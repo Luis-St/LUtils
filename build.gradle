@@ -1,0 +1,34 @@
+plugins {
+    id 'java-library'
+    id 'eclipse'
+    id 'java'
+}
+
+ext {
+	
+}
+
+println('Java: ' + System.getProperty('java.version') + ' JVM: ' + System.getProperty('java.vm.version') + '(' + System.getProperty('java.vendor') + ')' + ' Arch: ' + System.getProperty('os.arch'))
+
+repositories {
+    
+}
+
+dependencies {
+
+}
+
+task mainRun(type:JavaExec) {
+
+}
+
+wrapper {
+    gradleVersion = '7.4'
+    distributionType = Wrapper.DistributionType.ALL
+}
+
+jar {
+	manifest {
+		attributes('Main-Class': '')
+	}
+}
