@@ -1,4 +1,4 @@
-package net.luis.utils;
+package net.luis.utils.util;
 
 import java.io.File;
 import java.io.FilenameFilter;

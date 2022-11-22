@@ -1,4 +1,4 @@
-package net.luis.utils;
+package net.luis.utils.util;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
