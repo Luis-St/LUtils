@@ -1,4 +1,4 @@
-package net.luis.utils;
+package net.luis.utils.util;
 
 import com.google.common.collect.Table.Cell;
 
