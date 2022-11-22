@@ -14,16 +14,16 @@ import com.google.common.collect.Maps;
 public class WeightCollection<T> {
 	
 	private final NavigableMap<Integer, T> map;
-	private final Random random;
+	private final Random rng;
 	private int total = 0;
 	
 	public WeightCollection() {
 		this(new Random());
 	}
 	
-	public WeightCollection(Random random) {
+	public WeightCollection(Random rng) {
 		this.map = Maps.newTreeMap();
-		this.random = random;
+		this.rng = rng;
 	}
 	
 	public void add(int weight, T value) {
@@ -35,12 +35,31 @@ public class WeightCollection<T> {
 	}
 	
 	public T next() {
-		int value = (int) (this.random.nextDouble() * this.total);
+		int value = (int) (this.rng.nextDouble() * this.total);
 		return this.map.higherEntry(value).getValue();
 	}
 	
 	public boolean isEmpty() {
 		return this.map.isEmpty();
+	}
+	
+	@Override
+	public boolean equals(Object object) {
+		if (object instanceof WeightCollection<?> collection) {
+			if (!this.map.equals(collection.map)) {
+				return false;
+			} else if (!this.rng.equals(collection.rng)) {
+				return false;
+			} else {
+				return this.total == collection.total;
+			}
+		}
+		return false;
+	}
+	
+	@Override
+	public String toString() {
+		return this.map.toString();
 	}
 	
 }

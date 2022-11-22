@@ -49,4 +49,9 @@ public class SimpleCell<R, C, V> implements Cell<R, C, V> {
 		return false;
 	}
 	
+	@Override
+	public String toString() {
+		return ToString.toString(this);
+	}
+	
 }

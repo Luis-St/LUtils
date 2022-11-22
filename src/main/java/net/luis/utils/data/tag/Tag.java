@@ -19,8 +19,6 @@ public interface Tag {
 	
 	Logger LOGGER = LogManager.getLogger();
 	
-	long CRYPT_KEY = 128;
-	
 	byte END_TAG = 0;
 	byte BYTE_TAG = 1;
 	byte SHORT_TAG = 2;

@@ -116,16 +116,12 @@ public abstract class Either<L, R> {
 		
 		@Override
 		public boolean equals(Object object) {
-			if (this == object) {
-				return true;
+			if (object instanceof Left<?, ?> left) {
+				return Objects.equals(this.value, left.value);
 			}
-			if (!(object instanceof Left)) {
-				return false;
-			}
-			Left<?, ?> other = (Left<?, ?>) object;
-			return Objects.equals(this.value, other.value);
+			return false;
 		}
-
+		
 		@Override
 		public int hashCode() {
 			return Objects.hash(this.value);
@@ -183,14 +179,10 @@ public abstract class Either<L, R> {
 		
 		@Override
 		public boolean equals(Object object) {
-			if (this == object) {
-				return true;
+			if (object instanceof Right<?, ?> right) {
+				return Objects.equals(this.value, right.value);
 			}
-			if (!(object instanceof Right)) {
-				return false;
-			}
-			Right<?, ?> other = (Right<?, ?>) object;
-			return Objects.equals(this.value, other.value);
+			return false;
 		}
 		
 		@Override
