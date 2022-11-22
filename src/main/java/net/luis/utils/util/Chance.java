@@ -43,4 +43,21 @@ public class Chance {
 		}
 	}
 	
+	@Override
+	public boolean equals(Object object) {
+		if (object instanceof Chance chance) {
+			if (!this.rng.equals(chance.rng)) {
+				return false;
+			} else  {
+				return this.chance == chance.chance;
+			}
+		}
+		return false;
+	}
+	
+	@Override
+	public String toString() {
+		return ToString.toString(this, false, "rng");
+	}
+	
 }

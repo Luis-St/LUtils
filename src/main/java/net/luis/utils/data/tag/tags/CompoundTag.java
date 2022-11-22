@@ -13,7 +13,6 @@ import org.jetbrains.annotations.Nullable;
 
 import com.google.common.collect.Maps;
 
-import net.luis.utils.data.DataUtil;
 import net.luis.utils.data.tag.Tag;
 import net.luis.utils.data.tag.TagType;
 import net.luis.utils.data.tag.TagTypes;
@@ -41,7 +40,7 @@ public class CompoundTag implements Tag {
 				byte type = input.readByte();
 				TagType<?> tagType = TagTypes.getType(type);
 				if (type != END_TAG) {
-					String key = DataUtil.decrypt(CRYPT_KEY, input.readUTF());
+					String key = input.readUTF();
 					Tag tag = tagType.load(input);
 					data.put(key, tag);
 				}
@@ -77,7 +76,7 @@ public class CompoundTag implements Tag {
 			Tag tag = this.data.get(key);
 			output.writeByte(tag.getId());
 			if (tag.getId() != 0) {
-				output.writeUTF(DataUtil.encrypt(CRYPT_KEY, key));
+				output.writeUTF(key);
 				tag.save(output);
 			}
 		}

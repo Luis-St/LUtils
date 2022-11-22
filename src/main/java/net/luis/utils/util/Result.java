@@ -62,4 +62,12 @@ public class Result<T> implements Supplier<Either<T, String>> {
 		return this.either.right();
 	}
 	
+	@Override
+	public boolean equals(Object object) {
+		if (object instanceof Result<?> result) {
+			return this.either.equals(result.either);
+		}
+		return false;
+	}
+	
 }

@@ -25,20 +25,4 @@ public class DataUtil {
 		return new DataOutputStream(new BufferedOutputStream(new FileOutputStream(path.toFile())));
 	}
 	
-	public static String encrypt(long key, String text) {
-		byte[] encryptBytes = new byte[text.getBytes().length];
-		for (int i = 0; i < encryptBytes.length; i++) {
-			encryptBytes[i] = (byte) (text.getBytes()[i] + key);
-		}
-		return new String(encryptBytes);
-	}
-	
-	public static String decrypt(long key, String text) {
-		byte[] decryptBytes = new byte[text.getBytes().length];
-		for (int i = 0; i < decryptBytes.length; i++) {
-			decryptBytes[i] = (byte) (text.getBytes()[i] - key);
-		}
-		return new String(decryptBytes);
-	}
-	
 }

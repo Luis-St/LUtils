@@ -5,7 +5,6 @@ import java.io.DataOutput;
 import java.io.IOException;
 import java.util.Objects;
 
-import net.luis.utils.data.DataUtil;
 import net.luis.utils.data.tag.Tag;
 import net.luis.utils.data.tag.TagType;
 import net.luis.utils.data.tag.visitor.TagVisitor;
@@ -15,7 +14,7 @@ public class StringTag implements Tag {
 	public static final TagType<StringTag> TYPE = new TagType<StringTag>() {
 		@Override
 		public StringTag load(DataInput input) throws IOException {
-			return StringTag.valueOf(DataUtil.decrypt(CRYPT_KEY, input.readUTF()));
+			return StringTag.valueOf(input.readUTF());
 		}
 		
 		@Override
@@ -45,7 +44,7 @@ public class StringTag implements Tag {
 	
 	@Override
 	public void save(DataOutput output) throws IOException {
-		output.writeUTF(DataUtil.encrypt(CRYPT_KEY, this.data));
+		output.writeUTF(this.data);
 	}
 	
 	@Override
