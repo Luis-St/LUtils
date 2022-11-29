@@ -11,18 +11,7 @@ repositories {
     mavenCentral()
 }
 
-eclipse {
-	jdt {
-		sourceCompatibility = "17"
-		targetCompatibility = "17"
-	}
-}
-
-java {
-	toolchain {
-		languageVersion = JavaLanguageVersion.of(17)
-	}
-}
+java.toolchain.languageVersion = JavaLanguageVersion.of(17)
 
 compileJava {
 	sourceCompatibility = "17"
@@ -58,7 +47,10 @@ publishing {
 	
 	repositories {
 		maven {
-			url "file://C:/Users/luiss/.m2/repository"
+			url uri("C:/Users/luiss/.m2/repository")
+		}
+		maven {
+			url uri("${projectDir}/maven/repositories")
 		}
 	}
 }
