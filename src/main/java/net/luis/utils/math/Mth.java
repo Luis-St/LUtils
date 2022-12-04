@@ -55,11 +55,18 @@ public class Mth {
 	}
 	
 	public static int randomInt(Random rng, int min, int max) {
+		return min + rng.nextInt(max - min);
+	}
+	
+	public static int randomExclusiveInt(Random rng, int min, int max) {
+		return min + rng.nextInt(max - min - 1) + 1;
+	}
+	
+	public static int randomInclusiveInt(Random rng, int min, int max) {
 		return min + rng.nextInt(max - min + 1);
 	}
 	
 	public static double roundTo(double value, double roundValue) {
-		
 		double d = Math.round(value * roundValue);
 		return d / roundValue;
 	}

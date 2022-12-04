@@ -29,12 +29,17 @@ public class ToString {
 	
 	@NotNull
 	public static String toString(Object object) {
-		return new ToString(object, true).toString();
+		return new ToString(object, false).toString();
 	}
 	
 	@NotNull
 	public static String toString(Object object, boolean includeSuperClassFields) {
 		return new ToString(object, includeSuperClassFields).toString();
+	}
+	
+	@NotNull
+	public static String toString(Object object, String... excludeFields) {
+		return new ToString(object, false, excludeFields).toString();
 	}
 	
 	@NotNull
