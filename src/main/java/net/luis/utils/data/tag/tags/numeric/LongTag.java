@@ -5,14 +5,20 @@ import java.io.DataOutput;
 import java.io.IOException;
 
 import net.luis.utils.data.tag.TagType;
+import net.luis.utils.data.tag.exception.LoadTagException;
+import net.luis.utils.data.tag.exception.SaveTagException;
 import net.luis.utils.data.tag.visitor.TagVisitor;
 
 public class LongTag extends NumericTag {
 	
 	public static final TagType<LongTag> TYPE = new TagType<LongTag>() {
 		@Override
-		public LongTag load(DataInput input) throws IOException {
-			return valueOf(input.readLong());
+		public LongTag load(DataInput input) throws LoadTagException {
+			try {
+				return valueOf(input.readLong());
+			} catch (IOException e) {
+				throw new LoadTagException(e);
+			}
 		}
 		
 		@Override
@@ -42,8 +48,12 @@ public class LongTag extends NumericTag {
 	}
 	
 	@Override
-	public void save(DataOutput output) throws IOException {
-		output.writeLong(this.data);
+	public void save(DataOutput output) throws SaveTagException {
+		try {
+			output.writeLong(this.data);
+		} catch (IOException e) {
+			throw new SaveTagException(e);
+		}
 	}
 	
 	@Override

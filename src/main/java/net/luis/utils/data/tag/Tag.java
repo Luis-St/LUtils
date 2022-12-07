@@ -1,8 +1,12 @@
 package net.luis.utils.data.tag;
 
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
 import java.io.DataInputStream;
 import java.io.DataOutput;
 import java.io.DataOutputStream;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -10,7 +14,8 @@ import java.nio.file.Path;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import net.luis.utils.data.DataUtil;
+import net.luis.utils.data.tag.exception.LoadTagException;
+import net.luis.utils.data.tag.exception.SaveTagException;
 import net.luis.utils.data.tag.tags.EndTag;
 import net.luis.utils.data.tag.visitor.StringTagVisitor;
 import net.luis.utils.data.tag.visitor.TagVisitor;
@@ -34,7 +39,7 @@ public interface Tag {
 	byte COMPOUND_TAG = 12;
 	byte PRIMITIVE_TAG = 99;
 	
-	void save(DataOutput output) throws IOException;
+	void save(DataOutput output) throws SaveTagException;
 	
 	String toString();
 	
@@ -50,29 +55,33 @@ public interface Tag {
 		return new StringTagVisitor().visit(this);
 	}
 	
-	static Tag load(Path path) throws IOException {
+	static Tag load(Path path) throws LoadTagException {
 		if (!Files.exists(path)) {
-			LOGGER.warn("Fail to load tag from {}, since the file does not exists", path);
+			LOGGER.warn("Tag from file {} cannot be loaded because the file does not exist", path);
 			return EndTag.INSTANCE;
 		}
-		DataInputStream input = DataUtil.inputStream(path);
-		byte type = input.readByte();
-		TagType<?> tagType = TagTypes.getType(type);
-		Tag tag = tagType.load(input);
-		input.close();
-		return tag;
+		try (DataInputStream input = new DataInputStream(new BufferedInputStream(new FileInputStream(path.toFile())))) {
+			byte type = input.readByte();
+			TagType<?> tagType = TagTypes.getType(type);
+			Tag tag = tagType.load(input);
+			return tag;
+		} catch (IOException e) {
+			throw new LoadTagException(path);
+		}
 	}
 	
-	static void save(Path path, Tag tag) throws IOException {
-		if (!Files.exists(path)) {
-			Files.createDirectories(path.getParent());
-			Files.createFile(path);
+	static void save(Path path, Tag tag) throws SaveTagException {
+		try (DataOutputStream output = new DataOutputStream(new BufferedOutputStream(new FileOutputStream(path.toFile())))) {
+			if (!Files.exists(path)) {
+				Files.createDirectories(path.getParent());
+				Files.createFile(path);
+			}
+			output.writeByte(tag.getId());
+			tag.save(output);
+			output.flush();
+		} catch (IOException e) {
+			throw new SaveTagException(tag, path);
 		}
-		DataOutputStream output = DataUtil.outputStream(path);
-		output.writeByte(tag.getId());
-		tag.save(output);
-		output.flush();
-		output.close();
 	}
 	
 }

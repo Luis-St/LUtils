@@ -11,6 +11,8 @@ import com.google.common.collect.Lists;
 import net.luis.utils.data.tag.Tag;
 import net.luis.utils.data.tag.TagType;
 import net.luis.utils.data.tag.TagTypes;
+import net.luis.utils.data.tag.exception.LoadTagException;
+import net.luis.utils.data.tag.exception.SaveTagException;
 import net.luis.utils.data.tag.tags.CompoundTag;
 import net.luis.utils.data.tag.tags.StringTag;
 import net.luis.utils.data.tag.tags.collection.array.ByteArrayTag;
@@ -28,18 +30,22 @@ public class ListTag extends CollectionTag<Tag> {
 	
 	public static final TagType<ListTag> TYPE = new TagType<ListTag>() {
 		@Override
-		public ListTag load(DataInput input) throws IOException {
-			byte type = input.readByte();
-			int size = input.readInt();
-			if (type == 0 && size > 0) {
-				throw new RuntimeException("Missing type on ListTag");
-			} else {
-				TagType<?> tagType = TagTypes.getType(type);
-				List<Tag> data = Lists.newArrayListWithCapacity(size);
-				for (int i = 0; i < size; ++i) {
-					data.add(tagType.load(input));
+		public ListTag load(DataInput input) throws LoadTagException {
+			try {
+				byte type = input.readByte();
+				int size = input.readInt();
+				if (type == 0 && size > 0) {
+					throw new LoadTagException("Missing type on ListTag");
+				} else {
+					TagType<?> tagType = TagTypes.getType(type);
+					List<Tag> data = Lists.newArrayListWithCapacity(size);
+					for (int i = 0; i < size; ++i) {
+						data.add(tagType.load(input));
+					}
+					return new ListTag(data, type);
 				}
-				return new ListTag(data, type);
+			} catch (IOException e) {
+				throw new LoadTagException(e);
 			}
 		}
 		
@@ -72,16 +78,20 @@ public class ListTag extends CollectionTag<Tag> {
 	}
 	
 	@Override
-	public void save(DataOutput output) throws IOException {
-		if (this.data.isEmpty()) {
-			this.type = 0;
-		} else {
-			this.type = this.data.get(0).getId();
-		}
-		output.writeByte(this.type);
-		output.writeInt(this.data.size());
-		for (Tag tag : this.data) {
-			tag.save(output);
+	public void save(DataOutput output) throws SaveTagException {
+		try {
+			if (this.data.isEmpty()) {
+				this.type = 0;
+			} else {
+				this.type = this.data.get(0).getId();
+			}
+			output.writeByte(this.type);
+			output.writeInt(this.data.size());
+			for (Tag tag : this.data) {
+				tag.save(output);
+			}
+		} catch (IOException e) {
+			throw new SaveTagException(e);
 		}
 	}
 	

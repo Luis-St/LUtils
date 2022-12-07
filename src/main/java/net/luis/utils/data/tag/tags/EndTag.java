@@ -2,17 +2,18 @@ package net.luis.utils.data.tag.tags;
 
 import java.io.DataInput;
 import java.io.DataOutput;
-import java.io.IOException;
 
 import net.luis.utils.data.tag.Tag;
 import net.luis.utils.data.tag.TagType;
+import net.luis.utils.data.tag.exception.LoadTagException;
+import net.luis.utils.data.tag.exception.SaveTagException;
 import net.luis.utils.data.tag.visitor.TagVisitor;
 
 public class EndTag implements Tag {
 	
 	public static final TagType<EndTag> TYPE = new TagType<EndTag>() {
 		@Override
-		public EndTag load(DataInput input) throws IOException {
+		public EndTag load(DataInput input) throws LoadTagException {
 			return INSTANCE;
 		}
 		
@@ -33,8 +34,8 @@ public class EndTag implements Tag {
 	}
 	
 	@Override
-	public void save(DataOutput output) throws IOException {
-		
+	public void save(DataOutput outpt) throws SaveTagException {
+		throw new SaveTagException("Cannot save a tag of the type" + this.getType().getVisitorName());
 	}
 	
 	@Override

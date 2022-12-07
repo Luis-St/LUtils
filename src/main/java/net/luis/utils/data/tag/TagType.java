@@ -1,13 +1,14 @@
 package net.luis.utils.data.tag;
 
 import java.io.DataInput;
-import java.io.IOException;
 
+import net.luis.utils.data.tag.exception.InvalidTagException;
+import net.luis.utils.data.tag.exception.LoadTagException;
 import net.luis.utils.data.tag.tags.EndTag;
 
 public interface TagType<T extends Tag> {
 	
-	T load(DataInput input) throws IOException;
+	T load(DataInput input) throws LoadTagException;
 	
 	String getName();
 	
@@ -20,8 +21,8 @@ public interface TagType<T extends Tag> {
 	static TagType<EndTag> createInvalid(int id) {
 		return new TagType<EndTag>() {
 			@Override
-			public EndTag load(DataInput input) throws IOException {
-				throw new IOException("Invalid tag id: " + id);
+			public EndTag load(DataInput input) throws LoadTagException {
+				throw new InvalidTagException(id);
 			}
 			
 			@Override
@@ -31,7 +32,7 @@ public interface TagType<T extends Tag> {
 			
 			@Override
 			public String getVisitorName() {
-				return "UNKNOWN_" + id;
+				return "INVALID_" + id;
 			}
 		};
 	}

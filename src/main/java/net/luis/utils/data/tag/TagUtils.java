@@ -9,7 +9,7 @@ import com.google.common.collect.Lists;
 import net.luis.utils.data.tag.tags.CompoundTag;
 import net.luis.utils.data.tag.tags.collection.ListTag;
 
-public class TagUtil {
+public class TagUtils {
 	
 	public static CompoundTag writeUUID(UUID uuid) {
 		CompoundTag tag = new CompoundTag();

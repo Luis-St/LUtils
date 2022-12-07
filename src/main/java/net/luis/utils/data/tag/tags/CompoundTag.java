@@ -16,6 +16,8 @@ import com.google.common.collect.Maps;
 import net.luis.utils.data.tag.Tag;
 import net.luis.utils.data.tag.TagType;
 import net.luis.utils.data.tag.TagTypes;
+import net.luis.utils.data.tag.exception.LoadTagException;
+import net.luis.utils.data.tag.exception.SaveTagException;
 import net.luis.utils.data.tag.tags.collection.ListTag;
 import net.luis.utils.data.tag.tags.collection.array.ByteArrayTag;
 import net.luis.utils.data.tag.tags.collection.array.IntArrayTag;
@@ -33,19 +35,23 @@ public class CompoundTag implements Tag {
 	
 	public static final TagType<CompoundTag> TYPE = new TagType<CompoundTag>() {
 		@Override
-		public CompoundTag load(DataInput input) throws IOException {
-			int size = input.readInt();
-			Map<String, Tag> data = Maps.newHashMap();
-			for (int i = 0; i < size; i++) {
-				byte type = input.readByte();
-				TagType<?> tagType = TagTypes.getType(type);
-				if (type != END_TAG) {
-					String key = input.readUTF();
-					Tag tag = tagType.load(input);
-					data.put(key, tag);
+		public CompoundTag load(DataInput input) throws LoadTagException {
+			try {
+				int size = input.readInt();
+				Map<String, Tag> data = Maps.newHashMap();
+				for (int i = 0; i < size; i++) {
+					byte type = input.readByte();
+					TagType<?> tagType = TagTypes.getType(type);
+					if (type != END_TAG) {
+						String key = input.readUTF();
+						Tag tag = tagType.load(input);
+						data.put(key, tag);
+					}
 				}
+				return new CompoundTag(data);
+			} catch (IOException e) {
+				throw new LoadTagException(e);
 			}
-			return new CompoundTag(data);
 		}
 		
 		@Override
@@ -70,15 +76,19 @@ public class CompoundTag implements Tag {
 	}
 	
 	@Override
-	public void save(DataOutput output) throws IOException {
-		output.writeInt(this.data.size());
-		for (String key : this.data.keySet()) {
-			Tag tag = this.data.get(key);
-			output.writeByte(tag.getId());
-			if (tag.getId() != 0) {
-				output.writeUTF(key);
-				tag.save(output);
+	public void save(DataOutput output) throws SaveTagException {
+		try {
+			output.writeInt(this.data.size());
+			for (String key : this.data.keySet()) {
+				Tag tag = this.data.get(key);
+				output.writeByte(tag.getId());
+				if (tag.getId() != 0) {
+					output.writeUTF(key);
+					tag.save(output);
+				}
 			}
+		} catch (IOException e) {
+			throw new SaveTagException(e);
 		}
 	}
 	
