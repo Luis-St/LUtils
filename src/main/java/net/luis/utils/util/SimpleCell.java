@@ -1,5 +1,7 @@
 package net.luis.utils.util;
 
+import java.util.Objects;
+
 import com.google.common.collect.Table.Cell;
 
 /**
@@ -36,6 +38,11 @@ public class SimpleCell<R, C, V> implements Cell<R, C, V> {
 	}
 	
 	@Override
+	public String toString() {
+		return ToString.toString(this);
+	}
+	
+	@Override
 	public boolean equals(Object object) {
 		if (object instanceof SimpleCell<?, ?, ?> cell) {
 			if (!this.rowKey.equals(cell.getRowKey())) {
@@ -50,8 +57,8 @@ public class SimpleCell<R, C, V> implements Cell<R, C, V> {
 	}
 	
 	@Override
-	public String toString() {
-		return ToString.toString(this);
+	public int hashCode() {
+		return Objects.hash(this.rowKey, this.columnKey, this.value);
 	}
 	
 }

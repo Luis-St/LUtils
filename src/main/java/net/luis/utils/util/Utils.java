@@ -28,11 +28,12 @@ public class Utils {
 	
 	public static final UUID EMPTY_UUID = UUID.fromString("00000000-0000-0000-0000-000000000000");
 	
-	public static <T> T make(T object, Consumer<T> consumer) {
+	public static <T> T make(T object, @NotNull Consumer<T> consumer) {
 		consumer.accept(object);
 		return object;
 	}
 	
+	@NotNull
 	public static <K, V, T> List<T> mapToList(Map<K, V> map, BiFunction<K, V, T> function) {
 		List<T> list = Lists.newArrayList();
 		for (Map.Entry<K, V> entry : map.entrySet()) {
@@ -41,6 +42,7 @@ public class Utils {
 		return list;
 	}
 	
+	@NotNull
 	public static <T, K, V> Map<K, V> listToMap(List<T> list, Function<T, Entry<K, V>> function) {
 		Map<K, V> map = Maps.newHashMap();
 		for (T t : list) {
@@ -50,12 +52,12 @@ public class Utils {
 		return map;
 	}
 	
-	@Deprecated // Use a StreamList instead
+	@NotNull
 	public static <T, U> List<U> mapList(List<T> list, Function<T, U> function) {
 		return list.stream().map(function).collect(Collectors.toList());
 	}
 	
-	@Deprecated // Use a StreamList instead
+	@NotNull
 	public static <T, U, V> List<V> mapList(List<T> list, Function<T, U> firstFunction, Function<U, V> secondFunction) {
 		return list.stream().map(firstFunction).map(secondFunction).collect(Collectors.toList());
 	}
@@ -98,7 +100,7 @@ public class Utils {
 	@NotNull
 	public static <T> T warpNullTo(T value, T nullFallback) {
 		if (value == null) {
-			return Objects.requireNonNull(nullFallback, "The fallback value can not be null");
+			return Objects.requireNonNull(nullFallback, "The fallback value must not be null");
 		}
 		return value;
 	}

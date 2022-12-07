@@ -15,7 +15,7 @@ public class DefaultExceptionHandler implements Thread.UncaughtExceptionHandler 
 	
 	@Override
 	public void uncaughtException(Thread thread, Throwable throwable) {
-		LOGGER.warn("Error in thread " + thread.getName(), throwable);
+		LOGGER.error("Error in thread {}: {}", thread.getName(), throwable);
 	}
 	
 }

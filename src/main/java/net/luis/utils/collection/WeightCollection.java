@@ -1,6 +1,7 @@
 package net.luis.utils.collection;
 
 import java.util.NavigableMap;
+import java.util.Objects;
 import java.util.Random;
 
 import com.google.common.collect.Maps;
@@ -28,7 +29,7 @@ public class WeightCollection<T> {
 	
 	public void add(int weight, T value) {
 		if (0 >= weight) {
-			throw new IllegalArgumentException("The weight must be larger that 0 but it is " + weight);
+			throw new IllegalArgumentException("The weight must be greater than 0, but it is " + weight);
 		}
 		this.total += weight;
 		this.map.put(this.total, value);
@@ -41,6 +42,11 @@ public class WeightCollection<T> {
 	
 	public boolean isEmpty() {
 		return this.map.isEmpty();
+	}
+	
+	@Override
+	public String toString() {
+		return this.map.toString();
 	}
 	
 	@Override
@@ -58,8 +64,8 @@ public class WeightCollection<T> {
 	}
 	
 	@Override
-	public String toString() {
-		return this.map.toString();
+	public int hashCode() {
+		return Objects.hash(this.map, this.rng, this.total);
 	}
 	
 }

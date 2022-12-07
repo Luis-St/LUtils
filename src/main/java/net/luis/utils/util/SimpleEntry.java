@@ -36,7 +36,12 @@ public class SimpleEntry<K, V> implements Map.Entry<K, V> {
 	@Nullable
 	@Override
 	public V setValue(V value) {
-		throw new ConcurrentModificationException("Unable to set value of entry to " + value + ", since the entry is muted");
+		throw new ConcurrentModificationException("Value of the entry cannot be set to " + value + ", because the entry is muted");
+	}
+	
+	@Override
+	public String toString() {
+		return ToString.toString(this);
 	}
 	
 	@Override
@@ -52,8 +57,8 @@ public class SimpleEntry<K, V> implements Map.Entry<K, V> {
 	}
 	
 	@Override
-	public String toString() {
-		return ToString.toString(this);
+	public int hashCode() {
+		return Objects.hash(this.key, this.value);
 	}
 	
 }

@@ -1,6 +1,8 @@
 package net.luis.utils.util;
 
+import java.util.Objects;
 import java.util.Random;
+
 
 /**
  *
@@ -44,11 +46,16 @@ public class Chance {
 	}
 	
 	@Override
+	public String toString() {
+		return ToString.toString(this, "rng");
+	}
+	
+	@Override
 	public boolean equals(Object object) {
 		if (object instanceof Chance chance) {
 			if (!this.rng.equals(chance.rng)) {
 				return false;
-			} else  {
+			} else {
 				return this.chance == chance.chance;
 			}
 		}
@@ -56,8 +63,8 @@ public class Chance {
 	}
 	
 	@Override
-	public String toString() {
-		return ToString.toString(this, false, "rng");
+	public int hashCode() {
+		return Objects.hash(this.rng, this.chance);
 	}
 	
 }

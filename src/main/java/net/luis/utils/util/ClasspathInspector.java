@@ -28,19 +28,19 @@ public class ClasspathInspector {
 				classes.addAll(getClasses(file));
 			}
 		}
-		classes.removeIf(clazz -> clazz.isAnonymousClass());
+		classes.removeIf(Class::isAnonymousClass);
 		return classes;
 	}
 	
 	@NotNull
 	private static List<Class<?>> getClasses(File path) {
 		List<Class<?>> classes = Lists.newArrayList();
-		for (File file : getFiles(path, (dir, name) -> name.endsWith(".class"), true)) {
+		for (File file : getFiles(path, (directory, name) -> name.endsWith(".class"))) {
 			String className = getClassName(file.getAbsolutePath().substring(path.getAbsolutePath().length() + 1));
 			try {
 				classes.add(Class.forName(className));
 			} catch (ClassNotFoundException e) {
-				LOGGER.error("Fail to find class for name {}, since it does not exists", className);
+				LOGGER.error("The class for the name {} cannot be found because it does not exist", className);
 				throw new RuntimeException(e);
 			}
 		}
@@ -48,14 +48,14 @@ public class ClasspathInspector {
 	}
 	
 	@NotNull
-	private static List<File> getFiles(File directory, FilenameFilter filter, boolean recurse) {
+	private static List<File> getFiles(File directory, FilenameFilter filter) {
 		List<File> files = Lists.newArrayList();
 		for (File file : directory.listFiles()) {
-			if (filter == null || filter.accept(directory, file.getName())) {
+			if (filter.accept(directory, file.getName())) {
 				files.add(file);
 			}
-			if (recurse && file.isDirectory()) {
-				files.addAll(getFiles(file, filter, recurse));
+			if (file.isDirectory()) {
+				files.addAll(getFiles(file, filter));
 			}
 		}
 		return files;
