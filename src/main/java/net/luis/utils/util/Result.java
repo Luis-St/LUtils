@@ -1,6 +1,7 @@
 package net.luis.utils.util;
 
 import java.util.NoSuchElementException;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
@@ -14,7 +15,7 @@ import java.util.function.Supplier;
 public class Result<T> implements Supplier<Either<T, String>> {
 	
 	private final Either<T, String> either;
-
+	
 	private Result(Either<T, String> either) {
 		this.either = either;
 	}
@@ -26,7 +27,7 @@ public class Result<T> implements Supplier<Either<T, String>> {
 	public static <T> Result<T> error(String error) {
 		return new Result<>(Either.right(error));
 	}
-
+	
 	@Override
 	public Either<T, String> get() {
 		return this.either;
@@ -51,7 +52,7 @@ public class Result<T> implements Supplier<Either<T, String>> {
 			return this.either.leftOrThrow();
 		}
 		onError.accept(this.either.rightOrThrow());
-		throw new NoSuchElementException("No value present");
+		throw new NoSuchElementException("No value available");
 	}
 	
 	public boolean isError() {
@@ -63,11 +64,21 @@ public class Result<T> implements Supplier<Either<T, String>> {
 	}
 	
 	@Override
+	public String toString() {
+		return ToString.toString(this);
+	}
+	
+	@Override
 	public boolean equals(Object object) {
 		if (object instanceof Result<?> result) {
 			return this.either.equals(result.either);
 		}
 		return false;
+	}
+	
+	@Override
+	public int hashCode() {
+		return Objects.hash(this.either);
 	}
 	
 }

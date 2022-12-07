@@ -49,7 +49,7 @@ public class ToString {
 	
 	@Override
 	public String toString() {
-		StringBuilder builder = new StringBuilder(this.object.getClass().getSimpleName());
+		StringBuilder builder = new StringBuilder(this.getClassName(this.object.getClass()));
 		List<Field> fields = this.getFields();
 		if (fields.size() > 0) {
 			builder.append("{");
@@ -65,6 +65,10 @@ public class ToString {
 			builder.append("}");
 		}
 		return builder.toString();
+	}
+	
+	private String getClassName(Class<?> clazz) {
+		return clazz.getName().replace(clazz.getPackageName() + ".", "").replace("$", ".");
 	}
 	
 	@NotNull

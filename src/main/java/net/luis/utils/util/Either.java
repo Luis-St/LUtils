@@ -115,6 +115,11 @@ public abstract class Either<L, R> {
 		}
 		
 		@Override
+		public String toString() {
+			return ToString.toString(this);
+		}
+		
+		@Override
 		public boolean equals(Object object) {
 			if (object instanceof Left<?, ?> left) {
 				return Objects.equals(this.value, left.value);
@@ -175,6 +180,11 @@ public abstract class Either<L, R> {
 		@Override
 		public Optional<R> right() {
 			return Optional.of(this.value);
+		}
+		
+		@Override
+		public String toString() {
+			return ToString.toString(this);
 		}
 		
 		@Override

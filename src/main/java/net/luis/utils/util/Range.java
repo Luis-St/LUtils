@@ -1,5 +1,7 @@
 package net.luis.utils.util;
 
+import java.util.Objects;
+
 import net.luis.utils.math.Mth;
 
 /**
@@ -25,7 +27,7 @@ public class Range {
 	
 	public static Range of(int min, int max) {
 		if (max > min) {
-			throw new RuntimeException("The max value must be larger than the min value");
+			throw new RuntimeException("The maximum value must be greater than the minimum value");
 		} else {
 			return new Range(min, max);
 		}
@@ -41,6 +43,24 @@ public class Range {
 	
 	public boolean isInRange(int value) {
 		return Mth.isInBounds(value, this.min, this.max);
+	}
+	
+	@Override
+	public String toString() {
+		return ToString.toString(this);
+	}
+	
+	@Override
+	public boolean equals(Object object) {
+		if (object instanceof Range range) {
+			return this.min == range.min && this.max == range.max;
+		}
+		return false;
+	}
+	
+	@Override
+	public int hashCode() {
+		return Objects.hash(this.min, this.max);
 	}
 	
 }
