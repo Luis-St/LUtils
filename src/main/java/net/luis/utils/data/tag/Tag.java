@@ -32,11 +32,12 @@ public interface Tag {
 	byte FLOAT_TAG = 5;
 	byte DOUBLE_TAG = 6;
 	byte STRING_TAG = 7;
-	byte BYTE_ARRAY_TAG = 8;
-	byte INT_ARRAY_TAG = 9;
-	byte LONG_ARRAY_TAG = 10;
-	byte LIST_TAG = 11;
-	byte COMPOUND_TAG = 12;
+	byte CRYPT_STRING_TAG = 8;
+	byte BYTE_ARRAY_TAG = 9;
+	byte INT_ARRAY_TAG = 10;
+	byte LONG_ARRAY_TAG = 11;
+	byte LIST_TAG = 12;
+	byte COMPOUND_TAG = 13;
 	byte PRIMITIVE_TAG = 99;
 	
 	void save(DataOutput output) throws SaveTagException;

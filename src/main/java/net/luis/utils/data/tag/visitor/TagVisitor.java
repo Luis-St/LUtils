@@ -1,6 +1,7 @@
 package net.luis.utils.data.tag.visitor;
 
 import net.luis.utils.data.tag.tags.CompoundTag;
+import net.luis.utils.data.tag.tags.CryptStringTag;
 import net.luis.utils.data.tag.tags.EndTag;
 import net.luis.utils.data.tag.tags.StringTag;
 import net.luis.utils.data.tag.tags.collection.ListTag;
@@ -29,6 +30,8 @@ public interface TagVisitor {
 	void visitDouble(DoubleTag tag);
 	
 	void visitString(StringTag tag);
+	
+	void visitCryptString(CryptStringTag tag);
 	
 	void visitByteArray(ByteArrayTag tag);
 	
