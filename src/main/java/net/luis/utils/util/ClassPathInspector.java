@@ -16,7 +16,7 @@ import com.google.common.collect.Lists;
  *
  */
 
-public class ClasspathInspector {
+public class ClassPathInspector {
 	
 	private static final Logger LOGGER = LogManager.getLogger();
 	

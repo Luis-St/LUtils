@@ -3,7 +3,6 @@ package net.luis.utils.util;
 import java.util.Objects;
 import java.util.Random;
 
-
 /**
  *
  * @author Luis-st
