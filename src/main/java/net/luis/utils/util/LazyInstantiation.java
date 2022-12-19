@@ -5,7 +5,6 @@ import java.util.Objects;
 
 import org.apache.commons.lang3.mutable.MutableObject;
 
-
 /**
  *
  * @author Luis-st
