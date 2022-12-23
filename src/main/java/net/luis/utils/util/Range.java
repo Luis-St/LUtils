@@ -52,10 +52,7 @@ public class Range {
 	
 	@Override
 	public boolean equals(Object object) {
-		if (object instanceof Range range) {
-			return this.min == range.min && this.max == range.max;
-		}
-		return false;
+		return Equals.equals(this, object);
 	}
 	
 	@Override

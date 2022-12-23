@@ -44,16 +44,7 @@ public class SimpleCell<R, C, V> implements Cell<R, C, V> {
 	
 	@Override
 	public boolean equals(Object object) {
-		if (object instanceof SimpleCell<?, ?, ?> cell) {
-			if (!this.rowKey.equals(cell.getRowKey())) {
-				return false;
-			} else if (!this.columnKey.equals(cell.getColumnKey())) {
-				return false;
-			} else {
-				return this.value.equals(cell.getValue());
-			}
-		}
-		return false;
+		return Equals.equals(this, object);
 	}
 	
 	@Override

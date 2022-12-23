@@ -42,14 +42,7 @@ public class SimpleEntry<K, V> implements Map.Entry<K, V> {
 	
 	@Override
 	public boolean equals(Object object) {
-		if (object instanceof SimpleEntry<?, ?> entry) {
-			if (!this.key.equals(entry.getKey())) {
-				return false;
-			} else {
-				return Objects.equals(this.value, entry.getValue());
-			}
-		}
-		return false;
+		return Equals.equals(this, object);
 	}
 	
 	@Override

@@ -121,10 +121,7 @@ public abstract class Either<L, R> {
 		
 		@Override
 		public boolean equals(Object object) {
-			if (object instanceof Left<?, ?> left) {
-				return Objects.equals(this.value, left.value);
-			}
-			return false;
+			return Equals.equals(this, object);
 		}
 		
 		@Override
@@ -189,10 +186,7 @@ public abstract class Either<L, R> {
 		
 		@Override
 		public boolean equals(Object object) {
-			if (object instanceof Right<?, ?> right) {
-				return Objects.equals(this.value, right.value);
-			}
-			return false;
+			return Equals.equals(this, object);
 		}
 		
 		@Override

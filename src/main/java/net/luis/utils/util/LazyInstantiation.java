@@ -52,14 +52,7 @@ public class LazyInstantiation<T> {
 	
 	@Override
 	public boolean equals(Object object) {
-		if (object instanceof LazyInstantiation<?> lazy) {
-			if (this.instantiated != lazy.instantiated) {
-				return false;
-			} else {
-				return this.object.equals(lazy.object);
-			}
-		}
-		return false;
+		return Equals.equals(this, object);
 	}
 	
 	@Override

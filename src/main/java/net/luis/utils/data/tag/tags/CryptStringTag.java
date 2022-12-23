@@ -3,7 +3,6 @@ package net.luis.utils.data.tag.tags;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.security.SecureRandom;
-import java.util.Objects;
 
 import javax.crypto.Cipher;
 import javax.crypto.SecretKeyFactory;
@@ -14,6 +13,7 @@ import net.luis.utils.data.tag.TagType;
 import net.luis.utils.data.tag.exception.LoadTagException;
 import net.luis.utils.data.tag.exception.SaveTagException;
 import net.luis.utils.data.tag.visitor.TagVisitor;
+import net.luis.utils.util.Equals;
 
 /**
  *
@@ -118,11 +118,7 @@ public class CryptStringTag implements Tag {
 	
 	@Override
 	public boolean equals(Object object) {
-		if (this == object) {
-			return true;
-		} else {
-			return object instanceof CryptStringTag tag && Objects.equals(this.data, tag.data);
-		}
+		return Equals.equals(this, object);
 	}
 	
 	@Override

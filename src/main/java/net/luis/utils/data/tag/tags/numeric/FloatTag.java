@@ -8,6 +8,7 @@ import net.luis.utils.data.tag.TagType;
 import net.luis.utils.data.tag.exception.LoadTagException;
 import net.luis.utils.data.tag.exception.SaveTagException;
 import net.luis.utils.data.tag.visitor.TagVisitor;
+import net.luis.utils.util.Equals;
 
 public class FloatTag extends NumericTag {
 	
@@ -113,12 +114,7 @@ public class FloatTag extends NumericTag {
 	
 	@Override
 	public boolean equals(Object object) {
-		if (object == this) {
-			return true;
-		} else if (object instanceof FloatTag tag) {
-			return this.getAsFloat() == tag.getAsFloat();
-		}
-		return false;
+		return Equals.equals(this, object);
 	}
 	
 	@Override
