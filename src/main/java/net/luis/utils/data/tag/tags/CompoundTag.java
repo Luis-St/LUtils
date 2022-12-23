@@ -9,8 +9,6 @@ import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Set;
 
-import org.jetbrains.annotations.Nullable;
-
 import com.google.common.collect.Maps;
 
 import net.luis.utils.data.tag.Tag;
@@ -139,7 +137,6 @@ public class CompoundTag implements Tag {
 		}
 	}
 	
-	@Nullable
 	public Tag put(String key, Tag tag) {
 		if (tag == null) {
 			throw new IllegalArgumentException("Invalid tag with value null for key: " + key);
@@ -173,6 +170,10 @@ public class CompoundTag implements Tag {
 	
 	public void putString(String key, String data) {
 		this.put(key, StringTag.valueOf(data));
+	}
+	
+	public void putCryptString(String key, String data) {
+		this.put(key, CryptStringTag.valueOf(data));
 	}
 	
 	public void putByteArray(String key, byte[] data) {
@@ -216,7 +217,6 @@ public class CompoundTag implements Tag {
 		return tag == null ? 0 : tag.getId();
 	}
 	
-	@Nullable
 	public Tag get(String key) {
 		return this.data.get(key);
 	}
@@ -290,6 +290,17 @@ public class CompoundTag implements Tag {
 	public String getString(String key) {
 		try {
 			if (this.contains(key, STRING_TAG)) {
+				return this.get(key).getAsString();
+			}
+		} catch (ClassCastException e) {
+			throw new RuntimeException("Fail to read tag of type: " + TagTypes.getType(this.getTagType(key)).getName() + ", since it's corrupt");
+		}
+		return "";
+	}
+	
+	public String getCryptString(String key) {
+		try {
+			if (this.contains(key, CRYPT_STRING_TAG)) {
 				return this.get(key).getAsString();
 			}
 		} catch (ClassCastException e) {
