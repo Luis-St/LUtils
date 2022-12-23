@@ -5,7 +5,6 @@ import java.io.DataOutput;
 import java.io.IOException;
 import java.util.List;
 
-import com.google.common.base.Objects;
 import com.google.common.collect.Lists;
 
 import net.luis.utils.data.tag.Tag;
@@ -25,6 +24,7 @@ import net.luis.utils.data.tag.tags.numeric.IntTag;
 import net.luis.utils.data.tag.tags.numeric.LongTag;
 import net.luis.utils.data.tag.tags.numeric.ShortTag;
 import net.luis.utils.data.tag.visitor.TagVisitor;
+import net.luis.utils.util.Equals;
 
 public class ListTag extends CollectionTag<Tag> {
 	
@@ -325,10 +325,7 @@ public class ListTag extends CollectionTag<Tag> {
 	
 	@Override
 	public boolean equals(Object object) {
-		if (object == this) {
-			return true;
-		}
-		return object instanceof ListTag tag && Objects.equal(this.data, tag.data);
+		return Equals.equals(this, object);
 	}
 	
 	@Override

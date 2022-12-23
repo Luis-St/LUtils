@@ -16,6 +16,7 @@ import net.luis.utils.data.tag.tags.collection.CollectionTag;
 import net.luis.utils.data.tag.tags.numeric.LongTag;
 import net.luis.utils.data.tag.tags.numeric.NumericTag;
 import net.luis.utils.data.tag.visitor.TagVisitor;
+import net.luis.utils.util.Equals;
 
 public class LongArrayTag extends CollectionTag<LongTag> {
 	
@@ -162,11 +163,7 @@ public class LongArrayTag extends CollectionTag<LongTag> {
 	
 	@Override
 	public boolean equals(Object object) {
-		if (this == object) {
-			return true;
-		} else {
-			return object instanceof LongArrayTag tag && Arrays.equals(this.data, tag.data);
-		}
+		return Equals.equals(this, object);
 	}
 	
 	@Override

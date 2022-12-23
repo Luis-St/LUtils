@@ -6,7 +6,6 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Objects;
 import java.util.Set;
 
 import com.google.common.collect.Maps;
@@ -28,6 +27,7 @@ import net.luis.utils.data.tag.tags.numeric.LongTag;
 import net.luis.utils.data.tag.tags.numeric.NumericTag;
 import net.luis.utils.data.tag.tags.numeric.ShortTag;
 import net.luis.utils.data.tag.visitor.TagVisitor;
+import net.luis.utils.util.Equals;
 
 public class CompoundTag implements Tag {
 	
@@ -390,11 +390,7 @@ public class CompoundTag implements Tag {
 	
 	@Override
 	public boolean equals(Object object) {
-		if (this == object) {
-			return true;
-		} else {
-			return object instanceof CompoundTag && Objects.equals(this.data, ((CompoundTag) object).data);
-		}
+		return Equals.equals(this, object);
 	}
 	
 	@Override

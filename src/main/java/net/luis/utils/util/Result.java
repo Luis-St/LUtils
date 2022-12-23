@@ -70,10 +70,7 @@ public class Result<T> implements Supplier<Either<T, String>> {
 	
 	@Override
 	public boolean equals(Object object) {
-		if (object instanceof Result<?> result) {
-			return this.either.equals(result.either);
-		}
-		return false;
+		return Equals.equals(this, object);
 	}
 	
 	@Override

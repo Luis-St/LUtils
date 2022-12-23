@@ -3,13 +3,13 @@ package net.luis.utils.data.tag.tags;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
-import java.util.Objects;
 
 import net.luis.utils.data.tag.Tag;
 import net.luis.utils.data.tag.TagType;
 import net.luis.utils.data.tag.exception.LoadTagException;
 import net.luis.utils.data.tag.exception.SaveTagException;
 import net.luis.utils.data.tag.visitor.TagVisitor;
+import net.luis.utils.util.Equals;
 
 public class StringTag implements Tag {
 	
@@ -89,11 +89,7 @@ public class StringTag implements Tag {
 	
 	@Override
 	public boolean equals(Object object) {
-		if (this == object) {
-			return true;
-		} else {
-			return object instanceof StringTag tag && Objects.equals(this.data, tag.data);
-		}
+		return Equals.equals(this, object);
 	}
 	
 	@Override

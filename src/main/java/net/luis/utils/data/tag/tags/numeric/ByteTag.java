@@ -8,6 +8,7 @@ import net.luis.utils.data.tag.TagType;
 import net.luis.utils.data.tag.exception.LoadTagException;
 import net.luis.utils.data.tag.exception.SaveTagException;
 import net.luis.utils.data.tag.visitor.TagVisitor;
+import net.luis.utils.util.Equals;
 
 public class ByteTag extends NumericTag {
 	
@@ -120,12 +121,7 @@ public class ByteTag extends NumericTag {
 	
 	@Override
 	public boolean equals(Object object) {
-		if (object == this) {
-			return true;
-		} else if (object instanceof ByteTag tag) {
-			return this.getAsByte() == tag.getAsByte();
-		}
-		return false;
+		return Equals.equals(this, object);
 	}
 	
 	@Override
