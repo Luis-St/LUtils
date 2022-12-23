@@ -22,7 +22,6 @@ dependencies {
 	implementation "com.google.guava:guava:31.0.1-jre"
 	implementation group: "org.apache.logging.log4j", name: "log4j-api", version: "2.14.1"
 	implementation group: "org.apache.logging.log4j", name: "log4j-core", version: "2.14.1"
-	implementation "org.jetbrains:annotations:23.0.0"
 	implementation group: "org.apache.commons", name: "commons-lang3", version: "3.0"
 }
 
@@ -44,7 +43,7 @@ publishing {
 		mavenJava(MavenPublication) {
 			groupId = "net.luis"
 			artifactId = "LUtils"
-			version = "1.5"
+			version = "1.6"
 			artifact jar
 			artifact sourcesJar
 		}

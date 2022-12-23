@@ -4,8 +4,6 @@ import java.util.ConcurrentModificationException;
 import java.util.Map;
 import java.util.Objects;
 
-import org.jetbrains.annotations.Nullable;
-
 /**
  *
  * @author Luis-st
@@ -27,13 +25,11 @@ public class SimpleEntry<K, V> implements Map.Entry<K, V> {
 		return this.key;
 	}
 	
-	@Nullable
 	@Override
 	public V getValue() {
 		return this.value;
 	}
 	
-	@Nullable
 	@Override
 	public V setValue(V value) {
 		throw new ConcurrentModificationException("Value of the entry cannot be set to " + value + ", because the entry is muted");

@@ -26,7 +26,7 @@ public class Range {
 	}
 	
 	public static Range of(int min, int max) {
-		if (max > min) {
+		if (min > max) {
 			throw new RuntimeException("The maximum value must be greater than the minimum value");
 		} else {
 			return new Range(min, max);
