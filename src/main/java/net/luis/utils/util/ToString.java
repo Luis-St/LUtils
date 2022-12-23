@@ -1,11 +1,12 @@
 package net.luis.utils.util;
 
 import java.lang.reflect.Field;
-import java.util.ArrayList;
+import java.lang.reflect.Modifier;
 import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
-import org.jetbrains.annotations.NotNull;
+import org.apache.commons.lang3.ClassUtils;
 
 import com.google.common.collect.Lists;
 
@@ -18,33 +19,21 @@ import com.google.common.collect.Lists;
 public class ToString {
 	
 	private final Object object;
-	private final boolean includeSuperClassFields;
+	private final FieldHandler fieldHandler;
 	private final List<String> excludeFields;
 	
-	private ToString(Object object, boolean includeSuperClassFields, String... excludeFields) {
+	private ToString(Object object, FieldHandler fieldHandler, String... excludeFields) {
 		this.object = object;
-		this.includeSuperClassFields = includeSuperClassFields;
+		this.fieldHandler = fieldHandler;
 		this.excludeFields = Lists.newArrayList(excludeFields);
 	}
 	
-	@NotNull
-	public static String toString(Object object) {
-		return new ToString(object, false).toString();
-	}
-	
-	@NotNull
-	public static String toString(Object object, boolean includeSuperClassFields) {
-		return new ToString(object, includeSuperClassFields).toString();
-	}
-	
-	@NotNull
 	public static String toString(Object object, String... excludeFields) {
-		return new ToString(object, false, excludeFields).toString();
+		return new ToString(object, FieldHandler.EXCLUDE_JAVA, excludeFields).toString();
 	}
 	
-	@NotNull
-	public static String toString(Object object, boolean includeSuperClassFields, String... excludeFields) {
-		return new ToString(object, includeSuperClassFields, excludeFields).toString();
+	public static String toString(Object object, FieldHandler fieldHandler, String... excludeFields) {
+		return new ToString(object, fieldHandler, excludeFields).toString();
 	}
 	
 	@Override
@@ -53,16 +42,32 @@ public class ToString {
 		List<Field> fields = this.getFields();
 		if (fields.size() > 0) {
 			builder.append("{");
-			for (int i = 0; i < fields.size(); i++) {
-				String name = fields.get(i).getName();
-				if (!this.excludeFields.contains(name)) {
-					if (i != 0) {
-						builder.append(",");
+			ReflectionHelper.enableExceptionThrowing();
+			for (Field field : fields) {
+				builder.append(field.getName()).append("=");
+				Object object = ReflectionHelper.get(field, this.object);
+				Class<?> clazz = ClassUtils.primitiveToWrapper(field.getType());
+				if (object == null) {
+					if (clazz.isArray()) {
+						builder.append("[]");
+					} else if (clazz == Byte.class || clazz == Short.class || clazz == Integer.class || clazz == Long.class) {
+						builder.append(0);
+					} else if (clazz == Float.class || clazz == Double.class) {
+						builder.append(0.0);
+					} else if (clazz == Boolean.class) {
+						builder.append(false);
+					} else {
+						builder.append("null");
 					}
-					builder.append(name).append("=").append(ReflectionHelper.get(fields.get(i), this.object).toString());
+				} else if (clazz.isArray()) {
+					builder.append(Arrays.toString((Object[]) object));
+				} else {
+					builder.append(object);
 				}
+				builder.append(",");
 			}
-			builder.append("}");
+			ReflectionHelper.disableExceptionThrowing();
+			builder.replace(builder.lastIndexOf(","), builder.length(), "").append("}");
 		}
 		return builder.toString();
 	}
@@ -71,23 +76,36 @@ public class ToString {
 		return clazz.getName().replace(clazz.getPackageName() + ".", "").replace("$", ".");
 	}
 	
-	@NotNull
 	private <T> List<Field> getFields() {
-		List<List<Field>> allFields = new ArrayList<>();
+		if (this.fieldHandler == FieldHandler.NO) {
+			return Lists.newArrayList();
+		}
+		List<List<Field>> fields = Lists.newArrayList();
 		Class<?> clazz = this.object.getClass();
-		if (!this.includeSuperClassFields) {
-			allFields.add(Arrays.asList(clazz.getDeclaredFields()));
+		if (this.fieldHandler == FieldHandler.EXCLUDE) {
+			fields.add(Arrays.asList(clazz.getDeclaredFields()));
 		} else {
 			while (clazz.getSuperclass() != null) {
-				allFields.add(Arrays.asList(clazz.getDeclaredFields()));
+				if (this.fieldHandler == FieldHandler.EXCLUDE_JAVA && clazz.getPackageName().startsWith("java")) {
+					break;
+				}
+				fields.add(Arrays.asList(clazz.getDeclaredFields()));
 				clazz = clazz.getSuperclass();
 			}
 		}
-		List<Field> fields = new ArrayList<>();
-		for (List<Field> list : Utils.reverseList(allFields)) {
-			fields.addAll(list);
-		}
-		return fields;
+		return Utils.reverseList(fields.stream().flatMap((list) -> {
+			return Utils.reverseList(list).stream();
+		}).filter((field) -> {
+			return !Modifier.isStatic(field.getModifiers());
+		}).filter((field) -> {
+			return !this.excludeFields.contains(field.getName());
+		}).collect(Collectors.toList()));
+	}
+	
+	public static enum FieldHandler {
+		
+		NO, INCLUDE, EXCLUDE, EXCLUDE_JAVA;
+	
 	}
 	
 }
