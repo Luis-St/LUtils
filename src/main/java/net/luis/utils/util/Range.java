@@ -1,8 +1,9 @@
 package net.luis.utils.util;
 
-import java.util.Objects;
-
 import net.luis.utils.math.Mth;
+import org.jetbrains.annotations.NotNull;
+
+import java.util.Objects;
 
 /**
  *
@@ -21,11 +22,11 @@ public class Range {
 		
 	}
 	
-	public static Range of(int max) {
+	public static @NotNull Range of(int max) {
 		return of(0, max);
 	}
 	
-	public static Range of(int min, int max) {
+	public static @NotNull Range of(int min, int max) {
 		if (min > max) {
 			throw new RuntimeException("The maximum value must be greater than the minimum value");
 		} else {

@@ -1,9 +1,9 @@
 package net.luis.utils.math;
 
-import java.util.Random;
-
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+
+import java.util.Random;
 
 /**
  *
@@ -20,7 +20,7 @@ public class Mth {
 		byte sum = 0;
 		for (int j = 0; j < s.length(); j++) {
 			try {
-				sum += Byte.valueOf("" + s.charAt(j));
+				sum += Byte.parseByte("" + s.charAt(j));
 			} catch (NumberFormatException e) {
 				LOGGER.warn("Fail to get byte for char {}", s.charAt(j));
 			}
@@ -33,7 +33,7 @@ public class Mth {
 		int sum = 0;
 		for (int j = 0; j < s.length(); j++) {
 			try {
-				sum += Integer.valueOf("" + s.charAt(j));
+				sum += Integer.parseInt("" + s.charAt(j));
 			} catch (NumberFormatException e) {
 				LOGGER.warn("Fail to get int for char {}", s.charAt(j));
 			}
@@ -46,7 +46,7 @@ public class Mth {
 		long sum = 0;
 		for (int j = 0; j < s.length(); j++) {
 			try {
-				sum += Long.valueOf("" + s.charAt(j));
+				sum += Long.parseLong("" + s.charAt(j));
 			} catch (NumberFormatException e) {
 				LOGGER.warn("Fail to get long for char {}", s.charAt(j));
 			}
@@ -72,10 +72,7 @@ public class Mth {
 	}
 	
 	public static boolean isInBounds(int value, int min, int max) {
-		if (max >= value && value >= min) {
-			return true;
-		}
-		return false;
+		return max >= value && value >= min;
 	}
 	
 	public static boolean sameValues(Number... numbers) {
@@ -123,7 +120,7 @@ public class Mth {
 		if (min > value) {
 			return min;
 		} else {
-			return value > max ? max : value;
+			return Math.min(value, max);
 		}
 	}
 	
@@ -131,7 +128,7 @@ public class Mth {
 		if (min > value) {
 			return min;
 		} else {
-			return value > max ? max : value;
+			return Math.min(value, max);
 		}
 	}
 	
@@ -139,7 +136,7 @@ public class Mth {
 		if (min > value) {
 			return min;
 		} else {
-			return value > max ? max : value;
+			return Math.min(value, max);
 		}
 	}
 	
@@ -147,7 +144,7 @@ public class Mth {
 		if (min > value) {
 			return min;
 		} else {
-			return value > max ? max : value;
+			return Math.min(value, max);
 		}
 	}
 	

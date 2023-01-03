@@ -1,13 +1,5 @@
 package net.luis.utils.data.tag.tags.collection.array;
 
-import java.io.DataInput;
-import java.io.DataOutput;
-import java.io.IOException;
-import java.util.Arrays;
-import java.util.List;
-
-import org.apache.commons.lang3.ArrayUtils;
-
 import net.luis.utils.data.tag.Tag;
 import net.luis.utils.data.tag.TagType;
 import net.luis.utils.data.tag.exception.LoadTagException;
@@ -17,12 +9,20 @@ import net.luis.utils.data.tag.tags.numeric.IntTag;
 import net.luis.utils.data.tag.tags.numeric.NumericTag;
 import net.luis.utils.data.tag.visitor.TagVisitor;
 import net.luis.utils.util.Equals;
+import org.apache.commons.lang3.ArrayUtils;
+import org.jetbrains.annotations.NotNull;
+
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
+import java.util.Arrays;
+import java.util.List;
 
 public class IntArrayTag extends CollectionTag<IntTag> {
 	
-	public static final TagType<IntArrayTag> TYPE = new TagType<IntArrayTag>() {
+	public static final TagType<IntArrayTag> TYPE = new TagType<>() {
 		@Override
-		public IntArrayTag load(DataInput input) throws LoadTagException {
+		public @NotNull IntArrayTag load(DataInput input) throws LoadTagException {
 			try {
 				int length = input.readInt();
 				int[] data = new int[length];
@@ -36,12 +36,12 @@ public class IntArrayTag extends CollectionTag<IntTag> {
 		}
 		
 		@Override
-		public String getName() {
+		public @NotNull String getName() {
 			return "int_array_tag";
 		}
 		
 		@Override
-		public String getVisitorName() {
+		public @NotNull String getVisitorName() {
 			return "IntArrayTag";
 		}
 	};
@@ -73,8 +73,8 @@ public class IntArrayTag extends CollectionTag<IntTag> {
 	public void save(DataOutput output) throws SaveTagException {
 		try {
 			output.writeInt(this.data.length);
-			for (int i = 0; i < this.data.length; i++) {
-				output.writeInt(this.data[i]);
+			for (int datum : this.data) {
+				output.writeInt(datum);
 			}
 		} catch (IOException e) {
 			throw new SaveTagException(e);
@@ -87,12 +87,12 @@ public class IntArrayTag extends CollectionTag<IntTag> {
 	}
 	
 	@Override
-	public TagType<IntArrayTag> getType() {
+	public @NotNull TagType<IntArrayTag> getType() {
 		return TYPE;
 	}
 	
 	@Override
-	public IntArrayTag copy() {
+	public @NotNull IntArrayTag copy() {
 		int[] data = new int[this.data.length];
 		System.arraycopy(this.data, 0, data, 0, this.data.length);
 		return new IntArrayTag(data);
@@ -108,7 +108,7 @@ public class IntArrayTag extends CollectionTag<IntTag> {
 	}
 	
 	@Override
-	public IntTag set(int index, IntTag tag) {
+	public @NotNull IntTag set(int index, IntTag tag) {
 		int i = this.data[index];
 		this.data[index] = tag.getAsInt();
 		return IntTag.valueOf(i);

@@ -1,16 +1,16 @@
 package net.luis.utils.util;
 
+import com.google.common.collect.Lists;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.jetbrains.annotations.Nullable;
+
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.List;
 import java.util.stream.Collectors;
-
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-
-import com.google.common.collect.Lists;
 
 /**
  *
@@ -40,7 +40,7 @@ public class ReflectionHelper {
 		THROW_EXCEPTIONS = false;
 	}
 	
-	public static Class<?> getClassForName(String className) {
+	public static @Nullable Class<?> getClassForName(String className) {
 		try {
 			return Class.forName(className);
 		} catch (ClassNotFoundException e) {
@@ -69,7 +69,7 @@ public class ReflectionHelper {
 		return Lists.newArrayList(objects).stream().map(Object::getClass).map(Class::getSimpleName).collect(Collectors.toList());
 	}
 	
-	public static <T> Constructor<T> getConstructor(Class<T> clazz, Class<?>... parameters) {
+	public static <T> @Nullable Constructor<T> getConstructor(Class<T> clazz, Class<?>... parameters) {
 		Constructor<T> constructor = null;
 		try {
 			constructor = clazz.getDeclaredConstructor(parameters);
@@ -95,13 +95,13 @@ public class ReflectionHelper {
 		Constructor<?> constructor = null;
 		try {
 			constructor = clazz.getDeclaredConstructor(parameters);
-		} catch (Exception e) {
+		} catch (Exception ignored) {
 			
 		}
 		return constructor != null;
 	}
 	
-	public static <T> T newInstance(Constructor<T> constructor, Object... parameters) {
+	public static <T> @Nullable T newInstance(Constructor<T> constructor, Object... parameters) {
 		T instance = null;
 		try {
 			if (constructor.trySetAccessible()) {
@@ -124,7 +124,7 @@ public class ReflectionHelper {
 				throw new RuntimeException(e);
 			}
 		} catch (IllegalArgumentException e) {
-			LOGGER.warn("The parameters {} do not match those of the constructor in type {}, expected parameters {}", getSimpleNames(constructor.getParameterTypes()), constructor.getClass().getSimpleName());
+			LOGGER.warn("The parameters {} do not match those of the constructor in type {}, expected parameters {}", getSimpleNames(parameters), constructor.getClass().getSimpleName(), getSimpleNames(constructor.getParameterTypes()));
 			if (LOG_EXCEPTIONS && !THROW_EXCEPTIONS) {
 				LOGGER.error(e);
 			} else if (THROW_EXCEPTIONS) {
@@ -141,7 +141,7 @@ public class ReflectionHelper {
 		return instance;
 	}
 	
-	public static <T> T newInstance(Class<T> clazz, Object... parameters) {
+	public static <T> @Nullable T newInstance(Class<T> clazz, Object... parameters) {
 		return newInstance(getConstructor(clazz, Lists.newArrayList(parameters).stream().map(Object::getClass).toArray(Class<?>[]::new)), parameters);
 	}
 	
@@ -171,13 +171,13 @@ public class ReflectionHelper {
 		Method method = null;
 		try {
 			method = clazz.getDeclaredMethod(name, parameters);
-		} catch (Exception e) {
+		} catch (Exception ignored) {
 			
 		}
 		return method != null;
 	}
 	
-	public static Object invoke(Method method, Object instance, Object... parameters) {
+	public static @Nullable Object invoke(Method method, Object instance, Object... parameters) {
 		Object returnValue = null;
 		try {
 			if (method.trySetAccessible()) {
@@ -210,11 +210,11 @@ public class ReflectionHelper {
 		return returnValue;
 	}
 	
-	public static Object invoke(Class<?> clazz, String name, Object instance, Object... parameters) {
+	public static @Nullable Object invoke(Class<?> clazz, String name, Object instance, Object... parameters) {
 		return invoke(getMethod(clazz, name, Lists.newArrayList(parameters).stream().map(Object::getClass).toArray(Class<?>[]::new)), instance, parameters);
 	}
 	
-	public static Field getField(Class<?> clazz, String name) {
+	public static @Nullable Field getField(Class<?> clazz, String name) {
 		Field field = null;
 		try {
 			field = clazz.getDeclaredField(name);
@@ -226,7 +226,7 @@ public class ReflectionHelper {
 				throw new RuntimeException(e);
 			}
 		} catch (SecurityException e) {
-			LOGGER.warn("No permisson to get field {} in class {}", name, clazz.getSimpleName());
+			LOGGER.warn("No permission to get field {} in class {}", name, clazz.getSimpleName());
 			if (LOG_EXCEPTIONS && !THROW_EXCEPTIONS) {
 				LOGGER.error(e);
 			} else if (THROW_EXCEPTIONS) {
@@ -240,13 +240,13 @@ public class ReflectionHelper {
 		Field field = null;
 		try {
 			field = clazz.getDeclaredField(name);
-		} catch (Exception e) {
+		} catch (Exception ignored) {
 			
 		}
 		return field != null;
 	}
 	
-	public static Object get(Field field, Object instance) {
+	public static @Nullable Object get(Field field, Object instance) {
 		Object value = null;
 		try {
 			if (field.trySetAccessible()) {
@@ -272,7 +272,7 @@ public class ReflectionHelper {
 		return value;
 	}
 	
-	public static Object get(Class<?> clazz, String name, Object instance) {
+	public static @Nullable Object get(Class<?> clazz, String name, Object instance) {
 		return get(getField(clazz, name), instance);
 	}
 	

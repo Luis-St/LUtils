@@ -1,8 +1,8 @@
 package net.luis.utils.data.tag.exception;
 
-import java.nio.file.Path;
-
 import net.luis.utils.data.tag.Tag;
+
+import java.nio.file.Path;
 
 /**
  *

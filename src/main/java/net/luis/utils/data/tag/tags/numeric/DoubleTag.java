@@ -1,20 +1,21 @@
 package net.luis.utils.data.tag.tags.numeric;
 
-import java.io.DataInput;
-import java.io.DataOutput;
-import java.io.IOException;
-
 import net.luis.utils.data.tag.TagType;
 import net.luis.utils.data.tag.exception.LoadTagException;
 import net.luis.utils.data.tag.exception.SaveTagException;
 import net.luis.utils.data.tag.visitor.TagVisitor;
 import net.luis.utils.util.Equals;
+import org.jetbrains.annotations.NotNull;
+
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
 
 public class DoubleTag extends NumericTag {
 	
-	public static final TagType<DoubleTag> TYPE = new TagType<DoubleTag>() {
+	public static final TagType<DoubleTag> TYPE = new TagType<>() {
 		@Override
-		public DoubleTag load(DataInput input) throws LoadTagException {
+		public @NotNull DoubleTag load(DataInput input) throws LoadTagException {
 			try {
 				return valueOf(input.readDouble());
 			} catch (IOException e) {
@@ -23,12 +24,12 @@ public class DoubleTag extends NumericTag {
 		}
 		
 		@Override
-		public String getName() {
+		public @NotNull String getName() {
 			return "float_tag";
 		}
 		
 		@Override
-		public String getVisitorName() {
+		public @NotNull String getVisitorName() {
 			return "DoubleTag";
 		}
 		
@@ -63,12 +64,12 @@ public class DoubleTag extends NumericTag {
 	}
 	
 	@Override
-	public TagType<DoubleTag> getType() {
+	public @NotNull TagType<DoubleTag> getType() {
 		return TYPE;
 	}
 	
 	@Override
-	public DoubleTag copy() {
+	public @NotNull DoubleTag copy() {
 		return valueOf(this.data);
 	}
 	
@@ -104,11 +105,11 @@ public class DoubleTag extends NumericTag {
 	
 	@Override
 	public double getAsDouble() {
-		return (double) this.data;
+		return this.data;
 	}
 	
 	@Override
-	public Number getAsNumber() {
+	public @NotNull Number getAsNumber() {
 		return this.data;
 	}
 	

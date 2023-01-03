@@ -1,13 +1,5 @@
 package net.luis.utils.data.tag.tags.collection.array;
 
-import java.io.DataInput;
-import java.io.DataOutput;
-import java.io.IOException;
-import java.util.Arrays;
-import java.util.List;
-
-import org.apache.commons.lang3.ArrayUtils;
-
 import net.luis.utils.data.tag.Tag;
 import net.luis.utils.data.tag.TagType;
 import net.luis.utils.data.tag.exception.LoadTagException;
@@ -17,12 +9,20 @@ import net.luis.utils.data.tag.tags.numeric.LongTag;
 import net.luis.utils.data.tag.tags.numeric.NumericTag;
 import net.luis.utils.data.tag.visitor.TagVisitor;
 import net.luis.utils.util.Equals;
+import org.apache.commons.lang3.ArrayUtils;
+import org.jetbrains.annotations.NotNull;
+
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
+import java.util.Arrays;
+import java.util.List;
 
 public class LongArrayTag extends CollectionTag<LongTag> {
 	
-	public static final TagType<LongArrayTag> TYPE = new TagType<LongArrayTag>() {
+	public static final TagType<LongArrayTag> TYPE = new TagType<>() {
 		@Override
-		public LongArrayTag load(DataInput input) throws LoadTagException {
+		public @NotNull LongArrayTag load(DataInput input) throws LoadTagException {
 			try {
 				int length = input.readInt();
 				long[] data = new long[length];
@@ -36,12 +36,12 @@ public class LongArrayTag extends CollectionTag<LongTag> {
 		}
 		
 		@Override
-		public String getName() {
+		public @NotNull String getName() {
 			return "int_array_tag";
 		}
 		
 		@Override
-		public String getVisitorName() {
+		public @NotNull String getVisitorName() {
 			return "IntArrayTag";
 		}
 	};
@@ -73,8 +73,8 @@ public class LongArrayTag extends CollectionTag<LongTag> {
 	public void save(DataOutput output) throws SaveTagException {
 		try {
 			output.writeInt(this.data.length);
-			for (int i = 0; i < this.data.length; i++) {
-				output.writeLong(this.data[i]);
+			for (long datum : this.data) {
+				output.writeLong(datum);
 			}
 		} catch (IOException e) {
 			throw new SaveTagException(e);
@@ -87,12 +87,12 @@ public class LongArrayTag extends CollectionTag<LongTag> {
 	}
 	
 	@Override
-	public TagType<LongArrayTag> getType() {
+	public @NotNull TagType<LongArrayTag> getType() {
 		return TYPE;
 	}
 	
 	@Override
-	public LongArrayTag copy() {
+	public @NotNull LongArrayTag copy() {
 		long[] data = new long[this.data.length];
 		System.arraycopy(this.data, 0, data, 0, this.data.length);
 		return new LongArrayTag(data);
@@ -108,7 +108,7 @@ public class LongArrayTag extends CollectionTag<LongTag> {
 	}
 	
 	@Override
-	public LongTag set(int index, LongTag tag) {
+	public @NotNull LongTag set(int index, LongTag tag) {
 		long i = this.data[index];
 		this.data[index] = tag.getAsByte();
 		return LongTag.valueOf(i);

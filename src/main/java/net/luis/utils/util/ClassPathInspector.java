@@ -1,13 +1,14 @@
 package net.luis.utils.util;
 
+import com.google.common.collect.Lists;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.jetbrains.annotations.NotNull;
+
 import java.io.File;
 import java.io.FilenameFilter;
 import java.util.List;
-
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-
-import com.google.common.collect.Lists;
+import java.util.Objects;
 
 /**
  *
@@ -19,7 +20,7 @@ public class ClassPathInspector {
 	
 	private static final Logger LOGGER = LogManager.getLogger();
 	
-	public static List<Class<?>> getClasses() {
+	public static @NotNull List<Class<?>> getClasses() {
 		List<Class<?>> classes = Lists.newArrayList();
 		for (File file : getClasspathClasses()) {
 			if (file.isDirectory()) {
@@ -30,7 +31,7 @@ public class ClassPathInspector {
 		return classes;
 	}
 	
-	private static List<Class<?>> getClasses(File path) {
+	private static @NotNull List<Class<?>> getClasses(File path) {
 		List<Class<?>> classes = Lists.newArrayList();
 		for (File file : getFiles(path, (directory, name) -> name.endsWith(".class"))) {
 			String className = getClassName(file.getAbsolutePath().substring(path.getAbsolutePath().length() + 1));
@@ -44,9 +45,9 @@ public class ClassPathInspector {
 		return classes;
 	}
 	
-	private static List<File> getFiles(File directory, FilenameFilter filter) {
+	private static @NotNull List<File> getFiles(File directory, FilenameFilter filter) {
 		List<File> files = Lists.newArrayList();
-		for (File file : directory.listFiles()) {
+		for (File file : Objects.requireNonNull(directory.listFiles())) {
 			if (filter.accept(directory, file.getName())) {
 				files.add(file);
 			}
@@ -57,11 +58,11 @@ public class ClassPathInspector {
 		return files;
 	}
 	
-	private static String getClassName(final String fileName) {
+	private static @NotNull String getClassName(final String fileName) {
 		return fileName.substring(0, fileName.length() - 6).replaceAll("/|\\\\", "\\.");
 	}
 	
-	private static List<File> getClasspathClasses() {
+	private static @NotNull List<File> getClasspathClasses() {
 		List<File> files = Lists.newArrayList();
 		if (System.getProperty("java.class.path") != null) {
 			for (String path : System.getProperty("java.class.path").split(File.pathSeparator)) {

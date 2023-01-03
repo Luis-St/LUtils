@@ -1,8 +1,9 @@
 package net.luis.utils.util;
 
-import java.util.Objects;
-
 import com.google.common.collect.Table.Cell;
+import org.jetbrains.annotations.NotNull;
+
+import java.util.Objects;
 
 /**
  *
@@ -17,18 +18,18 @@ public class SimpleCell<R, C, V> implements Cell<R, C, V> {
 	private final V value;
 	
 	public SimpleCell(R rowKey, C columnKey, V value) {
-		this.rowKey = rowKey;
-		this.columnKey = columnKey;
+		this.rowKey = Objects.requireNonNull(rowKey);
+		this.columnKey = Objects.requireNonNull(columnKey);
 		this.value = value;
 	}
 	
 	@Override
-	public R getRowKey() {
+	public @NotNull R getRowKey() {
 		return this.rowKey;
 	}
 	
 	@Override
-	public C getColumnKey() {
+	public @NotNull C getColumnKey() {
 		return this.columnKey;
 	}
 	

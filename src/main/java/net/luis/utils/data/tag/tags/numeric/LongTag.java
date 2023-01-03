@@ -1,20 +1,21 @@
 package net.luis.utils.data.tag.tags.numeric;
 
-import java.io.DataInput;
-import java.io.DataOutput;
-import java.io.IOException;
-
 import net.luis.utils.data.tag.TagType;
 import net.luis.utils.data.tag.exception.LoadTagException;
 import net.luis.utils.data.tag.exception.SaveTagException;
 import net.luis.utils.data.tag.visitor.TagVisitor;
 import net.luis.utils.util.Equals;
+import org.jetbrains.annotations.NotNull;
+
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
 
 public class LongTag extends NumericTag {
 	
-	public static final TagType<LongTag> TYPE = new TagType<LongTag>() {
+	public static final TagType<LongTag> TYPE = new TagType<>() {
 		@Override
-		public LongTag load(DataInput input) throws LoadTagException {
+		public @NotNull LongTag load(DataInput input) throws LoadTagException {
 			try {
 				return valueOf(input.readLong());
 			} catch (IOException e) {
@@ -23,12 +24,12 @@ public class LongTag extends NumericTag {
 		}
 		
 		@Override
-		public String getName() {
+		public @NotNull String getName() {
 			return "long_tag";
 		}
 		
 		@Override
-		public String getVisitorName() {
+		public @NotNull String getVisitorName() {
 			return "LongTag";
 		}
 		
@@ -63,12 +64,12 @@ public class LongTag extends NumericTag {
 	}
 	
 	@Override
-	public TagType<LongTag> getType() {
+	public @NotNull TagType<LongTag> getType() {
 		return TYPE;
 	}
 	
 	@Override
-	public LongTag copy() {
+	public @NotNull LongTag copy() {
 		return valueOf(this.data);
 	}
 	
@@ -94,7 +95,7 @@ public class LongTag extends NumericTag {
 	
 	@Override
 	public long getAsLong() {
-		return (long) this.data;
+		return this.data;
 	}
 	
 	@Override
@@ -108,7 +109,7 @@ public class LongTag extends NumericTag {
 	}
 	
 	@Override
-	public Number getAsNumber() {
+	public @NotNull Number getAsNumber() {
 		return this.data;
 	}
 	

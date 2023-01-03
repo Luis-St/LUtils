@@ -1,24 +1,17 @@
 package net.luis.utils.data.tag;
 
-import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
-import java.io.DataInputStream;
-import java.io.DataOutput;
-import java.io.DataOutputStream;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-
 import net.luis.utils.data.tag.exception.LoadTagException;
 import net.luis.utils.data.tag.exception.SaveTagException;
 import net.luis.utils.data.tag.tags.EndTag;
 import net.luis.utils.data.tag.visitor.StringTagVisitor;
 import net.luis.utils.data.tag.visitor.TagVisitor;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.jetbrains.annotations.NotNull;
+
+import java.io.*;
+import java.nio.file.Files;
+import java.nio.file.Path;
 
 public interface Tag {
 	
@@ -39,22 +32,6 @@ public interface Tag {
 	byte LIST_TAG = 12;
 	byte COMPOUND_TAG = 13;
 	byte PRIMITIVE_TAG = 99;
-	
-	void save(DataOutput output) throws SaveTagException;
-	
-	String toString();
-	
-	byte getId();
-	
-	TagType<?> getType();
-	
-	Tag copy();
-	
-	void accept(TagVisitor visitor);
-	
-	default String getAsString() {
-		return new StringTagVisitor().visit(this);
-	}
 	
 	static Tag load(Path path) throws LoadTagException {
 		if (!Files.exists(path)) {
@@ -83,6 +60,25 @@ public interface Tag {
 		} catch (IOException e) {
 			throw new SaveTagException(tag, path);
 		}
+	}
+	
+	void save(DataOutput output) throws SaveTagException;
+	
+	String toString();
+	
+	byte getId();
+	
+	@NotNull
+	TagType<?> getType();
+	
+	@NotNull
+	Tag copy();
+	
+	void accept(TagVisitor visitor);
+	
+	@NotNull
+	default String getAsString() {
+		return new StringTagVisitor().visit(this);
 	}
 	
 }

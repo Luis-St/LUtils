@@ -1,13 +1,5 @@
 package net.luis.utils.data.tag.tags.collection.array;
 
-import java.io.DataInput;
-import java.io.DataOutput;
-import java.io.IOException;
-import java.util.Arrays;
-import java.util.List;
-
-import org.apache.commons.lang3.ArrayUtils;
-
 import net.luis.utils.data.tag.Tag;
 import net.luis.utils.data.tag.TagType;
 import net.luis.utils.data.tag.exception.LoadTagException;
@@ -17,12 +9,20 @@ import net.luis.utils.data.tag.tags.numeric.ByteTag;
 import net.luis.utils.data.tag.tags.numeric.NumericTag;
 import net.luis.utils.data.tag.visitor.TagVisitor;
 import net.luis.utils.util.Equals;
+import org.apache.commons.lang3.ArrayUtils;
+import org.jetbrains.annotations.NotNull;
+
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
+import java.util.Arrays;
+import java.util.List;
 
 public class ByteArrayTag extends CollectionTag<ByteTag> {
 	
-	public static final TagType<ByteArrayTag> TYPE = new TagType<ByteArrayTag>() {
+	public static final TagType<ByteArrayTag> TYPE = new TagType<>() {
 		@Override
-		public ByteArrayTag load(DataInput input) throws LoadTagException {
+		public @NotNull ByteArrayTag load(DataInput input) throws LoadTagException {
 			try {
 				int length = input.readInt();
 				byte[] data = new byte[length];
@@ -36,12 +36,12 @@ public class ByteArrayTag extends CollectionTag<ByteTag> {
 		}
 		
 		@Override
-		public String getName() {
+		public @NotNull String getName() {
 			return "int_array_tag";
 		}
 		
 		@Override
-		public String getVisitorName() {
+		public @NotNull String getVisitorName() {
 			return "IntArrayTag";
 		}
 	};
@@ -87,12 +87,12 @@ public class ByteArrayTag extends CollectionTag<ByteTag> {
 	}
 	
 	@Override
-	public TagType<ByteArrayTag> getType() {
+	public @NotNull TagType<ByteArrayTag> getType() {
 		return TYPE;
 	}
 	
 	@Override
-	public ByteArrayTag copy() {
+	public @NotNull ByteArrayTag copy() {
 		byte[] data = new byte[this.data.length];
 		System.arraycopy(this.data, 0, data, 0, this.data.length);
 		return new ByteArrayTag(data);
@@ -108,7 +108,7 @@ public class ByteArrayTag extends CollectionTag<ByteTag> {
 	}
 	
 	@Override
-	public ByteTag set(int index, ByteTag tag) {
+	public @NotNull ByteTag set(int index, ByteTag tag) {
 		byte i = this.data[index];
 		this.data[index] = tag.getAsByte();
 		return ByteTag.valueOf(i);

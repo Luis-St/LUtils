@@ -11,23 +11,12 @@ repositories {
     mavenCentral()
 }
 
-java.toolchain.languageVersion = JavaLanguageVersion.of(17)
-
-compileJava {
-	sourceCompatibility = "17"
-	targetCompatibility = "17"
-}
-
 dependencies {
 	implementation "com.google.guava:guava:31.0.1-jre"
-	implementation group: "org.apache.logging.log4j", name: "log4j-api", version: "2.14.1"
-	implementation group: "org.apache.logging.log4j", name: "log4j-core", version: "2.14.1"
-	implementation group: "org.apache.commons", name: "commons-lang3", version: "3.0"
-}
-
-wrapper {
-    gradleVersion = "7.4"
-    distributionType = Wrapper.DistributionType.ALL
+	implementation "org.apache.logging.log4j:log4j-api:2.14.1"
+	implementation "org.apache.logging.log4j:log4j-core:2.17.1"
+	implementation "org.apache.commons:commons-lang3:3.0"
+	implementation "org.jetbrains:annotations:23.0.0"
 }
 
 java {
