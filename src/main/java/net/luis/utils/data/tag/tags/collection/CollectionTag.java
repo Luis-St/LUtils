@@ -6,6 +6,12 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.AbstractList;
 
+/**
+ *
+ * @author Luis-st
+ *
+ */
+
 public abstract class CollectionTag<T extends Tag> extends AbstractList<T> implements Tag {
 	
 	

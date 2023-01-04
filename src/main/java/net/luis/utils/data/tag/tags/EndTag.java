@@ -10,6 +10,12 @@ import org.jetbrains.annotations.NotNull;
 import java.io.DataInput;
 import java.io.DataOutput;
 
+/**
+ *
+ * @author Luis-st
+ *
+ */
+
 public class EndTag implements Tag {
 	
 	public static final EndTag INSTANCE = new EndTag();

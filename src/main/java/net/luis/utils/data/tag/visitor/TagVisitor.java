@@ -10,6 +10,12 @@ import net.luis.utils.data.tag.tags.collection.array.IntArrayTag;
 import net.luis.utils.data.tag.tags.collection.array.LongArrayTag;
 import net.luis.utils.data.tag.tags.numeric.*;
 
+/**
+ *
+ * @author Luis-st
+ *
+ */
+
 public interface TagVisitor {
 	
 	void visitByte(ByteTag tag);

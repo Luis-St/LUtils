@@ -11,6 +11,12 @@ import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 
+/**
+ *
+ * @author Luis-st
+ *
+ */
+
 public class LongTag extends NumericTag {
 	
 	public static final TagType<LongTag> TYPE = new TagType<>() {

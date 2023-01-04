@@ -11,6 +11,12 @@ import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 
+/**
+ *
+ * @author Luis-st
+ *
+ */
+
 public class ByteTag extends NumericTag {
 	
 	public static final TagType<ByteTag> TYPE = new TagType<>() {

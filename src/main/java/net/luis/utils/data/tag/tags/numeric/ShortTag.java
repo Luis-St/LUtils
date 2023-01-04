@@ -11,6 +11,12 @@ import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 
+/**
+ *
+ * @author Luis-st
+ *
+ */
+
 public class ShortTag extends NumericTag {
 	
 	public static final TagType<ShortTag> TYPE = new TagType<>() {
