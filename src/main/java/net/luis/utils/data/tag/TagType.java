@@ -7,6 +7,12 @@ import org.jetbrains.annotations.NotNull;
 
 import java.io.DataInput;
 
+/**
+ *
+ * @author Luis-st
+ *
+ */
+
 public interface TagType<T extends Tag> {
 	
 	static TagType<EndTag> createInvalid(int id) {

@@ -18,6 +18,12 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 
+/**
+ *
+ * @author Luis-st
+ *
+ */
+
 public class LongArrayTag extends CollectionTag<LongTag> {
 	
 	public static final TagType<LongArrayTag> TYPE = new TagType<>() {

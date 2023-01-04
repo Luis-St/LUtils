@@ -20,6 +20,12 @@ import java.io.DataOutput;
 import java.io.IOException;
 import java.util.List;
 
+/**
+ *
+ * @author Luis-st
+ *
+ */
+
 public class ListTag extends CollectionTag<Tag> {
 	
 	public static final TagType<ListTag> TYPE = new TagType<>() {

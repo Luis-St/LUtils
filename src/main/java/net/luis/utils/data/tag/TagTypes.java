@@ -11,9 +11,15 @@ import net.luis.utils.data.tag.tags.collection.array.LongArrayTag;
 import net.luis.utils.data.tag.tags.numeric.*;
 import org.jetbrains.annotations.NotNull;
 
+/**
+ *
+ * @author Luis-st
+ *
+ */
+
 public class TagTypes {
 	
-	public static final TagType<?>[] TYPES = new TagType<?>[] {
+	private static final TagType<?>[] TYPES = new TagType<?>[] {
 			EndTag.TYPE, ByteTag.TYPE, ShortTag.TYPE, IntTag.TYPE, LongTag.TYPE, FloatTag.TYPE, DoubleTag.TYPE, StringTag.TYPE, CryptStringTag.TYPE, ByteArrayTag.TYPE, IntArrayTag.TYPE, LongArrayTag.TYPE, ListTag.TYPE, CompoundTag.TYPE
 	};
 	

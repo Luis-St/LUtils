@@ -12,6 +12,12 @@ import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 
+/**
+ *
+ * @author Luis-st
+ *
+ */
+
 public class StringTag implements Tag {
 	
 	public static final StringTag EMPTY = new StringTag("");

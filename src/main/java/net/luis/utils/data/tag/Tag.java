@@ -13,6 +13,12 @@ import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
+/**
+ *
+ * @author Luis-st
+ *
+ */
+
 public interface Tag {
 	
 	Logger LOGGER = LogManager.getLogger();

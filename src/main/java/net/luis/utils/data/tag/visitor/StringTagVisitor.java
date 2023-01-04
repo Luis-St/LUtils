@@ -15,6 +15,12 @@ import net.luis.utils.data.tag.tags.numeric.*;
 import java.util.Collections;
 import java.util.List;
 
+/**
+ *
+ * @author Luis-st
+ *
+ */
+
 public class StringTagVisitor implements TagVisitor {
 	
 	private final StringBuilder builder = new StringBuilder();

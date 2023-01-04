@@ -18,6 +18,12 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 
+/**
+ *
+ * @author Luis-st
+ *
+ */
+
 public class IntArrayTag extends CollectionTag<IntTag> {
 	
 	public static final TagType<IntArrayTag> TYPE = new TagType<>() {

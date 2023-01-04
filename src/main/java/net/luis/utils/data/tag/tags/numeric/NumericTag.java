@@ -3,6 +3,12 @@ package net.luis.utils.data.tag.tags.numeric;
 import net.luis.utils.data.tag.Tag;
 import org.jetbrains.annotations.NotNull;
 
+/**
+ *
+ * @author Luis-st
+ *
+ */
+
 public abstract class NumericTag implements Tag {
 	
 	public abstract byte getAsByte();

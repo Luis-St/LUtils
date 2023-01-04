@@ -23,6 +23,12 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
+/**
+ *
+ * @author Luis-st
+ *
+ */
+
 public class CompoundTag implements Tag {
 	
 	public static final TagType<CompoundTag> TYPE = new TagType<>() {

@@ -9,6 +9,12 @@ import java.util.List;
 import java.util.UUID;
 import java.util.function.Function;
 
+/**
+ *
+ * @author Luis-st
+ *
+ */
+
 public class TagUtils {
 	
 	public static @NotNull CompoundTag writeUUID(UUID uuid) {
