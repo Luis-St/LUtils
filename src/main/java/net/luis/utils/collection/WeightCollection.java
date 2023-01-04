@@ -1,6 +1,7 @@
 package net.luis.utils.collection;
 
 import com.google.common.collect.Maps;
+import net.luis.utils.util.Equals;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.NavigableMap;
@@ -37,6 +38,9 @@ public class WeightCollection<T> {
 	}
 	
 	public @NotNull T next() {
+		if (this.isEmpty()) {
+			throw new RuntimeException("The collection is empty, there is no next value");
+		}
 		int value = (int) (this.rng.nextDouble() * this.total);
 		return this.map.higherEntry(value).getValue();
 	}
@@ -52,16 +56,7 @@ public class WeightCollection<T> {
 	
 	@Override
 	public boolean equals(Object object) {
-		if (object instanceof WeightCollection<?> collection) {
-			if (!this.map.equals(collection.map)) {
-				return false;
-			} else if (!this.rng.equals(collection.rng)) {
-				return false;
-			} else {
-				return this.total == collection.total;
-			}
-		}
-		return false;
+		return Equals.equals(this, object, "rng");
 	}
 	
 	@Override

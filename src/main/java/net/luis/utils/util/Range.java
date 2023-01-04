@@ -19,7 +19,6 @@ public class Range {
 	private Range(int min, int max) {
 		this.min = min;
 		this.max = max;
-		
 	}
 	
 	public static @NotNull Range of(int max) {

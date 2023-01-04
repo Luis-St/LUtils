@@ -21,9 +21,10 @@ public class LazyInstantiation<T> {
 		this.object = new MutableObject<>();
 	}
 	
-	public LazyInstantiation(T object) {
+	public LazyInstantiation(T value) {
 		this.object = new MutableObject<>();
-		this.set(object);
+		this.object.setValue(value);
+		this.instantiated = true;
 	}
 	
 	public @Nullable T get() {
@@ -38,7 +39,7 @@ public class LazyInstantiation<T> {
 		if (this.instantiated) {
 			throw new ConcurrentModificationException("Cannot change a final object");
 		} else {
-			this.object.setValue(Objects.requireNonNull(value));
+			this.object.setValue(value);
 			this.instantiated = true;
 		}
 	}
