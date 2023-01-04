@@ -58,7 +58,7 @@ public class Result<T> implements Supplier<Either<T, String>> {
 	}
 	
 	public boolean isError() {
-		return this.either.isLeft();
+		return this.either.isRight();
 	}
 	
 	public @NotNull Optional<String> error() {
