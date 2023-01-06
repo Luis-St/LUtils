@@ -47,24 +47,27 @@ public interface Tag {
 		try (DataInputStream input = new DataInputStream(new BufferedInputStream(new FileInputStream(path.toFile())))) {
 			byte type = input.readByte();
 			TagType<?> tagType = TagTypes.getType(type);
-			Tag tag = tagType.load(input);
-			return tag;
+			return tagType.load(input);
 		} catch (IOException e) {
-			throw new LoadTagException(path);
+			throw new LoadTagException(path, e);
 		}
 	}
 	
 	static void save(Path path, Tag tag) throws SaveTagException {
-		try (DataOutputStream output = new DataOutputStream(new BufferedOutputStream(new FileOutputStream(path.toFile())))) {
-			if (!Files.exists(path)) {
+		if (!Files.exists(path)) {
+			try {
 				Files.createDirectories(path.getParent());
 				Files.createFile(path);
+			} catch (IOException e) {
+				throw new SaveTagException(tag, path, e);
 			}
+		}
+		try (DataOutputStream output = new DataOutputStream(new BufferedOutputStream(new FileOutputStream(path.toFile())))) {
 			output.writeByte(tag.getId());
 			tag.save(output);
 			output.flush();
 		} catch (IOException e) {
-			throw new SaveTagException(tag, path);
+			throw new SaveTagException(tag, path, e);
 		}
 	}
 	
