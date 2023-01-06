@@ -24,12 +24,8 @@ public class LoadTagException extends TagException {
 		super(cause);
 	}
 	
-	public LoadTagException(Path path) {
-		super("Tag cannot be loaded from file " + path.toString());
-	}
-	
-	public LoadTagException(String message, Throwable cause) {
-		super(message, cause);
+	public LoadTagException(Path path, Throwable cause) {
+		super("Tag cannot be loaded from file " + path.toString(), cause);
 	}
 	
 }

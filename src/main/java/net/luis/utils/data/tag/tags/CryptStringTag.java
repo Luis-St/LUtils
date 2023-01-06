@@ -87,7 +87,7 @@ public class CryptStringTag implements Tag {
 	
 	@Override
 	public byte getId() {
-		return STRING_TAG;
+		return CRYPT_STRING_TAG;
 	}
 	
 	@Override
