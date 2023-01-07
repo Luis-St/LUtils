@@ -32,14 +32,13 @@ class CompoundTagTest {
 		tagSave.putIntArray("IntArray", new int[] {4, 5, 6, 7});
 		tagSave.putLongArray("LongArray", new long[] {8, 9, 10, 11});
 		tagSave.putString("String", "String");
-		tagSave.putCryptString("CryptString", "CryptString");
 		tagSave.putList("List", new ListTag());
 		tagSave.putCompound("Compound", new CompoundTag());
 		assertDoesNotThrow(() -> Tag.save(path, tagSave));
 		Tag tag = Tag.load(path);
 		assertInstanceOf(CompoundTag.class, tag);
 		if (tag instanceof CompoundTag tagLoad) {
-			assertEquals(tagLoad.size(), 14);
+			assertEquals(tagLoad.size(), 13);
 			assertTrue(tagLoad.getBoolean("Boolean"));
 			assertEquals(tagLoad.getByte("Byte"), (byte) 12);
 			assertEquals(tagLoad.getShort("Short"), (short) 13);
@@ -51,7 +50,6 @@ class CompoundTagTest {
 			assertArrayEquals(tagLoad.getIntArray("IntArray"), new int[] {4, 5, 6, 7});
 			assertArrayEquals(tagLoad.getLongArray("LongArray"), new long[] {8, 9, 10, 11});
 			assertEquals(tagLoad.getString("String"), "String");
-			assertEquals(tagLoad.getCryptString("CryptString"), "CryptString");
 			assertTrue(tagLoad.getList("List").isEmpty());
 			assertTrue(tagLoad.getCompound("Compound").isEmpty());
 		}

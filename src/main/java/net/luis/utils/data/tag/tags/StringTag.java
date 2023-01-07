@@ -11,6 +11,7 @@ import org.jetbrains.annotations.NotNull;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
+import java.util.Random;
 
 /**
  *
@@ -25,7 +26,16 @@ public class StringTag implements Tag {
 		@Override
 		public @NotNull StringTag load(DataInput input) throws LoadTagException {
 			try {
-				return StringTag.valueOf(input.readUTF());
+				int length = input.readInt();
+				if (length == 0) {
+					return StringTag.EMPTY;
+				} else {
+					char[] array = new char[length];
+					for (int i = 0; i < length; i++) {
+						array[i] = (char) (input.readInt() - length * 2);
+					}
+					return StringTag.valueOf(new String(array));
+				}
 			} catch (IOException e) {
 				throw new LoadTagException(e);
 			}
@@ -57,7 +67,11 @@ public class StringTag implements Tag {
 	@Override
 	public void save(DataOutput output) throws SaveTagException {
 		try {
-			output.writeUTF(this.data);
+			int[] array = this.data.chars().toArray();
+			output.writeInt(array.length);
+			for (int i : array) {
+				output.writeInt(i + array.length * 2);
+			}
 		} catch (IOException e) {
 			throw new SaveTagException(e);
 		}

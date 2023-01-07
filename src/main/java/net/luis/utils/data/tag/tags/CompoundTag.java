@@ -20,7 +20,6 @@ import java.io.DataOutput;
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Set;
 
 /**
@@ -41,9 +40,13 @@ public class CompoundTag implements Tag {
 					byte type = input.readByte();
 					TagType<?> tagType = TagTypes.getType(type);
 					if (type != END_TAG) {
-						String key = input.readUTF();
+						int length = input.readInt();
+						char[] array = new char[length];
+						for (int j = 0; j < length; j++) {
+							array[j] = (char) (input.readInt() - length * 2);
+						}
 						Tag tag = tagType.load(input);
-						data.put(key, tag);
+						data.put(new String(array), tag);
 					}
 				}
 				return new CompoundTag(data);
@@ -70,7 +73,7 @@ public class CompoundTag implements Tag {
 	}
 	
 	private CompoundTag(Map<String, Tag> data) {
-		this.data = data;
+		this.data = Maps.newHashMap(data);
 	}
 	
 	@Override
@@ -81,7 +84,11 @@ public class CompoundTag implements Tag {
 				Tag tag = this.data.get(key);
 				output.writeByte(tag.getId());
 				if (tag.getId() != 0) {
-					output.writeUTF(key);
+					int[] array = key.chars().toArray();
+					output.writeInt(array.length);
+					for (int i : array) {
+						output.writeInt(i + array.length * 2);
+					}
 					tag.save(output);
 				}
 			}
@@ -102,11 +109,7 @@ public class CompoundTag implements Tag {
 	
 	@Override
 	public @NotNull CompoundTag copy() {
-		Map<String, Tag> data = Maps.newHashMap();
-		for (Entry<String, Tag> entry : this.data.entrySet()) {
-			data.put(entry.getKey(), entry.getValue().copy());
-		}
-		return new CompoundTag(data);
+		return new CompoundTag(Map.copyOf(this.data));
 	}
 	
 	@Override
@@ -170,10 +173,6 @@ public class CompoundTag implements Tag {
 	
 	public void putString(String key, String data) {
 		this.put(key, StringTag.valueOf(data));
-	}
-	
-	public void putCryptString(String key, String data) {
-		this.put(key, CryptStringTag.valueOf(data));
 	}
 	
 	public void putByteArray(String key, byte[] data) {
@@ -290,17 +289,6 @@ public class CompoundTag implements Tag {
 	public String getString(String key) {
 		try {
 			if (this.contains(key, STRING_TAG)) {
-				return this.get(key).getAsString();
-			}
-		} catch (ClassCastException e) {
-			throw new RuntimeException("Fail to read tag of type: " + TagTypes.getType(this.getTagType(key)).getName() + ", since it's corrupt");
-		}
-		return "";
-	}
-	
-	public String getCryptString(String key) {
-		try {
-			if (this.contains(key, CRYPT_STRING_TAG)) {
 				return this.get(key).getAsString();
 			}
 		} catch (ClassCastException e) {

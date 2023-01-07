@@ -3,7 +3,6 @@ package net.luis.utils.data.tag.visitor;
 import com.google.common.collect.Lists;
 import net.luis.utils.data.tag.Tag;
 import net.luis.utils.data.tag.tags.CompoundTag;
-import net.luis.utils.data.tag.tags.CryptStringTag;
 import net.luis.utils.data.tag.tags.EndTag;
 import net.luis.utils.data.tag.tags.StringTag;
 import net.luis.utils.data.tag.tags.collection.ListTag;
@@ -62,11 +61,6 @@ public class StringTagVisitor implements TagVisitor {
 	
 	@Override
 	public void visitString(StringTag tag) {
-		this.builder.append(tag.getAsString());
-	}
-	
-	@Override
-	public void visitCryptString(CryptStringTag tag) {
 		this.builder.append(tag.getAsString());
 	}
 	
