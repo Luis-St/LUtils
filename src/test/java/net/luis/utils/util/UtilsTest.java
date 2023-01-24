@@ -56,6 +56,18 @@ class UtilsTest {
 	}
 	
 	@Test
+	void runIf() {
+		assertNull(Utils.runIf(null, String::isBlank, String::trim));
+		assertEquals(Utils.runIf(" ", String::isBlank, String::trim), "");
+	}
+	
+	@Test
+	void runIfNot() {
+		assertNull(Utils.runIfNot(null, String::isEmpty, (value) -> "*".repeat(4)));
+		assertEquals(Utils.runIf("", String::isEmpty, (value) -> "*".repeat(4)), "****");
+	}
+	
+	@Test
 	void runIfNotNull() {
 		assertNull(Utils.runIfNotNull(null, String::trim));
 		assertEquals(Utils.runIfNotNull(" runIfNotNull ", String::trim), "runIfNotNull");

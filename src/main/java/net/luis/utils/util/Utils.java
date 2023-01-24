@@ -10,6 +10,7 @@ import java.util.Map.Entry;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.function.Function;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 /**
@@ -74,6 +75,20 @@ public class Utils {
 			reversedList.add(list.get(i));
 		}
 		return reversedList;
+	}
+	
+	public static <T, R> @Nullable R runIf(T value, Predicate<T> predicate, Function<T, R> function) {
+		if (value != null && predicate.test(value)) {
+			return function.apply(value);
+		}
+		return null;
+	}
+	
+	public static <T, R> @Nullable R runIfNot(T value, Predicate<T> predicate, Function<T, R> function) {
+		if (value != null && !predicate.test(value)) {
+			return function.apply(value);
+		}
+		return null;
 	}
 	
 	public static <T, R> @Nullable R runIfNotNull(T value, Function<T, R> function) {
