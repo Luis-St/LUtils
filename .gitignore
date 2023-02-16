@@ -15,3 +15,4 @@ run
 # project files
 setup.bat
 /.idea/
+/src/main/java/net/luis/utils/Main.java
