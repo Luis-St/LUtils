@@ -3,6 +3,7 @@ package net.luis.utils.data.tag;
 import com.google.common.collect.Lists;
 import net.luis.utils.data.tag.tags.CompoundTag;
 import net.luis.utils.data.tag.tags.collection.ListTag;
+import net.luis.utils.util.Utils;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
@@ -25,7 +26,10 @@ public class TagUtils {
 	}
 	
 	public static @NotNull UUID readUUID(CompoundTag tag) {
-		return new UUID(tag.getLong("mostBits"), tag.getLong("leastBits"));
+		if (tag.contains("mostBits") && tag.contains("leastBits")) {
+			return new UUID(tag.getLong("mostBits"), tag.getLong("leastBits"));
+		}
+		return Utils.EMPTY_UUID;
 	}
 	
 	public static <E, T extends Tag> @NotNull ListTag writeList(List<E> list, Function<E, T> function) {

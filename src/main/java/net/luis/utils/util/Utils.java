@@ -23,6 +23,10 @@ public class Utils {
 	
 	public static final UUID EMPTY_UUID = UUID.fromString("00000000-0000-0000-0000-000000000000");
 	
+	public static boolean isEmpty(@NotNull UUID uuid) {
+	    return uuid == EMPTY_UUID || uuid.equals(EMPTY_UUID);
+	}
+	
 	public static <T> @NotNull T make(T object, Consumer<T> consumer) {
 		consumer.accept(object);
 		return Objects.requireNonNull(object);
