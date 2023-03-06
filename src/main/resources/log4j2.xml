@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Configuration name="BuilderTest" status="ERROR">
+    <ThresholdFilter onMatch="ACCEPT" onMismatch="ACCEPT" level="DEBUG"/>
+    <Appenders>
+        <CONSOLE name="Console" target="SYSTEM_OUT">
+            <PatternLayout pattern="[%d{HH:mm:ss}] [%t] [%C{1}/%level] %msg%n%throwable"/>
+            <MarkerFilter onMatch="DENY" onMismatch="ACCEPT" marker="FLOW"/>
+        </CONSOLE>
+    </Appenders>
+    <Loggers>
+        <Logger name="org.apache.logging.log4j" level="INFO" additivity="false">
+            <AppenderRef ref="Console"/>
+        </Logger>
+        <Root level="ERROR">
+            <AppenderRef ref="Console"/>
+        </Root>
+    </Loggers>
+</Configuration>
