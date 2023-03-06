@@ -1,6 +1,4 @@
 plugins {
-	id "java-library"
-	id "eclipse"
 	id "java"
 	id "maven-publish"
 }
@@ -32,12 +30,19 @@ artifacts {
 	archives sourcesJar
 }
 
+tasks.register("run", JavaExec) {
+	group = "runs"
+	getMainClass().set("net.luis.utils.Main")
+	classpath = sourceSets.main.runtimeClasspath
+	enableAssertions = true
+}
+
 publishing {
 	publications {
 		mavenJava(MavenPublication) {
 			groupId = "net.luis"
 			artifactId = "LUtils"
-			version = "2.1"
+			version = "2.4"
 			artifact jar
 			artifact sourcesJar
 		}
