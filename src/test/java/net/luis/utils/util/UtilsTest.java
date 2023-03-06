@@ -7,6 +7,7 @@ import org.junit.jupiter.api.Test;
 import java.util.Arrays;
 import java.util.Map;
 import java.util.Random;
+import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -17,6 +18,13 @@ import static org.junit.jupiter.api.Assertions.*;
  */
 
 class UtilsTest {
+	@Test
+	void isEmpty() {
+		assertTrue(Utils.isEmpty(Utils.EMPTY_UUID));
+		assertTrue(Utils.isEmpty(UUID.fromString("00000000-0000-0000-0000-000000000000")));
+		assertFalse(Utils.isEmpty(UUID.randomUUID()));
+		assertThrows(NullPointerException.class, () -> Utils.isEmpty(null));
+	}
 	
 	@Test
 	void make() {
