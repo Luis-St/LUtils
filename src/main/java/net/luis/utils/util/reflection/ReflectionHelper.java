@@ -1,4 +1,4 @@
-package net.luis.utils.util;
+package net.luis.utils.util.reflection;
 
 import com.google.common.collect.Lists;
 import org.apache.logging.log4j.LogManager;

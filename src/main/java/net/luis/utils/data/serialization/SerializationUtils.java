@@ -4,7 +4,7 @@ import net.luis.utils.data.serialization.Deserializable.Type;
 import net.luis.utils.data.tag.Tag;
 import net.luis.utils.data.tag.exception.TagException;
 import net.luis.utils.data.tag.tags.CompoundTag;
-import net.luis.utils.util.ReflectionHelper;
+import net.luis.utils.util.reflection.ReflectionHelper;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jetbrains.annotations.NotNull;
