@@ -4,7 +4,6 @@ import net.luis.utils.data.tag.TagType;
 import net.luis.utils.data.tag.exception.LoadTagException;
 import net.luis.utils.data.tag.exception.SaveTagException;
 import net.luis.utils.data.tag.visitor.TagVisitor;
-import net.luis.utils.util.Equals;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.DataInput;
@@ -17,11 +16,12 @@ import java.io.IOException;
  *
  */
 
+@Deprecated
 public class FloatTag extends NumericTag {
 	
 	public static final TagType<FloatTag> TYPE = new TagType<>() {
 		@Override
-		public @NotNull FloatTag load(DataInput input) throws LoadTagException {
+		public @NotNull FloatTag load(@NotNull DataInput input) throws LoadTagException {
 			try {
 				return valueOf(input.readFloat());
 			} catch (IOException e) {
@@ -51,12 +51,12 @@ public class FloatTag extends NumericTag {
 		this.data = data;
 	}
 	
-	public static FloatTag valueOf(float data) {
+	public static @NotNull FloatTag valueOf(float data) {
 		return new FloatTag(data);
 	}
 	
 	@Override
-	public void save(DataOutput output) throws SaveTagException {
+	public void save(@NotNull DataOutput output) throws SaveTagException {
 		try {
 			output.writeFloat(this.data);
 		} catch (IOException e) {
@@ -80,7 +80,7 @@ public class FloatTag extends NumericTag {
 	}
 	
 	@Override
-	public void accept(TagVisitor visitor) {
+	public void accept(@NotNull TagVisitor visitor) {
 		visitor.visitFloat(this);
 	}
 	
@@ -120,8 +120,11 @@ public class FloatTag extends NumericTag {
 	}
 	
 	@Override
-	public boolean equals(Object object) {
-		return Equals.equals(this, object);
+	public boolean equals(Object o) {
+		if (this == o) return true;
+		if (!(o instanceof FloatTag floatTag)) return false;
+		
+		return Float.compare(floatTag.data, this.data) == 0;
 	}
 	
 	@Override

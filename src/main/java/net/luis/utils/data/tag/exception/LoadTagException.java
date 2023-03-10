@@ -1,5 +1,6 @@
 package net.luis.utils.data.tag.exception;
 
+import java.io.Serial;
 import java.nio.file.Path;
 
 /**
@@ -10,6 +11,7 @@ import java.nio.file.Path;
 
 public class LoadTagException extends TagException {
 	
+	@Serial
 	private static final long serialVersionUID = 739609791447382568L;
 	
 	public LoadTagException() {

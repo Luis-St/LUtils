@@ -4,7 +4,6 @@ import net.luis.utils.data.tag.TagType;
 import net.luis.utils.data.tag.exception.LoadTagException;
 import net.luis.utils.data.tag.exception.SaveTagException;
 import net.luis.utils.data.tag.visitor.TagVisitor;
-import net.luis.utils.util.Equals;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.DataInput;
@@ -21,7 +20,7 @@ public class LongTag extends NumericTag {
 	
 	public static final TagType<LongTag> TYPE = new TagType<>() {
 		@Override
-		public @NotNull LongTag load(DataInput input) throws LoadTagException {
+		public @NotNull LongTag load(@NotNull DataInput input) throws LoadTagException {
 			try {
 				return valueOf(input.readLong());
 			} catch (IOException e) {
@@ -51,12 +50,12 @@ public class LongTag extends NumericTag {
 		this.data = data;
 	}
 	
-	public static LongTag valueOf(long data) {
+	public static @NotNull LongTag valueOf(long data) {
 		return new LongTag(data);
 	}
 	
 	@Override
-	public void save(DataOutput output) throws SaveTagException {
+	public void save(@NotNull DataOutput output) throws SaveTagException {
 		try {
 			output.writeLong(this.data);
 		} catch (IOException e) {
@@ -80,7 +79,7 @@ public class LongTag extends NumericTag {
 	}
 	
 	@Override
-	public void accept(TagVisitor visitor) {
+	public void accept(@NotNull TagVisitor visitor) {
 		visitor.visitLong(this);
 	}
 	
@@ -120,8 +119,11 @@ public class LongTag extends NumericTag {
 	}
 	
 	@Override
-	public boolean equals(Object object) {
-		return Equals.equals(this, object);
+	public boolean equals(Object o) {
+		if (this == o) return true;
+		if (!(o instanceof LongTag longTag)) return false;
+		
+		return this.data == longTag.data;
 	}
 	
 	@Override

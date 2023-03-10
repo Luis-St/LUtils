@@ -1,5 +1,7 @@
 package net.luis.utils.data.serialization;
 
+import org.jetbrains.annotations.NotNull;
+
 import java.lang.annotation.*;
 
 /**
@@ -13,8 +15,10 @@ import java.lang.annotation.*;
 @Target(ElementType.TYPE)
 public @interface Deserializable {
 	
+	@NotNull
 	Type type() default Type.CONSTRUCTOR;
 	
+	@NotNull
 	String methodName() default "";
 	
 	enum Type {

@@ -15,27 +15,27 @@ import java.io.DataInput;
 
 public interface TagType<T extends Tag> {
 	
-	static TagType<EndTag> createInvalid(int id) {
-		return new TagType<EndTag>() {
+	static @NotNull TagType<EndTag> createInvalid(int id) {
+		return new TagType<>() {
 			@Override
-			public EndTag load(DataInput input) throws LoadTagException {
+			public @NotNull EndTag load(@NotNull DataInput input) throws LoadTagException {
 				throw new InvalidTagException(id);
 			}
 			
 			@Override
-			public String getName() {
+			public @NotNull String getName() {
 				return "INVALID[" + id + "]";
 			}
 			
 			@Override
-			public String getVisitorName() {
+			public @NotNull String getVisitorName() {
 				return "INVALID_" + id;
 			}
 		};
 	}
 	
 	@NotNull
-	T load(DataInput input) throws LoadTagException;
+	T load(@NotNull DataInput input) throws LoadTagException;
 	
 	@NotNull
 	String getName();

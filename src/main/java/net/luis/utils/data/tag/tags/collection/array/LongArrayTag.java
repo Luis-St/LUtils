@@ -8,9 +8,9 @@ import net.luis.utils.data.tag.tags.collection.CollectionTag;
 import net.luis.utils.data.tag.tags.numeric.LongTag;
 import net.luis.utils.data.tag.tags.numeric.NumericTag;
 import net.luis.utils.data.tag.visitor.TagVisitor;
-import net.luis.utils.util.Equals;
 import org.apache.commons.lang3.ArrayUtils;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.io.DataInput;
 import java.io.DataOutput;
@@ -28,7 +28,7 @@ public class LongArrayTag extends CollectionTag<LongTag> {
 	
 	public static final TagType<LongArrayTag> TYPE = new TagType<>() {
 		@Override
-		public @NotNull LongArrayTag load(DataInput input) throws LoadTagException {
+		public @NotNull LongArrayTag load(@NotNull DataInput input) throws LoadTagException {
 			try {
 				int length = input.readInt();
 				long[] data = new long[length];
@@ -66,7 +66,7 @@ public class LongArrayTag extends CollectionTag<LongTag> {
 		this.data = data;
 	}
 	
-	private static long[] toArray(List<Long> list) {
+	private static long[] toArray(@NotNull List<Long> list) {
 		long[] data = new long[list.size()];
 		for (int i = 0; i < list.size(); i++) {
 			Long integer = list.get(i);
@@ -76,7 +76,7 @@ public class LongArrayTag extends CollectionTag<LongTag> {
 	}
 	
 	@Override
-	public void save(DataOutput output) throws SaveTagException {
+	public void save(@NotNull DataOutput output) throws SaveTagException {
 		try {
 			output.writeInt(this.data.length);
 			for (long datum : this.data) {
@@ -105,7 +105,7 @@ public class LongArrayTag extends CollectionTag<LongTag> {
 	}
 	
 	@Override
-	public void accept(TagVisitor visitor) {
+	public void accept(@NotNull TagVisitor visitor) {
 		visitor.visitLongArray(this);
 	}
 	
@@ -114,26 +114,26 @@ public class LongArrayTag extends CollectionTag<LongTag> {
 	}
 	
 	@Override
-	public @NotNull LongTag set(int index, LongTag tag) {
+	public @NotNull LongTag set(int index, @NotNull LongTag tag) {
 		long i = this.data[index];
 		this.data[index] = tag.getAsByte();
 		return LongTag.valueOf(i);
 	}
 	
 	@Override
-	public void add(int index, LongTag tag) {
+	public void add(int index, @NotNull LongTag tag) {
 		this.data = ArrayUtils.add(this.data, index, tag.getAsByte());
 	}
 	
 	@Override
-	public LongTag remove(int index) {
+	public @Nullable LongTag remove(int index) {
 		long i = this.data[index];
 		this.data = ArrayUtils.remove(this.data, index);
 		return LongTag.valueOf(i);
 	}
 	
 	@Override
-	public boolean setTag(int index, Tag tag) {
+	public boolean setTag(int index, @NotNull Tag tag) {
 		if (tag instanceof NumericTag numericTag) {
 			this.data[index] = numericTag.getAsByte();
 			return true;
@@ -143,7 +143,7 @@ public class LongArrayTag extends CollectionTag<LongTag> {
 	}
 	
 	@Override
-	public boolean addTag(int index, Tag tag) {
+	public boolean addTag(int index, @NotNull Tag tag) {
 		if (tag instanceof NumericTag numericTag) {
 			this.data = ArrayUtils.add(this.data, index, numericTag.getAsByte());
 			return true;
@@ -158,7 +158,7 @@ public class LongArrayTag extends CollectionTag<LongTag> {
 	}
 	
 	@Override
-	public LongTag get(int index) {
+	public @NotNull LongTag get(int index) {
 		return LongTag.valueOf(this.data[index]);
 	}
 	
@@ -168,8 +168,12 @@ public class LongArrayTag extends CollectionTag<LongTag> {
 	}
 	
 	@Override
-	public boolean equals(Object object) {
-		return Equals.equals(this, object);
+	public boolean equals(Object o) {
+		if (this == o) return true;
+		if (!(o instanceof LongArrayTag longTags)) return false;
+		if (!super.equals(o)) return false;
+		
+		return Arrays.equals(this.data, longTags.data);
 	}
 	
 	@Override

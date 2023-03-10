@@ -13,13 +13,12 @@ import java.util.Objects;
 @FunctionalInterface
 public interface TriConsumer<T, U, V> {
 	
-	void accept(T t, U u, V v);
+	void accept(@NotNull T t, @NotNull U u, @NotNull V v);
 	
-	default @NotNull TriConsumer<T, U, V> andThen(TriConsumer<? super T, ? super U, ? super V> consumer) {
-		Objects.requireNonNull(consumer);
+	default @NotNull TriConsumer<T, U, V> andThen(@NotNull TriConsumer<? super T, ? super U, ? super V> consumer) {
 		return (t, u, v) -> {
 			this.accept(t, u, v);
-			consumer.accept(t, u, v);
+			Objects.requireNonNull(consumer).accept(t, u, v);
 		};
 	}
 	

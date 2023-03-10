@@ -34,7 +34,7 @@ public class SimpleEntry<K, V> implements Map.Entry<K, V> {
 	}
 	
 	@Override
-	public V setValue(V value) {
+	public @Nullable V setValue(@Nullable V value) {
 		throw new ConcurrentModificationException("Value of the entry cannot be set to " + value + ", because the entry is muted");
 	}
 	
@@ -43,9 +43,14 @@ public class SimpleEntry<K, V> implements Map.Entry<K, V> {
 		return ToString.toString(this);
 	}
 	
+	
 	@Override
-	public boolean equals(Object object) {
-		return Equals.equals(this, object);
+	public boolean equals(@Nullable Object o) {
+		if (this == o) return true;
+		if (!(o instanceof SimpleEntry<?, ?> that)) return false;
+		
+		if (!this.key.equals(that.key)) return false;
+		return Objects.equals(this.value, that.value);
 	}
 	
 	@Override

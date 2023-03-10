@@ -1,5 +1,7 @@
 package net.luis.utils.util.reflection;
 
+import org.jetbrains.annotations.NotNull;
+
 /**
  *
  * @author Luis-st
@@ -8,7 +10,7 @@ package net.luis.utils.util.reflection;
 
 public record ParameterInfo(Object parameter, boolean hasName, String parameterName, boolean nullable) {
 	
-	public Class<?> type() {
+	public @NotNull Class<?> type() {
 		return this.parameter.getClass();
 	}
 }

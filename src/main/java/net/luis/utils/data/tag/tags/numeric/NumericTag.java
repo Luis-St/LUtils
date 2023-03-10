@@ -26,7 +26,7 @@ public abstract class NumericTag implements Tag {
 	public abstract @NotNull Number getAsNumber();
 	
 	@Override
-	public String toString() {
+	public @NotNull String toString() {
 		return this.getAsString();
 	}
 	

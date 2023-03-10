@@ -2,6 +2,7 @@ package net.luis.utils.data.tag.exception;
 
 import net.luis.utils.data.tag.Tag;
 
+import java.io.Serial;
 import java.nio.file.Path;
 
 /**
@@ -12,6 +13,7 @@ import java.nio.file.Path;
 
 public class SaveTagException extends TagException {
 	
+	@Serial
 	private static final long serialVersionUID = 1058513685709077997L;
 	
 	public SaveTagException() {

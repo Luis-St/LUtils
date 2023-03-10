@@ -1,8 +1,8 @@
 package net.luis.utils.collection;
 
 import com.google.common.collect.Maps;
-import net.luis.utils.util.Equals;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.NavigableMap;
 import java.util.Objects;
@@ -29,7 +29,7 @@ public class WeightCollection<T> {
 		this.rng = rng;
 	}
 	
-	public void add(int weight, T value) {
+	public void add(int weight, @NotNull T value) {
 		if (0 >= weight) {
 			throw new IllegalArgumentException("The weight must be greater than 0, but it is " + weight);
 		}
@@ -50,13 +50,18 @@ public class WeightCollection<T> {
 	}
 	
 	@Override
-	public String toString() {
+	public @NotNull String toString() {
 		return this.map.toString();
 	}
 	
 	@Override
-	public boolean equals(Object object) {
-		return Equals.equals(this, object, "rng");
+	public boolean equals(@Nullable Object o) {
+		if (this == o) return true;
+		if (!(o instanceof WeightCollection<?> that)) return false;
+		
+		if (this.total != that.total) return false;
+		if (!this.map.equals(that.map)) return false;
+		return this.rng.equals(that.rng);
 	}
 	
 	@Override

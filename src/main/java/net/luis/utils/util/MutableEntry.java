@@ -1,5 +1,7 @@
 package net.luis.utils.util;
 
+import org.jetbrains.annotations.Nullable;
+
 /**
  *
  * @author Luis-st
@@ -13,7 +15,7 @@ public class MutableEntry<K, V> extends SimpleEntry<K, V> {
 	}
 	
 	@Override
-	public V setValue(V value) {
+	public @Nullable V setValue(@Nullable V value) {
 		V oldValue = this.value;
 		this.value = value;
 		return oldValue;

@@ -2,6 +2,7 @@ package net.luis.utils.util;
 
 import com.google.common.collect.Table.Cell;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.Objects;
 
@@ -44,8 +45,13 @@ public class SimpleCell<R, C, V> implements Cell<R, C, V> {
 	}
 	
 	@Override
-	public boolean equals(Object object) {
-		return Equals.equals(this, object);
+	public boolean equals(@Nullable Object o) {
+		if (this == o) return true;
+		if (!(o instanceof SimpleCell<?, ?, ?> that)) return false;
+		
+		if (!this.rowKey.equals(that.rowKey)) return false;
+		if (!this.columnKey.equals(that.columnKey)) return false;
+		return this.value.equals(that.value);
 	}
 	
 	@Override

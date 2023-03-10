@@ -1,6 +1,7 @@
 package net.luis.utils.util;
 
 import org.apache.commons.lang3.mutable.MutableObject;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ConcurrentModificationException;
@@ -35,7 +36,7 @@ public class LazyInstantiation<T> {
 		}
 	}
 	
-	public void set(T value) {
+	public void set(@NotNull T value) {
 		if (this.instantiated) {
 			throw new ConcurrentModificationException("Cannot change a final object");
 		} else {
@@ -53,8 +54,12 @@ public class LazyInstantiation<T> {
 	}
 	
 	@Override
-	public boolean equals(Object object) {
-		return Equals.equals(this, object);
+	public boolean equals(@Nullable Object o) {
+		if (this == o) return true;
+		if (!(o instanceof LazyInstantiation<?> that)) return false;
+		
+		if (this.instantiated != that.instantiated) return false;
+		return this.object.equals(that.object);
 	}
 	
 	@Override

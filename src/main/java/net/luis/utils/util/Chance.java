@@ -1,6 +1,7 @@
 package net.luis.utils.util;
 
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.Objects;
 import java.util.Random;
@@ -52,8 +53,12 @@ public class Chance {
 	}
 	
 	@Override
-	public boolean equals(Object object) {
-		return Equals.equals(this, object, "rng");
+	public boolean equals(@Nullable Object o) {
+		if (this == o) return true;
+		if (!(o instanceof Chance that)) return false;
+		
+		if (Double.compare(that.chance, this.chance) != 0) return false;
+		return this.rng.equals(that.rng);
 	}
 	
 	@Override
