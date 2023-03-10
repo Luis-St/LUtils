@@ -6,6 +6,7 @@ import net.luis.utils.data.tag.exception.LoadTagException;
 import net.luis.utils.data.tag.exception.SaveTagException;
 import net.luis.utils.data.tag.visitor.TagVisitor;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.io.DataInput;
 import java.io.DataOutput;
@@ -51,11 +52,11 @@ public class StringTag implements Tag {
 	};
 	private final String data;
 	
-	private StringTag(String data) {
+	private StringTag(@NotNull String data) {
 		this.data = data;
 	}
 	
-	public static @NotNull StringTag valueOf(String data) {
+	public static @NotNull StringTag valueOf(@Nullable String data) {
 		if (data == null) {
 			return EMPTY;
 		}
@@ -106,7 +107,7 @@ public class StringTag implements Tag {
 	}
 	
 	@Override
-	public boolean equals(Object o) {
+	public boolean equals(@Nullable Object o) {
 		if (this == o) return true;
 		if (!(o instanceof StringTag stringTag)) return false;
 		

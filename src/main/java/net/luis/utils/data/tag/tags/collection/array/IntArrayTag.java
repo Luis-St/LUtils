@@ -58,7 +58,7 @@ public class IntArrayTag extends CollectionTag<IntTag> {
 		this(new int[0]);
 	}
 	
-	public IntArrayTag(List<Integer> data) {
+	public IntArrayTag(@NotNull List<Integer> data) {
 		this(toArray(data));
 	}
 	
@@ -168,7 +168,7 @@ public class IntArrayTag extends CollectionTag<IntTag> {
 	}
 	
 	@Override
-	public boolean equals(Object o) {
+	public boolean equals(@Nullable Object o) {
 		if (this == o) return true;
 		if (!(o instanceof IntArrayTag intTags)) return false;
 		if (!super.equals(o)) return false;

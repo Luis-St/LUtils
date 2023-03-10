@@ -9,7 +9,7 @@ import java.util.function.Supplier;
  *
  */
 
-public class LazyLoad<T> {
+public class LazyLoad<T> implements Supplier<T> {
 	
 	private final Supplier<T> supplier;
 	private T value;
@@ -28,6 +28,7 @@ public class LazyLoad<T> {
 		return this.value != null;
 	}
 	
+	@Override
 	public T get() {
 		this.load();
 		return this.value;

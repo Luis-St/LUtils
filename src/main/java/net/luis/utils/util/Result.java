@@ -19,15 +19,15 @@ public class Result<T> implements Supplier<Either<T, String>> {
 	
 	private final Either<T, String> either;
 	
-	private Result(Either<T, String> either) {
+	private Result(@NotNull Either<T, String> either) {
 		this.either = either;
 	}
 	
-	public static <T> @NotNull Result<T> success(T value) {
+	public static <T> @NotNull Result<T> success(@NotNull T value) {
 		return new Result<>(Either.left(value));
 	}
 	
-	public static <T> @NotNull Result<T> error(String error) {
+	public static <T> @NotNull Result<T> error(@NotNull String error) {
 		return new Result<>(Either.right(error));
 	}
 	
@@ -67,7 +67,7 @@ public class Result<T> implements Supplier<Either<T, String>> {
 	}
 	
 	@Override
-	public String toString() {
+	public @NotNull String toString() {
 		return ToString.toString(this);
 	}
 	

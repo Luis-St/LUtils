@@ -168,7 +168,7 @@ public class LongArrayTag extends CollectionTag<LongTag> {
 	}
 	
 	@Override
-	public boolean equals(Object o) {
+	public boolean equals(@Nullable Object o) {
 		if (this == o) return true;
 		if (!(o instanceof LongArrayTag longTags)) return false;
 		if (!super.equals(o)) return false;

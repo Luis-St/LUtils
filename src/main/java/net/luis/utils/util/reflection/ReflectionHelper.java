@@ -22,7 +22,7 @@ import java.util.stream.Collectors;
 
 public class ReflectionHelper {
 	
-	private static final Logger LOGGER = LogManager.getLogger();
+	private static final Logger LOGGER = LogManager.getLogger(ReflectionHelper.class);
 	private static boolean LOG_EXCEPTIONS = false;
 	private static boolean THROW_EXCEPTIONS = false;
 	

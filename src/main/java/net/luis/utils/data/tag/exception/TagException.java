@@ -1,5 +1,7 @@
 package net.luis.utils.data.tag.exception;
 
+import org.jetbrains.annotations.NotNull;
+
 import java.io.Serial;
 
 /**
@@ -17,15 +19,15 @@ public class TagException extends RuntimeException {
 		super();
 	}
 	
-	public TagException(String message) {
+	public TagException(@NotNull String message) {
 		super(message);
 	}
 	
-	public TagException(Throwable cause) {
+	public TagException(@NotNull Throwable cause) {
 		super(cause);
 	}
 	
-	public TagException(String message, Throwable cause) {
+	public TagException(@NotNull String message, @NotNull Throwable cause) {
 		super(message, cause);
 	}
 	

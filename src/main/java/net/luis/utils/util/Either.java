@@ -20,11 +20,11 @@ public abstract class Either<L, R> {
 		
 	}
 	
-	public static <L, R> @NotNull Either<L, R> left(@NotNull L value) {
+	public static <L, R> @NotNull Either<L, R> left(@Nullable L value) {
 		return new Left<>(value);
 	}
 	
-	public static <L, R> @NotNull Either<L, R> right(@NotNull R value) {
+	public static <L, R> @NotNull Either<L, R> right(@Nullable R value) {
 		return new Right<>(value);
 	}
 	
@@ -68,7 +68,7 @@ public abstract class Either<L, R> {
 		
 		private final L value;
 		
-		public Left(L value) {
+		public Left(@Nullable L value) {
 			this.value = value;
 		}
 		
@@ -105,7 +105,7 @@ public abstract class Either<L, R> {
 		
 		@Override
 		public @NotNull Optional<L> left() {
-			return Optional.of(this.value);
+			return Optional.ofNullable(this.value);
 		}
 		
 		@Override
@@ -114,16 +114,16 @@ public abstract class Either<L, R> {
 		}
 		
 		@Override
-		public String toString() {
+		public @NotNull String toString() {
 			return ToString.toString(this);
 		}
 		
 		@Override
-		public boolean equals(@Nullable Object o) {
+		public boolean equals(Object o) {
 			if (this == o) return true;
 			if (!(o instanceof Left<?, ?> left)) return false;
 			
-			return this.value.equals(left.value);
+			return Objects.equals(this.value, left.value);
 		}
 		
 		@Override
@@ -136,7 +136,7 @@ public abstract class Either<L, R> {
 		
 		private final R value;
 		
-		public Right(R value) {
+		public Right(@Nullable R value) {
 			this.value = value;
 		}
 		
@@ -178,20 +178,20 @@ public abstract class Either<L, R> {
 		
 		@Override
 		public @NotNull Optional<R> right() {
-			return Optional.of(this.value);
+			return Optional.ofNullable(this.value);
 		}
 		
 		@Override
-		public String toString() {
+		public @NotNull String toString() {
 			return ToString.toString(this);
 		}
 		
 		@Override
-		public boolean equals(@Nullable Object o) {
+		public boolean equals(Object o) {
 			if (this == o) return true;
 			if (!(o instanceof Right<?, ?> right)) return false;
 			
-			return this.value.equals(right.value);
+			return Objects.equals(this.value, right.value);
 		}
 		
 		@Override

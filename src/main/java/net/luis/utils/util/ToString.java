@@ -23,7 +23,7 @@ public class ToString {
 	private final FieldHandler fieldHandler;
 	private final List<String> excludeFields;
 	
-	private ToString(Object object, FieldHandler fieldHandler, String... excludeFields) {
+	private ToString(@NotNull Object object, @NotNull FieldHandler fieldHandler, @NotNull String... excludeFields) {
 		this.object = object;
 		this.fieldHandler = fieldHandler;
 		this.excludeFields = Lists.newArrayList(excludeFields);
@@ -38,7 +38,7 @@ public class ToString {
 	}
 	
 	@Override
-	public String toString() {
+	public @NotNull String toString() {
 		StringBuilder builder = new StringBuilder(this.getClassName(this.object.getClass()));
 		List<Field> fields = this.getFields();
 		if (fields.size() > 0) {
@@ -73,7 +73,7 @@ public class ToString {
 		return builder.toString();
 	}
 	
-	private String getClassName(@NotNull Class<?> clazz) {
+	private @NotNull String getClassName(@NotNull Class<?> clazz) {
 		return clazz.getName().replace(clazz.getPackageName() + ".", "").replace("$", ".");
 	}
 	

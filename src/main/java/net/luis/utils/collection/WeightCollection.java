@@ -24,7 +24,7 @@ public class WeightCollection<T> {
 		this(new Random());
 	}
 	
-	public WeightCollection(Random rng) {
+	public WeightCollection(@NotNull Random rng) {
 		this.map = Maps.newTreeMap();
 		this.rng = rng;
 	}

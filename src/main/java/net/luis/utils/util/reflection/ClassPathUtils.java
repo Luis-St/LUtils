@@ -20,7 +20,7 @@ import java.util.stream.Collectors;
 
 public class ClassPathUtils {
 	
-	private static final Logger LOGGER = LogManager.getLogger();
+	private static final Logger LOGGER = LogManager.getLogger(ClassPathUtils.class);
 	
 	public static @NotNull List<Class<?>> getAllClasses() {
 		List<Class<?>> classes = Lists.newArrayList();
