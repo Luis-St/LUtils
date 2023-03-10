@@ -14,13 +14,10 @@ import java.util.function.Function;
 @FunctionalInterface
 public interface QuadFunction<T, U, V, W, R> {
 	
-	R apply(T t, U u, V v, W w);
+	R apply(@NotNull T t, @NotNull U u, @NotNull V v, @NotNull W w);
 	
-	default <S> @NotNull QuadFunction<T, U, V, W, S> andThen(Function<? super R, ? extends S> after) {
-		Objects.requireNonNull(after);
-		return (T t, U u, V v, W w) -> {
-			return after.apply(this.apply(t, u, v, w));
-		};
+	default <S> @NotNull QuadFunction<T, U, V, W, S> andThen(@NotNull Function<? super R, ? extends S> after) {
+		return (T t, U u, V v, W w) -> Objects.requireNonNull(after).apply(this.apply(t, u, v, w));
 	}
 	
 }

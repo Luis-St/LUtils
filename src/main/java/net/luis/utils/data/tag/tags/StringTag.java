@@ -5,13 +5,11 @@ import net.luis.utils.data.tag.TagType;
 import net.luis.utils.data.tag.exception.LoadTagException;
 import net.luis.utils.data.tag.exception.SaveTagException;
 import net.luis.utils.data.tag.visitor.TagVisitor;
-import net.luis.utils.util.Equals;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
-import java.util.Random;
 
 /**
  *
@@ -24,7 +22,7 @@ public class StringTag implements Tag {
 	public static final StringTag EMPTY = new StringTag("");
 	public static final TagType<StringTag> TYPE = new TagType<>() {
 		@Override
-		public @NotNull StringTag load(DataInput input) throws LoadTagException {
+		public @NotNull StringTag load(@NotNull DataInput input) throws LoadTagException {
 			try {
 				int length = input.readInt();
 				if (length == 0) {
@@ -57,7 +55,7 @@ public class StringTag implements Tag {
 		this.data = data;
 	}
 	
-	public static StringTag valueOf(String data) {
+	public static @NotNull StringTag valueOf(String data) {
 		if (data == null) {
 			return EMPTY;
 		}
@@ -65,7 +63,7 @@ public class StringTag implements Tag {
 	}
 	
 	@Override
-	public void save(DataOutput output) throws SaveTagException {
+	public void save(@NotNull DataOutput output) throws SaveTagException {
 		try {
 			int[] array = this.data.chars().toArray();
 			output.writeInt(array.length);
@@ -93,7 +91,7 @@ public class StringTag implements Tag {
 	}
 	
 	@Override
-	public void accept(TagVisitor visitor) {
+	public void accept(@NotNull TagVisitor visitor) {
 		visitor.visitString(this);
 	}
 	
@@ -103,13 +101,16 @@ public class StringTag implements Tag {
 	}
 	
 	@Override
-	public String toString() {
+	public @NotNull String toString() {
 		return Tag.super.getAsString();
 	}
 	
 	@Override
-	public boolean equals(Object object) {
-		return Equals.equals(this, object);
+	public boolean equals(Object o) {
+		if (this == o) return true;
+		if (!(o instanceof StringTag stringTag)) return false;
+		
+		return this.data.equals(stringTag.data);
 	}
 	
 	@Override

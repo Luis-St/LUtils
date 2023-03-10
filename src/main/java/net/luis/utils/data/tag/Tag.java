@@ -24,21 +24,18 @@ public interface Tag {
 	Logger LOGGER = LogManager.getLogger();
 	
 	byte END_TAG = 0;
-	byte BYTE_TAG = 1;
-	byte SHORT_TAG = 2;
-	byte INT_TAG = 3;
-	byte LONG_TAG = 4;
-	byte FLOAT_TAG = 5;
-	byte DOUBLE_TAG = 6;
-	byte STRING_TAG = 7;
-	byte BYTE_ARRAY_TAG = 8;
-	byte INT_ARRAY_TAG = 9;
-	byte LONG_ARRAY_TAG = 10;
-	byte LIST_TAG = 11;
-	byte COMPOUND_TAG = 12;
+	byte INT_TAG = 1;
+	byte LONG_TAG = 2;
+	byte FLOAT_TAG = 3;
+	byte DOUBLE_TAG = 4;
+	byte STRING_TAG = 5;
+	byte INT_ARRAY_TAG = 6;
+	byte LONG_ARRAY_TAG = 7;
+	byte LIST_TAG = 8;
+	byte COMPOUND_TAG = 9;
 	byte PRIMITIVE_TAG = 99;
 	
-	static Tag load(Path path) throws LoadTagException {
+	static @NotNull Tag load(@NotNull Path path) throws LoadTagException {
 		if (!Files.exists(path)) {
 			LOGGER.warn("Tag from file {} cannot be loaded because the file does not exist", path);
 			return EndTag.INSTANCE;
@@ -52,7 +49,7 @@ public interface Tag {
 		}
 	}
 	
-	static void save(Path path, Tag tag) throws SaveTagException {
+	static void save(@NotNull Path path, @NotNull Tag tag) throws SaveTagException {
 		if (!Files.exists(path)) {
 			try {
 				Files.createDirectories(path.getParent());
@@ -70,8 +67,9 @@ public interface Tag {
 		}
 	}
 	
-	void save(DataOutput output) throws SaveTagException;
+	void save(@NotNull DataOutput output) throws SaveTagException;
 	
+	@NotNull
 	String toString();
 	
 	byte getId();
@@ -82,7 +80,7 @@ public interface Tag {
 	@NotNull
 	Tag copy();
 	
-	void accept(TagVisitor visitor);
+	void accept(@NotNull TagVisitor visitor);
 	
 	@NotNull
 	default String getAsString() {

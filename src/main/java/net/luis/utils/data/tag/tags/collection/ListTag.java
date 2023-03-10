@@ -7,13 +7,15 @@ import net.luis.utils.data.tag.TagTypes;
 import net.luis.utils.data.tag.exception.LoadTagException;
 import net.luis.utils.data.tag.exception.SaveTagException;
 import net.luis.utils.data.tag.tags.CompoundTag;
-import net.luis.utils.data.tag.tags.collection.array.ByteArrayTag;
 import net.luis.utils.data.tag.tags.collection.array.IntArrayTag;
 import net.luis.utils.data.tag.tags.collection.array.LongArrayTag;
-import net.luis.utils.data.tag.tags.numeric.*;
+import net.luis.utils.data.tag.tags.numeric.DoubleTag;
+import net.luis.utils.data.tag.tags.numeric.FloatTag;
+import net.luis.utils.data.tag.tags.numeric.IntTag;
+import net.luis.utils.data.tag.tags.numeric.LongTag;
 import net.luis.utils.data.tag.visitor.TagVisitor;
-import net.luis.utils.util.Equals;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.io.DataInput;
 import java.io.DataOutput;
@@ -30,7 +32,7 @@ public class ListTag extends CollectionTag<Tag> {
 	
 	public static final TagType<ListTag> TYPE = new TagType<>() {
 		@Override
-		public @NotNull ListTag load(DataInput input) throws LoadTagException {
+		public @NotNull ListTag load(@NotNull DataInput input) throws LoadTagException {
 			try {
 				byte type = input.readByte();
 				int size = input.readInt();
@@ -78,7 +80,7 @@ public class ListTag extends CollectionTag<Tag> {
 	}
 	
 	@Override
-	public void save(DataOutput output) throws SaveTagException {
+	public void save(@NotNull DataOutput output) throws SaveTagException {
 		try {
 			if (this.data.isEmpty()) {
 				this.type = 0;
@@ -115,7 +117,7 @@ public class ListTag extends CollectionTag<Tag> {
 	}
 	
 	@Override
-	public void accept(TagVisitor visitor) {
+	public void accept(@NotNull TagVisitor visitor) {
 		visitor.visitList(this);
 	}
 	
@@ -126,7 +128,7 @@ public class ListTag extends CollectionTag<Tag> {
 	}
 	
 	@Override
-	public Tag remove(int index) {
+	public @Nullable Tag remove(int index) {
 		Tag tag = this.data.remove(index);
 		this.updateTypeAfterRemove();
 		return tag;
@@ -135,26 +137,6 @@ public class ListTag extends CollectionTag<Tag> {
 	@Override
 	public boolean isEmpty() {
 		return this.data.isEmpty();
-	}
-	
-	public byte getByte(int index) {
-		if (this.data.size() > index && index >= 0) {
-			Tag tag = this.data.get(index);
-			if (tag.getId() == BYTE_TAG) {
-				return ((ByteTag) tag).getAsByte();
-			}
-		}
-		return (byte) 0;
-	}
-	
-	public short getShort(int index) {
-		if (this.data.size() > index && index >= 0) {
-			Tag tag = this.data.get(index);
-			if (tag.getId() == SHORT_TAG) {
-				return ((ShortTag) tag).getAsShort();
-			}
-		}
-		return (short) 0;
 	}
 	
 	public int getInt(int index) {
@@ -177,6 +159,7 @@ public class ListTag extends CollectionTag<Tag> {
 		return 0;
 	}
 	
+	@Deprecated
 	public float getFloat(int index) {
 		if (this.data.size() > index && index >= 0) {
 			Tag tag = this.data.get(index);
@@ -197,7 +180,7 @@ public class ListTag extends CollectionTag<Tag> {
 		return 0;
 	}
 	
-	public String getString(int index) {
+	public @NotNull String getString(int index) {
 		if (this.data.size() > index && index >= 0) {
 			Tag tag = this.data.get(index);
 			if (tag.getId() == STRING_TAG) {
@@ -205,16 +188,6 @@ public class ListTag extends CollectionTag<Tag> {
 			}
 		}
 		return "";
-	}
-	
-	public byte[] getByteArray(int index) {
-		if (this.data.size() > index && index >= 0) {
-			Tag tag = this.data.get(index);
-			if (tag.getId() == BYTE_ARRAY_TAG) {
-				return ((ByteArrayTag) tag).getAsByteArray();
-			}
-		}
-		return new byte[0];
 	}
 	
 	public int[] getIntArray(int index) {
@@ -237,7 +210,7 @@ public class ListTag extends CollectionTag<Tag> {
 		return new long[0];
 	}
 	
-	public ListTag getList(int index) {
+	public @NotNull ListTag getList(int index) {
 		if (this.data.size() > index && index >= 0) {
 			Tag tag = this.data.get(index);
 			if (tag.getId() == LIST_TAG) {
@@ -247,7 +220,7 @@ public class ListTag extends CollectionTag<Tag> {
 		return new ListTag();
 	}
 	
-	public CompoundTag getCompoundTag(int index) {
+	public @NotNull CompoundTag getCompoundTag(int index) {
 		if (this.data.size() > index && index >= 0) {
 			Tag tag = this.data.get(index);
 			if (tag.getId() == COMPOUND_TAG) {
@@ -263,12 +236,12 @@ public class ListTag extends CollectionTag<Tag> {
 	}
 	
 	@Override
-	public Tag get(int index) {
+	public @NotNull Tag get(int index) {
 		return this.data.get(index);
 	}
 	
 	@Override
-	public @NotNull Tag set(int index, Tag tag) {
+	public @NotNull Tag set(int index, @NotNull Tag tag) {
 		Tag oldTag = this.get(index);
 		if (!this.setTag(index, tag)) {
 			LOGGER.warn("Try to add tag of type {} to data of {}", tag.getId(), this.type);
@@ -277,14 +250,14 @@ public class ListTag extends CollectionTag<Tag> {
 	}
 	
 	@Override
-	public void add(int index, Tag tag) {
+	public void add(int index, @NotNull Tag tag) {
 		if (!this.addTag(index, tag)) {
 			LOGGER.warn("Try to add tag of type {} to data of {}", tag.getId(), this.type);
 		}
 	}
 	
 	@Override
-	public boolean setTag(int index, Tag tag) {
+	public boolean setTag(int index, @NotNull Tag tag) {
 		if (this.updateType(tag)) {
 			this.data.set(index, tag);
 			return true;
@@ -293,7 +266,7 @@ public class ListTag extends CollectionTag<Tag> {
 	}
 	
 	@Override
-	public boolean addTag(int index, Tag tag) {
+	public boolean addTag(int index, @NotNull Tag tag) {
 		if (this.updateType(tag)) {
 			this.data.add(index, tag);
 			return true;
@@ -301,7 +274,7 @@ public class ListTag extends CollectionTag<Tag> {
 		return false;
 	}
 	
-	private boolean updateType(Tag tag) {
+	private boolean updateType(@NotNull Tag tag) {
 		if (tag.getId() == 0) {
 			return false;
 		} else if (this.type == 0) {
@@ -324,8 +297,13 @@ public class ListTag extends CollectionTag<Tag> {
 	}
 	
 	@Override
-	public boolean equals(Object object) {
-		return Equals.equals(this, object);
+	public boolean equals(Object o) {
+		if (this == o) return true;
+		if (!(o instanceof ListTag tags)) return false;
+		if (!super.equals(o)) return false;
+		
+		if (this.type != tags.type) return false;
+		return this.data.equals(tags.data);
 	}
 	
 	@Override

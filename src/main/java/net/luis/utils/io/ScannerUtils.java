@@ -1,12 +1,13 @@
 package net.luis.utils.io;
 
 import org.apache.commons.lang3.StringUtils;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.Scanner;
 
 public class ScannerUtils {
 	
-	public static int nextInt(String output) {
+	public static int nextInt(@NotNull String output) {
 		Scanner scanner = new Scanner(System.in);
 		if (!StringUtils.isEmpty(output)) {
 			System.out.println(output);
@@ -16,7 +17,7 @@ public class ScannerUtils {
 		return value;
 	}
 	
-	public static long nextLong(String output) {
+	public static long nextLong(@NotNull String output) {
 		Scanner scanner = new Scanner(System.in);
 		if (!StringUtils.isEmpty(output)) {
 			System.out.println(output);
@@ -26,7 +27,7 @@ public class ScannerUtils {
 		return value;
 	}
 	
-	public static float nextFloat(String output) {
+	public static float nextFloat(@NotNull String output) {
 		Scanner scanner = new Scanner(System.in);
 		if (!StringUtils.isEmpty(output)) {
 			System.out.println(output);
@@ -36,7 +37,7 @@ public class ScannerUtils {
 		return value;
 	}
 	
-	public static double nextDouble(String output) {
+	public static double nextDouble(@NotNull String output) {
 		Scanner scanner = new Scanner(System.in);
 		if (!StringUtils.isEmpty(output)) {
 			System.out.println(output);
@@ -46,7 +47,7 @@ public class ScannerUtils {
 		return value;
 	}
 	
-	public static String nextString(String output) {
+	public static @NotNull String nextString(@NotNull String output) {
 		Scanner scanner = new Scanner(System.in);
 		if (!StringUtils.isEmpty(output)) {
 			System.out.println(output);

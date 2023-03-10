@@ -2,6 +2,7 @@ package net.luis.utils.math;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.Random;
 
@@ -41,15 +42,15 @@ public class Mth {
 		return sum;
 	}
 	
-	public static int randomInt(Random rng, int min, int max) {
+	public static int randomInt(@NotNull Random rng, int min, int max) {
 		return min + rng.nextInt(max - min);
 	}
 	
-	public static int randomExclusiveInt(Random rng, int min, int max) {
+	public static int randomExclusiveInt(@NotNull Random rng, int min, int max) {
 		return min + rng.nextInt(max - min - 1) + 1;
 	}
 	
-	public static int randomInclusiveInt(Random rng, int min, int max) {
+	public static int randomInclusiveInt(@NotNull Random rng, int min, int max) {
 		return min + rng.nextInt(max - min + 1);
 	}
 	
@@ -62,7 +63,7 @@ public class Mth {
 		return max >= value && value >= min;
 	}
 	
-	public static boolean sameValues(Number... numbers) {
+	public static boolean sameValues(@NotNull Number... numbers) {
 		if (numbers.length == 0) {
 			return false;
 		} else if (numbers.length == 1) {

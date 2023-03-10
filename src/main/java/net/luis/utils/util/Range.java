@@ -2,6 +2,7 @@ package net.luis.utils.util;
 
 import net.luis.utils.math.Mth;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.Objects;
 
@@ -51,8 +52,12 @@ public class Range {
 	}
 	
 	@Override
-	public boolean equals(Object object) {
-		return Equals.equals(this, object);
+	public boolean equals(@Nullable Object o) {
+		if (this == o) return true;
+		if (!(o instanceof Range range)) return false;
+		
+		if (this.min != range.min) return false;
+		return this.max == range.max;
 	}
 	
 	@Override

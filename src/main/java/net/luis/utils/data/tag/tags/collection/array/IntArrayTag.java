@@ -8,9 +8,9 @@ import net.luis.utils.data.tag.tags.collection.CollectionTag;
 import net.luis.utils.data.tag.tags.numeric.IntTag;
 import net.luis.utils.data.tag.tags.numeric.NumericTag;
 import net.luis.utils.data.tag.visitor.TagVisitor;
-import net.luis.utils.util.Equals;
 import org.apache.commons.lang3.ArrayUtils;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.io.DataInput;
 import java.io.DataOutput;
@@ -28,7 +28,7 @@ public class IntArrayTag extends CollectionTag<IntTag> {
 	
 	public static final TagType<IntArrayTag> TYPE = new TagType<>() {
 		@Override
-		public @NotNull IntArrayTag load(DataInput input) throws LoadTagException {
+		public @NotNull IntArrayTag load(@NotNull DataInput input) throws LoadTagException {
 			try {
 				int length = input.readInt();
 				int[] data = new int[length];
@@ -66,7 +66,7 @@ public class IntArrayTag extends CollectionTag<IntTag> {
 		this.data = data;
 	}
 	
-	private static int[] toArray(List<Integer> list) {
+	private static int[] toArray(@NotNull List<Integer> list) {
 		int[] data = new int[list.size()];
 		for (int i = 0; i < list.size(); i++) {
 			Integer integer = list.get(i);
@@ -76,7 +76,7 @@ public class IntArrayTag extends CollectionTag<IntTag> {
 	}
 	
 	@Override
-	public void save(DataOutput output) throws SaveTagException {
+	public void save(@NotNull DataOutput output) throws SaveTagException {
 		try {
 			output.writeInt(this.data.length);
 			for (int datum : this.data) {
@@ -105,7 +105,7 @@ public class IntArrayTag extends CollectionTag<IntTag> {
 	}
 	
 	@Override
-	public void accept(TagVisitor visitor) {
+	public void accept(@NotNull TagVisitor visitor) {
 		visitor.visitIntArray(this);
 	}
 	
@@ -114,26 +114,26 @@ public class IntArrayTag extends CollectionTag<IntTag> {
 	}
 	
 	@Override
-	public @NotNull IntTag set(int index, IntTag tag) {
+	public @NotNull IntTag set(int index, @NotNull IntTag tag) {
 		int i = this.data[index];
 		this.data[index] = tag.getAsInt();
 		return IntTag.valueOf(i);
 	}
 	
 	@Override
-	public void add(int index, IntTag tag) {
+	public void add(int index, @NotNull IntTag tag) {
 		this.data = ArrayUtils.add(this.data, index, tag.getAsInt());
 	}
 	
 	@Override
-	public IntTag remove(int index) {
+	public @Nullable IntTag remove(int index) {
 		int i = this.data[index];
 		this.data = ArrayUtils.remove(this.data, index);
 		return IntTag.valueOf(i);
 	}
 	
 	@Override
-	public boolean setTag(int index, Tag tag) {
+	public boolean setTag(int index, @NotNull Tag tag) {
 		if (tag instanceof NumericTag numericTag) {
 			this.data[index] = numericTag.getAsInt();
 			return true;
@@ -143,7 +143,7 @@ public class IntArrayTag extends CollectionTag<IntTag> {
 	}
 	
 	@Override
-	public boolean addTag(int index, Tag tag) {
+	public boolean addTag(int index, @NotNull Tag tag) {
 		if (tag instanceof NumericTag numericTag) {
 			this.data = ArrayUtils.add(this.data, index, numericTag.getAsInt());
 			return true;
@@ -158,7 +158,7 @@ public class IntArrayTag extends CollectionTag<IntTag> {
 	}
 	
 	@Override
-	public IntTag get(int index) {
+	public @NotNull IntTag get(int index) {
 		return IntTag.valueOf(this.data[index]);
 	}
 	
@@ -168,8 +168,12 @@ public class IntArrayTag extends CollectionTag<IntTag> {
 	}
 	
 	@Override
-	public boolean equals(Object object) {
-		return Equals.equals(this, object);
+	public boolean equals(Object o) {
+		if (this == o) return true;
+		if (!(o instanceof IntArrayTag intTags)) return false;
+		if (!super.equals(o)) return false;
+		
+		return Arrays.equals(this.data, intTags.data);
 	}
 	
 	@Override

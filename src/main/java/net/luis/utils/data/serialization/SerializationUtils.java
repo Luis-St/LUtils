@@ -12,6 +12,7 @@ import org.jetbrains.annotations.NotNull;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.nio.file.Path;
+import java.util.Objects;
 
 /**
  *
@@ -23,7 +24,7 @@ public class SerializationUtils {
 	
 	private static final Logger LOGGER = LogManager.getLogger();
 	
-	public static <T extends Serializable> @NotNull T deserialize(Class<T> clazz, Path path) {
+	public static <T extends Serializable> @NotNull T deserialize(@NotNull Class<T> clazz, @NotNull Path path) {
 		try {
 			Tag tag = Tag.load(path);
 			if (tag instanceof CompoundTag compoundTag) {
@@ -39,7 +40,7 @@ public class SerializationUtils {
 	}
 	
 	@SuppressWarnings("unchecked")
-	public static <T extends Serializable> @NotNull T deserialize(Class<T> clazz, CompoundTag tag) {
+	public static <T extends Serializable> @NotNull T deserialize(@NotNull Class<T> clazz, @NotNull CompoundTag tag) {
 		if (!clazz.isAnnotationPresent(Deserializable.class)) {
 			LOGGER.error("An object of type {} cannot be deserialized because the type is not marked as deserializable", clazz.getSimpleName());
 			throw new RuntimeException();
@@ -48,13 +49,13 @@ public class SerializationUtils {
 			Deserializable deserializable = clazz.getAnnotationsByType(Deserializable.class)[0];
 			if (deserializable.type() == Type.CONSTRUCTOR) {
 				if (ReflectionHelper.hasConstructor(clazz, CompoundTag.class)) {
-					return ReflectionHelper.newInstance(clazz, tag);
+					return Objects.requireNonNull(ReflectionHelper.newInstance(clazz, tag));
 				}
 				LOGGER.error("The deserialization type of type {} was set to constructor, but no valid constructor was found", clazz.getSimpleName());
 				throw new RuntimeException();
 			} else if (deserializable.type() == Type.METHOD) {
 				if (ReflectionHelper.hasConstructor(clazz)) {
-					T object = ReflectionHelper.newInstance(clazz);
+					T object = Objects.requireNonNull(ReflectionHelper.newInstance(clazz));
 					if (ReflectionHelper.hasMethod(clazz, deserializable.methodName(), CompoundTag.class)) {
 						Method method = ReflectionHelper.getMethod(clazz, deserializable.methodName(), CompoundTag.class);
 						if (!Modifier.isStatic(method.getModifiers())) {
@@ -73,7 +74,7 @@ public class SerializationUtils {
 				if (ReflectionHelper.hasMethod(clazz, deserializable.methodName(), CompoundTag.class)) {
 					Method method = ReflectionHelper.getMethod(clazz, deserializable.methodName(), CompoundTag.class);
 					if (Modifier.isStatic(method.getModifiers())) {
-						return (T) ReflectionHelper.invoke(method, null, tag);
+						return (T) Objects.requireNonNull(ReflectionHelper.invoke(method, null, tag));
 					}
 					LOGGER.error("The method {} to be used for deserialization is non-static, but a static method was expected", deserializable.methodName());
 					throw new RuntimeException();

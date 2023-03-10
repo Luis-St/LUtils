@@ -14,13 +14,10 @@ import java.util.function.Function;
 @FunctionalInterface
 public interface TriFunction<T, U, V, R> {
 	
-	R apply(T t, U u, V v);
+	R apply(@NotNull T t, @NotNull U u, @NotNull V v);
 	
-	default <S> @NotNull TriFunction<T, U, V, S> andThen(Function<? super R, ? extends S> after) {
-		Objects.requireNonNull(after);
-		return (T t, U u, V v) -> {
-			return after.apply(this.apply(t, u, v));
-		};
+	default <S> @NotNull TriFunction<T, U, V, S> andThen(@NotNull Function<? super R, ? extends S> after) {
+		return (T t, U u, V v) -> Objects.requireNonNull(after).apply(this.apply(t, u, v));
 	}
 	
 }

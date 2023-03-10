@@ -4,7 +4,6 @@ import net.luis.utils.data.tag.TagType;
 import net.luis.utils.data.tag.exception.LoadTagException;
 import net.luis.utils.data.tag.exception.SaveTagException;
 import net.luis.utils.data.tag.visitor.TagVisitor;
-import net.luis.utils.util.Equals;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.DataInput;
@@ -21,7 +20,7 @@ public class DoubleTag extends NumericTag {
 	
 	public static final TagType<DoubleTag> TYPE = new TagType<>() {
 		@Override
-		public @NotNull DoubleTag load(DataInput input) throws LoadTagException {
+		public @NotNull DoubleTag load(@NotNull DataInput input) throws LoadTagException {
 			try {
 				return valueOf(input.readDouble());
 			} catch (IOException e) {
@@ -51,12 +50,12 @@ public class DoubleTag extends NumericTag {
 		this.data = data;
 	}
 	
-	public static DoubleTag valueOf(double data) {
+	public static @NotNull DoubleTag valueOf(double data) {
 		return new DoubleTag(data);
 	}
 	
 	@Override
-	public void save(DataOutput output) throws SaveTagException {
+	public void save(@NotNull DataOutput output) throws SaveTagException {
 		try {
 			output.writeDouble(this.data);
 		} catch (IOException e) {
@@ -80,7 +79,7 @@ public class DoubleTag extends NumericTag {
 	}
 	
 	@Override
-	public void accept(TagVisitor visitor) {
+	public void accept(@NotNull TagVisitor visitor) {
 		visitor.visitDouble(this);
 	}
 	
@@ -120,8 +119,11 @@ public class DoubleTag extends NumericTag {
 	}
 	
 	@Override
-	public boolean equals(Object object) {
-		return Equals.equals(this, object);
+	public boolean equals(Object o) {
+		if (this == o) return true;
+		if (!(o instanceof DoubleTag doubleTag)) return false;
+		
+		return Double.compare(doubleTag.data, this.data) == 0;
 	}
 	
 	@Override

@@ -21,7 +21,7 @@ public class EndTag implements Tag {
 	public static final EndTag INSTANCE = new EndTag();
 	public static final TagType<EndTag> TYPE = new TagType<>() {
 		@Override
-		public @NotNull EndTag load(DataInput input) throws LoadTagException {
+		public @NotNull EndTag load(@NotNull DataInput input) throws LoadTagException {
 			return INSTANCE;
 		}
 		
@@ -41,7 +41,7 @@ public class EndTag implements Tag {
 	}
 	
 	@Override
-	public void save(DataOutput output) throws SaveTagException {
+	public void save(@NotNull DataOutput output) throws SaveTagException {
 		throw new SaveTagException("Cannot save a tag of the type" + this.getType().getVisitorName());
 	}
 	
@@ -61,12 +61,12 @@ public class EndTag implements Tag {
 	}
 	
 	@Override
-	public void accept(TagVisitor visitor) {
+	public void accept(@NotNull TagVisitor visitor) {
 		visitor.visitEnd(this);
 	}
 	
 	@Override
-	public String toString() {
+	public @NotNull String toString() {
 		return this.getAsString();
 	}
 	

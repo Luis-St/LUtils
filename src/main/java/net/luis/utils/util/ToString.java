@@ -29,11 +29,11 @@ public class ToString {
 		this.excludeFields = Lists.newArrayList(excludeFields);
 	}
 	
-	public static @NotNull String toString(Object object, String... excludeFields) {
+	public static @NotNull String toString(@NotNull Object object, @NotNull String... excludeFields) {
 		return new ToString(object, FieldHandler.EXCLUDE_JAVA, excludeFields).toString();
 	}
 	
-	public static @NotNull String toString(Object object, FieldHandler fieldHandler, String... excludeFields) {
+	public static @NotNull String toString(@NotNull Object object, @NotNull FieldHandler fieldHandler, @NotNull String... excludeFields) {
 		return new ToString(object, fieldHandler, excludeFields).toString();
 	}
 	
@@ -73,11 +73,11 @@ public class ToString {
 		return builder.toString();
 	}
 	
-	private String getClassName(Class<?> clazz) {
+	private String getClassName(@NotNull Class<?> clazz) {
 		return clazz.getName().replace(clazz.getPackageName() + ".", "").replace("$", ".");
 	}
 	
-	private <T> List<Field> getFields() {
+	private <T> @NotNull List<Field> getFields() {
 		if (this.fieldHandler == FieldHandler.NO) {
 			return Lists.newArrayList();
 		}

@@ -27,12 +27,12 @@ public class Utils {
 	    return uuid == EMPTY_UUID || uuid.equals(EMPTY_UUID);
 	}
 	
-	public static <T> @NotNull T make(T object, Consumer<T> consumer) {
+	public static <T> @NotNull T make(@NotNull T object, @NotNull Consumer<T> consumer) {
 		consumer.accept(object);
 		return Objects.requireNonNull(object);
 	}
 	
-	public static <K, V, T> @NotNull List<T> mapToList(Map<K, V> map, BiFunction<K, V, T> function) {
+	public static <K, V, T> @NotNull List<T> mapToList(@NotNull Map<K, V> map, @NotNull BiFunction<K, V, T> function) {
 		List<T> list = Lists.newArrayList();
 		for (Map.Entry<K, V> entry : map.entrySet()) {
 			list.add(function.apply(entry.getKey(), entry.getValue()));
@@ -40,7 +40,7 @@ public class Utils {
 		return list;
 	}
 	
-	public static <T, K, V> @NotNull Map<K, V> listToMap(List<T> list, Function<T, Entry<K, V>> function) {
+	public static <T, K, V> @NotNull Map<K, V> listToMap(@NotNull List<T> list, @NotNull Function<T, Entry<K, V>> function) {
 		Map<K, V> map = Maps.newHashMap();
 		for (T t : list) {
 			Entry<K, V> entry = function.apply(t);
@@ -49,15 +49,15 @@ public class Utils {
 		return map;
 	}
 	
-	public static <T, U> @NotNull List<U> mapList(List<T> list, Function<T, U> function) {
+	public static <T, U> @NotNull List<U> mapList(@NotNull List<T> list, @NotNull Function<T, U> function) {
 		return list.stream().map(function).collect(Collectors.toList());
 	}
 	
-	public static <T, U, V> @NotNull List<V> mapList(List<T> list, Function<T, U> firstFunction, Function<U, V> secondFunction) {
+	public static <T, U, V> @NotNull List<V> mapList(@NotNull List<T> list, @NotNull Function<T, U> firstFunction, Function<U, V> secondFunction) {
 		return list.stream().map(firstFunction).map(secondFunction).collect(Collectors.toList());
 	}
 	
-	public static <K, T, V> @NotNull Map<T, V> mapKey(Map<K, V> map, Function<K, T> function) {
+	public static <K, T, V> @NotNull Map<T, V> mapKey(@NotNull Map<K, V> map, @NotNull Function<K, T> function) {
 		Map<T, V> mapped = Maps.newHashMap();
 		for (Entry<K, V> entry : map.entrySet()) {
 			mapped.put(function.apply(entry.getKey()), entry.getValue());
@@ -65,7 +65,7 @@ public class Utils {
 		return mapped;
 	}
 	
-	public static <K, V, T> @NotNull Map<K, T> mapValue(Map<K, V> map, Function<V, T> function) {
+	public static <K, V, T> @NotNull Map<K, T> mapValue(@NotNull Map<K, V> map, @NotNull Function<V, T> function) {
 		Map<K, T> mapped = Maps.newHashMap();
 		for (Entry<K, V> entry : map.entrySet()) {
 			mapped.put(entry.getKey(), function.apply(entry.getValue()));
@@ -73,7 +73,7 @@ public class Utils {
 		return mapped;
 	}
 	
-	public static <T> @NotNull List<T> reverseList(List<T> list) {
+	public static <T> @NotNull List<T> reverseList(@NotNull List<T> list) {
 		List<T> reversedList = Lists.newArrayList();
 		for (int i = list.size(); i-- > 0; ) {
 			reversedList.add(list.get(i));
@@ -81,28 +81,28 @@ public class Utils {
 		return reversedList;
 	}
 	
-	public static <T, R> @Nullable R runIf(T value, Predicate<T> predicate, Function<T, R> function) {
+	public static <T, R> @Nullable R runIf(@Nullable T value, @NotNull Predicate<T> predicate, @NotNull Function<T, R> function) {
 		if (value != null && predicate.test(value)) {
 			return function.apply(value);
 		}
 		return null;
 	}
 	
-	public static <T, R> @Nullable R runIfNot(T value, Predicate<T> predicate, Function<T, R> function) {
+	public static <T, R> @Nullable R runIfNot(@Nullable T value, @NotNull Predicate<T> predicate, @NotNull Function<T, R> function) {
 		if (value != null && !predicate.test(value)) {
 			return function.apply(value);
 		}
 		return null;
 	}
 	
-	public static <T, R> @Nullable R runIfNotNull(T value, Function<T, R> function) {
+	public static <T, R> @Nullable R runIfNotNull(@Nullable T value, Function<T, R> function) {
 		if (value != null) {
 			return function.apply(value);
 		}
 		return null;
 	}
 	
-	public static <T> @NotNull T warpNullTo(T value, T nullFallback) {
+	public static <T> @NotNull T warpNullTo(@Nullable T value, @NotNull T nullFallback) {
 		if (value == null) {
 			return Objects.requireNonNull(nullFallback, "The fallback value must not be null");
 		}
@@ -114,7 +114,7 @@ public class Utils {
 	}
 	
 	@SafeVarargs
-	public static <T> @NotNull List<T> concatLists(List<T>... lists) {
+	public static <T> @NotNull List<T> concatLists(@NotNull List<T>... lists) {
 		List<T> list = Lists.newArrayList();
 		for (List<T> t : lists) {
 			list.addAll(t);
@@ -122,19 +122,19 @@ public class Utils {
 		return list;
 	}
 	
-	public static <T> @NotNull T getRandom(T[] values, Random rng) {
+	public static <T> @NotNull T getRandom(@NotNull T[] values, @NotNull Random rng) {
 		return values[rng.nextInt(values.length)];
 	}
 	
-	public static <T> @NotNull Optional<T> getRandomSafe(T[] values, Random rng) {
+	public static <T> @NotNull Optional<T> getRandomSafe(@NotNull T[] values, @NotNull Random rng) {
 		return values.length == 0 ? Optional.empty() : Optional.of(getRandom(values, rng));
 	}
 	
-	public static <T> @NotNull T getRandom(List<T> values, Random rng) {
+	public static <T> @NotNull T getRandom(@NotNull List<T> values, @NotNull Random rng) {
 		return values.get(rng.nextInt(values.size()));
 	}
 	
-	public static <T> @NotNull Optional<T> getRandomSafe(List<T> values, Random rng) {
+	public static <T> @NotNull Optional<T> getRandomSafe(@NotNull List<T> values, @NotNull Random rng) {
 		return values.isEmpty() ? Optional.empty() : Optional.of(getRandom(values, rng));
 	}
 	

@@ -7,12 +7,10 @@ import net.luis.utils.data.tag.TagTypes;
 import net.luis.utils.data.tag.exception.LoadTagException;
 import net.luis.utils.data.tag.exception.SaveTagException;
 import net.luis.utils.data.tag.tags.collection.ListTag;
-import net.luis.utils.data.tag.tags.collection.array.ByteArrayTag;
 import net.luis.utils.data.tag.tags.collection.array.IntArrayTag;
 import net.luis.utils.data.tag.tags.collection.array.LongArrayTag;
 import net.luis.utils.data.tag.tags.numeric.*;
 import net.luis.utils.data.tag.visitor.TagVisitor;
-import net.luis.utils.util.Equals;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.DataInput;
@@ -20,6 +18,7 @@ import java.io.DataOutput;
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 
 /**
@@ -32,7 +31,7 @@ public class CompoundTag implements Tag {
 	
 	public static final TagType<CompoundTag> TYPE = new TagType<>() {
 		@Override
-		public @NotNull CompoundTag load(DataInput input) throws LoadTagException {
+		public @NotNull CompoundTag load(@NotNull DataInput input) throws LoadTagException {
 			try {
 				int size = input.readInt();
 				Map<String, Tag> data = Maps.newHashMap();
@@ -77,7 +76,7 @@ public class CompoundTag implements Tag {
 	}
 	
 	@Override
-	public void save(DataOutput output) throws SaveTagException {
+	public void save(@NotNull DataOutput output) throws SaveTagException {
 		try {
 			output.writeInt(this.data.size());
 			for (String key : this.data.keySet()) {
@@ -113,7 +112,7 @@ public class CompoundTag implements Tag {
 	}
 	
 	@Override
-	public void accept(TagVisitor visitor) {
+	public void accept(@NotNull TagVisitor visitor) {
 		visitor.visitCompound(this);
 	}
 	
@@ -121,7 +120,7 @@ public class CompoundTag implements Tag {
 		return this.data.size();
 	}
 	
-	public Set<String> getAllKeys() {
+	public @NotNull Set<String> getAllKeys() {
 		return this.data.keySet();
 	}
 	
@@ -129,120 +128,80 @@ public class CompoundTag implements Tag {
 		return this.data.containsKey(key);
 	}
 	
-	public boolean contains(String key, int type) {
+	public boolean contains(@NotNull String key, int type) {
 		int tagType = this.getTagType(key);
 		if (tagType == type) {
 			return true;
 		} else if (type != 99) {
 			return false;
 		} else {
-			return tagType == BYTE_TAG || tagType == SHORT_TAG || tagType == INT_TAG || tagType == LONG_TAG || tagType == FLOAT_TAG || tagType == DOUBLE_TAG;
+			return tagType == INT_TAG || tagType == LONG_TAG || tagType == FLOAT_TAG || tagType == DOUBLE_TAG;
 		}
 	}
 	
-	public Tag put(String key, Tag tag) {
-		if (tag == null) {
-			throw new IllegalArgumentException("Invalid tag with value null for key: " + key);
-		}
-		return this.data.put(key, tag);
+	public void put(@NotNull String key, @NotNull Tag tag) {
+		this.data.put(key, Objects.requireNonNull(tag, "Invalid tag with value null for key: " + key));
 	}
 	
-	public void putByte(String key, byte data) {
-		this.put(key, ByteTag.valueOf(data));
-	}
-	
-	public void putShort(String key, short data) {
-		this.put(key, ShortTag.valueOf(data));
-	}
-	
-	public void putInt(String key, int data) {
+	public void putInt(@NotNull String key, int data) {
 		this.put(key, IntTag.valueOf(data));
 	}
 	
-	public void putLong(String key, long data) {
+	public void putLong(@NotNull String key, long data) {
 		this.put(key, LongTag.valueOf(data));
 	}
 	
-	public void putFloat(String key, float data) {
+	@Deprecated
+	public void putFloat(@NotNull String key, float data) {
 		this.put(key, FloatTag.valueOf(data));
 	}
 	
-	public void putDouble(String key, double data) {
+	public void putDouble(@NotNull String key, double data) {
 		this.put(key, DoubleTag.valueOf(data));
 	}
 	
-	public void putString(String key, String data) {
+	public void putString(@NotNull String key, @NotNull String data) {
 		this.put(key, StringTag.valueOf(data));
 	}
 	
-	public void putByteArray(String key, byte[] data) {
-		this.put(key, new ByteArrayTag(data));
-	}
-	
-	public void putByteArray(String key, List<Byte> data) {
-		this.put(key, new ByteArrayTag(data));
-	}
-	
-	public void putIntArray(String key, int[] data) {
+	public void putIntArray(@NotNull String key, int[] data) {
 		this.put(key, new IntArrayTag(data));
 	}
 	
-	public void putIntArray(String key, List<Integer> data) {
+	public void putIntArray(@NotNull String key, @NotNull List<Integer> data) {
 		this.put(key, new IntArrayTag(data));
 	}
 	
-	public void putLongArray(String key, long[] data) {
+	public void putLongArray(@NotNull String key, long[] data) {
 		this.put(key, new LongArrayTag(data));
 	}
 	
-	public void putLongArray(String key, List<Long> data) {
+	public void putLongArray(@NotNull String key, @NotNull List<Long> data) {
 		this.put(key, new LongArrayTag(data));
 	}
 	
-	public void putList(String key, ListTag data) {
+	public void putList(@NotNull String key, @NotNull ListTag data) {
 		this.put(key, data);
 	}
 	
-	public void putCompound(String key, CompoundTag data) {
+	public void putCompound(@NotNull String key, @NotNull CompoundTag data) {
 		this.put(key, data);
 	}
 	
-	public void putBoolean(String key, boolean data) {
-		this.put(key, ByteTag.valueOf(data));
+	public void putBoolean(@NotNull String key, boolean data) {
+		this.put(key, IntTag.valueOf(data ? 1 : 0));
 	}
 	
-	public byte getTagType(String key) {
-		Tag tag = this.get(key);
-		return tag == null ? 0 : tag.getId();
+	public byte getTagType(@NotNull String key) {
+		return this.get(key).getId();
 	}
 	
-	public Tag get(String key) {
+	public @NotNull Tag get(@NotNull String key) {
 		return this.data.get(key);
 	}
 	
-	public byte getByte(String key) {
-		try {
-			if (this.contains(key, PRIMITIVE_TAG)) {
-				return ((NumericTag) this.get(key)).getAsByte();
-			}
-		} catch (ClassCastException ignored) {
-			
-		}
-		return (byte) 0;
-	}
-	
-	public short getShort(String key) {
-		try {
-			if (this.contains(key, PRIMITIVE_TAG)) {
-				return ((NumericTag) this.get(key)).getAsShort();
-			}
-		} catch (ClassCastException ignored) {
-			
-		}
-		return (short) 0;
-	}
-	
-	public int getInt(String key) {
+
+	public int getInt(@NotNull String key) {
 		try {
 			if (this.contains(key, PRIMITIVE_TAG)) {
 				return ((NumericTag) this.get(key)).getAsInt();
@@ -253,7 +212,7 @@ public class CompoundTag implements Tag {
 		return 0;
 	}
 	
-	public long getLong(String key) {
+	public long getLong(@NotNull String key) {
 		try {
 			if (this.contains(key, PRIMITIVE_TAG)) {
 				return ((NumericTag) this.get(key)).getAsLong();
@@ -264,7 +223,8 @@ public class CompoundTag implements Tag {
 		return 0;
 	}
 	
-	public float getFloat(String key) {
+	@Deprecated
+	public float getFloat(@NotNull String key) {
 		try {
 			if (this.contains(key, PRIMITIVE_TAG)) {
 				return ((NumericTag) this.get(key)).getAsFloat();
@@ -275,7 +235,7 @@ public class CompoundTag implements Tag {
 		return (float) 0;
 	}
 	
-	public double getDouble(String key) {
+	public double getDouble(@NotNull String key) {
 		try {
 			if (this.contains(key, PRIMITIVE_TAG)) {
 				return ((NumericTag) this.get(key)).getAsDouble();
@@ -286,7 +246,7 @@ public class CompoundTag implements Tag {
 		return 0;
 	}
 	
-	public String getString(String key) {
+	public @NotNull String getString(@NotNull String key) {
 		try {
 			if (this.contains(key, STRING_TAG)) {
 				return this.get(key).getAsString();
@@ -297,18 +257,7 @@ public class CompoundTag implements Tag {
 		return "";
 	}
 	
-	public byte[] getByteArray(String key) {
-		try {
-			if (this.contains(key, BYTE_ARRAY_TAG)) {
-				return ((ByteArrayTag) this.get(key)).getAsByteArray();
-			}
-		} catch (ClassCastException e) {
-			throw new RuntimeException("Fail to read tag of type: " + TagTypes.getType(this.getTagType(key)).getName() + ", since it's corrupt");
-		}
-		return new byte[0];
-	}
-	
-	public int[] getIntArray(String key) {
+	public int[] getIntArray(@NotNull String key) {
 		try {
 			if (this.contains(key, INT_ARRAY_TAG)) {
 				return ((IntArrayTag) this.get(key)).getAsIntArray();
@@ -319,7 +268,7 @@ public class CompoundTag implements Tag {
 		return new int[0];
 	}
 	
-	public long[] getLongArray(String key) {
+	public long[] getLongArray(@NotNull String key) {
 		try {
 			if (this.contains(key, LONG_ARRAY_TAG)) {
 				return ((LongArrayTag) this.get(key)).getAsLongArray();
@@ -330,11 +279,11 @@ public class CompoundTag implements Tag {
 		return new long[0];
 	}
 	
-	public ListTag getList(String key) {
+	public @NotNull ListTag getList(@NotNull String key) {
 		return this.getList(key, -1);
 	}
 	
-	public ListTag getList(String key, int type) {
+	public @NotNull ListTag getList(@NotNull String key, int type) {
 		try {
 			if (this.contains(key, LIST_TAG)) {
 				ListTag tag = (ListTag) this.get(key);
@@ -348,7 +297,7 @@ public class CompoundTag implements Tag {
 		return new ListTag();
 	}
 	
-	public CompoundTag getCompound(String key) {
+	public @NotNull CompoundTag getCompound(@NotNull String key) {
 		try {
 			if (this.contains(key, COMPOUND_TAG)) {
 				return (CompoundTag) this.get(key);
@@ -359,11 +308,11 @@ public class CompoundTag implements Tag {
 		return new CompoundTag();
 	}
 	
-	public boolean getBoolean(String key) {
-		return this.getByte(key) != 0;
+	public boolean getBoolean(@NotNull String key) {
+		return this.getInt(key) != 0;
 	}
 	
-	public void remove(String key) {
+	public void remove(@NotNull String key) {
 		this.data.remove(key);
 	}
 	
@@ -372,13 +321,16 @@ public class CompoundTag implements Tag {
 	}
 	
 	@Override
-	public String toString() {
+	public @NotNull String toString() {
 		return this.getAsString();
 	}
 	
 	@Override
-	public boolean equals(Object object) {
-		return Equals.equals(this, object);
+	public boolean equals(Object o) {
+		if (this == o) return true;
+		if (!(o instanceof CompoundTag that)) return false;
+		
+		return this.data.equals(that.data);
 	}
 	
 	@Override

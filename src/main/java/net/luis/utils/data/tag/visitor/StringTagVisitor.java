@@ -6,10 +6,13 @@ import net.luis.utils.data.tag.tags.CompoundTag;
 import net.luis.utils.data.tag.tags.EndTag;
 import net.luis.utils.data.tag.tags.StringTag;
 import net.luis.utils.data.tag.tags.collection.ListTag;
-import net.luis.utils.data.tag.tags.collection.array.ByteArrayTag;
 import net.luis.utils.data.tag.tags.collection.array.IntArrayTag;
 import net.luis.utils.data.tag.tags.collection.array.LongArrayTag;
-import net.luis.utils.data.tag.tags.numeric.*;
+import net.luis.utils.data.tag.tags.numeric.DoubleTag;
+import net.luis.utils.data.tag.tags.numeric.FloatTag;
+import net.luis.utils.data.tag.tags.numeric.IntTag;
+import net.luis.utils.data.tag.tags.numeric.LongTag;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.Collections;
 import java.util.List;
@@ -24,61 +27,38 @@ public class StringTagVisitor implements TagVisitor {
 	
 	private final StringBuilder builder = new StringBuilder();
 	
-	public String visit(Tag tag) {
+	public String visit(@NotNull Tag tag) {
 		tag.accept(this);
 		return this.builder.toString();
 	}
 	
 	@Override
-	public void visitByte(ByteTag tag) {
-		this.builder.append(tag.getAsNumber()).append("b");
-	}
-	
-	@Override
-	public void visitShort(ShortTag tag) {
-		this.builder.append(tag.getAsNumber()).append("s");
-	}
-	
-	@Override
-	public void visitInt(IntTag tag) {
+	public void visitInt(@NotNull IntTag tag) {
 		this.builder.append(tag.getAsNumber());
 	}
 	
 	@Override
-	public void visitLong(LongTag tag) {
+	public void visitLong(@NotNull LongTag tag) {
 		this.builder.append(tag.getAsNumber()).append("l");
 	}
 	
 	@Override
-	public void visitFloat(FloatTag tag) {
+	public void visitFloat(@NotNull FloatTag tag) {
 		this.builder.append(tag.getAsNumber()).append("f");
 	}
 	
 	@Override
-	public void visitDouble(DoubleTag tag) {
+	public void visitDouble(@NotNull DoubleTag tag) {
 		this.builder.append(tag.getAsNumber()).append("d");
 	}
 	
 	@Override
-	public void visitString(StringTag tag) {
+	public void visitString(@NotNull StringTag tag) {
 		this.builder.append(tag.getAsString());
 	}
 	
 	@Override
-	public void visitByteArray(ByteArrayTag tag) {
-		this.builder.append("[B;");
-		byte[] data = tag.getAsByteArray();
-		for (int i = 0; i < data.length; ++i) {
-			if (i != 0) {
-				this.builder.append(',');
-			}
-			this.builder.append(data[i]);
-		}
-		this.builder.append(']');
-	}
-	
-	@Override
-	public void visitIntArray(IntArrayTag tag) {
+	public void visitIntArray(@NotNull IntArrayTag tag) {
 		this.builder.append("[I;");
 		int[] data = tag.getAsIntArray();
 		for (int i = 0; i < data.length; ++i) {
@@ -91,7 +71,7 @@ public class StringTagVisitor implements TagVisitor {
 	}
 	
 	@Override
-	public void visitLongArray(LongArrayTag tag) {
+	public void visitLongArray(@NotNull LongArrayTag tag) {
 		this.builder.append("[L;");
 		long[] data = tag.getAsLongArray();
 		for (int i = 0; i < data.length; ++i) {
@@ -104,7 +84,7 @@ public class StringTagVisitor implements TagVisitor {
 	}
 	
 	@Override
-	public void visitList(ListTag tag) {
+	public void visitList(@NotNull ListTag tag) {
 		this.builder.append("[");
 		for (int i = 0; i < tag.size(); i++) {
 			if (i != 0) {
@@ -116,7 +96,7 @@ public class StringTagVisitor implements TagVisitor {
 	}
 	
 	@Override
-	public void visitCompound(CompoundTag tag) {
+	public void visitCompound(@NotNull CompoundTag tag) {
 		this.builder.append("{");
 		List<String> keys = Lists.newArrayList(tag.getAllKeys());
 		Collections.sort(keys);
@@ -130,7 +110,7 @@ public class StringTagVisitor implements TagVisitor {
 	}
 	
 	@Override
-	public void visitEnd(EndTag tag) {
+	public void visitEnd(@NotNull EndTag tag) {
 		this.builder.append("END");
 	}
 	
