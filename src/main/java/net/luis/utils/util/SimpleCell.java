@@ -18,7 +18,7 @@ public class SimpleCell<R, C, V> implements Cell<R, C, V> {
 	private final C columnKey;
 	private final V value;
 	
-	public SimpleCell(R rowKey, C columnKey, V value) {
+	public SimpleCell(@NotNull R rowKey, @NotNull C columnKey, @Nullable V value) {
 		this.rowKey = Objects.requireNonNull(rowKey);
 		this.columnKey = Objects.requireNonNull(columnKey);
 		this.value = value;
@@ -35,7 +35,7 @@ public class SimpleCell<R, C, V> implements Cell<R, C, V> {
 	}
 	
 	@Override
-	public V getValue() {
+	public @Nullable V getValue() {
 		return this.value;
 	}
 	
@@ -45,13 +45,13 @@ public class SimpleCell<R, C, V> implements Cell<R, C, V> {
 	}
 	
 	@Override
-	public boolean equals(@Nullable Object o) {
+	public boolean equals(Object o) {
 		if (this == o) return true;
 		if (!(o instanceof SimpleCell<?, ?, ?> that)) return false;
 		
 		if (!this.rowKey.equals(that.rowKey)) return false;
 		if (!this.columnKey.equals(that.columnKey)) return false;
-		return this.value.equals(that.value);
+		return Objects.equals(this.value, that.value);
 	}
 	
 	@Override

@@ -18,7 +18,7 @@ public class SimpleEntry<K, V> implements Map.Entry<K, V> {
 	private final K key;
 	protected V value;
 	
-	public SimpleEntry(K key, V value) {
+	public SimpleEntry(@NotNull K key, @Nullable V value) {
 		this.key = Objects.requireNonNull(key);
 		this.value = value;
 	}
@@ -39,10 +39,9 @@ public class SimpleEntry<K, V> implements Map.Entry<K, V> {
 	}
 	
 	@Override
-	public String toString() {
+	public @NotNull String toString() {
 		return ToString.toString(this);
 	}
-	
 	
 	@Override
 	public boolean equals(@Nullable Object o) {

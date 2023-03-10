@@ -21,11 +21,12 @@ import java.nio.file.Path;
 
 public interface Tag {
 	
-	Logger LOGGER = LogManager.getLogger();
+	Logger LOGGER = LogManager.getLogger(Tag.class);
 	
 	byte END_TAG = 0;
 	byte INT_TAG = 1;
 	byte LONG_TAG = 2;
+	@Deprecated
 	byte FLOAT_TAG = 3;
 	byte DOUBLE_TAG = 4;
 	byte STRING_TAG = 5;

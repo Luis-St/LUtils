@@ -1,5 +1,7 @@
 package net.luis.utils.data.tag.exception;
 
+import org.jetbrains.annotations.NotNull;
+
 import java.io.Serial;
 import java.nio.file.Path;
 
@@ -18,16 +20,16 @@ public class LoadTagException extends TagException {
 		super();
 	}
 	
-	public LoadTagException(String message) {
+	public LoadTagException(@NotNull String message) {
 		super(message);
 	}
 	
-	public LoadTagException(Throwable cause) {
+	public LoadTagException(@NotNull Throwable cause) {
 		super(cause);
 	}
 	
-	public LoadTagException(Path path, Throwable cause) {
-		super("Tag cannot be loaded from file " + path.toString(), cause);
+	public LoadTagException(@NotNull Path path, @NotNull Throwable cause) {
+		super("Tag cannot be loaded from file " + path, cause);
 	}
 	
 }

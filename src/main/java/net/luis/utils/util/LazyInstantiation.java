@@ -22,7 +22,7 @@ public class LazyInstantiation<T> {
 		this.object = new MutableObject<>();
 	}
 	
-	public LazyInstantiation(T value) {
+	public LazyInstantiation(@NotNull T value) {
 		this.object = new MutableObject<>();
 		this.object.setValue(value);
 		this.instantiated = true;
@@ -46,7 +46,7 @@ public class LazyInstantiation<T> {
 	}
 	
 	@Override
-	public String toString() {
+	public @NotNull String toString() {
 		if (!this.instantiated) {
 			return "null";
 		}

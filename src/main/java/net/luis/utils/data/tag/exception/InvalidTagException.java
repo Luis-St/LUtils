@@ -1,5 +1,7 @@
 package net.luis.utils.data.tag.exception;
 
+import org.jetbrains.annotations.NotNull;
+
 import java.io.Serial;
 
 /**
@@ -17,7 +19,7 @@ public class InvalidTagException extends TagException {
 		super("Invalid tag ID: " + id);
 	}
 	
-	public InvalidTagException(int id, Throwable cause) {
+	public InvalidTagException(int id, @NotNull Throwable cause) {
 		super("Invalid tag ID: " + id, cause);
 	}
 	

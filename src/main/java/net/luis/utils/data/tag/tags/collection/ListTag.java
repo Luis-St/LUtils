@@ -297,7 +297,7 @@ public class ListTag extends CollectionTag<Tag> {
 	}
 	
 	@Override
-	public boolean equals(Object o) {
+	public boolean equals(@Nullable Object o) {
 		if (this == o) return true;
 		if (!(o instanceof ListTag tags)) return false;
 		if (!super.equals(o)) return false;

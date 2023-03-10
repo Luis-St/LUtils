@@ -12,6 +12,7 @@ import net.luis.utils.data.tag.tags.collection.array.LongArrayTag;
 import net.luis.utils.data.tag.tags.numeric.*;
 import net.luis.utils.data.tag.visitor.TagVisitor;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.io.DataInput;
 import java.io.DataOutput;
@@ -71,7 +72,7 @@ public class CompoundTag implements Tag {
 		this(Maps.newHashMap());
 	}
 	
-	private CompoundTag(Map<String, Tag> data) {
+	private CompoundTag(@NotNull Map<String, Tag> data) {
 		this.data = Maps.newHashMap(data);
 	}
 	
@@ -326,7 +327,7 @@ public class CompoundTag implements Tag {
 	}
 	
 	@Override
-	public boolean equals(Object o) {
+	public boolean equals(@Nullable Object o) {
 		if (this == o) return true;
 		if (!(o instanceof CompoundTag that)) return false;
 		

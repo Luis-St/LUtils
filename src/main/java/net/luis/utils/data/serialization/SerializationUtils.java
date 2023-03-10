@@ -22,7 +22,7 @@ import java.util.Objects;
 
 public class SerializationUtils {
 	
-	private static final Logger LOGGER = LogManager.getLogger();
+	private static final Logger LOGGER = LogManager.getLogger(SerializationUtils.class);
 	
 	public static <T extends Serializable> @NotNull T deserialize(@NotNull Class<T> clazz, @NotNull Path path) {
 		try {
