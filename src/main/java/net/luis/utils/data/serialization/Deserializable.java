@@ -15,11 +15,9 @@ import java.lang.annotation.*;
 @Target(ElementType.TYPE)
 public @interface Deserializable {
 	
-	@NotNull
-	Type type() default Type.CONSTRUCTOR;
+	@NotNull Type type() default Type.CONSTRUCTOR;
 	
-	@NotNull
-	String methodName() default "";
+	@NotNull String methodName() default "";
 	
 	enum Type {
 		

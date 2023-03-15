@@ -42,7 +42,7 @@ public class ReflectionHelper {
 		THROW_EXCEPTIONS = false;
 	}
 	
-	public static @Nullable Class<?> getClassForName(@NotNull String className) {
+	public static Class<?> getClassForName(String className) {
 		try {
 			return Class.forName(className);
 		} catch (ClassNotFoundException e) {
@@ -56,22 +56,22 @@ public class ReflectionHelper {
 		return null;
 	}
 	
-	public static boolean hasInterface(@NotNull Class<?> clazz, @NotNull Class<?> iface) {
+	public static boolean hasInterface(Class<?> clazz, Class<?> iface) {
 		if (iface.isInterface()) {
 			return Lists.newArrayList(clazz.getInterfaces()).contains(iface);
 		}
 		return false;
 	}
 	
-	private static List<String> getSimpleNames(@NotNull Class<?>... classes) {
+	private static List<String> getSimpleNames(Class<?>... classes) {
 		return Lists.newArrayList(classes).stream().map(Class::getSimpleName).collect(Collectors.toList());
 	}
 	
-	private static List<String> getSimpleNames(@NotNull Object... objects) {
+	private static List<String> getSimpleNames(Object... objects) {
 		return Lists.newArrayList(objects).stream().map(Object::getClass).map(Class::getSimpleName).collect(Collectors.toList());
 	}
 	
-	public static <T> @Nullable Constructor<T> getConstructor(@NotNull Class<T> clazz, @NotNull Class<?>... parameters) {
+	public static <T> Constructor<T> getConstructor(Class<T> clazz, Class<?>... parameters) {
 		Constructor<T> constructor = null;
 		try {
 			constructor = clazz.getDeclaredConstructor(parameters);
@@ -93,7 +93,7 @@ public class ReflectionHelper {
 		return constructor;
 	}
 	
-	public static boolean hasConstructor(@NotNull Class<?> clazz, @NotNull Class<?>... parameters) {
+	public static boolean hasConstructor(Class<?> clazz, Class<?>... parameters) {
 		Constructor<?> constructor = null;
 		try {
 			constructor = clazz.getDeclaredConstructor(parameters);
@@ -103,7 +103,7 @@ public class ReflectionHelper {
 		return constructor != null;
 	}
 	
-	public static <T> @Nullable T newInstance(@NotNull Constructor<T> constructor, @NotNull Object... parameters) {
+	public static <T> T newInstance(Constructor<T> constructor, Object... parameters) {
 		T instance = null;
 		try {
 			if (constructor.trySetAccessible()) {
@@ -143,11 +143,11 @@ public class ReflectionHelper {
 		return instance;
 	}
 	
-	public static <T> @Nullable T newInstance(@NotNull Class<T> clazz, @NotNull Object... parameters) {
+	public static <T> T newInstance(Class<T> clazz, Object... parameters) {
 		return newInstance(Objects.requireNonNull(getConstructor(clazz, Lists.newArrayList(parameters).stream().map(Object::getClass).toArray(Class<?>[]::new))), parameters);
 	}
 	
-	public static @Nullable Method getMethod(@NotNull Class<?> clazz, @NotNull String name, @NotNull Class<?>... parameters) {
+	public static Method getMethod(Class<?> clazz, String name, Class<?>... parameters) {
 		Method method = null;
 		try {
 			method = clazz.getDeclaredMethod(name, parameters);
@@ -169,7 +169,7 @@ public class ReflectionHelper {
 		return method;
 	}
 	
-	public static boolean hasMethod(@NotNull Class<?> clazz, @NotNull String name, @NotNull Class<?>... parameters) {
+	public static boolean hasMethod(Class<?> clazz, String name, Class<?>... parameters) {
 		Method method = null;
 		try {
 			method = clazz.getDeclaredMethod(name, parameters);
@@ -179,7 +179,7 @@ public class ReflectionHelper {
 		return method != null;
 	}
 	
-	public static @Nullable Object invoke(@NotNull Method method, @Nullable Object instance, @NotNull Object... parameters) {
+	public static Object invoke(Method method, Object instance, Object... parameters) {
 		Object returnValue = null;
 		try {
 			if (method.trySetAccessible()) {
@@ -212,11 +212,11 @@ public class ReflectionHelper {
 		return returnValue;
 	}
 	
-	public static @Nullable Object invoke(@NotNull Class<?> clazz, @NotNull String name, @Nullable Object instance, @NotNull Object... parameters) {
+	public static Object invoke(Class<?> clazz, String name, Object instance, Object... parameters) {
 		return invoke(Objects.requireNonNull(getMethod(clazz, name, Lists.newArrayList(parameters).stream().map(Object::getClass).toArray(Class<?>[]::new))), instance, parameters);
 	}
 	
-	public static @Nullable Field getField(@NotNull Class<?> clazz, @NotNull String name) {
+	public static Field getField(Class<?> clazz, String name) {
 		Field field = null;
 		try {
 			field = clazz.getDeclaredField(name);
@@ -238,7 +238,7 @@ public class ReflectionHelper {
 		return field;
 	}
 	
-	public static boolean hasField(@NotNull Class<?> clazz, @NotNull String name) {
+	public static boolean hasField(Class<?> clazz, String name) {
 		Field field = null;
 		try {
 			field = clazz.getDeclaredField(name);
@@ -248,7 +248,7 @@ public class ReflectionHelper {
 		return field != null;
 	}
 	
-	public static @Nullable Object get(@NotNull Field field, @NotNull Object instance) {
+	public static Object get(Field field, Object instance) {
 		Object value = null;
 		try {
 			if (field.trySetAccessible()) {
@@ -274,11 +274,11 @@ public class ReflectionHelper {
 		return value;
 	}
 	
-	public static @Nullable Object get(@NotNull Class<?> clazz, @NotNull String name, @NotNull Object instance) {
-		return get(Objects.requireNonNull(getField(clazz, name)), instance);
+	public static Object get(Class<?> clazz, String name, Object instance) {
+		return get(getField(clazz, name), instance);
 	}
 	
-	public static void set(@NotNull Field field, @NotNull Object instance, @NotNull Object value) {
+	public static void set(Field field, Object instance, Object value) {
 		try {
 			if (field.trySetAccessible()) {
 				field.set(instance, value);
@@ -302,8 +302,8 @@ public class ReflectionHelper {
 		}
 	}
 	
-	public static void set(@NotNull Class<?> clazz, @NotNull String name, @NotNull Object instance, @NotNull Object value) {
-		set(Objects.requireNonNull(getField(clazz, name)), instance, value);
+	public static void set(Class<?> clazz, String name, Object instance, Object value) {
+		set(getField(clazz, name), instance, value);
 	}
 	
 }

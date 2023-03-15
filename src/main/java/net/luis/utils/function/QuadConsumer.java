@@ -13,7 +13,7 @@ import java.util.Objects;
 @FunctionalInterface
 public interface QuadConsumer<T, U, V, W> {
 	
-	void accept(@NotNull T t, @NotNull U u, @NotNull V v, @NotNull W w);
+	void accept(T t, U u, V v, W w);
 	
 	default @NotNull QuadConsumer<T, U, V, W> andThen(@NotNull QuadConsumer<? super T, ? super U, ? super V, ? super W> consumer) {
 		return (t, u, v, w) -> {

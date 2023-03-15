@@ -34,14 +34,11 @@ public interface TagType<T extends Tag> {
 		};
 	}
 	
-	@NotNull
-	T load(@NotNull DataInput input) throws LoadTagException;
+	@NotNull T load(@NotNull DataInput input) throws LoadTagException;
 	
-	@NotNull
-	String getName();
+	@NotNull String getName();
 	
-	@NotNull
-	String getVisitorName();
+	@NotNull String getVisitorName();
 	
 	default boolean isValue() {
 		return false;

@@ -24,7 +24,7 @@ public class SerializationUtils {
 	
 	private static final Logger LOGGER = LogManager.getLogger(SerializationUtils.class);
 	
-	public static <T extends Serializable> @NotNull T deserialize(@NotNull Class<T> clazz, @NotNull Path path) {
+	public static <T extends Serializable> @NotNull T deserialize(Class<T> clazz, @NotNull Path path) {
 		try {
 			Tag tag = Tag.load(path);
 			if (tag instanceof CompoundTag compoundTag) {
@@ -40,7 +40,7 @@ public class SerializationUtils {
 	}
 	
 	@SuppressWarnings("unchecked")
-	public static <T extends Serializable> @NotNull T deserialize(@NotNull Class<T> clazz, @NotNull CompoundTag tag) {
+	public static <T extends Serializable> @NotNull T deserialize(Class<T> clazz, @NotNull CompoundTag tag) {
 		if (!clazz.isAnnotationPresent(Deserializable.class)) {
 			LOGGER.error("An object of type {} cannot be deserialized because the type is not marked as deserializable", clazz.getSimpleName());
 			throw new RuntimeException();
