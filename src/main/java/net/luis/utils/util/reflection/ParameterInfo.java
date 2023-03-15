@@ -8,7 +8,7 @@ import org.jetbrains.annotations.NotNull;
  *
  */
 
-public record ParameterInfo(Object parameter, boolean hasName, String parameterName, boolean nullable) {
+public record ParameterInfo(@NotNull Object parameter, boolean hasName, @NotNull String parameterName, boolean nullable) {
 	
 	public @NotNull Class<?> type() {
 		return this.parameter.getClass();

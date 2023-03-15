@@ -14,7 +14,7 @@ import java.util.function.Function;
 @FunctionalInterface
 public interface QuadFunction<T, U, V, W, R> {
 	
-	R apply(@NotNull T t, @NotNull U u, @NotNull V v, @NotNull W w);
+	R apply(T t, U u, V v, W w);
 	
 	default <S> @NotNull QuadFunction<T, U, V, W, S> andThen(@NotNull Function<? super R, ? extends S> after) {
 		return (T t, U u, V v, W w) -> Objects.requireNonNull(after).apply(this.apply(t, u, v, w));

@@ -17,7 +17,7 @@ import java.util.Map;
 
 public class ReflectionUtils {
 	
-	public static void invokeMethod(@NotNull Method method, @Nullable Object instance, @NotNull Object... args) {
+	public static void invokeMethod(Method method, Object instance, Object... args) {
 		if (hasDuplicates(args)) {
 			throw new IllegalArgumentException("The arguments must not contain duplicates");
 		}
@@ -28,7 +28,7 @@ public class ReflectionUtils {
 		invokeMethod(method, instance, parameterInfos);
 	}
 	
-	private static boolean hasDuplicates(@NotNull Object... args) {
+	private static boolean hasDuplicates(Object... args) {
 	    List<Class<?>> classes = Lists.newArrayList();
 		for (Object arg : args) {
 			if (classes.contains(arg.getClass())) {
@@ -39,7 +39,7 @@ public class ReflectionUtils {
 		return false;
 	}
 	
-	public static void invokeMethod(@NotNull Method method, @Nullable Object instance, @NotNull List<ParameterInfo> parameterInfos) {
+	public static void invokeMethod(Method method, Object instance, List<ParameterInfo> parameterInfos) {
 		List<Object> parameters = Lists.newArrayList();
 		for (Parameter parameter : method.getParameters()) {
 			parameters.add(getParameter(parameter, parameterInfos));
@@ -50,7 +50,7 @@ public class ReflectionUtils {
 		ReflectionHelper.invoke(method, instance, parameters.toArray());
 	}
 	
-	private static @NotNull ParameterInfo getParameter(@NotNull Parameter parameter, @NotNull List<ParameterInfo> parameterInfos) {
+	private static ParameterInfo getParameter(Parameter parameter, List<ParameterInfo> parameterInfos) {
 		for (ParameterInfo info : parameterInfos) {
 			boolean duplicates = hasDuplicates(parameterInfos);
 			if (info.type() == parameter.getType()) {
@@ -69,14 +69,14 @@ public class ReflectionUtils {
 		throw new IllegalArgumentException("Could not find a parameter with the type " + parameter.getType().getName() + " in the given parameters");
 	}
 	
-	private static @NotNull ParameterInfo checkNullability(@NotNull ParameterInfo info, @NotNull Parameter parameter) {
+	private static ParameterInfo checkNullability(ParameterInfo info, Parameter parameter) {
 		if (info.nullable() && !parameter.isAnnotationPresent(Nullable.class)) {
 			throw new IllegalArgumentException("The parameter " + parameter.getName() + " of the method " + parameter.getDeclaringExecutable().getName() + " is not marked as nullable");
 		}
 		return info;
 	}
 	
-	private static boolean hasDuplicates(@NotNull List<ParameterInfo> parameterInfos) {
+	private static boolean hasDuplicates(List<ParameterInfo> parameterInfos) {
 		List<Class<?>> classes = Lists.newArrayList();
 		for (ParameterInfo info : parameterInfos) {
 			if (classes.contains(info.type())) {

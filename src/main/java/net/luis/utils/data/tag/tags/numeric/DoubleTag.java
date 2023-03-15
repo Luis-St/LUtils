@@ -31,7 +31,7 @@ public class DoubleTag extends NumericTag {
 		
 		@Override
 		public @NotNull String getName() {
-			return "float_tag";
+			return "double_tag";
 		}
 		
 		@Override

@@ -26,8 +26,7 @@ public interface Tag {
 	byte END_TAG = 0;
 	byte INT_TAG = 1;
 	byte LONG_TAG = 2;
-	@Deprecated
-	byte FLOAT_TAG = 3;
+	@Deprecated byte FLOAT_TAG = 3;
 	byte DOUBLE_TAG = 4;
 	byte STRING_TAG = 5;
 	byte INT_ARRAY_TAG = 6;
@@ -70,21 +69,17 @@ public interface Tag {
 	
 	void save(@NotNull DataOutput output) throws SaveTagException;
 	
-	@NotNull
-	String toString();
+	@NotNull String toString();
 	
 	byte getId();
 	
-	@NotNull
-	TagType<?> getType();
+	@NotNull TagType<?> getType();
 	
-	@NotNull
-	Tag copy();
+	@NotNull Tag copy();
 	
 	void accept(@NotNull TagVisitor visitor);
 	
-	@NotNull
-	default String getAsString() {
+	default @NotNull String getAsString() {
 		return new StringTagVisitor().visit(this);
 	}
 	
