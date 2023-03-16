@@ -30,7 +30,7 @@ public class ClassPathUtils {
 					classes.add(Class.forName(classInfo.getName()));
 				} catch (ClassNotFoundException e) {
 					LOGGER.error("The class for the name {} cannot be found because it does not exist", classInfo.getName());
-				} catch (NoClassDefFoundError ignored) {
+				} catch (Throwable ignored) {
 				
 				}
 			});
