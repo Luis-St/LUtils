@@ -25,16 +25,8 @@ public class ClassPathUtils {
 	public static @NotNull List<Class<?>> getAllClasses() {
 		List<Class<?>> classes = Lists.newArrayList();
 		try {
-			ClassPath.from(ClassLoader.getSystemClassLoader()).getTopLevelClasses().forEach(classInfo -> {
-				try {
-					classes.add(Class.forName(classInfo.getName()));
-				} catch (ClassNotFoundException e) {
-					LOGGER.error("The class for the name {} cannot be found because it does not exist", classInfo.getName());
-				} catch (Throwable ignored) {
-				
-				}
-			});
-		} catch (Exception e) {
+			classes.addAll(ClassPathHelper.getClasses());
+		} catch (Exception | Error e) {
 			LOGGER.error("An error occurred while trying to get all classes from the classpath", e);
 		}
 		return classes;
