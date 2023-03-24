@@ -12,7 +12,7 @@ import java.util.function.Function;
 
 /**
  *
- * @author Luis-st
+ * @author Luis-St
  *
  */
 

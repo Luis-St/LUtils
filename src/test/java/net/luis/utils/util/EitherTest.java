@@ -8,7 +8,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 /**
  *
- * @author Luis-st
+ * @author Luis-St
  *
  */
 
