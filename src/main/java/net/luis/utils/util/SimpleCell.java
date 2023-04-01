@@ -1,8 +1,6 @@
 package net.luis.utils.util;
 
 import com.google.common.collect.Table.Cell;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 import java.util.Objects;
 
@@ -18,32 +16,28 @@ public class SimpleCell<R, C, V> implements Cell<R, C, V> {
 	private final C columnKey;
 	private final V value;
 	
-	public SimpleCell(@NotNull R rowKey, @NotNull C columnKey, @Nullable V value) {
+	public SimpleCell(R rowKey, C columnKey, V value) {
 		this.rowKey = Objects.requireNonNull(rowKey);
 		this.columnKey = Objects.requireNonNull(columnKey);
 		this.value = value;
 	}
 	
 	@Override
-	public @NotNull R getRowKey() {
+	public R getRowKey() {
 		return this.rowKey;
 	}
 	
 	@Override
-	public @NotNull C getColumnKey() {
+	public C getColumnKey() {
 		return this.columnKey;
 	}
 	
 	@Override
-	public @Nullable V getValue() {
+	public V getValue() {
 		return this.value;
 	}
 	
-	@Override
-	public String toString() {
-		return ToString.toString(this);
-	}
-	
+	//region Object overrides
 	@Override
 	public boolean equals(Object o) {
 		if (this == o) return true;
@@ -59,4 +53,9 @@ public class SimpleCell<R, C, V> implements Cell<R, C, V> {
 		return Objects.hash(this.rowKey, this.columnKey, this.value);
 	}
 	
+	@Override
+	public String toString() {
+		return "SimpleCell{rowKey=" + this.rowKey + ", columnKey=" + this.columnKey + ", value=" + this.value + "}";
+	}
+	//endregion
 }

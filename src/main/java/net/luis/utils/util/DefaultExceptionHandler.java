@@ -15,7 +15,7 @@ public class DefaultExceptionHandler implements Thread.UncaughtExceptionHandler 
 	private static final Logger LOGGER = LogManager.getLogger(DefaultExceptionHandler.class);
 	
 	@Override
-	public void uncaughtException(@NotNull Thread thread, @NotNull Throwable throwable) {
+	public void uncaughtException(@NotNull Thread thread, Throwable throwable) {
 		LOGGER.error("Error in thread {}: {}", thread.getName(), throwable);
 	}
 	

@@ -5,8 +5,8 @@ import net.luis.utils.data.tag.TagType;
 import net.luis.utils.data.tag.exception.LoadTagException;
 import net.luis.utils.data.tag.exception.SaveTagException;
 import net.luis.utils.data.tag.visitor.TagVisitor;
+import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 import java.io.DataInput;
 import java.io.DataOutput;
@@ -21,6 +21,7 @@ import java.io.IOException;
 public class StringTag implements Tag {
 	
 	public static final StringTag EMPTY = new StringTag("");
+	//region Type
 	public static final TagType<StringTag> TYPE = new TagType<>() {
 		@Override
 		public @NotNull StringTag load(@NotNull DataInput input) throws LoadTagException {
@@ -50,17 +51,16 @@ public class StringTag implements Tag {
 			return "StringTag";
 		}
 	};
+	//endregion
+	
 	private final String data;
 	
-	private StringTag(@NotNull String data) {
+	private StringTag(String data) {
 		this.data = data;
 	}
 	
-	public static @NotNull StringTag valueOf(@Nullable String data) {
-		if (data == null) {
-			return EMPTY;
-		}
-		return data.isEmpty() ? EMPTY : new StringTag(data);
+	public static @NotNull StringTag valueOf(String data) {
+		return StringUtils.isEmpty(data) ? EMPTY : new StringTag(data);
 	}
 	
 	@Override
@@ -101,13 +101,9 @@ public class StringTag implements Tag {
 		return this.data;
 	}
 	
+	//region Object overrides
 	@Override
-	public @NotNull String toString() {
-		return Tag.super.getAsString();
-	}
-	
-	@Override
-	public boolean equals(@Nullable Object o) {
+	public boolean equals(Object o) {
 		if (this == o) return true;
 		if (!(o instanceof StringTag stringTag)) return false;
 		
@@ -118,5 +114,11 @@ public class StringTag implements Tag {
 	public int hashCode() {
 		return this.data.hashCode();
 	}
+	
+	@Override
+	public String toString() {
+		return Tag.super.getAsString();
+	}
+	//endregion
 	
 }

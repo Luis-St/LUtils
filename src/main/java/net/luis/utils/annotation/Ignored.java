@@ -11,8 +11,8 @@ import java.lang.annotation.*;
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
 @Target({
-		ElementType.PARAMETER, ElementType.TYPE_PARAMETER, ElementType.FIELD
+		ElementType.PARAMETER
 })
 public @interface Ignored {
-	
+
 }

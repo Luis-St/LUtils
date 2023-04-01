@@ -1,7 +1,6 @@
 package net.luis.utils.util;
 
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 import java.util.Objects;
 import java.util.Random;
@@ -47,13 +46,9 @@ public class Chance {
 		}
 	}
 	
+	//region Object overrides
 	@Override
-	public @NotNull String toString() {
-		return ToString.toString(this, "rng");
-	}
-	
-	@Override
-	public boolean equals(@Nullable Object o) {
+	public boolean equals(Object o) {
 		if (this == o) return true;
 		if (!(o instanceof Chance that)) return false;
 		
@@ -65,5 +60,11 @@ public class Chance {
 	public int hashCode() {
 		return Objects.hash(this.rng, this.chance);
 	}
+	
+	@Override
+	public String toString() {
+		return "Chance{chance=" + this.chance + "}";
+	}
+	//endregion
 	
 }

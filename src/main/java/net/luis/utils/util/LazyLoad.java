@@ -34,6 +34,7 @@ public class LazyLoad<T> implements Supplier<T> {
 		return this.value;
 	}
 	
+	//region Object overrides
 	@Override
 	public boolean equals(Object o) {
 		if (this == o) return true;
@@ -49,7 +50,7 @@ public class LazyLoad<T> implements Supplier<T> {
 	
 	@Override
 	public String toString() {
-		return ToString.toString(this, "supplier");
+		return "LazyLoad{supplier=" + this.supplier + ", value=" + this.value + "}";
 	}
-	
+	//endregion
 }
