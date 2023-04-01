@@ -11,22 +11,18 @@ import org.jetbrains.annotations.NotNull;
 
 public abstract class NumericTag implements Tag {
 	
-	public abstract byte getAsByte();
-	
-	public abstract short getAsShort();
-	
+	//region Getters
 	public abstract int getAsInt();
 	
 	public abstract long getAsLong();
 	
-	public abstract float getAsFloat();
-	
 	public abstract double getAsDouble();
 	
 	public abstract @NotNull Number getAsNumber();
+	//endregion
 	
 	@Override
-	public @NotNull String toString() {
+	public String toString() {
 		return this.getAsString();
 	}
 	

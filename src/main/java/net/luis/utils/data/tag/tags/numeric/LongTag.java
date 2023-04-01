@@ -5,7 +5,6 @@ import net.luis.utils.data.tag.exception.LoadTagException;
 import net.luis.utils.data.tag.exception.SaveTagException;
 import net.luis.utils.data.tag.visitor.TagVisitor;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 import java.io.DataInput;
 import java.io.DataOutput;
@@ -19,6 +18,7 @@ import java.io.IOException;
 
 public class LongTag extends NumericTag {
 	
+	//region Type
 	public static final TagType<LongTag> TYPE = new TagType<>() {
 		@Override
 		public @NotNull LongTag load(@NotNull DataInput input) throws LoadTagException {
@@ -44,6 +44,7 @@ public class LongTag extends NumericTag {
 			return true;
 		}
 	};
+	//endregion
 	
 	private final long data;
 	
@@ -84,16 +85,7 @@ public class LongTag extends NumericTag {
 		visitor.visitLong(this);
 	}
 	
-	@Override
-	public byte getAsByte() {
-		return (byte) this.data;
-	}
-	
-	@Override
-	public short getAsShort() {
-		return (short) this.data;
-	}
-	
+	//region Getters
 	@Override
 	public int getAsInt() {
 		return (int) this.data;
@@ -105,11 +97,6 @@ public class LongTag extends NumericTag {
 	}
 	
 	@Override
-	public float getAsFloat() {
-		return (float) this.data;
-	}
-	
-	@Override
 	public double getAsDouble() {
 		return (double) this.data;
 	}
@@ -118,9 +105,11 @@ public class LongTag extends NumericTag {
 	public @NotNull Number getAsNumber() {
 		return this.data;
 	}
+	//endregion
 	
+	//region Object overrides
 	@Override
-	public boolean equals(@Nullable Object o) {
+	public boolean equals(Object o) {
 		if (this == o) return true;
 		if (!(o instanceof LongTag longTag)) return false;
 		
@@ -131,5 +120,6 @@ public class LongTag extends NumericTag {
 	public int hashCode() {
 		return Long.hashCode(this.data);
 	}
+	//endregion
 	
 }
