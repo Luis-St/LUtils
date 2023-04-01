@@ -1,10 +1,9 @@
-package net.luis.utils.util.reflection;
+package net.luis.utils.util.unsafe.reflection;
 
 import com.google.common.collect.Lists;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
@@ -23,6 +22,7 @@ import java.util.stream.Collectors;
 public class ReflectionHelper {
 	
 	private static final Logger LOGGER = LogManager.getLogger(ReflectionHelper.class);
+	//region Debugging
 	private static boolean LOG_EXCEPTIONS = false;
 	private static boolean THROW_EXCEPTIONS = false;
 	
@@ -41,28 +41,32 @@ public class ReflectionHelper {
 	public static void disableExceptionThrowing() {
 		THROW_EXCEPTIONS = false;
 	}
+	//endregion
 	
 	public static Class<?> getClassForName(String className) {
 		try {
 			return Class.forName(className);
 		} catch (ClassNotFoundException e) {
+			//region Exception handling
 			LOGGER.warn("The type {} could not be found", className);
 			if (LOG_EXCEPTIONS && !THROW_EXCEPTIONS) {
 				LOGGER.error(e);
 			} else if (THROW_EXCEPTIONS) {
 				throw new RuntimeException(e);
 			}
+			//endregion
 		}
 		return null;
 	}
 	
-	public static boolean hasInterface(Class<?> clazz, Class<?> iface) {
+	public static boolean hasInterface(Class<?> clazz, @NotNull Class<?> iface) {
 		if (iface.isInterface()) {
 			return Lists.newArrayList(clazz.getInterfaces()).contains(iface);
 		}
 		return false;
 	}
 	
+	//region Internal helper methods
 	private static List<String> getSimpleNames(Class<?>... classes) {
 		return Lists.newArrayList(classes).stream().map(Class::getSimpleName).collect(Collectors.toList());
 	}
@@ -70,8 +74,10 @@ public class ReflectionHelper {
 	private static List<String> getSimpleNames(Object... objects) {
 		return Lists.newArrayList(objects).stream().map(Object::getClass).map(Class::getSimpleName).collect(Collectors.toList());
 	}
+	//endregion
 	
-	public static <T> Constructor<T> getConstructor(Class<T> clazz, Class<?>... parameters) {
+	//region Constructor methods
+	public static <T> Constructor<T> getConstructor(@NotNull Class<T> clazz, Class<?>... parameters) {
 		Constructor<T> constructor = null;
 		try {
 			constructor = clazz.getDeclaredConstructor(parameters);
@@ -98,12 +104,12 @@ public class ReflectionHelper {
 		try {
 			constructor = clazz.getDeclaredConstructor(parameters);
 		} catch (Exception ignored) {
-			
+		
 		}
 		return constructor != null;
 	}
 	
-	public static <T> T newInstance(Constructor<T> constructor, Object... parameters) {
+	public static <T> T newInstance(@NotNull Constructor<T> constructor, Object... parameters) {
 		T instance = null;
 		try {
 			if (constructor.trySetAccessible()) {
@@ -146,8 +152,10 @@ public class ReflectionHelper {
 	public static <T> T newInstance(Class<T> clazz, Object... parameters) {
 		return newInstance(Objects.requireNonNull(getConstructor(clazz, Lists.newArrayList(parameters).stream().map(Object::getClass).toArray(Class<?>[]::new))), parameters);
 	}
+	//endregion
 	
-	public static Method getMethod(Class<?> clazz, String name, Class<?>... parameters) {
+	//region Method methods
+	public static Method getMethod(@NotNull Class<?> clazz, String name, Class<?>... parameters) {
 		Method method = null;
 		try {
 			method = clazz.getDeclaredMethod(name, parameters);
@@ -174,12 +182,12 @@ public class ReflectionHelper {
 		try {
 			method = clazz.getDeclaredMethod(name, parameters);
 		} catch (Exception ignored) {
-			
+		
 		}
 		return method != null;
 	}
 	
-	public static Object invoke(Method method, Object instance, Object... parameters) {
+	public static Object invoke(@NotNull Method method, Object instance, Object... parameters) {
 		Object returnValue = null;
 		try {
 			if (method.trySetAccessible()) {
@@ -215,8 +223,10 @@ public class ReflectionHelper {
 	public static Object invoke(Class<?> clazz, String name, Object instance, Object... parameters) {
 		return invoke(Objects.requireNonNull(getMethod(clazz, name, Lists.newArrayList(parameters).stream().map(Object::getClass).toArray(Class<?>[]::new))), instance, parameters);
 	}
+	//endregion
 	
-	public static Field getField(Class<?> clazz, String name) {
+	//region Field methods
+	public static Field getField(@NotNull Class<?> clazz, String name) {
 		Field field = null;
 		try {
 			field = clazz.getDeclaredField(name);
@@ -243,12 +253,12 @@ public class ReflectionHelper {
 		try {
 			field = clazz.getDeclaredField(name);
 		} catch (Exception ignored) {
-			
+		
 		}
 		return field != null;
 	}
 	
-	public static Object get(Field field, Object instance) {
+	public static Object get(@NotNull Field field, Object instance) {
 		Object value = null;
 		try {
 			if (field.trySetAccessible()) {
@@ -278,7 +288,7 @@ public class ReflectionHelper {
 		return get(getField(clazz, name), instance);
 	}
 	
-	public static void set(Field field, Object instance, Object value) {
+	public static void set(@NotNull Field field, Object instance, Object value) {
 		try {
 			if (field.trySetAccessible()) {
 				field.set(instance, value);
@@ -305,5 +315,6 @@ public class ReflectionHelper {
 	public static void set(Class<?> clazz, String name, Object instance, Object value) {
 		set(getField(clazz, name), instance, value);
 	}
+	//endregion
 	
 }
