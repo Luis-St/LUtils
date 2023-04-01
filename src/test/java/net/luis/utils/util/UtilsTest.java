@@ -28,7 +28,8 @@ class UtilsTest {
 	
 	@Test
 	void make() {
-		assertThrows(NullPointerException.class, () -> Utils.make(null, (list) -> {}));
+		assertThrows(NullPointerException.class, () -> Utils.make(null, (list) -> {
+		}));
 		assertEquals(Utils.make(Lists.newArrayList(), (list) -> list.addAll(Arrays.asList(0, 1, 2, 3, 4))), Lists.newArrayList(0, 1, 2, 3, 4));
 	}
 	
@@ -59,11 +60,6 @@ class UtilsTest {
 	}
 	
 	@Test
-	void reverseList() {
-		assertEquals(Utils.reverseList(Lists.newArrayList(0, 1, 2, 3, 4)), Lists.newArrayList(4, 3, 2, 1, 0));
-	}
-	
-	@Test
 	void runIf() {
 		assertNull(Utils.runIf(null, String::isBlank, String::trim));
 		assertEquals(Utils.runIf(" ", String::isBlank, String::trim), "");
@@ -89,15 +85,9 @@ class UtilsTest {
 	}
 	
 	@Test
-	void concatLists() {
-		assertTrue(Utils.concatLists().isEmpty());
-		assertEquals(Utils.concatLists(Lists.newArrayList(0, 1, 2), Lists.newArrayList(3, 4)), Lists.newArrayList(0, 1, 2, 3, 4));
-	}
-	
-	@Test
 	void getRandomSafe() {
 		assertTrue(Utils.getRandomSafe(new Integer[0], new Random()).isEmpty());
-		assertTrue(Utils.getRandomSafe(new Integer[] {0, 1, 2, 3, 4}, new Random()).isPresent());
+		assertTrue(Utils.getRandomSafe(new Integer[]{0, 1, 2, 3, 4}, new Random()).isPresent());
 		
 		assertTrue(Utils.getRandomSafe(Lists.newArrayList(), new Random()).isEmpty());
 		assertTrue(Utils.getRandomSafe(Lists.newArrayList(0, 1, 2, 3, 4), new Random()).isPresent());
