@@ -1,7 +1,5 @@
 package net.luis.utils.exception;
 
-import org.jetbrains.annotations.NotNull;
-
 import java.io.Serial;
 
 /**
@@ -15,11 +13,11 @@ public class InvalidValueException extends RuntimeException {
 	@Serial
 	private static final long serialVersionUID = -214146787383637863L;
 	
-	public InvalidValueException(@NotNull String message) {
+	public InvalidValueException(String message) {
 		super(message);
 	}
 	
-	public InvalidValueException(@NotNull String message, @NotNull Throwable cause) {
+	public InvalidValueException(String message, Throwable cause) {
 		super(message, cause);
 	}
 	

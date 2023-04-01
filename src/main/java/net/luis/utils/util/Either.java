@@ -1,7 +1,6 @@
 package net.luis.utils.util;
 
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 import java.util.Objects;
 import java.util.Optional;
@@ -17,20 +16,20 @@ import java.util.function.Function;
 public abstract class Either<L, R> {
 	
 	private Either() {
-		
+	
 	}
 	
-	public static <L, R> @NotNull Either<L, R> left(@Nullable L value) {
+	public static <L, R> @NotNull Either<L, R> left(L value) {
 		return new Left<>(value);
 	}
 	
-	public static <L, R> @NotNull Either<L, R> right(@Nullable R value) {
+	public static <L, R> @NotNull Either<L, R> right(R value) {
 		return new Right<>(value);
 	}
 	
 	public abstract <C, D> @NotNull Either<C, D> mapBoth(@NotNull Function<? super L, ? extends C> leftFunction, @NotNull Function<? super R, ? extends D> rightFunction);
 	
-	public abstract <T> @NotNull T map(@NotNull Function<? super L, ? extends T> leftFunction, @NotNull Function<? super R, ? extends T> rightFunction);
+	public abstract <T> T map(@NotNull Function<? super L, ? extends T> leftFunction, @NotNull Function<? super R, ? extends T> rightFunction);
 	
 	public abstract boolean isLeft();
 	
@@ -66,9 +65,10 @@ public abstract class Either<L, R> {
 	
 	private static final class Left<L, R> extends Either<L, R> {
 		
+		//region Left implementation
 		private final L value;
 		
-		public Left(@Nullable L value) {
+		public Left(L value) {
 			this.value = value;
 		}
 		
@@ -78,7 +78,7 @@ public abstract class Either<L, R> {
 		}
 		
 		@Override
-		public <T> @NotNull T map(@NotNull Function<? super L, ? extends T> leftFunction, @NotNull Function<? super R, ? extends T> rightFunction) {
+		public <T> T map(@NotNull Function<? super L, ? extends T> leftFunction, @NotNull Function<? super R, ? extends T> rightFunction) {
 			return leftFunction.apply(this.value);
 		}
 		
@@ -112,12 +112,9 @@ public abstract class Either<L, R> {
 		public @NotNull Optional<R> right() {
 			return Optional.empty();
 		}
+		//endregion
 		
-		@Override
-		public @NotNull String toString() {
-			return ToString.toString(this);
-		}
-		
+		//region Object overrides
 		@Override
 		public boolean equals(Object o) {
 			if (this == o) return true;
@@ -130,13 +127,20 @@ public abstract class Either<L, R> {
 		public int hashCode() {
 			return Objects.hash(this.value);
 		}
+		
+		@Override
+		public String toString() {
+			return "Left{value=" + this.value + "}";
+		}
+		//endregion
 	}
 	
 	private static final class Right<L, R> extends Either<L, R> {
 		
+		//region Right implementation
 		private final R value;
 		
-		public Right(@Nullable R value) {
+		public Right(R value) {
 			this.value = value;
 		}
 		
@@ -146,7 +150,7 @@ public abstract class Either<L, R> {
 		}
 		
 		@Override
-		public <T> @NotNull T map(@NotNull Function<? super L, ? extends T> leftFunction, @NotNull Function<? super R, ? extends T> rightFunction) {
+		public <T> T map(@NotNull Function<? super L, ? extends T> leftFunction, @NotNull Function<? super R, ? extends T> rightFunction) {
 			return rightFunction.apply(this.value);
 		}
 		
@@ -180,10 +184,12 @@ public abstract class Either<L, R> {
 		public @NotNull Optional<R> right() {
 			return Optional.ofNullable(this.value);
 		}
+		//endregion
 		
+		//region Object overrides
 		@Override
-		public @NotNull String toString() {
-			return ToString.toString(this);
+		public String toString() {
+			return "Right{value=" + this.value + "}";
 		}
 		
 		@Override
@@ -198,6 +204,7 @@ public abstract class Either<L, R> {
 		public int hashCode() {
 			return Objects.hash(this.value);
 		}
+		//endregion
 		
 	}
 	

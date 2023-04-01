@@ -2,7 +2,6 @@ package net.luis.utils.collection;
 
 import com.google.common.collect.Maps;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 import java.util.NavigableMap;
 import java.util.Objects;
@@ -24,7 +23,7 @@ public class WeightCollection<T> {
 		this(new Random());
 	}
 	
-	public WeightCollection(@NotNull Random rng) {
+	public WeightCollection(Random rng) {
 		this.map = Maps.newTreeMap();
 		this.rng = rng;
 	}
@@ -37,25 +36,25 @@ public class WeightCollection<T> {
 		this.map.put(this.total, Objects.requireNonNull(value));
 	}
 	
-	public @NotNull T next() {
+	public T next() {
 		if (this.isEmpty()) {
 			throw new RuntimeException("The collection is empty, there is no next value");
 		}
-		int value = (int) (this.rng.nextDouble() * this.total);
-		return this.map.higherEntry(value).getValue();
+		return this.map.higherEntry((int) (this.rng.nextDouble() * this.total)).getValue();
 	}
 	
 	public boolean isEmpty() {
 		return this.map.isEmpty();
 	}
 	
+	//region Object overrides
 	@Override
-	public @NotNull String toString() {
+	public String toString() {
 		return this.map.toString();
 	}
 	
 	@Override
-	public boolean equals(@Nullable Object o) {
+	public boolean equals(Object o) {
 		if (this == o) return true;
 		if (!(o instanceof WeightCollection<?> that)) return false;
 		
@@ -68,5 +67,6 @@ public class WeightCollection<T> {
 	public int hashCode() {
 		return Objects.hash(this.map, this.rng, this.total);
 	}
+	//endregion
 	
 }

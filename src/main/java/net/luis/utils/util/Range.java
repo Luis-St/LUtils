@@ -2,7 +2,6 @@ package net.luis.utils.util;
 
 import net.luis.utils.math.Mth;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 import java.util.Objects;
 
@@ -46,13 +45,9 @@ public class Range {
 		return Mth.isInBounds(value, this.min, this.max);
 	}
 	
+	//region Object overrides
 	@Override
-	public @NotNull String toString() {
-		return ToString.toString(this);
-	}
-	
-	@Override
-	public boolean equals(@Nullable Object o) {
+	public boolean equals(Object o) {
 		if (this == o) return true;
 		if (!(o instanceof Range range)) return false;
 		
@@ -65,4 +60,9 @@ public class Range {
 		return Objects.hash(this.min, this.max);
 	}
 	
+	@Override
+	public String toString() {
+		return "Range{min=" + this.min + ", max=" + this.max + "}";
+	}
+	//endregion
 }

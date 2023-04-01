@@ -1,7 +1,6 @@
 package net.luis.utils.util;
 
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 import java.util.NoSuchElementException;
 import java.util.Objects;
@@ -19,7 +18,7 @@ public class Result<T> implements Supplier<Either<T, String>> {
 	
 	private final Either<T, String> either;
 	
-	private Result(@NotNull Either<T, String> either) {
+	private Result(Either<T, String> either) {
 		this.either = either;
 	}
 	
@@ -46,7 +45,7 @@ public class Result<T> implements Supplier<Either<T, String>> {
 	
 	public @NotNull T orThrow() {
 		return this.orThrow((error) -> {
-			
+		
 		});
 	}
 	
@@ -66,13 +65,9 @@ public class Result<T> implements Supplier<Either<T, String>> {
 		return this.either.right();
 	}
 	
+	//region Object overrides
 	@Override
-	public @NotNull String toString() {
-		return ToString.toString(this);
-	}
-	
-	@Override
-	public boolean equals(@Nullable Object o) {
+	public boolean equals(Object o) {
 		if (this == o) return true;
 		if (!(o instanceof Result<?> result)) return false;
 		
@@ -84,4 +79,9 @@ public class Result<T> implements Supplier<Either<T, String>> {
 		return Objects.hash(this.either);
 	}
 	
+	@Override
+	public String toString() {
+		return "Result{either=" + this.either + "}";
+	}
+	//endregion
 }

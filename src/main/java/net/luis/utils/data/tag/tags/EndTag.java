@@ -19,6 +19,7 @@ import java.io.DataOutput;
 public class EndTag implements Tag {
 	
 	public static final EndTag INSTANCE = new EndTag();
+	//region Type
 	public static final TagType<EndTag> TYPE = new TagType<>() {
 		@Override
 		public @NotNull EndTag load(@NotNull DataInput input) throws LoadTagException {
@@ -35,9 +36,10 @@ public class EndTag implements Tag {
 			return "EndTag";
 		}
 	};
+	//endregion
 	
 	private EndTag() {
-		
+	
 	}
 	
 	@Override
@@ -65,9 +67,11 @@ public class EndTag implements Tag {
 		visitor.visitEnd(this);
 	}
 	
+	//region Object overrides
 	@Override
-	public @NotNull String toString() {
+	public String toString() {
 		return this.getAsString();
 	}
+	//endregion
 	
 }

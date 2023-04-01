@@ -1,7 +1,6 @@
 package net.luis.utils.data.tag.exception;
 
 import net.luis.utils.data.tag.Tag;
-import org.jetbrains.annotations.NotNull;
 
 import java.io.Serial;
 import java.nio.file.Path;
@@ -21,15 +20,15 @@ public class SaveTagException extends TagException {
 		super();
 	}
 	
-	public SaveTagException(@NotNull String message) {
+	public SaveTagException(String message) {
 		super(message);
 	}
 	
-	public SaveTagException(@NotNull Throwable cause) {
+	public SaveTagException(Throwable cause) {
 		super(cause);
 	}
 	
-	public SaveTagException(@NotNull Tag tag, @NotNull Path path, @NotNull Throwable cause) {
+	public SaveTagException(Tag tag, Path path, Throwable cause) {
 		super("Tag of type " + tag.getType().getVisitorName() + " cannot be stored in file " + path, cause);
 	}
 	

@@ -1,10 +1,12 @@
 package net.luis.utils.collection;
 
 import com.google.common.collect.Lists;
-import org.jetbrains.annotations.NotNull;
+import net.luis.utils.annotation.Ignored;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.*;
+import java.util.AbstractList;
+import java.util.Comparator;
+import java.util.List;
 
 /**
  *
@@ -21,7 +23,7 @@ public class SortedList<E> extends AbstractList<E> {
 		this(Lists.newArrayList());
 	}
 	
-	public SortedList(@Nullable Comparator<E> comparator) {
+	public SortedList(Comparator<E> comparator) {
 		this(Lists.newArrayList(), comparator);
 	}
 	
@@ -31,21 +33,21 @@ public class SortedList<E> extends AbstractList<E> {
 	}
 	
 	@SafeVarargs
-	public SortedList(@Nullable Comparator<E> comparator, E... elements) {
+	public SortedList(Comparator<E> comparator, E... elements) {
 		this(Lists.newArrayList(elements), comparator);
 	}
 	
-	public SortedList(@NotNull List<E> elements) {
+	public SortedList(List<E> elements) {
 		this.internalList = elements;
 	}
 	
-	public SortedList(@NotNull List<E> elements, @Nullable Comparator<E> comparator) {
+	public SortedList(List<E> elements, Comparator<E> comparator) {
 		this.internalList = elements;
 		this.comparator = comparator;
 	}
 	
 	public void setComparator(@Nullable Comparator<E> comparator) {
-		this.comparator = Objects.requireNonNull(comparator);
+		this.comparator = comparator;
 		this.internalList.sort(comparator);
 	}
 	
@@ -63,8 +65,8 @@ public class SortedList<E> extends AbstractList<E> {
 	}
 	
 	@Override
-	public boolean remove(Object o) {
-		boolean removed = this.internalList.remove(o);
+	public boolean remove(Object object) {
+		boolean removed = this.internalList.remove(object);
 		this.internalList.sort(this.comparator);
 		return removed;
 	}
@@ -80,7 +82,7 @@ public class SortedList<E> extends AbstractList<E> {
 	}
 	
 	@Override
-	public void sort(Comparator<? super E> comparator) {
-		throw new UnsupportedOperationException("Use setComparator() instead");
+	public void sort(@Ignored Comparator<? super E> comparator) {
+		super.sort(this.comparator);
 	}
 }
