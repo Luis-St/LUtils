@@ -1,5 +1,6 @@
 package net.luis.utils.data.tag.visitor;
 
+import net.luis.utils.annotation.Ignored;
 import net.luis.utils.data.tag.tags.CompoundTag;
 import net.luis.utils.data.tag.tags.EndTag;
 import net.luis.utils.data.tag.tags.StringTag;
@@ -7,7 +8,6 @@ import net.luis.utils.data.tag.tags.collection.ListTag;
 import net.luis.utils.data.tag.tags.collection.array.IntArrayTag;
 import net.luis.utils.data.tag.tags.collection.array.LongArrayTag;
 import net.luis.utils.data.tag.tags.numeric.DoubleTag;
-import net.luis.utils.data.tag.tags.numeric.FloatTag;
 import net.luis.utils.data.tag.tags.numeric.IntTag;
 import net.luis.utils.data.tag.tags.numeric.LongTag;
 import org.jetbrains.annotations.NotNull;
@@ -24,9 +24,6 @@ public interface TagVisitor {
 	
 	void visitLong(@NotNull LongTag tag);
 	
-	@Deprecated
-	void visitFloat(@NotNull FloatTag tag);
-	
 	void visitDouble(@NotNull DoubleTag tag);
 	
 	void visitString(@NotNull StringTag tag);
@@ -39,6 +36,6 @@ public interface TagVisitor {
 	
 	void visitCompound(@NotNull CompoundTag tag);
 	
-	void visitEnd(@NotNull EndTag tag);
+	void visitEnd(@Ignored EndTag tag);
 	
 }

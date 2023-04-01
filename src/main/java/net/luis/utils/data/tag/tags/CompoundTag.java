@@ -9,10 +9,12 @@ import net.luis.utils.data.tag.exception.SaveTagException;
 import net.luis.utils.data.tag.tags.collection.ListTag;
 import net.luis.utils.data.tag.tags.collection.array.IntArrayTag;
 import net.luis.utils.data.tag.tags.collection.array.LongArrayTag;
-import net.luis.utils.data.tag.tags.numeric.*;
+import net.luis.utils.data.tag.tags.numeric.DoubleTag;
+import net.luis.utils.data.tag.tags.numeric.IntTag;
+import net.luis.utils.data.tag.tags.numeric.LongTag;
+import net.luis.utils.data.tag.tags.numeric.NumericTag;
 import net.luis.utils.data.tag.visitor.TagVisitor;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 import java.io.DataInput;
 import java.io.DataOutput;
@@ -30,6 +32,7 @@ import java.util.Set;
 
 public class CompoundTag implements Tag {
 	
+	//region Type
 	public static final TagType<CompoundTag> TYPE = new TagType<>() {
 		@Override
 		public @NotNull CompoundTag load(@NotNull DataInput input) throws LoadTagException {
@@ -65,6 +68,7 @@ public class CompoundTag implements Tag {
 			return "CompoundTag";
 		}
 	};
+	//endregion
 	
 	private final Map<String, Tag> data;
 	
@@ -72,7 +76,7 @@ public class CompoundTag implements Tag {
 		this(Maps.newHashMap());
 	}
 	
-	private CompoundTag(@NotNull Map<String, Tag> data) {
+	private CompoundTag(Map<String, Tag> data) {
 		this.data = Maps.newHashMap(data);
 	}
 	
@@ -129,17 +133,18 @@ public class CompoundTag implements Tag {
 		return this.data.containsKey(key);
 	}
 	
-	public boolean contains(@NotNull String key, int type) {
+	public boolean contains(String key, int type) {
 		int tagType = this.getTagType(key);
 		if (tagType == type) {
 			return true;
 		} else if (type != 99) {
 			return false;
 		} else {
-			return tagType == INT_TAG || tagType == LONG_TAG || tagType == FLOAT_TAG || tagType == DOUBLE_TAG;
+			return tagType == INT_TAG || tagType == LONG_TAG || tagType == DOUBLE_TAG;
 		}
 	}
 	
+	//region Putters
 	public void put(@NotNull String key, @NotNull Tag tag) {
 		this.data.put(key, Objects.requireNonNull(tag, "Invalid tag with value null for key: " + key));
 	}
@@ -150,11 +155,6 @@ public class CompoundTag implements Tag {
 	
 	public void putLong(@NotNull String key, long data) {
 		this.put(key, LongTag.valueOf(data));
-	}
-	
-	@Deprecated
-	public void putFloat(@NotNull String key, float data) {
-		this.put(key, FloatTag.valueOf(data));
 	}
 	
 	public void putDouble(@NotNull String key, double data) {
@@ -192,62 +192,51 @@ public class CompoundTag implements Tag {
 	public void putBoolean(@NotNull String key, boolean data) {
 		this.put(key, IntTag.valueOf(data ? 1 : 0));
 	}
+	//endregion
 	
-	public byte getTagType(@NotNull String key) {
+	//region Getters
+	public byte getTagType(String key) {
 		return this.get(key).getId();
 	}
 	
-	public @NotNull Tag get(@NotNull String key) {
+	public Tag get(String key) {
 		return this.data.get(key);
 	}
 	
-
-	public int getInt(@NotNull String key) {
+	public int getInt(String key) {
 		try {
 			if (this.contains(key, PRIMITIVE_TAG)) {
 				return ((NumericTag) this.get(key)).getAsInt();
 			}
 		} catch (ClassCastException ignored) {
-			
+		
 		}
 		return 0;
 	}
 	
-	public long getLong(@NotNull String key) {
+	public long getLong(String key) {
 		try {
 			if (this.contains(key, PRIMITIVE_TAG)) {
 				return ((NumericTag) this.get(key)).getAsLong();
 			}
 		} catch (ClassCastException ignored) {
-			
+		
 		}
 		return 0;
 	}
 	
-	@Deprecated
-	public float getFloat(@NotNull String key) {
-		try {
-			if (this.contains(key, PRIMITIVE_TAG)) {
-				return ((NumericTag) this.get(key)).getAsFloat();
-			}
-		} catch (ClassCastException ignored) {
-			
-		}
-		return (float) 0;
-	}
-	
-	public double getDouble(@NotNull String key) {
+	public double getDouble(String key) {
 		try {
 			if (this.contains(key, PRIMITIVE_TAG)) {
 				return ((NumericTag) this.get(key)).getAsDouble();
 			}
 		} catch (ClassCastException ignored) {
-			
+		
 		}
 		return 0;
 	}
 	
-	public @NotNull String getString(@NotNull String key) {
+	public @NotNull String getString(String key) {
 		try {
 			if (this.contains(key, STRING_TAG)) {
 				return this.get(key).getAsString();
@@ -258,7 +247,7 @@ public class CompoundTag implements Tag {
 		return "";
 	}
 	
-	public int[] getIntArray(@NotNull String key) {
+	public int[] getIntArray(String key) {
 		try {
 			if (this.contains(key, INT_ARRAY_TAG)) {
 				return ((IntArrayTag) this.get(key)).getAsIntArray();
@@ -269,7 +258,7 @@ public class CompoundTag implements Tag {
 		return new int[0];
 	}
 	
-	public long[] getLongArray(@NotNull String key) {
+	public long[] getLongArray(String key) {
 		try {
 			if (this.contains(key, LONG_ARRAY_TAG)) {
 				return ((LongArrayTag) this.get(key)).getAsLongArray();
@@ -280,11 +269,11 @@ public class CompoundTag implements Tag {
 		return new long[0];
 	}
 	
-	public @NotNull ListTag getList(@NotNull String key) {
+	public @NotNull ListTag getList(String key) {
 		return this.getList(key, -1);
 	}
 	
-	public @NotNull ListTag getList(@NotNull String key, int type) {
+	public @NotNull ListTag getList(String key, int type) {
 		try {
 			if (this.contains(key, LIST_TAG)) {
 				ListTag tag = (ListTag) this.get(key);
@@ -298,7 +287,7 @@ public class CompoundTag implements Tag {
 		return new ListTag();
 	}
 	
-	public @NotNull CompoundTag getCompound(@NotNull String key) {
+	public @NotNull CompoundTag getCompound(String key) {
 		try {
 			if (this.contains(key, COMPOUND_TAG)) {
 				return (CompoundTag) this.get(key);
@@ -309,11 +298,12 @@ public class CompoundTag implements Tag {
 		return new CompoundTag();
 	}
 	
-	public boolean getBoolean(@NotNull String key) {
+	public boolean getBoolean(String key) {
 		return this.getInt(key) != 0;
 	}
+	//endregion
 	
-	public void remove(@NotNull String key) {
+	public void remove(String key) {
 		this.data.remove(key);
 	}
 	
@@ -321,13 +311,9 @@ public class CompoundTag implements Tag {
 		return this.data.isEmpty();
 	}
 	
+	//region Object overrides
 	@Override
-	public @NotNull String toString() {
-		return this.getAsString();
-	}
-	
-	@Override
-	public boolean equals(@Nullable Object o) {
+	public boolean equals(Object o) {
 		if (this == o) return true;
 		if (!(o instanceof CompoundTag that)) return false;
 		
@@ -338,5 +324,11 @@ public class CompoundTag implements Tag {
 	public int hashCode() {
 		return this.data.hashCode();
 	}
+	
+	@Override
+	public String toString() {
+		return this.getAsString();
+	}
+	//endregion
 	
 }

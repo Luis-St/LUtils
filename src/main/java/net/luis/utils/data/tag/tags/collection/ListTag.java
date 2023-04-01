@@ -10,12 +10,10 @@ import net.luis.utils.data.tag.tags.CompoundTag;
 import net.luis.utils.data.tag.tags.collection.array.IntArrayTag;
 import net.luis.utils.data.tag.tags.collection.array.LongArrayTag;
 import net.luis.utils.data.tag.tags.numeric.DoubleTag;
-import net.luis.utils.data.tag.tags.numeric.FloatTag;
 import net.luis.utils.data.tag.tags.numeric.IntTag;
 import net.luis.utils.data.tag.tags.numeric.LongTag;
 import net.luis.utils.data.tag.visitor.TagVisitor;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 import java.io.DataInput;
 import java.io.DataOutput;
@@ -30,6 +28,7 @@ import java.util.List;
 
 public class ListTag extends CollectionTag<Tag> {
 	
+	//region Type
 	public static final TagType<ListTag> TYPE = new TagType<>() {
 		@Override
 		public @NotNull ListTag load(@NotNull DataInput input) throws LoadTagException {
@@ -66,6 +65,7 @@ public class ListTag extends CollectionTag<Tag> {
 			return true;
 		}
 	};
+	//endregion
 	
 	private final List<Tag> data;
 	private byte type;
@@ -121,14 +121,8 @@ public class ListTag extends CollectionTag<Tag> {
 		visitor.visitList(this);
 	}
 	
-	private void updateTypeAfterRemove() {
-		if (this.data.isEmpty()) {
-			this.type = 0;
-		}
-	}
-	
 	@Override
-	public @Nullable Tag remove(int index) {
+	public Tag remove(int index) {
 		Tag tag = this.data.remove(index);
 		this.updateTypeAfterRemove();
 		return tag;
@@ -137,6 +131,12 @@ public class ListTag extends CollectionTag<Tag> {
 	@Override
 	public boolean isEmpty() {
 		return this.data.isEmpty();
+	}
+	
+	//region Getters
+	@Override
+	public Tag get(int index) {
+		return this.data.get(index);
 	}
 	
 	public int getInt(int index) {
@@ -157,17 +157,6 @@ public class ListTag extends CollectionTag<Tag> {
 			}
 		}
 		return 0;
-	}
-	
-	@Deprecated
-	public float getFloat(int index) {
-		if (this.data.size() > index && index >= 0) {
-			Tag tag = this.data.get(index);
-			if (tag.getId() == FLOAT_TAG) {
-				return ((FloatTag) tag).getAsFloat();
-			}
-		}
-		return (float) 0;
 	}
 	
 	public double getDouble(int index) {
@@ -229,31 +218,21 @@ public class ListTag extends CollectionTag<Tag> {
 		}
 		return new CompoundTag();
 	}
+	//endregion
 	
 	@Override
 	public int size() {
 		return this.data.size();
 	}
 	
+	//region Setters
 	@Override
-	public @NotNull Tag get(int index) {
-		return this.data.get(index);
-	}
-	
-	@Override
-	public @NotNull Tag set(int index, @NotNull Tag tag) {
+	public Tag set(int index, @NotNull Tag tag) {
 		Tag oldTag = this.get(index);
 		if (!this.setTag(index, tag)) {
 			LOGGER.warn("Try to add tag of type {} to data of {}", tag.getId(), this.type);
 		}
 		return oldTag;
-	}
-	
-	@Override
-	public void add(int index, @NotNull Tag tag) {
-		if (!this.addTag(index, tag)) {
-			LOGGER.warn("Try to add tag of type {} to data of {}", tag.getId(), this.type);
-		}
 	}
 	
 	@Override
@@ -264,7 +243,9 @@ public class ListTag extends CollectionTag<Tag> {
 		}
 		return false;
 	}
+	//endregion
 	
+	//region Adders
 	@Override
 	public boolean addTag(int index, @NotNull Tag tag) {
 		if (this.updateType(tag)) {
@@ -274,6 +255,15 @@ public class ListTag extends CollectionTag<Tag> {
 		return false;
 	}
 	
+	@Override
+	public void add(int index, @NotNull Tag tag) {
+		if (!this.addTag(index, tag)) {
+			LOGGER.warn("Try to add tag of type {} to data of {}", tag.getId(), this.type);
+		}
+	}
+	//endregion
+	
+	//region Internal helper methods
 	private boolean updateType(@NotNull Tag tag) {
 		if (tag.getId() == 0) {
 			return false;
@@ -284,6 +274,13 @@ public class ListTag extends CollectionTag<Tag> {
 			return this.type == tag.getId();
 		}
 	}
+	
+	private void updateTypeAfterRemove() {
+		if (this.data.isEmpty()) {
+			this.type = 0;
+		}
+	}
+	//endregion
 	
 	@Override
 	public void clear() {
@@ -296,8 +293,9 @@ public class ListTag extends CollectionTag<Tag> {
 		return this.type;
 	}
 	
+	//region Object overrides
 	@Override
-	public boolean equals(@Nullable Object o) {
+	public boolean equals(Object o) {
 		if (this == o) return true;
 		if (!(o instanceof ListTag tags)) return false;
 		if (!super.equals(o)) return false;
@@ -310,5 +308,6 @@ public class ListTag extends CollectionTag<Tag> {
 	public int hashCode() {
 		return this.data.hashCode();
 	}
+	//endregion
 	
 }

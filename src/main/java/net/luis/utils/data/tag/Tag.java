@@ -26,13 +26,12 @@ public interface Tag {
 	byte END_TAG = 0;
 	byte INT_TAG = 1;
 	byte LONG_TAG = 2;
-	@Deprecated byte FLOAT_TAG = 3;
-	byte DOUBLE_TAG = 4;
-	byte STRING_TAG = 5;
-	byte INT_ARRAY_TAG = 6;
-	byte LONG_ARRAY_TAG = 7;
-	byte LIST_TAG = 8;
-	byte COMPOUND_TAG = 9;
+	byte DOUBLE_TAG = 3;
+	byte STRING_TAG = 4;
+	byte INT_ARRAY_TAG = 5;
+	byte LONG_ARRAY_TAG = 6;
+	byte LIST_TAG = 7;
+	byte COMPOUND_TAG = 8;
 	byte PRIMITIVE_TAG = 99;
 	
 	static @NotNull Tag load(@NotNull Path path) throws LoadTagException {
@@ -69,8 +68,6 @@ public interface Tag {
 	
 	void save(@NotNull DataOutput output) throws SaveTagException;
 	
-	@NotNull String toString();
-	
 	byte getId();
 	
 	@NotNull TagType<?> getType();
@@ -82,5 +79,7 @@ public interface Tag {
 	default @NotNull String getAsString() {
 		return new StringTagVisitor().visit(this);
 	}
+	
+	String toString();
 	
 }
