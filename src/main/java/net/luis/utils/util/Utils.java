@@ -23,8 +23,8 @@ public class Utils {
 	
 	public static final UUID EMPTY_UUID = UUID.fromString("00000000-0000-0000-0000-000000000000");
 	
-	public static boolean isEmpty(@NotNull UUID uuid) {
-	    return uuid == EMPTY_UUID || uuid.equals(EMPTY_UUID);
+	public static boolean isEmpty(UUID uuid) {
+		return uuid == EMPTY_UUID || EMPTY_UUID.equals(uuid);
 	}
 	
 	public static <T> @NotNull T make(@NotNull T object, @NotNull Consumer<T> consumer) {
@@ -49,6 +49,7 @@ public class Utils {
 		return map;
 	}
 	
+	//region List util methods
 	public static <T, U> @NotNull List<U> mapList(@NotNull List<T> list, @NotNull Function<T, U> function) {
 		return list.stream().map(function).collect(Collectors.toList());
 	}
@@ -56,7 +57,27 @@ public class Utils {
 	public static <T, U, V> @NotNull List<V> mapList(@NotNull List<T> list, @NotNull Function<T, U> firstFunction, Function<U, V> secondFunction) {
 		return list.stream().map(firstFunction).map(secondFunction).collect(Collectors.toList());
 	}
+	//endregion
 	
+	//region Duplicate checks
+	public static boolean hasDuplicates(Object[] values) {
+		return values.length != Arrays.stream(values).distinct().count();
+	}
+	
+	public static boolean hasDuplicates(@NotNull List<?> values) {
+		return values.size() != values.stream().distinct().count();
+	}
+	
+	public static boolean hasDuplicates(@NotNull Object value, Object[] values) {
+		return values.length != Arrays.stream(values).filter(value::equals).count();
+	}
+	
+	public static boolean hasDuplicates(@NotNull Object value, @NotNull List<?> values) {
+		return values.size() != values.stream().filter(value::equals).count();
+	}
+	//endregion
+	
+	//region Map util methods
 	public static <K, T, V> @NotNull Map<T, V> mapKey(@NotNull Map<K, V> map, @NotNull Function<K, T> function) {
 		Map<T, V> mapped = Maps.newHashMap();
 		for (Entry<K, V> entry : map.entrySet()) {
@@ -72,61 +93,48 @@ public class Utils {
 		}
 		return mapped;
 	}
+	//endregion
 	
-	public static <T> @NotNull List<T> reverseList(@NotNull List<T> list) {
-		List<T> reversedList = Lists.newArrayList();
-		for (int i = list.size(); i-- > 0; ) {
-			reversedList.add(list.get(i));
-		}
-		return reversedList;
-	}
-	
-	public static <T, R> @Nullable R runIf(@Nullable T value, @NotNull Predicate<T> predicate, @NotNull Function<T, R> function) {
+	//region Null helper methods
+	public static <T, R> R runIf(@Nullable T value, @NotNull Predicate<T> predicate, @NotNull Function<T, R> function) {
 		if (value != null && predicate.test(value)) {
 			return function.apply(value);
 		}
 		return null;
 	}
 	
-	public static <T, R> @Nullable R runIfNot(@Nullable T value, @NotNull Predicate<T> predicate, @NotNull Function<T, R> function) {
+	public static <T, R> R runIfNot(@Nullable T value, @NotNull Predicate<T> predicate, @NotNull Function<T, R> function) {
 		if (value != null && !predicate.test(value)) {
 			return function.apply(value);
 		}
 		return null;
 	}
 	
-	public static <T, R> @Nullable R runIfNotNull(@Nullable T value, Function<T, R> function) {
+	public static <T, R> R runIfNotNull(T value, @NotNull Function<T, R> function) {
 		if (value != null) {
 			return function.apply(value);
 		}
 		return null;
 	}
 	
-	public static <T> @NotNull T warpNullTo(@Nullable T value, @NotNull T nullFallback) {
+	public static <T> @NotNull T warpNullTo(T value, @NotNull T nullFallback) {
 		if (value == null) {
 			return Objects.requireNonNull(nullFallback, "The fallback value must not be null");
 		}
 		return value;
 	}
+	//endregion
 	
+	//region Random util methods
 	public static @NotNull Random systemRandom() {
 		return new Random(System.currentTimeMillis());
 	}
 	
-	@SafeVarargs
-	public static <T> @NotNull List<T> concatLists(@NotNull List<T>... lists) {
-		List<T> list = Lists.newArrayList();
-		for (List<T> t : lists) {
-			list.addAll(t);
-		}
-		return list;
-	}
-	
-	public static <T> @NotNull T getRandom(@NotNull T[] values, @NotNull Random rng) {
+	public static <T> @NotNull T getRandom(T[] values, @NotNull Random rng) {
 		return values[rng.nextInt(values.length)];
 	}
 	
-	public static <T> @NotNull Optional<T> getRandomSafe(@NotNull T[] values, @NotNull Random rng) {
+	public static <T> @NotNull Optional<T> getRandomSafe(T[] values, @NotNull Random rng) {
 		return values.length == 0 ? Optional.empty() : Optional.of(getRandom(values, rng));
 	}
 	
@@ -137,5 +145,6 @@ public class Utils {
 	public static <T> @NotNull Optional<T> getRandomSafe(@NotNull List<T> values, @NotNull Random rng) {
 		return values.isEmpty() ? Optional.empty() : Optional.of(getRandom(values, rng));
 	}
+	//endregion
 	
 }
