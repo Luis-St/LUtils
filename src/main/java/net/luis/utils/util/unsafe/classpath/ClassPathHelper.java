@@ -1,4 +1,4 @@
-package net.luis.utils.util.reflection;
+package net.luis.utils.util.unsafe.classpath;
 
 import org.jetbrains.annotations.NotNull;
 
@@ -31,8 +31,9 @@ class ClassPathHelper {
 		return classes;
 	}
 	
-	private static @NotNull String gtClassName(@NotNull String fileName) {
-		return fileName.substring(0, fileName.length() - 6).replaceAll("/|\\\\", "\\.");
+	//region Internal helper methods
+	private static @NotNull String getClassName(@NotNull String fileName) {
+		return fileName.substring(0, fileName.length() - 6).replace("/", ".").replace("\\", ".");
 	}
 	
 	private static @NotNull List<Class<?>> getClassesFromJar(@NotNull File file) {
@@ -43,7 +44,7 @@ class ClassPathHelper {
 				while (enumeration.hasMoreElements()) {
 					JarEntry entry = enumeration.nextElement();
 					if (entry.getName().endsWith("class")) {
-						Class<?> clazz = Class.forName(gtClassName(entry.getName()));
+						Class<?> clazz = Class.forName(getClassName(entry.getName()));
 						classes.add(clazz);
 					}
 				}
@@ -60,7 +61,7 @@ class ClassPathHelper {
 			classes.addAll(getClassesFromJar(file));
 		}
 		for (File classfile : listFiles(path, (dir, name) -> name.endsWith(".class"), true)) {
-			String className = gtClassName(classfile.getAbsolutePath().substring(path.getAbsolutePath().length() + 1));
+			String className = getClassName(classfile.getAbsolutePath().substring(path.getAbsolutePath().length() + 1));
 			try {
 				classes.add(Class.forName(className));
 			} catch (Exception | Error ignored) {
@@ -93,5 +94,6 @@ class ClassPathHelper {
 		}
 		return files;
 	}
+	//endregion
 	
 }

@@ -6,7 +6,7 @@ plugins {
 println("Java: " + System.getProperty("java.version") + " JVM: " + System.getProperty("java.vm.version") + "Java Runtime:" + System.getProperty("java.runtime.version"))
 
 repositories {
-    mavenCentral()
+	mavenCentral()
 }
 
 dependencies {
@@ -57,8 +57,8 @@ publishing {
 jar {
 	manifest {
 		attributes([
-			"Built-By": "Luis Staudt",
-			"Multi-Release": "true"
+				"Built-By"     : "Luis Staudt",
+				"Multi-Release": "true"
 		])
 	}
 }
