@@ -6,7 +6,9 @@ import net.luis.utils.data.tag.tags.StringTag;
 import net.luis.utils.data.tag.tags.collection.ListTag;
 import net.luis.utils.data.tag.tags.collection.array.IntArrayTag;
 import net.luis.utils.data.tag.tags.collection.array.LongArrayTag;
-import net.luis.utils.data.tag.tags.numeric.*;
+import net.luis.utils.data.tag.tags.numeric.DoubleTag;
+import net.luis.utils.data.tag.tags.numeric.IntTag;
+import net.luis.utils.data.tag.tags.numeric.LongTag;
 import org.jetbrains.annotations.NotNull;
 
 /**
@@ -17,8 +19,8 @@ import org.jetbrains.annotations.NotNull;
 
 public class TagTypes {
 	
-	private static final TagType<?>[] TYPES = new TagType<?>[] {
-			EndTag.TYPE, IntTag.TYPE, LongTag.TYPE, FloatTag.TYPE, DoubleTag.TYPE, StringTag.TYPE, IntArrayTag.TYPE, LongArrayTag.TYPE, ListTag.TYPE, CompoundTag.TYPE
+	private static final TagType<?>[] TYPES = new TagType<?>[]{
+			EndTag.TYPE, IntTag.TYPE, LongTag.TYPE, DoubleTag.TYPE, StringTag.TYPE, IntArrayTag.TYPE, LongArrayTag.TYPE, ListTag.TYPE, CompoundTag.TYPE
 	};
 	
 	public static @NotNull TagType<?> getType(int id) {

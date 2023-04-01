@@ -16,12 +16,13 @@ public class Mth {
 	
 	private static final Logger LOGGER = LogManager.getLogger(Mth.class);
 	
+	//region Sum
 	public static long sum(int value) {
 		String s = String.valueOf(value);
 		long sum = 0;
 		for (int j = 0; j < s.length(); j++) {
 			try {
-				sum += Long.parseLong("" + s.charAt(j));
+				sum += Long.parseLong(String.valueOf(s.charAt(j)));
 			} catch (NumberFormatException e) {
 				LOGGER.warn("Fail to get int for char {}", s.charAt(j));
 			}
@@ -34,14 +35,16 @@ public class Mth {
 		long sum = 0;
 		for (int j = 0; j < s.length(); j++) {
 			try {
-				sum += Long.parseLong("" + s.charAt(j));
+				sum += Long.parseLong(String.valueOf(s.charAt(j)));
 			} catch (NumberFormatException e) {
 				LOGGER.warn("Fail to get long for char {}", s.charAt(j));
 			}
 		}
 		return sum;
 	}
+	//endregion
 	
+	//region Random
 	public static int randomInt(@NotNull Random rng, int min, int max) {
 		return min + rng.nextInt(max - min);
 	}
@@ -53,6 +56,7 @@ public class Mth {
 	public static int randomInclusiveInt(@NotNull Random rng, int min, int max) {
 		return min + rng.nextInt(max - min + 1);
 	}
+	//endregion
 	
 	public static double roundTo(double value, double roundValue) {
 		double d = Math.round(value * roundValue);
@@ -78,16 +82,12 @@ public class Mth {
 		return true;
 	}
 	
-	public static float frac(float f) {
-		int i = (int) f;
-		return f - i;
-	}
-	
 	public static double frac(double f) {
 		int i = (int) f;
 		return f - i;
 	}
 	
+	//region Clamp
 	public static int clamp(int value, int min, int max) {
 		if (min > value) {
 			return min;
@@ -104,14 +104,6 @@ public class Mth {
 		}
 	}
 	
-	public static float clamp(float value, float min, float max) {
-		if (min > value) {
-			return min;
-		} else {
-			return Math.min(value, max);
-		}
-	}
-	
 	public static double clamp(double value, double min, double max) {
 		if (min > value) {
 			return min;
@@ -119,7 +111,9 @@ public class Mth {
 			return Math.min(value, max);
 		}
 	}
+	//endregion
 	
+	//region Average
 	public static double average(int... values) {
 		long sum = 0;
 		for (int value : values) {
@@ -136,14 +130,6 @@ public class Mth {
 		return (double) sum / (double) values.length;
 	}
 	
-	public static double average(float... values) {
-		long sum = 0;
-		for (float value : values) {
-			sum += value;
-		}
-		return (double) sum / (double) values.length;
-	}
-	
 	public static double average(double... values) {
 		long sum = 0;
 		for (double value : values) {
@@ -151,6 +137,7 @@ public class Mth {
 		}
 		return (double) sum / (double) values.length;
 	}
+	//endregion
 	
 	public static boolean isPowerOfTwo(int value) {
 		return value != 0 && (value & value - 1) == 0;

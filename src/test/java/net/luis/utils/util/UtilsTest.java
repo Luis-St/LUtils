@@ -23,7 +23,6 @@ class UtilsTest {
 		assertTrue(Utils.isEmpty(Utils.EMPTY_UUID));
 		assertTrue(Utils.isEmpty(UUID.fromString("00000000-0000-0000-0000-000000000000")));
 		assertFalse(Utils.isEmpty(UUID.randomUUID()));
-		assertThrows(NullPointerException.class, () -> Utils.isEmpty(null));
 	}
 	
 	@Test

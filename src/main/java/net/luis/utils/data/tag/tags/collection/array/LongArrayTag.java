@@ -10,7 +10,6 @@ import net.luis.utils.data.tag.tags.numeric.NumericTag;
 import net.luis.utils.data.tag.visitor.TagVisitor;
 import org.apache.commons.lang3.ArrayUtils;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 import java.io.DataInput;
 import java.io.DataOutput;
@@ -26,6 +25,7 @@ import java.util.List;
 
 public class LongArrayTag extends CollectionTag<LongTag> {
 	
+	//region Type
 	public static final TagType<LongArrayTag> TYPE = new TagType<>() {
 		@Override
 		public @NotNull LongArrayTag load(@NotNull DataInput input) throws LoadTagException {
@@ -51,6 +51,7 @@ public class LongArrayTag extends CollectionTag<LongTag> {
 			return "IntArrayTag";
 		}
 	};
+	//endregion
 	
 	private long[] data;
 	
@@ -114,28 +115,28 @@ public class LongArrayTag extends CollectionTag<LongTag> {
 	}
 	
 	@Override
-	public @NotNull LongTag set(int index, @NotNull LongTag tag) {
+	public LongTag set(int index, @NotNull LongTag tag) {
 		long i = this.data[index];
-		this.data[index] = tag.getAsByte();
+		this.data[index] = tag.getAsLong();
 		return LongTag.valueOf(i);
 	}
 	
 	@Override
 	public void add(int index, @NotNull LongTag tag) {
-		this.data = ArrayUtils.add(this.data, index, tag.getAsByte());
+		this.data = ArrayUtils.add(this.data, index, tag.getAsLong());
 	}
 	
 	@Override
-	public @Nullable LongTag remove(int index) {
+	public LongTag remove(int index) {
 		long i = this.data[index];
 		this.data = ArrayUtils.remove(this.data, index);
 		return LongTag.valueOf(i);
 	}
 	
 	@Override
-	public boolean setTag(int index, @NotNull Tag tag) {
+	public boolean setTag(int index, Tag tag) {
 		if (tag instanceof NumericTag numericTag) {
-			this.data[index] = numericTag.getAsByte();
+			this.data[index] = numericTag.getAsLong();
 			return true;
 		} else {
 			return false;
@@ -143,9 +144,9 @@ public class LongArrayTag extends CollectionTag<LongTag> {
 	}
 	
 	@Override
-	public boolean addTag(int index, @NotNull Tag tag) {
+	public boolean addTag(int index, Tag tag) {
 		if (tag instanceof NumericTag numericTag) {
-			this.data = ArrayUtils.add(this.data, index, numericTag.getAsByte());
+			this.data = ArrayUtils.add(this.data, index, numericTag.getAsLong());
 			return true;
 		} else {
 			return false;
@@ -158,7 +159,7 @@ public class LongArrayTag extends CollectionTag<LongTag> {
 	}
 	
 	@Override
-	public @NotNull LongTag get(int index) {
+	public LongTag get(int index) {
 		return LongTag.valueOf(this.data[index]);
 	}
 	
@@ -167,8 +168,9 @@ public class LongArrayTag extends CollectionTag<LongTag> {
 		return this.data.length;
 	}
 	
+	//region Object overrides
 	@Override
-	public boolean equals(@Nullable Object o) {
+	public boolean equals(Object o) {
 		if (this == o) return true;
 		if (!(o instanceof LongArrayTag longTags)) return false;
 		if (!super.equals(o)) return false;
@@ -180,5 +182,6 @@ public class LongArrayTag extends CollectionTag<LongTag> {
 	public int hashCode() {
 		return Arrays.hashCode(this.data);
 	}
+	//endregion
 	
 }

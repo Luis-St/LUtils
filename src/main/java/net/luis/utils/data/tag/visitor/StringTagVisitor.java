@@ -1,6 +1,7 @@
 package net.luis.utils.data.tag.visitor;
 
 import com.google.common.collect.Lists;
+import net.luis.utils.annotation.Ignored;
 import net.luis.utils.data.tag.Tag;
 import net.luis.utils.data.tag.tags.CompoundTag;
 import net.luis.utils.data.tag.tags.EndTag;
@@ -9,7 +10,6 @@ import net.luis.utils.data.tag.tags.collection.ListTag;
 import net.luis.utils.data.tag.tags.collection.array.IntArrayTag;
 import net.luis.utils.data.tag.tags.collection.array.LongArrayTag;
 import net.luis.utils.data.tag.tags.numeric.DoubleTag;
-import net.luis.utils.data.tag.tags.numeric.FloatTag;
 import net.luis.utils.data.tag.tags.numeric.IntTag;
 import net.luis.utils.data.tag.tags.numeric.LongTag;
 import org.jetbrains.annotations.NotNull;
@@ -39,17 +39,12 @@ public class StringTagVisitor implements TagVisitor {
 	
 	@Override
 	public void visitLong(@NotNull LongTag tag) {
-		this.builder.append(tag.getAsNumber()).append("l");
-	}
-	
-	@Override
-	public void visitFloat(@NotNull FloatTag tag) {
-		this.builder.append(tag.getAsNumber()).append("f");
+		this.builder.append(tag.getAsNumber()).append("L");
 	}
 	
 	@Override
 	public void visitDouble(@NotNull DoubleTag tag) {
-		this.builder.append(tag.getAsNumber()).append("d");
+		this.builder.append(tag.getAsNumber()).append("D");
 	}
 	
 	@Override
@@ -110,7 +105,7 @@ public class StringTagVisitor implements TagVisitor {
 	}
 	
 	@Override
-	public void visitEnd(@NotNull EndTag tag) {
+	public void visitEnd(@Ignored EndTag tag) {
 		this.builder.append("END");
 	}
 	
