@@ -1,18 +1,39 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Configuration name="BuilderTest" status="ERROR">
-    <ThresholdFilter onMatch="ACCEPT" onMismatch="ACCEPT" level="DEBUG"/>
-    <Appenders>
-        <CONSOLE name="Console" target="SYSTEM_OUT">
-            <PatternLayout pattern="[%d{HH:mm:ss}] [%t] [%C{1}/%level] %msg%n%throwable"/>
-            <MarkerFilter onMatch="DENY" onMismatch="ACCEPT" marker="FLOW"/>
-        </CONSOLE>
-    </Appenders>
-    <Loggers>
-        <Logger name="org.apache.logging.log4j" level="INFO" additivity="false">
-            <AppenderRef ref="Console"/>
-        </Logger>
-        <Root level="ERROR">
-            <AppenderRef ref="Console"/>
-        </Root>
-    </Loggers>
+<Configuration status="ERROR">
+	<Appenders>
+		<Console name="Trace" target="SYSTEM_OUT">
+			<PatternLayout pattern="[%d{HH:mm:ss}] [%t] [%C:%line/%level{TRACE=Trace}] %msg%n%throwable"/>
+			<LevelMatchFilter level="TRACE" onMatch="ACCEPT" onMismatch="DENY"/>
+		</Console>
+		<Console name="Debug" target="SYSTEM_OUT">
+			<PatternLayout pattern="[%d{HH:mm:ss}] [%t] [%C{1}:%line/%level{DEBUG=Debug}] %msg%n%throwable"/>
+			<LevelMatchFilter level="DEBUG" onMatch="ACCEPT" onMismatch="DENY"/>
+		</Console>
+		<Console name="Info" target="SYSTEM_OUT">
+			<PatternLayout pattern="[%d{HH:mm:ss}] [%t] [%C{1}/%level{INFO=Info}] %msg%n%throwable"/>
+			<LevelMatchFilter level="INFO" onMatch="ACCEPT" onMismatch="DENY"/>
+		</Console>
+		<Console name="Warn" target="SYSTEM_OUT">
+			<PatternLayout pattern="[%d{HH:mm:ss}] [%t] [%C{1}/%level{WARN=Warn}] %msg%n%throwable"/>
+			<LevelMatchFilter level="WARN" onMatch="ACCEPT" onMismatch="DENY"/>
+		</Console>
+		<Console name="Error" target="SYSTEM_OUT">
+			<PatternLayout pattern="[%d{HH:mm:ss}] [%t] [%C{1}/%level{ERROR=Error}] %msg%n%throwable"/>
+			<LevelMatchFilter level="ERROR" onMatch="ACCEPT" onMismatch="DENY"/>
+		</Console>
+		<Console name="Fatal" target="SYSTEM_OUT">
+			<PatternLayout pattern="[%d{HH:mm:ss}] [%t] [%C{1}/%level{FATAL=Fatal}] %msg%n%throwable"/>
+			<LevelMatchFilter level="FATAL" onMatch="ACCEPT" onMismatch="DENY"/>
+		</Console>
+	</Appenders>
+	<Loggers>
+		<Root level="TRACE">
+			<AppenderRef ref="Trace"/>
+			<AppenderRef ref="Debug"/>
+			<AppenderRef ref="Info"/>
+			<AppenderRef ref="Warn"/>
+			<AppenderRef ref="Error"/>
+			<AppenderRef ref="Fatal"/>
+		</Root>
+	</Loggers>
 </Configuration>
