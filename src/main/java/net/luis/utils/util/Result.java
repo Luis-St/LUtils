@@ -57,6 +57,13 @@ public class Result<T> implements Supplier<Either<T, String>> {
 		throw new NoSuchElementException("No value available");
 	}
 	
+	public <X extends RuntimeException> @NotNull T orThrow(Supplier<? extends X> exceptionSupplier) {
+		if (this.either.isLeft()) {
+			return this.either.leftOrThrow();
+		}
+		throw exceptionSupplier.get();
+	}
+	
 	public boolean isError() {
 		return this.either.isRight();
 	}

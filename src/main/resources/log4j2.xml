@@ -1,39 +1,53 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Configuration status="ERROR">
 	<Appenders>
-		<Console name="Trace" target="SYSTEM_OUT">
+		<Console name="ConsoleTrace" target="SYSTEM_OUT">
 			<PatternLayout pattern="[%d{HH:mm:ss}] [%t] [%C:%line/%level{TRACE=Trace}] %msg%n%throwable"/>
 			<LevelMatchFilter level="TRACE" onMatch="ACCEPT" onMismatch="DENY"/>
 		</Console>
-		<Console name="Debug" target="SYSTEM_OUT">
+		<Console name="ConsoleDebug" target="SYSTEM_OUT">
 			<PatternLayout pattern="[%d{HH:mm:ss}] [%t] [%C{1}:%line/%level{DEBUG=Debug}] %msg%n%throwable"/>
 			<LevelMatchFilter level="DEBUG" onMatch="ACCEPT" onMismatch="DENY"/>
 		</Console>
-		<Console name="Info" target="SYSTEM_OUT">
+		<Console name="ConsoleInfo" target="SYSTEM_OUT">
 			<PatternLayout pattern="[%d{HH:mm:ss}] [%t] [%C{1}/%level{INFO=Info}] %msg%n%throwable"/>
 			<LevelMatchFilter level="INFO" onMatch="ACCEPT" onMismatch="DENY"/>
 		</Console>
-		<Console name="Warn" target="SYSTEM_OUT">
+		<Console name="ConsoleWarn" target="SYSTEM_OUT">
 			<PatternLayout pattern="[%d{HH:mm:ss}] [%t] [%C{1}/%level{WARN=Warn}] %msg%n%throwable"/>
 			<LevelMatchFilter level="WARN" onMatch="ACCEPT" onMismatch="DENY"/>
 		</Console>
-		<Console name="Error" target="SYSTEM_OUT">
+		<Console name="ConsoleError" target="SYSTEM_OUT">
 			<PatternLayout pattern="[%d{HH:mm:ss}] [%t] [%C{1}/%level{ERROR=Error}] %msg%n%throwable"/>
 			<LevelMatchFilter level="ERROR" onMatch="ACCEPT" onMismatch="DENY"/>
 		</Console>
-		<Console name="Fatal" target="SYSTEM_OUT">
+		<Console name="ConsoleFatal" target="SYSTEM_OUT">
 			<PatternLayout pattern="[%d{HH:mm:ss}] [%t] [%C{1}/%level{FATAL=Fatal}] %msg%n%throwable"/>
 			<LevelMatchFilter level="FATAL" onMatch="ACCEPT" onMismatch="DENY"/>
 		</Console>
+		<RollingRandomAccessFile name="DebugLogFile" fileName="./logs/debug.log" filePattern="./logs/debug-%d{dd-MM-yyyy}-%i.log.gz">
+			<PatternLayout pattern="[%d{HH:mm:ss}] [%t] [%C{1}/%level{DEBUG=Debug, INFO=Info, WARN=Warn, ERROR=Error, FATAL=Fatal}] %msg%n%throwable"/>
+			<ThresholdFilter level="DEBUG" onMatch="ACCEPT" onMismatch="DENY"/>
+			<Policies>
+				<SizeBasedTriggeringPolicy/>
+				<OnStartupTriggeringPolicy/>
+			</Policies>
+		</RollingRandomAccessFile>
+		<RollingRandomAccessFile name="InfoLogFile" fileName="./logs/info.log" filePattern="./logs/info-%d{dd-MM-yyyy}-%i.log.gz">
+			<PatternLayout pattern="[%d{HH:mm:ss}] [%t] [%C{1}/%level{INFO=Info, WARN=Warn, ERROR=Error, FATAL=Fatal}] %msg%n%throwable"/>
+			<ThresholdFilter level="INFO" onMatch="ACCEPT" onMismatch="DENY"/>
+			<Policies>
+				<SizeBasedTriggeringPolicy/>
+				<OnStartupTriggeringPolicy/>
+			</Policies>
+		</RollingRandomAccessFile>
 	</Appenders>
 	<Loggers>
-		<Root level="TRACE">
-			<AppenderRef ref="Trace"/>
-			<AppenderRef ref="Debug"/>
-			<AppenderRef ref="Info"/>
-			<AppenderRef ref="Warn"/>
-			<AppenderRef ref="Error"/>
-			<AppenderRef ref="Fatal"/>
+		<Root level="ALL">
+			<AppenderRef ref="ConsoleInfo"/>
+			<AppenderRef ref="ConsoleWarn"/>
+			<AppenderRef ref="ConsoleError"/>
+			<AppenderRef ref="ConsoleFatal"/>
 		</Root>
 	</Loggers>
 </Configuration>
