@@ -59,21 +59,21 @@ class UtilsTest {
 	}
 	
 	@Test
-	void runIf() {
-		assertNull(Utils.runIf(null, String::isBlank, String::trim));
-		assertEquals(Utils.runIf(" ", String::isBlank, String::trim), "");
+	void mapIf() {
+		assertNull(Utils.mapIf(null, String::isBlank, String::trim));
+		assertEquals(Utils.mapIf(" ", String::isBlank, String::trim), "");
 	}
 	
 	@Test
-	void runIfNot() {
-		assertNull(Utils.runIfNot(null, String::isEmpty, (value) -> "*".repeat(4)));
-		assertEquals(Utils.runIf("", String::isEmpty, (value) -> "*".repeat(4)), "****");
+	void mapIfNot() {
+		assertNull(Utils.mapIfNot(null, String::isEmpty, (value) -> "*".repeat(4)));
+		assertEquals(Utils.mapIfNot("*".repeat(4), String::isEmpty, (value) -> ""), "");
 	}
 	
 	@Test
-	void runIfNotNull() {
-		assertNull(Utils.runIfNotNull(null, String::trim));
-		assertEquals(Utils.runIfNotNull(" runIfNotNull ", String::trim), "runIfNotNull");
+	void mapIfNotNull() {
+		assertNull(Utils.mapIfNotNull(null, String::trim));
+		assertEquals(Utils.mapIfNotNull(" runIfNotNull ", String::trim), "runIfNotNull");
 	}
 	
 	@Test

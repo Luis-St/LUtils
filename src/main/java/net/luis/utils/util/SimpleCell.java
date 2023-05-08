@@ -10,31 +10,11 @@ import java.util.Objects;
  *
  */
 
-public class SimpleCell<R, C, V> implements Cell<R, C, V> {
+public record SimpleCell<R, C, V>(R getRowKey, C getColumnKey, V getValue) implements Cell<R, C, V> {
 	
-	private final R rowKey;
-	private final C columnKey;
-	private final V value;
-	
-	public SimpleCell(R rowKey, C columnKey, V value) {
-		this.rowKey = Objects.requireNonNull(rowKey);
-		this.columnKey = Objects.requireNonNull(columnKey);
-		this.value = value;
-	}
-	
-	@Override
-	public R getRowKey() {
-		return this.rowKey;
-	}
-	
-	@Override
-	public C getColumnKey() {
-		return this.columnKey;
-	}
-	
-	@Override
-	public V getValue() {
-		return this.value;
+	public SimpleCell {
+		Objects.requireNonNull(getRowKey, "Row key must not be null");
+		Objects.requireNonNull(getColumnKey, "Column key must not be null");
 	}
 	
 	//region Object overrides
@@ -43,19 +23,19 @@ public class SimpleCell<R, C, V> implements Cell<R, C, V> {
 		if (this == o) return true;
 		if (!(o instanceof SimpleCell<?, ?, ?> that)) return false;
 		
-		if (!this.rowKey.equals(that.rowKey)) return false;
-		if (!this.columnKey.equals(that.columnKey)) return false;
-		return Objects.equals(this.value, that.value);
+		if (!this.getRowKey.equals(that.getRowKey)) return false;
+		if (!this.getColumnKey.equals(that.getColumnKey)) return false;
+		return Objects.equals(this.getValue, that.getValue);
 	}
 	
 	@Override
 	public int hashCode() {
-		return Objects.hash(this.rowKey, this.columnKey, this.value);
+		return Objects.hash(this.getRowKey, this.getColumnKey, this.getValue);
 	}
 	
 	@Override
 	public String toString() {
-		return "SimpleCell{rowKey=" + this.rowKey + ", columnKey=" + this.columnKey + ", value=" + this.value + "}";
+		return "SimpleCell{rowKey=" + this.getRowKey + ", columnKey=" + this.getColumnKey + ", value=" + this.getValue + "}";
 	}
 	//endregion
 }

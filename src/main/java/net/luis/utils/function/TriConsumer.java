@@ -18,8 +18,7 @@ public interface TriConsumer<T, U, V> {
 	default @NotNull TriConsumer<T, U, V> andThen(@NotNull TriConsumer<? super T, ? super U, ? super V> consumer) {
 		return (t, u, v) -> {
 			this.accept(t, u, v);
-			Objects.requireNonNull(consumer).accept(t, u, v);
+			Objects.requireNonNull(consumer, "'Then' action must not be null").accept(t, u, v);
 		};
 	}
-	
 }

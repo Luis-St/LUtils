@@ -16,7 +16,7 @@ public class SimpleEntry<K, V> implements Map.Entry<K, V> {
 	protected V value;
 	
 	public SimpleEntry(K key, V value) {
-		this.key = Objects.requireNonNull(key);
+		this.key = Objects.requireNonNull(key, "Key must not be null");
 		this.value = value;
 	}
 	

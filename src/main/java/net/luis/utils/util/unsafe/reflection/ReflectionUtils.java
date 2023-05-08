@@ -13,6 +13,7 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 
 /**
  *
@@ -22,7 +23,8 @@ import java.util.List;
 
 public class ReflectionUtils {
 	
-	public static @NotNull Nullability getNullability(@NotNull AnnotatedType type) {
+	public static @NotNull Nullability getNullability(AnnotatedType type) {
+		Objects.requireNonNull(type, "Annotated type must not be null");
 		if (type.isAnnotationPresent(Nullable.class)) {
 			return Nullability.NULLABLE;
 		} else if (type.isAnnotationPresent(NotNull.class)) {
@@ -32,7 +34,7 @@ public class ReflectionUtils {
 	}
 	
 	public static @NotNull String getRawName(@NotNull Method method, String... prefixes) {
-		String name = method.getName();
+		String name = Objects.requireNonNull(method, "Method must not be null").getName();
 		if (name.startsWith("get")) {
 			return name.substring(3);
 		} else if (name.startsWith("is")) {
@@ -48,19 +50,20 @@ public class ReflectionUtils {
 		return name;
 	}
 	
-	public static @NotNull List<Method> getMethodsForName(@NotNull Class<?> clazz, String name) {
+	public static @NotNull List<Method> getMethodsForName(Class<?> clazz, String name) {
+		Objects.requireNonNull(clazz, "Class must not be null");
 		return Arrays.stream(clazz.getDeclaredMethods()).filter(method -> method.getName().equals(name)).toList();
 	}
 	
-	public static Object[] getParameters(@NotNull Method method, Object... values) {
-		return getParameters(method, Utils.mapList(Lists.newArrayList(values), value -> {
+	public static Object[] getParameters(Method method, Object... values) {
+		return getParameters(Objects.requireNonNull(method, "Method must not be null"), Utils.mapList(Lists.newArrayList(values), value -> {
 			String name = value.getClass().getSimpleName();
 			return new ValueInfo(value, name.substring(0, 1).toLowerCase() + name.substring(1), Nullability.UNKNOWN);
 		}));
 	}
 	
-	public static Object[] getParameters(@NotNull Method method, List<ValueInfo> values) {
-		Parameter[] parameters = method.getParameters();
+	public static Object[] getParameters(Method method, List<ValueInfo> values) {
+		Parameter[] parameters = Objects.requireNonNull(method, "Method must not be null").getParameters();
 		Object[] arguments = new Object[parameters.length];
 		for (int i = 0; i < parameters.length; i++) {
 			arguments[i] = findParameter(parameters[i], values);
@@ -69,9 +72,9 @@ public class ReflectionUtils {
 	}
 	
 	//region Internal
-	private static @NotNull Object findParameter(@NotNull Parameter parameter, List<ValueInfo> values) {
-		Executable executable = parameter.getDeclaringExecutable();
-		for (ValueInfo value : values) {
+	private static @NotNull Object findParameter(Parameter parameter, List<ValueInfo> values) {
+		Executable executable = Objects.requireNonNull(parameter, "Parameter must not be null").getDeclaringExecutable();
+		for (ValueInfo value : Objects.requireNonNull(values, "Values must not be null")) {
 			Object object = value.value();
 			boolean duplicate = Utils.hasDuplicates(object, Utils.mapList(Lists.newArrayList(values), ValueInfo::value));
 			if (parameter.getType().isInstance(object)) {
@@ -87,5 +90,4 @@ public class ReflectionUtils {
 		throw new IllegalArgumentException("No value for parameter " + parameter.getName() + " of method " + executable.getDeclaringClass().getSimpleName() + "#" + executable.getName() + " found");
 	}
 	//endregion
-	
 }

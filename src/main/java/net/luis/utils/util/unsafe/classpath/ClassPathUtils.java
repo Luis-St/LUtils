@@ -9,6 +9,7 @@ import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 /**
@@ -32,33 +33,40 @@ public class ClassPathUtils {
 	}
 	
 	//region Classes
-	public static @NotNull List<Class<?>> getClasses(@NotNull String packageName) {
+	public static @NotNull List<Class<?>> getClasses(String packageName) {
+		Objects.requireNonNull(packageName, "Package name must not be null");
 		return getAllClasses().stream().filter(clazz -> clazz.getPackageName().startsWith(packageName)).collect(Collectors.toList());
 	}
 	
-	public static @NotNull List<Class<?>> getAnnotatedClasses(@NotNull Class<? extends Annotation> annotation) {
+	public static @NotNull List<Class<?>> getAnnotatedClasses(Class<? extends Annotation> annotation) {
+		Objects.requireNonNull(annotation, "Annotation must not be null");
 		return getAllClasses().stream().filter(clazz -> clazz.isAnnotationPresent(annotation)).collect(Collectors.toList());
 	}
 	//endregion
 	
 	//region Methods
-	public static @NotNull List<Method> getAnnotatedMethods(@NotNull Class<? extends Annotation> annotation) {
+	public static @NotNull List<Method> getAnnotatedMethods(Class<? extends Annotation> annotation) {
+		Objects.requireNonNull(annotation, "Annotation must not be null");
 		return getAllClasses().stream().map(Class::getDeclaredMethods).flatMap(methods -> Lists.newArrayList(methods).stream()).filter(method -> method.isAnnotationPresent(annotation)).collect(Collectors.toList());
 	}
 	
-	public static @NotNull List<Method> getAnnotatedMethods(@NotNull Class<?> clazz, @NotNull Class<? extends Annotation> annotation) {
+	public static @NotNull List<Method> getAnnotatedMethods(@NotNull Class<?> clazz, Class<? extends Annotation> annotation) {
+		Objects.requireNonNull(clazz, "Class must not be null");
+		Objects.requireNonNull(annotation, "Annotation must not be null");
 		return Lists.newArrayList(clazz.getDeclaredMethods()).stream().filter(method -> method.isAnnotationPresent(annotation)).collect(Collectors.toList());
 	}
 	//endregion
 	
 	//region Fields
-	public static @NotNull List<Field> getAnnotatedFields(@NotNull Class<? extends Annotation> annotation) {
+	public static @NotNull List<Field> getAnnotatedFields(Class<? extends Annotation> annotation) {
+		Objects.requireNonNull(annotation, "Annotation must not be null");
 		return getAllClasses().stream().map(Class::getDeclaredFields).flatMap(fields -> Lists.newArrayList(fields).stream()).filter(field -> field.isAnnotationPresent(annotation)).collect(Collectors.toList());
 	}
 	
-	public static @NotNull List<Field> getAnnotatedFields(@NotNull Class<?> clazz, @NotNull Class<? extends Annotation> annotation) {
+	public static @NotNull List<Field> getAnnotatedFields(@NotNull Class<?> clazz, Class<? extends Annotation> annotation) {
+		Objects.requireNonNull(clazz, "Class must not be null");
+		Objects.requireNonNull(annotation, "Annotation must not be null");
 		return Lists.newArrayList(clazz.getDeclaredFields()).stream().filter(field -> field.isAnnotationPresent(annotation)).collect(Collectors.toList());
 	}
 	//endregion
-	
 }

@@ -15,7 +15,7 @@ public class LazyLoad<T> implements Supplier<T> {
 	private T value;
 	
 	public LazyLoad(Supplier<T> supplier) {
-		this.supplier = supplier;
+		this.supplier = Objects.requireNonNull(supplier, "Supplied value must not be null");
 	}
 	
 	public void load() {

@@ -1,9 +1,10 @@
 package net.luis.utils.math;
 
+import org.apache.commons.lang3.ArrayUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.jetbrains.annotations.NotNull;
 
+import java.util.Objects;
 import java.util.Random;
 
 /**
@@ -45,16 +46,16 @@ public class Mth {
 	//endregion
 	
 	//region Random
-	public static int randomInt(@NotNull Random rng, int min, int max) {
-		return min + rng.nextInt(max - min);
+	public static int randomInt(Random rng, int min, int max) {;
+		return min + Objects.requireNonNull(rng, "Random must not be null").nextInt(max - min);
 	}
 	
-	public static int randomExclusiveInt(@NotNull Random rng, int min, int max) {
-		return min + rng.nextInt(max - min - 1) + 1;
+	public static int randomExclusiveInt(Random rng, int min, int max) {
+		return min + Objects.requireNonNull(rng, "Random must not be null").nextInt(max - min - 1) + 1;
 	}
 	
-	public static int randomInclusiveInt(@NotNull Random rng, int min, int max) {
-		return min + rng.nextInt(max - min + 1);
+	public static int randomInclusiveInt(Random rng, int min, int max) {
+		return min + Objects.requireNonNull(rng, "Random must not be null").nextInt(max - min + 1);
 	}
 	//endregion
 	
@@ -67,8 +68,8 @@ public class Mth {
 		return max >= value && value >= min;
 	}
 	
-	public static boolean sameValues(@NotNull Number... numbers) {
-		if (numbers.length == 0) {
+	public static boolean sameValues(Number... numbers) {
+		if (numbers == null || numbers.length == 0) {
 			return false;
 		} else if (numbers.length == 1) {
 			return true;
@@ -115,6 +116,7 @@ public class Mth {
 	
 	//region Average
 	public static double average(int... values) {
+		values = ArrayUtils.nullToEmpty(values);
 		long sum = 0;
 		for (int value : values) {
 			sum += value;
@@ -123,6 +125,7 @@ public class Mth {
 	}
 	
 	public static double average(long... values) {
+		values = ArrayUtils.nullToEmpty(values);
 		long sum = 0;
 		for (long value : values) {
 			sum += value;
@@ -131,6 +134,7 @@ public class Mth {
 	}
 	
 	public static double average(double... values) {
+		values = ArrayUtils.nullToEmpty(values);
 		long sum = 0;
 		for (double value : values) {
 			sum += value;
@@ -142,5 +146,4 @@ public class Mth {
 	public static boolean isPowerOfTwo(int value) {
 		return value != 0 && (value & value - 1) == 0;
 	}
-	
 }

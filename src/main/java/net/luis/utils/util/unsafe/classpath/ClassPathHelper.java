@@ -36,8 +36,9 @@ class ClassPathHelper {
 		return fileName.substring(0, fileName.length() - 6).replace("/", ".").replace("\\", ".");
 	}
 	
-	private static @NotNull List<Class<?>> getClassesFromJar(@NotNull File file) {
+	private static @NotNull List<Class<?>> getClassesFromJar(File file) {
 		List<Class<?>> classes = new ArrayList<>();
+		Objects.requireNonNull(file, "File must not be null");
 		if (file.canRead()) {
 			try (JarFile jar = new JarFile(file)) {
 				Enumeration<JarEntry> enumeration = jar.entries();
@@ -55,8 +56,9 @@ class ClassPathHelper {
 		return classes;
 	}
 	
-	private static @NotNull List<Class<?>> getClassesFromDirectory(@NotNull File path) {
+	private static @NotNull List<Class<?>> getClassesFromDirectory(File path) {
 		List<Class<?>> classes = new ArrayList<>();
+		Objects.requireNonNull(path, "Path must not be null");
 		for (File file : listFiles(path, (dir, name) -> name.endsWith(".jar"), false)) {
 			classes.addAll(getClassesFromJar(file));
 		}
@@ -71,8 +73,9 @@ class ClassPathHelper {
 		return classes;
 	}
 	
-	private static @NotNull List<File> listFiles(@NotNull File directory, FilenameFilter filter, boolean recurse) {
+	private static @NotNull List<File> listFiles(File directory, FilenameFilter filter, boolean recurse) {
 		List<File> files = new ArrayList<>();
+		Objects.requireNonNull(directory, "Directory must not be null");
 		for (File entry : Objects.requireNonNull(directory.listFiles())) {
 			if (filter == null || filter.accept(directory, entry.getName())) {
 				files.add(entry);
@@ -95,5 +98,4 @@ class ClassPathHelper {
 		return files;
 	}
 	//endregion
-	
 }
