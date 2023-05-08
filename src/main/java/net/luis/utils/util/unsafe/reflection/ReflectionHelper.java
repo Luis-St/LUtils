@@ -59,7 +59,8 @@ public class ReflectionHelper {
 		return null;
 	}
 	
-	public static boolean hasInterface(Class<?> clazz, @NotNull Class<?> iface) {
+	public static boolean hasInterface(Class<?> clazz, Class<?> iface) {
+		Objects.requireNonNull(iface, "Interface must not be null");
 		if (iface.isInterface()) {
 			return Lists.newArrayList(clazz.getInterfaces()).contains(iface);
 		}
@@ -67,20 +68,20 @@ public class ReflectionHelper {
 	}
 	
 	//region Internal helper methods
-	private static List<String> getSimpleNames(Class<?>... classes) {
+	private static @NotNull List<String> getSimpleNames(Class<?>... classes) {
 		return Lists.newArrayList(classes).stream().map(Class::getSimpleName).collect(Collectors.toList());
 	}
 	
-	private static List<String> getSimpleNames(Object... objects) {
+	private static @NotNull List<String> getSimpleNames(Object... objects) {
 		return Lists.newArrayList(objects).stream().map(Object::getClass).map(Class::getSimpleName).collect(Collectors.toList());
 	}
 	//endregion
 	
 	//region Constructor methods
-	public static <T> Constructor<T> getConstructor(@NotNull Class<T> clazz, Class<?>... parameters) {
+	public static <T> Constructor<T> getConstructor(Class<T> clazz, Class<?>... parameters) {
 		Constructor<T> constructor = null;
 		try {
-			constructor = clazz.getDeclaredConstructor(parameters);
+			constructor = Objects.requireNonNull(clazz, "Class must not be null").getDeclaredConstructor(parameters);
 		} catch (NoSuchMethodException e) {
 			if (LOG_EXCEPTIONS && !THROW_EXCEPTIONS) {
 				LOGGER.error(e);
@@ -109,9 +110,10 @@ public class ReflectionHelper {
 		return constructor != null;
 	}
 	
-	public static <T> T newInstance(@NotNull Constructor<T> constructor, Object... parameters) {
+	public static <T> T newInstance(Constructor<T> constructor, Object... parameters) {
 		T instance = null;
 		try {
+			Objects.requireNonNull(constructor, "Constructor must not be null");
 			if (constructor.trySetAccessible()) {
 				instance = constructor.newInstance(parameters);
 			} else {
@@ -155,10 +157,10 @@ public class ReflectionHelper {
 	//endregion
 	
 	//region Method methods
-	public static Method getMethod(@NotNull Class<?> clazz, String name, Class<?>... parameters) {
+	public static Method getMethod(Class<?> clazz, String name, Class<?>... parameters) {
 		Method method = null;
 		try {
-			method = clazz.getDeclaredMethod(name, parameters);
+			method = Objects.requireNonNull(clazz, "Class must not be null").getDeclaredMethod(name, parameters);
 		} catch (NoSuchMethodException e) {
 			LOGGER.warn("Error retrieving method for name {} and parameter {} in type {}", name, getSimpleNames(parameters), clazz.getSimpleName());
 			if (LOG_EXCEPTIONS && !THROW_EXCEPTIONS) {
@@ -187,9 +189,10 @@ public class ReflectionHelper {
 		return method != null;
 	}
 	
-	public static Object invoke(@NotNull Method method, Object instance, Object... parameters) {
+	public static Object invoke(Method method, Object instance, Object... parameters) {
 		Object returnValue = null;
 		try {
+			Objects.requireNonNull(method, "Method must not be null");
 			if (method.trySetAccessible()) {
 				returnValue = method.invoke(instance, parameters);
 			} else {
@@ -226,10 +229,10 @@ public class ReflectionHelper {
 	//endregion
 	
 	//region Field methods
-	public static Field getField(@NotNull Class<?> clazz, String name) {
+	public static Field getField(Class<?> clazz, String name) {
 		Field field = null;
 		try {
-			field = clazz.getDeclaredField(name);
+			field = Objects.requireNonNull(clazz, "Class must not be null").getDeclaredField(name);
 		} catch (NoSuchFieldException e) {
 			LOGGER.warn("Fail to get field {} in class {}", name, clazz.getSimpleName());
 			if (LOG_EXCEPTIONS && !THROW_EXCEPTIONS) {
@@ -258,9 +261,10 @@ public class ReflectionHelper {
 		return field != null;
 	}
 	
-	public static Object get(@NotNull Field field, Object instance) {
+	public static Object get(Field field, Object instance) {
 		Object value = null;
 		try {
+			Objects.requireNonNull(field, "Field must not be null");
 			if (field.trySetAccessible()) {
 				value = field.get(instance);
 			} else {
@@ -288,8 +292,9 @@ public class ReflectionHelper {
 		return get(getField(clazz, name), instance);
 	}
 	
-	public static void set(@NotNull Field field, Object instance, Object value) {
+	public static void set(Field field, Object instance, Object value) {
 		try {
+			Objects.requireNonNull(field, "Field must not be null");
 			if (field.trySetAccessible()) {
 				field.set(instance, value);
 			} else {
@@ -316,5 +321,4 @@ public class ReflectionHelper {
 		set(getField(clazz, name), instance, value);
 	}
 	//endregion
-	
 }

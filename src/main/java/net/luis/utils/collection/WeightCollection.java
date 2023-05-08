@@ -25,15 +25,15 @@ public class WeightCollection<T> {
 	
 	public WeightCollection(Random rng) {
 		this.map = Maps.newTreeMap();
-		this.rng = rng;
+		this.rng = Objects.requireNonNull(rng, "Random must not be null");
 	}
 	
-	public void add(int weight, @NotNull T value) {
+	public void add(int weight, T value) {
 		if (0 >= weight) {
 			throw new IllegalArgumentException("The weight must be greater than 0, but it is " + weight);
 		}
 		this.total += weight;
-		this.map.put(this.total, Objects.requireNonNull(value));
+		this.map.put(this.total, value);
 	}
 	
 	public T next() {
@@ -68,5 +68,4 @@ public class WeightCollection<T> {
 		return Objects.hash(this.map, this.rng, this.total);
 	}
 	//endregion
-	
 }

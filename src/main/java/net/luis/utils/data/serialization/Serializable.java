@@ -12,5 +12,4 @@ import org.jetbrains.annotations.NotNull;
 public interface Serializable {
 	
 	@NotNull CompoundTag serialize();
-	
 }

@@ -5,7 +5,6 @@ import org.jetbrains.annotations.NotNull;
 import java.util.NoSuchElementException;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 /**
@@ -22,12 +21,12 @@ public class Result<T> implements Supplier<Either<T, String>> {
 		this.either = either;
 	}
 	
-	public static <T> @NotNull Result<T> success(@NotNull T value) {
+	public static <T> @NotNull Result<T> success(T value) {
 		return new Result<>(Either.left(value));
 	}
 	
-	public static <T> @NotNull Result<T> error(@NotNull String error) {
-		return new Result<>(Either.right(error));
+	public static <T> @NotNull Result<T> error(String error) {
+		return new Result<>(Either.right(Objects.requireNonNull(error, "Error must not be null")));
 	}
 	
 	@Override
@@ -44,24 +43,14 @@ public class Result<T> implements Supplier<Either<T, String>> {
 	}
 	
 	public @NotNull T orThrow() {
-		return this.orThrow((error) -> {
-		
-		});
-	}
-	
-	public @NotNull T orThrow(@NotNull Consumer<String> onError) {
-		if (this.either.isLeft()) {
-			return this.either.leftOrThrow();
-		}
-		onError.accept(this.either.rightOrThrow());
-		throw new NoSuchElementException("No value available");
+		return this.orThrow(() -> new NoSuchElementException("No value available"));
 	}
 	
 	public <X extends RuntimeException> @NotNull T orThrow(Supplier<? extends X> exceptionSupplier) {
 		if (this.either.isLeft()) {
 			return this.either.leftOrThrow();
 		}
-		throw exceptionSupplier.get();
+		throw Objects.requireNonNull(exceptionSupplier, "Supplied exception must not be null").get();
 	}
 	
 	public boolean isError() {

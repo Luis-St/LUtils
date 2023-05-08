@@ -37,9 +37,10 @@ class ResultTest {
 	@Test
 	void orThrow() {
 		assertDoesNotThrow(() -> Result.success(100).orThrow());
-		assertDoesNotThrow(() -> Result.success(100).orThrow((error) -> System.out.println("Error of result:" + error)));
+		assertDoesNotThrow(() -> Result.success(100).orThrow(RuntimeException::new));
 		assertThrows(NoSuchElementException.class, () -> Result.error("Error").orThrow());
-		assertThrows(NoSuchElementException.class, () -> Result.error("Error").orThrow((error) -> {}));
+		assertThrows(NullPointerException.class, () -> Result.error("Error").orThrow(null));
+		assertThrows(RuntimeException.class, () -> Result.error("Error").orThrow(RuntimeException::new));
 	}
 	
 	@Test

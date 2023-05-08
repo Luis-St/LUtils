@@ -50,5 +50,4 @@ public class ScannerUtils {
 		scanner.close();
 		return value;
 	}
-	
 }

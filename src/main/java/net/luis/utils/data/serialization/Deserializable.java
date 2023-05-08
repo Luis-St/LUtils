@@ -22,7 +22,5 @@ public @interface Deserializable {
 	enum Type {
 		
 		CONSTRUCTOR(), METHOD(), STATIC_METHOD()
-		
 	}
-	
 }

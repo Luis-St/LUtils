@@ -58,6 +58,4 @@ public class StackTraceUtils {
 	public static @NotNull Method getCallingMethod() {
 		return getCallingMethod(1);
 	}
-	
-	
 }

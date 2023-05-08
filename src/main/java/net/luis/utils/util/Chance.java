@@ -66,5 +66,4 @@ public class Chance {
 		return "Chance{chance=" + this.chance + "}";
 	}
 	//endregion
-	
 }
