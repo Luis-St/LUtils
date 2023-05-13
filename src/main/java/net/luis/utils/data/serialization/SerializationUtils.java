@@ -5,8 +5,6 @@ import net.luis.utils.data.tag.Tag;
 import net.luis.utils.data.tag.exception.TagException;
 import net.luis.utils.data.tag.tags.CompoundTag;
 import net.luis.utils.util.unsafe.reflection.ReflectionHelper;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.jetbrains.annotations.NotNull;
 
 import java.lang.reflect.Method;
@@ -19,8 +17,6 @@ import java.util.Objects;
  */
 
 public class SerializationUtils {
-	
-	private static final Logger LOGGER = LogManager.getLogger(SerializationUtils.class);
 	
 	public static <T extends Serializable> @NotNull T deserialize(@NotNull Class<T> clazz, @NotNull Path path) {
 		try {

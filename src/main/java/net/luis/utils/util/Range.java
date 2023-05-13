@@ -33,6 +33,10 @@ public class Range {
 		}
 	}
 	
+	public static @NotNull Range of(char min, char max) {
+		return of((int) min, (int) max);
+	}
+	
 	public int getMin() {
 		return this.min;
 	}
