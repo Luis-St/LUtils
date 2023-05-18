@@ -96,6 +96,12 @@ public class ReflectionHelper {
 			} else if (THROW_EXCEPTIONS) {
 				throw new RuntimeException(e);
 			}
+		} catch (NullPointerException e) {
+			if (LOG_EXCEPTIONS && !THROW_EXCEPTIONS) {
+				LOGGER.error(e);
+			} else if (THROW_EXCEPTIONS) {
+				throw e;
+			}
 		}
 		return constructor;
 	}
@@ -147,6 +153,12 @@ public class ReflectionHelper {
 			} else if (THROW_EXCEPTIONS) {
 				throw new RuntimeException(e);
 			}
+		} catch (NullPointerException e) {
+			if (LOG_EXCEPTIONS && !THROW_EXCEPTIONS) {
+				LOGGER.error(e);
+			} else if (THROW_EXCEPTIONS) {
+				throw e;
+			}
 		}
 		return instance;
 	}
@@ -174,6 +186,12 @@ public class ReflectionHelper {
 				LOGGER.error(e);
 			} else if (THROW_EXCEPTIONS) {
 				throw new RuntimeException(e);
+			}
+		} catch (NullPointerException e) {
+			if (LOG_EXCEPTIONS && !THROW_EXCEPTIONS) {
+				LOGGER.error(e);
+			} else if (THROW_EXCEPTIONS) {
+				throw e;
 			}
 		}
 		return method;
@@ -219,6 +237,12 @@ public class ReflectionHelper {
 			} else if (THROW_EXCEPTIONS) {
 				throw new RuntimeException(e);
 			}
+		} catch (NullPointerException e) {
+			if (LOG_EXCEPTIONS && !THROW_EXCEPTIONS) {
+				LOGGER.error(e);
+			} else if (THROW_EXCEPTIONS) {
+				throw e;
+			}
 		}
 		return returnValue;
 	}
@@ -246,6 +270,12 @@ public class ReflectionHelper {
 				LOGGER.error(e);
 			} else if (THROW_EXCEPTIONS) {
 				throw new RuntimeException(e);
+			}
+		} catch (NullPointerException e) {
+			if (LOG_EXCEPTIONS && !THROW_EXCEPTIONS) {
+				LOGGER.error(e);
+			} else if (THROW_EXCEPTIONS) {
+				throw e;
 			}
 		}
 		return field;
@@ -284,6 +314,12 @@ public class ReflectionHelper {
 			} else if (THROW_EXCEPTIONS) {
 				throw new RuntimeException(e);
 			}
+		} catch (NullPointerException e) {
+			if (LOG_EXCEPTIONS && !THROW_EXCEPTIONS) {
+				LOGGER.error(e);
+			} else if (THROW_EXCEPTIONS) {
+				throw e;
+			}
 		}
 		return value;
 	}
@@ -313,6 +349,12 @@ public class ReflectionHelper {
 				LOGGER.error(e);
 			} else if (THROW_EXCEPTIONS) {
 				throw new RuntimeException(e);
+			}
+		} catch (NullPointerException e) {
+			if (LOG_EXCEPTIONS && !THROW_EXCEPTIONS) {
+				LOGGER.error(e);
+			} else if (THROW_EXCEPTIONS) {
+				throw e;
 			}
 		}
 	}
