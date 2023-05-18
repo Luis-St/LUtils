@@ -44,7 +44,6 @@ public abstract class Either<L, R> {
 	public abstract @NotNull Optional<R> right();
 	
 	public <T> Either<T, R> mapLeft(Function<? super L, ? extends T> mapper) {
-		
 		return this.map((value) -> Either.left(Objects.requireNonNull(mapper, "Mapper must not be null").apply(value)), Either::right);
 	}
 	
