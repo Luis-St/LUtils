@@ -21,6 +21,7 @@ module net.luis.utils {
 	exports net.luis.utils.data.tag.tags.collection.array;
 	exports net.luis.utils.data.tag.tags.numeric;
 	exports net.luis.utils.data.tag.visitor;
+	exports net.luis.utils.event;
 	exports net.luis.utils.exception;
 	exports net.luis.utils.function;
 	exports net.luis.utils.io;
