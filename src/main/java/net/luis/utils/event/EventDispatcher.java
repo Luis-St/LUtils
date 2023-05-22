@@ -28,7 +28,7 @@ public class EventDispatcher {
 	
 	@SuppressWarnings("unchecked")
 	public <T extends EventType<E>, E extends Event> void dispatch(T type, E event) {
-		this.listeners.get(type).forEach(listener -> ((EventListener<T, E>) listener).call(type, event));
+		this.listeners.getOrDefault(type, Registry.of()).forEach(listener -> ((EventListener<T, E>) listener).call(type, event));
 	}
 	
 	//region Object overrides
