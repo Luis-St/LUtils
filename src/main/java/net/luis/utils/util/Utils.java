@@ -7,10 +7,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
 import java.util.Map.Entry;
-import java.util.function.BiFunction;
-import java.util.function.Consumer;
-import java.util.function.Function;
-import java.util.function.Predicate;
+import java.util.function.*;
 import java.util.stream.Collectors;
 
 /**
@@ -107,20 +104,20 @@ public class Utils {
 	//endregion
 	
 	//region Null helper methods
-	public static <T, R> R mapIf(@Nullable T value, Predicate<T> condition, Function<T, R> mapper) {
+	public static <T, R> R mapIf(T value, Predicate<T> condition, Function<T, R> mapper) {
 		Objects.requireNonNull(condition, "Condition must not be null");
 		if (value != null && condition.test(value)) {
 			return Objects.requireNonNull(mapper, "Mapper must not be null").apply(value);
 		}
-		return null;
+		throw new NullPointerException("Value must not be null");
 	}
 	
-	public static <T, R> R mapIfNot(@Nullable T value, Predicate<T> condition, Function<T, R> mapper) {
+	public static <T, R> R mapIfNot(T value, Predicate<T> condition, Function<T, R> mapper) {
 		Objects.requireNonNull(condition, "Condition must not be null");
 		if (value != null && !condition.test(value)) {
 			return Objects.requireNonNull(mapper, "Mapper must not be null").apply(value);
 		}
-		return null;
+		throw new NullPointerException("Value must not be null");
 	}
 	
 	public static <T, R> R mapIfNotNull(T value, Function<T, R> mapper) {
@@ -135,6 +132,19 @@ public class Utils {
 			return Objects.requireNonNull(nullFallback, "Fallback value must not be null");
 		}
 		return value;
+	}
+	
+	public static <T> @NotNull T warpNullTo(T value, Supplier<T> nullFallback) {
+		if (value == null) {
+			return Objects.requireNonNull(nullFallback, "Fallback supplier must not be null").get();
+		}
+		return value;
+	}
+	
+	public static <T> void executeIfNotNull(T value, Consumer<T> action) {
+		if (value != null) {
+			Objects.requireNonNull(action, "Action must not be null").accept(value);
+		}
 	}
 	//endregion
 	

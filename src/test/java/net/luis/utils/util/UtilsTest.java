@@ -4,10 +4,7 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import org.junit.jupiter.api.Test;
 
-import java.util.Arrays;
-import java.util.Map;
-import java.util.Random;
-import java.util.UUID;
+import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -27,8 +24,7 @@ class UtilsTest {
 	
 	@Test
 	void make() {
-		assertThrows(NullPointerException.class, () -> Utils.make(null, (list) -> {
-		}));
+		assertThrows(NullPointerException.class, () -> Utils.make(null, (list) -> {}));
 		assertEquals(Utils.make(Lists.newArrayList(), (list) -> list.addAll(Arrays.asList(0, 1, 2, 3, 4))), Lists.newArrayList(0, 1, 2, 3, 4));
 	}
 	
@@ -60,13 +56,13 @@ class UtilsTest {
 	
 	@Test
 	void mapIf() {
-		assertNull(Utils.mapIf(null, String::isBlank, String::trim));
+		assertThrows(NullPointerException.class, () -> Utils.mapIf(null, String::isBlank, String::trim));
 		assertEquals(Utils.mapIf(" ", String::isBlank, String::trim), "");
 	}
 	
 	@Test
 	void mapIfNot() {
-		assertNull(Utils.mapIfNot(null, String::isEmpty, (value) -> "*".repeat(4)));
+		assertThrows(NullPointerException.class, () -> Utils.mapIfNot(null, String::isEmpty, (value) -> "*".repeat(4)));
 		assertEquals(Utils.mapIfNot("*".repeat(4), String::isEmpty, (value) -> ""), "");
 	}
 	
@@ -78,16 +74,18 @@ class UtilsTest {
 	
 	@Test
 	void warpNullTo() {
-		assertThrows(NullPointerException.class, () -> Utils.warpNullTo(null, null));
+		assertThrows(NullPointerException.class, () -> Utils.warpNullTo((String) null, (String) null));
 		assertEquals(Utils.warpNullTo(null, "fallback"), "fallback");
 		assertEquals(Utils.warpNullTo("value", "fallback"), "value");
+		assertThrows(NullPointerException.class, () -> Utils.warpNullTo(null, null));
+		assertEquals(Utils.warpNullTo(null, () -> 0), 0);
+		assertEquals(Utils.warpNullTo(1, () -> 0), 1);
 	}
 	
 	@Test
 	void getRandomSafe() {
 		assertTrue(Utils.getRandomSafe(new Integer[0], new Random()).isEmpty());
 		assertTrue(Utils.getRandomSafe(new Integer[]{0, 1, 2, 3, 4}, new Random()).isPresent());
-		
 		assertTrue(Utils.getRandomSafe(Lists.newArrayList(), new Random()).isEmpty());
 		assertTrue(Utils.getRandomSafe(Lists.newArrayList(0, 1, 2, 3, 4), new Random()).isPresent());
 	}
