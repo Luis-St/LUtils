@@ -4,6 +4,9 @@ import org.apache.commons.lang3.mutable.MutableObject;
 
 import java.util.ConcurrentModificationException;
 import java.util.Objects;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Future;
+import java.util.function.Consumer;
 
 /**
  *
@@ -14,6 +17,8 @@ import java.util.Objects;
 public class LazyInstantiation<T> {
 	
 	private final MutableObject<T> object;
+	private Consumer<T> action;
+	private CompletableFuture<T> future;
 	private boolean instantiated = false;
 	
 	public LazyInstantiation() {
@@ -40,7 +45,20 @@ public class LazyInstantiation<T> {
 		} else {
 			this.object.setValue(value);
 			this.instantiated = true;
+			Utils.executeIfNotNull(this.action, (action) -> {
+				action.accept(value);
+				this.future.complete(value);
+			});
 		}
+	}
+	
+	public boolean isInstantiated() {
+		return this.instantiated;
+	}
+	
+	public CompletableFuture<T> whenInstantiated(Consumer<T> action) {
+		this.action = Objects.requireNonNull(action, "Instantiation action must not be null");
+		return this.future = new CompletableFuture<>();
 	}
 	
 	//region Object overrides
