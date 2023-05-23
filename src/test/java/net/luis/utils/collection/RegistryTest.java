@@ -4,6 +4,7 @@ import com.google.common.collect.Lists;
 import org.junit.jupiter.api.Test;
 
 import java.util.UUID;
+import java.util.function.Function;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -27,7 +28,10 @@ class RegistryTest {
 		Registry<Integer> registry = Registry.of();
 		assertNotNull(registry.register(10));
 		assertDoesNotThrow(() -> registry.register(10));
-		assertThrows(NullPointerException.class, () -> registry.register(null));
+		assertThrows(NullPointerException.class, () -> registry.register((Integer) null));
+		assertNotNull(registry.register(uniqueId -> 10));
+		assertDoesNotThrow(() -> registry.register(uniqueId -> 10));
+		assertThrows(NullPointerException.class, () -> registry.register((Function<UUID, Integer>) null));
 	}
 	
 	@Test

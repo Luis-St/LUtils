@@ -4,6 +4,7 @@ import com.google.common.collect.Maps;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
+import java.util.function.Function;
 
 /**
  *
@@ -36,19 +37,28 @@ public class Registry<T> implements Iterable<T> {
 		return registry;
 	}
 	
-	public @NotNull UUID register(T item) {
+	private void checkFrozen() {
 		if (this.frozen) {
 			throw new UnsupportedOperationException("Registry is frozen");
 		}
+	}
+	
+	public @NotNull UUID register(T item) {
+		this.checkFrozen();
 		UUID uniqueId = UUID.randomUUID();
 		this.registry.put(uniqueId, Objects.requireNonNull(item, "Item must not be null"));
 		return uniqueId;
 	}
 	
+	public @NotNull UUID register(Function<UUID, T> function) {
+		this.checkFrozen();
+		UUID uniqueId = UUID.randomUUID();
+		this.registry.put(uniqueId, Objects.requireNonNull(function, "Function must not be null").apply(uniqueId));
+		return uniqueId;
+	}
+	
 	public boolean remove(UUID uniqueId) {
-		if (this.frozen) {
-			throw new UnsupportedOperationException("Registry is frozen");
-		}
+		this.checkFrozen();
 		return this.registry.remove(Objects.requireNonNull(uniqueId, "Unique id must not be null")) != null;
 	}
 	
@@ -86,9 +96,7 @@ public class Registry<T> implements Iterable<T> {
 	}
 	
 	public void clear() {
-		if (this.frozen) {
-			throw new UnsupportedOperationException("Registry is frozen");
-		}
+		this.checkFrozen();
 		this.registry.clear();
 	}
 	
