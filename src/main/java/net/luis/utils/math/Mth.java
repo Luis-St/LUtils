@@ -46,7 +46,7 @@ public class Mth {
 	//endregion
 	
 	//region Random
-	public static int randomInt(Random rng, int min, int max) {;
+	public static int randomInt(Random rng, int min, int max) {
 		return min + Objects.requireNonNull(rng, "Random must not be null").nextInt(max - min);
 	}
 	

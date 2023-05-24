@@ -73,5 +73,4 @@ public class EndTag implements Tag {
 		return this.getAsString();
 	}
 	//endregion
-	
 }

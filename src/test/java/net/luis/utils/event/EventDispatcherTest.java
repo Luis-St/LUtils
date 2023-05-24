@@ -43,5 +43,5 @@ class EventDispatcherTest {
 		dispatcher.dispatch(TYPE, new ExampleEvent());
 	}
 	
-	static class ExampleEvent implements Event { }
+	static class ExampleEvent implements Event {}
 }

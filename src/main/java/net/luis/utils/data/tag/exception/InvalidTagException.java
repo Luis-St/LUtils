@@ -20,5 +20,4 @@ public class InvalidTagException extends TagException {
 	public InvalidTagException(int id, Throwable cause) {
 		super("Invalid tag ID: " + id, cause);
 	}
-	
 }

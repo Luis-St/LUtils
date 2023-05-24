@@ -39,9 +39,4 @@ public interface TagType<T extends Tag> {
 	@NotNull String getName();
 	
 	@NotNull String getVisitorName();
-	
-	default boolean isValue() {
-		return false;
-	}
-	
 }

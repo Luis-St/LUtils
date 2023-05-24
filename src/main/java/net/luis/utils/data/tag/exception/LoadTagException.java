@@ -29,5 +29,4 @@ public class LoadTagException extends TagException {
 	public LoadTagException(Path path, Throwable cause) {
 		super("Tag cannot be loaded from file " + path, cause);
 	}
-	
 }

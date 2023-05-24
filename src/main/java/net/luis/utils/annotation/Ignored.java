@@ -14,15 +14,15 @@ public class Ignored {
 	@Documented
 	@Target({ElementType.PARAMETER, ElementType.LOCAL_VARIABLE})
 	@Retention(RetentionPolicy.RUNTIME)
-	public @interface Always { }
+	public @interface Always {}
 	
 	@Documented
 	@Target({ElementType.PARAMETER, ElementType.LOCAL_VARIABLE})
 	@Retention(RetentionPolicy.RUNTIME)
-	public @interface Maybe { }
+	public @interface Maybe {}
 	
 	@Documented
 	@Target({ElementType.PARAMETER, ElementType.LOCAL_VARIABLE})
 	@Retention(RetentionPolicy.RUNTIME)
-	public @interface Never { }
+	public @interface Never {}
 }

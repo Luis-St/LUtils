@@ -1,17 +1,13 @@
 package net.luis.utils.data.tag.visitor;
 
 import com.google.common.collect.Lists;
-import net.luis.utils.annotation.Ignored;
+import net.luis.utils.annotation.Ignored.Always;
 import net.luis.utils.data.tag.Tag;
-import net.luis.utils.data.tag.tags.CompoundTag;
-import net.luis.utils.data.tag.tags.EndTag;
-import net.luis.utils.data.tag.tags.StringTag;
+import net.luis.utils.data.tag.tags.*;
 import net.luis.utils.data.tag.tags.collection.ListTag;
 import net.luis.utils.data.tag.tags.collection.array.IntArrayTag;
 import net.luis.utils.data.tag.tags.collection.array.LongArrayTag;
-import net.luis.utils.data.tag.tags.numeric.DoubleTag;
-import net.luis.utils.data.tag.tags.numeric.IntTag;
-import net.luis.utils.data.tag.tags.numeric.LongTag;
+import net.luis.utils.data.tag.tags.numeric.*;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Collections;
@@ -105,8 +101,7 @@ public class StringTagVisitor implements TagVisitor {
 	}
 	
 	@Override
-	public void visitEnd(@Ignored.Always EndTag tag) {
+	public void visitEnd(@Always EndTag tag) {
 		this.builder.append("END");
 	}
-	
 }

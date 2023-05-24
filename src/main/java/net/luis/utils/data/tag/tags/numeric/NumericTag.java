@@ -25,5 +25,4 @@ public abstract class NumericTag implements Tag {
 	public String toString() {
 		return this.getAsString();
 	}
-	
 }
