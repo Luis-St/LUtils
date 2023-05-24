@@ -82,7 +82,7 @@ public class SortedList<E> extends AbstractList<E> {
 	}
 	
 	@Override
-	public void sort(@Ignored Comparator<? super E> comparator) {
+	public void sort(@Ignored.Always Comparator<? super E> comparator) {
 		super.sort(this.comparator);
 	}
 }
