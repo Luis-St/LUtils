@@ -36,11 +36,6 @@ public class LongTag extends NumericTag {
 		public @NotNull String getVisitorName() {
 			return "LongTag";
 		}
-		
-		@Override
-		public boolean isValue() {
-			return true;
-		}
 	};
 	//endregion
 	

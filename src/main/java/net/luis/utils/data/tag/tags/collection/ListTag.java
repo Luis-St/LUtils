@@ -53,11 +53,6 @@ public class ListTag extends CollectionTag<Tag> {
 		public @NotNull String getVisitorName() {
 			return "ListTag";
 		}
-		
-		@Override
-		public boolean isValue() {
-			return true;
-		}
 	};
 	//endregion
 	

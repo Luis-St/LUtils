@@ -36,11 +36,6 @@ public class IntTag extends NumericTag {
 		public @NotNull String getVisitorName() {
 			return "IntTag";
 		}
-		
-		@Override
-		public boolean isValue() {
-			return true;
-		}
 	};
 	//endregion
 	
