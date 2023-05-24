@@ -6,9 +6,7 @@ import net.luis.utils.data.tag.exception.SaveTagException;
 import net.luis.utils.data.tag.visitor.TagVisitor;
 import org.jetbrains.annotations.NotNull;
 
-import java.io.DataInput;
-import java.io.DataOutput;
-import java.io.IOException;
+import java.io.*;
 
 /**
  *
@@ -121,5 +119,4 @@ public class LongTag extends NumericTag {
 		return Long.hashCode(this.data);
 	}
 	//endregion
-	
 }

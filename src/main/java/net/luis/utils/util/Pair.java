@@ -22,7 +22,7 @@ public class Pair<F, S> {
 	}
 	
 	public static <T, U> @NotNull Pair<T, U> of(T first, U second) {
-	    return new Pair<>(first, second);
+		return new Pair<>(first, second);
 	}
 	
 	public F getFirst() {

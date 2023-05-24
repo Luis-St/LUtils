@@ -1,28 +1,18 @@
 package net.luis.utils.data.tag.tags;
 
 import com.google.common.collect.Maps;
-import net.luis.utils.data.tag.Tag;
-import net.luis.utils.data.tag.TagType;
-import net.luis.utils.data.tag.TagTypes;
+import net.luis.utils.data.tag.*;
 import net.luis.utils.data.tag.exception.LoadTagException;
 import net.luis.utils.data.tag.exception.SaveTagException;
 import net.luis.utils.data.tag.tags.collection.ListTag;
 import net.luis.utils.data.tag.tags.collection.array.IntArrayTag;
 import net.luis.utils.data.tag.tags.collection.array.LongArrayTag;
-import net.luis.utils.data.tag.tags.numeric.DoubleTag;
-import net.luis.utils.data.tag.tags.numeric.IntTag;
-import net.luis.utils.data.tag.tags.numeric.LongTag;
-import net.luis.utils.data.tag.tags.numeric.NumericTag;
+import net.luis.utils.data.tag.tags.numeric.*;
 import net.luis.utils.data.tag.visitor.TagVisitor;
 import org.jetbrains.annotations.NotNull;
 
-import java.io.DataInput;
-import java.io.DataOutput;
-import java.io.IOException;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
+import java.io.*;
+import java.util.*;
 
 /**
  *
@@ -330,5 +320,4 @@ public class CompoundTag implements Tag {
 		return this.getAsString();
 	}
 	//endregion
-	
 }

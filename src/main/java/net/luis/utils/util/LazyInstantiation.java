@@ -5,7 +5,6 @@ import org.apache.commons.lang3.mutable.MutableObject;
 import java.util.ConcurrentModificationException;
 import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.Future;
 import java.util.function.Consumer;
 
 /**

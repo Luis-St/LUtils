@@ -31,5 +31,4 @@ public class SaveTagException extends TagException {
 	public SaveTagException(Tag tag, Path path, Throwable cause) {
 		super("Tag of type " + tag.getType().getVisitorName() + " cannot be stored in file " + path, cause);
 	}
-	
 }

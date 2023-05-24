@@ -6,5 +6,4 @@ package net.luis.utils.event;
  *
  */
 
-public interface Event {
-}
+public interface Event {}

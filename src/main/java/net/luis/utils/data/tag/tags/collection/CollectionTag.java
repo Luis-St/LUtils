@@ -33,5 +33,4 @@ public abstract class CollectionTag<T extends Tag> extends AbstractList<T> imple
 	public String toString() {
 		return this.getAsString();
 	}
-	
 }

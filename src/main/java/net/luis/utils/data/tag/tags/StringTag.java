@@ -8,9 +8,7 @@ import net.luis.utils.data.tag.visitor.TagVisitor;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 
-import java.io.DataInput;
-import java.io.DataOutput;
-import java.io.IOException;
+import java.io.*;
 
 /**
  *
@@ -120,5 +118,4 @@ public class StringTag implements Tag {
 		return Tag.super.getAsString();
 	}
 	//endregion
-	
 }

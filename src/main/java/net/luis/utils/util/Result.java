@@ -2,9 +2,7 @@ package net.luis.utils.util;
 
 import org.jetbrains.annotations.NotNull;
 
-import java.util.NoSuchElementException;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 import java.util.function.Supplier;
 
 /**
