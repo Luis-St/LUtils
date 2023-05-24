@@ -7,7 +7,7 @@ package net.luis.utils.event;
  */
 
 @FunctionalInterface
-public interface EventListener<T extends EventType<E>, E extends Event> {
+public interface EventListener<E extends Event> {
 	
-	void call(T type, E event);
+	void call(E event);
 }
