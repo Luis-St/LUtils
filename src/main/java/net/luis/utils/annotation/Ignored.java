@@ -8,9 +8,21 @@ import java.lang.annotation.*;
  *
  */
 
-@Documented
-@Retention(RetentionPolicy.RUNTIME)
-@Target(ElementType.PARAMETER)
-public @interface Ignored {
 
+public class Ignored {
+	
+	@Documented
+	@Target({ElementType.PARAMETER, ElementType.LOCAL_VARIABLE})
+	@Retention(RetentionPolicy.RUNTIME)
+	public @interface Always { }
+	
+	@Documented
+	@Target({ElementType.PARAMETER, ElementType.LOCAL_VARIABLE})
+	@Retention(RetentionPolicy.RUNTIME)
+	public @interface Maybe { }
+	
+	@Documented
+	@Target({ElementType.PARAMETER, ElementType.LOCAL_VARIABLE})
+	@Retention(RetentionPolicy.RUNTIME)
+	public @interface Never { }
 }
