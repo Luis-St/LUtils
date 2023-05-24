@@ -12,9 +12,9 @@ import java.util.*;
 
 public class EventDispatcher {
 	
-	private final Map<EventType<?>, Registry<EventListener<?, ?>>> listeners = new HashMap<>();
+	private final Map<EventType<?>, Registry<EventListener<?>>> listeners = new HashMap<>();
 	
-	public <T extends EventType<E>, E extends Event> UUID register(T type, EventListener<T, E> listener) {
+	public <T extends EventType<E>, E extends Event> UUID register(T type, EventListener<E> listener) {
 		return this.listeners.computeIfAbsent(type, k -> Registry.of()).register(listener);
 	}
 	
@@ -28,7 +28,7 @@ public class EventDispatcher {
 	
 	@SuppressWarnings("unchecked")
 	public <T extends EventType<E>, E extends Event> void dispatch(T type, E event) {
-		this.listeners.getOrDefault(type, Registry.of()).forEach(listener -> ((EventListener<T, E>) listener).call(type, event));
+		this.listeners.getOrDefault(type, Registry.of()).forEach(listener -> ((EventListener<E>) listener).call(event));
 	}
 	
 	//region Object overrides
