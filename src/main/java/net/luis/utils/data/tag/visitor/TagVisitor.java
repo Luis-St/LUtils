@@ -36,6 +36,6 @@ public interface TagVisitor {
 	
 	void visitCompound(@NotNull CompoundTag tag);
 	
-	void visitEnd(@Ignored EndTag tag);
+	void visitEnd(@Ignored.Always EndTag tag);
 	
 }

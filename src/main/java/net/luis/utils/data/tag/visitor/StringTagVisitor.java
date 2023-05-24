@@ -105,7 +105,7 @@ public class StringTagVisitor implements TagVisitor {
 	}
 	
 	@Override
-	public void visitEnd(@Ignored EndTag tag) {
+	public void visitEnd(@Ignored.Always EndTag tag) {
 		this.builder.append("END");
 	}
 	
