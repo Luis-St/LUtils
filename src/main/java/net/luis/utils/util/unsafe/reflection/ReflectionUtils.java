@@ -50,15 +50,15 @@ public class ReflectionUtils {
 		return Arrays.stream(clazz.getDeclaredMethods()).filter(method -> method.getName().equals(name)).toList();
 	}
 	
-	public static Object[] getParameters(Method method, Object... values) {
-		return getParameters(Objects.requireNonNull(method, "Method must not be null"), Utils.mapList(Lists.newArrayList(values), value -> {
+	public static Object [] getParameters(Executable executable, Object... values) {
+		return getParameters(Objects.requireNonNull(executable, "Executable must not be null"), Utils.mapList(Lists.newArrayList(values), value -> {
 			String name = value.getClass().getSimpleName();
 			return new ValueInfo(value, name.substring(0, 1).toLowerCase() + name.substring(1), Nullability.UNKNOWN);
 		}));
 	}
 	
-	public static Object[] getParameters(Method method, List<ValueInfo> values) {
-		Parameter[] parameters = Objects.requireNonNull(method, "Method must not be null").getParameters();
+	public static Object[] getParameters(Executable executable, List<ValueInfo> values) {
+		Parameter[] parameters = Objects.requireNonNull(executable, "Method must not be null").getParameters();
 		Object[] arguments = new Object[parameters.length];
 		for (int i = 0; i < parameters.length; i++) {
 			arguments[i] = findParameter(parameters[i], values);
