@@ -18,13 +18,13 @@ class EventDispatcherTest {
 	
 	@Test
 	void register() {
-		assertDoesNotThrow(() -> new EventDispatcher().register(TYPE, (type, event) -> {}));
+		assertDoesNotThrow(() -> new EventDispatcher().register(TYPE, (event) -> {}));
 	}
 	
 	@Test
 	void remove() {
 		EventDispatcher dispatcher = new EventDispatcher();
-		UUID uniqueId = dispatcher.register(TYPE, (type, event) -> {});
+		UUID uniqueId = dispatcher.register(TYPE, (event) -> {});
 		assertTrue(dispatcher.remove(TYPE, uniqueId));
 	}
 	
@@ -32,12 +32,10 @@ class EventDispatcherTest {
 	void dispatch() {
 		EventDispatcher dispatcher = new EventDispatcher();
 		assertDoesNotThrow(() -> dispatcher.dispatch(TYPE, new ExampleEvent()));
-		dispatcher.register(TYPE, (type, event) -> {
-			assertEquals(TYPE, type);
+		dispatcher.register(TYPE, (event) -> {
 			assertEquals(ExampleEvent.class, event.getClass());
 		});
-		dispatcher.register(TYPE, (type, event) -> {
-			assertEquals(TYPE, type);
+		dispatcher.register(TYPE, (event) -> {
 			assertEquals(ExampleEvent.class, event.getClass());
 		});
 		dispatcher.dispatch(TYPE, new ExampleEvent());

@@ -2,6 +2,7 @@ package net.luis.utils.util;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.junit.jupiter.api.Test;
 
 import java.util.*;
@@ -15,6 +16,7 @@ import static org.junit.jupiter.api.Assertions.*;
  */
 
 class UtilsTest {
+	
 	@Test
 	void isEmpty() {
 		assertTrue(Utils.isEmpty(Utils.EMPTY_UUID));
@@ -73,6 +75,21 @@ class UtilsTest {
 	}
 	
 	@Test
+	void hasDuplicates() {
+		assertThrows(NullPointerException.class, () -> Utils.hasDuplicates((Integer[]) null));
+		assertThrows(NullPointerException.class, () -> Utils.hasDuplicates((List<Integer>) null));
+		assertFalse(Utils.hasDuplicates(new Integer[]{0, 1, 2, 3, 4}));
+		assertTrue(Utils.hasDuplicates(new Integer[]{0, 1, 2, 3, 4, 0}));
+		assertFalse(Utils.hasDuplicates(Lists.newArrayList(0, 1, 2, 3, 4)));
+		assertTrue(Utils.hasDuplicates(Lists.newArrayList(0, 1, 2, 3, 4, 0)));
+		
+		assertFalse(Utils.hasDuplicates(4, new Integer[]{0, 1, 2, 3, 4}));
+		assertTrue(Utils.hasDuplicates(4, new Integer[]{0, 1, 2, 3, 4, 4}));
+		assertFalse(Utils.hasDuplicates(4, Lists.newArrayList(0, 1, 2, 3, 4)));
+		assertTrue(Utils.hasDuplicates(4, Lists.newArrayList(0, 1, 2, 3, 4, 4)));
+	}
+	
+	@Test
 	void warpNullTo() {
 		assertThrows(NullPointerException.class, () -> Utils.warpNullTo((String) null, (String) null));
 		assertEquals(Utils.warpNullTo(null, "fallback"), "fallback");
@@ -80,6 +97,15 @@ class UtilsTest {
 		assertThrows(NullPointerException.class, () -> Utils.warpNullTo(null, null));
 		assertEquals(Utils.warpNullTo(null, () -> 0), 0);
 		assertEquals(Utils.warpNullTo(1, () -> 0), 1);
+	}
+	
+	@Test
+	void executeIfNotNull() {
+		assertDoesNotThrow(() -> Utils.executeIfNotNull(null, (value) -> {}));
+		assertDoesNotThrow(() -> Utils.executeIfNotNull(null, (value) -> {
+			throw new NullPointerException();
+		}));
+		Utils.executeIfNotNull("value", (value) -> assertEquals(value, "value"));
 	}
 	
 	@Test

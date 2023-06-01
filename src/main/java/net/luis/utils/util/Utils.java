@@ -2,6 +2,8 @@ package net.luis.utils.util;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import com.google.common.collect.Sets;
+import org.apache.commons.lang3.ArrayUtils;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
@@ -60,30 +62,6 @@ public class Utils {
 	}
 	//endregion
 	
-	//region Duplicate checks
-	public static boolean hasDuplicates(Object[] values) {
-		Objects.requireNonNull(values, "Values must not be null");
-		return values.length != Arrays.stream(values).distinct().count();
-	}
-	
-	public static boolean hasDuplicates(List<?> values) {
-		Objects.requireNonNull(values, "Values must not be null");
-		return values.size() != values.stream().distinct().count();
-	}
-	
-	public static boolean hasDuplicates(Object object, Object[] values) {
-		Objects.requireNonNull(object, "Object must not be null");
-		Objects.requireNonNull(values, "Values must not be null");
-		return values.length != Arrays.stream(values).filter(object::equals).count();
-	}
-	
-	public static boolean hasDuplicates(Object object, List<?> values) {
-		Objects.requireNonNull(object, "Object must not be null");
-		Objects.requireNonNull(values, "Values must not be null");
-		return values.size() != values.stream().filter(object::equals).count();
-	}
-	//endregion
-	
 	//region Map util methods
 	public static <K, T, V> @NotNull Map<T, V> mapKey(Map<K, V> map, Function<K, T> mapper) {
 		Map<T, V> mapped = Maps.newHashMap();
@@ -102,7 +80,7 @@ public class Utils {
 	}
 	//endregion
 	
-	//region Null helper methods
+	//region Mapper methods
 	public static <T, R> R mapIf(T value, Predicate<T> condition, Function<T, R> mapper) {
 		Objects.requireNonNull(condition, "Condition must not be null");
 		if (value != null && condition.test(value)) {
@@ -125,7 +103,39 @@ public class Utils {
 		}
 		return null;
 	}
+	//endregion
 	
+	//region Duplicate checks
+	public static boolean hasDuplicates(Object[] values) {
+		Objects.requireNonNull(values, "Values must not be null");
+		return values.length != Arrays.stream(values).distinct().count();
+	}
+	
+	public static boolean hasDuplicates(List<?> values) {
+		Objects.requireNonNull(values, "Values must not be null");
+		return values.size() != values.stream().distinct().count();
+	}
+	
+	public static boolean hasDuplicates(Object object, Object[] values) {
+		Objects.requireNonNull(object, "Object must not be null");
+		Objects.requireNonNull(values, "Values must not be null");
+		if (!ArrayUtils.contains(values, object)) {
+			return false;
+		}
+		return values.length != Sets.newHashSet(values).size();
+	}
+	
+	public static boolean hasDuplicates(Object object, List<?> values) {
+		Objects.requireNonNull(object, "Object must not be null");
+		Objects.requireNonNull(values, "Values must not be null");
+		if (!values.contains(object)) {
+			return false;
+		}
+		return values.size() != Sets.newHashSet(values).size();
+	}
+	//endregion
+	
+	//region Null helper methods
 	public static <T> @NotNull T warpNullTo(T value, T nullFallback) {
 		if (value == null) {
 			return Objects.requireNonNull(nullFallback, "Fallback value must not be null");
