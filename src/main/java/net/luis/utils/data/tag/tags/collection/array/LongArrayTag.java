@@ -10,6 +10,8 @@ import org.apache.commons.lang3.ArrayUtils;
 
 import net.luis.utils.data.tag.Tag;
 import net.luis.utils.data.tag.TagType;
+import net.luis.utils.data.tag.exception.LoadTagException;
+import net.luis.utils.data.tag.exception.SaveTagException;
 import net.luis.utils.data.tag.tags.collection.CollectionTag;
 import net.luis.utils.data.tag.tags.numeric.LongTag;
 import net.luis.utils.data.tag.tags.numeric.NumericTag;
@@ -19,13 +21,17 @@ public class LongArrayTag extends CollectionTag<LongTag> {
 	
 	public static final TagType<LongArrayTag> TYPE = new TagType<LongArrayTag>() {
 		@Override
-		public LongArrayTag load(DataInput input) throws IOException {
-			int length = input.readInt();
-			long[] data = new long[length];
-			for (int i = 0; i < length; i++) {
-				data[i] = input.readLong();
+		public LongArrayTag load(DataInput input) throws LoadTagException {
+			try {
+				int length = input.readInt();
+				long[] data = new long[length];
+				for (int i = 0; i < length; i++) {
+					data[i] = input.readLong();
+				}
+				return new LongArrayTag(data);
+			} catch (IOException e) {
+				throw new LoadTagException(e);
 			}
-			return new LongArrayTag(data);
 		}
 		
 		@Override
@@ -63,10 +69,14 @@ public class LongArrayTag extends CollectionTag<LongTag> {
 	}
 	
 	@Override
-	public void save(DataOutput output) throws IOException {
-		output.writeInt(this.data.length);
-		for (int i = 0; i < this.data.length; i++) {
-			output.writeLong(this.data[i]);
+	public void save(DataOutput output) throws SaveTagException {
+		try {
+			output.writeInt(this.data.length);
+			for (int i = 0; i < this.data.length; i++) {
+				output.writeLong(this.data[i]);
+			}
+		} catch (IOException e) {
+			throw new SaveTagException(e);
 		}
 	}
 	

@@ -7,14 +7,20 @@ import java.util.Objects;
 
 import net.luis.utils.data.tag.Tag;
 import net.luis.utils.data.tag.TagType;
+import net.luis.utils.data.tag.exception.LoadTagException;
+import net.luis.utils.data.tag.exception.SaveTagException;
 import net.luis.utils.data.tag.visitor.TagVisitor;
 
 public class StringTag implements Tag {
 	
 	public static final TagType<StringTag> TYPE = new TagType<StringTag>() {
 		@Override
-		public StringTag load(DataInput input) throws IOException {
-			return StringTag.valueOf(input.readUTF());
+		public StringTag load(DataInput input) throws LoadTagException {
+			try {
+				return StringTag.valueOf(input.readUTF());
+			} catch (IOException e) {
+				throw new LoadTagException(e);
+			}
 		}
 		
 		@Override
@@ -43,8 +49,12 @@ public class StringTag implements Tag {
 	}
 	
 	@Override
-	public void save(DataOutput output) throws IOException {
-		output.writeUTF(this.data);
+	public void save(DataOutput output) throws SaveTagException {
+		try {
+			output.writeUTF(this.data);
+		} catch (IOException e) {
+			throw new SaveTagException(e);
+		}
 	}
 	
 	@Override

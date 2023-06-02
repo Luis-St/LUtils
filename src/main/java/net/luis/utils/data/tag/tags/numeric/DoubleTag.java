@@ -5,14 +5,20 @@ import java.io.DataOutput;
 import java.io.IOException;
 
 import net.luis.utils.data.tag.TagType;
+import net.luis.utils.data.tag.exception.LoadTagException;
+import net.luis.utils.data.tag.exception.SaveTagException;
 import net.luis.utils.data.tag.visitor.TagVisitor;
 
 public class DoubleTag extends NumericTag {
 	
 	public static final TagType<DoubleTag> TYPE = new TagType<DoubleTag>() {
 		@Override
-		public DoubleTag load(DataInput input) throws IOException {
-			return valueOf(input.readDouble());
+		public DoubleTag load(DataInput input) throws LoadTagException {
+			try {
+				return valueOf(input.readDouble());
+			} catch (IOException e) {
+				throw new LoadTagException(e);
+			}
 		}
 		
 		@Override
@@ -42,8 +48,12 @@ public class DoubleTag extends NumericTag {
 	}
 	
 	@Override
-	public void save(DataOutput output) throws IOException {
-		output.writeDouble(this.data);
+	public void save(DataOutput output) throws SaveTagException {
+		try {
+			output.writeDouble(this.data);
+		} catch (IOException e) {
+			throw new SaveTagException(e);
+		}
 	}
 	
 	@Override

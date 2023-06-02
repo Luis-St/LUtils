@@ -49,7 +49,6 @@ publishing {
 			artifact sourcesJar
 		}
 	}
-	
 	repositories {
 		maven {
 			url uri("${projectDir}/maven/repositories")
