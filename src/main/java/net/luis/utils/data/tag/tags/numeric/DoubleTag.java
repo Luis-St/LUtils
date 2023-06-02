@@ -36,11 +36,6 @@ public class DoubleTag extends NumericTag {
 		public @NotNull String getVisitorName() {
 			return "DoubleTag";
 		}
-		
-		@Override
-		public boolean isValue() {
-			return true;
-		}
 	};
 	//endregion
 	
