@@ -1,15 +1,6 @@
 package net.luis.utils.data.tag.tags;
 
-import java.io.DataInput;
-import java.io.DataOutput;
-import java.io.IOException;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Set;
-
 import com.google.common.collect.Maps;
-
 import net.luis.utils.data.tag.Tag;
 import net.luis.utils.data.tag.TagType;
 import net.luis.utils.data.tag.TagTypes;
@@ -19,21 +10,24 @@ import net.luis.utils.data.tag.tags.collection.ListTag;
 import net.luis.utils.data.tag.tags.collection.array.ByteArrayTag;
 import net.luis.utils.data.tag.tags.collection.array.IntArrayTag;
 import net.luis.utils.data.tag.tags.collection.array.LongArrayTag;
-import net.luis.utils.data.tag.tags.numeric.ByteTag;
-import net.luis.utils.data.tag.tags.numeric.DoubleTag;
-import net.luis.utils.data.tag.tags.numeric.FloatTag;
-import net.luis.utils.data.tag.tags.numeric.IntTag;
-import net.luis.utils.data.tag.tags.numeric.LongTag;
-import net.luis.utils.data.tag.tags.numeric.NumericTag;
-import net.luis.utils.data.tag.tags.numeric.ShortTag;
+import net.luis.utils.data.tag.tags.numeric.*;
 import net.luis.utils.data.tag.visitor.TagVisitor;
 import net.luis.utils.util.Equals;
+import org.jetbrains.annotations.NotNull;
+
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
 
 public class CompoundTag implements Tag {
 	
-	public static final TagType<CompoundTag> TYPE = new TagType<CompoundTag>() {
+	public static final TagType<CompoundTag> TYPE = new TagType<>() {
 		@Override
-		public CompoundTag load(DataInput input) throws LoadTagException {
+		public @NotNull CompoundTag load(DataInput input) throws LoadTagException {
 			try {
 				int size = input.readInt();
 				Map<String, Tag> data = Maps.newHashMap();
@@ -53,12 +47,12 @@ public class CompoundTag implements Tag {
 		}
 		
 		@Override
-		public String getName() {
+		public @NotNull String getName() {
 			return "compound_tag";
 		}
 		
 		@Override
-		public String getVisitorName() {
+		public @NotNull String getVisitorName() {
 			return "CompoundTag";
 		}
 	};
@@ -96,12 +90,12 @@ public class CompoundTag implements Tag {
 	}
 	
 	@Override
-	public TagType<CompoundTag> getType() {
+	public @NotNull TagType<CompoundTag> getType() {
 		return TYPE;
 	}
 	
 	@Override
-	public CompoundTag copy() {
+	public @NotNull CompoundTag copy() {
 		Map<String, Tag> data = Maps.newHashMap();
 		for (Entry<String, Tag> entry : this.data.entrySet()) {
 			data.put(entry.getKey(), entry.getValue().copy());
@@ -226,7 +220,7 @@ public class CompoundTag implements Tag {
 			if (this.contains(key, PRIMITIVE_TAG)) {
 				return ((NumericTag) this.get(key)).getAsByte();
 			}
-		} catch (ClassCastException e) {
+		} catch (ClassCastException ignored) {
 			
 		}
 		return (byte) 0;
@@ -237,7 +231,7 @@ public class CompoundTag implements Tag {
 			if (this.contains(key, PRIMITIVE_TAG)) {
 				return ((NumericTag) this.get(key)).getAsShort();
 			}
-		} catch (ClassCastException e) {
+		} catch (ClassCastException ignored) {
 			
 		}
 		return (short) 0;
@@ -248,10 +242,10 @@ public class CompoundTag implements Tag {
 			if (this.contains(key, PRIMITIVE_TAG)) {
 				return ((NumericTag) this.get(key)).getAsInt();
 			}
-		} catch (ClassCastException e) {
+		} catch (ClassCastException ignored) {
 			
 		}
-		return (int) 0;
+		return 0;
 	}
 	
 	public long getLong(String key) {
@@ -259,10 +253,10 @@ public class CompoundTag implements Tag {
 			if (this.contains(key, PRIMITIVE_TAG)) {
 				return ((NumericTag) this.get(key)).getAsLong();
 			}
-		} catch (ClassCastException e) {
+		} catch (ClassCastException ignored) {
 			
 		}
-		return (long) 0;
+		return 0;
 	}
 	
 	public float getFloat(String key) {
@@ -270,7 +264,7 @@ public class CompoundTag implements Tag {
 			if (this.contains(key, PRIMITIVE_TAG)) {
 				return ((NumericTag) this.get(key)).getAsFloat();
 			}
-		} catch (ClassCastException e) {
+		} catch (ClassCastException ignored) {
 			
 		}
 		return (float) 0;
@@ -281,10 +275,10 @@ public class CompoundTag implements Tag {
 			if (this.contains(key, PRIMITIVE_TAG)) {
 				return ((NumericTag) this.get(key)).getAsDouble();
 			}
-		} catch (ClassCastException e) {
+		} catch (ClassCastException ignored) {
 			
 		}
-		return (double) 0;
+		return 0;
 	}
 	
 	public String getString(String key) {

@@ -1,6 +1,7 @@
 package net.luis.utils.data.tag.tags.numeric;
 
 import net.luis.utils.data.tag.Tag;
+import org.jetbrains.annotations.NotNull;
 
 public abstract class NumericTag implements Tag {
 	
@@ -16,7 +17,7 @@ public abstract class NumericTag implements Tag {
 	
 	public abstract double getAsDouble();
 	
-	public abstract Number getAsNumber();
+	public abstract @NotNull Number getAsNumber();
 	
 	@Override
 	public String toString() {

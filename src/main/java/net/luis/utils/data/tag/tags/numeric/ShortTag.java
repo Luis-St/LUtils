@@ -1,20 +1,21 @@
 package net.luis.utils.data.tag.tags.numeric;
 
-import java.io.DataInput;
-import java.io.DataOutput;
-import java.io.IOException;
-
 import net.luis.utils.data.tag.TagType;
 import net.luis.utils.data.tag.exception.LoadTagException;
 import net.luis.utils.data.tag.exception.SaveTagException;
 import net.luis.utils.data.tag.visitor.TagVisitor;
 import net.luis.utils.util.Equals;
+import org.jetbrains.annotations.NotNull;
+
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
 
 public class ShortTag extends NumericTag {
 	
-	public static final TagType<ShortTag> TYPE = new TagType<ShortTag>() {
+	public static final TagType<ShortTag> TYPE = new TagType<>() {
 		@Override
-		public ShortTag load(DataInput input) throws LoadTagException {
+		public @NotNull ShortTag load(DataInput input) throws LoadTagException {
 			try {
 				return valueOf(input.readShort());
 			} catch (IOException e) {
@@ -23,12 +24,12 @@ public class ShortTag extends NumericTag {
 		}
 		
 		@Override
-		public String getName() {
+		public @NotNull String getName() {
 			return "short_tag";
 		}
 		
 		@Override
-		public String getVisitorName() {
+		public @NotNull String getVisitorName() {
 			return "ShortTag";
 		}
 		
@@ -63,12 +64,12 @@ public class ShortTag extends NumericTag {
 	}
 	
 	@Override
-	public TagType<ShortTag> getType() {
+	public @NotNull TagType<ShortTag> getType() {
 		return TYPE;
 	}
 	
 	@Override
-	public ShortTag copy() {
+	public @NotNull ShortTag copy() {
 		return valueOf(this.data);
 	}
 	
@@ -84,31 +85,31 @@ public class ShortTag extends NumericTag {
 	
 	@Override
 	public short getAsShort() {
-		return (short) this.data;
+		return this.data;
 	}
 	
 	@Override
 	public int getAsInt() {
-		return (int) this.data;
+		return this.data;
 	}
 	
 	@Override
 	public long getAsLong() {
-		return (long) this.data;
+		return this.data;
 	}
 	
 	@Override
 	public float getAsFloat() {
-		return (float) this.data;
+		return this.data;
 	}
 	
 	@Override
 	public double getAsDouble() {
-		return (double) this.data;
+		return this.data;
 	}
 	
 	@Override
-	public Number getAsNumber() {
+	public @NotNull Number getAsNumber() {
 		return this.data;
 	}
 	

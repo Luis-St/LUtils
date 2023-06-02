@@ -1,36 +1,30 @@
 package net.luis.utils.data.tag.tags.collection;
 
-import java.io.DataInput;
-import java.io.DataOutput;
-import java.io.IOException;
-import java.util.List;
-
 import com.google.common.collect.Lists;
-
 import net.luis.utils.data.tag.Tag;
 import net.luis.utils.data.tag.TagType;
 import net.luis.utils.data.tag.TagTypes;
 import net.luis.utils.data.tag.exception.LoadTagException;
 import net.luis.utils.data.tag.exception.SaveTagException;
 import net.luis.utils.data.tag.tags.CompoundTag;
-import net.luis.utils.data.tag.tags.StringTag;
 import net.luis.utils.data.tag.tags.collection.array.ByteArrayTag;
 import net.luis.utils.data.tag.tags.collection.array.IntArrayTag;
 import net.luis.utils.data.tag.tags.collection.array.LongArrayTag;
-import net.luis.utils.data.tag.tags.numeric.ByteTag;
-import net.luis.utils.data.tag.tags.numeric.DoubleTag;
-import net.luis.utils.data.tag.tags.numeric.FloatTag;
-import net.luis.utils.data.tag.tags.numeric.IntTag;
-import net.luis.utils.data.tag.tags.numeric.LongTag;
-import net.luis.utils.data.tag.tags.numeric.ShortTag;
+import net.luis.utils.data.tag.tags.numeric.*;
 import net.luis.utils.data.tag.visitor.TagVisitor;
 import net.luis.utils.util.Equals;
+import org.jetbrains.annotations.NotNull;
+
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
+import java.util.List;
 
 public class ListTag extends CollectionTag<Tag> {
 	
-	public static final TagType<ListTag> TYPE = new TagType<ListTag>() {
+	public static final TagType<ListTag> TYPE = new TagType<>() {
 		@Override
-		public ListTag load(DataInput input) throws LoadTagException {
+		public @NotNull ListTag load(DataInput input) throws LoadTagException {
 			try {
 				byte type = input.readByte();
 				int size = input.readInt();
@@ -50,12 +44,12 @@ public class ListTag extends CollectionTag<Tag> {
 		}
 		
 		@Override
-		public String getName() {
+		public @NotNull String getName() {
 			return "data_tag";
 		}
 		
 		@Override
-		public String getVisitorName() {
+		public @NotNull String getVisitorName() {
 			return "ListTag";
 		}
 		
@@ -101,12 +95,12 @@ public class ListTag extends CollectionTag<Tag> {
 	}
 	
 	@Override
-	public TagType<ListTag> getType() {
+	public @NotNull TagType<ListTag> getType() {
 		return TYPE;
 	}
 	
 	@Override
-	public ListTag copy() {
+	public @NotNull ListTag copy() {
 		List<Tag> copy = Lists.newArrayList();
 		for (Tag tag : this.data) {
 			copy.add(tag.copy());
@@ -164,7 +158,7 @@ public class ListTag extends CollectionTag<Tag> {
 				return ((IntTag) tag).getAsInt();
 			}
 		}
-		return (int) 0;
+		return 0;
 	}
 	
 	public long getLong(int index) {
@@ -174,7 +168,7 @@ public class ListTag extends CollectionTag<Tag> {
 				return ((LongTag) tag).getAsLong();
 			}
 		}
-		return (long) 0;
+		return 0;
 	}
 	
 	public float getFloat(int index) {
@@ -194,14 +188,14 @@ public class ListTag extends CollectionTag<Tag> {
 				return ((DoubleTag) tag).getAsDouble();
 			}
 		}
-		return (double) 0;
+		return 0;
 	}
 	
 	public String getString(int index) {
 		if (this.data.size() > index && index >= 0) {
 			Tag tag = this.data.get(index);
 			if (tag.getId() == STRING_TAG) {
-				return ((StringTag) tag).getAsString();
+				return tag.getAsString();
 			}
 		}
 		return "";
@@ -268,10 +262,10 @@ public class ListTag extends CollectionTag<Tag> {
 	}
 	
 	@Override
-	public Tag set(int index, Tag tag) {
+	public @NotNull Tag set(int index, Tag tag) {
 		Tag oldTag = this.get(index);
 		if (!this.setTag(index, tag)) {
-			LOGGER.warn("Try to add tag of type {} to data of [}", tag.getId(), this.type);
+			LOGGER.warn("Try to add tag of type {} to data of {}", tag.getId(), this.type);
 		}
 		return oldTag;
 	}
@@ -279,7 +273,7 @@ public class ListTag extends CollectionTag<Tag> {
 	@Override
 	public void add(int index, Tag tag) {
 		if (!this.addTag(index, tag)) {
-			LOGGER.warn("Try to add tag of type {} to data of [}", tag.getId(), this.type);
+			LOGGER.warn("Try to add tag of type {} to data of {}", tag.getId(), this.type);
 		}
 	}
 	

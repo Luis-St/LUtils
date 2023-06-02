@@ -1,9 +1,10 @@
 package net.luis.utils.util;
 
+import org.apache.commons.lang3.mutable.MutableObject;
+import org.jetbrains.annotations.Nullable;
+
 import java.util.ConcurrentModificationException;
 import java.util.Objects;
-
-import org.apache.commons.lang3.mutable.MutableObject;
 
 /**
  *
@@ -25,7 +26,7 @@ public class LazyInstantiation<T> {
 		this.set(object);
 	}
 	
-	public T get() {
+	public @Nullable T get() {
 		if (!this.instantiated) {
 			throw new NullPointerException("The object has not been instantiated yet");
 		} else {
@@ -37,7 +38,7 @@ public class LazyInstantiation<T> {
 		if (this.instantiated) {
 			throw new ConcurrentModificationException("Cannot change a final object");
 		} else {
-			this.object.setValue(value);
+			this.object.setValue(Objects.requireNonNull(value));
 			this.instantiated = true;
 		}
 	}
@@ -47,7 +48,7 @@ public class LazyInstantiation<T> {
 		if (!this.instantiated) {
 			return "null";
 		}
-		return this.get().toString();
+		return Objects.requireNonNull(this.get()).toString();
 	}
 	
 	@Override

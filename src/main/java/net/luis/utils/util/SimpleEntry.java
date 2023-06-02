@@ -1,5 +1,8 @@
 package net.luis.utils.util;
 
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+
 import java.util.ConcurrentModificationException;
 import java.util.Map;
 import java.util.Objects;
@@ -16,17 +19,17 @@ public class SimpleEntry<K, V> implements Map.Entry<K, V> {
 	protected V value;
 	
 	public SimpleEntry(K key, V value) {
-		this.key = key;
+		this.key = Objects.requireNonNull(key);
 		this.value = value;
 	}
 	
 	@Override
-	public K getKey() {
+	public @NotNull K getKey() {
 		return this.key;
 	}
 	
 	@Override
-	public V getValue() {
+	public @Nullable V getValue() {
 		return this.value;
 	}
 	

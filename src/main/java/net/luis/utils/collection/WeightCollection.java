@@ -1,10 +1,11 @@
 package net.luis.utils.collection;
 
+import com.google.common.collect.Maps;
+import org.jetbrains.annotations.NotNull;
+
 import java.util.NavigableMap;
 import java.util.Objects;
 import java.util.Random;
-
-import com.google.common.collect.Maps;
 
 /**
  *
@@ -32,10 +33,10 @@ public class WeightCollection<T> {
 			throw new IllegalArgumentException("The weight must be greater than 0, but it is " + weight);
 		}
 		this.total += weight;
-		this.map.put(this.total, value);
+		this.map.put(this.total, Objects.requireNonNull(value));
 	}
 	
-	public T next() {
+	public @NotNull T next() {
 		int value = (int) (this.rng.nextDouble() * this.total);
 		return this.map.higherEntry(value).getValue();
 	}

@@ -1,5 +1,7 @@
 package net.luis.utils.util;
 
+import org.jetbrains.annotations.NotNull;
+
 import java.util.NoSuchElementException;
 import java.util.Objects;
 import java.util.Optional;
@@ -20,16 +22,16 @@ public class Result<T> implements Supplier<Either<T, String>> {
 		this.either = either;
 	}
 	
-	public static <T> Result<T> success(T value) {
+	public static <T> @NotNull Result<T> success(T value) {
 		return new Result<>(Either.left(value));
 	}
 	
-	public static <T> Result<T> error(String error) {
+	public static <T> @NotNull Result<T> error(String error) {
 		return new Result<>(Either.right(error));
 	}
 	
 	@Override
-	public Either<T, String> get() {
+	public @NotNull Either<T, String> get() {
 		return this.either;
 	}
 	
@@ -37,17 +39,17 @@ public class Result<T> implements Supplier<Either<T, String>> {
 		return this.either.isLeft();
 	}
 	
-	public Optional<T> result() {
+	public @NotNull Optional<T> result() {
 		return this.either.left();
 	}
 	
-	public T orThrow() {
+	public @NotNull T orThrow() {
 		return this.orThrow((error) -> {
 			
 		});
 	}
 	
-	public T orThrow(Consumer<String> onError) {
+	public @NotNull T orThrow(Consumer<String> onError) {
 		if (this.either.isLeft()) {
 			return this.either.leftOrThrow();
 		}
@@ -59,7 +61,7 @@ public class Result<T> implements Supplier<Either<T, String>> {
 		return this.either.isLeft();
 	}
 	
-	public Optional<String> error() {
+	public @NotNull Optional<String> error() {
 		return this.either.right();
 	}
 	

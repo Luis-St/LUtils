@@ -1,16 +1,19 @@
 package net.luis.utils.data.tag.tags.collection;
 
-import java.util.AbstractList;
-
 import net.luis.utils.data.tag.Tag;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+
+import java.util.AbstractList;
 
 public abstract class CollectionTag<T extends Tag> extends AbstractList<T> implements Tag {
 	
-	public abstract T set(int index, T tag);
+	
+	public abstract @NotNull T set(int index, T tag);
 	
 	public abstract void add(int index, T tag);
 	
-	public abstract T remove(int index);
+	public abstract @Nullable T remove(int index);
 	
 	public abstract boolean setTag(int index, Tag tag);
 	

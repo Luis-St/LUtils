@@ -1,21 +1,23 @@
 package net.luis.utils.data.tag.tags;
 
-import java.io.DataInput;
-import java.io.DataOutput;
-import java.io.IOException;
-
 import net.luis.utils.data.tag.Tag;
 import net.luis.utils.data.tag.TagType;
 import net.luis.utils.data.tag.exception.LoadTagException;
 import net.luis.utils.data.tag.exception.SaveTagException;
 import net.luis.utils.data.tag.visitor.TagVisitor;
 import net.luis.utils.util.Equals;
+import org.jetbrains.annotations.NotNull;
+
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
 
 public class StringTag implements Tag {
 	
-	public static final TagType<StringTag> TYPE = new TagType<StringTag>() {
+	public static final StringTag EMPTY = new StringTag("");
+	public static final TagType<StringTag> TYPE = new TagType<>() {
 		@Override
-		public StringTag load(DataInput input) throws LoadTagException {
+		public @NotNull StringTag load(DataInput input) throws LoadTagException {
 			try {
 				return StringTag.valueOf(input.readUTF());
 			} catch (IOException e) {
@@ -24,17 +26,15 @@ public class StringTag implements Tag {
 		}
 		
 		@Override
-		public String getName() {
+		public @NotNull String getName() {
 			return "string_tag";
 		}
 		
 		@Override
-		public String getVisitorName() {
+		public @NotNull String getVisitorName() {
 			return "StringTag";
 		}
 	};
-	public static final StringTag EMPTY = new StringTag("");
-	
 	private final String data;
 	
 	private StringTag(String data) {
@@ -63,12 +63,12 @@ public class StringTag implements Tag {
 	}
 	
 	@Override
-	public TagType<StringTag> getType() {
+	public @NotNull TagType<StringTag> getType() {
 		return TYPE;
 	}
 	
 	@Override
-	public StringTag copy() {
+	public @NotNull StringTag copy() {
 		return valueOf(this.data);
 	}
 	
@@ -78,7 +78,7 @@ public class StringTag implements Tag {
 	}
 	
 	@Override
-	public String getAsString() {
+	public @NotNull String getAsString() {
 		return this.data;
 	}
 	

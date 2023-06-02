@@ -1,19 +1,19 @@
 package net.luis.utils.data.tag.tags;
 
-import java.io.DataInput;
-import java.io.DataOutput;
-import java.security.SecureRandom;
-
-import javax.crypto.Cipher;
-import javax.crypto.SecretKeyFactory;
-import javax.crypto.spec.SecretKeySpec;
-
 import net.luis.utils.data.tag.Tag;
 import net.luis.utils.data.tag.TagType;
 import net.luis.utils.data.tag.exception.LoadTagException;
 import net.luis.utils.data.tag.exception.SaveTagException;
 import net.luis.utils.data.tag.visitor.TagVisitor;
 import net.luis.utils.util.Equals;
+import org.jetbrains.annotations.NotNull;
+
+import javax.crypto.Cipher;
+import javax.crypto.SecretKeyFactory;
+import javax.crypto.spec.SecretKeySpec;
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.security.SecureRandom;
 
 /**
  *
@@ -23,9 +23,10 @@ import net.luis.utils.util.Equals;
 
 public class CryptStringTag implements Tag {
 	
-	public static final TagType<CryptStringTag> TYPE = new TagType<CryptStringTag>() {
+	public static final CryptStringTag EMPTY = new CryptStringTag("");
+	public static final TagType<CryptStringTag> TYPE = new TagType<>() {
 		@Override
-		public CryptStringTag load(DataInput input) throws LoadTagException {
+		public @NotNull CryptStringTag load(DataInput input) throws LoadTagException {
 			try {
 				Cipher cipher = Cipher.getInstance("DES/ECB/PKCS5Padding");
 				byte[] byteKey = new byte[128];
@@ -38,17 +39,15 @@ public class CryptStringTag implements Tag {
 		}
 		
 		@Override
-		public String getName() {
+		public @NotNull String getName() {
 			return "crypt_string_tag";
 		}
 		
 		@Override
-		public String getVisitorName() {
+		public @NotNull String getVisitorName() {
 			return "CryptStringTag";
 		}
 	};
-	public static final CryptStringTag EMPTY = new CryptStringTag("");
-	
 	private final String data;
 	
 	private CryptStringTag(String data) {
@@ -92,12 +91,12 @@ public class CryptStringTag implements Tag {
 	}
 	
 	@Override
-	public TagType<CryptStringTag> getType() {
+	public @NotNull TagType<CryptStringTag> getType() {
 		return TYPE;
 	}
 	
 	@Override
-	public CryptStringTag copy() {
+	public @NotNull CryptStringTag copy() {
 		return valueOf(this.data);
 	}
 	
@@ -107,7 +106,7 @@ public class CryptStringTag implements Tag {
 	}
 	
 	@Override
-	public String getAsString() {
+	public @NotNull String getAsString() {
 		return this.data;
 	}
 	

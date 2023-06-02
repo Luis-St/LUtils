@@ -1,20 +1,21 @@
 package net.luis.utils.data.tag.tags.numeric;
 
-import java.io.DataInput;
-import java.io.DataOutput;
-import java.io.IOException;
-
 import net.luis.utils.data.tag.TagType;
 import net.luis.utils.data.tag.exception.LoadTagException;
 import net.luis.utils.data.tag.exception.SaveTagException;
 import net.luis.utils.data.tag.visitor.TagVisitor;
 import net.luis.utils.util.Equals;
+import org.jetbrains.annotations.NotNull;
+
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
 
 public class ByteTag extends NumericTag {
 	
-	public static final TagType<ByteTag> TYPE = new TagType<ByteTag>() {
+	public static final TagType<ByteTag> TYPE = new TagType<>() {
 		@Override
-		public ByteTag load(DataInput input) throws LoadTagException {
+		public @NotNull ByteTag load(DataInput input) throws LoadTagException {
 			try {
 				return valueOf(input.readByte());
 			} catch (IOException e) {
@@ -23,12 +24,12 @@ public class ByteTag extends NumericTag {
 		}
 		
 		@Override
-		public String getName() {
+		public @NotNull String getName() {
 			return "byte_tag";
 		}
 		
 		@Override
-		public String getVisitorName() {
+		public @NotNull String getVisitorName() {
 			return "ByteTag";
 		}
 		
@@ -70,12 +71,12 @@ public class ByteTag extends NumericTag {
 	}
 	
 	@Override
-	public TagType<ByteTag> getType() {
+	public @NotNull TagType<ByteTag> getType() {
 		return TYPE;
 	}
 	
 	@Override
-	public ByteTag copy() {
+	public @NotNull ByteTag copy() {
 		return valueOf(this.data);
 	}
 	
@@ -86,36 +87,36 @@ public class ByteTag extends NumericTag {
 	
 	@Override
 	public byte getAsByte() {
-		return (byte) this.data;
+		return this.data;
 	}
 	
 	@Override
 	public short getAsShort() {
-		return (short) this.data;
+		return this.data;
 	}
 	
 	@Override
 	public int getAsInt() {
-		return (int) this.data;
+		return this.data;
 	}
 	
 	@Override
 	public long getAsLong() {
-		return (long) this.data;
+		return this.data;
 	}
 	
 	@Override
 	public float getAsFloat() {
-		return (float) this.data;
+		return this.data;
 	}
 	
 	@Override
 	public double getAsDouble() {
-		return (double) this.data;
+		return this.data;
 	}
 	
 	@Override
-	public Number getAsNumber() {
+	public @NotNull Number getAsNumber() {
 		return this.data;
 	}
 	

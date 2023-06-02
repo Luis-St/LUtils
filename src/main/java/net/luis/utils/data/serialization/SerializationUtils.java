@@ -1,17 +1,17 @@
 package net.luis.utils.data.serialization;
 
-import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
-import java.nio.file.Path;
-
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-
 import net.luis.utils.data.serialization.Deserializable.Type;
 import net.luis.utils.data.tag.Tag;
 import net.luis.utils.data.tag.exception.TagException;
 import net.luis.utils.data.tag.tags.CompoundTag;
 import net.luis.utils.util.ReflectionHelper;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.jetbrains.annotations.NotNull;
+
+import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
+import java.nio.file.Path;
 
 /**
  *
@@ -23,7 +23,7 @@ public class SerializationUtils {
 	
 	private static final Logger LOGGER = LogManager.getLogger();
 	
-	public static <T extends Serializable> T deserialize(Class<T> clazz, Path path) {
+	public static <T extends Serializable> @NotNull T deserialize(Class<T> clazz, Path path) {
 		try {
 			Tag tag = Tag.load(path);
 			if (tag instanceof CompoundTag compoundTag) {
@@ -39,7 +39,7 @@ public class SerializationUtils {
 	}
 	
 	@SuppressWarnings("unchecked")
-	public static <T extends Serializable> T deserialize(Class<T> clazz, CompoundTag tag) {
+	public static <T extends Serializable> @NotNull T deserialize(Class<T> clazz, CompoundTag tag) {
 		if (!clazz.isAnnotationPresent(Deserializable.class)) {
 			LOGGER.error("An object of type {} cannot be deserialized because the type is not marked as deserializable", clazz.getSimpleName());
 			throw new RuntimeException();

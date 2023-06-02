@@ -1,14 +1,14 @@
 package net.luis.utils.util;
 
+import com.google.common.collect.Lists;
+import org.apache.commons.lang3.ClassUtils;
+import org.jetbrains.annotations.NotNull;
+
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
-
-import org.apache.commons.lang3.ClassUtils;
-
-import com.google.common.collect.Lists;
 
 /**
  *
@@ -28,11 +28,11 @@ public class ToString {
 		this.excludeFields = Lists.newArrayList(excludeFields);
 	}
 	
-	public static String toString(Object object, String... excludeFields) {
+	public static @NotNull String toString(Object object, String... excludeFields) {
 		return new ToString(object, FieldHandler.EXCLUDE_JAVA, excludeFields).toString();
 	}
 	
-	public static String toString(Object object, FieldHandler fieldHandler, String... excludeFields) {
+	public static @NotNull String toString(Object object, FieldHandler fieldHandler, String... excludeFields) {
 		return new ToString(object, fieldHandler, excludeFields).toString();
 	}
 	
@@ -93,19 +93,13 @@ public class ToString {
 				clazz = clazz.getSuperclass();
 			}
 		}
-		return Utils.reverseList(fields.stream().flatMap((list) -> {
-			return Utils.reverseList(list).stream();
-		}).filter((field) -> {
-			return !Modifier.isStatic(field.getModifiers());
-		}).filter((field) -> {
-			return !this.excludeFields.contains(field.getName());
-		}).collect(Collectors.toList()));
+		return Utils.reverseList(fields.stream().flatMap((list) -> Utils.reverseList(list).stream()).filter((field) -> !Modifier.isStatic(field.getModifiers())).filter((field) -> !this.excludeFields.contains(field.getName())).collect(Collectors.toList()));
 	}
 	
-	public static enum FieldHandler {
+	public enum FieldHandler {
 		
-		NO, INCLUDE, EXCLUDE, EXCLUDE_JAVA;
-	
+		NO, INCLUDE, EXCLUDE, EXCLUDE_JAVA
+		
 	}
 	
 }

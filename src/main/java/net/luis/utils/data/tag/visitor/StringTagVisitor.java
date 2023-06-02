@@ -1,10 +1,6 @@
 package net.luis.utils.data.tag.visitor;
 
-import java.util.Collections;
-import java.util.List;
-
 import com.google.common.collect.Lists;
-
 import net.luis.utils.data.tag.Tag;
 import net.luis.utils.data.tag.tags.CompoundTag;
 import net.luis.utils.data.tag.tags.CryptStringTag;
@@ -14,12 +10,10 @@ import net.luis.utils.data.tag.tags.collection.ListTag;
 import net.luis.utils.data.tag.tags.collection.array.ByteArrayTag;
 import net.luis.utils.data.tag.tags.collection.array.IntArrayTag;
 import net.luis.utils.data.tag.tags.collection.array.LongArrayTag;
-import net.luis.utils.data.tag.tags.numeric.ByteTag;
-import net.luis.utils.data.tag.tags.numeric.DoubleTag;
-import net.luis.utils.data.tag.tags.numeric.FloatTag;
-import net.luis.utils.data.tag.tags.numeric.IntTag;
-import net.luis.utils.data.tag.tags.numeric.LongTag;
-import net.luis.utils.data.tag.tags.numeric.ShortTag;
+import net.luis.utils.data.tag.tags.numeric.*;
+
+import java.util.Collections;
+import java.util.List;
 
 public class StringTagVisitor implements TagVisitor {
 	

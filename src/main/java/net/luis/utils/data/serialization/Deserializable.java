@@ -1,10 +1,6 @@
 package net.luis.utils.data.serialization;
 
-import java.lang.annotation.Documented;
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
+import java.lang.annotation.*;
 
 /**
  *
@@ -21,10 +17,10 @@ public @interface Deserializable {
 	
 	String methodName() default "";
 	
-	public static enum Type {
+	enum Type {
 		
-		CONSTRUCTOR(), METHOD(), STATIC_METHOD();
-	
+		CONSTRUCTOR(), METHOD(), STATIC_METHOD()
+		
 	}
 	
 }

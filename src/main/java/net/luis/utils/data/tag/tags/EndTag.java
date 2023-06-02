@@ -1,40 +1,41 @@
 package net.luis.utils.data.tag.tags;
 
-import java.io.DataInput;
-import java.io.DataOutput;
-
 import net.luis.utils.data.tag.Tag;
 import net.luis.utils.data.tag.TagType;
 import net.luis.utils.data.tag.exception.LoadTagException;
 import net.luis.utils.data.tag.exception.SaveTagException;
 import net.luis.utils.data.tag.visitor.TagVisitor;
+import org.jetbrains.annotations.NotNull;
+
+import java.io.DataInput;
+import java.io.DataOutput;
 
 public class EndTag implements Tag {
 	
-	public static final TagType<EndTag> TYPE = new TagType<EndTag>() {
+	public static final EndTag INSTANCE = new EndTag();
+	public static final TagType<EndTag> TYPE = new TagType<>() {
 		@Override
-		public EndTag load(DataInput input) throws LoadTagException {
+		public @NotNull EndTag load(DataInput input) throws LoadTagException {
 			return INSTANCE;
 		}
 		
 		@Override
-		public String getName() {
+		public @NotNull String getName() {
 			return "end_tag";
 		}
 		
 		@Override
-		public String getVisitorName() {
+		public @NotNull String getVisitorName() {
 			return "EndTag";
 		}
 	};
-	public static final EndTag INSTANCE = new EndTag();
 	
 	private EndTag() {
 		
 	}
 	
 	@Override
-	public void save(DataOutput outpt) throws SaveTagException {
+	public void save(DataOutput output) throws SaveTagException {
 		throw new SaveTagException("Cannot save a tag of the type" + this.getType().getVisitorName());
 	}
 	
@@ -44,12 +45,12 @@ public class EndTag implements Tag {
 	}
 	
 	@Override
-	public TagType<EndTag> getType() {
+	public @NotNull TagType<EndTag> getType() {
 		return TYPE;
 	}
 	
 	@Override
-	public EndTag copy() {
+	public @NotNull EndTag copy() {
 		return this;
 	}
 	

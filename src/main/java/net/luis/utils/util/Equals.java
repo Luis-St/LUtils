@@ -1,12 +1,12 @@
 package net.luis.utils.util;
 
+import com.google.common.collect.Lists;
+
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
-
-import com.google.common.collect.Lists;
 
 /**
  *
@@ -55,11 +55,7 @@ public class Equals {
 	}
 	
 	private <T> List<Field> getFields() {
-		return Lists.newArrayList(this.object.getClass().getDeclaredFields()).stream().filter((field) -> {
-			return !Modifier.isStatic(field.getModifiers());
-		}).filter((field) -> {
-			return !this.excludeFields.contains(field.getName());
-		}).collect(Collectors.toList());
+		return Lists.newArrayList(this.object.getClass().getDeclaredFields()).stream().filter((field) -> !Modifier.isStatic(field.getModifiers())).filter((field) -> !this.excludeFields.contains(field.getName())).collect(Collectors.toList());
 	}
 	
 }
