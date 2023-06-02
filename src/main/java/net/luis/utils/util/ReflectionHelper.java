@@ -9,7 +9,6 @@ import java.util.stream.Collectors;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.jetbrains.annotations.Nullable;
 
 import com.google.common.collect.Lists;
 
@@ -41,7 +40,6 @@ public class ReflectionHelper {
 		THROW_EXCEPTIONS = false;
 	}
 	
-	@Nullable
 	public static Class<?> getClassForName(String className) {
 		try {
 			return Class.forName(className);
@@ -71,7 +69,6 @@ public class ReflectionHelper {
 		return Lists.newArrayList(objects).stream().map(Object::getClass).map(Class::getSimpleName).collect(Collectors.toList());
 	}
 	
-	@Nullable
 	public static <T> Constructor<T> getConstructor(Class<T> clazz, Class<?>... parameters) {
 		Constructor<T> constructor = null;
 		try {
@@ -104,7 +101,6 @@ public class ReflectionHelper {
 		return constructor != null;
 	}
 	
-	@Nullable
 	public static <T> T newInstance(Constructor<T> constructor, Object... parameters) {
 		T instance = null;
 		try {
@@ -145,12 +141,10 @@ public class ReflectionHelper {
 		return instance;
 	}
 	
-	@Nullable
 	public static <T> T newInstance(Class<T> clazz, Object... parameters) {
 		return newInstance(getConstructor(clazz, Lists.newArrayList(parameters).stream().map(Object::getClass).toArray(Class<?>[]::new)), parameters);
 	}
 	
-	@Nullable
 	public static Method getMethod(Class<?> clazz, String name, Class<?>... parameters) {
 		Method method = null;
 		try {
@@ -183,8 +177,7 @@ public class ReflectionHelper {
 		return method != null;
 	}
 	
-	@Nullable
-	public static Object invoke(Method method, @Nullable Object instance, Object... parameters) {
+	public static Object invoke(Method method, Object instance, Object... parameters) {
 		Object returnValue = null;
 		try {
 			if (method.trySetAccessible()) {
@@ -217,12 +210,10 @@ public class ReflectionHelper {
 		return returnValue;
 	}
 	
-	@Nullable
-	public static Object invoke(Class<?> clazz, String name, @Nullable Object instance, Object... parameters) {
+	public static Object invoke(Class<?> clazz, String name, Object instance, Object... parameters) {
 		return invoke(getMethod(clazz, name, Lists.newArrayList(parameters).stream().map(Object::getClass).toArray(Class<?>[]::new)), instance, parameters);
 	}
 	
-	@Nullable
 	public static Field getField(Class<?> clazz, String name) {
 		Field field = null;
 		try {
@@ -255,8 +246,7 @@ public class ReflectionHelper {
 		return field != null;
 	}
 	
-	@Nullable
-	public static Object get(Field field, @Nullable Object instance) {
+	public static Object get(Field field, Object instance) {
 		Object value = null;
 		try {
 			if (field.trySetAccessible()) {
@@ -282,12 +272,11 @@ public class ReflectionHelper {
 		return value;
 	}
 	
-	@Nullable
-	public static Object get(Class<?> clazz, String name, @Nullable Object instance) {
+	public static Object get(Class<?> clazz, String name, Object instance) {
 		return get(getField(clazz, name), instance);
 	}
 	
-	public static void set(Field field, @Nullable Object instance, Object value) {
+	public static void set(Field field, Object instance, Object value) {
 		try {
 			if (field.trySetAccessible()) {
 				field.set(instance, value);
@@ -311,7 +300,7 @@ public class ReflectionHelper {
 		}
 	}
 	
-	public static void set(Class<?> clazz, String name, @Nullable Object instance, Object value) {
+	public static void set(Class<?> clazz, String name, Object instance, Object value) {
 		set(getField(clazz, name), instance, value);
 	}
 	

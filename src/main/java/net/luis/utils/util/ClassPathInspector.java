@@ -6,7 +6,6 @@ import java.util.List;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.jetbrains.annotations.NotNull;
 
 import com.google.common.collect.Lists;
 
@@ -20,7 +19,6 @@ public class ClassPathInspector {
 	
 	private static final Logger LOGGER = LogManager.getLogger();
 	
-	@NotNull
 	public static List<Class<?>> getClasses() {
 		List<Class<?>> classes = Lists.newArrayList();
 		for (File file : getClasspathClasses()) {
@@ -32,7 +30,6 @@ public class ClassPathInspector {
 		return classes;
 	}
 	
-	@NotNull
 	private static List<Class<?>> getClasses(File path) {
 		List<Class<?>> classes = Lists.newArrayList();
 		for (File file : getFiles(path, (directory, name) -> name.endsWith(".class"))) {
@@ -47,7 +44,6 @@ public class ClassPathInspector {
 		return classes;
 	}
 	
-	@NotNull
 	private static List<File> getFiles(File directory, FilenameFilter filter) {
 		List<File> files = Lists.newArrayList();
 		for (File file : directory.listFiles()) {
@@ -61,12 +57,10 @@ public class ClassPathInspector {
 		return files;
 	}
 	
-	@NotNull
 	private static String getClassName(final String fileName) {
 		return fileName.substring(0, fileName.length() - 6).replaceAll("/|\\\\", "\\.");
 	}
 	
-	@NotNull
 	private static List<File> getClasspathClasses() {
 		List<File> files = Lists.newArrayList();
 		if (System.getProperty("java.class.path") != null) {
