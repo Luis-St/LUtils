@@ -137,7 +137,7 @@ public class ReflectionHelper {
 				throw new RuntimeException(e);
 			}
 		} catch (IllegalArgumentException e) {
-			LOGGER.warn("The parameters {} do not match those of the constructor in type {}, expected parameters {}", getSimpleNames(parameters), constructor.getClass().getSimpleName(), getSimpleNames(constructor.getParameterTypes()));
+			LOGGER.warn("The parameters {} do not match those of the constructor in type {}, expected parameters {}", getSimpleNames(parameters), constructor.getDeclaringClass().getSimpleName(), getSimpleNames(constructor.getParameterTypes()));
 			if (LOG_EXCEPTIONS && !THROW_EXCEPTIONS) {
 				LOGGER.error(e);
 			} else if (THROW_EXCEPTIONS) {
