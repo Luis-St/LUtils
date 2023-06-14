@@ -40,6 +40,7 @@ tasks.register("run", JavaExec) {
 	getMainClass().set("net.luis.utils.Main")
 	classpath = sourceSets.main.runtimeClasspath
 	enableAssertions = true
+	standardInput = System.in
 }
 
 publishing {
@@ -47,7 +48,7 @@ publishing {
 		mavenJava(MavenPublication) {
 			groupId = "net.luis"
 			artifactId = "LUtils"
-			version = "4.4.3"
+			version = "4.4.4"
 			artifact jar
 			artifact sourcesJar
 		}
