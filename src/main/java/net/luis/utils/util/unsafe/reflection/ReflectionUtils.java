@@ -4,6 +4,7 @@ import com.google.common.collect.Lists;
 import net.luis.utils.util.Utils;
 import net.luis.utils.util.unsafe.Nullability;
 import net.luis.utils.util.unsafe.info.ValueInfo;
+import org.apache.commons.lang3.ClassUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -72,7 +73,7 @@ public class ReflectionUtils {
 		for (ValueInfo value : Objects.requireNonNull(values, "Values must not be null")) {
 			Object object = value.value();
 			boolean duplicate = Utils.hasDuplicates(object, Utils.mapList(Lists.newArrayList(values), ValueInfo::value));
-			if (parameter.getType().isInstance(object)) {
+			if (parameter.getType().isInstance(object) || ClassUtils.primitiveToWrapper(parameter.getType()).isInstance(object)) {
 				if (!duplicate) {
 					return object;
 				} else if (!parameter.isNamePresent()) {
