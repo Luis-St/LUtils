@@ -3,8 +3,6 @@ plugins {
 	id "maven-publish"
 }
 
-println("Java: " + System.getProperty("java.version") + " JVM: " + System.getProperty("java.vm.version") + "Java Runtime:" + System.getProperty("java.runtime.version"))
-
 repositories {
 	mavenCentral()
 }

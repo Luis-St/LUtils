@@ -1,10 +1,13 @@
 package net.luis.utils.util.unsafe.classpath;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
 import java.io.FilenameFilter;
 import java.util.*;
+import java.util.function.Predicate;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 
@@ -16,13 +19,15 @@ import java.util.jar.JarFile;
 
 class ClassPathHelper {
 	
-	static @NotNull List<Class<?>> getClasses() {
+	private static final Logger LOGGER = LogManager.getLogger(ClassPathHelper.class);
+	
+	static @NotNull List<Class<?>> getClasses(boolean includeJars, Predicate<String> condition) {
 		List<Class<?>> classes = new ArrayList<>();
 		for (File file : getClassPathFiles()) {
 			if (file.isDirectory()) {
-				classes.addAll(getClassesFromDirectory(file));
-			} else {
-				classes.addAll(getClassesFromJar(file));
+				classes.addAll(getClassesFromDirectory(file, condition));
+			} else if (includeJars) {
+				classes.addAll(getClassesFromJar(file, condition));
 			}
 		}
 		return classes;
@@ -33,7 +38,7 @@ class ClassPathHelper {
 		return fileName.substring(0, fileName.length() - 6).replace("/", ".").replace("\\", ".");
 	}
 	
-	private static @NotNull List<Class<?>> getClassesFromJar(File file) {
+	private static @NotNull List<Class<?>> getClassesFromJar(File file, Predicate<String> condition) {
 		List<Class<?>> classes = new ArrayList<>();
 		Objects.requireNonNull(file, "File must not be null");
 		if (file.canRead()) {
@@ -42,6 +47,10 @@ class ClassPathHelper {
 				while (enumeration.hasMoreElements()) {
 					JarEntry entry = enumeration.nextElement();
 					if (entry.getName().endsWith("class")) {
+						String className = getClassName(entry.getName());
+						if (!condition.test(className)) {
+							continue;
+						}
 						Class<?> clazz = Class.forName(getClassName(entry.getName()));
 						classes.add(clazz);
 					}
@@ -53,14 +62,17 @@ class ClassPathHelper {
 		return classes;
 	}
 	
-	private static @NotNull List<Class<?>> getClassesFromDirectory(File path) {
+	private static @NotNull List<Class<?>> getClassesFromDirectory(File path, Predicate<String> condition) {
 		List<Class<?>> classes = new ArrayList<>();
 		Objects.requireNonNull(path, "Path must not be null");
 		for (File file : listFiles(path, (dir, name) -> name.endsWith(".jar"), false)) {
-			classes.addAll(getClassesFromJar(file));
+			classes.addAll(getClassesFromJar(file, condition));
 		}
 		for (File classfile : listFiles(path, (dir, name) -> name.endsWith(".class"), true)) {
 			String className = getClassName(classfile.getAbsolutePath().substring(path.getAbsolutePath().length() + 1));
+			if (!condition.test(className)) {
+				continue;
+			}
 			try {
 				classes.add(Class.forName(className));
 			} catch (Exception | Error ignored) {
