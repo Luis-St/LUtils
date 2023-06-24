@@ -1,9 +1,11 @@
 package net.luis.utils.logging;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.core.LoggerContext;
 import org.apache.logging.log4j.core.config.Configuration;
+import org.apache.logging.log4j.core.config.Configurator;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Arrays;
@@ -16,6 +18,13 @@ import java.util.Objects;
  */
 
 public class LoggingUtils {
+	
+	static Level[] CONSOLE_LEVELS = new Level[] {Level.TRACE, Level.DEBUG, Level.INFO, Level.WARN, Level.ERROR, Level.FATAL};
+	static Level[] FILE_LEVELS = new Level[] {Level.DEBUG, Level.INFO};
+	
+	public static void initialize(LoggerConfiguration configuration) {
+		Configurator.initialize(Objects.requireNonNull(configuration, "Configuration must not be null").build());
+	}
 	
 	//region Helper methods
 	private static void enableAppender(String name) {
@@ -31,143 +40,61 @@ public class LoggingUtils {
 		config.getRootLogger().removeAppender(name);
 		context.updateLoggers(config);
 	}
-	//endregion
 	
-	//region Console enable methods
-	public static void enableConsoleTrace() {
-		enableAppender("ConsoleTrace");
-	}
-	
-	public static void enableConsoleDebug() {
-		enableAppender("ConsoleDebug");
-	}
-	
-	public static void enableConsoleInfo() {
-		enableAppender("ConsoleInfo");
-	}
-	
-	public static void enableConsoleWarn() {
-		enableAppender("ConsoleWarn");
-	}
-	
-	public static void enableConsoleError() {
-		enableAppender("ConsoleError");
-	}
-	
-	public static void enableConsoleFatal() {
-		enableAppender("ConsoleFatal");
-	}
-	
-	public static void enableConsole(@NotNull Level level) {
-		switch (level.intLevel()) {
-			case 0 -> disableConsoleAll();
-			case 600 -> enableConsoleTrace();
-			case 500 -> enableConsoleDebug();
-			case 400 -> enableConsoleInfo();
-			case 300 -> enableConsoleWarn();
-			case 200 -> enableConsoleError();
-			case 100 -> enableConsoleFatal();
-			case Integer.MAX_VALUE -> enableConsoleAll();
-			default -> {
-			}
+	static @NotNull String getLogger(Level level, LoggingType type) {
+		if (level == Level.ALL || level == Level.OFF) {
+			throw new IllegalArgumentException("Level must not be 'all' or 'off'");
 		}
-	}
-	
-	public static void enableConsoleAll() {
-		enableConsoleTrace();
-		enableConsoleDebug();
-		enableConsoleInfo();
-		enableConsoleWarn();
-		enableConsoleError();
-		enableConsoleFatal();
-	}
-	
-	public static void enableConsoleAll(Level... levels) {
-		Arrays.asList(levels).forEach(LoggingUtils::enableConsole);
-	}
-	//endregion
-	
-	//region Console disable methods
-	public static void disableConsoleTrace() {
-		disableAppender("ConsoleTrace");
-	}
-	
-	public static void disableConsoleDebug() {
-		disableAppender("ConsoleDebug");
-	}
-	
-	public static void disableConsoleInfo() {
-		disableAppender("ConsoleInfo");
-	}
-	
-	public static void disableConsoleWarn() {
-		disableAppender("ConsoleWarn");
-	}
-	
-	public static void disableConsoleError() {
-		disableAppender("ConsoleError");
-	}
-	
-	public static void disableConsoleFatal() {
-		disableAppender("ConsoleFatal");
-	}
-	
-	public static void disableConsole(@NotNull Level level) {
-		switch (level.intLevel()) {
-			case 0 -> enableConsoleAll();
-			case 600 -> disableConsoleTrace();
-			case 500 -> disableConsoleDebug();
-			case 400 -> disableConsoleInfo();
-			case 300 -> disableConsoleWarn();
-			case 200 -> disableConsoleError();
-			case 100 -> disableConsoleFatal();
-			case Integer.MAX_VALUE -> disableConsoleAll();
-			default -> {
-			}
+		if (type == LoggingType.FILE && level != Level.DEBUG && level != Level.INFO) {
+			throw new IllegalArgumentException("Level must be 'debug' or 'info'");
 		}
-	}
-	
-	public static void disableConsoleAll() {
-		disableConsoleTrace();
-		disableConsoleDebug();
-		disableConsoleInfo();
-		disableConsoleWarn();
-		disableConsoleError();
-		disableConsoleFatal();
-	}
-	
-	public static void disableConsoleAll(Level... levels) {
-		Arrays.asList(levels).forEach(LoggingUtils::disableConsole);
+		String levelName = Objects.requireNonNull(level, "Level must not be null").name().toLowerCase();
+		String typeName = Objects.requireNonNull(type, "Type must not be null").name().toLowerCase();
+		return StringUtils.capitalize(typeName) + StringUtils.capitalize(levelName);
 	}
 	//endregion
 	
-	//region File enable methods
-	public static void enableDebugFile() {
-		enableAppender("DebugLogFile");
+	//region Enable logging
+	public static void enable(Level level, LoggingType type) {
+		enableAppender(getLogger(level, type));
 	}
 	
-	public static void enableInfoFile() {
-		enableAppender("InfoLogFile");
+	public static void enableConsole(Level level) {
+		enable(level, LoggingType.CONSOLE);
 	}
 	
-	public static void enableFiles() {
-		enableDebugFile();
-		enableInfoFile();
+	public static void enableConsole() {
+		Arrays.stream(CONSOLE_LEVELS).forEach(LoggingUtils::enableConsole);
+	}
+	
+	public static void enableFile(Level level) {
+		enable(level, LoggingType.FILE);
+	}
+	
+	public static void enableFile() {
+		Arrays.stream(FILE_LEVELS).forEach(LoggingUtils::enableFile);
 	}
 	//endregion
 	
-	//region File disable methods
-	private static void disableDebugFile() {
-		disableAppender("DebugLogFile");
+	//region Disable logging
+	public static void disable(Level level, LoggingType type) {
+		disableAppender(getLogger(level, type));
 	}
 	
-	private static void disableInfoFile() {
-		disableAppender("InfoLogFile");
+	public static void disableConsole(Level level) {
+		disable(level, LoggingType.CONSOLE);
 	}
 	
-	public static void disableFiles() {
-		disableDebugFile();
-		disableInfoFile();
+	public static void disableConsole() {
+		Arrays.stream(CONSOLE_LEVELS).forEach(LoggingUtils::disableConsole);
+	}
+	
+	public static void disableFile(Level level) {
+		disable(level, LoggingType.FILE);
+	}
+	
+	public static void disableFile() {
+		Arrays.stream(FILE_LEVELS).forEach(LoggingUtils::disableFile);
 	}
 	//endregion
 }
