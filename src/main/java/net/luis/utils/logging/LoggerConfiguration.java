@@ -20,8 +20,6 @@ import java.util.*;
 
 public class LoggerConfiguration {
 	
-	public static final LoggerConfiguration DEFAULT = new LoggerConfiguration();
-	
 	private static final String LEVEL_NAMES = "TRACE=Trace, DEBUG=Debug, INFO=Info, WARN=Warn, ERROR=Error, FATAL=Fatal";
 	private static final String TRACE_PATTERN = "[%d{HH:mm:ss}] [%t] [%C:%line/%level{" + LEVEL_NAMES + "}] %msg%n%throwable";
 	private static final String DEBUG_PATTERN = "[%d{HH:mm:ss}] [%t] [%C{1}:%line/%level{" + LEVEL_NAMES + "}] %msg%n%throwable";
@@ -29,7 +27,7 @@ public class LoggerConfiguration {
 	private static final String WARN_PATTERN = "[%d{HH:mm:ss}] [%t] [%C{1}/%level{{" + LEVEL_NAMES + "}] %msg%n%throwable";
 	private static final String ERROR_PATTERN = "[%d{HH:mm:ss}] [%t] [%C{1}/%level{" + LEVEL_NAMES + "}] %msg%n%throwable";
 	private static final String FATAL_PATTERN = "[%d{HH:mm:ss}] [%t] [%C{1}/%level{" + LEVEL_NAMES + "}] %msg%n%throwable";
-	
+	public static final LoggerConfiguration DEFAULT = new LoggerConfiguration();
 	private final Set<LoggingType> allowedTypes = Sets.newHashSet(LoggingType.CONSOLE, LoggingType.FILE);
 	private final Map<Level, String> consolePattern = Maps.newHashMap();
 	private final Map<Level, String> filePattern = Maps.newHashMap();

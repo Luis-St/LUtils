@@ -8,7 +8,6 @@ import java.lang.annotation.*;
  *
  */
 
-
 public class Ignored {
 	
 	@Documented

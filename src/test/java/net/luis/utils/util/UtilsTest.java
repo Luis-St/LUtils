@@ -2,7 +2,6 @@ package net.luis.utils.util;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
-import org.checkerframework.checker.nullness.qual.Nullable;
 import org.junit.jupiter.api.Test;
 
 import java.util.*;
@@ -78,13 +77,13 @@ class UtilsTest {
 	void hasDuplicates() {
 		assertThrows(NullPointerException.class, () -> Utils.hasDuplicates((Integer[]) null));
 		assertThrows(NullPointerException.class, () -> Utils.hasDuplicates((List<Integer>) null));
-		assertFalse(Utils.hasDuplicates(new Integer[]{0, 1, 2, 3, 4}));
-		assertTrue(Utils.hasDuplicates(new Integer[]{0, 1, 2, 3, 4, 0}));
+		assertFalse(Utils.hasDuplicates(new Integer[] {0, 1, 2, 3, 4}));
+		assertTrue(Utils.hasDuplicates(new Integer[] {0, 1, 2, 3, 4, 0}));
 		assertFalse(Utils.hasDuplicates(Lists.newArrayList(0, 1, 2, 3, 4)));
 		assertTrue(Utils.hasDuplicates(Lists.newArrayList(0, 1, 2, 3, 4, 0)));
 		
-		assertFalse(Utils.hasDuplicates(4, new Integer[]{0, 1, 2, 3, 4}));
-		assertTrue(Utils.hasDuplicates(4, new Integer[]{0, 1, 2, 3, 4, 4}));
+		assertFalse(Utils.hasDuplicates(4, new Integer[] {0, 1, 2, 3, 4}));
+		assertTrue(Utils.hasDuplicates(4, new Integer[] {0, 1, 2, 3, 4, 4}));
 		assertFalse(Utils.hasDuplicates(4, Lists.newArrayList(0, 1, 2, 3, 4)));
 		assertTrue(Utils.hasDuplicates(4, Lists.newArrayList(0, 1, 2, 3, 4, 4)));
 	}
@@ -111,7 +110,7 @@ class UtilsTest {
 	@Test
 	void getRandomSafe() {
 		assertTrue(Utils.getRandomSafe(new Integer[0], new Random()).isEmpty());
-		assertTrue(Utils.getRandomSafe(new Integer[]{0, 1, 2, 3, 4}, new Random()).isPresent());
+		assertTrue(Utils.getRandomSafe(new Integer[] {0, 1, 2, 3, 4}, new Random()).isPresent());
 		assertTrue(Utils.getRandomSafe(Lists.newArrayList(), new Random()).isEmpty());
 		assertTrue(Utils.getRandomSafe(Lists.newArrayList(0, 1, 2, 3, 4), new Random()).isPresent());
 	}

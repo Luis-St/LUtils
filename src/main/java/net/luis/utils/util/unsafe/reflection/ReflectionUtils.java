@@ -51,7 +51,7 @@ public class ReflectionUtils {
 		return Arrays.stream(clazz.getDeclaredMethods()).filter(method -> method.getName().equals(name)).toList();
 	}
 	
-	public static Object [] getParameters(Executable executable, Object... values) {
+	public static Object[] getParameters(Executable executable, Object... values) {
 		return getParameters(Objects.requireNonNull(executable, "Executable must not be null"), Utils.mapList(Lists.newArrayList(values), value -> {
 			String name = value.getClass().getSimpleName();
 			return new ValueInfo(value, name.substring(0, 1).toLowerCase() + name.substring(1), Nullability.UNKNOWN);

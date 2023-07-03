@@ -30,7 +30,7 @@ public class LoggingUtils {
 	private static void enableAppender(String name) {
 		LoggerContext context = (LoggerContext) LogManager.getContext(false);
 		Configuration config = context.getConfiguration();
-		config.getRootLogger().addAppender(Objects.requireNonNull(config.getAppender(name), "Appender " + name + " not found"), null, null);
+		config.getRootLogger().addAppender(Objects.requireNonNull(config.getAppender(name), "Appender " + name + " not found, appender may not be registered"), null, null);
 		context.updateLoggers(config);
 	}
 	
