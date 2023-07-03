@@ -18,7 +18,7 @@ class DoubleTagTest {
 	
 	@Test
 	void save() {
-		Path path = new File("D:\\Programmieren\\Git Repositories\\LUtils\\build\\tests\\double_tag_test.txt").toPath();
+		Path path = new File(".\\LUtils\\build\\tests\\double_tag_test.txt").toPath();
 		DoubleTag tagSave = DoubleTag.valueOf(12.0);
 		assertDoesNotThrow(() -> Tag.save(path, tagSave));
 		Tag tag = Tag.load(path);

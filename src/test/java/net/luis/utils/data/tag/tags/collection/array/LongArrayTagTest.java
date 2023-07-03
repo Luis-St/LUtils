@@ -19,7 +19,7 @@ class LongArrayTagTest {
 	
 	@Test
 	void save() {
-		Path path = new File("D:\\Programmieren\\Git Repositories\\LUtils\\build\\tests\\long_array_tag_test.txt").toPath();
+		Path path = new File(".\\LUtils\\build\\tests\\long_array_tag_test.txt").toPath();
 		LongArrayTag tagSave = new LongArrayTag();
 		tagSave.add(LongTag.valueOf(12L));
 		tagSave.add(LongTag.valueOf(13L));
