@@ -1,13 +1,17 @@
 package net.luis.utils.resources;
 
+import com.google.common.collect.Lists;
 import net.luis.utils.util.Pair;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.logging.log4j.core.util.IOUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.*;
 import java.net.URL;
+import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -84,7 +88,15 @@ final class InternalResourceLocation extends ResourceLocation {
 	@Override
 	public @NotNull Stream<String> getLines() throws IOException {
 		try (BufferedReader reader = new BufferedReader(new InputStreamReader(this.getStream()))) {
-			return reader.lines();
+			List<String> lines = Lists.newArrayList();
+			while (true) {
+				String line = reader.readLine();
+				if (line == null) {
+					break;
+				}
+				lines.add(line);
+			}
+			return lines.stream();
 		}
 	}
 }
