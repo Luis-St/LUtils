@@ -19,18 +19,54 @@ import java.util.Objects;
 
 public class LoggingUtils {
 	
-	static Level[] CONSOLE_LEVELS = new Level[] {Level.TRACE, Level.DEBUG, Level.INFO, Level.WARN, Level.ERROR, Level.FATAL};
-	static Level[] FILE_LEVELS = new Level[] {Level.DEBUG, Level.INFO, Level.ERROR};
+	static final Level[] CONSOLE_LEVELS = new Level[] {Level.TRACE, Level.DEBUG, Level.INFO, Level.WARN, Level.ERROR, Level.FATAL};
+	static final Level[] FILE_LEVELS = new Level[] {Level.DEBUG, Level.INFO, Level.ERROR};
+	private static boolean initialized = false;
+	
+	//region Initialization
+	public static void load() {
+		LoggerConfiguration config = LoggingHelper.load();
+		initialize(config);
+		LoggingHelper.configure();
+	}
+	
+	public static void initialize() {
+		initialize(LoggerConfiguration.DEFAULT);
+	}
 	
 	public static void initialize(LoggerConfiguration configuration) {
-		Configurator.initialize(Objects.requireNonNull(configuration, "Configuration must not be null").build());
+		initialize(configuration, false);
 	}
+	
+	public static void initialize(LoggerConfiguration configuration, boolean override) {
+		if (!initialized) {
+			Configurator.initialize(Objects.requireNonNull(configuration, "Configuration must not be null").build());
+			initialized = true;
+		} else if (override) {
+			Configurator.initialize(Objects.requireNonNull(configuration, "Configuration must not be null").build());
+		} else {
+			throw new IllegalStateException("Logging has already been initialized");
+		}
+	}
+	
+	public static boolean initializeSafe(LoggerConfiguration configuration) {
+		if (!isInitialized()) {
+			initialize(configuration);
+			return true;
+		}
+		return false;
+	}
+	
+	public static boolean isInitialized() {
+		return initialized;
+	}
+	//endregion
 	
 	//region Helper methods
 	private static void enableAppender(String name) {
 		LoggerContext context = (LoggerContext) LogManager.getContext(false);
 		Configuration config = context.getConfiguration();
-		config.getRootLogger().addAppender(Objects.requireNonNull(config.getAppender(name), "Appender " + name + " not found"), null, null);
+		config.getRootLogger().addAppender(Objects.requireNonNull(config.getAppender(name), "Appender " + name + " not found, appender may not be registered"), null, null);
 		context.updateLoggers(config);
 	}
 	
