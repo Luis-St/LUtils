@@ -127,6 +127,11 @@ public class LoggerConfiguration {
 		this.defaultLoggers.getOrDefault(type, Lists.newArrayList()).add(level);
 		return this;
 	}
+	
+	public LoggerConfiguration removeDefaultLogger(LoggingType type, Level level) {
+		this.defaultLoggers.getOrDefault(type, Lists.newArrayList()).remove(level);
+		return this;
+	}
 	//endregion
 	
 	public Configuration build() {

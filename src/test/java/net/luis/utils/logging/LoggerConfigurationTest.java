@@ -74,6 +74,17 @@ class LoggerConfigurationTest {
 	}
 	
 	@Test
+	void removeDefaultLogger() {
+		assertDoesNotThrow(() -> this.configuration.removeDefaultLogger(null, null));
+		for (Level level : new Level[] {Level.TRACE, Level.DEBUG, Level.INFO, Level.WARN, Level.ERROR, Level.FATAL}) {
+			assertDoesNotThrow(() -> this.configuration.removeDefaultLogger(LoggingType.CONSOLE, level));
+		}
+		for (Level level : new Level[] {Level.DEBUG, Level.INFO, Level.ERROR}) {
+			assertDoesNotThrow(() -> this.configuration.removeDefaultLogger(LoggingType.FILE, level));
+		}
+	}
+	
+	@Test
 	void build() {
 		assertDoesNotThrow(this.configuration::build);
 	}
