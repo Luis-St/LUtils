@@ -1,11 +1,14 @@
 package net.luis.utils.resources;
 
+import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 import java.io.File;
 import java.nio.file.Files;
-import java.nio.file.Path;
+import java.util.List;
+import java.util.function.Function;
+import java.util.function.UnaryOperator;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -26,8 +29,8 @@ class ResourceLocationTest {
 		Files.createDirectory(new File("./test").toPath()).toFile().deleteOnExit();
 		Files.createFile(test1.toPath());
 		test1.deleteOnExit();
-		Files.write(test0.toPath(), "{\n\t\"path\": \"disk:test.json\"\n}".getBytes());
-		Files.write(test1.toPath(), "{\n\t\"path\": \"disk:test/test.json\"\n}".getBytes());
+		Files.write(test0.toPath(), ("{" + System.lineSeparator() + "\t\"path\": \"disk:test.json\"" + System.lineSeparator() + "}").getBytes());
+		Files.write(test1.toPath(), ("{" + System.lineSeparator() + "\t\"path\": \"disk:test/test.json\"" + System.lineSeparator() + "}").getBytes());
 	}
 	
 	@Test
@@ -56,6 +59,7 @@ class ResourceLocationTest {
 		assertThrows(NullPointerException.class, () -> ResourceLocation.getResource(null, "", null));
 		assertThrows(NullPointerException.class, () -> ResourceLocation.getResource("", null, null));
 		assertThrows(NullPointerException.class, () -> ResourceLocation.getResource("", "", null));
+		
 		assertDoesNotThrow(() -> ResourceLocation.getResource("", ""));
 		assertDoesNotThrow(() -> ResourceLocation.getResource("", "", ResourceLocation.Type.EXTERNAL));
 		assertDoesNotThrow(() -> ResourceLocation.getResource("", "", ResourceLocation.Type.INTERNAL));
@@ -113,6 +117,7 @@ class ResourceLocationTest {
 		assertThrows(UnsupportedOperationException.class, () -> ResourceLocation.internal("test", "test.json").asFile());
 		assertThrows(UnsupportedOperationException.class, () -> ResourceLocation.getResource("", "test.json", ResourceLocation.Type.INTERNAL).asFile());
 		assertThrows(UnsupportedOperationException.class, () -> ResourceLocation.getResource("test", "test.json", ResourceLocation.Type.INTERNAL).asFile());
+		
 		assertDoesNotThrow(() -> ResourceLocation.external("test.json").asFile());
 		assertDoesNotThrow(() -> ResourceLocation.external("", "test.json").asFile());
 		assertDoesNotThrow(() -> ResourceLocation.external("test", "test.json").asFile());
@@ -127,6 +132,7 @@ class ResourceLocationTest {
 		assertThrows(UnsupportedOperationException.class, () -> ResourceLocation.internal("test", "test.json").asPath());
 		assertThrows(UnsupportedOperationException.class, () -> ResourceLocation.getResource("", "test.json", ResourceLocation.Type.INTERNAL).asPath());
 		assertThrows(UnsupportedOperationException.class, () -> ResourceLocation.getResource("test", "test.json", ResourceLocation.Type.INTERNAL).asPath());
+		
 		assertDoesNotThrow(() -> ResourceLocation.external("test.json").asPath());
 		assertDoesNotThrow(() -> ResourceLocation.external("", "test.json").asPath());
 		assertDoesNotThrow(() -> ResourceLocation.external("test", "test.json").asPath());
@@ -136,21 +142,88 @@ class ResourceLocationTest {
 	
 	@Test
 	void exists() {
+		assertTrue(ResourceLocation.internal("test.json").exists());
+		assertTrue(ResourceLocation.internal("", "test.json").exists());
+		assertTrue(ResourceLocation.internal("test", "test.json").exists());
+		assertTrue(ResourceLocation.getResource("", "test.json", ResourceLocation.Type.INTERNAL).exists());
+		assertTrue(ResourceLocation.getResource("test", "test.json", ResourceLocation.Type.INTERNAL).exists());
+		
+		assertFalse(ResourceLocation.internal("test.xml").exists());
+		assertFalse(ResourceLocation.internal("", "test.xml").exists());
+		assertFalse(ResourceLocation.internal("test", "test.xml").exists());
+		
+		assertTrue(ResourceLocation.external("test.json").exists());
+		assertTrue(ResourceLocation.external("", "test.json").exists());
+		assertTrue(ResourceLocation.external("test", "test.json").exists());
+		assertTrue(ResourceLocation.getResource("", "test.json").exists());
+		assertTrue(ResourceLocation.getResource("test", "test.json").exists());
+		
+		assertFalse(ResourceLocation.external("test.xml").exists());
+		assertFalse(ResourceLocation.external("", "test.xml").exists());
+		assertFalse(ResourceLocation.external("test", "test.xml").exists());
 	}
 	
 	@Test
-	void getStream() {
+	void getStream() throws Exception {
+		assertDoesNotThrow(() -> assertNotNull(ResourceLocation.internal("test.json").getStream()));
+		assertDoesNotThrow(() -> assertNotNull(ResourceLocation.internal("", "test.json").getStream()));
+		assertDoesNotThrow(() -> assertNotNull(ResourceLocation.internal("test", "test.json").getStream()));
+		assertDoesNotThrow(() -> assertNotNull(ResourceLocation.getResource("", "test.json", ResourceLocation.Type.INTERNAL).getStream()));
+		assertDoesNotThrow(() -> assertNotNull(ResourceLocation.getResource("test", "test.json", ResourceLocation.Type.INTERNAL).getStream()));
+		assertDoesNotThrow(() -> assertNotNull(ResourceLocation.external("test.json").getStream()));
+		assertDoesNotThrow(() -> assertNotNull(ResourceLocation.external("", "test.json").getStream()));
+		assertDoesNotThrow(() -> assertNotNull(ResourceLocation.external("test", "test.json").getStream()));
+		assertDoesNotThrow(() -> assertNotNull(ResourceLocation.getResource("", "test.json").getStream()));
+		assertDoesNotThrow(() -> assertNotNull(ResourceLocation.getResource("test", "test.json").getStream()));
 	}
 	
 	@Test
 	void getBytes() {
+		assertDoesNotThrow(() -> assertNotNull(ResourceLocation.internal("test.json").getBytes()));
+		assertDoesNotThrow(() -> assertNotNull(ResourceLocation.internal("", "test.json").getBytes()));
+		assertDoesNotThrow(() -> assertNotNull(ResourceLocation.internal("test", "test.json").getBytes()));
+		assertDoesNotThrow(() -> assertNotNull(ResourceLocation.getResource("", "test.json", ResourceLocation.Type.INTERNAL).getBytes()));
+		assertDoesNotThrow(() -> assertNotNull(ResourceLocation.getResource("test", "test.json", ResourceLocation.Type.INTERNAL).getBytes()));
+		assertDoesNotThrow(() -> assertNotNull(ResourceLocation.external("test.json").getBytes()));
+		assertDoesNotThrow(() -> assertNotNull(ResourceLocation.external("", "test.json").getBytes()));
+		assertDoesNotThrow(() -> assertNotNull(ResourceLocation.external("test", "test.json").getBytes()));
+		assertDoesNotThrow(() -> assertNotNull(ResourceLocation.getResource("", "test.json").getBytes()));
+		assertDoesNotThrow(() -> assertNotNull(ResourceLocation.getResource("test", "test.json").getBytes()));
 	}
 	
 	@Test
 	void getString() {
+		UnaryOperator<String> internal = path -> "{" + System.lineSeparator() + "\t\"path\": \"classpath:" + path + "test.json\"" + System.lineSeparator() + "}";
+		UnaryOperator<String> external = path -> "{" + System.lineSeparator() + "\t\"path\": \"disk:" + path + "test.json\"" + System.lineSeparator() + "}";
+		
+		assertDoesNotThrow(() -> assertEquals(internal.apply(""), ResourceLocation.internal("test.json").getString()));
+		assertDoesNotThrow(() -> assertEquals(internal.apply(""), ResourceLocation.internal("", "test.json").getString()));
+		assertDoesNotThrow(() -> assertEquals(internal.apply("test/"), ResourceLocation.internal("test", "test.json").getString()));
+		assertDoesNotThrow(() -> assertEquals(internal.apply(""), ResourceLocation.getResource("", "test.json", ResourceLocation.Type.INTERNAL).getString()));
+		assertDoesNotThrow(() -> assertEquals(internal.apply("test/"), ResourceLocation.getResource("test", "test.json", ResourceLocation.Type.INTERNAL).getString()));
+		
+		assertDoesNotThrow(() -> assertEquals(external.apply(""), ResourceLocation.external("test.json").getString()));
+		assertDoesNotThrow(() -> assertEquals(external.apply(""), ResourceLocation.external("", "test.json").getString()));
+		assertDoesNotThrow(() -> assertEquals(external.apply("test/"), ResourceLocation.external("test", "test.json").getString()));
+		assertDoesNotThrow(() -> assertEquals(external.apply(""), ResourceLocation.getResource("", "test.json").getString()));
+		assertDoesNotThrow(() -> assertEquals(external.apply("test/"), ResourceLocation.getResource("test", "test.json").getString()));
 	}
 	
 	@Test
 	void getLines() {
+		Function<String, List<String>> internal = path -> List.of("{", "\t\"path\": \"classpath:" + path + "test.json\"", "}");
+		Function<String, List<String>> external = path -> List.of("{", "\t\"path\": \"disk:" + path + "test.json\"", "}");
+		
+		assertDoesNotThrow(() -> assertEquals(internal.apply(""), ResourceLocation.internal("test.json").getLines().toList()));
+		assertDoesNotThrow(() -> assertEquals(internal.apply(""), ResourceLocation.internal("", "test.json").getLines().toList()));
+		assertDoesNotThrow(() -> assertEquals(internal.apply("test/"), ResourceLocation.internal("test", "test.json").getLines().toList()));
+		assertDoesNotThrow(() -> assertEquals(internal.apply(""), ResourceLocation.getResource("", "test.json", ResourceLocation.Type.INTERNAL).getLines().toList()));
+		assertDoesNotThrow(() -> assertEquals(internal.apply("test/"), ResourceLocation.getResource("test", "test.json", ResourceLocation.Type.INTERNAL).getLines().toList()));
+		
+		assertDoesNotThrow(() -> assertEquals(external.apply(""), ResourceLocation.external("test.json").getLines().toList()));
+		assertDoesNotThrow(() -> assertEquals(external.apply(""), ResourceLocation.external("", "test.json").getLines().toList()));
+		assertDoesNotThrow(() -> assertEquals(external.apply("test/"), ResourceLocation.external("test", "test.json").getLines().toList()));
+		assertDoesNotThrow(() -> assertEquals(external.apply(""), ResourceLocation.getResource("", "test.json").getLines().toList()));
+		assertDoesNotThrow(() -> assertEquals(external.apply("test/"), ResourceLocation.getResource("test", "test.json").getLines().toList()));
 	}
 }
