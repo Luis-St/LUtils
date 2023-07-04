@@ -15,8 +15,8 @@ import org.jetbrains.annotations.NotNull;
 
 public class TagTypes {
 	
-	private static final TagType<?>[] TYPES = new TagType<?>[]{
-			EndTag.TYPE, IntTag.TYPE, LongTag.TYPE, DoubleTag.TYPE, StringTag.TYPE, IntArrayTag.TYPE, LongArrayTag.TYPE, ListTag.TYPE, CompoundTag.TYPE
+	private static final TagType<?>[] TYPES = new TagType<?>[] {
+		EndTag.TYPE, IntTag.TYPE, LongTag.TYPE, DoubleTag.TYPE, StringTag.TYPE, IntArrayTag.TYPE, LongArrayTag.TYPE, ListTag.TYPE, CompoundTag.TYPE
 	};
 	
 	public static @NotNull TagType<?> getType(int id) {

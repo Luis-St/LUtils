@@ -30,7 +30,7 @@ public class LoggerConfiguration {
 		patterns.put(Level.ERROR, "[%d{HH:mm:ss}] [%t] [%C{1}/%level{" + names + "}] %msg%n%throwable");
 		patterns.put(Level.FATAL, "[%d{HH:mm:ss}] [%t] [%C{1}/%level{" + names + "}] %msg%n%throwable");
 	});
-	
+  
 	private final Set<LoggingType> allowedTypes = Sets.newHashSet(LoggingType.CONSOLE, LoggingType.FILE);
 	private final Map<LoggingType, Map<Level, String>> patternOverrides = Utils.make(Maps.newEnumMap(LoggingType.class), type -> {
 		type.put(LoggingType.CONSOLE, Maps.newHashMap());

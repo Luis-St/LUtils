@@ -25,8 +25,8 @@ class CompoundTagTest {
 		tagSave.putInt("Int", 14);
 		tagSave.putLong("Long", 15L);
 		tagSave.putDouble("Double", 17.0);
-		tagSave.putIntArray("IntArray", new int[]{4, 5, 6, 7});
-		tagSave.putLongArray("LongArray", new long[]{8, 9, 10, 11});
+		tagSave.putIntArray("IntArray", new int[] {4, 5, 6, 7});
+		tagSave.putLongArray("LongArray", new long[] {8, 9, 10, 11});
 		tagSave.putString("String", "String");
 		tagSave.putList("List", new ListTag());
 		tagSave.putCompound("Compound", new CompoundTag());
@@ -39,8 +39,8 @@ class CompoundTagTest {
 			assertEquals(tagLoad.getInt("Int"), 14);
 			assertEquals(tagLoad.getLong("Long"), 15L);
 			assertEquals(tagLoad.getDouble("Double"), 17.0);
-			assertArrayEquals(tagLoad.getIntArray("IntArray"), new int[]{4, 5, 6, 7});
-			assertArrayEquals(tagLoad.getLongArray("LongArray"), new long[]{8, 9, 10, 11});
+			assertArrayEquals(tagLoad.getIntArray("IntArray"), new int[] {4, 5, 6, 7});
+			assertArrayEquals(tagLoad.getLongArray("LongArray"), new long[] {8, 9, 10, 11});
 			assertEquals(tagLoad.getString("String"), "String");
 			assertTrue(tagLoad.getList("List").isEmpty());
 			assertTrue(tagLoad.getCompound("Compound").isEmpty());
