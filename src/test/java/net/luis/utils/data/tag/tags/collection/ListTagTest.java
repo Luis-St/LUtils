@@ -19,7 +19,7 @@ class ListTagTest {
 	
 	@Test
 	void save() {
-		Path path = new File(".\\LUtils\\build\\tests\\list_tag_test.txt").toPath();
+		Path path = new File("./build/tests/list_tag_test.txt").toPath();
 		ListTag tagSave = new ListTag();
 		tagSave.add(IntTag.valueOf(12));
 		tagSave.add(IntTag.valueOf(13));

@@ -19,7 +19,7 @@ class CompoundTagTest {
 	
 	@Test
 	void save() {
-		Path path = new File(".\\LUtils\\build\\tests\\compound_tag_test.txt").toPath();
+		Path path = new File("./build/tests/compound_tag_test.txt").toPath();
 		CompoundTag tagSave = new CompoundTag();
 		tagSave.putBoolean("Boolean", true);
 		tagSave.putInt("Int", 14);

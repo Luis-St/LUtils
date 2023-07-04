@@ -18,7 +18,7 @@ class IntTagTest {
 	
 	@Test
 	void save() {
-		Path path = new File(".\\LUtils\\build\\tests\\int_tag_test.txt").toPath();
+		Path path = new File("./build/tests/int_tag_test.txt").toPath();
 		IntTag tagSave = IntTag.valueOf(12);
 		assertDoesNotThrow(() -> Tag.save(path, tagSave));
 		Tag tag = Tag.load(path);

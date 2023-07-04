@@ -18,7 +18,7 @@ class LongTagTest {
 	
 	@Test
 	void save() {
-		Path path = new File(".\\LUtils\\build\\tests\\long_tag_test.txt").toPath();
+		Path path = new File("./build/tests/long_tag_test.txt").toPath();
 		LongTag tagSave = LongTag.valueOf(12L);
 		assertDoesNotThrow(() -> Tag.save(path, tagSave));
 		Tag tag = Tag.load(path);
