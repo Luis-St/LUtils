@@ -1,8 +1,8 @@
 package net.luis.utils.logging;
 
-import com.google.common.collect.Maps;
-import com.google.common.collect.Sets;
+import com.google.common.collect.*;
 import net.luis.utils.util.Pair;
+import net.luis.utils.util.Utils;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.core.Filter;
 import org.apache.logging.log4j.core.appender.ConsoleAppender;
@@ -20,29 +20,43 @@ import java.util.*;
 
 public class LoggerConfiguration {
 	
-	private static final String LEVEL_NAMES = "TRACE=Trace, DEBUG=Debug, INFO=Info, WARN=Warn, ERROR=Error, FATAL=Fatal";
-	private static final String TRACE_PATTERN = "[%d{HH:mm:ss}] [%t] [%C:%line/%level{" + LEVEL_NAMES + "}] %msg%n%throwable";
-	private static final String DEBUG_PATTERN = "[%d{HH:mm:ss}] [%t] [%C{1}:%line/%level{" + LEVEL_NAMES + "}] %msg%n%throwable";
-	private static final String INFO_PATTERN = "[%d{HH:mm:ss}] [%t] [%C{1}/%level{" + LEVEL_NAMES + "}] %msg%n%throwable";
-	private static final String WARN_PATTERN = "[%d{HH:mm:ss}] [%t] [%C{1}/%level{{" + LEVEL_NAMES + "}] %msg%n%throwable";
-	private static final String ERROR_PATTERN = "[%d{HH:mm:ss}] [%t] [%C{1}/%level{" + LEVEL_NAMES + "}] %msg%n%throwable";
-	private static final String FATAL_PATTERN = "[%d{HH:mm:ss}] [%t] [%C{1}/%level{" + LEVEL_NAMES + "}] %msg%n%throwable";
 	public static final LoggerConfiguration DEFAULT = new LoggerConfiguration();
+	private static final Map<Level, String> DEFAULT_PATTERNS = Utils.make(Maps.newHashMap(), patterns -> {
+		String names = "TRACE=Trace, DEBUG=Debug, INFO=Info, WARN=Warn, ERROR=Error, FATAL=Fatal";
+		patterns.put(Level.TRACE, "[%d{HH:mm:ss}] [%t] [%C:%line/%level{" + names + "}] %msg%n%throwable");
+		patterns.put(Level.DEBUG, "[%d{HH:mm:ss}] [%t] [%C{1}:%line/%level{" + names + "}] %msg%n%throwable");
+		patterns.put(Level.INFO, "[%d{HH:mm:ss}] [%t] [%C{1}/%level{" + names + "}] %msg%n%throwable");
+		patterns.put(Level.WARN, "[%d{HH:mm:ss}] [%t] [%C{1}/%level{" + names + "}] %msg%n%throwable");
+		patterns.put(Level.ERROR, "[%d{HH:mm:ss}] [%t] [%C{1}/%level{" + names + "}] %msg%n%throwable");
+		patterns.put(Level.FATAL, "[%d{HH:mm:ss}] [%t] [%C{1}/%level{" + names + "}] %msg%n%throwable");
+	});
+  
 	private final Set<LoggingType> allowedTypes = Sets.newHashSet(LoggingType.CONSOLE, LoggingType.FILE);
-	private final Map<Level, String> consolePattern = Maps.newHashMap();
-	private final Map<Level, String> filePattern = Maps.newHashMap();
-	private final Set<String> defaultLoggers = Sets.newHashSet("ConsoleInfo", "ConsoleWarn", "ConsoleError", "ConsoleFatal");
+	private final Map<LoggingType, Map<Level, String>> patternOverrides = Utils.make(Maps.newEnumMap(LoggingType.class), type -> {
+		type.put(LoggingType.CONSOLE, Maps.newHashMap());
+		type.put(LoggingType.FILE, Maps.newHashMap());
+	});
+	private final Map<LoggingType, List<Level>> defaultLoggers = Utils.make(Maps.newEnumMap(LoggingType.class), loggers -> {
+		loggers.put(LoggingType.CONSOLE, Lists.newArrayList(Level.INFO, Level.WARN, Level.ERROR, Level.FATAL));
+		loggers.put(LoggingType.FILE, Lists.newArrayList());
+	});
+	private final Map<Level, Pair<String, String>> logs = Utils.make(Maps.newHashMap(), logs -> {
+		logs.put(Level.DEBUG, Pair.of("./logs/debug.log", "./logs/debug-%d{dd-MM-yyyy}-%i.log.gz"));
+		logs.put(Level.INFO, Pair.of("./logs/info.log", "./logs/info-%d{dd-MM-yyyy}-%i.log.gz"));
+		logs.put(Level.ERROR, Pair.of("./logs/error.log", "./logs/error-%d{dd-MM-yyyy}-%i.log.gz"));
+	});
 	private Level statusLevel = Level.ERROR;
-	private Pair<String, String> debugLog = Pair.of("./logs/debug.log", "./logs/debug-%d{dd-MM-yyyy}-%i.log.gz");
-	private Pair<String, String> infoLog = Pair.of("./logs/info.log", "./logs/info-%d{dd-MM-yyyy}-%i.log.gz");
 	
+	//region Status level
 	public LoggerConfiguration setStatusLevel(Level level) {
 		this.statusLevel = Objects.requireNonNull(level, "Level must not be null");
 		return this;
 	}
+	//endregion
 	
+	//region Enable/Disable logging type
 	public LoggerConfiguration enableLogging(LoggingType type) {
-		this.allowedTypes.add(Objects.requireNonNull(type, "Type must not be null"));
+		this.allowedTypes.add(Objects.requireNonNull(type, "Logging type must not be null"));
 		return this;
 	}
 	
@@ -50,121 +64,130 @@ public class LoggerConfiguration {
 		this.allowedTypes.remove(type);
 		return this;
 	}
+	//endregion
 	
-	public LoggerConfiguration overrideConsolePattern(Level level, String pattern) {
+	//region Pattern override
+	public LoggerConfiguration overridePattern(LoggingType type, Level level, String pattern) {
+		Objects.requireNonNull(type, "Logging type must not be null");
+		Objects.requireNonNull(pattern, "Pattern must not be null");
 		if (level == Level.ALL) {
 			for (Level temp : LoggingUtils.CONSOLE_LEVELS) {
-				this.consolePattern.put(temp, pattern);
+				this.patternOverrides.getOrDefault(type, Maps.newHashMap()).put(temp, pattern);
 			}
 		} else if (level == Level.OFF) {
-			this.consolePattern.clear();
+			this.patternOverrides.getOrDefault(type, Maps.newHashMap()).clear();
 		} else {
-			this.consolePattern.put(Objects.requireNonNull(level, "Level must not be null"), Objects.requireNonNull(pattern, "Pattern must not be null"));
+			this.patternOverrides.getOrDefault(type, Maps.newHashMap()).put(Objects.requireNonNull(level, "Level must not be null"), pattern);
 		}
 		return this;
 	}
 	
+	public LoggerConfiguration overrideConsolePattern(Level level, String pattern) {
+		return this.overridePattern(LoggingType.CONSOLE, level, pattern);
+	}
+	
 	public LoggerConfiguration overrideFilePattern(Level level, String pattern) {
-		if (level == Level.ALL) {
-			for (Level temp : LoggingUtils.FILE_LEVELS) {
-				this.filePattern.put(temp, pattern);
-			}
-		} else if (level == Level.OFF) {
-			this.filePattern.clear();
-		} else {
-			this.filePattern.put(Objects.requireNonNull(level, "Level must not be null"), Objects.requireNonNull(pattern, "Pattern must not be null"));
-		}
+		return this.overridePattern(LoggingType.FILE, level, pattern);
+	}
+	//endregion
+	
+	//region Log override
+	public LoggerConfiguration overrideLog(Level level, String fileName, String filePattern) {
+		validateLevel(level);
+		this.logs.put(level, Pair.of(Objects.requireNonNull(fileName, "File name must not be null"), Objects.requireNonNull(filePattern, "File pattern must not be null")));
 		return this;
 	}
 	
 	public LoggerConfiguration overrideDebugLog(String fileName, String filePattern) {
-		this.debugLog = Pair.of(Objects.requireNonNull(fileName, "File name must not be null"), Objects.requireNonNull(filePattern, "File pattern must not be null"));
-		return this;
+		return this.overrideLog(Level.DEBUG, fileName, filePattern);
 	}
 	
 	public LoggerConfiguration overrideInfoLog(String fileName, String filePattern) {
-		this.infoLog = Pair.of(Objects.requireNonNull(fileName, "File name must not be null"), Objects.requireNonNull(filePattern, "File pattern must not be null"));
+		return this.overrideLog(Level.INFO, fileName, filePattern);
+	}
+	
+	public LoggerConfiguration overrideErrorLog(String fileName, String filePattern) {
+		return this.overrideLog(Level.ERROR, fileName, filePattern);
+	}
+	
+	private void validateLevel(Level level) {
+		Objects.requireNonNull(level, "Level must not be null");
+		if (level == Level.ALL || level == Level.OFF) {
+			throw new IllegalArgumentException("Level must not be ALL or OFF");
+		}
+		if (level != Level.DEBUG && level != Level.INFO && level != Level.ERROR) {
+			throw new IllegalArgumentException("Logging type 'file' does not support level '" + level.name().toLowerCase() + "'");
+		}
+	}
+	//endregion
+	
+	//region Default loggers
+	public LoggerConfiguration addDefaultLogger(LoggingType type, Level level) {
+		LoggingUtils.checkLevel(Objects.requireNonNull(type, "Logging type must not be null"), Objects.requireNonNull(level, "Level must not be null"));
+		this.defaultLoggers.getOrDefault(type, Lists.newArrayList()).add(level);
 		return this;
 	}
 	
-	public LoggerConfiguration addDefaultLogger(Level level, LoggingType type) {
-		this.defaultLoggers.add(LoggingUtils.getLogger(level, type));
+	public LoggerConfiguration removeDefaultLogger(LoggingType type, Level level) {
+		this.defaultLoggers.getOrDefault(type, Lists.newArrayList()).remove(level);
 		return this;
 	}
+	//endregion
 	
 	public Configuration build() {
 		ConfigurationBuilder<BuiltConfiguration> builder = ConfigurationBuilderFactory.newConfigurationBuilder();
 		builder.setConfigurationName("RuntimeConfiguration");
 		builder.setStatusLevel(this.statusLevel);
+		RootLoggerComponentBuilder rootBuilder = builder.newRootLogger(Level.ALL);
 		if (this.allowedTypes.contains(LoggingType.CONSOLE)) {
-			builder.add(builder.newAppender("ConsoleTrace", "Console")
-				.addAttribute("target", ConsoleAppender.Target.SYSTEM_OUT)
-				.add(this.pattern(builder, this.consolePattern.getOrDefault(Level.TRACE, TRACE_PATTERN)))
-				.add(this.filter(builder, "LevelMatchFilter", Level.TRACE)));
-			
-			builder.add(builder.newAppender("ConsoleDebug", "Console")
-				.addAttribute("target", ConsoleAppender.Target.SYSTEM_OUT)
-				.add(this.pattern(builder, this.consolePattern.getOrDefault(Level.DEBUG, DEBUG_PATTERN)))
-				.add(this.filter(builder, "LevelMatchFilter", Level.DEBUG)));
-			
-			builder.add(builder.newAppender("ConsoleInfo", "Console")
-				.addAttribute("target", ConsoleAppender.Target.SYSTEM_OUT)
-				.add(this.pattern(builder, this.consolePattern.getOrDefault(Level.INFO, INFO_PATTERN)))
-				.add(this.filter(builder, "LevelMatchFilter", Level.INFO)));
-			
-			builder.add(builder.newAppender("ConsoleWarn", "Console")
-				.addAttribute("target", ConsoleAppender.Target.SYSTEM_OUT)
-				.add(this.pattern(builder, this.consolePattern.getOrDefault(Level.WARN, WARN_PATTERN)))
-				.add(this.filter(builder, "LevelMatchFilter", Level.WARN)));
-			
-			builder.add(builder.newAppender("ConsoleError", "Console")
-				.addAttribute("target", ConsoleAppender.Target.SYSTEM_OUT)
-				.add(this.pattern(builder, this.consolePattern.getOrDefault(Level.ERROR, ERROR_PATTERN)))
-				.add(this.filter(builder, "LevelMatchFilter", Level.ERROR)));
-			
-			builder.add(builder.newAppender("ConsoleFatal", "Console")
-				.addAttribute("target", ConsoleAppender.Target.SYSTEM_OUT)
-				.add(this.pattern(builder, this.consolePattern.getOrDefault(Level.FATAL, FATAL_PATTERN)))
-				.add(this.filter(builder, "LevelMatchFilter", Level.FATAL)));
+			for (Level level : LoggingUtils.CONSOLE_LEVELS) {
+				String name = LoggingUtils.getLogger(LoggingType.CONSOLE, level);
+				builder.add(builder.newAppender(name, "Console")
+					.addAttribute("target", ConsoleAppender.Target.SYSTEM_OUT)
+					.add(this.pattern(builder, this.getPattern(LoggingType.CONSOLE, level)))
+					.add(this.filter(builder, "LevelMatchFilter", level)));
+				if (this.defaultLoggers.getOrDefault(LoggingType.CONSOLE, Lists.newArrayList()).contains(level)) {
+					rootBuilder.add(builder.newAppenderRef(name));
+				}
+			}
 		}
 		if (this.allowedTypes.contains(LoggingType.FILE)) {
-			builder.add(builder.newAppender("DebugLogFile", "RollingRandomAccessFile")
-				.addAttribute("fileName", this.debugLog.getFirst())
-				.addAttribute("filePattern", this.debugLog.getSecond())
-				.add(this.pattern(builder, this.filePattern.getOrDefault(Level.DEBUG, DEBUG_PATTERN)))
-				.add(this.filter(builder, "ThresholdFilter", Level.DEBUG))
-				.addComponent(this.policies(builder)));
-			
-			builder.add(builder.newAppender("InfoLogFile", "RollingRandomAccessFile")
-				.addAttribute("fileName", this.infoLog.getFirst())
-				.addAttribute("filePattern", this.infoLog.getSecond())
-				.add(this.pattern(builder, this.filePattern.getOrDefault(Level.INFO, INFO_PATTERN)))
-				.add(this.filter(builder, "ThresholdFilter", Level.INFO))
-				.addComponent(this.policies(builder)));
-		}
-		RootLoggerComponentBuilder rootBuilder = builder.newRootLogger(Level.ALL);
-		for (String logger : this.defaultLoggers) {
-			if (logger.contains("Console") && !this.allowedTypes.contains(LoggingType.CONSOLE)) {
-				continue;
+			for (Level level : LoggingUtils.FILE_LEVELS) {
+				String name = LoggingUtils.getLogger(LoggingType.FILE, level);
+				builder.add(builder.newAppender(name, "RollingRandomAccessFile")
+					.addAttribute("fileName", this.logs.get(level).getFirst())
+					.addAttribute("filePattern", this.logs.get(level).getSecond())
+					.add(this.pattern(builder, this.getPattern(LoggingType.FILE, level)))
+					.add(this.filter(builder, "ThresholdFilter", level))
+					.addComponent(this.policies(builder)));
+				if (this.defaultLoggers.getOrDefault(LoggingType.FILE, Lists.newArrayList()).contains(level)) {
+					rootBuilder.add(builder.newAppenderRef(name));
+				}
 			}
-			if (logger.contains("LogFile") && !this.allowedTypes.contains(LoggingType.FILE)) {
-				continue;
-			}
-			rootBuilder.add(builder.newAppenderRef(logger));
 		}
 		return builder.add(rootBuilder).build();
 	}
 	
 	//region Helper methods
+	private String getPattern(LoggingType type, Level level) {
+		return this.patternOverrides.getOrDefault(type, Maps.newHashMap()).getOrDefault(level, DEFAULT_PATTERNS.get(level));
+	}
+	
 	private LayoutComponentBuilder pattern(ConfigurationBuilder<BuiltConfiguration> builder, String pattern) {
+		Objects.requireNonNull(builder, "Builder must not be null");
+		Objects.requireNonNull(pattern, "Pattern must not be null");
 		return builder.newLayout("PatternLayout").addAttribute("pattern", pattern);
 	}
 	
 	private FilterComponentBuilder filter(ConfigurationBuilder<BuiltConfiguration> builder, String filter, Level level) {
+		Objects.requireNonNull(builder, "Builder must not be null");
+		Objects.requireNonNull(filter, "Filter must not be null");
+		Objects.requireNonNull(level, "Level must not be null");
 		return builder.newFilter(filter, Filter.Result.ACCEPT, Filter.Result.DENY).addAttribute("level", level);
 	}
 	
 	private ComponentBuilder<?> policies(ConfigurationBuilder<BuiltConfiguration> builder) {
+		Objects.requireNonNull(builder, "Builder must not be null");
 		return builder.newComponent("Policies").addComponent(builder.newComponent("SizeBasedTriggeringPolicy")).addComponent(builder.newComponent("OnStartupTriggeringPolicy"));
 	}
 	//endregion

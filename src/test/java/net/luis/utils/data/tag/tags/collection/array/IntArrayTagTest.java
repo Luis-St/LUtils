@@ -19,7 +19,7 @@ class IntArrayTagTest {
 	
 	@Test
 	void save() {
-		Path path = new File("D:\\Programmieren\\Git Repositories\\LUtils\\build\\tests\\int_array_tag_test.txt").toPath();
+		Path path = new File("./build/tests/int_array_tag_test.txt").toPath();
 		IntArrayTag tagSave = new IntArrayTag();
 		tagSave.add(IntTag.valueOf(12));
 		tagSave.add(IntTag.valueOf(13));

@@ -19,12 +19,48 @@ import java.util.Objects;
 
 public class LoggingUtils {
 	
-	static Level[] CONSOLE_LEVELS = new Level[] {Level.TRACE, Level.DEBUG, Level.INFO, Level.WARN, Level.ERROR, Level.FATAL};
-	static Level[] FILE_LEVELS = new Level[] {Level.DEBUG, Level.INFO};
+	static final Level[] CONSOLE_LEVELS = new Level[] {Level.TRACE, Level.DEBUG, Level.INFO, Level.WARN, Level.ERROR, Level.FATAL};
+	static final Level[] FILE_LEVELS = new Level[] {Level.DEBUG, Level.INFO, Level.ERROR};
+	private static boolean initialized = false;
+	
+	//region Initialization
+	public static void load() {
+		LoggerConfiguration config = LoggingHelper.load();
+		initialize(config);
+		LoggingHelper.configure();
+	}
+	
+	public static void initialize() {
+		initialize(LoggerConfiguration.DEFAULT);
+	}
 	
 	public static void initialize(LoggerConfiguration configuration) {
-		Configurator.initialize(Objects.requireNonNull(configuration, "Configuration must not be null").build());
+		initialize(configuration, false);
 	}
+	
+	public static void initialize(LoggerConfiguration configuration, boolean override) {
+		if (!initialized) {
+			Configurator.initialize(Objects.requireNonNull(configuration, "Configuration must not be null").build());
+			initialized = true;
+		} else if (override) {
+			Configurator.initialize(Objects.requireNonNull(configuration, "Configuration must not be null").build());
+		} else {
+			throw new IllegalStateException("Logging has already been initialized");
+		}
+	}
+	
+	public static boolean initializeSafe(LoggerConfiguration configuration) {
+		if (!isInitialized()) {
+			initialize(configuration);
+			return true;
+		}
+		return false;
+	}
+	
+	public static boolean isInitialized() {
+		return initialized;
+	}
+	//endregion
 	
 	//region Helper methods
 	private static void enableAppender(String name) {
@@ -41,22 +77,26 @@ public class LoggingUtils {
 		context.updateLoggers(config);
 	}
 	
-	static @NotNull String getLogger(Level level, LoggingType type) {
+	static void checkLevel(LoggingType type, Level level) {
 		if (level == Level.ALL || level == Level.OFF) {
 			throw new IllegalArgumentException("Level must not be 'all' or 'off'");
 		}
-		if (type == LoggingType.FILE && level != Level.DEBUG && level != Level.INFO) {
-			throw new IllegalArgumentException("Level must be 'debug' or 'info'");
+		if (type == LoggingType.FILE && level != Level.DEBUG && level != Level.INFO && level != Level.ERROR) {
+			throw new IllegalArgumentException("Logging type 'file' does not support level '" + level.name().toLowerCase() + "'");
 		}
+	}
+	
+	static @NotNull String getLogger(LoggingType type, Level level) {
+		checkLevel(type, level);
 		String levelName = Objects.requireNonNull(level, "Level must not be null").name().toLowerCase();
-		String typeName = Objects.requireNonNull(type, "Type must not be null").name().toLowerCase();
+		String typeName = Objects.requireNonNull(type, "Logging type must not be null").name().toLowerCase();
 		return StringUtils.capitalize(typeName) + StringUtils.capitalize(levelName);
 	}
 	//endregion
 	
 	//region Enable logging
 	public static void enable(Level level, LoggingType type) {
-		enableAppender(getLogger(level, type));
+		enableAppender(getLogger(type, level));
 	}
 	
 	public static void enableConsole(Level level) {
@@ -78,7 +118,7 @@ public class LoggingUtils {
 	
 	//region Disable logging
 	public static void disable(Level level, LoggingType type) {
-		disableAppender(getLogger(level, type));
+		disableAppender(getLogger(type, level));
 	}
 	
 	public static void disableConsole(Level level) {

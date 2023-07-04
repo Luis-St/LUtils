@@ -18,7 +18,7 @@ class StringTagTest {
 	
 	@Test
 	void save() {
-		Path path = new File("D:\\Programmieren\\Git Repositories\\LUtils\\build\\tests\\string_tag_test.txt").toPath();
+		Path path = new File("./build/tests/string_tag_test.txt").toPath();
 		StringTag tagSave = StringTag.valueOf("StringTagTest");
 		assertDoesNotThrow(() -> Tag.save(path, tagSave));
 		Tag tag = Tag.load(path);
