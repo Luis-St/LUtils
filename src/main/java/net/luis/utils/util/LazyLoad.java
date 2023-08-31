@@ -44,13 +44,8 @@ public class LazyLoad<T> implements Supplier<T> {
 	}
 	
 	@Override
-	public int hashCode() {
-		return Objects.hash(this.value);
-	}
-	
-	@Override
 	public String toString() {
-		return "LazyLoad{supplier=" + this.supplier + ", value=" + this.value + "}";
+		return "LazyLoad{value=" + this.value + "}";
 	}
 	//endregion
 }

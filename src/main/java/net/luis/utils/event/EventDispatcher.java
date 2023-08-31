@@ -14,20 +14,20 @@ public class EventDispatcher {
 	
 	private final Map<EventType<?>, Registry<EventListener<?>>> listeners = new HashMap<>();
 	
-	public <T extends EventType<E>, E extends Event> UUID register(T type, EventListener<E> listener) {
+	public <E extends Event> UUID register(EventType<E> type, EventListener<E> listener) {
 		return this.listeners.computeIfAbsent(type, k -> Registry.of()).register(listener);
 	}
 	
-	public <T extends EventType<E>, E extends Event> boolean remove(T type, UUID uniqueId) {
+	public <E extends Event> boolean remove(EventType<E> type, UUID uniqueId) {
 		return this.listeners.get(type).remove(uniqueId);
 	}
 	
-	public <T extends EventType<E>, E extends Event> void removeAll(T type) {
+	public <E extends Event> void removeAll(EventType<E> type) {
 		this.listeners.get(type).clear();
 	}
 	
 	@SuppressWarnings("unchecked")
-	public <T extends EventType<E>, E extends Event> void dispatch(T type, E event) {
+	public <E extends Event> void dispatch(EventType<E> type, E event) {
 		this.listeners.getOrDefault(type, Registry.of()).forEach(listener -> ((EventListener<E>) listener).call(event));
 	}
 	

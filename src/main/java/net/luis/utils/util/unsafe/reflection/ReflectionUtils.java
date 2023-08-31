@@ -51,15 +51,15 @@ public class ReflectionUtils {
 		return Arrays.stream(clazz.getDeclaredMethods()).filter(method -> method.getName().equals(name)).toList();
 	}
 	
-	public static Object[] getParameters(Executable executable, Object... values) {
+	public static Object @NotNull [] getParameters(Executable executable, Object... values) {
 		return getParameters(Objects.requireNonNull(executable, "Executable must not be null"), Utils.mapList(Lists.newArrayList(values), value -> {
 			String name = value.getClass().getSimpleName();
 			return new ValueInfo(value, name.substring(0, 1).toLowerCase() + name.substring(1), Nullability.UNKNOWN);
 		}));
 	}
 	
-	public static Object[] getParameters(Executable executable, List<ValueInfo> values) {
-		Parameter[] parameters = Objects.requireNonNull(executable, "Method must not be null").getParameters();
+	public static Object @NotNull [] getParameters(Executable executable, List<ValueInfo> values) {
+		Parameter[] parameters = Objects.requireNonNull(executable, "Executable must not be null").getParameters();
 		Object[] arguments = new Object[parameters.length];
 		for (int i = 0; i < parameters.length; i++) {
 			arguments[i] = findParameter(parameters[i], values);
@@ -72,9 +72,9 @@ public class ReflectionUtils {
 		Executable executable = Objects.requireNonNull(parameter, "Parameter must not be null").getDeclaringExecutable();
 		for (ValueInfo value : Objects.requireNonNull(values, "Values must not be null")) {
 			Object object = value.value();
-			boolean duplicate = Utils.hasDuplicates(object, Utils.mapList(Lists.newArrayList(values), ValueInfo::value));
+			boolean noDuplicates = !Utils.hasDuplicates(object, Utils.mapList(Lists.newArrayList(values), ValueInfo::value));
 			if (parameter.getType().isInstance(object) || ClassUtils.primitiveToWrapper(parameter.getType()).isInstance(object)) {
-				if (!duplicate) {
+				if (noDuplicates) {
 					return object;
 				} else if (!parameter.isNamePresent()) {
 					throw new IllegalArgumentException("The parameter " + parameter.getName() + " of method " + executable.getDeclaringClass().getSimpleName() + "#" + executable.getName() + " is ambiguous");

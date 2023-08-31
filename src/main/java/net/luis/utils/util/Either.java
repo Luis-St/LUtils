@@ -60,7 +60,7 @@ public abstract class Either<L, R> {
 	}
 	
 	public Either<R, L> swap() {
-		return map(Either::right, Either::left);
+		return this.map(Either::right, Either::left);
 	}
 	
 	private static final class Left<L, R> extends Either<L, R> {
@@ -68,7 +68,7 @@ public abstract class Either<L, R> {
 		//region Left implementation
 		private final L value;
 		
-		public Left(L value) {
+		private Left(L value) {
 			this.value = value;
 		}
 		
@@ -140,7 +140,7 @@ public abstract class Either<L, R> {
 		//region Right implementation
 		private final R value;
 		
-		public Right(R value) {
+		private Right(R value) {
 			this.value = value;
 		}
 		

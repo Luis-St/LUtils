@@ -37,14 +37,14 @@ final class ExternalResourceLocation extends ResourceLocation {
 		if (strPath.isEmpty()) {
 			return "./";
 		}
-		if (!strPath.startsWith("./") && !strPath.startsWith("/")) {
+		if (!strPath.startsWith("./") && strPath.charAt(0) != '/') {
 			strPath = "./" + strPath;
-		} else if (strPath.startsWith(".")) {
+		} else if (strPath.charAt(0) == '.') {
 			strPath = "./" + strPath.substring(1);
-		} else if (strPath.startsWith("/")) {
+		} else if (strPath.charAt(0) == '/') {
 			strPath = "." + strPath;
 		}
-		return !strPath.endsWith("/") ? strPath + "/" : strPath;
+		return strPath.charAt(strPath.length() - 1) != '/' ? strPath + "/" : strPath;
 	}
 	//endregion
 	
@@ -74,7 +74,7 @@ final class ExternalResourceLocation extends ResourceLocation {
 	}
 	
 	@Override
-	public byte[] getBytes() throws IOException {
+	public byte @NotNull [] getBytes() throws IOException {
 		return Files.readAllBytes(this.path);
 	}
 	

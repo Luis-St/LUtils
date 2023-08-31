@@ -7,6 +7,5 @@ package net.luis.utils.util.unsafe;
  */
 
 public enum Nullability {
-	
 	NULLABLE, NOT_NULL, UNKNOWN
 }

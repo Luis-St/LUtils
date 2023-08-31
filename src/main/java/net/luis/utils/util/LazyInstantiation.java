@@ -18,7 +18,7 @@ public class LazyInstantiation<T> {
 	private final MutableObject<T> object;
 	private Consumer<T> action;
 	private CompletableFuture<T> future;
-	private boolean instantiated = false;
+	private boolean instantiated;
 	
 	public LazyInstantiation() {
 		this.object = new MutableObject<>();
@@ -31,10 +31,10 @@ public class LazyInstantiation<T> {
 	}
 	
 	public T get() {
-		if (!this.instantiated) {
-			throw new NullPointerException("The object has not been instantiated yet");
-		} else {
+		if (this.instantiated) {
 			return this.object.getValue();
+		} else {
+			throw new NullPointerException("The object has not been instantiated yet");
 		}
 	}
 	
@@ -72,7 +72,7 @@ public class LazyInstantiation<T> {
 	
 	@Override
 	public int hashCode() {
-		return Objects.hash(this.object, this.instantiated);
+		return Objects.hash(this.object);
 	}
 	
 	@Override

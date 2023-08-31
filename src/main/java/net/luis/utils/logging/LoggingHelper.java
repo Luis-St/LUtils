@@ -85,11 +85,11 @@ class LoggingHelper {
 	
 	//region Helper methods
 	private static boolean isEnabled(String property) {
-	    return "true".equalsIgnoreCase(property) || "enable".equalsIgnoreCase(property) || "enabled".equalsIgnoreCase(property);
+		return "true".equalsIgnoreCase(property) || "enable".equalsIgnoreCase(property) || "enabled".equalsIgnoreCase(property);
 	}
 	
 	private static boolean isDisabled(String property) {
-	    return "false".equalsIgnoreCase(property) || "disable".equalsIgnoreCase(property) || "disabled".equalsIgnoreCase(property);
+		return "false".equalsIgnoreCase(property) || "disable".equalsIgnoreCase(property) || "disabled".equalsIgnoreCase(property);
 	}
 	//endregion
 }

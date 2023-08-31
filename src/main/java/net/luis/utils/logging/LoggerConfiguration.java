@@ -20,7 +20,6 @@ import java.util.*;
 
 public class LoggerConfiguration {
 	
-	public static final LoggerConfiguration DEFAULT = new LoggerConfiguration();
 	private static final Map<Level, String> DEFAULT_PATTERNS = Utils.make(Maps.newHashMap(), patterns -> {
 		String names = "TRACE=Trace, DEBUG=Debug, INFO=Info, WARN=Warn, ERROR=Error, FATAL=Fatal";
 		patterns.put(Level.TRACE, "[%d{HH:mm:ss}] [%t] [%C:%line/%level{" + names + "}] %msg%n%throwable");
@@ -30,7 +29,8 @@ public class LoggerConfiguration {
 		patterns.put(Level.ERROR, "[%d{HH:mm:ss}] [%t] [%C{1}/%level{" + names + "}] %msg%n%throwable");
 		patterns.put(Level.FATAL, "[%d{HH:mm:ss}] [%t] [%C{1}/%level{" + names + "}] %msg%n%throwable");
 	});
-  
+	public static final LoggerConfiguration DEFAULT = new LoggerConfiguration();
+	
 	private final Set<LoggingType> allowedTypes = Sets.newHashSet(LoggingType.CONSOLE, LoggingType.FILE);
 	private final Map<LoggingType, Map<Level, String>> patternOverrides = Utils.make(Maps.newEnumMap(LoggingType.class), type -> {
 		type.put(LoggingType.CONSOLE, Maps.newHashMap());
@@ -93,7 +93,7 @@ public class LoggerConfiguration {
 	
 	//region Log override
 	public LoggerConfiguration overrideLog(Level level, String fileName, String filePattern) {
-		validateLevel(level);
+		this.validateLevel(level);
 		this.logs.put(level, Pair.of(Objects.requireNonNull(fileName, "File name must not be null"), Objects.requireNonNull(filePattern, "File pattern must not be null")));
 		return this;
 	}

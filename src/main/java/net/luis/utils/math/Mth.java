@@ -76,7 +76,7 @@ public class Mth {
 		}
 		Number number = numbers[0];
 		for (int i = 1; i < numbers.length; i++) {
-			if (number.doubleValue() != numbers[i].doubleValue()) {
+			if (number.intValue() != numbers[i].intValue()) {
 				return false;
 			}
 		}

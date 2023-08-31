@@ -3,13 +3,11 @@ package net.luis.utils.resources;
 import com.google.common.collect.Lists;
 import net.luis.utils.util.Pair;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.logging.log4j.core.util.IOUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.*;
 import java.net.URL;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -74,7 +72,7 @@ final class InternalResourceLocation extends ResourceLocation {
 	}
 	
 	@Override
-	public byte[] getBytes() throws IOException {
+	public byte @NotNull [] getBytes() throws IOException {
 		try (InputStream stream = this.getStream()) {
 			return stream.readAllBytes();
 		}

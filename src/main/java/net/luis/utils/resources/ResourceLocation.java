@@ -44,11 +44,10 @@ public abstract sealed class ResourceLocation permits ExternalResourceLocation, 
 		return new ExternalResourceLocation(path, name);
 	}
 	
-	
 	public static @NotNull ResourceLocation getResource(String path, String name) {
 		return getResource(path, name, Type.EXTERNAL);
 	}
-
+	
 	public static @NotNull ResourceLocation getResource(String path, String name, Type preferredType) {
 		Objects.requireNonNull(preferredType, "Preferred type must not be null");
 		ResourceLocation internal = internal(path, name);
@@ -63,7 +62,7 @@ public abstract sealed class ResourceLocation permits ExternalResourceLocation, 
 		} else if (external.exists()) {
 			return external;
 		}
-		String location = (path.endsWith("/") ? path : path + "/") + name;
+		String location = (path.charAt(path.length() - 1) == '/' ? path : path + "/") + name;
 		throw new IllegalArgumentException("Resource '" + location + "' was not found in any location");
 	}
 	//endregion
@@ -100,7 +99,7 @@ public abstract sealed class ResourceLocation permits ExternalResourceLocation, 
 	
 	public abstract @NotNull InputStream getStream() throws IOException;
 	
-	public abstract byte[] getBytes() throws IOException;
+	public abstract byte @NotNull [] getBytes() throws IOException;
 	
 	public abstract @NotNull String getString() throws IOException;
 	
@@ -127,7 +126,7 @@ public abstract sealed class ResourceLocation permits ExternalResourceLocation, 
 	}
 	//endregion
 	
-	public static enum Type {
-		INTERNAL, EXTERNAL;
+	public enum Type {
+		INTERNAL, EXTERNAL
 	}
 }

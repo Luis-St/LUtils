@@ -1,6 +1,5 @@
 package net.luis.utils.resources;
 
-import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 

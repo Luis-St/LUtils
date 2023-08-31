@@ -45,7 +45,7 @@ public class SimpleEntry<K, V> implements Map.Entry<K, V> {
 	
 	@Override
 	public int hashCode() {
-		return Objects.hash(this.key, this.value);
+		return Objects.hash(this.key);
 	}
 	
 	@Override
