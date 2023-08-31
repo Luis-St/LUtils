@@ -7,8 +7,11 @@ import java.util.Scanner;
 
 /**
  *
+ * @author Luis-St
+ *
  */
 
+@Deprecated
 public class ScannerUtils {
 	
 	public static int nextInt(String output) {
