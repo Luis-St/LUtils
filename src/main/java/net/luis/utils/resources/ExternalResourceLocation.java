@@ -20,11 +20,11 @@ final class ExternalResourceLocation extends ResourceLocation {
 	private final File file;
 	private final Path path;
 	
-	ExternalResourceLocation(Pair<String, String> pair) {
+	ExternalResourceLocation(@NotNull Pair<String, String> pair) {
 		this(pair.getFirst(), pair.getSecond());
 	}
 	
-	ExternalResourceLocation(String path, String name) {
+	ExternalResourceLocation(@Nullable String path, @NotNull  String name) {
 		super(path, name);
 		this.file = new File(this.getPath() + this.getFile());
 		this.path = Paths.get(this.getPath() + this.getFile());

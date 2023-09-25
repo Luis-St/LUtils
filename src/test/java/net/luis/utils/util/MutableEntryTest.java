@@ -10,6 +10,7 @@ import static org.junit.jupiter.api.Assertions.*;
  *
  */
 
+@SuppressWarnings("DataFlowIssue")
 class MutableEntryTest {
 	
 	@Test
@@ -25,6 +26,6 @@ class MutableEntryTest {
 		assertDoesNotThrow(() -> {
 			entry.setValue("value1");
 		});
-		assertEquals(entry.getValue(), "value1");
+		assertEquals("value1", entry.getValue());
 	}
 }

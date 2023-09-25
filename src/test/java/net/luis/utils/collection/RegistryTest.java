@@ -1,8 +1,10 @@
 package net.luis.utils.collection;
 
 import com.google.common.collect.Lists;
+import net.luis.utils.util.Utils;
 import org.junit.jupiter.api.Test;
 
+import java.util.NoSuchElementException;
 import java.util.UUID;
 import java.util.function.Function;
 
@@ -14,6 +16,7 @@ import static org.junit.jupiter.api.Assertions.*;
  *
  */
 
+@SuppressWarnings("DataFlowIssue")
 class RegistryTest {
 	
 	@Test
@@ -40,7 +43,8 @@ class RegistryTest {
 		assertFalse(registry.remove(UUID.fromString("00000000-0000-0000-0000-000000000000")));
 		UUID uniqueId = registry.register(10);
 		assertTrue(registry.remove(uniqueId));
-		assertThrows(NullPointerException.class, () -> registry.remove(null));
+		assertDoesNotThrow(() -> registry.remove(null));
+		assertFalse(registry.remove(null));
 	}
 	
 	@Test
@@ -52,12 +56,22 @@ class RegistryTest {
 	}
 	
 	@Test
+	void getOrThrow() {
+		Registry<Integer> registry = Registry.of();
+		UUID uniqueId = registry.register(10);
+		assertDoesNotThrow(() -> registry.getOrThrow(uniqueId));
+		assertThrows(NullPointerException.class, () -> registry.getOrThrow(null));
+		assertThrows(NoSuchElementException.class, () -> registry.getOrThrow(UUID.randomUUID()));
+	}
+	
+	@Test
 	void getUniqueId() {
 		Registry<Integer> registry = Registry.of();
 		UUID uniqueId = registry.register(10);
 		assertEquals(uniqueId, registry.getUniqueId(10));
-		assertNull(registry.getUniqueId(20));
-		assertThrows(NullPointerException.class, () -> registry.getUniqueId(null));
+		assertNotNull(registry.getUniqueId(20));
+		assertDoesNotThrow(() -> registry.getUniqueId(null));
+		assertEquals(Utils.EMPTY_UUID, registry.getUniqueId(null));
 	}
 	
 	@Test

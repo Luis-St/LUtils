@@ -3,8 +3,7 @@ package net.luis.utils.util.unsafe.reflection;
 import com.google.common.collect.Lists;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
+import org.jetbrains.annotations.*;
 
 import java.lang.reflect.*;
 import java.util.List;
@@ -42,7 +41,7 @@ public class ReflectionHelper {
 	}
 	//endregion
 	
-	public static Class<?> getClassForName(String className) {
+	public static @UnknownNullability Class<?> getClassForName(@NotNull String className) {
 		try {
 			return Class.forName(className);
 		} catch (ClassNotFoundException e) {
@@ -59,7 +58,7 @@ public class ReflectionHelper {
 		return null;
 	}
 	
-	public static boolean hasInterface(Class<?> clazz, Class<?> iface) {
+	public static boolean hasInterface(@NotNull Class<?> clazz, @NotNull Class<?> iface) {
 		Objects.requireNonNull(iface, "Interface must not be null");
 		if (iface.isInterface()) {
 			return Lists.newArrayList(clazz.getInterfaces()).contains(iface);
@@ -68,17 +67,17 @@ public class ReflectionHelper {
 	}
 	
 	//region Internal helper methods
-	private static @NotNull List<String> getSimpleNames(Class<?>... classes) {
+	private static @NotNull List<String> getSimpleNames(Class<?> @NotNull ... classes) {
 		return Lists.newArrayList(classes).stream().map(Class::getSimpleName).collect(Collectors.toList());
 	}
 	
-	private static @NotNull List<String> getSimpleNames(Object... objects) {
+	private static @NotNull List<String> getSimpleNames(Object @NotNull ... objects) {
 		return Lists.newArrayList(objects).stream().map(Object::getClass).map(Class::getSimpleName).collect(Collectors.toList());
 	}
 	//endregion
 	
 	//region Constructor methods
-	public static <T> Constructor<T> getConstructor(Class<T> clazz, Class<?>... parameters) {
+	public static <T> @UnknownNullability Constructor<T> getConstructor(@NotNull Class<T> clazz, Class<?> @NotNull ... parameters) {
 		Constructor<T> constructor = null;
 		try {
 			constructor = Objects.requireNonNull(clazz, "Class must not be null").getDeclaredConstructor(parameters);
@@ -109,11 +108,11 @@ public class ReflectionHelper {
 		return constructor;
 	}
 	
-	public static boolean hasConstructor(Class<?> clazz, Class<?>... parameters) {
+	public static boolean hasConstructor(@NotNull Class<?> clazz, Class<?> @NotNull ... parameters) {
 		return hasConstructor(clazz, null, parameters);
 	}
 	
-	public static <T> boolean hasConstructor(Class<T> clazz, @Nullable Predicate<Constructor<T>> predicate, Class<?>... parameters) {
+	public static <T> boolean hasConstructor(@NotNull Class<T> clazz, @Nullable Predicate<Constructor<T>> predicate, Class<?> @NotNull ... parameters) {
 		Constructor<T> constructor = null;
 		try {
 			constructor = clazz.getDeclaredConstructor(parameters);
@@ -123,7 +122,7 @@ public class ReflectionHelper {
 		return constructor != null && (predicate == null || predicate.test(constructor));
 	}
 	
-	public static <T> T newInstance(Constructor<T> constructor, Object... parameters) {
+	public static <T> T newInstance(@NotNull Constructor<T> constructor, Object @NotNull ... parameters) {
 		T instance = null;
 		try {
 			Objects.requireNonNull(constructor, "Constructor must not be null");
@@ -175,13 +174,13 @@ public class ReflectionHelper {
 		return instance;
 	}
 	
-	public static <T> T newInstance(Class<T> clazz, Object... parameters) {
+	public static <T> T newInstance(@NotNull Class<T> clazz, Object @NotNull ... parameters) {
 		return newInstance(Objects.requireNonNull(getConstructor(clazz, Lists.newArrayList(parameters).stream().map(Object::getClass).toArray(Class<?>[]::new))), parameters);
 	}
 	//endregion
 	
 	//region Method methods
-	public static Method getMethod(Class<?> clazz, String name, Class<?>... parameters) {
+	public static @UnknownNullability Method getMethod(@NotNull Class<?> clazz, @NotNull String name, Class<?> @NotNull ... parameters) {
 		Method method = null;
 		try {
 			method = Objects.requireNonNull(clazz, "Class must not be null").getDeclaredMethod(name, parameters);
@@ -212,11 +211,11 @@ public class ReflectionHelper {
 		return method;
 	}
 	
-	public static boolean hasMethod(Class<?> clazz, String name, Class<?>... parameters) {
+	public static boolean hasMethod(@NotNull Class<?> clazz, @NotNull String name, Class<?> @NotNull ... parameters) {
 		return hasMethod(clazz, name, null, parameters);
 	}
 	
-	public static boolean hasMethod(Class<?> clazz, String name, @Nullable Predicate<Method> predicate, Class<?>... parameters) {
+	public static boolean hasMethod(@NotNull Class<?> clazz, @NotNull String name, @Nullable Predicate<Method> predicate, Class<?> @NotNull ... parameters) {
 		Method method = null;
 		try {
 			method = clazz.getDeclaredMethod(name, parameters);
@@ -226,7 +225,7 @@ public class ReflectionHelper {
 		return method != null && (predicate == null || predicate.test(method));
 	}
 	
-	public static Object invoke(Method method, Object instance, Object... parameters) {
+	public static @UnknownNullability Object invoke(@NotNull Method method, @Nullable Object instance, Object @NotNull ... parameters) {
 		Object returnValue = null;
 		try {
 			Objects.requireNonNull(method, "Method must not be null");
@@ -270,13 +269,13 @@ public class ReflectionHelper {
 		return returnValue;
 	}
 	
-	public static Object invoke(Class<?> clazz, String name, Object instance, Object... parameters) {
+	public static @UnknownNullability Object invoke(@NotNull Class<?> clazz, @NotNull String name, @Nullable Object instance, Object @NotNull ... parameters) {
 		return invoke(Objects.requireNonNull(getMethod(clazz, name, Lists.newArrayList(parameters).stream().map(Object::getClass).toArray(Class<?>[]::new))), instance, parameters);
 	}
 	//endregion
 	
 	//region Field methods
-	public static Field getField(Class<?> clazz, String name) {
+	public static @UnknownNullability Field getField(@NotNull Class<?> clazz, @NotNull String name) {
 		Field field = null;
 		try {
 			field = Objects.requireNonNull(clazz, "Class must not be null").getDeclaredField(name);
@@ -307,11 +306,11 @@ public class ReflectionHelper {
 		return field;
 	}
 	
-	public static boolean hasField(Class<?> clazz, String name) {
+	public static boolean hasField(@NotNull Class<?> clazz, @NotNull String name) {
 		return hasField(clazz, name, null);
 	}
 	
-	public static boolean hasField(Class<?> clazz, String name, @Nullable Predicate<Field> predicate) {
+	public static boolean hasField(@NotNull Class<?> clazz, @NotNull String name, @Nullable Predicate<Field> predicate) {
 		Field field = null;
 		try {
 			field = clazz.getDeclaredField(name);
@@ -321,7 +320,7 @@ public class ReflectionHelper {
 		return field != null && (predicate == null || predicate.test(field));
 	}
 	
-	public static Object get(Field field, Object instance) {
+	public static @UnknownNullability Object get(@NotNull Field field, @Nullable Object instance) {
 		Object value = null;
 		try {
 			Objects.requireNonNull(field, "Field must not be null");
@@ -331,7 +330,7 @@ public class ReflectionHelper {
 				LOGGER.warn("The package of type '{}' is not accessible for the caller", field.getDeclaringClass().getSimpleName());
 			}
 		} catch (IllegalArgumentException e) {
-			LOGGER.warn("Value of the field '{}' in type '{}' cannot be determined", field.getName(), instance.getClass().getSimpleName());
+			LOGGER.warn("Value of the field '{}' in type '{}' cannot be determined", field.getName(), field.getDeclaringClass().getSimpleName());
 			if (logExceptions) {
 				LOGGER.error(e);
 			}
@@ -357,11 +356,11 @@ public class ReflectionHelper {
 		return value;
 	}
 	
-	public static Object get(Class<?> clazz, String name, Object instance) {
+	public static @UnknownNullability Object get(@NotNull Class<?> clazz, @NotNull String name, @Nullable Object instance) {
 		return get(getField(clazz, name), instance);
 	}
 	
-	public static void set(Field field, Object instance, Object value) {
+	public static void set(@NotNull Field field, @Nullable Object instance, @Nullable Object value) {
 		try {
 			Objects.requireNonNull(field, "Field must not be null");
 			if (field.trySetAccessible()) {
@@ -370,7 +369,7 @@ public class ReflectionHelper {
 				LOGGER.warn("The package of type '{}' is not accessible for the caller", field.getDeclaringClass().getSimpleName());
 			}
 		} catch (IllegalArgumentException e) {
-			LOGGER.warn("Value of the field with the name '{}' in type '{}' could not be set", field.getName(), instance.getClass().getSimpleName());
+			LOGGER.warn("Value of the field with the name '{}' in type '{}' could not be set", field.getName(), field.getDeclaringClass().getSimpleName());
 			if (logExceptions) {
 				LOGGER.error(e);
 			}
@@ -395,7 +394,7 @@ public class ReflectionHelper {
 		}
 	}
 	
-	public static void set(Class<?> clazz, String name, Object instance, Object value) {
+	public static void set(@NotNull Class<?> clazz, @NotNull String name, @Nullable Object instance, @Nullable Object value) {
 		set(getField(clazz, name), instance, value);
 	}
 	//endregion

@@ -26,10 +26,10 @@ class EitherTest {
 	@Test
 	void map() {
 		Either<String, String> leftEither = Either.left("10");
-		assertEquals(leftEither.map(Integer::parseInt, Integer::parseInt), Integer.valueOf(10));
+		assertEquals(Integer.valueOf(10), leftEither.map(Integer::parseInt, Integer::parseInt));
 		
 		Either<String, String> rightEither = Either.right("10");
-		assertEquals(rightEither.map(Integer::parseInt, Integer::parseInt), Integer.valueOf(10));
+		assertEquals(Integer.valueOf(10), rightEither.map(Integer::parseInt, Integer::parseInt));
 	}
 	
 	@Test
@@ -71,14 +71,14 @@ class EitherTest {
 	@Test
 	void leftOrThrow() {
 		assertDoesNotThrow(() -> Either.left("left").leftOrThrow());
-		assertEquals(Either.left("left").leftOrThrow(), "left");
+		assertEquals("left", Either.left("left").leftOrThrow());
 		assertThrows(NoSuchElementException.class, () -> Either.right("right").leftOrThrow());
 	}
 	
 	@Test
 	void rightOrThrow() {
 		assertDoesNotThrow(() -> Either.right("right").rightOrThrow());
-		assertEquals(Either.right("right").rightOrThrow(), "right");
+		assertEquals("right", Either.right("right").rightOrThrow());
 		assertThrows(NoSuchElementException.class, () -> Either.left("left").rightOrThrow());
 	}
 	
@@ -89,13 +89,13 @@ class EitherTest {
 		assertTrue(leftEither.isRight());
 		assertThrows(NoSuchElementException.class, leftEither::leftOrThrow);
 		assertDoesNotThrow(leftEither::rightOrThrow);
-		assertEquals(leftEither.rightOrThrow(), "left");
+		assertEquals("left", leftEither.rightOrThrow());
 		
 		Either<String, String> rightEither = Either.<String, String>right("right").swap();
 		assertTrue(rightEither.isLeft());
 		assertFalse(rightEither.isRight());
 		assertDoesNotThrow(rightEither::leftOrThrow);
-		assertEquals(rightEither.leftOrThrow(), "right");
+		assertEquals("right", rightEither.leftOrThrow());
 		assertThrows(NoSuchElementException.class, rightEither::rightOrThrow);
 	}
 }

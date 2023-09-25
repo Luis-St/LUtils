@@ -1,8 +1,7 @@
 package net.luis.utils.util.unsafe.classpath;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
 import java.io.FilenameFilter;
@@ -17,11 +16,10 @@ import java.util.jar.JarFile;
  *
  */
 
+@SuppressWarnings("ErrorNotRethrown")
 class ClassPathHelper {
 	
-	private static final Logger LOGGER = LogManager.getLogger(ClassPathHelper.class);
-	
-	static @NotNull List<Class<?>> getClasses(boolean includeJars, Predicate<String> condition) {
+	static @NotNull List<Class<?>> getClasses(boolean includeJars, @NotNull Predicate<String> condition) {
 		List<Class<?>> classes = new ArrayList<>();
 		for (File file : getClassPathFiles()) {
 			if (file.isDirectory()) {
@@ -38,7 +36,7 @@ class ClassPathHelper {
 		return fileName.substring(0, fileName.length() - 6).replace("/", ".").replace("\\", ".");
 	}
 	
-	private static @NotNull List<Class<?>> getClassesFromJar(File file, Predicate<String> condition) {
+	private static @NotNull List<Class<?>> getClassesFromJar(@NotNull File file, @NotNull Predicate<String> condition) {
 		List<Class<?>> classes = new ArrayList<>();
 		Objects.requireNonNull(file, "File must not be null");
 		if (file.canRead()) {
@@ -55,14 +53,12 @@ class ClassPathHelper {
 						classes.add(clazz);
 					}
 				}
-			} catch (Exception | Error ignored) {
-			
-			}
+			} catch (Exception | Error ignored) {}
 		}
 		return classes;
 	}
 	
-	private static @NotNull List<Class<?>> getClassesFromDirectory(File path, Predicate<String> condition) {
+	private static @NotNull List<Class<?>> getClassesFromDirectory(@NotNull File path, @NotNull Predicate<String> condition) {
 		List<Class<?>> classes = new ArrayList<>();
 		Objects.requireNonNull(path, "Path must not be null");
 		for (File file : listFiles(path, (dir, name) -> name.endsWith(".jar"), false)) {
@@ -82,7 +78,7 @@ class ClassPathHelper {
 		return classes;
 	}
 	
-	private static @NotNull List<File> listFiles(File directory, FilenameFilter filter, boolean recurse) {
+	private static @NotNull List<File> listFiles(@NotNull File directory, @Nullable FilenameFilter filter, boolean recurse) {
 		List<File> files = new ArrayList<>();
 		Objects.requireNonNull(directory, "Directory must not be null");
 		for (File entry : Objects.requireNonNull(directory.listFiles())) {

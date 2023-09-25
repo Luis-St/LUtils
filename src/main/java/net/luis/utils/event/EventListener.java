@@ -1,5 +1,7 @@
 package net.luis.utils.event;
 
+import org.jetbrains.annotations.NotNull;
+
 /**
  *
  * @author Luis-St
@@ -9,5 +11,5 @@ package net.luis.utils.event;
 @FunctionalInterface
 public interface EventListener<E extends Event> {
 	
-	void call(E event);
+	void call(@NotNull E event);
 }

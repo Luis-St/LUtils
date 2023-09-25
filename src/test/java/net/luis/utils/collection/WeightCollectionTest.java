@@ -28,7 +28,7 @@ class WeightCollectionTest {
 		WeightCollection<Integer> collection = new WeightCollection<>();
 		assertThrows(RuntimeException.class, collection::next);
 		collection.add(100, 10);
-		assertEquals(collection.next(), 10);
+		assertEquals(10, collection.next());
 	}
 	
 	@Test

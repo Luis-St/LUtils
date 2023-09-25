@@ -1,5 +1,8 @@
 package net.luis.utils.util;
 
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.UnknownNullability;
+
 import java.util.Objects;
 import java.util.function.Supplier;
 
@@ -14,7 +17,7 @@ public class LazyLoad<T> implements Supplier<T> {
 	private final Supplier<T> supplier;
 	private T value;
 	
-	public LazyLoad(Supplier<T> supplier) {
+	public LazyLoad(@NotNull Supplier<T> supplier) {
 		this.supplier = Objects.requireNonNull(supplier, "Supplied value must not be null");
 	}
 	
@@ -29,7 +32,7 @@ public class LazyLoad<T> implements Supplier<T> {
 	}
 	
 	@Override
-	public T get() {
+	public @UnknownNullability T get() {
 		this.load();
 		return this.value;
 	}

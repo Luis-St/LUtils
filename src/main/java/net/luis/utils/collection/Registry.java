@@ -1,7 +1,9 @@
 package net.luis.utils.collection;
 
 import com.google.common.collect.Maps;
+import net.luis.utils.util.Utils;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
 import java.util.function.Function;
@@ -16,7 +18,7 @@ public class Registry<T> implements Iterable<T> {
 	
 	private final Map<UUID, T> registry = Maps.newHashMap();
 	private final boolean freezable;
-	private boolean frozen = false;
+	private boolean frozen;
 	
 	private Registry(boolean freezable) {
 		this.freezable = freezable;
@@ -30,7 +32,7 @@ public class Registry<T> implements Iterable<T> {
 		return new Registry<>(true);
 	}
 	
-	public static <T> @NotNull Registry<T> of(List<T> items) {
+	public static <T> @NotNull Registry<T> of(@NotNull List<T> items) {
 		Registry<T> registry = Registry.freezable();
 		Objects.requireNonNull(items, "Items must not be null").forEach(registry::register);
 		registry.freeze();
@@ -43,34 +45,42 @@ public class Registry<T> implements Iterable<T> {
 		}
 	}
 	
-	public @NotNull UUID register(T item) {
+	public @NotNull UUID register(@NotNull T item) {
 		this.checkFrozen();
 		UUID uniqueId = UUID.randomUUID();
 		this.registry.put(uniqueId, Objects.requireNonNull(item, "Item must not be null"));
 		return uniqueId;
 	}
 	
-	public @NotNull UUID register(Function<UUID, T> function) {
+	public @NotNull UUID register(@NotNull Function<UUID, T> function) {
 		this.checkFrozen();
 		UUID uniqueId = UUID.randomUUID();
 		this.registry.put(uniqueId, Objects.requireNonNull(function, "Function must not be null").apply(uniqueId));
 		return uniqueId;
 	}
 	
-	public boolean remove(UUID uniqueId) {
+	public boolean remove(@Nullable UUID uniqueId) {
 		this.checkFrozen();
-		return this.registry.remove(Objects.requireNonNull(uniqueId, "Unique id must not be null")) != null;
+		return this.registry.remove(uniqueId) != null;
 	}
 	
-	public T get(UUID uniqueId) {
+	public @Nullable T get(@NotNull UUID uniqueId) {
 		return this.registry.get(Objects.requireNonNull(uniqueId, "Unique id must not be null"));
 	}
 	
-	public UUID getUniqueId(T item) {
-		return this.registry.entrySet().stream().filter(entry -> entry.getValue().equals(Objects.requireNonNull(item, "Item must not be null"))).map(Map.Entry::getKey).findFirst().orElse(null);
+	public @NotNull T getOrThrow(@NotNull UUID uniqueId) {
+		T item = this.get(uniqueId);
+		if (item == null) {
+			throw new NoSuchElementException("No value present");
+		}
+		return item;
 	}
 	
-	public boolean contains(UUID uniqueId) {
+	public @NotNull UUID getUniqueId(@Nullable T item) {
+		return this.registry.entrySet().stream().filter(entry -> entry.getValue().equals(item)).map(Map.Entry::getKey).findFirst().orElse(Utils.EMPTY_UUID);
+	}
+	
+	public boolean contains(@Nullable UUID uniqueId) {
 		return this.registry.containsKey(uniqueId);
 	}
 	
@@ -127,12 +137,12 @@ public class Registry<T> implements Iterable<T> {
 	
 	@Override
 	public int hashCode() {
-		return Objects.hash(this.registry, this.freezable, this.frozen);
+		return Objects.hash(this.registry, this.freezable);
 	}
 	
 	@Override
 	public String toString() {
-		return "Registry{registry=" + this.registry + ", frozen=" + this.frozen + "}";
+		return (this.frozen ? "Frozen " : "") + "Registry" + this.registry;
 	}
 	//endregion
 }

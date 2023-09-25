@@ -21,34 +21,34 @@ public abstract sealed class ResourceLocation permits ExternalResourceLocation, 
 	private final String path;
 	private final String file;
 	
-	ResourceLocation(String path, String file) {
+	ResourceLocation(@Nullable String path, @NotNull String file) {
 		String strPath = StringUtils.stripToEmpty(path);
 		this.path = this.modifyPath(strPath);
-		this.file = StringUtils.stripToEmpty(file);
+		this.file = file.strip();
 	}
 	
 	//region Static factory methods
-	public static @NotNull ResourceLocation internal(String file) {
+	public static @NotNull ResourceLocation internal(@NotNull String file) {
 		return new InternalResourceLocation(splitPath(file));
 	}
 	
-	public static @NotNull ResourceLocation internal(String path, String name) {
+	public static @NotNull ResourceLocation internal(@Nullable String path, @NotNull String name) {
 		return new InternalResourceLocation(path, name);
 	}
 	
-	public static @NotNull ResourceLocation external(String file) {
+	public static @NotNull ResourceLocation external(@NotNull String file) {
 		return new ExternalResourceLocation(splitPath(file));
 	}
 	
-	public static @NotNull ResourceLocation external(String path, String name) {
+	public static @NotNull ResourceLocation external(@Nullable String path, @NotNull String name) {
 		return new ExternalResourceLocation(path, name);
 	}
 	
-	public static @NotNull ResourceLocation getResource(String path, String name) {
+	public static @NotNull ResourceLocation getResource(@Nullable String path, @NotNull String name) {
 		return getResource(path, name, Type.EXTERNAL);
 	}
 	
-	public static @NotNull ResourceLocation getResource(String path, String name, Type preferredType) {
+	public static @NotNull ResourceLocation getResource(@Nullable String path, @NotNull String name, @NotNull Type preferredType) {
 		Objects.requireNonNull(preferredType, "Preferred type must not be null");
 		ResourceLocation internal = internal(path, name);
 		ResourceLocation external = external(path, name);
@@ -62,14 +62,17 @@ public abstract sealed class ResourceLocation permits ExternalResourceLocation, 
 		} else if (external.exists()) {
 			return external;
 		}
+		if (path == null) {
+			throw new IllegalArgumentException("Resource '" + name + "' was not found in any location");
+		}
 		String location = (path.charAt(path.length() - 1) == '/' ? path : path + "/") + name;
 		throw new IllegalArgumentException("Resource '" + location + "' was not found in any location");
 	}
 	//endregion
 	
 	//region Static helper methods
-	static @NotNull Pair<String, String> splitPath(String file) {
-		String str = Objects.requireNonNull(file, "File must not be null").strip().replace("\\", "/");
+	static @NotNull Pair<String, String> splitPath(@NotNull String file) {
+		String str = file.strip().replace("\\", "/");
 		int index = str.lastIndexOf("/");
 		if (index == -1) {
 			return Pair.of("", str);

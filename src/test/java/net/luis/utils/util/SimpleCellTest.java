@@ -10,6 +10,7 @@ import static org.junit.jupiter.api.Assertions.*;
  *
  */
 
+@SuppressWarnings("DataFlowIssue")
 class SimpleCellTest {
 	
 	@Test
@@ -22,16 +23,16 @@ class SimpleCellTest {
 	
 	@Test
 	void getRowKey() {
-		assertEquals(new SimpleCell<>("rowKey", "columnKey", "value").getRowKey(), "rowKey");
+		assertEquals("rowKey", new SimpleCell<>("rowKey", "columnKey", "value").getRowKey());
 	}
 	
 	@Test
 	void getColumnKey() {
-		assertEquals(new SimpleCell<>("rowKey", "columnKey", "value").getColumnKey(), "columnKey");
+		assertEquals("columnKey", new SimpleCell<>("rowKey", "columnKey", "value").getColumnKey());
 	}
 	
 	@Test
 	void getValue() {
-		assertEquals(new SimpleCell<>("rowKey", "columnKey", "value").getValue(), "value");
+		assertEquals("value", new SimpleCell<>("rowKey", "columnKey", "value").getValue());
 	}
 }

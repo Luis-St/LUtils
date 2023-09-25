@@ -17,6 +17,7 @@ import static org.junit.jupiter.api.Assertions.*;
  *
  */
 
+@SuppressWarnings("DataFlowIssue")
 class ResourceLocationTest {
 	
 	@BeforeAll
@@ -35,20 +36,20 @@ class ResourceLocationTest {
 	@Test
 	void internal() {
 		assertThrows(NullPointerException.class, () -> ResourceLocation.internal(null));
+		assertThrows(NullPointerException.class, () -> ResourceLocation.internal(null, null));
+		assertThrows(NullPointerException.class, () -> ResourceLocation.internal("", null));
 		assertDoesNotThrow(() -> ResourceLocation.internal(""));
-		assertDoesNotThrow(() -> ResourceLocation.internal(null, null));
 		assertDoesNotThrow(() -> ResourceLocation.internal(null, ""));
-		assertDoesNotThrow(() -> ResourceLocation.internal("", null));
 		assertDoesNotThrow(() -> ResourceLocation.internal("", ""));
 	}
 	
 	@Test
 	void external() {
 		assertThrows(NullPointerException.class, () -> ResourceLocation.external(null));
+		assertThrows(NullPointerException.class, () -> ResourceLocation.external(null, null));
+		assertThrows(NullPointerException.class, () -> ResourceLocation.external("", null));
 		assertDoesNotThrow(() -> ResourceLocation.external(""));
-		assertDoesNotThrow(() -> ResourceLocation.external(null, null));
 		assertDoesNotThrow(() -> ResourceLocation.external(null, ""));
-		assertDoesNotThrow(() -> ResourceLocation.external("", null));
 		assertDoesNotThrow(() -> ResourceLocation.external("", ""));
 	}
 	
@@ -163,7 +164,7 @@ class ResourceLocationTest {
 	}
 	
 	@Test
-	void getStream() throws Exception {
+	void getStream() {
 		assertDoesNotThrow(() -> assertNotNull(ResourceLocation.internal("test.json").getStream()));
 		assertDoesNotThrow(() -> assertNotNull(ResourceLocation.internal("", "test.json").getStream()));
 		assertDoesNotThrow(() -> assertNotNull(ResourceLocation.internal("test", "test.json").getStream()));

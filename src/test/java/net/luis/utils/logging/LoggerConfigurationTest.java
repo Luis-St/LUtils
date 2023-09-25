@@ -5,6 +5,7 @@ import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+@SuppressWarnings("DataFlowIssue")
 class LoggerConfigurationTest {
 	
 	private final LoggerConfiguration configuration = new LoggerConfiguration();
@@ -75,7 +76,9 @@ class LoggerConfigurationTest {
 	
 	@Test
 	void removeDefaultLogger() {
-		assertDoesNotThrow(() -> this.configuration.removeDefaultLogger(null, null));
+		assertThrows(NullPointerException.class, () -> this.configuration.removeDefaultLogger(null, null));
+		assertDoesNotThrow(() -> this.configuration.removeDefaultLogger(LoggingType.CONSOLE, null));
+		assertDoesNotThrow(() -> this.configuration.removeDefaultLogger(LoggingType.FILE, null));
 		for (Level level : new Level[] {Level.TRACE, Level.DEBUG, Level.INFO, Level.WARN, Level.ERROR, Level.FATAL}) {
 			assertDoesNotThrow(() -> this.configuration.removeDefaultLogger(LoggingType.CONSOLE, level));
 		}

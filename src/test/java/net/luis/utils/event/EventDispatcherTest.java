@@ -32,12 +32,8 @@ class EventDispatcherTest {
 	void dispatch() {
 		EventDispatcher dispatcher = new EventDispatcher();
 		assertDoesNotThrow(() -> dispatcher.dispatch(TYPE, new ExampleEvent()));
-		dispatcher.register(TYPE, (event) -> {
-			assertEquals(ExampleEvent.class, event.getClass());
-		});
-		dispatcher.register(TYPE, (event) -> {
-			assertEquals(ExampleEvent.class, event.getClass());
-		});
+		dispatcher.register(TYPE, (event) -> assertEquals(ExampleEvent.class, event.getClass()));
+		dispatcher.register(TYPE, (event) -> assertEquals(ExampleEvent.class, event.getClass()));
 		dispatcher.dispatch(TYPE, new ExampleEvent());
 	}
 	

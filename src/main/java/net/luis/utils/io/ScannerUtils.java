@@ -1,7 +1,7 @@
 package net.luis.utils.io;
 
 import org.apache.commons.lang3.StringUtils;
-import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.*;
 
 import java.util.Scanner;
 
@@ -11,10 +11,11 @@ import java.util.Scanner;
  *
  */
 
-@Deprecated
+@Blocking
+@Deprecated(forRemoval = true)
 public class ScannerUtils {
 	
-	public static int nextInt(String output) {
+	public static int nextInt(@Nullable String output) {
 		Scanner scanner = new Scanner(System.in);
 		if (!StringUtils.isEmpty(output)) {
 			System.out.println(output);
@@ -24,7 +25,7 @@ public class ScannerUtils {
 		return value;
 	}
 	
-	public static long nextLong(String output) {
+	public static long nextLong(@Nullable String output) {
 		Scanner scanner = new Scanner(System.in);
 		if (!StringUtils.isEmpty(output)) {
 			System.out.println(output);
@@ -34,7 +35,7 @@ public class ScannerUtils {
 		return value;
 	}
 	
-	public static double nextDouble(String output) {
+	public static double nextDouble(@Nullable String output) {
 		Scanner scanner = new Scanner(System.in);
 		if (!StringUtils.isEmpty(output)) {
 			System.out.println(output);
@@ -44,7 +45,7 @@ public class ScannerUtils {
 		return value;
 	}
 	
-	public static @NotNull String nextString(String output) {
+	public static @NotNull String nextString(@Nullable String output) {
 		Scanner scanner = new Scanner(System.in);
 		if (!StringUtils.isEmpty(output)) {
 			System.out.println(output);

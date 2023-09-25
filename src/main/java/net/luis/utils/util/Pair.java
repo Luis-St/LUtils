@@ -1,6 +1,7 @@
 package net.luis.utils.util;
 
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.Objects;
 import java.util.function.Function;
@@ -16,40 +17,40 @@ public class Pair<F, S> {
 	private final F first;
 	private final S second;
 	
-	private Pair(F first, S second) {
+	private Pair(@Nullable F first, @Nullable S second) {
 		this.first = first;
 		this.second = second;
 	}
 	
-	public static <T, U> @NotNull Pair<T, U> of(T first, U second) {
+	public static <T, U> @NotNull Pair<T, U> of(@Nullable T first, @Nullable U second) {
 		return new Pair<>(first, second);
 	}
 	
-	public F getFirst() {
+	public @Nullable F getFirst() {
 		return this.first;
 	}
 	
-	public S getSecond() {
+	public @Nullable S getSecond() {
 		return this.second;
 	}
 	
-	public Pair<S, F> swap() {
+	public @NotNull Pair<S, F> swap() {
 		return Pair.of(this.second, this.first);
 	}
 	
-	public <T> @NotNull Pair<T, S> withFirst(T first) {
+	public <T> @NotNull Pair<T, S> withFirst(@Nullable T first) {
 		return Pair.of(first, this.second);
 	}
 	
-	public <T> @NotNull Pair<F, T> withSecond(T second) {
+	public <T> @NotNull Pair<F, T> withSecond(@Nullable T second) {
 		return Pair.of(this.first, second);
 	}
 	
-	public <T> @NotNull Pair<T, S> mapFirst(Function<? super F, ? extends T> mapper) {
+	public <T> @NotNull Pair<T, S> mapFirst(@NotNull Function<? super F, ? extends T> mapper) {
 		return Pair.of(Objects.requireNonNull(mapper, "Mapper must not be null").apply(this.first), this.second);
 	}
 	
-	public <T> @NotNull Pair<F, T> mapSecond(Function<? super S, ? extends T> mapper) {
+	public <T> @NotNull Pair<F, T> mapSecond(@NotNull Function<? super S, ? extends T> mapper) {
 		return Pair.of(this.first, Objects.requireNonNull(mapper, "Mapper must not be null").apply(this.second));
 	}
 	

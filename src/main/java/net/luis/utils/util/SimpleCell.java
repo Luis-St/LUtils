@@ -1,6 +1,8 @@
 package net.luis.utils.util;
 
 import com.google.common.collect.Table.Cell;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.Objects;
 
@@ -10,7 +12,7 @@ import java.util.Objects;
  *
  */
 
-public record SimpleCell<R, C, V>(R getRowKey, C getColumnKey, V getValue) implements Cell<R, C, V> {
+public record SimpleCell<R, C, V>(@NotNull R getRowKey, @NotNull C getColumnKey, @Nullable V getValue) implements Cell<R, C, V> {
 	
 	public SimpleCell {
 		Objects.requireNonNull(getRowKey, "Row key must not be null");

@@ -23,11 +23,11 @@ final class InternalResourceLocation extends ResourceLocation {
 	
 	private final URL url;
 	
-	InternalResourceLocation(Pair<String, String> pair) {
+	InternalResourceLocation(@NotNull Pair<String, String> pair) {
 		this(pair.getFirst(), pair.getSecond());
 	}
 	
-	InternalResourceLocation(String path, String name) {
+	InternalResourceLocation(@Nullable String path, @NotNull String name) {
 		super(path, name);
 		this.url = this.getClass().getResource(this.getPath() + this.getFile());
 	}
@@ -39,10 +39,10 @@ final class InternalResourceLocation extends ResourceLocation {
 		if (strPath.isEmpty()) {
 			return "/";
 		}
-		if (!strPath.startsWith("/")) {
+		if (strPath.charAt(0) != '/') {
 			strPath = "/" + strPath;
 		}
-		return !strPath.endsWith("/") ? strPath + "/" : strPath;
+		return strPath.charAt(strPath.length() - 1) != '/' ? strPath + "/" : strPath;
 	}
 	//endregion
 	

@@ -7,6 +7,7 @@ import org.apache.logging.log4j.core.LoggerContext;
 import org.apache.logging.log4j.core.config.Configuration;
 import org.apache.logging.log4j.core.config.Configurator;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.Arrays;
 import java.util.Objects;
@@ -34,11 +35,11 @@ public class LoggingUtils {
 		initialize(LoggerConfiguration.DEFAULT);
 	}
 	
-	public static void initialize(LoggerConfiguration configuration) {
+	public static void initialize(@NotNull LoggerConfiguration configuration) {
 		initialize(configuration, false);
 	}
 	
-	public static void initialize(LoggerConfiguration configuration, boolean override) {
+	public static void initialize(@NotNull LoggerConfiguration configuration, boolean override) {
 		if (!initialized) {
 			Configurator.initialize(Objects.requireNonNull(configuration, "Configuration must not be null").build());
 			initialized = true;
@@ -49,7 +50,7 @@ public class LoggingUtils {
 		}
 	}
 	
-	public static boolean initializeSafe(LoggerConfiguration configuration) {
+	public static boolean initializeSafe(@NotNull LoggerConfiguration configuration) {
 		if (!isInitialized()) {
 			initialize(configuration);
 			return true;
@@ -63,21 +64,21 @@ public class LoggingUtils {
 	//endregion
 	
 	//region Helper methods
-	private static void enableAppender(String name) {
+	private static void enableAppender(@NotNull String name) {
 		LoggerContext context = (LoggerContext) LogManager.getContext(false);
 		Configuration config = context.getConfiguration();
 		config.getRootLogger().addAppender(Objects.requireNonNull(config.getAppender(name), "Appender " + name + " not found, appender may not be registered"), null, null);
 		context.updateLoggers(config);
 	}
 	
-	private static void disableAppender(String name) {
+	private static void disableAppender(@NotNull String name) {
 		LoggerContext context = (LoggerContext) LogManager.getContext(false);
 		Configuration config = context.getConfiguration();
 		config.getRootLogger().removeAppender(name);
 		context.updateLoggers(config);
 	}
 	
-	static void checkLevel(LoggingType type, Level level) {
+	static void checkLevel(@Nullable LoggingType type, @Nullable Level level) {
 		if (level == Level.ALL || level == Level.OFF) {
 			throw new IllegalArgumentException("Level must not be 'all' or 'off'");
 		}
@@ -86,7 +87,7 @@ public class LoggingUtils {
 		}
 	}
 	
-	static @NotNull String getLogger(LoggingType type, Level level) {
+	static @NotNull String getLogger(@NotNull LoggingType type, @NotNull Level level) {
 		checkLevel(type, level);
 		String levelName = Objects.requireNonNull(level, "Level must not be null").name().toLowerCase();
 		String typeName = Objects.requireNonNull(type, "Logging type must not be null").name().toLowerCase();
@@ -95,11 +96,11 @@ public class LoggingUtils {
 	//endregion
 	
 	//region Enable logging
-	public static void enable(Level level, LoggingType type) {
+	public static void enable(@NotNull Level level, @NotNull LoggingType type) {
 		enableAppender(getLogger(type, level));
 	}
 	
-	public static void enableConsole(Level level) {
+	public static void enableConsole(@NotNull Level level) {
 		enable(level, LoggingType.CONSOLE);
 	}
 	
@@ -107,7 +108,7 @@ public class LoggingUtils {
 		Arrays.stream(CONSOLE_LEVELS).forEach(LoggingUtils::enableConsole);
 	}
 	
-	public static void enableFile(Level level) {
+	public static void enableFile(@NotNull Level level) {
 		enable(level, LoggingType.FILE);
 	}
 	
@@ -129,7 +130,7 @@ public class LoggingUtils {
 		Arrays.stream(CONSOLE_LEVELS).forEach(LoggingUtils::disableConsole);
 	}
 	
-	public static void disableFile(Level level) {
+	public static void disableFile(@NotNull Level level) {
 		disable(level, LoggingType.FILE);
 	}
 	

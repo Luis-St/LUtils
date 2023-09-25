@@ -3,6 +3,7 @@ package net.luis.utils.util.unsafe;
 import net.luis.utils.util.unsafe.reflection.ReflectionHelper;
 import net.luis.utils.util.unsafe.reflection.ReflectionUtils;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.UnknownNullability;
 
 import java.lang.reflect.Method;
 import java.util.*;
@@ -19,11 +20,11 @@ public class StackTraceUtils {
 		return Thread.currentThread().getStackTrace()[4 + callsBefore];
 	}
 	
-	public static Class<?> getCallingClass(int callsBefore) {
+	public static @UnknownNullability Class<?> getCallingClass(int callsBefore) {
 		return ReflectionHelper.getClassForName(getStackTrace(callsBefore).getClassName());
 	}
 	
-	public static Class<?> getCallingClass() {
+	public static @UnknownNullability Class<?> getCallingClass() {
 		return getCallingClass(1);
 	}
 	

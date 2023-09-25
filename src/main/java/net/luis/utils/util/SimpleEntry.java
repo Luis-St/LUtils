@@ -1,5 +1,8 @@
 package net.luis.utils.util;
 
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+
 import java.util.*;
 
 /**
@@ -13,23 +16,23 @@ public class SimpleEntry<K, V> implements Map.Entry<K, V> {
 	private final K key;
 	protected V value;
 	
-	public SimpleEntry(K key, V value) {
+	public SimpleEntry(@NotNull K key, @Nullable V value) {
 		this.key = Objects.requireNonNull(key, "Key must not be null");
 		this.value = value;
 	}
 	
 	@Override
-	public K getKey() {
+	public @NotNull K getKey() {
 		return this.key;
 	}
 	
 	@Override
-	public V getValue() {
+	public @Nullable V getValue() {
 		return this.value;
 	}
 	
 	@Override
-	public V setValue(V value) {
+	public @Nullable V setValue(@Nullable V value) {
 		throw new ConcurrentModificationException("Value of the entry cannot be set to " + value + ", because the entry is muted");
 	}
 	

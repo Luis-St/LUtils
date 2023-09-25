@@ -1,6 +1,8 @@
 package net.luis.utils.event;
 
 import net.luis.utils.collection.Registry;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
 
@@ -14,20 +16,24 @@ public class EventDispatcher {
 	
 	private final Map<EventType<?>, Registry<EventListener<?>>> listeners = new HashMap<>();
 	
-	public <E extends Event> UUID register(EventType<E> type, EventListener<E> listener) {
+	public <E extends Event> @NotNull UUID register(@NotNull EventType<E> type, @NotNull EventListener<E> listener) {
+		Objects.requireNonNull(type, "Type must not be null");
+		Objects.requireNonNull(listener, "Listener must not be null");
 		return this.listeners.computeIfAbsent(type, k -> Registry.of()).register(listener);
 	}
 	
-	public <E extends Event> boolean remove(EventType<E> type, UUID uniqueId) {
-		return this.listeners.get(type).remove(uniqueId);
+	public <E extends Event> boolean remove(@Nullable EventType<E> type, @Nullable UUID uniqueId) {
+		return this.listeners.getOrDefault(type, Registry.of()).remove(uniqueId);
 	}
 	
-	public <E extends Event> void removeAll(EventType<E> type) {
-		this.listeners.get(type).clear();
+	public <E extends Event> void removeAll(@Nullable EventType<E> type) {
+		this.listeners.getOrDefault(type, Registry.of()).clear();
 	}
 	
 	@SuppressWarnings("unchecked")
-	public <E extends Event> void dispatch(EventType<E> type, E event) {
+	public <E extends Event> void dispatch(@NotNull EventType<E> type, @NotNull E event) {
+		Objects.requireNonNull(type, "Type must not be null");
+		Objects.requireNonNull(event, "Event must not be null");
 		this.listeners.getOrDefault(type, Registry.of()).forEach(listener -> ((EventListener<E>) listener).call(event));
 	}
 	

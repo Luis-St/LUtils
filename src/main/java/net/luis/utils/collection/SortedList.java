@@ -1,8 +1,8 @@
 package net.luis.utils.collection;
 
 import com.google.common.collect.Lists;
-import net.luis.utils.annotation.Ignored.Always;
-import org.jetbrains.annotations.Nullable;
+import net.luis.utils.annotation.Ignored;
+import org.jetbrains.annotations.*;
 
 import java.util.*;
 
@@ -21,25 +21,25 @@ public class SortedList<E> extends AbstractList<E> {
 		this(Lists.newArrayList());
 	}
 	
-	public SortedList(Comparator<E> comparator) {
+	public SortedList(@Nullable Comparator<E> comparator) {
 		this(Lists.newArrayList(), comparator);
 	}
 	
 	@SafeVarargs
-	public SortedList(E... elements) {
+	public SortedList(E @NotNull ... elements) {
 		this(Lists.newArrayList(elements));
 	}
 	
 	@SafeVarargs
-	public SortedList(Comparator<E> comparator, E... elements) {
+	public SortedList(@Nullable Comparator<E> comparator, E @NotNull ... elements) {
 		this(Lists.newArrayList(elements), comparator);
 	}
 	
-	public SortedList(List<E> elements) {
+	public SortedList(@NotNull List<E> elements) {
 		this.internalList = elements;
 	}
 	
-	public SortedList(List<E> elements, Comparator<E> comparator) {
+	public SortedList(@NotNull List<E> elements, @Nullable Comparator<E> comparator) {
 		this.internalList = elements;
 		this.comparator = comparator;
 	}
@@ -50,37 +50,37 @@ public class SortedList<E> extends AbstractList<E> {
 	}
 	
 	@Override
-	public E set(int index, E element) {
+	public E set(@Range(from = 0, to = Integer.MAX_VALUE) int index, @Nullable E element) {
 		E old = this.internalList.set(index, element);
 		this.internalList.sort(this.comparator);
 		return old;
 	}
 	
 	@Override
-	public void add(int index, E element) {
+	public void add(@Range(from = 0, to = Integer.MAX_VALUE) int index, @Nullable E element) {
 		this.internalList.add(index, element);
 		this.internalList.sort(this.comparator);
 	}
 	
 	@Override
-	public boolean remove(Object object) {
+	public boolean remove(@Nullable Object object) {
 		boolean removed = this.internalList.remove(object);
 		this.internalList.sort(this.comparator);
 		return removed;
 	}
 	
 	@Override
-	public E get(int index) {
+	public @NotNull E get(int index) {
 		return this.internalList.get(index);
 	}
 	
 	@Override
-	public int size() {
+	public @Range(from = 0, to = Integer.MAX_VALUE) int size() {
 		return this.internalList.size();
 	}
 	
 	@Override
-	public void sort(@Always Comparator<? super E> comparator) {
+	public void sort(@Ignored.Always @Nullable Comparator<? super E> comparator) {
 		super.sort(this.comparator);
 	}
 }

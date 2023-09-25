@@ -12,6 +12,7 @@ import static org.junit.jupiter.api.Assertions.*;
  *
  */
 
+@SuppressWarnings("DataFlowIssue")
 class ResultTest {
 	
 	@Test
@@ -30,7 +31,7 @@ class ResultTest {
 	void result() {
 		assertTrue(Result.success(100).result().isPresent());
 		assertTrue(Result.error("Error").result().isEmpty());
-		assertEquals(Result.success(100).result().orElseThrow(), 100);
+		assertEquals(100, Result.success(100).result().orElseThrow());
 		assertThrows(NoSuchElementException.class, () -> Result.error("Error").result().orElseThrow());
 	}
 	
@@ -53,7 +54,7 @@ class ResultTest {
 	void error() {
 		assertTrue(Result.success(100).error().isEmpty());
 		assertTrue(Result.error("Error").error().isPresent());
-		assertEquals(Result.error("Error").error().orElseThrow(), "Error");
+		assertEquals("Error", Result.error("Error").error().orElseThrow());
 		assertThrows(NoSuchElementException.class, () -> Result.success(100).error().orElseThrow());
 	}
 }

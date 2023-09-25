@@ -1,6 +1,7 @@
 package net.luis.utils.util;
 
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
 import java.util.function.Supplier;
@@ -15,15 +16,15 @@ public class Result<T> implements Supplier<Either<T, String>> {
 	
 	private final Either<T, String> either;
 	
-	private Result(Either<T, String> either) {
+	private Result(@NotNull Either<T, String> either) {
 		this.either = either;
 	}
 	
-	public static <T> @NotNull Result<T> success(T value) {
+	public static <T> @NotNull Result<T> success(@Nullable T value) {
 		return new Result<>(Either.left(value));
 	}
 	
-	public static <T> @NotNull Result<T> error(String error) {
+	public static <T> @NotNull Result<T> error(@NotNull String error) {
 		return new Result<>(Either.right(Objects.requireNonNull(error, "Error must not be null")));
 	}
 	
@@ -44,7 +45,7 @@ public class Result<T> implements Supplier<Either<T, String>> {
 		return this.orThrow(() -> new NoSuchElementException("No value available"));
 	}
 	
-	public <X extends RuntimeException> @NotNull T orThrow(Supplier<? extends X> exceptionSupplier) {
+	public <X extends RuntimeException> @NotNull T orThrow(@NotNull Supplier<? extends X> exceptionSupplier) {
 		if (this.either.isLeft()) {
 			return this.either.leftOrThrow();
 		}

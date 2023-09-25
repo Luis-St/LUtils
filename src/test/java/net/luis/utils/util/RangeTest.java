@@ -22,14 +22,14 @@ class RangeTest {
 	
 	@Test
 	void getMin() {
-		assertEquals(Range.of(0, 9).getMin(), 0);
-		assertNotEquals(Range.of(0, 9).getMin(), 1);
+		assertEquals(0, Range.of(0, 9).getMin());
+		assertNotEquals(1, Range.of(0, 9).getMin());
 	}
 	
 	@Test
 	void getMax() {
-		assertEquals(Range.of(0, 9).getMax(), 9);
-		assertNotEquals(Range.of(0, 9).getMax(), 8);
+		assertEquals(9, Range.of(0, 9).getMax());
+		assertNotEquals(8, Range.of(0, 9).getMax());
 	}
 	
 	@Test

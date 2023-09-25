@@ -48,16 +48,17 @@ public class FileUtils {
 		if (str.isEmpty() || "/".equals(str) || "./".equals(str)) {
 			return "./";
 		}
-		if (!str.endsWith("/")) {
+		int last = str.length() - 1;
+		if (str.charAt(last) != '/') {
 			str += "/";
 		}
-		if (str.startsWith("./") && str.endsWith("/")) {
+		if (str.startsWith("./") && str.charAt(last) == '/') {
 			return str;
-		} else if (!str.startsWith("./") && !str.startsWith("/")) {
+		} else if (!str.startsWith("./") && str.charAt(0) != '/') {
 			return "./" + str;
-		} else if (str.startsWith(".")) {
+		} else if (str.charAt(0) == '.') {
 			return "./" + str.substring(1);
-		} else if (str.startsWith("/")) {
+		} else if (str.charAt(0) == '/') {
 			return "." + str;
 		}
 		return str;

@@ -4,6 +4,7 @@ import net.luis.utils.io.FileUtils;
 import net.luis.utils.util.Pair;
 import org.apache.logging.log4j.Level;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.stream.Stream;
 
@@ -84,11 +85,11 @@ class LoggingHelper {
 	}
 	
 	//region Helper methods
-	private static boolean isEnabled(String property) {
+	private static boolean isEnabled(@Nullable String property) {
 		return "true".equalsIgnoreCase(property) || "enable".equalsIgnoreCase(property) || "enabled".equalsIgnoreCase(property);
 	}
 	
-	private static boolean isDisabled(String property) {
+	private static boolean isDisabled(@Nullable String property) {
 		return "false".equalsIgnoreCase(property) || "disable".equalsIgnoreCase(property) || "disabled".equalsIgnoreCase(property);
 	}
 	//endregion

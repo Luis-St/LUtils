@@ -1,6 +1,7 @@
 package net.luis.utils.collection;
 
 import com.google.common.collect.Maps;
+import org.jetbrains.annotations.*;
 
 import java.util.*;
 
@@ -10,22 +11,23 @@ import java.util.*;
  *
  */
 
+@SuppressWarnings({"UsingRandomNextDoubleForRandomInteger", "ConstantValue"})
 public class WeightCollection<T> {
 	
 	private final NavigableMap<Integer, T> map;
 	private final Random rng;
-	private int total = 0;
+	private int total;
 	
 	public WeightCollection() {
 		this(new Random());
 	}
 	
-	public WeightCollection(Random rng) {
+	public WeightCollection(@NotNull Random rng) {
 		this.map = Maps.newTreeMap();
 		this.rng = Objects.requireNonNull(rng, "Random must not be null");
 	}
 	
-	public void add(int weight, T value) {
+	public void add(@Range(from = 1, to = Integer.MAX_VALUE) int weight, @NotNull T value) {
 		if (0 >= weight) {
 			throw new IllegalArgumentException("The weight must be greater than 0, but it is " + weight);
 		}
@@ -33,7 +35,7 @@ public class WeightCollection<T> {
 		this.map.put(this.total, value);
 	}
 	
-	public T next() {
+	public @UnknownNullability T next() {
 		if (this.isEmpty()) {
 			throw new RuntimeException("The collection is empty, there is no next value");
 		}
@@ -62,7 +64,7 @@ public class WeightCollection<T> {
 	
 	@Override
 	public int hashCode() {
-		return Objects.hash(this.map, this.rng, this.total);
+		return Objects.hash(this.map);
 	}
 	//endregion
 }

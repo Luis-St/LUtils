@@ -1,12 +1,20 @@
 package net.luis.utils.event;
 
+import org.jetbrains.annotations.NotNull;
+
+import java.util.Objects;
+
 /**
  *
  * @author Luis-St
  *
  */
 
-public record EventType<T extends Event>(String name) {
+public record EventType<T extends Event>(@NotNull String name) {
+	
+	public EventType {
+		Objects.requireNonNull(name, "Name must not be null");
+	}
 	
 	//region Object overrides
 	@Override

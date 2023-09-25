@@ -18,8 +18,8 @@ class MthTest {
 	
 	@Test
 	void sum() {
-		assertEquals(Mth.sum(127), 10);
-		assertEquals(Mth.sum(127L), 10);
+		assertEquals(10, Mth.sum(127));
+		assertEquals(10, Mth.sum(127L));
 	}
 	
 	@Test
@@ -28,8 +28,8 @@ class MthTest {
 		for (int i = 0; i < 1000000; i++) {
 			values.add(Mth.randomInt(RNG, 0, 10));
 		}
-		assertEquals(Collections.min(values), 0);
-		assertEquals(Collections.max(values), 9);
+		assertEquals(0, Collections.min(values));
+		assertEquals(9, Collections.max(values));
 	}
 	
 	@Test
@@ -38,8 +38,8 @@ class MthTest {
 		for (int i = 0; i < 1000000; i++) {
 			values.add(Mth.randomExclusiveInt(RNG, 0, 10));
 		}
-		assertEquals(Collections.min(values), 1);
-		assertEquals(Collections.max(values), 9);
+		assertEquals(1, Collections.min(values));
+		assertEquals(9, Collections.max(values));
 	}
 	
 	@Test
@@ -48,13 +48,15 @@ class MthTest {
 		for (int i = 0; i < 1000000; i++) {
 			values.add(Mth.randomInclusiveInt(RNG, 0, 10));
 		}
-		assertEquals(Collections.min(values), 0);
-		assertEquals(Collections.max(values), 10);
+		assertEquals(0, Collections.min(values));
+		assertEquals(10, Collections.max(values));
 	}
 	
 	@Test
 	void roundTo() {
-		assertEquals(Mth.roundTo(10.051, 100), 10.05);
+		assertEquals(10.1, Mth.roundTo(10.05, 1));
+		assertEquals(10.05, Mth.roundTo(10.051, 2));
+		assertEquals(10.051, Mth.roundTo(10.051, 3));
 	}
 	
 	@Test
@@ -76,36 +78,36 @@ class MthTest {
 	
 	@Test
 	void frac() {
-		assertEquals(Mth.frac(1.5F), 0.5F);
-		assertEquals(Mth.frac(1.5), 0.5);
+		assertEquals(0.5F, Mth.frac(1.5F));
+		assertEquals(0.5, Mth.frac(1.5));
 	}
 	
 	@Test
 	void clamp() {
-		assertEquals(Mth.clamp(-1, 0, 9), 0);
-		assertEquals(Mth.clamp(4, 0, 9), 4);
-		assertEquals(Mth.clamp(10, 0, 9), 9);
+		assertEquals(0, Mth.clamp(-1, 0, 9));
+		assertEquals(4, Mth.clamp(4, 0, 9));
+		assertEquals(9, Mth.clamp(10, 0, 9));
 		
-		assertEquals(Mth.clamp(-1L, 0L, 9L), 0L);
-		assertEquals(Mth.clamp(4L, 0L, 9L), 4L);
-		assertEquals(Mth.clamp(10L, 0L, 9L), 9L);
+		assertEquals(0L, Mth.clamp(-1L, 0L, 9L));
+		assertEquals(4L, Mth.clamp(4L, 0L, 9L));
+		assertEquals(9L, Mth.clamp(10L, 0L, 9L));
 		
-		assertEquals(Mth.clamp(-1.0, 0.0, 9.0), 0.0);
-		assertEquals(Mth.clamp(4.0, 0.0, 9.0), 4.0);
-		assertEquals(Mth.clamp(10.0, 0.0, 9.0), 9.0);
+		assertEquals(0.0, Mth.clamp(-1.0, 0.0, 9.0));
+		assertEquals(4.0, Mth.clamp(4.0, 0.0, 9.0));
+		assertEquals(9.0, Mth.clamp(10.0, 0.0, 9.0));
 		
-		assertEquals(Mth.clamp(-1.0F, 0.0F, 9.0F), 0.0F);
-		assertEquals(Mth.clamp(4.0F, 0.0F, 9.0F), 4.0F);
-		assertEquals(Mth.clamp(10.0F, 0.0F, 9.0F), 9.0F);
+		assertEquals(0.0F, Mth.clamp(-1.0F, 0.0F, 9.0F));
+		assertEquals(4.0F, Mth.clamp(4.0F, 0.0F, 9.0F));
+		assertEquals(9.0F, Mth.clamp(10.0F, 0.0F, 9.0F));
 	}
 	
 	@Test
 	void average() {
 		assertTrue(Double.isNaN(Mth.average()));
-		assertEquals(Mth.average(0, 1, 2, 3, 4), 2.0);
-		assertEquals(Mth.average(0L, 1L, 2L, 3L, 4L), 2.0);
-		assertEquals(Mth.average(0.0, 1.0, 2.0, 3.0, 4.0), 2.0);
-		assertEquals(Mth.average(0F, 1F, 2F, 3F, 4F), 2.0);
+		assertEquals(2.0, Mth.average(0, 1, 2, 3, 4));
+		assertEquals(2.0, Mth.average(0L, 1L, 2L, 3L, 4L));
+		assertEquals(2.0, Mth.average(0.0, 1.0, 2.0, 3.0, 4.0));
+		assertEquals(2.0, Mth.average(0.0F, 1.0F, 2.0F, 3.0F, 4.0F));
 	}
 	
 	@Test

@@ -1,5 +1,7 @@
 package net.luis.utils.util;
 
+import net.luis.utils.exception.AlreadyInitialisedException;
+import net.luis.utils.exception.NotInitialisedException;
 import org.junit.jupiter.api.Test;
 
 import java.util.ConcurrentModificationException;
@@ -13,20 +15,21 @@ import static org.junit.jupiter.api.Assertions.*;
  *
  */
 
+@SuppressWarnings("DataFlowIssue")
 class LazyInstantiationTest {
 	
 	@Test
 	void get() {
-		assertThrows(NullPointerException.class, new LazyInstantiation<>()::get);
+		assertThrows(NotInitialisedException.class, new LazyInstantiation<>()::get);
 		assertDoesNotThrow(new LazyInstantiation<>(10)::get);
-		assertEquals(new LazyInstantiation<>(10).get(), 10);
+		assertEquals(10, new LazyInstantiation<>(10).get());
 	}
 	
 	@Test
 	void set() {
 		LazyInstantiation<Integer> lazy = new LazyInstantiation<>();
 		assertDoesNotThrow(() -> lazy.set(10));
-		assertThrows(ConcurrentModificationException.class, () -> lazy.set(10));
+		assertThrows(AlreadyInitialisedException.class, () -> lazy.set(10));
 	}
 	
 	@Test
@@ -41,9 +44,7 @@ class LazyInstantiationTest {
 	void whenInstantiated() {
 		LazyInstantiation<Integer> lazy = new LazyInstantiation<>();
 		assertThrows(NullPointerException.class, () -> lazy.whenInstantiated(null));
-		CompletableFuture<Integer> future = assertDoesNotThrow(() -> lazy.whenInstantiated((value) -> {
-			assertEquals(value, 10);
-		}));
+		CompletableFuture<Integer> future = assertDoesNotThrow(() -> lazy.whenInstantiated((value) -> assertEquals(10, value)));
 		assertFalse(future.isDone());
 		lazy.set(10);
 		assertTrue(future.isDone());

@@ -1,6 +1,7 @@
 package net.luis.utils.util;
 
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.Objects;
 import java.util.Optional;
@@ -19,47 +20,47 @@ public abstract class Either<L, R> {
 	
 	}
 	
-	public static <L, R> @NotNull Either<L, R> left(L value) {
+	public static <L, R> @NotNull Either<L, R> left(@Nullable L value) {
 		return new Left<>(value);
 	}
 	
-	public static <L, R> @NotNull Either<L, R> right(R value) {
+	public static <L, R> @NotNull Either<L, R> right(@Nullable R value) {
 		return new Right<>(value);
 	}
 	
-	public abstract <C, D> @NotNull Either<C, D> mapBoth(Function<? super L, ? extends C> leftMapper, Function<? super R, ? extends D> rightMapper);
+	public abstract <C, D> @NotNull Either<C, D> mapBoth(@NotNull Function<? super L, ? extends C> leftMapper, @NotNull Function<? super R, ? extends D> rightMapper);
 	
-	public abstract <T> T map(Function<? super L, ? extends T> leftMapper, Function<? super R, ? extends T> rightMapper);
+	public abstract <T> T map(@NotNull Function<? super L, ? extends T> leftMapper, @NotNull Function<? super R, ? extends T> rightMapper);
 	
 	public abstract boolean isLeft();
 	
 	public abstract boolean isRight();
 	
-	public abstract @NotNull Either<L, R> ifLeft(Consumer<? super L> action);
+	public abstract @NotNull Either<L, R> ifLeft(@NotNull Consumer<? super L> action);
 	
-	public abstract @NotNull Either<L, R> ifRight(Consumer<? super R> action);
+	public abstract @NotNull Either<L, R> ifRight(@NotNull Consumer<? super R> action);
 	
 	public abstract @NotNull Optional<L> left();
 	
 	public abstract @NotNull Optional<R> right();
 	
-	public <T> Either<T, R> mapLeft(Function<? super L, ? extends T> mapper) {
+	public <T> Either<T, R> mapLeft(@NotNull Function<? super L, ? extends T> mapper) {
 		return this.map((value) -> Either.left(Objects.requireNonNull(mapper, "Mapper must not be null").apply(value)), Either::right);
 	}
 	
-	public <T> Either<L, T> mapRight(Function<? super R, ? extends T> mapper) {
+	public <T> Either<L, T> mapRight(@NotNull Function<? super R, ? extends T> mapper) {
 		return this.map(Either::left, (value) -> Either.right(Objects.requireNonNull(mapper, "Mapper must not be null").apply(value)));
 	}
 	
-	public L leftOrThrow() {
+	public @NotNull L leftOrThrow() {
 		return this.left().orElseThrow();
 	}
 	
-	public R rightOrThrow() {
+	public @NotNull R rightOrThrow() {
 		return this.right().orElseThrow();
 	}
 	
-	public Either<R, L> swap() {
+	public @NotNull Either<R, L> swap() {
 		return this.map(Either::right, Either::left);
 	}
 	
@@ -68,17 +69,17 @@ public abstract class Either<L, R> {
 		//region Left implementation
 		private final L value;
 		
-		private Left(L value) {
+		private Left(@Nullable L value) {
 			this.value = value;
 		}
 		
 		@Override
-		public <C, D> @NotNull Either<C, D> mapBoth(Function<? super L, ? extends C> leftMapper, Function<? super R, ? extends D> rightMapper) {
+		public <C, D> @NotNull Either<C, D> mapBoth(@NotNull Function<? super L, ? extends C> leftMapper, @NotNull Function<? super R, ? extends D> rightMapper) {
 			return new Left<>(Objects.requireNonNull(leftMapper, "Left mapper must nut be null").apply(this.value));
 		}
 		
 		@Override
-		public <T> T map(Function<? super L, ? extends T> leftMapper, Function<? super R, ? extends T> rightMapper) {
+		public <T> T map(@NotNull Function<? super L, ? extends T> leftMapper, @NotNull Function<? super R, ? extends T> rightMapper) {
 			return Objects.requireNonNull(leftMapper, "Left mapper must nut be null").apply(this.value);
 		}
 		
@@ -93,7 +94,7 @@ public abstract class Either<L, R> {
 		}
 		
 		@Override
-		public @NotNull Either<L, R> ifLeft(Consumer<? super L> action) {
+		public @NotNull Either<L, R> ifLeft(@NotNull Consumer<? super L> action) {
 			Objects.requireNonNull(action, "Action must not be null").accept(this.value);
 			return this;
 		}
@@ -140,17 +141,17 @@ public abstract class Either<L, R> {
 		//region Right implementation
 		private final R value;
 		
-		private Right(R value) {
+		private Right(@Nullable R value) {
 			this.value = value;
 		}
 		
 		@Override
-		public <C, D> @NotNull Either<C, D> mapBoth(Function<? super L, ? extends C> leftMapper, Function<? super R, ? extends D> rightMapper) {
+		public <C, D> @NotNull Either<C, D> mapBoth(@NotNull Function<? super L, ? extends C> leftMapper, @NotNull Function<? super R, ? extends D> rightMapper) {
 			return new Right<>(Objects.requireNonNull(rightMapper, "Right mapper must nut be null").apply(this.value));
 		}
 		
 		@Override
-		public <T> T map(Function<? super L, ? extends T> leftMapper, Function<? super R, ? extends T> rightMapper) {
+		public <T> T map(@NotNull Function<? super L, ? extends T> leftMapper, @NotNull Function<? super R, ? extends T> rightMapper) {
 			return Objects.requireNonNull(rightMapper, "Right mapper must nut be null").apply(this.value);
 		}
 		
@@ -165,12 +166,12 @@ public abstract class Either<L, R> {
 		}
 		
 		@Override
-		public @NotNull Either<L, R> ifLeft(Consumer<? super L> action) {
+		public @NotNull Either<L, R> ifLeft(@NotNull Consumer<? super L> action) {
 			return this;
 		}
 		
 		@Override
-		public @NotNull Either<L, R> ifRight(Consumer<? super R> action) {
+		public @NotNull Either<L, R> ifRight(@NotNull Consumer<? super R> action) {
 			Objects.requireNonNull(action, "Action must not be null").accept(this.value);
 			return this;
 		}

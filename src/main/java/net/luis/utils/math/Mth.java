@@ -1,11 +1,11 @@
 package net.luis.utils.math;
 
-import org.apache.commons.lang3.ArrayUtils;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.Objects;
 import java.util.Random;
+import java.util.stream.*;
 
 /**
  *
@@ -15,60 +15,53 @@ import java.util.Random;
 
 public class Mth {
 	
-	private static final Logger LOGGER = LogManager.getLogger(Mth.class);
-	
 	//region Sum
-	public static long sum(int value) {
-		String s = String.valueOf(value);
-		long sum = 0;
-		for (int j = 0; j < s.length(); j++) {
-			try {
-				sum += Long.parseLong(String.valueOf(s.charAt(j)));
-			} catch (NumberFormatException e) {
-				LOGGER.warn("Fail to get int for char {}", s.charAt(j));
-			}
+	public static int sum(int value) {
+		int sum = 0;
+		while (value != 0) {
+			sum += value % 10;
+			value /= 10;
 		}
 		return sum;
 	}
 	
-	public static long sum(long value) {
-		String s = String.valueOf(value);
-		long sum = 0;
-		for (int j = 0; j < s.length(); j++) {
-			try {
-				sum += Long.parseLong(String.valueOf(s.charAt(j)));
-			} catch (NumberFormatException e) {
-				LOGGER.warn("Fail to get long for char {}", s.charAt(j));
-			}
+	public static int sum(long value) {
+		int sum = 0;
+		while (value != 0) {
+			sum += (int) (value % 10);
+			value /= 10;
 		}
 		return sum;
 	}
 	//endregion
 	
 	//region Random
-	public static int randomInt(Random rng, int min, int max) {
+	public static int randomInt(@NotNull Random rng, int min, int max) {
 		return min + Objects.requireNonNull(rng, "Random must not be null").nextInt(max - min);
 	}
 	
-	public static int randomExclusiveInt(Random rng, int min, int max) {
+	public static int randomExclusiveInt(@NotNull Random rng, int min, int max) {
 		return min + Objects.requireNonNull(rng, "Random must not be null").nextInt(max - min - 1) + 1;
 	}
 	
-	public static int randomInclusiveInt(Random rng, int min, int max) {
+	public static int randomInclusiveInt(@NotNull Random rng, int min, int max) {
 		return min + Objects.requireNonNull(rng, "Random must not be null").nextInt(max - min + 1);
 	}
 	//endregion
 	
-	public static double roundTo(double value, double roundValue) {
-		double d = Math.round(value * roundValue);
-		return d / roundValue;
+	public static double roundTo(double value, int roundValue) {
+		double i = 1;
+		for (int j = 0; j < roundValue; j++) {
+			i *= 10;
+		}
+		return Math.round(value * i) / i;
 	}
 	
 	public static boolean isInBounds(int value, int min, int max) {
 		return max >= value && value >= min;
 	}
 	
-	public static boolean sameValues(Number... numbers) {
+	public static boolean sameValues(Number @Nullable ... numbers) {
 		if (numbers == null || numbers.length == 0) {
 			return false;
 		} else if (numbers.length == 1) {
@@ -84,8 +77,7 @@ public class Mth {
 	}
 	
 	public static double frac(double f) {
-		int i = (int) f;
-		return f - i;
+		return f - ((int) f);
 	}
 	
 	//region Clamp
@@ -115,31 +107,25 @@ public class Mth {
 	//endregion
 	
 	//region Average
-	public static double average(int... values) {
-		values = ArrayUtils.nullToEmpty(values);
-		long sum = 0;
-		for (int value : values) {
-			sum += value;
+	public static double average(int @Nullable ... values) {
+		if (values == null || values.length == 0) {
+			return Double.NaN;
 		}
-		return (double) sum / (double) values.length;
+		return IntStream.of(values).average().orElse(0);
 	}
 	
-	public static double average(long... values) {
-		values = ArrayUtils.nullToEmpty(values);
-		long sum = 0;
-		for (long value : values) {
-			sum += value;
+	public static double average(long @Nullable ... values) {
+		if (values == null || values.length == 0) {
+			return Double.NaN;
 		}
-		return (double) sum / (double) values.length;
+		return LongStream.of(values).average().orElse(0);
 	}
 	
-	public static double average(double... values) {
-		values = ArrayUtils.nullToEmpty(values);
-		long sum = 0;
-		for (double value : values) {
-			sum += value;
+	public static double average(double @Nullable ... values) {
+		if (values == null || values.length == 0) {
+			return Double.NaN;
 		}
-		return (double) sum / (double) values.length;
+		return DoubleStream.of(values).average().orElse(0);
 	}
 	//endregion
 	

@@ -4,6 +4,7 @@ import com.google.common.collect.Lists;
 import net.luis.utils.util.Utils;
 import net.luis.utils.util.unsafe.Nullability;
 import net.luis.utils.util.unsafe.info.ValueInfo;
+import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.ClassUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -19,7 +20,7 @@ import java.util.*;
 
 public class ReflectionUtils {
 	
-	public static @NotNull Nullability getNullability(AnnotatedType type) {
+	public static @NotNull Nullability getNullability(@NotNull AnnotatedType type) {
 		Objects.requireNonNull(type, "Annotated type must not be null");
 		if (type.isAnnotationPresent(Nullable.class)) {
 			return Nullability.NULLABLE;
@@ -29,7 +30,7 @@ public class ReflectionUtils {
 		return Nullability.UNKNOWN;
 	}
 	
-	public static @NotNull String getRawName(@NotNull Method method, String... prefixes) {
+	public static @NotNull String getRawName(@NotNull Method method, String @Nullable ... prefixes) {
 		String name = Objects.requireNonNull(method, "Method must not be null").getName();
 		if (name.startsWith("get")) {
 			return name.substring(3);
@@ -38,7 +39,7 @@ public class ReflectionUtils {
 		} else if (name.startsWith("has")) {
 			return name.substring(3);
 		}
-		for (String prefix : prefixes) {
+		for (String prefix : ArrayUtils.nullToEmpty(prefixes)) {
 			if (name.startsWith(prefix)) {
 				return name.substring(prefix.length());
 			}
@@ -46,19 +47,19 @@ public class ReflectionUtils {
 		return name;
 	}
 	
-	public static @NotNull List<Method> getMethodsForName(Class<?> clazz, String name) {
+	public static @NotNull List<Method> getMethodsForName(@NotNull Class<?> clazz, @Nullable String name) {
 		Objects.requireNonNull(clazz, "Class must not be null");
 		return Arrays.stream(clazz.getDeclaredMethods()).filter(method -> method.getName().equals(name)).toList();
 	}
 	
-	public static Object @NotNull [] getParameters(Executable executable, Object... values) {
+	public static Object @NotNull [] getParameters(@NotNull Executable executable, Object @NotNull ... values) {
 		return getParameters(Objects.requireNonNull(executable, "Executable must not be null"), Utils.mapList(Lists.newArrayList(values), value -> {
 			String name = value.getClass().getSimpleName();
 			return new ValueInfo(value, name.substring(0, 1).toLowerCase() + name.substring(1), Nullability.UNKNOWN);
 		}));
 	}
 	
-	public static Object @NotNull [] getParameters(Executable executable, List<ValueInfo> values) {
+	public static Object @NotNull [] getParameters(@NotNull Executable executable, @NotNull List<ValueInfo> values) {
 		Parameter[] parameters = Objects.requireNonNull(executable, "Executable must not be null").getParameters();
 		Object[] arguments = new Object[parameters.length];
 		for (int i = 0; i < parameters.length; i++) {
@@ -68,7 +69,7 @@ public class ReflectionUtils {
 	}
 	
 	//region Internal
-	private static @NotNull Object findParameter(Parameter parameter, List<ValueInfo> values) {
+	private static @NotNull Object findParameter(@NotNull Parameter parameter, @NotNull List<ValueInfo> values) {
 		Executable executable = Objects.requireNonNull(parameter, "Parameter must not be null").getDeclaringExecutable();
 		for (ValueInfo value : Objects.requireNonNull(values, "Values must not be null")) {
 			Object object = value.value();

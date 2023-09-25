@@ -1,6 +1,7 @@
 package net.luis.utils.function;
 
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.UnknownNullability;
 
 import java.util.Objects;
 
@@ -13,7 +14,7 @@ import java.util.Objects;
 @FunctionalInterface
 public interface TriConsumer<T, U, V> {
 	
-	void accept(T t, U u, V v);
+	void accept(@UnknownNullability T t, @UnknownNullability U u, @UnknownNullability V v);
 	
 	default @NotNull TriConsumer<T, U, V> andThen(@NotNull TriConsumer<? super T, ? super U, ? super V> consumer) {
 		return (t, u, v) -> {
