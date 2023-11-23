@@ -41,6 +41,16 @@ tasks.register("run", JavaExec) {
 	standardInput = System.in
 }
 
+def username = ""
+def password = ""
+def file = file("./../credentials.properties")
+if (file.exists()) {
+	def properties = new Properties()
+	file.withInputStream {properties.load(it)}
+	username = properties.getProperty("username")
+	password = properties.getProperty("password")
+}
+
 publishing {
 	publications {
 		mavenJava(MavenPublication) {
@@ -52,8 +62,14 @@ publishing {
 		}
 	}
 	repositories {
-		maven {
-			url uri("${projectDir}/maven/repositories")
+		if (!username.isBlank() && !password.isBlank()) {
+			maven {
+				url "https://maven.luis-st.net/libraries/"
+				credentials.username = username
+				credentials.password = password
+			}
+		} else {
+			System.err.println("No credentials provided. Publishing to maven.luis-st.net not possible.")
 		}
 	}
 }
@@ -61,7 +77,7 @@ publishing {
 jar {
 	manifest {
 		attributes([
-			"Built-By"     : "Luis Staudt",
+			"Built-By": "Luis Staudt",
 			"Multi-Release": "true"
 		])
 	}
