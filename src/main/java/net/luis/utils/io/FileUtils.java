@@ -18,6 +18,8 @@ public class FileUtils {
 		int index = str.lastIndexOf("/");
 		if (index == -1) {
 			return Pair.of("", str);
+		} else if (getExtension(file).isEmpty()) {
+			return Pair.of(str, "");
 		} else {
 			return Pair.of(str.substring(0, index + 1), str.substring(index + 1));
 		}

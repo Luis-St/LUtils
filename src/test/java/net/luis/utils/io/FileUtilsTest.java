@@ -13,7 +13,7 @@ class FileUtilsTest {
 		assertDoesNotThrow(() -> FileUtils.split(""));
 		assertEquals(Pair.of("", ""), FileUtils.split(""));
 		assertEquals(Pair.of("/", ""), FileUtils.split("/"));
-		assertEquals(Pair.of("/", "test"), FileUtils.split("/test"));
+		assertEquals(Pair.of("/test", ""), FileUtils.split("/test"));
 		assertEquals(Pair.of("/test/", ""), FileUtils.split("/test/"));
 		assertEquals(Pair.of("/", "test.json"), FileUtils.split("/test.json"));
 		assertEquals(Pair.of("/test/", "test.json"), FileUtils.split("/test/test.json"));
@@ -25,7 +25,7 @@ class FileUtilsTest {
 		assertDoesNotThrow(() -> FileUtils.getName(""));
 		assertEquals("", FileUtils.getName(""));
 		assertEquals("", FileUtils.getName("/"));
-		assertEquals("test", FileUtils.getName("/test"));
+		assertEquals("", FileUtils.getName("/test"));
 		assertEquals("test", FileUtils.getName("/test.json"));
 		assertEquals("test", FileUtils.getName("/test/test.json"));
 	}

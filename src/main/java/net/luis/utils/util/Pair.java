@@ -26,11 +26,11 @@ public class Pair<F, S> {
 		return new Pair<>(first, second);
 	}
 	
-	public @Nullable F getFirst() {
+	public F getFirst() {
 		return this.first;
 	}
 	
-	public @Nullable S getSecond() {
+	public S getSecond() {
 		return this.second;
 	}
 	
