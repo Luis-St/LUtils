@@ -4,7 +4,6 @@ import net.luis.utils.exception.AlreadyInitialisedException;
 import net.luis.utils.exception.NotInitialisedException;
 import org.junit.jupiter.api.Test;
 
-import java.util.ConcurrentModificationException;
 import java.util.concurrent.CompletableFuture;
 
 import static org.junit.jupiter.api.Assertions.*;
