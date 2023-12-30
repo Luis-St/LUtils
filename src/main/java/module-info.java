@@ -12,6 +12,7 @@ module net.luis.utils {
 	requires org.apache.commons.lang3;
 	
 	exports net.luis.utils.annotation;
+	exports net.luis.utils.annotation.type;
 	exports net.luis.utils.collection;
 	exports net.luis.utils.data.serialization;
 	exports net.luis.utils.data.tag;
@@ -30,6 +31,5 @@ module net.luis.utils {
 	exports net.luis.utils.util;
 	exports net.luis.utils.util.unsafe;
 	exports net.luis.utils.util.unsafe.classpath;
-	exports net.luis.utils.util.unsafe.info;
 	exports net.luis.utils.util.unsafe.reflection;
 }

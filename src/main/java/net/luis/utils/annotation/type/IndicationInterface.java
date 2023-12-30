@@ -1,4 +1,4 @@
-package net.luis.utils.annotation;
+package net.luis.utils.annotation.type;
 
 import java.lang.annotation.*;
 
