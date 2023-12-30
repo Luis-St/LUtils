@@ -1,5 +1,6 @@
 package net.luis.utils.resources;
 
+import net.luis.utils.io.FileUtils;
 import net.luis.utils.util.Pair;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
@@ -8,6 +9,7 @@ import org.jetbrains.annotations.Nullable;
 import java.io.*;
 import java.nio.file.Path;
 import java.util.Objects;
+import java.util.function.Supplier;
 import java.util.stream.Stream;
 
 /**
@@ -17,6 +19,8 @@ import java.util.stream.Stream;
  */
 
 public abstract sealed class ResourceLocation permits ExternalResourceLocation, InternalResourceLocation {
+	
+	protected static final Supplier<Path> TEMP;
 	
 	private final String path;
 	private final String file;
@@ -108,6 +112,10 @@ public abstract sealed class ResourceLocation permits ExternalResourceLocation, 
 	
 	public abstract @NotNull Stream<String> getLines() throws IOException;
 	
+	public abstract @NotNull Path copy() throws IOException;
+	
+	public abstract @NotNull Path copy(@NotNull Path target) throws IOException;
+	
 	//region Object overrides
 	@Override
 	public boolean equals(Object o) {
@@ -126,6 +134,18 @@ public abstract sealed class ResourceLocation permits ExternalResourceLocation, 
 	@Override
 	public String toString() {
 		return this.path + this.file;
+	}
+	//endregion
+	
+	//region Static initializer
+	static {
+		TEMP = () -> {
+			try {
+				return FileUtils.createSessionDirectory("resources");
+			} catch (IOException e) {
+				throw new RuntimeException(e);
+			}
+		};
 	}
 	//endregion
 	

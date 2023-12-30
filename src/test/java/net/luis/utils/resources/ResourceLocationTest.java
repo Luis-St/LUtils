@@ -1,10 +1,11 @@
 package net.luis.utils.resources;
 
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
 
 import java.io.File;
+import java.io.IOException;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.List;
 import java.util.function.Function;
 import java.util.function.UnaryOperator;
@@ -20,18 +21,29 @@ import static org.junit.jupiter.api.Assertions.*;
 @SuppressWarnings("DataFlowIssue")
 class ResourceLocationTest {
 	
+	//region Setup
 	@BeforeAll
 	static void setUpBefore() throws Exception {
-		File test0 = new File("./test.json");
-		Files.createFile(test0.toPath());
-		test0.deleteOnExit();
-		File test1 = new File("./test/test.json");
-		Files.createDirectory(new File("./test").toPath()).toFile().deleteOnExit();
-		Files.createFile(test1.toPath());
-		test1.deleteOnExit();
-		Files.write(test0.toPath(), ("{" + System.lineSeparator() + "\t\"path\": \"disk:test.json\"" + System.lineSeparator() + "}").getBytes());
-		Files.write(test1.toPath(), ("{" + System.lineSeparator() + "\t\"path\": \"disk:test/test.json\"" + System.lineSeparator() + "}").getBytes());
+		File file = new File("test.json");
+		Files.createFile(file.toPath());
+		File folder = new File("test/test.json");
+		Files.createDirectory(new File("test").toPath());
+		Files.createFile(folder.toPath());
+		Files.write(file.toPath(), ("{" + System.lineSeparator() + "\t\"path\": \"disk:test.json\"" + System.lineSeparator() + "}").getBytes());
+		Files.write(folder.toPath(), ("{" + System.lineSeparator() + "\t\"path\": \"disk:test/test.json\"" + System.lineSeparator() + "}").getBytes());
 	}
+	//endregion
+	
+	//region Cleanup
+	@AfterAll
+	static void tearDownAfter() throws Exception {
+		Files.deleteIfExists(Path.of("test.json"));
+		Files.deleteIfExists(Path.of("test/test.json"));
+		Files.deleteIfExists(Path.of("test/internal.json"));
+		Files.deleteIfExists(Path.of("test/external.json"));
+		Files.deleteIfExists(Path.of("test"));
+	}
+	//endregion
 	
 	@Test
 	void internal() {
@@ -225,5 +237,27 @@ class ResourceLocationTest {
 		assertDoesNotThrow(() -> assertEquals(external.apply("test/"), ResourceLocation.external("test", "test.json").getLines().toList()));
 		assertDoesNotThrow(() -> assertEquals(external.apply(""), ResourceLocation.getResource("", "test.json").getLines().toList()));
 		assertDoesNotThrow(() -> assertEquals(external.apply("test/"), ResourceLocation.getResource("test", "test.json").getLines().toList()));
+	}
+	
+	@Test
+	void copy() throws Exception {
+		ResourceLocation internal = ResourceLocation.internal("test.json");
+		ResourceLocation external = ResourceLocation.external("test.json");
+		
+		Path internalTempCopy = internal.copy();
+		assertTrue(Files.exists(internalTempCopy));
+		assertDoesNotThrow(() -> internal.copy());
+		
+		Path externalTempCopy = external.copy();
+		assertTrue(Files.exists(externalTempCopy));
+		assertDoesNotThrow(() -> external.copy());
+		
+		Path internalTargetCopy = internal.copy(Path.of("./test/internal.json"));
+		assertTrue(Files.exists(internalTargetCopy));
+		assertDoesNotThrow(() -> internal.copy(Path.of("./test/internal.json")));
+		
+		Path externalTargetCopy = external.copy(Path.of("./test/external.json"));
+		assertTrue(Files.exists(externalTargetCopy));
+		assertDoesNotThrow(() -> external.copy(Path.of("./test/external.json")));
 	}
 }

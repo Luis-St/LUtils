@@ -1,6 +1,7 @@
 package net.luis.utils.resources;
 
 import com.google.common.collect.Lists;
+import net.luis.utils.io.FileUtils;
 import net.luis.utils.util.Pair;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
@@ -8,7 +9,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.io.*;
 import java.net.URL;
-import java.nio.file.Path;
+import java.nio.file.*;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -96,5 +97,25 @@ final class InternalResourceLocation extends ResourceLocation {
 			}
 			return lines.stream();
 		}
+	}
+	
+	@Override
+	public @NotNull Path copy() throws IOException {
+		String path = this.getPath();
+		Path target = TEMP.get().resolve(path.startsWith("/") ? path.substring(1) : path).resolve(this.getFile());
+		FileUtils.createIfNotExists(target);
+		InputStream stream = this.getStream();
+		Files.copy(stream, target, StandardCopyOption.REPLACE_EXISTING);
+		stream.close();
+		return target;
+	}
+	
+	@Override
+	public @NotNull Path copy(@NotNull Path target) throws IOException {
+		FileUtils.createIfNotExists(target);
+		InputStream stream = this.getStream();
+		Files.copy(stream, target, StandardCopyOption.REPLACE_EXISTING);
+		stream.close();
+		return target;
 	}
 }

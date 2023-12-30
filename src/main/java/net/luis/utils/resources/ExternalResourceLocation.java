@@ -24,7 +24,7 @@ final class ExternalResourceLocation extends ResourceLocation {
 		this(pair.getFirst(), pair.getSecond());
 	}
 	
-	ExternalResourceLocation(@Nullable String path, @NotNull  String name) {
+	ExternalResourceLocation(@Nullable String path, @NotNull String name) {
 		super(path, name);
 		this.file = new File(this.getPath() + this.getFile());
 		this.path = Paths.get(this.getPath() + this.getFile());
@@ -86,5 +86,17 @@ final class ExternalResourceLocation extends ResourceLocation {
 	@Override
 	public @NotNull Stream<String> getLines() throws IOException {
 		return Files.readAllLines(this.path).stream();
+	}
+	
+	@Override
+	public @NotNull Path copy() throws IOException {
+		String path = this.getPath();
+		Path target = TEMP.get().resolve(path.startsWith("./") ? path.substring(2) : path).resolve(this.getFile());
+		return Files.copy(this.path, target, StandardCopyOption.REPLACE_EXISTING);
+	}
+	
+	@Override
+	public @NotNull Path copy(@NotNull Path target) throws IOException {
+		return Files.copy(this.path, target, StandardCopyOption.REPLACE_EXISTING);
 	}
 }
