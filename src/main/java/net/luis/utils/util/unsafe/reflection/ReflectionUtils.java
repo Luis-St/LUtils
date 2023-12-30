@@ -1,9 +1,9 @@
 package net.luis.utils.util.unsafe.reflection;
 
 import com.google.common.collect.Lists;
+import net.luis.utils.util.Pair;
 import net.luis.utils.util.Utils;
 import net.luis.utils.util.unsafe.Nullability;
-import net.luis.utils.util.unsafe.info.ValueInfo;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.ClassUtils;
 import org.jetbrains.annotations.NotNull;
@@ -55,11 +55,11 @@ public class ReflectionUtils {
 	public static Object @NotNull [] getParameters(@NotNull Executable executable, Object @NotNull ... values) {
 		return getParameters(Objects.requireNonNull(executable, "Executable must not be null"), Utils.mapList(Lists.newArrayList(values), value -> {
 			String name = value.getClass().getSimpleName();
-			return new ValueInfo(value, name.substring(0, 1).toLowerCase() + name.substring(1), Nullability.UNKNOWN);
+			return Pair.of(value, name.substring(0, 1).toLowerCase() + name.substring(1));
 		}));
 	}
 	
-	public static Object @NotNull [] getParameters(@NotNull Executable executable, @NotNull List<ValueInfo> values) {
+	public static Object @NotNull [] getParameters(@NotNull Executable executable, @NotNull List<Pair<Object, String>> values) {
 		Parameter[] parameters = Objects.requireNonNull(executable, "Executable must not be null").getParameters();
 		Object[] arguments = new Object[parameters.length];
 		for (int i = 0; i < parameters.length; i++) {
@@ -69,17 +69,17 @@ public class ReflectionUtils {
 	}
 	
 	//region Internal
-	private static @NotNull Object findParameter(@NotNull Parameter parameter, @NotNull List<ValueInfo> values) {
+	private static @NotNull Object findParameter(@NotNull Parameter parameter, @NotNull List<Pair<Object, String>> values) {
 		Executable executable = Objects.requireNonNull(parameter, "Parameter must not be null").getDeclaringExecutable();
-		for (ValueInfo value : Objects.requireNonNull(values, "Values must not be null")) {
-			Object object = value.value();
-			boolean noDuplicates = !Utils.hasDuplicates(object, Utils.mapList(Lists.newArrayList(values), ValueInfo::value));
+		for (Pair<Object, String> value : Objects.requireNonNull(values, "Values must not be null")) {
+			Object object = value.getFirst();
+			boolean noDuplicates = !Utils.hasDuplicates(object, Utils.mapList(Lists.newArrayList(values), Pair::getFirst));
 			if (parameter.getType().isInstance(object) || ClassUtils.primitiveToWrapper(parameter.getType()).isInstance(object)) {
 				if (noDuplicates) {
 					return object;
 				} else if (!parameter.isNamePresent()) {
 					throw new IllegalArgumentException("The parameter " + parameter.getName() + " of method " + executable.getDeclaringClass().getSimpleName() + "#" + executable.getName() + " is ambiguous");
-				} else if (parameter.getName().equalsIgnoreCase(value.name())) {
+				} else if (parameter.getName().equalsIgnoreCase(value.getSecond())) {
 					return object;
 				}
 			}
