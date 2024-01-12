@@ -32,17 +32,16 @@ public class LoggingUtils {
 	 * Supported file logging levels.<br>
 	 */
 	static final Level[] FILE_LEVELS = new Level[] {Level.DEBUG, Level.INFO, Level.ERROR};
-	private static LoggerConfiguration configuration;
+	private static LoggerConfiguration configuration = null;
 	private static boolean registeredFactory = false;
 	
 	//region Configuration
-	
 	/**
 	 * Loads the logging configuration from the system properties and initializes the logging system.<br>
 	 * @deprecated Use the load method which takes a logger name as parameter instead
 	 * @throws IllegalStateException If the logging system has already been initialized
 	 */
-	@Deprecated // ToDo: Mark as for removal in next version
+	@Deprecated(forRemoval = true) // ToDo: Remove in the next versions
 	public static void load() {
 		initialize(LoggingHelper.load(Lists.newArrayList("*")));
 		LoggingHelper.configure();
@@ -87,7 +86,7 @@ public class LoggingUtils {
 	 * @see #initialize(LoggerConfiguration)
 	 * @see #initialize(LoggerConfiguration, boolean)
 	 */
-	@Deprecated // ToDo: Mark as for removal in next version
+	@Deprecated(forRemoval = true) // ToDo: Remove in the next versions
 	public static void initialize() {
 		initialize(LoggerConfiguration.DEFAULT);
 	}
@@ -96,6 +95,22 @@ public class LoggingUtils {
 	 * Initializes the logging system with the given configuration.<br>
 	 * The logger should be initialized as early as possible in the application lifecycle.<br>
 	 * Ideally, in the static-initializer of the main class as first call.<br>
+	 * Example:<br>
+	 * <pre>{@code
+	 * public class Main {
+	 *
+	 * 	private static final Logger LOGGER;
+	 *
+	 * 	public static void main(String[] args) {
+	 * 		// ...
+	 *    }
+	 *
+	 * 	static {
+	 * 		// Initialize the logging system her
+	 * 		LOGGER = LogManager.getLogger(Main.class);
+	 *    }
+	 * }
+	 * }</pre>
 	 * @param configuration The configuration to use
 	 * @throws NullPointerException If the configuration is null
 	 * @throws IllegalStateException If the logging system has already been initialized
@@ -248,12 +263,18 @@ public class LoggingUtils {
 	 * Enables logging for the given logging type and level.<br>
 	 * @param type  The logging type to enable logging for
 	 * @param level The level to enable logging for
-	 * @throws NullPointerException     If the level or logging type is null
-	 * @throws IllegalArgumentException If the combination of logging type and level is invalid
-	 * @throws IllegalStateException    If the appender for the given logging type and level was not found
+	 * @throws NullPointerException If the level or logging type is null
+	 * @throws IllegalArgumentException If the level is 'off' or the combination of logging type and level is invalid
+	 * @throws IllegalStateException If the appender for the given logging type and level was not found
 	 */
 	public static void enable(@NotNull LoggingType type, @NotNull Level level) {
-		enableAppender(getLogger(type, level));
+		if (level == Level.OFF) {
+			throw new IllegalArgumentException("Unable to enable logging of type '" + type + "' for level 'off'");
+		} else if (level == Level.ALL) {
+			Arrays.stream(CONSOLE_LEVELS).forEach(LoggingUtils::enableConsole);
+		} else {
+			enableAppender(getLogger(type, level));
+		}
 	}
 	
 	/**
@@ -262,6 +283,7 @@ public class LoggingUtils {
 	 * @throws NullPointerException If the level is null
 	 * @throws IllegalArgumentException If the level is not supported by console logging
 	 * @throws IllegalStateException If the appender for the given console logging level was not found
+	 * @see #enable(LoggingType, Level)
 	 */
 	public static void enableConsole(@NotNull Level level) {
 		enable(LoggingType.CONSOLE, level);
@@ -269,9 +291,12 @@ public class LoggingUtils {
 	
 	/**
 	 * Enables console logging for all levels.<br>
+	 * @deprecated Use {@link #enableConsole(Level)} with {@link Level#ALL} instead
 	 * @throws IllegalArgumentException If a level is not supported by console logging
 	 * @throws IllegalStateException If a console logging appender was not found
+	 * @see #enable(LoggingType, Level)
 	 */
+	@Deprecated // ToDo: Mark as for removal in the next versions
 	public static void enableConsole() {
 		Arrays.stream(CONSOLE_LEVELS).forEach(LoggingUtils::enableConsole);
 	}
@@ -282,6 +307,7 @@ public class LoggingUtils {
 	 * @throws NullPointerException If the level is null
 	 * @throws IllegalArgumentException If the level is not supported by file logging
 	 * @throws IllegalStateException If the appender for the given file logging level was not found
+	 * @see #enable(LoggingType, Level)
 	 */
 	public static void enableFile(@NotNull Level level) {
 		enable(LoggingType.FILE, level);
@@ -289,9 +315,12 @@ public class LoggingUtils {
 	
 	/**
 	 * Enables file logging for all levels.<br>
+	 * @deprecated Use {@link #enableFile(Level)} with {@link Level#ALL} instead
 	 * @throws IllegalArgumentException If a level is not supported by file logging
 	 * @throws IllegalStateException If a file logging appender was not found
+	 * @see #enable(LoggingType, Level)
 	 */
+	@Deprecated // ToDo: Mark as for removal in the next versions
 	public static void enableFile() {
 		Arrays.stream(FILE_LEVELS).forEach(LoggingUtils::enableFile);
 	}
@@ -303,11 +332,17 @@ public class LoggingUtils {
 	 * Disables logging for the given logging type and level.<br>
 	 * @param type  The logging type to disable logging for
 	 * @param level The level to disable logging for
-	 * @throws NullPointerException     If the level or logging type is null
-	 * @throws IllegalArgumentException If the combination of logging type and level is invalid
+	 * @throws NullPointerException If the level or logging type is null
+	 * @throws IllegalArgumentException If the level is 'off' or the combination of logging type and level is invalid
 	 */
 	public static void disable(@NotNull LoggingType type, @NotNull Level level) {
-		disableAppender(getLogger(type, level));
+		if (level == Level.OFF) {
+			throw new IllegalArgumentException("Unable to disable logging of type '" + type + "' for level 'off'");
+		} else if (level == Level.ALL) {
+			Arrays.stream(CONSOLE_LEVELS).forEach(LoggingUtils::disableConsole);
+		} else {
+			disableAppender(getLogger(type, level));
+		}
 	}
 	
 	/**
@@ -315,6 +350,7 @@ public class LoggingUtils {
 	 * @param level The level to disable console logging for
 	 * @throws NullPointerException If the level is null
 	 * @throws IllegalArgumentException If the level is not supported by console logging
+	 * @see #disable(LoggingType, Level)
 	 */
 	public static void disableConsole(@NotNull Level level) {
 		disable(LoggingType.CONSOLE, level);
@@ -322,9 +358,12 @@ public class LoggingUtils {
 	
 	/**
 	 * Disables console logging for all levels.<br>
+	 * @deprecated Use {@link #disableConsole(Level)} with {@link Level#ALL} instead
 	 * @throws IllegalArgumentException If a level is not supported by console logging
 	 * @throws IllegalStateException If a console logging appender was not found
+	 * @see #disable(LoggingType, Level)
 	 */
+	@Deprecated // ToDo: Mark as for removal in the next versions
 	public static void disableConsole() {
 		Arrays.stream(CONSOLE_LEVELS).forEach(LoggingUtils::disableConsole);
 	}
@@ -334,6 +373,7 @@ public class LoggingUtils {
 	 * @param level The level to disable file logging for
 	 * @throws NullPointerException If the level is null
 	 * @throws IllegalArgumentException If the level is not supported by file logging
+	 * @see #disable(LoggingType, Level)
 	 */
 	public static void disableFile(@NotNull Level level) {
 		disable(LoggingType.FILE, level);
@@ -341,9 +381,12 @@ public class LoggingUtils {
 	
 	/**
 	 * Disables file logging for all levels.<br>
+	 * @deprecated Use {@link #disableFile(Level)} with {@link Level#ALL} instead
 	 * @throws IllegalArgumentException If a level is not supported by file logging
 	 * @throws IllegalStateException If a file logging appender was not found
+	 * @see #disable(LoggingType, Level)
 	 */
+	@Deprecated // ToDo: Mark as for removal in the next versions
 	public static void disableFile() {
 		Arrays.stream(FILE_LEVELS).forEach(LoggingUtils::disableFile);
 	}
@@ -368,7 +411,7 @@ public class LoggingUtils {
 	}
 	
 	/**
-	 * Enables the given appender.<br>
+	 * Gets the appender for the given name and enables it.<br>
 	 * @param name The name of the appender to enable
 	 * @throws NullPointerException If the name of the appender is null
 	 * @throws IllegalStateException If the appender was not found
@@ -395,7 +438,7 @@ public class LoggingUtils {
 	}
 	
 	/**
-	 * Disables the given appender.<br>
+	 * Gets the appender for the given name and disables it.<br>
 	 * @param name The name of the appender to disable
 	 */
 	private static void disableAppender(@NotNull String name) {

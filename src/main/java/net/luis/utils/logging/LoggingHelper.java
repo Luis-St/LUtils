@@ -147,10 +147,10 @@ class LoggingHelper {
 			}
 			config.overrideLog(log.level(), folder + file, folder + archive);
 		});
-		//region Deprecated -> ToDo: Mark as for removal in next version
+		//region For removal -> ToDo: Remove in the next versions
 		String folderProperty = System.getProperty("logging.file.folder", "");
 		if (!folderProperty.isEmpty()) {
-			LOGGER.warn("Property 'logging.file.folder' is deprecated, use 'logging.file.folder.root' and 'logging.file.folder.{level}(|.file|.archive)' instead");
+			LOGGER.warn("Property 'logging.file.folder' is for removal, use 'logging.file.folder.root' and 'logging.file.folder.{level}(|.file|.archive)' instead");
 		}
 		if (StringUtils.contains(folderProperty, ".")) {
 			throw new IllegalArgumentException("Invalid value '" + folderProperty + "' for property 'logging.file.folder' (deprecated), must not contain '.'");
