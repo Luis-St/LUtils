@@ -20,7 +20,6 @@ import java.util.*;
  *
  * @author Luis-St
  */
-
 public class LoggingUtils {
 	
 	private static final List<String> CONFIGURED_LOGGERS = Lists.newArrayList();

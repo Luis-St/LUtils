@@ -35,7 +35,6 @@ import java.util.*;
  *
  * @author Luis-St
  */
-
 public class LoggerConfiguration {
 	
 	private static final String DRIVER_REGEX = "^([a-zA-Z]:).*$";

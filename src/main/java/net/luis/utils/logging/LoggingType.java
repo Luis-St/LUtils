@@ -7,7 +7,6 @@ import org.jetbrains.annotations.NotNull;
  *
  * @author Luis-St
  */
-
 public enum LoggingType {
 	/**
 	 * The logging will be printed to the console.<br>

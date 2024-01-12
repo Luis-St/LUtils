@@ -13,7 +13,6 @@ import java.util.stream.Stream;
  *
  * @author Luis-St
  */
-
 class LoggingHelper {
 	
 	/*

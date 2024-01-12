@@ -26,7 +26,6 @@ import java.net.URI;
  *
  * @author Luis-St
  */
-
 @Order(50)
 @Plugin(name = "CachedFactory", category = ConfigurationFactory.CATEGORY)
 public class CachedFactory extends ConfigurationFactory {
