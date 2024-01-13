@@ -75,6 +75,7 @@ publishing {
 }
 
 jar {
+	exclude("net/luis/utils/Main.class")
 	manifest {
 		attributes([
 			"Built-By": "Luis Staudt",

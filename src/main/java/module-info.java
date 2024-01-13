@@ -3,7 +3,6 @@
  * @author Luis-St
  *
  */
-
 module net.luis.utils {
 	requires org.apache.logging.log4j.core;
 	requires org.apache.logging.log4j;
@@ -14,14 +13,6 @@ module net.luis.utils {
 	exports net.luis.utils.annotation;
 	exports net.luis.utils.annotation.type;
 	exports net.luis.utils.collection;
-	exports net.luis.utils.data.serialization;
-	exports net.luis.utils.data.tag;
-	exports net.luis.utils.data.tag.exception;
-	exports net.luis.utils.data.tag.tags;
-	exports net.luis.utils.data.tag.tags.collection;
-	exports net.luis.utils.data.tag.tags.collection.array;
-	exports net.luis.utils.data.tag.tags.numeric;
-	exports net.luis.utils.data.tag.visitor;
 	exports net.luis.utils.event;
 	exports net.luis.utils.exception;
 	exports net.luis.utils.function;
