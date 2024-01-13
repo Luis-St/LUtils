@@ -16,19 +16,18 @@ import java.util.function.Consumer;
  *
  */
 
-// TODO: Rename to LazyInitialisation
-public class LazyInstantiation<T> {
+public class LazyInitialisation<T> {
 	
 	private final MutableObject<T> object;
 	private Consumer<T> action;
 	private CompletableFuture<T> future;
 	private boolean initialised;
 	
-	public LazyInstantiation() {
+	public LazyInitialisation() {
 		this.object = new MutableObject<>();
 	}
 	
-	public LazyInstantiation(@Nullable T value) {
+	public LazyInitialisation(@Nullable T value) {
 		this.object = new MutableObject<>();
 		this.object.setValue(value);
 		this.initialised = true;
@@ -59,7 +58,7 @@ public class LazyInstantiation<T> {
 		return this.initialised;
 	}
 	
-	public @NotNull CompletableFuture<T> whenInstantiated(@NotNull Consumer<@Nullable T> action) {
+	public @NotNull CompletableFuture<T> onInitialisation(@NotNull Consumer<T> action) {
 		this.action = Objects.requireNonNull(action, "Initialisation action must not be null");
 		return this.future = new CompletableFuture<>();
 	}
@@ -68,7 +67,7 @@ public class LazyInstantiation<T> {
 	@Override
 	public boolean equals(Object o) {
 		if (this == o) return true;
-		if (!(o instanceof LazyInstantiation<?> that)) return false;
+		if (!(o instanceof LazyInitialisation<?> that)) return false;
 		
 		if (this.initialised != that.initialised) return false;
 		return this.object.equals(that.object);
