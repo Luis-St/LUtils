@@ -27,10 +27,12 @@ test {
 
 java {
 	withSourcesJar()
+	withJavadocJar()
 }
 
 artifacts {
 	archives sourcesJar
+	archives javadocJar
 }
 
 tasks.register("run", JavaExec) {
@@ -59,6 +61,7 @@ publishing {
 			version = "4.13.0"
 			artifact jar
 			artifact sourcesJar
+			artifact javadocJar
 		}
 	}
 	repositories {
