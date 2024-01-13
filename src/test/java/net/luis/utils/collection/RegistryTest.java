@@ -6,7 +6,6 @@ import net.luis.utils.exception.NoSuchItemException;
 import net.luis.utils.util.Utils;
 import org.junit.jupiter.api.Test;
 
-import java.util.NoSuchElementException;
 import java.util.UUID;
 import java.util.function.Function;
 

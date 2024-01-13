@@ -35,6 +35,7 @@ public class LoggingUtils {
 	private static boolean registeredFactory = false;
 	
 	//region Configuration
+	
 	/**
 	 * Loads the logging configuration from the system properties and initializes the logging system.<br>
 	 * @deprecated Use the load method which takes a logger name as parameter instead

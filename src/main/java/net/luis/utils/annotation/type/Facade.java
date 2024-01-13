@@ -1,7 +1,5 @@
 package net.luis.utils.annotation.type;
 
-import org.jetbrains.annotations.NotNull;
-
 import java.lang.annotation.*;
 
 /**
