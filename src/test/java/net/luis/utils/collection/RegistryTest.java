@@ -1,6 +1,8 @@
 package net.luis.utils.collection;
 
 import com.google.common.collect.Lists;
+import net.luis.utils.exception.ModificationException;
+import net.luis.utils.exception.NoSuchItemException;
 import net.luis.utils.util.Utils;
 import org.junit.jupiter.api.Test;
 
@@ -61,7 +63,7 @@ class RegistryTest {
 		UUID uniqueId = registry.register(10);
 		assertDoesNotThrow(() -> registry.getOrThrow(uniqueId));
 		assertThrows(NullPointerException.class, () -> registry.getOrThrow(null));
-		assertThrows(NoSuchElementException.class, () -> registry.getOrThrow(UUID.randomUUID()));
+		assertThrows(NoSuchItemException.class, () -> registry.getOrThrow(UUID.randomUUID()));
 	}
 	
 	@Test
@@ -78,7 +80,9 @@ class RegistryTest {
 	void contains() {
 		Registry<Integer> registry = Registry.of();
 		assertTrue(registry.contains(registry.register(10)));
-		assertFalse(registry.contains(null));
+		assertFalse(registry.contains(Utils.EMPTY_UUID));
+		assertTrue(registry.contains(10));
+		assertFalse(registry.contains(20));
 	}
 	
 	@Test
@@ -110,16 +114,7 @@ class RegistryTest {
 		Registry<Integer> registry = Registry.freezable();
 		assertDoesNotThrow(() -> registry.register(10));
 		registry.freeze();
-		assertThrows(UnsupportedOperationException.class, () -> registry.register(10));
-	}
-	
-	@Test
-	void unfreeze() {
-		Registry<Integer> registry = Registry.freezable();
-		registry.freeze();
-		assertThrows(UnsupportedOperationException.class, () -> registry.register(10));
-		registry.unfreeze();
-		assertDoesNotThrow(() -> registry.register(10));
+		assertThrows(ModificationException.class, () -> registry.register(10));
 	}
 	
 	@Test

@@ -35,13 +35,12 @@ public class Registry<T> implements Iterable<T> {
 	public static <T> @NotNull Registry<T> of(@NotNull List<T> items) {
 		Registry<T> registry = Registry.freezable();
 		Objects.requireNonNull(items, "Items must not be null").forEach(registry::register);
-		registry.freeze();
-		return registry;
+		return registry.freeze();
 	}
 	
 	private void checkFrozen() {
 		if (this.frozen) {
-			throw new UnsupportedOperationException("Registry is frozen");
+			throw new ModificationException("Registry is frozen, no modifications are allowed");
 		}
 	}
 	
@@ -55,7 +54,7 @@ public class Registry<T> implements Iterable<T> {
 	public @NotNull UUID register(@NotNull Function<UUID, T> function) {
 		this.checkFrozen();
 		UUID uniqueId = UUID.randomUUID();
-		this.registry.put(uniqueId, Objects.requireNonNull(function, "Function must not be null").apply(uniqueId));
+		this.registry.put(uniqueId, Objects.requireNonNull(function, "Register function must not be null").apply(uniqueId));
 		return uniqueId;
 	}
 	
@@ -71,7 +70,7 @@ public class Registry<T> implements Iterable<T> {
 	public @NotNull T getOrThrow(@NotNull UUID uniqueId) {
 		T item = this.get(uniqueId);
 		if (item == null) {
-			throw new NoSuchElementException("No value present");
+			throw new NoSuchItemException("No item with unique id '" + uniqueId + "' found");
 		}
 		return item;
 	}
@@ -110,14 +109,11 @@ public class Registry<T> implements Iterable<T> {
 		this.registry.clear();
 	}
 	
-	public void freeze() {
+	public @NotNull Registry<T> freeze() {
 		if (this.freezable) {
 			this.frozen = true;
 		}
-	}
-	
-	public void unfreeze() {
-		this.frozen = false;
+		return this;
 	}
 	
 	public boolean isFrozen() {
