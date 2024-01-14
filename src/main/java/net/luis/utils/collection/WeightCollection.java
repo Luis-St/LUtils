@@ -6,27 +6,51 @@ import org.jetbrains.annotations.*;
 import java.util.*;
 
 /**
+ * A collection which returns a random element based on the weight of the elements.<br>
+ * The higher the weight, the higher the chance that the element is returned.<br>
  *
  * @author Luis-St
- *
  */
-
 @SuppressWarnings({"UsingRandomNextDoubleForRandomInteger", "ConstantValue"})
 public class WeightCollection<T> {
 	
+	/**
+	 * The internal map.
+	 */
 	private final NavigableMap<Integer, T> map;
+	/**
+	 * The random number generator.
+	 */
 	private final Random rng;
+	/**
+	 * The total weight of the collection.
+	 */
 	private int total;
 	
+	/**
+	 * Constructs a new empty weight collection.<br>
+	 */
 	public WeightCollection() {
 		this(new Random());
 	}
 	
+	/**
+	 * Constructs a new empty weight collection with the given random number generator.<br>
+	 * @param rng The random number generator
+	 * @throws NullPointerException If the random number generator is null
+	 */
 	public WeightCollection(@NotNull Random rng) {
 		this.map = Maps.newTreeMap();
 		this.rng = Objects.requireNonNull(rng, "Random must not be null");
 	}
 	
+	/**
+	 * Adds the given value with the given weight to the collection.<br>
+	 * @param weight The weight of the value
+	 * @param value The value to add
+	 * @throws NullPointerException If the value is null
+	 * @throws IllegalArgumentException If the weight is less than or equal to
+	 */
 	public void add(int weight, @NotNull T value) {
 		Objects.requireNonNull(value, "Value must not be null");
 		if (0 >= weight) {
@@ -36,6 +60,11 @@ public class WeightCollection<T> {
 		this.map.put(this.total, value);
 	}
 	
+	/**
+	 * Removes the given value from the collection.<br>
+	 * @param value The value to remove
+	 * @return True, if the value was removed, otherwise false
+	 */
 	public boolean remove(@Nullable T value) {
 		for (Map.Entry<Integer, T> entry : this.map.entrySet()) {
 			if (entry.getValue().equals(value)) {
@@ -47,15 +76,28 @@ public class WeightCollection<T> {
 		return false;
 	}
 	
+	/**
+	 * Checks if the collection contains the given value.<br>
+	 * @param value The value to check
+	 * @return True, if the collection contains the value, otherwise false
+	 */
 	public boolean contains(@Nullable T value) {
 		return this.map.containsValue(value);
 	}
 	
+	/**
+	 * Removes all values from the collection.<br>
+	 */
 	public void clear() {
 		this.map.clear();
 		this.total = 0;
 	}
 	
+	/**
+	 * Gets an element from the collection based on the weight of the elements.<br>
+	 * Elements with a higher weight have a higher chance to be returned.<br>
+	 * @return An weighted random element
+	 */
 	public T next() {
 		if (this.isEmpty()) {
 			throw new IllegalStateException("The collection is empty, there is no next value");
@@ -63,14 +105,23 @@ public class WeightCollection<T> {
 		return this.map.higherEntry((int) (this.rng.nextDouble() * this.total)).getValue();
 	}
 	
+	/**
+	 * @return True, if the collection is empty, otherwise false
+	 */
 	public boolean isEmpty() {
 		return this.map.isEmpty();
 	}
 	
+	/**
+	 * @return The size of the collection
+	 */
 	public int getSize() {
 		return this.map.size();
 	}
 	
+	/**
+	 * @return The total weight of the collection
+	 */
 	public int getTotal() {
 		return this.total;
 	}
