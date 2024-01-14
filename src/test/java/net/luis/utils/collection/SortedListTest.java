@@ -16,72 +16,85 @@ class SortedListTest {
 	
 	@Test
 	void setComparator() {
-		SortedList<String> sortedList = new SortedList<>("A", "B");
-		assertEquals("A", sortedList.get(0));
-		assertEquals("B", sortedList.get(1));
-		sortedList.setComparator(Comparator.reverseOrder());
-		assertEquals("B", sortedList.get(0));
-		assertEquals("A", sortedList.get(1));
+		SortedList<String> list = new SortedList<>("A", "B");
+		assertEquals("A", list.get(0));
+		assertEquals("B", list.get(1));
+		list.setComparator(Comparator.reverseOrder());
+		assertEquals("B", list.get(0));
+		assertEquals("A", list.get(1));
 	}
 	
 	@Test
 	void set() {
-		SortedList<String> sortedList = new SortedList<>();
-		sortedList.add("A");
-		sortedList.add("B");
-		sortedList.set(0, "C");
-		assertEquals(2, sortedList.size());
-		assertEquals("B", sortedList.get(0));
-		assertEquals("C", sortedList.get(1));
+		SortedList<String> list = new SortedList<>();
+		list.add("A");
+		list.set(0, "B");
+		assertThrows(NullPointerException.class, () -> list.set(2, null));
+		assertEquals(1, list.size());
+		assertEquals("B", list.get(0));
+		list.set(0, "C");
+		assertEquals(1, list.size());
+		assertEquals("C", list.get(0));
 	}
 	
 	@Test
 	void add() {
-		SortedList<String> sortedList = new SortedList<>();
-		sortedList.add("B");
-		sortedList.add("A");
-		assertEquals(2, sortedList.size());
+		SortedList<String> list = new SortedList<>();
+		list.add("A");
+		list.add("B");
+		assertThrows(NullPointerException.class, () -> list.add(null));
+		assertEquals(2, list.size());
+		list.add("C");
+		assertEquals(3, list.size());
+		assertEquals("A", list.get(0));
+		assertEquals("B", list.get(1));
+		assertEquals("C", list.get(2));
 	}
 	
 	@Test
 	void remove() {
-		SortedList<String> sortedList = new SortedList<>();
-		sortedList.add("A");
-		sortedList.add("B");
-		sortedList.remove("A");
-		assertEquals(1, sortedList.size());
-		assertEquals("B", sortedList.get(0));
+		SortedList<String> list = new SortedList<>();
+		list.add("A");
+		list.add("B");
+		assertEquals(2, list.size());
+		assertEquals("A", list.get(0));
+		assertTrue(list.remove("A"));
+		assertEquals(1, list.size());
+		assertEquals("B", list.get(0));
 	}
 	
 	@Test
 	void get() {
-		SortedList<String> sortedList = new SortedList<>();
-		sortedList.add("B");
-		sortedList.add("A");
-		assertEquals("A", sortedList.get(0));
-		assertEquals("B", sortedList.get(1));
+		SortedList<String> list = new SortedList<>();
+		list.add("A");
+		list.add("B");
+		assertEquals("A", list.get(0));
+		assertEquals("B", list.get(1));
+		assertThrows(IndexOutOfBoundsException.class, () -> list.get(2));
 	}
 	
 	@Test
 	void size() {
-		SortedList<String> sortedList = new SortedList<>();
-		sortedList.add("A");
-		assertEquals(1, sortedList.size());
-		sortedList.add("B");
-		assertEquals(2, sortedList.size());
-		sortedList.add("C");
-		assertEquals(3, sortedList.size());
+		SortedList<String> list = new SortedList<>();
+		assertEquals(0, list.size());
+		list.add("A");
+		assertEquals(1, list.size());
+		list.add("B");
+		assertEquals(2, list.size());
+		list.add("C");
+		assertEquals(3, list.size());
 	}
 	
 	@Test
 	void sort() {
-		SortedList<String> sortedList = new SortedList<>();
-		sortedList.add("B");
-		sortedList.add("A");
-		assertEquals("A", sortedList.get(0));
-		assertEquals("B", sortedList.get(1));
-		sortedList.sort(Comparator.reverseOrder());
-		assertEquals("A", sortedList.get(0));
-		assertEquals("B", sortedList.get(1));
+		SortedList<String> list = new SortedList<>();
+		list.add("A");
+		list.add("B");
+		assertEquals("A", list.get(0));
+		assertEquals("B", list.get(1));
+		list.sort(Comparator.reverseOrder());
+		assertEquals("A", list.get(0));
+		assertEquals("B", list.get(1));
+		assertDoesNotThrow(() -> list.sort(null));
 	}
 }

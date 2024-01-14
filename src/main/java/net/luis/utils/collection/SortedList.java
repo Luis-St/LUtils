@@ -2,7 +2,8 @@ package net.luis.utils.collection;
 
 import com.google.common.collect.Lists;
 import net.luis.utils.annotation.Ignored;
-import org.jetbrains.annotations.*;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
 
@@ -36,7 +37,7 @@ public class SortedList<E> extends AbstractList<E> {
 	}
 	
 	public SortedList(@NotNull List<E> elements) {
-		this.internalList = elements;
+		this(elements, null);
 	}
 	
 	public SortedList(@NotNull List<E> elements, @Nullable Comparator<E> comparator) {
@@ -50,14 +51,16 @@ public class SortedList<E> extends AbstractList<E> {
 	}
 	
 	@Override
-	public E set(@Range(from = 0, to = Integer.MAX_VALUE) int index, @Nullable E element) {
+	public E set(int index, @NotNull E element) {
+		Objects.requireNonNull(element, "Element must not be null");
 		E old = this.internalList.set(index, element);
 		this.internalList.sort(this.comparator);
 		return old;
 	}
 	
 	@Override
-	public void add(@Range(from = 0, to = Integer.MAX_VALUE) int index, @Nullable E element) {
+	public void add(int index, @NotNull E element) {
+		Objects.requireNonNull(element, "Element must not be null");
 		this.internalList.add(index, element);
 		this.internalList.sort(this.comparator);
 	}
@@ -75,7 +78,7 @@ public class SortedList<E> extends AbstractList<E> {
 	}
 	
 	@Override
-	public @Range(from = 0, to = Integer.MAX_VALUE) int size() {
+	public int size() {
 		return this.internalList.size();
 	}
 	
