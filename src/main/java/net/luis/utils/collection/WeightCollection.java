@@ -27,7 +27,8 @@ public class WeightCollection<T> {
 		this.rng = Objects.requireNonNull(rng, "Random must not be null");
 	}
 	
-	public void add(@Range(from = 1, to = Integer.MAX_VALUE) int weight, @NotNull T value) {
+	public void add(int weight, @NotNull T value) {
+		Objects.requireNonNull(value, "Value must not be null");
 		if (0 >= weight) {
 			throw new IllegalArgumentException("The weight must be greater than 0, but it is " + weight);
 		}
@@ -35,15 +36,43 @@ public class WeightCollection<T> {
 		this.map.put(this.total, value);
 	}
 	
-	public @UnknownNullability T next() {
+	public boolean remove(@Nullable T value) {
+		for (Map.Entry<Integer, T> entry : this.map.entrySet()) {
+			if (entry.getValue().equals(value)) {
+				this.total -= entry.getKey();
+				this.map.remove(entry.getKey());
+				return true;
+			}
+		}
+		return false;
+	}
+	
+	public boolean contains(@Nullable T value) {
+		return this.map.containsValue(value);
+	}
+	
+	public void clear() {
+		this.map.clear();
+		this.total = 0;
+	}
+	
+	public T next() {
 		if (this.isEmpty()) {
-			throw new RuntimeException("The collection is empty, there is no next value");
+			throw new IllegalStateException("The collection is empty, there is no next value");
 		}
 		return this.map.higherEntry((int) (this.rng.nextDouble() * this.total)).getValue();
 	}
 	
 	public boolean isEmpty() {
 		return this.map.isEmpty();
+	}
+	
+	public int getSize() {
+		return this.map.size();
+	}
+	
+	public int getTotal() {
+		return this.total;
 	}
 	
 	//region Object overrides
