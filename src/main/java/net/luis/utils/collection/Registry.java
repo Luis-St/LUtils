@@ -17,7 +17,7 @@ import java.util.function.Function;
  *
  * @author Luis-St
  *
- * @param <T> The type of the items in the registry.
+ * @param <T> The type of the items in the registry
  */
 public class Registry<T> implements Iterable<T> {
 	
@@ -36,7 +36,7 @@ public class Registry<T> implements Iterable<T> {
 	
 	/**
 	 * Constructs a new registry.<br>
-	 * @param freezable Whether the registry is freezable or not.
+	 * @param freezable Whether the registry is freezable or not
 	 */
 	private Registry(boolean freezable) {
 		this.freezable = freezable;
@@ -79,7 +79,7 @@ public class Registry<T> implements Iterable<T> {
 	
 	/**
 	 * Checks whether the registry is frozen or not.<br>
-	 * If the registry is frozen, a {@link ModificationException} will be thrown.
+	 * @throws ModificationException If the registry is frozen
 	 */
 	private void checkFrozen() {
 		if (this.frozen) {
@@ -89,10 +89,10 @@ public class Registry<T> implements Iterable<T> {
 	
 	/**
 	 * Registers an item in the registry.<br>
-	 * @param item The item to register.
-	 * @return The unique id of the item.
-	 * @throws ModificationException If the registry is frozen.
-	 * @throws NullPointerException If the item is null.
+	 * @param item The item to register
+	 * @return The unique id of the item
+	 * @throws ModificationException If the registry is frozen
+	 * @throws NullPointerException If the item is null
 	 */
 	public @NotNull UUID register(@NotNull T item) {
 		this.checkFrozen();
@@ -103,10 +103,10 @@ public class Registry<T> implements Iterable<T> {
 	
 	/**
 	 * Registers the item returned by the register function in the registry.<br>
-	 * @param function The function that returns the item to register.
-	 * @return The unique id of the item.
-	 * @throws ModificationException If the registry is frozen.
-	 * @throws NullPointerException If the register function is null.
+	 * @param function The function that returns the item to register
+	 * @return The unique id of the item
+	 * @throws ModificationException If the registry is frozen
+	 * @throws NullPointerException If the register function is null
 	 */
 	public @NotNull UUID register(@NotNull Function<UUID, T> function) {
 		this.checkFrozen();
@@ -117,9 +117,9 @@ public class Registry<T> implements Iterable<T> {
 	
 	/**
 	 * Removes the item with the given unique id from the registry.<br>
-	 * @param uniqueId The unique id of the item to remove.
-	 * @return True if an item was removed, false otherwise.
-	 * @throws ModificationException If the registry is frozen.
+	 * @param uniqueId The unique id of the item to remove
+	 * @return True if an item was removed, false otherwise
+	 * @throws ModificationException If the registry is frozen
 	 */
 	public boolean remove(@Nullable UUID uniqueId) {
 		this.checkFrozen();
@@ -128,9 +128,9 @@ public class Registry<T> implements Iterable<T> {
 	
 	/**
 	 * Gets the item with the given unique id from the registry.<br>
-	 * @param uniqueId The unique id of the item to get.
-	 * @return The item with the given unique id or null if no item was found.
-	 * @throws NullPointerException If the unique id is null.
+	 * @param uniqueId The unique id of the item to get
+	 * @return The item with the given unique id or null if no item was found
+	 * @throws NullPointerException If the unique id is null
 	 */
 	public @Nullable T get(@NotNull UUID uniqueId) {
 		return this.registry.get(Objects.requireNonNull(uniqueId, "Unique id must not be null"));
@@ -138,10 +138,10 @@ public class Registry<T> implements Iterable<T> {
 	
 	/**
 	 * Gets the item with the given unique id from the registry.<br>
-	 * @param uniqueId The unique id of the item to get.
-	 * @return The item with the given unique id.
-	 * @throws NullPointerException If the unique id is null.
-	 * @throws NoSuchItemException If no item with the given unique id was found.
+	 * @param uniqueId The unique id of the item to get
+	 * @return The item with the given unique id
+	 * @throws NullPointerException If the unique id is null
+	 * @throws NoSuchItemException If no item with the given unique id was found
 	 */
 	public @NotNull T getOrThrow(@NotNull UUID uniqueId) {
 		T item = this.get(uniqueId);
@@ -153,8 +153,8 @@ public class Registry<T> implements Iterable<T> {
 	
 	/**
 	 * Gets the unique id of the given item from the registry.<br>
-	 * @param item The item to get the unique id of.
-	 * @return The unique id of the given item or {@link Utils#EMPTY_UUID} if no item was found.
+	 * @param item The item to get the unique id of
+	 * @return The unique id of the given item or {@link Utils#EMPTY_UUID} if no item was found
 	 */
 	public @NotNull UUID getUniqueId(@Nullable T item) {
 		return this.registry.entrySet().stream().filter(entry -> entry.getValue().equals(item)).map(Map.Entry::getKey).findFirst().orElse(Utils.EMPTY_UUID);
@@ -162,8 +162,8 @@ public class Registry<T> implements Iterable<T> {
 	
 	/**
 	 * Checks whether the registry contains an item with the given unique id.<br>
-	 * @param uniqueId The unique id to check.
-	 * @return True if the registry contains an item with the given unique id, false otherwise.
+	 * @param uniqueId The unique id to check
+	 * @return True if the registry contains an item with the given unique id, false otherwise
 	 */
 	public boolean contains(@Nullable UUID uniqueId) {
 		return this.registry.containsKey(uniqueId);
@@ -171,8 +171,8 @@ public class Registry<T> implements Iterable<T> {
 	
 	/**
 	 * Checks whether the registry contains the given item.<br>
-	 * @param item The item to check.
-	 * @return True if the registry contains the given item, false otherwise.
+	 * @param item The item to check
+	 * @return True if the registry contains the given item, false otherwise
 	 */
 	public boolean contains(@Nullable T item) {
 		return this.registry.containsValue(item);
@@ -180,7 +180,7 @@ public class Registry<T> implements Iterable<T> {
 	
 	/**
 	 * Gets the unique ids of all items in the registry.<br>
-	 * @return A set of all unique ids in the registry.
+	 * @return A set of all unique ids in the registry
 	 */
 	public @NotNull Set<UUID> getKeys() {
 		return this.registry.keySet();
@@ -188,14 +188,14 @@ public class Registry<T> implements Iterable<T> {
 	
 	/**
 	 * Gets all items in the registry.<br>
-	 * @return A collection of all items in the registry.
+	 * @return A collection of all items in the registry
 	 */
 	public @NotNull Collection<T> getItems() {
 		return this.registry.values();
 	}
 	
 	/**
-	 * @return An iterator over all items in the registry.
+	 * @return An iterator over all items in the registry
 	 */
 	@Override
 	public @NotNull Iterator<T> iterator() {
@@ -204,14 +204,14 @@ public class Registry<T> implements Iterable<T> {
 	
 	/**
 	 * Checks whether the registry is empty or not.<br>
-	 * @return True if the registry is empty, false otherwise.
+	 * @return True if the registry is empty, false otherwise
 	 */
 	public boolean isEmpty() {
 		return this.registry.isEmpty();
 	}
 	
 	/**
-	 * @return The size of the registry.
+	 * @return The size of the registry
 	 */
 	public int size() {
 		return this.registry.size();
@@ -219,7 +219,7 @@ public class Registry<T> implements Iterable<T> {
 	
 	/**
 	 * Clears the registry if it is not frozen.<br>
-	 * @throws ModificationException If the registry is frozen.
+	 * @throws ModificationException If the registry is frozen
 	 */
 	public void clear() {
 		this.checkFrozen();
@@ -228,7 +228,7 @@ public class Registry<T> implements Iterable<T> {
 	
 	/**
 	 * Freezes the registry if it is freezable.<br>
-	 * @return The registry.
+	 * @return The registry
 	 */
 	public @NotNull Registry<T> freeze() {
 		if (this.freezable) {
@@ -239,7 +239,7 @@ public class Registry<T> implements Iterable<T> {
 	
 	/**
 	 * Checks whether the registry is frozen or not.<br>
-	 * @return True if the registry is frozen, false otherwise.
+	 * @return True if the registry is frozen, false otherwise
 	 */
 	public boolean isFrozen() {
 		return this.frozen;
