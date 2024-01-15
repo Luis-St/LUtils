@@ -2,6 +2,9 @@ package net.luis.utils.exception;
 
 import org.jetbrains.annotations.NotNull;
 
+/**
+ * @author Luis-St
+ */
 public class ModificationException extends RuntimeException {
 	
 	public ModificationException() {

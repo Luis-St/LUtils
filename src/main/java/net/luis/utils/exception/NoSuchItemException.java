@@ -2,7 +2,10 @@ package net.luis.utils.exception;
 
 import org.jetbrains.annotations.NotNull;
 
-public class NoSuchItemException extends RuntimeException {
+/**
+ * @author Luis-St
+ */
+public class NoSuchItemException extends NoSuchElementException {
 	
 	public NoSuchItemException() {
 		super();
