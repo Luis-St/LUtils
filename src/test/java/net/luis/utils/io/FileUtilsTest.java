@@ -27,7 +27,7 @@ class FileUtilsTest {
 		assertDoesNotThrow(() -> FileUtils.split(null));
 		assertDoesNotThrow(() -> FileUtils.split(""));
 		assertEquals(Pair.of("", ""), FileUtils.split(""));
-		assertEquals(Pair.of("", "."), FileUtils.split("."));
+		assertEquals(Pair.of(".", ""), FileUtils.split("."));
 		assertEquals(Pair.of("/", ""), FileUtils.split("/"));
 		assertEquals(Pair.of("./", ""), FileUtils.split("./"));
 		assertEquals(Pair.of("test", ""), FileUtils.split("test"));
@@ -66,6 +66,7 @@ class FileUtilsTest {
 		assertEquals("./", FileUtils.getRelativePath(null));
 		assertEquals("./", FileUtils.getRelativePath(""));
 		assertEquals("./", FileUtils.getRelativePath("/"));
+		assertEquals("./test/", FileUtils.getRelativePath("test"));
 		assertEquals("./test/", FileUtils.getRelativePath("/test"));
 		assertEquals("./test/", FileUtils.getRelativePath("/test/"));
 		assertEquals("./test/", FileUtils.getRelativePath("./test/"));
