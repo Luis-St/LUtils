@@ -19,7 +19,9 @@ class MthTest {
 	@Test
 	void sum() {
 		assertEquals(10, Mth.sum(127));
+		assertEquals(5, Mth.sum(-23));
 		assertEquals(10, Mth.sum(127L));
+		assertEquals(5, Mth.sum(-23L));
 	}
 	
 	@Test
