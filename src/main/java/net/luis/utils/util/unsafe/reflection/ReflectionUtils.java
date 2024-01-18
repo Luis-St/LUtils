@@ -3,7 +3,6 @@ package net.luis.utils.util.unsafe.reflection;
 import com.google.common.collect.Lists;
 import net.luis.utils.util.Pair;
 import net.luis.utils.util.Utils;
-import net.luis.utils.util.unsafe.Nullability;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.ClassUtils;
 import org.jetbrains.annotations.NotNull;
@@ -19,16 +18,6 @@ import java.util.*;
  */
 
 public class ReflectionUtils {
-	
-	public static @NotNull Nullability getNullability(@NotNull AnnotatedType type) {
-		Objects.requireNonNull(type, "Annotated type must not be null");
-		if (type.isAnnotationPresent(Nullable.class)) {
-			return Nullability.NULLABLE;
-		} else if (type.isAnnotationPresent(NotNull.class)) {
-			return Nullability.NOT_NULL;
-		}
-		return Nullability.UNKNOWN;
-	}
 	
 	public static @NotNull String getRawName(@NotNull Method method, String @Nullable ... prefixes) {
 		String name = Objects.requireNonNull(method, "Method must not be null").getName();

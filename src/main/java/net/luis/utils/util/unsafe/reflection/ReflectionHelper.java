@@ -41,7 +41,7 @@ public class ReflectionHelper {
 	}
 	//endregion
 	
-	public static @UnknownNullability Class<?> getClassForName(@NotNull String className) {
+	public static @Nullable Class<?> getClassForName(@NotNull String className) {
 		try {
 			return Class.forName(className);
 		} catch (ClassNotFoundException e) {
@@ -77,7 +77,7 @@ public class ReflectionHelper {
 	//endregion
 	
 	//region Constructor methods
-	public static <T> @UnknownNullability Constructor<T> getConstructor(@NotNull Class<T> clazz, Class<?> @NotNull ... parameters) {
+	public static <T> Constructor<T> getConstructor(@NotNull Class<T> clazz, Class<?> @NotNull ... parameters) {
 		Constructor<T> constructor = null;
 		try {
 			constructor = Objects.requireNonNull(clazz, "Class must not be null").getDeclaredConstructor(parameters);
@@ -180,7 +180,7 @@ public class ReflectionHelper {
 	//endregion
 	
 	//region Method methods
-	public static @UnknownNullability Method getMethod(@NotNull Class<?> clazz, @NotNull String name, Class<?> @NotNull ... parameters) {
+	public static Method getMethod(@NotNull Class<?> clazz, @NotNull String name, Class<?> @NotNull ... parameters) {
 		Method method = null;
 		try {
 			method = Objects.requireNonNull(clazz, "Class must not be null").getDeclaredMethod(name, parameters);
@@ -225,7 +225,7 @@ public class ReflectionHelper {
 		return method != null && (predicate == null || predicate.test(method));
 	}
 	
-	public static @UnknownNullability Object invoke(@NotNull Method method, @Nullable Object instance, Object @NotNull ... parameters) {
+	public static Object invoke(@NotNull Method method, @Nullable Object instance, Object @NotNull ... parameters) {
 		Object returnValue = null;
 		try {
 			Objects.requireNonNull(method, "Method must not be null");
@@ -269,13 +269,13 @@ public class ReflectionHelper {
 		return returnValue;
 	}
 	
-	public static @UnknownNullability Object invoke(@NotNull Class<?> clazz, @NotNull String name, @Nullable Object instance, Object @NotNull ... parameters) {
+	public static Object invoke(@NotNull Class<?> clazz, @NotNull String name, @Nullable Object instance, Object @NotNull ... parameters) {
 		return invoke(Objects.requireNonNull(getMethod(clazz, name, Lists.newArrayList(parameters).stream().map(Object::getClass).toArray(Class<?>[]::new))), instance, parameters);
 	}
 	//endregion
 	
 	//region Field methods
-	public static @UnknownNullability Field getField(@NotNull Class<?> clazz, @NotNull String name) {
+	public static Field getField(@NotNull Class<?> clazz, @NotNull String name) {
 		Field field = null;
 		try {
 			field = Objects.requireNonNull(clazz, "Class must not be null").getDeclaredField(name);
@@ -320,7 +320,7 @@ public class ReflectionHelper {
 		return field != null && (predicate == null || predicate.test(field));
 	}
 	
-	public static @UnknownNullability Object get(@NotNull Field field, @Nullable Object instance) {
+	public static Object get(@NotNull Field field, @Nullable Object instance) {
 		Object value = null;
 		try {
 			Objects.requireNonNull(field, "Field must not be null");
@@ -356,7 +356,7 @@ public class ReflectionHelper {
 		return value;
 	}
 	
-	public static @UnknownNullability Object get(@NotNull Class<?> clazz, @NotNull String name, @Nullable Object instance) {
+	public static Object get(@NotNull Class<?> clazz, @NotNull String name, @Nullable Object instance) {
 		return get(getField(clazz, name), instance);
 	}
 	

@@ -20,11 +20,11 @@ public class StackTraceUtils {
 		return Thread.currentThread().getStackTrace()[4 + callsBefore];
 	}
 	
-	public static @UnknownNullability Class<?> getCallingClass(int callsBefore) {
+	public static Class<?> getCallingClass(int callsBefore) {
 		return ReflectionHelper.getClassForName(getStackTrace(callsBefore).getClassName());
 	}
 	
-	public static @UnknownNullability Class<?> getCallingClass() {
+	public static Class<?> getCallingClass() {
 		return getCallingClass(1);
 	}
 	
