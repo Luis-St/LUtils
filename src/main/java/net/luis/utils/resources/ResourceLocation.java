@@ -13,47 +13,114 @@ import java.util.function.Supplier;
 import java.util.stream.Stream;
 
 /**
+ * Represents a resource which can be loaded from the classpath or from the filesystem.<br>
  *
  * @author Luis-St
- *
  */
-
 public abstract sealed class ResourceLocation permits ExternalResourceLocation, InternalResourceLocation {
 	
+	/**
+	 * The temporary directory for resources which are copied from the classpath.<br>
+	 */
 	protected static final Supplier<Path> TEMP;
 	
+	/**
+	 * The path of the resource.<br>
+	 */
 	private final String path;
+	/**
+	 * The name of the resource.<br>
+	 */
 	private final String file;
 	
+	/**
+	 * Constructs a new {@link ResourceLocation} with the given path and name.<br>
+	 * The path will be stripped and then modified by {@link #modifyPath(String)}.<br>
+	 *
+	 *
+	 * @param path The path of the resource
+	 * @param file The name of the resource
+	 * @throws NullPointerException If the file is null
+	 */
 	ResourceLocation(@Nullable String path, @NotNull String file) {
-		String strPath = StringUtils.stripToEmpty(path);
-		this.path = this.modifyPath(strPath);
-		this.file = file.strip();
+		this.path = this.modifyPath(StringUtils.stripToEmpty(path));
+		this.file = Objects.requireNonNull(file, "File must not be null").strip();
 	}
 	
 	//region Static factory methods
+	
+	/**
+	 * Creates a new {@link ResourceLocation} for a resource on the classpath.<br>
+	 * @param file The file of the resource
+	 * @return A new resource location
+	 * @throws NullPointerException If the file is null
+	 */
 	public static @NotNull ResourceLocation internal(@NotNull String file) {
 		return new InternalResourceLocation(splitPath(file));
 	}
 	
+	/**
+	 * Creates a new {@link ResourceLocation} for a resource on the classpath.<br>
+	 * @param path The path of the resource
+	 * @param name The name of the resource
+	 * @return A new resource location
+	 * @throws NullPointerException If the name is null
+	 */
 	public static @NotNull ResourceLocation internal(@Nullable String path, @NotNull String name) {
 		return new InternalResourceLocation(path, name);
 	}
 	
+	/**
+	 * Creates a new {@link ResourceLocation} for a resource on the filesystem.<br>
+	 * @param file The file of the resource
+	 * @return A new resource location
+	 * @throws NullPointerException If the file is null
+	 */
 	public static @NotNull ResourceLocation external(@NotNull String file) {
 		return new ExternalResourceLocation(splitPath(file));
 	}
 	
+	/**
+	 * Creates a new {@link ResourceLocation} for a resource on the filesystem.<br>
+	 * @param path The path of the resource
+	 * @param name The name of the resource
+	 * @return A new resource location
+	 * @throws NullPointerException If the name is null
+	 */
 	public static @NotNull ResourceLocation external(@Nullable String path, @NotNull String name) {
 		return new ExternalResourceLocation(path, name);
 	}
 	
+	/**
+	 * Gets a resource from the classpath or from the filesystem.<br>
+	 * Trys to load the resource from the filesystem first.<br>
+	 * If the resource was not found in the filesystem then the classpath will be tried.<br>
+	 * If the resource was not found an exception will be thrown.<br>
+	 * @param path The path of the resource
+	 * @param name The name of the resource
+	 * @return The resource location
+	 * @throws NullPointerException If the path is null
+	 * @throws IllegalArgumentException If the resource was not found
+	 * @see #getResource(String, String, Type)
+	 */
 	public static @NotNull ResourceLocation getResource(@Nullable String path, @NotNull String name) {
 		return getResource(path, name, Type.EXTERNAL);
 	}
 	
-	public static @NotNull ResourceLocation getResource(@Nullable String path, @NotNull String name, @NotNull Type preferredType) {
-		Objects.requireNonNull(preferredType, "Preferred type must not be null");
+	/**
+	 * Gets a resource from the classpath or from the filesystem.<br>
+	 * Trys to load the resource from the preferred type first.<br>
+	 * If the preferred type is null then the resource will be tried to load from the classpath first.<br>
+	 * If the resource was not found in the preferred type then the other type will be tried.<br>
+	 * If the resource wa not found an exception will be thrown.<br>
+	 * @param path The path of the resource
+	 * @param name The name of the resource
+	 * @param preferredType The preferred type of the resource
+	 * @return The resource location
+	 * @throws NullPointerException If the path is null
+	 * @throws IllegalArgumentException If the resource was not found
+	 */
+	public static @NotNull ResourceLocation getResource(@Nullable String path, @NotNull String name, @Nullable Type preferredType) {
 		ResourceLocation internal = internal(path, name);
 		ResourceLocation external = external(path, name);
 		if (preferredType == Type.INTERNAL && internal.exists()) {
@@ -76,6 +143,7 @@ public abstract sealed class ResourceLocation permits ExternalResourceLocation, 
 	
 	//region Static helper methods
 	static @NotNull Pair<String, String> splitPath(@NotNull String file) {
+		Objects.requireNonNull(file, "File must not be null");
 		String str = file.strip().replace("\\", "/");
 		int index = str.lastIndexOf("/");
 		if (index == -1) {
@@ -149,7 +217,17 @@ public abstract sealed class ResourceLocation permits ExternalResourceLocation, 
 	}
 	//endregion
 	
+	/**
+	 * Represents the type of a {@link ResourceLocation}.<br>
+	 */
 	public enum Type {
-		INTERNAL, EXTERNAL
+		/**
+		 * Represents a resource on the classpath.<br>
+		 */
+		INTERNAL,
+		/**
+		 * Represents a resource on the filesystem.<br>
+		 */
+		EXTERNAL;
 	}
 }

@@ -99,13 +99,13 @@ public class Mth {
 	 *     <li><pre>roundTo(10.051, 2) = 10.05</pre></li>
 	 *     <li><pre>roundTo(10.051, 3) = 10.051</pre></li>
 	 * </ul>
-	 * @param value
-	 * @param roundValue
+	 * @param value The value to round
+	 * @param digits The number of digits after the decimal point
 	 * @return The rounded value
 	 */
-	public static double roundTo(double value, int roundValue) {
+	public static double roundTo(double value, int digits) {
 		double i = 1;
-		for (int j = 0; j < roundValue; j++) {
+		for (int j = 0; j < digits; j++) {
 			i *= 10;
 		}
 		return Math.round(value * i) / i;
