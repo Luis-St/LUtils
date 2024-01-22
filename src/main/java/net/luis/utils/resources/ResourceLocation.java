@@ -29,7 +29,7 @@ public abstract sealed class ResourceLocation permits ExternalResourceLocation, 
 	 */
 	private final String path;
 	/**
-	 * The name of the resource.<br>
+	 * The (file) name of the resource.<br>
 	 */
 	private final String file;
 	
@@ -142,6 +142,13 @@ public abstract sealed class ResourceLocation permits ExternalResourceLocation, 
 	//endregion
 	
 	//region Static helper methods
+	
+	/**
+	 * Splits a file into a path and a name.<br>
+	 * @param file The file to split
+	 * @return A pair of the path and the name
+	 * @throws NullPointerException If the file is null
+	 */
 	static @NotNull Pair<String, String> splitPath(@NotNull String file) {
 		Objects.requireNonNull(file, "File must not be null");
 		String str = file.strip().replace("\\", "/");
@@ -154,34 +161,99 @@ public abstract sealed class ResourceLocation permits ExternalResourceLocation, 
 	}
 	//endregion
 	
+	/**
+	 * Modifies the path of the resource on construction.<br>
+	 * @param path The path to modify
+	 * @return The modified path
+	 */
 	protected abstract @NotNull String modifyPath(@Nullable String path);
 	
+	/**
+	 * @return The type of the resource
+	 */
 	public abstract @NotNull Type getType();
 	
-	public final @NotNull String getFile() {
-		return this.file;
-	}
-	
+	/**
+	 * @return The path of the resource
+	 */
 	public final @NotNull String getPath() {
 		return this.path;
 	}
 	
+	/**
+	 * @return The (file) name of the resource
+	 */
+	public final @NotNull String getFile() {
+		return this.file;
+	}
+	
+	/**
+	 * Constructs a new {@link File} from the resource.<br>
+	 * Resources on the classpath can not be converted into a file.<br>
+	 * @return The resource as a {@link File}
+	 * @throws UnsupportedOperationException If the resource is on the classpath
+	 */
 	public abstract @NotNull File asFile();
 	
+	/**
+	 * Constructs a new {@link Path} from the resource.<br>
+	 * Resources on the classpath can not be converted into a path.<br>
+	 * @return The resource as a {@link Path}
+	 * @throws UnsupportedOperationException If the resource is on the classpath
+	 */
 	public abstract @NotNull Path asPath();
 	
+	/**
+	 * Checks if the resource exists.<br>
+	 * @return True if the resource exists, otherwise false
+	 */
 	public abstract boolean exists();
 	
+	/**
+	 * Reads the content of the resource as a stream.<br>
+	 * @return An {@link InputStream} to the resource
+	 * @throws IOException If an I/O error occurs
+	 */
 	public abstract @NotNull InputStream getStream() throws IOException;
 	
+	/**
+	 * Reads the content of the resource as a byte array.<br>
+	 * @return The bytes of the resource
+	 * @throws IOException If an I/O error occurs
+	 */
 	public abstract byte @NotNull [] getBytes() throws IOException;
 	
+	/**
+	 * Reads the content of the resource as a single string.<br>
+	 * @return The resource content
+	 * @throws IOException If an I/O error occurs
+	 */
 	public abstract @NotNull String getString() throws IOException;
 	
+	/**
+	 * Reads the content of the resource as a stream of lines.<br>
+	 * @return The resource content
+	 * @throws IOException If an I/O error occurs
+	 */
 	public abstract @NotNull Stream<String> getLines() throws IOException;
 	
+	/**
+	 * Copies the resource to the {@link #TEMP temporary directory}.<br>
+	 * The copied resource will be deleted on program exit.<br>
+	 * @return The path of the copied resource
+	 * @throws IOException If an I/O error occurs
+	 */
 	public abstract @NotNull Path copy() throws IOException;
 	
+	/**
+	 * Copies the resource to the given target path.<br>
+	 * The copied resource will stay on the filesystem<br>
+	 * and will not be deleted on program exit.<br>
+	 * If a temporary copy of the resource is needed use {@link #copy()} instead.<br>
+	 * @param target The target path
+	 * @return The path of the copied resource
+	 * @throws IOException If an I/O error occurs
+	 */
 	public abstract @NotNull Path copy(@NotNull Path target) throws IOException;
 	
 	//region Object overrides

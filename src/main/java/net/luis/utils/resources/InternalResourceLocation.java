@@ -15,19 +15,34 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 /**
+ * Internal implementation of {@link ResourceLocation}.<br>
+ * This class is used to load resources from the classpath.<br>
  *
  * @author Luis-St
- *
  */
-
 final class InternalResourceLocation extends ResourceLocation {
 	
+	/**
+	 * The url of the resource on the classpath or null if the resource does not exist.<br>
+	 */
 	private final URL url;
 	
+	/**
+	 * Constructs a new {@link InternalResourceLocation} from the given {@link Pair}.<br>
+	 * The first value of the pair is the path, and the second value is the name of the resource.<br>
+	 * @param pair The pair
+	 * @throws NullPointerException If the pair is null
+	 */
 	InternalResourceLocation(@NotNull Pair<String, String> pair) {
 		this(pair.getFirst(), pair.getSecond());
 	}
 	
+	/**
+	 * Constructs a new {@link InternalResourceLocation} with the given path and name.<br>
+	 * @param path The path of the resource
+	 * @param name The name of the resource
+	 * @throws NullPointerException If the name is null
+	 */
 	InternalResourceLocation(@Nullable String path, @NotNull String name) {
 		super(path, name);
 		this.url = this.getClass().getResource(this.getPath() + this.getFile());

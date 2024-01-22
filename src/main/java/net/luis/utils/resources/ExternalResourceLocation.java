@@ -10,20 +10,38 @@ import java.nio.file.*;
 import java.util.stream.Stream;
 
 /**
+ * External implementation of {@link ResourceLocation}.<br>
+ * This class is used to load resources from the filesystem.<br>
  *
  * @author Luis-St
- *
  */
-
 final class ExternalResourceLocation extends ResourceLocation {
 	
+	/**
+	 * The resource as a file.<br>
+	 */
 	private final File file;
+	/**
+	 * The resource as a path.<br>
+	 */
 	private final Path path;
 	
+	/**
+	 * Constructs a new {@link ExternalResourceLocation} from the given {@link Pair}.<br>
+	 * The first value of the pair is the path, and the second value is the name of the resource.<br>
+	 * @param pair The pair
+	 * @throws NullPointerException If the pair is null
+	 */
 	ExternalResourceLocation(@NotNull Pair<String, String> pair) {
 		this(pair.getFirst(), pair.getSecond());
 	}
 	
+	/**
+	 * Constructs a new {@link ExternalResourceLocation} with the given path and name.<br>
+	 * @param path The path of the resource
+	 * @param name The name of the resource
+	 * @throws NullPointerException If the name is null
+	 */
 	ExternalResourceLocation(@Nullable String path, @NotNull String name) {
 		super(path, name);
 		this.file = new File(this.getPath() + this.getFile());
