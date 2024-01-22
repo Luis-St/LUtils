@@ -1,7 +1,8 @@
 package net.luis.utils.collection;
 
 import com.google.common.collect.Maps;
-import org.jetbrains.annotations.*;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
 
