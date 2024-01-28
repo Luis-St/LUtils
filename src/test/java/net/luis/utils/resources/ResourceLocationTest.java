@@ -67,11 +67,11 @@ class ResourceLocationTest {
 	@Test
 	void getResource() {
 		assertThrows(NullPointerException.class, () -> ResourceLocation.getResource(null, null, null));
-		assertThrows(NullPointerException.class, () -> ResourceLocation.getResource(null, "", null));
 		assertThrows(NullPointerException.class, () -> ResourceLocation.getResource("", null, null));
-		assertThrows(NullPointerException.class, () -> ResourceLocation.getResource("", "", null));
 		
 		assertDoesNotThrow(() -> ResourceLocation.getResource("", ""));
+		assertDoesNotThrow(() -> ResourceLocation.getResource(null, "", null));
+		assertDoesNotThrow(() -> ResourceLocation.getResource("", "", null));
 		assertDoesNotThrow(() -> ResourceLocation.getResource("", "", ResourceLocation.Type.EXTERNAL));
 		assertDoesNotThrow(() -> ResourceLocation.getResource("", "", ResourceLocation.Type.INTERNAL));
 	}
