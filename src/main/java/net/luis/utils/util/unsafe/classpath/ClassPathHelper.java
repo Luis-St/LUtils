@@ -12,14 +12,21 @@ import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 
 /**
+ * Internal helper class to get all classes from the classpath.<br>
+ *
+ * @see ClassPathUtils
  *
  * @author Luis-St
- *
  */
-
 @SuppressWarnings("ErrorNotRethrown")
 class ClassPathHelper {
 	
+	/**
+	 * Get all classes from the classpath.<br>
+	 * @param includeDependencies If true, classes from dependencies will be included
+	 * @param condition A condition to filter the classes
+	 * @return A list of all classes
+	 */
 	static @NotNull List<Class<?>> getClasses(boolean includeDependencies, @NotNull Predicate<String> condition) {
 		List<Class<?>> classes = new ArrayList<>();
 		for (File file : getClassPathFiles()) {
@@ -35,6 +42,14 @@ class ClassPathHelper {
 	
 	//region Internal helper methods
 	
+	/**
+	 * Gets all classes from the given jar file.<br>
+	 * Any exceptions which will be thrown while trying to get the classes will be ignored.<br>
+	 * @param file The jar file
+	 * @param condition A condition to filter the classes
+	 * @return A list of all classes in the given jar file
+	 * @throws NullPointerException If the given file is null
+	 */
 	private static @NotNull List<Class<?>> getClassesFromJar(@NotNull File file, @NotNull Predicate<String> condition) {
 		Objects.requireNonNull(file, "File must not be null");
 		List<Class<?>> classes = new ArrayList<>();
@@ -57,7 +72,18 @@ class ClassPathHelper {
 		return classes;
 	}
 	
-	private static @NotNull List<Class<?>> getClassesFromDirectory(@NotNull File path, @NotNull Predicate<String> condition) {
+	/**
+	 * Gets all classes from the given directory.<br>
+	 * This method will be called recursively if the given directory contains subdirectories.<br>
+	 * If a jar file is found, {@link #getClassesFromJar(File, Predicate)} will be called.<br>
+	 * Any exceptions which will be thrown while trying to get the classes will be ignored.<br>
+	 * This method will be mainly used to get all classes in ide environments, from the output directory.<br>
+	 * @param directory The directory to get the classes from
+	 * @param condition A condition to filter the classes
+	 * @return A list of all classes in the given directory
+	 * @throws NullPointerException If the given directory is null
+	 */
+	private static @NotNull List<Class<?>> getClassesFromDirectory(@NotNull File directory, @NotNull Predicate<String> condition) {
 		Objects.requireNonNull(directory, "Path must not be null");
 		List<Class<?>> classes = new ArrayList<>();
 		for (File file : listFiles(directory, (dir, name) -> name.endsWith(".jar"), false)) {
@@ -75,6 +101,14 @@ class ClassPathHelper {
 		return classes;
 	}
 	
+	/**
+	 * Gets all files from the given directory.<br>
+	 * @param directory The directory to get the files from
+	 * @param filter A filter to filter the files
+	 * @param recurse If true, subdirectories will be included
+	 * @return A list of all files in the given directory
+	 * @throws NullPointerException If the given directory is null
+	 */
 	private static @NotNull List<File> listFiles(@NotNull File directory, @Nullable FilenameFilter filter, boolean recurse) {
 		Objects.requireNonNull(directory, "Directory must not be null");
 		List<File> files = new ArrayList<>();
@@ -89,6 +123,10 @@ class ClassPathHelper {
 		return files;
 	}
 	
+	/**
+	 * Gets all files from the classpath.<br>
+	 * @return A list of all files from the classpath
+	 */
 	private static @NotNull List<File> getClassPathFiles() {
 		List<File> files = new ArrayList<>();
 		String classPath = System.getProperty("java.class.path");
@@ -100,6 +138,12 @@ class ClassPathHelper {
 		return files;
 	}
 	
+	/**
+	 * Converts the given file name to a class name.<br>
+	 * @param fileName The file name to convert
+	 * @return The converted class name
+	 * @throws NullPointerException If the given file name is null
+	 */
 	private static @NotNull String convertToClass(@NotNull String fileName) {
 		Objects.requireNonNull(fileName, "File name must not be null");
 		return fileName.substring(0, fileName.length() - 6).replace("/", ".").replace("\\", ".");
