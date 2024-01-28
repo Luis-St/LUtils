@@ -1,6 +1,7 @@
 plugins {
 	id "java"
 	id "maven-publish"
+	id "com.github.johnrengelman.shadow" version "${Shadow}"
 }
 
 repositories {
@@ -85,4 +86,8 @@ jar {
 			"Multi-Release": "true"
 		])
 	}
+}
+
+shadowJar {
+	archiveClassifier.set("")
 }
