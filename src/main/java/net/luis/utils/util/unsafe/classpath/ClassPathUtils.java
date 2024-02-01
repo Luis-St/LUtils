@@ -51,7 +51,7 @@ public class ClassPathUtils {
 	
 	public static @NotNull List<Class<?>> getClasses(@Nullable String packageName, @Nullable Mode mode) {
 		return Lists.newArrayList(ClassPathHelper.getClasses(true, clazz -> {
-			return packageName == null || (mode == Mode.INCLUDE) == clazz.startsWith(packageName);
+			return packageName == null || (mode == Mode.EXCLUDE) != clazz.startsWith(packageName);
 		}));
 	}
 	
@@ -81,6 +81,15 @@ public class ClassPathUtils {
 		Objects.requireNonNull(clazz, "Class must not be null");
 		Objects.requireNonNull(annotation, "Annotation must not be null");
 		return Lists.newArrayList(clazz.getDeclaredMethods()).stream().filter(method -> method.isAnnotationPresent(annotation)).collect(Collectors.toList());
+	}
+	public static @NotNull Optional<Method> getAnnotatedMethod(@NotNull Class<?> clazz, @NotNull String name, @NotNull Class<? extends Annotation> annotation, Class<?> @Nullable ... parameters) {
+		Objects.requireNonNull(clazz, "Class must not be null");
+		Objects.requireNonNull(name, "Name must not be null");
+		Objects.requireNonNull(annotation, "Annotation must not be null");
+		if (ReflectionHelper.hasMethod(clazz, name, m -> m.isAnnotationPresent(annotation), parameters)) {
+			return Optional.of(ReflectionHelper.getMethod(clazz, name, parameters));
+		}
+		return Optional.empty();
 	}
 	//endregion
 	
