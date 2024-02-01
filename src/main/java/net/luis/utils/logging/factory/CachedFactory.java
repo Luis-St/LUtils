@@ -13,14 +13,16 @@ import java.net.URI;
  * Cached Log4j2 configuration factory.<br>
  * This factory always returns the cached configuration of the {@link LoggingUtils} class<br>
  * or the default configuration if {@link LoggingUtils} has not been initialized.<br>
- * <br>
- * Can be used with spring boot to auto replace the spring boot configuration with the logger configuration used before spring boot.<br>
- * The factory is will be automatically registered if the spring boot framework is detected<br>
- * and the {@link LoggingUtils} class is initialized.<br>
- * <br>
- * The factory can also be manually registered by setting the system property "log4j.configurationFactory"<br>
- * to the fully qualified class name of this factory.<br>
- * This must be done before the log4j2 framework is initialized.<br>
+ * <p>
+ *     Can be used with spring boot to auto replace the spring boot configuration with the logger configuration used before spring boot.<br>
+ *     The factory is will be automatically registered if the spring boot framework is detected<br>
+ *     and the {@link LoggingUtils} class is initialized.<br>
+ * </p>
+ * <p>
+ *     The factory can also be manually registered by setting the system property "log4j.configurationFactory"<br>
+ *     to the fully qualified class name of this factory.<br>
+ *     This must be done before the log4j2 framework is initialized.<br>
+ * </p>
  *
  * @see LoggingUtils
  *

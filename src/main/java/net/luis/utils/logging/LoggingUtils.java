@@ -14,9 +14,10 @@ import java.util.*;
 
 /**
  * Logging utility class.<br>
- * <br>
- * This class is used to initialize or load a logging configuration.<br>
- * It also provides methods to enable/disable logging.<br>
+ * <p>
+ *     This class is used to initialize or load a logging configuration.<br>
+ *     It also provides methods to enable/disable logging.<br>
+ * </p>
  *
  * @author Luis-St
  */

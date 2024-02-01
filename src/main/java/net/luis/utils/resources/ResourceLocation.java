@@ -247,8 +247,7 @@ public abstract sealed class ResourceLocation permits ExternalResourceLocation, 
 	
 	/**
 	 * Copies the resource to the given target path.<br>
-	 * The copied resource will stay on the filesystem<br>
-	 * and will not be deleted on program exit.<br>
+	 * The copied resource will stay on the filesystem and will not be deleted on program exit.<br>
 	 * If a temporary copy of the resource is needed use {@link #copy()} instead.<br>
 	 * @param target The target path
 	 * @return The path of the copied resource

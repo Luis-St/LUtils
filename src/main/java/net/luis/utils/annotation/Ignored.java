@@ -42,9 +42,11 @@ public class Ignored {
 	/**
 	 * Indicates that a parameter is never ignored.<br>
 	 * This is the default behavior of any parameter in java.<br>
-	 * The annotation is only used to reset the behavior of a parameter that is<br>
-	 * annotated with {@link Ignored.Always} or {@link Ignored.Maybe}.<br>
-	 * An example would be an overridden method where the superclass ignores a parameter.<br>
+	 * <p>
+	 *     The annotation is only used to reset the behavior of a parameter that is<br>
+	 *     annotated with {@link Ignored.Always} or {@link Ignored.Maybe}.<br>
+	 *     An example would be an overridden method where the superclass ignores a parameter.<br>
+	 * </p>
 	 *
 	 * @author Luis-St
 	 */

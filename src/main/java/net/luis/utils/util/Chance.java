@@ -19,14 +19,14 @@ public class Chance {
 	 */
 	private final Random rng = new Random();
 	/**
-	 * The chance of something happening.<br>
+	 * The chance value of something happens.<br>
 	 */
 	private final double chance;
 	
 	/**
 	 * Constructs a new {@link Chance} with the given chance.<br>
 	 * The chance will be clamped between 0.0 and 1.0.<br>
-	 * @param chance The chance as a double
+	 * @param chance The chance value as a double
 	 */
 	private Chance(double chance) {
 		this.chance = Mth.clamp(chance, 0.0, 1.0);
@@ -36,7 +36,7 @@ public class Chance {
 	 * Creates a new {@link Chance} with the given chance.<br>
 	 * The chance will be clamped between 0.0 and 1.0.<br>
 	 * @param chance The chance as a double
-	 * @return A new {@link Chance} with the given chance
+	 * @return The created chance
 	 */
 	public static @NotNull Chance of(double chance) {
 		return new Chance(chance);
@@ -66,9 +66,11 @@ public class Chance {
 	
 	/**
 	 * Gets the result of the chance.<br>
-	 * If {@link #isTrue()} this will always return true.<br>
-	 * If {@link #isFalse()} this will always return false.<br>
-	 * Otherwise, true if the random number generator returns a number below the chance.<br>
+	 * <p>
+	 *     If {@link #isTrue()} this will always return true.<br>
+	 *     If {@link #isFalse()} this will always return false.<br>
+	 *     Otherwise, true if the random number generator returns a number below the chance.<br>
+	 * </p>
 	 * @return The result of the chance
 	 */
 	public boolean result() {

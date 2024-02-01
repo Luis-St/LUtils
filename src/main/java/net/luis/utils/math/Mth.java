@@ -125,10 +125,12 @@ public class Mth {
 	
 	/**
 	 * Checks if the given values have the same value.<br>
-	 * If the given array is null or empty, false will be returned.<br>
-	 * If the given array has only one element, true will be returned.<br>
-	 * If there are more than one element, the integer value of the first element will be compared<br>
-	 * to the integer value of the other elements.<br>
+	 * <p>
+	 *     If the given array is null or empty, false will be returned.<br>
+	 *     If the given array has only one element, true will be returned.<br>
+	 *     If there are more than one element, the integer value of the first element will be compared<br>
+	 *     to the integer value of the other elements.<br>
+	 * </p>
 	 * @param numbers The numbers to compare
 	 * @return True if all numbers have the same value, otherwise false
 	 */
@@ -161,9 +163,11 @@ public class Mth {
 	
 	/**
 	 * Clamps the given integer value between the given min and max value.<br>
-	 * If the given value is less than the given min value, the min value will be returned.<br>
-	 * If the given value is greater than the given max value, the max value will be returned.<br>
-	 * (min &le; value &le; max)<br>
+	 * <p>
+	 *     If the given value is less than the given min value, the min value will be returned.<br>
+	 *     If the given value is greater than the given max value, the max value will be returned.<br>
+	 *     (min &le; value &le; max)<br>
+	 * </p>
 	 * @param value The value to clamp
 	 * @param min The minimum value (inclusive)
 	 * @param max The maximum value (inclusive)
@@ -179,9 +183,11 @@ public class Mth {
 	
 	/**
 	 * Clamps the given long value between the given min and max value.<br>
-	 * If the given value is less than the given min value, the min value will be returned.<br>
-	 * If the given value is greater than the given max value, the max value will be returned.<br>
-	 * (min &le; value &le; max)<br>
+	 * <p>
+	 *     If the given value is less than the given min value, the min value will be returned.<br>
+	 *     If the given value is greater than the given max value, the max value will be returned.<br>
+	 *     (min &le; value &le; max)<br>
+	 * </p>
 	 * @param value The value to clamp
 	 * @param min The minimum value (inclusive)
 	 * @param max The maximum value (inclusive)
@@ -197,9 +203,11 @@ public class Mth {
 	
 	/**
 	 * Clamps the given double value between the given min and max value.<br>
-	 * If the given value is less than the given min value, the min value will be returned.<br>
-	 * If the given value is greater than the given max value, the max value will be returned.<br>
-	 * (min &le; value &le; max)<br>
+	 * <p>
+	 *     If the given value is less than the given min value, the min value will be returned.<br>
+	 *     If the given value is greater than the given max value, the max value will be returned.<br>
+	 *     (min &le; value &le; max)<br>
+	 * </p>
 	 * @param value The value to clamp
 	 * @param min The minimum value (inclusive)
 	 * @param max The maximum value (inclusive)

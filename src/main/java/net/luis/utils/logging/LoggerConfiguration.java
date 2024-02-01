@@ -16,7 +16,6 @@ import java.util.*;
 
 /**
  * Runtime logger configuration for Log4j2.<br>
- * <br>
  * The default configuration is:<br>
  * <ul>
  *     <li>Console logging enabled</li>
