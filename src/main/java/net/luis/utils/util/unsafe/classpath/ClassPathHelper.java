@@ -10,6 +10,7 @@ import java.util.*;
 import java.util.function.Predicate;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
+import java.util.stream.Collectors;
 
 /**
  * Internal helper class to get all classes from the classpath.<br>
@@ -22,7 +23,7 @@ import java.util.jar.JarFile;
 class ClassPathHelper {
 	
 	/**
-	 * Get all classes from the classpath.<br>
+	 * Gets all classes from the classpath.<br>
 	 * @param includeDependencies If true, classes from dependencies will be included
 	 * @param condition A condition to filter the classes
 	 * @return A list of all classes
@@ -34,7 +35,8 @@ class ClassPathHelper {
 				classes.addAll(getClassesFromDirectory(file, condition));
 			} else {
 				String caller = StackTraceUtils.getCallingClass(1).getPackageName();
-				classes.addAll(getClassesFromJar(file, includeDependencies ? condition : condition.and(clazz -> clazz.startsWith(caller))));
+				String pack = Arrays.stream(caller.split("\\.")).limit(ClassPathUtils.getPackageDepth()).collect(Collectors.joining("."));
+				classes.addAll(getClassesFromJar(file, includeDependencies ? condition : condition.and(clazz -> clazz.startsWith(pack))));
 			}
 		}
 		return classes;

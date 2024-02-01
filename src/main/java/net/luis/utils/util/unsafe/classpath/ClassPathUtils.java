@@ -23,6 +23,15 @@ import java.util.stream.Collectors;
 public class ClassPathUtils {
 	
 	private static final Logger LOGGER = LogManager.getLogger(ClassPathUtils.class);
+	private static int packageDepth = 3;
+	
+	public static int getPackageDepth() {
+		return packageDepth;
+	}
+	
+	public static void setPackageDepth(int packageDepth) {
+		ClassPathUtils.packageDepth = Math.max(1, packageDepth);
+	}
 	
 	//region Classes
 	public static @NotNull List<Class<?>> getAllClasses() {
