@@ -22,6 +22,8 @@ public class StackTraceUtils {
 	 */
 	private static final String UNSAFE_CALLS_MAIN = "unsafe.calls.main";
 	
+	//region Calling class
+	
 	/**
 	 * Gets the calling class from the stack trace with an offset of {@code 4}.<br>
 	 * <ul>
@@ -60,6 +62,9 @@ public class StackTraceUtils {
 	public static Class<?> getCallingClass(int callsBefore) {
 		return ReflectionHelper.getClassForName(getStackTrace(1 + callsBefore).getClassName());
 	}
+	//endregion
+	
+	//region Calling method
 	
 	/**
 	 * Gets the calling method from the stack trace with an offset of {@code 4}.<br>
@@ -164,6 +169,7 @@ public class StackTraceUtils {
 			return Optional.empty();
 		}
 	}
+	//endregion
 	
 	//region Internal
 	
