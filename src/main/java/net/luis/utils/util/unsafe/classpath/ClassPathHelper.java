@@ -23,8 +23,34 @@ import java.util.stream.Collectors;
 class ClassPathHelper {
 	
 	/**
+	 * Constant for the system property 'unsafe.package.depth'.<br>
+	 * <p>
+	 *     The property is used in {@link #getClasses(boolean, Predicate)} to filter the classes<br>
+	 *     from the classpath by the package depth of the calling class.<br>
+	 * </p>
+	 * <p>
+	 *     The default value is {@code 2}.<br>
+	 * </p>
+	 */
+	private static final String UNSAFE_PACKAGE_DEPTH = "unsafe.package.depth";
+	
+	/**
 	 * Gets all classes from the classpath.<br>
-	 * @param includeDependencies If true, classes from dependencies will be included
+	 * The classes will be filtered by the given condition.<br>
+	 * <p>
+	 *     If dependency classes should not be included, an 'and' clause is added to the condition.<br>
+	 *     The clause checks uses the package name of the calling class to determine if the class is a dependency or not.<br>
+	 * </p>
+	 * <p>
+	 *     For example, if the caller of this method is in the package "net.luis.utils.util",<br>
+	 * 	   all classes in the packages "net.luis.utils" will be returned,<br>
+	 * 	   because the depth is 3 which means that the package will be cut after the third dot.<br>
+	 * 	   The depth can be changed by using the system property 'unsafe.package.depth'.<br>
+	 * </p>
+	 * <p>
+	 *     Any exceptions which will be thrown while trying to get the classes will be ignored.<br>
+	 * </p>
+	 * @param includeDependencies Whether to include dependency classes or not
 	 * @param condition A condition to filter the classes
 	 * @return A list of all classes
 	 */
@@ -35,7 +61,8 @@ class ClassPathHelper {
 				classes.addAll(getClassesFromDirectory(file, condition));
 			} else {
 				String caller = StackTraceUtils.getCallingClass(1).getPackageName();
-				String pack = Arrays.stream(caller.split("\\.")).limit(ClassPathUtils.getPackageDepth()).collect(Collectors.joining("."));
+				int packageDepth = Integer.parseInt(System.getProperty("unsafe.package.depth", "2"));
+				String pack = Arrays.stream(caller.split("\\.")).limit(packageDepth).collect(Collectors.joining("."));
 				classes.addAll(getClassesFromJar(file, includeDependencies ? condition : condition.and(clazz -> clazz.startsWith(pack))));
 			}
 		}
@@ -77,9 +104,11 @@ class ClassPathHelper {
 	/**
 	 * Gets all classes from the given directory.<br>
 	 * This method will be called recursively if the given directory contains subdirectories.<br>
-	 * If a jar file is found, {@link #getClassesFromJar(File, Predicate)} will be called.<br>
-	 * Any exceptions which will be thrown while trying to get the classes will be ignored.<br>
-	 * This method will be mainly used to get all classes in ide environments, from the output directory.<br>
+	 * <p>
+	 *     If a jar file is found, {@link #getClassesFromJar(File, Predicate)} will be called.<br>
+	 *     Any exceptions which will be thrown while trying to get the classes will be ignored.<br>
+	 *     This method will be mainly used to get all classes in ide environments, from the output directory.<br>
+	 * </p>
 	 * @param directory The directory to get the classes from
 	 * @param condition A condition to filter the classes
 	 * @return A list of all classes in the given directory
@@ -105,6 +134,7 @@ class ClassPathHelper {
 	
 	/**
 	 * Gets all files from the given directory.<br>
+	 * If the given directory contains subdirectories, this method will be called recursively.<br>
 	 * @param directory The directory to get the files from
 	 * @param filter A filter to filter the files
 	 * @param recurse If true, subdirectories will be included
@@ -127,6 +157,8 @@ class ClassPathHelper {
 	
 	/**
 	 * Gets all files from the classpath.<br>
+	 * The files will be extracted from the system property 'java.class.path'.<br>
+	 * The system path separator will be used to split the classpath into single files.<br>
 	 * @return A list of all files from the classpath
 	 */
 	private static @NotNull List<File> getClassPathFiles() {

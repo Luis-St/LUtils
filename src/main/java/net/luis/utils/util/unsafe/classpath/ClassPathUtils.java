@@ -26,26 +26,6 @@ public class ClassPathUtils {
 	 * The logger for this class.<br>
 	 */
 	private static final Logger LOGGER = LogManager.getLogger(ClassPathUtils.class);
-	/**
-	 * The depth of the package used to filter the classes.<br>
-	 */
-	private static int packageDepth = 3;
-	
-	/**
-	 * @return The depth of the package used to filter the classes
-	 */
-	public static int getPackageDepth() {
-		return packageDepth;
-	}
-	
-	/**
-	 * Sets the depth of the package used to filter the classes.<br>
-	 * If the depth is less than 1, it will be set to 1.<br>
-	 * @param packageDepth The new depth of the package used to filter the classes
-	 */
-	public static void setPackageDepth(int packageDepth) {
-		ClassPathUtils.packageDepth = Math.max(1, packageDepth);
-	}
 	
 	//region Classes
 	
@@ -72,12 +52,13 @@ public class ClassPathUtils {
 	 *     For example, if the caller of this method is in the package "net.luis.utils.util",<br>
 	 * 	   all classes in the packages "net.luis.utils" will be returned,<br>
 	 * 	   because the depth is 3 which means that the package will be cut after the third dot.<br>
-	 * 	   The depth can be changed by using {@link #setPackageDepth(int)}.<br>
+	 * 	   The depth can be changed by using the system property 'unsafe.package.depth'.<br>
 	 * </p>
 	 * <p>
 	 *     If an error occurs, the error will be logged and an empty list will be returned.<br>
 	 * </p>
 	 * @return A list of all classes from the classpath which are related to the project
+	 * @see ClassPathHelper
 	 */
 	public static @NotNull List<Class<?>> getProjectClasses() {
 		List<Class<?>> classes = Lists.newArrayList();
