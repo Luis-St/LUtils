@@ -3,13 +3,14 @@ package net.luis.utils.util.unsafe.reflection;
 import com.google.common.collect.Lists;
 import net.luis.utils.util.Pair;
 import net.luis.utils.util.Utils;
-import org.apache.commons.lang3.ArrayUtils;
-import org.apache.commons.lang3.ClassUtils;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
+import org.apache.commons.lang3.*;
+import org.jetbrains.annotations.*;
 
 import java.lang.reflect.*;
 import java.util.*;
+import java.util.stream.Collectors;
+
+import static org.apache.commons.lang3.ArrayUtils.*;
 
 /**
  *
@@ -28,7 +29,7 @@ public class ReflectionUtils {
 		} else if (name.startsWith("has")) {
 			return name.substring(3);
 		}
-		for (String prefix : ArrayUtils.nullToEmpty(prefixes)) {
+		for (String prefix : nullToEmpty(prefixes)) {
 			if (name.startsWith(prefix)) {
 				return name.substring(prefix.length());
 			}
@@ -38,21 +39,21 @@ public class ReflectionUtils {
 	
 	public static @NotNull List<Method> getMethodsForName(@NotNull Class<?> clazz, @Nullable String name) {
 		Objects.requireNonNull(clazz, "Class must not be null");
-		return Arrays.stream(clazz.getDeclaredMethods()).filter(method -> method.getName().equals(name)).toList();
+		return Arrays.stream(clazz.getDeclaredMethods()).filter(method -> method.getName().equals(name) || name == null).collect(Collectors.toList());
 	}
 	
-	public static Object @NotNull [] getParameters(@NotNull Executable executable, Object @NotNull ... values) {
-		return getParameters(Objects.requireNonNull(executable, "Executable must not be null"), Utils.mapList(Lists.newArrayList(values), value -> {
+	public static Object @NotNull [] findParameters(@NotNull Executable executable, Object @Nullable ... values) {
+		return findParameters(Objects.requireNonNull(executable, "Executable must not be null"), Utils.mapList(Lists.newArrayList(nullToEmpty(values)), value -> {
 			String name = value.getClass().getSimpleName();
-			return Pair.of(value, name.substring(0, 1).toLowerCase() + name.substring(1));
+			return Pair.of(value, StringUtils.uncapitalize(name));
 		}));
 	}
 	
-	public static Object @NotNull [] getParameters(@NotNull Executable executable, @NotNull List<Pair<Object, String>> values) {
+	public static Object @NotNull [] findParameters(@NotNull Executable executable, @Nullable List<Pair<Object, String>> values) {
 		Parameter[] parameters = Objects.requireNonNull(executable, "Executable must not be null").getParameters();
 		Object[] arguments = new Object[parameters.length];
 		for (int i = 0; i < parameters.length; i++) {
-			arguments[i] = findParameter(parameters[i], values);
+			arguments[i] = findParameter(parameters[i], values == null ? Lists.newArrayList() : values);
 		}
 		return arguments;
 	}
@@ -67,13 +68,13 @@ public class ReflectionUtils {
 				if (noDuplicates) {
 					return object;
 				} else if (!parameter.isNamePresent()) {
-					throw new IllegalArgumentException("The parameter " + parameter.getName() + " of method " + executable.getDeclaringClass().getSimpleName() + "#" + executable.getName() + " is ambiguous");
+					throw new IllegalArgumentException("The parameter '" + parameter.getName() + "' of method '" + executable.getDeclaringClass().getSimpleName() + "#" + executable.getName() + "' is ambiguous");
 				} else if (parameter.getName().equalsIgnoreCase(value.getSecond())) {
 					return object;
 				}
 			}
 		}
-		throw new IllegalArgumentException("No value for parameter " + parameter.getName() + " of method " + executable.getDeclaringClass().getSimpleName() + "#" + executable.getName() + " found");
+		throw new IllegalStateException("No value for parameter '" + parameter.getName() + "' of method '" + executable.getDeclaringClass().getSimpleName() + "#" + executable.getName() + "' found");
 	}
 	//endregion
 }
