@@ -4,7 +4,8 @@ import net.luis.utils.annotation.Ignored;
 import net.luis.utils.exception.ModificationException;
 import org.jetbrains.annotations.*;
 
-import java.util.*;
+import java.util.Map;
+import java.util.Objects;
 
 /**
  * A simple immutable implementation of the {@link Map.Entry} interface.<br>
