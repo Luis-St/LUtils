@@ -1,8 +1,7 @@
 package net.luis.utils.util;
 
+import net.luis.utils.exception.ModificationException;
 import org.junit.jupiter.api.Test;
-
-import java.util.ConcurrentModificationException;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -34,6 +33,6 @@ class SimpleEntryTest {
 	
 	@Test
 	void setValue() {
-		assertThrows(ConcurrentModificationException.class, () -> new SimpleEntry<>("key", "value").setValue("value"));
+		assertThrows(ModificationException.class, () -> new SimpleEntry<>("key", "value").setValue("value"));
 	}
 }
