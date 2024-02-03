@@ -10,5 +10,5 @@ import java.lang.annotation.*;
  */
 @Documented
 @Target({ElementType.TYPE, ElementType.FIELD, ElementType.METHOD})
-@Retention(RetentionPolicy.RUNTIME)
+@Retention(RetentionPolicy.CLASS)
 public @interface Internal {}
