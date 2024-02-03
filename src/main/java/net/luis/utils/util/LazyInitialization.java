@@ -37,13 +37,11 @@ public class LazyInitialisation<T> {
 		if (this.initialised) {
 			return this.object.getValue();
 		} else {
-			throw new NotInitialisedException("The object has not been initialised yet");
 		}
 	}
 	
 	public void set(@Nullable T value) {
 		if (this.initialised) {
-			throw new AlreadyInitialisedException("The object has already been initialised");
 		} else {
 			this.object.setValue(value);
 			this.initialised = true;
