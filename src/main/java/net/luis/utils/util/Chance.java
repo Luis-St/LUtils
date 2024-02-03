@@ -7,7 +7,7 @@ import java.util.Objects;
 import java.util.Random;
 
 /**
- * A class that represents a chance of something happening.<br>
+ * Represents a chance of something happening.<br>
  * The chance is a double between 0.0 and 1.0, where 0.0 is 0% and 1.0 is 100%.<br>
  *
  * @author Luis-St

@@ -22,7 +22,7 @@ import java.util.function.Function;
 public class Registry<T> implements Iterable<T> {
 	
 	/**
-	 * The registry map that contains the items and their unique ids.
+	 * The registry mapTo that contains the items and their unique ids.
 	 */
 	private final Map<UUID, T> registry = Maps.newHashMap();
 	/**
@@ -46,8 +46,8 @@ public class Registry<T> implements Iterable<T> {
 	
 	/**
 	 * Creates a new unfreezable registry.<br>
-	 * @return A new unfreezable registry.
-	 * @param <T> The type of the items in the registry.
+	 * @return The created registry
+	 * @param <T> The type of the items in the registry
 	 */
 	public static <T> @NotNull Registry<T> of() {
 		return new Registry<>(false);
@@ -55,8 +55,8 @@ public class Registry<T> implements Iterable<T> {
 	
 	/**
 	 * Creates a new freezable registry.<br>
-	 * @return A new freezable registry.
-	 * @param <T> The type of the items in the registry.
+	 * @return The created registry
+	 * @param <T> The type of the items in the registry
 	 */
 	public static <T> @NotNull Registry<T> freezable() {
 		return new Registry<>(true);
@@ -66,9 +66,9 @@ public class Registry<T> implements Iterable<T> {
 	 * Creates a registry from a list of items.<br>
 	 * The items will be registered in the order they are in the list.<br>
 	 * The registry will be frozen after all items have been registered.<br>
-	 * @param items The items to register.
-	 * @return The frozen registry with the items.
-	 * @param <T> The type of the items.
+	 * @param items The items to register
+	 * @return The created frozen registry containing the items
+	 * @param <T> The type of the items
 	 */
 	public static <T> @NotNull Registry<T> of(@NotNull List<T> items) {
 		Registry<T> registry = Registry.freezable();

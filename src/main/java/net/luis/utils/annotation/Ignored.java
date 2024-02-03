@@ -4,6 +4,9 @@ import java.lang.annotation.*;
 
 /**
  * Annotations to indicate that a parameter or local variable is ignored.
+ * <p>
+ *     Will be removed after the final release of java's unnamed variables.<br>
+ * </p>
  *
  * @see Ignored.Always
  * @see Ignored.Maybe

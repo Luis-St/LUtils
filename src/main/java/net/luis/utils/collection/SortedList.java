@@ -12,6 +12,8 @@ import java.util.*;
  * using the set comparator or if it is {@code null} the natural order.<br>
  *
  * @author Luis-St
+ *
+ * @param <E> The type of the elements
  */
 public class SortedList<E> extends AbstractList<E> {
 	
