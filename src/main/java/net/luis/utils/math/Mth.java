@@ -119,7 +119,7 @@ public class Mth {
 	 * @param max The maximum value
 	 * @return True if the value is in the given bounds, otherwise false
 	 */
-	public static boolean isInBounds(int value, int min, int max) {
+	public static boolean isInBounds(double value, double min, double max) {
 		return max >= value && value >= min;
 	}
 	

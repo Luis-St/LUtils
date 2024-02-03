@@ -17,19 +17,19 @@ class RangeTest {
 		assertNotNull(Range.of(9));
 		assertNotNull(Range.of(0, 0));
 		assertNotNull(Range.of(0, 9));
-		assertThrows(RuntimeException.class, () -> Range.of(9, 0));
+		assertThrows(IllegalArgumentException.class, () -> Range.of(9, 0));
 	}
 	
 	@Test
 	void getMin() {
-		assertEquals(0, Range.of(0, 9).getMin());
-		assertNotEquals(1, Range.of(0, 9).getMin());
+		assertEquals(0.0, Range.of(0, 9).getMin());
+		assertNotEquals(1.0, Range.of(0, 9).getMin());
 	}
 	
 	@Test
 	void getMax() {
-		assertEquals(9, Range.of(0, 9).getMax());
-		assertNotEquals(8, Range.of(0, 9).getMax());
+		assertEquals(9.0, Range.of(0, 9).getMax());
+		assertNotEquals(8.0, Range.of(0, 9).getMax());
 	}
 	
 	@Test

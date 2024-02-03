@@ -6,46 +6,97 @@ import org.jetbrains.annotations.NotNull;
 import java.util.Objects;
 
 /**
+ * Represents a range of values between a minimum and maximum value (inclusive).<br>
  *
  * @author Luis-St
- *
  */
-
 public class Range {
 	
-	private final int min;
-	private final int max;
+	/**
+	 * The minimum value of the range.<br>
+	 */
+	private final double min;
+	/**
+	 * The maximum value of the range.<br>
+	 */
+	private final double max;
 	
-	private Range(int min, int max) {
+	/**
+	 * Constructs a new {@link Range} with the specified minimum and maximum value.<br>
+	 * @param min The minimum value of the range
+	 * @param max The maximum value of the range
+	 * @throws IllegalArgumentException If the maximum value is less than the minimum value
+	 */
+	private Range(double min, double max) {
 		this.min = min;
 		this.max = max;
-	}
-	
-	public static @NotNull Range of(int max) {
-		return of(0, max);
-	}
-	
-	public static @NotNull Range of(int min, int max) {
-		if (min > max) {
-			throw new RuntimeException("The maximum value must be greater than the minimum value");
-		} else {
-			return new Range(min, max);
+		if (this.min > this.max) {
+			throw new IllegalArgumentException("The maximum value must be greater than the minimum value");
 		}
 	}
 	
-	public static @NotNull Range of(char min, char max) {
-		return of(min, (int) max);
+	/**
+	 * Creates a new {@link Range} with the specified maximum value.<br>
+	 * The minimum value is set to 0.<br>
+	 * @param max The maximum value of the range
+	 * @return The created range
+	 * @throws IllegalArgumentException If the maximum value is less than 0
+	 */
+	public static @NotNull Range of(double max) {
+		return of(0, max);
 	}
 	
-	public int getMin() {
+	/**
+	 * Creates a new {@link Range} with the specified minimum and maximum value.<br>
+	 * The characters are converted to their respective doubleeger values.<br>
+	 * @param min The minimum value of the range
+	 * @param max The maximum value of the range
+	 * @return The created range
+	 * @throws IllegalArgumentException If the maximum value is less than the minimum value
+	 */
+	public static @NotNull Range of(char min, char max) {
+		return of(min, (double) max);
+	}
+	
+	/**
+	 * Creates a new {@link Range} with the specified minimum and maximum value.<br>
+	 * @param min The minimum value of the range
+	 * @param max The maximum value of the range
+	 * @return The created range
+	 * @throws IllegalArgumentException If the maximum value is less than the minimum value
+	 */
+	public static @NotNull Range of(double min, double max) {
+		return new Range(min, max);
+	}
+	
+	/**
+	 * @return The minimum value of the range
+	 */
+	public Number getMin() {
 		return this.min;
 	}
 	
-	public int getMax() {
+	/**
+	 * @return The maximum value of the range
+	 */
+	public double getMax() {
 		return this.max;
 	}
 	
-	public boolean isInRange(int value) {
+	/**
+	 * @return The range between the minimum and maximum value
+	 */
+	public double getRange() {
+		return this.max - this.min;
+	}
+	
+	/**
+	 * Checks if the specified value is within the range of this range.<br>
+	 * @param value The value to check
+	 * @return True if the value is within the range, otherwise false
+	 * @see Mth#isInBounds(double, double, double)
+	 */
+	public boolean isInRange(double value) {
 		return Mth.isInBounds(value, this.min, this.max);
 	}
 	
@@ -55,8 +106,8 @@ public class Range {
 		if (this == o) return true;
 		if (!(o instanceof Range range)) return false;
 		
-		if (this.min != range.min) return false;
-		return this.max == range.max;
+		if (Double.compare(range.min, this.min) != 0) return false;
+		return Double.compare(range.max, this.max) == 0;
 	}
 	
 	@Override
@@ -66,7 +117,7 @@ public class Range {
 	
 	@Override
 	public String toString() {
-		return "Range{min=" + this.min + ", max=" + this.max + "}";
+		return "[" + this.min + "; " + this.max + "]";
 	}
 	//endregion
 }
