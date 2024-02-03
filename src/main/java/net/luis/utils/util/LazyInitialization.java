@@ -11,38 +11,81 @@ import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
 
 /**
+ * A class representing a lazy initialization of an object.<br>
  *
  * @author Luis-St
  *
+ * @param <T> The type of the object to initialize
  */
-
+public class LazyInitialization<T> {
 	
+	/**
+	 * The object to be initialized.<br>
+	 */
 	private final MutableObject<T> object;
+	/**
+	 * The action to perform when the object is initialized.<br>
+	 */
 	private final Consumer<T> action;
+	/**
+	 * Whether the object has been initialized or not.<br>
+	 */
 	private boolean initialised;
 	
+	/**
+	 * Constructs a new {@link LazyInitialization} with no value and no initialization action.<br>
+	 */
 	public LazyInitialization() {
 		this(new MutableObject<>(), (v) -> {});
 	}
 	
+	/**
+	 * Constructs an already initialized {@link LazyInitialization} with the given value.<br>
+	 * @param value The value to initialize the object with
+	 */
 	public LazyInitialization(@Nullable T value) {
 		this(new MutableObject<>(value), (v) -> {});
 	}
 	
+	/**
+	 * Constructs a new {@link LazyInitialization} with the given initialization action.<br>
+	 * @param action The action to perform when the object is initialized
+	 * @throws NullPointerException If the action is null
+	 */
 	public LazyInitialization(@NotNull Consumer<T> action) {
 		this(new MutableObject<>(), action);
 	}
 	
+	/**
+	 * Constructs an already initialized {@link LazyInitialization} with the given value and initialization action.<br>
+	 * @param value The value to initialize the object with
+	 * @param action The action to perform when the object is initialized
+	 * @throws NullPointerException If the action is null
+	 */
 	public LazyInitialization(@Nullable T value, @NotNull Consumer<T> action) {
 		this(new MutableObject<>(value), action);
 	}
 	
+	/**
+	 * Constructs a new {@link LazyInitialization} with the given mutable object and initialization action.<br>
+	 * @param mutable The internal mutable object to hold the value
+	 * @param action The action to perform when the object is initialized
+	 * @throws NullPointerException If the mutable or action is null
+	 * @see #LazyInitialization(Object)
+	 * @see #LazyInitialization(Consumer)
+	 * @see #LazyInitialization(Object, Consumer)
+	 */
 	private LazyInitialization(@NotNull MutableObject<T> mutable, @NotNull Consumer<T> action) {
 		this.object = Objects.requireNonNull(mutable, "Object must not be null");
 		this.action = Objects.requireNonNull(action, "Action must not be null");
 		this.initialised = this.object.getValue() != null;
 	}
 	
+	/**
+	 * Gets the value of the object if it has been initialized.<br>
+	 * @return The value of the object
+	 * @throws NotInitializedException If the object has not been initialized yet
+	 */
 	public @Nullable T get() {
 		if (this.initialised) {
 			return this.object.getValue();
@@ -51,6 +94,12 @@ import java.util.function.Consumer;
 		}
 	}
 	
+	/**
+	 * Sets the value of the object if it has not been initialized yet.<br>
+	 * Performs the action set in the constructor if the object is initialized.<br>
+	 * @param value The value to initialize the object with
+	 * @throws AlreadyInitializedException If the object has already been initialized
+	 */
 	public void set(@Nullable T value) {
 		if (this.initialised) {
 			throw new AlreadyInitializedException("The object has already been initialized");
@@ -61,6 +110,10 @@ import java.util.function.Consumer;
 		}
 	}
 	
+	/**
+	 * Checks whether the object has been initialized or not.<br>
+	 * @return True if the object has been initialized, false otherwise
+	 */
 	public boolean isInstantiated() {
 		return this.initialised;
 	}
