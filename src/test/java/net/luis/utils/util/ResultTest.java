@@ -39,7 +39,7 @@ class ResultTest {
 	void orThrow() {
 		assertDoesNotThrow(() -> Result.success(100).orThrow());
 		assertDoesNotThrow(() -> Result.success(100).orThrow(RuntimeException::new));
-		assertThrows(NoSuchElementException.class, () -> Result.error("Error").orThrow());
+		assertThrows(IllegalStateException.class, () -> Result.error("Error").orThrow());
 		assertThrows(NullPointerException.class, () -> Result.error("Error").orThrow(null));
 		assertThrows(RuntimeException.class, () -> Result.error("Error").orThrow(RuntimeException::new));
 	}
