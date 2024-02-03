@@ -26,10 +26,10 @@ class EitherTest {
 	@Test
 	void map() {
 		Either<String, String> leftEither = Either.left("10");
-		assertEquals(Integer.valueOf(10), leftEither.map(Integer::parseInt, Integer::parseInt));
+		assertEquals(Integer.valueOf(10), leftEither.mapTo(Integer::parseInt, Integer::parseInt));
 		
 		Either<String, String> rightEither = Either.right("10");
-		assertEquals(Integer.valueOf(10), rightEither.map(Integer::parseInt, Integer::parseInt));
+		assertEquals(Integer.valueOf(10), rightEither.mapTo(Integer::parseInt, Integer::parseInt));
 	}
 	
 	@Test
@@ -72,14 +72,14 @@ class EitherTest {
 	void leftOrThrow() {
 		assertDoesNotThrow(() -> Either.left("left").leftOrThrow());
 		assertEquals("left", Either.left("left").leftOrThrow());
-		assertThrows(NoSuchElementException.class, () -> Either.right("right").leftOrThrow());
+		assertThrows(IllegalStateException.class, () -> Either.right("right").leftOrThrow());
 	}
 	
 	@Test
 	void rightOrThrow() {
 		assertDoesNotThrow(() -> Either.right("right").rightOrThrow());
 		assertEquals("right", Either.right("right").rightOrThrow());
-		assertThrows(NoSuchElementException.class, () -> Either.left("left").rightOrThrow());
+		assertThrows(IllegalStateException.class, () -> Either.left("left").rightOrThrow());
 	}
 	
 	@Test
@@ -87,7 +87,7 @@ class EitherTest {
 		Either<String, String> leftEither = Either.<String, String>left("left").swap();
 		assertFalse(leftEither.isLeft());
 		assertTrue(leftEither.isRight());
-		assertThrows(NoSuchElementException.class, leftEither::leftOrThrow);
+		assertThrows(IllegalStateException.class, leftEither::leftOrThrow);
 		assertDoesNotThrow(leftEither::rightOrThrow);
 		assertEquals("left", leftEither.rightOrThrow());
 		
@@ -96,6 +96,6 @@ class EitherTest {
 		assertFalse(rightEither.isRight());
 		assertDoesNotThrow(rightEither::leftOrThrow);
 		assertEquals("right", rightEither.leftOrThrow());
-		assertThrows(NoSuchElementException.class, rightEither::rightOrThrow);
+		assertThrows(IllegalStateException.class, rightEither::rightOrThrow);
 	}
 }
