@@ -5,20 +5,19 @@ import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
+ * Test class for {@link SimpleCell}.<br>
  *
  * @author Luis-St
- *
  */
-
-@SuppressWarnings("DataFlowIssue")
 class SimpleCellTest {
 	
 	@Test
 	void constructor() {
+		assertThrows(NullPointerException.class, () -> new SimpleCell<>(null, null, "value"));
 		assertThrows(NullPointerException.class, () -> new SimpleCell<>(null, "columnKey", "value"));
 		assertThrows(NullPointerException.class, () -> new SimpleCell<>("rowKey", null, "value"));
-		assertDoesNotThrow(() -> new SimpleCell<>("rowKey", "columnKey", "value"));
 		assertDoesNotThrow(() -> new SimpleCell<>("rowKey", "columnKey", null));
+		assertDoesNotThrow(() -> new SimpleCell<>("rowKey", "columnKey", "value"));
 	}
 	
 	@Test

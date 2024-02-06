@@ -2,15 +2,23 @@ package net.luis.utils.collection;
 
 import org.junit.jupiter.api.Test;
 
+import java.util.Random;
+
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
+ * Test class for {@link WeightCollection}.<br>
  *
  * @author Luis-St
- *
  */
-
 class WeightCollectionTest {
+	
+	@Test
+	void constructor() {
+		assertDoesNotThrow(() -> new WeightCollection<>());
+		assertDoesNotThrow(() -> new WeightCollection<>(new Random()));
+		assertThrows(NullPointerException.class, () -> new WeightCollection<>(null));
+	}
 	
 	@Test
 	void add() {

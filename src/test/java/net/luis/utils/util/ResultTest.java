@@ -3,17 +3,30 @@ package net.luis.utils.util;
 import org.junit.jupiter.api.Test;
 
 import java.util.NoSuchElementException;
+import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
+ * Test class for {@link Result}
  *
  * @author Luis-St
- *
  */
-
-@SuppressWarnings("DataFlowIssue")
 class ResultTest {
+	
+	@Test
+	void createSuccess() {
+		assertNotNull(Result.success(100));
+		assertDoesNotThrow(() -> Result.success(100));
+		assertDoesNotThrow(() -> Result.success(null));
+	}
+	
+	@Test
+	void createError() {
+		assertNotNull(Result.error("Error"));
+		assertDoesNotThrow(() -> Result.error("Error"));
+		assertThrows(NullPointerException.class, () -> Result.error(null));
+	}
 	
 	@Test
 	void get() {
@@ -29,10 +42,8 @@ class ResultTest {
 	
 	@Test
 	void result() {
-		assertTrue(Result.success(100).result().isPresent());
-		assertTrue(Result.error("Error").result().isEmpty());
-		assertEquals(100, Result.success(100).result().orElseThrow());
-		assertThrows(NoSuchElementException.class, () -> Result.error("Error").result().orElseThrow());
+		assertEquals(Optional.of(100), Result.success(100).result());
+		assertEquals(Optional.empty(), Result.error("Error").result());
 	}
 	
 	@Test
@@ -41,7 +52,7 @@ class ResultTest {
 		assertDoesNotThrow(() -> Result.success(100).orThrow(RuntimeException::new));
 		assertThrows(IllegalStateException.class, () -> Result.error("Error").orThrow());
 		assertThrows(NullPointerException.class, () -> Result.error("Error").orThrow(null));
-		assertThrows(RuntimeException.class, () -> Result.error("Error").orThrow(RuntimeException::new));
+		assertThrows(NoSuchElementException.class, () -> Result.error("Error").orThrow(NoSuchElementException::new));
 	}
 	
 	@Test
@@ -52,9 +63,7 @@ class ResultTest {
 	
 	@Test
 	void error() {
-		assertTrue(Result.success(100).error().isEmpty());
-		assertTrue(Result.error("Error").error().isPresent());
-		assertEquals("Error", Result.error("Error").error().orElseThrow());
-		assertThrows(NoSuchElementException.class, () -> Result.success(100).error().orElseThrow());
+		assertEquals(Optional.empty(), Result.success(100).error());
+		assertEquals(Optional.of("Error"), Result.error("Error").error());
 	}
 }

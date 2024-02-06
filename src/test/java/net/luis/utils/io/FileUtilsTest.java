@@ -10,6 +10,11 @@ import java.nio.file.Path;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+/**
+ * Test class for {@link FileUtils}.<br>
+ *
+ * @author Luis-St
+ */
 class FileUtilsTest {
 	
 	//region Clean up

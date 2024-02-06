@@ -6,12 +6,10 @@ import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
+ * Test class for {@link SimpleEntry}.<br>
  *
  * @author Luis-St
- *
  */
-
-@SuppressWarnings("DataFlowIssue")
 class SimpleEntryTest {
 	
 	@Test
@@ -29,6 +27,7 @@ class SimpleEntryTest {
 	@Test
 	void getValue() {
 		assertEquals("value", new SimpleEntry<>("key", "value").getValue());
+		assertNull(new SimpleEntry<>("key", null).getValue());
 	}
 	
 	@Test

@@ -7,19 +7,30 @@ import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
+ * Test class for {@link LazyInitialization}.<br>
  *
  * @author Luis-St
- *
  */
-
-@SuppressWarnings("DataFlowIssue")
 class LazyInitializationTest {
+	
+	@Test
+	void constructor() {
+		assertDoesNotThrow(() -> new LazyInitialization<>());
+		assertDoesNotThrow(() -> new LazyInitialization<>(10));
+		assertDoesNotThrow(() -> new LazyInitialization<>((Object) null));
+		assertDoesNotThrow(() -> new LazyInitialization<>((v) -> {}));
+		assertThrows(NullPointerException.class, () -> new LazyInitialization<>(null));
+		assertDoesNotThrow(() -> new LazyInitialization<>(10, (v) -> {}));
+		assertDoesNotThrow(() -> new LazyInitialization<>(null, (v) -> {}));
+		assertThrows(NullPointerException.class, () -> new LazyInitialization<>(null, null));
+	}
 	
 	@Test
 	void get() {
 		assertThrows(NotInitializedException.class, new LazyInitialization<>()::get);
 		assertDoesNotThrow(new LazyInitialization<>(10)::get);
 		assertEquals(10, new LazyInitialization<>(10).get());
+		assertNull(new LazyInitialization<>((Object) null).get());
 	}
 	
 	@Test

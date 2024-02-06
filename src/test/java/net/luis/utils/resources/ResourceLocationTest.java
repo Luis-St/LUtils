@@ -12,12 +12,10 @@ import java.util.function.UnaryOperator;
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
+ * Test class for {@link ResourceLocation}.<br>
  *
  * @author Luis-St
- *
  */
-
-@SuppressWarnings("DataFlowIssue")
 class ResourceLocationTest {
 	
 	//region Setup

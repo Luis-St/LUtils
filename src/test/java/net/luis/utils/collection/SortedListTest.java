@@ -3,16 +3,31 @@ package net.luis.utils.collection;
 import org.junit.jupiter.api.Test;
 
 import java.util.Comparator;
+import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
+ * Test class for {@link SortedList}.<br>
  *
  * @author Luis-St
- *
  */
-
 class SortedListTest {
+	
+	@Test
+	void constructor() {
+		assertDoesNotThrow(() -> new SortedList<>());
+		assertDoesNotThrow(() -> new SortedList<>((Comparator<?>) null));
+		assertDoesNotThrow(() -> new SortedList<>("A", "B"));
+		assertThrows(NullPointerException.class, () -> new SortedList<>((String[]) null));
+		assertDoesNotThrow(() -> new SortedList<>(null, "A", "B"));
+		assertDoesNotThrow(() -> new SortedList<>(Comparator.reverseOrder(), "A", "B"));
+		assertThrows(NullPointerException.class, () -> new SortedList<>(null, (String[]) null));
+		assertDoesNotThrow(() -> new SortedList<>(List.of()));
+		assertThrows(NullPointerException.class, () -> new SortedList<>((List<?>) null));
+		assertDoesNotThrow(() -> new SortedList<>(List.of("A", "B"), null));
+		assertThrows(NullPointerException.class, () -> new SortedList<>((List<?>) null, null));
+	}
 	
 	@Test
 	void setComparator() {

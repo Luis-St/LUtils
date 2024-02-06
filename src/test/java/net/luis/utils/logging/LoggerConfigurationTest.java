@@ -5,7 +5,11 @@ import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-@SuppressWarnings("DataFlowIssue")
+/**
+ * Test class for {@link LoggerConfiguration}.<br>
+ *
+ * @author Luis-St
+ */
 class LoggerConfigurationTest {
 	
 	private final LoggerConfiguration configuration = new LoggerConfiguration("*");

@@ -12,12 +12,10 @@ import java.util.function.Function;
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
+ * Test class for {@link Registry}.<br>
  *
  * @author Luis-St
- *
  */
-
-@SuppressWarnings("DataFlowIssue")
 class RegistryTest {
 	
 	@Test
@@ -76,12 +74,40 @@ class RegistryTest {
 	}
 	
 	@Test
-	void contains() {
+	void containsKey() {
 		Registry<Integer> registry = Registry.of();
-		assertTrue(registry.contains(registry.register(10)));
+		UUID uniqueId = registry.register(10);
+		assertTrue(registry.contains(uniqueId));
 		assertFalse(registry.contains(Utils.EMPTY_UUID));
+		assertDoesNotThrow(() -> registry.contains((UUID) null));
+	}
+	
+	@Test
+	void containsValue() {
+		Registry<Integer> registry = Registry.of();
+		registry.register(10);
 		assertTrue(registry.contains(10));
 		assertFalse(registry.contains(20));
+		assertDoesNotThrow(() -> registry.contains((Integer) null));
+	}
+	
+	@Test
+	void getKeys() {
+		Registry<Integer> registry = Registry.of();
+		UUID uniqueId = registry.register(10);
+		registry.register(20);
+		assertEquals(2, registry.getKeys().size());
+		assertTrue(registry.getKeys().contains(uniqueId));
+	}
+	
+	@Test
+	void getItems() {
+		Registry<Integer> registry = Registry.of();
+		registry.register(10);
+		registry.register(20);
+		assertEquals(2, registry.getItems().size());
+		assertTrue(registry.getItems().contains(10));
+		assertTrue(registry.getItems().contains(20));
 	}
 	
 	@Test

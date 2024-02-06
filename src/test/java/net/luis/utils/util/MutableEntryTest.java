@@ -5,12 +5,10 @@ import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
+ * Test class for {@link MutableEntry}.<br>
  *
  * @author Luis-St
- *
  */
-
-@SuppressWarnings("DataFlowIssue")
 class MutableEntryTest {
 	
 	@Test
@@ -23,9 +21,8 @@ class MutableEntryTest {
 	@Test
 	void setValue() {
 		MutableEntry<String, String> entry = new MutableEntry<>("key", "value0");
-		assertDoesNotThrow(() -> {
-			entry.setValue("value1");
-		});
+		assertEquals("value0", entry.getValue());
+		assertDoesNotThrow(() -> entry.setValue("value1"));
 		assertEquals("value1", entry.getValue());
 	}
 }

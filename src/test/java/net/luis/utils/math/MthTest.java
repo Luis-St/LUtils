@@ -7,14 +7,13 @@ import java.util.*;
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
+ * Test class for {@link Mth}.<br>
  *
  * @author Luis-St
- *
  */
-
 class MthTest {
 	
-	static final Random RNG = new Random();
+	private static final Random RNG = new Random(0);
 	
 	@Test
 	void sum() {
@@ -26,32 +25,35 @@ class MthTest {
 	
 	@Test
 	void randomInt() {
-		List<Integer> values = new ArrayList<>();
-		for (int i = 0; i < 1000000; i++) {
-			values.add(Mth.randomInt(RNG, 0, 10));
+		assertThrows(NullPointerException.class, () -> Mth.randomInt(null, 0, 10));
+		assertThrows(IllegalArgumentException.class, () -> Mth.randomInt(RNG, 10, 0));
+		assertThrows(IllegalArgumentException.class, () -> Mth.randomInt(RNG, 10, 10));
+		for (int i = 0; i < 1000; i++) {
+			int value = assertDoesNotThrow(() -> Mth.randomInt(RNG, 0, 10));
+			assertTrue(9 >= value && value >= 0);
 		}
-		assertEquals(0, Collections.min(values));
-		assertEquals(9, Collections.max(values));
 	}
 	
 	@Test
 	void randomExclusiveInt() {
-		List<Integer> values = new ArrayList<>();
-		for (int i = 0; i < 1000000; i++) {
-			values.add(Mth.randomExclusiveInt(RNG, 0, 10));
+		assertThrows(NullPointerException.class, () -> Mth.randomInt(null, 0, 10));
+		assertThrows(IllegalArgumentException.class, () -> Mth.randomInt(RNG, 10, 0));
+		assertThrows(IllegalArgumentException.class, () -> Mth.randomInt(RNG, 10, 10));
+		for (int i = 0; i < 1000; i++) {
+			int value = assertDoesNotThrow(() -> Mth.randomExclusiveInt(RNG, 0, 10));
+			assertTrue(9 >= value && value >= 1);
 		}
-		assertEquals(1, Collections.min(values));
-		assertEquals(9, Collections.max(values));
 	}
 	
 	@Test
 	void randomInclusiveInt() {
-		List<Integer> values = new ArrayList<>();
-		for (int i = 0; i < 1000000; i++) {
-			values.add(Mth.randomInclusiveInt(RNG, 0, 10));
+		assertThrows(NullPointerException.class, () -> Mth.randomInt(null, 0, 10));
+		assertThrows(IllegalArgumentException.class, () -> Mth.randomInt(RNG, 10, 0));
+		assertThrows(IllegalArgumentException.class, () -> Mth.randomInt(RNG, 10, 10));
+		for (int i = 0; i < 1000; i++) {
+			int value = assertDoesNotThrow(() -> Mth.randomInclusiveInt(RNG, 0, 10));
+			assertTrue(10 >= value && value >= 0);
 		}
-		assertEquals(0, Collections.min(values));
-		assertEquals(10, Collections.max(values));
 	}
 	
 	@Test
@@ -63,11 +65,11 @@ class MthTest {
 	
 	@Test
 	void isInBounds() {
-		assertTrue(Mth.isInBounds(1, 0, 2));
-		assertTrue(Mth.isInBounds(1, 0, 1));
-		assertTrue(Mth.isInBounds(1, 1, 2));
-		assertTrue(Mth.isInBounds(1, 1, 1));
-		assertFalse(Mth.isInBounds(3, 0, 2));
+		assertTrue(Mth.isInBounds(1.0, 0.0, 2.0));
+		assertTrue(Mth.isInBounds(1.0, 0.0, 1.0));
+		assertTrue(Mth.isInBounds(1.0, 1.0, 2.0));
+		assertTrue(Mth.isInBounds(1.0, 1.0, 1.0));
+		assertFalse(Mth.isInBounds(3.0, 0.0, 2.0));
 	}
 	
 	@Test

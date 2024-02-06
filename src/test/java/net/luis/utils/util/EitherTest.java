@@ -5,29 +5,22 @@ import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
+ * Test class for {@link Either}.<br>
  *
  * @author Luis-St
- *
  */
-
 class EitherTest {
 	
 	@Test
-	void mapBoth() {
-		Either<String, String> leftEither = Either.left("10");
-		assertEquals(leftEither.mapBoth(Integer::parseInt, Integer::parseInt), Either.left(10));
-		
-		Either<String, String> rightEither = Either.right("10");
-		assertEquals(rightEither.mapBoth(Integer::parseInt, Integer::parseInt), Either.right(10));
+	void left() {
+		assertNotNull(Either.left("left"));
+		assertDoesNotThrow(() -> Either.left(null));
 	}
 	
 	@Test
-	void map() {
-		Either<String, String> leftEither = Either.left("10");
-		assertEquals(Integer.valueOf(10), leftEither.mapTo(Integer::parseInt, Integer::parseInt));
-		
-		Either<String, String> rightEither = Either.right("10");
-		assertEquals(Integer.valueOf(10), rightEither.mapTo(Integer::parseInt, Integer::parseInt));
+	void right() {
+		assertNotNull(Either.right("right"));
+		assertDoesNotThrow(() -> Either.right(null));
 	}
 	
 	@Test
@@ -43,41 +36,19 @@ class EitherTest {
 	}
 	
 	@Test
-	void left() {
-		assertTrue(Either.left("left").left().isPresent());
-		assertTrue(Either.right("right").left().isEmpty());
-	}
-	
-	@Test
-	void right() {
-		assertTrue(Either.right("right").right().isPresent());
-		assertTrue(Either.left("left").right().isEmpty());
-	}
-	
-	@Test
-	void mapLeft() {
-		Either<String, String> either = Either.left(" left ");
-		assertEquals(either.mapLeft(String::trim), Either.left("left"));
-	}
-	
-	@Test
-	void mapRight() {
-		Either<String, String> either = Either.right(" right ");
-		assertEquals(either.mapRight(String::trim), Either.right("right"));
-	}
-	
-	@Test
 	void leftOrThrow() {
 		assertDoesNotThrow(() -> Either.left("left").leftOrThrow());
 		assertEquals("left", Either.left("left").leftOrThrow());
-		assertThrows(IllegalStateException.class, () -> Either.right("right").leftOrThrow());
+		assertNull(Either.left(null).leftOrThrow());
+		assertThrows(IllegalStateException.class, Either.right("right")::leftOrThrow);
 	}
 	
 	@Test
 	void rightOrThrow() {
 		assertDoesNotThrow(() -> Either.right("right").rightOrThrow());
 		assertEquals("right", Either.right("right").rightOrThrow());
-		assertThrows(IllegalStateException.class, () -> Either.left("left").rightOrThrow());
+		assertNull(Either.right(null).rightOrThrow());
+		assertThrows(IllegalStateException.class, Either.left("left")::rightOrThrow);
 	}
 	
 	@Test
@@ -95,5 +66,55 @@ class EitherTest {
 		assertDoesNotThrow(rightEither::leftOrThrow);
 		assertEquals("right", rightEither.leftOrThrow());
 		assertThrows(IllegalStateException.class, rightEither::rightOrThrow);
+	}
+	
+	@Test
+	void mapBoth() {
+		Either<String, String> leftEither = Either.left("10");
+		assertThrows(NullPointerException.class, () -> leftEither.mapBoth(null, null));
+		assertThrows(NullPointerException.class, () -> leftEither.mapBoth(null, Integer::parseInt));
+		assertDoesNotThrow(() -> leftEither.mapBoth(Integer::parseInt, null));
+		assertDoesNotThrow(() -> leftEither.mapBoth(Integer::parseInt, Integer::parseInt));
+		assertEquals(leftEither.mapBoth(Integer::parseInt, Integer::parseInt), Either.left(10));
+		
+		Either<String, String> rightEither = Either.right("10");
+		assertThrows(NullPointerException.class, () -> rightEither.mapBoth(null, null));
+		assertThrows(NullPointerException.class, () -> rightEither.mapBoth(Integer::parseInt, null));
+		assertDoesNotThrow(() -> rightEither.mapBoth(null, Integer::parseInt));
+		assertDoesNotThrow(() -> rightEither.mapBoth(Integer::parseInt, Integer::parseInt));
+		assertEquals(rightEither.mapBoth(Integer::parseInt, Integer::parseInt), Either.right(10));
+	}
+	
+	@Test
+	void mapTo() {
+		Either<String, String> leftEither = Either.left("10");
+		assertThrows(NullPointerException.class, () -> leftEither.mapTo(null, null));
+		assertThrows(NullPointerException.class, () -> leftEither.mapTo(null, Integer::parseInt));
+		assertDoesNotThrow(() -> leftEither.mapTo(Integer::parseInt, null));
+		assertDoesNotThrow(() -> leftEither.mapTo(Integer::parseInt, Integer::parseInt));
+		assertEquals(Integer.valueOf(10), leftEither.mapTo(Integer::parseInt, Integer::parseInt));
+		
+		Either<String, String> rightEither = Either.right("10");
+		assertThrows(NullPointerException.class, () -> rightEither.mapTo(null, null));
+		assertThrows(NullPointerException.class, () -> rightEither.mapTo(Integer::parseInt, null));
+		assertDoesNotThrow(() -> rightEither.mapTo(null, Integer::parseInt));
+		assertDoesNotThrow(() -> rightEither.mapTo(Integer::parseInt, Integer::parseInt));
+		assertEquals(Integer.valueOf(10), rightEither.mapTo(Integer::parseInt, Integer::parseInt));
+	}
+	
+	@Test
+	void mapLeft() {
+		Either<String, String> either = Either.left(" left ");
+		assertThrows(NullPointerException.class, () -> either.mapLeft(null));
+		assertDoesNotThrow(() -> either.mapLeft(String::trim));
+		assertEquals(either.mapLeft(String::trim), Either.left("left"));
+	}
+	
+	@Test
+	void mapRight() {
+		Either<String, String> either = Either.right(" right ");
+		assertThrows(NullPointerException.class, () -> either.mapRight(null));
+		assertDoesNotThrow(() -> either.mapRight(String::trim));
+		assertEquals(either.mapRight(String::trim), Either.right("right"));
 	}
 }

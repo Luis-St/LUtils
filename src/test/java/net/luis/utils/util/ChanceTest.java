@@ -5,16 +5,16 @@ import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
+ * Test class for {@link Chance}.<br>
  *
  * @author Luis-St
- *
  */
-
 class ChanceTest {
 	
 	@Test
 	void of() {
 		assertNotNull(Chance.of(1.0));
+		assertDoesNotThrow(() -> Chance.of(1.0));
 	}
 	
 	@Test
