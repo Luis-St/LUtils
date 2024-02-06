@@ -11,25 +11,53 @@ import java.util.function.*;
 import java.util.stream.Collectors;
 
 /**
+ * Utility class for various helper methods.<br>
  *
  * @author Luis-St
- *
  */
-
 public class Utils {
 	
+	/**
+	 * Empty UUID constant.<br>
+	 */
 	public static final UUID EMPTY_UUID = UUID.fromString("00000000-0000-0000-0000-000000000000");
 	
+	/**
+	 * Checks if the given UUID is empty.<br>
+	 * An empty UUID is a UUID with all zeros.<br>
+	 * @param uuid The UUID to check
+	 * @return True, if the UUID is empty, otherwise false
+	 */
 	public static boolean isEmpty(@Nullable UUID uuid) {
 		return uuid == EMPTY_UUID || EMPTY_UUID.equals(uuid);
 	}
 	
+	/**
+	 * Applies the given action to the given object and returns the object.<br>
+	 * This is useful for creating objects and applying actions to them in one line.<br>
+	 * @param object The object to apply the action to
+	 * @param action The action to apply to the object
+	 * @return The object after the action has been applied
+	 * @throws NullPointerException If the object or action is null
+	 * @param <T> The type of the object
+	 */
 	public static <T> @NotNull T make(@NotNull T object, @NotNull Consumer<T> action) {
 		Objects.requireNonNull(object, "Object must not be null");
 		Objects.requireNonNull(action, "Action must not be null").accept(object);
 		return object;
 	}
 	
+	/**
+	 * Maps the given map to a list using the given mapper.<br>
+	 * The mapper takes the key and value of the map and returns the resulting list value.<br>
+	 * @param map The map to convert
+	 * @param mapper The mapper to use
+	 * @return The resulting list
+	 * @throws NullPointerException If the map or mapper is null
+	 * @param <K> The type of the map key
+	 * @param <V> The type of the map value
+	 * @param <T> The type of the list
+	 */
 	public static <K, V, T> @NotNull List<T> mapToList(@NotNull Map<K, V> map, @NotNull BiFunction<K, V, T> mapper) {
 		List<T> list = Lists.newArrayList();
 		for (Map.Entry<K, V> entry : Objects.requireNonNull(map, "Map must not be null").entrySet()) {
@@ -38,6 +66,17 @@ public class Utils {
 		return list;
 	}
 	
+	/**
+	 * Maps the given list to a map using the given mapper.<br>
+	 * The mapper takes the list value and returns the resulting map entry.<br>
+	 * @param list The list to convert
+	 * @param mapper The mapper to use
+	 * @return The resulting map
+	 * @throws NullPointerException If the list or mapper is null
+	 * @param <T> The type of the list
+	 * @param <K> The type of the map key
+	 * @param <V> The type of the map value
+	 */
 	public static <T, K, V> @NotNull Map<K, V> listToMap(@NotNull List<T> list, @NotNull Function<T, Entry<K, V>> mapper) {
 		Map<K, V> map = Maps.newHashMap();
 		for (T t : Objects.requireNonNull(list, "List must not be null")) {
@@ -48,12 +87,41 @@ public class Utils {
 	}
 	
 	//region List util methods
+	
+	/**
+	 * Maps the given list to a new list using the given mapper.<br>
+	 * Shorthand for:
+	 * <pre>{@code
+	 * list.stream().map(mapper).collect(Collectors.toList());
+	 * }</pre>
+	 * @param list The list to map
+	 * @param mapper The mapper to use
+	 * @return The resulting list
+	 * @throws NullPointerException If the list or mapper is null
+	 * @param <T> The type of the list
+	 * @param <U> The type of the resulting list
+	 */
 	public static <T, U> @NotNull List<U> mapList(@NotNull List<T> list, @NotNull Function<T, U> mapper) {
 		Objects.requireNonNull(list, "List must not be null");
 		Objects.requireNonNull(mapper, "Mapper must not be null");
 		return list.stream().map(mapper).collect(Collectors.toList());
 	}
 	
+	/**
+	 * Maps the given list to a new list using the given two mappers.<br>
+	 * Shorthand for:
+	 * <pre>{@code
+	 * list.stream().map(firstMapper).map(secondMapper).collect(Collectors.toList());
+	 * }</pre>
+	 * @param list The list to map
+	 * @param firstMapper The first mapper to use
+	 * @param secondMapper The second mapper to use
+	 * @return The resulting list
+	 * @throws NullPointerException If the list, first mapper or second mapper is null
+	 * @param <T> The type of the list
+	 * @param <U> The type of the list after the first mapper
+	 * @param <V> The type of the resulting list
+	 */
 	public static <T, U, V> @NotNull List<V> mapList(@NotNull List<T> list, @NotNull Function<T, U> firstMapper, @NotNull Function<U, V> secondMapper) {
 		Objects.requireNonNull(list, "List must not be null");
 		Objects.requireNonNull(firstMapper, "First mapper must not be null");
@@ -63,6 +131,17 @@ public class Utils {
 	//endregion
 	
 	//region Map util methods
+	
+	/**
+	 * Maps the keys of the given map using the given mapper.<br>
+	 * @param map The map to map
+	 * @param mapper The mapper to use
+	 * @return A new {@link HashMap} with the mapped keys
+	 * @throws NullPointerException If the map or mapper is null
+	 * @param <K> The type of the map key
+	 * @param <T> The type of the key in the resulting map
+	 * @param <V> The type of the map value
+	 */
 	public static <K, T, V> @NotNull Map<T, V> mapKey(@NotNull Map<K, V> map, @NotNull Function<K, T> mapper) {
 		Map<T, V> mapped = Maps.newHashMap();
 		for (Entry<K, V> entry : Objects.requireNonNull(map, "Map must not be null").entrySet()) {
@@ -71,6 +150,16 @@ public class Utils {
 		return mapped;
 	}
 	
+	/**
+	 * Maps the values of the given map using the given mapper.<br>
+	 * @param map The map to map
+	 * @param mapper The mapper to use
+	 * @return A new {@link HashMap} with the mapped values
+	 * @throws NullPointerException If the map or mapper is null
+	 * @param <K> The type of the map key
+	 * @param <V> The type of the map value
+	 * @param <T> The type of the value in the resulting map
+	 */
 	public static <K, V, T> @NotNull Map<K, T> mapValue(@NotNull Map<K, V> map, @NotNull Function<V, T> mapper) {
 		Map<K, T> mapped = Maps.newHashMap();
 		for (Entry<K, V> entry : Objects.requireNonNull(map, "Map must not be null").entrySet()) {
@@ -81,16 +170,36 @@ public class Utils {
 	//endregion
 	
 	//region Duplicate checks
+	
+	/**
+	 * Checks if the given array contains duplicate values.<br>
+	 * @param array The array to check
+	 * @return True, if the array contains duplicate values, otherwise false
+	 * @throws NullPointerException If the array is null
+	 */
 	public static boolean hasDuplicates(Object @NotNull [] array) {
 		Objects.requireNonNull(array, "Array must not be null");
 		return array.length != Arrays.stream(array).distinct().count();
 	}
 	
+	/**
+	 * Checks if the given list contains duplicate values.<br>
+	 * @param list The list to check
+	 * @return True, if the list contains duplicate values, otherwise false
+	 * @throws NullPointerException If the list is null
+	 */
 	public static boolean hasDuplicates(@NotNull List<?> list) {
 		Objects.requireNonNull(list, "List must not be null");
 		return list.size() != list.stream().distinct().count();
 	}
 	
+	/**
+	 * Checks if the given object is contained multiple times in the given array.<br>
+	 * @param object The object to check
+	 * @param array The array to check in
+	 * @return True, if the object is contained multiple times in the array, otherwise false
+	 * @throws NullPointerException If the array is null
+	 */
 	public static boolean hasDuplicates(@Nullable Object object, Object @NotNull [] array) {
 		Objects.requireNonNull(array, "Array must not be null");
 		if (!ArrayUtils.contains(array, object)) {
@@ -99,6 +208,13 @@ public class Utils {
 		return array.length != Sets.newHashSet(array).size();
 	}
 	
+	/**
+	 * Checks if the given object is contained multiple times in the given list.<br>
+	 * @param object The object to check
+	 * @param list The list to check in
+	 * @return True, if the object is contained multiple times in the list, otherwise false
+	 * @throws NullPointerException If the list is null
+	 */
 	public static boolean hasDuplicates(@Nullable Object object, @NotNull List<?> list) {
 		Objects.requireNonNull(list, "List must not be null");
 		if (!list.contains(object)) {
@@ -109,21 +225,50 @@ public class Utils {
 	//endregion
 	
 	//region Null helper methods
+	
+	/**
+	 * Wraps the given value to the given fallback value if the value is null.<br>
+	 * If the value is not null, the value is returned.<br>
+	 * @param value The value to wrap
+	 * @param nullFallback The fallback value to use
+	 * @return The value or the fallback value if the value is null
+	 * @throws NullPointerException If the fallback value is null
+	 * @param <T> The type of the value
+	 */
 	public static <T> @NotNull T warpNullTo(@Nullable T value, @NotNull T nullFallback) {
+		Objects.requireNonNull(nullFallback, "Fallback value must not be null");
 		if (value == null) {
 			return nullFallback;
 		}
 		return value;
 	}
 	
+	/**
+	 * Wraps the given value to the value returned by the given fallback supplier if the value is null.<br>
+	 * If the value is not null, the value is returned.<br>
+	 * @param value The value to wrap
+	 * @param nullFallback The fallback supplier to use
+	 * @return The value or the value returned by the fallback supplier if the value is null
+	 * @throws NullPointerException If the fallback supplier is null
+	 * @param <T> The type of the value
+	 */
 	public static <T> @NotNull T warpNullTo(@Nullable T value, @NotNull Supplier<T> nullFallback) {
+		Objects.requireNonNull(nullFallback, "Fallback supplier must not be null");
 		if (value == null) {
 			return nullFallback.get();
 		}
 		return value;
 	}
 	
+	/**
+	 * Executes the given action if the given value is not null.<br>
+	 * @param value The value to check
+	 * @param action The action to execute
+	 * @throws NullPointerException If the action is null
+	 * @param <T> The type of the value
+	 */
 	public static <T> void executeIfNotNull(@Nullable T value, @NotNull Consumer<T> action) {
+		Objects.requireNonNull(action, "Action must not be null");
 		if (value != null) {
 			action.accept(value);
 		}
@@ -131,10 +276,23 @@ public class Utils {
 	//endregion
 	
 	//region Random util methods
+	
+	/**
+	 * @return A new {@link Random} instance using the current system time as seed
+	 */
 	public static @NotNull Random systemRandom() {
 		return new Random(System.currentTimeMillis());
 	}
 	
+	/**
+	 * Returns a random value from the given array using the given random number generator.<br>
+	 * @param rng The random number generator to use
+	 * @param values The array to get the random value from
+	 * @return A random value from the array
+	 * @throws NullPointerException If the random number generator or array is null
+	 * @throws IllegalArgumentException If the array is empty
+	 * @param <T> The type of the array
+	 */
 	@SafeVarargs
 	public static <T> @NotNull T getRandom(@NotNull Random rng, T @NotNull ... values) {
 		Objects.requireNonNull(rng, "Random must not be null");
@@ -142,6 +300,16 @@ public class Utils {
 		return values[rng.nextInt(values.length)];
 	}
 	
+	/**
+	 * Returns a random value from the given array using the given random number generator.<br>
+	 * If the array is empty or null, an empty optional is returned.<br>
+	 * @param rng The random number generator to use
+	 * @param values The array to get the random value from
+	 * @return A random value from the array
+	 * @throws NullPointerException If the random number generator is null
+	 * @see #getRandom(Random, Object[])
+	 * @param <T> The type of the array
+	 */
 	@SafeVarargs
 	public static <T> @NotNull Optional<T> getRandomSafe(@NotNull Random rng, T @Nullable ... values) {
 		Objects.requireNonNull(rng, "Random must not be null");
@@ -151,12 +319,30 @@ public class Utils {
 		return Optional.of(getRandom(rng, values));
 	}
 	
+	/**
+	 * Returns a random value from the given list using the given random number generator.<br>
+	 * @param rng The random number generator to use
+	 * @param values The list to get the random value from
+	 * @return A random value from the list
+	 * @throws NullPointerException If the random number generator or list is null
+	 * @param <T> The type of the list
+	 */
 	public static <T> @NotNull T getRandom(@NotNull Random rng, @NotNull List<T> values) {
 		Objects.requireNonNull(rng, "Random must not be null");
 		Objects.requireNonNull(values, "Values must not be null");
 		return values.get(rng.nextInt(values.size()));
 	}
 	
+	/**
+	 * Returns a random value from the given list using the given random number generator.<br>
+	 * If the list is empty or null, an empty optional is returned.<br>
+	 * @param rng The random number generator to use
+	 * @param values The list to get the random value from
+	 * @return A random value from the list
+	 * @throws NullPointerException If the random number generator is null
+	 * @see #getRandom(Random, List)
+	 * @param <T> The type of the list
+	 */
 	public static <T> @NotNull Optional<T> getRandomSafe(@NotNull Random rng, @Nullable List<T> values) {
 		Objects.requireNonNull(rng, "Random must not be null");
 		if (values == null || values.isEmpty()) {
