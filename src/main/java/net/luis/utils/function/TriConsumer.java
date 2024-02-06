@@ -28,14 +28,15 @@ public interface TriConsumer<T, U, V> {
 	/**
 	 * Returns a composed consumer of same type that performs, in sequence,<br>
 	 * this operation followed by the {@code after} operation.<br>
-	 * @param operation The operation to perform after this operation
+	 * @param after The operation to perform after this operation
 	 * @return A composed consumer that performs in sequence this operation followed by the {@code after} operation
 	 * @throws NullPointerException If the {@code after} operation is null
 	 */
-	default @NotNull TriConsumer<T, U, V> andThen(@NotNull TriConsumer<? super T, ? super U, ? super V> operation) {
+	default @NotNull TriConsumer<T, U, V> andThen(@NotNull TriConsumer<? super T, ? super U, ? super V> after) {
+		Objects.requireNonNull(after, "'After' function must not be null");;
 		return (t, u, v) -> {
 			this.accept(t, u, v);
-			Objects.requireNonNull(operation, "Operation must not be null").accept(t, u, v);
+			after.accept(t, u, v);
 		};
 	}
 }

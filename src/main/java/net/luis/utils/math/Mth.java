@@ -59,9 +59,14 @@ public class Mth {
 	 * @param max The maximum value
 	 * @return A random integer between min (inclusive) and max (exclusive)
 	 * @throws NullPointerException If the given random number generator is null
+	 * @throws IllegalArgumentException If the given minimum value is greater than or equal to the given maximum value
 	 */
 	public static int randomInt(@NotNull Random rng, int min, int max) {
-		return min + Objects.requireNonNull(rng, "Random must not be null").nextInt(max - min);
+		Objects.requireNonNull(rng, "Random must not be null");
+		if (min >= max) {
+			throw new IllegalArgumentException("The minimum value must be less than the maximum value");
+		}
+		return min + rng.nextInt(max - min);
 	}
 	
 	/**
@@ -72,9 +77,14 @@ public class Mth {
 	 * @param max The maximum value
 	 * @return A random integer between min (exclusive) and max (exclusive)
 	 * @throws NullPointerException If the given random number generator is null
+	 * @throws IllegalArgumentException If the given minimum value is greater than or equal to the given maximum value
 	 */
 	public static int randomExclusiveInt(@NotNull Random rng, int min, int max) {
-		return min + Objects.requireNonNull(rng, "Random must not be null").nextInt(max - min - 1) + 1;
+		Objects.requireNonNull(rng, "Random must not be null");
+		if (min >= max) {
+			throw new IllegalArgumentException("The minimum value must be less than the maximum value");
+		}
+		return min + rng.nextInt(max - min - 1) + 1;
 	}
 	
 	/**
@@ -85,9 +95,14 @@ public class Mth {
 	 * @param max The maximum value
 	 * @return A random integer between min (inclusive) and max (inclusive)
 	 * @throws NullPointerException If the given random number generator is null
+	 * @throws IllegalArgumentException If the given minimum value is greater than or equal to the given maximum value
 	 */
 	public static int randomInclusiveInt(@NotNull Random rng, int min, int max) {
-		return min + Objects.requireNonNull(rng, "Random must not be null").nextInt(max - min + 1);
+		Objects.requireNonNull(rng, "Random must not be null");
+		if (min >= max) {
+			throw new IllegalArgumentException("The minimum value must be less than the maximum value");
+		}
+		return min + rng.nextInt(max - min + 1);
 	}
 	//endregion
 	

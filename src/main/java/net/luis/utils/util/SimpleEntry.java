@@ -84,7 +84,7 @@ public class SimpleEntry<K, V> implements Map.Entry<K, V> {
 	
 	@Override
 	public String toString() {
-		return "SimpleEntry{key=" + this.key + ", value=" + this.value + "}";
+		return this.key + "=" + this.value;
 	}
 	//endregion
 }

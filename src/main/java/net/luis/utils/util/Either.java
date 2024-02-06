@@ -113,7 +113,7 @@ public abstract sealed class Either<L, R> permits Either.Left, Either.Right {
 	 * @return A new {@link Either} instance with the mapped values
 	 * @param <C> The new type of the left value
 	 * @param <D> The new type of the right value
-	 * @throws NullPointerException If the left or right mapper is null
+	 * @throws NullPointerException If the mapper used in this either implementation is null
 	 */
 	public abstract <C, D> @NotNull Either<C, D> mapBoth(@NotNull Function<? super L, ? extends C> leftMapper, @NotNull Function<? super R, ? extends D> rightMapper);
 	
@@ -123,7 +123,7 @@ public abstract sealed class Either<L, R> permits Either.Left, Either.Right {
 	 * @param rightMapper The mapper for the right value
 	 * @return The mapped value
 	 * @param <T> The type of the mapped value
-	 * @throws NullPointerException If the left or right mapper is null
+	 * @throws NullPointerException If the mapper used in this either implementation is null
 	 */
 	public abstract <T> T mapTo(@NotNull Function<? super L, ? extends T> leftMapper, @NotNull Function<? super R, ? extends T> rightMapper);
 	
@@ -242,7 +242,7 @@ public abstract sealed class Either<L, R> permits Either.Left, Either.Right {
 		
 		@Override
 		public String toString() {
-			return "Left{value=" + this.value + "}";
+			return "(" + this.value + ",)";
 		}
 		//endregion
 	}
@@ -327,7 +327,7 @@ public abstract sealed class Either<L, R> permits Either.Left, Either.Right {
 		//region Object overrides
 		@Override
 		public String toString() {
-			return "Right{value=" + this.value + "}";
+			return "(," + this.value + ")";
 		}
 		
 		@Override

@@ -50,7 +50,7 @@ public record SimpleCell<R, C, V>(@NotNull R getRowKey, @NotNull C getColumnKey,
 	
 	@Override
 	public String toString() {
-		return "SimpleCell{rowKey=" + this.getRowKey + ", columnKey=" + this.getColumnKey + ", value=" + this.getValue + "}";
+		return "(" + this.getRowKey + "," + this.getColumnKey + ")=" + this.getValue;
 	}
 	//endregion
 }

@@ -40,7 +40,7 @@ public class MutableEntry<K, V> extends SimpleEntry<K, V> {
 	//region Object overrides
 	@Override
 	public String toString() {
-		return "MutableEntry{key=" + this.getKey() + ", value=" + this.value + "}";
+		return this.getKey() + "=" + this.getValue();
 	}
 	//endregion
 }

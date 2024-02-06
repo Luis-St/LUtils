@@ -83,7 +83,7 @@ public class Result<T> implements Supplier<Either<T, String>> {
 	 * @return The result of the operation
 	 * @throws IllegalStateException If the result is an error
 	 */
-	public @NotNull T orThrow() {
+	public @Nullable T orThrow() {
 		return this.orThrow(() -> new IllegalStateException("Result failed, no value present"));
 	}
 	
@@ -95,7 +95,7 @@ public class Result<T> implements Supplier<Either<T, String>> {
 	 * @throws NullPointerException If the exception supplier is null
 	 * @throws X If the result is an error
 	 */
-	public <X extends RuntimeException> @NotNull T orThrow(@NotNull Supplier<? extends X> exceptionSupplier) {
+	public <X extends RuntimeException> @Nullable T orThrow(@NotNull Supplier<? extends X> exceptionSupplier) {
 		if (this.result.isLeft()) {
 			return this.result.leftOrThrow();
 		}
@@ -133,7 +133,10 @@ public class Result<T> implements Supplier<Either<T, String>> {
 	
 	@Override
 	public String toString() {
-		return "Result{result=" + this.result + "}";
+		if (this.isSuccess()) {
+			return String.valueOf(this.orThrow());
+		}
+		return this.error().orElseThrow();
 	}
 	//endregion
 }

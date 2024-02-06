@@ -100,7 +100,7 @@ public class Chance {
 	
 	@Override
 	public String toString() {
-		return "Chance{chance=" + this.chance + "}";
+		return Double.toString(this.chance);
 	}
 	//endregion
 }

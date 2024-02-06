@@ -35,7 +35,7 @@ public class LazyInitialization<T> {
 	 * Constructs a new {@link LazyInitialization} with no value and no initialization action.<br>
 	 */
 	public LazyInitialization() {
-		this(new MutableObject<>(), (v) -> {});
+		this(new MutableObject<>(), (v) -> {}, false);
 	}
 	
 	/**
@@ -43,7 +43,7 @@ public class LazyInitialization<T> {
 	 * @param value The value to initialize the object with
 	 */
 	public LazyInitialization(@Nullable T value) {
-		this(new MutableObject<>(value), (v) -> {});
+		this(new MutableObject<>(value), (v) -> {}, true);
 	}
 	
 	/**
@@ -52,7 +52,7 @@ public class LazyInitialization<T> {
 	 * @throws NullPointerException If the action is null
 	 */
 	public LazyInitialization(@NotNull Consumer<T> action) {
-		this(new MutableObject<>(), action);
+		this(new MutableObject<>(), action, false);
 	}
 	
 	/**
@@ -62,22 +62,23 @@ public class LazyInitialization<T> {
 	 * @throws NullPointerException If the action is null
 	 */
 	public LazyInitialization(@Nullable T value, @NotNull Consumer<T> action) {
-		this(new MutableObject<>(value), action);
+		this(new MutableObject<>(value), action, true);
 	}
 	
 	/**
 	 * Constructs a new {@link LazyInitialization} with the given mutable object and initialization action.<br>
 	 * @param mutable The internal mutable object to hold the value
 	 * @param action The action to perform when the object is initialized
+	 * @param initialised Whether the object has been initialized or not
 	 * @throws NullPointerException If the mutable or action is null
 	 * @see #LazyInitialization(Object)
 	 * @see #LazyInitialization(Consumer)
 	 * @see #LazyInitialization(Object, Consumer)
 	 */
-	private LazyInitialization(@NotNull MutableObject<T> mutable, @NotNull Consumer<T> action) {
+	private LazyInitialization(@NotNull MutableObject<T> mutable, @NotNull Consumer<T> action, boolean initialised) {
 		this.object = Objects.requireNonNull(mutable, "Object must not be null");
 		this.action = Objects.requireNonNull(action, "Action must not be null");
-		this.initialised = this.object.getValue() != null;
+		this.initialised = initialised;
 	}
 	
 	/**
@@ -135,9 +136,9 @@ public class LazyInitialization<T> {
 	@Override
 	public String toString() {
 		if (!this.initialised) {
-			return "null";
+			return "unknown";
 		}
-		return Objects.requireNonNull(this.get()).toString();
+		return String.valueOf(this.get());
 	}
 	//endregion
 }

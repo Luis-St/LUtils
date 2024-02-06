@@ -78,7 +78,7 @@ public class LazyLoad<T> implements Supplier<T> {
 	
 	@Override
 	public String toString() {
-		return "LazyLoad{value=" + this.value + "}";
+		return "lazy (" + String.valueOf(this.value) + ")";
 	}
 	//endregion
 }

@@ -127,7 +127,7 @@ public class Pair<F, S> {
 	
 	@Override
 	public String toString() {
-		return "Pair{first=" + this.first + ", second=" + this.second + "}";
+		return "(" + this.first + ", " + this.second + ")";
 	}
 	//endregion
 }

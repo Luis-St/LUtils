@@ -30,14 +30,15 @@ public interface QuadConsumer<T, U, V, W> {
 	/**
 	 * Returns a composed consumer of same type that performs, in sequence,<br>
 	 * this operation followed by the {@code after} operation.<br>
-	 * @param operation The operation to perform after this operation
+	 * @param after The operation to perform after this operation
 	 * @return A composed consumer that performs in sequence this operation followed by the {@code after} operation
 	 * @throws NullPointerException If the {@code after} operation is null
 	 */
-	default @NotNull QuadConsumer<T, U, V, W> andThen(@NotNull QuadConsumer<? super T, ? super U, ? super V, ? super W> operation) {
+	default @NotNull QuadConsumer<T, U, V, W> andThen(@NotNull QuadConsumer<? super T, ? super U, ? super V, ? super W> after) {
+		Objects.requireNonNull(after, "'After' function must not be null");
 		return (t, u, v, w) -> {
 			this.accept(t, u, v, w);
-			Objects.requireNonNull(operation, "Operation must not be null").accept(t, u, v, w);
+			after.accept(t, u, v, w);
 		};
 	}
 }

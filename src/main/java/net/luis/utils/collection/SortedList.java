@@ -71,6 +71,7 @@ public class SortedList<E> extends AbstractList<E> {
 	 * The comparator is set to {@code null}.<br>
 	 * The list is not copied, it is used directly.<br>
 	 * @param elements The list to use
+	 * @throws NullPointerException If the list is null
 	 */
 	public SortedList(@NotNull List<E> elements) {
 		this(elements, null);
@@ -81,9 +82,11 @@ public class SortedList<E> extends AbstractList<E> {
 	 * The list is not copied, it is used directly.<br>
 	 * @param elements The list to use
 	 * @param comparator The comparator used to sort the list
+	 * @throws NullPointerException If the list is null
 	 */
 	public SortedList(@NotNull List<E> elements, @Nullable Comparator<E> comparator) {
-		this.internalList = elements;
+		Objects.requireNonNull(elements, "List must not be null");
+		this.internalList = Lists.newArrayList(elements);
 		this.comparator = comparator;
 	}
 	

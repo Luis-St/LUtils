@@ -2,8 +2,7 @@ package net.luis.utils.util;
 
 import com.google.common.collect.*;
 import org.apache.commons.lang3.ArrayUtils;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
+import org.jetbrains.annotations.*;
 
 import java.util.*;
 import java.util.Map.Entry;
@@ -48,39 +47,51 @@ public class Utils {
 	}
 	
 	/**
-	 * Maps the given map to a list using the given mapper.<br>
+	 * Maps the given map to a list using the given mapper function.<br>
 	 * The mapper takes the key and value of the map and returns the resulting list value.<br>
-	 * @param map The map to convert
-	 * @param mapper The mapper to use
-	 * @return The resulting list
-	 * @throws NullPointerException If the map or mapper is null
+	 * <p>
+	 *     If the map or the function is null, an empty list is returned.<br>
+	 *     In the case the map is empty, the resulting list is also empty.<br>
+	 * </p>
+	 * @param map The map to convert to a list
+	 * @param function The function to use for mapping
+	 * @return The list containing the mapped entries
 	 * @param <K> The type of the map key
 	 * @param <V> The type of the map value
 	 * @param <T> The type of the list
 	 */
-	public static <K, V, T> @NotNull List<T> mapToList(@NotNull Map<K, V> map, @NotNull BiFunction<K, V, T> mapper) {
+	public static <K, V, T> @NotNull List<T> mapToList(@Nullable Map<K, V> map, @Nullable BiFunction<K, V, T> function) {
 		List<T> list = Lists.newArrayList();
-		for (Map.Entry<K, V> entry : Objects.requireNonNull(map, "Map must not be null").entrySet()) {
-			list.add(Objects.requireNonNull(mapper, "Mapper must not be null").apply(entry.getKey(), entry.getValue()));
+		if (map == null || map.isEmpty() || function == null) {
+			return list;
+		}
+		for (Map.Entry<K, V> entry : map.entrySet()) {
+			list.add(function.apply(entry.getKey(), entry.getValue()));
 		}
 		return list;
 	}
 	
 	/**
-	 * Maps the given list to a map using the given mapper.<br>
+	 * Maps the given list to a map using the given mapper function.<br>
 	 * The mapper takes the list value and returns the resulting map entry.<br>
+	 * <p>
+	 *     If the list or the function is null, an empty map is returned.<br>
+	 *     In the case the list is empty, the resulting map is also empty.<br>
+	 * </p>
 	 * @param list The list to convert
-	 * @param mapper The mapper to use
-	 * @return The resulting map
-	 * @throws NullPointerException If the list or mapper is null
+	 * @param function The function to use for mapping
+	 * @return The map containing the mapped elements
 	 * @param <T> The type of the list
 	 * @param <K> The type of the map key
 	 * @param <V> The type of the map value
 	 */
-	public static <T, K, V> @NotNull Map<K, V> listToMap(@NotNull List<T> list, @NotNull Function<T, Entry<K, V>> mapper) {
+	public static <T, K, V> @NotNull Map<K, V> listToMap(@Nullable List<T> list, @Nullable Function<T, Entry<K, V>> function) {
 		Map<K, V> map = Maps.newHashMap();
-		for (T t : Objects.requireNonNull(list, "List must not be null")) {
-			Entry<K, V> entry = Objects.requireNonNull(mapper, "Mapper must not be null").apply(t);
+		if (list == null || list.isEmpty() || function == null) {
+			return map;
+		}
+		for (T t : list) {
+			Entry<K, V> entry = function.apply(t);
 			map.put(entry.getKey(), entry.getValue());
 		}
 		return map;
@@ -89,81 +100,119 @@ public class Utils {
 	//region List util methods
 	
 	/**
-	 * Maps the given list to a new list using the given mapper.<br>
-	 * Shorthand for:
+	 * Maps the given list to a new list using the given mapper function.<br>
+	 * <p>
+	 *     If the list or the function is null, an empty list is returned.<br>
+	 *     In the case the list is empty, the resulting list is also empty.<br>
+	 * </p>
+	 * <p>
+	 *     Shorthand for:
+	 * </p>
 	 * <pre>{@code
-	 * list.stream().map(mapper).collect(Collectors.toList());
+	 *  list.stream().map(function).collect(Collectors.toList());
 	 * }</pre>
 	 * @param list The list to map
-	 * @param mapper The mapper to use
-	 * @return The resulting list
-	 * @throws NullPointerException If the list or mapper is null
+	 * @param function The function to use for mapping
+	 * @return The list after mapping or an empty list
 	 * @param <T> The type of the list
 	 * @param <U> The type of the resulting list
 	 */
-	public static <T, U> @NotNull List<U> mapList(@NotNull List<T> list, @NotNull Function<T, U> mapper) {
-		Objects.requireNonNull(list, "List must not be null");
-		Objects.requireNonNull(mapper, "Mapper must not be null");
-		return list.stream().map(mapper).collect(Collectors.toList());
+	public static <T, U> @NotNull List<U> mapList(@Nullable List<T> list, @Nullable Function<T, U> function) {
+		if (list == null || list.isEmpty()) {
+			return Lists.newArrayList();
+		}
+		if (function == null) {
+			return Lists.newArrayList();
+		}
+		return list.stream().map(function).collect(Collectors.toList());
 	}
 	
 	/**
-	 * Maps the given list to a new list using the given two mappers.<br>
-	 * Shorthand for:
+	 * Maps the given list to a new list using the given two mapper functions.<br>
+	 * <p>
+	 *     If the list or the functions are null, an empty list is returned.<br>
+	 *     In the case the list is empty, the resulting list is also empty.<br>
+	 * </p>
+	 * <p>
+	 *     Shorthand for:
+	 * </p>
 	 * <pre>{@code
-	 * list.stream().map(firstMapper).map(secondMapper).collect(Collectors.toList());
+	 * list.stream().map(first).map(second).collect(Collectors.toList());
 	 * }</pre>
 	 * @param list The list to map
-	 * @param firstMapper The first mapper to use
-	 * @param secondMapper The second mapper to use
-	 * @return The resulting list
-	 * @throws NullPointerException If the list, first mapper or second mapper is null
+	 * @param first The first function to use for mapping
+	 * @param second The second function to use for mapping
+	 * @return The list after mapping or an empty list
 	 * @param <T> The type of the list
 	 * @param <U> The type of the list after the first mapper
 	 * @param <V> The type of the resulting list
 	 */
-	public static <T, U, V> @NotNull List<V> mapList(@NotNull List<T> list, @NotNull Function<T, U> firstMapper, @NotNull Function<U, V> secondMapper) {
-		Objects.requireNonNull(list, "List must not be null");
-		Objects.requireNonNull(firstMapper, "First mapper must not be null");
-		Objects.requireNonNull(secondMapper, "Second mapper must not be null");
-		return list.stream().map(firstMapper).map(secondMapper).collect(Collectors.toList());
+	public static <T, U, V> @NotNull List<V> mapList(@Nullable List<T> list, @Nullable Function<T, U> first, @Nullable Function<U, V> second) {
+		if (list == null || list.isEmpty()) {
+			return Lists.newArrayList();
+		}
+		if (first == null || second == null) {
+			return Lists.newArrayList();
+		}
+		return list.stream().map(first).map(second).collect(Collectors.toList());
 	}
 	//endregion
 	
 	//region Map util methods
 	
 	/**
-	 * Maps the keys of the given map using the given mapper.<br>
-	 * @param map The map to map
-	 * @param mapper The mapper to use
-	 * @return A new {@link HashMap} with the mapped keys
-	 * @throws NullPointerException If the map or mapper is null
+	 * Maps the keys of the given map using the given mapper function.<br>
+	 * <p>
+	 *     If the map or the function is null, an empty map is returned.<br>
+	 *     In the case the map is empty, the resulting map is also empty.<br>
+	 * </p>
+	 * <p>
+	 *     If the function returns null for a key, the key is not added to the resulting map.<br>
+	 * </p>
+	 * @param map The map to map the keys
+	 * @param function The function to use for mapping
+	 * @return A new map with the mapped keys
 	 * @param <K> The type of the map key
 	 * @param <T> The type of the key in the resulting map
 	 * @param <V> The type of the map value
 	 */
-	public static <K, T, V> @NotNull Map<T, V> mapKey(@NotNull Map<K, V> map, @NotNull Function<K, T> mapper) {
+	public static <K, T, V> @NotNull Map<T, V> mapKey(@Nullable Map<K, V> map, @Nullable Function<K, T> function) {
 		Map<T, V> mapped = Maps.newHashMap();
-		for (Entry<K, V> entry : Objects.requireNonNull(map, "Map must not be null").entrySet()) {
-			mapped.put(Objects.requireNonNull(mapper, "Mapper must not be null").apply(entry.getKey()), entry.getValue());
+		if (map == null || map.isEmpty() || function == null) {
+			return mapped;
+		}
+		for (Entry<K, V> entry : map.entrySet()) {
+			T key = function.apply(entry.getKey());
+			if (key != null) {
+				mapped.put(key, entry.getValue());
+			}
 		}
 		return mapped;
 	}
 	
 	/**
-	 * Maps the values of the given map using the given mapper.<br>
-	 * @param map The map to map
-	 * @param mapper The mapper to use
-	 * @return A new {@link HashMap} with the mapped values
-	 * @throws NullPointerException If the map or mapper is null
+	 * Maps the values of the given map using the given mapper function.<br>
+	 * <p>
+	 *     If the map or the function is null, an empty map is returned.<br>
+	 *     In the case the map is empty, the resulting map is also empty.<br>
+	 * </p>
+	 * <p>
+	 *     The function must be able to handle null values.<br>
+	 * </p>
+	 * @param map The map to map the values
+	 * @param function The function to use for mapping
+	 * @return A new map with the mapped values
 	 * @param <K> The type of the map key
 	 * @param <V> The type of the map value
 	 * @param <T> The type of the value in the resulting map
 	 */
-	public static <K, V, T> @NotNull Map<K, T> mapValue(@NotNull Map<K, V> map, @NotNull Function<V, T> mapper) {
+	public static <K, V, T> @NotNull Map<K, T> mapValue(@Nullable Map<K, V> map, @Nullable Function<V, T> function) {
 		Map<K, T> mapped = Maps.newHashMap();
-		for (Entry<K, V> entry : Objects.requireNonNull(map, "Map must not be null").entrySet()) {
-			mapped.put(entry.getKey(), Objects.requireNonNull(mapper, "Mapper must not be null").apply(entry.getValue()));
+		if (map == null || map.isEmpty() || function == null) {
+			return mapped;
+		}
+		for (Entry<K, V> entry : map.entrySet()) {
+			mapped.put(entry.getKey(), function.apply(entry.getValue()));
 		}
 		return mapped;
 	}
@@ -173,23 +222,27 @@ public class Utils {
 	
 	/**
 	 * Checks if the given array contains duplicate values.<br>
+	 * If the array is null or empty, false is returned.<br>
 	 * @param array The array to check
 	 * @return True, if the array contains duplicate values, otherwise false
-	 * @throws NullPointerException If the array is null
 	 */
-	public static boolean hasDuplicates(Object @NotNull [] array) {
-		Objects.requireNonNull(array, "Array must not be null");
+	public static boolean hasDuplicates(Object @Nullable [] array) {
+		if (array == null || array.length == 0) {
+			return false;
+		}
 		return array.length != Arrays.stream(array).distinct().count();
 	}
 	
 	/**
 	 * Checks if the given list contains duplicate values.<br>
+	 * If the list is null or empty, false is returned.<br>
 	 * @param list The list to check
 	 * @return True, if the list contains duplicate values, otherwise false
-	 * @throws NullPointerException If the list is null
 	 */
-	public static boolean hasDuplicates(@NotNull List<?> list) {
-		Objects.requireNonNull(list, "List must not be null");
+	public static boolean hasDuplicates(@Nullable List<?> list) {
+		if (list == null || list.isEmpty()) {
+			return false;
+		}
 		return list.size() != list.stream().distinct().count();
 	}
 	
@@ -198,11 +251,9 @@ public class Utils {
 	 * @param object The object to check
 	 * @param array The array to check in
 	 * @return True, if the object is contained multiple times in the array, otherwise false
-	 * @throws NullPointerException If the array is null
 	 */
-	public static boolean hasDuplicates(@Nullable Object object, Object @NotNull [] array) {
-		Objects.requireNonNull(array, "Array must not be null");
-		if (!ArrayUtils.contains(array, object)) {
+	public static boolean hasDuplicates(@Nullable Object object, Object @Nullable [] array) {
+		if (array == null || !ArrayUtils.contains(array, object)) {
 			return false;
 		}
 		return array.length != Sets.newHashSet(array).size();
@@ -213,11 +264,9 @@ public class Utils {
 	 * @param object The object to check
 	 * @param list The list to check in
 	 * @return True, if the object is contained multiple times in the list, otherwise false
-	 * @throws NullPointerException If the list is null
 	 */
-	public static boolean hasDuplicates(@Nullable Object object, @NotNull List<?> list) {
-		Objects.requireNonNull(list, "List must not be null");
-		if (!list.contains(object)) {
+	public static boolean hasDuplicates(@Nullable Object object, @Nullable List<?> list) {
+		if (list == null || !list.contains(object)) {
 			return false;
 		}
 		return list.size() != Sets.newHashSet(list).size();
