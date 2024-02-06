@@ -80,80 +80,52 @@ public class Utils {
 	}
 	//endregion
 	
-	//region Mapper methods
-	public static <T, R> R mapIf(@Nullable T value, @NotNull Predicate<T> condition, @NotNull Function<T, R> mapper) {
-		Objects.requireNonNull(condition, "Condition must not be null");
-		if (value != null && condition.test(value)) {
-			return Objects.requireNonNull(mapper, "Mapper must not be null").apply(value);
-		}
-		throw new NullPointerException("Value must not be null");
-	}
-	
-	public static <T, R> R mapIfNot(@Nullable T value, @NotNull Predicate<T> condition, @NotNull Function<T, R> mapper) {
-		Objects.requireNonNull(condition, "Condition must not be null");
-		if (value != null && !condition.test(value)) {
-			return Objects.requireNonNull(mapper, "Mapper must not be null").apply(value);
-		}
-		throw new NullPointerException("Value must not be null");
-	}
-	
-	@Deprecated // Use Optional#map instead
-	public static <T, R> R mapIfNotNull(@Nullable T value, @NotNull Function<T, R> mapper) {
-		if (value != null) {
-			return Objects.requireNonNull(mapper, "Mapper must not be null").apply(value);
-		}
-		return null;
-	}
-	//endregion
-	
 	//region Duplicate checks
-	public static boolean hasDuplicates(@NotNull Object[] values) {
-		Objects.requireNonNull(values, "Values must not be null");
-		return values.length != Arrays.stream(values).distinct().count();
+	public static boolean hasDuplicates(Object @NotNull [] array) {
+		Objects.requireNonNull(array, "Array must not be null");
+		return array.length != Arrays.stream(array).distinct().count();
 	}
 	
-	public static boolean hasDuplicates(@NotNull List<?> values) {
-		Objects.requireNonNull(values, "Values must not be null");
-		return values.size() != values.stream().distinct().count();
+	public static boolean hasDuplicates(@NotNull List<?> list) {
+		Objects.requireNonNull(list, "List must not be null");
+		return list.size() != list.stream().distinct().count();
 	}
 	
-	public static boolean hasDuplicates(@NotNull Object object, @NotNull Object[] values) {
-		Objects.requireNonNull(object, "Object must not be null");
-		Objects.requireNonNull(values, "Values must not be null");
-		if (!ArrayUtils.contains(values, object)) {
+	public static boolean hasDuplicates(@Nullable Object object, Object @NotNull [] array) {
+		Objects.requireNonNull(array, "Array must not be null");
+		if (!ArrayUtils.contains(array, object)) {
 			return false;
 		}
-		return values.length != Sets.newHashSet(values).size();
+		return array.length != Sets.newHashSet(array).size();
 	}
 	
-	public static boolean hasDuplicates(@NotNull Object object, @NotNull List<?> values) {
-		Objects.requireNonNull(object, "Object must not be null");
-		Objects.requireNonNull(values, "Values must not be null");
-		if (!values.contains(object)) {
+	public static boolean hasDuplicates(@Nullable Object object, @NotNull List<?> list) {
+		Objects.requireNonNull(list, "List must not be null");
+		if (!list.contains(object)) {
 			return false;
 		}
-		return values.size() != Sets.newHashSet(values).size();
+		return list.size() != Sets.newHashSet(list).size();
 	}
 	//endregion
 	
 	//region Null helper methods
 	public static <T> @NotNull T warpNullTo(@Nullable T value, @NotNull T nullFallback) {
 		if (value == null) {
-			return Objects.requireNonNull(nullFallback, "Fallback value must not be null");
+			return nullFallback;
 		}
 		return value;
 	}
 	
 	public static <T> @NotNull T warpNullTo(@Nullable T value, @NotNull Supplier<T> nullFallback) {
 		if (value == null) {
-			return Objects.requireNonNull(nullFallback, "Fallback supplier must not be null").get();
+			return nullFallback.get();
 		}
 		return value;
 	}
 	
 	public static <T> void executeIfNotNull(@Nullable T value, @NotNull Consumer<T> action) {
 		if (value != null) {
-			Objects.requireNonNull(action, "Action must not be null").accept(value);
+			action.accept(value);
 		}
 	}
 	//endregion
@@ -163,28 +135,34 @@ public class Utils {
 		return new Random(System.currentTimeMillis());
 	}
 	
-	public static <T> @NotNull T getRandom(T @NotNull [] values, @NotNull Random rng) {
-		Objects.requireNonNull(values, "Values must not be null");
+	@SafeVarargs
+	public static <T> @NotNull T getRandom(@NotNull Random rng, T @NotNull ... values) {
 		Objects.requireNonNull(rng, "Random must not be null");
+		Objects.requireNonNull(values, "Values must not be null");
 		return values[rng.nextInt(values.length)];
 	}
 	
-	public static <T> @NotNull Optional<T> getRandomSafe(T @NotNull [] values, @NotNull Random rng) {
-		Objects.requireNonNull(values, "Values must not be null");
+	@SafeVarargs
+	public static <T> @NotNull Optional<T> getRandomSafe(@NotNull Random rng, T @Nullable ... values) {
 		Objects.requireNonNull(rng, "Random must not be null");
-		return values.length == 0 ? Optional.empty() : Optional.of(getRandom(values, rng));
+		if (values == null || values.length == 0) {
+			return Optional.empty();
+		}
+		return Optional.of(getRandom(rng, values));
 	}
 	
-	public static <T> @NotNull T getRandom(@NotNull List<T> values, @NotNull Random rng) {
-		Objects.requireNonNull(values, "Values must not be null");
+	public static <T> @NotNull T getRandom(@NotNull Random rng, @NotNull List<T> values) {
 		Objects.requireNonNull(rng, "Random must not be null");
+		Objects.requireNonNull(values, "Values must not be null");
 		return values.get(rng.nextInt(values.size()));
 	}
 	
-	public static <T> @NotNull Optional<T> getRandomSafe(@NotNull List<T> values, @NotNull Random rng) {
-		Objects.requireNonNull(values, "Values must not be null");
+	public static <T> @NotNull Optional<T> getRandomSafe(@NotNull Random rng, @Nullable List<T> values) {
 		Objects.requireNonNull(rng, "Random must not be null");
-		return values.isEmpty() ? Optional.empty() : Optional.of(getRandom(values, rng));
+		if (values == null || values.isEmpty()) {
+			return Optional.empty();
+		}
+		return Optional.of(getRandom(rng, values));
 	}
 	//endregion
 }
