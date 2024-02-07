@@ -1,7 +1,7 @@
 package net.luis.utils.exception;
 
 import net.luis.utils.collection.Registry;
-import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 /**
  * Thrown when a method is called on an object which will modify it,<br>
@@ -24,7 +24,7 @@ public class ModificationException extends RuntimeException {
 	 * Constructs a new {@link ModificationException} with the specified message.<br>
 	 * @param message The message of the exception
 	 */
-	public ModificationException(@NotNull String message) {
+	public ModificationException(@Nullable String message) {
 		super(message);
 	}
 	
@@ -33,7 +33,7 @@ public class ModificationException extends RuntimeException {
 	 * @param message The message of the exception
 	 * @param cause The cause of the exception
 	 */
-	public ModificationException(@NotNull String message, @NotNull Throwable cause) {
+	public ModificationException(@Nullable String message, @Nullable Throwable cause) {
 		super(message, cause);
 	}
 	
@@ -41,7 +41,7 @@ public class ModificationException extends RuntimeException {
 	 * Constructs a new {@link ModificationException} with the specified cause.<br>
 	 * @param cause The cause of the exception
 	 */
-	public ModificationException(@NotNull Throwable cause) {
+	public ModificationException(@Nullable Throwable cause) {
 		super(cause);
 	}
 }

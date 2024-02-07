@@ -1,7 +1,7 @@
 package net.luis.utils.exception;
 
 import net.luis.utils.collection.Registry;
-import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.NoSuchElementException;
 
@@ -27,7 +27,7 @@ public class NoSuchItemException extends NoSuchElementException {
 	 * Constructs a new {@link NoSuchItemException} with the specified message.<br>
 	 * @param message The message of the exception
 	 */
-	public NoSuchItemException(@NotNull String message) {
+	public NoSuchItemException(@Nullable String message) {
 		super(message);
 	}
 	
@@ -36,7 +36,7 @@ public class NoSuchItemException extends NoSuchElementException {
 	 * @param message The message of the exception
 	 * @param cause The cause of the exception
 	 */
-	public NoSuchItemException(@NotNull String message, @NotNull Throwable cause) {
+	public NoSuchItemException(@Nullable String message, @Nullable Throwable cause) {
 		super(message, cause);
 	}
 	
@@ -44,7 +44,7 @@ public class NoSuchItemException extends NoSuchElementException {
 	 * Constructs a new {@link NoSuchItemException} with the specified cause.<br>
 	 * @param cause The cause of the exception
 	 */
-	public NoSuchItemException(@NotNull Throwable cause) {
+	public NoSuchItemException(@Nullable Throwable cause) {
 		super(cause);
 	}
 }

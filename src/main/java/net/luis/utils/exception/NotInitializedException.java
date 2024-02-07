@@ -1,7 +1,7 @@
 package net.luis.utils.exception;
 
 import net.luis.utils.util.LazyInitialization;
-import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 /**
  * Thrown when an access or action is attempted on an object that has not been initialized<br>
@@ -24,7 +24,7 @@ public class NotInitializedException extends RuntimeException {
 	 * Constructs a new {@link NotInitializedException} with the specified message.<br>
 	 * @param message The message of the exception
 	 */
-	public NotInitializedException(@NotNull String message) {
+	public NotInitializedException(@Nullable String message) {
 		super(message);
 	}
 	
@@ -33,7 +33,7 @@ public class NotInitializedException extends RuntimeException {
 	 * @param message The message of the exception
 	 * @param cause The cause of the exception
 	 */
-	public NotInitializedException(@NotNull String message, @NotNull Throwable cause) {
+	public NotInitializedException(@Nullable String message, @Nullable Throwable cause) {
 		super(message, cause);
 	}
 	
@@ -41,7 +41,7 @@ public class NotInitializedException extends RuntimeException {
 	 * Constructs a new {@link NotInitializedException} with the specified cause.<br>
 	 * @param cause The cause of the exception
 	 */
-	public NotInitializedException(@NotNull Throwable cause) {
+	public NotInitializedException(@Nullable Throwable cause) {
 		super(cause);
 	}
 }

@@ -1,7 +1,7 @@
 package net.luis.utils.exception;
 
 import net.luis.utils.util.LazyInitialization;
-import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 /**
  * Thrown when an initialization is attempted on an object that has already been initialized.<br>
@@ -23,7 +23,7 @@ public class AlreadyInitializedException extends RuntimeException {
 	 * Constructs a new {@link AlreadyInitializedException} with the specified message.<br>
 	 * @param message The message of the exception
 	 */
-	public AlreadyInitializedException(@NotNull String message) {
+	public AlreadyInitializedException(@Nullable String message) {
 		super(message);
 	}
 	
@@ -32,7 +32,7 @@ public class AlreadyInitializedException extends RuntimeException {
 	 * @param message The message of the exception
 	 * @param cause The cause of the exception
 	 */
-	public AlreadyInitializedException(@NotNull String message, @NotNull Throwable cause) {
+	public AlreadyInitializedException(@Nullable String message, @Nullable Throwable cause) {
 		super(message, cause);
 	}
 	
@@ -40,7 +40,7 @@ public class AlreadyInitializedException extends RuntimeException {
 	 * Constructs a new {@link AlreadyInitializedException} with the specified cause.<br>
 	 * @param cause The cause of the exception
 	 */
-	public AlreadyInitializedException(@NotNull Throwable cause) {
+	public AlreadyInitializedException(@Nullable Throwable cause) {
 		super(cause);
 	}
 }
