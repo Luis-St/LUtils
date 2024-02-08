@@ -299,6 +299,6 @@ public abstract sealed class ResourceLocation permits ExternalResourceLocation, 
 		/**
 		 * Represents a resource on the filesystem.<br>
 		 */
-		EXTERNAL;
+		EXTERNAL
 	}
 }

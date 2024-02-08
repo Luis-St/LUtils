@@ -16,9 +16,7 @@ public class ModificationException extends RuntimeException {
 	/**
 	 * Constructs a new {@link ModificationException} with no details.<br>
 	 */
-	public ModificationException() {
-		super();
-	}
+	public ModificationException() {}
 	
 	/**
 	 * Constructs a new {@link ModificationException} with the specified message.<br>

@@ -19,9 +19,7 @@ public class NoSuchItemException extends NoSuchElementException {
 	/**
 	 * Constructs a new {@link NoSuchItemException} with no details.<br>
 	 */
-	public NoSuchItemException() {
-		super();
-	}
+	public NoSuchItemException() {}
 	
 	/**
 	 * Constructs a new {@link NoSuchItemException} with the specified message.<br>

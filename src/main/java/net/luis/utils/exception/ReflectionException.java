@@ -1,6 +1,5 @@
 package net.luis.utils.exception;
 
-import net.luis.utils.util.LazyInitialization;
 import net.luis.utils.util.unsafe.reflection.ReflectionHelper;
 import org.jetbrains.annotations.Nullable;
 
@@ -16,9 +15,7 @@ public class ReflectionException extends RuntimeException {
 	/**
 	 * Constructs a new {@link ReflectionException} with no details.<br>
 	 */
-	public ReflectionException() {
-		super();
-	}
+	public ReflectionException() {}
 	
 	/**
 	 * Constructs a new {@link ReflectionException} with the specified message.<br>

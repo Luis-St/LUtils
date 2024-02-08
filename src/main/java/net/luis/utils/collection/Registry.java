@@ -71,7 +71,7 @@ public class Registry<T> implements Iterable<T> {
 	 * @param <T> The type of the items
 	 */
 	public static <T> @NotNull Registry<T> of(@NotNull List<T> items) {
-		Registry<T> registry = Registry.freezable();
+		Registry<T> registry = freezable();
 		Objects.requireNonNull(items, "Items must not be null").forEach(registry::register);
 		return registry.freeze();
 	}

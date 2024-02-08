@@ -33,7 +33,7 @@ public @interface Singleton {
 	 *
 	 * @author Luis-St
 	 */
-	static enum Method {
+	enum Method {
 		/**
 		 * The instance of the singleton class can be obtained by calling the static method {@code getInstance()}.<br>
 		 */
@@ -53,6 +53,6 @@ public @interface Singleton {
 		/**
 		 * The method to obtain the instance of the singleton class is undefined.<br>
 		 */
-		UNDEFINED;
+		UNDEFINED
 	}
 }

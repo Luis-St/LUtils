@@ -2,7 +2,6 @@ package net.luis.utils.util.unsafe.reflection;
 
 import com.google.common.collect.Lists;
 import net.luis.utils.exception.ReflectionException;
-import org.apache.commons.lang3.ArrayUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jetbrains.annotations.NotNull;
@@ -77,7 +76,7 @@ public class ReflectionHelper {
 		Objects.requireNonNull(clazz, "Class must not be null");
 		Objects.requireNonNull(iface, "Interface must not be null");
 		if (iface.isInterface()) {
-			return ArrayUtils.contains(clazz.getInterfaces(), iface);
+			return contains(clazz.getInterfaces(), iface);
 		}
 		return false;
 	}

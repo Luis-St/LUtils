@@ -2,10 +2,7 @@ package net.luis.utils.util.unsafe;
 
 import org.junit.jupiter.api.*;
 
-import java.io.File;
 import java.lang.reflect.Method;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;

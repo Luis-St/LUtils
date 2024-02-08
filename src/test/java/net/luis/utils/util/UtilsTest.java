@@ -145,7 +145,7 @@ class UtilsTest {
 	@Test
 	void warpNullTo() {
 		assertThrows(NullPointerException.class, () -> Utils.warpNullTo("", (String) null));
-		assertThrows(NullPointerException.class, () -> Utils.warpNullTo((String) null, (String) null));
+		assertThrows(NullPointerException.class, () -> Utils.warpNullTo(null, (String) null));
 		assertEquals("fallback", Utils.warpNullTo(null, "fallback"));
 		assertEquals("value", Utils.warpNullTo("value", "fallback"));
 		

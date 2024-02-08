@@ -17,7 +17,9 @@ module net.luis.utils {
 	exports net.luis.utils.function;
 	exports net.luis.utils.io;
 	exports net.luis.utils.logging;
+	exports net.luis.utils.logging.factory;
 	exports net.luis.utils.math;
+	exports net.luis.utils.resources;
 	exports net.luis.utils.util;
 	exports net.luis.utils.util.unsafe;
 	exports net.luis.utils.util.unsafe.classpath;

@@ -55,7 +55,7 @@ public class Ignored {
 	 */
 	@Inherited
 	@Documented
-	@Target({ElementType.PARAMETER})
+	@Target(ElementType.PARAMETER)
 	@Retention(RetentionPolicy.CLASS)
 	public @interface Never {}
 }

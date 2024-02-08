@@ -16,9 +16,7 @@ public class NotInitializedException extends RuntimeException {
 	/**
 	 * Constructs a new {@link NotInitializedException} with no details.<br>
 	 */
-	public NotInitializedException() {
-		super();
-	}
+	public NotInitializedException() {}
 	
 	/**
 	 * Constructs a new {@link NotInitializedException} with the specified message.<br>

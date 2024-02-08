@@ -46,7 +46,7 @@ public class ClassPathUtils {
 	/**
 	 * Gets all classes from the classpath which are related to the project.<br>
 	 * Related classes are classes that are in the same package as the caller of this method.<br>
-	 * By default, the depth of which the package is used to filter the classes is 3.<br>
+	 * By default, the depth of the package which is used to filter the classes is 3.<br>
 	 * <p>
 	 *     For example, if the caller of this method is in the package "net.luis.utils.util",<br>
 	 * 	   all classes in the packages "net.luis.utils" will be returned,<br>

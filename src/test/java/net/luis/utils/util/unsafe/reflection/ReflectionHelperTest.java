@@ -68,7 +68,7 @@ class ReflectionHelperTest {
 	
 	@Test
 	void hasConstructor() {
-		assertThrows(NullPointerException.class, () -> ReflectionHelper.hasConstructor((Class<TestClass>) null, (Predicate<Constructor<TestClass>>) null, (Class<?>[]) null));
+		assertThrows(NullPointerException.class, () -> ReflectionHelper.hasConstructor(null, (Predicate<Constructor<TestClass>>) null, (Class<?>[]) null));
 		assertFalse(ReflectionHelper.hasConstructor(TestClass.class, (c) -> true, Integer.class));
 		// No args constructor
 		assertDoesNotThrow(() -> ReflectionHelper.hasConstructor(TestClass.class, (Predicate<Constructor<TestClass>>) null, String.class));
@@ -159,10 +159,10 @@ class ReflectionHelperTest {
 	//region Tests for hasMethod
 	@Test
 	void hasGetterMethod() {
-		assertThrows(NullPointerException.class, () -> ReflectionHelper.hasMethod((Class<TestClass>) null, null, (Predicate<Method>) null, (Class<?>[]) null));
-		assertThrows(NullPointerException.class, () -> ReflectionHelper.hasMethod((Class<TestClass>) null, "getField", (Predicate<Method>) null, (Class<?>[]) null));
-		assertThrows(NullPointerException.class, () -> ReflectionHelper.hasMethod(TestClass.class, null, (Predicate<Method>) null, (Class<?>[]) null));
-		assertDoesNotThrow(() -> ReflectionHelper.hasMethod(TestClass.class, "getField", (Predicate<Method>) null, (Class<?>[]) null));
+		assertThrows(NullPointerException.class, () -> ReflectionHelper.hasMethod(null, null, null, (Class<?>[]) null));
+		assertThrows(NullPointerException.class, () -> ReflectionHelper.hasMethod(null, "getField", null, (Class<?>[]) null));
+		assertThrows(NullPointerException.class, () -> ReflectionHelper.hasMethod(TestClass.class, null, null, (Class<?>[]) null));
+		assertDoesNotThrow(() -> ReflectionHelper.hasMethod(TestClass.class, "getField", null, (Class<?>[]) null));
 		assertDoesNotThrow(() -> ReflectionHelper.hasMethod(TestClass.class, "getField", (Predicate<Method>) null, String.class));
 		assertDoesNotThrow(() -> ReflectionHelper.hasMethod(TestClass.class, "getField", (m) -> true, (Class<?>[]) null));
 		assertFalse(ReflectionHelper.hasMethod(TestClass.class, "testMethod", (m) -> true, (Class<?>[]) null));
@@ -173,10 +173,10 @@ class ReflectionHelperTest {
 	
 	@Test
 	void hasSetterMethod() {
-		assertThrows(NullPointerException.class, () -> ReflectionHelper.hasMethod((Class<TestClass>) null, null, (Predicate<Method>) null, (Class<?>[]) null));
-		assertThrows(NullPointerException.class, () -> ReflectionHelper.hasMethod((Class<TestClass>) null, "setField", (Predicate<Method>) null, (Class<?>[]) null));
-		assertThrows(NullPointerException.class, () -> ReflectionHelper.hasMethod(TestClass.class, null, (Predicate<Method>) null, (Class<?>[]) null));
-		assertDoesNotThrow(() -> ReflectionHelper.hasMethod(TestClass.class, "setField", (Predicate<Method>) null, (Class<?>[]) null));
+		assertThrows(NullPointerException.class, () -> ReflectionHelper.hasMethod(null, null, null, (Class<?>[]) null));
+		assertThrows(NullPointerException.class, () -> ReflectionHelper.hasMethod(null, "setField", null, (Class<?>[]) null));
+		assertThrows(NullPointerException.class, () -> ReflectionHelper.hasMethod(TestClass.class, null, null, (Class<?>[]) null));
+		assertDoesNotThrow(() -> ReflectionHelper.hasMethod(TestClass.class, "setField", null, (Class<?>[]) null));
 		assertDoesNotThrow(() -> ReflectionHelper.hasMethod(TestClass.class, "setField", (Predicate<Method>) null, String.class));
 		assertDoesNotThrow(() -> ReflectionHelper.hasMethod(TestClass.class, "setField", (m) -> true, (Class<?>[]) null));
 		assertFalse(ReflectionHelper.hasMethod(TestClass.class, "testMethod", (m) -> true, String.class));
@@ -187,10 +187,10 @@ class ReflectionHelperTest {
 	
 	@Test
 	void hasStaticGetterMethod() {
-		assertThrows(NullPointerException.class, () -> ReflectionHelper.hasMethod((Class<TestClass>) null, null, (Predicate<Method>) null, (Class<?>[]) null));
-		assertThrows(NullPointerException.class, () -> ReflectionHelper.hasMethod((Class<TestClass>) null, "getStaticField", (Predicate<Method>) null, (Class<?>[]) null));
-		assertThrows(NullPointerException.class, () -> ReflectionHelper.hasMethod(TestClass.class, null, (Predicate<Method>) null, (Class<?>[]) null));
-		assertDoesNotThrow(() -> ReflectionHelper.hasMethod(TestClass.class, "getStaticField", (Predicate<Method>) null, (Class<?>[]) null));
+		assertThrows(NullPointerException.class, () -> ReflectionHelper.hasMethod(null, null, null, (Class<?>[]) null));
+		assertThrows(NullPointerException.class, () -> ReflectionHelper.hasMethod(null, "getStaticField", null, (Class<?>[]) null));
+		assertThrows(NullPointerException.class, () -> ReflectionHelper.hasMethod(TestClass.class, null, null, (Class<?>[]) null));
+		assertDoesNotThrow(() -> ReflectionHelper.hasMethod(TestClass.class, "getStaticField", null, (Class<?>[]) null));
 		assertDoesNotThrow(() -> ReflectionHelper.hasMethod(TestClass.class, "getStaticField", (Predicate<Method>) null, String.class));
 		assertDoesNotThrow(() -> ReflectionHelper.hasMethod(TestClass.class, "getStaticField", (m) -> true, (Class<?>[]) null));
 		assertFalse(ReflectionHelper.hasMethod(TestClass.class, "testStaticMethod", (m) -> true, (Class<?>[]) null));
@@ -201,10 +201,10 @@ class ReflectionHelperTest {
 	
 	@Test
 	void hasStaticSetterMethod() {
-		assertThrows(NullPointerException.class, () -> ReflectionHelper.hasMethod((Class<TestClass>) null, null, (Predicate<Method>) null, (Class<?>[]) null));
-		assertThrows(NullPointerException.class, () -> ReflectionHelper.hasMethod((Class<TestClass>) null, "setStaticField", (Predicate<Method>) null, (Class<?>[]) null));
-		assertThrows(NullPointerException.class, () -> ReflectionHelper.hasMethod(TestClass.class, null, (Predicate<Method>) null, (Class<?>[]) null));
-		assertDoesNotThrow(() -> ReflectionHelper.hasMethod(TestClass.class, "setStaticField", (Predicate<Method>) null, (Class<?>[]) null));
+		assertThrows(NullPointerException.class, () -> ReflectionHelper.hasMethod(null, null, null, (Class<?>[]) null));
+		assertThrows(NullPointerException.class, () -> ReflectionHelper.hasMethod(null, "setStaticField", null, (Class<?>[]) null));
+		assertThrows(NullPointerException.class, () -> ReflectionHelper.hasMethod(TestClass.class, null, null, (Class<?>[]) null));
+		assertDoesNotThrow(() -> ReflectionHelper.hasMethod(TestClass.class, "setStaticField", null, (Class<?>[]) null));
 		assertDoesNotThrow(() -> ReflectionHelper.hasMethod(TestClass.class, "setStaticField", (Predicate<Method>) null, String.class));
 		assertDoesNotThrow(() -> ReflectionHelper.hasMethod(TestClass.class, "setStaticField", (m) -> true, (Class<?>[]) null));
 		assertFalse(ReflectionHelper.hasMethod(TestClass.class, "testStaticMethod", (m) -> true, String.class));
@@ -218,9 +218,9 @@ class ReflectionHelperTest {
 	@Test
 	void invokeGetter() {
 		assertThrows(NullPointerException.class, () -> ReflectionHelper.invoke(null, null, (Object[]) null));
-		assertThrows(NullPointerException.class, () -> ReflectionHelper.invoke(null, null, (Object) null, (Object[]) null));
-		assertThrows(NullPointerException.class, () -> ReflectionHelper.invoke(null, "", (Object) null, (Object[]) null));
-		assertThrows(NullPointerException.class, () -> ReflectionHelper.invoke(TestClass.class, null, (Object) null, (Object[]) null));
+		assertThrows(NullPointerException.class, () -> ReflectionHelper.invoke(null, null, null, (Object[]) null));
+		assertThrows(NullPointerException.class, () -> ReflectionHelper.invoke(null, "", null, (Object[]) null));
+		assertThrows(NullPointerException.class, () -> ReflectionHelper.invoke(TestClass.class, null, null, (Object[]) null));
 		// Above the null checks, below the functional tests
 		assertThrows(ReflectionException.class, () -> ReflectionHelper.invoke(TestClass.class, "testMethod", null, (Object[]) null));
 		assertThrows(ReflectionException.class, () -> ReflectionHelper.invoke(TestClass.class, "testMethod", new TestClass(), (Object[]) null));
@@ -235,9 +235,9 @@ class ReflectionHelperTest {
 	@Test
 	void invokeSetter() {
 		assertThrows(NullPointerException.class, () -> ReflectionHelper.invoke(null, null, (Object[]) null));
-		assertThrows(NullPointerException.class, () -> ReflectionHelper.invoke(null, null, (Object) null, (Object[]) null));
-		assertThrows(NullPointerException.class, () -> ReflectionHelper.invoke(null, "", (Object) null, (Object[]) null));
-		assertThrows(NullPointerException.class, () -> ReflectionHelper.invoke(TestClass.class, null, (Object) null, (Object[]) null));
+		assertThrows(NullPointerException.class, () -> ReflectionHelper.invoke(null, null, null, (Object[]) null));
+		assertThrows(NullPointerException.class, () -> ReflectionHelper.invoke(null, "", null, (Object[]) null));
+		assertThrows(NullPointerException.class, () -> ReflectionHelper.invoke(TestClass.class, null, null, (Object[]) null));
 		// Above the null checks, below the functional tests
 		assertThrows(ReflectionException.class, () -> ReflectionHelper.invoke(TestClass.class, "testMethod", null, "invoked"));
 		assertThrows(ReflectionException.class, () -> ReflectionHelper.invoke(TestClass.class, "testMethod", new TestClass(), "invoked"));
@@ -254,9 +254,9 @@ class ReflectionHelperTest {
 	@Test
 	void invokeStaticGetter() {
 		assertThrows(NullPointerException.class, () -> ReflectionHelper.invoke(null, null, (Object[]) null));
-		assertThrows(NullPointerException.class, () -> ReflectionHelper.invoke(null, null, (Object) null, (Object[]) null));
-		assertThrows(NullPointerException.class, () -> ReflectionHelper.invoke(null, "", (Object) null, (Object[]) null));
-		assertThrows(NullPointerException.class, () -> ReflectionHelper.invoke(TestClass.class, null, (Object) null, (Object[]) null));
+		assertThrows(NullPointerException.class, () -> ReflectionHelper.invoke(null, null, null, (Object[]) null));
+		assertThrows(NullPointerException.class, () -> ReflectionHelper.invoke(null, "", null, (Object[]) null));
+		assertThrows(NullPointerException.class, () -> ReflectionHelper.invoke(TestClass.class, null, null, (Object[]) null));
 		// Above the null checks, below the functional tests
 		assertThrows(ReflectionException.class, () -> ReflectionHelper.invoke(TestClass.class, "staticTestMethod", null, (Object[]) null));
 		assertThrows(ReflectionException.class, () -> ReflectionHelper.invoke(TestClass.class, "staticTestMethod", new TestClass(), (Object[]) null));
@@ -273,9 +273,9 @@ class ReflectionHelperTest {
 	@Test
 	void invokeStaticSetter() {
 		assertThrows(NullPointerException.class, () -> ReflectionHelper.invoke(null, null, (Object[]) null));
-		assertThrows(NullPointerException.class, () -> ReflectionHelper.invoke(null, null, (Object) null, (Object[]) null));
-		assertThrows(NullPointerException.class, () -> ReflectionHelper.invoke(null, "", (Object) null, (Object[]) null));
-		assertThrows(NullPointerException.class, () -> ReflectionHelper.invoke(TestClass.class, null, (Object) null, (Object[]) null));
+		assertThrows(NullPointerException.class, () -> ReflectionHelper.invoke(null, null, null, (Object[]) null));
+		assertThrows(NullPointerException.class, () -> ReflectionHelper.invoke(null, "", null, (Object[]) null));
+		assertThrows(NullPointerException.class, () -> ReflectionHelper.invoke(TestClass.class, null, null, (Object[]) null));
 		// Above the null checks, below the functional tests
 		assertThrows(ReflectionException.class, () -> ReflectionHelper.invoke(TestClass.class, "staticTestMethod", null, "invoked"));
 		assertThrows(ReflectionException.class, () -> ReflectionHelper.invoke(TestClass.class, "staticTestMethod", new TestClass(), "invoked"));
@@ -319,11 +319,11 @@ class ReflectionHelperTest {
 	//region Tests for hasField
 	@Test
 	void hasField() {
-		assertThrows(NullPointerException.class, () -> ReflectionHelper.hasField((Class<TestClass>) null, null, (Predicate<Field>) null));
-		assertThrows(NullPointerException.class, () -> ReflectionHelper.hasField((Class<TestClass>) null, "field", (Predicate<Field>) null));
-		assertThrows(NullPointerException.class, () -> ReflectionHelper.hasField(TestClass.class, null, (Predicate<Field>) null));
-		assertDoesNotThrow(() -> ReflectionHelper.hasField(TestClass.class, "field", (Predicate<Field>) null));
-		assertDoesNotThrow(() -> ReflectionHelper.hasField(TestClass.class, "field", (Predicate<Field>) null));
+		assertThrows(NullPointerException.class, () -> ReflectionHelper.hasField(null, null, null));
+		assertThrows(NullPointerException.class, () -> ReflectionHelper.hasField(null, "field", null));
+		assertThrows(NullPointerException.class, () -> ReflectionHelper.hasField(TestClass.class, null, null));
+		assertDoesNotThrow(() -> ReflectionHelper.hasField(TestClass.class, "field", null));
+		assertDoesNotThrow(() -> ReflectionHelper.hasField(TestClass.class, "field", null));
 		assertDoesNotThrow(() -> ReflectionHelper.hasField(TestClass.class, "field", (f) -> true));
 		assertFalse(ReflectionHelper.hasField(TestClass.class, "testField", (f) -> true));
 		assertFalse(ReflectionHelper.hasField(TestClass.class, "field", (f) -> false));
@@ -332,11 +332,11 @@ class ReflectionHelperTest {
 	
 	@Test
 	void hasStaticField() {
-		assertThrows(NullPointerException.class, () -> ReflectionHelper.hasField((Class<TestClass>) null, null, (Predicate<Field>) null));
-		assertThrows(NullPointerException.class, () -> ReflectionHelper.hasField((Class<TestClass>) null, "staticField", (Predicate<Field>) null));
-		assertThrows(NullPointerException.class, () -> ReflectionHelper.hasField(TestClass.class, null, (Predicate<Field>) null));
-		assertDoesNotThrow(() -> ReflectionHelper.hasField(TestClass.class, "staticField", (Predicate<Field>) null));
-		assertDoesNotThrow(() -> ReflectionHelper.hasField(TestClass.class, "staticField", (Predicate<Field>) null));
+		assertThrows(NullPointerException.class, () -> ReflectionHelper.hasField(null, null, null));
+		assertThrows(NullPointerException.class, () -> ReflectionHelper.hasField(null, "staticField", null));
+		assertThrows(NullPointerException.class, () -> ReflectionHelper.hasField(TestClass.class, null, null));
+		assertDoesNotThrow(() -> ReflectionHelper.hasField(TestClass.class, "staticField", null));
+		assertDoesNotThrow(() -> ReflectionHelper.hasField(TestClass.class, "staticField", null));
 		assertDoesNotThrow(() -> ReflectionHelper.hasField(TestClass.class, "staticField", (f) -> true));
 		assertFalse(ReflectionHelper.hasField(TestClass.class, "staticTestField", (f) -> true));
 		assertFalse(ReflectionHelper.hasField(TestClass.class, "staticField", (f) -> false));
@@ -440,20 +440,20 @@ class ReflectionHelperTest {
 			this.field = field;
 		}
 		
-		private @Nullable String getField() {
-			return this.field;
-		}
-		
-		private void setField(@Nullable String field) {
-			this.field = field;
-		}
-		
 		private static String getStaticField() {
 			return staticField;
 		}
 		
 		private static void setStaticField(String field) {
 			staticField = field;
+		}
+		
+		private @Nullable String getField() {
+			return this.field;
+		}
+		
+		private void setField(@Nullable String field) {
+			this.field = field;
 		}
 		
 		@Override

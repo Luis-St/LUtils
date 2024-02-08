@@ -15,9 +15,7 @@ public class AlreadyInitializedException extends RuntimeException {
 	/**
 	 * Constructs a new {@link AlreadyInitializedException} with no details.<br>
 	 */
-	public AlreadyInitializedException() {
-		super();
-	}
+	public AlreadyInitializedException() {}
 	
 	/**
 	 * Constructs a new {@link AlreadyInitializedException} with the specified message.<br>
