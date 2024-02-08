@@ -24,7 +24,7 @@ public class ReflectionUtils {
 	
 	/**
 	 * Gets the raw name of the given method.<br>
-	 * The raw name is the name of the method without prefixes like "get", "is" or "has".<br>
+	 * The raw name is the name of the method without prefixes like "get", "set", "is" or "has".<br>
 	 * @param method The method to get the raw name of
 	 * @param prefixes Additional prefixes to remove
 	 * @return The raw name of the given method or {@link Method#getName()} as fallback
@@ -33,6 +33,8 @@ public class ReflectionUtils {
 	public static @NotNull String getRawName(@NotNull Method method, String @Nullable ... prefixes) {
 		String name = Objects.requireNonNull(method, "Method must not be null").getName();
 		if (name.startsWith("get")) {
+			return name.substring(3);
+		} else if (name.startsWith("set")) {
 			return name.substring(3);
 		} else if (name.startsWith("is")) {
 			return name.substring(2);
@@ -50,7 +52,7 @@ public class ReflectionUtils {
 	/**
 	 * Gets all methods of the given class for the given name (case-sensitive).<br>
 	 * If the given name is null, all methods of the given class will be returned.<br>
-	 * The methods will be returned in the order they are declared in the class.<br>
+	 * The methods will be returned in the order of their parameter count.<br>
 	 * @param clazz The class to get the methods of
 	 * @param name The name of the methods to get
 	 * @return A list of all methods from the given class for the given name
@@ -58,7 +60,8 @@ public class ReflectionUtils {
 	 */
 	public static @NotNull List<Method> getMethodsForName(@NotNull Class<?> clazz, @Nullable String name) {
 		Objects.requireNonNull(clazz, "Class must not be null");
-		return Arrays.stream(clazz.getDeclaredMethods()).filter(method -> method.getName().equals(name) || name == null).collect(Collectors.toList());
+		return Arrays.stream(clazz.getDeclaredMethods()).filter(method -> method.getName().equals(name) || name == null)
+			.sorted(Comparator.comparingInt(Method::getParameterCount)).collect(Collectors.toList());
 	}
 	
 	/**
@@ -78,7 +81,8 @@ public class ReflectionUtils {
 	 * @see #findParameter(Parameter, List)
 	 */
 	public static Object @NotNull [] findParameters(@NotNull Executable executable, Object @Nullable ... values) {
-		return findParameters(Objects.requireNonNull(executable, "Executable must not be null"), Utils.mapList(Lists.newArrayList(nullToEmpty(values)), value -> {
+		Objects.requireNonNull(executable, "Executable must not be null");
+		return findParameters(executable, Utils.mapList(Lists.newArrayList(nullToEmpty(values)), value -> {
 			String name = value.getClass().getSimpleName();
 			return Pair.of(value, StringUtils.uncapitalize(name));
 		}));
@@ -123,8 +127,10 @@ public class ReflectionUtils {
 	 * @throws IllegalStateException If no value for the parameter could be found
 	 */
 	private static @NotNull Object findParameter(@NotNull Parameter parameter, @NotNull List<Pair<Object, String>> values) {
-		Executable executable = Objects.requireNonNull(parameter, "Parameter must not be null").getDeclaringExecutable();
-		for (Pair<Object, String> value : Objects.requireNonNull(values, "Values must not be null")) {
+		Objects.requireNonNull(parameter, "Parameter must not be null");
+		Objects.requireNonNull(values, "Values must not be null");
+		Executable executable = parameter.getDeclaringExecutable();
+		for (Pair<Object, String> value : values) {
 			Object object = value.getFirst();
 			boolean noDuplicates = !Utils.hasDuplicates(object, Utils.mapList(Lists.newArrayList(values), Pair::getFirst));
 			if (parameter.getType().isInstance(object) || ClassUtils.primitiveToWrapper(parameter.getType()).isInstance(object)) {

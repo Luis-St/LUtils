@@ -17,9 +17,9 @@ import static org.junit.jupiter.api.Assertions.*;
  */
 class FileUtilsTest {
 	
-	//region Clean up
+	//region Cleanup
 	@AfterAll
-	static void tearDownAfter() throws Exception {
+	static void cleanUpAfter() throws Exception {
 		Files.deleteIfExists(Path.of("test.json"));
 		Files.deleteIfExists(Path.of("test/test.json"));
 		Files.deleteIfExists(Path.of("test"));

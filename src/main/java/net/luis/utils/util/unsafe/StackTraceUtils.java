@@ -22,10 +22,36 @@ public class StackTraceUtils {
 	 */
 	private static final String UNSAFE_CALLS_MAIN = "unsafe.calls.main";
 	
+	/**
+	 * Constant for the system property 'unsafe.offset.base'.<br>
+	 * The base offset for the stack trace elements is {@code 3}.<br>
+	 * Used internally in {@link StackTraceUtils#getStackTrace(int)} to get the correct stack trace element.<br>
+	 */
+	private static final String UNSAFE_OFFSET_BASE = "unsafe.offset.base";
+	
+	/**
+	 * Constant for the system property 'unsafe.offset.default'.<br>
+	 * <p>
+	 *     The default offset for the stack trace elements is {@code 1}.<br>
+	 *     The value must be greater than or equal to {@code 1}.<br>
+	 *     The value will be added to the base offset to get the correct stack trace element.<br>
+	 * </p>
+	 */
+	private static final String UNSAFE_OFFSET_DEFAULT = "unsafe.offset.default";
+	
 	//region Calling class
 	
 	/**
-	 * Gets the calling class from the stack trace with an offset of {@code 4}.<br>
+	 * Gets the calling class from the stack trace with an offset of:<br>
+	 * <pre>base + default</pre>
+	 * <p>
+	 *     The base offset will be get from the system property 'unsafe.offset.base'.<br>
+	 *     If the property is not set, the default value {@code 3} will be used.<br>
+	 * </p>
+	 * <p>
+	 *     The default offset will be get from the system property 'unsafe.offset.default'.<br>
+	 *     If the property is not set, the default value {@code 1} will be used.<br>
+	 * </p>
 	 * <ul>
 	 *     <li>...</li>
 	 *     <li>2: {@link StackTraceUtils#getCallingClass()}</li>
@@ -39,11 +65,20 @@ public class StackTraceUtils {
 	 * @see StackTraceUtils#getStackTrace(int)
 	 */
 	public static Class<?> getCallingClass() {
-		return ReflectionHelper.getClassForName(getStackTrace(1).getClassName());
+		return ReflectionHelper.getClassForName(getStackTrace(getDefaultOffset()).getClassName());
 	}
 	
 	/**
-	 * Gets the calling class from the stack trace with an offset of {@code 4 + callsBefore}.<br>
+	 * Gets the calling class from the stack trace with an offset of:<br>
+	 * <pre>base + default + callsBefore</pre>
+	 * <p>
+	 *     The base offset will be get from the system property 'unsafe.offset.base'.<br>
+	 *     If the property is not set, the default value {@code 3} will be used.<br>
+	 * </p>
+	 * <p>
+	 *     The default offset will be get from the system property 'unsafe.offset.default'.<br>
+	 *     If the property is not set, the default value {@code 1} will be used.<br>
+	 * </p>
 	 * <ul>
 	 *     <li>...</li>
 	 *     <li>2: {@link StackTraceUtils#getCallingClass(int)}</li>
@@ -60,14 +95,23 @@ public class StackTraceUtils {
 	 * @see StackTraceUtils#getStackTrace(int)
 	 */
 	public static Class<?> getCallingClass(int callsBefore) {
-		return ReflectionHelper.getClassForName(getStackTrace(1 + callsBefore).getClassName());
+		return ReflectionHelper.getClassForName(getStackTrace(getDefaultOffset() + callsBefore).getClassName());
 	}
 	//endregion
 	
 	//region Calling method
 	
 	/**
-	 * Gets the calling method from the stack trace with an offset of {@code 4}.<br>
+	 * Gets the calling method from the stack trace with an offset of:<br>
+	 * <pre>base + default</pre>
+	 * <p>
+	 *     The base offset will be get from the system property 'unsafe.offset.base'.<br>
+	 *     If the property is not set, the default value {@code 3} will be used.<br>
+	 * </p>
+	 * <p>
+	 *     The default offset will be get from the system property 'unsafe.offset.default'.<br>
+	 *     If the property is not set, the default value {@code 1} will be used.<br>
+	 * </p>
 	 * <ul>
 	 *     <li>...</li>
 	 *     <li>2: {@link StackTraceUtils#getCallingMethod()}</li>
@@ -82,7 +126,7 @@ public class StackTraceUtils {
 	 * @see StackTraceUtils#getStackTrace(int)
 	 */
 	public static @NotNull Method getCallingMethod() {
-		StackTraceElement element = getStackTrace(1);
+		StackTraceElement element = getStackTrace(getDefaultOffset());
 		Method method = getCallingMethod(element);
 		if (method != null) {
 			return method;
@@ -92,7 +136,16 @@ public class StackTraceUtils {
 	}
 	
 	/**
-	 * Gets the calling method from the stack trace with an offset of {@code 4 + callsBefore}.<br>
+	 * Gets the calling method from the stack trace with an offset of:<br>
+	 * <pre>base + default + callsBefore</pre>
+	 * <p>
+	 *     The base offset will be get from the system property 'unsafe.offset.base'.<br>
+	 *     If the property is not set, the default value {@code 3} will be used.<br>
+	 * </p>
+	 * <p>
+	 *     The default offset will be get from the system property 'unsafe.offset.default'.<br>
+	 *     If the property is not set, the default value {@code 1} will be used.<br>
+	 * </p>
 	 * <ul>
 	 *     <li>...</li>
 	 *     <li>2: {@link StackTraceUtils#getCallingMethod(int)}</li>
@@ -110,7 +163,7 @@ public class StackTraceUtils {
 	 * @see StackTraceUtils#getStackTrace(int)
 	 */
 	public static @NotNull Method getCallingMethod(int callsBefore) {
-		StackTraceElement element = getStackTrace(1 + callsBefore);
+		StackTraceElement element = getStackTrace(getDefaultOffset() + callsBefore);
 		Method method = getCallingMethod(element);
 		if (method != null) {
 			return method;
@@ -120,7 +173,16 @@ public class StackTraceUtils {
 	}
 	
 	/**
-	 * Gets the calling method safe from the stack trace with an offset of {@code 4}.<br>
+	 * Gets the calling method safe from the stack trace with an offset of:<br>
+	 * <pre>base + default</pre>
+	 * <p>
+	 *     The base offset will be get from the system property 'unsafe.offset.base'.<br>
+	 *     If the property is not set, the default value {@code 3} will be used.<br>
+	 * </p>
+	 * <p>
+	 *     The default offset will be get from the system property 'unsafe.offset.default'.<br>
+	 *     If the property is not set, the default value {@code 1} will be used.<br>
+	 * </p>
 	 * <ul>
 	 *     <li>...</li>
 	 *     <li>2: {@link StackTraceUtils#getCallingMethodSafe()}</li>
@@ -136,7 +198,7 @@ public class StackTraceUtils {
 	 */
 	public static @NotNull Optional<Method> getCallingMethodSafe() {
 		try {
-			StackTraceElement element = getStackTrace(1);
+			StackTraceElement element = getStackTrace(getDefaultOffset());
 			return Optional.ofNullable(getCallingMethod(element));
 		} catch (Exception ignored) {
 			return Optional.empty();
@@ -144,7 +206,16 @@ public class StackTraceUtils {
 	}
 	
 	/**
-	 * Gets the calling method safe from the stack trace with an offset of {@code 4 + callsBefore}.<br>
+	 * Gets the calling method safe from the stack trace with an offset of:<br>
+	 * <pre>base + default + callsBefore</pre>
+	 * <p>
+	 *     The base offset will be get from the system property 'unsafe.offset.base'.<br>
+	 *     If the property is not set, the default value {@code 3} will be used.<br>
+	 * </p>
+	 * <p>
+	 *     The default offset will be get from the system property 'unsafe.offset.default'.<br>
+	 *     If the property is not set, the default value {@code 1} will be used.<br>
+	 * </p>
 	 * <ul>
 	 *     <li>...</li>
 	 *     <li>2: {@link StackTraceUtils#getCallingMethodSafe(int)}</li>
@@ -163,7 +234,7 @@ public class StackTraceUtils {
 	 */
 	public static @NotNull Optional<Method> getCallingMethodSafe(int callsBefore) {
 		try {
-			StackTraceElement element = getStackTrace(callsBefore);
+			StackTraceElement element = getStackTrace(getDefaultOffset() + callsBefore);
 			return Optional.ofNullable(getCallingMethod(element));
 		} catch (Exception e) {
 			return Optional.empty();
@@ -174,9 +245,30 @@ public class StackTraceUtils {
 	//region Internal
 	
 	/**
+	 * Gets the default offset for the stack trace elements.<br>
+	 * <p>
+	 *     The default offset will be get from the system property 'unsafe.offset.default'.<br>
+	 *     If the property is not set, the default value {@code 1} will be used.<br>
+	 * </p>
+	 * @return The default offset
+	 * @see StackTraceUtils#getCallingClass()
+	 * @see StackTraceUtils#getCallingClass(int)
+	 * @see StackTraceUtils#getCallingMethod()
+	 * @see StackTraceUtils#getCallingMethod(int)
+	 * @see StackTraceUtils#getCallingMethodSafe()
+	 * @see StackTraceUtils#getCallingMethodSafe(int)
+	 */
+	private static int getDefaultOffset() {
+		return Integer.parseInt(System.getProperty(UNSAFE_OFFSET_DEFAULT, "1"));
+	}
+	
+	/**
 	 * Gets the stack trace element at the specified position.<br>
 	 * This method is used internally to get the correct stack trace element.<br>
-	 * The base offset is {@code 3} and the default offset of any calling method is {@code 1}.<br>
+	 * <p>
+	 *     The base offset will be get from the system property 'unsafe.offset.base'.<br>
+	 *     If the property is not set, the default value {@code 3} will be used.<br>
+	 * </p>
 	 * <ul>
 	 *     <li>0: {@link Thread#getStackTrace()}</li>
 	 *     <li>1: {@link StackTraceUtils#getStackTrace(int)}</li>
@@ -195,14 +287,15 @@ public class StackTraceUtils {
 		if (0 >= callsBefore) {
 			throw new IllegalArgumentException("The calls before value must be greater than 0");
 		}
-		if (elements.length < 3 + callsBefore) {
+		int base = Integer.parseInt(System.getProperty(UNSAFE_OFFSET_BASE, "3"));
+		if (elements.length < base + callsBefore) {
 			throw new IndexOutOfBoundsException("The specified position is out of bounds");
 		}
 		boolean preventMainCalls = !Boolean.parseBoolean(System.getProperty(UNSAFE_CALLS_MAIN, "false"));
-		if (elements.length - 1 == 3 + callsBefore && preventMainCalls) {
+		if (elements.length - 1 == base + callsBefore && preventMainCalls) {
 			throw new IllegalCallerException("Could not identify the calling stack trace element for the main method");
 		}
-		return elements[3 + callsBefore];
+		return elements[base + callsBefore];
 	}
 	
 	/**
