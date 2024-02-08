@@ -9,8 +9,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.lang.reflect.*;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
@@ -500,21 +499,28 @@ public class ReflectionHelper {
 	
 	/**
 	 * Maps the given classes to their simple names.<br>
+	 * If the given array is null or empty, an empty list will be returned.<br>
 	 * @param classes The list of classes
 	 * @return A list containing the simple names
 	 */
 	private static @NotNull List<String> getSimpleNames(Class<?> @Nullable ... classes) {
-		return Lists.newArrayList(nullToEmpty(classes)).stream().map(Class::getSimpleName).collect(Collectors.toList());
+		if (classes == null || classes.length == 0) {
+			return Lists.newArrayList();
+		}
+		return Arrays.stream(classes).map(Class::getSimpleName).collect(Collectors.toList());
 	}
 	
 	/**
-	 * Maps the given objects to their simple names<br>
-	 * by converting them to their classes first.<br>
+	 * Maps the given objects to their simple names by converting them to their classes first.<br>
+	 * If the given array is null or empty, an empty list will be returned.<br>
 	 * @param objects The list of objects
 	 * @return A list containing the simple names
 	 */
 	private static @NotNull List<String> getSimpleNames(Object @Nullable ... objects) {
-		return Lists.newArrayList(nullToEmpty(objects)).stream().map(Object::getClass).map(Class::getSimpleName).collect(Collectors.toList());
+		if (objects == null || objects.length == 0) {
+			return Lists.newArrayList();
+		}
+		return Arrays.stream(objects).map(Object::getClass).map(Class::getSimpleName).collect(Collectors.toList());
 	}
 	//endregion
 }

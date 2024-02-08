@@ -42,6 +42,9 @@ public class ReflectionUtils {
 			return name.substring(3);
 		}
 		for (String prefix : nullToEmpty(prefixes)) {
+			if (prefix == null || prefix.isEmpty()) {
+				continue;
+			}
 			if (name.startsWith(prefix)) {
 				return name.substring(prefix.length());
 			}
