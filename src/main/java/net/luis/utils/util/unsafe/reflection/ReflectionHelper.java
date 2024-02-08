@@ -426,7 +426,7 @@ public class ReflectionHelper {
 		Objects.requireNonNull(clazz, "Class must not be null");
 		Objects.requireNonNull(name, "Name must not be null");
 		Field field = getField(clazz, name);
-		if (field == null) {
+		if (field == null) { // Only thrown when 'reflection.exceptions.throw' is false
 			throw new IllegalStateException("No field with the name '" + name + "' in type '" + clazz.getSimpleName() + "' found");
 		}
 		return get(field, instance);
@@ -473,7 +473,7 @@ public class ReflectionHelper {
 		Objects.requireNonNull(clazz, "Class must not be null");
 		Objects.requireNonNull(name, "Name must not be null");
 		Field field = getField(clazz, name);
-		if (field == null) {
+		if (field == null) { // Only thrown when 'reflection.exceptions.throw' is false
 			throw new IllegalStateException("No field with the name '" + name + "' in type '" + clazz.getSimpleName() + "' found");
 		}
 		set(field, instance, value);
