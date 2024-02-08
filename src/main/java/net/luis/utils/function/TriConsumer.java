@@ -33,7 +33,7 @@ public interface TriConsumer<T, U, V> {
 	 * @throws NullPointerException If the {@code after} operation is null
 	 */
 	default @NotNull TriConsumer<T, U, V> andThen(@NotNull TriConsumer<? super T, ? super U, ? super V> after) {
-		Objects.requireNonNull(after, "'After' function must not be null");;
+		Objects.requireNonNull(after, "'After' function must not be null");
 		return (t, u, v) -> {
 			this.accept(t, u, v);
 			after.accept(t, u, v);
