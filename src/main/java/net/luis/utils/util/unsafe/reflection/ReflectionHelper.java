@@ -1,6 +1,8 @@
 package net.luis.utils.util.unsafe.reflection;
 
 import com.google.common.collect.Lists;
+import net.luis.utils.exception.ReflectionException;
+import org.apache.commons.lang3.ArrayUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jetbrains.annotations.NotNull;
@@ -39,7 +41,11 @@ public class ReflectionHelper {
 	private static final String REFLECTION_EXCEPTIONS_THROW = "reflection.exceptions.throw";
 	/**
 	 * Constant for the system property 'reflection.exceptions.log'.<br>
-	 * If this property is {@code true}, exceptions will be logged when an error occurs.<br>
+	 * <p>
+	 *     If this property is {@code true}, exceptions will be logged when an error occurs.<br>
+	 *     If the property is {@code false}, the logging is not completely disabled<br>
+	 *     only exceptions will not be logged.<br>
+	 * </p>
 	 */
 	private static final String REFLECTION_EXCEPTIONS_LOG = "reflection.exceptions.log";
 	
@@ -72,7 +78,7 @@ public class ReflectionHelper {
 		Objects.requireNonNull(clazz, "Class must not be null");
 		Objects.requireNonNull(iface, "Interface must not be null");
 		if (iface.isInterface()) {
-			return Lists.newArrayList(clazz.getInterfaces()).contains(iface);
+			return ArrayUtils.contains(clazz.getInterfaces(), iface);
 		}
 		return false;
 	}
@@ -488,7 +494,7 @@ public class ReflectionHelper {
 			LOGGER.error(e);
 		}
 		if (Boolean.parseBoolean(System.getProperty(REFLECTION_EXCEPTIONS_THROW, "false"))) {
-			throw new RuntimeException(e);
+			throw new ReflectionException(e);
 		}
 	}
 	
