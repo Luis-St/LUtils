@@ -1,6 +1,7 @@
 plugins {
 	id "java"
 	id "maven-publish"
+	id "com.github.joschi.licenser" version "${Licenser}"
 }
 
 repositories {
@@ -19,6 +20,12 @@ dependencies {
 	// Test
 	testImplementation "org.junit.jupiter:junit-jupiter-api:5.8.1"
 	testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:5.8.1"
+}
+
+license {
+	header = file("header.txt")
+	include "**/*.java"
+	exclude("**/Main.java")
 }
 
 test {
