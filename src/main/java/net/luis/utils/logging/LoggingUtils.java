@@ -1,7 +1,7 @@
 package net.luis.utils.logging;
 
 import com.google.common.collect.Lists;
-import net.luis.utils.logging.factory.CachedFactory;
+import net.luis.utils.logging.factory.SpringFactory;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
@@ -14,39 +14,26 @@ import java.util.*;
 
 /**
  * Logging utility class.<br>
- * <p>
- *     This class is used to initialize or load a logging configuration.<br>
- *     It also provides methods to enable/disable logging.<br>
- * </p>
- *
- * @author Luis-St
+ * <br>
+ * This class is used to initialize or load a logging configuration.<br>
+ * It also provides methods to enable/disable logging.<br>
  */
 public class LoggingUtils {
 	
+	/**
+	 * A list of all loggers which are configured.<br>
+	 */
 	private static final List<String> CONFIGURED_LOGGERS = Lists.newArrayList();
 	/**
-	 * Supported console logging levels.<br>
+	 * The current configuration or null if the logging system has not been initialized.<br>
 	 */
-	static final Level[] CONSOLE_LEVELS = new Level[] {Level.TRACE, Level.DEBUG, Level.INFO, Level.WARN, Level.ERROR, Level.FATAL};
-	/**
-	 * Supported file logging levels.<br>
-	 */
-	static final Level[] FILE_LEVELS = new Level[] {Level.DEBUG, Level.INFO, Level.ERROR};
 	private static LoggerConfiguration configuration = null;
+	/**
+	 * Whether the cached factory has been registered or not.<br>
+	 */
 	private static boolean registeredFactory = false;
 	
-	//region Configuration
-	
-	/**
-	 * Loads the logging configuration from the system properties and initializes the logging system.<br>
-	 * @deprecated Use the load method which takes a logger name as parameter instead
-	 * @throws IllegalStateException If the logging system has already been initialized
-	 */
-	@Deprecated(forRemoval = true) // ToDo: Remove in the next versions
-	public static void load() {
-		initialize(LoggingHelper.load(Lists.newArrayList("*")));
-		LoggingHelper.configure();
-	}
+	//region Loading from system properties
 	
 	/**
 	 * Loads the logging configuration for the given loggers from the system properties and initializes the logging system.<br>
@@ -73,45 +60,19 @@ public class LoggingUtils {
 	 * @see #initialize(LoggerConfiguration, boolean)
 	 */
 	public static void load(@NotNull List<String> loggers) {
-		initialize(LoggingHelper.load(loggers));
+		reconfigure(LoggingHelper.load(loggers)); // No idea why initialize does not work here
 		LoggingHelper.configure();
 	}
+	//endregion
 	
-	/**
-	 * Initializes the logging system with the default configuration.<br>
-	 * The logger should be initialized as early as possible in the application lifecycle.<br>
-	 * Ideally, in the static-initializer of the main class as first call.<br>
-	 * @deprecated The default configuration is not recommended anymore because it uses wildcard loggers.
-	 * @throws IllegalStateException If the logging system has already been initialized
-	 * @see LoggerConfiguration#DEFAULT
-	 * @see #initialize(LoggerConfiguration)
-	 * @see #initialize(LoggerConfiguration, boolean)
-	 */
-	@Deprecated(forRemoval = true) // ToDo: Remove in the next versions
-	public static void initialize() {
-		initialize(LoggerConfiguration.DEFAULT);
-	}
+	//region Initialize and reconfigure
 	
 	/**
 	 * Initializes the logging system with the given configuration.<br>
-	 * The logger should be initialized as early as possible in the application lifecycle.<br>
-	 * Ideally, in the static-initializer of the main class as first call.<br>
-	 * Example:<br>
-	 * <pre>{@code
-	 * public class Main {
-	 *
-	 * 	private static final Logger LOGGER;
-	 *
-	 * 	public static void main(String[] args) {
-	 * 		// ...
-	 *    }
-	 *
-	 * 	static {
-	 * 		// Initialize the logging system her
-	 * 		LOGGER = LogManager.getLogger(Main.class);
-	 *    }
-	 * }
-	 * }</pre>
+	 * <p>
+	 *     The logger should be initialized as early as possible in the application lifecycle.<br>
+	 *     Ideally, in the static-initializer of the main class before any calls to the logger.<br>
+	 * </p>
 	 * @param configuration The configuration to use
 	 * @throws NullPointerException If the configuration is null
 	 * @throws IllegalStateException If the logging system has already been initialized
@@ -123,9 +84,13 @@ public class LoggingUtils {
 	
 	/**
 	 * Initializes the logging system with the given configuration.<br>
-	 * The logger should be initialized as early as possible in the application lifecycle.<br>
-	 * Ideally, in the static-initializer of the main class as first call.<br>
-	 * Example:<br>
+	 * <p>
+	 *     The logger should be initialized as early as possible in the application lifecycle.<br>
+	 *     Ideally, in the static-initializer of the main class before any calls to the logger.<br>
+	 * </p>
+	 * <p>
+	 *     Example:<br>
+	 * </p>
 	 * <pre>{@code
 	 * public class Main {
 	 *
@@ -133,18 +98,19 @@ public class LoggingUtils {
 	 *
 	 * 	public static void main(String[] args) {
 	 * 		// ...
-	 *    }
+	 * 	}
 	 *
 	 * 	static {
-	 * 		// Initialize the logging system her
+	 * 		// Initialize the logging system here
 	 * 		LOGGER = LogManager.getLogger(Main.class);
-	 *    }
+	 * 	}
 	 * }
 	 * }</pre>
 	 * @param configuration The configuration to use
 	 * @param override Whether to override the current configuration if the logging system has already been initialized
 	 * @throws NullPointerException If the configuration is null
 	 * @throws IllegalStateException If the logging system has already been initialized and override is false
+	 * @see #registerSpringFactory()
 	 */
 	public static void initialize(@NotNull LoggerConfiguration configuration, boolean override) {
 		if (!isInitialized()) {
@@ -186,7 +152,6 @@ public class LoggingUtils {
 		List<String> loggers = Lists.newArrayList(config.getLoggers().keySet());
 		loggers.removeIf(String::isEmpty);
 		CONFIGURED_LOGGERS.addAll(loggers);
-		tryRegisterFactory();
 	}
 	
 	/**
@@ -217,6 +182,7 @@ public class LoggingUtils {
 			reconfigure(configuration);
 		}
 	}
+	//endregion
 	
 	/**
 	 * Checks whether the logging system has been initialized.<br>
@@ -256,7 +222,41 @@ public class LoggingUtils {
 	public static boolean isRootLoggerConfigured() {
 		return CONFIGURED_LOGGERS.contains("*");
 	}
-	//endregion
+	
+	/**
+	 * Registers the spring logging configuration factory.<br>
+	 * The factory will only be registered if the spring boot framework is found.<br>
+	 * <p>
+	 *     This method should be called as early as possible in the application lifecycle.<br>
+	 *     Ideally, in the static-initializer of the main class as first call.<br>
+	 * </p>
+	 * <p>
+	 *     Example:<br>
+	 * </p>
+	 * <pre>{@code
+	 * public class Main {
+	 *
+	 *     private static final Logger LOGGER;
+	 *
+	 *     public static void main(String[] args) {
+	 *         // ...
+	 *     }
+	 *
+	 * 	static {
+	 * 	    // Register the spring logging factory here
+	 * 		// Initialize the logging system here
+	 * 		LOGGER = LogManager.getLogger(Main.class);
+	 * 	}
+	 * }
+	 * }</pre>
+	 * @see #initialize(LoggerConfiguration, boolean)
+	 */
+	public static void registerSpringFactory() {
+		if (!registeredFactory) {
+			System.setProperty("log4j.configurationFactory", SpringFactory.class.getName());
+			registeredFactory = true;
+		}
+	}
 	
 	//region Enable logging
 	
@@ -265,17 +265,11 @@ public class LoggingUtils {
 	 * @param type  The logging type to enable logging for
 	 * @param level The level to enable logging for
 	 * @throws NullPointerException If the level or logging type is null
-	 * @throws IllegalArgumentException If the level is 'off' or the combination of logging type and level is invalid
-	 * @throws IllegalStateException If the appender for the given logging type and level was not found
+	 * @throws IllegalArgumentException If the combination of logging type and level is invalid
+	 * @throws IllegalStateException If the appender for the given logging type and level was not found (file logging only)
 	 */
 	public static void enable(@NotNull LoggingType type, @NotNull Level level) {
-		if (level == Level.OFF) {
-			throw new IllegalArgumentException("Unable to enable logging of type '" + type + "' for level 'off'");
-		} else if (level == Level.ALL) {
-			Arrays.stream(CONSOLE_LEVELS).forEach(LoggingUtils::enableConsole);
-		} else {
-			enableAppender(getLogger(type, level));
-		}
+		enableAppender(getLogger(type, level));
 	}
 	
 	/**
@@ -283,8 +277,6 @@ public class LoggingUtils {
 	 * @param level The level to enable console logging for
 	 * @throws NullPointerException If the level is null
 	 * @throws IllegalArgumentException If the level is not supported by console logging
-	 * @throws IllegalStateException If the appender for the given console logging level was not found
-	 * @see #enable(LoggingType, Level)
 	 */
 	public static void enableConsole(@NotNull Level level) {
 		enable(LoggingType.CONSOLE, level);
@@ -292,14 +284,10 @@ public class LoggingUtils {
 	
 	/**
 	 * Enables console logging for all levels.<br>
-	 * @deprecated Use {@link #enableConsole(Level)} with {@link Level#ALL} instead
 	 * @throws IllegalArgumentException If a level is not supported by console logging
-	 * @throws IllegalStateException If a console logging appender was not found
-	 * @see #enable(LoggingType, Level)
 	 */
-	@Deprecated // ToDo: Mark as for removal in the next versions
 	public static void enableConsole() {
-		Arrays.stream(CONSOLE_LEVELS).forEach(LoggingUtils::enableConsole);
+		Arrays.stream(LoggingType.CONSOLE.getAllowedLevels()).forEach(LoggingUtils::enableConsole);
 	}
 	
 	/**
@@ -308,7 +296,6 @@ public class LoggingUtils {
 	 * @throws NullPointerException If the level is null
 	 * @throws IllegalArgumentException If the level is not supported by file logging
 	 * @throws IllegalStateException If the appender for the given file logging level was not found
-	 * @see #enable(LoggingType, Level)
 	 */
 	public static void enableFile(@NotNull Level level) {
 		enable(LoggingType.FILE, level);
@@ -316,14 +303,11 @@ public class LoggingUtils {
 	
 	/**
 	 * Enables file logging for all levels.<br>
-	 * @deprecated Use {@link #enableFile(Level)} with {@link Level#ALL} instead
 	 * @throws IllegalArgumentException If a level is not supported by file logging
 	 * @throws IllegalStateException If a file logging appender was not found
-	 * @see #enable(LoggingType, Level)
 	 */
-	@Deprecated // ToDo: Mark as for removal in the next versions
 	public static void enableFile() {
-		Arrays.stream(FILE_LEVELS).forEach(LoggingUtils::enableFile);
+		Arrays.stream(LoggingType.FILE.getAllowedLevels()).forEach(LoggingUtils::enableFile);
 	}
 	//endregion
 	
@@ -334,16 +318,10 @@ public class LoggingUtils {
 	 * @param type  The logging type to disable logging for
 	 * @param level The level to disable logging for
 	 * @throws NullPointerException If the level or logging type is null
-	 * @throws IllegalArgumentException If the level is 'off' or the combination of logging type and level is invalid
+	 * @throws IllegalArgumentException If the combination of logging type and level is invalid
 	 */
 	public static void disable(@NotNull LoggingType type, @NotNull Level level) {
-		if (level == Level.OFF) {
-			throw new IllegalArgumentException("Unable to disable logging of type '" + type + "' for level 'off'");
-		} else if (level == Level.ALL) {
-			Arrays.stream(CONSOLE_LEVELS).forEach(LoggingUtils::disableConsole);
-		} else {
-			disableAppender(getLogger(type, level));
-		}
+		disableAppender(getLogger(type, level));
 	}
 	
 	/**
@@ -351,7 +329,6 @@ public class LoggingUtils {
 	 * @param level The level to disable console logging for
 	 * @throws NullPointerException If the level is null
 	 * @throws IllegalArgumentException If the level is not supported by console logging
-	 * @see #disable(LoggingType, Level)
 	 */
 	public static void disableConsole(@NotNull Level level) {
 		disable(LoggingType.CONSOLE, level);
@@ -359,14 +336,11 @@ public class LoggingUtils {
 	
 	/**
 	 * Disables console logging for all levels.<br>
-	 * @deprecated Use {@link #disableConsole(Level)} with {@link Level#ALL} instead
 	 * @throws IllegalArgumentException If a level is not supported by console logging
 	 * @throws IllegalStateException If a console logging appender was not found
-	 * @see #disable(LoggingType, Level)
 	 */
-	@Deprecated // ToDo: Mark as for removal in the next versions
 	public static void disableConsole() {
-		Arrays.stream(CONSOLE_LEVELS).forEach(LoggingUtils::disableConsole);
+		Arrays.stream(LoggingType.CONSOLE.getAllowedLevels()).forEach(LoggingUtils::disableConsole);
 	}
 	
 	/**
@@ -374,7 +348,6 @@ public class LoggingUtils {
 	 * @param level The level to disable file logging for
 	 * @throws NullPointerException If the level is null
 	 * @throws IllegalArgumentException If the level is not supported by file logging
-	 * @see #disable(LoggingType, Level)
 	 */
 	public static void disableFile(@NotNull Level level) {
 		disable(LoggingType.FILE, level);
@@ -382,40 +355,21 @@ public class LoggingUtils {
 	
 	/**
 	 * Disables file logging for all levels.<br>
-	 * @deprecated Use {@link #disableFile(Level)} with {@link Level#ALL} instead
 	 * @throws IllegalArgumentException If a level is not supported by file logging
 	 * @throws IllegalStateException If a file logging appender was not found
-	 * @see #disable(LoggingType, Level)
 	 */
-	@Deprecated // ToDo: Mark as for removal in the next versions
 	public static void disableFile() {
-		Arrays.stream(FILE_LEVELS).forEach(LoggingUtils::disableFile);
+		Arrays.stream(LoggingType.FILE.getAllowedLevels()).forEach(LoggingUtils::disableFile);
 	}
 	//endregion
 	
 	//region Helper methods
 	
 	/**
-	 * Tries to register the cached configuration factory.<br>
-	 * If the spring boot framework is found, the factory will be registered,<br>
-	 * otherwise the factory will not be registered.<br>
-	 */
-	private static void tryRegisterFactory() {
-		Class<?> spring = null;
-		try {
-			spring = Class.forName("org.springframework.boot.SpringApplication");
-		} catch (Throwable ignored) {}
-		if (spring != null) {
-			System.setProperty("log4j.configurationFactory", CachedFactory.class.getName());
-			registeredFactory = true;
-		}
-	}
-	
-	/**
-	 * Gets the appender for the given name and enables it.<br>
+	 * Enables the given appender.<br>
 	 * @param name The name of the appender to enable
 	 * @throws NullPointerException If the name of the appender is null
-	 * @throws IllegalStateException If the appender was not found
+	 * @throws IllegalStateException If the appender was not found (file logging only)
 	 */
 	private static void enableAppender(@NotNull String name) {
 		LoggerContext context = (LoggerContext) LogManager.getContext(false);
@@ -439,7 +393,7 @@ public class LoggingUtils {
 	}
 	
 	/**
-	 * Gets the appender for the given name and disables it.<br>
+	 * Disables the given appender.<br>
 	 * @param name The name of the appender to disable
 	 */
 	private static void disableAppender(@NotNull String name) {

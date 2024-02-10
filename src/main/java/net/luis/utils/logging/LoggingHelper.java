@@ -15,17 +15,14 @@ import java.util.stream.Stream;
  */
 class LoggingHelper {
 	
-	/*
-	 * ToDo:
-	 *  - Add default logger
-	 *  - Allow to configure with a file (json -> to properties)
+	/**
+	 * The logger of this class.<br>
 	 */
-	
 	private static final Logger LOGGER = LogManager.getLogger(LoggingHelper.class);
 	
 	/**
 	 * Creates a new logger configuration and modifies it according to the system properties.<br>
-	 * System properties:
+	 * General system properties:<br>
 	 * <ul>
 	 *     <li>
 	 *         logging.statusLevel<br>
@@ -41,6 +38,32 @@ class LoggingHelper {
 	 *         Enables/disables file logging, expect 'true' or 'false'.<br>
 	 *         Default: 'true'
 	 *     </li>
+	 * </ul>
+	 *
+	 * File logging system properties:<br>
+	 * <ul>
+	 *     <li>
+	 * 	       logging.file.{level}<br>
+	 * 	       Enables/disables file logging for the given level, expect 'true' or 'false'<br>
+	 * 	       {level} must be replaced with a valid {@link Level} name in lower case<br>
+	 * 	       <br>
+	 * 	       Default:
+	 * 	       <ul>
+	 * 	           <li>Enabled levels: None</li>
+	 * 	           <li>Disabled levels: Trace, Debug, Info, Warn, Error, Fatal</li>
+	 * 	       </ul>
+	 * 	       Examples:
+	 * 	       <ul>
+	 * 	           <li>
+	 * 	               logging.file.debug=true<br>
+	 * 	               Enables file logging for the debug level
+	 * 	           </li>
+	 * 	           <li>
+	 * 	               logging.file.info=false<br>
+	 * 	               Disables file logging for the info level
+	 * 	           </li>
+	 * 	       </ul>
+	 * 	 </li
 	 *     <li>
 	 *         logging.file.folder.root<br>
 	 *         The root folder to log to, expect a relative or absolute path of a folder.<br>
@@ -64,12 +87,18 @@ class LoggingHelper {
 	 *         {level} must be replaced with a valid {@link Level} name in lower case.<br>
 	 *         Default: '{level}-%d{dd-MM-yyyy}-%i.log.gz'
 	 *     </li>
-	 *     <li>
-	 *         logging.file.folder (deprecated)<br>
-	 *         The folder to log to, expect a relative path of a folder<br>
-	 *         Default: 'logs/{level}'
-	 *     </li>
+	 *
 	 * </ul>
+	 *
+	 * For removal system properties:<br>
+	 * <ul>
+	 *     <li>
+	 * 	       logging.file.folder (deprecated)<br>
+	 * 	       The folder to log to, expect a relative path of a folder<br>
+	 * 	       Default: 'logs/{level}'
+	 * 	   </li>
+	 * </ul>
+	 *
 	 * @param loggers The names of the loggers which should be configured
 	 * @return The logger configuration
 	 * @throws NullPointerException If the given list of loggers is null
@@ -106,67 +135,61 @@ class LoggingHelper {
 				throw new IllegalArgumentException("Invalid value '" + fileLogging + "' for property 'logging.file'");
 			}
 		}
+		String root = System.getProperty("logging.file.folder.root", "./").replace("\\", "/");
+		if (!root.matches("^([a-zA-Z]:|\\./).*$")) {
+			throw new IllegalArgumentException("Invalid value '" + root + "' for property 'logging.file.folder.root', must be a relative or absolute path");
+		}
+		config.setRootDirectory(StringUtils.strip(root, "/ ") + "/"); // Root must be relative or absolute and end with '/'
 		//region Local record
 		record LogFile(Level level, String folder, String file, String archive) {
 			
 			public static LogFile forLevel(@NotNull Level level) {
 				Objects.requireNonNull(level, "Level must not be null");
-				String folder = System.getProperty("logging.file.folder." + level.name().toLowerCase(), "");
-				String file = System.getProperty("logging.file.folder." + level.name().toLowerCase() + ".file", "");
-				String archive = System.getProperty("logging.file.folder." + level.name().toLowerCase() + ".archive", "");
+				String folder = System.getProperty("logging.file.folder." + level.name().toLowerCase(), null);
+				String file = System.getProperty("logging.file.folder." + level.name().toLowerCase() + ".file", null);
+				String archive = System.getProperty("logging.file.folder." + level.name().toLowerCase() + ".archive", null);
 				return new LogFile(level, folder, file, archive);
 			}
 			
-			public String folderOr(String folder) {
-				return StringUtils.defaultIfEmpty(this.folder, folder);
+			public @NotNull String folderOr(@NotNull String defaultFolder) {
+				String folder = this.folder != null ? this.folder : Objects.requireNonNull(defaultFolder, "Default folder must not be null");
+				return StringUtils.strip(folder.replace("\\", "/"), "/ ");
 			}
 			
-			public String fileOr(String file) {
-				return StringUtils.defaultIfEmpty(this.file, file);
+			public @NotNull String fileOr(@NotNull String defaultFile) {
+				String file = this.file != null ? this.file : Objects.requireNonNull(defaultFile, "Default file must not be null");
+				return StringUtils.strip(file.replace("\\", "/"), "/ ");
 			}
 			
-			public String archiveOr(String archive) {
-				return StringUtils.defaultIfEmpty(this.archive, archive);
+			public @NotNull String archiveOr(@NotNull String defaultArchive) {
+				String archive = this.archive != null ? this.archive : Objects.requireNonNull(defaultArchive, "Default archive must not be null");
+				return StringUtils.strip(archive.replace("\\", "/"), "/ ");
 			}
 			
 			public boolean isValid() {
-				return !this.folder.isEmpty() || !this.file.isEmpty() || !this.archive.isEmpty();
+				return this.folder != null || this.file != null || this.archive != null;
 			}
 		}
 		//endregion
-		config.setRootDirectory(System.getProperty("logging.file.folder.root", "./"));
-		Stream.of(LoggingUtils.FILE_LEVELS).map(LogFile::forLevel).filter(LogFile::isValid).forEach(log -> {
-			String folder = log.folderOr("logs");
-			String file = log.fileOr(log.level().name().toLowerCase() + ".log");
-			String archive = log.archiveOr(log.level().name().toLowerCase() + "-%d{dd-MM-yyyy}-%i.log.gz");
-			if (folder.endsWith("/") && file.startsWith("/")) {
-				folder = folder.substring(0, folder.length() - 1);
-			} else if (!folder.endsWith("/") && !file.startsWith("/")) {
-				folder += "/";
-			}
+		Stream.of(LoggingType.FILE.getAllowedLevels()).map(LogFile::forLevel).filter(LogFile::isValid).forEach(log -> {
+			String folder = log.folderOr("logs"); // Folder must not be null and starts and ends with '/'
+			String file = "/" + log.fileOr(log.level().name().toLowerCase() + ".log"); // File must not be null and starts with '/'
+			String archive = "/" + log.archiveOr(log.level().name().toLowerCase() + "-%d{dd-MM-yyyy}-%i.log.gz"); // Archive must not be null and starts with '/'
 			config.overrideLog(log.level(), folder + file, folder + archive);
 		});
-		//region For removal -> ToDo: Remove in the next versions
-		String folderProperty = System.getProperty("logging.file.folder", "");
-		if (!folderProperty.isEmpty()) {
-			LOGGER.warn("Property 'logging.file.folder' is for removal, use 'logging.file.folder.root' and 'logging.file.folder.{level}(|.file|.archive)' instead");
-		}
-		if (StringUtils.contains(folderProperty, ".")) {
-			throw new IllegalArgumentException("Invalid value '" + folderProperty + "' for property 'logging.file.folder' (deprecated), must not contain '.'");
-		}
-		String logFolder = getRelativePath(folderProperty);
-		if (!"./".equals(logFolder)) {
-			for (Level level : LoggingUtils.FILE_LEVELS) {
-				String path = logFolder + "/" + level.name().toLowerCase();
-				config.overrideLog(level, path + ".log", path + "-%d{dd-MM-yyyy}-%i.log.gz");
+		// Configure default file loggers before initializing the loggers
+		for (Level level : LoggingType.FILE) {
+			String value = System.getProperty("logging." + LoggingType.FILE + "." + level.name().toLowerCase(), "");
+			if (isEnabled(value)) {
+				config.addDefaultLogger(LoggingType.FILE, level);
 			}
 		}
-		//endregion
 		return config;
 	}
 	
 	/**
 	 * Configures the current logging configuration according to the system properties.<br>
+	 * Only console logging is configured, due file logging must be configured at startup.<br>
 	 * System properties:
 	 * <ul>
 	 *     <li>
@@ -176,8 +199,8 @@ class LoggingHelper {
 	 *         <br>
 	 *         Default:
 	 *         <ul>
-	 *             <li>Enabled levels: Info, Warn, Error, Fatal</li>
-	 *             <li>Disabled levels: Trace, Debug</li>
+	 *             <li>Enabled levels: info, warn, error, fatal</li>
+	 *             <li>Disabled levels: trace, debug</li>
 	 *         </ul>
 	 *         Examples:
 	 *         <ul>
@@ -191,54 +214,21 @@ class LoggingHelper {
 	 *             </li>
 	 *         </ul>
 	 *     </li>
-	 *     <li>
-	 *         logging.file.{level}<br>
-	 *         Enables/disables file logging for the given level, expect 'true' or 'false'<br>
-	 *         {level} must be replaced with a valid {@link Level} name in lower case<br>
-	 *         <br>
-	 *         Default:
-	 *         <ul>
-	 *             <li>Enabled levels: None</li>
-	 *             <li>Disabled levels: Trace, Debug, Info, Warn, Error, Fatal</li>
-	 *         </ul>
-	 *         Examples:
-	 *         <ul>
-	 *             <li>
-	 *                 logging.file.debug=true<br>
-	 *                 Enables file logging for the debug level
-	 *             </li>
-	 *             <li>
-	 *                 logging.file.info=false<br>
-	 *                 Disables file logging for the info level
-	 *             </li>
-	 *         </ul>
-	 *    </li>
 	 * </ul>
 	 * @throws IllegalArgumentException If the value of a system property is invalid
 	 */
 	public static void configure() {
-		configureType(LoggingType.FILE, LoggingUtils.FILE_LEVELS);
-		configureType(LoggingType.CONSOLE, LoggingUtils.CONSOLE_LEVELS);
-	}
-	
-	/**
-	 * Configures the current logging configuration according to the system properties for the given type.<br>
-	 * @param type The type to configure
-	 * @param levels The allowed levels for the given type
-	 * @see #configure()
-	 */
-	private static void configureType(@NotNull LoggingType type, Level @NotNull [] levels) {
-		Stream.of(levels).map(level -> {
-			return Map.entry(level, System.getProperty("logging." + type + "." + level.name().toLowerCase(), ""));
+		Stream.of(LoggingType.CONSOLE.getAllowedLevels()).map(level -> {
+			return Map.entry(level, System.getProperty("logging." + LoggingType.CONSOLE + "." + level.name().toLowerCase(), ""));
 		}).filter(entry -> !entry.getValue().isEmpty()).forEach(entry -> {
 			Level level = entry.getKey();
 			String value = entry.getValue();
 			if (isEnabled(value)) {
-				LoggingUtils.enable(type, level);
+				LoggingUtils.enableConsole(level);
 			} else if (isDisabled(value)) {
-				LoggingUtils.disable(type, level);
+				LoggingUtils.disableConsole(level);
 			} else {
-				throw new IllegalArgumentException("Invalid value '" + value + "' for property 'logging." + type + "." + level.name().toLowerCase() + "'");
+				throw new IllegalArgumentException("Invalid value '" + value + "' for property 'logging." + LoggingType.CONSOLE + "." + level.name().toLowerCase() + "'");
 			}
 		});
 	}
@@ -248,8 +238,8 @@ class LoggingHelper {
 	/**
 	 * Checks if the given property is enabled.<br>
 	 * A property is enabled if it is equal to 'true', 'enable' or 'enabled', '1', 'on' or 'yes' (case-insensitive).
-	 * @param property The property to check.
-	 * @return True if the property is enabled, false otherwise.
+	 * @param property The property to check
+	 * @return True if the property is enabled, false otherwise
 	 */
 	private static boolean isEnabled(@Nullable String property) {
 		return StringUtils.equalsAnyIgnoreCase(property, "true", "enable", "enabled", "1", "on", "yes");
@@ -258,8 +248,8 @@ class LoggingHelper {
 	/**
 	 * Checks if the given property is disabled.<br>
 	 * A property is disabled if it is equal to 'false', 'disable' or 'disabled', '0', 'off' or 'no' (case-insensitive).
-	 * @param property The property to check.
-	 * @return True if the property is disabled, false otherwise.
+	 * @param property The property to check
+	 * @return True if the property is disabled, false otherwise
 	 */
 	private static boolean isDisabled(@Nullable String property) {
 		return StringUtils.equalsAnyIgnoreCase(property, "false", "disable", "disabled", "0", "off", "no");
@@ -283,8 +273,8 @@ class LoggingHelper {
 	 *     getRelativePath("./test") = "./test/"
 	 *     getRelativePath("test/test") = "./test/test/"
 	 * </pre>
-	 * @param file The file to get the relative path of.
-	 * @return The relative path of the given file.
+	 * @param file The file to get the relative path of
+	 * @return The relative path of the given file
 	 */
 	private static @NotNull String getRelativePath(@Nullable String file) {
 		String str = StringUtils.stripToEmpty(file).replace("\\", "/");
