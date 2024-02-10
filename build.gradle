@@ -37,6 +37,10 @@ java {
 	withJavadocJar()
 }
 
+javadoc {
+	exclude("**/Main.java")
+}
+
 artifacts {
 	archives sourcesJar
 	archives javadocJar

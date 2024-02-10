@@ -16,6 +16,11 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
+/**
+ * Default module for the LUtils library.<br>
+ *
+ * @author Luis-St
+ */
 module net.luis.utils {
 	requires org.apache.logging.log4j.core;
 	requires org.apache.logging.log4j;
