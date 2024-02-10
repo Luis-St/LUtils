@@ -1,7 +1,10 @@
 package net.luis.utils.logging;
 
+import com.google.common.collect.Lists;
 import org.apache.logging.log4j.Level;
 import org.junit.jupiter.api.Test;
+
+import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -12,87 +15,212 @@ import static org.junit.jupiter.api.Assertions.*;
  */
 class LoggerConfigurationTest {
 	
-	private final LoggerConfiguration configuration = new LoggerConfiguration("*");
+	@Test
+	void constructor() {
+		assertThrows(NullPointerException.class, () -> new LoggerConfiguration((String[]) null));
+		assertThrows(IllegalArgumentException.class, LoggerConfiguration::new);
+		assertThrows(IllegalArgumentException.class, () -> new LoggerConfiguration((String) null));
+		assertThrows(NullPointerException.class, () -> new LoggerConfiguration((List<String>) null));
+		assertThrows(IllegalArgumentException.class, () -> new LoggerConfiguration(Lists.newArrayList()));
+		assertThrows(IllegalArgumentException.class, () -> new LoggerConfiguration(Lists.newArrayList("")));
+		assertThrows(IllegalArgumentException.class, () -> new LoggerConfiguration(Lists.newArrayList(" ")));
+		assertDoesNotThrow(() -> new LoggerConfiguration("*"));
+		assertDoesNotThrow(() -> new LoggerConfiguration("test"));
+		assertDoesNotThrow(() -> new LoggerConfiguration(Lists.newArrayList("*")));
+		assertDoesNotThrow(() -> new LoggerConfiguration(Lists.newArrayList("test")));
+	}
 	
 	@Test
 	void setStatusLevel() {
-		assertThrows(NullPointerException.class, () -> this.configuration.setStatusLevel(null));
-		assertDoesNotThrow(() -> this.configuration.setStatusLevel(Level.ERROR));
+		LoggerConfiguration config = new LoggerConfiguration("*");
+		assertThrows(NullPointerException.class, () -> config.setStatusLevel(null));
+		for (Level level : Level.values()) {
+			assertSame(config, assertDoesNotThrow(() -> config.setStatusLevel(level)));
+		}
 	}
 	
 	@Test
 	void enableLogging() {
-		assertThrows(NullPointerException.class, () -> this.configuration.enableLogging(null));
-		assertDoesNotThrow(() -> this.configuration.enableLogging(LoggingType.FILE));
-		assertDoesNotThrow(() -> this.configuration.enableLogging(LoggingType.CONSOLE));
+		LoggerConfiguration config = new LoggerConfiguration("*");
+		assertThrows(NullPointerException.class, () -> config.enableLogging(null));
+		for (LoggingType type : LoggingType.values()) {
+			assertSame(config, assertDoesNotThrow(() -> config.enableLogging(type)));
+		}
 	}
 	
 	@Test
 	void disableLogging() {
-		assertDoesNotThrow(() -> this.configuration.disableLogging(LoggingType.FILE));
-		assertDoesNotThrow(() -> this.configuration.disableLogging(LoggingType.CONSOLE));
+		LoggerConfiguration config = new LoggerConfiguration("*");
+		assertDoesNotThrow(() -> config.disableLogging(null));
+		for (LoggingType type : LoggingType.values()) {
+			assertSame(config, assertDoesNotThrow(() -> config.disableLogging(type)));
+		}
 	}
 	
 	@Test
 	void overridePattern() {
-		assertThrows(NullPointerException.class, () -> this.configuration.overridePattern(null, Level.ALL, ""));
-		assertThrows(NullPointerException.class, () -> this.configuration.overridePattern(LoggingType.CONSOLE, null, ""));
-		assertThrows(NullPointerException.class, () -> this.configuration.overridePattern(LoggingType.CONSOLE, Level.ALL, null));
+		LoggerConfiguration config = new LoggerConfiguration("*");
+		assertThrows(NullPointerException.class, () -> config.overridePattern(null, null, null));
+		assertThrows(NullPointerException.class, () -> config.overridePattern(LoggingType.CONSOLE, Level.ALL, null));
 		for (LoggingType type : LoggingType.values()) {
+			assertThrows(NullPointerException.class, () -> config.overridePattern(type, null, "%msg"));
 			for (Level level : Level.values()) {
-				assertDoesNotThrow(() -> this.configuration.overridePattern(type, level, ""));
+				assertThrows(NullPointerException.class, () -> config.overridePattern(null, level, ""));
+				assertThrows(IllegalArgumentException.class, () -> config.overridePattern(type, level, ""));
+				assertThrows(IllegalArgumentException.class, () -> config.overridePattern(type, level, "No message"));
+				assertSame(config, assertDoesNotThrow(() -> config.overridePattern(type, level, "%msg")));
 			}
 		}
 	}
 	
 	@Test
+	void overrideConsolePattern() {
+		LoggerConfiguration config = new LoggerConfiguration("*");
+		assertThrows(NullPointerException.class, () -> config.overrideConsolePattern(null, null));
+		assertThrows(NullPointerException.class, () -> config.overrideConsolePattern(null, "%msg"));
+		for (Level level : Level.values()) {
+			assertThrows(NullPointerException.class, () -> config.overrideConsolePattern(level, null));
+			assertThrows(IllegalArgumentException.class, () -> config.overrideConsolePattern(level, ""));
+			assertSame(config, assertDoesNotThrow(() -> config.overrideConsolePattern(level, "%msg")));
+		}
+	}
+	
+	@Test
+	void overrideFilePattern() {
+		LoggerConfiguration config = new LoggerConfiguration("*");
+		assertThrows(NullPointerException.class, () -> config.overrideFilePattern(null, null));
+		assertThrows(NullPointerException.class, () -> config.overrideFilePattern(null, "%msg"));
+		for (Level level : Level.values()) {
+			assertThrows(NullPointerException.class, () -> config.overrideFilePattern(level, null));
+			assertThrows(IllegalArgumentException.class, () -> config.overrideFilePattern(level, ""));
+			assertSame(config, assertDoesNotThrow(() -> config.overrideFilePattern(level, "%msg")));
+		}
+	}
+	
+	@Test
+	void setRootDirectory() {
+		LoggerConfiguration config = new LoggerConfiguration("*");
+		assertThrows(NullPointerException.class, () -> config.setRootDirectory(null));
+		assertThrows(IllegalArgumentException.class, () -> config.setRootDirectory(""));
+		assertThrows(IllegalArgumentException.class, () -> config.setRootDirectory(" "));
+		assertThrows(IllegalArgumentException.class, () -> config.setRootDirectory("test"));
+		assertThrows(IllegalArgumentException.class, () -> config.setRootDirectory("/test"));
+		assertThrows(IllegalArgumentException.class, () -> config.setRootDirectory("test/"));
+		assertSame(config, assertDoesNotThrow(() -> config.setRootDirectory("./test")));
+		assertSame(config, assertDoesNotThrow(() -> config.setRootDirectory("D:/test")));
+	}
+	
+	@Test
 	void overrideLog() {
-		assertThrows(NullPointerException.class, () -> this.configuration.overrideLog(Level.DEBUG, null, ""));
-		assertThrows(NullPointerException.class, () -> this.configuration.overrideLog(Level.DEBUG, "", null));
-		assertDoesNotThrow(() -> this.configuration.overrideLog(Level.DEBUG, "", ""));
-		assertThrows(IllegalArgumentException.class, () -> this.configuration.overrideLog(Level.OFF, "", ""));
-		assertThrows(IllegalArgumentException.class, () -> this.configuration.overrideLog(Level.TRACE, "", ""));
-		assertThrows(IllegalArgumentException.class, () -> this.configuration.overrideLog(Level.WARN, "", ""));
-		assertThrows(IllegalArgumentException.class, () -> this.configuration.overrideLog(Level.FATAL, "", ""));
-		assertDoesNotThrow(() -> this.configuration.overrideLog(Level.DEBUG, "", ""));
-		assertDoesNotThrow(() -> this.configuration.overrideLog(Level.INFO, "", ""));
-		assertDoesNotThrow(() -> this.configuration.overrideLog(Level.ERROR, "", ""));
+		LoggerConfiguration config = new LoggerConfiguration("*");
+		assertThrows(NullPointerException.class, () -> config.overrideLog(null, null, null));
+		assertThrows(NullPointerException.class, () -> config.overrideLog(null, "", ""));
+		assertThrows(NullPointerException.class, () -> config.overrideLog(Level.DEBUG, null, ""));
+		assertThrows(NullPointerException.class, () -> config.overrideLog(Level.DEBUG, "", null));
+		for (Level level : new Level[]{Level.OFF, Level.TRACE, Level.FATAL, Level.ALL}) {
+			assertThrows(IllegalArgumentException.class, () -> config.overrideLog(level, "", ""));
+		}
+		for (Level level : new Level[]{Level.DEBUG, Level.INFO, Level.ERROR}) {
+			assertThrows(IllegalArgumentException.class, () -> config.overrideLog(level, "", "test.log"));
+			assertThrows(IllegalArgumentException.class, () -> config.overrideLog(level, "test.log", ""));
+			assertThrows(IllegalArgumentException.class, () -> config.overrideLog(level, "D:/test.log", "D:/test.log"));
+			assertThrows(IllegalArgumentException.class, () -> config.overrideLog(level, "test.log", "D:/test.log"));
+			assertThrows(IllegalArgumentException.class, () -> config.overrideLog(level, "D:/test.log", "test.log"));
+			assertThrows(IllegalArgumentException.class, () -> config.overrideLog(level, "./test.log", "./test.log"));
+			assertThrows(IllegalArgumentException.class, () -> config.overrideLog(level, "test.log", "./test.log"));
+			assertThrows(IllegalArgumentException.class, () -> config.overrideLog(level, "./test.log", "test.log"));
+			assertSame(config, assertDoesNotThrow(() -> config.overrideLog(level, "/test.log", "/test.log")));
+		}
+	}
+	
+	@Test
+	void overrideDebugLog() {
+		LoggerConfiguration config = new LoggerConfiguration("*");
+		assertThrows(NullPointerException.class, () -> config.overrideDebugLog(null, null));
+		assertThrows(NullPointerException.class, () -> config.overrideDebugLog(null, ""));
+		assertThrows(NullPointerException.class, () -> config.overrideDebugLog("", null));
+		assertThrows(IllegalArgumentException.class, () -> config.overrideDebugLog("", "test.log"));
+		assertThrows(IllegalArgumentException.class, () -> config.overrideDebugLog("test.log", ""));
+		assertThrows(IllegalArgumentException.class, () -> config.overrideDebugLog("D:/test.log", "D:/test.log"));
+		assertThrows(IllegalArgumentException.class, () -> config.overrideDebugLog("test.log", "D:/test.log"));
+		assertThrows(IllegalArgumentException.class, () -> config.overrideDebugLog("D:/test.log", "test.log"));
+		assertThrows(IllegalArgumentException.class, () -> config.overrideDebugLog("./test.log", "./test.log"));
+		assertThrows(IllegalArgumentException.class, () -> config.overrideDebugLog("test.log", "./test.log"));
+		assertThrows(IllegalArgumentException.class, () -> config.overrideDebugLog("./test.log", "test.log"));
+		assertSame(config, assertDoesNotThrow(() -> config.overrideDebugLog("/test.log", "/test.log")));
+	}
+	
+	@Test
+	void overrideInfoLog() {
+		LoggerConfiguration config = new LoggerConfiguration("*");
+		assertThrows(NullPointerException.class, () -> config.overrideInfoLog(null, null));
+		assertThrows(NullPointerException.class, () -> config.overrideInfoLog(null, ""));
+		assertThrows(NullPointerException.class, () -> config.overrideInfoLog("", null));
+		assertThrows(IllegalArgumentException.class, () -> config.overrideInfoLog("", "test.log"));
+		assertThrows(IllegalArgumentException.class, () -> config.overrideInfoLog("test.log", ""));
+		assertThrows(IllegalArgumentException.class, () -> config.overrideInfoLog("D:/test.log", "D:/test.log"));
+		assertThrows(IllegalArgumentException.class, () -> config.overrideInfoLog("test.log", "D:/test.log"));
+		assertThrows(IllegalArgumentException.class, () -> config.overrideInfoLog("D:/test.log", "test.log"));
+		assertThrows(IllegalArgumentException.class, () -> config.overrideInfoLog("./test.log", "./test.log"));
+		assertThrows(IllegalArgumentException.class, () -> config.overrideInfoLog("test.log", "./test.log"));
+		assertThrows(IllegalArgumentException.class, () -> config.overrideInfoLog("./test.log", "test.log"));
+		assertSame(config, assertDoesNotThrow(() -> config.overrideInfoLog("/test.log", "/test.log")));
+	}
+	
+	@Test
+	void overrideErrorLog() {
+		LoggerConfiguration config = new LoggerConfiguration("*");
+		assertThrows(NullPointerException.class, () -> config.overrideErrorLog(null, null));
+		assertThrows(NullPointerException.class, () -> config.overrideErrorLog(null, ""));
+		assertThrows(NullPointerException.class, () -> config.overrideErrorLog("", null));
+		assertThrows(IllegalArgumentException.class, () -> config.overrideErrorLog("", "test.log"));
+		assertThrows(IllegalArgumentException.class, () -> config.overrideErrorLog("test.log", ""));
+		assertThrows(IllegalArgumentException.class, () -> config.overrideErrorLog("D:/test.log", "D:/test.log"));
+		assertThrows(IllegalArgumentException.class, () -> config.overrideErrorLog("test.log", "D:/test.log"));
+		assertThrows(IllegalArgumentException.class, () -> config.overrideErrorLog("D:/test.log", "test.log"));
+		assertThrows(IllegalArgumentException.class, () -> config.overrideErrorLog("./test.log", "./test.log"));
+		assertThrows(IllegalArgumentException.class, () -> config.overrideErrorLog("test.log", "./test.log"));
+		assertThrows(IllegalArgumentException.class, () -> config.overrideErrorLog("./test.log", "test.log"));
+		assertSame(config, assertDoesNotThrow(() -> config.overrideErrorLog("/test.log", "/test.log")));
 	}
 	
 	@Test
 	void addDefaultLogger() {
-		assertThrows(NullPointerException.class, () -> this.configuration.addDefaultLogger(null, Level.INFO));
-		assertThrows(NullPointerException.class, () -> this.configuration.addDefaultLogger(LoggingType.CONSOLE, null));
-		assertThrows(IllegalArgumentException.class, () -> this.configuration.addDefaultLogger(LoggingType.CONSOLE, Level.OFF));
-		assertThrows(IllegalArgumentException.class, () -> this.configuration.addDefaultLogger(LoggingType.CONSOLE, Level.ALL));
-		assertThrows(IllegalArgumentException.class, () -> this.configuration.addDefaultLogger(LoggingType.FILE, Level.OFF));
-		assertThrows(IllegalArgumentException.class, () -> this.configuration.addDefaultLogger(LoggingType.FILE, Level.TRACE));
-		assertThrows(IllegalArgumentException.class, () -> this.configuration.addDefaultLogger(LoggingType.FILE, Level.WARN));
-		assertThrows(IllegalArgumentException.class, () -> this.configuration.addDefaultLogger(LoggingType.FILE, Level.FATAL));
-		assertThrows(IllegalArgumentException.class, () -> this.configuration.addDefaultLogger(LoggingType.FILE, Level.ALL));
-		for (Level level : new Level[] {Level.TRACE, Level.DEBUG, Level.INFO, Level.WARN, Level.ERROR, Level.FATAL}) {
-			assertDoesNotThrow(() -> this.configuration.addDefaultLogger(LoggingType.CONSOLE, level));
+		LoggerConfiguration config = new LoggerConfiguration("*");
+		assertThrows(NullPointerException.class, () -> config.addDefaultLogger(null, null));
+		assertThrows(NullPointerException.class, () -> config.addDefaultLogger(null, Level.ALL));
+		assertThrows(NullPointerException.class, () -> config.addDefaultLogger(LoggingType.CONSOLE, null));
+		for (LoggingType type : LoggingType.values()) {
+			assertThrows(IllegalArgumentException.class, () -> config.addDefaultLogger(type, Level.OFF));
+			assertThrows(IllegalArgumentException.class, () -> config.addDefaultLogger(type, Level.ALL));
 		}
-		for (Level level : new Level[] {Level.DEBUG, Level.INFO, Level.ERROR}) {
-			assertDoesNotThrow(() -> this.configuration.addDefaultLogger(LoggingType.FILE, level));
+		assertThrows(IllegalArgumentException.class, () -> config.addDefaultLogger(LoggingType.FILE, Level.TRACE));
+		assertThrows(IllegalArgumentException.class, () -> config.addDefaultLogger(LoggingType.FILE, Level.FATAL));
+		for (Level level : new Level[]{Level.TRACE, Level.DEBUG, Level.INFO, Level.ERROR, Level.FATAL}) {
+			assertSame(config, assertDoesNotThrow(() -> config.addDefaultLogger(LoggingType.CONSOLE, level)));
+		}
+		for (Level level : new Level[]{Level.DEBUG, Level.INFO, Level.ERROR}) {
+			assertSame(config, assertDoesNotThrow(() -> config.addDefaultLogger(LoggingType.FILE, level)));
 		}
 	}
 	
 	@Test
 	void removeDefaultLogger() {
-		assertDoesNotThrow(() -> this.configuration.removeDefaultLogger(null, null));
-		assertDoesNotThrow(() -> this.configuration.removeDefaultLogger(LoggingType.CONSOLE, null));
-		assertDoesNotThrow(() -> this.configuration.removeDefaultLogger(LoggingType.FILE, null));
-		for (Level level : new Level[] {Level.TRACE, Level.DEBUG, Level.INFO, Level.WARN, Level.ERROR, Level.FATAL}) {
-			assertDoesNotThrow(() -> this.configuration.removeDefaultLogger(LoggingType.CONSOLE, level));
-		}
-		for (Level level : new Level[] {Level.DEBUG, Level.INFO, Level.ERROR}) {
-			assertDoesNotThrow(() -> this.configuration.removeDefaultLogger(LoggingType.FILE, level));
+		LoggerConfiguration config = new LoggerConfiguration("*");
+		assertDoesNotThrow(() -> config.removeDefaultLogger(null, null));
+		assertDoesNotThrow(() -> config.removeDefaultLogger(null, Level.ALL));
+		assertDoesNotThrow(() -> config.removeDefaultLogger(LoggingType.CONSOLE, null));
+		for (LoggingType type : LoggingType.values()) {
+			for (Level level : Level.values()) {
+				assertSame(config, assertDoesNotThrow(() -> config.removeDefaultLogger(type, level)));
+			}
 		}
 	}
 	
 	@Test
 	void build() {
-		assertDoesNotThrow(this.configuration::build);
+		LoggerConfiguration config = new LoggerConfiguration("*");
+		assertDoesNotThrow(config::build);
+		assertNotNull(config.build());
 	}
 }
