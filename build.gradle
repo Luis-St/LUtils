@@ -42,6 +42,8 @@ tasks.register("run", JavaExec) {
 	classpath = sourceSets.main.runtimeClasspath
 	enableAssertions = true
 	standardInput = System.in
+	args()
+	jvmArgs()
 }
 
 def username = ""

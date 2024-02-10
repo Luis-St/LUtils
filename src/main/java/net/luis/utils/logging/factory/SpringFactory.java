@@ -10,27 +10,18 @@ import org.jetbrains.annotations.NotNull;
 import java.net.URI;
 
 /**
- * Cached Log4j2 configuration factory.<br>
- * This factory always returns the cached configuration of the {@link LoggingUtils} class<br>
- * or the default configuration if {@link LoggingUtils} has not been initialized.<br>
+ * Spring logging configuration factory.<br>
+ * Due to the fact that spring boot replaces the logging configuration with its own,<br>
+ * this factory is used to replace the spring boot configuration with the logger configuration used before spring boot.<br>
  * <p>
- *     Can be used with spring boot to auto replace the spring boot configuration with the logger configuration used before spring boot.<br>
- *     The factory is will be automatically registered if the spring boot framework is detected<br>
- *     and the {@link LoggingUtils} class is initialized.<br>
+ *     This factory must be registered via the system property 'log4j.configurationFactory'<br>
+ *     with the fully qualified class name as its value.<br>
+ *     Alternatively, the factory can be registered by calling {@link LoggingUtils#registerSpringFactory()}.<br>
  * </p>
- * <p>
- *     The factory can also be manually registered by setting the system property "log4j.configurationFactory"<br>
- *     to the fully qualified class name of this factory.<br>
- *     This must be done before the log4j2 framework is initialized.<br>
- * </p>
- *
- * @see LoggingUtils
- *
- * @author Luis-St
  */
 @Order(50)
-@Plugin(name = "CachedFactory", category = ConfigurationFactory.CATEGORY)
-public class CachedFactory extends ConfigurationFactory {
+@Plugin(name = "SpringFactory", category = ConfigurationFactory.CATEGORY)
+public class SpringFactory extends ConfigurationFactory {
 	
 	/**
 	 * @return The supported file extensions of the factory
@@ -50,7 +41,7 @@ public class CachedFactory extends ConfigurationFactory {
 	/**
 	 * @param context The logger context
 	 * @param source The configuration source
-	 * @return The configuration currently cached or the default configuration if none is cached.<br>
+	 * @return The configuration used before spring boot or the default configuration if none is cached
 	 */
 	@Override
 	public @NotNull Configuration getConfiguration(@NotNull LoggerContext context, @NotNull ConfigurationSource source) {
@@ -66,7 +57,7 @@ public class CachedFactory extends ConfigurationFactory {
 	 * @param context The logger context
 	 * @param name The configuration name.
 	 * @param location The configuration location.
-	 * @return The configuration currently cached or the default configuration if none is cached.
+	 * @return The configuration used before spring boot or the default configuration if none is cached
 	 */
 	@Override
 	public @NotNull Configuration getConfiguration(@NotNull LoggerContext context, @NotNull String name, @NotNull URI location) {
