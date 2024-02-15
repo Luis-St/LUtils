@@ -43,7 +43,7 @@ class LoggingHelper {
 	 * General system properties:<br>
 	 * <ul>
 	 *     <li>
-	 *         logging.statusLevel<br>
+	 *         logging.level.status<br>
 	 *         The status level of the internal apache logger, expect a valid {@link Level} name in lower case.
 	 *     </li>
 	 *     <li>
@@ -108,15 +108,6 @@ class LoggingHelper {
 	 *
 	 * </ul>
 	 *
-	 * For removal system properties:<br>
-	 * <ul>
-	 *     <li>
-	 * 	       logging.file.folder (deprecated)<br>
-	 * 	       The folder to log to, expect a relative path of a folder<br>
-	 * 	       Default: 'logs/{level}'
-	 * 	   </li>
-	 * </ul>
-	 *
 	 * @param loggers The names of the loggers which should be configured
 	 * @return The logger configuration
 	 * @throws NullPointerException If the given list of loggers is null
@@ -124,7 +115,7 @@ class LoggingHelper {
 	 */
 	public static @NotNull LoggerConfiguration load(@NotNull List<String> loggers) {
 		LoggerConfiguration config = new LoggerConfiguration(loggers);
-		String statusLevel = System.getProperty("logging.statusLevel");
+		String statusLevel = System.getProperty("logging.level.status");
 		if (statusLevel != null) {
 			Level level = Level.getLevel(statusLevel);
 			if (level == null) {
@@ -161,7 +152,7 @@ class LoggingHelper {
 		//region Local record
 		record LogFile(Level level, String folder, String file, String archive) {
 			
-			public static LogFile forLevel(@NotNull Level level) {
+			public static @NotNull LogFile forLevel(@NotNull Level level) {
 				Objects.requireNonNull(level, "Level must not be null");
 				String folder = System.getProperty("logging.file.folder." + level.name().toLowerCase(), null);
 				String file = System.getProperty("logging.file.folder." + level.name().toLowerCase() + ".file", null);
