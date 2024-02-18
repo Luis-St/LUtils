@@ -22,6 +22,11 @@ import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+/**
+ * Test class for {@link NotInitializedException}.<br>
+ *
+ * @author Luis-St
+ */
 class NotInitializedExceptionTest {
 	
 	@Test
