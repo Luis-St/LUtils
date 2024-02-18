@@ -18,6 +18,7 @@
 
 package net.luis.utils.logging;
 
+import net.luis.utils.exception.InvalidValueException;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.*;
 import org.jetbrains.annotations.NotNull;
@@ -111,42 +112,42 @@ class LoggingHelper {
 	 * @param loggers The names of the loggers which should be configured
 	 * @return The logger configuration
 	 * @throws NullPointerException If the given list of loggers is null
-	 * @throws IllegalArgumentException If the value of a system property is invalid or if the logger configuration is invalid
+	 * @throws InvalidValueException If the value of a system property is invalid
 	 */
 	public static @NotNull LoggerConfiguration load(@NotNull List<String> loggers) {
 		LoggerConfiguration config = new LoggerConfiguration(loggers);
 		String statusLevel = System.getProperty("logging.level.status");
-		if (statusLevel != null) {
+		if (StringUtils.isNotBlank(statusLevel)) {
 			Level level = Level.getLevel(statusLevel);
 			if (level == null) {
-				throw new IllegalArgumentException("Invalid value '" + statusLevel + "' for property 'logging.statusLevel'");
+				throw new InvalidValueException("Invalid value '" + statusLevel + "' for property 'logging.statusLevel'");
 			} else {
 				config.setStatusLevel(level);
 			}
 		}
 		String consoleLogging = System.getProperty("logging.console");
-		if (consoleLogging != null) {
+		if (StringUtils.isNotBlank(consoleLogging)) {
 			if (isEnabled(consoleLogging)) {
 				config.enableLogging(LoggingType.CONSOLE);
 			} else if (isDisabled(consoleLogging)) {
 				config.disableLogging(LoggingType.CONSOLE);
 			} else {
-				throw new IllegalArgumentException("Invalid value '" + consoleLogging + "' for property 'logging.console'");
+				throw new InvalidValueException("Invalid value '" + consoleLogging + "' for property 'logging.console'");
 			}
 		}
 		String fileLogging = System.getProperty("logging.file");
-		if (fileLogging != null) {
+		if (StringUtils.isNotBlank(fileLogging)) {
 			if (isEnabled(fileLogging)) {
 				config.enableLogging(LoggingType.FILE);
 			} else if (isDisabled(fileLogging)) {
 				config.disableLogging(LoggingType.FILE);
 			} else {
-				throw new IllegalArgumentException("Invalid value '" + fileLogging + "' for property 'logging.file'");
+				throw new InvalidValueException("Invalid value '" + fileLogging + "' for property 'logging.file'");
 			}
 		}
 		String root = System.getProperty("logging.file.folder.root", "./").replace("\\", "/");
 		if (!root.matches("^([a-zA-Z]:|\\./).*$")) {
-			throw new IllegalArgumentException("Invalid value '" + root + "' for property 'logging.file.folder.root', must be a relative or absolute path");
+			throw new InvalidValueException("Invalid value '" + root + "' for property 'logging.file.folder.root', must be a relative or absolute path");
 		}
 		config.setRootDirectory(StringUtils.strip(root, "/ ") + "/"); // Root must be relative or absolute and end with '/'
 		//region Local record
@@ -186,11 +187,14 @@ class LoggingHelper {
 			String archive = "/" + log.archiveOr(log.level().name().toLowerCase() + "-%d{dd-MM-yyyy}-%i.log.gz"); // Archive must not be null and starts with '/'
 			config.overrideLog(log.level(), folder + file, folder + archive);
 		});
-		// Configure default file loggers before initializing the loggers
 		for (Level level : LoggingType.FILE) {
 			String value = System.getProperty("logging." + LoggingType.FILE + "." + level.name().toLowerCase(), "");
 			if (isEnabled(value)) {
 				config.addDefaultLogger(LoggingType.FILE, level);
+			} else if (isDisabled(value)) {
+				config.removeDefaultLogger(LoggingType.FILE, level);
+			} else {
+				throw new InvalidValueException("Invalid value '" + value + "' for property 'logging." + LoggingType.FILE + "." + level.name().toLowerCase() + "'");
 			}
 		}
 		return config;
@@ -228,10 +232,10 @@ class LoggingHelper {
 	 */
 	public static void configure() {
 		Stream.of(LoggingType.CONSOLE.getAllowedLevels()).map(level -> {
-			return Map.entry(level, System.getProperty("logging." + LoggingType.CONSOLE + "." + level.name().toLowerCase(), ""));
-		}).filter(entry -> !entry.getValue().isEmpty()).forEach(entry -> {
-			Level level = entry.getKey();
-			String value = entry.getValue();
+			return Pair.of(level, System.getProperty("logging." + LoggingType.CONSOLE + "." + level.name().toLowerCase(), ""));
+		}).filter(entry -> !entry.getSecond().isEmpty()).forEach(entry -> {
+			Level level = entry.getFirst();
+			String value = entry.getSecond();
 			if (isEnabled(value)) {
 				LoggingUtils.enableConsole(level);
 			} else if (isDisabled(value)) {
@@ -262,47 +266,6 @@ class LoggingHelper {
 	 */
 	private static boolean isDisabled(@Nullable String property) {
 		return StringUtils.equalsAnyIgnoreCase(property, "false", "disable", "disabled", "0", "off", "no");
-	}
-	
-	/**
-	 * Returns the relative path of the given file.<br>
-	 * If the file is null, empty or equal to '/' the current directory ('./') is returned.<br>
-	 * If the file starts with './' and ends with '/' it is returned as is.<br>
-	 * All other files are returned as: {@code './' + file + '/'}<br>
-	 * Examples:
-	 * <pre>
-	 *     getRelativePath(null) = "./"
-	 *     getRelativePath("") = "./"
-	 *     getRelativePath("/") = "./"
-	 *     getRelativePath("./") = "./"
-	 *     getRelativePath("test") = "./test/"
-	 *     getRelativePath("/test") = "./test/"
-	 *     getRelativePath("test/") = "./test/"
-	 *     getRelativePath("/test/") = "./test/"
-	 *     getRelativePath("./test") = "./test/"
-	 *     getRelativePath("test/test") = "./test/test/"
-	 * </pre>
-	 * @param file The file to get the relative path of
-	 * @return The relative path of the given file
-	 */
-	private static @NotNull String getRelativePath(@Nullable String file) {
-		String str = StringUtils.stripToEmpty(file).replace("\\", "/");
-		if (str.isEmpty() || "/".equals(str) || "./".equals(str)) {
-			return "./";
-		}
-		if (!str.endsWith("/")) {
-			str += "/";
-		}
-		if (str.startsWith("./") && str.endsWith("/")) {
-			return str;
-		} else if (!str.startsWith("./") && !str.startsWith("/")) {
-			return "./" + str;
-		} else if (str.startsWith(".")) {
-			return "./" + str.substring(1);
-		} else if (str.startsWith("/")) {
-			return "." + str;
-		}
-		return str;
 	}
 	//endregion
 }
