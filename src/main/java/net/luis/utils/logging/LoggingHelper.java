@@ -19,43 +19,138 @@
 package net.luis.utils.logging;
 
 import net.luis.utils.exception.InvalidValueException;
+import net.luis.utils.resources.ResourceLocation;
+import net.luis.utils.util.Pair;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.*;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.io.IOException;
 import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
 /**
- * Helper class to configure the logging from system properties.<br>
+ * Helper class to configure logging from system properties.<br>
  *
  * @author Luis-St
  */
 class LoggingHelper {
 	
 	/**
-	 * The logger of this class.<br>
+	 * The pattern to match a property in the format 'key=value'.<br>
+	 * <p>
+	 *     The key must not contain any whitespace characters.<br>
+	 *     The value must not contain any line breaks.<br>
+	 * </p>
 	 */
-	private static final Logger LOGGER = LogManager.getLogger(LoggingHelper.class);
+	private static final Pattern PROPERTY_PATTERN = Pattern.compile("^(\\S*)(=)(.*)$");
+	/**
+	 * The pattern to match a valid path.<br>
+	 * The path must be relative or absolute.<br>
+	 */
+	private static final String PATH_PATTERN = "^([a-zA-Z]:|\\./).*$";
+	/**
+	 * Constant for the system property 'logging.level.status'.<br>
+	 * <p>
+	 *     The property is used to set the status level of the internal apache logger.<br>
+	 *     The value must be a valid {@link Level} name in lower case.<br>
+	 * </p>
+	 * <p>
+	 *     The default value is {@code 'error'}.
+	 * </p>
+	 */
+	private static final String LOGGING_LEVEL_STATUS = "logging.level.status";
+	/**
+	 * Constant for the system property 'logging.config'.<br>
+	 * <p>
+	 *     The property is used to set the location of the logging configuration file.<br>
+	 *     The value must be a relative or absolute path of a file.<br>
+	 *     If specified, the system properties will be loaded from the configuration file.<br>
+	 * </p>
+	 * <p>
+	 *     By default, the property is not set.<br>
+	 * </p>
+	 */
+	private static final String LOGGING_CONFIG = "logging.config";
+	/**
+	 * Constant for the system property 'logging.config.override'.<br>
+	 * <p>
+	 *     The property is used to enable/disable the override of system properties by the configuration file.<br>
+	 *     The value must be 'true' or 'false'.<br>
+	 *     If enabled, the system properties set with {@code -D} flag will be overridden by the configuration file.<br>
+	 * </p>
+	 * <p>
+	 *     The default value is {@code 'false'}.<br>
+	 * </p>
+	 */
+	private static final String LOGGING_CONFIG_OVERRIDE = "logging.config.override";
+	/**
+	 * Constant for the system property 'logging.console'.<br>
+	 * <p>
+	 *     The property is used to enable/disable console logging.<br>
+	 *     The value must be 'true' or 'false'.<br>
+	 * </p>
+	 * <p>
+	 *     The default value is {@code 'true'}.<br>
+	 * </p>
+	 */
+	private static final String LOGGING_CONSOLE = "logging.console";
+	/**
+	 * Constant for the system property 'logging.file'.<br>
+	 * <p>
+	 *     The property is used to enable/disable file logging.<br>
+	 *     The value must be 'true' or 'false'.<br>
+	 * </p>
+	 * <p>
+	 *     The default value is {@code 'true'}.<br>
+	 * </p>
+	 */
+	private static final String LOGGING_FILE = "logging.file";
+	/**
+	 * Constant for the system property 'logging.file.folder.root'.<br>
+	 * <p>
+	 *     The property is used to set the root folder of the log files.<br>
+	 *     The value must be a relative or absolute path of a folder.<br>
+	 * </p>
+	 * <p>
+	 *     The default value is {@code './'}.<br>
+	 * </p>
+	 */
+	private static final String LOGGING_FILE_FOLDER_ROOT = "logging.file.folder.root";
 	
 	/**
-	 * Creates a new logger configuration and modifies it according to the system properties.<br>
+	 * Creates a new logger configuration for the given loggers.<br>
+	 * The configuration is created with the default values and modifies it according to the system properties.<br>
 	 * General system properties:<br>
 	 * <ul>
 	 *     <li>
 	 *         logging.level.status<br>
-	 *         The status level of the internal apache logger, expect a valid {@link Level} name in lower case.
+	 *         The status level of the internal apache logger, expect a valid {@link Level} name in lower case.<br>
+	 *         Default: 'error'<br>
+	 *     </li>
+	 *     <li>
+	 *         logging.config<br>
+	 *         The location of the logging configuration file, expect a relative or absolute path of a file.<br>
+	 *         If specified, the system properties will be loaded from the configuration file.<br>
+	 *         Default: None<br>
+	 *     </li>
+	 *     <li>
+	 *         logging.config.override<br>
+	 *         Enables/disables the override of system properties by the configuration file, expect 'true' or 'false'.<br>
+	 *         Default: 'false'<br>
 	 *     </li>
 	 *     <li>
 	 *         logging.console<br>
 	 *         Enables/disables console logging, expect 'true' or 'false'.<br>
-	 *         Default: 'true'
+	 *         Default: 'true'<br>
 	 *     </li>
 	 *     <li>
 	 *         logging.file<br>
 	 *         Enables/disables file logging, expect 'true' or 'false'.<br>
-	 *         Default: 'true'
+	 *         Default: 'true'<br>
 	 *     </li>
 	 * </ul>
 	 *
@@ -75,36 +170,36 @@ class LoggingHelper {
 	 * 	       <ul>
 	 * 	           <li>
 	 * 	               logging.file.debug=true<br>
-	 * 	               Enables file logging for the debug level
+	 * 	               Enables file logging for the debug level<br>
 	 * 	           </li>
 	 * 	           <li>
 	 * 	               logging.file.info=false<br>
-	 * 	               Disables file logging for the info level
+	 * 	               Disables file logging for the info level<br>
 	 * 	           </li>
 	 * 	       </ul>
 	 * 	 </li
 	 *     <li>
 	 *         logging.file.folder.root<br>
 	 *         The root folder to log to, expect a relative or absolute path of a folder.<br>
-	 *         Default: './'
+	 *         Default: './'<br>
 	 *     </li>
 	 *     <li>
 	 *         logging.file.folder.{level}<br>
 	 *         The folder to a log file of a specific level, expect a relative path of a folder.<br>
 	 *         {level} must be replaced with a valid {@link Level} name in lower case.<br>
-	 *         Default: 'logs/'
+	 *         Default: 'logs/'<br>
 	 *     </li>
 	 *     <li>
 	 *         logging.file.folder.{level}.file<br>
 	 *         The file name of the current log file of a specific level, expect a file name.<br>
 	 *         {level} must be replaced with a valid {@link Level} name in lower case.<br>
-	 *         Default: '{level}.log'
+	 *         Default: '{level}.log'<br>
 	 *     </li>
 	 *     <li>
 	 *         logging.file.folder.{level}.archive<br>
 	 *         The file pattern of the archived log files of a specific level, expect a file pattern.<br>
 	 *         {level} must be replaced with a valid {@link Level} name in lower case.<br>
-	 *         Default: '{level}-%d{dd-MM-yyyy}-%i.log.gz'
+	 *         Default: '{level}-%d{dd-MM-yyyy}-%i.log.gz'<br>
 	 *     </li>
 	 *
 	 * </ul>
@@ -113,41 +208,98 @@ class LoggingHelper {
 	 * @return The logger configuration
 	 * @throws NullPointerException If the given list of loggers is null
 	 * @throws InvalidValueException If the value of a system property is invalid
+	 * @throws IllegalStateException If a system property is already set and the configuration tries to override it
+	 * @see #loadInternal(List)
+	 * @see #loadProperties(ResourceLocation)
 	 */
 	public static @NotNull LoggerConfiguration load(@NotNull List<String> loggers) {
+		String config = System.getProperty("logging.config");
+		if (StringUtils.isNotBlank(config)) {
+			String file = config.replace("\\", "/");
+			if (!file.matches(PATH_PATTERN)) {
+				throw new InvalidValueException("Invalid value '" + file + "' for property 'logging.config', must be a relative or absolute path");
+			}
+			loadProperties(ResourceLocation.external(file));
+		}
+		return loadInternal(loggers);
+	}
+	
+	/**
+	 * Loads the system properties from the given location.<br>
+	 * The location must be a valid file, and the properties must be in the format 'key=value'.<br>
+	 * If a property is already set, the override is allowed if the system property 'logging.config.override' is set to 'true'.<br>
+	 * @param location The location of the properties file
+	 * @throws NullPointerException If the given location is null
+	 * @throws IllegalStateException If a system property is already set and the configuration tries to override it
+	 * @throws RuntimeException If the properties file could not be loaded
+	 * @see #PROPERTY_PATTERN
+	 */
+	private static void loadProperties(@NotNull ResourceLocation location) {
+		Objects.requireNonNull(location, "Location must not be null");
+		boolean noOverrides = !Boolean.parseBoolean(System.getProperty("logging.config.override", "false"));
+		try {
+			for (String line : location.getLines().toList()) {
+				if (StringUtils.isBlank(line) || StringUtils.startsWithAny(line, "#", "!")) {
+					continue;
+				}
+				Matcher matcher = PROPERTY_PATTERN.matcher(line);
+				if (matcher.matches()) {
+					String key = matcher.group(1);
+					if (System.getProperty(key) != null && noOverrides) {
+						throw new IllegalStateException("System property '" + key + "' is already set and override is not allowed");
+					}
+					System.setProperty(key, matcher.group(3));
+				}
+			}
+		} catch (IOException e) {
+			throw new RuntimeException("Unable to load logging config file '" + location + "'", e);
+		}
+	}
+	
+	/**
+	 * Creates a new logger configuration for the given loggers.<br>
+	 * The configuration is created with the default values and modifies it according to the system properties.<br>
+	 * The system properties are specified in the documentation of the method {@link #load(List)}.<br>
+	 * @param loggers The names of the loggers which should be configured
+	 * @return The logger configuration
+	 * @throws NullPointerException If the given list of loggers is null
+	 * @throws InvalidValueException If the value of a system property is invalid
+	 * @see #load(List)
+	 */
+	private static @NotNull LoggerConfiguration loadInternal(@NotNull List<String> loggers) {
 		LoggerConfiguration config = new LoggerConfiguration(loggers);
-		String statusLevel = System.getProperty("logging.level.status");
+		String statusLevel = System.getProperty(LOGGING_LEVEL_STATUS);
 		if (StringUtils.isNotBlank(statusLevel)) {
 			Level level = Level.getLevel(statusLevel);
 			if (level == null) {
-				throw new InvalidValueException("Invalid value '" + statusLevel + "' for property 'logging.statusLevel'");
+				throw new InvalidValueException("Invalid value '" + statusLevel + "' for property '" + LOGGING_LEVEL_STATUS + "'");
 			} else {
 				config.setStatusLevel(level);
 			}
 		}
-		String consoleLogging = System.getProperty("logging.console");
+		String consoleLogging = System.getProperty(LOGGING_CONSOLE);
 		if (StringUtils.isNotBlank(consoleLogging)) {
 			if (isEnabled(consoleLogging)) {
 				config.enableLogging(LoggingType.CONSOLE);
 			} else if (isDisabled(consoleLogging)) {
 				config.disableLogging(LoggingType.CONSOLE);
 			} else {
-				throw new InvalidValueException("Invalid value '" + consoleLogging + "' for property 'logging.console'");
+				throw new InvalidValueException("Invalid value '" + consoleLogging + "' for property '" + LOGGING_CONSOLE + "'");
 			}
 		}
-		String fileLogging = System.getProperty("logging.file");
+		String fileLogging = System.getProperty(LOGGING_FILE);
 		if (StringUtils.isNotBlank(fileLogging)) {
 			if (isEnabled(fileLogging)) {
 				config.enableLogging(LoggingType.FILE);
 			} else if (isDisabled(fileLogging)) {
 				config.disableLogging(LoggingType.FILE);
 			} else {
-				throw new InvalidValueException("Invalid value '" + fileLogging + "' for property 'logging.file'");
+				throw new InvalidValueException("Invalid value '" + fileLogging + "' for property '" + LOGGING_FILE + "'");
 			}
 		}
-		String root = System.getProperty("logging.file.folder.root", "./").replace("\\", "/");
-		if (!root.matches("^([a-zA-Z]:|\\./).*$")) {
-			throw new InvalidValueException("Invalid value '" + root + "' for property 'logging.file.folder.root', must be a relative or absolute path");
+		String root = System.getProperty(LOGGING_FILE_FOLDER_ROOT, "./").replace("\\", "/");
+		if (!root.matches(PATH_PATTERN)) {
+			throw new InvalidValueException("Invalid value '" + root + "' for property '" + LOGGING_FILE_FOLDER_ROOT + "', must be a relative or absolute path");
 		}
 		config.setRootDirectory(StringUtils.strip(root, "/ ") + "/"); // Root must be relative or absolute and end with '/'
 		//region Local record
