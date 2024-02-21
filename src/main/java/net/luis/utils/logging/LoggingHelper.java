@@ -177,31 +177,30 @@ class LoggingHelper {
 	 * 	               Disables file logging for the info level<br>
 	 * 	           </li>
 	 * 	       </ul>
-	 * 	 </li
-	 *     <li>
-	 *         logging.file.folder.root<br>
-	 *         The root folder to log to, expect a relative or absolute path of a folder.<br>
-	 *         Default: './'<br>
-	 *     </li>
-	 *     <li>
-	 *         logging.file.folder.{level}<br>
-	 *         The folder to a log file of a specific level, expect a relative path of a folder.<br>
-	 *         {level} must be replaced with a valid {@link Level} name in lower case.<br>
-	 *         Default: 'logs/'<br>
-	 *     </li>
-	 *     <li>
-	 *         logging.file.folder.{level}.file<br>
-	 *         The file name of the current log file of a specific level, expect a file name.<br>
-	 *         {level} must be replaced with a valid {@link Level} name in lower case.<br>
-	 *         Default: '{level}.log'<br>
-	 *     </li>
-	 *     <li>
-	 *         logging.file.folder.{level}.archive<br>
-	 *         The file pattern of the archived log files of a specific level, expect a file pattern.<br>
-	 *         {level} must be replaced with a valid {@link Level} name in lower case.<br>
-	 *         Default: '{level}-%d{dd-MM-yyyy}-%i.log.gz'<br>
-	 *     </li>
-	 *
+	 * 	  </li>
+	 *    <li>
+	 *        logging.file.folder.root<br>
+	 *        The root folder to log to, expect a relative or absolute path of a folder.<br>
+	 *        Default: './'<br>
+	 *    </li>
+	 *    <li>
+	 *        logging.file.folder.{level}<br>
+	 *        The folder to a log file of a specific level, expect a relative path of a folder.<br>
+	 *        {level} must be replaced with a valid {@link Level} name in lower case.<br>
+	 *        Default: 'logs/'<br>
+	 *    </li>
+	 *    <li>
+	 *        logging.file.folder.{level}.file<br>
+	 *        The file name of the current log file of a specific level, expect a file name.<br>
+	 *        {level} must be replaced with a valid {@link Level} name in lower case.<br>
+	 *        Default: '{level}.log'<br>
+	 *    </li>
+	 *    <li>
+	 *        logging.file.folder.{level}.archive<br>
+	 *        The file pattern of the archived log files of a specific level, expect a file pattern.<br>
+	 *        {level} must be replaced with a valid {@link Level} name in lower case.<br>
+	 *        Default: '{level}-%d{dd-MM-yyyy}-%i.log.gz'<br>
+	 *    </li>
 	 * </ul>
 	 *
 	 * @param loggers The names of the loggers which should be configured

@@ -39,6 +39,7 @@ java {
 
 javadoc {
 	exclude("**/Main.java")
+	options.memberLevel = JavadocMemberLevel.PRIVATE
 }
 
 artifacts {
