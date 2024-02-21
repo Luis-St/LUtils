@@ -66,12 +66,14 @@ if (file.exists()) {
 	password = properties.getProperty("password")
 }
 
+compileJava.dependsOn(updateLicenses)
+
 publishing {
 	publications {
 		mavenJava(MavenPublication) {
 			groupId = "net.luis"
 			artifactId = "LUtils"
-			version = "5.0.0"
+			version = "5.1.0"
 			artifact jar
 			artifact sourcesJar
 			artifact javadocJar
