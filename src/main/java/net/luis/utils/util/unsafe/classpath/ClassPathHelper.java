@@ -18,9 +18,9 @@
 
 package net.luis.utils.util.unsafe.classpath;
 
+import com.google.common.collect.Lists;
 import net.luis.utils.util.unsafe.StackTraceUtils;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
+import org.jetbrains.annotations.*;
 
 import java.io.File;
 import java.io.FilenameFilter;
@@ -53,6 +53,23 @@ class ClassPathHelper {
 	private static final String UNSAFE_PACKAGE_DEPTH = "unsafe.package.depth";
 	
 	/**
+	 * Constant for the system property 'unsafe.classes.ignored'.<br>
+	 * <p>
+	 *     The property is used in to filter classes which should be fully ignored.<br>
+	 *     All classes which are listed will not be loaded.<br>
+	 * </p>
+	 * <p>
+	 *     The value of the property is a comma or semicolon separated list of fully qualified class names.<br>
+	 *     If you want to ignore all classes from a package, you can use a wildcard at the end of the package name.<br>
+	 *     Wildcard entries are only allowed at the end of the package name, the entry must end with {@code .*}.<br>
+	 * </p>
+	 * <p>
+	 *     The default value is an empty string.<br>
+	 * </p>
+	 */
+	private static final String UNSAFE_CLASSES_IGNORED = "unsafe.classes.ignored";
+	
+	/**
 	 * Gets all classes from the classpath.<br>
 	 * The classes will be filtered by the given condition.<br>
 	 * <p>
@@ -73,7 +90,7 @@ class ClassPathHelper {
 	 * @return A list of all classes
 	 */
 	static @NotNull List<Class<?>> getClasses(boolean includeDependencies, @NotNull Predicate<String> condition) {
-		List<Class<?>> classes = new ArrayList<>();
+		List<Class<?>> classes = Lists.newArrayList();
 		for (File file : getClassPathFiles()) {
 			if (file.isDirectory()) {
 				classes.addAll(getClassesFromDirectory(file, condition));
@@ -90,6 +107,41 @@ class ClassPathHelper {
 	//region Internal helper methods
 	
 	/**
+	 * Gets a condition to filter the classes which should be ignored.<br>
+	 * The condition is based on the system property 'unsafe.classes.ignored'.<br>
+	 * <p>
+	 *     The value of the property is a comma or semicolon separated list of fully qualified class names.<br>
+	 *     If you want to ignore all classes from a package, you can use a wildcard at the end of the package name.<br>
+	 *     Wildcard entries are only allowed at the end of the package name, the entry must end with {@code .*}.<br>
+	 * </p>
+	 * <p>
+	 *     If the property is not set, the condition will always return {@code false}.<br>
+	 *     This means that no classes will be ignored.<br>
+	 * </p>
+	 * @return A condition to filter the classes which should be ignored
+	 */
+	private static @NotNull Predicate<String> getIgnoreCondition() {
+		String property = System.getProperty(UNSAFE_CLASSES_IGNORED, "");
+		List<String> classes = Arrays.stream(property.split("[,;]")).map(String::trim).filter(s -> !s.isEmpty()).toList();
+		if (classes.isEmpty()) {
+			return clazz -> false;
+		}
+		List<String> ignored = classes.stream().filter(s -> !s.endsWith(".*")).toList();
+		List<String> patterns = ignored.stream().filter(s -> s.endsWith(".*")).map(s -> s.substring(0, s.length() - 1)).toList();
+		return clazz -> {
+			if (ignored.contains(clazz)) {
+				return true;
+			}
+			for (String pattern : patterns) {
+				if (clazz.startsWith(pattern.substring(0, pattern.length() - 2))) {
+					return true;
+				}
+			}
+			return false;
+		};
+	}
+	
+	/**
 	 * Gets all classes from the given jar file.<br>
 	 * Any exceptions which will be thrown while trying to get the classes will be ignored.<br>
 	 * @param file The jar file
@@ -99,19 +151,22 @@ class ClassPathHelper {
 	 */
 	private static @NotNull List<Class<?>> getClassesFromJar(@NotNull File file, @NotNull Predicate<String> condition) {
 		Objects.requireNonNull(file, "File must not be null");
-		List<Class<?>> classes = new ArrayList<>();
+		List<Class<?>> classes = Lists.newArrayList();
+		Predicate<String> ignore = getIgnoreCondition();
 		if (file.exists() && file.canRead()) {
 			try (JarFile jar = new JarFile(file)) {
 				Enumeration<JarEntry> enumeration = jar.entries();
 				while (enumeration.hasMoreElements()) {
 					JarEntry entry = enumeration.nextElement();
-					if (entry.getName().endsWith("class")) {
+					if (entry.getName().endsWith(".class")) {
 						String className = convertToClass(entry.getName());
+						if (ignore.test(className)) {
+							continue;
+						}
 						if (!condition.test(className)) {
 							continue;
 						}
-						Class<?> clazz = Class.forName(convertToClass(entry.getName()));
-						classes.add(clazz);
+						classes.add(Class.forName(className));
 					}
 				}
 			} catch (Exception | Error ignored) {}
@@ -134,12 +189,16 @@ class ClassPathHelper {
 	 */
 	private static @NotNull List<Class<?>> getClassesFromDirectory(@NotNull File directory, @NotNull Predicate<String> condition) {
 		Objects.requireNonNull(directory, "Path must not be null");
-		List<Class<?>> classes = new ArrayList<>();
+		List<Class<?>> classes = Lists.newArrayList();
 		for (File file : listFiles(directory, (dir, name) -> name.endsWith(".jar"), false)) {
 			classes.addAll(getClassesFromJar(file, condition));
 		}
+		Predicate<String> ignore = getIgnoreCondition();
 		for (File classfile : listFiles(directory, (dir, name) -> name.endsWith(".class"), true)) {
 			String className = convertToClass(classfile.getAbsolutePath().substring(directory.getAbsolutePath().length() + 1));
+			if (ignore.test(className)) {
+				continue;
+			}
 			if (!condition.test(className)) {
 				continue;
 			}
@@ -161,7 +220,7 @@ class ClassPathHelper {
 	 */
 	private static @NotNull List<File> listFiles(@NotNull File directory, @Nullable FilenameFilter filter, boolean recurse) {
 		Objects.requireNonNull(directory, "Directory must not be null");
-		List<File> files = new ArrayList<>();
+		List<File> files = Lists.newArrayList();
 		for (File entry : Objects.requireNonNull(directory.listFiles())) {
 			if (filter == null || filter.accept(directory, entry.getName())) {
 				files.add(entry);
@@ -180,7 +239,7 @@ class ClassPathHelper {
 	 * @return A list of all files from the classpath
 	 */
 	private static @NotNull List<File> getClassPathFiles() {
-		List<File> files = new ArrayList<>();
+		List<File> files = Lists.newArrayList();
 		String classPath = System.getProperty("java.class.path");
 		if (classPath != null) {
 			for (String path : classPath.split(File.pathSeparator)) {
