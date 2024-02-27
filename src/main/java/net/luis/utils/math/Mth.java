@@ -255,6 +255,97 @@ public class Mth {
 	}
 	//endregion
 	
+	//region Min
+	
+	/**
+	 * Returns the minimum of the given integer values.<br>
+	 * If the given array is null or empty, {@link Integer#MAX_VALUE} will be returned.<br>
+	 * @param values The values
+	 * @return The minimum of the given values
+	 * @throws IllegalStateException If the minimum value cannot be determined (should never happen)
+	 */
+	public static int min(int @Nullable ... values) {
+		if (values == null || values.length == 0) {
+			return Integer.MAX_VALUE;
+		}
+		return IntStream.of(values).min().orElseThrow(IllegalStateException::new);
+	}
+	
+	/**
+	 * Returns the minimum of the given long values.<br>
+	 * If the given array is null or empty, {@link Long#MAX_VALUE} will be returned.<br>
+	 * @param values The values
+	 * @return The minimum of the given values
+	 * @throws IllegalStateException If the minimum value cannot be determined (should never happen)
+	 */
+	public static long min(long @Nullable ... values) {
+		if (values == null || values.length == 0) {
+			return Long.MAX_VALUE;
+		}
+		return LongStream.of(values).min().orElseThrow(IllegalStateException::new);
+	}
+	
+	/**
+	 * Returns the minimum of the given double values.<br>
+	 * If the given array is null or empty, {@link Double#MAX_VALUE} will be returned.<br>
+	 * @param values The values
+	 * @return The minimum of the given values
+	 * @throws IllegalStateException If the minimum value cannot be determined (should never happen)
+	 */
+	public static double min(double @Nullable ... values) {
+		if (values == null || values.length == 0) {
+			return Double.MAX_VALUE;
+		}
+		return DoubleStream.of(values).min().orElseThrow(IllegalStateException::new);
+	}
+	//endregion
+	
+	//region Max
+	
+	/**
+	 * Returns the maximum of the given integer values.<br>
+	 * If the given array is null or empty, {@link Integer#MIN_VALUE} will be returned.<br>
+	 * @param values The values
+	 * @return The maximum of the given values
+	 * @throws IllegalStateException If the maximum value cannot be determined (should never happen)
+	 */
+	public static int max(int @Nullable ... values) {
+		if (values == null || values.length == 0) {
+			return Integer.MIN_VALUE;
+		}
+		return IntStream.of(values).max().orElseThrow(IllegalStateException::new);
+	}
+	
+	/**
+	 * Returns the maximum of the given long values.<br>
+	 * If the given array is null or empty, {@link Long#MIN_VALUE} will be returned.<br>
+	 * @param values The values
+	 * @return The maximum of the given values
+	 * @throws IllegalStateException If the maximum value cannot be determined (should never happen)
+	 */
+	public static long max(long @Nullable ... values) {
+		if (values == null || values.length == 0) {
+			return Long.MIN_VALUE;
+		}
+		return LongStream.of(values).max().orElseThrow(IllegalStateException::new);
+	}
+	
+	/**
+	 * Returns the maximum of the given double values.<br>
+	 * If the given array is null or empty, {@link Double#MIN_VALUE} will be returned.<br>
+	 * @param values The values
+	 * @return The maximum of the given values
+	 * @throws IllegalStateException If the maximum value cannot be determined (should never happen)
+	 */
+	public static double max(double @Nullable ... values) {
+		if (values == null || values.length == 0) {
+			return Double.MIN_VALUE;
+		}
+		return DoubleStream.of(values).max().orElseThrow(IllegalStateException::new);
+	}
+	
+	//endregion
+	
 	//region Average
 	
 	/**
@@ -262,12 +353,13 @@ public class Mth {
 	 * If the given array is null or empty, {@link Double#NaN} will be returned.<br>
 	 * @param values The values
 	 * @return The average of the given values
+	 * @throws IllegalStateException If the average value cannot be determined (should never happen)
 	 */
 	public static double average(int @Nullable ... values) {
 		if (values == null || values.length == 0) {
 			return Double.NaN;
 		}
-		return IntStream.of(values).average().orElse(0);
+		return IntStream.of(values).average().orElseThrow(IllegalStateException::new);
 	}
 	
 	/**
@@ -275,12 +367,13 @@ public class Mth {
 	 * If the given array is null or empty, {@link Double#NaN} will be returned.<br>
 	 * @param values The values
 	 * @return The average of the given values
+	 * @throws IllegalStateException If the average value cannot be determined (should never happen)
 	 */
 	public static double average(long @Nullable ... values) {
 		if (values == null || values.length == 0) {
 			return Double.NaN;
 		}
-		return LongStream.of(values).average().orElse(0);
+		return LongStream.of(values).average().orElseThrow(IllegalStateException::new);
 	}
 	
 	/**
@@ -288,14 +381,16 @@ public class Mth {
 	 * If the given array is null or empty, {@link Double#NaN} will be returned.<br>
 	 * @param values The values
 	 * @return The average of the given values
+	 * @throws IllegalStateException If the average value cannot be determined (should never happen)
 	 */
 	public static double average(double @Nullable ... values) {
 		if (values == null || values.length == 0) {
 			return Double.NaN;
 		}
-		return DoubleStream.of(values).average().orElse(0);
+		return DoubleStream.of(values).average().orElseThrow(IllegalStateException::new);
 	}
 	//endregion
+	
 	
 	/**
 	 * Checks if the given value is a power of two.<br>

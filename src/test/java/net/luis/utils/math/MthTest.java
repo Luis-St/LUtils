@@ -124,12 +124,34 @@ class MthTest {
 	}
 	
 	@Test
+	void min() {
+		assertEquals(Integer.MAX_VALUE, Mth.min((int[]) null));
+		assertEquals(Long.MAX_VALUE, Mth.min((long[]) null));
+		assertEquals(Double.MAX_VALUE, Mth.min((double[]) null));
+		assertEquals(0, Mth.min(0, 1, 2, 3, 4));
+		assertEquals(0L, Mth.min(0L, 1L, 2L, 3L, 4L));
+		assertEquals(0.0, Mth.min(0.0, 1.0, 2.0, 3.0, 4.0));
+	}
+	
+	@Test
+	void max() {
+		assertEquals(Integer.MIN_VALUE, Mth.max((int[]) null));
+		assertEquals(Long.MIN_VALUE, Mth.max((long[]) null));
+		assertEquals(Double.MIN_VALUE, Mth.max((double[]) null));
+		assertEquals(4, Mth.max(0, 1, 2, 3, 4));
+		assertEquals(4L, Mth.max(0L, 1L, 2L, 3L, 4L));
+		assertEquals(4.0, Mth.max(0.0, 1.0, 2.0, 3.0, 4.0));
+	}
+	
+	@Test
 	void average() {
 		assertTrue(Double.isNaN(Mth.average()));
+		assertTrue(Double.isNaN(Mth.average((int[]) null)));
+		assertTrue(Double.isNaN(Mth.average((long[]) null)));
+		assertTrue(Double.isNaN(Mth.average((double[]) null)));
 		assertEquals(2.0, Mth.average(0, 1, 2, 3, 4));
 		assertEquals(2.0, Mth.average(0L, 1L, 2L, 3L, 4L));
 		assertEquals(2.0, Mth.average(0.0, 1.0, 2.0, 3.0, 4.0));
-		assertEquals(2.0, Mth.average(0.0F, 1.0F, 2.0F, 3.0F, 4.0F));
 	}
 	
 	@Test
