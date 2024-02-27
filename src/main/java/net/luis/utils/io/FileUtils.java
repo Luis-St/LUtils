@@ -39,18 +39,19 @@ public class FileUtils {
 	/**
 	 * Splits the given file into a pair of the folder and the file name.<br>
 	 * The folder is the part before the last slash, the name is the part after the last slash.<br>
-	 * Examples:
-	 * <ul>
-	 *     <li><pre>null -> ("", "")</pre></li>
-	 *     <li><pre>"" -> ("", "")</pre></li>
-	 *     <li><pre>"." -> (".", "")</pre></li>
-	 *     <li><pre>"./" -> ("./", "")</pre></li>
-	 *     <li><pre>"test" -> ("test", "")</pre></li>
-	 *     <li><pre>"/test/" -> ("/test"/, "")</pre></li>
-	 *     <li><pre>"/test.json" -> ("/", "test.json")</pre></li>
-	 *     <li><pre>"/test/test.json" -> ("/test"/, "test.json")</pre></li>
-	 * </ul>
-	 *
+	 * <p>
+	 *     Examples:<br>
+	 * </p>
+	 * <pre>{@code
+	 * split(null) -> ("", "")
+	 * split("") -> ("", "")
+	 * split(".") -> (".", "")
+	 * split("./") -> ("./", "")
+	 * split("foo") -> ("foo", "")
+	 * split("/foo/") -> ("/foo"/, "")
+	 * split("/foo.json") -> ("/", "foo.json")
+	 * split("/bar/foo.json") -> ("/bar"/, "foo.json")
+	 * }</pre>
 	 * @param file The file to split as a string
 	 * @return The pair of the folder and the file name
 	 */
@@ -70,14 +71,16 @@ public class FileUtils {
 	/**
 	 * Gets the name of the given file.<br>
 	 * The file can be a path or a file name.<br>
-	 * Examples:
-	 * <ul>
-	 *     <li><pre>null -> ""</pre></li>
-	 *     <li><pre>"" -> ""</pre></li>
-	 *     <li><pre>"/" -> ""</pre></li>
-	 *     <li><pre>"/test.json" -> "test"</pre></li>
-	 *     <li><pre>"/test/test.json" -> "test"</pre></li>
-	 * </ul>
+	 * <p>
+	 *     Examples:<br>
+	 * </p>
+	 * <pre>{@code
+	 * getName(null) -> ""
+	 * getName("") -> ""
+	 * getName("/") -> ""
+	 * getName("/foo.json") -> "foo"
+	 * getName("/bar/foo.json") -> "foo"
+	 * }</pre>
 	 * @param file The file to get the name of
 	 * @return The name of the file or an empty string if the file has no name
 	 */
@@ -94,14 +97,16 @@ public class FileUtils {
 	/**
 	 * Gets the extension of the given file.<br>
 	 * The file can be a path or a file name.<br>
-	 * Examples:
-	 * <ul>
-	 *     <li><pre>null -> ""</pre></li>
-	 *     <li><pre>"" -> ""</pre></li>
-	 *     <li><pre>"/" -> ""</pre></li>
-	 *     <li><pre>"/test.json" -> ".json"</pre></li>
-	 *     <li><pre>"/test/test.json" -> ".json"</pre></li>
-	 * </ul>
+	 * <p>
+	 *     Examples:<br>
+	 * </p>
+	 * <pre>{@code
+	 * getExtension(null) -> ""
+	 * getExtension("") -> ""
+	 * getExtension("/") -> ""
+	 * getExtension("/foo.json") -> ".json"
+	 * getExtension("/bar/foo.json") -> ".json"
+	 * }</pre>
 	 * @param file The file to get the extension of
 	 * @return The extension of the file or an empty string if the file has no extension
 	 */
@@ -117,18 +122,19 @@ public class FileUtils {
 	
 	/**
 	 * Gets the relative path of the given file.<br>
-	 * The file will be relativized.<br>
-	 * The file can be a path or a file name.<br>
-	 * Examples:
-	 * <ul>
-	 *     <li><pre>null -> "./"</pre></li>
-	 *     <li><pre>"" -> "./"</pre></li>
-	 *     <li><pre>"/" -> "./"</pre></li>
-	 *     <li><pre>"test" -> "./test/"</pre></li>
-	 *     <li><pre>"./test/" -> "./test/"</pre></li>
-	 *     <li><pre>"/test.json" -> "./test.json"</pre></li>
-	 *     <li><pre>"/test/test.json" -> "./test/test.json"</pre></li>
-	 * </ul>
+	 * The file can be a path or a file name.
+	 * <p>
+	 *     Examples:
+	 * </p>
+	 * <pre>{@code
+	 * getRelativePath(null) -> "./"
+	 * getRelativePath("") -> "./"
+	 * getRelativePath("/") -> "./"
+	 * getRelativePath("foo") -> "./foo/"
+	 * getRelativePath("./foo/") -> "./foo/"
+	 * getRelativePath("/foo.json") -> "./foo.json"
+	 * getRelativePath("/bar/foo.json") -> "./bar/foo.json"
+	 * }</pre>
 	 * @param file The file to get the relative path of
 	 * @return The relative path of the file
 	 */
