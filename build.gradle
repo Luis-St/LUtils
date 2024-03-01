@@ -22,6 +22,8 @@ dependencies {
 	testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:5.8.1"
 }
 
+compileJava.dependsOn(updateLicenses)
+
 license {
 	header = file("header.txt")
 	include "**/*.java"
@@ -66,8 +68,6 @@ if (file.exists()) {
 	username = properties.getProperty("username")
 	password = properties.getProperty("password")
 }
-
-compileJava.dependsOn(updateLicenses)
 
 publishing {
 	publications {
