@@ -26,7 +26,7 @@ compileJava.dependsOn(updateLicenses)
 
 license {
 	header = file("header.txt")
-	include "**/*.java"
+	include("**/*.java")
 	exclude("**/Main.java")
 }
 

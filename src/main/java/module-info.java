@@ -34,6 +34,7 @@ module net.luis.utils {
 	exports net.luis.utils.exception;
 	exports net.luis.utils.function;
 	exports net.luis.utils.io;
+	exports net.luis.utils.lang;
 	exports net.luis.utils.logging;
 	exports net.luis.utils.logging.factory;
 	exports net.luis.utils.math;
