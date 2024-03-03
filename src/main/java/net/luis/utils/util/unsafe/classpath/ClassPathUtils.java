@@ -167,13 +167,13 @@ public class ClassPathUtils {
 	
 	/**
 	 * Gets all methods from the given class that are annotated with the given annotation.<br>
-	 * @deprecated Because the method is not related to the classpath, a similar method should be added to {@link ReflectionUtils}
+	 * @deprecated Use {@link ReflectionUtils#getAnnotatedMethods(Class, Class)} instead
 	 * @param clazz The class in which the methods should be
 	 * @param annotation The annotation which should be present on the methods
 	 * @return A list of all methods
 	 * @throws NullPointerException If the given class or annotation is null
 	 */
-	@Deprecated // ToDo: Mark as for removal in the next release
+	@Deprecated(forRemoval = true) // ToDo: Remove in the next release
 	public static @NotNull List<Method> getAnnotatedMethods(@NotNull Class<?> clazz, @NotNull Class<? extends Annotation> annotation) {
 		Objects.requireNonNull(clazz, "Class must not be null");
 		Objects.requireNonNull(annotation, "Annotation must not be null");
@@ -182,7 +182,7 @@ public class ClassPathUtils {
 	
 	/**
 	 * Gets the method with the given name from the given class which is annotated with the given annotation.<br>
-	 * @deprecated Because the method is not related to the classpath, a similar method should be added to {@link ReflectionUtils}
+	 * @deprecated Use {@link ReflectionUtils#getAnnotatedMethod(Class, String, Class, Class...)} instead
 	 * @param clazz The class in which the method should be
 	 * @param name The name of the method
 	 * @param annotation The annotation which should be present on the method
@@ -190,7 +190,7 @@ public class ClassPathUtils {
 	 * @return An optional containing the method or an empty optional if the method was not found
 	 * @throws NullPointerException If the given class, name or annotation is null
 	 */
-	@Deprecated // ToDo: Mark as for removal in the next release
+	@Deprecated(forRemoval = true) // ToDo: Remove in the next release
 	public static @NotNull Optional<Method> getAnnotatedMethod(@NotNull Class<?> clazz, @NotNull String name, @NotNull Class<? extends Annotation> annotation, Class<?> @Nullable ... parameters) {
 		Objects.requireNonNull(clazz, "Class must not be null");
 		Objects.requireNonNull(name, "Name must not be null");
@@ -229,13 +229,13 @@ public class ClassPathUtils {
 	
 	/**
 	 * Gets all fields from the given class that are annotated with the given annotation.<br>
-	 * @deprecated Because the method is not related to the classpath, a similar method should be added to {@link ReflectionUtils}
+	 * @deprecated Use {@link ReflectionUtils#getAnnotatedFields(Class, Class)} instead
 	 * @param clazz The class in which the fields should be
 	 * @param annotation The annotation which should be present on the fields
 	 * @return A list of all fields
 	 * @throws NullPointerException If the given class or annotation is null
 	 */
-	@Deprecated // ToDo: Mark as for removal in the next release
+	@Deprecated(forRemoval = true) // ToDo: Remove in the next release
 	public static @NotNull List<Field> getAnnotatedFields(@NotNull Class<?> clazz, @NotNull Class<? extends Annotation> annotation) {
 		Objects.requireNonNull(clazz, "Class must not be null");
 		Objects.requireNonNull(annotation, "Annotation must not be null");
@@ -245,14 +245,14 @@ public class ClassPathUtils {
 	/**
 	 * Gets the field with the given name from the given class which is annotated with the given annotation.<br>
 	 * If the field does not exist or is not annotated with the given annotation, an empty optional will be returned.<br>
-	 * @deprecated Because the method is not related to the classpath, a similar method should be added to {@link ReflectionUtils}
+	 * @deprecated Use {@link ReflectionUtils#getAnnotatedField(Class, String, Class)} instead
 	 * @param clazz The class in which the field should be
 	 * @param name The name of the field
 	 * @param annotation The annotation which should be present on the field
 	 * @return An optional containing the field or an empty optional if the field was not found
 	 * @throws NullPointerException If the given class, name or annotation is null
 	 */
-	@Deprecated // ToDo: Mark as for removal in the next release
+	@Deprecated // ToDo: Remove in the next release
 	public static @NotNull Optional<Field> getAnnotatedField(@NotNull Class<?> clazz, @NotNull String name, @NotNull Class<? extends Annotation> annotation) {
 		Objects.requireNonNull(clazz, "Class must not be null");
 		Objects.requireNonNull(name, "Name must not be null");
