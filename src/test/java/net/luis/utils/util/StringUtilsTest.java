@@ -19,6 +19,7 @@
 package net.luis.utils.util;
 
 import com.google.common.collect.Lists;
+import org.apache.commons.lang3.ArrayUtils;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
@@ -31,7 +32,27 @@ import static org.junit.jupiter.api.Assertions.*;
  *
  * @author Luis-St
  */
+@SuppressWarnings("RedundantArrayCreation")
 class StringUtilsTest {
+	
+	@Test
+	void getOppositeBracket() {
+		assertEquals(')', StringUtils.getOppositeBracket('('));
+		assertEquals('[', StringUtils.getOppositeBracket(']'));
+		assertEquals('}', StringUtils.getOppositeBracket('{'));
+		assertEquals('>', StringUtils.getOppositeBracket('<'));
+		assertEquals('\0', StringUtils.getOppositeBracket('a'));
+	}
+	
+	@Test
+	void reverseIncludeBrackets() {
+		assertDoesNotThrow(() -> StringUtils.reverseIncludeBrackets(null));
+		assertEquals("", StringUtils.reverseIncludeBrackets(null));
+		assertEquals("", StringUtils.reverseIncludeBrackets(""));
+		assertEquals("cba", StringUtils.reverseIncludeBrackets("abc"));
+		assertEquals("(cb)a", StringUtils.reverseIncludeBrackets("a(bc)"));
+		assertEquals("<cb>a", StringUtils.reverseIncludeBrackets("a<bc>"));
+	}
 	
 	@Test
 	void indexOfAll() {
@@ -190,35 +211,67 @@ class StringUtilsTest {
 	}
 	
 	@Test
-	void isAfter() {
-		assertDoesNotThrow(() -> StringUtils.isAfter(null, '\0'));
-		assertFalse(StringUtils.isAfter(null, '\0'));
-		assertFalse(StringUtils.isAfter("", '\0'));
-		assertTrue(StringUtils.isAfter("abcde", 'a'));
-		assertTrue(StringUtils.isAfter("abcde", 'a', 'b'));
-		assertFalse(StringUtils.isAfter("abcae", 'a', 'b'));
-		assertTrue(StringUtils.isAfter("abcab", 'a', 'b'));
+	void isAfterAllOccurrence() {
+		assertDoesNotThrow(() -> StringUtils.isAfterAllOccurrence(null, '\0', ArrayUtils.EMPTY_STRING_ARRAY));
+		assertDoesNotThrow(() -> StringUtils.isAfterAllOccurrence("abcde", '\0', (String[]) null));
+		assertFalse(StringUtils.isAfterAllOccurrence(null, '\0', ArrayUtils.EMPTY_STRING_ARRAY));
+		assertFalse(StringUtils.isAfterAllOccurrence("", '\0', ArrayUtils.EMPTY_STRING_ARRAY));
+		assertFalse(StringUtils.isAfterAllOccurrence("abcde", '\0', (String[]) null));
+		assertTrue(StringUtils.isAfterAllOccurrence("abcde", 'a', ArrayUtils.EMPTY_STRING_ARRAY));
+		assertFalse(StringUtils.isAfterAllOccurrence("abcde", 'x', ArrayUtils.EMPTY_STRING_ARRAY));
+		assertTrue(StringUtils.isAfterAllOccurrence("abcde", 'a', new String[] {"b"}));
+		assertTrue(StringUtils.isAfterAllOccurrence("abcab", 'a', new String[] {"b"}));
+		assertFalse(StringUtils.isAfterAllOccurrence("abcae", 'a', new String[] {"b"}));
+		assertTrue(StringUtils.isAfterAllOccurrence("abcae", 'a', new String[] {"b", "e"}));
 	}
 	
 	@Test
-	void isBefore() {
-		assertDoesNotThrow(() -> StringUtils.isBefore(null, '\0'));
-		assertFalse(StringUtils.isBefore(null, '\0'));
-		assertFalse(StringUtils.isBefore("", '\0'));
-		assertTrue(StringUtils.isBefore("abcde", 'd'));
-		assertTrue(StringUtils.isBefore("abcde", 'd', 'e'));
-		assertFalse(StringUtils.isBefore("abcae", 'd', 'e'));
-		assertTrue(StringUtils.isBefore("aecae", 'a', 'e'));
+	void isBeforeAllOccurrence() {
+		assertDoesNotThrow(() -> StringUtils.isBeforeAllOccurrence(null, '\0', ArrayUtils.EMPTY_STRING_ARRAY));
+		assertDoesNotThrow(() -> StringUtils.isBeforeAllOccurrence("abcde", '\0', (String[]) null));
+		assertFalse(StringUtils.isBeforeAllOccurrence(null, '\0', ArrayUtils.EMPTY_STRING_ARRAY));
+		assertFalse(StringUtils.isBeforeAllOccurrence("", '\0', ArrayUtils.EMPTY_STRING_ARRAY));
+		assertFalse(StringUtils.isBeforeAllOccurrence("abcde", '\0', (String[]) null));
+		assertTrue(StringUtils.isBeforeAllOccurrence("abcde", 'd', ArrayUtils.EMPTY_STRING_ARRAY));
+		assertFalse(StringUtils.isBeforeAllOccurrence("abcde", 'x', ArrayUtils.EMPTY_STRING_ARRAY));
+		assertTrue(StringUtils.isBeforeAllOccurrence("abcde", 'e', new String[] {"d"}));
+		assertTrue(StringUtils.isBeforeAllOccurrence("aecae", 'e', new String[] {"a"}));
+		assertFalse(StringUtils.isBeforeAllOccurrence("aecde", 'e', new String[] {"a"}));
+		assertTrue(StringUtils.isBeforeAllOccurrence("aecde", 'e', new String[] {"a", "d"}));
 	}
 	
 	@Test
-	void isBetween() {
-		assertFalse(StringUtils.isBetween(null, '\0'));
-		assertFalse(StringUtils.isBetween("", '\0'));
-		assertFalse(StringUtils.isBetween("ab.*.cd", new char[] {'\0', '\0'}));
-		assertTrue(StringUtils.isBetween("ab.*.cd", '*'));
-		assertTrue(StringUtils.isBetween("ab.*.cd", '.', '*', '.'));
-		assertFalse(StringUtils.isBetween("ab.*.cd", '.', '*', '*'));
+	void isSurroundedBy() {
+		assertDoesNotThrow(() -> StringUtils.isSurroundedBy(null, '\0', ArrayUtils.EMPTY_STRING_ARRAY));
+		assertDoesNotThrow(() -> StringUtils.isSurroundedBy("a.*.b", '\0', (String[]) null));
+		assertFalse(StringUtils.isSurroundedBy(null, '\0', ArrayUtils.EMPTY_STRING_ARRAY));
+		assertFalse(StringUtils.isSurroundedBy("", '\0', ArrayUtils.EMPTY_STRING_ARRAY));
+		assertFalse(StringUtils.isSurroundedBy("a.*.b", '\0', (String[]) null));
+		assertTrue(StringUtils.isSurroundedBy("a.*.b", '*', ArrayUtils.EMPTY_STRING_ARRAY));
+		assertFalse(StringUtils.isSurroundedBy("a.*.b", 'x', ArrayUtils.EMPTY_STRING_ARRAY));
+		assertTrue(StringUtils.isSurroundedBy("a.*.b", '*', new String[] {"."}));
+		assertTrue(StringUtils.isSurroundedBy("a.*.b.*.c", '*', new String[] {"."}));
+		assertFalse(StringUtils.isSurroundedBy("a.*.b.?*?.c", '*', new String[] {"."}));
+		assertTrue(StringUtils.isSurroundedBy("a.*.b.?*?.c", '*', new String[] {".", "?"}));
+		assertTrue(StringUtils.isSurroundedBy("a.*.b.?*?.c", '*', new String[] {".", "?."}));
+		
+		System.setProperty("lang.surrounded.reverse.brackets", "true");
+		assertTrue(StringUtils.isSurroundedBy("a.[*].b", '*', new String[] {"]."}));
+		assertFalse(StringUtils.isSurroundedBy("a.[*[.b", '*', new String[] {"[."}));
+		System.setProperty("lang.surrounded.reverse.brackets", "false");
+	}
+	
+	@Test
+	void removeQuoted() {
+		assertDoesNotThrow(() -> StringUtils.removeQuoted(null));
+		assertEquals("", StringUtils.removeQuoted(null));
+		assertEquals("", StringUtils.removeQuoted(""));
+		assertEquals("abc", StringUtils.removeQuoted("abc"));
+		assertEquals("ac", StringUtils.removeQuoted("a\"b\"c"));
+		assertEquals("ac", StringUtils.removeQuoted("a'b'c"));
+		assertEquals("ad", StringUtils.removeQuoted("a\"b\\\"c\"d"));
+		assertEquals("ad", StringUtils.removeQuoted("a'b\\'c'd"));
+		assertEquals("ad'e", StringUtils.removeQuoted("a\"b'c\"d'e"));
 	}
 	
 	@Test
@@ -240,6 +293,18 @@ class StringUtilsTest {
 		assertFalse(StringUtils.matchingBalanced("(", "(", ")"));
 		assertTrue(StringUtils.matchingBalanced("(())", "(", ")"));
 		assertFalse(StringUtils.matchingBalanced("(()", "(", ")"));
+		
+		System.setProperty("lang.match.in.quotes", "true");
+		assertFalse(StringUtils.matchingBalanced("((\")\")", '(', ')'));
+		assertFalse(StringUtils.matchingBalanced("((')')", '(', ')'));
+		assertTrue(StringUtils.matchingBalanced("(\"(\")", '(', ')'));
+		assertTrue(StringUtils.matchingBalanced("('(')", '(', ')'));
+		
+		assertFalse(StringUtils.matchingBalanced("((\")\")", "(", ")"));
+		assertFalse(StringUtils.matchingBalanced("((')')", "(", ")"));
+		assertTrue(StringUtils.matchingBalanced("(\"(\")", "(", ")"));
+		assertTrue(StringUtils.matchingBalanced("('(')", "(", ")"));
+		System.setProperty("lang.match.in.quotes", "false");
 	}
 	
 	@Test

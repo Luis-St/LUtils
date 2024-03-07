@@ -18,8 +18,11 @@
 
 package net.luis.utils.util;
 
+import com.google.common.base.Objects;
 import com.google.common.collect.Lists;
 import org.apache.commons.lang3.ArrayUtils;
+import org.apache.commons.lang3.ObjectUtils;
+import org.intellij.lang.annotations.Language;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -35,6 +38,99 @@ import static org.apache.commons.lang3.StringUtils.*;
  * @author Luis-St
  */
 public class StringUtils {
+	
+	/**
+	 * Regular expression pattern used to remove single-quoted string parts.<br>
+	 * The regular expression allows escaped single quotes inside the string.<br>
+	 */
+	private static final String SINGLE_QUOTE_PATTERN = "(?<!\\\\)('([^\\\\']|\\\\.)*')";
+	/**
+	 * Regular expression pattern used to remove double-quoted string parts.<br>
+	 * The regular expression allows escaped double quotes inside the string.<br>
+	 */
+	private static final String DOUBLE_QUOTE_PATTERN = "(?<!\\\\)(\"([^\\\\\"]|\\\\.)*\")";
+	/**
+	 * Constant for system property 'lang.surrounded.reverse.brackets'.<br>
+	 * <p>
+	 *     This property is used in {@link #isSurroundedBy(String, char, String...)} to determine<br>
+	 *     if the brackets should be reversed.<br>
+	 * </p>
+	 * <p>
+	 *     The default value is {@code false}.<br>
+	 * </p>
+	 */
+	private static final String LANG_SURROUNDED_REVERSE_BRACKETS = "lang.surrounded.reverse.brackets";
+	/**
+	 * Constant for system property 'lang.match.in.quotes'.<br>
+	 * <p>
+	 *     This property is used in {@link #matchingBalanced(String, String, String)} to determine<br>
+	 *     if occurrences of the {@code open} and {@code close} strings should be match inside quotes.<br>
+	 * </p>
+	 * <p>
+	 *     The default value is {@code false}.<br>
+	 * </p>
+	 */
+	private static final String LANG_MATCH_IN_QUOTES = "lang.match.in.quotes";
+	
+	/**
+	 * Gets the opposite bracket of the given {@code bracket}.<br>
+	 * If the given character is not a bracket, {@code '\0'} will be returned.<br>
+	 * <p>
+	 *     Examples:<br>
+	 * </p>
+	 * <pre>{@code
+	 * getOppositeBracket('(') -> ')'
+	 * getOppositeBracket(']') -> '['
+	 * getOppositeBracket('{') -> '}'
+	 * getOppositeBracket('<') -> '>'
+	 * getOppositeBracket('a') -> '\0'
+	 * }</pre>
+	 * @param bracket The bracket to get the opposite of
+	 * @return The opposite bracket of the given character or {@code '\0'} if the given character is not a bracket
+	 */
+	public static char getOppositeBracket(char bracket) {
+		return switch (bracket) {
+			case '(' -> ')';
+			case ')' -> '(';
+			case '[' -> ']';
+			case ']' -> '[';
+			case '{' -> '}';
+			case '}' -> '{';
+			case '<' -> '>';
+			case '>' -> '<';
+			default -> '\0';
+		};
+	}
+	
+	/**
+	 * Reverses the given string including brackets.<br>
+	 * If the given string is null or empty, an empty string will be returned.<br>
+	 * <p>
+	 *     Examples:<br>
+	 * </p>
+	 * <pre>{@code
+	 * reverseIncludeBrackets(null) -> ""
+	 * reverseIncludeBrackets("") -> ""
+	 * reverseIncludeBrackets("abc") -> "cba"
+	 * reverseIncludeBrackets("a(bc)") -> "(cb)a"
+	 * reverseIncludeBrackets("a<bc>") -> "<cb>a"
+	 * }</pre>
+	 * @param str The string to reverse
+	 * @return The reversed string including brackets
+	 */
+	public static @NotNull String reverseIncludeBrackets(@Nullable String str) {
+		if (isEmpty(str)) {
+			return "";
+		}
+		char[] reversed = reverse(str).toCharArray();
+		for (int i = 0; i < reversed.length; i++) {
+			char opposite = getOppositeBracket(reversed[i]);
+			if (opposite != '\0') {
+				reversed[i] = opposite;
+			}
+		}
+		return new String(reversed);
+	}
 	
 	/**
 	 * Searches for occurrences of the given {@code search} character in the given string.<br>
@@ -97,6 +193,12 @@ public class StringUtils {
 		}
 		return indexes;
 	}
+	
+	//region Description
+	
+	/*
+	 * Summarize methods, only one method for counting differences with different modes
+	 */
 	
 	/**
 	 * Does the base difference calculation for the given strings.<br>
@@ -299,6 +401,7 @@ public class StringUtils {
 		}
 		return Collections.min(differences);
 	}
+	//endregion
 	
 	/**
 	 * Calculates the levenshtein distance between the given strings.<br>
@@ -476,140 +579,193 @@ public class StringUtils {
 	}
 	
 	/**
-	 * Checks if the given characters follow the given {@code first} character in the given string.<br>
-	 * If the {@code first} character is found, all occurrences will be checked if<br>
-	 * they are followed by the given {@code follows} characters.<br>
+	 * Checks if the given {@code target} character is followed by any string inside the given {@code follows} array.<br>
+	 * If the {@code target} character is found in the given string, all occurrences will be checked.<br>
 	 * <p>
-	 *     If all occurrences of the {@code first} character are followed by the given {@code follows} characters, true will be returned.<br>
+	 *     If all occurrences of the {@code target} character are followed by any string inside the {@code follows} array,<br>
+	 *     true will be returned.<br>
 	 *     If the string is empty or the character is not found, false will be returned.<br>
 	 * </p>
 	 * <p>
-	 *     The characters {@code follows} must be in the correct order.<br>
-	 *     The character {@code first} will be the first character in the string.<br>
-	 * </p>
-	 * <p>
 	 *     Examples:<br>
 	 * </p>
 	 * <pre>{@code
-	 * isAfter(null, *, *) -> false
-	 * isAfter("", *, *) -> false
-	 * isAfter("abcde", 'a') -> true
-	 * isAfter("abcde", 'a', 'b') -> true // First occurrence matches
-	 * isAfter("abcae", 'a', 'b') -> false // Second occurrence does not match
-	 * isAfter("abcab", 'a', 'b') -> true // Both occurrences match
+	 * isAfterAllOccurrence(null, *, *) -> false
+	 * isAfterAllOccurrence("", *, *) -> false
+	 * isAfterAllOccurrence(*, *, null) -> false
+	 * isAfterAllOccurrence("abcde", 'a', []) -> true
+	 * isAfterAllOccurrence("abcde", 'x', []) -> false // No occurrence
+	 * isAfterAllOccurrence("abcde", 'a', ["b"]) -> true // First occurrence matches
+	 * isAfterAllOccurrence("abcab", 'a', ["b"]) -> true // Both occurrences match
+	 * isAfterAllOccurrence("abcae", 'a', ["b"]) -> false // Second occurrence does not match
+	 * isAfterAllOccurrence("abcae", 'a', ["b", "e"]) -> true // Both occurrences match
 	 * }</pre>
 	 * @param str The string to check
-	 * @param first The first character (in the string)
-	 * @param follows The characters to check if they follow the first character
-	 * @return True if the string contains the first character, and it is followed by the given characters, false otherwise
+	 * @param target The character to check if it is followed by any string
+	 * @param follows The strings to check if any of them {@code follows} the target character
+	 * @return True if the string contains the target character, and it is followed by any string inside the {@code follows} array, false otherwise
 	 */
-	public static boolean isAfter(@Nullable String str, char first, char @Nullable ... follows) {
-		List<Integer> indexes = indexOfAll(str, first);
-		if (indexes.isEmpty() || isEmpty(str)) {
+	public static boolean isAfterAllOccurrence(@Nullable String str, char target, String @Nullable ... follows) {
+		if (str == null && follows == null) {
+			return true;
+		}
+		if (isEmpty(str) || follows == null) {
 			return false;
 		}
-		String follow = first + String.valueOf(ArrayUtils.nullToEmpty(follows));
-		for (int index : indexes) {
-			if (!str.startsWith(follow, index)) {
-				return false;
-			}
-		}
-		return true;
-	}
-	
-	/**
-	 * Checks if the given characters precede the given {@code first} character in the given string.<br>
-	 * If the {@code first} character is found, all occurrences will be checked if<br>
-	 * they are preceded by the given {@code precedes} characters.<br>
-	 * <p>
-	 *     If all occurrences of the {@code first} character are preceded by the given {@code precedes} characters, true will be returned.<br>
-	 *     If the string is empty or the character is not found, false will be returned.<br>
-	 * </p>
-	 * <p>
-	 *     The characters {@code precedes} must be in the correct order.<br>
-	 *     The character {@code first} will be the first character in the string.<br>
-	 * </p>
-	 * <p>
-	 *     Examples:<br>
-	 * </p>
-	 * <pre>{@code
-	 * isBefore(null, *, *) -> false
-	 * isBefore("", *, *) -> false
-	 * isBefore("abcde", 'd') -> true
-	 * isBefore("abcde", 'd', 'e') -> true // First occurrence matches
-	 * isBefore("abcae", 'd', 'e') -> false // Second occurrence does not match
-	 * isBefore("aecae", 'a', 'e') -> true // Both occurrences match
-	 * }</pre>
-	 * @param str The string to check
-	 * @param first The first character (in the string)
-	 * @param precedes The characters to check if they precede the first character
-	 * @return True if the string contains the first character, and it is preceded by the given characters, false otherwise
-	 */
-	public static boolean isBefore(@Nullable String str, char first, char @Nullable ... precedes) {
-		if (isEmpty(str)) {
-			return false;
-		}
-		String reverse = reverse(str);
-		if (precedes == null || precedes.length == 0) {
-			return isAfter(reverse, first);
-		}
-		char[] precede = (first + String.valueOf(precedes)).toCharArray();
-		ArrayUtils.reverse(precede);
-		return isAfter(reverse, precede[0], ArrayUtils.subarray(precede, 1, precede.length));
-	}
-	
-	/**
-	 * Checks if the centered character of the {@code between} characters is in the given string.<br>
-	 * If the centered character is found, the characters before and after the centered character will be checked.<br>
-	 * <p>
-	 *     If there is no centered character, false will be returned.<br>
-	 *     If the string is empty or the centered character is not found, false will be returned.<br>
-	 * </p>
-	 * <p>
-	 *     If the characters before and after the centered character are in the correct order,<br>
-	 *     around the centered character, true will be returned.<br>
-	 *     If there are multiple occurrences of the centered character, all occurrences will be checked.<br>
-	 * </p>
-	 * <p>
-	 *     Examples:<br>
-	 * </p>
-	 * <pre>{@code
-	 * isBetween(null, *) -> false
-	 * isBetween("", *) -> false
-	 * isBetween(*, null) -> false
-	 * isBetween(*, <even length>) -> false
-	 * isBetween("ab.*.cd", '*') -> true
-	 * isBetween("ab.*.cd", '.', '*', '.') -> true
-	 * isBetween("ab.*.cd", '.', '*', '*') -> false
-	 * }</pre>
-	 * @param str The string to check
-	 * @param between The characters to check if they are around the centered character
-	 * @return True if the string contains the centered character, and the characters before and after are in the correct order, false otherwise
-	 */
-	public static boolean isBetween(@Nullable String str, char @Nullable ... between) {
-		if (isEmpty(str) || between == null || between.length % 2 == 0) {
-			return false;
-		}
-		List<Integer> indexes = indexOfAll(str, between[between.length / 2]);
+		List<Integer> indexes = indexOfAll(str, target);
 		if (indexes.isEmpty()) {
 			return false;
 		}
-		char[] before = ArrayUtils.subarray(between, 0, between.length / 2);
-		char[] after = ArrayUtils.subarray(between, between.length / 2 + 1, between.length);
+		if (follows.length == 0) {
+			return true;
+		}
 		for (int index : indexes) {
-			if (!str.startsWith(String.valueOf(after), index + 1)) {
-				return false;
-			}
-			if (!str.substring(index + 1).startsWith(String.valueOf(before))) {
+			if (index + 1 >= str.length() || !startsWithAny(str.substring(index + 1), follows)) {
 				return false;
 			}
 		}
 		return true;
+	}
+	
+	/**
+	 * Checks if the given {@code target} character is preceded by any string inside the given {@code precedes} array.<br>
+	 * If the {@code target} character is found, all occurrences will be checked.<br>
+	 * <p>
+	 *     If all occurrences of the {@code target} character are preceded by any string inside the {@code precedes} array,<br>
+	 *     true will be returned.<br>
+	 *     If the string is empty or the character is not found, false will be returned.<br>
+	 * </p>
+	 * <p>
+	 *     Examples:<br>
+	 * </p>
+	 * <pre>{@code
+	 * isBeforeAllOccurrence(null, *, *) -> false
+	 * isBeforeAllOccurrence("", *, *) -> false
+	 * isBeforeAllOccurrence(*, *, null) -> false
+	 * isBeforeAllOccurrence("abcde", 'd', []) -> true
+	 * isBeforeAllOccurrence("abcde", 'x', []) -> false // No occurrence
+	 * isBeforeAllOccurrence("abcde", 'e', ["d"]) -> true // First occurrence matches
+	 * isBeforeAllOccurrence("aecae", 'e', ["a"]) -> true // Both occurrences match
+	 * isBeforeAllOccurrence("aecde", 'e', ["a"]) -> false // Second occurrence does not match
+	 * isBeforeAllOccurrence("aecde", 'e', ["a", "d"]) -> true // Both occurrences match
+	 * }</pre>
+	 * @param str The string to check
+	 * @param target The character to check if it is preceded by any string
+	 * @param precedes The strings to check if any of them {@code precedes} the target character
+	 * @return True if the string contains the target character, and it is preceded by any string inside the {@code precedes} array, false otherwise
+	 */
+	public static boolean isBeforeAllOccurrence(@Nullable String str, char target, String @Nullable ... precedes) {
+		return isAfterAllOccurrence(reverse(str), target, precedes);
+	}
+	
+	/**
+	 * Checks if the given {@code target} character is surrounded by any string inside the given {@code surrounded} array.<br>
+	 * If the centered character is found, all occurrences will be checked.<br>
+	 * <p>
+	 *     If the {@code target} character is found, and it is surrounded by any string inside the {@code surrounded} array,<br>
+	 *     true will be returned.<br>
+	 *     If the string is empty or the character is not found, false will be returned.<br>
+	 * </p>
+	 * <p>
+	 *     The strings inside the {@code surrounded} array will be checked in the order they are given.<br>
+	 *     Each string will be reversed to check if it's before the {@code target} character.<br>
+	 * </p>
+	 * <p>
+	 *     If the system property 'lang.surrounded.reverse.brackets' is set to true,<br>
+	 *     the strings inside the {@code surrounded} array will be reversed including brackets.<br>
+	 * </p>
+	 * <p>
+	 *     Examples:<br>
+	 * </p>
+	 * <pre>{@code
+	 * isSurroundedBy(null, *, *) -> false
+	 * isSurroundedBy("", *, *) -> false
+	 * isSurroundedBy(*, *, null) -> false
+	 * isSurroundedBy("a.*.b", '*', []) -> true
+	 * isSurroundedBy("a.*.b", 'x', []) -> false // No occurrence
+	 * isSurroundedBy("a.*.b", '*', ["."]) -> true // First occurrence matches
+	 * isSurroundedBy("a.*.b.*.c", '*', ["."]) -> true // Both occurrences match
+	 * isSurroundedBy("a.*.b.?*?.c", '*', ["."]) -> false // Second occurrence does not match
+	 * isSurroundedBy("a.*.b.?*?.c", '*', [".", "?"]) -> true // Both occurrences match
+	 * isSurroundedBy("a.*.b.?*?.c", '*', [".", "?."]) -> true // Both occurrences match
+	 * // With system property 'lang.surrounded.reverse.brackets' set to true
+	 * isSurroundedBy("a.[*].b", '*', ["]."]) -> true
+	 * isSurroundedBy("a.[*[.b", '*', ["[."]) -> false
+	 * }</pre>
+	 * @param str The string to check
+	 * @param target The character to check if it is surrounded by any string
+	 * @param surrounded The strings to check if any of them surrounds the target character
+	 * @return True if the string contains the target character, and it is surrounded by any string inside the {@code surrounded} array, false otherwise
+	 * @see #LANG_SURROUNDED_REVERSE_BRACKETS
+	 * @see #reverseIncludeBrackets(String)
+	 */
+	public static boolean isSurroundedBy(@Nullable String str, char target, String @Nullable ... surrounded) {
+		if (str == null && surrounded == null) {
+			return true;
+		}
+		if (isEmpty(str) || surrounded == null) {
+			return false;
+		}
+		if (surrounded.length == 0) {
+			return contains(str, target);
+		}
+		List<Integer> indexes = indexOfAll(str, target);
+		if (indexes.isEmpty()) {
+			return false;
+		}
+		boolean reverseBrackets = Boolean.parseBoolean(System.getProperty(LANG_SURROUNDED_REVERSE_BRACKETS, "false"));
+		for (int index : indexes) {
+			String before = str.substring(0, index);
+			String reverse = reverseBrackets ? reverseIncludeBrackets(before) : reverse(before);
+			if (!startsWithAny(reverse, surrounded) || !startsWithAny(str.substring(index + 1), surrounded)) {
+				return false;
+			}
+		}
+		return true;
+	}
+	
+	/**
+	 * Removes quoted parts from the given string.<br>
+	 * <p>
+	 *     Double quotes will be removed before single quotes.<br>
+	 *     If a quote is escaped with a backslash, it will be ignored.<br>
+	 * </p>
+	 * <p>
+	 *     Examples:<br>
+	 * </p>
+	 * <pre>{@code
+	 * removeQuoted(null) -> ""
+	 * removeQuoted("") -> ""
+	 * removeQuoted("abc") -> "abc"
+	 * removeQuoted("a\"b\"c") -> "ac"
+	 * removeQuoted("a'b'c") -> "ac"
+	 * removeQuoted("a\"b\\\"c\"d") -> "ad"
+	 * removeQuoted("a'b\\'c'd") -> "ad"
+	 * removeQuoted("a\"b'c\"d'e") -> "ad'e"
+	 * }</pre>
+	 * @param str The string to remove the quoted parts from
+	 * @return The string without the quoted parts
+	 */
+	public static @NotNull String removeQuoted(@Nullable String str) {
+		if (isEmpty(str)) {
+			return "";
+		}
+		if (str.contains("\"")) {
+			str = str.replaceAll(DOUBLE_QUOTE_PATTERN, "");
+		}
+		if (str.contains("'")) {
+			str = str.replaceAll(SINGLE_QUOTE_PATTERN, "");
+		}
+		return str;
 	}
 	
 	/**
 	 * Checks if the given string is matching balanced.<br>
 	 * This means that the open and close characters are in the correct order and have the same number of occurrences.<br>
+	 * <p>
+	 *     If the system property 'lang.match.in.quotes' is set to true,<br>
+	 *     double and single quotes will be removed from the string before checking.<br>
+	 * </p>
 	 * <p>
 	 *     Examples:<br>
 	 * </p>
@@ -621,36 +777,30 @@ public class StringUtils {
 	 * matchingBalanced("(", '(', ')') -> false
 	 * matchingBalanced("(())", '(', ')') -> true
 	 * matchingBalanced("(()", '(', ')') -> false
+	 * // With system property 'lang.match.in.quotes' set to true
+	 * matchingBalanced("((\")\")", '(', ')') -> false
+	 * matchingBalanced("((')')", '(', ')') -> false
+	 * matchingBalanced("(\"(\")", '(', ')') -> true
+	 * matchingBalanced("('(')", '(', ')') -> true
 	 * }</pre>
 	 * @param str The string to check
 	 * @param open The open character
 	 * @param close The close character
 	 * @return True if the string is matching balanced, false otherwise
+	 * @see #matchingBalanced(String, String, String)
+	 * @see #LANG_MATCH_IN_QUOTES
 	 */
 	public static boolean matchingBalanced(@Nullable String str, char open, char close) {
-		if (str == null) {
-			return false;
-		}
-		if (isBlank(str) || (str.length() == 1 && open == close)) {
-			return true;
-		}
-		Stack<Character> stack = new Stack<>();
-		for (char c : str.toCharArray()) {
-			if (c == open) {
-				stack.push(c);
-			} else if (c == close) {
-				if (stack.isEmpty()) {
-					return false;
-				}
-				stack.pop();
-			}
-		}
-		return stack.isEmpty();
+		return matchingBalanced(str, String.valueOf(open), String.valueOf(close));
 	}
 	
-	/**
+ 	/**
 	 * Checks if the given string is matching balanced.<br>
 	 * This means that the open and close strings are in the correct order and have the same number of occurrences.<br>
+	 * <p>
+	 *     If the system property 'lang.match.in.quotes' is set to true,<br>
+	 *     double and single quotes will be removed from the string before checking.<br>
+	 * </p>
 	 * <p>
 	 *     Examples:<br>
 	 * </p>
@@ -665,24 +815,28 @@ public class StringUtils {
 	 * matchingBalanced("(", "(", ")") -> false
 	 * matchingBalanced("(())", "(", ")") -> true
 	 * matchingBalanced("(()", "(", ")") -> false
+	 * // With system property 'lang.match.in.quotes' set to true
+	 * matchingBalanced("((\")\")", "(", ")") -> false
+	 * matchingBalanced("((')')", "(", ")") -> false
+	 * matchingBalanced("(\"(\")", "(", ")") -> true
+	 * matchingBalanced("('(')", "(", ")") -> true
 	 * }</pre>
 	 * @param str The string to check
 	 * @param open The open string
 	 * @param close The close string
 	 * @return True if the string is matching balanced, false otherwise
+	 * @see #LANG_MATCH_IN_QUOTES
 	 */
 	public static boolean matchingBalanced(@Nullable String str, @Nullable String open, @Nullable String close) {
-		if (str == null) {
+		if (str == null || (open == null) != (close == null)) {
 			return false;
 		}
-		if (open == null && close == null) {
+		if (isBlank(str) || ObjectUtils.allNull(open, close) || (Objects.equal(open, close) && str.equals(open))) {
 			return true;
 		}
-		if ((open == null) != (close == null)) {
-			return false;
-		}
-		if (isBlank(str) || (open.equals(close) && str.equals(open))) {
-			return true;
+		assert open != null;
+		if (Boolean.parseBoolean(System.getProperty(LANG_MATCH_IN_QUOTES, "false"))) {
+			str = removeQuoted(str);
 		}
 		Stack<String> stack = new Stack<>();
 		for (int i = 0; i < str.length(); i++) {
