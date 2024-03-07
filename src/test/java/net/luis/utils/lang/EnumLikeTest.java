@@ -23,9 +23,9 @@ import net.luis.utils.annotation.ReflectiveUsage;
 import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.Test;
 
-import static org.junit.jupiter.api.Assertions.*;
-
 import java.util.List;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 /**
  *
@@ -89,15 +89,15 @@ class EnumLikeTest {
 	
 	@Test
 	void compareTo() {
-		assertThrows(NullPointerException.class, () -> Example.EXAMPLE_0.compareTo(null));
-		assertEquals(0, Example.EXAMPLE_0.compareTo(Example.EXAMPLE_0));
-		assertEquals(-1, Example.EXAMPLE_0.compareTo(Example.EXAMPLE_1));
-		assertEquals(1, Example.EXAMPLE_1.compareTo(Example.EXAMPLE_0));
+		assertThrows(NullPointerException.class, () -> Example.EXAMPLE_2.compareTo(null));
+		assertEquals(0, Example.EXAMPLE_2.compareTo(Example.EXAMPLE_2));
+		assertEquals(-1, Example.EXAMPLE_2.compareTo(Example.EXAMPLE_3));
+		assertEquals(1, Example.EXAMPLE_3.compareTo(Example.EXAMPLE_2));
 	}
 	
 	//region Static initializer
 	static {
-		Example.EXAMPLE_0.name();
+		Example.EXAMPLE_2.name();
 		TestClass.EXAMPLE_4.name();
 	}
 	//endregion
@@ -107,11 +107,10 @@ class EnumLikeTest {
 		
 		@ReflectiveUsage
 		private static final List<Example> VALUES = Lists.newLinkedList();
-		
-		public static final Example EXAMPLE_0 = new Example("Example 0");
-		public static final Example EXAMPLE_1 = new Example("Example 1");
-		protected static final Example EXAMPLE_2 = new Example("Example 2");
-		private static final Example EXAMPLE_3 = new Example("Example 3");
+		private static final Example EXAMPLE_0 = new Example("Example 0");
+		protected static final Example EXAMPLE_1 = new Example("Example 1");
+		public static final Example EXAMPLE_2 = new Example("Example 2");
+		public static final Example EXAMPLE_3 = new Example("Example 3");
 		
 		public Example(String name) {
 			this.name = name;

@@ -391,7 +391,6 @@ public class Mth {
 	}
 	//endregion
 	
-	
 	/**
 	 * Checks if the given value is a power of two.<br>
 	 * @param value The value to check

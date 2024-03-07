@@ -18,7 +18,6 @@
 
 package net.luis.utils.collection.util;
 
-import net.luis.utils.collection.util.MutableEntry;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;

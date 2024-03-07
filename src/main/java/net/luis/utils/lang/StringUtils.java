@@ -793,7 +793,7 @@ public class StringUtils {
 		return matchingBalanced(str, String.valueOf(open), String.valueOf(close));
 	}
 	
- 	/**
+	/**
 	 * Checks if the given string is matching balanced.<br>
 	 * This means that the open and close strings are in the correct order and have the same number of occurrences.<br>
 	 * <p>

@@ -18,7 +18,6 @@
 
 package net.luis.utils.collection.util;
 
-import net.luis.utils.collection.util.SimpleEntry;
 import net.luis.utils.exception.ModificationException;
 import org.junit.jupiter.api.Test;
 

@@ -100,7 +100,7 @@ public interface EnumLike<T extends EnumLike<T>> extends Comparable<T> {
 	 * @param <T> The type of the enum-like class
 	 * @throws NullPointerException If the given enum-like class is null
 	 */
-	public static <T extends EnumLike <T>> @NotNull @Unmodifiable List<EnumConstant<T>> getPredefinedConstants(@NotNull Class<T> enumType) {
+	public static <T extends EnumLike<T>> @NotNull @Unmodifiable List<EnumConstant<T>> getPredefinedConstants(@NotNull Class<T> enumType) {
 		Objects.requireNonNull(enumType, "Enum type must not be null");
 		List<EnumConstant<T>> values = Lists.newArrayList();
 		List<Field> constants = ReflectionUtils.getFieldsForType(enumType, enumType);
@@ -129,7 +129,7 @@ public interface EnumLike<T extends EnumLike<T>> extends Comparable<T> {
 	 * @throws ClassCastException If the 'VALUES' field in the given enum-like class is not a list of the given enum-like class
 	 * @throws IllegalStateException If no 'VALUES' field in the given enum-like class exists
 	 */
-	public static <T extends EnumLike <T>> @NotNull @Unmodifiable List<T> values(@NotNull Class<T> enumType) {
+	public static <T extends EnumLike<T>> @NotNull @Unmodifiable List<T> values(@NotNull Class<T> enumType) {
 		Objects.requireNonNull(enumType, "Enum type must not be null");
 		Predicate<Field> isConstant = field -> field.isAnnotationPresent(ReflectiveUsage.class) && Modifier.isPrivate(field.getModifiers()) && isConstant(field);
 		if (ReflectionHelper.hasField(enumType, "VALUES", isConstant)) {

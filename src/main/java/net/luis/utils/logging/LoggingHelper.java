@@ -22,12 +22,13 @@ import net.luis.utils.exception.InvalidValueException;
 import net.luis.utils.resources.ResourceLocation;
 import net.luis.utils.util.Pair;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.logging.log4j.*;
+import org.apache.logging.log4j.Level;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.IOException;
-import java.util.*;
+import java.util.List;
+import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
@@ -158,8 +159,8 @@ class LoggingHelper {
 	 * <ul>
 	 *     <li>
 	 * 	       logging.file.{level}<br>
-	 * 	       Enables/disables file logging for the given level, expect 'true' or 'false'<br>
-	 * 	       {level} must be replaced with a valid {@link Level} name in lower case<br>
+	 * 	       Enables/disables file logging for the given level, expect 'true' or 'false'.<br>
+	 *         {level} must be replaced with a valid {@link Level} name in lower case.<br>
 	 * 	       <br>
 	 * 	       Default:
 	 * 	       <ul>

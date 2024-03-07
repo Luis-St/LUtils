@@ -18,7 +18,6 @@
 
 package net.luis.utils.logging;
 
-import com.google.common.collect.Iterables;
 import org.apache.logging.log4j.Level;
 import org.jetbrains.annotations.NotNull;
 
@@ -75,6 +74,7 @@ public enum LoggingType implements Iterable<Level> {
 	private @NotNull Iterator<Level> createIterator(Level @NotNull [] levels) {
 		return new Iterator<Level>() {
 			private int index = 0;
+			
 			@Override
 			public boolean hasNext() {
 				return this.index < levels.length;
