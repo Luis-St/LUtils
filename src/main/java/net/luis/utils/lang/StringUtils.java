@@ -659,7 +659,7 @@ public class StringUtils {
 	
 	/**
 	 * Checks if the given {@code target} character is surrounded by any string inside the given {@code surrounded} array.<br>
-	 * If the centered character is found, all occurrences will be checked.<br>
+	 * If the target character is found, all occurrences will be checked.<br>
 	 * <p>
 	 *     If the {@code target} character is found, and it is surrounded by any string inside the {@code surrounded} array,<br>
 	 *     true will be returned.<br>
