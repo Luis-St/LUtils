@@ -16,8 +16,9 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-package net.luis.utils.util;
+package net.luis.utils.collection.util;
 
+import net.luis.utils.collection.util.SimpleEntry;
 import net.luis.utils.exception.ModificationException;
 import org.junit.jupiter.api.Test;
 

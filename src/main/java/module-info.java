@@ -17,7 +17,7 @@
  */
 
 /**
- * Default module for the LUtils library.<br>
+ * Module for the LUtils library.<br>
  *
  * @author Luis-St
  */
@@ -31,6 +31,7 @@ module net.luis.utils {
 	exports net.luis.utils.annotation;
 	exports net.luis.utils.annotation.type;
 	exports net.luis.utils.collection;
+	exports net.luis.utils.collection.util;
 	exports net.luis.utils.exception;
 	exports net.luis.utils.function;
 	exports net.luis.utils.io;

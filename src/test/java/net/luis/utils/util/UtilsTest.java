@@ -20,6 +20,7 @@ package net.luis.utils.util;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import net.luis.utils.collection.util.SimpleEntry;
 import org.junit.jupiter.api.Test;
 
 import java.util.*;
