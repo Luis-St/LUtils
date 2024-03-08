@@ -140,7 +140,7 @@ public interface EnumLike<T extends EnumLike<T>> extends Comparable<T> {
 	
 	/**
 	 * Returns the constant of the given enum-like class with the specified name.<br>
-	 * If the given name is null or no constant with the given name exists, an exception is thrown.<br>
+	 * If the given name is null or no constant with the given name (case-insensitive) exists, an exception is thrown.<br>
 	 * @param enumType The enum-like class
 	 * @param name The name of the constant
 	 * @return The constant with the given name
@@ -149,7 +149,7 @@ public interface EnumLike<T extends EnumLike<T>> extends Comparable<T> {
 	 * @throws IllegalStateException If no constant with the given name exists
 	 */
 	public static <T extends EnumLike<T>> T valueOf(@NotNull Class<T> enumType, @Nullable String name) {
-		return values(enumType).stream().filter(constant -> constant.name().equals(name)).findFirst().orElseThrow(() -> new IllegalStateException("No constant '" + name + "' in " + enumType.getSimpleName() + " found"));
+		return values(enumType).stream().filter(constant -> constant.name().equalsIgnoreCase(name)).findFirst().orElseThrow(() -> new IllegalStateException("No constant '" + name + "' in " + enumType.getSimpleName() + " found"));
 	}
 	
 	/**

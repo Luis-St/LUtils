@@ -62,11 +62,16 @@ class EnumLikeTest {
 	void valueOf() {
 		assertThrows(NullPointerException.class, () -> EnumLike.valueOf(null, "Example 0"));
 		assertThrows(IllegalStateException.class, () -> EnumLike.valueOf(Example.class, null));
-		assertEquals(Example.EXAMPLE_0, EnumLike.valueOf(Example.class, "Example 0"));
-		assertEquals(Example.EXAMPLE_1, EnumLike.valueOf(Example.class, "Example 1"));
-		assertEquals(Example.EXAMPLE_2, EnumLike.valueOf(Example.class, "Example 2"));
-		assertEquals(Example.EXAMPLE_3, EnumLike.valueOf(Example.class, "Example 3"));
-		assertEquals(TestClass.EXAMPLE_4, EnumLike.valueOf(Example.class, "Example 4"));
+		assertEquals(Example.EXAMPLE_0, EnumLike.valueOf(Example.class, "EXAMPLE 0"));
+		assertEquals(Example.EXAMPLE_1, EnumLike.valueOf(Example.class, "EXAMPLE 1"));
+		assertEquals(Example.EXAMPLE_2, EnumLike.valueOf(Example.class, "EXAMPLE 2"));
+		assertEquals(Example.EXAMPLE_3, EnumLike.valueOf(Example.class, "EXAMPLE 3"));
+		assertEquals(TestClass.EXAMPLE_4, EnumLike.valueOf(Example.class, "EXAMPLE 4"));
+		assertEquals(Example.EXAMPLE_0, EnumLike.valueOf(Example.class, "example 0"));
+		assertEquals(Example.EXAMPLE_1, EnumLike.valueOf(Example.class, "example 1"));
+		assertEquals(Example.EXAMPLE_2, EnumLike.valueOf(Example.class, "example 2"));
+		assertEquals(Example.EXAMPLE_3, EnumLike.valueOf(Example.class, "example 3"));
+		assertEquals(TestClass.EXAMPLE_4, EnumLike.valueOf(Example.class, "example 4"));
 	}
 	
 	@Test
