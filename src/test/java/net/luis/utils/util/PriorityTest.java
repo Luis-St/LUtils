@@ -18,9 +18,11 @@
 
 package net.luis.utils.util;
 
+import com.google.common.collect.Lists;
 import net.luis.utils.lang.EnumLike;
 import org.junit.jupiter.api.Test;
 
+import java.util.Collections;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -100,5 +102,20 @@ class PriorityTest {
 		assertTrue(Priority.NORMAL.compareTo(Priority.LOW) > 0);
 		assertTrue(Priority.LOW.compareTo(Priority.LOWEST) > 0);
 		assertEquals(0, Priority.NORMAL.compareTo(Priority.NORMAL));
+		
+		List<Priority> values = Lists.newArrayList(EnumLike.values(Priority.class));
+		values.sort(Priority::compareTo);
+		assertEquals(Priority.LOWEST, values.get(0));
+		assertEquals(Priority.LOW, values.get(1));
+		assertEquals(Priority.NORMAL, values.get(2));
+		assertEquals(Priority.HIGH, values.get(3));
+		assertEquals(Priority.HIGHEST, values.get(4));
+		
+		values.sort(Collections.reverseOrder(Priority::compareTo));
+		assertEquals(Priority.HIGHEST, values.get(0));
+		assertEquals(Priority.HIGH, values.get(1));
+		assertEquals(Priority.NORMAL, values.get(2));
+		assertEquals(Priority.LOW, values.get(3));
+		assertEquals(Priority.LOWEST, values.get(4));
 	}
 }
