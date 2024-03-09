@@ -35,12 +35,12 @@ import java.util.NoSuchElementException;
 public class NoSuchItemException extends NoSuchElementException {
 	
 	/**
-	 * Constructs a new {@link NoSuchItemException} with no details.<br>
+	 * Constructs a new no such item exception with no details.<br>
 	 */
 	public NoSuchItemException() {}
 	
 	/**
-	 * Constructs a new {@link NoSuchItemException} with the specified message.<br>
+	 * Constructs a new no such item exception with the specified message.<br>
 	 * @param message The message of the exception
 	 */
 	public NoSuchItemException(@Nullable String message) {
@@ -48,7 +48,7 @@ public class NoSuchItemException extends NoSuchElementException {
 	}
 	
 	/**
-	 * Constructs a new {@link NoSuchItemException} with the specified message and cause.<br>
+	 * Constructs a new no such item exception with the specified message and cause.<br>
 	 * @param message The message of the exception
 	 * @param cause The cause of the exception
 	 */
@@ -57,7 +57,7 @@ public class NoSuchItemException extends NoSuchElementException {
 	}
 	
 	/**
-	 * Constructs a new {@link NoSuchItemException} with the specified cause.<br>
+	 * Constructs a new no such item exception with the specified cause.<br>
 	 * @param cause The cause of the exception
 	 */
 	public NoSuchItemException(@Nullable Throwable cause) {

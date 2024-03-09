@@ -41,7 +41,7 @@ public class Result<T> implements Supplier<Either<T, String>> {
 	private final Either<T, String> result;
 	
 	/**
-	 * Constructs a new {@link Result} with the specified result.<br>
+	 * Constructs a new result with the specified result.<br>
 	 * @param result The result of the operation
 	 * @throws NullPointerException If the result is null
 	 */
@@ -52,7 +52,7 @@ public class Result<T> implements Supplier<Either<T, String>> {
 	//region Static factory methods
 	
 	/**
-	 * Creates a new successful {@link Result} with the specified value.<br>
+	 * Creates a new successful result with the specified value.<br>
 	 * @param value The value of the result
 	 * @return The created result
 	 * @param <T> The type of the result
@@ -62,7 +62,7 @@ public class Result<T> implements Supplier<Either<T, String>> {
 	}
 	
 	/**
-	 * Creates a new failed {@link Result} with the specified error message.<br>
+	 * Creates a new failed result with the specified error message.<br>
 	 * @param error The error message of the result
 	 * @return The created result
 	 * @param <T> The type of the result

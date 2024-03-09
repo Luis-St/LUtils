@@ -52,10 +52,8 @@ public abstract sealed class ResourceLocation permits ExternalResourceLocation, 
 	private final String file;
 	
 	/**
-	 * Constructs a new {@link ResourceLocation} with the given path and name.<br>
+	 * Constructs a new resource location with the given path and name.<br>
 	 * The path will be stripped and then modified by {@link #modifyPath(String)}.<br>
-	 *
-	 *
 	 * @param path The path of the resource
 	 * @param file The name of the resource
 	 * @throws NullPointerException If the file is null
@@ -68,7 +66,7 @@ public abstract sealed class ResourceLocation permits ExternalResourceLocation, 
 	//region Static factory methods
 	
 	/**
-	 * Creates a new {@link ResourceLocation} for a resource on the classpath.<br>
+	 * Creates a new resource location for a resource on the classpath.<br>
 	 * @param file The file of the resource
 	 * @return A new resource location
 	 * @throws NullPointerException If the file is null
@@ -78,7 +76,7 @@ public abstract sealed class ResourceLocation permits ExternalResourceLocation, 
 	}
 	
 	/**
-	 * Creates a new {@link ResourceLocation} for a resource on the classpath.<br>
+	 * Creates a new resource location for a resource on the classpath.<br>
 	 * @param path The path of the resource
 	 * @param name The name of the resource
 	 * @return A new resource location
@@ -89,7 +87,7 @@ public abstract sealed class ResourceLocation permits ExternalResourceLocation, 
 	}
 	
 	/**
-	 * Creates a new {@link ResourceLocation} for a resource on the filesystem.<br>
+	 * Creates a new resource location for a resource on the filesystem.<br>
 	 * @param file The file of the resource
 	 * @return A new resource location
 	 * @throws NullPointerException If the file is null
@@ -99,7 +97,7 @@ public abstract sealed class ResourceLocation permits ExternalResourceLocation, 
 	}
 	
 	/**
-	 * Creates a new {@link ResourceLocation} for a resource on the filesystem.<br>
+	 * Creates a new resource location for a resource on the filesystem.<br>
 	 * @param path The path of the resource
 	 * @param name The name of the resource
 	 * @return A new resource location
@@ -215,7 +213,7 @@ public abstract sealed class ResourceLocation permits ExternalResourceLocation, 
 	
 	/**
 	 * Constructs a new {@link Path} from the resource.<br>
-	 * Resources on the classpath can not be converted into a path.<br>
+	 * Resources on the classpath cannot be converted into a path.<br>
 	 * @return The resource as a {@link Path}
 	 * @throws UnsupportedOperationException If the resource is on the classpath
 	 */

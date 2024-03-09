@@ -45,7 +45,7 @@ final class ExternalResourceLocation extends ResourceLocation {
 	private final Path path;
 	
 	/**
-	 * Constructs a new {@link ExternalResourceLocation} from the given {@link Pair}.<br>
+	 * Constructs a new external resource location from the given {@link Pair}.<br>
 	 * The first value of the pair is the path, and the second value is the name of the resource.<br>
 	 * @param pair The pair
 	 * @throws NullPointerException If the pair is null
@@ -55,7 +55,7 @@ final class ExternalResourceLocation extends ResourceLocation {
 	}
 	
 	/**
-	 * Constructs a new {@link ExternalResourceLocation} with the given path and name.<br>
+	 * Constructs a new external resource location with the given path and name.<br>
 	 * @param path The path of the resource
 	 * @param name The name of the resource
 	 * @throws NullPointerException If the name is null

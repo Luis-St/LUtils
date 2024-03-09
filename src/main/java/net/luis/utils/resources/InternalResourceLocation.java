@@ -46,7 +46,7 @@ final class InternalResourceLocation extends ResourceLocation {
 	private final URL url;
 	
 	/**
-	 * Constructs a new {@link InternalResourceLocation} from the given {@link Pair}.<br>
+	 * Constructs a new internal resource location from the given {@link Pair}.<br>
 	 * The first value of the pair is the path, and the second value is the name of the resource.<br>
 	 * @param pair The pair
 	 * @throws NullPointerException If the pair is null
@@ -56,7 +56,7 @@ final class InternalResourceLocation extends ResourceLocation {
 	}
 	
 	/**
-	 * Constructs a new {@link InternalResourceLocation} with the given path and name.<br>
+	 * Constructs a new internal resource location with the given path and name.<br>
 	 * @param path The path of the resource
 	 * @param name The name of the resource
 	 * @throws NullPointerException If the name is null

@@ -46,7 +46,7 @@ public abstract sealed class Either<L, R> permits Either.Left, Either.Right {
 	//region Static factory methods
 	
 	/**
-	 * Creates a new {@link Either} instance with the given value as the left value.<br>
+	 * Creates a new either instance with the given value as the left value.<br>
 	 * @param value The left value
 	 * @return The created (left) either instance
 	 * @param <L> The type of the left value
@@ -57,7 +57,7 @@ public abstract sealed class Either<L, R> permits Either.Left, Either.Right {
 	}
 	
 	/**
-	 * Creates a new {@link Either} instance with the given value as the right value.<br>
+	 * Creates a new either instance with the given value as the right value.<br>
 	 * @param value The right value
 	 * @return The created (right) either instance
 	 * @param <L> The type of the left value
@@ -69,24 +69,24 @@ public abstract sealed class Either<L, R> permits Either.Left, Either.Right {
 	//endregion
 	
 	/**
-	 * @return True if this {@link Either} instance is a left instance, false otherwise
+	 * @return True if this either instance is a left instance, false otherwise
 	 */
 	public abstract boolean isLeft();
 	
 	/**
-	 * @return True if this {@link Either} instance is a right instance, false otherwise
+	 * @return True if this either instance is a right instance, false otherwise
 	 */
 	public abstract boolean isRight();
 	
 	/**
-	 * Performs the given action if this {@link Either} instance is a left instance.<br>
+	 * Performs the given action if this either instance is a left instance.<br>
 	 * @param action The action to perform
 	 * @throws NullPointerException If the action is null
 	 */
 	public void ifLeft(@NotNull Consumer<? super L> action) {}
 	
 	/**
-	 * Performs the given action if this {@link Either} instance is a right instance.<br>
+	 * Performs the given action if this either instance is a right instance.<br>
 	 * @param action The action to perform
 	 * @throws NullPointerException If the action is null
 	 */
@@ -103,30 +103,30 @@ public abstract sealed class Either<L, R> permits Either.Left, Either.Right {
 	public abstract @NotNull Optional<R> right();
 	
 	/**
-	 * @return The left value or throws an exception if it is a right {@link Either}
+	 * @return The left value or throws an exception if it is a right either
 	 * @throws IllegalStateException If the left value is not present
 	 */
 	public abstract @Nullable L leftOrThrow();
 	
 	/**
-	 * @return The right value or throws an exception if it is a left {@link Either}
+	 * @return The right value or throws an exception if it is a left either
 	 * @throws IllegalStateException If the right value is not present
 	 */
 	public abstract @Nullable R rightOrThrow();
 	
 	/**
-	 * Swaps the left and right values of this {@link Either} instance.<br>
-	 * @return A new {@link Either} instance with the swapped values
+	 * Swaps the left and right values of this either instance.<br>
+	 * @return A new either instance with the swapped values
 	 */
 	public @NotNull Either<R, L> swap() {
 		return this.mapTo(Either::right, Either::left);
 	}
 	
 	/**
-	 * Maps the left and right values of this {@link Either} instance to new values.<br>
+	 * Maps the left and right values of this either instance to new values.<br>
 	 * @param leftMapper The mapper for the left value
 	 * @param rightMapper The mapper for the right value
-	 * @return A new {@link Either} instance with the mapped values
+	 * @return A new either instance with the mapped values
 	 * @param <C> The new type of the left value
 	 * @param <D> The new type of the right value
 	 * @throws NullPointerException If the mapper used in this either implementation is null
@@ -134,7 +134,7 @@ public abstract sealed class Either<L, R> permits Either.Left, Either.Right {
 	public abstract <C, D> @NotNull Either<C, D> mapBoth(@NotNull Function<? super L, ? extends C> leftMapper, @NotNull Function<? super R, ? extends D> rightMapper);
 	
 	/**
-	 * Maps the left and right values of this {@link Either} instance to a new value.<br>
+	 * Maps the left and right values of this either instance to a new value.<br>
 	 * @param leftMapper The mapper for the left value
 	 * @param rightMapper The mapper for the right value
 	 * @return The mapped value
@@ -144,9 +144,9 @@ public abstract sealed class Either<L, R> permits Either.Left, Either.Right {
 	public abstract <T> T mapTo(@NotNull Function<? super L, ? extends T> leftMapper, @NotNull Function<? super R, ? extends T> rightMapper);
 	
 	/**
-	 * Maps the left value of this {@link Either} instance to a new value.<br>
+	 * Maps the left value of this either instance to a new value.<br>
 	 * @param mapper The mapper for the left value
-	 * @return A new {@link Either} instance with the mapped left value
+	 * @return A new either instance with the mapped left value
 	 * @param <T> The new type of the left value
 	 * @throws NullPointerException If the mapper is null
 	 */
@@ -155,9 +155,9 @@ public abstract sealed class Either<L, R> permits Either.Left, Either.Right {
 	}
 	
 	/**
-	 * Maps the right value of this {@link Either} instance to a new value.<br>
+	 * Maps the right value of this either instance to a new value.<br>
 	 * @param mapper The mapper for the right value
-	 * @return A new {@link Either} instance with the mapped right value
+	 * @return A new either instance with the mapped right value
 	 * @param <T> The new type of the right value
 	 * @throws NullPointerException If the mapper is null
 	 */
@@ -166,7 +166,7 @@ public abstract sealed class Either<L, R> permits Either.Left, Either.Right {
 	}
 	
 	/**
-	 * Left implementation of the {@link Either}.<br>
+	 * Left implementation of the either.<br>
 	 *
 	 * @author Luis-St
 	 *
@@ -183,7 +183,7 @@ public abstract sealed class Either<L, R> permits Either.Left, Either.Right {
 		private final L value;
 		
 		/**
-		 * Constructs a new {@link Left} either instance with the given value.<br>
+		 * Constructs a new left either instance with the given value.<br>
 		 * @param value The value of the left either
 		 */
 		private Left(@Nullable L value) {
@@ -258,7 +258,7 @@ public abstract sealed class Either<L, R> permits Either.Left, Either.Right {
 	}
 	
 	/**
-	 * Right implementation of the {@link Either}.<br>
+	 * Right implementation of the either.<br>
 	 *
 	 * @author Luis-St
 	 *
@@ -275,7 +275,7 @@ public abstract sealed class Either<L, R> permits Either.Left, Either.Right {
 		private final R value;
 		
 		/**
-		 * Constructs a new {@link Right} either instance with the given value.<br>
+		 * Constructs a new right either instance with the given value.<br>
 		 * @param value The value of the right either
 		 */
 		private Right(@Nullable R value) {

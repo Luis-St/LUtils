@@ -32,12 +32,12 @@ import org.jetbrains.annotations.Nullable;
 public class InvalidValueException extends RuntimeException {
 	
 	/**
-	 * Constructs a new {@link InvalidValueException} with no details.<br>
+	 * Constructs a new invalid value exception with no details.<br>
 	 */
 	public InvalidValueException() {}
 	
 	/**
-	 * Constructs a new {@link InvalidValueException} with the specified message.<br>
+	 * Constructs a new invalid value exception with the specified message.<br>
 	 * @param message The message of the exception
 	 */
 	public InvalidValueException(@Nullable String message) {
@@ -45,7 +45,7 @@ public class InvalidValueException extends RuntimeException {
 	}
 	
 	/**
-	 * Constructs a new {@link InvalidValueException} with the specified message and cause.<br>
+	 * Constructs a new invalid value exception with the specified message and cause.<br>
 	 * @param message The message of the exception
 	 * @param cause The cause of the exception
 	 */
@@ -54,7 +54,7 @@ public class InvalidValueException extends RuntimeException {
 	}
 	
 	/**
-	 * Constructs a new {@link InvalidValueException} with the specified cause.<br>
+	 * Constructs a new invalid value exception with the specified cause.<br>
 	 * @param cause The cause of the exception
 	 */
 	public InvalidValueException(@Nullable Throwable cause) {

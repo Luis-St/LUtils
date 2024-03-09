@@ -44,7 +44,7 @@ public class Pair<F, S> {
 	private final S second;
 	
 	/**
-	 * Constructs a new {@link Pair} with the specified first and second value.<br>
+	 * Constructs a new pair with the specified first and second value.<br>
 	 * @param first The first value
 	 * @param second The second value
 	 * @see #of(Object, Object)
@@ -55,7 +55,7 @@ public class Pair<F, S> {
 	}
 	
 	/**
-	 * Creates a new {@link Pair} with the specified first and second value.<br>
+	 * Creates a new pair with the specified first and second value.<br>
 	 * @param first The first value
 	 * @param second The second value
 	 * @return The created pair instance

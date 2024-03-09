@@ -31,12 +31,12 @@ import org.jetbrains.annotations.Nullable;
 public class ReflectionException extends RuntimeException {
 	
 	/**
-	 * Constructs a new {@link ReflectionException} with no details.<br>
+	 * Constructs a new reflection exception with no details.<br>
 	 */
 	public ReflectionException() {}
 	
 	/**
-	 * Constructs a new {@link ReflectionException} with the specified message.<br>
+	 * Constructs a new reflection exception with the specified message.<br>
 	 * @param message The message of the exception
 	 */
 	public ReflectionException(@Nullable String message) {
@@ -44,7 +44,7 @@ public class ReflectionException extends RuntimeException {
 	}
 	
 	/**
-	 * Constructs a new {@link ReflectionException} with the specified message and cause.<br>
+	 * Constructs a new reflection exception with the specified message and cause.<br>
 	 * @param message The message of the exception
 	 * @param cause The cause of the exception
 	 */
@@ -53,7 +53,7 @@ public class ReflectionException extends RuntimeException {
 	}
 	
 	/**
-	 * Constructs a new {@link ReflectionException} with the specified cause.<br>
+	 * Constructs a new reflection exception with the specified cause.<br>
 	 * @param cause The cause of the exception
 	 */
 	public ReflectionException(@Nullable Throwable cause) {

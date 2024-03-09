@@ -48,7 +48,7 @@ public class SimpleEntry<K, V> implements Map.Entry<K, V> {
 	protected V value;
 	
 	/**
-	 * Constructs a new {@link SimpleEntry} with the specified key and value.<br>
+	 * Constructs a new simple entry with the specified key and value.<br>
 	 * @param key The key of the entry
 	 * @param value The value of the entry
 	 * @throws NullPointerException If the key is null

@@ -32,12 +32,12 @@ import org.jetbrains.annotations.Nullable;
 public class NotInitializedException extends RuntimeException {
 	
 	/**
-	 * Constructs a new {@link NotInitializedException} with no details.<br>
+	 * Constructs a new not initialized exception with no details.<br>
 	 */
 	public NotInitializedException() {}
 	
 	/**
-	 * Constructs a new {@link NotInitializedException} with the specified message.<br>
+	 * Constructs a new not initialized exception with the specified message.<br>
 	 * @param message The message of the exception
 	 */
 	public NotInitializedException(@Nullable String message) {
@@ -45,7 +45,7 @@ public class NotInitializedException extends RuntimeException {
 	}
 	
 	/**
-	 * Constructs a new {@link NotInitializedException} with the specified message and cause.<br>
+	 * Constructs a new not initialized exception with the specified message and cause.<br>
 	 * @param message The message of the exception
 	 * @param cause The cause of the exception
 	 */
@@ -54,7 +54,7 @@ public class NotInitializedException extends RuntimeException {
 	}
 	
 	/**
-	 * Constructs a new {@link NotInitializedException} with the specified cause.<br>
+	 * Constructs a new not initialized exception with the specified cause.<br>
 	 * @param cause The cause of the exception
 	 */
 	public NotInitializedException(@Nullable Throwable cause) {

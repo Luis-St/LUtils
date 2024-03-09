@@ -34,7 +34,7 @@ import org.jetbrains.annotations.Nullable;
 public class MutableEntry<K, V> extends SimpleEntry<K, V> {
 	
 	/**
-	 * Constructs a new {@link MutableEntry} with the specified key and value.<br>
+	 * Constructs a new mutable entry with the specified key and value.<br>
 	 * @param key The key of the entry
 	 * @param value The value of the entry
 	 * @throws NullPointerException If the key is null

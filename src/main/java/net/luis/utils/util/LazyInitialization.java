@@ -50,14 +50,14 @@ public class LazyInitialization<T> {
 	private boolean initialised;
 	
 	/**
-	 * Constructs a new {@link LazyInitialization} with no value and no initialization action.<br>
+	 * Constructs a new lazy initialization with no value and no initialization action.<br>
 	 */
 	public LazyInitialization() {
 		this(new MutableObject<>(), (v) -> {}, false);
 	}
 	
 	/**
-	 * Constructs an already initialized {@link LazyInitialization} with the given value.<br>
+	 * Constructs an already initialized lazy initialization with the given value.<br>
 	 * @param value The value to initialize the object with
 	 */
 	public LazyInitialization(@Nullable T value) {
@@ -65,7 +65,7 @@ public class LazyInitialization<T> {
 	}
 	
 	/**
-	 * Constructs a new {@link LazyInitialization} with the given initialization action.<br>
+	 * Constructs a new lazy initialization with the given initialization action.<br>
 	 * @param action The action to perform when the object is initialized
 	 * @throws NullPointerException If the action is null
 	 */
@@ -74,7 +74,7 @@ public class LazyInitialization<T> {
 	}
 	
 	/**
-	 * Constructs an already initialized {@link LazyInitialization} with the given value and initialization action.<br>
+	 * Constructs an already initialized lazy initialization with the given value and initialization action.<br>
 	 * @param value The value to initialize the object with
 	 * @param action The action to perform when the object is initialized
 	 * @throws NullPointerException If the action is null
@@ -84,7 +84,7 @@ public class LazyInitialization<T> {
 	}
 	
 	/**
-	 * Constructs a new {@link LazyInitialization} with the given mutable object and initialization action.<br>
+	 * Constructs a new lazy initialization with the given mutable object and initialization action.<br>
 	 * @param mutable The internal mutable object to hold the value
 	 * @param action The action to perform when the object is initialized
 	 * @param initialised Whether the object has been initialized or not

@@ -43,7 +43,7 @@ public class LazyLoad<T> implements Supplier<T> {
 	private T value;
 	
 	/**
-	 * Constructs a new {@link LazyLoad} with the specified supplier.<br>
+	 * Constructs a new lazy load with the specified supplier.<br>
 	 * @param supplier The supplier of the value to be loaded lazily
 	 * @throws NullPointerException If the supplier is null
 	 */

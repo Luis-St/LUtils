@@ -39,7 +39,7 @@ import java.util.*;
  *     <li>Console logging enabled</li>
  *     <li>File logging enabled</li>
  * </ul>
- * A disabled logging type will not be initialized and therefore not be available and can not be enabled later.<br>
+ * A disabled logging type will not be initialized and therefore not be available and cannot be enabled later.<br>
  * The default loggers are:<br>
  * <ul>
  *     <li>Console: INFO, WARN, ERROR, FATAL</li>
@@ -118,7 +118,7 @@ public class LoggerConfiguration {
 	private String rootDirectory = "./";
 	
 	/**
-	 * Constructs a new {@link LoggerConfiguration} with the specified logger name.<br>
+	 * Constructs a new logger configuration with the specified logger name.<br>
 	 * The logger name is used to identify the logger in the configuration.<br>
 	 * The logger name must be the package name, the full class name or a '*' to include all loggers.<br>
 	 * If the list contains a '*', all other logger names will be ignored.<br>
@@ -132,7 +132,7 @@ public class LoggerConfiguration {
 	}
 	
 	/**
-	 * Constructs a new {@link LoggerConfiguration} with the specified logger name.<br>
+	 * Constructs a new logger configuration with the specified logger name.<br>
 	 * The logger name is used to identify the logger in the configuration.<br>
 	 * The logger name must be the package name, the full class name or a '*' to include all loggers.<br>
 	 * If the list contains a '*', all other logger names will be ignored.<br>

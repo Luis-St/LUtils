@@ -72,7 +72,7 @@ public class StackTraceUtils {
 	 * </p>
 	 * <ul>
 	 *     <li>...</li>
-	 *     <li>2: {@link StackTraceUtils#getCallingClass()}</li>
+	 *     <li>2: This method</li>
 	 *     <li>3: The method which requests the calling class</li>
 	 *     <li>4: The calling class</li>
 	 * </ul>
@@ -99,7 +99,7 @@ public class StackTraceUtils {
 	 * </p>
 	 * <ul>
 	 *     <li>...</li>
-	 *     <li>2: {@link StackTraceUtils#getCallingClass(int)}</li>
+	 *     <li>2: This method</li>
 	 *     <li>3: The class with the method which calls this method</li>
 	 *     <li>4: The calling class</li>
 	 *     <li>...</li>
@@ -132,7 +132,7 @@ public class StackTraceUtils {
 	 * </p>
 	 * <ul>
 	 *     <li>...</li>
-	 *     <li>2: {@link StackTraceUtils#getCallingMethod()}</li>
+	 *     <li>2: This method</li>
 	 *     <li>3: The method which requests the calling method</li>
 	 *     <li>4: The calling method</li>
 	 * </ul>
@@ -166,7 +166,7 @@ public class StackTraceUtils {
 	 * </p>
 	 * <ul>
 	 *     <li>...</li>
-	 *     <li>2: {@link StackTraceUtils#getCallingMethod(int)}</li>
+	 *     <li>2: This method</li>
 	 *     <li>3: The method which calls this method</li>
 	 *     <li>4: The calling method</li>
 	 *     <li>...</li>
@@ -203,7 +203,7 @@ public class StackTraceUtils {
 	 * </p>
 	 * <ul>
 	 *     <li>...</li>
-	 *     <li>2: {@link StackTraceUtils#getCallingMethodSafe()}</li>
+	 *     <li>2: This method</li>
 	 *     <li>3: The method which requests the calling method</li>
 	 *     <li>4: The calling method</li>
 	 *     <li>...</li>
@@ -236,7 +236,7 @@ public class StackTraceUtils {
 	 * </p>
 	 * <ul>
 	 *     <li>...</li>
-	 *     <li>2: {@link StackTraceUtils#getCallingMethodSafe(int)}</li>
+	 *     <li>2: This method</li>
 	 *     <li>3: The method which calls this method</li>
 	 *     <li>4: The calling method</li>
 	 *     <li>5: The method which calls the method which requests the calling method</li>
@@ -289,7 +289,7 @@ public class StackTraceUtils {
 	 * </p>
 	 * <ul>
 	 *     <li>0: {@link Thread#getStackTrace()}</li>
-	 *     <li>1: {@link StackTraceUtils#getStackTrace(int)}</li>
+	 *     <li>2: This method</li>
 	 *     <li>2: The overloading method in this class</li>
 	 *     <li>3: The method which requests the calling stack trace element</li>
 	 *     <li>4: The calling method or class</li>

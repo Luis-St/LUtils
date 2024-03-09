@@ -39,7 +39,7 @@ import java.util.Objects;
 public record SimpleCell<R, C, V>(@NotNull R getRowKey, @NotNull C getColumnKey, @Nullable V getValue) implements Table.Cell<R, C, V> {
 	
 	/**
-	 * Constructs a new {@link SimpleCell} with the specified row key, column key and value.<br>
+	 * Constructs a new simple cell with the specified row key, column key and value.<br>
 	 * @param getRowKey The row key of the cell
 	 * @param getColumnKey The column key of the cell
 	 * @param getValue The value of the cell

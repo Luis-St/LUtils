@@ -42,7 +42,7 @@ public class Chance {
 	private final double chance;
 	
 	/**
-	 * Constructs a new {@link Chance} with the given chance.<br>
+	 * Constructs a new chance with the given chance.<br>
 	 * The chance will be clamped between 0.0 and 1.0.<br>
 	 * @param chance The chance value as a double
 	 */
@@ -51,7 +51,7 @@ public class Chance {
 	}
 	
 	/**
-	 * Creates a new {@link Chance} with the given chance.<br>
+	 * Creates a new chance with the given chance.<br>
 	 * The chance will be clamped between 0.0 and 1.0.<br>
 	 * @param chance The chance as a double
 	 * @return The created chance

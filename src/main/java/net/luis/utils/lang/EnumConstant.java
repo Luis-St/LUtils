@@ -35,7 +35,7 @@ import java.util.Objects;
 public record EnumConstant<T>(@NotNull String name, int ordinal, @NotNull T value) {
 	
 	/**
-	 * Constructs a new {@link EnumConstant} with the given name, ordinal and value.<br>
+	 * Constructs a new enum constant with the given name, ordinal and value.<br>
 	 * @param name The name of the enum constant
 	 * @param ordinal The ordinal of the enum constant
 	 * @param value The value of the enum constant

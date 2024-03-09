@@ -32,12 +32,12 @@ import org.jetbrains.annotations.Nullable;
 public class ModificationException extends RuntimeException {
 	
 	/**
-	 * Constructs a new {@link ModificationException} with no details.<br>
+	 * Constructs a new modification exception with no details.<br>
 	 */
 	public ModificationException() {}
 	
 	/**
-	 * Constructs a new {@link ModificationException} with the specified message.<br>
+	 * Constructs a new modification exception with the specified message.<br>
 	 * @param message The message of the exception
 	 */
 	public ModificationException(@Nullable String message) {
@@ -45,7 +45,7 @@ public class ModificationException extends RuntimeException {
 	}
 	
 	/**
-	 * Constructs a new {@link ModificationException} with the specified message and cause.<br>
+	 * Constructs a new modification exception with the specified message and cause.<br>
 	 * @param message The message of the exception
 	 * @param cause The cause of the exception
 	 */
@@ -54,7 +54,7 @@ public class ModificationException extends RuntimeException {
 	}
 	
 	/**
-	 * Constructs a new {@link ModificationException} with the specified cause.<br>
+	 * Constructs a new modification exception with the specified cause.<br>
 	 * @param cause The cause of the exception
 	 */
 	public ModificationException(@Nullable Throwable cause) {
