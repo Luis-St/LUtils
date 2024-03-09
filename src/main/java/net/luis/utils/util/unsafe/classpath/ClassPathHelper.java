@@ -97,7 +97,7 @@ class ClassPathHelper {
 				classes.addAll(getClassesFromDirectory(file, condition));
 			} else {
 				String caller = StackTraceUtils.getCallingClass(1).getPackageName();
-				int packageDepth = Integer.parseInt(System.getProperty("unsafe.package.depth", "2"));
+				int packageDepth = Integer.parseInt(System.getProperty(UNSAFE_PACKAGE_DEPTH, "2"));
 				String pack = Arrays.stream(caller.split("\\.")).limit(packageDepth).collect(Collectors.joining("."));
 				classes.addAll(getClassesFromJar(file, includeDependencies ? condition : condition.and(clazz -> clazz.startsWith(pack))));
 			}

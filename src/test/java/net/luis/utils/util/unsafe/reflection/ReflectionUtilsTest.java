@@ -72,16 +72,16 @@ class ReflectionUtilsTest {
 		assertDoesNotThrow(() -> ReflectionUtils.findParameters(GET_STRING, (Object[]) null));
 		assertDoesNotThrow(() -> ReflectionUtils.findParameters(GET_STRING, (List<Pair<Object, String>>) null));
 		assertArrayEquals(EMPTY, ReflectionUtils.findParameters(GET_STRING));
-		assertArrayEquals(new Object[] {""}, ReflectionUtils.findParameters(SET_STRING, ""));
-		assertArrayEquals(new Object[] {""}, ReflectionUtils.findParameters(SET_STRING, 10, "", new Object()));
-		assertArrayEquals(new Object[] {"", action}, ReflectionUtils.findParameters(SET_STRING_OLD_ACTION, action, ""));
-		assertArrayEquals(new Object[] {"", action}, ReflectionUtils.findParameters(SET_STRING_OLD_ACTION, "", action));
+		assertArrayEquals(new Object[] { "" }, ReflectionUtils.findParameters(SET_STRING, ""));
+		assertArrayEquals(new Object[] { "" }, ReflectionUtils.findParameters(SET_STRING, 10, "", new Object()));
+		assertArrayEquals(new Object[] { "", action }, ReflectionUtils.findParameters(SET_STRING_OLD_ACTION, action, ""));
+		assertArrayEquals(new Object[] { "", action }, ReflectionUtils.findParameters(SET_STRING_OLD_ACTION, "", action));
 		
 		List<Pair<Object, String>> parameters = Lists.newArrayList(Pair.of(action, "oldAction"), Pair.of("", "str"));
-		assertArrayEquals(new Object[] {""}, ReflectionUtils.findParameters(SET_STRING, Lists.newArrayList(Pair.of("", "str"))));
-		assertArrayEquals(new Object[] {""}, ReflectionUtils.findParameters(SET_STRING, parameters));
-		assertArrayEquals(new Object[] {"", action}, ReflectionUtils.findParameters(SET_STRING_OLD_ACTION, parameters));
-		assertArrayEquals(new Object[] {"", action}, ReflectionUtils.findParameters(SET_STRING_OLD_ACTION, "", action));
+		assertArrayEquals(new Object[] { "" }, ReflectionUtils.findParameters(SET_STRING, Lists.newArrayList(Pair.of("", "str"))));
+		assertArrayEquals(new Object[] { "" }, ReflectionUtils.findParameters(SET_STRING, parameters));
+		assertArrayEquals(new Object[] { "", action }, ReflectionUtils.findParameters(SET_STRING_OLD_ACTION, parameters));
+		assertArrayEquals(new Object[] { "", action }, ReflectionUtils.findParameters(SET_STRING_OLD_ACTION, "", action));
 	}
 	
 	//region Static initializer

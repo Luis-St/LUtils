@@ -219,10 +219,10 @@ class StringUtilsTest {
 		assertFalse(StringUtils.isAfterAllOccurrence("abcde", '\0', (String[]) null));
 		assertTrue(StringUtils.isAfterAllOccurrence("abcde", 'a', ArrayUtils.EMPTY_STRING_ARRAY));
 		assertFalse(StringUtils.isAfterAllOccurrence("abcde", 'x', ArrayUtils.EMPTY_STRING_ARRAY));
-		assertTrue(StringUtils.isAfterAllOccurrence("abcde", 'a', new String[] {"b"}));
-		assertTrue(StringUtils.isAfterAllOccurrence("abcab", 'a', new String[] {"b"}));
-		assertFalse(StringUtils.isAfterAllOccurrence("abcae", 'a', new String[] {"b"}));
-		assertTrue(StringUtils.isAfterAllOccurrence("abcae", 'a', new String[] {"b", "e"}));
+		assertTrue(StringUtils.isAfterAllOccurrence("abcde", 'a', new String[] { "b" }));
+		assertTrue(StringUtils.isAfterAllOccurrence("abcab", 'a', new String[] { "b" }));
+		assertFalse(StringUtils.isAfterAllOccurrence("abcae", 'a', new String[] { "b" }));
+		assertTrue(StringUtils.isAfterAllOccurrence("abcae", 'a', new String[] { "b", "e" }));
 	}
 	
 	@Test
@@ -234,10 +234,10 @@ class StringUtilsTest {
 		assertFalse(StringUtils.isBeforeAllOccurrence("abcde", '\0', (String[]) null));
 		assertTrue(StringUtils.isBeforeAllOccurrence("abcde", 'd', ArrayUtils.EMPTY_STRING_ARRAY));
 		assertFalse(StringUtils.isBeforeAllOccurrence("abcde", 'x', ArrayUtils.EMPTY_STRING_ARRAY));
-		assertTrue(StringUtils.isBeforeAllOccurrence("abcde", 'e', new String[] {"d"}));
-		assertTrue(StringUtils.isBeforeAllOccurrence("aecae", 'e', new String[] {"a"}));
-		assertFalse(StringUtils.isBeforeAllOccurrence("aecde", 'e', new String[] {"a"}));
-		assertTrue(StringUtils.isBeforeAllOccurrence("aecde", 'e', new String[] {"a", "d"}));
+		assertTrue(StringUtils.isBeforeAllOccurrence("abcde", 'e', new String[] { "d" }));
+		assertTrue(StringUtils.isBeforeAllOccurrence("aecae", 'e', new String[] { "a" }));
+		assertFalse(StringUtils.isBeforeAllOccurrence("aecde", 'e', new String[] { "a" }));
+		assertTrue(StringUtils.isBeforeAllOccurrence("aecde", 'e', new String[] { "a", "d" }));
 	}
 	
 	@Test
@@ -249,15 +249,15 @@ class StringUtilsTest {
 		assertFalse(StringUtils.isSurroundedBy("a.*.b", '\0', (String[]) null));
 		assertTrue(StringUtils.isSurroundedBy("a.*.b", '*', ArrayUtils.EMPTY_STRING_ARRAY));
 		assertFalse(StringUtils.isSurroundedBy("a.*.b", 'x', ArrayUtils.EMPTY_STRING_ARRAY));
-		assertTrue(StringUtils.isSurroundedBy("a.*.b", '*', new String[] {"."}));
-		assertTrue(StringUtils.isSurroundedBy("a.*.b.*.c", '*', new String[] {"."}));
-		assertFalse(StringUtils.isSurroundedBy("a.*.b.?*?.c", '*', new String[] {"."}));
-		assertTrue(StringUtils.isSurroundedBy("a.*.b.?*?.c", '*', new String[] {".", "?"}));
-		assertTrue(StringUtils.isSurroundedBy("a.*.b.?*?.c", '*', new String[] {".", "?."}));
+		assertTrue(StringUtils.isSurroundedBy("a.*.b", '*', new String[] { "." }));
+		assertTrue(StringUtils.isSurroundedBy("a.*.b.*.c", '*', new String[] { "." }));
+		assertFalse(StringUtils.isSurroundedBy("a.*.b.?*?.c", '*', new String[] { "." }));
+		assertTrue(StringUtils.isSurroundedBy("a.*.b.?*?.c", '*', new String[] { ".", "?" }));
+		assertTrue(StringUtils.isSurroundedBy("a.*.b.?*?.c", '*', new String[] { ".", "?." }));
 		
 		System.setProperty("lang.surrounded.reverse.brackets", "true");
-		assertTrue(StringUtils.isSurroundedBy("a.[*].b", '*', new String[] {"]."}));
-		assertFalse(StringUtils.isSurroundedBy("a.[*[.b", '*', new String[] {"[."}));
+		assertTrue(StringUtils.isSurroundedBy("a.[*].b", '*', new String[] { "]." }));
+		assertFalse(StringUtils.isSurroundedBy("a.[*[.b", '*', new String[] { "[." }));
 		System.setProperty("lang.surrounded.reverse.brackets", "false");
 	}
 	

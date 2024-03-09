@@ -135,10 +135,10 @@ class LoggerConfigurationTest {
 		assertThrows(NullPointerException.class, () -> config.overrideLog(null, "", ""));
 		assertThrows(NullPointerException.class, () -> config.overrideLog(Level.DEBUG, null, ""));
 		assertThrows(NullPointerException.class, () -> config.overrideLog(Level.DEBUG, "", null));
-		for (Level level : new Level[] {Level.OFF, Level.TRACE, Level.FATAL, Level.ALL}) {
+		for (Level level : new Level[] { Level.OFF, Level.TRACE, Level.FATAL, Level.ALL }) {
 			assertThrows(IllegalArgumentException.class, () -> config.overrideLog(level, "", ""));
 		}
-		for (Level level : new Level[] {Level.DEBUG, Level.INFO, Level.ERROR}) {
+		for (Level level : new Level[] { Level.DEBUG, Level.INFO, Level.ERROR }) {
 			assertThrows(IllegalArgumentException.class, () -> config.overrideLog(level, "", "test.log"));
 			assertThrows(IllegalArgumentException.class, () -> config.overrideLog(level, "test.log", ""));
 			assertThrows(IllegalArgumentException.class, () -> config.overrideLog(level, "D:/test.log", "D:/test.log"));
@@ -214,10 +214,10 @@ class LoggerConfigurationTest {
 		}
 		assertThrows(IllegalArgumentException.class, () -> config.addDefaultLogger(LoggingType.FILE, Level.TRACE));
 		assertThrows(IllegalArgumentException.class, () -> config.addDefaultLogger(LoggingType.FILE, Level.FATAL));
-		for (Level level : new Level[] {Level.TRACE, Level.DEBUG, Level.INFO, Level.ERROR, Level.FATAL}) {
+		for (Level level : new Level[] { Level.TRACE, Level.DEBUG, Level.INFO, Level.ERROR, Level.FATAL }) {
 			assertSame(config, assertDoesNotThrow(() -> config.addDefaultLogger(LoggingType.CONSOLE, level)));
 		}
-		for (Level level : new Level[] {Level.DEBUG, Level.INFO, Level.ERROR}) {
+		for (Level level : new Level[] { Level.DEBUG, Level.INFO, Level.ERROR }) {
 			assertSame(config, assertDoesNotThrow(() -> config.addDefaultLogger(LoggingType.FILE, level)));
 		}
 	}

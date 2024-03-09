@@ -37,7 +37,7 @@ class UtilsTest {
 	private static final Random RNG = new Random(0);
 	private static final Map<String, Integer> MAP = Maps.newHashMap(Map.of("0", 0, "1", 1, "2", 2, "3", 3, "4", 4));
 	private static final List<Integer> LIST = Lists.newArrayList(0, 1, 2, 3, 4);
-	private static final Integer[] ARRAY = {0, 1, 2, 3, 4};
+	private static final Integer[] ARRAY = { 0, 1, 2, 3, 4 };
 	private static final Integer[] EMPTY = {};
 	
 	@Test
@@ -125,7 +125,7 @@ class UtilsTest {
 		//region Setup
 		List<Integer> list = Lists.newArrayList(LIST);
 		list.add(4);
-		Integer[] array = {0, 1, 2, 3, 4, 4};
+		Integer[] array = { 0, 1, 2, 3, 4, 4 };
 		//endregion
 		assertDoesNotThrow(() -> Utils.hasDuplicates((Integer[]) null));
 		assertFalse(Utils.hasDuplicates((Integer[]) null));
@@ -192,7 +192,7 @@ class UtilsTest {
 	@Test
 	void getRandom() {
 		//region Setup
-		Integer[] singleArray = {0};
+		Integer[] singleArray = { 0 };
 		List<Integer> singleList = Lists.newArrayList(0);
 		//endregion
 		assertThrows(NullPointerException.class, () -> Utils.getRandom(null, (Integer[]) null));
@@ -219,7 +219,7 @@ class UtilsTest {
 	@Test
 	void getRandomSafe() {
 		//region Setup
-		Integer[] singleArray = {0};
+		Integer[] singleArray = { 0 };
 		List<Integer> singleList = Lists.newArrayList(0);
 		//endregion
 		assertThrows(NullPointerException.class, () -> Utils.getRandomSafe(null, (Integer[]) null));

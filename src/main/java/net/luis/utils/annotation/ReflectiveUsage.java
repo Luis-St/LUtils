@@ -28,6 +28,6 @@ import java.lang.annotation.*;
  * @author Luis-St
  */
 @Documented
-@Target({ElementType.TYPE, ElementType.METHOD, ElementType.CONSTRUCTOR, ElementType.FIELD})
+@Target({ ElementType.TYPE, ElementType.METHOD, ElementType.CONSTRUCTOR, ElementType.FIELD })
 @Retention(RetentionPolicy.RUNTIME)
 public @interface ReflectiveUsage {}

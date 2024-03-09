@@ -213,11 +213,11 @@ class LoggingHelper {
 	 * @see #loadProperties(ResourceLocation)
 	 */
 	public static @NotNull LoggerConfiguration load(@NotNull List<String> loggers) {
-		String config = System.getProperty("logging.config");
+		String config = System.getProperty(LOGGING_CONFIG);
 		if (StringUtils.isNotBlank(config)) {
 			String file = config.replace("\\", "/");
 			if (!file.matches(PATH_PATTERN)) {
-				throw new InvalidValueException("Invalid value '" + file + "' for property 'logging.config', must be a relative or absolute path");
+				throw new InvalidValueException("Invalid value '" + file + "' for property '" + LOGGING_CONFIG + "', must be a relative or absolute path");
 			}
 			loadProperties(ResourceLocation.external(file));
 		}
@@ -236,7 +236,7 @@ class LoggingHelper {
 	 */
 	private static void loadProperties(@NotNull ResourceLocation location) {
 		Objects.requireNonNull(location, "Location must not be null");
-		boolean noOverrides = !Boolean.parseBoolean(System.getProperty("logging.config.override", "false"));
+		boolean noOverrides = !Boolean.parseBoolean(System.getProperty(LOGGING_CONFIG_OVERRIDE, "false"));
 		try {
 			for (String line : location.getLines().toList()) {
 				if (StringUtils.isBlank(line) || StringUtils.startsWithAny(line, "#", "!")) {

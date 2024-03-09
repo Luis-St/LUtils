@@ -27,6 +27,6 @@ import java.lang.annotation.*;
  * @author Luis-St
  */
 @Documented
-@Target({ElementType.TYPE, ElementType.FIELD, ElementType.METHOD})
+@Target({ ElementType.TYPE, ElementType.FIELD, ElementType.METHOD })
 @Retention(RetentionPolicy.CLASS)
 public @interface Internal {}

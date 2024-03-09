@@ -41,11 +41,11 @@ public enum LoggingType implements Iterable<Level> {
 	/**
 	 * Supported console logging levels.<br>
 	 */
-	private static final Level[] CONSOLE_LEVELS = new Level[] {Level.TRACE, Level.DEBUG, Level.INFO, Level.WARN, Level.ERROR, Level.FATAL};
+	private static final Level[] CONSOLE_LEVELS = { Level.TRACE, Level.DEBUG, Level.INFO, Level.WARN, Level.ERROR, Level.FATAL };
 	/**
 	 * Supported file logging levels.<br>
 	 */
-	private static final Level[] FILE_LEVELS = new Level[] {Level.DEBUG, Level.INFO, Level.ERROR};
+	private static final Level[] FILE_LEVELS = { Level.DEBUG, Level.INFO, Level.ERROR };
 	
 	/**
 	 * Gets the allowed levels for this logging type.
@@ -72,8 +72,8 @@ public enum LoggingType implements Iterable<Level> {
 	 * @return The created iterator
 	 */
 	private @NotNull Iterator<Level> createIterator(Level @NotNull [] levels) {
-		return new Iterator<Level>() {
-			private int index = 0;
+		return new Iterator<>() {
+			private int index;
 			
 			@Override
 			public boolean hasNext() {

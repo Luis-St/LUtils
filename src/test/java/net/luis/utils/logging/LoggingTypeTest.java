@@ -34,8 +34,8 @@ class LoggingTypeTest {
 	void getAllowedLevels() {
 		assertEquals(6, LoggingType.CONSOLE.getAllowedLevels().length);
 		assertEquals(3, LoggingType.FILE.getAllowedLevels().length);
-		assertArrayEquals(new Level[] {Level.TRACE, Level.DEBUG, Level.INFO, Level.WARN, Level.ERROR, Level.FATAL}, LoggingType.CONSOLE.getAllowedLevels());
-		assertArrayEquals(new Level[] {Level.DEBUG, Level.INFO, Level.ERROR}, LoggingType.FILE.getAllowedLevels());
+		assertArrayEquals(new Level[] { Level.TRACE, Level.DEBUG, Level.INFO, Level.WARN, Level.ERROR, Level.FATAL }, LoggingType.CONSOLE.getAllowedLevels());
+		assertArrayEquals(new Level[] { Level.DEBUG, Level.INFO, Level.ERROR }, LoggingType.FILE.getAllowedLevels());
 	}
 	
 	@Test

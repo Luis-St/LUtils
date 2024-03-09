@@ -43,7 +43,7 @@ public class Ignored {
 	 */
 	@Inherited
 	@Documented
-	@Target({ElementType.PARAMETER, ElementType.LOCAL_VARIABLE})
+	@Target({ ElementType.PARAMETER, ElementType.LOCAL_VARIABLE })
 	@Retention(RetentionPolicy.CLASS)
 	public @interface Always {}
 	
@@ -56,7 +56,7 @@ public class Ignored {
 	 */
 	@Inherited
 	@Documented
-	@Target({ElementType.PARAMETER, ElementType.LOCAL_VARIABLE})
+	@Target({ ElementType.PARAMETER, ElementType.LOCAL_VARIABLE })
 	@Retention(RetentionPolicy.CLASS)
 	public @interface Maybe {}
 	

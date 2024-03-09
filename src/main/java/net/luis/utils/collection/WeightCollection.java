@@ -30,7 +30,7 @@ import java.util.*;
  *
  * @author Luis-St
  */
-@SuppressWarnings({"UsingRandomNextDoubleForRandomInteger", "ConstantValue"})
+@SuppressWarnings({ "UsingRandomNextDoubleForRandomInteger" })
 public class WeightCollection<T> {
 	
 	/**

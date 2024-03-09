@@ -46,7 +46,7 @@ public class SpringFactory extends ConfigurationFactory {
 	 */
 	@Override
 	protected String @NotNull [] getSupportedTypes() {
-		return new String[] {"*"};
+		return new String[] { "*" };
 	}
 	
 	/**
