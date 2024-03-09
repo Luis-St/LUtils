@@ -54,6 +54,18 @@ class EitherTest {
 	}
 	
 	@Test
+	void ifLeft() {
+		Either.left("left").ifLeft(s -> assertEquals("left", s));
+		Either.right("right").ifLeft(s -> fail("Should not be called"));
+	}
+	
+	@Test
+	void ifRight() {
+		Either.right("right").ifRight(s -> assertEquals("right", s));
+		Either.left("left").ifRight(s -> fail("Should not be called"));
+	}
+	
+	@Test
 	void leftOrThrow() {
 		assertDoesNotThrow(() -> Either.left("left").leftOrThrow());
 		assertEquals("left", Either.left("left").leftOrThrow());

@@ -81,18 +81,16 @@ public abstract sealed class Either<L, R> permits Either.Left, Either.Right {
 	/**
 	 * Performs the given action if this {@link Either} instance is a left instance.<br>
 	 * @param action The action to perform
-	 * @return This instance
 	 * @throws NullPointerException If the action is null
 	 */
-	public abstract @NotNull Either<L, R> ifLeft(@NotNull Consumer<? super L> action);
+	public void ifLeft(@NotNull Consumer<? super L> action) {}
 	
 	/**
 	 * Performs the given action if this {@link Either} instance is a right instance.<br>
 	 * @param action The action to perform
-	 * @return This instance
 	 * @throws NullPointerException If the action is null
 	 */
-	public abstract @NotNull Either<L, R> ifRight(@NotNull Consumer<? super R> action);
+	public void ifRight(@NotNull Consumer<? super R> action) {}
 	
 	/**
 	 * @return The left value as an {@link Optional}
@@ -203,14 +201,8 @@ public abstract sealed class Either<L, R> permits Either.Left, Either.Right {
 		}
 		
 		@Override
-		public @NotNull Either<L, R> ifLeft(@NotNull Consumer<? super L> action) {
+		public void ifLeft(@NotNull Consumer<? super L> action) {
 			Objects.requireNonNull(action, "Action must not be null").accept(this.value);
-			return this;
-		}
-		
-		@Override
-		public @NotNull Either<L, R> ifRight(@NotNull Consumer<? super R> action) {
-			return this;
 		}
 		
 		@Override
@@ -301,14 +293,8 @@ public abstract sealed class Either<L, R> permits Either.Left, Either.Right {
 		}
 		
 		@Override
-		public @NotNull Either<L, R> ifLeft(@NotNull Consumer<? super L> action) {
-			return this;
-		}
-		
-		@Override
-		public @NotNull Either<L, R> ifRight(@NotNull Consumer<? super R> action) {
+		public void ifRight(@NotNull Consumer<? super R> action) {
 			Objects.requireNonNull(action, "Action must not be null").accept(this.value);
-			return this;
 		}
 		
 		@Override
