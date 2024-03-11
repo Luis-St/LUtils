@@ -31,20 +31,53 @@ class ChanceTest {
 	
 	@Test
 	void of() {
-		assertNotNull(Chance.of(1.0));
 		assertDoesNotThrow(() -> Chance.of(1.0));
+		assertNotNull(Chance.of(1.0));
+		assertEquals(Chance.ZERO, Chance.of(0.0));
+		assertEquals(Chance.ZERO, Chance.of(-100.0));
+		assertEquals(Chance.ONE, Chance.of(1.0));
+		assertEquals(Chance.ONE, Chance.of(100.0));
+	}
+	
+	@Test
+	void parse() {
+		assertDoesNotThrow(() -> Chance.parse(null));
+		assertEquals(Chance.ZERO, Chance.parse(null));
+		assertEquals(Chance.ZERO, Chance.parse(""));
+		assertEquals(Chance.ZERO, Chance.parse("0%"));
+		assertEquals(Chance.ZERO, Chance.parse("0.0"));
+		assertEquals(Chance.ZERO, Chance.parse(".0%"));
+		assertEquals(Chance.ZERO, Chance.parse("0.0%"));
+		assertEquals(Chance.of(0.05), Chance.parse("0.05%"));
+		assertEquals(Chance.of(0.1), Chance.parse("0.1%"));
+		assertEquals(Chance.of(0.5), Chance.parse("0.5%"));
+		assertEquals(Chance.ONE, Chance.parse("1.0%"));
+	}
+	
+	@Test
+	void setSeed() {
+		assertDoesNotThrow(() -> Chance.setSeed(-1));
+		assertDoesNotThrow(() -> Chance.setSeed(1));
 	}
 	
 	@Test
 	void isTrue() {
-		assertTrue(Chance.of(1.0).isTrue());
+		assertFalse(Chance.ZERO.isTrue());
+		assertFalse(Chance.of(0.0).isTrue());
 		assertFalse(Chance.of(0.9).isTrue());
+		assertTrue(Chance.of(1.0).isTrue());
+		assertTrue(Chance.of(100.0).isTrue());
+		assertTrue(Chance.ONE.isTrue());
 	}
 	
 	@Test
 	void isFalse() {
-		assertTrue(Chance.of(0.0).isFalse());
+		assertFalse(Chance.ONE.isFalse());
+		assertFalse(Chance.of(1.0).isFalse());
 		assertFalse(Chance.of(0.1).isFalse());
+		assertTrue(Chance.of(0.0).isFalse());
+		assertTrue(Chance.of(-100.0).isFalse());
+		assertTrue(Chance.ZERO.isFalse());
 	}
 	
 	@Test
