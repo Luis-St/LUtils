@@ -81,7 +81,7 @@ The library provides the following packages:
 
 ## Documentation
 
-The documentation is available at [docs.luis-st.net](https://docs.luis-st.net/LUtils/).
+The documentation is available at [docs.luis-st.net](https://docs.luis-st.net/net.luis.utils/module-summary.html).
 
 ## Examples
 
