@@ -42,6 +42,10 @@ public class KeyType<K extends Key> implements EnumLike<KeyType<?>> {
 	@SuppressWarnings("MismatchedQueryAndUpdateOfCollection")
 	private static final List<KeyType<?>> VALUES = Lists.newLinkedList();
 	
+	public static final KeyType<StringKey> STRING = new KeyType<>("string", Priority.LOW, StringKey::isValid, StringKey::new);
+	public static final KeyType<NamespaceKey> NAMESPACE = new KeyType<>("namespace", Priority.NORMAL, NamespaceKey::isValid, NamespaceKey::new);
+	public static final KeyType<PatternKey> PATTERN = new KeyType<>("pattern", Priority.HIGH, PatternKey::isValid, PatternKey::new);
+	public static final KeyType<UniqueKey> UNIQUE = new KeyType<>("unique", Priority.HIGH, UniqueKey::isValid, UniqueKey::new);
 	
 	private final String name;
 	private final Priority priority;
