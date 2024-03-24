@@ -106,13 +106,13 @@ public abstract sealed class Either<L, R> permits Either.Left, Either.Right {
 	 * @return The left value or throws an exception if it is a right either
 	 * @throws IllegalStateException If the left value is not present
 	 */
-	public abstract @Nullable L leftOrThrow();
+	public abstract  L leftOrThrow();
 	
 	/**
 	 * @return The right value or throws an exception if it is a left either
 	 * @throws IllegalStateException If the right value is not present
 	 */
-	public abstract @Nullable R rightOrThrow();
+	public abstract R rightOrThrow();
 	
 	/**
 	 * Swaps the left and right values of this either instance.<br>
@@ -216,7 +216,7 @@ public abstract sealed class Either<L, R> permits Either.Left, Either.Right {
 		}
 		
 		@Override
-		public @Nullable L leftOrThrow() {
+		public L leftOrThrow() {
 			return this.value;
 		}
 		
@@ -313,7 +313,7 @@ public abstract sealed class Either<L, R> permits Either.Left, Either.Right {
 		}
 		
 		@Override
-		public @Nullable R rightOrThrow() {
+		public R rightOrThrow() {
 			return this.value;
 		}
 		
