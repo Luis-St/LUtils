@@ -4,6 +4,9 @@ plugins {
 	id "com.github.joschi.licenser" version "${Licenser}"
 }
 
+project.ext.username = System.getenv("MAVEN_USERNAME")
+project.ext.password = System.getenv("MAVEN_PASSWORD")
+
 repositories {
 	mavenCentral()
 }
@@ -59,16 +62,6 @@ tasks.register("run", JavaExec) {
 	jvmArgs()
 }
 
-def username = ""
-def password = ""
-def file = file("./../../credentials.properties")
-if (file.exists()) {
-	def properties = new Properties()
-	file.withInputStream {properties.load(it)}
-	username = properties.getProperty("username")
-	password = properties.getProperty("password")
-}
-
 publishing {
 	publications {
 		mavenJava(MavenPublication) {
@@ -81,11 +74,11 @@ publishing {
 		}
 	}
 	repositories {
-		if (!username.isBlank() && !password.isBlank()) {
+		if (project.ext.username != null && project.ext.password != null) {
 			maven {
 				url "https://maven.luis-st.net/libraries/"
-				credentials.username = username
-				credentials.password = password
+				credentials.username = project.ext.username
+				credentials.password = project.ext.password
 			}
 		} else {
 			System.err.println("No credentials provided. Publishing to maven.luis-st.net not possible.")
