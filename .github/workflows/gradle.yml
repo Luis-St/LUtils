@@ -23,6 +23,7 @@ jobs:
         with:
           arguments: licenseCheck
   build:
+    needs: license-check
     runs-on: ubuntu-latest
     steps:
       - name: 'Checkout repository'

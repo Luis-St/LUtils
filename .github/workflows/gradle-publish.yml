@@ -12,6 +12,7 @@ permissions:
 
 jobs:
   license-check:
+    if: github.event.pull_request.merged == true
     runs-on: ubuntu-latest
     steps:
       - name: 'Checkout repository'
@@ -29,6 +30,7 @@ jobs:
           arguments: licenseCheck
   build:
     if: github.event.pull_request.merged == true
+    needs: license-check
     runs-on: ubuntu-latest
     steps:
       - name: 'Checkout repository'
