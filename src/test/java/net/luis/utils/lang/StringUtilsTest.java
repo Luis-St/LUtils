@@ -295,15 +295,15 @@ class StringUtilsTest {
 		assertFalse(StringUtils.matchingBalanced("(()", "(", ")"));
 		
 		System.setProperty("lang.match.in.quotes", "true");
-		assertFalse(StringUtils.matchingBalanced("((\")\")", '(', ')'));
-		assertFalse(StringUtils.matchingBalanced("((')')", '(', ')'));
-		assertTrue(StringUtils.matchingBalanced("(\"(\")", '(', ')'));
-		assertTrue(StringUtils.matchingBalanced("('(')", '(', ')'));
+		assertFalse(StringUtils.matchingBalanced("(\"(\")", '(', ')'));
+		assertFalse(StringUtils.matchingBalanced("('(')", '(', ')'));
+		assertTrue(StringUtils.matchingBalanced("((\")\")", '(', ')'));
+		assertTrue(StringUtils.matchingBalanced("((')')", '(', ')'));
 		
-		assertFalse(StringUtils.matchingBalanced("((\")\")", "(", ")"));
-		assertFalse(StringUtils.matchingBalanced("((')')", "(", ")"));
-		assertTrue(StringUtils.matchingBalanced("(\"(\")", "(", ")"));
-		assertTrue(StringUtils.matchingBalanced("('(')", "(", ")"));
+		assertFalse(StringUtils.matchingBalanced("(\"(\")", "(", ")"));
+		assertFalse(StringUtils.matchingBalanced("('(')", "(", ")"));
+		assertTrue(StringUtils.matchingBalanced("((\")\")", "(", ")"));
+		assertTrue(StringUtils.matchingBalanced("((')')", "(", ")"));
 		System.setProperty("lang.match.in.quotes", "false");
 	}
 	
