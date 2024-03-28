@@ -64,7 +64,7 @@ public class NamespaceKey implements Key {
 	
 	@Override
 	public String @NotNull [] getKeyParts() {
-		return new String[] { this.key };
+		return this.key.split("\\.");
 	}
 	
 	//region Object overrides

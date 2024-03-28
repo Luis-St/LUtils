@@ -64,7 +64,7 @@ public class UniqueKey implements Key {
 	
 	@Override
 	public String @NotNull [] getKeyParts() {
-		return this.key.split("-");
+		return new String[] { this.key };
 	}
 	
 	//region Object overrides

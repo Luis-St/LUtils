@@ -60,10 +60,7 @@ public class PatternKey implements Key {
 		if (!VALIDATOR.matcher(key).matches()) {
 			return false;
 		}
-		if (!key.contains("*")) {
-			return false;
-		}
-		return StringUtils.isSurroundedBy(key, '*', ".");
+		return key.contains("*") && StringUtils.isSurroundedBy(key, '*', ".");
 	}
 	
 	@Override
