@@ -35,6 +35,64 @@ import static org.junit.jupiter.api.Assertions.*;
 class PriorityTest {
 	
 	@Test
+	void createBelow() {
+		assertThrows(NullPointerException.class, () -> Priority.createBelow(null));
+		Priority priority = Priority.createBelow(Priority.LOW);
+		assertNotNull(priority);
+		assertEquals(Priority.LOW.priority() - 1, priority.priority());
+		assertTrue(priority.compareTo(Priority.LOW) < 0);
+		assertTrue(priority.compareTo(Priority.LOWEST) > 0);
+	}
+	
+	@Test
+	void createAbove() {
+		assertThrows(NullPointerException.class, () -> Priority.createBelow(null));
+		Priority priority = Priority.createAbove(Priority.HIGH);
+		assertNotNull(priority);
+		assertEquals(Priority.HIGH.priority() + 1, priority.priority());
+		assertTrue(priority.compareTo(Priority.HIGH) > 0);
+		assertTrue(priority.compareTo(Priority.HIGHEST) < 0);
+	}
+	
+	@Test
+	void createBetween() {
+		assertThrows(NullPointerException.class, () -> Priority.createBetween(null, null));
+		assertThrows(NullPointerException.class, () -> Priority.createBetween(Priority.LOW, null));
+		assertThrows(NullPointerException.class, () -> Priority.createBetween(null, Priority.HIGH));
+		Priority priority = Priority.createBetween(Priority.LOW, Priority.HIGH);
+		assertNotNull(priority);
+		assertEquals(Priority.NORMAL.priority(), priority.priority());
+		assertTrue(priority.compareTo(Priority.LOW) > 0);
+		assertEquals(0, priority.compareTo(Priority.NORMAL));
+		assertTrue(priority.compareTo(Priority.HIGH) < 0);
+	}
+	
+	@Test
+	void lowest() {
+		assertDoesNotThrow(() -> Priority.lowest());
+		assertEquals(Priority.LOWEST, Priority.lowest());
+		assertEquals(Priority.LOW, Priority.lowest(Priority.LOW, Priority.HIGH));
+	}
+	
+	@Test
+	void highest() {
+		assertDoesNotThrow(() -> Priority.highest());
+		assertEquals(Priority.HIGHEST, Priority.highest());
+		assertEquals(Priority.HIGH, Priority.highest(Priority.LOW, Priority.HIGH));
+	}
+	
+	@Test
+	void getNearest() {
+		assertEquals(Priority.LOWEST, Priority.getNearest(Long.MIN_VALUE));
+		assertEquals(Priority.LOWEST, Priority.getNearest(Integer.MIN_VALUE));
+		assertEquals(Priority.LOW, Priority.getNearest(Integer.MIN_VALUE / 2));
+		assertEquals(Priority.NORMAL, Priority.getNearest(0));
+		assertEquals(Priority.HIGH, Priority.getNearest(Integer.MAX_VALUE / 2));
+		assertEquals(Priority.HIGHEST, Priority.getNearest(Integer.MAX_VALUE));
+		assertEquals(Priority.HIGHEST, Priority.getNearest(Long.MAX_VALUE));
+	}
+	
+	@Test
 	void constructor() {
 		assertThrows(NullPointerException.class, () -> new Priority(null, 0));
 	}
