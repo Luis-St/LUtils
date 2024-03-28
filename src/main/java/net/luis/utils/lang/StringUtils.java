@@ -762,7 +762,7 @@ public class StringUtils {
 	 * Checks if the given string is matching balanced.<br>
 	 * This means that the open and close characters are in the correct order and have the same number of occurrences.<br>
 	 * <p>
-	 *     If the system property 'lang.match.in.quotes' is set to true,<br>
+	 *     If the system property 'lang.match.in.quotes' is set to false,<br>
 	 *     double and single quotes will be removed from the string before checking.<br>
 	 * </p>
 	 * <p>
@@ -777,10 +777,10 @@ public class StringUtils {
 	 * matchingBalanced("(())", '(', ')') -> true
 	 * matchingBalanced("(()", '(', ')') -> false
 	 * // With system property 'lang.match.in.quotes' set to true
-	 * matchingBalanced("((\")\")", '(', ')') -> false
-	 * matchingBalanced("((')')", '(', ')') -> false
-	 * matchingBalanced("(\"(\")", '(', ')') -> true
-	 * matchingBalanced("('(')", '(', ')') -> true
+	 * matchingBalanced("(\"(\")", '(', ')') -> false
+	 * matchingBalanced("('(')", '(', ')') -> false
+	 * matchingBalanced("((\")\")", '(', ')') -> true
+	 * matchingBalanced("((')')", '(', ')') -> true
 	 * }</pre>
 	 * @param str The string to check
 	 * @param open The open character
@@ -797,7 +797,7 @@ public class StringUtils {
 	 * Checks if the given string is matching balanced.<br>
 	 * This means that the open and close strings are in the correct order and have the same number of occurrences.<br>
 	 * <p>
-	 *     If the system property 'lang.match.in.quotes' is set to true,<br>
+	 *     If the system property 'lang.match.in.quotes' is set to false,<br>
 	 *     double and single quotes will be removed from the string before checking.<br>
 	 * </p>
 	 * <p>
@@ -815,10 +815,10 @@ public class StringUtils {
 	 * matchingBalanced("(())", "(", ")") -> true
 	 * matchingBalanced("(()", "(", ")") -> false
 	 * // With system property 'lang.match.in.quotes' set to true
-	 * matchingBalanced("((\")\")", "(", ")") -> false
-	 * matchingBalanced("((')')", "(", ")") -> false
-	 * matchingBalanced("(\"(\")", "(", ")") -> true
-	 * matchingBalanced("('(')", "(", ")") -> true
+	 * matchingBalanced("(\"(\")", "(", ")") -> false
+	 * matchingBalanced("('(')", "(", ")") -> false
+	 * matchingBalanced("((\")\")", "(", ")") -> true
+	 * matchingBalanced("((')')", "(", ")") -> true
 	 * }</pre>
 	 * @param str The string to check
 	 * @param open The open string
@@ -834,7 +834,8 @@ public class StringUtils {
 			return true;
 		}
 		assert open != null;
-		if (Boolean.parseBoolean(System.getProperty(LANG_MATCH_IN_QUOTES, "false"))) {
+		// Inverted, keep quotes if system property is set to true
+		if (!Boolean.parseBoolean(System.getProperty(LANG_MATCH_IN_QUOTES, "false"))) {
 			str = removeQuoted(str);
 		}
 		Stack<String> stack = new Stack<>();

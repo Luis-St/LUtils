@@ -135,7 +135,7 @@ public interface EnumLike<T extends EnumLike<T>> extends Comparable<T> {
 		if (ReflectionHelper.hasField(enumType, "VALUES", isConstant)) {
 			return List.copyOf((List<T>) ReflectionHelper.get(enumType, "VALUES", null));
 		}
-		throw new IllegalStateException("No 'VALUES' field in " + enumType.getSimpleName() + " found");
+		throw new IllegalStateException("No 'VALUES' field in " + enumType.getSimpleName() + " class with ReflectiveUsage annotation and signature 'private static final List<" + enumType.getSimpleName() + ">' found");
 	}
 	
 	/**
