@@ -19,6 +19,7 @@
 package net.luis.utils.data.key;
 
 import net.luis.utils.lang.StringUtils;
+import org.apache.commons.lang3.ArrayUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -38,7 +39,7 @@ public class PatternKey implements Key {
 	
 	private static final Pattern VALIDATOR = Pattern.compile("^(?!.*(?:\\.-|\\.\\.|--))(?![.\\-])([a-z0-9.*-]+)(?<![.\\-])$");
 	
-	private final String rawKey;
+	private final String key;
 	private final String[] keyParts;
 	
 	PatternKey(@NotNull String key) {
@@ -46,8 +47,8 @@ public class PatternKey implements Key {
 		if (isBlank(key)) {
 			throw new IllegalArgumentException("Key must not be blank");
 		}
-		this.rawKey = key;
-		if (!this.rawKey.contains("*")) {
+		this.key = key;
+		if (!this.key.contains("*")) {
 			throw new IllegalArgumentException("Pattern key must contain at least one wildcard");
 		}
 		this.keyParts = key.split("\\*");
@@ -70,17 +71,17 @@ public class PatternKey implements Key {
 	
 	@Override
 	public @NotNull String getRawKey() {
-		return this.rawKey;
+		return this.key;
 	}
 	
 	@Override
 	public @NotNull String getKey(Object @Nullable ... objects) {
 		int wildcards = this.keyParts.length - 1;
 		if (objects == null || wildcards > objects.length) {
-			throw new IllegalArgumentException("Key '" + this.rawKey + "' requires " + wildcards + " wildcards, but only " + (objects == null ? 0 : objects.length) + " were provided");
+			throw new IllegalArgumentException("Key '" + this.key + "' requires " + wildcards + " wildcards, but only " + ArrayUtils.getLength(objects) + " were provided");
 		}
 		if (objects.length > wildcards) {
-			throw new IllegalArgumentException("Too many wildcards (" + objects.length + ") for key '" + this.rawKey + "' provided (expected " + wildcards + ")");
+			throw new IllegalArgumentException("Too many wildcards (" + objects.length + ") for key '" + this.key + "' provided (expected " + wildcards + ")");
 		}
 		StringBuilder key = new StringBuilder();
 		for (int i = 0; i < this.keyParts.length; i++) {
@@ -94,15 +95,15 @@ public class PatternKey implements Key {
 	
 	@Override
 	public String @NotNull [] getKeyParts() {
-		return this.keyParts;
+		return this.key.split("\\.");
 	}
 	
 	@Override
 	public boolean matches(@Nullable String key) {
-		if (isBlank(key) || !VALIDATOR.matcher(key).matches() || key.contains("*")) {
+		if (key == null || !NamespaceKey.isValid(key)) {
 			return false;
 		}
-		String[] instanceParts = this.rawKey.split("\\.");
+		String[] instanceParts = this.key.split("\\.");
 		String[] keyParts = key.split("\\.");
 		if (instanceParts.length != keyParts.length) {
 			return false;
@@ -124,20 +125,20 @@ public class PatternKey implements Key {
 		if (this == o) return true;
 		if (!(o instanceof PatternKey that)) return false;
 		
-		if (!this.rawKey.equals(that.rawKey)) return false;
+		if (!this.key.equals(that.key)) return false;
 		return Objects.deepEquals(this.keyParts, that.keyParts);
 	}
 	
 	@Override
 	public int hashCode() {
-		int result = Objects.hash(this.rawKey);
+		int result = Objects.hash(this.key);
 		result = 31 * result + Arrays.hashCode(this.keyParts);
 		return result;
 	}
 	
 	@Override
 	public String toString() {
-		return this.rawKey;
+		return this.key;
 	}
 	//endregion
 }
