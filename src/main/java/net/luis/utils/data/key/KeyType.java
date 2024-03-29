@@ -44,7 +44,8 @@ public class KeyType<K extends Key> implements EnumLike<KeyType<?>> {
 	
 	public static final KeyType<StringKey> STRING = new KeyType<>("string", Priority.LOW, StringKey::isValid, StringKey::new);
 	public static final KeyType<NamespaceKey> NAMESPACE = new KeyType<>("namespace", Priority.NORMAL, NamespaceKey::isValid, NamespaceKey::new);
-	public static final KeyType<PatternKey> PATTERN = new KeyType<>("pattern", Priority.HIGH, PatternKey::isValid, PatternKey::new);
+	public static final KeyType<CompressedKey> COMPRESSED = new KeyType<>("compressed", Priority.createAbove(Priority.NORMAL), CompressedKey::isValid, CompressedKey::new);
+	public static final KeyType<PatternKey> PATTERN = new KeyType<>("pattern", Priority.createBelow(Priority.HIGH), PatternKey::isValid, PatternKey::new);
 	public static final KeyType<UniqueKey> UNIQUE = new KeyType<>("unique", Priority.HIGH, UniqueKey::isValid, UniqueKey::new);
 	
 	private final String name;
