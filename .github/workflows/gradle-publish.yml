@@ -1,6 +1,8 @@
-name: Publish to maven on merged pull request
+name: Publish to maven
 
-on: release
+on:
+  release:
+    types: [ published ]
 
 permissions:
   contents: read
@@ -59,6 +61,10 @@ jobs:
   publish:
     needs: test
     runs-on: ubuntu-latest
+    environment: Default
+    env:
+      MAVEN_USERNAME: ${{ secrets.MAVEN_USERNAME }}
+      MAVEN_PASSWORD: ${{ secrets.MAVEN_PASSWORD }}
     steps:
       - name: 'Checkout repository'
         uses: actions/checkout@v4.1.1
