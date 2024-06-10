@@ -30,7 +30,7 @@ import java.util.regex.Pattern;
  * This class represents a version number.<br>
  * The version number is represented by the following simplified pattern:<br>
  * <pre>{@code
- * major.minor.patch[(r.-)build][-suffix][+suffixVersion]
+ * [v]major.minor.patch[(r.-)build][(-)suffix][(+)suffixVersion]
  * }</pre>
  * The version is composed of the following parts:
  * <ul>
@@ -41,6 +41,10 @@ import java.util.regex.Pattern;
  *     <li>suffix: The suffix or pre-release identifier (e.g. alpha, beta, rc, ...)</li>
  *     <li>suffixVersion: The version of the suffix or pre-release identifier</li>
  * </ul>
+ * <p>
+ *     Everything placed in square brackets is optional.<br>
+ *     Characters in parentheses are separators, if there are multiple separators, one of them can be used.<br>
+ * </p>
  *
  * @author Luis-St
  */
