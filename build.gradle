@@ -59,7 +59,6 @@ tasks.register("run", JavaExec) {
 	enableAssertions = true
 	standardInput = System.in
 	args()
-	jvmArgs()
 }
 
 publishing {
