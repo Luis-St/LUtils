@@ -170,6 +170,20 @@ class StringReaderTest {
 	}
 	
 	@Test
+	void mark() {
+		StringReader reader = new StringReader("test");
+		reader.skip(2);
+		assertEquals(2, reader.getIndex());
+		reader.mark();
+		reader.skip();
+		assertEquals(3, reader.getIndex());
+		reader.reset();
+		assertEquals(2, reader.getIndex());
+		reader.reset();
+		assertEquals(0, reader.getIndex());
+	}
+	
+	@Test
 	void reset() {
 		StringReader reader = new StringReader("test");
 		reader.read();
