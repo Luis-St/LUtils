@@ -38,6 +38,10 @@ public class StringReader {
 	 * The current index of the reader.<br>
 	 */
 	private int index;
+	/**
+	 * The marked index of the reader.<br>
+	 */
+	private int markedIndex = -1;
 	
 	/**
 	 * Constructs a new string reader with the given string.<br>
@@ -197,10 +201,24 @@ public class StringReader {
 	}
 	
 	/**
-	 * Resets the index of the reader to zero.<br>
+	 * Marks the current index of the reader.<br>
+	 * The marked index can be reset to by calling {@link #reset()}.<br>
+	 * After calling {@link #reset()}, the marked index will be reset.<br>
+	 */
+	public void mark() {
+		this.markedIndex = this.index;
+	}
+	
+	/**
+	 * Resets the index of the reader to zero or if set to the marked index.<br>
 	 */
 	public void reset() {
-		this.index = 0;
+		if (this.markedIndex == -1) {
+			this.index = 0;
+		} else {
+			this.index = this.markedIndex;
+			this.markedIndex = -1;
+		}
 	}
 	
 	/**
