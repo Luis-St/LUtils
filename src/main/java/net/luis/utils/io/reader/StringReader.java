@@ -112,6 +112,25 @@ public class StringReader {
 	}
 	
 	/**
+	 * Checks whether the number of characters to read matches the given predicate.<br>
+	 * @param amount The number of characters to read
+	 * @param predicate The predicate to match the characters
+	 * @return True if the number of characters to read matches the predicate, otherwise false
+	 */
+	public boolean canRead(int amount, @NotNull Predicate<Character> predicate) {
+		Objects.requireNonNull(predicate, "Predicate must not be null");
+		if (0 >= amount) {
+			throw new IllegalArgumentException("Amount must be greater than zero");
+		}
+		for (int i = 0; i < amount; i++) {
+			if (!this.canRead() || !predicate.test(this.string.charAt(this.index + i))) {
+				return false;
+			}
+		}
+		return true;
+	}
+	
+	/**
 	 * Peeks the current character without incrementing the index.<br>
 	 * @return The current character
 	 */
@@ -125,6 +144,18 @@ public class StringReader {
 	 */
 	public void skip() {
 		this.index++;
+	}
+	
+	/**
+	 * Skips the given number of characters.<br>
+	 * @param amount The number of characters to skip
+	 * @throws IllegalArgumentException If the amount is less than or equal to zero
+	 */
+	public void skip(int amount) {
+		if (0 >= amount) {
+			throw new IllegalArgumentException("Amount must be greater than zero");
+		}
+		this.index += amount;
 	}
 	
 	/**
@@ -328,24 +359,71 @@ public class StringReader {
 	 * Reads a boolean.<br>
 	 * <p>
 	 *     The boolean is read as an unquoted string and then parsed.<br>
-	 *     If the value is 'true' (case-insensitive), true is returned.<br>
-	 *     If the value is 'false' (case-insensitive), false is returned.<br>
+	 *     The value is parsed case-insensitive.<br>
 	 * </p>
-	 * @param terminator The terminator to read until
 	 * @return The boolean value which was read
 	 * @throws IllegalArgumentException If the read value is not a boolean
 	 */
-	public boolean readBoolean(char terminator) {
+	public boolean readBoolean() {
 		if (!this.canRead()) {
 			throw new IllegalArgumentException("Expected a boolean value but found nothing");
 		}
-		String value = this.readUnquotedString(terminator);
+		int start = this.index;
+		char c = Character.toLowerCase(this.peek());
+		String value = null;
+		if (c == 't') {
+			value = this.read(4);
+		} else if (c == 'f') {
+			value = this.read(5);
+		} else {
+			throw new IllegalArgumentException("Expected a start character of 'true' or 'false' but found: '" + c + "'");
+		}
 		if ("true".equalsIgnoreCase(value)) {
 			return true;
 		} else if ("false".equalsIgnoreCase(value)) {
 			return false;
 		}
+		this.index = start;
 		throw new IllegalArgumentException("Expected a boolean value but found: " + value);
+	}
+	
+	/**
+	 * Reads a number as a string.<br>
+	 * <p>
+	 *     The number can be a byte, short, integer, long, float or double.<br>
+	 *     The first character can be a minus or plus sign.<br>
+	 *     The number can contain a dot for float or double values.<br>
+	 *     The number can contain a type suffix for byte, short, integer, long, float or double values.<br>
+	 * </p>
+	 * @return The number as a string which was read
+	 * @throws IllegalArgumentException If the read value is not a number
+	 */
+	private @NotNull String readNumber() {
+		StringBuilder builder = new StringBuilder();
+		if (this.peek() == '-' || this.peek() == '+') {
+			builder.append(this.read());
+		}
+		boolean hasDot = false;
+		while (this.canRead()) {
+			char c = this.peek();
+			if (!Character.isDigit(c) && c != '.') {
+				break;
+			}
+			if (c == '.') {
+				if (hasDot) {
+					throw new IllegalArgumentException("Expected a number but found: '" + builder.toString() + c + "'");
+				}
+				hasDot = true;
+			}
+			builder.append(this.read());
+		}
+		if (this.canRead()) {
+			char type = Character.toLowerCase(this.peek());
+			if (type == 'b' || type == 's' || type == 'i' || type == 'l' || type == 'f' || type == 'd') {
+				builder.append(Character.toLowerCase(this.read()));
+			}
+		}
+		return builder.toString();
 	}
 	
 	/**
@@ -354,19 +432,25 @@ public class StringReader {
 	 *     The byte is read as an unquoted string and then parsed.<br>
 	 *     If the value is a valid byte, the byte value is returned.<br>
 	 * </p>
-	 * @param terminator The terminator to read until
 	 * @return The byte value which was read
 	 * @throws IllegalArgumentException If the read value is not a byte
 	 */
-	public byte readByte(char terminator) {
+	public byte readByte() {
 		if (!this.canRead()) {
 			throw new IllegalArgumentException("Expected a byte value but found nothing");
 		}
-		String value = this.readUnquotedString(terminator);
+		String value = this.readNumber();
+		if (value.isEmpty()) {
+			throw new IllegalArgumentException("Expected a byte value but found nothing");
+		}
+		char last = Character.toLowerCase(value.charAt(value.length() - 1));
+		if (!Character.isDigit(last) && last != 'b') {
+			throw new IllegalArgumentException("Expected a byte value but found: '" + value + "'");
+		}
 		try {
-			return Byte.parseByte(value);
+			return Byte.parseByte(Character.isDigit(last) ? value : value.substring(0, value.length() - 1));
 		} catch (NumberFormatException e) {
-			throw new IllegalArgumentException("Expected a byte value but found: " + value, e);
+			throw new IllegalArgumentException("Expected a byte value but found: '" + value + "'", e);
 		}
 	}
 	
@@ -376,19 +460,25 @@ public class StringReader {
 	 *     The short is read as an unquoted string and then parsed.<br>
 	 *     If the value is a valid short, the short value is returned.<br>
 	 * </p>
-	 * @param terminator The terminator to read until
 	 * @return The short value which was read
 	 * @throws IllegalArgumentException If the read value is not a short
 	 */
-	public short readShort(char terminator) {
+	public short readShort() {
 		if (!this.canRead()) {
 			throw new IllegalArgumentException("Expected a short value but found nothing");
 		}
-		String value = this.readUnquotedString(terminator);
+		String value = this.readNumber();
+		if (value.isEmpty()) {
+			throw new IllegalArgumentException("Expected a short value but found nothing");
+		}
+		char last = Character.toLowerCase(value.charAt(value.length() - 1));
+		if (!Character.isDigit(last) && last != 's') {
+			throw new IllegalArgumentException("Expected a short value but found: '" + value + "'");
+		}
 		try {
-			return Short.parseShort(value);
+			return Short.parseShort(Character.isDigit(last) ? value : value.substring(0, value.length() - 1));
 		} catch (NumberFormatException e) {
-			throw new IllegalArgumentException("Expected a short value but found: " + value, e);
+			throw new IllegalArgumentException("Expected a short value but found: '" + value + "'", e);
 		}
 	}
 	
@@ -398,19 +488,25 @@ public class StringReader {
 	 *     The integer is read as an unquoted string and then parsed.<br>
 	 *     If the value is a valid integer, the integer value is returned.<br>
 	 * </p>
-	 * @param terminator The terminator to read until
 	 * @return The integer value which was read
 	 * @throws IllegalArgumentException If the read value is not an integer
 	 */
-	public int readInt(char terminator) {
+	public int readInt() {
 		if (!this.canRead()) {
 			throw new IllegalArgumentException("Expected an integer value but found nothing");
 		}
-		String value = this.readUnquotedString(terminator);
+		String value = this.readNumber();
+		if (value.isEmpty()) {
+			throw new IllegalArgumentException("Expected a integer value but found nothing");
+		}
+		char last = Character.toLowerCase(value.charAt(value.length() - 1));
+		if (!Character.isDigit(last) && last != 'i') {
+			throw new IllegalArgumentException("Expected a integer value but found: '" + value + "'");
+		}
 		try {
-			return Integer.parseInt(value);
+			return Integer.parseInt(Character.isDigit(last) ? value : value.substring(0, value.length() - 1));
 		} catch (NumberFormatException e) {
-			throw new IllegalArgumentException("Expected an integer value but found: " + value, e);
+			throw new IllegalArgumentException("Expected an integer value but found: '" + value + "'", e);
 		}
 	}
 	
@@ -420,19 +516,25 @@ public class StringReader {
 	 *     The long is read as an unquoted string and then parsed.<br>
 	 *     If the value is a valid long, the long value is returned.<br>
 	 * </p>
-	 * @param terminator The terminator to read until
 	 * @return The long value which was read
 	 * @throws IllegalArgumentException If the read value is not a long
 	 */
-	public long readLong(char terminator) {
+	public long readLong() {
 		if (!this.canRead()) {
 			throw new IllegalArgumentException("Expected a long value but found nothing");
 		}
-		String value = this.readUnquotedString(terminator);
+		String value = this.readNumber();
+		if (value.isEmpty()) {
+			throw new IllegalArgumentException("Expected a long value but found nothing");
+		}
+		char last = Character.toLowerCase(value.charAt(value.length() - 1));
+		if (!Character.isDigit(last) && last != 'l') {
+			throw new IllegalArgumentException("Expected a long value but found: '" + value + "'");
+		}
 		try {
-			return Long.parseLong(value);
+			return Long.parseLong(Character.isDigit(last) ? value : value.substring(0, value.length() - 1));
 		} catch (NumberFormatException e) {
-			throw new IllegalArgumentException("Expected a long value but found: " + value, e);
+			throw new IllegalArgumentException("Expected a long value but found: '" + value + "'", e);
 		}
 	}
 	
@@ -442,19 +544,25 @@ public class StringReader {
 	 *     The float is read as an unquoted string and then parsed.<br>
 	 *     If the value is a valid float, the float value is returned.<br>
 	 * </p>
-	 * @param terminator The terminator to read until
 	 * @return The float value which was read
 	 * @throws IllegalArgumentException If the read value is not a float
 	 */
-	public float readFloat(char terminator) {
+	public float readFloat() {
 		if (!this.canRead()) {
 			throw new IllegalArgumentException("Expected a float value but found nothing");
 		}
-		String value = this.readUnquotedString(terminator);
+		String value = this.readNumber();
+		if (value.isEmpty()) {
+			throw new IllegalArgumentException("Expected a float value but found nothing");
+		}
+		char last = Character.toLowerCase(value.charAt(value.length() - 1));
+		if (!Character.isDigit(last) && last != 'f') {
+			throw new IllegalArgumentException("Expected a float value but found: '" + value + "'");
+		}
 		try {
-			return Float.parseFloat(value);
+			return Float.parseFloat(Character.isDigit(last) ? value : value.substring(0, value.length() - 1));
 		} catch (NumberFormatException e) {
-			throw new IllegalArgumentException("Expected a float value but found: " + value, e);
+			throw new IllegalArgumentException("Expected a float value but found: '" + value + "'", e);
 		}
 	}
 	
@@ -464,18 +572,25 @@ public class StringReader {
 	 *     The double is read as an unquoted string and then parsed.<br>
 	 *     If the value is a valid double, the double value is returned.<br>
 	 * </p>
-	 * @param terminator The terminator to read until
 	 * @return The double value which was read
+	 * @throws IllegalArgumentException If the read value is not a double
 	 */
-	public double readDouble(char terminator) {
+	public double readDouble() {
 		if (!this.canRead()) {
 			throw new IllegalArgumentException("Expected a double value but found nothing");
 		}
-		String value = this.readUnquotedString(terminator);
+		String value = this.readNumber();
+		if (value.isEmpty()) {
+			throw new IllegalArgumentException("Expected a double value but found nothing");
+		}
+		char last = Character.toLowerCase(value.charAt(value.length() - 1));
+		if (!Character.isDigit(last) && last != 'd') {
+			throw new IllegalArgumentException("Expected a double value but found: '" + value + "'");
+		}
 		try {
-			return Double.parseDouble(value);
+			return Double.parseDouble(Character.isDigit(last) ? value : value.substring(0, value.length() - 1));
 		} catch (NumberFormatException e) {
-			throw new IllegalArgumentException("Expected a double value but found: " + value, e);
+			throw new IllegalArgumentException("Expected a double value but found: '" + value + "'", e);
 		}
 	}
 }

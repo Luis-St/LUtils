@@ -92,6 +92,14 @@ class StringReaderTest {
 		assertTrue(reader.canRead(3));
 		assertTrue(reader.canRead(4));
 		assertFalse(reader.canRead(5));
+		
+		reader.reset();
+		
+		assertTrue(reader.canRead(2, c -> c == 't' || c == 'e'));
+		reader.skip(2);
+		assertTrue(reader.canRead(2, c -> c == 's' || c == 't'));
+		reader.skip(2);
+		assertFalse(reader.canRead());
 	}
 	
 	@Test
@@ -141,6 +149,16 @@ class StringReaderTest {
 		assertEquals(3, reader.getIndex());
 		assertEquals('t', reader.peek());
 		assertDoesNotThrow(() -> reader.skip(c -> c == 't'));
+		
+		reader.reset();
+		assertThrows(IllegalArgumentException.class, () -> reader.skip(-1));
+		assertThrows(IllegalArgumentException.class, () -> reader.skip(0));
+		reader.skip(2);
+		assertEquals(2, reader.getIndex());
+		assertEquals('e', reader.peek());
+		reader.skip(2);
+		assertEquals(4, reader.getIndex());
+		assertDoesNotThrow(() -> reader.skip(1));
 	}
 	
 	@Test
@@ -223,63 +241,84 @@ class StringReaderTest {
 	@Test
 	void readBoolean() {
 		StringReader reader = new StringReader("test true false");
-		assertThrows(IllegalArgumentException.class, () -> reader.readBoolean(' '));
-		assertTrue(reader.readBoolean(' '));
-		assertFalse(reader.readBoolean(' '));
-		assertThrows(IllegalArgumentException.class, () -> reader.readBoolean(' '));
+		assertThrows(IllegalArgumentException.class, reader::readBoolean);
+		assertEquals('t', reader.read());
+		reader.skip(4);
+		assertTrue(reader.readBoolean());
+		reader.skip();
+		assertFalse(reader.readBoolean());
+		assertThrows(IllegalArgumentException.class, reader::readBoolean);
 	}
 	
 	@Test
 	void readByte() {
-		StringReader reader = new StringReader("test 1 2");
-		assertThrows(IllegalArgumentException.class, () -> reader.readByte(' '));
-		assertEquals(1, reader.readByte(' '));
-		assertEquals(2, reader.readByte(' '));
-		assertThrows(IllegalArgumentException.class, () -> reader.readByte(' '));
+		StringReader reader = new StringReader("test 127 -128");
+		assertThrows(IllegalArgumentException.class, reader::readByte);
+		assertEquals('t', reader.read());
+		reader.skip(4);
+		assertEquals(127, reader.readByte());
+		reader.skip();
+		assertEquals(-128, reader.readByte());
+		assertThrows(IllegalArgumentException.class, reader::readByte);
 	}
 	
 	@Test
 	void readShort() {
-		StringReader reader = new StringReader("test 1 2");
-		assertThrows(IllegalArgumentException.class, () -> reader.readShort(' '));
-		assertEquals(1, reader.readShort(' '));
-		assertEquals(2, reader.readShort(' '));
-		assertThrows(IllegalArgumentException.class, () -> reader.readShort(' '));
+		StringReader reader = new StringReader("test -15078 9875s");
+		assertThrows(IllegalArgumentException.class, reader::readShort);
+		assertEquals('t', reader.read());
+		reader.skip(4);
+		assertEquals(-15078, reader.readShort());
+		reader.skip();
+		assertEquals(9875, reader.readShort());
+		assertThrows(IllegalArgumentException.class, reader::readShort);
 	}
 	
 	@Test
 	void readInt() {
-		StringReader reader = new StringReader("test 1 2");
-		assertThrows(IllegalArgumentException.class, () -> reader.readInt(' '));
-		assertEquals(1, reader.readInt(' '));
-		assertEquals(2, reader.readInt(' '));
-		assertThrows(IllegalArgumentException.class, () -> reader.readInt(' '));
+		StringReader reader = new StringReader("test 1 2i");
+		assertThrows(IllegalArgumentException.class, reader::readInt);
+		assertEquals('t', reader.read());
+		reader.skip(4);
+		assertEquals(1, reader.readInt());
+		reader.skip();
+		assertEquals(2, reader.readInt());
+		assertThrows(IllegalArgumentException.class, reader::readInt);
 	}
 	
 	@Test
 	void readLong() {
-		StringReader reader = new StringReader("test 1 2");
-		assertThrows(IllegalArgumentException.class, () -> reader.readLong(' '));
-		assertEquals(1, reader.readLong(' '));
-		assertEquals(2, reader.readLong(' '));
-		assertThrows(IllegalArgumentException.class, () -> reader.readLong(' '));
+		StringReader reader = new StringReader("test 1 2l");
+		assertThrows(IllegalArgumentException.class, reader::readLong);
+		assertEquals('t', reader.read());
+		reader.skip(4);
+		assertEquals(1, reader.readLong());
+		reader.skip();
+		assertEquals(2, reader.readLong());
+		assertThrows(IllegalArgumentException.class, reader::readLong);
 	}
 	
 	@Test
 	void readFloat() {
-		StringReader reader = new StringReader("test 1.0 0.2");
-		assertThrows(IllegalArgumentException.class, () -> reader.readFloat(' '));
-		assertEquals(1.0F, reader.readFloat(' '));
-		assertEquals(0.2F, reader.readFloat(' '));
-		assertThrows(IllegalArgumentException.class, () -> reader.readFloat(' '));
+		StringReader reader = new StringReader("test -10.46 0.256");
+		assertThrows(IllegalArgumentException.class, reader::readFloat);
+		assertEquals('t', reader.read());
+		reader.skip(4);
+		assertEquals(-10.46, reader.readFloat(), 0.01);
+		reader.skip();
+		assertEquals(0.256, reader.readFloat(), 0.01);
+		assertThrows(IllegalArgumentException.class, reader::readFloat);
 	}
 	
 	@Test
 	void readDouble() {
 		StringReader reader = new StringReader("test 1.0 0.2");
-		assertThrows(IllegalArgumentException.class, () -> reader.readDouble(' '));
-		assertEquals(1.0, reader.readDouble(' '));
-		assertEquals(0.2, reader.readDouble(' '));
-		assertThrows(IllegalArgumentException.class, () -> reader.readDouble(' '));
+		assertThrows(IllegalArgumentException.class, reader::readDouble);
+		assertEquals('t', reader.read());
+		reader.skip(4);
+		assertEquals(1.0, reader.readDouble(), 0.01);
+		reader.skip();
+		assertEquals(0.2, reader.readDouble(), 0.01);
+		assertThrows(IllegalArgumentException.class, reader::readDouble);
 	}
 }
