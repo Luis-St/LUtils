@@ -228,7 +228,8 @@ public class LoggingUtils {
 	/**
 	 * @return The names of all the configured loggers as an unmodifiable list
 	 */
-	public static @NotNull @Unmodifiable List<String> getConfiguredLoggers() {
+	@Unmodifiable
+	public static @NotNull List<String> getConfiguredLoggers() {
 		return List.copyOf(CONFIGURED_LOGGERS);
 	}
 	
