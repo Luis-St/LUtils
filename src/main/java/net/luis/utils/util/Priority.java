@@ -21,12 +21,12 @@ package net.luis.utils.util;
 import com.google.common.collect.Lists;
 import net.luis.utils.annotation.ReflectiveUsage;
 import net.luis.utils.lang.EnumLike;
-import org.apache.commons.lang3.ArrayUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.math.BigInteger;
-import java.util.*;
+import java.util.List;
+import java.util.Objects;
 import java.util.stream.Stream;
 
 /**
