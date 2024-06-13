@@ -95,6 +95,9 @@ class StringReaderTest {
 		
 		reader.reset();
 		
+		assertThrows(NullPointerException.class, () -> reader.canRead(1, null));
+		assertThrows(IllegalArgumentException.class, () -> reader.canRead(-1, c -> true));
+		assertThrows(IllegalArgumentException.class, () -> reader.canRead(0, c -> true));
 		assertTrue(reader.canRead(2, c -> c == 't' || c == 'e'));
 		reader.skip(2);
 		assertTrue(reader.canRead(2, c -> c == 's' || c == 't'));
