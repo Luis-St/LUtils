@@ -18,7 +18,10 @@
 
 package net.luis.utils.io.reader;
 
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+
+import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -40,7 +43,6 @@ class ScopedStringReaderTest {
 		reader.read();
 		assertThrows(NullPointerException.class, () -> reader.readScope(null));
 		reader.reset();
-		assertThrows(IllegalArgumentException.class, () -> reader.readScope(new ScopedStringReader.StringScope('a', 'a')));
 		assertThrows(IllegalArgumentException.class, () -> reader.readScope(ScopedStringReader.PARENTHESES));
 		reader.read();
 		assertEquals("", reader.readScope(ScopedStringReader.PARENTHESES));
@@ -98,5 +100,57 @@ class ScopedStringReaderTest {
 		assertEquals("[Hello]", failExtra.readScope(ScopedStringReader.SQUARE_BRACKETS));
 		assertEquals(' ', failExtra.read());
 		assertThrows(IllegalStateException.class, () -> failExtra.readScope(ScopedStringReader.SQUARE_BRACKETS));
+	}
+	
+	@Test
+	void readList() {
+		ScopedStringReader reader = new ScopedStringReader("[ true , false ] [  10.0  ,  15.5  ,  20.6  ,  25.89  ] [10,15,20,25] [\"Hello\", \"World\"] [[\"str1\"], [\"str1\", \"str2\"]]");
+		assertEquals(List.of(true, false), reader.readList(StringReader::readBoolean));
+		assertEquals(' ', reader.read());
+		assertEquals(List.of(10.0, 15.5, 20.6, 25.89), reader.readList(StringReader::readDouble));
+		assertEquals(' ', reader.read());
+		assertEquals(List.of(10, 15, 20, 25), reader.readList(StringReader::readInt));
+		assertEquals(' ', reader.read());
+		assertEquals(List.of("Hello", "World"), reader.readList(StringReader::readString));
+		assertEquals(' ', reader.read());
+		assertEquals(List.of(List.of("str1"), List.of("str1", "str2")), reader.readList(r -> r.readList(StringReader::readString)));
+	}
+	
+	@Test
+	void readSet() {
+		ScopedStringReader reader = new ScopedStringReader("( true , false ) (  10.0  ,  15.5  ,  20.6  ,  25.89  ) (10,15,20,25) (\"Hello\", \"World\") ([\"str1\"], [\"str1\", \"str2\"])");
+		assertEquals(Set.of(true, false), reader.readSet(StringReader::readBoolean));
+		assertEquals(' ', reader.read());
+		assertEquals(Set.of(10.0, 15.5, 20.6, 25.89), reader.readSet(StringReader::readDouble));
+		assertEquals(' ', reader.read());
+		assertEquals(Set.of(10, 15, 20, 25), reader.readSet(StringReader::readInt));
+		assertEquals(' ', reader.read());
+		assertEquals(Set.of("Hello", "World"), reader.readSet(StringReader::readString));
+		assertEquals(' ', reader.read());
+		assertEquals(Set.of(List.of("str1"), List.of("str1", "str2")), reader.readSet(r -> r.readList(StringReader::readString)));
+	}
+	
+	@Test
+	void readMap() {
+		ScopedStringReader reader = new ScopedStringReader("{key1= value1, key2= value2} {key1=10, key2=20} {0=\"Hello\", 1=\"World\"} { 0.0 = [ \"str1\" ], 1.0 = [ \"str1\" , \"str2\" ] }");
+		assertEquals(Map.of("key1", "value1", "key2", "value2"), reader.readMap(StringReader::readString, StringReader::readString));
+		assertEquals(' ', reader.read());
+		assertEquals(Map.of("key1", 10, "key2", 20), reader.readMap(StringReader::readString, StringReader::readInt));
+		assertEquals(' ', reader.read());
+		assertEquals(Map.of(0, "Hello", 1, "World"), reader.readMap(StringReader::readInt, StringReader::readString));
+		assertEquals(' ', reader.read());
+		assertEquals(Map.of(0.0, List.of("str1"), 1.0, List.of("str1", "str2")), reader.readMap(StringReader::readDouble, r -> r.readList(StringReader::readString)));
+	}
+	
+	@Nested
+	class StringScopeTest {
+		
+		@Test
+		void constructor() {
+			assertThrows(IllegalArgumentException.class, () -> new ScopedStringReader.StringScope('\0', '\''));
+			assertThrows(IllegalArgumentException.class, () -> new ScopedStringReader.StringScope('\'', '\0'));
+			assertThrows(IllegalArgumentException.class, () -> new ScopedStringReader.StringScope('"', '"'));
+			assertDoesNotThrow(() -> new ScopedStringReader.StringScope('(', ')'));
+		}
 	}
 }

@@ -106,7 +106,7 @@ public abstract sealed class Either<L, R> permits Either.Left, Either.Right {
 	 * @return The left value or throws an exception if it is a right either
 	 * @throws IllegalStateException If the left value is not present
 	 */
-	public abstract  L leftOrThrow();
+	public abstract L leftOrThrow();
 	
 	/**
 	 * @return The right value or throws an exception if it is a left either

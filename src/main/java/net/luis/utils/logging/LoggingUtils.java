@@ -112,16 +112,16 @@ public class LoggingUtils {
 	 * <pre>{@code
 	 * public class Main {
 	 *
-	 * 	private static final Logger LOGGER;
+	 *     private static final Logger LOGGER;
 	 *
-	 * 	public static void main(String[] args) {
-	 * 		// ...
-	 * 	}
+	 *     public static void main(String[] args) {
+	 *         // ...
+	 *     }
 	 *
-	 * 	static {
-	 * 		// Initialize the logging system here
-	 * 		LOGGER = LogManager.getLogger(Main.class);
-	 * 	}
+	 *     static {
+	 *         // Initialize the logging system here
+	 *         LOGGER = LogManager.getLogger(Main.class);
+	 *     }
 	 * }
 	 * }</pre>
 	 * @param configuration The configuration to use
@@ -265,7 +265,7 @@ public class LoggingUtils {
 	 * 	    // Register the spring logging factory here
 	 * 		// Initialize the logging system here
 	 * 		LOGGER = LogManager.getLogger(Main.class);
-	 * 	}
+	 *    }
 	 * }
 	 * }</pre>
 	 * @see #initialize(LoggerConfiguration, boolean)
