@@ -301,11 +301,11 @@ public class LoggerConfiguration {
 			throw new IllegalArgumentException("Archive must not be empty");
 		}
 		file = file.replace("\\", "/");
-		if (file.matches(DRIVER_REGEX)) {
+		if (file.matches("^([a-zA-Z]:|\\./).*$")) {
 			throw new IllegalArgumentException("File name must not be absolute or relative");
 		}
 		archive = archive.replace("\\", "/");
-		if (archive.matches(DRIVER_REGEX)) {
+		if (archive.matches("^([a-zA-Z]:|\\./).*$")) {
 			throw new IllegalArgumentException("Archive must not be absolute or relative");
 		}
 		this.logs.put(level, Map.entry(StringUtils.strip(file, "/"), StringUtils.strip(archive, "/"))); // Must not start with '/'
