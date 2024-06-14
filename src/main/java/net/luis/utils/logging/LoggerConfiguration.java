@@ -34,6 +34,7 @@ import java.util.*;
 
 /**
  * Runtime logger configuration for Log4j2.<br>
+ * <br>
  * The default configuration is:<br>
  * <ul>
  *     <li>Console logging enabled</li>
@@ -66,12 +67,12 @@ public class LoggerConfiguration {
 	 * The default patterns for the log levels.<br>
 	 */
 	private static final Map<Level, String> DEFAULT_PATTERNS = Utils.make(Maps.newHashMap(), map -> {
-		map.put(Level.TRACE, "[%d{HH:mm:ss}] [%t] [%C:%line/%level{" + NAMES + "}] %msg%n%throwable");
-		map.put(Level.DEBUG, "[%d{HH:mm:ss}] [%t] [%C{1}:%line/%level{" + NAMES + "}] %msg%n%throwable");
-		map.put(Level.INFO, "[%d{HH:mm:ss}] [%t] [%C{1}/%level{" + NAMES + "}] %msg%n%throwable");
-		map.put(Level.WARN, "[%d{HH:mm:ss}] [%t] [%C{1}/%level{" + NAMES + "}] %msg%n%throwable");
-		map.put(Level.ERROR, "[%d{HH:mm:ss}] [%t] [%C{1}/%level{" + NAMES + "}] %msg%n%throwable");
-		map.put(Level.FATAL, "[%d{HH:mm:ss}] [%t] [%C{1}/%level{" + NAMES + "}] %msg%n%throwable");
+		map.put(Level.TRACE, "[%d{HH:mm:ss}] [%t] [%marker] [%C:%line/%level{" + NAMES + "}] %msg%n%throwable");
+		map.put(Level.DEBUG, "[%d{HH:mm:ss}] [%t] [%marker] [%C{1}:%line/%level{" + NAMES + "}] %msg%n%throwable");
+		map.put(Level.INFO, "[%d{HH:mm:ss}] [%t] [%marker] [%C{1}/%level{" + NAMES + "}] %msg%n%throwable");
+		map.put(Level.WARN, "[%d{HH:mm:ss}] [%t] [%marker] [%C{1}/%level{" + NAMES + "}] %msg%n%throwable");
+		map.put(Level.ERROR, "[%d{HH:mm:ss}] [%t] [%marker] [%C{1}/%level{" + NAMES + "}] %msg%n%throwable");
+		map.put(Level.FATAL, "[%d{HH:mm:ss}] [%t] [%marker] [%C{1}/%level{" + NAMES + "}] %msg%n%throwable");
 	});
 	/**
 	 * The default logger configuration.<br>
@@ -300,11 +301,11 @@ public class LoggerConfiguration {
 			throw new IllegalArgumentException("Archive must not be empty");
 		}
 		file = file.replace("\\", "/");
-		if (file.matches("^([a-zA-Z]:|\\./).*$")) {
+		if (file.matches(DRIVER_REGEX)) {
 			throw new IllegalArgumentException("File name must not be absolute or relative");
 		}
 		archive = archive.replace("\\", "/");
-		if (archive.matches("^([a-zA-Z]:|\\./).*$")) {
+		if (archive.matches(DRIVER_REGEX)) {
 			throw new IllegalArgumentException("Archive must not be absolute or relative");
 		}
 		this.logs.put(level, Map.entry(StringUtils.strip(file, "/"), StringUtils.strip(archive, "/"))); // Must not start with '/'
@@ -510,7 +511,8 @@ public class LoggerConfiguration {
 	 * @return The pattern for the given type and level, or the default pattern if there is no override
 	 */
 	private @NotNull String getPattern(@NotNull LoggingType type, @NotNull Level level) {
-		return this.patternOverrides.getOrDefault(type, Maps.newHashMap()).getOrDefault(level, DEFAULT_PATTERNS.get(level));
+		String pattern = this.patternOverrides.getOrDefault(type, Maps.newHashMap()).getOrDefault(level, DEFAULT_PATTERNS.get(level));
+		return "%replace{" + pattern + "}{\\[\\s*]\\s*}{}";
 	}
 	//endregion
 }
