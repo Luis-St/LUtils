@@ -21,8 +21,7 @@ package net.luis.utils.logging;
 import com.google.common.collect.Lists;
 import net.luis.utils.logging.factory.SpringFactory;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.logging.log4j.Level;
-import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.*;
 import org.apache.logging.log4j.core.Appender;
 import org.apache.logging.log4j.core.LoggerContext;
 import org.apache.logging.log4j.core.config.*;
@@ -50,6 +49,8 @@ public class LoggingUtils {
 	 * Whether the cached factory has been registered or not.<br>
 	 */
 	private static boolean registeredFactory = false;
+	
+	//region Configuration
 	
 	//region Loading from system properties
 	
@@ -276,6 +277,7 @@ public class LoggingUtils {
 			registeredFactory = true;
 		}
 	}
+	//endregion
 	
 	//region Enable logging
 	
@@ -379,6 +381,35 @@ public class LoggingUtils {
 	 */
 	public static void disableFile() {
 		Arrays.stream(LoggingType.FILE.getAllowedLevels()).forEach(LoggingUtils::disableFile);
+	}
+	//endregion
+	
+	//region Marker
+	
+	/**
+	 * Creates a new reference marker with the given length.<br>
+	 * <p>
+	 *     The marker will be generated with a random UUID which is shortened to the given length.<br>
+	 *     The dashes of the UUID will be removed and the marker will be created with the first characters of the UUID.<br>
+	 * </p>
+	 * <p>
+	 *     The marker should be use to identify related log messages.<br>
+	 *     An example use case would be to mark log messages which are part of the same process or operation.<br>
+	 *     The process or operation may be handled by a different thread with delayed log messages,<br>
+	 *     which may causes the log messages to be out of order or being separated by other log messages.<br>
+	 * </p>
+	 * @param length The length of the reference marker
+	 * @return A new reference marker
+	 * @throws IllegalArgumentException If the length is less than 1 or greater than 32
+	 */
+	public static @NotNull Marker createRefrenceMarker(int length) {
+		if (1 > length) {
+			throw new IllegalArgumentException("Reference marker length must be 1 or greater");
+		}
+		if (length > 32) {
+			throw new IllegalArgumentException("Reference marker length must be 32 or less");
+		}
+		return MarkerManager.getMarker(UUID.randomUUID().toString().replace("-", "").substring(0, length));
 	}
 	//endregion
 	
