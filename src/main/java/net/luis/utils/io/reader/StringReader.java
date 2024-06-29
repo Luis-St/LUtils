@@ -18,6 +18,7 @@
 
 package net.luis.utils.io.reader;
 
+import net.luis.utils.exception.InvalidStringException;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Objects;
@@ -284,7 +285,7 @@ public class StringReader {
 	 *     If there are no more characters to read, an empty string is returned.
 	 * </p>
 	 * @return The quoted string which was read
-	 * @throws IllegalArgumentException If the next read character is not a single or double quote
+	 * @throws InvalidStringException If the next read character is not a single or double quote
 	 */
 	public @NotNull String readQuotedString() {
 		if (!this.canRead()) {
@@ -292,7 +293,7 @@ public class StringReader {
 		}
 		char next = this.peek();
 		if (next != '"' && next != '\'') {
-			throw new IllegalArgumentException("Expected a single or double quote as next character, but found: '" + next + "'");
+			throw new InvalidStringException("Expected a single or double quote as next character, but found: '" + next + "'");
 		}
 		this.skip();
 		StringBuilder builder = new StringBuilder();
@@ -324,7 +325,7 @@ public class StringReader {
 	 * </p>
 	 * @param terminator The terminator to read until
 	 * @return The string which was read until the terminator
-	 * @throws IllegalArgumentException If the terminator is a backslash
+	 * @throws InvalidStringException If the terminator is a backslash
 	 */
 	public @NotNull String readUntil(char terminator) {
 		if (terminator == '\\') {
@@ -380,11 +381,12 @@ public class StringReader {
 	 *     The value is parsed case-insensitive.<br>
 	 * </p>
 	 * @return The boolean value which was read
-	 * @throws IllegalArgumentException If the read value is not a boolean
+	 * @throws StringIndexOutOfBoundsException If there are no more characters to read
+	 * @throws InvalidStringException If the read value is not a boolean
 	 */
 	public boolean readBoolean() {
 		if (!this.canRead()) {
-			throw new IllegalArgumentException("Expected a boolean value but found nothing");
+			throw new StringIndexOutOfBoundsException("Expected a boolean value but found nothing");
 		}
 		int start = this.index;
 		char c = Character.toLowerCase(this.peek());
@@ -394,7 +396,7 @@ public class StringReader {
 		} else if (c == 'f') {
 			value = this.read(5);
 		} else {
-			throw new IllegalArgumentException("Expected a start character of 'true' or 'false' but found: '" + c + "'");
+			throw new InvalidStringException("Expected a start character of 'true' or 'false' but found: '" + c + "'");
 		}
 		if ("true".equalsIgnoreCase(value)) {
 			return true;
@@ -402,7 +404,7 @@ public class StringReader {
 			return false;
 		}
 		this.index = start;
-		throw new IllegalArgumentException("Expected a boolean value but found: " + value);
+		throw new InvalidStringException("Expected a boolean value but found: " + value);
 	}
 	
 	/**
@@ -414,7 +416,7 @@ public class StringReader {
 	 *     The number can contain a type suffix for byte, short, integer, long, float or double values.<br>
 	 * </p>
 	 * @return The number as a string which was read
-	 * @throws IllegalArgumentException If the read value is not a number
+	 * @throws InvalidStringException If the read value is not a number
 	 */
 	private @NotNull String readNumberAsString() {
 		if (!this.canRead()) {
@@ -436,7 +438,7 @@ public class StringReader {
 			}
 			if (c == '.') {
 				if (hasDot) {
-					throw new IllegalArgumentException("Expected a number but found: '" + builder.toString() + c + "'");
+					throw new InvalidStringException("Expected a number but found: '" + builder.toString() + c + "'");
 				}
 				hasDot = true;
 			}
@@ -452,11 +454,16 @@ public class StringReader {
 	}
 	
 	/**
-	 * Reads a byte.<br>
+	 * Reads a number.<br>
 	 * <p>
-	 *     The byte is read as an unquoted string and then parsed.<br>
-	 *     If the value is a valid byte, the byte value is returned.<br>
+	 *     If the number is specified with a type suffix, the number is parsed as the specified type.<br>
+	 *     By default, the number is parsed as a double if it contains a dot otherwise as a long.<br>
 	 * </p>
+	 * @return The number value which was read
+	 * @throws StringIndexOutOfBoundsException If there are no more characters to read
+	 * @throws InvalidStringException If the read value is not a number
+	 * @see #readNumberAsString()
+	 */
 	public @NotNull Number readNumber() {
 		if (!this.canRead()) {
 			throw new StringIndexOutOfBoundsException("Expected a number value but found nothing");
@@ -484,24 +491,25 @@ public class StringReader {
 	}
 	
 	 * @return The byte value which was read
-	 * @throws IllegalArgumentException If the read value is not a byte
+	 * @throws StringIndexOutOfBoundsException If there are no more characters to read
+	 * @throws InvalidStringException If the read value is not a byte
 	 */
 	public byte readByte() {
 		if (!this.canRead()) {
-			throw new IllegalArgumentException("Expected a byte value but found nothing");
+			throw new StringIndexOutOfBoundsException("Expected a byte value but found nothing");
 		}
 		String value = this.readNumberAsString();
 		if (value.isEmpty()) {
-			throw new IllegalArgumentException("Expected a byte value but found nothing");
+			throw new InvalidStringException("Expected a byte value but found nothing");
 		}
 		char last = Character.toLowerCase(value.charAt(value.length() - 1));
 		if (!Character.isDigit(last) && last != 'b') {
-			throw new IllegalArgumentException("Expected a byte value but found: '" + value + "'");
+			throw new InvalidStringException("Expected a byte value but found: '" + value + "'");
 		}
 		try {
 			return Byte.parseByte(Character.isDigit(last) ? value : value.substring(0, value.length() - 1));
 		} catch (NumberFormatException e) {
-			throw new IllegalArgumentException("Expected a byte value but found: '" + value + "'", e);
+			throw new InvalidStringException("Expected a byte value but found: '" + value + "'", e);
 		}
 	}
 	
@@ -512,24 +520,25 @@ public class StringReader {
 	 *     If the value is a valid short, the short value is returned.<br>
 	 * </p>
 	 * @return The short value which was read
-	 * @throws IllegalArgumentException If the read value is not a short
+	 * @throws StringIndexOutOfBoundsException If there are no more characters to read
+	 * @throws InvalidStringException If the read value is not a short
 	 */
 	public short readShort() {
 		if (!this.canRead()) {
-			throw new IllegalArgumentException("Expected a short value but found nothing");
+			throw new StringIndexOutOfBoundsException("Expected a short value but found nothing");
 		}
 		String value = this.readNumberAsString();
 		if (value.isEmpty()) {
-			throw new IllegalArgumentException("Expected a short value but found nothing");
+			throw new InvalidStringException("Expected a short value but found nothing");
 		}
 		char last = Character.toLowerCase(value.charAt(value.length() - 1));
 		if (!Character.isDigit(last) && last != 's') {
-			throw new IllegalArgumentException("Expected a short value but found: '" + value + "'");
+			throw new InvalidStringException("Expected a short value but found: '" + value + "'");
 		}
 		try {
 			return Short.parseShort(Character.isDigit(last) ? value : value.substring(0, value.length() - 1));
 		} catch (NumberFormatException e) {
-			throw new IllegalArgumentException("Expected a short value but found: '" + value + "'", e);
+			throw new InvalidStringException("Expected a short value but found: '" + value + "'", e);
 		}
 	}
 	
@@ -540,24 +549,25 @@ public class StringReader {
 	 *     If the value is a valid integer, the integer value is returned.<br>
 	 * </p>
 	 * @return The integer value which was read
-	 * @throws IllegalArgumentException If the read value is not an integer
+	 * @throws StringIndexOutOfBoundsException If there are no more characters to read
+	 * @throws InvalidStringException If the read value is not an integer
 	 */
 	public int readInt() {
 		if (!this.canRead()) {
-			throw new IllegalArgumentException("Expected an integer value but found nothing");
+			throw new StringIndexOutOfBoundsException("Expected an integer value but found nothing");
 		}
 		String value = this.readNumberAsString();
 		if (value.isEmpty()) {
-			throw new IllegalArgumentException("Expected a integer value but found nothing");
+			throw new InvalidStringException("Expected a integer value but found nothing");
 		}
 		char last = Character.toLowerCase(value.charAt(value.length() - 1));
 		if (!Character.isDigit(last) && last != 'i') {
-			throw new IllegalArgumentException("Expected a integer value but found: '" + value + "'");
+			throw new InvalidStringException("Expected a integer value but found: '" + value + "'");
 		}
 		try {
 			return Integer.parseInt(Character.isDigit(last) ? value : value.substring(0, value.length() - 1));
 		} catch (NumberFormatException e) {
-			throw new IllegalArgumentException("Expected an integer value but found: '" + value + "'", e);
+			throw new InvalidStringException("Expected an integer value but found: '" + value + "'", e);
 		}
 	}
 	
@@ -568,24 +578,25 @@ public class StringReader {
 	 *     If the value is a valid long, the long value is returned.<br>
 	 * </p>
 	 * @return The long value which was read
-	 * @throws IllegalArgumentException If the read value is not a long
+	 * @throws StringIndexOutOfBoundsException If there are no more characters to read
+	 * @throws InvalidStringException If the read value is not a long
 	 */
 	public long readLong() {
 		if (!this.canRead()) {
-			throw new IllegalArgumentException("Expected a long value but found nothing");
+			throw new StringIndexOutOfBoundsException("Expected a long value but found nothing");
 		}
 		String value = this.readNumberAsString();
 		if (value.isEmpty()) {
-			throw new IllegalArgumentException("Expected a long value but found nothing");
+			throw new InvalidStringException("Expected a long value but found nothing");
 		}
 		char last = Character.toLowerCase(value.charAt(value.length() - 1));
 		if (!Character.isDigit(last) && last != 'l') {
-			throw new IllegalArgumentException("Expected a long value but found: '" + value + "'");
+			throw new InvalidStringException("Expected a long value but found: '" + value + "'");
 		}
 		try {
 			return Long.parseLong(Character.isDigit(last) ? value : value.substring(0, value.length() - 1));
 		} catch (NumberFormatException e) {
-			throw new IllegalArgumentException("Expected a long value but found: '" + value + "'", e);
+			throw new InvalidStringException("Expected a long value but found: '" + value + "'", e);
 		}
 	}
 	
@@ -596,24 +607,25 @@ public class StringReader {
 	 *     If the value is a valid float, the float value is returned.<br>
 	 * </p>
 	 * @return The float value which was read
-	 * @throws IllegalArgumentException If the read value is not a float
+	 * @throws StringIndexOutOfBoundsException If there are no more characters to read
+	 * @throws InvalidStringException If the read value is not a float
 	 */
 	public float readFloat() {
 		if (!this.canRead()) {
-			throw new IllegalArgumentException("Expected a float value but found nothing");
+			throw new StringIndexOutOfBoundsException("Expected a float value but found nothing");
 		}
 		String value = this.readNumberAsString();
 		if (value.isEmpty()) {
-			throw new IllegalArgumentException("Expected a float value but found nothing");
+			throw new InvalidStringException("Expected a float value but found nothing");
 		}
 		char last = Character.toLowerCase(value.charAt(value.length() - 1));
 		if (!Character.isDigit(last) && last != 'f') {
-			throw new IllegalArgumentException("Expected a float value but found: '" + value + "'");
+			throw new InvalidStringException("Expected a float value but found: '" + value + "'");
 		}
 		try {
 			return Float.parseFloat(Character.isDigit(last) ? value : value.substring(0, value.length() - 1));
 		} catch (NumberFormatException e) {
-			throw new IllegalArgumentException("Expected a float value but found: '" + value + "'", e);
+			throw new InvalidStringException("Expected a float value but found: '" + value + "'", e);
 		}
 	}
 	
@@ -624,24 +636,25 @@ public class StringReader {
 	 *     If the value is a valid double, the double value is returned.<br>
 	 * </p>
 	 * @return The double value which was read
-	 * @throws IllegalArgumentException If the read value is not a double
+	 * @throws StringIndexOutOfBoundsException If there are no more characters to read
+	 * @throws InvalidStringException If the read value is not a double
 	 */
 	public double readDouble() {
 		if (!this.canRead()) {
-			throw new IllegalArgumentException("Expected a double value but found nothing");
+			throw new StringIndexOutOfBoundsException("Expected a double value but found nothing");
 		}
 		String value = this.readNumberAsString();
 		if (value.isEmpty()) {
-			throw new IllegalArgumentException("Expected a double value but found nothing");
+			throw new InvalidStringException("Expected a double value but found nothing");
 		}
 		char last = Character.toLowerCase(value.charAt(value.length() - 1));
 		if (!Character.isDigit(last) && last != 'd') {
-			throw new IllegalArgumentException("Expected a double value but found: '" + value + "'");
+			throw new InvalidStringException("Expected a double value but found: '" + value + "'");
 		}
 		try {
 			return Double.parseDouble(Character.isDigit(last) ? value : value.substring(0, value.length() - 1));
 		} catch (NumberFormatException e) {
-			throw new IllegalArgumentException("Expected a double value but found: '" + value + "'", e);
+			throw new InvalidStringException("Expected a double value but found: '" + value + "'", e);
 		}
 	}
 }

@@ -18,6 +18,7 @@
 
 package net.luis.utils.io.reader;
 
+import net.luis.utils.exception.InvalidStringException;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
@@ -58,12 +59,12 @@ class ScopedStringReaderTest {
 		ScopedStringReader failMissing = new ScopedStringReader("(Hello) (World it is (nice here)");
 		assertEquals("(Hello)", failMissing.readScope(ScopedStringReader.PARENTHESES));
 		assertEquals(' ', failMissing.read());
-		assertThrows(IllegalStateException.class, () -> failMissing.readScope(ScopedStringReader.PARENTHESES));
+		assertThrows(InvalidStringException.class, () -> failMissing.readScope(ScopedStringReader.PARENTHESES));
 		
 		ScopedStringReader failExtra = new ScopedStringReader("(Hello) (World (it is (nice here))");
 		assertEquals("(Hello)", failExtra.readScope(ScopedStringReader.PARENTHESES));
 		assertEquals(' ', failExtra.read());
-		assertThrows(IllegalStateException.class, () -> failExtra.readScope(ScopedStringReader.PARENTHESES));
+		assertThrows(InvalidStringException.class, () -> failExtra.readScope(ScopedStringReader.PARENTHESES));
 	}
 	
 	@Test
@@ -76,12 +77,12 @@ class ScopedStringReaderTest {
 		ScopedStringReader failMissing = new ScopedStringReader("{Hello} {World it is {nice here}");
 		assertEquals("{Hello}", failMissing.readScope(ScopedStringReader.CURLY_BRACKETS));
 		assertEquals(' ', failMissing.read());
-		assertThrows(IllegalStateException.class, () -> failMissing.readScope(ScopedStringReader.CURLY_BRACKETS));
+		assertThrows(InvalidStringException.class, () -> failMissing.readScope(ScopedStringReader.CURLY_BRACKETS));
 		
 		ScopedStringReader failExtra = new ScopedStringReader("{Hello} {World {it is {nice here}}");
 		assertEquals("{Hello}", failExtra.readScope(ScopedStringReader.CURLY_BRACKETS));
 		assertEquals(' ', failExtra.read());
-		assertThrows(IllegalStateException.class, () -> failExtra.readScope(ScopedStringReader.CURLY_BRACKETS));
+		assertThrows(InvalidStringException.class, () -> failExtra.readScope(ScopedStringReader.CURLY_BRACKETS));
 	}
 	
 	@Test
@@ -94,12 +95,12 @@ class ScopedStringReaderTest {
 		ScopedStringReader failMissing = new ScopedStringReader("[Hello] [World it is [nice here]");
 		assertEquals("[Hello]", failMissing.readScope(ScopedStringReader.SQUARE_BRACKETS));
 		assertEquals(' ', failMissing.read());
-		assertThrows(IllegalStateException.class, () -> failMissing.readScope(ScopedStringReader.SQUARE_BRACKETS));
+		assertThrows(InvalidStringException.class, () -> failMissing.readScope(ScopedStringReader.SQUARE_BRACKETS));
 		
 		ScopedStringReader failExtra = new ScopedStringReader("[Hello] [World [it is [nice here]]");
 		assertEquals("[Hello]", failExtra.readScope(ScopedStringReader.SQUARE_BRACKETS));
 		assertEquals(' ', failExtra.read());
-		assertThrows(IllegalStateException.class, () -> failExtra.readScope(ScopedStringReader.SQUARE_BRACKETS));
+		assertThrows(InvalidStringException.class, () -> failExtra.readScope(ScopedStringReader.SQUARE_BRACKETS));
 	}
 	
 	@Test

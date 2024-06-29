@@ -18,6 +18,7 @@
 
 package net.luis.utils.io.reader;
 
+import net.luis.utils.exception.InvalidStringException;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Unmodifiable;
 
@@ -80,7 +81,7 @@ public class ScopedStringReader extends StringReader {
 	 * @return The read string
 	 * @throws NullPointerException If the scope is null
 	 * @throws IllegalArgumentException If the next character is not the opening character of the scope
-	 * @throws IllegalStateException If the scope is invalid
+	 * @throws InvalidStringException If the scope is invalid
 	 */
 	public @NotNull String readScope(@NotNull StringScope scope) {
 		Objects.requireNonNull(scope, "Scope must not be null");
@@ -123,9 +124,9 @@ public class ScopedStringReader extends StringReader {
 			escaped = false;
 		}
 		if (depth > 0) {
-			throw new IllegalStateException("Invalid scope, " + depth + " scope" + (depth > 1 ? "s" : "") + " are not closed, expected '" + scope.close + "'");
+			throw new InvalidStringException("Invalid scope, " + depth + " scope" + (depth > 1 ? "s" : "") + " are not closed, expected '" + scope.close + "'");
 		} else if (depth < 0) {
-			throw new IllegalStateException("Invalid scope, " + -depth + " scope" + (-depth > 1 ? "s" : "") + " are not opened, expected '" + scope.open + "'");
+			throw new InvalidStringException("Invalid scope, " + -depth + " scope" + (-depth > 1 ? "s" : "") + " are not opened, expected '" + scope.open + "'");
 		}
 		return builder.toString();
 	}
@@ -162,18 +163,19 @@ public class ScopedStringReader extends StringReader {
 		}
 		if (!stack.isEmpty()) {
 			String scopes = stack.reversed().stream().map(SCOPE_REGISTRY::get).map(String::valueOf).collect(Collectors.joining("', '", "'", "'"));
-			throw new IllegalStateException("Invalid scope, " + stack.size() + " scope" + (stack.size() > 1 ? "s" : "") + " are not closed, expected closing characters in order: " + scopes);
+			throw new InvalidStringException("Invalid scope, " + stack.size() + " scope" + (stack.size() > 1 ? "s" : "") + " are not closed, expected closing characters in order: " + scopes);
 		}
 		return builder.toString();
 	}
 	
 	@Unmodifiable
 	private <T> @NotNull Collection<T> readCollection(@NotNull StringScope scope, @NotNull Function<ScopedStringReader, T> parser) {
+		Objects.requireNonNull(scope, "Scope must not be null");
 		Objects.requireNonNull(parser, "Parser must not be null");
 		ScopedStringReader reader = new ScopedStringReader(this.readScope(scope));
 		char next = reader.peek();
 		if (next != scope.open) {
-			throw new IllegalArgumentException("Expected '" + scope.open + "' but got '" + next + "'");
+			throw new InvalidStringException("Expected '" + scope.open + "' but got '" + next + "'");
 		}
 		reader.skip();
 		reader.skipWhitespaces();
@@ -221,7 +223,7 @@ public class ScopedStringReader extends StringReader {
 		Collection<String> entries = this.readCollection(CURLY_BRACKETS, reader -> reader.readUntil(',').strip());
 		for (String entry : entries) {
 			if (!entry.contains("=")) {
-				throw new IllegalStateException("Invalid map entry, expected key=value but got: '" + entry + "'");
+				throw new InvalidStringException("Invalid map entry, expected 'key=value' but got: '" + entry + "'");
 			}
 			ScopedStringReader reader = new ScopedStringReader(entry);
 			K key = keyParser.apply(new ScopedStringReader(reader.readUntil('=').strip()));

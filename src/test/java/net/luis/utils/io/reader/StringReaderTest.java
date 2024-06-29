@@ -18,6 +18,7 @@
 
 package net.luis.utils.io.reader;
 
+import net.luis.utils.exception.InvalidStringException;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -28,6 +29,8 @@ import static org.junit.jupiter.api.Assertions.*;
  * @author Luis-St
  */
 class StringReaderTest {
+	
+	private static final double PRECISION = 0.0001;
 	
 	@Test
 	void constructor() {
@@ -225,7 +228,7 @@ class StringReaderTest {
 		assertEquals("this is a simple", reader.readQuotedString());
 		reader.skip();
 		assertEquals("test", reader.read(4));
-		assertThrows(IllegalArgumentException.class, reader::readQuotedString);
+		assertThrows(InvalidStringException.class, reader::readQuotedString);
 		reader.skip();
 		assertEquals("string", reader.readQuotedString());
 		reader.skip();
@@ -258,84 +261,112 @@ class StringReaderTest {
 	@Test
 	void readBoolean() {
 		StringReader reader = new StringReader("test true false");
-		assertThrows(IllegalArgumentException.class, reader::readBoolean);
+		assertThrows(InvalidStringException.class, reader::readBoolean);
 		assertEquals('t', reader.read());
 		reader.skip(4);
 		assertTrue(reader.readBoolean());
 		reader.skip();
 		assertFalse(reader.readBoolean());
-		assertThrows(IllegalArgumentException.class, reader::readBoolean);
+		assertThrows(StringIndexOutOfBoundsException.class, reader::readBoolean);
+	}
+	
+	@Test
+	void readNumber() {
+		StringReader reader = new StringReader("test 1 3b 2.0 '3.5f'");
+		assertThrows(InvalidStringException.class, reader::readNumber);
+		assertEquals('t', reader.read());
+		reader.skip(4);
+		assertEquals(1, assertInstanceOf(Long.class, reader.readNumber()));
+		reader.skip();
+		assertEquals(3, (int) assertInstanceOf(Byte.class, reader.readNumber()));
+		reader.skip();
+		assertEquals(2.0, assertInstanceOf(Double.class, reader.readNumber()), PRECISION);
+		reader.skip();
+		assertEquals(3.5, assertInstanceOf(Float.class, reader.readNumber()), PRECISION);
+		assertThrows(StringIndexOutOfBoundsException.class, reader::readNumber);
 	}
 	
 	@Test
 	void readByte() {
-		StringReader reader = new StringReader("test 127 -128");
-		assertThrows(IllegalArgumentException.class, reader::readByte);
+		StringReader reader = new StringReader("test 127 -128b '100'");
+		assertThrows(InvalidStringException.class, reader::readByte);
 		assertEquals('t', reader.read());
 		reader.skip(4);
 		assertEquals(127, reader.readByte());
 		reader.skip();
 		assertEquals(-128, reader.readByte());
-		assertThrows(IllegalArgumentException.class, reader::readByte);
+		reader.skip();
+		assertEquals(100, reader.readByte());
+		assertThrows(StringIndexOutOfBoundsException.class, reader::readByte);
 	}
 	
 	@Test
 	void readShort() {
-		StringReader reader = new StringReader("test -15078 9875s");
-		assertThrows(IllegalArgumentException.class, reader::readShort);
+		StringReader reader = new StringReader("test -15078 9875s '22'");
+		assertThrows(InvalidStringException.class, reader::readShort);
 		assertEquals('t', reader.read());
 		reader.skip(4);
 		assertEquals(-15078, reader.readShort());
 		reader.skip();
 		assertEquals(9875, reader.readShort());
-		assertThrows(IllegalArgumentException.class, reader::readShort);
+		reader.skip();
+		assertEquals(22, reader.readShort());
+		assertThrows(StringIndexOutOfBoundsException.class, reader::readShort);
 	}
 	
 	@Test
 	void readInt() {
-		StringReader reader = new StringReader("test 1 2i");
-		assertThrows(IllegalArgumentException.class, reader::readInt);
+		StringReader reader = new StringReader("test 1 2i '5'");
+		assertThrows(InvalidStringException.class, reader::readInt);
 		assertEquals('t', reader.read());
 		reader.skip(4);
 		assertEquals(1, reader.readInt());
 		reader.skip();
 		assertEquals(2, reader.readInt());
-		assertThrows(IllegalArgumentException.class, reader::readInt);
+		reader.skip();
+		assertEquals(5, reader.readInt());
+		assertThrows(StringIndexOutOfBoundsException.class, reader::readInt);
 	}
 	
 	@Test
 	void readLong() {
-		StringReader reader = new StringReader("test 1 2l");
-		assertThrows(IllegalArgumentException.class, reader::readLong);
+		StringReader reader = new StringReader("test 1 2l '5l'");
+		assertThrows(InvalidStringException.class, reader::readLong);
 		assertEquals('t', reader.read());
 		reader.skip(4);
 		assertEquals(1, reader.readLong());
 		reader.skip();
 		assertEquals(2, reader.readLong());
-		assertThrows(IllegalArgumentException.class, reader::readLong);
+		reader.skip();
+		assertEquals(5, reader.readLong());
+		assertThrows(StringIndexOutOfBoundsException.class, reader::readLong);
 	}
 	
 	@Test
 	void readFloat() {
-		StringReader reader = new StringReader("test -10.46 0.256");
-		assertThrows(IllegalArgumentException.class, reader::readFloat);
+		StringReader reader = new StringReader("test -10.46 0.256 '5.0f'");
+		assertThrows(InvalidStringException.class, reader::readFloat);
 		assertEquals('t', reader.read());
 		reader.skip(4);
-		assertEquals(-10.46, reader.readFloat(), 0.01);
+		assertEquals(-10.46, reader.readFloat(), PRECISION);
 		reader.skip();
-		assertEquals(0.256, reader.readFloat(), 0.01);
-		assertThrows(IllegalArgumentException.class, reader::readFloat);
+		assertEquals(0.256, reader.readFloat(), PRECISION);
+		reader.skip();
+		assertEquals(5.0, reader.readFloat(), PRECISION);
+		assertThrows(StringIndexOutOfBoundsException.class, reader::readFloat);
 	}
 	
 	@Test
 	void readDouble() {
-		StringReader reader = new StringReader("test 1.0 0.2");
-		assertThrows(IllegalArgumentException.class, reader::readDouble);
+		StringReader reader = new StringReader("test 1.0 0.2 '0.5d'");
+		assertThrows(InvalidStringException.class, reader::readDouble);
 		assertEquals('t', reader.read());
 		reader.skip(4);
-		assertEquals(1.0, reader.readDouble(), 0.01);
+		assertEquals(1.0, reader.readDouble(), PRECISION);
 		reader.skip();
-		assertEquals(0.2, reader.readDouble(), 0.01);
-		assertThrows(IllegalArgumentException.class, reader::readDouble);
+		assertEquals(0.2, reader.readDouble(), PRECISION);
+		reader.skip();
+		assertEquals(0.5, reader.readDouble(), PRECISION);
+		assertThrows(StringIndexOutOfBoundsException.class, reader::readDouble);
 	}
 }
