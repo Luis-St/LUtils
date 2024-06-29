@@ -21,44 +21,47 @@ package net.luis.utils.exception;
 import org.jetbrains.annotations.Nullable;
 
 /**
- * Thrown to indicate that a given value is invalid.<br>
- * <p>
- *     It may be thrown when a system property has an invalid value.<br>
- *     The exception message should contain in this case the name of the system property and the invalid value.<br>
- *     The message may also contain a description of the expected value.<br>
- * </p>
+ * Thrown to indicate that a string is invalid.<br>
+ * This exception will be thrown if a string is not valid for a specific operation.<br>
+ * For example:<br><br>
+ * <ul>
+ *     <li>If a string is empty and the operation requires a non-empty string.</li>
+ *     <li>If a string is not in the correct format.</li>
+ * </ul>
+ * The exception message should contain a description of the invalid string.<br>
+ * The message may also contain a description of the expected string.<br>
  *
  * @author Luis-St
  */
-public class InvalidValueException extends RuntimeException {
+public class InvalidStringException extends RuntimeException {
 	
 	/**
-	 * Constructs a new invalid value exception with no details.<br>
+	 * Constructs a new invalid string exception with no details.<br>
 	 */
-	public InvalidValueException() {}
+	public InvalidStringException() {}
 	
 	/**
-	 * Constructs a new invalid value exception with the specified message.<br>
+	 * Constructs a new invalid string exception with the specified message.<br>
 	 * @param message The message of the exception
 	 */
-	public InvalidValueException(@Nullable String message) {
+	public InvalidStringException(@Nullable String message) {
 		super(message);
 	}
 	
 	/**
-	 * Constructs a new invalid value exception with the specified message and cause.<br>
+	 * Constructs a new invalid string exception with the specified message and cause.<br>
 	 * @param message The message of the exception
 	 * @param cause The cause of the exception
 	 */
-	public InvalidValueException(@Nullable String message, @Nullable Throwable cause) {
+	public InvalidStringException(@Nullable String message, @Nullable Throwable cause) {
 		super(message, cause);
 	}
 	
 	/**
-	 * Constructs a new invalid value exception with the specified cause.<br>
+	 * Constructs a new invalid string exception with the specified cause.<br>
 	 * @param cause The cause of the exception
 	 */
-	public InvalidValueException(@Nullable Throwable cause) {
+	public InvalidStringException(@Nullable Throwable cause) {
 		super(cause);
 	}
 }
