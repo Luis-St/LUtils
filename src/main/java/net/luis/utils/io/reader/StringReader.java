@@ -410,11 +410,22 @@ public class StringReader {
 	/**
 	 * Reads a number as a string.<br>
 	 * <p>
-	 *     The number can be a byte, short, integer, long, float or double.<br>
-	 *     The first character can be a minus or plus sign.<br>
-	 *     The number can contain a dot for float or double values.<br>
-	 *     The number can contain a type suffix for byte, short, integer, long, float or double values.<br>
+	 *     The number can be quoted or unquoted.<br>
+	 *     If the number is quoted, the number is read as a quoted string.<br>
 	 * </p>
+	 * <p>
+	 *     The first character can be a minus or plus sign.<br>
+	 *     The number can contain a single dot for float or double values.<br>
+	 *     The number can contain a type suffix (single character, case-insensitive) at the end of the number:<br>
+	 * </p>
+	 * <ul>
+	 *     <li>byte: 'b'</li>
+	 *     <li>short: 's'</li>
+	 *     <li>integer: 'i'</li>
+	 *     <li>long: 'l'</li>
+	 *     <li>float: 'f'</li>
+	 *     <li>double: 'd'</li>
+	 * </ul>
 	 * @return The number as a string which was read
 	 * @throws InvalidStringException If the read value is not a number
 	 */
@@ -490,9 +501,13 @@ public class StringReader {
 		};
 	}
 	
+	/**
+	 * Reads a byte.<br>
+	 * The number can be suffixed with a 'b' (case-insensitive) to indicate that it is a byte.<br>
 	 * @return The byte value which was read
 	 * @throws StringIndexOutOfBoundsException If there are no more characters to read
 	 * @throws InvalidStringException If the read value is not a byte
+	 * @see #readNumberAsString()
 	 */
 	public byte readByte() {
 		if (!this.canRead()) {
@@ -515,13 +530,11 @@ public class StringReader {
 	
 	/**
 	 * Reads a short.<br>
-	 * <p>
-	 *     The short is read as an unquoted string and then parsed.<br>
-	 *     If the value is a valid short, the short value is returned.<br>
-	 * </p>
+	 * The number can be suffixed with an 's' (case-insensitive) to indicate that it is a short.<br>
 	 * @return The short value which was read
 	 * @throws StringIndexOutOfBoundsException If there are no more characters to read
 	 * @throws InvalidStringException If the read value is not a short
+	 * @see #readNumberAsString()
 	 */
 	public short readShort() {
 		if (!this.canRead()) {
@@ -544,13 +557,11 @@ public class StringReader {
 	
 	/**
 	 * Reads an integer.<br>
-	 * <p>
-	 *     The integer is read as an unquoted string and then parsed.<br>
-	 *     If the value is a valid integer, the integer value is returned.<br>
-	 * </p>
+	 * The number can be suffixed with an 'i' (case-insensitive) to indicate that it is an integer.<br>
 	 * @return The integer value which was read
 	 * @throws StringIndexOutOfBoundsException If there are no more characters to read
 	 * @throws InvalidStringException If the read value is not an integer
+	 * @see #readNumberAsString()
 	 */
 	public int readInt() {
 		if (!this.canRead()) {
@@ -573,13 +584,11 @@ public class StringReader {
 	
 	/**
 	 * Reads a long.<br>
-	 * <p>
-	 *     The long is read as an unquoted string and then parsed.<br>
-	 *     If the value is a valid long, the long value is returned.<br>
-	 * </p>
+	 * The number can be suffixed with an 'l' (case-insensitive) to indicate that it is a long.<br>
 	 * @return The long value which was read
 	 * @throws StringIndexOutOfBoundsException If there are no more characters to read
 	 * @throws InvalidStringException If the read value is not a long
+	 * @see #readNumberAsString()
 	 */
 	public long readLong() {
 		if (!this.canRead()) {
@@ -602,13 +611,11 @@ public class StringReader {
 	
 	/**
 	 * Reads a float.<br>
-	 * <p>
-	 *     The float is read as an unquoted string and then parsed.<br>
-	 *     If the value is a valid float, the float value is returned.<br>
-	 * </p>
+	 * The number can be suffixed with an 'f' (case-insensitive) to indicate that it is a float.<br>
 	 * @return The float value which was read
 	 * @throws StringIndexOutOfBoundsException If there are no more characters to read
 	 * @throws InvalidStringException If the read value is not a float
+	 * @see #readNumberAsString()
 	 */
 	public float readFloat() {
 		if (!this.canRead()) {
@@ -631,13 +638,11 @@ public class StringReader {
 	
 	/**
 	 * Reads a double.<br>
-	 * <p>
-	 *     The double is read as an unquoted string and then parsed.<br>
-	 *     If the value is a valid double, the double value is returned.<br>
-	 * </p>
+	 * The number can be suffixed with a 'd' (case-insensitive) to indicate that it is a double.<br>
 	 * @return The double value which was read
 	 * @throws StringIndexOutOfBoundsException If there are no more characters to read
 	 * @throws InvalidStringException If the read value is not a double
+	 * @see #readNumberAsString()
 	 */
 	public double readDouble() {
 		if (!this.canRead()) {

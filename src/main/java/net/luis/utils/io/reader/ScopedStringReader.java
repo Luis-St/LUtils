@@ -131,6 +131,19 @@ public class ScopedStringReader extends StringReader {
 		return builder.toString();
 	}
 	
+	/**
+	 * Reads the string until the given terminator is found.<br>
+	 * The terminator and escape character ('\\') are read but not included in the result.<br>
+	 * <p>
+	 *     If the terminator is found at the beginning or at the end of the string, an empty string is returned.<br>
+	 *     If the terminator is found in a quoted part or in a scope, the terminator is ignored.<br>
+	 *     If the terminator is not found, the rest of the string is returned.<br>
+	 * </p>
+	 * @param terminator The terminator to read until
+	 * @return The read string
+	 * @throws IllegalArgumentException If the terminator is a backslash
+	 * @throws InvalidStringException If the scope is invalid
+	 */
 	@Override
 	public @NotNull String readUntil(char terminator) {
 		if (terminator == '\\') {
@@ -168,6 +181,24 @@ public class ScopedStringReader extends StringReader {
 		return builder.toString();
 	}
 	
+	/**
+	 * Reads a collection like object from the string.<br>
+	 * <p>
+	 *     The collection is defined by an opening and a closing character.<br>
+	 *     If there are no more characters to read, an empty collection is returned.<br>
+	 *     Whitespace characters are ignored.<br>
+	 * </p>
+	 * <p>
+	 *     The elements of the collection are separated by a comma.<br>
+	 *     The elements are parsed by the given parser.<br>
+	 * </p>
+	 * @param scope The scope with the opening and closing character
+	 * @param parser The parser to parse the elements
+	 * @return The read collection
+	 * @param <T> The type of the elements
+	 * @throws NullPointerException If the scope or parser is null
+	 * @throws IllegalArgumentException If an error occurs while reading the collection
+	 */
 	@Unmodifiable
 	private <T> @NotNull Collection<T> readCollection(@NotNull StringScope scope, @NotNull Function<ScopedStringReader, T> parser) {
 		Objects.requireNonNull(scope, "Scope must not be null");
@@ -197,6 +228,16 @@ public class ScopedStringReader extends StringReader {
 		return List.copyOf(collection);
 	}
 	
+	/**
+	 * Reads a list from the string.<br>
+	 * The list is defined by square brackets.<br>
+	 * @param parser The parser to parse the elements
+	 * @return The read list as an {@link ArrayList}
+	 * @param <T> The type of the elements
+	 * @throws NullPointerException If the parser is null
+	 * @throws InvalidStringException If an error occurs while reading the list
+	 * @see #readCollection(StringScope, Function)
+	 */
 	public <T> @NotNull List<T> readList(@NotNull Function<ScopedStringReader, T> parser) {
 		Objects.requireNonNull(parser, "List element parser must not be null");
 		if (!this.canRead()) {
@@ -205,6 +246,19 @@ public class ScopedStringReader extends StringReader {
 		return new ArrayList<>(this.readCollection(SQUARE_BRACKETS, parser));
 	}
 	
+	/**
+	 * Reads a set from the string.<br>
+	 * <p>
+	 *     The order of the elements is not guaranteed.<br>
+	 *     Duplicates are ignored.<br>
+	 * </p>
+	 * @param parser The parser to parse the elements
+	 * @return The read set as an {@link HashSet}
+	 * @param <T> The type of the elements
+	 * @throws NullPointerException If the parser is null
+	 * @throws InvalidStringException If an error occurs while reading the set
+	 * @see #readCollection(StringScope, Function)
+	 */
 	public <T> @NotNull Set<T> readSet(@NotNull Function<ScopedStringReader, T> parser) {
 		Objects.requireNonNull(parser, "Set element parser must not be null");
 		if (!this.canRead()) {
@@ -213,6 +267,25 @@ public class ScopedStringReader extends StringReader {
 		return new HashSet<>(this.readCollection(PARENTHESES, parser));
 	}
 	
+	/**
+	 * Reads a map from the string.<br>
+	 * <p>
+	 *     The map is defined by curly brackets.<br>
+	 *     The key and value are separated by an equal sign ('=').<br>
+	 *     The entries are separated by a comma.<br>
+	 * </p>
+	 * <p>
+	 *     If a key is defined multiple times, the last value is used.<br>
+	 * </p>
+	 * @param keyParser The parser to parse the keys
+	 * @param valueParser The parser to parse the values
+	 * @return The read map as a {@link HashMap}
+	 * @param <K> The type of the keys
+	 * @param <V> The type of the values
+	 * @throws NullPointerException If the key or value parser is null
+	 * @throws InvalidStringException If an error occurs while reading the map
+	 * @see #readCollection(StringScope, Function)
+	 */
 	public <K, V> @NotNull Map<K, V> readMap(@NotNull Function<ScopedStringReader, K> keyParser, @NotNull Function<ScopedStringReader, V> valueParser) {
 		Objects.requireNonNull(keyParser, "Map key parser must not be null");
 		Objects.requireNonNull(valueParser, "Map value parser must not be null");
