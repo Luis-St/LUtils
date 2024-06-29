@@ -416,7 +416,14 @@ public class StringReader {
 	 * @return The number as a string which was read
 	 * @throws IllegalArgumentException If the read value is not a number
 	 */
-	private @NotNull String readNumber() {
+	private @NotNull String readNumberAsString() {
+		if (!this.canRead()) {
+			return "";
+		}
+		char next = this.peek();
+		if (next == '"' || next == '\'') {
+			return this.readQuotedString();
+		}
 		StringBuilder builder = new StringBuilder();
 		if (this.peek() == '-' || this.peek() == '+') {
 			builder.append(this.read());
@@ -450,6 +457,32 @@ public class StringReader {
 	 *     The byte is read as an unquoted string and then parsed.<br>
 	 *     If the value is a valid byte, the byte value is returned.<br>
 	 * </p>
+	public @NotNull Number readNumber() {
+		if (!this.canRead()) {
+			throw new StringIndexOutOfBoundsException("Expected a number value but found nothing");
+		}
+		String number = this.readNumberAsString();
+		if (number.isEmpty()) {
+			throw new InvalidStringException("Expected a number value but found nothing");
+		}
+		char numberType = Character.toLowerCase(number.charAt(number.length() - 1));
+		if (Character.isDigit(numberType)) {
+			if (number.contains(".")) {
+				return Double.parseDouble(number);
+			}
+			return Long.parseLong(number);
+		}
+		return switch (numberType) {
+			case 'b' -> Byte.parseByte(number.substring(0, number.length() - 1));
+			case 's' -> Short.parseShort(number.substring(0, number.length() - 1));
+			case 'i' -> Integer.parseInt(number.substring(0, number.length() - 1));
+			case 'l' -> Long.parseLong(number.substring(0, number.length() - 1));
+			case 'f' -> Float.parseFloat(number.substring(0, number.length() - 1));
+			case 'd' -> Double.parseDouble(number.substring(0, number.length() - 1));
+			default -> throw new InvalidStringException("Unknown number type: " + numberType);
+		};
+	}
+	
 	 * @return The byte value which was read
 	 * @throws IllegalArgumentException If the read value is not a byte
 	 */
@@ -457,7 +490,7 @@ public class StringReader {
 		if (!this.canRead()) {
 			throw new IllegalArgumentException("Expected a byte value but found nothing");
 		}
-		String value = this.readNumber();
+		String value = this.readNumberAsString();
 		if (value.isEmpty()) {
 			throw new IllegalArgumentException("Expected a byte value but found nothing");
 		}
@@ -485,7 +518,7 @@ public class StringReader {
 		if (!this.canRead()) {
 			throw new IllegalArgumentException("Expected a short value but found nothing");
 		}
-		String value = this.readNumber();
+		String value = this.readNumberAsString();
 		if (value.isEmpty()) {
 			throw new IllegalArgumentException("Expected a short value but found nothing");
 		}
@@ -513,7 +546,7 @@ public class StringReader {
 		if (!this.canRead()) {
 			throw new IllegalArgumentException("Expected an integer value but found nothing");
 		}
-		String value = this.readNumber();
+		String value = this.readNumberAsString();
 		if (value.isEmpty()) {
 			throw new IllegalArgumentException("Expected a integer value but found nothing");
 		}
@@ -541,7 +574,7 @@ public class StringReader {
 		if (!this.canRead()) {
 			throw new IllegalArgumentException("Expected a long value but found nothing");
 		}
-		String value = this.readNumber();
+		String value = this.readNumberAsString();
 		if (value.isEmpty()) {
 			throw new IllegalArgumentException("Expected a long value but found nothing");
 		}
@@ -569,7 +602,7 @@ public class StringReader {
 		if (!this.canRead()) {
 			throw new IllegalArgumentException("Expected a float value but found nothing");
 		}
-		String value = this.readNumber();
+		String value = this.readNumberAsString();
 		if (value.isEmpty()) {
 			throw new IllegalArgumentException("Expected a float value but found nothing");
 		}
@@ -597,7 +630,7 @@ public class StringReader {
 		if (!this.canRead()) {
 			throw new IllegalArgumentException("Expected a double value but found nothing");
 		}
-		String value = this.readNumber();
+		String value = this.readNumberAsString();
 		if (value.isEmpty()) {
 			throw new IllegalArgumentException("Expected a double value but found nothing");
 		}
