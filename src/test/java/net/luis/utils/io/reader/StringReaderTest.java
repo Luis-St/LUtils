@@ -157,6 +157,7 @@ class StringReaderTest {
 		assertDoesNotThrow(() -> reader.skip(c -> c == 't'));
 		
 		reader.reset();
+		
 		assertThrows(IllegalArgumentException.class, () -> reader.skip(-1));
 		assertThrows(IllegalArgumentException.class, () -> reader.skip(0));
 		reader.skip(2);
@@ -247,6 +248,20 @@ class StringReaderTest {
 		assertEquals("\"string\"", reader.readUntil(' '));
 		assertEquals("reader", reader.readUntil('r'));
 		assertEquals("", reader.readUntil(' '));
+		
+		reader.reset();
+		
+		assertEquals("", reader.readUntil("ts"));
+		assertEquals("hi", reader.readUntil("ts"));
+		reader.skip();
+		assertEquals("is a simpl", reader.readUntil("et"));
+		reader.skip();
+		assertEquals("te", reader.readUntil("s "));
+		reader.skip(2);
+		assertEquals("'string for the'", reader.readUntil("s "));
+		assertEquals("\"string\"", reader.readUntil(" "));
+		assertEquals("reader", reader.readUntil("r"));
+		assertEquals("", reader.readUntil(" "));
 	}
 	
 	@Test

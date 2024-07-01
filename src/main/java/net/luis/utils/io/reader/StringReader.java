@@ -19,6 +19,7 @@
 package net.luis.utils.io.reader;
 
 import net.luis.utils.exception.InvalidStringException;
+import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Objects;
@@ -317,7 +318,7 @@ public class StringReader {
 	
 	/**
 	 * Reads the string until the given terminator is found.<br>
-	 *     The terminator and escape character ('\\') are read but not included in the result.<br>
+	 * The terminator and escape character ('\\') are read but not included in the result.<br>
 	 * <p>
 	 *     If the terminator is found at the beginning or at the end of the string, an empty string is returned.<br>
 	 *     If the terminator is found in a quoted part of the string, the terminator is ignored.<br>
@@ -331,6 +332,43 @@ public class StringReader {
 		if (terminator == '\\') {
 			throw new IllegalArgumentException("Terminator cannot be a backslash");
 		}
+		return this.readUntil(c -> c == terminator);
+	}
+	
+	/**
+	 * Reads the string until one of the given terminators is found.<br>
+	 * The terminators and escape character ('\\') are read but not included in the result.<br>
+	 * <p>
+	 *     If any of the terminators is found at the beginning or at the end of the string, an empty string is returned.<br>
+	 *     If any of the terminators is found in a quoted part of the string, the terminator is ignored.<br>
+	 *     If none of the terminators is found, the rest of the string is returned.<br>
+	 * </p>
+	 * @param terminators The terminators to read until
+	 * @return The string which was read until one of the terminators
+	 * @throws IllegalArgumentException If the terminators are empty or contain a backslash
+	 */
+	public @NotNull String readUntil(@NotNull String terminators) {
+		if (terminators.isEmpty()) {
+			throw new IllegalArgumentException("Terminators must not be empty");
+		}
+		if (terminators.length() == 1) {
+			return this.readUntil(terminators.charAt(0));
+		}
+		if (terminators.contains("\\")) {
+			throw new IllegalArgumentException("Terminators cannot contain a backslash");
+		}
+		return this.readUntil(c -> terminators.indexOf(c) != -1);
+	}
+	
+	/**
+	 * Internal method to read the string until the given predicate is true.<br>
+	 * @param predicate The predicate to match the characters
+	 * @return The string which was read until the predicate is true
+	 * @see #readUntil(char)
+	 * @see #readUntil(String)
+	 */
+	@ApiStatus.Internal
+	protected @NotNull String readUntil(@NotNull Predicate<Character> predicate) {
 		StringBuilder builder = new StringBuilder();
 		boolean escaped = false;
 		boolean inSingleQuotes = false;
@@ -342,7 +380,7 @@ public class StringReader {
 			} else if (c == '\\') {
 				escaped = true;
 				continue;
-			} else if (!inSingleQuotes && !inDoubleQuotes && c == terminator) {
+			} else if (!inSingleQuotes && !inDoubleQuotes && predicate.test(c)) {
 				break;
 			} else if (c == '\'') {
 				inSingleQuotes = !inSingleQuotes;
@@ -357,7 +395,8 @@ public class StringReader {
 	/**
 	 * Reads a string.<br>
 	 * <p>
-	 *     If the next character is a single or double quote, {@link #readQuotedString()} is called otherwise {@link #readUnquotedString()} is called.<br>
+	 *     If the next character is a single or double quote,<br>
+	 *     {@link #readQuotedString()} is called otherwise {@link #readUnquotedString()} is called.<br>
 	 *     If there are no more characters to read, an empty string is returned.<br>
 	 * </p>
 	 * @return The string which was read
