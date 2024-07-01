@@ -24,6 +24,7 @@ import org.jetbrains.annotations.Unmodifiable;
 
 import java.util.*;
 import java.util.function.Function;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 /**
@@ -146,9 +147,35 @@ public class ScopedStringReader extends StringReader {
 	 */
 	@Override
 	public @NotNull String readUntil(char terminator) {
-		if (terminator == '\\') {
-			throw new IllegalArgumentException("Terminator cannot be a backslash");
-		}
+		return super.readUntil(terminator);
+	}
+	
+	/**
+	 * Reads the string until the given terminators are found.<br>
+	 * The terminators and escape character ('\\') are read but not included in the result.
+	 * <p>
+	 *     If the any of the terminators is found at the beginning or at the end of the string, an empty string is returned.<br>
+	 *     If any of the terminators is found in a quoted part or in a scope, the terminator are ignored.<br>
+	 *     If none of the terminators is found, the rest of the string is returned.<br>
+	 * </p>
+	 * @param terminators The terminators to read until
+	 * @return The read string
+	 * @throws IllegalArgumentException If the terminators are empty or contain a backslash
+	 */
+	@Override
+	public @NotNull String readUntil(@NotNull String terminators) {
+		return super.readUntil(terminators);
+	}
+	
+	/**
+	 * Internal method to read the string until the given predicate is true.<br>
+	 * @param predicate The predicate to match the characters
+	 * @return The string which was read until the predicate is true
+	 * @see #readUntil(char)
+	 * @see #readUntil(String)
+	 */
+	@Override
+	protected @NotNull String readUntil(@NotNull Predicate<Character> predicate) {
 		StringBuilder builder = new StringBuilder();
 		boolean escaped = false;
 		boolean inSingleQuotes = false;
@@ -161,7 +188,7 @@ public class ScopedStringReader extends StringReader {
 			} else if (c == '\\') {
 				escaped = true;
 				continue;
-			} else if (!inSingleQuotes && !inDoubleQuotes && c == terminator && stack.isEmpty()) {
+			} else if (!inSingleQuotes && !inDoubleQuotes && predicate.test(c) && stack.isEmpty()) {
 				break;
 			} else if (c == '\'') {
 				inSingleQuotes = !inSingleQuotes;
