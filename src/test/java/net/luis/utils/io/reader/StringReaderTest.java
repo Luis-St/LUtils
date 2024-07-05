@@ -265,6 +265,33 @@ class StringReaderTest {
 	}
 	
 	@Test
+	void readUntilInclusive() {
+		StringReader reader = new StringReader("this is a simple \\test 'string for the' \"string\" \\reade\\r");
+		assertThrows(IllegalArgumentException.class, () -> reader.readUntilInclusive('\\'));
+		assertEquals("t", reader.readUntilInclusive('t'));
+		assertEquals("his is a simple test", reader.readUntilInclusive('t'));
+		reader.skip();
+		assertEquals("'string for the' ", reader.readUntilInclusive(' '));
+		assertEquals("\"string\" ", reader.readUntilInclusive(' '));
+		assertEquals("reader", reader.readUntilInclusive('r'));
+		assertEquals("", reader.readUntilInclusive(' '));
+		
+		reader.reset();
+		
+		assertEquals("t", reader.readUntilInclusive("ts"));
+		assertEquals("his", reader.readUntilInclusive("ts"));
+		reader.skip();
+		assertEquals("is a simple", reader.readUntilInclusive("et"));
+		reader.skip();
+		assertEquals("tes", reader.readUntilInclusive("s "));
+		reader.skip(2);
+		assertEquals("'string for the' ", reader.readUntilInclusive("s "));
+		assertEquals("\"string\" ", reader.readUntilInclusive(" "));
+		assertEquals("reader", reader.readUntilInclusive("r"));
+		assertEquals("", reader.readUntilInclusive(" "));
+	}
+	
+	@Test
 	void readString() {
 		StringReader reader = new StringReader("this \"is a simple\" 'test string'");
 		assertEquals("this", reader.readString());

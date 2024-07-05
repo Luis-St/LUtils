@@ -86,6 +86,64 @@ class ScopedStringReaderTest {
 	}
 	
 	@Test
+	void readUntil() {
+		ScopedStringReader reader = new ScopedStringReader("this is a simple \\test 'string for the' [string] {string = 10} \\reade\\r");
+		assertThrows(IllegalArgumentException.class, () -> reader.readUntil('\\'));
+		assertEquals("", reader.readUntil('t'));
+		assertEquals("his is a simple tes", reader.readUntil('t'));
+		reader.skip();
+		assertEquals("'string for the'", reader.readUntil(' '));
+		assertEquals("[string]", reader.readUntil(' '));
+		assertEquals("{string = 10}", reader.readUntil(' '));
+		assertEquals("reader", reader.readUntil('r'));
+		assertEquals("", reader.readUntil(' '));
+		
+		reader.reset();
+		
+		assertEquals("", reader.readUntil("ts"));
+		assertEquals("hi", reader.readUntil("ts"));
+		reader.skip();
+		assertEquals("is a simpl", reader.readUntil("et"));
+		reader.skip();
+		assertEquals("te", reader.readUntil("s "));
+		reader.skip(2);
+		assertEquals("'string for the'", reader.readUntil("s "));
+		assertEquals("[string]", reader.readUntil(" "));
+		assertEquals("{string = 10}", reader.readUntil("= "));
+		assertEquals("reader", reader.readUntil("r"));
+		assertEquals("", reader.readUntil(" "));
+	}
+	
+	@Test
+	void readUntilInclusive() {
+		ScopedStringReader reader = new ScopedStringReader("this is a simple \\test 'string for the' [string] {string = 10} \\reade\\r");
+		assertThrows(IllegalArgumentException.class, () -> reader.readUntilInclusive('\\'));
+		assertEquals("t", reader.readUntilInclusive('t'));
+		assertEquals("his is a simple test", reader.readUntilInclusive('t'));
+		reader.skip();
+		assertEquals("'string for the' ", reader.readUntilInclusive(' '));
+		assertEquals("[string] ", reader.readUntilInclusive(' '));
+		assertEquals("{string = 10} ", reader.readUntilInclusive(' '));
+		assertEquals("reader", reader.readUntilInclusive('r'));
+		assertEquals("", reader.readUntilInclusive(' '));
+		
+		reader.reset();
+		
+		assertEquals("t", reader.readUntilInclusive("ts"));
+		assertEquals("his", reader.readUntilInclusive("ts"));
+		reader.skip();
+		assertEquals("is a simple", reader.readUntilInclusive("et"));
+		reader.skip();
+		assertEquals("tes", reader.readUntilInclusive("s "));
+		reader.skip(2);
+		assertEquals("'string for the' ", reader.readUntilInclusive("s "));
+		assertEquals("[string] ", reader.readUntilInclusive(" "));
+		assertEquals("{string = 10} ", reader.readUntilInclusive("= "));
+		assertEquals("reader", reader.readUntilInclusive("r"));
+		assertEquals("", reader.readUntilInclusive(" "));
+	}
+	
+	@Test
 	void readScopeSquareBrackets() {
 		ScopedStringReader success = new ScopedStringReader("[Hello] [World it is [nice here]]");
 		assertEquals("[Hello]", success.readScope(ScopedStringReader.SQUARE_BRACKETS));
