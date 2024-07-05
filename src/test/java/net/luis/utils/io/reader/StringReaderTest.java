@@ -314,7 +314,7 @@ class StringReaderTest {
 	
 	@Test
 	void readNumber() {
-		StringReader reader = new StringReader("test 1 3b 2.0 '3.5f'");
+		StringReader reader = new StringReader("test 1 3b 2.0 '3.5f' 0x10 0b11");
 		assertThrows(InvalidStringException.class, reader::readNumber);
 		assertEquals('t', reader.read());
 		reader.skip(4);
@@ -325,12 +325,16 @@ class StringReaderTest {
 		assertEquals(2.0, assertInstanceOf(Double.class, reader.readNumber()), PRECISION);
 		reader.skip();
 		assertEquals(3.5, assertInstanceOf(Float.class, reader.readNumber()), PRECISION);
+		reader.skip();
+		assertEquals(16, assertInstanceOf(Long.class, reader.readNumber()));
+		reader.skip();
+		assertEquals(3, assertInstanceOf(Long.class, reader.readNumber()));
 		assertThrows(StringIndexOutOfBoundsException.class, reader::readNumber);
 	}
 	
 	@Test
 	void readByte() {
-		StringReader reader = new StringReader("test 127 -128b '100'");
+		StringReader reader = new StringReader("test 127 -128b '100' 0x7F 0b01011");
 		assertThrows(InvalidStringException.class, reader::readByte);
 		assertEquals('t', reader.read());
 		reader.skip(4);
@@ -339,12 +343,16 @@ class StringReaderTest {
 		assertEquals(-128, reader.readByte());
 		reader.skip();
 		assertEquals(100, reader.readByte());
+		reader.skip();
+		assertEquals(127, reader.readByte());
+		reader.skip();
+		assertEquals(11, reader.readByte());
 		assertThrows(StringIndexOutOfBoundsException.class, reader::readByte);
 	}
 	
 	@Test
 	void readShort() {
-		StringReader reader = new StringReader("test -15078 9875s '22'");
+		StringReader reader = new StringReader("test -15078 9875s '22' 0x7FFF 0b111101");
 		assertThrows(InvalidStringException.class, reader::readShort);
 		assertEquals('t', reader.read());
 		reader.skip(4);
@@ -353,12 +361,16 @@ class StringReaderTest {
 		assertEquals(9875, reader.readShort());
 		reader.skip();
 		assertEquals(22, reader.readShort());
+		reader.skip();
+		assertEquals(32767, reader.readShort());
+		reader.skip();
+		assertEquals(61, reader.readShort());
 		assertThrows(StringIndexOutOfBoundsException.class, reader::readShort);
 	}
 	
 	@Test
 	void readInt() {
-		StringReader reader = new StringReader("test 1 2i '5'");
+		StringReader reader = new StringReader("test 1 2i '5' 0xFAF 0b101");
 		assertThrows(InvalidStringException.class, reader::readInt);
 		assertEquals('t', reader.read());
 		reader.skip(4);
@@ -367,20 +379,29 @@ class StringReaderTest {
 		assertEquals(2, reader.readInt());
 		reader.skip();
 		assertEquals(5, reader.readInt());
+		reader.skip();
+		assertEquals(4015, reader.readInt());
+		reader.skip();
+		assertEquals(5, reader.readInt());
+		reader.skip();
 		assertThrows(StringIndexOutOfBoundsException.class, reader::readInt);
 	}
 	
 	@Test
 	void readLong() {
-		StringReader reader = new StringReader("test 1 2l '5l'");
+		StringReader reader = new StringReader("test 1_000 2l '5l' 0xA5 0b110001");
 		assertThrows(InvalidStringException.class, reader::readLong);
 		assertEquals('t', reader.read());
 		reader.skip(4);
-		assertEquals(1, reader.readLong());
+		assertEquals(1000, reader.readLong());
 		reader.skip();
 		assertEquals(2, reader.readLong());
 		reader.skip();
 		assertEquals(5, reader.readLong());
+		reader.skip();
+		assertEquals(165, reader.readLong());
+		reader.skip();
+		assertEquals(49, reader.readLong());
 		assertThrows(StringIndexOutOfBoundsException.class, reader::readLong);
 	}
 	

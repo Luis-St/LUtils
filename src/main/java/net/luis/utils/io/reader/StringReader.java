@@ -494,8 +494,12 @@ public class StringReader {
 	 *     <li>float: 'f'</li>
 	 *     <li>double: 'd'</li>
 	 * </ul>
+	 * <p>
+	 *     The number can be specified in hexadecimal or binary format by starting with '0x' or '0b'.<br>
+	 *     The number can contain underscores to separate digits.<br>
+	 * </p>
 	 * @return The number as a string which was read
-	 * @throws InvalidStringException If the read value is not a number
+	 * @throws InvalidStringException If the read value is not a (valid) number
 	 */
 	private @NotNull String readNumberAsString() {
 		if (!this.canRead()) {
@@ -506,24 +510,56 @@ public class StringReader {
 			return this.readQuotedString();
 		}
 		StringBuilder builder = new StringBuilder();
-		if (this.peek() == '-' || this.peek() == '+') {
+		if (next == '-' || next == '+') {
 			builder.append(this.read());
 		}
 		boolean hasDot = false;
+		boolean hasHex = false;
+		boolean hasBin = false;
 		while (this.canRead()) {
-			char c = this.peek();
-			if (!Character.isDigit(c) && c != '.') {
-				break;
-			}
-			if (c == '.') {
-				if (hasDot) {
-					throw new InvalidStringException("Expected a number but found: '" + builder.toString() + c + "'");
+			char c = Character.toLowerCase(this.peek());
+			if (!Character.isDigit(c)) {
+				int firstNumber = 0;
+				if (!builder.isEmpty() && (builder.charAt(0) == '-' || builder.charAt(0) == '+')) {
+					firstNumber = 1;
 				}
-				hasDot = true;
+				if (c == 'x') {
+					if (hasHex) {
+						throw new InvalidStringException("Expected a number but found: '" + builder.toString() + c + "'");
+					}
+					if (builder.length() == 1 && builder.charAt(firstNumber) == '0') {
+						hasHex = true;
+					}
+				} else if (c == 'b') {
+					if (hasBin) {
+						throw new InvalidStringException("Expected a number but found: '" + builder.toString() + c + "'");
+					}
+					if (builder.length() == 1 && builder.charAt(firstNumber) == '0') { // 'b' is a valid suffix for byte
+						hasBin = true;
+					}
+				} else if (c == '.') {
+					if (hasHex || hasBin) {
+						throw new InvalidStringException("A hexadecimal or binary number must not contain a dot: '" + builder.toString() + c + "'");
+					}
+					if (hasDot) {
+						throw new InvalidStringException("Invalid floating point number: '" + builder.toString() + c + "'");
+					}
+					hasDot = true;
+				} else if (c == '_') {
+					this.skip();
+					continue;
+				} else {
+					if (!hasHex) {
+						break;
+					}
+					if (c < 'a' || 'f' < c) {
+						break;
+					}
+				}
 			}
 			builder.append(this.read());
 		}
-		if (this.canRead()) {
+		if (this.canRead() && !hasHex && !hasBin) {
 			char type = Character.toLowerCase(this.peek());
 			if (type == 'b' || type == 's' || type == 'i' || type == 'l' || type == 'f' || type == 'd') {
 				builder.append(Character.toLowerCase(this.read()));
@@ -533,12 +569,33 @@ public class StringReader {
 	}
 	
 	/**
+	 * Parses the radix of the number.<br>
+	 * The radix is determined by the prefix of the number:<br>
+	 * <ul>
+	 *     <li>0x: hexadecimal</li>
+	 *     <li>0b: binary</li>
+	 *     <li>otherwise: decimal</li>
+	 * </ul>
+	 * @param number The number to parse the radix from
+	 * @return The radix of the number
+	 */
+	private int parseRadix(@NotNull String number) {
+		if (number.startsWith("0x")) {
+			return 16;
+		}
+		if (number.startsWith("0b")) {
+			return 2;
+		}
+		return 10;
+	}
+	
+	/**
 	 * Reads a number.<br>
 	 * If the number is specified with a type suffix, the number is parsed as the specified type.<br>
 	 * By default, the number is parsed as a double if it contains a dot otherwise as a long.<br>
 	 * @return The number value which was read
 	 * @throws StringIndexOutOfBoundsException If there are no more characters to read
-	 * @throws InvalidStringException If the read value is not a number
+	 * @throws InvalidStringException If the read value is not a (valid) number
 	 * @see #readNumberAsString()
 	 */
 	public @NotNull Number readNumber() {
@@ -546,21 +603,25 @@ public class StringReader {
 			throw new StringIndexOutOfBoundsException("Expected a number value but found nothing");
 		}
 		String number = this.readNumberAsString();
+		int radix = this.parseRadix(number);
+		if (radix != 10) {
+			number = number.substring(2);
+		}
 		if (number.isEmpty()) {
 			throw new InvalidStringException("Expected a number value but found nothing");
 		}
 		char numberType = Character.toLowerCase(number.charAt(number.length() - 1));
-		if (Character.isDigit(numberType)) {
+		if (Character.isDigit(numberType) || radix != 10) {
 			if (number.contains(".")) {
 				return Double.parseDouble(number);
 			}
-			return Long.parseLong(number);
+			return Long.parseLong(number, radix);
 		}
 		return switch (numberType) {
-			case 'b' -> Byte.parseByte(number.substring(0, number.length() - 1));
-			case 's' -> Short.parseShort(number.substring(0, number.length() - 1));
-			case 'i' -> Integer.parseInt(number.substring(0, number.length() - 1));
-			case 'l' -> Long.parseLong(number.substring(0, number.length() - 1));
+			case 'b' -> Byte.parseByte(number.substring(0, number.length() - 1), radix);
+			case 's' -> Short.parseShort(number.substring(0, number.length() - 1), radix);
+			case 'i' -> Integer.parseInt(number.substring(0, number.length() - 1), radix);
+			case 'l' -> Long.parseLong(number.substring(0, number.length() - 1), radix);
 			case 'f' -> Float.parseFloat(number.substring(0, number.length() - 1));
 			case 'd' -> Double.parseDouble(number.substring(0, number.length() - 1));
 			default -> throw new InvalidStringException("Unknown number type: " + numberType);
@@ -572,25 +633,32 @@ public class StringReader {
 	 * The number can be suffixed with a 'b' (case-insensitive) to indicate that it is a byte.<br>
 	 * @return The byte value which was read
 	 * @throws StringIndexOutOfBoundsException If there are no more characters to read
-	 * @throws InvalidStringException If the read value is not a byte
+	 * @throws InvalidStringException If the read value is not a (valid) byte
 	 * @see #readNumberAsString()
 	 */
 	public byte readByte() {
 		if (!this.canRead()) {
 			throw new StringIndexOutOfBoundsException("Expected a byte value but found nothing");
 		}
-		String value = this.readNumberAsString();
-		if (value.isEmpty()) {
+		String number = this.readNumberAsString();
+		int radix = this.parseRadix(number);
+		if (radix != 10) {
+			number = number.substring(2);
+		}
+		if (number.isEmpty()) {
 			throw new InvalidStringException("Expected a byte value but found nothing");
 		}
-		char last = Character.toLowerCase(value.charAt(value.length() - 1));
-		if (!Character.isDigit(last) && last != 'b') {
-			throw new InvalidStringException("Expected a byte value but found: '" + value + "'");
+		char last = Character.toLowerCase(number.charAt(number.length() - 1));
+		if (!Character.isDigit(last) && last != 'b' && radix == 10) {
+			throw new InvalidStringException("Expected a byte value but found: '" + number + "'");
 		}
 		try {
-			return Byte.parseByte(Character.isDigit(last) ? value : value.substring(0, value.length() - 1));
+			if (!Character.isDigit(last) && radix == 10) {
+				return Byte.parseByte(number.substring(0, number.length() - 1));
+			}
+			return Byte.parseByte(number, radix);
 		} catch (NumberFormatException e) {
-			throw new InvalidStringException("Expected a byte value but found: '" + value + "'", e);
+			throw new InvalidStringException("Expected a byte value but found: '" + number + "'", e);
 		}
 	}
 	
@@ -599,25 +667,32 @@ public class StringReader {
 	 * The number can be suffixed with an 's' (case-insensitive) to indicate that it is a short.<br>
 	 * @return The short value which was read
 	 * @throws StringIndexOutOfBoundsException If there are no more characters to read
-	 * @throws InvalidStringException If the read value is not a short
+	 * @throws InvalidStringException If the read value is not a (valid) short
 	 * @see #readNumberAsString()
 	 */
 	public short readShort() {
 		if (!this.canRead()) {
 			throw new StringIndexOutOfBoundsException("Expected a short value but found nothing");
 		}
-		String value = this.readNumberAsString();
-		if (value.isEmpty()) {
+		String number = this.readNumberAsString();
+		int radix = this.parseRadix(number);
+		if (radix != 10) {
+			number = number.substring(2);
+		}
+		if (number.isEmpty()) {
 			throw new InvalidStringException("Expected a short value but found nothing");
 		}
-		char last = Character.toLowerCase(value.charAt(value.length() - 1));
-		if (!Character.isDigit(last) && last != 's') {
-			throw new InvalidStringException("Expected a short value but found: '" + value + "'");
+		char last = Character.toLowerCase(number.charAt(number.length() - 1));
+		if (!Character.isDigit(last) && last != 's' && radix == 10) {
+			throw new InvalidStringException("Expected a short value but found: '" + number + "'");
 		}
 		try {
-			return Short.parseShort(Character.isDigit(last) ? value : value.substring(0, value.length() - 1));
+			if (!Character.isDigit(last) && radix == 10) {
+				return Short.parseShort(number.substring(0, number.length() - 1));
+			}
+			return Short.parseShort(number, radix);
 		} catch (NumberFormatException e) {
-			throw new InvalidStringException("Expected a short value but found: '" + value + "'", e);
+			throw new InvalidStringException("Expected a short value but found: '" + number + "'", e);
 		}
 	}
 	
@@ -625,26 +700,32 @@ public class StringReader {
 	 * Reads an integer.<br>
 	 * The number can be suffixed with an 'i' (case-insensitive) to indicate that it is an integer.<br>
 	 * @return The integer value which was read
-	 * @throws StringIndexOutOfBoundsException If there are no more characters to read
-	 * @throws InvalidStringException If the read value is not an integer
+	 * @throws InvalidStringException If the read value is not a (valid) integer
 	 * @see #readNumberAsString()
 	 */
 	public int readInt() {
 		if (!this.canRead()) {
 			throw new StringIndexOutOfBoundsException("Expected an integer value but found nothing");
 		}
-		String value = this.readNumberAsString();
-		if (value.isEmpty()) {
+		String number = this.readNumberAsString();
+		int radix = this.parseRadix(number);
+		if (radix != 10) {
+			number = number.substring(2);
+		}
+		if (number.isEmpty()) {
 			throw new InvalidStringException("Expected a integer value but found nothing");
 		}
-		char last = Character.toLowerCase(value.charAt(value.length() - 1));
-		if (!Character.isDigit(last) && last != 'i') {
-			throw new InvalidStringException("Expected a integer value but found: '" + value + "'");
+		char last = Character.toLowerCase(number.charAt(number.length() - 1));
+		if (!Character.isDigit(last) && last != 'i' && radix == 10) {
+			throw new InvalidStringException("Expected a integer value but found: '" + number + "'");
 		}
 		try {
-			return Integer.parseInt(Character.isDigit(last) ? value : value.substring(0, value.length() - 1));
+			if (!Character.isDigit(last) && radix == 10) {
+				return Integer.parseInt(number.substring(0, number.length() - 1));
+			}
+			return Integer.parseInt(number, radix);
 		} catch (NumberFormatException e) {
-			throw new InvalidStringException("Expected an integer value but found: '" + value + "'", e);
+			throw new InvalidStringException("Expected an integer value but found: '" + number + "'", e);
 		}
 	}
 	
@@ -653,25 +734,32 @@ public class StringReader {
 	 * The number can be suffixed with an 'l' (case-insensitive) to indicate that it is a long.<br>
 	 * @return The long value which was read
 	 * @throws StringIndexOutOfBoundsException If there are no more characters to read
-	 * @throws InvalidStringException If the read value is not a long
+	 * @throws InvalidStringException If the read value is not a (valid) long
 	 * @see #readNumberAsString()
 	 */
 	public long readLong() {
 		if (!this.canRead()) {
 			throw new StringIndexOutOfBoundsException("Expected a long value but found nothing");
 		}
-		String value = this.readNumberAsString();
-		if (value.isEmpty()) {
+		String number = this.readNumberAsString();
+		int radix = this.parseRadix(number);
+		if (radix != 10) {
+			number = number.substring(2);
+		}
+		if (number.isEmpty()) {
 			throw new InvalidStringException("Expected a long value but found nothing");
 		}
-		char last = Character.toLowerCase(value.charAt(value.length() - 1));
-		if (!Character.isDigit(last) && last != 'l') {
-			throw new InvalidStringException("Expected a long value but found: '" + value + "'");
+		char last = Character.toLowerCase(number.charAt(number.length() - 1));
+		if (!Character.isDigit(last) && last != 'l' && radix == 10) {
+			throw new InvalidStringException("Expected a long value but found: '" + number + "'");
 		}
 		try {
-			return Long.parseLong(Character.isDigit(last) ? value : value.substring(0, value.length() - 1));
+			if (!Character.isDigit(last) && radix == 10) {
+				return Long.parseLong(number.substring(0, number.length() - 1));
+			}
+			return Long.parseLong(number, radix);
 		} catch (NumberFormatException e) {
-			throw new InvalidStringException("Expected a long value but found: '" + value + "'", e);
+			throw new InvalidStringException("Expected a long value but found: '" + number + "'", e);
 		}
 	}
 	
@@ -680,7 +768,7 @@ public class StringReader {
 	 * The number can be suffixed with an 'f' (case-insensitive) to indicate that it is a float.<br>
 	 * @return The float value which was read
 	 * @throws StringIndexOutOfBoundsException If there are no more characters to read
-	 * @throws InvalidStringException If the read value is not a float
+	 * @throws InvalidStringException If the read value is not a (valid) float
 	 * @see #readNumberAsString()
 	 */
 	public float readFloat() {
@@ -707,7 +795,7 @@ public class StringReader {
 	 * The number can be suffixed with a 'd' (case-insensitive) to indicate that it is a double.<br>
 	 * @return The double value which was read
 	 * @throws StringIndexOutOfBoundsException If there are no more characters to read
-	 * @throws InvalidStringException If the read value is not a double
+	 * @throws InvalidStringException If the read value is not a (valid) double
 	 * @see #readNumberAsString()
 	 */
 	public double readDouble() {
