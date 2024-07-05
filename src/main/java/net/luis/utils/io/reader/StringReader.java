@@ -70,7 +70,6 @@ public class StringReader {
 	
 	/**
 	 * Reads the next character from the string.<br>
-	 * Increments the index by one.<br>
 	 * @return The next character
 	 * @throws IndexOutOfBoundsException If there are no more characters to read ({@link #canRead()} returns false)
 	 */
@@ -166,10 +165,8 @@ public class StringReader {
 	
 	/**
 	 * Skips all characters that are equal to the given character.<br>
-	 * <p>
-	 *     If the next character is not equal to the given character, nothing happens.<br>
-	 *     If there are no more characters to read, nothing happens.<br>
-	 * </p>
+	 * If the next character is not equal to the given character<br>
+	 * or there are no more characters to read, nothing happens.<br>
 	 * @param c The character to skip
 	 */
 	public void skip(char c) {
@@ -180,10 +177,8 @@ public class StringReader {
 	
 	/**
 	 * Skips all characters that match the given predicate.<br>
-	 * <p>
-	 *     If the next character does not match the predicate, nothing happens.<br>
-	 *     If there are no more characters to read, nothing happens.<br>
-	 * </p>
+	 * If the next character does not match the predicate<br>
+	 * or there are no more characters to read, nothing happens.<br>
 	 * @param predicate The predicate to match
 	 * @throws NullPointerException If the predicate is null
 	 */
@@ -213,6 +208,7 @@ public class StringReader {
 	
 	/**
 	 * Resets the index of the reader to zero or if set to the marked index.<br>
+	 * If the marked index is set, it will be reset after calling this method.<br>
 	 */
 	public void reset() {
 		if (this.markedIndex == -1) {
@@ -225,7 +221,6 @@ public class StringReader {
 	
 	/**
 	 * Reads the remaining string.<br>
-	 * If there are no more characters to read, an empty string is returned.<br>
 	 * @return The remaining string
 	 */
 	public @NotNull String readRemaining() {
@@ -242,8 +237,8 @@ public class StringReader {
 	/**
 	 * Reads the string until the next whitespace (' ') is found.<br>
 	 * The whitespace is read but not included in the result.<br>
-	 * If there are no more characters to read, an empty string is returned.<br>
-	 * @return The string read until the next whitespace
+	 * @return The string read until the default terminator
+	 * @see #readUnquotedString(char)
 	 */
 	public @NotNull String readUnquotedString() {
 		return this.readUnquotedString(' ');
@@ -251,13 +246,8 @@ public class StringReader {
 	
 	/**
 	 * Reads the string until the given terminator is found.<br>
-	 * <p>
-	 *     The string will be read in 'raw' mode, meaning that no escaping is done.<br>
-	 *     The terminator is read but not included in the result.<br>
-	 * </p>
-	 * <p>
-	 *     If there are no more characters to read, an empty string is returned.<br>
-	 * </p>
+	 * The string will be read in 'raw' mode, meaning that no escaping is done.<br>
+	 * The terminator is read but not included in the result.<br>
 	 * @param terminator The terminator to read until
 	 * @return The string which was read until the terminator
 	 */
@@ -278,13 +268,8 @@ public class StringReader {
 	
 	/**
 	 * Reads a quoted string.<br>
-	 * <p>
-	 *     A quoted string is a string enclosed in single or double quotes.<br>
-	 *     The quotes are read but not included in the result.<br>
-	 * </p>
-	 * <p>
-	 *     If there are no more characters to read, an empty string is returned.
-	 * </p>
+	 * A quoted string is a string enclosed in single or double quotes.<br>
+	 * The quotes are read but not included in the result.<br>
 	 * @return The quoted string which was read
 	 * @throws InvalidStringException If the next read character is not a single or double quote
 	 */
@@ -332,7 +317,26 @@ public class StringReader {
 		if (terminator == '\\') {
 			throw new IllegalArgumentException("Terminator cannot be a backslash");
 		}
-		return this.readUntil(c -> c == terminator);
+		return this.readUntil(c -> c == terminator, false);
+	}
+	
+	/**
+	 * Reads the string until the given terminator is found.<br>
+	 * The escape character ('\\') is read but not included in the result.<br>
+	 * <p>
+	 *     If the terminator is found at the beginning or at the end of the string, an empty string is returned.<br>
+	 *     If the terminator is found in a quoted part of the string, the terminator is ignored.<br>
+	 *     If the terminator is not found, the rest of the string is returned.<br>
+	 * </p>
+	 * @param terminator The terminator to read until
+	 * @return The string which was read until the terminator
+	 * @throws InvalidStringException If the terminator is a backslash
+	 */
+	public @NotNull String readUntilInclusive(char terminator) {
+		if (terminator == '\\') {
+			throw new IllegalArgumentException("Terminator cannot be a backslash");
+		}
+		return this.readUntil(c -> c == terminator, true);
 	}
 	
 	/**
@@ -357,18 +361,46 @@ public class StringReader {
 		if (terminators.contains("\\")) {
 			throw new IllegalArgumentException("Terminators cannot contain a backslash");
 		}
-		return this.readUntil(c -> terminators.indexOf(c) != -1);
+		return this.readUntil(c -> terminators.indexOf(c) != -1, false);
+	}
+	
+	/**
+	 * Reads the string until one of the given terminators is found.<br>
+	 * The escape character ('\\') is read but not included in the result.<br>
+	 * <p>
+	 *     If any of the terminators is found at the beginning or at the end of the string, an empty string is returned.<br>
+	 *     If any of the terminators is found in a quoted part of the string, the terminator is ignored.<br>
+	 *     If none of the terminators is found, the rest of the string is returned.<br>
+	 * </p>
+	 * @param terminators The terminators to read until
+	 * @return The string which was read until one of the terminators
+	 * @throws IllegalArgumentException If the terminators are empty or contain a backslash
+	 */
+	public @NotNull String readUntilInclusive(@NotNull String terminators) {
+		if (terminators.isEmpty()) {
+			throw new IllegalArgumentException("Terminators must not be empty");
+		}
+		if (terminators.length() == 1) {
+			return this.readUntilInclusive(terminators.charAt(0));
+		}
+		if (terminators.contains("\\")) {
+			throw new IllegalArgumentException("Terminators cannot contain a backslash");
+		}
+		return this.readUntil(c -> terminators.indexOf(c) != -1, true);
 	}
 	
 	/**
 	 * Internal method to read the string until the given predicate is true.<br>
 	 * @param predicate The predicate to match the characters
+	 * @param inclusive Whether the character which matches the predicate should be included in the result or not
 	 * @return The string which was read until the predicate is true
 	 * @see #readUntil(char)
 	 * @see #readUntil(String)
+	 * @see #readUntilInclusive(char)
+	 * @see #readUntilInclusive(String)
 	 */
 	@ApiStatus.Internal
-	protected @NotNull String readUntil(@NotNull Predicate<Character> predicate) {
+	protected @NotNull String readUntil(@NotNull Predicate<Character> predicate, boolean inclusive) {
 		StringBuilder builder = new StringBuilder();
 		boolean escaped = false;
 		boolean inSingleQuotes = false;
@@ -381,6 +413,9 @@ public class StringReader {
 				escaped = true;
 				continue;
 			} else if (!inSingleQuotes && !inDoubleQuotes && predicate.test(c)) {
+				if (inclusive) {
+					builder.append(c);
+				}
 				break;
 			} else if (c == '\'') {
 				inSingleQuotes = !inSingleQuotes;
@@ -415,10 +450,7 @@ public class StringReader {
 	
 	/**
 	 * Reads a boolean.<br>
-	 * <p>
-	 *     The boolean is read as an unquoted string and then parsed.<br>
-	 *     The value is parsed case-insensitive.<br>
-	 * </p>
+	 * The boolean is read as an unquoted string and then parsed case-insensitive.<br>
 	 * @return The boolean value which was read
 	 * @throws StringIndexOutOfBoundsException If there are no more characters to read
 	 * @throws InvalidStringException If the read value is not a boolean
@@ -443,15 +475,12 @@ public class StringReader {
 			return false;
 		}
 		this.index = start;
-		throw new InvalidStringException("Expected a boolean value but found: " + value);
+		throw new InvalidStringException("Expected a boolean value but found: '" + value + "'");
 	}
 	
 	/**
 	 * Reads a number as a string.<br>
-	 * <p>
-	 *     The number can be quoted or unquoted.<br>
-	 *     If the number is quoted, the number is read as a quoted string.<br>
-	 * </p>
+	 * The number can be quoted or unquoted.<br>
 	 * <p>
 	 *     The first character can be a minus or plus sign.<br>
 	 *     The number can contain a single dot for float or double values.<br>
@@ -505,10 +534,8 @@ public class StringReader {
 	
 	/**
 	 * Reads a number.<br>
-	 * <p>
-	 *     If the number is specified with a type suffix, the number is parsed as the specified type.<br>
-	 *     By default, the number is parsed as a double if it contains a dot otherwise as a long.<br>
-	 * </p>
+	 * If the number is specified with a type suffix, the number is parsed as the specified type.<br>
+	 * By default, the number is parsed as a double if it contains a dot otherwise as a long.<br>
 	 * @return The number value which was read
 	 * @throws StringIndexOutOfBoundsException If there are no more characters to read
 	 * @throws InvalidStringException If the read value is not a number

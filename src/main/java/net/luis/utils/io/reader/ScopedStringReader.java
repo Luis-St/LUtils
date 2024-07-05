@@ -151,6 +151,24 @@ public class ScopedStringReader extends StringReader {
 	}
 	
 	/**
+	 * Reads the string until the given terminator is found.<br>
+	 * The escape character ('\\') is read but not included in the result.<br>
+	 * <p>
+	 *     If the terminator is found at the beginning or at the end of the string, an empty string is returned.<br>
+	 *     If the terminator is found in a quoted part or in a scope, the terminator is ignored.<br>
+	 *     If the terminator is not found, the rest of the string is returned.<br>
+	 * </p>
+	 * @param terminator The terminator to read until
+	 * @return The read string
+	 * @throws IllegalArgumentException If the terminator is a backslash
+	 * @throws InvalidStringException If the scope is invalid
+	 */
+	@Override
+	public @NotNull String readUntilInclusive(char terminator) {
+		return super.readUntilInclusive(terminator);
+	}
+	
+	/**
 	 * Reads the string until the given terminators are found.<br>
 	 * The terminators and escape character ('\\') are read but not included in the result.
 	 * <p>
@@ -168,14 +186,34 @@ public class ScopedStringReader extends StringReader {
 	}
 	
 	/**
+	 * Reads the string until the given terminators are found.<br>
+	 * The escape character ('\\') is read but not included in the result.
+	 * <p>
+	 *     If the any of the terminators is found at the beginning or at the end of the string, an empty string is returned.<br>
+	 *     If any of the terminators is found in a quoted part or in a scope, the terminator are ignored.<br>
+	 *     If none of the terminators is found, the rest of the string is returned.<br>
+	 * </p>
+	 * @param terminators The terminators to read until
+	 * @return The read string
+	 * @throws IllegalArgumentException If the terminators are empty or contain a backslash
+	 */
+	@Override
+	public @NotNull String readUntilInclusive(@NotNull String terminators) {
+		return super.readUntilInclusive(terminators);
+	}
+	
+	/**
 	 * Internal method to read the string until the given predicate is true.<br>
 	 * @param predicate The predicate to match the characters
+	 * @param inclusive If the character that matches the predicate should be included in the result or not
 	 * @return The string which was read until the predicate is true
 	 * @see #readUntil(char)
 	 * @see #readUntil(String)
+	 * @see #readUntilInclusive(char)
+	 * @see #readUntilInclusive(String)
 	 */
 	@Override
-	protected @NotNull String readUntil(@NotNull Predicate<Character> predicate) {
+	protected @NotNull String readUntil(@NotNull Predicate<Character> predicate, boolean inclusive) {
 		StringBuilder builder = new StringBuilder();
 		boolean escaped = false;
 		boolean inSingleQuotes = false;
@@ -189,6 +227,9 @@ public class ScopedStringReader extends StringReader {
 				escaped = true;
 				continue;
 			} else if (!inSingleQuotes && !inDoubleQuotes && predicate.test(c) && stack.isEmpty()) {
+				if (inclusive) {
+					builder.append(c);
+				}
 				break;
 			} else if (c == '\'') {
 				inSingleQuotes = !inSingleQuotes;
