@@ -237,9 +237,7 @@ public class Version implements Comparable<Version> {
 			return builder.withBuild(separator, build).build();
 		}
 		if (matcher.group(8) != null) {
-			if (matcher.group(8) != null) {
-				return builder.withSuffix(matcher.group(8)).build();
-			}
+			return builder.withSuffix(matcher.group(8)).build();
 		}
 		return ZERO;
 	}

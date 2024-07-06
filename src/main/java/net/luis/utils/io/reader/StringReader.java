@@ -461,7 +461,7 @@ public class StringReader {
 		}
 		int start = this.index;
 		char c = Character.toLowerCase(this.peek());
-		String value = null;
+		String value;
 		if (c == 't') {
 			value = this.read(4);
 		} else if (c == 'f') {
@@ -525,24 +525,24 @@ public class StringReader {
 				}
 				if (c == 'x') {
 					if (hasHex) {
-						throw new InvalidStringException("Expected a number but found: '" + builder.toString() + c + "'");
+						throw new InvalidStringException("Expected a number but found: '" + builder + c + "'");
 					}
 					if (builder.length() == 1 && builder.charAt(firstNumber) == '0') {
 						hasHex = true;
 					}
 				} else if (c == 'b') {
 					if (hasBin) {
-						throw new InvalidStringException("Expected a number but found: '" + builder.toString() + c + "'");
+						throw new InvalidStringException("Expected a number but found: '" + builder + c + "'");
 					}
 					if (builder.length() == 1 && builder.charAt(firstNumber) == '0') { // 'b' is a valid suffix for byte
 						hasBin = true;
 					}
 				} else if (c == '.') {
 					if (hasHex || hasBin) {
-						throw new InvalidStringException("A hexadecimal or binary number must not contain a dot: '" + builder.toString() + c + "'");
+						throw new InvalidStringException("A hexadecimal or binary number must not contain a dot: '" + builder + c + "'");
 					}
 					if (hasDot) {
-						throw new InvalidStringException("Invalid floating point number: '" + builder.toString() + c + "'");
+						throw new InvalidStringException("Invalid floating point number: '" + builder + c + "'");
 					}
 					hasDot = true;
 				} else if (c == '_') {
