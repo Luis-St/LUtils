@@ -40,6 +40,7 @@ module net.luis.utils {
 	exports net.luis.utils.logging;
 	exports net.luis.utils.logging.factory;
 	exports net.luis.utils.math;
+	exports net.luis.utils.math.algorithm;
 	exports net.luis.utils.resources;
 	exports net.luis.utils.util;
 	exports net.luis.utils.util.unsafe;
