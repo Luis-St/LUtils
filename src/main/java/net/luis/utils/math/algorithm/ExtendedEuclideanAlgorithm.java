@@ -18,7 +18,12 @@
 
 package net.luis.utils.math.algorithm;
 
+import org.jetbrains.annotations.NotNull;
+
+import java.math.BigInteger;
 import java.util.*;
+
+import static java.math.BigInteger.*;
 
 /**
  *
@@ -28,22 +33,30 @@ import java.util.*;
 
 public class ExtendedEuclideanAlgorithm {
 	
-	private final List<Long> firstCoefficients = new ArrayList<>();
-	private final List<Long> secondCoefficients = new ArrayList<>();
-	private final long initialValue;
-	private final long initialDivisor;
-	private long value;
-	private long divisor;
-	private long remainder;
-	private long quotient;
+	private final List<BigInteger> firstCoefficients = new ArrayList<>();
+	private final List<BigInteger> secondCoefficients = new ArrayList<>();
+	private final BigInteger initialValue;
+	private final BigInteger initialDivisor;
+	private BigInteger value;
+	private BigInteger divisor;
+	private BigInteger remainder;
+	private BigInteger quotient;
 	private int step;
 	
+	public ExtendedEuclideanAlgorithm(int value, int divisor) {
+		this(BigInteger.valueOf(value), BigInteger.valueOf(divisor));
+	}
+	
 	public ExtendedEuclideanAlgorithm(long value, long divisor) {
+		this(BigInteger.valueOf(value), BigInteger.valueOf(divisor));
+	}
+	
+	public ExtendedEuclideanAlgorithm(@NotNull BigInteger value, @NotNull BigInteger divisor) {
 		//region Validation
-		if (value == 0) {
+		if (value.equals(ZERO)) {
 			throw new IllegalArgumentException("The value must not be 0");
 		}
-		if (divisor == 0) {
+		if (divisor.equals(ZERO)) {
 			throw new IllegalArgumentException("The divisor must not be 0");
 		}
 		//endregion
@@ -51,13 +64,21 @@ public class ExtendedEuclideanAlgorithm {
 		this.initialDivisor = divisor;
 		this.value = value;
 		this.divisor = divisor;
-		this.remainder = value % divisor;
-		this.quotient = value / divisor;
-		this.firstCoefficients.addAll(List.of(1L, 0L));
-		this.secondCoefficients.addAll(List.of(0L, 1L));
+		this.remainder = value.mod(divisor);
+		this.quotient = value.divide(divisor);
+		this.firstCoefficients.addAll(List.of(ONE, ZERO));
+		this.secondCoefficients.addAll(List.of(ZERO, ONE));
+	}
+	
+	public static int gcd(int value, int divisor) {
+		return gcd(BigInteger.valueOf(value), BigInteger.valueOf(divisor)).intValueExact();
 	}
 	
 	public static long gcd(long value, long divisor) {
+		return gcd(BigInteger.valueOf(value), BigInteger.valueOf(divisor)).longValueExact();
+	}
+	
+	public static @NotNull BigInteger gcd(@NotNull BigInteger value, @NotNull BigInteger divisor) {
 		ExtendedEuclideanAlgorithm eea = new ExtendedEuclideanAlgorithm(value, divisor);
 		eea.execute();
 		return eea.getDivisor();
@@ -65,30 +86,30 @@ public class ExtendedEuclideanAlgorithm {
 	
 	//region Getter
 	public boolean isComplete() {
-		return this.remainder == 0;
+		return this.remainder.equals(ZERO);
 	}
 	
-	public long getInitialValue() {
+	public @NotNull BigInteger getInitialValue() {
 		return this.initialValue;
 	}
 	
-	public long getInitialDivisor() {
+	public @NotNull BigInteger getInitialDivisor() {
 		return this.initialDivisor;
 	}
 	
-	public long getValue() {
+	public @NotNull BigInteger getValue() {
 		return this.value;
 	}
 	
-	public long getDivisor() {
+	public @NotNull BigInteger getDivisor() {
 		return this.divisor;
 	}
 	
-	public long getRemainder() {
+	public @NotNull BigInteger getRemainder() {
 		return this.remainder;
 	}
 	
-	public long getQuotient() {
+	public @NotNull BigInteger getQuotient() {
 		return this.quotient;
 	}
 	
@@ -96,51 +117,56 @@ public class ExtendedEuclideanAlgorithm {
 		return this.step;
 	}
 	
-	public long getFirstCoefficient() {
+	public @NotNull BigInteger getFirstCoefficient() {
 		return this.getFirstCoefficient(1);
 	}
 	
-	public long getSecondCoefficient() {
+	public @NotNull BigInteger getSecondCoefficient() {
 		return this.getSecondCoefficient(1);
 	}
 	//endregion
 	
 	public void execute() {
-		while (!this.isComplete()) {
-			this.executeStep();
-		}
+		this.execute(1);
 	}
 	
 	public void execute(int steps) {
+		if (this.isComplete() || steps <= 0) {
+			return;
+		}
 		for (int i = 0; i < steps; i++) {
 			this.executeStep();
 		}
 	}
 	
+	public void executeUntilComplete() {
+		while (!this.isComplete()) {
+			this.executeStep();
+		}
+	}
+	
 	//region Helper methods
-	private long getFirstCoefficient(int step) {
+	private @NotNull BigInteger getFirstCoefficient(int step) {
 		return this.firstCoefficients.get(this.firstCoefficients.size() - Math.abs(step));
 	}
 	
-	private long getSecondCoefficient(int step) {
+	private @NotNull BigInteger getSecondCoefficient(int step) {
 		return this.secondCoefficients.get(this.secondCoefficients.size() - Math.abs(step));
 	}
 	
 	private void executeStep() {
-		long base = this.divisor;
-		long divisor = this.remainder;
-		
-		long remainder = base % divisor;
-		long quotient = base / divisor;
-		
+		BigInteger base = this.divisor;
+		BigInteger divisor = this.remainder;
+		BigInteger remainder = base.mod(divisor);
+		BigInteger quotient = base.divide(divisor);
 		this.update(base, divisor, remainder, quotient);
 	}
 	
-	private void update(long value, long divisor, long remainder, long quotient) {
-		long s = this.getFirstCoefficient(-2) - (this.quotient * this.getFirstCoefficient(-1));
-		long t = this.getSecondCoefficient(-2) - (this.quotient * this.getSecondCoefficient(-1));
-		this.firstCoefficients.add(s);
-		this.secondCoefficients.add(t);
+	private void update(@NotNull BigInteger value, @NotNull BigInteger divisor, @NotNull BigInteger remainder, @NotNull BigInteger quotient) {
+		BigInteger first = this.getFirstCoefficient(-2).subtract(this.quotient.multiply(this.getFirstCoefficient(-1)));
+		BigInteger second = this.getSecondCoefficient(-2).subtract(this.quotient.multiply(this.getSecondCoefficient(-1)));
+		this.firstCoefficients.add(first);
+		this.secondCoefficients.add(second);
 		
 		this.value = value;
 		this.divisor = divisor;
@@ -156,12 +182,12 @@ public class ExtendedEuclideanAlgorithm {
 		if (this == object) return true;
 		if (!(object instanceof ExtendedEuclideanAlgorithm that)) return false;
 		
-		if (this.initialValue != that.initialValue) return false;
-		if (this.initialDivisor != that.initialDivisor) return false;
-		if (this.value != that.value) return false;
-		if (this.divisor != that.divisor) return false;
-		if (this.remainder != that.remainder) return false;
-		if (this.quotient != that.quotient) return false;
+		if (!Objects.equals(this.initialValue, that.initialValue)) return false;
+		if (!Objects.equals(this.initialDivisor, that.initialDivisor)) return false;
+		if (!Objects.equals(this.value, that.value)) return false;
+		if (!Objects.equals(this.divisor, that.divisor)) return false;
+		if (!Objects.equals(this.remainder, that.remainder)) return false;
+		if (!Objects.equals(this.quotient, that.quotient)) return false;
 		if (this.step != that.step) return false;
 		if (!this.firstCoefficients.equals(that.firstCoefficients)) return false;
 		return this.secondCoefficients.equals(that.secondCoefficients);
@@ -174,7 +200,7 @@ public class ExtendedEuclideanAlgorithm {
 	
 	@Override
 	public String toString() {
-		return "EEA(" + this.initialValue + ", " + this.initialDivisor + ") = (" + this.value + "v, " + this.divisor + "d, " + this.remainder + "r, " + this.quotient + "q, " + this.getFirstCoefficient() + "s, " + this.getSecondCoefficient() + "t)";
+		return "EEA(" + this.initialValue + ", " + this.initialDivisor + ") = (" + this.value + "v, " + this.divisor + "d, " + this.remainder + "r, " + this.quotient + "q, " + this.getFirstCoefficient() + "fc, " + this.getSecondCoefficient() + "sc)";
 	}
 	//endregion
 }
