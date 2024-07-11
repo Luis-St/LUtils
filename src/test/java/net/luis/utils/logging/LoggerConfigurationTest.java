@@ -236,6 +236,50 @@ class LoggerConfigurationTest {
 	}
 	
 	@Test
+	void setFileSize() {
+		LoggerConfiguration config = new LoggerConfiguration("*");
+		assertThrows(NullPointerException.class, () -> config.setFileSize(null));
+		assertThrows(IllegalArgumentException.class, () -> config.setFileSize(""));
+		assertThrows(IllegalArgumentException.class, () -> config.setFileSize(" "));
+		assertThrows(IllegalArgumentException.class, () -> config.setFileSize("test"));
+		assertDoesNotThrow(() -> config.setFileSize("1"));
+		assertDoesNotThrow(() -> config.setFileSize("1B"));
+		assertDoesNotThrow(() -> config.setFileSize("1KB"));
+		assertDoesNotThrow(() -> config.setFileSize("1MB"));
+		assertDoesNotThrow(() -> config.setFileSize("1GB"));
+		assertDoesNotThrow(() -> config.setFileSize("1TB"));
+	}
+	
+	@Test
+	void setArchiveType() {
+		LoggerConfiguration config = new LoggerConfiguration("*");
+		assertThrows(NullPointerException.class, () -> config.setArchiveType(null));
+		assertThrows(IllegalArgumentException.class, () -> config.setArchiveType(""));
+		assertThrows(IllegalArgumentException.class, () -> config.setArchiveType(" "));
+		assertThrows(IllegalArgumentException.class, () -> config.setArchiveType(".log"));
+		assertDoesNotThrow(() -> config.setArchiveType(".zip"));
+		assertDoesNotThrow(() -> config.setArchiveType(".gz"));
+		assertDoesNotThrow(() -> config.setArchiveType(".bz2"));
+		assertDoesNotThrow(() -> config.setArchiveType(".xy"));
+	}
+	
+	@Test
+	void setCompressionLevel() {
+		LoggerConfiguration config = new LoggerConfiguration("*");
+		assertDoesNotThrow(() -> config.setCompressionLevel(-1));
+		assertDoesNotThrow(() -> config.setCompressionLevel(0));
+		assertDoesNotThrow(() -> config.setCompressionLevel(1));
+	}
+	
+	@Test
+	void setMaxArchiveFiles() {
+		LoggerConfiguration config = new LoggerConfiguration("*");
+		assertDoesNotThrow(() -> config.setMaxArchiveFiles(-1));
+		assertDoesNotThrow(() -> config.setMaxArchiveFiles(0));
+		assertDoesNotThrow(() -> config.setMaxArchiveFiles(1));
+	}
+	
+	@Test
 	void build() {
 		LoggerConfiguration config = new LoggerConfiguration("*");
 		assertDoesNotThrow(config::build);
