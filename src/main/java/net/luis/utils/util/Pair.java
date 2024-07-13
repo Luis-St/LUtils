@@ -49,7 +49,7 @@ public class Pair<F, S> {
 	 * @param second The second value
 	 * @see #of(Object, Object)
 	 */
-	private Pair(@Nullable F first, @Nullable S second) {
+	protected Pair(@Nullable F first, @Nullable S second) { // protected to prevent instantiation from outside but allow inheritance
 		this.first = first;
 		this.second = second;
 	}
