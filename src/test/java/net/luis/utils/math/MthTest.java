@@ -159,6 +159,7 @@ class MthTest {
 		assertFalse(Mth.isPowerOfTwo(0));
 		assertTrue(Mth.isPowerOfTwo(2));
 		assertFalse(Mth.isPowerOfTwo(3));
-		assertTrue(Mth.isPowerOfTwo(4));
+		assertTrue(Mth.isPowerOfTwo(128));
+		assertTrue(Mth.isPowerOfTwo(1024));
 	}
 }
