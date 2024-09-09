@@ -18,7 +18,7 @@
 
 package net.luis.utils.exception;
 
-import net.luis.utils.collection.Registry;
+import net.luis.utils.collection.registry.Registry;
 import org.jetbrains.annotations.Nullable;
 
 /**

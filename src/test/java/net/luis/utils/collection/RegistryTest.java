@@ -19,12 +19,16 @@
 package net.luis.utils.collection;
 
 import com.google.common.collect.Lists;
+import net.luis.utils.annotation.type.MockObject;
+import net.luis.utils.collection.registry.Registry;
+import net.luis.utils.collection.registry.key.KeyGenerator;
+import net.luis.utils.collection.registry.key.RegistryKey;
 import net.luis.utils.exception.ModificationException;
 import net.luis.utils.exception.NoSuchItemException;
-import net.luis.utils.util.Utils;
+import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.Test;
 
-import java.util.UUID;
+import java.util.Objects;
 import java.util.function.Function;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -36,73 +40,83 @@ import static org.junit.jupiter.api.Assertions.*;
  */
 class RegistryTest {
 	
+	private static final KeyGenerator<MockedRegistryKey> KEY_GENERATOR = MockedRegistryKey.createKeyGenerator();
+	
 	@Test
 	void of() {
-		assertNotNull(Registry.of());
-		assertDoesNotThrow(() -> Registry.of(Lists.newArrayList()));
 		assertThrows(NullPointerException.class, () -> Registry.of(null));
+		assertNotNull(Registry.of(KEY_GENERATOR));
+		assertDoesNotThrow(() -> Registry.of(KEY_GENERATOR));
+		
+		assertThrows(NullPointerException.class, () -> Registry.of(null, Lists.newArrayList()));
+		assertThrows(NullPointerException.class, () -> Registry.of(KEY_GENERATOR, null));
+		assertNotNull(Registry.of(KEY_GENERATOR, Lists.newArrayList()));
+		assertDoesNotThrow(() -> Registry.of(KEY_GENERATOR, Lists.newArrayList()));
 	}
 	
 	@Test
 	void register() {
-		Registry<Integer> registry = Registry.of();
+		Registry<MockedRegistryKey, Integer> registry = Registry.of(KEY_GENERATOR);
 		assertNotNull(registry.register(10));
 		assertDoesNotThrow(() -> registry.register(10));
 		assertThrows(NullPointerException.class, () -> registry.register((Integer) null));
-		assertNotNull(registry.register(uniqueId -> 10));
+		assertNotNull(registry.register(registryKey -> 10));
 		assertDoesNotThrow(() -> registry.register(uniqueId -> 10));
-		assertThrows(NullPointerException.class, () -> registry.register((Function<UUID, Integer>) null));
+		assertThrows(NullPointerException.class, () -> registry.register((Function<MockedRegistryKey, Integer>) null));
 	}
 	
 	@Test
 	void remove() {
-		Registry<Integer> registry = Registry.of();
-		assertFalse(registry.remove(UUID.fromString("00000000-0000-0000-0000-000000000000")));
-		UUID uniqueId = registry.register(10);
-		assertTrue(registry.remove(uniqueId));
+		Registry<MockedRegistryKey, Integer> registry = Registry.of(KEY_GENERATOR);
+		assertFalse(registry.remove(new MockedRegistryKey(10)));
+		assertTrue(registry.remove(registry.register(10)));
 		assertDoesNotThrow(() -> registry.remove(null));
 		assertFalse(registry.remove(null));
 	}
 	
 	@Test
 	void get() {
-		Registry<Integer> registry = Registry.of();
-		UUID uniqueId = registry.register(10);
-		assertEquals(10, registry.get(uniqueId));
+		Registry<MockedRegistryKey, Integer> registry = Registry.of(KEY_GENERATOR);
+		MockedRegistryKey registryKey = registry.register(10);
+		assertEquals(10, registry.get(registryKey));
 		assertThrows(NullPointerException.class, () -> registry.get(null));
 	}
 	
 	@Test
 	void getOrThrow() {
-		Registry<Integer> registry = Registry.of();
-		UUID uniqueId = registry.register(10);
-		assertDoesNotThrow(() -> registry.getOrThrow(uniqueId));
+		Registry<MockedRegistryKey, Integer> registry = Registry.of(KEY_GENERATOR);
+		MockedRegistryKey registryKey = registry.register(10);
+		
+		assertDoesNotThrow(() -> registry.getOrThrow(registryKey));
 		assertThrows(NullPointerException.class, () -> registry.getOrThrow(null));
-		assertThrows(NoSuchItemException.class, () -> registry.getOrThrow(UUID.randomUUID()));
+		assertThrows(NoSuchItemException.class, () -> registry.getOrThrow(new MockedRegistryKey(100)));
 	}
 	
 	@Test
-	void getUniqueId() {
-		Registry<Integer> registry = Registry.of();
-		UUID uniqueId = registry.register(10);
-		assertEquals(uniqueId, registry.getUniqueId(10));
-		assertNotNull(registry.getUniqueId(20));
-		assertDoesNotThrow(() -> registry.getUniqueId(null));
-		assertEquals(Utils.EMPTY_UUID, registry.getUniqueId(null));
+	void getKey() {
+		Registry<MockedRegistryKey, Integer> registry = Registry.of(KEY_GENERATOR);
+		MockedRegistryKey registryKey = registry.register(10);
+		
+		assertEquals(registryKey, registry.getKey(10));
+		assertNull(registry.getKey(20));
+		assertDoesNotThrow(() -> registry.getKey(null));
+		assertNull(registry.getKey(null));
 	}
 	
 	@Test
 	void containsKey() {
-		Registry<Integer> registry = Registry.of();
-		UUID uniqueId = registry.register(10);
-		assertTrue(registry.contains(uniqueId));
-		assertFalse(registry.contains(Utils.EMPTY_UUID));
-		assertDoesNotThrow(() -> registry.contains((UUID) null));
+		Registry<MockedRegistryKey, Integer> registry = Registry.of(KEY_GENERATOR);
+		MockedRegistryKey registryKey = registry.register(10);
+		
+		assertTrue(registry.contains(registryKey));
+		assertFalse(registry.contains(new MockedRegistryKey(200)));
+		assertDoesNotThrow(() -> registry.contains((MockedRegistryKey) null));
 	}
 	
 	@Test
 	void containsValue() {
-		Registry<Integer> registry = Registry.of();
+		Registry<MockedRegistryKey, Integer> registry = Registry.of(KEY_GENERATOR);
+		
 		registry.register(10);
 		assertTrue(registry.contains(10));
 		assertFalse(registry.contains(20));
@@ -111,16 +125,17 @@ class RegistryTest {
 	
 	@Test
 	void getKeys() {
-		Registry<Integer> registry = Registry.of();
-		UUID uniqueId = registry.register(10);
+		Registry<MockedRegistryKey, Integer> registry = Registry.of(KEY_GENERATOR);
+		MockedRegistryKey registryKey = registry.register(10);
+		
 		registry.register(20);
 		assertEquals(2, registry.getKeys().size());
-		assertTrue(registry.getKeys().contains(uniqueId));
+		assertTrue(registry.getKeys().contains(registryKey));
 	}
 	
 	@Test
 	void getItems() {
-		Registry<Integer> registry = Registry.of();
+		Registry<MockedRegistryKey, Integer> registry = Registry.of(KEY_GENERATOR);
 		registry.register(10);
 		registry.register(20);
 		assertEquals(2, registry.getItems().size());
@@ -130,7 +145,7 @@ class RegistryTest {
 	
 	@Test
 	void isEmpty() {
-		Registry<Integer> registry = Registry.of();
+		Registry<MockedRegistryKey, Integer> registry = Registry.of(KEY_GENERATOR);
 		assertTrue(registry.isEmpty());
 		registry.register(10);
 		assertFalse(registry.isEmpty());
@@ -138,7 +153,7 @@ class RegistryTest {
 	
 	@Test
 	void size() {
-		Registry<Integer> registry = Registry.of();
+		Registry<MockedRegistryKey, Integer> registry = Registry.of(KEY_GENERATOR);
 		assertEquals(0, registry.size());
 		registry.register(10);
 		assertEquals(1, registry.size());
@@ -146,7 +161,7 @@ class RegistryTest {
 	
 	@Test
 	void clear() {
-		Registry<Integer> registry = Registry.of();
+		Registry<MockedRegistryKey, Integer> registry = Registry.of(KEY_GENERATOR);
 		registry.register(10);
 		registry.clear();
 		assertTrue(registry.isEmpty());
@@ -154,7 +169,7 @@ class RegistryTest {
 	
 	@Test
 	void freeze() {
-		Registry<Integer> registry = Registry.freezable();
+		Registry<MockedRegistryKey, Integer> registry = Registry.freezable(KEY_GENERATOR);
 		assertDoesNotThrow(() -> registry.register(10));
 		registry.freeze();
 		assertThrows(ModificationException.class, () -> registry.register(10));
@@ -162,12 +177,58 @@ class RegistryTest {
 	
 	@Test
 	void isFrozen() {
-		Registry<Integer> registry1 = Registry.freezable();
+		Registry<MockedRegistryKey, Integer> registry1 = Registry.freezable(KEY_GENERATOR);
 		assertFalse(registry1.isFrozen());
 		registry1.freeze();
 		assertTrue(registry1.isFrozen());
-		Registry<Integer> registry2 = Registry.of();
+		Registry<MockedRegistryKey, Integer> registry2 = Registry.of(KEY_GENERATOR);
 		registry2.freeze();
 		assertFalse(registry2.isFrozen());
 	}
+	
+	//region Mocked classes
+	@MockObject(RegistryKey.class)
+	private static class MockedRegistryKey implements RegistryKey<Integer> {
+		
+		private final int key;
+		
+		private MockedRegistryKey(int key) {
+			this.key = key;
+		}
+		
+		private static @NotNull KeyGenerator<MockedRegistryKey> createKeyGenerator() {
+			return new KeyGenerator<>() {
+				private int currentKey = 0;
+				
+				@Override
+				public @NotNull MockedRegistryKey generateKey() {
+					return new MockedRegistryKey(this.currentKey++);
+				}
+			};
+		}
+		
+		@Override
+		public @NotNull Integer getKey() {
+			return this.key;
+		}
+		
+		@Override
+		public int compareTo(@NotNull RegistryKey<Integer> otherKey) {
+			return Integer.compare(this.key, otherKey.getKey());
+		}
+		
+		@Override
+		public boolean equals(Object object) {
+			if (this == object) return true;
+			if (!(object instanceof MockedRegistryKey that)) return false;
+			
+			return this.key == that.key;
+		}
+		
+		@Override
+		public int hashCode() {
+			return Objects.hash(this.key);
+		}
+	}
+	//endregion
 }

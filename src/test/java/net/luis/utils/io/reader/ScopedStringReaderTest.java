@@ -86,6 +86,42 @@ class ScopedStringReaderTest {
 	}
 	
 	@Test
+	void readScopeSquareBrackets() {
+		ScopedStringReader success = new ScopedStringReader("[Hello] [World it is [nice here]]");
+		assertEquals("[Hello]", success.readScope(ScopedStringReader.SQUARE_BRACKETS));
+		assertEquals(' ', success.read());
+		assertEquals("[World it is [nice here]]", success.readScope(ScopedStringReader.SQUARE_BRACKETS));
+		
+		ScopedStringReader failMissing = new ScopedStringReader("[Hello] [World it is [nice here]");
+		assertEquals("[Hello]", failMissing.readScope(ScopedStringReader.SQUARE_BRACKETS));
+		assertEquals(' ', failMissing.read());
+		assertThrows(InvalidStringException.class, () -> failMissing.readScope(ScopedStringReader.SQUARE_BRACKETS));
+		
+		ScopedStringReader failExtra = new ScopedStringReader("[Hello] [World [it is [nice here]]");
+		assertEquals("[Hello]", failExtra.readScope(ScopedStringReader.SQUARE_BRACKETS));
+		assertEquals(' ', failExtra.read());
+		assertThrows(InvalidStringException.class, () -> failExtra.readScope(ScopedStringReader.SQUARE_BRACKETS));
+	}
+	
+	@Test
+	void readScopeAngleBrackets() {
+		ScopedStringReader success = new ScopedStringReader("<Hello> <World it is <nice here>>");
+		assertEquals("<Hello>", success.readScope(ScopedStringReader.ANGLE_BRACKETS));
+		assertEquals(' ', success.read());
+		assertEquals("<World it is <nice here>>", success.readScope(ScopedStringReader.ANGLE_BRACKETS));
+		
+		ScopedStringReader failMissing = new ScopedStringReader("<Hello> <World it is <nice here>");
+		assertEquals("<Hello>", failMissing.readScope(ScopedStringReader.ANGLE_BRACKETS));
+		assertEquals(' ', failMissing.read());
+		assertThrows(InvalidStringException.class, () -> failMissing.readScope(ScopedStringReader.ANGLE_BRACKETS));
+		
+		ScopedStringReader failExtra = new ScopedStringReader("<Hello> <World <it is <nice here>>");
+		assertEquals("<Hello>", failExtra.readScope(ScopedStringReader.ANGLE_BRACKETS));
+		assertEquals(' ', failExtra.read());
+		assertThrows(InvalidStringException.class, () -> failExtra.readScope(ScopedStringReader.ANGLE_BRACKETS));
+	}
+	
+	@Test
 	void readUntil() {
 		ScopedStringReader reader = new ScopedStringReader("this is a simple \\test 'string for the' [string] {string = 10} \\reade\\r");
 		assertThrows(IllegalArgumentException.class, () -> reader.readUntil('\\'));
@@ -141,24 +177,6 @@ class ScopedStringReaderTest {
 		assertEquals("{string = 10} ", reader.readUntilInclusive("= "));
 		assertEquals("reader", reader.readUntilInclusive("r"));
 		assertEquals("", reader.readUntilInclusive(" "));
-	}
-	
-	@Test
-	void readScopeSquareBrackets() {
-		ScopedStringReader success = new ScopedStringReader("[Hello] [World it is [nice here]]");
-		assertEquals("[Hello]", success.readScope(ScopedStringReader.SQUARE_BRACKETS));
-		assertEquals(' ', success.read());
-		assertEquals("[World it is [nice here]]", success.readScope(ScopedStringReader.SQUARE_BRACKETS));
-		
-		ScopedStringReader failMissing = new ScopedStringReader("[Hello] [World it is [nice here]");
-		assertEquals("[Hello]", failMissing.readScope(ScopedStringReader.SQUARE_BRACKETS));
-		assertEquals(' ', failMissing.read());
-		assertThrows(InvalidStringException.class, () -> failMissing.readScope(ScopedStringReader.SQUARE_BRACKETS));
-		
-		ScopedStringReader failExtra = new ScopedStringReader("[Hello] [World [it is [nice here]]");
-		assertEquals("[Hello]", failExtra.readScope(ScopedStringReader.SQUARE_BRACKETS));
-		assertEquals(' ', failExtra.read());
-		assertThrows(InvalidStringException.class, () -> failExtra.readScope(ScopedStringReader.SQUARE_BRACKETS));
 	}
 	
 	@Test

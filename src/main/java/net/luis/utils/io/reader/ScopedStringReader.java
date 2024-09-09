@@ -20,7 +20,6 @@ package net.luis.utils.io.reader;
 
 import net.luis.utils.exception.InvalidStringException;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Unmodifiable;
 
 import java.util.*;
 import java.util.function.Function;
@@ -267,7 +266,6 @@ public class ScopedStringReader extends StringReader {
 	 * @throws NullPointerException If the scope or parser is null
 	 * @throws IllegalArgumentException If an error occurs while reading the collection
 	 */
-	@Unmodifiable
 	private <T> @NotNull Collection<T> readCollection(@NotNull StringScope scope, @NotNull Function<ScopedStringReader, T> parser) {
 		Objects.requireNonNull(scope, "Scope must not be null");
 		Objects.requireNonNull(parser, "Parser must not be null");
@@ -316,6 +314,7 @@ public class ScopedStringReader extends StringReader {
 	
 	/**
 	 * Reads a set from the string.<br>
+	 * The set is defined by parentheses.<br>
 	 * <p>
 	 *     The order of the elements is not guaranteed.<br>
 	 *     Duplicates are ignored.<br>
@@ -337,8 +336,8 @@ public class ScopedStringReader extends StringReader {
 	
 	/**
 	 * Reads a map from the string.<br>
+	 * The map is defined by curly brackets.<br>
 	 * <p>
-	 *     The map is defined by curly brackets.<br>
 	 *     The key and value are separated by an equal sign ('=').<br>
 	 *     The entries are separated by a comma.<br>
 	 * </p>
