@@ -23,6 +23,8 @@ import com.google.common.collect.Maps;
 import net.luis.utils.collection.util.SimpleEntry;
 import org.junit.jupiter.api.Test;
 
+import java.io.IOError;
+import java.io.IOException;
 import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -241,5 +243,11 @@ class UtilsTest {
 			assertTrue(value.isPresent());
 			assertTrue(4 >= value.get() && value.get() >= 0);
 		}
+	}
+	
+	@Test
+	void throwSneaky() {
+		assertThrows(NullPointerException.class, () -> Utils.throwSneaky(null));
+		assertThrows(IllegalMonitorStateException.class, () -> Utils.throwSneaky(new IllegalMonitorStateException()));
 	}
 }

@@ -419,4 +419,17 @@ public class Utils {
 		return Optional.of(getRandom(rng, values));
 	}
 	//endregion
+	
+	/**
+	 * Throws the given exception as a sneaky exception.<br>
+	 * @param e The exception to throw
+	 * @param <E> The type of the exception
+	 * @throws E The given exception as a sneaky exception
+	 * @throws NullPointerException If the exception is null
+	 */
+	@SuppressWarnings("unchecked")
+	public static <E extends Throwable> void throwSneaky(@NotNull Throwable e) throws E {
+		Objects.requireNonNull(e, "Exception must not be null");
+		throw (E) e;
+	}
 }
