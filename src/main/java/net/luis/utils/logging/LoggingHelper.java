@@ -50,7 +50,7 @@ class LoggingHelper {
 	 *     The value must not contain any line breaks.<br>
 	 * </p>
 	 */
-	private static final Pattern PROPERTY_PATTERN = Pattern.compile("^(\\S*)(=)(.*)$");
+	private static final Pattern PROPERTY_PATTERN = Pattern.compile("^(\\S*)(\\s*=\\s*)(.*)$");
 	/**
 	 * Constant for the system property 'logging.status_level'.<br>
 	 * <p>
@@ -178,6 +178,30 @@ class LoggingHelper {
 	 * </p>
 	 */
 	private static final String LOGGING_ARCHIVE_MAX_FILES = "logging.archive.max_files";
+	/**
+	 * Constant for the system property 'logging.archive.auto_deletion.depth'.<br>
+	 * <p>
+	 *     The property is used to set the maximum depth of the log archive auto deletion.<br>
+	 *     The value must be a number greater than 0.<br>
+	 *     If the value is less than 1, the value will be clamped to 1.<br>
+	 * </p>
+	 * <p>
+	 *     The default value is {@code 1}.<br>
+	 * </p>
+	 */
+	private static final String LOGGING_ARCHIVE_AUTO_DELETION_DEPTH = "logging.archive.auto_deletion.depth";
+	/**
+	 * Constant for the system property 'logging.archive.auto_deletion.age'.<br>
+	 * <p>
+	 *     The property is used to set the maximum age of the log archive auto deletion.<br>
+	 *     The value must be a number greater than 0.<br>
+	 *     If the value is less than 1, the value will be clamped to 1.<br>
+	 * </p>
+	 * <p>
+	 *     The default value is {@code 30}.<br>
+	 * </p>
+	 */
+	private static final String LOGGING_ARCHIVE_AUTO_DELETION_AGE = "logging.archive.auto_deletion.age";
 	
 	/**
 	 * Creates a new logger configuration for the given loggers.<br>
@@ -233,6 +257,16 @@ class LoggingHelper {
 	 *         logging.archive.max_files<br>
 	 *         The maximum number of log archives which should be kept, expect a number greater than 0.<br>
 	 *         Default: '10'<br>
+	 *     </li>
+	 *     <li>
+	 *         logging.archive.auto_deletion.depth<br>
+	 *         The maximum depth of the log archive auto deletion, expect a number greater than 0.<br>
+	 *         Default: '1'<br>
+	 *     </li>
+	 *     <li>
+	 *         logging.archive.auto_deletion.age<br>
+	 *         The maximum age of the log archive auto deletion, expect a number greater than 0.<br>
+	 *         Default: '30'<br>
 	 *     </li>
 	 * </ul>
 	 * <br>
@@ -404,6 +438,18 @@ class LoggingHelper {
 			config.setMaxArchiveFiles(NumberUtils.toInt(maxArchiveFiles, 10));
 		} catch (Exception e) {
 			throw new IllegalArgumentException("Invalid value '" + maxArchiveFiles + "' for property '" + LOGGING_ARCHIVE_MAX_FILES + "', expected a number greater than 0");
+		}
+		String autoDeletionDepth = System.getProperty(LOGGING_ARCHIVE_AUTO_DELETION_DEPTH, "1");
+		try {
+			config.setArchiveAutoDeletionDepth(NumberUtils.toInt(autoDeletionDepth, 1));
+		} catch (Exception e) {
+			throw new IllegalArgumentException("Invalid value '" + autoDeletionDepth + "' for property '" + LOGGING_ARCHIVE_AUTO_DELETION_DEPTH + "', expected a number greater than 0");
+		}
+		String autoDeletionAge = System.getProperty(LOGGING_ARCHIVE_AUTO_DELETION_AGE, "30");
+		try {
+			config.setArchiveAutoDeletionAge(NumberUtils.toInt(autoDeletionAge, 30));
+		} catch (Exception e) {
+			throw new IllegalArgumentException("Invalid value '" + autoDeletionAge + "' for property '" + LOGGING_ARCHIVE_AUTO_DELETION_AGE + "', expected a number greater than 0");
 		}
 		//region Local record
 		record LogFile(Level level, String folder, String file, String archive) {

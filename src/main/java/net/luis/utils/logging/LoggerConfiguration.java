@@ -115,9 +115,9 @@ public class LoggerConfiguration {
 	 * The log file and archive patterns for the log levels.<br>
 	 */
 	private final Map<Level, Map.Entry<String, String>> logs = Utils.make(Maps.newHashMap(), map -> {
-		map.put(Level.DEBUG, Map.entry("logs/debug.log", "logs/debug-%d{dd-MM-yyyy}-%i.log"));
-		map.put(Level.INFO, Map.entry("logs/info.log", "logs/info-%d{dd-MM-yyyy}-%i.log"));
-		map.put(Level.ERROR, Map.entry("logs/error.log", "logs/error-%d{dd-MM-yyyy}-%i.log"));
+		map.put(Level.DEBUG, Map.entry("debug.log", "debug-%d{dd-MM-yyyy}-%i.log"));
+		map.put(Level.INFO, Map.entry("info.log", "info-%d{dd-MM-yyyy}-%i.log"));
+		map.put(Level.ERROR, Map.entry("error.log", "error-%d{dd-MM-yyyy}-%i.log"));
 	});
 	/**
 	 * The status level for the internal Log4j2 logger.<br>
@@ -126,7 +126,7 @@ public class LoggerConfiguration {
 	/**
 	 * The root directory for all log files.<br>
 	 */
-	private String rootDirectory = "./";
+	private String rootDirectory = "./logs/";
 	/**
 	 * The maximum file size for the log files.<br>
 	 */
@@ -143,11 +143,19 @@ public class LoggerConfiguration {
 	 * The maximum number of archived log files which should be kept.<br>
 	 */
 	private int maxArchiveFiles = 10;
+	/**
+	 * The maximum depth in which archived log files should be deleted.<br>
+	 */
+	private int archiveAutoDeletionDepth = 1;
+	/**
+	 * The age in days after which archived log files should be deleted.<br>
+	 */
+	private int archiveAutoDeletionAge = 30;
 	
 	/**
 	 * Constructs a new logger configuration with the specified logger name.<br>
 	 * The logger name is used to identify the logger in the configuration.<br>
-	 * The logger name must be the package name, the full class name or a '*' to include all loggers.<br>
+	 * The logger name must be the package name, the full class name, or a '*' to include all loggers.<br>
 	 * If the list contains a '*', all other logger names will be ignored.<br>
 	 * @param loggers The names of the logger which should be configured
 	 * @throws NullPointerException If the given array is null
@@ -528,6 +536,29 @@ public class LoggerConfiguration {
 		this.maxArchiveFiles = Math.max(1, maxArchiveFiles);
 		return this;
 	}
+	/**
+	 * Sets the maximum depth in which archived log files should be deleted.<br>
+	 * The maximum depth must be greater than 0.<br>
+	 * If the value is less than 1, it will be set to 1.<br>
+	 * @param archiveAutoDeletionDepth The depth in which archived log files should be deleted
+	 * @return The current configuration builder
+	 */
+	public @NotNull LoggerConfiguration setArchiveAutoDeletionDepth(int archiveAutoDeletionDepth) {
+		this.archiveAutoDeletionDepth = Math.max(1, archiveAutoDeletionDepth);
+		return this;
+	}
+	
+	/**
+	 * Sets the age in days after which archived log files should be deleted.<br>
+	 * The maximum depth must be greater than 0.<br>
+	 * If the value is less than 1, it will be set to 1.<br>
+	 * @param archiveAutoDeletionAge The age in days after which archived log files should be deleted
+	 * @return The current configuration builder
+	 */
+	public @NotNull LoggerConfiguration setArchiveAutoDeletionAge(int archiveAutoDeletionAge) {
+		this.archiveAutoDeletionAge = Math.max(1, archiveAutoDeletionAge);
+		return this;
+	}
 	//endregion
 	
 	/**
@@ -577,7 +608,15 @@ public class LoggerConfiguration {
 									.addAttribute("modulate", true)))
 							.addComponent(builder.newComponent("DefaultRolloverStrategy")
 								.addAttribute("max", this.maxArchiveFiles)
-								.addAttribute("compressionLevel", this.compressionLevel)));
+								.addAttribute("compressionLevel", this.compressionLevel)
+								.addComponent(builder.newComponent("Delete")
+									.addAttribute("basePath", this.rootDirectory)
+									.addAttribute("maxDepth", this.archiveAutoDeletionDepth)
+									.addComponent(builder.newComponent("IfLastModified")
+										.addAttribute("age", this.archiveAutoDeletionAge + "d"))
+									.addComponent(builder.newComponent("IfFileName")
+										.addAttribute("glob", "*." + this.archiveType))
+								)));
 					appenders.add(name);
 				}
 			}
