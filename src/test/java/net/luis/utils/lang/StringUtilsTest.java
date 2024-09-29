@@ -319,4 +319,27 @@ class StringUtilsTest {
 		assertTrue(StringUtils.matchesPattern(pattern, "a"));
 		assertFalse(StringUtils.matchesPattern(pattern, "b"));
 	}
+	
+	@Test
+	void containsNotEscaped() {
+		assertDoesNotThrow(() -> StringUtils.containsNotEscaped(null, 'a'));
+		assertFalse(StringUtils.containsNotEscaped(null, 'a'));
+		assertFalse(StringUtils.containsNotEscaped("", 'a'));
+		assertTrue(StringUtils.containsNotEscaped("abc", 'a'));
+		assertFalse(StringUtils.containsNotEscaped("aba", 'c'));
+		assertFalse(StringUtils.containsNotEscaped("\\abc", 'a'));
+		assertTrue(StringUtils.containsNotEscaped("\\aba", 'a'));
+	}
+	
+	@Test
+	void splitNotEscaped() {
+		assertDoesNotThrow(() -> StringUtils.splitNotEscaped(null, 'a'));
+		assertDoesNotThrow(() -> StringUtils.splitNotEscaped("", 'a'));
+		assertArrayEquals(ArrayUtils.EMPTY_STRING_ARRAY, StringUtils.splitNotEscaped(null, 'a'));
+		assertArrayEquals(ArrayUtils.EMPTY_STRING_ARRAY, StringUtils.splitNotEscaped("", 'a'));
+		assertArrayEquals(new String[] { "a", "c" }, StringUtils.splitNotEscaped("abc", 'b'));
+		assertArrayEquals(new String[] { "a\\bc" }, StringUtils.splitNotEscaped("a\\bc", 'b'));
+		assertArrayEquals(new String[] { "a\\b" }, StringUtils.splitNotEscaped("a\\bc", 'c'));
+		assertArrayEquals(new String[] { "a\\:b", "c", "d\\:e" }, StringUtils.splitNotEscaped("a\\:b:c:d\\:e", ':'));
+	}
 }
