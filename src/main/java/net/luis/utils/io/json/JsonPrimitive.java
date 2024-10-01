@@ -18,8 +18,12 @@
 
 package net.luis.utils.io.json;
 
+import net.luis.utils.io.reader.StringReader;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.UnknownNullability;
+
+import java.util.Objects;
+import java.util.StringTokenizer;
 
 /**
  *
@@ -29,40 +33,88 @@ import org.jetbrains.annotations.UnknownNullability;
 
 public class JsonPrimitive implements JsonElement {
 	
-	public @UnknownNullability String getAsString() {
-		return null;
+	private final Object value;
+	
+	public JsonPrimitive(boolean value) {
+		this((Object) value);
+	}
+	
+	public JsonPrimitive(@NotNull Number value) {
+		this((Object) value);
+	}
+	
+	public JsonPrimitive(@NotNull String value) {
+		this((Object) value);
+	}
+	
+	public JsonPrimitive(@NotNull Object value) {
+		Objects.requireNonNull(value, "Value must not be null");
+		switch (value) {
+			case Boolean b -> this.value = value;
+			case Number n -> this.value = value;
+			case String s -> this.value = tryParse(s);
+			default -> throw new IllegalArgumentException("Value must be a boolean, number or string");
+		}
+	}
+	
+	//region Static helper methods
+	private static @NotNull Object tryParse(@NotNull String string) {
+		if ("true".equalsIgnoreCase(string) || "false".equalsIgnoreCase(string)) {
+			return Boolean.parseBoolean(string);
+		}
+		StringReader reader = new StringReader(string);
+		try {
+			return reader.readNumber();
+		} catch (Exception e) {
+			return string;
+		}
+	}
+	//endregion
+	
+	public @NotNull String getAsString() {
+		return String.valueOf(this.value);
 	}
 	
 	public boolean getAsBoolean() {
-		return false;
+		return switch (this.value) {
+			case Boolean b -> b;
+			case Number n -> n.intValue() != 0;
+			case String s -> Boolean.parseBoolean(s);
+			default -> false;
+		};
 	}
 	
-	public @UnknownNullability Number getAsNumber() {
-		return null;
+	public @NotNull Number getAsNumber() {
+		return switch (this.value) {
+			case Boolean b -> b ? 1 : 0;
+			case Number n -> n;
+			case String s -> throw new NumberFormatException("Cannot convert string to number: " + s);
+			default -> 0;
+		};
 	}
 	
 	public byte getAsByte() {
-		return 0;
+		return this.getAsNumber().byteValue();
 	}
 	
 	public short getAsShort() {
-		return 0;
+		return this.getAsNumber().shortValue();
 	}
 	
 	public int getAsInteger() {
-		return 0;
+		return this.getAsNumber().intValue();
 	}
 	
 	public long getAsLong() {
-		return 0;
+		return this.getAsNumber().longValue();
 	}
 	
 	public float getAsFloat() {
-		return 0;
+		return this.getAsNumber().floatValue();
 	}
 	
 	public double getAsDouble() {
-		return 0;
+		return this.getAsNumber().doubleValue();
 	}
 	
 	@Override

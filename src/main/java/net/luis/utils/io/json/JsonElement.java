@@ -19,7 +19,10 @@
 package net.luis.utils.io.json;
 
 import net.luis.utils.io.json.exception.JsonTypeException;
+import net.luis.utils.io.json.type.JsonType;
 import org.jetbrains.annotations.NotNull;
+
+import java.util.Objects;
 
 /**
  *
@@ -45,25 +48,43 @@ public interface JsonElement {
 		return this instanceof JsonPrimitive;
 	}
 	
+	default boolean isJsonType(@NotNull JsonType<? extends JsonElement, ?> type) {
+		return Objects.requireNonNull(type, "Json type must not be null").isJsonType(this);
+	}
+	
 	default @NotNull JsonObject getAsJsonObject() {
 		if (this instanceof JsonObject object) {
 			return object;
 		}
-		throw new JsonTypeException("Json element is not a json object: '" + this.toString() + "'");
+		throw new JsonTypeException("Expected a JsonObject, but found: " + this.getClass().getSimpleName());
 	}
 	
 	default @NotNull JsonArray getAsJsonArray() {
 		if (this instanceof JsonArray array) {
 			return array;
 		}
-		throw new JsonTypeException("Json element is not a json array: '" + this.toString() + "'");
+		throw new JsonTypeException("Expected a JsonArray, but found: " + this.getClass().getSimpleName());
 	}
 	
 	default @NotNull JsonPrimitive getAsJsonPrimitive() {
 		if (this instanceof JsonPrimitive primitive) {
 			return primitive;
 		}
-		throw new JsonTypeException("Json element is not a json primitive: '" + this.toString() + "'");
+		throw new JsonTypeException("Expected a JsonPrimitive, but found: " + this.getClass().getSimpleName());
+	}
+	
+	@SuppressWarnings("unchecked")
+	default <J extends JsonElement, T> @NotNull T getAsJsonType(@NotNull JsonType<J, T> type) {
+		Objects.requireNonNull(type, "Json type must not be null");
+		if (type.isJsonType(this)) {
+			J jsonElement = null;
+			try {
+				jsonElement = (J) this;
+			} catch (ClassCastException e) {
+				throw new IllegalStateException("Json type '" + type.getName() + "' is not correctly implemented: '" + this.toString() + "'", e);
+			}
+		}
+		throw new JsonTypeException(this.getClass().getSimpleName() + " can not be converted to type: '" + type.getName() + "'");
 	}
 	
 	@NotNull String toString(@NotNull JsonConfig config);

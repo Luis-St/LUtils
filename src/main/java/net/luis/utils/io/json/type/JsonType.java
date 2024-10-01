@@ -19,6 +19,7 @@
 package net.luis.utils.io.json.type;
 
 import net.luis.utils.io.json.JsonElement;
+import org.jetbrains.annotations.NotNull;
 
 /**
  *
@@ -29,6 +30,10 @@ import net.luis.utils.io.json.JsonElement;
  */
 
 public interface JsonType<J extends JsonElement, T> {
-
-
+	
+	@NotNull String getName();
+	
+	boolean isJsonType(@NotNull JsonElement element);
+	
+	@NotNull T getAsJsonType(@NotNull J element);
 }

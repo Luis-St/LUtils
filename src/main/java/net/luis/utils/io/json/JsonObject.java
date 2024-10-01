@@ -19,10 +19,10 @@
 package net.luis.utils.io.json;
 
 import com.google.common.collect.Maps;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.UnknownNullability;
+import net.luis.utils.io.json.exception.JsonTypeException;
+import org.jetbrains.annotations.*;
 
-import java.util.Map;
+import java.util.*;
 
 /**
  *
@@ -34,57 +34,126 @@ public class JsonObject implements JsonElement {
 	
 	private final Map<String, JsonElement> elements = Maps.newLinkedHashMap();
 	
-	public @UnknownNullability JsonElement get(@NotNull String key) {
-		return null;
+	//region Query operations
+	public boolean isEmpty() {
+		return this.elements.isEmpty();
 	}
 	
-	public @UnknownNullability JsonObject getAsJsonObject(@NotNull String key) {
-		return null;
+	public boolean containsKey(@Nullable String key) {
+		return this.elements.containsKey(key);
 	}
 	
-	public @UnknownNullability JsonArray getAsJsonArray(@NotNull String key) {
-		return null;
+	public boolean containsValue(@Nullable JsonElement element) {
+		return this.elements.containsValue(element);
 	}
 	
-	public @UnknownNullability JsonPrimitive getJsonPrimitive(@NotNull String key) {
-		return null;
+	public @NotNull Set<String> keySet() {
+		return this.elements.keySet();
 	}
 	
-	public @UnknownNullability String getAsString(@NotNull String key) {
-		return null;
+	public @NotNull Collection<JsonElement> values() {
+		return this.elements.values();
+	}
+	
+	public @NotNull Set<Map.Entry<String, JsonElement>> entrySet() {
+		return this.elements.entrySet();
+	}
+	//endregion
+	
+	public @Nullable JsonElement put(@NotNull String key, @Nullable JsonElement element) {
+		Objects.requireNonNull(key, "Key must not be null");
+		return this.elements.put(key, element);
+	}
+	
+	//region Remove operations
+	public @Nullable JsonElement remove(@Nullable String key) {
+		return this.elements.remove(key);
+	}
+	
+	public void clear() {
+		this.elements.clear();
+	}
+	//endregion
+	
+	//region Replace operations
+	public @Nullable JsonElement replace(@NotNull String key, @Nullable JsonElement value) {
+		Objects.requireNonNull(key, "Key must not be null");
+		return this.elements.replace(key, value == null ? JsonNull.INSTANCE : value);
+	}
+	
+	public boolean replace(@NotNull String key, @NotNull JsonElement oldValue, @Nullable JsonElement newValue) {
+		Objects.requireNonNull(key, "Key must not be null");
+		Objects.requireNonNull(oldValue, "Old value must not be null");
+		return this.elements.replace(key, oldValue, newValue == null ? JsonNull.INSTANCE : newValue);
+	}
+	//endregion
+	
+	//region Get operations
+	public @NotNull JsonElement get(@NotNull String key) {
+		Objects.requireNonNull(key, "Key must not be null");
+		return this.elements.getOrDefault(key, JsonNull.INSTANCE);
+	}
+	
+	public @NotNull JsonObject getAsJsonObject(@NotNull String key) {
+		JsonElement json = this.get(key);
+		if (json instanceof JsonObject object) {
+			return object;
+		}
+		throw new JsonTypeException("Expected JsonObject for key '" + key + "', but found " + json.getClass().getSimpleName());
+	}
+	
+	public @NotNull JsonArray getAsJsonArray(@NotNull String key) {
+		JsonElement json = this.get(key);
+		if (json instanceof JsonArray array) {
+			return array;
+		}
+		throw new JsonTypeException("Expected JsonArray for key '" + key + "', but found " + json.getClass().getSimpleName());
+	}
+	
+	public @NotNull JsonPrimitive getJsonPrimitive(@NotNull String key) {
+		JsonElement json = this.get(key);
+		if (json instanceof JsonPrimitive primitive) {
+			return primitive;
+		}
+		throw new JsonTypeException("Expected JsonPrimitive for key '" + key + "', but found " + json.getClass().getSimpleName());
+	}
+	
+	public @NotNull String getAsString(@NotNull String key) {
+		return this.getJsonPrimitive(key).getAsString();
 	}
 	
 	public boolean getAsBoolean(@NotNull String key) {
-		return false;
+		return this.getJsonPrimitive(key).getAsBoolean();
 	}
 	
-	public @UnknownNullability Number getAsNumber(@NotNull String key) {
-		return null;
+	public @NotNull Number getAsNumber(@NotNull String key) {
+		return this.getJsonPrimitive(key).getAsNumber();
 	}
 	
 	public byte getAsByte(@NotNull String key) {
-		return 0;
+		return this.getJsonPrimitive(key).getAsByte();
 	}
 	
 	public short getAsShort(@NotNull String key) {
-		return 0;
+		return this.getJsonPrimitive(key).getAsShort();
 	}
 	
 	public int getAsInteger(@NotNull String key) {
-		return 0;
+		return this.getJsonPrimitive(key).getAsInteger();
 	}
 	
 	public long getAsLong(@NotNull String key) {
-		return 0;
+		return this.getJsonPrimitive(key).getAsLong();
 	}
-
+	
 	public float getAsFloat(@NotNull String key) {
-		return 0;
+		return this.getJsonPrimitive(key).getAsFloat();
 	}
 	
 	public double getAsDouble(@NotNull String key) {
-		return 0;
+		return this.getJsonPrimitive(key).getAsDouble();
 	}
+	//endregion
 	
 	@Override
 	public @NotNull String toString(@NotNull JsonConfig config) {

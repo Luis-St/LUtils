@@ -37,4 +37,8 @@ public class JsonArrayIndexOutOfBoundsException extends ArrayIndexOutOfBoundsExc
 	public JsonArrayIndexOutOfBoundsException(int index) {
 		super("Json array index out of bounds: " + index);
 	}
+	
+	public JsonArrayIndexOutOfBoundsException(int index, int size) {
+		super("Json array index out of bounds: " + index + " of size " + size);
+	}
 }
