@@ -127,21 +127,26 @@ public class Mth {
 	/**
 	 * Rounds the given value to the given number of digits after the decimal point.<br>
 	 * Example:<br>
-	 * <ul>
-	 *     <li><pre>roundTo(10.05, 1) = 10.1</pre></li>
-	 *     <li><pre>roundTo(10.051, 2) = 10.05</pre></li>
-	 *     <li><pre>roundTo(10.051, 3) = 10.051</pre></li>
-	 * </ul>
+	 * <pre>{@code
+	 * roundTo(1234.5678, 3) = 1234.568
+	 * roundTo(1234.5678, 2) = 1234.57
+	 * roundTo(1234.5678, 1) = 1234.6
+	 * roundTo(1234.5678, 0) = 1235.0
+	 * roundTo(1234.5678, -1) = 1230.0
+	 * roundTo(1234.5678, -2) = 1200.0
+	 * roundTo(1234.5678, -3) = 1000.0
+	 * }</pre>
 	 * @param value The value to round
 	 * @param digits The number of digits after the decimal point
 	 * @return The rounded value
 	 */
 	public static double roundTo(double value, int digits) {
-		double i = 1;
-		for (int j = 0; j < digits; j++) {
-			i *= 10;
+		double factor = Math.pow(10, Math.abs(digits));
+		if (0 > digits) {
+			return Math.round(value / factor) * factor;
+		} else {
+			return Math.round(value * factor) / factor;
 		}
-		return Math.round(value * i) / i;
 	}
 	
 	/**

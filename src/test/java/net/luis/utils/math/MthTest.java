@@ -76,9 +76,13 @@ class MthTest {
 	
 	@Test
 	void roundTo() {
-		assertEquals(10.1, Mth.roundTo(10.05, 1));
-		assertEquals(10.05, Mth.roundTo(10.051, 2));
-		assertEquals(10.051, Mth.roundTo(10.051, 3));
+		assertEquals(1234.568, Mth.roundTo(1234.5678, 3), 0.0001);
+		assertEquals(1234.57, Mth.roundTo(1234.5678, 2), 0.0001);
+		assertEquals(1234.6, Mth.roundTo(1234.5678, 1), 0.0001);
+		assertEquals(1235.0, Mth.roundTo(1234.5678, 0), 0.0001);
+		assertEquals(1230.0, Mth.roundTo(1234.5678, -1), 0.0001);
+		assertEquals(1200.0, Mth.roundTo(1234.5678, -2), 0.0001);
+		assertEquals(1000.0, Mth.roundTo(1234.5678, -3), 0.0001);
 	}
 	
 	@Test
