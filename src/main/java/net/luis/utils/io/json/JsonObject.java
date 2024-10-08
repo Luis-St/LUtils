@@ -60,10 +60,48 @@ public class JsonObject implements JsonElement {
 	}
 	//endregion
 	
-	public @Nullable JsonElement put(@NotNull String key, @Nullable JsonElement element) {
+	//region Add operations
+	public @Nullable JsonElement add(@NotNull String key, @Nullable JsonElement element) {
 		Objects.requireNonNull(key, "Key must not be null");
-		return this.elements.put(key, element);
+		return this.elements.put(key, element == null ? JsonNull.INSTANCE : element);
 	}
+	
+	public @Nullable JsonElement add(@NotNull String key, @Nullable String value) {
+		return this.add(key, value == null ? null : new JsonPrimitive(value));
+	}
+	
+	public @Nullable JsonElement add(@NotNull String key, boolean value) {
+		return this.add(key, new JsonPrimitive(value));
+	}
+	
+	public @Nullable JsonElement add(@NotNull String key, @Nullable Number value) {
+		return this.add(key, value == null ? null : new JsonPrimitive(value));
+	}
+	
+	public @Nullable JsonElement add(@NotNull String key, byte value) {
+		return this.add(key, new JsonPrimitive(value));
+	}
+	
+	public @Nullable JsonElement add(@NotNull String key, short value) {
+		return this.add(key, new JsonPrimitive(value));
+	}
+	
+	public @Nullable JsonElement add(@NotNull String key, int value) {
+		return this.add(key, new JsonPrimitive(value));
+	}
+	
+	public @Nullable JsonElement add(@NotNull String key, long value) {
+		return this.add(key, new JsonPrimitive(value));
+	}
+	
+	public @Nullable JsonElement add(@NotNull String key, float value) {
+		return this.add(key, new JsonPrimitive(value));
+	}
+	
+	public @Nullable JsonElement add(@NotNull String key, double value) {
+		return this.add(key, new JsonPrimitive(value));
+	}
+	//endregion
 	
 	//region Remove operations
 	public @Nullable JsonElement remove(@Nullable String key) {
@@ -157,6 +195,21 @@ public class JsonObject implements JsonElement {
 	
 	@Override
 	public @NotNull String toString(@NotNull JsonConfig config) {
-		return "";
+		StringBuilder builder = new StringBuilder("{");
+		List<Map.Entry<String, JsonElement>> entries = List.copyOf(this.elements.entrySet());
+		for (int i = 0; i < entries.size(); i++) {
+			builder.append(System.lineSeparator());
+			builder.append(config.indent());
+			
+			Map.Entry<String, JsonElement> entry = entries.get(i);
+			builder.append("\"").append(entry.getKey()).append("\": ");
+			builder.append(entry.getValue().toString(config).replace(System.lineSeparator(), System.lineSeparator() + config.indent()));
+			if (i < this.elements.size() - 1) {
+				builder.append(",");
+			} else {
+				builder.append(System.lineSeparator());
+			}
+		}
+		return builder.append("}").toString();
 	}
 }

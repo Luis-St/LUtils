@@ -64,7 +64,12 @@ public class JsonPrimitive implements JsonElement {
 		}
 		StringReader reader = new StringReader(string);
 		try {
-			return reader.readNumber();
+			Number number = reader.readNumber();
+			reader.skipWhitespaces();
+			if (reader.canRead()) {
+				return string;
+			}
+			return number;
 		} catch (Exception e) {
 			return string;
 		}
@@ -80,7 +85,7 @@ public class JsonPrimitive implements JsonElement {
 			case Boolean b -> b;
 			case Number n -> n.intValue() != 0;
 			case String s -> Boolean.parseBoolean(s);
-			default -> false;
+			default -> throw new IllegalStateException("Cannot convert value to boolean: " + this.value);
 		};
 	}
 	
@@ -88,8 +93,8 @@ public class JsonPrimitive implements JsonElement {
 		return switch (this.value) {
 			case Boolean b -> b ? 1 : 0;
 			case Number n -> n;
-			case String s -> throw new NumberFormatException("Cannot convert string to number: " + s);
-			default -> 0;
+			case String s -> new StringReader(s).readNumber();
+			default -> throw new IllegalStateException("Cannot convert value to number: " + this.value);
 		};
 	}
 	
@@ -119,6 +124,9 @@ public class JsonPrimitive implements JsonElement {
 	
 	@Override
 	public @NotNull String toString(@NotNull JsonConfig config) {
-		return "";
+		if (this.value instanceof String string) {
+			return "\"" + string + "\"";
+		}
+		return this.getAsString();
 	}
 }

@@ -34,6 +34,6 @@ public class JsonNull implements JsonElement {
 	
 	@Override
 	public @NotNull String toString(@NotNull JsonConfig config) {
-		return "";
+		return "null";
 	}
 }

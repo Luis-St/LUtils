@@ -21,7 +21,8 @@ package net.luis.utils.io.json;
 import com.google.common.collect.Lists;
 import net.luis.utils.io.json.exception.JsonArrayIndexOutOfBoundsException;
 import net.luis.utils.io.json.exception.JsonTypeException;
-import org.jetbrains.annotations.*;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
 
@@ -163,6 +164,19 @@ public class JsonArray implements JsonElement {
 	
 	@Override
 	public @NotNull String toString(@NotNull JsonConfig config) {
-		return "";
+		StringBuilder builder = new StringBuilder("[");
+		for (int i = 0; i < this.elements.size(); i++) {
+			builder.append(System.lineSeparator());
+			builder.append(config.indent());
+			
+			String json = this.elements.get(i).toString(config);
+			builder.append(json.replace(System.lineSeparator(), System.lineSeparator() + config.indent()));
+			if (i < this.elements.size() - 1) {
+				builder.append(",");
+			} else {
+				builder.append(System.lineSeparator());
+			}
+		}
+		return builder.append("]").toString();
 	}
 }

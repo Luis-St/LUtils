@@ -16,16 +16,9 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-package net.luis.utils.io.json;
+package net.luis.utils.io.json.exception;
 
-import net.luis.utils.io.config.ReadOnly;
-import net.luis.utils.io.config.WriteOnly;
-import net.luis.utils.util.ErrorAction;
-import org.jetbrains.annotations.NotNull;
-
-import java.nio.charset.Charset;
-import java.nio.charset.StandardCharsets;
-import java.util.Objects;
+import org.jetbrains.annotations.Nullable;
 
 /**
  *
@@ -33,16 +26,19 @@ import java.util.Objects;
  *
  */
 
-public record JsonConfig(
-	@WriteOnly @NotNull String indent,
-	@NotNull Charset charset,
-	@NotNull ErrorAction errorAction
-) {
+public class JsonSyntaxException extends RuntimeException {
 	
-	public static final JsonConfig DEFAULT = new JsonConfig("\t", StandardCharsets.UTF_8, ErrorAction.IGNORE);
+	public JsonSyntaxException() {}
 	
-	public JsonConfig {
-		Objects.requireNonNull(charset, "Charset must not be null");
-		Objects.requireNonNull(errorAction, "Error action must not be null");
+	public JsonSyntaxException(@Nullable String message) {
+		super(message);
+	}
+	
+	public JsonSyntaxException(@Nullable String message, @Nullable Throwable cause) {
+		super(message, cause);
+	}
+	
+	public JsonSyntaxException(@Nullable Throwable cause) {
+		super(cause);
 	}
 }
