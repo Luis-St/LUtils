@@ -22,6 +22,7 @@ import net.luis.utils.exception.InvalidStringException;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
+import java.io.Reader;
 import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -35,7 +36,8 @@ class ScopedStringReaderTest {
 	
 	@Test
 	void constructor() {
-		assertThrows(NullPointerException.class, () -> new ScopedStringReader(null));
+		assertThrows(NullPointerException.class, () -> new ScopedStringReader((String) null));
+		assertThrows(NullPointerException.class, () -> new ScopedStringReader((Reader) null));
 	}
 	
 	@Test

@@ -21,6 +21,8 @@ package net.luis.utils.io.reader;
 import net.luis.utils.exception.InvalidStringException;
 import org.jetbrains.annotations.NotNull;
 
+import java.io.Reader;
+import java.io.UncheckedIOException;
 import java.util.*;
 import java.util.function.Function;
 import java.util.function.Predicate;
@@ -64,6 +66,17 @@ public class ScopedStringReader extends StringReader {
 	 */
 	public ScopedStringReader(@NotNull String string) {
 		super(string);
+	}
+	
+	/**
+	 * Constructs a new scoped string reader with the given reader.<br>
+	 * The reader is closed after reading the string.<br>
+	 * @param reader The reader to read from
+	 * @throws NullPointerException If the reader is null
+	 * @throws UncheckedIOException If an I/O error occurs while reading the string
+	 */
+	public ScopedStringReader(@NotNull Reader reader) {
+		super(reader);
 	}
 	
 	/**

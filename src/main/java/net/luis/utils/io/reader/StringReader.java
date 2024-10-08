@@ -22,6 +22,7 @@ import net.luis.utils.exception.InvalidStringException;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
 
+import java.io.*;
 import java.util.Objects;
 import java.util.function.Predicate;
 
@@ -52,6 +53,29 @@ public class StringReader {
 	 */
 	public StringReader(@NotNull String string) {
 		this.string = Objects.requireNonNull(string, "String must not be null");
+	}
+	
+	/**
+	 * Constructs a new string reader from the given reader.<br>
+	 * The reader is closed after reading the string.<br>
+	 * @param reader The reader to read from
+	 * @throws NullPointerException If the reader is null
+	 * @throws UncheckedIOException If an I/O error occurs while reading the string
+	 */
+	@SuppressWarnings("NestedAssignment")
+	public StringReader(@NotNull Reader reader) {
+		Objects.requireNonNull(reader, "Reader must not be null");
+		StringBuilder content = new StringBuilder();
+		try {
+			int ch;
+			while ((ch = reader.read()) != -1) {
+				content.append((char) ch);
+			}
+			reader.close();
+		} catch (IOException e) {
+			throw new UncheckedIOException("Failed to read string from reader", e);
+		}
+		this.string = content.toString();
 	}
 	
 	/**

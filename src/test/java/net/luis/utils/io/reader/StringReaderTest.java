@@ -21,6 +21,8 @@ package net.luis.utils.io.reader;
 import net.luis.utils.exception.InvalidStringException;
 import org.junit.jupiter.api.Test;
 
+import java.io.Reader;
+
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
@@ -34,7 +36,8 @@ class StringReaderTest {
 	
 	@Test
 	void constructor() {
-		assertThrows(NullPointerException.class, () -> new StringReader(null));
+		assertThrows(NullPointerException.class, () -> new StringReader((String) null));
+		assertThrows(NullPointerException.class, () -> new ScopedStringReader((Reader) null));
 	}
 	
 	@Test
