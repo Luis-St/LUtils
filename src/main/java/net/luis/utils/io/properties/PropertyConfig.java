@@ -43,12 +43,12 @@ public record PropertyConfig(
 	@ReadOnly @NotNull Set<Character> commentCharacters,
 	@NotNull Pattern keyPattern,
 	@NotNull Pattern valuePattern,
+	@ReadOnly boolean advancedParsing,
 	@NotNull Charset charset,
-	@NotNull ErrorAction errorAction,
-	@ReadOnly boolean advancedParsing
+	@NotNull ErrorAction errorAction
 ) {
 	
-	public static final PropertyConfig DEFAULT = new PropertyConfig('=', 1, Set.of('#'), Pattern.compile("^[a-zA-Z0-9._-]+$"), Pattern.compile(".*"), StandardCharsets.UTF_8, ErrorAction.IGNORE, false);
+	public static final PropertyConfig DEFAULT = new PropertyConfig('=', 1, Set.of('#'), Pattern.compile("^[a-zA-Z0-9._-]+$"), Pattern.compile(".*"), false, StandardCharsets.UTF_8, ErrorAction.IGNORE);
 	
 	public PropertyConfig {
 		Objects.requireNonNull(commentCharacters, "Comment characters must not be null");

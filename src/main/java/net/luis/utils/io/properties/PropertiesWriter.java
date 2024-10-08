@@ -41,27 +41,36 @@ public class PropertiesWriter implements AutoCloseable {
 	}
 	
 	public PropertiesWriter(@NotNull DataOutputStream stream, @NotNull PropertyConfig config) {
-		this.config = Objects.requireNonNull(config, "Config must not be null");
-		this.writer = new BufferedWriter(new OutputStreamWriter(stream.getStream(), config.charset()));
+		this.config = Objects.requireNonNull(config, "Property config must not be null");
+		this.writer = new BufferedWriter(new OutputStreamWriter(Objects.requireNonNull(stream, "Stream must not be null").getStream(), config.charset()));
 	}
 	
 	public void write(@NotNull Property property) {
+		Objects.requireNonNull(property, "Property must not be null");
 		this.write(property.getKey(), property.getRawValue());
 	}
 	
-	public void write(@NotNull Properties properties) {
-		properties.getProperties().forEach(this::write);
-	}
-	
 	public void write(@NotNull String key, @NotNull Object value) {
+		Objects.requireNonNull(key, "Key must not be null");
+		Objects.requireNonNull(value, "Value must not be null");
 		this.write(key, value.toString());
 	}
 	
+	public void write(@NotNull Properties properties) {
+		Objects.requireNonNull(properties, "Properties must not be null");
+		properties.getProperties().forEach(this::write);
+	}
+	
 	public <T> void write(@NotNull String key, @NotNull T value, @NotNull ValueConverter<String, T> converter) {
+		Objects.requireNonNull(key, "Key must not be null");
+		Objects.requireNonNull(value, "Value must not be null");
+		Objects.requireNonNull(converter, "Converter must not be null");
 		this.write(key, converter.convert(value));
 	}
 	
 	private void write(@NotNull String key, @NotNull String value) {
+		Objects.requireNonNull(key, "Key must not be null");
+		Objects.requireNonNull(value, "Value must not be null");
 		try {
 			this.config.ensureKeyMatches(key);
 			this.config.ensureValueMatches(value);

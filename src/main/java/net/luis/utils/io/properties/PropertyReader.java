@@ -54,7 +54,7 @@ public class PropertyReader implements AutoCloseable {
 	}
 	
 	public PropertyReader(@NotNull DataInputStream stream, @NotNull PropertyConfig config) {
-		this.config = Objects.requireNonNull(config, "Config must not be null");
+		this.config = Objects.requireNonNull(config, "Property config must not be null");
 		this.reader = new BufferedReader(new InputStreamReader(stream.getStream(), config.charset()));
 	}
 	
