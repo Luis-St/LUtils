@@ -21,14 +21,14 @@ package net.luis.utils.io.properties;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import net.luis.utils.io.exception.IllegalLineReadException;
-import net.luis.utils.io.properties.exception.*;
+import net.luis.utils.io.properties.exception.IllegalPropertyKeyPartException;
 import net.luis.utils.io.reader.ScopedStringReader;
+import net.luis.utils.io.stream.DataInputStream;
 import net.luis.utils.lang.StringUtils;
 import org.apache.commons.lang3.ArrayUtils;
 import org.jetbrains.annotations.*;
 
 import java.io.*;
-import java.nio.file.Path;
 import java.util.*;
 import java.util.regex.Pattern;
 
@@ -40,11 +40,6 @@ import static org.apache.commons.lang3.StringUtils.*;
  *
  */
 
-//net.luis.[test|dev|prod].properties = src/main/resources
-//net.luis.${sys?net.luis.test(?default_value)}.properties = src/main/resources -> System.getProperty("net.luis.test")
-//net.luis.${env?net.luis.test(?default_value)}.properties = src/main/resources -> System.getenv("net.luis.test")
-//net.luis.${(?prop)?net.luis.test(?default_value)}.properties = src/main/resources -> Property in same file
-
 public class PropertyReader implements AutoCloseable {
 	
 	private static final Pattern COMPACTED_KEY_PATTERN = Pattern.compile("^(.+?)\\.(\\[(.*)])\\.?(.*)$");
@@ -54,9 +49,13 @@ public class PropertyReader implements AutoCloseable {
 	private final PropertyConfig config;
 	private final BufferedReader reader;
 	
-	private PropertyReader(@NotNull InputStream stream, @NotNull PropertyConfig config) {
+	public PropertyReader(@NotNull DataInputStream stream) {
+		this(stream, PropertyConfig.DEFAULT);
+	}
+	
+	public PropertyReader(@NotNull DataInputStream stream, @NotNull PropertyConfig config) {
 		this.config = Objects.requireNonNull(config, "Config must not be null");
-		this.reader = new BufferedReader(new InputStreamReader(stream, config.charset()));
+		this.reader = new BufferedReader(new InputStreamReader(stream.getStream(), config.charset()));
 	}
 	
 	//region Static helper methods
@@ -65,10 +64,6 @@ public class PropertyReader implements AutoCloseable {
 		return result.substring(1, result.length() - 1);
 	}
 	//endregion
-	
-	public static @NotNull Builder newBuilder() {
-		return new Builder();
-	}
 	
 	public @NotNull Properties readProperties() {
 		List<Property> properties = Lists.newArrayList();
@@ -136,10 +131,7 @@ public class PropertyReader implements AutoCloseable {
 		String value = this.removeAlignment(rawValue, alignment, false);
 		if (this.isAdvancedKey(key) && this.config.advancedParsing()) {
 			List<Property> properties = this.parsePropertyAdvanced(key, value);
-			Pattern valuePattern = this.config.valuePattern();
-			if (!valuePattern.matcher(value).matches()) {
-				throw new IllegalPropertyKeyException("Property value '" + key + "' does not match the pattern '" +  valuePattern.pattern() + "' defined in property config");
-			}
+			this.config.ensureValueMatches(value);
 			return properties;
 		}
 		return List.of(this.parsePropertySimple(key, value));
@@ -179,16 +171,8 @@ public class PropertyReader implements AutoCloseable {
 	
 	//region Simple parsing
 	private @NotNull Property parsePropertySimple(@NotNull String key, @NotNull String value) throws IOException {
-		Objects.requireNonNull(key, "Key must not be null");
-		Objects.requireNonNull(value, "Value must not be null");
-		Pattern keyPattern = this.config.keyPattern();
-		if (!keyPattern.matcher(key).matches()) {
-			throw new IllegalPropertyKeyException("Property key '" + key + "' does not match the pattern '" +  keyPattern.pattern() + "' defined in property config");
-		}
-		Pattern valuePattern = this.config.valuePattern();
-		if (!valuePattern.matcher(value).matches()) {
-			throw new IllegalPropertyKeyException("Property value '" + key + "' does not match the pattern '" +  valuePattern.pattern() + "' defined in property config");
-		}
+		this.config.ensureKeyMatches(key);
+		this.config.ensureValueMatches(value);
 		return Property.of(key, value);
 	}
 	//endregion
@@ -242,9 +226,7 @@ public class PropertyReader implements AutoCloseable {
 		
 		List<Property> properties = Lists.newArrayList();
 		for (String resolvedKey : resolvedKeys) {
-			if (!this.config.keyPattern().matcher(resolvedKey).matches()) {
-				throw new IllegalPropertyKeyException("Resolved property key '" + resolvedKey + "' does not match the pattern '" +  this.config.keyPattern().pattern() + "' defined in property config");
-			}
+			this.config.ensureKeyMatches(resolvedKey);
 			properties.add(Property.of(resolvedKey, value));
 		}
 		return properties;
@@ -294,7 +276,7 @@ public class PropertyReader implements AutoCloseable {
 		Objects.requireNonNull(parts, "Parts must not be null");
 		String targetKey = this.getTargetKey(key, variable, parts);
 		String targetType = parts[0];
-		String value = null;
+		String value;
 		if (isBlank(targetType) || equalsAnyIgnoreCase(targetType, "prop", "property")) {
 			value = this.properties.get(targetKey);
 		} else if (equalsAnyIgnoreCase(targetType, "sys", "system")) {
@@ -345,62 +327,4 @@ public class PropertyReader implements AutoCloseable {
 	public void close() throws IOException {
 		this.reader.close();
 	}
-	
-	//region Builder
-	public static class Builder {
-		
-		private InputStream stream;
-		private PropertyConfig config = PropertyConfig.DEFAULT;
-		
-		private Builder() {}
-		
-		//region Static helper methods
-		private static @NotNull FileInputStream createFileStream(@NotNull File file) {
-			try {
-				return new FileInputStream(file);
-			} catch (FileNotFoundException e) {
-				throw new UncheckedIOException("File not found: " + file, e);
-			}
-		}
-		//endregion
-		
-		public @NotNull Builder fromFile(@NotNull String file) {
-			Objects.requireNonNull(file, "File must not be null");
-			return this.fromFile(new File(file));
-		}
-		
-		public @NotNull Builder fromFile(@NotNull String path, @NotNull String fileName) {
-			Objects.requireNonNull(path, "Path must not be null");
-			Objects.requireNonNull(fileName, "File name must not be null");
-			return this.fromFile(new File(path, fileName));
-		}
-		
-		public @NotNull Builder fromPath(@NotNull Path path) {
-			Objects.requireNonNull(path, "Path must not be null");
-			return this.fromFile(path.toFile());
-		}
-		
-		public @NotNull Builder fromFile(@NotNull File file) {
-			Objects.requireNonNull(file, "File must not be null");
-			this.stream = createFileStream(file);
-			return this;
-		}
-		
-		public @NotNull Builder fromInputStream(@NotNull InputStream stream) {
-			Objects.requireNonNull(stream, "Input stream must not be null");
-			this.stream = stream;
-			return this;
-		}
-		
-		public @NotNull Builder withConfig(@NotNull PropertyConfig config) {
-			Objects.requireNonNull(config, "Config must not be null");
-			this.config = config;
-			return this;
-		}
-		
-		public @NotNull PropertyReader build() {
-			return new PropertyReader(this.stream, this.config);
-		}
-	}
-	//endregion
 }

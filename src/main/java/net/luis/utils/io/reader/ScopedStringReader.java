@@ -381,7 +381,7 @@ public class ScopedStringReader extends StringReader {
 	 * @param open The opening character of the scope
 	 * @param close The closing character of the scope
 	 */
-	public static record StringScope(char open, char close) {
+	public record StringScope(char open, char close) {
 		
 		/**
 		 * Constructs a new string scope with the given opening and closing character.<br>

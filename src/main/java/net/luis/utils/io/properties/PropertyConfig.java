@@ -18,8 +18,12 @@
 
 package net.luis.utils.io.properties;
 
+import net.luis.utils.io.config.ReadOnly;
+import net.luis.utils.io.config.WriteOnly;
+import net.luis.utils.io.properties.exception.IllegalPropertyKeyException;
 import net.luis.utils.util.ErrorAction;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
@@ -35,15 +39,16 @@ import java.util.regex.Pattern;
 
 public record PropertyConfig(
 	char separator,
-	@NotNull Set<Character> commentCharacters,
+	@WriteOnly int alignment,
+	@ReadOnly @NotNull Set<Character> commentCharacters,
 	@NotNull Pattern keyPattern,
 	@NotNull Pattern valuePattern,
 	@NotNull Charset charset,
 	@NotNull ErrorAction errorAction,
-	boolean advancedParsing
+	@ReadOnly boolean advancedParsing
 ) {
 	
-	public static final PropertyConfig DEFAULT = new PropertyConfig('=', Set.of('#'), Pattern.compile("^[a-zA-Z0-9._-]+$"), Pattern.compile(".*"), StandardCharsets.UTF_8, ErrorAction.IGNORE, true);
+	public static final PropertyConfig DEFAULT = new PropertyConfig('=', 1, Set.of('#'), Pattern.compile("^[a-zA-Z0-9._-]+$"), Pattern.compile(".*"), StandardCharsets.UTF_8, ErrorAction.IGNORE, false);
 	
 	public PropertyConfig {
 		Objects.requireNonNull(commentCharacters, "Comment characters must not be null");
@@ -60,6 +65,20 @@ public record PropertyConfig(
 		}
 		if (commentCharacters.contains(separator)) {
 			throw new IllegalArgumentException("Separator must not be a comment character");
+		}
+	}
+	
+	public void ensureKeyMatches(@Nullable String key) throws IllegalPropertyKeyException {
+		Objects.requireNonNull(key, "Key must not be null");
+		if (!this.keyPattern.matcher(key).matches()) {
+			throw new IllegalPropertyKeyException("Property key '" + key + "' does not match the pattern '" + this.keyPattern.pattern() + "' defined in property config");
+		}
+	}
+	
+	public void ensureValueMatches(@Nullable String value) throws IllegalPropertyKeyException {
+		Objects.requireNonNull(value, "Value must not be null");
+		if (!this.valuePattern.matcher(value).matches()) {
+			throw new IllegalPropertyKeyException("Property value '" + value + "' does not match the pattern '" + this.valuePattern.pattern() + "' defined in property config");
 		}
 	}
 }
