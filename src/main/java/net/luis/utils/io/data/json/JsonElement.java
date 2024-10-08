@@ -19,10 +19,7 @@
 package net.luis.utils.io.data.json;
 
 import net.luis.utils.io.data.json.exception.JsonTypeException;
-import net.luis.utils.io.data.json.type.JsonType;
 import org.jetbrains.annotations.NotNull;
-
-import java.util.Objects;
 
 /**
  *
@@ -31,7 +28,22 @@ import java.util.Objects;
  */
 
 public interface JsonElement {
-
+	
+	private @NotNull String getName() {
+		StringBuilder name = new StringBuilder();
+		String className = this.getClass().getSimpleName();
+		for (int i = 0; i < className.length(); i++) {
+			char c = className.charAt(i);
+			if (Character.isUpperCase(c)) {
+				name.append(" ");
+				name.append(Character.toLowerCase(c));
+			} else {
+				name.append(c);
+			}
+		}
+		return name.toString();
+	}
+	
 	default boolean isJsonNull() {
 		return this instanceof JsonNull;
 	}
@@ -48,43 +60,25 @@ public interface JsonElement {
 		return this instanceof JsonPrimitive;
 	}
 	
-	default boolean isJsonType(@NotNull JsonType<? extends JsonElement, ?> type) {
-		return Objects.requireNonNull(type, "Json type must not be null").isJsonType(this);
-	}
-	
 	default @NotNull JsonObject getAsJsonObject() {
 		if (this instanceof JsonObject object) {
 			return object;
 		}
-		throw new JsonTypeException("Expected a JsonObject, but found: " + this.getClass().getSimpleName());
+		throw new JsonTypeException("Expected a json object, but found: " + this.getName());
 	}
 	
 	default @NotNull JsonArray getAsJsonArray() {
 		if (this instanceof JsonArray array) {
 			return array;
 		}
-		throw new JsonTypeException("Expected a JsonArray, but found: " + this.getClass().getSimpleName());
+		throw new JsonTypeException("Expected a json array, but found: " + this.getName());
 	}
 	
 	default @NotNull JsonPrimitive getAsJsonPrimitive() {
 		if (this instanceof JsonPrimitive primitive) {
 			return primitive;
 		}
-		throw new JsonTypeException("Expected a JsonPrimitive, but found: " + this.getClass().getSimpleName());
-	}
-	
-	@SuppressWarnings("unchecked")
-	default <J extends JsonElement, T> @NotNull T getAsJsonType(@NotNull JsonType<J, T> type) {
-		Objects.requireNonNull(type, "Json type must not be null");
-		if (type.isJsonType(this)) {
-			J jsonElement = null;
-			try {
-				jsonElement = (J) this;
-			} catch (ClassCastException e) {
-				throw new IllegalStateException("Json type '" + type.getName() + "' is not correctly implemented: '" + this.toString() + "'", e);
-			}
-		}
-		throw new JsonTypeException(this.getClass().getSimpleName() + " can not be converted to type: '" + type.getName() + "'");
+		throw new JsonTypeException("Expected a json primitive, but found: " + this.getName());
 	}
 	
 	@NotNull String toString(@NotNull JsonConfig config);
