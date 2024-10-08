@@ -39,16 +39,16 @@ module net.luis.utils {
 	exports net.luis.utils.function;
 	
 	exports net.luis.utils.io;
-	exports net.luis.utils.io.config;
+	exports net.luis.utils.io.data.config;
+	exports net.luis.utils.io.data.json;
+	exports net.luis.utils.io.data.json.exception;
+	exports net.luis.utils.io.data.json.type;
+	exports net.luis.utils.io.data.properties;
+	exports net.luis.utils.io.data.properties.exception;
+	exports net.luis.utils.io.data.util;
 	exports net.luis.utils.io.exception;
-	exports net.luis.utils.io.json;
-	exports net.luis.utils.io.json.exception;
-	exports net.luis.utils.io.json.type;
-	exports net.luis.utils.io.properties;
-	exports net.luis.utils.io.properties.exception;
 	exports net.luis.utils.io.reader;
 	exports net.luis.utils.io.stream;
-	exports net.luis.utils.io.util;
 	
 	exports net.luis.utils.lang;
 	
