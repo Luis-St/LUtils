@@ -18,7 +18,8 @@
 
 package net.luis.utils.io.data.properties;
 
-import net.luis.utils.io.data.util.DefaultValueGetter;
+import net.luis.utils.io.reader.StringReader;
+import net.luis.utils.util.ValueParser;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -31,7 +32,7 @@ import java.util.Objects;
  *
  */
 
-public class Property implements DefaultValueGetter {
+public class Property {
 	
 	private final String key;
 	private final String value;
@@ -53,10 +54,121 @@ public class Property implements DefaultValueGetter {
 		return this.value;
 	}
 	
-	@Override
-	public final @NotNull String getString() {
+	//region Getters
+	public @NotNull String getString() {
 		return this.value;
 	}
+	
+	public boolean getBoolean() {
+		return Boolean.parseBoolean(this.getString());
+	}
+	
+	public boolean getBoolean(boolean defaultValue) {
+		try {
+			return this.getBoolean();
+		} catch (Exception e) {
+			return defaultValue;
+		}
+	}
+	
+	public @NotNull Number getNumber() {
+		return new StringReader(this.getString()).readNumber();
+	}
+	
+	public @NotNull Number getNumber(@NotNull Number defaultValue) {
+		try {
+			return this.getNumber();
+		} catch (Exception e) {
+			return Objects.requireNonNull(defaultValue, "Default value must not be null");
+		}
+	}
+	
+	public byte getByte() {
+		return this.getNumber().byteValue();
+	}
+	
+	public byte getByte(byte defaultValue) {
+		try {
+			return this.getByte();
+		} catch (Exception e) {
+			return defaultValue;
+		}
+	}
+	
+	public short getShort() {
+		return this.getNumber().shortValue();
+	}
+	
+	public short getShort(short defaultValue) {
+		try {
+			return this.getShort();
+		} catch (Exception e) {
+			return defaultValue;
+		}
+	}
+	
+	public int getInteger() {
+		return this.getNumber().intValue();
+	}
+	
+	public int getInteger(int defaultValue) {
+		try {
+			return this.getInteger();
+		} catch (Exception e) {
+			return defaultValue;
+		}
+	}
+	
+	public long getLong() {
+		return this.getNumber().longValue();
+	}
+	
+	public long getLong(long defaultValue) {
+		try {
+			return this.getLong();
+		} catch (Exception e) {
+			return defaultValue;
+		}
+	}
+	
+	public float getFloat() {
+		return this.getNumber().floatValue();
+	}
+	
+	public float getFloat(float defaultValue) {
+		try {
+			return this.getFloat();
+		} catch (Exception e) {
+			return defaultValue;
+		}
+	}
+	
+	public double getDouble() {
+		return this.getNumber().doubleValue();
+	}
+	
+	public double getDouble(double defaultValue) {
+		try {
+			return this.getDouble();
+		} catch (Exception e) {
+			return defaultValue;
+		}
+	}
+	
+	public <T> @NotNull T get(@NotNull ValueParser<String, T> parser) {
+		Objects.requireNonNull(parser, "Parser must not be null");
+		return parser.parse(this.getString());
+	}
+	
+	public <T> @NotNull T get(@NotNull ValueParser<String, T> parser, @NotNull T defaultValue) {
+		Objects.requireNonNull(parser, "Parser must not be null");
+		try {
+			return this.get(parser);
+		} catch (Exception e) {
+			return Objects.requireNonNull(defaultValue, "Default value must not be null");
+		}
+	}
+	//endregion
 	
 	public boolean isPartOfGroup(@Nullable String group) {
 		if (StringUtils.isEmpty(group)) {
