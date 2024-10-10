@@ -21,23 +21,39 @@ package net.luis.utils.io.data.json.exception;
 import org.jetbrains.annotations.Nullable;
 
 /**
+ * Thrown to indicate that the syntax of a json string is invalid.<br>
+ * The exception message will contain the details of the syntax error.<br>
  *
  * @author Luis-St
- *
  */
-
 public class JsonSyntaxException extends RuntimeException {
 	
+	/**
+	 * Constructs a new json syntax exception with no details.<br>
+	 */
 	public JsonSyntaxException() {}
 	
+	/**
+	 * Constructs a new json syntax exception with the specified message.<br>
+	 * @param message The message of the exception
+	 */
 	public JsonSyntaxException(@Nullable String message) {
 		super(message);
 	}
 	
+	/**
+	 * Constructs a new json syntax exception with the specified message and cause.<br>
+	 * @param message The message of the exception
+	 * @param cause The cause of the exception
+	 */
 	public JsonSyntaxException(@Nullable String message, @Nullable Throwable cause) {
 		super(message, cause);
 	}
 	
+	/**
+	 * Constructs a new json syntax exception with the specified cause.<br>
+	 * @param cause The cause of the exception
+	 */
 	public JsonSyntaxException(@Nullable Throwable cause) {
 		super(cause);
 	}

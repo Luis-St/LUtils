@@ -21,23 +21,39 @@ package net.luis.utils.io.data.json.exception;
 import org.jetbrains.annotations.Nullable;
 
 /**
+ * Thrown when a json element is not of the expected type.<br>
+ * The exception message will contain the details about the expected and actual types.<br>
  *
  * @author Luis-St
- *
  */
-
 public class JsonTypeException extends RuntimeException {
 	
+	/**
+	 * Constructs a new json type exception with no details.<br>
+	 */
 	public JsonTypeException() {}
 	
+	/**
+	 * Constructs a new json type exception with the specified message.<br>
+	 * @param message The message of the exception
+	 */
 	public JsonTypeException(@Nullable String message) {
 		super(message);
 	}
 	
+	/**
+	 * Constructs a new json type exception with the specified message and cause.<br>
+	 * @param message The message of the exception
+	 * @param cause The cause of the exception
+	 */
 	public JsonTypeException(@Nullable String message, @Nullable Throwable cause) {
 		super(message, cause);
 	}
 	
+	/**
+	 * Constructs a new json type exception with the specified cause.<br>
+	 * @param cause The cause of the exception
+	 */
 	public JsonTypeException(@Nullable Throwable cause) {
 		super(cause);
 	}

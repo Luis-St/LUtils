@@ -21,23 +21,40 @@ package net.luis.utils.io.data.json.exception;
 import org.jetbrains.annotations.Nullable;
 
 /**
+ * Thrown to indicate that an index of a json array is out of bounds.<br>
+ * This exception is thrown when an index is either negative or greater than or equal to the size of the array.<br>
+ * The exception message will contain the index and may the size of the array.<br>
  *
  * @author Luis-St
- *
  */
-
 public class JsonArrayIndexOutOfBoundsException extends ArrayIndexOutOfBoundsException {
 	
+	/**
+	 * Constructs a new json array index out-of-bounds exception with no details.<br>
+	 */
 	public JsonArrayIndexOutOfBoundsException() {}
 	
+	/**
+	 * Constructs a new json array index out-of-bounds exception with the specified message.<br>
+	 * @param message The message of the exception
+	 */
 	public JsonArrayIndexOutOfBoundsException(@Nullable String message) {
 		super(message);
 	}
 	
+	/**
+	 * Constructs a new json array index out-of-bounds exception with the specified index.<br>
+	 * @param index The index that is out of bounds
+	 */
 	public JsonArrayIndexOutOfBoundsException(int index) {
 		super("Json array index out of bounds: " + index);
 	}
 	
+	/**
+	 * Constructs a new json array index out-of-bounds exception with the specified index and size.<br>
+	 * @param index The index that is out of bounds
+	 * @param size The size of the array
+	 */
 	public JsonArrayIndexOutOfBoundsException(int index, int size) {
 		super("Json array index out of bounds: " + index + " of size " + size);
 	}
