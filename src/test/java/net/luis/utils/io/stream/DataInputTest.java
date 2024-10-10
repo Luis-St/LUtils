@@ -10,7 +10,7 @@ import static org.junit.jupiter.api.Assertions.*;
  *
  */
 
-class DataInputStreamTest {
+class DataInputTest {
 	
 	@Test
 	void getStream() {

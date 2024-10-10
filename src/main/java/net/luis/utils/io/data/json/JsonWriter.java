@@ -18,7 +18,7 @@
 
 package net.luis.utils.io.data.json;
 
-import net.luis.utils.io.stream.DataOutputStream;
+import net.luis.utils.io.data.DataOutput;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.*;
@@ -35,13 +35,13 @@ public class JsonWriter implements AutoCloseable {
 	private final JsonConfig config;
 	private final BufferedWriter writer;
 	
-	public JsonWriter(@NotNull DataOutputStream stream) {
-		this(stream, JsonConfig.DEFAULT);
+	public JsonWriter(@NotNull DataOutput output) {
+		this(output, JsonConfig.DEFAULT);
 	}
 	
-	public JsonWriter(@NotNull DataOutputStream stream, @NotNull JsonConfig config) {
+	public JsonWriter(@NotNull DataOutput output, @NotNull JsonConfig config) {
 		this.config = Objects.requireNonNull(config, "Json config must not be null");
-		this.writer = new BufferedWriter(new OutputStreamWriter(Objects.requireNonNull(stream, "Stream must not be null").getStream(), config.charset()));
+		this.writer = new BufferedWriter(new OutputStreamWriter(Objects.requireNonNull(output, "Output must not be null").getStream(), config.charset()));
 	}
 	
 	public void writeJson(@NotNull JsonElement json) {

@@ -23,7 +23,7 @@ import com.google.common.collect.Maps;
 import net.luis.utils.io.exception.IllegalLineReadException;
 import net.luis.utils.io.data.properties.exception.IllegalPropertyKeyPartException;
 import net.luis.utils.io.reader.ScopedStringReader;
-import net.luis.utils.io.stream.DataInputStream;
+import net.luis.utils.io.data.DataInput;
 import net.luis.utils.lang.StringUtils;
 import org.apache.commons.lang3.ArrayUtils;
 import org.jetbrains.annotations.*;
@@ -49,13 +49,13 @@ public class PropertyReader implements AutoCloseable {
 	private final PropertyConfig config;
 	private final BufferedReader reader;
 	
-	public PropertyReader(@NotNull DataInputStream stream) {
-		this(stream, PropertyConfig.DEFAULT);
+	public PropertyReader(@NotNull DataInput input) {
+		this(input, PropertyConfig.DEFAULT);
 	}
 	
-	public PropertyReader(@NotNull DataInputStream stream, @NotNull PropertyConfig config) {
+	public PropertyReader(@NotNull DataInput input, @NotNull PropertyConfig config) {
 		this.config = Objects.requireNonNull(config, "Property config must not be null");
-		this.reader = new BufferedReader(new InputStreamReader(stream.getStream(), config.charset()));
+		this.reader = new BufferedReader(new InputStreamReader(Objects.requireNonNull(input, "Input must not be null").getStream(), config.charset()));
 	}
 	
 	//region Static helper methods

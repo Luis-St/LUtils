@@ -51,13 +51,18 @@ public class Properties {
 	private static @NotNull Property copyPropertyAndRemoveGroup(@NotNull Property property, @Nullable String group) {
 		if (!property.isPartOfGroup(group)) {
 			throw new IllegalArgumentException("Property is not part of group");
+	private static @NotNull Property copyPropertyAndRemoveGroup(@NotNull Property property, @Nullable String subgroup) {
+		if (!property.isPartOfGroup(subgroup)) {
+			throw new IllegalArgumentException("Property '" + property.getKey() + "' is not part of subgroup '" + subgroup + "'");
 		}
-		if (StringUtils.isEmpty(group)) {
+		if (StringUtils.isEmpty(subgroup)) {
 			return Property.of(property.getKey(), property.getRawValue());
 		}
 		String key = property.getKey();
 		if (key.startsWith(group.endsWith(".") ? group : group + ".")) {
 			key = key.substring(group.length() + 1);
+		if (key.startsWith(subgroup.endsWith(".") ? subgroup : subgroup + ".")) {
+			key = key.substring(subgroup.length() + 1);
 		}
 		return Property.of(key, property.getRawValue());
 	}
@@ -73,15 +78,18 @@ public class Properties {
 	}
 	
 	public @UnknownNullability Property getProperty(@NotNull String key) {
+	public @Nullable Property getProperty(@NotNull String key) {
 		Objects.requireNonNull(key, "Key must not be null");
 		return this.properties.get(key);
 	}
 	
 	public @NotNull Properties getGroupedProperties(@Nullable String group) {
+	public @NotNull Properties getSubProperties(@Nullable String subgroup) {
 		List<Property> properties = Lists.newArrayList();
 		this.properties.values().forEach(property -> {
 			if (property.isPartOfGroup(group)) {
 				properties.add(copyPropertyAndRemoveGroup(property, group));
+			if (property.isPartOfGroup(subgroup)) {
 			}
 		});
 		return new Properties(properties);

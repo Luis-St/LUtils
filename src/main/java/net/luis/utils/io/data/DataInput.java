@@ -16,7 +16,7 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-package net.luis.utils.io.stream;
+package net.luis.utils.io.data;
 
 import org.jetbrains.annotations.NotNull;
 
@@ -30,37 +30,37 @@ import java.util.Objects;
  *
  */
 
-public class DataOutputStream implements AutoCloseable {
+public class DataInput implements AutoCloseable {
 	
-	private final OutputStream stream;
+	private final InputStream stream;
 	
-	public DataOutputStream(@NotNull String file) {
+	public DataInput(@NotNull String file) {
 		this(new File(Objects.requireNonNull(file, "File must not be null")));
 	}
 	
-	public DataOutputStream(@NotNull String path, @NotNull String fileName) {
+	public DataInput(@NotNull String path, @NotNull String fileName) {
 		this(new File(Objects.requireNonNull(path, "Path must not be null"), Objects.requireNonNull(fileName, "File name must not be null")));
 	}
 	
-	public DataOutputStream(@NotNull Path path) {
+	public DataInput(@NotNull Path path) {
 		this(Objects.requireNonNull(path, "Path must not be null").toFile());
 	}
 	
-	public DataOutputStream(@NotNull File file) {
+	public DataInput(@NotNull File file) {
 		Objects.requireNonNull(file, "File must not be null");
 		try {
-			this.stream = new FileOutputStream(file);
+			this.stream = new FileInputStream(file);
 		} catch (FileNotFoundException e) {
 			throw new UncheckedIOException("File not found: " + file, e);
 		}
 	}
 	
-	public DataOutputStream(@NotNull OutputStream stream) {
-		Objects.requireNonNull(stream, "Output stream must not be null");
+	public DataInput(@NotNull InputStream stream) {
+		Objects.requireNonNull(stream, "Input stream must not be null");
 		this.stream = stream;
 	}
 	
-	public @NotNull OutputStream getStream() {
+	public @NotNull InputStream getStream() {
 		return this.stream;
 	}
 	

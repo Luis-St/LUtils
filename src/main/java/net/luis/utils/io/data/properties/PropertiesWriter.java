@@ -38,11 +38,14 @@ public class PropertiesWriter implements AutoCloseable {
 	
 	public PropertiesWriter(@NotNull DataOutputStream stream) {
 		this(stream, PropertyConfig.DEFAULT);
+	public PropertiesWriter(@NotNull DataOutput output) {
+		this(output, PropertyConfig.DEFAULT);
 	}
 	
 	public PropertiesWriter(@NotNull DataOutputStream stream, @NotNull PropertyConfig config) {
+	public PropertiesWriter(@NotNull DataOutput output, @NotNull PropertyConfig config) {
 		this.config = Objects.requireNonNull(config, "Property config must not be null");
-		this.writer = new BufferedWriter(new OutputStreamWriter(Objects.requireNonNull(stream, "Stream must not be null").getStream(), config.charset()));
+		this.writer = new BufferedWriter(new OutputStreamWriter(Objects.requireNonNull(output, "Output must not be null").getStream(), config.charset()));
 	}
 	
 	public void write(@NotNull String key, @NotNull Object value) {
@@ -77,7 +80,7 @@ public class PropertiesWriter implements AutoCloseable {
 	}
 	
 	@Override
-	public void close() throws Exception {
+	public void close() throws IOException {
 		this.writer.close();
 	}
 }

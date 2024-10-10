@@ -21,7 +21,7 @@ package net.luis.utils.io.data.json;
 import net.luis.utils.io.data.json.exception.JsonSyntaxException;
 import net.luis.utils.io.reader.ScopedStringReader;
 import net.luis.utils.io.reader.StringReader;
-import net.luis.utils.io.stream.DataInputStream;
+import net.luis.utils.io.data.DataInput;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
@@ -48,13 +48,13 @@ public class JsonReader implements AutoCloseable {
 		this.reader = new ScopedStringReader(Objects.requireNonNull(string, "String must not be null"));
 	}
 	
-	public JsonReader(@NotNull DataInputStream stream) {
-		this(stream, JsonConfig.DEFAULT);
+	public JsonReader(@NotNull DataInput input) {
+		this(input, JsonConfig.DEFAULT);
 	}
 	
-	public JsonReader(@NotNull DataInputStream stream, @NotNull JsonConfig config) {
+	public JsonReader(@NotNull DataInput input, @NotNull JsonConfig config) {
 		this.config = Objects.requireNonNull(config, "Json config must not be null");
-		this.reader = new ScopedStringReader(new InputStreamReader(Objects.requireNonNull(stream, "Stream must not be null").getStream(), config.charset()));
+		this.reader = new ScopedStringReader(new InputStreamReader(Objects.requireNonNull(input, "Input must not be null").getStream(), config.charset()));
 	}
 	
 	public @NotNull JsonElement readJson() {

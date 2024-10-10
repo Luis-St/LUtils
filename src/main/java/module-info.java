@@ -39,6 +39,7 @@ module net.luis.utils {
 	exports net.luis.utils.function;
 	
 	exports net.luis.utils.io;
+	exports net.luis.utils.io.data;
 	exports net.luis.utils.io.data.config;
 	exports net.luis.utils.io.data.json;
 	exports net.luis.utils.io.data.json.exception;
@@ -46,7 +47,6 @@ module net.luis.utils {
 	exports net.luis.utils.io.data.properties.exception;
 	exports net.luis.utils.io.exception;
 	exports net.luis.utils.io.reader;
-	exports net.luis.utils.io.stream;
 	
 	exports net.luis.utils.lang;
 	
