@@ -45,15 +45,10 @@ public class PropertiesWriter implements AutoCloseable {
 		this.writer = new BufferedWriter(new OutputStreamWriter(Objects.requireNonNull(stream, "Stream must not be null").getStream(), config.charset()));
 	}
 	
-	public void write(@NotNull Property property) {
-		Objects.requireNonNull(property, "Property must not be null");
-		this.write(property.getKey(), property.getRawValue());
-	}
-	
 	public void write(@NotNull String key, @NotNull Object value) {
 		Objects.requireNonNull(key, "Key must not be null");
 		Objects.requireNonNull(value, "Value must not be null");
-		this.write(key, value.toString());
+		this.write(Property.of(key, value.toString()));
 	}
 	
 	public void write(@NotNull Properties properties) {
@@ -65,21 +60,16 @@ public class PropertiesWriter implements AutoCloseable {
 		Objects.requireNonNull(key, "Key must not be null");
 		Objects.requireNonNull(value, "Value must not be null");
 		Objects.requireNonNull(converter, "Converter must not be null");
-		this.write(key, converter.convert(value));
+		this.write(Property.of(key, converter.convert(value)));
 	}
 	
-	private void write(@NotNull String key, @NotNull String value) {
-		Objects.requireNonNull(key, "Key must not be null");
-		Objects.requireNonNull(value, "Value must not be null");
+	public void write(@NotNull Property property) {
+		Objects.requireNonNull(property, "Property must not be null");
 		try {
-			this.config.ensureKeyMatches(key);
-			this.config.ensureValueMatches(value);
+			this.config.ensureKeyMatches(property.getKey());
+			this.config.ensureValueMatches(property.getRawValue());
 			
-			this.writer.write(key);
-			this.writer.write(" ".repeat(this.config.alignment()));
-			this.writer.write(this.config.separator());
-			this.writer.write(" ".repeat(this.config.alignment()));
-			this.writer.write(value);
+			this.writer.write(property.toString(this.config));
 			this.writer.newLine();
 		} catch (IOException e) {
 			this.config.errorAction().handle(e);
