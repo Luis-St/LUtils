@@ -32,11 +32,19 @@ import java.util.Set;
 import java.util.regex.Pattern;
 
 /**
+ * Configuration for reading and writing properties.<br>
  *
  * @author Luis-St
  *
+ * @param separator The separator between key and value
+ * @param alignment The number of spaces between key and value (write-only)
+ * @param commentCharacters The characters that indicate a comment line (read-only)
+ * @param keyPattern The pattern that a key must match
+ * @param valuePattern The pattern that a value must match
+ * @param advancedParsing Whether to use advanced parsing (read-only)
+ * @param charset The charset to use for reading and writing
+ * @param errorAction The action to take when an error occurs
  */
-
 public record PropertyConfig(
 	char separator,
 	@WriteOnly int alignment,
@@ -48,8 +56,32 @@ public record PropertyConfig(
 	@NotNull ErrorAction errorAction
 ) {
 	
-	public static final PropertyConfig DEFAULT = new PropertyConfig('=', 1, Set.of('#'), Pattern.compile("^[a-zA-Z0-9._-]+$"), Pattern.compile(".*"), false, StandardCharsets.UTF_8, ErrorAction.IGNORE);
+	/**
+	 * The default property configuration.<br>
+	 * Separator: '='<br>
+	 * Alignment: 1<br>
+	 * Comment characters: '#'<br>
+	 * Key pattern: "^[a-zA-Z0-9._-]+$"<br>
+	 * Value pattern: ".*"<br>
+	 * Advanced parsing: false<br>
+	 * Charset: UTF-8<br>
+	 * Error action: THROW<br>
+	 */
+	public static final PropertyConfig DEFAULT = new PropertyConfig('=', 1, Set.of('#'), Pattern.compile("^[a-zA-Z0-9._-]+$"), Pattern.compile(".*"), false, StandardCharsets.UTF_8, ErrorAction.THROW);
 	
+	/**
+	 * Constructs a new property configuration.<br>
+	 * @param separator The separator between key and value
+	 * @param alignment The number of spaces between key and value
+	 * @param commentCharacters The characters that indicate a comment line
+	 * @param keyPattern The pattern that a key must match
+	 * @param valuePattern The pattern that a value must match
+	 * @param advancedParsing Whether to use advanced parsing
+	 * @param charset The charset to use for reading and writing
+	 * @param errorAction The action to take when an error occurs
+	 * @throws NullPointerException If any of the parameters is null
+	 * @throws IllegalArgumentException If the separator is a whitespace character, a newline character, or a comment character
+	 */
 	public PropertyConfig {
 		Objects.requireNonNull(commentCharacters, "Comment characters must not be null");
 		Objects.requireNonNull(keyPattern, "Key pattern must not be null");
@@ -68,6 +100,12 @@ public record PropertyConfig(
 		}
 	}
 	
+	/**
+	 * Checks whether the given key matches the key pattern.<br>
+	 * @param key The key to check
+	 * @throws NullPointerException If the key is null
+	 * @throws IllegalPropertyKeyException If the key does not match the key pattern
+	 */
 	public void ensureKeyMatches(@Nullable String key) throws IllegalPropertyKeyException {
 		Objects.requireNonNull(key, "Key must not be null");
 		if (!this.keyPattern.matcher(key).matches()) {
@@ -75,6 +113,12 @@ public record PropertyConfig(
 		}
 	}
 	
+	/**
+	 * Checks whether the given value matches the value pattern.<br>
+	 * @param value The value to check
+	 * @throws NullPointerException If the value is null
+	 * @throws IllegalPropertyKeyException If the value does not match the value pattern
+	 */
 	public void ensureValueMatches(@Nullable String value) throws IllegalPropertyKeyException {
 		Objects.requireNonNull(value, "Value must not be null");
 		if (!this.valuePattern.matcher(value).matches()) {

@@ -35,36 +35,83 @@ import java.util.regex.Pattern;
 import static org.apache.commons.lang3.StringUtils.*;
 
 /**
+ * Represents a reader for properties.<br>
+ * This reader reads the properties from a defined input and returns them as a properties object.<br>
+ * The base format of the properties is a key-value pair separated by a separator:<br>
+ * <pre>{@code
+ * <key><separator><value>
+ * }</pre>
+ * The line as a whole can contain multiple separators, but the first one will be used to split the key and value.<br>
+ *
+ *
+ *
  *
  * @author Luis-St
- *
  */
-
 public class PropertyReader implements AutoCloseable {
 	
+	/**
+	 * The pattern to check if a key is a compacted key.<br>
+	 */
 	private static final Pattern COMPACTED_KEY_PATTERN = Pattern.compile("^(.+?)\\.(\\[(.*)])\\.?(.*)$");
+	/**
+	 * The pattern to check if a key is a variable key.<br>
+	 */
 	private static final Pattern VARIABLE_KEY_PATTERN = Pattern.compile("^(.+?)\\.(\\$\\{(.*)})\\.?(.*)$");
 	
+	/**
+	 * A cache for all properties that have been read.<br>
+	 */
 	private final Map<String, String> properties = Maps.newLinkedHashMap();
+	/**
+	 * The configuration for this reader.<br>
+	 */
 	private final PropertyConfig config;
+	/**
+	 * The internal io reader to read the properties.<br>
+	 */
 	private final BufferedReader reader;
 	
+	/**
+	 * Constructs a new property reader with the given input and the default configuration.<br>
+	 * @param input The input to read the properties from
+	 * @throws NullPointerException If the input is null
+	 */
 	public PropertyReader(@NotNull DataInput input) {
 		this(input, PropertyConfig.DEFAULT);
 	}
 	
+	/**
+	 * Constructs a new property reader with the given input and configuration.<br>
+	 * @param input The input to read the properties from
+	 * @param config The configuration for this reader
+	 * @throws NullPointerException If the input or the configuration is null
+	 */
 	public PropertyReader(@NotNull DataInput input, @NotNull PropertyConfig config) {
 		this.config = Objects.requireNonNull(config, "Property config must not be null");
 		this.reader = new BufferedReader(new InputStreamReader(Objects.requireNonNull(input, "Input must not be null").getStream(), config.charset()));
 	}
 	
 	//region Static helper methods
+	
+	/**
+	 * Reads the content of the give scoped string reader and returns it without the scope.<br>
+	 * @param reader The reader to read the content from
+	 * @param scope The scope which is expected
+	 * @return The content of the reader without the scope
+	 */
 	private static @NotNull String readScopeExclude(@NotNull ScopedStringReader reader, ScopedStringReader.@NotNull StringScope scope) {
+		Objects.requireNonNull(reader, "Reader must not be null");
+		Objects.requireNonNull(scope, "Scope must not be null");
 		String result = reader.readScope(scope);
 		return result.substring(1, result.length() - 1);
 	}
 	//endregion
 	
+	/**
+	 * Reads the properties from the input and returns them as a properties object.<br>
+	 * @return The properties that have been read
+	 */
 	public @NotNull Properties readProperties() {
 		List<Property> properties = Lists.newArrayList();
 		try {
@@ -86,6 +133,15 @@ public class PropertyReader implements AutoCloseable {
 		return new Properties(properties);
 	}
 	
+	/**
+	 * Parses the given line and returns the properties that have been read.<br>
+	 * If the line is empty or a comment, an empty list will be returned.<br>
+	 * In the case of an error, the error action of the configuration will be executed.<br>
+	 * @param rawLine The line to parse
+	 * @return The properties that have been read
+	 * @throws NullPointerException If the line is null
+	 * @throws IllegalLineReadException If the line is not parsable (depends on the configuration)
+	 */
 	private @NotNull @Unmodifiable List<Property> parseLine(@NotNull String rawLine) {
 		Objects.requireNonNull(rawLine, "Line must not be null");
 		String line = rawLine.stripLeading();
@@ -108,6 +164,13 @@ public class PropertyReader implements AutoCloseable {
 		}
 	}
 	
+	/**
+	 * Returns the value part of the given parts.<br>
+	 * If the line contains multiple separators, the value part will be concatenated with the separator.<br>
+	 * @param valueParts The parts of the line that were split at the separator
+	 * @return The value part of the line
+	 * @throws NullPointerException If the value parts are null
+	 */
 	private @NotNull String getValuePart(String @NotNull [] valueParts) {
 		Objects.requireNonNull(valueParts, "Value parts must not be null");
 		if (valueParts.length == 1) {
@@ -123,12 +186,23 @@ public class PropertyReader implements AutoCloseable {
 		}
 	}
 	
+	/**
+	 * Parses the given key and value and returns the properties that have been read.<br>
+	 * If advanced parsing is enabled, the key can be a compacted or variable key.<br>
+	 * @param rawKey
+	 * @param rawValue
+	 * @return
+	 * @throws IOException
+	 */
 	private @NotNull @Unmodifiable List<Property> parseProperty(@NotNull String rawKey, @NotNull String rawValue) throws IOException {
 		Objects.requireNonNull(rawKey, "Key must not be null");
 		Objects.requireNonNull(rawValue, "Value must not be null");
 		int alignment = this.getWhitespaceAlignmentCount(rawKey);
 		String key = this.removeAlignment(rawKey, alignment, true);
 		String value = this.removeAlignment(rawValue, alignment, false);
+		if (this.isAdvancedKey(key) && !this.config.advancedParsing()) {
+			this.config.errorAction().handle(new IllegalPropertyKeyPartException("Advanced key '" + key + "' is not allowed: '" + rawKey + "'"));
+		}
 		if (this.isAdvancedKey(key) && this.config.advancedParsing()) {
 			List<Property> properties = this.parsePropertyAdvanced(key, value);
 			this.config.ensureValueMatches(value);

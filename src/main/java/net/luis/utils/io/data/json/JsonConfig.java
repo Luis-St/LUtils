@@ -38,7 +38,7 @@ public record JsonConfig(
 	@NotNull ErrorAction errorAction
 ) {
 	
-	public static final JsonConfig DEFAULT = new JsonConfig("\t", StandardCharsets.UTF_8, ErrorAction.IGNORE);
+	public static final JsonConfig DEFAULT = new JsonConfig("\t", StandardCharsets.UTF_8, ErrorAction.THROW);
 	
 	public JsonConfig {
 		Objects.requireNonNull(charset, "Charset must not be null");

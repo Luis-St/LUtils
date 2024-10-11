@@ -26,31 +26,49 @@ import org.jetbrains.annotations.*;
 import java.util.*;
 
 /**
+ * Represents a collection of properties.<br>
+ * This class is immutable and is used for reading properties only.<br>
  *
  * @author Luis-St
- *
  */
-
 public class Properties {
 	
+	/**
+	 * The internal map of properties.<br>
+	 * For performance reasons, the properties are stored with their keys as the map key.<br>
+	 */
 	private final Map<String, Property> properties = Maps.newLinkedHashMap();
 	
-	public Properties() {}
-	
+	/**
+	 * Constructs a new properties instance from a list of properties.<br>
+	 * @param properties The list of properties to construct the instance from
+	 * @throws NullPointerException If the list of properties is null
+	 */
 	public Properties(@NotNull List<Property> properties) {
 		Objects.requireNonNull(properties, "Properties must not be null");
 		properties.forEach(property -> this.properties.put(property.getKey(), property));
 	}
 	
+	/**
+	 * Constructs a new properties instance from a map of properties
+	 * @param properties The map of properties to construct the instance from
+	 * @throws NullPointerException If the map of properties is null
+	 */
 	public Properties(@NotNull Map<String, Property> properties) {
 		Objects.requireNonNull(properties, "Properties must not be null");
 		this.properties.putAll(properties);
 	}
 	
 	//region Static helper methods
-	private static @NotNull Property copyPropertyAndRemoveGroup(@NotNull Property property, @Nullable String group) {
-		if (!property.isPartOfGroup(group)) {
-			throw new IllegalArgumentException("Property is not part of group");
+	
+	/**
+	 * Copies a property and removes the specified subgroup from the key.<br>
+	 * If the subgroup is null or empty, the property is copied without any changes.<br>
+	 * @param property The property to copy
+	 * @param subgroup The subgroup to remove from the key
+	 * @return The copied property with the subgroup removed from the key
+	 * @throws IllegalArgumentException If the property is not part of the specified subgroup
+	 */
 	private static @NotNull Property copyPropertyAndRemoveGroup(@NotNull Property property, @Nullable String subgroup) {
 		if (!property.isPartOfGroup(subgroup)) {
 			throw new IllegalArgumentException("Property '" + property.getKey() + "' is not part of subgroup '" + subgroup + "'");
@@ -59,8 +77,6 @@ public class Properties {
 			return Property.of(property.getKey(), property.getRawValue());
 		}
 		String key = property.getKey();
-		if (key.startsWith(group.endsWith(".") ? group : group + ".")) {
-			key = key.substring(group.length() + 1);
 		if (key.startsWith(subgroup.endsWith(".") ? subgroup : subgroup + ".")) {
 			key = key.substring(subgroup.length() + 1);
 		}
@@ -68,33 +84,58 @@ public class Properties {
 	}
 	//endregion
 	
+	/**
+	 * Returns an unmodifiable collection of all properties in this instance.<br>
+	 * @return A collection of all properties
+	 */
 	public @NotNull @Unmodifiable Collection<Property> getProperties() {
 		return Collections.unmodifiableCollection(this.properties.values());
 	}
 	
+	/**
+	 * Checks if this instance contains a property with the specified key.<br>
+	 * @param key The key to check for
+	 * @return True if a property with the specified key exists, otherwise false
+	 * @throws NullPointerException If the key is null
+	 */
 	public boolean hasProperty(@NotNull String key) {
 		Objects.requireNonNull(key, "Key must not be null");
 		return this.properties.containsKey(key);
 	}
 	
-	public @UnknownNullability Property getProperty(@NotNull String key) {
+	/**
+	 * Returns the property with the specified key or null if no such property exists.<br>
+	 * @param key The key of the property to return
+	 * @return The property with the specified key or null
+	 * @throws NullPointerException If the key is null
+	 */
 	public @Nullable Property getProperty(@NotNull String key) {
 		Objects.requireNonNull(key, "Key must not be null");
 		return this.properties.get(key);
 	}
 	
-	public @NotNull Properties getGroupedProperties(@Nullable String group) {
+	/**
+	 * Returns all properties that are part of the specified subgroup.<br>
+	 * If the subgroup is null or empty, all properties are returned.<br>
+	 * The properties are copied and the subgroup is removed from the key.<br>
+	 * @param subgroup The subgroup to get the properties for
+	 * @return A new properties instance containing all properties that are part of the specified subgroup
+	 */
 	public @NotNull Properties getSubProperties(@Nullable String subgroup) {
 		List<Property> properties = Lists.newArrayList();
 		this.properties.values().forEach(property -> {
-			if (property.isPartOfGroup(group)) {
-				properties.add(copyPropertyAndRemoveGroup(property, group));
 			if (property.isPartOfGroup(subgroup)) {
+				properties.add(copyPropertyAndRemoveGroup(property, subgroup));
 			}
 		});
 		return new Properties(properties);
 	}
 	
+	/**
+	 * Returns a map of all properties grouped by their subgroups.<br>
+	 * The map returned can either contain nested maps or simple key-value pairs.<br>
+	 * @return A map of all properties grouped by their subgroups
+	 */
 	@SuppressWarnings("unchecked")
 	public @NotNull Map<String, Object> getGroupedMap() {
 		Map<String, Object> map = Maps.newLinkedHashMap();
