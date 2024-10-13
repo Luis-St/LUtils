@@ -65,7 +65,7 @@ class PropertyReaderTest {
 		assertDoesNotThrow(() -> new PropertyReader(provider, PropertyConfig.DEFAULT));
 	}
 	
-	@Test // ToDO: Added test for advanced key when not allowed
+	@Test
 	void readSimplePropertiesDefaultConfig() {
 		PropertyReader reader;
 		Properties properties;
@@ -93,6 +93,14 @@ class PropertyReaderTest {
 		
 		// Illegal key
 		reader = createReader("key 1 = value1" + System.lineSeparator());
+		assertThrows(IllegalPropertyKeyException.class, reader::readProperties);
+		
+		// Compacted key -> Not allowed
+		reader = createReader("key.[1|2] = value1" + System.lineSeparator());
+		assertThrows(IllegalPropertyKeyException.class, reader::readProperties);
+		
+		// Variable key -> Not allowed
+		reader = createReader("key.${?key1} = value1" + System.lineSeparator());
 		assertThrows(IllegalPropertyKeyException.class, reader::readProperties);
 	}
 	
@@ -124,6 +132,14 @@ class PropertyReaderTest {
 		
 		// Illegal key
 		reader = createReader("key1 : value1", CUSTOM_CONFIG);
+		assertThrows(IllegalPropertyKeyException.class, reader::readProperties);
+		
+		// Compacted key -> Not allowed
+		reader = createReader("key.[a|b] = value1" + System.lineSeparator());
+		assertThrows(IllegalPropertyKeyException.class, reader::readProperties);
+		
+		// Variable key -> Not allowed
+		reader = createReader("key.${?key_a} = value1" + System.lineSeparator());
 		assertThrows(IllegalPropertyKeyException.class, reader::readProperties);
 		
 		// Illegal value
