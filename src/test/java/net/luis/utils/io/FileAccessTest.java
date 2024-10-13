@@ -20,10 +20,9 @@ package net.luis.utils.io;
 
 import org.apache.commons.lang3.function.FailableConsumer;
 import org.apache.commons.lang3.function.FailableFunction;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
 
-import java.io.IOException;
-import java.io.UncheckedIOException;
+import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
@@ -36,37 +35,54 @@ import static org.junit.jupiter.api.Assertions.*;
  */
 class FileAccessTest {
 	
-	private final Path folder = FileUtils.createSessionDirectory("FileAccessTest");
+	private static final Path FILE = Path.of("FileAccess/FileAccess.json");
 	
-	FileAccessTest() throws IOException {}
+	//region Setup
+	@BeforeAll
+	static void setUpBefore() throws Exception {
+		Files.createDirectory(FILE.getParent());
+	}
+	//endregion
+	
+	//region Cleanup
+	@AfterAll
+	static void cleanUpAfter() throws Exception {
+		Files.deleteIfExists(FILE);
+		Files.deleteIfExists(FILE.getParent());
+	}
+	//endregion
 	
 	@Test
 	void constructor() {
 		assertThrows(NullPointerException.class, () -> new FileAccess(null));
-		assertDoesNotThrow(() -> new FileAccess(this.folder.resolve("test.json")));
-		assertThrows(IllegalStateException.class, () -> new FileAccess(this.folder.resolve("test.json")));
+		FileAccess fileAccess = assertDoesNotThrow(() -> new FileAccess(FILE));
+		assertThrows(IllegalStateException.class, () -> new FileAccess(FILE));
+		fileAccess.close();
 	}
 	
 	@Test
 	void getFile() {
-		FileAccess fileAccess = new FileAccess(this.folder.resolve("test.json"));
+		FileAccess fileAccess = new FileAccess(FILE);
 		assertNotNull(fileAccess.getFile());
-		assertEquals(this.folder.resolve("test.json"), fileAccess.getFile());
+		assertEquals(FILE, fileAccess.getFile());
+		fileAccess.close();
 	}
 	
 	@Test
 	void canAccess() {
-		FileAccess fileAccess = new FileAccess(this.folder.resolve("test.json"));
+		FileAccess fileAccess = new FileAccess(FILE);
 		assertTrue(fileAccess.canAccess());
 		fileAccess.access(f -> {
 			assertFalse(fileAccess.canAccess());
 		});
 		assertTrue(fileAccess.canAccess());
+		fileAccess.close();
+		assertFalse(fileAccess.canAccess());
 	}
 	
 	@Test
-	void access() {
-		FileAccess fileAccess = new FileAccess(this.folder.resolve("test.json"));
+	void accessConsumer() {
+		FileAccess fileAccess = new FileAccess(FILE);
 		assertThrows(NullPointerException.class, () -> fileAccess.access((FailableConsumer<Path, IOException>) null));
 		assertDoesNotThrow(() -> fileAccess.access(file -> {
 			if (Files.notExists(file)) {
@@ -78,7 +94,13 @@ class FileAccessTest {
 			Files.delete(file);
 			Files.delete(file);
 		}));
+		fileAccess.close();
+		assertThrows(IllegalStateException.class, () -> fileAccess.access(file -> {}));
+	}
 	
+	@Test
+	void accessFunction() {
+		FileAccess fileAccess = new FileAccess(FILE);
 		assertThrows(NullPointerException.class, () -> fileAccess.access((FailableFunction<Path, Object, IOException>) null));
 		assertDoesNotThrow(() -> fileAccess.access(file -> {
 			if (Files.notExists(file)) {
@@ -92,5 +114,15 @@ class FileAccessTest {
 			Files.delete(file);
 			return 0;
 		}));
+		fileAccess.close();
+		assertThrows(IllegalStateException.class, () -> fileAccess.access(file -> 0));
+	}
+	
+	@Test
+	void close() {
+		FileAccess fileAccess = new FileAccess(FILE);
+		assertThrows(IllegalStateException.class, () -> new FileAccess(FILE));
+		fileAccess.close();
+		assertDoesNotThrow(() -> new FileAccess(FILE)).close();
 	}
 }

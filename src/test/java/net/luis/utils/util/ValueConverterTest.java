@@ -19,6 +19,7 @@
 package net.luis.utils.util;
 
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.junit.jupiter.api.Test;
 
 import java.util.Objects;
@@ -35,12 +36,12 @@ class ValueConverterTest {
 	
 	private static final ValueConverter<String, Integer> CONVERTER = new ValueConverter<String, Integer>() {
 		@Override
-		public @NotNull String convert(@NotNull Integer value) {
+		public @NotNull String convert(@Nullable Integer value) {
 			return String.valueOf(Objects.requireNonNull(value));
 		}
 		
 		@Override
-		public @NotNull Integer parse(@NotNull String value) {
+		public @NotNull Integer parse(@Nullable String value) {
 			return Integer.parseInt(Objects.requireNonNull(value));
 		}
 	};

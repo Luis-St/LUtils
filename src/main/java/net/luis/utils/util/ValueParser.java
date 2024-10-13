@@ -44,7 +44,7 @@ public interface ValueParser<F, T> {
 	 * @throws NullPointerException If the value is null (optional)
 	 * @throws IllegalArgumentException If the value is invalid (optional)
 	 */
-	@NotNull T parse(@UnknownNullability F value);
+	@NotNull T parse(@Nullable F value);
 	
 	/**
 	 * Safe method to parse a value from type {@code F} to type {@code T}.<br>
@@ -72,12 +72,12 @@ public interface ValueParser<F, T> {
 		return new ValueConverter<>() {
 			
 			@Override
-			public @NotNull F convert(@NotNull T value) {
+			public @NotNull F convert(@Nullable T value) {
 				return convert.apply(value);
 			}
 			
 			@Override
-			public @NotNull T parse(@NotNull F value) {
+			public @NotNull T parse(@Nullable F value) {
 				return ValueParser.this.parse(value);
 			}
 		};

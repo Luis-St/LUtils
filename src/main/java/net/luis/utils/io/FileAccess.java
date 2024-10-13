@@ -47,7 +47,7 @@ import java.util.concurrent.locks.ReentrantLock;
  *
  * @author Luis-St
  */
-public class FileAccess {
+public class FileAccess implements AutoCloseable {
 	
 	/**
 	 * Map of all files that are currently accessed by an instance of this class.<br>
@@ -63,6 +63,10 @@ public class FileAccess {
 	 * File that is managed by this instance of the class.<br>
 	 */
 	private final Path file;
+	/**
+	 * Flag to check if the file access is closed.<br>
+	 */
+	private boolean closed;
 	
 	/**
 	 * Constructs a new file access instance for the given file.<br>
@@ -79,6 +83,16 @@ public class FileAccess {
 	}
 	
 	/**
+	 * Ensures that the file access is open.<br>
+	 * @throws IllegalStateException If the file access is closed
+	 */
+	private void ensureOpen() {
+		if (this.closed) {
+			throw new IllegalStateException("Unable to interact with closed file access: " + this.file);
+		}
+	}
+	
+	/**
 	 * @return The file that is accessed by this instance of the class
 	 */
 	public @NotNull Path getFile() {
@@ -90,15 +104,17 @@ public class FileAccess {
 	 * @return True if the file can be accessed, false if not
 	 */
 	public boolean canAccess() {
-		return !this.lock.isLocked();
+		return !this.lock.isLocked() && !this.closed;
 	}
 	
 	/**
 	 * Access the file with the given action.<br>
 	 * @param action The action to perform on the file
+	 * @throws IllegalStateException If the file access is closed
 	 * @throws UncheckedIOException If the action throws an IOException
 	 */
 	public void access(@NotNull FailableConsumer<Path, IOException> action) {
+		this.ensureOpen();
 		this.lock.lock();
 		try {
 			action.accept(this.file);
@@ -114,9 +130,11 @@ public class FileAccess {
 	 * @param action The action to perform on the file
 	 * @return The result of the action
 	 * @param <T> The type of the result
+	 * @throws IllegalStateException If the file access is closed
 	 * @throws UncheckedIOException If the action throws an IOException
 	 */
 	public <T> @NotNull T access(@NotNull FailableFunction<Path, T, IOException> action) {
+		this.ensureOpen();
 		this.lock.lock();
 		try {
 			return action.apply(this.file);
@@ -125,6 +143,19 @@ public class FileAccess {
 		} finally {
 			this.lock.unlock();
 		}
+	}
+	
+	/**
+	 * Closes the file access.<br>
+	 * The call to this method is optional, because the file access will be closed automatically when the instance is garbage collected.<br>
+	 */
+	@Override
+	public void close() {
+		if (this.closed) {
+			return;
+		}
+		this.closed = true;
+		ACCESSED_FILES.remove(this.file.toString());
 	}
 	
 	//region Object overrides

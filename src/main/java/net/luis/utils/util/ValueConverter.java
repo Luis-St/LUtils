@@ -41,7 +41,7 @@ public interface ValueConverter<F, T> extends ValueParser<F, T> {
 	 * @throws NullPointerException If the value is null (optional)
 	 * @throws IllegalArgumentException If the value is invalid (optional)
 	 */
-	@NotNull F convert(@UnknownNullability T value);
+	@NotNull F convert(@Nullable T value);
 	
 	/**
 	 * Safe method to convert a value from type {@code T} to type {@code F}.<br>

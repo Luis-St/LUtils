@@ -16,11 +16,10 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-package net.luis.utils.collection;
+package net.luis.utils.collection.registry;
 
 import com.google.common.collect.Lists;
 import net.luis.utils.annotation.type.MockObject;
-import net.luis.utils.collection.registry.Registry;
 import net.luis.utils.collection.registry.key.KeyGenerator;
 import net.luis.utils.collection.registry.key.RegistryKey;
 import net.luis.utils.exception.ModificationException;
