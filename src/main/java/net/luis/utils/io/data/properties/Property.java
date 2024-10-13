@@ -356,7 +356,7 @@ public class Property {
 	 * property.isPartOfGroup(""); // true
 	 * property.isPartOfGroup("this"); // true
 	 * property.isPartOfGroup("this.is"); // true
-	 * property.isPartOfGroup("this.is.an.example.key"); // true
+	 * property.isPartOfGroup("this.is.an.example.key"); // false -> 'key' is not part of the group, it is the key itself
 	 * property.isPartOfGroup("some.other.group"); // false
 	 * }</pre>
 	 * @param group The group to check

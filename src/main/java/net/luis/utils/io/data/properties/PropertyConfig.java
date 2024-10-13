@@ -23,7 +23,6 @@ import net.luis.utils.io.data.config.WriteOnly;
 import net.luis.utils.io.data.properties.exception.IllegalPropertyKeyException;
 import net.luis.utils.util.ErrorAction;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
@@ -80,7 +79,7 @@ public record PropertyConfig(
 	 * @param charset The charset to use for reading and writing
 	 * @param errorAction The action to take when an error occurs
 	 * @throws NullPointerException If any of the parameters is null
-	 * @throws IllegalArgumentException If the separator is a whitespace character, a newline character, or a comment character
+	 * @throws IllegalArgumentException If the separator is a whitespace character or a comment character
 	 */
 	public PropertyConfig {
 		Objects.requireNonNull(commentCharacters, "Comment characters must not be null");
@@ -92,9 +91,6 @@ public record PropertyConfig(
 		if (separator == '\0' || Character.isWhitespace(separator)) {
 			throw new IllegalArgumentException("Separator must not be a whitespace character");
 		}
-		if (System.lineSeparator().equals("" + separator)) {
-			throw new IllegalArgumentException("Separator must not be a newline character");
-		}
 		if (commentCharacters.contains(separator)) {
 			throw new IllegalArgumentException("Separator must not be a comment character");
 		}
@@ -104,10 +100,13 @@ public record PropertyConfig(
 	 * Checks whether the given key matches the key pattern.<br>
 	 * @param key The key to check
 	 * @throws NullPointerException If the key is null
-	 * @throws IllegalPropertyKeyException If the key does not match the key pattern
+	 * @throws IllegalPropertyKeyException If the key is blank or does not match the key pattern
 	 */
-	public void ensureKeyMatches(@Nullable String key) throws IllegalPropertyKeyException {
+	public void ensureKeyMatches(@NotNull String key) throws IllegalPropertyKeyException {
 		Objects.requireNonNull(key, "Key must not be null");
+		if (key.isBlank()) {
+			throw new IllegalPropertyKeyException("Property key must not be empty");
+		}
 		if (!this.keyPattern.matcher(key).matches()) {
 			throw new IllegalPropertyKeyException("Property key '" + key + "' does not match the pattern '" + this.keyPattern.pattern() + "' defined in property config");
 		}
@@ -119,7 +118,7 @@ public record PropertyConfig(
 	 * @throws NullPointerException If the value is null
 	 * @throws IllegalPropertyKeyException If the value does not match the value pattern
 	 */
-	public void ensureValueMatches(@Nullable String value) throws IllegalPropertyKeyException {
+	public void ensureValueMatches(@NotNull String value) throws IllegalPropertyKeyException {
 		Objects.requireNonNull(value, "Value must not be null");
 		if (!this.valuePattern.matcher(value).matches()) {
 			throw new IllegalPropertyKeyException("Property value '" + value + "' does not match the pattern '" + this.valuePattern.pattern() + "' defined in property config");

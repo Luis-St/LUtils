@@ -18,7 +18,7 @@
 
 package net.luis.utils.io.data.properties;
 
-import net.luis.utils.io.data.DataOutput;
+import net.luis.utils.io.data.OutputProvider;
 import net.luis.utils.util.ValueConverter;
 import org.jetbrains.annotations.NotNull;
 
@@ -116,6 +116,7 @@ public class PropertiesWriter implements AutoCloseable {
 			
 			this.writer.write(property.toString(this.config));
 			this.writer.newLine();
+			this.writer.flush();
 		} catch (IOException e) {
 			this.config.errorAction().handle(e);
 		}

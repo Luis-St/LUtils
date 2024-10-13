@@ -85,6 +85,14 @@ public class Properties {
 	//endregion
 	
 	/**
+	 * Returns the number of properties in this instance.<br>
+	 * @return The number of properties
+	 */
+	public int size() {
+		return this.properties.size();
+	}
+	
+	/**
 	 * Returns an unmodifiable collection of all properties in this instance.<br>
 	 * @return A collection of all properties
 	 */
@@ -121,7 +129,7 @@ public class Properties {
 	 * @param subgroup The subgroup to get the properties for
 	 * @return A new properties instance containing all properties that are part of the specified subgroup
 	 */
-	public @NotNull Properties getSubProperties(@Nullable String subgroup) {
+	public @NotNull Properties getPropertiesOfSubgroup(@Nullable String subgroup) {
 		List<Property> properties = Lists.newArrayList();
 		this.properties.values().forEach(property -> {
 			if (property.isPartOfGroup(subgroup)) {
@@ -167,14 +175,6 @@ public class Properties {
 	@Override
 	public String toString() {
 		return this.properties.toString();
-	}
-	
-	public @NotNull String toString(@NotNull PropertyConfig config) {
-		StringBuilder builder = new StringBuilder();
-		this.properties.forEach((key, property) -> {
-			builder.append(property.toString(config)).append(System.lineSeparator());
-		});
-		return builder.toString();
 	}
 	//endregion
 }
