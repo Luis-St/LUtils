@@ -74,20 +74,20 @@ public class PropertyReader implements AutoCloseable {
 	
 	/**
 	 * Constructs a new property reader with the given input and the default configuration.<br>
-	 * @param input The input to read the properties from
+	 * @param input The input to create the reader for
 	 * @throws NullPointerException If the input is null
 	 */
-	public PropertyReader(@NotNull DataInput input) {
+	public PropertyReader(@NotNull InputProvider input) {
 		this(input, PropertyConfig.DEFAULT);
 	}
 	
 	/**
 	 * Constructs a new property reader with the given input and configuration.<br>
-	 * @param input The input to read the properties from
+	 * @param input The input to create the reader for
 	 * @param config The configuration for this reader
 	 * @throws NullPointerException If the input or the configuration is null
 	 */
-	public PropertyReader(@NotNull DataInput input, @NotNull PropertyConfig config) {
+	public PropertyReader(@NotNull InputProvider input, @NotNull PropertyConfig config) {
 		this.config = Objects.requireNonNull(config, "Property config must not be null");
 		this.reader = new BufferedReader(new InputStreamReader(Objects.requireNonNull(input, "Input must not be null").getStream(), config.charset()));
 	}
