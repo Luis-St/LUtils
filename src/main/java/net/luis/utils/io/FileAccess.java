@@ -18,6 +18,7 @@
 
 package net.luis.utils.io;
 
+import net.luis.utils.util.Utils;
 import org.apache.commons.lang3.function.FailableConsumer;
 import org.apache.commons.lang3.function.FailableFunction;
 import org.jetbrains.annotations.NotNull;
@@ -84,11 +85,11 @@ public class FileAccess implements AutoCloseable {
 	
 	/**
 	 * Ensures that the file access is open.<br>
-	 * @throws IllegalStateException If the file access is closed
+	 * @throws IOException If the file access is closed (sneaky thrown)
 	 */
 	private void ensureOpen() {
 		if (this.closed) {
-			throw new IllegalStateException("Unable to interact with closed file access: " + this.file);
+			Utils.throwSneaky(new IOException("Unable to interact with closed file access: " + this.file));
 		}
 	}
 	
@@ -110,7 +111,7 @@ public class FileAccess implements AutoCloseable {
 	/**
 	 * Access the file with the given action.<br>
 	 * @param action The action to perform on the file
-	 * @throws IllegalStateException If the file access is closed
+	 * @throws IOException If the file access is closed (sneaky thrown)
 	 * @throws UncheckedIOException If the action throws an IOException
 	 */
 	public void access(@NotNull FailableConsumer<Path, IOException> action) {
@@ -130,7 +131,7 @@ public class FileAccess implements AutoCloseable {
 	 * @param action The action to perform on the file
 	 * @return The result of the action
 	 * @param <T> The type of the result
-	 * @throws IllegalStateException If the file access is closed
+	 * @throws IOException If the file access is closed (sneaky thrown)
 	 * @throws UncheckedIOException If the action throws an IOException
 	 */
 	public <T> @NotNull T access(@NotNull FailableFunction<Path, T, IOException> action) {

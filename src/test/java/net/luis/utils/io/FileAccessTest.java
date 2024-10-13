@@ -95,7 +95,7 @@ class FileAccessTest {
 			Files.delete(file);
 		}));
 		fileAccess.close();
-		assertThrows(IllegalStateException.class, () -> fileAccess.access(file -> {}));
+		assertThrows(IOException.class, () -> fileAccess.access(file -> {}));
 	}
 	
 	@Test
@@ -115,7 +115,7 @@ class FileAccessTest {
 			return 0;
 		}));
 		fileAccess.close();
-		assertThrows(IllegalStateException.class, () -> fileAccess.access(file -> 0));
+		assertThrows(IOException.class, () -> fileAccess.access(file -> 0));
 	}
 	
 	@Test
