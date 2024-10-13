@@ -20,10 +20,10 @@ package net.luis.utils.io.data.properties;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import net.luis.utils.io.data.properties.exception.*;
 import net.luis.utils.io.exception.IllegalLineReadException;
-import net.luis.utils.io.data.properties.exception.IllegalPropertyKeyPartException;
 import net.luis.utils.io.reader.ScopedStringReader;
-import net.luis.utils.io.data.DataInput;
+import net.luis.utils.io.data.InputProvider;
 import net.luis.utils.lang.StringUtils;
 import org.apache.commons.lang3.ArrayUtils;
 import org.jetbrains.annotations.*;
@@ -42,8 +42,34 @@ import static org.apache.commons.lang3.StringUtils.*;
  * <key><separator><value>
  * }</pre>
  * The line as a whole can contain multiple separators, but the first one will be used to split the key and value.<br>
+ * <br>
  *
+ * <h4><a href="compactedKeys">Compacted keys</a></h4>
+ * A compacted key is a key that contains multiple keys separated by a pipe.<br>
+ * The compacted part of a key is enclosed in square brackets {@code [}, {@code ]} and the keys are separated by {@code |}.<br>
+ * <pre>{@code
+ * <key_part>.[<compacted_key_part>|<compacted_key_part>|...].<key_part><separator><value>
+ * }</pre>
+ * All compacted keys will be resolved to multiple keys with the same value.<br>
+ * A compacted key part can contain a variable key part that will be resolved to a value.<br>
+ * <br>
  *
+ * <h4><a href="variableKeys">Variable keys</a></h4>
+ * A variable key is a key that contains a variable part that will be resolved to a value.<br>
+ * The variable part of a key is enclosed in curly brackets <code>{</code>, <code>}</code> and the parts are separated by {@code ?}.<br>
+ * <p>
+ *     The first part is the target type, the second part is the target key and the third part is the default value.<br>
+ *     The default value is optional and will be used if the resolved value is {@code null}.<br>
+ *     The target type can be one of the following:<br>
+ * </p>
+ * <ul>
+ *     <li>{@code <empty>}, {@code prop} or {@code property} - The value will be resolved from the previously read properties of this reader</li>
+ *     <li>{@code sys} or {@code system} - The value will be resolved from the system properties</li>
+ *     <li>{@code env} or {@code environment} - The value will be resolved from the system environment</li>
+ * </ul>
+ * <pre>{@code
+ * <key_part>.?{<target_type>?<variable_key>?<default_value>}.<key_part><separator><value>
+ * }</pre>
  *
  *
  * @author Luis-St
@@ -111,6 +137,7 @@ public class PropertyReader implements AutoCloseable {
 	/**
 	 * Reads the properties from the input and returns them as a properties object.<br>
 	 * @return The properties that have been read
+	 * @throws IOException If an error occurs while reading the properties
 	 */
 	public @NotNull Properties readProperties() {
 		List<Property> properties = Lists.newArrayList();
@@ -188,11 +215,13 @@ public class PropertyReader implements AutoCloseable {
 	
 	/**
 	 * Parses the given key and value and returns the properties that have been read.<br>
-	 * If advanced parsing is enabled, the key can be a compacted or variable key.<br>
-	 * @param rawKey
-	 * @param rawValue
-	 * @return
-	 * @throws IOException
+	 * If advanced parsing is enabled, the key can be a {@link PropertyReader compacted} or {@link PropertyReader variable key}.<br>
+	 * @param rawKey The key to parse
+	 * @param rawValue The value to parse
+	 * @return The properties that have been read
+	 * @throws IOException If an error occurs while parsing the key or value
+	 * @see #parsePropertySimple(String, String)
+	 * @see #resolveAdvancedKeys(String)
 	 */
 	private @NotNull @Unmodifiable List<Property> parseProperty(@NotNull String rawKey, @NotNull String rawValue) throws IOException {
 		Objects.requireNonNull(rawKey, "Key must not be null");
@@ -203,20 +232,37 @@ public class PropertyReader implements AutoCloseable {
 		if (this.isAdvancedKey(key) && !this.config.advancedParsing()) {
 			this.config.errorAction().handle(new IllegalPropertyKeyPartException("Advanced key '" + key + "' is not allowed: '" + rawKey + "'"));
 		}
-		if (this.isAdvancedKey(key) && this.config.advancedParsing()) {
-			List<Property> properties = this.parsePropertyAdvanced(key, value);
-			this.config.ensureValueMatches(value);
+		if (this.config.advancedParsing()) {
+			List<Property> properties = Lists.newArrayList();
+			for (String resolvedKey : this.resolveAdvancedKeys(key)) {
+				this.config.ensureKeyMatches(resolvedKey);
+				this.config.ensureValueMatches(value);
+				properties.add(Property.of(resolvedKey, value));
+			}
 			return properties;
 		}
 		return List.of(this.parsePropertySimple(key, value));
 	}
 	
 	//region Helper methods
+	
+	/**
+	 * Checks if the given key is either a compacted or variable key.<br>
+	 * @param key The key to check
+	 * @return True if the key is advanced, otherwise false
+	 */
 	private boolean isAdvancedKey(@NotNull String key) {
 		Objects.requireNonNull(key, "Key must not be null");
 		return COMPACTED_KEY_PATTERN.matcher(key).matches() || VARIABLE_KEY_PATTERN.matcher(key).matches();
 	}
 	
+	/**
+	 * Returns the alignment count of the given key.<br>
+	 * The alignment count is the count of whitespaces at the end of the key.<br>
+	 * @param key The key to get the alignment count of
+	 * @return The alignment count of the key
+	 * @throws NullPointerException If the key is null
+	 */
 	private int getWhitespaceAlignmentCount(@NotNull String key) {
 		Objects.requireNonNull(key, "Key must not be null");
 		int count = 0;
@@ -230,6 +276,16 @@ public class PropertyReader implements AutoCloseable {
 		return count;
 	}
 	
+	/**
+	 * Removes the alignment from the given string.<br>
+	 * If the alignment is 0, the string will be returned as is.<br>
+	 * If the alignment is greater than 0, the alignment will be removed from the string.<br>
+	 * @param str The string to remove the alignment from
+	 * @param alignment The alignment count to remove
+	 * @param isKey True if the string is a key, otherwise false
+	 * @return The string without the alignment
+	 * @throws NullPointerException If the string is null
+	 */
 	private @NotNull String removeAlignment(@NotNull String str, int alignment, boolean isKey) {
 		Objects.requireNonNull(str, "String must not be null");
 		if (0 >= alignment) {
@@ -244,7 +300,17 @@ public class PropertyReader implements AutoCloseable {
 	//endregion
 	
 	//region Simple parsing
-	private @NotNull Property parsePropertySimple(@NotNull String key, @NotNull String value) throws IOException {
+	
+	/**
+	 * Parses the given key and value and returns a property.<br>
+	 * The key and value will be checked against the configuration.<br>
+	 * @param key The key to parse
+	 * @param value The value to parse
+	 * @return The property that has been read
+	 * @throws IllegalPropertyKeyException If the key does not match the pattern specified in the configuration
+	 * @throws IllegalPropertyValueException If the value does not match the pattern specified in the configuration
+	 */
+	private @NotNull Property parsePropertySimple(@NotNull String key, @NotNull String value) throws IllegalPropertyKeyException, IllegalPropertyValueException {
 		this.config.ensureKeyMatches(key);
 		this.config.ensureValueMatches(value);
 		return Property.of(key, value);
@@ -252,38 +318,51 @@ public class PropertyReader implements AutoCloseable {
 	//endregion
 	
 	//region Advanced parsing
-	private @NotNull @Unmodifiable List<Property> parsePropertyAdvanced(@NotNull String key, @NotNull String value) throws IOException {
+	
+	/**
+	 * Validates and resolves the given advanced key and returns the resolved keys.<br>
+	 * The key can be a {@link PropertyReader compacted} or {@link PropertyReader variable key}.<br>
+	 * @param key The key to resolve
+	 * @return The resolved keys
+	 * @throws NullPointerException If the key is null
+	 * @throws IllegalPropertyKeyPartException If a key part is not valid
+	 * @see #resolveCompactedKeyPart(String, String)
+	 * @see #resolveVariableKeyPart(String, String)
+	 */
+	private @NotNull @Unmodifiable List<String> resolveAdvancedKeys(@NotNull String key) throws IllegalPropertyKeyPartException {
 		Objects.requireNonNull(key, "Key must not be null");
-		Objects.requireNonNull(value, "Value must not be null");
 		List<String> resolvedKeys = Lists.newArrayList();
 		ScopedStringReader reader = new ScopedStringReader(key);
 		while (reader.canRead()) {
 			int position = reader.getIndex();
-			String part = reader.readUntil('.');
+			String part = reader.readUntilInclusive('.');
+			
+			if (part.charAt(part.length() - 1) == '.') {
+				if (!reader.canRead()) {
+					throw new IllegalPropertyKeyPartException("Key part '" + part + "' at position " + position + " end must not end with a dot: '" + key + "'");
+				}
+				part = part.substring(0, part.length() - 1);
+			}
 			if (part.isEmpty()) {
-				continue; // empty key part -> maybe ignoring it since [].[] is a valid key
+				throw new IllegalPropertyKeyPartException("Key part '" + part + "' at position " + position + " must not be empty: '" + key + "'");
 			} else if (part.isBlank()) {
-				throw new IllegalPropertyKeyPartException("Key part at position " + position + " must not be blank: '" + key + "'");
+				throw new IllegalPropertyKeyPartException("Key part '" + part + "' at position " + position + " must not be blank: '" + key + "'");
 			}
-			if (!reader.canRead()) {
-				throw new IllegalPropertyKeyPartException("Key part ends with illegal character: '" + part.charAt(part.length() - 1) + "'");
-			}
-			char next = reader.peek();
-			if (next == '.') {
-				throw new IllegalPropertyKeyPartException("Key part at position " + position + " must not be empty: '" + key + "'");
-			} else if (next == '$') {
-				reader.skip(); // skip $
-				position = reader.getIndex();
-				String variable = readScopeExclude(reader, ScopedStringReader.CURLY_BRACKETS);
+			
+			ScopedStringReader partReader = new ScopedStringReader(part);
+			if (partReader.peek() == '$') {
+				partReader.skip(); // skip $
+				position += partReader.getIndex();
+				String variable = readScopeExclude(partReader, ScopedStringReader.CURLY_BRACKETS);
 				if (variable.isEmpty()) {
 					throw new IllegalPropertyKeyPartException("Variable key part '${" + variable + "}' at position " + position + " must not be empty: '" + key + "'");
 				} else if (variable.isBlank()) {
 					throw new IllegalPropertyKeyPartException("Variable key part '${" + variable + "}' at position " + position + " must not be blank: '" + key + "'");
 				}
-				resolvedKeys = this.extendResolvedKeys(resolvedKeys, this.parseVariableKeyPart(key, variable));
-			} else if (next == '[') {
-				position = reader.getIndex();
-				String compacted = readScopeExclude(reader, ScopedStringReader.SQUARE_BRACKETS);
+				resolvedKeys = this.extendResolvedKeys(resolvedKeys, this.resolveVariableKeyPart(key, variable));
+			} else if (partReader.peek() == '[') {
+				position += partReader.getIndex();
+				String compacted = readScopeExclude(partReader, ScopedStringReader.SQUARE_BRACKETS);
 				if (compacted.isEmpty()) {
 					throw new IllegalPropertyKeyPartException("Compacted key part '[" + compacted + "]' at position " + position + " must not be empty: '" + key + "'");
 				} else if (compacted.isBlank()) {
@@ -291,23 +370,28 @@ public class PropertyReader implements AutoCloseable {
 				} else if (compacted.indexOf('|') == -1) {
 					resolvedKeys = this.extendResolvedKeys(resolvedKeys, compacted);
 				} else {
-					resolvedKeys = this.extendResolvedKeys(resolvedKeys, this.parseCompactedKeyPart(key, compacted));
+					resolvedKeys = this.extendResolvedKeys(resolvedKeys, this.resolveCompactedKeyPart(key, compacted));
 				}
 			} else {
 				resolvedKeys = this.extendResolvedKeys(resolvedKeys, part);
 			}
 		}
-		
-		List<Property> properties = Lists.newArrayList();
-		for (String resolvedKey : resolvedKeys) {
-			this.config.ensureKeyMatches(resolvedKey);
-			properties.add(Property.of(resolvedKey, value));
-		}
-		return properties;
+		return resolvedKeys;
 	}
 	
-	//region Compacted key parsing
-	private String @NotNull [] parseCompactedKeyPart(@NotNull String key, @NotNull String compacted) throws IOException {
+	//region Compacted key resolving
+	
+	/**
+	 * Validates and resolves the given compacted key part against the expected format.<br>
+	 * The compacted key part must contain at least one value, a pipe separates multiple values.<br>
+	 * The values must not be blank, contain whitespaces or be nested.<br>
+	 * @param key The key to resolve
+	 * @param compacted The compacted key part to resolve
+	 * @return The resolved keys
+	 * @throws NullPointerException If the key or compacted key part is null
+	 * @throws IllegalPropertyKeyPartException If the compacted key part does not match the expected format
+	 */
+	private String @NotNull [] resolveCompactedKeyPart(@NotNull String key, @NotNull String compacted) throws IllegalPropertyKeyPartException {
 		Objects.requireNonNull(key, "Key must not be null");
 		Objects.requireNonNull(compacted, "Compacted key part must not be null");
 		String[] compactedValues = compacted.split("\\|");
@@ -323,31 +407,64 @@ public class PropertyReader implements AutoCloseable {
 				throw new IllegalPropertyKeyPartException("Value '" + compactedValue + "' in compacted key part '[" + compacted + "]' must not be nested: '" + key + "'");
 			} else if (compactedValue.charAt(0) == '$') {
 				String variable = readScopeExclude(new ScopedStringReader(compactedValue.substring(1)), ScopedStringReader.CURLY_BRACKETS);
-				compactedValues[i] = this.parseVariableKeyPart(key, variable);
+				compactedValues[i] = this.resolveVariableKeyPart(key, variable);
 			}
 		}
 		return compactedValues;
 	}
 	//endregion
 	
-	//region Variable key parsing
-	private @NotNull String parseVariableKeyPart(@NotNull String key, @NotNull String variable) throws IOException {
+	//region Variable key resolving
+	
+	/**
+	 * <p>
+	 *     Validates and resolves the given variable key part against the expected format.<br>
+	 *     The variable key part must contain at least one question mark but at most two.<br>
+	 *     The first part is the target type, the second part is the target key and the third part is the optional default value.<br>
+	 * </p>
+	 * The target type must be one of the following:<br>
+	 * <ul>
+	 *     <li>{@code <empty>}, {@code prop} or {@code property} - The value will be resolved from the previously read properties of this reader</li>
+	 *     <li>{@code sys} or {@code system} - The value will be resolved from the system properties</li>
+	 *     <li>{@code env} or {@code environment} - The value will be resolved from the system environment</li>
+	 * </ul>
+	 * @param key The key to resolve
+	 * @param variable The variable key part to resolve
+	 * @return The resolved key
+	 * @throws NullPointerException If the key or variable key part is null
+	 * @throws IllegalPropertyKeyPartException If the variable key part does not match the expected format or the value could not be resolved
+	 * @see #resolveVariableValue(String, String)
+	 */
+	private @NotNull String resolveVariableKeyPart(@NotNull String key, @NotNull String variable) throws IllegalPropertyKeyPartException {
 		Objects.requireNonNull(key, "Key must not be null");
 		Objects.requireNonNull(variable, "Variable key part must not be null");
 		int questionMarkCount = countMatches(variable, '?');
 		if (questionMarkCount == 0) {
 			throw new IllegalPropertyKeyPartException("Variable key part '${" + variable + "}' must contain at least one question mark: '" + key + "'");
 		} else if (questionMarkCount == 1 || questionMarkCount == 2) {
-			return this.resolveVariableValue(key, variable, variable.split("\\?"));
+			return this.resolveVariableValue(key, variable);
 		} else {
 			throw new IllegalPropertyKeyPartException("Variable key part '${" + variable + "}' must contain at most two question marks: '" + key + "'");
 		}
 	}
 	
-	private @NotNull String resolveVariableValue(@NotNull String key, @NotNull String variable, String @NotNull [] parts) throws IOException {
+	/**
+	 * Resolves the actual value of the given variable key part.<br>
+	 * <p>
+	 *     If the target type is {@code empty}, {@code prop} or {@code property}, the value will be resolved from the previously read properties of this reader.<br>
+	 *     If the target type is {@code sys} or {@code system}, the value will be resolved from the system properties.<br>
+	 *     If the target type is {@code env} or {@code environment}, the value will be resolved from the system environment.<br>
+	 * </p>
+	 * @param key The key to resolve, used for error messages
+	 * @param variable The variable key part to resolve
+	 * @return The resolved value
+	 * @throws NullPointerException If the key or variable key part is null
+	 * @throws IllegalPropertyKeyPartException If the target type is not valid or the resolved value is null
+	 */
+	private @NotNull String resolveVariableValue(@NotNull String key, @NotNull String variable) throws IllegalPropertyKeyPartException {
 		Objects.requireNonNull(key, "Key must not be null");
 		Objects.requireNonNull(variable, "Variable key part must not be null");
-		Objects.requireNonNull(parts, "Parts must not be null");
+		String[] parts = variable.split("\\?");
 		String targetKey = this.getTargetKey(key, variable, parts);
 		String targetType = parts[0];
 		String value;
@@ -369,6 +486,17 @@ public class PropertyReader implements AutoCloseable {
 		return value;
 	}
 	
+	/**
+	 * Validates and returns the target key of the given variable key part.<br>
+	 * The target key must not be empty, contain nested variable parts or compacted parts.<br>
+	 * The target key will be stripped of whitespaces.<br>
+	 * @param key The key to resolve
+	 * @param variable The variable key part to resolve
+	 * @param parts The parts of the variable key part
+	 * @return The target key of the variable key part
+	 * @throws NullPointerException If the key, variable key part or parts are null
+	 * @throws IllegalPropertyKeyPartException If the target key is not valid
+	 */
 	private @NotNull String getTargetKey(@NotNull String key, @NotNull String variable, String @NotNull [] parts) throws IllegalPropertyKeyPartException {
 		Objects.requireNonNull(key, "Key must not be null");
 		Objects.requireNonNull(variable, "Variable key part must not be null");
@@ -385,12 +513,26 @@ public class PropertyReader implements AutoCloseable {
 	}
 	//endregion
 	
-	private @NotNull List<String> extendResolvedKeys(@NotNull List<String> keys, String @Nullable ... keyParts) {
-		Objects.requireNonNull(keys, "Keys must not be null");
+	/**
+	 * Extends the given list of resolved keys with the given new key parts.<br>
+	 * The new key parts will be appended to each resolved key:<br>
+	 * <pre>{@code
+	 * <resolved_key>.<new_key_part>
+	 * }</pre>
+	 * @param resolvedKeys The resolved keys to extend
+	 * @param keyParts The new key parts to append
+	 * @return The extended resolved keys
+	 * @throws NullPointerException If the resolved keys are null
+	 */
+	private @NotNull List<String> extendResolvedKeys(@NotNull List<String> resolvedKeys, String @Nullable ... keyParts) {
+		Objects.requireNonNull(resolvedKeys, "Resolved keys must not be null");
 		List<String> result = Lists.newArrayList();
-		for (String key : keys) {
+		if (resolvedKeys.isEmpty() && keyParts != null) {
+			result.addAll(Arrays.asList(keyParts));
+		}
+		for (String key : resolvedKeys) {
 			for (String part : ArrayUtils.nullToEmpty(keyParts)) {
-				result.add(key + part);
+				result.add(key + "." + part);
 			}
 		}
 		return result;

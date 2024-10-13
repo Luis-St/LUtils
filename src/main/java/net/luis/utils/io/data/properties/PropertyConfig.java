@@ -21,6 +21,7 @@ package net.luis.utils.io.data.properties;
 import net.luis.utils.io.data.config.ReadOnly;
 import net.luis.utils.io.data.config.WriteOnly;
 import net.luis.utils.io.data.properties.exception.IllegalPropertyKeyException;
+import net.luis.utils.io.data.properties.exception.IllegalPropertyValueException;
 import net.luis.utils.util.ErrorAction;
 import org.jetbrains.annotations.NotNull;
 
@@ -116,12 +117,12 @@ public record PropertyConfig(
 	 * Checks whether the given value matches the value pattern.<br>
 	 * @param value The value to check
 	 * @throws NullPointerException If the value is null
-	 * @throws IllegalPropertyKeyException If the value does not match the value pattern
+	 * @throws IllegalPropertyValueException If the value does not match the value pattern
 	 */
-	public void ensureValueMatches(@NotNull String value) throws IllegalPropertyKeyException {
+	public void ensureValueMatches(@NotNull String value) throws IllegalPropertyValueException {
 		Objects.requireNonNull(value, "Value must not be null");
 		if (!this.valuePattern.matcher(value).matches()) {
-			throw new IllegalPropertyKeyException("Property value '" + value + "' does not match the pattern '" + this.valuePattern.pattern() + "' defined in property config");
+			throw new IllegalPropertyValueException("Property value '" + value + "' does not match the pattern '" + this.valuePattern.pattern() + "' defined in property config");
 		}
 	}
 }

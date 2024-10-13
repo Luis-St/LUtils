@@ -35,6 +35,8 @@ license {
 
 test {
 	useJUnitPlatform()
+	environment("env.default", "3")
+	environment("env.custom", "c")
 }
 
 java {

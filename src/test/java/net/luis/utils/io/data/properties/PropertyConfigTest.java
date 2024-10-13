@@ -19,6 +19,7 @@
 package net.luis.utils.io.data.properties;
 
 import net.luis.utils.io.data.properties.exception.IllegalPropertyKeyException;
+import net.luis.utils.io.data.properties.exception.IllegalPropertyValueException;
 import net.luis.utils.util.ErrorAction;
 import org.junit.jupiter.api.Test;
 
@@ -75,8 +76,8 @@ class PropertyConfigTest {
 		assertDoesNotThrow(() -> DEFAULT_CONFIG.ensureValueMatches("[10, 20, 30]"));
 		
 		assertThrows(NullPointerException.class, () -> CUSTOM_CONFIG.ensureValueMatches(null));
-		assertThrows(IllegalPropertyKeyException.class, () -> CUSTOM_CONFIG.ensureValueMatches("$abc"));
-		assertThrows(IllegalPropertyKeyException.class, () -> CUSTOM_CONFIG.ensureValueMatches("[10, 20, 30]"));
+		assertThrows(IllegalPropertyValueException.class, () -> CUSTOM_CONFIG.ensureValueMatches("$abc"));
+		assertThrows(IllegalPropertyValueException.class, () -> CUSTOM_CONFIG.ensureValueMatches("[10, 20, 30]"));
 		assertDoesNotThrow(() -> CUSTOM_CONFIG.ensureValueMatches(""));
 		assertDoesNotThrow(() -> CUSTOM_CONFIG.ensureValueMatches("abc"));
 	}
