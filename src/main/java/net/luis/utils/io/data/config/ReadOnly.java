@@ -18,15 +18,33 @@
 
 package net.luis.utils.io.data.config;
 
+import org.jetbrains.annotations.NotNull;
+
 import java.lang.annotation.*;
 
 /**
+ * Annotation for record components of an io configuration.<br>
+ * The annotated record component is used for reading only.<br>
+ * <p>
+ *     The value of the annotation defines dependencies to other record components.<br>
+ *     If the value is empty, the record component is not dependent on any other record component.<br>
+ *     The dependencies must also be annotated with {@link ReadOnly}.<br>
+ * </p>
+ * <p>
+ *     The dependencies must be boolean expressions and can be combined with the following operators:<br>
+ *     {@code key1 == 10} - The record component is dependent on key1 only if key1 is equal to 10.<br>
+ *     {@code key1 && key2} - The record component is dependent on key1 and key2.<br>
+ * </p>
+ * <p>
+ *     The dependencies are not checked or used, they are only for documentation purposes.<br>
+ * </p>
  *
  * @author Luis-St
- *
  */
-
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.RECORD_COMPONENT)
-public @interface ReadOnly {}
+public @interface ReadOnly {
+	
+	@NotNull String[] value() default {};
+}
