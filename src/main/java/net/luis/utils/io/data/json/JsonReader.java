@@ -64,13 +64,19 @@ public class JsonReader implements AutoCloseable {
 	private @NotNull JsonElement readJsonElement(@NotNull ScopedStringReader reader) {
 		this.reader.skipWhitespaces();
 		char next = reader.peek();
+		JsonElement element;
 		if (next == '{') {
-			return this.readJsonObject(reader);
+			element = this.readJsonObject(reader);
 		} else if (next == '[') {
-			return this.readJsonArray(reader);
+			element = this.readJsonArray(reader);
 		} else {
-			return this.readJsonValue(reader);
+			element = this.readJsonValue(reader);
 		}
+		reader.skipWhitespaces();
+		if (this.config.strict() && reader.canRead()) {
+			throw new JsonSyntaxException("Invalid json element, expected end of input but got: '" + reader.peek() + "'");
+		}
+		return element;
 	}
 	
 	private @NotNull JsonObject readJsonObject(@NotNull ScopedStringReader jsonReader) {
@@ -78,10 +84,6 @@ public class JsonReader implements AutoCloseable {
 			throw new JsonSyntaxException("Invalid start of json object, expected '{' but got: '" + jsonReader.peek() + "'");
 		}
 		String jsonObjectScope = jsonReader.readScope(ScopedStringReader.CURLY_BRACKETS);
-		jsonReader.skipWhitespaces();
-		if (jsonReader.canRead()) {
-			throw new JsonSyntaxException("Invalid end of json object, expected '}' but got: '" + jsonReader.peek() + "'");
-		}
 		if (2 > jsonObjectScope.length()) {
 			throw new JsonSyntaxException("Invalid json object, expected format: '{\"key\": \"value\"}' but got: '" + jsonObjectScope + "'");
 		}
@@ -93,19 +95,27 @@ public class JsonReader implements AutoCloseable {
 		ScopedStringReader objectReader = new ScopedStringReader(jsonObjectScope.substring(1, jsonObjectScope.length() - 1));
 		while (objectReader.canRead()) {
 			objectReader.skipWhitespaces();
-			String key = objectReader.readString();
-			objectReader.skipWhitespaces();
+			String key;
+			if (this.config.strict()) {
+				key = objectReader.readQuotedString();
+			} else {
+				key = objectReader.readString();
+				objectReader.skipWhitespaces();
+			}
 			if (objectReader.peek() != ':') {
 				throw new JsonSyntaxException("Invalid json object, expected ':' but got: '" + objectReader.peek() + "'");
 			}
 			objectReader.skip();
+			objectReader.skipWhitespaces();
 			
-			objectReader.skipWhitespaces();
-			jsonObject.add(key, this.readJsonElement(new ScopedStringReader(objectReader.readUntil(','))));
-			objectReader.skipWhitespaces();
-			if (objectReader.canRead() && objectReader.peek() == ',') {
-				objectReader.skip();
+			String value = objectReader.readUntilInclusive(',');
+			if (value.charAt(value.length() - 1) == ',') {
+				objectReader.skipWhitespaces();
+				if (this.config.strict() && !objectReader.canRead()) {
+					throw new JsonSyntaxException("Invalid json object, expected another entry but got nothing");
+				}
 			}
+			jsonObject.add(key, this.readJsonElement(new ScopedStringReader(value.substring(0, value.length() - 1))));
 		}
 		return jsonObject;
 	}
@@ -115,10 +125,6 @@ public class JsonReader implements AutoCloseable {
 			throw new JsonSyntaxException("Invalid start of json array, expected '[' but got: '" + jsonReader.peek() + "'");
 		}
 		String jsonArrayScope = jsonReader.readScope(ScopedStringReader.SQUARE_BRACKETS);
-		jsonReader.skipWhitespaces();
-		if (jsonReader.canRead()) {
-			throw new JsonSyntaxException("Invalid end of json array, expected ']' but got: '" + jsonReader.peek() + "'");
-		}
 		if (2 > jsonArrayScope.length()) {
 			throw new JsonSyntaxException("Invalid json array, expected format: '[\"value\"]' but got: '" + jsonArrayScope + "'");
 		}
@@ -130,29 +136,30 @@ public class JsonReader implements AutoCloseable {
 		ScopedStringReader arrayReader = new ScopedStringReader(jsonArrayScope.substring(1, jsonArrayScope.length() - 1));
 		while (arrayReader.canRead()) {
 			arrayReader.skipWhitespaces();
-			jsonArray.add(this.readJsonElement(new ScopedStringReader(arrayReader.readUntil(','))));
+			String element = arrayReader.readUntilInclusive(',');
 			arrayReader.skipWhitespaces();
-			if (arrayReader.canRead() && arrayReader.peek() == ',') {
-				arrayReader.skip();
+			if (element.charAt(element.length() - 1) == ',') {
+				if (this.config.strict() && !arrayReader.canRead()) {
+					throw new JsonSyntaxException("Invalid json array, expected another element but got nothing");
+				}
 			}
+			jsonArray.add(this.readJsonElement(new ScopedStringReader(element.substring(0, element.length() - 1))));
 		}
 		return jsonArray;
 	}
 	
 	private @NotNull JsonElement readJsonValue(@NotNull ScopedStringReader reader) {
+		reader.skipWhitespaces();
 		char next = reader.peek();
-		if (Character.isWhitespace(next)) {
-			throw new JsonSyntaxException("Invalid json value, expected value but got: '" + next + "'");
-		}
 		if (next == '"') {
 			return new JsonPrimitive(reader.readQuotedString());
 		}
 		String value = reader.readRemaining().strip();
-		if ("null".equalsIgnoreCase(value)) {
+		if (this.config.strict() ? "null".equals(value) : "null".equalsIgnoreCase(value)) {
 			return JsonNull.INSTANCE;
-		} else if ("true".equalsIgnoreCase(value)) {
+		} else if (this.config.strict() ? "true".equals(value) : "true".equalsIgnoreCase(value)) {
 			return new JsonPrimitive(true);
-		} else if ("false".equalsIgnoreCase(value)) {
+		} else if (this.config.strict() ? "false".equals(value) : "false".equalsIgnoreCase(value)) {
 			return new JsonPrimitive(false);
 		}
 		StringReader valueReader = new StringReader(value);
@@ -164,5 +171,7 @@ public class JsonReader implements AutoCloseable {
 	}
 	
 	@Override
-	public void close() throws IOException {}
+	public void close() throws IOException {
+		this.reader.readRemaining(); // Assert that there is no remaining content
+	}
 }

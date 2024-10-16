@@ -18,6 +18,7 @@
 
 package net.luis.utils.io.data.json;
 
+import net.luis.utils.io.data.config.ReadOnly;
 import net.luis.utils.io.data.config.WriteOnly;
 import net.luis.utils.util.ErrorAction;
 import org.jetbrains.annotations.NotNull;
@@ -33,15 +34,27 @@ import java.util.Objects;
  */
 
 public record JsonConfig(
+	@ReadOnly boolean strict,
 	@WriteOnly @NotNull String indent,
+	@WriteOnly boolean prettyPrint,
+	@WriteOnly boolean simplifyArrays,
+	@WriteOnly("simplifyArrays") int maxArraySimplificationSize,
+	@WriteOnly boolean simplifyObjects,
+	@WriteOnly("simplifyObjects") int maxObjectSimplificationSize,
 	@NotNull Charset charset,
 	@NotNull ErrorAction errorAction
 ) {
 	
-	public static final JsonConfig DEFAULT = new JsonConfig("\t", StandardCharsets.UTF_8, ErrorAction.THROW);
+	public static final JsonConfig DEFAULT = new JsonConfig(true, "\t", true, true, 10, true, 1, StandardCharsets.UTF_8, ErrorAction.THROW);
 	
 	public JsonConfig {
 		Objects.requireNonNull(charset, "Charset must not be null");
 		Objects.requireNonNull(errorAction, "Error action must not be null");
+		if (simplifyArrays && 1 > maxArraySimplificationSize) {
+			throw new IllegalArgumentException("Max array simplification size must be greater than 0 if json array should be simplified");
+		}
+		if (simplifyObjects && 1 > maxObjectSimplificationSize) {
+			throw new IllegalArgumentException("Max object simplification size must be greater than 0 if json objects should be simplified");
+		}
 	}
 }

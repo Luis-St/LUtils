@@ -34,7 +34,17 @@ public class JsonObject implements JsonElement {
 	
 	private final Map<String, JsonElement> elements = Maps.newLinkedHashMap();
 	
+	public JsonObject() {}
+	
+	public JsonObject(@NotNull Map<String, ? extends JsonElement> elements) {
+		this.elements.putAll(Objects.requireNonNull(elements, "Json elements must not be null"));
+	}
+	
 	//region Query operations
+	public int size() {
+		return this.elements.size();
+	}
+	
 	public boolean isEmpty() {
 		return this.elements.isEmpty();
 	}
@@ -194,19 +204,27 @@ public class JsonObject implements JsonElement {
 	//endregion
 	
 	@Override
+	@SuppressWarnings("DuplicatedCode")
 	public @NotNull String toString(@NotNull JsonConfig config) {
 		StringBuilder builder = new StringBuilder("{");
 		List<Map.Entry<String, JsonElement>> entries = List.copyOf(this.elements.entrySet());
+		boolean shouldSimplify = config.simplifyObjects() && entries.size() >= config.maxObjectSimplificationSize();
 		for (int i = 0; i < entries.size(); i++) {
-			builder.append(System.lineSeparator());
-			builder.append(config.indent());
+			if (config.prettyPrint() && !shouldSimplify) {
+				builder.append(System.lineSeparator());
+				builder.append(config.indent());
+			}
 			
 			Map.Entry<String, JsonElement> entry = entries.get(i);
 			builder.append("\"").append(entry.getKey()).append("\": ");
-			builder.append(entry.getValue().toString(config).replace(System.lineSeparator(), System.lineSeparator() + config.indent()));
+			String value = entry.getValue().toString(config);
+			if (config.prettyPrint() && !shouldSimplify) {
+				value = value.replace(System.lineSeparator(), System.lineSeparator() + config.indent());
+			}
+			builder.append(value);
 			if (i < this.elements.size() - 1) {
 				builder.append(",");
-			} else {
+			} else if (config.prettyPrint() && !shouldSimplify) {
 				builder.append(System.lineSeparator());
 			}
 		}

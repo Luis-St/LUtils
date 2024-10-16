@@ -163,17 +163,24 @@ public class JsonArray implements JsonElement {
 	//endregion
 	
 	@Override
+	@SuppressWarnings("DuplicatedCode")
 	public @NotNull String toString(@NotNull JsonConfig config) {
 		StringBuilder builder = new StringBuilder("[");
+		boolean shouldSimplify = config.simplifyArrays() && this.size() >= config.maxArraySimplificationSize();
 		for (int i = 0; i < this.elements.size(); i++) {
-			builder.append(System.lineSeparator());
-			builder.append(config.indent());
+			if (config.prettyPrint() && !shouldSimplify) {
+				builder.append(System.lineSeparator());
+				builder.append(config.indent());
+			}
 			
 			String json = this.elements.get(i).toString(config);
-			builder.append(json.replace(System.lineSeparator(), System.lineSeparator() + config.indent()));
+			if (config.prettyPrint() && !shouldSimplify) {
+				json = json.replace(System.lineSeparator(), System.lineSeparator() + config.indent());
+			}
+			builder.append(json);
 			if (i < this.elements.size() - 1) {
 				builder.append(",");
-			} else {
+			} else if (config.prettyPrint() && !shouldSimplify) {
 				builder.append(System.lineSeparator());
 			}
 		}

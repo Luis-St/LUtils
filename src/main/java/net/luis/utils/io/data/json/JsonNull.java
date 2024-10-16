@@ -19,6 +19,7 @@
 package net.luis.utils.io.data.json;
 
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 /**
  *
@@ -33,7 +34,7 @@ public class JsonNull implements JsonElement {
 	private JsonNull() {}
 	
 	@Override
-	public @NotNull String toString(@NotNull JsonConfig config) {
+	public @NotNull String toString(@Nullable JsonConfig config) {
 		return "null";
 	}
 }
