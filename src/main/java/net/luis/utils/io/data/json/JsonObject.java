@@ -20,6 +20,7 @@ package net.luis.utils.io.data.json;
 
 import com.google.common.collect.Maps;
 import net.luis.utils.io.data.json.exception.JsonTypeException;
+import net.luis.utils.io.data.json.exception.NoSuchJsonElementException;
 import org.jetbrains.annotations.*;
 
 import java.util.*;
@@ -137,13 +138,16 @@ public class JsonObject implements JsonElement {
 	//endregion
 	
 	//region Get operations
-	public @NotNull JsonElement get(@NotNull String key) {
+	public @Nullable JsonElement get(@NotNull String key) {
 		Objects.requireNonNull(key, "Key must not be null");
-		return this.elements.getOrDefault(key, JsonNull.INSTANCE);
+		return this.elements.get(key);
 	}
 	
 	public @NotNull JsonObject getAsJsonObject(@NotNull String key) {
 		JsonElement json = this.get(key);
+		if (json == null) {
+			throw new NoSuchJsonElementException("Expected json object for key '" + key + "', but found null");
+		}
 		if (json instanceof JsonObject object) {
 			return object;
 		}
@@ -152,6 +156,9 @@ public class JsonObject implements JsonElement {
 	
 	public @NotNull JsonArray getAsJsonArray(@NotNull String key) {
 		JsonElement json = this.get(key);
+		if (json == null) {
+			throw new NoSuchJsonElementException("Expected json array for key '" + key + "', but found null");
+		}
 		if (json instanceof JsonArray array) {
 			return array;
 		}
@@ -160,6 +167,9 @@ public class JsonObject implements JsonElement {
 	
 	public @NotNull JsonPrimitive getJsonPrimitive(@NotNull String key) {
 		JsonElement json = this.get(key);
+		if (json == null) {
+			throw new NoSuchJsonElementException("Expected json primitive for key '" + key + "', but found null");
+		}
 		if (json instanceof JsonPrimitive primitive) {
 			return primitive;
 		}
@@ -203,12 +213,31 @@ public class JsonObject implements JsonElement {
 	}
 	//endregion
 	
+	//region Object overrides
+	@Override
+	public boolean equals(Object o) {
+		if (this == o) return true;
+		if (!(o instanceof JsonObject that)) return false;
+		
+		return this.elements.equals(that.elements);
+	}
+	
+	@Override
+	public int hashCode() {
+		return Objects.hash(this.elements);
+	}
+	
+	@Override
+	public String toString() {
+		return this.toString(JsonConfig.DEFAULT);
+	}
+	
 	@Override
 	@SuppressWarnings("DuplicatedCode")
 	public @NotNull String toString(@NotNull JsonConfig config) {
 		StringBuilder builder = new StringBuilder("{");
 		List<Map.Entry<String, JsonElement>> entries = List.copyOf(this.elements.entrySet());
-		boolean shouldSimplify = config.simplifyObjects() && entries.size() >= config.maxObjectSimplificationSize();
+		boolean shouldSimplify = config.simplifyObjects() && config.maxObjectSimplificationSize() >=  entries.size();
 		for (int i = 0; i < entries.size(); i++) {
 			if (config.prettyPrint() && !shouldSimplify) {
 				builder.append(System.lineSeparator());
@@ -224,10 +253,14 @@ public class JsonObject implements JsonElement {
 			builder.append(value);
 			if (i < this.elements.size() - 1) {
 				builder.append(",");
+				if (shouldSimplify) {
+					builder.append(" ");
+				}
 			} else if (config.prettyPrint() && !shouldSimplify) {
 				builder.append(System.lineSeparator());
 			}
 		}
 		return builder.append("}").toString();
 	}
+	//endregion
 }
