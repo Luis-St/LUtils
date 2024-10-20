@@ -33,8 +33,15 @@ public class JsonNull implements JsonElement {
 	
 	private JsonNull() {}
 	
+	//region Object overrides
+	@Override
+	public String toString() {
+		return this.toString(JsonConfig.DEFAULT);
+	}
+	
 	@Override
 	public @NotNull String toString(@Nullable JsonConfig config) {
 		return "null";
 	}
+	//endregion
 }

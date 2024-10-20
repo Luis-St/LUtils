@@ -37,9 +37,9 @@ public record JsonConfig(
 	@ReadOnly boolean strict,
 	@WriteOnly @NotNull String indent,
 	@WriteOnly boolean prettyPrint,
-	@WriteOnly boolean simplifyArrays,
+	@WriteOnly("prettyPrint") boolean simplifyArrays,
 	@WriteOnly("simplifyArrays") int maxArraySimplificationSize,
-	@WriteOnly boolean simplifyObjects,
+	@WriteOnly("prettyPrint") boolean simplifyObjects,
 	@WriteOnly("simplifyObjects") int maxObjectSimplificationSize,
 	@NotNull Charset charset,
 	@NotNull ErrorAction errorAction

@@ -120,6 +120,25 @@ public class JsonPrimitive implements JsonElement {
 		return this.getAsNumber().doubleValue();
 	}
 	
+	//region Object overrides
+	@Override
+	public boolean equals(Object o) {
+		if (this == o) return true;
+		if (!(o instanceof JsonPrimitive that)) return false;
+		
+		return this.value.equals(that.value);
+	}
+	
+	@Override
+	public int hashCode() {
+		return Objects.hash(this.value);
+	}
+	
+	@Override
+	public String toString() {
+		return this.toString(JsonConfig.DEFAULT);
+	}
+	
 	@Override
 	public @NotNull String toString(@NotNull JsonConfig config) {
 		if (this.value instanceof String string) {
@@ -127,4 +146,5 @@ public class JsonPrimitive implements JsonElement {
 		}
 		return this.getAsString();
 	}
+	//endregion
 }
