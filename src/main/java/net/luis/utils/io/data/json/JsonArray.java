@@ -60,13 +60,93 @@ public class JsonArray implements JsonElement {
 	}
 	//endregion
 	
-	//region Modify operations
-	public @NotNull JsonElement set(int i, @Nullable JsonElement json) {
-		return this.elements.set(i, json == null ? JsonNull.INSTANCE : json);
+	//region Set operations
+	public @NotNull JsonElement set(int index, @Nullable JsonElement json) {
+		if (0 > index) {
+			throw new JsonArrayIndexOutOfBoundsException(index);
+		}
+		if (index >= this.size()) {
+			throw new JsonArrayIndexOutOfBoundsException(index, this.size());
+		}
+		return this.elements.set(index, json == null ? JsonNull.INSTANCE : json);
 	}
 	
+	public @NotNull JsonElement set(int index, @Nullable String value) {
+		return this.set(index, value == null ? null : new JsonPrimitive(value));
+	}
+	
+	public @NotNull JsonElement set(int index, boolean value) {
+		return this.set(index, new JsonPrimitive(value));
+	}
+	
+	public @NotNull JsonElement set(int index, @Nullable Number value) {
+		return this.set(index, value == null ? null : new JsonPrimitive(value));
+	}
+	
+	public @NotNull JsonElement set(int index, byte value) {
+		return this.set(index, new JsonPrimitive(value));
+	}
+	
+	public @NotNull JsonElement set(int index, short value) {
+		return this.set(index, new JsonPrimitive(value));
+	}
+	
+	public @NotNull JsonElement set(int index, int value) {
+		return this.set(index, new JsonPrimitive(value));
+	}
+	
+	public @NotNull JsonElement set(int index, long value) {
+		return this.set(index, new JsonPrimitive(value));
+	}
+	
+	public @NotNull JsonElement set(int index, float value) {
+		return this.set(index, new JsonPrimitive(value));
+	}
+	
+	public @NotNull JsonElement set(int index, double value) {
+		return this.set(index, new JsonPrimitive(value));
+	}
+	//endregion
+	
+	//region Add operations
 	public void add(@Nullable JsonElement json) {
 		this.elements.add(json == null ? JsonNull.INSTANCE : json);
+	}
+	
+	public void add(@Nullable String value) {
+		this.add(value == null ? null : new JsonPrimitive(value));
+	}
+	
+	public void add(boolean value) {
+		this.add(new JsonPrimitive(value));
+	}
+	
+	public void add(@Nullable Number value) {
+		this.add(value == null ? null : new JsonPrimitive(value));
+	}
+	
+	public void add(byte value) {
+		this.add(new JsonPrimitive(value));
+	}
+	
+	public void add(short value) {
+		this.add(new JsonPrimitive(value));
+	}
+	
+	public void add(int value) {
+		this.add(new JsonPrimitive(value));
+	}
+	
+	public void add(long value) {
+		this.add(new JsonPrimitive(value));
+	}
+	
+	public void add(float value) {
+		this.add(new JsonPrimitive(value));
+	}
+	
+	public void add(double value) {
+		this.add(new JsonPrimitive(value));
 	}
 	//endregion
 	
@@ -117,7 +197,7 @@ public class JsonArray implements JsonElement {
 		throw new JsonTypeException("Expected JsonArray at index " + index + ", but found: " + json.getClass().getSimpleName());
 	}
 	
-	public @NotNull JsonPrimitive getJsonPrimitive(int index) {
+	public @NotNull JsonPrimitive getAsJsonPrimitive(int index) {
 		JsonElement json = this.get(index);
 		if (json instanceof JsonPrimitive primitive) {
 			return primitive;
@@ -126,47 +206,66 @@ public class JsonArray implements JsonElement {
 	}
 	
 	public @NotNull String getAsString(int index) {
-		return this.getJsonPrimitive(index).getAsString();
+		return this.getAsJsonPrimitive(index).getAsString();
 	}
 	
 	public boolean getAsBoolean(int index) {
-		return this.getJsonPrimitive(index).getAsBoolean();
+		return this.getAsJsonPrimitive(index).getAsBoolean();
 	}
 	
 	public @NotNull Number getAsNumber(int index) {
-		return this.getJsonPrimitive(index).getAsNumber();
+		return this.getAsJsonPrimitive(index).getAsNumber();
 	}
 	
 	public byte getAsByte(int index) {
-		return this.getJsonPrimitive(index).getAsByte();
+		return this.getAsJsonPrimitive(index).getAsByte();
 	}
 	
 	public short getAsShort(int index) {
-		return this.getJsonPrimitive(index).getAsShort();
+		return this.getAsJsonPrimitive(index).getAsShort();
 	}
 	
 	public int getAsInteger(int index) {
-		return this.getJsonPrimitive(index).getAsInteger();
+		return this.getAsJsonPrimitive(index).getAsInteger();
 	}
 	
 	public long getAsLong(int index) {
-		return this.getJsonPrimitive(index).getAsLong();
+		return this.getAsJsonPrimitive(index).getAsLong();
 	}
 	
 	public float getAsFloat(int index) {
-		return this.getJsonPrimitive(index).getAsFloat();
+		return this.getAsJsonPrimitive(index).getAsFloat();
 	}
 	
 	public double getAsDouble(int index) {
-		return this.getJsonPrimitive(index).getAsDouble();
+		return this.getAsJsonPrimitive(index).getAsDouble();
 	}
 	//endregion
+	
+	//region Object overrides
+	@Override
+	public boolean equals(Object o) {
+		if (this == o) return true;
+		if (!(o instanceof JsonArray array)) return false;
+		
+		return this.elements.equals(array.elements);
+	}
+	
+	@Override
+	public int hashCode() {
+		return Objects.hash(this.elements);
+	}
+	
+	@Override
+	public String toString() {
+		return this.toString(JsonConfig.DEFAULT);
+	}
 	
 	@Override
 	@SuppressWarnings("DuplicatedCode")
 	public @NotNull String toString(@NotNull JsonConfig config) {
 		StringBuilder builder = new StringBuilder("[");
-		boolean shouldSimplify = config.simplifyArrays() && this.size() >= config.maxArraySimplificationSize();
+		boolean shouldSimplify = config.simplifyArrays() && config.maxArraySimplificationSize() >= this.size();
 		for (int i = 0; i < this.elements.size(); i++) {
 			if (config.prettyPrint() && !shouldSimplify) {
 				builder.append(System.lineSeparator());
@@ -180,10 +279,14 @@ public class JsonArray implements JsonElement {
 			builder.append(json);
 			if (i < this.elements.size() - 1) {
 				builder.append(",");
+				if (shouldSimplify) {
+					builder.append(" ");
+				}
 			} else if (config.prettyPrint() && !shouldSimplify) {
 				builder.append(System.lineSeparator());
 			}
 		}
 		return builder.append("]").toString();
 	}
+	//endregion
 }
