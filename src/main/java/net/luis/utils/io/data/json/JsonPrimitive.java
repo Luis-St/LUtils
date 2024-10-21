@@ -20,6 +20,7 @@ package net.luis.utils.io.data.json;
 
 import net.luis.utils.io.reader.StringReader;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.Objects;
 
@@ -140,7 +141,7 @@ public class JsonPrimitive implements JsonElement {
 	}
 	
 	@Override
-	public @NotNull String toString(@NotNull JsonConfig config) {
+	public @NotNull String toString(@Nullable JsonConfig config) {
 		if (this.value instanceof String string) {
 			return "\"" + string + "\"";
 		}

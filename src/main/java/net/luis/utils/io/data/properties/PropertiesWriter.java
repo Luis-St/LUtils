@@ -68,10 +68,10 @@ public class PropertiesWriter implements AutoCloseable {
 	 * @throws NullPointerException If the key or the value is null
 	 * @throws IOException If an I/O error occurs (optional)
 	 */
-	public void write(@NotNull String key, @NotNull Object value) {
+	public void writeProperty(@NotNull String key, @NotNull Object value) {
 		Objects.requireNonNull(key, "Key must not be null");
 		Objects.requireNonNull(value, "Value must not be null");
-		this.write(Property.of(key, value.toString()));
+		this.writeProperty(Property.of(key, value.toString()));
 	}
 	
 	/**
@@ -84,11 +84,11 @@ public class PropertiesWriter implements AutoCloseable {
 	 * @throws NullPointerException If the key, the value or the converter is null
 	 * @throws IOException If an I/O error occurs (optional)
 	 */
-	public <T> void write(@NotNull String key, @NotNull T value, @NotNull ValueConverter<String, T> converter) {
+	public <T> void writeProperty(@NotNull String key, @NotNull T value, @NotNull ValueConverter<String, T> converter) {
 		Objects.requireNonNull(key, "Key must not be null");
 		Objects.requireNonNull(value, "Value must not be null");
 		Objects.requireNonNull(converter, "Converter must not be null");
-		this.write(Property.of(key, converter.convert(value)));
+		this.writeProperty(Property.of(key, converter.convert(value)));
 	}
 	
 	/**
@@ -97,9 +97,9 @@ public class PropertiesWriter implements AutoCloseable {
 	 * @throws NullPointerException If the properties are null
 	 * @throws IOException If an I/O error occurs (optional)
 	 */
-	public void write(@NotNull Properties properties) {
+	public void writeProperty(@NotNull Properties properties) {
 		Objects.requireNonNull(properties, "Properties must not be null");
-		properties.getProperties().forEach(this::write);
+		properties.getProperties().forEach(this::writeProperty);
 	}
 	
 	/**
@@ -108,7 +108,7 @@ public class PropertiesWriter implements AutoCloseable {
 	 * @throws NullPointerException If the property is null
 	 * @throws IOException If an I/O error occurs (optional)
 	 */
-	public void write(@NotNull Property property) {
+	public void writeProperty(@NotNull Property property) {
 		Objects.requireNonNull(property, "Property must not be null");
 		try {
 			this.config.ensureKeyMatches(property.getKey());

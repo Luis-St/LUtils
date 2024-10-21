@@ -18,6 +18,7 @@
 
 package net.luis.utils.io.data.properties;
 
+import net.luis.utils.annotation.type.MockObject;
 import net.luis.utils.io.data.InputProvider;
 import net.luis.utils.io.data.properties.exception.*;
 import net.luis.utils.io.exception.IllegalLineReadException;
@@ -371,6 +372,7 @@ class PropertyReaderTest {
 	}
 	
 	//region Internal classes
+	@MockObject(InputStream.class)
 	private static class StringInputStream extends InputStream {
 		
 		private final String string;

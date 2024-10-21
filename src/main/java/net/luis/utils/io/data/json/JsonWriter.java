@@ -45,8 +45,10 @@ public class JsonWriter implements AutoCloseable {
 	}
 	
 	public void writeJson(@NotNull JsonElement json) {
+		Objects.requireNonNull(json, "Json element must not be null");
 		try {
 			this.writer.write(json.toString(this.config));
+			this.writer.flush();
 		} catch (IOException e) {
 			this.config.errorAction().handle(e);
 		}

@@ -18,6 +18,7 @@
 
 package net.luis.utils.io.data.properties;
 
+import net.luis.utils.annotation.type.MockObject;
 import net.luis.utils.io.data.OutputProvider;
 import net.luis.utils.util.*;
 import org.jetbrains.annotations.NotNull;
@@ -67,57 +68,57 @@ class PropertiesWriterTest {
 	}
 	
 	@Test
-	void writeDefaultConfig() {
+	void writePropertyDefaultConfig() {
 		StringOutputStream stream = new StringOutputStream();
 		PropertiesWriter writer = new PropertiesWriter(new OutputProvider(stream), DEFAULT_CONFIG);
 		
-		assertThrows(NullPointerException.class, () -> writer.write(null, "value"));
-		assertThrows(NullPointerException.class, () -> writer.write("key", null));
-		assertDoesNotThrow(() -> writer.write("key", "value"));
+		assertThrows(NullPointerException.class, () -> writer.writeProperty(null, "value"));
+		assertThrows(NullPointerException.class, () -> writer.writeProperty("key", null));
+		assertDoesNotThrow(() -> writer.writeProperty("key", "value"));
 		assertEquals("key = value" + System.lineSeparator(), stream.toString());
 		stream.reset();
 		
-		assertThrows(NullPointerException.class, () -> writer.write(null, "value", CONVERTER));
-		assertThrows(NullPointerException.class, () -> writer.write("key", null, CONVERTER));
-		assertDoesNotThrow(() -> writer.write("key", "value", CONVERTER));
+		assertThrows(NullPointerException.class, () -> writer.writeProperty(null, "value", CONVERTER));
+		assertThrows(NullPointerException.class, () -> writer.writeProperty("key", null, CONVERTER));
+		assertDoesNotThrow(() -> writer.writeProperty("key", "value", CONVERTER));
 		assertEquals("key = value" + System.lineSeparator(), stream.toString());
 		stream.reset();
 		
-		assertThrows(NullPointerException.class, () -> writer.write((Properties) null));
-		assertDoesNotThrow(() -> writer.write(TEST_PROPERTIES));
+		assertThrows(NullPointerException.class, () -> writer.writeProperty((Properties) null));
+		assertDoesNotThrow(() -> writer.writeProperty(TEST_PROPERTIES));
 		assertEquals("key = value" + System.lineSeparator(), stream.toString());
 		stream.reset();
 		
-		assertThrows(NullPointerException.class, () -> writer.write((Property) null));
-		assertDoesNotThrow(() -> writer.write(Property.of("key", "value")));
+		assertThrows(NullPointerException.class, () -> writer.writeProperty((Property) null));
+		assertDoesNotThrow(() -> writer.writeProperty(Property.of("key", "value")));
 		assertEquals("key = value" + System.lineSeparator(), stream.toString());
 		stream.reset();
 	}
 	
 	@Test
-	void writeCustomConfig() {
+	void writePropertyCustomConfig() {
 		StringOutputStream stream = new StringOutputStream();
 		PropertiesWriter writer = new PropertiesWriter(new OutputProvider(stream), CUSTOM_CONFIG);
 		
-		assertThrows(NullPointerException.class, () -> writer.write(null, "value"));
-		assertThrows(NullPointerException.class, () -> writer.write("key", null));
-		assertDoesNotThrow(() -> writer.write("key", "value"));
+		assertThrows(NullPointerException.class, () -> writer.writeProperty(null, "value"));
+		assertThrows(NullPointerException.class, () -> writer.writeProperty("key", null));
+		assertDoesNotThrow(() -> writer.writeProperty("key", "value"));
 		assertEquals("key:value" + System.lineSeparator(), stream.toString());
 		stream.reset();
 		
-		assertThrows(NullPointerException.class, () -> writer.write(null, "value", CONVERTER));
-		assertThrows(NullPointerException.class, () -> writer.write("key", null, CONVERTER));
-		assertDoesNotThrow(() -> writer.write("key", "value", CONVERTER));
+		assertThrows(NullPointerException.class, () -> writer.writeProperty(null, "value", CONVERTER));
+		assertThrows(NullPointerException.class, () -> writer.writeProperty("key", null, CONVERTER));
+		assertDoesNotThrow(() -> writer.writeProperty("key", "value", CONVERTER));
 		assertEquals("key:value" + System.lineSeparator(), stream.toString());
 		stream.reset();
 		
-		assertThrows(NullPointerException.class, () -> writer.write((Properties) null));
-		assertDoesNotThrow(() -> writer.write(TEST_PROPERTIES));
+		assertThrows(NullPointerException.class, () -> writer.writeProperty((Properties) null));
+		assertDoesNotThrow(() -> writer.writeProperty(TEST_PROPERTIES));
 		assertEquals("key:value" + System.lineSeparator(), stream.toString());
 		stream.reset();
 		
-		assertThrows(NullPointerException.class, () -> writer.write((Property) null));
-		assertDoesNotThrow(() -> writer.write(Property.of("key", "value")));
+		assertThrows(NullPointerException.class, () -> writer.writeProperty((Property) null));
+		assertDoesNotThrow(() -> writer.writeProperty(Property.of("key", "value")));
 		assertEquals("key:value" + System.lineSeparator(), stream.toString());
 		stream.reset();
 	}
@@ -128,6 +129,7 @@ class PropertiesWriterTest {
 	}
 	
 	//region Internal classes
+	@MockObject(OutputStream.class)
 	private static class StringOutputStream extends OutputStream {
 		
 		private final StringBuilder builder = new StringBuilder();
