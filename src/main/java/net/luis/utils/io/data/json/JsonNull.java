@@ -22,18 +22,27 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 /**
+ * Represents a json null value.<br>
+ * This class is a singleton.<br>
  *
  * @author Luis-St
- *
  */
-
 public class JsonNull implements JsonElement {
 	
+	/**
+	 * The singleton instance of {@link JsonNull}.<br>
+	 * This instance is immutable and can be used for all null values.<br>
+	 */
 	public static final JsonNull INSTANCE = new JsonNull();
 	
+	/**
+	 * Constructs a new {@link JsonNull}.<br>
+	 * Should not be used, use {@link #INSTANCE} instead.<br>
+	 */
 	private JsonNull() {}
 	
 	//region Object overrides
+	
 	@Override
 	public String toString() {
 		return this.toString(JsonConfig.DEFAULT);
