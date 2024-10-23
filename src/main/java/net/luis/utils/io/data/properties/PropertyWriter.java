@@ -30,33 +30,33 @@ import java.util.Objects;
  *
  * @author Luis-St
  */
-public class PropertiesWriter implements AutoCloseable {
+public class PropertyWriter implements AutoCloseable {
 	
 	/**
-	 * The configuration for the properties writer.<br>
+	 * The configuration for the property writer.<br>
 	 */
 	private final PropertyConfig config;
 	/**
-	 * The internal io writer for writing the properties.<br>
+	 * The internal io writer for writing the property.<br>
 	 */
 	private final BufferedWriter writer;
 	
 	/**
-	 * Constructs a new properties writer for the given output with the default property configuration.<br>
+	 * Constructs a new property writer for the given output with the default property configuration.<br>
 	 * @param output The output provider to create the writer for
 	 * @throws NullPointerException If the output is null
 	 */
-	public PropertiesWriter(@NotNull OutputProvider output) {
+	public PropertyWriter(@NotNull OutputProvider output) {
 		this(output, PropertyConfig.DEFAULT);
 	}
 	
 	/**
-	 * Constructs a new properties writer for the given output with the given property configuration.<br>
+	 * Constructs a new property writer for the given output with the given property configuration.<br>
 	 * @param output The output to create the writer for
 	 * @param config The configuration for the properties writer
 	 * @throws NullPointerException If the output or the configuration is null
 	 */
-	public PropertiesWriter(@NotNull OutputProvider output, @NotNull PropertyConfig config) {
+	public PropertyWriter(@NotNull OutputProvider output, @NotNull PropertyConfig config) {
 		this.config = Objects.requireNonNull(config, "Property config must not be null");
 		this.writer = new BufferedWriter(new OutputStreamWriter(Objects.requireNonNull(output, "Output must not be null").getStream(), config.charset()));
 	}

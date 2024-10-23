@@ -34,11 +34,11 @@ import java.util.regex.Pattern;
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
- * Test class for {@link PropertiesWriter}.<br>
+ * Test class for {@link PropertyWriter}.<br>
  *
  * @author Luis-St
  */
-class PropertiesWriterTest {
+class PropertyWriterTest {
 	
 	private static final ValueConverter<String, String> CONVERTER = new ValueConverter<String, String>() {
 		@Override
@@ -59,18 +59,18 @@ class PropertiesWriterTest {
 	void constructor() {
 		OutputProvider provider = new OutputProvider(OutputStream.nullOutputStream());
 		
-		assertThrows(NullPointerException.class, () -> new PropertiesWriter(null));
-		assertDoesNotThrow(() -> new PropertiesWriter(provider));
+		assertThrows(NullPointerException.class, () -> new PropertyWriter(null));
+		assertDoesNotThrow(() -> new PropertyWriter(provider));
 		
-		assertThrows(NullPointerException.class, () -> new PropertiesWriter(null, PropertyConfig.DEFAULT));
-		assertThrows(NullPointerException.class, () -> new PropertiesWriter(provider, null));
-		assertDoesNotThrow(() -> new PropertiesWriter(provider, PropertyConfig.DEFAULT));
+		assertThrows(NullPointerException.class, () -> new PropertyWriter(null, PropertyConfig.DEFAULT));
+		assertThrows(NullPointerException.class, () -> new PropertyWriter(provider, null));
+		assertDoesNotThrow(() -> new PropertyWriter(provider, PropertyConfig.DEFAULT));
 	}
 	
 	@Test
 	void writePropertyDefaultConfig() {
 		StringOutputStream stream = new StringOutputStream();
-		PropertiesWriter writer = new PropertiesWriter(new OutputProvider(stream), DEFAULT_CONFIG);
+		PropertyWriter writer = new PropertyWriter(new OutputProvider(stream), DEFAULT_CONFIG);
 		
 		assertThrows(NullPointerException.class, () -> writer.writeProperty(null, "value"));
 		assertThrows(NullPointerException.class, () -> writer.writeProperty("key", null));
@@ -98,7 +98,7 @@ class PropertiesWriterTest {
 	@Test
 	void writePropertyCustomConfig() {
 		StringOutputStream stream = new StringOutputStream();
-		PropertiesWriter writer = new PropertiesWriter(new OutputProvider(stream), CUSTOM_CONFIG);
+		PropertyWriter writer = new PropertyWriter(new OutputProvider(stream), CUSTOM_CONFIG);
 		
 		assertThrows(NullPointerException.class, () -> writer.writeProperty(null, "value"));
 		assertThrows(NullPointerException.class, () -> writer.writeProperty("key", null));
@@ -125,7 +125,7 @@ class PropertiesWriterTest {
 	
 	@Test
 	void close() {
-		assertDoesNotThrow(() -> new PropertiesWriter(new OutputProvider(OutputStream.nullOutputStream())).close());
+		assertDoesNotThrow(() -> new PropertyWriter(new OutputProvider(OutputStream.nullOutputStream())).close());
 	}
 	
 	//region Internal classes
