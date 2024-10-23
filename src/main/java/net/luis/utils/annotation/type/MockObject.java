@@ -49,7 +49,8 @@ import java.lang.annotation.*;
 public @interface MockObject {
 	
 	/**
-	 * @return The class that is mocked by this mock object.<br>
+	 * Returns the class mocked by this mock object.<br>
+	 * @return The class
 	 */
 	@NotNull Class<?> value();
 }

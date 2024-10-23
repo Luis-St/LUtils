@@ -119,21 +119,25 @@ public class Range {
 	}
 	
 	/**
-	 * @return The minimum value of the range
+	 * Returns the minimum value of the range.<br>
+	 * @return The minimum
 	 */
 	public double getMin() {
 		return this.min;
 	}
 	
 	/**
-	 * @return The maximum value of the range
+	 * Returns the maximum value of the range.<br>
+	 * @return The maximum
 	 */
 	public double getMax() {
 		return this.max;
 	}
 	
 	/**
-	 * @return The range between the minimum and maximum value
+	 * Returns the range between the minimum and maximum value.<br>
+	 * The range is calculated by subtracting the minimum value from the maximum value.<br>
+	 * @return The range
 	 */
 	public double getRange() {
 		return this.max - this.min;

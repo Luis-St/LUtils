@@ -50,6 +50,12 @@ public class LoggingUtils {
 	 */
 	private static boolean registeredFactory = false;
 	
+	/**
+	 * Private constructor to prevent instantiation.<br>
+	 * This is a static helper class.<br>
+	 */
+	private LoggingUtils() {}
+	
 	//region Configuration
 	
 	//region Loading from system properties
@@ -220,6 +226,7 @@ public class LoggingUtils {
 	}
 	
 	/**
+	 * Returns the current configuration of the logging system.<br>
 	 * @return The current configuration or null if the logging system has not been initialized
 	 */
 	public static @Nullable LoggerConfiguration getConfiguration() {
@@ -227,6 +234,7 @@ public class LoggingUtils {
 	}
 	
 	/**
+	 * Returns a list of all the configured loggers.<br>
 	 * @return The names of all the configured loggers as an unmodifiable list
 	 */
 	@Unmodifiable

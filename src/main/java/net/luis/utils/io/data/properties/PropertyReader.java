@@ -44,7 +44,7 @@ import static org.apache.commons.lang3.StringUtils.*;
  * The line as a whole can contain multiple separators, but the first one will be used to split the key and value.<br>
  * <br>
  *
- * <h4><a href="compactedKeys">Compacted keys</a></h4>
+ * <h2><a href="compactedKeys">Compacted keys</a></h2>
  * A compacted key is a key that contains multiple keys separated by a pipe.<br>
  * The compacted part of a key is enclosed in square brackets {@code [}, {@code ]} and the keys are separated by {@code |}.<br>
  * <pre>{@code
@@ -54,7 +54,7 @@ import static org.apache.commons.lang3.StringUtils.*;
  * A compacted key part can contain a variable key part that will be resolved to a value.<br>
  * <br>
  *
- * <h4><a href="variableKeys">Variable keys</a></h4>
+ * <h2><a href="variableKeys">Variable keys</a></h2>
  * A variable key is a key that contains a variable part that will be resolved to a value.<br>
  * The variable part of a key is enclosed in curly brackets <code>{</code>, <code>}</code> and the parts are separated by {@code ?}.<br>
  * <p>
@@ -137,7 +137,7 @@ public class PropertyReader implements AutoCloseable {
 	/**
 	 * Reads the properties from the input and returns them as a properties object.<br>
 	 * @return The properties that have been read
-	 * @throws IOException If an error occurs while reading the properties
+	 * @throws UncheckedIOException If an error occurs while reading the properties
 	 */
 	public @NotNull Properties readProperties() {
 		List<Property> properties = Lists.newArrayList();
@@ -155,7 +155,7 @@ public class PropertyReader implements AutoCloseable {
 				properties.forEach(property -> this.properties.put(property.getKey(), property.getRawValue()));
 			}
 		} catch (IOException e) {
-			this.config.errorAction().handle(e);
+			this.config.errorAction().handle(new UncheckedIOException("An error occurred while reading the properties", e));
 		}
 		return new Properties(properties);
 	}
@@ -167,7 +167,7 @@ public class PropertyReader implements AutoCloseable {
 	 * @param rawLine The line to parse
 	 * @return The properties that have been read
 	 * @throws NullPointerException If the line is null
-	 * @throws IllegalLineReadException If the line is not parsable (depends on the configuration)
+	 * @throws UncheckedIOException If the line is not parsable (depends on the configuration)
 	 */
 	private @NotNull @Unmodifiable List<Property> parseLine(@NotNull String rawLine) {
 		Objects.requireNonNull(rawLine, "Line must not be null");
@@ -186,7 +186,7 @@ public class PropertyReader implements AutoCloseable {
 		try {
 			return this.parseProperty(parts[0], this.getValuePart(parts));
 		} catch (IOException e) {
-			this.config.errorAction().handle(e);
+			this.config.errorAction().handle(new UncheckedIOException("An error occurred while parsing the line", e));
 			return List.of();
 		}
 	}

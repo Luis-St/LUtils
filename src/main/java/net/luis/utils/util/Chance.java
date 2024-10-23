@@ -130,14 +130,16 @@ public class Chance {
 	}
 	
 	/**
-	 * @return If the chance is always true, the chance is 1.0 or above
+	 * Checks if the chance is always true.<br>
+	 * @return True if the chance is 1.0 or above, otherwise false
 	 */
 	public boolean isTrue() {
 		return this.chance >= 1.0;
 	}
 	
 	/**
-	 * @return If the chance is always false, the chance is 0.0 or below
+	 * Checks if the chance is always false.<br>
+	 * @return True if the chance is 0.0 or below, otherwise false
 	 */
 	public boolean isFalse() {
 		return 0.0 >= this.chance;

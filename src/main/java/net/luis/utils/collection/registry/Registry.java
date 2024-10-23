@@ -246,6 +246,7 @@ public class Registry<K extends RegistryKey<?>, I> implements Iterable<I> {
 	}
 	
 	/**
+	 * Returns the number of items in the registry.<br>
 	 * @return The size of the registry
 	 */
 	public int size() {

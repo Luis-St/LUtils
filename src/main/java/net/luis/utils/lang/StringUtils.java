@@ -73,6 +73,12 @@ public class StringUtils {
 	private static final String LANG_MATCH_IN_QUOTES = "lang.match.in.quotes";
 	
 	/**
+	 * Private constructor to prevent instantiation.<br>
+	 * This is a static helper class.<br>
+	 */
+	private StringUtils() {}
+	
+	/**
 	 * Gets the opposite bracket of the given {@code bracket}.<br>
 	 * If the given character is not a bracket, {@code '\0'} will be returned.<br>
 	 * <p>

@@ -153,6 +153,7 @@ public class ExtendedEuclideanAlgorithm {
 	//region Getter
 	
 	/**
+	 * Checks if the EEA is complete.<br>
 	 * @return True, if the EEA is complete, otherwise false
 	 */
 	public boolean isComplete() {
@@ -160,64 +161,72 @@ public class ExtendedEuclideanAlgorithm {
 	}
 	
 	/**
-	 * @return The initial value of the EEA
+	 * Returns the initial value of the EEA.<br>
+	 * @return The initial value
 	 */
 	public @NotNull BigInteger getInitialValue() {
 		return this.initialValue;
 	}
 	
 	/**
-	 * @return The initial divisor of the EEA
+	 * Returns the initial divisor of the EEA.<br>
+	 * @return The initial divisor
 	 */
 	public @NotNull BigInteger getInitialDivisor() {
 		return this.initialDivisor;
 	}
 	
 	/**
-	 * @return The current value of the EEA
+	 * Returns the current value of the EEA.<br>
+	 * @return The current value
 	 */
 	public @NotNull BigInteger getValue() {
 		return this.value;
 	}
 	
 	/**
-	 * @return The current divisor of the EEA
+	 * Returns the current divisor of the EEA.<br>
+	 * @return The current divisor
 	 */
 	public @NotNull BigInteger getDivisor() {
 		return this.divisor;
 	}
 	
 	/**
-	 * @return The current remainder of the EEA
+	 * Returns the current remainder of the EEA.<br>
+	 * @return The current remainder
 	 */
 	public @NotNull BigInteger getRemainder() {
 		return this.remainder;
 	}
 	
 	/**
-	 * @return The current quotient of the EEA
+	 * Returns the current quotient of the EEA.<br>
+	 * @return The current quotient
 	 */
 	public @NotNull BigInteger getQuotient() {
 		return this.quotient;
 	}
 	
 	/**
-	 * @return The first coefficient of the EEA
+	 * Returns the number of steps the EEA has executed.<br>
+	 * @return The number of steps
 	 */
 	public int getStep() {
 		return this.step;
 	}
 	
 	/**
-
-	 * @return The current first coefficient of the EEA
+	 * Returns the first coefficient of the EEA.<br>
+	 * @return The first coefficient
 	 */
 	public @NotNull BigInteger getFirstCoefficient() {
 		return this.getFirstCoefficient(1);
 	}
 	
 	/**
-	 * @return The current second coefficient of the EEA
+	 * Returns the second coefficient of the EEA.<br>
+	 * @return The second coefficient
 	 */
 	public @NotNull BigInteger getSecondCoefficient() {
 		return this.getSecondCoefficient(1);

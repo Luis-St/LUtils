@@ -79,14 +79,16 @@ public class StringReader {
 	}
 	
 	/**
-	 * @return The string to read from
+	 * Returns the string to read from.<br>
+	 * @return The string
 	 */
 	public @NotNull String getString() {
 		return this.string;
 	}
 	
 	/**
-	 * @return The current index of the reader
+	 * Returns the current character index of the reader.<br>
+	 * @return The current index
 	 */
 	public int getIndex() {
 		return this.index;

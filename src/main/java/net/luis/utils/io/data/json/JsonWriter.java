@@ -67,15 +67,15 @@ public class JsonWriter implements AutoCloseable {
 	 * The json element is written as a string with the configuration of the writer.<br>
 	 * @param json The json element to write
 	 * @throws NullPointerException If the json element is null
+	 * @throws UncheckedIOException If an I/O error occurs
 	 */
 	public void writeJson(@NotNull JsonElement json) {
 		Objects.requireNonNull(json, "Json element must not be null");
 		try {
 			this.writer.write(json.toString(this.config));
-			this.writer.newLine();
 			this.writer.flush();
 		} catch (IOException e) {
-			this.config.errorAction().handle(e);
+			this.config.errorAction().handle(new UncheckedIOException("An I/O error occurred while writing the json element", e));
 		}
 	}
 	

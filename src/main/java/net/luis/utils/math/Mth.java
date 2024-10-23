@@ -32,6 +32,12 @@ import java.util.stream.*;
  */
 public class Mth {
 	
+	/**
+	 * Private constructor to prevent instantiation.<br>
+	 * This is a static helper class.<br>
+	 */
+	private Mth() {}
+	
 	//region Sum
 	
 	/**

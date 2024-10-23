@@ -28,11 +28,14 @@ import java.util.function.Supplier;
  * The key is used to access the items in the registry.<br>
  *
  * @author Luis-St
+ *
+ * @param <T> The type of the key
  */
 public interface RegistryKey<T> extends Comparable<RegistryKey<T>> {
 	
 	/**
-	 * @return The key of the registry key
+	 * Returns the element associated with the key.<br>
+	 * @return The element of the registry key
 	 */
 	@NotNull T getKey();
 	

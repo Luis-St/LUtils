@@ -67,14 +67,16 @@ public class Pair<F, S> {
 	}
 	
 	/**
-	 * @return The first value of the pair
+	 * Returns the first value of the pair.<br>
+	 * @return The first value
 	 */
 	public F getFirst() {
 		return this.first;
 	}
 	
 	/**
-	 * @return The second value of the pair
+	 * Returns the second value of the pair.<br>
+	 * @return The second value
 	 */
 	public S getSecond() {
 		return this.second;

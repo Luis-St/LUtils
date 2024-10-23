@@ -37,6 +37,12 @@ import java.util.stream.Stream;
 public class FileUtils {
 	
 	/**
+	 * Private constructor to prevent instantiation.<br>
+	 * This is a static helper class.<br>
+	 */
+	private FileUtils() {}
+	
+	/**
 	 * Splits the given file into a pair of the folder and the file name.<br>
 	 * The folder is the part before the last slash, the name is the part after the last slash.<br>
 	 * <p>

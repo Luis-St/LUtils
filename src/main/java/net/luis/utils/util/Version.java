@@ -243,35 +243,40 @@ public class Version implements Comparable<Version> {
 	}
 	
 	/**
-	 * @return The major version number
+	 * Returns the major version number as an integer.<br>
+	 * @return The major version
 	 */
 	public int getMajor() {
 		return this.major;
 	}
 	
 	/**
-	 * @return The minor version number
+	 * Returns the minor version number as an integer.<br>
+	 * @return The minor version
 	 */
 	public int getMinor() {
 		return this.minor;
 	}
 	
 	/**
-	 * @return The patch or fix version number
+	 * Returns the patch or fix version number as an integer.<br>
+	 * @return The patch or fix version
 	 */
 	public int getPatch() {
 		return this.patch;
 	}
 	
 	/**
-	 * @return The build version number or {@code 0} if not present
+	 * Returns the build version number as an integer.<br>
+	 * @return The build version or {@code 0} if not present
 	 */
 	public int getBuild() {
 		return Math.max(0, this.buildVersion.version());
 	}
 	
 	/**
-	 * @return The suffix or pre-release identifier, if not present, an empty string
+	 * Returns the suffix or pre-release identifier.<br>
+	 * @return The suffix or pre-release identifier or an empty string if not present
 	 */
 	public @NotNull String getSuffix() {
 		return this.suffix;
@@ -292,30 +297,27 @@ public class Version implements Comparable<Version> {
 	 * @return The index of the suffix
 	 */
 	public int getSuffixIndex() {
-		if ("alpha".equals(this.suffix)) {
-			return 1;
-		} else if ("beta".equals(this.suffix)) {
-			return 2;
-		} else if ("rc".equals(this.suffix) || "release-candidate".equals(this.suffix)) {
-			return 3;
-		} else if ("release".equals(this.suffix)) {
-			return 4;
-		} else if ("final".equals(this.suffix)) {
-			return 5;
-		} else {
-			return 0;
-		}
+		return switch (this.suffix) {
+			case "alpha" -> 1;
+			case "beta" -> 2;
+			case "rc", "release-candidate" -> 3;
+			case "release" -> 4;
+			case "final" -> 5;
+			case null, default -> 0;
+		};
 	}
 	
 	/**
-	 * @return The suffix version number or {@code 0} if not present
+	 * Returns the suffix version number as an integer.<br>
+	 * @return The suffix version or {@code 0} if not present
 	 */
 	public int getSuffixVersion() {
 		return Math.max(0, this.suffixVersion.version());
 	}
 	
 	/**
-	 * @return The version as a builder for modifications
+	 * Returns the version as a builder for modifications.<br>
+	 * @return The version as a builder
 	 */
 	public Version.@NotNull Builder asBuilder() {
 		Version.Builder builder = new Version.Builder(this.major, this.minor, this.patch).withSuffix(this.suffix);

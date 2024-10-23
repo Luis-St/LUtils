@@ -35,7 +35,8 @@ import java.lang.annotation.*;
 public @interface Mediator {
 	
 	/**
-	 * @return The types that are mediated by this class
+	 * Returns the types that are mediated by this class.<br>
+	 * @return The types
 	 */
 	@NotNull Class<?>[] value() default {};
 }

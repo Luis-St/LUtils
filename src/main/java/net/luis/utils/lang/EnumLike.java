@@ -76,6 +76,8 @@ import java.util.function.Predicate;
  * </p>
  *
  * @author Luis-St
+ *
+ * @param <T> The type of the enum-like class
  */
 @SuppressWarnings({ "unchecked", "SuspiciousMethodCalls" })
 public interface EnumLike<T extends EnumLike<T>> extends Comparable<T> {
@@ -155,11 +157,13 @@ public interface EnumLike<T extends EnumLike<T>> extends Comparable<T> {
 	}
 	
 	/**
+	 * Returns the name of the given enum-like constant.<br>
 	 * @return The name of the constant
 	 */
 	@NotNull String name();
 	
 	/**
+	 * Returns the ordinal of the given enum-like constant.<br>
 	 * @return The ordinal of the constant
 	 * @throws IllegalStateException If the constant was not correctly defined
 	 */

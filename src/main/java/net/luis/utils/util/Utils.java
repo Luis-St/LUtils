@@ -41,6 +41,12 @@ public class Utils {
 	public static final UUID EMPTY_UUID = UUID.fromString("00000000-0000-0000-0000-000000000000");
 	
 	/**
+	 * Private constructor to prevent instantiation.<br>
+	 * This is a static helper class.<br>
+	 */
+	private Utils() {}
+	
+	/**
 	 * Checks if the given UUID is empty.<br>
 	 * An empty UUID is a UUID with all zeros.<br>
 	 * @param uuid The UUID to check
@@ -346,7 +352,8 @@ public class Utils {
 	//region Random util methods
 	
 	/**
-	 * @return A new {@link Random} instance using the current system time as seed
+	 * Returns a new {@link Random} instance using the current system time as seed.<br>
+	 * @return A new random number generator
 	 */
 	public static @NotNull Random systemRandom() {
 		return new Random(System.currentTimeMillis());

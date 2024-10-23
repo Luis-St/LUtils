@@ -57,6 +57,12 @@ public class StackTraceUtils {
 	 */
 	private static final String UNSAFE_OFFSET_DEFAULT = "unsafe.offset.default";
 	
+	/**
+	 * Private constructor to prevent instantiation.<br>
+	 * This is a static helper class.<br>
+	 */
+	private StackTraceUtils() {}
+	
 	//region Calling class
 	
 	/**

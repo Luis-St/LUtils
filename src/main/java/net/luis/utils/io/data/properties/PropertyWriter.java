@@ -66,7 +66,7 @@ public class PropertyWriter implements AutoCloseable {
 	 * @param key The key of the property
 	 * @param value The value of the property
 	 * @throws NullPointerException If the key or the value is null
-	 * @throws IOException If an I/O error occurs (optional)
+	 * @throws UncheckedIOException If an I/O error occurs (optional)
 	 */
 	public void writeProperty(@NotNull String key, @NotNull Object value) {
 		Objects.requireNonNull(key, "Key must not be null");
@@ -82,7 +82,7 @@ public class PropertyWriter implements AutoCloseable {
 	 * @param converter The converter to convert the value to a string
 	 * @param <T> The type of the value
 	 * @throws NullPointerException If the key, the value or the converter is null
-	 * @throws IOException If an I/O error occurs (optional)
+	 * @throws UncheckedIOException If an I/O error occurs (optional)
 	 */
 	public <T> void writeProperty(@NotNull String key, @NotNull T value, @NotNull ValueConverter<String, T> converter) {
 		Objects.requireNonNull(key, "Key must not be null");
@@ -95,7 +95,7 @@ public class PropertyWriter implements AutoCloseable {
 	 * Writes the given properties to the underlying output.<br>
 	 * @param properties The properties to write
 	 * @throws NullPointerException If the properties are null
-	 * @throws IOException If an I/O error occurs (optional)
+	 * @throws UncheckedIOException If an I/O error occurs (optional)
 	 */
 	public void writeProperty(@NotNull Properties properties) {
 		Objects.requireNonNull(properties, "Properties must not be null");
@@ -106,7 +106,7 @@ public class PropertyWriter implements AutoCloseable {
 	 * Writes the given property to the underlying output.<br>
 	 * @param property The property to write
 	 * @throws NullPointerException If the property is null
-	 * @throws IOException If an I/O error occurs (optional)
+	 * @throws UncheckedIOException If an I/O error occurs (optional)
 	 */
 	public void writeProperty(@NotNull Property property) {
 		Objects.requireNonNull(property, "Property must not be null");
@@ -118,7 +118,7 @@ public class PropertyWriter implements AutoCloseable {
 			this.writer.newLine();
 			this.writer.flush();
 		} catch (IOException e) {
-			this.config.errorAction().handle(e);
+			this.config.errorAction().handle(new UncheckedIOException("An I/O error occurred while writing the property", e));
 		}
 	}
 	

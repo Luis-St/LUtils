@@ -41,6 +41,12 @@ import static org.apache.commons.lang3.ArrayUtils.*;
  */
 public class ReflectionUtils {
 	
+	/**
+	 * Private constructor to prevent instantiation.<br>
+	 * This is a static helper class.<br>
+	 */
+	private ReflectionUtils() {}
+	
 	//region Methods
 	
 	/**
@@ -131,7 +137,7 @@ public class ReflectionUtils {
 		Objects.requireNonNull(clazz, "Class must not be null");
 		List<Method> methods = getMethodsForName(clazz, name);
 		if (methods.size() == 1) {
-			return Optional.of(methods.get(0));
+			return Optional.of(methods.getFirst());
 		}
 		return Optional.empty();
 	}

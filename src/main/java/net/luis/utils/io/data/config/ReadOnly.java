@@ -46,5 +46,10 @@ import java.lang.annotation.*;
 @Target(ElementType.RECORD_COMPONENT)
 public @interface ReadOnly {
 	
-	@NotNull String[] value() default {};
+	/**
+	 * The dependencies of the annotated record component.<br>
+	 * Each dependency must be a boolean expression.<br>
+	 * @return The dependencies
+	 */
+	String @NotNull [] value() default {};
 }

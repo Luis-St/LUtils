@@ -204,6 +204,12 @@ class LoggingHelper {
 	private static final String LOGGING_ARCHIVE_AUTO_DELETION_AGE = "logging.archive.auto_deletion.age";
 	
 	/**
+	 * Private constructor to prevent instantiation.<br>
+	 * This is a static helper class.<br>
+	 */
+	private LoggingHelper() {}
+	
+	/**
 	 * Creates a new logger configuration for the given loggers.<br>
 	 * The configuration is created with the default values and modifies it according to the system properties.<br>
 	 * General system properties:<br>

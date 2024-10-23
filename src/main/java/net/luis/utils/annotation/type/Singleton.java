@@ -42,7 +42,8 @@ import java.lang.annotation.*;
 public @interface Singleton {
 	
 	/**
-	 * @return The method to obtain the instance of the singleton class
+	 * Returns the method to get the instance of the singleton class.<br>
+	 * @return The method to get the singleton
 	 */
 	@NotNull Method value() default Method.UNDEFINED;
 	

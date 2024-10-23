@@ -34,17 +34,12 @@ class JsonPrimitiveTest {
 	void constructor() {
 		assertThrows(NullPointerException.class, () -> new JsonPrimitive((Number) null));
 		assertThrows(NullPointerException.class, () -> new JsonPrimitive((String) null));
-		assertThrows(NullPointerException.class, () -> new JsonPrimitive((Object) null));
 		assertThrows(NullPointerException.class, () -> new JsonPrimitive((Object) null, true));
-		assertThrows(IllegalArgumentException.class, () -> new JsonPrimitive(new Object()));
+		assertThrows(IllegalArgumentException.class, () -> new JsonPrimitive(new Object(), true));
 		assertDoesNotThrow(() -> new JsonPrimitive(true));
 		assertDoesNotThrow(() -> new JsonPrimitive(1));
 		assertDoesNotThrow(() -> new JsonPrimitive(1.0));
 		assertDoesNotThrow(() -> new JsonPrimitive("test"));
-		assertDoesNotThrow(() -> new JsonPrimitive((Object) true));
-		assertDoesNotThrow(() -> new JsonPrimitive((Object) 1));
-		assertDoesNotThrow(() -> new JsonPrimitive((Object) 1.0));
-		assertDoesNotThrow(() -> new JsonPrimitive((Object) "test"));
 		assertDoesNotThrow(() -> new JsonPrimitive((Object) "1", false));
 	}
 	

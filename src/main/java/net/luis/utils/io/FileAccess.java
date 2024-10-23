@@ -85,16 +85,17 @@ public class FileAccess implements AutoCloseable {
 	
 	/**
 	 * Ensures that the file access is open.<br>
-	 * @throws IOException If the file access is closed (sneaky thrown)
+	 * @throws IllegalStateException If the file access is closed
 	 */
 	private void ensureOpen() {
 		if (this.closed) {
-			Utils.throwSneaky(new IOException("Unable to interact with closed file access: " + this.file));
+			throw new IllegalStateException("Unable to interact with closed file access: " + this.file);
 		}
 	}
 	
 	/**
-	 * @return The file that is accessed by this instance of the class
+	 * Returns the file accessed by this instance of the class.<br>
+	 * @return The file
 	 */
 	public @NotNull Path getFile() {
 		return this.file;
@@ -111,7 +112,7 @@ public class FileAccess implements AutoCloseable {
 	/**
 	 * Access the file with the given action.<br>
 	 * @param action The action to perform on the file
-	 * @throws IOException If the file access is closed (sneaky thrown)
+	 * @throws IllegalStateException If the file access is closed
 	 * @throws UncheckedIOException If the action throws an IOException
 	 */
 	public void access(@NotNull FailableConsumer<Path, IOException> action) {
@@ -131,7 +132,7 @@ public class FileAccess implements AutoCloseable {
 	 * @param action The action to perform on the file
 	 * @return The result of the action
 	 * @param <T> The type of the result
-	 * @throws IOException If the file access is closed (sneaky thrown)
+	 * @throws IllegalStateException If the file access is closed
 	 * @throws UncheckedIOException If the action throws an IOException
 	 */
 	public <T> @NotNull T access(@NotNull FailableFunction<Path, T, IOException> action) {

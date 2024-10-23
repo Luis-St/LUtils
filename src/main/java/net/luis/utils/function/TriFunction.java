@@ -32,6 +32,7 @@ import java.util.function.Function;
  * @param <T> The type of the first argument
  * @param <U> The type of the second argument
  * @param <V> The type of the third argument
+ * @param <R> The type of the result
  */
 @FunctionalInterface
 public interface TriFunction<T, U, V, R> {
