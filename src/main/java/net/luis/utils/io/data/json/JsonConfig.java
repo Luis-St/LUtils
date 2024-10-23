@@ -28,11 +28,20 @@ import java.nio.charset.StandardCharsets;
 import java.util.Objects;
 
 /**
+ * Configuration for reading and writing json elements.<br>
  *
  * @author Luis-St
  *
+ * @param strict Whether to use strict json parsing when reading (read-only)
+ * @param indent The string to use for indentation (write-only)
+ * @param prettyPrint Whether to pretty print the json (write-only)
+ * @param simplifyArrays Whether to simplify json arrays (write-only)
+ * @param maxArraySimplificationSize The maximum size of a json array to simplify (write-only)
+ * @param simplifyObjects Whether to simplify json objects (write-only)
+ * @param maxObjectSimplificationSize The maximum size of a json object to simplify (write-only)
+ * @param charset The charset to use for reading and writing
+ * @param errorAction The action to take when an error occurs
  */
-
 public record JsonConfig(
 	@ReadOnly boolean strict,
 	@WriteOnly @NotNull String indent,
@@ -45,9 +54,36 @@ public record JsonConfig(
 	@NotNull ErrorAction errorAction
 ) {
 	
+	/**
+	 * The default json configuration.<br>
+	 * Strict: true<br>
+	 * Indent: "\t"<br>
+	 * Pretty print: true<br>
+	 * Simplify arrays: true<br>
+	 * Max array simplification size: 10<br>
+	 * Simplify objects: true<br>
+	 * Max object simplification size: 1<br>
+	 * Charset: UTF-8<br>
+	 * Error action: THROW<br>
+	 */
 	public static final JsonConfig DEFAULT = new JsonConfig(true, "\t", true, true, 10, true, 1, StandardCharsets.UTF_8, ErrorAction.THROW);
 	
+	/**
+	 * Constructs a new json configuration.<br>
+	 * @param strict Whether to use strict json parsing when reading (read-only)
+	 * @param indent The string to use for indentation (write-only)
+	 * @param prettyPrint Whether to pretty print the json (write-only)
+	 * @param simplifyArrays Whether to simplify json arrays (write-only)
+	 * @param maxArraySimplificationSize The maximum size of a json array to simplify (write-only)
+	 * @param simplifyObjects Whether to simplify json objects (write-only)
+	 * @param maxObjectSimplificationSize The maximum size of a json object to simplify (write-only)
+	 * @param charset The charset to use for reading and writing
+	 * @param errorAction The action to take when an error occurs
+	 * @throws NullPointerException If any of the parameters is null
+	 * @throws IllegalArgumentException If the max array or object simplification size is less than 1 and the corresponding simplification is enabled
+	 */
 	public JsonConfig {
+		Objects.requireNonNull(indent, "Indent must not be null");
 		Objects.requireNonNull(charset, "Charset must not be null");
 		Objects.requireNonNull(errorAction, "Error action must not be null");
 		if (simplifyArrays && 1 > maxArraySimplificationSize) {

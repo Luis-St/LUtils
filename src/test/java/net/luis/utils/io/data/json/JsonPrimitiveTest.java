@@ -35,6 +35,7 @@ class JsonPrimitiveTest {
 		assertThrows(NullPointerException.class, () -> new JsonPrimitive((Number) null));
 		assertThrows(NullPointerException.class, () -> new JsonPrimitive((String) null));
 		assertThrows(NullPointerException.class, () -> new JsonPrimitive((Object) null));
+		assertThrows(NullPointerException.class, () -> new JsonPrimitive((Object) null, true));
 		assertThrows(IllegalArgumentException.class, () -> new JsonPrimitive(new Object()));
 		assertDoesNotThrow(() -> new JsonPrimitive(true));
 		assertDoesNotThrow(() -> new JsonPrimitive(1));
@@ -44,6 +45,7 @@ class JsonPrimitiveTest {
 		assertDoesNotThrow(() -> new JsonPrimitive((Object) 1));
 		assertDoesNotThrow(() -> new JsonPrimitive((Object) 1.0));
 		assertDoesNotThrow(() -> new JsonPrimitive((Object) "test"));
+		assertDoesNotThrow(() -> new JsonPrimitive((Object) "1", false));
 	}
 	
 	@Test
@@ -86,7 +88,11 @@ class JsonPrimitiveTest {
 		assertEquals("true", new JsonPrimitive(true).getAsString());
 		assertEquals("1", new JsonPrimitive(1).getAsString());
 		assertEquals("1.0", new JsonPrimitive(1.0).getAsString());
+		assertEquals("1.0f", new JsonPrimitive("1.0f").getAsString());
 		assertEquals("test", new JsonPrimitive("test").getAsString());
+		
+		assertEquals("1.0", new JsonPrimitive("1.0f", true).getAsString());
+		assertNotEquals("1.0", new JsonPrimitive("1.0f", false).getAsString());
 	}
 	
 	@Test
