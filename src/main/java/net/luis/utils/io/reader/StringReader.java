@@ -18,13 +18,16 @@
 
 package net.luis.utils.io.reader;
 
+import com.google.common.collect.Lists;
 import net.luis.utils.exception.InvalidStringException;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.*;
-import java.util.Objects;
+import java.util.*;
 import java.util.function.Predicate;
+import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 /**
  * A utility class to read strings.<br>
@@ -280,10 +283,11 @@ public class StringReader {
 	 * The terminator is read but not included in the result.<br>
 	 * @param terminator The terminator to read until
 	 * @return The string which was read until the terminator
+	 * @throws StringIndexOutOfBoundsException If there are no more characters to read
 	 */
 	public @NotNull String readUnquotedString(char terminator) {
 		if (!this.canRead()) {
-			return "";
+			throw new StringIndexOutOfBoundsException("Expected an unquoted string but found nothing");
 		}
 		StringBuilder builder = new StringBuilder();
 		while (this.canRead()) {
@@ -301,11 +305,12 @@ public class StringReader {
 	 * A quoted string is a string enclosed in single or double quotes.<br>
 	 * The quotes are read but not included in the result.<br>
 	 * @return The quoted string which was read
+	 * @throws StringIndexOutOfBoundsException If there are no more characters to read
 	 * @throws InvalidStringException If the next read character is not a single or double quote
 	 */
 	public @NotNull String readQuotedString() {
 		if (!this.canRead()) {
-			return "";
+			throw new StringIndexOutOfBoundsException("Expected a quoted string but found nothing");
 		}
 		char next = this.peek();
 		if (next != '"' && next != '\'') {
@@ -465,10 +470,13 @@ public class StringReader {
 	 *     If there are no more characters to read, an empty string is returned.<br>
 	 * </p>
 	 * @return The string which was read
+	 * @throws StringIndexOutOfBoundsException If there are no more characters to read
+	 * @see #readQuotedString()
+	 * @see #readUnquotedString()
 	 */
 	public @NotNull String readString() {
 		if (!this.canRead()) {
-			return "";
+			throw new StringIndexOutOfBoundsException("Expected a string value but found nothing");
 		}
 		char next = this.peek();
 		if (next == '"' || next == '\'') {
@@ -476,6 +484,125 @@ public class StringReader {
 			return this.readUntil(next);
 		}
 		return this.readUnquotedString();
+	}
+	
+	/**
+	 * Reads the given expected string from the reader.<br>
+	 * If any read character does not match the expected character, an exception is thrown.<br>
+	 * <p>
+	 *     If the expected string could not be read, an exception is thrown.<br>
+	 *     The reader index is set to the last matching character of the expected string.<br>
+	 * </p>
+	 * @param expected The expected string
+	 * @param caseSensitive Whether the expected string should be case-sensitive or not
+	 * @return The expected string which was read
+	 * @throws StringIndexOutOfBoundsException If there are no more characters to read
+	 * @throws IllegalArgumentException If the expected string is empty
+	 * @throws InvalidStringException If the string read does not match the expected string
+	 */
+	public @NotNull String readExpected(@NotNull String expected, boolean caseSensitive) {
+		if (!this.canRead()) {
+			throw new StringIndexOutOfBoundsException("Expected '" + expected + "' but found nothing");
+		}
+		if (expected.isEmpty()) {
+			throw new IllegalArgumentException("Expected string must not be empty");
+		}
+		int length = expected.length();
+		if (!this.canRead(length)) {
+			throw new InvalidStringException("Expected '" + expected + "' requires " + length + " characters but found " + (this.string.length() - this.index) + " remaining characters");
+		}
+		int markedIndex = this.markedIndex;
+		StringBuilder builder = new StringBuilder();
+		for (int i = 0; i < length; i++) {
+			this.mark();
+			char c = this.read();
+			if (caseSensitive) {
+				if (c != expected.charAt(i)) {
+					this.reset();
+					throw new InvalidStringException("Expected '" + expected + "' but found: '" + builder + c + "'");
+				}
+			} else {
+				if (Character.toLowerCase(c) != Character.toLowerCase(expected.charAt(i))) {
+					this.reset();
+					throw new InvalidStringException("Expected '" + expected + "' but found: '" + builder + c + "'");
+				}
+			}
+			builder.append(c);
+		}
+		this.markedIndex = markedIndex;
+		return builder.toString();
+	}
+	
+	/**
+	 * Reads the first matching expected string from the reader.<br>
+	 * <p>
+	 *     If any read character does not match the expected character of a given string,<br>
+	 *     the string is removed from the list.<br>
+	 *     If no expected string matches the read string, an exception is thrown.<br>
+	 * </p>
+	 * <p>
+	 *     If none of the expected strings could be read, an exception is thrown.<br>
+	 *     The reader index is set to the last matching character of the expected strings.<br>
+	 * </p>
+	 * @param expected The list of expected strings
+	 * @param caseSensitive Whether the expected strings should be case-sensitive or not
+	 * @return The expected string which was read
+	 * @throws StringIndexOutOfBoundsException If there are no more characters to read
+	 * @throws IllegalArgumentException If the list of expected strings is empty
+	 * @throws InvalidStringException If the string read does not match any of the expected strings
+	 */
+	public @NotNull String readExpected(@NotNull List<String> expected, boolean caseSensitive) {
+		if (!this.canRead()) {
+			throw new StringIndexOutOfBoundsException("Expected one of '" + expected + "' but found nothing");
+		}
+		if (expected.isEmpty()) {
+			throw new IllegalArgumentException("Expected strings must not be empty");
+		}
+		int readable = this.string.length() - this.index;
+		List<String> possibleExpected = expected.stream().filter(e -> e.length() <= readable).collect(Collectors.toList());
+		if (possibleExpected.isEmpty()) {
+			throw new InvalidStringException("Expected one of '" + expected + "' but there are not enough remaining characters " + readable + " for any expected string");
+		}
+		
+		int start = this.index;
+		int markedIndex = this.markedIndex;
+		StringBuilder builder = new StringBuilder();
+		for (int i = 0; i < readable; i++) {
+			this.mark();
+			char c = this.read();
+			List<String> newPossibleExpected = Lists.newArrayList();
+			Iterator<String> iterator = possibleExpected.iterator();
+			while (iterator.hasNext()) {
+				String expectedString = iterator.next();
+				if (i >= expectedString.length()) {
+					iterator.remove();
+					continue;
+				}
+				if (caseSensitive) {
+					if (c != expectedString.charAt(i)) {
+						iterator.remove();
+						continue;
+					}
+				} else {
+					if (Character.toLowerCase(c) != Character.toLowerCase(expectedString.charAt(i))) {
+						iterator.remove();
+						continue;
+					}
+				}
+				builder.append(c);
+				if (caseSensitive ? expectedString.contentEquals(builder) : expectedString.equalsIgnoreCase(builder.toString())) {
+					return builder.toString();
+				}
+				newPossibleExpected.add(expectedString);
+			}
+			if (newPossibleExpected.isEmpty()) {
+				this.reset();
+				break;
+			}
+			possibleExpected = newPossibleExpected;
+		}
+		this.markedIndex = markedIndex;
+		throw new InvalidStringException("Expected one of '" + expected + "' but found: '" + this.string.substring(start, this.index) + "'");
 	}
 	
 	/**
@@ -489,13 +616,12 @@ public class StringReader {
 		if (!this.canRead()) {
 			throw new StringIndexOutOfBoundsException("Expected a boolean value but found nothing");
 		}
-		int start = this.index;
 		char c = Character.toLowerCase(this.peek());
 		String value;
 		if (c == 't') {
-			value = this.read(4);
+			value = this.readExpected("true", false);
 		} else if (c == 'f') {
-			value = this.read(5);
+			value = this.readExpected("false", false);
 		} else {
 			throw new InvalidStringException("Expected a start character of 'true' or 'false' but found: '" + c + "'");
 		}
@@ -504,7 +630,6 @@ public class StringReader {
 		} else if ("false".equalsIgnoreCase(value)) {
 			return false;
 		}
-		this.index = start;
 		throw new InvalidStringException("Expected a boolean value but found: '" + value + "'");
 	}
 	
@@ -621,6 +746,7 @@ public class StringReader {
 						break;
 					}
 				}
+				
 			}
 			builder.append(this.read());
 		}
@@ -700,15 +826,15 @@ public class StringReader {
 	 */
 	public @NotNull Number readNumber() {
 		if (!this.canRead()) {
-			throw new StringIndexOutOfBoundsException("Expected a number value but found nothing");
+			throw new StringIndexOutOfBoundsException("Expected a number but found nothing");
 		}
 		String number = this.readNumberAsString();
+		if (number.isEmpty()) {
+			throw new InvalidStringException("Expected a number but found nothing");
+		}
 		int radix = this.parseRadix(number);
 		if (radix != 10) {
 			number = number.substring(2);
-		}
-		if (number.isEmpty()) {
-			throw new InvalidStringException("Expected a number value but found nothing");
 		}
 		char numberType = Character.toLowerCase(number.charAt(number.length() - 1));
 		if (Character.isDigit(numberType) || radix != 10) {
@@ -730,7 +856,7 @@ public class StringReader {
 	
 	/**
 	 * Reads a byte.<br>
-	 * The number can be suffixed with a 'b' (case-insensitive) to indicate that it is a byte.<br>
+	 * The number can be suffixed with a {@code b} (case-insensitive) to indicate that it is a byte.<br>
 	 * @return The byte value which was read
 	 * @throws StringIndexOutOfBoundsException If there are no more characters to read
 	 * @throws InvalidStringException If the read value is not a (valid) byte
@@ -764,7 +890,7 @@ public class StringReader {
 	
 	/**
 	 * Reads a short.<br>
-	 * The number can be suffixed with an 's' (case-insensitive) to indicate that it is a short.<br>
+	 * The number can be suffixed with an {@code s} (case-insensitive) to indicate that it is a short.<br>
 	 * @return The short value which was read
 	 * @throws StringIndexOutOfBoundsException If there are no more characters to read
 	 * @throws InvalidStringException If the read value is not a (valid) short
@@ -798,7 +924,7 @@ public class StringReader {
 	
 	/**
 	 * Reads an integer.<br>
-	 * The number can be suffixed with an 'i' (case-insensitive) to indicate that it is an integer.<br>
+	 * The number can be suffixed with an {@code i} (case-insensitive) to indicate that it is an integer.<br>
 	 * @return The integer value which was read
 	 * @throws InvalidStringException If the read value is not a (valid) integer
 	 * @see #readNumberAsString()
@@ -831,7 +957,7 @@ public class StringReader {
 	
 	/**
 	 * Reads a long.<br>
-	 * The number can be suffixed with an 'l' (case-insensitive) to indicate that it is a long.<br>
+	 * The number can be suffixed with an {@code l} (case-insensitive) to indicate that it is a long.<br>
 	 * @return The long value which was read
 	 * @throws StringIndexOutOfBoundsException If there are no more characters to read
 	 * @throws InvalidStringException If the read value is not a (valid) long
@@ -865,7 +991,7 @@ public class StringReader {
 	
 	/**
 	 * Reads a float.<br>
-	 * The number can be suffixed with an 'f' (case-insensitive) to indicate that it is a float.<br>
+	 * The number can be suffixed with an {@code f} (case-insensitive) to indicate that it is a float.<br>
 	 * @return The float value which was read
 	 * @throws StringIndexOutOfBoundsException If there are no more characters to read
 	 * @throws InvalidStringException If the read value is not a (valid) float
@@ -892,7 +1018,7 @@ public class StringReader {
 	
 	/**
 	 * Reads a double.<br>
-	 * The number can be suffixed with a 'd' (case-insensitive) to indicate that it is a double.<br>
+	 * The number can be suffixed with a {@code d} (case-insensitive) to indicate that it is a double.<br>
 	 * @return The double value which was read
 	 * @throws StringIndexOutOfBoundsException If there are no more characters to read
 	 * @throws InvalidStringException If the read value is not a (valid) double
