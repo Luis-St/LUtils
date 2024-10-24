@@ -26,8 +26,7 @@ import net.luis.utils.util.ErrorAction;
 import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.Test;
 
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.util.Objects;
 import java.util.Set;
@@ -90,19 +89,19 @@ class PropertyReaderTest {
 		
 		// No separator
 		reader = createReader("key_a : value1");
-		assertThrows(IllegalLineReadException.class, reader::readProperties);
+		assertInstanceOf(IllegalLineReadException.class, assertThrows(UncheckedIOException.class, reader::readProperties).getCause());
 		
 		// Illegal key
 		reader = createReader("key 1 = value1" + System.lineSeparator());
-		assertThrows(IllegalPropertyKeyException.class, reader::readProperties);
+		assertInstanceOf(IllegalPropertyKeyException.class, assertThrows(UncheckedIOException.class, reader::readProperties).getCause());
 		
 		// Compacted key -> Not allowed
 		reader = createReader("key.[1|2] = value1" + System.lineSeparator());
-		assertThrows(IllegalPropertyKeyException.class, reader::readProperties);
+		assertInstanceOf(IllegalPropertyKeyException.class, assertThrows(UncheckedIOException.class, reader::readProperties).getCause());
 		
 		// Variable key -> Not allowed
 		reader = createReader("key.${?key1} = value1" + System.lineSeparator());
-		assertThrows(IllegalPropertyKeyException.class, reader::readProperties);
+		assertInstanceOf(IllegalPropertyKeyException.class, assertThrows(UncheckedIOException.class, reader::readProperties).getCause());
 	}
 	
 	@Test
@@ -129,23 +128,23 @@ class PropertyReaderTest {
 		
 		// No separator
 		reader = createReader("key_a = value1", CUSTOM_CONFIG);
-		assertThrows(IllegalLineReadException.class, reader::readProperties);
+		assertInstanceOf(IllegalLineReadException.class, assertThrows(UncheckedIOException.class, reader::readProperties).getCause());
 		
 		// Illegal key
 		reader = createReader("key1 : value1", CUSTOM_CONFIG);
-		assertThrows(IllegalPropertyKeyException.class, reader::readProperties);
+		assertInstanceOf(IllegalPropertyKeyException.class, assertThrows(UncheckedIOException.class, reader::readProperties).getCause());
 		
 		// Compacted key -> Not allowed
 		reader = createReader("key.[a|b] = value1" + System.lineSeparator());
-		assertThrows(IllegalPropertyKeyException.class, reader::readProperties);
+		assertInstanceOf(IllegalPropertyKeyException.class, assertThrows(UncheckedIOException.class, reader::readProperties).getCause());
 		
 		// Variable key -> Not allowed
 		reader = createReader("key.${?key_a} = value1" + System.lineSeparator());
-		assertThrows(IllegalPropertyKeyException.class, reader::readProperties);
+		assertInstanceOf(IllegalPropertyKeyException.class, assertThrows(UncheckedIOException.class, reader::readProperties).getCause());
 		
 		// Illegal value
 		reader = createReader("key_a : $value", CUSTOM_CONFIG);
-		assertThrows(IllegalPropertyValueException.class, reader::readProperties);
+		assertInstanceOf(IllegalPropertyValueException.class, assertThrows(UncheckedIOException.class, reader::readProperties).getCause());
 	}
 	
 	@Test
@@ -175,23 +174,23 @@ class PropertyReaderTest {
 		
 		// Empty key part
 		reader = createReader("key..test = value1", ADVANCED_DEFAULT_CONFIG);
-		assertThrows(IllegalPropertyKeyPartException.class, reader::readProperties);
+		assertInstanceOf(IllegalPropertyKeyPartException.class, assertThrows(UncheckedIOException.class, reader::readProperties).getCause());
 		
 		// Blank key part
 		reader = createReader("key. .test = value1", ADVANCED_DEFAULT_CONFIG);
-		assertThrows(IllegalPropertyKeyPartException.class, reader::readProperties);
+		assertInstanceOf(IllegalPropertyKeyPartException.class, assertThrows(UncheckedIOException.class, reader::readProperties).getCause());
 		
 		// Illegal key end
 		reader = createReader("key.test. = value1", ADVANCED_DEFAULT_CONFIG);
-		assertThrows(IllegalPropertyKeyPartException.class, reader::readProperties);
+		assertInstanceOf(IllegalPropertyKeyPartException.class, assertThrows(UncheckedIOException.class, reader::readProperties).getCause());
 		
 		// Empty compacted key part
 		reader = createReader("key.[].test = value1", ADVANCED_DEFAULT_CONFIG);
-		assertThrows(IllegalPropertyKeyPartException.class, reader::readProperties);
+		assertInstanceOf(IllegalPropertyKeyPartException.class, assertThrows(UncheckedIOException.class, reader::readProperties).getCause());
 		
 		// Blank compacted key part
 		reader = createReader("key.[ ].test = value1", ADVANCED_DEFAULT_CONFIG);
-		assertThrows(IllegalPropertyKeyPartException.class, reader::readProperties);
+		assertInstanceOf(IllegalPropertyKeyPartException.class, assertThrows(UncheckedIOException.class, reader::readProperties).getCause());
 	}
 	
 	@Test
@@ -221,23 +220,23 @@ class PropertyReaderTest {
 		
 		// Empty key part
 		reader = createReader("key..test : value1", CUSTOM_CONFIG);
-		assertThrows(IllegalPropertyKeyPartException.class, reader::readProperties);
+		assertInstanceOf(IllegalPropertyKeyPartException.class, assertThrows(UncheckedIOException.class, reader::readProperties).getCause());
 		
 		// Blank key part
 		reader = createReader("key. .test : value1", CUSTOM_CONFIG);
-		assertThrows(IllegalPropertyKeyPartException.class, reader::readProperties);
+		assertInstanceOf(IllegalPropertyKeyPartException.class, assertThrows(UncheckedIOException.class, reader::readProperties).getCause());
 		
 		// Illegal key end
 		reader = createReader("key.test. : value1", CUSTOM_CONFIG);
-		assertThrows(IllegalPropertyKeyPartException.class, reader::readProperties);
+		assertInstanceOf(IllegalPropertyKeyPartException.class, assertThrows(UncheckedIOException.class, reader::readProperties).getCause());
 		
 		// Empty compacted key part
 		reader = createReader("key.[].test : value1", CUSTOM_CONFIG);
-		assertThrows(IllegalPropertyKeyPartException.class, reader::readProperties);
+		assertInstanceOf(IllegalPropertyKeyPartException.class, assertThrows(UncheckedIOException.class, reader::readProperties).getCause());
 		
 		// Blank compacted key part
 		reader = createReader("key.[ ].test : value1", CUSTOM_CONFIG);
-		assertThrows(IllegalPropertyKeyPartException.class, reader::readProperties);
+		assertInstanceOf(IllegalPropertyKeyPartException.class, assertThrows(UncheckedIOException.class, reader::readProperties).getCause());
 	}
 	
 	@Test
@@ -260,47 +259,47 @@ class PropertyReaderTest {
 		
 		// Empty key part
 		reader = createReader("key..test = value1", ADVANCED_DEFAULT_CONFIG);
-		assertThrows(IllegalPropertyKeyPartException.class, reader::readProperties);
+		assertInstanceOf(IllegalPropertyKeyPartException.class, assertThrows(UncheckedIOException.class, reader::readProperties).getCause());
 		
 		// Blank key part
 		reader = createReader("key. .test = value1", ADVANCED_DEFAULT_CONFIG);
-		assertThrows(IllegalPropertyKeyPartException.class, reader::readProperties);
+		assertInstanceOf(IllegalPropertyKeyPartException.class, assertThrows(UncheckedIOException.class, reader::readProperties).getCause());
 		
 		// Illegal key end
 		reader = createReader("key.test. = value1", ADVANCED_DEFAULT_CONFIG);
-		assertThrows(IllegalPropertyKeyPartException.class, reader::readProperties);
+		assertInstanceOf(IllegalPropertyKeyPartException.class, assertThrows(UncheckedIOException.class, reader::readProperties).getCause());
 		
 		// Empty variable key part
 		reader = createReader("key.${}.test = value1", ADVANCED_DEFAULT_CONFIG);
-		assertThrows(IllegalPropertyKeyPartException.class, reader::readProperties);
+		assertInstanceOf(IllegalPropertyKeyPartException.class, assertThrows(UncheckedIOException.class, reader::readProperties).getCause());
 		
 		// Blank variable key part
 		reader = createReader("key.${ }.test = value1", ADVANCED_DEFAULT_CONFIG);
-		assertThrows(IllegalPropertyKeyPartException.class, reader::readProperties);
+		assertInstanceOf(IllegalPropertyKeyPartException.class, assertThrows(UncheckedIOException.class, reader::readProperties).getCause());
 		
 		// No target type specified
 		reader = createReader("key.${key.test}.test = value1", ADVANCED_DEFAULT_CONFIG);
-		assertThrows(IllegalPropertyKeyPartException.class, reader::readProperties);
+		assertInstanceOf(IllegalPropertyKeyPartException.class, assertThrows(UncheckedIOException.class, reader::readProperties).getCause());
 		
 		// Too many arguments specified
 		reader = createReader("key.${custom?key.test?10?11}.test = value1", ADVANCED_DEFAULT_CONFIG);
-		assertThrows(IllegalPropertyKeyPartException.class, reader::readProperties);
+		assertInstanceOf(IllegalPropertyKeyPartException.class, assertThrows(UncheckedIOException.class, reader::readProperties).getCause());
 		
 		// Nested compacted key part
 		reader = createReader("key.${env?key[1|2]?10?11}.test = value1", ADVANCED_DEFAULT_CONFIG);
-		assertThrows(IllegalPropertyKeyPartException.class, reader::readProperties);
+		assertInstanceOf(IllegalPropertyKeyPartException.class, assertThrows(UncheckedIOException.class, reader::readProperties).getCause());
 		
 		// Nested variable key part
 		reader = createReader("key.${env?key.${sys?test}?10?11}.test = value1", ADVANCED_DEFAULT_CONFIG);
-		assertThrows(IllegalPropertyKeyPartException.class, reader::readProperties);
+		assertInstanceOf(IllegalPropertyKeyPartException.class, assertThrows(UncheckedIOException.class, reader::readProperties).getCause());
 		
 		// Unknown target type
 		reader = createReader("key.${custom?key.test}.test = value1", ADVANCED_DEFAULT_CONFIG);
-		assertThrows(IllegalPropertyKeyPartException.class, reader::readProperties);
+		assertInstanceOf(IllegalPropertyKeyPartException.class, assertThrows(UncheckedIOException.class, reader::readProperties).getCause());
 		
 		// Key not found -> No default value
 		reader = createReader("key.${sys?key.test}.test = value1", ADVANCED_DEFAULT_CONFIG);
-		assertThrows(IllegalPropertyKeyPartException.class, reader::readProperties);
+		assertInstanceOf(IllegalPropertyKeyPartException.class, assertThrows(UncheckedIOException.class, reader::readProperties).getCause());
 	}
 	
 	@Test
@@ -323,47 +322,47 @@ class PropertyReaderTest {
 		
 		// Empty key part
 		reader = createReader("key..test : value1", CUSTOM_CONFIG);
-		assertThrows(IllegalPropertyKeyPartException.class, reader::readProperties);
+		assertInstanceOf(IllegalPropertyKeyPartException.class, assertThrows(UncheckedIOException.class, reader::readProperties).getCause());
 		
 		// Blank key part
 		reader = createReader("key. .test : value1", CUSTOM_CONFIG);
-		assertThrows(IllegalPropertyKeyPartException.class, reader::readProperties);
+		assertInstanceOf(IllegalPropertyKeyPartException.class, assertThrows(UncheckedIOException.class, reader::readProperties).getCause());
 		
 		// Illegal key end
 		reader = createReader("key.test. : value1", CUSTOM_CONFIG);
-		assertThrows(IllegalPropertyKeyPartException.class, reader::readProperties);
+		assertInstanceOf(IllegalPropertyKeyPartException.class, assertThrows(UncheckedIOException.class, reader::readProperties).getCause());
 		
 		// Empty variable key part
 		reader = createReader("key.${}.test : value1", CUSTOM_CONFIG);
-		assertThrows(IllegalPropertyKeyPartException.class, reader::readProperties);
+		assertInstanceOf(IllegalPropertyKeyPartException.class, assertThrows(UncheckedIOException.class, reader::readProperties).getCause());
 		
 		// Blank variable key part
 		reader = createReader("key.${ }.test : value1", CUSTOM_CONFIG);
-		assertThrows(IllegalPropertyKeyPartException.class, reader::readProperties);
+		assertInstanceOf(IllegalPropertyKeyPartException.class, assertThrows(UncheckedIOException.class, reader::readProperties).getCause());
 		
 		// No target type specified
 		reader = createReader("key.${key.test}.test : value1", CUSTOM_CONFIG);
-		assertThrows(IllegalPropertyKeyPartException.class, reader::readProperties);
+		assertInstanceOf(IllegalPropertyKeyPartException.class, assertThrows(UncheckedIOException.class, reader::readProperties).getCause());
 		
 		// Too many arguments specified
 		reader = createReader("key.${custom?key.test?10?11}.test : value1", CUSTOM_CONFIG);
-		assertThrows(IllegalPropertyKeyPartException.class, reader::readProperties);
+		assertInstanceOf(IllegalPropertyKeyPartException.class, assertThrows(UncheckedIOException.class, reader::readProperties).getCause());
 		
 		// Nested compacted key part
 		reader = createReader("key.${env?key[1|2]?10?11}.test : value1", CUSTOM_CONFIG);
-		assertThrows(IllegalPropertyKeyPartException.class, reader::readProperties);
+		assertInstanceOf(IllegalPropertyKeyPartException.class, assertThrows(UncheckedIOException.class, reader::readProperties).getCause());
 		
 		// Nested variable key part
 		reader = createReader("key.${env?key.${sys?test}?10?11}.test : value1", CUSTOM_CONFIG);
-		assertThrows(IllegalPropertyKeyPartException.class, reader::readProperties);
+		assertInstanceOf(IllegalPropertyKeyPartException.class, assertThrows(UncheckedIOException.class, reader::readProperties).getCause());
 		
 		// Unknown target type
 		reader = createReader("key.${custom?key.test}.test : value1", CUSTOM_CONFIG);
-		assertThrows(IllegalPropertyKeyPartException.class, reader::readProperties);
+		assertInstanceOf(IllegalPropertyKeyPartException.class, assertThrows(UncheckedIOException.class, reader::readProperties).getCause());
 		
 		// Key not found -> No default value
 		reader = createReader("key.${sys?key.test}.test : value1", CUSTOM_CONFIG);
-		assertThrows(IllegalPropertyKeyPartException.class, reader::readProperties);
+		assertInstanceOf(IllegalPropertyKeyPartException.class, assertThrows(UncheckedIOException.class, reader::readProperties).getCause());
 	}
 	
 	@Test

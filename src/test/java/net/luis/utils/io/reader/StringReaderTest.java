@@ -317,7 +317,7 @@ class StringReaderTest {
 	
 	@Test
 	void readNumber() {
-		StringReader reader = new StringReader("test 1 3b 2.0 '3.5f' 0x10 0b11");
+		StringReader reader = new StringReader("test 1 3b 2.0 '3.5f' 0x10 0b11 \"1.23e-2\" 0x1.23P4");
 		assertThrows(InvalidStringException.class, reader::readNumber);
 		assertEquals('t', reader.read());
 		reader.skip(4);
@@ -332,6 +332,10 @@ class StringReaderTest {
 		assertEquals(16, assertInstanceOf(Long.class, reader.readNumber()));
 		reader.skip();
 		assertEquals(3, assertInstanceOf(Long.class, reader.readNumber()));
+		reader.skip();
+		assertEquals(0.0123, assertInstanceOf(Double.class, reader.readNumber()), PRECISION);
+		reader.skip();
+		assertEquals(18.1875, assertInstanceOf(Double.class, reader.readNumber()), PRECISION);
 		assertThrows(StringIndexOutOfBoundsException.class, reader::readNumber);
 	}
 	
@@ -410,7 +414,7 @@ class StringReaderTest {
 	
 	@Test
 	void readFloat() {
-		StringReader reader = new StringReader("test -10.46 0.256 '5.0f'");
+		StringReader reader = new StringReader("test -10.46 0.256 '5.0f' 1.23E-2f 0x1.23p-4");
 		assertThrows(InvalidStringException.class, reader::readFloat);
 		assertEquals('t', reader.read());
 		reader.skip(4);
@@ -419,12 +423,16 @@ class StringReaderTest {
 		assertEquals(0.256, reader.readFloat(), PRECISION);
 		reader.skip();
 		assertEquals(5.0, reader.readFloat(), PRECISION);
+		reader.skip();
+		assertEquals(0.0123, reader.readFloat(), PRECISION);
+		reader.skip();
+		assertEquals(0.071044921875, reader.readFloat(), PRECISION);
 		assertThrows(StringIndexOutOfBoundsException.class, reader::readFloat);
 	}
 	
 	@Test
 	void readDouble() {
-		StringReader reader = new StringReader("test 1.0 0.2 '0.5d'");
+		StringReader reader = new StringReader("test 1.0 0.2 '0.5d' 1.23E+2 0x1.23p-4");
 		assertThrows(InvalidStringException.class, reader::readDouble);
 		assertEquals('t', reader.read());
 		reader.skip(4);
@@ -433,6 +441,10 @@ class StringReaderTest {
 		assertEquals(0.2, reader.readDouble(), PRECISION);
 		reader.skip();
 		assertEquals(0.5, reader.readDouble(), PRECISION);
+		reader.skip();
+		assertEquals(123.0, reader.readDouble(), PRECISION);
+		reader.skip();
+		assertEquals(0.071044921875, reader.readDouble(), PRECISION);
 		assertThrows(StringIndexOutOfBoundsException.class, reader::readDouble);
 	}
 }

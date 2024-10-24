@@ -33,6 +33,10 @@ import java.util.function.Predicate;
  */
 public class StringReader {
 	
+	//exponent in hexadecimal floating point
+	private static final Pattern INVALID_FLOATING_POINT_EXPONENT_PATTERN = Pattern.compile("^[+-]?(|\\.)");
+	private static final Pattern INVALID_HEXADECIMAL_FLOATING_POINT_EXPONENT_PATTERN = Pattern.compile("^[+-]?0x(|\\.)");
+	
 	/**
 	 * The string to read from.<br>
 	 */
@@ -523,6 +527,7 @@ public class StringReader {
 	 * <p>
 	 *     The number can be specified in hexadecimal or binary format by starting with '0x' or '0b'.<br>
 	 *     The number can contain underscores to separate digits.<br>
+	 *     Floating point numbers can contain an exponent with 'e' or 'p' for hexadecimal floating point numbers.<br>
 	 * </p>
 	 * @return The number as a string which was read
 	 * @throws InvalidStringException If the read value is not a (valid) number
@@ -540,16 +545,25 @@ public class StringReader {
 			builder.append(this.read());
 		}
 		boolean hasDot = false;
+		boolean hasExponent = false;
 		boolean hasHex = false;
 		boolean hasBin = false;
+		int firstNumber = 0;
+		if (!builder.isEmpty() && (builder.charAt(0) == '-' || builder.charAt(0) == '+')) {
+			firstNumber = 1;
+		}
 		while (this.canRead()) {
 			char c = Character.toLowerCase(this.peek());
 			if (!Character.isDigit(c)) {
-				int firstNumber = 0;
-				if (!builder.isEmpty() && (builder.charAt(0) == '-' || builder.charAt(0) == '+')) {
-					firstNumber = 1;
-				}
-				if (c == 'x') {
+				if (c == '+' || c == '-') {
+					if (!hasExponent) {
+						throw new InvalidStringException("Expected a number but found: '" + builder + c + "'");
+					}
+					char last = Character.toLowerCase(builder.charAt(builder.length() - 1));
+					if (last != 'e' && last != 'p') {
+						throw new InvalidStringException("Invalid exponent in floating point number: '" + builder + c + "'");
+					}
+				} else if (c == 'x') {
 					if (hasHex) {
 						throw new InvalidStringException("Expected a number but found: '" + builder + c + "'");
 					}
@@ -564,8 +578,8 @@ public class StringReader {
 						hasBin = true;
 					}
 				} else if (c == '.') {
-					if (hasHex || hasBin) {
-						throw new InvalidStringException("A hexadecimal or binary number must not contain a dot: '" + builder + c + "'");
+					if (hasBin) {
+						throw new InvalidStringException("A binary number must not contain a dot: '" + builder + c + "'");
 					}
 					if (hasDot) {
 						throw new InvalidStringException("Invalid floating point number: '" + builder + c + "'");
@@ -574,6 +588,31 @@ public class StringReader {
 				} else if (c == '_') {
 					this.skip();
 					continue;
+				} else if (c == 'e') {
+					if (hasExponent) {
+						throw new InvalidStringException("Expected a number but found: '" + builder + c + "'");
+					}
+					if (hasHex || hasBin) {
+						throw new InvalidStringException("A hexadecimal or binary number must not contain an exponent: '" + builder + c + "'");
+					}
+					if (INVALID_FLOATING_POINT_EXPONENT_PATTERN.matcher(builder.toString()).matches()) {
+						throw new InvalidStringException("Invalid exponent in floating point number: '" + builder + c + "'");
+					}
+					hasExponent = true;
+				} else if (c == 'p') {
+					if (!hasHex) {
+						throw new InvalidStringException("Invalid exponent for non-hexadecimal number: '" + builder + c + "'");
+					}
+					if (hasExponent) {
+						throw new InvalidStringException("Expected a number but found: '" + builder + c + "'");
+					}
+					if (hasBin) {
+						throw new InvalidStringException("A binary number must not contain an exponent: '" + builder + c + "'");
+					}
+					if (INVALID_HEXADECIMAL_FLOATING_POINT_EXPONENT_PATTERN.matcher(builder.toString()).matches()) {
+						throw new InvalidStringException("Invalid exponent in hexadecimal floating point number: '" + builder + c + "'");
+					}
+					hasExponent = true;
 				} else {
 					if (!hasHex) {
 						break;
@@ -593,6 +632,8 @@ public class StringReader {
 		}
 		return builder.toString();
 	}
+	
+	//region Radix helper methods
 	
 	/**
 	 * Parses the radix of the number.<br>
@@ -614,6 +655,39 @@ public class StringReader {
 		}
 		return 10;
 	}
+	
+	/**
+	 * Parses a float number with the given radix.<br>
+	 * Supported radix are 10 (decimal) and 16 (hexadecimal).<br>
+	 * @param number The number to parse
+	 * @param radix The radix of the number
+	 * @return The parsed floating point number
+	 */
+	private float parseFloatWithRadix(@NotNull String number, int radix) {
+		if (radix == 10) {
+			return Float.parseFloat(number);
+		} else if (radix == 16) {
+			return Float.parseFloat("0x" + number);
+		}
+		throw new IllegalArgumentException("Invalid radix for floating point number, expected decimal or hexadecimal but found: " + radix);
+	}
+	
+	/**
+	 * Parses a double number with the given radix.<br>
+	 * Supported radix are 10 (decimal) and 16 (hexadecimal).<br>
+	 * @param number The number to parse
+	 * @param radix The radix of the number
+	 * @return The parsed double number
+	 */
+	private double parseDoubleWithRadix(@NotNull String number, int radix) {
+		if (radix == 10) {
+			return Double.parseDouble(number);
+		} else if (radix == 16) {
+			return Double.parseDouble("0x" + number);
+		}
+		throw new IllegalArgumentException("Invalid radix for floating point number, expected decimal or hexadecimal but found: " + radix);
+	}
+	//endregion
 	
 	/**
 	 * Reads a number.<br>
@@ -639,7 +713,7 @@ public class StringReader {
 		char numberType = Character.toLowerCase(number.charAt(number.length() - 1));
 		if (Character.isDigit(numberType) || radix != 10) {
 			if (number.contains(".")) {
-				return Double.parseDouble(number);
+				return this.parseDoubleWithRadix(number, radix);
 			}
 			return Long.parseLong(number, radix);
 		}
@@ -648,8 +722,8 @@ public class StringReader {
 			case 's' -> Short.parseShort(number.substring(0, number.length() - 1), radix);
 			case 'i' -> Integer.parseInt(number.substring(0, number.length() - 1), radix);
 			case 'l' -> Long.parseLong(number.substring(0, number.length() - 1), radix);
-			case 'f' -> Float.parseFloat(number.substring(0, number.length() - 1));
-			case 'd' -> Double.parseDouble(number.substring(0, number.length() - 1));
+			case 'f' -> this.parseFloatWithRadix(number.substring(0, number.length() - 1), radix);
+			case 'd' -> this.parseDoubleWithRadix(number.substring(0, number.length() - 1), radix);
 			default -> throw new InvalidStringException("Unknown number type: " + numberType);
 		};
 	}
