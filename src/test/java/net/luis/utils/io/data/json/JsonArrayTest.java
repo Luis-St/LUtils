@@ -35,7 +35,7 @@ import static org.junit.jupiter.api.Assertions.*;
  */
 class JsonArrayTest {
 	
-	private static final JsonConfig CUSTOM_CONFIG = new JsonConfig(true, "  ", true, true, 5, true, 1, StandardCharsets.UTF_8, ErrorAction.THROW);
+	private static final JsonConfig CUSTOM_CONFIG = new JsonConfig(true, true, "  ", true, 5, true, 1, StandardCharsets.UTF_8, ErrorAction.THROW);
 	
 	@Test
 	void constructor() {

@@ -33,8 +33,8 @@ import java.util.Objects;
  * @author Luis-St
  *
  * @param strict Whether to use strict json parsing when reading (read-only)
- * @param indent The string to use for indentation (write-only)
  * @param prettyPrint Whether to pretty print the json (write-only)
+ * @param indent The string to use for indentation (write-only)
  * @param simplifyArrays Whether to simplify json arrays (write-only)
  * @param maxArraySimplificationSize The maximum size of a json array to simplify (write-only)
  * @param simplifyObjects Whether to simplify json objects (write-only)
@@ -44,8 +44,8 @@ import java.util.Objects;
  */
 public record JsonConfig(
 	@ReadOnly boolean strict,
-	@WriteOnly @NotNull String indent,
 	@WriteOnly boolean prettyPrint,
+	@WriteOnly("prettyPrint") @NotNull String indent,
 	@WriteOnly("prettyPrint") boolean simplifyArrays,
 	@WriteOnly("simplifyArrays") int maxArraySimplificationSize,
 	@WriteOnly("prettyPrint") boolean simplifyObjects,
@@ -57,8 +57,8 @@ public record JsonConfig(
 	/**
 	 * The default json configuration.<br>
 	 * Strict: true<br>
-	 * Indent: "\t"<br>
 	 * Pretty print: true<br>
+	 * Indent: "\t"<br>
 	 * Simplify arrays: true<br>
 	 * Max array simplification size: 10<br>
 	 * Simplify objects: true<br>
@@ -66,13 +66,13 @@ public record JsonConfig(
 	 * Charset: UTF-8<br>
 	 * Error action: THROW<br>
 	 */
-	public static final JsonConfig DEFAULT = new JsonConfig(true, "\t", true, true, 10, true, 1, StandardCharsets.UTF_8, ErrorAction.THROW);
+	public static final JsonConfig DEFAULT = new JsonConfig(true, true, "\t", true, 10, true, 1, StandardCharsets.UTF_8, ErrorAction.THROW);
 	
 	/**
 	 * Constructs a new json configuration.<br>
 	 * @param strict Whether to use strict json parsing when reading (read-only)
-	 * @param indent The string to use for indentation (write-only)
 	 * @param prettyPrint Whether to pretty print the json (write-only)
+	 * @param indent The string to use for indentation (write-only)
 	 * @param simplifyArrays Whether to simplify json arrays (write-only)
 	 * @param maxArraySimplificationSize The maximum size of a json array to simplify (write-only)
 	 * @param simplifyObjects Whether to simplify json objects (write-only)

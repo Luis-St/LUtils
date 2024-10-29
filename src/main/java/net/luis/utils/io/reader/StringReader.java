@@ -36,7 +36,6 @@ import java.util.stream.Collectors;
  */
 public class StringReader {
 	
-	//exponent in hexadecimal floating point
 	private static final Pattern INVALID_FLOATING_POINT_EXPONENT_PATTERN = Pattern.compile("^[+-]?(|\\.)");
 	private static final Pattern INVALID_HEXADECIMAL_FLOATING_POINT_EXPONENT_PATTERN = Pattern.compile("^[+-]?0x(|\\.)");
 	
