@@ -325,12 +325,12 @@ public class JsonObject implements JsonElement {
 	public @NotNull JsonObject getAsJsonObject(@NotNull String key) {
 		JsonElement json = this.get(key);
 		if (json == null) {
-			throw new NoSuchJsonElementException("Expected json object for key '" + key + "', but found null");
+			throw new NoSuchJsonElementException("Expected json object for key '" + key + "', but found none");
 		}
 		if (json instanceof JsonObject object) {
 			return object;
 		}
-		throw new JsonTypeException("Expected JsonObject for key '" + key + "', but found " + json.getClass().getSimpleName());
+		return json.getAsJsonObject(); // throws JsonTypeException
 	}
 	
 	/**
@@ -345,12 +345,12 @@ public class JsonObject implements JsonElement {
 	public @NotNull JsonArray getAsJsonArray(@NotNull String key) {
 		JsonElement json = this.get(key);
 		if (json == null) {
-			throw new NoSuchJsonElementException("Expected json array for key '" + key + "', but found null");
+			throw new NoSuchJsonElementException("Expected json array for key '" + key + "', but found none");
 		}
 		if (json instanceof JsonArray array) {
 			return array;
 		}
-		throw new JsonTypeException("Expected JsonArray for key '" + key + "', but found " + json.getClass().getSimpleName());
+		return json.getAsJsonArray(); // throws JsonTypeException
 	}
 	
 	/**
@@ -365,12 +365,12 @@ public class JsonObject implements JsonElement {
 	public @NotNull JsonPrimitive getJsonPrimitive(@NotNull String key) {
 		JsonElement json = this.get(key);
 		if (json == null) {
-			throw new NoSuchJsonElementException("Expected json primitive for key '" + key + "', but found null");
+			throw new NoSuchJsonElementException("Expected json primitive for key '" + key + "', but found none");
 		}
 		if (json instanceof JsonPrimitive primitive) {
 			return primitive;
 		}
-		throw new JsonTypeException("Expected JsonPrimitive for key '" + key + "', but found " + json.getClass().getSimpleName());
+		return json.getAsJsonPrimitive(); // throws JsonTypeException
 	}
 	
 	/**

@@ -393,7 +393,7 @@ public class JsonArray implements JsonElement {
 		if (json instanceof JsonObject object) {
 			return object;
 		}
-		throw new JsonTypeException("Expected JsonObject at index " + index + ", but found: " + json.getClass().getSimpleName());
+		return json.getAsJsonObject(); // throws JsonTypeException
 	}
 	
 	/**
@@ -409,7 +409,7 @@ public class JsonArray implements JsonElement {
 		if (json instanceof JsonArray array) {
 			return array;
 		}
-		throw new JsonTypeException("Expected JsonArray at index " + index + ", but found: " + json.getClass().getSimpleName());
+		return json.getAsJsonArray(); // throws JsonTypeException
 	}
 	
 	/**
@@ -425,7 +425,7 @@ public class JsonArray implements JsonElement {
 		if (json instanceof JsonPrimitive primitive) {
 			return primitive;
 		}
-		throw new JsonTypeException("Expected JsonPrimitive at index " + index + ", but found: " + json.getClass().getSimpleName());
+		return json.getAsJsonPrimitive(); // throws JsonTypeException
 	}
 	
 	/**
