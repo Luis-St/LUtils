@@ -71,7 +71,7 @@ public class Property {
 	 * Returns the key of the property as a string.<br>
 	 * @return The key of the property
 	 */
-	public final @NotNull String getKey() {
+	public @NotNull String getKey() {
 		return this.key;
 	}
 	
@@ -79,7 +79,7 @@ public class Property {
 	 * Returns the value of the property as a string.<br>
 	 * @return The value of the property
 	 */
-	public final @NotNull String getRawValue() {
+	public @NotNull String getRawValue() {
 		return this.value;
 	}
 	
