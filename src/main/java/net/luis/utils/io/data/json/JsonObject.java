@@ -524,27 +524,35 @@ public class JsonObject implements JsonElement {
 	public @NotNull String toString(@NotNull JsonConfig config) {
 		StringBuilder builder = new StringBuilder("{");
 		List<Map.Entry<String, JsonElement>> entries = List.copyOf(this.elements.entrySet());
-		boolean shouldSimplify = config.simplifyObjects() && config.maxObjectSimplificationSize() >=  entries.size();
-		for (int i = 0; i < entries.size(); i++) {
-			if (config.prettyPrint() && !shouldSimplify) {
-				builder.append(System.lineSeparator());
-				builder.append(config.indent());
+		if (!entries.isEmpty()) {
+			boolean shouldSimplify = config.simplifyObjects() && config.maxObjectSimplificationSize() >=  entries.size();
+			if (shouldSimplify) {
+				builder.append(" ");
 			}
-			
-			Map.Entry<String, JsonElement> entry = entries.get(i);
-			builder.append("\"").append(entry.getKey()).append("\": ");
-			String value = entry.getValue().toString(config);
-			if (config.prettyPrint() && !shouldSimplify) {
-				value = value.replace(System.lineSeparator(), System.lineSeparator() + config.indent());
-			}
-			builder.append(value);
-			if (i < this.elements.size() - 1) {
-				builder.append(",");
-				if (shouldSimplify) {
-					builder.append(" ");
+			for (int i = 0; i < entries.size(); i++) {
+				if (config.prettyPrint() && !shouldSimplify) {
+					builder.append(System.lineSeparator());
+					builder.append(config.indent());
 				}
-			} else if (config.prettyPrint() && !shouldSimplify) {
-				builder.append(System.lineSeparator());
+				
+				Map.Entry<String, JsonElement> entry = entries.get(i);
+				builder.append("\"").append(entry.getKey()).append("\": ");
+				String value = entry.getValue().toString(config);
+				if (config.prettyPrint() && !shouldSimplify) {
+					value = value.replace(System.lineSeparator(), System.lineSeparator() + config.indent());
+				}
+				builder.append(value);
+				if (i < this.elements.size() - 1) {
+					builder.append(",");
+					if (shouldSimplify) {
+						builder.append(" ");
+					}
+				} else if (config.prettyPrint() && !shouldSimplify) {
+					builder.append(System.lineSeparator());
+				}
+			}
+			if (shouldSimplify) {
+				builder.append(" ");
 			}
 		}
 		return builder.append("}").toString();

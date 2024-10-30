@@ -82,7 +82,7 @@ class JsonWriterTest {
 		
 		object.add("key", "value");
 		writer.writeJson(object);
-		assertEquals("{\"key\": \"value\"}", stream.toString());
+		assertEquals("{ \"key\": \"value\" }", stream.toString());
 		stream.reset();
 	}
 	

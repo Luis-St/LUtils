@@ -329,7 +329,7 @@ class JsonObjectTest {
 		assertEquals("{}", object.toString());
 		
 		object.add("key0", JsonNull.INSTANCE);
-		assertEquals("{\"key0\": null}", object.toString());
+		assertEquals("{ \"key0\": null }", object.toString());
 		
 		object.add("key1", new JsonPrimitive(10));
 		assertEquals("{%n\t\"key0\": null,%n\t\"key1\": 10%n}".replace("%n", System.lineSeparator()), object.toString());
@@ -347,11 +347,11 @@ class JsonObjectTest {
 		String expected = "{" + System.lineSeparator() +
 			"  \"key0\": null," + System.lineSeparator() +
 			"  \"key1\": 10," + System.lineSeparator() +
-			"  \"key2\": {\"key0\": true, \"key1\": 10}" + System.lineSeparator() +
+			"  \"key2\": { \"key0\": true, \"key1\": 10 }" + System.lineSeparator() +
 			"}";
 		//endregion
 		
-		assertEquals("{\"key0\": null, \"key1\": 10}", object.toString(CUSTOM_CONFIG));
+		assertEquals("{ \"key0\": null, \"key1\": 10 }", object.toString(CUSTOM_CONFIG));
 		
 		JsonObject innerObject = new JsonObject();
 		innerObject.add("key0", new JsonPrimitive(true));
