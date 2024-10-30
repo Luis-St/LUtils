@@ -30,7 +30,7 @@ import java.util.regex.Pattern;
  * This class represents a version number.<br>
  * The version number is represented by the following simplified pattern:<br>
  * <pre>{@code
- * [v]major.minor.patch[(r.-)build][(-)suffix][(+)suffixVersion]
+ * [v]major.minor[.patch][(r.-)build][(-)suffix][(+)suffixVersion]
  * }</pre>
  * The version is composed of the following parts:
  * <ul>
@@ -62,7 +62,8 @@ public class Version implements Comparable<Version> {
 	 * </ul>
 	 * The pattern is case-sensitive and allows the version number to be prefixed with a 'v'.<br>
 	 * <p>
-	 *     The major, minor, and patch version numbers are required.<br>
+	 *     The major and minor version numbers are required.<br>
+	 *     The patch version is optional.<br>
 	 *     They must be separated by a dot.<br>
 	 * </p>
 	 * <p>
@@ -75,7 +76,7 @@ public class Version implements Comparable<Version> {
 	 *     If the suffix-version is present, it must be separated by a plus sign.<br>
 	 * </p>
 	 */
-	private static final Pattern VERSION_PATTERN = Pattern.compile("^v?(\\d+)\\.(\\d+)\\.(\\d+)(([.r-])(\\d+))?(-([a-z]+))?(\\+(\\d{3}))?$");
+	private static final Pattern VERSION_PATTERN = Pattern.compile("^v?(\\d+)\\.(\\d+)(\\.(\\d+))?(([.r-])(\\d+))?(-([a-z]+))?(\\+(\\d{3}))?$");
 	/**
 	 * Constant for the system property 'version.default.prefixed'.<br>
 	 * <p>
@@ -148,6 +149,24 @@ public class Version implements Comparable<Version> {
 	 * </p>
 	 * @param major The major version number
 	 * @param minor The minor version number
+	 * @return The created version
+	 * @see Version.Builder
+	 */
+	public static @NotNull Version of(int major, int minor) {
+		if (0 >= major && 0 >= minor) {
+			return ZERO;
+		}
+		return new Version.Builder(major, minor).build();
+	}
+	
+	/**
+	 * Creates a new version with the given version numbers.<br>
+	 * The version numbers will be clamped to a minimum of 0.<br>
+	 * <p>
+	 *     If the version numbers are all 0 or less, {@link #ZERO} will be returned.<br>
+	 * </p>
+	 * @param major The major version number
+	 * @param minor The minor version number
 	 * @param patch The patch or fix version number
 	 * @return The created version
 	 * @see Version.Builder
@@ -157,6 +176,18 @@ public class Version implements Comparable<Version> {
 			return ZERO;
 		}
 		return new Version.Builder(major, minor, patch).build();
+	}
+	
+	/**
+	 * Creates a new version builder with the given version numbers.<br>
+	 * The version numbers will be clamped to a minimum of 0.<br>
+	 * @param major The major version number
+	 * @param minor The minor version number
+	 * @return The created version builder
+	 * @see Version.Builder
+	 */
+	public static Version.@NotNull Builder builder(int major, int minor) {
+		return new Version.Builder(major, minor);
 	}
 	
 	/**
@@ -182,10 +213,14 @@ public class Version implements Comparable<Version> {
 	 *     The following examples are valid base version strings:<br>
 	 * </p>
 	 * <ul>
+	 *     <li>1.0</li>
+	 *     <li>v1.0</li>
 	 *     <li>1.0.0</li>
 	 *     <li>v1.0.0</li>
 	 * </ul>
 	 * <p>
+	 *     The major and minor version numbers are required and must be separated by a dot.<br>
+	 *     The patch version is optional and must be separated by a dot.<br>
 	 *     The build number is optional and can be separated by a dot, a hyphen, or an 'r' (release).<br>
 	 *     Examples for valid build version strings are:<br>
 	 * </p>
@@ -194,6 +229,10 @@ public class Version implements Comparable<Version> {
 	 *     <li>1.0.0-0</li>
 	 *     <li>1.0.0r0</li>
 	 * </ul>
+	 * <p>
+	 *     <strong>Note</strong>: If the patch version is not present, the build number must not be separated by a dot<br>
+	 *     otherwise it will be considered as the patch version.<br>
+	 * </p>
 	 * <p>
 	 *     The suffix and suffix-version are optional.<br>
 	 *     If the suffix is present, it must be separated by a hyphen.<br>
@@ -220,24 +259,27 @@ public class Version implements Comparable<Version> {
 		}
 		int major = Integer.parseInt(matcher.group(1));
 		int minor = Integer.parseInt(matcher.group(2));
-		int patch = Integer.parseInt(matcher.group(3));
-		Version.Builder builder = builder(major, minor, patch);
-		if (matcher.group(10) != null) {
-			builder = builder.withSuffixVersion(Integer.parseInt(matcher.group(10)));
+		int patch = 0;
+		if (matcher.group(4) != null) {
+			patch = Integer.parseInt(matcher.group(4));
 		}
-		if (StringUtils.isEmpty(matcher.group(4)) && StringUtils.isEmpty(matcher.group(8))) {
+		Version.Builder builder = builder(major, minor, patch);
+		if (matcher.group(11) != null) {
+			builder = builder.withSuffixVersion(Integer.parseInt(matcher.group(11)));
+		}
+		if (StringUtils.isEmpty(matcher.group(5)) && StringUtils.isEmpty(matcher.group(9))) {
 			return builder.build();
 		}
-		if (matcher.group(4) != null) {
-			int build = Integer.parseInt(matcher.group(6));
-			char separator = matcher.group(5).charAt(0);
-			if (matcher.group(8) != null) {
-				return builder.withBuild(separator, build).withSuffix(matcher.group(8)).build();
+		if (matcher.group(5) != null) {
+			int build = Integer.parseInt(matcher.group(7));
+			char separator = matcher.group(6).charAt(0);
+			if (matcher.group(9) != null) {
+				return builder.withBuild(separator, build).withSuffix(matcher.group(9)).build();
 			}
 			return builder.withBuild(separator, build).build();
 		}
-		if (matcher.group(8) != null) {
-			return builder.withSuffix(matcher.group(8)).build();
+		if (matcher.group(9) != null) {
+			return builder.withSuffix(matcher.group(9)).build();
 		}
 		return ZERO;
 	}
@@ -421,12 +463,36 @@ public class Version implements Comparable<Version> {
 	 * <pre>{@code
 	 * <major>.<minor>.<patch>[(r.-)<build>][-<suffix>][+<suffixVersion>]
 	 * }</pre>
+	 * If the patch version is 0, it will be omitted.<br>
 	 * @param prefixed If the version should be prefixed with a 'v'
 	 * @return The version as a string
+	 * @see #toString(boolean, boolean)
 	 */
-	public String toString(boolean prefixed) {
+	public @NotNull String toString(boolean prefixed) {
+		return this.toString(prefixed, true);
+	}
+	
+	/**
+	 * Returns the version as a string.<br>
+	 * The version will be formatted as follows:<br>
+	 * <pre>{@code
+	 * <major>.<minor>.<patch>[(r.-)<build>][-<suffix>][+<suffixVersion>]
+	 * }</pre>
+	 * If the patch version is 0 and {@code omitZeros} is true, it will be omitted.<br>
+	 * In this case, the version will be formatted as follows:<br>
+	 * <pre>{@code
+	 * <major>.<minor>[(r.-)<build>][-<suffix>][+<suffixVersion>]
+	 * }</pre>
+	 * @param prefixed If the version should be prefixed with a 'v'
+	 * @param omitZeros If the patch version should be omitted if it is 0
+	 * @return The version as a string
+	 */
+	public @NotNull String toString(boolean prefixed, boolean omitZeros) {
 		StringBuilder builder = new StringBuilder(prefixed ? "v" : "");
-		builder.append(this.major).append('.').append(this.minor).append('.').append(this.patch);
+		builder.append(this.major).append('.').append(this.minor);
+		if (!omitZeros || this.patch != 0) {
+			builder.append('.').append(this.patch);
+		}
 		if (this.buildVersion.isNotEmpty()) {
 			builder.append(this.buildVersion);
 		}
@@ -474,6 +540,17 @@ public class Version implements Comparable<Version> {
 		 * The appendable suffix version number.<br>
 		 */
 		private AppendingVersion suffixVersion = AppendingVersion.EMPTY;
+		
+		/**
+		 * Constructs a new version builder with the given version numbers.<br>
+		 * The version numbers will be clamped to a minimum of 0.<br>
+		 * @param major The major version number
+		 * @param minor The minor version number
+		 */
+		private Builder(int major, int minor) {
+			this.major = Math.max(0, major);
+			this.minor = Math.max(0, minor);
+		}
 		
 		/**
 		 * Constructs a new version builder with the given version numbers.<br>
