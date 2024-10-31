@@ -19,7 +19,10 @@
 package net.luis.utils.io.reader;
 
 import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
 import net.luis.utils.exception.InvalidStringException;
+import org.apache.commons.lang3.ArrayUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
 
@@ -345,11 +348,11 @@ public class StringReader {
 	 * </p>
 	 * @param terminator The terminator to read until
 	 * @return The string which was read until the terminator
-	 * @throws InvalidStringException If the terminator is a backslash
+	 * @throws IllegalArgumentException If the terminator is a backslash
 	 */
 	public @NotNull String readUntil(char terminator) {
 		if (terminator == '\\') {
-			throw new IllegalArgumentException("Terminator cannot be a backslash");
+			throw new IllegalArgumentException("Terminator must not be a backslash");
 		}
 		return this.readUntil(c -> c == terminator, false);
 	}
@@ -364,63 +367,35 @@ public class StringReader {
 	 * </p>
 	 * @param terminator The terminator to read until
 	 * @return The string which was read until the terminator
-	 * @throws InvalidStringException If the terminator is a backslash
+	 * @throws IllegalArgumentException If the terminator is a backslash
 	 */
 	public @NotNull String readUntilInclusive(char terminator) {
 		if (terminator == '\\') {
-			throw new IllegalArgumentException("Terminator cannot be a backslash");
+			throw new IllegalArgumentException("Terminator must not be a backslash");
 		}
 		return this.readUntil(c -> c == terminator, true);
 	}
 	
-	/**
-	 * Reads the string until one of the given terminators is found.<br>
-	 * The terminators and escape character ('\\') are read but not included in the result.<br>
-	 * <p>
-	 *     If any of the terminators is found at the beginning or at the end of the string, an empty string is returned.<br>
-	 *     If any of the terminators is found in a quoted part of the string, the terminator is ignored.<br>
-	 *     If none of the terminators is found, the rest of the string is returned.<br>
-	 * </p>
-	 * @param terminators The terminators to read until
-	 * @return The string which was read until one of the terminators
-	 * @throws IllegalArgumentException If the terminators are empty or contain a backslash
-	 */
-	public @NotNull String readUntil(@NotNull String terminators) {
-		if (terminators.isEmpty()) {
+	public @NotNull String readUntil(char @NotNull ... terminators) {
+		Set<Character> terminatorSet = Sets.newHashSet(ArrayUtils.toObject(terminators));
+		if (terminatorSet.isEmpty()) {
 			throw new IllegalArgumentException("Terminators must not be empty");
 		}
-		if (terminators.length() == 1) {
-			return this.readUntil(terminators.charAt(0));
+		if (terminatorSet.contains('\\')) {
+			throw new IllegalArgumentException("Terminators must not contain a backslash");
 		}
-		if (terminators.contains("\\")) {
-			throw new IllegalArgumentException("Terminators cannot contain a backslash");
-		}
-		return this.readUntil(c -> terminators.indexOf(c) != -1, false);
+		return this.readUntil(terminatorSet::contains, false);
 	}
 	
-	/**
-	 * Reads the string until one of the given terminators is found.<br>
-	 * The escape character ('\\') is read but not included in the result.<br>
-	 * <p>
-	 *     If any of the terminators is found at the beginning or at the end of the string, an empty string is returned.<br>
-	 *     If any of the terminators is found in a quoted part of the string, the terminator is ignored.<br>
-	 *     If none of the terminators is found, the rest of the string is returned.<br>
-	 * </p>
-	 * @param terminators The terminators to read until
-	 * @return The string which was read until one of the terminators
-	 * @throws IllegalArgumentException If the terminators are empty or contain a backslash
-	 */
-	public @NotNull String readUntilInclusive(@NotNull String terminators) {
-		if (terminators.isEmpty()) {
+	public @NotNull String readUntilInclusive(char... terminators) {
+		Set<Character> terminatorSet = Sets.newHashSet(ArrayUtils.toObject(terminators));
+		if (terminatorSet.isEmpty()) {
 			throw new IllegalArgumentException("Terminators must not be empty");
 		}
-		if (terminators.length() == 1) {
-			return this.readUntilInclusive(terminators.charAt(0));
+		if (terminatorSet.contains('\\')) {
+			throw new IllegalArgumentException("Terminators must not contain a backslash");
 		}
-		if (terminators.contains("\\")) {
-			throw new IllegalArgumentException("Terminators cannot contain a backslash");
-		}
-		return this.readUntil(c -> terminators.indexOf(c) != -1, true);
+		return this.readUntil(terminatorSet::contains, true);
 	}
 	
 	/**
@@ -429,9 +404,7 @@ public class StringReader {
 	 * @param inclusive Whether the character which matches the predicate should be included in the result or not
 	 * @return The string which was read until the predicate is true
 	 * @see #readUntil(char)
-	 * @see #readUntil(String)
 	 * @see #readUntilInclusive(char)
-	 * @see #readUntilInclusive(String)
 	 */
 	@ApiStatus.Internal
 	protected @NotNull String readUntil(@NotNull Predicate<Character> predicate, boolean inclusive) {
@@ -455,6 +428,120 @@ public class StringReader {
 				inSingleQuotes = !inSingleQuotes;
 			} else if (c == '\"') {
 				inDoubleQuotes = !inDoubleQuotes;
+			}
+			builder.append(c);
+		}
+		return builder.toString();
+	}
+	
+	/**
+	 * Reads the string until the given terminator string is found.<br>
+	 * The terminator string and escape character ('\\') are read but not included in the result.<br>
+	 * <p>
+	 *     If the terminator string is found at the beginning or at the end of the string, an empty string is returned.<br>
+	 *     If the terminator string is found in a quoted part of the string, the terminator is ignored.<br>
+	 *     If the terminator string is not found, the rest of the string is returned.<br>
+	 * </p>
+	 * @param terminator The terminating string to read until
+	 * @param caseSensitive Whether the terminator string should be case-sensitive or not
+	 * @return The string which was read until the terminator
+	 * @throws NullPointerException If the terminator string is null
+	 * @throws IllegalArgumentException If the terminator string is empty or contains a backslash
+	 */
+	public @NotNull String readUntil(@NotNull String terminator, boolean caseSensitive) {
+		Objects.requireNonNull(terminator, "Terminator string must not be null");
+		if (terminator.isEmpty()) {
+			throw new IllegalArgumentException("Terminator string must not be empty");
+		}
+		if (terminator.length() == 1) {
+			return this.readUntil(terminator.charAt(0));
+		}
+		if (terminator.contains("\\")) {
+			throw new IllegalArgumentException("Terminator string must not contain a backslash");
+		}
+		return this.readUntil(terminator, caseSensitive, false);
+	}
+	
+	/**
+	 * Reads the string until the given terminator string is found.<br>
+	 * The escape character ('\\') is read but not included in the result.<br>
+	 * <p>
+	 *     If the terminator string is found at the beginning or at the end of the string, an empty string is returned.<br>
+	 *     If the terminator string is found in a quoted part of the string, the terminator is ignored.<br>
+	 *     If the terminator string is not found, the rest of the string is returned.<br>
+	 * </p>
+	 * @param terminator The terminating string to read until
+	 * @param caseSensitive Whether the terminator string should be case-sensitive or not
+	 * @return The string which was read until the terminator
+	 * @throws NullPointerException If the terminator string is null
+	 * @throws IllegalArgumentException If the terminator string is empty or contains a backslash
+	 */
+	public @NotNull String readUntilInclusive(@NotNull String terminator, boolean caseSensitive) {
+		Objects.requireNonNull(terminator, "Terminator string must not be null");
+		if (terminator.isEmpty()) {
+			throw new IllegalArgumentException("Terminators string must not be empty");
+		}
+		if (terminator.length() == 1) {
+			return this.readUntilInclusive(terminator.charAt(0));
+		}
+		if (terminator.contains("\\")) {
+			throw new IllegalArgumentException("Terminator string must not contain a backslash");
+		}
+		return this.readUntil(terminator, caseSensitive, true);
+	}
+	
+	/**
+	 * Internal method to read the string until the terminating string is found.<br>
+	 * @param terminator The terminator string to read until
+	 * @param caseSensitive Whether the terminator string should be case-sensitive or not
+	 * @param inclusive Whether the terminator string should be included in the result or not
+	 * @return The string which was read until the equals predicate is true
+	 * @throws NullPointerException If the terminator string is null
+	 * @see #readUntil(String, boolean)
+	 * @see #readUntilInclusive(String, boolean)
+	 */
+	@ApiStatus.Internal
+	protected @NotNull String readUntil(@NotNull String terminator, boolean caseSensitive, boolean inclusive) {
+		Objects.requireNonNull(terminator, "Terminator string must not be null");
+		Predicate<String> matcher = s -> caseSensitive ? s.startsWith(terminator) : StringUtils.startsWithIgnoreCase(s, terminator);
+		Predicate<String> breaker = s -> caseSensitive ? s.equals(terminator) : s.equalsIgnoreCase(terminator);
+		StringBuilder builder = new StringBuilder();
+		StringBuilder terminatorBuilder = new StringBuilder();
+		boolean escaped = false;
+		boolean inSingleQuotes = false;
+		boolean inDoubleQuotes = false;
+		while (this.canRead()) {
+			char c = this.read();
+			if (escaped) {
+				escaped = false;
+			} else if (c == '\\') {
+				escaped = true;
+				continue;
+			} else if (c == '\'') {
+				inSingleQuotes = !inSingleQuotes;
+			} else if (c == '\"') {
+				inDoubleQuotes = !inDoubleQuotes;
+			}
+			if (!inSingleQuotes && !inDoubleQuotes) {
+				if (terminatorBuilder.isEmpty()) {
+					if (matcher.test(String.valueOf(c))) {
+						terminatorBuilder.append(c);
+						continue;
+					}
+				} else {
+					terminatorBuilder.append(c);
+					if (breaker.test(terminatorBuilder.toString())) {
+						if (inclusive) {
+							builder.append(terminatorBuilder);
+						}
+						break;
+					}
+					if (!matcher.test(terminatorBuilder.toString())) {
+						builder.append(terminatorBuilder);
+						terminatorBuilder.setLength(0);
+					}
+					continue;
+				}
 			}
 			builder.append(c);
 		}
@@ -500,6 +587,7 @@ public class StringReader {
 	 * @throws InvalidStringException If the string read does not match the expected string
 	 */
 	public @NotNull String readExpected(@NotNull String expected, boolean caseSensitive) {
+		Objects.requireNonNull(expected, "Expected string must not be null");
 		if (!this.canRead()) {
 			throw new StringIndexOutOfBoundsException("Expected '" + expected + "' but found nothing");
 		}
@@ -551,6 +639,7 @@ public class StringReader {
 	 * @throws InvalidStringException If the string read does not match any of the expected strings
 	 */
 	public @NotNull String readExpected(@NotNull List<String> expected, boolean caseSensitive) {
+		Objects.requireNonNull(expected, "Expected strings must not be null");
 		if (!this.canRead()) {
 			throw new StringIndexOutOfBoundsException("Expected one of '" + expected + "' but found nothing");
 		}

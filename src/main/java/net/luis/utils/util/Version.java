@@ -302,7 +302,7 @@ public class Version implements Comparable<Version> {
 	
 	/**
 	 * Returns the patch or fix version number as an integer.<br>
-	 * @return The patch or fix version
+	 * @return The patch or fix version or {@code 0} if not present
 	 */
 	public int getPatch() {
 		return this.patch;
