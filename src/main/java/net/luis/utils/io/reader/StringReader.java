@@ -269,6 +269,8 @@ public class StringReader {
 		return builder.toString();
 	}
 	
+	//region Read string
+	
 	/**
 	 * Reads the string until the next whitespace (' ') is found.<br>
 	 * The whitespace is read but not included in the result.<br>
@@ -339,6 +341,33 @@ public class StringReader {
 	}
 	
 	/**
+	 * Reads a string.<br>
+	 * <p>
+	 *     If the next character is a single or double quote,<br>
+	 *     {@link #readQuotedString()} is called otherwise {@link #readUnquotedString()} is called.<br>
+	 *     If there are no more characters to read, an empty string is returned.<br>
+	 * </p>
+	 * @return The string which was read
+	 * @throws StringIndexOutOfBoundsException If there are no more characters to read
+	 * @see #readQuotedString()
+	 * @see #readUnquotedString()
+	 */
+	public @NotNull String readString() {
+		if (!this.canRead()) {
+			throw new StringIndexOutOfBoundsException("Expected a string value but found nothing");
+		}
+		char next = this.peek();
+		if (next == '"' || next == '\'') {
+			this.skip();
+			return this.readUntil(next);
+		}
+		return this.readUnquotedString();
+	}
+	//endregion
+	
+	//region Read until
+	
+	/**
 	 * Reads the string until the given terminator is found.<br>
 	 * The terminator and escape character ('\\') are read but not included in the result.<br>
 	 * <p>
@@ -376,26 +405,50 @@ public class StringReader {
 		return this.readUntil(c -> c == terminator, true);
 	}
 	
+	/**
+	 * Reads the string until any of the given terminators is found.<br>
+	 * The terminators and escape character ('\\') are read but not included in the result.<br>
+	 * <p>
+	 *     If any terminator is found at the beginning or at the end of the string, an empty string is returned.<br>
+	 *     If any terminator is found in a quoted part of the string, the terminator is ignored.<br>
+	 *     If none terminator is found, the rest of the string is returned.<br>
+	 * </p>
+	 * @param terminators The terminators to read until
+	 * @return The string which was read until the terminator
+	 * @throws IllegalArgumentException If the terminators are empty or contain a backslash
+	 */
 	public @NotNull String readUntil(char @NotNull ... terminators) {
-		Set<Character> terminatorSet = Sets.newHashSet(ArrayUtils.toObject(terminators));
-		if (terminatorSet.isEmpty()) {
+		Set<Character> uniqueTerminators = Sets.newHashSet(ArrayUtils.toObject(terminators));
+		if (uniqueTerminators.isEmpty()) {
 			throw new IllegalArgumentException("Terminators must not be empty");
 		}
-		if (terminatorSet.contains('\\')) {
+		if (uniqueTerminators.contains('\\')) {
 			throw new IllegalArgumentException("Terminators must not contain a backslash");
 		}
-		return this.readUntil(terminatorSet::contains, false);
+		return this.readUntil(uniqueTerminators::contains, false);
 	}
 	
+	/**
+	 * Reads the string until any of the given terminators is found.<br>
+	 * The escape character ('\\') is read but not included in the result.<br>
+	 * <p>
+	 *     If any terminator is found at the beginning or at the end of the string, an empty string is returned.<br>
+	 *     If any terminator is found in a quoted part of the string, the terminator is ignored.<br>
+	 *     If none terminator is found, the rest of the string is returned.<br>
+	 * </p>
+	 * @param terminators The terminators to read until
+	 * @return The string which was read until the terminator
+	 * @throws IllegalArgumentException If the terminators are empty or contain a backslash
+	 */
 	public @NotNull String readUntilInclusive(char... terminators) {
-		Set<Character> terminatorSet = Sets.newHashSet(ArrayUtils.toObject(terminators));
-		if (terminatorSet.isEmpty()) {
+		Set<Character> uniqueTerminators = Sets.newHashSet(ArrayUtils.toObject(terminators));
+		if (uniqueTerminators.isEmpty()) {
 			throw new IllegalArgumentException("Terminators must not be empty");
 		}
-		if (terminatorSet.contains('\\')) {
+		if (uniqueTerminators.contains('\\')) {
 			throw new IllegalArgumentException("Terminators must not contain a backslash");
 		}
-		return this.readUntil(terminatorSet::contains, true);
+		return this.readUntil(uniqueTerminators::contains, true);
 	}
 	
 	/**
@@ -405,6 +458,8 @@ public class StringReader {
 	 * @return The string which was read until the predicate is true
 	 * @see #readUntil(char)
 	 * @see #readUntilInclusive(char)
+	 * @see #readUntil(char...)
+	 * @see #readUntilInclusive(char...)
 	 */
 	@ApiStatus.Internal
 	protected @NotNull String readUntil(@NotNull Predicate<Character> predicate, boolean inclusive) {
@@ -501,10 +556,11 @@ public class StringReader {
 	 * @see #readUntilInclusive(String, boolean)
 	 */
 	@ApiStatus.Internal
+	@SuppressWarnings("DuplicatedCode")
 	protected @NotNull String readUntil(@NotNull String terminator, boolean caseSensitive, boolean inclusive) {
 		Objects.requireNonNull(terminator, "Terminator string must not be null");
-		Predicate<String> matcher = s -> caseSensitive ? s.startsWith(terminator) : StringUtils.startsWithIgnoreCase(s, terminator);
-		Predicate<String> breaker = s -> caseSensitive ? s.equals(terminator) : s.equalsIgnoreCase(terminator);
+		Predicate<String> matcher = s -> caseSensitive ? terminator.startsWith(s) : StringUtils.startsWithIgnoreCase(s, terminator);
+		Predicate<String> breaker = s -> caseSensitive ? terminator.equals(s) : s.equalsIgnoreCase(terminator);
 		StringBuilder builder = new StringBuilder();
 		StringBuilder terminatorBuilder = new StringBuilder();
 		boolean escaped = false;
@@ -547,30 +603,9 @@ public class StringReader {
 		}
 		return builder.toString();
 	}
+	//endregion
 	
-	/**
-	 * Reads a string.<br>
-	 * <p>
-	 *     If the next character is a single or double quote,<br>
-	 *     {@link #readQuotedString()} is called otherwise {@link #readUnquotedString()} is called.<br>
-	 *     If there are no more characters to read, an empty string is returned.<br>
-	 * </p>
-	 * @return The string which was read
-	 * @throws StringIndexOutOfBoundsException If there are no more characters to read
-	 * @see #readQuotedString()
-	 * @see #readUnquotedString()
-	 */
-	public @NotNull String readString() {
-		if (!this.canRead()) {
-			throw new StringIndexOutOfBoundsException("Expected a string value but found nothing");
-		}
-		char next = this.peek();
-		if (next == '"' || next == '\'') {
-			this.skip();
-			return this.readUntil(next);
-		}
-		return this.readUnquotedString();
-	}
+	//region Read expected
 	
 	/**
 	 * Reads the given expected string from the reader.<br>
@@ -692,6 +727,7 @@ public class StringReader {
 		this.markedIndex = markedIndex;
 		throw new InvalidStringException("Expected one of '" + expected + "' but found: '" + this.string.substring(start, this.index) + "'");
 	}
+	//endregion
 	
 	/**
 	 * Reads a boolean.<br>
@@ -720,6 +756,8 @@ public class StringReader {
 		}
 		throw new InvalidStringException("Expected a boolean value but found: '" + value + "'");
 	}
+	
+	//region Read number helper methods
 	
 	/**
 	 * Reads a number as a string.<br>
@@ -847,8 +885,6 @@ public class StringReader {
 		return builder.toString();
 	}
 	
-	//region Radix helper methods
-	
 	/**
 	 * Parses the radix of the number.<br>
 	 * The radix is determined by the prefix of the number:<br>
@@ -941,6 +977,8 @@ public class StringReader {
 			default -> throw new InvalidStringException("Unknown number type: " + numberType);
 		};
 	}
+	
+	//region Read integer numbers
 	
 	/**
 	 * Reads a byte.<br>
@@ -1076,6 +1114,9 @@ public class StringReader {
 			throw new InvalidStringException("Expected a long value but found: '" + number + "'", e);
 		}
 	}
+	//endregion
+	
+	//region Floating point numbers
 	
 	/**
 	 * Reads a float.<br>
@@ -1130,4 +1171,5 @@ public class StringReader {
 			throw new InvalidStringException("Expected a double value but found: '" + value + "'", e);
 		}
 	}
+	//endregion
 }

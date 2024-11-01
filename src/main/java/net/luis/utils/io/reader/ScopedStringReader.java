@@ -19,6 +19,8 @@
 package net.luis.utils.io.reader;
 
 import net.luis.utils.exception.InvalidStringException;
+import org.apache.commons.lang3.StringUtils;
+import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.Reader;
@@ -144,6 +146,8 @@ public class ScopedStringReader extends StringReader {
 		return builder.toString();
 	}
 	
+	//region Read until
+	
 	/**
 	 * Reads the string until the given terminator is found.<br>
 	 * The terminator and escape character ('\\') are read but not included in the result.<br>
@@ -181,50 +185,52 @@ public class ScopedStringReader extends StringReader {
 	}
 	
 	/**
-	 * Reads the string until the given terminators are found.<br>
+	 * Reads the string until any of the given terminators is found.<br>
 	 * The terminators and escape character ('\\') are read but not included in the result.
 	 * <p>
-	 *     If the any of the terminators is found at the beginning or at the end of the string, an empty string is returned.<br>
-	 *     If any of the terminators is found in a quoted part or in a scope, the terminator are ignored.<br>
-	 *     If none of the terminators is found, the rest of the string is returned.<br>
+	 *     If any terminator is found at the beginning or at the end of the string, an empty string is returned.<br>
+	 *     If any terminator is found in a quoted part or in a scope, the terminator is ignored.<br>
+	 *     If none terminator is found, the rest of the string is returned.<br>
 	 * </p>
 	 * @param terminators The terminators to read until
-	 * @return The read string
+	 * @return The string which was read until the terminator
 	 * @throws IllegalArgumentException If the terminators are empty or contain a backslash
 	 */
 	@Override
-	public @NotNull String readUntil(@NotNull String terminators) {
+	public @NotNull String readUntil(char @NotNull ... terminators) {
 		return super.readUntil(terminators);
 	}
 	
 	/**
-	 * Reads the string until the given terminators are found.<br>
+	 * Reads the string until any of the given terminators is found.<br>
 	 * The escape character ('\\') is read but not included in the result.
 	 * <p>
-	 *     If the any of the terminators is found at the beginning or at the end of the string, an empty string is returned.<br>
-	 *     If any of the terminators is found in a quoted part or in a scope, the terminator are ignored.<br>
-	 *     If none of the terminators is found, the rest of the string is returned.<br>
+	 *     If any terminator is found at the beginning or at the end of the string, an empty string is returned.<br>
+	 *     If any terminator is found in a quoted part or in a scope, the terminator is ignored.<br>
+	 *     If none terminator is found, the rest of the string is returned.<br>
 	 * </p>
 	 * @param terminators The terminators to read until
-	 * @return The read string
+	 * @return The string which was read until the terminator
 	 * @throws IllegalArgumentException If the terminators are empty or contain a backslash
 	 */
 	@Override
-	public @NotNull String readUntilInclusive(@NotNull String terminators) {
+	public @NotNull String readUntilInclusive(char @NotNull ... terminators) {
 		return super.readUntilInclusive(terminators);
 	}
 	
 	/**
 	 * Internal method to read the string until the given predicate is true.<br>
 	 * @param predicate The predicate to match the characters
-	 * @param inclusive If the character that matches the predicate should be included in the result or not
+	 * @param inclusive Whether the character which matches the predicate should be included in the result or not
 	 * @return The string which was read until the predicate is true
 	 * @see #readUntil(char)
-	 * @see #readUntil(String)
 	 * @see #readUntilInclusive(char)
-	 * @see #readUntilInclusive(String)
+	 * @see #readUntil(char...)
+	 * @see #readUntilInclusive(char...)
 	 */
 	@Override
+	@ApiStatus.Internal
+	@SuppressWarnings("DuplicatedCode")
 	protected @NotNull String readUntil(@NotNull Predicate<Character> predicate, boolean inclusive) {
 		StringBuilder builder = new StringBuilder();
 		boolean escaped = false;
@@ -260,6 +266,116 @@ public class ScopedStringReader extends StringReader {
 		}
 		return builder.toString();
 	}
+	
+	/**
+	 * Reads the string until the given terminator string is found.<br>
+	 * The terminator string and escape character ('\\') are read but not included in the result.<br>
+	 * <p>
+	 *     If the terminator string is found at the beginning or at the end of the string, an empty string is returned.<br>
+	 *     If the terminator string is found in a quoted part or in a scope, the terminator is ignored.<br>
+	 *     If the terminator string is not found, the rest of the string is returned.<br>
+	 * </p>
+	 * @param terminator The terminating string to read until
+	 * @param caseSensitive Whether the terminator string should be case-sensitive or not
+	 * @return The string which was read until the terminator
+	 * @throws NullPointerException If the terminator string is null
+	 * @throws IllegalArgumentException If the terminator string is empty or contains a backslash
+	 */
+	@Override
+	public @NotNull String readUntil(@NotNull String terminator, boolean caseSensitive) {
+		return super.readUntil(terminator, caseSensitive);
+	}
+	
+	/**
+	 * Reads the string until the given terminator string is found.<br>
+	 * The escape character ('\\') is read but not included in the result.<br>
+	 * <p>
+	 *     If the terminator string is found at the beginning or at the end of the string, an empty string is returned.<br>
+	 *     If the terminator string is found in a quoted part or in a scope, the terminator is ignored.<br>
+	 *     If the terminator string is not found, the rest of the string is returned.<br>
+	 * </p>
+	 * @param terminator The terminating string to read until
+	 * @param caseSensitive Whether the terminator string should be case-sensitive or not
+	 * @return The string which was read until the terminator
+	 * @throws NullPointerException If the terminator string is null
+	 * @throws IllegalArgumentException If the terminator string is empty or contains a backslash
+	 */
+	@Override
+	public @NotNull String readUntilInclusive(@NotNull String terminator, boolean caseSensitive) {
+		return super.readUntilInclusive(terminator, caseSensitive);
+	}
+	
+	/**
+	 * Internal method to read the string until the terminating string is found.<br>
+	 * @param terminator The terminator string to read until
+	 * @param caseSensitive Whether the terminator string should be case-sensitive or not
+	 * @param inclusive Whether the terminator string should be included in the result or not
+	 * @return The string which was read until the equals predicate is true
+	 * @throws NullPointerException If the terminator string is null
+	 * @see #readUntil(String, boolean)
+	 * @see #readUntilInclusive(String, boolean)
+	 */
+	@Override
+	@ApiStatus.Internal
+	@SuppressWarnings("DuplicatedCode")
+	protected @NotNull String readUntil(@NotNull String terminator, boolean caseSensitive, boolean inclusive) {
+		Objects.requireNonNull(terminator, "Terminator string must not be null");
+		Predicate<String> matcher = s -> caseSensitive ? terminator.startsWith(s) : StringUtils.startsWithIgnoreCase(s, terminator);
+		Predicate<String> breaker = s -> caseSensitive ? terminator.equals(s) : s.equalsIgnoreCase(terminator);
+		StringBuilder builder = new StringBuilder();
+		StringBuilder terminatorBuilder = new StringBuilder();
+		boolean escaped = false;
+		boolean inSingleQuotes = false;
+		boolean inDoubleQuotes = false;
+		Deque<Character> stack = new ArrayDeque<>();
+		while (this.canRead()) {
+			char c = this.read();
+			if (escaped) {
+				escaped = false;
+			} else if (c == '\\') {
+				escaped = true;
+				continue;
+			} else if (c == '\'') {
+				inSingleQuotes = !inSingleQuotes;
+			} else if (c == '\"') {
+				inDoubleQuotes = !inDoubleQuotes;
+			} else if (SCOPE_REGISTRY.containsKey(c)) {
+				stack.push(c);
+			} else if (!stack.isEmpty() && SCOPE_REGISTRY.get(stack.peek()) == c) {
+				stack.pop();
+			}
+			if (!inSingleQuotes && !inDoubleQuotes && stack.isEmpty()) {
+				if (terminatorBuilder.isEmpty()) {
+					if (matcher.test(String.valueOf(c))) {
+						terminatorBuilder.append(c);
+						continue;
+					}
+				} else {
+					terminatorBuilder.append(c);
+					if (breaker.test(terminatorBuilder.toString())) {
+						if (inclusive) {
+							builder.append(terminatorBuilder);
+						}
+						break;
+					}
+					if (!matcher.test(terminatorBuilder.toString())) {
+						builder.append(terminatorBuilder);
+						terminatorBuilder.setLength(0);
+					}
+					continue;
+				}
+			}
+			builder.append(c);
+		}
+		if (!stack.isEmpty()) {
+			String scopes = stack.reversed().stream().map(SCOPE_REGISTRY::get).map(String::valueOf).collect(Collectors.joining("', '", "'", "'"));
+			throw new InvalidStringException("Invalid scope, " + stack.size() + " scope" + (stack.size() > 1 ? "s" : "") + " are not closed, expected closing characters in order: " + scopes);
+		}
+		return builder.toString();
+	}
+	//endregion
+	
+	//region Read collections
 	
 	/**
 	 * Reads a collection like object from the string.<br>
@@ -385,6 +501,7 @@ public class ScopedStringReader extends StringReader {
 		}
 		return map;
 	}
+	//endregion
 	
 	/**
 	 * A record to define a string scope with an opening and a closing character.<br>

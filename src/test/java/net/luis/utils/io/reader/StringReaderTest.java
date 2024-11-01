@@ -242,11 +242,20 @@ class StringReaderTest {
 	}
 	
 	@Test
+	void readString() {
+		StringReader reader = new StringReader("this \"is a simple\" 'test string'");
+		assertEquals("this", reader.readString());
+		assertEquals("is a simple", reader.readString());
+		reader.skip();
+		assertEquals("test string", reader.readString());
+	}
+	
+	@Test
 	void readUntil() {
-		StringReader reader = new StringReader("this is a simple \\test 'string for the' \"string\" \\reade\\r");
+		StringReader reader = new StringReader("this is a sImple \\test 'string for the' \"string\" \\reade\\r");
 		assertThrows(IllegalArgumentException.class, () -> reader.readUntil('\\'));
 		assertEquals("", reader.readUntil('t'));
-		assertEquals("his is a simple tes", reader.readUntil('t'));
+		assertEquals("his is a sImple tes", reader.readUntil('t'));
 		reader.skip();
 		assertEquals("'string for the'", reader.readUntil(' '));
 		assertEquals("\"string\"", reader.readUntil(' '));
@@ -255,25 +264,43 @@ class StringReaderTest {
 		
 		reader.reset();
 		
-		assertEquals("", reader.readUntil("ts"));
-		assertEquals("hi", reader.readUntil("ts"));
+		assertThrows(NullPointerException.class, () -> reader.readUntil((char[]) null));
+		assertThrows(IllegalArgumentException.class, reader::readUntil);
+		assertThrows(IllegalArgumentException.class, () -> reader.readUntil('\\'));
+		assertEquals("", reader.readUntil('t', 's'));
+		assertEquals("hi", reader.readUntil('t', 's'));
 		reader.skip();
-		assertEquals("is a simpl", reader.readUntil("et"));
+		assertEquals("is a sImpl", reader.readUntil('e', 't'));
 		reader.skip();
-		assertEquals("te", reader.readUntil("s "));
+		assertEquals("te", reader.readUntil('s', ' '));
 		reader.skip(2);
-		assertEquals("'string for the'", reader.readUntil("s "));
-		assertEquals("\"string\"", reader.readUntil(" "));
-		assertEquals("reader", reader.readUntil("r"));
-		assertEquals("", reader.readUntil(" "));
+		assertEquals("'string for the'", reader.readUntil('s', ' '));
+		assertEquals("\"string\"", reader.readUntil(' ', 'x'));
+		assertEquals("reader", reader.readUntil('r', '\0'));
+		assertEquals("", reader.readUntil(' ', ' '));
+		
+		reader.reset();
+		
+		assertThrows(NullPointerException.class, () -> reader.readUntil((String) null, false));
+		assertThrows(NullPointerException.class, () -> reader.readUntil((String) null, true));
+		assertEquals("", reader.readUntil("t", false));
+		assertEquals('h', reader.peek());
+		reader.skip(4);
+		assertEquals("is ", reader.readUntil("a", false));
+		reader.skip();
+		assertEquals("", reader.readUntil("sImple", true));
+		reader.skip(7);
+		assertEquals("'string for the'", reader.readUntil(" ", true));
+		reader.skip(9);
+		assertEquals("reader", reader.readUntil("r", false));
 	}
 	
 	@Test
 	void readUntilInclusive() {
-		StringReader reader = new StringReader("this is a simple \\test 'string for the' \"string\" \\reade\\r");
+		StringReader reader = new StringReader("this is a sImple \\test 'string for the' \"string\" \\reade\\r");
 		assertThrows(IllegalArgumentException.class, () -> reader.readUntilInclusive('\\'));
 		assertEquals("t", reader.readUntilInclusive('t'));
-		assertEquals("his is a simple test", reader.readUntilInclusive('t'));
+		assertEquals("his is a sImple test", reader.readUntilInclusive('t'));
 		reader.skip();
 		assertEquals("'string for the' ", reader.readUntilInclusive(' '));
 		assertEquals("\"string\" ", reader.readUntilInclusive(' '));
@@ -282,26 +309,35 @@ class StringReaderTest {
 		
 		reader.reset();
 		
-		assertEquals("t", reader.readUntilInclusive("ts"));
-		assertEquals("his", reader.readUntilInclusive("ts"));
+		assertThrows(NullPointerException.class, () -> reader.readUntilInclusive((char[]) null));
+		assertThrows(IllegalArgumentException.class, reader::readUntilInclusive);
+		assertThrows(IllegalArgumentException.class, () -> reader.readUntilInclusive('\\'));
+		assertEquals("t", reader.readUntilInclusive('t', 's'));
+		assertEquals("his", reader.readUntilInclusive('t', 's'));
 		reader.skip();
-		assertEquals("is a simple", reader.readUntilInclusive("et"));
+		assertEquals("is a sImple", reader.readUntilInclusive('e', 't'));
 		reader.skip();
-		assertEquals("tes", reader.readUntilInclusive("s "));
+		assertEquals("tes", reader.readUntilInclusive('s', ' '));
 		reader.skip(2);
-		assertEquals("'string for the' ", reader.readUntilInclusive("s "));
-		assertEquals("\"string\" ", reader.readUntilInclusive(" "));
-		assertEquals("reader", reader.readUntilInclusive("r"));
-		assertEquals("", reader.readUntilInclusive(" "));
-	}
-	
-	@Test
-	void readString() {
-		StringReader reader = new StringReader("this \"is a simple\" 'test string'");
-		assertEquals("this", reader.readString());
-		assertEquals("is a simple", reader.readString());
+		assertEquals("'string for the' ", reader.readUntilInclusive('s', ' '));
+		assertEquals("\"string\" ", reader.readUntilInclusive(' ', 'x'));
+		assertEquals("reader", reader.readUntilInclusive('r', '\0'));
+		assertEquals("", reader.readUntilInclusive(' ', ' '));
+		
+		reader.reset();
+		
+		assertThrows(NullPointerException.class, () -> reader.readUntilInclusive((String) null, false));
+		assertThrows(NullPointerException.class, () -> reader.readUntilInclusive((String) null, true));
+		assertEquals("t", reader.readUntilInclusive("t", false));
+		assertEquals('h', reader.peek());
+		reader.skip(4);
+		assertEquals("is a", reader.readUntilInclusive("a", false));
 		reader.skip();
-		assertEquals("test string", reader.readString());
+		assertEquals("sImple", reader.readUntilInclusive("sImple", true));
+		reader.skip(7);
+		assertEquals("'string for the' ", reader.readUntilInclusive(" ", true));
+		reader.skip(9);
+		assertEquals("reader", reader.readUntilInclusive("r", false));
 	}
 	
 	@Test
