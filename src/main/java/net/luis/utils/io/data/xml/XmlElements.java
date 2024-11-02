@@ -96,7 +96,7 @@ public class XmlElements {
 	//endregion
 	
 	//region Add operations
-	private void add(@NotNull String name, @NotNull XmlElement element) {
+	public void add(@NotNull String name, @NotNull XmlElement element) {
 		Objects.requireNonNull(name, "Name must not be null");
 		if (this.elements.isEmpty() || this.isUndefined()) {
 			this.elements.put(name, Lists.newArrayList(element));
@@ -115,14 +115,29 @@ public class XmlElements {
 		}
 	}
 	
+	public void add(@NotNull XmlElement element) {
+		Objects.requireNonNull(element, "Element must not be null");
+		this.add(element.getName(), element);
+	}
+	
 	public void addContainer(@NotNull String name, @NotNull XmlContainer container) {
 		Objects.requireNonNull(container, "Container must not be null");
 		this.add(name, container);
 	}
 	
+	public void addContainer(@NotNull XmlContainer container) {
+		Objects.requireNonNull(container, "Container must not be null");
+		this.add(container.getName(), container);
+	}
+	
 	public void addValue(@NotNull String name, @NotNull XmlValue value) {
 		Objects.requireNonNull(value, "Value must not be null");
 		this.add(name, value);
+	}
+	
+	public void addValue(@NotNull XmlValue value) {
+		Objects.requireNonNull(value, "Value must not be null");
+		this.add(value.getName(), value);
 	}
 	//endregion
 	
@@ -227,8 +242,12 @@ public class XmlElements {
 		return this.toString(XmlConfig.DEFAULT);
 	}
 	
-	public @NotNull String toString(@NotNull XmlConfig config) {
+	public @NotNull String toString(@NotNull XmlConfig config) { // ToDO: Fix
+		Objects.requireNonNull(config, "Xml config must not be null");
 		StringBuilder builder = new StringBuilder();
+		
+		
+		
 		if (this.isArray()) {
 			for (XmlElement element : this.getAsArray()) {
 				builder.append(element.toString(config)).append(System.lineSeparator());

@@ -35,7 +35,7 @@ import static net.luis.utils.io.data.xml.XmlHelper.*;
  *
  */
 
-public class XmlValue extends XmlElement {
+public final class XmlValue extends XmlElement {
 	
 	private final String value;
 	
@@ -63,6 +63,16 @@ public class XmlValue extends XmlElement {
 	public XmlValue(@NotNull String name, @NotNull XmlAttributes attributes, @Nullable String value) {
 		super(name, attributes);
 		this.value = escapeXml(String.valueOf(value));
+	}
+	
+	@Override
+	protected @NotNull String getElementType() {
+		return "xml value";
+	}
+	
+	@Override
+	public boolean isSelfClosing() {
+		return false;
 	}
 	
 	public @NotNull String getRawValue() {
@@ -245,7 +255,7 @@ public class XmlValue extends XmlElement {
 		if (config.prettyPrint() && !config.simplifyValues()) {
 			builder.append(System.lineSeparator());
 		}
-		return builder.append("</").append(this.name).append(">").toString();
+		return builder.append("</").append(this.getName()).append(">").toString();
 	}
 	//endregion
 }

@@ -123,6 +123,9 @@ public class StringReader {
 		if (0 >= amount) {
 			throw new IllegalArgumentException("Amount must be greater than zero");
 		}
+		if (!this.canRead(amount)) {
+			throw new IndexOutOfBoundsException("Expected " + amount + " characters but found only " + (this.string.length() - this.index) + " remaining characters");
+		}
 		StringBuilder builder = new StringBuilder();
 		for (int i = 0; i < amount; i++) {
 			builder.append(this.read());

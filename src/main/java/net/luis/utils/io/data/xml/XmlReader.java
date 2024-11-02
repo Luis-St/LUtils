@@ -29,6 +29,8 @@ import org.jetbrains.annotations.NotNull;
 import java.io.InputStreamReader;
 import java.nio.charset.Charset;
 import java.util.*;
+import java.util.regex.MatchResult;
+import java.util.regex.Pattern;
 
 /**
  *
@@ -101,62 +103,113 @@ public class XmlReader implements AutoCloseable {
 		return new XmlDeclaration(version, charset, standalone);
 	}
 	
-	public void readeXmlElement() {
+	public @NotNull XmlElement readeXmlElement() {
 		if (!this.readDeclaration) {
 			throw new IllegalStateException("Xml declaration must be read before reading xml elements");
 		}
-	
-	
-	
-	
-	
-	
+		XmlElement element = this.readeXmlElement(this.reader);
+		this.reader.skipWhitespaces();
+		return element;
 	}
 	
 	private @NotNull XmlElement readeXmlElement(@NotNull ScopedStringReader xmlReader) {
 		xmlReader.skipWhitespaces();
 		StringReader elementReader = new StringReader(xmlReader.readScope(ScopedStringReader.ANGLE_BRACKETS));
-		elementReader.skip(); // Skip '<'
+		elementReader.skip();
 		elementReader.skipWhitespaces();
 		
-		String name = elementReader.readUntil(" ");
+		String name = elementReader.readUntil(' ');
 		if (name.isEmpty()) {
-			throw new XmlSyntaxException("Expected element name, but found: '" + elementReader.getString() + "'");
+			throw new XmlSyntaxException("Expected element name, but found none");
 		}
-		if (!elementReader.canRead()) {
+		elementReader.skipWhitespaces();
+		XmlAttributes attributes = new XmlAttributes();
+		if (elementReader.canRead() && elementReader.peek() != '/' && elementReader.peek() != '>') {
+			attributes = this.readXmlAttributes(elementReader);
+			if (elementReader.peek() == '/') {
+				elementReader.skip();
+				elementReader.skipWhitespaces();
+				char next = elementReader.read();
+				if (next != '>') {
+					throw new XmlSyntaxException("Expected '>' after self-closing element, but found: '" + next + "'");
+				}
+				return new XmlElement(name, attributes);
+			} else if (elementReader.peek() != '>') {
+				throw new XmlSyntaxException("Expected closing '>' after xml attributes, but found: '" + elementReader.peek() + "'");
+			}
+			elementReader.skip();
+		} else {
+			name += elementReader.readRemaining();
 			if (name.charAt(name.length() - 1) != '>') {
-				throw new XmlSyntaxException("Expected closing '>' after element name, but found: '" + elementReader.getString() + "'");
+				throw new XmlSyntaxException("Expected closing '>' after element name, but found: '" + name + "'");
 			}
 			name = name.substring(0, name.length() - 1).stripTrailing();
 			if (name.isEmpty()) {
-				throw new XmlSyntaxException("Expected element name, but found: '" + elementReader.getString() + "'");
+				throw new XmlSyntaxException("Expected element name, but found empty element");
 			}
-			if (name.charAt(0) == '/') {
-				return XmlElement.createSelfClosingNoAttributes(name.substring(0, name.length() - 1).stripTrailing());
+			if (name.charAt(name.length() - 1) == '/') {
+				return new XmlElement(name.substring(0, name.length() - 1).stripTrailing());
 			}
-		
 		}
-	
-	
-		return null;
+		int closingIndex = this.getClosingElement(xmlReader, name);
+		String content = xmlReader.read(closingIndex).stripIndent();
+		String next = xmlReader.read(2);
+		if (!"</".equals(next)) {
+			throw new XmlSyntaxException("Expected closing element for '" + name + "', but found: '" + next + "'");
+		}
+		xmlReader.skipWhitespaces();
+		xmlReader.readExpected(name, false);
+		xmlReader.skipWhitespaces();
+		if (xmlReader.peek() != '>') {
+			throw new XmlSyntaxException("Expected closing '>' after element name, but found: '" + xmlReader.peek() + "'");
+		}
+		xmlReader.skip();
+		if (content.contains("<")) {
+			return new XmlContainer(name, attributes, this.readeXmlElements(new ScopedStringReader(content)));
+		}
+		return new XmlValue(name, attributes, content.strip());
 	}
 	
-	private @NotNull XmlAttributes readeXmlAttributes(@NotNull StringReader attributeReader) {
+	private @NotNull XmlAttributes readXmlAttributes(@NotNull StringReader attributeReader) {
 		XmlAttributes attributes = new XmlAttributes();
 		attributeReader.skipWhitespaces();
 		while (attributeReader.peek() != '>' && attributeReader.peek() != '/') {
-			String name = attributeReader.readUntil(' ');
+			String name = attributeReader.readUntil('=', ' ');
 			attributeReader.skipWhitespaces();
-			if (attributeReader.peek() != '=') {
-				throw new XmlSyntaxException("Expected '=' after attribute key '" + name + "', but found: '" + attributeReader.peek() + "'");
+			if (attributeReader.peek() == '=') {
+				attributeReader.skip();
+			} else {
+				name = name.substring(0, name.length() - 1);
 			}
 			attributeReader.skipWhitespaces();
 			String value = attributeReader.readQuotedString();
 			attributeReader.skipWhitespaces();
 			attributes.add(name, value);
 		}
-		attributeReader.readRemaining();
 		return attributes;
+	}
+	
+	private int getClosingElement(@NotNull ScopedStringReader xmlReader, @NotNull String name) {
+		Pattern pattern = Pattern.compile("</\\s*" + name + "\\s*>");
+		String remaining = xmlReader.getString().substring(xmlReader.getIndex());
+		Optional<Integer> match = pattern.matcher(remaining).results().map(MatchResult::start).reduce((a, b) -> b);
+		if (match.isPresent()) {
+			return match.get();
+		}
+		throw new XmlSyntaxException("Expected closing element for '" + name + "', but found none in: '" + remaining + "'");
+	}
+	
+	private @NotNull XmlElements readeXmlElements(@NotNull ScopedStringReader xmlReader) {
+		XmlElements elements = new XmlElements();
+		while (xmlReader.canRead()) {
+			xmlReader.skipWhitespaces();
+			if (xmlReader.peek() == '<') {
+				elements.add(this.readeXmlElement(xmlReader));
+			} else {
+				throw new XmlSyntaxException("Expected '<' to start new element, but found: '" + xmlReader.peek() + "'");
+			}
+		}
+		return elements;
 	}
 	
 	@Override

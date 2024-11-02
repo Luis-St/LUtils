@@ -28,16 +28,35 @@ import java.util.*;
  *
  */
 
-public class XmlContainer extends XmlElement {
+public final class XmlContainer extends XmlElement {
 	
-	private final XmlElements elements = new XmlElements();
+	private final XmlElements elements;
 	
 	public XmlContainer(@NotNull String name) {
-		super(name);
+		this(name, new XmlElements());
+	}
+	
+	public XmlContainer(@NotNull String name, @NotNull XmlElements elements) {
+		this(name, new XmlAttributes(), elements);
 	}
 	
 	public XmlContainer(@NotNull String name, @NotNull XmlAttributes attributes) {
+		this(name, attributes, new XmlElements());
+	}
+	
+	public XmlContainer(@NotNull String name, @NotNull XmlAttributes attributes, @NotNull XmlElements elements) {
 		super(name, attributes);
+		this.elements = Objects.requireNonNull(elements, "Elements must not be null");
+	}
+	
+	@Override
+	protected @NotNull String getElementType() {
+		return "xml container";
+	}
+	
+	@Override
+	public boolean isSelfClosing() {
+		return false;
 	}
 	
 	//region Query operations
@@ -159,7 +178,7 @@ public class XmlContainer extends XmlElement {
 		} else {
 			builder.append(elements);
 		}
-		return builder.append("</").append(this.name).append(">").toString();
+		return builder.append("</").append(this.getName()).append(">").toString();
 	}
 	//endregion
 }

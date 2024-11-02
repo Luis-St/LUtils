@@ -33,27 +33,26 @@ import static net.luis.utils.io.data.xml.XmlHelper.*;
  *
  */
 
-public abstract class XmlElement {
+public sealed class XmlElement permits XmlContainer, XmlValue {
 	
-	protected final String name;
-	protected final XmlAttributes attributes;
+	private final String name;
+	private final XmlAttributes attributes;
 	
-	protected XmlElement(@NotNull String name) {
+	public XmlElement(@NotNull String name) {
 		this(name, new XmlAttributes());
 	}
 	
-	protected XmlElement(@NotNull String name, @NotNull XmlAttributes attributes) {
+	public XmlElement(@NotNull String name, @NotNull XmlAttributes attributes) {
 		this.name = validateElementName(name);
 		this.attributes = Objects.requireNonNull(attributes, "Attributes must not be null");
 	}
 	
-	public static @NotNull XmlElement createSelfClosingNoAttributes(@NotNull String name) {
-		return new XmlElement(name) {
-			@Override
-			public @NotNull String toString(@NotNull XmlConfig config) {
-				return "<" + this.name + "/>";
-			}
-		};
+	protected @NotNull String getElementType() {
+		return "xml self-closing element";
+	}
+	
+	public boolean isSelfClosing() {
+		return true;
 	}
 	
 	public boolean isXmlContainer() {
@@ -68,14 +67,14 @@ public abstract class XmlElement {
 		if (this instanceof XmlContainer container) {
 			return container;
 		}
-		throw new XmlTypeException("Expected a xml container, but found: xml value");
+		throw new XmlTypeException("Expected a xml container, but found: " + this.getElementType());
 	}
 	
 	public @NotNull XmlValue getAsXmlValue() {
 		if (this instanceof XmlValue value) {
 			return value;
 		}
-		throw new XmlTypeException("Expected a xml value, but found: xml object");
+		throw new XmlTypeException("Expected a xml value, but found: " + this.getElementType());
 	}
 	
 	public @NotNull String getName() {
@@ -205,6 +204,8 @@ public abstract class XmlElement {
 		return builder;
 	}
 	
-	public abstract @NotNull String toString(@NotNull XmlConfig config);
+	public @NotNull String toString(@NotNull XmlConfig config) {
+		return "<" + this.name + "/>";
+	}
 	//endregion
 }
