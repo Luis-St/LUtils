@@ -31,7 +31,8 @@ import java.util.regex.Pattern;
 
 class XmlHelper {
 	
-	private static final Pattern XML_PATTERN = Pattern.compile("^([a-z]([a-z0-9_-]*[a-z])*)+(:[a-z])?([a-z0-9_-]*[a-z])*$", Pattern.CASE_INSENSITIVE);
+	private static final Pattern XML_ELEMENT_NAME_PATTERN = Pattern.compile("^[a-z_-][a-z0-9_-]+(:[a-z0-9_-]+)?$", Pattern.CASE_INSENSITIVE);
+	private static final Pattern XML_ATTRIBUTE_KEY_PATTERN = Pattern.compile("^[a-z0-9_-]+(:[a-z0-9_-]+)?$", Pattern.CASE_INSENSITIVE);
 	
 	private static void validateBase(@NotNull String str, @NotNull String message) {
 		Objects.requireNonNull(str, message + " must not be null");
@@ -41,18 +42,21 @@ class XmlHelper {
 		if (str.isBlank()) {
 			throw new IllegalArgumentException(message + " must not be blank");
 		}
-		if (!XML_PATTERN.matcher(str).matches()) {
-			throw new IllegalArgumentException(message + " must match the pattern '" + XML_PATTERN.pattern() + "'");
-		}
 	}
 	
 	static @NotNull String validateElementName(@NotNull String name) {
 		validateBase(name, "Xml element name");
+		if (!XML_ELEMENT_NAME_PATTERN.matcher(name).matches()) {
+			throw new IllegalArgumentException("Xml element name must match the pattern '" + XML_ELEMENT_NAME_PATTERN.pattern() + "', but was: '" + name + "'");
+		}
 		return name;
 	}
 	
 	static @NotNull String validateAttributeKey(@NotNull String key) {
 		validateBase(key, "Xml attribute key");
+		if (!XML_ATTRIBUTE_KEY_PATTERN.matcher(key).matches()) {
+			throw new IllegalArgumentException("Xml attribute key must match the pattern '" + XML_ATTRIBUTE_KEY_PATTERN.pattern() + "', but was: '" + key + "'");
+		}
 		return key;
 	}
 	

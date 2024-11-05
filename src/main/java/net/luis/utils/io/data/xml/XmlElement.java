@@ -200,12 +200,16 @@ public sealed class XmlElement permits XmlContainer, XmlValue {
 		if (!this.attributes.isEmpty()) {
 			builder.append(" ").append(this.attributes.toString(config));
 		}
-		builder.append(">");
+		if (this.isSelfClosing()) {
+			builder.append("/>");
+		} else {
+			builder.append(">");
+		}
 		return builder;
 	}
 	
 	public @NotNull String toString(@NotNull XmlConfig config) {
-		return "<" + this.name + "/>";
+		return this.toBaseString(config).toString();
 	}
 	//endregion
 }
