@@ -18,13 +18,18 @@
 
 package net.luis.utils.io;
 
+import net.luis.utils.annotation.type.MockObject;
+import net.luis.utils.io.data.InputProvider;
 import net.luis.utils.util.Pair;
+import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Test;
 
-import java.io.IOException;
+import java.io.*;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Objects;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -141,4 +146,38 @@ class FileUtilsTest {
 		assertThrows(NullPointerException.class, () -> FileUtils.deleteRecursively(null));
 		assertThrows(IOException.class, () -> FileUtils.deleteRecursively(file));
 	}
+	
+	@Test
+	void readString() throws IOException {
+		assertThrows(NullPointerException.class, () -> FileUtils.readString((InputProvider) null));
+		assertEquals("Test", FileUtils.readString(new InputProvider(new StringInputStream("Test"))));
+		
+		assertThrows(NullPointerException.class, () -> FileUtils.readString(null, null));
+		assertEquals("Test", FileUtils.readString(new InputProvider(new StringInputStream("Test")), StandardCharsets.UTF_8));
+		
+		assertThrows(NullPointerException.class, () -> FileUtils.readString((Reader) null));
+		assertEquals("Test", FileUtils.readString(new StringReader("Test")));
+	}
+	
+	//region Internal classes
+	@MockObject(InputStream.class)
+	private static class StringInputStream extends InputStream {
+		
+		private final String string;
+		private int index;
+		
+		private StringInputStream(@NotNull String string) {
+			this.string = Objects.requireNonNull(string, "String must not be null");
+		}
+		
+		@Override
+		public int read() throws IOException {
+			return this.index < this.string.length() ? this.string.charAt(this.index++) : -1;
+		}
+		
+		public void reset() {
+			this.index = 0;
+		}
+	}
+	//endregion
 }

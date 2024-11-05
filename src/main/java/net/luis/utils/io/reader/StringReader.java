@@ -21,6 +21,7 @@ package net.luis.utils.io.reader;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import net.luis.utils.exception.InvalidStringException;
+import net.luis.utils.io.FileUtils;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.ApiStatus;
@@ -39,7 +40,13 @@ import java.util.stream.Collectors;
  */
 public class StringReader {
 	
+	/**
+	 * The pattern to check for an invalid decimal floating point exponent.<br>
+	 */
 	private static final Pattern INVALID_FLOATING_POINT_EXPONENT_PATTERN = Pattern.compile("^[+-]?(|\\.)");
+	/**
+	 * The pattern to check for an invalid hexadecimal floating point exponent.<br>
+	 */
 	private static final Pattern INVALID_HEXADECIMAL_FLOATING_POINT_EXPONENT_PATTERN = Pattern.compile("^[+-]?0x(|\\.)");
 	
 	/**
@@ -71,20 +78,13 @@ public class StringReader {
 	 * @throws NullPointerException If the reader is null
 	 * @throws UncheckedIOException If an I/O error occurs while reading the string
 	 */
-	@SuppressWarnings("NestedAssignment")
 	public StringReader(@NotNull Reader reader) {
 		Objects.requireNonNull(reader, "Reader must not be null");
-		StringBuilder content = new StringBuilder();
 		try {
-			int ch;
-			while ((ch = reader.read()) != -1) {
-				content.append((char) ch);
-			}
-			reader.close();
+			this.string = FileUtils.readString(reader);
 		} catch (IOException e) {
 			throw new UncheckedIOException("Failed to read string from reader", e);
 		}
-		this.string = content.toString();
 	}
 	
 	/**
