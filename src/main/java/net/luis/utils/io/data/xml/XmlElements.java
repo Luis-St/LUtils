@@ -246,8 +246,6 @@ public class XmlElements {
 		Objects.requireNonNull(config, "Xml config must not be null");
 		StringBuilder builder = new StringBuilder();
 		
-		
-		
 		if (this.isArray()) {
 			for (XmlElement element : this.getAsArray()) {
 				builder.append(element.toString(config)).append(System.lineSeparator());

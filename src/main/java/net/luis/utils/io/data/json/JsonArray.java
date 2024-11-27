@@ -55,7 +55,6 @@ public class JsonArray implements JsonElement {
 		this.elements.addAll(Objects.requireNonNull(elements, "Json elements must not be null"));
 	}
 	
-	
 	//region Query operations
 	
 	/**

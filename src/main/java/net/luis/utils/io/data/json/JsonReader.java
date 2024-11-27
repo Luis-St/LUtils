@@ -18,10 +18,10 @@
 
 package net.luis.utils.io.data.json;
 
+import net.luis.utils.io.data.InputProvider;
 import net.luis.utils.io.data.json.exception.JsonSyntaxException;
 import net.luis.utils.io.reader.ScopedStringReader;
 import net.luis.utils.io.reader.StringReader;
-import net.luis.utils.io.data.InputProvider;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;

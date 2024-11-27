@@ -53,7 +53,6 @@ public class XmlAttribute {
 		this.value = escapeXml(String.valueOf(value));
 	}
 	
-
 	public @NotNull String getKey() {
 		return this.key;
 	}

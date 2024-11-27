@@ -18,7 +18,6 @@
 
 package net.luis.utils.io;
 
-import net.luis.utils.util.Utils;
 import org.apache.commons.lang3.function.FailableConsumer;
 import org.apache.commons.lang3.function.FailableFunction;
 import org.jetbrains.annotations.NotNull;

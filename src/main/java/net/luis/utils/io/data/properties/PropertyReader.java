@@ -20,10 +20,10 @@ package net.luis.utils.io.data.properties;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import net.luis.utils.io.data.InputProvider;
 import net.luis.utils.io.data.properties.exception.*;
 import net.luis.utils.io.exception.IllegalLineReadException;
 import net.luis.utils.io.reader.ScopedStringReader;
-import net.luis.utils.io.data.InputProvider;
 import net.luis.utils.lang.StringUtils;
 import org.apache.commons.lang3.ArrayUtils;
 import org.jetbrains.annotations.*;

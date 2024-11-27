@@ -18,12 +18,6 @@
 
 package net.luis.utils.io.data.xml.exception;
 
-/**
- *
- * @author Luis-St
- *
- */
-
 import org.jetbrains.annotations.Nullable;
 
 /**

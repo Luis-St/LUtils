@@ -536,6 +536,7 @@ public class LoggerConfiguration {
 		this.maxArchiveFiles = Math.max(1, maxArchiveFiles);
 		return this;
 	}
+	
 	/**
 	 * Sets the maximum depth in which archived log files should be deleted.<br>
 	 * The maximum depth must be greater than 0.<br>

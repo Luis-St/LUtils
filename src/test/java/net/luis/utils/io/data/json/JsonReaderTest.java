@@ -18,18 +18,13 @@
 
 package net.luis.utils.io.data.json;
 
-import net.luis.utils.annotation.type.MockObject;
 import net.luis.utils.io.data.InputProvider;
 import net.luis.utils.io.data.json.exception.JsonSyntaxException;
-import net.luis.utils.io.data.properties.*;
 import net.luis.utils.util.ErrorAction;
-import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.Test;
 
-import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
-import java.util.Objects;
 
 import static org.junit.jupiter.api.Assertions.*;
 

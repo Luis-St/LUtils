@@ -18,6 +18,7 @@
 
 package net.luis.utils.io.data.json;
 
+import net.luis.utils.annotation.type.Singleton;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -27,6 +28,7 @@ import org.jetbrains.annotations.Nullable;
  *
  * @author Luis-St
  */
+@Singleton
 public class JsonNull implements JsonElement {
 	
 	/**

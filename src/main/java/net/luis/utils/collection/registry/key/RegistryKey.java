@@ -21,8 +21,6 @@ package net.luis.utils.collection.registry.key;
 import net.luis.utils.collection.registry.Registry;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.function.Supplier;
-
 /**
  * Class that represents a key in a {@link Registry}.<br>
  * The key is used to access the items in the registry.<br>

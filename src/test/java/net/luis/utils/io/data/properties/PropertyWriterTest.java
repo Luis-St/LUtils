@@ -20,7 +20,8 @@ package net.luis.utils.io.data.properties;
 
 import net.luis.utils.annotation.type.MockObject;
 import net.luis.utils.io.data.OutputProvider;
-import net.luis.utils.util.*;
+import net.luis.utils.util.ErrorAction;
+import net.luis.utils.util.ValueConverter;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.junit.jupiter.api.Test;

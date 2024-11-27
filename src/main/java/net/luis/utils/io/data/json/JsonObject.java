@@ -21,7 +21,8 @@ package net.luis.utils.io.data.json;
 import com.google.common.collect.Maps;
 import net.luis.utils.io.data.json.exception.JsonTypeException;
 import net.luis.utils.io.data.json.exception.NoSuchJsonElementException;
-import org.jetbrains.annotations.*;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
 
@@ -525,7 +526,7 @@ public class JsonObject implements JsonElement {
 		StringBuilder builder = new StringBuilder("{");
 		List<Map.Entry<String, JsonElement>> entries = List.copyOf(this.elements.entrySet());
 		if (!entries.isEmpty()) {
-			boolean shouldSimplify = config.simplifyObjects() && config.maxObjectSimplificationSize() >=  entries.size();
+			boolean shouldSimplify = config.simplifyObjects() && config.maxObjectSimplificationSize() >= entries.size();
 			if (shouldSimplify) {
 				builder.append(" ");
 			}

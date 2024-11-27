@@ -22,7 +22,6 @@ import com.google.common.base.Objects;
 import com.google.common.collect.Lists;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.ObjectUtils;
-import org.intellij.lang.annotations.RegExp;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -930,7 +929,7 @@ public class StringUtils {
 	 * If the string is empty or null, an empty array will be returned.<br>
 	 * <p>
 	 *     Examples:<br>
-     * </p>
+	 * </p>
 	 * <pre>{@code
 	 * splitNotEscaped(null, *) -> []
 	 * splitNotEscaped("", *) -> []
