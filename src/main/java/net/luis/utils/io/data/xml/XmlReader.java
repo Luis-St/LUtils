@@ -77,6 +77,9 @@ public class XmlReader implements AutoCloseable {
 	}
 	
 	public @NotNull XmlDeclaration readDeclaration() {
+		if (this.readDeclaration) {
+			throw new XmlSyntaxException("Xml declaration has already been read");
+		}
 		this.reader.skipWhitespaces();
 		StringReader declarationReader = new StringReader(this.reader.readScope(ScopedStringReader.ANGLE_BRACKETS));
 		String type = declarationReader.readUntil(' ');
@@ -91,12 +94,17 @@ public class XmlReader implements AutoCloseable {
 			String attribute = declarationReader.readExpected(attributes, false);
 			attributes.remove(attribute.toLowerCase());
 			
-			declarationReader.skipWhitespaces();
+			if (!this.config.strict()) {
+				declarationReader.skipWhitespaces();
+			}
 			char next = declarationReader.read();
 			if (next != '=') {
 				throw new XmlSyntaxException("Expected '=' after attribute key '" + attribute + "' in xml declaration, but found: '" + next + "'");
 			}
-			declarationReader.skipWhitespaces();
+			if (!this.config.strict()) {
+				declarationReader.skipWhitespaces();
+			}
+			
 			String value = declarationReader.readQuotedString();
 			declarationReader.skipWhitespaces();
 			declarationAttributes.put(attribute.toLowerCase(), value);
@@ -117,7 +125,11 @@ public class XmlReader implements AutoCloseable {
 	
 	public @NotNull XmlElement readeXmlElement() {
 		if (!this.readDeclaration) {
-			throw new IllegalStateException("Xml declaration must be read before reading xml elements");
+			if (this.config.strict()) {
+				throw new IllegalStateException("Xml declaration must be read before reading xml elements");
+			} else {
+				this.readDeclaration();
+			}
 		}
 		XmlElement element = this.readeXmlElement(this.reader);
 		this.reader.skipWhitespaces();
@@ -128,19 +140,23 @@ public class XmlReader implements AutoCloseable {
 		xmlReader.skipWhitespaces();
 		StringReader elementReader = new StringReader(xmlReader.readScope(ScopedStringReader.ANGLE_BRACKETS));
 		elementReader.skip();
-		elementReader.skipWhitespaces();
+		if (!this.config.strict()) {
+			elementReader.skipWhitespaces();
+		}
 		
 		String name = elementReader.readUntil(' ');
-		if (name.isEmpty()) {
+		if (name.isBlank()) {
 			throw new XmlSyntaxException("Expected element name, but found none");
 		}
-		elementReader.skipWhitespaces();
+		if (!this.config.strict()) {
+			elementReader.skipWhitespaces();
+		}
 		XmlAttributes attributes = new XmlAttributes();
 		if (elementReader.canRead() && elementReader.peek() != '/' && elementReader.peek() != '>') {
 			attributes = this.readXmlAttributes(elementReader);
 			if (elementReader.peek() == '/') {
 				elementReader.skip();
-				elementReader.skipWhitespaces();
+				this.skipWhitespacesConfigBased(elementReader);
 				char next = elementReader.read();
 				if (next != '>') {
 					throw new XmlSyntaxException("Expected '>' after self-closing element, but found: '" + next + "'");
@@ -169,9 +185,9 @@ public class XmlReader implements AutoCloseable {
 		if (!"</".equals(next)) {
 			throw new XmlSyntaxException("Expected closing element for '" + name + "', but found: '" + next + "'");
 		}
-		xmlReader.skipWhitespaces();
+		this.skipWhitespacesConfigBased(xmlReader);
 		xmlReader.readExpected(name, false);
-		xmlReader.skipWhitespaces();
+		this.skipWhitespacesConfigBased(xmlReader);
 		if (xmlReader.peek() != '>') {
 			throw new XmlSyntaxException("Expected closing '>' after element name, but found: '" + xmlReader.peek() + "'");
 		}
@@ -186,14 +202,25 @@ public class XmlReader implements AutoCloseable {
 		XmlAttributes attributes = new XmlAttributes();
 		attributeReader.skipWhitespaces();
 		while (attributeReader.peek() != '>' && attributeReader.peek() != '/') {
-			String name = attributeReader.readUntilInclusive('=', ' ');
-			attributeReader.skipWhitespaces();
-			if (attributeReader.peek() == '=') {
-				attributeReader.skip();
-			} else {
-				name = name.substring(0, name.length() - 1);
+			char[] terminators = { '=', ' ' };
+			if (this.config.strict()) {
+				terminators = new char[] { '=' };
 			}
-			attributeReader.skipWhitespaces();
+			String name = attributeReader.readUntilInclusive(terminators);
+			if (this.config.strict()) {
+				name = name.substring(0, name.length() - 1);
+				if (name.length() != name.strip().length()) {
+					throw new XmlSyntaxException("Unexpected whitespace in attribute name '" + name + "'");
+				}
+			} else {
+				attributeReader.skipWhitespaces();
+				if (attributeReader.peek() == '=') {
+					attributeReader.skip();
+				}
+			}
+			if (!this.config.strict()) {
+				attributeReader.skipWhitespaces();
+			}
 			String value = attributeReader.readQuotedString();
 			attributeReader.skipWhitespaces();
 			attributes.add(name.strip(), value);
@@ -215,10 +242,13 @@ public class XmlReader implements AutoCloseable {
 				reader.skip();
 				if (reader.peek() == '/') {
 					reader.skip();
-					reader.skipWhitespaces();
+					this.skipWhitespacesConfigBased(reader);
+					if (this.config.strict() && reader.peek() == ' ') {
+						throw new XmlSyntaxException("Expected element name, but found whitespace after '/'");
+					}
 					String elementName = reader.readUntil('>').strip();
 					if (elementName.isEmpty()) {
-						throw new XmlSyntaxException("Expected closing element for '" + name + "', but found none in: '" + remaining + "'");
+						throw new XmlSyntaxException("Expected closing element for '" + name + "', but found none");
 					}
 					if (scope.isEmpty() && elementName.equalsIgnoreCase(name)) {
 						return resultIndex;
@@ -230,7 +260,7 @@ public class XmlReader implements AutoCloseable {
 				} else {
 					reader.skipWhitespaces();
 					String elementName = reader.readUntilInclusive(' ', '>');
-					if (elementName.isEmpty()) {
+					if (elementName.isBlank()) {
 						throw new XmlSyntaxException("Expected element name, but found none");
 					}
 					if (elementName.charAt(elementName.length() - 1) == ' ') {
@@ -249,14 +279,14 @@ public class XmlReader implements AutoCloseable {
 						}
 						scope.push(elementName.strip());
 					} else {
-						throw new XmlSyntaxException("Expected closing element for '" + name + "', but found none in: '" + remaining + "'");
+						throw new XmlSyntaxException("Expected closing element for '" + name + "', but found none");
 					}
 				}
 			} else {
 				reader.skip();
 			}
 		}
-		throw new XmlSyntaxException("Expected closing element for '" + name + "', but found none in: '" + remaining + "'");
+		throw new XmlSyntaxException("Expected closing element for '" + name + "', but found none");
 	}
 	
 	private @NotNull XmlElements readeXmlElements(@NotNull ScopedStringReader xmlReader) {
@@ -271,6 +301,17 @@ public class XmlReader implements AutoCloseable {
 			xmlReader.skipWhitespaces();
 		}
 		return elements;
+	}
+	
+	private void skipWhitespacesConfigBased(@NotNull StringReader reader) {
+		if (this.config.strict()) {
+			char next = reader.peek();
+			if (Character.isWhitespace(next)) {
+				reader.skip();
+			}
+		} else {
+			reader.skipWhitespaces();
+		}
 	}
 	
 	@Override
