@@ -20,7 +20,6 @@ package net.luis.utils.io.data.properties;
 
 import net.luis.utils.annotation.type.MockObject;
 import net.luis.utils.io.data.OutputProvider;
-import net.luis.utils.util.ErrorAction;
 import net.luis.utils.util.ValueConverter;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -53,7 +52,7 @@ class PropertyWriterTest {
 		}
 	};
 	private static final PropertyConfig DEFAULT_CONFIG = PropertyConfig.DEFAULT;
-	private static final PropertyConfig CUSTOM_CONFIG = new PropertyConfig(':', 0, Set.of(';'), Pattern.compile("^[a-z._]+$"), Pattern.compile("^[ a-zA-Z0-9._-]*$"), true, StandardCharsets.UTF_8, ErrorAction.IGNORE);
+	private static final PropertyConfig CUSTOM_CONFIG = new PropertyConfig(':', 0, Set.of(';'), Pattern.compile("^[a-z._]+$"), Pattern.compile("^[ a-zA-Z0-9._-]*$"), true, StandardCharsets.UTF_8);
 	private static final Properties TEST_PROPERTIES = new Properties(List.of(Property.of("key", "value")));
 	
 	@Test

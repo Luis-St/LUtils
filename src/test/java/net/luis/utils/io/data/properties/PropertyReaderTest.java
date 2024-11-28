@@ -22,7 +22,6 @@ import net.luis.utils.annotation.type.MockObject;
 import net.luis.utils.io.data.InputProvider;
 import net.luis.utils.io.data.properties.exception.*;
 import net.luis.utils.io.exception.IllegalLineReadException;
-import net.luis.utils.util.ErrorAction;
 import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.Test;
 
@@ -42,8 +41,8 @@ import static org.junit.jupiter.api.Assertions.*;
 class PropertyReaderTest {
 	
 	private static final PropertyConfig DEFAULT_CONFIG = PropertyConfig.DEFAULT;
-	private static final PropertyConfig ADVANCED_DEFAULT_CONFIG = new PropertyConfig('=', 1, Set.of('#'), Pattern.compile("^[a-zA-Z0-9._-]+$"), Pattern.compile(".*"), true, StandardCharsets.UTF_8, ErrorAction.THROW);
-	private static final PropertyConfig CUSTOM_CONFIG = new PropertyConfig(':', 0, Set.of(';'), Pattern.compile("^[a-z._]+$"), Pattern.compile("^[ a-zA-Z0-9._-]*$"), true, StandardCharsets.UTF_8, ErrorAction.THROW);
+	private static final PropertyConfig ADVANCED_DEFAULT_CONFIG = new PropertyConfig('=', 1, Set.of('#'), Pattern.compile("^[a-zA-Z0-9._-]+$"), Pattern.compile(".*"), true, StandardCharsets.UTF_8);
+	private static final PropertyConfig CUSTOM_CONFIG = new PropertyConfig(':', 0, Set.of(';'), Pattern.compile("^[a-z._]+$"), Pattern.compile("^[ a-zA-Z0-9._-]*$"), true, StandardCharsets.UTF_8);
 	
 	private static @NotNull PropertyReader createReader(@NotNull String content) {
 		return new PropertyReader(new InputProvider(new StringInputStream(content)));

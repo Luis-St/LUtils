@@ -20,7 +20,6 @@ package net.luis.utils.io.data.json;
 
 import net.luis.utils.io.data.InputProvider;
 import net.luis.utils.io.data.json.exception.JsonSyntaxException;
-import net.luis.utils.util.ErrorAction;
 import org.junit.jupiter.api.Test;
 
 import java.io.InputStream;
@@ -36,7 +35,7 @@ import static org.junit.jupiter.api.Assertions.*;
 class JsonReaderTest {
 	
 	private static final JsonConfig DEFAULT_CONFIG = JsonConfig.DEFAULT;
-	private static final JsonConfig CUSTOM_CONFIG = new JsonConfig(false, true, "\t", true, 10, true, 1, StandardCharsets.UTF_8, ErrorAction.THROW);
+	private static final JsonConfig CUSTOM_CONFIG = new JsonConfig(false, true, "\t", true, 10, true, 1, StandardCharsets.UTF_8);
 	
 	@Test
 	void constructor() {

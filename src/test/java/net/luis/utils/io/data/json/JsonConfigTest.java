@@ -18,7 +18,6 @@
 
 package net.luis.utils.io.data.json;
 
-import net.luis.utils.util.ErrorAction;
 import org.junit.jupiter.api.Test;
 
 import java.nio.charset.StandardCharsets;
@@ -33,14 +32,13 @@ import static org.junit.jupiter.api.Assertions.*;
 class JsonConfigTest {
 	
 	private static final JsonConfig DEFAULT_CONFIG = JsonConfig.DEFAULT;
-	private static final JsonConfig CUSTOM_CONFIG = new JsonConfig(false, false, "  ", false, 1, false, 10, StandardCharsets.UTF_16, ErrorAction.IGNORE);
+	private static final JsonConfig CUSTOM_CONFIG = new JsonConfig(false, false, "  ", false, 1, false, 10, StandardCharsets.UTF_16);
 	
 	@Test
 	void constructor() {
-		assertThrows(NullPointerException.class, () -> new JsonConfig(true, true, "\t", true, 10, true, 1, null, ErrorAction.THROW));
-		assertThrows(NullPointerException.class, () -> new JsonConfig(true, true, "\t", true, 10, true, 1, StandardCharsets.UTF_8, null));
-		assertThrows(IllegalArgumentException.class, () -> new JsonConfig(true, true, "\t", true, 0, true, 1, StandardCharsets.UTF_8, ErrorAction.THROW));
-		assertThrows(IllegalArgumentException.class, () -> new JsonConfig(true, true, "\t", true, 10, true, 0, StandardCharsets.UTF_8, ErrorAction.THROW));
+		assertThrows(NullPointerException.class, () -> new JsonConfig(true, true, "\t", true, 10, true, 1, null));
+		assertThrows(IllegalArgumentException.class, () -> new JsonConfig(true, true, "\t", true, 0, true, 1, StandardCharsets.UTF_8));
+		assertThrows(IllegalArgumentException.class, () -> new JsonConfig(true, true, "\t", true, 10, true, 0, StandardCharsets.UTF_8));
 	}
 	
 	@Test
@@ -89,11 +87,5 @@ class JsonConfigTest {
 	void charset() {
 		assertEquals(StandardCharsets.UTF_8, DEFAULT_CONFIG.charset());
 		assertEquals(StandardCharsets.UTF_16, CUSTOM_CONFIG.charset());
-	}
-	
-	@Test
-	void errorAction() {
-		assertEquals(ErrorAction.THROW, DEFAULT_CONFIG.errorAction());
-		assertEquals(ErrorAction.IGNORE, CUSTOM_CONFIG.errorAction());
 	}
 }

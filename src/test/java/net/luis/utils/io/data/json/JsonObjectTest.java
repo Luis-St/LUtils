@@ -20,7 +20,6 @@ package net.luis.utils.io.data.json;
 
 import net.luis.utils.io.data.json.exception.JsonTypeException;
 import net.luis.utils.io.data.json.exception.NoSuchJsonElementException;
-import net.luis.utils.util.ErrorAction;
 import org.junit.jupiter.api.Test;
 
 import java.nio.charset.StandardCharsets;
@@ -36,7 +35,7 @@ import static org.junit.jupiter.api.Assertions.*;
  */
 class JsonObjectTest {
 	
-	private static final JsonConfig CUSTOM_CONFIG = new JsonConfig(true, true, "  ", true, 10, true, 2, StandardCharsets.UTF_8, ErrorAction.THROW);
+	private static final JsonConfig CUSTOM_CONFIG = new JsonConfig(true, true, "  ", true, 10, true, 2, StandardCharsets.UTF_8);
 	
 	@Test
 	void constructor() {

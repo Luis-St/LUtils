@@ -118,7 +118,7 @@ public class PropertyWriter implements AutoCloseable {
 			this.writer.newLine();
 			this.writer.flush();
 		} catch (IOException e) {
-			this.config.errorAction().handle(new UncheckedIOException("An I/O error occurred while writing the property", e));
+			throw new UncheckedIOException("An I/O error occurred while writing the property", e);
 		}
 	}
 	

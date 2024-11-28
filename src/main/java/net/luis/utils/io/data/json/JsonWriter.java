@@ -75,7 +75,7 @@ public class JsonWriter implements AutoCloseable {
 			this.writer.write(json.toString(this.config));
 			this.writer.flush();
 		} catch (IOException e) {
-			this.config.errorAction().handle(new UncheckedIOException("An I/O error occurred while writing the json element", e));
+			throw new UncheckedIOException("An I/O error occurred while writing the json element", e);
 		}
 	}
 	

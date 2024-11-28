@@ -20,7 +20,6 @@ package net.luis.utils.io.data.properties;
 
 import net.luis.utils.io.reader.ScopedStringReader;
 import net.luis.utils.io.reader.StringReader;
-import net.luis.utils.util.ErrorAction;
 import org.junit.jupiter.api.Test;
 
 import java.nio.charset.StandardCharsets;
@@ -37,7 +36,7 @@ import static org.junit.jupiter.api.Assertions.*;
  */
 class PropertyTest {
 	
-	private static final PropertyConfig CUSTOM = new PropertyConfig(':', 0, Set.of('#'), Pattern.compile("^[a-zA-Z0-9._-]+$"), Pattern.compile(".*"), false, StandardCharsets.UTF_8, ErrorAction.THROW);
+	private static final PropertyConfig CUSTOM = new PropertyConfig(':', 0, Set.of('#'), Pattern.compile("^[a-zA-Z0-9._-]+$"), Pattern.compile(".*"), false, StandardCharsets.UTF_8);
 	
 	@Test
 	void of() {

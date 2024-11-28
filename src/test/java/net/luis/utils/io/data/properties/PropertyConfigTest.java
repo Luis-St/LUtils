@@ -20,7 +20,6 @@ package net.luis.utils.io.data.properties;
 
 import net.luis.utils.io.data.properties.exception.IllegalPropertyKeyException;
 import net.luis.utils.io.data.properties.exception.IllegalPropertyValueException;
-import net.luis.utils.util.ErrorAction;
 import org.junit.jupiter.api.Test;
 
 import java.nio.charset.StandardCharsets;
@@ -37,19 +36,18 @@ import static org.junit.jupiter.api.Assertions.*;
 class PropertyConfigTest {
 	
 	private static final PropertyConfig DEFAULT_CONFIG = PropertyConfig.DEFAULT;
-	private static final PropertyConfig CUSTOM_CONFIG = new PropertyConfig(':', 0, Set.of(';'), Pattern.compile("^[a-z._]+$"), Pattern.compile("^[ a-zA-Z0-9._-]*$"), true, StandardCharsets.UTF_16, ErrorAction.IGNORE);
+	private static final PropertyConfig CUSTOM_CONFIG = new PropertyConfig(':', 0, Set.of(';'), Pattern.compile("^[a-z._]+$"), Pattern.compile("^[ a-zA-Z0-9._-]*$"), true, StandardCharsets.UTF_16);
 	
 	@Test
 	void constructor() {
-		assertThrows(NullPointerException.class, () -> new PropertyConfig('=', 1, null, Pattern.compile(""), Pattern.compile(""), false, StandardCharsets.UTF_8, ErrorAction.THROW));
-		assertThrows(NullPointerException.class, () -> new PropertyConfig('=', 1, Set.of('#'), null, Pattern.compile(""), false, StandardCharsets.UTF_8, ErrorAction.THROW));
-		assertThrows(NullPointerException.class, () -> new PropertyConfig('=', 1, Set.of('#'), Pattern.compile(""), null, false, StandardCharsets.UTF_8, ErrorAction.THROW));
-		assertThrows(NullPointerException.class, () -> new PropertyConfig('=', 1, Set.of('#'), Pattern.compile(""), Pattern.compile(""), false, null, ErrorAction.THROW));
-		assertThrows(NullPointerException.class, () -> new PropertyConfig('=', 1, Set.of('#'), Pattern.compile(""), Pattern.compile(""), false, StandardCharsets.UTF_8, null));
+		assertThrows(NullPointerException.class, () -> new PropertyConfig('=', 1, null, Pattern.compile(""), Pattern.compile(""), false, StandardCharsets.UTF_8));
+		assertThrows(NullPointerException.class, () -> new PropertyConfig('=', 1, Set.of('#'), null, Pattern.compile(""), false, StandardCharsets.UTF_8));
+		assertThrows(NullPointerException.class, () -> new PropertyConfig('=', 1, Set.of('#'), Pattern.compile(""), null, false, StandardCharsets.UTF_8));
+		assertThrows(NullPointerException.class, () -> new PropertyConfig('=', 1, Set.of('#'), Pattern.compile(""), Pattern.compile(""), false, null));
 		
-		assertThrows(IllegalArgumentException.class, () -> new PropertyConfig('\0', 1, Set.of('#'), Pattern.compile(""), Pattern.compile(""), false, StandardCharsets.UTF_8, ErrorAction.THROW));
-		assertThrows(IllegalArgumentException.class, () -> new PropertyConfig('\t', 1, Set.of('#'), Pattern.compile(""), Pattern.compile(""), false, StandardCharsets.UTF_8, ErrorAction.THROW));
-		assertThrows(IllegalArgumentException.class, () -> new PropertyConfig('#', 1, Set.of('#'), Pattern.compile(""), Pattern.compile(""), false, StandardCharsets.UTF_8, ErrorAction.THROW));
+		assertThrows(IllegalArgumentException.class, () -> new PropertyConfig('\0', 1, Set.of('#'), Pattern.compile(""), Pattern.compile(""), false, StandardCharsets.UTF_8));
+		assertThrows(IllegalArgumentException.class, () -> new PropertyConfig('\t', 1, Set.of('#'), Pattern.compile(""), Pattern.compile(""), false, StandardCharsets.UTF_8));
+		assertThrows(IllegalArgumentException.class, () -> new PropertyConfig('#', 1, Set.of('#'), Pattern.compile(""), Pattern.compile(""), false, StandardCharsets.UTF_8));
 	}
 	
 	@Test
@@ -130,13 +128,5 @@ class PropertyConfigTest {
 		assertEquals(StandardCharsets.UTF_8, DEFAULT_CONFIG.charset());
 		assertNotNull(CUSTOM_CONFIG.charset());
 		assertEquals(StandardCharsets.UTF_16, CUSTOM_CONFIG.charset());
-	}
-	
-	@Test
-	void errorAction() {
-		assertNotNull(DEFAULT_CONFIG.errorAction());
-		assertEquals(ErrorAction.THROW, DEFAULT_CONFIG.errorAction());
-		assertNotNull(CUSTOM_CONFIG.errorAction());
-		assertEquals(ErrorAction.IGNORE, CUSTOM_CONFIG.errorAction());
 	}
 }

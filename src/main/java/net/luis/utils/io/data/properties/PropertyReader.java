@@ -155,7 +155,7 @@ public class PropertyReader implements AutoCloseable {
 				properties.forEach(property -> this.properties.put(property.getKey(), property.getRawValue()));
 			}
 		} catch (IOException e) {
-			this.config.errorAction().handle(new UncheckedIOException("An error occurred while reading the properties", e));
+			throw new UncheckedIOException("An error occurred while reading the properties", e);
 		}
 		return new Properties(properties);
 	}
@@ -169,7 +169,7 @@ public class PropertyReader implements AutoCloseable {
 	 * @throws NullPointerException If the line is null
 	 * @throws UncheckedIOException If the line is not parsable (depends on the configuration)
 	 */
-	private @NotNull @Unmodifiable List<Property> parseLine(@NotNull String rawLine) {
+	private @NotNull @Unmodifiable List<Property> parseLine(@NotNull String rawLine) throws IOException {
 		Objects.requireNonNull(rawLine, "Line must not be null");
 		String line = rawLine.stripLeading();
 		if (line.isBlank() || this.config.commentCharacters().contains(line.charAt(0))) {
@@ -177,17 +177,16 @@ public class PropertyReader implements AutoCloseable {
 		}
 		char separator = this.config.separator();
 		if (!StringUtils.containsNotEscaped(line, separator)) {
-			this.config.errorAction().handle(new IllegalLineReadException("No separator (" + separator + ") found in line: " + line));
+			throw new IllegalLineReadException("No separator (" + separator + ") found in line: " + line);
 		}
 		String[] parts = StringUtils.splitNotEscaped(line, separator);
 		if (parts.length == 0) {
-			this.config.errorAction().handle(new IllegalLineReadException("Unable to split line at separator (" + separator + "): " + line));
+			throw new IllegalLineReadException("Unable to split line at separator (" + separator + "): " + line);
 		}
 		try {
 			return this.parseProperty(parts[0], this.getValuePart(parts));
 		} catch (IOException e) {
-			this.config.errorAction().handle(new UncheckedIOException("An error occurred while parsing the line", e));
-			return List.of();
+			throw new UncheckedIOException("An error occurred while parsing the line", e);
 		}
 	}
 	
@@ -230,7 +229,7 @@ public class PropertyReader implements AutoCloseable {
 		String key = this.removeAlignment(rawKey, alignment, true);
 		String value = this.removeAlignment(rawValue, alignment, false);
 		if (this.isAdvancedKey(key) && !this.config.advancedParsing()) {
-			this.config.errorAction().handle(new IllegalPropertyKeyPartException("Advanced key '" + key + "' is not allowed: '" + rawKey + "'"));
+			throw new IllegalPropertyKeyPartException("Advanced key '" + key + "' is not allowed: '" + rawKey + "'");
 		}
 		if (this.config.advancedParsing()) {
 			List<Property> properties = Lists.newArrayList();

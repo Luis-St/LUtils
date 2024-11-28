@@ -22,7 +22,6 @@ import net.luis.utils.io.data.config.ReadOnly;
 import net.luis.utils.io.data.config.WriteOnly;
 import net.luis.utils.io.data.properties.exception.IllegalPropertyKeyException;
 import net.luis.utils.io.data.properties.exception.IllegalPropertyValueException;
-import net.luis.utils.util.ErrorAction;
 import org.jetbrains.annotations.NotNull;
 
 import java.nio.charset.Charset;
@@ -43,7 +42,6 @@ import java.util.regex.Pattern;
  * @param valuePattern The pattern that a value must match
  * @param advancedParsing Whether to use advanced parsing (read-only)
  * @param charset The charset to use for reading and writing
- * @param errorAction The action to take when an error occurs
  */
 public record PropertyConfig(
 	char separator,
@@ -52,8 +50,7 @@ public record PropertyConfig(
 	@NotNull Pattern keyPattern,
 	@NotNull Pattern valuePattern,
 	@ReadOnly boolean advancedParsing,
-	@NotNull Charset charset,
-	@NotNull ErrorAction errorAction
+	@NotNull Charset charset
 ) {
 	
 	/**
@@ -65,9 +62,8 @@ public record PropertyConfig(
 	 * Value pattern: ".*"<br>
 	 * Advanced parsing: false<br>
 	 * Charset: UTF-8<br>
-	 * Error action: THROW<br>
 	 */
-	public static final PropertyConfig DEFAULT = new PropertyConfig('=', 1, Set.of('#'), Pattern.compile("^[a-zA-Z0-9._-]+$"), Pattern.compile(".*"), false, StandardCharsets.UTF_8, ErrorAction.THROW);
+	public static final PropertyConfig DEFAULT = new PropertyConfig('=', 1, Set.of('#'), Pattern.compile("^[a-zA-Z0-9._-]+$"), Pattern.compile(".*"), false, StandardCharsets.UTF_8);
 	
 	/**
 	 * Constructs a new property configuration.<br>
@@ -78,7 +74,6 @@ public record PropertyConfig(
 	 * @param valuePattern The pattern that a value must match
 	 * @param advancedParsing Whether to use advanced parsing
 	 * @param charset The charset to use for reading and writing
-	 * @param errorAction The action to take when an error occurs
 	 * @throws NullPointerException If any of the parameters is null
 	 * @throws IllegalArgumentException If the separator is a whitespace character or a comment character
 	 */
@@ -87,7 +82,6 @@ public record PropertyConfig(
 		Objects.requireNonNull(keyPattern, "Key pattern must not be null");
 		Objects.requireNonNull(valuePattern, "Value pattern must not be null");
 		Objects.requireNonNull(charset, "Charset must not be null");
-		Objects.requireNonNull(errorAction, "Error action must not be null");
 		
 		if (separator == '\0' || Character.isWhitespace(separator)) {
 			throw new IllegalArgumentException("Separator must not be a whitespace character");

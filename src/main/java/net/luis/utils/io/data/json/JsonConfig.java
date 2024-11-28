@@ -20,7 +20,6 @@ package net.luis.utils.io.data.json;
 
 import net.luis.utils.io.data.config.ReadOnly;
 import net.luis.utils.io.data.config.WriteOnly;
-import net.luis.utils.util.ErrorAction;
 import org.jetbrains.annotations.NotNull;
 
 import java.nio.charset.Charset;
@@ -40,7 +39,6 @@ import java.util.Objects;
  * @param simplifyObjects Whether to simplify json objects (write-only)
  * @param maxObjectSimplificationSize The maximum size of a json object to simplify (write-only)
  * @param charset The charset to use for reading and writing
- * @param errorAction The action to take when an error occurs
  */
 public record JsonConfig(
 	@ReadOnly boolean strict,
@@ -50,8 +48,7 @@ public record JsonConfig(
 	@WriteOnly("simplifyArrays") int maxArraySimplificationSize,
 	@WriteOnly("prettyPrint") boolean simplifyObjects,
 	@WriteOnly("simplifyObjects") int maxObjectSimplificationSize,
-	@NotNull Charset charset,
-	@NotNull ErrorAction errorAction
+	@NotNull Charset charset
 ) {
 	
 	/**
@@ -64,9 +61,8 @@ public record JsonConfig(
 	 * Simplify objects: true<br>
 	 * Max object simplification size: 1<br>
 	 * Charset: UTF-8<br>
-	 * Error action: THROW<br>
 	 */
-	public static final JsonConfig DEFAULT = new JsonConfig(true, true, "\t", true, 10, true, 1, StandardCharsets.UTF_8, ErrorAction.THROW);
+	public static final JsonConfig DEFAULT = new JsonConfig(true, true, "\t", true, 10, true, 1, StandardCharsets.UTF_8);
 	
 	/**
 	 * Constructs a new json configuration.<br>
@@ -78,14 +74,12 @@ public record JsonConfig(
 	 * @param simplifyObjects Whether to simplify json objects (write-only)
 	 * @param maxObjectSimplificationSize The maximum size of a json object to simplify (write-only)
 	 * @param charset The charset to use for reading and writing
-	 * @param errorAction The action to take when an error occurs
-	 * @throws NullPointerException If any of the parameters is null
+	 * @throws NullPointerException If the indent or charset is null
 	 * @throws IllegalArgumentException If the max array or object simplification size is less than 1 and the corresponding simplification is enabled
 	 */
 	public JsonConfig {
 		Objects.requireNonNull(indent, "Indent must not be null");
 		Objects.requireNonNull(charset, "Charset must not be null");
-		Objects.requireNonNull(errorAction, "Error action must not be null");
 		if (simplifyArrays && 1 > maxArraySimplificationSize) {
 			throw new IllegalArgumentException("Max array simplification size must be greater than 0 if json array should be simplified");
 		}

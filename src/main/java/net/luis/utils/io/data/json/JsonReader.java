@@ -87,24 +87,6 @@ public class JsonReader implements AutoCloseable {
 	}
 	
 	/**
-	 * Gets the last none whitespace character of the given string.<br>
-	 * The whitespace characters a determined by {@link Character#isWhitespace(char)}.<br>
-	 * @param string The string to get the last none whitespace character of
-	 * @return The last none whitespace character of the string or 0 if the string is empty
-	 * @throws NullPointerException If the string is null
-	 */
-	private static char lastNoneWhitespaceChar(@NotNull String string) {
-		Objects.requireNonNull(string, "String must not be null");
-		for (int i = string.length() - 1; i >= 0; i--) {
-			char c = string.charAt(i);
-			if (!Character.isWhitespace(c)) {
-				return c;
-			}
-		}
-		return 0;
-	}
-	
-	/**
 	 * Reads the next json element from the input.<br>
 	 * @return The next json element
 	 * @throws JsonSyntaxException If the json is invalid
