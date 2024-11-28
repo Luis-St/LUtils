@@ -24,16 +24,29 @@ import java.util.Objects;
 import java.util.regex.Pattern;
 
 /**
+ * Helper class for xml related operations.<br>
  *
  * @author Luis-St
- *
  */
-
 class XmlHelper {
 	
-	private static final Pattern XML_ELEMENT_NAME_PATTERN = Pattern.compile("^[a-z_-][a-z0-9_-]+(:[a-z0-9_-]+)?$", Pattern.CASE_INSENSITIVE);
-	private static final Pattern XML_ATTRIBUTE_KEY_PATTERN = Pattern.compile("^[a-z0-9_-]+(:[a-z0-9_-]+)?$", Pattern.CASE_INSENSITIVE);
+	/**
+	 * Pattern for valid xml element names.<br>
+	 */
+	static final Pattern XML_ELEMENT_NAME_PATTERN = Pattern.compile("^[a-z_-][a-z0-9_-]+(:[a-z0-9_-]+)?$", Pattern.CASE_INSENSITIVE);
+	/**
+	 * Pattern for valid xml attribute keys.<br>
+	 */
+	static final Pattern XML_ATTRIBUTE_NAME_PATTERN = Pattern.compile("^[a-z0-9_-]+(:[a-z0-9_-]+)?$", Pattern.CASE_INSENSITIVE);
 	
+	/**
+	 * Validates the given string.<br>
+	 * The base validation checks if the string is not null, not empty and not blank.<br>
+	 * @param str The string to validate
+	 * @param message The message to use in the exception
+	 * @throws NullPointerException If the string is null
+	 * @throws IllegalArgumentException If the string is empty or blank
+	 */
 	private static void validateBase(@NotNull String str, @NotNull String message) {
 		Objects.requireNonNull(str, message + " must not be null");
 		if (str.isEmpty()) {
@@ -44,6 +57,14 @@ class XmlHelper {
 		}
 	}
 	
+	/**
+	 * Validates the given xml element name.<br>
+	 * In addition to the base validation, the name must match the pattern {@link #XML_ELEMENT_NAME_PATTERN}.<br>
+	 * @param name The name to validate
+	 * @return The validated name
+	 * @throws NullPointerException If the name is null
+	 * @throws IllegalArgumentException If the base validation fails or the name does not match the pattern
+	 */
 	static @NotNull String validateElementName(@NotNull String name) {
 		validateBase(name, "Xml element name");
 		if (!XML_ELEMENT_NAME_PATTERN.matcher(name).matches()) {
@@ -52,19 +73,55 @@ class XmlHelper {
 		return name;
 	}
 	
-	static @NotNull String validateAttributeKey(@NotNull String key) {
-		validateBase(key, "Xml attribute key");
-		if (!XML_ATTRIBUTE_KEY_PATTERN.matcher(key).matches()) {
-			throw new IllegalArgumentException("Xml attribute key must match the pattern '" + XML_ATTRIBUTE_KEY_PATTERN.pattern() + "', but was: '" + key + "'");
+	/**
+	 * Validates the given xml attribute name.<br>
+	 * In addition to the base validation, the name must match the pattern {@link #XML_ATTRIBUTE_NAME_PATTERN}.<br>
+	 * @param name The name to validate
+	 * @return The validated name
+	 * @throws NullPointerException If the name is null
+	 * @throws IllegalArgumentException If the base validation fails or the name does not match the pattern
+	 */
+	static @NotNull String validateAttributeKey(@NotNull String name) {
+		validateBase(name, "Xml attribute name");
+		if (!XML_ATTRIBUTE_NAME_PATTERN.matcher(name).matches()) {
+			throw new IllegalArgumentException("Xml attribute name must match the pattern '" + XML_ATTRIBUTE_NAME_PATTERN.pattern() + "', but was: '" + name + "'");
 		}
-		return key;
+		return name;
 	}
 	
+	/**
+	 * Escapes the given value for xml.<br>
+	 * The following characters are replaced:<br>
+	 * <ul>
+	 *     <li>{@code " -> &quot;}</li>
+	 *     <li>{@code ' -> &apos;}</li>
+	 *     <li>{@code < -> &lt;}</li>
+	 *     <li>{@code > -> &gt;}</li>
+	 *    <li>{@code & -> &amp;}</li>
+	 * </ul>
+	 * @param value The value to escape
+	 * @return The escaped value
+	 * @throws NullPointerException If the value is null
+	 */
 	static @NotNull String escapeXml(@NotNull String value) {
 		Objects.requireNonNull(value, "Value must not be null");
 		return value.replace("\"", "&quot;").replace("'", "&apos;").replace("<", "&lt;").replace(">", "&gt;").replace("&", "&amp;");
 	}
 	
+	/**
+	 * Unescapes the given value from xml.<br>
+	 * The following characters are replaced:<br>
+	 * <ul>
+	 *     <li>{@code &quot; -> "}</li>
+	 *     <li>{@code &apos; -> '}</li>
+	 *     <li>{@code &lt; -> <}</li>
+	 *     <li>{@code &gt; -> >}</li>
+	 *     <li>{@code &amp; -> &}</li>
+	 * </ul>
+	 * @param value The value to unescape
+	 * @return The unescaped value
+	 * @throws NullPointerException If the value is null
+	 */
 	static @NotNull String unescapeXml(@NotNull String value) {
 		Objects.requireNonNull(value, "Value must not be null");
 		return value.replace("&quot;", "\"").replace("&apos;", "'").replace("&lt;", "<").replace("&gt;", ">").replace("&amp;", "&");

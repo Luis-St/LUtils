@@ -33,33 +33,71 @@ import java.nio.charset.Charset;
 import java.util.*;
 
 /**
+ * A xml reader that reads xml content from a {@link String string} or {@link InputProvider input provider}.<br>
+ * The reader expects a xml declaration at the beginning of the content, which can be read with {@link #readDeclaration()}.<br>
+ * After reading the declaration, the xml root element can be read with {@link #readeXmlElement()}.<br>
  *
  * @author Luis-St
- *
  */
-
 public class XmlReader implements AutoCloseable {
 	
+	/**
+	 * The possible attributes of a xml declaration.<br>
+	 */
 	private static final List<String> DECLARATION_ATTRIBUTES = List.of("version", "encoding", "standalone");
+	/**
+	 * The pattern to match comments in xml content.<br>
+	 */
 	private static final String COMMENT_PATTERN = "<!--.*?-->";
 	
+	/**
+	 * The xml config of this reader.<br>
+	 */
 	private final XmlConfig config;
+	/**
+	 * The internal reader used to read the xml content.<br>
+	 */
 	private final ScopedStringReader reader;
+	/**
+	 * A flag to indicate if the xml declaration has been read.<br>
+	 */
 	private boolean readDeclaration;
 	
+	/**
+	 * Constructs a new xml reader with the given string and default xml config.<br>
+	 * @param string The string to read the xml content from
+	 * @throws NullPointerException If the string is null
+	 */
 	public XmlReader(@NotNull String string) {
 		this(string, XmlConfig.DEFAULT);
 	}
 	
+	/**
+	 * Constructs a new xml reader with the given string and xml config.<br>
+	 * @param string The string to read the xml content from
+	 * @param config The xml config to use
+	 * @throws NullPointerException If the string or xml config is null
+	 */
 	public XmlReader(@NotNull String string, @NotNull XmlConfig config) {
 		this.config = Objects.requireNonNull(config, "Xml config must not be null");
 		this.reader = new ScopedStringReader(deleteComments(string));
 	}
 	
+	/**
+	 * Constructs a new xml reader with the given input provider and default xml config.<br>
+	 * @param input The input provider to read the xml content from
+	 * @throws NullPointerException If the input provider is null
+	 */
 	public XmlReader(@NotNull InputProvider input) {
 		this(input, XmlConfig.DEFAULT);
 	}
 	
+	/**
+	 * Constructs a new xml reader with the given input provider and xml config.<br>
+	 * @param input The input provider to read the xml content from
+	 * @param config The xml config to use
+	 * @throws NullPointerException If the input provider or xml config is null
+	 */
 	public XmlReader(@NotNull InputProvider input, @NotNull XmlConfig config) {
 		Objects.requireNonNull(input, "Input must not be null");
 		this.config = Objects.requireNonNull(config, "Xml config must not be null");
@@ -71,14 +109,26 @@ public class XmlReader implements AutoCloseable {
 		}
 	}
 	
+	/**
+	 * Deletes all xml comments from the given string.<br>
+	 * @param string The string to delete the comments from
+	 * @return The string without any xml comments
+	 * @throws NullPointerException If the string is null
+	 */
 	private static @NotNull String deleteComments(@NotNull String string) {
 		Objects.requireNonNull(string, "String must not be null");
 		return string.replaceAll(COMMENT_PATTERN, "");
 	}
 	
+	/**
+	 * Reads the xml declaration from the xml content.<br>
+	 * @return The xml declaration of the xml content
+	 * @throws IllegalStateException If the xml declaration has already been read
+	 * @throws XmlSyntaxException If the xml declaration is invalid
+	 */
 	public @NotNull XmlDeclaration readDeclaration() {
 		if (this.readDeclaration) {
-			throw new XmlSyntaxException("Xml declaration has already been read");
+			throw new IllegalStateException("Xml declaration has already been read");
 		}
 		this.reader.skipWhitespaces();
 		StringReader declarationReader = new StringReader(this.reader.readScope(ScopedStringReader.ANGLE_BRACKETS));
@@ -123,6 +173,12 @@ public class XmlReader implements AutoCloseable {
 		return new XmlDeclaration(version, charset, standalone);
 	}
 	
+	/**
+	 * Reads the xml root element from the xml content.<br>
+	 * @return The xml root element read
+	 * @throws IllegalStateException If the xml declaration has not been read
+	 * @throws XmlSyntaxException If the xml content is invalid
+	 */
 	public @NotNull XmlElement readeXmlElement() {
 		if (!this.readDeclaration) {
 			if (this.config.strict()) {
@@ -136,6 +192,12 @@ public class XmlReader implements AutoCloseable {
 		return element;
 	}
 	
+	/**
+	 * Reads a xml element from the given xml reader.<br>
+	 * @param xmlReader The xml reader to read the xml element from
+	 * @return The xml element read
+	 * @throws XmlSyntaxException If the xml element is invalid
+	 */
 	private @NotNull XmlElement readeXmlElement(@NotNull ScopedStringReader xmlReader) {
 		xmlReader.skipWhitespaces();
 		StringReader elementReader = new StringReader(xmlReader.readScope(ScopedStringReader.ANGLE_BRACKETS));
@@ -198,6 +260,12 @@ public class XmlReader implements AutoCloseable {
 		return new XmlValue(name, attributes, content.strip());
 	}
 	
+	/**
+	 * Reads the xml attributes from the given attribute reader.<br>
+	 * @param attributeReader The attribute reader to read the xml attributes from
+	 * @return The xml attributes read
+	 * @throws XmlSyntaxException If the xml attributes are invalid
+	 */
 	private @NotNull XmlAttributes readXmlAttributes(@NotNull StringReader attributeReader) {
 		XmlAttributes attributes = new XmlAttributes();
 		attributeReader.skipWhitespaces();
@@ -228,6 +296,13 @@ public class XmlReader implements AutoCloseable {
 		return attributes;
 	}
 	
+	/**
+	 * Gets the number of characters until the closing element of the given element name.<br>
+	 * @param xmlReader The xml reader to read the closing element from
+	 * @param name The name of the element to get the closing element for
+	 * @return The number of characters
+	 * @throws XmlSyntaxException If any syntax error occurs while reading the closing element
+	 */
 	private int getClosingElement(@NotNull ScopedStringReader xmlReader, @NotNull String name) {
 		String remaining = xmlReader.getString().substring(xmlReader.getIndex());
 		StringReader reader = new StringReader(remaining);
@@ -289,6 +364,12 @@ public class XmlReader implements AutoCloseable {
 		throw new XmlSyntaxException("Expected closing element for '" + name + "', but found none");
 	}
 	
+	/**
+	 * Reads the xml elements from the given xml reader.<br>
+	 * @param xmlReader The xml reader to read the xml elements from
+	 * @return The xml elements read
+	 * @throws XmlSyntaxException If the xml elements are invalid
+	 */
 	private @NotNull XmlElements readeXmlElements(@NotNull ScopedStringReader xmlReader) {
 		xmlReader.skipWhitespaces();
 		XmlElements elements = new XmlElements();
@@ -303,6 +384,11 @@ public class XmlReader implements AutoCloseable {
 		return elements;
 	}
 	
+	/**
+	 * Skips the next whitespace character based on the xml config.<br>
+	 * In strict mode, only the next whitespace character is skipped; otherwise all whitespaces are skipped.<br>
+	 * @param reader The reader to skip the whitespace character from
+	 */
 	private void skipWhitespacesConfigBased(@NotNull StringReader reader) {
 		if (this.config.strict()) {
 			char next = reader.peek();
@@ -316,6 +402,6 @@ public class XmlReader implements AutoCloseable {
 	
 	@Override
 	public void close() throws Exception {
-		this.reader.readRemaining();  // Assert that there is no remaining content
+		this.reader.readRemaining(); // Assert that there is no remaining content
 	}
 }

@@ -26,13 +26,24 @@ import java.nio.charset.StandardCharsets;
 import java.util.Objects;
 
 /**
+ * Represents an xml declaration.<br>
  *
  * @author Luis-St
  *
+ * @param version The version of the xml document
+ * @param encoding The encoding of the xml document
+ * @param standalone Whether the xml document is standalone or not
  */
-
 public record XmlDeclaration(@NotNull Version version, @NotNull Charset encoding, boolean standalone) {
 	
+	/**
+	 * Constructs a new xml declaration with the given version, encoding and standalone flag.<br>
+	 * @param version The version of the xml document
+	 * @param encoding The encoding of the xml document
+	 * @param standalone Whether the xml document is standalone or not
+	 * @throws NullPointerException If the version or encoding is null
+	 * @throws IllegalArgumentException If the version is invalid
+	 */
 	public XmlDeclaration {
 		Objects.requireNonNull(version, "Version must not be null");
 		Objects.requireNonNull(encoding, "Charset must not be null");
@@ -56,10 +67,25 @@ public record XmlDeclaration(@NotNull Version version, @NotNull Charset encoding
 		}
 	}
 	
+	/**
+	 * Constructs a new xml declaration with the given version and encoding.<br>
+	 * The encoding and standalone flag are set to UTF-8 and false respectively.<br>
+	 * @param version The version of the xml document
+	 * @throws NullPointerException If the version is null
+	 * @throws IllegalArgumentException If the version is invalid
+	 */
 	public XmlDeclaration(@NotNull Version version) {
 		this(version, StandardCharsets.UTF_8, false);
 	}
 	
+	/**
+	 * Constructs a new xml declaration with the given version and encoding.<br>
+	 * The standalone flag is set to false.<br>
+	 * @param version The version of the xml document
+	 * @param encoding The encoding of the xml document
+	 * @throws NullPointerException If the version or encoding is null
+	 * @throws IllegalArgumentException If the version is invalid
+	 */
 	public XmlDeclaration(@NotNull Version version, @NotNull Charset encoding) {
 		this(version, encoding, false);
 	}
