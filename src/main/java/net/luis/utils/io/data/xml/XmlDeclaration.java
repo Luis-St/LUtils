@@ -50,8 +50,8 @@ public record XmlDeclaration(@NotNull Version version, @NotNull Charset encoding
 		if (version.getMajor() <= 0) {
 			throw new IllegalArgumentException("Major version must be greater than 0, but was " + version.getMajor());
 		}
-		if (version.getMinor() >= 10 || version.getMinor() < 0) {
-			throw new IllegalArgumentException("Minor version must be greater than or equal to 0 and less than 10, but was " + version.getMinor());
+		if (version.getMinor() >= 10) {
+			throw new IllegalArgumentException("Minor version must be less than 10, but was " + version.getMinor());
 		}
 		if (version.getPatch() != 0) {
 			throw new IllegalArgumentException("Version must not have a patch number, but found " + version.getPatch());
