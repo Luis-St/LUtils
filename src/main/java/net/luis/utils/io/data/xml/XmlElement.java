@@ -408,11 +408,17 @@ public sealed class XmlElement permits XmlContainer, XmlValue {
 	 * The base string representation contains the root tag with the name and attributes.<br>
 	 * @param config The xml config to use for the string representation
 	 * @return The string builder
+	 * @throws NullPointerException If the xml config is null
+	 * @throws IllegalStateException If the element cannot be represented as a string because of the xml config
 	 */
-	protected @NotNull StringBuilder toBaseString(@Nullable XmlConfig config) {
+	protected @NotNull StringBuilder toBaseString(@NotNull XmlConfig config) {
+		Objects.requireNonNull(config, "Xml config must not be null");
 		StringBuilder builder = new StringBuilder();
 		builder.append("<").append(this.name);
 		if (!this.attributes.isEmpty()) {
+			if (!config.allowAttributes()) {
+				throw new IllegalStateException("Attributes are not allowed in xml elements according to the xml config");
+			}
 			builder.append(" ").append(this.attributes.toString(config));
 		}
 		if (this.isSelfClosing()) {
@@ -427,6 +433,7 @@ public sealed class XmlElement permits XmlContainer, XmlValue {
 	 * The string representation of this xml element.<br>
 	 * @param config The xml config to use for the string representation
 	 * @return The string representation
+	 * @throws NullPointerException If the xml config is null
 	 */
 	public @NotNull String toString(@NotNull XmlConfig config) {
 		return this.toBaseString(config).toString();

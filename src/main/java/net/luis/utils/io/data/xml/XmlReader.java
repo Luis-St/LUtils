@@ -293,6 +293,9 @@ public class XmlReader implements AutoCloseable {
 			attributeReader.skipWhitespaces();
 			attributes.add(name.strip(), value);
 		}
+		if (!attributes.isEmpty() && !this.config.allowAttributes()) {
+			throw new XmlSyntaxException("Attributes are not allowed in xml elements according to the xml config");
+		}
 		return attributes;
 	}
 	

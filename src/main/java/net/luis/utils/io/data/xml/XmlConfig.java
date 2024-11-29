@@ -27,22 +27,47 @@ import java.nio.charset.StandardCharsets;
 import java.util.Objects;
 
 /**
+ * Configuration for reading and writing xml elements.<br>
  *
  * @author Luis-St
  *
+ * @param strict Whether to use strict xml parsing when reading (read-only)
+ * @param prettyPrint Whether to pretty print the xml (write-only)
+ * @param indent The string to use for indentation (write-only)
+ * @param allowAttributes Whether to allow attributes in xml elements
+ * @param simplifyValues Whether to simplify xml values (write-only)
+ * @param charset The charset to use for reading and writing
  */
-
 public record XmlConfig(
 	@ReadOnly boolean strict,
 	@WriteOnly boolean prettyPrint,
 	@WriteOnly("prettyPrint") @NotNull String indent,
-	@ReadOnly boolean allowAttributes,
+	boolean allowAttributes,
 	@WriteOnly boolean simplifyValues,
 	@NotNull Charset charset
 ) {
 	
+	/**
+	 * The default xml configuration.<br>
+	 * Strict: true<br>
+	 * Pretty print: true<br>
+	 * Indent: "\t"<br>
+	 * Allow attributes: true<br>
+	 * Simplify values: true<br>
+	 * Charset: UTF-8<br>
+	 */
 	public static final XmlConfig DEFAULT = new XmlConfig(true, true, "\t", true, true, StandardCharsets.UTF_8);
 	
+	/**
+	 * Constructs a new xml configuration.<br>
+	 * @param strict Whether to use strict xml parsing when reading (read-only)
+	 * @param prettyPrint Whether to pretty print the xml (write-only)
+	 * @param indent The string to use for indentation (write-only)
+	 * @param allowAttributes Whether to allow attributes in xml elements
+	 * @param simplifyValues Whether to simplify xml values (write-only)
+	 * @param charset The charset to use for reading and writing
+	 * @throws NullPointerException If the indent or charset is null
+	 */
 	public XmlConfig {
 		Objects.requireNonNull(indent, "Indent must not be null");
 		Objects.requireNonNull(charset, "Charset must not be null");
