@@ -164,7 +164,7 @@ public sealed class XmlElement permits XmlContainer, XmlValue {
 	 * @return The previous attribute with the same key, or null if there was no previous attribute
 	 * @see XmlAttributes#add(XmlAttribute)
 	 */
-	public @Nullable XmlAttribute addAttribute(@Nullable XmlAttribute attribute) {
+	public @Nullable XmlAttribute addAttribute(@NotNull XmlAttribute attribute) {
 		return this.attributes.add(attribute);
 	}
 	

@@ -374,7 +374,11 @@ public final class XmlValue extends XmlElement {
 	 */
 	public <T> @NotNull T getAs(@NotNull ValueParser<String, T> parser) {
 		Objects.requireNonNull(parser, "Parser must not be null");
-		return parser.parse(this.value);
+		try {
+			return parser.parse(this.value);
+		} catch (Exception e) {
+			throw new IllegalArgumentException(e.getMessage(), e.getCause());
+		}
 	}
 	
 	/**

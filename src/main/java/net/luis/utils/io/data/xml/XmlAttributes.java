@@ -114,7 +114,7 @@ public class XmlAttributes {
 	 * @return The previous attribute with the same name, or null if there was none
 	 * @throws NullPointerException If the given attribute is null
 	 */
-	public @Nullable XmlAttribute add(@Nullable XmlAttribute attribute) {
+	public @Nullable XmlAttribute add(@NotNull XmlAttribute attribute) {
 		Objects.requireNonNull(attribute, "Attribute must not be null");
 		return this.attributes.put(attribute.getName(), attribute);
 	}

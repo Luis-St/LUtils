@@ -182,7 +182,15 @@ public class XmlElements {
 		Objects.requireNonNull(element, "Element must not be null");
 		String name = element.getName();
 		if (this.elements.isEmpty() || this.isUndefined()) {
-			this.elements.put(name, Lists.newArrayList(element));
+			if (this.elements.size() == 1) {
+				if (this.elements.firstEntry().getKey().equals(name)) {
+					this.elements.get(name).add(element);
+				} else {
+					this.elements.put(name, Lists.newArrayList(element));
+				}
+			} else {
+				this.elements.put(name, Lists.newArrayList(element));
+			}
 		} else if (this.isArray()) {
 			if (this.elements.containsKey(name)) {
 				this.elements.get(name).add(element);
@@ -224,15 +232,6 @@ public class XmlElements {
 	//region Remove operations
 	
 	/**
-	 * Removes the element with the given name from the collection.<br>
-	 * @param name The name of the element to remove
-	 * @return True if an element was removed, false otherwise
-	 */
-	public boolean remove(@Nullable String name) {
-		return this.elements.remove(name) != null;
-	}
-	
-	/**
 	 * Removes the given element from the collection considering the type.<br>
 	 * @param element The element to remove
 	 * @return True if the element was removed, false otherwise
@@ -240,11 +239,51 @@ public class XmlElements {
 	 */
 	public boolean remove(@NotNull XmlElement element) {
 		Objects.requireNonNull(element, "Element must not be null");
+		if (!this.elements.containsKey(element.getName())) {
+			return false;
+		}
 		boolean result = this.elements.get(element.getName()).remove(element);
 		if (this.elements.get(element.getName()).isEmpty()) {
 			this.elements.remove(element.getName());
 		}
 		return result;
+	}
+	
+	/**
+	 * Removes the element with the given name from the collection.<br>
+	 * This method should only be used if the collection is an object.<br>
+	 * @param name The name of the element to remove
+	 * @return True if an element was removed, false otherwise
+	 * @throws XmlTypeException If the collection is an array
+	 */
+	public boolean remove(@Nullable String name) {
+		if (this.isArray()) {
+			throw new XmlTypeException("Cannot remove element by name from xml array");
+		}
+		return this.elements.remove(name) != null;
+	}
+	
+	/**
+	 * Removes the element with the given index from the collection.<br>
+	 * This method should only be used if the collection is an array.<br>
+	 * @param index The index of the element to remove
+	 * @return True if an element was removed, false otherwise
+	 * @throws XmlTypeException If the collection is an object
+	 */
+	public boolean remove(int index) {
+		if (this.isObject()) {
+			throw new XmlTypeException("Cannot remove element by index from xml object");
+		}
+		try {
+			String name = this.elements.firstEntry().getKey();
+			this.elements.get(name).remove(index);
+			if (this.elements.get(name).isEmpty()) {
+				this.elements.remove(name);
+			}
+			return true;
+		} catch (Exception e) {
+			return false;
+		}
 	}
 	
 	/**
@@ -268,6 +307,9 @@ public class XmlElements {
 	public @Nullable XmlElement get(@Nullable String name) {
 		if (this.isArray()) {
 			throw new XmlTypeException("Unable to get a single element from an xml array");
+		}
+		if (!this.elements.containsKey(name)) {
+			return null;
 		}
 		return this.elements.get(name).getFirst();
 	}
@@ -415,6 +457,13 @@ public class XmlElements {
 	public @NotNull String toString(@NotNull XmlConfig config) {
 		Objects.requireNonNull(config, "Xml config must not be null");
 		StringBuilder builder = new StringBuilder();
+		if (this.isUndefined()) {
+			if (this.size() == 1) {
+				return this.elements.firstEntry().getValue().getFirst().toString(config);
+			} else {
+				return "";
+			}
+		}
 		if (this.isArray()) {
 			for (XmlElement element : this.getAsArray()) {
 				builder.append(element.toString(config));
@@ -422,7 +471,7 @@ public class XmlElements {
 					builder.append(System.lineSeparator());
 				}
 			}
-		} else {
+		} else if (this.isObject()) {
 			for (XmlElement element : this.getAsObject().values()) {
 				builder.append(element.toString(config));
 				if (config.prettyPrint()) {

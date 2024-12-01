@@ -177,14 +177,33 @@ public final class XmlContainer extends XmlElement {
 	//endregion
 	
 	//region Add operations
+	
+	/**
+	 * Adds the given element to this container.<br>
+	 * @param element The element to add
+	 * @throws NullPointerException If the element is null
+	 * @throws XmlTypeException If the element is not valid for the collection type
+	 */
 	public void add(@NotNull XmlElement element) {
 		this.elements.add(element);
 	}
 	
+	/**
+	 * Adds the given container to this container.<br>
+	 * @param container The container to add
+	 * @throws NullPointerException If the container is null
+	 * @throws XmlTypeException If the container is not valid for the collection type
+	 */
 	public void addContainer(@NotNull XmlContainer container) {
 		this.elements.addContainer(container);
 	}
 	
+	/**
+	 * Adds the given value to this container.<br>
+	 * @param value The value to add
+	 * @throws NullPointerException If the value is null
+	 * @throws XmlTypeException If the value is not valid for the collection type
+	 */
 	public void addValue(@NotNull XmlValue value) {
 		this.elements.addValue(value);
 	}
@@ -193,21 +212,34 @@ public final class XmlContainer extends XmlElement {
 	//region Remove operations
 	
 	/**
-	 * Removes the element with the given name from this container.<br>
-	 * @param name The name of the element to remove
-	 * @return True if the element was removed, otherwise false
-	 */
-	public boolean remove(@Nullable String name) {
-		return this.elements.remove(name);
-	}
-	
-	/**
 	 * Removes the given element from this container.<br>
 	 * @param element The element to remove
 	 * @return True if the element was removed, otherwise false
 	 */
 	public boolean remove(@NotNull XmlElement element) {
 		return this.elements.remove(element);
+	}
+	
+	/**
+	 * Removes the element with the given name from this container.<br>
+	 * This method should only be used if the collection is an object.<br>
+	 * @param name The name of the element to remove
+	 * @return True if the element was removed, otherwise false
+	 * @throws XmlTypeException If the collection is an array
+	 */
+	public boolean remove(@Nullable String name) {
+		return this.elements.remove(name);
+	}
+	
+	/**
+	 * Removes the element with the given index from this container.<br>
+	 * This method should only be used if the collection is an array.<br>
+	 * @param index The name of the element to remove
+	 * @return True if the element was removed, otherwise false
+	 * @throws XmlTypeException If the collection is an object
+	 */
+	public boolean remove(int index) {
+		return this.elements.remove(index);
 	}
 	
 	/**
@@ -322,14 +354,16 @@ public final class XmlContainer extends XmlElement {
 	public @NotNull String toString(@NotNull XmlConfig config) {
 		Objects.requireNonNull(config, "Config must not be null");
 		StringBuilder builder = this.toBaseString(config);
-		if (config.prettyPrint()) {
-			builder.append(System.lineSeparator()).append(config.indent());
-		}
-		String elements = this.elements.toString(config);
-		if (config.prettyPrint()) {
-			builder.append(elements.replace(System.lineSeparator(), System.lineSeparator() + config.indent())).append(System.lineSeparator());
-		} else {
-			builder.append(elements);
+		if (!this.elements.isEmpty()) {
+			if (config.prettyPrint()) {
+				builder.append(System.lineSeparator()).append(config.indent());
+			}
+			String elements = this.elements.toString(config);
+			if (config.prettyPrint()) {
+				builder.append(elements.replace(System.lineSeparator(), System.lineSeparator() + config.indent())).append(System.lineSeparator());
+			} else {
+				builder.append(elements);
+			}
 		}
 		return builder.append("</").append(this.getName()).append(">").toString();
 	}
