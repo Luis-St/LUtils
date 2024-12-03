@@ -95,9 +95,9 @@ class PropertyConfigTest {
 	@Test
 	void commentCharacters() {
 		assertNotNull(DEFAULT_CONFIG.commentCharacters());
-		assertIterableEquals(Set.of('#'), DEFAULT_CONFIG.commentCharacters());
+		assertEquals(Set.of('#'), DEFAULT_CONFIG.commentCharacters());
 		assertNotNull(CUSTOM_CONFIG.commentCharacters());
-		assertIterableEquals(Set.of(';'), CUSTOM_CONFIG.commentCharacters());
+		assertEquals(Set.of(';'), CUSTOM_CONFIG.commentCharacters());
 	}
 	
 	@Test

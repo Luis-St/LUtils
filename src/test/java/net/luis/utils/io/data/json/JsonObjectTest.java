@@ -117,9 +117,9 @@ class JsonObjectTest {
 	@Test
 	void keySet() {
 		JsonObject object = new JsonObject();
-		assertIterableEquals(Set.of(), object.keySet());
+		assertEquals(Set.of(), object.keySet());
 		object.add("key", JsonNull.INSTANCE);
-		assertIterableEquals(Set.of("key"), object.keySet());
+		assertEquals(Set.of("key"), object.keySet());
 	}
 	
 	@Test
@@ -133,9 +133,9 @@ class JsonObjectTest {
 	@Test
 	void entrySet() {
 		JsonObject object = new JsonObject();
-		assertIterableEquals(Set.of(), object.entrySet());
+		assertEquals(Set.of(), object.entrySet());
 		object.add("key", JsonNull.INSTANCE);
-		assertIterableEquals(Set.of(Map.entry("key", JsonNull.INSTANCE)), object.entrySet());
+		assertEquals(Set.of(Map.entry("key", JsonNull.INSTANCE)), object.entrySet());
 	}
 	
 	@Test
