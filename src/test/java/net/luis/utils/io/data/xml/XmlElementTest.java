@@ -219,7 +219,7 @@ class XmlElementTest {
 	
 	@Test
 	void getAttributeAs() {
-		ValueParser<String, List<Boolean>> parser = string -> new ScopedStringReader(string).readList(StringReader::readBoolean);
+		ValueParser<String, List<Boolean>> parser = string -> new ScopedStringReader(String.valueOf(string)).readList(StringReader::readBoolean);
 		
 		XmlElement element = new XmlElement("test");
 		assertThrows(NullPointerException.class, () -> element.getAttributeAsDouble(null));

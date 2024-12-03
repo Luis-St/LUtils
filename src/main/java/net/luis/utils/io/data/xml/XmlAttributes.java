@@ -124,6 +124,7 @@ public class XmlAttributes {
 	 * @param name The name of the attribute
 	 * @param value The string value of the attribute
 	 * @return The previous attribute with the same name, or null if there was none
+	 * @throws NullPointerException If the given name is null
 	 * @see #add(XmlAttribute)
 	 * @see XmlAttribute#XmlAttribute(String, String)
 	 */
@@ -136,6 +137,7 @@ public class XmlAttributes {
 	 * @param name The name of the attribute
 	 * @param value The boolean value of the attribute
 	 * @return The previous attribute with the same name, or null if there was none
+	 * @throws NullPointerException If the given name is null
 	 * @see #add(XmlAttribute)
 	 * @see XmlAttribute#XmlAttribute(String, boolean)
 	 */
@@ -148,6 +150,7 @@ public class XmlAttributes {
 	 * @param name The name of the attribute
 	 * @param value The number value of the attribute
 	 * @return The previous attribute with the same name, or null if there was none
+	 * @throws NullPointerException If the given name is null
 	 * @see #add(XmlAttribute)
 	 * @see XmlAttribute#XmlAttribute(String, Number)
 	 */
@@ -160,7 +163,9 @@ public class XmlAttributes {
 	 * @param name The name of the attribute
 	 * @param value The byte value of the attribute
 	 * @return The previous attribute with the same name, or null if there was none
+	 * @throws NullPointerException If the given name is null
 	 * @see #add(XmlAttribute)
+	 * @see XmlAttribute#XmlAttribute(String, Number)
 	 */
 	public @Nullable XmlAttribute add(@NotNull String name, byte value) {
 		return this.add(new XmlAttribute(name, value));
@@ -171,6 +176,9 @@ public class XmlAttributes {
 	 * @param name The name of the attribute
 	 * @param value The short value of the attribute
 	 * @return The previous attribute with the same name, or null if there was none
+	 * @throws NullPointerException If the given name is null
+	 * @see #add(XmlAttribute)
+	 * @see XmlAttribute#XmlAttribute(String, Number)
 	 */
 	public @Nullable XmlAttribute add(@NotNull String name, short value) {
 		return this.add(new XmlAttribute(name, value));
@@ -181,6 +189,9 @@ public class XmlAttributes {
 	 * @param name The name of the attribute
 	 * @param value The integer value of the attribute
 	 * @return The previous attribute with the same name, or null if there was none
+	 * @throws NullPointerException If the given name is null
+	 * @see #add(XmlAttribute)
+	 * @see XmlAttribute#XmlAttribute(String, Number)
 	 */
 	public @Nullable XmlAttribute add(@NotNull String name, int value) {
 		return this.add(new XmlAttribute(name, value));
@@ -191,6 +202,9 @@ public class XmlAttributes {
 	 * @param name The name of the attribute
 	 * @param value The long value of the attribute
 	 * @return The previous attribute with the same name, or null if there was none
+	 * @throws NullPointerException If the given name is null
+	 * @see #add(XmlAttribute)
+	 * @see XmlAttribute#XmlAttribute(String, Number)
 	 */
 	public @Nullable XmlAttribute add(@NotNull String name, long value) {
 		return this.add(new XmlAttribute(name, value));
@@ -201,6 +215,9 @@ public class XmlAttributes {
 	 * @param name The name of the attribute
 	 * @param value The float value of the attribute
 	 * @return The previous attribute with the same name, or null if there was none
+	 * @throws NullPointerException If the given name is null
+	 * @see #add(XmlAttribute)
+	 * @see XmlAttribute#XmlAttribute(String, Number)
 	 */
 	public @Nullable XmlAttribute add(@NotNull String name, float value) {
 		return this.add(new XmlAttribute(name, value));
@@ -211,6 +228,9 @@ public class XmlAttributes {
 	 * @param name The name of the attribute
 	 * @param value The double value of the attribute
 	 * @return The previous attribute with the same name, or null if there was none
+	 * @throws NullPointerException If the given name is null
+	 * @see #add(XmlAttribute)
+	 * @see XmlAttribute#XmlAttribute(String, Number)
 	 */
 	public @Nullable XmlAttribute add(@NotNull String name, double value) {
 		return this.add(new XmlAttribute(name, value));

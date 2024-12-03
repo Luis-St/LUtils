@@ -425,7 +425,7 @@ public class XmlElements {
 		}
 		Map<String, XmlElement> elements = Maps.newLinkedHashMap();
 		this.elements.forEach((name, list) -> elements.put(name, list.getFirst()));
-		return Map.copyOf(elements);
+		return Collections.unmodifiableMap(elements);
 	}
 	//endregion
 	

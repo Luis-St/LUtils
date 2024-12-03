@@ -148,14 +148,14 @@ class XmlContainerTest {
 	@Test
 	void nameSet() {
 		XmlContainer container = new XmlContainer("test");
-		assertIterableEquals(Set.of(), container.nameSet());
+		assertEquals(Set.of(), container.nameSet());
 		container.add(new XmlElement("test1"));
-		assertIterableEquals(Set.of("test1"), container.nameSet());
+		assertEquals(Set.of("test1"), container.nameSet());
 		container.add(new XmlElement("test2"));
-		assertIterableEquals(Set.of("test2", "test1"), container.nameSet());
+		assertEquals(Set.of("test1", "test2"), container.nameSet());
 		container.remove("test2");
 		container.add(new XmlElement("test1"));
-		assertIterableEquals(Set.of("test1"), container.nameSet());
+		assertEquals(Set.of("test1"), container.nameSet());
 	}
 	
 	@Test
@@ -303,7 +303,7 @@ class XmlContainerTest {
 		assertEquals("<test test=\"test\">" + System.lineSeparator() + "\t<test1/>" + System.lineSeparator() + "</test>", container.toString(XmlConfig.DEFAULT));
 		
 		container.add(new XmlElement("test2"));
-		assertEquals("<test test=\"test\">" + System.lineSeparator() +"\t<test1/>" + System.lineSeparator() + "\t<test2/>" + System.lineSeparator() +"</test>", container.toString(XmlConfig.DEFAULT));
+		assertEquals("<test test=\"test\">" + System.lineSeparator() + "\t<test1/>" + System.lineSeparator() + "\t<test2/>" + System.lineSeparator() + "</test>", container.toString(XmlConfig.DEFAULT));
 		
 		container.remove("test2");
 		container.add(new XmlElement("test1"));

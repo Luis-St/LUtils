@@ -338,10 +338,15 @@ public class XmlAttribute {
 	 * @return The value as the result of the parser
 	 * @param <T> The type of the result
 	 * @throws NullPointerException If the parser is null
+	 * @throws IllegalArgumentException If the parser is unable to parse the value
 	 */
 	public <T> @NotNull T getAs(@NotNull ValueParser<String, T> parser) {
 		Objects.requireNonNull(parser, "Parser must not be null");
-		return parser.parse(this.value);
+		try {
+			return parser.parse(this.value);
+		} catch (Exception e) {
+			throw new IllegalArgumentException(e.getMessage(), e.getCause());
+		}
 	}
 	
 	/**
