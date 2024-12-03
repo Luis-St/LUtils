@@ -20,44 +20,41 @@ package net.luis.utils.io.data.properties.exception;
 
 import org.jetbrains.annotations.Nullable;
 
-import java.io.IOException;
-
 /**
- * Thrown when the value of a property does not meet the set requirements.<br>
- * The exception message should contain details about the error.<br>
- * The message may also contain information about the requirements of the value.<br>
+ * Thrown to indicate that the syntax of a property string is invalid.<br>
+ * The exception message will contain the details of the syntax error.<br>
  *
  * @author Luis-St
  */
-public class IllegalPropertyValueException extends IOException {
+public class PropertySyntaxException extends RuntimeException {
 	
 	/**
-	 * Constructs a new illegal property value exception with no details.<br>
+	 * Constructs a new property syntax exception with no details.<br>
 	 */
-	public IllegalPropertyValueException() {}
+	public PropertySyntaxException() {}
 	
 	/**
-	 * Constructs a new illegal property value exception with the specified message.<br>
+	 * Constructs a new property syntax exception with the specified message.<br>
 	 * @param message The message of the exception
 	 */
-	public IllegalPropertyValueException(@Nullable String message) {
+	public PropertySyntaxException(@Nullable String message) {
 		super(message);
 	}
 	
 	/**
-	 * Constructs a new illegal property value exception with the specified message and cause.<br>
+	 * Constructs a new property syntax exception with the specified message and cause.<br>
 	 * @param message The message of the exception
 	 * @param cause The cause of the exception
 	 */
-	public IllegalPropertyValueException(@Nullable String message, @Nullable Throwable cause) {
+	public PropertySyntaxException(@Nullable String message, @Nullable Throwable cause) {
 		super(message, cause);
 	}
 	
 	/**
-	 * Constructs a new illegal property value exception with the specified cause.<br>
+	 * Constructs a new property syntax exception with the specified cause.<br>
 	 * @param cause The cause of the exception
 	 */
-	public IllegalPropertyValueException(@Nullable Throwable cause) {
+	public PropertySyntaxException(@Nullable Throwable cause) {
 		super(cause);
 	}
 }

@@ -20,8 +20,7 @@ package net.luis.utils.io.data.properties;
 
 import net.luis.utils.io.data.config.ReadOnly;
 import net.luis.utils.io.data.config.WriteOnly;
-import net.luis.utils.io.data.properties.exception.IllegalPropertyKeyException;
-import net.luis.utils.io.data.properties.exception.IllegalPropertyValueException;
+import net.luis.utils.io.data.properties.exception.PropertySyntaxException;
 import org.jetbrains.annotations.NotNull;
 
 import java.nio.charset.Charset;
@@ -95,15 +94,15 @@ public record PropertyConfig(
 	 * Checks whether the given key matches the key pattern.<br>
 	 * @param key The key to check
 	 * @throws NullPointerException If the key is null
-	 * @throws IllegalPropertyKeyException If the key is blank or does not match the key pattern
+	 * @throws PropertySyntaxException If the key is blank or does not match the key pattern
 	 */
-	public void ensureKeyMatches(@NotNull String key) throws IllegalPropertyKeyException {
+	public void ensureKeyMatches(@NotNull String key) {
 		Objects.requireNonNull(key, "Key must not be null");
 		if (key.isBlank()) {
-			throw new IllegalPropertyKeyException("Property key must not be empty");
+			throw new PropertySyntaxException("Property key must not be empty");
 		}
 		if (!this.keyPattern.matcher(key).matches()) {
-			throw new IllegalPropertyKeyException("Property key '" + key + "' does not match the pattern '" + this.keyPattern.pattern() + "' defined in property config");
+			throw new PropertySyntaxException("Property key '" + key + "' does not match the pattern '" + this.keyPattern.pattern() + "' defined in property config");
 		}
 	}
 	
@@ -111,12 +110,12 @@ public record PropertyConfig(
 	 * Checks whether the given value matches the value pattern.<br>
 	 * @param value The value to check
 	 * @throws NullPointerException If the value is null
-	 * @throws IllegalPropertyValueException If the value does not match the value pattern
+	 * @throws PropertySyntaxException If the value does not match the value pattern
 	 */
-	public void ensureValueMatches(@NotNull String value) throws IllegalPropertyValueException {
+	public void ensureValueMatches(@NotNull String value) {
 		Objects.requireNonNull(value, "Value must not be null");
 		if (!this.valuePattern.matcher(value).matches()) {
-			throw new IllegalPropertyValueException("Property value '" + value + "' does not match the pattern '" + this.valuePattern.pattern() + "' defined in property config");
+			throw new PropertySyntaxException("Property value '" + value + "' does not match the pattern '" + this.valuePattern.pattern() + "' defined in property config");
 		}
 	}
 }

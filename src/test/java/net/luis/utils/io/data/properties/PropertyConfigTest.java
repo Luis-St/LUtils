@@ -18,8 +18,7 @@
 
 package net.luis.utils.io.data.properties;
 
-import net.luis.utils.io.data.properties.exception.IllegalPropertyKeyException;
-import net.luis.utils.io.data.properties.exception.IllegalPropertyValueException;
+import net.luis.utils.io.data.properties.exception.PropertySyntaxException;
 import org.junit.jupiter.api.Test;
 
 import java.nio.charset.StandardCharsets;
@@ -53,16 +52,16 @@ class PropertyConfigTest {
 	@Test
 	void ensureKeyMatches() {
 		assertThrows(NullPointerException.class, () -> DEFAULT_CONFIG.ensureKeyMatches(null));
-		assertThrows(IllegalPropertyKeyException.class, () -> DEFAULT_CONFIG.ensureKeyMatches(""));
-		assertThrows(IllegalPropertyKeyException.class, () -> DEFAULT_CONFIG.ensureKeyMatches(" "));
+		assertThrows(PropertySyntaxException.class, () -> DEFAULT_CONFIG.ensureKeyMatches(""));
+		assertThrows(PropertySyntaxException.class, () -> DEFAULT_CONFIG.ensureKeyMatches(" "));
 		assertDoesNotThrow(() -> DEFAULT_CONFIG.ensureKeyMatches("this.is-a_key.123_example"));
 		assertDoesNotThrow(() -> DEFAULT_CONFIG.ensureKeyMatches("THIS.IS-A_KEY.123_EXAMPLE"));
 		
 		assertThrows(NullPointerException.class, () -> CUSTOM_CONFIG.ensureKeyMatches(null));
-		assertThrows(IllegalPropertyKeyException.class, () -> CUSTOM_CONFIG.ensureKeyMatches(""));
-		assertThrows(IllegalPropertyKeyException.class, () -> CUSTOM_CONFIG.ensureKeyMatches(" "));
-		assertThrows(IllegalPropertyKeyException.class, () -> CUSTOM_CONFIG.ensureKeyMatches("this.is-a.key"));
-		assertThrows(IllegalPropertyKeyException.class, () -> CUSTOM_CONFIG.ensureKeyMatches("this.123.key"));
+		assertThrows(PropertySyntaxException.class, () -> CUSTOM_CONFIG.ensureKeyMatches(""));
+		assertThrows(PropertySyntaxException.class, () -> CUSTOM_CONFIG.ensureKeyMatches(" "));
+		assertThrows(PropertySyntaxException.class, () -> CUSTOM_CONFIG.ensureKeyMatches("this.is-a.key"));
+		assertThrows(PropertySyntaxException.class, () -> CUSTOM_CONFIG.ensureKeyMatches("this.123.key"));
 		assertDoesNotThrow(() -> CUSTOM_CONFIG.ensureKeyMatches("this.is.a_key.example"));
 	}
 	
@@ -74,8 +73,8 @@ class PropertyConfigTest {
 		assertDoesNotThrow(() -> DEFAULT_CONFIG.ensureValueMatches("[10, 20, 30]"));
 		
 		assertThrows(NullPointerException.class, () -> CUSTOM_CONFIG.ensureValueMatches(null));
-		assertThrows(IllegalPropertyValueException.class, () -> CUSTOM_CONFIG.ensureValueMatches("$abc"));
-		assertThrows(IllegalPropertyValueException.class, () -> CUSTOM_CONFIG.ensureValueMatches("[10, 20, 30]"));
+		assertThrows(PropertySyntaxException.class, () -> CUSTOM_CONFIG.ensureValueMatches("$abc"));
+		assertThrows(PropertySyntaxException.class, () -> CUSTOM_CONFIG.ensureValueMatches("[10, 20, 30]"));
 		assertDoesNotThrow(() -> CUSTOM_CONFIG.ensureValueMatches(""));
 		assertDoesNotThrow(() -> CUSTOM_CONFIG.ensureValueMatches("abc"));
 	}

@@ -23,16 +23,16 @@ import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
- * Test class for {@link IllegalPropertyKeyPartException}.<br>
+ * Test class for {@link PropertySyntaxException}.<br>
  *
  * @author Luis-St
  */
-class IllegalPropertyKeyPartExceptionTest {
+class PropertySyntaxExceptionTest {
 	
 	@Test
 	void constructor() {
-		assertDoesNotThrow(() -> new IllegalPropertyKeyPartException((String) null));
-		assertDoesNotThrow(() -> new IllegalPropertyKeyPartException((Throwable) null));
-		assertDoesNotThrow(() -> new IllegalPropertyKeyPartException(null, null));
+		assertDoesNotThrow(() -> new PropertySyntaxException((String) null));
+		assertDoesNotThrow(() -> new PropertySyntaxException((Throwable) null));
+		assertDoesNotThrow(() -> new PropertySyntaxException(null, null));
 	}
 }
