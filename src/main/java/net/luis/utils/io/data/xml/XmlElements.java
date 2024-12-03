@@ -302,7 +302,7 @@ public class XmlElements {
 	 * @param name The name of the element to get
 	 * @return The element with the given name or null if no element with the name exists
 	 * @throws XmlTypeException If the collection is an array
-	 * @see #get(int) 
+	 * @see #get(int)
 	 */
 	public @Nullable XmlElement get(@Nullable String name) {
 		if (this.isArray()) {
@@ -321,7 +321,7 @@ public class XmlElements {
 	 * @return The element with the given name as a container
 	 * @throws XmlTypeException If the collection is an array
 	 * @throws NoSuchXmlElementException If no element with the given name exists
-	 * @see #get(String) 
+	 * @see #get(String)
 	 */
 	public @NotNull XmlContainer getAsContainer(@Nullable String name) {
 		XmlElement element = this.get(name);

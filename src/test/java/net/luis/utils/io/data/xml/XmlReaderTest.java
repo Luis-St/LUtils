@@ -100,7 +100,7 @@ class XmlReaderTest {
 		XmlReader emptyReader = new XmlReader(dec + "<test></test>");
 		emptyReader.readDeclaration();
 		assertEquals(new XmlValue("test", ""), emptyReader.readXmlElement());
-	
+		
 		XmlReader valueReader = new XmlReader(dec + "<test>value</test>");
 		valueReader.readDeclaration();
 		assertEquals(new XmlValue("test", "value"), valueReader.readXmlElement());
@@ -110,7 +110,7 @@ class XmlReaderTest {
 		XmlValue attributeElement = new XmlValue("test", "");
 		attributeElement.addAttribute("attribute1", "value1");
 		assertEquals(attributeElement, attributeReader.readXmlElement());
-	
+		
 		XmlReader multipleAttributesReader = new XmlReader(dec + "<test attribute1=\"value1\" attribute2=\"value2\"></test>");
 		multipleAttributesReader.readDeclaration();
 		attributeElement.addAttribute("attribute2", "value2");

@@ -218,7 +218,7 @@ public class PropertyReader implements AutoCloseable {
 	 * @see #parsePropertySimple(String, String)
 	 * @see #resolveAdvancedKeys(String)
 	 */
-	private @NotNull @Unmodifiable List<Property> parseProperty(@NotNull String rawKey, @NotNull String rawValue){
+	private @NotNull @Unmodifiable List<Property> parseProperty(@NotNull String rawKey, @NotNull String rawValue) {
 		Objects.requireNonNull(rawKey, "Key must not be null");
 		Objects.requireNonNull(rawValue, "Value must not be null");
 		int alignment = this.getWhitespaceAlignmentCount(rawKey);
