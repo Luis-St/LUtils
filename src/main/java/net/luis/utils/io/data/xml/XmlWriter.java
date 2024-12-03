@@ -70,6 +70,7 @@ public class XmlWriter implements AutoCloseable {
 	 * Writes the given xml declaration to the output.<br>
 	 * @param declaration The xml declaration to write
 	 * @throws NullPointerException If the xml declaration is null
+	 * @throws IllegalStateException If the xml declaration was already written (strict mode)
 	 * @throws UncheckedIOException If an I/O error occurs
 	 */
 	public void writeDeclaration(@NotNull XmlDeclaration declaration) {
@@ -77,11 +78,16 @@ public class XmlWriter implements AutoCloseable {
 		if (!this.wroteDeclaration) {
 			try {
 				this.writer.write(declaration.toString());
+				if (this.config.prettyPrint()) {
+					this.writer.newLine();
+				}
 				this.writer.flush();
 				this.wroteDeclaration = true;
 			} catch (IOException e) {
 				throw new UncheckedIOException("An I/O error occurred while writing the xml declaration", e);
 			}
+		} else if (this.config.strict()) {
+			throw new IllegalStateException("The xml declaration was already written");
 		}
 	}
 	
@@ -89,12 +95,17 @@ public class XmlWriter implements AutoCloseable {
 	 * Writes the given xml element to the output.<br>
 	 * @param element The xml element to write
 	 * @throws NullPointerException If the xml element is null
+	 * @throws IllegalStateException If the xml declaration was not written before the xml element (strict mode)
 	 * @throws UncheckedIOException If an I/O error occurs
 	 */
 	public void writeXml(@NotNull XmlElement element) {
 		Objects.requireNonNull(element, "Xml element must not be null");
 		if (!this.wroteDeclaration) {
-			this.writeDeclaration(new XmlDeclaration(Version.of(1, 0)));
+			if (this.config.strict()) {
+				throw new IllegalStateException("The xml declaration must be written before the xml element");
+			} else {
+				this.writeDeclaration(new XmlDeclaration(Version.of(1, 0)));
+			}
 		}
 		try {
 			this.writer.write(element.toString(this.config));

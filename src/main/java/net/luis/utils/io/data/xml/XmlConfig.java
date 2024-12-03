@@ -18,7 +18,6 @@
 
 package net.luis.utils.io.data.xml;
 
-import net.luis.utils.io.data.config.ReadOnly;
 import net.luis.utils.io.data.config.WriteOnly;
 import org.jetbrains.annotations.NotNull;
 
@@ -31,7 +30,7 @@ import java.util.Objects;
  *
  * @author Luis-St
  *
- * @param strict Whether to use strict xml parsing when reading (read-only)
+ * @param strict Whether to use strict xml parsing when reading
  * @param prettyPrint Whether to pretty print the xml (write-only)
  * @param indent The string to use for indentation (write-only)
  * @param allowAttributes Whether to allow attributes in xml elements
@@ -39,7 +38,7 @@ import java.util.Objects;
  * @param charset The charset to use for reading and writing
  */
 public record XmlConfig(
-	@ReadOnly boolean strict,
+	boolean strict,
 	@WriteOnly boolean prettyPrint,
 	@WriteOnly("prettyPrint") @NotNull String indent,
 	boolean allowAttributes,
@@ -60,7 +59,7 @@ public record XmlConfig(
 	
 	/**
 	 * Constructs a new xml configuration.<br>
-	 * @param strict Whether to use strict xml parsing when reading (read-only)
+	 * @param strict Whether to use strict xml parsing when reading
 	 * @param prettyPrint Whether to pretty print the xml (write-only)
 	 * @param indent The string to use for indentation (write-only)
 	 * @param allowAttributes Whether to allow attributes in xml elements
