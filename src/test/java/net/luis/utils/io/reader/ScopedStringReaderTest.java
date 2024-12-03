@@ -221,21 +221,25 @@ class ScopedStringReaderTest {
 	
 	@Test
 	void readList() {
-		ScopedStringReader reader = new ScopedStringReader("[ true , false ] [  10.0  ,  15.5  ,  20.6  ,  25.89  ] [10,15,20,25] [\"Hello\", \"World\"] [[\"str1\"], [\"str1\", \"str2\"]]");
-		assertEquals(List.of(true, false), reader.readList(StringReader::readBoolean));
+		ScopedStringReader reader = new ScopedStringReader("[] [ true , false ] [  10.0  ,  15.5  ,  20.6  ,  25.89  ] [10,15,20,25] [\"Hello\", \"World\"] [[\"str1\"], [\"str1\", \"str2\"]]");
+		assertIterableEquals(List.of(), reader.readList(StringReader::readBoolean));
 		assertEquals(' ', reader.read());
-		assertEquals(List.of(10.0, 15.5, 20.6, 25.89), reader.readList(StringReader::readDouble));
+		assertIterableEquals(List.of(true, false), reader.readList(StringReader::readBoolean));
 		assertEquals(' ', reader.read());
-		assertEquals(List.of(10, 15, 20, 25), reader.readList(StringReader::readInt));
+		assertIterableEquals(List.of(10.0, 15.5, 20.6, 25.89), reader.readList(StringReader::readDouble));
 		assertEquals(' ', reader.read());
-		assertEquals(List.of("Hello", "World"), reader.readList(StringReader::readString));
+		assertIterableEquals(List.of(10, 15, 20, 25), reader.readList(StringReader::readInt));
 		assertEquals(' ', reader.read());
-		assertEquals(List.of(List.of("str1"), List.of("str1", "str2")), reader.readList(r -> r.readList(StringReader::readString)));
+		assertIterableEquals(List.of("Hello", "World"), reader.readList(StringReader::readString));
+		assertEquals(' ', reader.read());
+		assertIterableEquals(List.of(List.of("str1"), List.of("str1", "str2")), reader.readList(r -> r.readList(StringReader::readString)));
 	}
 	
 	@Test
 	void readSet() {
-		ScopedStringReader reader = new ScopedStringReader("( true , false ) (  10.0  ,  15.5  ,  20.6  ,  25.89  ) (10,15,20,25) (\"Hello\", \"World\") ([\"str1\"], [\"str1\", \"str2\"])");
+		ScopedStringReader reader = new ScopedStringReader("() ( true , false ) (  10.0  ,  15.5  ,  20.6  ,  25.89  ) (10,15,20,25) (\"Hello\", \"World\") ([\"str1\"], [\"str1\", \"str2\"])");
+		assertEquals(Set.of(), reader.readSet(StringReader::readBoolean));
+		assertEquals(' ', reader.read());
 		assertEquals(Set.of(true, false), reader.readSet(StringReader::readBoolean));
 		assertEquals(' ', reader.read());
 		assertEquals(Set.of(10.0, 15.5, 20.6, 25.89), reader.readSet(StringReader::readDouble));
@@ -249,7 +253,9 @@ class ScopedStringReaderTest {
 	
 	@Test
 	void readMap() {
-		ScopedStringReader reader = new ScopedStringReader("{key1= value1, key2= value2} {key1=10, key2=20} {0=\"Hello\", 1=\"World\"} { 0.0 = [ \"str1\" ], 1.0 = [ \"str1\" , \"str2\" ] }");
+		ScopedStringReader reader = new ScopedStringReader("{} {key1= value1, key2= value2} {key1=10, key2=20} {0=\"Hello\", 1=\"World\"} { 0.0 = [ \"str1\" ], 1.0 = [ \"str1\" , \"str2\" ] }");
+		assertEquals(Map.of(), reader.readMap(StringReader::readString, StringReader::readString));
+		assertEquals(' ', reader.read());
 		assertEquals(Map.of("key1", "value1", "key2", "value2"), reader.readMap(StringReader::readString, StringReader::readString));
 		assertEquals(' ', reader.read());
 		assertEquals(Map.of("key1", 10, "key2", 20), reader.readMap(StringReader::readString, StringReader::readInt));

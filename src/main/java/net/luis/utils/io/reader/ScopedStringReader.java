@@ -407,6 +407,10 @@ public class ScopedStringReader extends StringReader {
 		reader.skipWhitespaces();
 		List<T> collection = new ArrayList<>();
 		while (reader.canRead()) {
+			if (reader.peek() == scope.close) {
+				reader.skip();
+				break;
+			}
 			String value = reader.readUntil(',').strip();
 			if (value.isEmpty()) {
 				continue;
