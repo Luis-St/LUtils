@@ -20,6 +20,8 @@ package net.luis.utils.math;
 
 import org.junit.jupiter.api.Test;
 
+import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.util.Random;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -164,5 +166,19 @@ class MthTest {
 		assertTrue(Mth.isPowerOfTwo(2));
 		assertFalse(Mth.isPowerOfTwo(3));
 		assertTrue(Mth.isPowerOfTwo(4));
+	}
+	
+	@Test
+	void parseHexToBigDecimal() {
+		assertThrows(NullPointerException.class, () -> Mth.parseHexToBigDecimal(null));
+		assertThrows(NumberFormatException.class, () -> Mth.parseHexToBigDecimal("10"));
+		assertThrows(NumberFormatException.class, () -> Mth.parseHexToBigDecimal("0xf.f"));
+		assertEquals(new BigDecimal("255"), Mth.parseHexToBigDecimal("0xF.Fp+4"));
+		assertEquals(new BigDecimal("0"), Mth.parseHexToBigDecimal("0x1.9Ap-4"));
+		assertEquals(new BigDecimal("-2"), Mth.parseHexToBigDecimal("-0x1p+1"));
+		assertEquals(new BigDecimal("16"), Mth.parseHexToBigDecimal("+0x1p+4"));
+		assertEquals(new BigDecimal("4"), Mth.parseHexToBigDecimal("0x1.p2"));
+		assertEquals(new BigDecimal("1"), Mth.parseHexToBigDecimal("0x10p-4"));
+		assertEquals(new BigDecimal(BigInteger.valueOf(2).pow(4096)), Mth.parseHexToBigDecimal("0x1p+4096"));
 	}
 }

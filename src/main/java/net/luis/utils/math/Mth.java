@@ -18,9 +18,11 @@
 
 package net.luis.utils.math;
 
+import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.math.*;
 import java.util.Objects;
 import java.util.Random;
 import java.util.stream.*;
@@ -409,5 +411,62 @@ public class Mth {
 	 */
 	public static boolean isPowerOfTwo(int value) {
 		return value != 0 && (value & value - 1) == 0;
+	}
+	
+	/**
+	 * Parses the given hexadecimal string to a big decimal.<br>
+	 * @param hex The hexadecimal string
+	 * @return The parsed big decimal
+	 * @throws NullPointerException If the given hexadecimal string is null
+	 * @throws NumberFormatException If the given hexadecimal string is not a valid hexadecimal floating point constant
+	 */
+	public static @NotNull BigDecimal parseHexToBigDecimal(@NotNull String hex) {
+		Objects.requireNonNull(hex, "Hexadecimal string must not be null");
+		BigDecimal sign = BigDecimal.ONE;
+		if (hex.startsWith("-")) {
+			hex = hex.substring(1);
+			sign = BigDecimal.valueOf(-1);
+		} else if (hex.startsWith("+")) {
+			hex = hex.substring(1);
+		}
+		if (!StringUtils.startsWithIgnoreCase(hex, "0x")) {
+			throw new NumberFormatException("Not a hexadecimal floating point constant: " + hex);
+		}
+		hex = hex.substring(2);
+		int p = hex.toLowerCase().indexOf("p");
+		if (0 > p) {
+			throw new NumberFormatException("Not a hexadecimal floating point constant: " + hex);
+		}
+		return getBigDecimal(hex, p).multiply(sign);
+	}
+	
+	/**
+	 * Parses the actual hexadecimal string to a big decimal.<br>
+	 * @param hex The hexadecimal string
+	 * @param p The index of the exponent
+	 * @return The parsed big decimal
+	 * @throws NullPointerException If the given hexadecimal string is null
+	 */
+	private static @NotNull BigDecimal getBigDecimal(@NotNull String hex, int p) {
+		Objects.requireNonNull(hex, "Hexadecimal string must not be null");
+		String mantissa = hex.substring(0, p);
+		String exponent = hex.substring(p + 1);
+		
+		int hexadecimalPlaces = 0;
+		if (mantissa.contains(".")) {
+			int dot = mantissa.indexOf(".");
+			hexadecimalPlaces = mantissa.length() - 1 - dot;
+			mantissa = mantissa.substring(0, dot) + mantissa.substring(dot + 1);
+		}
+		
+		int binaryExponent = Integer.parseInt(exponent) - (hexadecimalPlaces * 4);
+		boolean positive = binaryExponent >= 0;
+		if (0 > binaryExponent) {
+			binaryExponent = -binaryExponent;
+		}
+		
+		BigDecimal base = new BigDecimal(new BigInteger(mantissa, 16));
+		BigDecimal factor = new BigDecimal(BigInteger.TWO.pow(binaryExponent));
+		return positive ? base.multiply(factor) : base.divide(factor, RoundingMode.HALF_DOWN);
 	}
 }

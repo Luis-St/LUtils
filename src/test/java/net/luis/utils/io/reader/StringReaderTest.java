@@ -386,7 +386,7 @@ class StringReaderTest {
 		reader.skip(4);
 		assertEquals(1, assertInstanceOf(Long.class, reader.readNumber()));
 		reader.skip();
-		assertEquals(3, (int) assertInstanceOf(Byte.class, reader.readNumber()));
+		assertEquals((byte) 3, assertInstanceOf(Byte.class, reader.readNumber()));
 		reader.skip();
 		assertEquals(2.0, assertInstanceOf(Double.class, reader.readNumber()), PRECISION);
 		reader.skip();
