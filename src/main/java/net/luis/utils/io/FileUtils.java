@@ -18,11 +18,13 @@
 
 package net.luis.utils.io;
 
+import net.luis.utils.io.data.InputProvider;
 import net.luis.utils.util.Pair;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.*;
 
 import java.io.*;
+import java.nio.charset.Charset;
 import java.nio.file.*;
 import java.nio.file.attribute.FileAttribute;
 import java.util.Comparator;
@@ -35,6 +37,12 @@ import java.util.stream.Stream;
  * @author Luis-St
  */
 public class FileUtils {
+	
+	/**
+	 * Private constructor to prevent instantiation.<br>
+	 * This is a static helper class.<br>
+	 */
+	private FileUtils() {}
 	
 	/**
 	 * Splits the given file into a pair of the folder and the file name.<br>
@@ -233,6 +241,55 @@ public class FileUtils {
 		}
 		try (Stream<Path> files = Files.walk(path)) {
 			files.sorted(Comparator.reverseOrder()).map(Path::toFile).forEach(File::delete);
+		}
+	}
+	
+	/**
+	 * Reads the content of the given input provider as a string.<br>
+	 * @param provider The input provider to read from
+	 * @return The content of the input provider
+	 * @throws NullPointerException If the provider is null
+	 * @throws IOException If an I/O error occurs
+	 */
+	@Blocking
+	public static @NotNull String readString(@NotNull InputProvider provider) throws IOException {
+		Objects.requireNonNull(provider, "Provider must not be null");
+		return readString(new InputStreamReader(provider.getStream()));
+	}
+	
+	/**
+	 * Reads the content of the given input provider as a string using the given charset.<br>
+	 * @param provider The input provider to read from
+	 * @param charset The charset to use
+	 * @return The content of the input provider
+	 * @throws NullPointerException If the provider or charset is null
+	 * @throws IOException If an I/O error occurs
+	 */
+	@Blocking
+	public static @NotNull String readString(@NotNull InputProvider provider, @NotNull Charset charset) throws IOException {
+		Objects.requireNonNull(provider, "Provider must not be null");
+		Objects.requireNonNull(charset, "Charset must not be null");
+		return readString(new InputStreamReader(provider.getStream(), charset));
+	}
+	
+	/**
+	 * Reads the content of the given reader as a string.<br>
+	 * @param reader The reader to read from
+	 * @return The content of the reader
+	 * @throws NullPointerException If the reader is null
+	 * @throws IOException If an I/O error occurs
+	 */
+	@Blocking
+	@SuppressWarnings("NestedAssignment")
+	public static @NotNull String readString(@NotNull Reader reader) throws IOException {
+		Objects.requireNonNull(reader, "Reader must not be null");
+		try (BufferedReader buffer = new BufferedReader(reader)) {
+			StringBuilder builder = new StringBuilder();
+			String line;
+			while ((line = buffer.readLine()) != null) {
+				builder.append(line).append("\n");
+			}
+			return builder.toString().stripTrailing();
 		}
 	}
 }

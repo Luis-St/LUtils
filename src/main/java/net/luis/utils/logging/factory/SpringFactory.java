@@ -42,7 +42,14 @@ import java.net.URI;
 public class SpringFactory extends ConfigurationFactory {
 	
 	/**
-	 * @return The supported file extensions of the factory
+	 * Constructs a new spring factory for logging configuration.<br>
+	 */
+	public SpringFactory() {}
+	
+	/**
+	 * Returns the supported file extensions of the factory.<br>
+	 * The factory does not depend on the file extension, so it supports all file extensions.<br>
+	 * @return The supported file extensions
 	 */
 	@Override
 	protected String @NotNull [] getSupportedTypes() {
@@ -50,6 +57,7 @@ public class SpringFactory extends ConfigurationFactory {
 	}
 	
 	/**
+	 * Creates a new configuration with no additional changes.<br>
 	 * @return The default configuration
 	 */
 	private @NotNull Configuration defaultConfiguration() {

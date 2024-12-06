@@ -72,6 +72,12 @@ public class StringUtils {
 	private static final String LANG_MATCH_IN_QUOTES = "lang.match.in.quotes";
 	
 	/**
+	 * Private constructor to prevent instantiation.<br>
+	 * This is a static helper class.<br>
+	 */
+	private StringUtils() {}
+	
+	/**
 	 * Gets the opposite bracket of the given {@code bracket}.<br>
 	 * If the given character is not a bracket, {@code '\0'} will be returned.<br>
 	 * <p>
@@ -878,5 +884,88 @@ public class StringUtils {
 			return false;
 		}
 		return pattern.matcher(str).matches();
+	}
+	
+	/**
+	 * Checks if the string contains the given target character.<br>
+	 * The target character will be ignored if it is escaped with a backslash.<br>
+	 * If the string is empty or null, false will be returned.<br>
+	 * <p>
+	 *     Examples:<br>
+	 * </p>
+	 * <pre>{@code
+	 * containsNotEscaped(null, *) -> false
+	 * containsNotEscaped("", *) -> false
+	 * containsNotEscaped("abc", 'a') -> true
+	 * containsNotEscaped("aba", 'c') -> false
+	 * containsNotEscaped("\\abc", 'a') -> false
+	 * containsNotEscaped("\\aba", 'a') -> true
+	 * }</pre>
+	 * @param str The string to check
+	 * @param target The target character to check
+	 * @return True if the string contains the target character not escaped, false otherwise
+	 */
+	public static boolean containsNotEscaped(@Nullable String str, char target) {
+		if (isEmpty(str)) {
+			return false;
+		}
+		boolean escaped = false;
+		for (int i = 0; i < str.length(); i++) {
+			char c = str.charAt(i);
+			if (c == '\\') {
+				escaped = !escaped;
+			} else if (c == target && !escaped) {
+				return true;
+			} else {
+				escaped = false;
+			}
+		}
+		return false;
+	}
+	
+	/**
+	 * Splits the given string by the given target character.<br>
+	 * The target character will be ignored if it is escaped with a backslash.<br>
+	 * If the string is empty or null, an empty array will be returned.<br>
+	 * <p>
+	 *     Examples:<br>
+	 * </p>
+	 * <pre>{@code
+	 * splitNotEscaped(null, *) -> []
+	 * splitNotEscaped("", *) -> []
+	 * splitNotEscaped("abc", 'b') -> ["a", "c"]
+	 * splitNotEscaped("a\\bc", 'b') -> ["abc"]
+	 * splitNotEscaped("a\\bc", 'c') -> ["a\\b"]
+	 * splitNotEscaped("a\\:b:c:d\\:e", ':') -> ["a\\:b", "c", "d\\:e"]
+	 * }</pre>
+	 * @param str The string to split
+	 * @param target The target character to split by
+	 * @return The parts of the string split by the target character
+	 */
+	public static String @NotNull [] splitNotEscaped(@Nullable String str, char target) {
+		if (isEmpty(str)) {
+			return ArrayUtils.EMPTY_STRING_ARRAY;
+		}
+		List<String> parts = Lists.newArrayList();
+		StringBuilder builder = new StringBuilder();
+		boolean escaped = false;
+		for (int i = 0; i < str.length(); i++) {
+			char c = str.charAt(i);
+			if (c == '\\') {
+				escaped = !escaped;
+				builder.append(c);
+			} else if (c == target && !escaped) {
+				parts.add(builder.toString());
+				builder.setLength(0);
+			} else {
+				builder.append(c);
+				escaped = false;
+			}
+		}
+		String remaining = builder.toString();
+		if (!remaining.isEmpty()) {
+			parts.add(remaining);
+		}
+		return parts.toArray(String[]::new);
 	}
 }

@@ -33,6 +33,7 @@ import java.util.function.Function;
  * @param <U> The type of the second argument
  * @param <V> The type of the third argument
  * @param <W> The type of the fourth argument
+ * @param <R> The type of the result
  */
 @FunctionalInterface
 public interface QuadFunction<T, U, V, W, R> {

@@ -90,7 +90,8 @@ public class Result<T> implements Supplier<Either<T, String>> {
 	}
 	
 	/**
-	 * @return The result of the operation as an {@link Optional}
+	 * Returns the result of the operation as an {@link Optional}.<br>
+	 * @return The result of the operation
 	 */
 	public @NotNull Optional<T> result() {
 		return this.result.left();
@@ -129,7 +130,8 @@ public class Result<T> implements Supplier<Either<T, String>> {
 	}
 	
 	/**
-	 * @return The error message of the result as an {@link Optional}
+	 * Returns the error message of the result as an {@link Optional}.<br>
+	 * @return The error message
 	 */
 	public @NotNull Optional<String> error() {
 		return this.result.right();

@@ -21,8 +21,8 @@ dependencies {
 	// Other
 	implementation "org.jetbrains:annotations:${JetBrainsAnnotations}" // Annotations
 	// Test
-	testImplementation "org.junit.jupiter:junit-jupiter-api:5.8.1"
-	testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:5.8.1"
+	testImplementation "org.junit.jupiter:junit-jupiter-api:5.11.0-M2"
+	testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:5.11.0-M2"
 }
 
 compileJava.dependsOn(updateLicenses)
@@ -35,6 +35,8 @@ license {
 
 test {
 	useJUnitPlatform()
+	environment("env.default", "3")
+	environment("env.custom", "c")
 }
 
 java {
@@ -66,7 +68,7 @@ publishing {
 		mavenJava(MavenPublication) {
 			groupId = "net.luis"
 			artifactId = "LUtils"
-			version = "5.15.0"
+			version = "6.0.0"
 			artifact jar
 			artifact sourcesJar
 			artifact javadocJar

@@ -35,6 +35,12 @@ import java.lang.annotation.*;
 public class Ignored {
 	
 	/**
+	 * Private constructor to prevent instantiation.<br>
+	 * This is a static helper class.<br>
+	 */
+	private Ignored() {}
+	
+	/**
 	 * Indicates that the parameter or local variable is always ignored.<br>
 	 * Passing a null value to a parameter or local variable that is annotated with this annotation<br>
 	 * will be safe and will not cause any errors.<br>

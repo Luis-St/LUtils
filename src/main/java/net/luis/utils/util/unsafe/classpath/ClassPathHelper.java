@@ -71,6 +71,12 @@ class ClassPathHelper {
 	private static final String UNSAFE_CLASSES_IGNORED = "unsafe.classes.ignored";
 	
 	/**
+	 * Private constructor to prevent instantiation.<br>
+	 * This is a static helper class.<br>
+	 */
+	private ClassPathHelper() {}
+	
+	/**
 	 * Gets all classes from the classpath.<br>
 	 * The classes will be filtered by the given condition.<br>
 	 * <p>

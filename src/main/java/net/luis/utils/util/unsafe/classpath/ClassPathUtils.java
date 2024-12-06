@@ -44,6 +44,12 @@ public class ClassPathUtils {
 	 */
 	private static final Logger LOGGER = LogManager.getLogger(ClassPathUtils.class);
 	
+	/**
+	 * Private constructor to prevent instantiation.<br>
+	 * This is a static helper class.<br>
+	 */
+	private ClassPathUtils() {}
+	
 	//region Classes
 	
 	/**

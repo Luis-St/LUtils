@@ -242,4 +242,10 @@ class UtilsTest {
 			assertTrue(4 >= value.get() && value.get() >= 0);
 		}
 	}
+	
+	@Test
+	void throwSneaky() {
+		assertThrows(NullPointerException.class, () -> Utils.throwSneaky(null));
+		assertThrows(IllegalMonitorStateException.class, () -> Utils.throwSneaky(new IllegalMonitorStateException()));
+	}
 }

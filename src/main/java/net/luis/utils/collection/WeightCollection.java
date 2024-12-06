@@ -29,6 +29,8 @@ import java.util.*;
  * The higher the weight, the higher the chance that the element is returned.<br>
  *
  * @author Luis-St
+ *
+ * @param <T> The type of the elements
  */
 @SuppressWarnings({ "UsingRandomNextDoubleForRandomInteger" })
 public class WeightCollection<T> {
@@ -125,6 +127,7 @@ public class WeightCollection<T> {
 	}
 	
 	/**
+	 * Checks if the collection is empty.<br>
 	 * @return True, if the collection is empty, otherwise false
 	 */
 	public boolean isEmpty() {
@@ -132,6 +135,7 @@ public class WeightCollection<T> {
 	}
 	
 	/**
+	 * Returns the number of elements in the collection.<br>
 	 * @return The size of the collection
 	 */
 	public int getSize() {
@@ -139,7 +143,8 @@ public class WeightCollection<T> {
 	}
 	
 	/**
-	 * @return The total weight of the collection
+	 * Returns the total weight of the collection.<br>
+	 * @return The total weight
 	 */
 	public int getTotal() {
 		return this.total;

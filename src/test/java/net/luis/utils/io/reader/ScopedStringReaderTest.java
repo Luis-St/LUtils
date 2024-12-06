@@ -22,6 +22,7 @@ import net.luis.utils.exception.InvalidStringException;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
+import java.io.Reader;
 import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -35,7 +36,8 @@ class ScopedStringReaderTest {
 	
 	@Test
 	void constructor() {
-		assertThrows(NullPointerException.class, () -> new ScopedStringReader(null));
+		assertThrows(NullPointerException.class, () -> new ScopedStringReader((String) null));
+		assertThrows(NullPointerException.class, () -> new ScopedStringReader((Reader) null));
 	}
 	
 	@Test
@@ -86,64 +88,6 @@ class ScopedStringReaderTest {
 	}
 	
 	@Test
-	void readUntil() {
-		ScopedStringReader reader = new ScopedStringReader("this is a simple \\test 'string for the' [string] {string = 10} \\reade\\r");
-		assertThrows(IllegalArgumentException.class, () -> reader.readUntil('\\'));
-		assertEquals("", reader.readUntil('t'));
-		assertEquals("his is a simple tes", reader.readUntil('t'));
-		reader.skip();
-		assertEquals("'string for the'", reader.readUntil(' '));
-		assertEquals("[string]", reader.readUntil(' '));
-		assertEquals("{string = 10}", reader.readUntil(' '));
-		assertEquals("reader", reader.readUntil('r'));
-		assertEquals("", reader.readUntil(' '));
-		
-		reader.reset();
-		
-		assertEquals("", reader.readUntil("ts"));
-		assertEquals("hi", reader.readUntil("ts"));
-		reader.skip();
-		assertEquals("is a simpl", reader.readUntil("et"));
-		reader.skip();
-		assertEquals("te", reader.readUntil("s "));
-		reader.skip(2);
-		assertEquals("'string for the'", reader.readUntil("s "));
-		assertEquals("[string]", reader.readUntil(" "));
-		assertEquals("{string = 10}", reader.readUntil("= "));
-		assertEquals("reader", reader.readUntil("r"));
-		assertEquals("", reader.readUntil(" "));
-	}
-	
-	@Test
-	void readUntilInclusive() {
-		ScopedStringReader reader = new ScopedStringReader("this is a simple \\test 'string for the' [string] {string = 10} \\reade\\r");
-		assertThrows(IllegalArgumentException.class, () -> reader.readUntilInclusive('\\'));
-		assertEquals("t", reader.readUntilInclusive('t'));
-		assertEquals("his is a simple test", reader.readUntilInclusive('t'));
-		reader.skip();
-		assertEquals("'string for the' ", reader.readUntilInclusive(' '));
-		assertEquals("[string] ", reader.readUntilInclusive(' '));
-		assertEquals("{string = 10} ", reader.readUntilInclusive(' '));
-		assertEquals("reader", reader.readUntilInclusive('r'));
-		assertEquals("", reader.readUntilInclusive(' '));
-		
-		reader.reset();
-		
-		assertEquals("t", reader.readUntilInclusive("ts"));
-		assertEquals("his", reader.readUntilInclusive("ts"));
-		reader.skip();
-		assertEquals("is a simple", reader.readUntilInclusive("et"));
-		reader.skip();
-		assertEquals("tes", reader.readUntilInclusive("s "));
-		reader.skip(2);
-		assertEquals("'string for the' ", reader.readUntilInclusive("s "));
-		assertEquals("[string] ", reader.readUntilInclusive(" "));
-		assertEquals("{string = 10} ", reader.readUntilInclusive("= "));
-		assertEquals("reader", reader.readUntilInclusive("r"));
-		assertEquals("", reader.readUntilInclusive(" "));
-	}
-	
-	@Test
 	void readScopeSquareBrackets() {
 		ScopedStringReader success = new ScopedStringReader("[Hello] [World it is [nice here]]");
 		assertEquals("[Hello]", success.readScope(ScopedStringReader.SQUARE_BRACKETS));
@@ -162,22 +106,140 @@ class ScopedStringReaderTest {
 	}
 	
 	@Test
+	void readScopeAngleBrackets() {
+		ScopedStringReader success = new ScopedStringReader("<Hello> <World it is <nice here>>");
+		assertEquals("<Hello>", success.readScope(ScopedStringReader.ANGLE_BRACKETS));
+		assertEquals(' ', success.read());
+		assertEquals("<World it is <nice here>>", success.readScope(ScopedStringReader.ANGLE_BRACKETS));
+		
+		ScopedStringReader failMissing = new ScopedStringReader("<Hello> <World it is <nice here>");
+		assertEquals("<Hello>", failMissing.readScope(ScopedStringReader.ANGLE_BRACKETS));
+		assertEquals(' ', failMissing.read());
+		assertThrows(InvalidStringException.class, () -> failMissing.readScope(ScopedStringReader.ANGLE_BRACKETS));
+		
+		ScopedStringReader failExtra = new ScopedStringReader("<Hello> <World <it is <nice here>>");
+		assertEquals("<Hello>", failExtra.readScope(ScopedStringReader.ANGLE_BRACKETS));
+		assertEquals(' ', failExtra.read());
+		assertThrows(InvalidStringException.class, () -> failExtra.readScope(ScopedStringReader.ANGLE_BRACKETS));
+	}
+	
+	@Test
+	void readUntil() {
+		ScopedStringReader reader = new ScopedStringReader("this is a sImple \\test 'string for the' [string] {string = 10} \\reade\\r");
+		assertThrows(IllegalArgumentException.class, () -> reader.readUntil('\\'));
+		assertEquals("", reader.readUntil('t'));
+		assertEquals("his is a sImple tes", reader.readUntil('t'));
+		reader.skip();
+		assertEquals("'string for the'", reader.readUntil(' '));
+		assertEquals("[string]", reader.readUntil(' '));
+		assertEquals("{string = 10}", reader.readUntil(' '));
+		assertEquals("reader", reader.readUntil('r'));
+		assertEquals("", reader.readUntil(' '));
+		
+		reader.reset();
+		
+		assertThrows(NullPointerException.class, () -> reader.readUntil((char[]) null));
+		assertThrows(IllegalArgumentException.class, reader::readUntil);
+		assertThrows(IllegalArgumentException.class, () -> reader.readUntil('\\'));
+		assertEquals("", reader.readUntil('t', 's'));
+		assertEquals("hi", reader.readUntil('t', 's'));
+		reader.skip();
+		assertEquals("is a sImpl", reader.readUntil('e', 't'));
+		reader.skip();
+		assertEquals("te", reader.readUntil('s', ' '));
+		reader.skip(2);
+		assertEquals("'string for the'", reader.readUntil('s', ' '));
+		assertEquals("[string]", reader.readUntil(' '));
+		assertEquals("{string = 10}", reader.readUntil('=', ' '));
+		assertEquals("reader", reader.readUntil('r'));
+		assertEquals("", reader.readUntil(' ', '\0'));
+		
+		reader.reset();
+		
+		assertThrows(NullPointerException.class, () -> reader.readUntil((String) null, false));
+		assertThrows(NullPointerException.class, () -> reader.readUntil((String) null, true));
+		assertEquals("", reader.readUntil("t", false));
+		assertEquals('h', reader.peek());
+		reader.skip(4);
+		assertEquals("is ", reader.readUntil("a", false));
+		reader.skip();
+		assertEquals("", reader.readUntil("sImple", true));
+		reader.skip(7);
+		assertEquals("'string for the'", reader.readUntil(" ", true));
+		assertEquals("[string]", reader.readUntil(" ", false));
+		assertEquals("{string = 10}", reader.readUntil(" ", false));
+		assertEquals("reader", reader.readUntil("r", true));
+	}
+	
+	@Test
+	void readUntilInclusive() {
+		ScopedStringReader reader = new ScopedStringReader("this is a sImple \\test 'string for the' [string] {string = 10} \\reade\\r");
+		assertThrows(IllegalArgumentException.class, () -> reader.readUntilInclusive('\\'));
+		assertEquals("t", reader.readUntilInclusive('t'));
+		assertEquals("his is a sImple test", reader.readUntilInclusive('t'));
+		reader.skip();
+		assertEquals("'string for the' ", reader.readUntilInclusive(' '));
+		assertEquals("[string] ", reader.readUntilInclusive(' '));
+		assertEquals("{string = 10} ", reader.readUntilInclusive(' '));
+		assertEquals("reader", reader.readUntilInclusive('r'));
+		assertEquals("", reader.readUntilInclusive(' '));
+		
+		reader.reset();
+		
+		assertThrows(NullPointerException.class, () -> reader.readUntilInclusive((char[]) null));
+		assertThrows(IllegalArgumentException.class, reader::readUntilInclusive);
+		assertThrows(IllegalArgumentException.class, () -> reader.readUntilInclusive('\\'));
+		assertEquals("t", reader.readUntilInclusive('t', 's'));
+		assertEquals("his", reader.readUntilInclusive('t', 's'));
+		reader.skip();
+		assertEquals("is a sImple", reader.readUntilInclusive('e', 't'));
+		reader.skip();
+		assertEquals("tes", reader.readUntilInclusive('s', ' '));
+		reader.skip(2);
+		assertEquals("'string for the' ", reader.readUntilInclusive('s', ' '));
+		assertEquals("[string] ", reader.readUntilInclusive(' '));
+		assertEquals("{string = 10} ", reader.readUntilInclusive('=', ' '));
+		assertEquals("reader", reader.readUntilInclusive('r'));
+		assertEquals("", reader.readUntilInclusive(' ', '\0'));
+		
+		reader.reset();
+		
+		assertThrows(NullPointerException.class, () -> reader.readUntilInclusive((String) null, false));
+		assertThrows(NullPointerException.class, () -> reader.readUntilInclusive((String) null, true));
+		assertEquals("t", reader.readUntilInclusive("t", false));
+		assertEquals('h', reader.peek());
+		reader.skip(4);
+		assertEquals("is a", reader.readUntilInclusive("a", false));
+		reader.skip();
+		assertEquals("sImple", reader.readUntilInclusive("sImple", true));
+		reader.skip(7);
+		assertEquals("'string for the' ", reader.readUntilInclusive(" ", true));
+		assertEquals("[string] ", reader.readUntilInclusive(" ", false));
+		assertEquals("{string = 10} ", reader.readUntilInclusive(" ", false));
+		assertEquals("reader", reader.readUntilInclusive("r", true));
+	}
+	
+	@Test
 	void readList() {
-		ScopedStringReader reader = new ScopedStringReader("[ true , false ] [  10.0  ,  15.5  ,  20.6  ,  25.89  ] [10,15,20,25] [\"Hello\", \"World\"] [[\"str1\"], [\"str1\", \"str2\"]]");
-		assertEquals(List.of(true, false), reader.readList(StringReader::readBoolean));
+		ScopedStringReader reader = new ScopedStringReader("[] [ true , false ] [  10.0  ,  15.5  ,  20.6  ,  25.89  ] [10,15,20,25] [\"Hello\", \"World\"] [[\"str1\"], [\"str1\", \"str2\"]]");
+		assertIterableEquals(List.of(), reader.readList(StringReader::readBoolean));
 		assertEquals(' ', reader.read());
-		assertEquals(List.of(10.0, 15.5, 20.6, 25.89), reader.readList(StringReader::readDouble));
+		assertIterableEquals(List.of(true, false), reader.readList(StringReader::readBoolean));
 		assertEquals(' ', reader.read());
-		assertEquals(List.of(10, 15, 20, 25), reader.readList(StringReader::readInt));
+		assertIterableEquals(List.of(10.0, 15.5, 20.6, 25.89), reader.readList(StringReader::readDouble));
 		assertEquals(' ', reader.read());
-		assertEquals(List.of("Hello", "World"), reader.readList(StringReader::readString));
+		assertIterableEquals(List.of(10, 15, 20, 25), reader.readList(StringReader::readInt));
 		assertEquals(' ', reader.read());
-		assertEquals(List.of(List.of("str1"), List.of("str1", "str2")), reader.readList(r -> r.readList(StringReader::readString)));
+		assertIterableEquals(List.of("Hello", "World"), reader.readList(StringReader::readString));
+		assertEquals(' ', reader.read());
+		assertIterableEquals(List.of(List.of("str1"), List.of("str1", "str2")), reader.readList(r -> r.readList(StringReader::readString)));
 	}
 	
 	@Test
 	void readSet() {
-		ScopedStringReader reader = new ScopedStringReader("( true , false ) (  10.0  ,  15.5  ,  20.6  ,  25.89  ) (10,15,20,25) (\"Hello\", \"World\") ([\"str1\"], [\"str1\", \"str2\"])");
+		ScopedStringReader reader = new ScopedStringReader("() ( true , false ) (  10.0  ,  15.5  ,  20.6  ,  25.89  ) (10,15,20,25) (\"Hello\", \"World\") ([\"str1\"], [\"str1\", \"str2\"])");
+		assertEquals(Set.of(), reader.readSet(StringReader::readBoolean));
+		assertEquals(' ', reader.read());
 		assertEquals(Set.of(true, false), reader.readSet(StringReader::readBoolean));
 		assertEquals(' ', reader.read());
 		assertEquals(Set.of(10.0, 15.5, 20.6, 25.89), reader.readSet(StringReader::readDouble));
@@ -191,7 +253,9 @@ class ScopedStringReaderTest {
 	
 	@Test
 	void readMap() {
-		ScopedStringReader reader = new ScopedStringReader("{key1= value1, key2= value2} {key1=10, key2=20} {0=\"Hello\", 1=\"World\"} { 0.0 = [ \"str1\" ], 1.0 = [ \"str1\" , \"str2\" ] }");
+		ScopedStringReader reader = new ScopedStringReader("{} {key1= value1, key2= value2} {key1=10, key2=20} {0=\"Hello\", 1=\"World\"} { 0.0 = [ \"str1\" ], 1.0 = [ \"str1\" , \"str2\" ] }");
+		assertEquals(Map.of(), reader.readMap(StringReader::readString, StringReader::readString));
+		assertEquals(' ', reader.read());
 		assertEquals(Map.of("key1", "value1", "key2", "value2"), reader.readMap(StringReader::readString, StringReader::readString));
 		assertEquals(' ', reader.read());
 		assertEquals(Map.of("key1", 10, "key2", 20), reader.readMap(StringReader::readString, StringReader::readInt));

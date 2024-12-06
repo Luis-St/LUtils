@@ -35,6 +35,11 @@ public class LoggingExceptionHandler implements Thread.UncaughtExceptionHandler 
 	 */
 	private static final Logger LOGGER = LogManager.getLogger(LoggingExceptionHandler.class);
 	
+	/**
+	 * Constructs a new logging exception handler.<br>
+	 */
+	public LoggingExceptionHandler() {}
+	
 	@Override
 	public void uncaughtException(@NotNull Thread thread, @Nullable Throwable throwable) {
 		LOGGER.error("Error in thread {}: {}", thread.getName(), throwable);

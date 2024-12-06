@@ -22,6 +22,7 @@ import net.luis.utils.exception.InvalidValueException;
 import net.luis.utils.resources.ResourceLocation;
 import net.luis.utils.util.Pair;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.math.NumberUtils;
 import org.apache.logging.log4j.Level;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -32,6 +33,8 @@ import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
+
+import static net.luis.utils.logging.LoggerConfiguration.*;
 
 /**
  * Helper class to configure logging from system properties.<br>
@@ -47,14 +50,9 @@ class LoggingHelper {
 	 *     The value must not contain any line breaks.<br>
 	 * </p>
 	 */
-	private static final Pattern PROPERTY_PATTERN = Pattern.compile("^(\\S*)(=)(.*)$");
+	private static final Pattern PROPERTY_PATTERN = Pattern.compile("^(\\S*)(\\s*=\\s*)(.*)$");
 	/**
-	 * The pattern to match a valid path.<br>
-	 * The path must be relative or absolute.<br>
-	 */
-	private static final String PATH_PATTERN = "^([a-zA-Z]:|\\./).*$";
-	/**
-	 * Constant for the system property 'logging.level.status'.<br>
+	 * Constant for the system property 'logging.status_level'.<br>
 	 * <p>
 	 *     The property is used to set the status level of the internal apache logger.<br>
 	 *     The value must be a valid {@link Level} name in lower case.<br>
@@ -63,7 +61,7 @@ class LoggingHelper {
 	 *     The default value is {@code 'error'}.
 	 * </p>
 	 */
-	private static final String LOGGING_LEVEL_STATUS = "logging.level.status";
+	private static final String LOGGING_LEVEL_STATUS = "logging.status_level";
 	/**
 	 * Constant for the system property 'logging.config'.<br>
 	 * <p>
@@ -111,6 +109,24 @@ class LoggingHelper {
 	 */
 	private static final String LOGGING_FILE = "logging.file";
 	/**
+	 * Constant for the system property 'logging.file.size'.<br>
+	 * <p>
+	 *     The property is used to set the maximum size of a log file.<br>
+	 *     The value must be a number followed by a unit, the unit must be one of the following:<br>
+	 * </p>
+	 * <ul>
+	 *     <li>{@code 'B'}: bytes</li>
+	 *     <li>{@code 'KB'}: kilobytes</li>
+	 *     <li>{@code 'MB'}: megabytes</li>
+	 *     <li>{@code 'GB'}: gigabytes</li>
+	 *     <li>{@code 'TB'}: terabytes</li>
+	 * </ul>
+	 * <p>
+	 *     The default value is {@code '20MB'}.<br>
+	 * </p>
+	 */
+	private static final String LOGGING_FILE_SIZE = "logging.file.size";
+	/**
 	 * Constant for the system property 'logging.file.folder.root'.<br>
 	 * <p>
 	 *     The property is used to set the root folder of the log files.<br>
@@ -121,6 +137,77 @@ class LoggingHelper {
 	 * </p>
 	 */
 	private static final String LOGGING_FILE_FOLDER_ROOT = "logging.file.folder.root";
+	/**
+	 * Constant for the system property 'logging.archive.type'.<br>
+	 * <p>
+	 *     The property is used to set the type of the log archives.<br>
+	 *     The value must be one of the following:<br>
+	 * </p>
+	 * <ul>
+	 *     <li>{@code '.zip'}: compressed with the zip algorithm</li>
+	 *     <li>{@code '.gz'}: compressed with the gzip algorithm</li>
+	 *     <li>{@code '.bz2'}: compressed with the bzip2 algorithm</li>
+	 *     <li>{@code '.xz'}: compressed with the xz algorithm</li>
+	 * </ul>
+	 * <p>
+	 *     The default value is {@code '.gz'}.<br>
+	 * </p>
+	 */
+	private static final String LOGGING_ARCHIVE_TYPE = "logging.archive.type";
+	/**
+	 * Constant for the system property 'logging.archive.compression_level'.<br>
+	 * <p>
+	 *     The property is used to set the compression level of the log archives.<br>
+	 *     The value must be a number between 0 and 9, a higher value means a higher compression level.<br>
+	 *     If the value is out of range, the value will be clamped to the nearest valid value.<br>
+	 * </p>
+	 * <p>
+	 *     The default value is {@code 4}.<br>
+	 * </p>
+	 */
+	private static final String LOGGING_ARCHIVE_COMPRESSION_LEVEL = "logging.archive.compression_Level";
+	/**
+	 * Constant for the system property 'logging.archive.max_files'.<br>
+	 * <p>
+	 *     The property is used to set the maximum number of log archives which should be kept.<br>
+	 *     The value must be a number greater than 0.<br>
+	 *     If the value is less than 1, the value will be clamped to 1.<br>
+	 * </p>
+	 * <p>
+	 *     The default value is {@code 10}.<br>
+	 * </p>
+	 */
+	private static final String LOGGING_ARCHIVE_MAX_FILES = "logging.archive.max_files";
+	/**
+	 * Constant for the system property 'logging.archive.auto_deletion.depth'.<br>
+	 * <p>
+	 *     The property is used to set the maximum depth of the log archive auto deletion.<br>
+	 *     The value must be a number greater than 0.<br>
+	 *     If the value is less than 1, the value will be clamped to 1.<br>
+	 * </p>
+	 * <p>
+	 *     The default value is {@code 1}.<br>
+	 * </p>
+	 */
+	private static final String LOGGING_ARCHIVE_AUTO_DELETION_DEPTH = "logging.archive.auto_deletion.depth";
+	/**
+	 * Constant for the system property 'logging.archive.auto_deletion.age'.<br>
+	 * <p>
+	 *     The property is used to set the maximum age of the log archive auto deletion.<br>
+	 *     The value must be a number greater than 0.<br>
+	 *     If the value is less than 1, the value will be clamped to 1.<br>
+	 * </p>
+	 * <p>
+	 *     The default value is {@code 30}.<br>
+	 * </p>
+	 */
+	private static final String LOGGING_ARCHIVE_AUTO_DELETION_AGE = "logging.archive.auto_deletion.age";
+	
+	/**
+	 * Private constructor to prevent instantiation.<br>
+	 * This is a static helper class.<br>
+	 */
+	private LoggingHelper() {}
 	
 	/**
 	 * Creates a new logger configuration for the given loggers.<br>
@@ -128,7 +215,7 @@ class LoggingHelper {
 	 * General system properties:<br>
 	 * <ul>
 	 *     <li>
-	 *         logging.level.status<br>
+	 *         logging.status_level<br>
 	 *         The status level of the internal apache logger, expect a valid {@link Level} name in lower case.<br>
 	 *         Default: 'error'<br>
 	 *     </li>
@@ -154,7 +241,41 @@ class LoggingHelper {
 	 *         Default: 'true'<br>
 	 *     </li>
 	 * </ul>
-	 *
+	 * <br>
+	 * Log and archive system properties:<br>
+	 * <ul>
+	 *     <li>
+	 *         logging.file.size<br>
+	 *         The maximum size of a log file, expect a number followed by a unit.<br>
+	 *         Default: '20MB'<br>
+	 *     </li>
+	 *     <li>
+	 *         logging.archive.type<br>
+	 *         The type of the log archives, expect a file extension ('.zip', '.gz', '.bz2', '.xz').<br>
+	 *         Default: '.gz'<br>
+	 *     </li>
+	 *     <li>
+	 *         logging.archive.compression_level<br>
+	 *         The compression level of the log archives, expect a number between 0 and 9.<br>
+	 *         Default: '4'<br>
+	 *     </li>
+	 *     <li>
+	 *         logging.archive.max_files<br>
+	 *         The maximum number of log archives which should be kept, expect a number greater than 0.<br>
+	 *         Default: '10'<br>
+	 *     </li>
+	 *     <li>
+	 *         logging.archive.auto_deletion.depth<br>
+	 *         The maximum depth of the log archive auto deletion, expect a number greater than 0.<br>
+	 *         Default: '1'<br>
+	 *     </li>
+	 *     <li>
+	 *         logging.archive.auto_deletion.age<br>
+	 *         The maximum age of the log archive auto deletion, expect a number greater than 0.<br>
+	 *         Default: '30'<br>
+	 *     </li>
+	 * </ul>
+	 * <br>
 	 * File logging system properties:<br>
 	 * <ul>
 	 *     <li>
@@ -200,7 +321,7 @@ class LoggingHelper {
 	 *        logging.file.folder.{level}.archive<br>
 	 *        The file pattern of the archived log files of a specific level, expect a file pattern.<br>
 	 *        {level} must be replaced with a valid {@link Level} name in lower case.<br>
-	 *        Default: '{level}-%d{dd-MM-yyyy}-%i.log.gz'<br>
+	 *        Default: '{level}-%d{dd-MM-yyyy}-%i.log'<br>
 	 *    </li>
 	 * </ul>
 	 *
@@ -302,6 +423,40 @@ class LoggingHelper {
 			throw new InvalidValueException("Invalid value '" + root + "' for property '" + LOGGING_FILE_FOLDER_ROOT + "', must be a relative or absolute path");
 		}
 		config.setRootDirectory(StringUtils.strip(root, "/ ") + "/"); // Root must be relative or absolute and end with '/'
+		String fileSize = System.getProperty(LOGGING_FILE_SIZE, "20MB");
+		if (!Pattern.compile(FILE_SIZE, Pattern.CASE_INSENSITIVE).matcher(fileSize).matches()) {
+			throw new IllegalArgumentException("Invalid value '" + fileSize + "' for property '" + LOGGING_FILE_SIZE + "'");
+		}
+		config.setFileSize(fileSize);
+		String archiveType = System.getProperty(LOGGING_ARCHIVE_TYPE, "gz");
+		if (!Pattern.compile(ARCHIVE_TYPE, Pattern.CASE_INSENSITIVE).matcher(archiveType).matches()) {
+			throw new IllegalArgumentException("Invalid value '" + archiveType + "' for property '" + LOGGING_ARCHIVE_TYPE + "'");
+		}
+		config.setArchiveType(archiveType);
+		String compressionLevel = System.getProperty(LOGGING_ARCHIVE_COMPRESSION_LEVEL, "4");
+		try {
+			config.setCompressionLevel(Integer.parseInt(compressionLevel));
+		} catch (Exception e) {
+			throw new IllegalArgumentException("Invalid value '" + compressionLevel + "' for property '" + LOGGING_ARCHIVE_COMPRESSION_LEVEL + "', expected a number between 0 and 9");
+		}
+		String maxArchiveFiles = System.getProperty(LOGGING_ARCHIVE_MAX_FILES, "10");
+		try {
+			config.setMaxArchiveFiles(NumberUtils.toInt(maxArchiveFiles, 10));
+		} catch (Exception e) {
+			throw new IllegalArgumentException("Invalid value '" + maxArchiveFiles + "' for property '" + LOGGING_ARCHIVE_MAX_FILES + "', expected a number greater than 0");
+		}
+		String autoDeletionDepth = System.getProperty(LOGGING_ARCHIVE_AUTO_DELETION_DEPTH, "1");
+		try {
+			config.setArchiveAutoDeletionDepth(NumberUtils.toInt(autoDeletionDepth, 1));
+		} catch (Exception e) {
+			throw new IllegalArgumentException("Invalid value '" + autoDeletionDepth + "' for property '" + LOGGING_ARCHIVE_AUTO_DELETION_DEPTH + "', expected a number greater than 0");
+		}
+		String autoDeletionAge = System.getProperty(LOGGING_ARCHIVE_AUTO_DELETION_AGE, "30");
+		try {
+			config.setArchiveAutoDeletionAge(NumberUtils.toInt(autoDeletionAge, 30));
+		} catch (Exception e) {
+			throw new IllegalArgumentException("Invalid value '" + autoDeletionAge + "' for property '" + LOGGING_ARCHIVE_AUTO_DELETION_AGE + "', expected a number greater than 0");
+		}
 		//region Local record
 		record LogFile(Level level, String folder, String file, String archive) {
 			

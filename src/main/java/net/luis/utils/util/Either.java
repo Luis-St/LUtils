@@ -43,6 +43,11 @@ import java.util.function.Function;
  */
 public abstract sealed class Either<L, R> permits Either.Left, Either.Right {
 	
+	/**
+	 * Private because this class is sealed and not instantiable from outside.<br>
+	 */
+	private Either() {}
+	
 	//region Static factory methods
 	
 	/**
@@ -69,11 +74,13 @@ public abstract sealed class Either<L, R> permits Either.Left, Either.Right {
 	//endregion
 	
 	/**
+	 * Checks if this either instance is a left instance.<br>
 	 * @return True if this either instance is a left instance, false otherwise
 	 */
 	public abstract boolean isLeft();
 	
 	/**
+	 * Checks if this either instance is a right instance.<br>
 	 * @return True if this either instance is a right instance, false otherwise
 	 */
 	public abstract boolean isRight();
@@ -93,23 +100,27 @@ public abstract sealed class Either<L, R> permits Either.Left, Either.Right {
 	public void ifRight(@NotNull Consumer<? super R> action) {}
 	
 	/**
-	 * @return The left value as an {@link Optional}
+	 * Returns the left value as an {@link Optional}.<br>
+	 * @return The left value
 	 */
 	public abstract @NotNull Optional<L> left();
 	
 	/**
-	 * @return The right value as an {@link Optional}
+	 * Returns the right value as an {@link Optional}.<br>
+	 * @return The right value
 	 */
 	public abstract @NotNull Optional<R> right();
 	
 	/**
-	 * @return The left value or throws an exception if it is a right either
+	 * Returns the left value or throws an exception if it is a right either.<br>
+	 * @return The left value
 	 * @throws IllegalStateException If the left value is not present
 	 */
 	public abstract L leftOrThrow();
 	
 	/**
-	 * @return The right value or throws an exception if it is a left either
+	 * Returns the right value or throws an exception if it is a left either.<br>
+	 * @return The right value
 	 * @throws IllegalStateException If the right value is not present
 	 */
 	public abstract R rightOrThrow();

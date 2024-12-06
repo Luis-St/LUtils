@@ -185,19 +185,22 @@ public abstract sealed class ResourceLocation permits ExternalResourceLocation, 
 	protected abstract @NotNull String modifyPath(@Nullable String path);
 	
 	/**
-	 * @return The type of the resource
+	 * Returns the type of the resource.<br>
+	 * @return The type
 	 */
 	public abstract @NotNull Type getType();
 	
 	/**
-	 * @return The path of the resource
+	 * Returns the path of the resource.<br>
+	 * @return The path
 	 */
 	public final @NotNull String getPath() {
 		return this.path;
 	}
 	
 	/**
-	 * @return The (file) name of the resource
+	 * Returns the (file) name of the resource as a string.<br>
+	 * @return The (file) name
 	 */
 	public final @NotNull String getFile() {
 		return this.file;

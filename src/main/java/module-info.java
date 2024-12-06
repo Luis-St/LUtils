@@ -30,17 +30,36 @@ module net.luis.utils {
 	
 	exports net.luis.utils.annotation;
 	exports net.luis.utils.annotation.type;
+	
 	exports net.luis.utils.collection;
+	exports net.luis.utils.collection.registry;
+	exports net.luis.utils.collection.registry.key;
 	exports net.luis.utils.collection.util;
 	exports net.luis.utils.exception;
 	exports net.luis.utils.function;
+	
 	exports net.luis.utils.io;
+	exports net.luis.utils.io.data;
+	exports net.luis.utils.io.data.config;
+	exports net.luis.utils.io.data.json;
+	exports net.luis.utils.io.data.json.exception;
+	exports net.luis.utils.io.data.properties;
+	exports net.luis.utils.io.data.properties.exception;
+	exports net.luis.utils.io.data.xml;
+	exports net.luis.utils.io.data.xml.exception;
+	exports net.luis.utils.io.exception;
 	exports net.luis.utils.io.reader;
+	
 	exports net.luis.utils.lang;
+	
 	exports net.luis.utils.logging;
 	exports net.luis.utils.logging.factory;
+	
 	exports net.luis.utils.math;
+	exports net.luis.utils.math.algorithm;
+	
 	exports net.luis.utils.resources;
+	
 	exports net.luis.utils.util;
 	exports net.luis.utils.util.unsafe;
 	exports net.luis.utils.util.unsafe.classpath;

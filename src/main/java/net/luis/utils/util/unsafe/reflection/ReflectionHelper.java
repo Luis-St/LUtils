@@ -66,6 +66,12 @@ public class ReflectionHelper {
 	private static final String REFLECTION_EXCEPTIONS_LOG = "reflection.exceptions.log";
 	
 	/**
+	 * Private constructor to prevent instantiation.<br>
+	 * This is a static helper class.<br>
+	 */
+	private ReflectionHelper() {}
+	
+	/**
 	 * Gets the class for the given name.<br>
 	 * @param className The name of the class
 	 * @return The class for the given name or null if the class could not be found

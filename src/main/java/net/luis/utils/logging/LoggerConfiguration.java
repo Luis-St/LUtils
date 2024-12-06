@@ -19,6 +19,7 @@
 package net.luis.utils.logging;
 
 import com.google.common.collect.*;
+import net.luis.utils.math.Mth;
 import net.luis.utils.util.Utils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Level;
@@ -31,6 +32,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
+import java.util.regex.Pattern;
 
 /**
  * Runtime logger configuration for Log4j2.<br>
@@ -56,10 +58,6 @@ import java.util.*;
 public class LoggerConfiguration {
 	
 	/**
-	 * Regex to check if a path is absolute.<br>
-	 */
-	private static final String DRIVER_REGEX = "^([a-zA-Z]:).*$";
-	/**
 	 * The names of the log levels used in the default patterns.<br>
 	 */
 	private static final String NAMES = "TRACE=Trace, DEBUG=Debug, INFO=Info, WARN=Warn, ERROR=Error, FATAL=Fatal";
@@ -74,6 +72,18 @@ public class LoggerConfiguration {
 		map.put(Level.ERROR, "[%d{HH:mm:ss}] [%t] [%marker] [%C{1}/%level{" + NAMES + "}] %msg%n%throwable");
 		map.put(Level.FATAL, "[%d{HH:mm:ss}] [%t] [%marker] [%C{1}/%level{" + NAMES + "}] %msg%n%throwable");
 	});
+	/**
+	 * Regex to check if the file is absolute or relative.<br>
+	 */
+	static final String PATH_PATTERN = "^([a-zA-Z]:|\\./).*$";
+	/**
+	 * Regex to check if the file size is valid.<br>
+	 */
+	static final String FILE_SIZE = "^([0-9]+([.,][0-9]+)?)\\s*(|K|M|G|T)B?$";
+	/**
+	 * Regex to check if the archive type is valid.<br>
+	 */
+	static final String ARCHIVE_TYPE = "^\\.?(gz|zip|bz2|xy)$";
 	/**
 	 * The default logger configuration.<br>
 	 */
@@ -105,9 +115,9 @@ public class LoggerConfiguration {
 	 * The log file and archive patterns for the log levels.<br>
 	 */
 	private final Map<Level, Map.Entry<String, String>> logs = Utils.make(Maps.newHashMap(), map -> {
-		map.put(Level.DEBUG, Map.entry("logs/debug.log", "logs/debug-%d{dd-MM-yyyy}-%i.log.gz"));
-		map.put(Level.INFO, Map.entry("logs/info.log", "logs/info-%d{dd-MM-yyyy}-%i.log.gz"));
-		map.put(Level.ERROR, Map.entry("logs/error.log", "logs/error-%d{dd-MM-yyyy}-%i.log.gz"));
+		map.put(Level.DEBUG, Map.entry("debug.log", "debug-%d{dd-MM-yyyy}-%i.log"));
+		map.put(Level.INFO, Map.entry("info.log", "info-%d{dd-MM-yyyy}-%i.log"));
+		map.put(Level.ERROR, Map.entry("error.log", "error-%d{dd-MM-yyyy}-%i.log"));
 	});
 	/**
 	 * The status level for the internal Log4j2 logger.<br>
@@ -116,12 +126,36 @@ public class LoggerConfiguration {
 	/**
 	 * The root directory for all log files.<br>
 	 */
-	private String rootDirectory = "./";
+	private String rootDirectory = "./logs/";
+	/**
+	 * The maximum file size for the log files.<br>
+	 */
+	private String fileSize = "20MB";
+	/**
+	 * The archive type for the log files.<br>
+	 */
+	private String archiveType = "gz";
+	/**
+	 * The compression level for the archived log files.<br>
+	 */
+	private int compressionLevel = 4;
+	/**
+	 * The maximum number of archived log files which should be kept.<br>
+	 */
+	private int maxArchiveFiles = 10;
+	/**
+	 * The maximum depth in which archived log files should be deleted.<br>
+	 */
+	private int archiveAutoDeletionDepth = 1;
+	/**
+	 * The age in days after which archived log files should be deleted.<br>
+	 */
+	private int archiveAutoDeletionAge = 30;
 	
 	/**
 	 * Constructs a new logger configuration with the specified logger name.<br>
 	 * The logger name is used to identify the logger in the configuration.<br>
-	 * The logger name must be the package name, the full class name or a '*' to include all loggers.<br>
+	 * The logger name must be the package name, the full class name, or a '*' to include all loggers.<br>
 	 * If the list contains a '*', all other logger names will be ignored.<br>
 	 * @param loggers The names of the logger which should be configured
 	 * @throws NullPointerException If the given array is null
@@ -269,7 +303,7 @@ public class LoggerConfiguration {
 			throw new IllegalArgumentException("Root folder must not be empty");
 		}
 		rootDirectory = rootDirectory.replace("\\", "/");
-		if (!rootDirectory.startsWith("./") && !rootDirectory.matches(DRIVER_REGEX)) { // Must start with './' or a driver letter
+		if (!rootDirectory.matches(PATH_PATTERN)) {
 			throw new IllegalArgumentException("Root folder must be relative or absolute");
 		}
 		this.rootDirectory = StringUtils.strip(rootDirectory, "/") + "/"; // Must end with '/'
@@ -281,7 +315,7 @@ public class LoggerConfiguration {
 	 * If the root directory is not set, the default root directory ('./') is used.<br>
 	 * If the root directory has been set, the given file and archive will be appended to the root directory.<br>
 	 * The file and archive must not be absolute or relative.<br>
-	 * The log file will be built as follows: {@code rootDirectory + (file|archive)}<br>
+	 * The log file will be built as follows: {@code rootDirectory + (file|archive + "." + archive_type)}<br>
 	 * Default patterns can be found in {@link LoggerConfiguration#logs}.<br>
 	 * @param level The level to override the log file for
 	 * @param file The pattern for the current log file
@@ -301,11 +335,11 @@ public class LoggerConfiguration {
 			throw new IllegalArgumentException("Archive must not be empty");
 		}
 		file = file.replace("\\", "/");
-		if (file.matches("^([a-zA-Z]:|\\./).*$")) {
+		if (file.matches(PATH_PATTERN)) {
 			throw new IllegalArgumentException("File name must not be absolute or relative");
 		}
 		archive = archive.replace("\\", "/");
-		if (archive.matches("^([a-zA-Z]:|\\./).*$")) {
+		if (archive.matches(PATH_PATTERN)) {
 			throw new IllegalArgumentException("Archive must not be absolute or relative");
 		}
 		this.logs.put(level, Map.entry(StringUtils.strip(file, "/"), StringUtils.strip(archive, "/"))); // Must not start with '/'
@@ -317,7 +351,7 @@ public class LoggerConfiguration {
 	 * If the root directory is not set, the default root directory ('./') is used.<br>
 	 * If the root directory has been set, the given file and archive will be appended to the root directory.<br>
 	 * The file and archive must not be absolute or relative.<br>
-	 * The log file will be built as follows: {@code rootDirectory + (file|archive)}<br>
+	 * The log file will be built as follows: {@code rootDirectory + (file|archive + "." + archive_type)}<br>
 	 * Default patterns can be found in {@link LoggerConfiguration#logs}.<br>
 	 * @param file The pattern for the current log file
 	 * @param archive The pattern for all archived log files
@@ -335,7 +369,7 @@ public class LoggerConfiguration {
 	 * If the root directory is not set, the default root directory ('./') is used.<br>
 	 * If the root directory has been set, the given file and archive will be appended to the root directory.<br>
 	 * The file and archive must not be absolute or relative.<br>
-	 * The log file will be built as follows: {@code rootDirectory + (file|archive)}<br>
+	 * The log file will be built as follows: {@code rootDirectory + (file|archive + "." + archive_type)}<br>
 	 * Default patterns can be found in {@link LoggerConfiguration#logs}.<br>
 	 * @param file The pattern for the current log file
 	 * @param archive The pattern for all archived log files
@@ -353,7 +387,7 @@ public class LoggerConfiguration {
 	 * If the root directory is not set, the default root directory ('./') is used.<br>
 	 * If the root directory has been set, the given file and archive will be appended to the root directory.<br>
 	 * The file and archive must not be absolute or relative.<br>
-	 * The log file will be built as follows: {@code rootDirectory + (file|archive)}<br>
+	 * The log file will be built as follows: {@code rootDirectory + (file|archive + "." + archive_type)}<br>
 	 * Default patterns can be found in {@link LoggerConfiguration#logs}.<br>
 	 * @param file The pattern for the current log file
 	 * @param archive The pattern for all archived log files
@@ -434,6 +468,100 @@ public class LoggerConfiguration {
 	}
 	//endregion
 	
+	//region Log file
+	
+	/**
+	 * Sets the maximum file size for the log files.<br>
+	 * The file size must be a number followed by an optional unit (KB, MB, GB, TB).<br>
+	 * @param fileSize The file size to set
+	 * @return The current configuration builder
+	 * @throws NullPointerException If the given file size is null
+	 * @throws IllegalArgumentException If the given file size is not valid
+	 */
+	public @NotNull LoggerConfiguration setFileSize(@NotNull String fileSize) {
+		Objects.requireNonNull(fileSize, "File size must not be null");
+		if (StringUtils.isBlank(fileSize)) {
+			throw new IllegalArgumentException("File size must not be empty");
+		}
+		if (!Pattern.compile(FILE_SIZE, Pattern.CASE_INSENSITIVE).matcher(fileSize).matches()) {
+			throw new IllegalArgumentException("Invalid file size: '" + fileSize + "'");
+		}
+		this.fileSize = fileSize;
+		return this;
+	}
+	
+	/**
+	 * Sets the archive type for the archived log files.<br>
+	 * The archive type must be '.gz', '.zip', '.bz2' or '.xy' (dot is optional, case-insensitive).<br>
+	 * @param archiveType The archive type to set
+	 * @return The current configuration builder
+	 * @throws NullPointerException If the given archive type is null
+	 * @throws IllegalArgumentException If the given archive type is not valid
+	 */
+	public @NotNull LoggerConfiguration setArchiveType(@NotNull String archiveType) {
+		Objects.requireNonNull(archiveType, "Archive type must not be null");
+		if (StringUtils.isBlank(archiveType)) {
+			throw new IllegalArgumentException("Archive type must not be empty");
+		}
+		if (!Pattern.compile(ARCHIVE_TYPE, Pattern.CASE_INSENSITIVE).matcher(archiveType).matches()) {
+			throw new IllegalArgumentException("Archive type must be '.gz', '.zip', '.bz2' or '.xy'");
+		}
+		if (archiveType.startsWith(".")) {
+			archiveType = archiveType.substring(1);
+		}
+		this.archiveType = archiveType.toLowerCase();
+		return this;
+	}
+	
+	/**
+	 * Sets the compression level for the archived log files.<br>
+	 * The compression level must be between 0 and 9.<br>
+	 * If the value is out of bounds, it will be clamped to the nearest bound.<br>
+	 * @param compressionLevel The compression level to set
+	 * @return The current configuration builder
+	 */
+	public @NotNull LoggerConfiguration setCompressionLevel(int compressionLevel) {
+		this.compressionLevel = Mth.clamp(compressionLevel, 0, 9);
+		return this;
+	}
+	
+	/**
+	 * Sets the maximum number of archived log files which should be kept.<br>
+	 * The maximum number of archived log files must be greater than 0.<br>
+	 * If the value is less than 1, it will be set to 1.<br>
+	 * @param maxArchiveFiles The maximum number of archived log files to keep
+	 * @return The current configuration builder
+	 */
+	public @NotNull LoggerConfiguration setMaxArchiveFiles(int maxArchiveFiles) {
+		this.maxArchiveFiles = Math.max(1, maxArchiveFiles);
+		return this;
+	}
+	
+	/**
+	 * Sets the maximum depth in which archived log files should be deleted.<br>
+	 * The maximum depth must be greater than 0.<br>
+	 * If the value is less than 1, it will be set to 1.<br>
+	 * @param archiveAutoDeletionDepth The depth in which archived log files should be deleted
+	 * @return The current configuration builder
+	 */
+	public @NotNull LoggerConfiguration setArchiveAutoDeletionDepth(int archiveAutoDeletionDepth) {
+		this.archiveAutoDeletionDepth = Math.max(1, archiveAutoDeletionDepth);
+		return this;
+	}
+	
+	/**
+	 * Sets the age in days after which archived log files should be deleted.<br>
+	 * The maximum depth must be greater than 0.<br>
+	 * If the value is less than 1, it will be set to 1.<br>
+	 * @param archiveAutoDeletionAge The age in days after which archived log files should be deleted
+	 * @return The current configuration builder
+	 */
+	public @NotNull LoggerConfiguration setArchiveAutoDeletionAge(int archiveAutoDeletionAge) {
+		this.archiveAutoDeletionAge = Math.max(1, archiveAutoDeletionAge);
+		return this;
+	}
+	//endregion
+	
 	/**
 	 * Builds the configuration.<br>
 	 * @return The built configuration
@@ -467,17 +595,29 @@ public class LoggerConfiguration {
 					builder.add(
 						builder.newAppender(name, "RollingRandomAccessFile")
 							.addAttribute("fileName", this.rootDirectory + this.logs.get(level).getKey())
-							.addAttribute("filePattern", this.rootDirectory + this.logs.get(level).getValue())
+							.addAttribute("filePattern", this.rootDirectory + this.logs.get(level).getValue() + "." + this.archiveType)
 							.addComponent(builder.newLayout("PatternLayout")
 								.addAttribute("pattern", this.getPattern(LoggingType.FILE, level)))
 							.addComponent(builder.newFilter("ThresholdFilter", Filter.Result.ACCEPT, Filter.Result.DENY)
 								.addAttribute("level", level))
 							.addComponent(builder.newComponent("Policies")
-								.addComponent(builder.newComponent("SizeBasedTriggeringPolicy"))
+								.addComponent(builder.newComponent("SizeBasedTriggeringPolicy")
+									.addAttribute("size", this.fileSize))
 								.addComponent(builder.newComponent("OnStartupTriggeringPolicy"))
 								.addComponent(builder.newComponent("TimeBasedTriggeringPolicy")
 									.addAttribute("interval", 1)
-									.addAttribute("modulate", true))));
+									.addAttribute("modulate", true)))
+							.addComponent(builder.newComponent("DefaultRolloverStrategy")
+								.addAttribute("max", this.maxArchiveFiles)
+								.addAttribute("compressionLevel", this.compressionLevel)
+								.addComponent(builder.newComponent("Delete")
+									.addAttribute("basePath", this.rootDirectory)
+									.addAttribute("maxDepth", this.archiveAutoDeletionDepth)
+									.addComponent(builder.newComponent("IfLastModified")
+										.addAttribute("age", this.archiveAutoDeletionAge + "d"))
+									.addComponent(builder.newComponent("IfFileName")
+										.addAttribute("glob", "*." + this.archiveType))
+								)));
 					appenders.add(name);
 				}
 			}
