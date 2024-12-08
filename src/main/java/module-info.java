@@ -27,7 +27,6 @@ module net.luis.utils {
 	requires org.jetbrains.annotations;
 	requires com.google.common;
 	requires org.apache.commons.lang3;
-	requires jdk.sctp;
 	
 	exports net.luis.utils.annotation;
 	exports net.luis.utils.annotation.type;
