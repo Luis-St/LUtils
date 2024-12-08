@@ -29,6 +29,8 @@ import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.*;
 
 import java.io.*;
+import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.util.*;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
@@ -819,17 +821,17 @@ public class StringReader {
 				}
 			} else if (c == '.') {
 				if (type.isFloatingPoint() && builder.toString().contains(".")) {
-					throw new InvalidStringException("Multiple dots in a number are not allowed: '" + builder + c + "'");
+					throw new InvalidStringException("Multiple dots in a number are not allowed: '" + sign + builder + c + "'");
 				}
 				if (!type.isFloatingPoint()) {
 					type = NumberType.DOUBLE; // Largest none infinite floating point type
 				}
 				if (!type.isSupportedRadix(radix)) {
-					throw new InvalidStringException("Try to read number of type '" + type + "' which does not support radix '" + radix + "': '" + builder + c + "'");
+					throw new InvalidStringException("Try to read number of type '" + type + "' which does not support radix '" + radix + "': '" + sign + builder + c + "'");
 				}
 			} else if (c == 'x') {
 				if (radix != Radix.DECIMAL) {
-					throw new InvalidStringException("Found invalid 'x' in number of type '" + type + "' with radix '" + radix + "': '" + builder + c + "'");
+					throw new InvalidStringException("Found invalid 'x' in number of type '" + type + "' with radix '" + radix + "': '" + sign + builder + c + "'");
 				}
 				if (builder.length() != 1 || builder.charAt(0) != '0') {
 					throw new InvalidStringException();
@@ -840,7 +842,7 @@ public class StringReader {
 				continue;
 			} else if (c == 'b') {
 				if (radix != Radix.DECIMAL) {
-					throw new InvalidStringException("Found invalid 'b' in number of type '" + type + "' with radix '" + radix + "': '" + builder + c + "'");
+					throw new InvalidStringException("Found invalid 'b' in number of type '" + type + "' with radix '" + radix + "': '" + sign + builder + c + "'");
 				}
 				if (builder.length() == 1 && builder.charAt(0) == '0') {
 					radix = Radix.BINARY;
@@ -852,25 +854,26 @@ public class StringReader {
 				}
 			} else if (c == 'e' || c == 'p') {
 				if (exponent) {
-					throw new InvalidStringException("Found invalid '" + c + "' exponent in number of type '" + type + "' with radix '" + radix + "': '" + builder + c + "'");
+					throw new InvalidStringException("Found invalid '" + c + "' exponent in number of type '" + type + "' with radix '" + radix + "': '" + sign + builder + c + "'");
 				}
 				if (!type.isFloatingPoint()) {
-					throw new InvalidStringException("Exponent is only allowed for floating point numbers but found in number of type '" + type + "': '" + builder + c + "'");
+					throw new InvalidStringException("Exponent is only allowed for floating point numbers but found in number of type '" + type + "': '" + sign + builder + c + "'");
 				}
 				if ('e' == c && radix != Radix.DECIMAL) {
-					throw new InvalidStringException("Found invalid 'e' exponent in number of type '" + type + "' with radix '" + radix + "' expected 'decimal' radix: '" + builder + c + "'");
+					throw new InvalidStringException("Found invalid 'e' exponent in number of type '" + type + "' with radix '" + radix + "' expected 'decimal' radix: '" + sign + builder + c + "'");
 				}
 				if ('p' == c && radix != Radix.HEXADECIMAL) {
-					throw new InvalidStringException("Found invalid 'p' exponent in number of type '" + type + "' with radix '" + radix + "' expected 'hexadecimal' radix: '" + builder + c + "'");
+					throw new InvalidStringException("Found invalid 'p' exponent in number of type '" + type + "' with radix '" + radix + "' expected 'hexadecimal' radix: '" + sign + builder + c + "'");
 				}
 				exponent = true;
 			} else if (c == '+' || c == '-') {
+				String message = "Found invalid '" + c + "' sign in number of type '" + type + "' with radix '" + radix + "' and missing exponent: '" + sign + builder + c + "'";
 				if (!exponent) {
-					throw new InvalidStringException("Found invalid '" + c + "' sign in number of type '" + type + "' with radix '" + radix + "' and missing exponent: '" + builder + c + "'");
+					throw new InvalidStringException(message);
 				}
 				char last = Character.toLowerCase(builder.charAt(builder.length() - 1));
 				if (last != 'e' && last != 'p') {
-					throw new InvalidStringException("Found invalid '" + c + "' sign in number of type '" + type + "' with radix '" + radix + "' and missing exponent: '" + builder + c + "'");
+					throw new InvalidStringException(message);
 				}
 			} else {
 				if (radix != Radix.HEXADECIMAL) {
@@ -889,7 +892,10 @@ public class StringReader {
 			if (newType != null) {
 				this.skip();
 				if (!newType.isSupportedRadix(radix)) {
-					throw new InvalidStringException("Try to read number of type '" + newType + "' which does not support radix '" + radix + "': '" + builder + c + "'");
+					throw new InvalidStringException("Try to read number of type '" + newType + "' which does not support radix '" + radix + "': '" + sign + builder + c + "'");
+				}
+				if (!newType.canConvertTo(sign + builder.toString(), radix)) {
+					throw new InvalidStringException("Unable to convert number of type '" + type + "' to type '" + newType + "': '" + sign + builder + c + "'");
 				}
 				type = newType;
 			}
@@ -1075,6 +1081,59 @@ public class StringReader {
 			return number.type().parseNumber(number.getSignedValue(), number.radix());
 		} catch (NumberFormatException e) {
 			throw new InvalidStringException("Unable to parse double value: '" + number + "'", e);
+		}
+	}
+	//endregion
+	
+	//region Big numbers
+	
+	/**
+	 * Reads a big integer.<br>
+	 * @return The big integer value which was read
+	 * @throws StringIndexOutOfBoundsException If there are no more characters to read
+	 * @throws InvalidStringException If the read value is not a (valid) big integer
+	 * @see #readNumberAsString(NumberType)
+	 */
+	public @NotNull BigInteger readBigInteger() {
+		if (!this.canRead()) {
+			throw new StringIndexOutOfBoundsException("Expected a big integer value but found nothing");
+		}
+		ParsedNumber number = this.readNumberAsString(NumberType.BIG_INTEGER);
+		if (number == null || number.value().isEmpty()) {
+			throw new InvalidStringException("Expected a big integer value but found nothing");
+		}
+		if (number.type() != NumberType.BIG_INTEGER) {
+			throw new InvalidStringException("Expected a big integer value but found: '" + number + "'");
+		}
+		try {
+			return number.type().parseNumber(number.getSignedValue(), number.radix());
+		} catch (NumberFormatException e) {
+			throw new InvalidStringException("Unable to parse big integer value: '" + number + "'", e);
+		}
+	}
+	
+	/**
+	 * Reads a big decimal.<br>
+	 * @return The big decimal value which was read
+	 * @throws StringIndexOutOfBoundsException If there are no more characters to read
+	 * @throws InvalidStringException If the read value is not a (valid) big decimal
+	 * @see #readNumberAsString(NumberType)
+	 */
+	public @NotNull BigDecimal readBigDecimal() {
+		if (!this.canRead()) {
+			throw new StringIndexOutOfBoundsException("Expected a big decimal value but found nothing");
+		}
+		ParsedNumber number = this.readNumberAsString(NumberType.BIG_DECIMAL);
+		if (number == null || number.value().isEmpty()) {
+			throw new InvalidStringException("Expected a big decimal value but found nothing");
+		}
+		if (number.type() != NumberType.BIG_DECIMAL) {
+			throw new InvalidStringException("Expected a big decimal value but found: '" + number + "'");
+		}
+		try {
+			return number.type().parseNumber(number.getSignedValue(), number.radix());
+		} catch (NumberFormatException e) {
+			throw new InvalidStringException("Unable to parse big decimal value: '" + number + "'", e);
 		}
 	}
 	//endregion
