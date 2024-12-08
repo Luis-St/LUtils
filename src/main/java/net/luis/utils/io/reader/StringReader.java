@@ -22,15 +22,17 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import net.luis.utils.exception.InvalidStringException;
 import net.luis.utils.io.FileUtils;
+import net.luis.utils.math.NumberType;
+import net.luis.utils.math.Radix;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.jetbrains.annotations.ApiStatus;
-import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.*;
 
 import java.io.*;
+import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.util.*;
 import java.util.function.Predicate;
-import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 /**
@@ -39,15 +41,6 @@ import java.util.stream.Collectors;
  * @author Luis-St
  */
 public class StringReader {
-	
-	/**
-	 * The pattern to check for an invalid decimal floating point exponent.<br>
-	 */
-	private static final Pattern INVALID_FLOATING_POINT_EXPONENT_PATTERN = Pattern.compile("^[+-]?(|\\.)");
-	/**
-	 * The pattern to check for an invalid hexadecimal floating point exponent.<br>
-	 */
-	private static final Pattern INVALID_HEXADECIMAL_FLOATING_POINT_EXPONENT_PATTERN = Pattern.compile("^[+-]?0x(|\\.)");
 	
 	/**
 	 * The string to read from.<br>
@@ -779,166 +772,135 @@ public class StringReader {
 	 *     <li>double: 'd'</li>
 	 * </ul>
 	 * <p>
-	 *     The number can be specified in hexadecimal or binary format by starting with '0x' or '0b'.<br>
+	 *     The number can be specified in:<br>
+	 * </p>
+	 * <ul>
+	 *     <li>binary by prefixing with '0b'</li>
+	 *     <li>octal by prefixing with a single '0'</li>
+	 *     <li>decimal by default</li>
+	 *     <li>hexadecimal by prefixing with '0x'</li>
+	 * </ul>
+	 * <p>
 	 *     The number can contain underscores to separate digits.<br>
 	 *     Floating point numbers can contain an exponent with 'e' or 'p' for hexadecimal floating point numbers.<br>
 	 * </p>
 	 * @return The number as a string which was read
 	 * @throws InvalidStringException If the read value is not a (valid) number
 	 */
-	private @NotNull String readNumberAsString() {
+	private @Nullable ParsedNumber readNumberAsString(@Nullable NumberType initialType) {
 		if (!this.canRead()) {
-			return "";
+			return null;
 		}
 		char next = this.peek();
 		if (next == '"' || next == '\'') {
-			return this.readQuotedString();
+			String number = this.readQuotedString();
+			return new StringReader(number).readNumberAsString(initialType);
 		}
+		char sign = '+';
 		StringBuilder builder = new StringBuilder();
 		if (next == '-' || next == '+') {
-			builder.append(this.read());
+			sign = this.read();
 		}
-		boolean hasDot = false;
-		boolean hasExponent = false;
-		boolean hasHex = false;
-		boolean hasBin = false;
-		int firstNumber = 0;
-		if (!builder.isEmpty() && (builder.charAt(0) == '-' || builder.charAt(0) == '+')) {
-			firstNumber = 1;
-		}
+		
+		boolean exponent = false;
+		Radix radix = Radix.DECIMAL;
+		NumberType type = initialType == null ? NumberType.LONG : initialType; // Largest none infinite integer type
 		while (this.canRead()) {
 			char c = Character.toLowerCase(this.peek());
-			if (!Character.isDigit(c)) {
-				if (c == '+' || c == '-') {
-					if (!hasExponent) {
-						throw new InvalidStringException("Expected a number but found: '" + builder + c + "'");
-					}
-					char last = Character.toLowerCase(builder.charAt(builder.length() - 1));
-					if (last != 'e' && last != 'p') {
-						throw new InvalidStringException("Invalid exponent in floating point number: '" + builder + c + "'");
-					}
-				} else if (c == 'x') {
-					if (hasHex) {
-						throw new InvalidStringException("Expected a number but found: '" + builder + c + "'");
-					}
-					if (builder.length() == 1 && builder.charAt(firstNumber) == '0') {
-						hasHex = true;
-					}
-				} else if (c == 'b') {
-					if (hasBin) {
-						throw new InvalidStringException("Expected a number but found: '" + builder + c + "'");
-					}
-					if (builder.length() == 1 && builder.charAt(firstNumber) == '0') { // 'b' is a valid suffix for byte
-						hasBin = true;
-					}
-				} else if (c == '.') {
-					if (hasBin) {
-						throw new InvalidStringException("A binary number must not contain a dot: '" + builder + c + "'");
-					}
-					if (hasDot) {
-						throw new InvalidStringException("Invalid floating point number: '" + builder + c + "'");
-					}
-					hasDot = true;
-				} else if (c == '_') {
+			if (c == '_') {
+				if (builder.isEmpty()) {
+					throw new InvalidStringException("Underscores must not be at the beginning of a number");
+				}
+				this.skip();
+				continue;
+			}
+			
+			if (Character.isDigit(c)) {
+				if (builder.length() == 1 && builder.charAt(0) == '0' && c != '0' && radix == Radix.DECIMAL) {
+					radix = Radix.OCTAL;
+				}
+			} else if (c == '.') {
+				if (type.isFloatingPoint() && builder.toString().contains(".")) {
+					throw new InvalidStringException("Multiple dots in a number are not allowed: '" + sign + builder + c + "'");
+				}
+				if (!type.isFloatingPoint()) {
+					type = NumberType.DOUBLE; // Largest none infinite floating point type
+				}
+				if (!type.isSupportedRadix(radix)) {
+					throw new InvalidStringException("Try to read number of type '" + type + "' which does not support radix '" + radix + "': '" + sign + builder + c + "'");
+				}
+			} else if (c == 'x') {
+				if (radix != Radix.DECIMAL) {
+					throw new InvalidStringException("Found invalid 'x' in number of type '" + type + "' with radix '" + radix + "': '" + sign + builder + c + "'");
+				}
+				if (builder.length() != 1 || builder.charAt(0) != '0') {
+					throw new InvalidStringException();
+				}
+				radix = Radix.HEXADECIMAL;
+				builder.setLength(0);
+				this.skip();
+				continue;
+			} else if (c == 'b') {
+				if (radix != Radix.DECIMAL) {
+					throw new InvalidStringException("Found invalid 'b' in number of type '" + type + "' with radix '" + radix + "': '" + sign + builder + c + "'");
+				}
+				if (builder.length() == 1 && builder.charAt(0) == '0') {
+					radix = Radix.BINARY;
+					builder.setLength(0);
 					this.skip();
 					continue;
-				} else if (c == 'e') {
-					if (hasExponent) {
-						throw new InvalidStringException("Expected a number but found: '" + builder + c + "'");
-					}
-					if (hasHex || hasBin) {
-						throw new InvalidStringException("A hexadecimal or binary number must not contain an exponent: '" + builder + c + "'");
-					}
-					if (INVALID_FLOATING_POINT_EXPONENT_PATTERN.matcher(builder.toString()).matches()) {
-						throw new InvalidStringException("Invalid exponent in floating point number: '" + builder + c + "'");
-					}
-					hasExponent = true;
-				} else if (c == 'p') {
-					if (!hasHex) {
-						throw new InvalidStringException("Invalid exponent for non-hexadecimal number: '" + builder + c + "'");
-					}
-					if (hasExponent) {
-						throw new InvalidStringException("Expected a number but found: '" + builder + c + "'");
-					}
-					if (hasBin) {
-						throw new InvalidStringException("A binary number must not contain an exponent: '" + builder + c + "'");
-					}
-					if (INVALID_HEXADECIMAL_FLOATING_POINT_EXPONENT_PATTERN.matcher(builder.toString()).matches()) {
-						throw new InvalidStringException("Invalid exponent in hexadecimal floating point number: '" + builder + c + "'");
-					}
-					hasExponent = true;
 				} else {
-					if (!hasHex) {
-						break;
-					}
-					if (c < 'a' || 'f' < c) {
-						break;
-					}
+					break; // 'b' is a valid suffix for byte
 				}
-				
+			} else if (c == 'e' || c == 'p') {
+				if (exponent) {
+					throw new InvalidStringException("Found invalid '" + c + "' exponent in number of type '" + type + "' with radix '" + radix + "': '" + sign + builder + c + "'");
+				}
+				if (!type.isFloatingPoint()) {
+					throw new InvalidStringException("Exponent is only allowed for floating point numbers but found in number of type '" + type + "': '" + sign + builder + c + "'");
+				}
+				if ('e' == c && radix != Radix.DECIMAL) {
+					throw new InvalidStringException("Found invalid 'e' exponent in number of type '" + type + "' with radix '" + radix + "' expected 'decimal' radix: '" + sign + builder + c + "'");
+				}
+				if ('p' == c && radix != Radix.HEXADECIMAL) {
+					throw new InvalidStringException("Found invalid 'p' exponent in number of type '" + type + "' with radix '" + radix + "' expected 'hexadecimal' radix: '" + sign + builder + c + "'");
+				}
+				exponent = true;
+			} else if (c == '+' || c == '-') {
+				String message = "Found invalid '" + c + "' sign in number of type '" + type + "' with radix '" + radix + "' and missing exponent: '" + sign + builder + c + "'";
+				if (!exponent) {
+					throw new InvalidStringException(message);
+				}
+				char last = Character.toLowerCase(builder.charAt(builder.length() - 1));
+				if (last != 'e' && last != 'p') {
+					throw new InvalidStringException(message);
+				}
+			} else {
+				if (radix != Radix.HEXADECIMAL) {
+					break;
+				}
+				if (c < 'a' || 'f' < c) {
+					break;
+				}
 			}
 			builder.append(this.read());
 		}
-		if (this.canRead() && !hasHex && !hasBin) {
-			char type = Character.toLowerCase(this.peek());
-			if (type == 'b' || type == 's' || type == 'i' || type == 'l' || type == 'f' || type == 'd') {
-				builder.append(Character.toLowerCase(this.read()));
+		
+		if (this.canRead()) {
+			char c = Character.toLowerCase(this.peek());
+			NumberType newType = NumberType.getBySuffix(c);
+			if (newType != null) {
+				this.skip();
+				if (!newType.isSupportedRadix(radix)) {
+					throw new InvalidStringException("Try to read number of type '" + newType + "' which does not support radix '" + radix + "': '" + sign + builder + c + "'");
+				}
+				if (!newType.canConvertTo(sign + builder.toString(), radix)) {
+					throw new InvalidStringException("Unable to convert number of type '" + type + "' to type '" + newType + "': '" + sign + builder + c + "'");
+				}
+				type = newType;
 			}
 		}
-		return builder.toString();
-	}
-	
-	/**
-	 * Parses the radix of the number.<br>
-	 * The radix is determined by the prefix of the number:<br>
-	 * <ul>
-	 *     <li>0x: hexadecimal</li>
-	 *     <li>0b: binary</li>
-	 *     <li>otherwise: decimal</li>
-	 * </ul>
-	 * @param number The number to parse the radix from
-	 * @return The radix of the number
-	 */
-	private int parseRadix(@NotNull String number) {
-		if (number.startsWith("0x")) {
-			return 16;
-		}
-		if (number.startsWith("0b")) {
-			return 2;
-		}
-		return 10;
-	}
-	
-	/**
-	 * Parses a float number with the given radix.<br>
-	 * Supported radix are 10 (decimal) and 16 (hexadecimal).<br>
-	 * @param number The number to parse
-	 * @param radix The radix of the number
-	 * @return The parsed floating point number
-	 */
-	private float parseFloatWithRadix(@NotNull String number, int radix) {
-		if (radix == 10) {
-			return Float.parseFloat(number);
-		} else if (radix == 16) {
-			return Float.parseFloat("0x" + number);
-		}
-		throw new IllegalArgumentException("Invalid radix for floating point number, expected decimal or hexadecimal but found: " + radix);
-	}
-	
-	/**
-	 * Parses a double number with the given radix.<br>
-	 * Supported radix are 10 (decimal) and 16 (hexadecimal).<br>
-	 * @param number The number to parse
-	 * @param radix The radix of the number
-	 * @return The parsed double number
-	 */
-	private double parseDoubleWithRadix(@NotNull String number, int radix) {
-		if (radix == 10) {
-			return Double.parseDouble(number);
-		} else if (radix == 16) {
-			return Double.parseDouble("0x" + number);
-		}
-		throw new IllegalArgumentException("Invalid radix for floating point number, expected decimal or hexadecimal but found: " + radix);
+		return new ParsedNumber(sign, builder.toString(), type, radix);
 	}
 	//endregion
 	
@@ -949,36 +911,17 @@ public class StringReader {
 	 * @return The number value which was read
 	 * @throws StringIndexOutOfBoundsException If there are no more characters to read
 	 * @throws InvalidStringException If the read value is not a (valid) number
-	 * @see #readNumberAsString()
+	 * @see #readNumberAsString(NumberType)
 	 */
 	public @NotNull Number readNumber() {
 		if (!this.canRead()) {
 			throw new StringIndexOutOfBoundsException("Expected a number but found nothing");
 		}
-		String number = this.readNumberAsString();
-		if (number.isEmpty()) {
+		ParsedNumber number = this.readNumberAsString(null);
+		if (number == null || number.value().isEmpty()) {
 			throw new InvalidStringException("Expected a number but found nothing");
 		}
-		int radix = this.parseRadix(number);
-		if (radix != 10) {
-			number = number.substring(2);
-		}
-		char numberType = Character.toLowerCase(number.charAt(number.length() - 1));
-		if (Character.isDigit(numberType) || radix != 10) {
-			if (number.contains(".")) {
-				return this.parseDoubleWithRadix(number, radix);
-			}
-			return Long.parseLong(number, radix);
-		}
-		return switch (numberType) {
-			case 'b' -> Byte.parseByte(number.substring(0, number.length() - 1), radix);
-			case 's' -> Short.parseShort(number.substring(0, number.length() - 1), radix);
-			case 'i' -> Integer.parseInt(number.substring(0, number.length() - 1), radix);
-			case 'l' -> Long.parseLong(number.substring(0, number.length() - 1), radix);
-			case 'f' -> this.parseFloatWithRadix(number.substring(0, number.length() - 1), radix);
-			case 'd' -> this.parseDoubleWithRadix(number.substring(0, number.length() - 1), radix);
-			default -> throw new InvalidStringException("Unknown number type: " + numberType);
-		};
+		return number.type().parseNumber(number.getSignedValue(), number.radix());
 	}
 	
 	//region Read integer numbers
@@ -989,31 +932,23 @@ public class StringReader {
 	 * @return The byte value which was read
 	 * @throws StringIndexOutOfBoundsException If there are no more characters to read
 	 * @throws InvalidStringException If the read value is not a (valid) byte
-	 * @see #readNumberAsString()
+	 * @see #readNumberAsString(NumberType)
 	 */
 	public byte readByte() {
 		if (!this.canRead()) {
 			throw new StringIndexOutOfBoundsException("Expected a byte value but found nothing");
 		}
-		String number = this.readNumberAsString();
-		int radix = this.parseRadix(number);
-		if (radix != 10) {
-			number = number.substring(2);
-		}
-		if (number.isEmpty()) {
+		ParsedNumber number = this.readNumberAsString(NumberType.BYTE);
+		if (number == null || number.value().isEmpty()) {
 			throw new InvalidStringException("Expected a byte value but found nothing");
 		}
-		char last = Character.toLowerCase(number.charAt(number.length() - 1));
-		if (!Character.isDigit(last) && last != 'b' && radix == 10) {
+		if (number.type() != NumberType.BYTE) {
 			throw new InvalidStringException("Expected a byte value but found: '" + number + "'");
 		}
 		try {
-			if (!Character.isDigit(last) && radix == 10) {
-				return Byte.parseByte(number.substring(0, number.length() - 1));
-			}
-			return Byte.parseByte(number, radix);
+			return number.type().parseNumber(number.getSignedValue(), number.radix());
 		} catch (NumberFormatException e) {
-			throw new InvalidStringException("Expected a byte value but found: '" + number + "'", e);
+			throw new InvalidStringException("Unable to parse byte value: '" + number + "'", e);
 		}
 	}
 	
@@ -1023,31 +958,23 @@ public class StringReader {
 	 * @return The short value which was read
 	 * @throws StringIndexOutOfBoundsException If there are no more characters to read
 	 * @throws InvalidStringException If the read value is not a (valid) short
-	 * @see #readNumberAsString()
+	 * @see #readNumberAsString(NumberType)
 	 */
 	public short readShort() {
 		if (!this.canRead()) {
 			throw new StringIndexOutOfBoundsException("Expected a short value but found nothing");
 		}
-		String number = this.readNumberAsString();
-		int radix = this.parseRadix(number);
-		if (radix != 10) {
-			number = number.substring(2);
-		}
-		if (number.isEmpty()) {
+		ParsedNumber number = this.readNumberAsString(NumberType.SHORT);
+		if (number == null || number.value().isEmpty()) {
 			throw new InvalidStringException("Expected a short value but found nothing");
 		}
-		char last = Character.toLowerCase(number.charAt(number.length() - 1));
-		if (!Character.isDigit(last) && last != 's' && radix == 10) {
+		if (number.type() != NumberType.SHORT) {
 			throw new InvalidStringException("Expected a short value but found: '" + number + "'");
 		}
 		try {
-			if (!Character.isDigit(last) && radix == 10) {
-				return Short.parseShort(number.substring(0, number.length() - 1));
-			}
-			return Short.parseShort(number, radix);
+			return number.type().parseNumber(number.getSignedValue(), number.radix());
 		} catch (NumberFormatException e) {
-			throw new InvalidStringException("Expected a short value but found: '" + number + "'", e);
+			throw new InvalidStringException("Unable to parse short value: '" + number + "'", e);
 		}
 	}
 	
@@ -1056,31 +983,23 @@ public class StringReader {
 	 * The number can be suffixed with an {@code i} (case-insensitive) to indicate that it is an integer.<br>
 	 * @return The integer value which was read
 	 * @throws InvalidStringException If the read value is not a (valid) integer
-	 * @see #readNumberAsString()
+	 * @see #readNumberAsString(NumberType)
 	 */
 	public int readInt() {
 		if (!this.canRead()) {
 			throw new StringIndexOutOfBoundsException("Expected an integer value but found nothing");
 		}
-		String number = this.readNumberAsString();
-		int radix = this.parseRadix(number);
-		if (radix != 10) {
-			number = number.substring(2);
-		}
-		if (number.isEmpty()) {
+		ParsedNumber number = this.readNumberAsString(NumberType.INTEGER);
+		if (number == null || number.value().isEmpty()) {
 			throw new InvalidStringException("Expected a integer value but found nothing");
 		}
-		char last = Character.toLowerCase(number.charAt(number.length() - 1));
-		if (!Character.isDigit(last) && last != 'i' && radix == 10) {
+		if (number.type() != NumberType.INTEGER) {
 			throw new InvalidStringException("Expected a integer value but found: '" + number + "'");
 		}
 		try {
-			if (!Character.isDigit(last) && radix == 10) {
-				return Integer.parseInt(number.substring(0, number.length() - 1));
-			}
-			return Integer.parseInt(number, radix);
+			return number.type().parseNumber(number.getSignedValue(), number.radix());
 		} catch (NumberFormatException e) {
-			throw new InvalidStringException("Expected an integer value but found: '" + number + "'", e);
+			throw new InvalidStringException("Unable to parse integer value: '" + number + "'", e);
 		}
 	}
 	
@@ -1090,31 +1009,23 @@ public class StringReader {
 	 * @return The long value which was read
 	 * @throws StringIndexOutOfBoundsException If there are no more characters to read
 	 * @throws InvalidStringException If the read value is not a (valid) long
-	 * @see #readNumberAsString()
+	 * @see #readNumberAsString(NumberType)
 	 */
 	public long readLong() {
 		if (!this.canRead()) {
 			throw new StringIndexOutOfBoundsException("Expected a long value but found nothing");
 		}
-		String number = this.readNumberAsString();
-		int radix = this.parseRadix(number);
-		if (radix != 10) {
-			number = number.substring(2);
-		}
-		if (number.isEmpty()) {
+		ParsedNumber number = this.readNumberAsString(NumberType.LONG);
+		if (number == null || number.value().isEmpty()) {
 			throw new InvalidStringException("Expected a long value but found nothing");
 		}
-		char last = Character.toLowerCase(number.charAt(number.length() - 1));
-		if (!Character.isDigit(last) && last != 'l' && radix == 10) {
+		if (number.type() != NumberType.LONG) {
 			throw new InvalidStringException("Expected a long value but found: '" + number + "'");
 		}
 		try {
-			if (!Character.isDigit(last) && radix == 10) {
-				return Long.parseLong(number.substring(0, number.length() - 1));
-			}
-			return Long.parseLong(number, radix);
+			return number.type().parseNumber(number.getSignedValue(), number.radix());
 		} catch (NumberFormatException e) {
-			throw new InvalidStringException("Expected a long value but found: '" + number + "'", e);
+			throw new InvalidStringException("Unable to parse long value: '" + number + "'", e);
 		}
 	}
 	//endregion
@@ -1127,24 +1038,23 @@ public class StringReader {
 	 * @return The float value which was read
 	 * @throws StringIndexOutOfBoundsException If there are no more characters to read
 	 * @throws InvalidStringException If the read value is not a (valid) float
-	 * @see #readNumberAsString()
+	 * @see #readNumberAsString(NumberType)
 	 */
 	public float readFloat() {
 		if (!this.canRead()) {
 			throw new StringIndexOutOfBoundsException("Expected a float value but found nothing");
 		}
-		String value = this.readNumberAsString();
-		if (value.isEmpty()) {
+		ParsedNumber number = this.readNumberAsString(NumberType.FLOAT);
+		if (number == null || number.value().isEmpty()) {
 			throw new InvalidStringException("Expected a float value but found nothing");
 		}
-		char last = Character.toLowerCase(value.charAt(value.length() - 1));
-		if (!Character.isDigit(last) && last != 'f') {
-			throw new InvalidStringException("Expected a float value but found: '" + value + "'");
+		if (number.type() != NumberType.FLOAT) {
+			throw new InvalidStringException("Expected a float value but found: '" + number + "'");
 		}
 		try {
-			return Float.parseFloat(Character.isDigit(last) ? value : value.substring(0, value.length() - 1));
+			return number.type().parseNumber(number.getSignedValue(), number.radix());
 		} catch (NumberFormatException e) {
-			throw new InvalidStringException("Expected a float value but found: '" + value + "'", e);
+			throw new InvalidStringException("Unable to parse float value: '" + number + "'", e);
 		}
 	}
 	
@@ -1154,24 +1064,90 @@ public class StringReader {
 	 * @return The double value which was read
 	 * @throws StringIndexOutOfBoundsException If there are no more characters to read
 	 * @throws InvalidStringException If the read value is not a (valid) double
-	 * @see #readNumberAsString()
+	 * @see #readNumberAsString(NumberType)
 	 */
 	public double readDouble() {
 		if (!this.canRead()) {
 			throw new StringIndexOutOfBoundsException("Expected a double value but found nothing");
 		}
-		String value = this.readNumberAsString();
-		if (value.isEmpty()) {
+		ParsedNumber number = this.readNumberAsString(NumberType.DOUBLE);
+		if (number == null || number.value().isEmpty()) {
 			throw new InvalidStringException("Expected a double value but found nothing");
 		}
-		char last = Character.toLowerCase(value.charAt(value.length() - 1));
-		if (!Character.isDigit(last) && last != 'd') {
-			throw new InvalidStringException("Expected a double value but found: '" + value + "'");
+		if (number.type() != NumberType.DOUBLE) {
+			throw new InvalidStringException("Expected a double value but found: '" + number + "'");
 		}
 		try {
-			return Double.parseDouble(Character.isDigit(last) ? value : value.substring(0, value.length() - 1));
+			return number.type().parseNumber(number.getSignedValue(), number.radix());
 		} catch (NumberFormatException e) {
-			throw new InvalidStringException("Expected a double value but found: '" + value + "'", e);
+			throw new InvalidStringException("Unable to parse double value: '" + number + "'", e);
+		}
+	}
+	//endregion
+	
+	//region Big numbers
+	
+	/**
+	 * Reads a big integer.<br>
+	 * @return The big integer value which was read
+	 * @throws StringIndexOutOfBoundsException If there are no more characters to read
+	 * @throws InvalidStringException If the read value is not a (valid) big integer
+	 * @see #readNumberAsString(NumberType)
+	 */
+	public @NotNull BigInteger readBigInteger() {
+		if (!this.canRead()) {
+			throw new StringIndexOutOfBoundsException("Expected a big integer value but found nothing");
+		}
+		ParsedNumber number = this.readNumberAsString(NumberType.BIG_INTEGER);
+		if (number == null || number.value().isEmpty()) {
+			throw new InvalidStringException("Expected a big integer value but found nothing");
+		}
+		if (number.type() != NumberType.BIG_INTEGER) {
+			throw new InvalidStringException("Expected a big integer value but found: '" + number + "'");
+		}
+		try {
+			return number.type().parseNumber(number.getSignedValue(), number.radix());
+		} catch (NumberFormatException e) {
+			throw new InvalidStringException("Unable to parse big integer value: '" + number + "'", e);
+		}
+	}
+	
+	/**
+	 * Reads a big decimal.<br>
+	 * @return The big decimal value which was read
+	 * @throws StringIndexOutOfBoundsException If there are no more characters to read
+	 * @throws InvalidStringException If the read value is not a (valid) big decimal
+	 * @see #readNumberAsString(NumberType)
+	 */
+	public @NotNull BigDecimal readBigDecimal() {
+		if (!this.canRead()) {
+			throw new StringIndexOutOfBoundsException("Expected a big decimal value but found nothing");
+		}
+		ParsedNumber number = this.readNumberAsString(NumberType.BIG_DECIMAL);
+		if (number == null || number.value().isEmpty()) {
+			throw new InvalidStringException("Expected a big decimal value but found nothing");
+		}
+		if (number.type() != NumberType.BIG_DECIMAL) {
+			throw new InvalidStringException("Expected a big decimal value but found: '" + number + "'");
+		}
+		try {
+			return number.type().parseNumber(number.getSignedValue(), number.radix());
+		} catch (NumberFormatException e) {
+			throw new InvalidStringException("Unable to parse big decimal value: '" + number + "'", e);
+		}
+	}
+	//endregion
+	
+	//region Internal
+	private record ParsedNumber(char sign, @NotNull String value, @NotNull NumberType type, @NotNull Radix radix) {
+		
+		public @NotNull String getSignedValue() {
+			return this.sign + this.value;
+		}
+		
+		@Override
+		public @NotNull String toString() {
+			return this.sign + this.value + " of type " + this.type + " with radix " + this.radix;
 		}
 	}
 	//endregion

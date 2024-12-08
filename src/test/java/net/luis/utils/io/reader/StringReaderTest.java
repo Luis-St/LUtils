@@ -22,6 +22,8 @@ import net.luis.utils.exception.InvalidStringException;
 import org.junit.jupiter.api.Test;
 
 import java.io.Reader;
+import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -386,7 +388,7 @@ class StringReaderTest {
 		reader.skip(4);
 		assertEquals(1, assertInstanceOf(Long.class, reader.readNumber()));
 		reader.skip();
-		assertEquals(3, (int) assertInstanceOf(Byte.class, reader.readNumber()));
+		assertEquals((byte) 3, assertInstanceOf(Byte.class, reader.readNumber()));
 		reader.skip();
 		assertEquals(2.0, assertInstanceOf(Double.class, reader.readNumber()), PRECISION);
 		reader.skip();
@@ -509,5 +511,43 @@ class StringReaderTest {
 		reader.skip();
 		assertEquals(0.071044921875, reader.readDouble(), PRECISION);
 		assertThrows(StringIndexOutOfBoundsException.class, reader::readDouble);
+	}
+	
+	@Test
+	void readBigInteger() {
+		StringReader reader = new StringReader("test 1 500 '10_000_000_000_000_000' 0xFFF_FFF_FFF_FFF_FFF_FFF -10");
+		assertThrows(InvalidStringException.class, reader::readBigInteger);
+		assertEquals('t', reader.read());
+		reader.skip(4);
+		assertEquals(BigInteger.ONE, reader.readBigInteger());
+		reader.skip();
+		assertEquals(BigInteger.valueOf(500), reader.readBigInteger());
+		reader.skip();
+		assertEquals(new BigInteger("10_000_000_000_000_000".replace("_", "")), reader.readBigInteger());
+		reader.skip();
+		assertEquals(new BigInteger("FFF_FFF_FFF_FFF_FFF_FFF".replace("_", ""), 16), reader.readBigInteger());
+		reader.skip();
+		assertEquals(BigInteger.valueOf(-10), reader.readBigInteger());
+		reader.skip();
+		assertThrows(StringIndexOutOfBoundsException.class, reader::readBigInteger);
+	}
+	
+	@Test
+	void readBigDecimal() {
+		StringReader reader = new StringReader("test 1.0 0.54321 '1.9e5000' 0x1.FFp+4 -5.");
+		assertThrows(InvalidStringException.class, reader::readBigDecimal);
+		assertEquals('t', reader.read());
+		reader.skip(4);
+		assertEquals(new BigDecimal("1.0"), reader.readBigDecimal());
+		reader.skip();
+		assertEquals(new BigDecimal("0.54321"), reader.readBigDecimal());
+		reader.skip();
+		assertEquals(new BigDecimal("1.9e5000"), reader.readBigDecimal());
+		reader.skip();
+		assertEquals(new BigDecimal("32"), reader.readBigDecimal());
+		reader.skip();
+		assertEquals(new BigDecimal("-5"), reader.readBigDecimal());
+		reader.skip();
+		assertThrows(StringIndexOutOfBoundsException.class, reader::readBigDecimal);
 	}
 }
