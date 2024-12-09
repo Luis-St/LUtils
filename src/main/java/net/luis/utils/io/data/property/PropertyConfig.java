@@ -16,11 +16,11 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-package net.luis.utils.io.data.properties;
+package net.luis.utils.io.data.property;
 
 import net.luis.utils.io.data.config.ReadOnly;
 import net.luis.utils.io.data.config.WriteOnly;
-import net.luis.utils.io.data.properties.exception.PropertySyntaxException;
+import net.luis.utils.io.data.property.exception.PropertySyntaxException;
 import org.jetbrains.annotations.NotNull;
 
 import java.nio.charset.Charset;

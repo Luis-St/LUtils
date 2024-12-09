@@ -16,7 +16,7 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-package net.luis.utils.io.data.properties.exception;
+package net.luis.utils.io.data.property.exception;
 
 import org.jetbrains.annotations.Nullable;
 

@@ -43,8 +43,8 @@ module net.luis.utils {
 	exports net.luis.utils.io.data.config;
 	exports net.luis.utils.io.data.json;
 	exports net.luis.utils.io.data.json.exception;
-	exports net.luis.utils.io.data.properties;
-	exports net.luis.utils.io.data.properties.exception;
+	exports net.luis.utils.io.data.property;
+	exports net.luis.utils.io.data.property.exception;
 	exports net.luis.utils.io.data.xml;
 	exports net.luis.utils.io.data.xml.exception;
 	exports net.luis.utils.io.exception;

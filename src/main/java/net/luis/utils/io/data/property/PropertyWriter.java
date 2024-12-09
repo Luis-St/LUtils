@@ -16,7 +16,7 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-package net.luis.utils.io.data.properties;
+package net.luis.utils.io.data.property;
 
 import net.luis.utils.io.data.OutputProvider;
 import net.luis.utils.util.ValueConverter;
