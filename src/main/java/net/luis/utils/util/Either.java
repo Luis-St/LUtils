@@ -18,8 +18,7 @@
 
 package net.luis.utils.util;
 
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
+import org.jetbrains.annotations.*;
 
 import java.util.Objects;
 import java.util.Optional;
@@ -116,14 +115,14 @@ public abstract sealed class Either<L, R> permits Either.Left, Either.Right {
 	 * @return The left value
 	 * @throws IllegalStateException If the left value is not present
 	 */
-	public abstract L leftOrThrow();
+	public abstract @UnknownNullability L leftOrThrow();
 	
 	/**
 	 * Returns the right value or throws an exception if it is a left either.<br>
 	 * @return The right value
 	 * @throws IllegalStateException If the right value is not present
 	 */
-	public abstract R rightOrThrow();
+	public abstract @UnknownNullability R rightOrThrow();
 	
 	/**
 	 * Swaps the left and right values of this either instance.<br>
@@ -156,6 +155,7 @@ public abstract sealed class Either<L, R> permits Either.Left, Either.Right {
 	
 	/**
 	 * Maps the left value of this either instance to a new value.<br>
+	 * If this is a right either, the mapping is not applied.<br>
 	 * @param mapper The mapper for the left value
 	 * @return A new either instance with the mapped left value
 	 * @param <T> The new type of the left value
@@ -167,6 +167,7 @@ public abstract sealed class Either<L, R> permits Either.Left, Either.Right {
 	
 	/**
 	 * Maps the right value of this either instance to a new value.<br>
+	 * If this is a left either, the mapping is not applied.<br>
 	 * @param mapper The mapper for the right value
 	 * @return A new either instance with the mapped right value
 	 * @param <T> The new type of the right value
@@ -227,7 +228,7 @@ public abstract sealed class Either<L, R> permits Either.Left, Either.Right {
 		}
 		
 		@Override
-		public L leftOrThrow() {
+		public @UnknownNullability L leftOrThrow() {
 			return this.value;
 		}
 		
@@ -324,7 +325,7 @@ public abstract sealed class Either<L, R> permits Either.Left, Either.Right {
 		}
 		
 		@Override
-		public R rightOrThrow() {
+		public @UnknownNullability R rightOrThrow() {
 			return this.value;
 		}
 		

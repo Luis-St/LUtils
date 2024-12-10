@@ -18,11 +18,11 @@
 
 package net.luis.utils.util;
 
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
+import org.jetbrains.annotations.*;
 
 import java.util.Objects;
 import java.util.Optional;
+import java.util.function.Function;
 import java.util.function.Supplier;
 
 /**
@@ -102,7 +102,7 @@ public class Result<T> implements Supplier<Either<T, String>> {
 	 * @return The result of the operation
 	 * @throws IllegalStateException If the result is an error
 	 */
-	public @Nullable T orThrow() {
+	public @UnknownNullability T orThrow() {
 		return this.orThrow(() -> new IllegalStateException("Result failed, no value present"));
 	}
 	
@@ -114,7 +114,7 @@ public class Result<T> implements Supplier<Either<T, String>> {
 	 * @throws NullPointerException If the exception supplier is null
 	 * @throws X If the result is an error
 	 */
-	public <X extends RuntimeException> @Nullable T orThrow(@NotNull Supplier<? extends X> exceptionSupplier) {
+	public <X extends RuntimeException> @UnknownNullability T orThrow(@NotNull Supplier<? extends X> exceptionSupplier) {
 		if (this.result.isLeft()) {
 			return this.result.leftOrThrow();
 		}
@@ -135,6 +135,19 @@ public class Result<T> implements Supplier<Either<T, String>> {
 	 */
 	public @NotNull Optional<String> error() {
 		return this.result.right();
+	}
+	
+	/**
+	 * Maps the result of the operation to another type.<br>
+	 * If the result is an error, the mapping is not applied.<br>
+	 * @param mapper The mapper function
+	 * @return The mapped result
+	 * @param <R> The type of the mapped result
+	 * @throws NullPointerException If the mapper is null
+	 */
+	public <R> @NotNull Result<R> map(@NotNull Function<T, R> mapper) {
+		Objects.requireNonNull(mapper, "Mapper must not be null");
+		return new Result<>(this.result.mapLeft(mapper));
 	}
 	
 	//region Object overrides
