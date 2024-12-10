@@ -23,8 +23,7 @@ import net.luis.utils.io.data.json.exception.NoSuchJsonElementException;
 import org.junit.jupiter.api.Test;
 
 import java.nio.charset.StandardCharsets;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -123,11 +122,11 @@ class JsonObjectTest {
 	}
 	
 	@Test
-	void values() {
+	void elements() {
 		JsonObject object = new JsonObject();
-		assertIterableEquals(Set.of(), object.values());
+		assertIterableEquals(Set.of(), object.elements());
 		object.add("key", JsonNull.INSTANCE);
-		assertIterableEquals(Set.of(JsonNull.INSTANCE), object.values());
+		assertIterableEquals(Set.of(JsonNull.INSTANCE), object.elements());
 	}
 	
 	@Test
@@ -139,6 +138,18 @@ class JsonObjectTest {
 	}
 	
 	@Test
+	void forEach() {
+		JsonObject object = new JsonObject();
+		assertThrows(NullPointerException.class, () -> object.forEach(null));
+		object.forEach((key, value) -> fail());
+		object.add("key", JsonNull.INSTANCE);
+		object.forEach((key, value) -> {
+			assertEquals("key", key);
+			assertEquals(JsonNull.INSTANCE, value);
+		});
+	}
+	
+	@Test
 	void add() {
 		JsonObject object = new JsonObject();
 		assertThrows(NullPointerException.class, () -> object.add(null, JsonNull.INSTANCE));
@@ -146,6 +157,28 @@ class JsonObjectTest {
 		object.add("key1", new JsonPrimitive(10));
 		assertEquals(JsonNull.INSTANCE, object.get("key0"));
 		assertEquals(new JsonPrimitive(10), object.get("key1"));
+	}
+	
+	@Test
+	void addAll() {
+		JsonObject main = new JsonObject();
+		assertThrows(NullPointerException.class, () -> main.addAll((JsonObject) null));
+		JsonObject object = new JsonObject();
+		object.add("key0", JsonNull.INSTANCE);
+		object.add("key1", new JsonPrimitive(10));
+		main.addAll(object);
+		assertEquals(JsonNull.INSTANCE, main.get("key0"));
+		assertEquals(new JsonPrimitive(10), main.get("key1"));
+		assertEquals(2, main.size());
+		
+		assertThrows(NullPointerException.class, () -> main.addAll((Map<String, ? extends JsonElement>) null));
+		Map<String, JsonElement> map = new HashMap<>();
+		map.put("key2", new JsonPrimitive(20));
+		map.put("key3", new JsonPrimitive(30));
+		main.addAll(map);
+		assertEquals(new JsonPrimitive(20), main.get("key2"));
+		assertEquals(new JsonPrimitive(30), main.get("key3"));
+		assertEquals(4, main.size());
 	}
 	
 	@Test

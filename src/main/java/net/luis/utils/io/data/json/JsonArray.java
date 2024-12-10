@@ -21,8 +21,7 @@ package net.luis.utils.io.data.json;
 import com.google.common.collect.Lists;
 import net.luis.utils.io.data.json.exception.JsonArrayIndexOutOfBoundsException;
 import net.luis.utils.io.data.json.exception.JsonTypeException;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
+import org.jetbrains.annotations.*;
 
 import java.util.*;
 
@@ -33,7 +32,7 @@ import java.util.*;
  *
  * @author Luis-St
  */
-public class JsonArray implements JsonElement {
+public class JsonArray implements JsonElement, Iterable<JsonElement> {
 	
 	/**
 	 * The internal linked list of json elements.<br>
@@ -86,8 +85,25 @@ public class JsonArray implements JsonElement {
 	 * Returns an iterator over the elements in this json array.<br>
 	 * @return The iterator over the elements
 	 */
+	@Override
 	public @NotNull Iterator<JsonElement> iterator() {
 		return this.elements.iterator();
+	}
+	
+	/**
+	 * Returns an unmodifiable collection of the json elements in this json array.<br>
+	 * @return The collection of json elements
+	 */
+	public @NotNull @Unmodifiable Collection<JsonElement> elements() {
+		return Collections.unmodifiableCollection(this.elements);
+	}
+	
+	/**
+	 * Returns an unmodifiable list of the json elements in this json array.<br>
+	 * @return The list of json elements
+	 */
+	public @NotNull @Unmodifiable List<JsonElement> getElements() {
+		return List.copyOf(this.elements);
 	}
 	//endregion
 	
@@ -323,6 +339,33 @@ public class JsonArray implements JsonElement {
 	 */
 	public void add(double value) {
 		this.add(new JsonPrimitive(value));
+	}
+	
+	/**
+	 * Adds all json elements from the given json array to this json array.<br>
+	 * @param array The json array to add
+	 * @throws NullPointerException If the json array is null
+	 */
+	public void addAll(@NotNull JsonArray array) {
+		this.addAll(Objects.requireNonNull(array, "Json array must not be null").elements);
+	}
+	
+	/**
+	 * Adds all json elements from the given array to this json array.<br>
+	 * @param elements The array of json elements to add
+	 */
+	public void addAll(JsonElement @NotNull ... elements) {
+		Objects.requireNonNull(elements, "Json elements must not be null");
+		this.addAll(Arrays.asList(elements));
+	}
+	
+	/**
+	 * Adds all json elements from the given list to this json array.<br>
+	 * @param elements The list of json elements to add
+	 * @throws NullPointerException If the list of json elements is null
+	 */
+	public void addAll(@NotNull List<? extends JsonElement> elements) {
+		this.elements.addAll(Objects.requireNonNull(elements, "Json elements must not be null"));
 	}
 	//endregion
 	
