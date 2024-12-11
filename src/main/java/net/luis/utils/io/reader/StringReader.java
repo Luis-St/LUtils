@@ -756,9 +756,11 @@ public class StringReader {
 	//region Read number helper methods
 	
 	/**
-	 * Reads a number as a string.<br>
-	 * The number can be quoted or unquoted.<br>
+	 * Reads a number as a string of the given type.<br>
+	 * The initial type is used to determine the type of the number,<br>
+	 * it can be overridden by a larger number type (e.g. reading a byte as a long).<br>
 	 * <p>
+	 *     The number can be quoted or unquoted.<br>
 	 *     The first character can be a minus or plus sign.<br>
 	 *     The number can contain a single dot for float or double values.<br>
 	 *     The number can contain a type suffix (single character, case-insensitive) at the end of the number:<br>
@@ -784,6 +786,7 @@ public class StringReader {
 	 *     The number can contain underscores to separate digits.<br>
 	 *     Floating point numbers can contain an exponent with 'e' or 'p' for hexadecimal floating point numbers.<br>
 	 * </p>
+	 * @param initialType The initial number type to read as
 	 * @return The number as a string which was read
 	 * @throws InvalidStringException If the read value is not a (valid) number
 	 */
@@ -1139,16 +1142,45 @@ public class StringReader {
 	//endregion
 	
 	//region Internal
+	
+	/**
+	 * Internal to represent a parsed number.<br>
+	 * @param sign The sign of the number
+	 * @param value The value of the number
+	 * @param type The type of the number
+	 * @param radix The radix of the number
+	 */
 	private record ParsedNumber(char sign, @NotNull String value, @NotNull NumberType type, @NotNull Radix radix) {
 		
+		/**
+		 * Constructs a new parsed number.<br>
+		 * @param sign The sign of the number
+		 * @param value The value of the number
+		 * @param type The type of the number
+		 * @param radix The radix of the number
+		 * @throws NullPointerException If the value, type or radix is null
+		 */
+		private ParsedNumber {
+			Objects.requireNonNull(value, "Value must not be null");
+			Objects.requireNonNull(type, "Type must not be null");
+			Objects.requireNonNull(radix, "Radix must not be null");
+		}
+		
+		/**
+		 * Returns the signed value of the number.<br>
+		 * The value is prefixed with the sign.<br>
+		 * @return The signed value
+		 */
 		public @NotNull String getSignedValue() {
 			return this.sign + this.value;
 		}
 		
+		//region Object overrides
 		@Override
 		public @NotNull String toString() {
 			return this.sign + this.value + " of type " + this.type + " with radix " + this.radix;
 		}
+		//endregion
 	}
 	//endregion
 }

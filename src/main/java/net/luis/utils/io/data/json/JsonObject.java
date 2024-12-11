@@ -21,10 +21,10 @@ package net.luis.utils.io.data.json;
 import com.google.common.collect.Maps;
 import net.luis.utils.io.data.json.exception.JsonTypeException;
 import net.luis.utils.io.data.json.exception.NoSuchJsonElementException;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
+import org.jetbrains.annotations.*;
 
 import java.util.*;
+import java.util.function.BiConsumer;
 
 /**
  * Represents a json object.<br>
@@ -103,8 +103,8 @@ public class JsonObject implements JsonElement {
 	 * Returns the collection of values in this json object.<br>
 	 * @return The values of this json object
 	 */
-	public @NotNull Collection<JsonElement> values() {
-		return this.elements.values();
+	public @NotNull @Unmodifiable Collection<JsonElement> elements() {
+		return Collections.unmodifiableCollection(this.elements.values());
 	}
 	
 	/**
@@ -113,6 +113,15 @@ public class JsonObject implements JsonElement {
 	 */
 	public @NotNull Set<Map.Entry<String, JsonElement>> entrySet() {
 		return this.elements.entrySet();
+	}
+	
+	/**
+	 * Iterates over the entries of this json object and applies the given action to each entry.<br>
+	 * @param action The action to apply to each entry
+	 * @throws NullPointerException If the given action is null
+	 */
+	public void forEach(@NotNull BiConsumer<? super String, ? super JsonElement> action) {
+		this.elements.forEach(Objects.requireNonNull(action, "Action must not be null"));
 	}
 	//endregion
 	
@@ -249,6 +258,24 @@ public class JsonObject implements JsonElement {
 	 */
 	public @Nullable JsonElement add(@NotNull String key, double value) {
 		return this.add(key, new JsonPrimitive(value));
+	}
+	
+	/**
+	 * Adds all elements from the given json object to this json object.<br>
+	 * @param object The json object of elements to add
+	 * @throws NullPointerException If the given json object is null
+	 */
+	public void addAll(@NotNull JsonObject object) {
+		this.elements.putAll(Objects.requireNonNull(object, "Json object must not be null").elements);
+	}
+	
+	/**
+	 * Adds all elements from the given map to this json object.<br>
+	 * @param elements The map of elements to add
+	 * @throws NullPointerException If the given elements are null
+	 */
+	public void addAll(@NotNull Map<String, ? extends JsonElement> elements) {
+		this.elements.putAll(Objects.requireNonNull(elements, "Json elements must not be null"));
 	}
 	//endregion
 	

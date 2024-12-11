@@ -114,6 +114,24 @@ class JsonArrayTest {
 	}
 	
 	@Test
+	void elements() {
+		JsonArray array = new JsonArray();
+		assertIterableEquals(List.of(), array.elements());
+		array.add(JsonNull.INSTANCE);
+		array.add(new JsonPrimitive(10));
+		assertIterableEquals(List.of(JsonNull.INSTANCE, new JsonPrimitive(10)), array.elements());
+	}
+	
+	@Test
+	void getElements() {
+		JsonArray array = new JsonArray();
+		assertIterableEquals(List.of(), array.getElements());
+		array.add(JsonNull.INSTANCE);
+		array.add(new JsonPrimitive(10));
+		assertIterableEquals(List.of(JsonNull.INSTANCE, new JsonPrimitive(10)), array.getElements());
+	}
+	
+	@Test
 	void set() {
 		JsonArray array = new JsonArray();
 		assertThrows(JsonArrayIndexOutOfBoundsException.class, () -> array.set(0, JsonNull.INSTANCE));
@@ -132,6 +150,30 @@ class JsonArrayTest {
 		assertEquals(new JsonPrimitive(10), array.get(1));
 		array.remove(1);
 		assertEquals(JsonNull.INSTANCE, array.get(0));
+	}
+	
+	@Test
+	void addAll() {
+		JsonArray main = new JsonArray();
+		assertThrows(NullPointerException.class, () -> main.addAll((JsonArray) null));
+		JsonArray array = new JsonArray();
+		array.add(JsonNull.INSTANCE);
+		array.add(new JsonPrimitive(10));
+		main.addAll(array);
+		assertEquals(JsonNull.INSTANCE, main.get(0));
+		assertEquals(new JsonPrimitive(10), main.get(1));
+		assertEquals(2, main.size());
+		
+		assertThrows(NullPointerException.class, () -> main.addAll((JsonElement[]) null));
+		main.addAll(new JsonPrimitive(20), new JsonPrimitive(30));
+		assertEquals(new JsonPrimitive(20), main.get(2));
+		assertEquals(new JsonPrimitive(30), main.get(3));
+		assertEquals(4, main.size());
+		
+		assertThrows(NullPointerException.class, () -> main.addAll((List<? extends JsonElement>) null));
+		main.addAll(List.of(new JsonPrimitive(40), new JsonPrimitive(50)));
+		assertEquals(new JsonPrimitive(40), main.get(4));
+		assertEquals(new JsonPrimitive(50), main.get(5));
 	}
 	
 	@Test

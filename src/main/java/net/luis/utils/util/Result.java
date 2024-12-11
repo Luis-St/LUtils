@@ -18,11 +18,11 @@
 
 package net.luis.utils.util;
 
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
+import org.jetbrains.annotations.*;
 
 import java.util.Objects;
 import java.util.Optional;
+import java.util.function.Function;
 import java.util.function.Supplier;
 
 /**
@@ -102,8 +102,8 @@ public class Result<T> implements Supplier<Either<T, String>> {
 	 * @return The result of the operation
 	 * @throws IllegalStateException If the result is an error
 	 */
-	public @Nullable T orThrow() {
-		return this.orThrow(() -> new IllegalStateException("Result failed, no value present"));
+	public @UnknownNullability T orThrow() {
+		return this.orThrow(error -> new IllegalStateException("Result failed, no value present: " + error));
 	}
 	
 	/**
@@ -114,11 +114,11 @@ public class Result<T> implements Supplier<Either<T, String>> {
 	 * @throws NullPointerException If the exception supplier is null
 	 * @throws X If the result is an error
 	 */
-	public <X extends RuntimeException> @Nullable T orThrow(@NotNull Supplier<? extends X> exceptionSupplier) {
+	public <X extends RuntimeException> @UnknownNullability T orThrow(@NotNull Function<String, ? extends X> exceptionSupplier) {
 		if (this.result.isLeft()) {
 			return this.result.leftOrThrow();
 		}
-		throw Objects.requireNonNull(exceptionSupplier, "Supplied exception must not be null").get();
+		throw Objects.requireNonNull(exceptionSupplier, "Supplied exception must not be null").apply(this.result.rightOrThrow());
 	}
 	
 	/**
@@ -135,6 +135,28 @@ public class Result<T> implements Supplier<Either<T, String>> {
 	 */
 	public @NotNull Optional<String> error() {
 		return this.result.right();
+	}
+	
+	/**
+	 * Gets the error message of the operation or throws an exception.<br>
+	 * @return The error message
+	 * @throws IllegalStateException If the result is not an error
+	 */
+	public @NotNull String errorOrThrow() {
+		return this.error().orElseThrow(() -> new IllegalStateException("Result is not an error"));
+	}
+	
+	/**
+	 * Maps the result of the operation to another type.<br>
+	 * If the result is an error, the mapping is not applied.<br>
+	 * @param mapper The mapper function
+	 * @return The mapped result
+	 * @param <R> The type of the mapped result
+	 * @throws NullPointerException If the mapper is null
+	 */
+	public <R> @NotNull Result<R> map(@NotNull Function<T, R> mapper) {
+		Objects.requireNonNull(mapper, "Mapper must not be null");
+		return new Result<>(this.result.mapLeft(mapper));
 	}
 	
 	//region Object overrides

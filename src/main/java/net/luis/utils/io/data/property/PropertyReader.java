@@ -16,12 +16,12 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-package net.luis.utils.io.data.properties;
+package net.luis.utils.io.data.property;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import net.luis.utils.io.data.InputProvider;
-import net.luis.utils.io.data.properties.exception.PropertySyntaxException;
+import net.luis.utils.io.data.property.exception.PropertySyntaxException;
 import net.luis.utils.io.reader.ScopedStringReader;
 import net.luis.utils.lang.StringUtils;
 import org.apache.commons.lang3.ArrayUtils;

@@ -40,6 +40,11 @@ class XmlHelper {
 	static final Pattern XML_ATTRIBUTE_NAME_PATTERN = Pattern.compile("^[a-z0-9_-]+(:[a-z0-9_-]+)?$", Pattern.CASE_INSENSITIVE);
 	
 	/**
+	 * Private constructor to prevent instantiation of utility class.<br>
+	 */
+	private XmlHelper() {}
+	
+	/**
 	 * Validates the given string.<br>
 	 * The base validation checks if the string is not null, not empty and not blank.<br>
 	 * @param str The string to validate

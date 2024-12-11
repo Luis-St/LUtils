@@ -84,4 +84,17 @@ class ResultTest {
 		assertEquals(Optional.empty(), Result.success(100).error());
 		assertEquals(Optional.of("Error"), Result.error("Error").error());
 	}
+	
+	@Test
+	void errorOrThrow() {
+		assertThrows(IllegalStateException.class, () -> Result.success(100).errorOrThrow());
+		assertEquals("Error", Result.error("Error").errorOrThrow());
+	}
+	
+	@Test
+	void map() {
+		assertThrows(NullPointerException.class, () -> Result.success(100).map(null));
+		assertEquals(Result.success(200), Result.success(100).map(i -> i * 2));
+		assertEquals(Result.error("Error"), Result.error("Error").map(i -> 10));
+	}
 }

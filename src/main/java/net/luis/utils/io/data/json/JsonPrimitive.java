@@ -141,7 +141,13 @@ public class JsonPrimitive implements JsonElement {
 		return switch (this.value) {
 			case Boolean b -> b;
 			case Number n -> n.intValue() != 0;
-			case String s -> Boolean.parseBoolean(s);
+			case String s -> {
+				try {
+					yield new StringReader(s).readBoolean();
+				} catch (Exception e) {
+					throw new IllegalStateException("Cannot convert value to boolean: " + this.value, e);
+				}
+			}
 			default -> throw new IllegalStateException("Cannot convert value to boolean: " + this.value);
 		};
 	}
@@ -161,7 +167,13 @@ public class JsonPrimitive implements JsonElement {
 		return switch (this.value) {
 			case Boolean b -> b ? 1 : 0;
 			case Number n -> n;
-			case String s -> new StringReader(s).readNumber();
+			case String s -> {
+				try {
+					yield new StringReader(s).readNumber();
+				} catch (Exception e) {
+					throw new IllegalStateException("Cannot convert value to number: " + this.value, e);
+				}
+			}
 			default -> throw new IllegalStateException("Cannot convert value to number: " + this.value);
 		};
 	}
