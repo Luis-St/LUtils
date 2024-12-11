@@ -87,7 +87,7 @@ publishing {
 		create<MavenPublication>("mavenJava") {
 			groupId = "net.luis"
 			artifactId = "LUtils"
-			version = "6.1.0"
+			version = "6.3.0"
 			artifact(tasks.named<Jar>("jar"))
 			artifact(tasks.named<Jar>("sourcesJar"))
 			artifact(tasks.named<Jar>("javadocJar"))
