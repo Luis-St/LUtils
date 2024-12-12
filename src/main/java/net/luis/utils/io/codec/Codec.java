@@ -65,7 +65,7 @@ public interface Codec<C> extends Encoder<C>, Decoder<C> {
 			return "BooleanCodec";
 		}
 	};
-	Codec<Byte> BYTE = new Codec<>() {
+	RangeCodec<Byte> BYTE = new RangeCodec<>(Byte.MIN_VALUE, Byte.MAX_VALUE, Number::byteValue, Byte::parseByte) {
 		
 		@Override
 		public @NotNull <R> Result<R> encodeStart(@NotNull TypeProvider<R> provider, @NotNull R current, @Nullable Byte value) {
@@ -88,7 +88,7 @@ public interface Codec<C> extends Encoder<C>, Decoder<C> {
 			return "ByteCodec";
 		}
 	};
-	Codec<Short> SHORT = new Codec<>() {
+	RangeCodec<Short> SHORT = new RangeCodec<>(Short.MIN_VALUE, Short.MAX_VALUE, Number::shortValue, Short::parseShort) {
 		
 		@Override
 		public @NotNull <R> Result<R> encodeStart(@NotNull TypeProvider<R> provider, @NotNull R current, @Nullable Short value) {
@@ -111,7 +111,7 @@ public interface Codec<C> extends Encoder<C>, Decoder<C> {
 			return "ShortCodec";
 		}
 	};
-	Codec<Integer> INTEGER = new Codec<>() {
+	RangeCodec<Integer> INTEGER = new RangeCodec<>(Integer.MIN_VALUE, Integer.MAX_VALUE, Number::intValue, Integer::parseInt) {
 		
 		@Override
 		public @NotNull <R> Result<R> encodeStart(@NotNull TypeProvider<R> provider, @NotNull R current, @Nullable Integer value) {
@@ -134,7 +134,7 @@ public interface Codec<C> extends Encoder<C>, Decoder<C> {
 			return "IntegerCodec";
 		}
 	};
-	Codec<Long> LONG = new Codec<>() {
+	RangeCodec<Long> LONG = new RangeCodec<>(Long.MIN_VALUE, Long.MAX_VALUE, Number::longValue, Long::parseLong) {
 		
 		@Override
 		public @NotNull <R> Result<R> encodeStart(@NotNull TypeProvider<R> provider, @NotNull R current, @Nullable Long value) {
@@ -157,7 +157,7 @@ public interface Codec<C> extends Encoder<C>, Decoder<C> {
 			return "LongCodec";
 		}
 	};
-	Codec<Float> FLOAT = new Codec<>() {
+	RangeCodec<Float> FLOAT = new RangeCodec<>(Float.MIN_VALUE, Float.MAX_VALUE, Number::floatValue, Float::parseFloat) {
 		
 		@Override
 		public @NotNull <R> Result<R> encodeStart(@NotNull TypeProvider<R> provider, @NotNull R current, @Nullable Float value) {
@@ -180,7 +180,7 @@ public interface Codec<C> extends Encoder<C>, Decoder<C> {
 			return "FloatCodec";
 		}
 	};
-	Codec<Double> DOUBLE = new Codec<>() {
+	RangeCodec<Double> DOUBLE = new RangeCodec<>(Double.MIN_VALUE, Double.MAX_VALUE, Number::doubleValue, Double::parseDouble) {
 		
 		@Override
 		public @NotNull <R> Result<R> encodeStart(@NotNull TypeProvider<R> provider, @NotNull R current, @Nullable Double value) {
