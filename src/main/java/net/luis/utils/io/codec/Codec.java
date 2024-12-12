@@ -314,6 +314,33 @@ public interface Codec<C> extends Encoder<C>, Decoder<C> {
 		return optional(this);
 	}
 	
+	default @NotNull Codec<C> orElse(@NotNull C defaultValue) {
+		return this.orElseGet(() -> defaultValue);
+	}
+	
+	default @NotNull Codec<C> orElseGet(@NotNull Supplier<C> supplier) {
+		return new Codec<C>() {
+			@Override
+			public <R> @NotNull Result<R> encodeStart(@NotNull TypeProvider<R> provider, @NotNull R current, @Nullable C value) {
+				return Codec.this.encodeStart(provider, current, value);
+			}
+			
+			@Override
+			public <R> @NotNull Result<C> decodeStart(@NotNull TypeProvider<R> provider, @Nullable R value) {
+				Result<C> result = Codec.this.decodeStart(provider, value);
+				if (result.isError()) {
+					return Result.success(supplier.get());
+				}
+				return result;
+			}
+			
+			@Override
+			public String toString() {
+				return "OrElseCodec[" + Codec.this + "]";
+			}
+		};
+	}
+	
 	default <O> @NotNull ConfigurableCodec<C, O> bind(@NotNull CodecBuilder<O> builder) {
 		return new ConfigurableCodec<>(builder, this);
 	}

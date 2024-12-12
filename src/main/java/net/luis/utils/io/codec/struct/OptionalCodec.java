@@ -70,11 +70,11 @@ public class OptionalCodec<C> implements Codec<Optional<C>> {
 		return this.codec.decodeStart(provider, value).map(Optional::of);
 	}
 	
-	public @NotNull Codec<Optional<C>> orElse(@NotNull C defaultValue) {
-		return this.orElseGet(() -> defaultValue);
+	public @NotNull Codec<Optional<C>> orDefault(@NotNull C defaultValue) {
+		return this.orGetDefault(() -> defaultValue);
 	}
 	
-	public @NotNull Codec<Optional<C>> orElseGet(@NotNull Supplier<C> defaultProvider) {
+	public @NotNull Codec<Optional<C>> orGetDefault(@NotNull Supplier<C> defaultProvider) {
 		this.defaultProvider = defaultProvider;
 		return this;
 	}
