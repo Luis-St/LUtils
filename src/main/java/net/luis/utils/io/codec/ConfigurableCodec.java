@@ -53,12 +53,15 @@ public class ConfigurableCodec<C, O> implements Codec<C> {
 		if (this.getter == null) {
 			return Result.error("Unable to encode field '" + this.name + "' of '" + object + "' with '" + this + "': Getter is null");
 		}
-		C value = this.getter.apply(object);
-		Result<R> encodedValue = this.encodeStart(provider, provider.empty(), value);
-		if (encodedValue.isError()) {
-			return Result.error("Unable to encode '" + object + "' with '" + this + "': " + encodedValue.errorOrThrow());
+		Result<R> result = this.encodeStart(provider, provider.empty(), this.getter.apply(object));
+		if (result.isError()) {
+			return Result.error("Unable to encode '" + object + "' with '" + this + "': " + result.errorOrThrow());
 		}
-		return provider.set(map, this.name, encodedValue.orThrow());
+		R encoded = result.orThrow();
+		if (provider.getEmpty(encoded).isSuccess()) {
+			return Result.success(map);
+		}
+		return provider.set(map, this.name, encoded);
 	}
 	
 	@Override
