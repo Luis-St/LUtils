@@ -652,7 +652,7 @@ public class LoggerConfiguration {
 	 */
 	private @NotNull String getPattern(@NotNull LoggingType type, @NotNull Level level) {
 		String pattern = this.patternOverrides.getOrDefault(type, Maps.newHashMap()).getOrDefault(level, DEFAULT_PATTERNS.get(level));
-		return "%replace{" + pattern + "}{\\[\\s*]\\s*}{}";
+		return "%replace{" + pattern + "}{] \\[]}{]}";
 	}
 	//endregion
 }
