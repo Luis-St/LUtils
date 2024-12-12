@@ -20,7 +20,6 @@ package net.luis.utils.io.codec.struct;
 
 import net.luis.utils.io.codec.Codec;
 import net.luis.utils.io.codec.provider.TypeProvider;
-import net.luis.utils.util.Range;
 import net.luis.utils.util.Result;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -37,7 +36,8 @@ import java.util.stream.Collectors;
 public class ListCodec<C> implements Codec<List<C>> {
 	
 	private final Codec<C> codec;
-	private final Range sizeRange;
+	private final int minSize;
+	private final int maxSize;
 	
 	public ListCodec(@NotNull Codec<C> codec) {
 		this(codec, 0, Integer.MAX_VALUE);
@@ -45,7 +45,8 @@ public class ListCodec<C> implements Codec<List<C>> {
 	
 	public ListCodec(@NotNull Codec<C> codec, int minSize, int maxSize) {
 		this.codec = codec;
-		this.sizeRange = Range.of(minSize, maxSize);
+		this.minSize = minSize;
+		this.maxSize = maxSize;
 	}
 	
 	@Override
@@ -57,10 +58,7 @@ public class ListCodec<C> implements Codec<List<C>> {
 		if (encoded.stream().anyMatch(Result::isError)) {
 			return Result.error("Unable to encode some elements of list '" + value + "' using '" + this + "': \n" + encoded.stream().filter(Result::isError).map(Result::errorOrThrow).collect(Collectors.joining("\n")));
 		}
-		List<R> results = encoded.stream().map(Result::orThrow).toList();
-		if (!this.sizeRange.isInRange(results.size())) {
-			return Result.error("Unable to encode list '" + value + "' with codec '" + this.codec + "' size out of range: " + results.size());
-		}
+		List<R> results = encoded.stream().map(Result::orThrow).filter(result -> provider.getEmpty(result).isError()).toList();
 		return provider.merge(current, provider.createList(results));
 	}
 	
@@ -77,7 +75,11 @@ public class ListCodec<C> implements Codec<List<C>> {
 		if (results.stream().anyMatch(Result::isError)) {
 			return Result.error("Unable to decode some elements of list using '" + this + "': \n" + results.stream().filter(Result::isError).map(Result::errorOrThrow).collect(Collectors.joining("\n")));
 		}
-		return Result.success(results.stream().map(Result::orThrow).toList());
+		if (this.maxSize >= results.size() && results.size() >= this.minSize) {
+			return Result.success(results.stream().map(Result::orThrow).toList());
+		}
+		return Result.error("List was decoded successfully but size '" + results.size() + "' is out of range: " + this.minSize + ".." + this.maxSize);
+	}
 	
 	@Override
 	public String toString() {
