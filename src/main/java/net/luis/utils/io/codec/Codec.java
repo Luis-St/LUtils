@@ -42,7 +42,7 @@ public interface Codec<C> extends Encoder<C>, Decoder<C> {
 		@Override
 		public @NotNull <R> Result<R> encodeStart(@NotNull TypeProvider<R> provider, @NotNull R current, @Nullable Boolean value) {
 			if (value == null) {
-				return Result.error("Unable to encode null as boolean");
+				return Result.error("Unable to encode null as boolean using '" + this + "'");
 			}
 			return provider.createBoolean(value);
 		}
@@ -50,9 +50,14 @@ public interface Codec<C> extends Encoder<C>, Decoder<C> {
 		@Override
 		public @NotNull <R> Result<Boolean> decodeStart(@NotNull TypeProvider<R> provider, @Nullable R value) {
 			if (value == null) {
-				return Result.error("Unable to decode null value as boolean");
+				return Result.error("Unable to decode null value as boolean using '" + this + "'");
 			}
 			return provider.getBoolean(value);
+		}
+		
+		@Override
+		public String toString() {
+			return "BooleanCodec";
 		}
 	};
 	Codec<Byte> BYTE = new Codec<>() {
@@ -60,7 +65,7 @@ public interface Codec<C> extends Encoder<C>, Decoder<C> {
 		@Override
 		public @NotNull <R> Result<R> encodeStart(@NotNull TypeProvider<R> provider, @NotNull R current, @Nullable Byte value) {
 			if (value == null) {
-				return Result.error("Unable to encode null as byte");
+				return Result.error("Unable to encode null as byte using '" + this + "'");
 			}
 			return provider.createByte(value);
 		}
@@ -68,9 +73,14 @@ public interface Codec<C> extends Encoder<C>, Decoder<C> {
 		@Override
 		public @NotNull <R> Result<Byte> decodeStart(@NotNull TypeProvider<R> provider, @Nullable R value) {
 			if (value == null) {
-				return Result.error("Unable to decode null value as byte");
+				return Result.error("Unable to decode null value as byte using '" + this + "'");
 			}
 			return provider.getByte(value);
+		}
+		
+		@Override
+		public String toString() {
+			return "ByteCodec";
 		}
 	};
 	Codec<Short> SHORT = new Codec<>() {
@@ -78,7 +88,7 @@ public interface Codec<C> extends Encoder<C>, Decoder<C> {
 		@Override
 		public @NotNull <R> Result<R> encodeStart(@NotNull TypeProvider<R> provider, @NotNull R current, @Nullable Short value) {
 			if (value == null) {
-				return Result.error("Unable to encode null as short");
+				return Result.error("Unable to encode null as short using '" + this + "'");
 			}
 			return provider.createShort(value);
 		}
@@ -86,9 +96,14 @@ public interface Codec<C> extends Encoder<C>, Decoder<C> {
 		@Override
 		public @NotNull <R> Result<Short> decodeStart(@NotNull TypeProvider<R> provider, @Nullable R value) {
 			if (value == null) {
-				return Result.error("Unable to decode null value as short");
+				return Result.error("Unable to decode null value as short using '" + this + "'");
 			}
 			return provider.getShort(value);
+		}
+		
+		@Override
+		public String toString() {
+			return "ShortCodec";
 		}
 	};
 	Codec<Integer> INTEGER = new Codec<>() {
@@ -96,7 +111,7 @@ public interface Codec<C> extends Encoder<C>, Decoder<C> {
 		@Override
 		public @NotNull <R> Result<R> encodeStart(@NotNull TypeProvider<R> provider, @NotNull R current, @Nullable Integer value) {
 			if (value == null) {
-				return Result.error("Unable to encode null as integer");
+				return Result.error("Unable to encode null as integer using '" + this + "'");
 			}
 			return provider.createInteger(value);
 		}
@@ -104,9 +119,14 @@ public interface Codec<C> extends Encoder<C>, Decoder<C> {
 		@Override
 		public @NotNull <R> Result<Integer> decodeStart(@NotNull TypeProvider<R> provider, @Nullable R value) {
 			if (value == null) {
-				return Result.error("Unable to decode null value as integer");
+				return Result.error("Unable to decode null value as integer using '" + this + "'");
 			}
 			return provider.getInteger(value);
+		}
+		
+		@Override
+		public String toString() {
+			return "IntegerCodec";
 		}
 	};
 	Codec<Long> LONG = new Codec<>() {
@@ -114,7 +134,7 @@ public interface Codec<C> extends Encoder<C>, Decoder<C> {
 		@Override
 		public @NotNull <R> Result<R> encodeStart(@NotNull TypeProvider<R> provider, @NotNull R current, @Nullable Long value) {
 			if (value == null) {
-				return Result.error("Unable to encode null as long");
+				return Result.error("Unable to encode null as long using '" + this + "'");
 			}
 			return provider.createLong(value);
 		}
@@ -122,9 +142,14 @@ public interface Codec<C> extends Encoder<C>, Decoder<C> {
 		@Override
 		public @NotNull <R> Result<Long> decodeStart(@NotNull TypeProvider<R> provider, @Nullable R value) {
 			if (value == null) {
-				return Result.error("Unable to decode null value as long");
+				return Result.error("Unable to decode null value as long using '" + this + "'");
 			}
 			return provider.getLong(value);
+		}
+		
+		@Override
+		public String toString() {
+			return "LongCodec";
 		}
 	};
 	Codec<Float> FLOAT = new Codec<>() {
@@ -132,7 +157,7 @@ public interface Codec<C> extends Encoder<C>, Decoder<C> {
 		@Override
 		public @NotNull <R> Result<R> encodeStart(@NotNull TypeProvider<R> provider, @NotNull R current, @Nullable Float value) {
 			if (value == null) {
-				return Result.error("Unable to encode null as float");
+				return Result.error("Unable to encode null as float using '" + this + "'");
 			}
 			return provider.createFloat(value);
 		}
@@ -140,9 +165,14 @@ public interface Codec<C> extends Encoder<C>, Decoder<C> {
 		@Override
 		public @NotNull <R> Result<Float> decodeStart(@NotNull TypeProvider<R> provider, @Nullable R value) {
 			if (value == null) {
-				return Result.error("Unable to decode null value as float");
+				return Result.error("Unable to decode null value as float using '" + this + "'");
 			}
 			return provider.getFloat(value);
+		}
+		
+		@Override
+		public String toString() {
+			return "FloatCodec";
 		}
 	};
 	Codec<Double> DOUBLE = new Codec<>() {
@@ -150,7 +180,7 @@ public interface Codec<C> extends Encoder<C>, Decoder<C> {
 		@Override
 		public @NotNull <R> Result<R> encodeStart(@NotNull TypeProvider<R> provider, @NotNull R current, @Nullable Double value) {
 			if (value == null) {
-				return Result.error("Unable to encode null as double");
+				return Result.error("Unable to encode null as double using '" + this + "'");
 			}
 			return provider.createDouble(value);
 		}
@@ -158,9 +188,14 @@ public interface Codec<C> extends Encoder<C>, Decoder<C> {
 		@Override
 		public @NotNull <R> Result<Double> decodeStart(@NotNull TypeProvider<R> provider, @Nullable R value) {
 			if (value == null) {
-				return Result.error("Unable to decode null value as double");
+				return Result.error("Unable to decode null value as double using '" + this + "'");
 			}
 			return provider.getDouble(value);
+		}
+		
+		@Override
+		public String toString() {
+			return "Double Codec";
 		}
 	};
 	Codec<String> STRING = new Codec<>() {
@@ -168,7 +203,7 @@ public interface Codec<C> extends Encoder<C>, Decoder<C> {
 		@Override
 		public @NotNull <R> Result<R> encodeStart(@NotNull TypeProvider<R> provider, @NotNull R current, @Nullable String value) {
 			if (value == null) {
-				return Result.error("Unable to encode null as string");
+				return Result.error("Unable to encode null as string using '" + this + "'");
 			}
 			return provider.createString(value);
 		}
@@ -176,9 +211,14 @@ public interface Codec<C> extends Encoder<C>, Decoder<C> {
 		@Override
 		public @NotNull <R> Result<String> decodeStart(@NotNull TypeProvider<R> provider, @Nullable R value) {
 			if (value == null) {
-				return Result.error("Unable to decode null value as string");
+				return Result.error("Unable to decode null value as string using '" + this + "'");
 			}
 			return provider.getString(value);
+		}
+		
+		@Override
+		public String toString() {
+			return "StringCodec";
 		}
 	};
 	

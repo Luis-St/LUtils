@@ -51,7 +51,7 @@ public class OptionalCodec<C> implements Codec<Optional<C>> {
 	
 	@Override
 	@SuppressWarnings("OptionalAssignedToNull")
-	public @NotNull <R> Result<R> encodeStart(@NotNull TypeProvider<R> provider, @NotNull R current, @Nullable Optional<C> value) {
+	public <R> @NotNull Result<R> encodeStart(@NotNull TypeProvider<R> provider, @NotNull R current, @Nullable Optional<C> value) {
 		if (value == null) {
 			return Result.success(current);
 		}
@@ -59,7 +59,7 @@ public class OptionalCodec<C> implements Codec<Optional<C>> {
 	}
 	
 	@Override
-	public @NotNull <R> Result<Optional<C>> decodeStart(@NotNull TypeProvider<R> provider, @Nullable R value) {
+	public <R> @NotNull Result<Optional<C>> decodeStart(@NotNull TypeProvider<R> provider, @Nullable R value) {
 		if (value == null) {
 			return Result.success(this.getDefault());
 		}
@@ -77,5 +77,10 @@ public class OptionalCodec<C> implements Codec<Optional<C>> {
 	public @NotNull Codec<Optional<C>> orElseGet(@NotNull Supplier<C> defaultProvider) {
 		this.defaultProvider = defaultProvider;
 		return this;
+	}
+	
+	@Override
+	public String toString() {
+		return "OptionalCodec[" + this.codec + "]";
 	}
 }

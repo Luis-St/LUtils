@@ -42,9 +42,9 @@ public class EitherCodec<F, S> implements Codec<Either<F, S>> {
 	}
 	
 	@Override
-	public @NotNull <R> Result<R> encodeStart(@NotNull TypeProvider<R> provider, @NotNull R current, @Nullable Either<F, S> value) {
+	public <R> @NotNull Result<R> encodeStart(@NotNull TypeProvider<R> provider, @NotNull R current, @Nullable Either<F, S> value) {
 		if (value == null) {
-			return Result.error("Unable to encode null value as either of '" + this.firstCodec + "' and '" + this.secondCodec + "'");
+			return Result.error("Unable to encode null value as either using '" + this + "'");
 		}
 		return value.mapTo(
 			first -> this.firstCodec.encodeStart(provider, current, first),
@@ -53,18 +53,23 @@ public class EitherCodec<F, S> implements Codec<Either<F, S>> {
 	}
 	
 	@Override
-	public @NotNull <R> Result<Either<F, S>> decodeStart(@NotNull TypeProvider<R> provider, @Nullable R value) {
+	public <R> @NotNull Result<Either<F, S>> decodeStart(@NotNull TypeProvider<R> provider, @Nullable R value) {
 		if (value == null) {
 			return Result.error("Unable to decode null value as either");
 		}
 		Result<F> firstResult = this.firstCodec.decodeStart(provider, value);
 		Result<S> secondResult = this.secondCodec.decodeStart(provider, value);
 		if (firstResult.isError() && secondResult.isError()) {
-			return Result.error("Unable to decode value as either of '" + this.firstCodec + "' and '" + this.secondCodec + "': \n" + firstResult.errorOrThrow() + "\n" + secondResult.errorOrThrow());
+			return Result.error("Unable to decode value as either using '" + this + "': \n" + firstResult.errorOrThrow() + "\n" + secondResult.errorOrThrow());
 		}
 		if (firstResult.isSuccess()) {
 			return firstResult.map(Either::left);
 		}
 		return secondResult.map(Either::right);
+	}
+	
+	@Override
+	public String toString() {
+		return "EitherCodec[" + this.firstCodec + ", " + this.secondCodec + "]";
 	}
 }
