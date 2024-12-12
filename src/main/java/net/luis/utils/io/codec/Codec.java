@@ -277,6 +277,36 @@ public interface Codec<C> extends Encoder<C>, Decoder<C> {
 		};
 	}
 	
+	static <E extends Enum<E>> @NotNull KeyableCodec<E> enumOrdinal(@NotNull Class<E> clazz) {
+		Map<Integer, E> ordinalLookup = Arrays.stream(clazz.getEnumConstants()).collect(Collectors.toMap(Enum::ordinal, Function.identity()));
+		return Codec.keyable(Codec.INTEGER.mapDirect(Enum::ordinal, ordinalLookup::get), constant -> String.valueOf(constant.ordinal()), str -> {
+			try {
+				return ordinalLookup.get(Integer.parseInt(str));
+			} catch (NumberFormatException e) {
+				return null;
+			}
+		});
+	}
+	
+	static <E extends Enum<E>> @NotNull KeyableCodec<E> enumName(@NotNull Class<E> clazz) {
+		Map<String, E> lookup = Arrays.stream(clazz.getEnumConstants()).collect(Collectors.toMap(Enum::name, Function.identity()));
+		return Codec.keyable(Codec.STRING.mapDirect(Enum::name, lookup::get), Enum::name, lookup::get);
+	}
+	
+	static <E extends Enum<E>> @NotNull KeyableCodec<E> dynamicEnum(@NotNull Class<E> clazz) {
+		E[] constants = clazz.getEnumConstants();
+		Map<Integer, E> ordinalLookup = Arrays.stream(constants).collect(Collectors.toMap(Enum::ordinal, Function.identity()));
+		Map<String, E> nameLookup = Arrays.stream(constants).collect(Collectors.toMap(Enum::name, Function.identity()));
+		return Codec.keyable(Codec.either(Codec.INTEGER, Codec.STRING).mapDirect(
+			constant -> Either.right(constant.name()),
+			either -> either.mapTo(ordinalLookup::get, nameLookup::get)
+		), Enum::name, nameLookup::get);
+	}
+	
+	static <E extends Enum<E>> @NotNull KeyableCodec<E> friendlyEnumName(@NotNull Class<E> clazz, @NotNull Function<E, String> toFriendly, @NotNull Function<String, E> fromFriendly) {
+		return Codec.keyable(Codec.STRING.mapDirect(toFriendly, fromFriendly), toFriendly, fromFriendly);
+	}
+	
 	static @NotNull Codec<String> string(int length) {
 		return string(length, length);
 	}
@@ -362,6 +392,13 @@ public interface Codec<C> extends Encoder<C>, Decoder<C> {
 		return new EitherCodec<>(firstCodec, secondCodec);
 	}
 	
+	static <C> @NotNull Codec<C> withAlternative(@NotNull Codec<C> codec, @NotNull Codec<? extends C> alternative) {
+		return either(codec, alternative).mapDirect(
+			Either::left,
+			either -> either.mapTo(Function.identity(), Function.identity())
+		);
+	}
+	
 	static <E> @NotNull Codec<E> stringResolver(@NotNull Function<E, String> toString, @NotNull  Function<String, E> fromString) {
 		return Codec.STRING.map(
 			toString,
@@ -397,6 +434,10 @@ public interface Codec<C> extends Encoder<C>, Decoder<C> {
 	
 	default @NotNull Codec<Optional<C>> optional() {
 		return optional(this);
+	}
+	
+	default @NotNull Codec<C> withAlternative(@NotNull Codec<? extends C> alternative) {
+		return withAlternative(this, alternative);
 	}
 	
 	default <O> @NotNull Codec<O> mapDirect(@NotNull Function<O, C> to, @NotNull Function<C, O> from) {
