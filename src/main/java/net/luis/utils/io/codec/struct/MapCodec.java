@@ -18,14 +18,15 @@
 
 package net.luis.utils.io.codec.struct;
 
+import net.luis.utils.collection.util.SimpleEntry;
 import net.luis.utils.io.codec.Codec;
+import net.luis.utils.io.codec.KeyableCodec;
 import net.luis.utils.io.codec.provider.TypeProvider;
 import net.luis.utils.util.Result;
-import net.luis.utils.util.Utils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
@@ -35,33 +36,58 @@ import java.util.stream.Collectors;
  *
  */
 
-public class MapCodec<C> implements Codec<Map<String, C>> {
+public class MapCodec<K, V> implements Codec<Map<K, V>> {
 	
-	private final Codec<String> keyCodec;
-	private final Codec<C> valueCodec;
+	private final KeyableCodec<K> keyCodec;
+	private final Codec<V> valueCodec;
+	private final int minSize;
+	private final int maxSize;
 	
-	public MapCodec(@NotNull Codec<String> keyCodec, @NotNull Codec<C> valueCodec) {
+	public MapCodec(@NotNull KeyableCodec<K> keyCodec, @NotNull Codec<V> valueCodec) {
+		this(keyCodec, valueCodec, 0, Integer.MAX_VALUE);
+	}
+	
+	public MapCodec(@NotNull KeyableCodec<K> keyCodec, @NotNull Codec<V> valueCodec, int minSize, int maxSize) {
 		this.keyCodec = keyCodec;
 		this.valueCodec = valueCodec;
+		this.minSize = minSize;
+		this.maxSize = maxSize;
 	}
 	
 	@Override
-	public @NotNull <R> Result<R> encodeStart(@NotNull TypeProvider<R> provider, @NotNull R current, @Nullable Map<String, C> value) {
+	public <R> @NotNull Result<R> encodeStart(@NotNull TypeProvider<R> provider, @NotNull R current, @Nullable Map<K, V> value) {
 		if (value == null) {
-			return Result.error("Unable to encode null value as map of '" + this.keyCodec + "' and '" + this.valueCodec + "'");
 			return Result.error("Unable to encode null value as map using '" + this + "'");
 		}
-		Map<String, Result<R>> encoded = Utils.mapValue(value, v -> this.valueCodec.encodeStart(provider, provider.empty(), v));
-		Collection<Result<R>> encodedValues = encoded.values();
-		if (encodedValues.stream().anyMatch(Result::isError)) {
-			return Result.error("Unable to encode some elements of map '" + value + "' of '" + this.keyCodec + "' and '" + this.valueCodec + "': \n" +
-				encodedValues.stream().filter(Result::isError).map(Result::errorOrThrow).collect(Collectors.joining("\n")));
+		List<Result<Map.Entry<String, R>>> encoded = value.entrySet().stream().map(entry -> this.encodeEntry(provider, entry)).toList();
+		if (encoded.stream().anyMatch(Result::isError)) {
+			return Result.error("Unable to encode some entries of map '" + value + "' using '" + this + "': \n" + encoded.stream().filter(Result::isError).map(Result::errorOrThrow).collect(Collectors.joining("\n")));
 		}
-		return provider.merge(current, provider.createMap(Utils.mapValue(encoded, Result::orThrow)));
+		Result<R> emptyMap = provider.createMap();
+		if (emptyMap.isError()) {
+			return Result.error("Unable to create empty map: " + emptyMap.errorOrThrow());
+		}
+		R resultMap = emptyMap.orThrow();
+		encoded.stream().map(Result::orThrow).filter(entry -> provider.getEmpty(entry.getValue()).isError()).forEach(entry -> {
+			provider.set(resultMap, entry.getKey(), entry.getValue());
+		});
+		return provider.merge(current, resultMap);
+	}
+	
+	private <R> @NotNull Result<Map.Entry<String, R>> encodeEntry(@NotNull TypeProvider<R> provider, @NotNull Map.Entry<K, V> entry) {
+		Result<String> encodedKey = this.keyCodec.encodeKey(provider, entry.getKey());
+		if (encodedKey.isError()) {
+			return Result.error("Unable to encode key '" + entry.getKey() + "' of map entry '" + entry + "' using codec '" + this.keyCodec + "': \n" + encodedKey.errorOrThrow());
+		}
+		Result<R> encodedValue = this.valueCodec.encodeStart(provider, provider.empty(), entry.getValue());
+		if (encodedValue.isError()) {
+			return Result.error("Unable to encode value '" + entry.getValue() + "' of map entry '" + entry + "' using codec '" + this.valueCodec + "': \n" + encodedValue.errorOrThrow());
+		}
+		return Result.success(new SimpleEntry<>(encodedKey.orThrow(), encodedValue.orThrow()));
 	}
 	
 	@Override
-	public @NotNull <R> Result<Map<String, C>> decodeStart(@NotNull TypeProvider<R> provider, @Nullable R value) {
+	public <R> @NotNull Result<Map<K, V>> decodeStart(@NotNull TypeProvider<R> provider, @Nullable R value) {
 		if (value == null) {
 			return Result.error("Unable to decode null value as map using '" + this + "'");
 		}
@@ -69,17 +95,27 @@ public class MapCodec<C> implements Codec<Map<String, C>> {
 		if (decodedMap.isError()) {
 			return Result.error("Unable to decode map '" + value + "' using '" + this + "': \n" + decodedMap.errorOrThrow());
 		}
-		Result<Map<String, R>> decoded = provider.getMap(value);
-		if (decoded.isError()) {
-			return Result.error("Unable to decode map '" + value + "' of '" + this.keyCodec + "' and '" + this.valueCodec + "': \n" + decoded.errorOrThrow());
+		List<Result<Map.Entry<K, V>>> decoded = decodedMap.orThrow().entrySet().stream().map(entry -> this.decodeEntry(provider, entry)).toList();
+		if (decoded.stream().anyMatch(Result::isError)) {
+			return Result.error("Unable to decode some entries of map '" + value + "' using '" + this + "': \n" + decoded.stream().filter(Result::isError).map(Result::errorOrThrow).collect(Collectors.joining("\n")));
 		}
-		Map<String, Result<C>> decodedMap = Utils.mapValue(decoded.orThrow(), v -> this.valueCodec.decodeStart(provider, v));
-		Collection<Result<C>> decodedValues = decodedMap.values();
-		if (decodedValues.stream().anyMatch(Result::isError)) {
-			return Result.error("Unable to decode some elements of map '" + value + "' of '" + this.keyCodec + "' and '" + this.valueCodec + "': \n" +
-				decodedValues.stream().filter(Result::isError).map(Result::errorOrThrow).collect(Collectors.joining("\n")));
+		if (this.maxSize >= decoded.size() && decoded.size() >= this.minSize) {
+			return Result.success(decoded.stream().map(Result::orThrow).collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue)));
 		}
-		return Result.success(Utils.mapValue(decodedMap, Result::orThrow));
+		return Result.error("List was decoded successfully but size '" + decoded.size() + "' is out of range: " + this.minSize + ".." + this.maxSize);
+	}
+	
+	private <R> @NotNull Result<Map.Entry<K, V>> decodeEntry(@NotNull TypeProvider<R> provider, @NotNull Map.Entry<String, R> entry) {
+		Result<K> decodedKey = this.keyCodec.decodeKey(provider, entry.getKey());
+		if (decodedKey.isError()) {
+			return Result.error("Unable to decode key '" + entry.getKey() + "' using codec '" + this.keyCodec + "': \n" + decodedKey.errorOrThrow());
+		}
+		Result<V> decodedValue = this.valueCodec.decodeStart(provider, entry.getValue());
+		if (decodedValue.isError()) {
+			return Result.error("Unable to decode value '" + entry.getValue() + "' using codec '" + this.valueCodec + "': \n" + decodedValue.errorOrThrow());
+		}
+		return Result.success(new SimpleEntry<>(decodedKey.orThrow(), decodedValue.orThrow()));
+	}
 	
 	@Override
 	public String toString() {

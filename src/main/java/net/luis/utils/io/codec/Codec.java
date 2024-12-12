@@ -342,11 +342,23 @@ public interface Codec<C> extends Encoder<C>, Decoder<C> {
 		return map(STRING, codec);
 	}
 	
+	static <K, V> @NotNull Codec<Map<K, V>> map(@NotNull KeyableCodec<K> keyCodec, @NotNull Codec<V> valueCodec) {
+		return new MapCodec<>(keyCodec, valueCodec);
+	}
+	
+	static <K, V> @NotNull Codec<Map<K, V>> map(@NotNull KeyableCodec<K> keyCodec, @NotNull Codec<V> valueCodec, int maxSize) {
+		return map(keyCodec, valueCodec, 0, maxSize);
+	}
+	
 	static <K, V> @NotNull Codec<Map<K, V>> map(@NotNull KeyableCodec<K> keyCodec, @NotNull Codec<V> valueCodec, int minSize, int maxSize) {
 		return new MapCodec<>(keyCodec, valueCodec);
 	}
 	
-	static <F, S> @NotNull EitherCodec<F, S> either(@NotNull Codec<F> firstCodec, @NotNull Codec<S> secondCodec) {
+	static <K, V> @NotNull Codec<Map<K, V>> noneEmptyMap(@NotNull KeyableCodec<K> keyCodec, @NotNull Codec<V> valueCodec) {
+		return map(keyCodec, valueCodec, 1);
+	}
+	
+	static <F, S> @NotNull Codec<Either<F, S>> either(@NotNull Codec<F> firstCodec, @NotNull Codec<S> secondCodec) {
 		return new EitherCodec<>(firstCodec, secondCodec);
 	}
 	
