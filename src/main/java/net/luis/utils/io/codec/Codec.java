@@ -277,6 +277,14 @@ public interface Codec<C> extends Encoder<C>, Decoder<C> {
 		};
 	}
 	
+	static <C> @NotNull Codec<C> unit(@NotNull C value) {
+		return unit(() -> value);
+	}
+	
+	static <C> @NotNull Codec<C> unit(@NotNull Supplier<C> supplier) {
+		return new UnitCodec<>(supplier);
+	}
+	
 	static <C> @NotNull Codec<List<C>> list(@NotNull Codec<C> codec) {
 		return new ListCodec<>(codec);
 	}
