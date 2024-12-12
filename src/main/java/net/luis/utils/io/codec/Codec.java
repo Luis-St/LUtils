@@ -19,15 +19,20 @@
 package net.luis.utils.io.codec;
 
 import net.luis.utils.io.codec.decoder.Decoder;
+import net.luis.utils.io.codec.decoder.KeyableDecoder;
 import net.luis.utils.io.codec.encoder.Encoder;
+import net.luis.utils.io.codec.encoder.KeyableEncoder;
 import net.luis.utils.io.codec.provider.TypeProvider;
 import net.luis.utils.io.codec.struct.*;
+import net.luis.utils.util.Either;
 import net.luis.utils.util.Result;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
+import java.util.function.Function;
+import java.util.function.Supplier;
+import java.util.stream.Collectors;
 
 /**
  *
@@ -198,7 +203,9 @@ public interface Codec<C> extends Encoder<C>, Decoder<C> {
 			return "Double Codec";
 		}
 	};
-	Codec<String> STRING = new Codec<>() {
+	KeyableCodec<String> STRING = new KeyableCodec<>() {
+		private final KeyableEncoder<String> encoder = KeyableEncoder.of(this, Function.identity());
+		private final KeyableDecoder<String> decoder = KeyableDecoder.of(this, Function.identity());
 		
 		@Override
 		public @NotNull <R> Result<R> encodeStart(@NotNull TypeProvider<R> provider, @NotNull R current, @Nullable String value) {
@@ -206,6 +213,11 @@ public interface Codec<C> extends Encoder<C>, Decoder<C> {
 				return Result.error("Unable to encode null as string using '" + this + "'");
 			}
 			return provider.createString(value);
+		}
+		
+		@Override
+		public @NotNull <R> Result<String> encodeKey(@NotNull TypeProvider<R> provider, @NotNull String value) {
+			return this.encoder.encodeKey(provider, value);
 		}
 		
 		@Override
@@ -217,12 +229,54 @@ public interface Codec<C> extends Encoder<C>, Decoder<C> {
 		}
 		
 		@Override
+		public @NotNull <R> Result<String> decodeKey(@NotNull TypeProvider<R> provider, @NotNull String value) {
+			return this.decoder.decodeKey(provider, value);
+		}
+		
+		@Override
 		public String toString() {
 			return "StringCodec";
 		}
 	};
 	
 	//region Factories
+	static <C> @NotNull KeyableCodec<C> keyable(@NotNull Codec<C> codec, @NotNull Function<String, @Nullable C> fromKey) {
+		return keyable(codec, C::toString, fromKey);
+	}
+	
+	static <C> @NotNull KeyableCodec<C> keyable(@NotNull Codec<C> codec, @NotNull Function<C, String> toKey, @NotNull Function<String, @Nullable C> fromKey) {
+		return keyable(codec, KeyableEncoder.of(codec, toKey), KeyableDecoder.of(codec, fromKey));
+	}
+	
+	static <C> @NotNull KeyableCodec<C> keyable(@NotNull Codec<C> codec, @NotNull KeyableEncoder<C> encoder, @NotNull KeyableDecoder<C> decoder) {
+		return new KeyableCodec<>() {
+			@Override
+			public <R> @NotNull Result<R> encodeStart(@NotNull TypeProvider<R> provider, @NotNull R current, @Nullable C value) {
+				return encoder.encodeStart(provider, current, value);
+			}
+			
+			@Override
+			public <R> @NotNull Result<String> encodeKey(@NotNull TypeProvider<R> provider, @NotNull C value) {
+				return encoder.encodeKey(provider, value);
+			}
+			
+			@Override
+			public <R> @NotNull Result<C> decodeStart(@NotNull TypeProvider<R> provider, @Nullable R value) {
+				return decoder.decodeStart(provider, value);
+			}
+			
+			@Override
+			public <R> @NotNull Result<C> decodeKey(@NotNull TypeProvider<R> provider, @NotNull String value) {
+				return decoder.decodeKey(provider, value);
+			}
+			
+			@Override
+			public String toString() {
+				return "KeyableCodec[" + codec + "]";
+			}
+		};
+	}
+	
 	static <C> @NotNull Codec<List<C>> list(@NotNull Codec<C> codec) {
 		return new ListCodec<>(codec);
 	}
@@ -235,11 +289,11 @@ public interface Codec<C> extends Encoder<C>, Decoder<C> {
 		return new OptionalCodec<>(codec);
 	}
 	
-	static <C> @NotNull MapCodec<C> map(@NotNull Codec<C> codec) {
-		return new MapCodec<>(STRING, codec);
+	static <C> @NotNull Codec<Map<String, C>> map(@NotNull Codec<C> codec) {
+		return map(STRING, codec);
 	}
 	
-	static <C> @NotNull MapCodec<C> map(@NotNull Codec<String> keyCodec, @NotNull Codec<C> valueCodec) {
+	static <K, V> @NotNull Codec<Map<K, V>> map(@NotNull KeyableCodec<K> keyCodec, @NotNull Codec<V> valueCodec, int minSize, int maxSize) {
 		return new MapCodec<>(keyCodec, valueCodec);
 	}
 	
@@ -247,6 +301,10 @@ public interface Codec<C> extends Encoder<C>, Decoder<C> {
 		return new EitherCodec<>(firstCodec, secondCodec);
 	}
 	//endregion
+	
+	default @NotNull KeyableCodec<C> keyable(@NotNull Function<C, String> toKey, @NotNull Function<String, @Nullable C> fromKey) {
+		return keyable(this, toKey, fromKey);
+	}
 	
 	default @NotNull Codec<List<C>> list() {
 		return list(this);
