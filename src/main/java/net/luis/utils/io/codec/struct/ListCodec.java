@@ -49,13 +49,13 @@ public class ListCodec<C> implements Codec<List<C>> {
 	}
 	
 	@Override
-	public @NotNull <R> Result<R> encodeStart(@NotNull TypeProvider<R> provider, @NotNull R current, @Nullable List<C> value) {
+	public <R> @NotNull Result<R> encodeStart(@NotNull TypeProvider<R> provider, @NotNull R current, @Nullable List<C> value) {
 		if (value == null) {
-			return Result.error("Unable to encode null value as list of codec '" + this.codec + "'");
+			return Result.error("Unable to encode null value as list using '" + this + "'");
 		}
 		List<Result<R>> encoded = value.stream().map(v -> this.codec.encodeStart(provider, provider.empty(), v)).toList();
 		if (encoded.stream().anyMatch(Result::isError)) {
-			return Result.error("Unable to encode some elements of list '" + value + "' with codec '" + this.codec + "': \n" + encoded.stream().filter(Result::isError).map(Result::errorOrThrow).collect(Collectors.joining("\n")));
+			return Result.error("Unable to encode some elements of list '" + value + "' using '" + this + "': \n" + encoded.stream().filter(Result::isError).map(Result::errorOrThrow).collect(Collectors.joining("\n")));
 		}
 		List<R> results = encoded.stream().map(Result::orThrow).toList();
 		if (!this.sizeRange.isInRange(results.size())) {
@@ -65,18 +65,22 @@ public class ListCodec<C> implements Codec<List<C>> {
 	}
 	
 	@Override
-	public @NotNull <R> Result<List<C>> decodeStart(@NotNull TypeProvider<R> provider, @Nullable R value) {
+	public <R> @NotNull Result<List<C>> decodeStart(@NotNull TypeProvider<R> provider, @Nullable R value) {
 		if (value == null) {
-			return Result.error("Unable to decode null value as list of codec '" + this.codec + "'");
+			return Result.error("Unable to decode null value as list using'" + this + "'");
 		}
 		Result<List<R>> decoded = provider.getList(value);
 		if (decoded.isError()) {
-			return Result.error("Unable to decode list with codec '" + this.codec + "': " + decoded.errorOrThrow());
+			return Result.error("Unable to decode list using '" + this + "': " + decoded.errorOrThrow());
 		}
 		List<Result<C>> results = decoded.orThrow().stream().map(v -> this.codec.decodeStart(provider, v)).toList();
 		if (results.stream().anyMatch(Result::isError)) {
-			return Result.error("Unable to decode some elements of list with codec '" + this.codec + "': \n" + results.stream().filter(Result::isError).map(Result::errorOrThrow).collect(Collectors.joining("\n")));
+			return Result.error("Unable to decode some elements of list using '" + this + "': \n" + results.stream().filter(Result::isError).map(Result::errorOrThrow).collect(Collectors.joining("\n")));
 		}
 		return Result.success(results.stream().map(Result::orThrow).toList());
+	
+	@Override
+	public String toString() {
+		return "ListCodec[" + this.codec + "]";
 	}
 }

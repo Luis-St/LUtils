@@ -49,6 +49,7 @@ public class MapCodec<C> implements Codec<Map<String, C>> {
 	public @NotNull <R> Result<R> encodeStart(@NotNull TypeProvider<R> provider, @NotNull R current, @Nullable Map<String, C> value) {
 		if (value == null) {
 			return Result.error("Unable to encode null value as map of '" + this.keyCodec + "' and '" + this.valueCodec + "'");
+			return Result.error("Unable to encode null value as map using '" + this + "'");
 		}
 		Map<String, Result<R>> encoded = Utils.mapValue(value, v -> this.valueCodec.encodeStart(provider, provider.empty(), v));
 		Collection<Result<R>> encodedValues = encoded.values();
@@ -62,7 +63,11 @@ public class MapCodec<C> implements Codec<Map<String, C>> {
 	@Override
 	public @NotNull <R> Result<Map<String, C>> decodeStart(@NotNull TypeProvider<R> provider, @Nullable R value) {
 		if (value == null) {
-			return Result.error("Unable to decode null value as map of '" + this.keyCodec + "' and '" + this.valueCodec + "'");
+			return Result.error("Unable to decode null value as map using '" + this + "'");
+		}
+		Result<Map<String, R>> decodedMap = provider.getMap(value);
+		if (decodedMap.isError()) {
+			return Result.error("Unable to decode map '" + value + "' using '" + this + "': \n" + decodedMap.errorOrThrow());
 		}
 		Result<Map<String, R>> decoded = provider.getMap(value);
 		if (decoded.isError()) {
@@ -75,5 +80,9 @@ public class MapCodec<C> implements Codec<Map<String, C>> {
 				decodedValues.stream().filter(Result::isError).map(Result::errorOrThrow).collect(Collectors.joining("\n")));
 		}
 		return Result.success(Utils.mapValue(decodedMap, Result::orThrow));
+	
+	@Override
+	public String toString() {
+		return "MapCodec[" + this.keyCodec + ", " + this.valueCodec + "]";
 	}
 }
