@@ -16,7 +16,7 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-package net.luis.utils.io.codec;
+package net.luis.utils.io.codec.encoder;
 
 import net.luis.utils.io.codec.provider.TypeProvider;
 import net.luis.utils.util.Result;
