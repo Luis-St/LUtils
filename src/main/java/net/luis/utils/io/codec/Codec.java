@@ -277,6 +277,39 @@ public interface Codec<C> extends Encoder<C>, Decoder<C> {
 		};
 	}
 	
+	static @NotNull Codec<String> string(int length) {
+		return string(length, length);
+	}
+	
+	static @NotNull Codec<String> string(int minLength, int maxLength) {
+		return STRING.map(String::valueOf, result -> {
+			if (result.isSuccess()) {
+				String value = result.orThrow();
+				if (value.length() < minLength) {
+					return Result.error("String was decoded successfully but has less than " + minLength + " characters");
+				}
+				if (value.length() > maxLength) {
+					return Result.error("String was decoded successfully but has more than " + maxLength + " characters");
+				}
+				return Result.success(value);
+			}
+			return result;
+		});
+	}
+	
+	static @NotNull Codec<String> noneEmptyString() {
+		return STRING.map(String::valueOf, result -> {
+			if (result.isSuccess()) {
+				String value = result.orThrow();
+				if (value.isEmpty()) {
+					return Result.error("String was decoded successfully but is empty");
+				}
+				return Result.success(value);
+			}
+			return result;
+		});
+	}
+	
 	static <C> @NotNull Codec<C> unit(@NotNull C value) {
 		return unit(() -> value);
 	}
@@ -289,8 +322,16 @@ public interface Codec<C> extends Encoder<C>, Decoder<C> {
 		return new ListCodec<>(codec);
 	}
 	
+	static <C> @NotNull Codec<List<C>> list(@NotNull Codec<C> codec, int maxSize) {
+		return list(codec, 0, maxSize);
+	}
+	
 	static <C> @NotNull Codec<List<C>> list(@NotNull Codec<C> codec, int minSize, int maxSize) {
 		return new ListCodec<>(codec, minSize, maxSize);
+	}
+	
+	static <C> @NotNull Codec<List<C>> noneEmptyList(@NotNull Codec<C> codec) {
+		return list(codec, 1);
 	}
 	
 	static <C> @NotNull Codec<Optional<C>> optional(@NotNull Codec<C> codec) {
@@ -308,6 +349,18 @@ public interface Codec<C> extends Encoder<C>, Decoder<C> {
 	static <F, S> @NotNull EitherCodec<F, S> either(@NotNull Codec<F> firstCodec, @NotNull Codec<S> secondCodec) {
 		return new EitherCodec<>(firstCodec, secondCodec);
 	}
+	
+	static <E> @NotNull Codec<E> stringResolver(@NotNull Function<E, String> toString, @NotNull  Function<String, E> fromString) {
+		return Codec.STRING.map(
+			toString,
+			result -> {
+				if (result.isSuccess()) {
+					return Optional.ofNullable(fromString.apply(result.orThrow())).map(Result::success).orElseGet(() -> Result.error("Unknown element name: " + result.orThrow()));
+				}
+				return Result.error("Unable to resolve element name: " + result.errorOrThrow());
+			}
+		);
+	}
 	//endregion
 	
 	default @NotNull KeyableCodec<C> keyable(@NotNull Function<C, String> toKey, @NotNull Function<String, @Nullable C> fromKey) {
@@ -318,8 +371,52 @@ public interface Codec<C> extends Encoder<C>, Decoder<C> {
 		return list(this);
 	}
 	
+	default @NotNull Codec<List<C>> list(int maxSize) {
+		return list(this, maxSize);
+	}
+	
+	default @NotNull Codec<List<C>> list(int minSize, int maxSize) {
+		return list(this, minSize, maxSize);
+	}
+	
+	default @NotNull Codec<List<C>> noneEmptyList() {
+		return noneEmptyList(this);
+	}
+	
 	default @NotNull Codec<Optional<C>> optional() {
 		return optional(this);
+	}
+	
+	default <O> @NotNull Codec<O> mapDirect(@NotNull Function<O, C> to, @NotNull Function<C, O> from) {
+		return this.map(to, result -> result.map(from));
+	}
+	
+	default <O> @NotNull Codec<O> map(@NotNull Function<O, C> to, @NotNull Function<Result<C>, Result<O>> from) {
+		return new Codec<>() {
+			@Override
+			public <R> @NotNull Result<R> encodeStart(@NotNull TypeProvider<R> provider, @NotNull R current, @Nullable O value) {
+				return Codec.this.encodeStart(provider, current, to.apply(value));
+			}
+			
+			@Override
+			public <R> @NotNull Result<O> decodeStart(@NotNull TypeProvider<R> provider, @Nullable R value) {
+				return from.apply(Codec.this.decodeStart(provider, value));
+			}
+			
+			@Override
+			public String toString() {
+				return "MappedCodec[" + Codec.this + "]";
+			}
+		};
+	}
+	
+	default @NotNull Codec<C> validate(@NotNull Function<C, Result<C>> validator) {
+		return this.map(Function.identity(), result -> {
+			if (result.isSuccess()) {
+				return validator.apply(result.orThrow());
+			}
+			return result;
+		});
 	}
 	
 	default @NotNull Codec<C> orElse(@NotNull C defaultValue) {

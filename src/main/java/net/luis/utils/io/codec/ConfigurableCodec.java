@@ -33,22 +33,20 @@ import java.util.function.Function;
 
 public class ConfigurableCodec<C, O> implements Codec<C> {
 	
-	private final CodecBuilder<O> builder;
 	private final Codec<C> codec;
 	private @Nullable String name;
 	private @Nullable Function<O, C> getter;
 	
-	ConfigurableCodec(@NotNull CodecBuilder<O> builder, @NotNull Codec<C> codec) {
-		this.builder = builder;
+	ConfigurableCodec(@NotNull CodecBuilder<O> ignored, @NotNull Codec<C> codec) {
 		this.codec = codec;
 	}
 	
 	@Override
-	public @NotNull <R> Result<R> encodeStart(@NotNull TypeProvider<R> provider, @NotNull R current, @Nullable C value) {
+	public <R> @NotNull Result<R> encodeStart(@NotNull TypeProvider<R> provider, @NotNull R current, @Nullable C value) {
 		return this.codec.encodeStart(provider, current, value);
 	}
 	
-	public @NotNull <R> Result<R> encodeNamedStart(@NotNull TypeProvider<R> provider, @NotNull R map, @NotNull O object) {
+	public <R> @NotNull Result<R> encodeNamedStart(@NotNull TypeProvider<R> provider, @NotNull R map, @NotNull O object) {
 		if (this.name == null) {
 			return Result.error("Unable to encode field of '" + object + "' with '" + this + "': Name is null");
 		}
@@ -64,11 +62,11 @@ public class ConfigurableCodec<C, O> implements Codec<C> {
 	}
 	
 	@Override
-	public @NotNull <R> Result<C> decodeStart(@NotNull TypeProvider<R> provider, @Nullable R value) {
+	public <R> @NotNull Result<C> decodeStart(@NotNull TypeProvider<R> provider, @Nullable R value) {
 		return this.codec.decodeStart(provider, value);
 	}
 	
-	public @NotNull <R> Result<C> decodeNamedStart(@NotNull TypeProvider<R> provider, @NotNull R map) {
+	public <R> @NotNull Result<C> decodeNamedStart(@NotNull TypeProvider<R> provider, @NotNull R map) {
 		if (this.name == null) {
 			return Result.error("Unable to decode field of '" + map + "' with '" + this + "': Name is null");
 		}
