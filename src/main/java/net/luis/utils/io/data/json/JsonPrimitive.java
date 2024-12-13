@@ -115,6 +115,34 @@ public class JsonPrimitive implements JsonElement {
 			return string;
 		}
 	}
+	
+	/**
+	 * Parses the given string to a boolean.<br>
+	 * @param string The string
+	 * @return The parsed boolean
+	 * @throws IllegalStateException If the string cannot be parsed to a boolean
+	 */
+	private static boolean parseBoolean(@NotNull String string) {
+		try {
+			return new StringReader(string).readBoolean();
+		} catch (Exception e) {
+			throw new IllegalStateException("Cannot convert value to boolean: " + string, e);
+		}
+	}
+	
+	/**
+	 * Parses the given string to a number.<br>
+	 * @param string The string
+	 * @return The parsed number
+	 * @throws IllegalStateException If the string cannot be parsed to a number
+	 */
+	private static @NotNull Number parseNumber(@NotNull String string) {
+		try {
+			return new StringReader(string).readNumber();
+		} catch (Exception e) {
+			throw new IllegalStateException("Cannot convert value to number: " + string, e);
+		}
+	}
 	//endregion
 	
 	/**
@@ -141,13 +169,25 @@ public class JsonPrimitive implements JsonElement {
 		return switch (this.value) {
 			case Boolean b -> b;
 			case Number n -> n.intValue() != 0;
-			case String s -> {
-				try {
-					yield new StringReader(s).readBoolean();
-				} catch (Exception e) {
-					throw new IllegalStateException("Cannot convert value to boolean: " + this.value, e);
-				}
-			}
+			case String s -> parseBoolean(s);
+			default -> throw new IllegalStateException("Cannot convert value to boolean: " + this.value);
+		};
+	}
+	
+	/**
+	 * Gets the value of this json primitive as a boolean.<br>
+	 * The value will be converted to a boolean by using the following rules:<br>
+	 * <ul>
+	 *     <li>If the value is a boolean, it will be returned as it is</li>
+	 *     <li>If the value is a string, it will be parsed to a boolean using {@link Boolean#parseBoolean(String)}</li>
+	 * </ul>
+	 * @return The boolean representation of the value
+	 * @throws IllegalStateException If the value cannot be converted to a boolean
+	 */
+	public boolean getAsBooleanStrict() {
+		return switch (this.value) {
+			case Boolean b -> b;
+			case String s -> parseBoolean(s);
 			default -> throw new IllegalStateException("Cannot convert value to boolean: " + this.value);
 		};
 	}
@@ -167,13 +207,25 @@ public class JsonPrimitive implements JsonElement {
 		return switch (this.value) {
 			case Boolean b -> b ? 1 : 0;
 			case Number n -> n;
-			case String s -> {
-				try {
-					yield new StringReader(s).readNumber();
-				} catch (Exception e) {
-					throw new IllegalStateException("Cannot convert value to number: " + this.value, e);
-				}
-			}
+			case String s -> parseNumber(s);
+			default -> throw new IllegalStateException("Cannot convert value to number: " + this.value);
+		};
+	}
+	
+	/**
+	 * Gets the value of this json primitive as a number.<br>
+	 * The value will be converted to a number by using the following rules:<br>
+	 * <ul>
+	 *     <li>If the value is a number, it will be returned as it is</li>
+	 *     <li>If the value is a string, it will be parsed to a number using {@link StringReader#readNumber()}</li>
+	 * </ul>
+	 * @return The number representation of the value
+	 * @throws IllegalStateException If the value cannot be converted to a number
+	 */
+	public @NotNull Number getAsNumberStrict() {
+		return switch (this.value) {
+			case Number n -> n;
+			case String s -> parseNumber(s);
 			default -> throw new IllegalStateException("Cannot convert value to number: " + this.value);
 		};
 	}
@@ -183,9 +235,23 @@ public class JsonPrimitive implements JsonElement {
 	 * The value will be converted to a number and then to a byte.<br>
 	 * @return The byte representation of the value
 	 * @throws IllegalStateException If the value cannot be converted to a byte
+	 * @see #getAsNumber()
+	 * @see Number#byteValue()
 	 */
 	public byte getAsByte() {
 		return this.getAsNumber().byteValue();
+	}
+	
+	/**
+	 * Gets the value of this json primitive as a byte.<br>
+	 * The value will be converted to a number and then to a byte.<br>
+	 * @return The byte representation of the value
+	 * @throws IllegalStateException If the value cannot be converted to a byte
+	 * @see #getAsNumberStrict()
+	 * @see Number#byteValue()
+	 */
+	public byte getAsByteStrict() {
+		return this.getAsNumberStrict().byteValue();
 	}
 	
 	/**
@@ -193,9 +259,23 @@ public class JsonPrimitive implements JsonElement {
 	 * The value will be converted to a number and then to a short.<br>
 	 * @return The short representation of the value
 	 * @throws IllegalStateException If the value cannot be converted to a short
+	 * @see #getAsNumber()
+	 * @see Number#shortValue()
 	 */
 	public short getAsShort() {
 		return this.getAsNumber().shortValue();
+	}
+	
+	/**
+	 * Gets the value of this json primitive as a short.<br>
+	 * The value will be converted to a number and then to a short.<br>
+	 * @return The short representation of the value
+	 * @throws IllegalStateException If the value cannot be converted to a short
+	 * @see #getAsNumberStrict()
+	 * @see Number#shortValue()
+	 */
+	public short getAsShortStrict() {
+		return this.getAsNumberStrict().shortValue();
 	}
 	
 	/**
@@ -203,9 +283,23 @@ public class JsonPrimitive implements JsonElement {
 	 * The value will be converted to a number and then to an integer.<br>
 	 * @return The integer representation of the value
 	 * @throws IllegalStateException If the value cannot be converted to an integer
+	 * @see #getAsNumber()
+	 * @see Number#intValue()
 	 */
 	public int getAsInteger() {
 		return this.getAsNumber().intValue();
+	}
+	
+	/**
+	 * Gets the value of this json primitive as an integer.<br>
+	 * The value will be converted to a number and then to an integer.<br>
+	 * @return The integer representation of the value
+	 * @throws IllegalStateException If the value cannot be converted to an integer
+	 * @see #getAsNumberStrict()
+	 * @see Number#intValue()
+	 */
+	public int getAsIntegerStrict() {
+		return this.getAsNumberStrict().intValue();
 	}
 	
 	/**
@@ -213,9 +307,23 @@ public class JsonPrimitive implements JsonElement {
 	 * The value will be converted to a number and then to a long.<br>
 	 * @return The long representation of the value
 	 * @throws IllegalStateException If the value cannot be converted to a long
+	 * @see #getAsNumber()
+	 * @see Number#longValue()
 	 */
 	public long getAsLong() {
 		return this.getAsNumber().longValue();
+	}
+	
+	/**
+	 * Gets the value of this json primitive as a long.<br>
+	 * The value will be converted to a number and then to a long.<br>
+	 * @return The long representation of the value
+	 * @throws IllegalStateException If the value cannot be converted to a long
+	 * @see #getAsNumberStrict()
+	 * @see Number#longValue()
+	 */
+	public long getAsLongStrict() {
+		return this.getAsNumberStrict().longValue();
 	}
 	
 	/**
@@ -223,9 +331,23 @@ public class JsonPrimitive implements JsonElement {
 	 * The value will be converted to a number and then to a float.<br>
 	 * @return The float representation of the value
 	 * @throws IllegalStateException If the value cannot be converted to a float
+	 * @see #getAsNumber()
+	 * @see Number#floatValue()
 	 */
 	public float getAsFloat() {
 		return this.getAsNumber().floatValue();
+	}
+	
+	/**
+	 * Gets the value of this json primitive as a float.<br>
+	 * The value will be converted to a number and then to a float.<br>
+	 * @return The float representation of the value
+	 * @throws IllegalStateException If the value cannot be converted to a float
+	 * @see #getAsNumberStrict()
+	 * @see Number#floatValue()
+	 */
+	public float getAsFloatStrict() {
+		return this.getAsNumberStrict().floatValue();
 	}
 	
 	/**
@@ -233,9 +355,23 @@ public class JsonPrimitive implements JsonElement {
 	 * The value will be converted to a number and then to a double.<br>
 	 * @return The double representation of the value
 	 * @throws IllegalStateException If the value cannot be converted to a double
+	 * @see #getAsNumber()
+	 * @see Number#doubleValue()
 	 */
 	public double getAsDouble() {
 		return this.getAsNumber().doubleValue();
+	}
+	
+	/**
+	 * Gets the value of this json primitive as a double.<br>
+	 * The value will be converted to a number and then to a double.<br>
+	 * @return The double representation of the value
+	 * @throws IllegalStateException If the value cannot be converted to a double
+	 * @see #getAsNumberStrict()
+	 * @see Number#doubleValue()
+	 */
+	public double getAsDoubleStrict() {
+		return this.getAsNumberStrict().doubleValue();
 	}
 	
 	//region Object overrides
