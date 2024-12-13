@@ -121,7 +121,7 @@ public class JsonTypeProvider implements TypeProvider<JsonElement> {
 		}
 		JsonPrimitive primitive = type.getAsJsonPrimitive();
 		try {
-			return Result.success(primitive.getAsBoolean());
+			return Result.success(primitive.getAsBooleanStrict());
 		} catch (IllegalStateException e) {
 			return Result.error("Json element '" + type + "' is not a json boolean: " + e.getMessage());
 		}
@@ -134,7 +134,7 @@ public class JsonTypeProvider implements TypeProvider<JsonElement> {
 		}
 		JsonPrimitive primitive = type.getAsJsonPrimitive();
 		try {
-			return Result.success(primitive.getAsByte());
+			return Result.success(primitive.getAsByteStrict());
 		} catch (IllegalStateException e) {
 			return Result.error("Json element '" + type + "' is not a json byte: " + e.getMessage());
 		}
@@ -147,7 +147,7 @@ public class JsonTypeProvider implements TypeProvider<JsonElement> {
 		}
 		JsonPrimitive primitive = type.getAsJsonPrimitive();
 		try {
-			return Result.success(primitive.getAsShort());
+			return Result.success(primitive.getAsShortStrict());
 		} catch (IllegalStateException e) {
 			return Result.error("Json element '" + type + "' is not a json short: " + e.getMessage());
 		}
@@ -160,7 +160,7 @@ public class JsonTypeProvider implements TypeProvider<JsonElement> {
 		}
 		JsonPrimitive primitive = type.getAsJsonPrimitive();
 		try {
-			return Result.success(primitive.getAsInteger());
+			return Result.success(primitive.getAsIntegerStrict());
 		} catch (IllegalStateException e) {
 			return Result.error("Json element '" + type + "' is not a json integer: " + e.getMessage());
 		}
@@ -173,7 +173,7 @@ public class JsonTypeProvider implements TypeProvider<JsonElement> {
 		}
 		JsonPrimitive primitive = type.getAsJsonPrimitive();
 		try {
-			return Result.success(primitive.getAsLong());
+			return Result.success(primitive.getAsLongStrict());
 		} catch (IllegalStateException e) {
 			return Result.error("Json element '" + type + "' is not a json long: " + e.getMessage());
 		}
@@ -186,7 +186,7 @@ public class JsonTypeProvider implements TypeProvider<JsonElement> {
 		}
 		JsonPrimitive primitive = type.getAsJsonPrimitive();
 		try {
-			return Result.success(primitive.getAsFloat());
+			return Result.success(primitive.getAsFloatStrict());
 		} catch (IllegalStateException e) {
 			return Result.error("Json element '" + type + "' is not a json float: " + e.getMessage());
 		}
@@ -199,7 +199,7 @@ public class JsonTypeProvider implements TypeProvider<JsonElement> {
 		}
 		JsonPrimitive primitive = type.getAsJsonPrimitive();
 		try {
-			return Result.success(primitive.getAsDouble());
+			return Result.success(primitive.getAsDoubleStrict());
 		} catch (IllegalStateException e) {
 			return Result.error("Json element '" + type + "' is not a json double: " + e.getMessage());
 		}
