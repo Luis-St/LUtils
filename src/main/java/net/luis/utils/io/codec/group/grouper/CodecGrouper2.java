@@ -33,48 +33,54 @@ public record CodecGrouper2<CI1, CI2, O>(
 	@NotNull ConfigurableCodec<CI2, O> codec2
 ) {
 	
+	@SuppressWarnings({ "DuplicatedCode", "UnqualifiedFieldAccess" })
 	public @NotNull Codec<O> create(@NotNull CodecGroupingFunction2<CI1, CI2, O> function) {
 		return new Codec<>() {
 			
 			@Override
-			public @NotNull <R> Result<R> encodeStart(@NotNull TypeProvider<R> provider, @NotNull R current, @Nullable O value) {
+			public <R> @NotNull Result<R> encodeStart(@NotNull TypeProvider<R> provider, @NotNull R current, @Nullable O value) {
 				if (value == null) {
-					return Result.error("Unable to encode null value with '" + this);
+					return Result.error("Unable to encode null value using '" + this);
 				}
 				Result<R> mergedMap = provider.merge(current, provider.createMap());
 				if (mergedMap.isError()) {
-					return Result.error("Unable to encode '" + value + "' with '" + this + "': " + mergedMap.errorOrThrow());
+					return Result.error("Unable to encode '" + value + "' using '" + this + "': " + mergedMap.errorOrThrow());
 				}
 				R map = mergedMap.orThrow();
-				Result<R> encoded1 = CodecGrouper2.this.codec1.encodeNamedStart(provider, map, value);
+				Result<R> encoded1 = codec1.encodeNamedStart(provider, map, value);
 				if (encoded1.isError()) {
-					return Result.error("Unable to encode '" + value + "' with '" + this + "': " + encoded1.errorOrThrow());
+					return Result.error("Unable to encode component of '" + value + "' using '" + codec1 + "': " + encoded1.errorOrThrow());
 				}
-				Result<R> encoded2 = CodecGrouper2.this.codec2.encodeNamedStart(provider, map, value);
+				Result<R> encoded2 = codec2.encodeNamedStart(provider, map, value);
 				if (encoded2.isError()) {
-					return Result.error("Unable to encode '" + value + "' with '" + this + "': " + encoded2.errorOrThrow());
+					return Result.error("Unable to encode component of '" + value + "' using '" + codec2 + "': " + encoded2.errorOrThrow());
 				}
 				return Result.success(map);
 			}
 			
 			@Override
-			public @NotNull <R> Result<O> decodeStart(@NotNull TypeProvider<R> provider, @Nullable R value) {
+			public <R> @NotNull Result<O> decodeStart(@NotNull TypeProvider<R> provider, @Nullable R value) {
 				if (value == null) {
-					return Result.error("Unable to decode null value with '" + this);
+					return Result.error("Unable to decode null value using '" + this);
 				}
 				Result<Map<String, R>> decodedMap = provider.getMap(value);
 				if (decodedMap.isError()) {
-					return Result.error("Unable to decode '" + value + "' with '" + this + "': " + decodedMap.errorOrThrow());
+					return Result.error("Unable to decode '" + value + "' using '" + this + "': " + decodedMap.errorOrThrow());
 				}
-				Result<CI1> decoded1 = CodecGrouper2.this.codec1.decodeNamedStart(provider, value);
+				Result<CI1> decoded1 = codec1.decodeNamedStart(provider, value);
 				if (decoded1.isError()) {
-					return Result.error("Unable to decode '" + value + "' with '" + this + "': " + decoded1.errorOrThrow());
+					return Result.error("Unable to decode component of '" + value + "' using '" + codec1 + "': " + decoded1.errorOrThrow());
 				}
-				Result<CI2> decoded2 = CodecGrouper2.this.codec2.decodeNamedStart(provider, value);
+				Result<CI2> decoded2 = codec2.decodeNamedStart(provider, value);
 				if (decoded2.isError()) {
-					return Result.error("Unable to decode '" + value + "' with '" + this + "': " + decoded2.errorOrThrow());
+					return Result.error("Unable to decode component of '" + value + "' using '" + codec2 + "': " + decoded2.errorOrThrow());
 				}
 				return Result.success(function.create(decoded1.orThrow(), decoded2.orThrow()));
+			}
+			
+			@Override
+			public String toString() {
+				return "Codec[" + codec1 + ", " + codec2 + "]";
 			}
 		};
 	}
