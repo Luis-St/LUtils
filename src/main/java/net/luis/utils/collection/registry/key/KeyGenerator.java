@@ -29,6 +29,7 @@ import org.jetbrains.annotations.NotNull;
  *
  * @param <T> The type of the keys
  */
+@FunctionalInterface
 public interface KeyGenerator<T extends RegistryKey<?>> {
 	
 	/**

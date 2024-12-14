@@ -36,7 +36,7 @@ import java.util.stream.Stream;
  *
  * @author Luis-St
  */
-public class FileUtils {
+public final class FileUtils {
 	
 	/**
 	 * Private constructor to prevent instantiation.<br>

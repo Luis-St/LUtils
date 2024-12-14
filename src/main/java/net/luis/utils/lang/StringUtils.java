@@ -36,7 +36,7 @@ import static org.apache.commons.lang3.StringUtils.*;
  *
  * @author Luis-St
  */
-public class StringUtils {
+public final class StringUtils {
 	
 	/**
 	 * Regular expression pattern used to remove single-quoted string parts.<br>
@@ -759,7 +759,7 @@ public class StringUtils {
 			str = str.replaceAll(DOUBLE_QUOTE_PATTERN, "");
 		}
 		if (str.contains("'")) {
-			str = str.replaceAll(SINGLE_QUOTE_PATTERN, "");
+			return str.replaceAll(SINGLE_QUOTE_PATTERN, "");
 		}
 		return str;
 	}
@@ -844,7 +844,7 @@ public class StringUtils {
 		if (!Boolean.parseBoolean(System.getProperty(LANG_MATCH_IN_QUOTES, "false"))) {
 			str = removeQuoted(str);
 		}
-		Stack<String> stack = new Stack<>();
+		Deque<String> stack = new ArrayDeque<>();
 		for (int i = 0; i < str.length(); i++) {
 			if (str.startsWith(open, i)) {
 				stack.push(open);

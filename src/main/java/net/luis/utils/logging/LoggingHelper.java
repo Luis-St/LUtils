@@ -41,7 +41,7 @@ import static net.luis.utils.logging.LoggerConfiguration.*;
  *
  * @author Luis-St
  */
-class LoggingHelper {
+final class LoggingHelper {
 	
 	/**
 	 * The pattern to match a property in the format 'key=value'.<br>

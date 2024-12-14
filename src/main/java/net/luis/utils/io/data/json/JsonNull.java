@@ -29,7 +29,7 @@ import org.jetbrains.annotations.Nullable;
  * @author Luis-St
  */
 @Singleton
-public class JsonNull implements JsonElement {
+public final class JsonNull implements JsonElement {
 	
 	/**
 	 * The singleton instance of {@link JsonNull}.<br>
@@ -38,7 +38,7 @@ public class JsonNull implements JsonElement {
 	public static final JsonNull INSTANCE = new JsonNull();
 	
 	/**
-	 * Constructs a new {@link JsonNull}.<br>
+	 * Constructs a new json null.<br>
 	 * Should not be used, use {@link #INSTANCE} instead.<br>
 	 */
 	private JsonNull() {}

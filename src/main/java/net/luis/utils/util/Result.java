@@ -45,7 +45,7 @@ public class Result<T> implements Supplier<Either<T, String>> {
 	 * @param result The result of the operation
 	 * @throws NullPointerException If the result is null
 	 */
-	private Result(@NotNull Either<T, String> result) {
+	protected Result(@NotNull Either<T, String> result) { // protected to prevent instantiation from outside but allow inheritance
 		this.result = Objects.requireNonNull(result, "Result must not be null");
 	}
 	
@@ -157,6 +157,51 @@ public class Result<T> implements Supplier<Either<T, String>> {
 	public <R> @NotNull Result<R> map(@NotNull Function<T, R> mapper) {
 		Objects.requireNonNull(mapper, "Mapper must not be null");
 		return new Result<>(this.result.mapLeft(mapper));
+	}
+	
+	/**
+	 * Maps the result of the operation to another result of the same type.<br>
+	 * This is useful for chaining operations or validating the result.<br>
+	 * If the result is an error, the mapping is not applied.<br>
+	 * @param mapper The mapper function
+	 * @return The mapped result
+	 * @param <R> The type of the mapped result
+	 * @throws NullPointerException If the mapper is null
+	 */
+	public <R> @NotNull Result<R> flatMap(@NotNull Function<T, Result<R>> mapper) {
+		Objects.requireNonNull(mapper, "Mapper must not be null");
+		if (this.isSuccess()) {
+			return mapper.apply(this.orThrow());
+		}
+		return new Result<>(Either.right(this.errorOrThrow()));
+	}
+	
+	/**
+	 * Gets the result of the operation or the specified default value.<br>
+	 * This is useful for providing a fallback value if the operation fails.<br>
+	 * This method is equivalent to {@link #orElseGet(Supplier)} with a constant supplier.<br>
+	 * @param fallback The fallback value
+	 * @return The result of the operation or the fallback value
+	 * @throws NullPointerException If the fallback value is null
+	 */
+	public @UnknownNullability T orElse(@NotNull T fallback) {
+		Objects.requireNonNull(fallback, "Fallback must not be null");
+		return this.orElseGet(() -> fallback);
+	}
+	
+	/**
+	 * Gets the result of the operation or the result of the specified supplier.<br>
+	 * This is useful for providing a fallback value if the operation fails.<br>
+	 * @param supplier The supplier of the fallback value
+	 * @return The result of the operation or the fallback value
+	 * @throws NullPointerException If the supplier is null
+	 */
+	public @UnknownNullability T orElseGet(@NotNull Supplier<? extends T> supplier) {
+		Objects.requireNonNull(supplier, "Supplier must not be null");
+		if (this.result.isLeft()) {
+			return this.result.leftOrThrow();
+		}
+		return supplier.get();
 	}
 	
 	//region Object overrides

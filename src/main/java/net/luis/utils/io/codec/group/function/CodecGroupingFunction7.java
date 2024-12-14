@@ -26,6 +26,7 @@ import org.jetbrains.annotations.NotNull;
  *
  */
 
+@FunctionalInterface
 public interface CodecGroupingFunction7<CI1, CI2, CI3, CI4, CI5, CI6, CI7, R> {
 	
 	@NotNull R create(

@@ -32,7 +32,7 @@ import java.util.*;
  *
  * @param <T> The type of the elements
  */
-@SuppressWarnings({ "UsingRandomNextDoubleForRandomInteger" })
+@SuppressWarnings("UsingRandomNextDoubleForRandomInteger")
 public class WeightCollection<T> {
 	
 	/**

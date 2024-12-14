@@ -32,7 +32,7 @@ import java.util.*;
  *
  * @author Luis-St
  */
-public class StackTraceUtils {
+public final class StackTraceUtils {
 	
 	/**
 	 * Constant for the system property 'unsafe.calls.main'.<br>
@@ -334,7 +334,7 @@ public class StackTraceUtils {
 		Objects.requireNonNull(element, "Stack trace element must not be null");
 		Class<?> clazz = Objects.requireNonNull(ReflectionHelper.getClassForName(element.getClassName()));
 		List<Method> methods = ReflectionUtils.getMethodsForName(clazz, element.getMethodName());
-		return methods.size() == 1 ? methods.get(0) : null;
+		return methods.size() == 1 ? methods.getFirst() : null;
 	}
 	//endregion
 }

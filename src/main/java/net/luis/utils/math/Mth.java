@@ -32,7 +32,7 @@ import java.util.stream.*;
  *
  * @author Luis-St
  */
-public class Mth {
+public final class Mth {
 	
 	/**
 	 * Private constructor to prevent instantiation.<br>
@@ -281,7 +281,7 @@ public class Mth {
 		if (values == null || values.length == 0) {
 			return Integer.MAX_VALUE;
 		}
-		return IntStream.of(values).min().orElseThrow(IllegalStateException::new);
+		return IntStream.of(values).min().orElseThrow(() -> new IllegalStateException("Unable to determine minimum value"));
 	}
 	
 	/**
@@ -295,7 +295,7 @@ public class Mth {
 		if (values == null || values.length == 0) {
 			return Long.MAX_VALUE;
 		}
-		return LongStream.of(values).min().orElseThrow(IllegalStateException::new);
+		return LongStream.of(values).min().orElseThrow(() -> new IllegalStateException("Unable to determine minimum value"));
 	}
 	
 	/**
@@ -309,7 +309,7 @@ public class Mth {
 		if (values == null || values.length == 0) {
 			return Double.MAX_VALUE;
 		}
-		return DoubleStream.of(values).min().orElseThrow(IllegalStateException::new);
+		return DoubleStream.of(values).min().orElseThrow(() -> new IllegalStateException("Unable to determine minimum value"));
 	}
 	//endregion
 	
@@ -326,7 +326,7 @@ public class Mth {
 		if (values == null || values.length == 0) {
 			return Integer.MIN_VALUE;
 		}
-		return IntStream.of(values).max().orElseThrow(IllegalStateException::new);
+		return IntStream.of(values).max().orElseThrow(() -> new IllegalStateException("Unable to determine maximum value"));
 	}
 	
 	/**
@@ -340,7 +340,7 @@ public class Mth {
 		if (values == null || values.length == 0) {
 			return Long.MIN_VALUE;
 		}
-		return LongStream.of(values).max().orElseThrow(IllegalStateException::new);
+		return LongStream.of(values).max().orElseThrow(() -> new IllegalStateException("Unable to determine maximum value"));
 	}
 	
 	/**
@@ -354,7 +354,7 @@ public class Mth {
 		if (values == null || values.length == 0) {
 			return Double.MIN_VALUE;
 		}
-		return DoubleStream.of(values).max().orElseThrow(IllegalStateException::new);
+		return DoubleStream.of(values).max().orElseThrow(() -> new IllegalStateException("Unable to determine maximum value"));
 	}
 	
 	//endregion
@@ -372,7 +372,7 @@ public class Mth {
 		if (values == null || values.length == 0) {
 			return Double.NaN;
 		}
-		return IntStream.of(values).average().orElseThrow(IllegalStateException::new);
+		return IntStream.of(values).average().orElseThrow(() -> new IllegalStateException("Unable to determine average value"));
 	}
 	
 	/**
@@ -386,7 +386,7 @@ public class Mth {
 		if (values == null || values.length == 0) {
 			return Double.NaN;
 		}
-		return LongStream.of(values).average().orElseThrow(IllegalStateException::new);
+		return LongStream.of(values).average().orElseThrow(() -> new IllegalStateException("Unable to determine average value"));
 	}
 	
 	/**
@@ -400,7 +400,7 @@ public class Mth {
 		if (values == null || values.length == 0) {
 			return Double.NaN;
 		}
-		return DoubleStream.of(values).average().orElseThrow(IllegalStateException::new);
+		return DoubleStream.of(values).average().orElseThrow(() -> new IllegalStateException("Unable to determine average value"));
 	}
 	//endregion
 	
