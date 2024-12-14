@@ -166,7 +166,7 @@ public record Priority(@NotNull String name, long priority) implements EnumLike<
 	 */
 	public static @NotNull Priority getNearest(long priority) {
 		BigInteger target = BigInteger.valueOf(priority);
-		return Priority.VALUES.stream().reduce((p1, p2) -> {
+		return VALUES.stream().reduce((p1, p2) -> {
 			BigInteger diff1 = BigInteger.valueOf(p1.priority()).subtract(target).abs();
 			BigInteger diff2 = BigInteger.valueOf(p2.priority()).subtract(target).abs();
 			return diff1.compareTo(diff2) < 0 ? p1 : p2;

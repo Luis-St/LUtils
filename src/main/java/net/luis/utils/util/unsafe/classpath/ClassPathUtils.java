@@ -37,7 +37,7 @@ import java.util.stream.Collectors;
  * @author Luis-St
  */
 @SuppressWarnings("ErrorNotRethrown")
-public class ClassPathUtils {
+public final class ClassPathUtils {
 	
 	/**
 	 * The logger for this class.<br>

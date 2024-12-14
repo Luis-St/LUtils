@@ -55,7 +55,7 @@ public interface TriFunction<T, U, V, R> {
 	 * @throws NullPointerException If the {@code after} function is null
 	 */
 	default <S> @NotNull TriFunction<T, U, V, S> andThen(@NotNull Function<? super R, ? extends S> after) {
-		Objects.requireNonNull(after, "'After' function must not be null");
+		Objects.requireNonNull(after, "After function must not be null");
 		return (T t, U u, V v) -> after.apply(this.apply(t, u, v));
 	}
 }

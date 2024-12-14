@@ -27,12 +27,12 @@ import java.util.Objects;
  *
  * @author Luis-St
  */
-public class IntegerRegistryKey implements RegistryKey<Integer> {
+public final class IntegerRegistryKey implements RegistryKey<Integer> {
 	
 	/**
 	 * The default integer registry key with the value 0.<br>
 	 */
-	public static final IntegerRegistryKey DEFAULT = IntegerRegistryKey.of(0);
+	public static final IntegerRegistryKey DEFAULT = of(0);
 	
 	/**
 	 * The integer value of the key.<br>

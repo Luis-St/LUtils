@@ -64,7 +64,7 @@ public class Registry<K extends RegistryKey<?>, I> implements Iterable<I> {
 	 * @param freezable Whether the registry is freezable or not
 	 * @throws NullPointerException If the key generator is null
 	 */
-	private Registry(@NotNull KeyGenerator<K> keyGenerator, boolean freezable) {
+	protected Registry(@NotNull KeyGenerator<K> keyGenerator, boolean freezable) {
 		this.keyGenerator = Objects.requireNonNull(keyGenerator, "Key generator must not be null");
 		this.freezable = freezable;
 	}

@@ -32,7 +32,7 @@ import java.util.Map;
  *
  */
 
-public class JsonTypeProvider implements TypeProvider<JsonElement> {
+public final class JsonTypeProvider implements TypeProvider<JsonElement> {
 	
 	public static final JsonTypeProvider INSTANCE = new JsonTypeProvider();
 	

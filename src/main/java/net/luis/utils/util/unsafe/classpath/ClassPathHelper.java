@@ -39,7 +39,7 @@ import java.util.stream.Collectors;
  * @author Luis-St
  */
 @SuppressWarnings("ErrorNotRethrown")
-class ClassPathHelper {
+final class ClassPathHelper {
 	
 	/**
 	 * Constant for the system property 'unsafe.package.depth'.<br>

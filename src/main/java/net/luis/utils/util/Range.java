@@ -53,7 +53,7 @@ public class Range {
 	 * @param max The maximum value of the range
 	 * @throws IllegalArgumentException If the maximum value is less than the minimum value
 	 */
-	private Range(double min, double max) {
+	protected Range(double min, double max) { // protected to prevent instantiation from outside but allow inheritance
 		this.min = min;
 		this.max = max;
 		if (this.min > this.max) {

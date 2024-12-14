@@ -85,9 +85,9 @@ public class JsonPrimitive implements JsonElement {
 	public JsonPrimitive(@NotNull Object value, boolean parse) {
 		Objects.requireNonNull(value, "Value must not be null");
 		switch (value) {
-			case Boolean b -> this.value = value;
-			case Number n -> this.value = value;
-			case String s -> this.value = parse ? tryParse(s) : value;
+			case Boolean b -> this.value = b;
+			case Number n -> this.value = n;
+			case String s -> this.value = parse ? tryParse(s) : s;
 			default -> throw new IllegalArgumentException("Value must be a boolean, number or string");
 		}
 	}

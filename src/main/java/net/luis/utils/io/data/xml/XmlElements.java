@@ -319,7 +319,7 @@ public class XmlElements {
 	 * This method should only be used if the collection is an object.<br>
 	 * @param name The name of the element to get
 	 * @return The element with the given name as a container
-	 * @throws XmlTypeException If the collection is an array
+	 * @throws XmlTypeException If the collection is an array or the element is not a container
 	 * @throws NoSuchXmlElementException If no element with the given name exists
 	 * @see #get(String)
 	 */
@@ -336,7 +336,7 @@ public class XmlElements {
 	 * This method should only be used if the collection is an object.<br>
 	 * @param name The name of the element to get
 	 * @return The element with the given name as a value
-	 * @throws XmlTypeException If the collection is an array
+	 * @throws XmlTypeException If the collection is an array or the element is not a value
 	 * @throws NoSuchXmlElementException If no element with the given name exists
 	 * @see #get(String)
 	 */

@@ -28,7 +28,7 @@ import java.util.regex.Pattern;
  *
  * @author Luis-St
  */
-class XmlHelper {
+final class XmlHelper {
 	
 	/**
 	 * Pattern for valid xml element names.<br>

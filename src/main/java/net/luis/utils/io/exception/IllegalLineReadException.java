@@ -29,6 +29,7 @@ import java.io.IOException;
  *
  * @author Luis-St
  */
+@SuppressWarnings("CheckedExceptionClass")
 public class IllegalLineReadException extends IOException {
 	
 	/**

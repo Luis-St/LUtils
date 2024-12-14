@@ -16,9 +16,12 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-package net.luis.utils.io.codec.group.function;
+package net.luis.utils.io.codec;
 
+import net.luis.utils.util.Result;
 import org.jetbrains.annotations.NotNull;
+
+import java.util.function.Function;
 
 /**
  *
@@ -27,14 +30,8 @@ import org.jetbrains.annotations.NotNull;
  */
 
 @FunctionalInterface
-public interface CodecGroupingFunction6<CI1, CI2, CI3, CI4, CI5, CI6, R> {
+public interface ResultFunction<T, R> extends Function<Result<T>, Result<R>> {
 	
-	@NotNull R create(
-		@NotNull CI1 input1,
-		@NotNull CI2 input2,
-		@NotNull CI3 input3,
-		@NotNull CI4 input4,
-		@NotNull CI5 input5,
-		@NotNull CI6 input6
-	);
+	@Override
+	@NotNull Result<R> apply(@NotNull Result<T> input);
 }

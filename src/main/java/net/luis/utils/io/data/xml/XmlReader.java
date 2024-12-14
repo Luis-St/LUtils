@@ -336,7 +336,6 @@ public class XmlReader implements AutoCloseable {
 			reader.skipWhitespaces();
 			if (reader.peek() == '\'' || reader.peek() == '"') {
 				reader.readQuotedString();
-				continue;
 			} else if (reader.peek() == '<') {
 				int resultIndex = reader.getIndex();
 				reader.skip();
@@ -369,7 +368,6 @@ public class XmlReader implements AutoCloseable {
 							continue;
 						}
 						scope.push(elementName.strip());
-						continue;
 					} else if (elementName.charAt(elementName.length() - 1) == '>') {
 						elementName = elementName.substring(0, elementName.length() - 1).stripTrailing();
 						if (elementName.isEmpty()) {

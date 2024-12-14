@@ -29,12 +29,12 @@ import java.util.UUID;
  *
  * @author Luis-St
  */
-public class UniqueRegistryKey implements RegistryKey<UUID> {
+public final class UniqueRegistryKey implements RegistryKey<UUID> {
 	
 	/**
 	 * The default unique registry key with an empty UUID ({@link Utils#EMPTY_UUID}).<br>
 	 */
-	public static final UniqueRegistryKey DEFAULT = UniqueRegistryKey.of(Utils.EMPTY_UUID);
+	public static final UniqueRegistryKey DEFAULT = of(Utils.EMPTY_UUID);
 	
 	/**
 	 * The unique id of the registry key.<br>

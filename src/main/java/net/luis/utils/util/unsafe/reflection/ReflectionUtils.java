@@ -39,7 +39,7 @@ import static org.apache.commons.lang3.ArrayUtils.*;
  *
  * @author Luis-St
  */
-public class ReflectionUtils {
+public final class ReflectionUtils {
 	
 	/**
 	 * Private constructor to prevent instantiation.<br>
@@ -106,7 +106,7 @@ public class ReflectionUtils {
 		Objects.requireNonNull(name, "Name must not be null");
 		Objects.requireNonNull(annotation, "Annotation must not be null");
 		if (ReflectionHelper.hasMethod(clazz, name, m -> m.isAnnotationPresent(annotation), parameters)) {
-			return Optional.of(ReflectionHelper.getMethod(clazz, name, parameters));
+			return ReflectionHelper.getMethod(clazz, name, parameters);
 		}
 		return Optional.empty();
 	}
@@ -221,7 +221,7 @@ public class ReflectionUtils {
 		Objects.requireNonNull(name, "Name must not be null");
 		Objects.requireNonNull(annotation, "Annotation must not be null");
 		if (ReflectionHelper.hasField(clazz, name, f -> f.isAnnotationPresent(annotation))) {
-			return Optional.of(ReflectionHelper.getField(clazz, name));
+			return ReflectionHelper.getField(clazz, name);
 		}
 		return Optional.empty();
 	}

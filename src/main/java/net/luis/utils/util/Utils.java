@@ -33,7 +33,7 @@ import java.util.stream.Collectors;
  *
  * @author Luis-St
  */
-public class Utils {
+public final class Utils {
 	
 	/**
 	 * Empty UUID constant.<br>
