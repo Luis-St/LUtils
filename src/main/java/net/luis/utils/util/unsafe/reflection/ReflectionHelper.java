@@ -111,7 +111,7 @@ public final class ReflectionHelper {
 	 * Exceptions will not be logged or thrown by default.<br>
 	 * @param clazz The class to get the constructor from
 	 * @param parameters The parameters of the constructor
-	 * @return The constructor or null if the constructor could not be found
+	 * @return The constructor as an optional or an empty optional if the constructor could not be found
 	 * @param <T> The type of the class
 	 * @throws NullPointerException If the given class is null
 	 * @see #handleException(Exception)
@@ -167,7 +167,7 @@ public final class ReflectionHelper {
 	 * Exceptions will not be logged or thrown by default.<br>
 	 * @param constructor The constructor to create the instance from
 	 * @param parameters The parameters of the constructor
-	 * @return The new instance or null if the instance could not be created
+	 * @return The new instance as an optional or an empty optional if the instance could not be created
 	 * @param <T> The type of the instance
 	 * @throws NullPointerException If the given constructor is null
 	 * @see #handleException(Exception)
@@ -200,7 +200,7 @@ public final class ReflectionHelper {
 	 * Creates a new instance from the given class and parameters.<br>
 	 * @param clazz The class to create the instance from
 	 * @param parameters The parameters of the constructor
-	 * @return The new instance or null if the instance could not be created
+	 * @return The new instance as an optional or an empty optional if the instance could not be created
 	 * @param <T> The type of the instance
 	 * @throws NullPointerException If the given class is null
 	 * @throws IllegalStateException If no constructor for the given parameters could be found
@@ -226,7 +226,7 @@ public final class ReflectionHelper {
 	 * @param clazz The class to get the method from
 	 * @param name The name of the method
 	 * @param parameters The parameters of the method
-	 * @return The method or null if the method could not be found
+	 * @return The method as an optional or an empty optional if the method could not be found
 	 * @throws NullPointerException If the given class or name is null
 	 * @see #handleException(Exception)
 	 */
@@ -290,7 +290,7 @@ public final class ReflectionHelper {
 	 * @param method The method to invoke
 	 * @param instance The instance to invoke the method on
 	 * @param parameters The parameters of the method
-	 * @return The return value of the method
+	 * @return The return value of the method as an optional or an empty optional if the invocation failed
 	 * @throws NullPointerException If the given method is null
 	 * @see #handleException(Exception)
 	 */
@@ -325,7 +325,7 @@ public final class ReflectionHelper {
 	 * @param name The name of the method
 	 * @param instance The instance to invoke the method on
 	 * @param parameters The parameters of the method
-	 * @return The return value of the method
+	 * @return The return value of the method as an optional or an empty optional if the invocation failed
 	 * @throws NullPointerException If the given class or name is null
 	 * @throws IllegalStateException If no method for the given name and parameters could be found
 	 * @see #getMethod(Class, String, Class[])
@@ -350,7 +350,7 @@ public final class ReflectionHelper {
 	 * Exceptions will not be logged or thrown by default.<br>
 	 * @param clazz The class to get the field from
 	 * @param name The name of the field
-	 * @return The field or null if the field could not be found
+	 * @return The field as an optional or an empty optional if the field could not be found
 	 * @throws NullPointerException If the given class or name is null
 	 * @see #handleException(Exception)
 	 */
@@ -405,7 +405,7 @@ public final class ReflectionHelper {
 	 * Exceptions will not be logged or thrown by default.<br>
 	 * @param field The field to get the value from
 	 * @param instance The instance to get the value from
-	 * @return The value of the field
+	 * @return The value of the field as an optional or an empty optional if the value could not be determined
 	 * @throws NullPointerException If the given field is null
 	 * @see #handleException(Exception)
 	 */
@@ -432,7 +432,7 @@ public final class ReflectionHelper {
 	 * @param clazz The class to get the field from
 	 * @param name The name of the field
 	 * @param instance The instance to get the value from
-	 * @return The value of the field
+	 * @return The value of the field as an optional or an empty optional if the value could not be determined
 	 * @throws NullPointerException If the given class or name is null
 	 * @throws IllegalStateException If no field with the given name could be found
 	 * @see #getField(Class, String)
