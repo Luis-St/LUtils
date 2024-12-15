@@ -42,6 +42,13 @@ module net.luis.utils {
 	exports net.luis.utils.function.throwable;
 	
 	exports net.luis.utils.io;
+	exports net.luis.utils.io.codec;
+	exports net.luis.utils.io.codec.decoder;
+	exports net.luis.utils.io.codec.encoder;
+	exports net.luis.utils.io.codec.group.function;
+	exports net.luis.utils.io.codec.group.grouper;
+	exports net.luis.utils.io.codec.provider;
+	exports net.luis.utils.io.codec.struct;
 	exports net.luis.utils.io.data;
 	exports net.luis.utils.io.data.config;
 	exports net.luis.utils.io.data.json;
