@@ -23,21 +23,32 @@ import net.luis.utils.util.Result;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.function.Function;
+
 /**
  *
  * @author Luis-St
  *
  */
 
-public interface Encoder<T> {
+public interface Encoder<C> {
 	
-	default <R> @NotNull R encode(@NotNull TypeProvider<R> provider, @Nullable T value) {
+	default <R> @NotNull R encode(@NotNull TypeProvider<R> provider, @Nullable C value) {
 		return this.encode(provider, provider.empty(), value);
 	}
 	
-	default <R> @NotNull R encode(@NotNull TypeProvider<R> provider, @NotNull R current, @Nullable T value) {
+	default <R> @NotNull R encode(@NotNull TypeProvider<R> provider, @NotNull R current, @Nullable C value) {
 		return this.encodeStart(provider, current, value).orThrow();
 	}
 	
-	<R> @NotNull Result<R> encodeStart(@NotNull TypeProvider<R> provider, @NotNull R current, @Nullable T value);
+	<R> @NotNull Result<R> encodeStart(@NotNull TypeProvider<R> provider, @NotNull R current, @Nullable C value);
+	
+	default <O> @NotNull Encoder<O> mapEncoder(@NotNull Function<O, C> to) {
+		return new Encoder<>() {
+			@Override
+			public <R> @NotNull Result<R> encodeStart(@NotNull TypeProvider<R> provider, @NotNull R current, @Nullable O value) {
+				return Encoder.this.encodeStart(provider, current, to.apply(value));
+			}
+		};
+	}
 }
