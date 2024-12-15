@@ -35,8 +35,11 @@ module net.luis.utils {
 	exports net.luis.utils.collection.registry;
 	exports net.luis.utils.collection.registry.key;
 	exports net.luis.utils.collection.util;
+	
 	exports net.luis.utils.exception;
+	
 	exports net.luis.utils.function;
+	exports net.luis.utils.function.throwable;
 	
 	exports net.luis.utils.io;
 	exports net.luis.utils.io.data;
