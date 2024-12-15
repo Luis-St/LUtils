@@ -246,6 +246,24 @@ public interface Codec<C> extends Encoder<C>, Decoder<C> {
 		}
 	};
 	
+	Codec<byte[]> BYTE_ARRAY = of(BYTE.list(), array -> Lists.newArrayList(ArrayUtils.toObject(array)), result -> result.map(list -> ArrayUtils.toPrimitive(list.toArray(Byte[]::new))), "ByteArrayCodec");
+	Codec<IntStream> INT_STREAM = of(INTEGER.stream(), IntStream::boxed, result -> result.map(stream -> stream.mapToInt(Integer::intValue)), "IntStreamCodec");
+	Codec<LongStream> LONG_STREAM = of(LONG.stream(), LongStream::boxed, result -> result.map(stream -> stream.mapToLong(Long::longValue)), "LongStreamCodec");
+	Codec<DoubleStream> DOUBLE_STREAM = of(DOUBLE.stream(), DoubleStream::boxed, result -> result.map(stream -> stream.mapToDouble(Double::doubleValue)), "DoubleStreamCodec");
+	
+	KeyableCodec<java.util.UUID> UUID = keyable(of(STRING, java.util.UUID::toString, result -> result.map(java.util.UUID::fromString), "UUIDCodec"), java.util.UUID::fromString);
+	
+	Codec<LocalDate> LOCAL_DATE = of(STRING, LocalDate::toString, result -> result.map(LocalDate::parse), "LocalDateCodec");
+	Codec<LocalTime> LOCAL_TIME = of(STRING, LocalTime::toString, result -> result.map(LocalTime::parse), "LocalTimeCodec");
+	Codec<LocalDateTime> LOCAL_DATE_TIME = of(STRING, LocalDateTime::toString, result -> result.map(LocalDateTime::parse), "LocalDateTimeCodec");
+	Codec<ZonedDateTime> ZONED_DATE_TIME = of(STRING, ZonedDateTime::toString, result -> result.map(ZonedDateTime::parse), "ZonedDateTimeCodec");
+	
+	Codec<Charset> CHARSET = of(STRING, Charset::name, result -> result.map(Charset::forName), "CharsetCodec");
+	Codec<File> FILE = of(STRING, File::getPath, result -> result.map(File::new), "FileCodec");
+	Codec<Path> PATH = of(STRING, Path::toString, result -> result.map(Path::of), "PathCodec");
+	Codec<java.net.URI> URI = of(STRING, java.net.URI::toString, result -> result.map(ThrowableFunction.caught(java.net.URI::new)), "URICodec");
+	Codec<java.net.URL> URL = of(URI, ThrowableFunction.caught(java.net.URL::toURI), result -> result.map(ThrowableFunction.caught(java.net.URI::toURL)), "URLCodec");
+	
 	//region Factories
 	static <C, O> @NotNull Codec<O> of(@NotNull Codec<C> base, @NotNull Function<O, C> toBase, @NotNull ResultFunction<C, O> fromBase, @NotNull String name) {
 		return of(base.mapEncoder(toBase), base.mapDecoder(fromBase), name);
