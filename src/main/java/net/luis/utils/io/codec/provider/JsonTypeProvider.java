@@ -85,11 +85,6 @@ public final class JsonTypeProvider implements TypeProvider<JsonElement> {
 	}
 	
 	@Override
-	public @NotNull Result<JsonElement> createList() {
-		return Result.success(new JsonArray());
-	}
-	
-	@Override
 	public @NotNull Result<JsonElement> createList(@NotNull List<JsonElement> values) {
 		return Result.success(new JsonArray(values));
 	}
