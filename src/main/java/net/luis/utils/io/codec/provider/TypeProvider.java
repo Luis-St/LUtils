@@ -50,8 +50,6 @@ public interface TypeProvider<T> {
 	
 	@NotNull Result<T> createString(@NotNull String value);
 	
-	@NotNull Result<T> createList();
-	
 	@NotNull Result<T> createList(@NotNull List<T> values);
 	
 	@NotNull Result<T> createMap();
