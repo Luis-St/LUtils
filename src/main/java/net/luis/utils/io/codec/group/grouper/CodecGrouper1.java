@@ -27,16 +27,24 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Map;
+import java.util.Objects;
 
 public record CodecGrouper1<CI1, O>(
 	@NotNull ConfigurableCodec<CI1, O> codec1
 ) {
 	
+	public CodecGrouper1 {
+		Objects.requireNonNull(codec1, "Configured codec #1 must not be null");
+	}
+	
 	@SuppressWarnings({ "DuplicatedCode", "UnqualifiedFieldAccess" })
 	public @NotNull Codec<O> create(@NotNull CodecGroupingFunction1<CI1, O> function) {
+		Objects.requireNonNull(function, "Codec grouping function must not be null");
 		return new Codec<>() {
 			@Override
 			public <R> @NotNull Result<R> encodeStart(@NotNull TypeProvider<R> provider, @NotNull R current, @Nullable O value) {
+				Objects.requireNonNull(provider, "Type provider must not be null");
+				Objects.requireNonNull(current, "Current value must not be null");
 				if (value == null) {
 					return Result.error("Unable to encode null value using '" + this);
 				}
@@ -54,6 +62,7 @@ public record CodecGrouper1<CI1, O>(
 			
 			@Override
 			public <R> @NotNull Result<O> decodeStart(@NotNull TypeProvider<R> provider, @Nullable R value) {
+				Objects.requireNonNull(provider, "Type provider must not be null");
 				if (value == null) {
 					return Result.error("Unable to decode null value using '" + this);
 				}

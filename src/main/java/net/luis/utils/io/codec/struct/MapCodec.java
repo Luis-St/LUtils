@@ -26,8 +26,7 @@ import net.luis.utils.util.Result;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -56,6 +55,8 @@ public class MapCodec<K, V> implements Codec<Map<K, V>> {
 	
 	@Override
 	public <R> @NotNull Result<R> encodeStart(@NotNull TypeProvider<R> provider, @NotNull R current, @Nullable Map<K, V> value) {
+		Objects.requireNonNull(provider, "Type provider must not be null");
+		Objects.requireNonNull(current, "Current value must not be null");
 		if (value == null) {
 			return Result.error("Unable to encode null value as map using '" + this + "'");
 		}
@@ -75,6 +76,8 @@ public class MapCodec<K, V> implements Codec<Map<K, V>> {
 	}
 	
 	private <R> @NotNull Result<Map.Entry<String, R>> encodeEntry(@NotNull TypeProvider<R> provider, @NotNull Map.Entry<K, V> entry) {
+		Objects.requireNonNull(provider, "Type provider must not be null");
+		Objects.requireNonNull(entry, "Map entry must not be null");
 		Result<String> encodedKey = this.keyCodec.encodeKey(provider, entry.getKey());
 		if (encodedKey.isError()) {
 			return Result.error("Unable to encode key '" + entry.getKey() + "' of map entry '" + entry + "' using codec '" + this.keyCodec + "': \n" + encodedKey.errorOrThrow());
@@ -88,6 +91,7 @@ public class MapCodec<K, V> implements Codec<Map<K, V>> {
 	
 	@Override
 	public <R> @NotNull Result<Map<K, V>> decodeStart(@NotNull TypeProvider<R> provider, @Nullable R value) {
+		Objects.requireNonNull(provider, "Type provider must not be null");
 		if (value == null) {
 			return Result.error("Unable to decode null value as map using '" + this + "'");
 		}
@@ -106,6 +110,8 @@ public class MapCodec<K, V> implements Codec<Map<K, V>> {
 	}
 	
 	private <R> @NotNull Result<Map.Entry<K, V>> decodeEntry(@NotNull TypeProvider<R> provider, @NotNull Map.Entry<String, R> entry) {
+		Objects.requireNonNull(provider, "Type provider must not be null");
+		Objects.requireNonNull(entry, "Map entry must not be null");
 		Result<K> decodedKey = this.keyCodec.decodeKey(provider, entry.getKey());
 		if (decodedKey.isError()) {
 			return Result.error("Unable to decode key '" + entry.getKey() + "' using codec '" + this.keyCodec + "': \n" + decodedKey.errorOrThrow());

@@ -23,6 +23,7 @@ import net.luis.utils.util.Result;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.Objects;
 import java.util.function.Function;
 
 /**
@@ -38,15 +39,20 @@ public interface Encoder<C> {
 	}
 	
 	default <R> @NotNull R encode(@NotNull TypeProvider<R> provider, @NotNull R current, @Nullable C value) {
+		Objects.requireNonNull(provider, "Type provider must not be null");
+		Objects.requireNonNull(current, "Current value must not be null");
 		return this.encodeStart(provider, current, value).orThrow();
 	}
 	
 	<R> @NotNull Result<R> encodeStart(@NotNull TypeProvider<R> provider, @NotNull R current, @Nullable C value);
 	
 	default <O> @NotNull Encoder<O> mapEncoder(@NotNull Function<O, C> to) {
+		Objects.requireNonNull(to, "Encode mapping function must not be null");
 		return new Encoder<>() {
 			@Override
 			public <R> @NotNull Result<R> encodeStart(@NotNull TypeProvider<R> provider, @NotNull R current, @Nullable O value) {
+				Objects.requireNonNull(provider, "Type provider must not be null");
+				Objects.requireNonNull(current, "Current value must not be null");
 				return Encoder.this.encodeStart(provider, current, to.apply(value));
 			}
 		};

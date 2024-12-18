@@ -24,6 +24,7 @@ import net.luis.utils.util.Result;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.Objects;
 import java.util.function.Supplier;
 
 /**
@@ -37,16 +38,17 @@ public class UnitCodec<C> implements Codec<C> {
 	private final Supplier<C> supplier;
 	
 	public UnitCodec(@NotNull Supplier<C> supplier) {
-		this.supplier = supplier;
+		this.supplier = Objects.requireNonNull(supplier, "Unit supplier must not be null");
 	}
 	
 	@Override
-	public <R> @NotNull Result<R> encodeStart(@NotNull TypeProvider<R> provider, @NotNull R current, @Nullable C value) {
+	public <R> @NotNull Result<R> encodeStart(@Nullable TypeProvider<R> provider, @NotNull R current, @Nullable C value) {
+		Objects.requireNonNull(current, "Current value must not be null");
 		return Result.success(current);
 	}
 	
 	@Override
-	public <R> @NotNull Result<C> decodeStart(@NotNull TypeProvider<R> provider, @Nullable R value) {
+	public <R> @NotNull Result<C> decodeStart(@Nullable TypeProvider<R> provider, @Nullable R value) {
 		return Result.success(this.supplier.get());
 	}
 	

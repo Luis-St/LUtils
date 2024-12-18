@@ -24,6 +24,8 @@ import net.luis.utils.util.Result;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.Objects;
+
 /**
  *
  * @author Luis-St
@@ -33,15 +35,18 @@ import org.jetbrains.annotations.Nullable;
 public interface Decoder<C> {
 	
 	default <R> @NotNull C decode(@NotNull TypeProvider<R> provider, @Nullable R value) {
+		Objects.requireNonNull(provider, "Type provider must not be null");
 		return this.decodeStart(provider, value).orThrow();
 	}
 	
 	<R> @NotNull Result<C> decodeStart(@NotNull TypeProvider<R> provider, @Nullable R value);
 	
 	default <O> @NotNull Decoder<O> mapDecoder(@NotNull ResultFunction<C, O> from) {
+		Objects.requireNonNull(from, "Decode mapping function must not be null");
 		return new Decoder<>() {
 			@Override
 			public <R> @NotNull Result<O> decodeStart(@NotNull TypeProvider<R> provider, @Nullable R value) {
+				Objects.requireNonNull(provider, "Type provider must not be null");
 				return from.apply(Decoder.this.decodeStart(provider, value));
 			}
 		};

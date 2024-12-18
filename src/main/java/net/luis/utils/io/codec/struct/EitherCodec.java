@@ -25,6 +25,8 @@ import net.luis.utils.util.Result;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.Objects;
+
 /**
  *
  * @author Luis-St
@@ -37,12 +39,14 @@ public class EitherCodec<F, S> implements Codec<Either<F, S>> {
 	private final Codec<S> secondCodec;
 	
 	public EitherCodec(@NotNull Codec<F> firstCodec, @NotNull Codec<S> secondCodec) {
-		this.firstCodec = firstCodec;
-		this.secondCodec = secondCodec;
+		this.firstCodec = Objects.requireNonNull(firstCodec, "First codec must not be null");
+		this.secondCodec = Objects.requireNonNull(secondCodec, "Second codec must not be null");
 	}
 	
 	@Override
 	public <R> @NotNull Result<R> encodeStart(@NotNull TypeProvider<R> provider, @NotNull R current, @Nullable Either<F, S> value) {
+		Objects.requireNonNull(provider, "Type provider must not be null");
+		Objects.requireNonNull(current, "Current value must not be null");
 		if (value == null) {
 			return Result.error("Unable to encode null value as either using '" + this + "'");
 		}
@@ -54,6 +58,7 @@ public class EitherCodec<F, S> implements Codec<Either<F, S>> {
 	
 	@Override
 	public <R> @NotNull Result<Either<F, S>> decodeStart(@NotNull TypeProvider<R> provider, @Nullable R value) {
+		Objects.requireNonNull(provider, "Type provider must not be null");
 		if (value == null) {
 			return Result.error("Unable to decode null value as either");
 		}

@@ -27,6 +27,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Map;
+import java.util.Objects;
 
 public record CodecGrouper14<CI1, CI2, CI3, CI4, CI5, CI6, CI7, CI8, CI9, CI10, CI11, CI12, CI13, CI14, O>(
 	@NotNull ConfigurableCodec<CI1, O> codec1,
@@ -45,12 +46,32 @@ public record CodecGrouper14<CI1, CI2, CI3, CI4, CI5, CI6, CI7, CI8, CI9, CI10, 
 	@NotNull ConfigurableCodec<CI14, O> codec14
 ) {
 	
+	public CodecGrouper14 {
+		Objects.requireNonNull(codec1, "Configured codec #1 must not be null");
+		Objects.requireNonNull(codec2, "Configured codec #2 must not be null");
+		Objects.requireNonNull(codec3, "Configured codec #3 must not be null");
+		Objects.requireNonNull(codec4, "Configured codec #4 must not be null");
+		Objects.requireNonNull(codec5, "Configured codec #5 must not be null");
+		Objects.requireNonNull(codec6, "Configured codec #6 must not be null");
+		Objects.requireNonNull(codec7, "Configured codec #7 must not be null");
+		Objects.requireNonNull(codec8, "Configured codec #8 must not be null");
+		Objects.requireNonNull(codec9, "Configured codec #9 must not be null");
+		Objects.requireNonNull(codec10, "Configured codec #10 must not be null");
+		Objects.requireNonNull(codec11, "Configured codec #11 must not be null");
+		Objects.requireNonNull(codec12, "Configured codec #12 must not be null");
+		Objects.requireNonNull(codec13, "Configured codec #13 must not be null");
+		Objects.requireNonNull(codec14, "Configured codec #14 must not be null");
+	}
+	
 	@SuppressWarnings({ "DuplicatedCode", "UnqualifiedFieldAccess" })
 	public @NotNull Codec<O> create(@NotNull CodecGroupingFunction14<CI1, CI2, CI3, CI4, CI5, CI6, CI7, CI8, CI9, CI10, CI11, CI12, CI13, CI14, O> function) {
+		Objects.requireNonNull(function, "Codec grouping function must not be null");
 		return new Codec<>() {
 			
 			@Override
 			public <R> @NotNull Result<R> encodeStart(@NotNull TypeProvider<R> provider, @NotNull R current, @Nullable O value) {
+				Objects.requireNonNull(provider, "Type provider must not be null");
+				Objects.requireNonNull(current, "Current value must not be null");
 				if (value == null) {
 					return Result.error("Unable to encode null value with '" + this);
 				}
@@ -120,6 +141,7 @@ public record CodecGrouper14<CI1, CI2, CI3, CI4, CI5, CI6, CI7, CI8, CI9, CI10, 
 			
 			@Override
 			public @NotNull <R> Result<O> decodeStart(@NotNull TypeProvider<R> provider, @Nullable R value) {
+				Objects.requireNonNull(provider, "Type provider must not be null");
 				if (value == null) {
 					return Result.error("Unable to decode null value using '" + this);
 				}

@@ -23,6 +23,7 @@ import net.luis.utils.util.Result;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.Objects;
 import java.util.function.Function;
 
 /**
@@ -38,15 +39,19 @@ public class ConfigurableCodec<C, O> implements Codec<C> {
 	private @Nullable Function<O, C> getter;
 	
 	ConfigurableCodec(@NotNull CodecBuilder<O> ignored, @NotNull Codec<C> codec) {
-		this.codec = codec;
+		this.codec = Objects.requireNonNull(codec, "Codec must not be null");
 	}
 	
 	@Override
 	public <R> @NotNull Result<R> encodeStart(@NotNull TypeProvider<R> provider, @NotNull R current, @Nullable C value) {
+		Objects.requireNonNull(provider, "Type provider must not be null");
+		Objects.requireNonNull(current, "Current value must not be null");
 		return this.codec.encodeStart(provider, current, value);
 	}
 	
 	public <R> @NotNull Result<R> encodeNamedStart(@NotNull TypeProvider<R> provider, @NotNull R map, @NotNull O object) {
+		Objects.requireNonNull(provider, "Type provider must not be null");
+		Objects.requireNonNull(map, "Map must not be null");
 		if (this.name == null) {
 			return Result.error("Unable to encode field of '" + object + "' with '" + this + "': Name is null");
 		}
@@ -66,10 +71,13 @@ public class ConfigurableCodec<C, O> implements Codec<C> {
 	
 	@Override
 	public <R> @NotNull Result<C> decodeStart(@NotNull TypeProvider<R> provider, @Nullable R value) {
+		Objects.requireNonNull(provider, "Type provider must not be null");
 		return this.codec.decodeStart(provider, value);
 	}
 	
 	public <R> @NotNull Result<C> decodeNamedStart(@NotNull TypeProvider<R> provider, @NotNull R map) {
+		Objects.requireNonNull(provider, "Type provider must not be null");
+		Objects.requireNonNull(map, "Map must not be null");
 		if (this.name == null) {
 			return Result.error("Unable to decode field of '" + map + "' with '" + this + "': Name is null");
 		}
@@ -81,12 +89,12 @@ public class ConfigurableCodec<C, O> implements Codec<C> {
 	}
 	
 	public @NotNull ConfigurableCodec<C, O> named(@NotNull String name) {
-		this.name = name;
+		this.name = Objects.requireNonNull(name, "Name must not be null");
 		return this;
 	}
 	
 	public @NotNull ConfigurableCodec<C, O> getter(@NotNull Function<O, C> getter) {
-		this.getter = getter;
+		this.getter = Objects.requireNonNull(getter, "Getter must not be null");
 		return this;
 	}
 }

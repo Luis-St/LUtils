@@ -23,6 +23,7 @@ import net.luis.utils.util.Result;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Function;
 
@@ -35,21 +36,25 @@ import java.util.function.Function;
 public interface KeyableDecoder<C> extends Decoder<C> {
 	
 	static <C> @NotNull KeyableDecoder<C> of(@NotNull Decoder<C> decoder, @NotNull Function<String, @Nullable C> fromKey) {
+		Objects.requireNonNull(decoder, "Decoder must not be null");
+		Objects.requireNonNull(fromKey, "Key decoder must not be null");
 		return new KeyableDecoder<>() {
 			
 			@Override
 			public <R> @NotNull Result<C> decodeStart(@NotNull TypeProvider<R> provider, @Nullable R value) {
+				Objects.requireNonNull(provider, "Type provider must not be null");
 				return decoder.decodeStart(provider, value);
 			}
 			
 			@Override
-			public <R> @NotNull Result<C> decodeKey(@NotNull TypeProvider<R> provider, @NotNull String value) {
-				return Optional.ofNullable(fromKey.apply(value)).map(Result::success).orElseGet(() -> {
-					return Result.error("Unable to decode key with codec '" + this + "': Key '" + value + "' could not be converted back to a value");
+			public <R> @NotNull Result<C> decodeKey(@Nullable TypeProvider<R> provider, @NotNull String key) {
+				Objects.requireNonNull(key, "Key must not be null");
+				return Optional.ofNullable(fromKey.apply(key)).map(Result::success).orElseGet(() -> {
+					return Result.error("Unable to decode key with codec '" + this + "': Key '" + key + "' could not be converted back to a value");
 				});
 			}
 		};
 	}
 	
-	<R> @NotNull Result<C> decodeKey(@NotNull TypeProvider<R> provider, @NotNull String value);
+	<R> @NotNull Result<C> decodeKey(@NotNull TypeProvider<R> provider, @NotNull String key);
 }

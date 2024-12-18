@@ -25,6 +25,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 /**
@@ -51,6 +52,8 @@ public class ListCodec<C> implements Codec<List<C>> {
 	
 	@Override
 	public <R> @NotNull Result<R> encodeStart(@NotNull TypeProvider<R> provider, @NotNull R current, @Nullable List<C> value) {
+		Objects.requireNonNull(provider, "Type provider must not be null");
+		Objects.requireNonNull(current, "Current value must not be null");
 		if (value == null) {
 			return Result.error("Unable to encode null value as list using '" + this + "'");
 		}
@@ -64,6 +67,7 @@ public class ListCodec<C> implements Codec<List<C>> {
 	
 	@Override
 	public <R> @NotNull Result<List<C>> decodeStart(@NotNull TypeProvider<R> provider, @Nullable R value) {
+		Objects.requireNonNull(provider, "Type provider must not be null");
 		if (value == null) {
 			return Result.error("Unable to decode null value as list using'" + this + "'");
 		}

@@ -21,6 +21,7 @@ package net.luis.utils.io.codec;
 import net.luis.utils.util.Result;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.Objects;
 import java.util.function.Function;
 
 /**
@@ -31,6 +32,11 @@ import java.util.function.Function;
 
 @FunctionalInterface
 public interface ResultFunction<T, R> extends Function<Result<T>, Result<R>> {
+	
+	static <T, R> @NotNull ResultFunction<T, R> direct(@NotNull Function<T, R> function) {
+		Objects.requireNonNull(function, "Function must not be null");
+		return result -> result.map(function);
+	}
 	
 	@Override
 	@NotNull Result<R> apply(@NotNull Result<T> input);

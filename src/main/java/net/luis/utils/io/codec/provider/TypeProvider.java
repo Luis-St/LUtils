@@ -21,8 +21,7 @@ package net.luis.utils.io.codec.provider;
 import net.luis.utils.util.Result;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  *
@@ -85,6 +84,9 @@ public interface TypeProvider<T> {
 	@NotNull Result<T> set(@NotNull T type, @NotNull String key, @NotNull T value);
 	
 	default @NotNull Result<T> set(@NotNull T type, @NotNull String key, @NotNull Result<T> value) {
+		Objects.requireNonNull(type, "Type must not be null");
+		Objects.requireNonNull(key, "Key must not be null");
+		Objects.requireNonNull(value, "Value must not be null");
 		if (value.isSuccess()) {
 			return this.set(type, key, value.orThrow());
 		}
@@ -94,6 +96,8 @@ public interface TypeProvider<T> {
 	@NotNull Result<T> merge(@NotNull T current, @NotNull T value);
 	
 	default @NotNull Result<T> merge(@NotNull T current, @NotNull Result<T> value) {
+		Objects.requireNonNull(current, "Current value must not be null");
+		Objects.requireNonNull(value, "Value must not be null");
 		if (value.isSuccess()) {
 			return this.merge(current, value.orThrow());
 		}

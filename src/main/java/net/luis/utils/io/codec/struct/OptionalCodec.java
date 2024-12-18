@@ -24,6 +24,7 @@ import net.luis.utils.util.Result;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Supplier;
 
@@ -39,7 +40,7 @@ public class OptionalCodec<C> implements Codec<Optional<C>> {
 	private @Nullable Supplier<C> defaultProvider;
 	
 	public OptionalCodec(@NotNull Codec<C> codec) {
-		this.codec = codec;
+		this.codec = Objects.requireNonNull(codec, "Codec must not be null");
 	}
 	
 	private @NotNull Optional<C> getDefault() {
@@ -52,6 +53,8 @@ public class OptionalCodec<C> implements Codec<Optional<C>> {
 	@Override
 	@SuppressWarnings("OptionalAssignedToNull")
 	public <R> @NotNull Result<R> encodeStart(@NotNull TypeProvider<R> provider, @NotNull R current, @Nullable Optional<C> value) {
+		Objects.requireNonNull(provider, "Type provider must not be null");
+		Objects.requireNonNull(current, "Current value must not be null");
 		if (value == null) {
 			return Result.success(current);
 		}
@@ -60,6 +63,7 @@ public class OptionalCodec<C> implements Codec<Optional<C>> {
 	
 	@Override
 	public <R> @NotNull Result<Optional<C>> decodeStart(@NotNull TypeProvider<R> provider, @Nullable R value) {
+		Objects.requireNonNull(provider, "Type provider must not be null");
 		if (value == null) {
 			return Result.success(this.getDefault());
 		}
@@ -71,11 +75,12 @@ public class OptionalCodec<C> implements Codec<Optional<C>> {
 	}
 	
 	public @NotNull Codec<Optional<C>> orDefault(@NotNull C defaultValue) {
+		Objects.requireNonNull(defaultValue, "Default value must not be null");
 		return this.orGetDefault(() -> defaultValue);
 	}
 	
 	public @NotNull Codec<Optional<C>> orGetDefault(@NotNull Supplier<C> defaultProvider) {
-		this.defaultProvider = defaultProvider;
+		this.defaultProvider = Objects.requireNonNull(defaultProvider, "Default provider must not be null");
 		return this;
 	}
 	

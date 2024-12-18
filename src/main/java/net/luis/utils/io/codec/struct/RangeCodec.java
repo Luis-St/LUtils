@@ -27,6 +27,7 @@ import net.luis.utils.util.Result;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.Objects;
 import java.util.function.Function;
 
 /**
@@ -48,20 +49,25 @@ public abstract class RangeCodec<C extends Number & Comparable<C>> implements Ke
 	}
 	
 	protected RangeCodec(@NotNull C min, @NotNull C max, @NotNull Function<Number, C> converter, @NotNull Function<C, String> toKey, @NotNull Function<String, C> fromKey) {
-		this.min = min;
-		this.max = max;
-		this.converter = converter;
-		this.encoder = KeyableEncoder.of(this, toKey);
-		this.decoder = KeyableDecoder.of(this, fromKey);
+		this.min = Objects.requireNonNull(min, "Min value must not be null");
+		this.max = Objects.requireNonNull(max, "Max value must not be null");
+		this.converter = Objects.requireNonNull(converter, "Converter must not be null");
+		this.encoder = KeyableEncoder.of(this, Objects.requireNonNull(toKey, "String encoder must not be null"));
+		this.decoder = KeyableDecoder.of(this, Objects.requireNonNull(fromKey, "String decoder must not be null"));
 	}
 	
 	private static <C extends Number & Comparable<C>> @NotNull Codec<C> ranged(@NotNull Codec<C> codec, @NotNull C minInclusive, @NotNull C maxInclusive) {
+		Objects.requireNonNull(codec, "Codec must not be null");
+		Objects.requireNonNull(minInclusive, "Min value must not be null");
+		Objects.requireNonNull(maxInclusive, "Max value must not be null");
 		if (minInclusive.compareTo(maxInclusive) > 0) {
 			throw new IllegalArgumentException("Min value '" + minInclusive + "' is greater than max value '" + maxInclusive + "'");
 		}
 		return new Codec<>() {
 			@Override
 			public <R> @NotNull Result<R> encodeStart(@NotNull TypeProvider<R> provider, @NotNull R current, @Nullable C value) {
+				Objects.requireNonNull(provider, "Type provider must not be null");
+				Objects.requireNonNull(current, "Current value must not be null");
 				if (value == null) {
 					return Result.error("Unable to decode null value as number with codec '" + codec + "'");
 				}
@@ -70,6 +76,7 @@ public abstract class RangeCodec<C extends Number & Comparable<C>> implements Ke
 
 			@Override
 			public <R> @NotNull Result<C> decodeStart(@NotNull TypeProvider<R> provider, @Nullable R value) {
+				Objects.requireNonNull(provider, "Type provider must not be null");
 				Result<C> result = codec.decodeStart(provider, value);
 				if (result.isError()) {
 					return result;
@@ -89,13 +96,17 @@ public abstract class RangeCodec<C extends Number & Comparable<C>> implements Ke
 	}
 	
 	@Override
-	public @NotNull <R> Result<String> encodeKey(@NotNull TypeProvider<R> provider, @NotNull C value) {
-		return this.encoder.encodeKey(provider, value);
+	public @NotNull <R> Result<String> encodeKey(@NotNull TypeProvider<R> provider, @NotNull C key) {
+		Objects.requireNonNull(provider, "Type provider must not be null");
+		Objects.requireNonNull(key, "Value must not be null");
+		return this.encoder.encodeKey(provider, key);
 	}
 	
 	@Override
-	public @NotNull <R> Result<C> decodeKey(@NotNull TypeProvider<R> provider, @NotNull String value) {
-		return this.decoder.decodeKey(provider, value);
+	public @NotNull <R> Result<C> decodeKey(@NotNull TypeProvider<R> provider, @NotNull String key) {
+		Objects.requireNonNull(provider, "Type provider must not be null");
+		Objects.requireNonNull(key, "Value must not be null");
+		return this.decoder.decodeKey(provider, key);
 	}
 	
 	public @NotNull KeyableCodec<C> positive() {
@@ -127,6 +138,7 @@ public abstract class RangeCodec<C extends Number & Comparable<C>> implements Ke
 	}
 	
 	private @NotNull KeyableCodec<C> makeKeyable(@NotNull Codec<C> codec) {
+		Objects.requireNonNull(codec, "Codec must not be null");
 		return Codec.keyable(codec, this.encoder, this.decoder);
 	}
 }
