@@ -36,8 +36,7 @@ dependencies {
 	// Other
 	implementation("org.jetbrains:annotations:${jetBrainsAnnotations}") // Annotations
 	// Test
-	testImplementation("org.junit.jupiter:junit-jupiter-api:${junitJupiter}")
-	testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:${junitJupiter}")
+	testImplementation("org.junit.jupiter:junit-jupiter:${junitJupiter}")
 }
 
 tasks.named<JavaCompile>("compileJava") {
