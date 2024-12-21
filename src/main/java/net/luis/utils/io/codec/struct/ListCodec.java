@@ -45,7 +45,13 @@ public class ListCodec<C> implements Codec<List<C>> {
 	}
 	
 	public ListCodec(@NotNull Codec<C> codec, int minSize, int maxSize) {
-		this.codec = codec;
+		this.codec = Objects.requireNonNull(codec, "Codec must not be null");
+		if (0 > minSize) {
+			throw new IllegalArgumentException("Minimum size must be at least 0");
+		}
+		if (minSize > maxSize) {
+			throw new IllegalArgumentException("Minimum size must be less than or equal to maximum size");
+		}
 		this.minSize = minSize;
 		this.maxSize = maxSize;
 	}
@@ -85,8 +91,24 @@ public class ListCodec<C> implements Codec<List<C>> {
 		return Result.error("List was decoded successfully but size '" + results.size() + "' is out of range: " + this.minSize + ".." + this.maxSize);
 	}
 	
+	//region Object overrides
+	@Override
+	public boolean equals(Object o) {
+		if (!(o instanceof ListCodec<?> listCodec)) return false;
+		
+		if (this.minSize != listCodec.minSize) return false;
+		if (this.maxSize != listCodec.maxSize) return false;
+		return this.codec.equals(listCodec.codec);
+	}
+	
+	@Override
+	public int hashCode() {
+		return Objects.hash(this.codec, this.minSize, this.maxSize);
+	}
+	
 	@Override
 	public String toString() {
 		return "ListCodec[" + this.codec + "]";
 	}
+	//endregion
 }

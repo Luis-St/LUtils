@@ -73,8 +73,23 @@ public class EitherCodec<F, S> implements Codec<Either<F, S>> {
 		return secondResult.map(Either::right);
 	}
 	
+	//region Object overrides
+	@Override
+	public boolean equals(Object o) {
+		if (!(o instanceof EitherCodec<?, ?> that)) return false;
+		
+		if (!this.firstCodec.equals(that.firstCodec)) return false;
+		return this.secondCodec.equals(that.secondCodec);
+	}
+	
+	@Override
+	public int hashCode() {
+		return Objects.hash(this.firstCodec, this.secondCodec);
+	}
+	
 	@Override
 	public String toString() {
 		return "EitherCodec[" + this.firstCodec + ", " + this.secondCodec + "]";
 	}
+	//endregion
 }

@@ -71,7 +71,11 @@ public class OptionalCodec<C> implements Codec<Optional<C>> {
 		if (decoded.isSuccess()) {
 			return Result.success(this.getDefault());
 		}
-		return this.codec.decodeStart(provider, value).map(Optional::of);
+		Result<C> result = this.codec.decodeStart(provider, value);
+		if (result.isError()) {
+			return Result.success(this.getDefault());
+		}
+		return result.map(Optional::of);
 	}
 	
 	public @NotNull Codec<Optional<C>> orDefault(@NotNull C defaultValue) {
@@ -84,8 +88,23 @@ public class OptionalCodec<C> implements Codec<Optional<C>> {
 		return this;
 	}
 	
+	//region Object overrides
+	@Override
+	public boolean equals(Object o) {
+		if (!(o instanceof OptionalCodec<?> that)) return false;
+		
+		if (!this.codec.equals(that.codec)) return false;
+		return Objects.equals(this.defaultProvider, that.defaultProvider);
+	}
+	
+	@Override
+	public int hashCode() {
+		return Objects.hash(this.codec);
+	}
+	
 	@Override
 	public String toString() {
 		return "OptionalCodec[" + this.codec + "]";
 	}
+	//endregion
 }

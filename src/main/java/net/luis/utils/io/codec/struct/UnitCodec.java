@@ -52,8 +52,22 @@ public class UnitCodec<C> implements Codec<C> {
 		return Result.success(this.supplier.get());
 	}
 	
+	//region Object overrides
+	@Override
+	public boolean equals(Object o) {
+		if (!(o instanceof UnitCodec<?> unitCodec)) return false;
+		
+		return this.supplier.equals(unitCodec.supplier);
+	}
+	
+	@Override
+	public int hashCode() {
+		return Objects.hash(this.supplier);
+	}
+	
 	@Override
 	public String toString() {
 		return "unit codec";
 	}
+	//endregion
 }

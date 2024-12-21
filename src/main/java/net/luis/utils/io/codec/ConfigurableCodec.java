@@ -38,7 +38,8 @@ public class ConfigurableCodec<C, O> implements Codec<C> {
 	private @Nullable String name;
 	private @Nullable Function<O, C> getter;
 	
-	ConfigurableCodec(@NotNull CodecBuilder<O> ignored, @NotNull Codec<C> codec) {
+	ConfigurableCodec(@NotNull CodecBuilder<O> builder, @NotNull Codec<C> codec) {
+		Objects.requireNonNull(builder, "Builder must not be null");
 		this.codec = Objects.requireNonNull(codec, "Codec must not be null");
 	}
 	
@@ -97,4 +98,25 @@ public class ConfigurableCodec<C, O> implements Codec<C> {
 		this.getter = Objects.requireNonNull(getter, "Getter must not be null");
 		return this;
 	}
+	
+	//region Object overrides
+	@Override
+	public boolean equals(Object o) {
+		if (!(o instanceof ConfigurableCodec<?, ?> that)) return false;
+		
+		if (!this.codec.equals(that.codec)) return false;
+		if (!Objects.equals(this.name, that.name)) return false;
+		return Objects.equals(this.getter, that.getter);
+	}
+	
+	@Override
+	public int hashCode() {
+		return Objects.hash(this.codec);
+	}
+	
+	@Override
+	public String toString() {
+		return "ConfigurableCodec[" + this.codec + "]";
+	}
+	//endregion
 }

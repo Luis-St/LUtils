@@ -47,8 +47,14 @@ public class MapCodec<K, V> implements Codec<Map<K, V>> {
 	}
 	
 	public MapCodec(@NotNull KeyableCodec<K> keyCodec, @NotNull Codec<V> valueCodec, int minSize, int maxSize) {
-		this.keyCodec = keyCodec;
-		this.valueCodec = valueCodec;
+		this.keyCodec = Objects.requireNonNull(keyCodec, "Key codec must not be null");
+		this.valueCodec = Objects.requireNonNull(valueCodec, "Value codec must not be null");
+		if (0 > minSize) {
+			throw new IllegalArgumentException("Minimum size must be at least 0");
+		}
+		if (minSize > maxSize) {
+			throw new IllegalArgumentException("Minimum size must be less than or equal to maximum size");
+		}
 		this.minSize = minSize;
 		this.maxSize = maxSize;
 	}
@@ -123,8 +129,25 @@ public class MapCodec<K, V> implements Codec<Map<K, V>> {
 		return Result.success(new SimpleEntry<>(decodedKey.orThrow(), decodedValue.orThrow()));
 	}
 	
+	//region Object overrides
+	@Override
+	public boolean equals(Object o) {
+		if (!(o instanceof MapCodec<?, ?> mapCodec)) return false;
+		
+		if (this.minSize != mapCodec.minSize) return false;
+		if (this.maxSize != mapCodec.maxSize) return false;
+		if (!this.keyCodec.equals(mapCodec.keyCodec)) return false;
+		return this.valueCodec.equals(mapCodec.valueCodec);
+	}
+	
+	@Override
+	public int hashCode() {
+		return Objects.hash(this.keyCodec, this.valueCodec, this.minSize, this.maxSize);
+	}
+	
 	@Override
 	public String toString() {
 		return "MapCodec[" + this.keyCodec + ", " + this.valueCodec + "]";
 	}
+	//endregion
 }
