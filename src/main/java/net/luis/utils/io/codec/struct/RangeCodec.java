@@ -18,10 +18,7 @@
 
 package net.luis.utils.io.codec.struct;
 
-import net.luis.utils.io.codec.Codec;
 import net.luis.utils.io.codec.KeyableCodec;
-import net.luis.utils.io.codec.decoder.KeyableDecoder;
-import net.luis.utils.io.codec.encoder.KeyableEncoder;
 import net.luis.utils.io.codec.provider.TypeProvider;
 import net.luis.utils.util.Result;
 import org.jetbrains.annotations.NotNull;
@@ -38,107 +35,156 @@ import java.util.function.Function;
 
 public abstract class RangeCodec<C extends Number & Comparable<C>> implements KeyableCodec<C> {
 	
-	private final C min;
-	private final C max;
+	private final String name;
+	private final C minInclusive;
+	private final C maxInclusive;
 	private final Function<Number, C> converter;
-	private final KeyableEncoder<C> encoder;
-	private final KeyableDecoder<C> decoder;
+	private final Function<C, String> stringEncoder;
+	private final Function<String, C> stringDecoder;
 	
-	protected RangeCodec(@NotNull C min, @NotNull C max, @NotNull Function<Number, C> converter, @NotNull Function<String, C> fromKey) {
-		this(min, max, converter, String::valueOf, fromKey);
+	protected RangeCodec(@NotNull String name, @NotNull C min, @NotNull C max, @NotNull Function<Number, C> converter, @NotNull Function<String, C> decoder) {
+		this(name, min, max, converter, String::valueOf, decoder);
 	}
 	
-	protected RangeCodec(@NotNull C min, @NotNull C max, @NotNull Function<Number, C> converter, @NotNull Function<C, String> toKey, @NotNull Function<String, C> fromKey) {
-		this.min = Objects.requireNonNull(min, "Min value must not be null");
-		this.max = Objects.requireNonNull(max, "Max value must not be null");
+	protected RangeCodec(@NotNull String name, @NotNull C min, @NotNull C max, @NotNull Function<Number, C> converter, @NotNull Function<C, String> stringEncoder, @NotNull Function<String, C> stringDecoder) {
+		this.name = Objects.requireNonNull(name, "Name must not be null");
+		this.minInclusive = Objects.requireNonNull(min, "Min value must not be null");
+		this.maxInclusive = Objects.requireNonNull(max, "Max value must not be null");
 		this.converter = Objects.requireNonNull(converter, "Converter must not be null");
-		this.encoder = KeyableEncoder.of(this, Objects.requireNonNull(toKey, "String encoder must not be null"));
-		this.decoder = KeyableDecoder.of(this, Objects.requireNonNull(fromKey, "String decoder must not be null"));
+		this.stringEncoder = Objects.requireNonNull(stringEncoder, "String encoder must not be null");
+		this.stringDecoder = Objects.requireNonNull(stringDecoder, "String decoder must not be null");
 	}
 	
-	private static <C extends Number & Comparable<C>> @NotNull Codec<C> ranged(@NotNull Codec<C> codec, @NotNull C minInclusive, @NotNull C maxInclusive) {
-		Objects.requireNonNull(codec, "Codec must not be null");
-		Objects.requireNonNull(minInclusive, "Min value must not be null");
-		Objects.requireNonNull(maxInclusive, "Max value must not be null");
-		if (minInclusive.compareTo(maxInclusive) > 0) {
-			throw new IllegalArgumentException("Min value '" + minInclusive + "' is greater than max value '" + maxInclusive + "'");
+	//region Encode
+	@Override
+	public @NotNull <R> Result<R> encodeStart(@NotNull TypeProvider<R> provider, @NotNull R current, @Nullable C value) {
+		Objects.requireNonNull(provider, "Type provider must not be null");
+		Objects.requireNonNull(current, "Current value must not be null");
+		if (value == null) {
+			return Result.error("Unable to encode null as number using '" + this + "'");
 		}
-		return new Codec<>() {
-			@Override
-			public <R> @NotNull Result<R> encodeStart(@NotNull TypeProvider<R> provider, @NotNull R current, @Nullable C value) {
-				Objects.requireNonNull(provider, "Type provider must not be null");
-				Objects.requireNonNull(current, "Current value must not be null");
-				if (value == null) {
-					return Result.error("Unable to decode null value as number with codec '" + codec + "'");
-				}
-				return codec.encodeStart(provider, current, value);
-			}
-
-			@Override
-			public <R> @NotNull Result<C> decodeStart(@NotNull TypeProvider<R> provider, @Nullable R value) {
-				Objects.requireNonNull(provider, "Type provider must not be null");
-				Result<C> result = codec.decodeStart(provider, value);
-				if (result.isError()) {
-					return result;
-				}
-				C decoded = result.orThrow();
-				if (decoded.compareTo(minInclusive) >= 0 && 0 >= decoded.compareTo(maxInclusive)) {
-					return result;
-				}
-				return Result.error("Number '" + decoded + "' was decoded successfully, but is out of range: " + minInclusive + ".." + minInclusive);
-			}
-			
-			@Override
-			public String toString() {
-				return "RangeCodec " + codec + "[" + minInclusive + ".." + minInclusive + "]";
-			}
-		};
+		return this.encodeNumber(provider, value);
 	}
+	
+	protected abstract @NotNull <R> Result<R> encodeNumber(@NotNull TypeProvider<R> provider, @NotNull C value);
 	
 	@Override
 	public @NotNull <R> Result<String> encodeKey(@NotNull TypeProvider<R> provider, @NotNull C key) {
 		Objects.requireNonNull(provider, "Type provider must not be null");
 		Objects.requireNonNull(key, "Value must not be null");
-		return this.encoder.encodeKey(provider, key);
+		String encoded;
+		try {
+			encoded = this.stringEncoder.apply(key);
+		} catch (Exception e) {
+			return Result.error("Unable to encode key '" + key + "' with codec '" + this + "': " + e.getMessage());
+		}
+		if (encoded == null) {
+			return Result.error("Unable to encode key '" + key + "' with codec '" + this + "'");
+		}
+		return Result.success(encoded);
 	}
+	//endregion
+	
+	//region Decode
+	@Override
+	public @NotNull <R> Result<C> decodeStart(@NotNull TypeProvider<R> provider, @Nullable R value) {
+		Objects.requireNonNull(provider, "Type provider must not be null");
+		if (value == null) {
+			return Result.error("Unable to decode null value as number using '" + this + "'");
+		}
+		Result<C> result = this.decodeNumber(provider, value);
+		if (result.isError()) {
+			return result;
+		}
+		C decoded = result.orThrow();
+		if (decoded.compareTo(this.minInclusive) >= 0 && 0 >= decoded.compareTo(this.maxInclusive)) {
+			return result;
+		}
+		return Result.error("Number '" + decoded + "' was decoded successfully, but is out of range: " + this.minInclusive + ".." + this.minInclusive);
+	}
+	
+	protected abstract @NotNull <R> Result<C> decodeNumber(@NotNull TypeProvider<R> provider, @NotNull R value);
 	
 	@Override
 	public @NotNull <R> Result<C> decodeKey(@NotNull TypeProvider<R> provider, @NotNull String key) {
 		Objects.requireNonNull(provider, "Type provider must not be null");
 		Objects.requireNonNull(key, "Value must not be null");
-		return this.decoder.decodeKey(provider, key);
+		C decoded;
+		try {
+			decoded = this.stringDecoder.apply(key);
+		} catch (Exception e) {
+			return Result.error("Unable to decode key '" + key + "' with codec '" + this + "': " + e.getMessage());
+		}
+		if (decoded == null) {
+			return Result.error("Unable to decode key '" + key + "' with codec '" + this + "'");
+		}
+		return Result.success(decoded);
+	}
+	//endregion
+	
+	public @NotNull RangeCodec<C> positive() {
+		return this.range(this.converter.apply(1), this.maxInclusive);
 	}
 	
-	public @NotNull KeyableCodec<C> positive() {
-		return this.makeKeyable(ranged(this, this.converter.apply(1), this.max));
+	public @NotNull RangeCodec<C> positiveOrZero() {
+		return this.range(this.converter.apply(0), this.maxInclusive);
 	}
 	
-	public @NotNull KeyableCodec<C> positiveOrZero() {
-		return this.makeKeyable(ranged(this, this.converter.apply(0), this.max));
+	public @NotNull RangeCodec<C> negative() {
+		return this.range(this.minInclusive, this.converter.apply(-1));
 	}
 	
-	public @NotNull KeyableCodec<C> negative() {
-		return this.makeKeyable(ranged(this, this.min, this.converter.apply(-1)));
+	public @NotNull RangeCodec<C> negativeOrZero() {
+		return this.range(this.minInclusive, this.converter.apply(0));
 	}
 	
-	public @NotNull KeyableCodec<C> negativeOrZero() {
-		return this.makeKeyable(ranged(this, this.min, this.converter.apply(0)));
+	public @NotNull RangeCodec<C> atLeast(@NotNull C min) {
+		Objects.requireNonNull(min, "Min value must not be null");
+		return this.range(min, this.maxInclusive);
 	}
 	
-	public @NotNull KeyableCodec<C> atLeast(@NotNull C min) {
-		return this.makeKeyable(ranged(this, min, this.max));
+	public @NotNull RangeCodec<C> atMost(@NotNull C max) {
+		Objects.requireNonNull(max, "Max value must not be null");
+		return this.range(this.minInclusive, max);
 	}
 	
-	public @NotNull KeyableCodec<C> atMost(@NotNull C max) {
-		return this.makeKeyable(ranged(this, this.min, max));
+	public @NotNull RangeCodec<C> range(@NotNull C minInclusive, @NotNull C maxInclusive) {
+		Objects.requireNonNull(minInclusive, "Min value must not be null");
+		Objects.requireNonNull(maxInclusive, "Max value must not be null");
+		return new RangeCodec<>(this.name, minInclusive, maxInclusive, this.converter, this.stringEncoder, this.stringDecoder) {
+			@Override
+			protected @NotNull <R> Result<R> encodeNumber(@NotNull TypeProvider<R> provider, @NotNull C value) {
+				return RangeCodec.this.encodeNumber(provider, value);
+			}
+			
+			@Override
+			protected @NotNull <R> Result<C> decodeNumber(@NotNull TypeProvider<R> provider, @NotNull R value) {
+				return RangeCodec.this.decodeNumber(provider, value);
+			}
+		};
 	}
 	
-	public @NotNull KeyableCodec<C> between(@NotNull C minInclusive, @NotNull C maxInclusive) {
-		return this.makeKeyable(ranged(this, minInclusive, maxInclusive));
+	//region Object overrides
+	@Override
+	public boolean equals(Object o) {
+		if (!(o instanceof RangeCodec<?> that)) return false;
+		
+		if (!this.name.equals(that.name)) return false;
+		if (!this.converter.equals(that.converter)) return false;
+		if (!this.stringEncoder.equals(that.stringEncoder)) return false;
+		if (!this.stringDecoder.equals(that.stringDecoder)) return false;
+		if (!this.minInclusive.equals(that.minInclusive)) return false;
+		return this.maxInclusive.equals(that.maxInclusive);
 	}
 	
-	private @NotNull KeyableCodec<C> makeKeyable(@NotNull Codec<C> codec) {
-		Objects.requireNonNull(codec, "Codec must not be null");
-		return Codec.keyable(codec, this.encoder, this.decoder);
+	@Override
+	public int hashCode() {
+		return Objects.hash(this.name, this.converter, this.stringEncoder, this.stringDecoder);
 	}
+	
+	@Override
+	public String toString() {
+		return "Range" + this.name + "Codec[" + this.minInclusive + ".." + this.maxInclusive + "]";
+	}
+	//endregion
 }

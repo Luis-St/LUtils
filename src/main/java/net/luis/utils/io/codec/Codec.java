@@ -77,160 +77,100 @@ public interface Codec<C> extends Encoder<C>, Decoder<C> {
 			return "BooleanCodec";
 		}
 	};
-	RangeCodec<Byte> BYTE = new RangeCodec<>(Byte.MIN_VALUE, Byte.MAX_VALUE, Number::byteValue, Byte::parseByte) {
+	RangeCodec<Byte> BYTE = new RangeCodec<>("Byte", Byte.MIN_VALUE, Byte.MAX_VALUE, Number::byteValue, Byte::parseByte) {
 		
 		@Override
-		public <R> @NotNull Result<R> encodeStart(@NotNull TypeProvider<R> provider, @NotNull R current, @Nullable Byte value) {
+		protected @NotNull <R> Result<R> encodeNumber(@NotNull TypeProvider<R> provider, @NotNull Byte value) {
 			Objects.requireNonNull(provider, "Type provider must not be null");
-			Objects.requireNonNull(current, "Current value must not be null");
-			if (value == null) {
-				return Result.error("Unable to encode null as byte using '" + this + "'");
-			}
+			Objects.requireNonNull(value, "Value must not be null");
 			return provider.createByte(value);
 		}
 		
 		@Override
-		public <R> @NotNull Result<Byte> decodeStart(@NotNull TypeProvider<R> provider, @Nullable R value) {
+		protected @NotNull <R> Result<Byte> decodeNumber(@NotNull TypeProvider<R> provider, @NotNull R value) {
 			Objects.requireNonNull(provider, "Type provider must not be null");
-			if (value == null) {
-				return Result.error("Unable to decode null value as byte using '" + this + "'");
-			}
+			Objects.requireNonNull(value, "Value must not be null");
 			return provider.getByte(value);
 		}
-		
-		@Override
-		public String toString() {
-			return "ByteCodec";
-		}
 	};
-	RangeCodec<Short> SHORT = new RangeCodec<>(Short.MIN_VALUE, Short.MAX_VALUE, Number::shortValue, Short::parseShort) {
+	RangeCodec<Short> SHORT = new RangeCodec<>("Short", Short.MIN_VALUE, Short.MAX_VALUE, Number::shortValue, Short::parseShort) {
 		
 		@Override
-		public <R> @NotNull Result<R> encodeStart(@NotNull TypeProvider<R> provider, @NotNull R current, @Nullable Short value) {
+		protected @NotNull <R> Result<R> encodeNumber(@NotNull TypeProvider<R> provider, @NotNull Short value) {
 			Objects.requireNonNull(provider, "Type provider must not be null");
-			Objects.requireNonNull(current, "Current value must not be null");
-			if (value == null) {
-				return Result.error("Unable to encode null as short using '" + this + "'");
-			}
+			Objects.requireNonNull(value, "Value must not be null");
 			return provider.createShort(value);
 		}
 		
 		@Override
-		public <R> @NotNull Result<Short> decodeStart(@NotNull TypeProvider<R> provider, @Nullable R value) {
+		protected @NotNull <R> Result<Short> decodeNumber(@NotNull TypeProvider<R> provider, @NotNull R value) {
 			Objects.requireNonNull(provider, "Type provider must not be null");
-			if (value == null) {
-				return Result.error("Unable to decode null value as short using '" + this + "'");
-			}
+			Objects.requireNonNull(value, "Value must not be null");
 			return provider.getShort(value);
 		}
-		
-		@Override
-		public String toString() {
-			return "ShortCodec";
-		}
 	};
-	RangeCodec<Integer> INTEGER = new RangeCodec<>(Integer.MIN_VALUE, Integer.MAX_VALUE, Number::intValue, Integer::parseInt) {
+	RangeCodec<Integer> INTEGER = new RangeCodec<>("Integer", Integer.MIN_VALUE, Integer.MAX_VALUE, Number::intValue, Integer::parseInt) {
 		
 		@Override
-		public <R> @NotNull Result<R> encodeStart(@NotNull TypeProvider<R> provider, @NotNull R current, @Nullable Integer value) {
+		protected @NotNull <R> Result<R> encodeNumber(@NotNull TypeProvider<R> provider, @NotNull Integer value) {
 			Objects.requireNonNull(provider, "Type provider must not be null");
-			Objects.requireNonNull(current, "Current value must not be null");
-			if (value == null) {
-				return Result.error("Unable to encode null as integer using '" + this + "'");
-			}
+			Objects.requireNonNull(value, "Value must not be null");
 			return provider.createInteger(value);
 		}
 		
 		@Override
-		public <R> @NotNull Result<Integer> decodeStart(@NotNull TypeProvider<R> provider, @Nullable R value) {
+		protected @NotNull <R> Result<Integer> decodeNumber(@NotNull TypeProvider<R> provider, @NotNull R value) {
 			Objects.requireNonNull(provider, "Type provider must not be null");
-			if (value == null) {
-				return Result.error("Unable to decode null value as integer using '" + this + "'");
-			}
+			Objects.requireNonNull(value, "Value must not be null");
 			return provider.getInteger(value);
 		}
-		
-		@Override
-		public String toString() {
-			return "IntegerCodec";
-		}
 	};
-	RangeCodec<Long> LONG = new RangeCodec<>(Long.MIN_VALUE, Long.MAX_VALUE, Number::longValue, Long::parseLong) {
+	RangeCodec<Long> LONG = new RangeCodec<>("Long", Long.MIN_VALUE, Long.MAX_VALUE, Number::longValue, Long::parseLong) {
 		
 		@Override
-		public <R> @NotNull Result<R> encodeStart(@NotNull TypeProvider<R> provider, @NotNull R current, @Nullable Long value) {
+		protected @NotNull <R> Result<R> encodeNumber(@NotNull TypeProvider<R> provider, @NotNull Long value) {
 			Objects.requireNonNull(provider, "Type provider must not be null");
-			Objects.requireNonNull(current, "Current value must not be null");
-			if (value == null) {
-				return Result.error("Unable to encode null as long using '" + this + "'");
-			}
+			Objects.requireNonNull(value, "Value must not be null");
 			return provider.createLong(value);
 		}
 		
 		@Override
-		public <R> @NotNull Result<Long> decodeStart(@NotNull TypeProvider<R> provider, @Nullable R value) {
+		protected @NotNull <R> Result<Long> decodeNumber(@NotNull TypeProvider<R> provider, @NotNull R value) {
 			Objects.requireNonNull(provider, "Type provider must not be null");
-			if (value == null) {
-				return Result.error("Unable to decode null value as long using '" + this + "'");
-			}
+			Objects.requireNonNull(value, "Value must not be null");
 			return provider.getLong(value);
 		}
-		
-		@Override
-		public String toString() {
-			return "LongCodec";
-		}
 	};
-	RangeCodec<Float> FLOAT = new RangeCodec<>(Float.MIN_VALUE, Float.MAX_VALUE, Number::floatValue, Float::parseFloat) {
+	RangeCodec<Float> FLOAT = new RangeCodec<>("Float", -Float.MAX_VALUE, Float.MAX_VALUE, Number::floatValue, Float::parseFloat) {
 		
 		@Override
-		public <R> @NotNull Result<R> encodeStart(@NotNull TypeProvider<R> provider, @NotNull R current, @Nullable Float value) {
+		protected @NotNull <R> Result<R> encodeNumber(@NotNull TypeProvider<R> provider, @NotNull Float value) {
 			Objects.requireNonNull(provider, "Type provider must not be null");
-			Objects.requireNonNull(current, "Current value must not be null");
-			if (value == null) {
-				return Result.error("Unable to encode null as float using '" + this + "'");
-			}
+			Objects.requireNonNull(value, "Value must not be null");
 			return provider.createFloat(value);
 		}
 		
 		@Override
-		public <R> @NotNull Result<Float> decodeStart(@NotNull TypeProvider<R> provider, @Nullable R value) {
+		protected @NotNull <R> Result<Float> decodeNumber(@NotNull TypeProvider<R> provider, @NotNull R value) {
 			Objects.requireNonNull(provider, "Type provider must not be null");
-			if (value == null) {
-				return Result.error("Unable to decode null value as float using '" + this + "'");
-			}
+			Objects.requireNonNull(value, "Value must not be null");
 			return provider.getFloat(value);
 		}
-		
-		@Override
-		public String toString() {
-			return "FloatCodec";
-		}
 	};
-	RangeCodec<Double> DOUBLE = new RangeCodec<>(Double.MIN_VALUE, Double.MAX_VALUE, Number::doubleValue, Double::parseDouble) {
+	RangeCodec<Double> DOUBLE = new RangeCodec<>("Double", -Double.MAX_VALUE, Double.MAX_VALUE, Number::doubleValue, Double::parseDouble) {
 		
 		@Override
-		public <R> @NotNull Result<R> encodeStart(@NotNull TypeProvider<R> provider, @NotNull R current, @Nullable Double value) {
+		protected @NotNull <R> Result<R> encodeNumber(@NotNull TypeProvider<R> provider, @NotNull Double value) {
 			Objects.requireNonNull(provider, "Type provider must not be null");
-			Objects.requireNonNull(current, "Current value must not be null");
-			if (value == null) {
-				return Result.error("Unable to encode null as double using '" + this + "'");
-			}
+			Objects.requireNonNull(value, "Value must not be null");
 			return provider.createDouble(value);
 		}
 		
 		@Override
-		public <R> @NotNull Result<Double> decodeStart(@NotNull TypeProvider<R> provider, @Nullable R value) {
+		protected @NotNull <R> Result<Double> decodeNumber(@NotNull TypeProvider<R> provider, @NotNull R value) {
 			Objects.requireNonNull(provider, "Type provider must not be null");
-			if (value == null) {
-				return Result.error("Unable to decode null value as double using '" + this + "'");
-			}
+			Objects.requireNonNull(value, "Value must not be null");
 			return provider.getDouble(value);
-		}
-		
-		@Override
-		public String toString() {
-			return "Double Codec";
 		}
 	};
 	KeyableCodec<String> STRING = new KeyableCodec<>() {
