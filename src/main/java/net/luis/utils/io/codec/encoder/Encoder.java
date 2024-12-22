@@ -35,6 +35,7 @@ import java.util.function.Function;
 public interface Encoder<C> {
 	
 	default <R> @NotNull R encode(@NotNull TypeProvider<R> provider, @Nullable C value) {
+		Objects.requireNonNull(provider, "Type provider must not be null");
 		return this.encode(provider, provider.empty(), value);
 	}
 	
