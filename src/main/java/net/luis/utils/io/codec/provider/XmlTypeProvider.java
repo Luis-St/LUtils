@@ -35,12 +35,12 @@ public final class XmlTypeProvider implements TypeProvider<XmlElement> {
 	private static final String GENERATED = ":generated";
 	private static final String EMPTY = "empty" + GENERATED;
 	private static final String BOOLEAN = "boolean" + GENERATED;
-	private static final String BYTE = "byte_" + GENERATED;
+	private static final String BYTE = "byte" + GENERATED;
 	private static final String SHORT = "short" + GENERATED;
 	private static final String INTEGER = "integer" + GENERATED;
 	private static final String LONG = "long" + GENERATED;
 	private static final String FLOAT = "float" + GENERATED;
-	private static final String DOUBLE = "double_" + GENERATED;
+	private static final String DOUBLE = "double" + GENERATED;
 	private static final String STRING = "string" + GENERATED;
 	private static final String LIST = "list" + GENERATED;
 	private static final String LIST_ELEMENT = "list_element" + GENERATED;
@@ -98,7 +98,7 @@ public final class XmlTypeProvider implements TypeProvider<XmlElement> {
 	}
 	
 	@Override
-	public @NotNull Result<XmlElement> createList(@NotNull List<XmlElement> values) {
+	public @NotNull Result<XmlElement> createList(@NotNull List<? extends XmlElement> values) {
 		Objects.requireNonNull(values, "Values must not be null");
 		List<XmlElement> elements = values.stream().map(element -> this.copyWithName(LIST_ELEMENT, element)).toList();
 		return Result.success(new XmlContainer(LIST, new XmlElements(elements)));
@@ -110,7 +110,7 @@ public final class XmlTypeProvider implements TypeProvider<XmlElement> {
 	}
 	
 	@Override
-	public @NotNull Result<XmlElement> createMap(@NotNull Map<String, XmlElement> values) {
+	public @NotNull Result<XmlElement> createMap(@NotNull Map<String, ? extends XmlElement> values) {
 		Objects.requireNonNull(values, "Values must not be null");
 		return Result.success(new XmlContainer(MAP, new XmlElements(values)));
 	}
@@ -122,9 +122,6 @@ public final class XmlTypeProvider implements TypeProvider<XmlElement> {
 		Objects.requireNonNull(type, "Type must not be null");
 		if (!type.isSelfClosing()) {
 			return Result.error("Xml element '" + type + "' must be self-closing to be empty");
-		}
-		if (!type.getAttributes().isEmpty()) {
-			return Result.error("Xml element '" + type + "' must not have attributes to be empty");
 		}
 		return Result.success(type);
 	}
@@ -326,7 +323,7 @@ public final class XmlTypeProvider implements TypeProvider<XmlElement> {
 	public @NotNull Result<XmlElement> merge(@NotNull XmlElement current, @NotNull XmlElement value) {
 		Objects.requireNonNull(current, "Current value must not be null");
 		Objects.requireNonNull(value, "Value must not be null");
-		if (current.isSelfClosing() && current.getAttributes().isEmpty()) {
+		if (current.isSelfClosing()) {
 			return Result.success(value);
 		}
 		if (current.isXmlContainer() && value.isXmlContainer()) {

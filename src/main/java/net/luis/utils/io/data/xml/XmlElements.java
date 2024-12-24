@@ -64,7 +64,7 @@ public class XmlElements {
 	 * @throws NullPointerException If the elements are null
 	 * @throws XmlTypeException If the elements are not valid for the collection type
 	 */
-	public XmlElements(@NotNull List<XmlElement> elements) {
+	public XmlElements(@NotNull List<? extends XmlElement> elements) {
 		Objects.requireNonNull(elements, "Elements must not be null").forEach(this::add);
 	}
 	
@@ -75,7 +75,7 @@ public class XmlElements {
 	 * @throws NullPointerException If the elements are null
 	 * @throws XmlTypeException If the elements are not valid for the collection type
 	 */
-	public XmlElements(@NotNull Map<String, XmlElement> elements) {
+	public XmlElements(@NotNull Map<String, ? extends XmlElement> elements) {
 		Objects.requireNonNull(elements, "Elements must not be null").forEach((name, element) -> this.add(element));
 	}
 	

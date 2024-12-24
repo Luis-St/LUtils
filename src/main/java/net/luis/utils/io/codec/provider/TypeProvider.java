@@ -49,11 +49,11 @@ public interface TypeProvider<T> {
 	
 	@NotNull Result<T> createString(@NotNull String value);
 	
-	@NotNull Result<T> createList(@NotNull List<T> values);
+	@NotNull Result<T> createList(@NotNull List<? extends T> values);
 	
 	@NotNull Result<T> createMap();
 	
-	@NotNull Result<T> createMap(@NotNull Map<String, T> values);
+	@NotNull Result<T> createMap(@NotNull Map<String, ? extends T> values);
 	
 	@NotNull Result<T> getEmpty(@NotNull T type);
 	

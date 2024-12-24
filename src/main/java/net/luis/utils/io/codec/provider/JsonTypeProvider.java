@@ -85,7 +85,7 @@ public final class JsonTypeProvider implements TypeProvider<JsonElement> {
 	}
 	
 	@Override
-	public @NotNull Result<JsonElement> createList(@NotNull List<JsonElement> values) {
+	public @NotNull Result<JsonElement> createList(@NotNull List<? extends JsonElement> values) {
 		Objects.requireNonNull(values, "Values must not be null");
 		return Result.success(new JsonArray(values));
 	}
@@ -96,7 +96,7 @@ public final class JsonTypeProvider implements TypeProvider<JsonElement> {
 	}
 	
 	@Override
-	public @NotNull Result<JsonElement> createMap(@NotNull Map<String, JsonElement> values) {
+	public @NotNull Result<JsonElement> createMap(@NotNull Map<String, ? extends JsonElement> values) {
 		Objects.requireNonNull(values, "Values must not be null");
 		return Result.success(new JsonObject(values));
 	}
