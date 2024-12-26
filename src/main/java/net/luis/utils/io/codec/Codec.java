@@ -357,7 +357,7 @@ public interface Codec<C> extends Encoder<C>, Decoder<C> {
 		if (0 > length) {
 			throw new IllegalArgumentException("Length must be at least 0");
 		}
-		return string(length, length);
+		return string(0, length);
 	}
 	
 	static @NotNull Codec<String> string(int minLength, int maxLength) {
@@ -367,7 +367,15 @@ public interface Codec<C> extends Encoder<C>, Decoder<C> {
 		if (minLength > maxLength) {
 			throw new IllegalArgumentException("Minimum length must be less than or equal to maximum length");
 		}
-		return STRING.map(String::valueOf, result -> {
+		return STRING.map(str -> {
+			if (str.length() < minLength) {
+				return Result.error("String must have at least " + minLength + " characters");
+			}
+			if (str.length() > maxLength) {
+				return Result.error("String must have at most " + maxLength + " characters");
+			}
+			return Result.success(str);
+		}, result -> {
 			if (result.isSuccess()) {
 				String value = result.orThrow();
 				if (value.length() < minLength) {
@@ -383,7 +391,12 @@ public interface Codec<C> extends Encoder<C>, Decoder<C> {
 	}
 	
 	static @NotNull Codec<String> noneEmptyString() {
-		return STRING.map(String::valueOf, result -> {
+		return STRING.map(str -> {
+			if (str.isEmpty()) {
+				return Result.error("String must not be empty");
+			}
+			return Result.success(str);
+		}, result -> {
 			if (result.isSuccess()) {
 				String value = result.orThrow();
 				if (value.isEmpty()) {

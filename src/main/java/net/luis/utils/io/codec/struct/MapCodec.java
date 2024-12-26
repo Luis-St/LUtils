@@ -66,6 +66,9 @@ public class MapCodec<K, V> implements Codec<Map<K, V>> {
 		if (value == null) {
 			return Result.error("Unable to encode null value as map using '" + this + "'");
 		}
+		if (value.size() > this.maxSize || this.minSize > value.size()) {
+			return Result.error("Map size '" + value.size() + "' is out of range: " + this.minSize + ".." + this.maxSize);
+		}
 		List<Result<Map.Entry<String, R>>> encoded = value.entrySet().stream().map(entry -> this.encodeEntry(provider, entry)).toList();
 		if (encoded.stream().anyMatch(Result::isError)) {
 			return Result.error("Unable to encode some entries of map '" + value + "' using '" + this + "': \n" + encoded.stream().filter(Result::isError).map(Result::errorOrThrow).collect(Collectors.joining("\n")));
@@ -112,7 +115,7 @@ public class MapCodec<K, V> implements Codec<Map<K, V>> {
 		if (this.maxSize >= decoded.size() && decoded.size() >= this.minSize) {
 			return Result.success(decoded.stream().map(Result::orThrow).collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue)));
 		}
-		return Result.error("List was decoded successfully but size '" + decoded.size() + "' is out of range: " + this.minSize + ".." + this.maxSize);
+		return Result.error("Map was decoded successfully but size '" + decoded.size() + "' is out of range: " + this.minSize + ".." + this.maxSize);
 	}
 	
 	private <R> @NotNull Result<Map.Entry<K, V>> decodeEntry(@NotNull TypeProvider<R> provider, @NotNull Map.Entry<String, R> entry) {

@@ -63,6 +63,9 @@ public class ListCodec<C> implements Codec<List<C>> {
 		if (value == null) {
 			return Result.error("Unable to encode null value as list using '" + this + "'");
 		}
+		if (value.size() > this.maxSize || this.minSize > value.size()) {
+			return Result.error("List size '" + value.size() + "' is out of range: " + this.minSize + ".." + this.maxSize);
+		}
 		List<Result<R>> encoded = value.stream().map(v -> this.codec.encodeStart(provider, provider.empty(), v)).toList();
 		if (encoded.stream().anyMatch(Result::isError)) {
 			return Result.error("Unable to encode some elements of list '" + value + "' using '" + this + "': \n" + encoded.stream().filter(Result::isError).map(Result::errorOrThrow).collect(Collectors.joining("\n")));
