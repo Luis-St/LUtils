@@ -18,8 +18,10 @@
 
 package net.luis.utils.io.codec;
 
+import net.luis.utils.function.throwable.ThrowableFunction;
 import net.luis.utils.util.Result;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.UnknownNullability;
 
 import java.util.Objects;
 import java.util.function.Function;
@@ -31,13 +33,24 @@ import java.util.function.Function;
  */
 
 @FunctionalInterface
-public interface ResultFunction<T, R> extends Function<Result<T>, Result<R>> {
+public interface ResultingFunction<T, R> extends Function<T, Result<R>> {
 	
-	static <T, R> @NotNull ResultFunction<T, R> direct(@NotNull Function<T, R> function) {
+	static <T, R> @NotNull ResultingFunction<T, R> direct(@NotNull Function<T, R> function) {
 		Objects.requireNonNull(function, "Function must not be null");
-		return result -> result.map(function);
+		return value -> Result.success(function.apply(value));
+	}
+	
+	static <T, R> @NotNull ResultingFunction<T, R> throwable(@NotNull ThrowableFunction<T, R, ? extends Throwable> function) {
+		Objects.requireNonNull(function, "Function must not be null");
+		return value -> {
+			try {
+				return Result.success(function.apply(value));
+			} catch (Throwable throwable) {
+				return Result.error(throwable.getMessage());
+			}
+		};
 	}
 	
 	@Override
-	@NotNull Result<R> apply(@NotNull Result<T> input);
+	@NotNull Result<R> apply(@UnknownNullability T value);
 }

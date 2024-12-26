@@ -19,7 +19,7 @@
 package net.luis.utils.io.codec.decoder;
 
 import net.luis.utils.io.codec.Codec;
-import net.luis.utils.io.codec.ResultFunction;
+import net.luis.utils.io.codec.ResultMappingFunction;
 import net.luis.utils.io.codec.provider.JsonTypeProvider;
 import net.luis.utils.io.data.json.JsonPrimitive;
 import net.luis.utils.util.Result;
@@ -62,6 +62,6 @@ class DecoderTest {
 	@Test
 	void mapDecoder() {
 		assertThrows(NullPointerException.class, () -> Codec.INTEGER.mapDecoder(null));
-		assertNotNull(Codec.INTEGER.mapDecoder(ResultFunction.direct(Integer::doubleValue)));
+		assertNotNull(Codec.INTEGER.mapDecoder(ResultMappingFunction.direct(Integer::doubleValue)));
 	}
 }

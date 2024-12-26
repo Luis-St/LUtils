@@ -19,31 +19,25 @@
 package net.luis.utils.io.codec;
 
 import net.luis.utils.util.Result;
-import org.junit.jupiter.api.Test;
+import org.jetbrains.annotations.NotNull;
 
-import static org.junit.jupiter.api.Assertions.*;
+import java.util.Objects;
+import java.util.function.Function;
 
 /**
- * Test class for {@link ResultFunction}.<br>
  *
  * @author Luis-St
+ *
  */
-class ResultFunctionTest {
+
+@FunctionalInterface
+public interface ResultMappingFunction<T, R> extends Function<Result<T>, Result<R>> {
 	
-	@Test
-	void direct() {
-		assertThrows(NullPointerException.class, () -> ResultFunction.direct(null));
+	static <T, R> @NotNull ResultMappingFunction<T, R> direct(@NotNull Function<T, R> function) {
+		Objects.requireNonNull(function, "Function must not be null");
+		return result -> result.map(function);
 	}
 	
-	@Test
-	void apply() {
-		ResultFunction<String, Integer> function = ResultFunction.direct(Integer::parseInt);
-		
-		Result<Integer> success = function.apply(Result.success("1"));
-		assertTrue(success.isSuccess());
-		assertEquals(1, success.orThrow());
-		
-		Result<Integer> error = function.apply(Result.error("error"));
-		assertTrue(error.isError());
-	}
+	@Override
+	@NotNull Result<R> apply(@NotNull Result<T> input);
 }

@@ -18,7 +18,7 @@
 
 package net.luis.utils.io.codec.decoder;
 
-import net.luis.utils.io.codec.ResultFunction;
+import net.luis.utils.io.codec.ResultMappingFunction;
 import net.luis.utils.io.codec.provider.TypeProvider;
 import net.luis.utils.util.Result;
 import org.jetbrains.annotations.NotNull;
@@ -41,7 +41,7 @@ public interface Decoder<C> {
 	
 	<R> @NotNull Result<C> decodeStart(@NotNull TypeProvider<R> provider, @Nullable R value);
 	
-	default <O> @NotNull Decoder<O> mapDecoder(@NotNull ResultFunction<C, O> from) {
+	default <O> @NotNull Decoder<O> mapDecoder(@NotNull ResultMappingFunction<C, O> from) {
 		Objects.requireNonNull(from, "Decode mapping function must not be null");
 		return new Decoder<>() {
 			@Override
