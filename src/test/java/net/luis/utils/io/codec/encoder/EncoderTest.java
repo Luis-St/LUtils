@@ -19,6 +19,7 @@
 package net.luis.utils.io.codec.encoder;
 
 import net.luis.utils.io.codec.Codec;
+import net.luis.utils.io.codec.ResultingFunction;
 import net.luis.utils.io.codec.provider.JsonTypeProvider;
 import net.luis.utils.io.data.json.JsonElement;
 import net.luis.utils.io.data.json.JsonPrimitive;
@@ -69,6 +70,6 @@ class EncoderTest {
 	@Test
 	void mapEncoder() {
 		assertThrows(NullPointerException.class, () -> Codec.INTEGER.mapEncoder(null));
-		assertNotNull(Codec.INTEGER.mapEncoder(Double::intValue));
+		assertNotNull(Codec.INTEGER.mapEncoder(ResultingFunction.direct(Double::intValue)));
 	}
 }
