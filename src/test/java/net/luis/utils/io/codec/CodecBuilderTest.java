@@ -540,4 +540,13 @@ class CodecBuilderTest {
 		});
 		//endregion
 	}
+	
+	@Test
+	void bind() {
+		CodecBuilder.create(builder -> {
+			assertThrows(NullPointerException.class, () -> builder.bind(null));
+			assertNotNull(builder.bind(STRING));
+			return null;
+		});
+	}
 }

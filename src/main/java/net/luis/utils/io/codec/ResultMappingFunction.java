@@ -18,6 +18,7 @@
 
 package net.luis.utils.io.codec;
 
+import net.luis.utils.function.throwable.ThrowableFunction;
 import net.luis.utils.util.Result;
 import org.jetbrains.annotations.NotNull;
 
@@ -36,6 +37,20 @@ public interface ResultMappingFunction<T, R> extends Function<Result<T>, Result<
 	static <T, R> @NotNull ResultMappingFunction<T, R> direct(@NotNull Function<T, R> function) {
 		Objects.requireNonNull(function, "Function must not be null");
 		return result -> result.map(function);
+	}
+	
+	static <T, R> @NotNull ResultMappingFunction<T, R> throwable(@NotNull ThrowableFunction<T, R, ? extends Throwable> function) {
+		Objects.requireNonNull(function, "Function must not be null");
+		return result -> {
+			if (result.isError()) {
+				return Result.error(result.errorOrThrow());
+			}
+			try {
+				return Result.success(function.apply(result.orThrow()));
+			} catch (Throwable throwable) {
+				return Result.error(throwable.getMessage());
+			}
+		};
 	}
 	
 	@Override

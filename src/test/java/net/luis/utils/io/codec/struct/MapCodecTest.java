@@ -65,6 +65,28 @@ class MapCodecTest {
 	}
 	
 	@Test
+	void encodeStartSized() {
+		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
+		Codec<Map<Integer, Boolean>> codec = new MapCodec<>(Codec.INTEGER, Codec.BOOLEAN, 2, 2);
+		Map<Integer, Boolean> map = Map.of(1, true, 2, false);
+		JsonObject object = new JsonObject(Map.of(
+			"1", new JsonPrimitive(true), "2", new JsonPrimitive(false)
+		));
+		
+		assertThrows(NullPointerException.class, () -> codec.encodeStart(null, typeProvider.empty(), map));
+		assertThrows(NullPointerException.class, () -> codec.encodeStart(typeProvider, null, map));
+		
+		assertTrue(assertDoesNotThrow(() -> codec.encodeStart(typeProvider, typeProvider.empty(), null)).isError());
+		assertTrue(codec.encodeStart(typeProvider, typeProvider.empty(), Map.of(1, true)).isError());
+		assertTrue(codec.encodeStart(typeProvider, typeProvider.empty(), Map.of(1, true, 2, false, 3, true)).isError());
+		
+		Result<JsonElement> result = assertDoesNotThrow(() -> codec.encodeStart(typeProvider, typeProvider.empty(), map));
+		assertTrue(result.isSuccess());
+		assertInstanceOf(JsonObject.class, result.orThrow());
+		assertEquals(object, result.orThrow());
+	}
+	
+	@Test
 	void decodeStart() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Map<Integer, Boolean>> codec = new MapCodec<>(Codec.INTEGER, Codec.BOOLEAN);

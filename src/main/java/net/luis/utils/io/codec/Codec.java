@@ -40,7 +40,6 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.stream.*;
 
-import static net.luis.utils.function.throwable.ThrowableFunction.*;
 import static net.luis.utils.io.codec.ResultMappingFunction.*;
 
 /**
@@ -221,18 +220,18 @@ public interface Codec<C> extends Encoder<C>, Decoder<C> {
 	Codec<LongStream> LONG_STREAM = from(LONG.stream(), LongStream::boxed, direct(stream -> stream.mapToLong(Long::longValue)), "LongStreamCodec");
 	Codec<DoubleStream> DOUBLE_STREAM = from(DOUBLE.stream(), DoubleStream::boxed, direct(stream -> stream.mapToDouble(Double::doubleValue)), "DoubleStreamCodec");
 	
-	KeyableCodec<java.util.UUID> UUID = keyable(from(STRING, java.util.UUID::toString, direct(java.util.UUID::fromString), "UUIDCodec"), java.util.UUID::fromString);
+	KeyableCodec<java.util.UUID> UUID = keyable(from(STRING, java.util.UUID::toString, throwable(java.util.UUID::fromString), "UUIDCodec"), java.util.UUID::fromString);
 	
-	Codec<LocalDate> LOCAL_DATE = from(STRING, LocalDate::toString, direct(LocalDate::parse), "LocalDateCodec");
-	Codec<LocalTime> LOCAL_TIME = from(STRING, LocalTime::toString, direct(LocalTime::parse), "LocalTimeCodec");
-	Codec<LocalDateTime> LOCAL_DATE_TIME = from(STRING, LocalDateTime::toString, direct(LocalDateTime::parse), "LocalDateTimeCodec");
-	Codec<ZonedDateTime> ZONED_DATE_TIME = from(STRING, ZonedDateTime::toString, direct(ZonedDateTime::parse), "ZonedDateTimeCodec");
+	Codec<LocalDate> LOCAL_DATE = from(STRING, LocalDate::toString, throwable(LocalDate::parse), "LocalDateCodec");
+	Codec<LocalTime> LOCAL_TIME = from(STRING, LocalTime::toString, throwable(LocalTime::parse), "LocalTimeCodec");
+	Codec<LocalDateTime> LOCAL_DATE_TIME = from(STRING, LocalDateTime::toString, throwable(LocalDateTime::parse), "LocalDateTimeCodec");
+	Codec<ZonedDateTime> ZONED_DATE_TIME = from(STRING, ZonedDateTime::toString, throwable(ZonedDateTime::parse), "ZonedDateTimeCodec");
 	
-	Codec<Charset> CHARSET = from(STRING, Charset::name, direct(Charset::forName), "CharsetCodec");
-	Codec<File> FILE = from(STRING, File::getPath, direct(File::new), "FileCodec");
-	Codec<Path> PATH = from(STRING, Path::toString, direct(Path::of), "PathCodec");
-	Codec<java.net.URI> URI = from(STRING, java.net.URI::toString, direct(caught(java.net.URI::new)), "URICodec");
-	Codec<java.net.URL> URL = from(URI, ResultingFunction.throwable(java.net.URL::toURI), direct(caught(java.net.URI::toURL)), "URLCodec");
+	Codec<Charset> CHARSET = from(STRING, Charset::name, throwable(Charset::forName), "CharsetCodec");
+	Codec<File> FILE = from(STRING, File::getPath, throwable(File::new), "FileCodec");
+	Codec<Path> PATH = from(STRING, Path::toString, throwable(Path::of), "PathCodec");
+	Codec<java.net.URI> URI = from(STRING, java.net.URI::toString, throwable(java.net.URI::new), "URICodec");
+	Codec<java.net.URL> URL = from(URI, ResultingFunction.throwable(java.net.URL::toURI), throwable(java.net.URI::toURL), "URLCodec");
 	
 	//region Factories
 	static <C, O> @NotNull Codec<O> from(@NotNull Codec<C> base, @NotNull Function<O, C> toBase, @NotNull ResultMappingFunction<C, O> fromBase, @NotNull String name) {
@@ -513,9 +512,15 @@ public interface Codec<C> extends Encoder<C>, Decoder<C> {
 			toString,
 			result -> {
 				if (result.isSuccess()) {
-					return Optional.ofNullable(fromString.apply(result.orThrow())).map(Result::success).orElseGet(() -> Result.error("Unknown element name: " + result.orThrow()));
+					E value;
+					try {
+						value = fromString.apply(result.orThrow());
+					} catch (Exception e) {
+						return Result.error("Unable to resolve element: " + e.getMessage());
+					}
+					return Optional.ofNullable(value).map(Result::success).orElseGet(() -> Result.error("Unknown element: " + result.orThrow()));
 				}
-				return Result.error("Unable to resolve element name: " + result.errorOrThrow());
+				return Result.error("Unable to resolve element: " + result.errorOrThrow());
 			}
 		);
 	}

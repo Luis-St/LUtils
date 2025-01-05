@@ -61,6 +61,25 @@ class ListCodecTest {
 	}
 	
 	@Test
+	void encodeStartSized() {
+		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
+		Codec<List<Integer>> codec = new ListCodec<>(Codec.INTEGER, 3, 3);
+		List<Integer> list = List.of(1, 2, 3);
+		
+		assertThrows(NullPointerException.class, () -> codec.encodeStart(null, typeProvider.empty(), list));
+		assertThrows(NullPointerException.class, () -> codec.encodeStart(typeProvider, null, list));
+		
+		assertTrue(assertDoesNotThrow(() -> codec.encodeStart(typeProvider, typeProvider.empty(), null)).isError());
+		assertTrue(codec.encodeStart(typeProvider, typeProvider.empty(), List.of(1, 2)).isError());
+		assertTrue(codec.encodeStart(typeProvider, typeProvider.empty(), List.of(1, 2, 3, 4)).isError());
+		
+		Result<JsonElement> result = assertDoesNotThrow(() -> codec.encodeStart(typeProvider, typeProvider.empty(), list));
+		assertTrue(result.isSuccess());
+		assertInstanceOf(JsonArray.class, result.orThrow());
+		assertEquals(new JsonArray(list.stream().map(JsonPrimitive::new).toList()), result.orThrow());
+	}
+	
+	@Test
 	void decodeStart() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<List<Integer>> codec = new ListCodec<>(Codec.INTEGER);
@@ -87,6 +106,7 @@ class ListCodecTest {
 		assertTrue(assertDoesNotThrow(() -> codec.decodeStart(typeProvider, null)).isError());
 		assertTrue(codec.decodeStart(typeProvider, new JsonArray(Stream.of(1, 2).map(JsonPrimitive::new).toList())).isError());
 		assertTrue(codec.decodeStart(typeProvider, new JsonArray(Stream.of(1, 2, 3, 4).map(JsonPrimitive::new).toList())).isError());
+		
 		Result<List<Integer>> result = assertDoesNotThrow(() -> codec.decodeStart(typeProvider, array));
 		assertTrue(result.isSuccess());
 		assertIterableEquals(list, result.orThrow());

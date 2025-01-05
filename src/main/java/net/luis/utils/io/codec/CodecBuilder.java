@@ -416,4 +416,9 @@ public class CodecBuilder<T> {
 		//endregion
 		return new CodecGrouper16<>(codec1, codec2, codec3, codec4, codec5, codec6, codec7, codec8, codec9, codec10, codec11, codec12, codec13, codec14, codec15, codec16);
 	}
+	
+	public <C> @NotNull ConfigurableCodec<C, T> bind(@NotNull Codec<C> codec) {
+		Objects.requireNonNull(codec, "Codec must not be null");
+		return new ConfigurableCodec<>(this, codec);
+	}
 }

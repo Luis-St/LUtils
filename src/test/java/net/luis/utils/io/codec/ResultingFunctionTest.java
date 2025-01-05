@@ -24,31 +24,32 @@ import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
- * Test class for {@link ResultMappingFunction}.<br>
  *
  * @author Luis-St
+ *
  */
-class ResultMappingFunctionTest {
+
+class ResultingFunctionTest {
 	
 	@Test
 	void direct() {
-		assertThrows(NullPointerException.class, () -> ResultMappingFunction.direct(null));
+		assertThrows(NullPointerException.class, () -> ResultingFunction.direct(null));
 	}
 	
 	@Test
 	void throwable() {
-		assertThrows(NullPointerException.class, () -> ResultMappingFunction.throwable(null));
+		assertThrows(NullPointerException.class, () -> ResultingFunction.throwable(null));
 	}
 	
 	@Test
 	void apply() {
-		ResultMappingFunction<String, Integer> function = ResultMappingFunction.direct(Integer::parseInt);
+		ResultingFunction<String, Integer> function = ResultingFunction.throwable(Integer::parseInt);
 		
-		Result<Integer> success = function.apply(Result.success("1"));
+		Result<Integer> success = function.apply("1");
 		assertTrue(success.isSuccess());
 		assertEquals(1, success.orThrow());
 		
-		Result<Integer> error = function.apply(Result.error("error"));
+		Result<Integer> error = function.apply("error");
 		assertTrue(error.isError());
 	}
 }
