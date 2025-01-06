@@ -18,7 +18,10 @@
 
 package net.luis.utils.io.codec;
 
+import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.Test;
+
+import java.util.Optional;
 
 import static net.luis.utils.io.codec.Codec.*;
 import static org.junit.jupiter.api.Assertions.*;
@@ -30,523 +33,470 @@ import static org.junit.jupiter.api.Assertions.*;
  */
 class CodecBuilderTest {
 	
-	@Test
-	void create() {
-		assertThrows(NullPointerException.class, () -> CodecBuilder.create(null));
+	private static @NotNull ConfiguredCodec<Optional<Integer>, TestObject> create() {
+		return new ConfiguredCodec<>(INTEGER.optional(), TestObject::age);
 	}
 	
 	@Test
 	void group() {
 		//region One parameter
-		CodecBuilder.create(builder -> {
-			assertThrows(NullPointerException.class, () -> builder.group(null));
-			return null;
-		});
+		assertThrows(NullPointerException.class, () -> CodecBuilder.group(null));
 		//endregion
 		//region Two parameters
-		CodecBuilder.create(builder -> {
-			assertThrows(NullPointerException.class, () -> builder.group(null, STRING.bind(builder)));
-			assertThrows(NullPointerException.class, () -> builder.group(STRING.bind(builder), null));
-			return null;
-		});
+		assertThrows(NullPointerException.class, () -> CodecBuilder.group(null, create()));
+		assertThrows(NullPointerException.class, () -> CodecBuilder.group(create(), null));
 		//endregion
 		//region Three parameters
-		CodecBuilder.create(builder -> {
-			assertThrows(NullPointerException.class, () -> builder.group(null, STRING.bind(builder), STRING.bind(builder)));
-			assertThrows(NullPointerException.class, () -> builder.group(STRING.bind(builder), null, STRING.bind(builder)));
-			assertThrows(NullPointerException.class, () -> builder.group(STRING.bind(builder), STRING.bind(builder), null));
-			return null;
-		});
+		assertThrows(NullPointerException.class, () -> CodecBuilder.group(null, create(), create()));
+		assertThrows(NullPointerException.class, () -> CodecBuilder.group(create(), null, create()));
+		assertThrows(NullPointerException.class, () -> CodecBuilder.group(create(), create(), null));
 		//endregion
 		//region Four parameters
-		CodecBuilder.create(builder -> {
-			assertThrows(NullPointerException.class, () -> builder.group(null, STRING.bind(builder), STRING.bind(builder), STRING.bind(builder)));
-			assertThrows(NullPointerException.class, () -> builder.group(STRING.bind(builder), null, STRING.bind(builder), STRING.bind(builder)));
-			assertThrows(NullPointerException.class, () -> builder.group(STRING.bind(builder), STRING.bind(builder), null, STRING.bind(builder)));
-			assertThrows(NullPointerException.class, () -> builder.group(STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), null));
-			return null;
-		});
+		assertThrows(NullPointerException.class, () -> CodecBuilder.group(null, create(), create(), create()));
+		assertThrows(NullPointerException.class, () -> CodecBuilder.group(create(), null, create(), create()));
+		assertThrows(NullPointerException.class, () -> CodecBuilder.group(create(), create(), null, create()));
+		assertThrows(NullPointerException.class, () -> CodecBuilder.group(create(), create(), create(), null));
+		;
 		//endregion
 		//region Five parameters
-		CodecBuilder.create(builder -> {
-			assertThrows(NullPointerException.class, () -> builder.group(null, STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder)));
-			assertThrows(NullPointerException.class, () -> builder.group(STRING.bind(builder), null, STRING.bind(builder), STRING.bind(builder), STRING.bind(builder)));
-			assertThrows(NullPointerException.class, () -> builder.group(STRING.bind(builder), STRING.bind(builder), null, STRING.bind(builder), STRING.bind(builder)));
-			assertThrows(NullPointerException.class, () -> builder.group(STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), null, STRING.bind(builder)));
-			assertThrows(NullPointerException.class, () -> builder.group(STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), null));
-			return null;
-		});
+		assertThrows(NullPointerException.class, () -> CodecBuilder.group(null, create(), create(), create(), create()));
+		assertThrows(NullPointerException.class, () -> CodecBuilder.group(create(), null, create(), create(), create()));
+		assertThrows(NullPointerException.class, () -> CodecBuilder.group(create(), create(), null, create(), create()));
+		assertThrows(NullPointerException.class, () -> CodecBuilder.group(create(), create(), create(), null, create()));
+		assertThrows(NullPointerException.class, () -> CodecBuilder.group(create(), create(), create(), create(), null));
 		//endregion
 		//region Six parameters
-		CodecBuilder.create(builder -> {
-			assertThrows(NullPointerException.class, () -> builder.group(null, STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder)));
-			assertThrows(NullPointerException.class, () -> builder.group(STRING.bind(builder), null, STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder)));
-			assertThrows(NullPointerException.class, () -> builder.group(STRING.bind(builder), STRING.bind(builder), null, STRING.bind(builder), STRING.bind(builder), STRING.bind(builder)));
-			assertThrows(NullPointerException.class, () -> builder.group(STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), null, STRING.bind(builder), STRING.bind(builder)));
-			assertThrows(NullPointerException.class, () -> builder.group(STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), null, STRING.bind(builder)));
-			assertThrows(NullPointerException.class, () -> builder.group(STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), null));
-			return null;
-		});
+		assertThrows(NullPointerException.class, () -> CodecBuilder.group(null, create(), create(), create(), create(), create()));
+		assertThrows(NullPointerException.class, () -> CodecBuilder.group(create(), null, create(), create(), create(), create()));
+		assertThrows(NullPointerException.class, () -> CodecBuilder.group(create(), create(), null, create(), create(), create()));
+		assertThrows(NullPointerException.class, () -> CodecBuilder.group(create(), create(), create(), null, create(), create()));
+		assertThrows(NullPointerException.class, () -> CodecBuilder.group(create(), create(), create(), create(), null, create()));
+		assertThrows(NullPointerException.class, () -> CodecBuilder.group(create(), create(), create(), create(), create(), null));
 		//endregion
 		//region Seven parameters
-		CodecBuilder.create(builder -> {
-			assertThrows(NullPointerException.class, () -> builder.group(null, STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder)));
-			assertThrows(NullPointerException.class, () -> builder.group(STRING.bind(builder), null, STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder)));
-			assertThrows(NullPointerException.class, () -> builder.group(STRING.bind(builder), STRING.bind(builder), null, STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder)));
-			assertThrows(NullPointerException.class, () -> builder.group(STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), null, STRING.bind(builder), STRING.bind(builder), STRING.bind(builder)));
-			assertThrows(NullPointerException.class, () -> builder.group(STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), null, STRING.bind(builder), STRING.bind(builder)));
-			assertThrows(NullPointerException.class, () -> builder.group(STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), null, STRING.bind(builder)));
-			assertThrows(NullPointerException.class, () -> builder.group(STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), null));
-			return null;
-		});
+		assertThrows(NullPointerException.class, () -> CodecBuilder.group(null, create(), create(), create(), create(), create(), create()));
+		assertThrows(NullPointerException.class, () -> CodecBuilder.group(create(), null, create(), create(), create(), create(), create()));
+		assertThrows(NullPointerException.class, () -> CodecBuilder.group(create(), create(), null, create(), create(), create(), create()));
+		assertThrows(NullPointerException.class, () -> CodecBuilder.group(create(), create(), create(), null, create(), create(), create()));
+		assertThrows(NullPointerException.class, () -> CodecBuilder.group(create(), create(), create(), create(), null, create(), create()));
+		assertThrows(NullPointerException.class, () -> CodecBuilder.group(create(), create(), create(), create(), create(), null, create()));
+		assertThrows(NullPointerException.class, () -> CodecBuilder.group(create(), create(), create(), create(), create(), create(), null));
 		//endregion
 		//region Eight parameters
-		CodecBuilder.create(builder -> {
-			assertThrows(NullPointerException.class, () -> builder.group(
-				null, STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder)
-			));
-			assertThrows(NullPointerException.class, () -> builder.group(
-				STRING.bind(builder), null, STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder)
-			));
-			assertThrows(NullPointerException.class, () -> builder.group(
-				STRING.bind(builder), STRING.bind(builder), null, STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder)
-			));
-			assertThrows(NullPointerException.class, () -> builder.group(
-				STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), null, STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder)
-			));
-			assertThrows(NullPointerException.class, () -> builder.group(
-				STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), null, STRING.bind(builder), STRING.bind(builder), STRING.bind(builder)
-			));
-			assertThrows(NullPointerException.class, () -> builder.group(
-				STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), null, STRING.bind(builder), STRING.bind(builder)
-			));
-			assertThrows(NullPointerException.class, () -> builder.group(
-				STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), null, STRING.bind(builder)
-			));
-			assertThrows(NullPointerException.class, () -> builder.group(
-				STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), null
-			));
-			return null;
-		});
+		assertThrows(NullPointerException.class, () -> CodecBuilder.group(
+			null, create(), create(), create(), create(), create(), create(), create()
+		));
+		assertThrows(NullPointerException.class, () -> CodecBuilder.group(
+			create(), null, create(), create(), create(), create(), create(), create()
+		));
+		assertThrows(NullPointerException.class, () -> CodecBuilder.group(
+			create(), create(), null, create(), create(), create(), create(), create()
+		));
+		assertThrows(NullPointerException.class, () -> CodecBuilder.group(
+			create(), create(), create(), null, create(), create(), create(), create()
+		));
+		assertThrows(NullPointerException.class, () -> CodecBuilder.group(
+			create(), create(), create(), create(), null, create(), create(), create()
+		));
+		assertThrows(NullPointerException.class, () -> CodecBuilder.group(
+			create(), create(), create(), create(), create(), null, create(), create()
+		));
+		assertThrows(NullPointerException.class, () -> CodecBuilder.group(
+			create(), create(), create(), create(), create(), create(), null, create()
+		));
+		assertThrows(NullPointerException.class, () -> CodecBuilder.group(
+			create(), create(), create(), create(), create(), create(), create(), null
+		));
 		//endregion
 		//region Nine parameters
-		CodecBuilder.create(builder -> {
-			assertThrows(NullPointerException.class, () -> builder.group(
-				null, STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder)
-			));
-			assertThrows(NullPointerException.class, () -> builder.group(
-				STRING.bind(builder), null, STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder)
-			));
-			assertThrows(NullPointerException.class, () -> builder.group(
-				STRING.bind(builder), STRING.bind(builder), null, STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder)
-			));
-			assertThrows(NullPointerException.class, () -> builder.group(
-				STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), null, STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder)
-			));
-			assertThrows(NullPointerException.class, () -> builder.group(
-				STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), null, STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder)
-			));
-			assertThrows(NullPointerException.class, () -> builder.group(
-				STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), null, STRING.bind(builder), STRING.bind(builder), STRING.bind(builder)
-			));
-			assertThrows(NullPointerException.class, () -> builder.group(
-				STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), null, STRING.bind(builder), STRING.bind(builder)
-			));
-			assertThrows(NullPointerException.class, () -> builder.group(
-				STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), null, STRING.bind(builder)
-			));
-			assertThrows(NullPointerException.class, () -> builder.group(
-				STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), null
-			));
-			return null;
-		});
+		assertThrows(NullPointerException.class, () -> CodecBuilder.group(
+			null, create(), create(), create(), create(), create(), create(), create(), create()
+		));
+		assertThrows(NullPointerException.class, () -> CodecBuilder.group(
+			create(), null, create(), create(), create(), create(), create(), create(), create()
+		));
+		assertThrows(NullPointerException.class, () -> CodecBuilder.group(
+			create(), create(), null, create(), create(), create(), create(), create(), create()
+		));
+		assertThrows(NullPointerException.class, () -> CodecBuilder.group(
+			create(), create(), create(), null, create(), create(), create(), create(), create()
+		));
+		assertThrows(NullPointerException.class, () -> CodecBuilder.group(
+			create(), create(), create(), create(), null, create(), create(), create(), create()
+		));
+		assertThrows(NullPointerException.class, () -> CodecBuilder.group(
+			create(), create(), create(), create(), create(), null, create(), create(), create()
+		));
+		assertThrows(NullPointerException.class, () -> CodecBuilder.group(
+			create(), create(), create(), create(), create(), create(), null, create(), create()
+		));
+		assertThrows(NullPointerException.class, () -> CodecBuilder.group(
+			create(), create(), create(), create(), create(), create(), create(), null, create()
+		));
+		assertThrows(NullPointerException.class, () -> CodecBuilder.group(
+			create(), create(), create(), create(), create(), create(), create(), create(), null
+		));
 		//endregion
 		//region Ten parameters
-		CodecBuilder.create(builder -> {
-			assertThrows(NullPointerException.class, () -> builder.group(
-				null, STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder)
-			));
-			assertThrows(NullPointerException.class, () -> builder.group(
-				STRING.bind(builder), null, STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder)
-			));
-			assertThrows(NullPointerException.class, () -> builder.group(
-				STRING.bind(builder), STRING.bind(builder), null, STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder)
-			));
-			assertThrows(NullPointerException.class, () -> builder.group(
-				STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), null, STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder)
-			));
-			assertThrows(NullPointerException.class, () -> builder.group(
-				STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), null, STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder)
-			));
-			assertThrows(NullPointerException.class, () -> builder.group(
-				STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), null, STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder)
-			));
-			assertThrows(NullPointerException.class, () -> builder.group(
-				STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), null, STRING.bind(builder), STRING.bind(builder), STRING.bind(builder)
-			));
-			assertThrows(NullPointerException.class, () -> builder.group(
-				STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), null, STRING.bind(builder), STRING.bind(builder)
-			));
-			assertThrows(NullPointerException.class, () -> builder.group(
-				STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), null, STRING.bind(builder)
-			));
-			assertThrows(NullPointerException.class, () -> builder.group(
-				STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), null
-			));
-			return null;
-		});
+		assertThrows(NullPointerException.class, () -> CodecBuilder.group(
+			null, create(), create(), create(), create(), create(), create(), create(), create(), create()
+		));
+		assertThrows(NullPointerException.class, () -> CodecBuilder.group(
+			create(), null, create(), create(), create(), create(), create(), create(), create(), create()
+		));
+		assertThrows(NullPointerException.class, () -> CodecBuilder.group(
+			create(), create(), null, create(), create(), create(), create(), create(), create(), create()
+		));
+		assertThrows(NullPointerException.class, () -> CodecBuilder.group(
+			create(), create(), create(), null, create(), create(), create(), create(), create(), create()
+		));
+		assertThrows(NullPointerException.class, () -> CodecBuilder.group(
+			create(), create(), create(), create(), null, create(), create(), create(), create(), create()
+		));
+		assertThrows(NullPointerException.class, () -> CodecBuilder.group(
+			create(), create(), create(), create(), create(), null, create(), create(), create(), create()
+		));
+		assertThrows(NullPointerException.class, () -> CodecBuilder.group(
+			create(), create(), create(), create(), create(), create(), null, create(), create(), create()
+		));
+		assertThrows(NullPointerException.class, () -> CodecBuilder.group(
+			create(), create(), create(), create(), create(), create(), create(), null, create(), create()
+		));
+		assertThrows(NullPointerException.class, () -> CodecBuilder.group(
+			create(), create(), create(), create(), create(), create(), create(), create(), null, create()
+		));
+		assertThrows(NullPointerException.class, () -> CodecBuilder.group(
+			create(), create(), create(), create(), create(), create(), create(), create(), create(), null
+		));
 		//endregion
 		//region Eleven parameters
-		CodecBuilder.create(builder -> {
-			assertThrows(NullPointerException.class, () -> builder.group(
-				null, STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder)
-			));
-			assertThrows(NullPointerException.class, () -> builder.group(
-				STRING.bind(builder), null, STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder)
-			));
-			assertThrows(NullPointerException.class, () -> builder.group(
-				STRING.bind(builder), STRING.bind(builder), null, STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder)
-			));
-			assertThrows(NullPointerException.class, () -> builder.group(
-				STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), null, STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder)
-			));
-			assertThrows(NullPointerException.class, () -> builder.group(
-				STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), null, STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder)
-			));
-			assertThrows(NullPointerException.class, () -> builder.group(
-				STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), null, STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder)
-			));
-			assertThrows(NullPointerException.class, () -> builder.group(
-				STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), null, STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder)
-			));
-			assertThrows(NullPointerException.class, () -> builder.group(
-				STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), null, STRING.bind(builder), STRING.bind(builder), STRING.bind(builder)
-			));
-			assertThrows(NullPointerException.class, () -> builder.group(
-				STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), null, STRING.bind(builder), STRING.bind(builder)
-			));
-			assertThrows(NullPointerException.class, () -> builder.group(
-				STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), null, STRING.bind(builder)
-			));
-			assertThrows(NullPointerException.class, () -> builder.group(
-				STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), null
-			));
-			return null;
-		});
+		assertThrows(NullPointerException.class, () -> CodecBuilder.group(
+			null, create(), create(), create(), create(), create(), create(), create(), create(), create(), create()
+		));
+		assertThrows(NullPointerException.class, () -> CodecBuilder.group(
+			create(), null, create(), create(), create(), create(), create(), create(), create(), create(), create()
+		));
+		assertThrows(NullPointerException.class, () -> CodecBuilder.group(
+			create(), create(), null, create(), create(), create(), create(), create(), create(), create(), create()
+		));
+		assertThrows(NullPointerException.class, () -> CodecBuilder.group(
+			create(), create(), create(), null, create(), create(), create(), create(), create(), create(), create()
+		));
+		assertThrows(NullPointerException.class, () -> CodecBuilder.group(
+			create(), create(), create(), create(), null, create(), create(), create(), create(), create(), create()
+		));
+		assertThrows(NullPointerException.class, () -> CodecBuilder.group(
+			create(), create(), create(), create(), create(), null, create(), create(), create(), create(), create()
+		));
+		assertThrows(NullPointerException.class, () -> CodecBuilder.group(
+			create(), create(), create(), create(), create(), create(), null, create(), create(), create(), create()
+		));
+		assertThrows(NullPointerException.class, () -> CodecBuilder.group(
+			create(), create(), create(), create(), create(), create(), create(), null, create(), create(), create()
+		));
+		assertThrows(NullPointerException.class, () -> CodecBuilder.group(
+			create(), create(), create(), create(), create(), create(), create(), create(), null, create(), create()
+		));
+		assertThrows(NullPointerException.class, () -> CodecBuilder.group(
+			create(), create(), create(), create(), create(), create(), create(), create(), create(), null, create()
+		));
+		assertThrows(NullPointerException.class, () -> CodecBuilder.group(
+			create(), create(), create(), create(), create(), create(), create(), create(), create(), create(), null
+		));
 		//endregion
 		//region Twelve parameters
-		CodecBuilder.create(builder -> {
-			assertThrows(NullPointerException.class, () -> builder.group(
-				null, STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder),
-				STRING.bind(builder)
-			));
-			assertThrows(NullPointerException.class, () -> builder.group(
-				STRING.bind(builder), null, STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder),
-				STRING.bind(builder)
-			));
-			assertThrows(NullPointerException.class, () -> builder.group(
-				STRING.bind(builder), STRING.bind(builder), null, STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder),
-				STRING.bind(builder)
-			));
-			assertThrows(NullPointerException.class, () -> builder.group(
-				STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), null, STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder),
-				STRING.bind(builder)
-			));
-			assertThrows(NullPointerException.class, () -> builder.group(
-				STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), null, STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder),
-				STRING.bind(builder)
-			));
-			assertThrows(NullPointerException.class, () -> builder.group(
-				STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), null, STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder),
-				STRING.bind(builder)
-			));
-			assertThrows(NullPointerException.class, () -> builder.group(
-				STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), null, STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder),
-				STRING.bind(builder)
-			));
-			assertThrows(NullPointerException.class, () -> builder.group(
-				STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), null, STRING.bind(builder), STRING.bind(builder), STRING.bind(builder),
-				STRING.bind(builder)
-			));
-			assertThrows(NullPointerException.class, () -> builder.group(
-				STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), null, STRING.bind(builder), STRING.bind(builder),
-				STRING.bind(builder)
-			));
-			assertThrows(NullPointerException.class, () -> builder.group(
-				STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), null, STRING.bind(builder),
-				STRING.bind(builder)
-			));
-			assertThrows(NullPointerException.class, () -> builder.group(
-				STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), null,
-				STRING.bind(builder)
-			));
-			assertThrows(NullPointerException.class, () -> builder.group(
-				STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder),
-				STRING.bind(builder), null
-			));
-			return null;
-		});
+		assertThrows(NullPointerException.class, () -> CodecBuilder.group(
+			null, create(), create(), create(), create(), create(), create(), create(), create(), create(), create(),
+			create()
+		));
+		assertThrows(NullPointerException.class, () -> CodecBuilder.group(
+			create(), null, create(), create(), create(), create(), create(), create(), create(), create(), create(),
+			create()
+		));
+		assertThrows(NullPointerException.class, () -> CodecBuilder.group(
+			create(), create(), null, create(), create(), create(), create(), create(), create(), create(), create(),
+			create()
+		));
+		assertThrows(NullPointerException.class, () -> CodecBuilder.group(
+			create(), create(), create(), null, create(), create(), create(), create(), create(), create(), create(),
+			create()
+		));
+		assertThrows(NullPointerException.class, () -> CodecBuilder.group(
+			create(), create(), create(), create(), null, create(), create(), create(), create(), create(), create(),
+			create()
+		));
+		assertThrows(NullPointerException.class, () -> CodecBuilder.group(
+			create(), create(), create(), create(), create(), null, create(), create(), create(), create(), create(),
+			create()
+		));
+		assertThrows(NullPointerException.class, () -> CodecBuilder.group(
+			create(), create(), create(), create(), create(), create(), null, create(), create(), create(), create(),
+			create()
+		));
+		assertThrows(NullPointerException.class, () -> CodecBuilder.group(
+			create(), create(), create(), create(), create(), create(), create(), null, create(), create(), create(),
+			create()
+		));
+		assertThrows(NullPointerException.class, () -> CodecBuilder.group(
+			create(), create(), create(), create(), create(), create(), create(), create(), null, create(), create(),
+			create()
+		));
+		assertThrows(NullPointerException.class, () -> CodecBuilder.group(
+			create(), create(), create(), create(), create(), create(), create(), create(), create(), null, create(),
+			create()
+		));
+		assertThrows(NullPointerException.class, () -> CodecBuilder.group(
+			create(), create(), create(), create(), create(), create(), create(), create(), create(), create(), null,
+			create()
+		));
+		assertThrows(NullPointerException.class, () -> CodecBuilder.group(
+			create(), create(), create(), create(), create(), create(), create(), create(), create(), create(),
+			create(), null
+		));
 		//endregion
 		//region Thirteen parameters
-		CodecBuilder.create(builder -> {
-			assertThrows(NullPointerException.class, () -> builder.group(
-				null, STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder),
-				STRING.bind(builder), STRING.bind(builder)
-			));
-			assertThrows(NullPointerException.class, () -> builder.group(
-				STRING.bind(builder), null, STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder),
-				STRING.bind(builder), STRING.bind(builder)
-			));
-			assertThrows(NullPointerException.class, () -> builder.group(
-				STRING.bind(builder), STRING.bind(builder), null, STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder),
-				STRING.bind(builder), STRING.bind(builder)
-			));
-			assertThrows(NullPointerException.class, () -> builder.group(
-				STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), null, STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder),
-				STRING.bind(builder), STRING.bind(builder)
-			));
-			assertThrows(NullPointerException.class, () -> builder.group(
-				STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), null, STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder),
-				STRING.bind(builder), STRING.bind(builder)
-			));
-			assertThrows(NullPointerException.class, () -> builder.group(
-				STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), null, STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder),
-				STRING.bind(builder), STRING.bind(builder)
-			));
-			assertThrows(NullPointerException.class, () -> builder.group(
-				STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), null, STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder),
-				STRING.bind(builder), STRING.bind(builder)
-			));
-			assertThrows(NullPointerException.class, () -> builder.group(
-				STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), null, STRING.bind(builder), STRING.bind(builder), STRING.bind(builder),
-				STRING.bind(builder), STRING.bind(builder)
-			));
-			assertThrows(NullPointerException.class, () -> builder.group(
-				STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), null, STRING.bind(builder), STRING.bind(builder),
-				STRING.bind(builder), STRING.bind(builder)
-			));
-			assertThrows(NullPointerException.class, () -> builder.group(
-				STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), null, STRING.bind(builder),
-				STRING.bind(builder), STRING.bind(builder)
-			));
-			assertThrows(NullPointerException.class, () -> builder.group(
-				STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), null,
-				STRING.bind(builder), STRING.bind(builder)
-			));
-			assertThrows(NullPointerException.class, () -> builder.group(
-				STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder),
-				STRING.bind(builder), null, STRING.bind(builder)
-			));
-			assertThrows(NullPointerException.class, () -> builder.group(
-				STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder),
-				STRING.bind(builder), STRING.bind(builder), null
-			));
-			return null;
-		});
+		assertThrows(NullPointerException.class, () -> CodecBuilder.group(
+			null, create(), create(), create(), create(), create(), create(), create(), create(), create(), create(),
+			create(), create()
+		));
+		assertThrows(NullPointerException.class, () -> CodecBuilder.group(
+			create(), null, create(), create(), create(), create(), create(), create(), create(), create(), create(),
+			create(), create()
+		));
+		assertThrows(NullPointerException.class, () -> CodecBuilder.group(
+			create(), create(), null, create(), create(), create(), create(), create(), create(), create(), create(),
+			create(), create()
+		));
+		assertThrows(NullPointerException.class, () -> CodecBuilder.group(
+			create(), create(), create(), null, create(), create(), create(), create(), create(), create(), create(),
+			create(), create()
+		));
+		assertThrows(NullPointerException.class, () -> CodecBuilder.group(
+			create(), create(), create(), create(), null, create(), create(), create(), create(), create(), create(),
+			create(), create()
+		));
+		assertThrows(NullPointerException.class, () -> CodecBuilder.group(
+			create(), create(), create(), create(), create(), null, create(), create(), create(), create(), create(),
+			create(), create()
+		));
+		assertThrows(NullPointerException.class, () -> CodecBuilder.group(
+			create(), create(), create(), create(), create(), create(), null, create(), create(), create(), create(),
+			create(), create()
+		));
+		assertThrows(NullPointerException.class, () -> CodecBuilder.group(
+			create(), create(), create(), create(), create(), create(), create(), null, create(), create(), create(),
+			create(), create()
+		));
+		assertThrows(NullPointerException.class, () -> CodecBuilder.group(
+			create(), create(), create(), create(), create(), create(), create(), create(), null, create(), create(),
+			create(), create()
+		));
+		assertThrows(NullPointerException.class, () -> CodecBuilder.group(
+			create(), create(), create(), create(), create(), create(), create(), create(), create(), null, create(),
+			create(), create()
+		));
+		assertThrows(NullPointerException.class, () -> CodecBuilder.group(
+			create(), create(), create(), create(), create(), create(), create(), create(), create(), create(), null,
+			create(), create()
+		));
+		assertThrows(NullPointerException.class, () -> CodecBuilder.group(
+			create(), create(), create(), create(), create(), create(), create(), create(), create(), create(),
+			create(), null, create()
+		));
+		assertThrows(NullPointerException.class, () -> CodecBuilder.group(
+			create(), create(), create(), create(), create(), create(), create(), create(), create(), create(),
+			create(), create(), null
+		));
 		//endregion
 		//region Fourteen parameters
-		CodecBuilder.create(builder -> {
-			assertThrows(NullPointerException.class, () -> builder.group(
-				null, STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder),
-				STRING.bind(builder), STRING.bind(builder), STRING.bind(builder)
-			));
-			assertThrows(NullPointerException.class, () -> builder.group(
-				STRING.bind(builder), null, STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder),
-				STRING.bind(builder), STRING.bind(builder), STRING.bind(builder)
-			));
-			assertThrows(NullPointerException.class, () -> builder.group(
-				STRING.bind(builder), STRING.bind(builder), null, STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder),
-				STRING.bind(builder), STRING.bind(builder), STRING.bind(builder)
-			));
-			assertThrows(NullPointerException.class, () -> builder.group(
-				STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), null, STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder),
-				STRING.bind(builder), STRING.bind(builder), STRING.bind(builder)
-			));
-			assertThrows(NullPointerException.class, () -> builder.group(
-				STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), null, STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder),
-				STRING.bind(builder), STRING.bind(builder), STRING.bind(builder)
-			));
-			assertThrows(NullPointerException.class, () -> builder.group(
-				STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), null, STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder),
-				STRING.bind(builder), STRING.bind(builder), STRING.bind(builder)
-			));
-			assertThrows(NullPointerException.class, () -> builder.group(
-				STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), null, STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder),
-				STRING.bind(builder), STRING.bind(builder), STRING.bind(builder)
-			));
-			assertThrows(NullPointerException.class, () -> builder.group(
-				STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), null, STRING.bind(builder), STRING.bind(builder), STRING.bind(builder),
-				STRING.bind(builder), STRING.bind(builder), STRING.bind(builder)
-			));
-			assertThrows(NullPointerException.class, () -> builder.group(
-				STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), null, STRING.bind(builder), STRING.bind(builder),
-				STRING.bind(builder), STRING.bind(builder), STRING.bind(builder)
-			));
-			assertThrows(NullPointerException.class, () -> builder.group(
-				STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), null, STRING.bind(builder),
-				STRING.bind(builder), STRING.bind(builder), STRING.bind(builder)
-			));
-			assertThrows(NullPointerException.class, () -> builder.group(
-				STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), null,
-				STRING.bind(builder), STRING.bind(builder), STRING.bind(builder)
-			));
-			assertThrows(NullPointerException.class, () -> builder.group(
-				STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder),
-				STRING.bind(builder), null, STRING.bind(builder), STRING.bind(builder)
-			));
-			assertThrows(NullPointerException.class, () -> builder.group(
-				STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder),
-				STRING.bind(builder), STRING.bind(builder), null, STRING.bind(builder)
-			));
-			assertThrows(NullPointerException.class, () -> builder.group(
-				STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder),
-				STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), null
-			));
-			return null;
-		});
+		assertThrows(NullPointerException.class, () -> CodecBuilder.group(
+			null, create(), create(), create(), create(), create(), create(), create(), create(), create(), create(),
+			create(), create(), create()
+		));
+		assertThrows(NullPointerException.class, () -> CodecBuilder.group(
+			create(), null, create(), create(), create(), create(), create(), create(), create(), create(), create(),
+			create(), create(), create()
+		));
+		assertThrows(NullPointerException.class, () -> CodecBuilder.group(
+			create(), create(), null, create(), create(), create(), create(), create(), create(), create(), create(),
+			create(), create(), create()
+		));
+		assertThrows(NullPointerException.class, () -> CodecBuilder.group(
+			create(), create(), create(), null, create(), create(), create(), create(), create(), create(), create(),
+			create(), create(), create()
+		));
+		assertThrows(NullPointerException.class, () -> CodecBuilder.group(
+			create(), create(), create(), create(), null, create(), create(), create(), create(), create(), create(),
+			create(), create(), create()
+		));
+		assertThrows(NullPointerException.class, () -> CodecBuilder.group(
+			create(), create(), create(), create(), create(), null, create(), create(), create(), create(), create(),
+			create(), create(), create()
+		));
+		assertThrows(NullPointerException.class, () -> CodecBuilder.group(
+			create(), create(), create(), create(), create(), create(), null, create(), create(), create(), create(),
+			create(), create(), create()
+		));
+		assertThrows(NullPointerException.class, () -> CodecBuilder.group(
+			create(), create(), create(), create(), create(), create(), create(), null, create(), create(), create(),
+			create(), create(), create()
+		));
+		assertThrows(NullPointerException.class, () -> CodecBuilder.group(
+			create(), create(), create(), create(), create(), create(), create(), create(), null, create(), create(),
+			create(), create(), create()
+		));
+		assertThrows(NullPointerException.class, () -> CodecBuilder.group(
+			create(), create(), create(), create(), create(), create(), create(), create(), create(), null, create(),
+			create(), create(), create()
+		));
+		assertThrows(NullPointerException.class, () -> CodecBuilder.group(
+			create(), create(), create(), create(), create(), create(), create(), create(), create(), create(), null,
+			create(), create(), create()
+		));
+		assertThrows(NullPointerException.class, () -> CodecBuilder.group(
+			create(), create(), create(), create(), create(), create(), create(), create(), create(), create(),
+			create(), null, create(), create()
+		));
+		assertThrows(NullPointerException.class, () -> CodecBuilder.group(
+			create(), create(), create(), create(), create(), create(), create(), create(), create(), create(),
+			create(), create(), null, create()
+		));
+		assertThrows(NullPointerException.class, () -> CodecBuilder.group(
+			create(), create(), create(), create(), create(), create(), create(), create(), create(), create(),
+			create(), create(), create(), null
+		));
 		//endregion
 		//region Fifteen parameters
-		CodecBuilder.create(builder -> {
-			assertThrows(NullPointerException.class, () -> builder.group(
-				null, STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder),
-				STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder)
-			));
-			assertThrows(NullPointerException.class, () -> builder.group(
-				STRING.bind(builder), null, STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder),
-				STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder)
-			));
-			assertThrows(NullPointerException.class, () -> builder.group(
-				STRING.bind(builder), STRING.bind(builder), null, STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder),
-				STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder)
-			));
-			assertThrows(NullPointerException.class, () -> builder.group(
-				STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), null, STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder),
-				STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder)
-			));
-			assertThrows(NullPointerException.class, () -> builder.group(
-				STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), null, STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder),
-				STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder)
-			));
-			assertThrows(NullPointerException.class, () -> builder.group(
-				STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), null, STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder),
-				STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder)
-			));
-			assertThrows(NullPointerException.class, () -> builder.group(
-				STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), null, STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder),
-				STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder)
-			));
-			assertThrows(NullPointerException.class, () -> builder.group(
-				STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), null, STRING.bind(builder), STRING.bind(builder), STRING.bind(builder),
-				STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder)
-			));
-			assertThrows(NullPointerException.class, () -> builder.group(
-				STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), null, STRING.bind(builder), STRING.bind(builder),
-				STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder)
-			));
-			assertThrows(NullPointerException.class, () -> builder.group(
-				STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), null, STRING.bind(builder),
-				STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder)
-			));
-			assertThrows(NullPointerException.class, () -> builder.group(
-				STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), null,
-				STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder)
-			));
-			assertThrows(NullPointerException.class, () -> builder.group(
-				STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder),
-				STRING.bind(builder), null, STRING.bind(builder), STRING.bind(builder), STRING.bind(builder)
-			));
-			assertThrows(NullPointerException.class, () -> builder.group(
-				STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder),
-				STRING.bind(builder), STRING.bind(builder), null, STRING.bind(builder), STRING.bind(builder)
-			));
-			assertThrows(NullPointerException.class, () -> builder.group(
-				STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder),
-				STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), null, STRING.bind(builder)
-			));
-			assertThrows(NullPointerException.class, () -> builder.group(
-				STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder),
-				STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), null
-			));
-			return null;
-		});
+		assertThrows(NullPointerException.class, () -> CodecBuilder.group(
+			null, create(), create(), create(), create(), create(), create(), create(), create(), create(), create(),
+			create(), create(), create(), create()
+		));
+		assertThrows(NullPointerException.class, () -> CodecBuilder.group(
+			create(), null, create(), create(), create(), create(), create(), create(), create(), create(), create(),
+			create(), create(), create(), create()
+		));
+		assertThrows(NullPointerException.class, () -> CodecBuilder.group(
+			create(), create(), null, create(), create(), create(), create(), create(), create(), create(), create(),
+			create(), create(), create(), create()
+		));
+		assertThrows(NullPointerException.class, () -> CodecBuilder.group(
+			create(), create(), create(), null, create(), create(), create(), create(), create(), create(), create(),
+			create(), create(), create(), create()
+		));
+		assertThrows(NullPointerException.class, () -> CodecBuilder.group(
+			create(), create(), create(), create(), null, create(), create(), create(), create(), create(), create(),
+			create(), create(), create(), create()
+		));
+		assertThrows(NullPointerException.class, () -> CodecBuilder.group(
+			create(), create(), create(), create(), create(), null, create(), create(), create(), create(), create(),
+			create(), create(), create(), create()
+		));
+		assertThrows(NullPointerException.class, () -> CodecBuilder.group(
+			create(), create(), create(), create(), create(), create(), null, create(), create(), create(), create(),
+			create(), create(), create(), create()
+		));
+		assertThrows(NullPointerException.class, () -> CodecBuilder.group(
+			create(), create(), create(), create(), create(), create(), create(), null, create(), create(), create(),
+			create(), create(), create(), create()
+		));
+		assertThrows(NullPointerException.class, () -> CodecBuilder.group(
+			create(), create(), create(), create(), create(), create(), create(), create(), null, create(), create(),
+			create(), create(), create(), create()
+		));
+		assertThrows(NullPointerException.class, () -> CodecBuilder.group(
+			create(), create(), create(), create(), create(), create(), create(), create(), create(), null, create(),
+			create(), create(), create(), create()
+		));
+		assertThrows(NullPointerException.class, () -> CodecBuilder.group(
+			create(), create(), create(), create(), create(), create(), create(), create(), create(), create(), null,
+			create(), create(), create(), create()
+		));
+		assertThrows(NullPointerException.class, () -> CodecBuilder.group(
+			create(), create(), create(), create(), create(), create(), create(), create(), create(), create(),
+			create(), null, create(), create(), create()
+		));
+		assertThrows(NullPointerException.class, () -> CodecBuilder.group(
+			create(), create(), create(), create(), create(), create(), create(), create(), create(), create(),
+			create(), create(), null, create(), create()
+		));
+		assertThrows(NullPointerException.class, () -> CodecBuilder.group(
+			create(), create(), create(), create(), create(), create(), create(), create(), create(), create(),
+			create(), create(), create(), null, create()
+		));
+		assertThrows(NullPointerException.class, () -> CodecBuilder.group(
+			create(), create(), create(), create(), create(), create(), create(), create(), create(), create(),
+			create(), create(), create(), create(), null
+		));
 		//endregion
 		//region Sixteen parameters
-		CodecBuilder.create(builder -> {
-			assertThrows(NullPointerException.class, () -> builder.group(
-				null, STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder),
-				STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder)
-			));
-			assertThrows(NullPointerException.class, () -> builder.group(
-				STRING.bind(builder), null, STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder),
-				STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder)
-			));
-			assertThrows(NullPointerException.class, () -> builder.group(
-				STRING.bind(builder), STRING.bind(builder), null, STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder),
-				STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder)
-			));
-			assertThrows(NullPointerException.class, () -> builder.group(
-				STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), null, STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder),
-				STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder)
-			));
-			assertThrows(NullPointerException.class, () -> builder.group(
-				STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), null, STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder),
-				STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder)
-			));
-			assertThrows(NullPointerException.class, () -> builder.group(
-				STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), null, STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder),
-				STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder)
-			));
-			assertThrows(NullPointerException.class, () -> builder.group(
-				STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), null, STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder),
-				STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder)
-			));
-			assertThrows(NullPointerException.class, () -> builder.group(
-				STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), null, STRING.bind(builder), STRING.bind(builder), STRING.bind(builder),
-				STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder)
-			));
-			assertThrows(NullPointerException.class, () -> builder.group(
-				STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), null, STRING.bind(builder), STRING.bind(builder),
-				STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder)
-			));
-			assertThrows(NullPointerException.class, () -> builder.group(
-				STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), null, STRING.bind(builder),
-				STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder)
-			));
-			assertThrows(NullPointerException.class, () -> builder.group(
-				STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), null,
-				STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder)
-			));
-			assertThrows(NullPointerException.class, () -> builder.group(
-				STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder),
-				STRING.bind(builder), null, STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder)
-			));
-			assertThrows(NullPointerException.class, () -> builder.group(
-				STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder),
-				STRING.bind(builder), STRING.bind(builder), null, STRING.bind(builder), STRING.bind(builder), STRING.bind(builder)
-			));
-			assertThrows(NullPointerException.class, () -> builder.group(
-				STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder),
-				STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), null, STRING.bind(builder), STRING.bind(builder)
-			));
-			assertThrows(NullPointerException.class, () -> builder.group(
-				STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder),
-				STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), null, STRING.bind(builder)
-			));
-			assertThrows(NullPointerException.class, () -> builder.group(
-				STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder),
-				STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), STRING.bind(builder), null
-			));
-			return null;
-		});
+		assertThrows(NullPointerException.class, () -> CodecBuilder.group(
+			null, create(), create(), create(), create(), create(), create(), create(), create(), create(), create(),
+			create(), create(), create(), create(), create()
+		));
+		assertThrows(NullPointerException.class, () -> CodecBuilder.group(
+			create(), null, create(), create(), create(), create(), create(), create(), create(), create(), create(),
+			create(), create(), create(), create(), create()
+		));
+		assertThrows(NullPointerException.class, () -> CodecBuilder.group(
+			create(), create(), null, create(), create(), create(), create(), create(), create(), create(), create(),
+			create(), create(), create(), create(), create()
+		));
+		assertThrows(NullPointerException.class, () -> CodecBuilder.group(
+			create(), create(), create(), null, create(), create(), create(), create(), create(), create(), create(),
+			create(), create(), create(), create(), create()
+		));
+		assertThrows(NullPointerException.class, () -> CodecBuilder.group(
+			create(), create(), create(), create(), null, create(), create(), create(), create(), create(), create(),
+			create(), create(), create(), create(), create()
+		));
+		assertThrows(NullPointerException.class, () -> CodecBuilder.group(
+			create(), create(), create(), create(), create(), null, create(), create(), create(), create(), create(),
+			create(), create(), create(), create(), create()
+		));
+		assertThrows(NullPointerException.class, () -> CodecBuilder.group(
+			create(), create(), create(), create(), create(), create(), null, create(), create(), create(), create(),
+			create(), create(), create(), create(), create()
+		));
+		assertThrows(NullPointerException.class, () -> CodecBuilder.group(
+			create(), create(), create(), create(), create(), create(), create(), null, create(), create(), create(),
+			create(), create(), create(), create(), create()
+		));
+		assertThrows(NullPointerException.class, () -> CodecBuilder.group(
+			create(), create(), create(), create(), create(), create(), create(), create(), null, create(), create(),
+			create(), create(), create(), create(), create()
+		));
+		assertThrows(NullPointerException.class, () -> CodecBuilder.group(
+			create(), create(), create(), create(), create(), create(), create(), create(), create(), null, create(),
+			create(), create(), create(), create(), create()
+		));
+		assertThrows(NullPointerException.class, () -> CodecBuilder.group(
+			create(), create(), create(), create(), create(), create(), create(), create(), create(), create(), null,
+			create(), create(), create(), create(), create()
+		));
+		assertThrows(NullPointerException.class, () -> CodecBuilder.group(
+			create(), create(), create(), create(), create(), create(), create(), create(), create(), create(),
+			create(), null, create(), create(), create(), create()
+		));
+		assertThrows(NullPointerException.class, () -> CodecBuilder.group(
+			create(), create(), create(), create(), create(), create(), create(), create(), create(), create(),
+			create(), create(), null, create(), create(), create()
+		));
+		assertThrows(NullPointerException.class, () -> CodecBuilder.group(
+			create(), create(), create(), create(), create(), create(), create(), create(), create(), create(),
+			create(), create(), create(), null, create(), create()
+		));
+		assertThrows(NullPointerException.class, () -> CodecBuilder.group(
+			create(), create(), create(), create(), create(), create(), create(), create(), create(), create(),
+			create(), create(), create(), create(), null, create()
+		));
+		assertThrows(NullPointerException.class, () -> CodecBuilder.group(
+			create(), create(), create(), create(), create(), create(), create(), create(), create(), create(),
+			create(), create(), create(), create(), create(), null
+		));
 		//endregion
 	}
 	
-	@Test
-	void bind() {
-		CodecBuilder.create(builder -> {
-			assertThrows(NullPointerException.class, () -> builder.bind(null));
-			assertNotNull(builder.bind(STRING));
-			return null;
-		});
-	}
+	//region Internal
+	private record TestObject(@NotNull Optional<Integer> age) {}
+	//endregion
 }

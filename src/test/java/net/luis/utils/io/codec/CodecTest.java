@@ -22,6 +22,7 @@ import net.luis.utils.io.codec.provider.JsonTypeProvider;
 import net.luis.utils.io.codec.struct.*;
 import net.luis.utils.io.data.json.*;
 import net.luis.utils.util.Result;
+import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
@@ -232,12 +233,11 @@ class CodecTest {
 		Codec<Stream<Integer>> codec = Codec.stream(Codec.INTEGER);
 		JsonArray json = new JsonArray(List.of(new JsonPrimitive(1), new JsonPrimitive(2), new JsonPrimitive(3)));
 		
-		Result<JsonElement> encoded = codec.encodeStart(typeProvider, typeProvider.empty(), Stream.of(1, 2, 3));
+		Result<JsonElement> encoded = assertDoesNotThrow(() -> codec.encodeStart(typeProvider, typeProvider.empty(), Stream.of(1, 2, 3)));
 		assertTrue(encoded.isSuccess());
-		assertInstanceOf(JsonArray.class, encoded.orThrow());
-		assertEquals(json, encoded.orThrow());
+		assertEquals(json, assertInstanceOf(JsonArray.class, encoded.orThrow()));
 		
-		Result<Stream<Integer>> decoded = codec.decodeStart(typeProvider, json);
+		Result<Stream<Integer>> decoded = assertDoesNotThrow(() -> codec.decodeStart(typeProvider, json));
 		assertTrue(decoded.isSuccess());
 		assertEquals(List.of(1, 2, 3), decoded.orThrow().toList());
 	}
@@ -286,11 +286,11 @@ class CodecTest {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Integer> codec = Codec.withAlternative(Codec.INTEGER, alternative);
 		
-		Result<JsonElement> encoded = codec.encodeStart(typeProvider, typeProvider.empty(), 1);
+		Result<JsonElement> encoded = assertDoesNotThrow(() -> codec.encodeStart(typeProvider, typeProvider.empty(), 1));
 		assertTrue(encoded.isSuccess());
 		assertEquals(1, encoded.orThrow().getAsJsonPrimitive().getAsIntegerStrict());
 		
-		Result<Integer> decoded = codec.decodeStart(typeProvider, new JsonPrimitive(1.0));
+		Result<Integer> decoded = assertDoesNotThrow(() -> codec.decodeStart(typeProvider, new JsonPrimitive(1.0)));
 		assertTrue(decoded.isSuccess());
 		assertEquals(1, decoded.orThrow());
 	}
@@ -303,12 +303,12 @@ class CodecTest {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Integer> codec = Codec.stringResolver(String::valueOf, Integer::valueOf);
 		
-		Result<JsonElement> encoded = codec.encodeStart(typeProvider, typeProvider.empty(), 1);
+		Result<JsonElement> encoded = assertDoesNotThrow(() -> codec.encodeStart(typeProvider, typeProvider.empty(), 1));
 		assertTrue(encoded.isSuccess());
 		assertEquals("1", encoded.orThrow().getAsJsonPrimitive().getAsString());
 		
 		assertTrue(codec.decodeStart(typeProvider, new JsonPrimitive("test")).isError());
-		Result<Integer> decoded = codec.decodeStart(typeProvider, new JsonPrimitive("1"));
+		Result<Integer> decoded = assertDoesNotThrow(() -> codec.decodeStart(typeProvider, new JsonPrimitive("1")));
 		assertTrue(decoded.isSuccess());
 		assertEquals(1, decoded.orThrow());
 	}
@@ -348,12 +348,11 @@ class CodecTest {
 		Codec<Stream<Integer>> codec = Codec.INTEGER.stream();
 		JsonArray json = new JsonArray(List.of(new JsonPrimitive(1), new JsonPrimitive(2), new JsonPrimitive(3)));
 		
-		Result<JsonElement> encoded = codec.encodeStart(typeProvider, typeProvider.empty(), Stream.of(1, 2, 3));
+		Result<JsonElement> encoded = assertDoesNotThrow(() -> codec.encodeStart(typeProvider, typeProvider.empty(), Stream.of(1, 2, 3)));
 		assertTrue(encoded.isSuccess());
-		assertInstanceOf(JsonArray.class, encoded.orThrow());
-		assertEquals(json, encoded.orThrow());
+		assertEquals(json, assertInstanceOf(JsonArray.class, encoded.orThrow()));
 		
-		Result<Stream<Integer>> decoded = codec.decodeStart(typeProvider, json);
+		Result<Stream<Integer>> decoded = assertDoesNotThrow(() -> codec.decodeStart(typeProvider, json));
 		assertTrue(decoded.isSuccess());
 		assertEquals(List.of(1, 2, 3), decoded.orThrow().toList());
 	}
@@ -366,11 +365,11 @@ class CodecTest {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Integer> codec = Codec.INTEGER.withAlternative(alternative);
 		
-		Result<JsonElement> encoded = codec.encodeStart(typeProvider, typeProvider.empty(), 1);
+		Result<JsonElement> encoded = assertDoesNotThrow(() -> codec.encodeStart(typeProvider, typeProvider.empty(), 1));
 		assertTrue(encoded.isSuccess());
 		assertEquals(1, encoded.orThrow().getAsJsonPrimitive().getAsIntegerStrict());
 		
-		Result<Integer> decoded = codec.decodeStart(typeProvider, new JsonPrimitive(1.0));
+		Result<Integer> decoded = assertDoesNotThrow(() -> codec.decodeStart(typeProvider, new JsonPrimitive(1.0)));
 		assertTrue(decoded.isSuccess());
 		assertEquals(1, decoded.orThrow());
 	}
@@ -383,11 +382,11 @@ class CodecTest {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Integer> codec = Codec.STRING.xmap(String::valueOf, Integer::valueOf);
 		
-		Result<JsonElement> encoded = codec.encodeStart(typeProvider, typeProvider.empty(), 1);
+		Result<JsonElement> encoded = assertDoesNotThrow(() -> codec.encodeStart(typeProvider, typeProvider.empty(), 1));
 		assertTrue(encoded.isSuccess());
 		assertEquals("1", encoded.orThrow().getAsJsonPrimitive().getAsString());
 		
-		Result<Integer> decoded = codec.decodeStart(typeProvider, new JsonPrimitive("1"));
+		Result<Integer> decoded = assertDoesNotThrow(() -> codec.decodeStart(typeProvider, new JsonPrimitive("1")));
 		assertTrue(decoded.isSuccess());
 		assertEquals(1, decoded.orThrow());
 		
@@ -402,11 +401,11 @@ class CodecTest {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Integer> codec = Codec.STRING.flatMap(String::valueOf, ResultMappingFunction.throwable(Integer::valueOf));
 		
-		Result<JsonElement> encoded = codec.encodeStart(typeProvider, typeProvider.empty(), 1);
+		Result<JsonElement> encoded = assertDoesNotThrow(() -> codec.encodeStart(typeProvider, typeProvider.empty(), 1));
 		assertTrue(encoded.isSuccess());
 		assertEquals("1", encoded.orThrow().getAsJsonPrimitive().getAsString());
 		
-		Result<Integer> decoded = codec.decodeStart(typeProvider, new JsonPrimitive("1"));
+		Result<Integer> decoded = assertDoesNotThrow(() -> codec.decodeStart(typeProvider, new JsonPrimitive("1")));
 		assertTrue(decoded.isSuccess());
 		assertEquals(1, decoded.orThrow());
 		
@@ -421,11 +420,11 @@ class CodecTest {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Integer> codec = Codec.STRING.map(ResultingFunction.direct(String::valueOf), ResultMappingFunction.throwable(Integer::valueOf));
 		
-		Result<JsonElement> encoded = codec.encodeStart(typeProvider, typeProvider.empty(), 1);
+		Result<JsonElement> encoded = assertDoesNotThrow(() -> codec.encodeStart(typeProvider, typeProvider.empty(), 1));
 		assertTrue(encoded.isSuccess());
 		assertEquals("1", encoded.orThrow().getAsJsonPrimitive().getAsString());
 		
-		Result<Integer> decoded = codec.decodeStart(typeProvider, new JsonPrimitive("1"));
+		Result<Integer> decoded = assertDoesNotThrow(() -> codec.decodeStart(typeProvider, new JsonPrimitive("1")));
 		assertTrue(decoded.isSuccess());
 		assertEquals(1, decoded.orThrow());
 		
@@ -444,11 +443,11 @@ class CodecTest {
 			return Result.success(s);
 		});
 		
-		Result<JsonElement> encoded = codec.encodeStart(typeProvider, typeProvider.empty(), "1");
+		Result<JsonElement> encoded = assertDoesNotThrow(() -> codec.encodeStart(typeProvider, typeProvider.empty(), "1"));
 		assertTrue(encoded.isSuccess());
 		assertEquals("1", encoded.orThrow().getAsJsonPrimitive().getAsString());
 		
-		Result<String> decoded = codec.decodeStart(typeProvider, new JsonPrimitive("1"));
+		Result<String> decoded = assertDoesNotThrow(() -> codec.decodeStart(typeProvider, new JsonPrimitive("1")));
 		assertTrue(decoded.isSuccess());
 		assertEquals("1", decoded.orThrow());
 		
@@ -462,15 +461,15 @@ class CodecTest {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<String> codec = Codec.STRING.orElse("default");
 		
-		Result<JsonElement> encoded = codec.encodeStart(typeProvider, typeProvider.empty(), "1");
+		Result<JsonElement> encoded = assertDoesNotThrow(() -> codec.encodeStart(typeProvider, typeProvider.empty(), "1"));
 		assertTrue(encoded.isSuccess());
 		assertEquals("1", encoded.orThrow().getAsJsonPrimitive().getAsString());
 		
-		Result<String> decoded = codec.decodeStart(typeProvider, new JsonPrimitive("1"));
+		Result<String> decoded = assertDoesNotThrow(() -> codec.decodeStart(typeProvider, new JsonPrimitive("1")));
 		assertTrue(decoded.isSuccess());
 		assertEquals("1", decoded.orThrow());
 		
-		Result<String> decodedDefault = codec.decodeStart(typeProvider, typeProvider.empty());
+		Result<String> decodedDefault = assertDoesNotThrow(() -> codec.decodeStart(typeProvider, typeProvider.empty()));
 		assertTrue(decodedDefault.isSuccess());
 		assertEquals("default", decodedDefault.orThrow());
 	}
@@ -482,28 +481,43 @@ class CodecTest {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<String> codec = Codec.STRING.orElseGet(() -> "default");
 		
-		Result<JsonElement> encoded = codec.encodeStart(typeProvider, typeProvider.empty(), "1");
+		Result<JsonElement> encoded = assertDoesNotThrow(() -> codec.encodeStart(typeProvider, typeProvider.empty(), "1"));
 		assertTrue(encoded.isSuccess());
 		assertEquals("1", encoded.orThrow().getAsJsonPrimitive().getAsString());
 		
-		Result<String> decoded = codec.decodeStart(typeProvider, new JsonPrimitive("1"));
+		Result<String> decoded = assertDoesNotThrow(() -> codec.decodeStart(typeProvider, new JsonPrimitive("1")));
 		assertTrue(decoded.isSuccess());
 		assertEquals("1", decoded.orThrow());
 		
-		Result<String> decodedDefault = codec.decodeStart(typeProvider, typeProvider.empty());
+		Result<String> decodedDefault = assertDoesNotThrow(() -> codec.decodeStart(typeProvider, typeProvider.empty()));
 		assertTrue(decodedDefault.isSuccess());
 		assertEquals("default", decodedDefault.orThrow());
 	}
 	
 	@Test
-	void bind() {
-		assertThrows(NullPointerException.class, () -> Codec.STRING.bind(null));
-		assertNotNull(Codec.STRING.bind(new CodecBuilder<>()));
+	void named() {
+		assertThrows(NullPointerException.class, () -> Codec.STRING.named(null));
+		assertInstanceOf(NamedCodec.class, Codec.STRING.named("name"));
+	}
+	
+	@Test
+	void getter() {
+		assertThrows(NullPointerException.class, () -> Codec.STRING.getter(null));
+		assertInstanceOf(ConfiguredCodec.class, Codec.STRING.getter(TestObject::name));
+	}
+	
+	@Test
+	void configure() {
+		assertThrows(NullPointerException.class, () -> Codec.STRING.configure(null, TestObject::name));
+		assertThrows(NullPointerException.class, () -> Codec.STRING.configure("name", null));
+		assertInstanceOf(ConfiguredCodec.class, Codec.STRING.configure("name", TestObject::name));
 	}
 	
 	//region Internal
 	private enum TestEnum {
 		ONE, TWO, THREE
 	}
+	
+	private record TestObject(@NotNull String name) {}
 	//endregion
 }

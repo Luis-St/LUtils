@@ -19,7 +19,7 @@
 package net.luis.utils.io.codec.group.grouper;
 
 import net.luis.utils.io.codec.Codec;
-import net.luis.utils.io.codec.ConfigurableCodec;
+import net.luis.utils.io.codec.ConfiguredCodec;
 import net.luis.utils.io.codec.group.function.CodecGroupingFunction2;
 import net.luis.utils.io.codec.provider.TypeProvider;
 import net.luis.utils.util.Result;
@@ -30,8 +30,8 @@ import java.util.Map;
 import java.util.Objects;
 
 public record CodecGrouper2<CI1, CI2, O>(
-	@NotNull ConfigurableCodec<CI1, O> codec1,
-	@NotNull ConfigurableCodec<CI2, O> codec2
+	@NotNull ConfiguredCodec<CI1, O> codec1,
+	@NotNull ConfiguredCodec<CI2, O> codec2
 ) {
 	
 	public CodecGrouper2 {
@@ -56,11 +56,11 @@ public record CodecGrouper2<CI1, CI2, O>(
 					return Result.error("Unable to encode '" + value + "' using '" + this + "': " + mergedMap.errorOrThrow());
 				}
 				R map = mergedMap.orThrow();
-				Result<R> encoded1 = codec1.encodeNamedStart(provider, map, value);
+				Result<R> encoded1 = codec1.encodeStart(provider, map, value);
 				if (encoded1.isError()) {
 					return Result.error("Unable to encode component of '" + value + "' using '" + codec1 + "': " + encoded1.errorOrThrow());
 				}
-				Result<R> encoded2 = codec2.encodeNamedStart(provider, map, value);
+				Result<R> encoded2 = codec2.encodeStart(provider, map, value);
 				if (encoded2.isError()) {
 					return Result.error("Unable to encode component of '" + value + "' using '" + codec2 + "': " + encoded2.errorOrThrow());
 				}
@@ -77,11 +77,11 @@ public record CodecGrouper2<CI1, CI2, O>(
 				if (decodedMap.isError()) {
 					return Result.error("Unable to decode '" + value + "' using '" + this + "': " + decodedMap.errorOrThrow());
 				}
-				Result<CI1> decoded1 = codec1.decodeNamedStart(provider, value);
+				Result<CI1> decoded1 = codec1.decodeStart(provider, value);
 				if (decoded1.isError()) {
 					return Result.error("Unable to decode component of '" + value + "' using '" + codec1 + "': " + decoded1.errorOrThrow());
 				}
-				Result<CI2> decoded2 = codec2.decodeNamedStart(provider, value);
+				Result<CI2> decoded2 = codec2.decodeStart(provider, value);
 				if (decoded2.isError()) {
 					return Result.error("Unable to decode component of '" + value + "' using '" + codec2 + "': " + decoded2.errorOrThrow());
 				}

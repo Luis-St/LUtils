@@ -19,7 +19,7 @@
 package net.luis.utils.io.codec.group.grouper;
 
 import net.luis.utils.io.codec.Codec;
-import net.luis.utils.io.codec.ConfigurableCodec;
+import net.luis.utils.io.codec.ConfiguredCodec;
 import net.luis.utils.io.codec.group.function.CodecGroupingFunction7;
 import net.luis.utils.io.codec.provider.TypeProvider;
 import net.luis.utils.util.Result;
@@ -30,13 +30,13 @@ import java.util.Map;
 import java.util.Objects;
 
 public record CodecGrouper7<CI1, CI2, CI3, CI4, CI5, CI6, CI7, O>(
-	@NotNull ConfigurableCodec<CI1, O> codec1,
-	@NotNull ConfigurableCodec<CI2, O> codec2,
-	@NotNull ConfigurableCodec<CI3, O> codec3,
-	@NotNull ConfigurableCodec<CI4, O> codec4,
-	@NotNull ConfigurableCodec<CI5, O> codec5,
-	@NotNull ConfigurableCodec<CI6, O> codec6,
-	@NotNull ConfigurableCodec<CI7, O> codec7
+	@NotNull ConfiguredCodec<CI1, O> codec1,
+	@NotNull ConfiguredCodec<CI2, O> codec2,
+	@NotNull ConfiguredCodec<CI3, O> codec3,
+	@NotNull ConfiguredCodec<CI4, O> codec4,
+	@NotNull ConfiguredCodec<CI5, O> codec5,
+	@NotNull ConfiguredCodec<CI6, O> codec6,
+	@NotNull ConfiguredCodec<CI7, O> codec7
 ) {
 	
 	public CodecGrouper7 {
@@ -66,31 +66,31 @@ public record CodecGrouper7<CI1, CI2, CI3, CI4, CI5, CI6, CI7, O>(
 					return Result.error("Unable to encode '" + value + "' with '" + this + "': " + mergedMap.errorOrThrow());
 				}
 				R map = mergedMap.orThrow();
-				Result<R> encoded1 = codec1.encodeNamedStart(provider, map, value);
+				Result<R> encoded1 = codec1.encodeStart(provider, map, value);
 				if (encoded1.isError()) {
 					return Result.error("Unable to encode component of '" + value + "' with '" + codec1 + "': " + encoded1.errorOrThrow());
 				}
-				Result<R> encoded2 = codec2.encodeNamedStart(provider, map, value);
+				Result<R> encoded2 = codec2.encodeStart(provider, map, value);
 				if (encoded2.isError()) {
 					return Result.error("Unable to encode component of '" + value + "' with '" + codec2 + "': " + encoded2.errorOrThrow());
 				}
-				Result<R> encoded3 = codec3.encodeNamedStart(provider, map, value);
+				Result<R> encoded3 = codec3.encodeStart(provider, map, value);
 				if (encoded3.isError()) {
 					return Result.error("Unable to encode component of '" + value + "' with '" + codec3 + "': " + encoded3.errorOrThrow());
 				}
-				Result<R> encoded4 = codec4.encodeNamedStart(provider, map, value);
+				Result<R> encoded4 = codec4.encodeStart(provider, map, value);
 				if (encoded4.isError()) {
 					return Result.error("Unable to encode component of '" + value + "' with '" + codec4 + "': " + encoded4.errorOrThrow());
 				}
-				Result<R> encoded5 = codec5.encodeNamedStart(provider, map, value);
+				Result<R> encoded5 = codec5.encodeStart(provider, map, value);
 				if (encoded5.isError()) {
 					return Result.error("Unable to encode component of '" + value + "' with '" + codec5 + "': " + encoded5.errorOrThrow());
 				}
-				Result<R> encoded6 = codec6.encodeNamedStart(provider, map, value);
+				Result<R> encoded6 = codec6.encodeStart(provider, map, value);
 				if (encoded6.isError()) {
 					return Result.error("Unable to encode component of '" + value + "' with '" + codec6 + "': " + encoded6.errorOrThrow());
 				}
-				Result<R> encoded7 = codec7.encodeNamedStart(provider, map, value);
+				Result<R> encoded7 = codec7.encodeStart(provider, map, value);
 				if (encoded7.isError()) {
 					return Result.error("Unable to encode component of '" + value + "' with '" + codec7 + "': " + encoded7.errorOrThrow());
 				}
@@ -107,31 +107,31 @@ public record CodecGrouper7<CI1, CI2, CI3, CI4, CI5, CI6, CI7, O>(
 				if (decodedMap.isError()) {
 					return Result.error("Unable to decode '" + value + "' using '" + this + "': " + decodedMap.errorOrThrow());
 				}
-				Result<CI1> decoded1 = codec1.decodeNamedStart(provider, value);
+				Result<CI1> decoded1 = codec1.decodeStart(provider, value);
 				if (decoded1.isError()) {
 					return Result.error("Unable to decode component of '" + value + "' using '" + codec1 + "': " + decoded1.errorOrThrow());
 				}
-				Result<CI2> decoded2 = codec2.decodeNamedStart(provider, value);
+				Result<CI2> decoded2 = codec2.decodeStart(provider, value);
 				if (decoded2.isError()) {
 					return Result.error("Unable to decode component of '" + value + "' using '" + codec2 + "': " + decoded2.errorOrThrow());
 				}
-				Result<CI3> decoded3 = codec3.decodeNamedStart(provider, value);
+				Result<CI3> decoded3 = codec3.decodeStart(provider, value);
 				if (decoded3.isError()) {
 					return Result.error("Unable to decode component of '" + value + "' using '" + codec3 + "': " + decoded3.errorOrThrow());
 				}
-				Result<CI4> decoded4 = codec4.decodeNamedStart(provider, value);
+				Result<CI4> decoded4 = codec4.decodeStart(provider, value);
 				if (decoded4.isError()) {
 					return Result.error("Unable to decode component of '" + value + "' using '" + codec4 + "': " + decoded4.errorOrThrow());
 				}
-				Result<CI5> decoded5 = codec5.decodeNamedStart(provider, value);
+				Result<CI5> decoded5 = codec5.decodeStart(provider, value);
 				if (decoded5.isError()) {
 					return Result.error("Unable to decode component of '" + value + "' using '" + codec5 + "': " + decoded5.errorOrThrow());
 				}
-				Result<CI6> decoded6 = codec6.decodeNamedStart(provider, value);
+				Result<CI6> decoded6 = codec6.decodeStart(provider, value);
 				if (decoded6.isError()) {
 					return Result.error("Unable to decode component of '" + value + "' using '" + codec6 + "': " + decoded6.errorOrThrow());
 				}
-				Result<CI7> decoded7 = codec7.decodeNamedStart(provider, value);
+				Result<CI7> decoded7 = codec7.decodeStart(provider, value);
 				if (decoded7.isError()) {
 					return Result.error("Unable to decode component of '" + value + "' using '" + codec7 + "': " + decoded7.errorOrThrow());
 				}

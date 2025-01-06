@@ -602,7 +602,17 @@ public interface Codec<C> extends Encoder<C>, Decoder<C> {
 		return from(this, Function.identity(), result -> Result.success(result.orElseGet(supplier)), "OrElseCodec[" + this + "]");
 	}
 	
-	default <O> @NotNull ConfigurableCodec<C, O> bind(@NotNull CodecBuilder<O> builder) {
-		return new ConfigurableCodec<>(Objects.requireNonNull(builder, "Codec builder must not be null"), this);
+	default @NotNull Codec<C> named(@NotNull String name) {
+		return new NamedCodec<>(this, Objects.requireNonNull(name, "Name must not be null"));
+	}
+	
+	default <O> @NotNull ConfiguredCodec<C, O> getter(@NotNull Function<O, C> getter) {
+		return new ConfiguredCodec<>(this, getter);
+	}
+	
+	default <O> @NotNull ConfiguredCodec<C, O> configure(@NotNull String name, @NotNull Function<O, C> getter) {
+		Objects.requireNonNull(name, "Name must not be null");
+		Objects.requireNonNull(getter, "Getter must not be null");
+		return new ConfiguredCodec<>(this.named(name), getter);
 	}
 }

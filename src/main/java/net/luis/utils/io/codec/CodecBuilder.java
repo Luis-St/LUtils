@@ -22,7 +22,6 @@ import net.luis.utils.io.codec.group.grouper.*;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Objects;
-import java.util.function.Function;
 
 /**
  *
@@ -31,34 +30,28 @@ import java.util.function.Function;
  */
 
 @SuppressWarnings("DuplicatedCode")
-public class CodecBuilder<T> {
+public class CodecBuilder {
 	
-	CodecBuilder() {}
-	
-	public static <T> @NotNull Codec<T> create(@NotNull Function<CodecBuilder<T>, Codec<T>> function) {
-		return Objects.requireNonNull(function, "Function must not be null").apply(new CodecBuilder<>());
-	}
-	
-	public <CI1> @NotNull CodecGrouper1<CI1, T> group(
-		@NotNull ConfigurableCodec<CI1, T> codec1
+	public static <CI1, O> @NotNull CodecGrouper1<CI1, O> group(
+		@NotNull ConfiguredCodec<CI1, O> codec1
 	) {
 		Objects.requireNonNull(codec1, "Configured codec #1 must not be null");
 		return new CodecGrouper1<>(codec1);
 	}
 	
-	public <CI1, CI2> @NotNull CodecGrouper2<CI1, CI2, T> group(
-		@NotNull ConfigurableCodec<CI1, T> codec1,
-		@NotNull ConfigurableCodec<CI2, T> codec2
+	public static <CI1, CI2, O> @NotNull CodecGrouper2<CI1, CI2, O> group(
+		@NotNull ConfiguredCodec<CI1, O> codec1,
+		@NotNull ConfiguredCodec<CI2, O> codec2
 	) {
 		Objects.requireNonNull(codec1, "Configured codec #1 must not be null");
 		Objects.requireNonNull(codec2, "Configured codec #2 must not be null");
 		return new CodecGrouper2<>(codec1, codec2);
 	}
 	
-	public <CI1, CI2, CI3> @NotNull CodecGrouper3<CI1, CI2, CI3, T> group(
-		@NotNull ConfigurableCodec<CI1, T> codec1,
-		@NotNull ConfigurableCodec<CI2, T> codec2,
-		@NotNull ConfigurableCodec<CI3, T> codec3
+	public static <CI1, CI2, CI3, O> @NotNull CodecGrouper3<CI1, CI2, CI3, O> group(
+		@NotNull ConfiguredCodec<CI1, O> codec1,
+		@NotNull ConfiguredCodec<CI2, O> codec2,
+		@NotNull ConfiguredCodec<CI3, O> codec3
 	) {
 		Objects.requireNonNull(codec1, "Configured codec #1 must not be null");
 		Objects.requireNonNull(codec2, "Configured codec #2 must not be null");
@@ -66,11 +59,11 @@ public class CodecBuilder<T> {
 		return new CodecGrouper3<>(codec1, codec2, codec3);
 	}
 	
-	public <CI1, CI2, CI3, CI4> @NotNull CodecGrouper4<CI1, CI2, CI3, CI4, T> group(
-		@NotNull ConfigurableCodec<CI1, T> codec1,
-		@NotNull ConfigurableCodec<CI2, T> codec2,
-		@NotNull ConfigurableCodec<CI3, T> codec3,
-		@NotNull ConfigurableCodec<CI4, T> codec4
+	public static <CI1, CI2, CI3, CI4, O> @NotNull CodecGrouper4<CI1, CI2, CI3, CI4, O> group(
+		@NotNull ConfiguredCodec<CI1, O> codec1,
+		@NotNull ConfiguredCodec<CI2, O> codec2,
+		@NotNull ConfiguredCodec<CI3, O> codec3,
+		@NotNull ConfiguredCodec<CI4, O> codec4
 	) {
 		//region Parameter validation
 		Objects.requireNonNull(codec1, "Configured codec #1 must not be null");
@@ -81,12 +74,12 @@ public class CodecBuilder<T> {
 		return new CodecGrouper4<>(codec1, codec2, codec3, codec4);
 	}
 	
-	public <CI1, CI2, CI3, CI4, CI5> @NotNull CodecGrouper5<CI1, CI2, CI3, CI4, CI5, T> group(
-		@NotNull ConfigurableCodec<CI1, T> codec1,
-		@NotNull ConfigurableCodec<CI2, T> codec2,
-		@NotNull ConfigurableCodec<CI3, T> codec3,
-		@NotNull ConfigurableCodec<CI4, T> codec4,
-		@NotNull ConfigurableCodec<CI5, T> codec5
+	public static <CI1, CI2, CI3, CI4, CI5, O> @NotNull CodecGrouper5<CI1, CI2, CI3, CI4, CI5, O> group(
+		@NotNull ConfiguredCodec<CI1, O> codec1,
+		@NotNull ConfiguredCodec<CI2, O> codec2,
+		@NotNull ConfiguredCodec<CI3, O> codec3,
+		@NotNull ConfiguredCodec<CI4, O> codec4,
+		@NotNull ConfiguredCodec<CI5, O> codec5
 	) {
 		//region Parameter validation
 		Objects.requireNonNull(codec1, "Configured codec #1 must not be null");
@@ -98,13 +91,13 @@ public class CodecBuilder<T> {
 		return new CodecGrouper5<>(codec1, codec2, codec3, codec4, codec5);
 	}
 	
-	public <CI1, CI2, CI3, CI4, CI5, CI6> @NotNull CodecGrouper6<CI1, CI2, CI3, CI4, CI5, CI6, T> group(
-		@NotNull ConfigurableCodec<CI1, T> codec1,
-		@NotNull ConfigurableCodec<CI2, T> codec2,
-		@NotNull ConfigurableCodec<CI3, T> codec3,
-		@NotNull ConfigurableCodec<CI4, T> codec4,
-		@NotNull ConfigurableCodec<CI5, T> codec5,
-		@NotNull ConfigurableCodec<CI6, T> codec6
+	public static <CI1, CI2, CI3, CI4, CI5, CI6, O> @NotNull CodecGrouper6<CI1, CI2, CI3, CI4, CI5, CI6, O> group(
+		@NotNull ConfiguredCodec<CI1, O> codec1,
+		@NotNull ConfiguredCodec<CI2, O> codec2,
+		@NotNull ConfiguredCodec<CI3, O> codec3,
+		@NotNull ConfiguredCodec<CI4, O> codec4,
+		@NotNull ConfiguredCodec<CI5, O> codec5,
+		@NotNull ConfiguredCodec<CI6, O> codec6
 	) {
 		//region Parameter validation
 		Objects.requireNonNull(codec1, "Configured codec #1 must not be null");
@@ -117,14 +110,14 @@ public class CodecBuilder<T> {
 		return new CodecGrouper6<>(codec1, codec2, codec3, codec4, codec5, codec6);
 	}
 	
-	public <CI1, CI2, CI3, CI4, CI5, CI6, CI7> @NotNull CodecGrouper7<CI1, CI2, CI3, CI4, CI5, CI6, CI7, T> group(
-		@NotNull ConfigurableCodec<CI1, T> codec1,
-		@NotNull ConfigurableCodec<CI2, T> codec2,
-		@NotNull ConfigurableCodec<CI3, T> codec3,
-		@NotNull ConfigurableCodec<CI4, T> codec4,
-		@NotNull ConfigurableCodec<CI5, T> codec5,
-		@NotNull ConfigurableCodec<CI6, T> codec6,
-		@NotNull ConfigurableCodec<CI7, T> codec7
+	public static <CI1, CI2, CI3, CI4, CI5, CI6, CI7, O> @NotNull CodecGrouper7<CI1, CI2, CI3, CI4, CI5, CI6, CI7, O> group(
+		@NotNull ConfiguredCodec<CI1, O> codec1,
+		@NotNull ConfiguredCodec<CI2, O> codec2,
+		@NotNull ConfiguredCodec<CI3, O> codec3,
+		@NotNull ConfiguredCodec<CI4, O> codec4,
+		@NotNull ConfiguredCodec<CI5, O> codec5,
+		@NotNull ConfiguredCodec<CI6, O> codec6,
+		@NotNull ConfiguredCodec<CI7, O> codec7
 	) {
 		//region Parameter validation
 		Objects.requireNonNull(codec1, "Configured codec #1 must not be null");
@@ -138,15 +131,15 @@ public class CodecBuilder<T> {
 		return new CodecGrouper7<>(codec1, codec2, codec3, codec4, codec5, codec6, codec7);
 	}
 	
-	public <CI1, CI2, CI3, CI4, CI5, CI6, CI7, CI8> @NotNull CodecGrouper8<CI1, CI2, CI3, CI4, CI5, CI6, CI7, CI8, T> group(
-		@NotNull ConfigurableCodec<CI1, T> codec1,
-		@NotNull ConfigurableCodec<CI2, T> codec2,
-		@NotNull ConfigurableCodec<CI3, T> codec3,
-		@NotNull ConfigurableCodec<CI4, T> codec4,
-		@NotNull ConfigurableCodec<CI5, T> codec5,
-		@NotNull ConfigurableCodec<CI6, T> codec6,
-		@NotNull ConfigurableCodec<CI7, T> codec7,
-		@NotNull ConfigurableCodec<CI8, T> codec8
+	public static <CI1, CI2, CI3, CI4, CI5, CI6, CI7, CI8, O> @NotNull CodecGrouper8<CI1, CI2, CI3, CI4, CI5, CI6, CI7, CI8, O> group(
+		@NotNull ConfiguredCodec<CI1, O> codec1,
+		@NotNull ConfiguredCodec<CI2, O> codec2,
+		@NotNull ConfiguredCodec<CI3, O> codec3,
+		@NotNull ConfiguredCodec<CI4, O> codec4,
+		@NotNull ConfiguredCodec<CI5, O> codec5,
+		@NotNull ConfiguredCodec<CI6, O> codec6,
+		@NotNull ConfiguredCodec<CI7, O> codec7,
+		@NotNull ConfiguredCodec<CI8, O> codec8
 	) {
 		//region Parameter validation
 		Objects.requireNonNull(codec1, "Configured codec #1 must not be null");
@@ -161,16 +154,16 @@ public class CodecBuilder<T> {
 		return new CodecGrouper8<>(codec1, codec2, codec3, codec4, codec5, codec6, codec7, codec8);
 	}
 	
-	public <CI1, CI2, CI3, CI4, CI5, CI6, CI7, CI8, CI9> @NotNull CodecGrouper9<CI1, CI2, CI3, CI4, CI5, CI6, CI7, CI8, CI9, T> group(
-		@NotNull ConfigurableCodec<CI1, T> codec1,
-		@NotNull ConfigurableCodec<CI2, T> codec2,
-		@NotNull ConfigurableCodec<CI3, T> codec3,
-		@NotNull ConfigurableCodec<CI4, T> codec4,
-		@NotNull ConfigurableCodec<CI5, T> codec5,
-		@NotNull ConfigurableCodec<CI6, T> codec6,
-		@NotNull ConfigurableCodec<CI7, T> codec7,
-		@NotNull ConfigurableCodec<CI8, T> codec8,
-		@NotNull ConfigurableCodec<CI9, T> codec9
+	public static <CI1, CI2, CI3, CI4, CI5, CI6, CI7, CI8, CI9, O> @NotNull CodecGrouper9<CI1, CI2, CI3, CI4, CI5, CI6, CI7, CI8, CI9, O> group(
+		@NotNull ConfiguredCodec<CI1, O> codec1,
+		@NotNull ConfiguredCodec<CI2, O> codec2,
+		@NotNull ConfiguredCodec<CI3, O> codec3,
+		@NotNull ConfiguredCodec<CI4, O> codec4,
+		@NotNull ConfiguredCodec<CI5, O> codec5,
+		@NotNull ConfiguredCodec<CI6, O> codec6,
+		@NotNull ConfiguredCodec<CI7, O> codec7,
+		@NotNull ConfiguredCodec<CI8, O> codec8,
+		@NotNull ConfiguredCodec<CI9, O> codec9
 	) {
 		//region Parameter validation
 		Objects.requireNonNull(codec1, "Configured codec #1 must not be null");
@@ -186,17 +179,17 @@ public class CodecBuilder<T> {
 		return new CodecGrouper9<>(codec1, codec2, codec3, codec4, codec5, codec6, codec7, codec8, codec9);
 	}
 	
-	public <CI1, CI2, CI3, CI4, CI5, CI6, CI7, CI8, CI9, CI10> @NotNull CodecGrouper10<CI1, CI2, CI3, CI4, CI5, CI6, CI7, CI8, CI9, CI10, T> group(
-		@NotNull ConfigurableCodec<CI1, T> codec1,
-		@NotNull ConfigurableCodec<CI2, T> codec2,
-		@NotNull ConfigurableCodec<CI3, T> codec3,
-		@NotNull ConfigurableCodec<CI4, T> codec4,
-		@NotNull ConfigurableCodec<CI5, T> codec5,
-		@NotNull ConfigurableCodec<CI6, T> codec6,
-		@NotNull ConfigurableCodec<CI7, T> codec7,
-		@NotNull ConfigurableCodec<CI8, T> codec8,
-		@NotNull ConfigurableCodec<CI9, T> codec9,
-		@NotNull ConfigurableCodec<CI10, T> codec10
+	public static <CI1, CI2, CI3, CI4, CI5, CI6, CI7, CI8, CI9, CI10, O> @NotNull CodecGrouper10<CI1, CI2, CI3, CI4, CI5, CI6, CI7, CI8, CI9, CI10, O> group(
+		@NotNull ConfiguredCodec<CI1, O> codec1,
+		@NotNull ConfiguredCodec<CI2, O> codec2,
+		@NotNull ConfiguredCodec<CI3, O> codec3,
+		@NotNull ConfiguredCodec<CI4, O> codec4,
+		@NotNull ConfiguredCodec<CI5, O> codec5,
+		@NotNull ConfiguredCodec<CI6, O> codec6,
+		@NotNull ConfiguredCodec<CI7, O> codec7,
+		@NotNull ConfiguredCodec<CI8, O> codec8,
+		@NotNull ConfiguredCodec<CI9, O> codec9,
+		@NotNull ConfiguredCodec<CI10, O> codec10
 	) {
 		//region Parameter validation
 		Objects.requireNonNull(codec1, "Configured codec #1 must not be null");
@@ -213,18 +206,18 @@ public class CodecBuilder<T> {
 		return new CodecGrouper10<>(codec1, codec2, codec3, codec4, codec5, codec6, codec7, codec8, codec9, codec10);
 	}
 	
-	public <CI1, CI2, CI3, CI4, CI5, CI6, CI7, CI8, CI9, CI10, CI11> @NotNull CodecGrouper11<CI1, CI2, CI3, CI4, CI5, CI6, CI7, CI8, CI9, CI10, CI11, T> group(
-		@NotNull ConfigurableCodec<CI1, T> codec1,
-		@NotNull ConfigurableCodec<CI2, T> codec2,
-		@NotNull ConfigurableCodec<CI3, T> codec3,
-		@NotNull ConfigurableCodec<CI4, T> codec4,
-		@NotNull ConfigurableCodec<CI5, T> codec5,
-		@NotNull ConfigurableCodec<CI6, T> codec6,
-		@NotNull ConfigurableCodec<CI7, T> codec7,
-		@NotNull ConfigurableCodec<CI8, T> codec8,
-		@NotNull ConfigurableCodec<CI9, T> codec9,
-		@NotNull ConfigurableCodec<CI10, T> codec10,
-		@NotNull ConfigurableCodec<CI11, T> codec11
+	public static <CI1, CI2, CI3, CI4, CI5, CI6, CI7, CI8, CI9, CI10, CI11, O> @NotNull CodecGrouper11<CI1, CI2, CI3, CI4, CI5, CI6, CI7, CI8, CI9, CI10, CI11, O> group(
+		@NotNull ConfiguredCodec<CI1, O> codec1,
+		@NotNull ConfiguredCodec<CI2, O> codec2,
+		@NotNull ConfiguredCodec<CI3, O> codec3,
+		@NotNull ConfiguredCodec<CI4, O> codec4,
+		@NotNull ConfiguredCodec<CI5, O> codec5,
+		@NotNull ConfiguredCodec<CI6, O> codec6,
+		@NotNull ConfiguredCodec<CI7, O> codec7,
+		@NotNull ConfiguredCodec<CI8, O> codec8,
+		@NotNull ConfiguredCodec<CI9, O> codec9,
+		@NotNull ConfiguredCodec<CI10, O> codec10,
+		@NotNull ConfiguredCodec<CI11, O> codec11
 	) {
 		//region Parameter validation
 		Objects.requireNonNull(codec1, "Configured codec #1 must not be null");
@@ -242,19 +235,19 @@ public class CodecBuilder<T> {
 		return new CodecGrouper11<>(codec1, codec2, codec3, codec4, codec5, codec6, codec7, codec8, codec9, codec10, codec11);
 	}
 	
-	public <CI1, CI2, CI3, CI4, CI5, CI6, CI7, CI8, CI9, CI10, CI11, CI12> @NotNull CodecGrouper12<CI1, CI2, CI3, CI4, CI5, CI6, CI7, CI8, CI9, CI10, CI11, CI12, T> group(
-		@NotNull ConfigurableCodec<CI1, T> codec1,
-		@NotNull ConfigurableCodec<CI2, T> codec2,
-		@NotNull ConfigurableCodec<CI3, T> codec3,
-		@NotNull ConfigurableCodec<CI4, T> codec4,
-		@NotNull ConfigurableCodec<CI5, T> codec5,
-		@NotNull ConfigurableCodec<CI6, T> codec6,
-		@NotNull ConfigurableCodec<CI7, T> codec7,
-		@NotNull ConfigurableCodec<CI8, T> codec8,
-		@NotNull ConfigurableCodec<CI9, T> codec9,
-		@NotNull ConfigurableCodec<CI10, T> codec10,
-		@NotNull ConfigurableCodec<CI11, T> codec11,
-		@NotNull ConfigurableCodec<CI12, T> codec12
+	public static <CI1, CI2, CI3, CI4, CI5, CI6, CI7, CI8, CI9, CI10, CI11, CI12, O> @NotNull CodecGrouper12<CI1, CI2, CI3, CI4, CI5, CI6, CI7, CI8, CI9, CI10, CI11, CI12, O> group(
+		@NotNull ConfiguredCodec<CI1, O> codec1,
+		@NotNull ConfiguredCodec<CI2, O> codec2,
+		@NotNull ConfiguredCodec<CI3, O> codec3,
+		@NotNull ConfiguredCodec<CI4, O> codec4,
+		@NotNull ConfiguredCodec<CI5, O> codec5,
+		@NotNull ConfiguredCodec<CI6, O> codec6,
+		@NotNull ConfiguredCodec<CI7, O> codec7,
+		@NotNull ConfiguredCodec<CI8, O> codec8,
+		@NotNull ConfiguredCodec<CI9, O> codec9,
+		@NotNull ConfiguredCodec<CI10, O> codec10,
+		@NotNull ConfiguredCodec<CI11, O> codec11,
+		@NotNull ConfiguredCodec<CI12, O> codec12
 	) {
 		//region Parameter validation
 		Objects.requireNonNull(codec1, "Configured codec #1 must not be null");
@@ -273,20 +266,20 @@ public class CodecBuilder<T> {
 		return new CodecGrouper12<>(codec1, codec2, codec3, codec4, codec5, codec6, codec7, codec8, codec9, codec10, codec11, codec12);
 	}
 	
-	public <CI1, CI2, CI3, CI4, CI5, CI6, CI7, CI8, CI9, CI10, CI11, CI12, CI13> @NotNull CodecGrouper13<CI1, CI2, CI3, CI4, CI5, CI6, CI7, CI8, CI9, CI10, CI11, CI12, CI13, T> group(
-		@NotNull ConfigurableCodec<CI1, T> codec1,
-		@NotNull ConfigurableCodec<CI2, T> codec2,
-		@NotNull ConfigurableCodec<CI3, T> codec3,
-		@NotNull ConfigurableCodec<CI4, T> codec4,
-		@NotNull ConfigurableCodec<CI5, T> codec5,
-		@NotNull ConfigurableCodec<CI6, T> codec6,
-		@NotNull ConfigurableCodec<CI7, T> codec7,
-		@NotNull ConfigurableCodec<CI8, T> codec8,
-		@NotNull ConfigurableCodec<CI9, T> codec9,
-		@NotNull ConfigurableCodec<CI10, T> codec10,
-		@NotNull ConfigurableCodec<CI11, T> codec11,
-		@NotNull ConfigurableCodec<CI12, T> codec12,
-		@NotNull ConfigurableCodec<CI13, T> codec13
+	public static <CI1, CI2, CI3, CI4, CI5, CI6, CI7, CI8, CI9, CI10, CI11, CI12, CI13, O> @NotNull CodecGrouper13<CI1, CI2, CI3, CI4, CI5, CI6, CI7, CI8, CI9, CI10, CI11, CI12, CI13, O> group(
+		@NotNull ConfiguredCodec<CI1, O> codec1,
+		@NotNull ConfiguredCodec<CI2, O> codec2,
+		@NotNull ConfiguredCodec<CI3, O> codec3,
+		@NotNull ConfiguredCodec<CI4, O> codec4,
+		@NotNull ConfiguredCodec<CI5, O> codec5,
+		@NotNull ConfiguredCodec<CI6, O> codec6,
+		@NotNull ConfiguredCodec<CI7, O> codec7,
+		@NotNull ConfiguredCodec<CI8, O> codec8,
+		@NotNull ConfiguredCodec<CI9, O> codec9,
+		@NotNull ConfiguredCodec<CI10, O> codec10,
+		@NotNull ConfiguredCodec<CI11, O> codec11,
+		@NotNull ConfiguredCodec<CI12, O> codec12,
+		@NotNull ConfiguredCodec<CI13, O> codec13
 	) {
 		//region Parameter validation
 		Objects.requireNonNull(codec1, "Configured codec #1 must not be null");
@@ -306,21 +299,21 @@ public class CodecBuilder<T> {
 		return new CodecGrouper13<>(codec1, codec2, codec3, codec4, codec5, codec6, codec7, codec8, codec9, codec10, codec11, codec12, codec13);
 	}
 	
-	public <CI1, CI2, CI3, CI4, CI5, CI6, CI7, CI8, CI9, CI10, CI11, CI12, CI13, CI14> @NotNull CodecGrouper14<CI1, CI2, CI3, CI4, CI5, CI6, CI7, CI8, CI9, CI10, CI11, CI12, CI13, CI14, T> group(
-		@NotNull ConfigurableCodec<CI1, T> codec1,
-		@NotNull ConfigurableCodec<CI2, T> codec2,
-		@NotNull ConfigurableCodec<CI3, T> codec3,
-		@NotNull ConfigurableCodec<CI4, T> codec4,
-		@NotNull ConfigurableCodec<CI5, T> codec5,
-		@NotNull ConfigurableCodec<CI6, T> codec6,
-		@NotNull ConfigurableCodec<CI7, T> codec7,
-		@NotNull ConfigurableCodec<CI8, T> codec8,
-		@NotNull ConfigurableCodec<CI9, T> codec9,
-		@NotNull ConfigurableCodec<CI10, T> codec10,
-		@NotNull ConfigurableCodec<CI11, T> codec11,
-		@NotNull ConfigurableCodec<CI12, T> codec12,
-		@NotNull ConfigurableCodec<CI13, T> codec13,
-		@NotNull ConfigurableCodec<CI14, T> codec14
+	public static <CI1, CI2, CI3, CI4, CI5, CI6, CI7, CI8, CI9, CI10, CI11, CI12, CI13, CI14, O> @NotNull CodecGrouper14<CI1, CI2, CI3, CI4, CI5, CI6, CI7, CI8, CI9, CI10, CI11, CI12, CI13, CI14, O> group(
+		@NotNull ConfiguredCodec<CI1, O> codec1,
+		@NotNull ConfiguredCodec<CI2, O> codec2,
+		@NotNull ConfiguredCodec<CI3, O> codec3,
+		@NotNull ConfiguredCodec<CI4, O> codec4,
+		@NotNull ConfiguredCodec<CI5, O> codec5,
+		@NotNull ConfiguredCodec<CI6, O> codec6,
+		@NotNull ConfiguredCodec<CI7, O> codec7,
+		@NotNull ConfiguredCodec<CI8, O> codec8,
+		@NotNull ConfiguredCodec<CI9, O> codec9,
+		@NotNull ConfiguredCodec<CI10, O> codec10,
+		@NotNull ConfiguredCodec<CI11, O> codec11,
+		@NotNull ConfiguredCodec<CI12, O> codec12,
+		@NotNull ConfiguredCodec<CI13, O> codec13,
+		@NotNull ConfiguredCodec<CI14, O> codec14
 	) {
 		//region Parameter validation
 		Objects.requireNonNull(codec1, "Configured codec #1 must not be null");
@@ -341,22 +334,22 @@ public class CodecBuilder<T> {
 		return new CodecGrouper14<>(codec1, codec2, codec3, codec4, codec5, codec6, codec7, codec8, codec9, codec10, codec11, codec12, codec13, codec14);
 	}
 	
-	public <CI1, CI2, CI3, CI4, CI5, CI6, CI7, CI8, CI9, CI10, CI11, CI12, CI13, CI14, CI15> @NotNull CodecGrouper15<CI1, CI2, CI3, CI4, CI5, CI6, CI7, CI8, CI9, CI10, CI11, CI12, CI13, CI14, CI15, T> group(
-		@NotNull ConfigurableCodec<CI1, T> codec1,
-		@NotNull ConfigurableCodec<CI2, T> codec2,
-		@NotNull ConfigurableCodec<CI3, T> codec3,
-		@NotNull ConfigurableCodec<CI4, T> codec4,
-		@NotNull ConfigurableCodec<CI5, T> codec5,
-		@NotNull ConfigurableCodec<CI6, T> codec6,
-		@NotNull ConfigurableCodec<CI7, T> codec7,
-		@NotNull ConfigurableCodec<CI8, T> codec8,
-		@NotNull ConfigurableCodec<CI9, T> codec9,
-		@NotNull ConfigurableCodec<CI10, T> codec10,
-		@NotNull ConfigurableCodec<CI11, T> codec11,
-		@NotNull ConfigurableCodec<CI12, T> codec12,
-		@NotNull ConfigurableCodec<CI13, T> codec13,
-		@NotNull ConfigurableCodec<CI14, T> codec14,
-		@NotNull ConfigurableCodec<CI15, T> codec15
+	public static <CI1, CI2, CI3, CI4, CI5, CI6, CI7, CI8, CI9, CI10, CI11, CI12, CI13, CI14, CI15, O> @NotNull CodecGrouper15<CI1, CI2, CI3, CI4, CI5, CI6, CI7, CI8, CI9, CI10, CI11, CI12, CI13, CI14, CI15, O> group(
+		@NotNull ConfiguredCodec<CI1, O> codec1,
+		@NotNull ConfiguredCodec<CI2, O> codec2,
+		@NotNull ConfiguredCodec<CI3, O> codec3,
+		@NotNull ConfiguredCodec<CI4, O> codec4,
+		@NotNull ConfiguredCodec<CI5, O> codec5,
+		@NotNull ConfiguredCodec<CI6, O> codec6,
+		@NotNull ConfiguredCodec<CI7, O> codec7,
+		@NotNull ConfiguredCodec<CI8, O> codec8,
+		@NotNull ConfiguredCodec<CI9, O> codec9,
+		@NotNull ConfiguredCodec<CI10, O> codec10,
+		@NotNull ConfiguredCodec<CI11, O> codec11,
+		@NotNull ConfiguredCodec<CI12, O> codec12,
+		@NotNull ConfiguredCodec<CI13, O> codec13,
+		@NotNull ConfiguredCodec<CI14, O> codec14,
+		@NotNull ConfiguredCodec<CI15, O> codec15
 	) {
 		//region Parameter validation
 		Objects.requireNonNull(codec1, "Configured codec #1 must not be null");
@@ -378,23 +371,23 @@ public class CodecBuilder<T> {
 		return new CodecGrouper15<>(codec1, codec2, codec3, codec4, codec5, codec6, codec7, codec8, codec9, codec10, codec11, codec12, codec13, codec14, codec15);
 	}
 	
-	public <CI1, CI2, CI3, CI4, CI5, CI6, CI7, CI8, CI9, CI10, CI11, CI12, CI13, CI14, CI15, CI16> @NotNull CodecGrouper16<CI1, CI2, CI3, CI4, CI5, CI6, CI7, CI8, CI9, CI10, CI11, CI12, CI13, CI14, CI15, CI16, T> group(
-		@NotNull ConfigurableCodec<CI1, T> codec1,
-		@NotNull ConfigurableCodec<CI2, T> codec2,
-		@NotNull ConfigurableCodec<CI3, T> codec3,
-		@NotNull ConfigurableCodec<CI4, T> codec4,
-		@NotNull ConfigurableCodec<CI5, T> codec5,
-		@NotNull ConfigurableCodec<CI6, T> codec6,
-		@NotNull ConfigurableCodec<CI7, T> codec7,
-		@NotNull ConfigurableCodec<CI8, T> codec8,
-		@NotNull ConfigurableCodec<CI9, T> codec9,
-		@NotNull ConfigurableCodec<CI10, T> codec10,
-		@NotNull ConfigurableCodec<CI11, T> codec11,
-		@NotNull ConfigurableCodec<CI12, T> codec12,
-		@NotNull ConfigurableCodec<CI13, T> codec13,
-		@NotNull ConfigurableCodec<CI14, T> codec14,
-		@NotNull ConfigurableCodec<CI15, T> codec15,
-		@NotNull ConfigurableCodec<CI16, T> codec16
+	public static <CI1, CI2, CI3, CI4, CI5, CI6, CI7, CI8, CI9, CI10, CI11, CI12, CI13, CI14, CI15, CI16, O> @NotNull CodecGrouper16<CI1, CI2, CI3, CI4, CI5, CI6, CI7, CI8, CI9, CI10, CI11, CI12, CI13, CI14, CI15, CI16, O> group(
+		@NotNull ConfiguredCodec<CI1, O> codec1,
+		@NotNull ConfiguredCodec<CI2, O> codec2,
+		@NotNull ConfiguredCodec<CI3, O> codec3,
+		@NotNull ConfiguredCodec<CI4, O> codec4,
+		@NotNull ConfiguredCodec<CI5, O> codec5,
+		@NotNull ConfiguredCodec<CI6, O> codec6,
+		@NotNull ConfiguredCodec<CI7, O> codec7,
+		@NotNull ConfiguredCodec<CI8, O> codec8,
+		@NotNull ConfiguredCodec<CI9, O> codec9,
+		@NotNull ConfiguredCodec<CI10, O> codec10,
+		@NotNull ConfiguredCodec<CI11, O> codec11,
+		@NotNull ConfiguredCodec<CI12, O> codec12,
+		@NotNull ConfiguredCodec<CI13, O> codec13,
+		@NotNull ConfiguredCodec<CI14, O> codec14,
+		@NotNull ConfiguredCodec<CI15, O> codec15,
+		@NotNull ConfiguredCodec<CI16, O> codec16
 	) {
 		//region Parameter validation
 		Objects.requireNonNull(codec1, "Configured codec #1 must not be null");
@@ -415,10 +408,5 @@ public class CodecBuilder<T> {
 		Objects.requireNonNull(codec16, "Configured codec #16 must not be null");
 		//endregion
 		return new CodecGrouper16<>(codec1, codec2, codec3, codec4, codec5, codec6, codec7, codec8, codec9, codec10, codec11, codec12, codec13, codec14, codec15, codec16);
-	}
-	
-	public <C> @NotNull ConfigurableCodec<C, T> bind(@NotNull Codec<C> codec) {
-		Objects.requireNonNull(codec, "Codec must not be null");
-		return new ConfigurableCodec<>(this, codec);
 	}
 }
