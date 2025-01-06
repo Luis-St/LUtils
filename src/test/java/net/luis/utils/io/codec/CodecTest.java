@@ -22,13 +22,19 @@ import net.luis.utils.io.codec.provider.JsonTypeProvider;
 import net.luis.utils.io.codec.struct.*;
 import net.luis.utils.io.data.json.*;
 import net.luis.utils.util.Result;
+import net.luis.utils.util.Utils;
 import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.Test;
 
+import java.io.File;
+import java.net.*;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Path;
+import java.time.*;
 import java.util.List;
 import java.util.function.Function;
 import java.util.function.Supplier;
-import java.util.stream.Stream;
+import java.util.stream.*;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -40,7 +46,79 @@ import static org.junit.jupiter.api.Assertions.*;
 class CodecTest {
 	
 	@Test
-	void constants() {
+	void constantsEncode() throws MalformedURLException {
+		assertEquals(new JsonPrimitive(true), Codec.BOOLEAN.encode(JsonTypeProvider.INSTANCE, true));
+		assertEquals(new JsonPrimitive((byte) 1), Codec.BYTE.encode(JsonTypeProvider.INSTANCE, (byte) 1));
+		assertEquals(new JsonPrimitive((short) 1), Codec.SHORT.encode(JsonTypeProvider.INSTANCE, (short) 1));
+		assertEquals(new JsonPrimitive(1), Codec.INTEGER.encode(JsonTypeProvider.INSTANCE, 1));
+		assertEquals(new JsonPrimitive(1L), Codec.LONG.encode(JsonTypeProvider.INSTANCE, 1L));
+		assertEquals(new JsonPrimitive(1.0F), Codec.FLOAT.encode(JsonTypeProvider.INSTANCE, 1.0F));
+		assertEquals(new JsonPrimitive(1.0), Codec.DOUBLE.encode(JsonTypeProvider.INSTANCE, 1.0));
+		assertEquals(new JsonPrimitive("test"), Codec.STRING.encode(JsonTypeProvider.INSTANCE, "test"));
+		
+		assertEquals(new JsonArray(List.of(new JsonPrimitive((byte) 42))), Codec.BYTE_ARRAY.encode(JsonTypeProvider.INSTANCE, new byte[] { 42 }));
+		assertEquals(new JsonArray(List.of(new JsonPrimitive(42))), Codec.INT_STREAM.encode(JsonTypeProvider.INSTANCE, IntStream.of(42)));
+		assertEquals(new JsonArray(List.of(new JsonPrimitive(42L))), Codec.LONG_STREAM.encode(JsonTypeProvider.INSTANCE, LongStream.of(42)));
+		assertEquals(new JsonArray(List.of(new JsonPrimitive(42.0))), Codec.DOUBLE_STREAM.encode(JsonTypeProvider.INSTANCE, DoubleStream.of(42.0)));
+		
+		assertEquals(new JsonPrimitive(Utils.EMPTY_UUID.toString()), Codec.UUID.encode(JsonTypeProvider.INSTANCE, Utils.EMPTY_UUID));
+		
+		LocalTime localTime = LocalTime.of(19, 2);
+		assertEquals(new JsonPrimitive(localTime.toString()), Codec.LOCAL_TIME.encode(JsonTypeProvider.INSTANCE, localTime));
+		LocalDate localDate = LocalDate.of(2025, 1, 6);
+		assertEquals(new JsonPrimitive(localDate.toString()), Codec.LOCAL_DATE.encode(JsonTypeProvider.INSTANCE, localDate));
+		LocalDateTime local = LocalDateTime.of(2025, 1, 6, 19, 2);
+		assertEquals(new JsonPrimitive(local.toString()), Codec.LOCAL_DATE_TIME.encode(JsonTypeProvider.INSTANCE, local));
+		ZonedDateTime zoned = ZonedDateTime.of(local, ZoneId.systemDefault());
+		assertEquals(new JsonPrimitive(zoned.toString()), Codec.ZONED_DATE_TIME.encode(JsonTypeProvider.INSTANCE, zoned));
+		
+		assertEquals(new JsonPrimitive(StandardCharsets.UTF_8.name()), Codec.CHARSET.encode(JsonTypeProvider.INSTANCE, StandardCharsets.UTF_8));
+		File file = new File("test.json");
+		assertEquals(new JsonPrimitive(file.toString()), Codec.FILE.encode(JsonTypeProvider.INSTANCE, file));
+		Path path = Path.of("test.json");
+		assertEquals(new JsonPrimitive(path.toString()), Codec.PATH.encode(JsonTypeProvider.INSTANCE, path));
+		URI uri = URI.create("https://www.luis-st.net");
+		assertEquals(new JsonPrimitive(uri.toString()), Codec.URI.encode(JsonTypeProvider.INSTANCE, uri));
+		URL url = URI.create("https://www.luis-st.net").toURL();
+		assertEquals(new JsonPrimitive(url.toString()), Codec.URL.encode(JsonTypeProvider.INSTANCE, url));
+	}
+	
+	@Test // ToDo: Create custom assert method for streams
+	void constantsDecode() throws MalformedURLException {
+		assertEquals(true, Codec.BOOLEAN.decode(JsonTypeProvider.INSTANCE, new JsonPrimitive(true)));
+		assertEquals((byte) 1, Codec.BYTE.decode(JsonTypeProvider.INSTANCE, new JsonPrimitive((byte) 1)));
+		assertEquals((short) 1, Codec.SHORT.decode(JsonTypeProvider.INSTANCE, new JsonPrimitive((short) 1)));
+		assertEquals(1, Codec.INTEGER.decode(JsonTypeProvider.INSTANCE, new JsonPrimitive(1)));
+		assertEquals(1L, Codec.LONG.decode(JsonTypeProvider.INSTANCE, new JsonPrimitive(1)));
+		assertEquals(1.0F, Codec.FLOAT.decode(JsonTypeProvider.INSTANCE, new JsonPrimitive(1.0F)));
+		assertEquals(1.0, Codec.DOUBLE.decode(JsonTypeProvider.INSTANCE, new JsonPrimitive(1.0)));
+		assertEquals("test", Codec.STRING.decode(JsonTypeProvider.INSTANCE, new JsonPrimitive("test")));
+		
+		assertArrayEquals(new byte[] { 42 }, Codec.BYTE_ARRAY.decode(JsonTypeProvider.INSTANCE, new JsonArray(List.of(new JsonPrimitive((byte) 42)))));
+		assertArrayEquals(new int[] { 42 }, Codec.INT_STREAM.decode(JsonTypeProvider.INSTANCE, new JsonArray(List.of(new JsonPrimitive(42)))).toArray());
+		assertArrayEquals(new long[] { 42 }, Codec.LONG_STREAM.decode(JsonTypeProvider.INSTANCE, new JsonArray(List.of(new JsonPrimitive(42L)))).toArray());
+		assertArrayEquals(new double[] { 42.0 }, Codec.DOUBLE_STREAM.decode(JsonTypeProvider.INSTANCE, new JsonArray(List.of(new JsonPrimitive(42.0)))).toArray());
+		
+		assertEquals(Utils.EMPTY_UUID, Codec.UUID.decode(JsonTypeProvider.INSTANCE, new JsonPrimitive(Utils.EMPTY_UUID.toString())));
+		
+		LocalTime localTime = LocalTime.of(19, 2);
+		assertEquals(localTime, Codec.LOCAL_TIME.decode(JsonTypeProvider.INSTANCE, new JsonPrimitive(localTime.toString())));
+		LocalDate localDate = LocalDate.of(2025, 1, 6);
+		assertEquals(localDate, Codec.LOCAL_DATE.decode(JsonTypeProvider.INSTANCE, new JsonPrimitive(localDate.toString())));
+		LocalDateTime local = LocalDateTime.of(2025, 1, 6, 19, 2);
+		assertEquals(local, Codec.LOCAL_DATE_TIME.decode(JsonTypeProvider.INSTANCE, new JsonPrimitive(local.toString())));
+		ZonedDateTime zoned = ZonedDateTime.of(local, ZoneId.systemDefault());
+		assertEquals(zoned, Codec.ZONED_DATE_TIME.decode(JsonTypeProvider.INSTANCE, new JsonPrimitive(zoned.toString())));
+		
+		assertEquals(StandardCharsets.UTF_8, Codec.CHARSET.decode(JsonTypeProvider.INSTANCE, new JsonPrimitive(StandardCharsets.UTF_8.name())));
+		File file = new File("test.json");
+		assertEquals(file, Codec.FILE.decode(JsonTypeProvider.INSTANCE, new JsonPrimitive(file.toString())));
+		Path path = Path.of("test.json");
+		assertEquals(path, Codec.PATH.decode(JsonTypeProvider.INSTANCE, new JsonPrimitive(path.toString())));
+		URI uri = URI.create("https://www.luis-st.net");
+		assertEquals(uri, Codec.URI.decode(JsonTypeProvider.INSTANCE, new JsonPrimitive(uri.toString())));
+		URL url = URI.create("https://www.luis-st.net").toURL();
+		assertEquals(url, Codec.URL.decode(JsonTypeProvider.INSTANCE, new JsonPrimitive(url.toString())));
 	}
 	
 	@Test

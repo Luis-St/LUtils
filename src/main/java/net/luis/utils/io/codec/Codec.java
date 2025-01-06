@@ -222,8 +222,8 @@ public interface Codec<C> extends Encoder<C>, Decoder<C> {
 	
 	KeyableCodec<java.util.UUID> UUID = keyable(from(STRING, java.util.UUID::toString, throwable(java.util.UUID::fromString), "UUIDCodec"), java.util.UUID::fromString);
 	
-	Codec<LocalDate> LOCAL_DATE = from(STRING, LocalDate::toString, throwable(LocalDate::parse), "LocalDateCodec");
 	Codec<LocalTime> LOCAL_TIME = from(STRING, LocalTime::toString, throwable(LocalTime::parse), "LocalTimeCodec");
+	Codec<LocalDate> LOCAL_DATE = from(STRING, LocalDate::toString, throwable(LocalDate::parse), "LocalDateCodec");
 	Codec<LocalDateTime> LOCAL_DATE_TIME = from(STRING, LocalDateTime::toString, throwable(LocalDateTime::parse), "LocalDateTimeCodec");
 	Codec<ZonedDateTime> ZONED_DATE_TIME = from(STRING, ZonedDateTime::toString, throwable(ZonedDateTime::parse), "ZonedDateTimeCodec");
 	

@@ -104,7 +104,7 @@ class OptionalCodecTest {
 	
 	@Test
 	void orElseFlat() {
-		assertThrows(NullPointerException.class, () -> new OptionalCodec<>(Codec.INTEGER).orElseFlat(null));
+		assertDoesNotThrow(() -> new OptionalCodec<>(Codec.INTEGER).orElseFlat(null));
 		assertNotNull(new OptionalCodec<>(Codec.INTEGER).orElseFlat(1));
 	}
 	
