@@ -78,14 +78,13 @@ public class OptionalCodec<C> implements Codec<Optional<C>> {
 		return result.map(Optional::of);
 	}
 	
-	public @NotNull Codec<Optional<C>> orDefault(@NotNull C defaultValue) {
-		Objects.requireNonNull(defaultValue, "Default value must not be null");
-		return this.orGetDefault(() -> defaultValue);
+	public @NotNull Codec<C> orElseFlat(@Nullable C defaultValue) {
+		return this.orElseGetFlat(() -> defaultValue);
 	}
 	
-	public @NotNull Codec<Optional<C>> orGetDefault(@NotNull Supplier<C> defaultProvider) {
-		this.defaultProvider = Objects.requireNonNull(defaultProvider, "Default provider must not be null");
-		return this;
+	public @NotNull Codec<C> orElseGetFlat(@NotNull Supplier<C> supplier) {
+		Objects.requireNonNull(supplier, "Supplier must not be null");
+		return this.xmap(Optional::ofNullable, optional -> optional.orElseGet(supplier));
 	}
 	
 	//region Object overrides

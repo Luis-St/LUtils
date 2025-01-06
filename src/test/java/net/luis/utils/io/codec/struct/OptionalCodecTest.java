@@ -83,37 +83,34 @@ class OptionalCodecTest {
 	}
 	
 	@Test
-	void decodeStartWithDefault() {
+	void decodeStartFlat() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Optional<Integer>> codec = new OptionalCodec<>(Codec.INTEGER).orGetDefault(() -> 10);
+		Codec<Integer> codec = new OptionalCodec<>(Codec.INTEGER).orElseGetFlat(() -> 10);
 		
-		assertThrows(NullPointerException.class, () -> codec.decodeStart(null, Optional.of(1)));
+		assertThrows(NullPointerException.class, () -> codec.decodeStart(null, 1));
 		
-		Result<Optional<Integer>> nullResult = assertDoesNotThrow(() -> codec.decodeStart(typeProvider, null));
+		Result<Integer> nullResult = assertDoesNotThrow(() -> codec.decodeStart(typeProvider, null));
 		assertTrue(nullResult.isSuccess());
-		assertTrue(nullResult.orThrow().isPresent());
-		assertEquals(10, nullResult.orThrow().get());
+		assertEquals(10, nullResult.orThrow());
 		
-		Result<Optional<Integer>> invalidResult = assertDoesNotThrow(() -> codec.decodeStart(typeProvider, new JsonPrimitive("test")));
+		Result<Integer> invalidResult = assertDoesNotThrow(() -> codec.decodeStart(typeProvider, new JsonPrimitive("test")));
 		assertTrue(invalidResult.isSuccess());
-		assertTrue(invalidResult.orThrow().isPresent());
-		assertEquals(10, invalidResult.orThrow().get());
+		assertEquals(10, invalidResult.orThrow());
 		
-		Result<Optional<Integer>> result = assertDoesNotThrow(() -> codec.decodeStart(typeProvider, new JsonPrimitive(1)));
+		Result<Integer> result = assertDoesNotThrow(() -> codec.decodeStart(typeProvider, new JsonPrimitive(1)));
 		assertTrue(result.isSuccess());
-		assertTrue(result.orThrow().isPresent());
-		assertEquals(1, result.orThrow().get());
+		assertEquals(1, result.orThrow());
 	}
 	
 	@Test
-	void orDefault() {
-		assertThrows(NullPointerException.class, () -> new OptionalCodec<>(Codec.INTEGER).orDefault(null));
-		assertNotNull(new OptionalCodec<>(Codec.INTEGER).orDefault(1));
+	void orElseFlat() {
+		assertThrows(NullPointerException.class, () -> new OptionalCodec<>(Codec.INTEGER).orElseFlat(null));
+		assertNotNull(new OptionalCodec<>(Codec.INTEGER).orElseFlat(1));
 	}
 	
 	@Test
 	void orGetDefault() {
-		assertThrows(NullPointerException.class, () -> new OptionalCodec<>(Codec.INTEGER).orGetDefault(null));
-		assertNotNull(new OptionalCodec<>(Codec.INTEGER).orGetDefault(() -> 1));
+		assertThrows(NullPointerException.class, () -> new OptionalCodec<>(Codec.INTEGER).orElseGetFlat(null));
+		assertNotNull(new OptionalCodec<>(Codec.INTEGER).orElseGetFlat(() -> 1));
 	}
 }
