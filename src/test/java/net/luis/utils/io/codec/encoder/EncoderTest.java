@@ -63,8 +63,7 @@ class EncoderTest {
 		
 		Result<JsonElement> result = decoder.encodeStart(typeProvider, typeProvider.empty(), 1);
 		assertTrue(result.isSuccess());
-		assertInstanceOf(JsonPrimitive.class, result.orThrow());
-		assertEquals(new JsonPrimitive(1), result.orThrow());
+		assertEquals(new JsonPrimitive(1), assertInstanceOf(JsonPrimitive.class, result.orThrow()));
 	}
 	
 	@Test

@@ -43,56 +43,49 @@ class JsonTypeProviderTest {
 	void createBoolean() {
 		Result<JsonElement> result = JsonTypeProvider.INSTANCE.createBoolean(true);
 		assertTrue(result.isSuccess());
-		assertInstanceOf(JsonPrimitive.class, result.orThrow());
-		assertEquals(new JsonPrimitive(true), result.orThrow());
+		assertEquals(new JsonPrimitive(true), assertInstanceOf(JsonPrimitive.class, result.orThrow()));
 	}
 	
 	@Test
 	void createByte() {
 		Result<JsonElement> result = JsonTypeProvider.INSTANCE.createByte((byte) 1);
 		assertTrue(result.isSuccess());
-		assertInstanceOf(JsonPrimitive.class, result.orThrow());
-		assertEquals(new JsonPrimitive((byte) 1), result.orThrow());
+		assertEquals(new JsonPrimitive((byte) 1), assertInstanceOf(JsonPrimitive.class, result.orThrow()));
 	}
 	
 	@Test
 	void createShort() {
 		Result<JsonElement> result = JsonTypeProvider.INSTANCE.createShort((short) 1);
 		assertTrue(result.isSuccess());
-		assertInstanceOf(JsonPrimitive.class, result.orThrow());
-		assertEquals(new JsonPrimitive((short) 1), result.orThrow());
+		assertEquals(new JsonPrimitive((short) 1), assertInstanceOf(JsonPrimitive.class, result.orThrow()));
 	}
 	
 	@Test
 	void createInteger() {
 		Result<JsonElement> result = JsonTypeProvider.INSTANCE.createInteger(1);
 		assertTrue(result.isSuccess());
-		assertInstanceOf(JsonPrimitive.class, result.orThrow());
-		assertEquals(new JsonPrimitive(1), result.orThrow());
+		assertEquals(new JsonPrimitive(1), assertInstanceOf(JsonPrimitive.class, result.orThrow()));
 	}
 	
 	@Test
 	void createLong() {
 		Result<JsonElement> result = JsonTypeProvider.INSTANCE.createLong(1L);
 		assertTrue(result.isSuccess());
-		assertInstanceOf(JsonPrimitive.class, result.orThrow());
-		assertEquals(new JsonPrimitive(1L), result.orThrow());
+		assertEquals(new JsonPrimitive(1L), assertInstanceOf(JsonPrimitive.class, result.orThrow()));
 	}
 	
 	@Test
 	void createFloat() {
 		Result<JsonElement> result = JsonTypeProvider.INSTANCE.createFloat(1.0F);
 		assertTrue(result.isSuccess());
-		assertInstanceOf(JsonPrimitive.class, result.orThrow());
-		assertEquals(new JsonPrimitive(1.0F), result.orThrow());
+		assertEquals(new JsonPrimitive(1.0F), assertInstanceOf(JsonPrimitive.class, result.orThrow()));
 	}
 	
 	@Test
 	void createDouble() {
 		Result<JsonElement> result = JsonTypeProvider.INSTANCE.createDouble(1.0);
 		assertTrue(result.isSuccess());
-		assertInstanceOf(JsonPrimitive.class, result.orThrow());
-		assertEquals(new JsonPrimitive(1.0), result.orThrow());
+		assertEquals(new JsonPrimitive(1.0), assertInstanceOf(JsonPrimitive.class, result.orThrow()));
 	}
 	
 	@Test
@@ -100,8 +93,7 @@ class JsonTypeProviderTest {
 		assertThrows(NullPointerException.class, () -> JsonTypeProvider.INSTANCE.createString(null));
 		Result<JsonElement> result = JsonTypeProvider.INSTANCE.createString("test");
 		assertTrue(result.isSuccess());
-		assertInstanceOf(JsonPrimitive.class, result.orThrow());
-		assertEquals(new JsonPrimitive("test"), result.orThrow());
+		assertEquals(new JsonPrimitive("test"), assertInstanceOf(JsonPrimitive.class, result.orThrow()));
 	}
 	
 	@Test

@@ -81,8 +81,7 @@ class PropertyTest {
 		assertEquals(10L, Property.of("key", "10").getNumber());
 		assertEquals(10.0, Property.of("key", "10.0").getNumber());
 		Property property = Property.of("key", "10f");
-		assertInstanceOf(Float.class, property.getNumber());
-		assertEquals(10.0f, property.getNumber());
+		assertEquals(10.0f, assertInstanceOf(Float.class, property.getNumber()));
 		
 		assertEquals(10, Property.of("key", "a").getNumber(10));
 		assertEquals(10.0, Property.of("key", "a").getNumber(10.0));

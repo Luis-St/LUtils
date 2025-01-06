@@ -58,8 +58,7 @@ class OptionalCodecTest {
 		
 		Result<JsonElement> result = assertDoesNotThrow(() -> codec.encodeStart(typeProvider, typeProvider.empty(), Optional.of(1)));
 		assertTrue(result.isSuccess());
-		assertInstanceOf(JsonPrimitive.class, result.orThrow());
-		assertEquals(new JsonPrimitive(1), result.orThrow());
+		assertEquals(new JsonPrimitive(1), assertInstanceOf(JsonPrimitive.class, result.orThrow()));
 	}
 	
 	@Test

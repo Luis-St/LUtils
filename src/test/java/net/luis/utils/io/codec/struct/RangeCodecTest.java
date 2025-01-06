@@ -47,18 +47,15 @@ class RangeCodecTest {
 		
 		Result<JsonElement> negativeResult = assertDoesNotThrow(() -> codec.encodeStart(typeProvider, typeProvider.empty(), -1));
 		assertTrue(negativeResult.isSuccess());
-		assertInstanceOf(JsonPrimitive.class, negativeResult.orThrow());
-		assertEquals(new JsonPrimitive(-1), negativeResult.orThrow().getAsJsonPrimitive());
+		assertEquals(new JsonPrimitive(-1), assertInstanceOf(JsonPrimitive.class, negativeResult.orThrow()));
 		
 		Result<JsonElement> zeroResult = assertDoesNotThrow(() -> codec.encodeStart(typeProvider, typeProvider.empty(), 0));
 		assertTrue(zeroResult.isSuccess());
-		assertInstanceOf(JsonPrimitive.class, zeroResult.orThrow());
-		assertEquals(new JsonPrimitive(0), zeroResult.orThrow().getAsJsonPrimitive());
+		assertEquals(new JsonPrimitive(0), assertInstanceOf(JsonPrimitive.class, zeroResult.orThrow()));
 		
 		Result<JsonElement> positiveResult = assertDoesNotThrow(() -> codec.encodeStart(typeProvider, typeProvider.empty(), 1));
 		assertTrue(positiveResult.isSuccess());
-		assertInstanceOf(JsonPrimitive.class, positiveResult.orThrow());
-		assertEquals(new JsonPrimitive(1), positiveResult.orThrow().getAsJsonPrimitive());
+		assertEquals(new JsonPrimitive(1), assertInstanceOf(JsonPrimitive.class, positiveResult.orThrow()));
 	}
 	
 	@Test
@@ -73,18 +70,15 @@ class RangeCodecTest {
 		
 		Result<JsonElement> negativeResult = assertDoesNotThrow(() -> codec.encodeStart(typeProvider, typeProvider.empty(), -1.0));
 		assertTrue(negativeResult.isSuccess());
-		assertInstanceOf(JsonPrimitive.class, negativeResult.orThrow());
-		assertEquals(new JsonPrimitive(-1.0), negativeResult.orThrow().getAsJsonPrimitive());
+		assertEquals(new JsonPrimitive(-1.0), assertInstanceOf(JsonPrimitive.class, negativeResult.orThrow()));
 		
 		Result<JsonElement> zeroResult = assertDoesNotThrow(() -> codec.encodeStart(typeProvider, typeProvider.empty(), 0.0));
 		assertTrue(zeroResult.isSuccess());
-		assertInstanceOf(JsonPrimitive.class, zeroResult.orThrow());
-		assertEquals(new JsonPrimitive(0.0), zeroResult.orThrow().getAsJsonPrimitive());
+		assertEquals(new JsonPrimitive(0.0), assertInstanceOf(JsonPrimitive.class, zeroResult.orThrow()));
 		
 		Result<JsonElement> positiveResult = assertDoesNotThrow(() -> codec.encodeStart(typeProvider, typeProvider.empty(), 1.0));
 		assertTrue(positiveResult.isSuccess());
-		assertInstanceOf(JsonPrimitive.class, positiveResult.orThrow());
-		assertEquals(new JsonPrimitive(1.0), positiveResult.orThrow().getAsJsonPrimitive());
+		assertEquals(new JsonPrimitive(1.0), assertInstanceOf(JsonPrimitive.class, positiveResult.orThrow()));
 	}
 	//endregion
 	

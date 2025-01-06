@@ -60,8 +60,7 @@ class MapCodecTest {
 		assertTrue(assertDoesNotThrow(() -> codec.encodeStart(typeProvider, typeProvider.empty(), null)).isError());
 		Result<JsonElement> result = assertDoesNotThrow(() -> codec.encodeStart(typeProvider, typeProvider.empty(), map));
 		assertTrue(result.isSuccess());
-		assertInstanceOf(JsonObject.class, result.orThrow());
-		assertEquals(object, result.orThrow());
+		assertEquals(object, assertInstanceOf(JsonObject.class, result.orThrow()));
 	}
 	
 	@Test
@@ -82,8 +81,7 @@ class MapCodecTest {
 		
 		Result<JsonElement> result = assertDoesNotThrow(() -> codec.encodeStart(typeProvider, typeProvider.empty(), map));
 		assertTrue(result.isSuccess());
-		assertInstanceOf(JsonObject.class, result.orThrow());
-		assertEquals(object, result.orThrow());
+		assertEquals(object, assertInstanceOf(JsonObject.class, result.orThrow()));
 	}
 	
 	@Test

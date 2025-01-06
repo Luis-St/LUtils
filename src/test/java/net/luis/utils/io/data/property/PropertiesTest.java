@@ -101,20 +101,16 @@ class PropertiesTest {
 		assertEquals(1, properties.getGroupedMap().size());
 		
 		Map<String, Object> base = properties.getGroupedMap();
-		assertInstanceOf(Map.class, base.get("test"));
-		assertEquals(3, ((Map<String, Object>) base.get("test")).size());
+		assertEquals(3, assertInstanceOf(Map.class, base.get("test")).size());
 		
 		Map<String, Object> inner = (Map<String, Object>) base.get("test");
-		assertInstanceOf(Map.class, inner.get("a"));
-		assertEquals(1, ((Map<String, Object>) inner.get("a")).size());
-		assertEquals("value1", ((Map<String, Object>) inner.get("a")).get("key"));
+		assertEquals(1, assertInstanceOf(Map.class, inner.get("a")).size());
+		assertEquals("value1", assertInstanceOf(Map.class, inner.get("a")).get("key"));
 		
-		assertInstanceOf(Map.class, inner.get("b"));
-		assertEquals(1, ((Map<String, Object>) inner.get("b")).size());
-		assertEquals("value2", ((Map<String, Object>) inner.get("b")).get("key"));
+		assertEquals(1, assertInstanceOf(Map.class, inner.get("b")).size());
+		assertEquals("value2", assertInstanceOf(Map.class, inner.get("b")).get("key"));
 		
-		assertInstanceOf(Map.class, inner.get("c"));
-		assertEquals(1, ((Map<String, Object>) inner.get("c")).size());
-		assertEquals("value3", ((Map<String, Object>) inner.get("c")).get("key"));
+		assertEquals(1, assertInstanceOf(Map.class, inner.get("c")).size());
+		assertEquals("value3", assertInstanceOf(Map.class, inner.get("c")).get("key"));
 	}
 }
