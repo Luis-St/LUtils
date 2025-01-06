@@ -43,12 +43,21 @@ public final class XmlTypeProvider implements TypeProvider<XmlElement> {
 	private static final String DOUBLE = "double" + GENERATED;
 	private static final String STRING = "string" + GENERATED;
 	private static final String LIST = "list" + GENERATED;
-	private static final String LIST_ELEMENT = "list_element" + GENERATED;
+	private static final String ELEMENT = "element" + GENERATED;
 	private static final String MAP = "map" + GENERATED;
+	private static final String ROOT = "root" + GENERATED;
 	
-	public static final XmlTypeProvider INSTANCE = new XmlTypeProvider();
+	public static final XmlTypeProvider INSTANCE = new XmlTypeProvider(false);
 	
-	private XmlTypeProvider() {}
+	private final boolean useRoot;
+	
+	private XmlTypeProvider(boolean useRoot) {
+		this.useRoot = useRoot;
+	}
+	
+	public @NotNull XmlTypeProvider useRoot() {
+		return new XmlTypeProvider(true);
+	}
 	
 	//region Creation
 	@Override
@@ -100,19 +109,19 @@ public final class XmlTypeProvider implements TypeProvider<XmlElement> {
 	@Override
 	public @NotNull Result<XmlElement> createList(@NotNull List<? extends XmlElement> values) {
 		Objects.requireNonNull(values, "Values must not be null");
-		List<XmlElement> elements = values.stream().map(element -> this.copyWithName(LIST_ELEMENT, element)).toList();
+		List<XmlElement> elements = values.stream().map(element -> this.copyWithName(ELEMENT, element)).toList();
 		return Result.success(new XmlContainer(LIST, new XmlElements(elements)));
 	}
 	
 	@Override
 	public @NotNull Result<XmlElement> createMap() {
-		return Result.success(new XmlContainer(MAP));
+		return Result.success(new XmlContainer(this.getMapName()));
 	}
 	
 	@Override
 	public @NotNull Result<XmlElement> createMap(@NotNull Map<String, ? extends XmlElement> values) {
 		Objects.requireNonNull(values, "Values must not be null");
-		return Result.success(new XmlContainer(MAP, new XmlElements(values)));
+		return Result.success(new XmlContainer(this.getMapName(), new XmlElements(values)));
 	}
 	//endregion
 	
@@ -351,6 +360,10 @@ public final class XmlTypeProvider implements TypeProvider<XmlElement> {
 	//endregion
 	
 	//region Helper methods
+	private @NotNull String getMapName() {
+		return this.useRoot ? ROOT : MAP;
+	}
+	
 	private @NotNull XmlElement copyWithName(@NotNull String key, @NotNull XmlElement value) {
 		Objects.requireNonNull(key, "Key must not be null");
 		Objects.requireNonNull(value, "Value must not be null");

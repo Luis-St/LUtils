@@ -35,6 +35,11 @@ import static org.junit.jupiter.api.Assertions.*;
 class XmlTypeProviderTest {
 	
 	@Test
+	void useRoot() {
+		assertNotNull(XmlTypeProvider.INSTANCE.useRoot());
+	}
+	
+	@Test
 	void empty() {
 		XmlElement element = XmlTypeProvider.INSTANCE.empty();
 		assertTrue(element.isSelfClosing());
@@ -139,7 +144,7 @@ class XmlTypeProviderTest {
 		assertTrue(element.isXmlContainer());
 		assertEquals("list:generated", element.getName());
 		assertEquals(1, element.getAsXmlContainer().size());
-		assertEquals("list_element:generated", element.getAsXmlContainer().get(0).getName());
+		assertEquals("element:generated", element.getAsXmlContainer().get(0).getName());
 	}
 	
 	@Test
@@ -155,6 +160,24 @@ class XmlTypeProviderTest {
 		XmlElement element = result.orThrow();
 		assertTrue(element.isXmlContainer());
 		assertEquals("map:generated", element.getName());
+		assertEquals(1, element.getAsXmlContainer().size());
+		assertEquals("test", element.getAsXmlContainer().get(0).getName());
+	}
+	
+	@Test
+	void createMapUseRoot() {
+		XmlTypeProvider typeProvider = XmlTypeProvider.INSTANCE.useRoot();
+		Result<XmlElement> emptyResult = typeProvider.createMap();
+		assertTrue(emptyResult.isSuccess());
+		XmlElement emptyElement = emptyResult.orThrow();
+		assertTrue(emptyElement.isXmlContainer());
+		assertEquals("root:generated", emptyElement.getName());
+		
+		Result<XmlElement> result = typeProvider.createMap(Map.of("test", new XmlValue("test", 42)));
+		assertTrue(result.isSuccess());
+		XmlElement element = result.orThrow();
+		assertTrue(element.isXmlContainer());
+		assertEquals("root:generated", element.getName());
 		assertEquals(1, element.getAsXmlContainer().size());
 		assertEquals("test", element.getAsXmlContainer().get(0).getName());
 	}
@@ -299,8 +322,8 @@ class XmlTypeProviderTest {
 		assertTrue(emptyResult.orThrow().isEmpty());
 		
 		XmlContainer arrayContainer = new XmlContainer("list:generated");
-		arrayContainer.add(new XmlValue("list_element:generated", 42));
-		arrayContainer.add(new XmlValue("list_element:generated", 42));
+		arrayContainer.add(new XmlValue("element:generated", 42));
+		arrayContainer.add(new XmlValue("element:generated", 42));
 		Result<List<XmlElement>> arrayResult = XmlTypeProvider.INSTANCE.getList(arrayContainer);
 		assertTrue(arrayResult.isSuccess());
 		assertEquals(2, arrayResult.orThrow().size());
@@ -312,8 +335,8 @@ class XmlTypeProviderTest {
 		assertEquals(1, undefinedResult.orThrow().size());
 		
 		XmlContainer objectContainer = new XmlContainer("list:generated");
-		objectContainer.add(new XmlContainer("list_element1:generated"));
-		objectContainer.add(new XmlContainer("list_element2:generated"));
+		objectContainer.add(new XmlContainer("element1:generated"));
+		objectContainer.add(new XmlContainer("element2:generated"));
 		Result<List<XmlElement>> objectResult = XmlTypeProvider.INSTANCE.getList(objectContainer);
 		assertTrue(objectResult.isError());
 	}
