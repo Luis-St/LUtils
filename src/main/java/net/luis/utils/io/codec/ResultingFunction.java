@@ -27,19 +27,42 @@ import java.util.Objects;
 import java.util.function.Function;
 
 /**
+ * Functional interface for mapping a value to a result.<br>
+ * This function is a more friendly variant of {@code Function<T, Result<R>>}.<br>
+ * The main use case is to map a value to a result that may contain an error.<br>
  *
  * @author Luis-St
  *
+ * @param <T> The type of the input value
+ * @param <R> The type of the output result
  */
-
 @FunctionalInterface
 public interface ResultingFunction<T, R> extends Function<T, Result<R>> {
 	
+	/**
+	 * Creates a new resulting function that applies the given function to the value.<br>
+	 * The output result is a success result with the output of the function as value.<br>
+	 * @param function The function to apply to the value
+	 * @param <T> The type of the input value
+	 * @param <R> The type of the output result
+	 * @return The resulting function
+	 * @throws NullPointerException If the function is null
+	 */
 	static <T, R> @NotNull ResultingFunction<T, R> direct(@NotNull Function<T, R> function) {
 		Objects.requireNonNull(function, "Function must not be null");
 		return value -> Result.success(function.apply(value));
 	}
 	
+	/**
+	 * Creates a new resulting function that applies the given throwable function to the value.<br>
+	 * If the function throws an exception, the output result is an error with the exception message.<br>
+	 * In all other cases, the output result is a success result with the output of the function as value.<br>
+	 * @param function The throwable function to apply to the value
+	 * @param <T> The type of the input value
+	 * @param <R> The type of the output result
+	 * @return The resulting function
+	 * @throws NullPointerException If the throwable function is null
+	 */
 	static <T, R> @NotNull ResultingFunction<T, R> throwable(@NotNull ThrowableFunction<T, R, ? extends Throwable> function) {
 		Objects.requireNonNull(function, "Function must not be null");
 		return value -> {
