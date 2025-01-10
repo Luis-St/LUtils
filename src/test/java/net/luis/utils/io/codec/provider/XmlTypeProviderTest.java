@@ -36,7 +36,9 @@ class XmlTypeProviderTest {
 	
 	@Test
 	void useRoot() {
-		assertNotNull(XmlTypeProvider.INSTANCE.useRoot());
+		XmlTypeProvider typeProvider = XmlTypeProvider.INSTANCE.useRoot();
+		assertNotNull(typeProvider);
+		assertSame(typeProvider, typeProvider.useRoot());
 	}
 	
 	@Test

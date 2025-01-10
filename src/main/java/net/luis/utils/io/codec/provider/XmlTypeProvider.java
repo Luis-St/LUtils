@@ -19,7 +19,9 @@
 package net.luis.utils.io.codec.provider;
 
 import com.google.common.collect.Maps;
+import net.luis.utils.annotation.type.Singleton;
 import net.luis.utils.io.data.xml.*;
+import net.luis.utils.io.data.xml.exception.XmlTypeException;
 import net.luis.utils.util.Result;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
@@ -27,37 +29,100 @@ import org.jetbrains.annotations.NotNull;
 import java.util.*;
 
 /**
+ * Type provider implementation for xml elements.<br>
+ * This class is a singleton and should be accessed through the {@link #INSTANCE} constant.<br>
  *
  * @author Luis-St
- *
  */
-
+@Singleton
 public final class XmlTypeProvider implements TypeProvider<XmlElement> {
 	
+	/**
+	 * Constant for the generated namespace of the xml type provider.<br>
+	 * This namespace is used to create unique names for the xml types.<br>
+	 */
 	private static final String GENERATED = ":generated";
+	/**
+	 * Constant for the name of the empty xml element type.<br>
+	 */
 	private static final String EMPTY = "empty" + GENERATED;
+	/**
+	 * Constants for the name of boolean xml element type.<br>
+	 */
 	private static final String BOOLEAN = "boolean" + GENERATED;
+	/**
+	 * Constants for the name of byte xml element type.<br>
+	 */
 	private static final String BYTE = "byte" + GENERATED;
+	/**
+	 * Constants for the name of short xml element type.<br>
+	 */
 	private static final String SHORT = "short" + GENERATED;
+	/**
+	 * Constants for the name of integer xml element type.<br>
+	 */
 	private static final String INTEGER = "integer" + GENERATED;
+	/**
+	 * Constants for the name of long xml element type.<br>
+	 */
 	private static final String LONG = "long" + GENERATED;
+	/**
+	 * Constants for the name of float xml element type.<br>
+	 */
 	private static final String FLOAT = "float" + GENERATED;
+	/**
+	 * Constants for the name of double xml element type.<br>
+	 */
 	private static final String DOUBLE = "double" + GENERATED;
+	/**
+	 * Constants for the name of string xml element type.<br>
+	 */
 	private static final String STRING = "string" + GENERATED;
+	/**
+	 * Constants for the name of list xml element type.<br>
+	 */
 	private static final String LIST = "list" + GENERATED;
+	/**
+	 * Constants for the name of list element xml element type.<br>
+	 */
 	private static final String ELEMENT = "element" + GENERATED;
+	/**
+	 * Constants for the name of map xml element type.<br>
+	 */
 	private static final String MAP = "map" + GENERATED;
+	/**
+	 * Constants for the name of root xml element type.<br>
+	 * Used as name for maps if {@link #useRoot} is true.<br>
+	 */
 	private static final String ROOT = "root" + GENERATED;
 	
+	/**
+	 * The singleton instance of this class.<br>
+	 */
 	public static final XmlTypeProvider INSTANCE = new XmlTypeProvider(false);
 	
+	/**
+	 * Whether to use {@link #ROOT} as name for maps.<br>
+	 */
 	private final boolean useRoot;
 	
+	/**
+	 * Private constructor to prevent instantiation.<br>
+	 * @param useRoot Whether to use root as name for maps
+	 */
 	private XmlTypeProvider(boolean useRoot) {
 		this.useRoot = useRoot;
 	}
 	
+	/**
+	 * Returns a new instance of this class with {@link #useRoot} set to true.<br>
+	 * If {@link #useRoot} is already true, the same instance is returned.<br>
+	 * @return A new instance
+	 */
 	public @NotNull XmlTypeProvider useRoot() {
+		if (this.useRoot) {
+			return this;
+		}
 		return new XmlTypeProvider(true);
 	}
 	
@@ -369,15 +434,36 @@ public final class XmlTypeProvider implements TypeProvider<XmlElement> {
 	//endregion
 	
 	//region Helper methods
+	
+	/**
+	 * Returns the name for maps based on {@link #useRoot}.<br>
+	 * @return The name for maps
+	 */
 	private @NotNull String getMapName() {
 		return this.useRoot ? ROOT : MAP;
 	}
 	
+	/**
+	 * Escapes the given name if it is numeric.<br>
+	 * The name is escaped by adding an underscore in front of it.<br>
+	 * This is required because xml element names must not start with a number.<br>
+	 * @param name The name to escape
+	 * @return The escaped name
+	 * @throws NullPointerException If the name is null
+	 */
 	private @NotNull String escapeName(@NotNull String name) {
 		Objects.requireNonNull(name, "Name must not be null");
 		return StringUtils.isNumeric(name) ? "_" + name : name;
 	}
 	
+	/**
+	 * Unescapes the given name if it is numeric.<br>
+	 * The name is unescaped by removing an underscore in front of it.<br>
+	 * This is required because xml element names must not start with a number.<br>
+	 * @param name The name to unescape
+	 * @return The unescaped name
+	 * @throws NullPointerException If the name is null
+	 */
 	private @NotNull String unescapeName(@NotNull String name) {
 		Objects.requireNonNull(name, "Name must not be null");
 		if (name.startsWith("_") && StringUtils.isNumeric(name.substring(1))) {
@@ -386,6 +472,16 @@ public final class XmlTypeProvider implements TypeProvider<XmlElement> {
 		return name;
 	}
 	
+	/**
+	 * Copies the given xml element with the given name.<br>
+	 * The name is used as the new name for the copied element.<br>
+	 * The copy operation is based on the type of the given element.<br>
+	 * @param name The name for the copied element
+	 * @param value The element to copy
+	 * @return The copied element
+	 * @throws NullPointerException If the name or value is null
+	 * @throws IllegalStateException If the value is not a valid xml element (should not happen)
+	 */
 	private @NotNull XmlElement copyWithName(@NotNull String name, @NotNull XmlElement value) {
 		Objects.requireNonNull(name, "Name must not be null");
 		Objects.requireNonNull(value, "Value must not be null");
@@ -399,6 +495,16 @@ public final class XmlTypeProvider implements TypeProvider<XmlElement> {
 		throw new IllegalStateException("Unable to copy xml element '" + value + "' with name '" + name + "'");
 	}
 	
+	/**
+	 * Merges two arrays of xml elements.<br>
+	 * The elements of the current and value arrays are copied with the same name.<br>
+	 * The copied elements are then added to a new array.<br>
+	 * @param current The current elements
+	 * @param value The value elements
+	 * @return The merged array
+	 * @throws NullPointerException If the current or value elements are null
+	 * @throws XmlTypeException If the current or value elements are not arrays
+	 */
 	private @NotNull List<XmlElement> mergeArray(@NotNull XmlElements current, @NotNull XmlElements value) {
 		Objects.requireNonNull(current, "Current elements must not be null");
 		Objects.requireNonNull(value, "Value elements must not be null");
@@ -409,6 +515,15 @@ public final class XmlTypeProvider implements TypeProvider<XmlElement> {
 		return elements.getAsArray();
 	}
 	
+	/**
+	 * Merges two objects of xml elements.<br>
+	 * The elements of the current and value objects are moved to a new object.<br>
+	 * @param current The current elements
+	 * @param value The value elements
+	 * @return The merged object as map
+	 * @throws NullPointerException If the current or value elements are null
+	 * @throws XmlTypeException If the current or value elements are not objects
+	 */
 	private @NotNull Map<String, XmlElement> mergeObject(@NotNull XmlElements current, @NotNull XmlElements value) {
 		Objects.requireNonNull(current, "Current elements must not be null");
 		Objects.requireNonNull(value, "Value elements must not be null");
@@ -418,6 +533,14 @@ public final class XmlTypeProvider implements TypeProvider<XmlElement> {
 		return elements.getAsObject();
 	}
 	
+	/**
+	 * Merges two undefined containers of xml elements.<br>
+	 * The elements of the current and value containers are moved to a new container.<br>
+	 * @param current The current elements
+	 * @param value The value elements
+	 * @return A result containing the merged container or an error
+	 * @throws NullPointerException If the current or value elements are null
+	 */
 	private @NotNull Result<XmlElement> mergeUndefined(@NotNull XmlElements current, @NotNull XmlElements value) {
 		Objects.requireNonNull(current, "Current elements must not be null");
 		Objects.requireNonNull(value, "Value elements must not be null");

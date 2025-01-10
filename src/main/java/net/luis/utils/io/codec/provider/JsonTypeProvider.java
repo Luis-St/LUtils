@@ -19,6 +19,7 @@
 package net.luis.utils.io.codec.provider;
 
 import com.google.common.collect.Maps;
+import net.luis.utils.annotation.type.Singleton;
 import net.luis.utils.io.data.json.*;
 import net.luis.utils.util.Result;
 import org.jetbrains.annotations.NotNull;
@@ -26,15 +27,22 @@ import org.jetbrains.annotations.NotNull;
 import java.util.*;
 
 /**
+ * Type provider implementation for json elements.<br>
+ * This class is a singleton and should be accessed through the {@link #INSTANCE} constant.<br>
  *
  * @author Luis-St
- *
  */
-
+@Singleton
 public final class JsonTypeProvider implements TypeProvider<JsonElement> {
 	
+	/**
+	 * The singleton instance of this class.<br>
+	 */
 	public static final JsonTypeProvider INSTANCE = new JsonTypeProvider();
 	
+	/**
+	 * Private constructor to prevent instantiation.<br>
+	 */
 	private JsonTypeProvider() {}
 	
 	//region Creation
