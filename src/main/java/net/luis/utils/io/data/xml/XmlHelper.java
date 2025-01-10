@@ -33,7 +33,7 @@ final class XmlHelper {
 	/**
 	 * Pattern for valid xml element names.<br>
 	 */
-	static final Pattern XML_ELEMENT_NAME_PATTERN = Pattern.compile("^[a-z_-][a-z0-9_-]+(:[a-z0-9_-]+)?$", Pattern.CASE_INSENSITIVE);
+	static final Pattern XML_ELEMENT_NAME_PATTERN = Pattern.compile("^[a-z_-][a-z0-9_-]*(:[a-z0-9_-]+)?$", Pattern.CASE_INSENSITIVE);
 	/**
 	 * Pattern for valid xml attribute keys.<br>
 	 */

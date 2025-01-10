@@ -36,7 +36,7 @@ class XmlHelperTest {
 		assertThrows(IllegalArgumentException.class, () -> XmlHelper.validateElementName(" "));
 		assertThrows(IllegalArgumentException.class, () -> XmlHelper.validateElementName("1"));
 		assertThrows(IllegalArgumentException.class, () -> XmlHelper.validateElementName(":"));
-		assertThrows(IllegalArgumentException.class, () -> XmlHelper.validateElementName("a"));
+		assertDoesNotThrow(() -> XmlHelper.validateElementName("a"));
 		assertDoesNotThrow(() -> XmlHelper.validateElementName("a1"));
 		assertDoesNotThrow(() -> XmlHelper.validateElementName("_1"));
 		assertDoesNotThrow(() -> XmlHelper.validateElementName("-1"));
