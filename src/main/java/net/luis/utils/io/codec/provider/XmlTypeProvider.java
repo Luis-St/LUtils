@@ -18,8 +18,10 @@
 
 package net.luis.utils.io.codec.provider;
 
+import com.google.common.collect.Maps;
 import net.luis.utils.io.data.xml.*;
 import net.luis.utils.util.Result;
+import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
@@ -270,12 +272,15 @@ public final class XmlTypeProvider implements TypeProvider<XmlElement> {
 			return Result.success(Map.of());
 		}
 		if (elements.isObject()) {
-			return Result.success(elements.getAsObject());
+			Map<String, XmlElement> map = Maps.newLinkedHashMap();
+			elements.getAsObject().forEach((key, value) -> map.put(this.unescapeName(key), value));
+			return Result.success(map);
 		}
 		if (elements.isUndefined()) {
 			XmlElement element = elements.get(0);
 			if (element != null) {
-				return Result.success(Map.of(element.getName(), element));
+				XmlElement copied = this.copyWithName(this.unescapeName(element.getName()), element);
+				return Result.success(Map.of(copied.getName(), copied));
 			}
 			return Result.error("Xml element '" + type + "' is an undefined container with no elements but not empty");
 		}
@@ -295,7 +300,7 @@ public final class XmlTypeProvider implements TypeProvider<XmlElement> {
 		if (elements.isEmpty()) {
 			return Result.success(false);
 		}
-		return Result.success(elements.containsName(key));
+		return Result.success(elements.containsName(this.escapeName(key)));
 	}
 	
 	@Override
@@ -309,7 +314,11 @@ public final class XmlTypeProvider implements TypeProvider<XmlElement> {
 		if (elements.isArray()) {
 			return Result.error("Xml element '" + type + "' is a container with array elements");
 		}
-		return Result.success(elements.get(key));
+		XmlElement element = elements.get(this.escapeName(key));
+		if (element == null) { // null is valid for unit codec
+			return Result.success(null);
+		}
+		return Result.success(this.copyWithName(this.unescapeName(key), element));
 	}
 	
 	@Override
@@ -324,7 +333,7 @@ public final class XmlTypeProvider implements TypeProvider<XmlElement> {
 		if (elements.isArray()) {
 			return Result.error("Xml element '" + type + "' is a container with array elements");
 		}
-		elements.add(this.copyWithName(key, value));
+		elements.add(this.copyWithName(this.escapeName(key), value));
 		return Result.success(type);
 	}
 	
@@ -364,17 +373,30 @@ public final class XmlTypeProvider implements TypeProvider<XmlElement> {
 		return this.useRoot ? ROOT : MAP;
 	}
 	
-	private @NotNull XmlElement copyWithName(@NotNull String key, @NotNull XmlElement value) {
-		Objects.requireNonNull(key, "Key must not be null");
+	private @NotNull String escapeName(@NotNull String name) {
+		Objects.requireNonNull(name, "Name must not be null");
+		return StringUtils.isNumeric(name) ? "_" + name : name;
+	}
+	
+	private @NotNull String unescapeName(@NotNull String name) {
+		Objects.requireNonNull(name, "Name must not be null");
+		if (name.startsWith("_") && StringUtils.isNumeric(name.substring(1))) {
+			return name.substring(1);
+		}
+		return name;
+	}
+	
+	private @NotNull XmlElement copyWithName(@NotNull String name, @NotNull XmlElement value) {
+		Objects.requireNonNull(name, "Name must not be null");
 		Objects.requireNonNull(value, "Value must not be null");
 		if (value.isSelfClosing()) {
-			return new XmlElement(key);
+			return new XmlElement(name);
 		} else if (value.isXmlValue()) {
-			return new XmlValue(key, value.getAsXmlValue().getUnescapedValue());
+			return new XmlValue(name, value.getAsXmlValue().getUnescapedValue());
 		} else if (value.isXmlContainer()) {
-			return new XmlContainer(key, value.getAsXmlContainer().getElements());
+			return new XmlContainer(name, value.getAsXmlContainer().getElements());
 		}
-		throw new IllegalStateException("Unable to copy xml element '" + value + "' with name '" + key + "'");
+		throw new IllegalStateException("Unable to copy xml element '" + value + "' with name '" + name + "'");
 	}
 	
 	private @NotNull List<XmlElement> mergeArray(@NotNull XmlElements current, @NotNull XmlElements value) {
