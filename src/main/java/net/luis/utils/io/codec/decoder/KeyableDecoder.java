@@ -28,16 +28,30 @@ import java.util.Optional;
 import java.util.function.Function;
 
 /**
+ * Extension of {@link Decoder} that allows decoding keys.<br>
+ * A key is a string used to identify a value in a data structure.<br>
+ *
+ * @see Decoder
  *
  * @author Luis-St
  *
+ * @param <C> The type of the value to decode
  */
-
 public interface KeyableDecoder<C> extends Decoder<C> {
 	
-	static <C> @NotNull KeyableDecoder<C> of(@NotNull Decoder<C> decoder, @NotNull Function<String, @Nullable C> fromKey) {
+	/**
+	 * Creates a new keyable decoder from the specified decoder and key decoder.<br>
+	 * The key decoder function converts a key to a value.<br>
+	 * If the key decoder is not able to handle a key, it can simply return null.<br>
+	 * @param decoder The decoder
+	 * @param keyDecoder The key decoder function
+	 * @return The keyable decoder
+	 * @param <C> The type of the value to decode
+	 * @throws NullPointerException If the decoder or the key decoder function is null
+	 */
+	static <C> @NotNull KeyableDecoder<C> of(@NotNull Decoder<C> decoder, @NotNull Function<String, @Nullable C> keyDecoder) {
 		Objects.requireNonNull(decoder, "Decoder must not be null");
-		Objects.requireNonNull(fromKey, "Key decoder must not be null");
+		Objects.requireNonNull(keyDecoder, "Key decoder must not be null");
 		return new KeyableDecoder<>() {
 			
 			@Override
@@ -49,12 +63,21 @@ public interface KeyableDecoder<C> extends Decoder<C> {
 			@Override
 			public <R> @NotNull Result<C> decodeKey(@Nullable TypeProvider<R> provider, @NotNull String key) {
 				Objects.requireNonNull(key, "Key must not be null");
-				return Optional.ofNullable(fromKey.apply(key)).map(Result::success).orElseGet(() -> {
+				return Optional.ofNullable(keyDecoder.apply(key)).map(Result::success).orElseGet(() -> {
 					return Result.error("Unable to decode key with codec '" + this + "': Key '" + key + "' could not be converted back to a value");
 				});
 			}
 		};
 	}
 	
+	/**
+	 * Decodes a key to a value of the specified type and returns the result.<br>
+	 * The result contains the decoded key or an error message.<br>
+	 * @param provider The type provider
+	 * @param key The key to decode
+	 * @return The result
+	 * @param <R> The type to decode from
+	 * @throws NullPointerException If the type provider or the key is null
+	 */
 	<R> @NotNull Result<C> decodeKey(@NotNull TypeProvider<R> provider, @NotNull String key);
 }

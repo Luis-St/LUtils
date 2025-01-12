@@ -27,20 +27,52 @@ import org.jetbrains.annotations.Nullable;
 import java.util.Objects;
 
 /**
+ * Represents a decoder for a specific type.<br>
+ * The implementation decodes a value of the type specified by the type provider<br>
+ * and returns a result containing the decoded value or an error message.<br>
  *
  * @author Luis-St
  *
+ * @param <C> The type the decoder is for
  */
-
+@FunctionalInterface
 public interface Decoder<C> {
 	
+	/**
+	 * Decodes the value of the specified type and returns the decoded value directly.<br>
+	 * @param provider The type provider
+	 * @param value The value to decode
+	 * @return The decoded value
+	 * @param <R> The type to decode from
+	 * @throws NullPointerException If the type provider is null
+	 * @throws DecoderException If an error occurs during decoding
+	 * @see #decodeStart(TypeProvider, Object)
+	 */
 	default <R> @NotNull C decode(@NotNull TypeProvider<R> provider, @Nullable R value) {
 		Objects.requireNonNull(provider, "Type provider must not be null");
-		return this.decodeStart(provider, value).orThrow();
+		return this.decodeStart(provider, value).orThrow(DecoderException::new);
 	}
 	
+	/**
+	 * Decodes the value of the specified type and returns the result.<br>
+	 * The result contains the decoded value or an error message.<br>
+	 * @param provider The type provider
+	 * @param value The value to decode
+	 * @return The result
+	 * @param <R> The type to decode from
+	 * @throws NullPointerException If the type provider is null
+	 */
 	<R> @NotNull Result<C> decodeStart(@NotNull TypeProvider<R> provider, @Nullable R value);
 	
+	/**
+	 * Maps the type of the decoded value to another type.<br>
+	 * The mapping function is applied to the decoded result of the decoding process.<br>
+	 * The mapping function returns a result containing the mapped value or an error message if the mapping process fails.<br>
+	 * @param from The mapping function
+	 * @return The mapped decoder
+	 * @param <O> The type to map to
+	 * @throws NullPointerException If the mapping function is null
+	 */
 	default <O> @NotNull Decoder<O> mapDecoder(@NotNull ResultMappingFunction<C, O> from) {
 		Objects.requireNonNull(from, "Decode mapping function must not be null");
 		return new Decoder<>() {
