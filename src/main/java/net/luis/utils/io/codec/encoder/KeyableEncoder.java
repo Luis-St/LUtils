@@ -28,16 +28,30 @@ import java.util.Optional;
 import java.util.function.Function;
 
 /**
+ * Extension of {@link Encoder} that allows encoding keys.<br>
+ * A key is a string used to identify a value in a data structure.<br>
+ *
+ * @see Encoder
  *
  * @author Luis-St
  *
+ * @param <C> The type of the value to encode
  */
-
 public interface KeyableEncoder<C> extends Encoder<C> {
 	
-	static <C> @NotNull KeyableEncoder<C> of(@NotNull Encoder<C> encoder, @NotNull Function<C, String> toKey) {
+	/**
+	 * Creates a new keyable encoder from the specified encoder and key encoder.<br>
+	 * The key encoder function converts a key to a string.<br>
+	 * If the key encoder is not able to handle a key, it can simply return null.<br>
+	 * @param encoder The encoder
+	 * @param keyEncoder The key encoder function
+	 * @return The keyable encoder
+	 * @param <C> The type of the value to encode
+	 * @throws NullPointerException If the encoder or the key encoder function is null
+	 */
+	static <C> @NotNull KeyableEncoder<C> of(@NotNull Encoder<C> encoder, @NotNull Function<C, @Nullable String> keyEncoder) {
 		Objects.requireNonNull(encoder, "Encoder must not be null");
-		Objects.requireNonNull(toKey, "Key encoder must not be null");
+		Objects.requireNonNull(keyEncoder, "Key encoder must not be null");
 		return new KeyableEncoder<>() {
 			
 			@Override
@@ -50,12 +64,21 @@ public interface KeyableEncoder<C> extends Encoder<C> {
 			@Override
 			public <R> @NotNull Result<String> encodeKey(@Nullable TypeProvider<R> provider, @NotNull C key) {
 				Objects.requireNonNull(key, "Key must not be null");
-				return Optional.ofNullable(toKey.apply(key)).map(Result::success).orElseGet(() -> {
+				return Optional.ofNullable(keyEncoder.apply(key)).map(Result::success).orElseGet(() -> {
 					return Result.error("Unable to encode key with codec '" + this + "': Value '" + key + "' could not be converted to a string");
 				});
 			}
 		};
 	}
 	
+	/**
+	 * Encodes the key of the specified type and returns the encoded key as a result.<br>
+	 * The result contains the encoded key or an error message.<br>
+	 * @param provider The type provider
+	 * @param key The key to encode
+	 * @return The result
+	 * @param <R> The type to encode to
+	 * @throws NullPointerException If the type provider or the key is null
+	 */
 	<R> @NotNull Result<String> encodeKey(@NotNull TypeProvider<R> provider, @NotNull C key);
 }
