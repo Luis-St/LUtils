@@ -18,17 +18,34 @@
 
 package net.luis.utils.io.codec.group.function;
 
+import net.luis.utils.io.codec.Codec;
 import org.jetbrains.annotations.NotNull;
 
 /**
+ * Represents a codec grouping function that accepts five arguments and produces a result.<br>
+ * Manly used for decoding objects using a {@link Codec}.<br>
  *
  * @author Luis-St
  *
+ * @param <CI1> The type of the first input
+ * @param <CI2> The type of the second input
+ * @param <CI3> The type of the third input
+ * @param <CI4> The type of the fourth input
+ * @param <CI5> The type of the fifth input
+ * @param <R> The result type
  */
-
 @FunctionalInterface
 public interface CodecGroupingFunction5<CI1, CI2, CI3, CI4, CI5, R> {
 	
+	/**
+	 * Constructs a new object using the given inputs.<br>
+	 * @param input1 The first input
+	 * @param input2 The second input
+	 * @param input3 The third input
+	 * @param input4 The fourth input
+	 * @param input5 The fifth input
+	 * @return The constructed object
+	 */
 	@NotNull R create(
 		@NotNull CI1 input1,
 		@NotNull CI2 input2,

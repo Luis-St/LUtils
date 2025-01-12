@@ -18,17 +18,26 @@
 
 package net.luis.utils.io.codec.group.function;
 
+import net.luis.utils.io.codec.Codec;
 import org.jetbrains.annotations.NotNull;
 
 /**
+ * Represents a codec grouping function that accepts one argument and produces a result.<br>
+ * Manly used for decoding objects using a {@link Codec}.<br>
  *
  * @author Luis-St
  *
+ * @param <CI1> The type of the input
+ * @param <R> The result type
  */
-
 @FunctionalInterface
 public interface CodecGroupingFunction1<CI1, R> {
 	
+	/**
+	 * Constructs a new object using the given input.<br>
+	 * @param input1 The first input
+	 * @return The constructed object
+	 */
 	@NotNull R create(
 		@NotNull CI1 input1
 	);
