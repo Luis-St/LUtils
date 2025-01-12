@@ -18,17 +18,35 @@
 
 package net.luis.utils.io.codec.group.grouper;
 
-import net.luis.utils.io.codec.Codec;
-import net.luis.utils.io.codec.ConfiguredCodec;
+import net.luis.utils.io.codec.*;
 import net.luis.utils.io.codec.group.function.CodecGroupingFunction5;
 import net.luis.utils.io.codec.provider.TypeProvider;
 import net.luis.utils.util.Result;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
+import org.jetbrains.annotations.*;
 
 import java.util.Map;
 import java.util.Objects;
 
+/**
+ * Represents a group of five codecs.<br>
+ * The grouper is used for creating a new single codec that encodes and decodes a value of a specific type.<br>
+ * Each codec is responsible for encoding and decoding a specific component (field) of the value.<br>
+ * The grouped codec is created by providing a function that creates the value from the decoded components.<br>
+ *
+ * @author Luis-St
+ *
+ * @param codec1 The first codec
+ * @param codec2 The second codec
+ * @param codec3 The third codec
+ * @param codec4 The fourth codec
+ * @param codec5 The fifth codec
+ * @param <CI1> The type of the first component
+ * @param <CI2> The type of the second component
+ * @param <CI3> The type of the third component
+ * @param <CI4> The type of the fourth component
+ * @param <CI5> The type of the fifth component
+ * @param <O> The type of the resulting object this grouper is for
+ */
 public record CodecGrouper5<CI1, CI2, CI3, CI4, CI5, O>(
 	@NotNull ConfiguredCodec<CI1, O> codec1,
 	@NotNull ConfiguredCodec<CI2, O> codec2,
@@ -37,6 +55,17 @@ public record CodecGrouper5<CI1, CI2, CI3, CI4, CI5, O>(
 	@NotNull ConfiguredCodec<CI5, O> codec5
 ) {
 	
+	/**
+	 * Constructs a new codec grouper with the provided codecs.<br>
+	 * Do not use this constructor directly, use the builder method in {@link CodecBuilder} instead.<br>
+	 * @param codec1 The first codec
+	 * @param codec2 The second codec
+	 * @param codec3 The third codec
+	 * @param codec4 The fourth codec
+	 * @param codec5 The fifth codec
+	 * @throws NullPointerException If any of the provided codecs is null
+	 */
+	@ApiStatus.Internal
 	public CodecGrouper5 {
 		Objects.requireNonNull(codec1, "Configured codec #1 must not be null");
 		Objects.requireNonNull(codec2, "Configured codec #2 must not be null");
@@ -45,6 +74,13 @@ public record CodecGrouper5<CI1, CI2, CI3, CI4, CI5, O>(
 		Objects.requireNonNull(codec5, "Configured codec #5 must not be null");
 	}
 	
+	/**
+	 * Creates a new codec using the codecs of this grouper and the provided grouping function.<br>
+	 * The grouping function is used to create the resulting object from the decoded components.<br>
+	 * @param function The grouping function
+	 * @return The created codec
+	 * @throws NullPointerException If the provided grouping function is null
+	 */
 	@SuppressWarnings({ "DuplicatedCode", "UnqualifiedFieldAccess" })
 	public @NotNull Codec<O> create(@NotNull CodecGroupingFunction5<CI1, CI2, CI3, CI4, CI5, O> function) {
 		Objects.requireNonNull(function, "Codec grouping function must not be null");
