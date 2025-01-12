@@ -22,22 +22,46 @@ import net.luis.utils.io.codec.Codec;
 import net.luis.utils.io.codec.provider.TypeProvider;
 import net.luis.utils.util.Either;
 import net.luis.utils.util.Result;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
+import org.jetbrains.annotations.*;
 
 import java.util.Objects;
 
 /**
+ * A codec for encoding and decoding values of type {@link Either}.<br>
+ * This codec uses two other codecs to encode and decode the values of the first and second type.<br>
+ * <p>
+ *     The first codec is used to encode and decode the values of the first type.<br>
+ *     The second codec is used to encode and decode the values of the second type.
+ * </p>
+ * <p>
+ *     The first codec is decoded first and if it fails, the second codec is used to decode the value.<br>
+ *     <strong>Note</strong>: If the first codec is a string codec, it will always succeed, so the second codec will never be used.<br>
+ * </p>
  *
  * @author Luis-St
  *
+ * @param <F> The type of the first value
+ * @param <S> The type of the second value
  */
-
 public class EitherCodec<F, S> implements Codec<Either<F, S>> {
 	
+	/**
+	 * The codec used to encode and decode the values of the first type.<br>
+	 */
 	private final Codec<F> firstCodec;
+	/**
+	 * The codec used to encode and decode the values of the second type.<br>
+	 */
 	private final Codec<S> secondCodec;
 	
+	/**
+	 * Constructs a new either codec using the given codecs for the first and second type.<br>
+	 * Do not use this constructor directly, use any of the either factory methods in {@link Codec} instead.<br>
+	 * @param firstCodec The first codec
+	 * @param secondCodec The second codec
+	 * @throws NullPointerException If the first or second codec is null
+	 */
+	@ApiStatus.Internal
 	public EitherCodec(@NotNull Codec<F> firstCodec, @NotNull Codec<S> secondCodec) {
 		this.firstCodec = Objects.requireNonNull(firstCodec, "First codec must not be null");
 		this.secondCodec = Objects.requireNonNull(secondCodec, "Second codec must not be null");

@@ -21,22 +21,42 @@ package net.luis.utils.io.codec.struct;
 import net.luis.utils.io.codec.Codec;
 import net.luis.utils.io.codec.provider.TypeProvider;
 import net.luis.utils.util.Result;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
+import org.jetbrains.annotations.*;
 
 import java.util.Objects;
 import java.util.function.Supplier;
 
 /**
+ * A codec for encoding and decoding unit values.<br>
+ * This codec does not encode or decode any value, it is used to represent a unit value.<br>
+ * <p>
+ *     The unit codec can be used to represent a value that is not encoded or decoded.<br>
+ *     This is useful when a codec is required to encode or decode a value, but the value is not needed.<br>
+ * </p>
+ * <p>
+ *     The unit codec will always return the same value when encoding and decoding.<br>
+ *     During encoding, the current value is returned.<br>
+ *     During decoding, the unit value is returned which is created by a supplier.<br>
+ * </p>
  *
  * @author Luis-St
  *
+ * @param <C> The type of the unit value
  */
-
 public class UnitCodec<C> implements Codec<C> {
 	
+	/**
+	 * The supplier used to create the unit value.<br>
+	 */
 	private final Supplier<C> supplier;
 	
+	/**
+	 * Constructs a new unit codec using the given supplier for the unit value.<br>
+	 * Do not use this constructor directly, use any of the unit factory methods in {@link Codec} instead.<br>
+	 * @param supplier The supplier used to create the unit value
+	 * @throws NullPointerException If the supplier is null
+	 */
+	@ApiStatus.Internal
 	public UnitCodec(@NotNull Supplier<C> supplier) {
 		this.supplier = Objects.requireNonNull(supplier, "Unit supplier must not be null");
 	}

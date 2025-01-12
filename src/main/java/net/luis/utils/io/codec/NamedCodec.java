@@ -26,16 +26,42 @@ import org.jetbrains.annotations.Nullable;
 import java.util.Objects;
 
 /**
+ * A codec for encoding and decoding named values.<br>
+ * This codec uses another codec to encode and decode the value.<br>
+ * <p>
+ *     The named codec is used to encode and decode values with a specific name.<br>
+ *     The name is used to identify the value in a data structure.<br>
+ * </p>
+ * <p>
+ *     The current value in {@link #encodeStart(TypeProvider, Object, Object)} must be a data structure that can hold the named value.<br>
+ *     If the current value is not a data structure, the codec will return an error.<br>
+ * </p>
+ * <p>
+ *     The value in {@link #decodeStart(TypeProvider, Object)} must be a data structure that contains the named value.<br>
+ *     If the value is not a data structure or the named value is not present, the codec will return an error.<br>
+ * </p>
  *
  * @author Luis-St
  *
+ * @param <C> The type of the named value
  */
-
 public class NamedCodec<C> implements Codec<C> {
 	
+	/**
+	 * The codec used to encode and decode the named value.<br>
+	 */
 	private final Codec<C> codec;
+	/**
+	 * The name of the value.<br>
+	 */
 	private final String name;
 	
+	/**
+	 * Constructs a new named codec using the given codec and name for the value.<br>
+	 * @param codec The codec used to
+	 * @param name The name of the value
+	 * @throws NullPointerException If the codec or name is null
+	 */
 	NamedCodec(@NotNull Codec<C> codec, @NotNull String name) {
 		this.codec = Objects.requireNonNull(codec, "Codec must not be null");
 		this.name = Objects.requireNonNull(name, "Name must not be null");

@@ -21,33 +21,64 @@ package net.luis.utils.io.codec.struct;
 import net.luis.utils.io.codec.Codec;
 import net.luis.utils.io.codec.provider.TypeProvider;
 import net.luis.utils.util.Result;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
+import org.jetbrains.annotations.*;
 
 import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Supplier;
 
 /**
+ * A codec for encoding and decoding optional values.<br>
+ * This codec uses another codec to encode and decode the optional value.<br>
+ * <p>
+ *     The optional codec can be set to provide a default value if the optional value is empty.<br>
+ *     The default value is provided by a supplier.<br>
+ * </p>
+ * <p>
+ *     If the optional value is empty during encoding the current value is returned.<br>
+ *     This means that the value will not be appended to a data structure.<br>
+ * </p>
+ * <p>
+ *     If the optional value is empty during decoding the default value is returned.<br>
+ * </p>
  *
  * @author Luis-St
  *
+ * @param <C> The type of the optional value
  */
-
 public class OptionalCodec<C> implements Codec<Optional<C>> {
 	
+	/**
+	 * The codec used to encode and decode the optional value.<br>
+	 */
 	private final Codec<C> codec;
-	private @Nullable Supplier<C> defaultProvider;
+	/**
+	 * The supplier used to provide the default value if the optional value is empty.<br>
+	 * Can be null if no default value is provided.<br>
+	 */
+	private @Nullable Supplier<Optional<C>> defaultProvider;
 	
+	/**
+	 * Constructs a new optional codec using the given codec for the optional value.<br>
+	 * Do not use this constructor directly, use the optional factory methods in {@link Codec} instead.<br>
+	 * @param codec The codec for the optional value
+	 * @throws NullPointerException If the codec is null
+	 */
+	@ApiStatus.Internal
 	public OptionalCodec(@NotNull Codec<C> codec) {
 		this.codec = Objects.requireNonNull(codec, "Codec must not be null");
 	}
 	
+	/**
+	 * Gets the default value for this codec.<br>
+	 * If no default value is provided, an empty optional is returned.<br>
+	 * @return The default value
+	 */
 	private @NotNull Optional<C> getDefault() {
 		if (this.defaultProvider == null) {
 			return Optional.empty();
 		}
-		return Optional.of(this.defaultProvider.get());
+		return this.defaultProvider.get();
 	}
 	
 	@Override
@@ -78,10 +109,34 @@ public class OptionalCodec<C> implements Codec<Optional<C>> {
 		return result.map(Optional::of);
 	}
 	
+	@Override
+	public @NotNull Codec<Optional<C>> orElse(@Nullable Optional<C> defaultValue) {
+		return this.orElseGet(() -> defaultValue);
+	}
+	
+	@Override
+	public @NotNull Codec<Optional<C>> orElseGet(@NotNull Supplier<Optional<C>> supplier) {
+		this.defaultProvider = Objects.requireNonNull(supplier, "Supplier must not be null");
+		return this;
+	}
+	
+	/**
+	 * Returns a new codec that is not optional.<br>
+	 * The new codec will use the given default value if the optional value is empty.<br>
+	 * @param defaultValue The default value
+	 * @return The new codec
+	 */
 	public @NotNull Codec<C> orElseFlat(@Nullable C defaultValue) {
 		return this.orElseGetFlat(() -> defaultValue);
 	}
 	
+	/**
+	 * Returns a new codec that is not optional.<br>
+	 * The new codec will use the default value provided by the given supplier if the optional value is empty.<br>
+	 * @param supplier The supplier for the default value
+	 * @return The new codec
+	 * @throws NullPointerException If the supplier is null
+	 */
 	public @NotNull Codec<C> orElseGetFlat(@NotNull Supplier<C> supplier) {
 		Objects.requireNonNull(supplier, "Supplier must not be null");
 		return this.xmap(Optional::ofNullable, optional -> optional.orElseGet(supplier));

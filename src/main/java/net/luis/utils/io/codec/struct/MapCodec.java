@@ -23,29 +23,69 @@ import net.luis.utils.io.codec.Codec;
 import net.luis.utils.io.codec.KeyableCodec;
 import net.luis.utils.io.codec.provider.TypeProvider;
 import net.luis.utils.util.Result;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
+import org.jetbrains.annotations.*;
 
 import java.util.*;
 import java.util.stream.Collectors;
 
 /**
+ * A codec for encoding and decoding maps of key-value pairs.<br>
+ * This codec uses two other codecs to encode and decode the keys and values of the map.<br>
+ * The key codec must be a {@link KeyableCodec} to encode and decode the keys of the map.<br>
+ * <p>
+ *     The map codec can be sized to only accept maps of a certain size range.<br>
+ *     The minimum size and maximum size are inclusive.<br>
+ *     If the map size is out of range, the codec will return an error during encoding or decoding.<br>
+ * </p>
  *
  * @author Luis-St
  *
+ * @param <K> The type of keys in the map
+ * @param <V> The type of values in the map
  */
-
 public class MapCodec<K, V> implements Codec<Map<K, V>> {
 	
+	/**
+	 * The codec used to encode and decode the keys of the map.<br>
+	 */
 	private final KeyableCodec<K> keyCodec;
+	/**
+	 * The codec used to encode and decode the values of the map.<br>
+	 */
 	private final Codec<V> valueCodec;
+	/**
+	 * The minimum size of the map (inclusive).<br>
+	 */
 	private final int minSize;
+	/**
+	 * The maximum size of the map (inclusive).<br>
+	 */
 	private final int maxSize;
 	
+	/**
+	 * Constructs a new map codec using the given codecs for the keys and values.<br>
+	 * The map codec will accept maps of any size.<br>
+	 * Do not use this constructor directly, use any of the map factory methods in {@link Codec} instead.<br>
+	 * @param keyCodec The key codec
+	 * @param valueCodec The value codec
+	 * @throws NullPointerException If the key or value codec is null
+	 */
+	@ApiStatus.Internal
 	public MapCodec(@NotNull KeyableCodec<K> keyCodec, @NotNull Codec<V> valueCodec) {
 		this(keyCodec, valueCodec, 0, Integer.MAX_VALUE);
 	}
 	
+	/**
+	 * Constructs a new map codec using the given codecs for the keys and values and the size range of the map.<br>
+	 * Do not use this constructor directly, use any of the map factory methods in {@link Codec} instead.<br>
+	 * @param keyCodec The key codec
+	 * @param valueCodec The value codec
+	 * @param minSize The minimum size of the map (inclusive)
+	 * @param maxSize The maximum size of the map (inclusive)
+	 * @throws NullPointerException If the key or value codec is null
+	 * @throws IllegalArgumentException If the minimum size is less than zero or greater than the maximum size
+	 */
+	@ApiStatus.Internal
 	public MapCodec(@NotNull KeyableCodec<K> keyCodec, @NotNull Codec<V> valueCodec, int minSize, int maxSize) {
 		this.keyCodec = Objects.requireNonNull(keyCodec, "Key codec must not be null");
 		this.valueCodec = Objects.requireNonNull(valueCodec, "Value codec must not be null");
@@ -84,6 +124,15 @@ public class MapCodec<K, V> implements Codec<Map<K, V>> {
 		return provider.merge(current, resultMap);
 	}
 	
+	/**
+	 * Encodes the given map entry using the key and value codecs.<br>
+	 * The result contains the encoded entry or an error message.<br>
+	 * @param provider The type provider
+	 * @param entry The map entry
+	 * @return The result of the encoding process
+	 * @param <R> The type of the encoded value
+	 * @throws NullPointerException If the type provider or map entry is null
+	 */
 	private <R> @NotNull Result<Map.Entry<String, R>> encodeEntry(@NotNull TypeProvider<R> provider, @NotNull Map.Entry<K, V> entry) {
 		Objects.requireNonNull(provider, "Type provider must not be null");
 		Objects.requireNonNull(entry, "Map entry must not be null");
@@ -118,6 +167,15 @@ public class MapCodec<K, V> implements Codec<Map<K, V>> {
 		return Result.error("Map was decoded successfully but size '" + decoded.size() + "' is out of range: " + this.minSize + ".." + this.maxSize);
 	}
 	
+	/**
+	 * Decodes the given map entry using the key and value codecs.<br>
+	 * The result contains the decoded entry or an error message.<br>
+	 * @param provider The type provider
+	 * @param entry The map entry
+	 * @return The result of the decoding process
+	 * @param <R> The type of the decoded value
+	 * @throws NullPointerException If the type provider or map entry is null
+	 */
 	private <R> @NotNull Result<Map.Entry<K, V>> decodeEntry(@NotNull TypeProvider<R> provider, @NotNull Map.Entry<String, R> entry) {
 		Objects.requireNonNull(provider, "Type provider must not be null");
 		Objects.requireNonNull(entry, "Map entry must not be null");

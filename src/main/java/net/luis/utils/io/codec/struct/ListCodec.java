@@ -21,29 +21,62 @@ package net.luis.utils.io.codec.struct;
 import net.luis.utils.io.codec.Codec;
 import net.luis.utils.io.codec.provider.TypeProvider;
 import net.luis.utils.util.Result;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
+import org.jetbrains.annotations.*;
 
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
 /**
+ * A codec for encoding and decoding lists of elements.<br>
+ * This codec uses another codec to encode and decode the elements of the list.<br>
+ * <p>
+ *     The list codec can be sized to only accept lists of a certain size range.<br>
+ *     The minimum size and maximum size are inclusive.<br>
+ *     If the list size is out of range, the codec will return an error during encoding or decoding.<br>
+ * </p>
  *
  * @author Luis-St
  *
+ * @param <C> The type of elements in the list
  */
-
 public class ListCodec<C> implements Codec<List<C>> {
 	
+	/**
+	 * The codec used to encode and decode the elements of the list.<br>
+	 */
 	private final Codec<C> codec;
+	/**
+	 * The minimum size of the list (inclusive).<br>
+	 */
 	private final int minSize;
+	/**
+	 * The maximum size of the list (inclusive).<br>
+	 */
 	private final int maxSize;
 	
+	/**
+	 * Constructs a new list codec using the given codec for the elements.<br>
+	 * The list codec will accept lists of any size.<br>
+	 * Do not use this constructor directly, use any of the list factory methods in {@link Codec} instead.<br>
+	 * @param codec The codec for the elements
+	 * @throws NullPointerException If the codec is null
+	 */
+	@ApiStatus.Internal
 	public ListCodec(@NotNull Codec<C> codec) {
 		this(codec, 0, Integer.MAX_VALUE);
 	}
 	
+	/**
+	 * Constructs a new list codec using the given codec for the elements and the size range of the list.<br>
+	 * Do not use this constructor directly, use any of the list factory methods in {@link Codec} instead.<br>
+	 * @param codec The codec for the elements
+	 * @param minSize The minimum size of the list (inclusive)
+	 * @param maxSize The maximum size of the list (inclusive)
+	 * @throws NullPointerException If the codec is null
+	 * @throws IllegalArgumentException If the minimum size is less than zero or greater than the maximum size
+	 */
+	@ApiStatus.Internal
 	public ListCodec(@NotNull Codec<C> codec, int minSize, int maxSize) {
 		this.codec = Objects.requireNonNull(codec, "Codec must not be null");
 		if (0 > minSize) {
