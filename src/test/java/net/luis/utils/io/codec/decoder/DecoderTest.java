@@ -40,7 +40,7 @@ class DecoderTest {
 		Decoder<Integer>  decoder = Codec.INTEGER;
 		
 		assertThrows(NullPointerException.class, () -> decoder.decode(null, new JsonPrimitive(1)));
-		assertThrows(IllegalStateException.class, () -> decoder.decode(typeProvider, null));
+		assertThrows(DecoderException.class, () -> decoder.decode(typeProvider, null));
 		assertEquals(1, decoder.decode(typeProvider, new JsonPrimitive(1)));
 	}
 	

@@ -41,12 +41,12 @@ class EncoderTest {
 		Encoder<Integer> decoder = Codec.INTEGER;
 		
 		assertThrows(NullPointerException.class, () -> decoder.encode(null, 1));
-		assertThrows(IllegalStateException.class, () -> decoder.encode(typeProvider, null));
+		assertThrows(EncoderException.class, () -> decoder.encode(typeProvider, null));
 		assertEquals(new JsonPrimitive(1), decoder.encode(typeProvider, 1));
 		
 		assertThrows(NullPointerException.class, () -> decoder.encode(null, typeProvider.empty(), 1));
 		assertThrows(NullPointerException.class, () -> decoder.encode(typeProvider, null, 1));
-		assertThrows(IllegalStateException.class, () -> decoder.encode(typeProvider, typeProvider.empty(), null));
+		assertThrows(EncoderException.class, () -> decoder.encode(typeProvider, typeProvider.empty(), null));
 		assertEquals(new JsonPrimitive(1), decoder.encode(typeProvider, typeProvider.empty(), 1));
 	}
 	
