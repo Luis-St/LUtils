@@ -122,21 +122,6 @@ class CodecTest {
 	}
 	
 	@Test
-	void from() {
-		assertThrows(NullPointerException.class, () -> Codec.<Integer, String>from(null, (Function<String, Integer>) Integer::valueOf, ResultMappingFunction.direct(String::valueOf), "IntegerToStringCodec"));
-		assertThrows(NullPointerException.class, () -> Codec.from(Codec.INTEGER, (Function<String, Integer>) null, ResultMappingFunction.direct(String::valueOf), "IntegerToStringCodec"));
-		assertThrows(NullPointerException.class, () -> Codec.<Integer, String>from(Codec.INTEGER, (Function<String, Integer>) Integer::valueOf, null, "IntegerToStringCodec"));
-		assertThrows(NullPointerException.class, () -> Codec.<Integer, String>from(Codec.INTEGER, (Function<String, Integer>) Integer::valueOf, ResultMappingFunction.direct(String::valueOf), null));
-		assertNotNull(Codec.<Integer, String>from(Codec.INTEGER, (Function<String, Integer>) Integer::valueOf, ResultMappingFunction.direct(String::valueOf), "IntegerToStringCodec"));
-		
-		assertThrows(NullPointerException.class, () -> Codec.<Integer, String>from(null, ResultingFunction.throwable(Integer::valueOf), ResultMappingFunction.direct(String::valueOf), "IntegerToStringCodec"));
-		assertThrows(NullPointerException.class, () -> Codec.from(Codec.INTEGER, (ResultingFunction<String, Integer>) null, ResultMappingFunction.direct(String::valueOf), "IntegerToStringCodec"));
-		assertThrows(NullPointerException.class, () -> Codec.<Integer, String>from(Codec.INTEGER, ResultingFunction.throwable(Integer::valueOf), null, "IntegerToStringCodec"));
-		assertThrows(NullPointerException.class, () -> Codec.<Integer, String>from(Codec.INTEGER, ResultingFunction.throwable(Integer::valueOf), ResultMappingFunction.direct(String::valueOf), null));
-		assertNotNull(Codec.<Integer, String>from(Codec.INTEGER, (Function<String, Integer>) Integer::valueOf, ResultMappingFunction.direct(String::valueOf), "IntegerToStringCodec"));
-	}
-	
-	@Test
 	void of() {
 		assertThrows(NullPointerException.class, () -> Codec.of(null, Codec.INTEGER, "IntegerCodec"));
 		assertThrows(NullPointerException.class, () -> Codec.of(Codec.INTEGER, null, "IntegerCodec"));

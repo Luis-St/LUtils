@@ -215,41 +215,25 @@ public interface Codec<C> extends Encoder<C>, Decoder<C> {
 		}
 	};
 	
-	Codec<byte[]> BYTE_ARRAY = from(BYTE.list(), (Function<byte[], List<Byte>>) array -> Lists.newArrayList(ArrayUtils.toObject(array)), direct(list -> ArrayUtils.toPrimitive(list.toArray(Byte[]::new))), "ByteArrayCodec");
-	Codec<IntStream> INT_STREAM = from(INTEGER.stream(), IntStream::boxed, direct(stream -> stream.mapToInt(Integer::intValue)), "IntStreamCodec");
-	Codec<LongStream> LONG_STREAM = from(LONG.stream(), LongStream::boxed, direct(stream -> stream.mapToLong(Long::longValue)), "LongStreamCodec");
-	Codec<DoubleStream> DOUBLE_STREAM = from(DOUBLE.stream(), DoubleStream::boxed, direct(stream -> stream.mapToDouble(Double::doubleValue)), "DoubleStreamCodec");
+	Codec<byte[]> BYTE_ARRAY = BYTE.list().xmap(array -> Lists.newArrayList(ArrayUtils.toObject(array)), list -> ArrayUtils.toPrimitive(list.toArray(Byte[]::new))).codec("ByteArrayCodec");
+	Codec<IntStream> INT_STREAM = INTEGER.stream().xmap(IntStream::boxed, stream -> stream.mapToInt(Integer::intValue)).codec("IntStreamCodec");
+	Codec<LongStream> LONG_STREAM = LONG.stream().xmap(LongStream::boxed, stream -> stream.mapToLong(Long::longValue)).codec("LongStreamCodec");
+	Codec<DoubleStream> DOUBLE_STREAM = DOUBLE.stream().xmap(DoubleStream::boxed, stream -> stream.mapToDouble(Double::doubleValue)).codec("DoubleStreamCodec");
 	
-	KeyableCodec<java.util.UUID> UUID = keyable(from(STRING, java.util.UUID::toString, throwable(java.util.UUID::fromString), "UUIDCodec"), java.util.UUID::fromString);
+	KeyableCodec<java.util.UUID> UUID = keyable(STRING.flatMap(java.util.UUID::toString, throwable(java.util.UUID::fromString)).codec("UUIDCodec"), java.util.UUID::fromString);
 	
-	Codec<LocalTime> LOCAL_TIME = from(STRING, LocalTime::toString, throwable(LocalTime::parse), "LocalTimeCodec");
-	Codec<LocalDate> LOCAL_DATE = from(STRING, LocalDate::toString, throwable(LocalDate::parse), "LocalDateCodec");
-	Codec<LocalDateTime> LOCAL_DATE_TIME = from(STRING, LocalDateTime::toString, throwable(LocalDateTime::parse), "LocalDateTimeCodec");
-	Codec<ZonedDateTime> ZONED_DATE_TIME = from(STRING, ZonedDateTime::toString, throwable(ZonedDateTime::parse), "ZonedDateTimeCodec");
+	Codec<LocalTime> LOCAL_TIME = STRING.flatMap(LocalTime::toString, throwable(LocalTime::parse)).codec("LocalTimeCodec");
+	Codec<LocalDate> LOCAL_DATE = STRING.flatMap(LocalDate::toString, throwable(LocalDate::parse)).codec("LocalDateCodec");
+	Codec<LocalDateTime> LOCAL_DATE_TIME = STRING.flatMap(LocalDateTime::toString, throwable(LocalDateTime::parse)).codec("LocalDateTimeCodec");
+	Codec<ZonedDateTime> ZONED_DATE_TIME = STRING.flatMap(ZonedDateTime::toString, throwable(ZonedDateTime::parse)).codec("ZonedDateTimeCodec");
 	
-	Codec<Charset> CHARSET = from(STRING, Charset::name, throwable(Charset::forName), "CharsetCodec");
-	Codec<File> FILE = from(STRING, File::getPath, throwable(File::new), "FileCodec");
-	Codec<Path> PATH = from(STRING, Path::toString, throwable(Path::of), "PathCodec");
-	Codec<java.net.URI> URI = from(STRING, java.net.URI::toString, throwable(java.net.URI::new), "URICodec");
-	Codec<java.net.URL> URL = from(URI, ResultingFunction.throwable(java.net.URL::toURI), throwable(java.net.URI::toURL), "URLCodec");
+	Codec<Charset> CHARSET = STRING.flatMap(Charset::name, throwable(Charset::forName));
+	Codec<File> FILE = STRING.flatMap(File::getPath, throwable(File::new)).codec("FileCodec");
+	Codec<Path> PATH = STRING.flatMap(Path::toString, throwable(Path::of)).codec("PathCodec");
+	Codec<java.net.URI> URI = STRING.flatMap(java.net.URI::toString, throwable(java.net.URI::new)).codec("URICodec");
+	Codec<java.net.URL> URL = URI.map(ResultingFunction.throwable(java.net.URL::toURI), throwable(java.net.URI::toURL)).codec("URLCodec");
 	
 	//region Factories
-	static <C, O> @NotNull Codec<O> from(@NotNull Codec<C> base, @NotNull Function<O, C> toBase, @NotNull ResultMappingFunction<C, O> fromBase, @NotNull String name) {
-		Objects.requireNonNull(base, "Base codec must not be null");
-		Objects.requireNonNull(toBase, "Encoding mapping function must not be null");
-		Objects.requireNonNull(fromBase, "Decoding mapping function must not be null");
-		Objects.requireNonNull(name, "Codec name must not be null");
-		return from(base, ResultingFunction.direct(toBase), fromBase, name);
-	}
-	
-	static <C, O> @NotNull Codec<O> from(@NotNull Codec<C> base, @NotNull ResultingFunction<O, C> toBase, @NotNull ResultMappingFunction<C, O> fromBase, @NotNull String name) {
-		Objects.requireNonNull(base, "Base codec must not be null");
-		Objects.requireNonNull(toBase, "Encoding mapping function must not be null");
-		Objects.requireNonNull(fromBase, "Decoding mapping function must not be null");
-		Objects.requireNonNull(name, "Codec name must not be null");
-		return of(base.mapEncoder(toBase), base.mapDecoder(fromBase), name);
-	}
-	
 	static <C> @NotNull Codec<C> of(@NotNull Encoder<C> encoder, @NotNull Decoder<C> decoder, @NotNull String name) {
 		Objects.requireNonNull(encoder, "Encoder must not be null");
 		Objects.requireNonNull(decoder, "Decoder must not be null");
@@ -272,17 +256,17 @@ public interface Codec<C> extends Encoder<C>, Decoder<C> {
 		};
 	}
 	
-	static <C> @NotNull KeyableCodec<C> keyable(@NotNull Codec<C> codec, @NotNull Function<String, @Nullable C> fromKey) {
+	static <C> @NotNull KeyableCodec<C> keyable(@NotNull Codec<C> codec, @NotNull Function<String, @Nullable C> keyDecoder) {
 		Objects.requireNonNull(codec, "Base codec must not be null");
-		Objects.requireNonNull(fromKey, "Key decoder must not be null");
-		return keyable(codec, C::toString, fromKey);
+		Objects.requireNonNull(keyDecoder, "Key decoder must not be null");
+		return keyable(codec, C::toString, keyDecoder);
 	}
 	
-	static <C> @NotNull KeyableCodec<C> keyable(@NotNull Codec<C> codec, @NotNull Function<C, String> toKey, @NotNull Function<String, @Nullable C> fromKey) {
+	static <C> @NotNull KeyableCodec<C> keyable(@NotNull Codec<C> codec, @NotNull Function<C, String> keyEncoder, @NotNull Function<String, @Nullable C> keyDecoder) {
 		Objects.requireNonNull(codec, "Base codec must not be null");
-		Objects.requireNonNull(toKey, "Key encoder must not be null");
-		Objects.requireNonNull(fromKey, "Key decoder must not be null");
-		return keyable(codec, KeyableEncoder.of(codec, toKey), KeyableDecoder.of(codec, fromKey));
+		Objects.requireNonNull(keyEncoder, "Key encoder must not be null");
+		Objects.requireNonNull(keyDecoder, "Key decoder must not be null");
+		return keyable(codec, KeyableEncoder.of(codec, keyEncoder), KeyableDecoder.of(codec, keyDecoder));
 	}
 	
 	static <C> @NotNull KeyableCodec<C> keyable(@NotNull Codec<C> codec, @NotNull KeyableEncoder<C> encoder, @NotNull KeyableDecoder<C> decoder) {
@@ -450,7 +434,7 @@ public interface Codec<C> extends Encoder<C>, Decoder<C> {
 	
 	static <C> @NotNull Codec<Stream<C>> stream(@NotNull Codec<C> codec) {
 		Objects.requireNonNull(codec, "Codec must not be null");
-		return from(codec.list(), (Function<Stream<C>, List<C>>) Stream::toList, direct(List::stream), "StreamCodec[" + codec + "]");
+		return codec.list().xmap(Stream::toList, List::stream).codec("StreamCodec[" + codec + "]");
 	}
 	
 	static <C> @NotNull Codec<Map<String, C>> map(@NotNull Codec<C> valueCodec) {
@@ -526,10 +510,15 @@ public interface Codec<C> extends Encoder<C>, Decoder<C> {
 	}
 	//endregion
 	
-	default @NotNull KeyableCodec<C> keyable(@NotNull Function<C, String> toKey, @NotNull Function<String, @Nullable C> fromKey) {
-		Objects.requireNonNull(toKey, "Key encoder must not be null");
-		Objects.requireNonNull(fromKey, "Key decoder must not be null");
-		return keyable(this, toKey, fromKey);
+	private @NotNull Codec<C> codec(@NotNull String name) {
+		Objects.requireNonNull(name, "Codec name must not be null");
+		return of(this, this, name);
+	}
+	
+	default @NotNull KeyableCodec<C> keyable(@NotNull Function<C, String> keyEncoder, @NotNull Function<String, @Nullable C> keyDecoder) {
+		Objects.requireNonNull(keyEncoder, "Key encoder must not be null");
+		Objects.requireNonNull(keyDecoder, "Key decoder must not be null");
+		return keyable(this, keyEncoder, keyDecoder);
 	}
 	
 	default @NotNull Codec<Optional<C>> optional() {
@@ -573,7 +562,7 @@ public interface Codec<C> extends Encoder<C>, Decoder<C> {
 	default <O> @NotNull Codec<O> xmap(@NotNull Function<O, C> to, @NotNull Function<C, O> from) {
 		Objects.requireNonNull(to, "Encoding mapping function must not be null");
 		Objects.requireNonNull(from, "Decoding mapping function must not be null");
-		return this.flatMap(to, direct(from));
+		return this.map(ResultingFunction.direct(to), direct(from));
 	}
 	
 	default <O> @NotNull Codec<O> flatMap(@NotNull Function<O, C> to, @NotNull ResultMappingFunction<C, O> from) {
@@ -585,7 +574,7 @@ public interface Codec<C> extends Encoder<C>, Decoder<C> {
 	default <O> @NotNull Codec<O> map(@NotNull ResultingFunction<O, C> to, @NotNull ResultMappingFunction<C, O> from) {
 		Objects.requireNonNull(to, "Encoding mapping function must not be null");
 		Objects.requireNonNull(from, "Decoding mapping function must not be null");
-		return from(this, to, from, "MappedCodec[" + this + "]");
+		return of(this.mapEncoder(to), this.mapDecoder(from), "MappedCodec[" + this + "]");
 	}
 	
 	default @NotNull Codec<C> validate(@NotNull Function<C, Result<C>> validator) {
@@ -599,7 +588,7 @@ public interface Codec<C> extends Encoder<C>, Decoder<C> {
 	
 	default @NotNull Codec<C> orElseGet(@NotNull Supplier<C> supplier) {
 		Objects.requireNonNull(supplier, "Default value supplier must not be null");
-		return from(this, Function.identity(), result -> Result.success(result.orElseGet(supplier)), "OrElseCodec[" + this + "]");
+		return of(this, this.mapDecoder(result -> Result.success(result.orElseGet(supplier))), "OrElseCodec[" + this + "]");
 	}
 	
 	default @NotNull Codec<C> named(@NotNull String name) {
