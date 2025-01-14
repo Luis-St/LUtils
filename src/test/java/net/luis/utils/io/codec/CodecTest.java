@@ -222,6 +222,7 @@ class CodecTest {
 		assertThrows(IllegalArgumentException.class, () -> Codec.string(-1));
 		
 		Codec<String> limitedCodec = Codec.string(2);
+		assertInstanceOf(KeyableCodec.class, limitedCodec);
 		assertTrue(limitedCodec.encodeStart(typeProvider, typeProvider.empty(), "1").isSuccess());
 		assertTrue(limitedCodec.encodeStart(typeProvider, typeProvider.empty(), "12").isSuccess());
 		assertTrue(limitedCodec.encodeStart(typeProvider, typeProvider.empty(), "123").isError());
@@ -231,6 +232,7 @@ class CodecTest {
 		assertTrue(limitedCodec.decodeStart(typeProvider, new JsonPrimitive("123")).isError());
 		
 		Codec<String> boundedCodec = Codec.string(2, 2);
+		assertInstanceOf(KeyableCodec.class, boundedCodec);
 		assertTrue(boundedCodec.encodeStart(typeProvider, typeProvider.empty(), "1").isError());
 		assertTrue(boundedCodec.encodeStart(typeProvider, typeProvider.empty(), "123").isError());
 		assertTrue(boundedCodec.encodeStart(typeProvider, typeProvider.empty(), "12").isSuccess());
@@ -245,6 +247,8 @@ class CodecTest {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<String> codec = Codec.noneEmptyString();
 		
+		assertInstanceOf(KeyableCodec.class, codec);
+		
 		assertTrue(codec.encodeStart(typeProvider, typeProvider.empty(), "").isError());
 		assertTrue(codec.encodeStart(typeProvider, typeProvider.empty(), "1").isSuccess());
 		
@@ -254,7 +258,7 @@ class CodecTest {
 	
 	@Test
 	void unit() { // See also: UnitCodecTest
-		assertThrows(NullPointerException.class, () -> Codec.unit((Object) null));
+		assertDoesNotThrow(() -> Codec.unit((Object) null));
 		assertInstanceOf(UnitCodec.class, Codec.unit("unit"));
 		
 		assertThrows(NullPointerException.class, () -> Codec.unit((Supplier<?>) null));
@@ -457,12 +461,12 @@ class CodecTest {
 	}
 	
 	@Test
-	void flatMap() {
-		assertThrows(NullPointerException.class, () -> Codec.STRING.flatMap(null, ResultMappingFunction.throwable(Integer::valueOf)));
-		assertThrows(NullPointerException.class, () -> Codec.STRING.flatMap(String::valueOf, (ResultMappingFunction<String, Integer>) null));
+	void mapFlat() {
+		assertThrows(NullPointerException.class, () -> Codec.STRING.mapFlat(null, ResultMappingFunction.throwable(Integer::valueOf)));
+		assertThrows(NullPointerException.class, () -> Codec.STRING.mapFlat(String::valueOf, (ResultMappingFunction<String, Integer>) null));
 		
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Integer> codec = Codec.STRING.flatMap(String::valueOf, ResultMappingFunction.throwable(Integer::valueOf));
+		Codec<Integer> codec = Codec.STRING.mapFlat(String::valueOf, ResultMappingFunction.throwable(Integer::valueOf));
 		
 		Result<JsonElement> encoded = assertDoesNotThrow(() -> codec.encodeStart(typeProvider, typeProvider.empty(), 1));
 		assertTrue(encoded.isSuccess());
