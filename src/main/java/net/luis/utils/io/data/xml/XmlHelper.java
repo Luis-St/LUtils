@@ -1,6 +1,6 @@
 /*
  * LUtils
- * Copyright (C) 2024 Luis Staudt
+ * Copyright (C) 2025 Luis Staudt
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -28,12 +28,12 @@ import java.util.regex.Pattern;
  *
  * @author Luis-St
  */
-class XmlHelper {
+final class XmlHelper {
 	
 	/**
 	 * Pattern for valid xml element names.<br>
 	 */
-	static final Pattern XML_ELEMENT_NAME_PATTERN = Pattern.compile("^[a-z_-][a-z0-9_-]+(:[a-z0-9_-]+)?$", Pattern.CASE_INSENSITIVE);
+	static final Pattern XML_ELEMENT_NAME_PATTERN = Pattern.compile("^[a-z_-][a-z0-9_-]*(:[a-z0-9_-]+)?$", Pattern.CASE_INSENSITIVE);
 	/**
 	 * Pattern for valid xml attribute keys.<br>
 	 */

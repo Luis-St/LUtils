@@ -1,6 +1,6 @@
 /*
  * LUtils
- * Copyright (C) 2024 Luis Staudt
+ * Copyright (C) 2025 Luis Staudt
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -132,7 +132,7 @@ public class Version implements Comparable<Version> {
 	 * @param suffixVersion The appendable suffix version number, containing the separator and the version number
 	 * @throws NullPointerException If the build or suffix version is null
 	 */
-	private Version(int major, int minor, int patch, @NotNull AppendingVersion buildVersion, @Nullable String suffix, @NotNull AppendingVersion suffixVersion) {
+	protected Version(int major, int minor, int patch, @NotNull AppendingVersion buildVersion, @Nullable String suffix, @NotNull AppendingVersion suffixVersion) { // protected to prevent instantiation from outside but allow inheritance
 		this.major = Math.max(0, major);
 		this.minor = Math.max(0, minor);
 		this.patch = Math.max(0, patch);
@@ -150,13 +150,13 @@ public class Version implements Comparable<Version> {
 	 * @param major The major version number
 	 * @param minor The minor version number
 	 * @return The created version
-	 * @see Version.Builder
+	 * @see Builder
 	 */
 	public static @NotNull Version of(int major, int minor) {
 		if (0 >= major && 0 >= minor) {
 			return ZERO;
 		}
-		return new Version.Builder(major, minor).build();
+		return new Builder(major, minor).build();
 	}
 	
 	/**
@@ -169,13 +169,13 @@ public class Version implements Comparable<Version> {
 	 * @param minor The minor version number
 	 * @param patch The patch or fix version number
 	 * @return The created version
-	 * @see Version.Builder
+	 * @see Builder
 	 */
 	public static @NotNull Version of(int major, int minor, int patch) {
 		if (0 >= major && 0 >= minor && 0 >= patch) {
 			return ZERO;
 		}
-		return new Version.Builder(major, minor, patch).build();
+		return new Builder(major, minor, patch).build();
 	}
 	
 	/**
@@ -184,10 +184,10 @@ public class Version implements Comparable<Version> {
 	 * @param major The major version number
 	 * @param minor The minor version number
 	 * @return The created version builder
-	 * @see Version.Builder
+	 * @see Builder
 	 */
-	public static Version.@NotNull Builder builder(int major, int minor) {
-		return new Version.Builder(major, minor);
+	public static @NotNull Builder builder(int major, int minor) {
+		return new Builder(major, minor);
 	}
 	
 	/**
@@ -197,10 +197,10 @@ public class Version implements Comparable<Version> {
 	 * @param minor The minor version number
 	 * @param patch The patch or fix version number
 	 * @return The created version builder
-	 * @see Version.Builder
+	 * @see Builder
 	 */
-	public static Version.@NotNull Builder builder(int major, int minor, int patch) {
-		return new Version.Builder(major, minor, patch);
+	public static @NotNull Builder builder(int major, int minor, int patch) {
+		return new Builder(major, minor, patch);
 	}
 	
 	/**
@@ -263,9 +263,9 @@ public class Version implements Comparable<Version> {
 		if (matcher.group(4) != null) {
 			patch = Integer.parseInt(matcher.group(4));
 		}
-		Version.Builder builder = builder(major, minor, patch);
+		Builder builder = builder(major, minor, patch);
 		if (matcher.group(11) != null) {
-			builder = builder.withSuffixVersion(Integer.parseInt(matcher.group(11)));
+			builder.withSuffixVersion(Integer.parseInt(matcher.group(11)));
 		}
 		if (StringUtils.isEmpty(matcher.group(5)) && StringUtils.isEmpty(matcher.group(9))) {
 			return builder.build();
@@ -361,13 +361,13 @@ public class Version implements Comparable<Version> {
 	 * Returns the version as a builder for modifications.<br>
 	 * @return The version as a builder
 	 */
-	public Version.@NotNull Builder asBuilder() {
-		Version.Builder builder = new Version.Builder(this.major, this.minor, this.patch).withSuffix(this.suffix);
+	public @NotNull Builder asBuilder() {
+		Builder builder = new Builder(this.major, this.minor, this.patch).withSuffix(this.suffix);
 		if (this.suffixVersion.isNotEmpty()) {
-			builder = builder.withSuffixVersion(this.suffixVersion.version());
+			builder.withSuffixVersion(this.suffixVersion.version());
 		}
 		if (this.buildVersion.isNotEmpty()) {
-			builder = builder.withBuild(this.buildVersion.separator, this.buildVersion.version);
+			return builder.withBuild(this.buildVersion.separator, this.buildVersion.version);
 		}
 		return builder;
 	}
@@ -514,7 +514,7 @@ public class Version implements Comparable<Version> {
 	 *
 	 * @author Luis-St
 	 */
-	public static class Builder {
+	public static final class Builder {
 		
 		/**
 		 * The major version number.<br>
@@ -679,7 +679,8 @@ public class Version implements Comparable<Version> {
 	 * @param separator The separator character
 	 * @param version The version number
 	 */
-	private record AppendingVersion(char separator, int version) implements Comparable<AppendingVersion> {
+	@SuppressWarnings("ProtectedInnerClass")
+	protected record AppendingVersion(char separator, int version) implements Comparable<AppendingVersion> {
 		
 		/**
 		 * An empty appendable version number.<br>
@@ -704,7 +705,7 @@ public class Version implements Comparable<Version> {
 		 * @return The comparison result
 		 */
 		@Override
-		public int compareTo(@NotNull Version.AppendingVersion o) {
+		public int compareTo(@NotNull AppendingVersion o) {
 			if (this.version == -1 && o.version == -1) {
 				return 0;
 			}

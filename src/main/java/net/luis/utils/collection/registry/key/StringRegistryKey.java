@@ -1,6 +1,6 @@
 /*
  * LUtils
- * Copyright (C) 2024 Luis Staudt
+ * Copyright (C) 2025 Luis Staudt
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -27,12 +27,12 @@ import java.util.Objects;
  *
  * @author Luis-St
  */
-public class StringRegistryKey implements RegistryKey<String> {
+public final class StringRegistryKey implements RegistryKey<String> {
 	
 	/**
 	 * The default string registry key with an empty string as a key.<br>
 	 */
-	public static final StringRegistryKey DEFAULT = StringRegistryKey.of("");
+	public static final StringRegistryKey DEFAULT = of("");
 	
 	/**
 	 * The key of the registry key.<br>

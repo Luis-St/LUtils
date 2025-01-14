@@ -1,6 +1,6 @@
 /*
  * LUtils
- * Copyright (C) 2024 Luis Staudt
+ * Copyright (C) 2025 Luis Staudt
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -22,8 +22,7 @@ import com.google.common.collect.Lists;
 import net.luis.utils.exception.ReflectionException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
+import org.jetbrains.annotations.*;
 
 import java.lang.reflect.*;
 import java.util.*;
@@ -43,7 +42,7 @@ import static org.apache.commons.lang3.ArrayUtils.*;
  *
  * @author Luis-St
  */
-public class ReflectionHelper {
+public final class ReflectionHelper {
 	
 	/**
 	 * The logger for this class.<br>
@@ -112,16 +111,15 @@ public class ReflectionHelper {
 	 * Exceptions will not be logged or thrown by default.<br>
 	 * @param clazz The class to get the constructor from
 	 * @param parameters The parameters of the constructor
-	 * @return The constructor or null if the constructor could not be found
+	 * @return The constructor as an optional or an empty optional if the constructor could not be found
 	 * @param <T> The type of the class
 	 * @throws NullPointerException If the given class is null
 	 * @see #handleException(Exception)
 	 */
-	public static <T> Constructor<T> getConstructor(@NotNull Class<T> clazz, Class<?> @Nullable ... parameters) {
+	public static <T> @NotNull Optional<Constructor<T>> getConstructor(@NotNull Class<T> clazz, Class<?> @Nullable ... parameters) {
 		Objects.requireNonNull(clazz, "Class must not be null");
-		Constructor<T> constructor = null;
 		try {
-			constructor = clazz.getDeclaredConstructor(nullToEmpty(parameters));
+			return Optional.of(clazz.getDeclaredConstructor(nullToEmpty(parameters)));
 		} catch (NoSuchMethodException e) {
 			LOGGER.warn("Error retrieving the constructor for parameter {} in type '{}'", getSimpleNames(parameters), clazz.getSimpleName());
 			handleException(e);
@@ -129,7 +127,7 @@ public class ReflectionHelper {
 			LOGGER.warn("No permission to retrieve constructor of type '{}'", clazz.getSimpleName());
 			handleException(e);
 		}
-		return constructor;
+		return Optional.empty();
 	}
 	
 	/**
@@ -169,17 +167,16 @@ public class ReflectionHelper {
 	 * Exceptions will not be logged or thrown by default.<br>
 	 * @param constructor The constructor to create the instance from
 	 * @param parameters The parameters of the constructor
-	 * @return The new instance or null if the instance could not be created
+	 * @return The new instance as an optional or an empty optional if the instance could not be created
 	 * @param <T> The type of the instance
 	 * @throws NullPointerException If the given constructor is null
 	 * @see #handleException(Exception)
 	 */
-	public static <T> T newInstance(@NotNull Constructor<T> constructor, Object @Nullable ... parameters) {
+	public static <T> @NotNull Optional<T> newInstance(@NotNull Constructor<T> constructor, Object @Nullable ... parameters) {
 		Objects.requireNonNull(constructor, "Constructor must not be null");
-		T instance = null;
 		try {
 			if (constructor.trySetAccessible()) {
-				instance = constructor.newInstance(nullToEmpty(parameters));
+				return Optional.of(constructor.newInstance(nullToEmpty(parameters)));
 			} else {
 				LOGGER.warn("The package of type '{}' is not accessible for the caller", constructor.getDeclaringClass().getSimpleName());
 			}
@@ -196,28 +193,28 @@ public class ReflectionHelper {
 			LOGGER.warn("Something went wrong when invoking constructor of type '{}' with parameters {}", constructor.getDeclaringClass().getSimpleName(), getSimpleNames(parameters));
 			handleException(e);
 		}
-		return instance;
+		return Optional.empty();
 	}
 	
 	/**
 	 * Creates a new instance from the given class and parameters.<br>
 	 * @param clazz The class to create the instance from
 	 * @param parameters The parameters of the constructor
-	 * @return The new instance or null if the instance could not be created
+	 * @return The new instance as an optional or an empty optional if the instance could not be created
 	 * @param <T> The type of the instance
 	 * @throws NullPointerException If the given class is null
 	 * @throws IllegalStateException If no constructor for the given parameters could be found
 	 * @see #getConstructor(Class, Class[])
 	 * @see #newInstance(Constructor, Object...)
 	 */
-	public static <T> T newInstance(@NotNull Class<T> clazz, Object @Nullable ... parameters) {
+	public static <T> @NotNull Optional<T> newInstance(@NotNull Class<T> clazz, Object @Nullable ... parameters) {
 		Objects.requireNonNull(clazz, "Class must not be null");
 		Object[] params = nullToEmpty(parameters);
-		Constructor<T> constructor = getConstructor(clazz, Lists.newArrayList(params).stream().map(Object::getClass).toArray(Class<?>[]::new));
-		if (constructor == null) {
+		Optional<Constructor<T>> constructor = getConstructor(clazz, Lists.newArrayList(params).stream().map(Object::getClass).toArray(Class<?>[]::new));
+		if (constructor.isEmpty()) {
 			throw new IllegalStateException("No constructor for parameters " + getSimpleNames(params) + " in type '" + clazz.getSimpleName() + "' found");
 		}
-		return newInstance(constructor, params);
+		return newInstance(constructor.orElseThrow(), params);
 	}
 	//endregion
 	
@@ -229,16 +226,15 @@ public class ReflectionHelper {
 	 * @param clazz The class to get the method from
 	 * @param name The name of the method
 	 * @param parameters The parameters of the method
-	 * @return The method or null if the method could not be found
+	 * @return The method as an optional or an empty optional if the method could not be found
 	 * @throws NullPointerException If the given class or name is null
 	 * @see #handleException(Exception)
 	 */
-	public static Method getMethod(@NotNull Class<?> clazz, @NotNull String name, Class<?> @Nullable ... parameters) {
+	public static @NotNull Optional<Method> getMethod(@NotNull Class<?> clazz, @NotNull String name, Class<?> @Nullable ... parameters) {
 		Objects.requireNonNull(clazz, "Class must not be null");
 		Objects.requireNonNull(name, "Name must not be null");
-		Method method = null;
 		try {
-			method = clazz.getDeclaredMethod(name, nullToEmpty(parameters));
+			return Optional.of(clazz.getDeclaredMethod(name, nullToEmpty(parameters)));
 		} catch (NoSuchMethodException e) {
 			LOGGER.warn("Error retrieving method for name '{}' and parameter {} in type '{}'", name, getSimpleNames(parameters), clazz.getSimpleName());
 			handleException(e);
@@ -246,7 +242,7 @@ public class ReflectionHelper {
 			LOGGER.warn("No permission to retrieve method with name '{}' and parameters {} in type '{}'", name, getSimpleNames(parameters), clazz.getSimpleName());
 			handleException(e);
 		}
-		return method;
+		return Optional.empty();
 	}
 	
 	/**
@@ -294,16 +290,15 @@ public class ReflectionHelper {
 	 * @param method The method to invoke
 	 * @param instance The instance to invoke the method on
 	 * @param parameters The parameters of the method
-	 * @return The return value of the method
+	 * @return The return value of the method as an optional or an empty optional if the invocation failed
 	 * @throws NullPointerException If the given method is null
 	 * @see #handleException(Exception)
 	 */
-	public static Object invoke(@NotNull Method method, @Nullable Object instance, Object @Nullable ... parameters) {
+	public static @NotNull Optional<Object> invoke(@NotNull Method method, @Nullable Object instance, Object @Nullable ... parameters) {
 		Objects.requireNonNull(method, "Method must not be null");
-		Object returnValue = null;
 		try {
 			if (method.trySetAccessible()) {
-				returnValue = method.invoke(instance, nullToEmpty(parameters));
+				return Optional.ofNullable(method.invoke(instance, nullToEmpty(parameters)));
 			} else {
 				LOGGER.warn("The package of type '{}' is not accessible for the caller", method.getDeclaringClass().getSimpleName());
 			}
@@ -317,7 +312,7 @@ public class ReflectionHelper {
 			LOGGER.warn("Something went wrong when invoking method '{}' in type '{}' and parameters {}", method.getName(), method.getDeclaringClass().getSimpleName(), getSimpleNames(parameters));
 			handleException(e);
 		}
-		return returnValue;
+		return Optional.empty();
 	}
 	
 	/**
@@ -330,21 +325,21 @@ public class ReflectionHelper {
 	 * @param name The name of the method
 	 * @param instance The instance to invoke the method on
 	 * @param parameters The parameters of the method
-	 * @return The return value of the method
+	 * @return The return value of the method as an optional or an empty optional if the invocation failed
 	 * @throws NullPointerException If the given class or name is null
 	 * @throws IllegalStateException If no method for the given name and parameters could be found
 	 * @see #getMethod(Class, String, Class[])
 	 * @see #invoke(Method, Object, Object...)
 	 */
-	public static Object invoke(@NotNull Class<?> clazz, @NotNull String name, @Nullable Object instance, Object @Nullable ... parameters) {
+	public static @NotNull Optional<Object> invoke(@NotNull Class<?> clazz, @NotNull String name, @Nullable Object instance, Object @Nullable ... parameters) {
 		Objects.requireNonNull(clazz, "Class must not be null");
 		Objects.requireNonNull(name, "Name must not be null");
 		Object[] params = nullToEmpty(parameters);
-		Method method = getMethod(clazz, name, Lists.newArrayList(params).stream().map(Object::getClass).toArray(Class<?>[]::new));
-		if (method == null) {
+		Optional<Method> method = getMethod(clazz, name, Lists.newArrayList(params).stream().map(Object::getClass).toArray(Class<?>[]::new));
+		if (method.isEmpty()) {
 			throw new IllegalStateException("No method for name '" + name + "' and parameters " + getSimpleNames(params) + " in type '" + clazz.getSimpleName() + "' found");
 		}
-		return invoke(method, instance, params);
+		return invoke(method.orElseThrow(), instance, params);
 	}
 	//endregion
 	
@@ -355,16 +350,15 @@ public class ReflectionHelper {
 	 * Exceptions will not be logged or thrown by default.<br>
 	 * @param clazz The class to get the field from
 	 * @param name The name of the field
-	 * @return The field or null if the field could not be found
+	 * @return The field as an optional or an empty optional if the field could not be found
 	 * @throws NullPointerException If the given class or name is null
 	 * @see #handleException(Exception)
 	 */
-	public static Field getField(@NotNull Class<?> clazz, @NotNull String name) {
+	public static @NotNull Optional<Field> getField(@NotNull Class<?> clazz, @NotNull String name) {
 		Objects.requireNonNull(clazz, "Class must not be null");
 		Objects.requireNonNull(name, "Name must not be null");
-		Field field = null;
 		try {
-			field = clazz.getDeclaredField(name);
+			return Optional.of(clazz.getDeclaredField(name));
 		} catch (NoSuchFieldException e) {
 			LOGGER.warn("Fail to get field '{}' in type '{}'", name, clazz.getSimpleName());
 			handleException(e);
@@ -372,7 +366,7 @@ public class ReflectionHelper {
 			LOGGER.warn("No permission to get field '{}' in type '{}'", name, clazz.getSimpleName());
 			handleException(e);
 		}
-		return field;
+		return Optional.empty();
 	}
 	
 	/**
@@ -411,16 +405,15 @@ public class ReflectionHelper {
 	 * Exceptions will not be logged or thrown by default.<br>
 	 * @param field The field to get the value from
 	 * @param instance The instance to get the value from
-	 * @return The value of the field
+	 * @return The value of the field as an optional or an empty optional if the value could not be determined
 	 * @throws NullPointerException If the given field is null
 	 * @see #handleException(Exception)
 	 */
-	public static Object get(@NotNull Field field, @Nullable Object instance) {
+	public static @NotNull Optional<Object> get(@NotNull Field field, @Nullable Object instance) {
 		Objects.requireNonNull(field, "Field must not be null");
-		Object value = null;
 		try {
 			if (field.trySetAccessible()) {
-				value = field.get(instance);
+				return Optional.ofNullable(field.get(instance));
 			} else {
 				LOGGER.warn("The package of type '{}' is not accessible for the caller", field.getDeclaringClass().getSimpleName());
 			}
@@ -431,7 +424,7 @@ public class ReflectionHelper {
 			LOGGER.warn("Access to field '{}' in type '{}' not possible", field.getName(), field.getDeclaringClass().getSimpleName());
 			handleException(e);
 		}
-		return value;
+		return Optional.empty();
 	}
 	
 	/**
@@ -439,20 +432,20 @@ public class ReflectionHelper {
 	 * @param clazz The class to get the field from
 	 * @param name The name of the field
 	 * @param instance The instance to get the value from
-	 * @return The value of the field
+	 * @return The value of the field as an optional or an empty optional if the value could not be determined
 	 * @throws NullPointerException If the given class or name is null
 	 * @throws IllegalStateException If no field with the given name could be found
 	 * @see #getField(Class, String)
 	 * @see #get(Field, Object)
 	 */
-	public static Object get(@NotNull Class<?> clazz, @NotNull String name, @Nullable Object instance) {
+	public static @NotNull Optional<Object> get(@NotNull Class<?> clazz, @NotNull String name, @Nullable Object instance) {
 		Objects.requireNonNull(clazz, "Class must not be null");
 		Objects.requireNonNull(name, "Name must not be null");
-		Field field = getField(clazz, name);
-		if (field == null) { // Only thrown when 'reflection.exceptions.throw' is false
+		Optional<Field> field = getField(clazz, name);
+		if (field.isEmpty()) { // Only thrown when 'reflection.exceptions.throw' is false
 			throw new IllegalStateException("No field with the name '" + name + "' in type '" + clazz.getSimpleName() + "' found");
 		}
-		return get(field, instance);
+		return get(field.orElseThrow(), instance);
 	}
 	
 	/**
@@ -495,11 +488,11 @@ public class ReflectionHelper {
 	public static void set(@NotNull Class<?> clazz, @NotNull String name, @Nullable Object instance, @Nullable Object value) {
 		Objects.requireNonNull(clazz, "Class must not be null");
 		Objects.requireNonNull(name, "Name must not be null");
-		Field field = getField(clazz, name);
-		if (field == null) { // Only thrown when 'reflection.exceptions.throw' is false
+		Optional<Field> field = getField(clazz, name);
+		if (field.isEmpty()) { // Only thrown when 'reflection.exceptions.throw' is false
 			throw new IllegalStateException("No field with the name '" + name + "' in type '" + clazz.getSimpleName() + "' found");
 		}
-		set(field, instance, value);
+		set(field.orElseThrow(), instance, value);
 	}
 	//endregion
 	

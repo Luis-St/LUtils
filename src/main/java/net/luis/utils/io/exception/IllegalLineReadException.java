@@ -1,6 +1,6 @@
 /*
  * LUtils
- * Copyright (C) 2024 Luis Staudt
+ * Copyright (C) 2025 Luis Staudt
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -29,6 +29,7 @@ import java.io.IOException;
  *
  * @author Luis-St
  */
+@SuppressWarnings("CheckedExceptionClass")
 public class IllegalLineReadException extends IOException {
 	
 	/**

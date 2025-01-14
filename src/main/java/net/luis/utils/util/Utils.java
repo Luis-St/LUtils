@@ -1,6 +1,6 @@
 /*
  * LUtils
- * Copyright (C) 2024 Luis Staudt
+ * Copyright (C) 2025 Luis Staudt
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -33,7 +33,7 @@ import java.util.stream.Collectors;
  *
  * @author Luis-St
  */
-public class Utils {
+public final class Utils {
 	
 	/**
 	 * Empty UUID constant.<br>

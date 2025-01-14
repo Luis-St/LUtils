@@ -1,6 +1,6 @@
 /*
  * LUtils
- * Copyright (C) 2024 Luis Staudt
+ * Copyright (C) 2025 Luis Staudt
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -89,14 +89,14 @@ public abstract sealed class Either<L, R> permits Either.Left, Either.Right {
 	 * @param action The action to perform
 	 * @throws NullPointerException If the action is null
 	 */
-	public void ifLeft(@NotNull Consumer<? super L> action) {}
+	public abstract void ifLeft(@NotNull Consumer<? super L> action);
 	
 	/**
 	 * Performs the given action if this either instance is a right instance.<br>
 	 * @param action The action to perform
 	 * @throws NullPointerException If the action is null
 	 */
-	public void ifRight(@NotNull Consumer<? super R> action) {}
+	public abstract void ifRight(@NotNull Consumer<? super R> action);
 	
 	/**
 	 * Returns the left value as an {@link Optional}.<br>
@@ -218,6 +218,9 @@ public abstract sealed class Either<L, R> permits Either.Left, Either.Right {
 		}
 		
 		@Override
+		public void ifRight(@Nullable Consumer<? super R> action) {}
+		
+		@Override
 		public @NotNull Optional<L> left() {
 			return Optional.ofNullable(this.value);
 		}
@@ -303,6 +306,9 @@ public abstract sealed class Either<L, R> permits Either.Left, Either.Right {
 		public boolean isRight() {
 			return true;
 		}
+		
+		@Override
+		public void ifLeft(@Nullable Consumer<? super L> action) {}
 		
 		@Override
 		public void ifRight(@NotNull Consumer<? super R> action) {

@@ -1,6 +1,6 @@
 /*
  * LUtils
- * Copyright (C) 2024 Luis Staudt
+ * Copyright (C) 2025 Luis Staudt
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -47,8 +47,8 @@ class XmlContainerTest {
 		assertThrows(NullPointerException.class, () -> new XmlContainer(null, new XmlAttributes(), new XmlElements()));
 		assertThrows(NullPointerException.class, () -> new XmlContainer("test", (XmlElements) null));
 		assertThrows(NullPointerException.class, () -> new XmlContainer("test", (XmlAttributes) null));
-		assertThrows(NullPointerException.class, () -> new XmlContainer("test", (XmlAttributes) null, new XmlElements()));
-		assertThrows(NullPointerException.class, () -> new XmlContainer("test", new XmlAttributes(), (XmlElements) null));
+		assertThrows(NullPointerException.class, () -> new XmlContainer("test", null, new XmlElements()));
+		assertThrows(NullPointerException.class, () -> new XmlContainer("test", new XmlAttributes(), null));
 	}
 	
 	@Test
@@ -176,7 +176,7 @@ class XmlContainerTest {
 	@Test
 	void add() {
 		XmlContainer container = new XmlContainer("test");
-		assertThrows(NullPointerException.class, () -> container.add((XmlElement) null));
+		assertThrows(NullPointerException.class, () -> container.add(null));
 		container.add(new XmlElement("test1"));
 		assertEquals(1, container.size());
 		container.add(new XmlElement("test2"));
@@ -277,6 +277,11 @@ class XmlContainerTest {
 		assertEquals(element1, container.getAsContainer("test1"));
 		container.add(new XmlElement("test2"));
 		assertThrows(XmlTypeException.class, () -> container.getAsContainer("test2"));
+		
+		assertThrows(XmlTypeException.class, () -> container.getAsContainer(1));
+		container.remove("test2");
+		container.add(new XmlContainer("test1"));
+		assertEquals(element1, container.getAsContainer(0));
 	}
 	
 	@Test
@@ -288,6 +293,11 @@ class XmlContainerTest {
 		assertEquals(element1, container.getAsValue("test1"));
 		container.add(new XmlElement("test2"));
 		assertThrows(XmlTypeException.class, () -> container.getAsValue("test2"));
+		
+		assertThrows(XmlTypeException.class, () -> container.getAsValue(1));
+		container.remove("test2");
+		container.add(new XmlValue("test1", 0));
+		assertEquals(element1, container.getAsValue(0));
 	}
 	
 	@Test

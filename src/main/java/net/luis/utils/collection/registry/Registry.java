@@ -1,6 +1,6 @@
 /*
  * LUtils
- * Copyright (C) 2024 Luis Staudt
+ * Copyright (C) 2025 Luis Staudt
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -64,7 +64,7 @@ public class Registry<K extends RegistryKey<?>, I> implements Iterable<I> {
 	 * @param freezable Whether the registry is freezable or not
 	 * @throws NullPointerException If the key generator is null
 	 */
-	private Registry(@NotNull KeyGenerator<K> keyGenerator, boolean freezable) {
+	protected Registry(@NotNull KeyGenerator<K> keyGenerator, boolean freezable) {
 		this.keyGenerator = Objects.requireNonNull(keyGenerator, "Key generator must not be null");
 		this.freezable = freezable;
 	}

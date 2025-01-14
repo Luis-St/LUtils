@@ -1,6 +1,6 @@
 /*
  * LUtils
- * Copyright (C) 2024 Luis Staudt
+ * Copyright (C) 2025 Luis Staudt
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -35,7 +35,7 @@ import java.util.*;
  * This class is used to initialize or load a logging configuration.<br>
  * It also provides methods to enable/disable logging.<br>
  */
-public class LoggingUtils {
+public final class LoggingUtils {
 	
 	/**
 	 * A list of all loggers which are configured.<br>

@@ -1,6 +1,6 @@
 /*
  * LUtils
- * Copyright (C) 2024 Luis Staudt
+ * Copyright (C) 2025 Luis Staudt
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -837,7 +837,7 @@ public class StringReader {
 					throw new InvalidStringException("Found invalid 'x' in number of type '" + type + "' with radix '" + radix + "': '" + sign + builder + c + "'");
 				}
 				if (builder.length() != 1 || builder.charAt(0) != '0') {
-					throw new InvalidStringException();
+					throw new InvalidStringException("Found invalid 'x' in number of type '" + type + "' with radix '" + radix + "': '" + sign + builder + c + "'");
 				}
 				radix = Radix.HEXADECIMAL;
 				builder.setLength(0);

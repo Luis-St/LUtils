@@ -1,6 +1,6 @@
 /*
  * LUtils
- * Copyright (C) 2024 Luis Staudt
+ * Copyright (C) 2025 Luis Staudt
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -149,7 +149,7 @@ class XmlElementsTest {
 	@Test
 	void add() {
 		XmlElements elements = new XmlElements();
-		assertThrows(NullPointerException.class, () -> elements.add((XmlElement) null));
+		assertThrows(NullPointerException.class, () -> elements.add(null));
 		elements.add(new XmlElement("test1"));
 		assertEquals(1, elements.size());
 		elements.add(new XmlElement("test2"));
@@ -250,6 +250,11 @@ class XmlElementsTest {
 		assertEquals(element1, elements.getAsContainer("test1"));
 		elements.add(new XmlElement("test2"));
 		assertThrows(XmlTypeException.class, () -> elements.getAsContainer("test2"));
+		
+		assertThrows(XmlTypeException.class, () -> elements.getAsContainer(1));
+		elements.remove("test2");
+		elements.add(new XmlContainer("test1"));
+		assertEquals(element1, elements.getAsContainer(0));
 	}
 	
 	@Test
@@ -261,6 +266,11 @@ class XmlElementsTest {
 		assertEquals(element1, elements.getAsValue("test1"));
 		elements.add(new XmlElement("test2"));
 		assertThrows(XmlTypeException.class, () -> elements.getAsValue("test2"));
+		
+		assertThrows(XmlTypeException.class, () -> elements.getAsValue(1));
+		elements.remove("test2");
+		elements.add(new XmlValue("test1", 0));
+		assertEquals(element1, elements.getAsValue(0));
 	}
 	
 	@Test

@@ -1,6 +1,6 @@
 /*
  * LUtils
- * Copyright (C) 2024 Luis Staudt
+ * Copyright (C) 2025 Luis Staudt
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -78,10 +78,12 @@ class ReflectionHelperTest {
 		assertThrows(ReflectionException.class, () -> ReflectionHelper.getConstructor(TestClass.class, Integer.class));
 		// No args constructor
 		assertDoesNotThrow(() -> ReflectionHelper.getConstructor(TestClass.class, (Class<?>[]) null));
-		assertEquals(NO_ARGS_CONSTRUCTOR, ReflectionHelper.getConstructor(TestClass.class, (Class<?>[]) null));
+		assertTrue(ReflectionHelper.getConstructor(TestClass.class, (Class<?>[]) null).isPresent());
+		assertEquals(NO_ARGS_CONSTRUCTOR, assertDoesNotThrow(() -> ReflectionHelper.getConstructor(TestClass.class, (Class<?>[]) null).orElseThrow()));
 		// Args constructor
 		assertDoesNotThrow(() -> ReflectionHelper.getConstructor(TestClass.class, String.class));
-		assertEquals(ARGS_CONSTRUCTOR, ReflectionHelper.getConstructor(TestClass.class, String.class));
+		assertTrue(ReflectionHelper.getConstructor(TestClass.class, String.class).isPresent());
+		assertEquals(ARGS_CONSTRUCTOR, assertDoesNotThrow(() -> ReflectionHelper.getConstructor(TestClass.class, String.class).orElseThrow()));
 	}
 	
 	@Test
@@ -108,8 +110,10 @@ class ReflectionHelperTest {
 		assertThrows(ReflectionException.class, () -> ReflectionHelper.newInstance(NO_ARGS_CONSTRUCTOR, ""));
 		assertDoesNotThrow(() -> ReflectionHelper.newInstance(NO_ARGS_CONSTRUCTOR, (Object[]) null));
 		assertDoesNotThrow(() -> ReflectionHelper.newInstance(TestClass.class, (Object[]) null));
-		assertEquals(new TestClass(), ReflectionHelper.newInstance(NO_ARGS_CONSTRUCTOR, (Object[]) null));
-		assertEquals(new TestClass(), ReflectionHelper.newInstance(TestClass.class, (Object[]) null));
+		assertTrue(ReflectionHelper.newInstance(NO_ARGS_CONSTRUCTOR, (Object[]) null).isPresent());
+		assertTrue(ReflectionHelper.newInstance(TestClass.class, (Object[]) null).isPresent());
+		assertEquals(new TestClass(), assertDoesNotThrow(() -> ReflectionHelper.newInstance(NO_ARGS_CONSTRUCTOR, (Object[]) null).orElseThrow()));
+		assertEquals(new TestClass(), assertDoesNotThrow(() -> ReflectionHelper.newInstance(TestClass.class, (Object[]) null).orElseThrow()));
 		// Args constructor
 		assertThrows(NullPointerException.class, () -> ReflectionHelper.newInstance((Constructor<TestClass>) null, "constructed"));
 		assertThrows(NullPointerException.class, () -> ReflectionHelper.newInstance((Class<TestClass>) null, "constructed"));
@@ -118,8 +122,10 @@ class ReflectionHelperTest {
 		assertThrows(ReflectionException.class, () -> ReflectionHelper.newInstance(ARGS_CONSTRUCTOR, 0));
 		assertDoesNotThrow(() -> ReflectionHelper.newInstance(ARGS_CONSTRUCTOR, "constructed"));
 		assertDoesNotThrow(() -> ReflectionHelper.newInstance(TestClass.class, "constructed"));
-		assertEquals(new TestClass("constructed"), ReflectionHelper.newInstance(ARGS_CONSTRUCTOR, "constructed"));
-		assertEquals(new TestClass("constructed"), ReflectionHelper.newInstance(TestClass.class, "constructed"));
+		assertTrue(ReflectionHelper.newInstance(ARGS_CONSTRUCTOR, "constructed").isPresent());
+		assertTrue(ReflectionHelper.newInstance(TestClass.class, "constructed").isPresent());
+		assertEquals(new TestClass("constructed"), assertDoesNotThrow(() -> ReflectionHelper.newInstance(ARGS_CONSTRUCTOR, "constructed").orElseThrow()));
+		assertEquals(new TestClass("constructed"), assertDoesNotThrow(() -> ReflectionHelper.newInstance(TestClass.class, "constructed").orElseThrow()));
 	}
 	
 	//region Tests for getMethod
@@ -132,7 +138,8 @@ class ReflectionHelperTest {
 		assertThrows(ReflectionException.class, () -> ReflectionHelper.getMethod(TestClass.class, "getField", Integer.class));
 		assertThrows(ReflectionException.class, () -> ReflectionHelper.getMethod(TestClass.class, "testMethod", (Class<?>[]) null));
 		assertDoesNotThrow(() -> ReflectionHelper.getMethod(TestClass.class, "getField", (Class<?>[]) null));
-		assertEquals(GET_FIELD, ReflectionHelper.getMethod(TestClass.class, "getField", (Class<?>[]) null));
+		assertTrue(ReflectionHelper.getMethod(TestClass.class, "getField", (Class<?>[]) null).isPresent());
+		assertEquals(GET_FIELD, assertDoesNotThrow(() -> ReflectionHelper.getMethod(TestClass.class, "getField", (Class<?>[]) null).orElseThrow()));
 	}
 	
 	@Test
@@ -145,7 +152,8 @@ class ReflectionHelperTest {
 		assertThrows(ReflectionException.class, () -> ReflectionHelper.getMethod(TestClass.class, "setField", Integer.class));
 		assertThrows(ReflectionException.class, () -> ReflectionHelper.getMethod(TestClass.class, "testMethod", String.class));
 		assertDoesNotThrow(() -> ReflectionHelper.getMethod(TestClass.class, "setField", String.class));
-		assertEquals(SET_FIELD, ReflectionHelper.getMethod(TestClass.class, "setField", String.class));
+		assertTrue(ReflectionHelper.getMethod(TestClass.class, "setField", String.class).isPresent());
+		assertEquals(SET_FIELD, assertDoesNotThrow(() -> ReflectionHelper.getMethod(TestClass.class, "setField", String.class).orElseThrow()));
 	}
 	
 	@Test
@@ -157,7 +165,8 @@ class ReflectionHelperTest {
 		assertThrows(ReflectionException.class, () -> ReflectionHelper.getMethod(TestClass.class, "getStaticField", Integer.class));
 		assertThrows(ReflectionException.class, () -> ReflectionHelper.getMethod(TestClass.class, "getStaticMethod", String.class));
 		assertDoesNotThrow(() -> ReflectionHelper.getMethod(TestClass.class, "getStaticField", (Class<?>[]) null));
-		assertEquals(GET_STATIC_FIELD, ReflectionHelper.getMethod(TestClass.class, "getStaticField"));
+		assertTrue(ReflectionHelper.getMethod(TestClass.class, "getStaticField", (Class<?>[]) null).isPresent());
+		assertEquals(GET_STATIC_FIELD, assertDoesNotThrow(() -> ReflectionHelper.getMethod(TestClass.class, "getStaticField").orElseThrow()));
 	}
 	
 	@Test
@@ -170,7 +179,8 @@ class ReflectionHelperTest {
 		assertThrows(ReflectionException.class, () -> ReflectionHelper.getMethod(TestClass.class, "setStaticField", Integer.class));
 		assertThrows(ReflectionException.class, () -> ReflectionHelper.getMethod(TestClass.class, "testStaticField", String.class));
 		assertDoesNotThrow(() -> ReflectionHelper.getMethod(TestClass.class, "setStaticField", String.class));
-		assertEquals(SET_STATIC_FIELD, ReflectionHelper.getMethod(TestClass.class, "setStaticField", String.class));
+		assertTrue(ReflectionHelper.getMethod(TestClass.class, "setStaticField", String.class).isPresent());
+		assertEquals(SET_STATIC_FIELD, assertDoesNotThrow(() -> ReflectionHelper.getMethod(TestClass.class, "setStaticField", String.class).orElseThrow()));
 	}
 	//endregion
 	
@@ -246,8 +256,10 @@ class ReflectionHelperTest {
 		assertThrows(NullPointerException.class, () -> ReflectionHelper.invoke(TestClass.class, "getField", null, (Object[]) null));
 		assertDoesNotThrow(() -> ReflectionHelper.invoke(GET_FIELD, new TestClass(), (Object[]) null));
 		assertDoesNotThrow(() -> ReflectionHelper.invoke(TestClass.class, "getField", new TestClass(), (Object[]) null));
-		assertEquals("field", ReflectionHelper.invoke(GET_FIELD, new TestClass(), (Object[]) null));
-		assertEquals("field", ReflectionHelper.invoke(TestClass.class, "getField", new TestClass(), (Object[]) null));
+		assertTrue(ReflectionHelper.invoke(GET_FIELD, new TestClass(), (Object[]) null).isPresent());
+		assertTrue(ReflectionHelper.invoke(TestClass.class, "getField", new TestClass(), (Object[]) null).isPresent());
+		assertEquals("field", assertDoesNotThrow(() -> ReflectionHelper.invoke(GET_FIELD, new TestClass(), (Object[]) null).orElseThrow()));
+		assertEquals("field", assertDoesNotThrow(() -> ReflectionHelper.invoke(TestClass.class, "getField", new TestClass(), (Object[]) null).orElseThrow()));
 	}
 	
 	@Test
@@ -265,8 +277,8 @@ class ReflectionHelperTest {
 		assertThrows(ReflectionException.class, () -> ReflectionHelper.invoke(TestClass.class, "setField", new TestClass(), 0));
 		assertDoesNotThrow(() -> ReflectionHelper.invoke(SET_FIELD, new TestClass(), "invoked"));
 		assertDoesNotThrow(() -> ReflectionHelper.invoke(TestClass.class, "setField", new TestClass(), "invoked"));
-		assertNull(ReflectionHelper.invoke(SET_FIELD, new TestClass(), "invoked"));
-		assertNull(ReflectionHelper.invoke(TestClass.class, "setField", new TestClass(), "invoked"));
+		assertTrue(ReflectionHelper.invoke(SET_FIELD, new TestClass(), "invoked").isEmpty());
+		assertTrue(ReflectionHelper.invoke(TestClass.class, "setField", new TestClass(), "invoked").isEmpty());
 	}
 	
 	@Test
@@ -282,10 +294,14 @@ class ReflectionHelperTest {
 		assertDoesNotThrow(() -> ReflectionHelper.invoke(TestClass.class, "getStaticField", null, (Object[]) null));
 		assertDoesNotThrow(() -> ReflectionHelper.invoke(GET_STATIC_FIELD, new TestClass(), (Object[]) null));
 		assertDoesNotThrow(() -> ReflectionHelper.invoke(TestClass.class, "getStaticField", new TestClass(), (Object[]) null));
-		assertEquals("staticField", ReflectionHelper.invoke(GET_STATIC_FIELD, null, (Object[]) null));
-		assertEquals("staticField", ReflectionHelper.invoke(TestClass.class, "getStaticField", null, (Object[]) null));
-		assertEquals("staticField", ReflectionHelper.invoke(GET_STATIC_FIELD, new TestClass(), (Object[]) null));
-		assertEquals("staticField", ReflectionHelper.invoke(TestClass.class, "getStaticField", new TestClass(), (Object[]) null));
+		assertTrue(ReflectionHelper.invoke(GET_STATIC_FIELD, null, (Object[]) null).isPresent());
+		assertTrue(ReflectionHelper.invoke(TestClass.class, "getStaticField", null, (Object[]) null).isPresent());
+		assertTrue(ReflectionHelper.invoke(GET_STATIC_FIELD, new TestClass(), (Object[]) null).isPresent());
+		assertTrue(ReflectionHelper.invoke(TestClass.class, "getStaticField", new TestClass(), (Object[]) null).isPresent());
+		assertEquals("staticField", assertDoesNotThrow(() -> ReflectionHelper.invoke(GET_STATIC_FIELD, null, (Object[]) null).orElseThrow()));
+		assertEquals("staticField", assertDoesNotThrow(() -> ReflectionHelper.invoke(TestClass.class, "getStaticField", null, (Object[]) null).orElseThrow()));
+		assertEquals("staticField", assertDoesNotThrow(() -> ReflectionHelper.invoke(GET_STATIC_FIELD, new TestClass(), (Object[]) null).orElseThrow()));
+		assertEquals("staticField", assertDoesNotThrow(() -> ReflectionHelper.invoke(TestClass.class, "getStaticField", new TestClass(), (Object[]) null).orElseThrow()));
 	}
 	
 	@Test
@@ -303,10 +319,10 @@ class ReflectionHelperTest {
 		assertDoesNotThrow(() -> ReflectionHelper.invoke(TestClass.class, "setStaticField", null, "invoked"));
 		assertDoesNotThrow(() -> ReflectionHelper.invoke(SET_STATIC_FIELD, new TestClass(), "invoked"));
 		assertDoesNotThrow(() -> ReflectionHelper.invoke(TestClass.class, "setStaticField", new TestClass(), "invoked"));
-		assertNull(ReflectionHelper.invoke(SET_STATIC_FIELD, null, "invoked"));
-		assertNull(ReflectionHelper.invoke(TestClass.class, "setStaticField", null, "invoked"));
-		assertNull(ReflectionHelper.invoke(SET_STATIC_FIELD, new TestClass(), "invoked"));
-		assertNull(ReflectionHelper.invoke(TestClass.class, "setStaticField", new TestClass(), "invoked"));
+		assertTrue(ReflectionHelper.invoke(SET_STATIC_FIELD, null, "invoked").isEmpty());
+		assertTrue(ReflectionHelper.invoke(TestClass.class, "setStaticField", null, "invoked").isEmpty());
+		assertTrue(ReflectionHelper.invoke(SET_STATIC_FIELD, new TestClass(), "invoked").isEmpty());
+		assertTrue(ReflectionHelper.invoke(TestClass.class, "setStaticField", new TestClass(), "invoked").isEmpty());
 	}
 	//endregion
 	
@@ -319,7 +335,8 @@ class ReflectionHelperTest {
 		// Above the null checks, below the functional tests
 		assertThrows(ReflectionException.class, () -> ReflectionHelper.getField(TestClass.class, "testField"));
 		assertDoesNotThrow(() -> ReflectionHelper.getField(TestClass.class, "field"));
-		assertEquals(FIELD, ReflectionHelper.getField(TestClass.class, "field"));
+		assertTrue(ReflectionHelper.getField(TestClass.class, "field").isPresent());
+		assertEquals(FIELD, assertDoesNotThrow(() -> ReflectionHelper.getField(TestClass.class, "field").orElseThrow()));
 	}
 	
 	@Test
@@ -330,7 +347,8 @@ class ReflectionHelperTest {
 		// Above the null checks, below the functional tests
 		assertThrows(ReflectionException.class, () -> ReflectionHelper.getField(TestClass.class, "staticTestField"));
 		assertDoesNotThrow(() -> ReflectionHelper.getField(TestClass.class, "staticField"));
-		assertEquals(STATIC_FIELD, ReflectionHelper.getField(TestClass.class, "staticField"));
+		assertTrue(ReflectionHelper.getField(TestClass.class, "staticField").isPresent());
+		assertEquals(STATIC_FIELD, assertDoesNotThrow(() -> ReflectionHelper.getField(TestClass.class, "staticField").orElseThrow()));
 	}
 	//endregion
 	
@@ -375,8 +393,10 @@ class ReflectionHelperTest {
 		assertThrows(ReflectionException.class, () -> ReflectionHelper.get(TestClass.class, "testField", null));
 		assertDoesNotThrow(() -> ReflectionHelper.get(FIELD, new TestClass()));
 		assertDoesNotThrow(() -> ReflectionHelper.get(TestClass.class, "field", new TestClass()));
-		assertEquals("field", ReflectionHelper.get(FIELD, new TestClass()));
-		assertEquals("field", ReflectionHelper.get(TestClass.class, "field", new TestClass()));
+		assertTrue(ReflectionHelper.get(FIELD, new TestClass()).isPresent());
+		assertTrue(ReflectionHelper.get(TestClass.class, "field", new TestClass()).isPresent());
+		assertEquals("field", assertDoesNotThrow(() -> ReflectionHelper.get(FIELD, new TestClass()).orElseThrow()));
+		assertEquals("field", assertDoesNotThrow(() -> ReflectionHelper.get(TestClass.class, "field", new TestClass()).orElseThrow()));
 	}
 	
 	@Test
@@ -391,10 +411,14 @@ class ReflectionHelperTest {
 		assertDoesNotThrow(() -> ReflectionHelper.get(STATIC_FIELD, new TestClass()));
 		assertDoesNotThrow(() -> ReflectionHelper.get(TestClass.class, "staticField", null));
 		assertDoesNotThrow(() -> ReflectionHelper.get(TestClass.class, "staticField", new TestClass()));
-		assertEquals("invoked", ReflectionHelper.get(STATIC_FIELD, null));
-		assertEquals("invoked", ReflectionHelper.get(TestClass.class, "staticField", null));
-		assertEquals("invoked", ReflectionHelper.get(STATIC_FIELD, new TestClass()));
-		assertEquals("invoked", ReflectionHelper.get(TestClass.class, "staticField", new TestClass()));
+		assertTrue(ReflectionHelper.get(STATIC_FIELD, null).isPresent());
+		assertTrue(ReflectionHelper.get(TestClass.class, "staticField", null).isPresent());
+		assertTrue(ReflectionHelper.get(STATIC_FIELD, new TestClass()).isPresent());
+		assertTrue(ReflectionHelper.get(TestClass.class, "staticField", new TestClass()).isPresent());
+		assertEquals("invoked", assertDoesNotThrow(() -> ReflectionHelper.get(STATIC_FIELD, null).orElseThrow()));
+		assertEquals("invoked", assertDoesNotThrow(() -> ReflectionHelper.get(TestClass.class, "staticField", null).orElseThrow()));
+		assertEquals("invoked", assertDoesNotThrow(() -> ReflectionHelper.get(STATIC_FIELD, new TestClass()).orElseThrow()));
+		assertEquals("invoked", assertDoesNotThrow(() -> ReflectionHelper.get(TestClass.class, "staticField", new TestClass()).orElseThrow()));
 	}
 	//endregion
 	
@@ -446,7 +470,8 @@ class ReflectionHelperTest {
 	//endregion
 	
 	//region Internal reflection test class
-	private static class TestClass {
+	@SuppressWarnings("EqualsAndHashcode")
+	private static final class TestClass {
 		
 		private static String staticField = "staticField";
 		

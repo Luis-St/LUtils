@@ -1,6 +1,6 @@
 /*
  * LUtils
- * Copyright (C) 2024 Luis Staudt
+ * Copyright (C) 2025 Luis Staudt
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -336,7 +336,6 @@ public class XmlReader implements AutoCloseable {
 			reader.skipWhitespaces();
 			if (reader.peek() == '\'' || reader.peek() == '"') {
 				reader.readQuotedString();
-				continue;
 			} else if (reader.peek() == '<') {
 				int resultIndex = reader.getIndex();
 				reader.skip();
@@ -369,7 +368,6 @@ public class XmlReader implements AutoCloseable {
 							continue;
 						}
 						scope.push(elementName.strip());
-						continue;
 					} else if (elementName.charAt(elementName.length() - 1) == '>') {
 						elementName = elementName.substring(0, elementName.length() - 1).stripTrailing();
 						if (elementName.isEmpty()) {

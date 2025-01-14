@@ -1,6 +1,6 @@
 /*
  * LUtils
- * Copyright (C) 2024 Luis Staudt
+ * Copyright (C) 2025 Luis Staudt
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -26,8 +26,7 @@ import org.jetbrains.annotations.*;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 import java.util.function.Predicate;
 
 /**
@@ -79,6 +78,7 @@ import java.util.function.Predicate;
  *
  * @param <T> The type of the enum-like class
  */
+@FunctionalInterface
 @SuppressWarnings({ "unchecked", "SuspiciousMethodCalls" })
 public interface EnumLike<T extends EnumLike<T>> extends Comparable<T> {
 	
@@ -109,8 +109,11 @@ public interface EnumLike<T extends EnumLike<T>> extends Comparable<T> {
 		List<Field> constants = ReflectionUtils.getFieldsForType(enumType, enumType);
 		for (Field field : constants) {
 			if (isConstant(field)) {
-				T constant = (T) ReflectionHelper.get(field, null);
-				values.add(new EnumConstant<>(field.getName(), constant.ordinal(), constant));
+				Optional<?> optional = ReflectionHelper.get(field, null);
+				if (optional.isPresent()) {
+					T constant = (T) optional.orElseThrow();
+					values.add(new EnumConstant<>(field.getName(), constant.ordinal(), constant));
+				}
 			}
 		}
 		return List.copyOf(values);
@@ -137,7 +140,7 @@ public interface EnumLike<T extends EnumLike<T>> extends Comparable<T> {
 		Objects.requireNonNull(enumType, "Enum type must not be null");
 		Predicate<Field> isConstant = field -> field.isAnnotationPresent(ReflectiveUsage.class) && Modifier.isPrivate(field.getModifiers()) && isConstant(field);
 		if (ReflectionHelper.hasField(enumType, "VALUES", isConstant)) {
-			return List.copyOf((List<T>) ReflectionHelper.get(enumType, "VALUES", null));
+			return List.copyOf((List<T>) ReflectionHelper.get(enumType, "VALUES", null).orElseThrow());
 		}
 		throw new IllegalStateException("No 'VALUES' field in " + enumType.getSimpleName() + " class with ReflectiveUsage annotation and signature 'private static final List<" + enumType.getSimpleName() + ">' found");
 	}

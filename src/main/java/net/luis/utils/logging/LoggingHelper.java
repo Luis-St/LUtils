@@ -1,6 +1,6 @@
 /*
  * LUtils
- * Copyright (C) 2024 Luis Staudt
+ * Copyright (C) 2025 Luis Staudt
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -41,7 +41,7 @@ import static net.luis.utils.logging.LoggerConfiguration.*;
  *
  * @author Luis-St
  */
-class LoggingHelper {
+final class LoggingHelper {
 	
 	/**
 	 * The pattern to match a property in the format 'key=value'.<br>

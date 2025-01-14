@@ -1,6 +1,6 @@
 /*
  * LUtils
- * Copyright (C) 2024 Luis Staudt
+ * Copyright (C) 2025 Luis Staudt
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -68,7 +68,7 @@ public class Chance {
 	 * The chance will be clamped between 0.0 and 1.0.<br>
 	 * @param chance The chance value as a double
 	 */
-	private Chance(double chance) {
+	protected Chance(double chance) { // protected to prevent instantiation from outside but allow inheritance
 		this.chance = Mth.clamp(chance, 0.0, 1.0);
 	}
 	

@@ -1,6 +1,6 @@
 /*
  * LUtils
- * Copyright (C) 2024 Luis Staudt
+ * Copyright (C) 2025 Luis Staudt
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -35,10 +35,20 @@ module net.luis.utils {
 	exports net.luis.utils.collection.registry;
 	exports net.luis.utils.collection.registry.key;
 	exports net.luis.utils.collection.util;
+	
 	exports net.luis.utils.exception;
+	
 	exports net.luis.utils.function;
+	exports net.luis.utils.function.throwable;
 	
 	exports net.luis.utils.io;
+	exports net.luis.utils.io.codec;
+	exports net.luis.utils.io.codec.decoder;
+	exports net.luis.utils.io.codec.encoder;
+	exports net.luis.utils.io.codec.group.function;
+	exports net.luis.utils.io.codec.group.grouper;
+	exports net.luis.utils.io.codec.provider;
+	exports net.luis.utils.io.codec.struct;
 	exports net.luis.utils.io.data;
 	exports net.luis.utils.io.data.config;
 	exports net.luis.utils.io.data.json;

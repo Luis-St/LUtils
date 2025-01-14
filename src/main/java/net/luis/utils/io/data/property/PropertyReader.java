@@ -1,6 +1,6 @@
 /*
  * LUtils
- * Copyright (C) 2024 Luis Staudt
+ * Copyright (C) 2025 Luis Staudt
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -141,7 +141,7 @@ public class PropertyReader implements AutoCloseable {
 	public @NotNull Properties readProperties() {
 		List<Property> properties = Lists.newArrayList();
 		while (true) {
-			String line = null;
+			String line;
 			try {
 				line = this.reader.readLine();
 			} catch (Exception e) {
@@ -199,18 +199,17 @@ public class PropertyReader implements AutoCloseable {
 			return "";
 		} else if (valueParts.length == 2) {
 			return valueParts[1];
-		} else {
-			StringBuilder builder = new StringBuilder(valueParts[1]);
-			for (int i = 2; i < valueParts.length; i++) {
-				builder.append(this.config.separator()).append(valueParts[i]);
-			}
-			return builder.toString();
 		}
+		StringBuilder builder = new StringBuilder(valueParts[1]);
+		for (int i = 2; i < valueParts.length; i++) {
+			builder.append(this.config.separator()).append(valueParts[i]);
+		}
+		return builder.toString();
 	}
 	
 	/**
 	 * Parses the given key and value and returns the properties that have been read.<br>
-	 * If advanced parsing is enabled, the key can be a {@link PropertyReader compacted} or {@link PropertyReader variable key}.<br>
+	 * If advanced parsing is enabled, the key can be a compacted or variable key.<br>
 	 * @param rawKey The key to parse
 	 * @param rawValue The value to parse
 	 * @return The properties that have been read
@@ -265,7 +264,7 @@ public class PropertyReader implements AutoCloseable {
 			if (Character.isWhitespace(key.charAt(i))) {
 				count++;
 			} else {
-				break;
+				return count;
 			}
 		}
 		return count;
@@ -288,9 +287,8 @@ public class PropertyReader implements AutoCloseable {
 		}
 		if (isKey) {
 			return str.substring(0, str.length() - alignment);
-		} else {
-			return str.substring(alignment);
 		}
+		return str.substring(alignment);
 	}
 	//endregion
 	
@@ -315,7 +313,7 @@ public class PropertyReader implements AutoCloseable {
 	
 	/**
 	 * Validates and resolves the given advanced key and returns the resolved keys.<br>
-	 * The key can be a {@link PropertyReader compacted} or {@link PropertyReader variable key}.<br>
+	 * The key can be a compacted or variable key.<br>
 	 * @param key The key to resolve
 	 * @return The resolved keys
 	 * @throws NullPointerException If the key is null

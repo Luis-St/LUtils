@@ -1,6 +1,6 @@
 /*
  * LUtils
- * Copyright (C) 2024 Luis Staudt
+ * Copyright (C) 2025 Luis Staudt
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -51,7 +51,7 @@ public class Property {
 	 * @param value The value of the property
 	 * @throws NullPointerException If the key or the value is null
 	 */
-	private Property(@NotNull String key, @NotNull String value) {
+	protected Property(@NotNull String key, @NotNull String value) { // protected to prevent instantiation from outside but allow inheritance
 		this.key = Objects.requireNonNull(key, "Key must not be null");
 		this.value = Objects.requireNonNull(value, "Value must not be null");
 	}

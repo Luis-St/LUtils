@@ -1,6 +1,6 @@
 /*
  * LUtils
- * Copyright (C) 2024 Luis Staudt
+ * Copyright (C) 2025 Luis Staudt
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -21,6 +21,8 @@ package net.luis.utils.io.data.json;
 import net.luis.utils.io.data.json.exception.JsonTypeException;
 import org.junit.jupiter.api.Test;
 
+import java.nio.charset.StandardCharsets;
+
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
@@ -29,6 +31,8 @@ import static org.junit.jupiter.api.Assertions.*;
  * @author Luis-St
  */
 class JsonPrimitiveTest {
+	
+	private static final JsonConfig CUSTOM_CONFIG = new JsonConfig(true, true, "  ", true, 10, true, 2, StandardCharsets.UTF_8);
 	
 	@Test
 	void constructor() {
@@ -100,6 +104,20 @@ class JsonPrimitiveTest {
 		assertFalse(new JsonPrimitive(0.0).getAsBoolean());
 		assertTrue(new JsonPrimitive("true").getAsBoolean());
 		assertFalse(new JsonPrimitive("false").getAsBoolean());
+		assertThrows(IllegalStateException.class, () -> new JsonPrimitive("test").getAsBoolean());
+	}
+	@Test
+	void getAsBooleanStrict() {
+		assertTrue(new JsonPrimitive(true).getAsBooleanStrict());
+		assertFalse(new JsonPrimitive(false).getAsBooleanStrict());
+		assertTrue(new JsonPrimitive("true").getAsBooleanStrict());
+		assertFalse(new JsonPrimitive("false").getAsBooleanStrict());
+		assertThrows(IllegalStateException.class, () -> new JsonPrimitive(1).getAsBooleanStrict());
+		assertThrows(IllegalStateException.class, () -> new JsonPrimitive(0).getAsBooleanStrict());
+		assertThrows(IllegalStateException.class, () -> new JsonPrimitive(1.0).getAsBooleanStrict());
+		assertThrows(IllegalStateException.class, () -> new JsonPrimitive(0.0).getAsBooleanStrict());
+		assertThrows(IllegalStateException.class, () -> new JsonPrimitive("test").getAsBooleanStrict());
+
 	}
 	
 	@Test
@@ -114,6 +132,7 @@ class JsonPrimitiveTest {
 		assertEquals(1.0, new JsonPrimitive(1.0).getAsNumber());
 		assertEquals((short) 1, new JsonPrimitive("1s").getAsNumber());
 		assertEquals(1.0F, new JsonPrimitive("1.0f").getAsNumber());
+		assertThrows(IllegalStateException.class, () -> new JsonPrimitive("test").getAsNumber());
 	}
 	
 	@Test
@@ -130,6 +149,18 @@ class JsonPrimitiveTest {
 	}
 	
 	@Test
+	void getAsByteStrict() {
+		assertEquals((byte) 1, new JsonPrimitive(1).getAsByteStrict());
+		assertEquals((byte) 1, new JsonPrimitive(1L).getAsByteStrict());
+		assertEquals((byte) 1, new JsonPrimitive(1.0F).getAsByteStrict());
+		assertEquals((byte) 1, new JsonPrimitive(1.0).getAsByteStrict());
+		assertEquals((byte) 1, new JsonPrimitive("1b").getAsByteStrict());
+		assertThrows(IllegalStateException.class, () -> new JsonPrimitive(true).getAsByteStrict());
+		assertThrows(IllegalStateException.class, () -> new JsonPrimitive(false).getAsByteStrict());
+		assertThrows(IllegalStateException.class, () -> new JsonPrimitive("test").getAsByteStrict());
+	}
+	
+	@Test
 	void getAsShort() {
 		assertEquals((short) 0, new JsonPrimitive(false).getAsShort());
 		assertEquals((short) 1, new JsonPrimitive(true).getAsShort());
@@ -140,6 +171,18 @@ class JsonPrimitiveTest {
 		assertEquals((short) 1, new JsonPrimitive(1.0F).getAsShort());
 		assertEquals((short) 1, new JsonPrimitive(1.0).getAsShort());
 		assertEquals((short) 1, new JsonPrimitive("1s").getAsShort());
+	}
+	
+	@Test
+	void getAsShortStrict() {
+		assertEquals((short) 1, new JsonPrimitive(1).getAsShortStrict());
+		assertEquals((short) 1, new JsonPrimitive(1L).getAsShortStrict());
+		assertEquals((short) 1, new JsonPrimitive(1.0F).getAsShortStrict());
+		assertEquals((short) 1, new JsonPrimitive(1.0).getAsShortStrict());
+		assertEquals((short) 1, new JsonPrimitive("1s").getAsShortStrict());
+		assertThrows(IllegalStateException.class, () -> new JsonPrimitive(true).getAsShortStrict());
+		assertThrows(IllegalStateException.class, () -> new JsonPrimitive(false).getAsShortStrict());
+		assertThrows(IllegalStateException.class, () -> new JsonPrimitive("test").getAsShortStrict());
 	}
 	
 	@Test
@@ -156,6 +199,18 @@ class JsonPrimitiveTest {
 	}
 	
 	@Test
+	void getAsIntegerStrict() {
+		assertEquals(1, new JsonPrimitive(1).getAsIntegerStrict());
+		assertEquals(1, new JsonPrimitive(1L).getAsIntegerStrict());
+		assertEquals(1, new JsonPrimitive(1.0F).getAsIntegerStrict());
+		assertEquals(1, new JsonPrimitive(1.0).getAsIntegerStrict());
+		assertEquals(1, new JsonPrimitive("1i").getAsIntegerStrict());
+		assertThrows(IllegalStateException.class, () -> new JsonPrimitive(true).getAsIntegerStrict());
+		assertThrows(IllegalStateException.class, () -> new JsonPrimitive(false).getAsIntegerStrict());
+		assertThrows(IllegalStateException.class, () -> new JsonPrimitive("test").getAsIntegerStrict());
+	}
+	
+	@Test
 	void getAsLong() {
 		assertEquals(0L, new JsonPrimitive(false).getAsLong());
 		assertEquals(1L, new JsonPrimitive(true).getAsLong());
@@ -166,6 +221,18 @@ class JsonPrimitiveTest {
 		assertEquals(1L, new JsonPrimitive(1.0F).getAsLong());
 		assertEquals(1L, new JsonPrimitive(1.0).getAsLong());
 		assertEquals(1L, new JsonPrimitive("1l").getAsLong());
+	}
+	
+	@Test
+	void getAsLongStrict() {
+		assertEquals(1L, new JsonPrimitive(1).getAsLongStrict());
+		assertEquals(1L, new JsonPrimitive(1L).getAsLongStrict());
+		assertEquals(1L, new JsonPrimitive(1.0F).getAsLongStrict());
+		assertEquals(1L, new JsonPrimitive(1.0).getAsLongStrict());
+		assertEquals(1L, new JsonPrimitive("1l").getAsLongStrict());
+		assertThrows(IllegalStateException.class, () -> new JsonPrimitive(true).getAsLongStrict());
+		assertThrows(IllegalStateException.class, () -> new JsonPrimitive(false).getAsLongStrict());
+		assertThrows(IllegalStateException.class, () -> new JsonPrimitive("test").getAsLongStrict());
 	}
 	
 	@Test
@@ -183,6 +250,19 @@ class JsonPrimitiveTest {
 	}
 	
 	@Test
+	void getAsFloatStrict() {
+		assertEquals(1.0F, new JsonPrimitive(1).getAsFloatStrict());
+		assertEquals(1.0F, new JsonPrimitive(1L).getAsFloatStrict());
+		assertEquals(1.0F, new JsonPrimitive(1.0F).getAsFloatStrict());
+		assertEquals(1.0F, new JsonPrimitive(1.0).getAsFloatStrict());
+		assertEquals(1.0F, new JsonPrimitive("1f").getAsFloatStrict());
+		assertEquals(1.0F, new JsonPrimitive("1.0f").getAsFloatStrict());
+		assertThrows(IllegalStateException.class, () -> new JsonPrimitive(true).getAsFloatStrict());
+		assertThrows(IllegalStateException.class, () -> new JsonPrimitive(false).getAsFloatStrict());
+		assertThrows(IllegalStateException.class, () -> new JsonPrimitive("test").getAsFloatStrict());
+	}
+	
+	@Test
 	void getAsDouble() {
 		assertEquals(0.0, new JsonPrimitive(false).getAsDouble());
 		assertEquals(1.0, new JsonPrimitive(true).getAsDouble());
@@ -197,6 +277,19 @@ class JsonPrimitiveTest {
 	}
 	
 	@Test
+	void getAsDoubleStrict() {
+		assertEquals(1.0, new JsonPrimitive(1).getAsDoubleStrict());
+		assertEquals(1.0, new JsonPrimitive(1L).getAsDoubleStrict());
+		assertEquals(1.0, new JsonPrimitive(1.0F).getAsDoubleStrict());
+		assertEquals(1.0, new JsonPrimitive(1.0).getAsDoubleStrict());
+		assertEquals(1.0, new JsonPrimitive("1d").getAsDoubleStrict());
+		assertEquals(1.0, new JsonPrimitive("1.0d").getAsDoubleStrict());
+		assertThrows(IllegalStateException.class, () -> new JsonPrimitive(true).getAsDoubleStrict());
+		assertThrows(IllegalStateException.class, () -> new JsonPrimitive(false).getAsDoubleStrict());
+		assertThrows(IllegalStateException.class, () -> new JsonPrimitive("test").getAsDoubleStrict());
+	}
+	
+	@Test
 	void toStringDefaultConfig() {
 		assertEquals("false", new JsonPrimitive(false).toString());
 		assertEquals("true", new JsonPrimitive(true).toString());
@@ -208,5 +301,10 @@ class JsonPrimitiveTest {
 	@Test
 	void toStringCustomConfig() {
 		assertDoesNotThrow(() -> new JsonPrimitive(10).toString(null));
+		assertEquals("false", new JsonPrimitive(false).toString(CUSTOM_CONFIG));
+		assertEquals("true", new JsonPrimitive(true).toString(CUSTOM_CONFIG));
+		assertEquals("1", new JsonPrimitive(1).toString(CUSTOM_CONFIG));
+		assertEquals("1.0", new JsonPrimitive(1.0).toString(CUSTOM_CONFIG));
+		assertEquals("\"test\"", new JsonPrimitive("test").toString(CUSTOM_CONFIG));
 	}
 }

@@ -1,6 +1,6 @@
 /*
  * LUtils
- * Copyright (C) 2024 Luis Staudt
+ * Copyright (C) 2025 Luis Staudt
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -96,5 +96,26 @@ class ResultTest {
 		assertThrows(NullPointerException.class, () -> Result.success(100).map(null));
 		assertEquals(Result.success(200), Result.success(100).map(i -> i * 2));
 		assertEquals(Result.error("Error"), Result.error("Error").map(i -> 10));
+	}
+	
+	@Test
+	void flatMap() {
+		assertThrows(NullPointerException.class, () -> Result.success(100).flatMap(null));
+		assertEquals(Result.success(200), Result.success(100).flatMap(i -> Result.success(i * 2)));
+		assertEquals(Result.error("Error"), Result.error("Error").flatMap(i -> Result.success(10)));
+	}
+	
+	@Test
+	void orElse() {
+		assertThrows(NullPointerException.class, () -> Result.success(100).orElse(null));
+		assertEquals(100, Result.success(100).orElse(200));
+		assertEquals(200, Result.error("Error").orElse(200));
+	}
+	
+	@Test
+	void orElseGet() {
+		assertThrows(NullPointerException.class, () -> Result.success(100).orElseGet(null));
+		assertEquals(100, Result.success(100).orElseGet(() -> 200));
+		assertEquals(200, Result.error("Error").orElseGet(() -> 200));
 	}
 }

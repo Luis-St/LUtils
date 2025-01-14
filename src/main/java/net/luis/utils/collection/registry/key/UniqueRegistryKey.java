@@ -1,6 +1,6 @@
 /*
  * LUtils
- * Copyright (C) 2024 Luis Staudt
+ * Copyright (C) 2025 Luis Staudt
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -29,12 +29,12 @@ import java.util.UUID;
  *
  * @author Luis-St
  */
-public class UniqueRegistryKey implements RegistryKey<UUID> {
+public final class UniqueRegistryKey implements RegistryKey<UUID> {
 	
 	/**
 	 * The default unique registry key with an empty UUID ({@link Utils#EMPTY_UUID}).<br>
 	 */
-	public static final UniqueRegistryKey DEFAULT = UniqueRegistryKey.of(Utils.EMPTY_UUID);
+	public static final UniqueRegistryKey DEFAULT = of(Utils.EMPTY_UUID);
 	
 	/**
 	 * The unique id of the registry key.<br>

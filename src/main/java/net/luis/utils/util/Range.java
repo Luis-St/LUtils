@@ -1,6 +1,6 @@
 /*
  * LUtils
- * Copyright (C) 2024 Luis Staudt
+ * Copyright (C) 2025 Luis Staudt
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -53,7 +53,7 @@ public class Range {
 	 * @param max The maximum value of the range
 	 * @throws IllegalArgumentException If the maximum value is less than the minimum value
 	 */
-	private Range(double min, double max) {
+	protected Range(double min, double max) { // protected to prevent instantiation from outside but allow inheritance
 		this.min = min;
 		this.max = max;
 		if (this.min > this.max) {

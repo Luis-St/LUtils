@@ -1,6 +1,6 @@
 /*
  * LUtils
- * Copyright (C) 2024 Luis Staudt
+ * Copyright (C) 2025 Luis Staudt
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -81,8 +81,7 @@ class PropertyTest {
 		assertEquals(10L, Property.of("key", "10").getNumber());
 		assertEquals(10.0, Property.of("key", "10.0").getNumber());
 		Property property = Property.of("key", "10f");
-		assertInstanceOf(Float.class, property.getNumber());
-		assertEquals(10.0f, property.getNumber());
+		assertEquals(10.0f, assertInstanceOf(Float.class, property.getNumber()));
 		
 		assertEquals(10, Property.of("key", "a").getNumber(10));
 		assertEquals(10.0, Property.of("key", "a").getNumber(10.0));

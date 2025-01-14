@@ -1,6 +1,6 @@
 /*
  * LUtils
- * Copyright (C) 2024 Luis Staudt
+ * Copyright (C) 2025 Luis Staudt
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -27,12 +27,12 @@ import java.util.Objects;
  *
  * @author Luis-St
  */
-public class IntegerRegistryKey implements RegistryKey<Integer> {
+public final class IntegerRegistryKey implements RegistryKey<Integer> {
 	
 	/**
 	 * The default integer registry key with the value 0.<br>
 	 */
-	public static final IntegerRegistryKey DEFAULT = IntegerRegistryKey.of(0);
+	public static final IntegerRegistryKey DEFAULT = of(0);
 	
 	/**
 	 * The integer value of the key.<br>

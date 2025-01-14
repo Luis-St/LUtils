@@ -1,6 +1,6 @@
 /*
  * LUtils
- * Copyright (C) 2024 Luis Staudt
+ * Copyright (C) 2025 Luis Staudt
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -64,7 +64,7 @@ public class XmlElements {
 	 * @throws NullPointerException If the elements are null
 	 * @throws XmlTypeException If the elements are not valid for the collection type
 	 */
-	public XmlElements(@NotNull List<XmlElement> elements) {
+	public XmlElements(@NotNull List<? extends XmlElement> elements) {
 		Objects.requireNonNull(elements, "Elements must not be null").forEach(this::add);
 	}
 	
@@ -75,7 +75,7 @@ public class XmlElements {
 	 * @throws NullPointerException If the elements are null
 	 * @throws XmlTypeException If the elements are not valid for the collection type
 	 */
-	public XmlElements(@NotNull Map<String, XmlElement> elements) {
+	public XmlElements(@NotNull Map<String, ? extends XmlElement> elements) {
 		Objects.requireNonNull(elements, "Elements must not be null").forEach((name, element) -> this.add(element));
 	}
 	
@@ -319,7 +319,7 @@ public class XmlElements {
 	 * This method should only be used if the collection is an object.<br>
 	 * @param name The name of the element to get
 	 * @return The element with the given name as a container
-	 * @throws XmlTypeException If the collection is an array
+	 * @throws XmlTypeException If the collection is an array or the element is not a container
 	 * @throws NoSuchXmlElementException If no element with the given name exists
 	 * @see #get(String)
 	 */
@@ -336,7 +336,7 @@ public class XmlElements {
 	 * This method should only be used if the collection is an object.<br>
 	 * @param name The name of the element to get
 	 * @return The element with the given name as a value
-	 * @throws XmlTypeException If the collection is an array
+	 * @throws XmlTypeException If the collection is an array or the element is not a value
 	 * @throws NoSuchXmlElementException If no element with the given name exists
 	 * @see #get(String)
 	 */

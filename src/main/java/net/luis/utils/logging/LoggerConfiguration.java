@@ -1,6 +1,6 @@
 /*
  * LUtils
- * Copyright (C) 2024 Luis Staudt
+ * Copyright (C) 2025 Luis Staudt
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -652,7 +652,7 @@ public class LoggerConfiguration {
 	 */
 	private @NotNull String getPattern(@NotNull LoggingType type, @NotNull Level level) {
 		String pattern = this.patternOverrides.getOrDefault(type, Maps.newHashMap()).getOrDefault(level, DEFAULT_PATTERNS.get(level));
-		return "%replace{" + pattern + "}{\\[\\s*]\\s*}{}";
+		return "%replace{" + pattern + "}{] \\[]}{]}";
 	}
 	//endregion
 }

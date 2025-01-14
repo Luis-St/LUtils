@@ -1,6 +1,6 @@
 /*
  * LUtils
- * Copyright (C) 2024 Luis Staudt
+ * Copyright (C) 2025 Luis Staudt
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -37,7 +37,7 @@ import java.util.stream.Collectors;
  * @author Luis-St
  */
 @SuppressWarnings("ErrorNotRethrown")
-public class ClassPathUtils {
+public final class ClassPathUtils {
 	
 	/**
 	 * The logger for this class.<br>

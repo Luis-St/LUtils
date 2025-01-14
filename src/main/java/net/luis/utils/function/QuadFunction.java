@@ -1,6 +1,6 @@
 /*
  * LUtils
- * Copyright (C) 2024 Luis Staudt
+ * Copyright (C) 2025 Luis Staudt
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -54,10 +54,10 @@ public interface QuadFunction<T, U, V, W, R> {
 	 * @param after The function to apply after this function is applied
 	 * @return The composed function
 	 * @param <S> The type of the output of the {@code after} function, and of the composed function
-	 * @throws NullPointerException If the {@code after} function is null
+	 * @throws NullPointerException If the after function is null
 	 */
 	default <S> @NotNull QuadFunction<T, U, V, W, S> andThen(@NotNull Function<? super R, ? extends S> after) {
-		Objects.requireNonNull(after, "'After' function must not be null");
-		return (T t, U u, V v, W w) -> after.apply(this.apply(t, u, v, w));
+		Objects.requireNonNull(after, "After function must not be null");
+		return (t, u, v, w) -> after.apply(this.apply(t, u, v, w));
 	}
 }

@@ -1,6 +1,6 @@
 /*
  * LUtils
- * Copyright (C) 2024 Luis Staudt
+ * Copyright (C) 2025 Luis Staudt
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -166,7 +166,7 @@ public record Priority(@NotNull String name, long priority) implements EnumLike<
 	 */
 	public static @NotNull Priority getNearest(long priority) {
 		BigInteger target = BigInteger.valueOf(priority);
-		return Priority.VALUES.stream().reduce((p1, p2) -> {
+		return VALUES.stream().reduce((p1, p2) -> {
 			BigInteger diff1 = BigInteger.valueOf(p1.priority()).subtract(target).abs();
 			BigInteger diff2 = BigInteger.valueOf(p2.priority()).subtract(target).abs();
 			return diff1.compareTo(diff2) < 0 ? p1 : p2;

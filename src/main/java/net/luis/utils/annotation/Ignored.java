@@ -1,6 +1,6 @@
 /*
  * LUtils
- * Copyright (C) 2024 Luis Staudt
+ * Copyright (C) 2025 Luis Staudt
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -26,13 +26,13 @@ import java.lang.annotation.*;
  *     Will be removed after the final release of java's unnamed variables.<br>
  * </p>
  *
- * @see Ignored.Always
- * @see Ignored.Maybe
- * @see Ignored.Never
+ * @see Always
+ * @see Maybe
+ * @see Never
  *
  * @author Luis-St
  */
-public class Ignored {
+public final class Ignored {
 	
 	/**
 	 * Private constructor to prevent instantiation.<br>
@@ -71,7 +71,7 @@ public class Ignored {
 	 * This is the default behavior of any parameter in java.<br>
 	 * <p>
 	 *     The annotation is only used to reset the behavior of a parameter that is<br>
-	 *     annotated with {@link Ignored.Always} or {@link Ignored.Maybe}.<br>
+	 *     annotated with {@link Always} or {@link Maybe}.<br>
 	 *     An example would be an overridden method where the superclass ignores a parameter.<br>
 	 * </p>
 	 *
