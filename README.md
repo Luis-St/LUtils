@@ -70,7 +70,16 @@ The library provides the following packages:
     * `util`
 * `exception`
 * `function`
+  * `throwable`
 * `io`
+    * `codec` (since 7.0.0)
+        * `decoder`
+        * `encoder`
+        * `group`
+            * `function`
+            * `grouper`
+        * `provider`
+        * `struct`
     * `data` (since 6.0.0)
         * `config`
         * `json`
