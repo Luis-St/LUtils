@@ -71,6 +71,7 @@ module net.luis.utils {
 	exports net.luis.utils.resources;
 	
 	exports net.luis.utils.util;
+	exports net.luis.utils.util.getter;
 	exports net.luis.utils.util.unsafe;
 	exports net.luis.utils.util.unsafe.classpath;
 	exports net.luis.utils.util.unsafe.reflection;
