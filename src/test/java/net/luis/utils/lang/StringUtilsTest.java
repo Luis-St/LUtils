@@ -342,4 +342,30 @@ class StringUtilsTest {
 		assertArrayEquals(new String[] { "a\\b" }, StringUtils.splitNotEscaped("a\\bc", 'c'));
 		assertArrayEquals(new String[] { "a\\:b", "c", "d\\:e" }, StringUtils.splitNotEscaped("a\\:b:c:d\\:e", ':'));
 	}
+	
+	
+	@Test
+	void extract() {
+		assertDoesNotThrow(() -> StringUtils.extract(null, (String) null));
+		assertDoesNotThrow(() -> StringUtils.extract(null, "abc"));
+		assertDoesNotThrow(() -> StringUtils.extract("abc", (String) null));
+		assertArrayEquals(ArrayUtils.EMPTY_STRING_ARRAY, StringUtils.extract(null, (String) null));
+		assertArrayEquals(ArrayUtils.EMPTY_STRING_ARRAY, StringUtils.extract(null, ""));
+		assertArrayEquals(ArrayUtils.EMPTY_STRING_ARRAY, StringUtils.extract("abc", (String) null));
+		assertArrayEquals(ArrayUtils.EMPTY_STRING_ARRAY, StringUtils.extract("", "abc"));
+		assertArrayEquals(ArrayUtils.EMPTY_STRING_ARRAY, StringUtils.extract("abc", ""));
+		assertArrayEquals(new String[] { "a" }, StringUtils.extract("abc", "a"));
+		assertArrayEquals(new String[] { "abc" }, StringUtils.extract("abc", "abc"));
+		assertArrayEquals(new String[] { "[def]" }, StringUtils.extract("abc.[def].ghi", "\\[.*?]"));
+		
+		assertDoesNotThrow(() -> StringUtils.extract(null, (Pattern) null));
+		assertDoesNotThrow(() -> StringUtils.extract("abc", (Pattern) null));
+		assertDoesNotThrow(() -> StringUtils.extract(null, Pattern.compile("a")));
+		assertArrayEquals(ArrayUtils.EMPTY_STRING_ARRAY, StringUtils.extract(null, (Pattern) null));
+		assertArrayEquals(ArrayUtils.EMPTY_STRING_ARRAY, StringUtils.extract(null, Pattern.compile("a")));
+		assertArrayEquals(ArrayUtils.EMPTY_STRING_ARRAY, StringUtils.extract("abc", (Pattern) null));
+		assertArrayEquals(new String[] { "a" }, StringUtils.extract("abc", Pattern.compile("a")));
+		assertArrayEquals(new String[] { "abc" }, StringUtils.extract("abc", Pattern.compile("abc")));
+		assertArrayEquals(new String[] { "[def]" }, StringUtils.extract("abc.[def].ghi", Pattern.compile("\\[.*?]")));
+	}
 }
