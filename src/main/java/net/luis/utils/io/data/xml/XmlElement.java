@@ -376,7 +376,7 @@ public sealed class XmlElement permits XmlContainer, XmlValue {
 	 * @param parser The parser to convert the attribute value to the desired type
 	 * @return The value of the attribute as the specified type
 	 * @param <T> The type of the value
-	 * @see XmlAttributes#getAs(String, ThrowableFunction) 
+	 * @see XmlAttributes#getAs(String, ThrowableFunction)
 	 */
 	public <T> @NotNull T getAttributeAs(@NotNull String key, @NotNull ThrowableFunction<String, T, ? extends Exception> parser) {
 		return this.attributes.getAs(key, parser);

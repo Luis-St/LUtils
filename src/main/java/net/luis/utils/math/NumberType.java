@@ -21,7 +21,8 @@ package net.luis.utils.math;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.*;
 
-import java.math.*;
+import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.util.Objects;
 import java.util.Set;
 import java.util.function.BiFunction;
@@ -399,7 +400,7 @@ public enum NumberType {
 		if (this.bitSize > targetType.bitSize) {
 			return false;
 		}
-		if (targetType.isFloatingPoint())  {
+		if (targetType.isFloatingPoint()) {
 			return this.bitSize <= targetType.bitSize;
 		}
 		return this.minValue.doubleValue() >= targetType.minValue.doubleValue() && this.maxValue.doubleValue() <= targetType.maxValue.doubleValue();

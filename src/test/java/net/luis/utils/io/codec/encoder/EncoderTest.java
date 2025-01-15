@@ -53,7 +53,7 @@ class EncoderTest {
 	@Test
 	void encodeStart() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Encoder<Integer>  decoder = Codec.INTEGER;
+		Encoder<Integer> decoder = Codec.INTEGER;
 		
 		assertThrows(NullPointerException.class, () -> decoder.encodeStart(null, typeProvider.empty(), 1));
 		assertThrows(NullPointerException.class, () -> decoder.encodeStart(typeProvider, null, 1));

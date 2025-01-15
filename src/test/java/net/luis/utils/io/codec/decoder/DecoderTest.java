@@ -37,7 +37,7 @@ class DecoderTest {
 	@Test
 	void decode() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Decoder<Integer>  decoder = Codec.INTEGER;
+		Decoder<Integer> decoder = Codec.INTEGER;
 		
 		assertThrows(NullPointerException.class, () -> decoder.decode(null, new JsonPrimitive(1)));
 		assertThrows(DecoderException.class, () -> decoder.decode(typeProvider, null));
@@ -47,7 +47,7 @@ class DecoderTest {
 	@Test
 	void decodeStart() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Decoder<Integer>  decoder = Codec.INTEGER;
+		Decoder<Integer> decoder = Codec.INTEGER;
 		
 		assertThrows(NullPointerException.class, () -> decoder.decodeStart(null, new JsonPrimitive(1)));
 		

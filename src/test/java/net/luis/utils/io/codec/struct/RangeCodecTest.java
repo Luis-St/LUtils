@@ -201,6 +201,7 @@ class RangeCodecTest {
 		
 		assertTrue(assertDoesNotThrow(() -> codec.decodeKey(typeProvider, "test")).isError());
 	}
+	
 	@Test
 	void decodeFloatingPointKey() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
