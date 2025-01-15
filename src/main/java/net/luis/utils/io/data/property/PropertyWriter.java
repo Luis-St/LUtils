@@ -19,11 +19,11 @@
 package net.luis.utils.io.data.property;
 
 import net.luis.utils.io.data.OutputProvider;
-import net.luis.utils.util.ValueConverter;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.*;
 import java.util.Objects;
+import java.util.function.Function;
 
 /**
  * Represents a writer for properties.<br>
@@ -84,11 +84,11 @@ public class PropertyWriter implements AutoCloseable {
 	 * @throws NullPointerException If the key, the value or the converter is null
 	 * @throws UncheckedIOException If an I/O error occurs (optional)
 	 */
-	public <T> void writeProperty(@NotNull String key, @NotNull T value, @NotNull ValueConverter<String, T> converter) {
+	public <T> void writeProperty(@NotNull String key, @NotNull T value, @NotNull Function<T, String> converter) {
 		Objects.requireNonNull(key, "Key must not be null");
 		Objects.requireNonNull(value, "Value must not be null");
 		Objects.requireNonNull(converter, "Converter must not be null");
-		this.writeProperty(Property.of(key, converter.convert(value)));
+		this.writeProperty(Property.of(key, converter.apply(value)));
 	}
 	
 	/**
