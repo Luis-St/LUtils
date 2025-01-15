@@ -96,6 +96,7 @@ The library provides the following packages:
     * `algorithm`
 * `resources`
 * `util`
+    * `getter`
     * `unsafe`
         * `classpath` (not tested)
         * `reflection`
