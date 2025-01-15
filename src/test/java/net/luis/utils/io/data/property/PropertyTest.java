@@ -18,6 +18,7 @@
 
 package net.luis.utils.io.data.property;
 
+import net.luis.utils.function.throwable.ThrowableFunction;
 import net.luis.utils.io.reader.ScopedStringReader;
 import net.luis.utils.io.reader.StringReader;
 import org.junit.jupiter.api.Test;
@@ -60,107 +61,111 @@ class PropertyTest {
 	}
 	
 	@Test
-	void getString() {
-		assertEquals("value0", Property.of("key", "value0").getString());
-		assertEquals("value1", Property.of("key", "value1").getString());
+	void getAsString() {
+		assertEquals("value0", Property.of("key", "value0").getAsString());
+		assertEquals("value1", Property.of("key", "value1").getAsString());
 	}
 	
 	@Test
-	void getBoolean() {
-		assertThrows(IllegalArgumentException.class, () -> Property.of("key", "a").getBoolean());
-		assertTrue(Property.of("key", "true").getBoolean());
-		assertFalse(Property.of("key", "false").getBoolean());
+	void getAsBoolean() {
+		assertThrows(IllegalArgumentException.class, () -> Property.of("key", "a").getAsBoolean());
+		assertTrue(Property.of("key", "true").getAsBoolean());
+		assertFalse(Property.of("key", "false").getAsBoolean());
 		
-		assertTrue(Property.of("key", "a").getBoolean(true));
-		assertFalse(Property.of("key", "a").getBoolean(false));
+		assertTrue(Property.of("key", "a").getAsBoolean(true));
+		assertFalse(Property.of("key", "a").getAsBoolean(false));
 	}
 	
 	@Test
-	void getNumber() {
-		assertThrows(IllegalArgumentException.class, () -> Property.of("key", "a").getNumber());
-		assertEquals(10L, Property.of("key", "10").getNumber());
-		assertEquals(10.0, Property.of("key", "10.0").getNumber());
+	void getAsNumber() {
+		assertThrows(IllegalArgumentException.class, () -> Property.of("key", "a").getAsNumber());
+		assertEquals(10L, Property.of("key", "10").getAsNumber());
+		assertEquals(10.0, Property.of("key", "10.0").getAsNumber());
 		Property property = Property.of("key", "10f");
-		assertEquals(10.0f, assertInstanceOf(Float.class, property.getNumber()));
+		assertEquals(10.0f, assertInstanceOf(Float.class, property.getAsNumber()));
 		
-		assertEquals(10, Property.of("key", "a").getNumber(10));
-		assertEquals(10.0, Property.of("key", "a").getNumber(10.0));
+		assertEquals(10, Property.of("key", "a").getAsNumber(10));
+		assertEquals(10.0, Property.of("key", "a").getAsNumber(10.0));
 	}
 	
 	@Test
-	void getByte() {
-		assertThrows(IllegalArgumentException.class, () -> Property.of("key", "10.0").getByte());
-		assertThrows(IllegalArgumentException.class, () -> Property.of("key", "10f").getByte());
-		assertEquals((byte) 10, Property.of("key", "10").getByte());
-		assertEquals((byte) 127, Property.of("key", "0x7F").getByte());
-		assertEquals((byte) 127, Property.of("key", "0b1111111").getByte());
+	void getAsByte() {
+		assertThrows(IllegalArgumentException.class, () -> Property.of("key", "10.0").getAsByte());
+		assertThrows(IllegalArgumentException.class, () -> Property.of("key", "10f").getAsByte());
+		assertEquals((byte) 10, Property.of("key", "10").getAsByte());
+		assertEquals((byte) 127, Property.of("key", "0x7F").getAsByte());
+		assertEquals((byte) 127, Property.of("key", "0b1111111").getAsByte());
 		
-		assertEquals((byte) 10, Property.of("key", "10.0").getByte((byte) 10));
-		assertEquals((byte) 10, Property.of("key", "10f").getByte((byte) 10));
+		assertEquals((byte) 10, Property.of("key", "10.0").getAsByte((byte) 10));
+		assertEquals((byte) 10, Property.of("key", "10f").getAsByte((byte) 10));
 	}
 	
 	@Test
-	void getShort() {
-		assertThrows(IllegalArgumentException.class, () -> Property.of("key", "10.0").getShort());
-		assertThrows(IllegalArgumentException.class, () -> Property.of("key", "10f").getShort());
-		assertEquals((short) 10, Property.of("key", "10").getShort());
-		assertEquals((short) 32767, Property.of("key", "0x7FFF").getShort());
-		assertEquals((short) 32767, Property.of("key", "0b111111111111111").getShort());
+	void getAsShort() {
+		assertThrows(IllegalArgumentException.class, () -> Property.of("key", "10.0").getAsShort());
+		assertThrows(IllegalArgumentException.class, () -> Property.of("key", "10f").getAsShort());
+		assertEquals((short) 10, Property.of("key", "10").getAsShort());
+		assertEquals((short) 32767, Property.of("key", "0x7FFF").getAsShort());
+		assertEquals((short) 32767, Property.of("key", "0b111111111111111").getAsShort());
 		
-		assertEquals((short) 10, Property.of("key", "10.0").getShort((short) 10));
-		assertEquals((short) 10, Property.of("key", "10f").getShort((short) 10));
+		assertEquals((short) 10, Property.of("key", "10.0").getAsShort((short) 10));
+		assertEquals((short) 10, Property.of("key", "10f").getAsShort((short) 10));
 	}
 	
 	@Test
-	void getInteger() {
-		assertThrows(IllegalArgumentException.class, () -> Property.of("key", "10.0").getInteger());
-		assertThrows(IllegalArgumentException.class, () -> Property.of("key", "10f").getInteger());
-		assertEquals(10, Property.of("key", "10").getInteger());
-		assertEquals(2147483647, Property.of("key", "0x7FFFFFFF").getInteger());
-		assertEquals(2147483647, Property.of("key", "0b1111111111111111111111111111111").getInteger());
+	void getAsInteger() {
+		assertThrows(IllegalArgumentException.class, () -> Property.of("key", "10.0").getAsInteger());
+		assertThrows(IllegalArgumentException.class, () -> Property.of("key", "10f").getAsInteger());
+		assertEquals(10, Property.of("key", "10").getAsInteger());
+		assertEquals(2147483647, Property.of("key", "0x7FFFFFFF").getAsInteger());
+		assertEquals(2147483647, Property.of("key", "0b1111111111111111111111111111111").getAsInteger());
 		
-		assertEquals(10, Property.of("key", "10.0").getInteger(10));
-		assertEquals(10, Property.of("key", "10f").getInteger(10));
+		assertEquals(10, Property.of("key", "10.0").getAsInteger(10));
+		assertEquals(10, Property.of("key", "10f").getAsInteger(10));
 	}
 	
 	@Test
-	void getLong() {
-		assertThrows(IllegalArgumentException.class, () -> Property.of("key", "10.0").getLong());
-		assertThrows(IllegalArgumentException.class, () -> Property.of("key", "10f").getLong());
-		assertEquals(10L, Property.of("key", "10").getLong());
-		assertEquals(9223372036854775807L, Property.of("key", "0x7FFFFFFFFFFFFFFF").getLong());
-		assertEquals(9223372036854775807L, Property.of("key", "0b111111111111111111111111111111111111111111111111111111111111111").getLong());
+	void getAsLong() {
+		assertThrows(IllegalArgumentException.class, () -> Property.of("key", "10.0").getAsLong());
+		assertThrows(IllegalArgumentException.class, () -> Property.of("key", "10f").getAsLong());
+		assertEquals(10L, Property.of("key", "10").getAsLong());
+		assertEquals(9223372036854775807L, Property.of("key", "0x7FFFFFFFFFFFFFFF").getAsLong());
+		assertEquals(9223372036854775807L, Property.of("key", "0b111111111111111111111111111111111111111111111111111111111111111").getAsLong());
 		
-		assertEquals(10L, Property.of("key", "10.0").getLong(10L));
-		assertEquals(10L, Property.of("key", "10f").getLong(10L));
+		assertEquals(10L, Property.of("key", "10.0").getAsLong(10L));
+		assertEquals(10L, Property.of("key", "10f").getAsLong(10L));
 	}
 	
 	@Test
-	void getFloat() {
-		assertThrows(IllegalArgumentException.class, () -> Property.of("key", "10.0d").getFloat());
-		assertEquals(10.0f, Property.of("key", "10.0").getFloat());
-		assertEquals(10.0f, Property.of("key", "10.0f").getFloat());
+	void getAsFloat() {
+		assertThrows(IllegalArgumentException.class, () -> Property.of("key", "10.0d").getAsFloat());
+		assertEquals(10.0f, Property.of("key", "10.0").getAsFloat());
+		assertEquals(10.0f, Property.of("key", "10.0f").getAsFloat());
 		
-		assertEquals(10.0f, Property.of("key", "10.0d").getFloat(10.0f));
+		assertEquals(10.0f, Property.of("key", "10.0d").getAsFloat(10.0f));
 	}
 	
 	@Test
-	void getDouble() {
-		assertThrows(IllegalArgumentException.class, () -> Property.of("key", "10.0f").getDouble());
-		assertEquals(10.0, Property.of("key", "10.0").getDouble());
-		assertEquals(10.0, Property.of("key", "10.0d").getDouble());
+	void getAsDouble() {
+		assertThrows(IllegalArgumentException.class, () -> Property.of("key", "10.0f").getAsDouble());
+		assertEquals(10.0, Property.of("key", "10.0").getAsDouble());
+		assertEquals(10.0, Property.of("key", "10.0d").getAsDouble());
 		
-		assertEquals(10.0, Property.of("key", "10.0f").getDouble(10.0));
+		assertEquals(10.0, Property.of("key", "10.0f").getAsDouble(10.0));
 	}
 	
 	@Test
-	void get() {
-		Property property = Property.of("key", "[10, 20, 30]");
-		assertThrows(NullPointerException.class, () -> property.get(null));
-		assertThrows(IllegalArgumentException.class, () -> property.get(value -> new ScopedStringReader(value).readSet(StringReader::readInt)));
-		assertIterableEquals(List.of(10, 20, 30), property.get(value -> new ScopedStringReader(value).readList(StringReader::readInt)));
+	void getAs() {
+		ThrowableFunction<String, List<Boolean>, Exception> parser = string -> new ScopedStringReader(string).readList(StringReader::readBoolean);
 		
-		assertIterableEquals(List.of(10, 20, 30), property.get(value -> new ScopedStringReader(value).readSet(StringReader::readInt), List.of(10, 20, 30)));
+		assertThrows(NullPointerException.class, () -> Property.of("test", "[true, false]").getAs(null));
+		assertThrows(IllegalArgumentException.class, () -> Property.of("test", "true").getAs(parser));
+		assertIterableEquals(List.of(true, false), Property.of("test", "[true, false]").getAs(parser));
+		
+		assertThrows(NullPointerException.class, () -> Property.of("test", "true").getAs(parser, null));
+		assertThrows(NullPointerException.class, () -> Property.of("test", "[true, false]").getAs(parser, null));
+		assertIterableEquals(List.of(true, false), Property.of("test", "[true, false]").getAs(parser, List.of()));
+		assertIterableEquals(List.of(), Property.of("test", "true").getAs(parser, List.of()));
 	}
 	
 	@Test

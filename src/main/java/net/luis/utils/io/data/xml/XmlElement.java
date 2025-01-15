@@ -18,8 +18,8 @@
 
 package net.luis.utils.io.data.xml;
 
+import net.luis.utils.function.throwable.ThrowableFunction;
 import net.luis.utils.io.data.xml.exception.XmlTypeException;
-import net.luis.utils.util.ValueParser;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -376,9 +376,9 @@ public sealed class XmlElement permits XmlContainer, XmlValue {
 	 * @param parser The parser to convert the attribute value to the desired type
 	 * @return The value of the attribute as the specified type
 	 * @param <T> The type of the value
-	 * @see XmlAttributes#getAs(String, ValueParser)
+	 * @see XmlAttributes#getAs(String, ThrowableFunction) 
 	 */
-	public <T> @NotNull T getAttributeAs(@NotNull String key, @NotNull ValueParser<String, T> parser) {
+	public <T> @NotNull T getAttributeAs(@NotNull String key, @NotNull ThrowableFunction<String, T, ? extends Exception> parser) {
 		return this.attributes.getAs(key, parser);
 	}
 	//endregion

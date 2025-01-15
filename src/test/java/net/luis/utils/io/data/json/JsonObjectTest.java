@@ -287,7 +287,7 @@ class JsonObjectTest {
 		object.add("key0", JsonNull.INSTANCE);
 		assertThrows(JsonTypeException.class, () -> object.getAsNumber("key0"));
 		object.add("key1", new JsonPrimitive(10));
-		assertEquals(10, assertDoesNotThrow(() -> object.getAsNumber("key1")));
+		assertEquals(10L, assertDoesNotThrow(() -> object.getAsNumber("key1")));
 	}
 	
 	@Test

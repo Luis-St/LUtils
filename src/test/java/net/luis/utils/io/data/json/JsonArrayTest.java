@@ -279,7 +279,7 @@ class JsonArrayTest {
 		assertThrows(JsonTypeException.class, () -> array.getAsNumber(0));
 		array.set(0, new JsonPrimitive(10));
 		assertThrows(JsonArrayIndexOutOfBoundsException.class, () -> array.getAsJsonPrimitive(-1));
-		assertEquals(10, assertDoesNotThrow(() -> array.getAsNumber(0)));
+		assertEquals(10L, assertDoesNotThrow(() -> array.getAsNumber(0)));
 	}
 	
 	@Test

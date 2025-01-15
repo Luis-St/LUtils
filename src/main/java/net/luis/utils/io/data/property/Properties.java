@@ -153,7 +153,7 @@ public class Properties {
 			for (int i = 0; i < keyParts.length - 1; i++) {
 				currentMap = (Map<String, Object>) currentMap.computeIfAbsent(keyParts[i], k -> Maps.newLinkedHashMap());
 			}
-			currentMap.put(keyParts[keyParts.length - 1], property.getString());
+			currentMap.put(keyParts[keyParts.length - 1], property.getAsString());
 		});
 		return map;
 	}

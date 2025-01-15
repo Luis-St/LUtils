@@ -18,9 +18,9 @@
 
 package net.luis.utils.io.data.xml;
 
+import net.luis.utils.function.throwable.ThrowableFunction;
 import net.luis.utils.io.reader.ScopedStringReader;
 import net.luis.utils.io.reader.StringReader;
-import net.luis.utils.util.ValueParser;
 import org.junit.jupiter.api.Test;
 
 import java.nio.charset.StandardCharsets;
@@ -199,14 +199,14 @@ class XmlValueTest {
 	
 	@Test
 	void getAs() {
-		ValueParser<String, List<Boolean>> parser = string -> new ScopedStringReader(string).readList(StringReader::readBoolean);
+		ThrowableFunction<String, List<Boolean>, Exception> parser = string -> new ScopedStringReader(string).readList(StringReader::readBoolean);
 		
 		assertThrows(NullPointerException.class, () -> new XmlValue("test", "[true, false]").getAs(null));
 		assertThrows(IllegalArgumentException.class, () -> new XmlValue("test", "true").getAs(parser));
 		assertIterableEquals(List.of(true, false), new XmlValue("test", "[true, false]").getAs(parser));
 		
 		assertThrows(NullPointerException.class, () -> new XmlValue("test", "true").getAs(parser, null));
-		assertDoesNotThrow(() -> new XmlValue("test", "[true, false]").getAs(parser, null));
+		assertThrows(NullPointerException.class, () -> new XmlValue("test", "[true, false]").getAs(parser, null));
 		assertIterableEquals(List.of(true, false), new XmlValue("test", "[true, false]").getAs(parser, List.of()));
 		assertIterableEquals(List.of(), new XmlValue("test", "true").getAs(parser, List.of()));
 		

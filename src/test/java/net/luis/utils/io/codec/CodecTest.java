@@ -158,7 +158,7 @@ class CodecTest {
 		
 		JsonElement encoded = codec.encode(JsonTypeProvider.INSTANCE, TestEnum.ONE);
 		assertInstanceOf(JsonPrimitive.class, encoded);
-		assertEquals(0, encoded.getAsJsonPrimitive().getAsIntegerStrict());
+		assertEquals(0, encoded.getAsJsonPrimitive().getAsInteger());
 		
 		TestEnum decoded = codec.decode(JsonTypeProvider.INSTANCE, encoded);
 		assertEquals(TestEnum.ONE, decoded);
@@ -355,7 +355,7 @@ class CodecTest {
 		
 		Result<JsonElement> encoded = assertDoesNotThrow(() -> codec.encodeStart(typeProvider, typeProvider.empty(), 1));
 		assertTrue(encoded.isSuccess());
-		assertEquals(1, encoded.orThrow().getAsJsonPrimitive().getAsIntegerStrict());
+		assertEquals(1, encoded.orThrow().getAsJsonPrimitive().getAsInteger());
 		
 		Result<Integer> decoded = assertDoesNotThrow(() -> codec.decodeStart(typeProvider, new JsonPrimitive(1.0)));
 		assertTrue(decoded.isSuccess());
@@ -434,7 +434,7 @@ class CodecTest {
 		
 		Result<JsonElement> encoded = assertDoesNotThrow(() -> codec.encodeStart(typeProvider, typeProvider.empty(), 1));
 		assertTrue(encoded.isSuccess());
-		assertEquals(1, encoded.orThrow().getAsJsonPrimitive().getAsIntegerStrict());
+		assertEquals(1, encoded.orThrow().getAsJsonPrimitive().getAsInteger());
 		
 		Result<Integer> decoded = assertDoesNotThrow(() -> codec.decodeStart(typeProvider, new JsonPrimitive(1.0)));
 		assertTrue(decoded.isSuccess());

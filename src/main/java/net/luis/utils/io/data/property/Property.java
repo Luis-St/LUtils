@@ -18,9 +18,7 @@
 
 package net.luis.utils.io.data.property;
 
-import net.luis.utils.exception.InvalidStringException;
-import net.luis.utils.io.reader.StringReader;
-import net.luis.utils.util.ValueParser;
+import net.luis.utils.util.getter.DefaultValueGetter;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -34,7 +32,7 @@ import java.util.Objects;
  *
  * @author Luis-St
  */
-public class Property {
+public class Property implements DefaultValueGetter {
 	
 	/**
 	 * The key of the property.<br>
@@ -83,264 +81,15 @@ public class Property {
 		return this.value;
 	}
 	
-	//region Getters
-	
 	/**
-	 * Returns the value of the property as a string.<br>
-	 * Equivalent to {@link #getRawValue()}.<br>
+	 * {@inheritDoc}
+	 * This method is equivalent to {@link #getRawValue()}.<br>
 	 * @return The value of the property
 	 */
-	public @NotNull String getString() {
+	@Override
+	public @NotNull String getAsString() {
 		return this.value;
 	}
-	
-	/**
-	 * Returns the value of the property as a boolean.<br>
-	 * @return The value of the property
-	 * @throws IllegalArgumentException If the value is not a boolean
-	 */
-	public boolean getBoolean() {
-		if (StringUtils.equalsAnyIgnoreCase(this.value, "true", "false")) {
-			return Boolean.parseBoolean(this.getString());
-		}
-		throw new IllegalArgumentException("Value is not a boolean");
-	}
-	
-	/**
-	 * Returns the value of the property as a boolean.<br>
-	 * In case the value is not a boolean, the given default value is returned.<br>
-	 * @param defaultValue The default value
-	 * @return The value of the property
-	 */
-	public boolean getBoolean(boolean defaultValue) {
-		try {
-			return this.getBoolean();
-		} catch (Exception e) {
-			return defaultValue;
-		}
-	}
-	
-	/**
-	 * Returns the value of the property as a number.<br>
-	 * @return The value of the property
-	 * @throws IllegalArgumentException If the value is not a number
-	 */
-	public @NotNull Number getNumber() {
-		try {
-			return new StringReader(this.value).readNumber();
-		} catch (InvalidStringException e) {
-			throw new IllegalArgumentException(e.getMessage(), e.getCause());
-		}
-	}
-	
-	/**
-	 * Returns the value of the property as a number.<br>
-	 * In case the value is not a number, the given default value is returned.<br>
-	 * @param defaultValue The default value
-	 * @return The value of the property
-	 * @throws NullPointerException If the default value is null
-	 */
-	public @NotNull Number getNumber(@NotNull Number defaultValue) {
-		try {
-			return this.getNumber();
-		} catch (Exception e) {
-			return Objects.requireNonNull(defaultValue, "Default value must not be null");
-		}
-	}
-	
-	/**
-	 * Returns the value of the property as a byte.<br>
-	 * @return The value of the property
-	 * @throws IllegalArgumentException If the value is not a byte
-	 */
-	public byte getByte() {
-		try {
-			return new StringReader(this.value).readByte();
-		} catch (InvalidStringException e) {
-			throw new IllegalArgumentException(e.getMessage(), e.getCause());
-		}
-	}
-	
-	/**
-	 * Returns the value of the property as a byte.<br>
-	 * In case the value is not a byte, the given default value is returned.<br>
-	 * @param defaultValue The default value
-	 * @return The value of the property
-	 */
-	public byte getByte(byte defaultValue) {
-		try {
-			return this.getByte();
-		} catch (Exception e) {
-			return defaultValue;
-		}
-	}
-	
-	/**
-	 * Returns the value of the property as a short.<br>
-	 * @return The value of the property
-	 * @throws IllegalArgumentException If the value is not a short
-	 */
-	public short getShort() {
-		try {
-			return new StringReader(this.value).readShort();
-		} catch (InvalidStringException e) {
-			throw new IllegalArgumentException(e.getMessage(), e.getCause());
-		}
-	}
-	
-	/**
-	 * Returns the value of the property as a short.<br>
-	 * In case the value is not a short, the given default value is returned.<br>
-	 * @param defaultValue The default value
-	 * @return The value of the property
-	 */
-	public short getShort(short defaultValue) {
-		try {
-			return this.getShort();
-		} catch (Exception e) {
-			return defaultValue;
-		}
-	}
-	
-	/**
-	 * Returns the value of the property as an integer.<br>
-	 * @return The value of the property
-	 * @throws IllegalArgumentException If the value is not an integer
-	 */
-	public int getInteger() {
-		try {
-			return new StringReader(this.value).readInt();
-		} catch (InvalidStringException e) {
-			throw new IllegalArgumentException(e.getMessage(), e.getCause());
-		}
-	}
-	
-	/**
-	 * Returns the value of the property as an integer.<br>
-	 * In case the value is not an integer, the given default value is returned.<br>
-	 * @param defaultValue The default value
-	 * @return The value of the property
-	 */
-	public int getInteger(int defaultValue) {
-		try {
-			return this.getInteger();
-		} catch (Exception e) {
-			return defaultValue;
-		}
-	}
-	
-	/**
-	 * Returns the value of the property as a long.<br>
-	 * @return The value of the property
-	 * @throws IllegalArgumentException If the value is not a long
-	 */
-	public long getLong() {
-		try {
-			return new StringReader(this.value).readLong();
-		} catch (InvalidStringException e) {
-			throw new IllegalArgumentException(e.getMessage(), e.getCause());
-		}
-	}
-	
-	/**
-	 * Returns the value of the property as a long.<br>
-	 * In case the value is not a long, the given default value is returned.<br>
-	 * @param defaultValue The default value
-	 * @return The value of the property
-	 */
-	public long getLong(long defaultValue) {
-		try {
-			return this.getLong();
-		} catch (Exception e) {
-			return defaultValue;
-		}
-	}
-	
-	/**
-	 * Returns the value of the property as a float.<br>
-	 * @return The value of the property
-	 * @throws IllegalArgumentException If the value is not a float
-	 */
-	public float getFloat() {
-		try {
-			return new StringReader(this.value).readFloat();
-		} catch (InvalidStringException e) {
-			throw new IllegalArgumentException(e.getMessage(), e.getCause());
-		}
-	}
-	
-	/**
-	 * Returns the value of the property as a float.<br>
-	 * In case the value is not a float, the given default value is returned.<br>
-	 * @param defaultValue The default value
-	 * @return The value of the property
-	 */
-	public float getFloat(float defaultValue) {
-		try {
-			return this.getFloat();
-		} catch (Exception e) {
-			return defaultValue;
-		}
-	}
-	
-	/**
-	 * Returns the value of the property as a double.<br>
-	 * @return The value of the property
-	 * @throws IllegalArgumentException If the value is not a double
-	 */
-	public double getDouble() {
-		try {
-			return new StringReader(this.value).readDouble();
-		} catch (InvalidStringException e) {
-			throw new IllegalArgumentException(e.getMessage(), e.getCause());
-		}
-	}
-	
-	/**
-	 * Returns the value of the property as a double.<br>
-	 * In case the value is not a double, the given default value is returned.<br>
-	 * @param defaultValue The default value
-	 * @return The value of the property
-	 */
-	public double getDouble(double defaultValue) {
-		try {
-			return this.getDouble();
-		} catch (Exception e) {
-			return defaultValue;
-		}
-	}
-	
-	/**
-	 * Returns the value of the property as a parsed value.<br>
-	 * @param parser The parser to parse the value
-	 * @return The value of the property
-	 * @param <T> The type of the parsed value
-	 * @throws NullPointerException If the parser is null
-	 * @throws IllegalArgumentException If the value cannot be parsed (optional)
-	 */
-	public <T> @NotNull T get(@NotNull ValueParser<String, T> parser) {
-		Objects.requireNonNull(parser, "Parser must not be null");
-		return parser.parse(this.value);
-	}
-	
-	/**
-	 * Returns the value of the property as a parsed value.<br>
-	 * In case the value cannot be parsed, the given default value is returned.<br>
-	 * @param parser The parser to parse the value
-	 * @param defaultValue The default value
-	 * @return The value of the property
-	 * @param <T> The type of the parsed value
-	 * @throws NullPointerException If the parser or the default value is null
-	 */
-	public <T> @NotNull T get(@NotNull ValueParser<String, T> parser, @NotNull T defaultValue) {
-		Objects.requireNonNull(parser, "Parser must not be null");
-		try {
-			return this.get(parser);
-		} catch (Exception e) {
-			return Objects.requireNonNull(defaultValue, "Default value must not be null");
-		}
-	}
-	//endregion
 	
 	/**
 	 * Returns whether the key of the property is part of the given group.<br>
