@@ -18,10 +18,10 @@
 
 package net.luis.utils.io.data.xml;
 
+import net.luis.utils.function.throwable.ThrowableFunction;
 import net.luis.utils.io.data.xml.exception.NoSuchXmlAttributeException;
 import net.luis.utils.io.reader.ScopedStringReader;
 import net.luis.utils.io.reader.StringReader;
-import net.luis.utils.util.ValueParser;
 import org.junit.jupiter.api.Test;
 
 import java.nio.charset.StandardCharsets;
@@ -261,7 +261,7 @@ class XmlAttributesTest {
 	
 	@Test
 	void getAs() {
-		ValueParser<String, List<Boolean>> parser = value -> new ScopedStringReader(String.valueOf(value)).readList(StringReader::readBoolean);
+		ThrowableFunction<String, List<Boolean>, Exception> parser = value -> new ScopedStringReader(String.valueOf(value)).readList(StringReader::readBoolean);
 		
 		XmlAttributes attributes = new XmlAttributes();
 		assertThrows(NullPointerException.class, () -> attributes.getAs(null, parser));

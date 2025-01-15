@@ -18,9 +18,9 @@
 
 package net.luis.utils.io.data.xml;
 
+import net.luis.utils.function.throwable.ThrowableFunction;
 import net.luis.utils.io.reader.ScopedStringReader;
 import net.luis.utils.io.reader.StringReader;
-import net.luis.utils.util.ValueParser;
 import org.junit.jupiter.api.Test;
 
 import java.nio.charset.StandardCharsets;
@@ -183,7 +183,7 @@ class XmlAttributeTest {
 	
 	@Test
 	void getAs() {
-		ValueParser<String, List<Boolean>> parser = value -> new ScopedStringReader(String.valueOf(value)).readList(StringReader::readBoolean);
+		ThrowableFunction<String, List<Boolean>, Exception> parser = value -> new ScopedStringReader(String.valueOf(value)).readList(StringReader::readBoolean);
 		
 		assertThrows(NullPointerException.class, () -> new XmlAttribute("name", "[]").getAs(null));
 		assertThrows(IllegalArgumentException.class, () -> new XmlAttribute("name", "()").getAs(parser));

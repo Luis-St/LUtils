@@ -184,7 +184,7 @@ public record CodecGrouper7<CI1, CI2, CI3, CI4, CI5, CI6, CI7, O>(
 			
 			@Override
 			public String toString() {
-				return "Codec[" + codec1 + ", " + codec2 + ", " + codec3 + ", " + codec4 + ", " + codec5 + ", " + codec6 + ", " + codec7+ "]";
+				return "Codec[" + codec1 + ", " + codec2 + ", " + codec3 + ", " + codec4 + ", " + codec5 + ", " + codec6 + ", " + codec7 + "]";
 			}
 		};
 	}

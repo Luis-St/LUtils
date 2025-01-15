@@ -42,7 +42,7 @@ class KeyableDecoderTest {
 	@Test
 	void decodeKey() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		KeyableDecoder<Integer>  decoder = Codec.INTEGER;
+		KeyableDecoder<Integer> decoder = Codec.INTEGER;
 		
 		assertThrows(NullPointerException.class, () -> decoder.decodeKey(null, "1"));
 		assertThrows(NullPointerException.class, () -> decoder.decodeKey(typeProvider, null));

@@ -73,13 +73,13 @@ class PropertyReaderTest {
 		properties = assertDoesNotThrow(reader::readProperties);
 		assertEquals(4, properties.size());
 		assertNotNull(properties.getProperty("key1"));
-		assertEquals("value1", properties.getProperty("key1").getString());
+		assertEquals("value1", properties.getProperty("key1").getAsString());
 		assertNotNull(properties.getProperty("key2"));
-		assertEquals("alue2", properties.getProperty("key2").getString());
+		assertEquals("alue2", properties.getProperty("key2").getAsString());
 		assertNotNull(properties.getProperty("key3"));
-		assertEquals("", properties.getProperty("key3").getString());
+		assertEquals("", properties.getProperty("key3").getAsString());
 		assertNotNull(properties.getProperty("key4"));
-		assertEquals(" value4", properties.getProperty("key4").getString());
+		assertEquals(" value4", properties.getProperty("key4").getAsString());
 		
 		// Commented line
 		reader = createReader("#key1 = value1" + System.lineSeparator());
@@ -112,13 +112,13 @@ class PropertyReaderTest {
 		properties = assertDoesNotThrow(reader::readProperties);
 		assertEquals(4, properties.size());
 		assertNotNull(properties.getProperty("key_a"));
-		assertEquals("value1", properties.getProperty("key_a").getString());
+		assertEquals("value1", properties.getProperty("key_a").getAsString());
 		assertNotNull(properties.getProperty("key_b"));
-		assertEquals("alue2", properties.getProperty("key_b").getString());
+		assertEquals("alue2", properties.getProperty("key_b").getAsString());
 		assertNotNull(properties.getProperty("key_c"));
-		assertEquals("", properties.getProperty("key_c").getString());
+		assertEquals("", properties.getProperty("key_c").getAsString());
 		assertNotNull(properties.getProperty("key_d"));
-		assertEquals(" value4", properties.getProperty("key_d").getString());
+		assertEquals(" value4", properties.getProperty("key_d").getAsString());
 		
 		// Commented line
 		reader = createReader(";key_a : value1", CUSTOM_CONFIG);
@@ -155,21 +155,21 @@ class PropertyReaderTest {
 		properties = assertDoesNotThrow(reader::readProperties);
 		assertEquals(8, properties.size());
 		assertNotNull(properties.getProperty("key.1"));
-		assertEquals("value1", properties.getProperty("key.1").getString());
+		assertEquals("value1", properties.getProperty("key.1").getAsString());
 		assertNotNull(properties.getProperty("key.2"));
-		assertEquals("alue2", properties.getProperty("key.2").getString());
+		assertEquals("alue2", properties.getProperty("key.2").getAsString());
 		assertNotNull(properties.getProperty("key.3"));
-		assertEquals("alue2", properties.getProperty("key.3").getString());
+		assertEquals("alue2", properties.getProperty("key.3").getAsString());
 		assertNotNull(properties.getProperty("key.4.5"));
-		assertEquals("", properties.getProperty("key.4.5").getString());
+		assertEquals("", properties.getProperty("key.4.5").getAsString());
 		assertNotNull(properties.getProperty("key.6.8"));
-		assertEquals(" value4", properties.getProperty("key.6.8").getString());
+		assertEquals(" value4", properties.getProperty("key.6.8").getAsString());
 		assertNotNull(properties.getProperty("key.6.9"));
-		assertEquals(" value4", properties.getProperty("key.6.9").getString());
+		assertEquals(" value4", properties.getProperty("key.6.9").getAsString());
 		assertNotNull(properties.getProperty("key.7.8"));
-		assertEquals(" value4", properties.getProperty("key.7.8").getString());
+		assertEquals(" value4", properties.getProperty("key.7.8").getAsString());
 		assertNotNull(properties.getProperty("key.7.9"));
-		assertEquals(" value4", properties.getProperty("key.7.9").getString());
+		assertEquals(" value4", properties.getProperty("key.7.9").getAsString());
 		
 		// Empty key part
 		reader = createReader("key..test = value1", ADVANCED_DEFAULT_CONFIG);
@@ -201,21 +201,21 @@ class PropertyReaderTest {
 		properties = assertDoesNotThrow(reader::readProperties);
 		assertEquals(8, properties.size());
 		assertNotNull(properties.getProperty("key.a"));
-		assertEquals("value1", properties.getProperty("key.a").getString());
+		assertEquals("value1", properties.getProperty("key.a").getAsString());
 		assertNotNull(properties.getProperty("key.b"));
-		assertEquals("alue2", properties.getProperty("key.b").getString());
+		assertEquals("alue2", properties.getProperty("key.b").getAsString());
 		assertNotNull(properties.getProperty("key.c"));
-		assertEquals("alue2", properties.getProperty("key.c").getString());
+		assertEquals("alue2", properties.getProperty("key.c").getAsString());
 		assertNotNull(properties.getProperty("key.d.e"));
-		assertEquals("", properties.getProperty("key.d.e").getString());
+		assertEquals("", properties.getProperty("key.d.e").getAsString());
 		assertNotNull(properties.getProperty("key.f.h"));
-		assertEquals(" value4", properties.getProperty("key.f.h").getString());
+		assertEquals(" value4", properties.getProperty("key.f.h").getAsString());
 		assertNotNull(properties.getProperty("key.f.i"));
-		assertEquals(" value4", properties.getProperty("key.f.i").getString());
+		assertEquals(" value4", properties.getProperty("key.f.i").getAsString());
 		assertNotNull(properties.getProperty("key.g.h"));
-		assertEquals(" value4", properties.getProperty("key.g.h").getString());
+		assertEquals(" value4", properties.getProperty("key.g.h").getAsString());
 		assertNotNull(properties.getProperty("key.g.i"));
-		assertEquals(" value4", properties.getProperty("key.g.i").getString());
+		assertEquals(" value4", properties.getProperty("key.g.i").getAsString());
 		
 		// Empty key part
 		reader = createReader("key..test : value1", CUSTOM_CONFIG);
@@ -248,13 +248,13 @@ class PropertyReaderTest {
 		properties = assertDoesNotThrow(reader::readProperties);
 		assertEquals(4, properties.size());
 		assertNotNull(properties.getProperty("key"));
-		assertEquals("1", properties.getProperty("key").getString());
+		assertEquals("1", properties.getProperty("key").getAsString());
 		assertNotNull(properties.getProperty("key.1"));
-		assertEquals("alue2", properties.getProperty("key.1").getString());
+		assertEquals("alue2", properties.getProperty("key.1").getAsString());
 		assertNotNull(properties.getProperty("key.2"));
-		assertEquals("", properties.getProperty("key.2").getString());
+		assertEquals("", properties.getProperty("key.2").getAsString());
 		assertNotNull(properties.getProperty("key.3.4"));
-		assertEquals(" value4", properties.getProperty("key.3.4").getString());
+		assertEquals(" value4", properties.getProperty("key.3.4").getAsString());
 		
 		// Empty key part
 		reader = createReader("key..test = value1", ADVANCED_DEFAULT_CONFIG);
@@ -311,13 +311,13 @@ class PropertyReaderTest {
 		properties = assertDoesNotThrow(reader::readProperties);
 		assertEquals(4, properties.size());
 		assertNotNull(properties.getProperty("key"));
-		assertEquals("a", properties.getProperty("key").getString());
+		assertEquals("a", properties.getProperty("key").getAsString());
 		assertNotNull(properties.getProperty("key.a"));
-		assertEquals("alue2", properties.getProperty("key.a").getString());
+		assertEquals("alue2", properties.getProperty("key.a").getAsString());
 		assertNotNull(properties.getProperty("key.b"));
-		assertEquals("", properties.getProperty("key.b").getString());
+		assertEquals("", properties.getProperty("key.b").getAsString());
 		assertNotNull(properties.getProperty("key.c.d"));
-		assertEquals(" value4", properties.getProperty("key.c.d").getString());
+		assertEquals(" value4", properties.getProperty("key.c.d").getAsString());
 		
 		// Empty key part
 		reader = createReader("key..test : value1", CUSTOM_CONFIG);

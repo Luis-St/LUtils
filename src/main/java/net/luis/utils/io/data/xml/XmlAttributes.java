@@ -19,8 +19,8 @@
 package net.luis.utils.io.data.xml;
 
 import com.google.common.collect.Maps;
+import net.luis.utils.function.throwable.ThrowableFunction;
 import net.luis.utils.io.data.xml.exception.NoSuchXmlAttributeException;
-import net.luis.utils.util.ValueParser;
 import org.jetbrains.annotations.*;
 
 import java.util.*;
@@ -456,7 +456,7 @@ public class XmlAttributes {
 	 * @throws NullPointerException If the given name or parser is null
 	 * @throws NoSuchXmlAttributeException If there is no attribute with the given name
 	 */
-	public <T> @NotNull T getAs(@NotNull String name, @NotNull ValueParser<String, T> parser) {
+	public <T> @NotNull T getAs(@NotNull String name, @NotNull ThrowableFunction<String, T, ? extends Exception> parser) {
 		Objects.requireNonNull(parser, "Parser must not be null");
 		XmlAttribute attribute = this.get(name);
 		if (attribute == null) {

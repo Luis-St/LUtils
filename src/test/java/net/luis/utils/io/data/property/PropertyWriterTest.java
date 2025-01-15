@@ -20,15 +20,13 @@ package net.luis.utils.io.data.property;
 
 import net.luis.utils.annotation.type.MockObject;
 import net.luis.utils.io.data.OutputProvider;
-import net.luis.utils.util.ValueConverter;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 import org.junit.jupiter.api.Test;
 
 import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Set;
+import java.util.function.Function;
 import java.util.regex.Pattern;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -40,17 +38,6 @@ import static org.junit.jupiter.api.Assertions.*;
  */
 class PropertyWriterTest {
 	
-	private static final ValueConverter<String, String> CONVERTER = new ValueConverter<String, String>() {
-		@Override
-		public @NotNull String convert(@Nullable String value) {
-			return String.valueOf(value);
-		}
-		
-		@Override
-		public @NotNull String parse(@Nullable String value) {
-			return String.valueOf(value);
-		}
-	};
 	private static final PropertyConfig DEFAULT_CONFIG = PropertyConfig.DEFAULT;
 	private static final PropertyConfig CUSTOM_CONFIG = new PropertyConfig(':', 0, Set.of(';'), Pattern.compile("^[a-z._]+$"), Pattern.compile("^[ a-zA-Z0-9._-]*$"), true, StandardCharsets.UTF_8);
 	private static final Properties TEST_PROPERTIES = new Properties(List.of(Property.of("key", "value")));
@@ -69,6 +56,7 @@ class PropertyWriterTest {
 	
 	@Test
 	void writePropertyDefaultConfig() {
+		Function<String, String> convert = Function.identity();
 		StringOutputStream stream = new StringOutputStream();
 		PropertyWriter writer = new PropertyWriter(new OutputProvider(stream), DEFAULT_CONFIG);
 		
@@ -78,9 +66,9 @@ class PropertyWriterTest {
 		assertEquals("key = value" + System.lineSeparator(), stream.toString());
 		stream.reset();
 		
-		assertThrows(NullPointerException.class, () -> writer.writeProperty(null, "value", CONVERTER));
-		assertThrows(NullPointerException.class, () -> writer.writeProperty("key", null, CONVERTER));
-		assertDoesNotThrow(() -> writer.writeProperty("key", "value", CONVERTER));
+		assertThrows(NullPointerException.class, () -> writer.writeProperty(null, "value", convert));
+		assertThrows(NullPointerException.class, () -> writer.writeProperty("key", null, convert));
+		assertDoesNotThrow(() -> writer.writeProperty("key", "value", convert));
 		assertEquals("key = value" + System.lineSeparator(), stream.toString());
 		stream.reset();
 		
@@ -97,6 +85,7 @@ class PropertyWriterTest {
 	
 	@Test
 	void writePropertyCustomConfig() {
+		Function<String, String> convert = Function.identity();
 		StringOutputStream stream = new StringOutputStream();
 		PropertyWriter writer = new PropertyWriter(new OutputProvider(stream), CUSTOM_CONFIG);
 		
@@ -106,9 +95,9 @@ class PropertyWriterTest {
 		assertEquals("key:value" + System.lineSeparator(), stream.toString());
 		stream.reset();
 		
-		assertThrows(NullPointerException.class, () -> writer.writeProperty(null, "value", CONVERTER));
-		assertThrows(NullPointerException.class, () -> writer.writeProperty("key", null, CONVERTER));
-		assertDoesNotThrow(() -> writer.writeProperty("key", "value", CONVERTER));
+		assertThrows(NullPointerException.class, () -> writer.writeProperty(null, "value", convert));
+		assertThrows(NullPointerException.class, () -> writer.writeProperty("key", null, convert));
+		assertDoesNotThrow(() -> writer.writeProperty("key", "value", convert));
 		assertEquals("key:value" + System.lineSeparator(), stream.toString());
 		stream.reset();
 		
