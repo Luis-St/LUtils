@@ -23,8 +23,7 @@ import net.luis.utils.exception.InvalidStringException;
 import net.luis.utils.io.FileUtils;
 import net.luis.utils.io.data.InputProvider;
 import net.luis.utils.io.data.xml.exception.XmlSyntaxException;
-import net.luis.utils.io.reader.ScopedStringReader;
-import net.luis.utils.io.reader.StringReader;
+import net.luis.utils.io.reader.*;
 import net.luis.utils.util.Version;
 import org.jetbrains.annotations.NotNull;
 
@@ -136,7 +135,7 @@ public class XmlReader implements AutoCloseable {
 				return new XmlDeclaration(Version.of(1, 0));
 			}
 			this.reader.skipWhitespaces();
-			StringReader declarationReader = new StringReader(this.reader.readScope(ScopedStringReader.ANGLE_BRACKETS));
+			StringReader declarationReader = new StringReader(this.reader.readScope(StringScope.ANGLE_BRACKETS));
 			String type = declarationReader.readUntil(' ');
 			if (!"<?xml".equalsIgnoreCase(type)) {
 				throw new XmlSyntaxException("Expected xml declaration, but found: '" + declarationReader.getString() + "'");
@@ -217,7 +216,7 @@ public class XmlReader implements AutoCloseable {
 	private @NotNull XmlElement readXmlElement(@NotNull ScopedStringReader xmlReader) {
 		try {
 			xmlReader.skipWhitespaces();
-			StringReader elementReader = new StringReader(xmlReader.readScope(ScopedStringReader.ANGLE_BRACKETS));
+			StringReader elementReader = new StringReader(xmlReader.readScope(StringScope.ANGLE_BRACKETS));
 			elementReader.skip();
 			if (!this.config.strict()) {
 				elementReader.skipWhitespaces();

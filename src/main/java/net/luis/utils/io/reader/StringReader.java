@@ -36,7 +36,18 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 /**
- * A utility class to read strings.<br>
+ * Represents a reader to read from a string.<br>
+ * The reader can read specific types of values from the string such as:<br>
+ * <ul>
+ *     <li>Quoted and unquoted strings</li>
+ *     <li>Booleans</li>
+ *     <li>Numbers (byte, short, integer, long, float, double)</li>
+ *     <li>Big numbers (BigInteger, BigDecimal)</li>
+ * </ul>
+ * <p>
+ *     This reader implementation is not performance optimized,<br>
+ *     it reads the string character by character in {@code O(n)}.<br>
+ * </p>
  *
  * @author Luis-St
  */
@@ -1138,6 +1149,22 @@ public class StringReader {
 		} catch (NumberFormatException e) {
 			throw new InvalidStringException("Unable to parse big decimal value: '" + number + "'", e);
 		}
+	}
+	//endregion
+	
+	//region Object overrides
+	@Override
+	public boolean equals(Object o) {
+		if (!(o instanceof StringReader that)) return false;
+		
+		if (this.index != that.index) return false;
+		if (this.markedIndex != that.markedIndex) return false;
+		return this.string.equals(that.string);
+	}
+	
+	@Override
+	public int hashCode() {
+		return Objects.hash(this.string);
 	}
 	//endregion
 	

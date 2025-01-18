@@ -40,7 +40,7 @@ class StringReaderTest {
 	@Test
 	void constructor() {
 		assertThrows(NullPointerException.class, () -> new StringReader((String) null));
-		assertThrows(NullPointerException.class, () -> new ScopedStringReader((Reader) null));
+		assertThrows(NullPointerException.class, () -> new StringReader((Reader) null));
 	}
 	
 	@Test

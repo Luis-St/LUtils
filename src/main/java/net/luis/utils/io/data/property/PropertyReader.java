@@ -23,6 +23,7 @@ import com.google.common.collect.Maps;
 import net.luis.utils.io.data.InputProvider;
 import net.luis.utils.io.data.property.exception.PropertySyntaxException;
 import net.luis.utils.io.reader.ScopedStringReader;
+import net.luis.utils.io.reader.StringScope;
 import net.luis.utils.lang.StringUtils;
 import org.apache.commons.lang3.ArrayUtils;
 import org.jetbrains.annotations.*;
@@ -125,7 +126,7 @@ public class PropertyReader implements AutoCloseable {
 	 * @param scope The scope which is expected
 	 * @return The content of the reader without the scope
 	 */
-	private static @NotNull String readScopeExclude(@NotNull ScopedStringReader reader, ScopedStringReader.@NotNull StringScope scope) {
+	private static @NotNull String readScopeExclude(@NotNull ScopedStringReader reader, @NotNull StringScope scope) {
 		Objects.requireNonNull(reader, "Reader must not be null");
 		Objects.requireNonNull(scope, "Scope must not be null");
 		String result = reader.readScope(scope);
@@ -345,7 +346,7 @@ public class PropertyReader implements AutoCloseable {
 			if (partReader.peek() == '$') {
 				partReader.skip(); // skip $
 				position += partReader.getIndex();
-				String variable = readScopeExclude(partReader, ScopedStringReader.CURLY_BRACKETS);
+				String variable = readScopeExclude(partReader, StringScope.CURLY_BRACKETS);
 				if (variable.isEmpty()) {
 					throw new PropertySyntaxException("Variable key part '${" + variable + "}' at position " + position + " must not be empty: '" + key + "'");
 				} else if (variable.isBlank()) {
@@ -354,7 +355,7 @@ public class PropertyReader implements AutoCloseable {
 				resolvedKeys = this.extendResolvedKeys(resolvedKeys, this.resolveVariableKeyPart(key, variable));
 			} else if (partReader.peek() == '[') {
 				position += partReader.getIndex();
-				String compacted = readScopeExclude(partReader, ScopedStringReader.SQUARE_BRACKETS);
+				String compacted = readScopeExclude(partReader, StringScope.SQUARE_BRACKETS);
 				if (compacted.isEmpty()) {
 					throw new PropertySyntaxException("Compacted key part '[" + compacted + "]' at position " + position + " must not be empty: '" + key + "'");
 				} else if (compacted.isBlank()) {
@@ -396,7 +397,7 @@ public class PropertyReader implements AutoCloseable {
 			} else if (compactedValue.indexOf('[') != -1) {
 				throw new PropertySyntaxException("Value '" + compactedValue + "' in compacted key part '[" + compacted + "]' must not be nested: '" + key + "'");
 			} else if (compactedValue.charAt(0) == '$') {
-				String variable = readScopeExclude(new ScopedStringReader(compactedValue.substring(1)), ScopedStringReader.CURLY_BRACKETS);
+				String variable = readScopeExclude(new ScopedStringReader(compactedValue.substring(1)), StringScope.CURLY_BRACKETS);
 				compactedValues[i] = this.resolveVariableKeyPart(key, variable);
 			}
 		}

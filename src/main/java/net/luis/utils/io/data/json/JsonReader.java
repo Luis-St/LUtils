@@ -20,8 +20,7 @@ package net.luis.utils.io.data.json;
 
 import net.luis.utils.io.data.InputProvider;
 import net.luis.utils.io.data.json.exception.JsonSyntaxException;
-import net.luis.utils.io.reader.ScopedStringReader;
-import net.luis.utils.io.reader.StringReader;
+import net.luis.utils.io.reader.*;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
@@ -148,7 +147,7 @@ public class JsonReader implements AutoCloseable {
 	private @NotNull JsonArray readJsonArray(@NotNull ScopedStringReader jsonReader) {
 		String jsonArrayScope;
 		try {
-			jsonArrayScope = jsonReader.readScope(ScopedStringReader.SQUARE_BRACKETS);
+			jsonArrayScope = jsonReader.readScope(StringScope.SQUARE_BRACKETS);
 		} catch (Exception e) {
 			throw new JsonSyntaxException("Invalid json array, missing closing bracket ']'", e);
 		}
@@ -194,7 +193,7 @@ public class JsonReader implements AutoCloseable {
 	private @NotNull JsonObject readJsonObject(@NotNull ScopedStringReader jsonReader) {
 		String jsonObjectScope;
 		try {
-			jsonObjectScope = jsonReader.readScope(ScopedStringReader.CURLY_BRACKETS);
+			jsonObjectScope = jsonReader.readScope(StringScope.CURLY_BRACKETS);
 		} catch (Exception e) {
 			throw new JsonSyntaxException("Invalid json object, missing closing bracket '}'", e);
 		}
