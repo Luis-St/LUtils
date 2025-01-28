@@ -20,12 +20,12 @@ package net.luis.utils.io.data.json;
 
 import net.luis.utils.io.data.InputProvider;
 import net.luis.utils.io.data.json.exception.JsonSyntaxException;
-import net.luis.utils.io.reader.*;
+import net.luis.utils.io.reader.StringReader;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.util.Objects;
+import java.util.*;
 
 /**
  * A json reader for reading json elements from a {@link String string} or {@link InputProvider input provider}.<br>
@@ -37,13 +37,17 @@ import java.util.Objects;
 public class JsonReader implements AutoCloseable {
 	
 	/**
+	 * The scope stack used to keep track of the current json scope.<br>
+	 */
+	private final Deque<Character> scope = new ArrayDeque<>();
+	/**
 	 * The json config used by this reader.<br>
 	 */
 	private final JsonConfig config;
 	/**
 	 * The internal reader used to read the json content.<br>
 	 */
-	private final ScopedStringReader reader;
+	private final StringReader reader;
 	
 	/**
 	 * Constructs a new json reader with the given string and the default configuration.<br>
@@ -62,7 +66,7 @@ public class JsonReader implements AutoCloseable {
 	 */
 	public JsonReader(@NotNull String string, @NotNull JsonConfig config) {
 		this.config = Objects.requireNonNull(config, "Json config must not be null");
-		this.reader = new ScopedStringReader(Objects.requireNonNull(string, "String must not be null"));
+		this.reader = new StringReader(Objects.requireNonNull(string, "String must not be null"));
 	}
 	
 	/**
@@ -82,56 +86,61 @@ public class JsonReader implements AutoCloseable {
 	 */
 	public JsonReader(@NotNull InputProvider input, @NotNull JsonConfig config) {
 		this.config = Objects.requireNonNull(config, "Json config must not be null");
-		this.reader = new ScopedStringReader(new InputStreamReader(Objects.requireNonNull(input, "Input must not be null").getStream(), config.charset()));
+		this.reader = new StringReader(new InputStreamReader(Objects.requireNonNull(input, "Input must not be null").getStream(), config.charset()));
 	}
 	
 	/**
 	 * Reads the next json element from the input.<br>
+	 * <p>
+	 *     In strict mode, this reader only accepts one json element per input.<br>
+	 * </p>
 	 * @return The next json element
 	 * @throws JsonSyntaxException If the json is invalid
-	 * @see #readJsonElement(ScopedStringReader)
+	 * @see #readJsonElement()
 	 */
 	public @NotNull JsonElement readJson() {
 		if (!this.reader.canRead()) {
 			throw new JsonSyntaxException("Invalid json, expected content but got nothing");
 		}
-		return this.readJsonElement(this.reader);
-	}
-	
-	/**
-	 * Reads the next json element from the input.<br>
-	 * The reader supports reading of json objects, arrays, primitives and null values.<br>
-	 * <p>
-	 *     In strict mode, the reader only accepts one json element per input.<br>
-	 * </p>
-	 * @param reader The reader to read the json element from
-	 * @return The read json element
-	 * @throws JsonSyntaxException If the json is invalid (depends on the configuration)
-	 * @see #readJsonArray(ScopedStringReader)
-	 * @see #readJsonObject(ScopedStringReader)
-	 * @see #readJsonValue(ScopedStringReader)
-	 */
-	private @NotNull JsonElement readJsonElement(@NotNull ScopedStringReader reader) {
-		this.reader.skipWhitespaces();
-		char next = reader.peek();
-		JsonElement element;
-		if (next == '{') {
-			element = this.readJsonObject(reader);
-		} else if (next == '[') {
-			element = this.readJsonArray(reader);
-		} else {
-			element = this.readJsonValue(reader);
+		this.scope.clear();
+		JsonElement element = this.readJsonElement();
+		if (!this.scope.isEmpty()) {
+			throw new JsonSyntaxException("Invalid json structure, some elements are not closed properly");
 		}
-		reader.skipWhitespaces();
-		if (this.config.strict() && reader.canRead()) {
-			throw new JsonSyntaxException("Invalid json element, expected end of input but got: '" + reader.peek() + "'");
+		this.reader.skipWhitespaces();
+		if (this.config.strict() && this.reader.canRead()) {
+			throw new JsonSyntaxException("Invalid json element, expected end of input but got: '" + this.reader.peek() + "'");
 		}
 		return element;
 	}
 	
 	/**
-	 * Reads a json array from the given reader.<br>
-	 * The reader expects the json array to be formatted as follows:<br>
+	 * Reads the next json element from the input.<br>
+	 * Supported json elements are objects, arrays, primitives and null values.<br>
+	 * @return The read json element
+	 * @throws JsonSyntaxException If the json is invalid (depends on the configuration)
+	 * @see #readJsonArray()
+	 * @see #readJsonObject()
+	 * @see #readJsonValue()
+	 */
+	private @NotNull JsonElement readJsonElement() {
+		this.reader.skipWhitespaces();
+		char next = this.reader.peek();
+		JsonElement element;
+		if (next == '{') {
+			element = this.readJsonObject();
+		} else if (next == '[') {
+			element = this.readJsonArray();
+		} else {
+			element = this.readJsonValue();
+		}
+		this.reader.skipWhitespaces();
+		return element;
+	}
+	
+	/**
+	 * Reads a json array from the underlying reader.<br>
+	 * The json array is expected to be formatted as follows:<br>
 	 * <ul>
 	 *     <li>Empty array: {@code []}</li>
 	 *     <li>Array with one element: {@code ["value"]}</li>
@@ -140,44 +149,54 @@ public class JsonReader implements AutoCloseable {
 	 * <p>
 	 *     In strict mode, the reader expects no trailing comma after the last element.<br>
 	 * </p>
-	 * @param jsonReader The reader to read the json array from
 	 * @return The read json array
 	 * @throws JsonSyntaxException If the json array is invalid
 	 */
-	private @NotNull JsonArray readJsonArray(@NotNull ScopedStringReader jsonReader) {
-		String jsonArrayScope;
-		try {
-			jsonArrayScope = jsonReader.readScope(StringScope.SQUARE_BRACKETS);
-		} catch (Exception e) {
-			throw new JsonSyntaxException("Invalid json array, missing closing bracket ']'", e);
+	private @NotNull JsonArray readJsonArray() {
+		if (this.reader.peek() != '[') {
+			throw new JsonSyntaxException("Invalid json array, expected opening bracket '[' but got: '" + this.reader.peek() + "'");
 		}
-		if (2 > jsonArrayScope.length()) {
-			throw new JsonSyntaxException("Invalid json array, expected format: '[\"value\"]' but got: '" + jsonArrayScope + "'");
-		}
-		JsonArray jsonArray = new JsonArray();
-		if (jsonArrayScope.substring(1, jsonArrayScope.length() - 1).isBlank()) {
-			return jsonArray;
-		}
+		this.reader.skip();
+		this.scope.push('[');
 		
-		ScopedStringReader arrayReader = new ScopedStringReader(jsonArrayScope.substring(1, jsonArrayScope.length() - 1));
-		while (arrayReader.canRead()) {
-			arrayReader.skipWhitespaces();
-			String element = arrayReader.readUntilInclusive(',');
-			arrayReader.skipWhitespaces();
-			if (element.charAt(element.length() - 1) == ',') {
-				if (this.config.strict() && !arrayReader.canRead()) {
-					throw new JsonSyntaxException("Invalid json array, expected another element but got nothing");
-				}
-				element = element.substring(0, element.length() - 1);
+		JsonArray array = new JsonArray();
+		int currentScope = this.scope.size();
+		
+		this.reader.skipWhitespaces();
+		while (this.reader.canRead() && this.reader.peek() != ']') {
+			array.add(this.readJsonElement());
+			if (currentScope > this.scope.size()) {
+				throw new JsonSyntaxException("Invalid json structure, some elements are not closed properly");
 			}
-			jsonArray.add(this.readJsonElement(new ScopedStringReader(element)));
+			this.reader.skipWhitespaces();
+			if (this.reader.peek() == ',') {
+				this.reader.skip();
+				this.reader.skipWhitespaces();
+				if (this.config.strict() && this.reader.peek() == ']') {
+					throw new JsonSyntaxException("Invalid json array, expected another element but got closing bracket ']'");
+				}
+			}
 		}
-		return jsonArray;
+		if (!this.reader.canRead()) {
+			throw new JsonSyntaxException("Invalid json array, expected closing bracket ']' but got nothing");
+		}
+		if (this.scope.size() == currentScope) {
+			if (this.reader.peek() != ']') {
+				throw new JsonSyntaxException("Invalid json array, expected closing bracket ']' but got: '" + this.reader.peek() + "'");
+			}
+			if (this.scope.pop() != '[') {
+				throw new JsonSyntaxException("Invalid json structure, the scope stack is corrupted: " + this.scope);
+			}
+			this.reader.skip();
+		} else {
+			throw new JsonSyntaxException("Invalid json array, expected closing bracket ']' but got nothing");
+		}
+		return array;
 	}
 	
 	/**
-	 * Reads a json object from the given reader.<br>
-	 * The reader expects the json object to be formatted as follows:<br>
+	 * Reads a json object from the underlying reader<br>
+	 * The json object is expected to be formatted as follows:<br>
 	 * <ul>
 	 *     <li>Empty object: {@code {}}</li>
 	 *     <li>Object with one entry: {@code {"key": "value"}}</li>
@@ -186,56 +205,67 @@ public class JsonReader implements AutoCloseable {
 	 * <p>
 	 *     In strict mode, the reader expects the keys to be quoted and no trailing comma after the last entry.<br>
 	 * </p>
-	 * @param jsonReader The reader to read the json object from
 	 * @return The read json object
 	 * @throws JsonSyntaxException If the json object is invalid
 	 */
-	private @NotNull JsonObject readJsonObject(@NotNull ScopedStringReader jsonReader) {
-		String jsonObjectScope;
-		try {
-			jsonObjectScope = jsonReader.readScope(StringScope.CURLY_BRACKETS);
-		} catch (Exception e) {
-			throw new JsonSyntaxException("Invalid json object, missing closing bracket '}'", e);
+	private @NotNull JsonObject readJsonObject() {
+		if (this.reader.peek() != '{') {
+			throw new JsonSyntaxException("Invalid json object, expected opening bracket '{' but got: '" + this.reader.peek() + "'");
 		}
-		if (2 > jsonObjectScope.length()) {
-			throw new JsonSyntaxException("Invalid json object, expected format: '{\"key\": \"value\"}' but got: '" + jsonObjectScope + "'");
-		}
-		JsonObject jsonObject = new JsonObject();
-		if (jsonObjectScope.substring(1, jsonObjectScope.length() - 1).isBlank()) {
-			return jsonObject;
-		}
+		this.reader.skip();
+		this.scope.push('{');
 		
-		ScopedStringReader objectReader = new ScopedStringReader(jsonObjectScope.substring(1, jsonObjectScope.length() - 1));
-		while (objectReader.canRead()) {
-			objectReader.skipWhitespaces();
+		JsonObject object = new JsonObject();
+		int currentScope = this.scope.size();
+		
+		this.reader.skipWhitespaces();
+		while (this.reader.canRead() && this.reader.peek() != '}') {
+			this.reader.skipWhitespaces();
 			String key;
 			if (this.config.strict()) {
-				key = objectReader.readQuotedString();
+				key = this.reader.readQuotedString();
 			} else {
-				key = objectReader.readString();
-				objectReader.skipWhitespaces();
+				key = this.reader.readString();
+				this.reader.skipWhitespaces();
 			}
-			if (objectReader.peek() != ':') {
-				throw new JsonSyntaxException("Invalid json object, expected ':' but got: '" + objectReader.peek() + "'");
+			if (this.reader.peek() != ':') {
+				throw new JsonSyntaxException("Invalid json object, expected ':' but got: '" + this.reader.peek() + "'");
 			}
-			objectReader.skip();
-			objectReader.skipWhitespaces();
+			this.reader.skip();
+			this.reader.skipWhitespaces();
 			
-			String value = objectReader.readUntilInclusive(',');
-			if (value.charAt(value.length() - 1) == ',') {
-				objectReader.skipWhitespaces();
-				if (this.config.strict() && !objectReader.canRead()) {
-					throw new JsonSyntaxException("Invalid json object, expected another entry but got nothing");
-				}
-				value = value.substring(0, value.length() - 1);
+			object.add(key, this.readJsonElement());
+			if (currentScope > this.scope.size()) {
+				throw new JsonSyntaxException("Invalid json structure, some elements are not closed properly");
 			}
-			jsonObject.add(key, this.readJsonElement(new ScopedStringReader(value)));
+			this.reader.skipWhitespaces();
+			if (this.reader.peek() == ',') {
+				this.reader.skip();
+				this.reader.skipWhitespaces();
+				if (this.config.strict() && this.reader.peek() == '}') {
+					throw new JsonSyntaxException("Invalid json object, expected another entry but got closing bracket '}'");
+				}
+			}
 		}
-		return jsonObject;
+		if (!this.reader.canRead()) {
+			throw new JsonSyntaxException("Invalid json object, expected closing bracket '}' but got nothing");
+		}
+		if (this.scope.size() == currentScope) {
+			if (this.reader.peek() != '}') {
+				throw new JsonSyntaxException("Invalid json object, expected closing bracket '}' but got: '" + this.reader.peek() + "'");
+			}
+			if (this.scope.pop() != '{') {
+				throw new JsonSyntaxException("Invalid json structure, the scope stack is corrupted: " + this.scope);
+			}
+			this.reader.skip();
+		} else {
+			throw new JsonSyntaxException("Invalid json object, expected closing bracket '}' but got nothing");
+		}
+		return object;
 	}
 	
 	/**
-	 * Reads a json value from the given reader.<br>
+	 * Reads a json value from the underlying reader.<br>
 	 * A json value can be either a string, number, boolean or null.<br>
 	 * <p>
 	 *     In strict mode, the reader will throw a exception if the value is not a valid json primitive.<br>
@@ -247,41 +277,82 @@ public class JsonReader implements AutoCloseable {
 	 *     <li>{@code false} (lower-case)</li>
 	 * </ul>
 	 * <p>
-	 *     In non-strict mode, the reader will convert the value to a string if it is not a valid json primitive.<br>
-	 *     If the value is a valid json primitive, the reader will return it as a json primitive.<br>
-	 *     It also accepts the following values in addition to the strict values:<br>
+	 *     In non-strict mode, the following values are also accepted:<br>
 	 * </p>
 	 * <ul>
 	 *     <li>{@code NULL} (upper or mixed case)</li>
 	 *     <li>{@code TRUE} (upper or mixed case)</li>
 	 *     <li>{@code FALSE} (upper or mixed case)</li>
 	 * </ul>
-	 * @param reader The reader to read the json value from
 	 * @return The read json value
 	 * @throws JsonSyntaxException If the json value is invalid (depends on the configuration)
 	 */
-	private @NotNull JsonElement readJsonValue(@NotNull ScopedStringReader reader) {
-		reader.skipWhitespaces();
-		char next = reader.peek();
+	private @NotNull JsonElement readJsonValue() {
+		this.reader.skipWhitespaces();
+		char next = Character.toLowerCase(this.reader.peek());
 		if (next == '"') {
-			return new JsonPrimitive(reader.readQuotedString());
+			return new JsonPrimitive(this.reader.readQuotedString());
 		}
-		String value = reader.readRemaining().strip();
-		if (this.config.strict() ? "null".equals(value) : "null".equalsIgnoreCase(value)) {
-			return JsonNull.INSTANCE;
-		} else if (this.config.strict() ? "true".equals(value) : "true".equalsIgnoreCase(value)) {
-			return new JsonPrimitive(true);
-		} else if (this.config.strict() ? "false".equals(value) : "false".equalsIgnoreCase(value)) {
-			return new JsonPrimitive(false);
+		if (next == 'n') {
+			return this.readJsonNull();
+		} else if (next == 't' || next == 'f') {
+			return this.readJsonBoolean();
 		}
-		StringReader valueReader = new StringReader(value);
 		try {
-			return new JsonPrimitive(valueReader.readNumber());
+			return new JsonPrimitive(this.reader.readNumber());
 		} catch (Exception e) {
-			if (this.config.strict()) {
-				throw new JsonSyntaxException("Invalid json primitive, expected a number but got: '" + value + "'", e);
+			throw new JsonSyntaxException("Invalid json primitive, expected a number but got: '" + next + "'", e);
+		}
+	}
+	
+	/**
+	 * Reads a json null value from the underlying reader.<br>
+	 * The reader expects the next four characters to be 'null'.<br>
+	 * <p>
+	 *     In strict mode, the reader will throw an exception if the value is not 'null'.<br>
+	 *     In non-strict mode, the reader will accept any case of 'null' including mixed-case.<br>
+	 * </p>
+	 * @return The read json null value (always {@link JsonNull#INSTANCE})
+	 * @throws JsonSyntaxException If the json null value is invalid (depends on the configuration)
+	 */
+	private @NotNull JsonNull readJsonNull() {
+		if (Character.toLowerCase(this.reader.peek()) != 'n') {
+			throw new JsonSyntaxException("Invalid json null, expected 'null' but got: '" + this.reader.peek() + "'");
+		}
+		String value = this.reader.read(4);
+		if (this.config.strict() ? !"null".equals(value) : !"null".equalsIgnoreCase(value)) {
+			throw new JsonSyntaxException("Invalid json null, expected 'null' but got: '" + value + "'");
+		}
+		return JsonNull.INSTANCE;
+	}
+	
+	/**
+	 * Reads a json boolean value from the underlying reader.<br>
+	 * The reader expects the next four or five characters to be 'true' or 'false'.<br>
+	 * <p>
+	 *     In strict mode, the reader will throw a exception if the value is not 'true' or 'false'.<br>
+	 *     In non-strict mode, the reader will accept any case of 'true' or 'false' including mixed-case.<br>
+	 * </p>
+	 * @return The read json boolean value
+	 * @throws JsonSyntaxException If the json boolean value is invalid (depends on the configuration)
+	 */
+	private @NotNull JsonPrimitive readJsonBoolean() {
+		char next = Character.toLowerCase(this.reader.peek());
+		if (next != 't' && next != 'f') {
+			throw new JsonSyntaxException("Invalid json boolean, expected 'true' or 'false' but got: '" + next + "'");
+		}
+		if (next == 't') {
+			String value = this.reader.read(4);
+			if (this.config.strict() ? !"true".equals(value) : !"true".equalsIgnoreCase(value)) {
+				throw new JsonSyntaxException("Invalid json boolean, expected 'true' but got: '" + value + "'");
 			}
-			return new JsonPrimitive(value);
+			return new JsonPrimitive(true);
+		} else {
+			String value = this.reader.read(5);
+			if (this.config.strict() ? !"false".equals(value)  : !"false".equalsIgnoreCase(value)) {
+				throw new JsonSyntaxException("Invalid json boolean, expected 'false' but got: '" + value + "'");
+			}
+			return new JsonPrimitive(false);
 		}
 	}
 	

@@ -24,6 +24,7 @@ import org.junit.jupiter.api.Test;
 
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
+import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -77,6 +78,17 @@ class JsonReaderTest {
 		assertEquals(new JsonPrimitive(2L), ((JsonArray) array).get(1));
 		assertEquals(new JsonPrimitive(3L), ((JsonArray) array).get(2));
 		
+		JsonReader advancedArrayReader = new JsonReader("[{\"test\": 1}, {\"test\": 1}, {\"test\": 1}]");
+		JsonElement advancedArray = advancedArrayReader.readJson();
+		JsonObject result = new JsonObject();
+		result.add("test", 1L);
+		
+		assertInstanceOf(JsonArray.class, advancedArray);
+		assertEquals(3, ((JsonArray) advancedArray).size());
+		assertEquals(result, ((JsonArray) advancedArray).get(0));
+		assertEquals(result, ((JsonArray) advancedArray).get(1));
+		assertEquals(result, ((JsonArray) advancedArray).get(2));
+		
 		// Not enough characters to be valid
 		assertThrows(JsonSyntaxException.class, () -> new JsonReader("[").readJson());
 		
@@ -112,6 +124,14 @@ class JsonReaderTest {
 		assertEquals(1, ((JsonObject) object).size());
 		assertTrue(((JsonObject) object).containsKey("key"));
 		assertEquals(new JsonPrimitive("value"), ((JsonObject) object).get("key"));
+		
+		JsonReader advancedObjectReader = new JsonReader("{\"key\": [1, 2, 3]}");
+		JsonElement advancedObject= advancedObjectReader.readJson();
+		
+		assertInstanceOf(JsonObject.class, advancedObject);
+		assertEquals(1, ((JsonObject) advancedObject).size());
+		assertTrue(((JsonObject) advancedObject).containsKey("key"));
+		assertEquals(new JsonArray(List.of(new JsonPrimitive(1), new JsonPrimitive(2), new JsonPrimitive(3))), ((JsonObject) advancedObject).get("key"));
 		
 		// Not enough characters to be valid
 		assertThrows(JsonSyntaxException.class, () -> new JsonReader("{").readJson());
@@ -168,6 +188,17 @@ class JsonReaderTest {
 		assertEquals(new JsonPrimitive(2L), ((JsonArray) array).get(1));
 		assertEquals(new JsonPrimitive(3L), ((JsonArray) array).get(2));
 		
+		JsonReader advancedArrayReader = new JsonReader("[{ \"test\": 1 }, { \"test\": 1 }, { \"test\": 1 }]");
+		JsonElement advancedArray = advancedArrayReader.readJson();
+		JsonObject result = new JsonObject();
+		result.add("test", 1L);
+		
+		assertInstanceOf(JsonArray.class, advancedArray);
+		assertEquals(3, ((JsonArray) advancedArray).size());
+		assertEquals(result, ((JsonArray) advancedArray).get(0));
+		assertEquals(result, ((JsonArray) advancedArray).get(1));
+		assertEquals(result, ((JsonArray) advancedArray).get(2));
+		
 		// Not enough characters to be valid
 		assertThrows(JsonSyntaxException.class, () -> new JsonReader("[", CUSTOM_CONFIG).readJson());
 		
@@ -204,6 +235,14 @@ class JsonReaderTest {
 		assertTrue(((JsonObject) object).containsKey("key"));
 		assertEquals(new JsonPrimitive("value"), ((JsonObject) object).get("key"));
 		
+		JsonReader advancedObjectReader = new JsonReader("{\"key\": [1, 2, 3]}");
+		JsonElement advancedObject= advancedObjectReader.readJson();
+		
+		assertInstanceOf(JsonObject.class, advancedObject);
+		assertEquals(1, ((JsonObject) advancedObject).size());
+		assertTrue(((JsonObject) advancedObject).containsKey("key"));
+		assertEquals(new JsonArray(List.of(new JsonPrimitive(1), new JsonPrimitive(2), new JsonPrimitive(3))), ((JsonObject) advancedObject).get("key"));
+		
 		// Not enough characters to be valid
 		assertThrows(JsonSyntaxException.class, () -> new JsonReader("{", CUSTOM_CONFIG).readJson());
 		
@@ -239,7 +278,7 @@ class JsonReaderTest {
 		assertEquals(new JsonPrimitive("test"), stringElement);
 		
 		// Invalid string
-		assertDoesNotThrow(() -> new JsonReader("test", CUSTOM_CONFIG).readJson());
+		assertThrows(JsonSyntaxException.class, () -> new JsonReader("test", CUSTOM_CONFIG).readJson());
 	}
 	
 	@Test
