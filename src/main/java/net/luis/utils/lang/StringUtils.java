@@ -27,6 +27,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
+import java.util.function.Predicate;
 import java.util.function.ToIntBiFunction;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -1032,5 +1033,51 @@ public final class StringUtils {
 			groups.add(matcher.group());
 		}
 		return groups.toArray(String[]::new);
+	}
+	
+	/**
+	 * Converts the given string to a readable string.<br>
+	 * <p>
+	 *     The string will be split by the given condition.<br>
+	 *     The first character of each part will be capitalized, the rest will be lowercased.<br>
+	 *     The parts will be joined by a space.<br>
+	 * </p>
+	 * <p>
+	 *     If the string is null or empty, an empty string will be returned.<br>
+	 *     If the condition is null, the string will be returned as is.<br>
+	 * </p>
+	 * <p>
+	 *     Examples:<br>
+	 * </p>
+	 * <pre>{@code
+	 * getReadableString(null, *) -> ""
+	 * getReadableString("", *) -> ""
+	 * getReadableString("abc", null) -> "abc"
+	 * getReadableString("abc", Character::isUpperCase) -> "abc"
+	 * getReadableString("abc", Character::isLowerCase) -> "A B C"
+	 * getReadableString("abcDEFghi", Character::isUpperCase) -> "abc D E Fghi"
+	 * }</pre>
+	 * @param str The string to convert
+	 * @param condition The condition to split the string by
+	 * @return The readable string
+	 */
+	public static @NotNull String getReadableString(@Nullable String str, @Nullable Predicate<Character> condition) {
+		if (isEmpty(str)) {
+			return "";
+		}
+		if (condition == null) {
+			return str;
+		}
+		StringBuilder name = new StringBuilder();
+		for (int i = 0; i < str.length(); i++) {
+			char c = str.charAt(i);
+			if (condition.test(c)) {
+				name.append(" ");
+				name.append(Character.toUpperCase(c));
+			} else {
+				name.append(Character.toLowerCase(c));
+			}
+		}
+		return name.toString().strip();
 	}
 }

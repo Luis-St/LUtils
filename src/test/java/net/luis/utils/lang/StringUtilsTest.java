@@ -368,4 +368,16 @@ class StringUtilsTest {
 		assertArrayEquals(new String[] { "abc" }, StringUtils.extract("abc", Pattern.compile("abc")));
 		assertArrayEquals(new String[] { "[def]" }, StringUtils.extract("abc.[def].ghi", Pattern.compile("\\[.*?]")));
 	}
+	
+	@Test
+	void getReadableString() {
+		assertDoesNotThrow(() -> StringUtils.getReadableString(null, Character::isUpperCase));
+		assertDoesNotThrow(() -> StringUtils.getReadableString("", null));
+		assertEquals("", StringUtils.getReadableString(null, Character::isUpperCase));
+		assertEquals("abc", StringUtils.getReadableString("abc", null));
+		assertEquals("abc", StringUtils.getReadableString("abc", Character::isUpperCase));
+		assertEquals("A B C", StringUtils.getReadableString("abc", Character::isLowerCase));
+		assertEquals("abc D E Fghi", StringUtils.getReadableString("abcDEFghi", Character::isUpperCase));
+		assertEquals("Test Class", StringUtils.getReadableString("TestClass", Character::isUpperCase));
+	}
 }

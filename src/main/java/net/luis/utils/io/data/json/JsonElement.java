@@ -19,6 +19,7 @@
 package net.luis.utils.io.data.json;
 
 import net.luis.utils.io.data.json.exception.JsonTypeException;
+import net.luis.utils.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 
 /**
@@ -27,26 +28,17 @@ import org.jetbrains.annotations.NotNull;
  *
  * @author Luis-St
  */
+@FunctionalInterface
 public interface JsonElement {
 	
 	/**
 	 * Returns the name of the class in a human-readable format.<br>
-	 * The name is the class name with spaces between the words and all letters in lower case.<br>
+	 * The name is the class name with spaces between the words and all letters in lower-case.<br>
+	 * Used for debugging and error messages.<br>
 	 * @return The name of the class in a human-readable format
 	 */
 	private @NotNull String getName() {
-		StringBuilder name = new StringBuilder();
-		String className = this.getClass().getSimpleName();
-		for (int i = 0; i < className.length(); i++) {
-			char c = className.charAt(i);
-			if (Character.isUpperCase(c)) {
-				name.append(" ");
-				name.append(Character.toLowerCase(c));
-			} else {
-				name.append(c);
-			}
-		}
-		return name.toString().strip();
+		return StringUtils.getReadableString(this.getClass().getSimpleName(), Character::isUpperCase).toLowerCase();
 	}
 	
 	/**
