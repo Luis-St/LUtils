@@ -22,9 +22,11 @@ import net.luis.utils.io.codec.decoder.KeyableDecoder;
 import net.luis.utils.io.codec.encoder.KeyableEncoder;
 
 /**
+ * Combines the {@link Codec}, {@link KeyableEncoder} and {@link KeyableDecoder} interfaces.<br>
+ * Into one interface that provides all methods to encode and decode a value or a key.<br>
  *
  * @author Luis-St
  *
+ * @param <C> The type of the codec
  */
-
 public interface KeyableCodec<C> extends Codec<C>, KeyableEncoder<C>, KeyableDecoder<C> {}
