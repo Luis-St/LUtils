@@ -550,6 +550,7 @@ public class JsonObject implements JsonElement {
 	@Override
 	@SuppressWarnings("DuplicatedCode")
 	public @NotNull String toString(@NotNull JsonConfig config) {
+		Objects.requireNonNull(config, "Config must not be null");
 		StringBuilder builder = new StringBuilder("{");
 		List<Map.Entry<String, JsonElement>> entries = List.copyOf(this.elements.entrySet());
 		if (!entries.isEmpty()) {
