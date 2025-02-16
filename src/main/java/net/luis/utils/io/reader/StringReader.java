@@ -262,6 +262,49 @@ public class StringReader {
 	}
 	
 	/**
+	 * Reads all characters until the next line break is found.<br>
+	 * Supported line breaks are: LF ('\n'), CR ('\r'), CRLF ('\r\n').<br>
+	 * @param includeLineBreak Whether the line break should be included in the result or not
+	 * @return The line which was read
+	 */
+	public @NotNull String readLine(boolean includeLineBreak) {
+		if (!this.canRead()) {
+			return "";
+		}
+		StringBuilder builder = new StringBuilder();
+		while (this.canRead()) {
+			char c = this.read();
+			if (c != '\n' && c != '\r') {
+				builder.append(c);
+			} else {
+				// Types of line breaks:
+				//  - LF: Line Feed, '\n' (Unix, Linux, macOS)
+				//  - CR: Carriage Return, '\r' (Old Mac OS)
+				//  - CRLF: CR followed by LF, '\r\n' (Windows)
+				if (c == '\n') {
+					if (includeLineBreak) {
+						builder.append(c);
+					}
+					break;
+				} else {
+					if (includeLineBreak) {
+						builder.append(c);
+					}
+					if (this.canRead() && this.peek() == '\n') {
+						if (includeLineBreak) {
+							builder.append(this.read());
+						} else {
+							this.skip();
+						}
+					}
+					break;
+				}
+			}
+		}
+		return builder.toString();
+	}
+	
+	/**
 	 * Reads the remaining string.<br>
 	 * @return The remaining string
 	 */
