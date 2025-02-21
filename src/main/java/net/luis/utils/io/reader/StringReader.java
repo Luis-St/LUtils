@@ -312,11 +312,9 @@ public class StringReader {
 		if (!this.canRead()) {
 			return "";
 		}
-		StringBuilder builder = new StringBuilder();
-		while (this.canRead()) {
-			builder.append(this.read());
-		}
-		return builder.toString();
+		String remaining = this.string.substring(this.index);
+		this.index = this.string.length();
+		return remaining;
 	}
 	
 	//region Read string
