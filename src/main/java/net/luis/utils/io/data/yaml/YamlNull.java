@@ -30,11 +30,18 @@ import java.util.Objects;
  *
  */
 
-public class YamlNull extends AbstractYamlNode {
+public final class YamlNull extends AbstractYamlNode {
 	
 	public static final YamlNull INSTANCE = new YamlNull();
 	
-	public YamlNull() {}
+	private YamlNull() {}
+	
+	public static @NotNull YamlNull createNull(@NotNull String anchor) {
+		Objects.requireNonNull(anchor, "Anchor must not be null");
+		YamlNull instance = new YamlNull();
+		instance.setAnchor(anchor);
+		return instance;
+	}
 	
 	@Override
 	public boolean hasAnchor() {
