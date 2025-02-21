@@ -34,7 +34,7 @@ final class YamlHelper {
 	
 	private static final Pattern COLON_WHITESPACE_PATTERN = Pattern.compile(":\\s");
 	private static final Pattern WHITESPACE_PATTERN = Pattern.compile("\\s");
-	static final String[] SPECIAL_CHARACTERS = new String[] { "*", "&", "!", ">", "|", "#", "@", "%", "[", "{" };
+	static final String[] SPECIAL_CHARACTERS = new String[] { "*", "&", "!", ">", "|", "#", "@", "%", "[", "{", "'", "\"" };
 	
 	private YamlHelper() {}
 	
@@ -44,7 +44,7 @@ final class YamlHelper {
 			throw new IllegalArgumentException("Key must not be empty or blank");
 		}
 		if (StringUtils.startsWithAny(key, SPECIAL_CHARACTERS)) {
-			throw new IllegalArgumentException("Key must not start with a special character (*, &, !, >, |, #, @, %, [, {)");
+			throw new IllegalArgumentException("Key must not start with a special character (*, &, !, >, |, #, @, %, [, {, ' or \")");
 		}
 		if (COLON_WHITESPACE_PATTERN.matcher(key).find()) {
 			throw new IllegalArgumentException("Key must not contain a colon followed by a space");
@@ -56,8 +56,8 @@ final class YamlHelper {
 		if (anchor.isBlank()) {
 			throw new IllegalArgumentException("Anchor must not be empty or blank");
 		}
-		if (StringUtils.startsWithAny(anchor, "[", "{")) {
-			throw new IllegalArgumentException("Anchor must not start with a special character ([, {)");
+		if (StringUtils.containsAny(anchor, "[", "]", "{", "}")) {
+			throw new IllegalArgumentException("Anchor must not start with a special character ([, ], {, })");
 		}
 		if (WHITESPACE_PATTERN.matcher(anchor).find()) {
 			throw new IllegalArgumentException("Anchor must not contain a whitespace");
