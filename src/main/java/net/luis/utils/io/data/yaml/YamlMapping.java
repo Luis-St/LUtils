@@ -286,6 +286,17 @@ public class YamlMapping extends AbstractYamlNode {
 	public double getAsDouble(@NotNull String key) {
 		return this.getAsYamlScalar(key).getAsDouble();
 	}
+	
+	public @NotNull YamlStruct getAsYamlStruct(@NotNull String key) {
+		YamlNode node = this.get(key);
+		if (node == null) {
+			throw new NoSuchYamlNodeException("Expected yaml struct for key '" + key + "', but found none");
+		}
+		if (node instanceof YamlStruct struct) {
+			return struct;
+		}
+		return node.getAsYamlStruct(); // throws YamlTypeException
+	}
 	//endregion
 	
 	//region Object overrides

@@ -47,9 +47,6 @@ public class YamlStruct extends AbstractYamlNode implements YamlNode {
 		this.key = Objects.requireNonNull(key, "Key must not be null");
 		YamlHelper.validateYamlKey(this.key);
 		this.node = Objects.requireNonNull(node, "Node must not be null");
-		if (this.node instanceof YamlStruct) {
-			throw new YamlTypeException("Node must not be a yaml struct");
-		}
 		this.anchorDefined = false;
 	}
 	
