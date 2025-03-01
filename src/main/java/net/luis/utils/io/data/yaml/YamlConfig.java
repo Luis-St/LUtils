@@ -18,6 +18,7 @@
 
 package net.luis.utils.io.data.yaml;
 
+import net.luis.utils.io.data.config.ReadOnly;
 import net.luis.utils.io.data.config.WriteOnly;
 import org.jetbrains.annotations.NotNull;
 
@@ -31,6 +32,7 @@ import java.nio.charset.StandardCharsets;
  */
 
 public record YamlConfig(
+	@ReadOnly boolean strict,
 	@WriteOnly boolean useNullLiteral,
 	@WriteOnly boolean multilineStrings,
 	@WriteOnly boolean quoteSingleLineStrings,
@@ -39,5 +41,5 @@ public record YamlConfig(
 	@NotNull Charset charset
 ) {
 	
-	public static final YamlConfig DEFAULT = new YamlConfig(true, true, false, '\'', "  ", StandardCharsets.UTF_8);
+	public static final YamlConfig DEFAULT = new YamlConfig(true, true, true, false, '\'', "  ", StandardCharsets.UTF_8);
 }
