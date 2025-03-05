@@ -40,7 +40,8 @@ final class XmlHelper {
 	static final Pattern XML_ATTRIBUTE_NAME_PATTERN = Pattern.compile("^[a-z0-9_-]+(:[a-z0-9_-]+)?$", Pattern.CASE_INSENSITIVE);
 	
 	/**
-	 * Private constructor to prevent instantiation of utility class.<br>
+	 * Private constructor to prevent instantiation.<br>
+	 * This is a static helper class.<br>
 	 */
 	private XmlHelper() {}
 	

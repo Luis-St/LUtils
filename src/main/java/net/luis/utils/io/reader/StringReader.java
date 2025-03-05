@@ -36,7 +36,18 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 /**
- * A utility class to read strings.<br>
+ * Represents a reader to read from a string.<br>
+ * The reader can read specific types of values from the string such as:<br>
+ * <ul>
+ *     <li>Quoted and unquoted strings</li>
+ *     <li>Booleans</li>
+ *     <li>Numbers (byte, short, integer, long, float, double)</li>
+ *     <li>Big numbers (BigInteger, BigDecimal)</li>
+ * </ul>
+ * <p>
+ *     This reader implementation is not performance optimized,<br>
+ *     it reads the string character by character in {@code O(n)}.<br>
+ * </p>
  *
  * @author Luis-St
  */
@@ -251,6 +262,49 @@ public class StringReader {
 	}
 	
 	/**
+	 * Reads all characters until the next line break is found.<br>
+	 * Supported line breaks are: LF ('\n'), CR ('\r'), CRLF ('\r\n').<br>
+	 * @param includeLineBreak Whether the line break should be included in the result or not
+	 * @return The line which was read
+	 */
+	public @NotNull String readLine(boolean includeLineBreak) {
+		if (!this.canRead()) {
+			return "";
+		}
+		StringBuilder builder = new StringBuilder();
+		while (this.canRead()) {
+			char c = this.read();
+			if (c != '\n' && c != '\r') {
+				builder.append(c);
+			} else {
+				// Types of line breaks:
+				//  - LF: Line Feed, '\n' (Unix, Linux, macOS)
+				//  - CR: Carriage Return, '\r' (Old Mac OS)
+				//  - CRLF: CR followed by LF, '\r\n' (Windows)
+				if (c == '\n') {
+					if (includeLineBreak) {
+						builder.append(c);
+					}
+					break;
+				} else {
+					if (includeLineBreak) {
+						builder.append(c);
+					}
+					if (this.canRead() && this.peek() == '\n') {
+						if (includeLineBreak) {
+							builder.append(this.read());
+						} else {
+							this.skip();
+						}
+					}
+					break;
+				}
+			}
+		}
+		return builder.toString();
+	}
+	
+	/**
 	 * Reads the remaining string.<br>
 	 * @return The remaining string
 	 */
@@ -258,11 +312,9 @@ public class StringReader {
 		if (!this.canRead()) {
 			return "";
 		}
-		StringBuilder builder = new StringBuilder();
-		while (this.canRead()) {
-			builder.append(this.read());
-		}
-		return builder.toString();
+		String remaining = this.string.substring(this.index);
+		this.index = this.string.length();
+		return remaining;
 	}
 	
 	//region Read string
@@ -1138,6 +1190,22 @@ public class StringReader {
 		} catch (NumberFormatException e) {
 			throw new InvalidStringException("Unable to parse big decimal value: '" + number + "'", e);
 		}
+	}
+	//endregion
+	
+	//region Object overrides
+	@Override
+	public boolean equals(Object o) {
+		if (!(o instanceof StringReader that)) return false;
+		
+		if (this.index != that.index) return false;
+		if (this.markedIndex != that.markedIndex) return false;
+		return this.string.equals(that.string);
+	}
+	
+	@Override
+	public int hashCode() {
+		return Objects.hash(this.string);
 	}
 	//endregion
 	

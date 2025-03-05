@@ -22,11 +22,14 @@ import com.google.common.base.Objects;
 import com.google.common.collect.Lists;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.ObjectUtils;
+import org.intellij.lang.annotations.Language;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
+import java.util.function.Predicate;
 import java.util.function.ToIntBiFunction;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import static org.apache.commons.lang3.StringUtils.*;
@@ -967,5 +970,114 @@ public final class StringUtils {
 			parts.add(remaining);
 		}
 		return parts.toArray(String[]::new);
+	}
+	
+	/**
+	 * Extracts all groups from the given string which match the given regex.<br>
+	 * <p>
+	 *     If the string is null or empty, an empty array will be returned.<br>
+	 *     If the regex is null, empty or does not match, an empty array will be returned.<br>
+	 * </p>
+	 * <p>
+	 *     Examples:<br>
+	 * </p>
+	 * <pre>{@code
+	 * extract(null, null) -> []
+	 * extract(null, *) -> []
+	 * extract(*, null) -> []
+	 * extract("", *) -> []
+	 * extract(*, "") -> []
+	 * extract("abc", "a") -> ["a"]
+	 * extract("abc", "abc") -> ["abc"]
+	 * extract("abc.[def].ghi", "\\[.*?]") -> ["[def]"]
+	 * }</pre>
+	 * @param str The string to extract the groups from
+	 * @param regex The regex to match
+	 * @return The extracted groups
+	 */
+	public static String @NotNull [] extract(@Nullable String str, @Language("RegExp") @Nullable String regex) {
+		if (isEmpty(str) || isEmpty(regex)) {
+			return ArrayUtils.EMPTY_STRING_ARRAY;
+		}
+		return extract(str, Pattern.compile(regex));
+	}
+	
+	/**
+	 * Extract all groups from the given string which match the given pattern.<br>
+	 * <p>
+	 *     If the string is null or empty, an empty array will be returned.<br>
+	 *     If the pattern is null or does not match, an empty array will be returned.<br>
+	 * </p>
+	 * <p>
+	 *     Examples:<br>
+	 * </p>
+	 * <pre>{@code
+	 * extract(null, null) -> []
+	 * extract(null, *) -> []
+	 * extract(*, null) -> []
+	 * extract("abc", Pattern.compile("a")) -> ["a"]
+	 * extract("abc", Pattern.compile("abc")) -> ["abc"]
+	 * extract("abc.[def].ghi", Pattern.compile("\\[.*?]")) -> ["[def]"]
+	 * }</pre>
+	 * @param str The string to extract the groups from
+	 * @param pattern The pattern to match
+	 * @return The extracted groups
+	 */
+	public static String @NotNull [] extract(@Nullable String str, @Nullable Pattern pattern) {
+		if (isEmpty(str) || pattern == null) {
+			return ArrayUtils.EMPTY_STRING_ARRAY;
+		}
+		Matcher matcher = pattern.matcher(str);
+		List<String> groups = Lists.newArrayList();
+		while (matcher.find()) {
+			groups.add(matcher.group());
+		}
+		return groups.toArray(String[]::new);
+	}
+	
+	/**
+	 * Converts the given string to a readable string.<br>
+	 * <p>
+	 *     The string will be split by the given condition.<br>
+	 *     The first character of each part will be capitalized, the rest will be lowercased.<br>
+	 *     The parts will be joined by a space.<br>
+	 * </p>
+	 * <p>
+	 *     If the string is null or empty, an empty string will be returned.<br>
+	 *     If the condition is null, the string will be returned as is.<br>
+	 * </p>
+	 * <p>
+	 *     Examples:<br>
+	 * </p>
+	 * <pre>{@code
+	 * getReadableString(null, *) -> ""
+	 * getReadableString("", *) -> ""
+	 * getReadableString("abc", null) -> "abc"
+	 * getReadableString("abc", Character::isUpperCase) -> "abc"
+	 * getReadableString("abc", Character::isLowerCase) -> "A B C"
+	 * getReadableString("abcDEFghi", Character::isUpperCase) -> "abc D E Fghi"
+	 * }</pre>
+	 * @param str The string to convert
+	 * @param condition The condition to split the string by
+	 * @return The readable string
+	 */
+	public static @NotNull String getReadableString(@Nullable String str, @Nullable Predicate<Character> condition) {
+		if (isEmpty(str)) {
+			return "";
+		}
+		if (condition == null) {
+			return str;
+		}
+		StringBuilder name = new StringBuilder();
+		for (int i = 0; i < str.length(); i++) {
+			char c = str.charAt(i);
+			if (condition.test(c)) {
+				name.append(" ");
+				name.append(Character.toUpperCase(c));
+			} else {
+				name.append(Character.toLowerCase(c));
+			}
+		}
+		return name.toString().strip();
 	}
 }

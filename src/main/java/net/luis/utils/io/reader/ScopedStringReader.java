@@ -30,6 +30,8 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
+import static net.luis.utils.io.reader.StringScope.*;
+
 /**
  * A utility class to read strings with scopes.<br>
  * A scope is defined by two characters, an opening and a closing character.<br>
@@ -37,29 +39,6 @@ import java.util.stream.Collectors;
  * @author Luis-St
  */
 public class ScopedStringReader extends StringReader {
-	
-	/**
-	 * A map that stores all created scopes.<br>
-	 * The key is the opening character and the value is the closing character.<br>
-	 */
-	private static final Map<Character, Character> SCOPE_REGISTRY = new HashMap<>();
-	
-	/**
-	 * Constant string scope for parentheses.<br>
-	 */
-	public static final StringScope PARENTHESES = new StringScope('(', ')');
-	/**
-	 * Constant string scope for curly brackets.<br>
-	 */
-	public static final StringScope CURLY_BRACKETS = new StringScope('{', '}');
-	/**
-	 * Constant string scope for square brackets.<br>
-	 */
-	public static final StringScope SQUARE_BRACKETS = new StringScope('[', ']');
-	/**
-	 * Constant string scope for angle brackets.<br>
-	 */
-	public static final StringScope ANGLE_BRACKETS = new StringScope('<', '>');
 	
 	/**
 	 * Constructs a new scoped string reader with the given string.<br>
@@ -104,8 +83,8 @@ public class ScopedStringReader extends StringReader {
 			return "";
 		}
 		char next = this.peek();
-		if (next != scope.open) {
-			throw new IllegalArgumentException("Expected '" + scope.open + "' but got '" + next + "'");
+		if (next != scope.open()) {
+			throw new IllegalArgumentException("Expected '" + scope.open() + "' but got '" + next + "'");
 		}
 		StringBuilder builder = new StringBuilder();
 		int depth = 0;
@@ -125,9 +104,9 @@ public class ScopedStringReader extends StringReader {
 				inDoubleQuotes = !inDoubleQuotes;
 			}
 			if (!inSingleQuotes && !inDoubleQuotes && !escaped) {
-				if (c == scope.open) {
+				if (c == scope.open()) {
 					depth++;
-				} else if (c == scope.close) {
+				} else if (c == scope.close()) {
 					depth--;
 					if (depth == 0) {
 						builder.append(c);
@@ -139,9 +118,9 @@ public class ScopedStringReader extends StringReader {
 			escaped = false;
 		}
 		if (depth > 0) {
-			throw new InvalidStringException("Invalid scope, " + depth + " scope" + (depth > 1 ? "s" : "") + " are not closed, expected '" + scope.close + "'");
+			throw new InvalidStringException("Invalid scope, " + depth + " scope" + (depth > 1 ? "s" : "") + " are not closed, expected '" + scope.close() + "'");
 		} else if (depth < 0) {
-			throw new InvalidStringException("Invalid scope, " + -depth + " scope" + (-depth > 1 ? "s" : "") + " are not opened, expected '" + scope.open + "'");
+			throw new InvalidStringException("Invalid scope, " + -depth + " scope" + (-depth > 1 ? "s" : "") + " are not opened, expected '" + scope.open() + "'");
 		}
 		return builder.toString();
 	}
@@ -400,14 +379,14 @@ public class ScopedStringReader extends StringReader {
 		Objects.requireNonNull(parser, "Parser must not be null");
 		ScopedStringReader reader = new ScopedStringReader(this.readScope(scope));
 		char next = reader.peek();
-		if (next != scope.open) {
-			throw new InvalidStringException("Expected '" + scope.open + "' but got '" + next + "'");
+		if (next != scope.open()) {
+			throw new InvalidStringException("Expected '" + scope.open() + "' but got '" + next + "'");
 		}
 		reader.skip();
 		reader.skipWhitespaces();
 		List<T> collection = new ArrayList<>();
 		while (reader.canRead()) {
-			if (reader.peek() == scope.close) {
+			if (reader.peek() == scope.close()) {
 				reader.skip();
 				break;
 			}
@@ -415,7 +394,7 @@ public class ScopedStringReader extends StringReader {
 			if (value.isEmpty()) {
 				continue;
 			}
-			if (value.endsWith("" + scope.close)) {
+			if (value.endsWith("" + scope.close())) {
 				int remaining = reader.getString().length() - reader.getIndex();
 				if (0 >= remaining || reader.canRead(remaining, Character::isWhitespace)) {
 					value = value.substring(0, value.length() - 1);
@@ -506,31 +485,4 @@ public class ScopedStringReader extends StringReader {
 		return map;
 	}
 	//endregion
-	
-	/**
-	 * A record to define a string scope with an opening and a closing character.<br>
-	 *
-	 * @author Luis-St
-	 *
-	 * @param open The opening character of the scope
-	 * @param close The closing character of the scope
-	 */
-	public record StringScope(char open, char close) {
-		
-		/**
-		 * Constructs a new string scope with the given opening and closing character.<br>
-		 * @param open The opening character
-		 * @param close The closing character
-		 * @throws IllegalArgumentException If the opening and closing character are the same
-		 */
-		public StringScope {
-			if (open == close) {
-				throw new IllegalArgumentException("Opening and closing character must not be the same");
-			}
-			if (open == '\0' || close == '\0') {
-				throw new IllegalArgumentException("Opening and closing character must not be the null character");
-			}
-			SCOPE_REGISTRY.put(open, close);
-		}
-	}
 }

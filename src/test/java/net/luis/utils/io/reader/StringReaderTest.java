@@ -40,7 +40,7 @@ class StringReaderTest {
 	@Test
 	void constructor() {
 		assertThrows(NullPointerException.class, () -> new StringReader((String) null));
-		assertThrows(NullPointerException.class, () -> new ScopedStringReader((Reader) null));
+		assertThrows(NullPointerException.class, () -> new StringReader((Reader) null));
 	}
 	
 	@Test
@@ -203,6 +203,22 @@ class StringReaderTest {
 		reader.read();
 		reader.reset();
 		assertEquals(0, reader.getIndex());
+	}
+	
+	@Test
+	void readLine() {
+		StringReader reader = new StringReader("This is the first line.\nThis is the second line.\rThis is the third line.\r\nThis is the fourth line.");
+		assertEquals("This is the first line.", reader.readLine(false));
+		assertEquals("This is the second line.", reader.readLine(false));
+		assertEquals("This is the third line.", reader.readLine(false));
+		assertEquals("This is the fourth line.", reader.readLine(false));
+		
+		reader.reset();
+		
+		assertEquals("This is the first line.\n", reader.readLine(true));
+		assertEquals("This is the second line.\r", reader.readLine(true));
+		assertEquals("This is the third line.\r\n", reader.readLine(true));
+		assertEquals("This is the fourth line.", reader.readLine(true));
 	}
 	
 	@Test

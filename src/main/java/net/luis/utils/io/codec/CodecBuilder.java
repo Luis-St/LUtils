@@ -30,7 +30,13 @@ import java.util.Objects;
  * @author Luis-St
  */
 @SuppressWarnings("DuplicatedCode")
-public class CodecBuilder {
+public final class CodecBuilder {
+	
+	/**
+	 * Private constructor to prevent instantiation.<br>
+	 * This is a static helper class.<br>
+	 */
+	private CodecBuilder() {}
 	
 	/**
 	 * Creates a new codec grouper that groups the provided codec into a single codec.<br>

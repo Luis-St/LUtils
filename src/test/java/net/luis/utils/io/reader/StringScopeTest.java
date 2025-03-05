@@ -16,17 +16,24 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-package net.luis.utils.io.codec;
+package net.luis.utils.io.reader;
 
-import net.luis.utils.io.codec.decoder.KeyableDecoder;
-import net.luis.utils.io.codec.encoder.KeyableEncoder;
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 /**
- * Combines the {@link Codec}, {@link KeyableEncoder} and {@link KeyableDecoder} interfaces.<br>
- * Into one interface that provides all methods to encode and decode a value or a key.<br>
+ * Test class for {@link StringScope}.<br>
  *
  * @author Luis-St
- *
- * @param <C> The type of the codec
  */
-public interface KeyableCodec<C> extends Codec<C>, KeyableEncoder<C>, KeyableDecoder<C> {}
+public class StringScopeTest {
+	
+	@Test
+	void constructor() {
+		assertThrows(IllegalArgumentException.class, () -> new StringScope('\0', '\''));
+		assertThrows(IllegalArgumentException.class, () -> new StringScope('\'', '\0'));
+		assertThrows(IllegalArgumentException.class, () -> new StringScope('"', '"'));
+		assertDoesNotThrow(() -> new StringScope('(', ')'));
+	}
+}

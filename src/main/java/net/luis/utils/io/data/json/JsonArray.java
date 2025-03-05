@@ -610,6 +610,7 @@ public class JsonArray implements JsonElement, Iterable<JsonElement> {
 	@Override
 	@SuppressWarnings("DuplicatedCode")
 	public @NotNull String toString(@NotNull JsonConfig config) {
+		Objects.requireNonNull(config, "Config must not be null");
 		StringBuilder builder = new StringBuilder("[");
 		boolean shouldSimplify = config.simplifyArrays() && config.maxArraySimplificationSize() >= this.size();
 		for (int i = 0; i < this.elements.size(); i++) {
