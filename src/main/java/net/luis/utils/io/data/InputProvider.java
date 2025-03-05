@@ -18,6 +18,7 @@
 
 package net.luis.utils.io.data;
 
+import net.luis.utils.resources.ResourceLocation;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.*;
@@ -86,6 +87,20 @@ public class InputProvider implements AutoCloseable {
 			this.stream = new FileInputStream(file);
 		} catch (FileNotFoundException e) {
 			throw new UncheckedIOException("File not found: " + file, e);
+		}
+	}
+	
+	/**
+	 * Constructs a new input provider for the given resource location.<br>
+	 * @param location The resource location to read data from
+	 * @throws NullPointerException If the resource location is null
+	 * @throws UncheckedIOException If the resource could not be opened
+	 */
+	public InputProvider(@NotNull ResourceLocation location) {
+		try {
+			this.stream = location.getStream();
+		} catch (IOException e) {
+			throw new UncheckedIOException("Unable to open resource: " + location, e);
 		}
 	}
 	
