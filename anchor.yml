@@ -1,0 +1,41 @@
+greeting: &hello "Hello, World!"
+
+message1: *hello
+message2: *hello
+
+
+fruits: &fruit_list
+  - apple
+  - banana
+  - cherry
+
+nested_list:
+  -name: test
+
+basket1: *fruit_list
+basket2: *fruit_list
+
+
+default_config: &config
+  retries: 3
+  timeout: 30
+
+service1:
+  <<: *config
+  endpoint: service1.example.com
+
+service2:
+  <<: *config
+  timeout: 60  # Override timeout
+  endpoint: service2.example.com
+
+
+base_user: &user
+  name: John Doe
+  role: Developer
+
+users:
+  - *user
+  - &test
+    name: Alice
+    role: Designer

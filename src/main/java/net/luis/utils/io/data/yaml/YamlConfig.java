@@ -34,12 +34,13 @@ import java.nio.charset.StandardCharsets;
 public record YamlConfig(
 	@ReadOnly boolean strict,
 	@WriteOnly boolean useNullLiteral,
-	@WriteOnly boolean multilineStrings,
+	@WriteOnly boolean multilineStringsToBlockScalars,
+	@WriteOnly char blockScalarStyle,
 	@WriteOnly boolean quoteSingleLineStrings,
 	@WriteOnly char quoteCharacter,
 	@WriteOnly @NotNull String indent,
 	@NotNull Charset charset
 ) {
 	
-	public static final YamlConfig DEFAULT = new YamlConfig(true, true, true, false, '\'', "  ", StandardCharsets.UTF_8);
+	public static final YamlConfig DEFAULT = new YamlConfig(true, true, true, '|', false, '\'', "  ", StandardCharsets.UTF_8);
 }

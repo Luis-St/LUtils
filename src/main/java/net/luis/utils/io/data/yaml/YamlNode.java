@@ -49,6 +49,14 @@ public interface YamlNode {
 	
 	void setAnchor(@Nullable String anchor);
 	
+	default boolean isYamlStruct() {
+		return this instanceof YamlStruct;
+	}
+	
+	default boolean isYamlAnchor() {
+		return this instanceof YamlAnchor;
+	}
+	
 	default boolean isYamlNull() {
 		return this instanceof YamlNull;
 	}
@@ -65,8 +73,18 @@ public interface YamlNode {
 		return this instanceof YamlScalar;
 	}
 	
-	default boolean isYamlStruct() {
-		return this instanceof YamlStruct;
+	default @NotNull YamlStruct getAsYamlStruct() {
+		if (this instanceof YamlStruct struct) {
+			return struct;
+		}
+		throw new YamlTypeException("Expected a yaml struct, but got a " + this.getName());
+	}
+	
+	default @NotNull YamlAnchor getAsYamlAnchor() {
+		if (this instanceof YamlAnchor anchor) {
+			return anchor;
+		}
+		throw new YamlTypeException("Expected a yaml anchor, but got a " + this.getName());
 	}
 	
 	default @NotNull YamlMapping getAsYamlMapping() {
@@ -88,13 +106,6 @@ public interface YamlNode {
 			return scalar;
 		}
 		throw new YamlTypeException("Expected a yaml scalar, but got a " + this.getName());
-	}
-	
-	default @NotNull YamlStruct getAsYamlStruct() {
-		if (this instanceof YamlStruct struct) {
-			return struct;
-		}
-		throw new YamlTypeException("Expected a yaml struct, but got a " + this.getName());
 	}
 	
 	default @NotNull YamlStruct createStruct(@NotNull String key) {

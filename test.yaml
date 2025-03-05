@@ -1,0 +1,117 @@
+# YAML test file for YAML reader
+
+# Define a multi-line string with a folded style.
+description: >+
+  This folded multi-line string will be joined
+  into a single paragraph when parsed.
+  
+  
+
+list:
+  -
+  - 1
+  - !!int 2
+  - &test !!int 3
+  - test: *test
+  - - 4
+
+nested1:
+  -
+    - !!str "item1"
+    - !!str "item2"
+
+nested2:
+  - this is a simple multi plain string
+    inside a list
+
+nested3:
+  - "- !!str 10
+    - !!str 20"
+
+nested4:
+  -
+    "- !!str 10
+    - !!str 20"
+
+nested5:
+  - |
+    - !!str 10
+    - !!str 20
+
+nested6:
+  - test: 1
+    dummy: 1
+
+nested7:
+  -
+    test: 1
+    dummy: 1
+
+nested_map:
+  - &test !!map - test
+  - &test !!map test: *test
+
+
+# Define a defaults mapping with an anchor.
+defaults: &defaults
+  name: !!str "Default Name"
+  age: !!int 30
+  salary: !!float 12345.67
+  isActive: !!bool true
+  bio: |
+    This is a literal multi-line string.
+    It preserves line breaks exactly as written.
+  description: >
+    This folded multi-line string will be joined
+    into a single paragraph when parsed.
+  data: !!binary |
+    R0lGODlhAQABAIAAAAUEBA==
+  nested:
+    details:
+      - "item1"
+      - "item2"
+    inline_map: { key1: value1, key2: value2 }
+    inline_seq: [ a, b, c ]
+
+# Extended settings merge in the defaults and override some values.
+extended: &extended
+  <<: *defaults
+  name: "Extended Name"
+  extra: "Additional field"
+  numbers:
+    - !!int 100
+    - !!int 200
+    - !!int 300
+
+# Another defaults mapping with its own anchor.
+another_defaults: &another_defaults
+  flag: !!bool false
+  list:
+    - !!int 1
+    - !!int 2
+    - !!int 3
+  map: { a: 1, b: 2 }
+
+# Combined settings merge from multiple anchors.
+combined:
+  <<: [*defaults, *another_defaults]
+  name: "Combined Name"
+  # This 'list' key overrides the merged ones.
+  list:
+    - "item1"
+    - "item2"
+
+# Nested merge example: merging at different nesting levels.
+nested_merge:
+  outer:
+    <<: *extended
+    inner:
+      <<: [*defaults, *another_defaults]
+      message: "This is an inner message"
+      inline: { k1: v1, k2: v2 }
+
+# An inline mapping example.
+inline_example: { keyA: "valueA", keyB: "valueB" }
+
+# An inline sequence example with a mix of explicit types and an inline mapping.
+sequence_example: [ !!str "string", !!int "42", !!bool "false", { innerKey: "innerValue" } ]

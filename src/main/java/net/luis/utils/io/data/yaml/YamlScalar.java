@@ -104,14 +104,13 @@ public class YamlScalar extends AbstractYamlNode implements ValueGetter {
 	@Override
 	public @NotNull String toString(@NotNull YamlConfig config) {
 		Objects.requireNonNull(config, "Config must not be null");
-		if (config.multilineStrings() && StringUtils.containsAny(this.value, "\n", "\r")) {
+		if (StringUtils.containsAny(this.value, "\n", "\r")) {
 			return "|" + System.lineSeparator() + this.value.replaceAll("\\r\\n|\\r|\\n", System.lineSeparator());
-		}
-		String value = this.value.replace("\n", "\\n").replace("\r", "\\r");
+		};
 		if (config.quoteSingleLineStrings()) {
-			return config.quoteCharacter() + value + config.quoteCharacter();
+			return config.quoteCharacter() + this.value + config.quoteCharacter();
 		}
-		return this.getBaseString(config) + value;
+		return this.getBaseString(config) + this.value;
 	}
 	//endregion
 }

@@ -113,7 +113,7 @@ public class YamlDocument {
 	private @NotNull Map<String, YamlNode> collectAnchors() {
 		Map<String, YamlNode> anchors = Maps.newHashMap();
 		for (YamlStruct struct : this.structs.values()) {
-			if (!struct.isAnchorDefined()) {
+			if (!struct.hasAnchor()) {
 				this.mergeAnchors(anchors, this.collectAnchors(struct));
 			}
 		}
