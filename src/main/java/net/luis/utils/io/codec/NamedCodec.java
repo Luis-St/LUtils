@@ -57,13 +57,16 @@ public class NamedCodec<C> implements Codec<C> {
 	 * The name of the value.<br>
 	 */
 	private final String name;
-	
+	/**
+	 * The aliases of the value.<br>
+	 */
 	private final Set<String> aliases;
 	
 	/**
 	 * Constructs a new named codec using the given codec and name for the value.<br>
 	 * @param codec The codec used to
 	 * @param name The name of the value
+	 * @param aliases The aliases of the value
 	 * @throws NullPointerException If the codec or name is null
 	 */
 	NamedCodec(@NotNull Codec<C> codec, @NotNull String name, String @NotNull ... aliases) {
