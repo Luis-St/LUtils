@@ -46,6 +46,8 @@ public interface ThrowableQuadFunction<T, U, V, W, R, X extends Throwable> {
 	 * @return A caught quad-function
 	 * @param <T> The first argument type
 	 * @param <U> The second argument type
+	 * @param <V> The third argument type
+	 * @param <W> The fourth argument type
 	 * @param <R> The return type
 	 * @throws NullPointerException If the throwable quad-function is null
 	 */

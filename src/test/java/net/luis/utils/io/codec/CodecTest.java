@@ -564,7 +564,10 @@ class CodecTest {
 	@Test
 	void named() {
 		assertThrows(NullPointerException.class, () -> Codec.STRING.named(null));
+		assertThrows(NullPointerException.class, () -> Codec.STRING.named(null, ""));
+		assertThrows(NullPointerException.class, () -> Codec.STRING.named("", (String[]) null));
 		assertInstanceOf(NamedCodec.class, Codec.STRING.named("name"));
+		assertInstanceOf(NamedCodec.class, Codec.STRING.named("name", "_name"));
 	}
 	
 	@Test

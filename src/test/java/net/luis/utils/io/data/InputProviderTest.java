@@ -18,6 +18,7 @@
 
 package net.luis.utils.io.data;
 
+import net.luis.utils.resources.ResourceLocation;
 import org.junit.jupiter.api.*;
 
 import java.io.*;
@@ -72,6 +73,11 @@ class InputProviderTest {
 		assertThrows(UncheckedIOException.class, () -> new InputProvider(new File("InputProvider.json")));
 		assertThrows(UncheckedIOException.class, () -> new InputProvider(new File("InputProvider/")));
 		assertDoesNotThrow(() -> new InputProvider(new File("InputProvider/InputProvider.json"))).close();
+		
+		assertThrows(NullPointerException.class, () -> new InputProvider((ResourceLocation) null));
+		assertThrows(UncheckedIOException.class, () -> new InputProvider(ResourceLocation.external("InputProvider.json")));
+		//assertThrows(UncheckedIOException.class, () -> new InputProvider(ResourceLocation.external("InputProvider/"))); // Windows only exception
+		assertDoesNotThrow(() -> new InputProvider(ResourceLocation.external("InputProvider/InputProvider.json"))).close();
 		
 		assertThrows(NullPointerException.class, () -> new InputProvider((InputStream) null));
 		assertDoesNotThrow(() -> new InputProvider(new FileInputStream("InputProvider/InputProvider.json"))).close();

@@ -45,6 +45,7 @@ public interface ThrowableTriFunction<T, U, V, R, X extends Throwable> {
 	 * @return A caught tri-function
 	 * @param <T> The first argument type
 	 * @param <U> The second argument type
+	 * @param <V> The third argument type
 	 * @param <R> The return type
 	 * @throws NullPointerException If the throwable tri-function is null
 	 */

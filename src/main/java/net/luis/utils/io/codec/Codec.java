@@ -1088,14 +1088,17 @@ public interface Codec<C> extends Encoder<C>, Decoder<C> {
 	}
 	
 	/**
-	 * Creates a new named codec for the current codec using the given name.<br>
+	 * Creates a new named codec with the current codec using the given name and aliases.<br>
 	 * @param name The name of the codec
+	 * @param aliases The aliases of the codec
 	 * @return A new named codec
 	 * @throws NullPointerException If the codec name is null
 	 * @see NamedCodec
 	 */
-	default @NotNull Codec<C> named(@NotNull String name) {
-		return new NamedCodec<>(this, Objects.requireNonNull(name, "Name must not be null"));
+	default @NotNull Codec<C> named(@NotNull String name, String @NotNull ... aliases) {
+		Objects.requireNonNull(name, "Name must not be null");
+		Objects.requireNonNull(aliases, "Aliases must not be null");
+		return new NamedCodec<>(this, name, aliases);
 	}
 	
 	/**
@@ -1107,7 +1110,7 @@ public interface Codec<C> extends Encoder<C>, Decoder<C> {
 	 * @param <O> The type of the object which contains the component
 	 * @return A new configured codec
 	 * @throws NullPointerException If the getter function is null
-	 * @see #named(String)
+	 * @see #named(String, String...)
 	 * @see #configure(String, Function)
 	 * @see ConfiguredCodec
 	 */
@@ -1117,7 +1120,7 @@ public interface Codec<C> extends Encoder<C>, Decoder<C> {
 	
 	/**
 	 * Creates a new configured codec.<br>
-	 * This method combines the {@link #named(String)} and {@link #getter(Function)} methods.<br>
+	 * This method combines the {@link #named(String, String...)} and {@link #getter(Function)} methods.<br>
 	 * <p>
 	 *     The configured codec is used in the codec builder to create codecs for complex data structures.<br>
 	 *     The configured codec encodes and decodes components of the data structure using the given getter function.<br>
@@ -1127,7 +1130,7 @@ public interface Codec<C> extends Encoder<C>, Decoder<C> {
 	 * @param <O> The type of the object which contains the component
 	 * @return A new configured codec
 	 * @throws NullPointerException If the codec name or getter function is null
-	 * @see #named(String)
+	 * @see #named(String, String...)
 	 * @see #getter(Function)
 	 */
 	default <O> @NotNull ConfiguredCodec<C, O> configure(@NotNull String name, @NotNull Function<O, C> getter) {
