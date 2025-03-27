@@ -97,6 +97,7 @@ public class InputProvider implements AutoCloseable {
 	 * @throws UncheckedIOException If the resource could not be opened
 	 */
 	public InputProvider(@NotNull ResourceLocation location) {
+		Objects.requireNonNull(location, "Resource location must not be null");
 		try {
 			this.stream = location.getStream();
 		} catch (IOException e) {
