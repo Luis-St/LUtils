@@ -18,6 +18,7 @@
 
 package net.luis.utils.io.token;
 
+import net.luis.utils.io.token.definition.TokenDefinition;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.*;

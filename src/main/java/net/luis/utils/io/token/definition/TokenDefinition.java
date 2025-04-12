@@ -16,9 +16,12 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-package net.luis.utils.io.token;
+package net.luis.utils.io.token.definition;
 
+import net.luis.utils.io.token.TokenCategory;
 import org.jetbrains.annotations.NotNull;
+
+import java.util.Optional;
 
 /**
  *
@@ -26,50 +29,31 @@ import org.jetbrains.annotations.NotNull;
  *
  */
 
-@FunctionalInterface
 public interface TokenDefinition {
 	
-	TokenDefinition WORD = new TokenDefinition() {
-		@Override
-		public boolean matches(@NotNull String word) {
-			return word.length() > 1;
-		}
-		
-		@Override
-		public String toString() {
-			return "WORD";
-		}
-	};
+	TokenDefinition WORD = new WordTokenDefinition();
 	
 	static @NotNull TokenDefinition of(char token) {
-		return new TokenDefinition() {
-			@Override
-			public boolean matches(@NotNull String word) {
-				return word.length() == 1 && word.charAt(0) == token;
-			}
-			
-			@Override
-			public String toString() {
-				return String.valueOf(token);
-			}
-		};
+		return new CharTokenDefinition(token);
+	}
+	
+	static @NotNull TokenDefinition of(char token, @NotNull TokenCategory category) {
+		return new CharTokenDefinition(token, Optional.of(category));
 	}
 	
 	static @NotNull TokenDefinition of(@NotNull String token, boolean equalsIgnoreCase) {
-		return new TokenDefinition() {
-			@Override
-			public boolean matches(@NotNull String word) {
-				return equalsIgnoreCase ? word.equalsIgnoreCase(token) : word.equals(token);
-			}
-			
-			@Override
-			public String toString() {
-				return token;
-			}
-		};
+		return new StringTokenDefinition(token, equalsIgnoreCase);
+	}
+	
+	static @NotNull TokenDefinition of(@NotNull String token, boolean equalsIgnoreCase, @NotNull TokenCategory category) {
+		return new StringTokenDefinition(token, equalsIgnoreCase, Optional.of(category));
+	}
+	
+	@NotNull Optional<TokenCategory> category();
+	
+	default boolean isCategory(@NotNull TokenCategory category) {
+		return this.category().isPresent() && this.category().get() == category;
 	}
 	
 	boolean matches(@NotNull String word);
-	
-	
 }

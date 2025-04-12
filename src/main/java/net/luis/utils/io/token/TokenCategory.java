@@ -18,24 +18,11 @@
 
 package net.luis.utils.io.token;
 
-import net.luis.utils.io.token.definition.TokenDefinition;
-import org.jetbrains.annotations.NotNull;
-
-import java.util.Optional;
-
 /**
  *
  * @author Luis-St
  *
  */
 
-public record Token(@NotNull TokenDefinition definition, @NotNull String value, @NotNull TokenPosition position) {
-	
-	public @NotNull Optional<TokenCategory> category() {
-		return this.definition.category();
-	}
-	
-	public boolean isCategory(@NotNull TokenCategory category) {
-		return this.definition.isCategory(category);
-	}
+public interface TokenCategory {
 }
