@@ -30,12 +30,12 @@ import java.util.*;
 
 public class TokenReader {
 	
-	private final List<TokenDefinition> definitions;
+	private final Set<TokenDefinition> definitions;
 	private final Set<Character> allowedChars;
 	private final Set<Character> separators;
 	
-	public TokenReader(@NotNull List<TokenDefinition> definitions, @NotNull Set<Character> allowedChars, @NotNull Set<Character> separators) {
-		this.definitions = new ArrayList<>(definitions);
+	public TokenReader(@NotNull Set<TokenDefinition> definitions, @NotNull Set<Character> allowedChars, @NotNull Set<Character> separators) {
+		this.definitions = new HashSet<>(definitions);
 		this.allowedChars = new HashSet<>(allowedChars);
 		this.separators = new HashSet<>(separators);
 		this.allowedChars.addAll(separators);
@@ -44,8 +44,8 @@ public class TokenReader {
 	public @NotNull List<Token> readTokens(@NotNull String input) {
 		List<Token> tokens = new ArrayList<>();
 		int position = 0;
-		int line = 1;
-		int charInLine = 1;
+		int line = 0;
+		int charInLine = 0;
 		
 		StringBuilder currentWord = new StringBuilder();
 		int wordStartPosition = position;
@@ -56,7 +56,7 @@ public class TokenReader {
 			char current = input.charAt(position);
 			
 			if (!this.allowedChars.contains(current)) {
-				throw new UndefinedTokenException("Undefined character at line " + line + ", character " + charInLine + ": '" + current + "'");
+				throw new IllegalStateException("Undefined character at line " + line + ", character " + charInLine + ": '" + current + "'");
 			}
 			
 			boolean isSeparator = this.separators.contains(current);
@@ -66,19 +66,18 @@ public class TokenReader {
 					currentWord = new StringBuilder();
 				}
 				
-				for (TokenDefinition def : this.definitions) {
-					if (def.isSingleChar() && def.getSingleChar() == current) {
-						tokens.add(new Token(def, String.valueOf(current),
-							new TokenPosition(line, position, charInLine)));
+				for (TokenDefinition definition : this.definitions) {
+					String currentStr = String.valueOf(current);
+					if (definition.matches(currentStr)) {
+						tokens.add(new Token(definition, currentStr, new TokenPosition(line, position, charInLine)));
 						break;
 					}
 				}
 				
 				if (current == '\n') {
 					line++;
-					charInLine = 1;
-				} else {
-					charInLine++;
+					charInLine = 0;
+				} else {					charInLine++;
 				}
 				position++;
 				
@@ -91,7 +90,6 @@ public class TokenReader {
 					wordStartCharInLine = charInLine;
 				}
 				
-				// Add character to current word
 				currentWord.append(current);
 				charInLine++;
 				position++;
@@ -108,9 +106,9 @@ public class TokenReader {
 	private void addToken(@NotNull List<Token> tokens, @NotNull String word, int position, int line, int charInLine) {
 		TokenDefinition matchedDef = null;
 		
-		for (TokenDefinition def : this.definitions) {
-			if (def.matches(word)) {
-				matchedDef = def;
+		for (TokenDefinition definition : this.definitions) {
+			if (definition.matches(word)) {
+				matchedDef = definition;
 				break;
 			}
 		}

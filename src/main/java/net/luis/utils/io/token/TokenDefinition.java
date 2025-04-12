@@ -26,23 +26,50 @@ import org.jetbrains.annotations.NotNull;
  *
  */
 
-public abstract class TokenDefinition {
+@FunctionalInterface
+public interface TokenDefinition {
 	
-	public static final TokenDefinition WORD = new StringTokenDefinition("WORD", false);
+	TokenDefinition WORD = new TokenDefinition() {
+		@Override
+		public boolean matches(@NotNull String word) {
+			return word.length() > 1;
+		}
+		
+		@Override
+		public String toString() {
+			return "WORD";
+		}
+	};
 	
-	protected final String name;
-	
-	protected TokenDefinition(@NotNull String name) {
-		this.name = name;
+	static @NotNull TokenDefinition of(char token) {
+		return new TokenDefinition() {
+			@Override
+			public boolean matches(@NotNull String word) {
+				return word.length() == 1 && word.charAt(0) == token;
+			}
+			
+			@Override
+			public String toString() {
+				return String.valueOf(token);
+			}
+		};
 	}
 	
-	public abstract boolean isSingleChar();
-	
-	public abstract char getSingleChar();
-	
-	public abstract boolean matches(@NotNull String word);
-	
-	public @NotNull String getName() {
-		return this.name;
+	static @NotNull TokenDefinition of(@NotNull String token, boolean equalsIgnoreCase) {
+		return new TokenDefinition() {
+			@Override
+			public boolean matches(@NotNull String word) {
+				return equalsIgnoreCase ? word.equalsIgnoreCase(token) : word.equals(token);
+			}
+			
+			@Override
+			public String toString() {
+				return token;
+			}
+		};
 	}
+	
+	boolean matches(@NotNull String word);
+	
+	
 }

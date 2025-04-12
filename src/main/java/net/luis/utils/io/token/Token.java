@@ -25,4 +25,5 @@ import org.jetbrains.annotations.NotNull;
  * @author Luis-St
  *
  */
+
 public record Token(@NotNull TokenDefinition definition, @NotNull String value, @NotNull TokenPosition position) {}
