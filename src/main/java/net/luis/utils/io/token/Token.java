@@ -20,7 +20,9 @@ package net.luis.utils.io.token;
 
 import net.luis.utils.io.token.definition.TokenDefinition;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
+import java.util.Objects;
 import java.util.Optional;
 
 /**
@@ -31,11 +33,17 @@ import java.util.Optional;
 
 public record Token(@NotNull TokenDefinition definition, @NotNull String value, @NotNull TokenPosition position) {
 	
+	public Token {
+		Objects.requireNonNull(definition, "Token definition must not be null");
+		Objects.requireNonNull(value, "Token value must not be null");
+		Objects.requireNonNull(position, "Token position must not be null");
+	}
+	
 	public @NotNull Optional<TokenCategory> category() {
 		return this.definition.category();
 	}
 	
-	public boolean isCategory(@NotNull TokenCategory category) {
+	public boolean isCategory(@Nullable TokenCategory category) {
 		return this.definition.isCategory(category);
 	}
 }

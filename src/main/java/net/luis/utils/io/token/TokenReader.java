@@ -36,13 +36,14 @@ public class TokenReader {
 	private final Set<Character> separators;
 	
 	public TokenReader(@NotNull Set<TokenDefinition> definitions, @NotNull Set<Character> allowedChars, @NotNull Set<Character> separators) {
-		this.definitions = new HashSet<>(definitions);
-		this.allowedChars = new HashSet<>(allowedChars);
-		this.separators = new HashSet<>(separators);
+		this.definitions = new HashSet<>(Objects.requireNonNull(definitions, "Token definitions must not be null"));
+		this.allowedChars = new HashSet<>(Objects.requireNonNull(allowedChars, "Allowed characters must not be null"));
+		this.separators = new HashSet<>(Objects.requireNonNull(separators, "Separators must not be null"));
 		this.allowedChars.addAll(separators);
 	}
 	
 	public @NotNull List<Token> readTokens(@NotNull String input) {
+		Objects.requireNonNull(input, "Input string must not be null");
 		List<Token> tokens = new ArrayList<>();
 		int position = 0;
 		int line = 0;
@@ -105,6 +106,8 @@ public class TokenReader {
 	}
 	
 	private void addToken(@NotNull List<Token> tokens, @NotNull String word, int position, int line, int charInLine) {
+		Objects.requireNonNull(tokens, "Token list must not be null");
+		Objects.requireNonNull(word, "Word must not be null");
 		TokenDefinition matchedDef = null;
 		
 		for (TokenDefinition definition : this.definitions) {

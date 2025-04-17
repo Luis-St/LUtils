@@ -24,4 +24,17 @@ package net.luis.utils.io.token;
  *
  */
 
-public record TokenPosition(int line, int character, int characterInLine) {}
+public record TokenPosition(int line, int character, int characterInLine) {
+	
+	public TokenPosition {
+		if (line < 0) {
+			throw new IllegalArgumentException("Line number cannot be negative");
+		}
+		if (character < 0) {
+			throw new IllegalArgumentException("Character number cannot be negative");
+		}
+		if (characterInLine < 0) {
+			throw new IllegalArgumentException("Character in line number cannot be negative");
+		}
+	}
+}

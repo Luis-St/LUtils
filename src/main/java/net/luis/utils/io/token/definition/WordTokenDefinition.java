@@ -3,6 +3,7 @@ package net.luis.utils.io.token.definition;
 import net.luis.utils.io.token.TokenCategory;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.Objects;
 import java.util.Optional;
 
 /**
@@ -20,6 +21,7 @@ final class WordTokenDefinition implements TokenDefinition {
 	
 	@Override
 	public boolean matches(@NotNull String word) {
+		Objects.requireNonNull(word, "Word must not be null");
 		return word.length() > 1;
 	}
 	

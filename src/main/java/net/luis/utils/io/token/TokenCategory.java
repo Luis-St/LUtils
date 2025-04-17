@@ -24,5 +24,4 @@ package net.luis.utils.io.token;
  *
  */
 
-public interface TokenCategory {
-}
+public interface TokenCategory {}
