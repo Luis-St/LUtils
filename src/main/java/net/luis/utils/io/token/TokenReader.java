@@ -79,7 +79,8 @@ public class TokenReader {
 				if (current == '\n') {
 					line++;
 					charInLine = 0;
-				} else {					charInLine++;
+				} else {
+					charInLine++;
 				}
 				position++;
 				
