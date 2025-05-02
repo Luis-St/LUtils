@@ -18,10 +18,14 @@
 
 package net.luis.utils.io.token.rule;
 
+import com.google.common.collect.Lists;
 import net.luis.utils.io.token.rule.actions.TokenAction;
+import net.luis.utils.io.token.rule.rules.TokenRule;
+import net.luis.utils.io.token.tokens.Token;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.*;
+import java.util.List;
+import java.util.Objects;
 
 /**
  *
@@ -29,39 +33,37 @@ import java.util.*;
  *
  */
 
-public class RuleEngine {
+public class TokenRuleEngine {
 	
-	private final List<RuleAction> ruleActions;
+	private final List<RuleAction> ruleActions = Lists.newArrayList();
 	
-	public RuleEngine() {
-		this.ruleActions = new ArrayList<>();
+	public void addRule(@NotNull TokenRule tokenRule) {
+		Objects.requireNonNull(tokenRule, "Token rule must not be null");
+		this.addRule(tokenRule, TokenAction.identity());
 	}
 	
-	public void addRuleAction(@NotNull Rule rule, @NotNull TokenAction action) {
-		Objects.requireNonNull(rule, "Rule must not be null");
-		Objects.requireNonNull(action, "Action must not be null");
-		this.ruleActions.add(new RuleAction(rule, action));
+	public void addRule(@NotNull TokenRule tokenRule, @NotNull TokenAction action) {
+		Objects.requireNonNull(tokenRule, "Token rule must not be null");
+		Objects.requireNonNull(action, "Token action must not be null");
+		this.ruleActions.add(new RuleAction(tokenRule, action));
 	}
 	
-	public @NotNull List<String> process(@NotNull List<String> tokens) {
+	public @NotNull List<Token> process(@NotNull List<Token> tokens) {
 		Objects.requireNonNull(tokens, "Tokens must not be null");
 		
-		List<String> result = new ArrayList<>(tokens);
+		List<Token> result = Lists.newArrayList(tokens);
 		int index = 0;
 		while (index < result.size()) {
 			boolean matchFound = false;
 			
 			for (RuleAction ruleAction : this.ruleActions) {
-				Match match = ruleAction.rule().match(result, index);
+				TokenRuleMatch match = ruleAction.tokenRule().match(result, index);
 				if (match != null) {
-					// Apply the action
-					List<String> processed = ruleAction.action().apply(match);
+					List<Token> processed = ruleAction.action().apply(match);
 					
-					// Replace the matched tokens with the processed tokens
 					result.subList(match.startIndex(), match.endIndex()).clear();
 					result.addAll(match.startIndex(), processed);
 					
-					// Adjust index based on change in size
 					index = match.startIndex() + processed.size();
 					matchFound = true;
 					break;
@@ -72,15 +74,14 @@ public class RuleEngine {
 				index++;
 			}
 		}
-		
 		return result;
 	}
 	
-	private record RuleAction(@NotNull Rule rule, @NotNull TokenAction action) {
+	private record RuleAction(@NotNull TokenRule tokenRule, @NotNull TokenAction action) {
 		
 		private RuleAction {
-			Objects.requireNonNull(rule, "Rule must not be null");
-			Objects.requireNonNull(action, "Action must not be null");
+			Objects.requireNonNull(tokenRule, "Token rule must not be null");
+			Objects.requireNonNull(action, "Token action must not be null");
 		}
 	}
 }

@@ -18,7 +18,10 @@
 
 package net.luis.utils.io.token;
 
+import com.google.common.collect.Lists;
 import net.luis.utils.io.token.definition.TokenDefinition;
+import net.luis.utils.io.token.tokens.SimpleToken;
+import net.luis.utils.io.token.tokens.Token;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
@@ -44,7 +47,7 @@ public class TokenReader {
 	
 	public @NotNull List<Token> readTokens(@NotNull String input) {
 		Objects.requireNonNull(input, "Input string must not be null");
-		List<Token> tokens = new ArrayList<>();
+		List<Token> tokens = Lists.newArrayList();
 		int position = 0;
 		int line = 0;
 		int charInLine = 0;
@@ -71,7 +74,7 @@ public class TokenReader {
 				for (TokenDefinition definition : this.definitions) {
 					String currentStr = String.valueOf(current);
 					if (definition.matches(currentStr)) {
-						tokens.add(new Token(definition, currentStr, new TokenPosition(line, position, charInLine)));
+						tokens.add(new SimpleToken(definition, currentStr, new TokenPosition(line, position, charInLine)));
 						break;
 					}
 				}
@@ -102,7 +105,6 @@ public class TokenReader {
 		if (!currentWord.isEmpty()) {
 			this.addToken(tokens, currentWord.toString(), wordStartPosition, wordStartLine, wordStartCharInLine);
 		}
-		
 		return tokens;
 	}
 	
@@ -121,7 +123,6 @@ public class TokenReader {
 		if (matchedDef == null) {
 			matchedDef = TokenDefinition.WORD;
 		}
-		
-		tokens.add(new Token(matchedDef, word, new TokenPosition(line, position, charInLine)));
+		tokens.add(new SimpleToken(matchedDef, word, new TokenPosition(line, position, charInLine)));
 	}
 }

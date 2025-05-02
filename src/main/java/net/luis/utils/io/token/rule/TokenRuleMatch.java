@@ -16,14 +16,14 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-package net.luis.utils.io.token.rule.rules;
+package net.luis.utils.io.token.rule;
 
-import net.luis.utils.io.token.rule.Match;
-import net.luis.utils.io.token.rule.Rule;
+import net.luis.utils.io.token.rule.rules.TokenRule;
+import net.luis.utils.io.token.tokens.Token;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
-import java.util.*;
+import java.util.List;
+import java.util.Objects;
 
 /**
  *
@@ -31,25 +31,15 @@ import java.util.*;
  *
  */
 
-public record AnyRuleRule(@NotNull Set<Rule> rules) implements Rule {
+public record TokenRuleMatch(
+	int startIndex,
+	int endIndex, // exclusive
+	@NotNull List<Token> matchedTokens,
+	@NotNull TokenRule matchingTokenRule
+) {
 	
-	public AnyRuleRule {
-		rules = Set.copyOf(Objects.requireNonNull(rules, "Rules must not be null"));
-		for (Rule rule : rules) {
-			Objects.requireNonNull(rule, "Rules must not contain a null element");
-		}
-	}
-	
-	@Override
-	public @Nullable Match match(@NotNull List<String> tokens, int startIndex) {
-		Objects.requireNonNull(tokens, "Tokens must not be null");
-		
-		for (Rule rule : this.rules) {
-			Match match = rule.match(tokens, startIndex);
-			if (match != null) {
-				return match;
-			}
-		}
-		return null;
+	public TokenRuleMatch {
+		Objects.requireNonNull(matchedTokens, "Matched tokens must not be null");
+		Objects.requireNonNull(matchingTokenRule, "Matching rule must not be null");
 	}
 }

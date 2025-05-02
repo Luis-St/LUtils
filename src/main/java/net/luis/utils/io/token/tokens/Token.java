@@ -16,12 +16,11 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-package net.luis.utils.io.token.rule;
+package net.luis.utils.io.token.tokens;
 
+import net.luis.utils.io.token.TokenPosition;
+import net.luis.utils.io.token.definition.TokenDefinition;
 import org.jetbrains.annotations.NotNull;
-
-import java.util.List;
-import java.util.Objects;
 
 /**
  *
@@ -29,15 +28,13 @@ import java.util.Objects;
  *
  */
 
-public record Match(
-	int startIndex,
-	int endIndex, // exclusive
-	@NotNull List<String> matchedTokens,
-	@NotNull Rule matchingRule
-) {
+public interface Token {
 	
-	public Match {
-		Objects.requireNonNull(matchedTokens, "Matched tokens must not be null");
-		Objects.requireNonNull(matchingRule, "Matching rule must not be null");
-	}
+	@NotNull TokenDefinition definition();
+	
+	@NotNull String value();
+	
+	@NotNull TokenPosition startPosition();
+	
+	@NotNull TokenPosition endPosition();
 }

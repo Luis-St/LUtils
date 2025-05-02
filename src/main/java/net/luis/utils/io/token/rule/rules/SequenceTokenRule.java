@@ -18,8 +18,8 @@
 
 package net.luis.utils.io.token.rule.rules;
 
-import net.luis.utils.io.token.rule.Match;
-import net.luis.utils.io.token.rule.Rule;
+import net.luis.utils.io.token.rule.TokenRuleMatch;
+import net.luis.utils.io.token.tokens.Token;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -31,31 +31,32 @@ import java.util.*;
  *
  */
 
-public record SequenceRule(@NotNull List<Rule> rules) implements Rule {
+public record SequenceTokenRule(
+	@NotNull List<TokenRule> tokenRules
+) implements TokenRule {
 	
-	public SequenceRule {
-		Objects.requireNonNull(rules, "Rules must not be null");
-		if (rules.isEmpty()) {
-			throw new IllegalArgumentException("Rules must not be empty");
+	public SequenceTokenRule {
+		Objects.requireNonNull(tokenRules, "Token rule list must not be null");
+		if (tokenRules.isEmpty()) {
+			throw new IllegalArgumentException("Token rule list must not be empty");
 		}
-		rules = List.copyOf(rules);
-		
-		for (Rule rule : rules) {
-			Objects.requireNonNull(rule, "Rules must not contain a null element");
+		for (TokenRule tokenRule : tokenRules) {
+			Objects.requireNonNull(tokenRule, "Token rule list must not contain a null element");
 		}
+		tokenRules = List.copyOf(tokenRules);
 	}
 	
 	@Override
-	public @Nullable Match match(@NotNull List<String> tokens, int startIndex) {
+	public @Nullable TokenRuleMatch match(@NotNull List<Token> tokens, int startIndex) {
 		Objects.requireNonNull(tokens, "Tokens must not be null");
 		if (startIndex >= tokens.size()) {
 			return null;
 		}
 		
 		int currentIndex = startIndex;
-		List<String> matchedTokens = new ArrayList<>();
-		for (Rule rule : this.rules) {
-			Match match = rule.match(tokens, currentIndex);
+		List<Token> matchedTokens = new ArrayList<>();
+		for (TokenRule tokenRule : this.tokenRules) {
+			TokenRuleMatch match = tokenRule.match(tokens, currentIndex);
 			if (match == null) {
 				return null;
 			}
@@ -63,6 +64,6 @@ public record SequenceRule(@NotNull List<Rule> rules) implements Rule {
 			matchedTokens.addAll(match.matchedTokens());
 			currentIndex = match.endIndex();
 		}
-		return new Match(startIndex, currentIndex, matchedTokens, this);
+		return new TokenRuleMatch(startIndex, currentIndex, matchedTokens, this);
 	}
 }

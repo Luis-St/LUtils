@@ -18,12 +18,14 @@
 
 package net.luis.utils.io.token.rule.rules;
 
-import net.luis.utils.io.token.rule.Match;
-import net.luis.utils.io.token.rule.Rule;
+import com.google.common.collect.Lists;
+import net.luis.utils.io.token.rule.TokenRuleMatch;
+import net.luis.utils.io.token.tokens.Token;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.*;
+import java.util.List;
+import java.util.Objects;
 
 /**
  *
@@ -32,12 +34,12 @@ import java.util.*;
  */
 
 public record RepeatedTokenRule(
-	@NotNull Rule tokenRule,
+	@NotNull TokenRule tokenRule,
 	int minOccurrences,
-	int maxOccurrences // -1 means unlimited
-) implements Rule {
+	int maxOccurrences
+) implements TokenRule {
 	
-	public RepeatedTokenRule(@NotNull Rule tokenRule, int occurrences) {
+	public RepeatedTokenRule(@NotNull TokenRule tokenRule, int occurrences) {
 		this(tokenRule, occurrences, occurrences);
 	}
 	
@@ -46,23 +48,23 @@ public record RepeatedTokenRule(
 		if (minOccurrences < 0) {
 			throw new IllegalArgumentException("Min occurrences must not be negative");
 		}
-		if (maxOccurrences != -1 && maxOccurrences < minOccurrences) {
-			throw new IllegalArgumentException("Max occurrences must not be less than minOccurrences");
+		if (maxOccurrences < minOccurrences) {
+			throw new IllegalArgumentException("Max occurrences must not be less than min occurrences");
 		}
 	}
 	
 	@Override
-	public @Nullable Match match(@NotNull List<String> tokens, int startIndex) {
+	public @Nullable TokenRuleMatch match(@NotNull List<Token> tokens, int startIndex) {
 		Objects.requireNonNull(tokens, "Tokens must not be null");
 		if (startIndex >= tokens.size()) {
 			return null;
 		}
 		
-		int currentIndex = startIndex;
-		List<String> matchedTokens = new ArrayList<>();
 		int occurrences = 0;
-		while (currentIndex < tokens.size() && (this.maxOccurrences == -1 || occurrences < this.maxOccurrences)) {
-			Match match = this.tokenRule.match(tokens, currentIndex);
+		int currentIndex = startIndex;
+		List<Token> matchedTokens = Lists.newArrayList();
+		while (currentIndex < tokens.size() && occurrences < this.maxOccurrences) {
+			TokenRuleMatch match = this.tokenRule.match(tokens, currentIndex);
 			if (match == null) {
 				break;
 			}
@@ -72,8 +74,8 @@ public record RepeatedTokenRule(
 			occurrences++;
 		}
 		
-		if (occurrences >= this.minOccurrences) {
-			return new Match(startIndex, currentIndex, matchedTokens, this);
+		if (this.minOccurrences <= occurrences && occurrences <= this.maxOccurrences) {
+			return new TokenRuleMatch(startIndex, currentIndex, matchedTokens, this);
 		}
 		return null;
 	}

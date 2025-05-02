@@ -18,7 +18,8 @@
 
 package net.luis.utils.io.token.rule.actions;
 
-import net.luis.utils.io.token.rule.Match;
+import net.luis.utils.io.token.rule.TokenRuleMatch;
+import net.luis.utils.io.token.tokens.Token;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Unmodifiable;
 
@@ -38,8 +39,8 @@ public record TransformTokenAction(@NotNull TokenTransformer transformer) implem
 	}
 	
 	@Override
-	public @NotNull @Unmodifiable List<String> apply(@NotNull Match match) {
-		Objects.requireNonNull(match, "Match must not be null");
+	public @NotNull @Unmodifiable List<Token> apply(@NotNull TokenRuleMatch match) {
+		Objects.requireNonNull(match, "Token rule match must not be null");
 		return this.transformer.transform(match.matchedTokens());
 	}
 }

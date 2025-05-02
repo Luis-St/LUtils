@@ -32,7 +32,9 @@ import java.util.Optional;
 
 final class WordTokenDefinition implements TokenDefinition {
 	
-	WordTokenDefinition() {}
+	static final WordTokenDefinition INSTANCE = new WordTokenDefinition();
+	
+	private WordTokenDefinition() {}
 	
 	@Override
 	public @NotNull Optional<TokenCategory> category() {
@@ -45,8 +47,22 @@ final class WordTokenDefinition implements TokenDefinition {
 		return word.length() > 1;
 	}
 	
+	//region Object overrides
+	@Override
+	public boolean equals(Object object) {
+		if (!(object instanceof WordTokenDefinition that)) return false;
+		
+		return this == INSTANCE;
+	}
+	
+	@Override
+	public int hashCode() {
+		return Objects.hash(WordTokenDefinition.class);
+	}
+	
 	@Override
 	public String toString() {
 		return "WORD";
 	}
+	//endregion
 }

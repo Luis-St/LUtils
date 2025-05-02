@@ -18,7 +18,8 @@
 
 package net.luis.utils.io.token.rule.actions;
 
-import net.luis.utils.io.token.rule.Match;
+import net.luis.utils.io.token.rule.TokenRuleMatch;
+import net.luis.utils.io.token.tokens.Token;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Unmodifiable;
 
@@ -33,6 +34,11 @@ import java.util.List;
 @FunctionalInterface
 public interface TokenAction {
 	
-	@NotNull @Unmodifiable
-	List<String> apply(@NotNull Match match);
+	static @NotNull TokenAction identity() {
+		return TokenRuleMatch::matchedTokens;
+	}
+	
+	@NotNull
+	@Unmodifiable
+	List<Token> apply(@NotNull TokenRuleMatch match);
 }

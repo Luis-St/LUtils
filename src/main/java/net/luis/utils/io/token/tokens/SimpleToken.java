@@ -16,14 +16,14 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-package net.luis.utils.io.token;
+package net.luis.utils.io.token.tokens;
 
+import net.luis.utils.io.token.TokenCategory;
+import net.luis.utils.io.token.TokenPosition;
 import net.luis.utils.io.token.definition.TokenDefinition;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
+import org.jetbrains.annotations.*;
 
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 
 /**
  *
@@ -31,12 +31,27 @@ import java.util.Optional;
  *
  */
 
-public record Token(@NotNull TokenDefinition definition, @NotNull String value, @NotNull TokenPosition position) {
+public record SimpleToken(@NotNull TokenDefinition definition, @NotNull String value, @NotNull TokenPosition position) implements Token {
 	
-	public Token {
+	public SimpleToken {
 		Objects.requireNonNull(definition, "Token definition must not be null");
 		Objects.requireNonNull(value, "Token value must not be null");
 		Objects.requireNonNull(position, "Token position must not be null");
+	}
+	
+	@Override
+	public @NotNull String value() {
+		return this.value;
+	}
+	
+	@Override
+	public @NotNull TokenPosition startPosition() {
+		return this.position;
+	}
+	
+	@Override
+	public @NotNull TokenPosition endPosition() {
+		return this.position;
 	}
 	
 	public @NotNull Optional<TokenCategory> category() {

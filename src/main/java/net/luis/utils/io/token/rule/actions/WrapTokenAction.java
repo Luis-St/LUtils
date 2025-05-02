@@ -19,7 +19,8 @@
 package net.luis.utils.io.token.rule.actions;
 
 import com.google.common.collect.Lists;
-import net.luis.utils.io.token.rule.Match;
+import net.luis.utils.io.token.rule.TokenRuleMatch;
+import net.luis.utils.io.token.tokens.Token;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Unmodifiable;
 
@@ -31,35 +32,26 @@ import java.util.*;
  *
  */
 
-public record WrapTokenAction(@NotNull String prefix, @NotNull String suffix) implements TokenAction {
+public record WrapTokenAction(@NotNull Token prefixToken, @NotNull Token suffixToken) implements TokenAction {
 	
 	public WrapTokenAction {
-		Objects.requireNonNull(prefix, "Prefix must not be null");
-		Objects.requireNonNull(suffix, "Suffix must not be null");
+		Objects.requireNonNull(prefixToken, "Prefix token must not be null");
+		Objects.requireNonNull(suffixToken, "Suffix token must not be null");
 	}
 	
 	@Override
-	public @NotNull @Unmodifiable List<String> apply(@NotNull Match match) {
-		Objects.requireNonNull(match, "Match must not be null");
+	public @NotNull @Unmodifiable List<Token> apply(@NotNull TokenRuleMatch match) {
+		Objects.requireNonNull(match, "Token rule match must not be null");
 		
-		List<String> tokens = match.matchedTokens();
+		List<Token> tokens = match.matchedTokens();
 		if (tokens.isEmpty()) {
 			return Collections.emptyList();
 		}
 		
-		List<String> result = Lists.newArrayListWithExpectedSize(tokens.size());
-		result.add(this.prefix + tokens.getFirst());
-		
-		for (int i = 1; i < tokens.size() - 1; i++) {
-			result.add(tokens.get(i));
-		}
-		
-		if (tokens.size() > 1) {
-			result.add(tokens.getLast() + this.suffix);
-		} else {
-			String firstToken = result.removeFirst();
-			result.add(firstToken + this.suffix);
-		}
+		List<Token> result = Lists.newArrayListWithExpectedSize(tokens.size() + 2);
+		result.add(this.prefixToken);
+		result.addAll(tokens);
+		result.add(this.suffixToken);
 		return result;
 	}
 }

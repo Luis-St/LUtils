@@ -33,7 +33,7 @@ import java.util.Optional;
 
 public interface TokenDefinition {
 	
-	TokenDefinition WORD = new WordTokenDefinition();
+	TokenDefinition WORD = WordTokenDefinition.INSTANCE;
 	
 	static @NotNull TokenDefinition of(char token) {
 		return new CharTokenDefinition(token);

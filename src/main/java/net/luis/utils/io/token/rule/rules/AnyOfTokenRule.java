@@ -16,11 +16,12 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-package net.luis.utils.io.token.rule.actions;
+package net.luis.utils.io.token.rule.rules;
 
-import net.luis.utils.io.token.rule.Match;
+import net.luis.utils.io.token.rule.TokenRuleMatch;
+import net.luis.utils.io.token.tokens.Token;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Unmodifiable;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
 
@@ -30,17 +31,27 @@ import java.util.*;
  *
  */
 
-public record JoinTokenAction(@NotNull String delimiter) implements TokenAction {
+public record AnyOfTokenRule(
+	@NotNull Set<TokenRule> tokenRules
+) implements TokenRule {
 	
-	public JoinTokenAction {
-		Objects.requireNonNull(delimiter, "Delimiter must not be null");
+	public AnyOfTokenRule {
+		tokenRules = Set.copyOf(Objects.requireNonNull(tokenRules, "Token rule list must not be null"));
 	}
 	
 	@Override
-	public @NotNull @Unmodifiable List<String> apply(@NotNull Match match) {
-		Objects.requireNonNull(match, "Match must not be null");
+	public @Nullable TokenRuleMatch match(@NotNull List<Token> tokens, int startIndex) {
+		Objects.requireNonNull(tokens, "Tokens must not be null");
+		if (startIndex >= tokens.size()) {
+			return null;
+		}
 		
-		String joined = String.join(this.delimiter, match.matchedTokens());
-		return Collections.singletonList(joined);
+		for (TokenRule tokenRule : this.tokenRules) {
+			TokenRuleMatch match = tokenRule.match(tokens, startIndex);
+			if (match != null) {
+				return match;
+			}
+		}
+		return null;
 	}
 }
