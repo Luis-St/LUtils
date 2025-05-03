@@ -33,6 +33,7 @@ import java.util.stream.Stream;
  *
  */
 
+@FunctionalInterface
 public interface TokenDefinition {
 	
 	TokenDefinition WORD = WordTokenDefinition.INSTANCE;
@@ -72,6 +73,10 @@ public interface TokenDefinition {
 	//region Rule creation
 	default @NotNull TokenRule rule() {
 		return TokenRule.single(this);
+	}
+	
+	default @NotNull TokenRule optional() {
+		return TokenRule.optional(this.rule());
 	}
 	
 	default @NotNull TokenRule atLeast(int min) {

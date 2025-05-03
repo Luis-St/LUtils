@@ -56,6 +56,11 @@ public interface TokenRule {
 		return new PatternTokenRule(Objects.requireNonNull(pattern, "Pattern must not be null"));
 	}
 	
+	static @NotNull TokenRule optional(@NotNull TokenRule tokenRule) {
+		Objects.requireNonNull(tokenRule, "Token rule must not be null");
+		return new OptionalTokenRule(tokenRule);
+	}
+	
 	static @NotNull TokenRule atLeast(@NotNull TokenRule tokenRule, int min) {
 		return between(Objects.requireNonNull(tokenRule, "Token rule must not be null"), min, Integer.MAX_VALUE);
 	}
@@ -116,6 +121,10 @@ public interface TokenRule {
 	@Nullable TokenRuleMatch match(@NotNull List<Token> tokens, int startIndex);
 	
 	//region Rule creation
+	default @NotNull TokenRule optional() {
+		return optional(this);
+	}
+	
 	default @NotNull TokenRule atLeast(int min) {
 		return atLeast(this, min);
 	}

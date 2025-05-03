@@ -42,4 +42,8 @@ public record TokenRuleMatch(
 		Objects.requireNonNull(matchedTokens, "Matched tokens must not be null");
 		Objects.requireNonNull(matchingTokenRule, "Matching rule must not be null");
 	}
+	
+	public static @NotNull TokenRuleMatch empty(int index) {
+		return new TokenRuleMatch(index, index, List.of(), TokenRule.alwaysMatch());
+	}
 }

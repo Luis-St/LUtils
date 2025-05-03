@@ -24,8 +24,7 @@ import net.luis.utils.io.token.tokens.Token;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 
 /**
  *
@@ -42,6 +41,7 @@ public final class EndTokenRule implements TokenRule {
 	
 	@Override
 	public @Nullable TokenRuleMatch match(@NotNull List<Token> tokens, int startIndex) {
+		Objects.requireNonNull(tokens, "Tokens must not be null");
 		if (startIndex >= tokens.size()) {
 			return new TokenRuleMatch(startIndex, startIndex, Collections.emptyList(), this);
 		}
