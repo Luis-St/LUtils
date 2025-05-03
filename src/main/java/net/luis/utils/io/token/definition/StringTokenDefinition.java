@@ -46,4 +46,9 @@ record StringTokenDefinition(@NotNull String token, boolean equalsIgnoreCase, @N
 		Objects.requireNonNull(word, "Word must not be null");
 		return this.equalsIgnoreCase ? word.equalsIgnoreCase(this.token) : word.equals(this.token);
 	}
+	
+	@Override
+	public @NotNull String toString() {
+		return "StringTokenDefinition[token=" + this.token.replace("\t", "\\t").replace("\n", "\\n") + ",equalsIgnoreCase=" + this.equalsIgnoreCase + ",category=" + this.category + "]";
+	}
 }

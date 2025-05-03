@@ -18,11 +18,9 @@
 
 package net.luis.utils.io.token.definition;
 
-import net.luis.utils.io.token.TokenCategory;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Objects;
-import java.util.Optional;
 
 /**
  *
@@ -35,11 +33,6 @@ final class WordTokenDefinition implements TokenDefinition {
 	static final WordTokenDefinition INSTANCE = new WordTokenDefinition();
 	
 	private WordTokenDefinition() {}
-	
-	@Override
-	public @NotNull Optional<TokenCategory> category() {
-		return Optional.empty();
-	}
 	
 	@Override
 	public boolean matches(@NotNull String word) {

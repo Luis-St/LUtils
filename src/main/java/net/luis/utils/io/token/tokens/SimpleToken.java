@@ -61,4 +61,9 @@ public record SimpleToken(@NotNull TokenDefinition definition, @NotNull String v
 	public boolean isCategory(@Nullable TokenCategory category) {
 		return this.definition.isCategory(category);
 	}
+	
+	@Override
+	public @NotNull String toString() {
+		return "SimpleToken[definition=" + this.definition + ",value=" + this.value.replace("\t", "\\t").replace("\n", "\\n") + ",position=" + this.position + "]";
+	}
 }

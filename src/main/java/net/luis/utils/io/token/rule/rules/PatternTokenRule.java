@@ -20,6 +20,7 @@ package net.luis.utils.io.token.rule.rules;
 
 import net.luis.utils.io.token.rule.TokenRuleMatch;
 import net.luis.utils.io.token.tokens.Token;
+import org.intellij.lang.annotations.Language;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -37,7 +38,7 @@ public record PatternTokenRule(
 	@NotNull Pattern pattern
 ) implements TokenRule {
 	
-	public PatternTokenRule(@NotNull String regex) {
+	public PatternTokenRule(@Language("RegExp") @NotNull String regex) {
 		this(Pattern.compile(Objects.requireNonNull(regex, "Regex must not be null")));
 	}
 	

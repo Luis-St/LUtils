@@ -45,4 +45,9 @@ record CharTokenDefinition(char token, @NotNull Optional<TokenCategory> category
 		Objects.requireNonNull(word, "Word must not be null");
 		return word.length() == 1 && word.charAt(0) == this.token;
 	}
+	
+	@Override
+	public @NotNull String toString() {
+		return "CharTokenDefinition[token=" + ("" + this.token).replace("\t", "\\t").replace("\n", "\\n") + ",category=" + this.category + "]";
+	}
 }
