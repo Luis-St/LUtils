@@ -19,11 +19,13 @@
 package net.luis.utils.io.token.definition;
 
 import net.luis.utils.io.token.TokenCategory;
+import net.luis.utils.io.token.rule.rules.TokenRule;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  *
@@ -35,6 +37,7 @@ public interface TokenDefinition {
 	
 	TokenDefinition WORD = WordTokenDefinition.INSTANCE;
 	
+	//region Factory methods
 	static @NotNull TokenDefinition of(char token) {
 		return new CharTokenDefinition(token);
 	}
@@ -54,12 +57,83 @@ public interface TokenDefinition {
 		Objects.requireNonNull(category, "Token category must not be null");
 		return new StringTokenDefinition(token, equalsIgnoreCase, Optional.of(category));
 	}
+	//endregion
 	
-	@NotNull Optional<TokenCategory> category();
+	default @NotNull Optional<TokenCategory> category() {
+		return Optional.empty();
+	}
 	
 	default boolean isCategory(@Nullable TokenCategory category) {
 		return this.category().isPresent() && this.category().get() == category;
 	}
 	
 	boolean matches(@NotNull String word);
+	
+	//region Rule creation
+	default @NotNull TokenRule rule() {
+		return TokenRule.single(this);
+	}
+	
+	default @NotNull TokenRule atLeast(int min) {
+		return TokenRule.atLeast(this.rule(), min);
+	}
+	
+	default @NotNull TokenRule exactly(int occurrences) {
+		return TokenRule.exactly(this.rule(), occurrences);
+	}
+	
+	default @NotNull TokenRule atMost(int max) {
+		return TokenRule.atMost(this.rule(), max);
+	}
+	
+	default @NotNull TokenRule between(int min, int max) {
+		return TokenRule.between(this.rule(), min, max);
+	}
+	
+	default @NotNull TokenRule followedBy(@NotNull TokenDefinition definition) {
+		Objects.requireNonNull(definition, "Token definition must not be null");
+		return TokenRule.sequence(this.rule(), definition.rule());
+	}
+	
+	default @NotNull TokenRule followedBy(TokenDefinition @NotNull ... definitions) {
+		Objects.requireNonNull(definitions, "Token definition array must not be null");
+		List<TokenRule> rules = Stream.of(definitions).map(TokenDefinition::rule).collect(Collectors.toList());
+		rules.addFirst(this.rule());
+		return TokenRule.sequence(rules);
+	}
+	
+	default @NotNull TokenRule or(@NotNull TokenDefinition definition) {
+		Objects.requireNonNull(definition, "Token definition must not be null");
+		return TokenRule.any(this.rule(), definition.rule());
+	}
+	
+	default @NotNull TokenRule or(TokenDefinition @NotNull ... definitions) {
+		Objects.requireNonNull(definitions, "Token definition array must not be null");
+		Set<TokenRule> rules = Stream.of(definitions).map(TokenDefinition::rule).collect(Collectors.toSet());
+		rules.add(this.rule());
+		return TokenRule.any(rules);
+	}
+	
+	default @NotNull TokenRule asStart(@NotNull TokenDefinition endDefinition) {
+		Objects.requireNonNull(endDefinition, "End token definition must not be null");
+		return TokenRule.boundary(this.rule(), endDefinition.rule());
+	}
+	
+	default @NotNull TokenRule asStart(@NotNull TokenDefinition betweenDefinition, @NotNull TokenDefinition endDefinition) {
+		Objects.requireNonNull(betweenDefinition, "Between token definition must not be null");
+		Objects.requireNonNull(endDefinition, "End token definition must not be null");
+		return TokenRule.boundary(this.rule(), betweenDefinition.rule(), endDefinition.rule());
+	}
+	
+	default @NotNull TokenRule asEnd(@NotNull TokenDefinition startDefinition) {
+		Objects.requireNonNull(startDefinition, "Start token definition must not be null");
+		return TokenRule.boundary(startDefinition.rule(), this.rule());
+	}
+	
+	default @NotNull TokenRule asEnd(@NotNull TokenDefinition startDefinition, @NotNull TokenDefinition betweenDefinition) {
+		Objects.requireNonNull(startDefinition, "Start token definition must not be null");
+		Objects.requireNonNull(betweenDefinition, "Between token definition must not be null");
+		return TokenRule.boundary(startDefinition.rule(), betweenDefinition.rule(), this.rule());
+	}
+	//endregion
 }
