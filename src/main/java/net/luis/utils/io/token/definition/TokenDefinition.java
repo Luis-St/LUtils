@@ -18,10 +18,8 @@
 
 package net.luis.utils.io.token.definition;
 
-import net.luis.utils.io.token.TokenCategory;
 import net.luis.utils.io.token.rule.rules.TokenRule;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -43,30 +41,11 @@ public interface TokenDefinition {
 		return new CharTokenDefinition(token);
 	}
 	
-	static @NotNull TokenDefinition of(char token, @NotNull TokenCategory category) {
-		Objects.requireNonNull(category, "Token category must not be null");
-		return new CharTokenDefinition(token, Optional.of(category));
-	}
-	
 	static @NotNull TokenDefinition of(@NotNull String token, boolean equalsIgnoreCase) {
 		Objects.requireNonNull(token, "Token must not be null");
 		return new StringTokenDefinition(token, equalsIgnoreCase);
 	}
-	
-	static @NotNull TokenDefinition of(@NotNull String token, boolean equalsIgnoreCase, @NotNull TokenCategory category) {
-		Objects.requireNonNull(token, "Token must not be null");
-		Objects.requireNonNull(category, "Token category must not be null");
-		return new StringTokenDefinition(token, equalsIgnoreCase, Optional.of(category));
-	}
 	//endregion
-	
-	default @NotNull Optional<TokenCategory> category() {
-		return Optional.empty();
-	}
-	
-	default boolean isCategory(@Nullable TokenCategory category) {
-		return this.category().isPresent() && this.category().get() == category;
-	}
 	
 	boolean matches(@NotNull String word);
 	

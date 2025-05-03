@@ -18,11 +18,9 @@
 
 package net.luis.utils.io.token.definition;
 
-import net.luis.utils.io.token.TokenCategory;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Objects;
-import java.util.Optional;
 
 /**
  *
@@ -30,15 +28,7 @@ import java.util.Optional;
  *
  */
 
-record CharTokenDefinition(char token, @NotNull Optional<TokenCategory> category) implements TokenDefinition {
-	
-	CharTokenDefinition(char token) {
-		this(token, Optional.empty());
-	}
-	
-	CharTokenDefinition {
-		Objects.requireNonNull(category, "Category must not be null");
-	}
+record CharTokenDefinition(char token) implements TokenDefinition {
 	
 	@Override
 	public boolean matches(@NotNull String word) {
@@ -48,6 +38,6 @@ record CharTokenDefinition(char token, @NotNull Optional<TokenCategory> category
 	
 	@Override
 	public @NotNull String toString() {
-		return "CharTokenDefinition[token=" + ("" + this.token).replace("\t", "\\t").replace("\n", "\\n") + ",category=" + this.category + "]";
+		return "CharTokenDefinition[token=" + ("" + this.token).replace("\t", "\\t").replace("\n", "\\n") + "]";
 	}
 }

@@ -18,6 +18,7 @@
 
 package net.luis.utils.io.token.definition;
 
+import net.luis.utils.annotation.type.Singleton;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Objects;
@@ -28,6 +29,7 @@ import java.util.Objects;
  *
  */
 
+@Singleton
 final class WordTokenDefinition implements TokenDefinition {
 	
 	static final WordTokenDefinition INSTANCE = new WordTokenDefinition();

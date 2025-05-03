@@ -55,6 +55,9 @@ public record BoundaryTokenRule(
 		if (betweenTokenRule instanceof AnyOfTokenRule(Set<TokenRule> tokenRules)) {
 			validateTokenRules(tokenRules);
 		}
+		if (betweenTokenRule instanceof OptionalTokenRule(TokenRule tokenRule)) {
+			validateTokenRules(Set.of(tokenRule));
+		}
 		Objects.requireNonNull(endTokenRule, "End rule must not be null");
 	}
 	
@@ -65,6 +68,9 @@ public record BoundaryTokenRule(
 			}
 			if (tokenRule instanceof AnyOfTokenRule(Set<TokenRule> rules)) {
 				validateTokenRules(rules);
+			}
+			if (tokenRule instanceof OptionalTokenRule(TokenRule rule)) {
+				validateTokenRules(Set.of(rule));
 			}
 		}
 	}

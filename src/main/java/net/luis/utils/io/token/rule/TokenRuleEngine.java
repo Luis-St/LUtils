@@ -58,7 +58,7 @@ public class TokenRuleEngine {
 			
 			for (RuleAction ruleAction : this.ruleActions) {
 				TokenRuleMatch match = ruleAction.tokenRule().match(result, index);
-				if (match != null) {
+				if (match != null && !match.matchedTokens().isEmpty()) {
 					List<Token> processed = ruleAction.action().apply(match);
 					
 					result.subList(match.startIndex(), match.endIndex()).clear();

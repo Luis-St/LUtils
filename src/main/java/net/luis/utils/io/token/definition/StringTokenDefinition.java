@@ -18,11 +18,9 @@
 
 package net.luis.utils.io.token.definition;
 
-import net.luis.utils.io.token.TokenCategory;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Objects;
-import java.util.Optional;
 
 /**
  *
@@ -30,15 +28,10 @@ import java.util.Optional;
  *
  */
 
-record StringTokenDefinition(@NotNull String token, boolean equalsIgnoreCase, @NotNull Optional<TokenCategory> category) implements TokenDefinition {
-	
-	StringTokenDefinition(@NotNull String token, boolean equalsIgnoreCase) {
-		this(token, equalsIgnoreCase, Optional.empty());
-	}
+record StringTokenDefinition(@NotNull String token, boolean equalsIgnoreCase) implements TokenDefinition {
 	
 	StringTokenDefinition {
 		Objects.requireNonNull(token, "Token must not be null");
-		Objects.requireNonNull(category, "Category must not be null");
 	}
 	
 	@Override
@@ -49,6 +42,6 @@ record StringTokenDefinition(@NotNull String token, boolean equalsIgnoreCase, @N
 	
 	@Override
 	public @NotNull String toString() {
-		return "StringTokenDefinition[token=" + this.token.replace("\t", "\\t").replace("\n", "\\n") + ",equalsIgnoreCase=" + this.equalsIgnoreCase + ",category=" + this.category + "]";
+		return "StringTokenDefinition[token=" + this.token.replace("\t", "\\t").replace("\n", "\\n") + ",equalsIgnoreCase=" + this.equalsIgnoreCase + "]";
 	}
 }

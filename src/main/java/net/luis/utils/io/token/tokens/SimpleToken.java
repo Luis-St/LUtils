@@ -18,12 +18,11 @@
 
 package net.luis.utils.io.token.tokens;
 
-import net.luis.utils.io.token.TokenCategory;
 import net.luis.utils.io.token.TokenPosition;
 import net.luis.utils.io.token.definition.TokenDefinition;
-import org.jetbrains.annotations.*;
+import org.jetbrains.annotations.NotNull;
 
-import java.util.*;
+import java.util.Objects;
 
 /**
  *
@@ -52,14 +51,6 @@ public record SimpleToken(@NotNull TokenDefinition definition, @NotNull String v
 	@Override
 	public @NotNull TokenPosition endPosition() {
 		return this.position;
-	}
-	
-	public @NotNull Optional<TokenCategory> category() {
-		return this.definition.category();
-	}
-	
-	public boolean isCategory(@Nullable TokenCategory category) {
-		return this.definition.isCategory(category);
 	}
 	
 	@Override
