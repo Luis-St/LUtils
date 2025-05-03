@@ -34,27 +34,34 @@ import java.util.*;
 
 public record BoundaryTokenRule(
 	@NotNull TokenRule startTokenRule,
-	@NotNull Set<TokenRule> betweenTokenRules,
+	@NotNull TokenRule betweenTokenRule,
 	@NotNull TokenRule endTokenRule
 ) implements TokenRule {
 	
 	private static final Set<Class<? extends TokenRule>> INVALID_BETWEEN_RULES = Set.of(
 		BoundaryTokenRule.class,
 		RepeatedTokenRule.class,
-		SequenceTokenRule.class
+		SequenceTokenRule.class,
+		EndTokenRule.class
 	);
+	
+	public BoundaryTokenRule(@NotNull TokenRule startTokenRule, @NotNull TokenRule endTokenRule) {
+		this(Objects.requireNonNull(startTokenRule, "Start rule must not be null"), TokenRule.alwaysMatch(), Objects.requireNonNull(endTokenRule, "End rule must not be null"));
+	}
 	
 	public BoundaryTokenRule {
 		Objects.requireNonNull(startTokenRule, "Start rule must not be null");
-		Objects.requireNonNull(betweenTokenRules, "Between token rule list must not be null");
-		validateTokenRules(betweenTokenRules);
+		Objects.requireNonNull(betweenTokenRule, "Between token rule must not be null");
+		if (betweenTokenRule instanceof AnyOfTokenRule(Set<TokenRule> tokenRules)) {
+			validateTokenRules(tokenRules);
+		}
 		Objects.requireNonNull(endTokenRule, "End rule must not be null");
 	}
 	
 	private static void validateTokenRules(@NotNull Set<TokenRule> tokenRules) {
 		for (TokenRule tokenRule : tokenRules) {
 			if (INVALID_BETWEEN_RULES.contains(tokenRule.getClass())) {
-				throw new IllegalArgumentException("Between token rule list must not be of type " + tokenRule.getClass().getSimpleName());
+				throw new IllegalArgumentException("Between token rule must not contain a token rule of type " + tokenRule.getClass().getSimpleName());
 			}
 			if (tokenRule instanceof AnyOfTokenRule(Set<TokenRule> rules)) {
 				validateTokenRules(rules);
@@ -75,7 +82,6 @@ public record BoundaryTokenRule(
 		}
 		
 		int currentIndex = startMatch.endIndex();
-		AnyOfTokenRule betweenRule = new AnyOfTokenRule(this.betweenTokenRules);
 		List<Token> matchedTokens = Lists.newArrayList(startMatch.matchedTokens());
 		while (currentIndex < tokens.size()) {
 			TokenRuleMatch endMatch = this.endTokenRule.match(tokens, currentIndex);
@@ -84,21 +90,16 @@ public record BoundaryTokenRule(
 				return new TokenRuleMatch(startIndex, endMatch.endIndex(), matchedTokens, this);
 			}
 			
-			if (!this.betweenTokenRules.isEmpty()) {
-				TokenRuleMatch betweenMatch = betweenRule.match(tokens, currentIndex);
-				if (betweenMatch == null) {
-					return null;
-				}
-				if (currentIndex - betweenMatch.endIndex() > 1) {
-					throw new IllegalStateException("Between token rule must not match more than one token");
-				}
+			TokenRuleMatch betweenMatch = this.betweenTokenRule.match(tokens, currentIndex);
+			if (betweenMatch == null) {
+				return null;
+			}
+			if (currentIndex - betweenMatch.endIndex() > 1) {
+				throw new IllegalStateException("Between token rule must not match more than one token");
+			}
+			if (currentIndex < tokens.size()) {
 				matchedTokens.addAll(betweenMatch.matchedTokens());
 				currentIndex = betweenMatch.endIndex();
-			}
-			
-			if (currentIndex < tokens.size()) {
-				matchedTokens.add(tokens.get(currentIndex));
-				currentIndex++;
 			}
 		}
 		
