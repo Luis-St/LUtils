@@ -20,7 +20,6 @@ package net.luis.utils.io.token.rule.rules;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
-import net.luis.utils.io.token.definition.TokenDefinition;
 import net.luis.utils.io.token.rule.TokenRuleMatch;
 import net.luis.utils.io.token.tokens.Token;
 import org.intellij.lang.annotations.Language;
@@ -42,10 +41,6 @@ public interface TokenRule {
 	//region Factory methods
 	static @NotNull TokenRule alwaysMatch() {
 		return AlwaysMatchTokenRule.INSTANCE;
-	}
-	
-	static @NotNull TokenRule single(@NotNull TokenDefinition definition) {
-		return new SingleTokenRule(Objects.requireNonNull(definition, "Definition must not be null"));
 	}
 	
 	static @NotNull TokenRule pattern(@Language("RegExp") @NotNull String pattern) {
