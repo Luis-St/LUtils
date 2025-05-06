@@ -62,9 +62,8 @@ public interface Codec<C> extends Encoder<C>, Decoder<C> {
 	Codec<Boolean> BOOLEAN = new Codec<>() {
 		
 		@Override
-		public <R> @NotNull Result<R> encodeStart(@NotNull TypeProvider<R> provider, @NotNull R current, @Nullable Boolean value) {
+		public <R> @NotNull Result<R> encodeStart(@NotNull TypeProvider<R> provider, @Nullable R current, @Nullable Boolean value) {
 			Objects.requireNonNull(provider, "Type provider must not be null");
-			Objects.requireNonNull(current, "Current value must not be null");
 			if (value == null) {
 				return Result.error("Unable to encode null as boolean using '" + this + "'");
 			}
@@ -207,9 +206,8 @@ public interface Codec<C> extends Encoder<C>, Decoder<C> {
 		private final KeyableDecoder<String> decoder = KeyableDecoder.of(this, Function.identity());
 		
 		@Override
-		public <R> @NotNull Result<R> encodeStart(@NotNull TypeProvider<R> provider, @NotNull R current, @Nullable String value) {
+		public <R> @NotNull Result<R> encodeStart(@NotNull TypeProvider<R> provider, @Nullable R current, @Nullable String value) {
 			Objects.requireNonNull(provider, "Type provider must not be null");
-			Objects.requireNonNull(current, "Current value must not be null");
 			if (value == null) {
 				return Result.error("Unable to encode null as string using '" + this + "'");
 			}
@@ -366,8 +364,6 @@ public interface Codec<C> extends Encoder<C>, Decoder<C> {
 	 * @see KeyableCodec
 	 */
 	static <C> @NotNull KeyableCodec<C> keyable(@NotNull Codec<C> codec, @NotNull Function<String, @Nullable C> keyDecoder) {
-		Objects.requireNonNull(codec, "Base codec must not be null");
-		Objects.requireNonNull(keyDecoder, "Key decoder must not be null");
 		return keyable(codec, C::toString, keyDecoder);
 	}
 	
@@ -385,9 +381,6 @@ public interface Codec<C> extends Encoder<C>, Decoder<C> {
 	 * @see KeyableCodec
 	 */
 	static <C> @NotNull KeyableCodec<C> keyable(@NotNull Codec<C> codec, @NotNull Function<C, String> keyEncoder, @NotNull Function<String, @Nullable C> keyDecoder) {
-		Objects.requireNonNull(codec, "Base codec must not be null");
-		Objects.requireNonNull(keyEncoder, "Key encoder must not be null");
-		Objects.requireNonNull(keyDecoder, "Key decoder must not be null");
 		return keyable(codec, KeyableEncoder.of(codec, keyEncoder), KeyableDecoder.of(codec, keyDecoder));
 	}
 	
@@ -602,7 +595,7 @@ public interface Codec<C> extends Encoder<C>, Decoder<C> {
 	 * @see UnitCodec
 	 */
 	static <C> @NotNull Codec<C> unit(@NotNull Supplier<C> supplier) {
-		return new UnitCodec<>(Objects.requireNonNull(supplier, "Unit value supplier must not be null"));
+		return new UnitCodec<>(supplier);
 	}
 	
 	/**
@@ -614,7 +607,7 @@ public interface Codec<C> extends Encoder<C>, Decoder<C> {
 	 * @see OptionalCodec
 	 */
 	static <C> @NotNull Codec<Optional<C>> optional(@NotNull Codec<C> codec) {
-		return new OptionalCodec<>(Objects.requireNonNull(codec, "Codec must not be null"));
+		return new OptionalCodec<>(codec);
 	}
 	
 	/**
@@ -627,7 +620,7 @@ public interface Codec<C> extends Encoder<C>, Decoder<C> {
 	 * @see ListCodec
 	 */
 	static <C> @NotNull Codec<List<C>> list(@NotNull Codec<C> codec) {
-		return new ListCodec<>(Objects.requireNonNull(codec, "Codec must not be null"));
+		return new ListCodec<>(codec);
 	}
 	
 	/**
@@ -642,10 +635,6 @@ public interface Codec<C> extends Encoder<C>, Decoder<C> {
 	 * @see ListCodec
 	 */
 	static <C> @NotNull Codec<List<C>> list(@NotNull Codec<C> codec, int maxSize) {
-		Objects.requireNonNull(codec, "Codec must not be null");
-		if (0 > maxSize) {
-			throw new IllegalArgumentException("Maximum size must be at least 0");
-		}
 		return list(codec, 0, maxSize);
 	}
 	
@@ -662,13 +651,6 @@ public interface Codec<C> extends Encoder<C>, Decoder<C> {
 	 * @see ListCodec
 	 */
 	static <C> @NotNull Codec<List<C>> list(@NotNull Codec<C> codec, int minSize, int maxSize) {
-		Objects.requireNonNull(codec, "Codec must not be null");
-		if (0 > minSize) {
-			throw new IllegalArgumentException("Minimum size must be at least 0");
-		}
-		if (minSize > maxSize) {
-			throw new IllegalArgumentException("Minimum size must be less than or equal to maximum size");
-		}
 		return new ListCodec<>(codec, minSize, maxSize);
 	}
 	
@@ -707,7 +689,7 @@ public interface Codec<C> extends Encoder<C>, Decoder<C> {
 	 * @see MapCodec
 	 */
 	static <C> @NotNull Codec<Map<String, C>> map(@NotNull Codec<C> valueCodec) {
-		return map(STRING, Objects.requireNonNull(valueCodec, "Value codec must not be null"));
+		return map(STRING, valueCodec);
 	}
 	
 	/**
@@ -722,8 +704,6 @@ public interface Codec<C> extends Encoder<C>, Decoder<C> {
 	 * @see MapCodec
 	 */
 	static <K, V> @NotNull Codec<Map<K, V>> map(@NotNull KeyableCodec<K> keyCodec, @NotNull Codec<V> valueCodec) {
-		Objects.requireNonNull(keyCodec, "Key codec must not be null");
-		Objects.requireNonNull(valueCodec, "Value codec must not be null");
 		return new MapCodec<>(keyCodec, valueCodec);
 	}
 	
@@ -741,11 +721,6 @@ public interface Codec<C> extends Encoder<C>, Decoder<C> {
 	 * @see MapCodec
 	 */
 	static <K, V> @NotNull Codec<Map<K, V>> map(@NotNull KeyableCodec<K> keyCodec, @NotNull Codec<V> valueCodec, int maxSize) {
-		Objects.requireNonNull(keyCodec, "Key codec must not be null");
-		Objects.requireNonNull(valueCodec, "Value codec must not be null");
-		if (0 > maxSize) {
-			throw new IllegalArgumentException("Maximum size must be at least 0");
-		}
 		return map(keyCodec, valueCodec, 0, maxSize);
 	}
 	
@@ -764,14 +739,6 @@ public interface Codec<C> extends Encoder<C>, Decoder<C> {
 	 * @see MapCodec
 	 */
 	static <K, V> @NotNull Codec<Map<K, V>> map(@NotNull KeyableCodec<K> keyCodec, @NotNull Codec<V> valueCodec, int minSize, int maxSize) {
-		Objects.requireNonNull(keyCodec, "Key codec must not be null");
-		Objects.requireNonNull(valueCodec, "Value codec must not be null");
-		if (0 > minSize) {
-			throw new IllegalArgumentException("Minimum size must be at least 0");
-		}
-		if (minSize > maxSize) {
-			throw new IllegalArgumentException("Minimum size must be less than or equal to maximum size");
-		}
 		return new MapCodec<>(keyCodec, valueCodec, minSize, maxSize);
 	}
 	
@@ -787,8 +754,6 @@ public interface Codec<C> extends Encoder<C>, Decoder<C> {
 	 * @see MapCodec
 	 */
 	static <K, V> @NotNull Codec<Map<K, V>> noneEmptyMap(@NotNull KeyableCodec<K> keyCodec, @NotNull Codec<V> valueCodec) {
-		Objects.requireNonNull(keyCodec, "Key codec must not be null");
-		Objects.requireNonNull(valueCodec, "Value codec must not be null");
 		return map(keyCodec, valueCodec, 1);
 	}
 	
@@ -810,8 +775,6 @@ public interface Codec<C> extends Encoder<C>, Decoder<C> {
 	 * @see EitherCodec
 	 */
 	static <F, S> @NotNull Codec<Either<F, S>> either(@NotNull Codec<F> firstCodec, @NotNull Codec<S> secondCodec) {
-		Objects.requireNonNull(firstCodec, "First codec must not be null");
-		Objects.requireNonNull(secondCodec, "Second codec must not be null");
 		return new EitherCodec<>(firstCodec, secondCodec);
 	}
 	
@@ -825,8 +788,6 @@ public interface Codec<C> extends Encoder<C>, Decoder<C> {
 	 * @throws NullPointerException If the main codec or alternative codec is null
 	 */
 	static <C> @NotNull Codec<C> withAlternative(@NotNull Codec<C> main, @NotNull Codec<? extends C> alternative) {
-		Objects.requireNonNull(main, "Main codec must not be null");
-		Objects.requireNonNull(alternative, "Alternative codec must not be null");
 		return either(main, alternative).xmap(
 			Either::left,
 			either -> either.mapTo(Function.identity(), Function.identity())
@@ -844,7 +805,6 @@ public interface Codec<C> extends Encoder<C>, Decoder<C> {
 	 * @throws NullPointerException If the string encoder or decoder is null
 	 */
 	static <E> @NotNull Codec<E> stringResolver(@NotNull Function<E, String> stringEncoder, @NotNull Function<String, @Nullable E> stringDecoder) {
-		Objects.requireNonNull(stringEncoder, "Element string encoder must not be null");
 		Objects.requireNonNull(stringDecoder, "Element string decoder must not be null");
 		return STRING.mapFlat(
 			stringEncoder,
@@ -872,7 +832,6 @@ public interface Codec<C> extends Encoder<C>, Decoder<C> {
 	 * @see #of(Encoder, Decoder, String)
 	 */
 	private @NotNull Codec<C> codec(@NotNull String name) {
-		Objects.requireNonNull(name, "Codec name must not be null");
 		return of(this, this, name);
 	}
 	
@@ -888,8 +847,6 @@ public interface Codec<C> extends Encoder<C>, Decoder<C> {
 	 * @see KeyableCodec
 	 */
 	default @NotNull KeyableCodec<C> keyable(@NotNull Function<C, String> keyEncoder, @NotNull Function<String, @Nullable C> keyDecoder) {
-		Objects.requireNonNull(keyEncoder, "Key encoder must not be null");
-		Objects.requireNonNull(keyDecoder, "Key decoder must not be null");
 		return keyable(this, keyEncoder, keyDecoder);
 	}
 	
@@ -924,9 +881,6 @@ public interface Codec<C> extends Encoder<C>, Decoder<C> {
 	 * @see ListCodec
 	 */
 	default @NotNull Codec<List<C>> list(int maxSize) {
-		if (0 > maxSize) {
-			throw new IllegalArgumentException("Maximum size must be at least 0");
-		}
 		return list(this, maxSize);
 	}
 	
@@ -941,12 +895,6 @@ public interface Codec<C> extends Encoder<C>, Decoder<C> {
 	 * @see ListCodec
 	 */
 	default @NotNull Codec<List<C>> list(int minSize, int maxSize) {
-		if (0 > minSize) {
-			throw new IllegalArgumentException("Minimum size must be at least 0");
-		}
-		if (minSize > maxSize) {
-			throw new IllegalArgumentException("Minimum size must be less than or equal to maximum size");
-		}
 		return list(this, minSize, maxSize);
 	}
 	
@@ -979,7 +927,6 @@ public interface Codec<C> extends Encoder<C>, Decoder<C> {
 	 * @see #withAlternative(Codec, Codec)
 	 */
 	default @NotNull Codec<C> withAlternative(@NotNull Codec<? extends C> alternative) {
-		Objects.requireNonNull(alternative, "Alternative codec must not be null");
 		return withAlternative(this, alternative);
 	}
 	
@@ -999,8 +946,6 @@ public interface Codec<C> extends Encoder<C>, Decoder<C> {
 	 * @see #map(ResultingFunction, ResultMappingFunction)
 	 */
 	default <O> @NotNull Codec<O> xmap(@NotNull Function<O, C> to, @NotNull Function<C, O> from) {
-		Objects.requireNonNull(to, "Encoding mapping function must not be null");
-		Objects.requireNonNull(from, "Decoding mapping function must not be null");
 		return this.map(ResultingFunction.direct(to), direct(from));
 	}
 	
@@ -1024,8 +969,6 @@ public interface Codec<C> extends Encoder<C>, Decoder<C> {
 	 * @see #map(ResultingFunction, ResultMappingFunction)
 	 */
 	default <O> @NotNull Codec<O> mapFlat(@NotNull Function<O, C> to, @NotNull ResultMappingFunction<C, O> from) {
-		Objects.requireNonNull(to, "Encoding mapping function must not be null");
-		Objects.requireNonNull(from, "Decoding mapping function must not be null");
 		return this.map(ResultingFunction.direct(to), from);
 	}
 	
@@ -1049,8 +992,6 @@ public interface Codec<C> extends Encoder<C>, Decoder<C> {
 	 * @see #mapFlat(Function, ResultMappingFunction)
 	 */
 	default <O> @NotNull Codec<O> map(@NotNull ResultingFunction<O, C> to, @NotNull ResultMappingFunction<C, O> from) {
-		Objects.requireNonNull(to, "Encoding mapping function must not be null");
-		Objects.requireNonNull(from, "Decoding mapping function must not be null");
 		return of(this.mapEncoder(to), this.mapDecoder(from), "MappedCodec[" + this + "]");
 	}
 	
@@ -1096,8 +1037,6 @@ public interface Codec<C> extends Encoder<C>, Decoder<C> {
 	 * @see NamedCodec
 	 */
 	default @NotNull Codec<C> named(@NotNull String name, String @NotNull ... aliases) {
-		Objects.requireNonNull(name, "Name must not be null");
-		Objects.requireNonNull(aliases, "Aliases must not be null");
 		return new NamedCodec<>(this, name, aliases);
 	}
 	
@@ -1115,7 +1054,7 @@ public interface Codec<C> extends Encoder<C>, Decoder<C> {
 	 * @see ConfiguredCodec
 	 */
 	default <O> @NotNull ConfiguredCodec<C, O> getter(@NotNull Function<O, C> getter) {
-		return new ConfiguredCodec<>(this, Objects.requireNonNull(getter, "Getter must not be null"));
+		return new ConfiguredCodec<>(this, getter);
 	}
 	
 	/**
@@ -1134,8 +1073,6 @@ public interface Codec<C> extends Encoder<C>, Decoder<C> {
 	 * @see #getter(Function)
 	 */
 	default <O> @NotNull ConfiguredCodec<C, O> configure(@NotNull String name, @NotNull Function<O, C> getter) {
-		Objects.requireNonNull(name, "Name must not be null");
-		Objects.requireNonNull(getter, "Getter must not be null");
 		return new ConfiguredCodec<>(this.named(name), getter);
 	}
 }

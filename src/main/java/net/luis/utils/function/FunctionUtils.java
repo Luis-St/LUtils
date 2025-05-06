@@ -29,6 +29,7 @@ import java.util.function.*;
  *
  * @author Luis-St
  */
+@SuppressWarnings("DuplicatedCode")
 public final class FunctionUtils {
 	
 	/**

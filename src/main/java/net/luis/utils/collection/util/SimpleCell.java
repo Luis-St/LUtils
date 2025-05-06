@@ -36,7 +36,11 @@ import java.util.Objects;
  * @param <C> The type of the column key
  * @param <V> The type of the value
  */
-public record SimpleCell<R, C, V>(@NotNull R getRowKey, @NotNull C getColumnKey, @Nullable V getValue) implements Table.Cell<R, C, V> {
+public record SimpleCell<R, C, V>(
+	@NotNull R getRowKey,
+	@NotNull C getColumnKey,
+	@Nullable V getValue
+) implements Table.Cell<R, C, V> {
 	
 	/**
 	 * Constructs a new simple cell with the specified row key, column key and value.<br>
@@ -67,7 +71,7 @@ public record SimpleCell<R, C, V>(@NotNull R getRowKey, @NotNull C getColumnKey,
 	}
 	
 	@Override
-	public String toString() {
+	public @NotNull String toString() {
 		return "(" + this.getRowKey + "," + this.getColumnKey + ")=" + this.getValue;
 	}
 	//endregion

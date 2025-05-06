@@ -70,7 +70,7 @@ public class SortedList<E> extends AbstractList<E> {
 	 */
 	@SafeVarargs
 	public SortedList(E @NotNull ... elements) {
-		this(Lists.newArrayList(elements));
+		this(createList(elements));
 	}
 	
 	/**
@@ -81,7 +81,7 @@ public class SortedList<E> extends AbstractList<E> {
 	 */
 	@SafeVarargs
 	public SortedList(@Nullable Comparator<E> comparator, E @NotNull ... elements) {
-		this(Lists.newArrayList(elements), comparator);
+		this(createList(elements), comparator);
 	}
 	
 	/**
@@ -106,6 +106,20 @@ public class SortedList<E> extends AbstractList<E> {
 		Objects.requireNonNull(elements, "List must not be null");
 		this.internalList = Lists.newArrayList(elements);
 		this.comparator = comparator;
+	}
+	
+	/**
+	 * Creates a new list from the given elements.<br>
+	 * The elements are wrapped in an internal {@link ArrayList}.<br>
+	 * @param elements The elements to add
+	 * @return The new list
+	 * @param <E> The type of the elements
+	 * @throws NullPointerException If the elements are null
+	 */
+	@SafeVarargs
+	private static <E> @NotNull List<E> createList(E @NotNull ... elements) {
+		Objects.requireNonNull(elements, "Elements must not be null");
+		return Lists.newArrayList(elements);
 	}
 	
 	/**
