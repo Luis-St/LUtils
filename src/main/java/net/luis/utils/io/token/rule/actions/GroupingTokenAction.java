@@ -45,6 +45,10 @@ public class GroupingTokenAction implements TokenAction {
 	@Override
 	public @NotNull @Unmodifiable List<Token> apply(@NotNull TokenRuleMatch match) {
 		List<Token> tokens = match.matchedTokens();
-		return Collections.singletonList(new TokenGroup(tokens, this.definition));
+		TokenGroup group = new TokenGroup(tokens, this.definition);
+		if (!this.definition.matches(group.value())) {
+			throw new IllegalStateException("Tokens " + tokens + " of group does not match the defined token definition " + this.definition);
+		}
+		return Collections.singletonList(group);
 	}
 }
