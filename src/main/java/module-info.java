@@ -32,8 +32,6 @@ module net.luis.utils {
 	exports net.luis.utils.annotation.type;
 	
 	exports net.luis.utils.collection;
-	exports net.luis.utils.collection.registry;
-	exports net.luis.utils.collection.registry.key;
 	exports net.luis.utils.collection.util;
 	
 	exports net.luis.utils.exception;
@@ -42,6 +40,9 @@ module net.luis.utils {
 	exports net.luis.utils.function.throwable;
 	
 	exports net.luis.utils.io;
+	exports net.luis.utils.io.exception;
+	exports net.luis.utils.io.reader;
+	
 	exports net.luis.utils.io.codec;
 	exports net.luis.utils.io.codec.decoder;
 	exports net.luis.utils.io.codec.encoder;
@@ -49,6 +50,7 @@ module net.luis.utils {
 	exports net.luis.utils.io.codec.group.grouper;
 	exports net.luis.utils.io.codec.provider;
 	exports net.luis.utils.io.codec.struct;
+	
 	exports net.luis.utils.io.data;
 	exports net.luis.utils.io.data.config;
 	exports net.luis.utils.io.data.json;
@@ -57,8 +59,13 @@ module net.luis.utils {
 	exports net.luis.utils.io.data.property.exception;
 	exports net.luis.utils.io.data.xml;
 	exports net.luis.utils.io.data.xml.exception;
-	exports net.luis.utils.io.exception;
-	exports net.luis.utils.io.reader;
+	
+	exports net.luis.utils.io.token;
+	exports net.luis.utils.io.token.definition;
+	exports net.luis.utils.io.token.rule;
+	exports net.luis.utils.io.token.rule.actions;
+	exports net.luis.utils.io.token.rule.rules;
+	exports net.luis.utils.io.token.tokens;
 	
 	exports net.luis.utils.lang;
 	
