@@ -39,7 +39,7 @@ final class WordTokenDefinition implements TokenDefinition {
 	@Override
 	public boolean matches(@NotNull String word) {
 		Objects.requireNonNull(word, "Word must not be null");
-		return word.length() > 1;
+		return !word.isEmpty();
 	}
 	
 	//region Object overrides

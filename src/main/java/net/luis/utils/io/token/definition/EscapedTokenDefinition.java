@@ -16,10 +16,8 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-package net.luis.utils.io.token.tokens;
+package net.luis.utils.io.token.definition;
 
-import net.luis.utils.io.token.TokenPosition;
-import net.luis.utils.io.token.definition.TokenDefinition;
 import org.jetbrains.annotations.NotNull;
 
 /**
@@ -28,17 +26,20 @@ import org.jetbrains.annotations.NotNull;
  *
  */
 
-public interface Token {
+record EscapedTokenDefinition(
+	char token
+) implements TokenDefinition {
 	
-	@NotNull TokenDefinition definition();
+	@Override
+	public boolean matches(@NotNull String word) {
+		if (word.length() != 2) {
+			return false;
+		}
+		return word.charAt(0) == '\\' && word.charAt(1) == this.token;
+	}
 	
-	@NotNull String value();
-	
-	// Positions are inclusive
-	// The start position is the first character of the token
-	// The end position is the last character of the token
-	
-	@NotNull TokenPosition startPosition();
-	
-	@NotNull TokenPosition endPosition();
+	@Override
+	public @NotNull String toString() {
+		return "CharTokenDefinition[token=" + ("\\" + this.token).replace("\t", "\\t").replace("\n", "\\n") + "]";
+	}
 }

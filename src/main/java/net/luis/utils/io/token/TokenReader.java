@@ -20,9 +20,8 @@ package net.luis.utils.io.token;
 
 import com.google.common.collect.Lists;
 import net.luis.utils.io.token.definition.TokenDefinition;
-import net.luis.utils.io.token.tokens.SimpleToken;
-import net.luis.utils.io.token.tokens.Token;
-import org.jetbrains.annotations.NotNull;
+import net.luis.utils.io.token.tokens.*;
+import org.jetbrains.annotations.*;
 
 import java.util.*;
 
@@ -42,87 +41,116 @@ public class TokenReader {
 		this.definitions = new HashSet<>(Objects.requireNonNull(definitions, "Token definitions must not be null"));
 		this.allowedChars = new HashSet<>(Objects.requireNonNull(allowedChars, "Allowed characters must not be null"));
 		this.separators = new HashSet<>(Objects.requireNonNull(separators, "Separators must not be null"));
-		this.allowedChars.addAll(separators);
+		
+		this.separators.addAll(Arrays.asList('\\', '\n'));
+		this.allowedChars.addAll(this.separators);
 	}
 	
-	public @NotNull List<Token> readTokens(@NotNull String input) {
+	public @NotNull @Unmodifiable List<Token> readTokens(@NotNull String input) {
 		Objects.requireNonNull(input, "Input string must not be null");
 		List<Token> tokens = Lists.newArrayList();
-		int position = 0;
-		int line = 0;
-		int charInLine = 0;
 		
+		boolean escape = false;
 		StringBuilder currentWord = new StringBuilder();
-		int wordStartPosition = position;
-		int wordStartLine = line;
-		int wordStartCharInLine = charInLine;
-		
-		while (position < input.length()) {
-			char current = input.charAt(position);
+		PositionTracker current = new PositionTracker(0, 0, 0);
+		PositionTracker wordStart = new PositionTracker(0, 0, 0);
+		while (current.position < input.length()) {
+			char c = input.charAt(current.position);
 			
-			if (!this.allowedChars.contains(current)) {
-				throw new IllegalStateException("Undefined character at line " + line + ", character " + charInLine + ": '" + current + "'");
+			if (!this.allowedChars.contains(c)) {
+				throw new IllegalStateException("Undefined character at line " + current.line + ", character " + current.charInLine + ": '" + c + "'");
 			}
 			
-			boolean isSeparator = this.separators.contains(current);
-			if (isSeparator) {
+			if (escape)  {
+				tokens.add(new EscapedToken(TokenDefinition.ofEscaped(c), "\\" + c, wordStart.toTokenPosition(), current.toTokenPosition()));
+				escape = false;
+				current.increment();
+				wordStart.copyFrom(current);
+			} else if (this.separators.contains(c)) {
 				if (!currentWord.isEmpty()) {
-					this.addToken(tokens, currentWord.toString(), wordStartPosition, wordStartLine, wordStartCharInLine);
+					this.addToken(tokens, currentWord.toString(), wordStart.toTokenPosition(), new TokenPosition(current.line, current.position - 1, current.charInLine - 1));
 					currentWord = new StringBuilder();
 				}
 				
+				if (c == '\\' && current.position + 1 < input.length()) {
+					escape = true;
+					wordStart.copyFrom(current);
+					current.increment();
+					continue;
+				}
+				
 				for (TokenDefinition definition : this.definitions) {
-					String currentStr = String.valueOf(current);
-					if (definition.matches(currentStr)) {
-						tokens.add(new SimpleToken(definition, currentStr, new TokenPosition(line, position, charInLine)));
+					String str = String.valueOf(c);
+					if (definition.matches(str)) {
+						TokenPosition position = current.toTokenPosition();
+						tokens.add(new SimpleToken(definition, str, position, position));
 						break;
 					}
 				}
 				
-				if (current == '\n') {
-					line++;
-					charInLine = 0;
+				if (c == '\n') {
+					current.newLine();
 				} else {
-					charInLine++;
+					current.increment();
 				}
-				position++;
 				
-				wordStartPosition = position;
-				wordStartLine = line;
-				wordStartCharInLine = charInLine;
+				wordStart.copyFrom(current);
 			} else {
 				if (currentWord.isEmpty()) {
-					wordStartPosition = position;
-					wordStartCharInLine = charInLine;
+					wordStart.copyFrom(current);
 				}
 				
-				currentWord.append(current);
-				charInLine++;
-				position++;
+				currentWord.append(c);
+				current.increment();
 			}
 		}
 		
 		if (!currentWord.isEmpty()) {
-			this.addToken(tokens, currentWord.toString(), wordStartPosition, wordStartLine, wordStartCharInLine);
+			this.addToken(tokens, currentWord.toString(), wordStart.toTokenPosition(), current.toTokenPosition());
 		}
-		return tokens;
+		return List.copyOf(tokens);
 	}
 	
-	private void addToken(@NotNull List<Token> tokens, @NotNull String word, int position, int line, int charInLine) {
+	private void addToken(@NotNull List<Token> tokens, @NotNull String word, @NotNull TokenPosition startPosition, @NotNull TokenPosition endPosition) {
 		Objects.requireNonNull(tokens, "Token list must not be null");
 		Objects.requireNonNull(word, "Word must not be null");
-		TokenDefinition matchedDef = null;
 		
-		for (TokenDefinition definition : this.definitions) {
-			if (definition.matches(word)) {
-				matchedDef = definition;
-				break;
-			}
-		}
-		
-		if (matchedDef == null) {
-			matchedDef = TokenDefinition.WORD;
-		}
-		tokens.add(new SimpleToken(matchedDef, word, new TokenPosition(line, position, charInLine)));
+		TokenDefinition matchedDefinition = this.definitions.stream().filter(definition -> definition.matches(word)).findFirst().orElse(TokenDefinition.WORD);
+		tokens.add(new SimpleToken(matchedDefinition, word, startPosition, endPosition));
 	}
+	
+	//region Internal
+	private static final class PositionTracker {
+		
+		private int line;
+		private int position;
+		private int charInLine;
+		
+		private PositionTracker(int line, int position, int charInLine) {
+			this.line = line;
+			this.position = position;
+			this.charInLine = charInLine;
+		}
+		
+		private void increment() {
+			this.position++;
+			this.charInLine++;
+		}
+		
+		private void newLine() {
+			this.increment();
+			this.charInLine = 0;
+		}
+		
+		private void copyFrom(@NotNull PositionTracker other) {
+			this.line = other.line;
+			this.position = other.position;
+			this.charInLine = other.charInLine;
+		}
+		
+		private @NotNull TokenPosition toTokenPosition() {
+			return new TokenPosition(this.line, this.position, this.charInLine);
+		}
+	}
+	//endregion
 }

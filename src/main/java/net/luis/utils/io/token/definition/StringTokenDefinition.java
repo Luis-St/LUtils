@@ -28,7 +28,10 @@ import java.util.Objects;
  *
  */
 
-record StringTokenDefinition(@NotNull String token, boolean equalsIgnoreCase) implements TokenDefinition {
+record StringTokenDefinition(
+	@NotNull String token,
+	boolean equalsIgnoreCase
+) implements TokenDefinition {
 	
 	StringTokenDefinition {
 		Objects.requireNonNull(token, "Token must not be null");

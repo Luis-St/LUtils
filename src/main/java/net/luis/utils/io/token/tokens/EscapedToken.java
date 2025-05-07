@@ -30,28 +30,26 @@ import java.util.Objects;
  *
  */
 
-public record SimpleToken(
+public record EscapedToken(
 	@NotNull TokenDefinition definition,
 	@NotNull String value,
 	@NotNull TokenPosition startPosition,
 	@NotNull TokenPosition endPosition
 ) implements Token {
 	
-	public SimpleToken {
+	public EscapedToken {
 		Objects.requireNonNull(definition, "Token definition must not be null");
 		Objects.requireNonNull(value, "Token value must not be null");
 		Objects.requireNonNull(startPosition, "Token start position must not be null");
 		Objects.requireNonNull(endPosition, "Token end position must not be null");
+		if (value.length() != 2 || value.charAt(0) != '\\') {
+			throw new IllegalArgumentException("Escaped token value '" + value + "' must be of length 2 and start with '\\'");
+		}
 		if (!definition.matches(value)) {
 			throw new IllegalArgumentException("Token value '" + value + "' does not match the token definition '" + definition + "'");
 		}
 		if (endPosition.character() - startPosition.character() != value.length() - 1) { // Use -1 to make it inclusive
-			throw new IllegalArgumentException("Positions of token '" + value + "' do not match the length of the token '" + value.length() + "'");
+			throw new IllegalArgumentException("Positions of token '" + value + "' do not match the length of the token");
 		}
-	}
-	
-	@Override
-	public @NotNull String toString() {
-		return "SimpleToken[definition=" + this.definition + ",value=" + this.value.replace("\t", "\\t").replace("\n", "\\n") + ",startPosition=" + this.startPosition + ",endPosition=" + this.endPosition + "]";
 	}
 }

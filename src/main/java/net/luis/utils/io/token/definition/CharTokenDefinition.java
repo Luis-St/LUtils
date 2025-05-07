@@ -28,7 +28,9 @@ import java.util.Objects;
  *
  */
 
-record CharTokenDefinition(char token) implements TokenDefinition {
+record CharTokenDefinition(
+	char token
+) implements TokenDefinition {
 	
 	@Override
 	public boolean matches(@NotNull String word) {

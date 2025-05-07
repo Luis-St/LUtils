@@ -46,6 +46,10 @@ public interface TokenDefinition extends TokenRule {
 		return new StringTokenDefinition(token, equalsIgnoreCase);
 	}
 	
+	static @NotNull TokenDefinition ofEscaped(char token) {
+		return new EscapedTokenDefinition(token);
+	}
+	
 	boolean matches(@NotNull String word);
 	
 	@Override
