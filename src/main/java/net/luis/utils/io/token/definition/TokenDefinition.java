@@ -27,29 +27,57 @@ import org.jetbrains.annotations.Nullable;
 import java.util.*;
 
 /**
+ * Functional interface for a token definition.<br>
+ * A token definition defines a token and provides a method to check if a word matches the token.<br>
+ * <p>
+ *     For easier usage in rules this interface extends {@link TokenRule}.<br>
+ *     This means a token definition can be used as a rule in a {@link TokenRule}.<br>
+ * </p>
  *
  * @author Luis-St
- *
  */
-
 @FunctionalInterface
 public interface TokenDefinition extends TokenRule {
 	
-	TokenDefinition WORD = WordTokenDefinition.INSTANCE;
-	
+	/**
+	 * Creates a new token definition for a single character.<br>
+	 * @param token The token character
+	 * @return The token definition
+	 * @see CharTokenDefinition
+	 */
 	static @NotNull TokenDefinition of(char token) {
 		return new CharTokenDefinition(token);
 	}
 	
+	/**
+	 * Creates a new token definition for a string.<br>
+	 * @param token The token string
+	 * @param equalsIgnoreCase If the token should be compared case insensitive
+	 * @return The token definition
+	 * @throws NullPointerException If the token is null
+	 * @throws IllegalArgumentException If the token is empty
+	 * @see StringTokenDefinition
+	 */
 	static @NotNull TokenDefinition of(@NotNull String token, boolean equalsIgnoreCase) {
-		Objects.requireNonNull(token, "Token must not be null");
 		return new StringTokenDefinition(token, equalsIgnoreCase);
 	}
 	
+	/**
+	 * Creates a new escaped token definition for a single character.<br>
+	 * @param token The token character
+	 * @return The token definition
+	 * @see EscapedTokenDefinition
+	 */
 	static @NotNull TokenDefinition ofEscaped(char token) {
 		return new EscapedTokenDefinition(token);
 	}
 	
+	/**
+	 * Checks if the given word matches this token definition.<br>
+	 * @param word The word to check
+	 * @return True if the word matches this token definition, false otherwise
+	 * @throws NullPointerException If the word is null
+	 */
 	boolean matches(@NotNull String word);
 	
 	@Override

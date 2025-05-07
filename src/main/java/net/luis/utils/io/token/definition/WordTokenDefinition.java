@@ -24,16 +24,24 @@ import org.jetbrains.annotations.NotNull;
 import java.util.Objects;
 
 /**
+ * Token definition for a word.<br>
+ * This token definition matches a string that is not empty.<br>
+ * It should be used for tokens that cannot be defined by a single character or string.<br>
+ * An example would be identifiers in programming languages.<br>
  *
  * @author Luis-St
- *
  */
-
 @Singleton
 public final class WordTokenDefinition implements TokenDefinition {
 	
-	static final WordTokenDefinition INSTANCE = new WordTokenDefinition();
+	/**
+	 * Singleton instance of the word token definition.<br>
+	 */
+	public static final WordTokenDefinition INSTANCE = new WordTokenDefinition();
 	
+	/**
+	 * Private constructor to prevent instantiation.<br>
+	 */
 	private WordTokenDefinition() {}
 	
 	@Override

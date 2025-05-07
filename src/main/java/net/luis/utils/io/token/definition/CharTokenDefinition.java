@@ -23,11 +23,13 @@ import org.jetbrains.annotations.NotNull;
 import java.util.Objects;
 
 /**
+ * Token definition for a single character.<br>
+ * This token definition matches a string that is equal to the token character.<br>
  *
  * @author Luis-St
  *
+ * @param token The token character
  */
-
 public record CharTokenDefinition(
 	char token
 ) implements TokenDefinition {

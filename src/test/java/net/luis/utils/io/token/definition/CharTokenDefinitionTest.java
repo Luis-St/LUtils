@@ -18,37 +18,36 @@
 
 package net.luis.utils.io.token.definition;
 
-import org.jetbrains.annotations.NotNull;
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 /**
- * Token definition for escaped characters.<br>
- * This token definition matches a string that starts with a backslash (\) and is followed by the token character.<br>
- * Example:
- * <pre>{@code
- * \<token> // Generic
- * \t // Tab
- * \n // New line
- * \\ // Backslash
- * }</pre>
+ * Test class for {@link CharTokenDefinition}.<br>
  *
  * @author Luis-St
- *
- * @param token The escaped token character
  */
-public record EscapedTokenDefinition(
-	char token
-) implements TokenDefinition {
+class CharTokenDefinitionTest {
 	
-	@Override
-	public boolean matches(@NotNull String word) {
-		if (word.length() != 2) {
-			return false;
-		}
-		return word.charAt(0) == '\\' && word.charAt(1) == this.token;
+	@Test
+	void constructor() {
+		assertDoesNotThrow(() -> new CharTokenDefinition('a'));
+		assertDoesNotThrow(() -> new CharTokenDefinition('\\'));
 	}
 	
-	@Override
-	public @NotNull String toString() {
-		return "CharTokenDefinition[token=" + ("\\" + this.token).replace("\t", "\\t").replace("\n", "\\n") + "]";
+	@Test
+	void token() {
+		assertEquals('a', new CharTokenDefinition('a').token());
+		assertEquals('\\', new CharTokenDefinition('\\').token());
+	}
+	
+	@Test
+	void matches() {
+		CharTokenDefinition definition = new CharTokenDefinition('a');
+		assertThrows(NullPointerException.class, () -> definition.matches(null));
+		assertFalse(definition.matches(""));
+		assertTrue(definition.matches("a"));
+		assertFalse(definition.matches("A"));
+		assertFalse(definition.matches("aa"));
 	}
 }

@@ -23,22 +23,39 @@ import net.luis.utils.io.token.definition.TokenDefinition;
 import org.jetbrains.annotations.NotNull;
 
 /**
+ * Interface for a token.<br>
+ * A token is a sequence of characters that matches a token definition.<br>
+ * The implementations of this interface serve as a value for a token definition.<br>
  *
  * @author Luis-St
- *
  */
-
 public interface Token {
 	
+	/**
+	 * Returns the token definition that this token matches.<br>
+	 * @return The token definition
+	 */
 	@NotNull TokenDefinition definition();
 	
+	/**
+	 * Returns the value of the token.<br>
+	 * @return The value
+	 */
 	@NotNull String value();
 	
-	// Positions are inclusive
-	// The start position is the first character of the token
-	// The end position is the last character of the token
-	
+	/**
+	 * Returns the start position of the token.<br>
+	 * The start position is the first character of the token.<br>
+	 * @return The start position
+	 * @apiNote In the case of a single character token, the start and end position are the same.<br>
+	 */
 	@NotNull TokenPosition startPosition();
 	
+	/**
+	 * Returns the end position of the token.<br>
+	 * The end position is the last character of the token.<br>
+	 * @return The end position
+	 * @apiNote In the case of a single character token, the start and end position are the same.<br>
+	 */
 	@NotNull TokenPosition endPosition();
 }

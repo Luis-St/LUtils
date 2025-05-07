@@ -20,6 +20,7 @@ package net.luis.utils.io.token;
 
 import com.google.common.collect.Lists;
 import net.luis.utils.io.token.definition.TokenDefinition;
+import net.luis.utils.io.token.definition.WordTokenDefinition;
 import net.luis.utils.io.token.tokens.*;
 import org.jetbrains.annotations.*;
 
@@ -115,7 +116,7 @@ public class TokenReader {
 		Objects.requireNonNull(tokens, "Token list must not be null");
 		Objects.requireNonNull(word, "Word must not be null");
 		
-		TokenDefinition matchedDefinition = this.definitions.stream().filter(definition -> definition.matches(word)).findFirst().orElse(TokenDefinition.WORD);
+		TokenDefinition matchedDefinition = this.definitions.stream().filter(definition -> definition.matches(word)).findFirst().orElse(WordTokenDefinition.INSTANCE);
 		tokens.add(new SimpleToken(matchedDefinition, word, startPosition, endPosition));
 	}
 	

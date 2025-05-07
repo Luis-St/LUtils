@@ -23,18 +23,31 @@ import org.jetbrains.annotations.NotNull;
 import java.util.Objects;
 
 /**
+ * Token definition for a string.<br>
+ * This token definition matches a string that is equal to the token string.<br>
  *
  * @author Luis-St
  *
+ * @param token The token string
+ * @param equalsIgnoreCase If the token should be compared case insensitive
  */
-
 public record StringTokenDefinition(
 	@NotNull String token,
 	boolean equalsIgnoreCase
 ) implements TokenDefinition {
 	
+	/**
+	 * Constructs a new token definition for the given string.<br>
+	 * @param token The token string
+	 * @param equalsIgnoreCase If the token should be compared case insensitive
+	 * @throws NullPointerException If the token is null
+	 * @throws IllegalArgumentException If the token is empty
+	 */
 	public StringTokenDefinition {
 		Objects.requireNonNull(token, "Token must not be null");
+		if (token.isEmpty()) {
+			throw new IllegalArgumentException("Token must not be empty");
+		}
 	}
 	
 	@Override

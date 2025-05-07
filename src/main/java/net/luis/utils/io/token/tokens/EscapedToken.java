@@ -25,11 +25,16 @@ import org.jetbrains.annotations.NotNull;
 import java.util.Objects;
 
 /**
+ * Special token implementation for escaped tokens.<br>
+ * An escaped token is a token that starts with a backslash and has a length of 2.<br>
  *
  * @author Luis-St
  *
+ * @param definition The token definition
+ * @param value The string value of the token
+ * @param startPosition The start position of the token
+ * @param endPosition The end position of the token
  */
-
 public record EscapedToken(
 	@NotNull TokenDefinition definition,
 	@NotNull String value,
@@ -37,6 +42,16 @@ public record EscapedToken(
 	@NotNull TokenPosition endPosition
 ) implements Token {
 	
+	/**
+	 * Constructs a new escaped token for a string value.<br>
+	 * @param definition The token definition
+	 * @param value The string value of the token
+	 * @param startPosition The start position of the token
+	 * @param endPosition The end position of the token
+	 * @throws NullPointerException If any of the parameters are null
+	 * @throws IllegalArgumentException If the token value does not have a length of 2, does not start with a backslash,
+	 * does not match the token definition or the start and end positions do not match the length of the token
+	 */
 	public EscapedToken {
 		Objects.requireNonNull(definition, "Token definition must not be null");
 		Objects.requireNonNull(value, "Token value must not be null");
