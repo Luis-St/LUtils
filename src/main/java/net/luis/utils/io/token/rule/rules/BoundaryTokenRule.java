@@ -46,7 +46,7 @@ public record BoundaryTokenRule(
 	);
 	
 	public BoundaryTokenRule(@NotNull TokenRule startTokenRule, @NotNull TokenRule endTokenRule) {
-		this(Objects.requireNonNull(startTokenRule, "Start rule must not be null"), TokenRule.alwaysMatch(), Objects.requireNonNull(endTokenRule, "End rule must not be null"));
+		this(Objects.requireNonNull(startTokenRule, "Start rule must not be null"), TokenRules.alwaysMatch(), Objects.requireNonNull(endTokenRule, "End rule must not be null"));
 	}
 	
 	public BoundaryTokenRule {

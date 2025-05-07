@@ -19,6 +19,7 @@
 package net.luis.utils.io.token.rule;
 
 import net.luis.utils.io.token.rule.rules.TokenRule;
+import net.luis.utils.io.token.rule.rules.TokenRules;
 import net.luis.utils.io.token.tokens.Token;
 import org.jetbrains.annotations.NotNull;
 
@@ -44,6 +45,6 @@ public record TokenRuleMatch(
 	}
 	
 	public static @NotNull TokenRuleMatch empty(int index) {
-		return new TokenRuleMatch(index, index, List.of(), TokenRule.alwaysMatch());
+		return new TokenRuleMatch(index, index, List.of(), TokenRules.alwaysMatch());
 	}
 }

@@ -18,16 +18,13 @@
 
 package net.luis.utils.io.token.rule.rules;
 
-import com.google.common.collect.Lists;
-import com.google.common.collect.Sets;
 import net.luis.utils.io.token.rule.TokenRuleMatch;
 import net.luis.utils.io.token.tokens.Token;
-import org.intellij.lang.annotations.Language;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.*;
-import java.util.regex.Pattern;
+import java.util.List;
+
 
 /**
  *
@@ -38,148 +35,29 @@ import java.util.regex.Pattern;
 @FunctionalInterface
 public interface TokenRule {
 	
-	//region Factory methods
-	static @NotNull TokenRule alwaysMatch() {
-		return AlwaysMatchTokenRule.INSTANCE;
-	}
-	
-	static @NotNull TokenRule pattern(@Language("RegExp") @NotNull String pattern) {
-		return new PatternTokenRule(Objects.requireNonNull(pattern, "Regex must not be null"));
-	}
-	
-	static @NotNull TokenRule pattern(@NotNull Pattern pattern) {
-		return new PatternTokenRule(Objects.requireNonNull(pattern, "Pattern must not be null"));
-	}
-	
-	static @NotNull TokenRule optional(@NotNull TokenRule tokenRule) {
-		Objects.requireNonNull(tokenRule, "Token rule must not be null");
-		return new OptionalTokenRule(tokenRule);
-	}
-	
-	static @NotNull TokenRule atLeast(@NotNull TokenRule tokenRule, int min) {
-		return between(Objects.requireNonNull(tokenRule, "Token rule must not be null"), min, Integer.MAX_VALUE);
-	}
-	
-	static @NotNull TokenRule exactly(@NotNull TokenRule tokenRule, int occurrences) {
-		return between(Objects.requireNonNull(tokenRule, "Token rule must not be null"), occurrences, occurrences);
-	}
-	
-	static @NotNull TokenRule atMost(@NotNull TokenRule tokenRule, int max) {
-		return between(Objects.requireNonNull(tokenRule, "Token rule must not be null"), 0, max);
-	}
-	
-	static @NotNull TokenRule between(@NotNull TokenRule tokenRule, int min, int max) {
-		Objects.requireNonNull(tokenRule, "Token rule must not be null");
-		if (min < 0) {
-			throw new IllegalArgumentException("Min occurrences must not be negative");
-		}
-		if (max < min) {
-			throw new IllegalArgumentException("Max occurrences must not be less than min occurrences");
-		}
-		return new RepeatedTokenRule(tokenRule, min, max);
-	}
-	
-	static @NotNull TokenRule sequence(TokenRule @NotNull ... tokenRules) {
-		return sequence(List.of(Objects.requireNonNull(tokenRules, "Token rule array must not be null")));
-	}
-	
-	static @NotNull TokenRule sequence(@NotNull List<TokenRule> tokenRules) {
-		return new SequenceTokenRule(Objects.requireNonNull(tokenRules, "Token rule list must not be null"));
-	}
-	
-	static @NotNull TokenRule any(TokenRule @NotNull ... tokenRules) {
-		return any(Set.of(Objects.requireNonNull(tokenRules, "Token rule array must not be null")));
-	}
-	
-	static @NotNull TokenRule any(@NotNull Set<TokenRule> tokenRules) {
-		return new AnyOfTokenRule(Objects.requireNonNull(tokenRules, "Token rule list must not be null"));
-	}
-	
-	static @NotNull TokenRule boundary(@NotNull TokenRule startTokenRule, @NotNull TokenRule endTokenRule) {
-		Objects.requireNonNull(startTokenRule, "Start rule must not be null");
-		Objects.requireNonNull(endTokenRule, "End rule must not be null");
-		return new BoundaryTokenRule(startTokenRule, endTokenRule);
-	}
-	
-	static @NotNull TokenRule boundary(@NotNull TokenRule startTokenRule, @NotNull TokenRule betweenTokenRule, @NotNull TokenRule endTokenRule) {
-		Objects.requireNonNull(startTokenRule, "Start rule must not be null");
-		Objects.requireNonNull(betweenTokenRule, "Between token rule must not be null");
-		Objects.requireNonNull(endTokenRule, "End rule must not be null");
-		return new BoundaryTokenRule(startTokenRule, betweenTokenRule, endTokenRule);
-	}
-	
-	static @NotNull TokenRule end() {
-		return EndTokenRule.INSTANCE;
-	}
-	//endregion
-	
 	@Nullable TokenRuleMatch match(@NotNull List<Token> tokens, int startIndex);
 	
-	//region Rule creation
 	default @NotNull TokenRule optional() {
-		return optional(this);
+		return TokenRules.optional(this);
 	}
 	
-	default @NotNull TokenRule atLeast(int min) {
-		return atLeast(this, min);
+	default @NotNull TokenRule repeatAtLeast(int min) {
+		return TokenRules.repeatAtLeast(this, min);
 	}
 	
-	default @NotNull TokenRule exactly(int occurrences) {
-		return exactly(this, occurrences);
+	default @NotNull TokenRule repeatExactly(int occurrences) {
+		return TokenRules.repeatExactly(this, occurrences);
 	}
 	
-	default @NotNull TokenRule atMost(int max) {
-		return atMost(this, max);
+	default @NotNull TokenRule repeatAtMost(int max) {
+		return TokenRules.repeatAtMost(this, max);
 	}
 	
-	default @NotNull TokenRule between(int min, int max) {
-		return TokenRule.between(this, min, max);
+	default @NotNull TokenRule repeatInfinitely() {
+		return TokenRules.repeatInfinitely(this);
 	}
 	
-	default @NotNull TokenRule followedBy(@NotNull TokenRule tokenRule) {
-		Objects.requireNonNull(tokenRule, "Token rule must not be null");
-		return TokenRule.sequence(this, tokenRule);
+	default @NotNull TokenRule repeatBetween(int min, int max) {
+		return TokenRules.repeatBetween(this, min, max);
 	}
-	
-	default @NotNull TokenRule followedBy(TokenRule @NotNull ... tokenRules) {
-		Objects.requireNonNull(tokenRules, "Token rule array must not be null");
-		List<TokenRule> rules = Lists.newArrayList(tokenRules);
-		rules.addFirst(this);
-		return TokenRule.sequence(rules);
-	}
-	
-	default @NotNull TokenRule or(@NotNull TokenRule tokenRule) {
-		Objects.requireNonNull(tokenRule, "Token rule must not be null");
-		return TokenRule.any(this, tokenRule);
-	}
-	
-	default @NotNull TokenRule or(TokenRule @NotNull ... tokenRules) {
-		Objects.requireNonNull(tokenRules, "Token rule array must not be null");
-		Set<TokenRule> rules = Sets.newHashSet(tokenRules);
-		rules.add(this);
-		return TokenRule.any(rules);
-	}
-	
-	default @NotNull TokenRule asStart(@NotNull TokenRule endTokenRule) {
-		Objects.requireNonNull(endTokenRule, "End token rule must not be null");
-		return TokenRule.boundary(this, endTokenRule);
-	}
-	
-	default @NotNull TokenRule asStart(@NotNull TokenRule betweenTokeRule, @NotNull TokenRule endTokenRule) {
-		Objects.requireNonNull(betweenTokeRule, "Between token rule must not be null");
-		Objects.requireNonNull(endTokenRule, "End token rule must not be null");
-		return TokenRule.boundary(this, betweenTokeRule, endTokenRule);
-	}
-	
-	default @NotNull TokenRule asEnd(@NotNull TokenRule startTokenRule) {
-		Objects.requireNonNull(startTokenRule, "Start token rule must not be null");
-		return TokenRule.boundary(startTokenRule, this);
-	}
-	
-	default @NotNull TokenRule asEnd(@NotNull TokenRule startTokenRule, @NotNull TokenRule betweenTokeRule) {
-		Objects.requireNonNull(startTokenRule, "Start token rule must not be null");
-		Objects.requireNonNull(betweenTokeRule, "Between token rule must not be null");
-		return TokenRule.boundary(startTokenRule, betweenTokeRule, this);
-	}
-	//endregion
 }
