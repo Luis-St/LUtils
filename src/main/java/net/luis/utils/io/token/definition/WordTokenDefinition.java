@@ -30,7 +30,7 @@ import java.util.Objects;
  */
 
 @Singleton
-final class WordTokenDefinition implements TokenDefinition {
+public final class WordTokenDefinition implements TokenDefinition {
 	
 	static final WordTokenDefinition INSTANCE = new WordTokenDefinition();
 	

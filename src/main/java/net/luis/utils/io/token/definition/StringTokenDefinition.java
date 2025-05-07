@@ -28,12 +28,12 @@ import java.util.Objects;
  *
  */
 
-record StringTokenDefinition(
+public record StringTokenDefinition(
 	@NotNull String token,
 	boolean equalsIgnoreCase
 ) implements TokenDefinition {
 	
-	StringTokenDefinition {
+	public StringTokenDefinition {
 		Objects.requireNonNull(token, "Token must not be null");
 	}
 	

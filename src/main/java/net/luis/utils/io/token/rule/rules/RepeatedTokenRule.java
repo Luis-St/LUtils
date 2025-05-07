@@ -63,7 +63,7 @@ public record RepeatedTokenRule(
 		int occurrences = 0;
 		int currentIndex = startIndex;
 		List<Token> matchedTokens = Lists.newArrayList();
-		while (currentIndex < tokens.size() && occurrences < this.maxOccurrences) {
+		while (currentIndex < tokens.size() && occurrences <= this.maxOccurrences) {
 			TokenRuleMatch match = this.tokenRule.match(tokens, currentIndex);
 			if (match == null) {
 				break;

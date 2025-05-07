@@ -18,11 +18,13 @@
 
 package net.luis.utils.io.token.rule.rules;
 
+import net.luis.utils.io.token.definition.*;
 import org.intellij.lang.annotations.Language;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 /**
  *
@@ -30,7 +32,13 @@ import java.util.regex.Pattern;
  *
  */
 
-public class TokenRules {
+public final class TokenRules {
+	
+	/**
+	 * Private constructor to prevent instantiation.<br>
+	 * This is a static helper class.<br>
+	 */
+	private TokenRules() {}
 	
 	//region Factory methods
 	public static @NotNull TokenRule alwaysMatch() {
@@ -111,4 +119,133 @@ public class TokenRules {
 		return EndTokenRule.INSTANCE;
 	}
 	//endregion
+	
+	public static @NotNull String toRegex(@NotNull TokenRule tokenRule) {
+		Objects.requireNonNull(tokenRule, "Token rule must not be null");
+		String regex = toBaseRegex(tokenRule);
+		if (isSurroundedByBrackets(regex)) {
+			return regex.substring(1, regex.length() - 1);
+		}
+		return regex;
+	}
+	
+	private static @NotNull String toBaseRegex(@NotNull TokenRule tokenRule) {
+		Objects.requireNonNull(tokenRule, "Token rule must not be null");
+		switch (tokenRule) {
+			case AlwaysMatchTokenRule ignored -> {
+				return ".";
+			}
+			case EndTokenRule ignored -> {
+				return "$";
+			}
+			case PatternTokenRule(Pattern pattern) -> {
+				String regex = pattern.pattern();
+				if (isSurroundedByBrackets(regex)) {
+					return regex.substring(1, regex.length() - 1);
+				}
+				return regex;
+			}
+			case OptionalTokenRule(TokenRule rule) -> {
+				String regex = toBaseRegex(rule);
+				if (endsWithSpecialChar(regex)) {
+					return "(" + regex + ")?";
+				}
+				return regex + "?";
+			}
+			case RepeatedTokenRule(TokenRule rule, int minOccurrences, int maxOccurrences) -> {
+				String regex = toBaseRegex(rule);
+				if (endsWithSpecialChar(regex)) {
+					regex = "(" + regex + ")";
+				}
+				if (maxOccurrences == Integer.MAX_VALUE) {
+					if (minOccurrences == 0) {
+						return regex + "*";
+					} else if (minOccurrences == 1) {
+						return regex + "+";
+					}
+					return regex + "{" + minOccurrences + ",}";
+				} else if (minOccurrences == 0 && maxOccurrences == 1) {
+					return regex + "?";
+				} else if (minOccurrences == maxOccurrences) {
+					if (minOccurrences == 1) {
+						return regex;
+					} else {
+						return regex + "{" + minOccurrences + "}";
+					}
+				} else {
+					return regex + "{" + minOccurrences + "," + maxOccurrences + "}";
+				}
+			}
+			case AnyOfTokenRule(Set<TokenRule> tokenRules) -> {
+				if (tokenRules.stream().allMatch(CharTokenDefinition.class::isInstance)) {
+					return tokenRules.stream().map(CharTokenDefinition.class::cast).map(tr -> {
+						char token = tr.token();
+						return switch (token) {
+							case '[' -> "\\[";
+							case ']' -> "\\]";
+							case '\\' -> "\\\\";
+							default -> String.valueOf(token);
+						};
+					}).collect(Collectors.joining("", "[", "]"));
+				}
+				return tokenRules.stream().map(TokenRules::toRegex).collect(Collectors.joining("|", "(", ")"));
+			}
+			case SequenceTokenRule(List<TokenRule> tokenRules) -> {
+				return tokenRules.stream().map(TokenRules::toBaseRegex).collect(Collectors.joining("", "(", ")"));
+			}
+			case BoundaryTokenRule(TokenRule startTokenRule, TokenRule betweenTokenRule, TokenRule endTokenRule) -> {
+				String startRegex = toBaseRegex(startTokenRule);
+				String betweenRegex = toBaseRegex(betweenTokenRule);
+				String endRegex = toBaseRegex(endTokenRule);
+				if (endsWithSpecialChar(startRegex)) {
+					startRegex = "(" + startRegex + ")";
+				}
+				if (!isSurroundedByBrackets(betweenRegex)) {
+					betweenRegex = "(" + betweenRegex + ")";
+				}
+				if (endsWithSpecialChar(endRegex)) {
+					endRegex = "(" + endRegex + ")";
+				}
+				return "(" + startRegex + betweenRegex + endRegex + ")";
+			}
+			default -> {}
+		}
+		if (tokenRule instanceof TokenDefinition definition) {
+			return toBaseRegex(definition);
+		}
+		throw new IllegalStateException("Unexpected token rule: " + tokenRule);
+	}
+	
+	private static @NotNull String toBaseRegex(@NotNull TokenDefinition definition) {
+		if (definition instanceof WordTokenDefinition) {
+			return "[a-zA-Z0-9]+";
+		}
+		
+		String regex = switch (definition) {
+			case CharTokenDefinition def -> String.valueOf(def.token());
+			case StringTokenDefinition def -> def.token();
+			case EscapedTokenDefinition def -> "\\" + def.token();
+			default -> throw new IllegalStateException("Unexpected token definition: " + definition);
+		};
+		return regex.replace("\\", "\\\\")
+			.replace("$", "\\$").replace("(", "\\(").replace(")", "\\)")
+			.replace("{", "\\{").replace("}", "\\}").replace("[", "\\[")
+			.replace("]", "\\]").replace("^", "\\^").replace("|", "\\|")
+			.replace(".", "\\.").replace("+", "\\+").replace("*", "\\*");
+	}
+	
+	private static boolean isSurroundedByBrackets(@NotNull String regex) {
+		Objects.requireNonNull(regex, "Regex must not be null");
+		return regex.charAt(0) == '(' && isLastChar(regex, ')');
+	}
+	
+	private static boolean endsWithSpecialChar(@NotNull String regex) {
+		Objects.requireNonNull(regex, "Regex must not be null");
+		return isLastChar(regex, '?') || isLastChar(regex, '*') || isLastChar(regex, '+') || isLastChar(regex, '}');
+	}
+	
+	private static boolean isLastChar(@NotNull String regex, char c) {
+		Objects.requireNonNull(regex, "Regex must not be null");
+		return regex.charAt(regex.length() - 1) == c;
+	}
 }

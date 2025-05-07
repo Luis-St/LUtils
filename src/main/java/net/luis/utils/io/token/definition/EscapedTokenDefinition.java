@@ -26,7 +26,7 @@ import org.jetbrains.annotations.NotNull;
  *
  */
 
-record EscapedTokenDefinition(
+public record EscapedTokenDefinition(
 	char token
 ) implements TokenDefinition {
 	

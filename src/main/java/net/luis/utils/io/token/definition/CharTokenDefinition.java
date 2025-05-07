@@ -28,7 +28,7 @@ import java.util.Objects;
  *
  */
 
-record CharTokenDefinition(
+public record CharTokenDefinition(
 	char token
 ) implements TokenDefinition {
 	
