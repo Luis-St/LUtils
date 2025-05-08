@@ -63,19 +63,19 @@ class TokenGroupTest {
 		assertThrows(NullPointerException.class, () -> new TokenGroup(Lists.newArrayList(token0, token1, null), ANY_DEFINITION));
 		assertThrows(IllegalArgumentException.class, () -> new TokenGroup(tokens, (word) -> word.matches("abc")));
 		
-		Token validPosToken1 = createToken("AA", POS_0_0, POS_0_1);
-		Token validPosToken2 = createToken("BB", POS_0_2, POS_0_3);
-		List<Token> validPositionTokens = List.of(validPosToken1, validPosToken2);
 		Token invalidPosToken1 = createToken("AA", POS_0_0, POS_0_1);
 		Token invalidPosToken2 = createToken("BB", POS_0_4, new TokenPosition(0, 5, 5));
 		List<Token> tokensWithInvalidPositions = List.of(invalidPosToken1, invalidPosToken2);
-		assertThrows(IllegalArgumentException.class, () -> new TokenGroup(tokensWithInvalidPositions, ANY_DEFINITION));
+		assertDoesNotThrow(() -> new TokenGroup(tokensWithInvalidPositions, ANY_DEFINITION));
 		
 		Token gapToken1 = createToken("AA", POS_0_0, POS_0_1);
 		Token gapToken2 = createToken("BB", new TokenPosition(0, 3, 3), POS_0_4);
 		List<Token> tokensWithGap = List.of(gapToken1, gapToken2);
-		assertThrows(IllegalArgumentException.class, () -> new TokenGroup(tokensWithGap, ANY_DEFINITION));
+		assertDoesNotThrow(() -> new TokenGroup(tokensWithGap, ANY_DEFINITION));
 		
+		Token validPosToken1 = createToken("AA", POS_0_0, POS_0_1);
+		Token validPosToken2 = createToken("BB", POS_0_2, POS_0_3);
+		List<Token> validPositionTokens = List.of(validPosToken1, validPosToken2);
 		assertDoesNotThrow(() -> new TokenGroup(validPositionTokens, ANY_DEFINITION));
 		assertDoesNotThrow(() -> new TokenGroup(validPositionTokens, (word) -> word.length() == 4));
 	}

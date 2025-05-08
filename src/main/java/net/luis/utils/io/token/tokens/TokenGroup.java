@@ -70,9 +70,6 @@ public record TokenGroup(
 		if (!definition.matches(value)) {
 			throw new IllegalArgumentException("Tokens " + tokens + " of group does not match the defined token definition " + definition);
 		}
-		if (tokens.getLast().endPosition().character() - tokens.getFirst().startPosition().character() != value.length() - 1) {
-			throw new IllegalArgumentException("Start and end position of token group do not match");
-		}
 		tokens = List.copyOf(tokens);
 	}
 	

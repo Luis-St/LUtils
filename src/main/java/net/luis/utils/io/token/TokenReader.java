@@ -69,7 +69,7 @@ public class TokenReader {
 				wordStart.copyFrom(current);
 			} else if (this.separators.contains(c)) {
 				if (!currentWord.isEmpty()) {
-					this.addToken(tokens, currentWord.toString(), wordStart.toTokenPosition(), new TokenPosition(current.line, current.position - 1, current.charInLine - 1));
+					this.addToken(tokens, currentWord.toString(), wordStart.toTokenPosition(), new TokenPosition(current.line, current.charInLine - 1, current.position - 1));
 					currentWord = new StringBuilder();
 				}
 				
@@ -150,7 +150,7 @@ public class TokenReader {
 		}
 		
 		private @NotNull TokenPosition toTokenPosition() {
-			return new TokenPosition(this.line, this.position, this.charInLine);
+			return new TokenPosition(this.line, this.charInLine, this.position);
 		}
 	}
 	//endregion

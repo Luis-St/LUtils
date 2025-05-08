@@ -48,7 +48,7 @@ public record SimpleToken(
 	 * @param startPosition The start position of the token
 	 * @param endPosition The end position of the token
 	 * @throws NullPointerException If any of the parameters are null
-	 * @throws IllegalArgumentException If the token value does not match the token definition or the start and end positions do not match the length of the token
+	 * @throws IllegalArgumentException If the token value does not match the token definition
 	 */
 	public SimpleToken {
 		Objects.requireNonNull(definition, "Token definition must not be null");
@@ -58,9 +58,18 @@ public record SimpleToken(
 		if (!definition.matches(value)) {
 			throw new IllegalArgumentException("Token value '" + value + "' does not match the token definition '" + definition + "'");
 		}
-		if (endPosition.character() - startPosition.character() != value.length() - 1) { // Use -1 to make it inclusive
-			throw new IllegalArgumentException("Positions of token '" + value + "' do not match the length of the token '" + value.length() + "'");
-		}
+	}
+	
+	/**
+	 * Creates an unpositioned simple token for the given token definition and value.<br>
+	 * @param definition The token definition
+	 * @param value The string value of the token
+	 * @return The unpositioned simple token
+	 * @throws NullPointerException If the token definition or the token value is null
+	 * @throws IllegalArgumentException If the token value does not match the token definition
+	 */
+	public static @NotNull SimpleToken createUnpositioned(@NotNull TokenDefinition definition, @NotNull String value) {
+		return new SimpleToken(definition, value, TokenPosition.UNPOSITIONED, TokenPosition.UNPOSITIONED);
 	}
 	
 	@Override

@@ -24,17 +24,27 @@ package net.luis.utils.io.token;
  *
  */
 
-public record TokenPosition(int line, int character, int characterInLine) {
+public record TokenPosition(
+	int line,
+	int characterInLine,
+	int character
+) {
+	
+	public static final TokenPosition UNPOSITIONED = new TokenPosition(-1, -1, -1);
 	
 	public TokenPosition {
-		if (line < 0) {
+		if (line < 0 && line != -1) {
 			throw new IllegalArgumentException("Line number cannot be negative");
 		}
-		if (character < 0) {
+		if (character < 0 && character != -1) {
 			throw new IllegalArgumentException("Character number cannot be negative");
 		}
-		if (characterInLine < 0) {
+		if (characterInLine < 0 && characterInLine != -1) {
 			throw new IllegalArgumentException("Character in line number cannot be negative");
 		}
+	}
+	
+	public boolean isPositioned() {
+		return this != UNPOSITIONED;
 	}
 }

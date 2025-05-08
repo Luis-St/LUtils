@@ -47,7 +47,6 @@ class EscapedTokenTest {
 		assertThrows(IllegalArgumentException.class, () -> new EscapedToken(ESCAPED_DEFINITION, "nn", START_POSITION, END_POSITION));
 		
 		assertThrows(IllegalArgumentException.class, () -> new EscapedToken((word) -> word.matches("[a-z]+"), "\\n", START_POSITION, END_POSITION));
-		assertThrows(IllegalArgumentException.class, () -> new EscapedToken(ESCAPED_DEFINITION, "\\n", START_POSITION, new TokenPosition(0, 2, 2)));
 		
 		assertDoesNotThrow(() -> new EscapedToken(ESCAPED_DEFINITION, "\\n", START_POSITION, END_POSITION));
 		assertDoesNotThrow(() -> new EscapedToken(ESCAPED_DEFINITION, "\\t", START_POSITION, END_POSITION));

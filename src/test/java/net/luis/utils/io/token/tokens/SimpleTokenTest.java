@@ -42,7 +42,6 @@ class SimpleTokenTest {
 		assertThrows(NullPointerException.class, () -> new SimpleToken(NUMBER_DEFINITION, "123", null, END_POSITION));
 		assertThrows(NullPointerException.class, () -> new SimpleToken(NUMBER_DEFINITION, "123", START_POSITION, null));
 		assertThrows(IllegalArgumentException.class, () -> new SimpleToken(NUMBER_DEFINITION, "abc", START_POSITION, START_POSITION));
-		assertThrows(IllegalArgumentException.class, () -> new SimpleToken(NUMBER_DEFINITION, "123", START_POSITION, new TokenPosition(0, 3, 3)));
 		assertDoesNotThrow(() -> new SimpleToken(NUMBER_DEFINITION, "123", START_POSITION, END_POSITION));
 	}
 	
