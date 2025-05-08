@@ -19,6 +19,7 @@
 package net.luis.utils.io.token.rule.actions;
 
 import net.luis.utils.io.token.definition.TokenDefinition;
+import net.luis.utils.io.token.rule.TokenRuleEngine;
 import net.luis.utils.io.token.rule.TokenRuleMatch;
 import net.luis.utils.io.token.tokens.Token;
 import net.luis.utils.io.token.tokens.TokenGroup;
@@ -28,18 +29,26 @@ import org.jetbrains.annotations.Unmodifiable;
 import java.util.*;
 
 /**
+ * Token action that groups matched tokens into a single token group.<br>
+ * The value of the group must match the definition of this action.<br>
  *
  * @author Luis-St
  *
+ * @see TokenAction
+ * @see TokenGroup
+ * @see TokenRuleEngine
  */
-
-public class GroupingTokenAction implements TokenAction {
+public record GroupingTokenAction(
+	@NotNull TokenDefinition definition
+) implements TokenAction {
 	
-	private final TokenDefinition definition;
-	
-	public GroupingTokenAction(@NotNull TokenDefinition definition) {
+	/**
+	 * Constructs a new grouping token action with the given definition.<br>
+	 * @param definition The definition of the token group
+	 * @throws NullPointerException If the definition is null
+	 */
+	public GroupingTokenAction {
 		Objects.requireNonNull(definition, "Definition must not be null");
-		this.definition = definition;
 	}
 	
 	@Override

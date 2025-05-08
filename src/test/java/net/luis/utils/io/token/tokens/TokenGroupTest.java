@@ -21,6 +21,7 @@ package net.luis.utils.io.token.tokens;
 import com.google.common.collect.Lists;
 import net.luis.utils.io.token.TokenPosition;
 import net.luis.utils.io.token.definition.TokenDefinition;
+import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.Test;
 
 import java.util.*;
@@ -43,7 +44,7 @@ class TokenGroupTest {
 	private static final TokenPosition POS_0_4 = new TokenPosition(0, 4, 4);
 	private static final TokenPosition POS_0_5 = new TokenPosition(0, 5, 5);
 	
-	private static Token createToken(String value, TokenPosition start, TokenPosition end) {
+	private static @NotNull Token createToken(@NotNull String value, @NotNull TokenPosition start, @NotNull TokenPosition end) {
 		return new SimpleToken(ANY_DEFINITION, value, start, end);
 	}
 	

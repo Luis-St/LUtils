@@ -32,7 +32,9 @@ import java.util.Objects;
  *
  */
 
-public record TransformTokenAction(@NotNull TokenTransformer transformer) implements TokenAction {
+public record TransformTokenAction(
+	@NotNull TokenTransformer transformer
+) implements TokenAction {
 	
 	public TransformTokenAction {
 		Objects.requireNonNull(transformer, "Transformer must not be null");

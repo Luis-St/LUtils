@@ -32,7 +32,10 @@ import java.util.*;
  *
  */
 
-public record WrapTokenAction(@NotNull Token prefixToken, @NotNull Token suffixToken) implements TokenAction {
+public record WrapTokenAction(
+	@NotNull Token prefixToken,
+	@NotNull Token suffixToken
+) implements TokenAction {
 	
 	public WrapTokenAction {
 		Objects.requireNonNull(prefixToken, "Prefix token must not be null");
