@@ -70,6 +70,11 @@ public record TokenGroup(
 		if (!definition.matches(value)) {
 			throw new IllegalArgumentException("Tokens " + tokens + " of group does not match the defined token definition " + definition);
 		}
+		if (tokens.stream().allMatch(token -> token.startPosition().isPositioned() && token.endPosition().isPositioned())) {
+			if (tokens.getLast().endPosition().character() - tokens.getFirst().startPosition().character() != value.length() - 1) {
+				throw new IllegalArgumentException("Start and end position of token group do not match");
+			}
+		}
 		tokens = List.copyOf(tokens);
 	}
 	
@@ -83,10 +88,15 @@ public record TokenGroup(
 		return this.tokens.stream().map(Token::value).collect(Collectors.joining());
 	}
 	
+	public boolean isPositioned() {
+		return this.tokens.stream().allMatch(token -> token.startPosition().isPositioned() && token.endPosition().isPositioned());
+	}
+	
 	/**
 	 * Returns the start position of the token group.<br>
 	 * The start position is the start position of the first token in the group.<br>
 	 * @return The start position
+	 * @apiNote If {@link #isPositioned()} returns false, the start position can be unpositioned
 	 */
 	@Override
 	public @NotNull TokenPosition startPosition() {
@@ -97,6 +107,7 @@ public record TokenGroup(
 	 * Returns the end position of the token group.<br>
 	 * The end position is the end position of the last token in the group.<br>
 	 * @return The end position
+	 * @apiNote If {@link #isPositioned()} returns false, the end position can be unpositioned
 	 */
 	@Override
 	public @NotNull TokenPosition endPosition() {

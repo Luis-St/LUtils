@@ -65,13 +65,14 @@ class TokenGroupTest {
 		
 		Token invalidPosToken1 = createToken("AA", POS_0_0, POS_0_1);
 		Token invalidPosToken2 = createToken("BB", POS_0_4, new TokenPosition(0, 5, 5));
-		List<Token> tokensWithInvalidPositions = List.of(invalidPosToken1, invalidPosToken2);
-		assertDoesNotThrow(() -> new TokenGroup(tokensWithInvalidPositions, ANY_DEFINITION));
+		assertThrows(IllegalArgumentException.class, () -> new TokenGroup(List.of(invalidPosToken1, invalidPosToken2), ANY_DEFINITION));
+		
+		Token unpositionedToken2 = createToken("BB", TokenPosition.UNPOSITIONED, new TokenPosition(0, 5, 5));
+		assertDoesNotThrow(() -> new TokenGroup(List.of(invalidPosToken1, unpositionedToken2), ANY_DEFINITION));
 		
 		Token gapToken1 = createToken("AA", POS_0_0, POS_0_1);
 		Token gapToken2 = createToken("BB", new TokenPosition(0, 3, 3), POS_0_4);
-		List<Token> tokensWithGap = List.of(gapToken1, gapToken2);
-		assertDoesNotThrow(() -> new TokenGroup(tokensWithGap, ANY_DEFINITION));
+		assertThrows(IllegalArgumentException.class, () -> new TokenGroup(List.of(gapToken1, gapToken2), ANY_DEFINITION));
 		
 		Token validPosToken1 = createToken("AA", POS_0_0, POS_0_1);
 		Token validPosToken2 = createToken("BB", POS_0_2, POS_0_3);
@@ -112,15 +113,23 @@ class TokenGroupTest {
 		List<Token> tokens = List.of(token0, token1, token2);
 		TokenGroup group = new TokenGroup(tokens, NUMBER_DEFINITION);
 		
-		// Test that value() returns concatenated values
 		assertEquals("001122", group.value());
 		
-		// Test with different tokens
 		Token tokenA = createToken("hello", POS_0_0, new TokenPosition(0, 4, 4));
 		Token tokenB = createToken(" ", new TokenPosition(0, 5, 5), new TokenPosition(0, 5, 5));
 		Token tokenC = createToken("world", new TokenPosition(0, 6, 6), new TokenPosition(0, 10, 10));
 		TokenGroup textGroup = new TokenGroup(List.of(tokenA, tokenB, tokenC), ANY_DEFINITION);
 		assertEquals("hello world", textGroup.value());
+	}
+	
+	@Test
+	void isPositioned() {
+		Token positionedToken0 = createToken("00", POS_0_0, POS_0_1);
+		Token positionedToken1 = createToken("11", POS_0_2, POS_0_3);
+		assertTrue(new TokenGroup(List.of(positionedToken0, positionedToken1), ANY_DEFINITION).isPositioned());
+		
+		Token unpositionedToken1 = createToken("11", TokenPosition.UNPOSITIONED, POS_0_3);
+		assertFalse(new TokenGroup(List.of(positionedToken0, unpositionedToken1), ANY_DEFINITION).isPositioned());
 	}
 	
 	@Test

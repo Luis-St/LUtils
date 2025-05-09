@@ -47,10 +47,22 @@ class EscapedTokenTest {
 		assertThrows(IllegalArgumentException.class, () -> new EscapedToken(ESCAPED_DEFINITION, "nn", START_POSITION, END_POSITION));
 		
 		assertThrows(IllegalArgumentException.class, () -> new EscapedToken((word) -> word.matches("[a-z]+"), "\\n", START_POSITION, END_POSITION));
+		assertThrows(IllegalArgumentException.class, () -> new EscapedToken(ESCAPED_DEFINITION, "\\n", START_POSITION, new TokenPosition(0, 2, 2)));
+		assertDoesNotThrow(() -> new EscapedToken(ESCAPED_DEFINITION, "\\n", START_POSITION, TokenPosition.UNPOSITIONED));
 		
 		assertDoesNotThrow(() -> new EscapedToken(ESCAPED_DEFINITION, "\\n", START_POSITION, END_POSITION));
 		assertDoesNotThrow(() -> new EscapedToken(ESCAPED_DEFINITION, "\\t", START_POSITION, END_POSITION));
 		assertDoesNotThrow(() -> new EscapedToken(ESCAPED_DEFINITION, "\\\"", START_POSITION, END_POSITION));
+	}
+	
+	@Test
+	void createUnpositioned() {
+		assertThrows(NullPointerException.class, () -> EscapedToken.createUnpositioned(null, "\\n"));
+		assertThrows(NullPointerException.class, () -> EscapedToken.createUnpositioned(ESCAPED_DEFINITION, null));
+		assertThrows(IllegalArgumentException.class, () -> EscapedToken.createUnpositioned(ESCAPED_DEFINITION, "n"));
+		assertThrows(IllegalArgumentException.class, () -> EscapedToken.createUnpositioned(ESCAPED_DEFINITION, "\\\\n"));
+		assertThrows(IllegalArgumentException.class, () -> EscapedToken.createUnpositioned(ESCAPED_DEFINITION, "nn"));
+		assertDoesNotThrow(() -> EscapedToken.createUnpositioned(ESCAPED_DEFINITION, "\\n"));
 	}
 	
 	@Test
