@@ -26,19 +26,36 @@ import org.jetbrains.annotations.Unmodifiable;
 import java.util.List;
 
 /**
+ * Token action that is applied to a token rule match.<br>
+ * With a token action, the tokens of the match can be modified, transformed or removed.<br>
+ *
+ * @see TransformTokenAction
+ * @see GroupingTokenAction
+ * @see WrapTokenAction
  *
  * @author Luis-St
- *
  */
-
 @FunctionalInterface
 public interface TokenAction {
 	
+	/**
+	 * Creates a token action that does nothing.<br>
+	 * This action returns the matched tokens as they are.<br>
+	 * The resulting list is an immutable copy of the original list.<br>
+	 * @return The identity token action
+	 * @apiNote This method is equivalent to {@code match -> List.copyOf(match.matchedTokens())}
+	 */
 	static @NotNull TokenAction identity() {
-		return TokenRuleMatch::matchedTokens;
+		return match -> List.copyOf(match.matchedTokens());
 	}
 	
-	@NotNull
-	@Unmodifiable
+	/**
+	 * Applies this token action to the given token rule match.<br>
+	 * The action can modify, transform or remove the tokens of the match.<br>
+	 * @param match The token rule match to apply the action to
+	 * @return The resulting immutable list of tokens after applying the action
+	 * @throws NullPointerException If the match is null
+	 */
+	@NotNull @Unmodifiable
 	List<Token> apply(@NotNull TokenRuleMatch match);
 }

@@ -27,15 +27,22 @@ import java.util.List;
 import java.util.Objects;
 
 /**
+ * Token action that transforms the tokens using a transformer.<br>
+ * The transformer is applied to the tokens, and the result is returned as an immutable list of tokens.<br>
+ *
+ * @see TokenTransformer
  *
  * @author Luis-St
- *
  */
-
 public record TransformTokenAction(
 	@NotNull TokenTransformer transformer
 ) implements TokenAction {
 	
+	/**
+	 * Constructs a new transform token action with the given transformer.<br>
+	 * @param transformer The transformer to apply to tokens
+	 * @throws NullPointerException If the transformer is null
+	 */
 	public TransformTokenAction {
 		Objects.requireNonNull(transformer, "Transformer must not be null");
 	}
@@ -43,6 +50,6 @@ public record TransformTokenAction(
 	@Override
 	public @NotNull @Unmodifiable List<Token> apply(@NotNull TokenRuleMatch match) {
 		Objects.requireNonNull(match, "Token rule match must not be null");
-		return this.transformer.transform(match.matchedTokens());
+		return List.copyOf(this.transformer.transform(match.matchedTokens()));
 	}
 }

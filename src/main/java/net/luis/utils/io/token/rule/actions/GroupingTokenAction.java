@@ -29,7 +29,7 @@ import org.jetbrains.annotations.Unmodifiable;
 import java.util.*;
 
 /**
- * Token action that groups matched tokens into a single token group.<br>
+ * Token action that groups the tokens into a single token group.<br>
  * The value of the group must match the definition of this action.<br>
  *
  * @author Luis-St

@@ -27,16 +27,22 @@ import org.jetbrains.annotations.Unmodifiable;
 import java.util.*;
 
 /**
+ * Token action that wraps the tokens with a prefix and suffix token.<br>
+ * The prefix and suffix tokens are added to the beginning and end of the matched tokens, respectively.<br>
  *
  * @author Luis-St
- *
  */
-
 public record WrapTokenAction(
 	@NotNull Token prefixToken,
 	@NotNull Token suffixToken
 ) implements TokenAction {
 	
+	/**
+	 * Constructs a new wrap token action with the given prefix and suffix tokens.<br>
+	 * @param prefixToken The prefix token
+	 * @param suffixToken The suffix token
+	 * @throws NullPointerException If the prefix or suffix token is null
+	 */
 	public WrapTokenAction {
 		Objects.requireNonNull(prefixToken, "Prefix token must not be null");
 		Objects.requireNonNull(suffixToken, "Suffix token must not be null");
@@ -55,6 +61,6 @@ public record WrapTokenAction(
 		result.add(this.prefixToken);
 		result.addAll(tokens);
 		result.add(this.suffixToken);
-		return result;
+		return List.copyOf(result);
 	}
 }
