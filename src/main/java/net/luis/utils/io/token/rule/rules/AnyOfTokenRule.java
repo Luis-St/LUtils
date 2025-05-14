@@ -26,17 +26,29 @@ import org.jetbrains.annotations.Nullable;
 import java.util.*;
 
 /**
+ * A token rule that matches any of the provided token rules.<br>
+ * The first matching rule will be used to create the {@link TokenRuleMatch}.<br>
+ * This rule is useful for creating complex matching logic by combining multiple rules.<br>
  *
  * @author Luis-St
  *
+ * @param tokenRules The set of token rules to match against
  */
-
 public record AnyOfTokenRule(
 	@NotNull Set<TokenRule> tokenRules
 ) implements TokenRule {
 	
+	/**
+	 * Constructs a new any of token rule with the given token rules.<br>
+	 * @param tokenRules The set of token rules to match against
+	 * @throws NullPointerException If the token rule list is null
+	 */
 	public AnyOfTokenRule {
-		tokenRules = Set.copyOf(Objects.requireNonNull(tokenRules, "Token rule list must not be null"));
+		Objects.requireNonNull(tokenRules, "Token rule list must not be null");
+		if (tokenRules.isEmpty()) {
+			throw new IllegalArgumentException("Token rule list must not be empty");
+		}
+		tokenRules = Collections.unmodifiableSequencedSet(new LinkedHashSet<>(tokenRules));
 	}
 	
 	@Override

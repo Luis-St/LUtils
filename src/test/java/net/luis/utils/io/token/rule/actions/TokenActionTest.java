@@ -24,7 +24,6 @@ import net.luis.utils.io.token.tokens.SimpleToken;
 import net.luis.utils.io.token.tokens.Token;
 import org.junit.jupiter.api.Test;
 
-import java.util.Collections;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -46,15 +45,6 @@ class TokenActionTest {
 		
 		List<Token> result = TokenAction.identity().apply(TEST_MATCH);
 		assertEquals(TEST_TOKENS, result);
-		assertThrows(UnsupportedOperationException.class, () -> result.add(TEST_TOKEN));
-	}
-	
-	@Test
-	void apply() {
-		TokenAction action = match -> Collections.emptyList();
-		
-		List<Token> result = action.apply(TEST_MATCH);
-		assertTrue(result.isEmpty());
 		assertThrows(UnsupportedOperationException.class, () -> result.add(TEST_TOKEN));
 	}
 }

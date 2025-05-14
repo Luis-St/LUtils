@@ -23,18 +23,29 @@ import net.luis.utils.io.token.tokens.Token;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 
 /**
+ * A token rule that matches optionally a single token rule.<br>
+ * This rule is useful for creating optional matching logic.<br>
+ * It will match the token rule if it is present, otherwise it will return an empty match.<br>
  *
  * @author Luis-St
  *
+ * @param tokenRule The token rule to match optionally
  */
-
 public record OptionalTokenRule(
 	@NotNull TokenRule tokenRule
 ) implements TokenRule {
+	
+	/**
+	 * Constructs a new optional token rule with the given token rule.<br>
+	 * @param tokenRule The token rule to match optionally
+	 * @throws NullPointerException If the token rule is null
+	 */
+	public OptionalTokenRule {
+		Objects.requireNonNull(tokenRule, "Token rule must not be null");
+	}
 	
 	@Override
 	public @Nullable TokenRuleMatch match(@NotNull List<Token> tokens, int startIndex) {

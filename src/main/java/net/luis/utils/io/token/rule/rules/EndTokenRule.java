@@ -27,16 +27,24 @@ import org.jetbrains.annotations.Nullable;
 import java.util.*;
 
 /**
+ * A token rule that always matches the end of the token list.<br>
+ * This rule is useful to ensure that the end of the token list is reached.<br>
+ * The rule will only match if the start index is larger than or equal to the size of the token list.<br>
+ * This class is implemented as a singleton and can be accessed via {@link TokenRules#end()} or {@link #INSTANCE}.<br>
  *
  * @author Luis-St
- *
  */
-
 @Singleton
 public final class EndTokenRule implements TokenRule {
 	
+	/**
+	 * The singleton instance of this class.<br>
+	 */
 	public static final EndTokenRule INSTANCE = new EndTokenRule();
 	
+	/**
+	 * Private constructor to prevent instantiation.<br>
+	 */
 	private EndTokenRule() {}
 	
 	@Override

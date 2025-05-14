@@ -26,15 +26,24 @@ import org.jetbrains.annotations.Nullable;
 import java.util.*;
 
 /**
+ * A token rule that matches a sequence of token rules.<br>
+ * This rule is useful for creating complex matching logic by combining multiple rules.<br>
+ * It will match the token rules in the order they are provided, otherwise it will return null.<br>
  *
  * @author Luis-St
  *
+ * @param tokenRules The list of token rules to match against
  */
-
 public record SequenceTokenRule(
 	@NotNull List<TokenRule> tokenRules
 ) implements TokenRule {
 	
+	/**
+	 * Constructs a new sequence token rule with the given token rules.<br>
+	 * @param tokenRules The list of token rules to match against
+	 * @throws NullPointerException If the token rule list or any of its elements are null
+	 * @throws IllegalArgumentException If the token rule list is empty
+	 */
 	public SequenceTokenRule {
 		Objects.requireNonNull(tokenRules, "Token rule list must not be null");
 		if (tokenRules.isEmpty()) {

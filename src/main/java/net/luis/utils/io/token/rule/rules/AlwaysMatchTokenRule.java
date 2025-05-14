@@ -27,16 +27,23 @@ import org.jetbrains.annotations.Nullable;
 import java.util.*;
 
 /**
+ * A token rule that always matches a single token if the start index is valid.<br>
+ * This rule is useful for testing or as a default case in a chain of token rules.<br>
+ * This class is implemented as a singleton and can be accessed via {@link TokenRules#alwaysMatch()} or {@link #INSTANCE}.<br>
  *
  * @author Luis-St
- *
  */
-
 @Singleton
 public final class AlwaysMatchTokenRule implements TokenRule {
 	
+	/**
+	 * The singleton instance of this class.<br>
+	 */
 	public static final AlwaysMatchTokenRule INSTANCE = new AlwaysMatchTokenRule();
 	
+	/**
+	 * Private constructor to prevent instantiation.<br>
+	 */
 	private AlwaysMatchTokenRule() {}
 	
 	@Override

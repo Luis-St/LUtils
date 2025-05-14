@@ -18,7 +18,13 @@
 
 package net.luis.utils.io.token.definition;
 
+import net.luis.utils.io.token.rule.TokenRuleMatch;
+import net.luis.utils.io.token.tokens.SimpleToken;
+import net.luis.utils.io.token.tokens.Token;
 import org.junit.jupiter.api.Test;
+
+import java.util.Collections;
+import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -28,6 +34,11 @@ import static org.junit.jupiter.api.Assertions.*;
  * @author Luis-St
  */
 class TokenDefinitionTest {
+	
+	private static final Token TOKEN_0 = SimpleToken.createUnpositioned("test"::equals, "test");
+	private static final Token TOKEN_1 = SimpleToken.createUnpositioned("test1"::equals, "test1");
+	private static final Token TOKEN_2 = SimpleToken.createUnpositioned("test2"::equals, "test2");
+	private static final List<Token> TOKENS = List.of(TOKEN_0, TOKEN_1, TOKEN_2);
 	
 	@Test
 	void of() {
@@ -47,5 +58,22 @@ class TokenDefinitionTest {
 	void ofEscaped() {
 		assertDoesNotThrow(() -> TokenDefinition.ofEscaped('a'));
 		assertDoesNotThrow(() -> TokenDefinition.ofEscaped('\\'));
+	}
+	
+	@Test
+	void match() {
+		TokenDefinition testDefinition = TOKEN_0.definition();
+		assertThrows(NullPointerException.class, () -> testDefinition.match(null, 0));
+		assertNull(testDefinition.match(TOKENS, 1));
+		assertNull(testDefinition.match(TOKENS, 3));
+		assertNull(testDefinition.match(Collections.emptyList(), 0));
+		
+		TokenRuleMatch match = testDefinition.match(TOKENS, 0);
+		assertNotNull(match);
+		assertEquals(0, match.startIndex());
+		assertEquals(1, match.endIndex());
+		assertEquals(1, match.matchedTokens().size());
+		assertEquals(TOKEN_0, match.matchedTokens().get(0));
+		assertEquals(testDefinition, match.matchingTokenRule());
 	}
 }

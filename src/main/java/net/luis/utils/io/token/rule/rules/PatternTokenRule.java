@@ -29,19 +29,32 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
+ * A token rule that matches the value of a single token against a regular expression pattern.<br>
+ * This rule is useful for creating complex matching logic by using regular expressions.<br>
+ * It will match the token if its value matches the pattern, otherwise it will return null.<br>
  *
  * @author Luis-St
  *
+ * @param pattern The pattern to match against
  */
-
 public record PatternTokenRule(
 	@NotNull Pattern pattern
 ) implements TokenRule {
 	
+	/**
+	 * Constructs a new pattern token rule from the given pattern in string format.<br>
+	 * @param regex The regex pattern to match against
+	 * @throws NullPointerException If the regex pattern is null
+	 */
 	public PatternTokenRule(@Language("RegExp") @NotNull String regex) {
 		this(Pattern.compile(Objects.requireNonNull(regex, "Regex must not be null")));
 	}
 	
+	/**
+	 * Constructs a new pattern token rule from the given pattern.<br>
+	 * @param pattern The pattern to match against
+	 * @throws NullPointerException If the pattern is null
+	 */
 	public PatternTokenRule {
 		Objects.requireNonNull(pattern, "Pattern must not be null");
 	}

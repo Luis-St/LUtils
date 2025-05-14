@@ -28,21 +28,46 @@ import java.util.List;
 import java.util.Objects;
 
 /**
+ * A token rule that matches a token rule a number of times.<br>
+ * This rule is useful for creating complex matching logic by repeating a rule.<br>
+ * It will match the token rule a number of times between the min and max occurrences.<br>
+ * If the min and max occurrences are the same, it will match exactly that number of times.<br>
+ *
+ * @apiNote This class does not allow the creation of a optional token rule by setting the min and max occurrences to 0.<br>
+ * This is because the implementation of {@link #match(List, int)} will return null if there is no match.<br>
+ * Use {@link OptionalTokenRule} for that purpose.<br>
  *
  * @author Luis-St
  *
+ * @param tokenRule The token rule to match
+ * @param minOccurrences The minimum number of occurrences
+ * @param maxOccurrences The maximum number of occurrences
  */
-
 public record RepeatedTokenRule(
 	@NotNull TokenRule tokenRule,
 	int minOccurrences,
 	int maxOccurrences
 ) implements TokenRule {
 	
+	/**
+	 * Constructs a new repeated token rule with the given token rule and exact number of occurrences.<br>
+	 * @param tokenRule The token rule to match
+	 * @param occurrences The exact number of occurrences
+	 * @throws NullPointerException If the token rule is null
+	 * @throws IllegalArgumentException If the number of occurrences is lower than 0
+	 */
 	public RepeatedTokenRule(@NotNull TokenRule tokenRule, int occurrences) {
 		this(tokenRule, occurrences, occurrences);
 	}
 	
+	/**
+	 * Constructs a new repeated token rule with the given token rule and min and max number of occurrences.<br>
+	 * @param tokenRule The token rule to match
+	 * @param minOccurrences The minimum number of occurrences
+	 * @param maxOccurrences The maximum number of occurrences
+	 * @throws NullPointerException If the token rule is null
+	 * @throws IllegalArgumentException If the min or max occurrences are lower than 0, or if the max occurrences are lower than the min occurrences, or if both are 0
+	 */
 	public RepeatedTokenRule {
 		Objects.requireNonNull(tokenRule, "Token rule must not be null");
 		if (minOccurrences < 0) {
@@ -50,6 +75,9 @@ public record RepeatedTokenRule(
 		}
 		if (maxOccurrences < minOccurrences) {
 			throw new IllegalArgumentException("Max occurrences must not be less than min occurrences");
+		}
+		if (maxOccurrences == 0) {
+			throw new IllegalArgumentException("Min and max occurrences must not be 0, this rule will never match");
 		}
 	}
 	
