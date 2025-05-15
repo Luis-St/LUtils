@@ -42,22 +42,84 @@ class TokenDefinitionTest {
 	
 	@Test
 	void of() {
-		assertDoesNotThrow(() -> TokenDefinition.of('a'));
-		assertDoesNotThrow(() -> TokenDefinition.of('\\'));
+		assertInstanceOf(CharTokenDefinition.class, assertDoesNotThrow(() -> TokenDefinition.of('a')));
+		assertInstanceOf(CharTokenDefinition.class, assertDoesNotThrow(() -> TokenDefinition.of('\\')));
 		
 		assertThrows(NullPointerException.class, () -> TokenDefinition.of(null, false));
 		assertThrows(NullPointerException.class, () -> TokenDefinition.of(null, true));
 		assertThrows(IllegalArgumentException.class, () -> TokenDefinition.of("", false));
 		assertThrows(IllegalArgumentException.class, () -> TokenDefinition.of("", true));
-		assertDoesNotThrow(() -> TokenDefinition.of("a", false));
-		assertDoesNotThrow(() -> TokenDefinition.of("a", true));
-		assertDoesNotThrow(() -> TokenDefinition.of(" ", false));
+		assertInstanceOf(StringTokenDefinition.class, assertDoesNotThrow(() -> TokenDefinition.of("a", false)));
+		assertInstanceOf(StringTokenDefinition.class, assertDoesNotThrow(() -> TokenDefinition.of("a", true)));
+		assertInstanceOf(StringTokenDefinition.class, assertDoesNotThrow(() -> TokenDefinition.of(" ", false)));
 	}
 	
 	@Test
 	void ofEscaped() {
-		assertDoesNotThrow(() -> TokenDefinition.ofEscaped('a'));
-		assertDoesNotThrow(() -> TokenDefinition.ofEscaped('\\'));
+		assertInstanceOf(EscapedTokenDefinition.class, assertDoesNotThrow(() -> TokenDefinition.ofEscaped('a')));
+		assertInstanceOf(EscapedTokenDefinition.class, assertDoesNotThrow(() -> TokenDefinition.ofEscaped('\\')));
+	}
+	
+	@Test
+	void combine() {
+		assertThrows(NullPointerException.class, () -> TokenDefinition.combine(null));
+		assertThrows(IllegalArgumentException.class, () -> TokenDefinition.combine(new TokenDefinition[0]));
+		
+		TokenDefinition charDefinition = TokenDefinition.of('a');
+		assertSame(charDefinition, TokenDefinition.combine(charDefinition));
+		
+		TokenDefinition combined0 = TokenDefinition.combine(
+			TokenDefinition.of('a'),
+			TokenDefinition.of('b'),
+			TokenDefinition.of('c')
+		);
+		assertTrue(combined0.matches("abc"));
+		StringTokenDefinition combined0String = assertInstanceOf(StringTokenDefinition.class, combined0);
+		assertEquals("abc", combined0String.token());
+		assertFalse(combined0String.equalsIgnoreCase());
+		
+		TokenDefinition combined1 = TokenDefinition.combine(
+			TokenDefinition.of("hello", false),
+			TokenDefinition.of("world", false)
+		);
+		assertTrue(combined1.matches("helloworld"));
+		StringTokenDefinition combined1String = assertInstanceOf(StringTokenDefinition.class, combined1);
+		assertEquals("helloworld", combined1String.token());
+		assertFalse(combined1String.equalsIgnoreCase());
+		
+		TokenDefinition combined2 = TokenDefinition.combine(
+			TokenDefinition.ofEscaped('\\'),
+			TokenDefinition.of('n')
+		);
+		assertTrue(combined2.matches("\\\\n"));
+		StringTokenDefinition combined2String = assertInstanceOf(StringTokenDefinition.class, combined2);
+		assertEquals("\\\\n", combined2String.token());
+		assertFalse(combined2String.equalsIgnoreCase());
+		
+		TokenDefinition combined3 = TokenDefinition.combine(
+			TokenDefinition.of("hello", false),
+			TokenDefinition.of('-'),
+			TokenDefinition.ofEscaped('!')
+		);
+		assertTrue(combined3.matches("hello-\\!"));
+		StringTokenDefinition combined3String = assertInstanceOf(StringTokenDefinition.class, combined3);
+		assertTrue(combined3.matches("hello-\\!"));
+		assertEquals("hello-\\!", combined3String.token());
+		assertFalse(combined3String.equalsIgnoreCase());
+		
+		TokenDefinition combined4 = TokenDefinition.combine(
+			TokenDefinition.of("HELLO", false),
+			TokenDefinition.of("world", false)
+		);
+		assertTrue(combined4.matches("HELLOworld"));
+		StringTokenDefinition combined4String = assertInstanceOf(StringTokenDefinition.class, combined4);
+		assertTrue(combined4String.matches("HELLOworld"));
+		assertEquals("HELLOworld", combined4String.token());
+		assertFalse(combined4String.equalsIgnoreCase());
+		
+		TokenDefinition customDefinition = "custom"::equals;
+		assertSame(customDefinition, TokenDefinition.combine(customDefinition));
+		assertThrows(IllegalArgumentException.class, () -> TokenDefinition.combine(TokenDefinition.of('a'), "custom"::equals));
 	}
 	
 	@Test
@@ -73,7 +135,8 @@ class TokenDefinitionTest {
 		assertEquals(0, match.startIndex());
 		assertEquals(1, match.endIndex());
 		assertEquals(1, match.matchedTokens().size());
-		assertEquals(TOKEN_0, match.matchedTokens().get(0));
+		assertEquals(TOKEN_0, match.matchedTokens().getFirst());
 		assertEquals(testDefinition, match.matchingTokenRule());
 	}
 }
+

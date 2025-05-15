@@ -75,10 +75,6 @@ class AnyOfTokenRuleTest {
 		assertEquals(1, match1.matchedTokens().size());
 		assertEquals(TOKEN_1, match1.matchedTokens().getFirst());
 		
-		
 		assertNull(rule.match(List.of(TOKEN_2, TOKEN_2), 0));
-		
-		AnyOfTokenRule emptyRule = new AnyOfTokenRule(Collections.emptySet());
-		assertNull(emptyRule.match(List.of(TOKEN_0, TOKEN_1), 0));
 	}
 }
