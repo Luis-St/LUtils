@@ -64,6 +64,7 @@ tasks.named<Javadoc>("javadoc") {
 	exclude("**/Main.java")
 	options {
 		memberLevel = JavadocMemberLevel.PRIVATE
+		(this as StandardJavadocDocletOptions).addStringOption("tag", "apiNote:a:API Note:")
 	}
 }
 

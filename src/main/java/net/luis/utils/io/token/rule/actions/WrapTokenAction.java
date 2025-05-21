@@ -31,6 +31,9 @@ import java.util.*;
  * The prefix and suffix tokens are added to the beginning and end of the matched tokens, respectively.<br>
  *
  * @author Luis-St
+ *
+ * @param prefixToken The prefix token
+ * @param suffixToken The suffix token
  */
 public record WrapTokenAction(
 	@NotNull Token prefixToken,

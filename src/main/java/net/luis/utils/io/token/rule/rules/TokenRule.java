@@ -123,6 +123,8 @@ public interface TokenRule {
 	/**
 	 * Makes this token rule between repeatable by wrapping it in a {@link RepeatedTokenRule}.<br>
 	 * To make the new rule match, this rule must match at least min and at most max times.<br>
+	 * @param min The minimum number of times this rule must match
+	 * @param max The maximum number of times this rule can match
 	 * @return A new between repeatable token rule
 	 * @throws IllegalArgumentException If min is less than 0 or max is less than min
 	 * @see TokenRules#repeatBetween(TokenRule, int, int)

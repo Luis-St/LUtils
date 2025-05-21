@@ -33,6 +33,8 @@ import java.util.Objects;
  * @see TokenTransformer
  *
  * @author Luis-St
+ *
+ * @param transformer The transformer to apply to tokens
  */
 public record TransformTokenAction(
 	@NotNull TokenTransformer transformer

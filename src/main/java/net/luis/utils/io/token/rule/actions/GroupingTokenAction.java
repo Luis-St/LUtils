@@ -32,11 +32,13 @@ import java.util.*;
  * Token action that groups the tokens into a single token group.<br>
  * The value of the group must match the definition of this action.<br>
  *
- * @author Luis-St
- *
  * @see TokenAction
  * @see TokenGroup
  * @see TokenRuleEngine
+ *
+ * @author Luis-St
+ *
+ * @param definition The definition of the token group
  */
 public record GroupingTokenAction(
 	@NotNull TokenDefinition definition

@@ -62,7 +62,7 @@ class TokenDefinitionTest {
 	
 	@Test
 	void combine() {
-		assertThrows(NullPointerException.class, () -> TokenDefinition.combine(null));
+		assertThrows(NullPointerException.class, () -> TokenDefinition.combine((TokenDefinition[]) null));
 		assertThrows(IllegalArgumentException.class, () -> TokenDefinition.combine(new TokenDefinition[0]));
 		
 		TokenDefinition charDefinition = TokenDefinition.of('a');

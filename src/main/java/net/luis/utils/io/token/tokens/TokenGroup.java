@@ -88,6 +88,12 @@ public record TokenGroup(
 		return this.tokens.stream().map(Token::value).collect(Collectors.joining());
 	}
 	
+	/**
+	 * Checks if the token group is positioned.<br>
+	 * A token group is positioned if all tokens in the group are positioned.<br>
+	 * @return True if this token group is positioned, false otherwise
+	 * @see TokenPosition#isPositioned()
+	 */
 	public boolean isPositioned() {
 		return this.tokens.stream().allMatch(token -> token.startPosition().isPositioned() && token.endPosition().isPositioned());
 	}
