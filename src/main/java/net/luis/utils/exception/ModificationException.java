@@ -18,14 +18,11 @@
 
 package net.luis.utils.exception;
 
-import net.luis.utils.collection.registry.Registry;
 import org.jetbrains.annotations.Nullable;
 
 /**
  * Thrown when a method is called on an object which will modify it,<br>
  * but the object is not modifiable at the moment or at all.<br>
- *
- * @see Registry
  *
  * @author Luis-St
  */

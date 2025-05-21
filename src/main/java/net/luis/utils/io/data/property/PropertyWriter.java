@@ -69,8 +69,6 @@ public class PropertyWriter implements AutoCloseable {
 	 * @throws UncheckedIOException If an I/O error occurs (optional)
 	 */
 	public void writeProperty(@NotNull String key, @NotNull Object value) {
-		Objects.requireNonNull(key, "Key must not be null");
-		Objects.requireNonNull(value, "Value must not be null");
 		this.writeProperty(Property.of(key, value.toString()));
 	}
 	
@@ -85,7 +83,6 @@ public class PropertyWriter implements AutoCloseable {
 	 * @throws UncheckedIOException If an I/O error occurs (optional)
 	 */
 	public <T> void writeProperty(@NotNull String key, @NotNull T value, @NotNull Function<T, String> converter) {
-		Objects.requireNonNull(key, "Key must not be null");
 		Objects.requireNonNull(value, "Value must not be null");
 		Objects.requireNonNull(converter, "Converter must not be null");
 		this.writeProperty(Property.of(key, converter.apply(value)));

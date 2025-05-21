@@ -67,9 +67,11 @@ public class Properties {
 	 * @param property The property to copy
 	 * @param subgroup The subgroup to remove from the key
 	 * @return The copied property with the subgroup removed from the key
+	 * @throws NullPointerException If the property is null
 	 * @throws IllegalArgumentException If the property is not part of the specified subgroup
 	 */
 	private static @NotNull Property copyPropertyAndRemoveGroup(@NotNull Property property, @Nullable String subgroup) {
+		Objects.requireNonNull(property, "Property must not be null");
 		if (!property.isPartOfGroup(subgroup)) {
 			throw new IllegalArgumentException("Property '" + property.getKey() + "' is not part of subgroup '" + subgroup + "'");
 		}

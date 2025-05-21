@@ -343,7 +343,6 @@ class StringUtilsTest {
 		assertArrayEquals(new String[] { "a\\:b", "c", "d\\:e" }, StringUtils.splitNotEscaped("a\\:b:c:d\\:e", ':'));
 	}
 	
-	
 	@Test
 	void extract() {
 		assertDoesNotThrow(() -> StringUtils.extract(null, (String) null));

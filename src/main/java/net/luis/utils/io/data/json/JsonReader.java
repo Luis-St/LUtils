@@ -349,7 +349,7 @@ public class JsonReader implements AutoCloseable {
 			return new JsonPrimitive(true);
 		} else {
 			String value = this.reader.read(5);
-			if (this.config.strict() ? !"false".equals(value)  : !"false".equalsIgnoreCase(value)) {
+			if (this.config.strict() ? !"false".equals(value) : !"false".equalsIgnoreCase(value)) {
 				throw new JsonSyntaxException("Invalid json boolean, expected 'false' but got: '" + value + "'");
 			}
 			return new JsonPrimitive(false);
