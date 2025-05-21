@@ -27,34 +27,74 @@ import org.jetbrains.annotations.*;
 import java.util.*;
 
 /**
+ * A class that reads tokens from a string input based on defined token definitions.<br>
+ * It processes the input string, identifies tokens, and returns a list of tokens.<br>
+ * It handles escape sequences and allows for custom token definitions and separators.<br>
  *
  * @author Luis-St
- *
  */
-
 public class TokenReader {
 	
+	/**
+	 * The set of token definitions used to identify tokens in the input string.<br>
+	 */
 	private final Set<TokenDefinition> definitions;
+	/**
+	 * The set of allowed characters that can be part of tokens.<br>
+	 */
 	private final Set<Character> allowedChars;
+	/**
+	 * The set of characters that are considered as separators in the input string.<br>
+	 */
 	private final Set<Character> separators;
 	
+	/**
+	 * Constructs a new token reader with the specified token definitions, allowed characters, and separators.<br>
+	 * The characters '\\' and '\n' are added to the set of separators.<br>
+	 * The list of separators is added to the list of allowed characters to ensure they are valid.<br>
+	 * @param definitions The set of token definitions
+	 * @param allowedChars The set of allowed characters
+	 * @param separators The set of separators
+	 * @throws NullPointerException If any of the parameters are null
+	 * @throws IllegalArgumentException If the definitions contain the word token definition, or if the allowed characters or separators are empty
+	 */
 	public TokenReader(@NotNull Set<TokenDefinition> definitions, @NotNull Set<Character> allowedChars, @NotNull Set<Character> separators) {
 		this.definitions = new HashSet<>(Objects.requireNonNull(definitions, "Token definitions must not be null"));
 		this.allowedChars = new HashSet<>(Objects.requireNonNull(allowedChars, "Allowed characters must not be null"));
 		this.separators = new HashSet<>(Objects.requireNonNull(separators, "Separators must not be null"));
 		
+		if (this.definitions.contains(WordTokenDefinition.INSTANCE)) {
+			throw new IllegalArgumentException("Word token definition must not be part of the definitions");
+		}
+		if (this.allowedChars.isEmpty()) {
+			throw new IllegalArgumentException("Allowed characters must not be empty");
+		}
+		if (this.separators.isEmpty()) {
+			throw new IllegalArgumentException("Separators must not be empty");
+		}
+		
 		this.separators.addAll(Arrays.asList('\\', '\n'));
 		this.allowedChars.addAll(this.separators);
 	}
 	
+	/**
+	 * Reads tokens from the input string and returns a list of tokens.<br>
+	 * It processes the input string, identifies tokens based on the defined token definitions, and handles escape sequences.<br>
+	 * @param input The input string to read tokens from
+	 * @return An unmodifiable list of tokens read from the input string
+	 * @throws NullPointerException If the input string is null
+	 * @throws IllegalStateException If an undefined character is encountered in the input string
+	 * @see SimpleToken
+	 * @see EscapedToken
+	 */
 	public @NotNull @Unmodifiable List<Token> readTokens(@NotNull String input) {
 		Objects.requireNonNull(input, "Input string must not be null");
 		List<Token> tokens = Lists.newArrayList();
 		
 		boolean escape = false;
 		StringBuilder currentWord = new StringBuilder();
-		PositionTracker current = new PositionTracker(0, 0, 0);
-		PositionTracker wordStart = new PositionTracker(0, 0, 0);
+		PositionTracker current = new PositionTracker();
+		PositionTracker wordStart = new PositionTracker();
 		while (current.position < input.length()) {
 			char c = input.charAt(current.position);
 			
@@ -112,6 +152,16 @@ public class TokenReader {
 		return List.copyOf(tokens);
 	}
 	
+	/**
+	 * Adds a token to the list of tokens.<br>
+	 * It uses the token definitions to determine the type of token and creates a new token object.<br>
+	 * If no matching definition is found, a word token is created.<br>
+	 * @param tokens The list of tokens to add the new token to
+	 * @param word The word to be added as a token
+	 * @param startPosition The start position of the token in the input string
+	 * @param endPosition The end position of the token in the input string
+	 * @throws NullPointerException If any of the parameters are null
+	 */
 	private void addToken(@NotNull List<Token> tokens, @NotNull String word, @NotNull TokenPosition startPosition, @NotNull TokenPosition endPosition) {
 		Objects.requireNonNull(tokens, "Token list must not be null");
 		Objects.requireNonNull(word, "Word must not be null");
@@ -121,34 +171,61 @@ public class TokenReader {
 	}
 	
 	//region Internal
+	
+	/**
+	 * A class that tracks the position of the current character in the input string.<br>
+	 * It keeps track of the line number, character position, and character index in the line.<br>
+	 */
 	private static final class PositionTracker {
 		
+		/**
+		 * The line number of the current character in the input string.<br>
+		 */
 		private int line;
+		/**
+		 * The index of the current character in the input string.<br>
+		 */
 		private int position;
+		/**
+		 * The index of the current character in the line.<br>
+		 */
 		private int charInLine;
 		
-		private PositionTracker(int line, int position, int charInLine) {
-			this.line = line;
-			this.position = position;
-			this.charInLine = charInLine;
-		}
-		
+		/**
+		 * Counts a new character in the input string.<br>
+		 * It increments the position and character index.<br>
+		 */
 		private void increment() {
 			this.position++;
 			this.charInLine++;
 		}
 		
+		/**
+		 * Counts a new line in the input string.<br>
+		 * It increments the position and character index, and resets the character in line index to 0.<br>
+		 */
 		private void newLine() {
 			this.increment();
 			this.charInLine = 0;
 		}
 		
+		/**
+		 * Copies the position from another position tracker.<br>
+		 * It sets the line number, character position, and character index to the values of the other position tracker.<br>
+		 * @param other The other position tracker to copy from
+		 * @throws NullPointerException If the other position tracker is null
+		 */
 		private void copyFrom(@NotNull PositionTracker other) {
+			Objects.requireNonNull(other, "Position tracker must not be null");
 			this.line = other.line;
 			this.position = other.position;
 			this.charInLine = other.charInLine;
 		}
 		
+		/**
+		 * Creates a new token position based on the current position tracker.<br>
+		 * @return A new token position
+		 */
 		private @NotNull TokenPosition toTokenPosition() {
 			return new TokenPosition(this.line, this.charInLine, this.position);
 		}
