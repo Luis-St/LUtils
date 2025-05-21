@@ -26,7 +26,6 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 
-
 /**
  * A functional interface representing a rule for matching tokens in a list.<br>
  * It defines a method to match tokens starting from a given index and returns a {@link TokenRuleMatch} if successful.<br>

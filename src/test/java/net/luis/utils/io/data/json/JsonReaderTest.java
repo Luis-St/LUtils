@@ -126,7 +126,7 @@ class JsonReaderTest {
 		assertEquals(new JsonPrimitive("value"), ((JsonObject) object).get("key"));
 		
 		JsonReader advancedObjectReader = new JsonReader("{\"key\": [1, 2, 3]}");
-		JsonElement advancedObject= advancedObjectReader.readJson();
+		JsonElement advancedObject = advancedObjectReader.readJson();
 		
 		assertInstanceOf(JsonObject.class, advancedObject);
 		assertEquals(1, ((JsonObject) advancedObject).size());
@@ -236,7 +236,7 @@ class JsonReaderTest {
 		assertEquals(new JsonPrimitive("value"), ((JsonObject) object).get("key"));
 		
 		JsonReader advancedObjectReader = new JsonReader("{\"key\": [1, 2, 3]}");
-		JsonElement advancedObject= advancedObjectReader.readJson();
+		JsonElement advancedObject = advancedObjectReader.readJson();
 		
 		assertInstanceOf(JsonObject.class, advancedObject);
 		assertEquals(1, ((JsonObject) advancedObject).size());

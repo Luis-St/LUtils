@@ -2,7 +2,7 @@ name: Compile, test and build documentation on pull request
 
 on:
   pull_request:
-    types: [opened, synchronize, reopened, ready_for_review]
+    types: [ opened, synchronize, reopened, ready_for_review ]
 
 permissions:
   contents: read

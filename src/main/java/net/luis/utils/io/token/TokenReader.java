@@ -22,7 +22,8 @@ import com.google.common.collect.Lists;
 import net.luis.utils.io.token.definition.TokenDefinition;
 import net.luis.utils.io.token.definition.WordTokenDefinition;
 import net.luis.utils.io.token.tokens.*;
-import org.jetbrains.annotations.*;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Unmodifiable;
 
 import java.util.*;
 
@@ -102,7 +103,7 @@ public class TokenReader {
 				throw new IllegalStateException("Undefined character at line " + current.line + ", character " + current.charInLine + ": '" + c + "'");
 			}
 			
-			if (escape)  {
+			if (escape) {
 				tokens.add(new EscapedToken(TokenDefinition.ofEscaped(c), "\\" + c, wordStart.toTokenPosition(), current.toTokenPosition()));
 				escape = false;
 				current.increment();

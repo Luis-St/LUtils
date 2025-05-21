@@ -35,13 +35,13 @@ class TokenRuleTest {
 	
 	@Test
 	void optional() {
-		assertInstanceOf(OptionalTokenRule.class , NUMBER_DEFINITION.optional());
+		assertInstanceOf(OptionalTokenRule.class, NUMBER_DEFINITION.optional());
 	}
 	
 	@Test
 	void repeatAtLeast() {
 		assertThrows(IllegalArgumentException.class, () -> TEST_RULE.repeatAtLeast(-1));
-		RepeatedTokenRule repeatedRule = assertInstanceOf(RepeatedTokenRule.class , TEST_RULE.repeatAtLeast(2));
+		RepeatedTokenRule repeatedRule = assertInstanceOf(RepeatedTokenRule.class, TEST_RULE.repeatAtLeast(2));
 		
 		assertEquals(2, repeatedRule.minOccurrences());
 		assertEquals(Integer.MAX_VALUE, repeatedRule.maxOccurrences());
@@ -50,7 +50,7 @@ class TokenRuleTest {
 	@Test
 	void repeatExactly() {
 		assertThrows(IllegalArgumentException.class, () -> TEST_RULE.repeatExactly(-1));
-		RepeatedTokenRule repeatedRule = assertInstanceOf(RepeatedTokenRule.class , TEST_RULE.repeatExactly(2));
+		RepeatedTokenRule repeatedRule = assertInstanceOf(RepeatedTokenRule.class, TEST_RULE.repeatExactly(2));
 		
 		assertEquals(2, repeatedRule.minOccurrences());
 		assertEquals(2, repeatedRule.maxOccurrences());
@@ -59,7 +59,7 @@ class TokenRuleTest {
 	@Test
 	void repeatAtMost() {
 		assertThrows(IllegalArgumentException.class, () -> TEST_RULE.repeatAtMost(-1));
-		RepeatedTokenRule repeatedRule = assertInstanceOf(RepeatedTokenRule.class , TEST_RULE.repeatAtMost(2));
+		RepeatedTokenRule repeatedRule = assertInstanceOf(RepeatedTokenRule.class, TEST_RULE.repeatAtMost(2));
 		
 		assertEquals(0, repeatedRule.minOccurrences());
 		assertEquals(2, repeatedRule.maxOccurrences());
@@ -67,7 +67,7 @@ class TokenRuleTest {
 	
 	@Test
 	void repeatInfinitely() {
-		RepeatedTokenRule repeatedRule = assertInstanceOf(RepeatedTokenRule.class , TEST_RULE.repeatInfinitely());
+		RepeatedTokenRule repeatedRule = assertInstanceOf(RepeatedTokenRule.class, TEST_RULE.repeatInfinitely());
 		
 		assertEquals(0, repeatedRule.minOccurrences());
 		assertEquals(Integer.MAX_VALUE, repeatedRule.maxOccurrences());
@@ -78,7 +78,7 @@ class TokenRuleTest {
 		assertThrows(IllegalArgumentException.class, () -> TEST_RULE.repeatBetween(-1, 3));
 		assertThrows(IllegalArgumentException.class, () -> TEST_RULE.repeatBetween(5, 3));
 		
-		RepeatedTokenRule repeatedRule = assertInstanceOf(RepeatedTokenRule.class , TEST_RULE.repeatBetween(2, 5));
+		RepeatedTokenRule repeatedRule = assertInstanceOf(RepeatedTokenRule.class, TEST_RULE.repeatBetween(2, 5));
 		assertEquals(2, repeatedRule.minOccurrences());
 		assertEquals(5, repeatedRule.maxOccurrences());
 	}

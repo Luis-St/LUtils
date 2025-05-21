@@ -216,33 +216,33 @@ public final class FunctionUtils {
 	 * @return A new function that caches the result for each input
 	 */
 	public static <T, U, V, R> @NotNull TriFunction<T, U, V, R> memorize(@NotNull TriFunction<T, U, V, R> function) {
-	    Objects.requireNonNull(function, "Delegate function must not be null");
-	    return new TriFunction<>() {
-	        private final Map<T, Map<U, Map<V, R>>> cache = new WeakHashMap<>();
-	        
-	        @Override
-	        public @NotNull R apply(@NotNull T first, @NotNull U second, @NotNull V third) {
-	            if (this.cache.containsKey(first)) {
-	                Map<U, Map<V, R>> secondMap = this.cache.get(first);
-	                if (secondMap.containsKey(second)) {
-	                    Map<V, R> thirdMap = secondMap.get(second);
-	                    if (thirdMap.containsKey(third)) {
-	                        return thirdMap.get(third);
-	                    }
-	                } else {
-	                    secondMap.put(second, new WeakHashMap<>());
-	                }
-	            } else {
-	                Map<U, Map<V, R>> secondMap = new WeakHashMap<>();
-	                secondMap.put(second, new WeakHashMap<>());
-	                this.cache.put(first, secondMap);
-	            }
-	            R result = function.apply(first, second, third);
-	            Objects.requireNonNull(result, "Function result must not be null");
-	            this.cache.get(first).get(second).put(third, result);
-	            return result;
-	        }
-	    };
+		Objects.requireNonNull(function, "Delegate function must not be null");
+		return new TriFunction<>() {
+			private final Map<T, Map<U, Map<V, R>>> cache = new WeakHashMap<>();
+			
+			@Override
+			public @NotNull R apply(@NotNull T first, @NotNull U second, @NotNull V third) {
+				if (this.cache.containsKey(first)) {
+					Map<U, Map<V, R>> secondMap = this.cache.get(first);
+					if (secondMap.containsKey(second)) {
+						Map<V, R> thirdMap = secondMap.get(second);
+						if (thirdMap.containsKey(third)) {
+							return thirdMap.get(third);
+						}
+					} else {
+						secondMap.put(second, new WeakHashMap<>());
+					}
+				} else {
+					Map<U, Map<V, R>> secondMap = new WeakHashMap<>();
+					secondMap.put(second, new WeakHashMap<>());
+					this.cache.put(first, secondMap);
+				}
+				R result = function.apply(first, second, third);
+				Objects.requireNonNull(result, "Function result must not be null");
+				this.cache.get(first).get(second).put(third, result);
+				return result;
+			}
+		};
 	}
 	
 	/**
@@ -258,33 +258,33 @@ public final class FunctionUtils {
 	 * @return A new function that caches the result for each input
 	 */
 	public static <T, U, V, R, X extends Throwable> @NotNull ThrowableTriFunction<T, U, V, R, X> memorizeThrowable(@NotNull ThrowableTriFunction<T, U, V, R, X> function) {
-	    Objects.requireNonNull(function, "Delegate function must not be null");
-	    return new ThrowableTriFunction<>() {
-	        private final Map<T, Map<U, Map<V, R>>> cache = new WeakHashMap<>();
-	        
-	        @Override
-	        public @NotNull R apply(@NotNull T first, @NotNull U second, @NotNull V third) throws X {
-	            if (this.cache.containsKey(first)) {
-	                Map<U, Map<V, R>> secondMap = this.cache.get(first);
-	                if (secondMap.containsKey(second)) {
-	                    Map<V, R> thirdMap = secondMap.get(second);
-	                    if (thirdMap.containsKey(third)) {
-	                        return thirdMap.get(third);
-	                    }
-	                } else {
-	                    secondMap.put(second, new WeakHashMap<>());
-	                }
-	            } else {
-	                Map<U, Map<V, R>> secondMap = new WeakHashMap<>();
-	                secondMap.put(second, new WeakHashMap<>());
-	                this.cache.put(first, secondMap);
-	            }
-	            R result = function.apply(first, second, third);
-	            Objects.requireNonNull(result, "Function result must not be null");
-	            this.cache.get(first).get(second).put(third, result);
-	            return result;
-	        }
-	    };
+		Objects.requireNonNull(function, "Delegate function must not be null");
+		return new ThrowableTriFunction<>() {
+			private final Map<T, Map<U, Map<V, R>>> cache = new WeakHashMap<>();
+			
+			@Override
+			public @NotNull R apply(@NotNull T first, @NotNull U second, @NotNull V third) throws X {
+				if (this.cache.containsKey(first)) {
+					Map<U, Map<V, R>> secondMap = this.cache.get(first);
+					if (secondMap.containsKey(second)) {
+						Map<V, R> thirdMap = secondMap.get(second);
+						if (thirdMap.containsKey(third)) {
+							return thirdMap.get(third);
+						}
+					} else {
+						secondMap.put(second, new WeakHashMap<>());
+					}
+				} else {
+					Map<U, Map<V, R>> secondMap = new WeakHashMap<>();
+					secondMap.put(second, new WeakHashMap<>());
+					this.cache.put(first, secondMap);
+				}
+				R result = function.apply(first, second, third);
+				Objects.requireNonNull(result, "Function result must not be null");
+				this.cache.get(first).get(second).put(third, result);
+				return result;
+			}
+		};
 	}
 	
 	/**
@@ -300,42 +300,42 @@ public final class FunctionUtils {
 	 * @return A new function that caches the result for each input
 	 */
 	public static <T, U, V, W, R> @NotNull QuadFunction<T, U, V, W, R> memorize(@NotNull QuadFunction<T, U, V, W, R> function) {
-	    Objects.requireNonNull(function, "Delegate function must not be null");
-	    return new QuadFunction<>() {
-	        private final Map<T, Map<U, Map<V, Map<W, R>>>> cache = new WeakHashMap<>();
-	        
-	        @Override
-	        public @NotNull R apply(@NotNull T first, @NotNull U second, @NotNull V third, @NotNull W fourth) {
-	            if (this.cache.containsKey(first)) {
-	                Map<U, Map<V, Map<W, R>>> secondMap = this.cache.get(first);
-	                if (secondMap.containsKey(second)) {
-	                    Map<V, Map<W, R>> thirdMap = secondMap.get(second);
-	                    if (thirdMap.containsKey(third)) {
-	                        Map<W, R> fourthMap = thirdMap.get(third);
-	                        if (fourthMap.containsKey(fourth)) {
-	                            return fourthMap.get(fourth);
-	                        }
-	                    } else {
-	                        thirdMap.put(third, new WeakHashMap<>());
-	                    }
-	                } else {
-	                    Map<V, Map<W, R>> thirdMap = new WeakHashMap<>();
-	                    thirdMap.put(third, new WeakHashMap<>());
-	                    secondMap.put(second, thirdMap);
-	                }
-	            } else {
-	                Map<U, Map<V, Map<W, R>>> secondMap = new WeakHashMap<>();
-	                Map<V, Map<W, R>> thirdMap = new WeakHashMap<>();
-	                thirdMap.put(third, new WeakHashMap<>());
-	                secondMap.put(second, thirdMap);
-	                this.cache.put(first, secondMap);
-	            }
-	            R result = function.apply(first, second, third, fourth);
-	            Objects.requireNonNull(result, "Function result must not be null");
-	            this.cache.get(first).get(second).get(third).put(fourth, result);
-	            return result;
-	        }
-	    };
+		Objects.requireNonNull(function, "Delegate function must not be null");
+		return new QuadFunction<>() {
+			private final Map<T, Map<U, Map<V, Map<W, R>>>> cache = new WeakHashMap<>();
+			
+			@Override
+			public @NotNull R apply(@NotNull T first, @NotNull U second, @NotNull V third, @NotNull W fourth) {
+				if (this.cache.containsKey(first)) {
+					Map<U, Map<V, Map<W, R>>> secondMap = this.cache.get(first);
+					if (secondMap.containsKey(second)) {
+						Map<V, Map<W, R>> thirdMap = secondMap.get(second);
+						if (thirdMap.containsKey(third)) {
+							Map<W, R> fourthMap = thirdMap.get(third);
+							if (fourthMap.containsKey(fourth)) {
+								return fourthMap.get(fourth);
+							}
+						} else {
+							thirdMap.put(third, new WeakHashMap<>());
+						}
+					} else {
+						Map<V, Map<W, R>> thirdMap = new WeakHashMap<>();
+						thirdMap.put(third, new WeakHashMap<>());
+						secondMap.put(second, thirdMap);
+					}
+				} else {
+					Map<U, Map<V, Map<W, R>>> secondMap = new WeakHashMap<>();
+					Map<V, Map<W, R>> thirdMap = new WeakHashMap<>();
+					thirdMap.put(third, new WeakHashMap<>());
+					secondMap.put(second, thirdMap);
+					this.cache.put(first, secondMap);
+				}
+				R result = function.apply(first, second, third, fourth);
+				Objects.requireNonNull(result, "Function result must not be null");
+				this.cache.get(first).get(second).get(third).put(fourth, result);
+				return result;
+			}
+		};
 	}
 	
 	/**
@@ -352,41 +352,41 @@ public final class FunctionUtils {
 	 * @return A new function that caches the result for each input
 	 */
 	public static <T, U, V, W, R, X extends Throwable> @NotNull ThrowableQuadFunction<T, U, V, W, R, X> memorizeThrowable(@NotNull ThrowableQuadFunction<T, U, V, W, R, X> function) {
-	    Objects.requireNonNull(function, "Delegate function must not be null");
-	    return new ThrowableQuadFunction<>() {
-	        private final Map<T, Map<U, Map<V, Map<W, R>>>> cache = new WeakHashMap<>();
-	        
-	        @Override
-	        public @NotNull R apply(@NotNull T first, @NotNull U second, @NotNull V third, @NotNull W fourth) throws X {
-	            if (this.cache.containsKey(first)) {
-	                Map<U, Map<V, Map<W, R>>> secondMap = this.cache.get(first);
-	                if (secondMap.containsKey(second)) {
-	                    Map<V, Map<W, R>> thirdMap = secondMap.get(second);
-	                    if (thirdMap.containsKey(third)) {
-	                        Map<W, R> fourthMap = thirdMap.get(third);
-	                        if (fourthMap.containsKey(fourth)) {
-	                            return fourthMap.get(fourth);
-	                        }
-	                    } else {
-	                        thirdMap.put(third, new WeakHashMap<>());
-	                    }
-	                } else {
-	                    Map<V, Map<W, R>> thirdMap = new WeakHashMap<>();
-	                    thirdMap.put(third, new WeakHashMap<>());
-	                    secondMap.put(second, thirdMap);
-	                }
-	            } else {
-	                Map<U, Map<V, Map<W, R>>> secondMap = new WeakHashMap<>();
-	                Map<V, Map<W, R>> thirdMap = new WeakHashMap<>();
-	                thirdMap.put(third, new WeakHashMap<>());
-	                secondMap.put(second, thirdMap);
-	                this.cache.put(first, secondMap);
-	            }
-	            R result = function.apply(first, second, third, fourth);
-	            Objects.requireNonNull(result, "Function result must not be null");
-	            this.cache.get(first).get(second).get(third).put(fourth, result);
-	            return result;
-	        }
-	    };
+		Objects.requireNonNull(function, "Delegate function must not be null");
+		return new ThrowableQuadFunction<>() {
+			private final Map<T, Map<U, Map<V, Map<W, R>>>> cache = new WeakHashMap<>();
+			
+			@Override
+			public @NotNull R apply(@NotNull T first, @NotNull U second, @NotNull V third, @NotNull W fourth) throws X {
+				if (this.cache.containsKey(first)) {
+					Map<U, Map<V, Map<W, R>>> secondMap = this.cache.get(first);
+					if (secondMap.containsKey(second)) {
+						Map<V, Map<W, R>> thirdMap = secondMap.get(second);
+						if (thirdMap.containsKey(third)) {
+							Map<W, R> fourthMap = thirdMap.get(third);
+							if (fourthMap.containsKey(fourth)) {
+								return fourthMap.get(fourth);
+							}
+						} else {
+							thirdMap.put(third, new WeakHashMap<>());
+						}
+					} else {
+						Map<V, Map<W, R>> thirdMap = new WeakHashMap<>();
+						thirdMap.put(third, new WeakHashMap<>());
+						secondMap.put(second, thirdMap);
+					}
+				} else {
+					Map<U, Map<V, Map<W, R>>> secondMap = new WeakHashMap<>();
+					Map<V, Map<W, R>> thirdMap = new WeakHashMap<>();
+					thirdMap.put(third, new WeakHashMap<>());
+					secondMap.put(second, thirdMap);
+					this.cache.put(first, secondMap);
+				}
+				R result = function.apply(first, second, third, fourth);
+				Objects.requireNonNull(result, "Function result must not be null");
+				this.cache.get(first).get(second).get(third).put(fourth, result);
+				return result;
+			}
+		};
 	}
 }

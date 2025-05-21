@@ -61,7 +61,6 @@ class TokenReaderTest {
 		ALLOWED_CHARS
 	);
 	
-	
 	@Test
 	void constructor() {
 		assertThrows(NullPointerException.class, () -> new TokenReader(null, ALLOWED_CHARS, SEPARATORS));
@@ -86,7 +85,7 @@ class TokenReaderTest {
 		assertEquals(OPEN_PAREN, parenTokens.get(3).definition());
 		assertEquals(CLOSE_PAREN, parenTokens.get(4).definition());
 		assertEquals(CLOSE_PAREN, parenTokens.get(5).definition());
-	
+		
 		List<Token> numberTokens = reader.readTokens("1234567890");
 		assertEquals(10, numberTokens.size());
 		assertEquals(ONE, numberTokens.get(0).definition());

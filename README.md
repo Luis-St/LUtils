@@ -70,7 +70,7 @@ The library provides the following packages:
     * `util`
 * `exception`
 * `function`
-  * `throwable`
+    * `throwable`
 * `io`
     * `codec` (since 7.0.0)
         * `decoder`
