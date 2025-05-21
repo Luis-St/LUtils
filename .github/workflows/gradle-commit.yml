@@ -1,8 +1,6 @@
-name: Compile, test, build documentation and publish to maven on release
+name: Compile and test on commit
 
-on:
-  release:
-    types: [ published ]
+on: [ push ]
 
 permissions:
   contents: read
@@ -58,45 +56,3 @@ jobs:
         uses: gradle/actions/setup-gradle@v4.2.1
       - name: 'Test with Gradle'
         run: ./gradlew test
-  build-docs:
-    needs: test
-    runs-on: ubuntu-latest
-    steps:
-      - name: 'Checkout repository'
-        uses: actions/checkout@v4.2.2
-      - name: 'Set up JDK 21'
-        uses: actions/setup-java@v4.5.0
-        with:
-          distribution: 'temurin'
-          java-version: '21'
-      - name: 'Grant Permission to Gradle'
-        run: chmod +x gradlew
-      - name: 'Setup Gradle'
-        uses: gradle/actions/setup-gradle@v4.2.1
-      - name: 'Build documentation with Gradle'
-        run: ./gradlew javadoc
-        with:
-          name: javadoc-documentation
-          path: build/docs/javadoc/
-          retention-days: 30
-  publish:
-    needs: build-docs
-    runs-on: ubuntu-latest
-    environment: Default
-    env:
-      MAVEN_USERNAME: ${{ secrets.MAVEN_USERNAME }}
-      MAVEN_PASSWORD: ${{ secrets.MAVEN_PASSWORD }}
-    steps:
-      - name: 'Checkout repository'
-        uses: actions/checkout@v4.2.2
-      - name: 'Set up JDK 21'
-        uses: actions/setup-java@v4.5.0
-        with:
-          distribution: 'temurin'
-          java-version: '21'
-      - name: 'Grant Permission to Gradle'
-        run: chmod +x gradlew
-      - name: 'Setup Gradle'
-        uses: gradle/actions/setup-gradle@v4.2.1
-      - name: 'Publish with Gradle'
-        run: ./gradlew publish
