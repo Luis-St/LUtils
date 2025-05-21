@@ -1,4 +1,3 @@
-val licenser: String by project
 val googleGuava: String by project
 val log4jAPI: String by project
 val log4jCore: String by project
@@ -87,7 +86,7 @@ publishing {
 		create<MavenPublication>("mavenJava") {
 			groupId = "net.luis"
 			artifactId = "LUtils"
-			version = "7.3.0"
+			version = "7.4.0"
 			artifact(tasks.named<Jar>("jar"))
 			artifact(tasks.named<Jar>("sourcesJar"))
 			artifact(tasks.named<Jar>("javadocJar"))
