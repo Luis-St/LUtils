@@ -47,7 +47,10 @@ import java.util.stream.Stream;
  * @param name The name of the priority
  * @param priority The priority value
  */
-public record Priority(@NotNull String name, long priority) implements EnumLike<Priority> {
+public record Priority(
+	@NotNull String name,
+	long priority
+) implements EnumLike<Priority> {
 	
 	//region Internal
 	

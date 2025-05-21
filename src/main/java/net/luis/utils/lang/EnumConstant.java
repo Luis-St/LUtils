@@ -32,7 +32,11 @@ import java.util.Objects;
  * @param value The value of the enum constant
  * @param <T> The type of the enum constant
  */
-public record EnumConstant<T>(@NotNull String name, int ordinal, @NotNull T value) {
+public record EnumConstant<T>(
+	@NotNull String name,
+	int ordinal,
+	@NotNull T value
+) {
 	
 	/**
 	 * Constructs a new enum constant with the given name, ordinal and value.<br>

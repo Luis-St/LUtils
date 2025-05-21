@@ -112,8 +112,8 @@ public final class FileUtils {
 	 * getExtension(null) -> ""
 	 * getExtension("") -> ""
 	 * getExtension("/") -> ""
-	 * getExtension("/foo.json") -> ".json"
-	 * getExtension("/bar/foo.json") -> ".json"
+	 * getExtension("/foo.json") -> "json"
+	 * getExtension("/bar/foo.json") -> "json"
 	 * }</pre>
 	 * @param file The file to get the extension of
 	 * @return The extension of the file or an empty string if the file has no extension

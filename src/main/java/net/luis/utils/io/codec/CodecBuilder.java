@@ -22,8 +22,6 @@ import net.luis.utils.io.codec.group.function.*;
 import net.luis.utils.io.codec.group.grouper.*;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.Objects;
-
 /**
  * A utility class that provides methods to create codec groupers that group multiple codecs into a single codec.<br>
  *
@@ -53,7 +51,6 @@ public final class CodecBuilder {
 	public static <CI1, O> @NotNull CodecGrouper1<CI1, O> group(
 		@NotNull ConfiguredCodec<CI1, O> codec1
 	) {
-		Objects.requireNonNull(codec1, "Configured codec #1 must not be null");
 		return new CodecGrouper1<>(codec1);
 	}
 	
@@ -75,8 +72,6 @@ public final class CodecBuilder {
 		@NotNull ConfiguredCodec<CI1, O> codec1,
 		@NotNull ConfiguredCodec<CI2, O> codec2
 	) {
-		Objects.requireNonNull(codec1, "Configured codec #1 must not be null");
-		Objects.requireNonNull(codec2, "Configured codec #2 must not be null");
 		return new CodecGrouper2<>(codec1, codec2);
 	}
 	
@@ -101,9 +96,6 @@ public final class CodecBuilder {
 		@NotNull ConfiguredCodec<CI2, O> codec2,
 		@NotNull ConfiguredCodec<CI3, O> codec3
 	) {
-		Objects.requireNonNull(codec1, "Configured codec #1 must not be null");
-		Objects.requireNonNull(codec2, "Configured codec #2 must not be null");
-		Objects.requireNonNull(codec3, "Configured codec #3 must not be null");
 		return new CodecGrouper3<>(codec1, codec2, codec3);
 	}
 	
@@ -131,12 +123,6 @@ public final class CodecBuilder {
 		@NotNull ConfiguredCodec<CI3, O> codec3,
 		@NotNull ConfiguredCodec<CI4, O> codec4
 	) {
-		//region Parameter validation
-		Objects.requireNonNull(codec1, "Configured codec #1 must not be null");
-		Objects.requireNonNull(codec2, "Configured codec #2 must not be null");
-		Objects.requireNonNull(codec3, "Configured codec #3 must not be null");
-		Objects.requireNonNull(codec4, "Configured codec #4 must not be null");
-		//endregion
 		return new CodecGrouper4<>(codec1, codec2, codec3, codec4);
 	}
 	
@@ -167,13 +153,6 @@ public final class CodecBuilder {
 		@NotNull ConfiguredCodec<CI4, O> codec4,
 		@NotNull ConfiguredCodec<CI5, O> codec5
 	) {
-		//region Parameter validation
-		Objects.requireNonNull(codec1, "Configured codec #1 must not be null");
-		Objects.requireNonNull(codec2, "Configured codec #2 must not be null");
-		Objects.requireNonNull(codec3, "Configured codec #3 must not be null");
-		Objects.requireNonNull(codec4, "Configured codec #4 must not be null");
-		Objects.requireNonNull(codec5, "Configured codec #5 must not be null");
-		//endregion
 		return new CodecGrouper5<>(codec1, codec2, codec3, codec4, codec5);
 	}
 	
@@ -207,14 +186,6 @@ public final class CodecBuilder {
 		@NotNull ConfiguredCodec<CI5, O> codec5,
 		@NotNull ConfiguredCodec<CI6, O> codec6
 	) {
-		//region Parameter validation
-		Objects.requireNonNull(codec1, "Configured codec #1 must not be null");
-		Objects.requireNonNull(codec2, "Configured codec #2 must not be null");
-		Objects.requireNonNull(codec3, "Configured codec #3 must not be null");
-		Objects.requireNonNull(codec4, "Configured codec #4 must not be null");
-		Objects.requireNonNull(codec5, "Configured codec #5 must not be null");
-		Objects.requireNonNull(codec6, "Configured codec #6 must not be null");
-		//endregion
 		return new CodecGrouper6<>(codec1, codec2, codec3, codec4, codec5, codec6);
 	}
 	
@@ -251,15 +222,6 @@ public final class CodecBuilder {
 		@NotNull ConfiguredCodec<CI6, O> codec6,
 		@NotNull ConfiguredCodec<CI7, O> codec7
 	) {
-		//region Parameter validation
-		Objects.requireNonNull(codec1, "Configured codec #1 must not be null");
-		Objects.requireNonNull(codec2, "Configured codec #2 must not be null");
-		Objects.requireNonNull(codec3, "Configured codec #3 must not be null");
-		Objects.requireNonNull(codec4, "Configured codec #4 must not be null");
-		Objects.requireNonNull(codec5, "Configured codec #5 must not be null");
-		Objects.requireNonNull(codec6, "Configured codec #6 must not be null");
-		Objects.requireNonNull(codec7, "Configured codec #7 must not be null");
-		//endregion
 		return new CodecGrouper7<>(codec1, codec2, codec3, codec4, codec5, codec6, codec7);
 	}
 	
@@ -299,16 +261,6 @@ public final class CodecBuilder {
 		@NotNull ConfiguredCodec<CI7, O> codec7,
 		@NotNull ConfiguredCodec<CI8, O> codec8
 	) {
-		//region Parameter validation
-		Objects.requireNonNull(codec1, "Configured codec #1 must not be null");
-		Objects.requireNonNull(codec2, "Configured codec #2 must not be null");
-		Objects.requireNonNull(codec3, "Configured codec #3 must not be null");
-		Objects.requireNonNull(codec4, "Configured codec #4 must not be null");
-		Objects.requireNonNull(codec5, "Configured codec #5 must not be null");
-		Objects.requireNonNull(codec6, "Configured codec #6 must not be null");
-		Objects.requireNonNull(codec7, "Configured codec #7 must not be null");
-		Objects.requireNonNull(codec8, "Configured codec #8 must not be null");
-		//endregion
 		return new CodecGrouper8<>(codec1, codec2, codec3, codec4, codec5, codec6, codec7, codec8);
 	}
 	
@@ -351,17 +303,6 @@ public final class CodecBuilder {
 		@NotNull ConfiguredCodec<CI8, O> codec8,
 		@NotNull ConfiguredCodec<CI9, O> codec9
 	) {
-		//region Parameter validation
-		Objects.requireNonNull(codec1, "Configured codec #1 must not be null");
-		Objects.requireNonNull(codec2, "Configured codec #2 must not be null");
-		Objects.requireNonNull(codec3, "Configured codec #3 must not be null");
-		Objects.requireNonNull(codec4, "Configured codec #4 must not be null");
-		Objects.requireNonNull(codec5, "Configured codec #5 must not be null");
-		Objects.requireNonNull(codec6, "Configured codec #6 must not be null");
-		Objects.requireNonNull(codec7, "Configured codec #7 must not be null");
-		Objects.requireNonNull(codec8, "Configured codec #8 must not be null");
-		Objects.requireNonNull(codec9, "Configured codec #9 must not be null");
-		//endregion
 		return new CodecGrouper9<>(codec1, codec2, codec3, codec4, codec5, codec6, codec7, codec8, codec9);
 	}
 	
@@ -407,18 +348,6 @@ public final class CodecBuilder {
 		@NotNull ConfiguredCodec<CI9, O> codec9,
 		@NotNull ConfiguredCodec<CI10, O> codec10
 	) {
-		//region Parameter validation
-		Objects.requireNonNull(codec1, "Configured codec #1 must not be null");
-		Objects.requireNonNull(codec2, "Configured codec #2 must not be null");
-		Objects.requireNonNull(codec3, "Configured codec #3 must not be null");
-		Objects.requireNonNull(codec4, "Configured codec #4 must not be null");
-		Objects.requireNonNull(codec5, "Configured codec #5 must not be null");
-		Objects.requireNonNull(codec6, "Configured codec #6 must not be null");
-		Objects.requireNonNull(codec7, "Configured codec #7 must not be null");
-		Objects.requireNonNull(codec8, "Configured codec #8 must not be null");
-		Objects.requireNonNull(codec9, "Configured codec #9 must not be null");
-		Objects.requireNonNull(codec10, "Configured codec #10 must not be null");
-		//endregion
 		return new CodecGrouper10<>(codec1, codec2, codec3, codec4, codec5, codec6, codec7, codec8, codec9, codec10);
 	}
 	
@@ -467,19 +396,6 @@ public final class CodecBuilder {
 		@NotNull ConfiguredCodec<CI10, O> codec10,
 		@NotNull ConfiguredCodec<CI11, O> codec11
 	) {
-		//region Parameter validation
-		Objects.requireNonNull(codec1, "Configured codec #1 must not be null");
-		Objects.requireNonNull(codec2, "Configured codec #2 must not be null");
-		Objects.requireNonNull(codec3, "Configured codec #3 must not be null");
-		Objects.requireNonNull(codec4, "Configured codec #4 must not be null");
-		Objects.requireNonNull(codec5, "Configured codec #5 must not be null");
-		Objects.requireNonNull(codec6, "Configured codec #6 must not be null");
-		Objects.requireNonNull(codec7, "Configured codec #7 must not be null");
-		Objects.requireNonNull(codec8, "Configured codec #8 must not be null");
-		Objects.requireNonNull(codec9, "Configured codec #9 must not be null");
-		Objects.requireNonNull(codec10, "Configured codec #10 must not be null");
-		Objects.requireNonNull(codec11, "Configured codec #11 must not be null");
-		//endregion
 		return new CodecGrouper11<>(codec1, codec2, codec3, codec4, codec5, codec6, codec7, codec8, codec9, codec10, codec11);
 	}
 	
@@ -531,20 +447,6 @@ public final class CodecBuilder {
 		@NotNull ConfiguredCodec<CI11, O> codec11,
 		@NotNull ConfiguredCodec<CI12, O> codec12
 	) {
-		//region Parameter validation
-		Objects.requireNonNull(codec1, "Configured codec #1 must not be null");
-		Objects.requireNonNull(codec2, "Configured codec #2 must not be null");
-		Objects.requireNonNull(codec3, "Configured codec #3 must not be null");
-		Objects.requireNonNull(codec4, "Configured codec #4 must not be null");
-		Objects.requireNonNull(codec5, "Configured codec #5 must not be null");
-		Objects.requireNonNull(codec6, "Configured codec #6 must not be null");
-		Objects.requireNonNull(codec7, "Configured codec #7 must not be null");
-		Objects.requireNonNull(codec8, "Configured codec #8 must not be null");
-		Objects.requireNonNull(codec9, "Configured codec #9 must not be null");
-		Objects.requireNonNull(codec10, "Configured codec #10 must not be null");
-		Objects.requireNonNull(codec11, "Configured codec #11 must not be null");
-		Objects.requireNonNull(codec12, "Configured codec #12 must not be null");
-		//endregion
 		return new CodecGrouper12<>(codec1, codec2, codec3, codec4, codec5, codec6, codec7, codec8, codec9, codec10, codec11, codec12);
 	}
 	
@@ -599,21 +501,6 @@ public final class CodecBuilder {
 		@NotNull ConfiguredCodec<CI12, O> codec12,
 		@NotNull ConfiguredCodec<CI13, O> codec13
 	) {
-		//region Parameter validation
-		Objects.requireNonNull(codec1, "Configured codec #1 must not be null");
-		Objects.requireNonNull(codec2, "Configured codec #2 must not be null");
-		Objects.requireNonNull(codec3, "Configured codec #3 must not be null");
-		Objects.requireNonNull(codec4, "Configured codec #4 must not be null");
-		Objects.requireNonNull(codec5, "Configured codec #5 must not be null");
-		Objects.requireNonNull(codec6, "Configured codec #6 must not be null");
-		Objects.requireNonNull(codec7, "Configured codec #7 must not be null");
-		Objects.requireNonNull(codec8, "Configured codec #8 must not be null");
-		Objects.requireNonNull(codec9, "Configured codec #9 must not be null");
-		Objects.requireNonNull(codec10, "Configured codec #10 must not be null");
-		Objects.requireNonNull(codec11, "Configured codec #11 must not be null");
-		Objects.requireNonNull(codec12, "Configured codec #12 must not be null");
-		Objects.requireNonNull(codec13, "Configured codec #13 must not be null");
-		//endregion
 		return new CodecGrouper13<>(codec1, codec2, codec3, codec4, codec5, codec6, codec7, codec8, codec9, codec10, codec11, codec12, codec13);
 	}
 	
@@ -671,22 +558,6 @@ public final class CodecBuilder {
 		@NotNull ConfiguredCodec<CI13, O> codec13,
 		@NotNull ConfiguredCodec<CI14, O> codec14
 	) {
-		//region Parameter validation
-		Objects.requireNonNull(codec1, "Configured codec #1 must not be null");
-		Objects.requireNonNull(codec2, "Configured codec #2 must not be null");
-		Objects.requireNonNull(codec3, "Configured codec #3 must not be null");
-		Objects.requireNonNull(codec4, "Configured codec #4 must not be null");
-		Objects.requireNonNull(codec5, "Configured codec #5 must not be null");
-		Objects.requireNonNull(codec6, "Configured codec #6 must not be null");
-		Objects.requireNonNull(codec7, "Configured codec #7 must not be null");
-		Objects.requireNonNull(codec8, "Configured codec #8 must not be null");
-		Objects.requireNonNull(codec9, "Configured codec #9 must not be null");
-		Objects.requireNonNull(codec10, "Configured codec #10 must not be null");
-		Objects.requireNonNull(codec11, "Configured codec #11 must not be null");
-		Objects.requireNonNull(codec12, "Configured codec #12 must not be null");
-		Objects.requireNonNull(codec13, "Configured codec #13 must not be null");
-		Objects.requireNonNull(codec14, "Configured codec #14 must not be null");
-		//endregion
 		return new CodecGrouper14<>(codec1, codec2, codec3, codec4, codec5, codec6, codec7, codec8, codec9, codec10, codec11, codec12, codec13, codec14);
 	}
 	
@@ -747,23 +618,6 @@ public final class CodecBuilder {
 		@NotNull ConfiguredCodec<CI14, O> codec14,
 		@NotNull ConfiguredCodec<CI15, O> codec15
 	) {
-		//region Parameter validation
-		Objects.requireNonNull(codec1, "Configured codec #1 must not be null");
-		Objects.requireNonNull(codec2, "Configured codec #2 must not be null");
-		Objects.requireNonNull(codec3, "Configured codec #3 must not be null");
-		Objects.requireNonNull(codec4, "Configured codec #4 must not be null");
-		Objects.requireNonNull(codec5, "Configured codec #5 must not be null");
-		Objects.requireNonNull(codec6, "Configured codec #6 must not be null");
-		Objects.requireNonNull(codec7, "Configured codec #7 must not be null");
-		Objects.requireNonNull(codec8, "Configured codec #8 must not be null");
-		Objects.requireNonNull(codec9, "Configured codec #9 must not be null");
-		Objects.requireNonNull(codec10, "Configured codec #10 must not be null");
-		Objects.requireNonNull(codec11, "Configured codec #11 must not be null");
-		Objects.requireNonNull(codec12, "Configured codec #12 must not be null");
-		Objects.requireNonNull(codec13, "Configured codec #13 must not be null");
-		Objects.requireNonNull(codec14, "Configured codec #14 must not be null");
-		Objects.requireNonNull(codec15, "Configured codec #15 must not be null");
-		//endregion
 		return new CodecGrouper15<>(codec1, codec2, codec3, codec4, codec5, codec6, codec7, codec8, codec9, codec10, codec11, codec12, codec13, codec14, codec15);
 	}
 	
@@ -827,24 +681,6 @@ public final class CodecBuilder {
 		@NotNull ConfiguredCodec<CI15, O> codec15,
 		@NotNull ConfiguredCodec<CI16, O> codec16
 	) {
-		//region Parameter validation
-		Objects.requireNonNull(codec1, "Configured codec #1 must not be null");
-		Objects.requireNonNull(codec2, "Configured codec #2 must not be null");
-		Objects.requireNonNull(codec3, "Configured codec #3 must not be null");
-		Objects.requireNonNull(codec4, "Configured codec #4 must not be null");
-		Objects.requireNonNull(codec5, "Configured codec #5 must not be null");
-		Objects.requireNonNull(codec6, "Configured codec #6 must not be null");
-		Objects.requireNonNull(codec7, "Configured codec #7 must not be null");
-		Objects.requireNonNull(codec8, "Configured codec #8 must not be null");
-		Objects.requireNonNull(codec9, "Configured codec #9 must not be null");
-		Objects.requireNonNull(codec10, "Configured codec #10 must not be null");
-		Objects.requireNonNull(codec11, "Configured codec #11 must not be null");
-		Objects.requireNonNull(codec12, "Configured codec #12 must not be null");
-		Objects.requireNonNull(codec13, "Configured codec #13 must not be null");
-		Objects.requireNonNull(codec14, "Configured codec #14 must not be null");
-		Objects.requireNonNull(codec15, "Configured codec #15 must not be null");
-		Objects.requireNonNull(codec16, "Configured codec #16 must not be null");
-		//endregion
 		return new CodecGrouper16<>(codec1, codec2, codec3, codec4, codec5, codec6, codec7, codec8, codec9, codec10, codec11, codec12, codec13, codec14, codec15, codec16);
 	}
 }

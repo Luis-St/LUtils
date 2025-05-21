@@ -18,7 +18,6 @@
 
 package net.luis.utils.exception;
 
-import net.luis.utils.collection.registry.Registry;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.NoSuchElementException;
@@ -27,7 +26,6 @@ import java.util.NoSuchElementException;
  * Thrown when a requested item does not exist in a collection like object.<br>
  * Library equivalent of {@link NoSuchElementException}.<br>
  *
- * @see Registry
  * @see NoSuchElementException
  *
  * @author Luis-St

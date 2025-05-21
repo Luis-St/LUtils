@@ -38,6 +38,7 @@ class NamedCodecTest {
 	void constructor() {
 		assertThrows(NullPointerException.class, () -> new NamedCodec<>(null, "name"));
 		assertThrows(NullPointerException.class, () -> new NamedCodec<>(Codec.INTEGER.optional(), null));
+		assertThrows(NullPointerException.class, () -> new NamedCodec<>(Codec.INTEGER.optional(), "name", (String[]) null));
 	}
 	
 	@Test
@@ -85,5 +86,31 @@ class NamedCodecTest {
 		assertTrue(result.isSuccess());
 		assertTrue(result.orThrow().isPresent());
 		assertEquals(42, result.orThrow().orElseThrow());
+	}
+	
+	@Test
+	void decodeStartWithAlias() {
+		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
+		NamedCodec<Integer> codec = new NamedCodec<>(Codec.INTEGER, "name", "_name");
+		JsonObject map = new JsonObject();
+		
+		assertThrows(NullPointerException.class, () -> codec.decodeStart(null, map));
+		assertTrue(codec.decodeStart(typeProvider, null).isError());
+		
+		Result<Integer> emptyResult = codec.decodeStart(typeProvider, map);
+		assertTrue(emptyResult.isError());
+		map.add("_name", new JsonPrimitive(42));
+		
+		Result<Integer> noMapResult = codec.decodeStart(typeProvider, typeProvider.empty());
+		assertTrue(noMapResult.isError());
+		
+		Result<Integer> aliasResult = codec.decodeStart(typeProvider, map);
+		assertTrue(aliasResult.isSuccess());
+		assertEquals(42, aliasResult.orThrow());
+		
+		map.add("name", new JsonPrimitive(43));
+		Result<Integer> nameResult = codec.decodeStart(typeProvider, map);
+		assertTrue(nameResult.isSuccess());
+		assertEquals(43, nameResult.orThrow());
 	}
 }

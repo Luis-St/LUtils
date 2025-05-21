@@ -229,8 +229,8 @@ public abstract sealed class ResourceLocation permits ExternalResourceLocation, 
 	public abstract boolean exists();
 	
 	/**
-	 * Reads the content of the resource as a stream.<br>
-	 * @return An {@link InputStream} to the resource
+	 * Creates an input stream to the resource.<br>
+	 * @return An input stream
 	 * @throws IOException If an I/O error occurs
 	 */
 	public abstract @NotNull InputStream getStream() throws IOException;
