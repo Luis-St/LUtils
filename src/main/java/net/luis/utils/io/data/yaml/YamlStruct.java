@@ -18,7 +18,6 @@
 
 package net.luis.utils.io.data.yaml;
 
-import net.luis.utils.io.data.yaml.exception.YamlTypeException;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -30,104 +29,40 @@ import java.util.Objects;
  *
  */
 
-public class YamlStruct extends AbstractYamlNode implements YamlNode {
+public class YamlStruct {
 	
 	private final String key;
+	private final @Nullable String anchorDefinition;
 	private final YamlNode node;
-	private final boolean anchorDefined;
-	
-	public YamlStruct(@NotNull String key, @NotNull String anchor) {
-		this.key = Objects.requireNonNull(key, "Key must not be null");
-		YamlHelper.validateYamlKey(this.key);
-		this.node = new YamlScalar(Objects.requireNonNull(anchor, "Anchor must not be null"));
-		this.anchorDefined = true;
-	}
 	
 	public YamlStruct(@NotNull String key, @NotNull YamlNode node) {
 		this.key = Objects.requireNonNull(key, "Key must not be null");
 		YamlHelper.validateYamlKey(this.key);
+		this.anchorDefinition = null;
 		this.node = Objects.requireNonNull(node, "Node must not be null");
-		this.anchorDefined = false;
 	}
 	
-	@Override
-	public boolean hasAnchor() {
-		return !this.anchorDefined && this.node.hasAnchor();
-	}
-	
-	@Override
-	public @Nullable String getAnchor() {
-		return this.anchorDefined ? null : this.node.getAnchor();
-	}
-	
-	@Override
-	public void setAnchor(@Nullable String anchor) {
-		if (this.anchorDefined) {
-			throw new YamlTypeException("Defining an anchor on a node where the value is defined by an anchor is not allowed");
-		}
-		this.node.setAnchor(anchor);
+	public YamlStruct(@NotNull String key, @NotNull String anchorDefinition, @NotNull YamlNode node) {
+		this.key = Objects.requireNonNull(key, "Key must not be null");
+		YamlHelper.validateYamlKey(this.key);
+		this.anchorDefinition = Objects.requireNonNull(anchorDefinition, "Anchor definition must not be null");
+		YamlHelper.validateYamlAnchor(this.anchorDefinition);
+		this.node = Objects.requireNonNull(node, "Node must not be null");
 	}
 	
 	public @NotNull String getKey() {
 		return this.key;
 	}
 	
-	public boolean isAnchorDefined() {
-		return this.anchorDefined;
+	public boolean hasAnchorDefinition() {
+		return this.anchorDefinition != null;
+	}
+	
+	public @Nullable String getAnchorDefinition() {
+		return this.anchorDefinition;
 	}
 	
 	public @NotNull YamlNode getNode() {
-		if (this.anchorDefined) {
-			throw new YamlTypeException("Struct does only contain an anchor");
-		}
 		return this.node;
 	}
-	
-	public @NotNull String getAnchorReference() {
-		if (!this.anchorDefined) {
-			throw new YamlTypeException("Struct is not defined by an anchor");
-		}
-		return this.node.getAsYamlScalar().getAsString();
-	}
-	
-	//region Object overrides
-	@Override
-	public boolean equals(Object o) {
-		if (!(o instanceof YamlStruct that)) return false;
-		
-		if (this.anchorDefined != that.anchorDefined) return false;
-		if (!this.key.equals(that.key)) return false;
-		return this.node.equals(that.node);
-	}
-	
-	@Override
-	public int hashCode() {
-		return Objects.hash(this.key, this.node, this.anchorDefined);
-	}
-	
-	@Override
-	public String toString() {
-		return this.toString(YamlConfig.DEFAULT);
-	}
-	
-	@Override
-	public @NotNull String toString(@NotNull YamlConfig config) {
-		Objects.requireNonNull(config, "Config must not be null");
-		String base = this.key + ":";
-		if ((this.node instanceof YamlSequence || this.node instanceof YamlMapping) && !this.node.hasAnchor()) {
-			base += System.lineSeparator() + config.indent();
-		} else {
-			base += " ";
-		}
-		String node = this.node.toString(config);
-		if (this.anchorDefined) {
-			YamlScalar scalar = this.node.getAsYamlScalar();
-			if (scalar.hasAnchor()) {
-				base += "&" + scalar.getAnchor() + " ";
-			}
-			return base + "*" + scalar.getAsString();
-		}
-		return base + this.node.toString(config).replace(System.lineSeparator(), System.lineSeparator() + config.indent()).stripTrailing();
-	}
-	//endregion
 }

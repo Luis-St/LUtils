@@ -16,8 +16,9 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-package net.luis.utils.io.data.yaml;
+package net.luis.utils.io.data.yaml.tmp;
 
+import net.luis.utils.io.data.yaml.YamlNode;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Objects;

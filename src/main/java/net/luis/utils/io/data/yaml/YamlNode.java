@@ -18,12 +18,8 @@
 
 package net.luis.utils.io.data.yaml;
 
-import net.luis.utils.io.data.yaml.exception.YamlTypeException;
 import net.luis.utils.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
-
-import java.util.Objects;
 
 /**
  *
@@ -31,6 +27,7 @@ import java.util.Objects;
  *
  */
 
+@FunctionalInterface
 public interface YamlNode {
 	
 	/**
@@ -43,7 +40,7 @@ public interface YamlNode {
 		return StringUtils.getReadableString(this.getClass().getSimpleName(), Character::isUpperCase).toLowerCase();
 	}
 	
-	boolean hasAnchor();
+/*	boolean hasAnchor();
 	
 	@Nullable String getAnchor();
 	
@@ -114,7 +111,7 @@ public interface YamlNode {
 			throw new YamlTypeException("Cannot create a struct from a struct");
 		}
 		return new YamlStruct(key, this);
-	}
+	}*/
 	
 	@NotNull String toString(@NotNull YamlConfig config);
 }

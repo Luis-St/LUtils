@@ -16,8 +16,9 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-package net.luis.utils.io.data.yaml;
+package net.luis.utils.io.data.yaml.tmp;
 
+import net.luis.utils.io.data.yaml.YamlConfig;
 import net.luis.utils.util.getter.ValueGetter;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
