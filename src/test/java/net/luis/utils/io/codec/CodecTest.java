@@ -55,6 +55,7 @@ class CodecTest {
 		assertEquals(new JsonPrimitive(1.0F), Codec.FLOAT.encode(JsonTypeProvider.INSTANCE, 1.0F));
 		assertEquals(new JsonPrimitive(1.0), Codec.DOUBLE.encode(JsonTypeProvider.INSTANCE, 1.0));
 		assertEquals(new JsonPrimitive("test"), Codec.STRING.encode(JsonTypeProvider.INSTANCE, "test"));
+		assertEquals(new JsonPrimitive("a"), Codec.CHARACTER.encode(JsonTypeProvider.INSTANCE, 'a'));
 		
 		assertEquals(new JsonArray(List.of(new JsonPrimitive((byte) 42))), Codec.BYTE_ARRAY.encode(JsonTypeProvider.INSTANCE, new byte[] { 42 }));
 		assertEquals(new JsonArray(List.of(new JsonPrimitive(42))), Codec.INT_STREAM.encode(JsonTypeProvider.INSTANCE, IntStream.of(42)));
@@ -93,6 +94,7 @@ class CodecTest {
 		assertEquals(1.0F, Codec.FLOAT.decode(JsonTypeProvider.INSTANCE, new JsonPrimitive(1.0F)));
 		assertEquals(1.0, Codec.DOUBLE.decode(JsonTypeProvider.INSTANCE, new JsonPrimitive(1.0)));
 		assertEquals("test", Codec.STRING.decode(JsonTypeProvider.INSTANCE, new JsonPrimitive("test")));
+		assertEquals('a', Codec.CHARACTER.decode(JsonTypeProvider.INSTANCE, new JsonPrimitive("a")));
 		
 		assertArrayEquals(new byte[] { 42 }, Codec.BYTE_ARRAY.decode(JsonTypeProvider.INSTANCE, new JsonArray(List.of(new JsonPrimitive((byte) 42)))));
 		assertArrayEquals(new int[] { 42 }, Codec.INT_STREAM.decode(JsonTypeProvider.INSTANCE, new JsonArray(List.of(new JsonPrimitive(42)))).toArray());

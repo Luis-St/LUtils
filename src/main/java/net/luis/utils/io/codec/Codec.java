@@ -242,6 +242,20 @@ public interface Codec<C> extends Encoder<C>, Decoder<C> {
 			return "StringCodec";
 		}
 	};
+	/**
+	 * A keyable codec that encodes and decodes characters.<br>
+	 */
+	KeyableCodec<Character> CHARACTER = keyable(STRING.mapFlat(String::valueOf, throwable(str -> {
+		if (str.length() != 1) {
+			throw new IllegalArgumentException("String must have exactly one character");
+		}
+		return str.charAt(0);
+	})).codec("CharacterCodec"), str -> {
+		if (str.length() != 1) {
+			return null;
+		}
+		return str.charAt(0);
+	});
 	
 	/**
 	 * A codec that encodes and decodes byte arrays.<br>
