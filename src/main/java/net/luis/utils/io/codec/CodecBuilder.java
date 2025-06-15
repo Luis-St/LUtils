@@ -20,6 +20,7 @@ package net.luis.utils.io.codec;
 
 import net.luis.utils.io.codec.group.function.*;
 import net.luis.utils.io.codec.group.grouper.*;
+import net.luis.utils.io.codec.mapping.CodecAutoMapping;
 import org.jetbrains.annotations.NotNull;
 
 /**
@@ -35,6 +36,10 @@ public final class CodecBuilder {
 	 * This is a static helper class.<br>
 	 */
 	private CodecBuilder() {}
+	
+	public static @NotNull <O> Codec<O> autoMapCodec(@NotNull Class<O> clazz) {
+		return CodecAutoMapping.createAutoMappedCodec(clazz);
+	}
 	
 	/**
 	 * Creates a new codec grouper that groups the provided codec into a single codec.<br>

@@ -21,15 +21,11 @@ package net.luis.utils.io.codec.mapping;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import net.luis.utils.io.codec.*;
-import net.luis.utils.io.codec.provider.JsonTypeProvider;
-import net.luis.utils.io.data.json.JsonElement;
-import net.luis.utils.logging.*;
 import net.luis.utils.util.Either;
 import net.luis.utils.util.Utils;
 import net.luis.utils.util.unsafe.reflection.ReflectionHelper;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.ClassUtils;
-import org.apache.logging.log4j.*;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -50,70 +46,10 @@ import java.util.stream.Stream;
  *
  */
 
-public class AutoMappingTest {
+@SuppressWarnings({ "unchecked", "rawtypes" })
+public class CodecAutoMapping {
 	
-	private static final Logger LOGGER;
 	private static final CodecComponent[] EMPTY_CODEC_COMPONENTS = new CodecComponent[0];
-	
-	public static void main(String[] args) {
-		enum State {
-			USA, GERMANY, FRANCE, ITALY, SPAIN, UK
-		}
-		
-		class Address {
-			final String street;
-			final String city;
-			final State state;
-			final long zip;
-			
-			Address(String street, String city, State state) {
-				this(street, city, state, 0);
-			}
-			
-			@CodecConstructor
-			Address(String street, String city, State state, long zip) {
-				this.street = street;
-				this.city = city;
-				this.state = state;
-				this.zip = zip;
-			}
-		}
-		
-		record Person(
-			String name,
-			int age,
-			double height,
-			boolean gender,
-			Address[] addresses,
-			@GenericInfo(String.class) @NotNull List<String> hobbies,
-			@GenericInfo({ String.class, Integer.class }) @NotNull Map<String, Integer> scores,
-			@GenericInfo({ String.class, List.class, String.class }) @NotNull Either<String, List<String>> contactInfo,
-			@GenericInfo(String.class) @NotNull Optional<String> nickname
-		) {}
-		
-		Codec<Person> codec = fromStruct(Person.class);
-		
-		Person person = new Person(
-			"John Doe",
-			30,
-			1.75,
-			true,
-			new Address[] {
-				new Address("123 Main St", "Springfield", State.USA, 12345),
-				new Address("456 Elm St", "Shelbyville", State.GERMANY, 67890)
-			},
-			Lists.newArrayList("Reading", "Traveling", "Cooking"),
-			Maps.newHashMap(Map.of("Math", 95, "Science", 90, "History", 85)),
-			Either.right(List.of("Mike", "Sarah")),
-			Optional.empty()
-		);
-		
-		JsonElement element = codec.encode(JsonTypeProvider.INSTANCE, person);
-		LOGGER.debug(element);
-		Person decodedPerson = codec.decode(JsonTypeProvider.INSTANCE, element);
-		LOGGER.debug(decodedPerson);
-	}
-	
 	private static final Map<Class<?>, Codec<?>> CODEC_LOOKUP = Utils.make(Maps.newHashMap(), map -> {
 		map.put(Boolean.class, Codec.BOOLEAN);
 		map.put(Byte.class, Codec.BYTE);
@@ -123,6 +59,7 @@ public class AutoMappingTest {
 		map.put(Float.class, Codec.FLOAT);
 		map.put(Double.class, Codec.DOUBLE);
 		map.put(String.class, Codec.STRING);
+		map.put(Character.class, Codec.CHARACTER);
 		map.put(UUID.class, Codec.UUID);
 		map.put(LocalTime.class, Codec.LOCAL_TIME);
 		map.put(LocalDate.class, Codec.LOCAL_DATE);
@@ -135,8 +72,19 @@ public class AutoMappingTest {
 		map.put(URL.class, Codec.URL);
 	});
 	
-	@SuppressWarnings({ "unchecked", "rawtypes" })
-	public static <O> @NotNull Codec<O> fromStruct(@NotNull Class<O> clazz) {
+	public static @NotNull <O> Codec<O> createAutoMappedCodec(@NotNull Class<O> clazz) {
+		Objects.requireNonNull(clazz, "Class must not be null");
+		if (clazz.isInterface() || clazz.isAnnotation() || clazz.isPrimitive()) {
+			throw new IllegalArgumentException("Class must not be an interface, annotation or primitive type: " + clazz.getName());
+		}
+		
+		System.setProperty("reflection.exceptions.throw", "true");
+		Codec<O> codec = createCodec(clazz);
+		System.setProperty("reflection.exceptions.throw", "false");
+		return codec;
+	}
+	
+	private static <O> @NotNull Codec<O> createCodec(@NotNull Class<O> clazz) {
 		if (clazz.isEnum()) {
 			return Codec.dynamicEnum((Class<? extends Enum>) clazz);
 		}
@@ -151,10 +99,7 @@ public class AutoMappingTest {
 			throw new IllegalArgumentException("Record class has too many components (max 16): " + clazz.getName());
 		}
 		
-		// I know this code is a bit verbose, but it is necessary to handle the different number of components correctly
-		// Java does not provide a way to create a Codec dynamically based on the number of components in a record class
-		// Therefore, we create a Codec for each possible number of components (1 to 16) and return the appropriate one
-		ConfiguredCodec<?, O>[] configuredCodecs = Stream.of(components).map(AutoMappingTest::createConfiguredCodec).toArray(ConfiguredCodec[]::new);
+		ConfiguredCodec<?, O>[] configuredCodecs = Stream.of(components).map(CodecAutoMapping::createConfiguredCodec).toArray(ConfiguredCodec[]::new);
 		return switch (components.length) {
 			case 1 -> CodecBuilder.group(
 				configuredCodecs[0]
@@ -229,6 +174,7 @@ public class AutoMappingTest {
 	}
 	
 	private static CodecComponent @NotNull [] getComponents(@NotNull Class<?> clazz) {
+		Objects.requireNonNull(clazz, "Class must not be null");
 		RecordComponent[] recordComponents = clazz.getRecordComponents();
 		if (recordComponents != null) {
 			return Arrays.stream(recordComponents).map(CodecComponent::new).toArray(CodecComponent[]::new);
@@ -248,6 +194,9 @@ public class AutoMappingTest {
 	}
 	
 	private static <O> @NotNull Constructor<O> getConstructor(@NotNull Class<O> clazz, CodecComponent @NotNull [] components) {
+		Objects.requireNonNull(clazz, "Class must not be null");
+		Objects.requireNonNull(components, "Components must not be null");
+		
 		if (clazz.isRecord()) {
 			Class<?>[] parameterTypes = new Class<?>[components.length];
 			for (int i = 0; i < components.length; i++) {
@@ -272,8 +221,11 @@ public class AutoMappingTest {
 		return validateClassConstructor(clazz, components, constructors);
 	}
 	
-	@SuppressWarnings("unchecked")
 	private static <O> @NotNull Constructor<O> validateClassConstructor(@NotNull Class<O> clazz, CodecComponent @NotNull [] components, @NotNull List<Constructor<?>> constructors) {
+		Objects.requireNonNull(clazz, "Class must not be null");
+		Objects.requireNonNull(components, "Components must not be null");
+		Objects.requireNonNull(constructors, "Constructors must not be null");
+		
 		Constructor<O> constructor = (Constructor<O>) constructors.getFirst();
 		if (constructor.getParameterCount() != components.length) {
 			throw new IllegalArgumentException("Codec constructor for class " + clazz.getName() + " must have " + components.length + " parameters, but has " + constructor.getParameterCount());
@@ -288,8 +240,9 @@ public class AutoMappingTest {
 		return constructor;
 	}
 	
-	@SuppressWarnings("unchecked")
 	private static <C, O> @NotNull ConfiguredCodec<C, O> createConfiguredCodec(@NotNull CodecComponent component) {
+		Objects.requireNonNull(component, "Component must not be null");
+		
 		GenericInfo genericInfo = component.getAnnotation(GenericInfo.class);
 		Codec<C> codec = getCodec(component.getType(), genericInfo == null ? null : genericInfo.value());
 		String name = component.getName();
@@ -298,8 +251,9 @@ public class AutoMappingTest {
 		return codec.configure(name, getter);
 	}
 	
-	@SuppressWarnings({ "unchecked", "rawtypes" })
 	private static <C> @NotNull Codec<C> getCodec(@NotNull Class<?> clazz, Class<?> @Nullable [] genericInfo) {
+		Objects.requireNonNull(clazz, "Class must not be null");
+		
 		if (clazz.isArray()) {
 			Class<?> componentType = clazz.getComponentType();
 			return (Codec<C>) getCodec(componentType, genericInfo).list().xmap(Arrays::asList, list -> {
@@ -356,7 +310,7 @@ public class AutoMappingTest {
 		
 		Codec<?> codec = CODEC_LOOKUP.get(ClassUtils.primitiveToWrapper(clazz));
 		if (codec == null) {
-			codec = fromStruct(clazz);
+			codec = createCodec(clazz);
 		}
 		return (Codec<C>) codec;
 	}
@@ -365,6 +319,7 @@ public class AutoMappingTest {
 		if (genericInfo == null || count >= genericInfo.length) {
 			return null;
 		}
+		
 		Class<?>[] newGenericInfo = new Class<?>[genericInfo.length - count];
 		System.arraycopy(genericInfo, count, newGenericInfo, 0, newGenericInfo.length);
 		return newGenericInfo;
@@ -376,7 +331,5 @@ public class AutoMappingTest {
 	
 	static {
 		System.setProperty("reflection.exceptions.throw", "true");
-		LoggingUtils.initialize(LoggerConfiguration.DEFAULT.disableLogging(LoggingType.FILE).addDefaultLogger(LoggingType.CONSOLE, Level.DEBUG));
-		LOGGER = LogManager.getLogger(AutoMappingTest.class);
 	}
 }
