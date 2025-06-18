@@ -72,6 +72,7 @@ public class ExtendedEuclideanAlgorithm {
 	
 	/**
 	 * Constructs a new EEA with the given value and divisor.<br>
+	 *
 	 * @param value The value of the EEA
 	 * @param divisor The divisor of the EEA
 	 * @throws IllegalArgumentException If the value or divisor is 0
@@ -82,6 +83,7 @@ public class ExtendedEuclideanAlgorithm {
 	
 	/**
 	 * Constructs a new EEA with the given value and divisor.<br>
+	 *
 	 * @param value The value of the EEA
 	 * @param divisor The divisor of the EEA
 	 * @throws IllegalArgumentException If the value or divisor is 0
@@ -92,6 +94,7 @@ public class ExtendedEuclideanAlgorithm {
 	
 	/**
 	 * Constructs a new EEA with the given value and divisor.<br>
+	 *
 	 * @param value The value of the EEA
 	 * @param divisor The divisor of the EEA
 	 * @throws IllegalArgumentException If the value or divisor is 0
@@ -117,6 +120,7 @@ public class ExtendedEuclideanAlgorithm {
 	
 	/**
 	 * Calculates the greatest common divisor (GCD) of the given value and divisor using the EEA.<br>
+	 *
 	 * @param value The value to calculate the GCD for
 	 * @param divisor The divisor to calculate the GCD for
 	 * @return The GCD of the given value and divisor
@@ -128,6 +132,7 @@ public class ExtendedEuclideanAlgorithm {
 	
 	/**
 	 * Calculates the greatest common divisor (GCD) of the given value and divisor using the EEA.<br>
+	 *
 	 * @param value The value to calculate the GCD for
 	 * @param divisor The divisor to calculate the GCD for
 	 * @return The GCD of the given value and divisor
@@ -139,6 +144,7 @@ public class ExtendedEuclideanAlgorithm {
 	
 	/**
 	 * Calculates the greatest common divisor (GCD) of the given value and divisor using the EEA.<br>
+	 *
 	 * @param value The value to calculate the GCD for
 	 * @param divisor The divisor to calculate the GCD for
 	 * @return The GCD of the given value and divisor
@@ -243,6 +249,7 @@ public class ExtendedEuclideanAlgorithm {
 	/**
 	 * Executes the EEA for the given number of steps.<br>
 	 * If the EEA is already completed the method will return immediately.<br>
+	 *
 	 * @param steps The number of steps to execute
 	 */
 	public void execute(int steps) {
@@ -268,6 +275,7 @@ public class ExtendedEuclideanAlgorithm {
 	/**
 	 * Gets the first coefficient of the EEA.<br>
 	 * The number of steps is subtracted from the size of the first coefficients list to get the correct coefficient.<br>
+	 *
 	 * @param step The number of steps to go back
 	 * @return The first coefficient of the EEA
 	 */
@@ -278,6 +286,7 @@ public class ExtendedEuclideanAlgorithm {
 	/**
 	 * Gets the second coefficient of the EEA.<br>
 	 * The number of steps is subtracted from the size of the second coefficients list to get the correct coefficient.<br>
+	 *
 	 * @param step The number of steps to go back
 	 * @return The second coefficient of the EEA
 	 */
@@ -288,6 +297,7 @@ public class ExtendedEuclideanAlgorithm {
 	/**
 	 * Executes a single step of the EEA.<br>
 	 * The values of the EEA are recalculated.<br>
+	 *
 	 * @see #update(BigInteger, BigInteger, BigInteger, BigInteger)
 	 */
 	private void executeStep() {
@@ -302,6 +312,7 @@ public class ExtendedEuclideanAlgorithm {
 	 * Updates the values of the EEA.<br>
 	 * The first and second coefficients are calculated and added to their respective lists.<br>
 	 * The value, divisor, remainder, quotient and step are updated.<br>
+	 *
 	 * @param value The new value
 	 * @param divisor The new divisor
 	 * @param remainder The new remainder

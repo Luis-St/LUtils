@@ -33,17 +33,18 @@ import java.util.stream.Stream;
  * A record that represents a priority.<br>
  * <p>
  *     The priority can be used to determine the order of elements in a list.<br>
- *     The priority is an integer value that can be compared to other priorities.<br>
+ *     The priority is an integer value that can be compared to other priorities.
  * </p>
  * <p>
  *     Higher priorities are considered to be more important than lower priorities.<br>
- *     A higher priority has a higher value than a lower priority.<br>
+ *     A higher priority has a higher value than a lower priority.
  * </p>
  * <p>
  *     The default priorities {@link #LOWEST}, {@link #LOW}, {@link #NORMAL}, {@link #HIGH}, and {@link #HIGHEST}<br>
  *     are using integer values to represent the priority.<br>
- *     This allows the creation of priorities below the lowest priority and above the highest priority.<br>
+ *     This allows the creation of priorities below the lowest priority and above the highest priority.
  * </p>
+ *
  * @param name The name of the priority
  * @param priority The priority value
  */
@@ -66,7 +67,7 @@ public record Priority(
 	 * The lowest priority with the value of {@link Integer#MIN_VALUE}.<br>
 	 * <p>
 	 *     The lowest priority does not use {@link Long#MIN_VALUE}<br>
-	 *     to allow the creation of priorities below the lowest priority.<br>
+	 *     to allow the creation of priorities below the lowest priority.
 	 * </p>
 	 */
 	public static final Priority LOWEST = new Priority("lowest", Integer.MIN_VALUE);
@@ -86,13 +87,14 @@ public record Priority(
 	 * The highest priority with the value of {@link Integer#MAX_VALUE}.<br>
 	 * <p>
 	 *     The highest priority does not use {@link Long#MAX_VALUE}<br>
-	 *     to allow the creation of priorities above the highest priority.<br>
+	 *     to allow the creation of priorities above the highest priority.
 	 * </p>
 	 */
 	public static final Priority HIGHEST = new Priority("highest", Integer.MAX_VALUE);
 	
 	/**
 	 * Constructs a new priority with the given name and priority value.<br>
+	 *
 	 * @param name The name of the priority
 	 * @param priority The priority value
 	 * @throws NullPointerException If the name is null
@@ -106,6 +108,7 @@ public record Priority(
 	
 	/**
 	 * Creates a new priority below the given priority.<br>
+	 *
 	 * @param priority The target priority
 	 * @return The created priority
 	 */
@@ -116,6 +119,7 @@ public record Priority(
 	
 	/**
 	 * Creates a new priority above the given priority.<br>
+	 *
 	 * @param priority The target priority
 	 * @return The created priority
 	 */
@@ -126,6 +130,7 @@ public record Priority(
 	
 	/**
 	 * Creates a new priority between the two given priorities.<br>
+	 *
 	 * @param first The first priority
 	 * @param second The second priority
 	 * @return The created priority
@@ -139,6 +144,7 @@ public record Priority(
 	/**
 	 * Gets the lowest priority from the given priorities.<br>
 	 * If the list of priorities is null or empty, the nearest priority to {@link Long#MIN_VALUE} is returned.<br>
+	 *
 	 * @param priorities The list of priorities
 	 * @return The lowest priority
 	 */
@@ -152,6 +158,7 @@ public record Priority(
 	/**
 	 * Gets the highest priority from the given priorities.<br>
 	 * If the list of priorities is null or empty, the nearest priority to {@link Long#MAX_VALUE} is returned.<br>
+	 *
 	 * @param priorities The list of priorities
 	 * @return The highest priority
 	 */
@@ -164,6 +171,7 @@ public record Priority(
 	
 	/**
 	 * Returns the priority with the nearest value to the given priority.<br>
+	 *
 	 * @param priority The target priority
 	 * @return The nearest priority
 	 */

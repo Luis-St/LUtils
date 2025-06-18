@@ -29,7 +29,7 @@ import java.util.Objects;
  * <p>
  *     This interface provides safe methods to get the value as a specific type with a default value.<br>
  *     The default value will be returned if the value could not be parsed to the desired type.<br>
- *     The following methods are provided to get the value as a specific type with a default value:<br>
+ *     The following methods are provided to get the value as a specific type with a default value:
  * </p>
  * <ul>
  *     <li>{@link #getAsBoolean(boolean)} to get the value as a boolean</li>
@@ -51,6 +51,7 @@ public interface DefaultValueGetter extends ValueGetter {
 	/**
 	 * Returns the value which is hold by this object as a boolean.<br>
 	 * If the value is not a boolean, the default value will be returned.<br>
+	 *
 	 * @param defaultValue The default value
 	 * @return The value as a boolean or the default value
 	 */
@@ -65,6 +66,7 @@ public interface DefaultValueGetter extends ValueGetter {
 	/**
 	 * Returns the value which is hold by this object as a number.<br>
 	 * If the value is not a number, the default value will be returned.<br>
+	 *
 	 * @param defaultValue The default value
 	 * @return The value as a number or the default value
 	 * @throws NullPointerException If the default value is null
@@ -81,6 +83,7 @@ public interface DefaultValueGetter extends ValueGetter {
 	/**
 	 * Returns the value which is hold by this object as a byte.<br>
 	 * If the value is not a byte, the default value will be returned.<br>
+	 *
 	 * @param defaultValue The default value
 	 * @return The value as a byte or the default value
 	 */
@@ -95,6 +98,7 @@ public interface DefaultValueGetter extends ValueGetter {
 	/**
 	 * Returns the value which is hold by this object as a short.<br>
 	 * If the value is not a short, the default value will be returned.<br>
+	 *
 	 * @param defaultValue The default value
 	 * @return The value as a short or the default value
 	 */
@@ -109,6 +113,7 @@ public interface DefaultValueGetter extends ValueGetter {
 	/**
 	 * Returns the value which is hold by this object as an integer.<br>
 	 * If the value is not an integer, the default value will be returned.<br>
+	 *
 	 * @param defaultValue The default value
 	 * @return The value as an integer or the default value
 	 */
@@ -123,6 +128,7 @@ public interface DefaultValueGetter extends ValueGetter {
 	/**
 	 * Returns the value which is hold by this object as a long.<br>
 	 * If the value is not a long, the default value will be returned.<br>
+	 *
 	 * @param defaultValue The default value
 	 * @return The value as a long or the default value
 	 */
@@ -137,6 +143,7 @@ public interface DefaultValueGetter extends ValueGetter {
 	/**
 	 * Returns the value which is hold by this object as a float.<br>
 	 * If the value is not a float, the default value will be returned.<br>
+	 *
 	 * @param defaultValue The default value
 	 * @return The value as a float or the default value
 	 */
@@ -151,6 +158,7 @@ public interface DefaultValueGetter extends ValueGetter {
 	/**
 	 * Returns the value which is hold by this object as a double.<br>
 	 * If the value is not a double, the default value will be returned.<br>
+	 *
 	 * @param defaultValue The default value
 	 * @return The value as a double or the default value
 	 */
@@ -167,6 +175,7 @@ public interface DefaultValueGetter extends ValueGetter {
 	 * The parser must not be able to handle null values.<br>
 	 * In the case the parser is not able to parse the value, it should not return null, it should throw an exception.<br>
 	 * If the parser throws an exception, the default value will be returned.<br>
+	 *
 	 * @param parser The parser to parse the value
 	 * @param defaultValue The default value
 	 * @return The value as the result of the parser or the default value

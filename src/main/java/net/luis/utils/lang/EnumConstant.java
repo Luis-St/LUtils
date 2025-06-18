@@ -40,6 +40,7 @@ public record EnumConstant<T>(
 	
 	/**
 	 * Constructs a new enum constant with the given name, ordinal and value.<br>
+	 *
 	 * @param name The name of the enum constant
 	 * @param ordinal The ordinal of the enum constant
 	 * @param value The value of the enum constant

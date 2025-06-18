@@ -33,7 +33,7 @@ import java.util.stream.Collectors;
  *     The token group must contain at least two tokens.<br>
  *     The tokens must be continuous; this means that no token can be removed in the middle of the group.<br>
  *     The group is continuous if the distance between the start position of the first token and the end position of the last token<br>
- *     is equal to the length of the group value minus one (inclusive).<br>
+ *     is equal to the length of the group value minus one (inclusive).
  * </p>
  *
  * @author Luis-St
@@ -48,6 +48,7 @@ public record TokenGroup(
 	
 	/**
 	 * Constructs a new token group for a list of tokens.<br>
+	 *
 	 * @param tokens The list of tokens in the group
 	 * @param definition The token definition
 	 * @throws NullPointerException If the list of tokens, the token definition or any of the tokens are null
@@ -81,6 +82,7 @@ public record TokenGroup(
 	/**
 	 * Returns the value of the token group.<br>
 	 * The value is the concatenation of all token values in the group.<br>
+	 *
 	 * @return The concatenated values
 	 */
 	@Override
@@ -101,6 +103,7 @@ public record TokenGroup(
 	/**
 	 * Returns the start position of the token group.<br>
 	 * The start position is the start position of the first token in the group.<br>
+	 *
 	 * @return The start position
 	 * @apiNote If {@link #isPositioned()} returns false, the start position can be unpositioned
 	 */
@@ -112,6 +115,7 @@ public record TokenGroup(
 	/**
 	 * Returns the end position of the token group.<br>
 	 * The end position is the end position of the last token in the group.<br>
+	 *
 	 * @return The end position
 	 * @apiNote If {@link #isPositioned()} returns false, the end position can be unpositioned
 	 */

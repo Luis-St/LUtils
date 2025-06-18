@@ -56,6 +56,7 @@ public class SortedList<E> extends AbstractList<E> {
 	/**
 	 * Constructs a new empty sorted list with the given comparator.<br>
 	 * Internally, a {@link ArrayList} is used.<br>
+	 *
 	 * @param comparator The comparator used to sort the list
 	 */
 	public SortedList(@Nullable Comparator<E> comparator) {
@@ -66,6 +67,7 @@ public class SortedList<E> extends AbstractList<E> {
 	 * Constructs a new sorted list with the given elements.<br>
 	 * The comparator is set to {@code null}.<br>
 	 * The elements are wrapped in an internal {@link ArrayList}.<br>
+	 *
 	 * @param elements The elements to add
 	 */
 	@SafeVarargs
@@ -76,6 +78,7 @@ public class SortedList<E> extends AbstractList<E> {
 	/**
 	 * Constructs a new sorted list with the given elements and the comparator.<br>
 	 * The elements are wrapped in an internal {@link ArrayList}.<br>
+	 *
 	 * @param comparator The comparator used to sort the list
 	 * @param elements The elements to add
 	 */
@@ -88,6 +91,7 @@ public class SortedList<E> extends AbstractList<E> {
 	 * Constructs a new sorted list with from the given list.<br>
 	 * The comparator is set to {@code null}.<br>
 	 * The list is not copied, it is used directly.<br>
+	 *
 	 * @param elements The list to use
 	 * @throws NullPointerException If the list is null
 	 */
@@ -98,6 +102,7 @@ public class SortedList<E> extends AbstractList<E> {
 	/**
 	 * Constructs a new sorted list from the given list and the comparator.<br>
 	 * The list is not copied, it is used directly.<br>
+	 *
 	 * @param elements The list to use
 	 * @param comparator The comparator used to sort the list
 	 * @throws NullPointerException If the list is null
@@ -111,6 +116,7 @@ public class SortedList<E> extends AbstractList<E> {
 	/**
 	 * Creates a new list from the given elements.<br>
 	 * The elements are wrapped in an internal {@link ArrayList}.<br>
+	 *
 	 * @param elements The elements to add
 	 * @return The new list
 	 * @param <E> The type of the elements
@@ -133,6 +139,7 @@ public class SortedList<E> extends AbstractList<E> {
 	
 	/**
 	 * {@inheritDoc}<br>
+	 * <br>
 	 * The list is sorted after the element is added.
 	 */
 	@Override
@@ -145,6 +152,7 @@ public class SortedList<E> extends AbstractList<E> {
 	
 	/**
 	 * {@inheritDoc}<br>
+	 * <br>
 	 * The list is sorted after the element is added.
 	 */
 	@Override
@@ -156,6 +164,7 @@ public class SortedList<E> extends AbstractList<E> {
 	
 	/**
 	 * {@inheritDoc}<br>
+	 * <br>
 	 * The list is sorted after the element is removed.
 	 */
 	@Override

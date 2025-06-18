@@ -47,6 +47,7 @@ public class CodecComponent {
 	
 	/**
 	 * Constructs a new codec component from a record component.<br>
+	 *
 	 * @param component The record component to wrap
 	 * @throws NullPointerException If the record component is null
 	 */
@@ -56,6 +57,7 @@ public class CodecComponent {
 	
 	/**
 	 * Constructs a new codec component from a field.<br>
+	 *
 	 * @param component The field to wrap
 	 * @throws NullPointerException If the field is null
 	 */
@@ -87,6 +89,7 @@ public class CodecComponent {
 	
 	/**
 	 * Gets an annotation of the specified type from this component.<br>
+	 *
 	 * @param annotationClass The class of the annotation to get
 	 * @param <T> The type of the annotation
 	 * @return The annotation if present, or null if not

@@ -46,6 +46,7 @@ public record GroupingTokenAction(
 	
 	/**
 	 * Constructs a new grouping token action with the given definition.<br>
+	 *
 	 * @param definition The definition of the token group
 	 * @throws NullPointerException If the definition is null
 	 */

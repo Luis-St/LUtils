@@ -42,6 +42,7 @@ public record TransformTokenAction(
 	
 	/**
 	 * Constructs a new transform token action with the given transformer.<br>
+	 *
 	 * @param transformer The transformer to apply to tokens
 	 * @throws NullPointerException If the transformer is null
 	 */

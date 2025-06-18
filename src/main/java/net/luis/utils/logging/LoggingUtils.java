@@ -64,6 +64,7 @@ public final class LoggingUtils {
 	 * Loads the logging configuration for the given loggers from the system properties and initializes the logging system.<br>
 	 * Loading the logger should be done as early as possible in the application lifecycle.<br>
 	 * Ideally, in the static-initializer of the main class as first call.<br>
+	 *
 	 * @param loggers The loggers to load the configuration for
 	 * @throws NullPointerException If the logger list is null
 	 * @throws IllegalArgumentException If the logger list is empty or contains no valid logger
@@ -78,6 +79,7 @@ public final class LoggingUtils {
 	 * Loads the logging configuration for the given loggers from the system properties and initializes the logging system.<br>
 	 * Loading the logger should be done as early as possible in the application lifecycle.<br>
 	 * Ideally, in the static-initializer of the main class as first call.<br>
+	 *
 	 * @param loggers The loggers to load the configuration for
 	 * @throws NullPointerException If the logger list is null
 	 * @throws IllegalArgumentException If the logger list is empty or contains no valid logger
@@ -96,8 +98,9 @@ public final class LoggingUtils {
 	 * Initializes the logging system with the given configuration.<br>
 	 * <p>
 	 *     The logger should be initialized as early as possible in the application lifecycle.<br>
-	 *     Ideally, in the static-initializer of the main class before any calls to the logger.<br>
+	 *     Ideally, in the static-initializer of the main class before any calls to the logger.
 	 * </p>
+	 *
 	 * @param configuration The configuration to use
 	 * @throws NullPointerException If the configuration is null
 	 * @throws IllegalStateException If the logging system has already been initialized
@@ -111,10 +114,10 @@ public final class LoggingUtils {
 	 * Initializes the logging system with the given configuration.<br>
 	 * <p>
 	 *     The logger should be initialized as early as possible in the application lifecycle.<br>
-	 *     Ideally, in the static-initializer of the main class before any calls to the logger.<br>
+	 *     Ideally, in the static-initializer of the main class before any calls to the logger.
 	 * </p>
 	 * <p>
-	 *     Example:<br>
+	 *     Example:
 	 * </p>
 	 * <pre>{@code
 	 * public class Main {
@@ -131,6 +134,7 @@ public final class LoggingUtils {
 	 *     }
 	 * }
 	 * }</pre>
+	 *
 	 * @param configuration The configuration to use
 	 * @param override Whether to override the current configuration if the logging system has already been initialized
 	 * @throws NullPointerException If the configuration is null
@@ -149,6 +153,7 @@ public final class LoggingUtils {
 	
 	/**
 	 * Initializes the logging system with the given configuration if it has not already been initialized.<br>
+	 *
 	 * @param configuration The configuration to use
 	 * @return Whether the logging system has been initialized
 	 * @throws NullPointerException If the configuration is null
@@ -165,6 +170,7 @@ public final class LoggingUtils {
 	
 	/**
 	 * Initializes the log4j2 configurator with the given configuration.<br>
+	 *
 	 * @param configuration The configuration to use
 	 * @throws NullPointerException If the configuration is null
 	 */
@@ -182,6 +188,7 @@ public final class LoggingUtils {
 	/**
 	 * Reconfigures the logging system with the given configuration.<br>
 	 * Allows to change the logging configuration after it was initialized.<br>
+	 *
 	 * @param configuration The configuration to use
 	 * @throws NullPointerException If the configuration is null
 	 */
@@ -199,6 +206,7 @@ public final class LoggingUtils {
 	/**
 	 * Tries to initialize the logging system with the given configuration,<br>
 	 * if the logging system has already been initialized, the configuration will be reconfigured.<br>
+	 *
 	 * @param configuration The configuration to use
 	 * @throws NullPointerException If the configuration is null
 	 */
@@ -245,6 +253,7 @@ public final class LoggingUtils {
 	/**
 	 * Checks whether the root logger has been configured.<br>
 	 * If this returns true, other loggers were ignored or not configured.<br>
+	 *
 	 * @return True if the root logger has been configured, false otherwise
 	 */
 	public static boolean isRootLoggerConfigured() {
@@ -256,10 +265,10 @@ public final class LoggingUtils {
 	 * The factory will only be registered if the spring boot framework is found.<br>
 	 * <p>
 	 *     This method should be called as early as possible in the application lifecycle.<br>
-	 *     Ideally, in the static-initializer of the main class as first call.<br>
+	 *     Ideally, in the static-initializer of the main class as first call.
 	 * </p>
 	 * <p>
-	 *     Example:<br>
+	 *     Example:
 	 * </p>
 	 * <pre>{@code
 	 * public class Main {
@@ -277,6 +286,7 @@ public final class LoggingUtils {
 	 *    }
 	 * }
 	 * }</pre>
+	 *
 	 * @see #initialize(LoggerConfiguration, boolean)
 	 */
 	public static void registerSpringFactory() {
@@ -291,6 +301,7 @@ public final class LoggingUtils {
 	
 	/**
 	 * Enables logging for the given logging type and level.<br>
+	 *
 	 * @param type  The logging type to enable logging for
 	 * @param level The level to enable logging for
 	 * @throws NullPointerException If the level or logging type is null
@@ -303,6 +314,7 @@ public final class LoggingUtils {
 	
 	/**
 	 * Enables console logging for the given level.<br>
+	 *
 	 * @param level The level to enable console logging for
 	 * @throws NullPointerException If the level is null
 	 * @throws IllegalArgumentException If the level is not supported by console logging
@@ -321,6 +333,7 @@ public final class LoggingUtils {
 	
 	/**
 	 * Enables file logging for the given level.<br>
+	 *
 	 * @param level The level to enable file logging for
 	 * @throws NullPointerException If the level is null
 	 * @throws IllegalArgumentException If the level is not supported by file logging
@@ -332,6 +345,7 @@ public final class LoggingUtils {
 	
 	/**
 	 * Enables file logging for all levels.<br>
+	 *
 	 * @throws IllegalArgumentException If a level is not supported by file logging
 	 * @throws IllegalStateException If a file logging appender was not found
 	 */
@@ -344,6 +358,7 @@ public final class LoggingUtils {
 	
 	/**
 	 * Disables logging for the given logging type and level.<br>
+	 *
 	 * @param type  The logging type to disable logging for
 	 * @param level The level to disable logging for
 	 * @throws NullPointerException If the level or logging type is null
@@ -355,6 +370,7 @@ public final class LoggingUtils {
 	
 	/**
 	 * Disables console logging for the given level.<br>
+	 *
 	 * @param level The level to disable console logging for
 	 * @throws NullPointerException If the level is null
 	 * @throws IllegalArgumentException If the level is not supported by console logging
@@ -365,6 +381,7 @@ public final class LoggingUtils {
 	
 	/**
 	 * Disables console logging for all levels.<br>
+	 *
 	 * @throws IllegalArgumentException If a level is not supported by console logging
 	 * @throws IllegalStateException If a console logging appender was not found
 	 */
@@ -374,6 +391,7 @@ public final class LoggingUtils {
 	
 	/**
 	 * Disables file logging for the given level.<br>
+	 *
 	 * @param level The level to disable file logging for
 	 * @throws NullPointerException If the level is null
 	 * @throws IllegalArgumentException If the level is not supported by file logging
@@ -384,6 +402,7 @@ public final class LoggingUtils {
 	
 	/**
 	 * Disables file logging for all levels.<br>
+	 *
 	 * @throws IllegalArgumentException If a level is not supported by file logging
 	 * @throws IllegalStateException If a file logging appender was not found
 	 */
@@ -398,14 +417,15 @@ public final class LoggingUtils {
 	 * Creates a new reference marker with the given length.<br>
 	 * <p>
 	 *     The marker will be generated with a random UUID which is shortened to the given length.<br>
-	 *     The dashes of the UUID will be removed and the marker will be created with the first characters of the UUID.<br>
+	 *     The dashes of the UUID will be removed and the marker will be created with the first characters of the UUID.
 	 * </p>
 	 * <p>
 	 *     The marker should be use to identify related log messages.<br>
 	 *     An example use case would be to mark log messages which are part of the same process or operation.<br>
 	 *     The process or operation may be handled by a different thread with delayed log messages,<br>
-	 *     which may causes the log messages to be out of order or being separated by other log messages.<br>
+	 *     which may causes the log messages to be out of order or being separated by other log messages.
 	 * </p>
+	 *
 	 * @param length The length of the reference marker
 	 * @return A new reference marker
 	 * @throws IllegalArgumentException If the length is less than 1 or greater than 32
@@ -425,6 +445,7 @@ public final class LoggingUtils {
 	
 	/**
 	 * Enables the given appender.<br>
+	 *
 	 * @param name The name of the appender to enable
 	 * @throws NullPointerException If the name of the appender is null
 	 * @throws IllegalStateException If the appender was not found (file logging only)
@@ -473,6 +494,7 @@ public final class LoggingUtils {
 	
 	/**
 	 * Gets the name of the logger for the given logging type and level.<br>
+	 *
 	 * @param type The logging type
 	 * @param level The level
 	 * @return The name of the logger in upper camel case
@@ -491,6 +513,7 @@ public final class LoggingUtils {
 	 *     <li>The levels 'all' or 'off' with any logging type</li>
 	 *     <li>Logging type 'file' and level 'trace', 'warn' or 'fatal'</li>
 	 * </ul>
+	 *
 	 * @param type The logging type to check
 	 * @param level The level to check
 	 * @throws IllegalArgumentException If the combination of logging type and level is invalid

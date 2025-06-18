@@ -35,6 +35,7 @@ public interface CodecGroupingFunction1<CI1, R> {
 	
 	/**
 	 * Constructs a new object using the given input.<br>
+	 *
 	 * @param input1 The first input
 	 * @return The constructed object
 	 */

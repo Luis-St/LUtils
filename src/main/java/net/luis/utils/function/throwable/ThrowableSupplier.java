@@ -38,6 +38,7 @@ public interface ThrowableSupplier<T, X extends Throwable> {
 	
 	/**
 	 * Converts a throwable supplier into a supplier that throws a runtime exception when an exception is thrown.<br>
+	 *
 	 * @param supplier The throwable supplier
 	 * @return A caught supplier
 	 * @param <T> The type of the result
@@ -56,6 +57,7 @@ public interface ThrowableSupplier<T, X extends Throwable> {
 	
 	/**
 	 * Returns the result of the supplier.<br>
+	 *
 	 * @return The result
 	 * @throws X The exception that can be thrown
 	 */

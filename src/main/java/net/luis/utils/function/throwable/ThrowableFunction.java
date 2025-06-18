@@ -39,6 +39,7 @@ public interface ThrowableFunction<T, R, X extends Throwable> {
 	
 	/**
 	 * Converts a throwable function into a function that throws a runtime exception when an exception is thrown.<br>
+	 *
 	 * @param function The throwable function
 	 * @return A caught function
 	 * @param <T> The argument type
@@ -58,6 +59,7 @@ public interface ThrowableFunction<T, R, X extends Throwable> {
 	
 	/**
 	 * Applies the argument to the function and returns the result.<br>
+	 *
 	 * @param t The argument
 	 * @return The result
 	 * @throws X The exception that can be thrown
@@ -65,8 +67,9 @@ public interface ThrowableFunction<T, R, X extends Throwable> {
 	R apply(T t) throws X;
 	
 	/**
-	 * Returns a composed function that first applies this function to its input,<br>
+	 * Returns a composed function that first applies this function to its input,
 	 * and then applies the {@code after} function to the result.<br>
+	 *
 	 * @param after The function to apply after this function is applied
 	 * @return The composed throwable function
 	 * @param <S> The type of the output of the {@code after} function, and of the composed function

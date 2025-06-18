@@ -44,6 +44,7 @@ public enum ErrorAction {
 	
 	/**
 	 * Handles the error or exception.<br>
+	 *
 	 * @param e The throwable to handle
 	 * @throws NullPointerException If the throwable is null (optional)
 	 */

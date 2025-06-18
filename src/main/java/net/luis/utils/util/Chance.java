@@ -41,7 +41,7 @@ public class Chance {
 	 * <p>
 	 *     The chance can be either 1.0, or 0. followed by at least one digit.<br>
 	 *     The chance must be followed by a percent sign.<br>
-	 *     A dot or a comma can be used as a decimal separator.<br>
+	 *     A dot or a comma can be used as a decimal separator.
 	 * </p>
 	 */
 	private static final Pattern CHANCE_PATTERN = Pattern.compile("^(1[.,]0|0[.,](\\d+))%$");
@@ -66,6 +66,7 @@ public class Chance {
 	/**
 	 * Constructs a new chance with the given chance.<br>
 	 * The chance will be clamped between 0.0 and 1.0.<br>
+	 *
 	 * @param chance The chance value as a double
 	 */
 	protected Chance(double chance) { // protected to prevent instantiation from outside but allow inheritance
@@ -76,8 +77,9 @@ public class Chance {
 	 * Creates a new chance with the given chance.<br>
 	 * <p>
 	 *     If the chance is 0.0 or below, {@link #ZERO} will be returned.<br>
-	 *     If the chance is 1.0 or above, {@link #ONE} will be returned.<br>
+	 *     If the chance is 1.0 or above, {@link #ONE} will be returned.
 	 * </p>
+	 *
 	 * @param chance The chance as a double
 	 * @return The created chance
 	 */
@@ -95,12 +97,13 @@ public class Chance {
 	 * <p>
 	 *     The chance can be either 1.0, or 0. followed by at least one digit.<br>
 	 *     The chance must be followed by a percent sign.<br>
-	 *     A dot or a comma can be used as a decimal separator.<br>
+	 *     A dot or a comma can be used as a decimal separator.
 	 * </p>
 	 * <p>
 	 *     If the given string to parse is null or empty, {@link #ZERO} will be returned.<br>
-	 *     If the given string does not match the pattern ({@link #CHANCE_PATTERN}), {@link #ZERO} will be returned.<br>
+	 *     If the given string does not match the pattern ({@link #CHANCE_PATTERN}), {@link #ZERO} will be returned.
 	 * </p>
+	 *
 	 * @param chance The chance string to parse
 	 * @return The parsed chance or {@link #ZERO}
 	 */
@@ -150,8 +153,9 @@ public class Chance {
 	 * <p>
 	 *     If {@link #isTrue()} this will always return true.<br>
 	 *     If {@link #isFalse()} this will always return false.<br>
-	 *     Otherwise, true if the random number generator returns a number below the chance.<br>
+	 *     Otherwise, true if the random number generator returns a number below the chance.
 	 * </p>
+	 *
 	 * @return The result of the chance
 	 */
 	public boolean result() {

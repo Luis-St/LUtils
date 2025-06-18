@@ -46,6 +46,7 @@ public class XmlAttribute implements DefaultValueGetter {
 	
 	/**
 	 * Constructs a new xml attribute with the given name and boolean value.<br>
+	 *
 	 * @param name The name of the attribute
 	 * @param value The boolean value of the attribute
 	 * @throws IllegalArgumentException If the name is invalid (e.g. empty, blank, or does not match the pattern {@link XmlHelper#XML_ATTRIBUTE_NAME_PATTERN})
@@ -56,6 +57,7 @@ public class XmlAttribute implements DefaultValueGetter {
 	
 	/**
 	 * Constructs a new xml attribute with the given name and number value.<br>
+	 *
 	 * @param name The name of the attribute
 	 * @param value The number value of the attribute
 	 * @throws IllegalArgumentException If the name is invalid (e.g. empty, blank, or does not match the pattern {@link XmlHelper#XML_ATTRIBUTE_NAME_PATTERN})
@@ -67,6 +69,7 @@ public class XmlAttribute implements DefaultValueGetter {
 	/**
 	 * Constructs a new xml attribute with the given name and string value.<br>
 	 * The value will be xml-escaped automatically.<br>
+	 *
 	 * @param name The name of the attribute
 	 * @param value The string value of the attribute
 	 * @throws IllegalArgumentException If the name is invalid (e.g. empty, blank, or does not match the pattern {@link XmlHelper#XML_ATTRIBUTE_NAME_PATTERN})

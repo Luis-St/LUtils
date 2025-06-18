@@ -72,7 +72,7 @@ public final class Ignored {
 	 * <p>
 	 *     The annotation is only used to reset the behavior of a parameter that is<br>
 	 *     annotated with {@link Always} or {@link Maybe}.<br>
-	 *     An example would be an overridden method where the superclass ignores a parameter.<br>
+	 *     An example would be an overridden method where the superclass ignores a parameter.
 	 * </p>
 	 *
 	 * @author Luis-St

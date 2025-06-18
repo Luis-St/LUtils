@@ -40,6 +40,7 @@ public interface Encoder<C> {
 	
 	/**
 	 * Encodes the value of the specified type and returns the encoded value directly.<br>
+	 *
 	 * @param provider The type provider
 	 * @param value The value to encode
 	 * @return The encoded value
@@ -57,8 +58,9 @@ public interface Encoder<C> {
 	 * <p>
 	 *     The current value is the value that is currently encoded.<br>
 	 *     In the most cases this value should be equal to {@link TypeProvider#empty()}.<br>
-	 *     In the case of encoding a value that is part of a bigger structure, the current value should be the structure.<br>
+	 *     In the case of encoding a value that is part of a bigger structure, the current value should be the structure.
 	 * </p>
+	 *
 	 * @param provider The type provider
 	 * @param current The current value
 	 * @param value The value to encode
@@ -80,8 +82,9 @@ public interface Encoder<C> {
 	 * <p>
 	 *     The current value is the value that is currently encoded.<br>
 	 *     In the most cases this value should be equal to {@link TypeProvider#empty()}.<br>
-	 *     In the case of encoding a value that is part of a bigger structure, the current value should be the structure.<br>
+	 *     In the case of encoding a value that is part of a bigger structure, the current value should be the structure.
 	 * </p>
+	 *
 	 * @param provider The type provider
 	 * @param current The current value
 	 * @param value The value to encode
@@ -96,6 +99,7 @@ public interface Encoder<C> {
 	 * The mapping function is applied to the raw input value of {@link #encodeStart(TypeProvider, Object, Object)}.<br>
 	 * The mapping function returns a result containing the mapped value or an error message if the mapping process fails.<br>
 	 * The mapping function is not allowed to throw any exceptions.<br>
+	 *
 	 * @param to The mapping function
 	 * @return The mapped encoder
 	 * @param <O> The type to map to

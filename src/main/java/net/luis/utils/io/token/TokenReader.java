@@ -53,6 +53,7 @@ public class TokenReader {
 	 * Constructs a new token reader with the specified token definitions, allowed characters, and separators.<br>
 	 * The characters '\\' and '\n' are added to the set of separators.<br>
 	 * The list of separators is added to the list of allowed characters to ensure they are valid.<br>
+	 *
 	 * @param definitions The set of token definitions
 	 * @param allowedChars The set of allowed characters
 	 * @param separators The set of separators
@@ -81,6 +82,7 @@ public class TokenReader {
 	/**
 	 * Reads tokens from the input string and returns a list of tokens.<br>
 	 * It processes the input string, identifies tokens based on the defined token definitions, and handles escape sequences.<br>
+	 *
 	 * @param input The input string to read tokens from
 	 * @return An unmodifiable list of tokens read from the input string
 	 * @throws NullPointerException If the input string is null
@@ -157,6 +159,7 @@ public class TokenReader {
 	 * Adds a token to the list of tokens.<br>
 	 * It uses the token definitions to determine the type of token and creates a new token object.<br>
 	 * If no matching definition is found, a word token is created.<br>
+	 *
 	 * @param tokens The list of tokens to add the new token to
 	 * @param word The word to be added as a token
 	 * @param startPosition The start position of the token in the input string
@@ -213,6 +216,7 @@ public class TokenReader {
 		/**
 		 * Copies the position from another position tracker.<br>
 		 * It sets the line number, character position, and character index to the values of the other position tracker.<br>
+		 *
 		 * @param other The other position tracker to copy from
 		 * @throws NullPointerException If the other position tracker is null
 		 */
@@ -225,6 +229,7 @@ public class TokenReader {
 		
 		/**
 		 * Creates a new token position based on the current position tracker.<br>
+		 *
 		 * @return A new token position
 		 */
 		private @NotNull TokenPosition toTokenPosition() {

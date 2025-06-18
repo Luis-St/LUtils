@@ -35,7 +35,7 @@ import java.util.stream.Collectors;
  * <p>
  *     The map codec can be sized to only accept maps of a certain size range.<br>
  *     The minimum size and maximum size are inclusive.<br>
- *     If the map size is out of range, the codec will return an error during encoding or decoding.<br>
+ *     If the map size is out of range, the codec will return an error during encoding or decoding.
  * </p>
  *
  * @author Luis-St
@@ -66,6 +66,7 @@ public class MapCodec<K, V> implements Codec<Map<K, V>> {
 	 * Constructs a new map codec using the given codecs for the keys and values.<br>
 	 * The map codec will accept maps of any size.<br>
 	 * Do not use this constructor directly, use any of the map factory methods in {@link Codec} instead.<br>
+	 *
 	 * @param keyCodec The key codec
 	 * @param valueCodec The value codec
 	 * @throws NullPointerException If the key or value codec is null
@@ -78,6 +79,7 @@ public class MapCodec<K, V> implements Codec<Map<K, V>> {
 	/**
 	 * Constructs a new map codec using the given codecs for the keys and values and the size range of the map.<br>
 	 * Do not use this constructor directly, use any of the map factory methods in {@link Codec} instead.<br>
+	 *
 	 * @param keyCodec The key codec
 	 * @param valueCodec The value codec
 	 * @param minSize The minimum size of the map (inclusive)
@@ -127,6 +129,7 @@ public class MapCodec<K, V> implements Codec<Map<K, V>> {
 	/**
 	 * Encodes the given map entry using the key and value codecs.<br>
 	 * The result contains the encoded entry or an error message.<br>
+	 *
 	 * @param provider The type provider
 	 * @param entry The map entry
 	 * @return The result of the encoding process
@@ -170,6 +173,7 @@ public class MapCodec<K, V> implements Codec<Map<K, V>> {
 	/**
 	 * Decodes the given map entry using the key and value codecs.<br>
 	 * The result contains the decoded entry or an error message.<br>
+	 *
 	 * @param provider The type provider
 	 * @param entry The map entry
 	 * @return The result of the decoding process

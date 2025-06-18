@@ -27,7 +27,7 @@ import java.lang.reflect.Method;
 import java.util.*;
 
 /**
- * Utility class for stack trace related operations.<br>
+ * Utility class for stack trace-related operations.<br>
  * Provides methods to get the calling class and method.<br>
  *
  * @author Luis-St
@@ -52,7 +52,7 @@ public final class StackTraceUtils {
 	 * <p>
 	 *     The default offset for the stack trace elements is {@code 1}.<br>
 	 *     The value must be greater than or equal to {@code 1}.<br>
-	 *     The value will be added to the base offset to get the correct stack trace element.<br>
+	 *     The value will be added to the base offset to get the correct stack trace element.
 	 * </p>
 	 */
 	private static final String UNSAFE_OFFSET_DEFAULT = "unsafe.offset.default";
@@ -70,11 +70,11 @@ public final class StackTraceUtils {
 	 * <pre>base + default</pre>
 	 * <p>
 	 *     The base offset will be get from the system property 'unsafe.offset.base'.<br>
-	 *     If the property is not set, the default value {@code 3} will be used.<br>
+	 *     If the property is not set, the default value {@code 3} will be used.
 	 * </p>
 	 * <p>
 	 *     The default offset will be get from the system property 'unsafe.offset.default'.<br>
-	 *     If the property is not set, the default value {@code 1} will be used.<br>
+	 *     If the property is not set, the default value {@code 1} will be used.
 	 * </p>
 	 * <ul>
 	 *     <li>...</li>
@@ -82,6 +82,7 @@ public final class StackTraceUtils {
 	 *     <li>3: The method which requests the calling class</li>
 	 *     <li>4: The calling class</li>
 	 * </ul>
+	 *
 	 * @return The calling class
 	 * @throws IndexOutOfBoundsException If the specified position is out of bounds
 	 * @throws IllegalCallerException If called from the {@code main} method and 'unsafe.calls.main' is {@code false}
@@ -97,11 +98,11 @@ public final class StackTraceUtils {
 	 * <pre>base + default + callsBefore</pre>
 	 * <p>
 	 *     The base offset will be get from the system property 'unsafe.offset.base'.<br>
-	 *     If the property is not set, the default value {@code 3} will be used.<br>
+	 *     If the property is not set, the default value {@code 3} will be used.
 	 * </p>
 	 * <p>
 	 *     The default offset will be get from the system property 'unsafe.offset.default'.<br>
-	 *     If the property is not set, the default value {@code 1} will be used.<br>
+	 *     If the property is not set, the default value {@code 1} will be used.
 	 * </p>
 	 * <ul>
 	 *     <li>...</li>
@@ -110,6 +111,7 @@ public final class StackTraceUtils {
 	 *     <li>4: The calling class</li>
 	 *     <li>...</li>
 	 * </ul>
+	 *
 	 * @param callsBefore The number of calls before the method which requests the calling class
 	 * @return The calling class at the specified position
 	 * @throws IllegalArgumentException If the specified calls before value is less than or equal to 0
@@ -130,11 +132,11 @@ public final class StackTraceUtils {
 	 * <pre>base + default</pre>
 	 * <p>
 	 *     The base offset will be get from the system property 'unsafe.offset.base'.<br>
-	 *     If the property is not set, the default value {@code 3} will be used.<br>
+	 *     If the property is not set, the default value {@code 3} will be used.
 	 * </p>
 	 * <p>
 	 *     The default offset will be get from the system property 'unsafe.offset.default'.<br>
-	 *     If the property is not set, the default value {@code 1} will be used.<br>
+	 *     If the property is not set, the default value {@code 1} will be used.
 	 * </p>
 	 * <ul>
 	 *     <li>...</li>
@@ -142,6 +144,7 @@ public final class StackTraceUtils {
 	 *     <li>3: The method which requests the calling method</li>
 	 *     <li>4: The calling method</li>
 	 * </ul>
+	 *
 	 * @return The calling method
 	 * @throws IndexOutOfBoundsException If the specified position is out of bounds
 	 * @throws IllegalStateException If the calling method could not be identified
@@ -164,11 +167,11 @@ public final class StackTraceUtils {
 	 * <pre>base + default + callsBefore</pre>
 	 * <p>
 	 *     The base offset will be get from the system property 'unsafe.offset.base'.<br>
-	 *     If the property is not set, the default value {@code 3} will be used.<br>
+	 *     If the property is not set, the default value {@code 3} will be used.
 	 * </p>
 	 * <p>
 	 *     The default offset will be get from the system property 'unsafe.offset.default'.<br>
-	 *     If the property is not set, the default value {@code 1} will be used.<br>
+	 *     If the property is not set, the default value {@code 1} will be used.
 	 * </p>
 	 * <ul>
 	 *     <li>...</li>
@@ -177,6 +180,7 @@ public final class StackTraceUtils {
 	 *     <li>4: The calling method</li>
 	 *     <li>...</li>
 	 * </ul>
+	 *
 	 * @param callsBefore The number of calls before the method which requests the calling method
 	 * @return The calling method at the specified position
 	 * @throws IllegalArgumentException If the specified calls before value is less than or equal to 0
@@ -201,11 +205,11 @@ public final class StackTraceUtils {
 	 * <pre>base + default</pre>
 	 * <p>
 	 *     The base offset will be get from the system property 'unsafe.offset.base'.<br>
-	 *     If the property is not set, the default value {@code 3} will be used.<br>
+	 *     If the property is not set, the default value {@code 3} will be used.
 	 * </p>
 	 * <p>
 	 *     The default offset will be get from the system property 'unsafe.offset.default'.<br>
-	 *     If the property is not set, the default value {@code 1} will be used.<br>
+	 *     If the property is not set, the default value {@code 1} will be used.
 	 * </p>
 	 * <ul>
 	 *     <li>...</li>
@@ -214,6 +218,7 @@ public final class StackTraceUtils {
 	 *     <li>4: The calling method</li>
 	 *     <li>...</li>
 	 * </ul>
+	 *
 	 * @return An optional containing the calling method or an empty optional if the calling method could not be identified or an error occurred
 	 * @throws IndexOutOfBoundsException If the specified position is out of bounds
 	 * @throws IllegalCallerException If called from the {@code main} method and 'unsafe.calls.main' is {@code false}
@@ -234,11 +239,11 @@ public final class StackTraceUtils {
 	 * <pre>base + default + callsBefore</pre>
 	 * <p>
 	 *     The base offset will be get from the system property 'unsafe.offset.base'.<br>
-	 *     If the property is not set, the default value {@code 3} will be used.<br>
+	 *     If the property is not set, the default value {@code 3} will be used.
 	 * </p>
 	 * <p>
 	 *     The default offset will be get from the system property 'unsafe.offset.default'.<br>
-	 *     If the property is not set, the default value {@code 1} will be used.<br>
+	 *     If the property is not set, the default value {@code 1} will be used.
 	 * </p>
 	 * <ul>
 	 *     <li>...</li>
@@ -248,6 +253,7 @@ public final class StackTraceUtils {
 	 *     <li>5: The method which calls the method which requests the calling method</li>
 	 *     <li>...</li>
 	 * </ul>
+	 *
 	 * @param callsBefore The number of calls before the method which requests the calling method
 	 * @return An optional containing the calling method or an empty optional if the calling method could not be identified or an error occurred
 	 * @throws IllegalArgumentException If the specified calls before value is less than or equal to 0
@@ -272,8 +278,9 @@ public final class StackTraceUtils {
 	 * Gets the default offset for the stack trace elements.<br>
 	 * <p>
 	 *     The default offset will be get from the system property 'unsafe.offset.default'.<br>
-	 *     If the property is not set, the default value {@code 1} will be used.<br>
+	 *     If the property is not set, the default value {@code 1} will be used.
 	 * </p>
+	 *
 	 * @return The default offset
 	 * @see StackTraceUtils#getCallingClass()
 	 * @see StackTraceUtils#getCallingClass(int)
@@ -291,7 +298,7 @@ public final class StackTraceUtils {
 	 * This method is used internally to get the correct stack trace element.<br>
 	 * <p>
 	 *     The base offset will be get from the system property 'unsafe.offset.base'.<br>
-	 *     If the property is not set, the default value {@code 3} will be used.<br>
+	 *     If the property is not set, the default value {@code 3} will be used.
 	 * </p>
 	 * <ul>
 	 *     <li>0: {@link Thread#getStackTrace()}</li>
@@ -300,6 +307,7 @@ public final class StackTraceUtils {
 	 *     <li>3: The method which requests the calling stack trace element</li>
 	 *     <li>4: The calling method or class</li>
 	 * </ul>
+	 *
 	 * @param callsBefore The number of calls before the overloading method in this class
 	 * @return The stack trace element at the specified position
 	 * @throws IllegalArgumentException If the specified calls before value is less than or equal to 0
@@ -326,6 +334,7 @@ public final class StackTraceUtils {
 	 * Gets the calling method from the specified stack trace element.<br>
 	 * The calling method will be identified by the class name and the method name.<br>
 	 * If there are multiple methods with the same name in the same class, the method will not be identified.<br>
+	 *
 	 * @param element The stack trace element
 	 * @return The calling method or {@code null} if the method could not be identified
 	 * @throws NullPointerException If the specified stack trace element is {@code null}

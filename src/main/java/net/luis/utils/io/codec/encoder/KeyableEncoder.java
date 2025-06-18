@@ -43,6 +43,7 @@ public interface KeyableEncoder<C> extends Encoder<C> {
 	 * Creates a new keyable encoder from the specified encoder and key encoder.<br>
 	 * The key encoder function converts a key to a string.<br>
 	 * If the key encoder is not able to handle a key, it can simply return null.<br>
+	 *
 	 * @param encoder The encoder
 	 * @param keyEncoder The key encoder function
 	 * @return The keyable encoder
@@ -74,6 +75,7 @@ public interface KeyableEncoder<C> extends Encoder<C> {
 	/**
 	 * Encodes the key of the specified type and returns the encoded key as a result.<br>
 	 * The result contains the encoded key or an error message.<br>
+	 *
 	 * @param provider The type provider
 	 * @param key The key to encode
 	 * @return The result

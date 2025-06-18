@@ -49,6 +49,7 @@ public class ConfiguredCodec<C, O> {
 	
 	/**
 	 * Constructs a new configured codec using the given codec and getter for the component.<br>
+	 *
 	 * @param codec The codec
 	 * @param getter The getter
 	 * @throws NullPointerException If the codec or getter is null
@@ -60,6 +61,7 @@ public class ConfiguredCodec<C, O> {
 	
 	/**
 	 * Encodes the component of the object using the given type provider and current value.<br>
+	 *
 	 * @param provider The type provider
 	 * @param current The current value
 	 * @param object The object
@@ -79,6 +81,7 @@ public class ConfiguredCodec<C, O> {
 	/**
 	 * Decodes the component of the object using the given type provider and value.<br>
 	 * This method will simply pass through the value to the underlying codec.<br>
+	 *
 	 * @param provider The type provider
 	 * @param value The value
 	 * @return The result of the decoding operation

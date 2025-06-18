@@ -36,6 +36,7 @@ public interface TokenTransformer {
 	/**
 	 * Transforms the given list of tokens into another list of tokens.<br>
 	 * The transformer can modify the tokens, remove them, or add new tokens.<br>
+	 *
 	 * @param tokens The list of tokens to transform
 	 * @return The transformed list of tokens
 	 * @apiNote This method should return an unmodifiable list of tokens

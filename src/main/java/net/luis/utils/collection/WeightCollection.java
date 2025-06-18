@@ -57,6 +57,7 @@ public class WeightCollection<T> {
 	
 	/**
 	 * Constructs a new empty weight collection with the given random number generator.<br>
+	 *
 	 * @param rng The random number generator
 	 * @throws NullPointerException If the random number generator is null
 	 */
@@ -67,6 +68,7 @@ public class WeightCollection<T> {
 	
 	/**
 	 * Adds the given value with the given weight to the collection.<br>
+	 *
 	 * @param weight The weight of the value
 	 * @param value The value to add
 	 * @throws NullPointerException If the value is null
@@ -83,6 +85,7 @@ public class WeightCollection<T> {
 	
 	/**
 	 * Removes the given value from the collection.<br>
+	 *
 	 * @param value The value to remove
 	 * @return True, if the value was removed, otherwise false
 	 */
@@ -99,6 +102,7 @@ public class WeightCollection<T> {
 	
 	/**
 	 * Checks if the collection contains the given value.<br>
+	 *
 	 * @param value The value to check
 	 * @return True, if the collection contains the value, otherwise false
 	 */
@@ -117,6 +121,7 @@ public class WeightCollection<T> {
 	/**
 	 * Gets an element from the collection based on the weight of the elements.<br>
 	 * Elements with a higher weight have a higher chance to be returned.<br>
+	 *
 	 * @return An weighted random element
 	 */
 	public T next() {

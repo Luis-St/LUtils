@@ -45,10 +45,10 @@ final class ClassPathHelper {
 	 * Constant for the system property 'unsafe.package.depth'.<br>
 	 * <p>
 	 *     The property is used in {@link #getClasses(boolean, Predicate)} to filter the classes<br>
-	 *     from the classpath by the package depth of the calling class.<br>
+	 *     from the classpath by the package depth of the calling class.
 	 * </p>
 	 * <p>
-	 *     The default value is {@code 2}.<br>
+	 *     The default value is {@code 2}.
 	 * </p>
 	 */
 	private static final String UNSAFE_PACKAGE_DEPTH = "unsafe.package.depth";
@@ -57,15 +57,15 @@ final class ClassPathHelper {
 	 * Constant for the system property 'unsafe.classes.ignored'.<br>
 	 * <p>
 	 *     The property is used in to filter classes which should be fully ignored.<br>
-	 *     All classes which are listed will not be loaded.<br>
+	 *     All classes which are listed will not be loaded.
 	 * </p>
 	 * <p>
 	 *     The value of the property is a comma or semicolon separated list of fully qualified class names.<br>
 	 *     If you want to ignore all classes from a package, you can use a wildcard at the end of the package name.<br>
-	 *     Wildcard entries are only allowed at the end of the package name, the entry must end with {@code .*}.<br>
+	 *     Wildcard entries are only allowed at the end of the package name, the entry must end with {@code .*}.
 	 * </p>
 	 * <p>
-	 *     The default value is an empty string.<br>
+	 *     The default value is an empty string.
 	 * </p>
 	 */
 	private static final String UNSAFE_CLASSES_IGNORED = "unsafe.classes.ignored";
@@ -81,17 +81,18 @@ final class ClassPathHelper {
 	 * The classes will be filtered by the given condition.<br>
 	 * <p>
 	 *     If dependency classes should not be included, an 'and' clause is added to the condition.<br>
-	 *     The clause checks uses the package name of the calling class to determine if the class is a dependency or not.<br>
+	 *     The clause checks uses the package name of the calling class to determine if the class is a dependency or not.
 	 * </p>
 	 * <p>
 	 *     For example, if the caller of this method is in the package "net.luis.utils.util",<br>
 	 * 	   all classes in the packages "net.luis.utils" will be returned,<br>
 	 * 	   because the depth is 3 which means that the package will be cut after the third dot.<br>
-	 * 	   The depth can be changed by using the system property 'unsafe.package.depth'.<br>
+	 * 	   The depth can be changed by using the system property 'unsafe.package.depth'.
 	 * </p>
 	 * <p>
-	 *     Any exceptions which will be thrown while trying to get the classes will be ignored.<br>
+	 *     Any exceptions which will be thrown while trying to get the classes will be ignored.
 	 * </p>
+	 *
 	 * @param includeDependencies Whether to include dependency classes or not
 	 * @param condition A condition to filter the classes
 	 * @return A list of all classes
@@ -119,12 +120,13 @@ final class ClassPathHelper {
 	 * <p>
 	 *     The value of the property is a comma or semicolon separated list of fully qualified class names.<br>
 	 *     If you want to ignore all classes from a package, you can use a wildcard at the end of the package name.<br>
-	 *     Wildcard entries are only allowed at the end of the package name, the entry must end with {@code .*}.<br>
+	 *     Wildcard entries are only allowed at the end of the package name, the entry must end with {@code .*}.
 	 * </p>
 	 * <p>
 	 *     If the property is not set, the condition will always return {@code false}.<br>
-	 *     This means that no classes will be ignored.<br>
+	 *     This means that no classes will be ignored.
 	 * </p>
+	 *
 	 * @return A condition to filter the classes which should be ignored
 	 */
 	private static @NotNull Predicate<String> getIgnoreCondition() {
@@ -151,6 +153,7 @@ final class ClassPathHelper {
 	/**
 	 * Gets all classes from the given jar file.<br>
 	 * Any exceptions which will be thrown while trying to get the classes will be ignored.<br>
+	 *
 	 * @param file The jar file
 	 * @param condition A condition to filter the classes
 	 * @return A list of all classes in the given jar file
@@ -187,8 +190,9 @@ final class ClassPathHelper {
 	 * <p>
 	 *     If a jar file is found, {@link #getClassesFromJar(File, Predicate)} will be called.<br>
 	 *     Any exceptions which will be thrown while trying to get the classes will be ignored.<br>
-	 *     This method will be mainly used to get all classes in ide environments, from the output directory.<br>
+	 *     This method will be mainly used to get all classes in ide environments, from the output directory.
 	 * </p>
+	 *
 	 * @param directory The directory to get the classes from
 	 * @param condition A condition to filter the classes
 	 * @return A list of all classes in the given directory
@@ -219,6 +223,7 @@ final class ClassPathHelper {
 	/**
 	 * Gets all files from the given directory.<br>
 	 * If the given directory contains subdirectories, this method will be called recursively.<br>
+	 *
 	 * @param directory The directory to get the files from
 	 * @param filter A filter to filter the files
 	 * @param recurse If true, subdirectories will be included
@@ -243,6 +248,7 @@ final class ClassPathHelper {
 	 * Gets all files from the classpath.<br>
 	 * The files will be extracted from the system property 'java.class.path'.<br>
 	 * The system path separator will be used to split the classpath into single files.<br>
+	 *
 	 * @return A list of all files from the classpath
 	 */
 	private static @NotNull List<File> getClassPathFiles() {
@@ -258,6 +264,7 @@ final class ClassPathHelper {
 	
 	/**
 	 * Converts the given file name to a class name.<br>
+	 *
 	 * @param fileName The file name to convert
 	 * @return The converted class name
 	 * @throws NullPointerException If the given file name is null

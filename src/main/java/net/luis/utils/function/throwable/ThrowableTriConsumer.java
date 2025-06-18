@@ -40,6 +40,7 @@ public interface ThrowableTriConsumer<T, U, V, X extends Throwable> {
 	
 	/**
 	 * Converts a throwable tri-consumer into a tri-consumer that throws a runtime exception when an exception is thrown.<br>
+	 *
 	 * @param consumer The throwable tri-consumer
 	 * @return A caught tri-consumer
 	 * @param <T> The first argument type
@@ -60,6 +61,7 @@ public interface ThrowableTriConsumer<T, U, V, X extends Throwable> {
 	
 	/**
 	 * Functional method that takes three arguments and consumes them.<br>
+	 *
 	 * @param t The first argument
 	 * @param u The second argument
 	 * @param v The third argument
@@ -68,8 +70,9 @@ public interface ThrowableTriConsumer<T, U, V, X extends Throwable> {
 	void accept(T t, U u, V v) throws X;
 	
 	/**
-	 * Returns a composed consumer of same type that performs,<br>
+	 * Returns a composed consumer of same type that performs,
 	 * in sequence, this operation followed by the {@code after} operation.<br>
+	 *
 	 * @param after The operation to perform after this operation
 	 * @return The composed throwable consumer
 	 * @throws NullPointerException If the after operation is null

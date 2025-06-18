@@ -29,7 +29,7 @@ import java.util.Objects;
  * @author Luis-St
  *
  * @param token The token string
- * @param equalsIgnoreCase If the token should be compared case insensitive
+ * @param equalsIgnoreCase If the token should be compared case-insensitive
  */
 public record StringTokenDefinition(
 	@NotNull String token,
@@ -38,8 +38,9 @@ public record StringTokenDefinition(
 	
 	/**
 	 * Constructs a new token definition for the given string.<br>
+	 *
 	 * @param token The token string
-	 * @param equalsIgnoreCase If the token should be compared case insensitive
+	 * @param equalsIgnoreCase If the token should be compared case-insensitive
 	 * @throws NullPointerException If the token is null
 	 * @throws IllegalArgumentException If the token is empty
 	 */

@@ -32,15 +32,15 @@ import java.util.*;
  * <p>
  *     The collection can be either an object or an array.<br>
  *     If the collection has exactly one element, it's undefined whether it's an object or an array.<br>
- *     In this case, the next element which is added will determine the type of the collection.<br>
+ *     In this case, the next element which is added will determine the type of the collection.
  * </p>
  * <p>
  *     In the case this is an object collection, the keys of the elements must be unique.<br>
- *     If an element with a key that already exists is added, an exception will be thrown.<br>
+ *     If an element with a key that already exists is added, an exception will be thrown.
  * </p>
  * <p>
  *     In the case this is an array collection, the keys of the elements must be the same.<br>
- *     If an element with a key that is different from the existing elements is added, an exception will be thrown.<br>
+ *     If an element with a key that is different from the existing elements is added, an exception will be thrown.
  * </p>
  *
  * @author Luis-St
@@ -60,6 +60,7 @@ public class XmlElements {
 	/**
 	 * Constructs a new xml elements collection with the given elements.<br>
 	 * This constructor will determine the type of the collection based on the elements.<br>
+	 *
 	 * @param elements The elements to add to the collection
 	 * @throws NullPointerException If the elements are null
 	 * @throws XmlTypeException If the elements are not valid for the collection type
@@ -71,6 +72,7 @@ public class XmlElements {
 	/**
 	 * Constructs a new xml elements collection with the given elements.<br>
 	 * This constructor will determine the type of the collection based on the elements.<br>
+	 *
 	 * @param elements The elements to add to the collection
 	 * @throws NullPointerException If the elements are null
 	 * @throws XmlTypeException If the elements are not valid for the collection type
@@ -92,6 +94,7 @@ public class XmlElements {
 	/**
 	 * Checks whether the collection is an array.<br>
 	 * An array is a collection with exactly one key and multiple elements.<br>
+	 *
 	 * @return True if the collection is an array, false otherwise
 	 */
 	public boolean isArray() {
@@ -102,6 +105,7 @@ public class XmlElements {
 	 * Checks whether the collection is an object.<br>
 	 * An object is a collection with multiple keys.<br>
 	 * Each key has exactly one element.<br>
+	 *
 	 * @return True if the collection is an object, false otherwise
 	 */
 	public boolean isObject() {
@@ -129,6 +133,7 @@ public class XmlElements {
 	
 	/**
 	 * Checks if this collection contains an element with the given name.<br>
+	 *
 	 * @param name The name of the element to check for
 	 * @return True if the collection contains an element with the given name, false otherwise
 	 */
@@ -138,6 +143,7 @@ public class XmlElements {
 	
 	/**
 	 * Checks if this collection contains the given element considering the type.<br>
+	 *
 	 * @param element The element to check for
 	 * @return True if the collection contains the given element, false otherwise
 	 */
@@ -174,6 +180,7 @@ public class XmlElements {
 	
 	/**
 	 * Adds the given element to the collection.<br>
+	 *
 	 * @param element The element to add
 	 * @throws NullPointerException If the element is null
 	 * @throws XmlTypeException If the element is not valid for the collection type
@@ -208,6 +215,7 @@ public class XmlElements {
 	
 	/**
 	 * Adds the given container to the collection.<br>
+	 *
 	 * @param container The container to add
 	 * @throws NullPointerException If the container is null
 	 * @throws XmlTypeException If the container is not valid for the collection type
@@ -219,6 +227,7 @@ public class XmlElements {
 	
 	/**
 	 * Adds the given value to the collection.<br>
+	 *
 	 * @param value The value to add
 	 * @throws NullPointerException If the value is null
 	 * @throws XmlTypeException If the value is not valid for the collection type
@@ -233,6 +242,7 @@ public class XmlElements {
 	
 	/**
 	 * Removes the given element from the collection considering the type.<br>
+	 *
 	 * @param element The element to remove
 	 * @return True if the element was removed, false otherwise
 	 * @throws NullPointerException If the element is null
@@ -252,6 +262,7 @@ public class XmlElements {
 	/**
 	 * Removes the element with the given name from the collection.<br>
 	 * This method should only be used if the collection is an object.<br>
+	 *
 	 * @param name The name of the element to remove
 	 * @return True if an element was removed, false otherwise
 	 * @throws XmlTypeException If the collection is an array
@@ -266,6 +277,7 @@ public class XmlElements {
 	/**
 	 * Removes the element with the given index from the collection.<br>
 	 * This method should only be used if the collection is an array.<br>
+	 *
 	 * @param index The index of the element to remove
 	 * @return True if an element was removed, false otherwise
 	 * @throws XmlTypeException If the collection is an object
@@ -299,6 +311,7 @@ public class XmlElements {
 	/**
 	 * Returns the element with the given name from the collection.<br>
 	 * This method should only be used if the collection is an object.<br>
+	 *
 	 * @param name The name of the element to get
 	 * @return The element with the given name or null if no element with the name exists
 	 * @throws XmlTypeException If the collection is an array
@@ -317,6 +330,7 @@ public class XmlElements {
 	/**
 	 * Returns the element with the given name from the collection as a container.<br>
 	 * This method should only be used if the collection is an object.<br>
+	 *
 	 * @param name The name of the element to get
 	 * @return The element with the given name as a container
 	 * @throws XmlTypeException If the collection is an array or the element is not a container
@@ -334,6 +348,7 @@ public class XmlElements {
 	/**
 	 * Returns the element with the given name from the collection as a value.<br>
 	 * This method should only be used if the collection is an object.<br>
+	 *
 	 * @param name The name of the element to get
 	 * @return The element with the given name as a value
 	 * @throws XmlTypeException If the collection is an array or the element is not a value
@@ -351,6 +366,7 @@ public class XmlElements {
 	/**
 	 * Returns the element with the given index from the collection.<br>
 	 * This method should only be used if the collection is an array.<br>
+	 *
 	 * @param index The index of the element to get
 	 * @return The element with the given index or null if no element with the index exists
 	 * @throws XmlTypeException If the collection is an object
@@ -369,6 +385,7 @@ public class XmlElements {
 	/**
 	 * Returns the element with the given index from the collection as a container.<br>
 	 * This method should only be used if the collection is an array.<br>
+	 *
 	 * @param index The index of the element to get
 	 * @return The element with the given index as a container
 	 * @throws XmlTypeException If the collection is an object
@@ -386,6 +403,7 @@ public class XmlElements {
 	/**
 	 * Returns the element with the given index from the collection as a value.<br>
 	 * This method should only be used if the collection is an array.<br>
+	 *
 	 * @param index The index of the element to get
 	 * @return The element with the given index as a value
 	 * @throws XmlTypeException If the collection is an object
@@ -403,6 +421,7 @@ public class XmlElements {
 	/**
 	 * Returns the elements of the collection as an unmodifiable list.<br>
 	 * This method should only be used if the collection is an array.<br>
+	 *
 	 * @return The elements of the collection
 	 * @throws XmlTypeException If the collection is an object
 	 */
@@ -416,6 +435,7 @@ public class XmlElements {
 	/**
 	 * Returns the elements of the collection as an unmodifiable map.<br>
 	 * This method should only be used if the collection is an object.<br>
+	 *
 	 * @return The elements of the collection
 	 * @throws XmlTypeException If the collection is an array
 	 */

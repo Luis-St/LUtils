@@ -40,6 +40,7 @@ public interface Decoder<C> {
 	
 	/**
 	 * Decodes the value of the specified type and returns the decoded value directly.<br>
+	 *
 	 * @param provider The type provider
 	 * @param value The value to decode
 	 * @return The decoded value
@@ -56,6 +57,7 @@ public interface Decoder<C> {
 	/**
 	 * Decodes the value of the specified type and returns the result.<br>
 	 * The result contains the decoded value or an error message.<br>
+	 *
 	 * @param provider The type provider
 	 * @param value The value to decode
 	 * @return The result
@@ -68,6 +70,7 @@ public interface Decoder<C> {
 	 * Maps the type of the decoded value to another type.<br>
 	 * The mapping function is applied to the decoded result of the decoding process.<br>
 	 * The mapping function returns a result containing the mapped value or an error message if the mapping process fails.<br>
+	 *
 	 * @param from The mapping function
 	 * @return The mapped decoder
 	 * @param <O> The type to map to

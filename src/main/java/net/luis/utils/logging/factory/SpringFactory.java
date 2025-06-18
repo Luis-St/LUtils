@@ -34,7 +34,7 @@ import java.net.URI;
  * <p>
  *     This factory must be registered via the system property 'log4j.configurationFactory'<br>
  *     with the fully qualified class name as its value.<br>
- *     Alternatively, the factory can be registered by calling {@link LoggingUtils#registerSpringFactory()}.<br>
+ *     Alternatively, the factory can be registered by calling {@link LoggingUtils#registerSpringFactory()}.
  * </p>
  */
 @Order(50)
@@ -49,6 +49,7 @@ public class SpringFactory extends ConfigurationFactory {
 	/**
 	 * Returns the supported file extensions of the factory.<br>
 	 * The factory does not depend on the file extension, so it supports all file extensions.<br>
+	 *
 	 * @return The supported file extensions
 	 */
 	@Override

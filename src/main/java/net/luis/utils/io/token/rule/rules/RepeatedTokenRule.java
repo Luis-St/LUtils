@@ -51,6 +51,7 @@ public record RepeatedTokenRule(
 	
 	/**
 	 * Constructs a new repeated token rule with the given token rule and exact number of occurrences.<br>
+	 *
 	 * @param tokenRule The token rule to match
 	 * @param occurrences The exact number of occurrences
 	 * @throws NullPointerException If the token rule is null
@@ -62,6 +63,7 @@ public record RepeatedTokenRule(
 	
 	/**
 	 * Constructs a new repeated token rule with the given token rule and min and max number of occurrences.<br>
+	 *
 	 * @param tokenRule The token rule to match
 	 * @param minOccurrences The minimum number of occurrences
 	 * @param maxOccurrences The maximum number of occurrences

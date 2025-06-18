@@ -60,7 +60,7 @@ import static org.apache.commons.lang3.StringUtils.*;
  * <p>
  *     The first part is the target type, the second part is the target key and the third part is the default value.<br>
  *     The default value is optional and will be used if the resolved value is {@code null}.<br>
- *     The target type can be one of the following:<br>
+ *     The target type can be one of the following:
  * </p>
  * <ul>
  *     <li>{@code <empty>}, {@code prop} or {@code property} - The value will be resolved from the previously read properties of this reader</li>
@@ -100,6 +100,7 @@ public class PropertyReader implements AutoCloseable {
 	
 	/**
 	 * Constructs a new property reader with the given input and the default configuration.<br>
+	 *
 	 * @param input The input to create the reader for
 	 * @throws NullPointerException If the input is null
 	 */
@@ -109,6 +110,7 @@ public class PropertyReader implements AutoCloseable {
 	
 	/**
 	 * Constructs a new property reader with the given input and configuration.<br>
+	 *
 	 * @param input The input to create the reader for
 	 * @param config The configuration for this reader
 	 * @throws NullPointerException If the input or the configuration is null
@@ -122,6 +124,7 @@ public class PropertyReader implements AutoCloseable {
 	
 	/**
 	 * Reads the content of the give scoped string reader and returns it without the scope.<br>
+	 *
 	 * @param reader The reader to read the content from
 	 * @param scope The scope which is expected
 	 * @return The content of the reader without the scope
@@ -136,6 +139,7 @@ public class PropertyReader implements AutoCloseable {
 	
 	/**
 	 * Reads the properties from the input and returns them as a properties object.<br>
+	 *
 	 * @return The properties that have been read
 	 * @throws PropertySyntaxException If an error occurs while reading the properties
 	 */
@@ -165,6 +169,7 @@ public class PropertyReader implements AutoCloseable {
 	 * Parses the given line and returns the properties that have been read.<br>
 	 * If the line is empty or a comment, an empty list will be returned.<br>
 	 * In the case of an error, the error action of the configuration will be executed.<br>
+	 *
 	 * @param rawLine The line to parse
 	 * @return The properties that have been read
 	 * @throws NullPointerException If the line is null
@@ -190,6 +195,7 @@ public class PropertyReader implements AutoCloseable {
 	/**
 	 * Returns the value part of the given parts.<br>
 	 * If the line contains multiple separators, the value part will be concatenated with the separator.<br>
+	 *
 	 * @param valueParts The parts of the line that were split at the separator
 	 * @return The value part of the line
 	 * @throws NullPointerException If the value parts are null
@@ -211,6 +217,7 @@ public class PropertyReader implements AutoCloseable {
 	/**
 	 * Parses the given key and value and returns the properties that have been read.<br>
 	 * If advanced parsing is enabled, the key can be a compacted or variable key.<br>
+	 *
 	 * @param rawKey The key to parse
 	 * @param rawValue The value to parse
 	 * @return The properties that have been read
@@ -243,6 +250,7 @@ public class PropertyReader implements AutoCloseable {
 	
 	/**
 	 * Checks if the given key is either a compacted or variable key.<br>
+	 *
 	 * @param key The key to check
 	 * @return True if the key is advanced, otherwise false
 	 */
@@ -254,6 +262,7 @@ public class PropertyReader implements AutoCloseable {
 	/**
 	 * Returns the alignment count of the given key.<br>
 	 * The alignment count is the count of whitespaces at the end of the key.<br>
+	 *
 	 * @param key The key to get the alignment count of
 	 * @return The alignment count of the key
 	 * @throws NullPointerException If the key is null
@@ -275,6 +284,7 @@ public class PropertyReader implements AutoCloseable {
 	 * Removes the alignment from the given string.<br>
 	 * If the alignment is 0, the string will be returned as is.<br>
 	 * If the alignment is greater than 0, the alignment will be removed from the string.<br>
+	 *
 	 * @param str The string to remove the alignment from
 	 * @param alignment The alignment count to remove
 	 * @param isKey True if the string is a key, otherwise false
@@ -298,6 +308,7 @@ public class PropertyReader implements AutoCloseable {
 	/**
 	 * Parses the given key and value and returns a property.<br>
 	 * The key and value will be checked against the configuration.<br>
+	 *
 	 * @param key The key to parse
 	 * @param value The value to parse
 	 * @return The property that has been read
@@ -315,6 +326,7 @@ public class PropertyReader implements AutoCloseable {
 	/**
 	 * Validates and resolves the given advanced key and returns the resolved keys.<br>
 	 * The key can be a compacted or variable key.<br>
+	 *
 	 * @param key The key to resolve
 	 * @return The resolved keys
 	 * @throws NullPointerException If the key is null
@@ -378,6 +390,7 @@ public class PropertyReader implements AutoCloseable {
 	 * Validates and resolves the given compacted key part against the expected format.<br>
 	 * The compacted key part must contain at least one value, a pipe separates multiple values.<br>
 	 * The values must not be blank, contain whitespaces or be nested.<br>
+	 *
 	 * @param key The key to resolve
 	 * @param compacted The compacted key part to resolve
 	 * @return The resolved keys
@@ -411,7 +424,7 @@ public class PropertyReader implements AutoCloseable {
 	 * <p>
 	 *     Validates and resolves the given variable key part against the expected format.<br>
 	 *     The variable key part must contain at least one question mark but at most two.<br>
-	 *     The first part is the target type, the second part is the target key and the third part is the optional default value.<br>
+	 *     The first part is the target type, the second part is the target key and the third part is the optional default value.
 	 * </p>
 	 * The target type must be one of the following:<br>
 	 * <ul>
@@ -419,6 +432,7 @@ public class PropertyReader implements AutoCloseable {
 	 *     <li>{@code sys} or {@code system} - The value will be resolved from the system properties</li>
 	 *     <li>{@code env} or {@code environment} - The value will be resolved from the system environment</li>
 	 * </ul>
+	 *
 	 * @param key The key to resolve
 	 * @param variable The variable key part to resolve
 	 * @return The resolved key
@@ -444,8 +458,9 @@ public class PropertyReader implements AutoCloseable {
 	 * <p>
 	 *     If the target type is {@code empty}, {@code prop} or {@code property}, the value will be resolved from the previously read properties of this reader.<br>
 	 *     If the target type is {@code sys} or {@code system}, the value will be resolved from the system properties.<br>
-	 *     If the target type is {@code env} or {@code environment}, the value will be resolved from the system environment.<br>
+	 *     If the target type is {@code env} or {@code environment}, the value will be resolved from the system environment.
 	 * </p>
+	 *
 	 * @param key The key to resolve, used for error messages
 	 * @param variable The variable key part to resolve
 	 * @return The resolved value
@@ -481,6 +496,7 @@ public class PropertyReader implements AutoCloseable {
 	 * Validates and returns the target key of the given variable key part.<br>
 	 * The target key must not be empty, contain nested variable parts or compacted parts.<br>
 	 * The target key will be stripped of whitespaces.<br>
+	 *
 	 * @param key The key to resolve
 	 * @param variable The variable key part to resolve
 	 * @param parts The parts of the variable key part
@@ -510,6 +526,7 @@ public class PropertyReader implements AutoCloseable {
 	 * <pre>{@code
 	 * <resolved_key>.<new_key_part>
 	 * }</pre>
+	 *
 	 * @param resolvedKeys The resolved keys to extend
 	 * @param keyParts The new key parts to append
 	 * @return The extended resolved keys

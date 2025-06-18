@@ -25,11 +25,11 @@ import java.lang.annotation.*;
  * Fields marked with this annotation will be encoded and decoded by the codec auto-mapping system.<br>
  * <p>
  *     When a class has any fields annotated with this annotation, only those fields will be included in the codec,
- *     ignoring any non-annotated fields.<br>
+ *     ignoring any non-annotated fields.
  * </p>
  * <p>
  *     If no fields are annotated with this annotation, the codec auto-mapping system will include all non-static,
- *     final fields that are not marked as transient.<br>
+ *     final fields that are not marked as transient.
  * </p>
  *
  * @see CodecAutoMapping

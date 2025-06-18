@@ -29,7 +29,7 @@ import java.lang.annotation.*;
  * <p>
  *     Java's type erasure removes generic type information at runtime, so this annotation allows
  *     explicitly specifying the generic parameters that should be used when creating codecs.<br>
- *     Example usage:<br>
+ *     Example usage:
  * </p>
  * <pre><code>
  *     &#64;GenericInfo({String.class, Integer.class}) private Map&lt;String, Integer&gt; map;

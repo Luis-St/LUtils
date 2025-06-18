@@ -28,15 +28,15 @@ import java.lang.annotation.*;
  * <p>
  *     The value of the annotation defines dependencies to other record components.<br>
  *     If the value is empty, the record component is not dependent on any other record component.<br>
- *     The dependencies must also be annotated with {@link WriteOnly}.<br>
+ *     The dependencies must also be annotated with {@link WriteOnly}.
  * </p>
  * <p>
  *     The dependencies must be boolean expressions and can be combined with the following operators:<br>
  *     {@code key1 == 10} - The record component is dependent on key1 only if key1 is equal to 10.<br>
- *     {@code key1 && key2} - The record component is dependent on key1 and key2.<br>
+ *     {@code key1 && key2} - The record component is dependent on key1 and key2.
  * </p>
  * <p>
- *     The dependencies are not checked or used, they are only for documentation purposes.<br>
+ *     The dependencies are not checked or used, they are only for documentation purposes.
  * </p>
  *
  * @author Luis-St

@@ -48,7 +48,7 @@ public final class FileUtils {
 	 * Splits the given file into a pair of the folder and the file name.<br>
 	 * The folder is the part before the last slash, the name is the part after the last slash.<br>
 	 * <p>
-	 *     Examples:<br>
+	 *     Examples:
 	 * </p>
 	 * <pre>{@code
 	 * split(null) -> ("", "")
@@ -60,6 +60,7 @@ public final class FileUtils {
 	 * split("/foo.json") -> ("/", "foo.json")
 	 * split("/bar/foo.json") -> ("/bar"/, "foo.json")
 	 * }</pre>
+	 *
 	 * @param file The file to split as a string
 	 * @return The pair of the folder and the file name
 	 */
@@ -80,7 +81,7 @@ public final class FileUtils {
 	 * Gets the name of the given file.<br>
 	 * The file can be a path or a file name.<br>
 	 * <p>
-	 *     Examples:<br>
+	 *     Examples:
 	 * </p>
 	 * <pre>{@code
 	 * getName(null) -> ""
@@ -89,6 +90,7 @@ public final class FileUtils {
 	 * getName("/foo.json") -> "foo"
 	 * getName("/bar/foo.json") -> "foo"
 	 * }</pre>
+	 *
 	 * @param file The file to get the name of
 	 * @return The name of the file or an empty string if the file has no name
 	 */
@@ -106,7 +108,7 @@ public final class FileUtils {
 	 * Gets the extension of the given file.<br>
 	 * The file can be a path or a file name.<br>
 	 * <p>
-	 *     Examples:<br>
+	 *     Examples:
 	 * </p>
 	 * <pre>{@code
 	 * getExtension(null) -> ""
@@ -115,6 +117,7 @@ public final class FileUtils {
 	 * getExtension("/foo.json") -> "json"
 	 * getExtension("/bar/foo.json") -> "json"
 	 * }</pre>
+	 *
 	 * @param file The file to get the extension of
 	 * @return The extension of the file or an empty string if the file has no extension
 	 */
@@ -143,6 +146,7 @@ public final class FileUtils {
 	 * getRelativePath("/foo.json") -> "./foo.json"
 	 * getRelativePath("/bar/foo.json") -> "./bar/foo.json"
 	 * }</pre>
+	 *
 	 * @param file The file to get the relative path of
 	 * @return The relative path of the file
 	 */
@@ -169,6 +173,7 @@ public final class FileUtils {
 	
 	/**
 	 * Creates the given file and all parent directories.<br>
+	 *
 	 * @param file The file to create
 	 * @throws NullPointerException If the file is null
 	 * @throws FileAlreadyExistsException If the file already exists
@@ -193,6 +198,7 @@ public final class FileUtils {
 	
 	/**
 	 * Creates the given file and all parent directories if they do not exist.<br>
+	 *
 	 * @param file The file to create
 	 * @throws NullPointerException If the file is null
 	 * @throws IOException If an I/O error occurs
@@ -209,6 +215,7 @@ public final class FileUtils {
 	/**
 	 * Creates a temporary directory for the current session.<br>
 	 * The directory and all its content will be deleted when the JVM shuts down.<br>
+	 *
 	 * @param prefix The prefix of the directory name
 	 * @return The path of the created directory
 	 * @throws IOException If an I/O error occurs
@@ -229,6 +236,7 @@ public final class FileUtils {
 	
 	/**
 	 * Deletes the given file or directory recursively.<br>
+	 *
 	 * @param path The path to delete
 	 * @throws NullPointerException If the path is null
 	 * @throws IOException If an I/O error occurs
@@ -246,6 +254,7 @@ public final class FileUtils {
 	
 	/**
 	 * Reads the content of the given input provider as a string.<br>
+	 *
 	 * @param provider The input provider to read from
 	 * @return The content of the input provider
 	 * @throws NullPointerException If the provider is null
@@ -259,6 +268,7 @@ public final class FileUtils {
 	
 	/**
 	 * Reads the content of the given input provider as a string using the given charset.<br>
+	 *
 	 * @param provider The input provider to read from
 	 * @param charset The charset to use
 	 * @return The content of the input provider
@@ -274,6 +284,7 @@ public final class FileUtils {
 	
 	/**
 	 * Reads the content of the given reader as a string.<br>
+	 *
 	 * @param reader The reader to read from
 	 * @return The content of the reader
 	 * @throws NullPointerException If the reader is null

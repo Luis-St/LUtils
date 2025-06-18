@@ -74,6 +74,7 @@ public class JsonArray implements JsonElement, Iterable<JsonElement> {
 	
 	/**
 	 * Checks if this json array contains the given json element.<br>
+	 *
 	 * @param json The json element to check for
 	 * @return True if this json array contains the given json element, false otherwise
 	 */
@@ -112,6 +113,7 @@ public class JsonArray implements JsonElement, Iterable<JsonElement> {
 	/**
 	 * Sets the element at the given index to the given json element.<br>
 	 * If the json element is null, it will be replaced with a json null element.<br>
+	 *
 	 * @param index The index of the element to set
 	 * @param json The json element to set
 	 * @return The previous element at the given index
@@ -131,6 +133,7 @@ public class JsonArray implements JsonElement, Iterable<JsonElement> {
 	 * Sets the element at the given index to the given string.<br>
 	 * The string will be converted to a json primitive element.<br>
 	 * If the string is null, it will be replaced with a json null element.<br>
+	 *
 	 * @param index The index of the element to set
 	 * @param value The string to set
 	 * @return The previous element at the given index
@@ -144,6 +147,7 @@ public class JsonArray implements JsonElement, Iterable<JsonElement> {
 	/**
 	 * Sets the element at the given index to the given boolean.<br>
 	 * The boolean will be converted to a json primitive element.<br>
+	 *
 	 * @param index The index of the element to set
 	 * @param value The boolean to set
 	 * @return The previous element at the given index
@@ -158,6 +162,7 @@ public class JsonArray implements JsonElement, Iterable<JsonElement> {
 	 * Sets the element at the given index to the given number.<br>
 	 * The number will be converted to a json primitive element.<br>
 	 * If the number is null, it will be replaced with a json null element.<br>
+	 *
 	 * @param index The index of the element to set
 	 * @param value The number to set
 	 * @return The previous element at the given index
@@ -171,6 +176,7 @@ public class JsonArray implements JsonElement, Iterable<JsonElement> {
 	/**
 	 * Sets the element at the given index to the given byte.<br>
 	 * The byte will be converted to a json primitive element.<br>
+	 *
 	 * @param index The index of the element to set
 	 * @param value The byte to set
 	 * @return The previous element at the given index
@@ -184,6 +190,7 @@ public class JsonArray implements JsonElement, Iterable<JsonElement> {
 	/**
 	 * Sets the element at the given index to the given short.<br>
 	 * The short will be converted to a json primitive element.<br>
+	 *
 	 * @param index The index of the element to set
 	 * @param value The short to set
 	 * @return The previous element at the given index
@@ -197,6 +204,7 @@ public class JsonArray implements JsonElement, Iterable<JsonElement> {
 	/**
 	 * Sets the element at the given index to the given int.<br>
 	 * The int will be converted to a json primitive element.<br>
+	 *
 	 * @param index The index of the element to set
 	 * @param value The int to set
 	 * @return The previous element at the given index
@@ -210,6 +218,7 @@ public class JsonArray implements JsonElement, Iterable<JsonElement> {
 	/**
 	 * Sets the element at the given index to the given long.<br>
 	 * The long will be converted to a json primitive element.<br>
+	 *
 	 * @param index The index of the element to set
 	 * @param value The long to set
 	 * @return The previous element at the given index
@@ -223,6 +232,7 @@ public class JsonArray implements JsonElement, Iterable<JsonElement> {
 	/**
 	 * Sets the element at the given index to the given float.<br>
 	 * The float will be converted to a json primitive element.<br>
+	 *
 	 * @param index The index of the element to set
 	 * @param value The float to set
 	 * @return The previous element at the given index
@@ -236,6 +246,7 @@ public class JsonArray implements JsonElement, Iterable<JsonElement> {
 	/**
 	 * Sets the element at the given index to the given double.<br>
 	 * The double will be converted to a json primitive element.<br>
+	 *
 	 * @param index The index of the element to set
 	 * @param value The double to set
 	 * @return The previous element at the given index
@@ -252,6 +263,7 @@ public class JsonArray implements JsonElement, Iterable<JsonElement> {
 	/**
 	 * Adds the given json element to this json array.<br>
 	 * If the json element is null, it will be replaced with a json null element.<br>
+	 *
 	 * @param json The json element to add
 	 */
 	public void add(@Nullable JsonElement json) {
@@ -262,6 +274,7 @@ public class JsonArray implements JsonElement, Iterable<JsonElement> {
 	 * Adds the given string to this json array.<br>
 	 * The string will be converted to a json primitive element.<br>
 	 * If the string is null, it will be replaced with a json null element.<br>
+	 *
 	 * @param value The string to add
 	 */
 	public void add(@Nullable String value) {
@@ -271,6 +284,7 @@ public class JsonArray implements JsonElement, Iterable<JsonElement> {
 	/**
 	 * Adds the given boolean to this json array.<br>
 	 * The boolean will be converted to a json primitive element.<br>
+	 *
 	 * @param value The boolean to add
 	 */
 	public void add(boolean value) {
@@ -281,6 +295,7 @@ public class JsonArray implements JsonElement, Iterable<JsonElement> {
 	 * Adds the given number to this json array.<br>
 	 * The number will be converted to a json primitive element.<br>
 	 * If the number is null, it will be replaced with a json null element.<br>
+	 *
 	 * @param value The number to add
 	 */
 	public void add(@Nullable Number value) {
@@ -290,6 +305,7 @@ public class JsonArray implements JsonElement, Iterable<JsonElement> {
 	/**
 	 * Adds the given byte to this json array.<br>
 	 * The byte will be converted to a json primitive element.<br>
+	 *
 	 * @param value The byte to add
 	 */
 	public void add(byte value) {
@@ -299,6 +315,7 @@ public class JsonArray implements JsonElement, Iterable<JsonElement> {
 	/**
 	 * Adds the given short to this json array.<br>
 	 * The short will be converted to a json primitive element.<br>
+	 *
 	 * @param value The short to add
 	 */
 	public void add(short value) {
@@ -308,6 +325,7 @@ public class JsonArray implements JsonElement, Iterable<JsonElement> {
 	/**
 	 * Adds the given int to this json array.<br>
 	 * The int will be converted to a json primitive element.<br>
+	 *
 	 * @param value The int to add
 	 */
 	public void add(int value) {
@@ -317,6 +335,7 @@ public class JsonArray implements JsonElement, Iterable<JsonElement> {
 	/**
 	 * Adds the given long to this json array.<br>
 	 * The long will be converted to a json primitive element.<br>
+	 *
 	 * @param value The long to add
 	 */
 	public void add(long value) {
@@ -326,6 +345,7 @@ public class JsonArray implements JsonElement, Iterable<JsonElement> {
 	/**
 	 * Adds the given float to this json array.<br>
 	 * The float will be converted to a json primitive element.<br>
+	 *
 	 * @param value The float to add
 	 */
 	public void add(float value) {
@@ -335,6 +355,7 @@ public class JsonArray implements JsonElement, Iterable<JsonElement> {
 	/**
 	 * Adds the given double to this json array.<br>
 	 * The double will be converted to a json primitive element.<br>
+	 *
 	 * @param value The double to add
 	 */
 	public void add(double value) {
@@ -343,6 +364,7 @@ public class JsonArray implements JsonElement, Iterable<JsonElement> {
 	
 	/**
 	 * Adds all json elements from the given json array to this json array.<br>
+	 *
 	 * @param array The json array to add
 	 * @throws NullPointerException If the json array is null
 	 */
@@ -361,6 +383,7 @@ public class JsonArray implements JsonElement, Iterable<JsonElement> {
 	
 	/**
 	 * Adds all json elements from the given list to this json array.<br>
+	 *
 	 * @param elements The list of json elements to add
 	 * @throws NullPointerException If the list of json elements is null
 	 */
@@ -373,6 +396,7 @@ public class JsonArray implements JsonElement, Iterable<JsonElement> {
 	
 	/**
 	 * Removes the element at the given index from this json array.<br>
+	 *
 	 * @param index The index of the element to remove
 	 * @return The removed element
 	 * @throws JsonArrayIndexOutOfBoundsException If the index is negative or greater than the size of this json array
@@ -389,6 +413,7 @@ public class JsonArray implements JsonElement, Iterable<JsonElement> {
 	
 	/**
 	 * Removes the given json element from this json array.<br>
+	 *
 	 * @param json The json element to remove
 	 * @return True if the json element was removed, false otherwise
 	 */
@@ -408,6 +433,7 @@ public class JsonArray implements JsonElement, Iterable<JsonElement> {
 	
 	/**
 	 * Gets the json element at the given index from this json array.<br>
+	 *
 	 * @param index The index of the element to get
 	 * @return The json element at the given index
 	 * @throws JsonArrayIndexOutOfBoundsException If the index is negative or greater than the size of this json array
@@ -424,6 +450,7 @@ public class JsonArray implements JsonElement, Iterable<JsonElement> {
 	
 	/**
 	 * Gets the json element at the given index from this json array as a json object.<br>
+	 *
 	 * @param index The index of the element to get
 	 * @return The json object at the given index
 	 * @throws JsonArrayIndexOutOfBoundsException If the index is negative or greater than the size of this json array
@@ -440,6 +467,7 @@ public class JsonArray implements JsonElement, Iterable<JsonElement> {
 	
 	/**
 	 * Gets the json element at the given index from this json array as a json array.<br>
+	 *
 	 * @param index The index of the element to get
 	 * @return The json array at the given index
 	 * @throws JsonArrayIndexOutOfBoundsException If the index is negative or greater than the size of this json array
@@ -456,6 +484,7 @@ public class JsonArray implements JsonElement, Iterable<JsonElement> {
 	
 	/**
 	 * Gets the json element at the given index from this json array as a json primitive.<br>
+	 *
 	 * @param index The index of the element to get
 	 * @return The json primitive at the given index
 	 * @throws JsonArrayIndexOutOfBoundsException If the index is negative or greater than the size of this json array
@@ -473,6 +502,7 @@ public class JsonArray implements JsonElement, Iterable<JsonElement> {
 	/**
 	 * Gets the json element at the given index from this json array as a string.<br>
 	 * The element will be converted to a json primitive and then to a string.<br>
+	 *
 	 * @param index The index of the element to get
 	 * @return The string at the given index
 	 * @throws JsonArrayIndexOutOfBoundsException If the index is negative or greater than the size of this json array
@@ -486,6 +516,7 @@ public class JsonArray implements JsonElement, Iterable<JsonElement> {
 	/**
 	 * Gets the json element at the given index from this json array as a boolean.<br>
 	 * The element will be converted to a json primitive and then to a boolean.<br>
+	 *
 	 * @param index The index of the element to get
 	 * @return The boolean at the given index
 	 * @throws JsonArrayIndexOutOfBoundsException If the index is negative or greater than the size of this json array
@@ -499,6 +530,7 @@ public class JsonArray implements JsonElement, Iterable<JsonElement> {
 	/**
 	 * Gets the json element at the given index from this json array as a number.<br>
 	 * The element will be converted to a json primitive and then to a number.<br>
+	 *
 	 * @param index The index of the element to get
 	 * @return The number at the given index
 	 * @throws JsonArrayIndexOutOfBoundsException If the index is negative or greater than the size of this json array
@@ -512,6 +544,7 @@ public class JsonArray implements JsonElement, Iterable<JsonElement> {
 	/**
 	 * Gets the json element at the given index from this json array as a byte.<br>
 	 * The element will be converted to a json primitive and then to a byte.<br>
+	 *
 	 * @param index The index of the element to get
 	 * @return The byte at the given index
 	 * @throws JsonArrayIndexOutOfBoundsException If the index is negative or greater than the size of this json array
@@ -525,6 +558,7 @@ public class JsonArray implements JsonElement, Iterable<JsonElement> {
 	/**
 	 * Gets the json element at the given index from this json array as a short.<br>
 	 * The element will be converted to a json primitive and then to a short.<br>
+	 *
 	 * @param index The index of the element to get
 	 * @return The short at the given index
 	 * @throws JsonArrayIndexOutOfBoundsException If the index is negative or greater than the size of this json array
@@ -538,6 +572,7 @@ public class JsonArray implements JsonElement, Iterable<JsonElement> {
 	/**
 	 * Gets the json element at the given index from this json array as an int.<br>
 	 * The element will be converted to a json primitive and then to an int.<br>
+	 *
 	 * @param index The index of the element to get
 	 * @return The int at the given index
 	 * @throws JsonArrayIndexOutOfBoundsException If the index is negative or greater than the size of this json array
@@ -551,6 +586,7 @@ public class JsonArray implements JsonElement, Iterable<JsonElement> {
 	/**
 	 * Gets the json element at the given index from this json array as a long.<br>
 	 * The element will be converted to a json primitive and then to a long.<br>
+	 *
 	 * @param index The index of the element to get
 	 * @return The long at the given index
 	 * @throws JsonArrayIndexOutOfBoundsException If the index is negative or greater than the size of this json array
@@ -564,6 +600,7 @@ public class JsonArray implements JsonElement, Iterable<JsonElement> {
 	/**
 	 * Gets the json element at the given index from this json array as a float.<br>
 	 * The element will be converted to a json primitive and then to a float.<br>
+	 *
 	 * @param index The index of the element to get
 	 * @return The float at the given index
 	 * @throws JsonArrayIndexOutOfBoundsException If the index is negative or greater than the size of this json array
@@ -577,6 +614,7 @@ public class JsonArray implements JsonElement, Iterable<JsonElement> {
 	/**
 	 * Gets the json element at the given index from this json array as a double.<br>
 	 * The element will be converted to a json primitive and then to a double.<br>
+	 *
 	 * @param index The index of the element to get
 	 * @return The double at the given index
 	 * @throws JsonArrayIndexOutOfBoundsException If the index is negative or greater than the size of this json array

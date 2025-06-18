@@ -47,8 +47,9 @@ public interface TriFunction<T, U, V, R> {
 	R apply(T t, U u, V v);
 	
 	/**
-	 * Returns a composed function that first applies this function to its input,<br>
+	 * Returns a composed function that first applies this function to its input,
 	 * and then applies the {@code after} function to the result.<br>
+	 *
 	 * @param after The function to apply after this function is applied
 	 * @return The composed function
 	 * @param <S> The type of the output of the {@code after} function, and of the composed function

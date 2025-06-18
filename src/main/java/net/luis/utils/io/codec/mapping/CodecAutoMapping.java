@@ -91,6 +91,7 @@ public class CodecAutoMapping {
 	 * The method analyzes the class structure and creates a codec that can encode and decode instances of the class.<br>
 	 * For record classes, it uses the record components to create the codec.<br>
 	 * For regular classes, it uses either annotated fields or non-static, final fields to create the codec.<br>
+	 *
 	 * @param clazz The class for which a codec should be created
 	 * @param <O> The type of the class
 	 * @return A codec for the given class
@@ -115,6 +116,7 @@ public class CodecAutoMapping {
 	/**
 	 * Creates a codec for the given class based on its structure.<br>
 	 * This method handles different types of classes including enums and complex classes with fields.<br>
+	 *
 	 * @param clazz The class for which to create a codec
 	 * @param <O> The type of the class
 	 * @return A codec for the given class
@@ -213,6 +215,7 @@ public class CodecAutoMapping {
 	 * Gets the components (fields or record components) of a class that should be included in the codec.<br>
 	 * For record classes, it returns all record components.<br>
 	 * For regular classes, it returns either all fields annotated with {@link CodecField} or all non-static, final fields that are not transient.<br>
+	 *
 	 * @param clazz The class to get components from
 	 * @return An array of codec components
 	 * @throws NullPointerException If the provided class is null
@@ -242,6 +245,7 @@ public class CodecAutoMapping {
 	 * Gets the constructor to use for creating instances of the class.<br>
 	 * For record classes, it returns the canonical constructor that matches the record components.<br>
 	 * For regular classes, it returns either the constructor annotated with {@link CodecConstructor} or the only constructor of the class.<br>
+	 *
 	 * @param clazz The class to get the constructor from
 	 * @param components The components of the class
 	 * @param <O> The type of the class
@@ -281,6 +285,7 @@ public class CodecAutoMapping {
 	/**
 	 * Validates that the constructor matches the components of the class.<br>
 	 * This ensures that the constructor has the correct number of parameters and that each parameter is assignable from the corresponding component type.<br>
+	 *
 	 * @param clazz The class being validated
 	 * @param components The components of the class
 	 * @param constructors The (singleton) list containing the constructor to validate
@@ -311,6 +316,7 @@ public class CodecAutoMapping {
 	/**
 	 * Creates a configured codec for the given component.<br>
 	 * This method determines the codec to use for the component's type and configures it with the component's name and a getter function.<br>
+	 *
 	 * @param component The component to create a configured codec for
 	 * @param <C> The type of the component
 	 * @param <O> The type of the object containing the component
@@ -332,6 +338,7 @@ public class CodecAutoMapping {
 	/**
 	 * Gets a codec for the given class type, with optional generic type information.<br>
 	 * This method handles various types including arrays, enums, collections, and primitive types.<br>
+	 *
 	 * @param clazz The class to get a codec for
 	 * @param genericInfo Optional (nullable) generic type information for the class
 	 * @param <C> The type of the class
@@ -413,6 +420,7 @@ public class CodecAutoMapping {
 	/**
 	 * Drops a specified number of elements from the beginning of an array.<br>
 	 * This is used to handle nested generic types by removing the processed type parameters.<br>
+	 *
 	 * @param genericInfo The array of generic type information
 	 * @param count The number of elements to drop
 	 * @return A new array with the specified elements dropped, or null if the resulting array is empty
@@ -430,6 +438,7 @@ public class CodecAutoMapping {
 	/**
 	 * Creates a new instance of a class using the specified constructor and arguments.<br>
 	 * This method uses reflection to instantiate the class.<br>
+	 *
 	 * @param constructor The constructor to use
 	 * @param args The arguments to pass to the constructor
 	 * @param <O> The type of the class

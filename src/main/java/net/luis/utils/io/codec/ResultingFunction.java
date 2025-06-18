@@ -42,6 +42,7 @@ public interface ResultingFunction<T, R> extends Function<T, Result<R>> {
 	/**
 	 * Creates a new resulting function that applies the given function to the value.<br>
 	 * The output result is a success result with the output of the function as value.<br>
+	 *
 	 * @param function The function to apply to the value
 	 * @param <T> The type of the input value
 	 * @param <R> The type of the output result
@@ -57,6 +58,7 @@ public interface ResultingFunction<T, R> extends Function<T, Result<R>> {
 	 * Creates a new resulting function that applies the given throwable function to the value.<br>
 	 * If the function throws an exception, the output result is an error with the exception message.<br>
 	 * In all other cases, the output result is a success result with the output of the function as value.<br>
+	 *
 	 * @param function The throwable function to apply to the value
 	 * @param <T> The type of the input value
 	 * @param <R> The type of the output result

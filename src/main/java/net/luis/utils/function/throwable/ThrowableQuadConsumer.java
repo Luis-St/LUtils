@@ -41,6 +41,7 @@ public interface ThrowableQuadConsumer<T, U, V, W, X extends Throwable> {
 	
 	/**
 	 * Converts a throwable quad-consumer into a quad-consumer that throws a runtime exception when an exception is thrown.<br>
+	 *
 	 * @param consumer The throwable quad-consumer
 	 * @return A caught quad-consumer
 	 * @param <T> The first argument type
@@ -62,6 +63,7 @@ public interface ThrowableQuadConsumer<T, U, V, W, X extends Throwable> {
 	
 	/**
 	 * Functional method that takes four arguments and consumes them.<br>
+	 *
 	 * @param t The first argument
 	 * @param u The second argument
 	 * @param v The third argument
@@ -71,8 +73,9 @@ public interface ThrowableQuadConsumer<T, U, V, W, X extends Throwable> {
 	void accept(T t, U u, V v, W w) throws X;
 	
 	/**
-	 * Returns a composed consumer of same type that performs,<br>
+	 * Returns a composed consumer of same type that performs,
 	 * in sequence, this operation followed by the {@code after} operation.<br>
+	 *
 	 * @param after The operation to perform after this operation
 	 * @return The composed throwable consumer
 	 * @throws NullPointerException If the after operation is null

@@ -30,7 +30,7 @@ import java.util.Objects;
  * This class provides several constructors for different input sources.<br>
  * <p>
  *     Primary usage of this class is to provide an input stream for different input sources.<br>
- *     This can be useful for other readers or parsers to keep their constructors clean and simple.<br>
+ *     This can be useful for other readers or parsers to keep their constructors clean and simple.
  * </p>
  * The class is also {@link AutoCloseable}, so it can be used in try-with-resources statements.<br>
  *
@@ -45,6 +45,7 @@ public class InputProvider implements AutoCloseable {
 	
 	/**
 	 * Constructs a new input provider for the given file.<br>
+	 *
 	 * @param file The file to read data from
 	 * @throws NullPointerException If the file is null
 	 * @throws UncheckedIOException If the file is not found
@@ -56,6 +57,7 @@ public class InputProvider implements AutoCloseable {
 	/**
 	 * Constructs a new input provider for the given path and file name.<br>
 	 * The path and file name are concatenated to a file.<br>
+	 *
 	 * @param path The path to the file
 	 * @param fileName The name of the file
 	 * @throws NullPointerException If the path or file name is null
@@ -67,6 +69,7 @@ public class InputProvider implements AutoCloseable {
 	
 	/**
 	 * Constructs a new input provider for the given path.<br>
+	 *
 	 * @param path The path to the file
 	 * @throws NullPointerException If the path is null
 	 * @throws UncheckedIOException If the file is not found
@@ -77,6 +80,7 @@ public class InputProvider implements AutoCloseable {
 	
 	/**
 	 * Constructs a new input provider for the given file.<br>
+	 *
 	 * @param file The file to read data from
 	 * @throws NullPointerException If the file is null
 	 * @throws UncheckedIOException If the file is not found
@@ -92,6 +96,7 @@ public class InputProvider implements AutoCloseable {
 	
 	/**
 	 * Constructs a new input provider for the given resource location.<br>
+	 *
 	 * @param location The resource location to read data from
 	 * @throws NullPointerException If the resource location is null
 	 * @throws UncheckedIOException If the resource could not be opened
@@ -107,6 +112,7 @@ public class InputProvider implements AutoCloseable {
 	
 	/**
 	 * Constructs a new input provider for the given input stream.<br>
+	 *
 	 * @param stream The input stream to read data from
 	 * @throws NullPointerException If the input stream is null
 	 */
@@ -118,6 +124,7 @@ public class InputProvider implements AutoCloseable {
 	/**
 	 * Returns the internal input stream for reading data.<br>
 	 * The input stream should not be used directly, it is intended to be passed to other readers or parsers.<br>
+	 *
 	 * @return The input stream
 	 */
 	public @NotNull InputStream getStream() {

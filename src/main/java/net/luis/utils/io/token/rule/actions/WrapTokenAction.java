@@ -42,6 +42,7 @@ public record WrapTokenAction(
 	
 	/**
 	 * Constructs a new wrap token action with the given prefix and suffix tokens.<br>
+	 *
 	 * @param prefixToken The prefix token
 	 * @param suffixToken The suffix token
 	 * @throws NullPointerException If the prefix or suffix token is null

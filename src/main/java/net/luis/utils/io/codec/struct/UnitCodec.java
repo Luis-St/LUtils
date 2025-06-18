@@ -31,12 +31,12 @@ import java.util.function.Supplier;
  * This codec does not encode or decode any value, it is used to represent a unit value.<br>
  * <p>
  *     The unit codec can be used to represent a value that is not encoded or decoded.<br>
- *     This is useful when a codec is required to encode or decode a value, but the value is not needed.<br>
+ *     This is useful when a codec is required to encode or decode a value, but the value is not needed.
  * </p>
  * <p>
  *     The unit codec will always return the same value when encoding and decoding.<br>
  *     During encoding, the current value is returned.<br>
- *     During decoding, the unit value is returned which is created by a supplier.<br>
+ *     During decoding, the unit value is returned which is created by a supplier.
  * </p>
  *
  * @author Luis-St
@@ -53,6 +53,7 @@ public class UnitCodec<C> implements Codec<C> {
 	/**
 	 * Constructs a new unit codec using the given supplier for the unit value.<br>
 	 * Do not use this constructor directly, use any of the unit factory methods in {@link Codec} instead.<br>
+	 *
 	 * @param supplier The supplier used to create the unit value
 	 * @throws NullPointerException If the supplier is null
 	 */

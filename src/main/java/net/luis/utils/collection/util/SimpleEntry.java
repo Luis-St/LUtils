@@ -49,6 +49,7 @@ public class SimpleEntry<K, V> implements Map.Entry<K, V> {
 	
 	/**
 	 * Constructs a new simple entry with the specified key and value.<br>
+	 *
 	 * @param key The key of the entry
 	 * @param value The value of the entry
 	 * @throws NullPointerException If the key is null
@@ -76,6 +77,7 @@ public class SimpleEntry<K, V> implements Map.Entry<K, V> {
 	
 	/**
 	 * Throws a {@link ModificationException} because the entry is immutable.<br>
+	 *
 	 * @param value The new value of the entry (ignored)
 	 * @return Nothing, because an exception is thrown
 	 * @throws ModificationException Always

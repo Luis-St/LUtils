@@ -55,6 +55,7 @@ public final class ClassPathUtils {
 	/**
 	 * Gets all classes from the classpath.<br>
 	 * If an error occurs, the error will be logged and an empty list will be returned.<br>
+	 *
 	 * @return A list of all classes from the classpath
 	 */
 	public static @NotNull List<Class<?>> getAllClasses() {
@@ -75,11 +76,12 @@ public final class ClassPathUtils {
 	 *     For example, if the caller of this method is in the package "net.luis.utils.util",<br>
 	 * 	   all classes in the packages "net.luis.utils" will be returned,<br>
 	 * 	   because the depth is 3 which means that the package will be cut after the third dot.<br>
-	 * 	   The depth can be changed by using the system property 'unsafe.package.depth'.<br>
+	 * 	   The depth can be changed by using the system property 'unsafe.package.depth'.
 	 * </p>
 	 * <p>
-	 *     If an error occurs, the error will be logged and an empty list will be returned.<br>
+	 *     If an error occurs, the error will be logged and an empty list will be returned.
 	 * </p>
+	 *
 	 * @return A list of all classes from the classpath which are related to the project
 	 * @see ClassPathHelper
 	 */
@@ -96,6 +98,7 @@ public final class ClassPathUtils {
 	/**
 	 * Gets all classes from the given package.<br>
 	 * If the given package name is null, all classes will be returned.<br>
+	 *
 	 * @param packageName The package name in which the classes should be
 	 * @return A list of all classes
 	 */
@@ -109,8 +112,9 @@ public final class ClassPathUtils {
 	 * if the package name of the class starts with the given package name.<br>
 	 * <p>
 	 *     If the given package name is null, all classes will be returned.<br>
-	 *     If the mode is null, the classes will be included.<br>
+	 *     If the mode is null, the classes will be included.
 	 * </p>
+	 *
 	 * @param packageName The package name to filter the classes
 	 * @param mode Whether the classes should be included or excluded
 	 * @return A list of all classes
@@ -123,6 +127,7 @@ public final class ClassPathUtils {
 	
 	/**
 	 * Gets all classes from the classpath which are annotated with the given annotation.<br>
+	 *
 	 * @param annotation The annotation which should be present on the classes
 	 * @return A list of all classes
 	 * @throws NullPointerException If the given annotation is null
@@ -134,6 +139,7 @@ public final class ClassPathUtils {
 	
 	/**
 	 * Gets all classes from the given package which are annotated with the given annotation.<br>
+	 *
 	 * @param packageName The package name in which the classes should be
 	 * @param annotation The annotation which should be present on the classes
 	 * @return A list of all classes
@@ -149,6 +155,7 @@ public final class ClassPathUtils {
 	
 	/**
 	 * Gets all methods from the classpath which are annotated with the given annotation.<br>
+	 *
 	 * @param annotation The annotation which should be present on the methods
 	 * @return A list of all methods
 	 * @throws NullPointerException If the given annotation is null
@@ -160,6 +167,7 @@ public final class ClassPathUtils {
 	
 	/**
 	 * Gets all methods from the classes in the given package which are annotated with the given annotation.<br>
+	 *
 	 * @param packageName The package name in which the classes should be
 	 * @param annotation The annotation which should be present on the methods
 	 * @return A list of all methods
@@ -175,6 +183,7 @@ public final class ClassPathUtils {
 	
 	/**
 	 * Gets all fields from the classpath which are annotated with the given annotation.<br>
+	 *
 	 * @param annotation The annotation which should be present on the fields
 	 * @return A list of all fields
 	 * @throws NullPointerException If the given annotation is null
@@ -186,6 +195,7 @@ public final class ClassPathUtils {
 	
 	/**
 	 * Gets all fields from the classes in the given package which are annotated with the given annotation.<br>
+	 *
 	 * @param packageName The package name in which the classes should be
 	 * @param annotation The annotation which should be present on the fields
 	 * @return A list of all fields

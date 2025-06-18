@@ -40,6 +40,7 @@ public final class XmlValue extends XmlElement implements DefaultValueGetter {
 	
 	/**
 	 * Constructs a new xml value with the given name and boolean value.<br>
+	 *
 	 * @param name The name of the xml element
 	 * @param value The value of the xml element
 	 * @throws NullPointerException If the name is null
@@ -50,6 +51,7 @@ public final class XmlValue extends XmlElement implements DefaultValueGetter {
 	
 	/**
 	 * Constructs a new xml value with the given name and number value.<br>
+	 *
 	 * @param name The name of the xml element
 	 * @param value The value of the xml element
 	 * @throws NullPointerException If the name is null
@@ -61,6 +63,7 @@ public final class XmlValue extends XmlElement implements DefaultValueGetter {
 	/**
 	 * Constructs a new xml value with the given name and string value.<br>
 	 * The value will be escaped automatically.<br>
+	 *
 	 * @param name The name of the xml element
 	 * @param value The value of the xml element
 	 * @throws NullPointerException If the name is null
@@ -72,6 +75,7 @@ public final class XmlValue extends XmlElement implements DefaultValueGetter {
 	
 	/**
 	 * Constructs a new xml value with the given name, attributes and boolean value.<br>
+	 *
 	 * @param name The name of the xml element
 	 * @param attributes The attributes of the xml element
 	 * @param value The value of the xml element
@@ -83,6 +87,7 @@ public final class XmlValue extends XmlElement implements DefaultValueGetter {
 	
 	/**
 	 * Constructs a new xml value with the given name, attributes and number value.<br>
+	 *
 	 * @param name The name of the xml element
 	 * @param attributes The attributes of the xml element
 	 * @param value The value of the xml element
@@ -94,6 +99,7 @@ public final class XmlValue extends XmlElement implements DefaultValueGetter {
 	/**
 	 * Constructs a new xml value with the given name, attributes and string value.<br>
 	 * The value will be escaped automatically.<br>
+	 *
 	 * @param name The name of the xml element
 	 * @param attributes The attributes of the xml element
 	 * @param value The value of the xml element

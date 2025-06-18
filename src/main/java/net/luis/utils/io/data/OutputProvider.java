@@ -29,7 +29,7 @@ import java.util.Objects;
  * This class provides several constructors for different types of output sources.<br>
  * <p>
  *     Primary usage of this class is to provide an output stream for different output sources.<br>
- *     This can be useful for other writers or formatters to keep their constructors clean and simple.<br>
+ *     This can be useful for other writers or formatters to keep their constructors clean and simple.
  * </p>
  * The class is also {@link AutoCloseable}, so it can be used in try-with-resources statements.<br>
  *
@@ -44,6 +44,7 @@ public class OutputProvider implements AutoCloseable {
 	
 	/**
 	 * Constructs a new output provider for the given file.<br>
+	 *
 	 * @param file The file to write data to
 	 * @throws NullPointerException If the file is null
 	 * @throws UncheckedIOException If the file is not found
@@ -55,6 +56,7 @@ public class OutputProvider implements AutoCloseable {
 	/**
 	 * Constructs a new output provider for the given path and file name.<br>
 	 * The path and file name are concatenated to a file.<br>
+	 *
 	 * @param path The path to the file
 	 * @param fileName The name of the file
 	 * @throws NullPointerException If the path or file name is null
@@ -66,6 +68,7 @@ public class OutputProvider implements AutoCloseable {
 	
 	/**
 	 * Constructs a new output provider for the given path.<br>
+	 *
 	 * @param path The path to the file
 	 * @throws NullPointerException If the path is null
 	 * @throws UncheckedIOException If the file is not found
@@ -76,6 +79,7 @@ public class OutputProvider implements AutoCloseable {
 	
 	/**
 	 * Constructs a new output provider for the given file.<br>
+	 *
 	 * @param file The file to write data to
 	 * @throws NullPointerException If the file is null
 	 * @throws UncheckedIOException If the file is not found
@@ -91,6 +95,7 @@ public class OutputProvider implements AutoCloseable {
 	
 	/**
 	 * Constructs a new output provider for the given output stream.<br>
+	 *
 	 * @param stream The output stream to write data to
 	 * @throws NullPointerException If the stream is null
 	 */
@@ -102,6 +107,7 @@ public class OutputProvider implements AutoCloseable {
 	/**
 	 * Returns the internal output stream for writing data.<br>
 	 * The output stream should not be used directly, it is intended to be passed to other writers or formatters.<br>
+	 *
 	 * @return The output stream
 	 */
 	public @NotNull OutputStream getStream() {

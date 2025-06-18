@@ -108,6 +108,7 @@ public final class XmlTypeProvider implements TypeProvider<XmlElement> {
 	
 	/**
 	 * Private constructor to prevent instantiation.<br>
+	 *
 	 * @param useRoot Whether to use root as name for maps
 	 */
 	private XmlTypeProvider(boolean useRoot) {
@@ -117,6 +118,7 @@ public final class XmlTypeProvider implements TypeProvider<XmlElement> {
 	/**
 	 * Returns a new instance of this class with {@link #useRoot} set to true.<br>
 	 * If {@link #useRoot} is already true, the same instance is returned.<br>
+	 *
 	 * @return A new instance
 	 */
 	public @NotNull XmlTypeProvider useRoot() {
@@ -447,6 +449,7 @@ public final class XmlTypeProvider implements TypeProvider<XmlElement> {
 	 * Escapes the given name if it is numeric.<br>
 	 * The name is escaped by adding an underscore in front of it.<br>
 	 * This is required because xml element names must not start with a number.<br>
+	 *
 	 * @param name The name to escape
 	 * @return The escaped name
 	 * @throws NullPointerException If the name is null
@@ -460,6 +463,7 @@ public final class XmlTypeProvider implements TypeProvider<XmlElement> {
 	 * Unescapes the given name if it is numeric.<br>
 	 * The name is unescaped by removing an underscore in front of it.<br>
 	 * This is required because xml element names must not start with a number.<br>
+	 *
 	 * @param name The name to unescape
 	 * @return The unescaped name
 	 * @throws NullPointerException If the name is null
@@ -476,6 +480,7 @@ public final class XmlTypeProvider implements TypeProvider<XmlElement> {
 	 * Copies the given xml element with the given name.<br>
 	 * The name is used as the new name for the copied element.<br>
 	 * The copy operation is based on the type of the given element.<br>
+	 *
 	 * @param name The name for the copied element
 	 * @param value The element to copy
 	 * @return The copied element
@@ -499,6 +504,7 @@ public final class XmlTypeProvider implements TypeProvider<XmlElement> {
 	 * Merges two arrays of xml elements.<br>
 	 * The elements of the current and value arrays are copied with the same name.<br>
 	 * The copied elements are then added to a new array.<br>
+	 *
 	 * @param current The current elements
 	 * @param value The value elements
 	 * @return The merged array
@@ -518,6 +524,7 @@ public final class XmlTypeProvider implements TypeProvider<XmlElement> {
 	/**
 	 * Merges two objects of xml elements.<br>
 	 * The elements of the current and value objects are moved to a new object.<br>
+	 *
 	 * @param current The current elements
 	 * @param value The value elements
 	 * @return The merged object as map
@@ -536,6 +543,7 @@ public final class XmlTypeProvider implements TypeProvider<XmlElement> {
 	/**
 	 * Merges two undefined containers of xml elements.<br>
 	 * The elements of the current and value containers are moved to a new container.<br>
+	 *
 	 * @param current The current elements
 	 * @param value The value elements
 	 * @return A result containing the merged container or an error

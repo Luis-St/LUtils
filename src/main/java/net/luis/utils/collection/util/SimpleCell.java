@@ -44,6 +44,7 @@ public record SimpleCell<R, C, V>(
 	
 	/**
 	 * Constructs a new simple cell with the specified row key, column key and value.<br>
+	 *
 	 * @param getRowKey The row key of the cell
 	 * @param getColumnKey The column key of the cell
 	 * @param getValue The value of the cell

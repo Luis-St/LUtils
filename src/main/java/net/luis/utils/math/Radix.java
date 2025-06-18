@@ -65,6 +65,7 @@ public enum Radix {
 	
 	/**
 	 * Constructs a new radix with the given radix value and prefix.<br>
+	 *
 	 * @param radix The radix value
 	 * @param prefix The prefix for the radix
 	 * @throws IllegalArgumentException If the radix is less than or equal to 0

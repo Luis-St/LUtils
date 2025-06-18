@@ -52,6 +52,7 @@ public final class ReflectionUtils {
 	/**
 	 * Gets the raw name of the given method.<br>
 	 * The raw name is the name of the method without prefixes like "get", "set", "is" or "has".<br>
+	 *
 	 * @param method The method to get the raw name of
 	 * @param prefixes Additional prefixes to remove
 	 * @return The raw name of the given method or {@link Method#getName()} as fallback
@@ -81,6 +82,7 @@ public final class ReflectionUtils {
 	
 	/**
 	 * Gets all methods from the given class that are annotated with the given annotation.<br>
+	 *
 	 * @param clazz The class in which the methods should be
 	 * @param annotation The annotation which should be present on the methods
 	 * @return A list of all methods
@@ -94,6 +96,7 @@ public final class ReflectionUtils {
 	
 	/**
 	 * Gets the method with the given name from the given class which is annotated with the given annotation.<br>
+	 *
 	 * @param clazz The class in which the method should be
 	 * @param name The name of the method
 	 * @param annotation The annotation which should be present on the method
@@ -115,6 +118,7 @@ public final class ReflectionUtils {
 	 * Gets all methods of the given class for the given name (case-sensitive).<br>
 	 * If the given name is null, all methods of the given class will be returned.<br>
 	 * The methods will be returned in the order of their parameter count.<br>
+	 *
 	 * @param clazz The class to get the methods of
 	 * @param name The name of the methods to get
 	 * @return A list of all methods from the given class for the given name
@@ -128,6 +132,7 @@ public final class ReflectionUtils {
 	/**
 	 * Gets the method with the given name from the given class.<br>
 	 * If the given name is null or there are multiple methods with the given name, an empty optional will be returned.<br>
+	 *
 	 * @param clazz The class to get the method from
 	 * @param name The name of the method
 	 * @return An optional containing the method or an empty optional if the method was not found
@@ -148,8 +153,9 @@ public final class ReflectionUtils {
 	 * <p>
 	 *     In the case the compiler has not included the parameter names,<br>
 	 *     and the types are ambiguous, an exception will be thrown.<br>
-	 *     If the given executable has no parameters, an empty array will be returned.<br>
+	 *     If the given executable has no parameters, an empty array will be returned.
 	 * </p>
+	 *
 	 * @param executable The executable to find the parameters for
 	 * @param values The possible values for the parameters
 	 * @return An array of the found parameters in the correct order
@@ -172,8 +178,9 @@ public final class ReflectionUtils {
 	 * <p>
 	 *     In the case the compiler has not included the parameter names,<br>
 	 *     and the types are ambiguous, an exception will be thrown.<br>
-	 *     If the given executable has no parameters, an empty array will be returned.<br>
+	 *     If the given executable has no parameters, an empty array will be returned.
 	 * </p>
+	 *
 	 * @param executable The executable to find the parameters for
 	 * @param values The possible values for the parameters
 	 * @return An array of the found parameters in the correct order
@@ -196,6 +203,7 @@ public final class ReflectionUtils {
 	
 	/**
 	 * Gets all fields from the given class that are annotated with the given annotation.<br>
+	 *
 	 * @param clazz The class in which the fields should be
 	 * @param annotation The annotation which should be present on the fields
 	 * @return A list of all fields
@@ -210,6 +218,7 @@ public final class ReflectionUtils {
 	/**
 	 * Gets the field with the given name from the given class which is annotated with the given annotation.<br>
 	 * If the field does not exist or is not annotated with the given annotation, an empty optional will be returned.<br>
+	 *
 	 * @param clazz The class in which the field should be
 	 * @param name The name of the field
 	 * @param annotation The annotation which should be present on the field
@@ -229,6 +238,7 @@ public final class ReflectionUtils {
 	/**
 	 * Gets all fields from the given class for the given type.<br>
 	 * If the given type is null, an empty list will be returned.<br>
+	 *
 	 * @param clazz The class to get the fields of
 	 * @param type The type of the fields to get
 	 * @return A list of all fields from the given class for the given type
@@ -246,6 +256,7 @@ public final class ReflectionUtils {
 	 * Finds the value for the given parameter.<br>
 	 * The value will be searched by its type, and if the type is ambiguous, by its name.<br>
 	 * An exception will be thrown if no value for the parameter could be found.<br>
+	 *
 	 * @param parameter The parameter to find the value for
 	 * @param values The possible values for the parameter
 	 * @return The value found for the given parameter

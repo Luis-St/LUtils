@@ -30,13 +30,13 @@ import java.util.*;
  * <p>
  *     The implementations of this interface are used in {@link Codec Codecs} to provide type-specific encoding and decoding.<br>
  *     With this system the {@link Codec} can be used for any type,<br>
- *     as long as a {@link TypeProvider TypeProvider} is provided for that type.<br>
+ *     as long as a {@link TypeProvider TypeProvider} is provided for that type.
  * </p>
  * <p>
  *     The most methods in this interface return a {@link Result} object.<br>
  *     This is to provide a way to handle errors in the encoding and decoding process.<br>
  *     If the operation was successful, the {@link Result} will contain the result of the operation<br>
- *     or if the operation failed, the {@link Result} will contain an error message.<br>
+ *     or if the operation failed, the {@link Result} will contain an error message.
  * </p>
  *
  * @author Luis-St
@@ -47,12 +47,14 @@ public interface TypeProvider<T> {
 	
 	/**
 	 * Creates an empty value of the type this provider is for.<br>
+	 *
 	 * @return An empty value
 	 */
 	@NotNull T empty();
 	
 	/**
 	 * Creates a boolean value of the type this provider is for using the given value.<br>
+	 *
 	 * @param value The value to create the boolean value from
 	 * @return A result containing the boolean value
 	 */
@@ -60,6 +62,7 @@ public interface TypeProvider<T> {
 	
 	/**
 	 * Creates a byte value of the type this provider is for using the given value.<br>
+	 *
 	 * @param value The value to create the byte value from
 	 * @return A result containing the byte value
 	 */
@@ -67,6 +70,7 @@ public interface TypeProvider<T> {
 	
 	/**
 	 * Creates a short value of the type this provider is for using the given value.<br>
+	 *
 	 * @param value The value to create the short value from
 	 * @return A result containing the short value
 	 */
@@ -74,6 +78,7 @@ public interface TypeProvider<T> {
 	
 	/**
 	 * Creates an integer value of the type this provider is for using the given value.<br>
+	 *
 	 * @param value The value to create the integer value from
 	 * @return A result containing the integer value
 	 */
@@ -81,6 +86,7 @@ public interface TypeProvider<T> {
 	
 	/**
 	 * Creates a long value of the type this provider is for using the given value.<br>
+	 *
 	 * @param value The value to create the long value from
 	 * @return A result containing the long value
 	 */
@@ -88,6 +94,7 @@ public interface TypeProvider<T> {
 	
 	/**
 	 * Creates a float value of the type this provider is for using the given value.<br>
+	 *
 	 * @param value The value to create the float value from
 	 * @return A result containing the float value
 	 */
@@ -95,6 +102,7 @@ public interface TypeProvider<T> {
 	
 	/**
 	 * Creates a double value of the type this provider is for using the given value.<br>
+	 *
 	 * @param value The value to create the double value from
 	 * @return A result containing the double value
 	 */
@@ -102,6 +110,7 @@ public interface TypeProvider<T> {
 	
 	/**
 	 * Creates a string value of the type this provider is for using the given value.<br>
+	 *
 	 * @param value The value to create the string value from
 	 * @return A result containing the string value
 	 * @throws NullPointerException If the given value is null
@@ -110,6 +119,7 @@ public interface TypeProvider<T> {
 	
 	/**
 	 * Creates a list value of the type this provider is for using the given values.<br>
+	 *
 	 * @param values The values to create the list value from
 	 * @return A result containing the list value
 	 * @throws NullPointerException If the given values are null
@@ -118,12 +128,14 @@ public interface TypeProvider<T> {
 	
 	/**
 	 * Creates an empty map value of the type this provider is for.<br>
+	 *
 	 * @return A result containing the empty map value
 	 */
 	@NotNull Result<T> createMap();
 	
 	/**
 	 * Creates a map value of the type this provider is for using the given values.<br>
+	 *
 	 * @param values The values to create the map value from
 	 * @return A result containing the map value
 	 * @throws NullPointerException If the given values are null
@@ -132,6 +144,7 @@ public interface TypeProvider<T> {
 	
 	/**
 	 * Gets the given value as an empty value of the type this provider is for.<br>
+	 *
 	 * @param type The value to get as an empty value
 	 * @return A success result containing the empty value, or an error result if the given value is not an empty value
 	 * @throws NullPointerException If the given value is null
@@ -140,6 +153,7 @@ public interface TypeProvider<T> {
 	
 	/**
 	 * Gets the given value as a boolean value of the type this provider is for.<br>
+	 *
 	 * @param type The value to get as a boolean value
 	 * @return A success result containing the boolean value, or an error result if the given value is not a boolean value
 	 * @throws NullPointerException If the given value is null
@@ -156,6 +170,7 @@ public interface TypeProvider<T> {
 	
 	/**
 	 * Gets the given value as a short value of the type this provider is for.<br>
+	 *
 	 * @param type The value to get as a short value
 	 * @return A success result containing the short value, or an error result if the given value is not a short value
 	 * @throws NullPointerException If the given value is null
@@ -164,6 +179,7 @@ public interface TypeProvider<T> {
 	
 	/**
 	 * Gets the given value as an integer value of the type this provider is for.<br>
+	 *
 	 * @param type The value to get as an integer value
 	 * @return A success result containing the integer value, or an error result if the given value is not an integer value
 	 * @throws NullPointerException If the given value is null
@@ -180,6 +196,7 @@ public interface TypeProvider<T> {
 	
 	/**
 	 * Gets the given value as a float value of the type this provider is for.<br>
+	 *
 	 * @param type The value to get as a float value
 	 * @return A success result containing the float value, or an error result if the given value is not a float value
 	 * @throws NullPointerException If the given value is null
@@ -188,6 +205,7 @@ public interface TypeProvider<T> {
 	
 	/**
 	 * Gets the given value as a double value of the type this provider is for.<br>
+	 *
 	 * @param type The value to get as a double value
 	 * @return A success result containing the double value, or an error result if the given value is not a double value
 	 * @throws NullPointerException If the given value is null
@@ -196,6 +214,7 @@ public interface TypeProvider<T> {
 	
 	/**
 	 * Gets the given value as a string value of the type this provider is for.<br>
+	 *
 	 * @param type The value to get as a string value
 	 * @return A success result containing the string value, or an error result if the given value is not a string value
 	 * @throws NullPointerException If the given value is null
@@ -204,6 +223,7 @@ public interface TypeProvider<T> {
 	
 	/**
 	 * Gets the given value as a list value of the type this provider is for.<br>
+	 *
 	 * @param type The value to get as a list value
 	 * @return A success result containing the list value, or an error result if the given value is not a list value
 	 * @throws NullPointerException If the given value is null
@@ -212,6 +232,7 @@ public interface TypeProvider<T> {
 	
 	/**
 	 * Gets the given value as a map value of the type this provider is for.<br>
+	 *
 	 * @param type The value to get as a map value
 	 * @return A success result containing the map value, or an error result if the given value is not a map value
 	 * @throws NullPointerException If the given value is null
@@ -221,6 +242,7 @@ public interface TypeProvider<T> {
 	/**
 	 * Checks if the given value is a map and contains the given key.<br>
 	 * The given type must be a map.<br>
+	 *
 	 * @param type The value to check
 	 * @param key The key to check
 	 * @return A success result containing true if the map contains the key or false if not, or an error result if the given value is not a map
@@ -231,6 +253,7 @@ public interface TypeProvider<T> {
 	/**
 	 * Gets the value of the given key from the given value.<br>
 	 * The given type must be a map.<br>
+	 *
 	 * @param type The value to get the value from
 	 * @param key The key to get the value for
 	 * @return A success result containing the value for the key, or an error result if the given value is not a map
@@ -241,6 +264,7 @@ public interface TypeProvider<T> {
 	/**
 	 * Sets the value for the given key in the given value.<br>
 	 * The given type must be a map.<br>
+	 *
 	 * @param type The value to set the value in
 	 * @param key The key to set the value for
 	 * @param value The value to set
@@ -254,6 +278,7 @@ public interface TypeProvider<T> {
 	 * This is an overloaded method to handle the value as a {@link Result}.<br>
 	 * If the given value is a success, the value will be set.<br>
 	 * If the given value is an error, the value will not be set and an error result will be returned.<br>
+	 *
 	 * @param type The value to set the value in
 	 * @param key The key to set the value for
 	 * @param value The value to set
@@ -274,6 +299,7 @@ public interface TypeProvider<T> {
 	/**
 	 * Merges the given value with the current value.<br>
 	 * The logic is specific to the type this provider is for.<br>
+	 *
 	 * @param current The current value
 	 * @param value The value to merge
 	 * @return A success result containing the result of the merge operation, or an error result if the merge operation failed
@@ -287,6 +313,7 @@ public interface TypeProvider<T> {
 	 * If the given value is a success, the value will be merged.<br>
 	 * If the given value is an error, the value will not be merged and an error result will be returned.<br>
 	 * The logic is specific to the type this provider is for.<br>
+	 *
 	 * @param current The current value
 	 * @param value The value to merge
 	 * @return A success result containing the result of the merge operation, or an error result if the merge operation failed, or the given value is an error

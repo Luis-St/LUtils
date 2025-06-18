@@ -35,7 +35,7 @@ import java.util.Objects;
  * </p>
  * <p>
  *     The first codec is decoded first and if it fails, the second codec is used to decode the value.<br>
- *     <strong>Note</strong>: If the first codec is a string codec, it will always succeed, so the second codec will never be used.<br>
+ *     <strong>Note</strong>: If the first codec is a string codec, it will always succeed, so the second codec will never be used.
  * </p>
  *
  * @author Luis-St
@@ -57,6 +57,7 @@ public class EitherCodec<F, S> implements Codec<Either<F, S>> {
 	/**
 	 * Constructs a new either codec using the given codecs for the first and second type.<br>
 	 * Do not use this constructor directly, use any of the either factory methods in {@link Codec} instead.<br>
+	 *
 	 * @param firstCodec The first codec
 	 * @param secondCodec The second codec
 	 * @throws NullPointerException If the first or second codec is null

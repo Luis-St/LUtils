@@ -48,6 +48,7 @@ public class JsonObject implements JsonElement {
 	
 	/**
 	 * Constructs a json object with the given elements.<br>
+	 *
 	 * @param elements The map of elements to add
 	 * @throws NullPointerException If the given elements are null
 	 */
@@ -75,6 +76,7 @@ public class JsonObject implements JsonElement {
 	
 	/**
 	 * Checks if this json object contains the given key.<br>
+	 *
 	 * @param key The key to check
 	 * @return True if this json object contains the given key, false otherwise
 	 */
@@ -84,6 +86,7 @@ public class JsonObject implements JsonElement {
 	
 	/**
 	 * Checks if this json object contains the given element.<br>
+	 *
 	 * @param element The element to check
 	 * @return True if this json object contains the given element, false otherwise
 	 */
@@ -117,6 +120,7 @@ public class JsonObject implements JsonElement {
 	
 	/**
 	 * Iterates over the entries of this json object and applies the given action to each entry.<br>
+	 *
 	 * @param action The action to apply to each entry
 	 * @throws NullPointerException If the given action is null
 	 */
@@ -131,6 +135,7 @@ public class JsonObject implements JsonElement {
 	 * Adds the given element with the given key to this json object.<br>
 	 * If the element is null, it will be replaced with json null.<br>
 	 * If the key is already present, the element will be replaced.<br>
+	 *
 	 * @param key The key to add
 	 * @param element The element to add
 	 * @return The previous element associated with the key, or null if the key was not present
@@ -145,6 +150,7 @@ public class JsonObject implements JsonElement {
 	 * Adds the given string with the given key to this json object.<br>
 	 * If the string is null, it will be replaced with json null.<br>
 	 * The string value will be converted to a json primitive.<br>
+	 *
 	 * @param key The key to add
 	 * @param value The string value to add
 	 * @return The previous element associated with the key, or null if the key was not present
@@ -158,6 +164,7 @@ public class JsonObject implements JsonElement {
 	/**
 	 * Adds the given boolean with the given key to this json object.<br>
 	 * The boolean will be converted to a json primitive.<br>
+	 *
 	 * @param key The key to add
 	 * @param value The boolean value to add
 	 * @return The previous element associated with the key, or null if the key was not present
@@ -172,6 +179,7 @@ public class JsonObject implements JsonElement {
 	 * Adds the given number with the given key to this json object.<br>
 	 * If the number is null, it will be replaced with json null.<br>
 	 * The number value will be converted to a json primitive.<br>
+	 *
 	 * @param key The key to add
 	 * @param value The number value to add
 	 * @return The previous element associated with the key, or null if the key was not present
@@ -185,6 +193,7 @@ public class JsonObject implements JsonElement {
 	/**
 	 * Adds the given byte with the given key to this json object.<br>
 	 * The byte will be converted to a json primitive.<br>
+	 *
 	 * @param key The key to add
 	 * @param value The byte value to add
 	 * @return The previous element associated with the key, or null if the key was not present
@@ -198,6 +207,7 @@ public class JsonObject implements JsonElement {
 	/**
 	 * Adds the given short with the given key to this json object.<br>
 	 * The short will be converted to a json primitive.<br>
+	 *
 	 * @param key The key to add
 	 * @param value The short value to add
 	 * @return The previous element associated with the key, or null if the key was not present
@@ -211,6 +221,7 @@ public class JsonObject implements JsonElement {
 	/**
 	 * Adds the given int with the given key to this json object.<br>
 	 * The int will be converted to a json primitive.<br>
+	 *
 	 * @param key The key to add
 	 * @param value The int value to add
 	 * @return The previous element associated with the key, or null if the key was not present
@@ -224,6 +235,7 @@ public class JsonObject implements JsonElement {
 	/**
 	 * Adds the given long with the given key to this json object.<br>
 	 * The long will be converted to a json primitive.<br>
+	 *
 	 * @param key The key to add
 	 * @param value The long value to add
 	 * @return The previous element associated with the key, or null if the key was not present
@@ -237,6 +249,7 @@ public class JsonObject implements JsonElement {
 	/**
 	 * Adds the given float with the given key to this json object.<br>
 	 * The float will be converted to a json primitive.<br>
+	 *
 	 * @param key The key to add
 	 * @param value The float value to add
 	 * @return The previous element associated with the key, or null if the key was not present
@@ -250,6 +263,7 @@ public class JsonObject implements JsonElement {
 	/**
 	 * Adds the given double with the given key to this json object.<br>
 	 * The double will be converted to a json primitive.<br>
+	 *
 	 * @param key The key to add
 	 * @param value The double value to add
 	 * @return The previous element associated with the key, or null if the key was not present
@@ -262,6 +276,7 @@ public class JsonObject implements JsonElement {
 	
 	/**
 	 * Adds all elements from the given json object to this json object.<br>
+	 *
 	 * @param object The json object of elements to add
 	 * @throws NullPointerException If the given json object is null
 	 */
@@ -271,6 +286,7 @@ public class JsonObject implements JsonElement {
 	
 	/**
 	 * Adds all elements from the given map to this json object.<br>
+	 *
 	 * @param elements The map of elements to add
 	 * @throws NullPointerException If the given elements are null
 	 */
@@ -283,6 +299,7 @@ public class JsonObject implements JsonElement {
 	
 	/**
 	 * Removes the element with the given key from this json object.<br>
+	 *
 	 * @param key The key to remove
 	 * @return The element associated with the key, or null if the key was not present
 	 */
@@ -303,6 +320,7 @@ public class JsonObject implements JsonElement {
 	/**
 	 * Replaces the element with the given key in this json object with the new given element.<br>
 	 * If the given element is null, it will be replaced with json null.<br>
+	 *
 	 * @param key The key to replace
 	 * @param newElement The new element to replace with
 	 * @return The previous element associated with the key, or null if the key was not present
@@ -315,6 +333,7 @@ public class JsonObject implements JsonElement {
 	
 	/**
 	 * Replaces the given element with the given key in this json object with the new given element.<br>
+	 *
 	 * @param key The key to replace
 	 * @param oldElement The old element to replace
 	 * @param newElement The new element to replace with
@@ -332,6 +351,7 @@ public class JsonObject implements JsonElement {
 	
 	/**
 	 * Gets the element with the given key from this json object.<br>
+	 *
 	 * @param key The key to get
 	 * @return The element associated with the key, or null if the key was not present
 	 * @throws NullPointerException If the given key is null
@@ -343,6 +363,7 @@ public class JsonObject implements JsonElement {
 	
 	/**
 	 * Gets the element with the given key from this json object as a json object.<br>
+	 *
 	 * @param key The key to get
 	 * @return The element associated with the key as a json object
 	 * @throws NullPointerException If the given key is null
@@ -363,6 +384,7 @@ public class JsonObject implements JsonElement {
 	
 	/**
 	 * Gets the element with the given key from this json object as a json array.<br>
+	 *
 	 * @param key The key to get
 	 * @return The element associated with the key as a json array
 	 * @throws NullPointerException If the given key is null
@@ -383,6 +405,7 @@ public class JsonObject implements JsonElement {
 	
 	/**
 	 * Gets the element with the given key from this json object as a json primitive.<br>
+	 *
 	 * @param key The key to get
 	 * @return The element associated with the key as a json primitive
 	 * @throws NullPointerException If the given key is null
@@ -404,6 +427,7 @@ public class JsonObject implements JsonElement {
 	/**
 	 * Gets the element with the given key from this json object as a string.<br>
 	 * The element will be converted to a json primitive and then to a string.<br>
+	 *
 	 * @param key The key to get
 	 * @return The element associated with the key as a string
 	 * @throws NullPointerException If the given key is null
@@ -418,6 +442,7 @@ public class JsonObject implements JsonElement {
 	/**
 	 * Gets the element with the given key from this json object as a boolean.<br>
 	 * The element will be converted to a json primitive and then to a boolean.<br>
+	 *
 	 * @param key The key to get
 	 * @return The element associated with the key as a boolean
 	 * @throws NullPointerException If the given key is null
@@ -432,6 +457,7 @@ public class JsonObject implements JsonElement {
 	/**
 	 * Gets the element with the given key from this json object as a number.<br>
 	 * The element will be converted to a json primitive and then to a number.<br>
+	 *
 	 * @param key The key to get
 	 * @return The element associated with the key as a number
 	 * @throws NullPointerException If the given key is null
@@ -446,6 +472,7 @@ public class JsonObject implements JsonElement {
 	/**
 	 * Gets the element with the given key from this json object as a byte.<br>
 	 * The element will be converted to a json primitive and then to a byte.<br>
+	 *
 	 * @param key The key to get
 	 * @return The element associated with the key as a byte
 	 * @throws NullPointerException If the given key is null
@@ -460,6 +487,7 @@ public class JsonObject implements JsonElement {
 	/**
 	 * Gets the element with the given key from this json object as a short.<br>
 	 * The element will be converted to a json primitive and then to a short.<br>
+	 *
 	 * @param key The key to get
 	 * @return The element associated with the key as a short
 	 * @throws NullPointerException If the given key is null
@@ -474,6 +502,7 @@ public class JsonObject implements JsonElement {
 	/**
 	 * Gets the element with the given key from this json object as an integer.<br>
 	 * The element will be converted to a json primitive and then to an integer.<br>
+	 *
 	 * @param key The key to get
 	 * @return The element associated with the key as an integer
 	 * @throws NullPointerException If the given key is null
@@ -488,6 +517,7 @@ public class JsonObject implements JsonElement {
 	/**
 	 * Gets the element with the given key from this json object as a long.<br>
 	 * The element will be converted to a json primitive and then to a long.<br>
+	 *
 	 * @param key The key to get
 	 * @return The element associated with the key as a long
 	 * @throws NullPointerException If the given key is null
@@ -502,6 +532,7 @@ public class JsonObject implements JsonElement {
 	/**
 	 * Gets the element with the given key from this json object as a float.<br>
 	 * The element will be converted to a json primitive and then to a float.<br>
+	 *
 	 * @param key The key to get
 	 * @return The element associated with the key as a float
 	 * @throws NullPointerException If the given key is null
@@ -516,6 +547,7 @@ public class JsonObject implements JsonElement {
 	/**
 	 * Gets the element with the given key from this json object as a double.<br>
 	 * The element will be converted to a json primitive and then to a double.<br>
+	 *
 	 * @param key The key to get
 	 * @return The element associated with the key as a double
 	 * @throws NullPointerException If the given key is null

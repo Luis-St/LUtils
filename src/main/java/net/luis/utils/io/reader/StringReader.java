@@ -46,7 +46,7 @@ import java.util.stream.Collectors;
  * </ul>
  * <p>
  *     This reader implementation is not performance optimized,<br>
- *     it reads the string character by character in {@code O(n)}.<br>
+ *     it reads the string character by character in {@code O(n)}.
  * </p>
  *
  * @author Luis-St
@@ -68,6 +68,7 @@ public class StringReader {
 	
 	/**
 	 * Constructs a new string reader with the given string.<br>
+	 *
 	 * @param string The string to read from
 	 * @throws NullPointerException If the string is null
 	 */
@@ -78,6 +79,7 @@ public class StringReader {
 	/**
 	 * Constructs a new string reader from the given reader.<br>
 	 * The reader is closed after reading the string.<br>
+	 *
 	 * @param reader The reader to read from
 	 * @throws NullPointerException If the reader is null
 	 * @throws UncheckedIOException If an I/O error occurs while reading the string
@@ -109,6 +111,7 @@ public class StringReader {
 	
 	/**
 	 * Reads the next character from the string.<br>
+	 *
 	 * @return The next character
 	 * @throws IndexOutOfBoundsException If there are no more characters to read ({@link #canRead()} returns false)
 	 */
@@ -118,6 +121,7 @@ public class StringReader {
 	
 	/**
 	 * Reads the given number of characters from the string.<br>
+	 *
 	 * @param amount The number of characters to read
 	 * @return The read characters as a string
 	 * @throws IllegalArgumentException If the amount is less than or equal to zero
@@ -139,6 +143,7 @@ public class StringReader {
 	
 	/**
 	 * Checks whether there is at least the given number of characters to read.<br>
+	 *
 	 * @param amount The number of characters to read
 	 * @return True if there is at least a given number of characters to read, otherwise false
 	 * @throws IllegalArgumentException If the amount is less than or equal to zero
@@ -160,6 +165,7 @@ public class StringReader {
 	
 	/**
 	 * Checks whether the number of characters to read matches the given predicate.<br>
+	 *
 	 * @param amount The number of characters to read
 	 * @param predicate The predicate to match the characters
 	 * @return True if the number of characters to read matches the predicate, otherwise false
@@ -195,6 +201,7 @@ public class StringReader {
 	
 	/**
 	 * Skips the given number of characters.<br>
+	 *
 	 * @param amount The number of characters to skip
 	 * @throws IllegalArgumentException If the amount is less than or equal to zero
 	 */
@@ -209,6 +216,7 @@ public class StringReader {
 	 * Skips all characters that are equal to the given character.<br>
 	 * If the next character is not equal to the given character<br>
 	 * or there are no more characters to read, nothing happens.<br>
+	 *
 	 * @param c The character to skip
 	 */
 	public void skip(char c) {
@@ -221,6 +229,7 @@ public class StringReader {
 	 * Skips all characters that match the given predicate.<br>
 	 * If the next character does not match the predicate<br>
 	 * or there are no more characters to read, nothing happens.<br>
+	 *
 	 * @param predicate The predicate to match
 	 * @throws NullPointerException If the predicate is null
 	 */
@@ -264,6 +273,7 @@ public class StringReader {
 	/**
 	 * Reads all characters until the next line break is found.<br>
 	 * Supported line breaks are: LF ('\n'), CR ('\r'), CRLF ('\r\n').<br>
+	 *
 	 * @param includeLineBreak Whether the line break should be included in the result or not
 	 * @return The line which was read
 	 */
@@ -322,6 +332,7 @@ public class StringReader {
 	/**
 	 * Reads the string until the next whitespace (' ') is found.<br>
 	 * The whitespace is read but not included in the result.<br>
+	 *
 	 * @return The string read until the default terminator
 	 * @see #readUnquotedString(char)
 	 */
@@ -333,6 +344,7 @@ public class StringReader {
 	 * Reads the string until the given terminator is found.<br>
 	 * The string will be read in 'raw' mode, meaning that no escaping is done.<br>
 	 * The terminator is read but not included in the result.<br>
+	 *
 	 * @param terminator The terminator to read until
 	 * @return The string which was read until the terminator
 	 * @throws StringIndexOutOfBoundsException If there are no more characters to read
@@ -356,6 +368,7 @@ public class StringReader {
 	 * Reads a quoted string.<br>
 	 * A quoted string is a string enclosed in single or double quotes.<br>
 	 * The quotes are read but not included in the result.<br>
+	 *
 	 * @return The quoted string which was read
 	 * @throws StringIndexOutOfBoundsException If there are no more characters to read
 	 * @throws InvalidStringException If the next read character is not a single or double quote
@@ -393,8 +406,9 @@ public class StringReader {
 	 * <p>
 	 *     If the next character is a single or double quote,<br>
 	 *     {@link #readQuotedString()} is called otherwise {@link #readUnquotedString()} is called.<br>
-	 *     If there are no more characters to read, an empty string is returned.<br>
+	 *     If there are no more characters to read, an empty string is returned.
 	 * </p>
+	 *
 	 * @return The string which was read
 	 * @throws StringIndexOutOfBoundsException If there are no more characters to read
 	 * @see #readQuotedString()
@@ -421,8 +435,9 @@ public class StringReader {
 	 * <p>
 	 *     If the terminator is found at the beginning or at the end of the string, an empty string is returned.<br>
 	 *     If the terminator is found in a quoted part of the string, the terminator is ignored.<br>
-	 *     If the terminator is not found, the rest of the string is returned.<br>
+	 *     If the terminator is not found, the rest of the string is returned.
 	 * </p>
+	 *
 	 * @param terminator The terminator to read until
 	 * @return The string which was read until the terminator
 	 * @throws IllegalArgumentException If the terminator is a backslash
@@ -440,8 +455,9 @@ public class StringReader {
 	 * <p>
 	 *     If the terminator is found at the beginning or at the end of the string, an empty string is returned.<br>
 	 *     If the terminator is found in a quoted part of the string, the terminator is ignored.<br>
-	 *     If the terminator is not found, the rest of the string is returned.<br>
+	 *     If the terminator is not found, the rest of the string is returned.
 	 * </p>
+	 *
 	 * @param terminator The terminator to read until
 	 * @return The string which was read until the terminator
 	 * @throws IllegalArgumentException If the terminator is a backslash
@@ -459,8 +475,9 @@ public class StringReader {
 	 * <p>
 	 *     If any terminator is found at the beginning or at the end of the string, an empty string is returned.<br>
 	 *     If any terminator is found in a quoted part of the string, the terminator is ignored.<br>
-	 *     If none terminator is found, the rest of the string is returned.<br>
+	 *     If none terminator is found, the rest of the string is returned.
 	 * </p>
+	 *
 	 * @param terminators The terminators to read until
 	 * @return The string which was read until the terminator
 	 * @throws IllegalArgumentException If the terminators are empty or contain a backslash
@@ -482,8 +499,9 @@ public class StringReader {
 	 * <p>
 	 *     If any terminator is found at the beginning or at the end of the string, an empty string is returned.<br>
 	 *     If any terminator is found in a quoted part of the string, the terminator is ignored.<br>
-	 *     If none terminator is found, the rest of the string is returned.<br>
+	 *     If none terminator is found, the rest of the string is returned.
 	 * </p>
+	 *
 	 * @param terminators The terminators to read until
 	 * @return The string which was read until the terminator
 	 * @throws IllegalArgumentException If the terminators are empty or contain a backslash
@@ -501,6 +519,7 @@ public class StringReader {
 	
 	/**
 	 * Internal method to read the string until the given predicate is true.<br>
+	 *
 	 * @param predicate The predicate to match the characters
 	 * @param inclusive Whether the character which matches the predicate should be included in the result or not
 	 * @return The string which was read until the predicate is true
@@ -543,8 +562,9 @@ public class StringReader {
 	 * <p>
 	 *     If the terminator string is found at the beginning or at the end of the string, an empty string is returned.<br>
 	 *     If the terminator string is found in a quoted part of the string, the terminator is ignored.<br>
-	 *     If the terminator string is not found, the rest of the string is returned.<br>
+	 *     If the terminator string is not found, the rest of the string is returned.
 	 * </p>
+	 *
 	 * @param terminator The terminating string to read until
 	 * @param caseSensitive Whether the terminator string should be case-sensitive or not
 	 * @return The string which was read until the terminator
@@ -571,8 +591,9 @@ public class StringReader {
 	 * <p>
 	 *     If the terminator string is found at the beginning or at the end of the string, an empty string is returned.<br>
 	 *     If the terminator string is found in a quoted part of the string, the terminator is ignored.<br>
-	 *     If the terminator string is not found, the rest of the string is returned.<br>
+	 *     If the terminator string is not found, the rest of the string is returned.
 	 * </p>
+	 *
 	 * @param terminator The terminating string to read until
 	 * @param caseSensitive Whether the terminator string should be case-sensitive or not
 	 * @return The string which was read until the terminator
@@ -595,6 +616,7 @@ public class StringReader {
 	
 	/**
 	 * Internal method to read the string until the terminating string is found.<br>
+	 *
 	 * @param terminator The terminator string to read until
 	 * @param caseSensitive Whether the terminator string should be case-sensitive or not
 	 * @param inclusive Whether the terminator string should be included in the result or not
@@ -660,8 +682,9 @@ public class StringReader {
 	 * If any read character does not match the expected character, an exception is thrown.<br>
 	 * <p>
 	 *     If the expected string could not be read, an exception is thrown.<br>
-	 *     The reader index is set to the last matching character of the expected string.<br>
+	 *     The reader index is set to the last matching character of the expected string.
 	 * </p>
+	 *
 	 * @param expected The expected string
 	 * @param caseSensitive Whether the expected string should be case-sensitive or not
 	 * @return The expected string which was read
@@ -708,12 +731,13 @@ public class StringReader {
 	 * <p>
 	 *     If any read character does not match the expected character of a given string,<br>
 	 *     the string is removed from the list.<br>
-	 *     If no expected string matches the read string, an exception is thrown.<br>
+	 *     If no expected string matches the read string, an exception is thrown.
 	 * </p>
 	 * <p>
 	 *     If none of the expected strings could be read, an exception is thrown.<br>
-	 *     The reader index is set to the last matching character of the expected strings.<br>
+	 *     The reader index is set to the last matching character of the expected strings.
 	 * </p>
+	 *
 	 * @param expected The list of expected strings
 	 * @param caseSensitive Whether the expected strings should be case-sensitive or not
 	 * @return The expected string which was read
@@ -780,6 +804,7 @@ public class StringReader {
 	/**
 	 * Reads a boolean.<br>
 	 * The boolean is read as an unquoted string and then parsed case-insensitive.<br>
+	 *
 	 * @return The boolean value which was read
 	 * @throws StringIndexOutOfBoundsException If there are no more characters to read
 	 * @throws InvalidStringException If the read value is not a boolean
@@ -815,7 +840,7 @@ public class StringReader {
 	 *     The number can be quoted or unquoted.<br>
 	 *     The first character can be a minus or plus sign.<br>
 	 *     The number can contain a single dot for float or double values.<br>
-	 *     The number can contain a type suffix (single character, case-insensitive) at the end of the number:<br>
+	 *     The number can contain a type suffix (single character, case-insensitive) at the end of the number:
 	 * </p>
 	 * <ul>
 	 *     <li>byte: 'b'</li>
@@ -826,7 +851,7 @@ public class StringReader {
 	 *     <li>double: 'd'</li>
 	 * </ul>
 	 * <p>
-	 *     The number can be specified in:<br>
+	 *     The number can be specified in:
 	 * </p>
 	 * <ul>
 	 *     <li>binary by prefixing with '0b'</li>
@@ -836,8 +861,9 @@ public class StringReader {
 	 * </ul>
 	 * <p>
 	 *     The number can contain underscores to separate digits.<br>
-	 *     Floating point numbers can contain an exponent with 'e' or 'p' for hexadecimal floating point numbers.<br>
+	 *     Floating point numbers can contain an exponent with 'e' or 'p' for hexadecimal floating point numbers.
 	 * </p>
+	 *
 	 * @param initialType The initial number type to read as
 	 * @return The number as a string which was read
 	 * @throws InvalidStringException If the read value is not a (valid) number
@@ -963,6 +989,7 @@ public class StringReader {
 	 * Reads a number.<br>
 	 * If the number is specified with a type suffix, the number is parsed as the specified type.<br>
 	 * By default, the number is parsed as a double if it contains a dot otherwise as a long.<br>
+	 *
 	 * @return The number value which was read
 	 * @throws StringIndexOutOfBoundsException If there are no more characters to read
 	 * @throws InvalidStringException If the read value is not a (valid) number
@@ -984,6 +1011,7 @@ public class StringReader {
 	/**
 	 * Reads a byte.<br>
 	 * The number can be suffixed with a {@code b} (case-insensitive) to indicate that it is a byte.<br>
+	 *
 	 * @return The byte value which was read
 	 * @throws StringIndexOutOfBoundsException If there are no more characters to read
 	 * @throws InvalidStringException If the read value is not a (valid) byte
@@ -1010,6 +1038,7 @@ public class StringReader {
 	/**
 	 * Reads a short.<br>
 	 * The number can be suffixed with an {@code s} (case-insensitive) to indicate that it is a short.<br>
+	 *
 	 * @return The short value which was read
 	 * @throws StringIndexOutOfBoundsException If there are no more characters to read
 	 * @throws InvalidStringException If the read value is not a (valid) short
@@ -1036,6 +1065,7 @@ public class StringReader {
 	/**
 	 * Reads an integer.<br>
 	 * The number can be suffixed with an {@code i} (case-insensitive) to indicate that it is an integer.<br>
+	 *
 	 * @return The integer value which was read
 	 * @throws InvalidStringException If the read value is not a (valid) integer
 	 * @see #readNumberAsString(NumberType)
@@ -1061,6 +1091,7 @@ public class StringReader {
 	/**
 	 * Reads a long.<br>
 	 * The number can be suffixed with an {@code l} (case-insensitive) to indicate that it is a long.<br>
+	 *
 	 * @return The long value which was read
 	 * @throws StringIndexOutOfBoundsException If there are no more characters to read
 	 * @throws InvalidStringException If the read value is not a (valid) long
@@ -1090,6 +1121,7 @@ public class StringReader {
 	/**
 	 * Reads a float.<br>
 	 * The number can be suffixed with an {@code f} (case-insensitive) to indicate that it is a float.<br>
+	 *
 	 * @return The float value which was read
 	 * @throws StringIndexOutOfBoundsException If there are no more characters to read
 	 * @throws InvalidStringException If the read value is not a (valid) float
@@ -1116,6 +1148,7 @@ public class StringReader {
 	/**
 	 * Reads a double.<br>
 	 * The number can be suffixed with a {@code d} (case-insensitive) to indicate that it is a double.<br>
+	 *
 	 * @return The double value which was read
 	 * @throws StringIndexOutOfBoundsException If there are no more characters to read
 	 * @throws InvalidStringException If the read value is not a (valid) double
@@ -1144,6 +1177,7 @@ public class StringReader {
 	
 	/**
 	 * Reads a big integer.<br>
+	 *
 	 * @return The big integer value which was read
 	 * @throws StringIndexOutOfBoundsException If there are no more characters to read
 	 * @throws InvalidStringException If the read value is not a (valid) big integer
@@ -1169,6 +1203,7 @@ public class StringReader {
 	
 	/**
 	 * Reads a big decimal.<br>
+	 *
 	 * @return The big decimal value which was read
 	 * @throws StringIndexOutOfBoundsException If there are no more characters to read
 	 * @throws InvalidStringException If the read value is not a (valid) big decimal

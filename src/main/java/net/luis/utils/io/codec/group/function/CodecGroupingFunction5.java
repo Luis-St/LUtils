@@ -39,6 +39,7 @@ public interface CodecGroupingFunction5<CI1, CI2, CI3, CI4, CI5, R> {
 	
 	/**
 	 * Constructs a new object using the given inputs.<br>
+	 *
 	 * @param input1 The first input
 	 * @param input2 The second input
 	 * @param input3 The third input

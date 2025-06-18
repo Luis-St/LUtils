@@ -48,6 +48,7 @@ public class JsonPrimitive implements JsonElement, ValueGetter {
 	
 	/**
 	 * Constructs a new json primitive with the given number value.<br>
+	 *
 	 * @param value The number value
 	 * @throws NullPointerException If the value is null
 	 */
@@ -57,6 +58,7 @@ public class JsonPrimitive implements JsonElement, ValueGetter {
 	
 	/**
 	 * Constructs a new json primitive with the given string value.<br>
+	 *
 	 * @param value The string value
 	 * @throws NullPointerException If the value is null
 	 */
@@ -68,6 +70,7 @@ public class JsonPrimitive implements JsonElement, ValueGetter {
 	
 	/**
 	 * Tries to parse the given string to a boolean or number.<br>
+	 *
 	 * @param string The string
 	 * @return The parsed value or the string if it could not be parsed
 	 */

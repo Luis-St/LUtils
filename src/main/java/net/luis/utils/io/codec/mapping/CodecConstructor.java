@@ -25,10 +25,10 @@ import java.lang.annotation.*;
  * When a class has multiple constructors, one can be annotated with this annotation to indicate<br>
  * that it should be used for creating instances during codec decoding.<br>
  * <p>
- * The annotated constructor must have parameters that match the class's codec components in both number and type compatibility.<br>
+ *     The annotated constructor must have parameters that match the class's codec components in both number and type compatibility.
  * </p>
  * <p>
- * If a class has only one constructor, this annotation is optional.<br>
+ *     If a class has only one constructor, this annotation is optional.
  * </p>
  *
  * @see CodecAutoMapping

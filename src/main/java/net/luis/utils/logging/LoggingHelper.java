@@ -47,7 +47,7 @@ final class LoggingHelper {
 	 * The pattern to match a property in the format 'key=value'.<br>
 	 * <p>
 	 *     The key must not contain any whitespace characters.<br>
-	 *     The value must not contain any line breaks.<br>
+	 *     The value must not contain any line breaks.
 	 * </p>
 	 */
 	private static final Pattern PROPERTY_PATTERN = Pattern.compile("^(\\S*)(\\s*=\\s*)(.*)$");
@@ -55,7 +55,7 @@ final class LoggingHelper {
 	 * Constant for the system property 'logging.status_level'.<br>
 	 * <p>
 	 *     The property is used to set the status level of the internal apache logger.<br>
-	 *     The value must be a valid {@link Level} name in lower case.<br>
+	 *     The value must be a valid {@link Level} name in lower case.
 	 * </p>
 	 * <p>
 	 *     The default value is {@code 'error'}.
@@ -67,10 +67,10 @@ final class LoggingHelper {
 	 * <p>
 	 *     The property is used to set the location of the logging configuration file.<br>
 	 *     The value must be a relative or absolute path of a file.<br>
-	 *     If specified, the system properties will be loaded from the configuration file.<br>
+	 *     If specified, the system properties will be loaded from the configuration file.
 	 * </p>
 	 * <p>
-	 *     By default, the property is not set.<br>
+	 *     By default, the property is not set.
 	 * </p>
 	 */
 	private static final String LOGGING_CONFIG = "logging.config";
@@ -79,10 +79,10 @@ final class LoggingHelper {
 	 * <p>
 	 *     The property is used to enable/disable the override of system properties by the configuration file.<br>
 	 *     The value must be 'true' or 'false'.<br>
-	 *     If enabled, the system properties set with {@code -D} flag will be overridden by the configuration file.<br>
+	 *     If enabled, the system properties set with {@code -D} flag will be overridden by the configuration file.
 	 * </p>
 	 * <p>
-	 *     The default value is {@code 'false'}.<br>
+	 *     The default value is {@code 'false'}.
 	 * </p>
 	 */
 	private static final String LOGGING_CONFIG_OVERRIDE = "logging.config.override";
@@ -90,10 +90,10 @@ final class LoggingHelper {
 	 * Constant for the system property 'logging.console'.<br>
 	 * <p>
 	 *     The property is used to enable/disable console logging.<br>
-	 *     The value must be 'true' or 'false'.<br>
+	 *     The value must be 'true' or 'false'.
 	 * </p>
 	 * <p>
-	 *     The default value is {@code 'true'}.<br>
+	 *     The default value is {@code 'true'}.
 	 * </p>
 	 */
 	private static final String LOGGING_CONSOLE = "logging.console";
@@ -101,10 +101,10 @@ final class LoggingHelper {
 	 * Constant for the system property 'logging.file'.<br>
 	 * <p>
 	 *     The property is used to enable/disable file logging.<br>
-	 *     The value must be 'true' or 'false'.<br>
+	 *     The value must be 'true' or 'false'.
 	 * </p>
 	 * <p>
-	 *     The default value is {@code 'true'}.<br>
+	 *     The default value is {@code 'true'}.
 	 * </p>
 	 */
 	private static final String LOGGING_FILE = "logging.file";
@@ -112,7 +112,7 @@ final class LoggingHelper {
 	 * Constant for the system property 'logging.file.size'.<br>
 	 * <p>
 	 *     The property is used to set the maximum size of a log file.<br>
-	 *     The value must be a number followed by a unit, the unit must be one of the following:<br>
+	 *     The value must be a number followed by a unit, the unit must be one of the following:
 	 * </p>
 	 * <ul>
 	 *     <li>{@code 'B'}: bytes</li>
@@ -122,7 +122,7 @@ final class LoggingHelper {
 	 *     <li>{@code 'TB'}: terabytes</li>
 	 * </ul>
 	 * <p>
-	 *     The default value is {@code '20MB'}.<br>
+	 *     The default value is {@code '20MB'}.
 	 * </p>
 	 */
 	private static final String LOGGING_FILE_SIZE = "logging.file.size";
@@ -130,10 +130,10 @@ final class LoggingHelper {
 	 * Constant for the system property 'logging.file.folder.root'.<br>
 	 * <p>
 	 *     The property is used to set the root folder of the log files.<br>
-	 *     The value must be a relative or absolute path of a folder.<br>
+	 *     The value must be a relative or absolute path of a folder.
 	 * </p>
 	 * <p>
-	 *     The default value is {@code './'}.<br>
+	 *     The default value is {@code './'}.
 	 * </p>
 	 */
 	private static final String LOGGING_FILE_FOLDER_ROOT = "logging.file.folder.root";
@@ -141,7 +141,7 @@ final class LoggingHelper {
 	 * Constant for the system property 'logging.archive.type'.<br>
 	 * <p>
 	 *     The property is used to set the type of the log archives.<br>
-	 *     The value must be one of the following:<br>
+	 *     The value must be one of the following:
 	 * </p>
 	 * <ul>
 	 *     <li>{@code '.zip'}: compressed with the zip algorithm</li>
@@ -150,7 +150,7 @@ final class LoggingHelper {
 	 *     <li>{@code '.xz'}: compressed with the xz algorithm</li>
 	 * </ul>
 	 * <p>
-	 *     The default value is {@code '.gz'}.<br>
+	 *     The default value is {@code '.gz'}.
 	 * </p>
 	 */
 	private static final String LOGGING_ARCHIVE_TYPE = "logging.archive.type";
@@ -159,10 +159,10 @@ final class LoggingHelper {
 	 * <p>
 	 *     The property is used to set the compression level of the log archives.<br>
 	 *     The value must be a number between 0 and 9, a higher value means a higher compression level.<br>
-	 *     If the value is out of range, the value will be clamped to the nearest valid value.<br>
+	 *     If the value is out of range, the value will be clamped to the nearest valid value.
 	 * </p>
 	 * <p>
-	 *     The default value is {@code 4}.<br>
+	 *     The default value is {@code 4}.
 	 * </p>
 	 */
 	private static final String LOGGING_ARCHIVE_COMPRESSION_LEVEL = "logging.archive.compression_Level";
@@ -171,10 +171,10 @@ final class LoggingHelper {
 	 * <p>
 	 *     The property is used to set the maximum number of log archives which should be kept.<br>
 	 *     The value must be a number greater than 0.<br>
-	 *     If the value is less than 1, the value will be clamped to 1.<br>
+	 *     If the value is less than 1, the value will be clamped to 1.
 	 * </p>
 	 * <p>
-	 *     The default value is {@code 10}.<br>
+	 *     The default value is {@code 10}.
 	 * </p>
 	 */
 	private static final String LOGGING_ARCHIVE_MAX_FILES = "logging.archive.max_files";
@@ -183,10 +183,10 @@ final class LoggingHelper {
 	 * <p>
 	 *     The property is used to set the maximum depth of the log archive auto deletion.<br>
 	 *     The value must be a number greater than 0.<br>
-	 *     If the value is less than 1, the value will be clamped to 1.<br>
+	 *     If the value is less than 1, the value will be clamped to 1.
 	 * </p>
 	 * <p>
-	 *     The default value is {@code 1}.<br>
+	 *     The default value is {@code 1}.
 	 * </p>
 	 */
 	private static final String LOGGING_ARCHIVE_AUTO_DELETION_DEPTH = "logging.archive.auto_deletion.depth";
@@ -195,10 +195,10 @@ final class LoggingHelper {
 	 * <p>
 	 *     The property is used to set the maximum age of the log archive auto deletion.<br>
 	 *     The value must be a number greater than 0.<br>
-	 *     If the value is less than 1, the value will be clamped to 1.<br>
+	 *     If the value is less than 1, the value will be clamped to 1.
 	 * </p>
 	 * <p>
-	 *     The default value is {@code 30}.<br>
+	 *     The default value is {@code 30}.
 	 * </p>
 	 */
 	private static final String LOGGING_ARCHIVE_AUTO_DELETION_AGE = "logging.archive.auto_deletion.age";
@@ -217,28 +217,28 @@ final class LoggingHelper {
 	 *     <li>
 	 *         logging.status_level<br>
 	 *         The status level of the internal apache logger, expect a valid {@link Level} name in lower case.<br>
-	 *         Default: 'error'<br>
+	 *         Default: 'error'
 	 *     </li>
 	 *     <li>
 	 *         logging.config<br>
 	 *         The location of the logging configuration file, expect a relative or absolute path of a file.<br>
 	 *         If specified, the system properties will be loaded from the configuration file.<br>
-	 *         Default: None<br>
+	 *         Default: None
 	 *     </li>
 	 *     <li>
 	 *         logging.config.override<br>
 	 *         Enables/disables the override of system properties by the configuration file, expect 'true' or 'false'.<br>
-	 *         Default: 'false'<br>
+	 *         Default: 'false'
 	 *     </li>
 	 *     <li>
 	 *         logging.console<br>
 	 *         Enables/disables console logging, expect 'true' or 'false'.<br>
-	 *         Default: 'true'<br>
+	 *         Default: 'true'
 	 *     </li>
 	 *     <li>
 	 *         logging.file<br>
 	 *         Enables/disables file logging, expect 'true' or 'false'.<br>
-	 *         Default: 'true'<br>
+	 *         Default: 'true'
 	 *     </li>
 	 * </ul>
 	 * <br>
@@ -247,32 +247,32 @@ final class LoggingHelper {
 	 *     <li>
 	 *         logging.file.size<br>
 	 *         The maximum size of a log file, expect a number followed by a unit.<br>
-	 *         Default: '20MB'<br>
+	 *         Default: '20MB'
 	 *     </li>
 	 *     <li>
 	 *         logging.archive.type<br>
 	 *         The type of the log archives, expect a file extension ('.zip', '.gz', '.bz2', '.xz').<br>
-	 *         Default: '.gz'<br>
+	 *         Default: '.gz'
 	 *     </li>
 	 *     <li>
 	 *         logging.archive.compression_level<br>
 	 *         The compression level of the log archives, expect a number between 0 and 9.<br>
-	 *         Default: '4'<br>
+	 *         Default: '4'
 	 *     </li>
 	 *     <li>
 	 *         logging.archive.max_files<br>
 	 *         The maximum number of log archives which should be kept, expect a number greater than 0.<br>
-	 *         Default: '10'<br>
+	 *         Default: '10'
 	 *     </li>
 	 *     <li>
 	 *         logging.archive.auto_deletion.depth<br>
 	 *         The maximum depth of the log archive auto deletion, expect a number greater than 0.<br>
-	 *         Default: '1'<br>
+	 *         Default: '1'
 	 *     </li>
 	 *     <li>
 	 *         logging.archive.auto_deletion.age<br>
 	 *         The maximum age of the log archive auto deletion, expect a number greater than 0.<br>
-	 *         Default: '30'<br>
+	 *         Default: '30'
 	 *     </li>
 	 * </ul>
 	 * <br>
@@ -303,25 +303,25 @@ final class LoggingHelper {
 	 *    <li>
 	 *        logging.file.folder.root<br>
 	 *        The root folder to log to, expect a relative or absolute path of a folder.<br>
-	 *        Default: './'<br>
+	 *        Default: './'
 	 *    </li>
 	 *    <li>
 	 *        logging.file.folder.{level}<br>
 	 *        The folder to a log file of a specific level, expect a relative path of a folder.<br>
 	 *        {level} must be replaced with a valid {@link Level} name in lower case.<br>
-	 *        Default: 'logs/'<br>
+	 *        Default: 'logs/'
 	 *    </li>
 	 *    <li>
 	 *        logging.file.folder.{level}.file<br>
 	 *        The file name of the current log file of a specific level, expect a file name.<br>
 	 *        {level} must be replaced with a valid {@link Level} name in lower case.<br>
-	 *        Default: '{level}.log'<br>
+	 *        Default: '{level}.log'
 	 *    </li>
 	 *    <li>
 	 *        logging.file.folder.{level}.archive<br>
 	 *        The file pattern of the archived log files of a specific level, expect a file pattern.<br>
 	 *        {level} must be replaced with a valid {@link Level} name in lower case.<br>
-	 *        Default: '{level}-%d{dd-MM-yyyy}-%i.log'<br>
+	 *        Default: '{level}-%d{dd-MM-yyyy}-%i.log'
 	 *    </li>
 	 * </ul>
 	 *
@@ -349,6 +349,7 @@ final class LoggingHelper {
 	 * Loads the system properties from the given location.<br>
 	 * The location must be a valid file, and the properties must be in the format 'key=value'.<br>
 	 * If a property is already set, the override is allowed if the system property 'logging.config.override' is set to 'true'.<br>
+	 *
 	 * @param location The location of the properties file
 	 * @throws NullPointerException If the given location is null
 	 * @throws IllegalStateException If a system property is already set and the configuration tries to override it
@@ -381,6 +382,7 @@ final class LoggingHelper {
 	 * Creates a new logger configuration for the given loggers.<br>
 	 * The configuration is created with the default values and modifies it according to the system properties.<br>
 	 * The system properties are specified in the documentation of the method {@link #load(List)}.<br>
+	 *
 	 * @param loggers The names of the loggers which should be configured
 	 * @return The logger configuration
 	 * @throws NullPointerException If the given list of loggers is null
@@ -535,6 +537,7 @@ final class LoggingHelper {
 	 *         </ul>
 	 *     </li>
 	 * </ul>
+	 *
 	 * @throws IllegalArgumentException If the value of a system property is invalid
 	 */
 	public static void configure() {
@@ -557,7 +560,8 @@ final class LoggingHelper {
 	
 	/**
 	 * Checks if the given property is enabled.<br>
-	 * A property is enabled if it is equal to 'true', 'enable' or 'enabled', '1', 'on' or 'yes' (case-insensitive).
+	 * A property is enabled if it is equal to 'true', 'enable' or 'enabled', '1', 'on' or 'yes' (case-insensitive).<br>
+	 *
 	 * @param property The property to check
 	 * @return True if the property is enabled, false otherwise
 	 */
@@ -567,7 +571,8 @@ final class LoggingHelper {
 	
 	/**
 	 * Checks if the given property is disabled.<br>
-	 * A property is disabled if it is equal to 'false', 'disable' or 'disabled', '0', 'off' or 'no' (case-insensitive).
+	 * A property is disabled if it is equal to 'false', 'disable' or 'disabled', '0', 'off' or 'no' (case-insensitive).<br>
+	 *
 	 * @param property The property to check
 	 * @return True if the property is disabled, false otherwise
 	 */

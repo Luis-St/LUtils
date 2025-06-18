@@ -66,6 +66,7 @@ public class LazyInitialization<T> {
 	
 	/**
 	 * Constructs a new lazy initialization with the given initialization action.<br>
+	 *
 	 * @param action The action to perform when the object is initialized
 	 * @throws NullPointerException If the action is null
 	 */
@@ -75,6 +76,7 @@ public class LazyInitialization<T> {
 	
 	/**
 	 * Constructs an already initialized lazy initialization with the given value and initialization action.<br>
+	 *
 	 * @param value The value to initialize the object with
 	 * @param action The action to perform when the object is initialized
 	 * @throws NullPointerException If the action is null
@@ -85,6 +87,7 @@ public class LazyInitialization<T> {
 	
 	/**
 	 * Constructs a new lazy initialization with the given mutable object and initialization action.<br>
+	 *
 	 * @param mutable The internal mutable object to hold the value
 	 * @param action The action to perform when the object is initialized
 	 * @param initialised Whether the object has been initialized or not
@@ -101,6 +104,7 @@ public class LazyInitialization<T> {
 	
 	/**
 	 * Gets the value of the object if it has been initialized.<br>
+	 *
 	 * @return The value of the object
 	 * @throws NotInitializedException If the object has not been initialized yet
 	 */
@@ -115,6 +119,7 @@ public class LazyInitialization<T> {
 	/**
 	 * Sets the value of the object if it has not been initialized yet.<br>
 	 * Performs the action set in the constructor if the object is initialized.<br>
+	 *
 	 * @param value The value to initialize the object with
 	 * @throws AlreadyInitializedException If the object has already been initialized
 	 */

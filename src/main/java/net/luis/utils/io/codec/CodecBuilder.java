@@ -41,6 +41,7 @@ public final class CodecBuilder {
 	 * Creates an automatically mapped codec for the given class.<br>
 	 * The underlying auto-mapping system analyzes the class structure and creates a codec that can encode and decode instances of the class.<br>
 	 * The auto-mapping supports record classes (preferred), regular classes, and enums.<br>
+	 *
 	 * @param clazz The class for which to create a codec
 	 * @param <O> The type of the class
 	 * @return A codec for the given class
@@ -56,6 +57,7 @@ public final class CodecBuilder {
 	 * Creates a new codec grouper that groups the provided codec into a single codec.<br>
 	 * The resulting codec can be created by calling the {@code create} method of the returned grouper.<br>
 	 * The {@code create} requires a grouping function as input that constructs the resulting object from the provided components.<br>
+	 *
 	 * @param codec1 The first codec
 	 * @return The created codec grouper
 	 * @param <CI1> The type of the first component
@@ -74,6 +76,7 @@ public final class CodecBuilder {
 	 * Creates a new codec grouper that groups the provided codecs into a single codec.<br>
 	 * The resulting codec can be created by calling the {@code create} method of the returned grouper.<br>
 	 * The {@code create} requires a grouping function as input that constructs the resulting object from the provided components.<br>
+	 *
 	 * @param codec1 The first codec
 	 * @param codec2 The second codec
 	 * @return The created codec grouper
@@ -95,6 +98,7 @@ public final class CodecBuilder {
 	 * Creates a new codec grouper that groups the provided codecs into a single codec.<br>
 	 * The resulting codec can be created by calling the {@code create} method of the returned grouper.<br>
 	 * The {@code create} requires a grouping function as input that constructs the resulting object from the provided components.<br>
+	 *
 	 * @param codec1 The first codec
 	 * @param codec2 The second codec
 	 * @param codec3 The third codec
@@ -119,6 +123,7 @@ public final class CodecBuilder {
 	 * Creates a new codec grouper that groups the provided codecs into a single codec.<br>
 	 * The resulting codec can be created by calling the {@code create} method of the returned grouper.<br>
 	 * The {@code create} requires a grouping function as input that constructs the resulting object from the provided components.<br>
+	 *
 	 * @param codec1 The first codec
 	 * @param codec2 The second codec
 	 * @param codec3 The third codec
@@ -146,6 +151,7 @@ public final class CodecBuilder {
 	 * Creates a new codec grouper that groups the provided codecs into a single codec.<br>
 	 * The resulting codec can be created by calling the {@code create} method of the returned grouper.<br>
 	 * The {@code create} requires a grouping function as input that constructs the resulting object from the provided components.<br>
+	 *
 	 * @param codec1 The first codec
 	 * @param codec2 The second codec
 	 * @param codec3 The third codec
@@ -176,6 +182,7 @@ public final class CodecBuilder {
 	 * Creates a new codec grouper that groups the provided codecs into a single codec.<br>
 	 * The resulting codec can be created by calling the {@code create} method of the returned grouper.<br>
 	 * The {@code create} requires a grouping function as input that constructs the resulting object from the provided components.<br>
+	 *
 	 * @param codec1 The first codec
 	 * @param codec2 The second codec
 	 * @param codec3 The third codec
@@ -209,6 +216,7 @@ public final class CodecBuilder {
 	 * Creates a new codec grouper that groups the provided codecs into a single codec.<br>
 	 * The resulting codec can be created by calling the {@code create} method of the returned grouper.<br>
 	 * The {@code create} requires a grouping function as input that constructs the resulting object from the provided components.<br>
+	 *
 	 * @param codec1 The first codec
 	 * @param codec2 The second codec
 	 * @param codec3 The third codec
@@ -245,6 +253,7 @@ public final class CodecBuilder {
 	 * Creates a new codec grouper that groups the provided codecs into a single codec.<br>
 	 * The resulting codec can be created by calling the {@code create} method of the returned grouper.<br>
 	 * The {@code create} requires a grouping function as input that constructs the resulting object from the provided components.<br>
+	 *
 	 * @param codec1 The first codec
 	 * @param codec2 The second codec
 	 * @param codec3 The third codec
@@ -284,6 +293,7 @@ public final class CodecBuilder {
 	 * Creates a new codec grouper that groups the provided codecs into a single codec.<br>
 	 * The resulting codec can be created by calling the {@code create} method of the returned grouper.<br>
 	 * The {@code create} requires a grouping function as input that constructs the resulting object from the provided components.<br>
+	 *
 	 * @param codec1 The first codec
 	 * @param codec2 The second codec
 	 * @param codec3 The third codec
@@ -326,6 +336,7 @@ public final class CodecBuilder {
 	 * Creates a new codec grouper that groups the provided codecs into a single codec.<br>
 	 * The resulting codec can be created by calling the {@code create} method of the returned grouper.<br>
 	 * The {@code create} requires a grouping function as input that constructs the resulting object from the provided components.<br>
+	 *
 	 * @param codec1 The first codec
 	 * @param codec2 The second codec
 	 * @param codec3 The third codec
@@ -371,6 +382,7 @@ public final class CodecBuilder {
 	 * Creates a new codec grouper that groups the provided codecs into a single codec.<br>
 	 * The resulting codec can be created by calling the {@code create} method of the returned grouper.<br>
 	 * The {@code create} requires a grouping function as input that constructs the resulting object from the provided components.<br>
+	 *
 	 * @param codec1 The first codec
 	 * @param codec2 The second codec
 	 * @param codec3 The third codec
@@ -419,6 +431,7 @@ public final class CodecBuilder {
 	 * Creates a new codec grouper that groups the provided codecs into a single codec.<br>
 	 * The resulting codec can be created by calling the {@code create} method of the returned grouper.<br>
 	 * The {@code create} requires a grouping function as input that constructs the resulting object from the provided components.<br>
+	 *
 	 * @param codec1 The first codec
 	 * @param codec2 The second codec
 	 * @param codec3 The third codec
@@ -470,6 +483,7 @@ public final class CodecBuilder {
 	 * Creates a new codec grouper that groups the provided codecs into a single codec.<br>
 	 * The resulting codec can be created by calling the {@code create} method of the returned grouper.<br>
 	 * The {@code create} requires a grouping function as input that constructs the resulting object from the provided components.<br>
+	 *
 	 * @param codec1 The first codec
 	 * @param codec2 The second codec
 	 * @param codec3 The third codec
@@ -524,6 +538,7 @@ public final class CodecBuilder {
 	 * Creates a new codec grouper that groups the provided codecs into a single codec.<br>
 	 * The resulting codec can be created by calling the {@code create} method of the returned grouper.<br>
 	 * The {@code create} requires a grouping function as input that constructs the resulting object from the provided components.<br>
+	 *
 	 * @param codec1 The first codec
 	 * @param codec2 The second codec
 	 * @param codec3 The third codec
@@ -581,6 +596,7 @@ public final class CodecBuilder {
 	 * Creates a new codec grouper that groups the provided codecs into a single codec.<br>
 	 * The resulting codec can be created by calling the {@code create} method of the returned grouper.<br>
 	 * The {@code create} requires a grouping function as input that constructs the resulting object from the provided components.<br>
+	 *
 	 * @param codec1 The first codec
 	 * @param codec2 The second codec
 	 * @param codec3 The third codec
@@ -641,6 +657,7 @@ public final class CodecBuilder {
 	 * Creates a new codec grouper that groups the provided codecs into a single codec.<br>
 	 * The resulting codec can be created by calling the {@code create} method of the returned grouper.<br>
 	 * The {@code create} requires a grouping function as input that constructs the resulting object from the provided components.<br>
+	 *
 	 * @param codec1 The first codec
 	 * @param codec2 The second codec
 	 * @param codec3 The third codec

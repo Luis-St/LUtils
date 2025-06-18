@@ -56,6 +56,7 @@ public record BoundaryTokenRule(
 	/**
 	 * Constructs a new boundary token rule with the given start, and end token rule.<br>
 	 * The between token rule is set to {@link TokenRules#alwaysMatch()} by default.<br>
+	 *
 	 * @param startTokenRule The token rule that marks the start of the sequence
 	 * @param endTokenRule The token rule that marks the end of the sequence
 	 * @throws NullPointerException If the start or end token rule is null
@@ -67,6 +68,7 @@ public record BoundaryTokenRule(
 	
 	/**
 	 * Constructs a new boundary token rule with the given start, between, and end token rule.<br>
+	 *
 	 * @param startTokenRule The token rule that marks the start of the sequence
 	 * @param betweenTokenRule The token rule that matches the content between the start and end token rules
 	 * @param endTokenRule The token rule that marks the end of the sequence
@@ -86,6 +88,7 @@ public record BoundaryTokenRule(
 	/**
 	 * Validates the given token rules to ensure they do not contain any invalid between token rules.<br>
 	 * This method is called recursively to check all nested token rules.<br>
+	 *
 	 * @param type The type of the token rule to validate (e.g. "Start", "Between", "End")
 	 * @param tokenRules The collection of token rules to validate
 	 * @throws IllegalArgumentException If any of the token rules are invalid

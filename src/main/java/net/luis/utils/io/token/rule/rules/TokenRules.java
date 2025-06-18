@@ -43,6 +43,7 @@ public final class TokenRules {
 	
 	/**
 	 * Provides a token rule that always matches.<br>
+	 *
 	 * @return The token rule
 	 * @apiNote This is the preferred way to access the {@link AlwaysMatchTokenRule#INSTANCE} instance
 	 * @see AlwaysMatchTokenRule
@@ -53,6 +54,7 @@ public final class TokenRules {
 	
 	/**
 	 * Creates a pattern token rule with the given pattern in string format.<br>
+	 *
 	 * @param pattern The pattern to match
 	 * @return The created token rule
 	 * @throws NullPointerException If the pattern is null
@@ -65,6 +67,7 @@ public final class TokenRules {
 	
 	/**
 	 * Creates a pattern token rule with the given pattern.<br>
+	 *
 	 * @param pattern The pattern to match
 	 * @return The created token rule
 	 * @throws NullPointerException If the pattern is null
@@ -76,6 +79,7 @@ public final class TokenRules {
 	
 	/**
 	 * Creates an optional token rule with the given token rule.<br>
+	 *
 	 * @param tokenRule The token rule to match optionally
 	 * @return The created token rule that matches the given token rule optionally
 	 * @throws NullPointerException If the token rule is null
@@ -88,6 +92,7 @@ public final class TokenRules {
 	/**
 	 * Creates a repeated token rule with the given token rule and the minimum number of occurrences.<br>
 	 * This method is equivalent to {@link #repeatBetween(TokenRule, int, int)} with the maximum number of occurrences set to {@link Integer#MAX_VALUE}.<br>
+	 *
 	 * @param tokenRule The token rule to match
 	 * @param min The minimum number of occurrences
 	 * @return The created token rule that matches the given token rule at least the given number of times
@@ -103,6 +108,7 @@ public final class TokenRules {
 	/**
 	 * Creates a repeated token rule with the given token rule and the exact number of occurrences.<br>
 	 * This method is equivalent to {@link #repeatBetween(TokenRule, int, int)} with the minimum and maximum number of occurrences set to the same value.<br>
+	 *
 	 * @param tokenRule The token rule to match
 	 * @param repeats The exact number of occurrences
 	 * @return The created token rule that matches the given token rule exactly the given number of times
@@ -118,6 +124,7 @@ public final class TokenRules {
 	/**
 	 * Creates a repeated token rule with the given token rule and the maximum number of occurrences.<br>
 	 * This method is equivalent to {@link #repeatBetween(TokenRule, int, int)} with the minimum number of occurrences set to 0.<br>
+	 *
 	 * @param tokenRule The token rule to match
 	 * @param max The maximum number of occurrences
 	 * @return The created token rule that matches the given token rule at most the given number of times
@@ -133,6 +140,7 @@ public final class TokenRules {
 	/**
 	 * Creates a repeated token rule with the given token rule and no limit on the number of occurrences.<br>
 	 * This method is equivalent to {@link #repeatBetween(TokenRule, int, int)} with the minimum number of occurrences set to 0 and the maximum number of occurrences set to {@link Integer#MAX_VALUE}.<br>
+	 *
 	 * @param tokenRule The token rule to match
 	 * @return The created token rule that matches the given token rule any number of times
 	 * @throws NullPointerException If the token rule is null
@@ -145,6 +153,7 @@ public final class TokenRules {
 	
 	/**
 	 * Creates a repeated token rule with the given token rule and the minimum and maximum number of occurrences.<br>
+	 *
 	 * @param tokenRule The token rule to match
 	 * @param min The minimum number of occurrences
 	 * @param max The maximum number of occurrences
@@ -159,6 +168,7 @@ public final class TokenRules {
 	
 	/**
 	 * Creates a token rule that matches a sequence of token rules.<br>
+	 *
 	 * @param tokenRules The token rules to match in sequence
 	 * @return The created token rule
 	 * @throws NullPointerException If the token rule array or any of its elements are null
@@ -171,6 +181,7 @@ public final class TokenRules {
 	
 	/**
 	 * Creates a token rule that matches a sequence of token rules.<br>
+	 *
 	 * @param tokenRules The token rules to match in sequence
 	 * @return The created token rule
 	 * @throws NullPointerException If the token rule list or any of its elements are null
@@ -183,6 +194,7 @@ public final class TokenRules {
 	
 	/**
 	 * Creates a token rule that matches any of the given token rules.<br>
+	 *
 	 * @param tokenRules The token rules to match any of
 	 * @return The created token rule
 	 * @throws NullPointerException If the token rule array or any of its elements are null
@@ -195,6 +207,7 @@ public final class TokenRules {
 	
 	/**
 	 * Creates a token rule that matches any of the given token rules.<br>
+	 *
 	 * @param tokenRules The token rules to match any of
 	 * @return The created token rule
 	 * @throws NullPointerException If the token rule set or any of its elements are null
@@ -207,6 +220,7 @@ public final class TokenRules {
 	
 	/**
 	 * Creates a token rule that matches a boundary between the given start and end token rules.<br>
+	 *
 	 * @param startTokenRule The token rule that marks the start of the sequence
 	 * @param endTokenRule The token rule that marks the end of the sequence
 	 * @return The created token rule
@@ -221,6 +235,7 @@ public final class TokenRules {
 	
 	/**
 	 * Creates a token rule that matches a boundary between the given start, between, and end token rules.<br>
+	 *
 	 * @param startTokenRule The token rule that marks the start of the sequence
 	 * @param betweenTokenRule The token rule that matches the content between the start and end token rules
 	 * @param endTokenRule The token rule that marks the end of the sequence
@@ -236,6 +251,7 @@ public final class TokenRules {
 	
 	/**
 	 * Provides a token rule that matches the end of the input.<br>
+	 *
 	 * @return The token rule
 	 * @apiNote This is the preferred way to access the {@link EndTokenRule#INSTANCE} instance
 	 * @see EndTokenRule
@@ -248,6 +264,7 @@ public final class TokenRules {
 	/**
 	 * Converts the given token rule to a regex string.<br>
 	 * This method will remove the surrounding brackets if they are present.<br>
+	 *
 	 * @param tokenRule The token rule to convert
 	 * @return The regex string
 	 * @throws NullPointerException If the token rule is null
@@ -265,6 +282,7 @@ public final class TokenRules {
 	/**
 	 * Converts the given token rule to a regex string without removing the surrounding brackets.<br>
 	 * The rules are converted to regex strings and joined together with the appropriate regex operators.<br>
+	 *
 	 * @param tokenRule The token rule to convert
 	 * @return The regex string
 	 * @throws NullPointerException If the token rule is null
@@ -361,6 +379,7 @@ public final class TokenRules {
 	 * Converts the given token definition to a regex string.<br>
 	 * A word token definition is converted to a regex that matches any alphanumeric and numeric character.<br>
 	 * All special characters are escaped.<br>
+	 *
 	 * @param definition The token definition to convert
 	 * @return The regex string
 	 * @throws NullPointerException If the token definition is null
@@ -387,6 +406,7 @@ public final class TokenRules {
 	/**
 	 * Checks if the given regex is surrounded by brackets.<br>
 	 * This method will check if the first character is a bracket and if the last character is a closing bracket.<br>
+	 *
 	 * @param regex The regex to check
 	 * @return True if the regex is surrounded by brackets, false otherwise
 	 * @throws NullPointerException If the regex is null
@@ -399,6 +419,7 @@ public final class TokenRules {
 	/**
 	 * Checks if the given regex ends with a special character.<br>
 	 * The following characters are considered special characters: {@code ?, *, +, }<br>
+	 *
 	 * @param regex The regex to check
 	 * @return True if the regex ends with a special character, false otherwise
 	 * @throws NullPointerException If the regex is null
@@ -410,6 +431,7 @@ public final class TokenRules {
 	
 	/**
 	 * Checks if the given regex ends with the given character.<br>
+	 *
 	 * @param regex The regex to check
 	 * @param c The character to check
 	 * @return True if the regex ends with the given character, false otherwise

@@ -51,6 +51,7 @@ public abstract sealed class Either<L, R> permits Either.Left, Either.Right {
 	
 	/**
 	 * Creates a new either instance with the given value as the left value.<br>
+	 *
 	 * @param value The left value
 	 * @return The created (left) either instance
 	 * @param <L> The type of the left value
@@ -62,6 +63,7 @@ public abstract sealed class Either<L, R> permits Either.Left, Either.Right {
 	
 	/**
 	 * Creates a new either instance with the given value as the right value.<br>
+	 *
 	 * @param value The right value
 	 * @return The created (right) either instance
 	 * @param <L> The type of the left value
@@ -86,6 +88,7 @@ public abstract sealed class Either<L, R> permits Either.Left, Either.Right {
 	
 	/**
 	 * Performs the given action if this either instance is a left instance.<br>
+	 *
 	 * @param action The action to perform
 	 * @throws NullPointerException If the action is null
 	 */
@@ -93,6 +96,7 @@ public abstract sealed class Either<L, R> permits Either.Left, Either.Right {
 	
 	/**
 	 * Performs the given action if this either instance is a right instance.<br>
+	 *
 	 * @param action The action to perform
 	 * @throws NullPointerException If the action is null
 	 */
@@ -112,6 +116,7 @@ public abstract sealed class Either<L, R> permits Either.Left, Either.Right {
 	
 	/**
 	 * Returns the left value or throws an exception if it is a right either.<br>
+	 *
 	 * @return The left value
 	 * @throws IllegalStateException If the left value is not present
 	 */
@@ -119,6 +124,7 @@ public abstract sealed class Either<L, R> permits Either.Left, Either.Right {
 	
 	/**
 	 * Returns the right value or throws an exception if it is a left either.<br>
+	 *
 	 * @return The right value
 	 * @throws IllegalStateException If the right value is not present
 	 */
@@ -134,6 +140,7 @@ public abstract sealed class Either<L, R> permits Either.Left, Either.Right {
 	
 	/**
 	 * Maps the left and right values of this either instance to new values.<br>
+	 *
 	 * @param leftMapper The mapper for the left value
 	 * @param rightMapper The mapper for the right value
 	 * @return A new either instance with the mapped values
@@ -145,6 +152,7 @@ public abstract sealed class Either<L, R> permits Either.Left, Either.Right {
 	
 	/**
 	 * Maps the left and right values of this either instance to a new value.<br>
+	 *
 	 * @param leftMapper The mapper for the left value
 	 * @param rightMapper The mapper for the right value
 	 * @return The mapped value
@@ -156,6 +164,7 @@ public abstract sealed class Either<L, R> permits Either.Left, Either.Right {
 	/**
 	 * Maps the left value of this either instance to a new value.<br>
 	 * If this is a right either, the mapping is not applied.<br>
+	 *
 	 * @param mapper The mapper for the left value
 	 * @return A new either instance with the mapped left value
 	 * @param <T> The new type of the left value
@@ -168,6 +177,7 @@ public abstract sealed class Either<L, R> permits Either.Left, Either.Right {
 	/**
 	 * Maps the right value of this either instance to a new value.<br>
 	 * If this is a left either, the mapping is not applied.<br>
+	 *
 	 * @param mapper The mapper for the right value
 	 * @return A new either instance with the mapped right value
 	 * @param <T> The new type of the right value
