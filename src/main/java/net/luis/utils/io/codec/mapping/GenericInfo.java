@@ -18,18 +18,39 @@
 
 package net.luis.utils.io.codec.mapping;
 
+import org.jetbrains.annotations.NotNull;
+
 import java.lang.annotation.*;
 
 /**
+ * An annotation that provides generic type information for fields or record components.<br>
+ * This annotation is used by the codec auto-mapping system to determine the correct codec
+ * for generic types like {@code List<T>}, {@code Map<K, V>}, or {@code Optional<T>}.<br>
+ * <p>
+ *     Java's type erasure removes generic type information at runtime, so this annotation allows
+ *     explicitly specifying the generic parameters that should be used when creating codecs.<br>
+ *     Example usage:<br>
+ * </p>
+ * <pre><code>
+ *     &#64;GenericInfo({String.class, Integer.class}) private Map&lt;String, Integer&gt; map;
+ *     &#64;GenericInfo({ List.class, List.class, String.class, Integer.class }) private Either&lt;List&lt;String&gt;, List&lt;Integer&gt;&gt;
+ * </code></pre>
+ *
+ * @see CodecAutoMapping
  *
  * @author Luis-St
- *
  */
-
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ ElementType.RECORD_COMPONENT, ElementType.FIELD })
 public @interface GenericInfo {
 	
-	Class<?>[] value() default {};
+	/**
+	 * Specifies the generic type parameters for the annotated element.<br>
+	 * The order of the classes should match the order of the generic parameters.<br>
+	 * For nested generic types, all type parameters should be listed in order.<br>
+	 *
+	 * @return An array of classes representing the generic type parameters
+	 */
+	Class<?> @NotNull [] value() default {};
 }

@@ -21,13 +21,21 @@ package net.luis.utils.io.codec.mapping;
 import java.lang.annotation.*;
 
 /**
+ * An annotation that marks a constructor to be used by the codec auto-mapping system.<br>
+ * When a class has multiple constructors, one can be annotated with this annotation to indicate<br>
+ * that it should be used for creating instances during codec decoding.<br>
+ * <p>
+ * The annotated constructor must have parameters that match the class's codec components in both number and type compatibility.<br>
+ * </p>
+ * <p>
+ * If a class has only one constructor, this annotation is optional.<br>
+ * </p>
+ *
+ * @see CodecAutoMapping
  *
  * @author Luis-St
- *
  */
-
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ ElementType.CONSTRUCTOR })
-public @interface CodecConstructor {
-}
+public @interface CodecConstructor {}

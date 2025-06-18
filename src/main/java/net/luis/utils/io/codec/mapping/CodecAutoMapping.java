@@ -41,15 +41,29 @@ import java.util.function.Function;
 import java.util.stream.Stream;
 
 /**
+ * A utility class for automatically creating codecs for classes using reflection.<br>
+ * This class provides methods to generate codecs for classes without having to manually implement them.<br>
+ * It supports record classes (preferred), regular classes, and enums.<br>
+ *
+ * @see Codec
+ * @see CodecBuilder
  *
  * @author Luis-St
- *
  */
-
 @SuppressWarnings({ "unchecked", "rawtypes" })
 public class CodecAutoMapping {
 	
+	/**
+	 * An empty array of codec components used as a default return value when no components are found.<br>
+	 * This avoids creating a new empty array each time no components are found.<br>
+	 */
 	private static final CodecComponent[] EMPTY_CODEC_COMPONENTS = new CodecComponent[0];
+	
+	/**
+	 * A lookup map that associates Java classes with their corresponding codec implementations.<br>
+	 * This map contains predefined codecs for commonly used Java types like primitives, strings, and date/time classes.<br>
+	 * When creating an auto-mapped codec, this map is consulted first to find an existing codec for a given type.<br>
+	 */
 	private static final Map<Class<?>, Codec<?>> CODEC_LOOKUP = Utils.make(Maps.newHashMap(), map -> {
 		map.put(Boolean.class, Codec.BOOLEAN);
 		map.put(Byte.class, Codec.BYTE);
@@ -72,6 +86,20 @@ public class CodecAutoMapping {
 		map.put(URL.class, Codec.URL);
 	});
 	
+	/**
+	 * Creates an automatically mapped codec for the given class.<br>
+	 * The method analyzes the class structure and creates a codec that can encode and decode instances of the class.<br>
+	 * For record classes, it uses the record components to create the codec.<br>
+	 * For regular classes, it uses either annotated fields or non-static, final fields to create the codec.<br>
+	 * @param clazz The class for which a codec should be created
+	 * @param <O> The type of the class
+	 * @return A codec for the given class
+	 * @throws NullPointerException If the provided class is null
+	 * @throws IllegalArgumentException If the class is an interface, annotation, primitive type, or has invalid structure
+	 * @see CodecConstructor
+	 * @see CodecField
+	 * @see GenericInfo
+	 */
 	public static @NotNull <O> Codec<O> createAutoMappedCodec(@NotNull Class<O> clazz) {
 		Objects.requireNonNull(clazz, "Class must not be null");
 		if (clazz.isInterface() || clazz.isAnnotation() || clazz.isPrimitive()) {
@@ -84,6 +112,14 @@ public class CodecAutoMapping {
 		return codec;
 	}
 	
+	/**
+	 * Creates a codec for the given class based on its structure.<br>
+	 * This method handles different types of classes including enums and complex classes with fields.<br>
+	 * @param clazz The class for which to create a codec
+	 * @param <O> The type of the class
+	 * @return A codec for the given class
+	 * @throws IllegalArgumentException If the class has more than 16 components or an invalid structure
+	 */
 	private static <O> @NotNull Codec<O> createCodec(@NotNull Class<O> clazz) {
 		if (clazz.isEnum()) {
 			return Codec.dynamicEnum((Class<? extends Enum>) clazz);
@@ -173,6 +209,15 @@ public class CodecAutoMapping {
 		};
 	}
 	
+	/**
+	 * Gets the components (fields or record components) of a class that should be included in the codec.<br>
+	 * For record classes, it returns all record components.<br>
+	 * For regular classes, it returns either all fields annotated with {@link CodecField} or all non-static, final fields that are not transient.<br>
+	 * @param clazz The class to get components from
+	 * @return An array of codec components
+	 * @throws NullPointerException If the provided class is null
+	 * @see CodecField
+	 */
 	private static CodecComponent @NotNull [] getComponents(@NotNull Class<?> clazz) {
 		Objects.requireNonNull(clazz, "Class must not be null");
 		RecordComponent[] recordComponents = clazz.getRecordComponents();
@@ -193,6 +238,18 @@ public class CodecAutoMapping {
 			.map(CodecComponent::new).toArray(CodecComponent[]::new);
 	}
 	
+	/**
+	 * Gets the constructor to use for creating instances of the class.<br>
+	 * For record classes, it returns the canonical constructor that matches the record components.<br>
+	 * For regular classes, it returns either the constructor annotated with {@link CodecConstructor} or the only constructor of the class.<br>
+	 * @param clazz The class to get the constructor from
+	 * @param components The components of the class
+	 * @param <O> The type of the class
+	 * @return The constructor to use
+	 * @throws NullPointerException If the class or components are null
+	 * @throws IllegalArgumentException If no suitable constructor is found or multiple constructors are annotated
+	 * @see CodecConstructor
+	 */
 	private static <O> @NotNull Constructor<O> getConstructor(@NotNull Class<O> clazz, CodecComponent @NotNull [] components) {
 		Objects.requireNonNull(clazz, "Class must not be null");
 		Objects.requireNonNull(components, "Components must not be null");
@@ -221,6 +278,17 @@ public class CodecAutoMapping {
 		return validateClassConstructor(clazz, components, constructors);
 	}
 	
+	/**
+	 * Validates that the constructor matches the components of the class.<br>
+	 * This ensures that the constructor has the correct number of parameters and that each parameter is assignable from the corresponding component type.<br>
+	 * @param clazz The class being validated
+	 * @param components The components of the class
+	 * @param constructors The (singleton) list containing the constructor to validate
+	 * @param <O> The type of the class
+	 * @return The validated constructor
+	 * @throws NullPointerException If the class, components, or constructors are null
+	 * @throws IllegalArgumentException If the constructor doesn't match the components
+	 */
 	private static <O> @NotNull Constructor<O> validateClassConstructor(@NotNull Class<O> clazz, CodecComponent @NotNull [] components, @NotNull List<Constructor<?>> constructors) {
 		Objects.requireNonNull(clazz, "Class must not be null");
 		Objects.requireNonNull(components, "Components must not be null");
@@ -240,6 +308,16 @@ public class CodecAutoMapping {
 		return constructor;
 	}
 	
+	/**
+	 * Creates a configured codec for the given component.<br>
+	 * This method determines the codec to use for the component's type and configures it with the component's name and a getter function.<br>
+	 * @param component The component to create a configured codec for
+	 * @param <C> The type of the component
+	 * @param <O> The type of the object containing the component
+	 * @return A configured codec for the component
+	 * @throws NullPointerException If the component is null
+	 * @see GenericInfo
+	 */
 	private static <C, O> @NotNull ConfiguredCodec<C, O> createConfiguredCodec(@NotNull CodecComponent component) {
 		Objects.requireNonNull(component, "Component must not be null");
 		
@@ -251,6 +329,17 @@ public class CodecAutoMapping {
 		return codec.configure(name, getter);
 	}
 	
+	/**
+	 * Gets a codec for the given class type, with optional generic type information.<br>
+	 * This method handles various types including arrays, enums, collections, and primitive types.<br>
+	 * @param clazz The class to get a codec for
+	 * @param genericInfo Optional (nullable) generic type information for the class
+	 * @param <C> The type of the class
+	 * @return A codec for the given class
+	 * @throws NullPointerException If the class is null
+	 * @throws IllegalArgumentException If generic type information is missing or invalid
+	 * @see GenericInfo
+	 */
 	private static <C> @NotNull Codec<C> getCodec(@NotNull Class<?> clazz, Class<?> @Nullable [] genericInfo) {
 		Objects.requireNonNull(clazz, "Class must not be null");
 		
@@ -306,6 +395,12 @@ public class CodecAutoMapping {
 			}
 			
 			return (Codec<C>) Codec.list(getCodec(genericInfo[0], dropElements(genericInfo, 1)));
+		} else if (clazz.isAssignableFrom(Set.class)) {
+			if (genericInfo == null) {
+				throw new IllegalArgumentException("Missing generic type information for Set: " + clazz.getName());
+			}
+			
+			return (Codec<C>) Codec.list(getCodec(genericInfo[0], dropElements(genericInfo, 1))).xmap(ArrayList::new, HashSet::new);
 		}
 		
 		Codec<?> codec = CODEC_LOOKUP.get(ClassUtils.primitiveToWrapper(clazz));
@@ -315,6 +410,13 @@ public class CodecAutoMapping {
 		return (Codec<C>) codec;
 	}
 	
+	/**
+	 * Drops a specified number of elements from the beginning of an array.<br>
+	 * This is used to handle nested generic types by removing the processed type parameters.<br>
+	 * @param genericInfo The array of generic type information
+	 * @param count The number of elements to drop
+	 * @return A new array with the specified elements dropped, or null if the resulting array is empty
+	 */
 	private static Class<?> @Nullable [] dropElements(Class<?> @Nullable [] genericInfo, int count) {
 		if (genericInfo == null || count >= genericInfo.length) {
 			return null;
@@ -325,11 +427,16 @@ public class CodecAutoMapping {
 		return newGenericInfo;
 	}
 	
+	/**
+	 * Creates a new instance of a class using the specified constructor and arguments.<br>
+	 * This method uses reflection to instantiate the class.<br>
+	 * @param constructor The constructor to use
+	 * @param args The arguments to pass to the constructor
+	 * @param <O> The type of the class
+	 * @return A new instance of the class
+	 * @throws NullPointerException If the constructor or args are null
+	 */
 	private static <O> @NotNull O createInstance(@NotNull Constructor<O> constructor, Object @NotNull ... args) {
 		return ReflectionHelper.newInstance(constructor, args).orElseThrow();
-	}
-	
-	static {
-		System.setProperty("reflection.exceptions.throw", "true");
 	}
 }

@@ -21,13 +21,22 @@ package net.luis.utils.io.codec.mapping;
 import java.lang.annotation.*;
 
 /**
+ * An annotation that marks a field to be included in the codec auto-mapping process.<br>
+ * Fields marked with this annotation will be encoded and decoded by the codec auto-mapping system.<br>
+ * <p>
+ *     When a class has any fields annotated with this annotation, only those fields will be included in the codec,
+ *     ignoring any non-annotated fields.<br>
+ * </p>
+ * <p>
+ *     If no fields are annotated with this annotation, the codec auto-mapping system will include all non-static,
+ *     final fields that are not marked as transient.<br>
+ * </p>
+ *
+ * @see CodecAutoMapping
  *
  * @author Luis-St
- *
  */
-
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ ElementType.FIELD })
-public @interface CodecField {
-}
+public @interface CodecField {}

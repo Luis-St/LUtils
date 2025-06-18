@@ -37,6 +37,17 @@ public final class CodecBuilder {
 	 */
 	private CodecBuilder() {}
 	
+	/**
+	 * Creates an automatically mapped codec for the given class.<br>
+	 * The underlying auto-mapping system analyzes the class structure and creates a codec that can encode and decode instances of the class.<br>
+	 * The auto-mapping supports record classes (preferred), regular classes, and enums.<br>
+	 * @param clazz The class for which to create a codec
+	 * @param <O> The type of the class
+	 * @return A codec for the given class
+	 * @throws NullPointerException If the provided class is null
+	 * @throws IllegalArgumentException If the class is an interface, annotation, primitive type, or has invalid structure
+	 * @see CodecAutoMapping#createAutoMappedCodec(Class)
+	 */
 	public static @NotNull <O> Codec<O> autoMapCodec(@NotNull Class<O> clazz) {
 		return CodecAutoMapping.createAutoMappedCodec(clazz);
 	}
