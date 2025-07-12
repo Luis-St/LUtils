@@ -40,6 +40,10 @@ public class WeightCollection<T> {
 	 */
 	private final NavigableMap<Integer, T> map;
 	/**
+	 * Map to track individual weights of elements.
+	 */
+	private final Map<T, Integer> weights;
+	/**
 	 * The random number generator.
 	 */
 	private final Random rng;
@@ -63,6 +67,7 @@ public class WeightCollection<T> {
 	 */
 	public WeightCollection(@NotNull Random rng) {
 		this.map = Maps.newTreeMap();
+		this.weights = Maps.newHashMap();
 		this.rng = Objects.requireNonNull(rng, "Random must not be null");
 	}
 	
@@ -81,6 +86,7 @@ public class WeightCollection<T> {
 		}
 		this.total += weight;
 		this.map.put(this.total, value);
+		this.weights.put(value, weight);
 	}
 	
 	/**
@@ -90,14 +96,21 @@ public class WeightCollection<T> {
 	 * @return True, if the value was removed, otherwise false
 	 */
 	public boolean remove(@Nullable T value) {
-		for (Map.Entry<Integer, T> entry : this.map.entrySet()) {
-			if (entry.getValue().equals(value)) {
-				this.total -= entry.getKey();
-				this.map.remove(entry.getKey());
-				return true;
-			}
+		if (value == null || !this.weights.containsKey(value)) {
+			return false;
 		}
-		return false;
+		
+		this.weights.remove(value);
+		
+		this.map.clear();
+		this.total = 0;
+		
+		for (Map.Entry<T, Integer> entry : this.weights.entrySet()) {
+			this.total += entry.getValue();
+			this.map.put(this.total, entry.getKey());
+		}
+		
+		return true;
 	}
 	
 	/**
@@ -115,6 +128,7 @@ public class WeightCollection<T> {
 	 */
 	public void clear() {
 		this.map.clear();
+		this.weights.clear();
 		this.total = 0;
 	}
 	
@@ -168,12 +182,13 @@ public class WeightCollection<T> {
 		
 		if (this.total != that.total) return false;
 		if (!this.map.equals(that.map)) return false;
+		if (!this.weights.equals(that.weights)) return false;
 		return this.rng.equals(that.rng);
 	}
 	
 	@Override
 	public int hashCode() {
-		return Objects.hash(this.map);
+		return Objects.hash(this.map, this.weights);
 	}
 	//endregion
 }
