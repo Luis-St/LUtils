@@ -566,4 +566,14 @@ class StringReaderTest {
 		reader.skip();
 		assertThrows(StringIndexOutOfBoundsException.class, reader::readBigDecimal);
 	}
+	
+	@Test
+	void hashCodeForEqualReaders() {
+		StringReader reader1 = new StringReader("test");
+		StringReader reader2 = new StringReader("test");
+		
+		if (reader1.equals(reader2)) {
+			assertEquals(reader1.hashCode(), reader2.hashCode());
+		}
+	}
 }
