@@ -55,6 +55,7 @@ public record StringScope(char open, char close) {
 	
 	/**
 	 * Constructs a new string scope with the given opening and closing character.<br>
+	 *
 	 * @param open The opening character
 	 * @param close The closing character
 	 * @throws IllegalArgumentException If the opening and closing character are the same

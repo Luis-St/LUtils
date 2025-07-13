@@ -38,6 +38,7 @@ public interface QuadConsumer<T, U, V, W> {
 	
 	/**
 	 * Takes four arguments and consumes them.<br>
+	 *
 	 * @param t The first argument
 	 * @param u The second argument
 	 * @param v The third argument
@@ -46,8 +47,9 @@ public interface QuadConsumer<T, U, V, W> {
 	void accept(T t, U u, V v, W w);
 	
 	/**
-	 * Returns a composed consumer of same type that performs,<br>
+	 * Returns a composed consumer of same type that performs,
 	 * in sequence, this operation followed by the {@code after} operation.<br>
+	 *
 	 * @param after The operation to perform after this operation
 	 * @return The composed consumer
 	 * @throws NullPointerException If the after operation is null

@@ -44,6 +44,7 @@ public class LazyLoad<T> implements Supplier<T> {
 	
 	/**
 	 * Constructs a new lazy load with the specified supplier.<br>
+	 *
 	 * @param supplier The supplier of the value to be loaded lazily
 	 * @throws NullPointerException If the supplier is null
 	 */
@@ -71,6 +72,7 @@ public class LazyLoad<T> implements Supplier<T> {
 	/**
 	 * Gets the cached value.<br>
 	 * If the value has not been loaded yet, it will be loaded first.<br>
+	 *
 	 * @return The value
 	 * @see #load()
 	 */

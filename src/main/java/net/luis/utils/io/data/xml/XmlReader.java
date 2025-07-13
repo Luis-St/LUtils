@@ -65,6 +65,7 @@ public class XmlReader implements AutoCloseable {
 	
 	/**
 	 * Constructs a new xml reader with the given string and default xml config.<br>
+	 *
 	 * @param string The string to read the xml content from
 	 * @throws NullPointerException If the string is null
 	 */
@@ -74,6 +75,7 @@ public class XmlReader implements AutoCloseable {
 	
 	/**
 	 * Constructs a new xml reader with the given string and xml config.<br>
+	 *
 	 * @param string The string to read the xml content from
 	 * @param config The xml config to use
 	 * @throws NullPointerException If the string or xml config is null
@@ -85,6 +87,7 @@ public class XmlReader implements AutoCloseable {
 	
 	/**
 	 * Constructs a new xml reader with the given input provider and default xml config.<br>
+	 *
 	 * @param input The input provider to read the xml content from
 	 * @throws NullPointerException If the input provider is null
 	 */
@@ -94,6 +97,7 @@ public class XmlReader implements AutoCloseable {
 	
 	/**
 	 * Constructs a new xml reader with the given input provider and xml config.<br>
+	 *
 	 * @param input The input provider to read the xml content from
 	 * @param config The xml config to use
 	 * @throws NullPointerException If the input provider or xml config is null
@@ -111,6 +115,7 @@ public class XmlReader implements AutoCloseable {
 	
 	/**
 	 * Deletes all xml comments from the given string.<br>
+	 *
 	 * @param string The string to delete the comments from
 	 * @return The string without any xml comments
 	 * @throws NullPointerException If the string is null
@@ -122,6 +127,7 @@ public class XmlReader implements AutoCloseable {
 	
 	/**
 	 * Reads the xml declaration from the xml content.<br>
+	 *
 	 * @return The xml declaration of the xml content
 	 * @throws IllegalStateException If the xml declaration has already been read
 	 * @throws XmlSyntaxException If the xml declaration is invalid
@@ -190,6 +196,7 @@ public class XmlReader implements AutoCloseable {
 	
 	/**
 	 * Reads the xml root element from the xml content.<br>
+	 *
 	 * @return The xml root element read
 	 * @throws IllegalStateException If the xml declaration has not been read
 	 * @throws XmlSyntaxException If the xml content is invalid
@@ -209,6 +216,7 @@ public class XmlReader implements AutoCloseable {
 	
 	/**
 	 * Reads a xml element from the given xml reader.<br>
+	 *
 	 * @param xmlReader The xml reader to read the xml element from
 	 * @return The xml element read
 	 * @throws XmlSyntaxException If the xml element is invalid
@@ -281,6 +289,7 @@ public class XmlReader implements AutoCloseable {
 	
 	/**
 	 * Reads the xml attributes from the given attribute reader.<br>
+	 *
 	 * @param attributeReader The attribute reader to read the xml attributes from
 	 * @return The xml attributes read
 	 * @throws XmlSyntaxException If the xml attributes are invalid
@@ -322,6 +331,7 @@ public class XmlReader implements AutoCloseable {
 	
 	/**
 	 * Gets the number of characters until the closing element of the given element name.<br>
+	 *
 	 * @param xmlReader The xml reader to read the closing element from
 	 * @param name The name of the element to get the closing element for
 	 * @return The number of characters
@@ -388,6 +398,7 @@ public class XmlReader implements AutoCloseable {
 	
 	/**
 	 * Reads the xml elements from the given xml reader.<br>
+	 *
 	 * @param xmlReader The xml reader to read the xml elements from
 	 * @return The xml elements read
 	 * @throws XmlSyntaxException If the xml elements are invalid
@@ -409,6 +420,7 @@ public class XmlReader implements AutoCloseable {
 	/**
 	 * Skips the next whitespace character based on the xml config.<br>
 	 * In strict mode, only the next whitespace character is skipped; otherwise all whitespaces are skipped.<br>
+	 *
 	 * @param reader The reader to skip the whitespace character from
 	 */
 	private void skipWhitespacesConfigBased(@NotNull StringReader reader) {

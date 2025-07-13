@@ -51,6 +51,7 @@ public class JsonReader implements AutoCloseable {
 	
 	/**
 	 * Constructs a new json reader with the given string and the default configuration.<br>
+	 *
 	 * @param string The string to read from
 	 * @throws NullPointerException If the string is null
 	 */
@@ -60,6 +61,7 @@ public class JsonReader implements AutoCloseable {
 	
 	/**
 	 * Constructs a new json reader with the given string and configuration.<br>
+	 *
 	 * @param string The string to read from
 	 * @param config The configuration to use
 	 * @throws NullPointerException If the string or configuration is null
@@ -71,6 +73,7 @@ public class JsonReader implements AutoCloseable {
 	
 	/**
 	 * Constructs a new json reader with the given input and the default configuration.<br>
+	 *
 	 * @param input The input to create the reader for
 	 * @throws NullPointerException If the input is null
 	 */
@@ -80,6 +83,7 @@ public class JsonReader implements AutoCloseable {
 	
 	/**
 	 * Constructs a new json reader with the given input and configuration.<br>
+	 *
 	 * @param input The input to create the reader for
 	 * @param config The configuration to use
 	 * @throws NullPointerException If the input or configuration is null
@@ -92,8 +96,9 @@ public class JsonReader implements AutoCloseable {
 	/**
 	 * Reads the next json element from the input.<br>
 	 * <p>
-	 *     In strict mode, this reader only accepts one json element per input.<br>
+	 *     In strict mode, this reader only accepts one json element per input.
 	 * </p>
+	 *
 	 * @return The next json element
 	 * @throws JsonSyntaxException If the json is invalid
 	 * @see #readJsonElement()
@@ -117,6 +122,7 @@ public class JsonReader implements AutoCloseable {
 	/**
 	 * Reads the next json element from the input.<br>
 	 * Supported json elements are objects, arrays, primitives and null values.<br>
+	 *
 	 * @return The read json element
 	 * @throws JsonSyntaxException If the json is invalid (depends on the configuration)
 	 * @see #readJsonArray()
@@ -147,8 +153,9 @@ public class JsonReader implements AutoCloseable {
 	 *     <li>Array with multiple elements: {@code ["value1", "value2", "value3"]}</li>
 	 * </ul>
 	 * <p>
-	 *     In strict mode, the reader expects no trailing comma after the last element.<br>
+	 *     In strict mode, the reader expects no trailing comma after the last element.
 	 * </p>
+	 *
 	 * @return The read json array
 	 * @throws JsonSyntaxException If the json array is invalid
 	 */
@@ -203,8 +210,9 @@ public class JsonReader implements AutoCloseable {
 	 *     <li>Object with multiple entries: {@code {"key1": "value1", "key2": "value2", "key3": "value3"}'}/li>
 	 * </ul>
 	 * <p>
-	 *     In strict mode, the reader expects the keys to be quoted and no trailing comma after the last entry.<br>
+	 *     In strict mode, the reader expects the keys to be quoted and no trailing comma after the last entry.
 	 * </p>
+	 *
 	 * @return The read json object
 	 * @throws JsonSyntaxException If the json object is invalid
 	 */
@@ -269,7 +277,7 @@ public class JsonReader implements AutoCloseable {
 	 * A json value can be either a string, number, boolean or null.<br>
 	 * <p>
 	 *     In strict mode, the reader will throw a exception if the value is not a valid json primitive.<br>
-	 *     It also accepts only the following values:<br>
+	 *     It also accepts only the following values:
 	 * </p>
 	 * <ul>
 	 *     <li>{@code null} (lower-case)</li>
@@ -277,13 +285,14 @@ public class JsonReader implements AutoCloseable {
 	 *     <li>{@code false} (lower-case)</li>
 	 * </ul>
 	 * <p>
-	 *     In non-strict mode, the following values are also accepted:<br>
+	 *     In non-strict mode, the following values are also accepted:
 	 * </p>
 	 * <ul>
 	 *     <li>{@code NULL} (upper or mixed case)</li>
 	 *     <li>{@code TRUE} (upper or mixed case)</li>
 	 *     <li>{@code FALSE} (upper or mixed case)</li>
 	 * </ul>
+	 *
 	 * @return The read json value
 	 * @throws JsonSyntaxException If the json value is invalid (depends on the configuration)
 	 */
@@ -310,8 +319,9 @@ public class JsonReader implements AutoCloseable {
 	 * The reader expects the next four characters to be 'null'.<br>
 	 * <p>
 	 *     In strict mode, the reader will throw an exception if the value is not 'null'.<br>
-	 *     In non-strict mode, the reader will accept any case of 'null' including mixed-case.<br>
+	 *     In non-strict mode, the reader will accept any case of 'null' including mixed-case.
 	 * </p>
+	 *
 	 * @return The read json null value (always {@link JsonNull#INSTANCE})
 	 * @throws JsonSyntaxException If the json null value is invalid (depends on the configuration)
 	 */
@@ -331,8 +341,9 @@ public class JsonReader implements AutoCloseable {
 	 * The reader expects the next four or five characters to be 'true' or 'false'.<br>
 	 * <p>
 	 *     In strict mode, the reader will throw a exception if the value is not 'true' or 'false'.<br>
-	 *     In non-strict mode, the reader will accept any case of 'true' or 'false' including mixed-case.<br>
+	 *     In non-strict mode, the reader will accept any case of 'true' or 'false' including mixed-case.
 	 * </p>
+	 *
 	 * @return The read json boolean value
 	 * @throws JsonSyntaxException If the json boolean value is invalid (depends on the configuration)
 	 */

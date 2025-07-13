@@ -32,7 +32,7 @@ import java.util.Objects;
  * <p>
  *     The interface is functional because it has only one abstract method {@link #getAsString(int)}.<br>
  *     All other methods rely on this method to get the value as a string and then parse it to the desired type.<br>
- *     The {@link #getAsString(int)} method must bei implemented correctly, or the other methods will not work as expected.<br>
+ *     The {@link #getAsString(int)} method must bei implemented correctly, or the other methods will not work as expected.
  * </p>
  * The interface provides the following methods to get the value as a specific type:<br>
  * <ul>
@@ -54,6 +54,7 @@ public interface IndexedValueGetter {
 	
 	/**
 	 * Returns the value which is hold by this object as a string at the given index.<br>
+	 *
 	 * @param index The index of the value
 	 * @return The value as a string
 	 * @throws IndexOutOfBoundsException If the index is out of bounds
@@ -62,6 +63,7 @@ public interface IndexedValueGetter {
 	
 	/**
 	 * Returns the value which is hold by this object as a boolean at the given index.<br>
+	 *
 	 * @param index The index of the value
 	 * @return The value as a boolean
 	 * @throws IndexOutOfBoundsException If the index is out of bounds
@@ -77,6 +79,7 @@ public interface IndexedValueGetter {
 	
 	/**
 	 * Returns the value which is hold by this object as a number at the given index.<br>
+	 *
 	 * @param index The index of the value
 	 * @return The value as a number
 	 * @throws IndexOutOfBoundsException If the index is out of bounds
@@ -93,6 +96,7 @@ public interface IndexedValueGetter {
 	
 	/**
 	 * Returns the value which is hold by this object as a byte at the given index.<br>
+	 *
 	 * @param index The index of the value
 	 * @return The value as a byte
 	 * @throws IndexOutOfBoundsException If the index is out of bounds
@@ -109,6 +113,7 @@ public interface IndexedValueGetter {
 	
 	/**
 	 * Returns the value which is hold by this object as a short at the given index.<br>
+	 *
 	 * @param index The index of the value
 	 * @return The value as a short
 	 * @throws IndexOutOfBoundsException If the index is out of bounds
@@ -125,6 +130,7 @@ public interface IndexedValueGetter {
 	
 	/**
 	 * Returns the value which is hold by this object as an integer at the given index.<br>
+	 *
 	 * @param index The index of the value
 	 * @return The value as an integer
 	 * @throws IndexOutOfBoundsException If the index is out of bounds
@@ -141,6 +147,7 @@ public interface IndexedValueGetter {
 	
 	/**
 	 * Returns the value which is hold by this object as a long at the given index.<br>
+	 *
 	 * @param index The index of the value
 	 * @return The value as a long
 	 * @throws IndexOutOfBoundsException If the index is out of bounds
@@ -157,6 +164,7 @@ public interface IndexedValueGetter {
 	
 	/**
 	 * Returns the value which is hold by this object as a float at the given index.<br>
+	 *
 	 * @param index The index of the value
 	 * @return The value as a float
 	 * @throws IndexOutOfBoundsException If the index is out of bounds
@@ -173,6 +181,7 @@ public interface IndexedValueGetter {
 	
 	/**
 	 * Returns the value which is hold by this object as a double at the given index.<br>
+	 *
 	 * @param index The index of the value
 	 * @return The value as a double
 	 * @throws IndexOutOfBoundsException If the index is out of bounds
@@ -192,6 +201,7 @@ public interface IndexedValueGetter {
 	 * The value is parsed as the result of the given parser.<br>
 	 * The parser must not be able to handle null values.<br>
 	 * In the case the parser is not able to parse the value, it should not return null, it should throw an exception.<br>
+	 *
 	 * @param index The index of the value
 	 * @param parser The parser to parse the value
 	 * @return The value as the result of the parser

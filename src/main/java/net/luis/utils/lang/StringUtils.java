@@ -55,10 +55,10 @@ public final class StringUtils {
 	 * Constant for system property 'lang.surrounded.reverse.brackets'.<br>
 	 * <p>
 	 *     This property is used in {@link #isSurroundedBy(String, char, String...)} to determine<br>
-	 *     if the brackets should be reversed.<br>
+	 *     if the brackets should be reversed.
 	 * </p>
 	 * <p>
-	 *     The default value is {@code false}.<br>
+	 *     The default value is {@code false}.
 	 * </p>
 	 */
 	private static final String LANG_SURROUNDED_REVERSE_BRACKETS = "lang.surrounded.reverse.brackets";
@@ -66,10 +66,10 @@ public final class StringUtils {
 	 * Constant for system property 'lang.match.in.quotes'.<br>
 	 * <p>
 	 *     This property is used in {@link #matchingBalanced(String, String, String)} to determine<br>
-	 *     if occurrences of the {@code open} and {@code close} strings should be match inside quotes.<br>
+	 *     if occurrences of the {@code open} and {@code close} strings should be match inside quotes.
 	 * </p>
 	 * <p>
-	 *     The default value is {@code false}.<br>
+	 *     The default value is {@code false}.
 	 * </p>
 	 */
 	private static final String LANG_MATCH_IN_QUOTES = "lang.match.in.quotes";
@@ -84,7 +84,7 @@ public final class StringUtils {
 	 * Gets the opposite bracket of the given {@code bracket}.<br>
 	 * If the given character is not a bracket, {@code '\0'} will be returned.<br>
 	 * <p>
-	 *     Examples:<br>
+	 *     Examples:
 	 * </p>
 	 * <pre>{@code
 	 * getOppositeBracket('(') -> ')'
@@ -93,6 +93,7 @@ public final class StringUtils {
 	 * getOppositeBracket('<') -> '>'
 	 * getOppositeBracket('a') -> '\0'
 	 * }</pre>
+	 *
 	 * @param bracket The bracket to get the opposite of
 	 * @return The opposite bracket of the given character or {@code '\0'} if the given character is not a bracket
 	 */
@@ -114,7 +115,7 @@ public final class StringUtils {
 	 * Reverses the given string including brackets.<br>
 	 * If the given string is null or empty, an empty string will be returned.<br>
 	 * <p>
-	 *     Examples:<br>
+	 *     Examples:
 	 * </p>
 	 * <pre>{@code
 	 * reverseIncludeBrackets(null) -> ""
@@ -123,6 +124,7 @@ public final class StringUtils {
 	 * reverseIncludeBrackets("a(bc)") -> "(cb)a"
 	 * reverseIncludeBrackets("a<bc>") -> "<cb>a"
 	 * }</pre>
+	 *
 	 * @param str The string to reverse
 	 * @return The reversed string including brackets
 	 */
@@ -145,7 +147,7 @@ public final class StringUtils {
 	 * The index of the found occurrences will be returned in a list.<br>
 	 * If the given string is empty, an empty list will be returned.<br>
 	 * <p>
-	 *     Examples:<br>
+	 *     Examples:
 	 * </p>
 	 * <pre>{@code
 	 * indexOfAll(null, *) -> []
@@ -154,6 +156,7 @@ public final class StringUtils {
 	 * indexOfAll("aba", 'a') -> [0, 2]
 	 * indexOfAll("   ", ' ') -> [0, 1, 2]
 	 * }</pre>
+	 *
 	 * @param str The string to search in
 	 * @param search The character to search for
 	 * @return A list with the indexes of all occurrences in the given character
@@ -176,7 +179,7 @@ public final class StringUtils {
 	 * The occurred indexes will be returned in a list.<br>
 	 * If the given string or the search string is empty, an empty list will be returned.<br>
 	 * <p>
-	 *     Examples:<br>
+	 *     Examples:
 	 * </p>
 	 * <pre>{@code
 	 * indexOfAll(null, *) -> []
@@ -185,6 +188,7 @@ public final class StringUtils {
 	 * indexOfAll("abac", "ab") -> [0]
 	 * indexOfAll("abac ba", "ba") -> [1, 4]
 	 * }</pre>
+	 *
 	 * @param str The string to search in
 	 * @param search The string to search for
 	 * @return A list with the indexes of all occurrences in the given string
@@ -418,7 +422,7 @@ public final class StringUtils {
 	 *     If one of the strings is empty or null, the length of the other string will be returned.<br>
 	 * </p>
 	 * <p>
-	 *     Examples:<br>
+	 *     Examples:
 	 * </p>
 	 * <pre>{@code
 	 * levenshteinDistance(null, *) -> 0
@@ -432,6 +436,7 @@ public final class StringUtils {
 	 * levenshteinDistance("test", "text") -> 1
 	 * levenshteinDistance("abed", "tset") -> 3
 	 * }</pre>
+	 *
 	 * @param base The base string
 	 * @param compare The string to compare
 	 * @return The levenshtein distance between the given strings
@@ -481,7 +486,7 @@ public final class StringUtils {
 	 * A value will be considered similar if the difference is less or equal to the given {@code allowDifference}.<br>
 	 * The similarity will be checked with default counter-function {@link #countDifference(String, String)}.<br>
 	 * <p>
-	 *     In the following cases, an empty list will be returned:<br>
+	 *     In the following cases, an empty list will be returned:
 	 * </p>
 	 * <ul>
 	 *     <li>The base string is empty</li>
@@ -489,7 +494,7 @@ public final class StringUtils {
 	 *     <li>The given array of values is null or empty</li>
 	 * </ul>
 	 * <p>
-	 *     Examples:<br>
+	 *     Examples:
 	 * </p>
 	 * <pre>{@code
 	 * findSimilar(null, *, *) -> []
@@ -500,6 +505,7 @@ public final class StringUtils {
 	 * findSimilar("ab*", 1, ["ab0", "ab1"]) -> ["ab0", "ab1"]
 	 * findSimilar("abc", 2 ["bcd", "cde", "def", "efg"]) -> []
 	 * }</pre>
+	 *
 	 * @param base The base string
 	 * @param allowDifference The allowed difference between the base string and the values
 	 * @param values The array of values to check
@@ -515,7 +521,7 @@ public final class StringUtils {
 	 * A value will be considered similar if the difference is less or equal to the given {@code allowDifference}.<br>
 	 * The similarity will be checked with default counter-function {@link #countDifference(String, String)}.<br>
 	 * <p>
-	 *     In the following cases, an empty list will be returned:<br>
+	 *     In the following cases, an empty list will be returned:
 	 * </p>
 	 * <ul>
 	 *     <li>The base string is empty</li>
@@ -523,7 +529,7 @@ public final class StringUtils {
 	 *     <li>The given list of values is null or empty</li>
 	 * </ul>
 	 * <p>
-	 *     Examples:<br>
+	 *     Examples:
 	 * </p>
 	 * <pre>{@code
 	 * findSimilar(null, *, *) -> []
@@ -534,6 +540,7 @@ public final class StringUtils {
 	 * findSimilar("ab*", 1, ["ab0", "ab1"]) -> ["ab0", "ab1"]
 	 * findSimilar("abc", 2 ["bcd", "cde", "def", "efg"]) -> []
 	 * }</pre>
+	 *
 	 * @param base The base string
 	 * @param allowDifference The allowed difference between the base string and the values
 	 * @param values The list of values to check
@@ -549,7 +556,7 @@ public final class StringUtils {
 	 * A value will be considered similar if the difference is less or equal to the given {@code allowDifference}.<br>
 	 * The similarity will be checked with the given counter-function.<br>
 	 * <p>
-	 *     In the following cases, an empty list will be returned:<br>
+	 *     In the following cases, an empty list will be returned:
 	 * </p>
 	 * <ul>
 	 *     <li>The base string is empty</li>
@@ -557,7 +564,7 @@ public final class StringUtils {
 	 *     <li>The given list of values is null or empty</li>
 	 * </ul>
 	 * <p>
-	 *     Examples:<br>
+	 *     Examples:
 	 * </p>
 	 * <pre>{@code
 	 * findSimilar(null, *, *, *) -> []
@@ -567,6 +574,7 @@ public final class StringUtils {
 	 * findSimilar(*, *, *, null) -> []
 	 * findSimilar(*, *, *, []) -> []
 	 * }</pre>
+	 *
 	 * @param base The base string
 	 * @param allowDifference The allowed difference between the base string and the values
 	 * @param counter The counter-function to check the difference
@@ -590,12 +598,12 @@ public final class StringUtils {
 	 * Checks if the given {@code target} character is followed by any string inside the given {@code follows} array.<br>
 	 * If the {@code target} character is found in the given string, all occurrences will be checked.<br>
 	 * <p>
-	 *     If all occurrences of the {@code target} character are followed by any string inside the {@code follows} array,<br>
+	 *     If all occurrences of the {@code target} character are followed by any string inside the {@code follows} array,
 	 *     true will be returned.<br>
-	 *     If the string is empty or the character is not found, false will be returned.<br>
+	 *     If the string is empty or the character is not found, false will be returned.
 	 * </p>
 	 * <p>
-	 *     Examples:<br>
+	 *     Examples:
 	 * </p>
 	 * <pre>{@code
 	 * isAfterAllOccurrence(null, *, *) -> false
@@ -608,6 +616,7 @@ public final class StringUtils {
 	 * isAfterAllOccurrence("abcae", 'a', ["b"]) -> false // Second occurrence does not match
 	 * isAfterAllOccurrence("abcae", 'a', ["b", "e"]) -> true // Both occurrences match
 	 * }</pre>
+	 *
 	 * @param str The string to check
 	 * @param target The character to check if it is followed by any string
 	 * @param follows The strings to check if any of them {@code follows} the target character
@@ -639,12 +648,12 @@ public final class StringUtils {
 	 * Checks if the given {@code target} character is preceded by any string inside the given {@code precedes} array.<br>
 	 * If the {@code target} character is found, all occurrences will be checked.<br>
 	 * <p>
-	 *     If all occurrences of the {@code target} character are preceded by any string inside the {@code precedes} array,<br>
+	 *     If all occurrences of the {@code target} character are preceded by any string inside the {@code precedes} array,
 	 *     true will be returned.<br>
-	 *     If the string is empty or the character is not found, false will be returned.<br>
+	 *     If the string is empty or the character is not found, false will be returned.
 	 * </p>
 	 * <p>
-	 *     Examples:<br>
+	 *     Examples:
 	 * </p>
 	 * <pre>{@code
 	 * isBeforeAllOccurrence(null, *, *) -> false
@@ -657,6 +666,7 @@ public final class StringUtils {
 	 * isBeforeAllOccurrence("aecde", 'e', ["a"]) -> false // Second occurrence does not match
 	 * isBeforeAllOccurrence("aecde", 'e', ["a", "d"]) -> true // Both occurrences match
 	 * }</pre>
+	 *
 	 * @param str The string to check
 	 * @param target The character to check if it is preceded by any string
 	 * @param precedes The strings to check if any of them {@code precedes} the target character
@@ -670,20 +680,20 @@ public final class StringUtils {
 	 * Checks if the given {@code target} character is surrounded by any string inside the given {@code surrounded} array.<br>
 	 * If the target character is found, all occurrences will be checked.<br>
 	 * <p>
-	 *     If the {@code target} character is found, and it is surrounded by any string inside the {@code surrounded} array,<br>
+	 *     If the {@code target} character is found, and it is surrounded by any string inside the {@code surrounded} array,
 	 *     true will be returned.<br>
-	 *     If the string is empty or the character is not found, false will be returned.<br>
+	 *     If the string is empty or the character is not found, false will be returned.
 	 * </p>
 	 * <p>
 	 *     The strings inside the {@code surrounded} array will be checked in the order they are given.<br>
-	 *     Each string will be reversed to check if it's before the {@code target} character.<br>
+	 *     Each string will be reversed to check if it's before the {@code target} character.
 	 * </p>
 	 * <p>
-	 *     If the system property 'lang.surrounded.reverse.brackets' is set to true,<br>
-	 *     the strings inside the {@code surrounded} array will be reversed including brackets.<br>
+	 *     If the system property 'lang.surrounded.reverse.brackets' is set to true,
+	 *     the strings inside the {@code surrounded} array will be reversed including brackets.
 	 * </p>
 	 * <p>
-	 *     Examples:<br>
+	 *     Examples:
 	 * </p>
 	 * <pre>{@code
 	 * isSurroundedBy(null, *, *) -> false
@@ -700,6 +710,7 @@ public final class StringUtils {
 	 * isSurroundedBy("a.[*].b", '*', ["]."]) -> true
 	 * isSurroundedBy("a.[*[.b", '*', ["[."]) -> false
 	 * }</pre>
+	 *
 	 * @param str The string to check
 	 * @param target The character to check if it is surrounded by any string
 	 * @param surrounded The strings to check if any of them surrounds the target character
@@ -736,10 +747,10 @@ public final class StringUtils {
 	 * Removes quoted parts from the given string.<br>
 	 * <p>
 	 *     Double quotes will be removed before single quotes.<br>
-	 *     If a quote is escaped with a backslash, it will be ignored.<br>
+	 *     If a quote is escaped with a backslash, it will be ignored.
 	 * </p>
 	 * <p>
-	 *     Examples:<br>
+	 *     Examples:
 	 * </p>
 	 * <pre>{@code
 	 * removeQuoted(null) -> ""
@@ -751,6 +762,7 @@ public final class StringUtils {
 	 * removeQuoted("a'b\\'c'd") -> "ad"
 	 * removeQuoted("a\"b'c\"d'e") -> "ad'e"
 	 * }</pre>
+	 *
 	 * @param str The string to remove the quoted parts from
 	 * @return The string without the quoted parts
 	 */
@@ -772,10 +784,10 @@ public final class StringUtils {
 	 * This means that the open and close characters are in the correct order and have the same number of occurrences.<br>
 	 * <p>
 	 *     If the system property 'lang.match.in.quotes' is set to false,<br>
-	 *     double and single quotes will be removed from the string before checking.<br>
+	 *     double and single quotes will be removed from the string before checking.
 	 * </p>
 	 * <p>
-	 *     Examples:<br>
+	 *     Examples:
 	 * </p>
 	 * <pre>{@code
 	 * matchingBalanced(null, *, *) -> false
@@ -791,6 +803,7 @@ public final class StringUtils {
 	 * matchingBalanced("((\")\")", '(', ')') -> true
 	 * matchingBalanced("((')')", '(', ')') -> true
 	 * }</pre>
+	 *
 	 * @param str The string to check
 	 * @param open The open character
 	 * @param close The close character
@@ -807,10 +820,10 @@ public final class StringUtils {
 	 * This means that the open and close strings are in the correct order and have the same number of occurrences.<br>
 	 * <p>
 	 *     If the system property 'lang.match.in.quotes' is set to false,<br>
-	 *     double and single quotes will be removed from the string before checking.<br>
+	 *     double and single quotes will be removed from the string before checking.
 	 * </p>
 	 * <p>
-	 *     Examples:<br>
+	 *     Examples:
 	 * </p>
 	 * <pre>{@code
 	 * matchingBalanced(null, *, *) -> true
@@ -829,6 +842,7 @@ public final class StringUtils {
 	 * matchingBalanced("((\")\")", "(", ")") -> true
 	 * matchingBalanced("((')')", "(", ")") -> true
 	 * }</pre>
+	 *
 	 * @param str The string to check
 	 * @param open The open string
 	 * @param close The close string
@@ -866,7 +880,7 @@ public final class StringUtils {
 	/**
 	 * Checks if the given string matches the given pattern.<br>
 	 * <p>
-	 *     Examples:<br>
+	 *     Examples:
 	 * </p>
 	 * <pre>{@code
 	 * matchesPattern(null, null) -> true
@@ -875,6 +889,7 @@ public final class StringUtils {
 	 * matchesPattern(Pattern.compile("a"), "a") -> true
 	 * matchesPattern(Pattern.compile("a"), "b") -> false
 	 * }</pre>
+	 *
 	 * @param pattern The pattern to match
 	 * @param str The string to check
 	 * @return True if the string matches the pattern, false otherwise
@@ -894,7 +909,7 @@ public final class StringUtils {
 	 * The target character will be ignored if it is escaped with a backslash.<br>
 	 * If the string is empty or null, false will be returned.<br>
 	 * <p>
-	 *     Examples:<br>
+	 *     Examples:
 	 * </p>
 	 * <pre>{@code
 	 * containsNotEscaped(null, *) -> false
@@ -904,6 +919,7 @@ public final class StringUtils {
 	 * containsNotEscaped("\\abc", 'a') -> false
 	 * containsNotEscaped("\\aba", 'a') -> true
 	 * }</pre>
+	 *
 	 * @param str The string to check
 	 * @param target The target character to check
 	 * @return True if the string contains the target character not escaped, false otherwise
@@ -931,7 +947,7 @@ public final class StringUtils {
 	 * The target character will be ignored if it is escaped with a backslash.<br>
 	 * If the string is empty or null, an empty array will be returned.<br>
 	 * <p>
-	 *     Examples:<br>
+	 *     Examples:
 	 * </p>
 	 * <pre>{@code
 	 * splitNotEscaped(null, *) -> []
@@ -941,6 +957,7 @@ public final class StringUtils {
 	 * splitNotEscaped("a\\bc", 'c') -> ["a\\b"]
 	 * splitNotEscaped("a\\:b:c:d\\:e", ':') -> ["a\\:b", "c", "d\\:e"]
 	 * }</pre>
+	 *
 	 * @param str The string to split
 	 * @param target The target character to split by
 	 * @return The parts of the string split by the target character
@@ -976,10 +993,10 @@ public final class StringUtils {
 	 * Extracts all groups from the given string which match the given regex.<br>
 	 * <p>
 	 *     If the string is null or empty, an empty array will be returned.<br>
-	 *     If the regex is null, empty or does not match, an empty array will be returned.<br>
+	 *     If the regex is null, empty or does not match, an empty array will be returned.
 	 * </p>
 	 * <p>
-	 *     Examples:<br>
+	 *     Examples:
 	 * </p>
 	 * <pre>{@code
 	 * extract(null, null) -> []
@@ -991,6 +1008,7 @@ public final class StringUtils {
 	 * extract("abc", "abc") -> ["abc"]
 	 * extract("abc.[def].ghi", "\\[.*?]") -> ["[def]"]
 	 * }</pre>
+	 *
 	 * @param str The string to extract the groups from
 	 * @param regex The regex to match
 	 * @return The extracted groups
@@ -1006,10 +1024,10 @@ public final class StringUtils {
 	 * Extract all groups from the given string which match the given pattern.<br>
 	 * <p>
 	 *     If the string is null or empty, an empty array will be returned.<br>
-	 *     If the pattern is null or does not match, an empty array will be returned.<br>
+	 *     If the pattern is null or does not match, an empty array will be returned.
 	 * </p>
 	 * <p>
-	 *     Examples:<br>
+	 *     Examples:
 	 * </p>
 	 * <pre>{@code
 	 * extract(null, null) -> []
@@ -1019,6 +1037,7 @@ public final class StringUtils {
 	 * extract("abc", Pattern.compile("abc")) -> ["abc"]
 	 * extract("abc.[def].ghi", Pattern.compile("\\[.*?]")) -> ["[def]"]
 	 * }</pre>
+	 *
 	 * @param str The string to extract the groups from
 	 * @param pattern The pattern to match
 	 * @return The extracted groups
@@ -1040,14 +1059,14 @@ public final class StringUtils {
 	 * <p>
 	 *     The string will be split by the given condition.<br>
 	 *     The first character of each part will be capitalized, the rest will be lowercased.<br>
-	 *     The parts will be joined by a space.<br>
+	 *     The parts will be joined by a space.
 	 * </p>
 	 * <p>
 	 *     If the string is null or empty, an empty string will be returned.<br>
-	 *     If the condition is null, the string will be returned as is.<br>
+	 *     If the condition is null, the string will be returned as is.
 	 * </p>
 	 * <p>
-	 *     Examples:<br>
+	 *     Examples:
 	 * </p>
 	 * <pre>{@code
 	 * getReadableString(null, *) -> ""
@@ -1057,6 +1076,7 @@ public final class StringUtils {
 	 * getReadableString("abc", Character::isLowerCase) -> "A B C"
 	 * getReadableString("abcDEFghi", Character::isUpperCase) -> "abc D E Fghi"
 	 * }</pre>
+	 *
 	 * @param str The string to convert
 	 * @param condition The condition to split the string by
 	 * @return The readable string

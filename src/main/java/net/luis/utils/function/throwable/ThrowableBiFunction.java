@@ -40,6 +40,7 @@ public interface ThrowableBiFunction<T, U, R, X extends Throwable> {
 	
 	/**
 	 * Converts a throwable bi-function into a bi-function that throws a runtime exception when an exception is thrown.<br>
+	 *
 	 * @param function The throwable bi-function
 	 * @return A caught bi-function
 	 * @param <T> The first argument type
@@ -60,6 +61,7 @@ public interface ThrowableBiFunction<T, U, R, X extends Throwable> {
 	
 	/**
 	 * Applies the arguments to the function and returns the result.<br>
+	 *
 	 * @param t The first argument
 	 * @param u The second argument
 	 * @return The result
@@ -68,8 +70,9 @@ public interface ThrowableBiFunction<T, U, R, X extends Throwable> {
 	R apply(T t, U u) throws X;
 	
 	/**
-	 * Returns a composed function that first applies this function to its input,<br>
+	 * Returns a composed function that first applies this function to its input,
 	 * and then applies the {@code after} function to the result.<br>
+	 *
 	 * @param after The function to apply after this function is applied
 	 * @return The composed throwable function
 	 * @param <S> The type of the output of the {@code after} function, and of the composed function

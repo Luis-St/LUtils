@@ -33,16 +33,16 @@ import java.util.concurrent.locks.ReentrantLock;
  * This class manages the access to a file from multiple threads.<br>
  * <p>
  *     To use this class, create an instance of it with the file you want to access.<br>
- *     Share the instance with the threads that need to access the file.<br>
+ *     Share the instance with the threads that need to access the file.
  * </p>
  * <p>
  *     To ensure that only one thread accesses the file at a time,<br>
  *     use the {@link FileAccess#access(FailableConsumer)} or {@link FileAccess#access(FailableFunction)} methods.<br>
- *     These methods will lock the file for the calling thread and unlock it when the action is done.<br>
+ *     These methods will lock the file for the calling thread and unlock it when the action is done.
  * </p>
  * <p>
  *     Each file can only be accessed by one instance of this class at a time.<br>
- *     If you try to access a file that is already accessed by another instance of this class, an exception will be thrown.<br>
+ *     If you try to access a file that is already accessed by another instance of this class, an exception will be thrown.
  * </p>
  *
  * @author Luis-St
@@ -70,6 +70,7 @@ public class FileAccess implements AutoCloseable {
 	
 	/**
 	 * Constructs a new file access instance for the given file.<br>
+	 *
 	 * @param file The file to access
 	 * @throws NullPointerException If the file is null
 	 * @throws IllegalStateException If the file is already accessed by another instance of this class
@@ -110,6 +111,7 @@ public class FileAccess implements AutoCloseable {
 	
 	/**
 	 * Access the file with the given action.<br>
+	 *
 	 * @param action The action to perform on the file
 	 * @throws IllegalStateException If the file access is closed
 	 * @throws UncheckedIOException If the action throws an IOException
@@ -128,6 +130,7 @@ public class FileAccess implements AutoCloseable {
 	
 	/**
 	 * Access the file with the given action and return the result.<br>
+	 *
 	 * @param action The action to perform on the file
 	 * @return The result of the action
 	 * @param <T> The type of the result

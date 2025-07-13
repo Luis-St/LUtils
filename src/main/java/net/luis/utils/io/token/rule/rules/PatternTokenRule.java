@@ -43,6 +43,7 @@ public record PatternTokenRule(
 	
 	/**
 	 * Constructs a new pattern token rule from the given pattern in string format.<br>
+	 *
 	 * @param regex The regex pattern to match against
 	 * @throws NullPointerException If the regex pattern is null
 	 */
@@ -52,6 +53,7 @@ public record PatternTokenRule(
 	
 	/**
 	 * Constructs a new pattern token rule from the given pattern.<br>
+	 *
 	 * @param pattern The pattern to match against
 	 * @throws NullPointerException If the pattern is null
 	 */

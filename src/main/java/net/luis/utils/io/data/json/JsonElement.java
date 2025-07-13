@@ -35,6 +35,7 @@ public interface JsonElement {
 	 * Returns the name of the class in a human-readable format.<br>
 	 * The name is the class name with spaces between the words and all letters in lower-case.<br>
 	 * Used for debugging and error messages.<br>
+	 *
 	 * @return The name of the class in a human-readable format
 	 */
 	private @NotNull String getName() {
@@ -75,6 +76,7 @@ public interface JsonElement {
 	
 	/**
 	 * Converts this json element to a json object.<br>
+	 *
 	 * @return This json element as a json object
 	 * @throws JsonTypeException If this json element is not a json object
 	 */
@@ -87,6 +89,7 @@ public interface JsonElement {
 	
 	/**
 	 * Converts this json element to a json array.<br>
+	 *
 	 * @return This json element as a json array
 	 * @throws JsonTypeException If this json element is not a json array
 	 */
@@ -99,6 +102,7 @@ public interface JsonElement {
 	
 	/**
 	 * Converts this json element to a json primitive.<br>
+	 *
 	 * @return This json element as a json primitive
 	 * @throws JsonTypeException If this json element is not a json primitive
 	 */
@@ -112,6 +116,7 @@ public interface JsonElement {
 	/**
 	 * Returns a string representation of this json element based on the given json config.<br>
 	 * The json config specifies how the json element should be formatted.<br>
+	 *
 	 * @param config The json config to use
 	 * @return The string representation of this json element
 	 */

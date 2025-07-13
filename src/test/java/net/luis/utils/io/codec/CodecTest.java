@@ -55,6 +55,7 @@ class CodecTest {
 		assertEquals(new JsonPrimitive(1.0F), Codec.FLOAT.encode(JsonTypeProvider.INSTANCE, 1.0F));
 		assertEquals(new JsonPrimitive(1.0), Codec.DOUBLE.encode(JsonTypeProvider.INSTANCE, 1.0));
 		assertEquals(new JsonPrimitive("test"), Codec.STRING.encode(JsonTypeProvider.INSTANCE, "test"));
+		assertEquals(new JsonPrimitive("a"), Codec.CHARACTER.encode(JsonTypeProvider.INSTANCE, 'a'));
 		
 		assertEquals(new JsonArray(List.of(new JsonPrimitive((byte) 42))), Codec.BYTE_ARRAY.encode(JsonTypeProvider.INSTANCE, new byte[] { 42 }));
 		assertEquals(new JsonArray(List.of(new JsonPrimitive(42))), Codec.INT_STREAM.encode(JsonTypeProvider.INSTANCE, IntStream.of(42)));
@@ -71,6 +72,12 @@ class CodecTest {
 		assertEquals(new JsonPrimitive(local.toString()), Codec.LOCAL_DATE_TIME.encode(JsonTypeProvider.INSTANCE, local));
 		ZonedDateTime zoned = ZonedDateTime.of(local, ZoneId.systemDefault());
 		assertEquals(new JsonPrimitive(zoned.toString()), Codec.ZONED_DATE_TIME.encode(JsonTypeProvider.INSTANCE, zoned));
+		Instant instant = Instant.ofEpochMilli(1751059065063L);
+		assertEquals(new JsonPrimitive(instant.toString()), Codec.INSTANT.encode(JsonTypeProvider.INSTANCE, instant));
+		Duration duration = Duration.ofMillis(1751059065063L);
+		assertEquals(new JsonPrimitive("20266d 21h 17m 45s 63ms"), Codec.DURATION.encode(JsonTypeProvider.INSTANCE, duration));
+		Period period = Period.of(1, 2, 3);
+		assertEquals(new JsonPrimitive("1y 2m 3d"), Codec.PERIOD.encode(JsonTypeProvider.INSTANCE, period));
 		
 		assertEquals(new JsonPrimitive(StandardCharsets.UTF_8.name()), Codec.CHARSET.encode(JsonTypeProvider.INSTANCE, StandardCharsets.UTF_8));
 		File file = new File("test.json");
@@ -93,6 +100,7 @@ class CodecTest {
 		assertEquals(1.0F, Codec.FLOAT.decode(JsonTypeProvider.INSTANCE, new JsonPrimitive(1.0F)));
 		assertEquals(1.0, Codec.DOUBLE.decode(JsonTypeProvider.INSTANCE, new JsonPrimitive(1.0)));
 		assertEquals("test", Codec.STRING.decode(JsonTypeProvider.INSTANCE, new JsonPrimitive("test")));
+		assertEquals('a', Codec.CHARACTER.decode(JsonTypeProvider.INSTANCE, new JsonPrimitive("a")));
 		
 		assertArrayEquals(new byte[] { 42 }, Codec.BYTE_ARRAY.decode(JsonTypeProvider.INSTANCE, new JsonArray(List.of(new JsonPrimitive((byte) 42)))));
 		assertArrayEquals(new int[] { 42 }, Codec.INT_STREAM.decode(JsonTypeProvider.INSTANCE, new JsonArray(List.of(new JsonPrimitive(42)))).toArray());

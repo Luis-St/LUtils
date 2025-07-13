@@ -79,6 +79,7 @@ public record CodecGrouper12<CI1, CI2, CI3, CI4, CI5, CI6, CI7, CI8, CI9, CI10, 
 	/**
 	 * Constructs a new codec grouper with the provided codecs.<br>
 	 * Do not use this constructor directly, use the builder method in {@link CodecBuilder} instead.<br>
+	 *
 	 * @param codec1 The first codec
 	 * @param codec2 The second codec
 	 * @param codec3 The third codec
@@ -112,6 +113,7 @@ public record CodecGrouper12<CI1, CI2, CI3, CI4, CI5, CI6, CI7, CI8, CI9, CI10, 
 	/**
 	 * Creates a new codec using the codecs of this grouper and the provided grouping function.<br>
 	 * The grouping function is used to create the resulting object from the decoded components.<br>
+	 *
 	 * @param function The grouping function
 	 * @return The created codec
 	 * @throws NullPointerException If the provided grouping function is null

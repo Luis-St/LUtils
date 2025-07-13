@@ -25,6 +25,7 @@ import java.lang.annotation.*;
 /**
  * Types that are annotated with this annotation will be instantiated only once.<br>
  * It might be possible to get the instance of the class by:
+ *
  * <ul>
  *     <li>Calling the static method {@code getInstance()}</li>
  *     <li>Accessing the public static field {@code INSTANCE}</li>

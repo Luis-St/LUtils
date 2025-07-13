@@ -41,6 +41,7 @@ public record OptionalTokenRule(
 	
 	/**
 	 * Constructs a new optional token rule with the given token rule.<br>
+	 *
 	 * @param tokenRule The token rule to match optionally
 	 * @throws NullPointerException If the token rule is null
 	 */

@@ -48,6 +48,7 @@ public class XmlWriter implements AutoCloseable {
 	
 	/**
 	 * Constructs a new xml writer with the default configuration.<br>
+	 *
 	 * @param output The output to create the writer for
 	 * @throws NullPointerException If the output is null
 	 */
@@ -57,6 +58,7 @@ public class XmlWriter implements AutoCloseable {
 	
 	/**
 	 * Constructs a new xml writer with the given configuration.<br>
+	 *
 	 * @param output The output to create the writer for
 	 * @param config The configuration to use for the writer
 	 * @throws NullPointerException If the output or the configuration is null
@@ -68,6 +70,7 @@ public class XmlWriter implements AutoCloseable {
 	
 	/**
 	 * Writes the given xml declaration to the output.<br>
+	 *
 	 * @param declaration The xml declaration to write
 	 * @throws NullPointerException If the xml declaration is null
 	 * @throws IllegalStateException If the xml declaration was already written (strict mode)
@@ -93,6 +96,7 @@ public class XmlWriter implements AutoCloseable {
 	
 	/**
 	 * Writes the given xml element to the output.<br>
+	 *
 	 * @param element The xml element to write
 	 * @throws NullPointerException If the xml element is null
 	 * @throws IllegalStateException If the xml declaration was not written before the xml element (strict mode)

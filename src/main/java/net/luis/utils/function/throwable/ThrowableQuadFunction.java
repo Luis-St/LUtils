@@ -42,6 +42,7 @@ public interface ThrowableQuadFunction<T, U, V, W, R, X extends Throwable> {
 	
 	/**
 	 * Converts a throwable quad-function into a quad-function that throws a runtime exception when an exception is thrown.<br>
+	 *
 	 * @param function The throwable quad-function
 	 * @return A caught quad-function
 	 * @param <T> The first argument type
@@ -64,6 +65,7 @@ public interface ThrowableQuadFunction<T, U, V, W, R, X extends Throwable> {
 	
 	/**
 	 * Applies the arguments to the function and returns the result.<br>
+	 *
 	 * @param t The first argument
 	 * @param u The second argument
 	 * @param v The third argument
@@ -74,8 +76,9 @@ public interface ThrowableQuadFunction<T, U, V, W, R, X extends Throwable> {
 	R apply(T t, U u, V v, W w) throws X;
 	
 	/**
-	 * Returns a composed function that first applies this function to its input,<br>
+	 * Returns a composed function that first applies this function to its input,
 	 * and then applies the {@code after} function to the result.<br>
+	 *
 	 * @param after The function to apply after this function is applied
 	 * @return The composed throwable function
 	 * @param <S> The type of the output of the {@code after} function, and of the composed function

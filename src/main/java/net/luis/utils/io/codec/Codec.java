@@ -38,6 +38,8 @@ import java.time.*;
 import java.util.*;
 import java.util.function.Function;
 import java.util.function.Supplier;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.*;
 
 import static net.luis.utils.io.codec.ResultMappingFunction.*;
@@ -242,6 +244,59 @@ public interface Codec<C> extends Encoder<C>, Decoder<C> {
 			return "StringCodec";
 		}
 	};
+	/**
+	 * A keyable codec that encodes and decodes characters.<br>
+	 */
+	KeyableCodec<Character> CHARACTER = new KeyableCodec<>() {
+		
+		@Override
+		public @NotNull <R> Result<R> encodeStart(@NotNull TypeProvider<R> provider, @NotNull R current, @Nullable Character value) {
+			Objects.requireNonNull(provider, "Type provider must not be null");
+			if (value == null) {
+				return Result.error("Unable to encode null as character using '" + this + "'");
+			}
+			return provider.createString(String.valueOf(value));
+		}
+		
+		@Override
+		public @NotNull <R> Result<String> encodeKey(@NotNull TypeProvider<R> provider, @NotNull Character key) {
+			Objects.requireNonNull(provider, "Type provider must not be null");
+			Objects.requireNonNull(key, "Key must not be null");
+			return Result.success(String.valueOf(key));
+		}
+		
+		@Override
+		public @NotNull <R> Result<Character> decodeStart(@NotNull TypeProvider<R> provider, @Nullable R value) {
+			Objects.requireNonNull(provider, "Type provider must not be null");
+			if (value == null) {
+				return Result.error("Unable to decode null value as character using '" + this + "'");
+			}
+			Result<String> result = provider.getString(value);
+			if (result.isError()) {
+				return Result.error("Unable to decode value as character from a string value using '" + this + "': " + result.errorOrThrow());
+			}
+			String str = result.orThrow();
+			if (str.length() != 1) {
+				return Result.error("String must have exactly one character to decode as character using '" + this + "'");
+			}
+			return Result.success(str.charAt(0));
+		}
+		
+		@Override
+		public @NotNull <R> Result<Character> decodeKey(@NotNull TypeProvider<R> provider, @NotNull String key) {
+			Objects.requireNonNull(provider, "Type provider must not be null");
+			Objects.requireNonNull(key, "Key must not be null");
+			if (key.length() != 1) {
+				return Result.error("Key must have exactly one character to decode as character using '" + this + "'");
+			}
+			return Result.success(key.charAt(0));
+		}
+		
+		@Override
+		public String toString() {
+			return "CharacterCodec";
+		}
+	};
 	
 	/**
 	 * A codec that encodes and decodes byte arrays.<br>
@@ -290,6 +345,203 @@ public interface Codec<C> extends Encoder<C>, Decoder<C> {
 	 * The underlying zoned date time is converted to and from a string.<br>
 	 */
 	Codec<ZonedDateTime> ZONED_DATE_TIME = STRING.mapFlat(ZonedDateTime::toString, throwable(ZonedDateTime::parse)).codec("ZonedDateTimeCodec");
+	/**
+	 * A codec that encodes and decodes {@link Instant instant} values.<br>
+	 * The underlying instant is converted to and from a string using ISO-8601 format.<br>
+	 */
+	Codec<Instant> INSTANT = STRING.mapFlat(Instant::toString, throwable(Instant::parse)).codec("InstantCodec");
+	/**
+	 * A codec that encodes and decodes {@link Duration duration} values.<br>
+	 * The underlying duration is converted to and from a human-readable string format.<br>
+	 */
+	Codec<Duration> DURATION = new Codec<>() {
+		@Override
+		public <R> @NotNull Result<R> encodeStart(@NotNull TypeProvider<R> provider, @Nullable R current, @Nullable Duration value) {
+			Objects.requireNonNull(provider, "Type provider must not be null");
+			if (value == null) {
+				return Result.error("Unable to encode null as duration using '" + this + "'");
+			}
+			
+			long totalSeconds = value.getSeconds();
+			long days = totalSeconds / 86400;
+			long hours = (totalSeconds % 86400) / 3600;
+			long minutes = (totalSeconds % 3600) / 60;
+			long seconds = totalSeconds % 60;
+			long milliseconds = value.toMillis() % 1000;
+			long nanos = value.toNanos() % 1_000_000;
+			
+			StringBuilder builder = new StringBuilder();
+			if (days > 0) {
+				builder.append(days).append("d ");
+			}
+			if (hours > 0) {
+				builder.append(hours).append("h ");
+			}
+			if (minutes > 0) {
+				builder.append(minutes).append("m ");
+			}
+			if (seconds > 0) {
+				builder.append(seconds).append("s ");
+			}
+			if (milliseconds > 0) {
+				builder.append(milliseconds).append("ms ");
+			}
+			if (nanos > 0) {
+				builder.append(nanos).append("ns");
+			}
+			
+			String encoded = builder.toString().trim();
+			if (encoded.isEmpty()) {
+				encoded = "0s";
+			}
+			
+			return provider.createString(encoded);
+		}
+		
+		@Override
+		public <R> @NotNull Result<Duration> decodeStart(@NotNull TypeProvider<R> provider, @Nullable R value) {
+			Objects.requireNonNull(provider, "Type provider must not be null");
+			if (value == null) {
+				return Result.error("Unable to decode null value as duration using '" + this + "'");
+			}
+			
+			Result<String> stringResult = provider.getString(value);
+			if (stringResult.isError()) {
+				return Result.error("Unable to decode duration from non-string value using '" + this + "': " + stringResult.errorOrThrow());
+			}
+			
+			String str = stringResult.orThrow();
+			try {
+				String[] parts = str.toLowerCase().split("\\s+");
+				long totalSeconds = 0;
+				long nanos = 0;
+				
+				Pattern pattern = Pattern.compile("([+-]?\\d+)([a-z]{1,2})", Pattern.CASE_INSENSITIVE);
+				for (String part : parts) {
+					if (part.isEmpty()) {
+						continue;
+					}
+					
+					Matcher matcher = pattern.matcher(part);
+					if (!matcher.matches()) {
+						return Result.error("Invalid duration format, expected format like '1y 2mo 3w 4d 5h 6m 7s 800ms 900ns' but got '" + part + "'");
+					}
+					
+					long partValue = Long.parseLong(matcher.group(1));
+					String unit = matcher.group(2).toLowerCase();
+					switch (unit) {
+						case "y" -> totalSeconds += partValue * 86400 * 365;
+						case "mo" -> totalSeconds += partValue * 86400 * 30;
+						case "w" -> totalSeconds += partValue * 86400 * 7;
+						case "d" -> totalSeconds += partValue * 86400;
+						case "h" -> totalSeconds += partValue * 3600;
+						case "m" -> totalSeconds += partValue * 60;
+						case "s" -> totalSeconds += partValue;
+						case "ms" -> nanos += partValue * 1_000_000;
+						case "ns" -> nanos += partValue;
+						default -> {
+							return Result.error("Unknown time unit, expected one of 'y', 'mo', 'w', 'd', 'h', 'm', 's', 'ms', or 'ns' but got '" + unit + "'");
+						}
+					}
+				}
+				return Result.success(Duration.ofSeconds(totalSeconds, nanos));
+			} catch (Exception e) {
+				return Result.error("Failed to parse duration '" + str + "': " + e.getMessage());
+			}
+		}
+		
+		@Override
+		public String toString() {
+			return "DurationCodec";
+		}
+	};
+	/**
+	 * A codec that encodes and decodes {@link Period period} values.<br>
+	 * The underlying period is converted to and from a human-readable string format.<br>
+	 */
+	Codec<Period> PERIOD = new Codec<>() {
+		@Override
+		public <R> @NotNull Result<R> encodeStart(@NotNull TypeProvider<R> provider, @Nullable R current, @Nullable Period value) {
+			Objects.requireNonNull(provider, "Type provider must not be null");
+			if (value == null) {
+				return Result.error("Unable to encode null as period using '" + this + "'");
+			}
+			
+			if (value.isZero()) {
+				return provider.createString("0d");
+			}
+			
+			List<String> parts = Lists.newArrayList();
+			if (value.getYears() != 0) {
+				parts.add(value.getYears() + "y");
+			}
+			if (value.getMonths() != 0) {
+				parts.add(value.getMonths() + "m");
+			}
+			if (value.getDays() != 0) {
+				parts.add(value.getDays() + "d");
+			}
+			
+			return provider.createString(String.join(" ", parts));
+		}
+		
+		@Override
+		public <R> @NotNull Result<Period> decodeStart(@NotNull TypeProvider<R> provider, @Nullable R value) {
+			Objects.requireNonNull(provider, "Type provider must not be null");
+			if (value == null) {
+				return Result.error("Unable to decode null value as period using '" + this + "'");
+			}
+			
+			Result<String> result = provider.getString(value);
+			if (result.isError()) {
+				return Result.error("Unable to decode period from non-string value using '" + this + "': " + result.errorOrThrow());
+			}
+			
+			String str = result.orThrow();
+			try {
+				if ("0d".equalsIgnoreCase(str)) {
+					return Result.success(Period.ZERO);
+				}
+				
+				String[] parts = str.split("\\s+");
+				int years = 0;
+				int months = 0;
+				int days = 0;
+				
+				Pattern pattern = Pattern.compile("([+-]?\\d+)([a-z]{1,2})", Pattern.CASE_INSENSITIVE);
+				for (String part : parts) {
+					if (part.isEmpty()) {
+						continue;
+					}
+					
+					Matcher matcher = pattern.matcher(part);
+					if (!matcher.matches()) {
+						return Result.error("Invalid period format, expected format like '1y 2mo 3d' but got '" + part + "'");
+					}
+					
+					int partValue = Integer.parseInt(matcher.group(1));
+					String unit = matcher.group(2).toLowerCase();
+					
+					switch (unit) {
+						case "y" -> years += partValue;
+						case "mo" -> months += partValue;
+						case "d" -> days += partValue;
+						default -> {
+							return Result.error("Unknown time unit, expected one of 'y', 'mo', or 'd' but got '" + unit + "'");
+						}
+					}
+				}
+				return Result.success(Period.of(years, months, days));
+			} catch (Exception e) {
+				return Result.error("Failed to parse period '" + str + "': " + e.getMessage());
+			}
+		}
+		
+		@Override
+		public String toString() {
+			return "PeriodCodec";
+		}
+	};
 	
 	/**
 	 * A codec that encodes and decodes {@link Charset charsets}.<br>
@@ -826,6 +1078,7 @@ public interface Codec<C> extends Encoder<C>, Decoder<C> {
 	
 	/**
 	 * Wraps the current codec into a new codec with the given codec name.<br>
+	 *
 	 * @param name The name of the codec
 	 * @return A new codec
 	 * @throws NullPointerException If the codec name is null
@@ -839,6 +1092,7 @@ public interface Codec<C> extends Encoder<C>, Decoder<C> {
 	 * Wraps the current codec into a new keyable codec using the given key encoder and key decoder.<br>
 	 * The key encoder and key decoder are defined as functions that convert keys of the type C to and from strings.<br>
 	 * If the key decoder is unable to decode a key, it should return null.<br>
+	 *
 	 * @param keyEncoder The key encoder
 	 * @param keyDecoder The key decoder
 	 * @return A new keyable codec
@@ -852,6 +1106,7 @@ public interface Codec<C> extends Encoder<C>, Decoder<C> {
 	
 	/**
 	 * Wraps the current codec into a new optional codec.<br>
+	 *
 	 * @return A new optional codec for the current codec
 	 * @see #optional(Codec)
 	 * @see OptionalCodec
@@ -863,6 +1118,7 @@ public interface Codec<C> extends Encoder<C>, Decoder<C> {
 	/**
 	 * Creates a new list codec uses the current codec as element codec for the list codec.<br>
 	 * The created list codec has no size restrictions.<br>
+	 *
 	 * @return A new list codec for the current codec
 	 * @see #list(Codec)
 	 * @see ListCodec
@@ -874,6 +1130,7 @@ public interface Codec<C> extends Encoder<C>, Decoder<C> {
 	/**
 	 * Creates a new list codec uses the current codec as element codec for the list codec with the given maximum size.<br>
 	 * The list must have at most the maximum size after encoding and decoding.<br>
+	 *
 	 * @param maxSize The maximum size of the list (inclusive)
 	 * @return A new list codec for the current codec
 	 * @throws IllegalArgumentException If the maximum size is less than 0
@@ -887,6 +1144,7 @@ public interface Codec<C> extends Encoder<C>, Decoder<C> {
 	/**
 	 * Creates a new list codec uses the current codec as element codec for the list codec with the given minimum and maximum size.<br>
 	 * The list must have at least the minimum size and at most the maximum size after encoding and decoding.<br>
+	 *
 	 * @param minSize The minimum size of the list (inclusive)
 	 * @param maxSize The maximum size of the list (inclusive)
 	 * @return A new list codec for the current codec
@@ -901,6 +1159,7 @@ public interface Codec<C> extends Encoder<C>, Decoder<C> {
 	/**
 	 * Creates a new list codec uses the current codec as element codec for the list codec for non-empty lists.<br>
 	 * The list must not be empty after encoding and decoding.<br>
+	 *
 	 * @return A new list codec for the current codec
 	 * @see #noneEmptyList(Codec)
 	 * @see ListCodec
@@ -911,6 +1170,7 @@ public interface Codec<C> extends Encoder<C>, Decoder<C> {
 	
 	/**
 	 * Creates a new stream codec uses the current codec as element codec for the stream codec.<br>
+	 *
 	 * @return A new stream codec for the current codec
 	 * @see #stream(Codec)
 	 */
@@ -921,6 +1181,7 @@ public interface Codec<C> extends Encoder<C>, Decoder<C> {
 	/**
 	 * Creates a new codec that uses the current codec as the main codec and the given codec as alternative codec.<br>
 	 * If the main codec fails to encode or decode a value, the alternative codec is used.<br>
+	 *
 	 * @param alternative The alternative codec
 	 * @return A new codec
 	 * @throws NullPointerException If the alternative codec is null
@@ -935,8 +1196,9 @@ public interface Codec<C> extends Encoder<C>, Decoder<C> {
 	 * <p>
 	 *     The mapped codec maps the raw input and output values using the given functions.<br>
 	 *     The functions are applied before encoding and after decoding the base codec, on the raw values.<br>
-	 *     Any errors that occur during mapping must be self-contained and should not affect the base codec.<br>
+	 *     Any errors that occur during mapping must be self-contained and should not affect the base codec.
 	 * </p>
+	 *
 	 * @param to The encoding mapping function
 	 * @param from The decoding mapping function
 	 * @param <O> The type of the mapped value
@@ -953,13 +1215,14 @@ public interface Codec<C> extends Encoder<C>, Decoder<C> {
 	 * Creates a new mapped codec of type {@code O} from the current codec.<br>
 	 * <p>
 	 *     The mapped codec maps the raw input value using the given function.<br>
-	 *     The function is applied before encoding the base codec.<br>
+	 *     The function is applied before encoding the base codec.
 	 * </p>
 	 * <p>
 	 *     This mapping functions allows the handling of errors that occur during decode-mapping.<br>
 	 *     Therefor the mapping function is applied to the result of the base codec.<br>
-	 *     The mapping function must return a new result that contains the mapped value or an error message.<br>
+	 *     The mapping function must return a new result that contains the mapped value or an error message.
 	 * </p>
+	 *
 	 * @param to The encoding mapping function
 	 * @param from The decoding mapping function
 	 * @param <O> The type of the mapped value
@@ -977,12 +1240,13 @@ public interface Codec<C> extends Encoder<C>, Decoder<C> {
 	 * This mapping functions allows the handling of errors that occur during mapping.<br>
 	 * <p>
 	 *     The encode-mapping function is applied before encoding the base codec.<br>
-	 *     The function can return a new result that contains the mapped value or an error message.<br>
+	 *     The function can return a new result that contains the mapped value or an error message.
 	 * </p>
 	 * <p>
 	 *     The decode-mapping function is applied to the result of the base codec.<br>
-	 *     The function can return a new result that contains the mapped value or an error message.<br>
+	 *     The function can return a new result that contains the mapped value or an error message.
 	 * </p>
+	 *
 	 * @param to The encoding mapping function
 	 * @param from The decoding mapping function
 	 * @param <O> The type of the mapped value
@@ -998,6 +1262,7 @@ public interface Codec<C> extends Encoder<C>, Decoder<C> {
 	/**
 	 * Creates a new codec that will validate the result of the decoding process using the given validator function.<br>
 	 * The validator function is applied to the decoded value and must return a result that contains the validated value or an error message.<br>
+	 *
 	 * @param validator The validator function
 	 * @return A new codec
 	 * @throws NullPointerException If the validator function is null
@@ -1009,6 +1274,7 @@ public interface Codec<C> extends Encoder<C>, Decoder<C> {
 	
 	/**
 	 * Creates a new codec that will return the given default value in an error case during decoding.<br>
+	 *
 	 * @param defaultValue The default value
 	 * @return A new codec
 	 * @see #orElseGet(Supplier)
@@ -1019,6 +1285,7 @@ public interface Codec<C> extends Encoder<C>, Decoder<C> {
 	
 	/**
 	 * Creates a new codec that will return the value provided by the given supplier in an error case during decoding.<br>
+	 *
 	 * @param supplier The default value supplier
 	 * @return A new codec
 	 * @throws NullPointerException If the default value supplier is null
@@ -1030,6 +1297,7 @@ public interface Codec<C> extends Encoder<C>, Decoder<C> {
 	
 	/**
 	 * Creates a new named codec with the current codec using the given name and aliases.<br>
+	 *
 	 * @param name The name of the codec
 	 * @param aliases The aliases of the codec
 	 * @return A new named codec
@@ -1045,6 +1313,7 @@ public interface Codec<C> extends Encoder<C>, Decoder<C> {
 	 * The configured codec is used in the codec builder to create codecs for complex data structures.<br>
 	 * The configured codec encodes and decodes components of the data structure using the given getter function.<br>
 	 * It is expected that this is only called on named codecs.<br>
+	 *
 	 * @param getter The getter function
 	 * @param <O> The type of the object which contains the component
 	 * @return A new configured codec
@@ -1062,8 +1331,9 @@ public interface Codec<C> extends Encoder<C>, Decoder<C> {
 	 * This method combines the {@link #named(String, String...)} and {@link #getter(Function)} methods.<br>
 	 * <p>
 	 *     The configured codec is used in the codec builder to create codecs for complex data structures.<br>
-	 *     The configured codec encodes and decodes components of the data structure using the given getter function.<br>
+	 *     The configured codec encodes and decodes components of the data structure using the given getter function.
 	 * </p>
+	 *
 	 * @param name The name of the codec
 	 * @param getter The getter function
 	 * @param <O> The type of the object which contains the component

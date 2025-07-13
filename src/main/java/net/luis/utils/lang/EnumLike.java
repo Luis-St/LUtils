@@ -34,15 +34,15 @@ import java.util.function.Predicate;
  * <p>
  *     An enum-like class is a class with constants like an enum but with a public constructor.<br>
  *     The enum-like class contains predefined constants of its own type.<br>
- *     An enum-like class is a class that contains constants of its own type.<br>
+ *     An enum-like class is a class that contains constants of its own type.
  * </p>
  * <p>
  *     It is anticipated that constants are added at runtime.<br>
- *     The constants are not required to be known at compile time.<br>
+ *     The constants are not required to be known at compile time.
  * </p>
  * <p>
  *     Class Implementation example, see below:<br>
- *     The implementation can also be a record.<br>
+ *     The implementation can also be a record.
  * </p>
  * <pre>{@code
  * public class Example implements EnumLike<Example> {
@@ -71,7 +71,7 @@ import java.util.function.Predicate;
  * }</pre>
  * <p>
  *     The 'VALUES' field is required and must be exactly declared like above.<br>
- *     All instances of the enum-like class must be added to the 'VALUES' list in the constructor or a factory method.<br>
+ *     All instances of the enum-like class must be added to the 'VALUES' list in the constructor or a factory method.
  * </p>
  *
  * @author Luis-St
@@ -85,6 +85,7 @@ public interface EnumLike<T extends EnumLike<T>> extends Comparable<T> {
 	/**
 	 * Checks if the given field is a constant.<br>
 	 * A constant is a static final field.<br>
+	 *
 	 * @param field The field to check
 	 * @return True, if the given field is a constant, otherwise false
 	 * @throws NullPointerException If the given field is null
@@ -97,6 +98,7 @@ public interface EnumLike<T extends EnumLike<T>> extends Comparable<T> {
 	/**
 	 * Gets all predefined constants of the given enum-like class.<br>
 	 * A constant is a static final field of the given enum-like class.<br>
+	 *
 	 * @param enumType The enum-like class
 	 * @return An unmodifiable list of all predefined constants declared in the given enum-like class
 	 * @param <T> The type of the enum-like class
@@ -128,6 +130,7 @@ public interface EnumLike<T extends EnumLike<T>> extends Comparable<T> {
 	 * <pre>{@code
 	 * private static final List<Example> VALUES = Lists.newLinkedList();
 	 * }</pre>
+	 *
 	 * @param enumType The enum-like class
 	 * @return An unmodifiable list with the values of all constants declared in the given enum-like class
 	 * @param <T> The type of the enum-like class
@@ -148,6 +151,7 @@ public interface EnumLike<T extends EnumLike<T>> extends Comparable<T> {
 	/**
 	 * Returns the constant of the given enum-like class with the specified name.<br>
 	 * If the given name is null or no constant with the given name (case-insensitive) exists, an exception is thrown.<br>
+	 *
 	 * @param enumType The enum-like class
 	 * @param name The name of the constant
 	 * @return The constant with the given name
@@ -167,6 +171,7 @@ public interface EnumLike<T extends EnumLike<T>> extends Comparable<T> {
 	
 	/**
 	 * Returns the ordinal of the given enum-like constant.<br>
+	 *
 	 * @return The ordinal of the constant
 	 * @throws IllegalStateException If the constant was not correctly defined
 	 */

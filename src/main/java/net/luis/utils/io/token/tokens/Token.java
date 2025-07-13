@@ -46,6 +46,7 @@ public interface Token {
 	/**
 	 * Returns the start position of the token.<br>
 	 * The start position is the first character of the token.<br>
+	 *
 	 * @return The start position
 	 * @apiNote In the case of a single character token, the start and end position are the same.<br>
 	 */
@@ -54,6 +55,7 @@ public interface Token {
 	/**
 	 * Returns the end position of the token.<br>
 	 * The end position is the last character of the token.<br>
+	 *
 	 * @return The end position
 	 * @apiNote In the case of a single character token, the start and end position are the same.<br>
 	 */

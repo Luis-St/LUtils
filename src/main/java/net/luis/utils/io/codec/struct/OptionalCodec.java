@@ -32,14 +32,14 @@ import java.util.function.Supplier;
  * This codec uses another codec to encode and decode the optional value.<br>
  * <p>
  *     The optional codec can be set to provide a default value if the optional value is empty.<br>
- *     The default value is provided by a supplier.<br>
+ *     The default value is provided by a supplier.
  * </p>
  * <p>
  *     If the optional value is empty during encoding the current value is returned.<br>
- *     This means that the value will not be appended to a data structure.<br>
+ *     This means that the value will not be appended to a data structure.
  * </p>
  * <p>
- *     If the optional value is empty during decoding the default value is returned.<br>
+ *     If the optional value is empty during decoding the default value is returned.
  * </p>
  *
  * @author Luis-St
@@ -61,6 +61,7 @@ public class OptionalCodec<C> implements Codec<Optional<C>> {
 	/**
 	 * Constructs a new optional codec using the given codec for the optional value.<br>
 	 * Do not use this constructor directly, use the optional factory methods in {@link Codec} instead.<br>
+	 *
 	 * @param codec The codec for the optional value
 	 * @throws NullPointerException If the codec is null
 	 */
@@ -72,6 +73,7 @@ public class OptionalCodec<C> implements Codec<Optional<C>> {
 	/**
 	 * Gets the default value for this codec.<br>
 	 * If no default value is provided, an empty optional is returned.<br>
+	 *
 	 * @return The default value
 	 */
 	private @NotNull Optional<C> getDefault() {
@@ -123,6 +125,7 @@ public class OptionalCodec<C> implements Codec<Optional<C>> {
 	/**
 	 * Returns a new codec that is not optional.<br>
 	 * The new codec will use the given default value if the optional value is empty.<br>
+	 *
 	 * @param defaultValue The default value
 	 * @return The new codec
 	 */
@@ -133,6 +136,7 @@ public class OptionalCodec<C> implements Codec<Optional<C>> {
 	/**
 	 * Returns a new codec that is not optional.<br>
 	 * The new codec will use the default value provided by the given supplier if the optional value is empty.<br>
+	 *
 	 * @param supplier The supplier for the default value
 	 * @return The new codec
 	 * @throws NullPointerException If the supplier is null

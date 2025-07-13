@@ -43,6 +43,7 @@ public class PropertyWriter implements AutoCloseable {
 	
 	/**
 	 * Constructs a new property writer for the given output with the default property configuration.<br>
+	 *
 	 * @param output The output provider to create the writer for
 	 * @throws NullPointerException If the output is null
 	 */
@@ -52,6 +53,7 @@ public class PropertyWriter implements AutoCloseable {
 	
 	/**
 	 * Constructs a new property writer for the given output with the given property configuration.<br>
+	 *
 	 * @param output The output to create the writer for
 	 * @param config The configuration for the properties writer
 	 * @throws NullPointerException If the output or the configuration is null
@@ -63,6 +65,7 @@ public class PropertyWriter implements AutoCloseable {
 	
 	/**
 	 * Writes the given raw property to the underlying output.<br>
+	 *
 	 * @param key The key of the property
 	 * @param value The value of the property
 	 * @throws NullPointerException If the key or the value is null
@@ -75,6 +78,7 @@ public class PropertyWriter implements AutoCloseable {
 	/**
 	 * Writes the given raw property to the underlying output.<br>
 	 * The value is converted to a string using the given converter.<br>
+	 *
 	 * @param key The key of the property
 	 * @param value The value of the property
 	 * @param converter The converter to convert the value to a string
@@ -90,6 +94,7 @@ public class PropertyWriter implements AutoCloseable {
 	
 	/**
 	 * Writes the given properties to the underlying output.<br>
+	 *
 	 * @param properties The properties to write
 	 * @throws NullPointerException If the properties are null
 	 * @throws UncheckedIOException If an I/O error occurs (optional)
@@ -101,6 +106,7 @@ public class PropertyWriter implements AutoCloseable {
 	
 	/**
 	 * Writes the given property to the underlying output.<br>
+	 *
 	 * @param property The property to write
 	 * @throws NullPointerException If the property is null
 	 * @throws UncheckedIOException If an I/O error occurs (optional)

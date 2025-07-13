@@ -31,7 +31,7 @@ import java.util.*;
  * A token definition defines a token and provides a method to check if a word matches the token.<br>
  * <p>
  *     For easier usage in rules this interface extends {@link TokenRule}.<br>
- *     This means a token definition can be used as a rule in a {@link TokenRule}.<br>
+ *     This means a token definition can be used as a rule in a {@link TokenRule}.
  * </p>
  *
  * @author Luis-St
@@ -41,6 +41,7 @@ public interface TokenDefinition extends TokenRule {
 	
 	/**
 	 * Creates a new token definition for a single character.<br>
+	 *
 	 * @param token The token character
 	 * @return The token definition
 	 * @see CharTokenDefinition
@@ -51,8 +52,9 @@ public interface TokenDefinition extends TokenRule {
 	
 	/**
 	 * Creates a new token definition for a string.<br>
+	 *
 	 * @param token The token string
-	 * @param equalsIgnoreCase If the token should be compared case insensitive
+	 * @param equalsIgnoreCase If the token should be compared case-insensitive
 	 * @return The token definition
 	 * @throws NullPointerException If the token is null
 	 * @throws IllegalArgumentException If the token is empty
@@ -64,6 +66,7 @@ public interface TokenDefinition extends TokenRule {
 	
 	/**
 	 * Creates a new escaped token definition for a single character.<br>
+	 *
 	 * @param token The token character
 	 * @return The token definition
 	 * @see EscapedTokenDefinition
@@ -76,6 +79,7 @@ public interface TokenDefinition extends TokenRule {
 	 * Combines multiple token definitions into a single token definition.<br>
 	 * The resulting token definition contains the concatenated string of all token definitions.<br>
 	 * If only one token definition is provided, it is returned as is.<br>
+	 *
 	 * @param definitions The token definitions to combine
 	 * @return The combined token definition
 	 * @throws NullPointerException If the token definition array is null
@@ -105,6 +109,7 @@ public interface TokenDefinition extends TokenRule {
 	
 	/**
 	 * Checks if the given word matches this token definition.<br>
+	 *
 	 * @param word The word to check
 	 * @return True if the word matches this token definition, false otherwise
 	 * @throws NullPointerException If the word is null

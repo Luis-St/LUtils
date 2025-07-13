@@ -48,6 +48,7 @@ final class XmlHelper {
 	/**
 	 * Validates the given string.<br>
 	 * The base validation checks if the string is not null, not empty and not blank.<br>
+	 *
 	 * @param str The string to validate
 	 * @param message The message to use in the exception
 	 * @throws NullPointerException If the string is null
@@ -66,6 +67,7 @@ final class XmlHelper {
 	/**
 	 * Validates the given xml element name.<br>
 	 * In addition to the base validation, the name must match the pattern {@link #XML_ELEMENT_NAME_PATTERN}.<br>
+	 *
 	 * @param name The name to validate
 	 * @return The validated name
 	 * @throws NullPointerException If the name is null
@@ -82,6 +84,7 @@ final class XmlHelper {
 	/**
 	 * Validates the given xml attribute name.<br>
 	 * In addition to the base validation, the name must match the pattern {@link #XML_ATTRIBUTE_NAME_PATTERN}.<br>
+	 *
 	 * @param name The name to validate
 	 * @return The validated name
 	 * @throws NullPointerException If the name is null
@@ -105,6 +108,7 @@ final class XmlHelper {
 	 *     <li>{@code < -> &lt;}</li>
 	 *     <li>{@code > -> &gt;}</li>
 	 * </ul>
+	 *
 	 * @param value The value to escape
 	 * @return The escaped value
 	 * @throws NullPointerException If the value is null
@@ -124,6 +128,7 @@ final class XmlHelper {
 	 *     <li>{@code &lt; -> <}</li>
 	 *     <li>{@code &gt; -> >}</li>
 	 * </ul>
+	 *
 	 * @param value The value to unescape
 	 * @return The unescaped value
 	 * @throws NullPointerException If the value is null

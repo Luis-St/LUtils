@@ -42,6 +42,7 @@ public class Result<T> implements Supplier<Either<T, String>> {
 	
 	/**
 	 * Constructs a new result with the specified result.<br>
+	 *
 	 * @param result The result of the operation
 	 * @throws NullPointerException If the result is null
 	 */
@@ -53,6 +54,7 @@ public class Result<T> implements Supplier<Either<T, String>> {
 	
 	/**
 	 * Creates a new successful result with the specified value.<br>
+	 *
 	 * @param value The value of the result
 	 * @return The created result
 	 * @param <T> The type of the result
@@ -63,6 +65,7 @@ public class Result<T> implements Supplier<Either<T, String>> {
 	
 	/**
 	 * Creates a new failed result with the specified error message.<br>
+	 *
 	 * @param error The error message of the result
 	 * @return The created result
 	 * @param <T> The type of the result
@@ -99,6 +102,7 @@ public class Result<T> implements Supplier<Either<T, String>> {
 	
 	/**
 	 * Gets the result of the operation or throws an exception.<br>
+	 *
 	 * @return The result of the operation
 	 * @throws IllegalStateException If the result is an error
 	 */
@@ -108,6 +112,7 @@ public class Result<T> implements Supplier<Either<T, String>> {
 	
 	/**
 	 * Gets the result of the operation or throws the specified exception.<br>
+	 *
 	 * @param exceptionSupplier The supplier holding the exception to be thrown
 	 * @return The result of the operation
 	 * @param <X> The type of the exception
@@ -139,6 +144,7 @@ public class Result<T> implements Supplier<Either<T, String>> {
 	
 	/**
 	 * Gets the error message of the operation or throws an exception.<br>
+	 *
 	 * @return The error message
 	 * @throws IllegalStateException If the result is not an error
 	 */
@@ -149,6 +155,7 @@ public class Result<T> implements Supplier<Either<T, String>> {
 	/**
 	 * Maps the result of the operation to another type.<br>
 	 * If the result is an error, the mapping is not applied.<br>
+	 *
 	 * @param mapper The mapper function
 	 * @return The mapped result
 	 * @param <R> The type of the mapped result
@@ -163,6 +170,7 @@ public class Result<T> implements Supplier<Either<T, String>> {
 	 * Maps the result of the operation to another result of the same type.<br>
 	 * This is useful for chaining operations or validating the result.<br>
 	 * If the result is an error, the mapping is not applied.<br>
+	 *
 	 * @param mapper The mapper function
 	 * @return The mapped result
 	 * @param <R> The type of the mapped result
@@ -180,6 +188,7 @@ public class Result<T> implements Supplier<Either<T, String>> {
 	 * Gets the result of the operation or the specified default value.<br>
 	 * This is useful for providing a fallback value if the operation fails.<br>
 	 * This method is equivalent to {@link #orElseGet(Supplier)} with a constant supplier.<br>
+	 *
 	 * @param fallback The fallback value
 	 * @return The result of the operation or the fallback value
 	 * @throws NullPointerException If the fallback value is null
@@ -192,6 +201,7 @@ public class Result<T> implements Supplier<Either<T, String>> {
 	/**
 	 * Gets the result of the operation or the result of the specified supplier.<br>
 	 * This is useful for providing a fallback value if the operation fails.<br>
+	 *
 	 * @param supplier The supplier of the fallback value
 	 * @return The result of the operation or the fallback value
 	 * @throws NullPointerException If the supplier is null

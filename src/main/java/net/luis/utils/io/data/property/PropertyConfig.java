@@ -66,6 +66,7 @@ public record PropertyConfig(
 	
 	/**
 	 * Constructs a new property configuration.<br>
+	 *
 	 * @param separator The separator between key and value
 	 * @param alignment The number of spaces between key and value
 	 * @param commentCharacters The characters that indicate a comment line
@@ -92,6 +93,7 @@ public record PropertyConfig(
 	
 	/**
 	 * Checks whether the given key matches the key pattern.<br>
+	 *
 	 * @param key The key to check
 	 * @throws NullPointerException If the key is null
 	 * @throws PropertySyntaxException If the key is blank or does not match the key pattern
@@ -108,6 +110,7 @@ public record PropertyConfig(
 	
 	/**
 	 * Checks whether the given value matches the value pattern.<br>
+	 *
 	 * @param value The value to check
 	 * @throws NullPointerException If the value is null
 	 * @throws PropertySyntaxException If the value does not match the value pattern

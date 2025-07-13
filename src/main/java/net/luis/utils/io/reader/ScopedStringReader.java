@@ -42,6 +42,7 @@ public class ScopedStringReader extends StringReader {
 	
 	/**
 	 * Constructs a new scoped string reader with the given string.<br>
+	 *
 	 * @param string The string to read from
 	 * @throws NullPointerException If the string is null
 	 */
@@ -52,6 +53,7 @@ public class ScopedStringReader extends StringReader {
 	/**
 	 * Constructs a new scoped string reader with the given reader.<br>
 	 * The reader is closed after reading the string.<br>
+	 *
 	 * @param reader The reader to read from
 	 * @throws NullPointerException If the reader is null
 	 * @throws UncheckedIOException If an I/O error occurs while reading the string
@@ -65,12 +67,13 @@ public class ScopedStringReader extends StringReader {
 	 * <p>
 	 *     The scope is defined by an opening and a closing character.<br>
 	 *     The method will read until the opened scope is closed.<br>
-	 *     If there are nested scopes, the method will read until all scopes are closed.<br>
+	 *     If there are nested scopes, the method will read until all scopes are closed.
 	 * </p>
 	 * <p>
 	 *     The opening and closing character are included in the returned string.<br>
-	 *     If there are no more characters to read, an empty string is returned.<br>
+	 *     If there are no more characters to read, an empty string is returned.
 	 * </p>
+	 *
 	 * @param scope The scope to use
 	 * @return The read string
 	 * @throws NullPointerException If the scope is null
@@ -133,8 +136,9 @@ public class ScopedStringReader extends StringReader {
 	 * <p>
 	 *     If the terminator is found at the beginning or at the end of the string, an empty string is returned.<br>
 	 *     If the terminator is found in a quoted part or in a scope, the terminator is ignored.<br>
-	 *     If the terminator is not found, the rest of the string is returned.<br>
+	 *     If the terminator is not found, the rest of the string is returned.
 	 * </p>
+	 *
 	 * @param terminator The terminator to read until
 	 * @return The read string
 	 * @throws IllegalArgumentException If the terminator is a backslash
@@ -151,8 +155,9 @@ public class ScopedStringReader extends StringReader {
 	 * <p>
 	 *     If the terminator is found at the beginning or at the end of the string, an empty string is returned.<br>
 	 *     If the terminator is found in a quoted part or in a scope, the terminator is ignored.<br>
-	 *     If the terminator is not found, the rest of the string is returned.<br>
+	 *     If the terminator is not found, the rest of the string is returned.
 	 * </p>
+	 *
 	 * @param terminator The terminator to read until
 	 * @return The read string
 	 * @throws IllegalArgumentException If the terminator is a backslash
@@ -169,8 +174,9 @@ public class ScopedStringReader extends StringReader {
 	 * <p>
 	 *     If any terminator is found at the beginning or at the end of the string, an empty string is returned.<br>
 	 *     If any terminator is found in a quoted part or in a scope, the terminator is ignored.<br>
-	 *     If none terminator is found, the rest of the string is returned.<br>
+	 *     If none terminator is found, the rest of the string is returned.
 	 * </p>
+	 *
 	 * @param terminators The terminators to read until
 	 * @return The string which was read until the terminator
 	 * @throws IllegalArgumentException If the terminators are empty or contain a backslash
@@ -186,8 +192,9 @@ public class ScopedStringReader extends StringReader {
 	 * <p>
 	 *     If any terminator is found at the beginning or at the end of the string, an empty string is returned.<br>
 	 *     If any terminator is found in a quoted part or in a scope, the terminator is ignored.<br>
-	 *     If none terminator is found, the rest of the string is returned.<br>
+	 *     If none terminator is found, the rest of the string is returned.
 	 * </p>
+	 *
 	 * @param terminators The terminators to read until
 	 * @return The string which was read until the terminator
 	 * @throws IllegalArgumentException If the terminators are empty or contain a backslash
@@ -199,6 +206,7 @@ public class ScopedStringReader extends StringReader {
 	
 	/**
 	 * Internal method to read the string until the given predicate is true.<br>
+	 *
 	 * @param predicate The predicate to match the characters
 	 * @param inclusive Whether the character which matches the predicate should be included in the result or not
 	 * @return The string which was read until the predicate is true
@@ -252,8 +260,9 @@ public class ScopedStringReader extends StringReader {
 	 * <p>
 	 *     If the terminator string is found at the beginning or at the end of the string, an empty string is returned.<br>
 	 *     If the terminator string is found in a quoted part or in a scope, the terminator is ignored.<br>
-	 *     If the terminator string is not found, the rest of the string is returned.<br>
+	 *     If the terminator string is not found, the rest of the string is returned.
 	 * </p>
+	 *
 	 * @param terminator The terminating string to read until
 	 * @param caseSensitive Whether the terminator string should be case-sensitive or not
 	 * @return The string which was read until the terminator
@@ -271,8 +280,9 @@ public class ScopedStringReader extends StringReader {
 	 * <p>
 	 *     If the terminator string is found at the beginning or at the end of the string, an empty string is returned.<br>
 	 *     If the terminator string is found in a quoted part or in a scope, the terminator is ignored.<br>
-	 *     If the terminator string is not found, the rest of the string is returned.<br>
+	 *     If the terminator string is not found, the rest of the string is returned.
 	 * </p>
+	 *
 	 * @param terminator The terminating string to read until
 	 * @param caseSensitive Whether the terminator string should be case-sensitive or not
 	 * @return The string which was read until the terminator
@@ -286,6 +296,7 @@ public class ScopedStringReader extends StringReader {
 	
 	/**
 	 * Internal method to read the string until the terminating string is found.<br>
+	 *
 	 * @param terminator The terminator string to read until
 	 * @param caseSensitive Whether the terminator string should be case-sensitive or not
 	 * @param inclusive Whether the terminator string should be included in the result or not
@@ -361,12 +372,13 @@ public class ScopedStringReader extends StringReader {
 	 * <p>
 	 *     The collection is defined by an opening and a closing character.<br>
 	 *     If there are no more characters to read, an empty collection is returned.<br>
-	 *     Whitespace characters are ignored.<br>
+	 *     Whitespace characters are ignored.
 	 * </p>
 	 * <p>
 	 *     The elements of the collection are separated by a comma.<br>
-	 *     The elements are parsed by the given parser.<br>
+	 *     The elements are parsed by the given parser.
 	 * </p>
+	 *
 	 * @param scope The scope with the opening and closing character
 	 * @param parser The parser to parse the elements
 	 * @return The read collection
@@ -409,6 +421,7 @@ public class ScopedStringReader extends StringReader {
 	/**
 	 * Reads a list from the string.<br>
 	 * The list is defined by square brackets.<br>
+	 *
 	 * @param parser The parser to parse the elements
 	 * @return The read list as an {@link ArrayList}
 	 * @param <T> The type of the elements
@@ -429,8 +442,9 @@ public class ScopedStringReader extends StringReader {
 	 * The set is defined by parentheses.<br>
 	 * <p>
 	 *     The order of the elements is not guaranteed.<br>
-	 *     Duplicates are ignored.<br>
+	 *     Duplicates are ignored.
 	 * </p>
+	 *
 	 * @param parser The parser to parse the elements
 	 * @return The read set as an {@link HashSet}
 	 * @param <T> The type of the elements
@@ -451,11 +465,12 @@ public class ScopedStringReader extends StringReader {
 	 * The map is defined by curly brackets.<br>
 	 * <p>
 	 *     The key and value are separated by an equal sign ('=').<br>
-	 *     The entries are separated by a comma.<br>
+	 *     The entries are separated by a comma.
 	 * </p>
 	 * <p>
-	 *     If a key is defined multiple times, the last value is used.<br>
+	 *     If a key is defined multiple times, the last value is used.
 	 * </p>
+	 *
 	 * @param keyParser The parser to parse the keys
 	 * @param valueParser The parser to parse the values
 	 * @return The read map as a {@link HashMap}

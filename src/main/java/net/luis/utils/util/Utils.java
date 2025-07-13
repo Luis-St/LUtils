@@ -49,6 +49,7 @@ public final class Utils {
 	/**
 	 * Checks if the given UUID is empty.<br>
 	 * An empty UUID is a UUID with all zeros.<br>
+	 *
 	 * @param uuid The UUID to check
 	 * @return True, if the UUID is empty, otherwise false
 	 */
@@ -59,6 +60,7 @@ public final class Utils {
 	/**
 	 * Applies the given action to the given object and returns the object.<br>
 	 * This is useful for creating objects and applying actions to them in one line.<br>
+	 *
 	 * @param object The object to apply the action to
 	 * @param action The action to apply to the object
 	 * @return The object after the action has been applied
@@ -76,8 +78,9 @@ public final class Utils {
 	 * The mapper takes the key and value of the map and returns the resulting list value.<br>
 	 * <p>
 	 *     If the map or the function is null, an empty list is returned.<br>
-	 *     In the case the map is empty, the resulting list is also empty.<br>
+	 *     In the case the map is empty, the resulting list is also empty.
 	 * </p>
+	 *
 	 * @param map The map to convert to a list
 	 * @param function The function to use for mapping
 	 * @return The list containing the mapped entries
@@ -101,8 +104,9 @@ public final class Utils {
 	 * The mapper takes the list value and returns the resulting map entry.<br>
 	 * <p>
 	 *     If the list or the function is null, an empty map is returned.<br>
-	 *     In the case the list is empty, the resulting map is also empty.<br>
+	 *     In the case the list is empty, the resulting map is also empty.
 	 * </p>
+	 *
 	 * @param list The list to convert
 	 * @param function The function to use for mapping
 	 * @return The map containing the mapped elements
@@ -128,7 +132,7 @@ public final class Utils {
 	 * Maps the given list to a new list using the given mapper function.<br>
 	 * <p>
 	 *     If the list or the function is null, an empty list is returned.<br>
-	 *     In the case the list is empty, the resulting list is also empty.<br>
+	 *     In the case the list is empty, the resulting list is also empty.
 	 * </p>
 	 * <p>
 	 *     Shorthand for:
@@ -136,6 +140,7 @@ public final class Utils {
 	 * <pre>{@code
 	 *  list.stream().map(function).collect(Collectors.toList());
 	 * }</pre>
+	 *
 	 * @param list The list to map
 	 * @param function The function to use for mapping
 	 * @return The list after mapping or an empty list
@@ -156,7 +161,7 @@ public final class Utils {
 	 * Maps the given list to a new list using the given two mapper functions.<br>
 	 * <p>
 	 *     If the list or the functions are null, an empty list is returned.<br>
-	 *     In the case the list is empty, the resulting list is also empty.<br>
+	 *     In the case the list is empty, the resulting list is also empty.
 	 * </p>
 	 * <p>
 	 *     Shorthand for:
@@ -164,6 +169,7 @@ public final class Utils {
 	 * <pre>{@code
 	 * list.stream().map(first).map(second).collect(Collectors.toList());
 	 * }</pre>
+	 *
 	 * @param list The list to map
 	 * @param first The first function to use for mapping
 	 * @param second The second function to use for mapping
@@ -189,11 +195,12 @@ public final class Utils {
 	 * Maps the keys of the given map using the given mapper function.<br>
 	 * <p>
 	 *     If the map or the function is null, an empty map is returned.<br>
-	 *     In the case the map is empty, the resulting map is also empty.<br>
+	 *     In the case the map is empty, the resulting map is also empty.
 	 * </p>
 	 * <p>
-	 *     If the function returns null for a key, the key is not added to the resulting map.<br>
+	 *     If the function returns null for a key, the key is not added to the resulting map.
 	 * </p>
+	 *
 	 * @param map The map to map the keys
 	 * @param function The function to use for mapping
 	 * @return A new map with the mapped keys
@@ -219,11 +226,12 @@ public final class Utils {
 	 * Maps the values of the given map using the given mapper function.<br>
 	 * <p>
 	 *     If the map or the function is null, an empty map is returned.<br>
-	 *     In the case the map is empty, the resulting map is also empty.<br>
+	 *     In the case the map is empty, the resulting map is also empty.
 	 * </p>
 	 * <p>
-	 *     The function must be able to handle null values.<br>
+	 *     The function must be able to handle null values.
 	 * </p>
+	 *
 	 * @param map The map to map the values
 	 * @param function The function to use for mapping
 	 * @return A new map with the mapped values
@@ -248,6 +256,7 @@ public final class Utils {
 	/**
 	 * Checks if the given array contains duplicate values.<br>
 	 * If the array is null or empty, false is returned.<br>
+	 *
 	 * @param array The array to check
 	 * @return True, if the array contains duplicate values, otherwise false
 	 */
@@ -261,6 +270,7 @@ public final class Utils {
 	/**
 	 * Checks if the given list contains duplicate values.<br>
 	 * If the list is null or empty, false is returned.<br>
+	 *
 	 * @param list The list to check
 	 * @return True, if the list contains duplicate values, otherwise false
 	 */
@@ -273,6 +283,7 @@ public final class Utils {
 	
 	/**
 	 * Checks if the given object is contained multiple times in the given array.<br>
+	 *
 	 * @param object The object to check
 	 * @param array The array to check in
 	 * @return True, if the object is contained multiple times in the array, otherwise false
@@ -286,6 +297,7 @@ public final class Utils {
 	
 	/**
 	 * Checks if the given object is contained multiple times in the given list.<br>
+	 *
 	 * @param object The object to check
 	 * @param list The list to check in
 	 * @return True, if the object is contained multiple times in the list, otherwise false
@@ -302,6 +314,7 @@ public final class Utils {
 	
 	/**
 	 * Wraps the given value to the given fallback value if the value is null.<br>
+	 *
 	 * If the value is not null, the value is returned.<br>
 	 * @param value The value to wrap
 	 * @param nullFallback The fallback value to use
@@ -320,6 +333,7 @@ public final class Utils {
 	/**
 	 * Wraps the given value to the value returned by the given fallback supplier if the value is null.<br>
 	 * If the value is not null, the value is returned.<br>
+	 *
 	 * @param value The value to wrap
 	 * @param nullFallback The fallback supplier to use
 	 * @return The value or the value returned by the fallback supplier if the value is null
@@ -336,6 +350,7 @@ public final class Utils {
 	
 	/**
 	 * Executes the given action if the given value is not null.<br>
+	 *
 	 * @param value The value to check
 	 * @param action The action to execute
 	 * @throws NullPointerException If the action is null
@@ -361,6 +376,7 @@ public final class Utils {
 	
 	/**
 	 * Returns a random value from the given array using the given random number generator.<br>
+	 *
 	 * @param rng The random number generator to use
 	 * @param values The array to get the random value from
 	 * @return A random value from the array
@@ -378,6 +394,7 @@ public final class Utils {
 	/**
 	 * Returns a random value from the given array using the given random number generator.<br>
 	 * If the array is empty or null, an empty optional is returned.<br>
+	 *
 	 * @param rng The random number generator to use
 	 * @param values The array to get the random value from
 	 * @return A random value from the array
@@ -396,6 +413,7 @@ public final class Utils {
 	
 	/**
 	 * Returns a random value from the given list using the given random number generator.<br>
+	 *
 	 * @param rng The random number generator to use
 	 * @param values The list to get the random value from
 	 * @return A random value from the list
@@ -411,6 +429,7 @@ public final class Utils {
 	/**
 	 * Returns a random value from the given list using the given random number generator.<br>
 	 * If the list is empty or null, an empty optional is returned.<br>
+	 *
 	 * @param rng The random number generator to use
 	 * @param values The list to get the random value from
 	 * @return A random value from the list
@@ -429,6 +448,7 @@ public final class Utils {
 	
 	/**
 	 * Throws the given exception as a sneaky exception.<br>
+	 *
 	 * @param e The exception to throw
 	 * @param <E> The type of the exception
 	 * @throws E The given exception as a sneaky exception

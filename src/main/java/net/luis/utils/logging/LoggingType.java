@@ -29,6 +29,7 @@ import java.util.NoSuchElementException;
  * Implements {@link Iterable} to allow iterating over the allowed levels.<br>
  */
 public enum LoggingType implements Iterable<Level> {
+	
 	/**
 	 * The logging will be printed to the console.<br>
 	 */
@@ -49,6 +50,7 @@ public enum LoggingType implements Iterable<Level> {
 	
 	/**
 	 * Gets the allowed levels for this logging type.
+	 *
 	 * @return An array of allowed levels
 	 * @throws IllegalStateException If the logging type is unknown
 	 */
@@ -68,6 +70,7 @@ public enum LoggingType implements Iterable<Level> {
 	
 	/**
 	 * Creates an iterator for the given levels.
+	 *
 	 * @param levels The levels
 	 * @return The created iterator
 	 */

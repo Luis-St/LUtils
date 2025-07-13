@@ -45,6 +45,7 @@ public class Pair<F, S> {
 	
 	/**
 	 * Constructs a new pair with the specified first and second value.<br>
+	 *
 	 * @param first The first value
 	 * @param second The second value
 	 * @see #of(Object, Object)
@@ -56,6 +57,7 @@ public class Pair<F, S> {
 	
 	/**
 	 * Creates a new pair with the specified first and second value.<br>
+	 *
 	 * @param first The first value
 	 * @param second The second value
 	 * @return The created pair instance
@@ -92,6 +94,7 @@ public class Pair<F, S> {
 	
 	/**
 	 * Maps the first value of the pair to a new value using the specified mapper.<br>
+	 *
 	 * @param mapper The mapper function
 	 * @return A new pair with the mapped first value
 	 * @param <T> The new type of the first value
@@ -102,6 +105,7 @@ public class Pair<F, S> {
 	
 	/**
 	 * Maps the second value of the pair to a new value using the specified mapper.<br>
+	 *
 	 * @param mapper The mapper function
 	 * @return A new pair with the mapped second value
 	 * @param <T> The new type of the second value
@@ -112,6 +116,7 @@ public class Pair<F, S> {
 	
 	/**
 	 * Creates a new pair with the specified first value.<br>
+	 *
 	 * @param first The new first value replacing the old one
 	 * @return A new pair with the specified first value
 	 * @param <T> The new type of the first value
@@ -122,6 +127,7 @@ public class Pair<F, S> {
 	
 	/**
 	 * Creates a new pair with the specified second value.<br>
+	 *
 	 * @param second The new second value replacing the old one
 	 * @return A new pair with the specified second value
 	 * @param <T> The new type of the second value

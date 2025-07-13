@@ -43,6 +43,7 @@ public interface KeyableDecoder<C> extends Decoder<C> {
 	 * Creates a new keyable decoder from the specified decoder and key decoder.<br>
 	 * The key decoder function converts a key to a value.<br>
 	 * If the key decoder is not able to handle a key, it can simply return null.<br>
+	 *
 	 * @param decoder The decoder
 	 * @param keyDecoder The key decoder function
 	 * @return The keyable decoder
@@ -73,6 +74,7 @@ public interface KeyableDecoder<C> extends Decoder<C> {
 	/**
 	 * Decodes a key to a value of the specified type and returns the result.<br>
 	 * The result contains the decoded key or an error message.<br>
+	 *
 	 * @param provider The type provider
 	 * @param key The key to decode
 	 * @return The result

@@ -40,6 +40,7 @@ public record AnyOfTokenRule(
 	
 	/**
 	 * Constructs a new any of token rule with the given token rules.<br>
+	 *
 	 * @param tokenRules The set of token rules to match against
 	 * @throws NullPointerException If the token rule list is null
 	 */

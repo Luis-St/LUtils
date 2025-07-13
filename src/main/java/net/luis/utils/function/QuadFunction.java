@@ -40,6 +40,7 @@ public interface QuadFunction<T, U, V, W, R> {
 	
 	/**
 	 * Applies the arguments to the function and returns a value.<br>
+	 *
 	 * @param t The first argument
 	 * @param u The second argument
 	 * @param v The third argument
@@ -49,8 +50,9 @@ public interface QuadFunction<T, U, V, W, R> {
 	R apply(T t, U u, V v, W w);
 	
 	/**
-	 * Returns a composed function that first applies this function to its input,<br>
+	 * Returns a composed function that first applies this function to its input,
 	 * and then applies the {@code after} function to the result.<br>
+	 *
 	 * @param after The function to apply after this function is applied
 	 * @return The composed function
 	 * @param <S> The type of the output of the {@code after} function, and of the composed function

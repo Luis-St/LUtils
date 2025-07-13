@@ -157,6 +157,7 @@ public class LoggerConfiguration {
 	 * The logger name is used to identify the logger in the configuration.<br>
 	 * The logger name must be the package name, the full class name, or a '*' to include all loggers.<br>
 	 * If the list contains a '*', all other logger names will be ignored.<br>
+	 *
 	 * @param loggers The names of the logger which should be configured
 	 * @throws NullPointerException If the given array is null
 	 * @throws IllegalArgumentException If the given list is empty or does not contain any valid logger name
@@ -171,6 +172,7 @@ public class LoggerConfiguration {
 	 * The logger name is used to identify the logger in the configuration.<br>
 	 * The logger name must be the package name, the full class name or a '*' to include all loggers.<br>
 	 * If the list contains a '*', all other logger names will be ignored.<br>
+	 *
 	 * @param loggers The names of the logger which should be configured
 	 * @throws NullPointerException If the given list is null
 	 * @throws IllegalArgumentException If the given list is empty or does not contain any valid logger name
@@ -191,6 +193,7 @@ public class LoggerConfiguration {
 	
 	/**
 	 * Sets the status level for the internal Log4j2 logger.<br>
+	 *
 	 * @param level The level to set
 	 * @return The current configuration builder
 	 * @throws NullPointerException If the given level is null
@@ -205,6 +208,7 @@ public class LoggerConfiguration {
 	
 	/**
 	 * Enables the given logging type.<br>
+	 *
 	 * @param type The type to enable
 	 * @return The current configuration builder
 	 * @throws NullPointerException If the given type is null
@@ -216,6 +220,7 @@ public class LoggerConfiguration {
 	
 	/**
 	 * Disables the given logging type.<br>
+	 *
 	 * @param type The type to disable
 	 * @return The current configuration builder
 	 */
@@ -230,6 +235,7 @@ public class LoggerConfiguration {
 	/**
 	 * Overrides the pattern for the given logging type and level.<br>
 	 * Default patterns can be found in {@link LoggerConfiguration#DEFAULT_PATTERNS}.<br>
+	 *
 	 * @param type The logging type to override the pattern for ({@link LoggingType#CONSOLE} or {@link LoggingType#FILE})
 	 * @param level The level to override the pattern for ({@link Level#ALL} overrides all levels, {@link Level#OFF} clears all overrides)
 	 * @param pattern The pattern to use instead of the default one
@@ -261,6 +267,7 @@ public class LoggerConfiguration {
 	
 	/**
 	 * Overrides the console pattern for the given level.<br>
+	 *
 	 * @param level The level to override the pattern for ({@link Level#ALL} overrides all levels, {@link Level#OFF} clears all overrides)
 	 * @param pattern The pattern to use instead of the default one
 	 * @return The current configuration builder
@@ -274,6 +281,7 @@ public class LoggerConfiguration {
 	
 	/**
 	 * Overrides the file pattern for the given level.<br>
+	 *
 	 * @param level The level to override the pattern for ({@link Level#ALL} overrides all levels, {@link Level#OFF} clears all overrides)
 	 * @param pattern The pattern to use instead of the default one
 	 * @return The current configuration builder
@@ -292,6 +300,7 @@ public class LoggerConfiguration {
 	 * Sets the root directory for all log files.<br>
 	 * The root directory is the directory where the log files will be stored.<br>
 	 * The default root directory is './'.<br>
+	 *
 	 * @param rootDirectory The root directory to set, the path must be relative or absolute
 	 * @return The current configuration builder
 	 * @throws NullPointerException If the given root folder is null
@@ -317,6 +326,7 @@ public class LoggerConfiguration {
 	 * The file and archive must not be absolute or relative.<br>
 	 * The log file will be built as follows: {@code rootDirectory + (file|archive + "." + archive_type)}<br>
 	 * Default patterns can be found in {@link LoggerConfiguration#logs}.<br>
+	 *
 	 * @param level The level to override the log file for
 	 * @param file The pattern for the current log file
 	 * @param archive The pattern for all archived log files
@@ -353,6 +363,7 @@ public class LoggerConfiguration {
 	 * The file and archive must not be absolute or relative.<br>
 	 * The log file will be built as follows: {@code rootDirectory + (file|archive + "." + archive_type)}<br>
 	 * Default patterns can be found in {@link LoggerConfiguration#logs}.<br>
+	 *
 	 * @param file The pattern for the current log file
 	 * @param archive The pattern for all archived log files
 	 * @return The current configuration builder
@@ -371,6 +382,7 @@ public class LoggerConfiguration {
 	 * The file and archive must not be absolute or relative.<br>
 	 * The log file will be built as follows: {@code rootDirectory + (file|archive + "." + archive_type)}<br>
 	 * Default patterns can be found in {@link LoggerConfiguration#logs}.<br>
+	 *
 	 * @param file The pattern for the current log file
 	 * @param archive The pattern for all archived log files
 	 * @return The current configuration builder
@@ -389,6 +401,7 @@ public class LoggerConfiguration {
 	 * The file and archive must not be absolute or relative.<br>
 	 * The log file will be built as follows: {@code rootDirectory + (file|archive + "." + archive_type)}<br>
 	 * Default patterns can be found in {@link LoggerConfiguration#logs}.<br>
+	 *
 	 * @param file The pattern for the current log file
 	 * @param archive The pattern for all archived log files
 	 * @return The current configuration builder
@@ -402,6 +415,7 @@ public class LoggerConfiguration {
 	
 	/**
 	 * Validates the given level.<br>
+	 *
 	 * @param level The level to validate
 	 * @throws NullPointerException If the given level is null
 	 * @throws IllegalArgumentException If the given level is not {@link Level#DEBUG}, {@link Level#INFO} or {@link Level#ERROR}
@@ -424,13 +438,14 @@ public class LoggerConfiguration {
 	 * All default loggers will be automatically enabled at startup.<br>
 	 * <p>
 	 *     Console loggers which are not configured at startup can be configured later using<br>
-	 *     the enable and disable methods in {@link LoggingUtils}.<br>
+	 *     the enable and disable methods in {@link LoggingUtils}.
 	 * </p>
 	 * <p>
 	 *     File loggers which are not configured at startup are not available and can not be configured later.<br>
 	 *     If a file logger is  configured at startup, it can be configured later using<br>
-	 *     the enable and disable methods in {@link LoggingUtils}.<br>
+	 *     the enable and disable methods in {@link LoggingUtils}.
 	 * </p>
+	 *
 	 * @param type The type to add the default logger for
 	 * @param level The level to add the default logger for
 	 * @return The current configuration builder
@@ -451,13 +466,14 @@ public class LoggerConfiguration {
 	 * Removed default loggers will not be automatically enabled at startup.<br>
 	 * <p>
 	 *     Console loggers which are not configured at startup can be configured later using<br>
-	 *     the enable and disable methods in {@link LoggingUtils}.<br>
+	 *     the enable and disable methods in {@link LoggingUtils}.
 	 * </p>
 	 * <p>
 	 *     File loggers which are not configured at startup are not available and can not be configured later.<br>
 	 *     If a file logger is  configured at startup, it can be configured later using<br>
-	 *     the enable and disable methods in {@link LoggingUtils}.<br>
+	 *     the enable and disable methods in {@link LoggingUtils}.
 	 * </p>
+	 *
 	 * @param type The type to remove the default logger for
 	 * @param level The level to remove the default logger for
 	 * @return The current configuration builder
@@ -473,6 +489,7 @@ public class LoggerConfiguration {
 	/**
 	 * Sets the maximum file size for the log files.<br>
 	 * The file size must be a number followed by an optional unit (KB, MB, GB, TB).<br>
+	 *
 	 * @param fileSize The file size to set
 	 * @return The current configuration builder
 	 * @throws NullPointerException If the given file size is null
@@ -493,6 +510,7 @@ public class LoggerConfiguration {
 	/**
 	 * Sets the archive type for the archived log files.<br>
 	 * The archive type must be '.gz', '.zip', '.bz2' or '.xy' (dot is optional, case-insensitive).<br>
+	 *
 	 * @param archiveType The archive type to set
 	 * @return The current configuration builder
 	 * @throws NullPointerException If the given archive type is null
@@ -517,6 +535,7 @@ public class LoggerConfiguration {
 	 * Sets the compression level for the archived log files.<br>
 	 * The compression level must be between 0 and 9.<br>
 	 * If the value is out of bounds, it will be clamped to the nearest bound.<br>
+	 *
 	 * @param compressionLevel The compression level to set
 	 * @return The current configuration builder
 	 */
@@ -529,6 +548,7 @@ public class LoggerConfiguration {
 	 * Sets the maximum number of archived log files which should be kept.<br>
 	 * The maximum number of archived log files must be greater than 0.<br>
 	 * If the value is less than 1, it will be set to 1.<br>
+	 *
 	 * @param maxArchiveFiles The maximum number of archived log files to keep
 	 * @return The current configuration builder
 	 */
@@ -541,6 +561,7 @@ public class LoggerConfiguration {
 	 * Sets the maximum depth in which archived log files should be deleted.<br>
 	 * The maximum depth must be greater than 0.<br>
 	 * If the value is less than 1, it will be set to 1.<br>
+	 *
 	 * @param archiveAutoDeletionDepth The depth in which archived log files should be deleted
 	 * @return The current configuration builder
 	 */
@@ -553,6 +574,7 @@ public class LoggerConfiguration {
 	 * Sets the age in days after which archived log files should be deleted.<br>
 	 * The maximum depth must be greater than 0.<br>
 	 * If the value is less than 1, it will be set to 1.<br>
+	 *
 	 * @param archiveAutoDeletionAge The age in days after which archived log files should be deleted
 	 * @return The current configuration builder
 	 */
@@ -646,6 +668,7 @@ public class LoggerConfiguration {
 	
 	/**
 	 * Gets the pattern for the given type and level.<br>
+	 *
 	 * @param type The type to get the pattern for
 	 * @param level The level to get the pattern for
 	 * @return The pattern for the given type and level, or the default pattern if there is no override

@@ -43,7 +43,7 @@ import java.util.regex.Pattern;
  * </ul>
  * <p>
  *     Everything placed in square brackets is optional.<br>
- *     Characters in parentheses are separators, if there are multiple separators, one of them can be used.<br>
+ *     Characters in parentheses are separators, if there are multiple separators, one of them can be used.
  * </p>
  *
  * @author Luis-St
@@ -64,16 +64,16 @@ public class Version implements Comparable<Version> {
 	 * <p>
 	 *     The major and minor version numbers are required.<br>
 	 *     The patch version is optional.<br>
-	 *     They must be separated by a dot.<br>
+	 *     They must be separated by a dot.
 	 * </p>
 	 * <p>
 	 *     The build number is optional.<br>
-	 *     It must be separated by a dot, a hyphen, or an 'r' (release).<br>
+	 *     It must be separated by a dot, a hyphen, or an 'r' (release).
 	 * </p>
 	 * <p>
 	 *     The suffix and suffix-version are optional.<br>
 	 *     If the suffix is present, it must be separated by a hyphen.<br>
-	 *     If the suffix-version is present, it must be separated by a plus sign.<br>
+	 *     If the suffix-version is present, it must be separated by a plus sign.
 	 * </p>
 	 */
 	private static final Pattern VERSION_PATTERN = Pattern.compile("^v?(\\d+)\\.(\\d+)(\\.(\\d+))?(([.r-])(\\d+))?(-([a-z]+))?(\\+(\\d{3}))?$");
@@ -82,10 +82,10 @@ public class Version implements Comparable<Version> {
 	 * <p>
 	 *     If the system property is set to 'true', the version number will be prefixed with a 'v'<br>
 	 *     when it is converted to a string via {@link #toString()}.<br>
-	 *     The system property does not affect {@link #toString(boolean)}.<br>
+	 *     The system property does not affect {@link #toString(boolean)}.
 	 * </p>
 	 * <p>
-	 *     The default value is 'true'.<br>
+	 *     The default value is 'true'.
 	 * </p>
 	 */
 	private static final String VERSION_DEFAULT_PREFIXED = "version.default.prefixed";
@@ -124,6 +124,7 @@ public class Version implements Comparable<Version> {
 	/**
 	 * Constructs a new version with the given version numbers.<br>
 	 * The version numbers will be clamped to a minimum of 0.<br>
+	 *
 	 * @param major The major version number
 	 * @param minor The minor version number
 	 * @param patch The patch or fix version number
@@ -145,8 +146,9 @@ public class Version implements Comparable<Version> {
 	 * Creates a new version with the given version numbers.<br>
 	 * The version numbers will be clamped to a minimum of 0.<br>
 	 * <p>
-	 *     If the version numbers are all 0 or less, {@link #ZERO} will be returned.<br>
+	 *     If the version numbers are all 0 or less, {@link #ZERO} will be returned.
 	 * </p>
+	 *
 	 * @param major The major version number
 	 * @param minor The minor version number
 	 * @return The created version
@@ -163,8 +165,9 @@ public class Version implements Comparable<Version> {
 	 * Creates a new version with the given version numbers.<br>
 	 * The version numbers will be clamped to a minimum of 0.<br>
 	 * <p>
-	 *     If the version numbers are all 0 or less, {@link #ZERO} will be returned.<br>
+	 *     If the version numbers are all 0 or less, {@link #ZERO} will be returned.
 	 * </p>
+	 *
 	 * @param major The major version number
 	 * @param minor The minor version number
 	 * @param patch The patch or fix version number
@@ -181,6 +184,7 @@ public class Version implements Comparable<Version> {
 	/**
 	 * Creates a new version builder with the given version numbers.<br>
 	 * The version numbers will be clamped to a minimum of 0.<br>
+	 *
 	 * @param major The major version number
 	 * @param minor The minor version number
 	 * @return The created version builder
@@ -193,6 +197,7 @@ public class Version implements Comparable<Version> {
 	/**
 	 * Creates a new version builder with the given version numbers.<br>
 	 * The version numbers will be clamped to a minimum of 0.<br>
+	 *
 	 * @param major The major version number
 	 * @param minor The minor version number
 	 * @param patch The patch or fix version number
@@ -207,10 +212,10 @@ public class Version implements Comparable<Version> {
 	 * Parses a version from a string.<br>
 	 * <p>
 	 *     If the given string to parse is null, empty, blank,<br>
-	 *     or does not match the pattern ({@link #VERSION_PATTERN}), {@link #ZERO} will be returned.<br>
+	 *     or does not match the pattern ({@link #VERSION_PATTERN}), {@link #ZERO} will be returned.
 	 * </p>
 	 * <p>
-	 *     The following examples are valid base version strings:<br>
+	 *     The following examples are valid base version strings:
 	 * </p>
 	 * <ul>
 	 *     <li>1.0</li>
@@ -222,7 +227,7 @@ public class Version implements Comparable<Version> {
 	 *     The major and minor version numbers are required and must be separated by a dot.<br>
 	 *     The patch version is optional and must be separated by a dot.<br>
 	 *     The build number is optional and can be separated by a dot, a hyphen, or an 'r' (release).<br>
-	 *     Examples for valid build version strings are:<br>
+	 *     Examples for valid build version strings are:
 	 * </p>
 	 * <ul>
 	 *     <li>1.0.0.0</li>
@@ -231,13 +236,13 @@ public class Version implements Comparable<Version> {
 	 * </ul>
 	 * <p>
 	 *     <strong>Note</strong>: If the patch version is not present, the build number must not be separated by a dot<br>
-	 *     otherwise it will be considered as the patch version.<br>
+	 *     otherwise it will be considered as the patch version.
 	 * </p>
 	 * <p>
 	 *     The suffix and suffix-version are optional.<br>
 	 *     If the suffix is present, it must be separated by a hyphen.<br>
 	 *     If the suffix-version is present, it must be separated by a plus sign.<br>
-	 *     Examples for valid suffix and suffix-version strings are:<br>
+	 *     Examples for valid suffix and suffix-version strings are:
 	 * </p>
 	 * <ul>
 	 *     <li>1.0.0-alpha</li>
@@ -246,6 +251,7 @@ public class Version implements Comparable<Version> {
 	 *     <li>1.0.0-0+001</li>
 	 *     <li>1.0.0r0-alpha+001</li>
 	 * </ul>
+	 *
 	 * @param version The version string to parse
 	 * @return The parsed version or {@link #ZERO}
 	 */
@@ -336,6 +342,7 @@ public class Version implements Comparable<Version> {
 	 *     <li>4: Release</li>
 	 *     <li>5: Final</li>
 	 * </ul>
+	 *
 	 * @return The index of the suffix
 	 */
 	public int getSuffixIndex() {
@@ -384,10 +391,10 @@ public class Version implements Comparable<Version> {
 	 * <p>
 	 *     If the suffixes are equal, the suffix version will be compared.<br>
 	 *     If the suffixes are not equal, the suffixes will be compared<br>
-	 *     in this case, the suffix version will not be considered.<br>
+	 *     in this case, the suffix version will not be considered.
 	 * </p>
 	 * <p>
-	 *     The suffixes are compared based on the following order:<br>
+	 *     The suffixes are compared based on the following order:
 	 * </p>
 	 * <ol>
 	 *     <li>Alpha</li>
@@ -397,8 +404,9 @@ public class Version implements Comparable<Version> {
 	 *     <li>Final</li>
 	 * </ol>
 	 * <p>
-	 *     The first comparison that is not equal will determine the result.<br>
+	 *     The first comparison that is not equal will determine the result.
 	 * </p>
+	 *
 	 * @param o The version to compare with
 	 * @return The comparison result, negative if this version is less than the given version,<br>
 	 * positive if this version is greater than the given version, and zero if both versions are equal
@@ -544,6 +552,7 @@ public class Version implements Comparable<Version> {
 		/**
 		 * Constructs a new version builder with the given version numbers.<br>
 		 * The version numbers will be clamped to a minimum of 0.<br>
+		 *
 		 * @param major The major version number
 		 * @param minor The minor version number
 		 */
@@ -555,6 +564,7 @@ public class Version implements Comparable<Version> {
 		/**
 		 * Constructs a new version builder with the given version numbers.<br>
 		 * The version numbers will be clamped to a minimum of 0.<br>
+		 *
 		 * @param major The major version number
 		 * @param minor The minor version number
 		 * @param patch The patch or fix version number
@@ -568,6 +578,7 @@ public class Version implements Comparable<Version> {
 		/**
 		 * Sets the major version number.<br>
 		 * The major version number will be clamped to a minimum of 0.<br>
+		 *
 		 * @param major The major version number
 		 * @return This builder
 		 */
@@ -579,6 +590,7 @@ public class Version implements Comparable<Version> {
 		/**
 		 * Sets the minor version number.<br>
 		 * The minor version number will be clamped to a minimum of 0.<br>
+		 *
 		 * @param minor The minor version number
 		 * @return This builder
 		 */
@@ -590,6 +602,7 @@ public class Version implements Comparable<Version> {
 		/**
 		 * Sets the patch or fix version number.<br>
 		 * The patch or fix version number will be clamped to a minimum of 0.<br>
+		 *
 		 * @param patch The patch or fix version number
 		 * @return This builder
 		 */
@@ -601,6 +614,7 @@ public class Version implements Comparable<Version> {
 		/**
 		 * Sets the build version number and the separator.<br>
 		 * The build version number will be clamped to a minimum of 0.<br>
+		 *
 		 * @param separator The separator character (must be '.', '-', or 'r')
 		 * @param version The build version number
 		 * @return This builder
@@ -618,6 +632,7 @@ public class Version implements Comparable<Version> {
 		 * Sets the suffix or pre-release identifier.<br>
 		 * Removes leading and trailing whitespace from the suffix.<br>
 		 * Recommended suffixes are 'alpha', 'beta', 'rc', 'release-candidate', 'release', and 'final'.<br>
+		 *
 		 * @param suffix The suffix or pre-release identifier
 		 * @return This builder
 		 */
@@ -629,6 +644,7 @@ public class Version implements Comparable<Version> {
 		/**
 		 * Sets the suffix version number.<br>
 		 * The suffix version number will be clamped to a minimum of 0.<br>
+		 *
 		 * @param version The suffix version number
 		 * @return This builder
 		 */
@@ -692,6 +708,7 @@ public class Version implements Comparable<Version> {
 		/**
 		 * Checks if the version number is not empty.<br>
 		 * The version number is not empty if the separator is not {@code '\0'} and the version is not {@code -1}.<br>
+		 *
 		 * @return True if the version number is not empty, otherwise false
 		 */
 		public boolean isNotEmpty() {
@@ -701,6 +718,7 @@ public class Version implements Comparable<Version> {
 		/**
 		 * Compares this appendable version number with the given appendable version number.<br>
 		 * The comparison is based on the version number, the separator is not considered.<br>
+		 *
 		 * @param o The appendable version to compare with
 		 * @return The comparison result
 		 */
@@ -734,7 +752,7 @@ public class Version implements Comparable<Version> {
 		}
 		
 		@Override
-		public String toString() {
+		public @NotNull String toString() {
 			return this.separator + String.valueOf(this.version);
 		}
 		//endregion

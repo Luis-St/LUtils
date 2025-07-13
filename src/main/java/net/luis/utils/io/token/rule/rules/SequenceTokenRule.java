@@ -40,6 +40,7 @@ public record SequenceTokenRule(
 	
 	/**
 	 * Constructs a new sequence token rule with the given token rules.<br>
+	 *
 	 * @param tokenRules The list of token rules to match against
 	 * @throws NullPointerException If the token rule list or any of its elements are null
 	 * @throws IllegalArgumentException If the token rule list is empty

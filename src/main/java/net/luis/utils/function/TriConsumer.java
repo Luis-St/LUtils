@@ -37,6 +37,7 @@ public interface TriConsumer<T, U, V> {
 	
 	/**
 	 * Takes three arguments and consumes them.<br>
+	 *
 	 * @param t The first argument
 	 * @param u The second argument
 	 * @param v The third argument
@@ -44,8 +45,9 @@ public interface TriConsumer<T, U, V> {
 	void accept(T t, U u, V v);
 	
 	/**
-	 * Returns a composed consumer of same type that performs, in sequence,<br>
+	 * Returns a composed consumer of same type that performs, in sequence,
 	 * this operation followed by the {@code after} operation.<br>
+	 *
 	 * @param after The operation to perform after this operation
 	 * @return The composed consumer
 	 * @throws NullPointerException If the after operation is null

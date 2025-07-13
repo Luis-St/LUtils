@@ -47,6 +47,7 @@ public class TokenRuleEngine {
 	/**
 	 * Adds a validation rule to the engine.<br>
 	 * The rule is only used to validate tokens and does not modify them.<br>
+	 *
 	 * @param tokenRule The rule to be added
 	 * @throws NullPointerException If the rule is null
 	 */
@@ -59,6 +60,7 @@ public class TokenRuleEngine {
 	 * Adds a transformation rule to the engine.<br>
 	 * The rule is used to transform tokens and can modify them.<br>
 	 * The rule is applied to the tokens and the result is used to replace the matched tokens.<br>
+	 *
 	 * @param tokenRule The rule to be added
 	 * @param action The action to be applied to the matched tokens
 	 * @throws NullPointerException If the rule or action is null
@@ -74,6 +76,7 @@ public class TokenRuleEngine {
 	 * The rules are applied in the order they were added.<br>
 	 * If a rule matches, the matched tokens are replaced with the result of the action.<br>
 	 * If no rule matches, the engine moves to the next token.<br>
+	 *
 	 * @param tokens The list of tokens to be processed
 	 * @return A new unmodifiable list of tokens after processing
 	 * @throws NullPointerException If the list of tokens is null
@@ -121,6 +124,7 @@ public class TokenRuleEngine {
 		
 		/**
 		 * Constructs a new rule action with the given token rule and action.<br>
+		 *
 		 * @param tokenRule The token rule
 		 * @param action The action to be applied to the matched tokens
 		 * @throws NullPointerException If the rule or action is null

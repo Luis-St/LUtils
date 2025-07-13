@@ -28,17 +28,17 @@ import java.lang.annotation.*;
  * They are used to test the behavior of other objects.<br>
  * <p>
  *     Mock objects should be only used in tests.<br>
- *     The mock object must not be tested itself,<br>
- *     it is assumed that the mock object works correctly.<br>
+ *     The mock object must not be tested itself.<br>
+ *     it is assumed that the mock object works correctly.
  * </p>
  * <p>
- *     A mock object must always be a non abstract class.<br>
+ *     A mock object must always be a non-abstract class.<br>
  *     The class must be private or package-private.<br>
- *     In the case of package-private the class must also be final.<br>
+ *     In the case of package-private the class must also be final.
  * </p>
  * <p>
  *     A mocked class must also be prefixed with "Mocked" or<br>
- *     suffixed with "Mock" to indicate that it is a mock object.<br>
+ *     suffixed with "Mock" to indicate that it is a mock object.
  * </p>
  *
  * @author Luis-St

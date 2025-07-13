@@ -45,6 +45,7 @@ public record TokenRuleMatch(
 	
 	/**
 	 * Constructs a new token rule match with the given start and end index, matched tokens, and matching token rule.<br>
+	 *
 	 * @param startIndex The start index of the match
 	 * @param endIndex The end index of the match (exclusive)
 	 * @param matchedTokens The list of matched tokens
@@ -60,6 +61,7 @@ public record TokenRuleMatch(
 	 * Creates an empty token rule match with the given index.<br>
 	 * An empty token rule match has a start and end index of the given index, an empty list of matched tokens, and a matching token rule that always matches.<br>
 	 * This is useful for terminating the token rule matching process without consuming any tokens.<br>
+	 *
 	 * @param index The index of the empty token rule match
 	 * @return An empty token rule match
 	 * @see OptionalTokenRule

@@ -32,17 +32,17 @@ import static net.luis.utils.io.data.xml.XmlHelper.*;
  * A xml element can be a self-closing element, a container element or a value element.<br>
  * <p>
  *     A self-closing element is an element that does not have any content.<br>
- *     It is represented by a tag with a name and optional attributes.<br>
+ *     It is represented by a tag with a name and optional attributes.
  * </p>
  * <p>
  *     A container element is an element that contains other elements.<br>
  *     It is represented by a tag with a name, optional attributes and a closing tag.<br>
- *     The containing elements have either all the same name or unique names.<br>
+ *     The containing elements have either all the same name or unique names.
  * </p>
  * <p>
  *     A value element is an element that contains a value.<br>
  *     It is represented by a tag with a name, optional attributes and a value.<br>
- *     The value can be a string, a number or a boolean.<br>
+ *     The value can be a string, a number or a boolean.
  * </p>
  *
  * @see XmlContainer
@@ -63,6 +63,7 @@ public sealed class XmlElement permits XmlContainer, XmlValue {
 	
 	/**
 	 * Constructs a new xml element with the specified name and no attributes.<br>
+	 *
 	 * @param name The name of the xml element
 	 * @throws NullPointerException If the name is null
 	 * @throws IllegalArgumentException If the name is invalid
@@ -73,6 +74,7 @@ public sealed class XmlElement permits XmlContainer, XmlValue {
 	
 	/**
 	 * Constructs a new xml element with the specified name and attributes.<br>
+	 *
 	 * @param name The name of the xml element
 	 * @param attributes The attributes of the xml element
 	 * @throws NullPointerException If the name or attributes are null
@@ -86,6 +88,7 @@ public sealed class XmlElement permits XmlContainer, XmlValue {
 	/**
 	 * Returns the type of the xml element.<br>
 	 * This is used internally for error messages.<br>
+	 *
 	 * @return The type of the xml element
 	 */
 	protected @NotNull String getElementType() {
@@ -118,6 +121,7 @@ public sealed class XmlElement permits XmlContainer, XmlValue {
 	
 	/**
 	 * Converts this xml element to a xml container.<br>
+	 *
 	 * @return This xml element as a xml container
 	 * @throws XmlTypeException If this xml element is not a xml container
 	 */
@@ -130,6 +134,7 @@ public sealed class XmlElement permits XmlContainer, XmlValue {
 	
 	/**
 	 * Converts this xml element to a xml value.<br>
+	 *
 	 * @return This xml element as a xml value
 	 * @throws XmlTypeException If this xml element is not a xml value
 	 */
@@ -160,6 +165,7 @@ public sealed class XmlElement permits XmlContainer, XmlValue {
 	
 	/**
 	 * Adds the specified attribute to the element.<br>
+	 *
 	 * @param attribute The attribute to add
 	 * @return The previous attribute with the same key, or null if there was no previous attribute
 	 * @see XmlAttributes#add(XmlAttribute)
@@ -170,6 +176,7 @@ public sealed class XmlElement permits XmlContainer, XmlValue {
 	
 	/**
 	 * Adds a new attribute with the given name and string value to this element.<br>
+	 *
 	 * @param key The key of the attribute
 	 * @param value The value of the attribute
 	 * @return The previous attribute with the same key, or null if there was no previous attribute
@@ -181,6 +188,7 @@ public sealed class XmlElement permits XmlContainer, XmlValue {
 	
 	/**
 	 * Adds a new attribute with the given name and boolean value to this element.<br>
+	 *
 	 * @param key The key of the attribute
 	 * @param value The value of the attribute
 	 * @return The previous attribute with the same key, or null if there was no previous attribute
@@ -192,6 +200,7 @@ public sealed class XmlElement permits XmlContainer, XmlValue {
 	
 	/**
 	 * Adds a new attribute with the given name and number value to this element.<br>
+	 *
 	 * @param key The key of the attribute
 	 * @param value The value of the attribute
 	 * @return The previous attribute with the same key, or null if there was no previous attribute
@@ -203,6 +212,7 @@ public sealed class XmlElement permits XmlContainer, XmlValue {
 	
 	/**
 	 * Adds a new attribute with the given name and byte value to this element.<br>
+	 *
 	 * @param key The key of the attribute
 	 * @param value The value of the attribute
 	 * @return The previous attribute with the same key, or null if there was no previous attribute
@@ -214,6 +224,7 @@ public sealed class XmlElement permits XmlContainer, XmlValue {
 	
 	/**
 	 * Adds a new attribute with the given name and short value to this element.<br>
+	 *
 	 * @param key The key of the attribute
 	 * @param value The value of the attribute
 	 * @return The previous attribute with the same key, or null if there was no previous attribute
@@ -225,6 +236,7 @@ public sealed class XmlElement permits XmlContainer, XmlValue {
 	
 	/**
 	 * Adds a new attribute with the given name and integer value to this element.<br>
+	 *
 	 * @param key The key of the attribute
 	 * @param value The value of the attribute
 	 * @return The previous attribute with the same key, or null if there was no previous attribute
@@ -236,6 +248,7 @@ public sealed class XmlElement permits XmlContainer, XmlValue {
 	
 	/**
 	 * Adds a new attribute with the given name and long value to this element.<br>
+	 *
 	 * @param key The key of the attribute
 	 * @param value The value of the attribute
 	 * @return The previous attribute with the same key, or null if there was no previous attribute
@@ -247,6 +260,7 @@ public sealed class XmlElement permits XmlContainer, XmlValue {
 	
 	/**
 	 * Adds a new attribute with the given name and float value to this element.<br>
+	 *
 	 * @param key The key of the attribute
 	 * @param value The value of the attribute
 	 * @return The previous attribute with the same key, or null if there was no previous attribute
@@ -258,6 +272,7 @@ public sealed class XmlElement permits XmlContainer, XmlValue {
 	
 	/**
 	 * Adds a new attribute with the given name and double value to this element.<br>
+	 *
 	 * @param key The key of the attribute
 	 * @param value The value of the attribute
 	 * @return The previous attribute with the same key, or null if there was no previous attribute
@@ -272,6 +287,7 @@ public sealed class XmlElement permits XmlContainer, XmlValue {
 	
 	/**
 	 * Returns the attribute with the specified key, or null if there is no such attribute in this element.<br>
+	 *
 	 * @param key The key of the attribute
 	 * @return The attribute with the specified key, or null if there is no such attribute
 	 * @see XmlAttributes#get(String)
@@ -282,6 +298,7 @@ public sealed class XmlElement permits XmlContainer, XmlValue {
 	
 	/**
 	 * Returns the attribute with the specified key as a string.<br>
+	 *
 	 * @param key The key of the attribute
 	 * @return The value of the attribute as a string
 	 * @see XmlAttributes#getAsString(String)
@@ -292,6 +309,7 @@ public sealed class XmlElement permits XmlContainer, XmlValue {
 	
 	/**
 	 * Returns the attribute with the specified key as a boolean.<br>
+	 *
 	 * @param key The key of the attribute
 	 * @return The value of the attribute as a boolean
 	 * @see XmlAttributes#getAsBoolean(String)
@@ -302,6 +320,7 @@ public sealed class XmlElement permits XmlContainer, XmlValue {
 	
 	/**
 	 * Returns the attribute with the specified key as a number.<br>
+	 *
 	 * @param key The key of the attribute
 	 * @return The value of the attribute as a number
 	 * @see XmlAttributes#getAsNumber(String)
@@ -312,6 +331,7 @@ public sealed class XmlElement permits XmlContainer, XmlValue {
 	
 	/**
 	 * Returns the attribute with the specified key as a byte.<br>
+	 *
 	 * @param key The key of the attribute
 	 * @return The value of the attribute as a byte
 	 * @see XmlAttributes#getAsByte(String)
@@ -322,6 +342,7 @@ public sealed class XmlElement permits XmlContainer, XmlValue {
 	
 	/**
 	 * Returns the attribute with the specified key as a short.<br>
+	 *
 	 * @param key The key of the attribute
 	 * @return The value of the attribute as a short
 	 * @see XmlAttributes#getAsShort(String)
@@ -332,6 +353,7 @@ public sealed class XmlElement permits XmlContainer, XmlValue {
 	
 	/**
 	 * Returns the attribute with the specified key as an integer.<br>
+	 *
 	 * @param key The key of the attribute
 	 * @return The value of the attribute as an integer
 	 * @see XmlAttributes#getAsInteger(String)
@@ -342,6 +364,7 @@ public sealed class XmlElement permits XmlContainer, XmlValue {
 	
 	/**
 	 * Returns the attribute with the specified key as a long.<br>
+	 *
 	 * @param key The key of the attribute
 	 * @return The value of the attribute as a long
 	 * @see XmlAttributes#getAsLong(String)
@@ -352,6 +375,7 @@ public sealed class XmlElement permits XmlContainer, XmlValue {
 	
 	/**
 	 * Returns the attribute with the specified key as a float.<br>
+	 *
 	 * @param key The key of the attribute
 	 * @return The value of the attribute as a float
 	 * @see XmlAttributes#getAsFloat(String)
@@ -362,6 +386,7 @@ public sealed class XmlElement permits XmlContainer, XmlValue {
 	
 	/**
 	 * Returns the attribute with the specified key as a double.<br>
+	 *
 	 * @param key The key of the attribute
 	 * @return The value of the attribute as a double
 	 * @see XmlAttributes#getAsDouble(String)
@@ -372,6 +397,7 @@ public sealed class XmlElement permits XmlContainer, XmlValue {
 	
 	/**
 	 * Returns the attribute with the specified key as the type specified by the parser.<br>
+	 *
 	 * @param key The key of the attribute
 	 * @param parser The parser to convert the attribute value to the desired type
 	 * @return The value of the attribute as the specified type

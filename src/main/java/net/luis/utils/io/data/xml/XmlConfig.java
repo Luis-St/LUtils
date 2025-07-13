@@ -59,6 +59,7 @@ public record XmlConfig(
 	
 	/**
 	 * Constructs a new xml configuration.<br>
+	 *
 	 * @param strict Whether to use strict xml parsing when reading
 	 * @param prettyPrint Whether to pretty print the xml (write-only)
 	 * @param indent The string to use for indentation (write-only)

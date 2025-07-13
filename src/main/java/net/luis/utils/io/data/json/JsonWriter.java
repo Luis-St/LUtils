@@ -44,6 +44,7 @@ public class JsonWriter implements AutoCloseable {
 	
 	/**
 	 * Constructs a new json writer with the default configuration.<br>
+	 *
 	 * @param output The output to create the writer for
 	 * @throws NullPointerException If the output is null
 	 */
@@ -53,6 +54,7 @@ public class JsonWriter implements AutoCloseable {
 	
 	/**
 	 * Constructs a new json writer with the given configuration.<br>
+	 *
 	 * @param output The output to create the writer for
 	 * @param config The configuration to use for the writer
 	 * @throws NullPointerException If the output or the configuration is null
@@ -65,6 +67,7 @@ public class JsonWriter implements AutoCloseable {
 	/**
 	 * Writes the given json element to the output.<br>
 	 * The json element is written as a string with the configuration of the writer.<br>
+	 *
 	 * @param json The json element to write
 	 * @throws NullPointerException If the json element is null
 	 * @throws UncheckedIOException If an I/O error occurs

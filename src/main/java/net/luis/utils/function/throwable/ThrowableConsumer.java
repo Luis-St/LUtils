@@ -38,6 +38,7 @@ public interface ThrowableConsumer<T, X extends Throwable> {
 	
 	/**
 	 * Converts a throwable consumer into a consumer that throws a runtime exception when an exception is thrown.<br>
+	 *
 	 * @param consumer The throwable consumer
 	 * @return A caught consumer
 	 * @param <T> The argument type
@@ -56,14 +57,16 @@ public interface ThrowableConsumer<T, X extends Throwable> {
 	
 	/**
 	 * Functional method that takes one argument and consumes it.<br>
+	 *
 	 * @param t The argument
 	 * @throws X The exception that can be thrown
 	 */
 	void accept(T t) throws X;
 	
 	/**
-	 * Returns a composed consumer of same type that performs,<br>
+	 * Returns a composed consumer of same type that performs,
 	 * in sequence, this operation followed by the {@code after} operation.<br>
+	 *
 	 * @param after The operation to perform after this operation
 	 * @return The composed throwable consumer
 	 * @throws NullPointerException If the after operation is null

@@ -66,6 +66,7 @@ public record JsonConfig(
 	
 	/**
 	 * Constructs a new json configuration.<br>
+	 *
 	 * @param strict Whether to use strict json parsing when reading (read-only)
 	 * @param prettyPrint Whether to pretty print the json (write-only)
 	 * @param indent The string to use for indentation (write-only)

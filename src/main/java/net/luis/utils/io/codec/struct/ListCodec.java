@@ -33,7 +33,7 @@ import java.util.stream.Collectors;
  * <p>
  *     The list codec can be sized to only accept lists of a certain size range.<br>
  *     The minimum size and maximum size are inclusive.<br>
- *     If the list size is out of range, the codec will return an error during encoding or decoding.<br>
+ *     If the list size is out of range, the codec will return an error during encoding or decoding.
  * </p>
  *
  * @author Luis-St
@@ -59,6 +59,7 @@ public class ListCodec<C> implements Codec<List<C>> {
 	 * Constructs a new list codec using the given codec for the elements.<br>
 	 * The list codec will accept lists of any size.<br>
 	 * Do not use this constructor directly, use any of the list factory methods in {@link Codec} instead.<br>
+	 *
 	 * @param codec The codec for the elements
 	 * @throws NullPointerException If the codec is null
 	 */
@@ -70,6 +71,7 @@ public class ListCodec<C> implements Codec<List<C>> {
 	/**
 	 * Constructs a new list codec using the given codec for the elements and the size range of the list.<br>
 	 * Do not use this constructor directly, use any of the list factory methods in {@link Codec} instead.<br>
+	 *
 	 * @param codec The codec for the elements
 	 * @param minSize The minimum size of the list (inclusive)
 	 * @param maxSize The maximum size of the list (inclusive)

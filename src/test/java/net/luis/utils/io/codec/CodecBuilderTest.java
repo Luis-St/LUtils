@@ -38,6 +38,11 @@ class CodecBuilderTest {
 	}
 	
 	@Test
+	void autoMapCodec() {
+		assertThrows(NullPointerException.class, () -> CodecBuilder.autoMapCodec(null));
+	}
+	
+	@Test
 	void group() {
 		//region One parameter
 		assertThrows(NullPointerException.class, () -> CodecBuilder.group(null));

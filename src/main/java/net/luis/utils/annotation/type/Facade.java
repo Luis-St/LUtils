@@ -26,13 +26,14 @@ import java.lang.annotation.*;
  * <p>
  *     Facades can also be used to extend multiple classes.<br>
  *     Therefor, the facade hides an instance of each class that should be extended<br>
- *     and provides the methods of the extended classes.<br>
+ *     and provides the methods of the extended classes.
  * </p>
  * <p>
  *     The logic of the methods provided by the facade may be different<br>
  *     from the logic from the standalone classes.<br>
- *     The facade can also keep methods internal or provide additional methods.<br>
+ *     The facade can also keep methods internal or provide additional methods.
  * </p>
+ *
  * @author Luis-St
  */
 @Documented

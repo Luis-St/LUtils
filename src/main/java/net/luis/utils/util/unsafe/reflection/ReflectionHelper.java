@@ -37,8 +37,8 @@ import static org.apache.commons.lang3.ArrayUtils.*;
  * Provides methods to:
  * <ul>
  *     <li>check if a class has a constructor, method or field</li>
- *     <li>get constructors, methods and fields</li>
- *     <li>invoke constructors, methods and fields</li>
+ *     <li>get constructors, methods, and fields</li>
+ *     <li>invoke constructors, methods, and fields</li>
  * </ul>
  *
  * @author Luis-St
@@ -60,7 +60,7 @@ public final class ReflectionHelper {
 	 * <p>
 	 *     If this property is {@code true}, exceptions will be logged when an error occurs.<br>
 	 *     If the property is {@code false}, the logging is not completely disabled<br>
-	 *     only exceptions will not be logged.<br>
+	 *     only exceptions will not be logged.
 	 * </p>
 	 */
 	private static final String REFLECTION_EXCEPTIONS_LOG = "reflection.exceptions.log";
@@ -73,6 +73,7 @@ public final class ReflectionHelper {
 	
 	/**
 	 * Gets the class for the given name.<br>
+	 *
 	 * @param className The name of the class
 	 * @return The class for the given name or null if the class could not be found
 	 * @throws NullPointerException If the given class name is null
@@ -91,6 +92,7 @@ public final class ReflectionHelper {
 	
 	/**
 	 * Check if the given class is an instance of the given interface.<br>
+	 *
 	 * @param clazz The class to check
 	 * @param iface The interface to check
 	 * @return True if the given class is an instance of the given interface, otherwise false
@@ -110,6 +112,7 @@ public final class ReflectionHelper {
 	/**
 	 * Gets the constructor from the given class with the given parameters.<br>
 	 * Exceptions will not be logged or thrown by default.<br>
+	 *
 	 * @param clazz The class to get the constructor from
 	 * @param parameters The parameters of the constructor
 	 * @return The constructor as an optional or an empty optional if the constructor could not be found
@@ -134,6 +137,7 @@ public final class ReflectionHelper {
 	/**
 	 * Check if the given class has a constructor with the given parameters.<br>
 	 * Exceptions which occur during reflection will be ignored.<br>
+	 *
 	 * @param clazz The class to check
 	 * @param parameters The parameters of the constructor
 	 * @return True if the given class has a constructor with the given parameters, otherwise false
@@ -147,6 +151,7 @@ public final class ReflectionHelper {
 	/**
 	 * Check if the given class has a constructor with the given parameters.<br>
 	 * Exceptions which occur during reflection will be ignored.<br>
+	 *
 	 * @param clazz The class to check
 	 * @param predicate A predicate with an additional condition the constructor must meet
 	 * @param parameters The parameters of the constructor
@@ -166,6 +171,7 @@ public final class ReflectionHelper {
 	/**
 	 * Creates a new instance from the given constructor and parameters.<br>
 	 * Exceptions will not be logged or thrown by default.<br>
+	 *
 	 * @param constructor The constructor to create the instance from
 	 * @param parameters The parameters of the constructor
 	 * @return The new instance as an optional or an empty optional if the instance could not be created
@@ -199,6 +205,7 @@ public final class ReflectionHelper {
 	
 	/**
 	 * Creates a new instance from the given class and parameters.<br>
+	 *
 	 * @param clazz The class to create the instance from
 	 * @param parameters The parameters of the constructor
 	 * @return The new instance as an optional or an empty optional if the instance could not be created
@@ -223,6 +230,7 @@ public final class ReflectionHelper {
 	
 	/**
 	 * Gets the method from the given class with the given name and parameters.<br>
+	 *
 	 * Exceptions will not be logged or thrown by default.<br>
 	 * @param clazz The class to get the method from
 	 * @param name The name of the method
@@ -249,6 +257,7 @@ public final class ReflectionHelper {
 	/**
 	 * Check if the given class has a method with the given name and parameters.<br>
 	 * Exceptions which occur during reflection will be ignored.<br>
+	 *
 	 * @param clazz The class to check for the method
 	 * @param name The name of the method
 	 * @param parameters The parameters of the method
@@ -262,6 +271,7 @@ public final class ReflectionHelper {
 	/**
 	 * Check if the given class has a method with the given name and parameters.<br>
 	 * Exceptions which occur during reflection will be ignored.<br>
+	 *
 	 * @param clazz The class to check for the method
 	 * @param name The name of the method
 	 * @param predicate A predicate with an additional condition the method must meet
@@ -283,11 +293,12 @@ public final class ReflectionHelper {
 	 * Invokes the given method with the given parameters on the given instance.<br>
 	 * <p>
 	 *     If the invocation is successful, the return value will be returned.<br>
-	 *     If the invocation fails, the return value will be null.<br>
+	 *     If the invocation fails, the return value will be null.
 	 * </p>
 	 * <p>
-	 *     Exceptions will not be logged or thrown by default.<br>
+	 *     Exceptions will not be logged or thrown by default.
 	 * </p>
+	 *
 	 * @param method The method to invoke
 	 * @param instance The instance to invoke the method on
 	 * @param parameters The parameters of the method
@@ -320,8 +331,9 @@ public final class ReflectionHelper {
 	 * Invokes the method with the given name and parameters on the given instance.<br>
 	 * <p>
 	 *     If the invocation is successful, the return value will be returned.<br>
-	 *     If the invocation fails, the return value will be null.<br>
+	 *     If the invocation fails, the return value will be null.
 	 * </p>
+	 *
 	 * @param clazz The class which contains the method
 	 * @param name The name of the method
 	 * @param instance The instance to invoke the method on
@@ -348,6 +360,7 @@ public final class ReflectionHelper {
 	
 	/**
 	 * Gets the field from the given class with the given name.<br>
+	 *
 	 * Exceptions will not be logged or thrown by default.<br>
 	 * @param clazz The class to get the field from
 	 * @param name The name of the field
@@ -373,6 +386,7 @@ public final class ReflectionHelper {
 	/**
 	 * Check if the given class has a field with the given name.<br>
 	 * Exceptions which occur during reflection will be ignored.<br>
+	 *
 	 * @param clazz The class to check for the field
 	 * @param name The name of the field
 	 * @return True if the given class has a field with the given name, otherwise false
@@ -385,6 +399,7 @@ public final class ReflectionHelper {
 	/**
 	 * Check if the given class has a field with the given name.<br>
 	 * Exceptions which occur during reflection will be ignored.<br>
+	 *
 	 * @param clazz The class to check for the field
 	 * @param name The name of the field
 	 * @param predicate A predicate with an additional condition the field must meet
@@ -404,6 +419,7 @@ public final class ReflectionHelper {
 	/**
 	 * Gets the value of the given field from the given instance.<br>
 	 * Exceptions will not be logged or thrown by default.<br>
+	 *
 	 * @param field The field to get the value from
 	 * @param instance The instance to get the value from
 	 * @return The value of the field as an optional or an empty optional if the value could not be determined
@@ -430,6 +446,7 @@ public final class ReflectionHelper {
 	
 	/**
 	 * Gets the value from the field with the given name from the given class and instance.<br>
+	 *
 	 * @param clazz The class to get the field from
 	 * @param name The name of the field
 	 * @param instance The instance to get the value from
@@ -452,6 +469,7 @@ public final class ReflectionHelper {
 	/**
 	 * Sets the value of the given field in the given instance to the given value.<br>
 	 * Exceptions will not be logged or thrown by default.<br>
+	 *
 	 * @param field The field to set the value to
 	 * @param instance The instance to set the value to
 	 * @param value The value to set
@@ -477,6 +495,7 @@ public final class ReflectionHelper {
 	
 	/**
 	 * Sets the value of the field with the given name in the given class and instance to the given value.<br>
+	 *
 	 * @param clazz The class to set the field in
 	 * @param name The name of the field
 	 * @param instance The instance to set the value to
@@ -503,6 +522,7 @@ public final class ReflectionHelper {
 	 * Handles the given exception.<br>
 	 * If the system property 'reflection.exceptions.log' is {@code true}, the exception will be logged.<br>
 	 * If the system property 'reflection.exceptions.throw' is {@code true}, the exception will be thrown.<br>
+	 *
 	 * @param e The exception to handle
 	 */
 	private static void handleException(@NotNull Exception e) {
@@ -517,6 +537,7 @@ public final class ReflectionHelper {
 	/**
 	 * Maps the given classes to their simple names.<br>
 	 * If the given array is null or empty, an empty list will be returned.<br>
+	 *
 	 * @param classes The list of classes
 	 * @return A list containing the simple names
 	 */
@@ -530,6 +551,7 @@ public final class ReflectionHelper {
 	/**
 	 * Maps the given objects to their simple names by converting them to their classes first.<br>
 	 * If the given array is null or empty, an empty list will be returned.<br>
+	 *
 	 * @param objects The list of objects
 	 * @return A list containing the simple names
 	 */

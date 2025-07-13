@@ -40,6 +40,7 @@ public interface ResultMappingFunction<T, R> extends Function<Result<T>, Result<
 	/**
 	 * Creates a new result mapping function that applies the given function to the result.<br>
 	 * If the result is an error, the error is propagated to the output result and the function is not applied.<br>
+	 *
 	 * @param function The function to apply to the result
 	 * @param <T> The type of the input result
 	 * @param <R> The type of the output result
@@ -56,6 +57,7 @@ public interface ResultMappingFunction<T, R> extends Function<Result<T>, Result<
 	 * If the result is an error, the error is propagated to the output result and the function is not applied.<br>
 	 * If the function throws an exception, the exception is caught and the output result is an error with the exception message.<br>
 	 * In all other cases, the function is applied to the result.<br>
+	 *
 	 * @param function The throwable function to apply to the result
 	 * @param <T> The type of the input result
 	 * @param <R> The type of the output result

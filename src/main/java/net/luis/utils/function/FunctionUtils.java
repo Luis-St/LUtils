@@ -40,6 +40,7 @@ public final class FunctionUtils {
 	
 	/**
 	 * Memorizes the given {@link Supplier} and returns a new {@link Supplier} that caches the result of the first call.<br>
+	 *
 	 * @param delegate The delegate supplier to memorize
 	 * @return A new supplier that caches the result of the first call
 	 * @param <T> The type of the result
@@ -64,6 +65,7 @@ public final class FunctionUtils {
 	
 	/**
 	 * Memorizes the given {@link ThrowableSupplier} and returns a new {@link ThrowableSupplier} that caches the result of the first call.<br>
+	 *
 	 * @param delegate The delegate supplier to memorize
 	 * @param <T> The type of the result
 	 * @param <X> The type of the exception
@@ -91,6 +93,7 @@ public final class FunctionUtils {
 	 * Memorizes the given {@link Function} and returns a new {@link Function} that caches the result for each input.<br>
 	 * The cache is weakly referenced, so it will be cleared when the input is no longer reachable.<br>
 	 * Be aware that this may lead to memory leaks if the input is not properly managed.<br>
+	 *
 	 * @param delegate The delegate function to memorize
 	 * @param <T> The type of the input value
 	 * @param <R> The type of the result
@@ -113,6 +116,7 @@ public final class FunctionUtils {
 	 * Memorizes the given {@link ThrowableFunction} and returns a new {@link ThrowableFunction} that caches the result for each input.<br>
 	 * The cache is weakly referenced, so it will be cleared when the input is no longer reachable.<br>
 	 * Be aware that this may lead to memory leaks if the input is not properly managed.<br>
+	 *
 	 * @param delegate The delegate function to memorize
 	 * @param <T> The type of the input value
 	 * @param <R> The type of the result
@@ -141,6 +145,7 @@ public final class FunctionUtils {
 	 * Memorizes the given {@link BiFunction} and returns a new {@link BiFunction} that caches the result for each input.<br>
 	 * The cache is weakly referenced, so it will be cleared when the input is no longer reachable.<br>
 	 * Be aware that this may lead to memory leaks if the input is not properly managed.<br>
+	 *
 	 * @param function The delegate function to memorize
 	 * @param <T> The type of the first input value
 	 * @param <U> The type of the second input value
@@ -174,6 +179,7 @@ public final class FunctionUtils {
 	 * Memorizes the given {@link ThrowableBiFunction} and returns a new {@link ThrowableBiFunction} that caches the result for each input.<br>
 	 * The cache is weakly referenced, so it will be cleared when the input is no longer reachable.<br>
 	 * Be aware that this may lead to memory leaks if the input is not properly managed.<br>
+	 *
 	 * @param function The delegate function to memorize
 	 * @param <T> The type of the first input value
 	 * @param <U> The type of the second input value
@@ -208,6 +214,7 @@ public final class FunctionUtils {
 	 * Memorizes the given {@link TriFunction} and returns a new {@link TriFunction} that caches the result for each input.<br>
 	 * The cache is weakly referenced, so it will be cleared when the input is no longer reachable.<br>
 	 * Be aware that this may lead to memory leaks if the input is not properly managed.<br>
+	 *
 	 * @param function The delegate function to memorize
 	 * @param <T> The type of the first input value
 	 * @param <U> The type of the second input value
@@ -249,6 +256,7 @@ public final class FunctionUtils {
 	 * Memorizes the given {@link ThrowableTriFunction} and returns a new {@link ThrowableTriFunction} that caches the result for each input.<br>
 	 * The cache is weakly referenced, so it will be cleared when the input is no longer reachable.<br>
 	 * Be aware that this may lead to memory leaks if the input is not properly managed.<br>
+	 *
 	 * @param function The delegate function to memorize
 	 * @param <T> The type of the first input value
 	 * @param <U> The type of the second input value
@@ -291,6 +299,7 @@ public final class FunctionUtils {
 	 * Memorizes the given {@link QuadFunction} and returns a new {@link QuadFunction} that caches the result for each input.<br>
 	 * The cache is weakly referenced, so it will be cleared when the input is no longer reachable.<br>
 	 * Be aware that this may lead to memory leaks if the input is not properly managed.<br>
+	 *
 	 * @param function The delegate function to memorize
 	 * @param <T> The type of the first input value
 	 * @param <U> The type of the second input value
@@ -342,6 +351,7 @@ public final class FunctionUtils {
 	 * Memorizes the given {@link ThrowableQuadFunction} and returns a new {@link ThrowableQuadFunction} that caches the result for each input.<br>
 	 * The cache is weakly referenced, so it will be cleared when the input is no longer reachable.<br>
 	 * Be aware that this may lead to memory leaks if the input is not properly managed.<br>
+	 *
 	 * @param function The delegate function to memorize
 	 * @param <T> The type of the first input value
 	 * @param <U> The type of the second input value

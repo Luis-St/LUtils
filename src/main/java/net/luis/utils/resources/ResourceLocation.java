@@ -54,6 +54,7 @@ public abstract sealed class ResourceLocation permits ExternalResourceLocation, 
 	/**
 	 * Constructs a new resource location with the given path and name.<br>
 	 * The path will be stripped and then modified by {@link #modifyPath(String)}.<br>
+	 *
 	 * @param path The path of the resource
 	 * @param file The name of the resource
 	 * @throws NullPointerException If the file is null
@@ -67,6 +68,7 @@ public abstract sealed class ResourceLocation permits ExternalResourceLocation, 
 	
 	/**
 	 * Creates a new resource location for a resource on the classpath.<br>
+	 *
 	 * @param file The file of the resource
 	 * @return A new resource location
 	 * @throws NullPointerException If the file is null
@@ -77,6 +79,7 @@ public abstract sealed class ResourceLocation permits ExternalResourceLocation, 
 	
 	/**
 	 * Creates a new resource location for a resource on the classpath.<br>
+	 *
 	 * @param path The path of the resource
 	 * @param name The name of the resource
 	 * @return A new resource location
@@ -88,6 +91,7 @@ public abstract sealed class ResourceLocation permits ExternalResourceLocation, 
 	
 	/**
 	 * Creates a new resource location for a resource on the filesystem.<br>
+	 *
 	 * @param file The file of the resource
 	 * @return A new resource location
 	 * @throws NullPointerException If the file is null
@@ -98,6 +102,7 @@ public abstract sealed class ResourceLocation permits ExternalResourceLocation, 
 	
 	/**
 	 * Creates a new resource location for a resource on the filesystem.<br>
+	 *
 	 * @param path The path of the resource
 	 * @param name The name of the resource
 	 * @return A new resource location
@@ -110,8 +115,9 @@ public abstract sealed class ResourceLocation permits ExternalResourceLocation, 
 	/**
 	 * Gets a resource from the classpath or from the filesystem.<br>
 	 * Trys to load the resource from the filesystem first.<br>
-	 * If the resource was not found in the filesystem then the classpath will be tried.<br>
-	 * If the resource was not found an exception will be thrown.<br>
+	 * If the resource was not found in the filesystem, then the classpath will be tried.<br>
+	 * If the resource was not found, an exception will be thrown.<br>
+	 *
 	 * @param path The path of the resource
 	 * @param name The name of the resource
 	 * @return The resource location
@@ -126,9 +132,10 @@ public abstract sealed class ResourceLocation permits ExternalResourceLocation, 
 	/**
 	 * Gets a resource from the classpath or from the filesystem.<br>
 	 * Trys to load the resource from the preferred type first.<br>
-	 * If the preferred type is null then the resource will be tried to load from the classpath first.<br>
-	 * If the resource was not found in the preferred type then the other type will be tried.<br>
+	 * If the preferred type is null, then the resource will be tried to load from the classpath first.<br>
+	 * If the resource was not found in the preferred type, then the other type will be tried.<br>
 	 * If the resource wa not found an exception will be thrown.<br>
+	 *
 	 * @param path The path of the resource
 	 * @param name The name of the resource
 	 * @param preferredType The preferred type of the resource
@@ -161,6 +168,7 @@ public abstract sealed class ResourceLocation permits ExternalResourceLocation, 
 	
 	/**
 	 * Splits a file into a path and a name.<br>
+	 *
 	 * @param file The file to split
 	 * @return A pair of the path and the name
 	 * @throws NullPointerException If the file is null
@@ -179,6 +187,7 @@ public abstract sealed class ResourceLocation permits ExternalResourceLocation, 
 	
 	/**
 	 * Modifies the path of the resource on construction.<br>
+	 *
 	 * @param path The path to modify
 	 * @return The modified path
 	 */
@@ -209,6 +218,7 @@ public abstract sealed class ResourceLocation permits ExternalResourceLocation, 
 	/**
 	 * Constructs a new {@link File} from the resource.<br>
 	 * Resources on the classpath can not be converted into a file.<br>
+	 *
 	 * @return The resource as a {@link File}
 	 * @throws UnsupportedOperationException If the resource is on the classpath
 	 */
@@ -217,6 +227,7 @@ public abstract sealed class ResourceLocation permits ExternalResourceLocation, 
 	/**
 	 * Constructs a new {@link Path} from the resource.<br>
 	 * Resources on the classpath cannot be converted into a path.<br>
+	 *
 	 * @return The resource as a {@link Path}
 	 * @throws UnsupportedOperationException If the resource is on the classpath
 	 */
@@ -230,6 +241,7 @@ public abstract sealed class ResourceLocation permits ExternalResourceLocation, 
 	
 	/**
 	 * Creates an input stream to the resource.<br>
+	 *
 	 * @return An input stream
 	 * @throws IOException If an I/O error occurs
 	 */
@@ -237,6 +249,7 @@ public abstract sealed class ResourceLocation permits ExternalResourceLocation, 
 	
 	/**
 	 * Reads the content of the resource as a byte array.<br>
+	 *
 	 * @return The bytes of the resource
 	 * @throws IOException If an I/O error occurs
 	 */
@@ -244,6 +257,7 @@ public abstract sealed class ResourceLocation permits ExternalResourceLocation, 
 	
 	/**
 	 * Reads the content of the resource as a single string.<br>
+	 *
 	 * @return The resource content
 	 * @throws IOException If an I/O error occurs
 	 */
@@ -251,6 +265,7 @@ public abstract sealed class ResourceLocation permits ExternalResourceLocation, 
 	
 	/**
 	 * Reads the content of the resource as a stream of lines.<br>
+	 *
 	 * @return The resource content
 	 * @throws IOException If an I/O error occurs
 	 */
@@ -259,6 +274,7 @@ public abstract sealed class ResourceLocation permits ExternalResourceLocation, 
 	/**
 	 * Copies the resource to the {@link #TEMP temporary directory}.<br>
 	 * The copied resource will be deleted on program exit.<br>
+	 *
 	 * @return The path of the copied resource
 	 * @throws IOException If an I/O error occurs
 	 */
@@ -268,6 +284,7 @@ public abstract sealed class ResourceLocation permits ExternalResourceLocation, 
 	 * Copies the resource to the given target path.<br>
 	 * The copied resource will stay on the filesystem and will not be deleted on program exit.<br>
 	 * If a temporary copy of the resource is needed use {@link #copy()} instead.<br>
+	 *
 	 * @param target The target path
 	 * @return The path of the copied resource
 	 * @throws IOException If an I/O error occurs

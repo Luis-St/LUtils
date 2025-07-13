@@ -43,6 +43,7 @@ public record SimpleToken(
 	
 	/**
 	 * Constructs a new simple token for a string value.<br>
+	 *
 	 * @param definition The token definition
 	 * @param value The string value of the token
 	 * @param startPosition The start position of the token
@@ -68,6 +69,7 @@ public record SimpleToken(
 	
 	/**
 	 * Creates an unpositioned simple token for the given token definition and value.<br>
+	 *
 	 * @param definition The token definition
 	 * @param value The string value of the token
 	 * @return The unpositioned simple token

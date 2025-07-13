@@ -32,15 +32,15 @@ import java.util.Set;
  * <p>
  *     The named codec is used to encode and decode values with a specific name.<br>
  *     The name is used to identify the value in a data structure.<br>
- *     Optionally, aliases can be configured to identify the value if the name is not present.<br>
+ *     Optionally, aliases can be configured to identify the value if the name is not present.
  * </p>
  * <p>
  *     The current value in {@link #encodeStart(TypeProvider, Object, Object)} must be a data structure that can hold the named value.<br>
- *     If the current value is not a data structure, the codec will return an error.<br>
+ *     If the current value is not a data structure, the codec will return an error.
  * </p>
  * <p>
  *     The value in {@link #decodeStart(TypeProvider, Object)} must be a data structure that contains the named value.<br>
- *     If the value is not a data structure or the named value is not present, the codec will return an error.<br>
+ *     If the value is not a data structure or the named value is not present, the codec will return an error.
  * </p>
  *
  * @author Luis-St
@@ -64,6 +64,7 @@ public class NamedCodec<C> implements Codec<C> {
 	
 	/**
 	 * Constructs a new named codec using the given codec and name for the value.<br>
+	 *
 	 * @param codec The codec used to
 	 * @param name The name of the value
 	 * @param aliases The aliases of the value
@@ -119,6 +120,7 @@ public class NamedCodec<C> implements Codec<C> {
 	 * This method will try to decode the value by the first alias which is present in the map.<br>
 	 * If no alias is present, an error will be returned.<br>
 	 * The result will contain the decoded value or an error message.<br>
+	 *
 	 * @param provider The type provider
 	 * @param map The map to decode the value from
 	 * @param error The actual error message which occurred during decoding
@@ -144,6 +146,7 @@ public class NamedCodec<C> implements Codec<C> {
 	/**
 	 * Gets the first alias which is present in the given map or an error.<br>
 	 * The result contains the name or an error message.<br>
+	 *
 	 * @param provider The type provider
 	 * @param map The map to decode the value from
 	 * @return The result

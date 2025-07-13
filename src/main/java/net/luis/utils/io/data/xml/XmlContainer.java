@@ -39,6 +39,7 @@ public final class XmlContainer extends XmlElement {
 	
 	/**
 	 * Constructs a new xml container with the given name.<br>
+	 *
 	 * @param name The name of the container
 	 * @throws NullPointerException If the name is null
 	 */
@@ -48,6 +49,7 @@ public final class XmlContainer extends XmlElement {
 	
 	/**
 	 * Constructs a new xml container with the given name and elements.<br>
+	 *
 	 * @param name The name of the container
 	 * @param elements The elements of the container
 	 * @throws NullPointerException If the name or elements are null
@@ -58,6 +60,7 @@ public final class XmlContainer extends XmlElement {
 	
 	/**
 	 * Constructs a new xml container with the given name and attributes.<br>
+	 *
 	 * @param name The name of the container
 	 * @param attributes The attributes of the container
 	 * @throws NullPointerException If the name or attributes are null
@@ -68,6 +71,7 @@ public final class XmlContainer extends XmlElement {
 	
 	/**
 	 * Constructs a new xml container with the given name, attributes and elements.<br>
+	 *
 	 * @param name The name of the container
 	 * @param attributes The attributes of the container
 	 * @param elements The elements of the container
@@ -143,6 +147,7 @@ public final class XmlContainer extends XmlElement {
 	
 	/**
 	 * Checks if this container contains an element with the given name.<br>
+	 *
 	 * @param name The name of the element
 	 * @return True if this container contains an element with the given name, otherwise false
 	 */
@@ -152,6 +157,7 @@ public final class XmlContainer extends XmlElement {
 	
 	/**
 	 * Checks if this container contains the given element.<br>
+	 *
 	 * @param element The element to check
 	 * @return True if this container contains the given element, otherwise false
 	 */
@@ -180,6 +186,7 @@ public final class XmlContainer extends XmlElement {
 	
 	/**
 	 * Adds the given element to this container.<br>
+	 *
 	 * @param element The element to add
 	 * @throws NullPointerException If the element is null
 	 * @throws XmlTypeException If the element is not valid for the collection type
@@ -190,6 +197,7 @@ public final class XmlContainer extends XmlElement {
 	
 	/**
 	 * Adds the given container to this container.<br>
+	 *
 	 * @param container The container to add
 	 * @throws NullPointerException If the container is null
 	 * @throws XmlTypeException If the container is not valid for the collection type
@@ -200,6 +208,7 @@ public final class XmlContainer extends XmlElement {
 	
 	/**
 	 * Adds the given value to this container.<br>
+	 *
 	 * @param value The value to add
 	 * @throws NullPointerException If the value is null
 	 * @throws XmlTypeException If the value is not valid for the collection type
@@ -213,6 +222,7 @@ public final class XmlContainer extends XmlElement {
 	
 	/**
 	 * Removes the given element from this container.<br>
+	 *
 	 * @param element The element to remove
 	 * @return True if the element was removed, otherwise false
 	 */
@@ -223,6 +233,7 @@ public final class XmlContainer extends XmlElement {
 	/**
 	 * Removes the element with the given name from this container.<br>
 	 * This method should only be used if the collection is an object.<br>
+	 *
 	 * @param name The name of the element to remove
 	 * @return True if the element was removed, otherwise false
 	 * @throws XmlTypeException If the collection is an array
@@ -234,6 +245,7 @@ public final class XmlContainer extends XmlElement {
 	/**
 	 * Removes the element with the given index from this container.<br>
 	 * This method should only be used if the collection is an array.<br>
+	 *
 	 * @param index The name of the element to remove
 	 * @return True if the element was removed, otherwise false
 	 * @throws XmlTypeException If the collection is an object
@@ -255,6 +267,7 @@ public final class XmlContainer extends XmlElement {
 	/**
 	 * Returns the element with the given name from this container.<br>
 	 * This method should only be used if the container is an object.<br>
+	 *
 	 * @param name The name of the element
 	 * @return The element with the given name, or null if the element does not exist
 	 * @throws XmlTypeException If the container is not an array
@@ -267,6 +280,7 @@ public final class XmlContainer extends XmlElement {
 	/**
 	 * Returns the element with the given name from this container.<br>
 	 * This method should only be used if the container is an object.<br>
+	 *
 	 * @param name The name of the element
 	 * @return The element with the given name
 	 * @throws XmlTypeException If the container is an array
@@ -280,6 +294,7 @@ public final class XmlContainer extends XmlElement {
 	/**
 	 * Returns the element with the given name from this container.<br>
 	 * This method should only be used if the container is an object.<br>
+	 *
 	 * @param name The name of the element
 	 * @return The element with the given name
 	 * @throws XmlTypeException If the container is an array
@@ -293,6 +308,7 @@ public final class XmlContainer extends XmlElement {
 	/**
 	 * Returns the element at the given index from this container.<br>
 	 * This method should only be used if the container is an array.<br>
+	 *
 	 * @param index The index of the element
 	 * @return The element with the given index, or null if no element with the index exists
 	 * @throws XmlTypeException If the container is not an array
@@ -305,6 +321,7 @@ public final class XmlContainer extends XmlElement {
 	/**
 	 * Returns the element at the given index from this container.<br>
 	 * This method should only be used if the container is an array.<br>
+	 *
 	 * @param index The index of the element
 	 * @return The element with the given index
 	 * @throws XmlTypeException If the container is an object
@@ -318,6 +335,7 @@ public final class XmlContainer extends XmlElement {
 	/**
 	 * Returns the element at the given index from this container.<br>
 	 * This method should only be used if the container is an array.<br>
+	 *
 	 * @param index The index of the element
 	 * @return The element with the given index
 	 * @throws XmlTypeException If the container is an object

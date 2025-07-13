@@ -26,7 +26,7 @@ import net.luis.utils.util.unsafe.StackTraceUtils;
  * <p>
  *     The unpositioned constant is used to represent a token that is not positioned.<br>
  *     A token is considered unpositioned if it has not been assigned a position in the file.<br>
- *     This is useful for tokens that have been added after the tokenization process.<br>
+ *     This is useful for tokens that have been added after the tokenization process.
  * </p>
  *
  * @author Luis-St
@@ -48,6 +48,7 @@ public record TokenPosition(
 	
 	/**
 	 * Constructs a new token position.<br>
+	 *
 	 * @param line The line number of the token
 	 * @param characterInLine The character number in the line of the token
 	 * @param character The character number of the token in the file
@@ -72,6 +73,7 @@ public record TokenPosition(
 	/**
 	 * Checks if the token is positioned.<br>
 	 * A token is considered positioned if it has a valid line, character in line and character number (non-negative).<br>
+	 *
 	 * @return True if the token is positioned, false if it is unpositioned
 	 */
 	public boolean isPositioned() {

@@ -109,6 +109,7 @@ public enum NumberType {
 	
 	/**
 	 * Constructs a new number type with the given parameters.<br>
+	 *
 	 * @param numberClass The java number class that this type represents
 	 * @param bitSize The bit size of the number type
 	 * @param minValue The minimum value of the number type
@@ -139,6 +140,7 @@ public enum NumberType {
 	/**
 	 * Wraps the integer parser function to a number parser function.<br>
 	 * The wrapped parser simply translates the radix to an integer.<br>
+	 *
 	 * @param parser The integer parser function
 	 * @return The wrapped parser function
 	 * @throws NullPointerException If the parser is null
@@ -151,6 +153,7 @@ public enum NumberType {
 	/**
 	 * Wraps the floating point parser function to a number parser function.<br>
 	 * The wrapped parser handles the special cases of floating point numbers.<br>
+	 *
 	 * @param parser The floating point parser function
 	 * @return The wrapped parser function
 	 * @throws NullPointerException If the parser is null
@@ -163,6 +166,7 @@ public enum NumberType {
 	/**
 	 * Creates a new big decimal parser function.<br>
 	 * This parser function will handle the special cases of big decimals.<br>
+	 *
 	 * @return The big decimal parser function
 	 * @see Mth#parseHexToBigDecimal(String)
 	 */
@@ -182,6 +186,7 @@ public enum NumberType {
 	 * Inserts the radix prefix to the given value if it is not already present.<br>
 	 * If the value is signed, the radix prefix will be inserted after the sign.<br>
 	 * This method should only be used for floating point numbers.<br>
+	 *
 	 * @param value The value to insert the radix prefix to
 	 * @param radix The radix to insert
 	 * @return The value with the radix prefix inserted
@@ -207,6 +212,7 @@ public enum NumberType {
 	/**
 	 * Removes the radix prefixes from the given value.<br>
 	 * This method should only be used for integer numbers.<br>
+	 *
 	 * @param value The value to remove the radix prefixes from
 	 * @param radices The radices to remove
 	 * @return The value with the radix prefixes removed
@@ -224,6 +230,7 @@ public enum NumberType {
 	/**
 	 * Removes the type suffix from the given value if it is present.<br>
 	 * If the radix is hexadecimal, the suffix must be outside the range of 'a' to 'f'.<br>
+	 *
 	 * @param value The value to remove the type suffix from
 	 * @param type The number type to check the suffix against
 	 * @param radix The radix to check the suffix against
@@ -258,6 +265,7 @@ public enum NumberType {
 	/**
 	 * Gets the number type by the given suffix.<br>
 	 * Will return null if the suffix is {@code '\0'}.<br>
+	 *
 	 * @param suffix The suffix of the number type
 	 * @return The number type with the given suffix or null
 	 */
@@ -316,6 +324,7 @@ public enum NumberType {
 	/**
 	 * Checks if the given number is in the range of the number type.<br>
 	 * If the number type is infinite, this will always return true.<br>
+	 *
 	 * @param number The number to check
 	 * @return True if the number is in the range, false otherwise
 	 * @throws NullPointerException If the number is null
@@ -379,6 +388,7 @@ public enum NumberType {
 	 *     <li>the minimum value is less than the target type, it cannot be converted</li>
 	 *     <li>the maximum value is greater than the target type, it cannot be converted</li>
 	 * </ul>
+	 *
 	 * @param targetType The target type to check
 	 * @return True if the number type can be converted to the target type, false otherwise
 	 * @throws NullPointerException If the target type is null
@@ -415,6 +425,7 @@ public enum NumberType {
 	 *     <li>If the value has a suffix, it must match the number type suffix</li>
 	 *     <li>The parser must not throw an exception</li>
 	 * </ul>
+	 *
 	 * @param value The value to check
 	 * @param radix The radix to check
 	 * @return True if the number type can be converted to the target type, false otherwise
@@ -454,6 +465,7 @@ public enum NumberType {
 	 *     <li>If the value contains a type suffix, it will be removed</li>
 	 *     <li>If the value contains a radix prefix, it will be removed</li>
 	 * </ul>
+	 *
 	 * @param value The value to parse
 	 * @param radix The radix to parse the value with
 	 * @return The parsed number
@@ -487,6 +499,7 @@ public enum NumberType {
 	/**
 	 * Parses the given value to a number of this type based on the radix.<br>
 	 * This method parses the value strictly and will throw an exception if the value is invalid.<br>
+	 *
 	 * @param value The value to parse
 	 * @param radix The radix to parse the value with
 	 * @return The parsed number

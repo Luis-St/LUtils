@@ -49,6 +49,7 @@ public class Range {
 	
 	/**
 	 * Constructs a new range with the specified minimum and maximum value.<br>
+	 *
 	 * @param min The minimum value of the range
 	 * @param max The maximum value of the range
 	 * @throws IllegalArgumentException If the maximum value is less than the minimum value
@@ -64,6 +65,7 @@ public class Range {
 	/**
 	 * Creates a new range with the specified maximum value.<br>
 	 * The minimum value is set to 0.<br>
+	 *
 	 * @param max The maximum value of the range
 	 * @return The created range or an empty range if the maximum value is less than 0
 	 * @see #of(double, double)
@@ -75,6 +77,7 @@ public class Range {
 	/**
 	 * Creates a new range with the specified minimum and maximum value.<br>
 	 * The characters are converted to their respective double values.<br>
+	 *
 	 * @param min The minimum value of the range
 	 * @param max The maximum value of the range
 	 * @return The created range or an empty range if the maximum value is less than the minimum value
@@ -86,6 +89,7 @@ public class Range {
 	
 	/**
 	 * Creates a new range with the specified minimum and maximum value.<br>
+	 *
 	 * @param min The minimum value of the range
 	 * @param max The maximum value of the range
 	 * @return The created range or an empty range if the maximum value is less than the minimum value
@@ -101,6 +105,7 @@ public class Range {
 	/**
 	 * Parses the specified string to a range.<br>
 	 * The string must be in the format of {@code [min..max]}.<br>
+	 *
 	 * @param str The string to parse
 	 * @return The parsed range, or an empty range if the string is invalid
 	 */
@@ -137,6 +142,7 @@ public class Range {
 	/**
 	 * Returns the range between the minimum and maximum value.<br>
 	 * The range is calculated by subtracting the minimum value from the maximum value.<br>
+	 *
 	 * @return The range
 	 */
 	public double getRange() {
@@ -146,6 +152,7 @@ public class Range {
 	/**
 	 * Moves the range by the specified value.<br>
 	 * The minimum and maximum value are both increased by the specified value.<br>
+	 *
 	 * @param value The value to move the range by
 	 * @return The moved range
 	 */
@@ -157,8 +164,9 @@ public class Range {
 	 * Expands the range by the specified value.<br>
 	 * <p>
 	 *     The minimum value is decreased by the absolute of the specified value<br>
-	 *     and the maximum value is increased by the absolute of specified value.<br>
+	 *     and the maximum value is increased by the absolute of specified value.
 	 * </p>
+	 *
 	 * @param value The value to expand the range by
 	 * @return The expanded range
 	 */
@@ -168,6 +176,7 @@ public class Range {
 	
 	/**
 	 * Expands the maximum value of the range by the absolute of specified value.<br>
+	 *
 	 * @param value The value to expand the maximum value by
 	 * @return The expanded range
 	 */
@@ -178,6 +187,7 @@ public class Range {
 	/**
 	 * Expands the minimum value of the range by the absolute of specified value.<br>
 	 * The resulting range is maybe empty if the given value is negative.<br>
+	 *
 	 * @param value The value to expand the minimum value by
 	 * @return The expanded range
 	 */
@@ -187,6 +197,7 @@ public class Range {
 	
 	/**
 	 * Checks if the specified value is within the range of this range.<br>
+	 *
 	 * @param value The value to check
 	 * @return True if the value is within the range, otherwise false
 	 * @see Mth#isInBounds(double, double, double)

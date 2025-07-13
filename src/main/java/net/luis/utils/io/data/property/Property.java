@@ -45,6 +45,7 @@ public class Property implements DefaultValueGetter {
 	
 	/**
 	 * Constructs a new property with the given key and value.<br>
+	 *
 	 * @param key The key of the property
 	 * @param value The value of the property
 	 * @throws NullPointerException If the key or the value is null
@@ -56,6 +57,7 @@ public class Property implements DefaultValueGetter {
 	
 	/**
 	 * Creates a new property with the given key and value.<br>
+	 *
 	 * @param key The key of the property
 	 * @param value The value of the property
 	 * @return A new property
@@ -108,6 +110,7 @@ public class Property implements DefaultValueGetter {
 	 * property.isPartOfGroup("this.is.an.example.key"); // false -> 'key' is not part of the group, it is the key itself
 	 * property.isPartOfGroup("some.other.group"); // false
 	 * }</pre>
+	 *
 	 * @param group The group to check
 	 * @return Whether the key is part of the group or not
 	 * @throws IllegalArgumentException If the group is blank or starts with a dot

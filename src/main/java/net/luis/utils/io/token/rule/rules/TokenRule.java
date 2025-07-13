@@ -50,6 +50,7 @@ public interface TokenRule {
 	/**
 	 * Checks if the given tokens match this rule starting from the specified index.<br>
 	 * If the match is successful, a {@link TokenRuleMatch} is returned, otherwise null.<br>
+	 *
 	 * @param tokens The list of tokens to match against
 	 * @param startIndex The index to start matching from
 	 * @return A token rule match if successful, otherwise null
@@ -61,6 +62,7 @@ public interface TokenRule {
 	
 	/**
 	 * Makes this token rule optional by wrapping it in an {@link OptionalTokenRule}.<br>
+	 *
 	 * @return A new token rule that is optional
 	 * @see TokenRules#optional(TokenRule)
 	 * @see OptionalTokenRule
@@ -72,6 +74,7 @@ public interface TokenRule {
 	/**
 	 * Makes this token rule at least repeatable by wrapping it in a {@link RepeatedTokenRule}.<br>
 	 * To make the new rule match, this rule must match at least the specified number of times.<br>
+	 *
 	 * @param min The minimum number of times this rule must match
 	 * @return A new at least repeatable token rule
 	 * @throws IllegalArgumentException If min is less than 0
@@ -85,6 +88,7 @@ public interface TokenRule {
 	/**
 	 * Makes this token rule exactly repeatable by wrapping it in a {@link RepeatedTokenRule}.<br>
 	 * To make the new rule match, this rule must match exactly the specified number of times.<br>
+	 *
 	 * @param repeats The number of times this rule must match
 	 * @return A new exactly repeatable token rule
 	 * @throws IllegalArgumentException If repeats is less than 0
@@ -98,6 +102,7 @@ public interface TokenRule {
 	/**
 	 * Makes this token rule at most repeatable by wrapping it in a {@link RepeatedTokenRule}.<br>
 	 * To make the new rule match, this rule must match at most the specified number of times.<br>
+	 *
 	 * @param max The maximum number of times this rule can match
 	 * @return A new at most repeatable token rule
 	 * @throws IllegalArgumentException If max is less than 0
@@ -111,6 +116,7 @@ public interface TokenRule {
 	/**
 	 * Makes this token rule infinitely repeatable by wrapping it in a {@link RepeatedTokenRule}.<br>
 	 * To make the new rule match, this rule must match at least 0 and at most {@link Integer#MAX_VALUE} times.<br>
+	 *
 	 * @return A new infinitely repeatable token rule
 	 * @see TokenRules#repeatInfinitely(TokenRule)
 	 * @see RepeatedTokenRule
@@ -122,6 +128,7 @@ public interface TokenRule {
 	/**
 	 * Makes this token rule between repeatable by wrapping it in a {@link RepeatedTokenRule}.<br>
 	 * To make the new rule match, this rule must match at least min and at most max times.<br>
+	 *
 	 * @param min The minimum number of times this rule must match
 	 * @param max The maximum number of times this rule can match
 	 * @return A new between repeatable token rule

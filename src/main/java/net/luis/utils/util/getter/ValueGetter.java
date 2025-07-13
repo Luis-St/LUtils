@@ -32,7 +32,7 @@ import java.util.Objects;
  * <p>
  *     The interface is functional because it has only one abstract method {@link #getAsString()}.<br>
  *     All other methods rely on this method to get the value as a string and then parse it to the desired type.<br>
- *     The {@link #getAsString()} method must bei implemented correctly, or the other methods will not work as expected.<br>
+ *     The {@link #getAsString()} method must bei implemented correctly, or the other methods will not work as expected.
  * </p>
  * The interface provides the following methods to get the value as a specific type:<br>
  * <ul>
@@ -60,6 +60,7 @@ public interface ValueGetter {
 	
 	/**
 	 * Returns the value which is hold by this object as a boolean.<br>
+	 *
 	 * @return The value as a boolean
 	 * @throws IllegalArgumentException If the value is not a boolean (e.g. not "true" or "false")
 	 */
@@ -73,6 +74,7 @@ public interface ValueGetter {
 	
 	/**
 	 * Returns the value which is hold by this object as a number.<br>
+	 *
 	 * @return The value as a number
 	 * @throws IllegalArgumentException If the value is not a number
 	 */
@@ -87,6 +89,7 @@ public interface ValueGetter {
 	
 	/**
 	 * Returns the value which is hold by this object as a byte.<br>
+	 *
 	 * @return The value as a byte
 	 * @throws IllegalArgumentException If the value is not a byte
 	 */
@@ -101,6 +104,7 @@ public interface ValueGetter {
 	
 	/**
 	 * Returns the value which is hold by this object as a short.<br>
+	 *
 	 * @return The value as a short
 	 * @throws IllegalArgumentException If the value is not a short
 	 */
@@ -115,6 +119,7 @@ public interface ValueGetter {
 	
 	/**
 	 * Returns the value which is hold by this object as an integer.<br>
+	 *
 	 * @return The value as an integer
 	 * @throws IllegalArgumentException If the value is not an integer
 	 */
@@ -129,6 +134,7 @@ public interface ValueGetter {
 	
 	/**
 	 * Returns the value which is hold by this object as a long.<br>
+	 *
 	 * @return The value as a long
 	 * @throws IllegalArgumentException If the value is not a long
 	 */
@@ -143,6 +149,7 @@ public interface ValueGetter {
 	
 	/**
 	 * Returns the value which is hold by this object as a float.<br>
+	 *
 	 * @return The value as a float
 	 * @throws IllegalArgumentException If the value is not a float
 	 */
@@ -157,6 +164,7 @@ public interface ValueGetter {
 	
 	/**
 	 * Returns the value which is hold by this object as a double.<br>
+	 *
 	 * @return The value as a double
 	 * @throws IllegalArgumentException If the value is not a double
 	 */
@@ -173,6 +181,7 @@ public interface ValueGetter {
 	 * Returns the value which is hold by this object as the result of the given parser.<br>
 	 * The parser must not be able to handle null values.<br>
 	 * In the case the parser is not able to parse the value, it should not return null, it should throw an exception.<br>
+	 *
 	 * @param parser The parser to parse the value
 	 * @return The value as the result of the parser
 	 * @param <T> The type of the parsed value

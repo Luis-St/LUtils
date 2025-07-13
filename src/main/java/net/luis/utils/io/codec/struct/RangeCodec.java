@@ -42,7 +42,7 @@ import java.util.function.Function;
  * </ul>
  * <p>
  *     This codec is keyable, so it can be used as a key in a map codec.<br>
- *     The key is encoded as a string using the given string encoder and decoder.<br>
+ *     The key is encoded as a string using the given string encoder and decoder.
  * </p>
  *
  * @author Luis-St
@@ -79,6 +79,7 @@ public abstract class RangeCodec<C extends Number & Comparable<C>> implements Ke
 	
 	/**
 	 * Constructs a new range codec using the given name, minimum and maximum value, converter and decoder.<br>
+	 *
 	 * @param name The name of the range type
 	 * @param min The minimum value of the range (inclusive)
 	 * @param max The maximum value of the range (inclusive)
@@ -92,6 +93,7 @@ public abstract class RangeCodec<C extends Number & Comparable<C>> implements Ke
 	
 	/**
 	 * Constructs a new range codec using the given name, minimum and maximum value, converter, encoder and decoder.<br>
+	 *
 	 * @param name The name of the range type
 	 * @param min The minimum value of the range (inclusive)
 	 * @param max The maximum value of the range (inclusive)
@@ -228,6 +230,7 @@ public abstract class RangeCodec<C extends Number & Comparable<C>> implements Ke
 	
 	/**
 	 * Returns a new range codec that only accepts numbers greater or equal to the given number.<br>
+	 *
 	 * @param min The minimum value
 	 * @return The new range codec
 	 * @throws NullPointerException If the minimum value is null
@@ -239,6 +242,7 @@ public abstract class RangeCodec<C extends Number & Comparable<C>> implements Ke
 	
 	/**
 	 * Returns a new range codec that only accepts numbers smaller or equal to the given number.<br>
+	 *
 	 * @param max The maximum value
 	 * @return The new range codec
 	 * @throws NullPointerException If the maximum value is null
@@ -250,6 +254,7 @@ public abstract class RangeCodec<C extends Number & Comparable<C>> implements Ke
 	
 	/**
 	 * Returns a new range codec that only accepts numbers in the given range (inclusive).<br>
+	 *
 	 * @param minInclusive The minimum value
 	 * @param maxInclusive The maximum value
 	 * @return The new range codec
