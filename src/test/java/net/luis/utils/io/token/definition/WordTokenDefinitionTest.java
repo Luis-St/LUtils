@@ -162,4 +162,14 @@ class WordTokenDefinitionTest {
 	void toStringReturnsExpectedValue() {
 		assertEquals("WORD", WordTokenDefinition.INSTANCE.toString());
 	}
+	
+	@Test
+	void equalsReturnsTrueForSameInstance() {
+		assertTrue(WordTokenDefinition.INSTANCE.equals(WordTokenDefinition.INSTANCE));
+	}
+	
+	@Test
+	void equalsReturnsFalseForNull() {
+		assertFalse(WordTokenDefinition.INSTANCE.equals(null));
+	}
 }
