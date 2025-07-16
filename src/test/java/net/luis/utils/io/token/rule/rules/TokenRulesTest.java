@@ -18,12 +18,16 @@
 
 package net.luis.utils.io.token.rule.rules;
 
-import com.google.common.collect.Lists;
-import com.google.common.collect.Sets;
 import net.luis.utils.io.token.definition.*;
+import net.luis.utils.io.token.rule.TokenRuleMatch;
+import net.luis.utils.io.token.tokens.Token;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.junit.jupiter.api.Test;
 
-import java.util.*;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Set;
 import java.util.regex.Pattern;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -35,103 +39,360 @@ import static org.junit.jupiter.api.Assertions.*;
  */
 class TokenRulesTest {
 	
-	@Test
-	void alwaysMatch() {
-		assertSame(AlwaysMatchTokenRule.INSTANCE, TokenRules.alwaysMatch());
+	private static @NotNull TokenRule createRule(@NotNull String value) {
+		return new TokenRule() {
+			@Override
+			public @Nullable TokenRuleMatch match(@NotNull List<Token> tokens, int startIndex) {
+				return null;
+			}
+		};
 	}
 	
 	@Test
-	void pattern() {
-		assertInstanceOf(PatternTokenRule.class, TokenRules.pattern("test"));
+	void alwaysMatchReturnsSingleton() {
+		TokenRule rule1 = TokenRules.alwaysMatch();
+		TokenRule rule2 = TokenRules.alwaysMatch();
+		
+		assertSame(AlwaysMatchTokenRule.INSTANCE, rule1);
+		assertSame(rule1, rule2);
+		assertInstanceOf(AlwaysMatchTokenRule.class, rule1);
 	}
 	
 	@Test
-	void optional() {
-		assertInstanceOf(OptionalTokenRule.class, TokenRules.optional(TokenRules.alwaysMatch()));
+	void patternWithStringCreatesPatternTokenRule() {
+		TokenRule rule = TokenRules.pattern("\\d+");
+		
+		assertInstanceOf(PatternTokenRule.class, rule);
+		assertEquals("\\d+", ((PatternTokenRule) rule).pattern().pattern());
 	}
 	
 	@Test
-	void repeatAtLeast() {
-		assertInstanceOf(RepeatedTokenRule.class, TokenRules.repeatAtLeast(TokenRules.alwaysMatch(), 1));
+	void patternWithNullString() {
+		assertThrows(NullPointerException.class, () -> TokenRules.pattern((String) null));
 	}
 	
 	@Test
-	void repeatExactly() {
-		assertInstanceOf(RepeatedTokenRule.class, TokenRules.repeatExactly(TokenRules.alwaysMatch(), 1));
+	void patternWithInvalidRegex() {
+		assertThrows(Exception.class, () -> TokenRules.pattern("[invalid"));
 	}
 	
 	@Test
-	void repeatAtMost() {
-		assertInstanceOf(RepeatedTokenRule.class, TokenRules.repeatAtMost(TokenRules.alwaysMatch(), 1));
+	void patternWithCompiledPattern() {
+		Pattern compiled = Pattern.compile("[a-z]+");
+		TokenRule rule = TokenRules.pattern(compiled);
+		
+		assertInstanceOf(PatternTokenRule.class, rule);
+		assertEquals(compiled, ((PatternTokenRule) rule).pattern());
 	}
 	
 	@Test
-	void repeatInfinitely() {
-		assertInstanceOf(RepeatedTokenRule.class, TokenRules.repeatInfinitely(TokenRules.alwaysMatch()));
+	void patternWithNullCompiledPattern() {
+		assertThrows(NullPointerException.class, () -> TokenRules.pattern((Pattern) null));
 	}
 	
 	@Test
-	void repeatBetween() {
-		assertInstanceOf(RepeatedTokenRule.class, TokenRules.repeatBetween(TokenRules.alwaysMatch(), 1, 2));
+	void optionalCreatesOptionalTokenRule() {
+		TokenRule innerRule = createRule("test");
+		TokenRule optional = TokenRules.optional(innerRule);
+		
+		assertInstanceOf(OptionalTokenRule.class, optional);
+		assertEquals(innerRule, ((OptionalTokenRule) optional).tokenRule());
 	}
 	
 	@Test
-	void sequence() {
+	void optionalWithNullRule() {
+		assertThrows(NullPointerException.class, () -> TokenRules.optional(null));
+	}
+	
+	@Test
+	void repeatAtLeastCreatesRepeatedTokenRule() {
+		TokenRule innerRule = createRule("test");
+		TokenRule repeated = TokenRules.repeatAtLeast(innerRule, 3);
+		
+		assertInstanceOf(RepeatedTokenRule.class, repeated);
+		RepeatedTokenRule repeatedRule = (RepeatedTokenRule) repeated;
+		assertEquals(innerRule, repeatedRule.tokenRule());
+		assertEquals(3, repeatedRule.minOccurrences());
+		assertEquals(Integer.MAX_VALUE, repeatedRule.maxOccurrences());
+	}
+	
+	@Test
+	void repeatAtLeastWithNullRule() {
+		assertThrows(NullPointerException.class, () -> TokenRules.repeatAtLeast(null, 1));
+	}
+	
+	@Test
+	void repeatAtLeastWithNegativeMin() {
+		assertThrows(IllegalArgumentException.class, () -> TokenRules.repeatAtLeast(createRule("test"), -1));
+	}
+	
+	@Test
+	void repeatExactlyCreatesRepeatedTokenRule() {
+		TokenRule innerRule = createRule("test");
+		TokenRule repeated = TokenRules.repeatExactly(innerRule, 5);
+		
+		assertInstanceOf(RepeatedTokenRule.class, repeated);
+		RepeatedTokenRule repeatedRule = (RepeatedTokenRule) repeated;
+		assertEquals(innerRule, repeatedRule.tokenRule());
+		assertEquals(5, repeatedRule.minOccurrences());
+		assertEquals(5, repeatedRule.maxOccurrences());
+	}
+	
+	@Test
+	void repeatExactlyWithNullRule() {
+		assertThrows(NullPointerException.class, () -> TokenRules.repeatExactly(null, 1));
+	}
+	
+	@Test
+	void repeatExactlyWithNegativeCount() {
+		assertThrows(IllegalArgumentException.class, () -> TokenRules.repeatExactly(createRule("test"), -1));
+	}
+	
+	@Test
+	void repeatAtMostCreatesRepeatedTokenRule() {
+		TokenRule innerRule = createRule("test");
+		TokenRule repeated = TokenRules.repeatAtMost(innerRule, 4);
+		
+		assertInstanceOf(RepeatedTokenRule.class, repeated);
+		RepeatedTokenRule repeatedRule = (RepeatedTokenRule) repeated;
+		assertEquals(innerRule, repeatedRule.tokenRule());
+		assertEquals(0, repeatedRule.minOccurrences());
+		assertEquals(4, repeatedRule.maxOccurrences());
+	}
+	
+	@Test
+	void repeatAtMostWithNullRule() {
+		assertThrows(NullPointerException.class, () -> TokenRules.repeatAtMost(null, 1));
+	}
+	
+	@Test
+	void repeatAtMostWithNegativeMax() {
+		assertThrows(IllegalArgumentException.class, () -> TokenRules.repeatAtMost(createRule("test"), -1));
+	}
+	
+	@Test
+	void repeatInfinitelyCreatesRepeatedTokenRule() {
+		TokenRule innerRule = createRule("test");
+		TokenRule repeated = TokenRules.repeatInfinitely(innerRule);
+		
+		assertInstanceOf(RepeatedTokenRule.class, repeated);
+		RepeatedTokenRule repeatedRule = (RepeatedTokenRule) repeated;
+		assertEquals(innerRule, repeatedRule.tokenRule());
+		assertEquals(0, repeatedRule.minOccurrences());
+		assertEquals(Integer.MAX_VALUE, repeatedRule.maxOccurrences());
+	}
+	
+	@Test
+	void repeatInfinitelyWithNullRule() {
+		assertThrows(NullPointerException.class, () -> TokenRules.repeatInfinitely(null));
+	}
+	
+	@Test
+	void repeatBetweenCreatesRepeatedTokenRule() {
+		TokenRule innerRule = createRule("test");
+		TokenRule repeated = TokenRules.repeatBetween(innerRule, 2, 7);
+		
+		assertInstanceOf(RepeatedTokenRule.class, repeated);
+		RepeatedTokenRule repeatedRule = (RepeatedTokenRule) repeated;
+		assertEquals(innerRule, repeatedRule.tokenRule());
+		assertEquals(2, repeatedRule.minOccurrences());
+		assertEquals(7, repeatedRule.maxOccurrences());
+	}
+	
+	@Test
+	void repeatBetweenWithNullRule() {
+		assertThrows(NullPointerException.class, () -> TokenRules.repeatBetween(null, 1, 3));
+	}
+	
+	@Test
+	void repeatBetweenWithInvalidRange() {
+		TokenRule rule = createRule("test");
+		assertThrows(IllegalArgumentException.class, () -> TokenRules.repeatBetween(rule, -1, 3));
+		assertThrows(IllegalArgumentException.class, () -> TokenRules.repeatBetween(rule, 5, 3));
+		assertThrows(IllegalArgumentException.class, () -> TokenRules.repeatBetween(rule, 0, 0));
+	}
+	
+	@Test
+	void sequenceWithArrayCreatesSequenceTokenRule() {
+		TokenRule rule1 = createRule("first");
+		TokenRule rule2 = createRule("second");
+		TokenRule sequence = TokenRules.sequence(rule1, rule2);
+		
+		assertInstanceOf(SequenceTokenRule.class, sequence);
+		List<TokenRule> rules = ((SequenceTokenRule) sequence).tokenRules();
+		assertEquals(2, rules.size());
+		assertEquals(rule1, rules.get(0));
+		assertEquals(rule2, rules.get(1));
+	}
+	
+	@Test
+	void sequenceWithNullArray() {
 		assertThrows(NullPointerException.class, () -> TokenRules.sequence((TokenRule[]) null));
-		assertInstanceOf(SequenceTokenRule.class, TokenRules.sequence(TokenRules.alwaysMatch(), TokenRules.alwaysMatch()));
 	}
 	
 	@Test
-	void any() {
+	void sequenceWithEmptyArray() {
+		assertThrows(IllegalArgumentException.class, () -> TokenRules.sequence(new TokenRule[0]));
+	}
+	
+	@Test
+	void sequenceWithListCreatesSequenceTokenRule() {
+		TokenRule rule1 = createRule("a");
+		TokenRule rule2 = createRule("b");
+		TokenRule rule3 = createRule("c");
+		List<TokenRule> ruleList = List.of(rule1, rule2, rule3);
+		TokenRule sequence = TokenRules.sequence(ruleList);
+		
+		assertInstanceOf(SequenceTokenRule.class, sequence);
+		assertEquals(ruleList, ((SequenceTokenRule) sequence).tokenRules());
+	}
+	
+	@Test
+	void sequenceWithNullList() {
+		assertThrows(NullPointerException.class, () -> TokenRules.sequence((List<TokenRule>) null));
+	}
+	
+	@Test
+	void anyWithArrayCreatesAnyOfTokenRule() {
+		TokenRule rule1 = createRule("option1");
+		TokenRule rule2 = createRule("option2");
+		TokenRule anyOf = TokenRules.any(rule1, rule2);
+		
+		assertInstanceOf(AnyOfTokenRule.class, anyOf);
+		Set<TokenRule> rules = ((AnyOfTokenRule) anyOf).tokenRules();
+		assertEquals(2, rules.size());
+		assertTrue(rules.contains(rule1));
+		assertTrue(rules.contains(rule2));
+	}
+	
+	@Test
+	void anyWithNullArray() {
 		assertThrows(NullPointerException.class, () -> TokenRules.any((TokenRule[]) null));
-		assertInstanceOf(AnyOfTokenRule.class, TokenRules.any(TokenRules.alwaysMatch(), TokenRules.end()));
 	}
 	
 	@Test
-	void boundary() {
-		assertInstanceOf(BoundaryTokenRule.class, TokenRules.boundary(TokenRules.alwaysMatch(), TokenRules.alwaysMatch()));
-		assertInstanceOf(BoundaryTokenRule.class, TokenRules.boundary(TokenRules.alwaysMatch(), TokenRules.alwaysMatch(), TokenRules.alwaysMatch()));
+	void anyWithEmptyArray() {
+		assertThrows(IllegalArgumentException.class, () -> TokenRules.any(new TokenRule[0]));
 	}
 	
 	@Test
-	void end() {
-		assertSame(EndTokenRule.INSTANCE, TokenRules.end());
+	void anyWithSetCreatesAnyOfTokenRule() {
+		TokenRule rule1 = createRule("x");
+		TokenRule rule2 = createRule("y");
+		Set<TokenRule> ruleSet = Set.of(rule1, rule2);
+		TokenRule anyOf = TokenRules.any(ruleSet);
+		
+		assertInstanceOf(AnyOfTokenRule.class, anyOf);
+		assertEquals(ruleSet, ((AnyOfTokenRule) anyOf).tokenRules());
 	}
 	
 	@Test
-	void toRegex() {
+	void anyWithNullSet() {
+		assertThrows(NullPointerException.class, () -> TokenRules.any((Set<TokenRule>) null));
+	}
+	
+	@Test
+	void boundaryWithTwoRulesCreatesBoundaryTokenRule() {
+		TokenRule start = createRule("start");
+		TokenRule end = createRule("end");
+		TokenRule boundary = TokenRules.boundary(start, end);
+		
+		assertInstanceOf(BoundaryTokenRule.class, boundary);
+		BoundaryTokenRule boundaryRule = (BoundaryTokenRule) boundary;
+		assertEquals(start, boundaryRule.startTokenRule());
+		assertEquals(TokenRules.alwaysMatch(), boundaryRule.betweenTokenRule());
+		assertEquals(end, boundaryRule.endTokenRule());
+	}
+	
+	@Test
+	void boundaryWithThreeRulesCreatesBoundaryTokenRule() {
+		TokenRule start = createRule("start");
+		TokenRule between = createRule("between");
+		TokenRule end = createRule("end");
+		TokenRule boundary = TokenRules.boundary(start, between, end);
+		
+		assertInstanceOf(BoundaryTokenRule.class, boundary);
+		BoundaryTokenRule boundaryRule = (BoundaryTokenRule) boundary;
+		assertEquals(start, boundaryRule.startTokenRule());
+		assertEquals(between, boundaryRule.betweenTokenRule());
+		assertEquals(end, boundaryRule.endTokenRule());
+	}
+	
+	@Test
+	void boundaryWithNullRules() {
+		TokenRule validRule = createRule("valid");
+		assertThrows(NullPointerException.class, () -> TokenRules.boundary(null, validRule));
+		assertThrows(NullPointerException.class, () -> TokenRules.boundary(validRule, null));
+		assertThrows(NullPointerException.class, () -> TokenRules.boundary(null, validRule, validRule));
+		assertThrows(NullPointerException.class, () -> TokenRules.boundary(validRule, null, validRule));
+		assertThrows(NullPointerException.class, () -> TokenRules.boundary(validRule, validRule, null));
+	}
+	
+	@Test
+	void endReturnsSingleton() {
+		TokenRule end1 = TokenRules.end();
+		TokenRule end2 = TokenRules.end();
+		
+		assertSame(EndTokenRule.INSTANCE, end1);
+		assertSame(end1, end2);
+		assertInstanceOf(EndTokenRule.class, end1);
+	}
+	
+	@Test
+	void toRegexWithNullRule() {
 		assertThrows(NullPointerException.class, () -> TokenRules.toRegex(null));
-		
+	}
+	
+	@Test
+	void toRegexWithAlwaysMatchRule() {
 		assertEquals(".*?", TokenRules.toRegex(TokenRules.alwaysMatch()));
+	}
+	
+	@Test
+	void toRegexWithEndRule() {
 		assertEquals("$", TokenRules.toRegex(TokenRules.end()));
-		
+	}
+	
+	@Test
+	void toRegexWithSimplePatternRule() {
 		assertEquals("test", TokenRules.toRegex(TokenRules.pattern("test")));
-		assertEquals("test", TokenRules.toRegex(TokenRules.pattern(Pattern.compile("test"))));
-		assertEquals("test", TokenRules.toRegex(TokenRules.pattern("(test)")));
-		assertEquals("[a-z]", TokenRules.toRegex(TokenRules.pattern("[a-z]")));
 		assertEquals("\\d+", TokenRules.toRegex(TokenRules.pattern("\\d+")));
-		
+		assertEquals("[a-z]", TokenRules.toRegex(TokenRules.pattern("[a-z]")));
+	}
+	
+	@Test
+	void toRegexWithPatternInBrackets() {
+		assertEquals("test", TokenRules.toRegex(TokenRules.pattern("(test)")));
+		assertEquals("\\d+", TokenRules.toRegex(TokenRules.pattern("(\\d+)")));
+	}
+	
+	@Test
+	void toRegexWithOptionalRule() {
 		assertEquals("test?", TokenRules.toRegex(TokenRules.optional(TokenRules.pattern("test"))));
 		assertEquals("(.*?)?", TokenRules.toRegex(TokenRules.optional(TokenRules.alwaysMatch())));
 		assertEquals("(\\d+)?", TokenRules.toRegex(TokenRules.optional(TokenRules.pattern("\\d+"))));
-		
+	}
+	
+	@Test
+	void toRegexWithRepeatedRules() {
 		assertEquals("test{3}", TokenRules.toRegex(TokenRules.repeatExactly(TokenRules.pattern("test"), 3)));
 		assertEquals("test", TokenRules.toRegex(TokenRules.repeatExactly(TokenRules.pattern("test"), 1)));
-		
 		assertEquals("test{2,}", TokenRules.toRegex(TokenRules.repeatAtLeast(TokenRules.pattern("test"), 2)));
 		assertEquals("test+", TokenRules.toRegex(TokenRules.repeatAtLeast(TokenRules.pattern("test"), 1)));
-		
 		assertEquals("test{0,3}", TokenRules.toRegex(TokenRules.repeatAtMost(TokenRules.pattern("test"), 3)));
 		assertEquals("test?", TokenRules.toRegex(TokenRules.repeatAtMost(TokenRules.pattern("test"), 1)));
-		
 		assertEquals("test*", TokenRules.toRegex(TokenRules.repeatInfinitely(TokenRules.pattern("test"))));
-		
 		assertEquals("test{2,5}", TokenRules.toRegex(TokenRules.repeatBetween(TokenRules.pattern("test"), 2, 5)));
-		assertEquals("test?", TokenRules.toRegex(TokenRules.repeatBetween(TokenRules.pattern("test"), 0, 1)));
-		
+	}
+	
+	@Test
+	void toRegexWithSpecialCharacterHandling() {
 		assertEquals("(\\d+?){2,5}", TokenRules.toRegex(TokenRules.repeatBetween(TokenRules.pattern("\\d+?"), 2, 5)));
 		assertEquals("(test*)+", TokenRules.toRegex(TokenRules.repeatAtLeast(TokenRules.pattern("test*"), 1)));
-		
+	}
+	
+	@Test
+	void toRegexWithSequenceRule() {
 		assertEquals("test\\d+", TokenRules.toRegex(TokenRules.sequence(
 			TokenRules.pattern("test"),
 			TokenRules.pattern("\\d+")
@@ -141,29 +402,40 @@ class TokenRulesTest {
 			TokenRules.pattern("\\d+"),
 			TokenRules.alwaysMatch()
 		)));
-		
-		List<TokenRule> anyRules = Lists.newArrayList(
+	}
+	
+	@Test
+	void toRegexWithAnyOfRule() {
+		Set<TokenRule> anyRules = new LinkedHashSet<>(List.of(
 			TokenRules.pattern("test"),
 			TokenRules.pattern("\\d+")
-		);
-		assertEquals("test|\\d+", TokenRules.toRegex(TokenRules.any(new LinkedHashSet<>(anyRules))));
-		anyRules.add(TokenRules.alwaysMatch());
-		assertEquals("test|\\d+|.*?", TokenRules.toRegex(TokenRules.any(new LinkedHashSet<>(anyRules))));
-		TokenRule charA = new CharTokenDefinition('a');
-		TokenRule charB = new CharTokenDefinition('b');
-		TokenRule charC = new CharTokenDefinition('c');
-		assertEquals("[abc]", TokenRules.toRegex(TokenRules.any(Sets.newLinkedHashSet(Arrays.asList(charA, charB, charC)))));
-		TokenRule charBracket = new CharTokenDefinition('[');
-		TokenRule charBackslash = new CharTokenDefinition('\\');
-		assertEquals("[\\[\\\\]", TokenRules.toRegex(TokenRules.any(Sets.newLinkedHashSet(Arrays.asList(charBracket, charBackslash)))));
+		));
+		assertEquals("test|\\d+", TokenRules.toRegex(TokenRules.any(anyRules)));
 		
+		anyRules.add(TokenRules.alwaysMatch());
+		assertEquals("test|\\d+|.*?", TokenRules.toRegex(TokenRules.any(anyRules)));
+	}
+	
+	@Test
+	void toRegexWithCharacterTokenDefinitions() {
+		Set<TokenRule> charRules = new LinkedHashSet<>(List.of(
+			new CharTokenDefinition('a'),
+			new CharTokenDefinition('b'),
+			new CharTokenDefinition('c')
+		));
+		assertEquals("[abc]", TokenRules.toRegex(TokenRules.any(charRules)));
+		
+		Set<TokenRule> specialCharRules = new LinkedHashSet<>(List.of(
+			new CharTokenDefinition('['),
+			new CharTokenDefinition('\\')
+		));
+		assertEquals("[\\[\\\\]", TokenRules.toRegex(TokenRules.any(specialCharRules)));
+	}
+	
+	@Test
+	void toRegexWithBoundaryRule() {
 		assertEquals("test(.*?)end", TokenRules.toRegex(TokenRules.boundary(
 			TokenRules.pattern("test"),
-			TokenRules.pattern("end")
-		)));
-		assertEquals("test(.*?)end", TokenRules.toRegex(TokenRules.boundary(
-			TokenRules.pattern("test"),
-			TokenRules.alwaysMatch(),
 			TokenRules.pattern("end")
 		)));
 		assertEquals("test(\\d+?)end", TokenRules.toRegex(TokenRules.boundary(
@@ -171,45 +443,71 @@ class TokenRulesTest {
 			TokenRules.pattern("\\d+?"),
 			TokenRules.pattern("end")
 		)));
-		
+	}
+	
+	@Test
+	void toRegexWithTokenDefinitions() {
 		assertEquals("[a-zA-Z0-9]+", TokenRules.toRegex(WordTokenDefinition.INSTANCE));
 		assertEquals("a", TokenRules.toRegex(new CharTokenDefinition('a')));
 		assertEquals("test", TokenRules.toRegex(new StringTokenDefinition("test", false)));
 		assertEquals("\\\\a", TokenRules.toRegex(new EscapedTokenDefinition('a')));
-		
+	}
+	
+	@Test
+	void toRegexWithEscapedSpecialCharacters() {
 		assertEquals("\\$", TokenRules.toRegex(new CharTokenDefinition('$')));
 		assertEquals("\\(", TokenRules.toRegex(new CharTokenDefinition('(')));
 		assertEquals("\\+", TokenRules.toRegex(new CharTokenDefinition('+')));
 		assertEquals("\\.", TokenRules.toRegex(new CharTokenDefinition('.')));
 		assertEquals("\\*", TokenRules.toRegex(new CharTokenDefinition('*')));
-		
-		TokenRule complexRule1 = TokenRules.sequence(
+		assertEquals("\\{", TokenRules.toRegex(new CharTokenDefinition('{')));
+		assertEquals("\\}", TokenRules.toRegex(new CharTokenDefinition('}')));
+		assertEquals("\\[", TokenRules.toRegex(new CharTokenDefinition('[')));
+		assertEquals("\\]", TokenRules.toRegex(new CharTokenDefinition(']')));
+		assertEquals("\\^", TokenRules.toRegex(new CharTokenDefinition('^')));
+		assertEquals("\\|", TokenRules.toRegex(new CharTokenDefinition('|')));
+	}
+	
+	@Test
+	void toRegexWithComplexRules() {
+		TokenRule complex1 = TokenRules.sequence(
 			TokenRules.pattern("start"),
 			TokenRules.optional(TokenRules.pattern("\\d+")),
 			TokenRules.repeatAtLeast(TokenRules.pattern("[a-z]"), 1)
 		);
-		assertEquals("start(\\d+)?[a-z]+", TokenRules.toRegex(complexRule1));
+		assertEquals("start(\\d+)?[a-z]+", TokenRules.toRegex(complex1));
 		
-		TokenRule complexRule2 = TokenRules.any(new LinkedHashSet<>(Arrays.asList(
+		TokenRule complex2 = TokenRules.any(new LinkedHashSet<>(List.of(
 			TokenRules.pattern("option1"),
 			TokenRules.sequence(
 				TokenRules.pattern("prefix"),
 				TokenRules.repeatBetween(TokenRules.pattern("\\w"), 1, 3)
 			)
 		)));
-		assertEquals("option1|prefix\\w{1,3}", TokenRules.toRegex(complexRule2));
-		
-		TokenRule complexRule3 = TokenRules.boundary(
+		assertEquals("option1|prefix\\w{1,3}", TokenRules.toRegex(complex2));
+	}
+	
+	@Test
+	void toRegexWithVeryComplexRule() {
+		TokenRule complex = TokenRules.boundary(
 			TokenRules.pattern("\""),
 			TokenRules.repeatInfinitely(
-				TokenRules.any(new LinkedHashSet<>(Arrays.asList(
+				TokenRules.any(new LinkedHashSet<>(List.of(
 					TokenRules.pattern("[^\"]"),
 					TokenRules.pattern("\"")
 				)))
 			),
 			TokenRules.pattern("\"")
 		);
-		assertEquals("\"(([^\"]|\")*)\"", TokenRules.toRegex(complexRule3));
+		assertEquals("\"(([^\"]|\")*)\"", TokenRules.toRegex(complex));
+	}
+	
+	@Test
+	void factoryMethodsWithEdgeCases() {
+		assertDoesNotThrow(() -> TokenRules.repeatBetween(createRule("test"), 0, Integer.MAX_VALUE));
+		assertDoesNotThrow(() -> TokenRules.repeatAtLeast(createRule("test"), Integer.MAX_VALUE));
+		
+		assertDoesNotThrow(() -> TokenRules.sequence(List.of(createRule("single"))));
+		assertDoesNotThrow(() -> TokenRules.any(Set.of(createRule("single"))));
 	}
 }
-

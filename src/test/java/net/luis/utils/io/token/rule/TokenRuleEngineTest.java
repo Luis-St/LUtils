@@ -18,17 +18,20 @@
 
 package net.luis.utils.io.token.rule;
 
-import com.google.common.collect.Sets;
-import net.luis.utils.io.token.TokenReader;
+import net.luis.utils.io.token.definition.StringTokenDefinition;
 import net.luis.utils.io.token.definition.TokenDefinition;
+import net.luis.utils.io.token.rule.actions.GroupingTokenAction;
 import net.luis.utils.io.token.rule.actions.TokenAction;
-import net.luis.utils.io.token.rule.rules.*;
+import net.luis.utils.io.token.rule.actions.TransformTokenAction;
+import net.luis.utils.io.token.rule.rules.TokenRules;
 import net.luis.utils.io.token.tokens.SimpleToken;
 import net.luis.utils.io.token.tokens.Token;
+import net.luis.utils.io.token.tokens.TokenGroup;
+import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.Test;
 
+import java.util.Collections;
 import java.util.List;
-import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -39,138 +42,242 @@ import static org.junit.jupiter.api.Assertions.*;
  */
 class TokenRuleEngineTest {
 	
-	private static final Token TOKEN_0 = SimpleToken.createUnpositioned("test"::equals, "test");
-	private static final Token TOKEN_1 = SimpleToken.createUnpositioned("test1"::equals, "test1");
-	private static final Token TOKEN_2 = SimpleToken.createUnpositioned("test2"::equals, "test2");
+	private static @NotNull TokenDefinition createDefinition(@NotNull String value) {
+		return new StringTokenDefinition(value, false);
+	}
 	
-	private static final TokenDefinition NUMBER_DEFINITION = (word) -> word.matches("\\d+");
-	
-	private static final TokenDefinition OPEN_PAREN = TokenDefinition.of('(');
-	private static final TokenDefinition CLOSE_PAREN = TokenDefinition.of(')');
-	
-	private static final TokenDefinition ZERO = TokenDefinition.of('0');
-	private static final TokenDefinition ONE = TokenDefinition.of('1');
-	private static final TokenDefinition TWO = TokenDefinition.of('2');
-	private static final TokenDefinition THREE = TokenDefinition.of('3');
-	private static final TokenDefinition FOUR = TokenDefinition.of('4');
-	private static final TokenDefinition FIVE = TokenDefinition.of('5');
-	private static final TokenDefinition SIX = TokenDefinition.of('6');
-	private static final TokenDefinition SEVEN = TokenDefinition.of('7');
-	private static final TokenDefinition EIGHT = TokenDefinition.of('8');
-	private static final TokenDefinition NINE = TokenDefinition.of('9');
-	
-	private static final Set<TokenDefinition> DEFINITIONS = Set.of(
-		OPEN_PAREN, CLOSE_PAREN, ZERO, ONE, TWO, THREE, FOUR, FIVE, SIX, SEVEN, EIGHT, NINE
-	);
-	private static final Set<Character> ALLOWED_CHARS = Set.of(
-		'(', ')', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9'
-	);
-	private static final Set<Character> SEPARATORS = Sets.union(
-		Set.of(' '),
-		ALLOWED_CHARS
-	);
+	private static @NotNull Token createToken(@NotNull String value) {
+		return SimpleToken.createUnpositioned(createDefinition(value), value);
+	}
 	
 	@Test
-	void addRule() {
+	void addRuleWithNullRule() {
 		TokenRuleEngine engine = new TokenRuleEngine();
+		
 		assertThrows(NullPointerException.class, () -> engine.addRule(null));
+	}
+	
+	@Test
+	void addRuleWithValidRule() {
+		TokenRuleEngine engine = new TokenRuleEngine();
+		
 		assertDoesNotThrow(() -> engine.addRule(TokenRules.alwaysMatch()));
+	}
+	
+	@Test
+	void addRuleWithActionAndNullRule() {
+		TokenRuleEngine engine = new TokenRuleEngine();
 		
 		assertThrows(NullPointerException.class, () -> engine.addRule(null, TokenAction.identity()));
+	}
+	
+	@Test
+	void addRuleWithActionAndNullAction() {
+		TokenRuleEngine engine = new TokenRuleEngine();
+		
 		assertThrows(NullPointerException.class, () -> engine.addRule(TokenRules.alwaysMatch(), null));
+	}
+	
+	@Test
+	void addRuleWithValidRuleAndAction() {
+		TokenRuleEngine engine = new TokenRuleEngine();
+		
 		assertDoesNotThrow(() -> engine.addRule(TokenRules.alwaysMatch(), TokenAction.identity()));
 	}
 	
 	@Test
-	void process() {
-		TokenRuleEngine baseMatchEngine = new TokenRuleEngine();
-		assertThrows(NullPointerException.class, () -> baseMatchEngine.process(null));
+	void processWithNullTokenList() {
+		TokenRuleEngine engine = new TokenRuleEngine();
 		
-		List<Token> emptyList = List.of();
-		assertDoesNotThrow(() -> baseMatchEngine.process(emptyList));
-		assertEquals(emptyList, baseMatchEngine.process(emptyList));
+		assertThrows(NullPointerException.class, () -> engine.process(null));
+	}
+	
+	@Test
+	void processWithEmptyTokenList() {
+		TokenRuleEngine engine = new TokenRuleEngine();
+		List<Token> emptyList = Collections.emptyList();
+		List<Token> result = engine.process(emptyList);
 		
+		assertTrue(result.isEmpty());
+		assertNotSame(emptyList, result);
+	}
+	
+	@Test
+	void processWithEmptyTokenListAndRules() {
+		TokenRuleEngine engine = new TokenRuleEngine();
+		engine.addRule(TokenRules.alwaysMatch(), TokenAction.identity());
 		
-		TokenReader reader = new TokenReader(DEFINITIONS, ALLOWED_CHARS, SEPARATORS);
+		List<Token> emptyList = Collections.emptyList();
+		List<Token> result = engine.process(emptyList);
 		
-		TokenRuleEngine alwaysMatchEngine = new TokenRuleEngine();
-		alwaysMatchEngine.addRule(TokenRules.alwaysMatch(), TokenAction.identity());
-		List<Token> parenTokens = reader.readTokens("(()())");
-		List<Token> processedTokens = alwaysMatchEngine.process(parenTokens);
-		assertEquals(parenTokens.size(), processedTokens.size());
-		assertEquals(parenTokens, processedTokens);
+		assertTrue(result.isEmpty());
+	}
+	
+	@Test
+	void processWithNoRules() {
+		TokenRuleEngine engine = new TokenRuleEngine();
+		List<Token> tokens = List.of(createToken("test"));
+		List<Token> result = engine.process(tokens);
 		
-		TokenRuleEngine patternEngine = new TokenRuleEngine();
-		patternEngine.addRule(new PatternTokenRule("\\("), TokenAction.identity());
-		processedTokens = patternEngine.process(parenTokens);
-		assertEquals(parenTokens.size(), processedTokens.size());
-		assertEquals(parenTokens, processedTokens);
+		assertEquals(tokens.size(), result.size());
+		assertEquals(tokens, result);
+		assertNotSame(tokens, result);
+	}
+	
+	@Test
+	void processWithIdentityAction() {
+		TokenRuleEngine engine = new TokenRuleEngine();
+		engine.addRule(TokenRules.alwaysMatch(), TokenAction.identity());
 		
-		TokenRuleEngine optionalEngine = new TokenRuleEngine();
-		optionalEngine.addRule(new OptionalTokenRule(new PatternTokenRule("\\(")), TokenAction.identity());
-		processedTokens = optionalEngine.process(parenTokens);
-		assertEquals(parenTokens.size(), processedTokens.size());
-		assertEquals(parenTokens, processedTokens);
+		List<Token> tokens = List.of(createToken("test"));
+		List<Token> result = engine.process(tokens);
 		
-		TokenRuleEngine anyOfEngine = new TokenRuleEngine();
-		anyOfEngine.addRule(new AnyOfTokenRule(Set.of(
-			new PatternTokenRule("\\("),
-			new PatternTokenRule("\\)")
-		)), TokenAction.identity());
-		processedTokens = anyOfEngine.process(parenTokens);
-		assertEquals(parenTokens.size(), processedTokens.size());
-		assertEquals(parenTokens, processedTokens);
+		assertEquals(tokens.size(), result.size());
+		assertEquals(tokens.getFirst().value(), result.getFirst().value());
+	}
+	
+	@Test
+	void processWithValidationRule() {
+		TokenRuleEngine engine = new TokenRuleEngine();
+		engine.addRule(createDefinition("test"));
 		
-		TokenRuleEngine sequenceEngine = new TokenRuleEngine();
-		sequenceEngine.addRule(new SequenceTokenRule(List.of(
-			new PatternTokenRule("\\("),
-			new PatternTokenRule("\\(")
-		)), TokenAction.identity());
-		List<Token> sequenceTestTokens = reader.readTokens("(()");
-		processedTokens = sequenceEngine.process(sequenceTestTokens);
-		assertEquals(sequenceTestTokens.size(), processedTokens.size());
-		assertEquals(sequenceTestTokens, processedTokens);
+		List<Token> tokens = List.of(createToken("test"), createToken("other"));
+		List<Token> result = engine.process(tokens);
 		
-		TokenRuleEngine repeatedEngine = new TokenRuleEngine();
-		repeatedEngine.addRule(new RepeatedTokenRule(
-			new PatternTokenRule("\\("), 1, 3
-		), TokenAction.identity());
-		List<Token> repeatedTestTokens = reader.readTokens("(((");
-		processedTokens = repeatedEngine.process(repeatedTestTokens);
-		assertEquals(repeatedTestTokens.size(), processedTokens.size());
-		assertEquals(repeatedTestTokens, processedTokens);
+		assertEquals(tokens.size(), result.size());
+		assertEquals(tokens, result);
+	}
+	
+	@Test
+	void processWithTransformAction() {
+		TokenRuleEngine engine = new TokenRuleEngine();
+		TokenAction uppercaseAction = new TransformTokenAction(tokenList ->
+			tokenList.stream().map(token -> createToken(token.value().toUpperCase())).toList()
+		);
+		engine.addRule(createDefinition("test"), uppercaseAction);
 		
-		TokenRuleEngine boundaryEngine = new TokenRuleEngine();
-		boundaryEngine.addRule(new BoundaryTokenRule(
-			new PatternTokenRule("\\("),
-			TokenRules.alwaysMatch(),
-			new PatternTokenRule("\\)")
-		), TokenAction.identity());
-		List<Token> boundaryTestTokens = reader.readTokens("(123)");
-		processedTokens = boundaryEngine.process(boundaryTestTokens);
-		assertEquals(boundaryTestTokens.size(), processedTokens.size());
-		assertEquals(boundaryTestTokens, processedTokens);
+		List<Token> tokens = List.of(createToken("test"));
+		List<Token> result = engine.process(tokens);
 		
-		TokenRuleEngine complexEngine = new TokenRuleEngine();
-		complexEngine.addRule(new BoundaryTokenRule(
-			new PatternTokenRule("\\("),
-			new AnyOfTokenRule(Set.of(
-				new PatternTokenRule("1"),
-				new PatternTokenRule("2"),
-				new PatternTokenRule("3")
-			)),
-			new PatternTokenRule("\\)")
-		), TokenAction.identity());
-		List<Token> complexTestTokens = reader.readTokens("(123)");
-		processedTokens = complexEngine.process(complexTestTokens);
-		assertEquals(complexTestTokens.size(), processedTokens.size());
-		assertEquals(complexTestTokens, processedTokens);
+		assertEquals(1, result.size());
+		assertEquals("TEST", result.getFirst().value());
+	}
+	
+	@Test
+	void processWithGroupingAction() {
+		TokenRuleEngine engine = new TokenRuleEngine();
+		TokenDefinition groupDefinition = "testother"::equals;
+		GroupingTokenAction groupingAction = new GroupingTokenAction(groupDefinition);
+		engine.addRule(TokenRules.sequence(createDefinition("test"), createDefinition("other")), groupingAction);
 		
-		TokenRuleEngine endEngine = new TokenRuleEngine();
-		endEngine.addRule(TokenRules.end(), TokenAction.identity());
-		List<Token> endTestTokens = reader.readTokens(")");
-		processedTokens = endEngine.process(endTestTokens);
-		assertEquals(endTestTokens.size(), processedTokens.size());
-		assertEquals(endTestTokens, processedTokens);
+		List<Token> tokens = List.of(createToken("test"), createToken("other"));
+		List<Token> result = engine.process(tokens);
+		
+		assertEquals(1, result.size());
+		assertInstanceOf(TokenGroup.class, result.getFirst());
+		assertEquals("testother", result.getFirst().value());
+	}
+	
+	@Test
+	void processWithMultipleRules() {
+		TokenRuleEngine engine = new TokenRuleEngine();
+		engine.addRule(createDefinition("first"), new TransformTokenAction(tokenList ->
+			tokenList.stream().map(token -> createToken("FIRST")).toList()
+		));
+		engine.addRule(createDefinition("second"), new TransformTokenAction(tokenList ->
+			tokenList.stream().map(token -> createToken("SECOND")).toList()
+		));
+		
+		List<Token> tokens = List.of(createToken("first"), createToken("second"), createToken("third"));
+		List<Token> result = engine.process(tokens);
+		
+		assertEquals(3, result.size());
+		assertEquals("FIRST", result.getFirst().value());
+		assertEquals("SECOND", result.get(1).value());
+		assertEquals("third", result.get(2).value());
+	}
+	
+	@Test
+	void processWithRuleOrder() {
+		TokenRuleEngine engine = new TokenRuleEngine();
+		engine.addRule(TokenRules.alwaysMatch(), new TransformTokenAction(tokenList ->
+			tokenList.stream().map(token -> createToken("ALWAYS")).toList()
+		));
+		engine.addRule(createDefinition("test"), new TransformTokenAction(tokenList ->
+			tokenList.stream().map(token -> createToken("SPECIFIC")).toList()
+		));
+		
+		List<Token> tokens = List.of(createToken("test"));
+		
+		List<Token> result = engine.process(tokens);
+		
+		assertEquals(1, result.size());
+		assertEquals("ALWAYS", result.getFirst().value());
+	}
+	
+	@Test
+	void processWithNoMatchingRules() {
+		TokenRuleEngine engine = new TokenRuleEngine();
+		engine.addRule(createDefinition("notmatching"), TokenAction.identity());
+		
+		List<Token> tokens = List.of(createToken("test"));
+		List<Token> result = engine.process(tokens);
+		
+		assertEquals(tokens.size(), result.size());
+		assertEquals(tokens, result);
+	}
+	
+	@Test
+	void processWithSequentialApplication() {
+		TokenRuleEngine engine = new TokenRuleEngine();
+		engine.addRule(TokenRules.sequence(createDefinition("a"), createDefinition("b")), new TransformTokenAction(tokenList -> List.of(createToken("AB"))));
+		engine.addRule(TokenRules.sequence(createDefinition("AB"), createDefinition("c")), new TransformTokenAction(tokenList -> List.of(createToken("ABC"))));
+		
+		List<Token> tokens = List.of(createToken("a"), createToken("b"), createToken("c"));
+		List<Token> result = engine.process(tokens);
+		
+		assertEquals(1, result.size());
+		assertEquals("ABC", result.getFirst().value());
+	}
+	
+	@Test
+	void processWithOptionalRule() {
+		TokenRuleEngine engine = new TokenRuleEngine();
+		engine.addRule(TokenRules.optional(createDefinition("optional")), TokenAction.identity());
+		
+		List<Token> tokens = List.of(createToken("test"));
+		List<Token> result = engine.process(tokens);
+		
+		assertEquals(1, result.size());
+		assertEquals("test", result.getFirst().value());
+	}
+	
+	@Test
+	void processWithRepeatedRule() {
+		TokenRuleEngine engine = new TokenRuleEngine();
+		engine.addRule(TokenRules.repeatAtLeast(createDefinition("repeat"), 2), new GroupingTokenAction(word -> word.startsWith("repeat")));
+		
+		List<Token> tokens = List.of(
+			createToken("repeat"),
+			createToken("repeat"),
+			createToken("repeat"),
+			createToken("other")
+		);
+		
+		List<Token> result = engine.process(tokens);
+		
+		assertEquals(2, result.size());
+		assertInstanceOf(TokenGroup.class, result.getFirst());
+		assertEquals("repeatrepeatrepeat", result.getFirst().value());
+		assertEquals("other", result.get(1).value());
+	}
+	
+	@Test
+	void processResultIsUnmodifiable() {
+		TokenRuleEngine engine = new TokenRuleEngine();
+		List<Token> tokens = List.of(createToken("test"));
+		List<Token> result = engine.process(tokens);
+		
+		assertThrows(UnsupportedOperationException.class, () -> result.add(createToken("new")));
 	}
 }

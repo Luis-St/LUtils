@@ -30,10 +30,136 @@ import static org.junit.jupiter.api.Assertions.*;
 class WordTokenDefinitionTest {
 	
 	@Test
-	void matches() {
+	void instanceIsSingleton() {
+		assertSame(WordTokenDefinition.INSTANCE, WordTokenDefinition.INSTANCE);
+	}
+	
+	@Test
+	void matchesWithNullInput() {
 		assertThrows(NullPointerException.class, () -> WordTokenDefinition.INSTANCE.matches(null));
+	}
+	
+	@Test
+	void doesNotMatchWithEmptyString() {
 		assertFalse(WordTokenDefinition.INSTANCE.matches(""));
+	}
+	
+	@Test
+	void matchesWithSingleCharacter() {
 		assertTrue(WordTokenDefinition.INSTANCE.matches("a"));
 		assertTrue(WordTokenDefinition.INSTANCE.matches("A"));
+		assertTrue(WordTokenDefinition.INSTANCE.matches("z"));
+		assertTrue(WordTokenDefinition.INSTANCE.matches("Z"));
+		assertTrue(WordTokenDefinition.INSTANCE.matches("0"));
+		assertTrue(WordTokenDefinition.INSTANCE.matches("9"));
+	}
+	
+	@Test
+	void matchesWithMultipleCharacters() {
+		assertTrue(WordTokenDefinition.INSTANCE.matches("abc"));
+		assertTrue(WordTokenDefinition.INSTANCE.matches("ABC"));
+		assertTrue(WordTokenDefinition.INSTANCE.matches("123"));
+		assertTrue(WordTokenDefinition.INSTANCE.matches("abc123"));
+		assertTrue(WordTokenDefinition.INSTANCE.matches("123abc"));
+		assertTrue(WordTokenDefinition.INSTANCE.matches("AbC123"));
+	}
+	
+	@Test
+	void matchesWithLongWords() {
+		assertTrue(WordTokenDefinition.INSTANCE.matches("hello"));
+		assertTrue(WordTokenDefinition.INSTANCE.matches("HELLO"));
+		assertTrue(WordTokenDefinition.INSTANCE.matches("Hello"));
+		assertTrue(WordTokenDefinition.INSTANCE.matches("helloWorld"));
+		assertTrue(WordTokenDefinition.INSTANCE.matches("HelloWorld123"));
+		assertTrue(WordTokenDefinition.INSTANCE.matches("a".repeat(1000)));
+	}
+	
+	@Test
+	void matchesWithNumericStrings() {
+		assertTrue(WordTokenDefinition.INSTANCE.matches("123"));
+		assertTrue(WordTokenDefinition.INSTANCE.matches("0"));
+		assertTrue(WordTokenDefinition.INSTANCE.matches("999999"));
+		assertTrue(WordTokenDefinition.INSTANCE.matches("42"));
+	}
+	
+	@Test
+	void matchesWithMixedAlphanumeric() {
+		assertTrue(WordTokenDefinition.INSTANCE.matches("test123"));
+		assertTrue(WordTokenDefinition.INSTANCE.matches("123test"));
+		assertTrue(WordTokenDefinition.INSTANCE.matches("a1b2c3"));
+		assertTrue(WordTokenDefinition.INSTANCE.matches("Test123ABC"));
+	}
+	
+	@Test
+	void matchesWithSpecialCharacters() {
+		assertTrue(WordTokenDefinition.INSTANCE.matches("!"));
+		assertTrue(WordTokenDefinition.INSTANCE.matches("@"));
+		assertTrue(WordTokenDefinition.INSTANCE.matches("#"));
+		assertTrue(WordTokenDefinition.INSTANCE.matches("$"));
+		assertTrue(WordTokenDefinition.INSTANCE.matches("%"));
+		assertTrue(WordTokenDefinition.INSTANCE.matches("^"));
+		assertTrue(WordTokenDefinition.INSTANCE.matches("&"));
+		assertTrue(WordTokenDefinition.INSTANCE.matches("*"));
+		assertTrue(WordTokenDefinition.INSTANCE.matches("("));
+		assertTrue(WordTokenDefinition.INSTANCE.matches(")"));
+		assertTrue(WordTokenDefinition.INSTANCE.matches("-"));
+		assertTrue(WordTokenDefinition.INSTANCE.matches("_"));
+		assertTrue(WordTokenDefinition.INSTANCE.matches("="));
+		assertTrue(WordTokenDefinition.INSTANCE.matches("+"));
+	}
+	
+	@Test
+	void matchesWithWhitespace() {
+		assertTrue(WordTokenDefinition.INSTANCE.matches(" "));
+		assertTrue(WordTokenDefinition.INSTANCE.matches("\t"));
+		assertTrue(WordTokenDefinition.INSTANCE.matches("\n"));
+		assertTrue(WordTokenDefinition.INSTANCE.matches("\r"));
+		assertTrue(WordTokenDefinition.INSTANCE.matches("\f"));
+	}
+	
+	@Test
+	void matchesWithMixedValidAndInvalidCharacters() {
+		assertTrue(WordTokenDefinition.INSTANCE.matches("hello world"));
+		assertTrue(WordTokenDefinition.INSTANCE.matches("test!"));
+		assertTrue(WordTokenDefinition.INSTANCE.matches("!test"));
+		assertTrue(WordTokenDefinition.INSTANCE.matches("te!st"));
+		assertTrue(WordTokenDefinition.INSTANCE.matches("123-456"));
+		assertTrue(WordTokenDefinition.INSTANCE.matches("abc_def"));
+		assertTrue(WordTokenDefinition.INSTANCE.matches("test.txt"));
+		assertTrue(WordTokenDefinition.INSTANCE.matches("hello@world"));
+	}
+	
+	@Test
+	void matchesWithPunctuation() {
+		assertTrue(WordTokenDefinition.INSTANCE.matches("."));
+		assertTrue(WordTokenDefinition.INSTANCE.matches(","));
+		assertTrue(WordTokenDefinition.INSTANCE.matches(";"));
+		assertTrue(WordTokenDefinition.INSTANCE.matches(":"));
+		assertTrue(WordTokenDefinition.INSTANCE.matches("?"));
+		assertTrue(WordTokenDefinition.INSTANCE.matches("'"));
+		assertTrue(WordTokenDefinition.INSTANCE.matches("\""));
+		assertTrue(WordTokenDefinition.INSTANCE.matches("["));
+		assertTrue(WordTokenDefinition.INSTANCE.matches("]"));
+		assertTrue(WordTokenDefinition.INSTANCE.matches("{"));
+		assertTrue(WordTokenDefinition.INSTANCE.matches("}"));
+	}
+	
+	@Test
+	void matchesWithEscapeSequences() {
+		assertTrue(WordTokenDefinition.INSTANCE.matches("\\"));
+		assertTrue(WordTokenDefinition.INSTANCE.matches("\\n"));
+		assertTrue(WordTokenDefinition.INSTANCE.matches("\\t"));
+		assertTrue(WordTokenDefinition.INSTANCE.matches("\\\\"));
+		assertTrue(WordTokenDefinition.INSTANCE.matches("test\\n"));
+	}
+	
+	@Test
+	void equalInstancesHaveSameHashCode() {
+		assertEquals(WordTokenDefinition.INSTANCE.hashCode(), WordTokenDefinition.INSTANCE.hashCode());
+	}
+	
+	@Test
+	void toStringReturnsExpectedValue() {
+		assertEquals("WORD", WordTokenDefinition.INSTANCE.toString());
 	}
 }

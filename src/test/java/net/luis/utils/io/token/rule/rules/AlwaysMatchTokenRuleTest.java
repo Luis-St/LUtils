@@ -21,10 +21,12 @@ package net.luis.utils.io.token.rule.rules;
 import net.luis.utils.io.token.rule.TokenRuleMatch;
 import net.luis.utils.io.token.tokens.SimpleToken;
 import net.luis.utils.io.token.tokens.Token;
+import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.Test;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.stream.IntStream;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -35,38 +37,213 @@ import static org.junit.jupiter.api.Assertions.*;
  */
 class AlwaysMatchTokenRuleTest {
 	
-	private static final Token TOKEN_0 = SimpleToken.createUnpositioned("test0"::equals, "test0");
-	private static final Token TOKEN_1 = SimpleToken.createUnpositioned("test1"::equals, "test1");
-	private static final Token TOKEN_2 = SimpleToken.createUnpositioned("test2"::equals, "test2");
+	private static @NotNull Token createToken(@NotNull String value) {
+		return SimpleToken.createUnpositioned(word -> word.equals(value), value);
+	}
 	
 	@Test
-	void match() {
+	void matchWithNullTokenList() {
 		AlwaysMatchTokenRule rule = AlwaysMatchTokenRule.INSTANCE;
+		
 		assertThrows(NullPointerException.class, () -> rule.match(null, 0));
+	}
+	
+	@Test
+	void matchWithEmptyTokenList() {
+		AlwaysMatchTokenRule rule = AlwaysMatchTokenRule.INSTANCE;
+		
 		assertNull(rule.match(Collections.emptyList(), 0));
-		assertNull(rule.match(List.of(TOKEN_0), 1));
-		assertNull(rule.match(List.of(TOKEN_0, TOKEN_1), 3));
+	}
+	
+	@Test
+	void matchWithIndexOutOfBounds() {
+		AlwaysMatchTokenRule rule = AlwaysMatchTokenRule.INSTANCE;
+		List<Token> tokens = List.of(createToken("test"));
 		
-		TokenRuleMatch match0 = rule.match(List.of(TOKEN_0), 0);
-		assertNotNull(match0);
-		assertEquals(0, match0.startIndex());
-		assertEquals(1, match0.endIndex());
-		assertEquals(1, match0.matchedTokens().size());
-		assertEquals(TOKEN_0, match0.matchedTokens().getFirst());
-		assertEquals(rule, match0.matchingTokenRule());
+		assertNull(rule.match(tokens, 1));
+		assertNull(rule.match(tokens, 5));
+		assertNull(rule.match(tokens, -1));
+	}
+	
+	@Test
+	void matchWithValidIndex() {
+		AlwaysMatchTokenRule rule = AlwaysMatchTokenRule.INSTANCE;
+		Token token = createToken("test");
+		List<Token> tokens = List.of(token);
 		
-		TokenRuleMatch match1 = rule.match(List.of(TOKEN_0, TOKEN_1), 0);
+		TokenRuleMatch match = rule.match(tokens, 0);
+		
+		assertNotNull(match);
+		assertEquals(0, match.startIndex());
+		assertEquals(1, match.endIndex());
+		assertEquals(1, match.matchedTokens().size());
+		assertEquals(token, match.matchedTokens().getFirst());
+		assertSame(rule, match.matchingTokenRule());
+	}
+	
+	@Test
+	void matchWithFirstTokenInList() {
+		AlwaysMatchTokenRule rule = AlwaysMatchTokenRule.INSTANCE;
+		Token first = createToken("first");
+		Token second = createToken("second");
+		List<Token> tokens = List.of(first, second);
+		
+		TokenRuleMatch match = rule.match(tokens, 0);
+		
+		assertNotNull(match);
+		assertEquals(0, match.startIndex());
+		assertEquals(1, match.endIndex());
+		assertEquals(1, match.matchedTokens().size());
+		assertEquals(first, match.matchedTokens().getFirst());
+	}
+	
+	@Test
+	void matchWithSecondTokenInList() {
+		AlwaysMatchTokenRule rule = AlwaysMatchTokenRule.INSTANCE;
+		Token first = createToken("first");
+		Token second = createToken("second");
+		List<Token> tokens = List.of(first, second);
+		
+		TokenRuleMatch match = rule.match(tokens, 1);
+		
+		assertNotNull(match);
+		assertEquals(1, match.startIndex());
+		assertEquals(2, match.endIndex());
+		assertEquals(1, match.matchedTokens().size());
+		assertEquals(second, match.matchedTokens().getFirst());
+	}
+	
+	@Test
+	void matchWithDifferentTokenTypes() {
+		AlwaysMatchTokenRule rule = AlwaysMatchTokenRule.INSTANCE;
+		Token text = createToken("text");
+		Token number = createToken("123");
+		Token symbol = createToken("!");
+		List<Token> tokens = List.of(text, number, symbol);
+		
+		TokenRuleMatch textMatch = rule.match(tokens, 0);
+		TokenRuleMatch numberMatch = rule.match(tokens, 1);
+		TokenRuleMatch symbolMatch = rule.match(tokens, 2);
+		
+		assertNotNull(textMatch);
+		assertEquals(text, textMatch.matchedTokens().getFirst());
+		
+		assertNotNull(numberMatch);
+		assertEquals(number, numberMatch.matchedTokens().getFirst());
+		
+		assertNotNull(symbolMatch);
+		assertEquals(symbol, symbolMatch.matchedTokens().getFirst());
+	}
+	
+	@Test
+	void matchAlwaysMatchesExactlyOneToken() {
+		AlwaysMatchTokenRule rule = AlwaysMatchTokenRule.INSTANCE;
+		Token token1 = createToken("token1");
+		Token token2 = createToken("token2");
+		Token token3 = createToken("token3");
+		List<Token> tokens = List.of(token1, token2, token3);
+		
+		for (int i = 0; i < tokens.size(); i++) {
+			TokenRuleMatch match = rule.match(tokens, i);
+			assertNotNull(match);
+			assertEquals(i, match.startIndex());
+			assertEquals(i + 1, match.endIndex());
+			assertEquals(1, match.matchedTokens().size());
+			assertEquals(tokens.get(i), match.matchedTokens().getFirst());
+		}
+	}
+	
+	@Test
+	void matchWithLargeTokenList() {
+		AlwaysMatchTokenRule rule = AlwaysMatchTokenRule.INSTANCE;
+		List<Token> largeList = IntStream.range(0, 100).mapToObj(i -> createToken("token" + i)).toList();
+		
+		TokenRuleMatch firstMatch = rule.match(largeList, 0);
+		TokenRuleMatch middleMatch = rule.match(largeList, 50);
+		TokenRuleMatch lastMatch = rule.match(largeList, 99);
+		
+		assertNotNull(firstMatch);
+		assertEquals(0, firstMatch.startIndex());
+		assertEquals(1, firstMatch.endIndex());
+		
+		assertNotNull(middleMatch);
+		assertEquals(50, middleMatch.startIndex());
+		assertEquals(51, middleMatch.endIndex());
+		
+		assertNotNull(lastMatch);
+		assertEquals(99, lastMatch.startIndex());
+		assertEquals(100, lastMatch.endIndex());
+	}
+	
+	@Test
+	void matchWithSingleCharacterTokens() {
+		AlwaysMatchTokenRule rule = AlwaysMatchTokenRule.INSTANCE;
+		Token a = createToken("a");
+		Token b = createToken("b");
+		Token c = createToken("c");
+		List<Token> tokens = List.of(a, b, c);
+		
+		TokenRuleMatch matchA = rule.match(tokens, 0);
+		TokenRuleMatch matchB = rule.match(tokens, 1);
+		TokenRuleMatch matchC = rule.match(tokens, 2);
+		
+		assertNotNull(matchA);
+		assertEquals("a", matchA.matchedTokens().getFirst().value());
+		assertNotNull(matchB);
+		assertEquals("b", matchB.matchedTokens().getFirst().value());
+		assertNotNull(matchC);
+		assertEquals("c", matchC.matchedTokens().getFirst().value());
+	}
+	
+	@Test
+	void matchWithEmptyValueTokens() {
+		AlwaysMatchTokenRule rule = AlwaysMatchTokenRule.INSTANCE;
+		Token emptyToken = createToken("");
+		List<Token> tokens = List.of(emptyToken);
+		
+		TokenRuleMatch match = rule.match(tokens, 0);
+		
+		assertNotNull(match);
+		assertEquals(emptyToken, match.matchedTokens().getFirst());
+		assertEquals("", match.matchedTokens().getFirst().value());
+	}
+	
+	@Test
+	void matchWithSpecialCharacterTokens() {
+		AlwaysMatchTokenRule rule = AlwaysMatchTokenRule.INSTANCE;
+		Token space = createToken(" ");
+		Token tab = createToken("\t");
+		Token newline = createToken("\n");
+		Token backslash = createToken("\\");
+		List<Token> tokens = List.of(space, tab, newline, backslash);
+		
+		for (int i = 0; i < tokens.size(); i++) {
+			TokenRuleMatch match = rule.match(tokens, i);
+			assertNotNull(match);
+			assertEquals(tokens.get(i), match.matchedTokens().getFirst());
+		}
+	}
+	
+	@Test
+	void matchResultsAreConsistent() {
+		AlwaysMatchTokenRule rule = AlwaysMatchTokenRule.INSTANCE;
+		Token token = createToken("consistent");
+		List<Token> tokens = List.of(token);
+		
+		TokenRuleMatch match1 = rule.match(tokens, 0);
+		TokenRuleMatch match2 = rule.match(tokens, 0);
+		
 		assertNotNull(match1);
-		assertEquals(0, match1.startIndex());
-		assertEquals(1, match1.endIndex());
-		assertEquals(1, match1.matchedTokens().size());
-		assertEquals(TOKEN_0, match1.matchedTokens().getFirst());
-		
-		TokenRuleMatch match2 = rule.match(List.of(TOKEN_0, TOKEN_1), 1);
 		assertNotNull(match2);
-		assertEquals(1, match2.startIndex());
-		assertEquals(2, match2.endIndex());
-		assertEquals(1, match2.matchedTokens().size());
-		assertEquals(TOKEN_1, match2.matchedTokens().getFirst());
+		
+		assertEquals(match1.startIndex(), match2.startIndex());
+		assertEquals(match1.endIndex(), match2.endIndex());
+		assertEquals(match1.matchedTokens(), match2.matchedTokens());
+		assertSame(match1.matchingTokenRule(), match2.matchingTokenRule());
+	}
+	
+	@Test
+	void equalInstancesHaveSameHashCode() {
+		assertEquals(AlwaysMatchTokenRule.INSTANCE.hashCode(), AlwaysMatchTokenRule.INSTANCE.hashCode());
 	}
 }
