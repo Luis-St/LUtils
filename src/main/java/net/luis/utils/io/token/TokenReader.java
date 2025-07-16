@@ -150,7 +150,8 @@ public class TokenReader {
 		}
 		
 		if (!currentWord.isEmpty()) {
-			this.addToken(tokens, currentWord.toString(), wordStart.toTokenPosition(), current.toTokenPosition());
+			TokenPosition endPosition = new TokenPosition(current.line, current.charInLine - 1, current.position - 1);
+			this.addToken(tokens, currentWord.toString(), wordStart.toTokenPosition(), endPosition);
 		}
 		return List.copyOf(tokens);
 	}
@@ -210,6 +211,7 @@ public class TokenReader {
 		 */
 		private void newLine() {
 			this.increment();
+			this.line++;
 			this.charInLine = 0;
 		}
 		

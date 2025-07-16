@@ -85,11 +85,13 @@ public class TokenRuleEngine {
 		Objects.requireNonNull(tokens, "Tokens must not be null");
 		
 		List<Token> result = Lists.newArrayList(tokens);
-		int index = 0;
-		while (index < result.size()) {
-			boolean matchFound = false;
+		
+		for (RuleAction ruleAction : this.ruleActions) {
 			
-			for (RuleAction ruleAction : this.ruleActions) {
+			int index = 0;
+			while (index < result.size()) {
+				boolean matchFound = false;
+				
 				TokenRuleMatch match = ruleAction.tokenRule().match(result, index);
 				if (match != null && !match.matchedTokens().isEmpty()) {
 					List<Token> processed = ruleAction.action().apply(match);
@@ -99,12 +101,11 @@ public class TokenRuleEngine {
 					
 					index = match.startIndex() + processed.size();
 					matchFound = true;
-					break;
 				}
-			}
-			
-			if (!matchFound) {
-				index++;
+				
+				if (!matchFound) {
+					index++;
+				}
 			}
 		}
 		return List.copyOf(result);
