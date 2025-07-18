@@ -18,6 +18,7 @@
 
 package net.luis.utils.io.codec.encoder;
 
+import net.luis.utils.function.throwable.ThrowableFunction;
 import net.luis.utils.io.codec.provider.TypeProvider;
 import net.luis.utils.util.Result;
 import org.jetbrains.annotations.NotNull;
@@ -50,7 +51,7 @@ public interface KeyableEncoder<C> extends Encoder<C> {
 	 * @param <C> The type of the value to encode
 	 * @throws NullPointerException If the encoder or the key encoder function is null
 	 */
-	static <C> @NotNull KeyableEncoder<C> of(@NotNull Encoder<C> encoder, @NotNull Function<C, @Nullable String> keyEncoder) {
+	static <C> @NotNull KeyableEncoder<C> of(@NotNull Encoder<C> encoder, @NotNull ThrowableFunction<C, @Nullable String, ? extends Exception> keyEncoder) {
 		Objects.requireNonNull(encoder, "Encoder must not be null");
 		Objects.requireNonNull(keyEncoder, "Key encoder must not be null");
 		return new KeyableEncoder<>() {
@@ -65,9 +66,15 @@ public interface KeyableEncoder<C> extends Encoder<C> {
 			@Override
 			public <R> @NotNull Result<String> encodeKey(@Nullable TypeProvider<R> provider, @NotNull C key) {
 				Objects.requireNonNull(key, "Key must not be null");
-				return Optional.ofNullable(keyEncoder.apply(key)).map(Result::success).orElseGet(() -> {
-					return Result.error("Unable to encode key with codec '" + this + "': Value '" + key + "' could not be converted to a string");
-				});
+				
+				try {
+					String encodedKey = keyEncoder.apply(key);
+					return Optional.ofNullable(encodedKey).map(Result::success).orElseGet(() -> {
+						return Result.error("Unable to encode key with codec '" + this + "': Value '" + key + "' could not be converted to a string");
+					});
+				} catch (Exception e) {
+					return Result.error("Unable to encode key with codec '" + this + "': Value '" + key + "' could not be converted to a string due to an exception: " + e.getMessage());
+				}
 			}
 		};
 	}

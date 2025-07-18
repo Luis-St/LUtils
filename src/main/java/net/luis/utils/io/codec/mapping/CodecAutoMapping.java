@@ -21,8 +21,7 @@ package net.luis.utils.io.codec.mapping;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import net.luis.utils.io.codec.*;
-import net.luis.utils.util.Either;
-import net.luis.utils.util.Utils;
+import net.luis.utils.util.*;
 import net.luis.utils.util.unsafe.reflection.ReflectionHelper;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.ClassUtils;
@@ -237,8 +236,7 @@ public class CodecAutoMapping {
 			return fields.stream().filter(field -> field.isAnnotationPresent(CodecField.class)).map(CodecComponent::new).toArray(CodecComponent[]::new);
 		}
 		
-		return fields.stream().filter(field -> Modifier.isFinal(field.getModifiers()) && !Modifier.isTransient(field.getModifiers()))
-			.map(CodecComponent::new).toArray(CodecComponent[]::new);
+		return fields.stream().filter(field -> Modifier.isFinal(field.getModifiers()) && !Modifier.isTransient(field.getModifiers())).map(CodecComponent::new).toArray(CodecComponent[]::new);
 	}
 	
 	/**
@@ -352,10 +350,34 @@ public class CodecAutoMapping {
 		
 		if (clazz.isArray()) {
 			Class<?> componentType = clazz.getComponentType();
+			
+			//region Primitive Arrays
+			// For some reason Array.set(Object, int, Object) does not work with primitive arrays, so we need to handle them separately,
+			// this is also the reason why there is no Codec.array(Class<?> componentType) method
+			if (componentType == boolean.class) {
+				return (Codec<C>) Codec.BOOLEAN_ARRAY;
+			} else if (componentType == byte.class) {
+				return (Codec<C>) Codec.BYTE_ARRAY;
+			} else if (componentType == short.class) {
+				return (Codec<C>) Codec.SHORT_ARRAY;
+			} else if (componentType == int.class) {
+				return (Codec<C>) Codec.INTEGER_ARRAY;
+			} else if (componentType == long.class) {
+				return (Codec<C>) Codec.LONG_ARRAY;
+			} else if (componentType == float.class) {
+				return (Codec<C>) Codec.FLOAT_ARRAY;
+			} else if (componentType == double.class) {
+				return (Codec<C>) Codec.DOUBLE_ARRAY;
+			} else if (componentType == char.class) {
+				return (Codec<C>) Codec.CHARACTER_ARRAY;
+			}
+			//endregion
+			
 			return (Codec<C>) getCodec(componentType, genericInfo).list().xmap(Arrays::asList, list -> {
 				if (list.isEmpty()) {
 					return ArrayUtils.EMPTY_OBJECT_ARRAY;
 				}
+				
 				Object[] array = (Object[]) Array.newInstance(componentType, list.size());
 				for (int i = 0; i < list.size(); i++) {
 					array[i] = list.get(i);
@@ -407,7 +429,10 @@ public class CodecAutoMapping {
 				throw new IllegalArgumentException("Missing generic type information for Set: " + clazz.getName());
 			}
 			
-			return (Codec<C>) Codec.list(getCodec(genericInfo[0], dropElements(genericInfo, 1))).xmap(ArrayList::new, HashSet::new);
+			// Note: Type of Set<Object> is required to work, if this type notation is not present, java will infer the type as the dynamic type at runtime which causes in some cases errors
+			return (Codec<C>) Codec.list(getCodec(genericInfo[0], dropElements(genericInfo, 1))).xmap((Set<Object> set) -> {
+				return new ArrayList<>(set);
+			}, HashSet::new);
 		}
 		
 		Codec<?> codec = CODEC_LOOKUP.get(ClassUtils.primitiveToWrapper(clazz));
