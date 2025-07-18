@@ -54,6 +54,9 @@ public record XmlDeclaration(@NotNull Version version, @NotNull Charset encoding
 		if (version.getMinor() >= 10) {
 			throw new IllegalArgumentException("Minor version must be less than 10, but was " + version.getMinor());
 		}
+		if (version.getMinor() < 0) {
+			throw new IllegalArgumentException("Minor version must not be negative, but was " + version.getMinor());
+		}
 		if (version.getPatch() != 0) {
 			throw new IllegalArgumentException("Version must not have a patch number, but found " + version.getPatch());
 		}
@@ -111,7 +114,7 @@ public record XmlDeclaration(@NotNull Version version, @NotNull Charset encoding
 	
 	@Override
 	public String toString() {
-		return "<?xml version=\"" + this.version + "\" encoding=\"" + this.encoding.name() + "\" standalone=\"" + this.standalone + "\"?>";
+		return "<?xml version=\"" + this.version.toString().substring(1) + "\" encoding=\"" + this.encoding.name() + "\" standalone=\"" + this.standalone + "\"?>";
 	}
 	//endregion
 }

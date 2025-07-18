@@ -37,13 +37,30 @@ import static org.junit.jupiter.api.Assertions.*;
  */
 class XmlElementTest {
 	
-	private static final XmlConfig CUSTOM_CONFIG = new XmlConfig(false, false, "  ", false, false, StandardCharsets.UTF_8);
-	
 	@Test
-	void constructor() {
+	void constructorWithNullParameters() {
 		assertThrows(NullPointerException.class, () -> new XmlElement(null));
 		assertThrows(NullPointerException.class, () -> new XmlElement(null, new XmlAttributes()));
 		assertThrows(NullPointerException.class, () -> new XmlElement("test", null));
+	}
+	
+	@Test
+	void constructorWithValidParameters() {
+		assertDoesNotThrow(() -> new XmlElement("test"));
+		assertDoesNotThrow(() -> new XmlElement("test", new XmlAttributes()));
+		assertDoesNotThrow(() -> new XmlElement("valid-name"));
+		assertDoesNotThrow(() -> new XmlElement("_underscore"));
+		assertDoesNotThrow(() -> new XmlElement("name123"));
+		assertDoesNotThrow(() -> new XmlElement("ns:element"));
+	}
+	
+	@Test
+	void constructorWithInvalidName() {
+		assertThrows(IllegalArgumentException.class, () -> new XmlElement(""));
+		assertThrows(IllegalArgumentException.class, () -> new XmlElement(" "));
+		assertThrows(IllegalArgumentException.class, () -> new XmlElement("1invalid"));
+		assertThrows(IllegalArgumentException.class, () -> new XmlElement(":invalid"));
+		assertThrows(IllegalArgumentException.class, () -> new XmlElement("invalid space"));
 	}
 	
 	@Test
@@ -59,39 +76,60 @@ class XmlElementTest {
 	@Test
 	void isXmlContainer() {
 		assertFalse(new XmlElement("test").isXmlContainer());
+		assertTrue(new XmlContainer("test").isXmlContainer());
 	}
 	
 	@Test
 	void isXmlValue() {
 		assertFalse(new XmlElement("test").isXmlValue());
+		assertTrue(new XmlValue("test", "value").isXmlValue());
 	}
 	
 	@Test
 	void getAsXmlContainer() {
-		assertThrows(XmlTypeException.class, () -> new XmlElement("test").getAsXmlContainer());
+		XmlElement element = new XmlElement("test");
+		XmlContainer container = new XmlContainer("test");
+		
+		assertThrows(XmlTypeException.class, element::getAsXmlContainer);
+		assertEquals(container, container.getAsXmlContainer());
 	}
 	
 	@Test
 	void getAsXmlValue() {
-		assertThrows(XmlTypeException.class, () -> new XmlElement("test").getAsXmlValue());
+		XmlElement element = new XmlElement("test");
+		XmlValue value = new XmlValue("test", "value");
+		
+		assertThrows(XmlTypeException.class, element::getAsXmlValue);
+		assertEquals(value, value.getAsXmlValue());
 	}
 	
 	@Test
 	void getName() {
 		assertEquals("test", new XmlElement("test").getName());
+		assertEquals("element-name", new XmlElement("element-name").getName());
+		assertEquals("_underscore", new XmlElement("_underscore").getName());
+		assertEquals("ns:element", new XmlElement("ns:element").getName());
 	}
 	
 	@Test
 	void getAttributes() {
 		XmlElement element = new XmlElement("test");
-		assertEquals(new XmlAttributes(), element.getAttributes());
-		element.addAttribute("test", "test");
+		assertNotNull(element.getAttributes());
+		assertEquals(0, element.getAttributes().size());
+		
+		element.addAttribute("test", "value");
 		assertEquals(1, element.getAttributes().size());
+		
+		XmlAttributes attributes = new XmlAttributes();
+		attributes.add("existing", "value");
+		XmlElement elementWithAttributes = new XmlElement("test", attributes);
+		assertEquals(1, elementWithAttributes.getAttributes().size());
 	}
 	
 	@Test
-	void addAttribute() {
+	void addAttributeWithNull() {
 		XmlElement element = new XmlElement("test");
+		
 		assertThrows(NullPointerException.class, () -> element.addAttribute(null));
 		assertThrows(NullPointerException.class, () -> element.addAttribute(null, "test"));
 		assertThrows(NullPointerException.class, () -> element.addAttribute(null, true));
@@ -102,165 +140,220 @@ class XmlElementTest {
 		assertThrows(NullPointerException.class, () -> element.addAttribute(null, 0L));
 		assertThrows(NullPointerException.class, () -> element.addAttribute(null, 0.0F));
 		assertThrows(NullPointerException.class, () -> element.addAttribute(null, 0.0));
+	}
+	
+	@Test
+	void addAttributeSuccess() {
+		XmlElement element = new XmlElement("test");
 		
-		assertNull(assertDoesNotThrow(() -> element.addAttribute(new XmlAttribute("test_attribute", 0))));
+		assertNull(element.addAttribute(new XmlAttribute("attr", "value")));
 		assertEquals(1, element.getAttributes().size());
-		assertNull(assertDoesNotThrow(() -> element.addAttribute("test_string", (String) null)));
-		assertEquals(2, element.getAttributes().size());
-		assertNull(assertDoesNotThrow(() -> element.addAttribute("test_boolean", true)));
-		assertEquals(3, element.getAttributes().size());
-		assertNull(assertDoesNotThrow(() -> element.addAttribute("test_number", (Number) null)));
-		assertEquals(4, element.getAttributes().size());
-		assertNull(assertDoesNotThrow(() -> element.addAttribute("test_byte", (byte) 0)));
-		assertEquals(5, element.getAttributes().size());
-		assertNull(assertDoesNotThrow(() -> element.addAttribute("test_short", (short) 0)));
-		assertEquals(6, element.getAttributes().size());
-		assertNull(assertDoesNotThrow(() -> element.addAttribute("test_integer", 0)));
-		assertEquals(7, element.getAttributes().size());
-		assertNull(assertDoesNotThrow(() -> element.addAttribute("test_long", 0L)));
-		assertEquals(8, element.getAttributes().size());
-		assertNull(assertDoesNotThrow(() -> element.addAttribute("test_float", 0.0F)));
-		assertEquals(9, element.getAttributes().size());
-		assertNull(assertDoesNotThrow(() -> element.addAttribute("test_double", 0.0)));
-		assertEquals(10, element.getAttributes().size());
 		
-		assertNotNull(element.addAttribute("test_attribute", "test"));
+		assertNull(element.addAttribute("string", "value"));
+		assertNull(element.addAttribute("boolean", true));
+		assertNull(element.addAttribute("number", (Number) 42));
+		assertNull(element.addAttribute("byte", (byte) 127));
+		assertNull(element.addAttribute("short", (short) 1000));
+		assertNull(element.addAttribute("int", 100000));
+		assertNull(element.addAttribute("long", 1000000L));
+		assertNull(element.addAttribute("float", 3.14F));
+		assertNull(element.addAttribute("double", 2.718));
+		assertEquals(10, element.getAttributes().size());
+	}
+	
+	@Test
+	void addAttributeReplacement() {
+		XmlElement element = new XmlElement("test");
+		XmlAttribute originalAttribute = new XmlAttribute("attr", "original");
+		XmlAttribute newAttribute = new XmlAttribute("attr", "new");
+		
+		element.addAttribute(originalAttribute);
+		XmlAttribute replaced = element.addAttribute(newAttribute);
+		assertEquals(originalAttribute, replaced);
+		assertEquals(1, element.getAttributes().size());
+		assertEquals("new", element.getAttributeAsString("attr"));
 	}
 	
 	@Test
 	void getAttribute() {
 		XmlElement element = new XmlElement("test");
+		XmlAttribute attribute = new XmlAttribute("attr", "value");
+		
 		assertThrows(NullPointerException.class, () -> element.getAttribute(null));
-		assertNull(element.getAttribute("test"));
-		element.addAttribute("test", "test");
-		assertNotNull(element.getAttribute("test"));
+		assertNull(element.getAttribute("nonexistent"));
+		
+		element.addAttribute(attribute);
+		assertEquals(attribute, element.getAttribute("attr"));
+		assertNull(element.getAttribute("other"));
 	}
 	
 	@Test
 	void getAttributeAsString() {
 		XmlElement element = new XmlElement("test");
+		
 		assertThrows(NullPointerException.class, () -> element.getAttributeAsString(null));
-		assertThrows(NoSuchXmlAttributeException.class, () -> element.getAttributeAsString("test"));
-		element.addAttribute("test", "test");
-		assertEquals("test", element.getAttributeAsString("test"));
+		assertThrows(NoSuchXmlAttributeException.class, () -> element.getAttributeAsString("nonexistent"));
+		
+		element.addAttribute("attr", "value");
+		assertEquals("value", element.getAttributeAsString("attr"));
+		
+		element.addAttribute("escaped", "<test>");
+		assertEquals("<test>", element.getAttributeAsString("escaped"));
 	}
 	
 	@Test
 	void getAttributeAsBoolean() {
 		XmlElement element = new XmlElement("test");
+		
 		assertThrows(NullPointerException.class, () -> element.getAttributeAsBoolean(null));
-		assertThrows(NoSuchXmlAttributeException.class, () -> element.getAttributeAsBoolean("test"));
-		element.addAttribute("test", true);
-		assertTrue(element.getAttributeAsBoolean("test"));
+		assertThrows(NoSuchXmlAttributeException.class, () -> element.getAttributeAsBoolean("nonexistent"));
+		
+		element.addAttribute("true", true);
+		element.addAttribute("false", false);
+		assertTrue(element.getAttributeAsBoolean("true"));
+		assertFalse(element.getAttributeAsBoolean("false"));
 	}
 	
 	@Test
 	void getAttributeAsNumber() {
 		XmlElement element = new XmlElement("test");
+		
 		assertThrows(NullPointerException.class, () -> element.getAttributeAsNumber(null));
-		assertThrows(NoSuchXmlAttributeException.class, () -> element.getAttributeAsNumber("test"));
-		element.addAttribute("test", 0);
-		assertEquals(0L, element.getAttributeAsNumber("test"));
+		assertThrows(NoSuchXmlAttributeException.class, () -> element.getAttributeAsNumber("nonexistent"));
+		
+		element.addAttribute("int", 42);
+		element.addAttribute("double", 3.14);
+		assertEquals(42L, element.getAttributeAsNumber("int"));
+		assertEquals(3.14, element.getAttributeAsNumber("double"));
 	}
 	
 	@Test
-	void getAttributeAsByte() {
+	void getAttributeAsPrimitiveNumbers() {
 		XmlElement element = new XmlElement("test");
+		element.addAttribute("byte", (byte) 127);
+		element.addAttribute("short", (short) 1000);
+		element.addAttribute("int", 100000);
+		element.addAttribute("long", 1000000L);
+		element.addAttribute("float", 3.14F);
+		element.addAttribute("double", 2.718);
+		
 		assertThrows(NullPointerException.class, () -> element.getAttributeAsByte(null));
-		assertThrows(NoSuchXmlAttributeException.class, () -> element.getAttributeAsByte("test"));
-		element.addAttribute("test", (byte) 0);
-		assertEquals((byte) 0, element.getAttributeAsByte("test"));
-	}
-	
-	@Test
-	void getAttributeAsShort() {
-		XmlElement element = new XmlElement("test");
 		assertThrows(NullPointerException.class, () -> element.getAttributeAsShort(null));
-		assertThrows(NoSuchXmlAttributeException.class, () -> element.getAttributeAsShort("test"));
-		element.addAttribute("test", (short) 0);
-		assertEquals((short) 0, element.getAttributeAsShort("test"));
-	}
-	
-	@Test
-	void getAttributeAsInteger() {
-		XmlElement element = new XmlElement("test");
 		assertThrows(NullPointerException.class, () -> element.getAttributeAsInteger(null));
-		assertThrows(NoSuchXmlAttributeException.class, () -> element.getAttributeAsInteger("test"));
-		element.addAttribute("test", 0);
-		assertEquals(0, element.getAttributeAsInteger("test"));
-	}
-	
-	@Test
-	void getAttributeAsLong() {
-		XmlElement element = new XmlElement("test");
 		assertThrows(NullPointerException.class, () -> element.getAttributeAsLong(null));
-		assertThrows(NoSuchXmlAttributeException.class, () -> element.getAttributeAsLong("test"));
-		element.addAttribute("test", 0L);
-		assertEquals(0L, element.getAttributeAsLong("test"));
-	}
-	
-	@Test
-	void getAttributeAsFloat() {
-		XmlElement element = new XmlElement("test");
 		assertThrows(NullPointerException.class, () -> element.getAttributeAsFloat(null));
-		assertThrows(NoSuchXmlAttributeException.class, () -> element.getAttributeAsFloat("test"));
-		element.addAttribute("test", 0.0F);
-		assertEquals(0.0F, element.getAttributeAsFloat("test"));
-	}
-	
-	@Test
-	void getAttributeAsDouble() {
-		XmlElement element = new XmlElement("test");
 		assertThrows(NullPointerException.class, () -> element.getAttributeAsDouble(null));
-		assertThrows(NoSuchXmlAttributeException.class, () -> element.getAttributeAsDouble("test"));
-		element.addAttribute("test", 0.0);
-		assertEquals(0.0, element.getAttributeAsDouble("test"));
+		
+		assertThrows(NoSuchXmlAttributeException.class, () -> element.getAttributeAsByte("nonexistent"));
+		assertThrows(NoSuchXmlAttributeException.class, () -> element.getAttributeAsShort("nonexistent"));
+		assertThrows(NoSuchXmlAttributeException.class, () -> element.getAttributeAsInteger("nonexistent"));
+		assertThrows(NoSuchXmlAttributeException.class, () -> element.getAttributeAsLong("nonexistent"));
+		assertThrows(NoSuchXmlAttributeException.class, () -> element.getAttributeAsFloat("nonexistent"));
+		assertThrows(NoSuchXmlAttributeException.class, () -> element.getAttributeAsDouble("nonexistent"));
+		
+		assertEquals((byte) 127, element.getAttributeAsByte("byte"));
+		assertEquals((short) 1000, element.getAttributeAsShort("short"));
+		assertEquals(100000, element.getAttributeAsInteger("int"));
+		assertEquals(1000000L, element.getAttributeAsLong("long"));
+		assertEquals(3.14F, element.getAttributeAsFloat("float"));
+		assertEquals(2.718, element.getAttributeAsDouble("double"));
 	}
 	
 	@Test
 	void getAttributeAs() {
-		ThrowableFunction<String, List<Boolean>, Exception> parser = string -> new ScopedStringReader(String.valueOf(string)).readList(StringReader::readBoolean);
+		ThrowableFunction<String, List<Boolean>, Exception> parser = value -> 
+			new ScopedStringReader(String.valueOf(value)).readList(StringReader::readBoolean);
 		
 		XmlElement element = new XmlElement("test");
-		assertThrows(NullPointerException.class, () -> element.getAttributeAsDouble(null));
-		assertThrows(NoSuchXmlAttributeException.class, () -> element.getAttributeAs("test", parser));
-		element.addAttribute("test", "[true, false]");
-		assertIterableEquals(List.of(true, false), element.getAttributeAs("test", parser));
+		
+		assertThrows(NullPointerException.class, () -> element.getAttributeAs(null, parser));
+		assertThrows(NullPointerException.class, () -> element.getAttributeAs("attr", null));
+		assertThrows(NoSuchXmlAttributeException.class, () -> element.getAttributeAs("nonexistent", parser));
+		
+		element.addAttribute("list", "[true, false]");
+		assertIterableEquals(List.of(true, false), element.getAttributeAs("list", parser));
 	}
 	
 	@Test
-	void toBaseStringDefaultConfig() {
+	void equalsAndHashCode() {
+		XmlElement element1 = new XmlElement("test");
+		XmlElement element2 = new XmlElement("test");
+		XmlElement element3 = new XmlElement("other");
+		
+		assertEquals(element1, element2);
+		assertEquals(element1.hashCode(), element2.hashCode());
+		assertNotEquals(element1, element3);
+		
+		element1.addAttribute("attr", "value");
+		assertNotEquals(element1, element2);
+		
+		element2.addAttribute("attr", "value");
+		assertEquals(element1, element2);
+		assertEquals(element1.hashCode(), element2.hashCode());
+		
+		element2.addAttribute("other", "value");
+		assertNotEquals(element1, element2);
+		
+		assertNotEquals(element1, null);
+		assertNotEquals(element1, "string");
+		assertNotEquals(element1, new XmlContainer("test"));
+		assertNotEquals(element1, new XmlValue("test", "value"));
+	}
+	
+	@Test
+	void toBaseStringWithDefaultConfig() {
 		XmlElement element = new XmlElement("test");
+		
 		assertThrows(NullPointerException.class, () -> element.toBaseString(null));
 		assertEquals("<test/>", element.toBaseString(XmlConfig.DEFAULT).toString());
-		element.addAttribute("test", "test");
-		assertEquals("<test test=\"test\"/>", element.toBaseString(XmlConfig.DEFAULT).toString());
+		
+		element.addAttribute("attr", "value");
+		assertEquals("<test attr=\"value\"/>", element.toBaseString(XmlConfig.DEFAULT).toString());
+		
+		element.addAttribute("other", "test");
+		assertEquals("<test attr=\"value\" other=\"test\"/>", element.toBaseString(XmlConfig.DEFAULT).toString());
 	}
 	
 	@Test
-	void toBaseStringCustomConfig() {
+	void toBaseStringWithCustomConfig() {
+		XmlConfig customConfig = new XmlConfig(false, false, "  ", false, false, StandardCharsets.UTF_8);
 		XmlElement element = new XmlElement("test");
-		assertThrows(NullPointerException.class, () -> element.toBaseString(null));
-		assertEquals("<test/>", element.toBaseString(CUSTOM_CONFIG).toString());
-		element.addAttribute("test", "test");
-		assertThrows(IllegalStateException.class, () -> element.toBaseString(CUSTOM_CONFIG).toString());
+		
+		assertEquals("<test/>", element.toBaseString(customConfig).toString());
+		
+		element.addAttribute("attr", "value");
+		assertThrows(IllegalStateException.class, () -> element.toBaseString(customConfig));
 	}
 	
 	@Test
-	void toStringDefaultConfig() {
+	void toStringWithDefaultConfig() {
 		XmlElement element = new XmlElement("test");
-		assertThrows(NullPointerException.class, () -> element.toBaseString(null));
-		assertEquals("<test/>", element.toBaseString(XmlConfig.DEFAULT).toString());
-		element.addAttribute("test", "test");
-		assertEquals("<test test=\"test\"/>", element.toBaseString(XmlConfig.DEFAULT).toString());
+		
+		assertEquals("<test/>", element.toString());
+		assertEquals("<test/>", element.toString(XmlConfig.DEFAULT));
+		
+		element.addAttribute("attr", "value");
+		assertEquals("<test attr=\"value\"/>", element.toString(XmlConfig.DEFAULT));
 	}
 	
 	@Test
-	void toStringCustomConfig() {
+	void toStringWithCustomConfig() {
+		XmlConfig customConfig = new XmlConfig(false, false, "  ", false, false, StandardCharsets.UTF_8);
 		XmlElement element = new XmlElement("test");
-		assertThrows(NullPointerException.class, () -> element.toBaseString(null));
-		assertEquals("<test/>", element.toString(CUSTOM_CONFIG));
-		element.addAttribute("test", "test");
-		assertThrows(IllegalStateException.class, () -> element.toString(CUSTOM_CONFIG));
+		
+		assertEquals("<test/>", element.toString(customConfig));
+		
+		element.addAttribute("attr", "value");
+		assertThrows(IllegalStateException.class, () -> element.toString(customConfig));
+	}
+	
+	@Test
+	void toStringWithSpecialCharacters() {
+		XmlElement element = new XmlElement("test");
+		element.addAttribute("special", "<>&\"'");
+		
+		String result = element.toString();
+		assertTrue(result.contains("&lt;&gt;&amp;&quot;&apos;"));
+		assertFalse(result.contains("<>&\"'"));
 	}
 }

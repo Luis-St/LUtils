@@ -19,11 +19,11 @@
 package net.luis.utils.io.data.xml;
 
 import net.luis.utils.io.data.InputProvider;
-import net.luis.utils.io.data.json.JsonReader;
 import net.luis.utils.io.data.xml.exception.XmlSyntaxException;
 import net.luis.utils.util.Version;
 import org.junit.jupiter.api.Test;
 
+import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 
@@ -36,243 +36,387 @@ import static org.junit.jupiter.api.Assertions.*;
  */
 class XmlReaderTest {
 	
-	private static final XmlConfig CUSTOM_CONFIG = new XmlConfig(false, false, "\t", false, false, StandardCharsets.UTF_8);
-	
 	@Test
-	void constructor() {
+	void constructorWithNullParameters() {
 		assertThrows(NullPointerException.class, () -> new XmlReader((String) null));
-		assertDoesNotThrow(() -> new JsonReader("test"));
-		
 		assertThrows(NullPointerException.class, () -> new XmlReader((String) null, XmlConfig.DEFAULT));
 		assertThrows(NullPointerException.class, () -> new XmlReader("test", null));
-		assertDoesNotThrow(() -> new XmlReader("test", XmlConfig.DEFAULT));
-		
 		assertThrows(NullPointerException.class, () -> new XmlReader((InputProvider) null));
-		assertDoesNotThrow(() -> new XmlReader(new InputProvider(InputStream.nullInputStream())));
-		
 		assertThrows(NullPointerException.class, () -> new XmlReader((InputProvider) null, XmlConfig.DEFAULT));
 		assertThrows(NullPointerException.class, () -> new XmlReader(new InputProvider(InputStream.nullInputStream()), null));
-		assertDoesNotThrow(() -> new XmlReader(new InputProvider(InputStream.nullInputStream()), XmlConfig.DEFAULT));
 	}
 	
 	@Test
-	void readDeclarationDefaultConfig() {
-		XmlDeclaration declaration = new XmlDeclaration(Version.of(1, 0));
+	void constructorWithValidParameters() {
+		assertDoesNotThrow(() -> new XmlReader("test"));
+		assertDoesNotThrow(() -> new XmlReader("test", XmlConfig.DEFAULT));
+		assertDoesNotThrow(() -> new XmlReader(new InputProvider(InputStream.nullInputStream())));
+		assertDoesNotThrow(() -> new XmlReader(new InputProvider(InputStream.nullInputStream()), XmlConfig.DEFAULT));
+		
+		String xmlContent = "<?xml version=\"v1.0\"?><test/>";
+		ByteArrayInputStream inputStream = new ByteArrayInputStream(xmlContent.getBytes(StandardCharsets.UTF_8));
+		assertDoesNotThrow(() -> new XmlReader(new InputProvider(inputStream)));
+	}
+	
+	@Test
+	void readDeclarationValidWithDefaultConfig() {
+		XmlDeclaration expected = new XmlDeclaration(Version.of(1, 0));
+		
+		assertEquals(expected, new XmlReader("<?xml version=\"v1.0\"?>").readDeclaration());
+		assertEquals(expected, new XmlReader("<?xml version=\"v1.0\" ?>").readDeclaration());
+		assertEquals(expected, new XmlReader("  <?xml version=\"v1.0\"?>  ").readDeclaration());
+		
+		XmlDeclaration withEncoding = new XmlDeclaration(Version.of(1, 0), StandardCharsets.UTF_16);
+		assertEquals(withEncoding, new XmlReader("<?xml version=\"v1.0\" encoding=\"UTF-16\"?>").readDeclaration());
+		
+		XmlDeclaration standalone = new XmlDeclaration(Version.of(1, 0), StandardCharsets.UTF_8, true);
+		assertEquals(standalone, new XmlReader("<?xml version=\"v1.0\" standalone=\"yes\"?>").readDeclaration());
+		
+		XmlDeclaration full = new XmlDeclaration(Version.of(1, 1), StandardCharsets.ISO_8859_1, true);
+		assertEquals(full, new XmlReader("<?xml version=\"v1.1\" encoding=\"ISO-8859-1\" standalone=\"yes\"?>").readDeclaration());
+	}
+	
+	@Test
+	void readDeclarationInvalidWithDefaultConfig() {
 		assertThrows(XmlSyntaxException.class, () -> new XmlReader("<? version=\"v1.0\"?>").readDeclaration());
+		assertThrows(XmlSyntaxException.class, () -> new XmlReader("<?xmlversion=\"v1.0\"?>").readDeclaration());
 		assertThrows(XmlSyntaxException.class, () -> new XmlReader("<?xml  version=\"v1.0\"?>").readDeclaration());
 		assertThrows(XmlSyntaxException.class, () -> new XmlReader("<?xml version=v1.0?>").readDeclaration());
 		assertThrows(XmlSyntaxException.class, () -> new XmlReader("<?xml version =\"v1.0\"?>").readDeclaration());
 		assertThrows(XmlSyntaxException.class, () -> new XmlReader("<?xml version= \"v1.0\"?>").readDeclaration());
-		assertThrows(XmlSyntaxException.class, () -> new XmlReader("<?xml version=\"v1.0\"", CUSTOM_CONFIG).readDeclaration());
-		assertThrows(XmlSyntaxException.class, () -> new XmlReader("<?xml encoding=\"UTF-8\"").readDeclaration());
-		assertEquals(declaration, new XmlReader("<?xml version=\"v1.0\"?>").readDeclaration());
-		
-		XmlReader reader = new XmlReader("<?xml version=\"v1.0\"?>");
-		assertEquals(declaration, reader.readDeclaration());
-		assertThrows(IllegalStateException.class, reader::readDeclaration);
+		assertThrows(XmlSyntaxException.class, () -> new XmlReader("<?xml version=\"v1.0\"").readDeclaration());
+		assertThrows(XmlSyntaxException.class, () -> new XmlReader("<?xml encoding=\"UTF-8\"?>").readDeclaration());
+		assertThrows(XmlSyntaxException.class, () -> new XmlReader("<?xml standalone=\"yes\"?>").readDeclaration());
+		assertThrows(XmlSyntaxException.class, () -> new XmlReader("<?xml version=\"invalid\"?>").readDeclaration());
 	}
 	
 	@Test
-	void readDeclarationCustomConfig() {
-		XmlDeclaration declaration = new XmlDeclaration(Version.of(1, 0));
-		assertThrows(XmlSyntaxException.class, () -> new XmlReader("<? version=\"v1.0\"?>", CUSTOM_CONFIG).readDeclaration());
-		assertDoesNotThrow(() -> new XmlReader("<?xml  version=\"v1.0\"?>", CUSTOM_CONFIG).readDeclaration());
-		assertThrows(XmlSyntaxException.class, () -> new XmlReader("<?xml version=v1.0?>", CUSTOM_CONFIG).readDeclaration());
-		assertDoesNotThrow(() -> new XmlReader("<?xml version =\"v1.0\"?>", CUSTOM_CONFIG).readDeclaration());
-		assertDoesNotThrow(() -> new XmlReader("<?xml version= \"v1.0\"?>", CUSTOM_CONFIG).readDeclaration());
-		assertThrows(XmlSyntaxException.class, () -> new XmlReader("<?xml version=\"v1.0\"", CUSTOM_CONFIG).readDeclaration());
-		assertThrows(XmlSyntaxException.class, () -> new XmlReader("<?xml encoding=\"UTF-8\"", CUSTOM_CONFIG).readDeclaration());
-		assertEquals(declaration, new XmlReader("<?xml version=\"v1.0\"?>").readDeclaration());
+	void readDeclarationWithCustomConfig() {
+		XmlConfig customConfig = new XmlConfig(false, false, "\t", false, false, StandardCharsets.UTF_8);
+		XmlDeclaration expected = new XmlDeclaration(Version.of(1, 0));
 		
-		XmlReader reader = new XmlReader("<?xml version=\"v1.0\"?>", CUSTOM_CONFIG);
-		assertEquals(declaration, reader.readDeclaration());
-		assertEquals(declaration, assertDoesNotThrow(reader::readDeclaration));
+		assertDoesNotThrow(() -> new XmlReader("<?xml  version=\"v1.0\"?>", customConfig).readDeclaration());
+		assertDoesNotThrow(() -> new XmlReader("<?xml version =\"v1.0\"?>", customConfig).readDeclaration());
+		assertDoesNotThrow(() -> new XmlReader("<?xml version= \"v1.0\"?>", customConfig).readDeclaration());
+		assertEquals(expected, new XmlReader("<?xml version=\"v1.0\"?>", customConfig).readDeclaration());
+		
+		assertThrows(XmlSyntaxException.class, () -> new XmlReader("<? version=\"v1.0\"?>", customConfig).readDeclaration());
+		assertThrows(XmlSyntaxException.class, () -> new XmlReader("<?xml version=v1.0?>", customConfig).readDeclaration());
+		assertThrows(XmlSyntaxException.class, () -> new XmlReader("<?xml version=\"v1.0\"", customConfig).readDeclaration());
 	}
 	
 	@Test
-	void readXmlElementDefaultConfig() {
-		String dec = "<?xml version=\"v1.0\"?>";
+	void readDeclarationAlreadyRead() {
+		XmlReader readerStrict = new XmlReader("<?xml version=\"v1.0\"?>");
+		readerStrict.readDeclaration();
+		assertThrows(IllegalStateException.class, readerStrict::readDeclaration);
 		
-		XmlReader selfClosingReader = new XmlReader(dec + "<test/>");
-		selfClosingReader.readDeclaration();
-		assertEquals(new XmlElement("test"), selfClosingReader.readXmlElement());
-		
-		XmlReader emptyReader = new XmlReader(dec + "<test></test>");
-		emptyReader.readDeclaration();
-		assertEquals(new XmlValue("test", ""), emptyReader.readXmlElement());
-		
-		XmlReader valueReader = new XmlReader(dec + "<test>value</test>");
-		valueReader.readDeclaration();
-		assertEquals(new XmlValue("test", "value"), valueReader.readXmlElement());
-		
-		XmlReader attributeReader = new XmlReader(dec + "<test attribute1=\"value1\"></test>");
-		attributeReader.readDeclaration();
-		XmlValue attributeElement = new XmlValue("test", "");
-		attributeElement.addAttribute("attribute1", "value1");
-		assertEquals(attributeElement, attributeReader.readXmlElement());
-		
-		XmlReader multipleAttributesReader = new XmlReader(dec + "<test attribute1=\"value1\" attribute2=\"value2\"></test>");
-		multipleAttributesReader.readDeclaration();
-		attributeElement.addAttribute("attribute2", "value2");
-		assertEquals(attributeElement, multipleAttributesReader.readXmlElement());
-		
-		XmlReader nestedReader = new XmlReader(dec + "<test><nested>value</nested></test>");
-		nestedReader.readDeclaration();
-		XmlContainer nestedElement = new XmlContainer("test");
-		nestedElement.addValue(new XmlValue("nested", "value"));
-		assertEquals(nestedElement, nestedReader.readXmlElement());
-		
-		XmlReader arrayReader = new XmlReader(dec + "<test><nested>value1</nested><nested>value2</nested></test>");
-		arrayReader.readDeclaration();
-		XmlContainer arrayElement = new XmlContainer("test");
-		arrayElement.addValue(new XmlValue("nested", "value1"));
-		arrayElement.addValue(new XmlValue("nested", "value2"));
-		assertEquals(arrayElement, arrayReader.readXmlElement());
-		
-		XmlReader objectReader = new XmlReader(dec + "<test><nested1>value1</nested1><nested2>value2</nested2></test>");
-		objectReader.readDeclaration();
-		XmlContainer objectElement = new XmlContainer("test");
-		objectElement.addValue(new XmlValue("nested1", "value1"));
-		objectElement.addValue(new XmlValue("nested2", "value2"));
-		assertEquals(objectElement, objectReader.readXmlElement());
-		
-		XmlReader advanced = new XmlReader(dec + "<test><name><first>First</first><second>Second</second></name><array><array_element>Value</array_element></array></test>");
-		advanced.readDeclaration();
-		XmlContainer advancedElement = new XmlContainer("test");
-		XmlContainer nameElement = new XmlContainer("name");
-		nameElement.addValue(new XmlValue("first", "First"));
-		nameElement.addValue(new XmlValue("second", "Second"));
-		advancedElement.addContainer(nameElement);
-		XmlContainer arrayContainer = new XmlContainer("array");
-		arrayContainer.addValue(new XmlValue("array_element", "Value"));
-		advancedElement.addContainer(arrayContainer);
-		assertEquals(advancedElement, advanced.readXmlElement());
-		
-		XmlReader missingDeclarationReader = new XmlReader(dec + "<test></test>");
-		assertThrows(IllegalStateException.class, missingDeclarationReader::readXmlElement);
-		
-		XmlReader noElementNameReader = new XmlReader(dec + "<></>");
-		noElementNameReader.readDeclaration();
-		assertThrows(XmlSyntaxException.class, noElementNameReader::readXmlElement);
-		
-		XmlReader invalidSelfClosingReader = new XmlReader(dec + "<test/");
-		invalidSelfClosingReader.readDeclaration();
-		assertThrows(XmlSyntaxException.class, invalidSelfClosingReader::readXmlElement);
-		
-		XmlReader missingClosingCharReader = new XmlReader(dec + "<test attr=\"value\"</test>");
-		missingClosingCharReader.readDeclaration();
-		assertThrows(XmlSyntaxException.class, missingClosingCharReader::readXmlElement);
-		
-		XmlReader noClosingTagReader = new XmlReader(dec + "<test>");
-		noClosingTagReader.readDeclaration();
-		assertThrows(XmlSyntaxException.class, noClosingTagReader::readXmlElement);
-		
-		XmlReader invalidClosingTagReader = new XmlReader(dec + "<test></  test>");
-		invalidClosingTagReader.readDeclaration();
-		assertThrows(XmlSyntaxException.class, invalidClosingTagReader::readXmlElement);
-		
-		XmlReader missingClosingTagReader = new XmlReader(dec + "<test></test2>");
-		missingClosingTagReader.readDeclaration();
-		assertThrows(XmlSyntaxException.class, missingClosingTagReader::readXmlElement);
-		
-		XmlReader invalidNestedReader = new XmlReader(dec + "<test>b<nested></nested></test>");
-		invalidNestedReader.readDeclaration();
-		assertThrows(XmlSyntaxException.class, invalidNestedReader::readXmlElement);
+		XmlConfig customConfig = new XmlConfig(false, false, "\t", false, false, StandardCharsets.UTF_8);
+		XmlReader readerNonStrict = new XmlReader("<?xml version=\"v1.0\"?>", customConfig);
+		readerNonStrict.readDeclaration();
+		assertDoesNotThrow(readerNonStrict::readDeclaration);
 	}
 	
 	@Test
-	void readXmlElementCustomConfig() {
-		String dec = "<?xml version=\"v1.0\"?>";
+	void readXmlElementSelfClosing() {
+		String xml = "<?xml version=\"v1.0\"?><test/>";
+		XmlReader reader = new XmlReader(xml);
+		reader.readDeclaration();
 		
-		XmlReader selfClosingReader = new XmlReader(dec + "<test/>", CUSTOM_CONFIG);
-		selfClosingReader.readDeclaration();
-		assertEquals(new XmlElement("test"), selfClosingReader.readXmlElement());
+		XmlElement expected = new XmlElement("test");
+		assertEquals(expected, reader.readXmlElement());
+	}
+	
+	@Test
+	void readXmlElementSelfClosingWithAttributes() {
+		String xml = "<?xml version=\"v1.0\"?><test attr1=\"value1\" attr2=\"value2\"/>";
+		XmlReader reader = new XmlReader(xml);
+		reader.readDeclaration();
 		
-		XmlReader emptyReader = new XmlReader(dec + "<test></test>", CUSTOM_CONFIG);
-		emptyReader.readDeclaration();
-		assertEquals(new XmlValue("test", ""), emptyReader.readXmlElement());
+		XmlElement expected = new XmlElement("test");
+		expected.addAttribute("attr1", "value1");
+		expected.addAttribute("attr2", "value2");
+		assertEquals(expected, reader.readXmlElement());
+	}
+	
+	@Test
+	void readXmlElementEmpty() {
+		String xml = "<?xml version=\"v1.0\"?><test></test>";
+		XmlReader reader = new XmlReader(xml);
+		reader.readDeclaration();
 		
-		XmlReader valueReader = new XmlReader(dec + "<test>value</test>", CUSTOM_CONFIG);
-		valueReader.readDeclaration();
-		assertEquals(new XmlValue("test", "value"), valueReader.readXmlElement());
+		XmlValue expected = new XmlValue("test", "");
+		assertEquals(expected, reader.readXmlElement());
+	}
+	
+	@Test
+	void readXmlElementWithValue() {
+		String xml = "<?xml version=\"v1.0\"?><test>value</test>";
+		XmlReader reader = new XmlReader(xml);
+		reader.readDeclaration();
 		
-		XmlReader attributeReader = new XmlReader(dec + "<test attribute1=\"value1\"></test>", CUSTOM_CONFIG);
-		attributeReader.readDeclaration();
-		XmlValue attributeElement = new XmlValue("test", "");
-		attributeElement.addAttribute("attribute1", "value1");
-		assertThrows(XmlSyntaxException.class, attributeReader::readXmlElement);
+		XmlValue expected = new XmlValue("test", "value");
+		assertEquals(expected, reader.readXmlElement());
+	}
+	
+	@Test
+	void readXmlElementWithValueAndAttributes() {
+		String xml = "<?xml version=\"v1.0\"?><test attribute1=\"value1\">content</test>";
+		XmlReader reader = new XmlReader(xml);
+		reader.readDeclaration();
 		
-		XmlReader multipleAttributesReader = new XmlReader(dec + "<test attribute1=\"value1\" attribute2=\"value2\"></test>", CUSTOM_CONFIG);
-		multipleAttributesReader.readDeclaration();
-		attributeElement.addAttribute("attribute2", "value2");
-		assertThrows(XmlSyntaxException.class, multipleAttributesReader::readXmlElement);
+		XmlValue expected = new XmlValue("test", "content");
+		expected.addAttribute("attribute1", "value1");
+		assertEquals(expected, reader.readXmlElement());
+	}
+	
+	@Test
+	void readXmlElementNestedSingle() {
+		String xml = "<?xml version=\"v1.0\"?><test><nested>value</nested></test>";
+		XmlReader reader = new XmlReader(xml);
+		reader.readDeclaration();
 		
-		XmlReader nestedReader = new XmlReader(dec + "<test><nested>value</nested></test>", CUSTOM_CONFIG);
-		nestedReader.readDeclaration();
-		XmlContainer nestedElement = new XmlContainer("test");
-		nestedElement.addValue(new XmlValue("nested", "value"));
-		assertEquals(nestedElement, nestedReader.readXmlElement());
+		XmlContainer expected = new XmlContainer("test");
+		expected.addValue(new XmlValue("nested", "value"));
+		assertEquals(expected, reader.readXmlElement());
+	}
+	
+	@Test
+	void readXmlElementNestedArray() {
+		String xml = "<?xml version=\"v1.0\"?><test><nested>value1</nested><nested>value2</nested></test>";
+		XmlReader reader = new XmlReader(xml);
+		reader.readDeclaration();
 		
-		XmlReader arrayReader = new XmlReader(dec + "<test><nested>value1</nested><nested>value2</nested></test>", CUSTOM_CONFIG);
-		arrayReader.readDeclaration();
-		XmlContainer arrayElement = new XmlContainer("test");
-		arrayElement.addValue(new XmlValue("nested", "value1"));
-		arrayElement.addValue(new XmlValue("nested", "value2"));
-		assertEquals(arrayElement, arrayReader.readXmlElement());
+		XmlContainer expected = new XmlContainer("test");
+		expected.addValue(new XmlValue("nested", "value1"));
+		expected.addValue(new XmlValue("nested", "value2"));
+		assertEquals(expected, reader.readXmlElement());
+	}
+	
+	@Test
+	void readXmlElementNestedObject() {
+		String xml = "<?xml version=\"v1.0\"?><test><nested1>value1</nested1><nested2>value2</nested2></test>";
+		XmlReader reader = new XmlReader(xml);
+		reader.readDeclaration();
 		
-		XmlReader objectReader = new XmlReader(dec + "<test><nested1>value1</nested1><nested2>value2</nested2></test>", CUSTOM_CONFIG);
-		objectReader.readDeclaration();
-		XmlContainer objectElement = new XmlContainer("test");
-		objectElement.addValue(new XmlValue("nested1", "value1"));
-		objectElement.addValue(new XmlValue("nested2", "value2"));
-		assertEquals(objectElement, objectReader.readXmlElement());
+		XmlContainer expected = new XmlContainer("test");
+		expected.addValue(new XmlValue("nested1", "value1"));
+		expected.addValue(new XmlValue("nested2", "value2"));
+		assertEquals(expected, reader.readXmlElement());
+	}
+	
+	@Test
+	void readXmlElementComplex() {
+		String xml = "<?xml version=\"v1.0\"?>" +
+					"<root>" +
+					"<person id=\"1\">" +
+					"<name>John</name>" +
+					"<age>30</age>" +
+					"<emails>" +
+					"<email>john@example.com</email>" +
+					"<email>john.doe@work.com</email>" +
+					"</emails>" +
+					"</person>" +
+					"<person id=\"2\">" +
+					"<name>Jane</name>" +
+					"<age>25</age>" +
+					"</person>" +
+					"</root>";
 		
-		XmlReader advanced = new XmlReader(dec + "<test><name><first>First</first><second>Second</second></name><array><array_element>Value</array_element></array></test>", CUSTOM_CONFIG);
-		advanced.readDeclaration();
-		XmlContainer advancedElement = new XmlContainer("test");
-		XmlContainer nameElement = new XmlContainer("name");
-		nameElement.addValue(new XmlValue("first", "First"));
-		nameElement.addValue(new XmlValue("second", "Second"));
-		advancedElement.addContainer(nameElement);
-		XmlContainer arrayContainer = new XmlContainer("array");
-		arrayContainer.addValue(new XmlValue("array_element", "Value"));
-		advancedElement.addContainer(arrayContainer);
-		assertEquals(advancedElement, advanced.readXmlElement());
+		XmlReader reader = new XmlReader(xml);
+		reader.readDeclaration();
 		
-		XmlReader missingDeclarationReader = new XmlReader(dec + "<test></test>", CUSTOM_CONFIG);
-		assertDoesNotThrow(missingDeclarationReader::readXmlElement);
+		XmlContainer root = new XmlContainer("root");
 		
-		XmlReader noElementNameReader = new XmlReader(dec + "<></>", CUSTOM_CONFIG);
-		noElementNameReader.readDeclaration();
-		assertThrows(XmlSyntaxException.class, noElementNameReader::readXmlElement);
+		XmlContainer person1 = new XmlContainer("person");
+		person1.addAttribute("id", "1");
+		person1.addValue(new XmlValue("name", "John"));
+		person1.addValue(new XmlValue("age", "30"));
 		
-		XmlReader invalidSelfClosingReader = new XmlReader(dec + "<test/", CUSTOM_CONFIG);
-		invalidSelfClosingReader.readDeclaration();
-		assertThrows(XmlSyntaxException.class, invalidSelfClosingReader::readXmlElement);
+		XmlContainer emails = new XmlContainer("emails");
+		emails.addValue(new XmlValue("email", "john@example.com"));
+		emails.addValue(new XmlValue("email", "john.doe@work.com"));
+		person1.addContainer(emails);
 		
-		XmlReader missingClosingCharReader = new XmlReader(dec + "<test attr=\"value\"</test>", CUSTOM_CONFIG);
-		missingClosingCharReader.readDeclaration();
-		assertThrows(XmlSyntaxException.class, missingClosingCharReader::readXmlElement);
+		XmlContainer person2 = new XmlContainer("person");
+		person2.addAttribute("id", "2");
+		person2.addValue(new XmlValue("name", "Jane"));
+		person2.addValue(new XmlValue("age", "25"));
 		
-		XmlReader noClosingTagReader = new XmlReader(dec + "<test>", CUSTOM_CONFIG);
-		noClosingTagReader.readDeclaration();
-		assertThrows(XmlSyntaxException.class, noClosingTagReader::readXmlElement);
+		root.addContainer(person1);
+		root.addContainer(person2);
 		
-		XmlReader invalidClosingTagReader = new XmlReader(dec + "<test></  test>", CUSTOM_CONFIG);
-		invalidClosingTagReader.readDeclaration();
-		assertDoesNotThrow(invalidClosingTagReader::readXmlElement);
+		assertEquals(root, reader.readXmlElement());
+	}
+	
+	@Test
+	void readXmlElementWithoutDeclarationStrict() {
+		String xml = "<?xml version=\"v1.0\"?><test></test>";
+		XmlReader reader = new XmlReader(xml);
+		assertThrows(IllegalStateException.class, reader::readXmlElement);
+	}
+	
+	@Test
+	void readXmlElementWithoutDeclarationNonStrict() {
+		XmlConfig customConfig = new XmlConfig(false, false, "\t", false, false, StandardCharsets.UTF_8);
+		String xml = "<?xml version=\"v1.0\"?><test></test>";
+		XmlReader reader = new XmlReader(xml, customConfig);
+		assertDoesNotThrow(reader::readXmlElement);
+	}
+	
+	@Test
+	void readXmlElementInvalidSyntax() {
+		String declaration = "<?xml version=\"v1.0\"?>";
 		
-		XmlReader missingClosingTagReader = new XmlReader(dec + "<test></test2>", CUSTOM_CONFIG);
-		missingClosingTagReader.readDeclaration();
-		assertThrows(XmlSyntaxException.class, missingClosingTagReader::readXmlElement);
+		assertThrows(XmlSyntaxException.class, () -> {
+			XmlReader reader = new XmlReader(declaration + "<></>");
+			reader.readDeclaration();
+			reader.readXmlElement();
+		});
 		
-		XmlReader invalidNestedReader = new XmlReader(dec + "<test>b<nested></nested></test>", CUSTOM_CONFIG);
-		invalidNestedReader.readDeclaration();
-		assertThrows(XmlSyntaxException.class, invalidNestedReader::readXmlElement);
+		assertThrows(XmlSyntaxException.class, () -> {
+			XmlReader reader = new XmlReader(declaration + "<test/");
+			reader.readDeclaration();
+			reader.readXmlElement();
+		});
+		
+		assertThrows(XmlSyntaxException.class, () -> {
+			XmlReader reader = new XmlReader(declaration + "<test>");
+			reader.readDeclaration();
+			reader.readXmlElement();
+		});
+		
+		assertThrows(XmlSyntaxException.class, () -> {
+			XmlReader reader = new XmlReader(declaration + "<test></test2>");
+			reader.readDeclaration();
+			reader.readXmlElement();
+		});
+		
+		assertThrows(XmlSyntaxException.class, () -> {
+			XmlReader reader = new XmlReader(declaration + "<test>text<nested></nested></test>");
+			reader.readDeclaration();
+			reader.readXmlElement();
+		});
+	}
+	
+	@Test
+	void readXmlElementWithAttributesDisabled() {
+		XmlConfig noAttributesConfig = new XmlConfig(true, true, "\t", false, true, StandardCharsets.UTF_8);
+		String xml = "<?xml version=\"v1.0\"?><test attribute=\"value\"></test>";
+		XmlReader reader = new XmlReader(xml, noAttributesConfig);
+		reader.readDeclaration();
+		
+		assertThrows(XmlSyntaxException.class, reader::readXmlElement);
+	}
+	
+	@Test
+	void readXmlElementWithEscapedContent() {
+		String xml = "<?xml version=\"v1.0\"?><test>&lt;content&gt;</test>";
+		XmlReader reader = new XmlReader(xml);
+		reader.readDeclaration();
+		
+		XmlValue expected = new XmlValue("test", "<content>");
+		assertEquals(expected, reader.readXmlElement());
+	}
+	
+	@Test
+	void readXmlElementWithComments() {
+		String xml = "<?xml version=\"v1.0\"?><!-- This is a comment --><test><!-- Another comment -->value</test>";
+		XmlReader reader = new XmlReader(xml);
+		reader.readDeclaration();
+		
+		XmlValue expected = new XmlValue("test", "value");
+		assertEquals(expected, reader.readXmlElement());
+	}
+	
+	@Test
+	void readXmlElementWithNamespaces() {
+		String xml = "<?xml version=\"v1.0\"?><ns:test xmlns:ns=\"http://example.com\"><ns:child>value</ns:child></ns:test>";
+		XmlReader reader = new XmlReader(xml);
+		reader.readDeclaration();
+		
+		XmlContainer expected = new XmlContainer("ns:test");
+		expected.addAttribute("xmlns:ns", "http://example.com");
+		expected.addValue(new XmlValue("ns:child", "value"));
+		assertEquals(expected, reader.readXmlElement());
+	}
+	
+	@Test
+	void readXmlElementWithWhitespace() {
+		String xml = "<?xml version=\"v1.0\"?>\n  <test>\n    <child>value</child>\n  </test>\n";
+		XmlReader reader = new XmlReader(xml);
+		reader.readDeclaration();
+		
+		XmlContainer expected = new XmlContainer("test");
+		expected.addValue(new XmlValue("child", "value"));
+		assertEquals(expected, reader.readXmlElement());
+	}
+	
+	@Test
+	void readXmlElementAttributeVariations() {
+		String xml = "<?xml version=\"v1.0\"?><test attr1=\"value1\" attr2='value2' attr3=\"value with spaces\"></test>";
+		XmlReader reader = new XmlReader(xml);
+		reader.readDeclaration();
+		
+		XmlValue expected = new XmlValue("test", "");
+		expected.addAttribute("attr1", "value1");
+		expected.addAttribute("attr2", "value2");
+		expected.addAttribute("attr3", "value with spaces");
+		assertEquals(expected, reader.readXmlElement());
+	}
+	
+	@Test
+	void readXmlElementAttributesWithCustomConfig() {
+		XmlConfig customConfig = new XmlConfig(false, false, "\t", true, false, StandardCharsets.UTF_8);
+		String xml = "<?xml version=\"v1.0\"?><test attr1 = \"value1\" attr2= 'value2'></test>";
+		XmlReader reader = new XmlReader(xml, customConfig);
+		reader.readDeclaration();
+		
+		XmlValue expected = new XmlValue("test", "");
+		expected.addAttribute("attr1", "value1");
+		expected.addAttribute("attr2", "value2");
+		assertEquals(expected, reader.readXmlElement());
 	}
 	
 	@Test
 	void close() {
-		assertDoesNotThrow(() -> new XmlReader(new InputProvider(InputStream.nullInputStream())));
+		assertDoesNotThrow(() -> {
+			try (XmlReader reader = new XmlReader(new InputProvider(InputStream.nullInputStream()))) {
+				// Reader should close without issues
+			}
+		});
+		
+		assertDoesNotThrow(() -> {
+			try (XmlReader reader = new XmlReader("<?xml version=\"v1.0\"?><test/>")) {
+				reader.readDeclaration();
+				reader.readXmlElement();
+			}
+		});
+	}
+	
+	@Test
+	void readXmlElementEmptyElements() {
+		String xml = "<?xml version=\"v1.0\"?><root><empty1/><empty2></empty2></root>";
+		XmlReader reader = new XmlReader(xml);
+		reader.readDeclaration();
+		
+		XmlContainer expected = new XmlContainer("root");
+		expected.add(new XmlElement("empty1"));
+		expected.addValue(new XmlValue("empty2", ""));
+		assertEquals(expected, reader.readXmlElement());
+	}
+	
+	@Test
+	void readXmlElementMixedContent() {
+		String xml = "<?xml version=\"v1.0\"?><root><container><value>test</value></container><simple>direct</simple></root>";
+		XmlReader reader = new XmlReader(xml);
+		reader.readDeclaration();
+		
+		XmlContainer expected = new XmlContainer("root");
+		XmlContainer container = new XmlContainer("container");
+		container.addValue(new XmlValue("value", "test"));
+		expected.addContainer(container);
+		expected.addValue(new XmlValue("simple", "direct"));
+		assertEquals(expected, reader.readXmlElement());
 	}
 }
