@@ -388,13 +388,11 @@ class CodecAutoMappingTest {
 		
 		private final String name;
 		private final int age;
-		private String ignored;
 		private transient final String transientField = "transient";
 		
 		private ImplicitFieldsClass(@NotNull String name, int age) {
 			this.name = name;
 			this.age = age;
-			this.ignored = "ignored";
 		}
 	}
 	

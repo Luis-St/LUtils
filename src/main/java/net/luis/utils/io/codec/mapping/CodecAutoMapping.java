@@ -213,7 +213,7 @@ public class CodecAutoMapping {
 	/**
 	 * Gets the components (fields or record components) of a class that should be included in the codec.<br>
 	 * For record classes, it returns all record components.<br>
-	 * For regular classes, it returns either all fields annotated with {@link CodecField} or all non-static, final fields that are not transient.<br>
+	 * For regular classes, it returns either all fields annotated with {@link CodecField} or all non-static, not transient fields.<br>
 	 *
 	 * @param clazz The class to get components from
 	 * @return An array of codec components
@@ -236,7 +236,7 @@ public class CodecAutoMapping {
 			return fields.stream().filter(field -> field.isAnnotationPresent(CodecField.class)).map(CodecComponent::new).toArray(CodecComponent[]::new);
 		}
 		
-		return fields.stream().filter(field -> Modifier.isFinal(field.getModifiers()) && !Modifier.isTransient(field.getModifiers())).map(CodecComponent::new).toArray(CodecComponent[]::new);
+		return fields.stream().filter(field -> !Modifier.isTransient(field.getModifiers())).map(CodecComponent::new).toArray(CodecComponent[]::new);
 	}
 	
 	/**
