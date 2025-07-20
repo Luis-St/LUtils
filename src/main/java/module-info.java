@@ -46,8 +46,7 @@ module net.luis.utils {
 	exports net.luis.utils.io.codec;
 	exports net.luis.utils.io.codec.decoder;
 	exports net.luis.utils.io.codec.encoder;
-	exports net.luis.utils.io.codec.group.function;
-	exports net.luis.utils.io.codec.group.grouper;
+	exports net.luis.utils.io.codec.function;
 	exports net.luis.utils.io.codec.provider;
 	exports net.luis.utils.io.codec.struct;
 	

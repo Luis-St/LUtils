@@ -18,17 +18,18 @@
 
 package net.luis.utils.io.codec;
 
-import net.luis.utils.io.codec.group.function.*;
-import net.luis.utils.io.codec.group.grouper.*;
+import net.luis.utils.io.codec.function.*;
 import net.luis.utils.io.codec.mapping.CodecAutoMapping;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.List;
+import java.util.Objects;
+
 /**
- * A utility class that provides methods to create codec groupers that group multiple codecs into a single codec.<br>
+ * A utility class that provides methods to build codecs for complex objects.<br>
  *
  * @author Luis-St
  */
-@SuppressWarnings("DuplicatedCode")
 public final class CodecBuilder {
 	
 	/**
@@ -54,8 +55,8 @@ public final class CodecBuilder {
 	}
 	
 	/**
-	 * Creates a new codec grouper that groups the provided codec into a single codec.<br>
-	 * The resulting codec can be created by calling the {@code create} method of the returned grouper.<br>
+	 * Creates a codec creator containing the provided codec.<br>
+	 * The codec creator can be used to create the resulting codec by calling the {@link CodecCreator#create(CodecGroupingFunction)} method of the returned creator.<br>
 	 * The {@code create} requires a grouping function as input that constructs the resulting object from the provided components.<br>
 	 *
 	 * @param codec1 The first codec
@@ -63,18 +64,24 @@ public final class CodecBuilder {
 	 * @param <CI1> The type of the first component
 	 * @param <O> The type of the resulting object the created codec will produce
 	 * @throws NullPointerException If any of the provided codecs is null
-	 * @see CodecGrouper1
+	 * @see CodecCreator
+	 * @see CodecGroup
 	 * @see CodecGroupingFunction1
 	 */
-	public static <CI1, O> @NotNull CodecGrouper1<CI1, O> group(
+	public static <CI1, O> @NotNull CodecCreator<O, CodecGroupingFunction1<CI1, O>> group(
 		@NotNull ConfiguredCodec<CI1, O> codec1
 	) {
-		return new CodecGrouper1<>(codec1);
+		List<ConfiguredCodec<?, O>> codecs = List.of(
+			codec1
+		);
+		
+		ensureNoElementIsNull(codecs);
+		return new CodecCreator<>(codecs);
 	}
 	
 	/**
-	 * Creates a new codec grouper that groups the provided codecs into a single codec.<br>
-	 * The resulting codec can be created by calling the {@code create} method of the returned grouper.<br>
+	 * Creates a codec creator containing the provided codec.<br>
+	 * The codec creator can be used to create the resulting codec by calling the {@link CodecCreator#create(CodecGroupingFunction)} method of the returned creator.<br>
 	 * The {@code create} requires a grouping function as input that constructs the resulting object from the provided components.<br>
 	 *
 	 * @param codec1 The first codec
@@ -84,19 +91,25 @@ public final class CodecBuilder {
 	 * @param <CI2> The type of the second component
 	 * @param <O> The type of the resulting object the created codec will produce
 	 * @throws NullPointerException If any of the provided codecs is null
-	 * @see CodecGrouper2
+	 * @see CodecCreator
+	 * @see CodecGroup
 	 * @see CodecGroupingFunction2
 	 */
-	public static <CI1, CI2, O> @NotNull CodecGrouper2<CI1, CI2, O> group(
+	public static <CI1, CI2, O> @NotNull CodecCreator<O, CodecGroupingFunction2<CI1, CI2, O>> group(
 		@NotNull ConfiguredCodec<CI1, O> codec1,
 		@NotNull ConfiguredCodec<CI2, O> codec2
 	) {
-		return new CodecGrouper2<>(codec1, codec2);
+		List<ConfiguredCodec<?, O>> codecs = List.of(
+			codec1, codec2
+		);
+		
+		ensureNoElementIsNull(codecs);
+		return new CodecCreator<>(codecs);
 	}
 	
 	/**
-	 * Creates a new codec grouper that groups the provided codecs into a single codec.<br>
-	 * The resulting codec can be created by calling the {@code create} method of the returned grouper.<br>
+	 * Creates a codec creator containing the provided codec.<br>
+	 * The codec creator can be used to create the resulting codec by calling the {@link CodecCreator#create(CodecGroupingFunction)} method of the returned creator.<br>
 	 * The {@code create} requires a grouping function as input that constructs the resulting object from the provided components.<br>
 	 *
 	 * @param codec1 The first codec
@@ -108,20 +121,26 @@ public final class CodecBuilder {
 	 * @param <CI3> The type of the third component
 	 * @param <O> The type of the resulting object the created codec will produce
 	 * @throws NullPointerException If any of the provided codecs is null
-	 * @see CodecGrouper3
+	 * @see CodecCreator
+	 * @see CodecGroup
 	 * @see CodecGroupingFunction3
 	 */
-	public static <CI1, CI2, CI3, O> @NotNull CodecGrouper3<CI1, CI2, CI3, O> group(
+	public static <CI1, CI2, CI3, O> @NotNull CodecCreator<O, CodecGroupingFunction3<CI1, CI2, CI3, O>> group(
 		@NotNull ConfiguredCodec<CI1, O> codec1,
 		@NotNull ConfiguredCodec<CI2, O> codec2,
 		@NotNull ConfiguredCodec<CI3, O> codec3
 	) {
-		return new CodecGrouper3<>(codec1, codec2, codec3);
+		List<ConfiguredCodec<?, O>> codecs = List.of(
+			codec1, codec2, codec3
+		);
+		
+		ensureNoElementIsNull(codecs);
+		return new CodecCreator<>(codecs);
 	}
 	
 	/**
-	 * Creates a new codec grouper that groups the provided codecs into a single codec.<br>
-	 * The resulting codec can be created by calling the {@code create} method of the returned grouper.<br>
+	 * Creates a codec creator containing the provided codec.<br>
+	 * The codec creator can be used to create the resulting codec by calling the {@link CodecCreator#create(CodecGroupingFunction)} method of the returned creator.<br>
 	 * The {@code create} requires a grouping function as input that constructs the resulting object from the provided components.<br>
 	 *
 	 * @param codec1 The first codec
@@ -135,21 +154,27 @@ public final class CodecBuilder {
 	 * @param <CI4> The type of the fourth component
 	 * @param <O> The type of the resulting object the created codec will produce
 	 * @throws NullPointerException If any of the provided codecs is null
-	 * @see CodecGrouper4
+	 * @see CodecCreator
+	 * @see CodecGroup
 	 * @see CodecGroupingFunction4
 	 */
-	public static <CI1, CI2, CI3, CI4, O> @NotNull CodecGrouper4<CI1, CI2, CI3, CI4, O> group(
+	public static <CI1, CI2, CI3, CI4, O> @NotNull CodecCreator<O, CodecGroupingFunction4<CI1, CI2, CI3, CI4, O>> group(
 		@NotNull ConfiguredCodec<CI1, O> codec1,
 		@NotNull ConfiguredCodec<CI2, O> codec2,
 		@NotNull ConfiguredCodec<CI3, O> codec3,
 		@NotNull ConfiguredCodec<CI4, O> codec4
 	) {
-		return new CodecGrouper4<>(codec1, codec2, codec3, codec4);
+		List<ConfiguredCodec<?, O>> codecs = List.of(
+			codec1, codec2, codec3, codec4
+		);
+		
+		ensureNoElementIsNull(codecs);
+		return new CodecCreator<>(codecs);
 	}
 	
 	/**
-	 * Creates a new codec grouper that groups the provided codecs into a single codec.<br>
-	 * The resulting codec can be created by calling the {@code create} method of the returned grouper.<br>
+	 * Creates a codec creator containing the provided codec.<br>
+	 * The codec creator can be used to create the resulting codec by calling the {@link CodecCreator#create(CodecGroupingFunction)} method of the returned creator.<br>
 	 * The {@code create} requires a grouping function as input that constructs the resulting object from the provided components.<br>
 	 *
 	 * @param codec1 The first codec
@@ -165,22 +190,28 @@ public final class CodecBuilder {
 	 * @param <CI5> The type of the fifth component
 	 * @param <O> The type of the resulting object the created codec will produce
 	 * @throws NullPointerException If any of the provided codecs is null
-	 * @see CodecGrouper5
+	 * @see CodecCreator
+	 * @see CodecGroup
 	 * @see CodecGroupingFunction5
 	 */
-	public static <CI1, CI2, CI3, CI4, CI5, O> @NotNull CodecGrouper5<CI1, CI2, CI3, CI4, CI5, O> group(
+	public static <CI1, CI2, CI3, CI4, CI5, O> @NotNull CodecCreator<O, CodecGroupingFunction5<CI1, CI2, CI3, CI4, CI5, O>> group(
 		@NotNull ConfiguredCodec<CI1, O> codec1,
 		@NotNull ConfiguredCodec<CI2, O> codec2,
 		@NotNull ConfiguredCodec<CI3, O> codec3,
 		@NotNull ConfiguredCodec<CI4, O> codec4,
 		@NotNull ConfiguredCodec<CI5, O> codec5
 	) {
-		return new CodecGrouper5<>(codec1, codec2, codec3, codec4, codec5);
+		List<ConfiguredCodec<?, O>> codecs = List.of(
+			codec1, codec2, codec3, codec4, codec5
+		);
+		
+		ensureNoElementIsNull(codecs);
+		return new CodecCreator<>(codecs);
 	}
 	
 	/**
-	 * Creates a new codec grouper that groups the provided codecs into a single codec.<br>
-	 * The resulting codec can be created by calling the {@code create} method of the returned grouper.<br>
+	 * Creates a codec creator containing the provided codec.<br>
+	 * The codec creator can be used to create the resulting codec by calling the {@link CodecCreator#create(CodecGroupingFunction)} method of the returned creator.<br>
 	 * The {@code create} requires a grouping function as input that constructs the resulting object from the provided components.<br>
 	 *
 	 * @param codec1 The first codec
@@ -198,10 +229,11 @@ public final class CodecBuilder {
 	 * @param <CI6> The type of the sixth component
 	 * @param <O> The type of the resulting object the created codec will produce
 	 * @throws NullPointerException If any of the provided codecs is null
-	 * @see CodecGrouper6
+	 * @see CodecCreator
+	 * @see CodecGroup
 	 * @see CodecGroupingFunction6
 	 */
-	public static <CI1, CI2, CI3, CI4, CI5, CI6, O> @NotNull CodecGrouper6<CI1, CI2, CI3, CI4, CI5, CI6, O> group(
+	public static <CI1, CI2, CI3, CI4, CI5, CI6, O> @NotNull CodecCreator<O, CodecGroupingFunction6<CI1, CI2, CI3, CI4, CI5, CI6, O>> group(
 		@NotNull ConfiguredCodec<CI1, O> codec1,
 		@NotNull ConfiguredCodec<CI2, O> codec2,
 		@NotNull ConfiguredCodec<CI3, O> codec3,
@@ -209,12 +241,17 @@ public final class CodecBuilder {
 		@NotNull ConfiguredCodec<CI5, O> codec5,
 		@NotNull ConfiguredCodec<CI6, O> codec6
 	) {
-		return new CodecGrouper6<>(codec1, codec2, codec3, codec4, codec5, codec6);
+		List<ConfiguredCodec<?, O>> codecs = List.of(
+			codec1, codec2, codec3, codec4, codec5, codec6
+		);
+		
+		ensureNoElementIsNull(codecs);
+		return new CodecCreator<>(codecs);
 	}
 	
 	/**
-	 * Creates a new codec grouper that groups the provided codecs into a single codec.<br>
-	 * The resulting codec can be created by calling the {@code create} method of the returned grouper.<br>
+	 * Creates a codec creator containing the provided codec.<br>
+	 * The codec creator can be used to create the resulting codec by calling the {@link CodecCreator#create(CodecGroupingFunction)} method of the returned creator.<br>
 	 * The {@code create} requires a grouping function as input that constructs the resulting object from the provided components.<br>
 	 *
 	 * @param codec1 The first codec
@@ -234,10 +271,11 @@ public final class CodecBuilder {
 	 * @param <CI7> The type of the seventh component
 	 * @param <O> The type of the resulting object the created codec will produce
 	 * @throws NullPointerException If any of the provided codecs is null
-	 * @see CodecGrouper7
+	 * @see CodecCreator
+	 * @see CodecGroup
 	 * @see CodecGroupingFunction7
 	 */
-	public static <CI1, CI2, CI3, CI4, CI5, CI6, CI7, O> @NotNull CodecGrouper7<CI1, CI2, CI3, CI4, CI5, CI6, CI7, O> group(
+	public static <CI1, CI2, CI3, CI4, CI5, CI6, CI7, O> @NotNull CodecCreator<O, CodecGroupingFunction7<CI1, CI2, CI3, CI4, CI5, CI6, CI7, O>> group(
 		@NotNull ConfiguredCodec<CI1, O> codec1,
 		@NotNull ConfiguredCodec<CI2, O> codec2,
 		@NotNull ConfiguredCodec<CI3, O> codec3,
@@ -246,12 +284,17 @@ public final class CodecBuilder {
 		@NotNull ConfiguredCodec<CI6, O> codec6,
 		@NotNull ConfiguredCodec<CI7, O> codec7
 	) {
-		return new CodecGrouper7<>(codec1, codec2, codec3, codec4, codec5, codec6, codec7);
+		List<ConfiguredCodec<?, O>> codecs = List.of(
+			codec1, codec2, codec3, codec4, codec5, codec6, codec7
+		);
+		
+		ensureNoElementIsNull(codecs);
+		return new CodecCreator<>(codecs);
 	}
 	
 	/**
-	 * Creates a new codec grouper that groups the provided codecs into a single codec.<br>
-	 * The resulting codec can be created by calling the {@code create} method of the returned grouper.<br>
+	 * Creates a codec creator containing the provided codec.<br>
+	 * The codec creator can be used to create the resulting codec by calling the {@link CodecCreator#create(CodecGroupingFunction)} method of the returned creator.<br>
 	 * The {@code create} requires a grouping function as input that constructs the resulting object from the provided components.<br>
 	 *
 	 * @param codec1 The first codec
@@ -273,10 +316,11 @@ public final class CodecBuilder {
 	 * @param <CI8> The type of the eighth component
 	 * @param <O> The type of the resulting object the created codec will produce
 	 * @throws NullPointerException If any of the provided codecs is null
-	 * @see CodecGrouper8
+	 * @see CodecCreator
+	 * @see CodecGroup
 	 * @see CodecGroupingFunction8
 	 */
-	public static <CI1, CI2, CI3, CI4, CI5, CI6, CI7, CI8, O> @NotNull CodecGrouper8<CI1, CI2, CI3, CI4, CI5, CI6, CI7, CI8, O> group(
+	public static <CI1, CI2, CI3, CI4, CI5, CI6, CI7, CI8, O> @NotNull CodecCreator<O, CodecGroupingFunction8<CI1, CI2, CI3, CI4, CI5, CI6, CI7, CI8, O>> group(
 		@NotNull ConfiguredCodec<CI1, O> codec1,
 		@NotNull ConfiguredCodec<CI2, O> codec2,
 		@NotNull ConfiguredCodec<CI3, O> codec3,
@@ -286,12 +330,17 @@ public final class CodecBuilder {
 		@NotNull ConfiguredCodec<CI7, O> codec7,
 		@NotNull ConfiguredCodec<CI8, O> codec8
 	) {
-		return new CodecGrouper8<>(codec1, codec2, codec3, codec4, codec5, codec6, codec7, codec8);
+		List<ConfiguredCodec<?, O>> codecs = List.of(
+			codec1, codec2, codec3, codec4, codec5, codec6, codec7, codec8
+		);
+		
+		ensureNoElementIsNull(codecs);
+		return new CodecCreator<>(codecs);
 	}
 	
 	/**
-	 * Creates a new codec grouper that groups the provided codecs into a single codec.<br>
-	 * The resulting codec can be created by calling the {@code create} method of the returned grouper.<br>
+	 * Creates a codec creator containing the provided codec.<br>
+	 * The codec creator can be used to create the resulting codec by calling the {@link CodecCreator#create(CodecGroupingFunction)} method of the returned creator.<br>
 	 * The {@code create} requires a grouping function as input that constructs the resulting object from the provided components.<br>
 	 *
 	 * @param codec1 The first codec
@@ -315,10 +364,11 @@ public final class CodecBuilder {
 	 * @param <CI9> The type of the ninth component
 	 * @param <O> The type of the resulting object the created codec will produce
 	 * @throws NullPointerException If any of the provided codecs is null
-	 * @see CodecGrouper9
+	 * @see CodecCreator
+	 * @see CodecGroup
 	 * @see CodecGroupingFunction9
 	 */
-	public static <CI1, CI2, CI3, CI4, CI5, CI6, CI7, CI8, CI9, O> @NotNull CodecGrouper9<CI1, CI2, CI3, CI4, CI5, CI6, CI7, CI8, CI9, O> group(
+	public static <CI1, CI2, CI3, CI4, CI5, CI6, CI7, CI8, CI9, O> @NotNull CodecCreator<O, CodecGroupingFunction9<CI1, CI2, CI3, CI4, CI5, CI6, CI7, CI8, CI9, O>> group(
 		@NotNull ConfiguredCodec<CI1, O> codec1,
 		@NotNull ConfiguredCodec<CI2, O> codec2,
 		@NotNull ConfiguredCodec<CI3, O> codec3,
@@ -329,12 +379,17 @@ public final class CodecBuilder {
 		@NotNull ConfiguredCodec<CI8, O> codec8,
 		@NotNull ConfiguredCodec<CI9, O> codec9
 	) {
-		return new CodecGrouper9<>(codec1, codec2, codec3, codec4, codec5, codec6, codec7, codec8, codec9);
+		List<ConfiguredCodec<?, O>> codecs = List.of(
+			codec1, codec2, codec3, codec4, codec5, codec6, codec7, codec8, codec9
+		);
+		
+		ensureNoElementIsNull(codecs);
+		return new CodecCreator<>(codecs);
 	}
 	
 	/**
-	 * Creates a new codec grouper that groups the provided codecs into a single codec.<br>
-	 * The resulting codec can be created by calling the {@code create} method of the returned grouper.<br>
+	 * Creates a codec creator containing the provided codec.<br>
+	 * The codec creator can be used to create the resulting codec by calling the {@link CodecCreator#create(CodecGroupingFunction)} method of the returned creator.<br>
 	 * The {@code create} requires a grouping function as input that constructs the resulting object from the provided components.<br>
 	 *
 	 * @param codec1 The first codec
@@ -360,10 +415,11 @@ public final class CodecBuilder {
 	 * @param <CI10> The type of the tenth component
 	 * @param <O> The type of the resulting object the created codec will produce
 	 * @throws NullPointerException If any of the provided codecs is null
-	 * @see CodecGrouper10
+	 * @see CodecCreator
+	 * @see CodecGroup
 	 * @see CodecGroupingFunction10
 	 */
-	public static <CI1, CI2, CI3, CI4, CI5, CI6, CI7, CI8, CI9, CI10, O> @NotNull CodecGrouper10<CI1, CI2, CI3, CI4, CI5, CI6, CI7, CI8, CI9, CI10, O> group(
+	public static <CI1, CI2, CI3, CI4, CI5, CI6, CI7, CI8, CI9, CI10, O> @NotNull CodecCreator<O, CodecGroupingFunction10<CI1, CI2, CI3, CI4, CI5, CI6, CI7, CI8, CI9, CI10, O>> group(
 		@NotNull ConfiguredCodec<CI1, O> codec1,
 		@NotNull ConfiguredCodec<CI2, O> codec2,
 		@NotNull ConfiguredCodec<CI3, O> codec3,
@@ -375,12 +431,17 @@ public final class CodecBuilder {
 		@NotNull ConfiguredCodec<CI9, O> codec9,
 		@NotNull ConfiguredCodec<CI10, O> codec10
 	) {
-		return new CodecGrouper10<>(codec1, codec2, codec3, codec4, codec5, codec6, codec7, codec8, codec9, codec10);
+		List<ConfiguredCodec<?, O>> codecs = List.of(
+			codec1, codec2, codec3, codec4, codec5, codec6, codec7, codec8, codec9, codec10
+		);
+		
+		ensureNoElementIsNull(codecs);
+		return new CodecCreator<>(codecs);
 	}
 	
 	/**
-	 * Creates a new codec grouper that groups the provided codecs into a single codec.<br>
-	 * The resulting codec can be created by calling the {@code create} method of the returned grouper.<br>
+	 * Creates a codec creator containing the provided codec.<br>
+	 * The codec creator can be used to create the resulting codec by calling the {@link CodecCreator#create(CodecGroupingFunction)} method of the returned creator.<br>
 	 * The {@code create} requires a grouping function as input that constructs the resulting object from the provided components.<br>
 	 *
 	 * @param codec1 The first codec
@@ -408,10 +469,11 @@ public final class CodecBuilder {
 	 * @param <CI11> The type of the eleventh component
 	 * @param <O> The type of the resulting object the created codec will produce
 	 * @throws NullPointerException If any of the provided codecs is null
-	 * @see CodecGrouper11
+	 * @see CodecCreator
+	 * @see CodecGroup
 	 * @see CodecGroupingFunction11
 	 */
-	public static <CI1, CI2, CI3, CI4, CI5, CI6, CI7, CI8, CI9, CI10, CI11, O> @NotNull CodecGrouper11<CI1, CI2, CI3, CI4, CI5, CI6, CI7, CI8, CI9, CI10, CI11, O> group(
+	public static <CI1, CI2, CI3, CI4, CI5, CI6, CI7, CI8, CI9, CI10, CI11, O> @NotNull CodecCreator<O, CodecGroupingFunction11<CI1, CI2, CI3, CI4, CI5, CI6, CI7, CI8, CI9, CI10, CI11, O>> group(
 		@NotNull ConfiguredCodec<CI1, O> codec1,
 		@NotNull ConfiguredCodec<CI2, O> codec2,
 		@NotNull ConfiguredCodec<CI3, O> codec3,
@@ -424,12 +486,17 @@ public final class CodecBuilder {
 		@NotNull ConfiguredCodec<CI10, O> codec10,
 		@NotNull ConfiguredCodec<CI11, O> codec11
 	) {
-		return new CodecGrouper11<>(codec1, codec2, codec3, codec4, codec5, codec6, codec7, codec8, codec9, codec10, codec11);
+		List<ConfiguredCodec<?, O>> codecs = List.of(
+			codec1, codec2, codec3, codec4, codec5, codec6, codec7, codec8, codec9, codec10, codec11
+		);
+		
+		ensureNoElementIsNull(codecs);
+		return new CodecCreator<>(codecs);
 	}
 	
 	/**
-	 * Creates a new codec grouper that groups the provided codecs into a single codec.<br>
-	 * The resulting codec can be created by calling the {@code create} method of the returned grouper.<br>
+	 * Creates a codec creator containing the provided codec.<br>
+	 * The codec creator can be used to create the resulting codec by calling the {@link CodecCreator#create(CodecGroupingFunction)} method of the returned creator.<br>
 	 * The {@code create} requires a grouping function as input that constructs the resulting object from the provided components.<br>
 	 *
 	 * @param codec1 The first codec
@@ -459,10 +526,11 @@ public final class CodecBuilder {
 	 * @param <CI12> The type of the twelfth component
 	 * @param <O> The type of the resulting object the created codec will produce
 	 * @throws NullPointerException If any of the provided codecs is null
-	 * @see CodecGrouper12
+	 * @see CodecCreator
+	 * @see CodecGroup
 	 * @see CodecGroupingFunction12
 	 */
-	public static <CI1, CI2, CI3, CI4, CI5, CI6, CI7, CI8, CI9, CI10, CI11, CI12, O> @NotNull CodecGrouper12<CI1, CI2, CI3, CI4, CI5, CI6, CI7, CI8, CI9, CI10, CI11, CI12, O> group(
+	public static <CI1, CI2, CI3, CI4, CI5, CI6, CI7, CI8, CI9, CI10, CI11, CI12, O> @NotNull CodecCreator<O, CodecGroupingFunction12<CI1, CI2, CI3, CI4, CI5, CI6, CI7, CI8, CI9, CI10, CI11, CI12, O>> group(
 		@NotNull ConfiguredCodec<CI1, O> codec1,
 		@NotNull ConfiguredCodec<CI2, O> codec2,
 		@NotNull ConfiguredCodec<CI3, O> codec3,
@@ -476,12 +544,17 @@ public final class CodecBuilder {
 		@NotNull ConfiguredCodec<CI11, O> codec11,
 		@NotNull ConfiguredCodec<CI12, O> codec12
 	) {
-		return new CodecGrouper12<>(codec1, codec2, codec3, codec4, codec5, codec6, codec7, codec8, codec9, codec10, codec11, codec12);
+		List<ConfiguredCodec<?, O>> codecs = List.of(
+			codec1, codec2, codec3, codec4, codec5, codec6, codec7, codec8, codec9, codec10, codec11, codec12
+		);
+		
+		ensureNoElementIsNull(codecs);
+		return new CodecCreator<>(codecs);
 	}
 	
 	/**
-	 * Creates a new codec grouper that groups the provided codecs into a single codec.<br>
-	 * The resulting codec can be created by calling the {@code create} method of the returned grouper.<br>
+	 * Creates a codec creator containing the provided codec.<br>
+	 * The codec creator can be used to create the resulting codec by calling the {@link CodecCreator#create(CodecGroupingFunction)} method of the returned creator.<br>
 	 * The {@code create} requires a grouping function as input that constructs the resulting object from the provided components.<br>
 	 *
 	 * @param codec1 The first codec
@@ -513,10 +586,11 @@ public final class CodecBuilder {
 	 * @param <CI13> The type of the thirteenth component
 	 * @param <O> The type of the resulting object the created codec will produce
 	 * @throws NullPointerException If any of the provided codecs is null
-	 * @see CodecGrouper13
+	 * @see CodecCreator
+	 * @see CodecGroup
 	 * @see CodecGroupingFunction13
 	 */
-	public static <CI1, CI2, CI3, CI4, CI5, CI6, CI7, CI8, CI9, CI10, CI11, CI12, CI13, O> @NotNull CodecGrouper13<CI1, CI2, CI3, CI4, CI5, CI6, CI7, CI8, CI9, CI10, CI11, CI12, CI13, O> group(
+	public static <CI1, CI2, CI3, CI4, CI5, CI6, CI7, CI8, CI9, CI10, CI11, CI12, CI13, O> @NotNull CodecCreator<O, CodecGroupingFunction13<CI1, CI2, CI3, CI4, CI5, CI6, CI7, CI8, CI9, CI10, CI11, CI12, CI13, O>> group(
 		@NotNull ConfiguredCodec<CI1, O> codec1,
 		@NotNull ConfiguredCodec<CI2, O> codec2,
 		@NotNull ConfiguredCodec<CI3, O> codec3,
@@ -531,12 +605,17 @@ public final class CodecBuilder {
 		@NotNull ConfiguredCodec<CI12, O> codec12,
 		@NotNull ConfiguredCodec<CI13, O> codec13
 	) {
-		return new CodecGrouper13<>(codec1, codec2, codec3, codec4, codec5, codec6, codec7, codec8, codec9, codec10, codec11, codec12, codec13);
+		List<ConfiguredCodec<?, O>> codecs = List.of(
+			codec1, codec2, codec3, codec4, codec5, codec6, codec7, codec8, codec9, codec10, codec11, codec12, codec13
+		);
+		
+		ensureNoElementIsNull(codecs);
+		return new CodecCreator<>(codecs);
 	}
 	
 	/**
-	 * Creates a new codec grouper that groups the provided codecs into a single codec.<br>
-	 * The resulting codec can be created by calling the {@code create} method of the returned grouper.<br>
+	 * Creates a codec creator containing the provided codec.<br>
+	 * The codec creator can be used to create the resulting codec by calling the {@link CodecCreator#create(CodecGroupingFunction)} method of the returned creator.<br>
 	 * The {@code create} requires a grouping function as input that constructs the resulting object from the provided components.<br>
 	 *
 	 * @param codec1 The first codec
@@ -570,10 +649,11 @@ public final class CodecBuilder {
 	 * @param <CI14> The type of the fourteenth component
 	 * @param <O> The type of the resulting object the created codec will produce
 	 * @throws NullPointerException If any of the provided codecs is null
-	 * @see CodecGrouper14
+	 * @see CodecCreator
+	 * @see CodecGroup
 	 * @see CodecGroupingFunction14
 	 */
-	public static <CI1, CI2, CI3, CI4, CI5, CI6, CI7, CI8, CI9, CI10, CI11, CI12, CI13, CI14, O> @NotNull CodecGrouper14<CI1, CI2, CI3, CI4, CI5, CI6, CI7, CI8, CI9, CI10, CI11, CI12, CI13, CI14, O> group(
+	public static <CI1, CI2, CI3, CI4, CI5, CI6, CI7, CI8, CI9, CI10, CI11, CI12, CI13, CI14, O> @NotNull CodecCreator<O, CodecGroupingFunction14<CI1, CI2, CI3, CI4, CI5, CI6, CI7, CI8, CI9, CI10, CI11, CI12, CI13, CI14, O>> group(
 		@NotNull ConfiguredCodec<CI1, O> codec1,
 		@NotNull ConfiguredCodec<CI2, O> codec2,
 		@NotNull ConfiguredCodec<CI3, O> codec3,
@@ -589,12 +669,17 @@ public final class CodecBuilder {
 		@NotNull ConfiguredCodec<CI13, O> codec13,
 		@NotNull ConfiguredCodec<CI14, O> codec14
 	) {
-		return new CodecGrouper14<>(codec1, codec2, codec3, codec4, codec5, codec6, codec7, codec8, codec9, codec10, codec11, codec12, codec13, codec14);
+		List<ConfiguredCodec<?, O>> codecs = List.of(
+			codec1, codec2, codec3, codec4, codec5, codec6, codec7, codec8, codec9, codec10, codec11, codec12, codec13, codec14
+		);
+		
+		ensureNoElementIsNull(codecs);
+		return new CodecCreator<>(codecs);
 	}
 	
 	/**
-	 * Creates a new codec grouper that groups the provided codecs into a single codec.<br>
-	 * The resulting codec can be created by calling the {@code create} method of the returned grouper.<br>
+	 * Creates a codec creator containing the provided codec.<br>
+	 * The codec creator can be used to create the resulting codec by calling the {@link CodecCreator#create(CodecGroupingFunction)} method of the returned creator.<br>
 	 * The {@code create} requires a grouping function as input that constructs the resulting object from the provided components.<br>
 	 *
 	 * @param codec1 The first codec
@@ -630,10 +715,11 @@ public final class CodecBuilder {
 	 * @param <CI15> The type of the fifteenth component
 	 * @param <O> The type of the resulting object the created codec will produce
 	 * @throws NullPointerException If any of the provided codecs is null
-	 * @see CodecGrouper15
+	 * @see CodecCreator
+	 * @see CodecGroup
 	 * @see CodecGroupingFunction15
 	 */
-	public static <CI1, CI2, CI3, CI4, CI5, CI6, CI7, CI8, CI9, CI10, CI11, CI12, CI13, CI14, CI15, O> @NotNull CodecGrouper15<CI1, CI2, CI3, CI4, CI5, CI6, CI7, CI8, CI9, CI10, CI11, CI12, CI13, CI14, CI15, O> group(
+	public static <CI1, CI2, CI3, CI4, CI5, CI6, CI7, CI8, CI9, CI10, CI11, CI12, CI13, CI14, CI15, O> @NotNull CodecCreator<O, CodecGroupingFunction15<CI1, CI2, CI3, CI4, CI5, CI6, CI7, CI8, CI9, CI10, CI11, CI12, CI13, CI14, CI15, O>> group(
 		@NotNull ConfiguredCodec<CI1, O> codec1,
 		@NotNull ConfiguredCodec<CI2, O> codec2,
 		@NotNull ConfiguredCodec<CI3, O> codec3,
@@ -650,12 +736,17 @@ public final class CodecBuilder {
 		@NotNull ConfiguredCodec<CI14, O> codec14,
 		@NotNull ConfiguredCodec<CI15, O> codec15
 	) {
-		return new CodecGrouper15<>(codec1, codec2, codec3, codec4, codec5, codec6, codec7, codec8, codec9, codec10, codec11, codec12, codec13, codec14, codec15);
+		List<ConfiguredCodec<?, O>> codecs = List.of(
+			codec1, codec2, codec3, codec4, codec5, codec6, codec7, codec8, codec9, codec10, codec11, codec12, codec13, codec14, codec15
+		);
+		
+		ensureNoElementIsNull(codecs);
+		return new CodecCreator<>(codecs);
 	}
 	
 	/**
-	 * Creates a new codec grouper that groups the provided codecs into a single codec.<br>
-	 * The resulting codec can be created by calling the {@code create} method of the returned grouper.<br>
+	 * Creates a codec creator containing the provided codec.<br>
+	 * The codec creator can be used to create the resulting codec by calling the {@link CodecCreator#create(CodecGroupingFunction)} method of the returned creator.<br>
 	 * The {@code create} requires a grouping function as input that constructs the resulting object from the provided components.<br>
 	 *
 	 * @param codec1 The first codec
@@ -693,10 +784,11 @@ public final class CodecBuilder {
 	 * @param <CI16> The type of the sixteenth component
 	 * @param <O> The type of the resulting object the created codec will produce
 	 * @throws NullPointerException If any of the provided codecs is null
-	 * @see CodecGrouper16
+	 * @see CodecCreator
+	 * @see CodecGroup
 	 * @see CodecGroupingFunction16
 	 */
-	public static <CI1, CI2, CI3, CI4, CI5, CI6, CI7, CI8, CI9, CI10, CI11, CI12, CI13, CI14, CI15, CI16, O> @NotNull CodecGrouper16<CI1, CI2, CI3, CI4, CI5, CI6, CI7, CI8, CI9, CI10, CI11, CI12, CI13, CI14, CI15, CI16, O> group(
+	public static <CI1, CI2, CI3, CI4, CI5, CI6, CI7, CI8, CI9, CI10, CI11, CI12, CI13, CI14, CI15, CI16, O> @NotNull CodecCreator<O, CodecGroupingFunction16<CI1, CI2, CI3, CI4, CI5, CI6, CI7, CI8, CI9, CI10, CI11, CI12, CI13, CI14, CI15, CI16, O>> group(
 		@NotNull ConfiguredCodec<CI1, O> codec1,
 		@NotNull ConfiguredCodec<CI2, O> codec2,
 		@NotNull ConfiguredCodec<CI3, O> codec3,
@@ -714,6 +806,25 @@ public final class CodecBuilder {
 		@NotNull ConfiguredCodec<CI15, O> codec15,
 		@NotNull ConfiguredCodec<CI16, O> codec16
 	) {
-		return new CodecGrouper16<>(codec1, codec2, codec3, codec4, codec5, codec6, codec7, codec8, codec9, codec10, codec11, codec12, codec13, codec14, codec15, codec16);
+		List<ConfiguredCodec<?, O>> codecs = List.of(
+			codec1, codec2, codec3, codec4, codec5, codec6, codec7, codec8, codec9, codec10, codec11, codec12, codec13, codec14, codec15, codec16
+		);
+		
+		ensureNoElementIsNull(codecs);
+		return new CodecCreator<>(codecs);
+	}
+	
+	/**
+	 * Ensures that no element in the provided list is null.<br>
+	 * Used by the group methods to ensure that all provided codecs are not null.<br>
+	 * @param list The list to check for null elements
+	 * @throws NullPointerException If any element in the list is null
+	 */
+	private static void ensureNoElementIsNull(@NotNull List<?> list) {
+		for (int i = 0; i < list.size(); i++) {
+			if (list.get(i) == null) {
+				Objects.requireNonNull(list.get(i), "Codec of component " + i + " must not be null");
+			}
+		}
 	}
 }
