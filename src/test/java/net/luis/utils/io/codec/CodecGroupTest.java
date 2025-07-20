@@ -19,17 +19,17 @@
 package net.luis.utils.io.codec;
 
 import net.luis.utils.io.codec.provider.JsonTypeProvider;
-import net.luis.utils.io.codec.provider.XmlTypeProvider;
 import net.luis.utils.io.data.json.*;
 import net.luis.utils.util.Result;
 import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.Test;
 
-import java.util.*;
+import java.util.Arrays;
+import java.util.List;
 import java.util.function.Function;
 
+import static net.luis.utils.io.codec.ResultingFunction.*;
 import static org.junit.jupiter.api.Assertions.*;
-import static net.luis.utils.io.codec.ResultingFunction.direct;
 
 /**
  * Test class for {@link CodecGroup}.<br>
@@ -39,6 +39,7 @@ import static net.luis.utils.io.codec.ResultingFunction.direct;
 class CodecGroupTest {
 	
 	private record TestObject(@NotNull String name, int value) {}
+	
 	private record TestObject2(@NotNull String text, double number, boolean flag) {}
 	
 	private static @NotNull CodecGroup<TestObject> createTestCodecGroup() {

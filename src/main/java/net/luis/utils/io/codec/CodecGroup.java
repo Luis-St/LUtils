@@ -24,7 +24,6 @@ import net.luis.utils.util.Result;
 import org.jetbrains.annotations.*;
 
 import java.util.*;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 
 /**
@@ -92,7 +91,6 @@ public class CodecGroup<O> implements Codec<O> {
 		
 		return Result.success(map);
 	}
-	
 	
 	@Override
 	public @NotNull <R> Result<O> decodeStart(@NotNull TypeProvider<R> provider, @Nullable R value) {

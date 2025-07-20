@@ -23,9 +23,7 @@ import net.luis.utils.util.Version;
 import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.Test;
 
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.OutputStream;
+import java.io.*;
 import java.nio.charset.StandardCharsets;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -231,10 +229,10 @@ class XmlWriterTest {
 		container.addValue(new XmlValue("child2", "value2"));
 		writer.writeXml(container);
 		
-		String expected = "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"false\"?>" + 
-						 System.lineSeparator() + "<root>" + System.lineSeparator() + 
-						 "\t<child1>value1</child1>" + System.lineSeparator() + 
-						 "\t<child2>value2</child2>" + System.lineSeparator() + "</root>";
+		String expected = "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"false\"?>" +
+			System.lineSeparator() + "<root>" + System.lineSeparator() +
+			"\t<child1>value1</child1>" + System.lineSeparator() +
+			"\t<child2>value2</child2>" + System.lineSeparator() + "</root>";
 		assertEquals(expected, stream.toString());
 		writer.close();
 	}
@@ -253,11 +251,11 @@ class XmlWriterTest {
 		root.addContainer(child);
 		writer.writeXml(root);
 		
-		String expected = "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"false\"?>" + 
-						 System.lineSeparator() + "<root>" + System.lineSeparator() + 
-						 "\t<child>" + System.lineSeparator() + 
-						 "\t\t<grandchild>value</grandchild>" + System.lineSeparator() + 
-						 "\t</child>" + System.lineSeparator() + "</root>";
+		String expected = "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"false\"?>" +
+			System.lineSeparator() + "<root>" + System.lineSeparator() +
+			"\t<child>" + System.lineSeparator() +
+			"\t\t<grandchild>value</grandchild>" + System.lineSeparator() +
+			"\t</child>" + System.lineSeparator() + "</root>";
 		assertEquals(expected, stream.toString());
 		writer.close();
 	}
@@ -292,7 +290,7 @@ class XmlWriterTest {
 		writer.writeXml(root);
 		
 		String expected = "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"false\"?>" +
-						 "<root><child>value</child></root>";
+			"<root><child>value</child></root>";
 		assertEquals(expected, stream.toString());
 		writer.close();
 	}
@@ -311,11 +309,11 @@ class XmlWriterTest {
 		root.addValue(new XmlValue("item", "value3"));
 		writer.writeXml(root);
 		
-		String expected = "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"false\"?>" + 
-						 System.lineSeparator() + "<root>" + System.lineSeparator() + 
-						 "\t<item>value1</item>" + System.lineSeparator() + 
-						 "\t<item>value2</item>" + System.lineSeparator() + 
-						 "\t<item>value3</item>" + System.lineSeparator() + "</root>";
+		String expected = "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"false\"?>" +
+			System.lineSeparator() + "<root>" + System.lineSeparator() +
+			"\t<item>value1</item>" + System.lineSeparator() +
+			"\t<item>value2</item>" + System.lineSeparator() +
+			"\t<item>value3</item>" + System.lineSeparator() + "</root>";
 		assertEquals(expected, stream.toString());
 		writer.close();
 	}
@@ -331,8 +329,8 @@ class XmlWriterTest {
 		XmlValue value = new XmlValue("test", "<>&\"'");
 		writer.writeXml(value);
 		
-		String expected = "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"false\"?>" + 
-						 System.lineSeparator() + "<test>&lt;&gt;&amp;&quot;&apos;</test>";
+		String expected = "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"false\"?>" +
+			System.lineSeparator() + "<test>&lt;&gt;&amp;&quot;&apos;</test>";
 		assertEquals(expected, stream.toString());
 		writer.close();
 	}
@@ -349,8 +347,8 @@ class XmlWriterTest {
 		element.addAttribute("attr", "<>&\"'");
 		writer.writeXml(element);
 		
-		String expected = "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"false\"?>" + 
-						 System.lineSeparator() + "<test attr=\"&lt;&gt;&amp;&quot;&apos;\"/>";
+		String expected = "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"false\"?>" +
+			System.lineSeparator() + "<test attr=\"&lt;&gt;&amp;&quot;&apos;\"/>";
 		assertEquals(expected, stream.toString());
 		writer.close();
 	}
@@ -382,18 +380,18 @@ class XmlWriterTest {
 		root.addContainer(book2);
 		writer.writeXml(root);
 		
-		String expected = "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"false\"?>" + 
-						 System.lineSeparator() + "<library name=\"My Library\">" + System.lineSeparator() + 
-						 "\t<book id=\"1\">" + System.lineSeparator() + 
-						 "\t\t<title>Java Programming</title>" + System.lineSeparator() + 
-						 "\t\t<author>John Doe</author>" + System.lineSeparator() + 
-						 "\t\t<year>2023</year>" + System.lineSeparator() + 
-						 "\t</book>" + System.lineSeparator() + 
-						 "\t<book id=\"2\">" + System.lineSeparator() + 
-						 "\t\t<title>XML Processing</title>" + System.lineSeparator() + 
-						 "\t\t<author>Jane Smith</author>" + System.lineSeparator() + 
-						 "\t\t<year>2022</year>" + System.lineSeparator() + 
-						 "\t</book>" + System.lineSeparator() + "</library>";
+		String expected = "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"false\"?>" +
+			System.lineSeparator() + "<library name=\"My Library\">" + System.lineSeparator() +
+			"\t<book id=\"1\">" + System.lineSeparator() +
+			"\t\t<title>Java Programming</title>" + System.lineSeparator() +
+			"\t\t<author>John Doe</author>" + System.lineSeparator() +
+			"\t\t<year>2023</year>" + System.lineSeparator() +
+			"\t</book>" + System.lineSeparator() +
+			"\t<book id=\"2\">" + System.lineSeparator() +
+			"\t\t<title>XML Processing</title>" + System.lineSeparator() +
+			"\t\t<author>Jane Smith</author>" + System.lineSeparator() +
+			"\t\t<year>2022</year>" + System.lineSeparator() +
+			"\t</book>" + System.lineSeparator() + "</library>";
 		assertEquals(expected, stream.toString());
 		writer.close();
 	}
@@ -447,6 +445,7 @@ class XmlWriterTest {
 	
 	//region Helper class
 	private static class TestOutputStream extends OutputStream {
+		
 		private final ByteArrayOutputStream delegate = new ByteArrayOutputStream();
 		
 		@Override

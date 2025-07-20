@@ -44,13 +44,12 @@ class CodecGroupingFunction3Test {
 	
 	@Test
 	void createConditionalLogic() {
-		CodecGroupingFunction3<String, String, String, String> function = 
-			(first, second, third) -> {
-				if (first != null && second != null && third != null) {
-					return first + second + third;
-				}
-				return "incomplete";
-			};
+		CodecGroupingFunction3<String, String, String, String> function = (first, second, third) -> {
+			if (first != null && second != null && third != null) {
+				return first + second + third;
+			}
+			return "incomplete";
+		};
 		
 		assertEquals("abcdef", function.create("ab", "cd", "ef"));
 		assertEquals("incomplete", function.create("ab", null, "ef"));

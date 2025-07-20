@@ -21,9 +21,7 @@ package net.luis.utils.io.token;
 import com.google.common.collect.Sets;
 import net.luis.utils.io.token.definition.TokenDefinition;
 import net.luis.utils.io.token.definition.WordTokenDefinition;
-import net.luis.utils.io.token.tokens.EscapedToken;
-import net.luis.utils.io.token.tokens.SimpleToken;
-import net.luis.utils.io.token.tokens.Token;
+import net.luis.utils.io.token.tokens.*;
 import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.Test;
 

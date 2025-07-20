@@ -26,7 +26,7 @@ class CodecGroupingFunction14Test {
 	
 	@Test
 	void createWithFourteenInputs() {
-		CodecGroupingFunction14<String, String, String, String, String, String, String, String, String, String, String, String, String, String, String> function = (a, b, c, d, e, f, g, h, i, j, k, l, m, n) ->  {
+		CodecGroupingFunction14<String, String, String, String, String, String, String, String, String, String, String, String, String, String, String> function = (a, b, c, d, e, f, g, h, i, j, k, l, m, n) -> {
 			return a + b + c + d + e + f + g + h + i + j + k + l + m + n;
 		};
 		

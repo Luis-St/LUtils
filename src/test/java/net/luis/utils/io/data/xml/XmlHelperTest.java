@@ -204,8 +204,8 @@ class XmlHelperTest {
 		assertEquals("text&lt;tag&gt;more text", XmlHelper.escapeXml("text<tag>more text"));
 		assertEquals("&amp;quot;test&amp;quot;", XmlHelper.escapeXml("&quot;test&quot;"));
 		assertEquals("&lt;p&gt;Hello &amp; welcome!&lt;/p&gt;", XmlHelper.escapeXml("<p>Hello & welcome!</p>"));
-		assertEquals("JavaScript: if (a &lt; b &amp;&amp; c &gt; d) { alert(&quot;test&quot;); }", 
-					XmlHelper.escapeXml("JavaScript: if (a < b && c > d) { alert(\"test\"); }"));
+		assertEquals("JavaScript: if (a &lt; b &amp;&amp; c &gt; d) { alert(&quot;test&quot;); }",
+			XmlHelper.escapeXml("JavaScript: if (a < b && c > d) { alert(\"test\"); }"));
 	}
 	
 	@Test

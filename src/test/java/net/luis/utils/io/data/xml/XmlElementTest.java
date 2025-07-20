@@ -261,7 +261,7 @@ class XmlElementTest {
 	
 	@Test
 	void getAttributeAs() {
-		ThrowableFunction<String, List<Boolean>, Exception> parser = value -> 
+		ThrowableFunction<String, List<Boolean>, Exception> parser = value ->
 			new ScopedStringReader(String.valueOf(value)).readList(StringReader::readBoolean);
 		
 		XmlElement element = new XmlElement("test");

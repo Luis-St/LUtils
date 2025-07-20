@@ -20,13 +20,9 @@ package net.luis.utils.io.token.rule;
 
 import net.luis.utils.io.token.definition.StringTokenDefinition;
 import net.luis.utils.io.token.definition.TokenDefinition;
-import net.luis.utils.io.token.rule.actions.GroupingTokenAction;
-import net.luis.utils.io.token.rule.actions.TokenAction;
-import net.luis.utils.io.token.rule.actions.TransformTokenAction;
+import net.luis.utils.io.token.rule.actions.*;
 import net.luis.utils.io.token.rule.rules.TokenRules;
-import net.luis.utils.io.token.tokens.SimpleToken;
-import net.luis.utils.io.token.tokens.Token;
-import net.luis.utils.io.token.tokens.TokenGroup;
+import net.luis.utils.io.token.tokens.*;
 import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.Test;
 

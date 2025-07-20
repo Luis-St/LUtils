@@ -166,7 +166,7 @@ class UnitCodecTest {
 	@Test
 	void supplierCalledForEachDecode() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		int[] counter = {0};
+		int[] counter = { 0 };
 		Codec<Integer> codec = new UnitCodec<>(() -> ++counter[0]);
 		
 		Result<Integer> firstResult = codec.decodeStart(typeProvider, null);

@@ -187,7 +187,7 @@ public class SortedList<E> extends AbstractList<E> {
 	
 	@Override
 	public void clear() {
-	    this.internalList.clear();
+		this.internalList.clear();
 	}
 	
 	/**

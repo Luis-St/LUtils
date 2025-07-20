@@ -27,7 +27,6 @@ import org.jetbrains.annotations.Nullable;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
-import java.util.Objects;
 import java.util.function.Function;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -288,40 +287,48 @@ class CodecCreatorTest {
 	}
 	
 	private record TestObject(@NotNull String name, int value) {}
+	
 	private record TestObject2(@NotNull String text, double number, boolean flag) {}
+	
 	private record TestObject3(@NotNull String a, @NotNull String b, @NotNull String c, @NotNull String d, @NotNull String e) {}
 	
 	private static class TestFunction implements CodecGroupingFunction {
+		
 		public @NotNull TestObject create(@NotNull Object name, @NotNull Object value) {
 			return new TestObject((String) name, (Integer) value);
 		}
 	}
 	
 	private static class TestFunction2 implements CodecGroupingFunction {
+		
 		public @NotNull TestObject2 create(@NotNull Object text, @NotNull Object number, @NotNull Object flag) {
 			return new TestObject2((String) text, (Double) number, (Boolean) flag);
 		}
 	}
 	
 	private static class FailingTestFunction implements CodecGroupingFunction {
+		
 		public @Nullable TestObject create(@NotNull Object name, @NotNull Object value) {
 			return null;
 		}
 	}
 	
 	private static class NullReturningTestFunction implements CodecGroupingFunction {
+		
 		public @Nullable TestObject create(@NotNull Object name, @NotNull Object value) {
 			return null;
 		}
 	}
 	
 	private static class SingleParamFunction implements CodecGroupingFunction {
+		
 		public @NotNull String create(@NotNull Object value) {
 			return ((String) value).toUpperCase();
 		}
 	}
 	
 	private static class ManyParamFunction implements CodecGroupingFunction {
+		
 		public @NotNull TestObject3 create(@NotNull Object a, @NotNull Object b, @NotNull Object c, @NotNull Object d, @NotNull Object e) {
 			return new TestObject3((String) a, (String) b, (String) c, (String) d, (String) e);
 		}

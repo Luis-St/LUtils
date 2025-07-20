@@ -21,7 +21,8 @@ package net.luis.utils.io.token.rule.rules;
 import net.luis.utils.io.token.rule.TokenRuleMatch;
 import net.luis.utils.io.token.tokens.SimpleToken;
 import net.luis.utils.io.token.tokens.Token;
-import org.jetbrains.annotations.*;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.junit.jupiter.api.Test;
 
 import java.util.*;

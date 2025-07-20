@@ -208,20 +208,20 @@ class XmlReaderTest {
 	@Test
 	void readXmlElementComplex() {
 		String xml = "<?xml version=\"v1.0\"?>" +
-					"<root>" +
-					"<person id=\"1\">" +
-					"<name>John</name>" +
-					"<age>30</age>" +
-					"<emails>" +
-					"<email>john@example.com</email>" +
-					"<email>john.doe@work.com</email>" +
-					"</emails>" +
-					"</person>" +
-					"<person id=\"2\">" +
-					"<name>Jane</name>" +
-					"<age>25</age>" +
-					"</person>" +
-					"</root>";
+			"<root>" +
+			"<person id=\"1\">" +
+			"<name>John</name>" +
+			"<age>30</age>" +
+			"<emails>" +
+			"<email>john@example.com</email>" +
+			"<email>john.doe@work.com</email>" +
+			"</emails>" +
+			"</person>" +
+			"<person id=\"2\">" +
+			"<name>Jane</name>" +
+			"<age>25</age>" +
+			"</person>" +
+			"</root>";
 		
 		XmlReader reader = new XmlReader(xml);
 		reader.readDeclaration();

@@ -23,9 +23,7 @@ import net.luis.utils.io.data.json.exception.NoSuchJsonElementException;
 import org.junit.jupiter.api.Test;
 
 import java.nio.charset.StandardCharsets;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -475,7 +473,7 @@ class JsonObjectTest {
 		object.add("first", new JsonPrimitive(1));
 		object.add("second", new JsonPrimitive(2));
 		
-		String[] expectedOrder = {"third", "first", "second"};
+		String[] expectedOrder = { "third", "first", "second" };
 		String[] actualOrder = object.keySet().toArray(new String[0]);
 		assertArrayEquals(expectedOrder, actualOrder);
 		

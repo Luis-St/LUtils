@@ -21,9 +21,7 @@ package net.luis.utils.io.data.xml;
 import net.luis.utils.util.Version;
 import org.jetbrains.annotations.*;
 
-import java.util.ArrayDeque;
-import java.util.Deque;
-import java.util.Objects;
+import java.util.*;
 import java.util.function.Consumer;
 
 /**

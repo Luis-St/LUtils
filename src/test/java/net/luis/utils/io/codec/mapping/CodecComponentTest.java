@@ -18,7 +18,6 @@
 
 package net.luis.utils.io.codec.mapping;
 
-import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.Test;
 
 import java.lang.reflect.Field;
@@ -217,6 +216,7 @@ class CodecComponentTest {
 	
 	//region Test Classes
 	private static class TestClass {
+		
 		private final String name;
 		private final int age;
 		private final double height;
@@ -229,10 +229,12 @@ class CodecComponentTest {
 	}
 	
 	private static class TestClassWithPrivateField {
+		
 		private String privateField = "private";
 	}
 	
 	private static class AnnotatedTestClass {
+		
 		@CodecField
 		private final String annotatedField = "annotated";
 		

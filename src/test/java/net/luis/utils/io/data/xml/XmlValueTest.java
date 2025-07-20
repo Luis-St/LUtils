@@ -455,15 +455,15 @@ class XmlValueTest {
 		XmlConfig prettyConfig = new XmlConfig(true, true, "\t", true, false, StandardCharsets.UTF_8);
 		XmlValue value = new XmlValue("test", "value");
 		
-		String expected = "<test>" + System.lineSeparator() + 
-						 "\tvalue" + System.lineSeparator() + 
-						 "</test>";
+		String expected = "<test>" + System.lineSeparator() +
+			"\tvalue" + System.lineSeparator() +
+			"</test>";
 		assertEquals(expected, value.toString(prettyConfig));
 		
 		XmlValue emptyValue = new XmlValue("test", "");
-		expected = "<test>" + System.lineSeparator() + 
-				  "\t" + System.lineSeparator() + 
-				  "</test>";
+		expected = "<test>" + System.lineSeparator() +
+			"\t" + System.lineSeparator() +
+			"</test>";
 		assertEquals(expected, emptyValue.toString(prettyConfig));
 	}
 }

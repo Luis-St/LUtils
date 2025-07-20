@@ -18,8 +18,6 @@
 
 package net.luis.utils.io.codec.mapping;
 
-import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
 import net.luis.utils.io.codec.Codec;
 import net.luis.utils.io.codec.CodecBuilder;
 import net.luis.utils.io.codec.provider.JsonTypeProvider;

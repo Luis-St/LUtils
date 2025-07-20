@@ -19,9 +19,7 @@
 package net.luis.utils.io.codec;
 
 import net.luis.utils.io.codec.provider.JsonTypeProvider;
-import net.luis.utils.io.data.json.JsonElement;
-import net.luis.utils.io.data.json.JsonObject;
-import net.luis.utils.io.data.json.JsonPrimitive;
+import net.luis.utils.io.data.json.*;
 import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.Test;
 
@@ -63,7 +61,7 @@ class CodecBuilderTest {
 	
 	@Test
 	void autoMapCodecWithEnum() {
-		enum TestEnum { FIRST, SECOND, THIRD }
+		enum TestEnum {FIRST, SECOND, THIRD}
 		
 		Codec<TestEnum> codec = CodecBuilder.autoMapCodec(TestEnum.class);
 		assertNotNull(codec);

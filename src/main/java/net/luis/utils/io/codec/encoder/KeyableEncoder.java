@@ -26,7 +26,6 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.Objects;
 import java.util.Optional;
-import java.util.function.Function;
 
 /**
  * Extension of {@link Encoder} that allows encoding keys.<br>

@@ -159,10 +159,12 @@ class ConfiguredCodecTest {
 		assertTrue(result.startsWith("ConfigurableCodec["));
 		assertTrue(result.endsWith("]"));
 	}
-
+	
 	//region Internal
 	private record TestObjectOptionalInteger(@NotNull Optional<Integer> age) {}
+	
 	private record TestObjectString(@NotNull String name) {}
+	
 	private record TestObjectInteger(int age) {}
 	//endregion
 }

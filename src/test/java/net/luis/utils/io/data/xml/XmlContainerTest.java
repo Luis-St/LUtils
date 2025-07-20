@@ -23,9 +23,7 @@ import net.luis.utils.io.data.xml.exception.XmlTypeException;
 import org.junit.jupiter.api.Test;
 
 import java.nio.charset.StandardCharsets;
-import java.util.Collections;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -466,16 +464,16 @@ class XmlContainerTest {
 		assertEquals("<test attr=\"value\"></test>", container.toString(XmlConfig.DEFAULT));
 		
 		container.add(new XmlElement("child"));
-		String expected = "<test attr=\"value\">" + System.lineSeparator() + 
-						 "\t<child/>" + System.lineSeparator() + 
-						 "</test>";
+		String expected = "<test attr=\"value\">" + System.lineSeparator() +
+			"\t<child/>" + System.lineSeparator() +
+			"</test>";
 		assertEquals(expected, container.toString(XmlConfig.DEFAULT));
 		
 		container.add(new XmlElement("child2"));
-		expected = "<test attr=\"value\">" + System.lineSeparator() + 
-				  "\t<child/>" + System.lineSeparator() + 
-				  "\t<child2/>" + System.lineSeparator() + 
-				  "</test>";
+		expected = "<test attr=\"value\">" + System.lineSeparator() +
+			"\t<child/>" + System.lineSeparator() +
+			"\t<child2/>" + System.lineSeparator() +
+			"</test>";
 		assertEquals(expected, container.toString(XmlConfig.DEFAULT));
 	}
 	

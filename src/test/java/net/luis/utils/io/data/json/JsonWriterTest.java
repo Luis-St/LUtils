@@ -21,7 +21,8 @@ package net.luis.utils.io.data.json;
 import net.luis.utils.io.data.OutputProvider;
 import org.junit.jupiter.api.Test;
 
-import java.io.*;
+import java.io.ByteArrayOutputStream;
+import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -445,6 +446,7 @@ class JsonWriterTest {
 	
 	//region Helper Classes
 	private static class StringOutputStream extends OutputStream {
+		
 		private final StringBuilder builder = new StringBuilder();
 		
 		@Override
@@ -466,6 +468,7 @@ class JsonWriterTest {
 	}
 	
 	private static class FlushTrackingOutputStream extends OutputStream {
+		
 		private boolean flushCalled;
 		
 		@Override

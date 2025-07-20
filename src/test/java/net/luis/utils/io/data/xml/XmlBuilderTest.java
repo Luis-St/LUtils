@@ -172,7 +172,7 @@ class XmlBuilderTest {
 	void buildContainerWithSingleChild() {
 		XmlContainer container = XmlBuilder.create()
 			.container("root")
-				.value("message", "Hello")
+			.value("message", "Hello")
 			.end()
 			.buildContainer();
 		
@@ -186,10 +186,10 @@ class XmlBuilderTest {
 	void buildContainerWithMultipleChildren() {
 		XmlContainer container = XmlBuilder.create()
 			.container("users")
-				.value("user", "John")
-					.attribute("id", "1")
-				.value("user", "Jane")
-					.attribute("id", "2")
+			.value("user", "John")
+			.attribute("id", "1")
+			.value("user", "Jane")
+			.attribute("id", "2")
 			.end()
 			.buildContainer();
 		
@@ -205,13 +205,13 @@ class XmlBuilderTest {
 	void buildNestedContainers() {
 		XmlContainer root = XmlBuilder.create()
 			.container("library")
-				.container("books")
-					.value("book", "Java Programming")
-						.attribute("id", "1")
-					.value("book", "XML Processing")
-						.attribute("id", "2")
-				.end()
-				.value("totalBooks", 2)
+			.container("books")
+			.value("book", "Java Programming")
+			.attribute("id", "1")
+			.value("book", "XML Processing")
+			.attribute("id", "2")
+			.end()
+			.value("totalBooks", 2)
 			.end()
 			.buildContainer();
 		
@@ -231,26 +231,26 @@ class XmlBuilderTest {
 	void buildComplexStructure() {
 		XmlContainer root = XmlBuilder.create()
 			.container("company")
-				.attribute("name", "Tech Corp")
-				.container("departments")
-					.container("department")
-						.attribute("id", "IT")
-						.value("name", "Information Technology")
-						.value("headCount", 25)
-						.container("employees")
-							.value("employee", "John Doe")
-								.attribute("position", "Manager")
-							.value("employee", "Jane Smith")
-								.attribute("position", "Developer")
-						.end()
-					.end()
-					.container("department")
-						.attribute("id", "HR")
-						.value("name", "Human Resources")
-						.value("headCount", 10)
-					.end()
-				.end()
-				.value("founded", 2010)
+			.attribute("name", "Tech Corp")
+			.container("departments")
+			.container("department")
+			.attribute("id", "IT")
+			.value("name", "Information Technology")
+			.value("headCount", 25)
+			.container("employees")
+			.value("employee", "John Doe")
+			.attribute("position", "Manager")
+			.value("employee", "Jane Smith")
+			.attribute("position", "Developer")
+			.end()
+			.end()
+			.container("department")
+			.attribute("id", "HR")
+			.value("name", "Human Resources")
+			.value("headCount", 10)
+			.end()
+			.end()
+			.value("founded", 2010)
 			.end()
 			.buildContainer();
 		
@@ -291,8 +291,8 @@ class XmlBuilderTest {
 		
 		XmlContainer container = XmlBuilder.create()
 			.container("root")
-				.value("normal", "built with builder")
-				.add(prebuilt)
+			.value("normal", "built with builder")
+			.add(prebuilt)
 			.end()
 			.buildContainer();
 		
@@ -307,18 +307,18 @@ class XmlBuilderTest {
 	void childWithConfigurator() {
 		XmlContainer container = XmlBuilder.create()
 			.container("parent")
-				.child(child -> child
-					.value("name", "John")
-					.attribute("id", "1")
-				)
-				.child(child -> child
-					.element("separator")
-				)
-				.child(child -> child
-					.container("nested")
-						.value("data", "test")
-					.end()
-				)
+			.child(child -> child
+				.value("name", "John")
+				.attribute("id", "1")
+			)
+			.child(child -> child
+				.element("separator")
+			)
+			.child(child -> child
+				.container("nested")
+				.value("data", "test")
+				.end()
+			)
 			.end()
 			.buildContainer();
 		
@@ -336,7 +336,7 @@ class XmlBuilderTest {
 	void toXmlString() {
 		String xml = XmlBuilder.create()
 			.container("root")
-				.value("message", "Hello World")
+			.value("message", "Hello World")
 			.end()
 			.toXml();
 		
@@ -365,7 +365,7 @@ class XmlBuilderTest {
 	void toDocument() {
 		XmlDocument document = XmlBuilder.create()
 			.container("root")
-				.value("content", "test")
+			.value("content", "test")
 			.end()
 			.toDocument();
 		
@@ -429,7 +429,7 @@ class XmlBuilderTest {
 	void errorHandlingUnclosedContainers() {
 		XmlBuilder builder = XmlBuilder.create()
 			.container("root")
-				.container("nested");
+			.container("nested");
 		
 		assertThrows(IllegalStateException.class, builder::build);
 		assertThrows(IllegalStateException.class, builder::buildContainer);
@@ -506,39 +506,39 @@ class XmlBuilderTest {
 	void complexRealWorldExample() {
 		String xml = XmlBuilder.create()
 			.container("catalog")
-				.attribute("xmlns", "http://example.com/catalog")
-				.attribute("version", "1.0")
-				.container("products")
-					.container("product")
-						.attribute("id", "P001")
-						.attribute("featured", true)
-						.value("name", "Smartphone")
-						.value("price", 599.99)
-						.value("description", "Latest smartphone with advanced features")
-						.container("specifications")
-							.value("screen", "6.1 inches")
-							.value("storage", "128GB")
-							.value("ram", "8GB")
-						.end()
-						.container("reviews")
-							.value("review", "Excellent product!")
-								.attribute("rating", 5)
-								.attribute("reviewer", "John D.")
-							.value("review", "Good value for money")
-								.attribute("rating", 4)
-								.attribute("reviewer", "Jane S.")
-						.end()
-					.end()
-					.container("product")
-						.attribute("id", "P002")
-						.attribute("featured", false)
-						.value("name", "Laptop")
-						.value("price", 1299.99)
-						.value("description", "High-performance laptop for professionals")
-					.end()
-				.end()
-				.value("totalProducts", 2)
-				.value("lastUpdated", "2025-01-15")
+			.attribute("xmlns", "http://example.com/catalog")
+			.attribute("version", "1.0")
+			.container("products")
+			.container("product")
+			.attribute("id", "P001")
+			.attribute("featured", true)
+			.value("name", "Smartphone")
+			.value("price", 599.99)
+			.value("description", "Latest smartphone with advanced features")
+			.container("specifications")
+			.value("screen", "6.1 inches")
+			.value("storage", "128GB")
+			.value("ram", "8GB")
+			.end()
+			.container("reviews")
+			.value("review", "Excellent product!")
+			.attribute("rating", 5)
+			.attribute("reviewer", "John D.")
+			.value("review", "Good value for money")
+			.attribute("rating", 4)
+			.attribute("reviewer", "Jane S.")
+			.end()
+			.end()
+			.container("product")
+			.attribute("id", "P002")
+			.attribute("featured", false)
+			.value("name", "Laptop")
+			.value("price", 1299.99)
+			.value("description", "High-performance laptop for professionals")
+			.end()
+			.end()
+			.value("totalProducts", 2)
+			.value("lastUpdated", "2025-01-15")
 			.end()
 			.toXml();
 		

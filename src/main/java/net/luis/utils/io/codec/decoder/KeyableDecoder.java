@@ -19,7 +19,6 @@
 package net.luis.utils.io.codec.decoder;
 
 import net.luis.utils.function.throwable.ThrowableFunction;
-import net.luis.utils.io.codec.ResultingFunction;
 import net.luis.utils.io.codec.provider.TypeProvider;
 import net.luis.utils.util.Result;
 import org.jetbrains.annotations.NotNull;
@@ -27,7 +26,6 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.Objects;
 import java.util.Optional;
-import java.util.function.Function;
 
 /**
  * Extension of {@link Decoder} that allows decoding keys.<br>
