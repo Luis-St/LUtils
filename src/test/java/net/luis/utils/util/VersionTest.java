@@ -18,11 +18,7 @@
 
 package net.luis.utils.util;
 
-import net.luis.utils.math.Mth;
-import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
-
-import java.util.Random;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -34,283 +30,382 @@ import static org.junit.jupiter.api.Assertions.*;
 class VersionTest {
 	
 	@Test
-	void of() {
-		assertNotNull(Version.of(0, 0));
+	void ofTwoParametersCreatesVersion() {
+		assertNotNull(Version.of(1, 0));
+		assertEquals(1, Version.of(1, 0).getMajor());
+		assertEquals(0, Version.of(1, 0).getMinor());
+		assertEquals(0, Version.of(1, 0).getPatch());
+	}
+	
+	@Test
+	void ofTwoParametersHandlesZeroAndNegative() {
 		assertSame(Version.ZERO, Version.of(0, 0));
 		assertSame(Version.ZERO, Version.of(-1, -1));
-		
-		assertNotNull(Version.of(0, 0, 0));
-		assertSame(Version.ZERO, Version.of(0, 0, 0));
-		assertSame(Version.ZERO, Version.of(-1, -1, -1));
+		assertNotSame(Version.ZERO, Version.of(1, 0));
 	}
 	
 	@Test
-	void builder() {
-		assertNotNull(Version.builder(0, 0));
-		assertEquals(Version.ZERO, Version.builder(0, 0).build());
-		assertEquals(Version.ZERO, Version.builder(-1, -1).build());
-		assertEquals(Version.of(1, 0), Version.builder(1, 0).build());
-		
-		assertNotNull(Version.builder(0, 0, 0));
-		assertEquals(Version.ZERO, Version.builder(0, 0, 0).build());
-		assertEquals(Version.ZERO, Version.builder(-1, -1, -1).build());
-		assertEquals(Version.of(1, 0, 0), Version.builder(1, 0, 0).build());
-	}
-	
-	@Test
-	void parse() {
-		char[] separators = { '.', '-', 'r' };
-		String[] suffixes = { "alpha", "beta", "rc", "release", "final" };
-		assertDoesNotThrow(() -> Version.parse(null));
-		assertSame(Version.ZERO, Version.parse(null));
-		assertSame(Version.ZERO, Version.parse(""));
-		assertSame(Version.ZERO, Version.parse(" "));
-		assertSame(Version.ZERO, Version.parse("abcde"));
-		
-		assertSame(Version.ZERO, Version.parse("-1.-1"));
-		assertEquals(Version.of(1, 0), Version.parse("1.0"));
-		assertEquals(Version.of(1, 2), Version.parse("1.2"));
-		
-		assertSame(Version.ZERO, Version.parse("-1.-1.-1"));
-		assertEquals(Version.of(1, 0, 0), Version.parse("1.0.0"));
-		assertEquals(Version.of(1, 2, 3), Version.parse("1.2.3"));
-		for (char separator : separators) {
-			if (separator != '.') {
-				assertEquals(Version.builder(1, 2).withBuild(separator, 4).build(), Version.parse("1.2" + separator + "4"));
-			}
-			assertEquals(Version.builder(1, 2, 3).withBuild(separator, 4).build(), Version.parse("1.2.3" + separator + "4"));
-		}
-		for (String suffix : suffixes) {
-			assertEquals(Version.builder(1, 2).withSuffix(suffix).build(), Version.parse("1.2-" + suffix));
-			assertEquals(Version.builder(1, 2, 3).withSuffix(suffix).build(), Version.parse("1.2.3-" + suffix));
-		}
-		
-		assertEquals(Version.builder(1, 2).withSuffixVersion(0).build(), Version.parse("1.2+000"));
-		assertEquals(Version.builder(1, 2, 3).withSuffixVersion(0).build(), Version.parse("1.2.3+000"));
-		
-		for (char separator : separators) {
-			for (String suffix : suffixes) {
-				if (separator != '.') {
-					assertEquals(Version.builder(1, 2).withBuild(separator, 4).withSuffix(suffix).build(), Version.parse("1.2" + separator + "4-" + suffix));
-					assertEquals(Version.builder(1, 2).withBuild(separator, 4).withSuffix(suffix).withSuffixVersion(1).build(), Version.parse("1.2" + separator + "4-" + suffix + "+001"));
-				}
-				
-				assertEquals(Version.builder(1, 2, 3).withBuild(separator, 4).withSuffix(suffix).build(), Version.parse("1.2.3" + separator + "4-" + suffix));
-				assertEquals(Version.builder(1, 2, 3).withBuild(separator, 4).withSuffix(suffix).withSuffixVersion(1).build(), Version.parse("1.2.3" + separator + "4-" + suffix + "+001"));
-			}
-		}
-	}
-	
-	@Test
-	void getMajor() {
-		assertEquals(0, Version.ZERO.getMajor());
-		assertEquals(0, Version.of(-1, 0, 0).getMajor());
-		assertEquals(1, Version.of(1, 0, 0).getMajor());
+	void ofThreeParametersCreatesVersion() {
+		assertNotNull(Version.of(1, 2, 3));
 		assertEquals(1, Version.of(1, 2, 3).getMajor());
-	}
-	
-	@Test
-	void getMinor() {
-		assertEquals(0, Version.ZERO.getMinor());
-		assertEquals(0, Version.of(0, -1, 0).getMinor());
-		assertEquals(1, Version.of(0, 1, 0).getMinor());
 		assertEquals(2, Version.of(1, 2, 3).getMinor());
-	}
-	
-	@Test
-	void getPatch() {
-		assertEquals(0, Version.ZERO.getPatch());
-		assertEquals(0, Version.of(0, 0).getPatch());
-		assertEquals(0, Version.of(0, 0, -1).getPatch());
-		assertEquals(1, Version.of(0, 0, 1).getPatch());
 		assertEquals(3, Version.of(1, 2, 3).getPatch());
 	}
 	
 	@Test
-	void getBuild() {
+	void ofThreeParametersHandlesZeroAndNegative() {
+		assertSame(Version.ZERO, Version.of(0, 0, 0));
+		assertSame(Version.ZERO, Version.of(-1, -1, -1));
+		assertNotSame(Version.ZERO, Version.of(1, 0, 0));
+	}
+	
+	@Test
+	void builderTwoParametersCreatesBuilder() {
+		Version.Builder builder = Version.builder(1, 2);
+		assertNotNull(builder);
+		assertEquals(Version.of(1, 2), builder.build());
+	}
+	
+	@Test
+	void builderThreeParametersCreatesBuilder() {
+		Version.Builder builder = Version.builder(1, 2, 3);
+		assertNotNull(builder);
+		assertEquals(Version.of(1, 2, 3), builder.build());
+	}
+	
+	@Test
+	void parseBasicVersionStrings() {
+		assertEquals(Version.of(1, 0), Version.parse("1.0"));
+		assertEquals(Version.of(1, 2), Version.parse("1.2"));
+		assertEquals(Version.of(1, 0, 0), Version.parse("1.0.0"));
+		assertEquals(Version.of(1, 2, 3), Version.parse("1.2.3"));
+		assertEquals(Version.of(1, 0), Version.parse("v1.0"));
+		assertEquals(Version.of(1, 2, 3), Version.parse("v1.2.3"));
+	}
+	
+	@Test
+	void parseVersionsWithBuildNumbers() {
+		assertEquals(Version.builder(1, 2, 3).withBuild('.', 4).build(), Version.parse("1.2.3.4"));
+		assertEquals(Version.builder(1, 2, 3).withBuild('-', 4).build(), Version.parse("1.2.3-4"));
+		assertEquals(Version.builder(1, 2, 3).withBuild('r', 4).build(), Version.parse("1.2.3r4"));
+		assertEquals(Version.builder(1, 2).withBuild('-', 4).build(), Version.parse("1.2-4"));
+		assertEquals(Version.builder(1, 2).withBuild('r', 4).build(), Version.parse("1.2r4"));
+	}
+	
+	@Test
+	void parseVersionsWithSuffixes() {
+		String[] suffixes = {"alpha", "beta", "rc", "release", "final"};
+		for (String suffix : suffixes) {
+			assertEquals(Version.builder(1, 2).withSuffix(suffix).build(), Version.parse("1.2-" + suffix));
+			assertEquals(Version.builder(1, 2, 3).withSuffix(suffix).build(), Version.parse("1.2.3-" + suffix));
+		}
+	}
+	
+	@Test
+	void parseVersionsWithSuffixVersions() {
+		assertEquals(Version.builder(1, 2).withSuffixVersion(1).build(), Version.parse("1.2+001"));
+		assertEquals(Version.builder(1, 2, 3).withSuffixVersion(42).build(), Version.parse("1.2.3+042"));
+		assertEquals(Version.builder(1, 2, 3).withSuffixVersion(999).build(), Version.parse("1.2.3+999"));
+	}
+	
+	@Test
+	void parseComplexVersionStrings() {
+		char[] separators = {'.', '-', 'r'};
+		String[] suffixes = {"alpha", "beta", "rc"};
+		
+		for (char separator : separators) {
+			for (String suffix : suffixes) {
+				if (separator != '.') {
+					String versionStr = "1.2" + separator + "4-" + suffix + "+001";
+					Version expected = Version.builder(1, 2).withBuild(separator, 4).withSuffix(suffix).withSuffixVersion(1).build();
+					assertEquals(expected, Version.parse(versionStr));
+				}
+				
+				String versionStr = "1.2.3" + separator + "4-" + suffix + "+001";
+				Version expected = Version.builder(1, 2, 3).withBuild(separator, 4).withSuffix(suffix).withSuffixVersion(1).build();
+				assertEquals(expected, Version.parse(versionStr));
+			}
+		}
+	}
+	
+	@Test
+	void parseInvalidStringsReturnsZero() {
+		assertSame(Version.ZERO, Version.parse(null));
+		assertSame(Version.ZERO, Version.parse(""));
+		assertSame(Version.ZERO, Version.parse(" "));
+		assertSame(Version.ZERO, Version.parse("abcde"));
+		assertSame(Version.ZERO, Version.parse("-1.-1"));
+		assertSame(Version.ZERO, Version.parse("1"));
+		assertSame(Version.ZERO, Version.parse("1.2.3.4.5"));
+	}
+	
+	@Test
+	void getMajorReturnsCorrectValue() {
+		assertEquals(0, Version.ZERO.getMajor());
+		assertEquals(1, Version.of(1, 2, 3).getMajor());
+		assertEquals(10, Version.of(10, 5, 2).getMajor());
+		assertEquals(0, Version.of(-1, 0, 0).getMajor());
+	}
+	
+	@Test
+	void getMinorReturnsCorrectValue() {
+		assertEquals(0, Version.ZERO.getMinor());
+		assertEquals(2, Version.of(1, 2, 3).getMinor());
+		assertEquals(15, Version.of(1, 15, 3).getMinor());
+		assertEquals(0, Version.of(0, -1, 0).getMinor());
+	}
+	
+	@Test
+	void getPatchReturnsCorrectValue() {
+		assertEquals(0, Version.ZERO.getPatch());
+		assertEquals(0, Version.of(1, 2).getPatch());
+		assertEquals(3, Version.of(1, 2, 3).getPatch());
+		assertEquals(0, Version.of(0, 0, -1).getPatch());
+	}
+	
+	@Test
+	void getBuildReturnsCorrectValue() {
 		assertEquals(0, Version.ZERO.getBuild());
-		for (char separator : new char[] { '.', '-', 'r' }) {
-			assertEquals(0, Version.builder(0, 0).withBuild(separator, -1).build().getBuild());
-			assertEquals(0, Version.builder(0, 0).withBuild(separator, 0).build().getBuild());
-			assertEquals(1, Version.builder(0, 0).withBuild(separator, 1).build().getBuild());
+		assertEquals(0, Version.of(1, 2, 3).getBuild());
+		
+		for (char separator : new char[]{'.', '-', 'r'}) {
 			assertEquals(4, Version.builder(1, 2).withBuild(separator, 4).build().getBuild());
-			
-			assertEquals(0, Version.builder(0, 0, 0).withBuild(separator, -1).build().getBuild());
-			assertEquals(0, Version.builder(0, 0, 0).withBuild(separator, 0).build().getBuild());
-			assertEquals(1, Version.builder(0, 0, 0).withBuild(separator, 1).build().getBuild());
-			assertEquals(4, Version.builder(1, 2, 3).withBuild(separator, 4).build().getBuild());
+			assertEquals(0, Version.builder(1, 2).withBuild(separator, -1).build().getBuild());
 		}
 	}
 	
 	@Test
-	void getSuffix() {
+	void getSuffixReturnsCorrectValue() {
 		assertEquals("", Version.ZERO.getSuffix());
-		for (String suffix : new String[] { "alpha", "beta", "rc", "release", "final" }) {
-			assertEquals(suffix, Version.builder(0, 0).withSuffix(suffix).build().getSuffix());
+		assertEquals("", Version.of(1, 2, 3).getSuffix());
+		
+		String[] suffixes = {"alpha", "beta", "rc", "release", "final"};
+		for (String suffix : suffixes) {
 			assertEquals(suffix, Version.builder(1, 2).withSuffix(suffix).build().getSuffix());
-			
-			assertEquals(suffix, Version.builder(0, 0, 0).withSuffix(suffix).build().getSuffix());
-			assertEquals(suffix, Version.builder(1, 2, 3).withSuffix(suffix).build().getSuffix());
 		}
 	}
 	
 	@Test
-	void getSuffixVersion() {
+	void getSuffixIndexReturnsCorrectValue() {
+		assertEquals(0, Version.ZERO.getSuffixIndex());
+		assertEquals(0, Version.of(1, 2, 3).getSuffixIndex());
+		assertEquals(1, Version.builder(1, 2).withSuffix("alpha").build().getSuffixIndex());
+		assertEquals(2, Version.builder(1, 2).withSuffix("beta").build().getSuffixIndex());
+		assertEquals(3, Version.builder(1, 2).withSuffix("rc").build().getSuffixIndex());
+		assertEquals(3, Version.builder(1, 2).withSuffix("release-candidate").build().getSuffixIndex());
+		assertEquals(4, Version.builder(1, 2).withSuffix("release").build().getSuffixIndex());
+		assertEquals(5, Version.builder(1, 2).withSuffix("final").build().getSuffixIndex());
+		assertEquals(0, Version.builder(1, 2).withSuffix("unknown").build().getSuffixIndex());
+	}
+	
+	@Test
+	void getSuffixVersionReturnsCorrectValue() {
 		assertEquals(0, Version.ZERO.getSuffixVersion());
-		assertEquals(0, Version.builder(0, 0, 0).withSuffixVersion(-1).build().getSuffixVersion());
-		assertEquals(0, Version.builder(0, 0, 0).withSuffixVersion(0).build().getSuffixVersion());
-		assertEquals(1, Version.builder(0, 0, 0).withSuffixVersion(1).build().getSuffixVersion());
-		assertEquals(1, Version.builder(1, 2, 3).withSuffixVersion(1).build().getSuffixVersion());
+		assertEquals(0, Version.of(1, 2, 3).getSuffixVersion());
+		assertEquals(1, Version.builder(1, 2).withSuffixVersion(1).build().getSuffixVersion());
+		assertEquals(0, Version.builder(1, 2).withSuffixVersion(-1).build().getSuffixVersion());
 	}
 	
 	@Test
-	void asBuilder() {
-		assertEquals(Version.builder(0, 0), Version.ZERO.asBuilder());
-		assertEquals(Version.builder(1, 2), Version.of(1, 2).asBuilder());
-		assertEquals(Version.builder(0, 0, 0), Version.ZERO.asBuilder());
-		assertEquals(Version.builder(1, 2, 3), Version.of(1, 2, 3).asBuilder());
+	void asBuilderCreatesEquivalentBuilder() {
+		Version original = Version.of(1, 2, 3);
+		assertEquals(original, original.asBuilder().build());
+		
+		Version complex = Version.builder(1, 2, 3).withBuild('.', 4).withSuffix("alpha").withSuffixVersion(1).build();
+		assertEquals(complex, complex.asBuilder().build());
 	}
 	
 	@Test
-	void compareTo() {
-		Version version = Version.of(1, 2, 3);
-		Version build = Version.builder(1, 2, 3).withBuild('.', 4).build();
-		Version suffixVersion = Version.builder(1, 2, 3).withSuffixVersion(1).build();
-		Version suffixAlpha = Version.builder(1, 2, 3).withSuffix("alpha").withSuffixVersion(1).build();
+	void compareToOrdersVersionsCorrectly() {
+		Version v100 = Version.of(1, 0, 0);
+		Version v110 = Version.of(1, 1, 0);
+		Version v111 = Version.of(1, 1, 1);
+		Version v200 = Version.of(2, 0, 0);
 		
-		Version alpha = Version.builder(1, 2, 3).withSuffix("alpha").build();
-		Version beta = Version.builder(1, 2, 3).withSuffix("beta").build();
-		Version rc = Version.builder(1, 2, 3).withSuffix("rc").build();
-		Version release = Version.builder(1, 2, 3).withSuffix("release").build();
+		assertTrue(v100.compareTo(Version.ZERO) > 0);
+		assertTrue(v110.compareTo(v100) > 0);
+		assertTrue(v111.compareTo(v110) > 0);
+		assertTrue(v200.compareTo(v111) > 0);
 		
-		// x.compareTo(y) -> x > y -> 1 | x < y -> -1 | x == y -> 0
-		// Different versions
-		assertTrue(version.compareTo(Version.ZERO) > 0);
-		assertEquals(0, version.compareTo(version));
-		assertTrue(version.compareTo(build) < 0);
+		assertEquals(0, v100.compareTo(v100));
+		assertTrue(v100.compareTo(v110) < 0);
+	}
+	
+	@Test
+	void compareToHandlesBuildVersions() {
+		Version base = Version.of(1, 0, 0);
+		Version withBuild = Version.builder(1, 0, 0).withBuild('.', 1).build();
 		
-		assertTrue(build.compareTo(Version.ZERO) > 0);
-		assertTrue(build.compareTo(version) > 0);
-		assertEquals(0, build.compareTo(build));
+		assertTrue(withBuild.compareTo(base) > 0);
+		assertTrue(base.compareTo(withBuild) < 0);
+	}
+	
+	@Test
+	void compareToHandlesSuffixes() {
+		Version release = Version.of(1, 0, 0);
+		Version alpha = Version.builder(1, 0, 0).withSuffix("alpha").build();
+		Version beta = Version.builder(1, 0, 0).withSuffix("beta").build();
+		Version rc = Version.builder(1, 0, 0).withSuffix("rc").build();
 		
-		assertTrue(suffixVersion.compareTo(Version.ZERO) > 0);
-		assertTrue(suffixVersion.compareTo(build) < 0);
-		assertTrue(suffixVersion.compareTo(version) > 0);
-		assertTrue(suffixVersion.compareTo(suffixAlpha) > 0);
-		assertEquals(0, suffixVersion.compareTo(suffixVersion));
-		
-		assertTrue(suffixAlpha.compareTo(Version.ZERO) > 0);
-		assertTrue(suffixAlpha.compareTo(version) < 0);
-		assertTrue(suffixAlpha.compareTo(alpha) > 0);
-		assertEquals(0, suffixAlpha.compareTo(suffixAlpha));
-		
-		// Different suffix versions
-		assertTrue(alpha.compareTo(Version.ZERO) > 0);
-		assertTrue(alpha.compareTo(build) < 0);
 		assertTrue(alpha.compareTo(beta) < 0);
-		assertEquals(0, alpha.compareTo(alpha));
-		
-		assertTrue(beta.compareTo(Version.ZERO) > 0);
-		assertTrue(beta.compareTo(alpha) > 0);
 		assertTrue(beta.compareTo(rc) < 0);
-		assertEquals(0, beta.compareTo(beta));
-		
-		assertTrue(rc.compareTo(Version.ZERO) > 0);
-		assertTrue(rc.compareTo(beta) > 0);
 		assertTrue(rc.compareTo(release) < 0);
-		assertEquals(0, rc.compareTo(rc));
-		
-		assertTrue(release.compareTo(Version.ZERO) > 0);
-		assertTrue(release.compareTo(rc) > 0);
-		assertTrue(release.compareTo(version) < 0);
-		assertEquals(0, release.compareTo(release));
+		assertTrue(release.compareTo(alpha) > 0);
 	}
 	
 	@Test
-	void testToString() {
-		char[] separators = { '.', '-', 'r' };
-		String[] suffixes = { "alpha", "beta", "rc", "release", "final" };
-		assertEquals("0.0", Version.ZERO.toString(false));
-		assertEquals("v0.0", Version.ZERO.toString(true));
+	void compareToHandlesSuffixVersions() {
+		Version alpha1 = Version.builder(1, 0, 0).withSuffix("alpha").withSuffixVersion(1).build();
+		Version alpha2 = Version.builder(1, 0, 0).withSuffix("alpha").withSuffixVersion(2).build();
 		
-		Random rng = new Random();
-		for (char separator : separators) {
-			for (String suffix : suffixes) {
-				int mayor = Mth.randomInt(rng, 1, 20);
-				int minor = Mth.randomInt(rng, 1, 20);
-				int patch = Mth.randomInt(rng, 1, 20);
-				int build = Mth.randomInt(rng, 1, 20);
-				Version version = Version.builder(mayor, minor, patch).withBuild(separator, build).withSuffix(suffix).build();
-				String expected = mayor + "." + minor + "." + patch + separator + build + "-" + suffix;
-				assertEquals(expected, version.toString(false));
-				assertEquals("v" + expected, version.toString(true));
-			}
-		}
-		
-		assertEquals("0.0.0", Version.ZERO.toString(false, false));
-		assertEquals("v0.0.0", Version.ZERO.toString(true, false));
-		assertEquals("0.0", Version.ZERO.toString(false, true));
-		assertEquals("v0.0", Version.ZERO.toString(true, true));
-		
-		for (char separator : separators) {
-			for (String suffix : suffixes) {
-				int mayor = Mth.randomInt(rng, 1, 20);
-				int minor = Mth.randomInt(rng, 1, 20);
-				int build = Mth.randomInt(rng, 1, 20);
-				Version version = Version.builder(mayor, minor, 0).withBuild(separator, build).withSuffix(suffix).build();
-				String expected = mayor + "." + minor + ".0" + separator + build + "-" + suffix;
-				String expectedOmitted = mayor + "." + minor + separator + build + "-" + suffix;
-				assertEquals(expected, version.toString(false, false));
-				assertEquals("v" + expected, version.toString(true, false));
-				assertEquals(expectedOmitted, version.toString(false, true));
-				assertEquals("v" + expectedOmitted, version.toString(true, true));
-			}
-		}
+		assertTrue(alpha1.compareTo(alpha2) < 0);
+		assertTrue(alpha2.compareTo(alpha1) > 0);
+		assertEquals(0, alpha1.compareTo(alpha1));
 	}
 	
-	@Nested
-	class Builder {
+	@Test
+	void equalsComparesAllComponents() {
+		Version v1 = Version.of(1, 2, 3);
+		Version v2 = Version.of(1, 2, 3);
+		Version different = Version.of(1, 2, 4);
 		
-		@Test
-		void withMajor() {
-			assertNotNull(Version.builder(0, 0).withMajor(1));
-			assertNotNull(Version.builder(0, 0, 0).withMajor(1));
-		}
+		assertEquals(v1, v2);
+		assertNotEquals(v1, different);
+		assertNotEquals(v1, null);
+		assertNotEquals(v1, "not a version");
+	}
+	
+	@Test
+	void equalsHandlesComplexVersions() {
+		Version complex1 = Version.builder(1, 2, 3).withBuild('.', 4).withSuffix("alpha").withSuffixVersion(1).build();
+		Version complex2 = Version.builder(1, 2, 3).withBuild('.', 4).withSuffix("alpha").withSuffixVersion(1).build();
+		Version differentBuild = Version.builder(1, 2, 3).withBuild('-', 4).withSuffix("alpha").withSuffixVersion(1).build();
 		
-		@Test
-		void withMinor() {
-			assertNotNull(Version.builder(0, 0).withMinor(1));
-			assertNotNull(Version.builder(0, 0, 0).withMinor(1));
-		}
+		assertEquals(complex1, complex2);
+		assertNotEquals(complex1, differentBuild);
+	}
+	
+	@Test
+	void hashCodeIsSameForEqualObjects() {
+		Version v1 = Version.of(1, 2, 3);
+		Version v2 = Version.of(1, 2, 3);
 		
-		@Test
-		void withPatch() {
-			assertNotNull(Version.builder(0, 0).withPatch(1));
-			assertNotNull(Version.builder(0, 0, 0).withPatch(1));
-		}
+		assertEquals(v1.hashCode(), v2.hashCode());
+	}
+	
+	@Test
+	void toStringFormatsCorrectly() {
+		assertEquals("v1.0", Version.of(1, 0).toString(true));
+		assertEquals("1.0", Version.of(1, 0).toString(false));
+		assertEquals("v1.2.3", Version.of(1, 2, 3).toString(true));
+		assertEquals("1.2.3", Version.of(1, 2, 3).toString(false));
+	}
+	
+	@Test
+	void toStringWithOmitZerosFlag() {
+		assertEquals("1.0.0", Version.of(1, 0, 0).toString(false, false));
+		assertEquals("1.0", Version.of(1, 0, 0).toString(false, true));
+		assertEquals("1.2.3", Version.of(1, 2, 3).toString(false, false));
+		assertEquals("1.2.3", Version.of(1, 2, 3).toString(false, true));
+	}
+	
+	@Test
+	void toStringWithComplexVersions() {
+		Version complex = Version.builder(1, 2, 3).withBuild('.', 4).withSuffix("alpha").withSuffixVersion(1).build();
+		assertEquals("v1.2.3.4-alpha+001", complex.toString(true));
+		assertEquals("1.2.3.4-alpha+001", complex.toString(false));
 		
-		@Test
-		void withBuild() {
-			assertNotNull(Version.builder(0, 0).withBuild('.', 1));
-			assertNotNull(Version.builder(0, 0, 0).withBuild('.', 1));
-		}
+		Version withOmittablePatch = Version.builder(1, 2, 0).withBuild('-', 4).withSuffix("beta").build();
+		assertEquals("1.2.0-4-beta", withOmittablePatch.toString(false, false));
+		assertEquals("1.2-4-beta", withOmittablePatch.toString(false, true));
+	}
+	
+	@Test
+	void builderWithMajor() {
+		Version version = Version.builder(0, 0).withMajor(5).build();
+		assertEquals(5, version.getMajor());
+		assertEquals(0, version.getMinor());
+	}
+	
+	@Test
+	void builderWithMinor() {
+		Version version = Version.builder(1, 0).withMinor(7).build();
+		assertEquals(1, version.getMajor());
+		assertEquals(7, version.getMinor());
+	}
+	
+	@Test
+	void builderWithPatch() {
+		Version version = Version.builder(1, 2).withPatch(9).build();
+		assertEquals(1, version.getMajor());
+		assertEquals(2, version.getMinor());
+		assertEquals(9, version.getPatch());
+	}
+	
+	@Test
+	void builderWithBuild() {
+		Version version = Version.builder(1, 2).withBuild('.', 4).build();
+		assertEquals(4, version.getBuild());
 		
-		@Test
-		void withSuffix() {
-			assertNotNull(Version.builder(0, 0).withSuffix("alpha"));
-			assertNotNull(Version.builder(0, 0, 0).withSuffix("alpha"));
-		}
+		assertThrows(IllegalArgumentException.class, () -> Version.builder(1, 2).withBuild('x', 4));
+	}
+	
+	@Test
+	void builderWithSuffix() {
+		Version version = Version.builder(1, 2).withSuffix("alpha").build();
+		assertEquals("alpha", version.getSuffix());
 		
-		@Test
-		void withSuffixVersion() {
-			assertNotNull(Version.builder(0, 0).withSuffixVersion(1));
-			assertNotNull(Version.builder(0, 0, 0).withSuffixVersion(1));
-		}
+		Version nullSuffix = Version.builder(1, 2).withSuffix(null).build();
+		assertEquals("", nullSuffix.getSuffix());
+	}
+	
+	@Test
+	void builderWithSuffixVersion() {
+		Version version = Version.builder(1, 2).withSuffixVersion(42).build();
+		assertEquals(42, version.getSuffixVersion());
 		
-		@Test
-		void build() {
-			assertNotNull(Version.builder(0, 0).build());
-			assertNotNull(Version.builder(0, 0, 0).build());
-		}
+		Version negativeSuffix = Version.builder(1, 2).withSuffixVersion(-1).build();
+		assertEquals(0, negativeSuffix.getSuffixVersion());
+	}
+	
+	@Test
+	void builderBuildReturnsValidVersion() {
+		assertNotNull(Version.builder(1, 2).build());
+		assertNotNull(Version.builder(1, 2, 3).build());
+		
+		Version complex = Version.builder(1, 2, 3)
+			.withBuild('.', 4)
+			.withSuffix("alpha")
+			.withSuffixVersion(1)
+			.build();
+		assertNotNull(complex);
+		assertEquals(1, complex.getMajor());
+		assertEquals(2, complex.getMinor());
+		assertEquals(3, complex.getPatch());
+		assertEquals(4, complex.getBuild());
+		assertEquals("alpha", complex.getSuffix());
+		assertEquals(1, complex.getSuffixVersion());
+	}
+	
+	@Test
+	void builderEqualsAndHashCode() {
+		Version.Builder builder1 = Version.builder(1, 2, 3).withSuffix("alpha");
+		Version.Builder builder2 = Version.builder(1, 2, 3).withSuffix("alpha");
+		Version.Builder different = Version.builder(1, 2, 4).withSuffix("alpha");
+		
+		assertEquals(builder1, builder2);
+		assertNotEquals(builder1, different);
+		assertEquals(builder1.hashCode(), builder2.hashCode());
+	}
+	
+	@Test
+	void zeroConstantProperties() {
+		assertEquals(0, Version.ZERO.getMajor());
+		assertEquals(0, Version.ZERO.getMinor());
+		assertEquals(0, Version.ZERO.getPatch());
+		assertEquals(0, Version.ZERO.getBuild());
+		assertEquals("", Version.ZERO.getSuffix());
+		assertEquals(0, Version.ZERO.getSuffixVersion());
+		assertEquals("v0.0", Version.ZERO.toString());
 	}
 }

@@ -30,14 +30,54 @@ import static org.junit.jupiter.api.Assertions.*;
 class ErrorActionTest {
 	
 	@Test
-	void handleIgnore() {
-		assertDoesNotThrow(() -> ErrorAction.IGNORE.handle(null));
-		assertDoesNotThrow(() -> ErrorAction.IGNORE.handle(new RuntimeException()));
+	void ignoreHandlesAnyException() {
+		assertDoesNotThrow(() -> ErrorAction.IGNORE.handle(new RuntimeException("test")));
+		assertDoesNotThrow(() -> ErrorAction.IGNORE.handle(new IllegalArgumentException()));
+		assertDoesNotThrow(() -> ErrorAction.IGNORE.handle(new NullPointerException()));
+		assertDoesNotThrow(() -> ErrorAction.IGNORE.handle(new Exception("checked exception")));
 	}
 	
 	@Test
-	void handleThrow() {
+	void ignoreHandlesNullException() {
+		assertDoesNotThrow(() -> ErrorAction.IGNORE.handle(null));
+	}
+	
+	@Test
+	void throwRethrowsException() {
+		RuntimeException runtimeException = new RuntimeException("test message");
+		RuntimeException thrown = assertThrows(RuntimeException.class, () -> ErrorAction.THROW.handle(runtimeException));
+		assertSame(runtimeException, thrown);
+		assertEquals("test message", thrown.getMessage());
+	}
+	
+	@Test
+	void throwHandlesDifferentExceptionTypes() {
+		IllegalArgumentException illegalArg = new IllegalArgumentException("illegal");
+		IllegalArgumentException thrownIllegal = assertThrows(IllegalArgumentException.class, () -> ErrorAction.THROW.handle(illegalArg));
+		assertSame(illegalArg, thrownIllegal);
+		
+		NullPointerException nullPointer = new NullPointerException("null");
+		NullPointerException thrownNull = assertThrows(NullPointerException.class, () -> ErrorAction.THROW.handle(nullPointer));
+		assertSame(nullPointer, thrownNull);
+	}
+	
+	@Test
+	void throwHandlesNullException() {
 		assertThrows(NullPointerException.class, () -> ErrorAction.THROW.handle(null));
-		assertThrows(RuntimeException.class, () -> ErrorAction.THROW.handle(new RuntimeException()));
+	}
+	
+	@Test
+	void enumValues() {
+		ErrorAction[] values = ErrorAction.values();
+		assertEquals(2, values.length);
+		assertSame(ErrorAction.IGNORE, values[0]);
+		assertSame(ErrorAction.THROW, values[1]);
+	}
+	
+	@Test
+	void enumValueOf() {
+		assertSame(ErrorAction.IGNORE, ErrorAction.valueOf("IGNORE"));
+		assertSame(ErrorAction.THROW, ErrorAction.valueOf("THROW"));
+		assertThrows(IllegalArgumentException.class, () -> ErrorAction.valueOf("INVALID"));
 	}
 }
