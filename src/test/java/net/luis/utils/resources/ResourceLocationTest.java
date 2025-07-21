@@ -53,6 +53,7 @@ class ResourceLocationTest {
 		Files.deleteIfExists(Path.of("ResourceLocation/InternalResourceLocation.json"));
 		Files.deleteIfExists(Path.of("ResourceLocation/ExternalResourceLocation.json"));
 		Files.deleteIfExists(Path.of("ResourceLocation"));
+		Files.deleteIfExists(Path.of("target.txt"));
 	}
 	
 	@Test

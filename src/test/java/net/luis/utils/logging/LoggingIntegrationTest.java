@@ -46,6 +46,7 @@ class LoggingIntegrationTest {
 	@AfterAll
 	static void cleanUp() throws Exception {
 		FileUtils.deleteRecursively(Path.of("integration-test-logs"));
+		FileUtils.deleteRecursively(Path.of("test-logs"));
 		Files.delete(Path.of("error.log"));
 	}
 	
