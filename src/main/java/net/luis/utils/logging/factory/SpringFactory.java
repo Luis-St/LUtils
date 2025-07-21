@@ -26,6 +26,7 @@ import org.apache.logging.log4j.core.config.plugins.Plugin;
 import org.jetbrains.annotations.NotNull;
 
 import java.net.URI;
+import java.util.Objects;
 
 /**
  * Spring logging configuration factory.<br>
@@ -69,9 +70,13 @@ public class SpringFactory extends ConfigurationFactory {
 	 * @param context The logger context
 	 * @param source The configuration source
 	 * @return The configuration used before spring boot or the default configuration if none is cached
+	 * @throws NullPointerException If the context or source is null
 	 */
 	@Override
 	public @NotNull Configuration getConfiguration(@NotNull LoggerContext context, @NotNull ConfigurationSource source) {
+		Objects.requireNonNull(context, "Logger context must not be null");
+		Objects.requireNonNull(source, "Configuration source must not be null");
+		
 		LoggerConfiguration configuration = LoggingUtils.getConfiguration();
 		if (configuration != null) {
 			return configuration.build();
@@ -85,9 +90,14 @@ public class SpringFactory extends ConfigurationFactory {
 	 * @param name The configuration name.
 	 * @param location The configuration location.
 	 * @return The configuration used before spring boot or the default configuration if none is cached
+	 * @throws NullPointerException If the context, name, or location is null
 	 */
 	@Override
 	public @NotNull Configuration getConfiguration(@NotNull LoggerContext context, @NotNull String name, @NotNull URI location) {
+		Objects.requireNonNull(context, "Logger context must not be null");
+		Objects.requireNonNull(name, "Configuration name must not be null");
+		Objects.requireNonNull(location, "Configuration location must not be null");
+		
 		LoggerConfiguration configuration = LoggingUtils.getConfiguration();
 		if (configuration != null) {
 			return configuration.build();

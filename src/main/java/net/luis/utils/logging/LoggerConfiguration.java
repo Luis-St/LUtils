@@ -75,7 +75,7 @@ public class LoggerConfiguration {
 	/**
 	 * Regex to check if the file is absolute or relative.<br>
 	 */
-	static final String PATH_PATTERN = "^([a-zA-Z]:|\\./).*$";
+	static final String PATH_PATTERN = "^([a-zA-Z]:|/|\\./).*$";
 	/**
 	 * Regex to check if the file size is valid.<br>
 	 */
@@ -179,6 +179,7 @@ public class LoggerConfiguration {
 	 */
 	public LoggerConfiguration(@NotNull List<String> loggers) {
 		Objects.requireNonNull(loggers, "Loggers must not be null");
+		loggers = Lists.newArrayList(loggers);
 		if (loggers.isEmpty()) {
 			throw new IllegalArgumentException("Loggers must not be empty");
 		}

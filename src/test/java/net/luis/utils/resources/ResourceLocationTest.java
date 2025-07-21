@@ -35,9 +35,8 @@ import static org.junit.jupiter.api.Assertions.*;
  */
 class ResourceLocationTest {
 	
-	//region Setup
 	@BeforeAll
-	static void setUpBefore() throws Exception {
+	static void setUp() throws Exception {
 		File file = new File("ResourceLocation.json");
 		Files.createFile(file.toPath());
 		File folder = new File("ResourceLocation/ResourceLocation.json");
@@ -46,18 +45,15 @@ class ResourceLocationTest {
 		Files.write(file.toPath(), ("{" + System.lineSeparator() + "\t\"path\": \"disk:ResourceLocation.json\"" + System.lineSeparator() + "}").getBytes());
 		Files.write(folder.toPath(), ("{" + System.lineSeparator() + "\t\"path\": \"disk:ResourceLocation/ResourceLocation.json\"" + System.lineSeparator() + "}").getBytes());
 	}
-	//endregion
 	
-	//region Cleanup
 	@AfterAll
-	static void cleanUpAfter() throws Exception {
+	static void cleanUp() throws Exception {
 		Files.deleteIfExists(Path.of("ResourceLocation.json"));
 		Files.deleteIfExists(Path.of("ResourceLocation/ResourceLocation.json"));
 		Files.deleteIfExists(Path.of("ResourceLocation/InternalResourceLocation.json"));
 		Files.deleteIfExists(Path.of("ResourceLocation/ExternalResourceLocation.json"));
 		Files.deleteIfExists(Path.of("ResourceLocation"));
 	}
-	//endregion
 	
 	@Test
 	void internalFactoryMethodFailsWithNullFile() {
