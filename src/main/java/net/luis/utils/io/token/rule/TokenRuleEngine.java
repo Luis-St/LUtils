@@ -45,6 +45,12 @@ public class TokenRuleEngine {
 	private final List<RuleAction> ruleActions = Lists.newArrayList();
 	
 	/**
+	 * Constructs a new token rule engine.<br>
+	 * The engine starts with an empty list of rules.<br>
+	 */
+	public TokenRuleEngine() {}
+	
+	/**
 	 * Adds a validation rule to the engine.<br>
 	 * The rule is only used to validate tokens and does not modify them.<br>
 	 *

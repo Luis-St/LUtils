@@ -87,6 +87,12 @@ public class CodecAutoMapping {
 	});
 	
 	/**
+	 * Private constructor to prevent instantiation.<br>
+	 * This is a static helper class.<br>
+	 */
+	private CodecAutoMapping() {}
+	
+	/**
 	 * Creates an automatically mapped codec for the given class.<br>
 	 * The method analyzes the class structure and creates a codec that can encode and decode instances of the class.<br>
 	 * For record classes, it uses the record components to create the codec.<br>

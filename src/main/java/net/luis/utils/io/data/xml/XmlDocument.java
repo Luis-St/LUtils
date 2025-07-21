@@ -27,7 +27,7 @@ import java.util.Objects;
  *
  * @author Luis-St
  *
- * @param declaration The XML declaration (e.g., <?xml version="1.0" encoding="UTF-8"?>)
+ * @param declaration The XML declaration (e.g., {@code <?xml version="1.0" encoding="UTF-8"?>})
  * @param rootElement The root element of the XML document
  */
 public record XmlDocument(@NotNull XmlDeclaration declaration, @NotNull XmlElement rootElement) {

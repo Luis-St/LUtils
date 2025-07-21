@@ -824,14 +824,31 @@ public final class JsonBuilder {
 	 * Enumeration of builder contexts to track whether we're building an object or array.
 	 */
 	private enum BuilderContext {
-		OBJECT, ARRAY
+		/**
+		 * Context for building a json object.<br>
+		 */
+		OBJECT,
+		/**
+		 * Context for building a json array.<br>
+		 */
+		ARRAY
 	}
 	
 	/**
-	 * Internal class to track nesting state.
+	 * Internal class to track nesting state.<br>
+	 *
+	 * @param type The type of context (object or array)
+	 * @param element The json element associated with this context
 	 */
 	private record ContextFrame(@NotNull BuilderContext type, @NotNull JsonElement element) {
 		
+		/**
+		 * Constructs a new context frame with the specified type and element.<br>
+		 *
+		 * @param type The type of context (object or array)
+		 * @param element The json element associated with this context
+		 * @throws NullPointerException If the type or element is null
+		 */
 		private ContextFrame {
 			Objects.requireNonNull(type, "Context type must not be null");
 			Objects.requireNonNull(element, "Context element must not be null");

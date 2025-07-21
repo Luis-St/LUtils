@@ -197,6 +197,11 @@ public class TokenReader {
 		private int charInLine;
 		
 		/**
+		 * Constructs a new position tracker with initial values.<br>
+		 */
+		private PositionTracker() {}
+		
+		/**
 		 * Counts a new character in the input string.<br>
 		 * It increments the position and character index.<br>
 		 */
