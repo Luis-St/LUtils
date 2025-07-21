@@ -25,7 +25,6 @@ import org.apache.logging.log4j.core.config.Configuration;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Test;
 
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Collections;
 import java.util.List;
@@ -137,7 +136,7 @@ class LoggerConfigurationTest {
 		assertThrows(IllegalArgumentException.class, () -> config.overridePattern(LoggingType.CONSOLE, Level.INFO, "   "));
 		assertThrows(IllegalArgumentException.class, () -> config.overridePattern(LoggingType.CONSOLE, Level.INFO, "No message placeholder"));
 		
-		String[] validPatterns = {"%msg", "%message", "%m", "%throwable", "%ex", "%exception", "[%level] %msg%n", "%d{HH:mm:ss} %msg %throwable"};
+		String[] validPatterns = { "%msg", "%message", "%m", "%throwable", "%ex", "%exception", "[%level] %msg%n", "%d{HH:mm:ss} %msg %throwable" };
 		
 		for (LoggingType type : LoggingType.values()) {
 			for (String pattern : validPatterns) {
@@ -224,7 +223,7 @@ class LoggerConfigurationTest {
 		assertThrows(IllegalArgumentException.class, () -> config.overrideLog(Level.DEBUG, "test.log", "C:/archive.log"));
 		assertThrows(IllegalArgumentException.class, () -> config.overrideLog(Level.DEBUG, "test.log", "./archive.log"));
 		
-		Level[] validLevels = {Level.DEBUG, Level.INFO, Level.ERROR};
+		Level[] validLevels = { Level.DEBUG, Level.INFO, Level.ERROR };
 		for (Level level : validLevels) {
 			assertSame(config, config.overrideLog(level, "test.log", "archive.log"));
 			assertSame(config, config.overrideLog(level, "subfolder/test.log", "subfolder/archive.log"));
@@ -296,12 +295,12 @@ class LoggerConfigurationTest {
 		assertThrows(IllegalArgumentException.class, () -> config.addDefaultLogger(LoggingType.FILE, Level.WARN));
 		assertThrows(IllegalArgumentException.class, () -> config.addDefaultLogger(LoggingType.FILE, Level.FATAL));
 		
-		Level[] consoleLevels = {Level.TRACE, Level.DEBUG, Level.INFO, Level.WARN, Level.ERROR, Level.FATAL};
+		Level[] consoleLevels = { Level.TRACE, Level.DEBUG, Level.INFO, Level.WARN, Level.ERROR, Level.FATAL };
 		for (Level level : consoleLevels) {
 			assertSame(config, config.addDefaultLogger(LoggingType.CONSOLE, level));
 		}
 		
-		Level[] fileLevels = {Level.DEBUG, Level.INFO, Level.ERROR};
+		Level[] fileLevels = { Level.DEBUG, Level.INFO, Level.ERROR };
 		for (Level level : fileLevels) {
 			assertSame(config, config.addDefaultLogger(LoggingType.FILE, level));
 		}
@@ -339,7 +338,7 @@ class LoggerConfigurationTest {
 		assertThrows(IllegalArgumentException.class, () -> config.setFileSize("10XX"));
 		assertThrows(IllegalArgumentException.class, () -> config.setFileSize("MB10"));
 		
-		String[] validSizes = {"1", "10", "1B", "1KB", "1MB", "1GB", "1TB", "10.5MB", "1,5GB", "100 KB"};
+		String[] validSizes = { "1", "10", "1B", "1KB", "1MB", "1GB", "1TB", "10.5MB", "1,5GB", "100 KB" };
 		for (String size : validSizes) {
 			assertSame(config, config.setFileSize(size));
 		}
@@ -359,7 +358,7 @@ class LoggerConfigurationTest {
 		assertThrows(IllegalArgumentException.class, () -> config.setArchiveType(".tar"));
 		assertThrows(IllegalArgumentException.class, () -> config.setArchiveType("rar"));
 		
-		String[] validTypes = {".zip", ".gz", ".bz2", ".xy", "zip", "gz", "bz2", "xy"};
+		String[] validTypes = { ".zip", ".gz", ".bz2", ".xy", "zip", "gz", "bz2", "xy" };
 		for (String type : validTypes) {
 			assertSame(config, config.setArchiveType(type));
 		}
@@ -496,11 +495,11 @@ class LoggerConfigurationTest {
 		LoggerConfiguration config = new LoggerConfiguration("*");
 		
 		config.overrideConsolePattern(Level.DEBUG, "[DEBUG] %msg%n")
-			  .overrideConsolePattern(Level.INFO, "[INFO] %msg%n")
-			  .overrideConsolePattern(Level.ERROR, "[ERROR] %msg%n%throwable");
+			.overrideConsolePattern(Level.INFO, "[INFO] %msg%n")
+			.overrideConsolePattern(Level.ERROR, "[ERROR] %msg%n%throwable");
 		
 		config.overrideFilePattern(Level.ALL, "%d %level %msg%n")
-			  .overrideFilePattern(Level.ERROR, "%d [%level] %C - %msg%n%ex");
+			.overrideFilePattern(Level.ERROR, "%d [%level] %C - %msg%n%ex");
 		
 		Configuration result = assertDoesNotThrow(config::build);
 		assertNotNull(result);
@@ -511,7 +510,7 @@ class LoggerConfigurationTest {
 		LoggerConfiguration config = new LoggerConfiguration("*");
 		
 		config.overrideConsolePattern(Level.DEBUG, "[DEBUG] %msg%n")
-			  .overrideConsolePattern(Level.INFO, "[INFO] %msg%n");
+			.overrideConsolePattern(Level.INFO, "[INFO] %msg%n");
 		
 		config.overrideConsolePattern(Level.OFF, "%msg");
 		

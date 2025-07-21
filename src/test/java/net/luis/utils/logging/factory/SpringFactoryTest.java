@@ -21,9 +21,7 @@ package net.luis.utils.logging.factory;
 import net.luis.utils.logging.LoggerConfiguration;
 import net.luis.utils.logging.LoggingUtils;
 import org.apache.logging.log4j.core.LoggerContext;
-import org.apache.logging.log4j.core.config.Configuration;
-import org.apache.logging.log4j.core.config.ConfigurationFactory;
-import org.apache.logging.log4j.core.config.ConfigurationSource;
+import org.apache.logging.log4j.core.config.*;
 import org.apache.logging.log4j.core.config.plugins.Plugin;
 import org.junit.jupiter.api.Test;
 
@@ -31,7 +29,6 @@ import java.io.*;
 import java.net.URI;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 
 /**
  * Test class for {@link SpringFactory}.<br>
@@ -46,7 +43,6 @@ class SpringFactoryTest {
 		
 		SpringFactory factory = new SpringFactory();
 		assertNotNull(factory);
-		assertTrue(factory instanceof ConfigurationFactory);
 	}
 	
 	@Test

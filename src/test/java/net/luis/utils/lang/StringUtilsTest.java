@@ -236,12 +236,12 @@ class StringUtilsTest {
 	
 	@Test
 	void isAfterAllOccurrenceChecksFollowing() {
-		assertTrue(StringUtils.isAfterAllOccurrence("abcde", 'a', new String[]{}));
-		assertFalse(StringUtils.isAfterAllOccurrence("abcde", 'x', new String[]{}));
-		assertTrue(StringUtils.isAfterAllOccurrence("abcde", 'a', new String[]{"b"}));
-		assertTrue(StringUtils.isAfterAllOccurrence("abcab", 'a', new String[]{"b"}));
-		assertFalse(StringUtils.isAfterAllOccurrence("abcae", 'a', new String[]{"b"}));
-		assertTrue(StringUtils.isAfterAllOccurrence("abcae", 'a', new String[]{"b", "e"}));
+		assertTrue(StringUtils.isAfterAllOccurrence("abcde", 'a', new String[] {}));
+		assertFalse(StringUtils.isAfterAllOccurrence("abcde", 'x', new String[] {}));
+		assertTrue(StringUtils.isAfterAllOccurrence("abcde", 'a', new String[] { "b" }));
+		assertTrue(StringUtils.isAfterAllOccurrence("abcab", 'a', new String[] { "b" }));
+		assertFalse(StringUtils.isAfterAllOccurrence("abcae", 'a', new String[] { "b" }));
+		assertTrue(StringUtils.isAfterAllOccurrence("abcae", 'a', new String[] { "b", "e" }));
 	}
 	
 	@Test
@@ -253,12 +253,12 @@ class StringUtilsTest {
 	
 	@Test
 	void isBeforeAllOccurrenceChecksPreceding() {
-		assertTrue(StringUtils.isBeforeAllOccurrence("abcde", 'd', new String[]{}));
-		assertFalse(StringUtils.isBeforeAllOccurrence("abcde", 'x', new String[]{}));
-		assertTrue(StringUtils.isBeforeAllOccurrence("abcde", 'e', new String[]{"d"}));
-		assertTrue(StringUtils.isBeforeAllOccurrence("aecae", 'e', new String[]{"a"}));
-		assertFalse(StringUtils.isBeforeAllOccurrence("aecde", 'e', new String[]{"a"}));
-		assertTrue(StringUtils.isBeforeAllOccurrence("aecde", 'e', new String[]{"a", "d"}));
+		assertTrue(StringUtils.isBeforeAllOccurrence("abcde", 'd', new String[] {}));
+		assertFalse(StringUtils.isBeforeAllOccurrence("abcde", 'x', new String[] {}));
+		assertTrue(StringUtils.isBeforeAllOccurrence("abcde", 'e', new String[] { "d" }));
+		assertTrue(StringUtils.isBeforeAllOccurrence("aecae", 'e', new String[] { "a" }));
+		assertFalse(StringUtils.isBeforeAllOccurrence("aecde", 'e', new String[] { "a" }));
+		assertTrue(StringUtils.isBeforeAllOccurrence("aecde", 'e', new String[] { "a", "d" }));
 	}
 	
 	@Test
@@ -270,21 +270,21 @@ class StringUtilsTest {
 	
 	@Test
 	void isSurroundedByChecksSurrounding() {
-		assertTrue(StringUtils.isSurroundedBy("a.*.b", '*', new String[]{}));
-		assertFalse(StringUtils.isSurroundedBy("a.*.b", 'x', new String[]{}));
-		assertTrue(StringUtils.isSurroundedBy("a.*.b", '*', new String[]{"."}));
-		assertTrue(StringUtils.isSurroundedBy("a.*.b.*.c", '*', new String[]{"."}));
-		assertFalse(StringUtils.isSurroundedBy("a.*.b.?*?.c", '*', new String[]{"."}));
-		assertTrue(StringUtils.isSurroundedBy("a.*.b.?*?.c", '*', new String[]{".", "?"}));
-		assertTrue(StringUtils.isSurroundedBy("a.*.b.?*?.c", '*', new String[]{".", "?."}));
+		assertTrue(StringUtils.isSurroundedBy("a.*.b", '*', new String[] {}));
+		assertFalse(StringUtils.isSurroundedBy("a.*.b", 'x', new String[] {}));
+		assertTrue(StringUtils.isSurroundedBy("a.*.b", '*', new String[] { "." }));
+		assertTrue(StringUtils.isSurroundedBy("a.*.b.*.c", '*', new String[] { "." }));
+		assertFalse(StringUtils.isSurroundedBy("a.*.b.?*?.c", '*', new String[] { "." }));
+		assertTrue(StringUtils.isSurroundedBy("a.*.b.?*?.c", '*', new String[] { ".", "?" }));
+		assertTrue(StringUtils.isSurroundedBy("a.*.b.?*?.c", '*', new String[] { ".", "?." }));
 	}
 	
 	@Test
 	void isSurroundedByWithReverseBrackets() {
 		System.setProperty("lang.surrounded.reverse.brackets", "true");
 		try {
-			assertTrue(StringUtils.isSurroundedBy("a.[*].b", '*', new String[]{"]."}));
-			assertFalse(StringUtils.isSurroundedBy("a.[*[.b", '*', new String[]{"."}));
+			assertTrue(StringUtils.isSurroundedBy("a.[*].b", '*', new String[] { "]." }));
+			assertFalse(StringUtils.isSurroundedBy("a.[*[.b", '*', new String[] { "." }));
 		} finally {
 			System.setProperty("lang.surrounded.reverse.brackets", "false");
 		}
@@ -401,17 +401,17 @@ class StringUtilsTest {
 	
 	@Test
 	void splitNotEscapedSplitsCorrectly() {
-		assertArrayEquals(new String[]{"a", "c"}, StringUtils.splitNotEscaped("abc", 'b'));
-		assertArrayEquals(new String[]{"a\\bc"}, StringUtils.splitNotEscaped("a\\bc", 'b'));
-		assertArrayEquals(new String[]{"a\\b"}, StringUtils.splitNotEscaped("a\\bc", 'c'));
-		assertArrayEquals(new String[]{"a\\:b", "c", "d\\:e"}, StringUtils.splitNotEscaped("a\\:b:c:d\\:e", ':'));
+		assertArrayEquals(new String[] { "a", "c" }, StringUtils.splitNotEscaped("abc", 'b'));
+		assertArrayEquals(new String[] { "a\\bc" }, StringUtils.splitNotEscaped("a\\bc", 'b'));
+		assertArrayEquals(new String[] { "a\\b" }, StringUtils.splitNotEscaped("a\\bc", 'c'));
+		assertArrayEquals(new String[] { "a\\:b", "c", "d\\:e" }, StringUtils.splitNotEscaped("a\\:b:c:d\\:e", ':'));
 	}
 	
 	@Test
 	void splitNotEscapedHandlesEscapeSequences() {
-		assertArrayEquals(new String[]{"a\\\\", "c"}, StringUtils.splitNotEscaped("a\\\\:c", ':'));
-		assertArrayEquals(new String[]{"a", "", "c"}, StringUtils.splitNotEscaped("a::c", ':'));
-		assertArrayEquals(new String[]{"a\\:"}, StringUtils.splitNotEscaped("a\\:", ':'));
+		assertArrayEquals(new String[] { "a\\\\", "c" }, StringUtils.splitNotEscaped("a\\\\:c", ':'));
+		assertArrayEquals(new String[] { "a", "", "c" }, StringUtils.splitNotEscaped("a::c", ':'));
+		assertArrayEquals(new String[] { "a\\:" }, StringUtils.splitNotEscaped("a\\:", ':'));
 	}
 	
 	@Test
@@ -425,10 +425,10 @@ class StringUtilsTest {
 	
 	@Test
 	void extractStringFindsMatches() {
-		assertArrayEquals(new String[]{"a"}, StringUtils.extract("abc", "a"));
-		assertArrayEquals(new String[]{"abc"}, StringUtils.extract("abc", "abc"));
-		assertArrayEquals(new String[]{"[def]"}, StringUtils.extract("abc.[def].ghi", "\\[.*?]"));
-		assertArrayEquals(new String[]{"123", "456"}, StringUtils.extract("abc123def456ghi", "\\d+"));
+		assertArrayEquals(new String[] { "a" }, StringUtils.extract("abc", "a"));
+		assertArrayEquals(new String[] { "abc" }, StringUtils.extract("abc", "abc"));
+		assertArrayEquals(new String[] { "[def]" }, StringUtils.extract("abc.[def].ghi", "\\[.*?]"));
+		assertArrayEquals(new String[] { "123", "456" }, StringUtils.extract("abc123def456ghi", "\\d+"));
 	}
 	
 	@Test
@@ -440,10 +440,10 @@ class StringUtilsTest {
 	
 	@Test
 	void extractPatternFindsMatches() {
-		assertArrayEquals(new String[]{"a"}, StringUtils.extract("abc", Pattern.compile("a")));
-		assertArrayEquals(new String[]{"abc"}, StringUtils.extract("abc", Pattern.compile("abc")));
-		assertArrayEquals(new String[]{"[def]"}, StringUtils.extract("abc.[def].ghi", Pattern.compile("\\[.*?]")));
-		assertArrayEquals(new String[]{"123", "456"}, StringUtils.extract("abc123def456ghi", Pattern.compile("\\d+")));
+		assertArrayEquals(new String[] { "a" }, StringUtils.extract("abc", Pattern.compile("a")));
+		assertArrayEquals(new String[] { "abc" }, StringUtils.extract("abc", Pattern.compile("abc")));
+		assertArrayEquals(new String[] { "[def]" }, StringUtils.extract("abc.[def].ghi", Pattern.compile("\\[.*?]")));
+		assertArrayEquals(new String[] { "123", "456" }, StringUtils.extract("abc123def456ghi", Pattern.compile("\\d+")));
 	}
 	
 	@Test

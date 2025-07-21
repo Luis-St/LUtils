@@ -313,7 +313,7 @@ class NumberTypeTest {
 				if (!type.isFloatingPoint()) {
 					assertTrue(type.canConvertTo(NumberType.BIG_INTEGER), "Failed for " + type);
 				}
-				assertTrue(type.canConvertTo(NumberType.BIG_DECIMAL) , "Failed for " + type);
+				assertTrue(type.canConvertTo(NumberType.BIG_DECIMAL), "Failed for " + type);
 			}
 		}
 		

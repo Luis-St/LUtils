@@ -366,6 +366,10 @@ class CodecAutoMappingTest {
 		FIRST, SECOND, THIRD
 	}
 	
+	private interface TestInterface {}
+	
+	private @interface TestAnnotation {}
+	
 	private static final class AnnotatedFieldsClass {
 		
 		@CodecField
@@ -425,9 +429,5 @@ class CodecAutoMappingTest {
 			this.age = Integer.parseInt(age);
 		}
 	}
-	
-	private interface TestInterface {}
-	
-	private @interface TestAnnotation {}
 	//endregion
 }

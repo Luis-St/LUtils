@@ -42,14 +42,14 @@ public final class LoggingUtils {
 	 */
 	private static final List<String> CONFIGURED_LOGGERS = Lists.newArrayList();
 	/**
+	 * Whether the cached factory has been registered or not.<br>
+	 */
+	private static boolean registeredFactory = false;
+	/**
 	 * The current configuration or null if the logging system has not been initialized.<br>
 	 */
 	@VisibleForTesting
 	static LoggerConfiguration configuration = null;
-	/**
-	 * Whether the cached factory has been registered or not.<br>
-	 */
-	private static boolean registeredFactory = false;
 	
 	/**
 	 * Private constructor to prevent instantiation.<br>

@@ -94,7 +94,7 @@ class VersionTest {
 	
 	@Test
 	void parseVersionsWithSuffixes() {
-		String[] suffixes = {"alpha", "beta", "rc", "release", "final"};
+		String[] suffixes = { "alpha", "beta", "rc", "release", "final" };
 		for (String suffix : suffixes) {
 			assertEquals(Version.builder(1, 2).withSuffix(suffix).build(), Version.parse("1.2-" + suffix));
 			assertEquals(Version.builder(1, 2, 3).withSuffix(suffix).build(), Version.parse("1.2.3-" + suffix));
@@ -110,8 +110,8 @@ class VersionTest {
 	
 	@Test
 	void parseComplexVersionStrings() {
-		char[] separators = {'.', '-', 'r'};
-		String[] suffixes = {"alpha", "beta", "rc"};
+		char[] separators = { '.', '-', 'r' };
+		String[] suffixes = { "alpha", "beta", "rc" };
 		
 		for (char separator : separators) {
 			for (String suffix : suffixes) {
@@ -168,7 +168,7 @@ class VersionTest {
 		assertEquals(0, Version.ZERO.getBuild());
 		assertEquals(0, Version.of(1, 2, 3).getBuild());
 		
-		for (char separator : new char[]{'.', '-', 'r'}) {
+		for (char separator : new char[] { '.', '-', 'r' }) {
 			assertEquals(4, Version.builder(1, 2).withBuild(separator, 4).build().getBuild());
 			assertEquals(0, Version.builder(1, 2).withBuild(separator, -1).build().getBuild());
 		}
@@ -179,7 +179,7 @@ class VersionTest {
 		assertEquals("", Version.ZERO.getSuffix());
 		assertEquals("", Version.of(1, 2, 3).getSuffix());
 		
-		String[] suffixes = {"alpha", "beta", "rc", "release", "final"};
+		String[] suffixes = { "alpha", "beta", "rc", "release", "final" };
 		for (String suffix : suffixes) {
 			assertEquals(suffix, Version.builder(1, 2).withSuffix(suffix).build().getSuffix());
 		}

@@ -25,8 +25,6 @@ import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Test;
 
 import java.nio.file.Path;
-import java.util.Arrays;
-import java.util.Collections;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -201,7 +199,7 @@ class LoggingEdgeCasesTest {
 		String complexPattern = "%d{yyyy-MM-dd HH:mm:ss.SSS} [%t] [%marker] [%level] [%C{1}] [%M] [%line] [%F] %msg%n%throwable%ex%exception";
 		assertDoesNotThrow(() -> config.overrideFilePattern(Level.ALL, complexPattern));
 		
-		String[] minimalPatterns = {"%msg", "%m", "%message", "%throwable", "%ex", "%exception"};
+		String[] minimalPatterns = { "%msg", "%m", "%message", "%throwable", "%ex", "%exception" };
 		for (String pattern : minimalPatterns) {
 			assertDoesNotThrow(() -> config.overrideConsolePattern(Level.INFO, pattern));
 		}
@@ -335,23 +333,23 @@ class LoggingEdgeCasesTest {
 		LoggerConfiguration config = new LoggerConfiguration("*");
 		
 		config.setStatusLevel(Level.WARN)
-			  .enableLogging(LoggingType.CONSOLE)
-			  .enableLogging(LoggingType.FILE)
-			  .disableLogging(LoggingType.CONSOLE)
-			  .enableLogging(LoggingType.CONSOLE)
-			  .setRootDirectory("./test/")
-			  .setFileSize("100MB")
-			  .setArchiveType(".gz")
-			  .setCompressionLevel(5)
-			  .setMaxArchiveFiles(10)
-			  .addDefaultLogger(LoggingType.CONSOLE, Level.INFO)
-			  .removeDefaultLogger(LoggingType.CONSOLE, Level.INFO)
-			  .addDefaultLogger(LoggingType.CONSOLE, Level.ERROR)
-			  .addDefaultLogger(LoggingType.FILE, Level.ERROR)
-			  .overrideConsolePattern(Level.ALL, "%msg%n")
-			  .overrideConsolePattern(Level.OFF, "%msg")
-			  .overrideFilePattern(Level.ERROR, "%d %msg%n%throwable")
-			  .overrideLog(Level.ERROR, "errors.log", "errors-%i.log");
+			.enableLogging(LoggingType.CONSOLE)
+			.enableLogging(LoggingType.FILE)
+			.disableLogging(LoggingType.CONSOLE)
+			.enableLogging(LoggingType.CONSOLE)
+			.setRootDirectory("./test/")
+			.setFileSize("100MB")
+			.setArchiveType(".gz")
+			.setCompressionLevel(5)
+			.setMaxArchiveFiles(10)
+			.addDefaultLogger(LoggingType.CONSOLE, Level.INFO)
+			.removeDefaultLogger(LoggingType.CONSOLE, Level.INFO)
+			.addDefaultLogger(LoggingType.CONSOLE, Level.ERROR)
+			.addDefaultLogger(LoggingType.FILE, Level.ERROR)
+			.overrideConsolePattern(Level.ALL, "%msg%n")
+			.overrideConsolePattern(Level.OFF, "%msg")
+			.overrideFilePattern(Level.ERROR, "%d %msg%n%throwable")
+			.overrideLog(Level.ERROR, "errors.log", "errors-%i.log");
 		
 		Configuration result = assertDoesNotThrow(config::build);
 		assertNotNull(result);

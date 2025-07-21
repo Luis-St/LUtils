@@ -197,7 +197,7 @@ class LoggingIntegrationTest {
 		}
 		
 		config.overrideConsolePattern(Level.ALL, "%d{HH:mm:ss} [%level] %msg%n")
-			  .overrideFilePattern(Level.ALL, "%d{yyyy-MM-dd HH:mm:ss} [%level] %C - %msg%n%throwable");
+			.overrideFilePattern(Level.ALL, "%d{yyyy-MM-dd HH:mm:ss} [%level] %C - %msg%n%throwable");
 		
 		Configuration result = assertDoesNotThrow(config::build);
 		assertNotNull(result);

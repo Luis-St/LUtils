@@ -143,8 +143,8 @@ class LoggingHelperTest {
 		String originalFileInfo = System.getProperty("logging.file.info");
 		
 		try {
-			String[] enableValues = {"true", "enable", "enabled", "1", "on", "yes"};
-			String[] disableValues = {"false", "disable", "disabled", "0", "off", "no"};
+			String[] enableValues = { "true", "enable", "enabled", "1", "on", "yes" };
+			String[] disableValues = { "false", "disable", "disabled", "0", "off", "no" };
 			
 			for (String enableValue : enableValues) {
 				System.setProperty("logging.console.debug", enableValue);

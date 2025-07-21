@@ -18,16 +18,12 @@
 
 package net.luis.utils.logging;
 
-import net.luis.utils.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.Marker;
 import org.junit.jupiter.api.*;
 
-import java.nio.file.Path;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -199,7 +195,7 @@ class LoggingUtilsTest {
 		assertThrows(IllegalArgumentException.class, () -> LoggingUtils.enableConsole(Level.ALL));
 		assertThrows(IllegalArgumentException.class, () -> LoggingUtils.enableConsole(Level.OFF));
 		
-		Level[] validLevels = {Level.TRACE, Level.DEBUG, Level.INFO, Level.WARN, Level.ERROR, Level.FATAL};
+		Level[] validLevels = { Level.TRACE, Level.DEBUG, Level.INFO, Level.WARN, Level.ERROR, Level.FATAL };
 		for (Level level : validLevels) {
 			assertDoesNotThrow(() -> LoggingUtils.enableConsole(level));
 		}
@@ -216,10 +212,10 @@ class LoggingUtilsTest {
 		assertThrows(IllegalArgumentException.class, () -> LoggingUtils.enableFile(Level.WARN));
 		assertThrows(IllegalArgumentException.class, () -> LoggingUtils.enableFile(Level.FATAL));
 		
-		Level[] validLevels = {Level.DEBUG, Level.INFO, Level.ERROR};
+		Level[] validLevels = { Level.DEBUG, Level.INFO, Level.ERROR };
 		for (Level level : validLevels) {
 			IllegalStateException e = assertThrows(IllegalStateException.class, () -> LoggingUtils.enableFile(level));
-			assertEquals("Appender File" + StringUtils.capitalize(level.toString().toLowerCase()) +" not found, appender may not be registered", e.getMessage());
+			assertEquals("Appender File" + StringUtils.capitalize(level.toString().toLowerCase()) + " not found, appender may not be registered", e.getMessage());
 		}
 		
 		IllegalStateException e = assertThrows(IllegalStateException.class, LoggingUtils::enableFile);
@@ -248,7 +244,7 @@ class LoggingUtilsTest {
 		assertThrows(IllegalArgumentException.class, () -> LoggingUtils.disableConsole(Level.ALL));
 		assertThrows(IllegalArgumentException.class, () -> LoggingUtils.disableConsole(Level.OFF));
 		
-		Level[] validLevels = {Level.TRACE, Level.DEBUG, Level.INFO, Level.WARN, Level.ERROR, Level.FATAL};
+		Level[] validLevels = { Level.TRACE, Level.DEBUG, Level.INFO, Level.WARN, Level.ERROR, Level.FATAL };
 		for (Level level : validLevels) {
 			assertDoesNotThrow(() -> LoggingUtils.disableConsole(level));
 		}
@@ -265,7 +261,7 @@ class LoggingUtilsTest {
 		assertThrows(IllegalArgumentException.class, () -> LoggingUtils.disableFile(Level.WARN));
 		assertThrows(IllegalArgumentException.class, () -> LoggingUtils.disableFile(Level.FATAL));
 		
-		Level[] validLevels = {Level.DEBUG, Level.INFO, Level.ERROR};
+		Level[] validLevels = { Level.DEBUG, Level.INFO, Level.ERROR };
 		for (Level level : validLevels) {
 			assertDoesNotThrow(() -> LoggingUtils.disableFile(level));
 		}
@@ -324,12 +320,12 @@ class LoggingUtilsTest {
 		assertThrows(IllegalArgumentException.class, () -> LoggingUtils.checkLevel(LoggingType.FILE, Level.WARN));
 		assertThrows(IllegalArgumentException.class, () -> LoggingUtils.checkLevel(LoggingType.FILE, Level.FATAL));
 		
-		Level[] consoleLevels = {Level.TRACE, Level.DEBUG, Level.INFO, Level.WARN, Level.ERROR, Level.FATAL};
+		Level[] consoleLevels = { Level.TRACE, Level.DEBUG, Level.INFO, Level.WARN, Level.ERROR, Level.FATAL };
 		for (Level level : consoleLevels) {
 			assertDoesNotThrow(() -> LoggingUtils.checkLevel(LoggingType.CONSOLE, level));
 		}
 		
-		Level[] fileLevels = {Level.DEBUG, Level.INFO, Level.ERROR};
+		Level[] fileLevels = { Level.DEBUG, Level.INFO, Level.ERROR };
 		for (Level level : fileLevels) {
 			assertDoesNotThrow(() -> LoggingUtils.checkLevel(LoggingType.FILE, level));
 		}
@@ -351,14 +347,14 @@ class LoggingUtilsTest {
 		assertEquals("FileInfo", LoggingUtils.getLogger(LoggingType.FILE, Level.INFO));
 		assertEquals("FileError", LoggingUtils.getLogger(LoggingType.FILE, Level.ERROR));
 		
-		String[] expectedConsole = {"ConsoleTrace", "ConsoleDebug", "ConsoleInfo", "ConsoleWarn", "ConsoleError", "ConsoleFatal"};
-		Level[] consoleLevels = {Level.TRACE, Level.DEBUG, Level.INFO, Level.WARN, Level.ERROR, Level.FATAL};
+		String[] expectedConsole = { "ConsoleTrace", "ConsoleDebug", "ConsoleInfo", "ConsoleWarn", "ConsoleError", "ConsoleFatal" };
+		Level[] consoleLevels = { Level.TRACE, Level.DEBUG, Level.INFO, Level.WARN, Level.ERROR, Level.FATAL };
 		for (int i = 0; i < consoleLevels.length; i++) {
 			assertEquals(expectedConsole[i], LoggingUtils.getLogger(LoggingType.CONSOLE, consoleLevels[i]));
 		}
 		
-		String[] expectedFile = {"FileDebug", "FileInfo", "FileError"};
-		Level[] fileLevels = {Level.DEBUG, Level.INFO, Level.ERROR};
+		String[] expectedFile = { "FileDebug", "FileInfo", "FileError" };
+		Level[] fileLevels = { Level.DEBUG, Level.INFO, Level.ERROR };
 		for (int i = 0; i < fileLevels.length; i++) {
 			assertEquals(expectedFile[i], LoggingUtils.getLogger(LoggingType.FILE, fileLevels[i]));
 		}

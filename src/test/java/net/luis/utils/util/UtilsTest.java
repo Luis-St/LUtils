@@ -190,11 +190,11 @@ class UtilsTest {
 	@Test
 	void hasDuplicatesInArray() {
 		assertFalse(Utils.hasDuplicates((Integer[]) null));
-		assertFalse(Utils.hasDuplicates(new Integer[]{}));
-		assertFalse(Utils.hasDuplicates(new Integer[]{1, 2, 3, 4}));
-		assertTrue(Utils.hasDuplicates(new Integer[]{1, 2, 3, 3}));
-		assertTrue(Utils.hasDuplicates(new Integer[]{1, 1, 2, 3}));
-		assertTrue(Utils.hasDuplicates(new String[]{"a", "b", "a"}));
+		assertFalse(Utils.hasDuplicates(new Integer[] {}));
+		assertFalse(Utils.hasDuplicates(new Integer[] { 1, 2, 3, 4 }));
+		assertTrue(Utils.hasDuplicates(new Integer[] { 1, 2, 3, 3 }));
+		assertTrue(Utils.hasDuplicates(new Integer[] { 1, 1, 2, 3 }));
+		assertTrue(Utils.hasDuplicates(new String[] { "a", "b", "a" }));
 	}
 	
 	@Test
@@ -210,11 +210,11 @@ class UtilsTest {
 	@Test
 	void hasDuplicatesOfSpecificObjectInArray() {
 		assertFalse(Utils.hasDuplicates(1, (Integer[]) null));
-		assertFalse(Utils.hasDuplicates(1, new Integer[]{}));
-		assertFalse(Utils.hasDuplicates(1, new Integer[]{2, 3, 4}));
-		assertFalse(Utils.hasDuplicates(1, new Integer[]{1, 2, 3}));
-		assertTrue(Utils.hasDuplicates(1, new Integer[]{1, 1, 2}));
-		assertTrue(Utils.hasDuplicates(null, new Integer[]{null, null, 1}));
+		assertFalse(Utils.hasDuplicates(1, new Integer[] {}));
+		assertFalse(Utils.hasDuplicates(1, new Integer[] { 2, 3, 4 }));
+		assertFalse(Utils.hasDuplicates(1, new Integer[] { 1, 2, 3 }));
+		assertTrue(Utils.hasDuplicates(1, new Integer[] { 1, 1, 2 }));
+		assertTrue(Utils.hasDuplicates(null, new Integer[] { null, null, 1 }));
 	}
 	
 	@Test
@@ -295,8 +295,8 @@ class UtilsTest {
 	@Test
 	void getRandomFromArray() {
 		Random rng = new Random(12345);
-		Integer[] singleElement = {42};
-		Integer[] multipleElements = {1, 2, 3, 4, 5};
+		Integer[] singleElement = { 42 };
+		Integer[] multipleElements = { 1, 2, 3, 4, 5 };
 		
 		assertEquals(42, Utils.getRandom(rng, singleElement));
 		
@@ -309,9 +309,9 @@ class UtilsTest {
 	@Test
 	void getRandomFromArrayRejectsInvalidInputs() {
 		Random rng = new Random();
-		assertThrows(NullPointerException.class, () -> Utils.getRandom(null, new Integer[]{1}));
+		assertThrows(NullPointerException.class, () -> Utils.getRandom(null, new Integer[] { 1 }));
 		assertThrows(NullPointerException.class, () -> Utils.getRandom(rng, (Integer[]) null));
-		assertThrows(IllegalArgumentException.class, () -> Utils.getRandom(rng, new Integer[]{}));
+		assertThrows(IllegalArgumentException.class, () -> Utils.getRandom(rng, new Integer[] {}));
 	}
 	
 	@Test
@@ -339,12 +339,12 @@ class UtilsTest {
 	@Test
 	void getRandomSafeFromArray() {
 		Random rng = new Random(12345);
-		Integer[] singleElement = {42};
-		Integer[] multipleElements = {1, 2, 3, 4, 5};
+		Integer[] singleElement = { 42 };
+		Integer[] multipleElements = { 1, 2, 3, 4, 5 };
 		
 		assertEquals(Optional.of(42), Utils.getRandomSafe(rng, singleElement));
 		assertEquals(Optional.empty(), Utils.getRandomSafe(rng, (Integer[]) null));
-		assertEquals(Optional.empty(), Utils.getRandomSafe(rng, new Integer[]{}));
+		assertEquals(Optional.empty(), Utils.getRandomSafe(rng, new Integer[] {}));
 		
 		for (int i = 0; i < 100; i++) {
 			Optional<Integer> result = Utils.getRandomSafe(rng, multipleElements);
@@ -355,7 +355,7 @@ class UtilsTest {
 	
 	@Test
 	void getRandomSafeFromArrayRejectsNullRng() {
-		assertThrows(NullPointerException.class, () -> Utils.getRandomSafe(null, new Integer[]{1}));
+		assertThrows(NullPointerException.class, () -> Utils.getRandomSafe(null, new Integer[] { 1 }));
 	}
 	
 	@Test

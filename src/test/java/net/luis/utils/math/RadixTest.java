@@ -64,8 +64,7 @@ class RadixTest {
 		Radix[] radices = Radix.values();
 		for (int i = 0; i < radices.length; i++) {
 			for (int j = i + 1; j < radices.length; j++) {
-				assertNotEquals(radices[i].getRadix(), radices[j].getRadix(), 
-					"Radices " + radices[i] + " and " + radices[j] + " have same radix value");
+				assertNotEquals(radices[i].getRadix(), radices[j].getRadix(), "Radices " + radices[i] + " and " + radices[j] + " have same radix value");
 			}
 		}
 	}
@@ -75,8 +74,7 @@ class RadixTest {
 		Radix[] radices = Radix.values();
 		for (int i = 0; i < radices.length; i++) {
 			for (int j = i + 1; j < radices.length; j++) {
-				assertNotEquals(radices[i].getPrefix(), radices[j].getPrefix(), 
-					"Radices " + radices[i] + " and " + radices[j] + " have same prefix");
+				assertNotEquals(radices[i].getPrefix(), radices[j].getPrefix(), "Radices " + radices[i] + " and " + radices[j] + " have same prefix");
 			}
 		}
 	}
@@ -108,7 +106,7 @@ class RadixTest {
 	@Test
 	void prefixesAreValidFormatting() {
 		assertTrue(Radix.BINARY.getPrefix().startsWith("0"));
-		assertTrue(Radix.OCTAL.getPrefix().equals("0"));
+		assertEquals("0", Radix.OCTAL.getPrefix());
 		assertTrue(Radix.DECIMAL.getPrefix().isEmpty());
 		assertTrue(Radix.HEXADECIMAL.getPrefix().startsWith("0"));
 	}
@@ -125,7 +123,7 @@ class RadixTest {
 	void valuesReturnsAllRadices() {
 		Radix[] values = Radix.values();
 		assertEquals(4, values.length);
-		assertArrayEquals(new Radix[]{Radix.BINARY, Radix.OCTAL, Radix.DECIMAL, Radix.HEXADECIMAL}, values);
+		assertArrayEquals(new Radix[] { Radix.BINARY, Radix.OCTAL, Radix.DECIMAL, Radix.HEXADECIMAL }, values);
 	}
 	
 	@Test

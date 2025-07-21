@@ -28,13 +28,15 @@ import java.util.*;
  * This builder provides a convenient way to create nested json objects and arrays
  * using a chainable API that maintains proper structure and type safety.<br>
  * <p>
- * The builder supports creating both json objects and arrays, with automatic
- * context tracking to ensure operations are valid for the current structure type.
- * It provides type-specific methods for adding common data types and supports
- * arbitrary nesting depth.
+ *     The builder supports creating both json objects and arrays, with automatic
+ *     context tracking to ensure operations are valid for the current structure type.
+ *     It provides type-specific methods for adding common data types and supports
+ *     arbitrary nesting depth.
  * </p>
  *
- * <h3>Usage Examples:</h3>
+ * <p>
+ *     Usage Examples:
+ * </p>
  * <pre>{@code
  * // Simple object
  * JsonObject user = JsonBuilder.object()
@@ -69,28 +71,9 @@ import java.util.*;
 public final class JsonBuilder {
 	
 	/**
-	 * Enumeration of builder contexts to track whether we're building an object or array.
-	 */
-	private enum BuilderContext {
-		OBJECT, ARRAY
-	}
-	
-	/**
-	 * Internal class to track nesting state.
-	 */
-	private record ContextFrame(@NotNull BuilderContext type, @NotNull JsonElement element) {
-		
-		private ContextFrame {
-			Objects.requireNonNull(type, "Context type must not be null");
-			Objects.requireNonNull(element, "Context element must not be null");
-		}
-	}
-	
-	/**
 	 * Stack to track nested contexts for proper structure building.
 	 */
 	private final Deque<ContextFrame> contextStack = new ArrayDeque<>();
-	
 	/**
 	 * The root element being built.
 	 */
@@ -774,8 +757,6 @@ public final class JsonBuilder {
 		return result;
 	}
 	
-	//region Utility methods
-	
 	/**
 	 * Returns the current nesting depth of the builder.<br>
 	 * A depth of 1 means we're at the root level, 2 means one level nested, etc.
@@ -794,6 +775,8 @@ public final class JsonBuilder {
 	public boolean isInObjectContext() {
 		return !this.contextStack.isEmpty() && this.getCurrentContext().type == BuilderContext.OBJECT;
 	}
+	
+	//region Utility methods
 	
 	/**
 	 * Checks if the builder is currently in an array context.
@@ -836,4 +819,22 @@ public final class JsonBuilder {
 		return this.root.toString(config);
 	}
 	//endregion
+	
+	/**
+	 * Enumeration of builder contexts to track whether we're building an object or array.
+	 */
+	private enum BuilderContext {
+		OBJECT, ARRAY
+	}
+	
+	/**
+	 * Internal class to track nesting state.
+	 */
+	private record ContextFrame(@NotNull BuilderContext type, @NotNull JsonElement element) {
+		
+		private ContextFrame {
+			Objects.requireNonNull(type, "Context type must not be null");
+			Objects.requireNonNull(element, "Context element must not be null");
+		}
+	}
 }

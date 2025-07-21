@@ -75,8 +75,7 @@ class EnumConstantTest {
 	
 	@Test
 	void constructorAcceptsBothNullNameAndValue() {
-		assertThrows(NullPointerException.class, 
-			() -> new EnumConstant<>(null, 0, null));
+		assertThrows(NullPointerException.class, () -> new EnumConstant<>(null, 0, null));
 	}
 	
 	@Test

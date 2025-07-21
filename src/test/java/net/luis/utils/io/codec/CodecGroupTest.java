@@ -38,10 +38,6 @@ import static org.junit.jupiter.api.Assertions.*;
  */
 class CodecGroupTest {
 	
-	private record TestObject(@NotNull String name, int value) {}
-	
-	private record TestObject2(@NotNull String text, double number, boolean flag) {}
-	
 	private static @NotNull CodecGroup<TestObject> createTestCodecGroup() {
 		List<ConfiguredCodec<?, TestObject>> codecs = List.of(
 			Codec.STRING.configure("name", TestObject::name),
@@ -357,4 +353,8 @@ class CodecGroupTest {
 		assertTrue(result.startsWith("GroupCodec["));
 		assertTrue(result.endsWith("]"));
 	}
+	
+	private record TestObject(@NotNull String name, int value) {}
+	
+	private record TestObject2(@NotNull String text, double number, boolean flag) {}
 }
