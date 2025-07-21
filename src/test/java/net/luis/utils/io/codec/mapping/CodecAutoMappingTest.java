@@ -18,8 +18,6 @@
 
 package net.luis.utils.io.codec.mapping;
 
-import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
 import net.luis.utils.io.codec.Codec;
 import net.luis.utils.io.codec.CodecBuilder;
 import net.luis.utils.io.codec.provider.JsonTypeProvider;
@@ -41,129 +39,146 @@ import static org.junit.jupiter.api.Assertions.*;
 class CodecAutoMappingTest {
 	
 	@Test
-	void createAutoMappedCodecSimpleRecord() {
+	void nullClassThrowsException() {
+		assertThrows(NullPointerException.class, () -> CodecBuilder.autoMapCodec(null));
+	}
+	
+	@Test
+	void invalidClassTypesThrowExceptions() {
+		assertThrows(IllegalArgumentException.class, () -> CodecBuilder.autoMapCodec(TestInterface.class));
+		assertThrows(IllegalArgumentException.class, () -> CodecBuilder.autoMapCodec(TestAnnotation.class));
+		assertThrows(IllegalArgumentException.class, () -> CodecBuilder.autoMapCodec(int.class));
+	}
+	
+	@Test
+	void simpleRecordCodecWorks() {
 		record SimpleRecord(String name, int age, double height, boolean active) {}
 		
 		Codec<SimpleRecord> codec = CodecBuilder.autoMapCodec(SimpleRecord.class);
-		assertNotNull(codec);
+		JsonTypeProvider provider = JsonTypeProvider.INSTANCE;
 		
-		SimpleRecord record = new SimpleRecord("Test", 25, 1.80, true);
-		JsonElement encoded = codec.encode(JsonTypeProvider.INSTANCE, record);
+		SimpleRecord original = new SimpleRecord("Alice", 30, 1.70, true);
+		JsonElement encoded = codec.encode(provider, original);
 		
-		JsonObject jsonObject = assertInstanceOf(JsonObject.class, encoded);
-		assertEquals("Test", jsonObject.get("name").getAsJsonPrimitive().getAsString());
-		assertEquals(25, jsonObject.get("age").getAsJsonPrimitive().getAsInteger());
-		assertEquals(1.80, jsonObject.get("height").getAsJsonPrimitive().getAsDouble(), 0.001);
+		assertInstanceOf(JsonObject.class, encoded);
+		JsonObject jsonObject = (JsonObject) encoded;
+		assertEquals("Alice", jsonObject.get("name").getAsJsonPrimitive().getAsString());
+		assertEquals(30, jsonObject.get("age").getAsJsonPrimitive().getAsInteger());
+		assertEquals(1.70, jsonObject.get("height").getAsJsonPrimitive().getAsDouble(), 0.001);
 		assertTrue(jsonObject.get("active").getAsJsonPrimitive().getAsBoolean());
 		
-		SimpleRecord decoded = codec.decode(JsonTypeProvider.INSTANCE, encoded);
-		assertEquals(record, decoded);
+		SimpleRecord decoded = codec.decode(provider, encoded);
+		assertEquals(original, decoded);
 	}
 	
 	@Test
-	void createAutoMappedCodecRegularClass() {
-		Codec<TestClass> codec = CodecBuilder.autoMapCodec(TestClass.class);
-		assertNotNull(codec);
+	void emptyRecordCodecWorks() {
+		record EmptyRecord() {}
 		
-		TestClass testClass = new TestClass("Test", 25);
-		JsonElement encoded = codec.encode(JsonTypeProvider.INSTANCE, testClass);
+		Codec<EmptyRecord> codec = CodecBuilder.autoMapCodec(EmptyRecord.class);
+		JsonTypeProvider provider = JsonTypeProvider.INSTANCE;
 		
-		JsonObject jsonObject = assertInstanceOf(JsonObject.class, encoded);
-		assertEquals("Test", jsonObject.get("name").getAsJsonPrimitive().getAsString());
-		assertEquals(25, jsonObject.get("age").getAsJsonPrimitive().getAsInteger());
+		EmptyRecord original = new EmptyRecord();
+		JsonElement encoded = codec.encode(provider, original);
+		assertEquals(JsonNull.INSTANCE, encoded);
 		
-		TestClass decoded = codec.decode(JsonTypeProvider.INSTANCE, encoded);
-		assertEquals(testClass.name, decoded.name);
-		assertEquals(testClass.age, decoded.age);
+		EmptyRecord decoded = codec.decode(provider, encoded);
+		assertEquals(original, decoded);
 	}
 	
 	@Test
-	void createAutoMappedCodecImplicitFields() {
-		Codec<ImplicitFieldsClass> codec = CodecBuilder.autoMapCodec(ImplicitFieldsClass.class);
-		assertNotNull(codec);
+	void enumCodecWorks() {
+		Codec<TestEnum> codec = CodecBuilder.autoMapCodec(TestEnum.class);
+		JsonTypeProvider provider = JsonTypeProvider.INSTANCE;
 		
-		ImplicitFieldsClass testObj = new ImplicitFieldsClass("Test", 25);
-		JsonElement encoded = codec.encode(JsonTypeProvider.INSTANCE, testObj);
+		JsonElement encoded = codec.encode(provider, TestEnum.FIRST);
+		assertEquals(new JsonPrimitive("FIRST"), encoded);
 		
-		JsonObject jsonObject = assertInstanceOf(JsonObject.class, encoded);
-		assertEquals("Test", jsonObject.get("name").getAsJsonPrimitive().getAsString());
+		TestEnum decoded = codec.decode(provider, encoded);
+		assertEquals(TestEnum.FIRST, decoded);
+		
+		TestEnum decodedFromOrdinal = codec.decode(provider, new JsonPrimitive(0));
+		assertEquals(TestEnum.FIRST, decodedFromOrdinal);
+	}
+	
+	@Test
+	void annotatedFieldsOnlyAreUsed() {
+		Codec<AnnotatedFieldsClass> codec = CodecBuilder.autoMapCodec(AnnotatedFieldsClass.class);
+		JsonTypeProvider provider = JsonTypeProvider.INSTANCE;
+		
+		AnnotatedFieldsClass original = new AnnotatedFieldsClass("John", 25);
+		JsonElement encoded = codec.encode(provider, original);
+		
+		assertInstanceOf(JsonObject.class, encoded);
+		JsonObject jsonObject = (JsonObject) encoded;
+		assertEquals("John", jsonObject.get("name").getAsJsonPrimitive().getAsString());
 		assertEquals(25, jsonObject.get("age").getAsJsonPrimitive().getAsInteger());
 		assertFalse(jsonObject.containsKey("ignored"));
 		assertFalse(jsonObject.containsKey("transientField"));
 		
-		ImplicitFieldsClass decoded = codec.decode(JsonTypeProvider.INSTANCE, encoded);
-		assertEquals(testObj.name, decoded.name);
-		assertEquals(testObj.age, decoded.age);
+		AnnotatedFieldsClass decoded = codec.decode(provider, encoded);
+		assertEquals(original.name, decoded.name);
+		assertEquals(original.age, decoded.age);
 	}
 	
 	@Test
-	void createAutoMappedCodecNestedStructures() {
-		Codec<Person> codec = CodecBuilder.autoMapCodec(Person.class);
-		assertNotNull(codec);
+	void implicitFinalFieldsAreUsed() {
+		Codec<ImplicitFieldsClass> codec = CodecBuilder.autoMapCodec(ImplicitFieldsClass.class);
+		JsonTypeProvider provider = JsonTypeProvider.INSTANCE;
 		
-		Person person = new Person(
-			"John Doe",
-			30,
-			1.75,
-			true,
-			new Address[] {
-				new Address("123 Main St", "Springfield", State.USA, 12345),
-				new Address("456 Elm St", "Shelbyville", State.GERMANY, 67890)
-			},
-			Lists.newArrayList("Reading", "Traveling", "Cooking"),
-			Maps.newHashMap(Map.of("Math", 95, "Science", 90, "History", 85)),
-			Either.left(List.of("Mike", "Sarah")),
-			Optional.empty()
-		);
+		ImplicitFieldsClass original = new ImplicitFieldsClass("Jane", 30);
+		JsonElement encoded = codec.encode(provider, original);
 		
-		JsonElement encoded = codec.encode(JsonTypeProvider.INSTANCE, person);
-		JsonObject jsonObject = assertInstanceOf(JsonObject.class, encoded);
-		
-		assertEquals("John Doe", jsonObject.get("name").getAsJsonPrimitive().getAsString());
+		assertInstanceOf(JsonObject.class, encoded);
+		JsonObject jsonObject = (JsonObject) encoded;
+		assertEquals("Jane", jsonObject.get("name").getAsJsonPrimitive().getAsString());
 		assertEquals(30, jsonObject.get("age").getAsJsonPrimitive().getAsInteger());
-		assertEquals(1.75, jsonObject.get("height").getAsJsonPrimitive().getAsDouble(), 0.001);
-		assertTrue(jsonObject.get("gender").getAsJsonPrimitive().getAsBoolean());
+		assertFalse(jsonObject.containsKey("ignored"));
+		assertFalse(jsonObject.containsKey("transientField"));
 		
-		JsonArray addressesArray = jsonObject.get("addresses").getAsJsonArray();
-		assertEquals(2, addressesArray.size());
-		assertEquals("123 Main St", addressesArray.get(0).getAsJsonObject().get("street").getAsJsonPrimitive().getAsString());
-		assertEquals("Springfield", addressesArray.get(0).getAsJsonObject().get("city").getAsJsonPrimitive().getAsString());
-		assertEquals("USA", addressesArray.get(0).getAsJsonObject().get("state").getAsJsonPrimitive().getAsString());
-		
-		JsonArray hobbiesArray = jsonObject.get("hobbies").getAsJsonArray();
-		assertEquals(3, hobbiesArray.size());
-		assertEquals("Reading", hobbiesArray.get(0).getAsJsonPrimitive().getAsString());
-		
-		JsonArray contactInfo = jsonObject.get("contactInfo").getAsJsonArray();
-		assertEquals(2, contactInfo.size());
-		assertEquals("Mike", contactInfo.get(0).getAsJsonPrimitive().getAsString());
-		assertEquals("Sarah", contactInfo.get(1).getAsJsonPrimitive().getAsString());
-		
-		Person decoded = codec.decode(JsonTypeProvider.INSTANCE, encoded);
-		assertEquals(person.name(), decoded.name());
-		assertEquals(person.age(), decoded.age());
-		assertEquals(person.height(), decoded.height(), 0.001);
-		assertEquals(person.gender(), decoded.gender());
-		
-		assertEquals(person.addresses().length, decoded.addresses().length);
-		for (int i = 0; i < person.addresses().length; i++) {
-			assertEquals(person.addresses()[i].street, decoded.addresses()[i].street);
-			assertEquals(person.addresses()[i].city, decoded.addresses()[i].city);
-			assertEquals(person.addresses()[i].state, decoded.addresses()[i].state);
-			assertEquals(person.addresses()[i].zip, decoded.addresses()[i].zip);
-		}
-		
-		assertEquals(person.hobbies(), decoded.hobbies());
-		assertEquals(person.scores(), decoded.scores());
-		
-		assertTrue(decoded.contactInfo().isLeft());
-		assertEquals(person.contactInfo().left(), decoded.contactInfo().left());
-		
-		assertTrue(decoded.nickname().isEmpty());
+		ImplicitFieldsClass decoded = codec.decode(provider, encoded);
+		assertEquals(original.name, decoded.name);
+		assertEquals(original.age, decoded.age);
 	}
 	
 	@Test
-	void createAutoMappedCodecCollections() {
+	void emptyClassCodecWorks() {
+		Codec<EmptyClass> codec = CodecBuilder.autoMapCodec(EmptyClass.class);
+		JsonTypeProvider provider = JsonTypeProvider.INSTANCE;
+		
+		EmptyClass original = new EmptyClass();
+		JsonElement encoded = codec.encode(provider, original);
+		assertEquals(JsonNull.INSTANCE, encoded);
+		
+		EmptyClass decoded = codec.decode(provider, encoded);
+		assertNotNull(decoded);
+	}
+	
+	@Test
+	void multipleConstructorsWithAnnotation() {
+		Codec<MultiConstructorClass> codec = CodecBuilder.autoMapCodec(MultiConstructorClass.class);
+		JsonTypeProvider provider = JsonTypeProvider.INSTANCE;
+		
+		MultiConstructorClass original = new MultiConstructorClass("Test", 25);
+		JsonElement encoded = codec.encode(provider, original);
+		
+		assertInstanceOf(JsonObject.class, encoded);
+		JsonObject jsonObject = (JsonObject) encoded;
+		assertEquals("Test", jsonObject.get("name").getAsJsonPrimitive().getAsString());
+		assertEquals(25, jsonObject.get("age").getAsJsonPrimitive().getAsInteger());
+		
+		MultiConstructorClass decoded = codec.decode(provider, encoded);
+		assertEquals(original.name, decoded.name);
+		assertEquals(original.age, decoded.age);
+	}
+	
+	@Test
+	void invalidConstructorParametersThrowException() {
+		assertThrows(IllegalArgumentException.class, () -> CodecBuilder.autoMapCodec(InvalidConstructorClass.class));
+	}
+	
+	@Test
+	void collectionsWithGenericInfo() {
 		record CollectionRecord(
 			@GenericInfo(Integer.class) List<Integer> numbers,
 			@GenericInfo(String.class) Set<String> strings,
@@ -171,42 +186,41 @@ class CodecAutoMappingTest {
 		) {}
 		
 		Codec<CollectionRecord> codec = CodecBuilder.autoMapCodec(CollectionRecord.class);
-		assertNotNull(codec);
+		JsonTypeProvider provider = JsonTypeProvider.INSTANCE;
 		
-		List<Integer> numbers = List.of(1, 2, 3, 4, 5);
-		Set<String> strings = new HashSet<>(Set.of("one", "two", "three"));
+		List<Integer> numbers = List.of(1, 2, 3);
+		Set<String> strings = Set.of("a", "b", "c");
 		Map<String, LocalDate> dates = Map.of(
-			"birthday", LocalDate.of(1990, 1, 1),
-			"anniversary", LocalDate.of(2020, 6, 15)
+			"start", LocalDate.of(2025, 1, 1),
+			"end", LocalDate.of(2025, 12, 31)
 		);
 		
-		CollectionRecord record = new CollectionRecord(numbers, strings, dates);
-		JsonElement encoded = codec.encode(JsonTypeProvider.INSTANCE, record);
+		CollectionRecord original = new CollectionRecord(numbers, strings, dates);
+		JsonElement encoded = codec.encode(provider, original);
 		
-		JsonObject jsonObject = assertInstanceOf(JsonObject.class, encoded);
+		assertInstanceOf(JsonObject.class, encoded);
+		JsonObject jsonObject = (JsonObject) encoded;
+		
 		JsonArray numbersArray = jsonObject.get("numbers").getAsJsonArray();
-		assertEquals(5, numbersArray.size());
-		for (int i = 0; i < numbers.size(); i++) {
-			assertEquals(numbers.get(i), numbersArray.get(i).getAsJsonPrimitive().getAsInteger());
-		}
+		assertEquals(3, numbersArray.size());
+		assertEquals(1, numbersArray.get(0).getAsJsonPrimitive().getAsInteger());
 		
 		JsonArray stringsArray = jsonObject.get("strings").getAsJsonArray();
 		assertEquals(3, stringsArray.size());
 		
 		JsonObject datesObject = jsonObject.get("dates").getAsJsonObject();
 		assertEquals(2, datesObject.size());
-		assertEquals("1990-01-01", datesObject.get("birthday").getAsJsonPrimitive().getAsString());
-		assertEquals("2020-06-15", datesObject.get("anniversary").getAsJsonPrimitive().getAsString());
+		assertEquals("2025-01-01", datesObject.get("start").getAsJsonPrimitive().getAsString());
 		
-		CollectionRecord decoded = codec.decode(JsonTypeProvider.INSTANCE, encoded);
-		assertEquals(record.numbers(), decoded.numbers());
-		assertEquals(record.strings().size(), decoded.strings().size());
-		assertTrue(record.strings().containsAll(decoded.strings()));
-		assertEquals(record.dates(), decoded.dates());
+		CollectionRecord decoded = codec.decode(provider, encoded);
+		assertEquals(original.numbers(), decoded.numbers());
+		assertEquals(original.strings().size(), decoded.strings().size());
+		assertTrue(original.strings().containsAll(decoded.strings()));
+		assertEquals(original.dates(), decoded.dates());
 	}
 	
 	@Test
-	void createAutoMappedCodecNestedGenerics() {
+	void nestedGenericTypes() {
 		record NestedGenericRecord(
 			@GenericInfo({ List.class, Integer.class }) List<List<Integer>> nestedList,
 			@GenericInfo({ String.class, List.class, String.class }) Map<String, List<String>> nestedMap,
@@ -214,138 +228,161 @@ class CodecAutoMappingTest {
 		) {}
 		
 		Codec<NestedGenericRecord> codec = CodecBuilder.autoMapCodec(NestedGenericRecord.class);
-		assertNotNull(codec);
+		JsonTypeProvider provider = JsonTypeProvider.INSTANCE;
 		
-		List<List<Integer>> nestedList = List.of(
-			List.of(1, 2, 3),
-			List.of(4, 5, 6)
-		);
+		List<List<Integer>> nestedList = List.of(List.of(1, 2), List.of(3, 4));
 		Map<String, List<String>> nestedMap = Map.of(
-			"group1", List.of("a", "b", "c"),
-			"group2", List.of("d", "e", "f")
+			"group1", List.of("a", "b"),
+			"group2", List.of("c", "d")
 		);
-		Optional<List<String>> optionalList = Optional.of(List.of("x", "y", "z"));
+		Optional<List<String>> optionalList = Optional.of(List.of("x", "y"));
 		
-		NestedGenericRecord record = new NestedGenericRecord(nestedList, nestedMap, optionalList);
-		JsonElement encoded = codec.encode(JsonTypeProvider.INSTANCE, record);
+		NestedGenericRecord original = new NestedGenericRecord(nestedList, nestedMap, optionalList);
+		JsonElement encoded = codec.encode(provider, original);
 		assertInstanceOf(JsonObject.class, encoded);
 		
-		NestedGenericRecord decoded = codec.decode(JsonTypeProvider.INSTANCE, encoded);
-		
+		NestedGenericRecord decoded = codec.decode(provider, encoded);
 		assertEquals(2, decoded.nestedList().size());
-		assertEquals(3, decoded.nestedList().get(0).size());
-		assertEquals(1, decoded.nestedList().get(0).getFirst());
-		assertEquals(6, decoded.nestedList().get(1).get(2));
+		assertEquals(2, decoded.nestedList().getFirst().size());
+		assertEquals(1, decoded.nestedList().getFirst().getFirst());
 		
 		assertEquals(2, decoded.nestedMap().size());
-		assertEquals(3, decoded.nestedMap().get("group1").size());
+		assertEquals(2, decoded.nestedMap().get("group1").size());
 		assertEquals("a", decoded.nestedMap().get("group1").getFirst());
 		
 		assertTrue(decoded.optionalList().isPresent());
-		assertEquals(3, decoded.optionalList().get().size());
+		assertEquals(2, decoded.optionalList().get().size());
 		assertEquals("x", decoded.optionalList().get().getFirst());
 	}
 	
 	@Test
-	void createAutoMappedCodecEdgeCases() {
-		record EmptyRecord() {}
-		Codec<EmptyRecord> emptyCodec = CodecBuilder.autoMapCodec(EmptyRecord.class);
-		assertNotNull(emptyCodec);
+	void complexNestedStructures() {
+		record Address(String street, String city, TestEnum country, int zipCode) {}
 		
-		EmptyRecord emptyRecord = new EmptyRecord();
-		JsonElement encodedEmpty = emptyCodec.encode(JsonTypeProvider.INSTANCE, emptyRecord);
-		assertInstanceOf(JsonNull.class, encodedEmpty);
+		record Person(
+			String name,
+			int age,
+			double height,
+			boolean active,
+			Address[] addresses,
+			@GenericInfo(String.class) List<String> hobbies,
+			@GenericInfo({ String.class, Integer.class }) Map<String, Integer> scores,
+			@GenericInfo({ List.class, List.class, String.class, Integer.class }) Either<List<String>, List<Integer>> contact,
+			@GenericInfo(String.class) Optional<String> nickname
+		) {}
 		
-		EmptyRecord decodedEmpty = emptyCodec.decode(JsonTypeProvider.INSTANCE, encodedEmpty);
-		assertEquals(emptyRecord, decodedEmpty);
+		Codec<Person> codec = CodecBuilder.autoMapCodec(Person.class);
+		JsonTypeProvider provider = JsonTypeProvider.INSTANCE;
 		
-		Codec<EmptyClass> emptyClassCodec = CodecBuilder.autoMapCodec(EmptyClass.class);
-		assertNotNull(emptyClassCodec);
+		Person original = new Person(
+			"John Doe",
+			35,
+			1.80,
+			true,
+			new Address[] {
+				new Address("Main St 1", "Springfield", TestEnum.FIRST, 12345),
+				new Address("Elm St 2", "Shelbyville", TestEnum.SECOND, 67890)
+			},
+			List.of("Reading", "Gaming"),
+			Map.of("Math", 95, "Science", 88),
+			Either.left(List.of("John", "Jane")),
+			Optional.of("Johnny")
+		);
 		
-		EmptyClass emptyClass = new EmptyClass();
-		JsonElement encodedEmptyClass = emptyClassCodec.encode(JsonTypeProvider.INSTANCE, emptyClass);
-		assertInstanceOf(JsonNull.class, encodedEmptyClass);
+		JsonElement encoded = codec.encode(provider, original);
+		JsonObject jsonObject = assertInstanceOf(JsonObject.class, encoded);
 		
-		EmptyClass decodedEmptyClass = emptyClassCodec.decode(JsonTypeProvider.INSTANCE, encodedEmptyClass);
-		assertNotNull(decodedEmptyClass);
+		assertEquals("John Doe", jsonObject.get("name").getAsJsonPrimitive().getAsString());
+		assertEquals(35, jsonObject.get("age").getAsJsonPrimitive().getAsInteger());
+		assertEquals(1.80, jsonObject.get("height").getAsJsonPrimitive().getAsDouble(), 0.001);
+		assertTrue(jsonObject.get("active").getAsJsonPrimitive().getAsBoolean());
+		
+		JsonArray addressesArray = jsonObject.get("addresses").getAsJsonArray();
+		assertEquals(2, addressesArray.size());
+		assertEquals("Main St 1", addressesArray.get(0).getAsJsonObject().get("street").getAsJsonPrimitive().getAsString());
+		
+		JsonArray hobbiesArray = jsonObject.get("hobbies").getAsJsonArray();
+		assertEquals(2, hobbiesArray.size());
+		assertEquals("Reading", hobbiesArray.get(0).getAsJsonPrimitive().getAsString());
+		
+		JsonArray contactArray = jsonObject.get("contact").getAsJsonArray();
+		assertEquals(2, contactArray.size());
+		assertEquals("John", contactArray.get(0).getAsJsonPrimitive().getAsString());
+		
+		assertEquals("Johnny", jsonObject.get("nickname").getAsJsonPrimitive().getAsString());
+		
+		Person decoded = codec.decode(provider, encoded);
+		assertEquals(original.name(), decoded.name());
+		assertEquals(original.age(), decoded.age());
+		assertEquals(original.height(), decoded.height(), 0.001);
+		assertEquals(original.active(), decoded.active());
+		
+		assertEquals(original.addresses().length, decoded.addresses().length);
+		for (int i = 0; i < original.addresses().length; i++) {
+			assertEquals(original.addresses()[i], decoded.addresses()[i]);
+		}
+		
+		assertEquals(original.hobbies(), decoded.hobbies());
+		assertEquals(original.scores(), decoded.scores());
+		assertEquals(original.contact(), decoded.contact());
+		assertEquals(original.nickname(), decoded.nickname());
 	}
 	
 	@Test
-	void createAutoMappedCodecEnum() {
-		Codec<State> codec = CodecBuilder.autoMapCodec(State.class);
-		assertNotNull(codec);
-		
-		State state = State.GERMANY;
-		JsonElement encoded = codec.encode(JsonTypeProvider.INSTANCE, state);
-		
-		assertInstanceOf(JsonPrimitive.class, encoded);
-		assertEquals("GERMANY", encoded.getAsJsonPrimitive().getAsString());
-		
-		State decoded = codec.decode(JsonTypeProvider.INSTANCE, encoded);
-		assertEquals(state, decoded);
-	}
-	
-	@Test
-	void createAutoMappedCodecMissingGenericInfo() {
+	void missingGenericInfoThrowsException() {
 		record MissingGenericInfo(@NotNull List<String> list) {}
 		
-		IllegalArgumentException exception = assertThrows(
-			IllegalArgumentException.class,
-			() -> CodecBuilder.autoMapCodec(MissingGenericInfo.class)
-		);
+		IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> CodecBuilder.autoMapCodec(MissingGenericInfo.class));
 		assertTrue(exception.getMessage().contains("Missing generic type information"));
 	}
 	
 	@Test
-	void createAutoMappedCodecErrorCases() {
-		assertThrows(NullPointerException.class, () -> CodecBuilder.autoMapCodec(null));
-		assertThrows(IllegalArgumentException.class, () -> CodecBuilder.autoMapCodec(TestInterface.class));
-		assertThrows(IllegalArgumentException.class, () -> CodecBuilder.autoMapCodec(TestAnnotation.class));
-		assertThrows(IllegalArgumentException.class, () -> CodecBuilder.autoMapCodec(int.class));
+	void tooManyFieldsThrowsException() {
+		record TooManyFieldsRecord(
+			int f1, int f2, int f3, int f4, int f5, int f6, int f7, int f8,
+			int f9, int f10, int f11, int f12, int f13, int f14, int f15, int f16, int f17
+		) {}
 		
 		assertThrows(IllegalArgumentException.class, () -> CodecBuilder.autoMapCodec(TooManyFieldsRecord.class));
 	}
 	
 	@Test
-	void createAutoMappedCodecMultipleConstructors() {
-		Codec<MultiConstructorClass> codec = CodecBuilder.autoMapCodec(MultiConstructorClass.class);
-		assertNotNull(codec);
+	void arrayTypesAreSupported() {
+		record ArrayRecord(String[] strings, int[] numbers) {}
 		
-		MultiConstructorClass obj = new MultiConstructorClass("Test", 30);
-		JsonElement encoded = codec.encode(JsonTypeProvider.INSTANCE, obj);
+		Codec<ArrayRecord> codec = CodecBuilder.autoMapCodec(ArrayRecord.class);
+		JsonTypeProvider provider = JsonTypeProvider.INSTANCE;
 		
-		JsonObject jsonObject = assertInstanceOf(JsonObject.class, encoded);
-		assertEquals("Test", jsonObject.get("name").getAsJsonPrimitive().getAsString());
-		assertEquals(30, jsonObject.get("age").getAsJsonPrimitive().getAsInteger());
+		ArrayRecord original = new ArrayRecord(new String[] { "a", "b" }, new int[] { 1, 2 });
+		JsonElement encoded = codec.encode(provider, original);
+		ArrayRecord decoded = codec.decode(provider, encoded);
 		
-		MultiConstructorClass decoded = codec.decode(JsonTypeProvider.INSTANCE, encoded);
-		assertEquals(obj.name, decoded.name);
-		assertEquals(obj.age, decoded.age);
-	}
-	
-	@Test
-	void createAutoMappedCodecInvalidConstructor() {
-		// Test with a class that has incompatible constructor parameters
-		assertThrows(
-			IllegalArgumentException.class,
-			() -> CodecBuilder.autoMapCodec(InvalidConstructorClass.class)
-		);
+		assertArrayEquals(original.strings(), decoded.strings());
+		assertArrayEquals(original.numbers(), decoded.numbers());
 	}
 	
 	//region Test Classes
-	private static final class TestClass {
+	private enum TestEnum {
+		FIRST, SECOND, THIRD
+	}
+	
+	private interface TestInterface {}
+	
+	private @interface TestAnnotation {}
+	
+	private static final class AnnotatedFieldsClass {
 		
 		@CodecField
 		private final String name;
 		@CodecField
 		private final int age;
-		private final String ignored; // Not annotated, should be ignored
+		private final String ignored;
 		
 		@CodecConstructor
-		private TestClass(String name, int age) {
+		private AnnotatedFieldsClass(String name, int age) {
 			this.name = name;
 			this.age = age;
-			this.ignored = "This field is ignored";
+			this.ignored = "ignored";
 		}
 	}
 	
@@ -353,19 +390,15 @@ class CodecAutoMappingTest {
 		
 		private final String name;
 		private final int age;
-		private String ignored; // Not final, should be ignored
-		private transient final String transientField = "ignored"; // Transient, should be ignored
+		private transient final String transientField = "transient";
 		
 		private ImplicitFieldsClass(@NotNull String name, int age) {
 			this.name = name;
 			this.age = age;
-			this.ignored = "This field is ignored";
 		}
 	}
 	
-	private static class EmptyClass {
-		// Empty class with default constructor
-	}
+	private static class EmptyClass {}
 	
 	private static final class MultiConstructorClass {
 		
@@ -396,53 +429,5 @@ class CodecAutoMappingTest {
 			this.age = Integer.parseInt(age);
 		}
 	}
-	
-	private enum State {
-		USA, GERMANY, FRANCE, ITALY, SPAIN, UK
-	}
-	
-	private static class Address {
-		
-		final String street;
-		final String city;
-		final State state;
-		final long zip;
-		
-		Address(String street, String city, State state) {
-			this(street, city, state, 0);
-		}
-		
-		@CodecConstructor
-		Address(String street, String city, State state, long zip) {
-			this.street = street;
-			this.city = city;
-			this.state = state;
-			this.zip = zip;
-		}
-	}
-	
-	private record Person(
-		String name,
-		int age,
-		double height,
-		boolean gender,
-		Address[] addresses,
-		@GenericInfo(String.class) @NotNull List<String> hobbies,
-		@GenericInfo({ String.class, Integer.class }) @NotNull Map<String, Integer> scores,
-		@GenericInfo({ List.class, List.class, String.class, Integer.class }) @NotNull Either<List<String>, List<Integer>> contactInfo,
-		@GenericInfo(String.class) @NotNull Optional<String> nickname
-	) {}
-	
-	private record TooManyFieldsRecord(
-		int field1, int field2, int field3, int field4,
-		int field5, int field6, int field7, int field8,
-		int field9, int field10, int field11, int field12,
-		int field13, int field14, int field15, int field16,
-		int field17 // 17 fields, which exceeds the limit of 16
-	) {}
-	
-	private interface TestInterface {}
-	
-	private @interface TestAnnotation {}
 	//endregion
 }

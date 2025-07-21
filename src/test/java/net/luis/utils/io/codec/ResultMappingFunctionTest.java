@@ -31,24 +31,127 @@ import static org.junit.jupiter.api.Assertions.*;
 class ResultMappingFunctionTest {
 	
 	@Test
-	void direct() {
+	void directNullChecks() {
 		assertThrows(NullPointerException.class, () -> ResultMappingFunction.direct(null));
 	}
 	
 	@Test
-	void throwable() {
+	void directWithSuccessfulResult() {
+		ResultMappingFunction<String, Integer> function = ResultMappingFunction.direct(Integer::parseInt);
+		
+		Result<Integer> result = function.apply(Result.success("42"));
+		assertTrue(result.isSuccess());
+		assertEquals(42, result.orThrow());
+	}
+	
+	@Test
+	void directWithErrorResult() {
+		ResultMappingFunction<String, Integer> function = ResultMappingFunction.direct(Integer::parseInt);
+		
+		Result<Integer> result = function.apply(Result.error("parse error"));
+		assertTrue(result.isError());
+		assertEquals("parse error", result.errorOrThrow());
+	}
+	
+	@Test
+	void directWithFunctionThrowingException() {
+		ResultMappingFunction<String, Integer> function = ResultMappingFunction.direct(s -> {
+			if ("invalid".equals(s)) {
+				throw new NumberFormatException("Invalid number");
+			}
+			return Integer.parseInt(s);
+		});
+		
+		assertThrows(NumberFormatException.class, () -> function.apply(Result.success("invalid")));
+	}
+	
+	@Test
+	void directWithNullResult() {
+		ResultMappingFunction<String, String> function = ResultMappingFunction.direct(s -> null);
+		
+		Result<String> result = function.apply(Result.success("test"));
+		assertTrue(result.isSuccess());
+		assertNull(result.orThrow());
+	}
+	
+	@Test
+	void throwableNullChecks() {
 		assertThrows(NullPointerException.class, () -> ResultMappingFunction.throwable(null));
 	}
 	
 	@Test
-	void apply() {
+	void throwableWithSuccessfulResult() {
+		ResultMappingFunction<String, Integer> function = ResultMappingFunction.throwable(Integer::parseInt);
+		
+		Result<Integer> result = function.apply(Result.success("42"));
+		assertTrue(result.isSuccess());
+		assertEquals(42, result.orThrow());
+	}
+	
+	@Test
+	void throwableWithErrorResult() {
+		ResultMappingFunction<String, Integer> function = ResultMappingFunction.throwable(Integer::parseInt);
+		
+		Result<Integer> result = function.apply(Result.error("parse error"));
+		assertTrue(result.isError());
+		assertEquals("parse error", result.errorOrThrow());
+	}
+	
+	@Test
+	void throwableWithFunctionThrowingException() {
+		ResultMappingFunction<String, Integer> function = ResultMappingFunction.throwable(s -> {
+			throw new NumberFormatException("Invalid number: " + s);
+		});
+		
+		Result<Integer> result = function.apply(Result.success("invalid"));
+		assertTrue(result.isError());
+		assertEquals("Invalid number: invalid", result.errorOrThrow());
+	}
+	
+	@Test
+	void throwableWithFunctionThrowingNullPointerException() {
+		ResultMappingFunction<String, Integer> function = ResultMappingFunction.throwable(s -> {
+			throw new NullPointerException();
+		});
+		
+		Result<Integer> result = function.apply(Result.success("test"));
+		assertTrue(result.isError());
+		assertEquals("Unknown error, no message provided", result.errorOrThrow());
+	}
+	
+	@Test
+	void throwableWithNullResult() {
+		ResultMappingFunction<String, String> function = ResultMappingFunction.throwable(s -> null);
+		
+		Result<String> result = function.apply(Result.success("test"));
+		assertTrue(result.isSuccess());
+		assertNull(result.orThrow());
+	}
+	
+	@Test
+	void applyNullChecks() {
 		ResultMappingFunction<String, Integer> function = ResultMappingFunction.direct(Integer::parseInt);
 		
-		Result<Integer> success = function.apply(Result.success("1"));
-		assertTrue(success.isSuccess());
-		assertEquals(1, success.orThrow());
+		assertThrows(NullPointerException.class, () -> function.apply(null));
+	}
+	
+	@Test
+	void composingResultMappingFunctions() {
+		ResultMappingFunction<String, Integer> parseInt = ResultMappingFunction.direct(Integer::parseInt);
+		ResultMappingFunction<Integer, String> toString = ResultMappingFunction.direct(Object::toString);
 		
-		Result<Integer> error = function.apply(Result.error("error"));
-		assertTrue(error.isError());
+		Result<String> result = toString.apply(parseInt.apply(Result.success("42")));
+		assertTrue(result.isSuccess());
+		assertEquals("42", result.orThrow());
+	}
+	
+	@Test
+	void composingWithErrorPropagation() {
+		ResultMappingFunction<String, Integer> parseInt = ResultMappingFunction.direct(Integer::parseInt);
+		ResultMappingFunction<Integer, String> toString = ResultMappingFunction.direct(Object::toString);
+		
+		Result<String> result = toString.apply(parseInt.apply(Result.error("initial error")));
+		assertTrue(result.isError());
+		assertEquals("initial error", result.errorOrThrow());
 	}
 }

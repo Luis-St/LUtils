@@ -33,53 +33,149 @@ import static org.junit.jupiter.api.Assertions.*;
  */
 class OutputProviderTest {
 	
-	//region Setup
+	//region Setup and Cleanup
 	@BeforeAll
-	static void setUpBefore() throws Exception {
-		File folder = new File("OutputProvider/OutputProvider.json");
-		Files.createDirectory(new File("OutputProvider/").toPath());
-		Files.createFile(folder.toPath());
+	static void setUp() throws Exception {
+		Files.createDirectories(Path.of("OutputProvider"));
+		Files.createFile(Path.of("OutputProvider/OutputProvider.json"));
 	}
-	//endregion
 	
-	//region Cleanup
 	@AfterAll
-	static void cleanUpAfter() throws Exception {
+	static void tearDown() throws Exception {
 		Files.deleteIfExists(Path.of("OutputProvider/OutputProvider.json"));
-		Files.deleteIfExists(Path.of("OutputProvider/"));
+		Files.deleteIfExists(Path.of("OutputProvider"));
 	}
 	//endregion
 	
 	@Test
-	void constructor() throws Exception {
+	void constructorWithStringPath() {
 		assertThrows(NullPointerException.class, () -> new OutputProvider((String) null));
 		assertThrows(UncheckedIOException.class, () -> new OutputProvider("OutputProvider/"));
-		assertDoesNotThrow(() -> new OutputProvider("OutputProvider/OutputProvider.json")).close();
 		
-		assertThrows(NullPointerException.class, () -> new OutputProvider(null, "OutputProvider.json"));
-		assertThrows(NullPointerException.class, () -> new OutputProvider("OutputProvider", null));
+		try (OutputProvider provider = new OutputProvider("OutputProvider/OutputProvider.json")) {
+			assertNotNull(provider.getStream());
+		} catch (IOException e) {
+			fail("Should not throw IOException for valid path");
+		}
+		
+		try (OutputProvider provider = new OutputProvider("OutputProvider/new_file.json")) {
+			assertNotNull(provider.getStream());
+		} catch (IOException e) {
+			fail("Should not throw IOException for valid path");
+		} finally {
+			try {
+				Files.deleteIfExists(Path.of("OutputProvider/new_file.json"));
+			} catch (IOException e) {
+				fail("Should not throw IOException when deleting test file");
+			}
+		}
+	}
+	
+	@Test
+	void constructorWithPathAndFileName() {
+		assertThrows(NullPointerException.class, () -> new OutputProvider(null, "file.json"));
+		assertThrows(NullPointerException.class, () -> new OutputProvider("path", null));
+		assertThrows(NullPointerException.class, () -> new OutputProvider(null, null));
+		
 		assertThrows(UncheckedIOException.class, () -> new OutputProvider("OutputProvider", ""));
-		assertDoesNotThrow(() -> new OutputProvider("OutputProvider", "OutputProvider.json")).close();
+		assertThrows(UncheckedIOException.class, () -> new OutputProvider("nonexistent", "file.json"));
 		
+		try (OutputProvider provider = new OutputProvider("OutputProvider", "OutputProvider.json")) {
+			assertNotNull(provider.getStream());
+		} catch (IOException e) {
+			fail("Should not throw IOException for valid path and file name");
+		}
+	}
+	
+	@Test
+	void constructorWithNioPath() {
 		assertThrows(NullPointerException.class, () -> new OutputProvider((Path) null));
 		assertThrows(UncheckedIOException.class, () -> new OutputProvider(Path.of("OutputProvider/")));
-		assertDoesNotThrow(() -> new InputProvider(Path.of("OutputProvider/OutputProvider.json"))).close();
 		
+		try (OutputProvider provider = new OutputProvider(Path.of("OutputProvider/OutputProvider.json"))) {
+			assertNotNull(provider.getStream());
+		} catch (IOException e) {
+			fail("Should not throw IOException for valid path");
+		}
+	}
+	
+	@Test
+	void constructorWithFile() {
 		assertThrows(NullPointerException.class, () -> new OutputProvider((File) null));
 		assertThrows(UncheckedIOException.class, () -> new OutputProvider(new File("OutputProvider/")));
-		assertDoesNotThrow(() -> new OutputProvider(new File("OutputProvider/OutputProvider.json"))).close();
 		
+		try (OutputProvider provider = new OutputProvider(new File("OutputProvider/OutputProvider.json"))) {
+			assertNotNull(provider.getStream());
+		} catch (IOException e) {
+			fail("Should not throw IOException for valid file");
+		}
+	}
+	
+	@Test
+	void constructorWithOutputStream() {
 		assertThrows(NullPointerException.class, () -> new OutputProvider((OutputStream) null));
-		assertDoesNotThrow(() -> new OutputProvider(new FileOutputStream("OutputProvider/OutputProvider.json"))).close();
+		
+		try (OutputProvider provider = new OutputProvider(OutputStream.nullOutputStream())) {
+			assertNotNull(provider.getStream());
+		} catch (IOException e) {
+			fail("Should not throw IOException for null output stream");
+		}
+		
+		try (ByteArrayOutputStream os = new ByteArrayOutputStream(); OutputProvider provider = new OutputProvider(os)) {
+			assertNotNull(provider.getStream());
+		} catch (IOException e) {
+			fail("Should not throw IOException for ByteArrayOutputStream");
+		}
+		
+		try (FileOutputStream fos = new FileOutputStream("OutputProvider/OutputProvider.json");
+			 OutputProvider provider3 = new OutputProvider(fos)) {
+			assertNotNull(provider3.getStream());
+		} catch (IOException e) {
+			fail("Should not throw IOException for valid file");
+		}
 	}
 	
 	@Test
-	void getStream() {
-		assertNotNull(new OutputProvider(OutputStream.nullOutputStream()).getStream());
+	void getStreamReturnsCorrectStream() {
+		try (OutputProvider provider = new OutputProvider(OutputStream.nullOutputStream())) {
+			OutputStream stream = provider.getStream();
+			assertNotNull(stream);
+			assertSame(stream, provider.getStream());
+		} catch (IOException e) {
+			fail("Should not throw IOException for null output stream");
+		}
 	}
 	
 	@Test
-	void close() {
-		assertDoesNotThrow(() -> new OutputProvider(OutputStream.nullOutputStream()).close());
+	void closeClosesUnderlyingStream() {
+		ByteArrayOutputStream mockStream = new ByteArrayOutputStream();
+		OutputProvider provider = new OutputProvider(mockStream);
+		
+		try {
+			provider.close();
+		} catch (IOException e) {
+			fail("Should not throw IOException when closing provider");
+		}
+	}
+	
+	@Test
+	void multipleCloseCallsAreSafe() {
+		OutputProvider provider = new OutputProvider(OutputStream.nullOutputStream());
+		
+		assertDoesNotThrow(provider::close);
+		assertDoesNotThrow(provider::close);
+		assertDoesNotThrow(provider::close);
+	}
+	
+	@Test
+	void streamCanWriteData() throws IOException {
+		ByteArrayOutputStream os = new ByteArrayOutputStream();
+		try (OutputProvider provider = new OutputProvider(os)) {
+			OutputStream stream = provider.getStream();
+			stream.write("test data".getBytes());
+			stream.flush();
+		}
+		
+		assertEquals("test data", os.toString());
 	}
 }

@@ -188,7 +188,11 @@ public class XmlReader implements AutoCloseable {
 			Charset charset = declarationAttributes.containsKey("encoding") ? Charset.forName(declarationAttributes.get("encoding")) : this.config.charset();
 			boolean standalone = declarationAttributes.containsKey("standalone") && "yes".equalsIgnoreCase(declarationAttributes.get("standalone"));
 			this.readDeclaration = true;
-			return new XmlDeclaration(version, charset, standalone);
+			try {
+				return new XmlDeclaration(version, charset, standalone);
+			} catch (IllegalArgumentException e) {
+				throw new XmlSyntaxException("Invalid xml declaration: " + e.getMessage(), e);
+			}
 		} catch (InvalidStringException e) {
 			throw new XmlSyntaxException("Error while parsing xml declaration", e);
 		}
@@ -281,7 +285,7 @@ public class XmlReader implements AutoCloseable {
 			if (content.contains("<")) {
 				return new XmlContainer(name, attributes, this.readeXmlElements(new ScopedStringReader(content)));
 			}
-			return new XmlValue(name, attributes, content.strip());
+			return new XmlValue(name, attributes, XmlHelper.unescapeXml(content.strip()));
 		} catch (InvalidStringException e) {
 			throw new XmlSyntaxException("Error while parsing xml element", e);
 		}

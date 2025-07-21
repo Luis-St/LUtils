@@ -18,14 +18,15 @@
 
 package net.luis.utils.io.token.rule.rules;
 
-import net.luis.utils.io.token.definition.TokenDefinition;
 import net.luis.utils.io.token.rule.TokenRuleMatch;
 import net.luis.utils.io.token.tokens.SimpleToken;
 import net.luis.utils.io.token.tokens.Token;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.junit.jupiter.api.Test;
 
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
+import java.util.stream.IntStream;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -36,80 +37,338 @@ import static org.junit.jupiter.api.Assertions.*;
  */
 class RepeatedTokenRuleTest {
 	
-	private static final TokenDefinition NUMBER_DEFINITION = (word) -> word.matches("\\d+");
-	private static final Token NUMBER_TOKEN = SimpleToken.createUnpositioned(NUMBER_DEFINITION, "123");
-	private static final Token STRING_TOKEN = SimpleToken.createUnpositioned("test"::equals, "test");
+	private static @NotNull TokenRule createRule(@NotNull String value) {
+		return new TokenRule() {
+			@Override
+			public @Nullable TokenRuleMatch match(@NotNull List<Token> tokens, int startIndex) {
+				Objects.requireNonNull(tokens, "Tokens list must not be null");
+				if (startIndex >= tokens.size() || startIndex < 0) {
+					return null;
+				}
+				
+				Token token = tokens.get(startIndex);
+				if (token.value().equals(value)) {
+					return new TokenRuleMatch(startIndex, startIndex + 1, List.of(token), this);
+				}
+				return null;
+			}
+		};
+	}
+	
+	private static @NotNull Token createToken(@NotNull String value) {
+		return SimpleToken.createUnpositioned(word -> word.equals(value), value);
+	}
 	
 	@Test
-	void constructor() {
+	void constructorWithNullTokenRule() {
 		assertThrows(NullPointerException.class, () -> new RepeatedTokenRule(null, 1));
-		assertThrows(IllegalArgumentException.class, () -> new RepeatedTokenRule(NUMBER_DEFINITION, -1));
-		assertThrows(NullPointerException.class, () -> new RepeatedTokenRule(null, 1, 2));
-		assertThrows(IllegalArgumentException.class, () -> new RepeatedTokenRule(NUMBER_DEFINITION, -1, 2));
-		assertThrows(IllegalArgumentException.class, () -> new RepeatedTokenRule(NUMBER_DEFINITION, 3, 2));
-		assertThrows(IllegalArgumentException.class, () -> new RepeatedTokenRule(NUMBER_DEFINITION, 0, 0));
-		assertDoesNotThrow(() -> new RepeatedTokenRule(NUMBER_DEFINITION, 0, 2));
+		assertThrows(NullPointerException.class, () -> new RepeatedTokenRule(null, 1, 3));
 	}
 	
 	@Test
-	void tokenRule() {
-		assertSame(NUMBER_DEFINITION, new RepeatedTokenRule(NUMBER_DEFINITION, 0, 5).tokenRule());
-	}
-	
-	@Test
-	void minOccurrences() {
-		assertEquals(2, new RepeatedTokenRule(NUMBER_DEFINITION, 2, 5).minOccurrences());
-	}
-	
-	@Test
-	void maxOccurrences() {
-		assertEquals(4, new RepeatedTokenRule(NUMBER_DEFINITION, 1, 4).maxOccurrences());
-	}
-	
-	@Test
-	void match() {
-		RepeatedTokenRule repeatedRule = new RepeatedTokenRule(NUMBER_DEFINITION, 2, 3);
-		assertThrows(NullPointerException.class, () -> repeatedRule.match(null, 0));
-		assertNull(repeatedRule.match(Collections.emptyList(), 0));
-		assertNull(repeatedRule.match(List.of(STRING_TOKEN, STRING_TOKEN), 0));
-		assertNull(repeatedRule.match(List.of(NUMBER_TOKEN, NUMBER_TOKEN, NUMBER_TOKEN), 5));
+	void constructorWithNegativeOccurrences() {
+		TokenRule rule = createRule("test");
 		
-		List<Token> tokens0 = List.of(NUMBER_TOKEN, NUMBER_TOKEN, STRING_TOKEN);
-		TokenRuleMatch match0 = repeatedRule.match(tokens0, 0);
-		assertNotNull(match0);
-		assertEquals(0, match0.startIndex());
-		assertEquals(2, match0.endIndex());
-		assertEquals(2, match0.matchedTokens().size());
-		assertEquals(NUMBER_TOKEN, match0.matchedTokens().getFirst());
-		assertEquals(NUMBER_TOKEN, match0.matchedTokens().getLast());
+		assertThrows(IllegalArgumentException.class, () -> new RepeatedTokenRule(rule, -1));
+		assertThrows(IllegalArgumentException.class, () -> new RepeatedTokenRule(rule, -1, 3));
+		assertThrows(IllegalArgumentException.class, () -> new RepeatedTokenRule(rule, 1, -1));
+	}
+	
+	@Test
+	void constructorWithInvalidRange() {
+		TokenRule rule = createRule("test");
 		
-		List<Token> tokens1 = List.of(NUMBER_TOKEN, NUMBER_TOKEN, NUMBER_TOKEN, STRING_TOKEN);
-		TokenRuleMatch match1 = repeatedRule.match(tokens1, 0);
+		assertThrows(IllegalArgumentException.class, () -> new RepeatedTokenRule(rule, 5, 3));
+		assertThrows(IllegalArgumentException.class, () -> new RepeatedTokenRule(rule, 10, 5));
+	}
+	
+	@Test
+	void constructorWithZeroMaxOccurrences() {
+		TokenRule rule = createRule("test");
+		
+		assertThrows(IllegalArgumentException.class, () -> new RepeatedTokenRule(rule, 0, 0));
+	}
+	
+	@Test
+	void constructorWithValidParameters() {
+		TokenRule rule = createRule("test");
+		
+		assertDoesNotThrow(() -> new RepeatedTokenRule(rule, 0, 1));
+		assertDoesNotThrow(() -> new RepeatedTokenRule(rule, 1, 3));
+		assertDoesNotThrow(() -> new RepeatedTokenRule(rule, 5));
+		assertDoesNotThrow(() -> new RepeatedTokenRule(rule, 0, Integer.MAX_VALUE));
+	}
+	
+	@Test
+	void tokenRuleReturnsCorrectValue() {
+		TokenRule rule = createRule("test");
+		RepeatedTokenRule repeated = new RepeatedTokenRule(rule, 1, 3);
+		
+		assertSame(rule, repeated.tokenRule());
+	}
+	
+	@Test
+	void minOccurrencesReturnsCorrectValue() {
+		TokenRule rule = createRule("test");
+		
+		assertEquals(0, new RepeatedTokenRule(rule, 0, 5).minOccurrences());
+		assertEquals(2, new RepeatedTokenRule(rule, 2, 5).minOccurrences());
+		assertEquals(7, new RepeatedTokenRule(rule, 7).minOccurrences());
+	}
+	
+	@Test
+	void maxOccurrencesReturnsCorrectValue() {
+		TokenRule rule = createRule("test");
+		
+		assertEquals(5, new RepeatedTokenRule(rule, 0, 5).maxOccurrences());
+		assertEquals(3, new RepeatedTokenRule(rule, 1, 3).maxOccurrences());
+		assertEquals(7, new RepeatedTokenRule(rule, 7).maxOccurrences());
+	}
+	
+	@Test
+	void matchWithNullTokenList() {
+		RepeatedTokenRule rule = new RepeatedTokenRule(createRule("test"), 1, 3);
+		
+		assertThrows(NullPointerException.class, () -> rule.match(null, 0));
+	}
+	
+	@Test
+	void matchWithEmptyTokenList() {
+		RepeatedTokenRule rule = new RepeatedTokenRule(createRule("test"), 1, 3);
+		
+		assertNull(rule.match(Collections.emptyList(), 0));
+	}
+	
+	@Test
+	void matchWithIndexOutOfBounds() {
+		RepeatedTokenRule rule = new RepeatedTokenRule(createRule("test"), 1, 3);
+		List<Token> tokens = List.of(createToken("test"));
+		
+		assertNull(rule.match(tokens, 1));
+		assertNull(rule.match(tokens, 5));
+		assertNull(rule.match(tokens, -1));
+	}
+	
+	@Test
+	void matchWithExactOccurrences() {
+		RepeatedTokenRule rule = new RepeatedTokenRule(createRule("x"), 3);
+		List<Token> exactTokens = List.of(createToken("x"), createToken("x"), createToken("x"));
+		List<Token> insufficientTokens = List.of(createToken("x"), createToken("x"));
+		List<Token> excessiveTokens = List.of(createToken("x"), createToken("x"), createToken("x"), createToken("x"));
+		
+		TokenRuleMatch exactMatch = rule.match(exactTokens, 0);
+		assertNotNull(exactMatch);
+		assertEquals(0, exactMatch.startIndex());
+		assertEquals(3, exactMatch.endIndex());
+		assertEquals(3, exactMatch.matchedTokens().size());
+		
+		assertNull(rule.match(insufficientTokens, 0));
+		
+		assertNull(rule.match(excessiveTokens, 0));
+		
+		TokenRuleMatch excessiveWithOffsetMatch = rule.match(excessiveTokens, 1);
+		assertNotNull(excessiveWithOffsetMatch);
+		assertEquals(1, excessiveWithOffsetMatch.startIndex());
+		assertEquals(4, excessiveWithOffsetMatch.endIndex());
+		assertEquals(3, excessiveWithOffsetMatch.matchedTokens().size());
+	}
+	
+	@Test
+	void matchWithMinimumOccurrences() {
+		RepeatedTokenRule rule = new RepeatedTokenRule(createRule("a"), 2, 5);
+		
+		List<Token> tooFew = List.of(createToken("a"));
+		assertNull(rule.match(tooFew, 0));
+		
+		List<Token> atMin = List.of(createToken("a"), createToken("a"));
+		TokenRuleMatch minMatch = rule.match(atMin, 0);
+		assertNotNull(minMatch);
+		assertEquals(2, minMatch.matchedTokens().size());
+		
+		List<Token> aboveMin = List.of(createToken("a"), createToken("a"), createToken("a"));
+		TokenRuleMatch aboveMatch = rule.match(aboveMin, 0);
+		assertNotNull(aboveMatch);
+		assertEquals(3, aboveMatch.matchedTokens().size());
+	}
+	
+	@Test
+	void matchWithMaximumOccurrences() {
+		RepeatedTokenRule rule = new RepeatedTokenRule(createRule("b"), 1, 3);
+		
+		List<Token> atMax = List.of(createToken("b"), createToken("b"), createToken("b"));
+		TokenRuleMatch maxMatch = rule.match(atMax, 0);
+		assertNotNull(maxMatch);
+		assertEquals(3, maxMatch.matchedTokens().size());
+		
+		List<Token> aboveMax = List.of(createToken("b"), createToken("b"), createToken("b"), createToken("b"), createToken("b"));
+		assertNull(rule.match(aboveMax, 0));
+	}
+	
+	@Test
+	void matchWithZeroMinimumOccurrences() {
+		RepeatedTokenRule rule = new RepeatedTokenRule(createRule("optional"), 0, 2);
+		
+		List<Token> noMatch = List.of(createToken("other"));
+		TokenRuleMatch noMatchResult = rule.match(noMatch, 0);
+		assertNotNull(noMatchResult);
+		assertEquals(0, noMatchResult.startIndex());
+		assertEquals(0, noMatchResult.endIndex());
+		assertTrue(noMatchResult.matchedTokens().isEmpty());
+		
+		List<Token> oneMatch = List.of(createToken("optional"));
+		TokenRuleMatch oneMatchResult = rule.match(oneMatch, 0);
+		assertNotNull(oneMatchResult);
+		assertEquals(1, oneMatchResult.matchedTokens().size());
+		
+		List<Token> twoMatch = List.of(createToken("optional"), createToken("optional"));
+		TokenRuleMatch twoMatchResult = rule.match(twoMatch, 0);
+		assertNotNull(twoMatchResult);
+		assertEquals(2, twoMatchResult.matchedTokens().size());
+	}
+	
+	@Test
+	void matchWithMixedTokens() {
+		RepeatedTokenRule rule = new RepeatedTokenRule(createRule("target"), 2, 4);
+		List<Token> mixedTokens = List.of(
+			createToken("target"),
+			createToken("target"),
+			createToken("other"),
+			createToken("target")
+		);
+		
+		TokenRuleMatch match = rule.match(mixedTokens, 0);
+		
+		assertNotNull(match);
+		assertEquals(0, match.startIndex());
+		assertEquals(2, match.endIndex());
+		assertEquals(2, match.matchedTokens().size());
+		assertEquals("target", match.matchedTokens().get(0).value());
+		assertEquals("target", match.matchedTokens().get(1).value());
+	}
+	
+	@Test
+	void matchAtDifferentIndices() {
+		RepeatedTokenRule rule = new RepeatedTokenRule(createRule("repeat"), 1, 2);
+		List<Token> tokens = List.of(
+			createToken("other"),
+			createToken("repeat"),
+			createToken("repeat"),
+			createToken("different")
+		);
+		
+		TokenRuleMatch match = rule.match(tokens, 1);
+		
+		assertNotNull(match);
+		assertEquals(1, match.startIndex());
+		assertEquals(3, match.endIndex());
+		assertEquals(2, match.matchedTokens().size());
+	}
+	
+	@Test
+	void matchWithComplexInnerRule() {
+		TokenRule numberRule = TokenRules.pattern("\\d+");
+		RepeatedTokenRule rule = new RepeatedTokenRule(numberRule, 2, 3);
+		List<Token> tokens = List.of(
+			createToken("123"),
+			createToken("456"),
+			createToken("abc"),
+			createToken("789")
+		);
+		
+		TokenRuleMatch match = rule.match(tokens, 0);
+		
+		assertNotNull(match);
+		assertEquals(2, match.matchedTokens().size());
+		assertEquals("123", match.matchedTokens().get(0).value());
+		assertEquals("456", match.matchedTokens().get(1).value());
+	}
+	
+	@Test
+	void matchWithAlwaysMatchRule() {
+		RepeatedTokenRule rule = new RepeatedTokenRule(TokenRules.alwaysMatch(), 2, 4);
+		List<Token> tokens = List.of(
+			createToken("any1"),
+			createToken("any2"),
+			createToken("any3"),
+			createToken("any4"),
+			createToken("any5")
+		);
+		
+		TokenRuleMatch match = rule.match(tokens, 0);
+		assertNull(match);
+	}
+	
+	@Test
+	void matchWithOptionalInnerRule() {
+		OptionalTokenRule optional = new OptionalTokenRule(createRule("maybe"));
+		RepeatedTokenRule rule = new RepeatedTokenRule(optional, 1, 3);
+		List<Token> tokens = List.of(createToken("maybe"), createToken("other"));
+		
+		TokenRuleMatch match = rule.match(tokens, 0);
+		assertNull(match);
+	}
+	
+	@Test
+	void matchWithUnlimitedMaximum() {
+		RepeatedTokenRule rule = new RepeatedTokenRule(createRule("unlimited"), 1, Integer.MAX_VALUE);
+		List<Token> manyTokens = IntStream.range(0, 1000).mapToObj(i -> createToken("unlimited")).toList();
+		
+		TokenRuleMatch match = rule.match(manyTokens, 0);
+		
+		assertNotNull(match);
+		assertEquals(1000, match.matchedTokens().size());
+	}
+	
+	@Test
+	void matchStopsAtFirstNonMatch() {
+		RepeatedTokenRule rule = new RepeatedTokenRule(createRule("good"), 1, 10);
+		List<Token> tokens = List.of(
+			createToken("good"),
+			createToken("good"),
+			createToken("bad"),
+			createToken("good")
+		);
+		
+		TokenRuleMatch match = rule.match(tokens, 0);
+		
+		assertNotNull(match);
+		assertEquals(2, match.matchedTokens().size());
+		assertEquals(2, match.endIndex());
+	}
+	
+	@Test
+	void matchWithInsufficientTokens() {
+		RepeatedTokenRule rule = new RepeatedTokenRule(createRule("need"), 5, 10);
+		List<Token> tokens = List.of(
+			createToken("need"),
+			createToken("need"),
+			createToken("need")
+		);
+		
+		assertNull(rule.match(tokens, 0));
+	}
+	
+	@Test
+	void matchConsistencyAcrossMultipleCalls() {
+		RepeatedTokenRule rule = new RepeatedTokenRule(createRule("test"), 2, 3);
+		List<Token> tokens = List.of(createToken("test"), createToken("test"), createToken("test"));
+		
+		TokenRuleMatch match1 = rule.match(tokens, 0);
+		TokenRuleMatch match2 = rule.match(tokens, 0);
+		
 		assertNotNull(match1);
-		assertEquals(0, match1.startIndex());
-		assertEquals(3, match1.endIndex());
-		assertEquals(3, match1.matchedTokens().size());
-		
-		List<Token> tokens2 = List.of(STRING_TOKEN, NUMBER_TOKEN, NUMBER_TOKEN, NUMBER_TOKEN);
-		TokenRuleMatch match2 = repeatedRule.match(tokens2, 1);
 		assertNotNull(match2);
-		assertEquals(1, match2.startIndex());
-		assertEquals(4, match2.endIndex());
-		assertEquals(3, match2.matchedTokens().size());
+		assertEquals(match1.startIndex(), match2.startIndex());
+		assertEquals(match1.endIndex(), match2.endIndex());
+		assertEquals(match1.matchedTokens().size(), match2.matchedTokens().size());
+	}
+	
+	@Test
+	void equalRulesHaveSameHashCode() {
+		TokenRule innerRule = createRule("test");
+		RepeatedTokenRule rule1 = new RepeatedTokenRule(innerRule, 2, 5);
+		RepeatedTokenRule rule2 = new RepeatedTokenRule(innerRule, 2, 5);
 		
-		List<Token> tokens3 = List.of(NUMBER_TOKEN, NUMBER_TOKEN, NUMBER_TOKEN, NUMBER_TOKEN, STRING_TOKEN);
-		TokenRuleMatch match3 = repeatedRule.match(tokens3, 1);
-		assertNotNull(match3);
-		assertEquals(1, match3.startIndex());
-		assertEquals(4, match3.endIndex());
-		assertEquals(3, match3.matchedTokens().size());
-		
-		RepeatedTokenRule zeroMinRule = new RepeatedTokenRule(NUMBER_DEFINITION, 0, 2);
-		List<Token> noMatchTokens = List.of(STRING_TOKEN, STRING_TOKEN);
-		TokenRuleMatch zeroMatch = zeroMinRule.match(noMatchTokens, 0);
-		assertNotNull(zeroMatch);
-		assertEquals(0, zeroMatch.startIndex());
-		assertEquals(0, zeroMatch.endIndex());
-		assertTrue(zeroMatch.matchedTokens().isEmpty());
+		assertEquals(rule1.hashCode(), rule2.hashCode());
 	}
 }

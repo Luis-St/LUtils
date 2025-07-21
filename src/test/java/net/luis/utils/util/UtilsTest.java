@@ -34,218 +34,371 @@ import static org.junit.jupiter.api.Assertions.*;
  */
 class UtilsTest {
 	
-	private static final Random RNG = new Random(0);
-	private static final Map<String, Integer> MAP = Maps.newHashMap(Map.of("0", 0, "1", 1, "2", 2, "3", 3, "4", 4));
-	private static final List<Integer> LIST = Lists.newArrayList(0, 1, 2, 3, 4);
-	private static final Integer[] ARRAY = { 0, 1, 2, 3, 4 };
-	private static final Integer[] EMPTY = {};
-	
 	@Test
-	void isEmpty() {
+	void isEmptyIdentifiesEmptyUUID() {
 		assertTrue(Utils.isEmpty(Utils.EMPTY_UUID));
 		assertTrue(Utils.isEmpty(UUID.fromString("00000000-0000-0000-0000-000000000000")));
 		assertFalse(Utils.isEmpty(UUID.randomUUID()));
+		assertFalse(Utils.isEmpty(UUID.fromString("550e8400-e29b-41d4-a716-446655440000")));
+	}
+	
+	@Test
+	void isEmptyHandlesNull() {
 		assertDoesNotThrow(() -> Utils.isEmpty(null));
+		assertFalse(Utils.isEmpty(null));
 	}
 	
 	@Test
-	void make() {
-		assertThrows(NullPointerException.class, () -> Utils.make(null, (list) -> {}));
+	void makeAppliesActionAndReturnsObject() {
+		List<Integer> list = Utils.make(Lists.newArrayList(), l -> l.add(42));
+		assertEquals(Lists.newArrayList(42), list);
+		
+		Map<String, Integer> map = Utils.make(Maps.newHashMap(), m -> m.put("key", 100));
+		assertEquals(Map.of("key", 100), map);
+	}
+	
+	@Test
+	void makeRejectsNullParameters() {
+		assertThrows(NullPointerException.class, () -> Utils.make(null, list -> {}));
 		assertThrows(NullPointerException.class, () -> Utils.make(Lists.newArrayList(), null));
-		assertEquals(Lists.newArrayList(0), Utils.make(Lists.newArrayList(), (list) -> list.add(0)));
 	}
 	
 	@Test
-	void mapToList() {
-		assertDoesNotThrow(() -> Utils.mapToList(null, null));
-		assertDoesNotThrow(() -> Utils.mapToList(null, (key, value) -> value));
-		assertDoesNotThrow(() -> Utils.mapToList(MAP, null));
+	void mapToListConvertsMapToList() {
+		Map<String, Integer> map = Map.of("0", 0, "1", 1, "2", 2);
+		List<Integer> result = Utils.mapToList(map, (key, value) -> value);
+		
+		assertEquals(3, result.size());
+		assertTrue(result.containsAll(List.of(0, 1, 2)));
+	}
+	
+	@Test
+	void mapToListHandlesNullInputs() {
 		assertEquals(Lists.newArrayList(), Utils.mapToList(null, null));
 		assertEquals(Lists.newArrayList(), Utils.mapToList(null, (key, value) -> value));
-		assertEquals(Lists.newArrayList(), Utils.mapToList(MAP, null));
-		assertEquals(LIST, Utils.mapToList(MAP, (key, value) -> value));
+		assertEquals(Lists.newArrayList(), Utils.mapToList(Map.of("a", 1), null));
+		assertEquals(Lists.newArrayList(), Utils.mapToList(Maps.newHashMap(), (key, value) -> value));
 	}
 	
 	@Test
-	void listToMap() {
-		assertDoesNotThrow(() -> Utils.listToMap(null, null));
-		assertDoesNotThrow(() -> Utils.listToMap(null, (value) -> new SimpleEntry<>(String.valueOf(value), value)));
-		assertDoesNotThrow(() -> Utils.listToMap(LIST, null));
-		assertEquals(Maps.newHashMap(), Utils.listToMap(null, null));
-		assertEquals(Maps.newHashMap(), Utils.listToMap(null, (value) -> new SimpleEntry<>(String.valueOf(value), value)));
-		assertEquals(Maps.newHashMap(), Utils.listToMap(Lists.newArrayList(), null));
-		assertEquals(MAP, Utils.listToMap(LIST, (value) -> new SimpleEntry<>(String.valueOf(value), value)));
-	}
-	
-	@Test
-	void mapList() {
-		assertDoesNotThrow(() -> Utils.mapList(null, null));
-		assertDoesNotThrow(() -> Utils.mapList(null, String::valueOf));
-		assertDoesNotThrow(() -> Utils.mapList(Lists.newArrayList(), null));
-		assertEquals(Lists.newArrayList(), Utils.mapList(null, null));
-		assertEquals(Lists.newArrayList(), Utils.mapList(null, String::valueOf));
-		assertEquals(Lists.newArrayList(), Utils.mapList(Lists.newArrayList(), null));
-		assertEquals(Lists.newArrayList("0", "1", "2", "3", "4"), Utils.mapList(LIST, String::valueOf));
+	void mapToListTransformsKeyValuePairs() {
+		Map<String, Integer> map = Map.of("hello", 5, "world", 5);
+		List<String> result = Utils.mapToList(map, (key, value) -> key + ":" + value);
 		
-		assertDoesNotThrow(() -> Utils.mapList(null, null, null));
-		assertDoesNotThrow(() -> Utils.mapList(null, String::valueOf, (value) -> value + "!"));
-		assertDoesNotThrow(() -> Utils.mapList(Lists.newArrayList(), null, (value) -> value + "!"));
-		assertDoesNotThrow(() -> Utils.mapList(Lists.newArrayList(), String::valueOf, null));
-		assertEquals(Lists.newArrayList(), Utils.mapList(null, null, null));
-		assertEquals(Lists.newArrayList(), Utils.mapList(null, String::valueOf, (value) -> value + "!"));
-		assertEquals(Lists.newArrayList(), Utils.mapList(Lists.newArrayList(), null, (value) -> value + "!"));
-		assertEquals(Lists.newArrayList(), Utils.mapList(Lists.newArrayList(), String::valueOf, null));
-		assertEquals(Lists.newArrayList(0, 2, 4), Utils.mapList(Lists.newArrayList("0", "1", "2"), Integer::parseInt, (value) -> value * 2));
+		assertEquals(2, result.size());
+		assertTrue(result.contains("hello:5"));
+		assertTrue(result.contains("world:5"));
 	}
 	
 	@Test
-	void mapKey() {
-		assertDoesNotThrow(() -> Utils.mapKey(null, null));
-		assertDoesNotThrow(() -> Utils.mapKey(null, Object::toString));
-		assertDoesNotThrow(() -> Utils.mapKey(Maps.newHashMap(), null));
+	void listToMapConvertsListToMap() {
+		List<Integer> list = List.of(0, 1, 2, 3, 4);
+		Map<String, Integer> result = Utils.listToMap(list, value -> new SimpleEntry<>(String.valueOf(value), value));
+		
+		assertEquals(Map.of("0", 0, "1", 1, "2", 2, "3", 3, "4", 4), result);
+	}
+	
+	@Test
+	void listToMapHandlesNullInputs() {
+		assertEquals(Maps.newHashMap(), Utils.listToMap(null, null));
+		assertEquals(Maps.newHashMap(), Utils.listToMap(null, value -> new SimpleEntry<>("key", value)));
+		assertEquals(Maps.newHashMap(), Utils.listToMap(List.of(1, 2), null));
+		assertEquals(Maps.newHashMap(), Utils.listToMap(Lists.newArrayList(), value -> new SimpleEntry<>("key", value)));
+	}
+	
+	@Test
+	void mapListTransformsElements() {
+		List<Integer> numbers = List.of(1, 2, 3, 4);
+		List<String> strings = Utils.mapList(numbers, Object::toString);
+		
+		assertEquals(List.of("1", "2", "3", "4"), strings);
+	}
+	
+	@Test
+	void mapListHandlesNullInputs() {
+		assertEquals(Lists.newArrayList(), Utils.mapList(null, null));
+		assertEquals(Lists.newArrayList(), Utils.mapList(null, Object::toString));
+		assertEquals(Lists.newArrayList(), Utils.mapList(List.of(1, 2), null));
+		assertEquals(Lists.newArrayList(), Utils.mapList(Lists.newArrayList(), Object::toString));
+	}
+	
+	@Test
+	void mapListWithTwoFunctionsChainTransformations() {
+		List<Integer> numbers = List.of(1, 2, 3);
+		List<Integer> result = Utils.mapList(numbers, Object::toString, String::length);
+		
+		assertEquals(List.of(1, 1, 1), result);
+	}
+	
+	@Test
+	void mapListWithTwoFunctionsHandlesNullInputs() {
+		assertEquals(Lists.newArrayList(), Utils.mapList(null, null, null));
+		assertEquals(Lists.newArrayList(), Utils.mapList(null, Object::toString, String::length));
+		assertEquals(Lists.newArrayList(), Utils.mapList(List.of(1), null, String::length));
+		assertEquals(Lists.newArrayList(), Utils.mapList(List.of(1), Object::toString, null));
+	}
+	
+	@Test
+	void mapKeyTransformsMapKeys() {
+		Map<String, Integer> map = Map.of("0", 0, "1", 1, "2", 2);
+		Map<Integer, Integer> result = Utils.mapKey(map, Integer::parseInt);
+		
+		assertEquals(Map.of(0, 0, 1, 1, 2, 2), result);
+	}
+	
+	@Test
+	void mapKeyHandlesNullInputs() {
 		assertEquals(Maps.newHashMap(), Utils.mapKey(null, null));
 		assertEquals(Maps.newHashMap(), Utils.mapKey(null, Object::toString));
-		assertEquals(Maps.newHashMap(), Utils.mapKey(Maps.newHashMap(), null));
-		assertEquals(Map.of(0, 0, 1, 1, 2, 2, 3, 3, 4, 4), Utils.mapKey(MAP, Integer::parseInt));
+		assertEquals(Maps.newHashMap(), Utils.mapKey(Map.of("a", 1), null));
+		assertEquals(Maps.newHashMap(), Utils.mapKey(Maps.newHashMap(), Object::toString));
 	}
 	
 	@Test
-	void mapValue() {
-		assertDoesNotThrow(() -> Utils.mapValue(null, null));
-		assertDoesNotThrow(() -> Utils.mapValue(null, Object::toString));
-		assertDoesNotThrow(() -> Utils.mapValue(Maps.newHashMap(), null));
+	void mapKeyFiltersNullResults() {
+		Map<String, Integer> map = Map.of("valid", 1, "null", 2);
+		Map<String, Integer> result = Utils.mapKey(map, key -> "null".equals(key) ? null : key.toUpperCase());
+		
+		assertEquals(Map.of("VALID", 1), result);
+	}
+	
+	@Test
+	void mapValueTransformsMapValues() {
+		Map<Integer, String> map = Map.of(0, "0", 1, "1", 2, "2");
+		Map<Integer, Integer> result = Utils.mapValue(map, Integer::parseInt);
+		
+		assertEquals(Map.of(0, 0, 1, 1, 2, 2), result);
+	}
+	
+	@Test
+	void mapValueHandlesNullInputs() {
 		assertEquals(Maps.newHashMap(), Utils.mapValue(null, null));
 		assertEquals(Maps.newHashMap(), Utils.mapValue(null, Object::toString));
-		assertEquals(Maps.newHashMap(), Utils.mapValue(Maps.newHashMap(), null));
-		assertEquals(Map.of(0, 0, 1, 1, 2, 2), Utils.mapValue(Map.of(0, "0", 1, "1", 2, "2"), Integer::parseInt));
+		assertEquals(Maps.newHashMap(), Utils.mapValue(Map.of("a", 1), null));
+		assertEquals(Maps.newHashMap(), Utils.mapValue(Maps.newHashMap(), Object::toString));
 	}
 	
 	@Test
-	void hasDuplicates() {
-		//region Setup
-		List<Integer> list = Lists.newArrayList(LIST);
-		list.add(4);
-		Integer[] array = { 0, 1, 2, 3, 4, 4 };
-		//endregion
-		assertDoesNotThrow(() -> Utils.hasDuplicates((Integer[]) null));
-		assertFalse(Utils.hasDuplicates((Integer[]) null));
-		assertFalse(Utils.hasDuplicates(EMPTY));
-		assertFalse(Utils.hasDuplicates(ARRAY));
-		assertTrue(Utils.hasDuplicates(array));
+	void mapValueHandlesNullValues() {
+		Map<String, Integer> map = Maps.newHashMap();
+		map.put("key", null);
+		Map<String, String> result = Utils.mapValue(map, value -> value == null ? "null" : value.toString());
 		
-		assertDoesNotThrow(() -> Utils.hasDuplicates((List<Integer>) null));
+		assertEquals(Map.of("key", "null"), result);
+	}
+	
+	@Test
+	void hasDuplicatesInArray() {
+		assertFalse(Utils.hasDuplicates((Integer[]) null));
+		assertFalse(Utils.hasDuplicates(new Integer[] {}));
+		assertFalse(Utils.hasDuplicates(new Integer[] { 1, 2, 3, 4 }));
+		assertTrue(Utils.hasDuplicates(new Integer[] { 1, 2, 3, 3 }));
+		assertTrue(Utils.hasDuplicates(new Integer[] { 1, 1, 2, 3 }));
+		assertTrue(Utils.hasDuplicates(new String[] { "a", "b", "a" }));
+	}
+	
+	@Test
+	void hasDuplicatesInList() {
 		assertFalse(Utils.hasDuplicates((List<Integer>) null));
 		assertFalse(Utils.hasDuplicates(Lists.newArrayList()));
-		assertFalse(Utils.hasDuplicates(LIST));
-		assertTrue(Utils.hasDuplicates(list));
-		
-		assertDoesNotThrow(() -> Utils.hasDuplicates(null, (Integer[]) null));
-		assertDoesNotThrow(() -> Utils.hasDuplicates(null, EMPTY));
-		assertDoesNotThrow(() -> Utils.hasDuplicates(4, (Integer[]) null));
-		assertFalse(Utils.hasDuplicates(null, (Integer[]) null));
-		assertFalse(Utils.hasDuplicates(null, EMPTY));
-		assertFalse(Utils.hasDuplicates(4, (Integer[]) null));
-		assertFalse(Utils.hasDuplicates(null, ARRAY));
-		assertFalse(Utils.hasDuplicates(4, EMPTY));
-		assertFalse(Utils.hasDuplicates(4, ARRAY));
-		assertTrue(Utils.hasDuplicates(4, array));
-		
-		assertDoesNotThrow(() -> Utils.hasDuplicates(null, (List<Integer>) null));
-		assertDoesNotThrow(() -> Utils.hasDuplicates(null, Lists.newArrayList()));
-		assertDoesNotThrow(() -> Utils.hasDuplicates(4, (List<Integer>) null));
-		assertFalse(Utils.hasDuplicates(null, (List<Integer>) null));
-		assertFalse(Utils.hasDuplicates(null, Lists.newArrayList()));
-		assertFalse(Utils.hasDuplicates(4, (List<Integer>) null));
-		assertFalse(Utils.hasDuplicates(4, Lists.newArrayList()));
-		assertFalse(Utils.hasDuplicates(4, LIST));
-		assertTrue(Utils.hasDuplicates(4, list));
+		assertFalse(Utils.hasDuplicates(List.of(1, 2, 3, 4)));
+		assertTrue(Utils.hasDuplicates(List.of(1, 2, 3, 3)));
+		assertTrue(Utils.hasDuplicates(List.of(1, 1, 2, 3)));
+		assertTrue(Utils.hasDuplicates(List.of("a", "b", "a")));
 	}
 	
 	@Test
-	void warpNullTo() {
-		assertThrows(NullPointerException.class, () -> Utils.warpNullTo("", (String) null));
-		assertThrows(NullPointerException.class, () -> Utils.warpNullTo(null, (String) null));
+	void hasDuplicatesOfSpecificObjectInArray() {
+		assertFalse(Utils.hasDuplicates(1, (Integer[]) null));
+		assertFalse(Utils.hasDuplicates(1, new Integer[] {}));
+		assertFalse(Utils.hasDuplicates(1, new Integer[] { 2, 3, 4 }));
+		assertFalse(Utils.hasDuplicates(1, new Integer[] { 1, 2, 3 }));
+		assertTrue(Utils.hasDuplicates(1, new Integer[] { 1, 1, 2 }));
+		assertTrue(Utils.hasDuplicates(null, new Integer[] { null, null, 1 }));
+	}
+	
+	@Test
+	void hasDuplicatesOfSpecificObjectInList() {
+		assertFalse(Utils.hasDuplicates(1, (List<Integer>) null));
+		assertFalse(Utils.hasDuplicates(1, Lists.newArrayList()));
+		assertFalse(Utils.hasDuplicates(1, List.of(2, 3, 4)));
+		assertFalse(Utils.hasDuplicates(1, List.of(1, 2, 3)));
+		assertTrue(Utils.hasDuplicates(1, List.of(1, 1, 2)));
+		
+		List<Integer> listWithNulls = Lists.newArrayList();
+		listWithNulls.add(null);
+		listWithNulls.add(null);
+		listWithNulls.add(1);
+		assertTrue(Utils.hasDuplicates(null, listWithNulls));
+	}
+	
+	@Test
+	void warpNullToWithValue() {
 		assertEquals("fallback", Utils.warpNullTo(null, "fallback"));
 		assertEquals("value", Utils.warpNullTo("value", "fallback"));
-		
-		assertThrows(NullPointerException.class, () -> Utils.warpNullTo("", null));
-		assertThrows(NullPointerException.class, () -> Utils.warpNullTo(null, null));
+		assertEquals(42, Utils.warpNullTo(null, 42));
+		assertEquals(100, Utils.warpNullTo(100, 42));
+	}
+	
+	@Test
+	void warpNullToRejectNullFallback() {
+		assertThrows(NullPointerException.class, () -> Utils.warpNullTo("", (String) null));
+		assertThrows(NullPointerException.class, () -> Utils.warpNullTo(null, (String) null));
+	}
+	
+	@Test
+	void warpNullToWithSupplier() {
+		assertEquals("supplied", Utils.warpNullTo(null, () -> "supplied"));
+		assertEquals("value", Utils.warpNullTo("value", () -> "supplied"));
 		assertEquals(0, Utils.warpNullTo(null, () -> 0));
 		assertEquals(1, Utils.warpNullTo(1, () -> 0));
 	}
 	
 	@Test
-	void executeIfNotNull() {
+	void warpNullToRejectsNullSupplier() {
+		assertThrows(NullPointerException.class, () -> Utils.warpNullTo("", null));
+		assertThrows(NullPointerException.class, () -> Utils.warpNullTo(null, null));
+	}
+	
+	@Test
+	void executeIfNotNullRunsActionForNonNull() {
+		List<String> results = Lists.newArrayList();
+		Utils.executeIfNotNull("test", results::add);
+		assertEquals(List.of("test"), results);
+		
+		Utils.executeIfNotNull(42, value -> results.add(value.toString()));
+		assertEquals(List.of("test", "42"), results);
+	}
+	
+	@Test
+	void executeIfNotNullIgnoresNull() {
+		List<String> results = Lists.newArrayList();
+		Utils.executeIfNotNull(null, value -> results.add(value.toString()));
+		assertTrue(results.isEmpty());
+	}
+	
+	@Test
+	void executeIfNotNullRejectsNullAction() {
 		assertThrows(NullPointerException.class, () -> Utils.executeIfNotNull("value", null));
-		assertDoesNotThrow(() -> Utils.executeIfNotNull(null, (value) -> {}));
-		assertDoesNotThrow(() -> Utils.executeIfNotNull(null, (value) -> {
-			throw new NullPointerException();
-		}));
-		Utils.executeIfNotNull("value", (value) -> assertEquals("value", value));
 	}
 	
 	@Test
-	void systemRandom() {
-		assertNotNull(Utils.systemRandom());
-	}
-	
-	@Test
-	void getRandom() {
-		//region Setup
-		Integer[] singleArray = { 0 };
-		List<Integer> singleList = Lists.newArrayList(0);
-		//endregion
-		assertThrows(NullPointerException.class, () -> Utils.getRandom(null, (Integer[]) null));
-		assertThrows(NullPointerException.class, () -> Utils.getRandom(RNG, (Integer[]) null));
-		assertThrows(NullPointerException.class, () -> Utils.getRandom(null, ARRAY));
-		assertThrows(IllegalArgumentException.class, () -> Utils.getRandom(RNG, EMPTY));
-		assertEquals(0, Utils.getRandom(RNG, singleArray));
-		for (int i = 0; i < 1000; i++) {
-			int value = assertDoesNotThrow(() -> Utils.getRandom(RNG, ARRAY));
-			assertTrue(4 >= value && value >= 0);
-		}
+	void systemRandomCreatesValidGenerator() {
+		Random random = Utils.systemRandom();
+		assertNotNull(random);
 		
-		assertThrows(NullPointerException.class, () -> Utils.getRandom(null, (List<Integer>) null));
-		assertThrows(NullPointerException.class, () -> Utils.getRandom(RNG, (List<Integer>) null));
-		assertThrows(NullPointerException.class, () -> Utils.getRandom(null, LIST));
-		assertThrows(IllegalArgumentException.class, () -> Utils.getRandom(RNG, Lists.newArrayList()));
-		assertEquals(0, Utils.getRandom(RNG, singleList));
-		for (int i = 0; i < 1000; i++) {
-			int value = assertDoesNotThrow(() -> Utils.getRandom(RNG, LIST));
-			assertTrue(4 >= value && value >= 0);
-		}
+		Random another = Utils.systemRandom();
+		assertNotNull(another);
+		assertNotSame(random, another);
 	}
 	
 	@Test
-	void getRandomSafe() {
-		//region Setup
-		Integer[] singleArray = { 0 };
-		List<Integer> singleList = Lists.newArrayList(0);
-		//endregion
-		assertThrows(NullPointerException.class, () -> Utils.getRandomSafe(null, (Integer[]) null));
-		assertDoesNotThrow(() -> Utils.getRandomSafe(RNG, (Integer[]) null));
-		assertEquals(Optional.empty(), Utils.getRandomSafe(RNG, EMPTY));
-		assertEquals(Optional.of(0), Utils.getRandomSafe(RNG, singleArray));
-		for (int i = 0; i < 1000; i++) {
-			Optional<Integer> value = assertDoesNotThrow(() -> Utils.getRandomSafe(RNG, ARRAY));
-			assertTrue(value.isPresent());
-			assertTrue(4 >= value.get() && value.get() >= 0);
-		}
+	void getRandomFromArray() {
+		Random rng = new Random(12345);
+		Integer[] singleElement = { 42 };
+		Integer[] multipleElements = { 1, 2, 3, 4, 5 };
 		
-		assertThrows(NullPointerException.class, () -> Utils.getRandomSafe(null, (List<Integer>) null));
-		assertDoesNotThrow(() -> Utils.getRandomSafe(RNG, (List<Integer>) null));
-		assertEquals(Optional.empty(), Utils.getRandomSafe(RNG, Lists.newArrayList()));
-		assertEquals(Optional.of(0), Utils.getRandomSafe(RNG, singleList));
-		for (int i = 0; i < 1000; i++) {
-			Optional<Integer> value = assertDoesNotThrow(() -> Utils.getRandomSafe(RNG, LIST));
-			assertTrue(value.isPresent());
-			assertTrue(4 >= value.get() && value.get() >= 0);
+		assertEquals(42, Utils.getRandom(rng, singleElement));
+		
+		for (int i = 0; i < 100; i++) {
+			Integer result = Utils.getRandom(rng, multipleElements);
+			assertTrue(List.of(multipleElements).contains(result));
 		}
 	}
 	
 	@Test
-	void throwSneaky() {
+	void getRandomFromArrayRejectsInvalidInputs() {
+		Random rng = new Random();
+		assertThrows(NullPointerException.class, () -> Utils.getRandom(null, new Integer[] { 1 }));
+		assertThrows(NullPointerException.class, () -> Utils.getRandom(rng, (Integer[]) null));
+		assertThrows(IllegalArgumentException.class, () -> Utils.getRandom(rng, new Integer[] {}));
+	}
+	
+	@Test
+	void getRandomFromList() {
+		Random rng = new Random(12345);
+		List<Integer> singleElement = List.of(42);
+		List<Integer> multipleElements = List.of(1, 2, 3, 4, 5);
+		
+		assertEquals(42, Utils.getRandom(rng, singleElement));
+		
+		for (int i = 0; i < 100; i++) {
+			Integer result = Utils.getRandom(rng, multipleElements);
+			assertTrue(multipleElements.contains(result));
+		}
+	}
+	
+	@Test
+	void getRandomFromListRejectsInvalidInputs() {
+		Random rng = new Random();
+		assertThrows(NullPointerException.class, () -> Utils.getRandom(null, List.of(1)));
+		assertThrows(NullPointerException.class, () -> Utils.getRandom(rng, (List<Integer>) null));
+		assertThrows(IllegalArgumentException.class, () -> Utils.getRandom(rng, Lists.newArrayList()));
+	}
+	
+	@Test
+	void getRandomSafeFromArray() {
+		Random rng = new Random(12345);
+		Integer[] singleElement = { 42 };
+		Integer[] multipleElements = { 1, 2, 3, 4, 5 };
+		
+		assertEquals(Optional.of(42), Utils.getRandomSafe(rng, singleElement));
+		assertEquals(Optional.empty(), Utils.getRandomSafe(rng, (Integer[]) null));
+		assertEquals(Optional.empty(), Utils.getRandomSafe(rng, new Integer[] {}));
+		
+		for (int i = 0; i < 100; i++) {
+			Optional<Integer> result = Utils.getRandomSafe(rng, multipleElements);
+			assertTrue(result.isPresent());
+			assertTrue(List.of(multipleElements).contains(result.get()));
+		}
+	}
+	
+	@Test
+	void getRandomSafeFromArrayRejectsNullRng() {
+		assertThrows(NullPointerException.class, () -> Utils.getRandomSafe(null, new Integer[] { 1 }));
+	}
+	
+	@Test
+	void getRandomSafeFromList() {
+		Random rng = new Random(12345);
+		List<Integer> singleElement = List.of(42);
+		List<Integer> multipleElements = List.of(1, 2, 3, 4, 5);
+		
+		assertEquals(Optional.of(42), Utils.getRandomSafe(rng, singleElement));
+		assertEquals(Optional.empty(), Utils.getRandomSafe(rng, (List<Integer>) null));
+		assertEquals(Optional.empty(), Utils.getRandomSafe(rng, Lists.newArrayList()));
+		
+		for (int i = 0; i < 100; i++) {
+			Optional<Integer> result = Utils.getRandomSafe(rng, multipleElements);
+			assertTrue(result.isPresent());
+			assertTrue(multipleElements.contains(result.get()));
+		}
+	}
+	
+	@Test
+	void getRandomSafeFromListRejectsNullRng() {
+		assertThrows(NullPointerException.class, () -> Utils.getRandomSafe(null, List.of(1)));
+	}
+	
+	@Test
+	void throwSneakyRethrowsException() {
+		RuntimeException runtime = new RuntimeException("test");
+		RuntimeException thrown = assertThrows(RuntimeException.class, () -> Utils.throwSneaky(runtime));
+		assertSame(runtime, thrown);
+		
+		IllegalArgumentException illegal = new IllegalArgumentException("illegal");
+		IllegalArgumentException thrownIllegal = assertThrows(IllegalArgumentException.class, () -> Utils.throwSneaky(illegal));
+		assertSame(illegal, thrownIllegal);
+	}
+	
+	@Test
+	void throwSneakyRejectsNull() {
 		assertThrows(NullPointerException.class, () -> Utils.throwSneaky(null));
-		assertThrows(IllegalMonitorStateException.class, () -> Utils.throwSneaky(new IllegalMonitorStateException()));
+	}
+	
+	@Test
+	void emptyUuidConstant() {
+		assertEquals("00000000-0000-0000-0000-000000000000", Utils.EMPTY_UUID.toString());
+		assertTrue(Utils.isEmpty(Utils.EMPTY_UUID));
 	}
 }

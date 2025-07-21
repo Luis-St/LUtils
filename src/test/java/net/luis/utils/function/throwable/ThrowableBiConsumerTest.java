@@ -20,6 +20,9 @@ package net.luis.utils.function.throwable;
 
 import org.junit.jupiter.api.Test;
 
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.BiConsumer;
+
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
@@ -30,37 +33,194 @@ import static org.junit.jupiter.api.Assertions.*;
 class ThrowableBiConsumerTest {
 	
 	@Test
-	void caught() {
-		ThrowableBiConsumer<String, String, Exception> consumer = (a, b) -> {
-			assertEquals("a", a);
-			assertEquals("b", b);
-			throw new Exception();
+	void caughtConvertsSuccessfulConsumer() {
+		ThrowableBiConsumer<String, Integer, Exception> consumer = (s, i) -> {
+			assertEquals("test", s);
+			assertEquals(42, i);
 		};
-		assertThrows(RuntimeException.class, () -> ThrowableBiConsumer.caught(consumer).accept("a", "b"));
+		BiConsumer<String, Integer> caught = ThrowableBiConsumer.caught(consumer);
+		
+		assertDoesNotThrow(() -> caught.accept("test", 42));
+	}
+	
+	@Test
+	void caughtWrapsExceptionInRuntimeException() {
+		ThrowableBiConsumer<String, String, Exception> consumer = (a, b) -> {
+			throw new Exception("Test exception");
+		};
+		BiConsumer<String, String> caught = ThrowableBiConsumer.caught(consumer);
+		
+		RuntimeException exception = assertThrows(RuntimeException.class, () -> caught.accept("a", "b"));
+		assertInstanceOf(Exception.class, exception.getCause());
+		assertEquals("Test exception", exception.getCause().getMessage());
+	}
+	
+	@Test
+	void caughtWithNullConsumer() {
 		assertThrows(NullPointerException.class, () -> ThrowableBiConsumer.caught(null));
 	}
 	
 	@Test
-	void accept() {
+	void caughtWithNullParameters() {
 		ThrowableBiConsumer<String, String, Exception> consumer = (a, b) -> {
-			assertEquals("a", a);
-			assertEquals("b", b);
-			throw new Exception();
+			assertNull(a);
+			assertNull(b);
 		};
-		assertThrows(Exception.class, () -> consumer.accept("a", "b"));
+		BiConsumer<String, String> caught = ThrowableBiConsumer.caught(consumer);
+		
+		assertDoesNotThrow(() -> caught.accept(null, null));
 	}
 	
 	@Test
-	void andThen() {
+	void caughtWithDifferentParameterTypes() {
+		ThrowableBiConsumer<String, Integer, Exception> consumer = (s, i) -> {
+			assertEquals("hello", s);
+			assertEquals(5, i);
+		};
+		BiConsumer<String, Integer> caught = ThrowableBiConsumer.caught(consumer);
+		
+		assertDoesNotThrow(() -> caught.accept("hello", 5));
+	}
+	
+	@Test
+	void acceptWithSuccessfulExecution() {
 		ThrowableBiConsumer<String, String, Exception> consumer = (a, b) -> {
-			assertEquals("a", a);
-			assertEquals("b", b);
+			assertEquals("first", a);
+			assertEquals("second", b);
 		};
-		ThrowableBiConsumer<String, String, Exception> after = (a, b) -> {
-			assertEquals("a", a);
-			assertEquals("b", b);
+		
+		assertDoesNotThrow(() -> consumer.accept("first", "second"));
+	}
+	
+	@Test
+	void acceptWithException() {
+		ThrowableBiConsumer<String, String, Exception> consumer = (a, b) -> {
+			if ("fail".equals(a)) {
+				throw new Exception("Test exception");
+			}
 		};
-		assertDoesNotThrow(() -> consumer.andThen(after).accept("a", "b"));
+		
+		assertDoesNotThrow(() -> consumer.accept("success", "test"));
+		
+		Exception exception = assertThrows(Exception.class, () -> consumer.accept("fail", "test"));
+		assertEquals("Test exception", exception.getMessage());
+	}
+	
+	@Test
+	void acceptWithNullParameters() {
+		ThrowableBiConsumer<String, String, Exception> consumer = (a, b) -> {
+			if (a == null || b == null) {
+				throw new Exception("Null parameters not allowed");
+			}
+		};
+		
+		assertDoesNotThrow(() -> consumer.accept("valid", "valid"));
+		assertThrows(Exception.class, () -> consumer.accept(null, "valid"));
+		assertThrows(Exception.class, () -> consumer.accept("valid", null));
+		assertThrows(Exception.class, () -> consumer.accept(null, null));
+	}
+	
+	@Test
+	void acceptWithDifferentTypes() {
+		ThrowableBiConsumer<Integer, Boolean, Exception> consumer = (i, b) -> {
+			assertEquals(42, i);
+			assertTrue(b);
+		};
+		
+		assertDoesNotThrow(() -> consumer.accept(42, true));
+	}
+	
+	@Test
+	void andThenExecutesBothOperations() {
+		AtomicInteger counter = new AtomicInteger(0);
+		
+		ThrowableBiConsumer<String, String, Exception> first = (a, b) -> counter.incrementAndGet();
+		ThrowableBiConsumer<String, String, Exception> second = (a, b) -> counter.incrementAndGet();
+		
+		ThrowableBiConsumer<String, String, Exception> combined = first.andThen(second);
+		assertDoesNotThrow(() -> combined.accept("test", "test"));
+		
+		assertEquals(2, counter.get());
+	}
+	
+	@Test
+	void andThenExecutesInCorrectOrder() {
+		StringBuilder result = new StringBuilder();
+		
+		ThrowableBiConsumer<String, String, Exception> first = (a, b) -> result.append("first");
+		ThrowableBiConsumer<String, String, Exception> second = (a, b) -> result.append("second");
+		
+		ThrowableBiConsumer<String, String, Exception> combined = first.andThen(second);
+		assertDoesNotThrow(() -> combined.accept("test", "test"));
+		
+		assertEquals("firstsecond", result.toString());
+	}
+	
+	@Test
+	void andThenWithMultipleChaining() {
+		AtomicInteger counter = new AtomicInteger(0);
+		
+		ThrowableBiConsumer<String, String, Exception> first = (a, b) -> counter.incrementAndGet();
+		ThrowableBiConsumer<String, String, Exception> second = (a, b) -> counter.incrementAndGet();
+		ThrowableBiConsumer<String, String, Exception> third = (a, b) -> counter.incrementAndGet();
+		
+		ThrowableBiConsumer<String, String, Exception> combined = first.andThen(second).andThen(third);
+		assertDoesNotThrow(() -> combined.accept("test", "test"));
+		
+		assertEquals(3, counter.get());
+	}
+	
+	@Test
+	void andThenWithNullAfterConsumer() {
+		ThrowableBiConsumer<String, String, Exception> consumer = (a, b) -> {};
+		
 		assertThrows(NullPointerException.class, () -> consumer.andThen(null));
+	}
+	
+	@Test
+	void andThenPassesCorrectParameters() {
+		ThrowableBiConsumer<String, String, Exception> first = (a, b) -> {
+			assertEquals("test1", a);
+			assertEquals("test2", b);
+		};
+		
+		ThrowableBiConsumer<String, String, Exception> second = (a, b) -> {
+			assertEquals("test1", a);
+			assertEquals("test2", b);
+		};
+		
+		ThrowableBiConsumer<String, String, Exception> combined = first.andThen(second);
+		assertDoesNotThrow(() -> combined.accept("test1", "test2"));
+	}
+	
+	@Test
+	void andThenWithExceptionInFirstConsumer() {
+		ThrowableBiConsumer<String, String, Exception> first = (a, b) -> {
+			throw new Exception("First consumer failed");
+		};
+		
+		ThrowableBiConsumer<String, String, Exception> second = (a, b) -> {
+			fail("Second consumer should not be called");
+		};
+		
+		ThrowableBiConsumer<String, String, Exception> combined = first.andThen(second);
+		Exception exception = assertThrows(Exception.class, () -> combined.accept("test", "test"));
+		assertEquals("First consumer failed", exception.getMessage());
+	}
+	
+	@Test
+	void andThenWithExceptionInSecondConsumer() {
+		AtomicInteger counter = new AtomicInteger(0);
+		
+		ThrowableBiConsumer<String, String, Exception> first = (a, b) -> counter.incrementAndGet();
+		
+		ThrowableBiConsumer<String, String, Exception> second = (a, b) -> {
+			throw new Exception("Second consumer failed");
+		};
+		
+		ThrowableBiConsumer<String, String, Exception> combined = first.andThen(second);
+		Exception exception = assertThrows(Exception.class, () -> combined.accept("test", "test"));
+		assertEquals("Second consumer failed", exception.getMessage());
+		assertEquals(1, counter.get());
 	}
 }

@@ -32,84 +32,333 @@ import static org.junit.jupiter.api.Assertions.*;
 class WeightCollectionTest {
 	
 	@Test
-	void constructor() {
-		assertDoesNotThrow(() -> new WeightCollection<>());
-		assertDoesNotThrow(() -> new WeightCollection<>(new Random()));
+	void constructEmptyCollection() {
+		WeightCollection<String> collection = new WeightCollection<>();
+		
+		assertTrue(collection.isEmpty());
+		assertEquals(0, collection.getSize());
+		assertEquals(0, collection.getTotal());
+	}
+	
+	@Test
+	void constructWithRandom() {
+		Random random = new Random(42);
+		WeightCollection<String> collection = new WeightCollection<>(random);
+		
+		assertTrue(collection.isEmpty());
+		assertEquals(0, collection.getSize());
+		assertEquals(0, collection.getTotal());
+	}
+	
+	@Test
+	void constructWithNullRandom() {
 		assertThrows(NullPointerException.class, () -> new WeightCollection<>(null));
 	}
 	
 	@Test
-	void add() {
-		WeightCollection<Integer> collection = new WeightCollection<>();
-		collection.add(100, 10);
-		collection.add(100, 10);
-		assertEquals(2, collection.getSize());
-		assertEquals(200, collection.getTotal());
-		collection.add(100, 10);
+	void addSingleElement() {
+		WeightCollection<String> collection = new WeightCollection<>();
+		collection.add(50, "A");
+		
+		assertEquals(1, collection.getSize());
+		assertEquals(50, collection.getTotal());
+		assertFalse(collection.isEmpty());
+		assertTrue(collection.contains("A"));
+	}
+	
+	@Test
+	void addMultipleElements() {
+		WeightCollection<String> collection = new WeightCollection<>();
+		collection.add(30, "A");
+		collection.add(20, "B");
+		collection.add(50, "C");
+		
 		assertEquals(3, collection.getSize());
-		assertEquals(300, collection.getTotal());
-		assertThrows(IllegalArgumentException.class, () -> collection.add(0, 10));
-		assertThrows(NullPointerException.class, () -> collection.add(100, null));
+		assertEquals(100, collection.getTotal());
+		assertTrue(collection.contains("A"));
+		assertTrue(collection.contains("B"));
+		assertTrue(collection.contains("C"));
 	}
 	
 	@Test
-	void remove() {
-		WeightCollection<Integer> collection = new WeightCollection<>();
-		assertDoesNotThrow(() -> collection.remove(10));
-		assertFalse(collection.remove(10));
-		collection.add(100, 10);
-		assertTrue(collection.remove(10));
-	}
-	
-	@Test
-	void contains() {
-		WeightCollection<Integer> collection = new WeightCollection<>();
-		assertFalse(collection.contains(null));
-		assertFalse(collection.contains(10));
-		collection.add(100, 10);
-		assertTrue(collection.contains(10));
-	}
-	
-	@Test
-	void clear() {
-		WeightCollection<Integer> collection = new WeightCollection<>();
-		assertDoesNotThrow(collection::clear);
-		collection.add(100, 10);
-		collection.add(100, 10);
+	void addDuplicateElements() {
+		WeightCollection<String> collection = new WeightCollection<>();
+		collection.add(25, "A");
+		collection.add(25, "A");
+		
 		assertEquals(2, collection.getSize());
-		assertDoesNotThrow(collection::clear);
-		assertEquals(0, collection.getSize());
+		assertEquals(50, collection.getTotal());
+		assertTrue(collection.contains("A"));
 	}
 	
 	@Test
-	void next() {
-		WeightCollection<Integer> collection = new WeightCollection<>();
-		assertThrows(IllegalStateException.class, collection::next);
-		collection.add(100, 10);
-		assertEquals(10, collection.next());
+	void addElementWithZeroWeight() {
+		WeightCollection<String> collection = new WeightCollection<>();
+		
+		IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
+			() -> collection.add(0, "A"));
+		assertTrue(exception.getMessage().contains("greater than 0"));
 	}
 	
 	@Test
-	void isEmpty() {
-		WeightCollection<Integer> collection = new WeightCollection<>();
+	void addElementWithNegativeWeight() {
+		WeightCollection<String> collection = new WeightCollection<>();
+		
+		IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
+			() -> collection.add(-5, "A"));
+		assertTrue(exception.getMessage().contains("greater than 0"));
+	}
+	
+	@Test
+	void addNullElement() {
+		WeightCollection<String> collection = new WeightCollection<>();
+		
+		assertThrows(NullPointerException.class, () -> collection.add(50, null));
+	}
+	
+	@Test
+	void removeExistingElement() {
+		WeightCollection<String> collection = new WeightCollection<>();
+		collection.add(30, "A");
+		collection.add(20, "B");
+		collection.add(50, "C");
+		
+		boolean removed = collection.remove("B");
+		
+		assertTrue(removed);
+		assertEquals(2, collection.getSize());
+		assertEquals(80, collection.getTotal());
+		assertFalse(collection.contains("B"));
+		assertTrue(collection.contains("A"));
+		assertTrue(collection.contains("C"));
+	}
+	
+	@Test
+	void removeNonExistingElement() {
+		WeightCollection<String> collection = new WeightCollection<>();
+		collection.add(50, "A");
+		
+		boolean removed = collection.remove("B");
+		
+		assertFalse(removed);
+		assertEquals(1, collection.getSize());
+		assertEquals(50, collection.getTotal());
+	}
+	
+	@Test
+	void removeNullElement() {
+		WeightCollection<String> collection = new WeightCollection<>();
+		collection.add(50, "A");
+		
+		boolean removed = collection.remove(null);
+		
+		assertFalse(removed);
+		assertEquals(1, collection.getSize());
+		assertEquals(50, collection.getTotal());
+	}
+	
+	@Test
+	void removeFromEmptyCollection() {
+		WeightCollection<String> collection = new WeightCollection<>();
+		
+		boolean removed = collection.remove("A");
+		
+		assertFalse(removed);
 		assertTrue(collection.isEmpty());
-		collection.add(100, 10);
+	}
+	
+	@Test
+	void removeAllElements() {
+		WeightCollection<String> collection = new WeightCollection<>();
+		collection.add(30, "A");
+		collection.add(20, "B");
+		
+		collection.remove("A");
+		collection.remove("B");
+		
+		assertTrue(collection.isEmpty());
+		assertEquals(0, collection.getSize());
+		assertEquals(0, collection.getTotal());
+	}
+	
+	@Test
+	void containsExistingElement() {
+		WeightCollection<String> collection = new WeightCollection<>();
+		collection.add(50, "A");
+		
+		assertTrue(collection.contains("A"));
+	}
+	
+	@Test
+	void containsNonExistingElement() {
+		WeightCollection<String> collection = new WeightCollection<>();
+		collection.add(50, "A");
+		
+		assertFalse(collection.contains("B"));
+	}
+	
+	@Test
+	void containsNullElement() {
+		WeightCollection<String> collection = new WeightCollection<>();
+		collection.add(50, "A");
+		
+		assertFalse(collection.contains(null));
+	}
+	
+	@Test
+	void clearEmptyCollection() {
+		WeightCollection<String> collection = new WeightCollection<>();
+		
+		assertDoesNotThrow(collection::clear);
+		assertTrue(collection.isEmpty());
+	}
+	
+	@Test
+	void clearNonEmptyCollection() {
+		WeightCollection<String> collection = new WeightCollection<>();
+		collection.add(30, "A");
+		collection.add(20, "B");
+		
+		collection.clear();
+		
+		assertTrue(collection.isEmpty());
+		assertEquals(0, collection.getSize());
+		assertEquals(0, collection.getTotal());
+		assertFalse(collection.contains("A"));
+		assertFalse(collection.contains("B"));
+	}
+	
+	@Test
+	void nextFromSingleElement() {
+		WeightCollection<String> collection = new WeightCollection<>();
+		collection.add(100, "A");
+		
+		assertEquals("A", collection.next());
+	}
+	
+	@Test
+	void nextFromMultipleElements() {
+		WeightCollection<String> collection = new WeightCollection<>(new Random(42));
+		collection.add(50, "A");
+		collection.add(30, "B");
+		collection.add(20, "C");
+		
+		String result = collection.next();
+		
+		assertTrue("A".equals(result) || "B".equals(result) || "C".equals(result));
+	}
+	
+	@Test
+	void nextFromEmptyCollection() {
+		WeightCollection<String> collection = new WeightCollection<>();
+		
+		IllegalStateException exception = assertThrows(IllegalStateException.class, collection::next);
+		assertTrue(exception.getMessage().contains("empty"));
+	}
+	
+	@Test
+	void nextWithDeterministicRandom() {
+		WeightCollection<String> collection = new WeightCollection<>(new Random(0));
+		collection.add(50, "A");
+		collection.add(50, "B");
+		
+		String first = collection.next();
+		assertNotNull(first);
+		assertTrue("A".equals(first) || "B".equals(first));
+	}
+	
+	@Test
+	void isEmptyInitially() {
+		WeightCollection<String> collection = new WeightCollection<>();
+		
+		assertTrue(collection.isEmpty());
+	}
+	
+	@Test
+	void isEmptyAfterAddingElements() {
+		WeightCollection<String> collection = new WeightCollection<>();
+		collection.add(50, "A");
+		
 		assertFalse(collection.isEmpty());
 	}
 	
 	@Test
-	void getSize() {
-		WeightCollection<Integer> collection = new WeightCollection<>();
-		assertEquals(0, collection.getSize());
-		collection.add(100, 10);
-		assertEquals(1, collection.getSize());
+	void isEmptyAfterClearing() {
+		WeightCollection<String> collection = new WeightCollection<>();
+		collection.add(50, "A");
+		collection.clear();
+		
+		assertTrue(collection.isEmpty());
 	}
 	
 	@Test
-	void getTotal() {
-		WeightCollection<Integer> collection = new WeightCollection<>();
+	void sizeTracking() {
+		WeightCollection<String> collection = new WeightCollection<>();
+		assertEquals(0, collection.getSize());
+		
+		collection.add(25, "A");
+		assertEquals(1, collection.getSize());
+		
+		collection.add(25, "B");
+		assertEquals(2, collection.getSize());
+		
+		collection.remove("A");
+		assertEquals(1, collection.getSize());
+		
+		collection.clear();
+		assertEquals(0, collection.getSize());
+	}
+	
+	@Test
+	void totalWeightTracking() {
+		WeightCollection<String> collection = new WeightCollection<>();
 		assertEquals(0, collection.getTotal());
-		collection.add(100, 10);
-		assertEquals(100, collection.getTotal());
+		
+		collection.add(30, "A");
+		assertEquals(30, collection.getTotal());
+		
+		collection.add(20, "B");
+		assertEquals(50, collection.getTotal());
+		
+		collection.remove("A");
+		assertEquals(20, collection.getTotal());
+		
+		collection.clear();
+		assertEquals(0, collection.getTotal());
+	}
+	
+	@Test
+	void toStringRepresentation() {
+		WeightCollection<String> collection = new WeightCollection<>();
+		collection.add(50, "A");
+		
+		String result = collection.toString();
+		
+		assertNotNull(result);
+		assertTrue(result.contains("A"));
+	}
+	
+	@Test
+	void equalsForSameObjects() {
+		WeightCollection<String> collection1 = new WeightCollection<>(new Random(42));
+		WeightCollection<String> collection2 = new WeightCollection<>(new Random(42));
+		
+		collection1.add(50, "A");
+		collection2.add(50, "A");
+		
+		assertEquals(collection1, collection2);
+	}
+	
+	@Test
+	void hashCodeForSameObjects() {
+		WeightCollection<String> collection1 = new WeightCollection<>(new Random(42));
+		WeightCollection<String> collection2 = new WeightCollection<>(new Random(42));
+		
+		collection1.add(50, "A");
+		collection2.add(50, "A");
+		
+		if (collection1.equals(collection2)) {
+			assertEquals(collection1.hashCode(), collection2.hashCode());
+		}
 	}
 }

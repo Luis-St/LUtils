@@ -95,7 +95,13 @@ public final class FileUtils {
 	 * @return The name of the file or an empty string if the file has no name
 	 */
 	public static @NotNull String getName(@Nullable String file) {
-		String str = split(file).getSecond();
+		String str;
+		if (StringUtils.containsAny(file, "/", "\\")) {
+			str = split(file).getSecond();
+		} else {
+			str = StringUtils.stripToEmpty(file);
+		}
+		
 		int index = str.lastIndexOf(".");
 		if (index == -1) {
 			return str;

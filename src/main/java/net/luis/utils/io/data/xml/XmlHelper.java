@@ -122,11 +122,11 @@ final class XmlHelper {
 	 * Unescapes the given value from xml.<br>
 	 * The following characters are replaced:<br>
 	 * <ul>
-	 *     <li>{@code &amp; -> &}</li>
 	 *     <li>{@code &quot; -> "}</li>
 	 *     <li>{@code &apos; -> '}</li>
 	 *     <li>{@code &lt; -> <}</li>
 	 *     <li>{@code &gt; -> >}</li>
+	 *     <li>{@code &amp; -> &}</li>
 	 * </ul>
 	 *
 	 * @param value The value to unescape
@@ -135,6 +135,6 @@ final class XmlHelper {
 	 */
 	static @NotNull String unescapeXml(@NotNull String value) {
 		Objects.requireNonNull(value, "Value must not be null");
-		return value.replace("&amp;", "&").replace("&quot;", "\"").replace("&apos;", "'").replace("&lt;", "<").replace("&gt;", ">");
+		return value.replace("&quot;", "\"").replace("&apos;", "'").replace("&lt;", "<").replace("&gt;", ">").replace("&amp;", "&");
 	}
 }

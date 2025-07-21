@@ -20,6 +20,9 @@ package net.luis.utils.util;
 
 import org.junit.jupiter.api.Test;
 
+import java.util.Optional;
+import java.util.concurrent.atomic.AtomicBoolean;
+
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
@@ -30,121 +33,277 @@ import static org.junit.jupiter.api.Assertions.*;
 class EitherTest {
 	
 	@Test
-	void left() {
+	void leftWithValidValues() {
 		assertNotNull(Either.left("left"));
-		assertDoesNotThrow(() -> Either.left(null));
+		assertNotNull(Either.left(42));
+		assertNotNull(Either.left(null));
 	}
 	
 	@Test
-	void right() {
+	void rightWithValidValues() {
 		assertNotNull(Either.right("right"));
-		assertDoesNotThrow(() -> Either.right(null));
+		assertNotNull(Either.right(42));
+		assertNotNull(Either.right(null));
 	}
 	
 	@Test
-	void isLeft() {
+	void isLeftWithLeftEither() {
 		assertTrue(Either.left("left").isLeft());
+		assertTrue(Either.left(42).isLeft());
+		assertTrue(Either.left(null).isLeft());
+	}
+	
+	@Test
+	void isLeftWithRightEither() {
 		assertFalse(Either.right("right").isLeft());
+		assertFalse(Either.right(42).isLeft());
+		assertFalse(Either.right(null).isLeft());
 	}
 	
 	@Test
-	void isRight() {
+	void isRightWithRightEither() {
 		assertTrue(Either.right("right").isRight());
+		assertTrue(Either.right(42).isRight());
+		assertTrue(Either.right(null).isRight());
+	}
+	
+	@Test
+	void isRightWithLeftEither() {
 		assertFalse(Either.left("left").isRight());
+		assertFalse(Either.left(42).isRight());
+		assertFalse(Either.left(null).isRight());
 	}
 	
 	@Test
-	void ifLeft() {
-		Either.left("left").ifLeft(s -> assertEquals("left", s));
-		Either.right("right").ifLeft(s -> fail("Should not be called"));
+	void ifLeftWithLeftEither() {
+		AtomicBoolean executed = new AtomicBoolean(false);
+		Either.left("left").ifLeft(s -> {
+			assertEquals("left", s);
+			executed.set(true);
+		});
+		assertTrue(executed.get());
 	}
 	
 	@Test
-	void ifRight() {
-		Either.right("right").ifRight(s -> assertEquals("right", s));
-		Either.left("left").ifRight(s -> fail("Should not be called"));
+	void ifLeftWithRightEither() {
+		AtomicBoolean executed = new AtomicBoolean(false);
+		Either.right("right").ifLeft(s -> executed.set(true));
+		assertFalse(executed.get());
 	}
 	
 	@Test
-	void leftOrThrow() {
-		assertDoesNotThrow(() -> Either.left("left").leftOrThrow());
+	void ifLeftWithNullAction() {
+		assertThrows(NullPointerException.class, () -> Either.left("left").ifLeft(null));
+	}
+	
+	@Test
+	void ifRightWithRightEither() {
+		AtomicBoolean executed = new AtomicBoolean(false);
+		Either.right("right").ifRight(s -> {
+			assertEquals("right", s);
+			executed.set(true);
+		});
+		assertTrue(executed.get());
+	}
+	
+	@Test
+	void ifRightWithLeftEither() {
+		AtomicBoolean executed = new AtomicBoolean(false);
+		Either.left("left").ifRight(s -> executed.set(true));
+		assertFalse(executed.get());
+	}
+	
+	@Test
+	void ifRightWithNullAction() {
+		assertThrows(NullPointerException.class, () -> Either.right("right").ifRight(null));
+	}
+	
+	@Test
+	void leftWithLeftEither() {
+		assertEquals(Optional.of("left"), Either.left("left").left());
+		assertEquals(Optional.of(42), Either.left(42).left());
+		assertEquals(Optional.empty(), Either.left(null).left());
+	}
+	
+	@Test
+	void leftWithRightEither() {
+		assertEquals(Optional.empty(), Either.right("right").left());
+		assertEquals(Optional.empty(), Either.right(42).left());
+		assertEquals(Optional.empty(), Either.right(null).left());
+	}
+	
+	@Test
+	void rightWithRightEither() {
+		assertEquals(Optional.of("right"), Either.right("right").right());
+		assertEquals(Optional.of(42), Either.right(42).right());
+		assertEquals(Optional.empty(), Either.right(null).right());
+	}
+	
+	@Test
+	void rightWithLeftEither() {
+		assertEquals(Optional.empty(), Either.left("left").right());
+		assertEquals(Optional.empty(), Either.left(42).right());
+		assertEquals(Optional.empty(), Either.left(null).right());
+	}
+	
+	@Test
+	void leftOrThrowWithLeftEither() {
 		assertEquals("left", Either.left("left").leftOrThrow());
+		assertEquals(Integer.valueOf(42), Either.left(42).leftOrThrow());
 		assertNull(Either.left(null).leftOrThrow());
-		assertThrows(IllegalStateException.class, Either.right("right")::leftOrThrow);
 	}
 	
 	@Test
-	void rightOrThrow() {
-		assertDoesNotThrow(() -> Either.right("right").rightOrThrow());
+	void leftOrThrowWithRightEither() {
+		assertThrows(IllegalStateException.class, () -> Either.right("right").leftOrThrow());
+		assertThrows(IllegalStateException.class, () -> Either.right(42).leftOrThrow());
+		assertThrows(IllegalStateException.class, () -> Either.right(null).leftOrThrow());
+	}
+	
+	@Test
+	void rightOrThrowWithRightEither() {
 		assertEquals("right", Either.right("right").rightOrThrow());
+		assertEquals(Integer.valueOf(42), Either.right(42).rightOrThrow());
 		assertNull(Either.right(null).rightOrThrow());
-		assertThrows(IllegalStateException.class, Either.left("left")::rightOrThrow);
 	}
 	
 	@Test
-	void swap() {
-		Either<String, String> leftEither = Either.<String, String>left("left").swap();
-		assertFalse(leftEither.isLeft());
-		assertTrue(leftEither.isRight());
-		assertThrows(IllegalStateException.class, leftEither::leftOrThrow);
-		assertDoesNotThrow(leftEither::rightOrThrow);
-		assertEquals("left", leftEither.rightOrThrow());
+	void rightOrThrowWithLeftEither() {
+		assertThrows(IllegalStateException.class, () -> Either.left("left").rightOrThrow());
+		assertThrows(IllegalStateException.class, () -> Either.left(42).rightOrThrow());
+		assertThrows(IllegalStateException.class, () -> Either.left(null).rightOrThrow());
+	}
+	
+	@Test
+	void swapWithLeftEither() {
+		Either<String, String> original = Either.left("left");
+		Either<String, String> swapped = original.swap();
 		
-		Either<String, String> rightEither = Either.<String, String>right("right").swap();
-		assertTrue(rightEither.isLeft());
-		assertFalse(rightEither.isRight());
-		assertDoesNotThrow(rightEither::leftOrThrow);
-		assertEquals("right", rightEither.leftOrThrow());
-		assertThrows(IllegalStateException.class, rightEither::rightOrThrow);
+		assertFalse(swapped.isLeft());
+		assertTrue(swapped.isRight());
+		assertEquals("left", swapped.rightOrThrow());
+		assertThrows(IllegalStateException.class, swapped::leftOrThrow);
 	}
 	
 	@Test
-	void mapBoth() {
+	void swapWithRightEither() {
+		Either<String, String> original = Either.right("right");
+		Either<String, String> swapped = original.swap();
+		
+		assertTrue(swapped.isLeft());
+		assertFalse(swapped.isRight());
+		assertEquals("right", swapped.leftOrThrow());
+		assertThrows(IllegalStateException.class, swapped::rightOrThrow);
+	}
+	
+	@Test
+	void mapBothWithLeftEither() {
 		Either<String, String> leftEither = Either.left("10");
-		assertThrows(NullPointerException.class, () -> leftEither.mapBoth(null, null));
+		Either<Integer, Integer> result = leftEither.mapBoth(Integer::parseInt, Integer::parseInt);
+		
+		assertTrue(result.isLeft());
+		assertEquals(Integer.valueOf(10), result.leftOrThrow());
+	}
+	
+	@Test
+	void mapBothWithRightEither() {
+		Either<String, String> rightEither = Either.right("20");
+		Either<Integer, Integer> result = rightEither.mapBoth(Integer::parseInt, Integer::parseInt);
+		
+		assertTrue(result.isRight());
+		assertEquals(Integer.valueOf(20), result.rightOrThrow());
+	}
+	
+	@Test
+	void mapBothWithNullMappers() {
+		Either<String, String> leftEither = Either.left("10");
+		Either<String, String> rightEither = Either.right("20");
+		
 		assertThrows(NullPointerException.class, () -> leftEither.mapBoth(null, Integer::parseInt));
-		assertDoesNotThrow(() -> leftEither.mapBoth(Integer::parseInt, null));
-		assertDoesNotThrow(() -> leftEither.mapBoth(Integer::parseInt, Integer::parseInt));
-		assertEquals(leftEither.mapBoth(Integer::parseInt, Integer::parseInt), Either.left(10));
-		
-		Either<String, String> rightEither = Either.right("10");
-		assertThrows(NullPointerException.class, () -> rightEither.mapBoth(null, null));
 		assertThrows(NullPointerException.class, () -> rightEither.mapBoth(Integer::parseInt, null));
-		assertDoesNotThrow(() -> rightEither.mapBoth(null, Integer::parseInt));
-		assertDoesNotThrow(() -> rightEither.mapBoth(Integer::parseInt, Integer::parseInt));
-		assertEquals(rightEither.mapBoth(Integer::parseInt, Integer::parseInt), Either.right(10));
 	}
 	
 	@Test
-	void mapTo() {
+	void mapToWithLeftEither() {
 		Either<String, String> leftEither = Either.left("10");
-		assertThrows(NullPointerException.class, () -> leftEither.mapTo(null, null));
-		assertThrows(NullPointerException.class, () -> leftEither.mapTo(null, Integer::parseInt));
-		assertDoesNotThrow(() -> leftEither.mapTo(Integer::parseInt, null));
-		assertDoesNotThrow(() -> leftEither.mapTo(Integer::parseInt, Integer::parseInt));
-		assertEquals(Integer.valueOf(10), leftEither.mapTo(Integer::parseInt, Integer::parseInt));
+		Integer result = leftEither.mapTo(Integer::parseInt, Integer::parseInt);
 		
-		Either<String, String> rightEither = Either.right("10");
-		assertThrows(NullPointerException.class, () -> rightEither.mapTo(null, null));
+		assertEquals(Integer.valueOf(10), result);
+	}
+	
+	@Test
+	void mapToWithRightEither() {
+		Either<String, String> rightEither = Either.right("20");
+		Integer result = rightEither.mapTo(Integer::parseInt, Integer::parseInt);
+		
+		assertEquals(Integer.valueOf(20), result);
+	}
+	
+	@Test
+	void mapToWithNullMappers() {
+		Either<String, String> leftEither = Either.left("10");
+		Either<String, String> rightEither = Either.right("20");
+		
+		assertThrows(NullPointerException.class, () -> leftEither.mapTo(null, Integer::parseInt));
 		assertThrows(NullPointerException.class, () -> rightEither.mapTo(Integer::parseInt, null));
-		assertDoesNotThrow(() -> rightEither.mapTo(null, Integer::parseInt));
-		assertDoesNotThrow(() -> rightEither.mapTo(Integer::parseInt, Integer::parseInt));
-		assertEquals(Integer.valueOf(10), rightEither.mapTo(Integer::parseInt, Integer::parseInt));
 	}
 	
 	@Test
-	void mapLeft() {
+	void mapLeftWithLeftEither() {
 		Either<String, String> either = Either.left(" left ");
-		assertThrows(NullPointerException.class, () -> either.mapLeft(null));
-		assertDoesNotThrow(() -> either.mapLeft(String::trim));
-		assertEquals(either.mapLeft(String::trim), Either.left("left"));
+		Either<String, String> result = either.mapLeft(String::trim);
+		
+		assertTrue(result.isLeft());
+		assertEquals("left", result.leftOrThrow());
 	}
 	
 	@Test
-	void mapRight() {
+	void mapLeftWithRightEither() {
 		Either<String, String> either = Either.right(" right ");
+		Either<String, String> result = either.mapLeft(String::trim);
+		
+		assertTrue(result.isRight());
+		assertEquals(" right ", result.rightOrThrow());
+	}
+	
+	@Test
+	void mapLeftWithNullMapper() {
+		Either<String, String> either = Either.left("left");
+		assertThrows(NullPointerException.class, () -> either.mapLeft(null));
+	}
+	
+	@Test
+	void mapRightWithRightEither() {
+		Either<String, String> either = Either.right(" right ");
+		Either<String, String> result = either.mapRight(String::trim);
+		
+		assertTrue(result.isRight());
+		assertEquals("right", result.rightOrThrow());
+	}
+	
+	@Test
+	void mapRightWithLeftEither() {
+		Either<String, String> either = Either.left(" left ");
+		Either<String, String> result = either.mapRight(String::trim);
+		
+		assertTrue(result.isLeft());
+		assertEquals(" left ", result.leftOrThrow());
+	}
+	
+	@Test
+	void mapRightWithNullMapper() {
+		Either<String, String> either = Either.right("right");
 		assertThrows(NullPointerException.class, () -> either.mapRight(null));
-		assertDoesNotThrow(() -> either.mapRight(String::trim));
-		assertEquals(either.mapRight(String::trim), Either.right("right"));
+	}
+	
+	@Test
+	void hashCodeConsistency() {
+		Either<String, String> left1 = Either.left("same");
+		Either<String, String> left2 = Either.left("same");
+		Either<String, String> right1 = Either.right("same");
+		Either<String, String> right2 = Either.right("same");
+		
+		assertEquals(left1.hashCode(), left2.hashCode());
+		assertEquals(right1.hashCode(), right2.hashCode());
 	}
 }

@@ -39,48 +39,121 @@ class NamedCodecTest {
 		assertThrows(NullPointerException.class, () -> new NamedCodec<>(null, "name"));
 		assertThrows(NullPointerException.class, () -> new NamedCodec<>(Codec.INTEGER.optional(), null));
 		assertThrows(NullPointerException.class, () -> new NamedCodec<>(Codec.INTEGER.optional(), "name", (String[]) null));
+		assertDoesNotThrow(() -> new NamedCodec<>(Codec.INTEGER.optional(), "name"));
+		assertDoesNotThrow(() -> new NamedCodec<>(Codec.INTEGER.optional(), "name", "alias"));
 	}
 	
 	@Test
-	void encodeStart() {
+	void encodeStartNullChecks() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		NamedCodec<Optional<Integer>> codec = new NamedCodec<>(Codec.INTEGER.optional(), "name");
 		JsonObject map = new JsonObject();
 		
 		assertThrows(NullPointerException.class, () -> codec.encodeStart(null, map, Optional.of(42)));
 		assertThrows(NullPointerException.class, () -> codec.encodeStart(typeProvider, null, Optional.of(42)));
-		
-		Result<JsonElement> nullResult = codec.encodeStart(typeProvider, map, null);
-		assertTrue(nullResult.isError());
-		
-		Result<JsonElement> emptyResult = codec.encodeStart(typeProvider, map, Optional.empty());
-		assertTrue(emptyResult.isSuccess());
-		assertEquals(JsonNull.INSTANCE, assertInstanceOf(JsonNull.class, emptyResult.orThrow()));
-		
-		Result<JsonElement> noMapResult = codec.encodeStart(typeProvider, typeProvider.empty(), Optional.of(42));
-		assertTrue(noMapResult.isError());
-		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, map, Optional.of(42));
-		assertTrue(result.isSuccess());
-		assertSame(map, assertInstanceOf(JsonObject.class, result.orThrow()));
 	}
 	
 	@Test
-	void decodeStart() {
+	void encodeStartWithNullValue() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		NamedCodec<Optional<Integer>> codec = new NamedCodec<>(Codec.INTEGER.optional(), "name");
 		JsonObject map = new JsonObject();
 		
-		assertThrows(NullPointerException.class, () -> codec.decodeStart(null, map));
-		assertTrue(codec.decodeStart(typeProvider, null).isError());
+		Result<JsonElement> result = codec.encodeStart(typeProvider, map, null);
+		assertTrue(result.isError());
+		assertTrue(result.errorOrThrow().contains("Unable to encode named 'name' null value"));
+	}
+	
+	@Test
+	void encodeStartWithEmptyOptional() {
+		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
+		NamedCodec<Optional<Integer>> codec = new NamedCodec<>(Codec.INTEGER.optional(), "name");
+		JsonObject map = new JsonObject();
 		
-		Result<Optional<Integer>> emptyResult = codec.decodeStart(typeProvider, map);
-		assertTrue(emptyResult.isSuccess());
-		assertTrue(emptyResult.orThrow().isEmpty());
+		Result<JsonElement> result = codec.encodeStart(typeProvider, map, Optional.empty());
+		assertTrue(result.isSuccess());
+		assertEquals(JsonNull.INSTANCE, result.orThrow());
+	}
+	
+	@Test
+	void encodeStartWithNonMapCurrent() {
+		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
+		NamedCodec<Optional<Integer>> codec = new NamedCodec<>(Codec.INTEGER.optional(), "name");
+		
+		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), Optional.of(42));
+		assertTrue(result.isError());
+	}
+	
+	@Test
+	void encodeStartWithValidValue() {
+		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
+		NamedCodec<Optional<Integer>> codec = new NamedCodec<>(Codec.INTEGER.optional(), "name");
+		JsonObject map = new JsonObject();
+		
+		Result<JsonElement> result = codec.encodeStart(typeProvider, map, Optional.of(42));
+		assertTrue(result.isSuccess());
+		assertSame(map, result.orThrow());
+		assertTrue(map.containsKey("name"));
+		assertEquals(new JsonPrimitive(42), map.get("name"));
+	}
+	
+	@Test
+	void encodeStartWithRequiredValue() {
+		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
+		NamedCodec<Integer> codec = new NamedCodec<>(Codec.INTEGER, "number");
+		JsonObject map = new JsonObject();
+		
+		Result<JsonElement> result = codec.encodeStart(typeProvider, map, 123);
+		assertTrue(result.isSuccess());
+		assertSame(map, result.orThrow());
+		assertTrue(map.containsKey("number"));
+		assertEquals(new JsonPrimitive(123), map.get("number"));
+	}
+	
+	@Test
+	void decodeStartNullChecks() {
+		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
+		NamedCodec<Optional<Integer>> codec = new NamedCodec<>(Codec.INTEGER.optional(), "name");
+		
+		assertThrows(NullPointerException.class, () -> codec.decodeStart(null, new JsonObject()));
+	}
+	
+	@Test
+	void decodeStartWithNull() {
+		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
+		NamedCodec<Optional<Integer>> codec = new NamedCodec<>(Codec.INTEGER.optional(), "name");
+		
+		Result<Optional<Integer>> result = codec.decodeStart(typeProvider, null);
+		assertTrue(result.isError());
+		assertTrue(result.errorOrThrow().contains("Unable to decode named 'name' null value"));
+	}
+	
+	@Test
+	void decodeStartWithEmptyMap() {
+		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
+		NamedCodec<Optional<Integer>> codec = new NamedCodec<>(Codec.INTEGER.optional(), "name");
+		JsonObject map = new JsonObject();
+		
+		Result<Optional<Integer>> result = codec.decodeStart(typeProvider, map);
+		assertTrue(result.isSuccess());
+		assertTrue(result.orThrow().isEmpty());
+	}
+	
+	@Test
+	void decodeStartWithNonMapValue() {
+		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
+		NamedCodec<Optional<Integer>> codec = new NamedCodec<>(Codec.INTEGER.optional(), "name");
+		
+		Result<Optional<Integer>> result = codec.decodeStart(typeProvider, typeProvider.empty());
+		assertTrue(result.isError());
+	}
+	
+	@Test
+	void decodeStartWithValidValue() {
+		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
+		NamedCodec<Optional<Integer>> codec = new NamedCodec<>(Codec.INTEGER.optional(), "name");
+		JsonObject map = new JsonObject();
 		map.add("name", new JsonPrimitive(42));
-		
-		Result<Optional<Integer>> noMapResult = codec.decodeStart(typeProvider, typeProvider.empty());
-		assertTrue(noMapResult.isError());
 		
 		Result<Optional<Integer>> result = codec.decodeStart(typeProvider, map);
 		assertTrue(result.isSuccess());
@@ -89,28 +162,110 @@ class NamedCodecTest {
 	}
 	
 	@Test
-	void decodeStartWithAlias() {
+	void decodeStartWithRequiredValue() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		NamedCodec<Integer> codec = new NamedCodec<>(Codec.INTEGER, "name", "_name");
+		NamedCodec<Integer> codec = new NamedCodec<>(Codec.INTEGER, "number");
+		JsonObject map = new JsonObject();
+		map.add("number", new JsonPrimitive(123));
+		
+		Result<Integer> result = codec.decodeStart(typeProvider, map);
+		assertTrue(result.isSuccess());
+		assertEquals(123, result.orThrow());
+	}
+	
+	@Test
+	void decodeStartWithMissingRequiredValue() {
+		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
+		NamedCodec<Integer> codec = new NamedCodec<>(Codec.INTEGER, "number");
 		JsonObject map = new JsonObject();
 		
-		assertThrows(NullPointerException.class, () -> codec.decodeStart(null, map));
-		assertTrue(codec.decodeStart(typeProvider, null).isError());
+		Result<Integer> result = codec.decodeStart(typeProvider, map);
+		assertTrue(result.isError());
+	}
+	
+	@Test
+	void decodeStartWithSingleAlias() {
+		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
+		NamedCodec<Integer> codec = new NamedCodec<>(Codec.INTEGER, "name", "alias");
+		JsonObject map = new JsonObject();
+		map.add("alias", new JsonPrimitive(42));
 		
-		Result<Integer> emptyResult = codec.decodeStart(typeProvider, map);
-		assertTrue(emptyResult.isError());
-		map.add("_name", new JsonPrimitive(42));
+		Result<Integer> result = codec.decodeStart(typeProvider, map);
+		assertTrue(result.isSuccess());
+		assertEquals(42, result.orThrow());
+	}
+	
+	@Test
+	void decodeStartWithMultipleAliases() {
+		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
+		NamedCodec<Integer> codec = new NamedCodec<>(Codec.INTEGER, "name", "alias1", "alias2");
+		JsonObject map = new JsonObject();
+		map.add("alias2", new JsonPrimitive(42));
 		
-		Result<Integer> noMapResult = codec.decodeStart(typeProvider, typeProvider.empty());
-		assertTrue(noMapResult.isError());
-		
-		Result<Integer> aliasResult = codec.decodeStart(typeProvider, map);
-		assertTrue(aliasResult.isSuccess());
-		assertEquals(42, aliasResult.orThrow());
-		
+		Result<Integer> result = codec.decodeStart(typeProvider, map);
+		assertTrue(result.isSuccess());
+		assertEquals(42, result.orThrow());
+	}
+	
+	@Test
+	void decodeStartPrefersPrimaryNameOverAlias() {
+		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
+		NamedCodec<Integer> codec = new NamedCodec<>(Codec.INTEGER, "name", "alias");
+		JsonObject map = new JsonObject();
 		map.add("name", new JsonPrimitive(43));
-		Result<Integer> nameResult = codec.decodeStart(typeProvider, map);
-		assertTrue(nameResult.isSuccess());
-		assertEquals(43, nameResult.orThrow());
+		map.add("alias", new JsonPrimitive(42));
+		
+		Result<Integer> result = codec.decodeStart(typeProvider, map);
+		assertTrue(result.isSuccess());
+		assertEquals(43, result.orThrow());
+	}
+	
+	@Test
+	void decodeStartWithNoAliasesConfigured() {
+		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
+		NamedCodec<Integer> codec = new NamedCodec<>(Codec.INTEGER, "name");
+		JsonObject map = new JsonObject();
+		
+		Result<Integer> result = codec.decodeStart(typeProvider, map);
+		assertTrue(result.isError());
+		assertTrue(result.errorOrThrow().contains("no aliases configured"));
+	}
+	
+	@Test
+	void decodeStartWithNoMatchingAliases() {
+		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
+		NamedCodec<Integer> codec = new NamedCodec<>(Codec.INTEGER, "name", "alias1", "alias2");
+		JsonObject map = new JsonObject();
+		map.add("other", new JsonPrimitive(42));
+		
+		Result<Integer> result = codec.decodeStart(typeProvider, map);
+		assertTrue(result.isError());
+		assertTrue(result.errorOrThrow().contains("not found"));
+	}
+	
+	@Test
+	void equalsAndHashCode() {
+		NamedCodec<Integer> codec1 = new NamedCodec<>(Codec.INTEGER, "name");
+		NamedCodec<Integer> codec2 = new NamedCodec<>(Codec.INTEGER, "name");
+		
+		assertEquals(codec1.hashCode(), codec2.hashCode());
+	}
+	
+	@Test
+	void toStringWithoutAliases() {
+		NamedCodec<Integer> codec = new NamedCodec<>(Codec.INTEGER, "name");
+		String result = codec.toString();
+		
+		assertTrue(result.contains("'name'"));
+		assertFalse(result.contains("alias"));
+	}
+	
+	@Test
+	void toStringWithAliases() {
+		NamedCodec<Integer> codec = new NamedCodec<>(Codec.INTEGER, "name", "alias");
+		String result = codec.toString();
+		
+		assertTrue(result.contains("'name'"));
+		assertTrue(result.contains("alias"));
 	}
 }

@@ -21,6 +21,8 @@ package net.luis.utils.io.token.rule.rules;
 import net.luis.utils.io.token.rule.TokenRuleMatch;
 import net.luis.utils.io.token.tokens.SimpleToken;
 import net.luis.utils.io.token.tokens.Token;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Unmodifiable;
 import org.junit.jupiter.api.Test;
 
 import java.util.Collections;
@@ -35,34 +37,197 @@ import static org.junit.jupiter.api.Assertions.*;
  */
 class EndTokenRuleTest {
 	
-	private static final Token TOKEN_0 = SimpleToken.createUnpositioned("test"::equals, "test");
-	private static final Token TOKEN_1 = SimpleToken.createUnpositioned("test1"::equals, "test1");
+	private static @NotNull Token createToken(@NotNull String value) {
+		return SimpleToken.createUnpositioned(word -> word.equals(value), value);
+	}
+	
+	private static @NotNull @Unmodifiable List<Token> createTokenList() {
+		return java.util.stream.IntStream.range(0, 100).mapToObj(i -> createToken("token" + i)).toList();
+	}
 	
 	@Test
-	void match() {
+	void matchWithNullTokenList() {
 		EndTokenRule rule = EndTokenRule.INSTANCE;
-		assertThrows(NullPointerException.class, () -> rule.match(null, 0));
-		assertNull(rule.match(List.of(TOKEN_0, TOKEN_1), 0));
-		assertNull(rule.match(List.of(TOKEN_0, TOKEN_1), 1));
 		
-		List<Token> tokens = List.of(TOKEN_0, TOKEN_1);
+		assertThrows(NullPointerException.class, () -> rule.match(null, 0));
+	}
+	
+	@Test
+	void matchWithEmptyTokenListAtIndexZero() {
+		EndTokenRule rule = EndTokenRule.INSTANCE;
+		
+		TokenRuleMatch match = rule.match(Collections.emptyList(), 0);
+		
+		assertNotNull(match);
+		assertEquals(0, match.startIndex());
+		assertEquals(0, match.endIndex());
+		assertTrue(match.matchedTokens().isEmpty());
+		assertSame(rule, match.matchingTokenRule());
+	}
+	
+	@Test
+	void matchWithEmptyTokenListAtHigherIndex() {
+		EndTokenRule rule = EndTokenRule.INSTANCE;
+		
+		TokenRuleMatch match = rule.match(Collections.emptyList(), 5);
+		
+		assertNotNull(match);
+		assertEquals(5, match.startIndex());
+		assertEquals(5, match.endIndex());
+		assertTrue(match.matchedTokens().isEmpty());
+	}
+	
+	@Test
+	void matchWithTokensAtValidEndIndex() {
+		EndTokenRule rule = EndTokenRule.INSTANCE;
+		List<Token> tokens = List.of(createToken("first"), createToken("second"));
+		
 		TokenRuleMatch match = rule.match(tokens, 2);
+		
 		assertNotNull(match);
 		assertEquals(2, match.startIndex());
 		assertEquals(2, match.endIndex());
 		assertTrue(match.matchedTokens().isEmpty());
 		assertSame(rule, match.matchingTokenRule());
+	}
+	
+	@Test
+	void matchWithTokensAtIndexBeyondEnd() {
+		EndTokenRule rule = EndTokenRule.INSTANCE;
+		List<Token> tokens = List.of(createToken("test"));
 		
-		TokenRuleMatch beyondMatch = rule.match(tokens, 5);
-		assertNotNull(beyondMatch);
-		assertEquals(5, beyondMatch.startIndex());
-		assertEquals(5, beyondMatch.endIndex());
-		assertTrue(beyondMatch.matchedTokens().isEmpty());
+		TokenRuleMatch match = rule.match(tokens, 5);
+		
+		assertNotNull(match);
+		assertEquals(5, match.startIndex());
+		assertEquals(5, match.endIndex());
+		assertTrue(match.matchedTokens().isEmpty());
+	}
+	
+	@Test
+	void noMatchWithTokensAtValidTokenIndex() {
+		EndTokenRule rule = EndTokenRule.INSTANCE;
+		List<Token> tokens = List.of(createToken("first"), createToken("second"));
+		
+		assertNull(rule.match(tokens, 0));
+		assertNull(rule.match(tokens, 1));
+	}
+	
+	@Test
+	void noMatchWithSingleTokenAtIndexZero() {
+		EndTokenRule rule = EndTokenRule.INSTANCE;
+		List<Token> tokens = List.of(createToken("single"));
+		
+		assertNull(rule.match(tokens, 0));
+	}
+	
+	@Test
+	void matchWithLargeTokenListAtEnd() {
+		EndTokenRule rule = EndTokenRule.INSTANCE;
+		List<Token> largeList = createTokenList();
+		
+		TokenRuleMatch match = rule.match(largeList, 100);
+		
+		assertNotNull(match);
+		assertEquals(100, match.startIndex());
+		assertEquals(100, match.endIndex());
+		assertTrue(match.matchedTokens().isEmpty());
+	}
+	
+	@Test
+	void noMatchWithLargeTokenListInMiddle() {
+		EndTokenRule rule = EndTokenRule.INSTANCE;
+		List<Token> largeList = createTokenList();
+		
+		assertNull(rule.match(largeList, 50));
+		assertNull(rule.match(largeList, 99));
+	}
+	
+	@Test
+	void matchAtNegativeIndexBeyondSize() {
+		EndTokenRule rule = EndTokenRule.INSTANCE;
+		List<Token> tokens = List.of(createToken("test"));
+		
+		TokenRuleMatch match = rule.match(tokens, -5);
+		assertNull(match);
+	}
+	
+	@Test
+	void matchConsistencyAcrossMultipleCalls() {
+		EndTokenRule rule = EndTokenRule.INSTANCE;
+		List<Token> tokens = List.of(createToken("test"));
+		
+		TokenRuleMatch match1 = rule.match(tokens, 1);
+		TokenRuleMatch match2 = rule.match(tokens, 1);
+		
+		assertNotNull(match1);
+		assertNotNull(match2);
+		assertEquals(match1.startIndex(), match2.startIndex());
+		assertEquals(match1.endIndex(), match2.endIndex());
+		assertEquals(match1.matchedTokens(), match2.matchedTokens());
+		assertSame(match1.matchingTokenRule(), match2.matchingTokenRule());
+	}
+	
+	@Test
+	void matchWithDifferentTokenTypes() {
+		EndTokenRule rule = EndTokenRule.INSTANCE;
+		List<Token> tokens = List.of(
+			createToken("text"),
+			createToken("123"),
+			createToken("!@#")
+		);
+		
+		TokenRuleMatch match = rule.match(tokens, 3);
+		
+		assertNotNull(match);
+		assertEquals(3, match.startIndex());
+		assertEquals(3, match.endIndex());
+		assertTrue(match.matchedTokens().isEmpty());
+	}
+	
+	@Test
+	void matchEmptyTokensListIsAlwaysEmpty() {
+		EndTokenRule rule = EndTokenRule.INSTANCE;
+		
+		for (int i = 0; i <= 10; i++) {
+			TokenRuleMatch match = rule.match(Collections.emptyList(), i);
+			assertNotNull(match);
+			assertTrue(match.matchedTokens().isEmpty());
+			assertEquals(i, match.startIndex());
+			assertEquals(i, match.endIndex());
+		}
+	}
+	
+	@Test
+	void matchBehaviorWithZeroIndex() {
+		EndTokenRule rule = EndTokenRule.INSTANCE;
 		
 		TokenRuleMatch emptyMatch = rule.match(Collections.emptyList(), 0);
 		assertNotNull(emptyMatch);
-		assertEquals(0, emptyMatch.startIndex());
-		assertEquals(0, emptyMatch.endIndex());
-		assertTrue(emptyMatch.matchedTokens().isEmpty());
+		
+		List<Token> nonEmpty = List.of(createToken("test"));
+		assertNull(rule.match(nonEmpty, 0));
+	}
+	
+	@Test
+	void matchResultsHaveCorrectStructure() {
+		EndTokenRule rule = EndTokenRule.INSTANCE;
+		List<Token> tokens = List.of(createToken("a"), createToken("b"));
+		
+		TokenRuleMatch match = rule.match(tokens, 2);
+		
+		assertNotNull(match);
+		assertEquals(2, match.startIndex());
+		assertEquals(2, match.endIndex());
+		assertEquals(0, match.matchedTokens().size());
+		assertTrue(match.matchedTokens().isEmpty());
+		assertSame(rule, match.matchingTokenRule());
+		assertThrows(UnsupportedOperationException.class, () -> match.matchedTokens().add(createToken("new")));
+	}
+	
+	@Test
+	void equalInstancesHaveSameHashCode() {
+		assertEquals(EndTokenRule.INSTANCE.hashCode(), EndTokenRule.INSTANCE.hashCode());
 	}
 }
+

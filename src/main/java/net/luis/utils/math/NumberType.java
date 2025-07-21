@@ -59,11 +59,11 @@ public enum NumberType {
 	/**
 	 * Represents a {@link Float} number type.<br>
 	 */
-	FLOAT(Float.class, Float.SIZE, Float.MIN_VALUE, Float.MAX_VALUE, true, 'f', Set.of(Radix.DECIMAL, Radix.HEXADECIMAL), wrapFloatingPointParser(Float::parseFloat)),
+	FLOAT(Float.class, Float.SIZE, -Float.MAX_VALUE, Float.MAX_VALUE, true, 'f', Set.of(Radix.DECIMAL, Radix.HEXADECIMAL), wrapFloatingPointParser(Float::parseFloat)),
 	/**
 	 * Represents a {@link Double} number type.<br>
 	 */
-	DOUBLE(Double.class, Double.SIZE, Double.MIN_VALUE, Double.MAX_VALUE, true, 'd', Set.of(Radix.DECIMAL, Radix.HEXADECIMAL), wrapFloatingPointParser(Double::parseDouble)),
+	DOUBLE(Double.class, Double.SIZE, -Double.MAX_VALUE, Double.MAX_VALUE, true, 'd', Set.of(Radix.DECIMAL, Radix.HEXADECIMAL), wrapFloatingPointParser(Double::parseDouble)),
 	/**
 	 * Represents a {@link BigDecimal} number type.<br>
 	 */

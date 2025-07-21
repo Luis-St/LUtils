@@ -36,37 +36,76 @@ import static org.junit.jupiter.api.Assertions.*;
 class EnumLikeTest {
 	
 	@Test
-	void getPredefinedConstants() {
+	void getPredefinedConstantsFailsWithNullClass() {
 		assertThrows(NullPointerException.class, () -> EnumLike.getPredefinedConstants(null));
-		assertEquals(4, EnumLike.getPredefinedConstants(Example.class).size());
-		List<EnumConstant<Example>> list = EnumLike.getPredefinedConstants(Example.class);
-		assertEquals(new EnumConstant<>("EXAMPLE_0", 0, Example.EXAMPLE_0), list.get(0));
-		assertEquals(new EnumConstant<>("EXAMPLE_1", 1, Example.EXAMPLE_1), list.get(1));
-		assertEquals(new EnumConstant<>("EXAMPLE_2", 2, Example.EXAMPLE_2), list.get(2));
-		assertEquals(new EnumConstant<>("EXAMPLE_3", 3, Example.EXAMPLE_3), list.get(3));
 	}
 	
 	@Test
-	void values() {
+	void getPredefinedConstantsReturnsCorrectConstants() {
+		List<EnumConstant<Example>> constants = EnumLike.getPredefinedConstants(Example.class);
+		
+		assertEquals(4, constants.size());
+		assertEquals(new EnumConstant<>("EXAMPLE_0", 0, Example.EXAMPLE_0), constants.get(0));
+		assertEquals(new EnumConstant<>("EXAMPLE_1", 1, Example.EXAMPLE_1), constants.get(1));
+		assertEquals(new EnumConstant<>("EXAMPLE_2", 2, Example.EXAMPLE_2), constants.get(2));
+		assertEquals(new EnumConstant<>("EXAMPLE_3", 3, Example.EXAMPLE_3), constants.get(3));
+	}
+	
+	@Test
+	void getPredefinedConstantsHandlesEmptyClass() {
+		List<EnumConstant<EmptyExample>> constants = EnumLike.getPredefinedConstants(EmptyExample.class);
+		assertTrue(constants.isEmpty());
+	}
+	
+	@Test
+	void valuesFailsWithNullClass() {
 		assertThrows(NullPointerException.class, () -> EnumLike.values(null));
-		assertEquals(5, EnumLike.values(Example.class).size());
-		List<Example> list = EnumLike.values(Example.class);
-		assertEquals(Example.EXAMPLE_0, list.get(0));
-		assertEquals(Example.EXAMPLE_1, list.get(1));
-		assertEquals(Example.EXAMPLE_2, list.get(2));
-		assertEquals(Example.EXAMPLE_3, list.get(3));
-		assertEquals(TestClass.EXAMPLE_4, list.get(4));
 	}
 	
 	@Test
-	void valueOf() {
+	void valuesReturnsAllInstances() {
+		List<Example> values = EnumLike.values(Example.class);
+		
+		assertEquals(5, values.size());
+		assertEquals(Example.EXAMPLE_0, values.get(0));
+		assertEquals(Example.EXAMPLE_1, values.get(1));
+		assertEquals(Example.EXAMPLE_2, values.get(2));
+		assertEquals(Example.EXAMPLE_3, values.get(3));
+		assertEquals(TestClass.EXAMPLE_4, values.get(4));
+	}
+	
+	@Test
+	void valuesHandlesEmptyClass() {
+		List<EmptyExample> values = EnumLike.values(EmptyExample.class);
+		assertTrue(values.isEmpty());
+	}
+	
+	@Test
+	void valueOfFailsWithNullClass() {
 		assertThrows(NullPointerException.class, () -> EnumLike.valueOf(null, "Example 0"));
+	}
+	
+	@Test
+	void valueOfFailsWithNullName() {
 		assertThrows(IllegalStateException.class, () -> EnumLike.valueOf(Example.class, null));
+	}
+	
+	@Test
+	void valueOfFailsWithNonExistentName() {
+		assertThrows(IllegalStateException.class, () -> EnumLike.valueOf(Example.class, "NON_EXISTENT"));
+	}
+	
+	@Test
+	void valueOfFindsConstantsCaseInsensitive() {
 		assertEquals(Example.EXAMPLE_0, EnumLike.valueOf(Example.class, "EXAMPLE 0"));
 		assertEquals(Example.EXAMPLE_1, EnumLike.valueOf(Example.class, "EXAMPLE 1"));
 		assertEquals(Example.EXAMPLE_2, EnumLike.valueOf(Example.class, "EXAMPLE 2"));
 		assertEquals(Example.EXAMPLE_3, EnumLike.valueOf(Example.class, "EXAMPLE 3"));
 		assertEquals(TestClass.EXAMPLE_4, EnumLike.valueOf(Example.class, "EXAMPLE 4"));
+	}
+	
+	@Test
+	void valueOfFindsConstantsLowerCase() {
 		assertEquals(Example.EXAMPLE_0, EnumLike.valueOf(Example.class, "example 0"));
 		assertEquals(Example.EXAMPLE_1, EnumLike.valueOf(Example.class, "example 1"));
 		assertEquals(Example.EXAMPLE_2, EnumLike.valueOf(Example.class, "example 2"));
@@ -75,7 +114,14 @@ class EnumLikeTest {
 	}
 	
 	@Test
-	void name() {
+	void valueOfFindsConstantsMixedCase() {
+		assertEquals(Example.EXAMPLE_0, EnumLike.valueOf(Example.class, "Example 0"));
+		assertEquals(Example.EXAMPLE_1, EnumLike.valueOf(Example.class, "eXaMpLe 1"));
+		assertEquals(Example.EXAMPLE_2, EnumLike.valueOf(Example.class, "EXAMPLE 2"));
+	}
+	
+	@Test
+	void nameReturnsCorrectNames() {
 		assertEquals("Example 0", Example.EXAMPLE_0.name());
 		assertEquals("Example 1", Example.EXAMPLE_1.name());
 		assertEquals("Example 2", Example.EXAMPLE_2.name());
@@ -84,7 +130,7 @@ class EnumLikeTest {
 	}
 	
 	@Test
-	void ordinal() {
+	void ordinalReturnsCorrectOrder() {
 		assertEquals(0, Example.EXAMPLE_0.ordinal());
 		assertEquals(1, Example.EXAMPLE_1.ordinal());
 		assertEquals(2, Example.EXAMPLE_2.ordinal());
@@ -93,11 +139,27 @@ class EnumLikeTest {
 	}
 	
 	@Test
-	void compareTo() {
+	void compareToFailsWithNull() {
 		assertThrows(NullPointerException.class, () -> Example.EXAMPLE_2.compareTo(null));
+	}
+	
+	@Test
+	void compareToReturnsZeroForSameInstance() {
 		assertEquals(0, Example.EXAMPLE_2.compareTo(Example.EXAMPLE_2));
-		assertEquals(-1, Example.EXAMPLE_2.compareTo(Example.EXAMPLE_3));
-		assertEquals(1, Example.EXAMPLE_3.compareTo(Example.EXAMPLE_2));
+	}
+	
+	@Test
+	void compareToReturnsCorrectOrder() {
+		assertTrue(Example.EXAMPLE_0.compareTo(Example.EXAMPLE_1) < 0);
+		assertTrue(Example.EXAMPLE_1.compareTo(Example.EXAMPLE_0) > 0);
+		assertTrue(Example.EXAMPLE_2.compareTo(Example.EXAMPLE_3) < 0);
+		assertTrue(Example.EXAMPLE_3.compareTo(Example.EXAMPLE_2) > 0);
+	}
+	
+	@Test
+	void compareToWorksAcrossClasses() {
+		assertTrue(Example.EXAMPLE_3.compareTo(TestClass.EXAMPLE_4) < 0);
+		assertTrue(TestClass.EXAMPLE_4.compareTo(Example.EXAMPLE_3) > 0);
 	}
 	
 	//region Static initializer
@@ -117,7 +179,23 @@ class EnumLikeTest {
 		public static final Example EXAMPLE_2 = new Example("Example 2");
 		public static final Example EXAMPLE_3 = new Example("Example 3");
 		
-		public Example(String name) {
+		private Example(String name) {
+			this.name = name;
+			VALUES.add(this);
+		}
+		
+		@Override
+		public @NotNull String name() {
+			return this.name;
+		}
+	}
+	
+	private static record EmptyExample(String name) implements EnumLike<EmptyExample> {
+		
+		@ReflectiveUsage
+		private static final List<EmptyExample> VALUES = Lists.newLinkedList();
+		
+		private EmptyExample(String name) {
 			this.name = name;
 			VALUES.add(this);
 		}

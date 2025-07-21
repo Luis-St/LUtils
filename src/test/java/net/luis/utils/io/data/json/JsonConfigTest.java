@@ -31,61 +31,172 @@ import static org.junit.jupiter.api.Assertions.*;
  */
 class JsonConfigTest {
 	
-	private static final JsonConfig DEFAULT_CONFIG = JsonConfig.DEFAULT;
-	private static final JsonConfig CUSTOM_CONFIG = new JsonConfig(false, false, "  ", false, 1, false, 10, StandardCharsets.UTF_16);
-	
 	@Test
-	void constructor() {
-		assertThrows(NullPointerException.class, () -> new JsonConfig(true, true, "\t", true, 10, true, 1, null));
-		assertThrows(IllegalArgumentException.class, () -> new JsonConfig(true, true, "\t", true, 0, true, 1, StandardCharsets.UTF_8));
-		assertThrows(IllegalArgumentException.class, () -> new JsonConfig(true, true, "\t", true, 10, true, 0, StandardCharsets.UTF_8));
+	void constructorValidatesParameters() {
+		assertDoesNotThrow(() -> new JsonConfig(
+			true, true, "\t", true, 10, true, 1, StandardCharsets.UTF_8
+		));
+		
+		assertThrows(NullPointerException.class, () -> new JsonConfig(
+			true, true, null, true, 10, true, 1, StandardCharsets.UTF_8
+		));
+		
+		assertThrows(NullPointerException.class, () -> new JsonConfig(
+			true, true, "\t", true, 10, true, 1, null
+		));
+		
+		assertThrows(IllegalArgumentException.class, () -> new JsonConfig(
+			true, true, "\t", true, 0, true, 1, StandardCharsets.UTF_8
+		));
+		
+		assertThrows(IllegalArgumentException.class, () -> new JsonConfig(
+			true, true, "\t", true, -1, true, 1, StandardCharsets.UTF_8
+		));
+		
+		assertThrows(IllegalArgumentException.class, () -> new JsonConfig(
+			true, true, "\t", true, 10, true, 0, StandardCharsets.UTF_8
+		));
+		
+		assertThrows(IllegalArgumentException.class, () -> new JsonConfig(
+			true, true, "\t", true, 10, true, -1, StandardCharsets.UTF_8
+		));
+		
+		assertDoesNotThrow(() -> new JsonConfig(
+			true, true, "\t", false, 0, false, 0, StandardCharsets.UTF_8
+		));
+		
+		assertDoesNotThrow(() -> new JsonConfig(
+			true, true, "\t", false, -1, false, -1, StandardCharsets.UTF_8
+		));
 	}
 	
 	@Test
-	void strict() {
-		assertTrue(DEFAULT_CONFIG.strict());
-		assertFalse(CUSTOM_CONFIG.strict());
+	void defaultConfigurationValues() {
+		JsonConfig config = JsonConfig.DEFAULT;
+		
+		assertTrue(config.strict());
+		assertTrue(config.prettyPrint());
+		assertEquals("\t", config.indent());
+		assertTrue(config.simplifyArrays());
+		assertEquals(10, config.maxArraySimplificationSize());
+		assertTrue(config.simplifyObjects());
+		assertEquals(1, config.maxObjectSimplificationSize());
+		assertEquals(StandardCharsets.UTF_8, config.charset());
 	}
 	
 	@Test
-	void indent() {
-		assertEquals("\t", DEFAULT_CONFIG.indent());
-		assertEquals("  ", CUSTOM_CONFIG.indent());
+	void customConfigurationValues() {
+		JsonConfig config = new JsonConfig(
+			false, false, "    ", false, 5, false, 3, StandardCharsets.UTF_16
+		);
+		
+		assertFalse(config.strict());
+		assertFalse(config.prettyPrint());
+		assertEquals("    ", config.indent());
+		assertFalse(config.simplifyArrays());
+		assertEquals(5, config.maxArraySimplificationSize());
+		assertFalse(config.simplifyObjects());
+		assertEquals(3, config.maxObjectSimplificationSize());
+		assertEquals(StandardCharsets.UTF_16, config.charset());
 	}
 	
 	@Test
-	void prettyPrint() {
-		assertTrue(DEFAULT_CONFIG.prettyPrint());
-		assertFalse(CUSTOM_CONFIG.prettyPrint());
+	void allParameterCombinations() {
+		for (boolean strict : new boolean[] { true, false }) {
+			for (boolean prettyPrint : new boolean[] { true, false }) {
+				for (boolean simplifyArrays : new boolean[] { true, false }) {
+					for (boolean simplifyObjects : new boolean[] { true, false }) {
+						assertDoesNotThrow(() -> new JsonConfig(
+							strict, prettyPrint, "  ", simplifyArrays, 5, simplifyObjects, 2, StandardCharsets.UTF_8
+						));
+					}
+				}
+			}
+		}
 	}
 	
 	@Test
-	void simplifyArrays() {
-		assertTrue(DEFAULT_CONFIG.simplifyArrays());
-		assertFalse(CUSTOM_CONFIG.simplifyArrays());
+	void differentIndentStrings() {
+		String[] indents = { "\t", "  ", "    ", "        ", "", "xyz" };
+		
+		for (String indent : indents) {
+			JsonConfig config = new JsonConfig(
+				true, true, indent, true, 10, true, 1, StandardCharsets.UTF_8
+			);
+			assertEquals(indent, config.indent());
+		}
 	}
 	
 	@Test
-	void maxArraySimplificationSize() {
-		assertEquals(10, DEFAULT_CONFIG.maxArraySimplificationSize());
-		assertEquals(1, CUSTOM_CONFIG.maxArraySimplificationSize());
+	void differentCharsets() {
+		var charsets = new java.nio.charset.Charset[] {
+			StandardCharsets.UTF_8,
+			StandardCharsets.UTF_16,
+			StandardCharsets.UTF_16BE,
+			StandardCharsets.UTF_16LE,
+			StandardCharsets.ISO_8859_1,
+			StandardCharsets.US_ASCII
+		};
+		
+		for (var charset : charsets) {
+			JsonConfig config = new JsonConfig(
+				true, true, "\t", true, 10, true, 1, charset
+			);
+			assertEquals(charset, config.charset());
+		}
 	}
 	
 	@Test
-	void simplifyObjects() {
-		assertTrue(DEFAULT_CONFIG.simplifyObjects());
-		assertFalse(CUSTOM_CONFIG.simplifyObjects());
+	void boundarySizeValues() {
+		assertDoesNotThrow(() -> new JsonConfig(
+			true, true, "\t", true, 1, true, 1, StandardCharsets.UTF_8
+		));
+		
+		assertDoesNotThrow(() -> new JsonConfig(
+			true, true, "\t", true, 1000, true, 1000, StandardCharsets.UTF_8
+		));
+		
+		assertDoesNotThrow(() -> new JsonConfig(
+			true, true, "\t", true, Integer.MAX_VALUE, true, Integer.MAX_VALUE, StandardCharsets.UTF_8
+		));
 	}
 	
 	@Test
-	void maxObjectSimplificationSize() {
-		assertEquals(1, DEFAULT_CONFIG.maxObjectSimplificationSize());
-		assertEquals(10, CUSTOM_CONFIG.maxObjectSimplificationSize());
+	void recordEquality() {
+		JsonConfig config1 = new JsonConfig(
+			true, true, "\t", true, 10, true, 1, StandardCharsets.UTF_8
+		);
+		
+		JsonConfig config2 = new JsonConfig(
+			true, true, "\t", true, 10, true, 1, StandardCharsets.UTF_8
+		);
+		
+		JsonConfig config3 = new JsonConfig(
+			false, true, "\t", true, 10, true, 1, StandardCharsets.UTF_8
+		);
+		
+		assertEquals(config1, config2);
+		assertEquals(config1.hashCode(), config2.hashCode());
+		assertNotEquals(config1, config3);
+		
+		assertEquals(JsonConfig.DEFAULT, new JsonConfig(
+			true, true, "\t", true, 10, true, 1, StandardCharsets.UTF_8
+		));
 	}
 	
 	@Test
-	void charset() {
-		assertEquals(StandardCharsets.UTF_8, DEFAULT_CONFIG.charset());
-		assertEquals(StandardCharsets.UTF_16, CUSTOM_CONFIG.charset());
+	void recordToString() {
+		JsonConfig config = new JsonConfig(
+			true, false, "  ", false, 5, true, 2, StandardCharsets.UTF_16
+		);
+		
+		String toString = config.toString();
+		assertTrue(toString.contains("strict=true"));
+		assertTrue(toString.contains("prettyPrint=false"));
+		assertTrue(toString.contains("simplifyArrays=false"));
+		assertTrue(toString.contains("maxArraySimplificationSize=5"));
+		assertTrue(toString.contains("simplifyObjects=true"));
+		assertTrue(toString.contains("maxObjectSimplificationSize=2"));
+		assertTrue(toString.contains("UTF-16"));
 	}
 }

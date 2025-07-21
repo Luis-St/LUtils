@@ -73,7 +73,8 @@ public interface ResultMappingFunction<T, R> extends Function<Result<T>, Result<
 			try {
 				return Result.success(function.apply(result.orThrow()));
 			} catch (Throwable throwable) {
-				return Result.error(throwable.getMessage());
+				String message = throwable.getMessage();
+				return Result.error(message == null ? "Unknown error, no message provided" : message);
 			}
 		};
 	}

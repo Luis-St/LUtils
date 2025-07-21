@@ -19,6 +19,7 @@
 package net.luis.utils.io.codec;
 
 import com.google.common.collect.Lists;
+import net.luis.utils.function.throwable.ThrowableFunction;
 import net.luis.utils.io.codec.decoder.Decoder;
 import net.luis.utils.io.codec.decoder.KeyableDecoder;
 import net.luis.utils.io.codec.encoder.Encoder;
@@ -204,8 +205,8 @@ public interface Codec<C> extends Encoder<C>, Decoder<C> {
 	 * A codec that encodes and decodes strings.<br>
 	 */
 	KeyableCodec<String> STRING = new KeyableCodec<>() {
-		private final KeyableEncoder<String> encoder = KeyableEncoder.of(this, Function.identity());
-		private final KeyableDecoder<String> decoder = KeyableDecoder.of(this, Function.identity());
+		private final KeyableEncoder<String> encoder = KeyableEncoder.of(this, str -> str);
+		private final KeyableDecoder<String> decoder = KeyableDecoder.of(this, str -> str);
 		
 		@Override
 		public <R> @NotNull Result<R> encodeStart(@NotNull TypeProvider<R> provider, @Nullable R current, @Nullable String value) {
@@ -299,10 +300,45 @@ public interface Codec<C> extends Encoder<C>, Decoder<C> {
 	};
 	
 	/**
+	 * A codec that encodes and decodes boolean arrays.<br>
+	 * The underlying boolean array is converted to and from a list of booleans.<br>
+	 */
+	Codec<boolean[]> BOOLEAN_ARRAY = BOOLEAN.list().xmap(array -> Lists.newArrayList(ArrayUtils.toObject(array)), list -> ArrayUtils.toPrimitive(list.toArray(Boolean[]::new))).codec("BooleanArrayCodec");
+	/**
 	 * A codec that encodes and decodes byte arrays.<br>
 	 * The underlying byte array is converted to and from a list of bytes.<br>
 	 */
 	Codec<byte[]> BYTE_ARRAY = BYTE.list().xmap(array -> Lists.newArrayList(ArrayUtils.toObject(array)), list -> ArrayUtils.toPrimitive(list.toArray(Byte[]::new))).codec("ByteArrayCodec");
+	/**
+	 * A codec that encodes and decodes short arrays.<br>
+	 * The underlying byte array is converted to and from a list of shorts.<br>
+	 */
+	Codec<short[]> SHORT_ARRAY = SHORT.list().xmap(array -> Lists.newArrayList(ArrayUtils.toObject(array)), list -> ArrayUtils.toPrimitive(list.toArray(Short[]::new))).codec("ShortArrayCodec");
+	/**
+	 * A codec that encodes and decodes int arrays.<br>
+	 * The underlying byte array is converted to and from a list of integers.<br>
+	 */
+	Codec<int[]> INTEGER_ARRAY = INTEGER.list().xmap(array -> Lists.newArrayList(ArrayUtils.toObject(array)), list -> ArrayUtils.toPrimitive(list.toArray(Integer[]::new))).codec("IntegerArrayCodec");
+	/**
+	 * A codec that encodes and decodes long arrays.<br>
+	 * The underlying byte array is converted to and from a list of longs.<br>
+	 */
+	Codec<long[]> LONG_ARRAY = LONG.list().xmap(array -> Lists.newArrayList(ArrayUtils.toObject(array)), list -> ArrayUtils.toPrimitive(list.toArray(Long[]::new))).codec("LongArrayCodec");
+	/**
+	 * A codec that encodes and decodes float arrays.<br>
+	 * The underlying byte array is converted to and from a list of floats.<br>
+	 */
+	Codec<float[]> FLOAT_ARRAY = FLOAT.list().xmap(array -> Lists.newArrayList(ArrayUtils.toObject(array)), list -> ArrayUtils.toPrimitive(list.toArray(Float[]::new))).codec("FloatArrayCodec");
+	/**
+	 * A codec that encodes and decodes double arrays.<br>
+	 * The underlying byte array is converted to and from a list of doubles.<br>
+	 */
+	Codec<double[]> DOUBLE_ARRAY = DOUBLE.list().xmap(array -> Lists.newArrayList(ArrayUtils.toObject(array)), list -> ArrayUtils.toPrimitive(list.toArray(Double[]::new))).codec("DoubleArrayCodec");
+	/**
+	 * A codec that encodes and decodes character arrays.<br>
+	 * The underlying character array is converted to and from a list of characters.<br>
+	 */
+	Codec<char[]> CHARACTER_ARRAY = CHARACTER.list().xmap(array -> Lists.newArrayList(ArrayUtils.toObject(array)), list -> ArrayUtils.toPrimitive(list.toArray(Character[]::new))).codec("CharacterArrayCodec");
 	/**
 	 * A codec that encodes and decodes {@link IntStream int streams}.<br>
 	 * The underlying int stream is converted to and from a {@link Stream} of integers.<br>
@@ -615,7 +651,7 @@ public interface Codec<C> extends Encoder<C>, Decoder<C> {
 	 * @see #keyable(Codec, KeyableEncoder, KeyableDecoder)
 	 * @see KeyableCodec
 	 */
-	static <C> @NotNull KeyableCodec<C> keyable(@NotNull Codec<C> codec, @NotNull Function<String, @Nullable C> keyDecoder) {
+	static <C> @NotNull KeyableCodec<C> keyable(@NotNull Codec<C> codec, @NotNull ThrowableFunction<String, @Nullable C, ? extends Exception> keyDecoder) {
 		return keyable(codec, C::toString, keyDecoder);
 	}
 	
@@ -632,7 +668,9 @@ public interface Codec<C> extends Encoder<C>, Decoder<C> {
 	 * @see #keyable(Codec, KeyableEncoder, KeyableDecoder)
 	 * @see KeyableCodec
 	 */
-	static <C> @NotNull KeyableCodec<C> keyable(@NotNull Codec<C> codec, @NotNull Function<C, String> keyEncoder, @NotNull Function<String, @Nullable C> keyDecoder) {
+	static <C> @NotNull KeyableCodec<C> keyable(
+		@NotNull Codec<C> codec, @NotNull ThrowableFunction<C, String, ? extends Exception> keyEncoder, @NotNull ThrowableFunction<String, @Nullable C, ? extends Exception> keyDecoder
+	) {
 		return keyable(codec, KeyableEncoder.of(codec, keyEncoder), KeyableDecoder.of(codec, keyDecoder));
 	}
 	
@@ -727,7 +765,7 @@ public interface Codec<C> extends Encoder<C>, Decoder<C> {
 	static <E extends Enum<E>> @NotNull KeyableCodec<E> friendlyEnumName(@NotNull Function<E, String> friendlyEncoder, @NotNull Function<String, E> friendlyDecoder) {
 		Objects.requireNonNull(friendlyEncoder, "Friendly name encoder must not be null");
 		Objects.requireNonNull(friendlyDecoder, "Friendly name decoder must not be null");
-		return STRING.xmap(friendlyEncoder, friendlyDecoder).keyable(friendlyEncoder, friendlyDecoder);
+		return STRING.xmap(friendlyEncoder, friendlyDecoder).keyable(friendlyEncoder::apply, friendlyDecoder::apply);
 	}
 	
 	/**
@@ -800,7 +838,7 @@ public interface Codec<C> extends Encoder<C>, Decoder<C> {
 				return Result.success(value);
 			}
 			return result;
-		}).keyable(Function.identity(), Function.identity());
+		}).keyable(str -> str, str -> str);
 	}
 	
 	/**
@@ -824,7 +862,7 @@ public interface Codec<C> extends Encoder<C>, Decoder<C> {
 				return Result.success(value);
 			}
 			return result;
-		}).keyable(Function.identity(), Function.identity());
+		}).keyable(str -> str, str -> str);
 	}
 	
 	/**
@@ -1097,10 +1135,12 @@ public interface Codec<C> extends Encoder<C>, Decoder<C> {
 	 * @param keyDecoder The key decoder
 	 * @return A new keyable codec
 	 * @throws NullPointerException If the key encoder or key decoder is null
-	 * @see #keyable(Codec, Function, Function)
+	 * @see #keyable(Codec, ThrowableFunction, ThrowableFunction)
 	 * @see KeyableCodec
 	 */
-	default @NotNull KeyableCodec<C> keyable(@NotNull Function<C, String> keyEncoder, @NotNull Function<String, @Nullable C> keyDecoder) {
+	default @NotNull KeyableCodec<C> keyable(
+		@NotNull ThrowableFunction<C, String, ? extends Exception> keyEncoder, @NotNull ThrowableFunction<String, @Nullable C, ? extends Exception> keyDecoder
+	) {
 		return keyable(this, keyEncoder, keyDecoder);
 	}
 	

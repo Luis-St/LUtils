@@ -20,6 +20,8 @@ package net.luis.utils.io.data.xml.exception;
 
 import org.junit.jupiter.api.Test;
 
+import java.util.NoSuchElementException;
+
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
@@ -30,9 +32,73 @@ import static org.junit.jupiter.api.Assertions.*;
 class NoSuchXmlAttributeExceptionTest {
 	
 	@Test
-	void constructor() {
-		assertDoesNotThrow(() -> new NoSuchXmlAttributeException((String) null));
-		assertDoesNotThrow(() -> new NoSuchXmlAttributeException((Throwable) null));
-		assertDoesNotThrow(() -> new NoSuchXmlAttributeException(null, null));
+	void defaultConstructor() {
+		NoSuchXmlAttributeException exception = new NoSuchXmlAttributeException();
+		
+		assertNull(exception.getMessage());
+		assertNull(exception.getCause());
+		assertInstanceOf(NoSuchElementException.class, exception);
+	}
+	
+	@Test
+	void messageConstructor() {
+		String message = "Attribute not found";
+		NoSuchXmlAttributeException exception = new NoSuchXmlAttributeException(message);
+		
+		assertEquals(message, exception.getMessage());
+		assertNull(exception.getCause());
+	}
+	
+	@Test
+	void messageConstructorWithNull() {
+		NoSuchXmlAttributeException exception = new NoSuchXmlAttributeException((String) null);
+		
+		assertNull(exception.getMessage());
+		assertNull(exception.getCause());
+	}
+	
+	@Test
+	void messageAndCauseConstructor() {
+		String message = "Attribute not found";
+		Throwable cause = new RuntimeException("Root cause");
+		NoSuchXmlAttributeException exception = new NoSuchXmlAttributeException(message, cause);
+		
+		assertEquals(message, exception.getMessage());
+		assertEquals(cause, exception.getCause());
+	}
+	
+	@Test
+	void messageAndCauseConstructorWithNulls() {
+		NoSuchXmlAttributeException exception = new NoSuchXmlAttributeException(null, null);
+		
+		assertNull(exception.getMessage());
+		assertNull(exception.getCause());
+	}
+	
+	@Test
+	void causeConstructor() {
+		Throwable cause = new RuntimeException("Root cause");
+		NoSuchXmlAttributeException exception = new NoSuchXmlAttributeException(cause);
+		
+		assertEquals(cause.toString(), exception.getMessage());
+		assertEquals(cause, exception.getCause());
+	}
+	
+	@Test
+	void causeConstructorWithNull() {
+		NoSuchXmlAttributeException exception = new NoSuchXmlAttributeException((Throwable) null);
+		
+		assertNull(exception.getMessage());
+		assertNull(exception.getCause());
+	}
+	
+	@Test
+	void inheritanceHierarchy() {
+		NoSuchXmlAttributeException exception = new NoSuchXmlAttributeException();
+		
+		assertInstanceOf(NoSuchElementException.class, exception);
+		assertInstanceOf(RuntimeException.class, exception);
+		assertInstanceOf(Exception.class, exception);
+		assertInstanceOf(Throwable.class, exception);
 	}
 }
