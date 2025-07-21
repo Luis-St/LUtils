@@ -560,7 +560,7 @@ class StringReaderTest {
 		reader.skip();
 		assertEquals(new BigDecimal("1.9e5000"), reader.readBigDecimal());
 		reader.skip();
-		assertEquals(new BigDecimal("32"), reader.readBigDecimal());
+		assertEquals(new BigDecimal("31.9375"), reader.readBigDecimal());
 		reader.skip();
 		assertEquals(new BigDecimal("-5"), reader.readBigDecimal());
 		reader.skip();

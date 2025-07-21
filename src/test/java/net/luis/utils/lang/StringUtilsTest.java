@@ -36,237 +36,269 @@ import static org.junit.jupiter.api.Assertions.*;
 class StringUtilsTest {
 	
 	@Test
-	void getOppositeBracket() {
+	void getOppositeBracketReturnsCorrectBrackets() {
 		assertEquals(')', StringUtils.getOppositeBracket('('));
+		assertEquals('(', StringUtils.getOppositeBracket(')'));
+		assertEquals(']', StringUtils.getOppositeBracket('['));
 		assertEquals('[', StringUtils.getOppositeBracket(']'));
 		assertEquals('}', StringUtils.getOppositeBracket('{'));
+		assertEquals('{', StringUtils.getOppositeBracket('}'));
 		assertEquals('>', StringUtils.getOppositeBracket('<'));
-		assertEquals('\0', StringUtils.getOppositeBracket('a'));
+		assertEquals('<', StringUtils.getOppositeBracket('>'));
 	}
 	
 	@Test
-	void reverseIncludeBrackets() {
-		assertDoesNotThrow(() -> StringUtils.reverseIncludeBrackets(null));
+	void getOppositeBracketReturnsNullCharacterForNonBrackets() {
+		assertEquals('\0', StringUtils.getOppositeBracket('a'));
+		assertEquals('\0', StringUtils.getOppositeBracket('Z'));
+		assertEquals('\0', StringUtils.getOppositeBracket('1'));
+		assertEquals('\0', StringUtils.getOppositeBracket(' '));
+		assertEquals('\0', StringUtils.getOppositeBracket('\n'));
+		assertEquals('\0', StringUtils.getOppositeBracket('\0'));
+	}
+	
+	@Test
+	void reverseIncludeBracketsHandlesNullAndEmpty() {
 		assertEquals("", StringUtils.reverseIncludeBrackets(null));
 		assertEquals("", StringUtils.reverseIncludeBrackets(""));
-		assertEquals("cba", StringUtils.reverseIncludeBrackets("abc"));
-		assertEquals("(cb)a", StringUtils.reverseIncludeBrackets("a(bc)"));
-		assertEquals("<cb>a", StringUtils.reverseIncludeBrackets("a<bc>"));
 	}
 	
 	@Test
-	void indexOfAll() {
-		assertDoesNotThrow(() -> StringUtils.indexOfAll(null, '\0'));
-		assertEquals(Lists.newArrayList(), StringUtils.indexOfAll(null, '\0'));
-		assertEquals(Lists.newArrayList(), StringUtils.indexOfAll("", '\0'));
+	void reverseIncludeBracketsReversesSimpleStrings() {
+		assertEquals("cba", StringUtils.reverseIncludeBrackets("abc"));
+		assertEquals("321", StringUtils.reverseIncludeBrackets("123"));
+		assertEquals("a", StringUtils.reverseIncludeBrackets("a"));
+	}
+	
+	@Test
+	void reverseIncludeBracketsReversesBrackets() {
+		assertEquals("(cb)a", StringUtils.reverseIncludeBrackets("a(bc)"));
+		assertEquals("<cb>a", StringUtils.reverseIncludeBrackets("a<bc>"));
+		assertEquals("[fed]cba", StringUtils.reverseIncludeBrackets("abc[def]"));
+		assertEquals("{ghi}fed[cba]", StringUtils.reverseIncludeBrackets("[abc]def{ihg}"));
+	}
+	
+	@Test
+	void indexOfAllCharHandlesNullAndEmpty() {
+		assertEquals(Lists.newArrayList(), StringUtils.indexOfAll(null, 'a'));
+		assertEquals(Lists.newArrayList(), StringUtils.indexOfAll("", 'a'));
+	}
+	
+	@Test
+	void indexOfAllCharFindsOccurrences() {
 		assertEquals(Lists.newArrayList(0), StringUtils.indexOfAll("abc", 'a'));
 		assertEquals(Lists.newArrayList(0, 2), StringUtils.indexOfAll("aba", 'a'));
 		assertEquals(Lists.newArrayList(0, 1, 2), StringUtils.indexOfAll("   ", ' '));
-		
-		assertDoesNotThrow(() -> StringUtils.indexOfAll(null, "\0"));
-		assertEquals(Lists.newArrayList(), StringUtils.indexOfAll(null, "\0"));
-		assertEquals(Lists.newArrayList(), StringUtils.indexOfAll("", "\0"));
-		assertEquals(Lists.newArrayList(0), StringUtils.indexOfAll("abc", "a"));
-		assertEquals(Lists.newArrayList(0), StringUtils.indexOfAll("aba", "ab"));
-		assertEquals(Lists.newArrayList(0, 1, 2), StringUtils.indexOfAll("   ", " "));
+		assertEquals(Lists.newArrayList(), StringUtils.indexOfAll("abc", 'z'));
 	}
 	
 	@Test
-	void countDifference() {
-		assertDoesNotThrow(() -> StringUtils.countDifference(null, null));
-		assertDoesNotThrow(() -> StringUtils.countDifference(null, "abc"));
-		assertDoesNotThrow(() -> StringUtils.countDifference("abc", null));
+	void indexOfAllCharHandlesSpecialCharacters() {
+		assertEquals(Lists.newArrayList(2, 5), StringUtils.indexOfAll("ab\nab\n", '\n'));
+		assertEquals(Lists.newArrayList(0, 3), StringUtils.indexOfAll("\t12\t", '\t'));
+	}
+	
+	@Test
+	void indexOfAllStringHandlesNullAndEmpty() {
+		assertEquals(Lists.newArrayList(), StringUtils.indexOfAll(null, "ab"));
+		assertEquals(Lists.newArrayList(), StringUtils.indexOfAll("", "ab"));
+		assertEquals(Lists.newArrayList(), StringUtils.indexOfAll("abc", null));
+		assertEquals(Lists.newArrayList(), StringUtils.indexOfAll("abc", ""));
+	}
+	
+	@Test
+	void indexOfAllStringFindsOccurrences() {
+		assertEquals(Lists.newArrayList(0), StringUtils.indexOfAll("abc", "a"));
+		assertEquals(Lists.newArrayList(0), StringUtils.indexOfAll("aba", "ab"));
+		assertEquals(Lists.newArrayList(1, 5), StringUtils.indexOfAll("abac ba", "ba"));
+		assertEquals(Lists.newArrayList(0, 2), StringUtils.indexOfAll("abab", "ab"));
+	}
+	
+	@Test
+	void countDifferenceHandlesNullAndEmpty() {
 		assertEquals(0, StringUtils.countDifference(null, null));
 		assertEquals(0, StringUtils.countDifference("", ""));
 		assertEquals(3, StringUtils.countDifference(null, "abc"));
 		assertEquals(3, StringUtils.countDifference("abc", null));
 		assertEquals(3, StringUtils.countDifference("", "abc"));
 		assertEquals(3, StringUtils.countDifference("abc", ""));
+	}
+	
+	@Test
+	void countDifferenceCalculatesCorrectly() {
 		assertEquals(0, StringUtils.countDifference("abc", "abc"));
 		assertEquals(3, StringUtils.countDifference("xyz", "abc"));
 		assertEquals(2, StringUtils.countDifference("abcde", "abc  "));
 		assertEquals(2, StringUtils.countDifference("abcde", "  cde"));
 		assertEquals(5, StringUtils.countDifference("abcde", "cde"));
+		assertEquals(1, StringUtils.countDifference("abc", "abd"));
 	}
 	
 	@Test
-	void countDifferenceStripped() {
-		assertDoesNotThrow(() -> StringUtils.countDifferenceStripped(null, null));
-		assertDoesNotThrow(() -> StringUtils.countDifferenceStripped(null, "abc"));
-		assertDoesNotThrow(() -> StringUtils.countDifferenceStripped("abc", null));
+	void countDifferenceStrippedHandlesWhitespace() {
 		assertEquals(0, StringUtils.countDifferenceStripped(null, null));
 		assertEquals(0, StringUtils.countDifferenceStripped("", ""));
 		assertEquals(3, StringUtils.countDifferenceStripped(null, "abc"));
 		assertEquals(3, StringUtils.countDifferenceStripped("abc", null));
-		assertEquals(3, StringUtils.countDifferenceStripped("", "abc"));
-		assertEquals(3, StringUtils.countDifferenceStripped("abc", ""));
-		assertEquals(0, StringUtils.countDifferenceStripped("abc", "abc"));
-		assertEquals(3, StringUtils.countDifferenceStripped("xyz", "abc"));
 		assertEquals(2, StringUtils.countDifferenceStripped("abcde", "  abc"));
 		assertEquals(5, StringUtils.countDifferenceStripped("abcde", "  cde"));
-		assertEquals(5, StringUtils.countDifferenceStripped("abcde", "cde"));
+		assertEquals(0, StringUtils.countDifferenceStripped(" abc ", "abc"));
 	}
 	
 	@Test
-	void countDifferenceBackwards() {
-		assertDoesNotThrow(() -> StringUtils.countDifferenceBackwards(null, null));
-		assertDoesNotThrow(() -> StringUtils.countDifferenceBackwards(null, "abc"));
-		assertDoesNotThrow(() -> StringUtils.countDifferenceBackwards("abc", null));
+	void countDifferenceBackwardsCalculatesFromEnd() {
 		assertEquals(0, StringUtils.countDifferenceBackwards(null, null));
 		assertEquals(0, StringUtils.countDifferenceBackwards("", ""));
 		assertEquals(3, StringUtils.countDifferenceBackwards(null, "abc"));
 		assertEquals(3, StringUtils.countDifferenceBackwards("abc", null));
-		assertEquals(3, StringUtils.countDifferenceBackwards("", "abc"));
-		assertEquals(3, StringUtils.countDifferenceBackwards("abc", ""));
-		assertEquals(0, StringUtils.countDifferenceBackwards("abc", "abc"));
-		assertEquals(3, StringUtils.countDifferenceBackwards("xyz", "abc"));
 		assertEquals(5, StringUtils.countDifferenceBackwards("abcde", "  abc"));
 		assertEquals(2, StringUtils.countDifferenceBackwards("abcde", "  cde"));
 		assertEquals(2, StringUtils.countDifferenceBackwards("abcde", "cde"));
 	}
 	
 	@Test
-	void countDifferenceBackwardsStripped() {
-		assertDoesNotThrow(() -> StringUtils.countDifferenceBackwardsStripped(null, null));
-		assertDoesNotThrow(() -> StringUtils.countDifferenceBackwardsStripped(null, "abc"));
-		assertDoesNotThrow(() -> StringUtils.countDifferenceBackwardsStripped("abc", null));
+	void countDifferenceBackwardsStrippedCombinesBackwardsAndStripping() {
 		assertEquals(0, StringUtils.countDifferenceBackwardsStripped(null, null));
 		assertEquals(0, StringUtils.countDifferenceBackwardsStripped("", ""));
-		assertEquals(3, StringUtils.countDifferenceBackwardsStripped(null, "abc"));
-		assertEquals(3, StringUtils.countDifferenceBackwardsStripped("abc", null));
-		assertEquals(3, StringUtils.countDifferenceBackwardsStripped("", "abc"));
-		assertEquals(3, StringUtils.countDifferenceBackwardsStripped("abc", ""));
-		assertEquals(0, StringUtils.countDifferenceBackwardsStripped("abc", "abc"));
-		assertEquals(3, StringUtils.countDifferenceBackwardsStripped("xyz", "abc"));
 		assertEquals(5, StringUtils.countDifferenceBackwardsStripped("abcde", "abc  "));
 		assertEquals(2, StringUtils.countDifferenceBackwardsStripped("abcde", "cde  "));
 		assertEquals(2, StringUtils.countDifferenceBackwardsStripped("abcde", "cde"));
 	}
 	
 	@Test
-	void countDifferenceAligned() {
-		assertDoesNotThrow(() -> StringUtils.countDifferenceAligned(null, null));
-		assertDoesNotThrow(() -> StringUtils.countDifferenceAligned(null, "abc"));
-		assertDoesNotThrow(() -> StringUtils.countDifferenceAligned("abc", null));
+	void countDifferenceAlignedSelectsBestAlignment() {
 		assertEquals(0, StringUtils.countDifferenceAligned(null, null));
 		assertEquals(0, StringUtils.countDifferenceAligned("", ""));
 		assertEquals(3, StringUtils.countDifferenceAligned(null, "abc"));
 		assertEquals(3, StringUtils.countDifferenceAligned("abc", null));
-		assertEquals(3, StringUtils.countDifferenceAligned("", "abc"));
-		assertEquals(3, StringUtils.countDifferenceAligned("abc", ""));
-		assertEquals(0, StringUtils.countDifferenceAligned("abc", "abc"));
-		assertEquals(3, StringUtils.countDifferenceAligned("xyz", "abc"));
 		assertEquals(2, StringUtils.countDifferenceAligned("abcde", "abc  "));
 		assertEquals(2, StringUtils.countDifferenceAligned("abcde", "  cde"));
 		assertEquals(2, StringUtils.countDifferenceAligned("abcde", "cde"));
 	}
 	
 	@Test
-	void levenshteinDistance() {
-		assertDoesNotThrow(() -> StringUtils.levenshteinDistance(null, null));
-		assertDoesNotThrow(() -> StringUtils.levenshteinDistance(null, "abc"));
-		assertDoesNotThrow(() -> StringUtils.levenshteinDistance("abc", null));
+	void levenshteinDistanceHandlesNullAndEmpty() {
 		assertEquals(0, StringUtils.levenshteinDistance(null, null));
 		assertEquals(0, StringUtils.levenshteinDistance("", ""));
 		assertEquals(3, StringUtils.levenshteinDistance(null, "abc"));
 		assertEquals(3, StringUtils.levenshteinDistance("abc", null));
 		assertEquals(3, StringUtils.levenshteinDistance("abc", ""));
 		assertEquals(3, StringUtils.levenshteinDistance("", "abc"));
+	}
+	
+	@Test
+	void levenshteinDistanceCalculatesCorrectly() {
 		assertEquals(0, StringUtils.levenshteinDistance("abc", "abc"));
 		assertEquals(3, StringUtils.levenshteinDistance("abc", "def"));
 		assertEquals(1, StringUtils.levenshteinDistance("test", "text"));
 		assertEquals(3, StringUtils.levenshteinDistance("abed", "tset"));
+		assertEquals(1, StringUtils.levenshteinDistance("cat", "bat"));
+		assertEquals(3, StringUtils.levenshteinDistance("kitten", "sitting"));
 	}
 	
 	@Test
-	void findSimilar() {
-		assertDoesNotThrow(() -> StringUtils.findSimilar(null, 0, "abc"));
-		assertDoesNotThrow(() -> StringUtils.findSimilar("abc", 0, (String[]) null));
+	void findSimilarHandlesInvalidInputs() {
 		assertEquals(Lists.newArrayList(), StringUtils.findSimilar(null, 0, "abc"));
 		assertEquals(Lists.newArrayList(), StringUtils.findSimilar("", 0, "abc"));
 		assertEquals(Lists.newArrayList(), StringUtils.findSimilar("abc", -1, "abc"));
 		assertEquals(Lists.newArrayList(), StringUtils.findSimilar("abc", 0, (String[]) null));
+		assertEquals(Lists.newArrayList(), StringUtils.findSimilar("abc", 0, (List<String>) null));
+		assertEquals(Lists.newArrayList(), StringUtils.findSimilar("abc", 0, StringUtils::countDifference, null));
+		assertEquals(Lists.newArrayList(), StringUtils.findSimilar(null, 0, null, Lists.newArrayList("abc")));
+	}
+	
+	@Test
+	void findSimilarFindsMatches() {
 		assertEquals(Lists.newArrayList("abc"), StringUtils.findSimilar("abc", 1, "abc", "def", "ghi"));
 		assertEquals(Lists.newArrayList("ab0", "ab1"), StringUtils.findSimilar("ab*", 1, "ab0", "ab1"));
 		assertEquals(Lists.newArrayList(), StringUtils.findSimilar("abc", 2, "bcd", "cde", "def", "efg"));
-		
-		assertDoesNotThrow(() -> StringUtils.findSimilar(null, 0, Lists.newArrayList("abc")));
-		assertDoesNotThrow(() -> StringUtils.findSimilar("abc", 0, (List<String>) null));
-		assertEquals(Lists.newArrayList(), StringUtils.findSimilar(null, 0, Lists.newArrayList("abc")));
-		assertEquals(Lists.newArrayList(), StringUtils.findSimilar("", 0, Lists.newArrayList("abc")));
-		assertEquals(Lists.newArrayList(), StringUtils.findSimilar("abc", -1, Lists.newArrayList("abc")));
-		assertEquals(Lists.newArrayList(), StringUtils.findSimilar("abc", 0, (List<String>) null));
+		assertEquals(Lists.newArrayList("abc", "abd"), StringUtils.findSimilar("abc", 1, "abc", "abd", "xyz"));
+	}
+	
+	@Test
+	void findSimilarWithListWorks() {
 		assertEquals(Lists.newArrayList("abc"), StringUtils.findSimilar("abc", 1, Lists.newArrayList("abc", "def", "ghi")));
 		assertEquals(Lists.newArrayList("ab0", "ab1"), StringUtils.findSimilar("ab*", 1, Lists.newArrayList("ab0", "ab1")));
-		assertEquals(Lists.newArrayList(), StringUtils.findSimilar("abc", 2, Lists.newArrayList("bcd", "cde", "def", "efg")));
-		
-		assertDoesNotThrow(() -> StringUtils.findSimilar(null, 0, StringUtils::countDifference, Lists.newArrayList("abc")));
-		assertDoesNotThrow(() -> StringUtils.findSimilar("abc", 0, null, Lists.newArrayList("abc")));
-		assertDoesNotThrow(() -> StringUtils.findSimilar("abc", 0, StringUtils::countDifference, null));
-		assertEquals(Lists.newArrayList(), StringUtils.findSimilar(null, 0, StringUtils::countDifference, Lists.newArrayList("abc")));
-		assertEquals(Lists.newArrayList(), StringUtils.findSimilar("", 0, StringUtils::countDifference, Lists.newArrayList("abc")));
-		assertEquals(Lists.newArrayList(), StringUtils.findSimilar("abc", -1, StringUtils::countDifference, Lists.newArrayList("abc")));
-		assertEquals(Lists.newArrayList(), StringUtils.findSimilar("abc", 0, null, Lists.newArrayList("abc")));
-		assertEquals(Lists.newArrayList(), StringUtils.findSimilar("abc", 0, StringUtils::countDifference, null));
 	}
 	
 	@Test
-	void isAfterAllOccurrence() {
-		assertDoesNotThrow(() -> StringUtils.isAfterAllOccurrence(null, '\0', ArrayUtils.EMPTY_STRING_ARRAY));
-		assertDoesNotThrow(() -> StringUtils.isAfterAllOccurrence("abcde", '\0', (String[]) null));
-		assertFalse(StringUtils.isAfterAllOccurrence(null, '\0', ArrayUtils.EMPTY_STRING_ARRAY));
-		assertFalse(StringUtils.isAfterAllOccurrence("", '\0', ArrayUtils.EMPTY_STRING_ARRAY));
-		assertFalse(StringUtils.isAfterAllOccurrence("abcde", '\0', (String[]) null));
-		assertTrue(StringUtils.isAfterAllOccurrence("abcde", 'a', ArrayUtils.EMPTY_STRING_ARRAY));
-		assertFalse(StringUtils.isAfterAllOccurrence("abcde", 'x', ArrayUtils.EMPTY_STRING_ARRAY));
-		assertTrue(StringUtils.isAfterAllOccurrence("abcde", 'a', new String[] { "b" }));
-		assertTrue(StringUtils.isAfterAllOccurrence("abcab", 'a', new String[] { "b" }));
-		assertFalse(StringUtils.isAfterAllOccurrence("abcae", 'a', new String[] { "b" }));
-		assertTrue(StringUtils.isAfterAllOccurrence("abcae", 'a', new String[] { "b", "e" }));
+	void findSimilarWithCustomCounterWorks() {
+		assertEquals(Lists.newArrayList(), StringUtils.findSimilar("abc", 0, StringUtils::levenshteinDistance, Lists.newArrayList("def", "ghi")));
+		assertEquals(Lists.newArrayList("abc"), StringUtils.findSimilar("abc", 1, StringUtils::levenshteinDistance, Lists.newArrayList("abc", "def")));
 	}
 	
 	@Test
-	void isBeforeAllOccurrence() {
-		assertDoesNotThrow(() -> StringUtils.isBeforeAllOccurrence(null, '\0', ArrayUtils.EMPTY_STRING_ARRAY));
-		assertDoesNotThrow(() -> StringUtils.isBeforeAllOccurrence("abcde", '\0', (String[]) null));
-		assertFalse(StringUtils.isBeforeAllOccurrence(null, '\0', ArrayUtils.EMPTY_STRING_ARRAY));
-		assertFalse(StringUtils.isBeforeAllOccurrence("", '\0', ArrayUtils.EMPTY_STRING_ARRAY));
-		assertFalse(StringUtils.isBeforeAllOccurrence("abcde", '\0', (String[]) null));
-		assertTrue(StringUtils.isBeforeAllOccurrence("abcde", 'd', ArrayUtils.EMPTY_STRING_ARRAY));
-		assertFalse(StringUtils.isBeforeAllOccurrence("abcde", 'x', ArrayUtils.EMPTY_STRING_ARRAY));
-		assertTrue(StringUtils.isBeforeAllOccurrence("abcde", 'e', new String[] { "d" }));
-		assertTrue(StringUtils.isBeforeAllOccurrence("aecae", 'e', new String[] { "a" }));
-		assertFalse(StringUtils.isBeforeAllOccurrence("aecde", 'e', new String[] { "a" }));
-		assertTrue(StringUtils.isBeforeAllOccurrence("aecde", 'e', new String[] { "a", "d" }));
+	void isAfterAllOccurrenceHandlesInvalidInputs() {
+		assertFalse(StringUtils.isAfterAllOccurrence(null, 'a', "b"));
+		assertFalse(StringUtils.isAfterAllOccurrence("", 'a', "b"));
+		assertFalse(StringUtils.isAfterAllOccurrence("abc", 'a', (String[]) null));
 	}
 	
 	@Test
-	void isSurroundedBy() {
-		assertDoesNotThrow(() -> StringUtils.isSurroundedBy(null, '\0', ArrayUtils.EMPTY_STRING_ARRAY));
-		assertDoesNotThrow(() -> StringUtils.isSurroundedBy("a.*.b", '\0', (String[]) null));
-		assertFalse(StringUtils.isSurroundedBy(null, '\0', ArrayUtils.EMPTY_STRING_ARRAY));
-		assertFalse(StringUtils.isSurroundedBy("", '\0', ArrayUtils.EMPTY_STRING_ARRAY));
-		assertFalse(StringUtils.isSurroundedBy("a.*.b", '\0', (String[]) null));
-		assertTrue(StringUtils.isSurroundedBy("a.*.b", '*', ArrayUtils.EMPTY_STRING_ARRAY));
-		assertFalse(StringUtils.isSurroundedBy("a.*.b", 'x', ArrayUtils.EMPTY_STRING_ARRAY));
-		assertTrue(StringUtils.isSurroundedBy("a.*.b", '*', new String[] { "." }));
-		assertTrue(StringUtils.isSurroundedBy("a.*.b.*.c", '*', new String[] { "." }));
-		assertFalse(StringUtils.isSurroundedBy("a.*.b.?*?.c", '*', new String[] { "." }));
-		assertTrue(StringUtils.isSurroundedBy("a.*.b.?*?.c", '*', new String[] { ".", "?" }));
-		assertTrue(StringUtils.isSurroundedBy("a.*.b.?*?.c", '*', new String[] { ".", "?." }));
-		
+	void isAfterAllOccurrenceChecksFollowing() {
+		assertTrue(StringUtils.isAfterAllOccurrence("abcde", 'a', new String[]{}));
+		assertFalse(StringUtils.isAfterAllOccurrence("abcde", 'x', new String[]{}));
+		assertTrue(StringUtils.isAfterAllOccurrence("abcde", 'a', new String[]{"b"}));
+		assertTrue(StringUtils.isAfterAllOccurrence("abcab", 'a', new String[]{"b"}));
+		assertFalse(StringUtils.isAfterAllOccurrence("abcae", 'a', new String[]{"b"}));
+		assertTrue(StringUtils.isAfterAllOccurrence("abcae", 'a', new String[]{"b", "e"}));
+	}
+	
+	@Test
+	void isBeforeAllOccurrenceHandlesInvalidInputs() {
+		assertFalse(StringUtils.isBeforeAllOccurrence(null, 'a', "b"));
+		assertFalse(StringUtils.isBeforeAllOccurrence("", 'a', "b"));
+		assertFalse(StringUtils.isBeforeAllOccurrence("abc", 'a', (String[]) null));
+	}
+	
+	@Test
+	void isBeforeAllOccurrenceChecksPreceding() {
+		assertTrue(StringUtils.isBeforeAllOccurrence("abcde", 'd', new String[]{}));
+		assertFalse(StringUtils.isBeforeAllOccurrence("abcde", 'x', new String[]{}));
+		assertTrue(StringUtils.isBeforeAllOccurrence("abcde", 'e', new String[]{"d"}));
+		assertTrue(StringUtils.isBeforeAllOccurrence("aecae", 'e', new String[]{"a"}));
+		assertFalse(StringUtils.isBeforeAllOccurrence("aecde", 'e', new String[]{"a"}));
+		assertTrue(StringUtils.isBeforeAllOccurrence("aecde", 'e', new String[]{"a", "d"}));
+	}
+	
+	@Test
+	void isSurroundedByHandlesInvalidInputs() {
+		assertFalse(StringUtils.isSurroundedBy(null, 'a', "b"));
+		assertFalse(StringUtils.isSurroundedBy("", 'a', "b"));
+		assertFalse(StringUtils.isSurroundedBy("abc", 'a', (String[]) null));
+	}
+	
+	@Test
+	void isSurroundedByChecksSurrounding() {
+		assertTrue(StringUtils.isSurroundedBy("a.*.b", '*', new String[]{}));
+		assertFalse(StringUtils.isSurroundedBy("a.*.b", 'x', new String[]{}));
+		assertTrue(StringUtils.isSurroundedBy("a.*.b", '*', new String[]{"."}));
+		assertTrue(StringUtils.isSurroundedBy("a.*.b.*.c", '*', new String[]{"."}));
+		assertFalse(StringUtils.isSurroundedBy("a.*.b.?*?.c", '*', new String[]{"."}));
+		assertTrue(StringUtils.isSurroundedBy("a.*.b.?*?.c", '*', new String[]{".", "?"}));
+		assertTrue(StringUtils.isSurroundedBy("a.*.b.?*?.c", '*', new String[]{".", "?."}));
+	}
+	
+	@Test
+	void isSurroundedByWithReverseBrackets() {
 		System.setProperty("lang.surrounded.reverse.brackets", "true");
-		assertTrue(StringUtils.isSurroundedBy("a.[*].b", '*', new String[] { "]." }));
-		assertFalse(StringUtils.isSurroundedBy("a.[*[.b", '*', new String[] { "[." }));
-		System.setProperty("lang.surrounded.reverse.brackets", "false");
+		try {
+			assertTrue(StringUtils.isSurroundedBy("a.[*].b", '*', new String[]{"]."}));
+			assertFalse(StringUtils.isSurroundedBy("a.[*[.b", '*', new String[]{"."}));
+		} finally {
+			System.setProperty("lang.surrounded.reverse.brackets", "false");
+		}
 	}
 	
 	@Test
-	void removeQuoted() {
-		assertDoesNotThrow(() -> StringUtils.removeQuoted(null));
+	void removeQuotedHandlesNullAndEmpty() {
 		assertEquals("", StringUtils.removeQuoted(null));
 		assertEquals("", StringUtils.removeQuoted(""));
 		assertEquals("abc", StringUtils.removeQuoted("abc"));
+	}
+	
+	@Test
+	void removeQuotedRemovesQuotes() {
 		assertEquals("ac", StringUtils.removeQuoted("a\"b\"c"));
 		assertEquals("ac", StringUtils.removeQuoted("a'b'c"));
 		assertEquals("ad", StringUtils.removeQuoted("a\"b\\\"c\"d"));
@@ -275,108 +307,165 @@ class StringUtilsTest {
 	}
 	
 	@Test
-	void matchingBalanced() {
-		assertDoesNotThrow(() -> StringUtils.matchingBalanced(null, '\0', '\0'));
-		assertFalse(StringUtils.matchingBalanced(null, '\0', '\0'));
-		assertTrue(StringUtils.matchingBalanced("", '\0', '\0'));
-		assertTrue(StringUtils.matchingBalanced(" ", '\0', '\0'));
+	void removeQuotedHandlesEscapedQuotes() {
+		assertEquals("a\\\"b\\\"c", StringUtils.removeQuoted("a\\\"b\\\"c"));
+		assertEquals("a\\'b\\'c", StringUtils.removeQuoted("a\\'b\\'c"));
+		assertEquals("ac", StringUtils.removeQuoted("a\"\"c"));
+	}
+	
+	@Test
+	void matchingBalancedCharHandlesInvalidInputs() {
+		assertFalse(StringUtils.matchingBalanced(null, '(', ')'));
+		assertTrue(StringUtils.matchingBalanced("", '(', ')'));
+		assertTrue(StringUtils.matchingBalanced(" ", '(', ')'));
+	}
+	
+	@Test
+	void matchingBalancedCharWorksCorrectly() {
 		assertTrue(StringUtils.matchingBalanced("(", '(', '('));
 		assertFalse(StringUtils.matchingBalanced("(", '(', ')'));
 		assertTrue(StringUtils.matchingBalanced("(())", '(', ')'));
 		assertFalse(StringUtils.matchingBalanced("(()", '(', ')'));
-		
-		assertDoesNotThrow(() -> StringUtils.matchingBalanced(null, "\0", "\0"));
-		assertFalse(StringUtils.matchingBalanced(null, "\0", "\0"));
-		assertTrue(StringUtils.matchingBalanced("", "\0", "\0"));
-		assertTrue(StringUtils.matchingBalanced(" ", "\0", "\0"));
+		assertTrue(StringUtils.matchingBalanced("((()))", '(', ')'));
+		assertFalse(StringUtils.matchingBalanced("((())", '(', ')'));
+	}
+	
+	@Test
+	void matchingBalancedStringHandlesInvalidInputs() {
+		assertFalse(StringUtils.matchingBalanced(null, "(", ")"));
+		assertFalse(StringUtils.matchingBalanced("test", null, ")"));
+		assertFalse(StringUtils.matchingBalanced("test", "(", null));
+		assertTrue(StringUtils.matchingBalanced("", "(", ")"));
+		assertTrue(StringUtils.matchingBalanced("test", null, null));
+	}
+	
+	@Test
+	void matchingBalancedStringWorksCorrectly() {
 		assertTrue(StringUtils.matchingBalanced("(", "(", "("));
 		assertFalse(StringUtils.matchingBalanced("(", "(", ")"));
 		assertTrue(StringUtils.matchingBalanced("(())", "(", ")"));
 		assertFalse(StringUtils.matchingBalanced("(()", "(", ")"));
-		
-		System.setProperty("lang.match.in.quotes", "true");
-		assertFalse(StringUtils.matchingBalanced("(\"(\")", '(', ')'));
-		assertFalse(StringUtils.matchingBalanced("('(')", '(', ')'));
-		assertTrue(StringUtils.matchingBalanced("((\")\")", '(', ')'));
-		assertTrue(StringUtils.matchingBalanced("((')')", '(', ')'));
-		
-		assertFalse(StringUtils.matchingBalanced("(\"(\")", "(", ")"));
-		assertFalse(StringUtils.matchingBalanced("('(')", "(", ")"));
-		assertTrue(StringUtils.matchingBalanced("((\")\")", "(", ")"));
-		assertTrue(StringUtils.matchingBalanced("((')')", "(", ")"));
-		System.setProperty("lang.match.in.quotes", "false");
+		assertTrue(StringUtils.matchingBalanced("beginendbeginend", "begin", "end"));
+		assertFalse(StringUtils.matchingBalanced("beginbeginend", "begin", "end"));
 	}
 	
 	@Test
-	void matchesPattern() {
-		Pattern pattern = Pattern.compile("a");
-		assertDoesNotThrow(() -> StringUtils.matchesPattern(null, null));
-		assertDoesNotThrow(() -> StringUtils.matchesPattern(null, "a"));
-		assertDoesNotThrow(() -> StringUtils.matchesPattern(pattern, null));
+	void matchingBalancedWithQuotes() {
+		System.setProperty("lang.match.in.quotes", "true");
+		try {
+			assertFalse(StringUtils.matchingBalanced("(\"(\")", '(', ')'));
+			assertFalse(StringUtils.matchingBalanced("('(')", '(', ')'));
+			assertTrue(StringUtils.matchingBalanced("((\")\")", '(', ')'));
+			assertTrue(StringUtils.matchingBalanced("((')')", '(', ')'));
+		} finally {
+			System.setProperty("lang.match.in.quotes", "false");
+		}
+	}
+	
+	@Test
+	void matchesPatternHandlesNulls() {
 		assertTrue(StringUtils.matchesPattern(null, null));
 		assertFalse(StringUtils.matchesPattern(null, "a"));
-		assertFalse(StringUtils.matchesPattern(pattern, null));
-		assertTrue(StringUtils.matchesPattern(pattern, "a"));
-		assertFalse(StringUtils.matchesPattern(pattern, "b"));
+		assertFalse(StringUtils.matchesPattern(Pattern.compile("a"), null));
 	}
 	
 	@Test
-	void containsNotEscaped() {
-		assertDoesNotThrow(() -> StringUtils.containsNotEscaped(null, 'a'));
+	void matchesPatternWorksCorrectly() {
+		Pattern pattern = Pattern.compile("a+");
+		assertTrue(StringUtils.matchesPattern(pattern, "a"));
+		assertTrue(StringUtils.matchesPattern(pattern, "aa"));
+		assertFalse(StringUtils.matchesPattern(pattern, "b"));
+		assertFalse(StringUtils.matchesPattern(pattern, "ab"));
+	}
+	
+	@Test
+	void containsNotEscapedHandlesNullAndEmpty() {
 		assertFalse(StringUtils.containsNotEscaped(null, 'a'));
 		assertFalse(StringUtils.containsNotEscaped("", 'a'));
+	}
+	
+	@Test
+	void containsNotEscapedFindsUnescapedChars() {
 		assertTrue(StringUtils.containsNotEscaped("abc", 'a'));
 		assertFalse(StringUtils.containsNotEscaped("aba", 'c'));
-		assertFalse(StringUtils.containsNotEscaped("\\abc", 'a'));
-		assertTrue(StringUtils.containsNotEscaped("\\aba", 'a'));
+		assertFalse(StringUtils.containsNotEscaped("\\a", 'a'));
+		assertTrue(StringUtils.containsNotEscaped("\\ab", 'b'));
+		assertTrue(StringUtils.containsNotEscaped("\\\\a", 'a'));
 	}
 	
 	@Test
-	void splitNotEscaped() {
-		assertDoesNotThrow(() -> StringUtils.splitNotEscaped(null, 'a'));
-		assertDoesNotThrow(() -> StringUtils.splitNotEscaped("", 'a'));
+	void splitNotEscapedHandlesNullAndEmpty() {
 		assertArrayEquals(ArrayUtils.EMPTY_STRING_ARRAY, StringUtils.splitNotEscaped(null, 'a'));
 		assertArrayEquals(ArrayUtils.EMPTY_STRING_ARRAY, StringUtils.splitNotEscaped("", 'a'));
-		assertArrayEquals(new String[] { "a", "c" }, StringUtils.splitNotEscaped("abc", 'b'));
-		assertArrayEquals(new String[] { "a\\bc" }, StringUtils.splitNotEscaped("a\\bc", 'b'));
-		assertArrayEquals(new String[] { "a\\b" }, StringUtils.splitNotEscaped("a\\bc", 'c'));
-		assertArrayEquals(new String[] { "a\\:b", "c", "d\\:e" }, StringUtils.splitNotEscaped("a\\:b:c:d\\:e", ':'));
 	}
 	
 	@Test
-	void extract() {
-		assertDoesNotThrow(() -> StringUtils.extract(null, (String) null));
-		assertDoesNotThrow(() -> StringUtils.extract(null, "abc"));
-		assertDoesNotThrow(() -> StringUtils.extract("abc", (String) null));
+	void splitNotEscapedSplitsCorrectly() {
+		assertArrayEquals(new String[]{"a", "c"}, StringUtils.splitNotEscaped("abc", 'b'));
+		assertArrayEquals(new String[]{"a\\bc"}, StringUtils.splitNotEscaped("a\\bc", 'b'));
+		assertArrayEquals(new String[]{"a\\b"}, StringUtils.splitNotEscaped("a\\bc", 'c'));
+		assertArrayEquals(new String[]{"a\\:b", "c", "d\\:e"}, StringUtils.splitNotEscaped("a\\:b:c:d\\:e", ':'));
+	}
+	
+	@Test
+	void splitNotEscapedHandlesEscapeSequences() {
+		assertArrayEquals(new String[]{"a\\\\", "c"}, StringUtils.splitNotEscaped("a\\\\:c", ':'));
+		assertArrayEquals(new String[]{"a", "", "c"}, StringUtils.splitNotEscaped("a::c", ':'));
+		assertArrayEquals(new String[]{"a\\:"}, StringUtils.splitNotEscaped("a\\:", ':'));
+	}
+	
+	@Test
+	void extractStringHandlesNullAndEmpty() {
 		assertArrayEquals(ArrayUtils.EMPTY_STRING_ARRAY, StringUtils.extract(null, (String) null));
-		assertArrayEquals(ArrayUtils.EMPTY_STRING_ARRAY, StringUtils.extract(null, ""));
+		assertArrayEquals(ArrayUtils.EMPTY_STRING_ARRAY, StringUtils.extract(null, "abc"));
 		assertArrayEquals(ArrayUtils.EMPTY_STRING_ARRAY, StringUtils.extract("abc", (String) null));
 		assertArrayEquals(ArrayUtils.EMPTY_STRING_ARRAY, StringUtils.extract("", "abc"));
 		assertArrayEquals(ArrayUtils.EMPTY_STRING_ARRAY, StringUtils.extract("abc", ""));
-		assertArrayEquals(new String[] { "a" }, StringUtils.extract("abc", "a"));
-		assertArrayEquals(new String[] { "abc" }, StringUtils.extract("abc", "abc"));
-		assertArrayEquals(new String[] { "[def]" }, StringUtils.extract("abc.[def].ghi", "\\[.*?]"));
-		
-		assertDoesNotThrow(() -> StringUtils.extract(null, (Pattern) null));
-		assertDoesNotThrow(() -> StringUtils.extract("abc", (Pattern) null));
-		assertDoesNotThrow(() -> StringUtils.extract(null, Pattern.compile("a")));
-		assertArrayEquals(ArrayUtils.EMPTY_STRING_ARRAY, StringUtils.extract(null, (Pattern) null));
-		assertArrayEquals(ArrayUtils.EMPTY_STRING_ARRAY, StringUtils.extract(null, Pattern.compile("a")));
-		assertArrayEquals(ArrayUtils.EMPTY_STRING_ARRAY, StringUtils.extract("abc", (Pattern) null));
-		assertArrayEquals(new String[] { "a" }, StringUtils.extract("abc", Pattern.compile("a")));
-		assertArrayEquals(new String[] { "abc" }, StringUtils.extract("abc", Pattern.compile("abc")));
-		assertArrayEquals(new String[] { "[def]" }, StringUtils.extract("abc.[def].ghi", Pattern.compile("\\[.*?]")));
 	}
 	
 	@Test
-	void getReadableString() {
-		assertDoesNotThrow(() -> StringUtils.getReadableString(null, Character::isUpperCase));
-		assertDoesNotThrow(() -> StringUtils.getReadableString("", null));
+	void extractStringFindsMatches() {
+		assertArrayEquals(new String[]{"a"}, StringUtils.extract("abc", "a"));
+		assertArrayEquals(new String[]{"abc"}, StringUtils.extract("abc", "abc"));
+		assertArrayEquals(new String[]{"[def]"}, StringUtils.extract("abc.[def].ghi", "\\[.*?]"));
+		assertArrayEquals(new String[]{"123", "456"}, StringUtils.extract("abc123def456ghi", "\\d+"));
+	}
+	
+	@Test
+	void extractPatternHandlesNulls() {
+		assertArrayEquals(ArrayUtils.EMPTY_STRING_ARRAY, StringUtils.extract(null, (Pattern) null));
+		assertArrayEquals(ArrayUtils.EMPTY_STRING_ARRAY, StringUtils.extract(null, Pattern.compile("a")));
+		assertArrayEquals(ArrayUtils.EMPTY_STRING_ARRAY, StringUtils.extract("abc", (Pattern) null));
+	}
+	
+	@Test
+	void extractPatternFindsMatches() {
+		assertArrayEquals(new String[]{"a"}, StringUtils.extract("abc", Pattern.compile("a")));
+		assertArrayEquals(new String[]{"abc"}, StringUtils.extract("abc", Pattern.compile("abc")));
+		assertArrayEquals(new String[]{"[def]"}, StringUtils.extract("abc.[def].ghi", Pattern.compile("\\[.*?]")));
+		assertArrayEquals(new String[]{"123", "456"}, StringUtils.extract("abc123def456ghi", Pattern.compile("\\d+")));
+	}
+	
+	@Test
+	void getReadableStringHandlesNullAndEmpty() {
 		assertEquals("", StringUtils.getReadableString(null, Character::isUpperCase));
 		assertEquals("abc", StringUtils.getReadableString("abc", null));
+		assertEquals("", StringUtils.getReadableString("", Character::isUpperCase));
+	}
+	
+	@Test
+	void getReadableStringConvertsCorrectly() {
 		assertEquals("abc", StringUtils.getReadableString("abc", Character::isUpperCase));
 		assertEquals("A B C", StringUtils.getReadableString("abc", Character::isLowerCase));
 		assertEquals("abc D E Fghi", StringUtils.getReadableString("abcDEFghi", Character::isUpperCase));
 		assertEquals("Test Class", StringUtils.getReadableString("TestClass", Character::isUpperCase));
+		assertEquals("my _constant", StringUtils.getReadableString("MY_CONSTANT", c -> c == '_'));
+	}
+	
+	@Test
+	void getReadableStringHandlesSpecialCases() {
+		assertEquals("H T M L Parser", StringUtils.getReadableString("HTMLParser", Character::isUpperCase));
+		assertEquals("X M L", StringUtils.getReadableString("XML", Character::isUpperCase));
+		assertEquals("a 1b 2c 3", StringUtils.getReadableString("A1B2C3", Character::isDigit));
 	}
 }

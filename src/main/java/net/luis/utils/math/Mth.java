@@ -25,6 +25,8 @@ import org.jetbrains.annotations.Nullable;
 import java.math.*;
 import java.util.Objects;
 import java.util.Random;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.*;
 
 /**
@@ -196,7 +198,7 @@ public final class Mth {
 		}
 		Number number = numbers[0];
 		for (int i = 1; i < numbers.length; i++) {
-			if (number.intValue() != numbers[i].intValue()) {
+			if (Double.compare(number.doubleValue(), numbers[i].doubleValue()) != 0) {
 				return false;
 			}
 		}
@@ -431,11 +433,15 @@ public final class Mth {
 	 * @return True if the given value is a power of two, otherwise false
 	 */
 	public static boolean isPowerOfTwo(int value) {
-		return value != 0 && (value & value - 1) == 0;
+		return value > 0 && (value & value - 1) == 0;
 	}
 	
 	/**
 	 * Parses the given hexadecimal string to a big decimal.<br>
+	 * The hexadecimal string must be in the format of a floating point constant:<br>
+	 * <pre>{@code
+	 * [+-]?0[xX][0-9a-fA-F]+(?:\\.[0-9a-fA-F]*)?[pP][+-]?\\d+
+	 * }</pre>
 	 *
 	 * @param hex The hexadecimal string
 	 * @return The parsed big decimal
@@ -444,52 +450,67 @@ public final class Mth {
 	 */
 	public static @NotNull BigDecimal parseHexToBigDecimal(@NotNull String hex) {
 		Objects.requireNonNull(hex, "Hexadecimal string must not be null");
-		BigDecimal sign = BigDecimal.ONE;
-		if (hex.startsWith("-")) {
-			hex = hex.substring(1);
-			sign = BigDecimal.valueOf(-1);
-		} else if (hex.startsWith("+")) {
-			hex = hex.substring(1);
-		}
-		if (!StringUtils.startsWithIgnoreCase(hex, "0x")) {
-			throw new NumberFormatException("Not a hexadecimal floating point constant: " + hex);
-		}
-		hex = hex.substring(2);
-		int p = hex.toLowerCase().indexOf("p");
-		if (0 > p) {
-			throw new NumberFormatException("Not a hexadecimal floating point constant: " + hex);
-		}
-		return getBigDecimal(hex, p).multiply(sign);
-	}
-	
-	/**
-	 * Parses the actual hexadecimal string to a big decimal.<br>
-	 *
-	 * @param hex The hexadecimal string
-	 * @param p The index of the exponent
-	 * @return The parsed big decimal
-	 * @throws NullPointerException If the given hexadecimal string is null
-	 */
-	private static @NotNull BigDecimal getBigDecimal(@NotNull String hex, int p) {
-		Objects.requireNonNull(hex, "Hexadecimal string must not be null");
-		String mantissa = hex.substring(0, p);
-		String exponent = hex.substring(p + 1);
 		
-		int hexadecimalPlaces = 0;
-		if (mantissa.contains(".")) {
-			int dot = mantissa.indexOf(".");
-			hexadecimalPlaces = mantissa.length() - 1 - dot;
-			mantissa = mantissa.substring(0, dot) + mantissa.substring(dot + 1);
+		Pattern pattern = Pattern.compile(
+			"([+-]?)0[xX]([0-9a-fA-F]+)(?:\\.([0-9a-fA-F]*))?[pP]([+-]?\\d+)"
+		);
+		
+		Matcher matcher = pattern.matcher(hex.trim());
+		if (!matcher.matches()) {
+			throw new NumberFormatException("Invalid hexadecimal float format: " + hex);
 		}
 		
-		int binaryExponent = Integer.parseInt(exponent) - (hexadecimalPlaces * 4);
-		boolean positive = binaryExponent >= 0;
-		if (0 > binaryExponent) {
-			binaryExponent = -binaryExponent;
+		String sign = matcher.group(1);
+		String integerPart = matcher.group(2);
+		String fractionalPart = matcher.group(3);
+		String exponentStr = matcher.group(4);
+		
+		boolean negative = "-".equals(sign);
+		int exponent = Integer.parseInt(exponentStr);
+		
+		BigInteger mantissaNumerator = BigInteger.ZERO;
+		BigInteger mantissaDenominator = BigInteger.ONE;
+		
+		if (integerPart != null && !integerPart.isEmpty()) {
+			for (int i = 0; i < integerPart.length(); i++) {
+				int digit = Character.digit(integerPart.charAt(i), 16);
+				mantissaNumerator = mantissaNumerator.multiply(BigInteger.valueOf(16)).add(BigInteger.valueOf(digit));
+			}
 		}
 		
-		BigDecimal base = new BigDecimal(new BigInteger(mantissa, 16));
-		BigDecimal factor = new BigDecimal(BigInteger.TWO.pow(binaryExponent));
-		return positive ? base.multiply(factor) : base.divide(factor, RoundingMode.HALF_DOWN);
+		if (fractionalPart != null && !fractionalPart.isEmpty()) {
+			BigInteger fractionNumerator = BigInteger.ZERO;
+			BigInteger fractionDenominator = BigInteger.ONE;
+			
+			for (int i = 0; i < fractionalPart.length(); i++) {
+				int digit = Character.digit(fractionalPart.charAt(i), 16);
+				fractionDenominator = fractionDenominator.multiply(BigInteger.valueOf(16));
+				fractionNumerator = fractionNumerator.multiply(BigInteger.valueOf(16)).add(BigInteger.valueOf(digit));
+			}
+			
+			mantissaNumerator = mantissaNumerator.multiply(fractionDenominator).add(fractionNumerator);
+			mantissaDenominator = fractionDenominator;
+		}
+		
+		if (exponent > 0) {
+			BigInteger powerOfTwo = BigInteger.valueOf(2).pow(exponent);
+			mantissaNumerator = mantissaNumerator.multiply(powerOfTwo);
+		} else if (exponent < 0) {
+			BigInteger powerOfTwo = BigInteger.valueOf(2).pow(-exponent);
+			mantissaDenominator = mantissaDenominator.multiply(powerOfTwo);
+		}
+		
+		BigDecimal result;
+		if (mantissaDenominator.equals(BigInteger.ONE)) {
+			result = new BigDecimal(mantissaNumerator);
+		} else {
+			int scale = Math.max(50, mantissaDenominator.toString().length() * 2);
+			result = new BigDecimal(mantissaNumerator)
+				.divide(new BigDecimal(mantissaDenominator), scale, RoundingMode.HALF_UP);
+		}
+		
+		result = result.stripTrailingZeros();
+		
+		return negative ? result.negate() : result;
 	}
 }
