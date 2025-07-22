@@ -30,22 +30,150 @@ import static org.junit.jupiter.api.Assertions.*;
 class TriFunctionTest {
 	
 	@Test
-	void apply() {
+	void applyWithCorrectParameters() {
 		TriFunction<Integer, Integer, Integer, Integer> function = (a, b, c) -> {
 			assertEquals(1, a);
 			assertEquals(2, b);
 			assertEquals(3, c);
 			return a + b + c;
 		};
+		
 		assertEquals(6, function.apply(1, 2, 3));
 		assertDoesNotThrow(() -> function.apply(1, 2, 3));
 	}
 	
 	@Test
-	void andThen() {
+	void applyWithNullParameters() {
+		TriFunction<String, String, String, String> function = (a, b, c) -> {
+			assertNull(a);
+			assertNull(b);
+			assertNull(c);
+			return "result";
+		};
+		
+		assertEquals("result", function.apply(null, null, null));
+	}
+	
+	@Test
+	void applyWithMixedParameters() {
+		TriFunction<Object, Object, Object, String> function = (a, b, c) -> {
+			assertEquals("string", a);
+			assertEquals(42, b);
+			assertNull(c);
+			return "mixed";
+		};
+		
+		assertEquals("mixed", function.apply("string", 42, null));
+	}
+	
+	@Test
+	void applyWithDifferentTypes() {
+		TriFunction<Integer, String, Boolean, String> function = (i, s, b) -> {
+			assertEquals(1, i);
+			assertEquals("test", s);
+			assertTrue(b);
+			return i + s + b;
+		};
+		
+		assertEquals("1testtrue", function.apply(1, "test", true));
+	}
+	
+	@Test
+	void applyReturnsNullResult() {
+		TriFunction<String, String, String, String> function = (a, b, c) -> null;
+		
+		assertNull(function.apply("a", "b", "c"));
+	}
+	
+	@Test
+	void applyWithZeroValues() {
 		TriFunction<Integer, Integer, Integer, Integer> function = (a, b, c) -> a + b + c;
-		assertDoesNotThrow(() -> function.andThen(i -> i * 2));
-		assertEquals(12, function.andThen(i -> i * 2).apply(1, 2, 3));
+		
+		assertEquals(0, function.apply(0, 0, 0));
+	}
+	
+	@Test
+	void applyWithNegativeValues() {
+		TriFunction<Integer, Integer, Integer, Integer> function = (a, b, c) -> a + b + c;
+		
+		assertEquals(-6, function.apply(-1, -2, -3));
+	}
+	
+	@Test
+	void andThenCombinesFunctions() {
+		TriFunction<Integer, Integer, Integer, Integer> function = (a, b, c) -> a + b + c;
+		
+		TriFunction<Integer, Integer, Integer, Integer> combined = function.andThen(i -> i * 2);
+		
+		assertEquals(12, combined.apply(1, 2, 3));
+		assertDoesNotThrow(() -> combined.apply(1, 2, 3));
+	}
+	
+	@Test
+	void andThenWithDifferentReturnType() {
+		TriFunction<Integer, Integer, Integer, Integer> function = (a, b, c) -> a + b + c;
+		
+		TriFunction<Integer, Integer, Integer, String> combined = function.andThen(i -> "Result: " + i);
+		
+		assertEquals("Result: 6", combined.apply(1, 2, 3));
+	}
+	
+	@Test
+	void andThenWithMultipleChaining() {
+		TriFunction<Integer, Integer, Integer, Integer> function = (a, b, c) -> a + b + c;
+		
+		TriFunction<Integer, Integer, Integer, String> combined = function
+			.andThen(i -> i * 2)
+			.andThen(i -> "Final: " + i);
+		
+		assertEquals("Final: 12", combined.apply(1, 2, 3));
+	}
+	
+	@Test
+	void andThenWithNullAfterFunction() {
+		TriFunction<Integer, Integer, Integer, Integer> function = (a, b, c) -> a + b + c;
+		
 		assertThrows(NullPointerException.class, () -> function.andThen(null));
+	}
+	
+	@Test
+	void andThenWithIdentityFunction() {
+		TriFunction<Integer, Integer, Integer, Integer> function = (a, b, c) -> a + b + c;
+		
+		TriFunction<Integer, Integer, Integer, Integer> combined = function.andThen(i -> i);
+		
+		assertEquals(6, combined.apply(1, 2, 3));
+	}
+	
+	@Test
+	void andThenWithExceptionInOriginalFunction() {
+		TriFunction<Integer, Integer, Integer, Integer> function = (a, b, c) -> {
+			throw new RuntimeException("Original function failed");
+		};
+		
+		TriFunction<Integer, Integer, Integer, Integer> combined = function.andThen(i -> i * 2);
+		
+		assertThrows(RuntimeException.class, () -> combined.apply(1, 2, 3));
+	}
+	
+	@Test
+	void andThenWithExceptionInAfterFunction() {
+		TriFunction<Integer, Integer, Integer, Integer> function = (a, b, c) -> a + b + c;
+		
+		TriFunction<Integer, Integer, Integer, Integer> combined = function.andThen(i -> {
+			throw new RuntimeException("After function failed");
+		});
+		
+		assertThrows(RuntimeException.class, () -> combined.apply(1, 2, 3));
+	}
+	
+	@Test
+	void andThenWithNullResult() {
+		TriFunction<Integer, Integer, Integer, Integer> function = (a, b, c) -> null;
+		
+		TriFunction<Integer, Integer, Integer, String> combined = function.andThen(i ->
+			i == null ? "null" : i.toString());
+		
+		assertEquals("null", combined.apply(1, 2, 3));
 	}
 }

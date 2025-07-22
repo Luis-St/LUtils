@@ -18,6 +18,7 @@
 
 package net.luis.utils.resources;
 
+import net.luis.utils.function.FunctionUtils;
 import net.luis.utils.io.FileUtils;
 import net.luis.utils.util.Pair;
 import org.apache.commons.lang3.StringUtils;
@@ -159,7 +160,7 @@ public abstract sealed class ResourceLocation permits ExternalResourceLocation, 
 		if (path == null) {
 			throw new IllegalArgumentException("Resource '" + name + "' was not found in any location");
 		}
-		String location = (path.charAt(path.length() - 1) == '/' ? path : path + "/") + name;
+		String location = (!path.isEmpty() && path.charAt(path.length() - 1) == '/' ? path : path + "/") + name;
 		throw new IllegalArgumentException("Resource '" + location + "' was not found in any location");
 	}
 	//endregion
@@ -314,13 +315,13 @@ public abstract sealed class ResourceLocation permits ExternalResourceLocation, 
 	
 	//region Static initializer
 	static {
-		TEMP = () -> {
+		TEMP = FunctionUtils.memorize(() -> {
 			try {
 				return FileUtils.createSessionDirectory("resources");
 			} catch (IOException e) {
 				throw new RuntimeException(e);
 			}
-		};
+		});
 	}
 	//endregion
 	

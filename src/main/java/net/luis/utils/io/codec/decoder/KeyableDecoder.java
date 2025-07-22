@@ -18,6 +18,7 @@
 
 package net.luis.utils.io.codec.decoder;
 
+import net.luis.utils.function.throwable.ThrowableFunction;
 import net.luis.utils.io.codec.provider.TypeProvider;
 import net.luis.utils.util.Result;
 import org.jetbrains.annotations.NotNull;
@@ -25,7 +26,6 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.Objects;
 import java.util.Optional;
-import java.util.function.Function;
 
 /**
  * Extension of {@link Decoder} that allows decoding keys.<br>
@@ -50,7 +50,7 @@ public interface KeyableDecoder<C> extends Decoder<C> {
 	 * @param <C> The type of the value to decode
 	 * @throws NullPointerException If the decoder or the key decoder function is null
 	 */
-	static <C> @NotNull KeyableDecoder<C> of(@NotNull Decoder<C> decoder, @NotNull Function<String, @Nullable C> keyDecoder) {
+	static <C> @NotNull KeyableDecoder<C> of(@NotNull Decoder<C> decoder, @NotNull ThrowableFunction<String, @Nullable C, ? extends Exception> keyDecoder) {
 		Objects.requireNonNull(decoder, "Decoder must not be null");
 		Objects.requireNonNull(keyDecoder, "Key decoder must not be null");
 		return new KeyableDecoder<>() {
@@ -64,9 +64,15 @@ public interface KeyableDecoder<C> extends Decoder<C> {
 			@Override
 			public <R> @NotNull Result<C> decodeKey(@Nullable TypeProvider<R> provider, @NotNull String key) {
 				Objects.requireNonNull(key, "Key must not be null");
-				return Optional.ofNullable(keyDecoder.apply(key)).map(Result::success).orElseGet(() -> {
-					return Result.error("Unable to decode key with codec '" + this + "': Key '" + key + "' could not be converted back to a value");
-				});
+				
+				try {
+					C decodedKey = keyDecoder.apply(key);
+					return Optional.ofNullable(decodedKey).map(Result::success).orElseGet(() -> {
+						return Result.error("Unable to decode key with codec '" + this + "': Key '" + key + "' could not be converted back to a value");
+					});
+				} catch (Exception e) {
+					return Result.error("Unable to decode key with codec '" + this + "': Key '" + key + "' could not be converted back to a value due to an exception: " + e.getMessage());
+				}
 			}
 		};
 	}

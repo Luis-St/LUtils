@@ -30,9 +30,72 @@ import static org.junit.jupiter.api.Assertions.*;
 class XmlTypeExceptionTest {
 	
 	@Test
-	void constructor() {
-		assertDoesNotThrow(() -> new XmlTypeException((String) null));
-		assertDoesNotThrow(() -> new XmlTypeException((Throwable) null));
-		assertDoesNotThrow(() -> new XmlTypeException(null, null));
+	void defaultConstructor() {
+		XmlTypeException exception = new XmlTypeException();
+		
+		assertNull(exception.getMessage());
+		assertNull(exception.getCause());
+		assertInstanceOf(RuntimeException.class, exception);
+	}
+	
+	@Test
+	void messageConstructor() {
+		String message = "Unexpected XML type";
+		XmlTypeException exception = new XmlTypeException(message);
+		
+		assertEquals(message, exception.getMessage());
+		assertNull(exception.getCause());
+	}
+	
+	@Test
+	void messageConstructorWithNull() {
+		XmlTypeException exception = new XmlTypeException((String) null);
+		
+		assertNull(exception.getMessage());
+		assertNull(exception.getCause());
+	}
+	
+	@Test
+	void messageAndCauseConstructor() {
+		String message = "Unexpected XML type";
+		Throwable cause = new RuntimeException("Root cause");
+		XmlTypeException exception = new XmlTypeException(message, cause);
+		
+		assertEquals(message, exception.getMessage());
+		assertEquals(cause, exception.getCause());
+	}
+	
+	@Test
+	void messageAndCauseConstructorWithNulls() {
+		XmlTypeException exception = new XmlTypeException(null, null);
+		
+		assertNull(exception.getMessage());
+		assertNull(exception.getCause());
+	}
+	
+	@Test
+	void causeConstructor() {
+		Throwable cause = new RuntimeException("Root cause");
+		XmlTypeException exception = new XmlTypeException(cause);
+		
+		assertEquals(cause.toString(), exception.getMessage());
+		assertEquals(cause, exception.getCause());
+	}
+	
+	@Test
+	void causeConstructorWithNull() {
+		XmlTypeException exception = new XmlTypeException((Throwable) null);
+		
+		assertNull(exception.getMessage());
+		assertNull(exception.getCause());
+	}
+	
+	@Test
+	void inheritanceHierarchy() {
+		XmlTypeException exception = new XmlTypeException();
+		
+		assertInstanceOf(RuntimeException.class, exception);
+		assertInstanceOf(Exception.class, exception);
+		assertInstanceOf(Throwable.class, exception);
 	}
 }

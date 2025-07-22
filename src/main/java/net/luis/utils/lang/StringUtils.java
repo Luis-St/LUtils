@@ -186,7 +186,7 @@ public final class StringUtils {
 	 * indexOfAll("", *) -> []
 	 * indexOfAll("abed", "a") -> [0]
 	 * indexOfAll("abac", "ab") -> [0]
-	 * indexOfAll("abac ba", "ba") -> [1, 4]
+	 * indexOfAll("abac ba", "ba") -> [1, 5]
 	 * }</pre>
 	 *
 	 * @param str The string to search in

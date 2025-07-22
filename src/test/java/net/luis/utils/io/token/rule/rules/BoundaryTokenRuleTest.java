@@ -18,10 +18,11 @@
 
 package net.luis.utils.io.token.rule.rules;
 
-import net.luis.utils.io.token.definition.TokenDefinition;
 import net.luis.utils.io.token.rule.TokenRuleMatch;
 import net.luis.utils.io.token.tokens.SimpleToken;
 import net.luis.utils.io.token.tokens.Token;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.junit.jupiter.api.Test;
 
 import java.util.*;
@@ -35,156 +36,327 @@ import static org.junit.jupiter.api.Assertions.*;
  */
 class BoundaryTokenRuleTest {
 	
-	private static final TokenDefinition START_DEFINITION = "("::equals;
-	private static final TokenDefinition MIDDLE_DEFINITION = "test"::equals;
-	private static final TokenDefinition END_DEFINITION = ")"::equals;
-	private static final TokenDefinition NUMBER_DEFINITION = (word) -> word.matches("\\d+");
+	private static @NotNull TokenRule createRule(@NotNull String value) {
+		return new TokenRule() {
+			@Override
+			public @Nullable TokenRuleMatch match(@NotNull List<Token> tokens, int startIndex) {
+				Objects.requireNonNull(tokens, "Tokens list must not be null");
+				if (startIndex >= tokens.size() || startIndex < 0) {
+					return null;
+				}
+				
+				Token token = tokens.get(startIndex);
+				if (token.value().equals(value)) {
+					return new TokenRuleMatch(startIndex, startIndex + 1, List.of(token), this);
+				}
+				return null;
+			}
+		};
+	}
 	
-	private static final Token START_TOKEN = SimpleToken.createUnpositioned(START_DEFINITION, "(");
-	private static final Token MIDDLE_TOKEN = SimpleToken.createUnpositioned(MIDDLE_DEFINITION, "test");
-	private static final Token END_TOKEN = SimpleToken.createUnpositioned(END_DEFINITION, ")");
-	private static final Token NUMBER_TOKEN = SimpleToken.createUnpositioned(NUMBER_DEFINITION, "123");
-	
-	@Test
-	void constructor() {
-		assertThrows(NullPointerException.class, () -> new BoundaryTokenRule(null, END_DEFINITION));
-		assertThrows(NullPointerException.class, () -> new BoundaryTokenRule(START_DEFINITION, null));
-		
-		assertThrows(NullPointerException.class, () -> new BoundaryTokenRule(null, MIDDLE_DEFINITION, END_DEFINITION));
-		assertThrows(NullPointerException.class, () -> new BoundaryTokenRule(START_DEFINITION, null, END_DEFINITION));
-		assertThrows(NullPointerException.class, () -> new BoundaryTokenRule(START_DEFINITION, MIDDLE_DEFINITION, null));
-		
-		BoundaryTokenRule validRule = new BoundaryTokenRule(START_DEFINITION, END_DEFINITION);
-		assertDoesNotThrow(() -> new BoundaryTokenRule(START_DEFINITION, validRule, END_DEFINITION));
-		
-		RepeatedTokenRule repeatedRule = new RepeatedTokenRule(MIDDLE_DEFINITION, 1, 3);
-		assertDoesNotThrow(() -> new BoundaryTokenRule(START_DEFINITION, repeatedRule, END_DEFINITION));
-		
-		SequenceTokenRule sequenceRule = new SequenceTokenRule(List.of(MIDDLE_DEFINITION, MIDDLE_DEFINITION));
-		assertDoesNotThrow(() -> new BoundaryTokenRule(START_DEFINITION, sequenceRule, END_DEFINITION));
-		
-		assertThrows(IllegalArgumentException.class, () -> new BoundaryTokenRule(START_DEFINITION, EndTokenRule.INSTANCE, END_DEFINITION));
-		
-		AnyOfTokenRule anyOfInvalid = new AnyOfTokenRule(Set.of(MIDDLE_DEFINITION, new BoundaryTokenRule(START_DEFINITION, END_DEFINITION)));
-		assertDoesNotThrow(() -> new BoundaryTokenRule(START_DEFINITION, anyOfInvalid, END_DEFINITION));
-		
-		OptionalTokenRule optionalInvalid = new OptionalTokenRule(new RepeatedTokenRule(MIDDLE_DEFINITION, 1));
-		assertDoesNotThrow(() -> new BoundaryTokenRule(START_DEFINITION, optionalInvalid, END_DEFINITION));
-		
-		AnyOfTokenRule anyOfValid = new AnyOfTokenRule(Set.of(MIDDLE_DEFINITION));
-		assertDoesNotThrow(() -> new BoundaryTokenRule(START_DEFINITION, anyOfValid, END_DEFINITION));
-		
-		OptionalTokenRule optionalValid = new OptionalTokenRule(MIDDLE_DEFINITION);
-		assertDoesNotThrow(() -> new BoundaryTokenRule(START_DEFINITION, optionalValid, END_DEFINITION));
+	private static @NotNull Token createToken(@NotNull String value) {
+		return SimpleToken.createUnpositioned(word -> word.equals(value), value);
 	}
 	
 	@Test
-	void startTokenRule() {
-		assertEquals(START_DEFINITION, new BoundaryTokenRule(START_DEFINITION, END_DEFINITION).startTokenRule());
+	void constructorWithNullStartRule() {
+		assertThrows(NullPointerException.class, () -> new BoundaryTokenRule(null, createRule("end")));
 	}
 	
 	@Test
-	void betweenTokenRule() {
-		assertEquals(TokenRules.alwaysMatch(), new BoundaryTokenRule(START_DEFINITION, END_DEFINITION).betweenTokenRule());
-		assertEquals(MIDDLE_DEFINITION, new BoundaryTokenRule(START_DEFINITION, MIDDLE_DEFINITION, END_DEFINITION).betweenTokenRule());
+	void constructorWithNullEndRule() {
+		assertThrows(NullPointerException.class, () -> new BoundaryTokenRule(createRule("start"), null));
 	}
 	
 	@Test
-	void endTokenRule() {
-		assertEquals(END_DEFINITION, new BoundaryTokenRule(START_DEFINITION, END_DEFINITION).endTokenRule());
+	void constructorWithNullBetweenRule() {
+		assertThrows(NullPointerException.class, () -> new BoundaryTokenRule(createRule("start"), null, createRule("end")));
 	}
 	
 	@Test
-	void match() {
-		BoundaryTokenRule rule = new BoundaryTokenRule(START_DEFINITION, MIDDLE_DEFINITION, END_DEFINITION);
+	void constructorWithValidRules() {
+		assertDoesNotThrow(() -> new BoundaryTokenRule(createRule("start"), createRule("end")));
+		assertDoesNotThrow(() -> new BoundaryTokenRule(createRule("start"), createRule("middle"), createRule("end")));
+	}
+	
+	@Test
+	void constructorWithInvalidStartRule() {
+		assertThrows(IllegalArgumentException.class, () -> new BoundaryTokenRule(TokenRules.end(), createRule("end")));
+	}
+	
+	@Test
+	void constructorWithInvalidBetweenRule() {
+		assertThrows(IllegalArgumentException.class, () -> new BoundaryTokenRule(createRule("start"), TokenRules.end(), createRule("end")));
+	}
+	
+	@Test
+	void constructorWithNestedInvalidRules() {
+		AnyOfTokenRule invalidAnyOf = new AnyOfTokenRule(Set.of(createRule("valid"), TokenRules.end()));
+		
+		assertThrows(IllegalArgumentException.class, () -> new BoundaryTokenRule(createRule("start"), invalidAnyOf, createRule("end")));
+	}
+	
+	@Test
+	void constructorWithValidNestedRules() {
+		BoundaryTokenRule validNested = new BoundaryTokenRule(createRule("inner_start"), createRule("inner_end"));
+		RepeatedTokenRule validRepeated = new RepeatedTokenRule(createRule("repeat"), 1, 3);
+		SequenceTokenRule validSequence = new SequenceTokenRule(List.of(createRule("seq1"), createRule("seq2")));
+		
+		assertDoesNotThrow(() -> new BoundaryTokenRule(createRule("start"), validNested, createRule("end")));
+		assertDoesNotThrow(() -> new BoundaryTokenRule(createRule("start"), validRepeated, createRule("end")));
+		assertDoesNotThrow(() -> new BoundaryTokenRule(createRule("start"), validSequence, createRule("end")));
+	}
+	
+	@Test
+	void startTokenRuleReturnsCorrectRule() {
+		TokenRule startRule = createRule("start");
+		BoundaryTokenRule boundary = new BoundaryTokenRule(startRule, createRule("end"));
+		
+		assertEquals(startRule, boundary.startTokenRule());
+	}
+	
+	@Test
+	void betweenTokenRuleReturnsAlwaysMatchByDefault() {
+		BoundaryTokenRule boundary = new BoundaryTokenRule(createRule("start"), createRule("end"));
+		
+		assertEquals(TokenRules.alwaysMatch(), boundary.betweenTokenRule());
+	}
+	
+	@Test
+	void betweenTokenRuleReturnsSpecifiedRule() {
+		TokenRule betweenRule = createRule("middle");
+		BoundaryTokenRule boundary = new BoundaryTokenRule(createRule("start"), betweenRule, createRule("end"));
+		
+		assertEquals(betweenRule, boundary.betweenTokenRule());
+	}
+	
+	@Test
+	void endTokenRuleReturnsCorrectRule() {
+		TokenRule endRule = createRule("end");
+		BoundaryTokenRule boundary = new BoundaryTokenRule(createRule("start"), endRule);
+		
+		assertEquals(endRule, boundary.endTokenRule());
+	}
+	
+	@Test
+	void matchWithNullTokenList() {
+		BoundaryTokenRule rule = new BoundaryTokenRule(createRule("start"), createRule("end"));
+		
 		assertThrows(NullPointerException.class, () -> rule.match(null, 0));
+	}
+	
+	@Test
+	void matchWithEmptyTokenList() {
+		BoundaryTokenRule rule = new BoundaryTokenRule(createRule("start"), createRule("end"));
+		
 		assertNull(rule.match(Collections.emptyList(), 0));
+	}
+	
+	@Test
+	void matchWithIndexOutOfBounds() {
+		BoundaryTokenRule rule = new BoundaryTokenRule(createRule("start"), createRule("end"));
+		List<Token> tokens = List.of(createToken("start"));
 		
-		TokenRuleMatch match0 = rule.match(List.of(START_TOKEN, END_TOKEN), 0);
-		assertNotNull(match0);
-		assertEquals(0, match0.startIndex());
-		assertEquals(2, match0.endIndex());
-		assertEquals(2, match0.matchedTokens().size());
-		assertEquals(START_TOKEN, match0.matchedTokens().get(0));
-		assertEquals(END_TOKEN, match0.matchedTokens().get(1));
+		assertNull(rule.match(tokens, 1));
+		assertNull(rule.match(tokens, 5));
+	}
+	
+	@Test
+	void matchWithNoStartMatch() {
+		BoundaryTokenRule rule = new BoundaryTokenRule(createRule("start"), createRule("end"));
+		List<Token> tokens = List.of(createToken("other"), createToken("end"));
 		
-		TokenRuleMatch match1 = rule.match(List.of(START_TOKEN, MIDDLE_TOKEN, END_TOKEN), 0);
+		assertNull(rule.match(tokens, 0));
+	}
+	
+	@Test
+	void matchWithStartButNoEnd() {
+		BoundaryTokenRule rule = new BoundaryTokenRule(createRule("start"), createRule("end"));
+		List<Token> tokens = List.of(createToken("start"), createToken("other"));
+		
+		assertNull(rule.match(tokens, 0));
+	}
+	
+	@Test
+	void matchWithSimpleStartEnd() {
+		BoundaryTokenRule rule = new BoundaryTokenRule(createRule("start"), createRule("end"));
+		Token startToken = createToken("start");
+		Token endToken = createToken("end");
+		List<Token> tokens = List.of(startToken, endToken);
+		
+		TokenRuleMatch match = rule.match(tokens, 0);
+		
+		assertNotNull(match);
+		assertEquals(0, match.startIndex());
+		assertEquals(2, match.endIndex());
+		assertEquals(2, match.matchedTokens().size());
+		assertEquals(startToken, match.matchedTokens().get(0));
+		assertEquals(endToken, match.matchedTokens().get(1));
+	}
+	
+	@Test
+	void matchWithContentBetween() {
+		BoundaryTokenRule rule = new BoundaryTokenRule(createRule("("), createRule("content"), createRule(")"));
+		Token start = createToken("(");
+		Token content = createToken("content");
+		Token end = createToken(")");
+		List<Token> tokens = List.of(start, content, end);
+		
+		TokenRuleMatch match = rule.match(tokens, 0);
+		
+		assertNotNull(match);
+		assertEquals(0, match.startIndex());
+		assertEquals(3, match.endIndex());
+		assertEquals(3, match.matchedTokens().size());
+		assertEquals(start, match.matchedTokens().get(0));
+		assertEquals(content, match.matchedTokens().get(1));
+		assertEquals(end, match.matchedTokens().get(2));
+	}
+	
+	@Test
+	void matchWithMultipleContentTokens() {
+		BoundaryTokenRule rule = new BoundaryTokenRule(createRule("("), createRule("content"), createRule(")"));
+		Token start = createToken("(");
+		Token content1 = createToken("content");
+		Token content2 = createToken("content");
+		Token content3 = createToken("content");
+		Token end = createToken(")");
+		List<Token> tokens = List.of(start, content1, content2, content3, end);
+		
+		TokenRuleMatch match = rule.match(tokens, 0);
+		
+		assertNotNull(match);
+		assertEquals(0, match.startIndex());
+		assertEquals(5, match.endIndex());
+		assertEquals(5, match.matchedTokens().size());
+	}
+	
+	@Test
+	void matchWithAlwaysMatchBetween() {
+		BoundaryTokenRule rule = new BoundaryTokenRule(createRule("("), createRule(")"));
+		Token start = createToken("(");
+		Token middle1 = createToken("anything");
+		Token middle2 = createToken("goes");
+		Token end = createToken(")");
+		List<Token> tokens = List.of(start, middle1, middle2, end);
+		
+		TokenRuleMatch match = rule.match(tokens, 0);
+		
+		assertNotNull(match);
+		assertEquals(4, match.matchedTokens().size());
+		assertEquals(start, match.matchedTokens().get(0));
+		assertEquals(middle1, match.matchedTokens().get(1));
+		assertEquals(middle2, match.matchedTokens().get(2));
+		assertEquals(end, match.matchedTokens().get(3));
+	}
+	
+	@Test
+	void matchWithOptionalBetween() {
+		OptionalTokenRule optional = new OptionalTokenRule(createRule("optional"));
+		BoundaryTokenRule rule = new BoundaryTokenRule(createRule("start"), optional, createRule("end"));
+		
+		List<Token> withOptional = List.of(createToken("start"), createToken("optional"), createToken("end"));
+		TokenRuleMatch match1 = rule.match(withOptional, 0);
 		assertNotNull(match1);
-		assertEquals(0, match1.startIndex());
-		assertEquals(3, match1.endIndex());
 		assertEquals(3, match1.matchedTokens().size());
-		assertEquals(START_TOKEN, match1.matchedTokens().get(0));
-		assertEquals(MIDDLE_TOKEN, match1.matchedTokens().get(1));
-		assertEquals(END_TOKEN, match1.matchedTokens().get(2));
 		
-		TokenRuleMatch match2 = rule.match(List.of(START_TOKEN, MIDDLE_TOKEN, MIDDLE_TOKEN, END_TOKEN), 0);
+		List<Token> withoutOptional = List.of(createToken("start"), createToken("end"));
+		TokenRuleMatch match2 = rule.match(withoutOptional, 0);
 		assertNotNull(match2);
-		assertEquals(0, match2.startIndex());
-		assertEquals(4, match2.endIndex());
-		assertEquals(4, match2.matchedTokens().size());
+		assertEquals(2, match2.matchedTokens().size());
+	}
+	
+	@Test
+	void matchWithAnyOfBetween() {
+		AnyOfTokenRule anyOf = new AnyOfTokenRule(Set.of(createRule("option1"), createRule("option2")));
+		BoundaryTokenRule rule = new BoundaryTokenRule(createRule("["), anyOf, createRule("]"));
 		
-		TokenRuleMatch match3 = rule.match(List.of(START_TOKEN, END_TOKEN, END_TOKEN), 0);
-		assertNotNull(match3);
-		assertEquals(0, match3.startIndex());
-		assertEquals(2, match3.endIndex());
-		assertEquals(2, match3.matchedTokens().size());
+		List<Token> withOption1 = List.of(createToken("["), createToken("option1"), createToken("]"));
+		TokenRuleMatch match1 = rule.match(withOption1, 0);
+		assertNotNull(match1);
+		assertEquals("option1", match1.matchedTokens().get(1).value());
 		
-		assertNull(rule.match(List.of(START_TOKEN, MIDDLE_TOKEN), 0));
-		assertNull(rule.match(List.of(MIDDLE_TOKEN, END_TOKEN), 0));
-		assertNull(rule.match(List.of(START_TOKEN, END_TOKEN), 5));
+		List<Token> withOption2 = List.of(createToken("["), createToken("option2"), createToken("]"));
+		TokenRuleMatch match2 = rule.match(withOption2, 0);
+		assertNotNull(match2);
+		assertEquals("option2", match2.matchedTokens().get(1).value());
+	}
+	
+	@Test
+	void matchWithRepeatedBetween() {
+		RepeatedTokenRule repeated = new RepeatedTokenRule(createRule("x"), 1, 3);
+		BoundaryTokenRule rule = new BoundaryTokenRule(createRule("<"), repeated, createRule(">"));
 		
-		BoundaryTokenRule defaultRule = new BoundaryTokenRule(START_DEFINITION, END_DEFINITION);
-		Token number0 = SimpleToken.createUnpositioned(NUMBER_DEFINITION, "00");
-		Token number1 = SimpleToken.createUnpositioned(NUMBER_DEFINITION, "11");
-		TokenRuleMatch match4 = defaultRule.match(List.of(START_TOKEN, number0, MIDDLE_TOKEN, number1, END_TOKEN), 0);
-		assertNotNull(match4);
-		assertEquals(0, match4.startIndex());
-		assertEquals(5, match4.endIndex());
-		assertEquals(5, match4.matchedTokens().size());
+		List<Token> minRep = List.of(createToken("<"), createToken("x"), createToken(">"));
+		TokenRuleMatch match1 = rule.match(minRep, 0);
+		assertNotNull(match1);
+		assertEquals(3, match1.matchedTokens().size());
 		
-		OptionalTokenRule optionalRule = new OptionalTokenRule(MIDDLE_DEFINITION);
-		BoundaryTokenRule boundaryWithOptional = new BoundaryTokenRule(START_DEFINITION, optionalRule, END_DEFINITION);
-		TokenRuleMatch optMatch1 = boundaryWithOptional.match(List.of(START_TOKEN, MIDDLE_TOKEN, END_TOKEN), 0);
-		assertNotNull(optMatch1);
-		assertEquals(3, optMatch1.matchedTokens().size());
-		TokenRuleMatch optMatch2 = boundaryWithOptional.match(List.of(START_TOKEN, END_TOKEN), 0);
-		assertNotNull(optMatch2);
-		assertEquals(2, optMatch2.matchedTokens().size());
+		List<Token> maxRep = List.of(createToken("<"), createToken("x"), createToken("x"), createToken("x"), createToken(">"));
+		TokenRuleMatch match2 = rule.match(maxRep, 0);
+		assertNotNull(match2);
+		assertEquals(5, match2.matchedTokens().size());
+	}
+	
+	@Test
+	void matchWithSequenceBetween() {
+		SequenceTokenRule sequence = new SequenceTokenRule(List.of(createRule("a"), createRule("b")));
+		BoundaryTokenRule rule = new BoundaryTokenRule(createRule("{"), sequence, createRule("}"));
 		
-		AnyOfTokenRule anyOfRule = new AnyOfTokenRule(Set.of(MIDDLE_DEFINITION, NUMBER_DEFINITION));
-		BoundaryTokenRule boundaryWithAnyOf = new BoundaryTokenRule(START_DEFINITION, anyOfRule, END_DEFINITION);
-		TokenRuleMatch anyMatch1 = boundaryWithAnyOf.match(List.of(START_TOKEN, MIDDLE_TOKEN, END_TOKEN), 0);
-		assertNotNull(anyMatch1);
-		assertEquals(3, anyMatch1.matchedTokens().size());
-		TokenRuleMatch anyMatch2 = boundaryWithAnyOf.match(List.of(START_TOKEN, NUMBER_TOKEN, END_TOKEN), 0);
-		assertNotNull(anyMatch2);
-		assertEquals(3, anyMatch2.matchedTokens().size());
+		List<Token> tokens = List.of(createToken("{"), createToken("a"), createToken("b"), createToken("}"));
+		TokenRuleMatch match = rule.match(tokens, 0);
 		
-		RepeatedTokenRule repeatedRule = new RepeatedTokenRule(MIDDLE_DEFINITION, 1, 3);
-		BoundaryTokenRule boundaryWithRepeated = new BoundaryTokenRule(START_DEFINITION, repeatedRule, END_DEFINITION);
-		TokenRuleMatch repMatch1 = boundaryWithRepeated.match(List.of(START_TOKEN, MIDDLE_TOKEN, END_TOKEN), 0);
-		assertNotNull(repMatch1);
-		assertEquals(3, repMatch1.matchedTokens().size());
-		TokenRuleMatch repMatch3 = boundaryWithRepeated.match(List.of(START_TOKEN, MIDDLE_TOKEN, MIDDLE_TOKEN, MIDDLE_TOKEN, END_TOKEN), 0);
-		assertNotNull(repMatch3);
-		assertEquals(5, repMatch3.matchedTokens().size());
+		assertNotNull(match);
+		assertEquals(4, match.matchedTokens().size());
+		assertEquals("a", match.matchedTokens().get(1).value());
+		assertEquals("b", match.matchedTokens().get(2).value());
+	}
+	
+	@Test
+	void matchWithEarliestEndMatch() {
+		BoundaryTokenRule rule = new BoundaryTokenRule(createRule("start"), createRule("end"));
+		Token start = createToken("start");
+		Token end1 = createToken("end");
+		Token middle = createToken("middle");
+		Token end2 = createToken("end");
+		List<Token> tokens = List.of(start, end1, middle, end2);
 		
-		SequenceTokenRule sequenceRule = new SequenceTokenRule(List.of(MIDDLE_DEFINITION, NUMBER_DEFINITION));
-		BoundaryTokenRule boundaryWithSequence = new BoundaryTokenRule(START_DEFINITION, sequenceRule, END_DEFINITION);
-		TokenRuleMatch seqMatch = boundaryWithSequence.match(List.of(START_TOKEN, MIDDLE_TOKEN, NUMBER_TOKEN, END_TOKEN), 0);
-		assertNotNull(seqMatch);
-		assertEquals(4, seqMatch.matchedTokens().size());
+		TokenRuleMatch match = rule.match(tokens, 0);
 		
-		TokenRule complexRule = new SequenceTokenRule(List.of(
-			new OptionalTokenRule(MIDDLE_DEFINITION),
-			new AnyOfTokenRule(Set.of(NUMBER_DEFINITION))
-		));
-		BoundaryTokenRule boundaryWithComplex = new BoundaryTokenRule(START_DEFINITION, complexRule, END_DEFINITION);
-		TokenRuleMatch complexMatch1 = boundaryWithComplex.match(List.of(START_TOKEN, MIDDLE_TOKEN, NUMBER_TOKEN, END_TOKEN), 0);
-		assertNotNull(complexMatch1);
-		assertEquals(4, complexMatch1.matchedTokens().size());
-		TokenRuleMatch complexMatch2 = boundaryWithComplex.match(List.of(START_TOKEN, NUMBER_TOKEN, END_TOKEN), 0);
-		assertNotNull(complexMatch2);
-		assertEquals(3, complexMatch2.matchedTokens().size());
+		assertNotNull(match);
+		assertEquals(0, match.startIndex());
+		assertEquals(2, match.endIndex());
+		assertEquals(2, match.matchedTokens().size());
+		assertEquals(start, match.matchedTokens().get(0));
+		assertEquals(end1, match.matchedTokens().get(1));
+	}
+	
+	@Test
+	void matchAtDifferentStartIndices() {
+		BoundaryTokenRule rule = new BoundaryTokenRule(createRule("("), createRule(")"));
+		List<Token> tokens = List.of(
+			createToken("prefix"),
+			createToken("("),
+			createToken("content"),
+			createToken(")")
+		);
+		
+		TokenRuleMatch match = rule.match(tokens, 1);
+		
+		assertNotNull(match);
+		assertEquals(1, match.startIndex());
+		assertEquals(4, match.endIndex());
+		assertEquals(3, match.matchedTokens().size());
+	}
+	
+	@Test
+	void equalRulesHaveSameHashCode() {
+		TokenRule start = createRule("start");
+		TokenRule end = createRule("end");
+		BoundaryTokenRule rule1 = new BoundaryTokenRule(start, end);
+		BoundaryTokenRule rule2 = new BoundaryTokenRule(start, end);
+		
+		assertEquals(rule1.hashCode(), rule2.hashCode());
 	}
 }
+

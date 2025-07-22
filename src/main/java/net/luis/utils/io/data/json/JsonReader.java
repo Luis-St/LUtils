@@ -131,6 +131,9 @@ public class JsonReader implements AutoCloseable {
 	 */
 	private @NotNull JsonElement readJsonElement() {
 		this.reader.skipWhitespaces();
+		if (!this.reader.canRead()) {
+			throw new JsonSyntaxException("Invalid json element, expected content but got nothing");
+		}
 		char next = this.reader.peek();
 		JsonElement element;
 		if (next == '{') {
@@ -176,6 +179,9 @@ public class JsonReader implements AutoCloseable {
 				throw new JsonSyntaxException("Invalid json structure, some elements are not closed properly");
 			}
 			this.reader.skipWhitespaces();
+			if (!this.reader.canRead()) {
+				throw new JsonSyntaxException("Invalid json array, expected closing bracket ']' or another element but got nothing");
+			}
 			if (this.reader.peek() == ',') {
 				this.reader.skip();
 				this.reader.skipWhitespaces();
@@ -231,6 +237,9 @@ public class JsonReader implements AutoCloseable {
 			this.reader.skipWhitespaces();
 			String key;
 			if (this.config.strict()) {
+				if (this.reader.peek() != '"') {
+					throw new JsonSyntaxException("Invalid json object, expected quoted key but got: '" + this.reader.peek() + "'");
+				}
 				key = this.reader.readQuotedString();
 			} else {
 				key = this.reader.readString();
@@ -247,12 +256,17 @@ public class JsonReader implements AutoCloseable {
 				throw new JsonSyntaxException("Invalid json structure, some elements are not closed properly");
 			}
 			this.reader.skipWhitespaces();
+			if (!this.reader.canRead()) {
+				throw new JsonSyntaxException("Invalid json object, expected closing bracket '}' but got nothing");
+			}
 			if (this.reader.peek() == ',') {
 				this.reader.skip();
 				this.reader.skipWhitespaces();
 				if (this.config.strict() && this.reader.peek() == '}') {
 					throw new JsonSyntaxException("Invalid json object, expected another entry but got closing bracket '}'");
 				}
+			} else if (this.reader.peek() != '}') {
+				throw new JsonSyntaxException("Invalid json object, expected ',' or '}' but got: '" + this.reader.peek() + "'");
 			}
 		}
 		if (!this.reader.canRead()) {
@@ -298,6 +312,9 @@ public class JsonReader implements AutoCloseable {
 	 */
 	private @NotNull JsonElement readJsonValue() {
 		this.reader.skipWhitespaces();
+		if (!this.reader.canRead()) {
+			throw new JsonSyntaxException("Invalid json value, expected content but got nothing");
+		}
 		char next = Character.toLowerCase(this.reader.peek());
 		if (next == '"') {
 			return new JsonPrimitive(this.reader.readQuotedString());

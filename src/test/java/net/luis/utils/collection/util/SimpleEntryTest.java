@@ -31,25 +31,168 @@ import static org.junit.jupiter.api.Assertions.*;
 class SimpleEntryTest {
 	
 	@Test
-	void constructor() {
+	void constructorWithNullKey() {
 		assertThrows(NullPointerException.class, () -> new SimpleEntry<>(null, "value"));
+		assertThrows(NullPointerException.class, () -> new SimpleEntry<>(null, null));
+	}
+	
+	@Test
+	void constructorWithValidInputs() {
 		assertDoesNotThrow(() -> new SimpleEntry<>("key", "value"));
 		assertDoesNotThrow(() -> new SimpleEntry<>("key", null));
+		assertDoesNotThrow(() -> new SimpleEntry<>(123, "value"));
+		assertDoesNotThrow(() -> new SimpleEntry<>("", ""));
 	}
 	
 	@Test
 	void getKey() {
-		assertEquals("key", new SimpleEntry<>("key", "value").getKey());
+		SimpleEntry<String, String> entry = new SimpleEntry<>("testKey", "value");
+		assertEquals("testKey", entry.getKey());
+		
+		SimpleEntry<Integer, String> intEntry = new SimpleEntry<>(42, "value");
+		assertEquals(42, intEntry.getKey());
 	}
 	
 	@Test
 	void getValue() {
-		assertEquals("value", new SimpleEntry<>("key", "value").getValue());
-		assertNull(new SimpleEntry<>("key", null).getValue());
+		SimpleEntry<String, String> entry = new SimpleEntry<>("key", "testValue");
+		assertEquals("testValue", entry.getValue());
+		
+		SimpleEntry<String, Integer> intEntry = new SimpleEntry<>("key", 42);
+		assertEquals(42, intEntry.getValue());
 	}
 	
 	@Test
-	void setValue() {
-		assertThrows(ModificationException.class, () -> new SimpleEntry<>("key", "value").setValue("value"));
+	void getValueWithNull() {
+		SimpleEntry<String, String> entry = new SimpleEntry<>("key", null);
+		assertNull(entry.getValue());
+	}
+	
+	@Test
+	void setValueThrowsModificationException() {
+		SimpleEntry<String, String> entry = new SimpleEntry<>("key", "value");
+		
+		assertThrows(ModificationException.class, () -> entry.setValue("newValue"));
+		assertThrows(ModificationException.class, () -> entry.setValue(null));
+		assertThrows(ModificationException.class, () -> entry.setValue(""));
+	}
+	
+	@Test
+	void setValueExceptionMessage() {
+		SimpleEntry<String, String> entry = new SimpleEntry<>("key", "value");
+		
+		ModificationException exception = assertThrows(ModificationException.class, () -> entry.setValue("newValue"));
+		assertTrue(exception.getMessage().contains("newValue"));
+		assertTrue(exception.getMessage().contains("muted"));
+	}
+	
+	@Test
+	void setValueDoesNotChangeOriginalValue() {
+		SimpleEntry<String, String> entry = new SimpleEntry<>("key", "originalValue");
+		
+		assertThrows(ModificationException.class, () -> entry.setValue("attemptedNewValue"));
+		
+		assertEquals("originalValue", entry.getValue());
+	}
+	
+	@Test
+	void toStringMethod() {
+		SimpleEntry<String, String> entry = new SimpleEntry<>("key", "value");
+		assertEquals("key=value", entry.toString());
+		
+		SimpleEntry<String, String> nullValueEntry = new SimpleEntry<>("key", null);
+		assertEquals("key=null", nullValueEntry.toString());
+		
+		SimpleEntry<Integer, String> intKeyEntry = new SimpleEntry<>(42, "value");
+		assertEquals("42=value", intKeyEntry.toString());
+	}
+	
+	@Test
+	void equalsAndHashCodeSameObjects() {
+		SimpleEntry<String, String> entry1 = new SimpleEntry<>("key", "value");
+		SimpleEntry<String, String> entry2 = new SimpleEntry<>("key", "value");
+		
+		assertEquals(entry1, entry2);
+		assertEquals(entry1.hashCode(), entry2.hashCode());
+	}
+	
+	@Test
+	void equalsSameInstance() {
+		SimpleEntry<String, String> entry = new SimpleEntry<>("key", "value");
+		assertEquals(entry, entry);
+	}
+	
+	@Test
+	void equalsWithDifferentValues() {
+		SimpleEntry<String, String> entry1 = new SimpleEntry<>("key", "value1");
+		SimpleEntry<String, String> entry2 = new SimpleEntry<>("key", "value2");
+		
+		assertNotEquals(entry1, entry2);
+	}
+	
+	@Test
+	void equalsWithDifferentKeys() {
+		SimpleEntry<String, String> entry1 = new SimpleEntry<>("key1", "value");
+		SimpleEntry<String, String> entry2 = new SimpleEntry<>("key2", "value");
+		
+		assertNotEquals(entry1, entry2);
+	}
+	
+	@Test
+	void equalsWithNull() {
+		SimpleEntry<String, String> entry = new SimpleEntry<>("key", "value");
+		assertNotEquals(entry, null);
+	}
+	
+	@Test
+	void equalsWithDifferentType() {
+		SimpleEntry<String, String> entry = new SimpleEntry<>("key", "value");
+		assertNotEquals(entry, "not an entry");
+	}
+	
+	@Test
+	void equalsWithNullValues() {
+		SimpleEntry<String, String> entry1 = new SimpleEntry<>("key", null);
+		SimpleEntry<String, String> entry2 = new SimpleEntry<>("key", null);
+		
+		assertEquals(entry1, entry2);
+	}
+	
+	@Test
+	void equalsWithMixedNullValues() {
+		SimpleEntry<String, String> entry1 = new SimpleEntry<>("key", null);
+		SimpleEntry<String, String> entry2 = new SimpleEntry<>("key", "value");
+		
+		assertNotEquals(entry1, entry2);
+	}
+	
+	@Test
+	void hashCodeConsistency() {
+		SimpleEntry<String, String> entry = new SimpleEntry<>("key", "value");
+		int hash1 = entry.hashCode();
+		int hash2 = entry.hashCode();
+		
+		assertEquals(hash1, hash2);
+	}
+	
+	@Test
+	void hashCodeWithNullValue() {
+		SimpleEntry<String, String> entry1 = new SimpleEntry<>("key", null);
+		SimpleEntry<String, String> entry2 = new SimpleEntry<>("key", null);
+		
+		assertEquals(entry1.hashCode(), entry2.hashCode());
+	}
+	
+	@Test
+	void immutabilityGuarantee() {
+		SimpleEntry<String, String> entry = new SimpleEntry<>("key", "value");
+		
+		assertEquals("key", entry.getKey());
+		assertEquals("value", entry.getValue());
+		
+		assertThrows(ModificationException.class, () -> entry.setValue("different"));
+		
+		assertEquals("key", entry.getKey());
+		assertEquals("value", entry.getValue());
 	}
 }

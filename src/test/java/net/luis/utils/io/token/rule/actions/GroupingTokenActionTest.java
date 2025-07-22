@@ -21,10 +21,12 @@ package net.luis.utils.io.token.rule.actions;
 import net.luis.utils.io.token.TokenPosition;
 import net.luis.utils.io.token.definition.TokenDefinition;
 import net.luis.utils.io.token.rule.TokenRuleMatch;
+import net.luis.utils.io.token.rule.rules.TokenRules;
 import net.luis.utils.io.token.tokens.*;
 import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.Test;
 
+import java.util.Collections;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -36,42 +38,150 @@ import static org.junit.jupiter.api.Assertions.*;
  */
 class GroupingTokenActionTest {
 	
-	private static final TokenDefinition ANY_DEFINITION = (word) -> true;
-	private static final TokenPosition POS_0_0 = new TokenPosition(0, 0, 0);
-	private static final TokenPosition POS_0_1 = new TokenPosition(0, 1, 1);
-	private static final TokenPosition POS_0_2 = new TokenPosition(0, 2, 2);
-	private static final TokenPosition POS_0_3 = new TokenPosition(0, 3, 3);
-	
 	private static @NotNull Token createToken(@NotNull String value, @NotNull TokenPosition start, @NotNull TokenPosition end) {
-		return new SimpleToken(ANY_DEFINITION, value, start, end);
+		TokenDefinition definition = word -> word.equals(value);
+		return new SimpleToken(definition, value, start, end);
 	}
 	
 	@Test
-	void constructor() {
+	void constructorWithNullDefinition() {
 		assertThrows(NullPointerException.class, () -> new GroupingTokenAction(null));
-		assertDoesNotThrow(() -> new GroupingTokenAction(ANY_DEFINITION));
 	}
 	
 	@Test
-	void definition() {
-		GroupingTokenAction action = new GroupingTokenAction(ANY_DEFINITION);
-		assertEquals(ANY_DEFINITION, action.definition());
-	}
-	
-	@Test
-	void apply() {
-		Token token0 = createToken("00", POS_0_0, POS_0_1);
-		Token token1 = createToken("11", POS_0_2, POS_0_3);
-		TokenRuleMatch match = new TokenRuleMatch(0, 5, List.of(token0, token1), ANY_DEFINITION);
+	void constructorWithValidDefinition() {
+		TokenDefinition definition = word -> true;
 		
-		GroupingTokenAction action = new GroupingTokenAction(ANY_DEFINITION);
+		assertDoesNotThrow(() -> new GroupingTokenAction(definition));
+	}
+	
+	@Test
+	void definitionReturnsCorrectValue() {
+		TokenDefinition definition = "test"::equals;
+		GroupingTokenAction action = new GroupingTokenAction(definition);
+		
+		assertEquals(definition, action.definition());
+	}
+	
+	@Test
+	void applyWithNullMatch() {
+		GroupingTokenAction action = new GroupingTokenAction(word -> true);
+		
+		assertThrows(NullPointerException.class, () -> action.apply(null));
+	}
+	
+	@Test
+	void applyWithEmptyTokenList() {
+		GroupingTokenAction action = new GroupingTokenAction(word -> true);
+		TokenRuleMatch match = new TokenRuleMatch(0, 0, Collections.emptyList(), TokenRules.alwaysMatch());
+		
+		assertThrows(IllegalArgumentException.class, () -> action.apply(match));
+	}
+	
+	@Test
+	void applyWithMultipleTokens() {
+		TokenDefinition groupDefinition = "helloworld"::equals;
+		GroupingTokenAction action = new GroupingTokenAction(groupDefinition);
+		Token token1 = createToken("hello", new TokenPosition(0, 0, 0), new TokenPosition(0, 4, 4));
+		Token token2 = createToken("world", new TokenPosition(0, 5, 5), new TokenPosition(0, 9, 9));
+		List<Token> tokens = List.of(token1, token2);
+		TokenRuleMatch match = new TokenRuleMatch(0, 2, tokens, TokenRules.alwaysMatch());
+		
 		List<Token> result = action.apply(match);
+		
 		assertEquals(1, result.size());
 		TokenGroup group = assertInstanceOf(TokenGroup.class, result.getFirst());
-		assertEquals(ANY_DEFINITION, group.definition());
+		assertEquals(groupDefinition, group.definition());
+		assertEquals("helloworld", group.value());
 		assertEquals(2, group.tokens().size());
-		assertEquals("0011", group.value());
-		assertEquals(POS_0_0, group.startPosition());
-		assertEquals(POS_0_3, group.endPosition());
+		assertEquals(token1, group.tokens().get(0));
+		assertEquals(token2, group.tokens().get(1));
+	}
+	
+	@Test
+	void applyWithUnpositionedTokens() {
+		TokenDefinition groupDefinition = "test"::equals;
+		GroupingTokenAction action = new GroupingTokenAction(groupDefinition);
+		Token token0 = createToken("te", TokenPosition.UNPOSITIONED, TokenPosition.UNPOSITIONED);
+		Token token1 = createToken("st", TokenPosition.UNPOSITIONED, TokenPosition.UNPOSITIONED);
+		TokenRuleMatch match = new TokenRuleMatch(0, 1, List.of(token0, token1), TokenRules.alwaysMatch());
+		
+		List<Token> result = action.apply(match);
+		
+		assertEquals(1, result.size());
+		TokenGroup group = assertInstanceOf(TokenGroup.class, result.getFirst());
+		assertEquals("test", group.value());
+		assertFalse(group.isPositioned());
+	}
+	
+	@Test
+	void applyWithMixedPositionedTokens() {
+		TokenDefinition groupDefinition = "ab"::equals;
+		GroupingTokenAction action = new GroupingTokenAction(groupDefinition);
+		Token positionedToken = createToken("a", new TokenPosition(0, 0, 0), new TokenPosition(0, 0, 0));
+		Token unpositionedToken = createToken("b", TokenPosition.UNPOSITIONED, TokenPosition.UNPOSITIONED);
+		List<Token> tokens = List.of(positionedToken, unpositionedToken);
+		TokenRuleMatch match = new TokenRuleMatch(0, 2, tokens, TokenRules.alwaysMatch());
+		
+		List<Token> result = action.apply(match);
+		
+		assertEquals(1, result.size());
+		TokenGroup group = assertInstanceOf(TokenGroup.class, result.getFirst());
+		assertEquals("ab", group.value());
+		assertFalse(group.isPositioned());
+	}
+	
+	@Test
+	void applyWithNumericTokens() {
+		TokenDefinition groupDefinition = word -> word.matches("\\d+");
+		GroupingTokenAction action = new GroupingTokenAction(groupDefinition);
+		Token token1 = createToken("1", new TokenPosition(0, 0, 0), new TokenPosition(0, 0, 0));
+		Token token2 = createToken("2", new TokenPosition(0, 1, 1), new TokenPosition(0, 1, 1));
+		Token token3 = createToken("3", new TokenPosition(0, 2, 2), new TokenPosition(0, 2, 2));
+		List<Token> tokens = List.of(token1, token2, token3);
+		TokenRuleMatch match = new TokenRuleMatch(0, 3, tokens, TokenRules.alwaysMatch());
+		
+		List<Token> result = action.apply(match);
+		
+		assertEquals(1, result.size());
+		TokenGroup group = assertInstanceOf(TokenGroup.class, result.getFirst());
+		assertEquals("123", group.value());
+		assertEquals(3, group.tokens().size());
+	}
+	
+	@Test
+	void applyWithSpecialCharacterTokens() {
+		TokenDefinition groupDefinition = "()"::equals;
+		GroupingTokenAction action = new GroupingTokenAction(groupDefinition);
+		Token token1 = createToken("(", new TokenPosition(0, 0, 0), new TokenPosition(0, 0, 0));
+		Token token2 = createToken(")", new TokenPosition(0, 1, 1), new TokenPosition(0, 1, 1));
+		List<Token> tokens = List.of(token1, token2);
+		TokenRuleMatch match = new TokenRuleMatch(0, 2, tokens, TokenRules.alwaysMatch());
+		
+		List<Token> result = action.apply(match);
+		
+		assertEquals(1, result.size());
+		assertInstanceOf(TokenGroup.class, result.getFirst());
+		assertEquals("()", result.getFirst().value());
+	}
+	
+	@Test
+	void applyResultIsUnmodifiable() {
+		GroupingTokenAction action = new GroupingTokenAction(word -> true);
+		Token token = createToken("test", TokenPosition.UNPOSITIONED, TokenPosition.UNPOSITIONED);
+		TokenRuleMatch match = new TokenRuleMatch(0, 1, List.of(token, token), TokenRules.alwaysMatch());
+		
+		List<Token> result = action.apply(match);
+		
+		assertThrows(UnsupportedOperationException.class, () -> result.add(token));
+	}
+	
+	@Test
+	void equalActionsHaveSameHashCode() {
+		TokenDefinition definition = "test"::equals;
+		GroupingTokenAction action1 = new GroupingTokenAction(definition);
+		GroupingTokenAction action2 = new GroupingTokenAction(definition);
+		
+		assertEquals(action1.hashCode(), action2.hashCode());
 	}
 }

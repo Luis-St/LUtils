@@ -30,9 +30,72 @@ import static org.junit.jupiter.api.Assertions.*;
 class XmlSyntaxExceptionTest {
 	
 	@Test
-	void constructor() {
-		assertDoesNotThrow(() -> new XmlSyntaxException((String) null));
-		assertDoesNotThrow(() -> new XmlSyntaxException((Throwable) null));
-		assertDoesNotThrow(() -> new XmlSyntaxException(null, null));
+	void defaultConstructor() {
+		XmlSyntaxException exception = new XmlSyntaxException();
+		
+		assertNull(exception.getMessage());
+		assertNull(exception.getCause());
+		assertInstanceOf(RuntimeException.class, exception);
+	}
+	
+	@Test
+	void messageConstructor() {
+		String message = "Invalid XML syntax";
+		XmlSyntaxException exception = new XmlSyntaxException(message);
+		
+		assertEquals(message, exception.getMessage());
+		assertNull(exception.getCause());
+	}
+	
+	@Test
+	void messageConstructorWithNull() {
+		XmlSyntaxException exception = new XmlSyntaxException((String) null);
+		
+		assertNull(exception.getMessage());
+		assertNull(exception.getCause());
+	}
+	
+	@Test
+	void messageAndCauseConstructor() {
+		String message = "Invalid XML syntax";
+		Throwable cause = new RuntimeException("Root cause");
+		XmlSyntaxException exception = new XmlSyntaxException(message, cause);
+		
+		assertEquals(message, exception.getMessage());
+		assertEquals(cause, exception.getCause());
+	}
+	
+	@Test
+	void messageAndCauseConstructorWithNulls() {
+		XmlSyntaxException exception = new XmlSyntaxException(null, null);
+		
+		assertNull(exception.getMessage());
+		assertNull(exception.getCause());
+	}
+	
+	@Test
+	void causeConstructor() {
+		Throwable cause = new RuntimeException("Root cause");
+		XmlSyntaxException exception = new XmlSyntaxException(cause);
+		
+		assertEquals(cause.toString(), exception.getMessage());
+		assertEquals(cause, exception.getCause());
+	}
+	
+	@Test
+	void causeConstructorWithNull() {
+		XmlSyntaxException exception = new XmlSyntaxException((Throwable) null);
+		
+		assertNull(exception.getMessage());
+		assertNull(exception.getCause());
+	}
+	
+	@Test
+	void inheritanceHierarchy() {
+		XmlSyntaxException exception = new XmlSyntaxException();
+		
+		assertInstanceOf(RuntimeException.class, exception);
+		assertInstanceOf(Exception.class, exception);
+		assertInstanceOf(Throwable.class, exception);
 	}
 }

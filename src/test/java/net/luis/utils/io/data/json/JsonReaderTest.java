@@ -22,9 +22,9 @@ import net.luis.utils.io.data.InputProvider;
 import net.luis.utils.io.data.json.exception.JsonSyntaxException;
 import org.junit.jupiter.api.Test;
 
+import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
-import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -35,254 +35,379 @@ import static org.junit.jupiter.api.Assertions.*;
  */
 class JsonReaderTest {
 	
-	private static final JsonConfig DEFAULT_CONFIG = JsonConfig.DEFAULT;
-	private static final JsonConfig CUSTOM_CONFIG = new JsonConfig(false, true, "\t", true, 10, true, 1, StandardCharsets.UTF_8);
+	private static final JsonConfig STRICT_CONFIG = JsonConfig.DEFAULT;
+	private static final JsonConfig NON_STRICT_CONFIG = new JsonConfig(false, true, "\t", true, 10, true, 1, StandardCharsets.UTF_8);
 	
 	@Test
-	void constructor() {
+	void constructorWithString() {
 		assertThrows(NullPointerException.class, () -> new JsonReader((String) null));
-		assertDoesNotThrow(() -> new JsonReader("test"));
-		
-		assertThrows(NullPointerException.class, () -> new JsonReader((String) null, JsonConfig.DEFAULT));
+		assertThrows(NullPointerException.class, () -> new JsonReader((String) null, STRICT_CONFIG));
 		assertThrows(NullPointerException.class, () -> new JsonReader("test", null));
-		assertDoesNotThrow(() -> new JsonReader("test", JsonConfig.DEFAULT));
 		
-		assertThrows(NullPointerException.class, () -> new JsonReader((InputProvider) null));
-		assertDoesNotThrow(() -> new JsonReader(new InputProvider(InputStream.nullInputStream())));
-		
-		assertThrows(NullPointerException.class, () -> new JsonReader((InputProvider) null, JsonConfig.DEFAULT));
-		assertThrows(NullPointerException.class, () -> new JsonReader(new InputProvider(InputStream.nullInputStream()), null));
-		assertDoesNotThrow(() -> new JsonReader(new InputProvider(InputStream.nullInputStream()), JsonConfig.DEFAULT));
+		assertDoesNotThrow(() -> new JsonReader("{}"));
+		assertDoesNotThrow(() -> new JsonReader("{}", STRICT_CONFIG));
+		assertDoesNotThrow(() -> new JsonReader("[]", NON_STRICT_CONFIG));
 	}
 	
 	@Test
-	void readJson() {
+	void constructorWithInputProvider() {
+		assertThrows(NullPointerException.class, () -> new JsonReader((InputProvider) null));
+		assertThrows(NullPointerException.class, () -> new JsonReader((InputProvider) null, STRICT_CONFIG));
+		assertThrows(NullPointerException.class, () -> new JsonReader(new InputProvider(InputStream.nullInputStream()), null));
+		
+		assertDoesNotThrow(() -> new JsonReader(new InputProvider(InputStream.nullInputStream())));
+		assertDoesNotThrow(() -> new JsonReader(new InputProvider(InputStream.nullInputStream()), STRICT_CONFIG));
+	}
+	
+	@Test
+	void readJsonEmptyInput() {
 		JsonReader reader = new JsonReader("");
 		assertThrows(JsonSyntaxException.class, reader::readJson);
+		
+		JsonReader whitespaceReader = new JsonReader("   \n\t  ");
+		assertThrows(JsonSyntaxException.class, whitespaceReader::readJson);
 	}
 	
 	@Test
-	void readJsonArrayDefaultConfig() {
-		JsonReader emptyArrayReader = new JsonReader("[]");
-		JsonElement emptyArray = emptyArrayReader.readJson();
-		
-		assertInstanceOf(JsonArray.class, emptyArray);
-		assertEquals(new JsonArray(), emptyArray);
-		
-		JsonReader arrayReader = new JsonReader("[1, 2, 3]");
-		JsonElement array = arrayReader.readJson();
-		
-		assertInstanceOf(JsonArray.class, array);
-		assertEquals(3, ((JsonArray) array).size());
-		assertEquals(new JsonPrimitive(1L), ((JsonArray) array).get(0));
-		assertEquals(new JsonPrimitive(2L), ((JsonArray) array).get(1));
-		assertEquals(new JsonPrimitive(3L), ((JsonArray) array).get(2));
-		
-		JsonReader advancedArrayReader = new JsonReader("[{\"test\": 1}, {\"test\": 1}, {\"test\": 1}]");
-		JsonElement advancedArray = advancedArrayReader.readJson();
-		JsonObject result = new JsonObject();
-		result.add("test", 1L);
-		
-		assertInstanceOf(JsonArray.class, advancedArray);
-		assertEquals(3, ((JsonArray) advancedArray).size());
-		assertEquals(result, ((JsonArray) advancedArray).get(0));
-		assertEquals(result, ((JsonArray) advancedArray).get(1));
-		assertEquals(result, ((JsonArray) advancedArray).get(2));
-		
-		// Not enough characters to be valid
-		assertThrows(JsonSyntaxException.class, () -> new JsonReader("[").readJson());
-		
-		// Missing closing bracket
-		assertThrows(JsonSyntaxException.class, () -> new JsonReader("[ ").readJson());
-		assertDoesNotThrow(() -> new JsonReader("[ ]  ").readJson());
-		
-		// Trailing comma
-		assertThrows(JsonSyntaxException.class, () -> new JsonReader("[1, 2, 3, ]").readJson());
-	}
-	
-	@Test
-	void readJsonNullDefaultConfig() {
-		JsonReader reader = new JsonReader("null");
-		JsonElement element = reader.readJson();
-		
+	void readJsonNull() {
+		JsonReader strictReader = new JsonReader("null", STRICT_CONFIG);
+		JsonElement element = strictReader.readJson();
 		assertInstanceOf(JsonNull.class, element);
 		assertEquals(JsonNull.INSTANCE, element);
+		
+		JsonReader nonStrictReader = new JsonReader("NULL", NON_STRICT_CONFIG);
+		element = nonStrictReader.readJson();
+		assertEquals(JsonNull.INSTANCE, element);
+		
+		JsonReader mixedCaseReader = new JsonReader("nUlL", NON_STRICT_CONFIG);
+		element = mixedCaseReader.readJson();
+		assertEquals(JsonNull.INSTANCE, element);
+		
+		JsonReader invalidStrictReader = new JsonReader("NULL", STRICT_CONFIG);
+		assertThrows(JsonSyntaxException.class, invalidStrictReader::readJson);
 	}
 	
 	@Test
-	void readJsonObjectDefaultConfig() {
-		JsonReader emptyObjectReader = new JsonReader("{}");
-		JsonElement emptyObject = emptyObjectReader.readJson();
+	void readJsonBoolean() {
+		assertEquals(new JsonPrimitive(true), new JsonReader("true", STRICT_CONFIG).readJson());
+		assertEquals(new JsonPrimitive(true), new JsonReader("TRUE", NON_STRICT_CONFIG).readJson());
+		assertEquals(new JsonPrimitive(true), new JsonReader("True", NON_STRICT_CONFIG).readJson());
 		
-		assertInstanceOf(JsonObject.class, emptyObject);
-		assertEquals(new JsonObject(), emptyObject);
+		assertEquals(new JsonPrimitive(false), new JsonReader("false", STRICT_CONFIG).readJson());
+		assertEquals(new JsonPrimitive(false), new JsonReader("FALSE", NON_STRICT_CONFIG).readJson());
+		assertEquals(new JsonPrimitive(false), new JsonReader("False", NON_STRICT_CONFIG).readJson());
 		
-		JsonReader objectReader = new JsonReader("{\"key\": \"value\"}");
-		JsonElement object = objectReader.readJson();
+		assertThrows(JsonSyntaxException.class, () -> new JsonReader("TRUE", STRICT_CONFIG).readJson());
+		assertThrows(JsonSyntaxException.class, () -> new JsonReader("FALSE", STRICT_CONFIG).readJson());
+	}
+	
+	@Test
+	void readJsonNumbers() {
+		assertEquals(new JsonPrimitive(0L), new JsonReader("0").readJson());
+		assertEquals(new JsonPrimitive(42L), new JsonReader("42").readJson());
+		assertEquals(new JsonPrimitive(-42L), new JsonReader("-42").readJson());
+		assertEquals(new JsonPrimitive(123456789L), new JsonReader("123456789").readJson());
 		
-		assertInstanceOf(JsonObject.class, object);
-		assertEquals(1, ((JsonObject) object).size());
-		assertTrue(((JsonObject) object).containsKey("key"));
-		assertEquals(new JsonPrimitive("value"), ((JsonObject) object).get("key"));
+		assertEquals(new JsonPrimitive(3.14), new JsonReader("3.14").readJson());
+		assertEquals(new JsonPrimitive(-3.14), new JsonReader("-3.14").readJson());
+		assertEquals(new JsonPrimitive(0.0), new JsonReader("0.0").readJson());
+	}
+	
+	@Test
+	void readJsonStrings() {
+		assertEquals(new JsonPrimitive("hello"), new JsonReader("\"hello\"").readJson());
+		assertEquals(new JsonPrimitive(""), new JsonReader("\"\"").readJson());
+		assertEquals(new JsonPrimitive("hello world"), new JsonReader("\"hello world\"").readJson());
 		
-		JsonReader advancedObjectReader = new JsonReader("{\"key\": [1, 2, 3]}");
-		JsonElement advancedObject = advancedObjectReader.readJson();
+		assertEquals(new JsonPrimitive("hello\nworld"), new JsonReader("\"hello\nworld\"").readJson());
+		assertEquals(new JsonPrimitive("hello\tworld"), new JsonReader("\"hello\tworld\"").readJson());
+		assertEquals(new JsonPrimitive("hello\\\"world"), new JsonReader("\"hello\\\"world\"").readJson());
+		assertEquals(new JsonPrimitive("hello\\world"), new JsonReader("\"hello\\world\"").readJson());
 		
-		assertInstanceOf(JsonObject.class, advancedObject);
-		assertEquals(1, ((JsonObject) advancedObject).size());
-		assertTrue(((JsonObject) advancedObject).containsKey("key"));
-		assertEquals(new JsonArray(List.of(new JsonPrimitive(1), new JsonPrimitive(2), new JsonPrimitive(3))), ((JsonObject) advancedObject).get("key"));
+		assertEquals(new JsonPrimitive("Hello 世界"), new JsonReader("\"Hello 世界\"").readJson());
 		
-		// Not enough characters to be valid
+		assertThrows(JsonSyntaxException.class, () -> new JsonReader("hello").readJson());
+	}
+	
+	@Test
+	void readJsonArrayEmpty() {
+		JsonElement element = new JsonReader("[]").readJson();
+		assertTrue(assertInstanceOf(JsonArray.class, element).isEmpty());
+		
+		element = new JsonReader(" [ ] ").readJson();
+		assertTrue(assertInstanceOf(JsonArray.class, element).isEmpty());
+	}
+	
+	@Test
+	void readJsonArraySingleElement() {
+		JsonElement element = new JsonReader("[42]").readJson();
+		JsonArray array = assertInstanceOf(JsonArray.class, element);
+		assertEquals(1, array.size());
+		assertEquals(new JsonPrimitive(42L), array.get(0));
+		
+		element = new JsonReader("[ 42 ]").readJson();
+		array = assertInstanceOf(JsonArray.class, element);
+		assertEquals(1, array.size());
+		assertEquals(new JsonPrimitive(42L), array.get(0));
+	}
+	
+	@Test
+	void readJsonArrayMultipleElements() {
+		JsonElement element = new JsonReader("[1, 2, 3]").readJson();
+		JsonArray array = assertInstanceOf(JsonArray.class, element);
+		assertEquals(3, array.size());
+		assertEquals(new JsonPrimitive(1L), array.get(0));
+		assertEquals(new JsonPrimitive(2L), array.get(1));
+		assertEquals(new JsonPrimitive(3L), array.get(2));
+		
+		element = new JsonReader("[42, \"hello\", true, null]").readJson();
+		array = assertInstanceOf(JsonArray.class, element);
+		assertEquals(4, array.size());
+		assertEquals(new JsonPrimitive(42L), array.get(0));
+		assertEquals(new JsonPrimitive("hello"), array.get(1));
+		assertEquals(new JsonPrimitive(true), array.get(2));
+		assertEquals(JsonNull.INSTANCE, array.get(3));
+	}
+	
+	@Test
+	void readJsonArrayNested() {
+		JsonElement element = new JsonReader("[[1, 2], [3, 4]]").readJson();
+		JsonArray outerArray = assertInstanceOf(JsonArray.class, element);
+		assertEquals(2, outerArray.size());
+		
+		JsonArray innerArray1 = outerArray.getAsJsonArray(0);
+		assertEquals(2, innerArray1.size());
+		assertEquals(new JsonPrimitive(1L), innerArray1.get(0));
+		assertEquals(new JsonPrimitive(2L), innerArray1.get(1));
+		
+		JsonArray innerArray2 = outerArray.getAsJsonArray(1);
+		assertEquals(2, innerArray2.size());
+		assertEquals(new JsonPrimitive(3L), innerArray2.get(0));
+		assertEquals(new JsonPrimitive(4L), innerArray2.get(1));
+	}
+	
+	@Test
+	void readJsonArrayInvalid() {
+		assertThrows(JsonSyntaxException.class, () -> new JsonReader("[").readJson());
+		assertThrows(JsonSyntaxException.class, () -> new JsonReader("[1, 2").readJson());
+		
+		assertThrows(JsonSyntaxException.class, () -> new JsonReader("[1, 2,]", STRICT_CONFIG).readJson());
+		
+		assertDoesNotThrow(() -> new JsonReader("[1, 2,]", NON_STRICT_CONFIG).readJson());
+	}
+	
+	@Test
+	void readJsonObjectEmpty() {
+		JsonElement element = new JsonReader("{}").readJson();
+		assertTrue(assertInstanceOf(JsonObject.class, element).isEmpty());
+		
+		element = new JsonReader(" { } ").readJson();
+		assertTrue(assertInstanceOf(JsonObject.class, element).isEmpty());
+	}
+	
+	@Test
+	void readJsonObjectSingleEntry() {
+		JsonElement element = new JsonReader("{\"key\": \"value\"}").readJson();
+		JsonObject object = assertInstanceOf(JsonObject.class, element);
+		assertEquals(1, object.size());
+		assertEquals(new JsonPrimitive("value"), object.get("key"));
+		
+		element = new JsonReader("{ \"key\" : \"value\" }", NON_STRICT_CONFIG).readJson();
+		object = assertInstanceOf(JsonObject.class, element);
+		assertEquals(1, object.size());
+		assertEquals(new JsonPrimitive("value"), object.get("key"));
+	}
+	
+	@Test
+	void readJsonObjectMultipleEntries() {
+		JsonElement element = new JsonReader("{\"key1\": \"value1\", \"key2\": 42, \"key3\": true}").readJson();
+		JsonObject object = assertInstanceOf(JsonObject.class, element);
+		assertEquals(3, object.size());
+		assertEquals(new JsonPrimitive("value1"), object.get("key1"));
+		assertEquals(new JsonPrimitive(42L), object.get("key2"));
+		assertEquals(new JsonPrimitive(true), object.get("key3"));
+	}
+	
+	@Test
+	void readJsonObjectNested() {
+		JsonElement element = new JsonReader("{\"outer\": {\"inner\": \"value\"}}").readJson();
+		JsonObject outerObject = assertInstanceOf(JsonObject.class, element);
+		assertEquals(1, outerObject.size());
+		
+		JsonObject innerObject = outerObject.getAsJsonObject("outer");
+		assertEquals(1, innerObject.size());
+		assertEquals(new JsonPrimitive("value"), innerObject.get("inner"));
+	}
+	
+	@Test
+	void readJsonObjectWithArrays() {
+		JsonElement element = new JsonReader("{\"numbers\": [1, 2, 3], \"booleans\": [true, false]}").readJson();
+		JsonObject object = assertInstanceOf(JsonObject.class, element);
+		assertEquals(2, object.size());
+		
+		JsonArray numbers = object.getAsJsonArray("numbers");
+		assertEquals(3, numbers.size());
+		assertEquals(new JsonPrimitive(1L), numbers.get(0));
+		
+		JsonArray booleans = object.getAsJsonArray("booleans");
+		assertEquals(2, booleans.size());
+		assertEquals(new JsonPrimitive(true), booleans.get(0));
+	}
+	
+	@Test
+	void readJsonObjectStrictMode() {
+		assertDoesNotThrow(() -> new JsonReader("{\"key\": \"value\"}", STRICT_CONFIG).readJson());
+		assertThrows(JsonSyntaxException.class, () -> new JsonReader("{key: \"value\"}", STRICT_CONFIG).readJson());
+		
+		assertThrows(JsonSyntaxException.class, () -> new JsonReader("{\"key\": \"value\",}", STRICT_CONFIG).readJson());
+	}
+	
+	@Test
+	void readJsonObjectNonStrictMode() {
+		assertDoesNotThrow(() -> new JsonReader("{\"key\": \"value\",}", NON_STRICT_CONFIG).readJson());
+		
+		JsonElement element = new JsonReader("{\"key\": \"value\",}", NON_STRICT_CONFIG).readJson();
+		JsonObject object = assertInstanceOf(JsonObject.class, element);
+		assertEquals(new JsonPrimitive("value"), object.get("key"));
+	}
+	
+	@Test
+	void readJsonObjectInvalid() {
 		assertThrows(JsonSyntaxException.class, () -> new JsonReader("{").readJson());
+		assertThrows(JsonSyntaxException.class, () -> new JsonReader("{\"key\": \"value\"").readJson());
 		
-		// Missing closing bracket
-		assertThrows(JsonSyntaxException.class, () -> new JsonReader("{ ").readJson());
-		assertDoesNotThrow(() -> new JsonReader("{ }  ").readJson());
-		
-		// Missing key value separator
 		assertThrows(JsonSyntaxException.class, () -> new JsonReader("{\"key\" \"value\"}").readJson());
 		
-		// Trailing comma
-		assertThrows(JsonSyntaxException.class, () -> new JsonReader("{\"key\": \"value\", }").readJson());
+		assertThrows(JsonSyntaxException.class, () -> new JsonReader("{\"key1\": \"value1\" \"key2\": \"value2\"}").readJson());
 	}
 	
 	@Test
-	void readJsonPrimitiveDefaultConfig() {
-		JsonReader booleanReader = new JsonReader("true");
-		JsonElement booleanElement = booleanReader.readJson();
+	void readJsonComplexStructure() {
+		String complexJson = """
+			{
+				"users": [
+					{
+						"id": 1,
+						"name": "John Doe",
+						"active": true,
+						"profile": {
+							"age": 30,
+							"email": "john@example.com"
+						}
+					},
+					{
+						"id": 2,
+						"name": "Jane Smith",
+						"active": false,
+						"profile": {
+							"age": 25,
+							"email": "jane@example.com"
+						}
+					}
+				],
+				"meta": {
+					"total": 2,
+					"page": 1
+				}
+			}
+			""";
 		
-		assertInstanceOf(JsonPrimitive.class, booleanElement);
-		assertEquals(new JsonPrimitive(true), booleanElement);
+		JsonElement element = new JsonReader(complexJson).readJson();
+		JsonObject root = assertInstanceOf(JsonObject.class, element);
 		
-		JsonReader numberReader = new JsonReader("42");
-		JsonElement numberElement = numberReader.readJson();
+		assertTrue(root.containsKey("users"));
+		assertTrue(root.containsKey("meta"));
 		
-		assertInstanceOf(JsonPrimitive.class, numberElement);
-		assertEquals(new JsonPrimitive(42L), numberElement);
+		JsonArray users = root.getAsJsonArray("users");
+		assertEquals(2, users.size());
 		
-		JsonReader stringReader = new JsonReader("\"test\"");
-		JsonElement stringElement = stringReader.readJson();
+		JsonObject firstUser = users.getAsJsonObject(0);
+		assertEquals(new JsonPrimitive(1L), firstUser.get("id"));
+		assertEquals(new JsonPrimitive("John Doe"), firstUser.get("name"));
+		assertEquals(new JsonPrimitive(true), firstUser.get("active"));
 		
-		assertInstanceOf(JsonPrimitive.class, stringElement);
-		assertEquals(new JsonPrimitive("test"), stringElement);
-		
-		// Invalid string
-		assertThrows(JsonSyntaxException.class, () -> new JsonReader("test").readJson());
+		JsonObject firstProfile = firstUser.getAsJsonObject("profile");
+		assertEquals(new JsonPrimitive(30L), firstProfile.get("age"));
+		assertEquals(new JsonPrimitive("john@example.com"), firstProfile.get("email"));
 	}
 	
 	@Test
-	void readJsonArrayCustomConfig() {
-		JsonReader emptyArrayReader = new JsonReader("[]", CUSTOM_CONFIG);
-		JsonElement emptyArray = emptyArrayReader.readJson();
+	void readJsonWithInputProvider() {
+		String json = "{\"test\": \"value\"}";
+		byte[] jsonBytes = json.getBytes(StandardCharsets.UTF_8);
+		InputStream inputStream = new ByteArrayInputStream(jsonBytes);
+		InputProvider inputProvider = new InputProvider(inputStream);
 		
-		assertInstanceOf(JsonArray.class, emptyArray);
-		assertEquals(new JsonArray(), emptyArray);
-		
-		JsonReader arrayReader = new JsonReader("[1, 2, 3]", CUSTOM_CONFIG);
-		JsonElement array = arrayReader.readJson();
-		
-		assertInstanceOf(JsonArray.class, array);
-		assertEquals(3, ((JsonArray) array).size());
-		assertEquals(new JsonPrimitive(1L), ((JsonArray) array).get(0));
-		assertEquals(new JsonPrimitive(2L), ((JsonArray) array).get(1));
-		assertEquals(new JsonPrimitive(3L), ((JsonArray) array).get(2));
-		
-		JsonReader advancedArrayReader = new JsonReader("[{ \"test\": 1 }, { \"test\": 1 }, { \"test\": 1 }]");
-		JsonElement advancedArray = advancedArrayReader.readJson();
-		JsonObject result = new JsonObject();
-		result.add("test", 1L);
-		
-		assertInstanceOf(JsonArray.class, advancedArray);
-		assertEquals(3, ((JsonArray) advancedArray).size());
-		assertEquals(result, ((JsonArray) advancedArray).get(0));
-		assertEquals(result, ((JsonArray) advancedArray).get(1));
-		assertEquals(result, ((JsonArray) advancedArray).get(2));
-		
-		// Not enough characters to be valid
-		assertThrows(JsonSyntaxException.class, () -> new JsonReader("[", CUSTOM_CONFIG).readJson());
-		
-		// Missing closing bracket
-		assertThrows(JsonSyntaxException.class, () -> new JsonReader("[ ", CUSTOM_CONFIG).readJson());
-		assertDoesNotThrow(() -> new JsonReader("[ ]  ", CUSTOM_CONFIG).readJson());
-		
-		// Trailing comma
-		assertDoesNotThrow(() -> new JsonReader("[1, 2, 3, ]", CUSTOM_CONFIG).readJson());
-	}
-	
-	@Test
-	void readJsonNullCustomConfig() {
-		JsonReader reader = new JsonReader("null", CUSTOM_CONFIG);
+		JsonReader reader = new JsonReader(inputProvider);
 		JsonElement element = reader.readJson();
 		
-		assertInstanceOf(JsonNull.class, element);
-		assertEquals(JsonNull.INSTANCE, element);
+		JsonObject object = assertInstanceOf(JsonObject.class, element);
+		assertEquals(new JsonPrimitive("value"), object.get("test"));
 	}
 	
 	@Test
-	void readJsonObjectCustomConfig() {
-		JsonReader emptyObjectReader = new JsonReader("{}", CUSTOM_CONFIG);
-		JsonElement emptyObject = emptyObjectReader.readJson();
+	void readJsonStrictModeExtraContent() {
+		assertThrows(JsonSyntaxException.class, () -> new JsonReader("{} extra", STRICT_CONFIG).readJson());
+		assertThrows(JsonSyntaxException.class, () -> new JsonReader("42 123", STRICT_CONFIG).readJson());
 		
-		assertInstanceOf(JsonObject.class, emptyObject);
-		assertEquals(new JsonObject(), emptyObject);
-		
-		JsonReader objectReader = new JsonReader("{\"key\": \"value\"}", CUSTOM_CONFIG);
-		JsonElement object = objectReader.readJson();
-		
-		assertInstanceOf(JsonObject.class, object);
-		assertEquals(1, ((JsonObject) object).size());
-		assertTrue(((JsonObject) object).containsKey("key"));
-		assertEquals(new JsonPrimitive("value"), ((JsonObject) object).get("key"));
-		
-		JsonReader advancedObjectReader = new JsonReader("{\"key\": [1, 2, 3]}");
-		JsonElement advancedObject = advancedObjectReader.readJson();
-		
-		assertInstanceOf(JsonObject.class, advancedObject);
-		assertEquals(1, ((JsonObject) advancedObject).size());
-		assertTrue(((JsonObject) advancedObject).containsKey("key"));
-		assertEquals(new JsonArray(List.of(new JsonPrimitive(1), new JsonPrimitive(2), new JsonPrimitive(3))), ((JsonObject) advancedObject).get("key"));
-		
-		// Not enough characters to be valid
-		assertThrows(JsonSyntaxException.class, () -> new JsonReader("{", CUSTOM_CONFIG).readJson());
-		
-		// Missing closing bracket
-		assertThrows(JsonSyntaxException.class, () -> new JsonReader("{ ", CUSTOM_CONFIG).readJson());
-		assertDoesNotThrow(() -> new JsonReader("{ }  ", CUSTOM_CONFIG).readJson());
-		
-		// Missing key value separator
-		assertThrows(JsonSyntaxException.class, () -> new JsonReader("{\"key\" \"value\"}", CUSTOM_CONFIG).readJson());
-		
-		// Trailing comma
-		assertDoesNotThrow(() -> new JsonReader("{\"key\": \"value\", }", CUSTOM_CONFIG).readJson());
+		assertDoesNotThrow(() -> new JsonReader("{} extra", NON_STRICT_CONFIG).readJson());
+		assertDoesNotThrow(() -> new JsonReader("42 123", NON_STRICT_CONFIG).readJson());
 	}
 	
 	@Test
-	void readJsonPrimitiveCustomConfig() {
-		JsonReader booleanReader = new JsonReader("true", CUSTOM_CONFIG);
-		JsonElement booleanElement = booleanReader.readJson();
+	void readJsonWithWhitespace() {
+		String jsonWithWhitespace = """
+			  {
+			    "key1" : "value1" ,
+			    "key2" : [
+			      1 ,
+			      2 ,
+			      3
+			    ] ,
+			    "key3" : {
+			      "nested" : true
+			    }
+			  }
+			""";
 		
-		assertInstanceOf(JsonPrimitive.class, booleanElement);
-		assertEquals(new JsonPrimitive(true), booleanElement);
+		assertThrows(JsonSyntaxException.class, () -> new JsonReader(jsonWithWhitespace, STRICT_CONFIG).readJson());
 		
-		JsonReader numberReader = new JsonReader("42", CUSTOM_CONFIG);
-		JsonElement numberElement = numberReader.readJson();
+		JsonElement element = new JsonReader(jsonWithWhitespace, NON_STRICT_CONFIG).readJson();
+		JsonObject object = assertInstanceOf(JsonObject.class, element);
 		
-		assertInstanceOf(JsonPrimitive.class, numberElement);
-		assertEquals(new JsonPrimitive(42L), numberElement);
-		
-		JsonReader stringReader = new JsonReader("\"test\"", CUSTOM_CONFIG);
-		JsonElement stringElement = stringReader.readJson();
-		
-		assertInstanceOf(JsonPrimitive.class, stringElement);
-		assertEquals(new JsonPrimitive("test"), stringElement);
-		
-		// Invalid string
-		assertThrows(JsonSyntaxException.class, () -> new JsonReader("test", CUSTOM_CONFIG).readJson());
+		assertEquals(new JsonPrimitive("value1"), object.get("key1"));
+		assertEquals(3, object.getAsJsonArray("key2").size());
+		assertEquals(new JsonPrimitive(true), object.getAsJsonObject("key3").get("nested"));
 	}
 	
 	@Test
 	void close() {
-		assertDoesNotThrow(() -> new JsonReader("test").close());
+		assertDoesNotThrow(() -> new JsonReader("{}").close());
+		assertDoesNotThrow(() -> new JsonReader("[]").close());
+		assertDoesNotThrow(() -> new JsonReader("null").close());
+		
+		InputProvider provider = new InputProvider(new ByteArrayInputStream("{}".getBytes()));
+		JsonReader reader = new JsonReader(provider);
+		assertDoesNotThrow(reader::close);
+	}
+	
+	@Test
+	void readJsonInvalidSyntax() {
+		String[] invalidJsons = {
+			"{",
+			"}",
+			"[",
+			"]",
+			"{\"key\":}",
+			"{\"key\": \"value\", }",
+			"[1, 2, 3, ]",
+			"{\"key1\": \"value1\" \"key2\": \"value2\"}",
+			"{'key': 'value'}",
+			"{key: value}"
+		};
+		
+		for (String invalidJson : invalidJsons) {
+			assertThrows(JsonSyntaxException.class, () -> new JsonReader(invalidJson, STRICT_CONFIG).readJson());
+		}
 	}
 }

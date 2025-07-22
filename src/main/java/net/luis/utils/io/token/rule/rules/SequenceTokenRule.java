@@ -59,7 +59,7 @@ public record SequenceTokenRule(
 	@Override
 	public @Nullable TokenRuleMatch match(@NotNull List<Token> tokens, int startIndex) {
 		Objects.requireNonNull(tokens, "Tokens must not be null");
-		if (startIndex >= tokens.size()) {
+		if (startIndex >= tokens.size() || startIndex < 0) {
 			return null;
 		}
 		

@@ -346,8 +346,8 @@ public final class XmlTypeProvider implements TypeProvider<XmlElement> {
 		if (elements.isUndefined()) {
 			XmlElement element = elements.get(0);
 			if (element != null) {
-				XmlElement copied = this.copyWithName(this.unescapeName(element.getName()), element);
-				return Result.success(Map.of(copied.getName(), copied));
+				XmlElement copied = this.copyWithName(element.getName(), element);
+				return Result.success(Map.of(this.unescapeName(copied.getName()), copied));
 			}
 			return Result.error("Xml element '" + type + "' is an undefined container with no elements but not empty");
 		}
@@ -385,7 +385,7 @@ public final class XmlTypeProvider implements TypeProvider<XmlElement> {
 		if (element == null) { // null is valid for unit codec
 			return Result.success(null);
 		}
-		return Result.success(this.copyWithName(this.unescapeName(key), element));
+		return Result.success(this.copyWithName(this.escapeName(key), element));
 	}
 	
 	@Override

@@ -71,7 +71,8 @@ public interface ResultingFunction<T, R> extends Function<T, Result<R>> {
 			try {
 				return Result.success(function.apply(value));
 			} catch (Throwable throwable) {
-				return Result.error(throwable.getMessage());
+				String message = throwable.getMessage();
+				return Result.error(message == null ? "Unknown error, no message provided" : message);
 			}
 		};
 	}

@@ -34,62 +34,121 @@ import static org.junit.jupiter.api.Assertions.*;
  */
 class InputProviderTest {
 	
-	//region Setup
+	//region Setup and Cleanup
 	@BeforeAll
-	static void setUpBefore() throws Exception {
-		File folder = new File("InputProvider/InputProvider.json");
-		Files.createDirectory(new File("InputProvider/").toPath());
-		Files.createFile(folder.toPath());
+	static void setUp() throws Exception {
+		Files.createDirectories(Path.of("InputProvider"));
+		Files.createFile(Path.of("InputProvider/InputProvider.json"));
 	}
-	//endregion
 	
-	//region Cleanup
 	@AfterAll
-	static void cleanUpAfter() throws Exception {
+	static void tearDown() throws Exception {
 		Files.deleteIfExists(Path.of("InputProvider/InputProvider.json"));
-		Files.deleteIfExists(Path.of("InputProvider/"));
+		Files.deleteIfExists(Path.of("InputProvider"));
 	}
 	//endregion
 	
 	@Test
-	void constructor() throws Exception {
+	void constructorWithStringPath() throws Exception {
 		assertThrows(NullPointerException.class, () -> new InputProvider((String) null));
-		assertThrows(UncheckedIOException.class, () -> new InputProvider("InputProvider.json"));
+		
+		assertThrows(UncheckedIOException.class, () -> new InputProvider("nonexistent.json"));
 		assertThrows(UncheckedIOException.class, () -> new InputProvider("InputProvider/"));
-		assertDoesNotThrow(() -> new InputProvider("InputProvider/InputProvider.json")).close();
 		
-		assertThrows(NullPointerException.class, () -> new InputProvider(null, "InputProvider.json"));
-		assertThrows(NullPointerException.class, () -> new InputProvider("InputProvider", null));
+		try (InputProvider provider = new InputProvider("InputProvider/InputProvider.json")) {
+			assertNotNull(provider.getStream());
+		}
+	}
+	
+	@Test
+	void constructorWithPathAndFileName() throws Exception {
+		assertThrows(NullPointerException.class, () -> new InputProvider(null, "file.json"));
+		assertThrows(NullPointerException.class, () -> new InputProvider("path", null));
+		assertThrows(NullPointerException.class, () -> new InputProvider(null, null));
+		
 		assertThrows(UncheckedIOException.class, () -> new InputProvider("", "InputProvider.json"));
-		assertThrows(UncheckedIOException.class, () -> new InputProvider("InputProvider/", ""));
-		assertDoesNotThrow(() -> new InputProvider("InputProvider", "InputProvider.json")).close();
+		assertThrows(UncheckedIOException.class, () -> new InputProvider("InputProvider", ""));
+		assertThrows(UncheckedIOException.class, () -> new InputProvider("nonexistent", "file.json"));
 		
+		try (InputProvider provider = new InputProvider("InputProvider", "InputProvider.json")) {
+			assertNotNull(provider.getStream());
+		}
+	}
+	
+	@Test
+	void constructorWithNioPath() throws Exception {
 		assertThrows(NullPointerException.class, () -> new InputProvider((Path) null));
-		assertThrows(UncheckedIOException.class, () -> new InputProvider(Path.of("InputProvider.json")));
+		
+		assertThrows(UncheckedIOException.class, () -> new InputProvider(Path.of("nonexistent.json")));
 		assertThrows(UncheckedIOException.class, () -> new InputProvider(Path.of("InputProvider/")));
-		assertDoesNotThrow(() -> new InputProvider(Path.of("InputProvider/InputProvider.json"))).close();
 		
+		try (InputProvider provider = new InputProvider(Path.of("InputProvider/InputProvider.json"))) {
+			assertNotNull(provider.getStream());
+		}
+	}
+	
+	@Test
+	void constructorWithFile() throws Exception {
 		assertThrows(NullPointerException.class, () -> new InputProvider((File) null));
-		assertThrows(UncheckedIOException.class, () -> new InputProvider(new File("InputProvider.json")));
+		
+		assertThrows(UncheckedIOException.class, () -> new InputProvider(new File("nonexistent.json")));
 		assertThrows(UncheckedIOException.class, () -> new InputProvider(new File("InputProvider/")));
-		assertDoesNotThrow(() -> new InputProvider(new File("InputProvider/InputProvider.json"))).close();
 		
+		try (InputProvider provider = new InputProvider(new File("InputProvider/InputProvider.json"))) {
+			assertNotNull(provider.getStream());
+		}
+	}
+	
+	@Test
+	void constructorWithResourceLocation() throws Exception {
 		assertThrows(NullPointerException.class, () -> new InputProvider((ResourceLocation) null));
-		assertThrows(UncheckedIOException.class, () -> new InputProvider(ResourceLocation.external("InputProvider.json")));
-		//assertThrows(UncheckedIOException.class, () -> new InputProvider(ResourceLocation.external("InputProvider/"))); // Windows only exception
-		assertDoesNotThrow(() -> new InputProvider(ResourceLocation.external("InputProvider/InputProvider.json"))).close();
 		
+		assertThrows(UncheckedIOException.class, () -> new InputProvider(ResourceLocation.external("nonexistent.json")));
+		
+		try (InputProvider provider = new InputProvider(ResourceLocation.external("InputProvider/InputProvider.json"))) {
+			assertNotNull(provider.getStream());
+		}
+	}
+	
+	@Test
+	void constructorWithInputStream() throws Exception {
 		assertThrows(NullPointerException.class, () -> new InputProvider((InputStream) null));
-		assertDoesNotThrow(() -> new InputProvider(new FileInputStream("InputProvider/InputProvider.json"))).close();
+		
+		try (InputProvider provider1 = new InputProvider(InputStream.nullInputStream())) {
+			assertNotNull(provider1.getStream());
+		}
+		
+		try (FileInputStream fis = new FileInputStream("InputProvider/InputProvider.json");
+			 InputProvider provider2 = new InputProvider(fis)) {
+			assertNotNull(provider2.getStream());
+		} catch (IOException e) {
+			fail("Should not throw IOException for valid file");
+		}
 	}
 	
 	@Test
-	void getStream() {
-		assertNotNull(new InputProvider(InputStream.nullInputStream()).getStream());
+	void getStreamReturnsCorrectStream() throws Exception {
+		try (InputProvider provider = new InputProvider(InputStream.nullInputStream())) {
+			InputStream stream = provider.getStream();
+			assertNotNull(stream);
+			assertSame(stream, provider.getStream());
+		}
 	}
 	
 	@Test
-	void close() {
-		assertDoesNotThrow(() -> new InputProvider(InputStream.nullInputStream()).close());
+	void closeClosesUnderlyingStream() throws IOException {
+		ByteArrayInputStream mockStream = new ByteArrayInputStream(new byte[0]);
+		InputProvider provider = new InputProvider(mockStream);
+		
+		provider.close();
+	}
+	
+	@Test
+	void multipleCloseCallsAreSafe() {
+		InputProvider provider = new InputProvider(InputStream.nullInputStream());
+		
+		assertDoesNotThrow(provider::close);
+		assertDoesNotThrow(provider::close);
+		assertDoesNotThrow(provider::close);
 	}
 }

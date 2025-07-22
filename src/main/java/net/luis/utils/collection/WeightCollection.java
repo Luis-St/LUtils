@@ -182,8 +182,7 @@ public class WeightCollection<T> {
 		
 		if (this.total != that.total) return false;
 		if (!this.map.equals(that.map)) return false;
-		if (!this.weights.equals(that.weights)) return false;
-		return this.rng.equals(that.rng);
+		return this.weights.equals(that.weights);
 	}
 	
 	@Override

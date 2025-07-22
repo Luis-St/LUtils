@@ -42,13 +42,14 @@ public final class LoggingUtils {
 	 */
 	private static final List<String> CONFIGURED_LOGGERS = Lists.newArrayList();
 	/**
-	 * The current configuration or null if the logging system has not been initialized.<br>
-	 */
-	private static LoggerConfiguration configuration = null;
-	/**
 	 * Whether the cached factory has been registered or not.<br>
 	 */
 	private static boolean registeredFactory = false;
+	/**
+	 * The current configuration or null if the logging system has not been initialized.<br>
+	 */
+	@VisibleForTesting
+	static LoggerConfiguration configuration = null;
 	
 	/**
 	 * Private constructor to prevent instantiation.<br>
@@ -72,6 +73,7 @@ public final class LoggingUtils {
 	 * @see #load(List)
 	 */
 	public static void load(String @NotNull ... loggers) {
+		Objects.requireNonNull(loggers, "Logger list must not be null");
 		load(Arrays.asList(loggers));
 	}
 	
@@ -87,6 +89,7 @@ public final class LoggingUtils {
 	 * @see #initialize(LoggerConfiguration, boolean)
 	 */
 	public static void load(@NotNull List<String> loggers) {
+		Objects.requireNonNull(loggers, "Logger list must not be null");
 		reconfigure(LoggingHelper.load(loggers)); // No idea why initialize does not work here
 		LoggingHelper.configure();
 	}
@@ -107,6 +110,7 @@ public final class LoggingUtils {
 	 * @see #initialize(LoggerConfiguration, boolean)
 	 */
 	public static void initialize(@NotNull LoggerConfiguration configuration) {
+		Objects.requireNonNull(configuration, "Logger configuration must not be null");
 		initialize(configuration, false);
 	}
 	
@@ -142,6 +146,7 @@ public final class LoggingUtils {
 	 * @see #registerSpringFactory()
 	 */
 	public static void initialize(@NotNull LoggerConfiguration configuration, boolean override) {
+		Objects.requireNonNull(configuration, "Logger configuration must not be null");
 		if (!isInitialized()) {
 			initializeInternal(Objects.requireNonNull(configuration, "Logger configuration must not be null"));
 		} else if (override) {
@@ -161,8 +166,9 @@ public final class LoggingUtils {
 	 * @see #initialize(LoggerConfiguration, boolean)
 	 */
 	public static boolean initializeSafe(@NotNull LoggerConfiguration configuration) {
+		Objects.requireNonNull(configuration, "Logger configuration must not be null");
 		if (!isInitialized()) {
-			initialize(Objects.requireNonNull(configuration, "Logger configuration must not be null"));
+			initialize(configuration);
 			return true;
 		}
 		return false;

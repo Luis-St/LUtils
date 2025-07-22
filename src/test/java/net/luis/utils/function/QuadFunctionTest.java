@@ -30,7 +30,7 @@ import static org.junit.jupiter.api.Assertions.*;
 class QuadFunctionTest {
 	
 	@Test
-	void apply() {
+	void applyWithCorrectParameters() {
 		QuadFunction<Integer, Integer, Integer, Integer, Integer> function = (a, b, c, d) -> {
 			assertEquals(1, a);
 			assertEquals(2, b);
@@ -38,15 +38,146 @@ class QuadFunctionTest {
 			assertEquals(4, d);
 			return a + b + c + d;
 		};
+		
 		assertEquals(10, function.apply(1, 2, 3, 4));
 		assertDoesNotThrow(() -> function.apply(1, 2, 3, 4));
 	}
 	
 	@Test
-	void andThen() {
+	void applyWithNullParameters() {
+		QuadFunction<String, String, String, String, String> function = (a, b, c, d) -> {
+			assertNull(a);
+			assertNull(b);
+			assertNull(c);
+			assertNull(d);
+			return "result";
+		};
+		
+		assertEquals("result", function.apply(null, null, null, null));
+	}
+	
+	@Test
+	void applyWithMixedParameters() {
+		QuadFunction<Object, Object, Object, Object, String> function = (a, b, c, d) -> {
+			assertEquals("string", a);
+			assertEquals(42, b);
+			assertNull(c);
+			assertTrue((Boolean) d);
+			return "mixed";
+		};
+		
+		assertEquals("mixed", function.apply("string", 42, null, true));
+	}
+	
+	@Test
+	void applyWithDifferentTypes() {
+		QuadFunction<Integer, String, Boolean, Double, String> function = (i, s, b, d) -> {
+			assertEquals(1, i);
+			assertEquals("test", s);
+			assertTrue(b);
+			assertEquals(3.14, d, 0.001);
+			return i + s + b + d;
+		};
+		
+		assertEquals("1testtrue3.14", function.apply(1, "test", true, 3.14));
+	}
+	
+	@Test
+	void applyReturnsNullResult() {
+		QuadFunction<String, String, String, String, String> function = (a, b, c, d) -> null;
+		
+		assertNull(function.apply("a", "b", "c", "d"));
+	}
+	
+	@Test
+	void applyWithZeroValues() {
 		QuadFunction<Integer, Integer, Integer, Integer, Integer> function = (a, b, c, d) -> a + b + c + d;
-		assertDoesNotThrow(() -> function.andThen(i -> i * 2));
-		assertEquals(20, function.andThen(i -> i * 2).apply(1, 2, 3, 4));
+		
+		assertEquals(0, function.apply(0, 0, 0, 0));
+	}
+	
+	@Test
+	void applyWithNegativeValues() {
+		QuadFunction<Integer, Integer, Integer, Integer, Integer> function = (a, b, c, d) -> a + b + c + d;
+		
+		assertEquals(-10, function.apply(-1, -2, -3, -4));
+	}
+	
+	@Test
+	void andThenCombinesFunctions() {
+		QuadFunction<Integer, Integer, Integer, Integer, Integer> function = (a, b, c, d) -> a + b + c + d;
+		
+		QuadFunction<Integer, Integer, Integer, Integer, Integer> combined = function.andThen(i -> i * 2);
+		
+		assertEquals(20, combined.apply(1, 2, 3, 4));
+		assertDoesNotThrow(() -> combined.apply(1, 2, 3, 4));
+	}
+	
+	@Test
+	void andThenWithDifferentReturnType() {
+		QuadFunction<Integer, Integer, Integer, Integer, Integer> function = (a, b, c, d) -> a + b + c + d;
+		
+		QuadFunction<Integer, Integer, Integer, Integer, String> combined = function.andThen(i -> "Result: " + i);
+		
+		assertEquals("Result: 10", combined.apply(1, 2, 3, 4));
+	}
+	
+	@Test
+	void andThenWithMultipleChaining() {
+		QuadFunction<Integer, Integer, Integer, Integer, Integer> function = (a, b, c, d) -> a + b + c + d;
+		
+		QuadFunction<Integer, Integer, Integer, Integer, String> combined = function
+			.andThen(i -> i * 2)
+			.andThen(i -> "Final: " + i);
+		
+		assertEquals("Final: 20", combined.apply(1, 2, 3, 4));
+	}
+	
+	@Test
+	void andThenWithNullAfterFunction() {
+		QuadFunction<Integer, Integer, Integer, Integer, Integer> function = (a, b, c, d) -> a + b + c + d;
+		
 		assertThrows(NullPointerException.class, () -> function.andThen(null));
+	}
+	
+	@Test
+	void andThenWithIdentityFunction() {
+		QuadFunction<Integer, Integer, Integer, Integer, Integer> function = (a, b, c, d) -> a + b + c + d;
+		
+		QuadFunction<Integer, Integer, Integer, Integer, Integer> combined = function.andThen(i -> i);
+		
+		assertEquals(10, combined.apply(1, 2, 3, 4));
+	}
+	
+	@Test
+	void andThenWithExceptionInOriginalFunction() {
+		QuadFunction<Integer, Integer, Integer, Integer, Integer> function = (a, b, c, d) -> {
+			throw new RuntimeException("Original function failed");
+		};
+		
+		QuadFunction<Integer, Integer, Integer, Integer, Integer> combined = function.andThen(i -> i * 2);
+		
+		assertThrows(RuntimeException.class, () -> combined.apply(1, 2, 3, 4));
+	}
+	
+	@Test
+	void andThenWithExceptionInAfterFunction() {
+		QuadFunction<Integer, Integer, Integer, Integer, Integer> function = (a, b, c, d) -> a + b + c + d;
+		
+		QuadFunction<Integer, Integer, Integer, Integer, Integer> combined = function.andThen(i -> {
+			throw new RuntimeException("After function failed");
+		});
+		
+		assertThrows(RuntimeException.class, () -> combined.apply(1, 2, 3, 4));
+	}
+	
+	@Test
+	void andThenWithNullResult() {
+		QuadFunction<Integer, Integer, Integer, Integer, Integer> function = (a, b, c, d) -> null;
+		
+		QuadFunction<Integer, Integer, Integer, Integer, String> combined = function.andThen(i ->
+			i == null ? "null" : i.toString());
+		
+		assertEquals("null", combined.apply(1, 2, 3, 4));
 	}
 }

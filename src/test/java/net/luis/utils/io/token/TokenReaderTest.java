@@ -21,7 +21,8 @@ package net.luis.utils.io.token;
 import com.google.common.collect.Sets;
 import net.luis.utils.io.token.definition.TokenDefinition;
 import net.luis.utils.io.token.definition.WordTokenDefinition;
-import net.luis.utils.io.token.tokens.Token;
+import net.luis.utils.io.token.tokens.*;
+import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
@@ -36,67 +37,253 @@ import static org.junit.jupiter.api.Assertions.*;
  */
 class TokenReaderTest {
 	
-	private static final TokenDefinition OPEN_PAREN = TokenDefinition.of('(');
-	private static final TokenDefinition CLOSE_PAREN = TokenDefinition.of(')');
+	private static @NotNull TokenReader createBasicTokenReader() {
+		return createBasicTokenReader(Set.of());
+	}
 	
-	private static final TokenDefinition ZERO = TokenDefinition.of('0');
-	private static final TokenDefinition ONE = TokenDefinition.of('1');
-	private static final TokenDefinition TWO = TokenDefinition.of('2');
-	private static final TokenDefinition THREE = TokenDefinition.of('3');
-	private static final TokenDefinition FOUR = TokenDefinition.of('4');
-	private static final TokenDefinition FIVE = TokenDefinition.of('5');
-	private static final TokenDefinition SIX = TokenDefinition.of('6');
-	private static final TokenDefinition SEVEN = TokenDefinition.of('7');
-	private static final TokenDefinition EIGHT = TokenDefinition.of('8');
-	private static final TokenDefinition NINE = TokenDefinition.of('9');
-	
-	private static final Set<TokenDefinition> DEFINITIONS = Set.of(
-		OPEN_PAREN, CLOSE_PAREN, ZERO, ONE, TWO, THREE, FOUR, FIVE, SIX, SEVEN, EIGHT, NINE
-	);
-	private static final Set<Character> ALLOWED_CHARS = Set.of(
-		'(', ')', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9'
-	);
-	private static final Set<Character> SEPARATORS = Sets.union(
-		Set.of(' '),
-		ALLOWED_CHARS
-	);
-	
-	@Test
-	void constructor() {
-		assertThrows(NullPointerException.class, () -> new TokenReader(null, ALLOWED_CHARS, SEPARATORS));
-		assertThrows(NullPointerException.class, () -> new TokenReader(DEFINITIONS, null, SEPARATORS));
-		assertThrows(NullPointerException.class, () -> new TokenReader(DEFINITIONS, ALLOWED_CHARS, null));
-		assertThrows(IllegalArgumentException.class, () -> new TokenReader(Set.of(WordTokenDefinition.INSTANCE), ALLOWED_CHARS, SEPARATORS));
-		assertDoesNotThrow(() -> new TokenReader(DEFINITIONS, ALLOWED_CHARS, SEPARATORS));
+	private static @NotNull TokenReader createBasicTokenReader(@NotNull Set<Character> additionalSeparators) {
+		Set<TokenDefinition> definitions = Set.of(
+			TokenDefinition.of('('), TokenDefinition.of(')'),
+			TokenDefinition.of('0'), TokenDefinition.of('1'), TokenDefinition.of('2'),
+			TokenDefinition.of('3'), TokenDefinition.of('4'), TokenDefinition.of('5'),
+			TokenDefinition.of('6'), TokenDefinition.of('7'), TokenDefinition.of('8'),
+			TokenDefinition.of('9')
+		);
+		
+		Set<Character> allowedChars = Set.of(
+			'(', ')', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9',
+			'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l',
+			'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x',
+			'y', 'z'
+		);
+		
+		Set<Character> separators = Sets.union(Set.of(' '), additionalSeparators);
+		
+		return new TokenReader(definitions, allowedChars, separators);
 	}
 	
 	@Test
-	void readTokens() {
-		TokenReader reader = new TokenReader(DEFINITIONS, ALLOWED_CHARS, SEPARATORS);
+	void constructorWithNullDefinitions() {
+		Set<Character> allowedChars = Set.of('a', 'b');
+		Set<Character> separators = Set.of(' ');
+		
+		assertThrows(NullPointerException.class, () -> new TokenReader(null, allowedChars, separators));
+	}
+	
+	@Test
+	void constructorWithNullAllowedChars() {
+		Set<TokenDefinition> definitions = Set.of(TokenDefinition.of('a'));
+		Set<Character> separators = Set.of(' ');
+		
+		assertThrows(NullPointerException.class, () -> new TokenReader(definitions, null, separators));
+	}
+	
+	@Test
+	void constructorWithNullSeparators() {
+		Set<TokenDefinition> definitions = Set.of(TokenDefinition.of('a'));
+		Set<Character> allowedChars = Set.of('a', 'b');
+		
+		assertThrows(NullPointerException.class, () -> new TokenReader(definitions, allowedChars, null));
+	}
+	
+	@Test
+	void constructorWithWordTokenDefinition() {
+		Set<TokenDefinition> definitions = Set.of(WordTokenDefinition.INSTANCE);
+		Set<Character> allowedChars = Set.of('a', 'b');
+		Set<Character> separators = Set.of(' ');
+		
+		assertThrows(IllegalArgumentException.class, () -> new TokenReader(definitions, allowedChars, separators));
+	}
+	
+	@Test
+	void constructorWithEmptyAllowedChars() {
+		Set<TokenDefinition> definitions = Set.of(TokenDefinition.of('a'));
+		Set<Character> allowedChars = Set.of();
+		Set<Character> separators = Set.of(' ');
+		
+		assertThrows(IllegalArgumentException.class, () -> new TokenReader(definitions, allowedChars, separators));
+	}
+	
+	@Test
+	void constructorWithEmptySeparators() {
+		Set<TokenDefinition> definitions = Set.of(TokenDefinition.of('a'));
+		Set<Character> allowedChars = Set.of('a', 'b');
+		Set<Character> separators = Set.of();
+		
+		assertThrows(IllegalArgumentException.class, () -> new TokenReader(definitions, allowedChars, separators));
+	}
+	
+	@Test
+	void constructorWithValidParameters() {
+		Set<TokenDefinition> definitions = Set.of(TokenDefinition.of('a'), TokenDefinition.of('b'));
+		Set<Character> allowedChars = Set.of('a', 'b', ' ');
+		Set<Character> separators = Set.of(' ');
+		
+		assertDoesNotThrow(() -> new TokenReader(definitions, allowedChars, separators));
+	}
+	
+	@Test
+	void readTokensWithNullInput() {
+		TokenReader reader = createBasicTokenReader();
 		
 		assertThrows(NullPointerException.class, () -> reader.readTokens(null));
-		assertThrows(IllegalStateException.class, () -> reader.readTokens("(_)"));
+	}
+	
+	@Test
+	void readTokensWithUndefinedCharacter() {
+		TokenReader reader = createBasicTokenReader();
 		
-		List<Token> parenTokens = reader.readTokens("(()())");
-		assertEquals(6, parenTokens.size());
-		assertEquals(OPEN_PAREN, parenTokens.getFirst().definition());
-		assertEquals(OPEN_PAREN, parenTokens.get(1).definition());
-		assertEquals(CLOSE_PAREN, parenTokens.get(2).definition());
-		assertEquals(OPEN_PAREN, parenTokens.get(3).definition());
-		assertEquals(CLOSE_PAREN, parenTokens.get(4).definition());
-		assertEquals(CLOSE_PAREN, parenTokens.get(5).definition());
+		assertThrows(IllegalStateException.class, () -> reader.readTokens("_"));
+		assertThrows(IllegalStateException.class, () -> reader.readTokens("abc_"));
+		assertThrows(IllegalStateException.class, () -> reader.readTokens("_abc"));
+	}
+	
+	@Test
+	void readTokensWithEmptyString() {
+		TokenReader reader = createBasicTokenReader();
+		List<Token> tokens = reader.readTokens("");
 		
-		List<Token> numberTokens = reader.readTokens("1234567890");
-		assertEquals(10, numberTokens.size());
-		assertEquals(ONE, numberTokens.get(0).definition());
-		assertEquals(TWO, numberTokens.get(1).definition());
-		assertEquals(THREE, numberTokens.get(2).definition());
-		assertEquals(FOUR, numberTokens.get(3).definition());
-		assertEquals(FIVE, numberTokens.get(4).definition());
-		assertEquals(SIX, numberTokens.get(5).definition());
-		assertEquals(SEVEN, numberTokens.get(6).definition());
-		assertEquals(EIGHT, numberTokens.get(7).definition());
-		assertEquals(NINE, numberTokens.get(8).definition());
-		assertEquals(ZERO, numberTokens.get(9).definition());
+		assertTrue(tokens.isEmpty());
+	}
+	
+	@Test
+	void readTokensWithSingleCharacters() {
+		TokenReader reader = createBasicTokenReader();
+		List<Token> tokens = reader.readTokens("()");
+		
+		assertEquals(1, tokens.size());
+		assertEquals("()", tokens.getFirst().value());
+	}
+	
+	@Test
+	void readTokensWithParentheses() {
+		TokenReader reader = createBasicTokenReader();
+		List<Token> tokens = reader.readTokens("( () ( ) )");
+		
+		assertEquals(5, tokens.size());
+		assertEquals("(", tokens.getFirst().value());
+		assertEquals("()", tokens.get(1).value());
+		assertEquals("(", tokens.get(2).value());
+		assertEquals(")", tokens.get(3).value());
+		assertEquals(")", tokens.get(4).value());
+	}
+	
+	@Test
+	void readTokensWithNumbers() {
+		TokenReader reader = createBasicTokenReader(Set.of('0', '1', '2', '3', '4', '5', '6', '7', '8', '9'));
+		List<Token> tokens = reader.readTokens("0123456789");
+		
+		assertEquals(10, tokens.size());
+		for (int i = 0; i < 10; i++) {
+			assertEquals(String.valueOf(i), tokens.get(i).value());
+		}
+	}
+	
+	@Test
+	void readTokensWithWords() {
+		TokenReader reader = createBasicTokenReader();
+		List<Token> tokens = reader.readTokens("abc def");
+		
+		assertEquals(2, tokens.size());
+		assertEquals("abc", tokens.getFirst().value());
+		assertEquals("def", tokens.get(1).value());
+		assertInstanceOf(SimpleToken.class, tokens.getFirst());
+		assertInstanceOf(SimpleToken.class, tokens.get(1));
+	}
+	
+	@Test
+	void readTokensWithMixedContent() {
+		TokenReader reader = createBasicTokenReader(Set.of('(', ')'));
+		List<Token> tokens = reader.readTokens("(123)");
+		
+		assertEquals(3, tokens.size());
+		assertEquals("(", tokens.getFirst().value());
+		assertEquals("123", tokens.get(1).value());
+		assertEquals(")", tokens.get(2).value());
+	}
+	
+	@Test
+	void readTokensWithEscapeSequences() {
+		TokenReader reader = createBasicTokenReader();
+		List<Token> tokens = reader.readTokens("\\n\\t\\\\");
+		
+		assertEquals(3, tokens.size());
+		assertEquals("\\n", tokens.getFirst().value());
+		assertEquals("\\t", tokens.get(1).value());
+		assertEquals("\\\\", tokens.get(2).value());
+		assertInstanceOf(EscapedToken.class, tokens.getFirst());
+		assertInstanceOf(EscapedToken.class, tokens.get(1));
+		assertInstanceOf(EscapedToken.class, tokens.get(2));
+	}
+	
+	@Test
+	void readTokensWithNewlines() {
+		TokenReader reader = createBasicTokenReader();
+		List<Token> tokens = reader.readTokens("a\nb");
+		
+		assertEquals(2, tokens.size());
+		assertEquals("a", tokens.getFirst().value());
+		assertEquals("b", tokens.get(1).value());
+	}
+	
+	@Test
+	void readTokensWithSpaces() {
+		TokenReader reader = createBasicTokenReader();
+		List<Token> tokens = reader.readTokens("a b c");
+		
+		assertEquals(3, tokens.size());
+		assertEquals("a", tokens.getFirst().value());
+		assertEquals("b", tokens.get(1).value());
+		assertEquals("c", tokens.get(2).value());
+	}
+	
+	@Test
+	void readTokensVerifiesPositions() {
+		TokenReader reader = createBasicTokenReader();
+		List<Token> tokens = reader.readTokens("ab c");
+		
+		assertEquals(2, tokens.size());
+		
+		Token firstToken = tokens.getFirst();
+		assertEquals(0, firstToken.startPosition().line());
+		assertEquals(0, firstToken.startPosition().characterInLine());
+		assertEquals(0, firstToken.startPosition().character());
+		assertEquals(0, firstToken.endPosition().line());
+		assertEquals(1, firstToken.endPosition().characterInLine());
+		assertEquals(1, firstToken.endPosition().character());
+		
+		Token secondToken = tokens.get(1);
+		assertEquals(0, secondToken.startPosition().line());
+		assertEquals(3, secondToken.startPosition().characterInLine());
+		assertEquals(3, secondToken.startPosition().character());
+		assertEquals(0, secondToken.endPosition().line());
+		assertEquals(3, secondToken.endPosition().characterInLine());
+		assertEquals(3, secondToken.endPosition().character());
+	}
+	
+	@Test
+	void readTokensWithMultipleLines() {
+		TokenReader reader = createBasicTokenReader();
+		List<Token> tokens = reader.readTokens("a\nb\nc");
+		
+		assertEquals(3, tokens.size());
+		
+		assertEquals(0, tokens.getFirst().startPosition().line());
+		assertEquals(1, tokens.get(1).startPosition().line());
+		assertEquals(2, tokens.get(2).startPosition().line());
+	}
+	
+	@Test
+	void readTokensWithComplexInput() {
+		TokenReader reader = createBasicTokenReader(Set.of('(', ')', '\n'));
+		List<Token> tokens = reader.readTokens("hello(123)\\nworld");
+		
+		assertEquals(6, tokens.size());
+		assertEquals("hello", tokens.getFirst().value());
+		assertEquals("(", tokens.get(1).value());
+		assertEquals("123", tokens.get(2).value());
+		assertEquals(")", tokens.get(3).value());
+		assertEquals("\\n", tokens.get(4).value());
+		assertEquals("world", tokens.get(5).value());
 	}
 }
