@@ -24,7 +24,6 @@ import net.luis.utils.io.codec.*;
 import net.luis.utils.util.Either;
 import net.luis.utils.util.Utils;
 import net.luis.utils.util.unsafe.reflection.ReflectionHelper;
-import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.ClassUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -38,7 +37,7 @@ import java.nio.file.Path;
 import java.time.*;
 import java.util.*;
 import java.util.function.Function;
-import java.util.stream.Stream;
+import java.util.stream.*;
 
 /**
  * A utility class for automatically creating codecs for classes using reflection.<br>
@@ -51,7 +50,7 @@ import java.util.stream.Stream;
  * @author Luis-St
  */
 @SuppressWarnings({ "unchecked", "rawtypes" })
-public class CodecAutoMapping {
+public final class CodecAutoMapping {
 	
 	/**
 	 * An empty array of codec components used as a default return value when no components are found.<br>
@@ -64,7 +63,7 @@ public class CodecAutoMapping {
 	 * This map contains predefined codecs for commonly used Java types like primitives, strings, and date/time classes.<br>
 	 * When creating an auto-mapped codec, this map is consulted first to find an existing codec for a given type.<br>
 	 */
-	private static final Map<Class<?>, Codec<?>> CODEC_LOOKUP = Utils.make(Maps.newHashMap(), map -> {
+	public static final Map<Class<?>, Codec<?>> CODEC_LOOKUP = Utils.make(Maps.newHashMap(), map -> {
 		map.put(Boolean.class, Codec.BOOLEAN);
 		map.put(Byte.class, Codec.BYTE);
 		map.put(Short.class, Codec.SHORT);
@@ -84,6 +83,18 @@ public class CodecAutoMapping {
 		map.put(Path.class, Codec.PATH);
 		map.put(URI.class, Codec.URI);
 		map.put(URL.class, Codec.URL);
+		map.put(IntStream.class, Codec.INT_STREAM);
+		map.put(LongStream.class, Codec.LONG_STREAM);
+		map.put(DoubleStream.class, Codec.DOUBLE_STREAM);
+		
+		map.put(boolean[].class, Codec.BOOLEAN_ARRAY);
+		map.put(byte[].class, Codec.BYTE_ARRAY);
+		map.put(short[].class, Codec.SHORT_ARRAY);
+		map.put(int[].class, Codec.INTEGER_ARRAY);
+		map.put(long[].class, Codec.LONG_ARRAY);
+		map.put(float[].class, Codec.FLOAT_ARRAY);
+		map.put(double[].class, Codec.DOUBLE_ARRAY);
+		map.put(char[].class, Codec.CHARACTER_ARRAY);
 	});
 	
 	/**
@@ -356,41 +367,9 @@ public class CodecAutoMapping {
 		Objects.requireNonNull(clazz, "Class must not be null");
 		
 		if (clazz.isArray()) {
-			Class<?> componentType = clazz.getComponentType();
-			
-			//region Primitive Arrays
 			// For some reason Array.set(Object, int, Object) does not work with primitive arrays, so we need to handle them separately,
 			// this is also the reason why there is no Codec.array(Class<?> componentType) method
-			if (componentType == boolean.class) {
-				return (Codec<C>) Codec.BOOLEAN_ARRAY;
-			} else if (componentType == byte.class) {
-				return (Codec<C>) Codec.BYTE_ARRAY;
-			} else if (componentType == short.class) {
-				return (Codec<C>) Codec.SHORT_ARRAY;
-			} else if (componentType == int.class) {
-				return (Codec<C>) Codec.INTEGER_ARRAY;
-			} else if (componentType == long.class) {
-				return (Codec<C>) Codec.LONG_ARRAY;
-			} else if (componentType == float.class) {
-				return (Codec<C>) Codec.FLOAT_ARRAY;
-			} else if (componentType == double.class) {
-				return (Codec<C>) Codec.DOUBLE_ARRAY;
-			} else if (componentType == char.class) {
-				return (Codec<C>) Codec.CHARACTER_ARRAY;
-			}
-			//endregion
-			
-			return (Codec<C>) getCodec(componentType, genericInfo).list().xmap(Arrays::asList, list -> {
-				if (list.isEmpty()) {
-					return ArrayUtils.EMPTY_OBJECT_ARRAY;
-				}
-				
-				Object[] array = (Object[]) Array.newInstance(componentType, list.size());
-				for (int i = 0; i < list.size(); i++) {
-					array[i] = list.get(i);
-				}
-				return array;
-			});
+			return CodecArrayHelper.getOrCreateArrayCodec(clazz, componentType -> getCodec(componentType, null));
 		} else if (clazz.isEnum()) {
 			return Codec.dynamicEnum((Class<? extends Enum>) clazz);
 		}

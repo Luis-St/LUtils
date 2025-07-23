@@ -361,6 +361,190 @@ class CodecAutoMappingTest {
 		assertArrayEquals(original.numbers(), decoded.numbers());
 	}
 	
+	@Test
+	void twoDimensionalArraysAreSupported() {
+		record Array2DRecord(int[][] matrix, String[][] textGrid, boolean[][] flags) {}
+		
+		Codec<Array2DRecord> codec = CodecBuilder.autoMapCodec(Array2DRecord.class);
+		JsonTypeProvider provider = JsonTypeProvider.INSTANCE;
+		
+		int[][] matrix = {
+			{ 1, 2, 3 },
+			{ 4, 5, 6 },
+			{ 7, 8, 9 }
+		};
+		String[][] textGrid = {
+			{ "a", "b" },
+			{ "c", "d" }
+		};
+		boolean[][] flags = {
+			{ true, false },
+			{ false, true }
+		};
+		
+		Array2DRecord original = new Array2DRecord(matrix, textGrid, flags);
+		JsonElement encoded = codec.encode(provider, original);
+		
+		assertInstanceOf(JsonObject.class, encoded);
+		JsonObject jsonObject = (JsonObject) encoded;
+		
+		JsonArray matrixArray = jsonObject.get("matrix").getAsJsonArray();
+		assertEquals(3, matrixArray.size());
+		JsonArray firstRow = matrixArray.get(0).getAsJsonArray();
+		assertEquals(3, firstRow.size());
+		assertEquals(1, firstRow.get(0).getAsJsonPrimitive().getAsInteger());
+		assertEquals(2, firstRow.get(1).getAsJsonPrimitive().getAsInteger());
+		assertEquals(3, firstRow.get(2).getAsJsonPrimitive().getAsInteger());
+		
+		Array2DRecord decoded = codec.decode(provider, encoded);
+		
+		assertArrayEquals(original.matrix()[0], decoded.matrix()[0]);
+		assertArrayEquals(original.matrix()[1], decoded.matrix()[1]);
+		assertArrayEquals(original.matrix()[2], decoded.matrix()[2]);
+		
+		assertArrayEquals(original.textGrid()[0], decoded.textGrid()[0]);
+		assertArrayEquals(original.textGrid()[1], decoded.textGrid()[1]);
+		
+		assertArrayEquals(original.flags()[0], decoded.flags()[0]);
+		assertArrayEquals(original.flags()[1], decoded.flags()[1]);
+	}
+	
+	@Test
+	void threeDimensionalArraysAreSupported() {
+		record Array3DRecord(int[][][] cube, byte[][][] data) {}
+		
+		Codec<Array3DRecord> codec = CodecBuilder.autoMapCodec(Array3DRecord.class);
+		JsonTypeProvider provider = JsonTypeProvider.INSTANCE;
+		
+		int[][][] cube = {
+			{
+				{ 1, 2 },
+				{ 3, 4 }
+			},
+			{
+				{ 5, 6 },
+				{ 7, 8 }
+			}
+		};
+		
+		byte[][][] data = {
+			{
+				{ 10, 20 },
+				{ 30, 40 }
+			}
+		};
+		
+		Array3DRecord original = new Array3DRecord(cube, data);
+		JsonElement encoded = codec.encode(provider, original);
+		Array3DRecord decoded = codec.decode(provider, encoded);
+		
+		assertEquals(2, decoded.cube().length);
+		assertEquals(2, decoded.cube()[0].length);
+		assertEquals(2, decoded.cube()[0][0].length);
+		assertEquals(1, decoded.cube()[0][0][0]);
+		assertEquals(2, decoded.cube()[0][0][1]);
+		assertEquals(3, decoded.cube()[0][1][0]);
+		assertEquals(4, decoded.cube()[0][1][1]);
+		assertEquals(5, decoded.cube()[1][0][0]);
+		assertEquals(6, decoded.cube()[1][0][1]);
+		assertEquals(7, decoded.cube()[1][1][0]);
+		assertEquals(8, decoded.cube()[1][1][1]);
+		
+		assertEquals(1, decoded.data().length);
+		assertEquals(2, decoded.data()[0].length);
+		assertEquals(2, decoded.data()[0][0].length);
+		assertEquals(10, decoded.data()[0][0][0]);
+		assertEquals(20, decoded.data()[0][0][1]);
+		assertEquals(30, decoded.data()[0][1][0]);
+		assertEquals(40, decoded.data()[0][1][1]);
+	}
+	
+	@Test
+	void jaggedArraysAreSupported() {
+		record JaggedArrayRecord(int[][] jaggedMatrix, String[][] jaggedText) {}
+		
+		Codec<JaggedArrayRecord> codec = CodecBuilder.autoMapCodec(JaggedArrayRecord.class);
+		JsonTypeProvider provider = JsonTypeProvider.INSTANCE;
+		
+		int[][] jaggedMatrix = {
+			{ 1, 2, 3, 4, 5 },
+			{ 6, 7 },
+			{ 8, 9, 10 }
+		};
+		
+		String[][] jaggedText = {
+			{ "hello", "world" },
+			{ "foo" },
+			{ "bar", "baz", "qux", "quux" }
+		};
+		
+		JaggedArrayRecord original = new JaggedArrayRecord(jaggedMatrix, jaggedText);
+		JsonElement encoded = codec.encode(provider, original);
+		JaggedArrayRecord decoded = codec.decode(provider, encoded);
+		
+		assertEquals(3, decoded.jaggedMatrix().length);
+		assertArrayEquals(new int[] { 1, 2, 3, 4, 5 }, decoded.jaggedMatrix()[0]);
+		assertArrayEquals(new int[] { 6, 7 }, decoded.jaggedMatrix()[1]);
+		assertArrayEquals(new int[] { 8, 9, 10 }, decoded.jaggedMatrix()[2]);
+		
+		assertEquals(3, decoded.jaggedText().length);
+		assertArrayEquals(new String[] { "hello", "world" }, decoded.jaggedText()[0]);
+		assertArrayEquals(new String[] { "foo" }, decoded.jaggedText()[1]);
+		assertArrayEquals(new String[] { "bar", "baz", "qux", "quux" }, decoded.jaggedText()[2]);
+	}
+	
+	@Test
+	void emptyMultiDimensionalArraysAreSupported() {
+		record EmptyArrayRecord(int[][] emptyMatrix, String[][] emptyGrid) {}
+		
+		Codec<EmptyArrayRecord> codec = CodecBuilder.autoMapCodec(EmptyArrayRecord.class);
+		JsonTypeProvider provider = JsonTypeProvider.INSTANCE;
+		
+		int[][] emptyMatrix = new int[0][];
+		String[][] emptyGrid = new String[0][];
+		
+		EmptyArrayRecord original = new EmptyArrayRecord(emptyMatrix, emptyGrid);
+		JsonElement encoded = codec.encode(provider, original);
+		EmptyArrayRecord decoded = codec.decode(provider, encoded);
+		
+		assertEquals(0, decoded.emptyMatrix().length);
+		assertEquals(0, decoded.emptyGrid().length);
+	}
+	
+	@Test
+	void mixedDimensionalArraysWithComplexTypes() {
+		record ComplexArrayRecord(TestEnum[][] enumMatrix, LocalDate[][][] dateGrid) {}
+		
+		Codec<ComplexArrayRecord> codec = CodecBuilder.autoMapCodec(ComplexArrayRecord.class);
+		JsonTypeProvider provider = JsonTypeProvider.INSTANCE;
+		
+		TestEnum[][] enumMatrix = {
+			{ TestEnum.FIRST, TestEnum.SECOND },
+			{ TestEnum.THIRD, TestEnum.FIRST }
+		};
+		
+		LocalDate[][][] dateGrid = {
+			{
+				{ LocalDate.of(2025, 1, 1), LocalDate.of(2025, 1, 2) },
+				{ LocalDate.of(2025, 1, 3), LocalDate.of(2025, 1, 4) }
+			}
+		};
+		
+		ComplexArrayRecord original = new ComplexArrayRecord(enumMatrix, dateGrid);
+		JsonElement encoded = codec.encode(provider, original);
+		ComplexArrayRecord decoded = codec.decode(provider, encoded);
+		
+		assertEquals(TestEnum.FIRST, decoded.enumMatrix()[0][0]);
+		assertEquals(TestEnum.SECOND, decoded.enumMatrix()[0][1]);
+		assertEquals(TestEnum.THIRD, decoded.enumMatrix()[1][0]);
+		assertEquals(TestEnum.FIRST, decoded.enumMatrix()[1][1]);
+		
+		assertEquals(LocalDate.of(2025, 1, 1), decoded.dateGrid()[0][0][0]);
+		assertEquals(LocalDate.of(2025, 1, 2), decoded.dateGrid()[0][0][1]);
+		assertEquals(LocalDate.of(2025, 1, 3), decoded.dateGrid()[0][1][0]);
+		assertEquals(LocalDate.of(2025, 1, 4), decoded.dateGrid()[0][1][1]);
+	}
+	
 	//region Test Classes
 	private enum TestEnum {
 		FIRST, SECOND, THIRD
