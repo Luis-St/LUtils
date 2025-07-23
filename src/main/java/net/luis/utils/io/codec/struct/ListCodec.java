@@ -124,7 +124,7 @@ public class ListCodec<C> implements Codec<List<C>> {
 			return Result.error("Unable to decode some elements of list using '" + this + "': \n" + results.stream().filter(Result::isError).map(Result::errorOrThrow).collect(Collectors.joining("\n")));
 		}
 		if (this.maxSize >= results.size() && results.size() >= this.minSize) {
-			return Result.success(results.stream().map(Result::orThrow).toList());
+			return Result.success(results.stream().map(Result::orThrow).collect(Collectors.toList()));
 		}
 		return Result.error("List was decoded successfully but size '" + results.size() + "' is out of range: " + this.minSize + ".." + this.maxSize);
 	}
