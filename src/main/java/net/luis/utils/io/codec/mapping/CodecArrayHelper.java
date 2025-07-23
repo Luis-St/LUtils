@@ -70,7 +70,8 @@ class CodecArrayHelper {
 		if (arrayDimension == 1) {
 			Codec<C> codec = (Codec<C>) componentCodec.list().xmap(Arrays::asList, list -> {
 				if (list.isEmpty()) {
-					return ArrayUtils.EMPTY_OBJECT_ARRAY;
+					// Return an empty array of the correct type, cast to Object[] to avoid type issues (needed for some reason)
+					return (Object[]) Array.newInstance(componentType, 0);
 				}
 				
 				Object[] array = (Object[]) Array.newInstance(componentType, list.size());
