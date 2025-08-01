@@ -29,6 +29,8 @@ import net.luis.utils.io.codec.struct.*;
 import net.luis.utils.util.Either;
 import net.luis.utils.util.Result;
 import org.apache.commons.lang3.ArrayUtils;
+import org.intellij.lang.annotations.Language;
+import org.intellij.lang.annotations.RegExp;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -862,6 +864,49 @@ public interface Codec<C> extends Encoder<C>, Decoder<C> {
 				return Result.success(value);
 			}
 			return result;
+		}).keyable(str -> str, str -> str);
+	}
+	
+	/**
+	 * Creates a new keyable string codec that validates strings against the given regular expression.<br>
+	 * The string must match the regex pattern during both encoding and decoding.<br>
+	 * @param regex The regular expression pattern as a string
+	 * @return A new keyable string codec that validates against the regex
+	 * @throws NullPointerException If the regex is null
+	 * @throws java.util.regex.PatternSyntaxException If the regex pattern is invalid
+	 * @see KeyableCodec
+	 * @see Pattern
+	 */
+	static @NotNull KeyableCodec<String> formattedString(@NotNull @Language("RegExp") String regex) {
+		Objects.requireNonNull(regex, "Format must not be null");
+		return formattedString(Pattern.compile(regex));
+	}
+	
+	/**
+	 * Creates a new keyable string codec that validates strings against the given pattern.<br>
+	 * The string must match the pattern during both encoding and decoding.<br>
+	 * @param regex The compiled regular expression pattern
+	 * @return A new keyable string codec that validates against the pattern
+	 * @throws NullPointerException If the pattern is null
+	 * @see KeyableCodec
+	 * @see Pattern
+	 */
+	static @NotNull KeyableCodec<String> formattedString(@NotNull Pattern regex) {
+		Objects.requireNonNull(regex, "Format must not be null");
+		return STRING.map(str -> {
+			if (regex.matcher(str).matches()) {
+				return Result.success(str);
+			}
+			return Result.error("String '" + str + "' does not match the expected format '" + regex + "'");
+		}, result -> {
+			if (result.isError()) {
+				return result;
+			}
+			String str = result.orThrow();
+			if (regex.matcher(str).matches()) {
+				return Result.success(str);
+			}
+			return Result.error("String '" + str + "' was decoded successfully but does not match expected format '" + regex + "'");
 		}).keyable(str -> str, str -> str);
 	}
 	

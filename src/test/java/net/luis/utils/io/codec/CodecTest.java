@@ -35,6 +35,8 @@ import java.util.List;
 import java.util.Optional;
 import java.util.function.Function;
 import java.util.function.Supplier;
+import java.util.regex.Pattern;
+import java.util.regex.PatternSyntaxException;
 import java.util.stream.*;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -234,6 +236,101 @@ class CodecTest {
 		assertInstanceOf(KeyableCodec.class, nonEmptyCodec);
 		assertTrue(nonEmptyCodec.encodeStart(provider, provider.empty(), "").isError());
 		assertTrue(nonEmptyCodec.encodeStart(provider, provider.empty(), "a").isSuccess());
+	}
+	
+	@Test
+	void formattedStringCodecs() {
+		JsonTypeProvider provider = JsonTypeProvider.INSTANCE;
+		
+		assertThrows(NullPointerException.class, () -> Codec.formattedString((String) null));
+		assertThrows(PatternSyntaxException.class, () -> Codec.formattedString("[invalid"));
+		
+		assertThrows(NullPointerException.class, () -> Codec.formattedString((Pattern) null));
+		
+		Pattern emailPattern = Pattern.compile("^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$");
+		Codec<String> emailCodec = Codec.formattedString(emailPattern);
+		assertInstanceOf(KeyableCodec.class, emailCodec);
+		
+		String validEmail = "test@example.com";
+		assertEquals(new JsonPrimitive(validEmail), emailCodec.encode(provider, validEmail));
+		assertEquals(validEmail, emailCodec.decode(provider, new JsonPrimitive(validEmail)));
+		
+		String invalidEmail = "not-an-email";
+		assertTrue(emailCodec.encodeStart(provider, provider.empty(), invalidEmail).isError());
+		assertTrue(emailCodec.decodeStart(provider, new JsonPrimitive(invalidEmail)).isError());
+	}
+	
+	@Test
+	void formattedStringWithDigitsOnly() {
+		JsonTypeProvider provider = JsonTypeProvider.INSTANCE;
+		
+		Codec<String> digitsCodec = Codec.formattedString("\\d+");
+		
+		assertTrue(digitsCodec.encodeStart(provider, provider.empty(), "12345").isSuccess());
+		assertTrue(digitsCodec.decodeStart(provider, new JsonPrimitive("12345")).isSuccess());
+		assertEquals("12345", digitsCodec.decode(provider, new JsonPrimitive("12345")));
+		
+		assertTrue(digitsCodec.encodeStart(provider, provider.empty(), "abc123").isError());
+		assertTrue(digitsCodec.decodeStart(provider, new JsonPrimitive("abc123")).isError());
+		assertTrue(digitsCodec.encodeStart(provider, provider.empty(), "").isError());
+	}
+	
+	@Test
+	void formattedStringWithAlphanumeric() {
+		JsonTypeProvider provider = JsonTypeProvider.INSTANCE;
+		
+		Pattern alphanumericPattern = Pattern.compile("[a-zA-Z0-9]{3,10}");
+		Codec<String> alphanumericCodec = Codec.formattedString(alphanumericPattern);
+		
+		assertTrue(alphanumericCodec.encodeStart(provider, provider.empty(), "abc123").isSuccess());
+		assertTrue(alphanumericCodec.encodeStart(provider, provider.empty(), "ABC").isSuccess());
+		assertTrue(alphanumericCodec.encodeStart(provider, provider.empty(), "1234567890").isSuccess());
+		
+		assertTrue(alphanumericCodec.encodeStart(provider, provider.empty(), "ab").isError());
+		assertTrue(alphanumericCodec.encodeStart(provider, provider.empty(), "12345678901").isError());
+		assertTrue(alphanumericCodec.encodeStart(provider, provider.empty(), "abc-123").isError());
+	}
+	
+	@Test
+	void formattedStringWithComplexPattern() {
+		JsonTypeProvider provider = JsonTypeProvider.INSTANCE;
+		
+		Codec<String> phoneCodec = Codec.formattedString("^\\+?[1-9]\\d{1,14}$");
+		
+		assertTrue(phoneCodec.encodeStart(provider, provider.empty(), "+1234567890").isSuccess());
+		assertTrue(phoneCodec.encodeStart(provider, provider.empty(), "1234567890").isSuccess());
+		assertTrue(phoneCodec.decodeStart(provider, new JsonPrimitive("+49123456789")).isSuccess());
+		
+		assertTrue(phoneCodec.encodeStart(provider, provider.empty(), "0123456789").isError()); // starts with 0
+		assertTrue(phoneCodec.encodeStart(provider, provider.empty(), "+").isError()); // just plus
+		assertTrue(phoneCodec.encodeStart(provider, provider.empty(), "123-456-7890").isError()); // contains dashes
+	}
+	
+	@Test
+	void formattedStringEmptyPattern() {
+		JsonTypeProvider provider = JsonTypeProvider.INSTANCE;
+		
+		Codec<String> emptyCodec = Codec.formattedString("^$");
+		
+		assertTrue(emptyCodec.encodeStart(provider, provider.empty(), "").isSuccess());
+		assertTrue(emptyCodec.decodeStart(provider, new JsonPrimitive("")).isSuccess());
+		
+		assertTrue(emptyCodec.encodeStart(provider, provider.empty(), "a").isError());
+		assertTrue(emptyCodec.decodeStart(provider, new JsonPrimitive("a")).isError());
+	}
+	
+	@Test
+	void formattedStringMatchesAnyCharacter() {
+		JsonTypeProvider provider = JsonTypeProvider.INSTANCE;
+		
+		Codec<String> singleCharCodec = Codec.formattedString("^.$");
+		
+		assertTrue(singleCharCodec.encodeStart(provider, provider.empty(), "a").isSuccess());
+		assertTrue(singleCharCodec.encodeStart(provider, provider.empty(), "1").isSuccess());
+		assertTrue(singleCharCodec.encodeStart(provider, provider.empty(), "@").isSuccess());
+		
+		assertTrue(singleCharCodec.encodeStart(provider, provider.empty(), "").isError());
+		assertTrue(singleCharCodec.encodeStart(provider, provider.empty(), "ab").isError());
 	}
 	
 	@Test
