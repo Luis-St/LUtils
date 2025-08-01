@@ -71,18 +71,18 @@ public interface Decoder<C> {
 	 * The mapping function is applied to the decoded result of the decoding process.<br>
 	 * The mapping function returns a result containing the mapped value or an error message if the mapping process fails.<br>
 	 *
-	 * @param from The mapping function
+	 * @param function The mapping function
 	 * @return The mapped decoder
 	 * @param <O> The type to map to
 	 * @throws NullPointerException If the mapping function is null
 	 */
-	default <O> @NotNull Decoder<O> mapDecoder(@NotNull ResultMappingFunction<C, O> from) {
-		Objects.requireNonNull(from, "Decode mapping function must not be null");
+	default <O> @NotNull Decoder<O> mapDecoder(@NotNull ResultMappingFunction<C, O> function) {
+		Objects.requireNonNull(function, "Decode mapping function must not be null");
 		return new Decoder<>() {
 			@Override
 			public <R> @NotNull Result<O> decodeStart(@NotNull TypeProvider<R> provider, @Nullable R value) {
 				Objects.requireNonNull(provider, "Type provider must not be null");
-				return from.apply(Decoder.this.decodeStart(provider, value));
+				return function.apply(Decoder.this.decodeStart(provider, value));
 			}
 		};
 	}

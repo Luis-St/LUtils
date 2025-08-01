@@ -19,6 +19,7 @@
 package net.luis.utils.io.codec.decoder;
 
 import net.luis.utils.io.codec.Codec;
+import net.luis.utils.io.codec.ResultingFunction;
 import net.luis.utils.io.codec.provider.JsonTypeProvider;
 import net.luis.utils.io.data.json.JsonPrimitive;
 import net.luis.utils.util.Result;
@@ -35,13 +36,13 @@ class KeyableDecoderTest {
 	
 	@Test
 	void ofNullChecks() {
-		assertThrows(NullPointerException.class, () -> KeyableDecoder.of(null, Integer::valueOf));
+		assertThrows(NullPointerException.class, () -> KeyableDecoder.of(null, ResultingFunction.direct(Integer::valueOf)));
 		assertThrows(NullPointerException.class, () -> KeyableDecoder.of(Codec.INTEGER, null));
 	}
 	
 	@Test
 	void ofCreatesValidDecoder() {
-		KeyableDecoder<Integer> decoder = KeyableDecoder.of(Codec.INTEGER, Integer::valueOf);
+		KeyableDecoder<Integer> decoder = KeyableDecoder.of(Codec.INTEGER, ResultingFunction.direct(Integer::valueOf));
 		assertNotNull(decoder);
 		
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
@@ -122,7 +123,7 @@ class KeyableDecoderTest {
 	
 	@Test
 	void decodeKeyWithCustomKeyDecoder() {
-		KeyableDecoder<Integer> decoder = KeyableDecoder.of(Codec.INTEGER, key -> {
+		KeyableDecoder<Integer> decoder = KeyableDecoder.of(Codec.INTEGER, ResultingFunction.direct(key -> {
 			if ("special".equals(key)) {
 				return 999;
 			}
@@ -130,6 +131,34 @@ class KeyableDecoderTest {
 				return Integer.parseInt(key);
 			} catch (NumberFormatException e) {
 				return null;
+			}
+		}));
+		
+		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
+		
+		Result<Integer> specialResult = decoder.decodeKey(typeProvider, "special");
+		assertTrue(specialResult.isSuccess());
+		assertEquals(999, specialResult.orThrow());
+		
+		Result<Integer> numberResult = decoder.decodeKey(typeProvider, "42");
+		assertTrue(numberResult.isSuccess());
+		assertEquals(42, numberResult.orThrow());
+		
+		Result<Integer> invalidResult = decoder.decodeKey(typeProvider, "invalid");
+		assertTrue(invalidResult.isSuccess());
+		assertNull(invalidResult.orThrow());
+	}
+	
+	@Test
+	void decodeKeyWithResultingKeyDecoder() {
+		KeyableDecoder<Integer> decoder = KeyableDecoder.of(Codec.INTEGER, key -> {
+			if ("special".equals(key)) {
+				return Result.success(999);
+			}
+			try {
+				return Result.success(Integer.parseInt(key));
+			} catch (NumberFormatException e) {
+				return Result.error("Invalid number: " + key);
 			}
 		});
 		
@@ -145,17 +174,17 @@ class KeyableDecoderTest {
 		
 		Result<Integer> invalidResult = decoder.decodeKey(typeProvider, "invalid");
 		assertTrue(invalidResult.isError());
-		assertTrue(invalidResult.errorOrThrow().contains("could not be converted back to a value"));
+		assertTrue(invalidResult.errorOrThrow().contains("Invalid number"));
 	}
 	
 	@Test
 	void decodeKeyWithNullReturningKeyDecoder() {
-		KeyableDecoder<String> decoder = KeyableDecoder.of(Codec.STRING, key -> null);
+		KeyableDecoder<String> decoder = KeyableDecoder.of(Codec.STRING, ResultingFunction.direct(key -> null));
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		
 		Result<String> result = decoder.decodeKey(typeProvider, "anything");
-		assertTrue(result.isError());
-		assertTrue(result.errorOrThrow().contains("could not be converted back to a value"));
+		assertTrue(result.isSuccess());
+		assertNull(result.orThrow());
 	}
 	
 	@Test

@@ -100,19 +100,19 @@ public interface Encoder<C> {
 	 * The mapping function returns a result containing the mapped value or an error message if the mapping process fails.<br>
 	 * The mapping function is not allowed to throw any exceptions.<br>
 	 *
-	 * @param to The mapping function
+	 * @param function The mapping function
 	 * @return The mapped encoder
 	 * @param <O> The type to map to
 	 * @throws NullPointerException If the mapping function is null
 	 */
-	default <O> @NotNull Encoder<O> mapEncoder(@NotNull ResultingFunction<O, C> to) {
-		Objects.requireNonNull(to, "Encode mapping function must not be null");
+	default <O> @NotNull Encoder<O> mapEncoder(@NotNull ResultingFunction<O, C> function) {
+		Objects.requireNonNull(function, "Encode mapping function must not be null");
 		return new Encoder<>() {
 			@Override
 			public <R> @NotNull Result<R> encodeStart(@NotNull TypeProvider<R> provider, @NotNull R current, @Nullable O value) {
 				Objects.requireNonNull(provider, "Type provider must not be null");
 				Objects.requireNonNull(current, "Current value must not be null");
-				Result<C> result = to.apply(value);
+				Result<C> result = function.apply(value);
 				if (result.isError()) {
 					return Result.error("Failed to map value to encode: " + result.errorOrThrow());
 				}

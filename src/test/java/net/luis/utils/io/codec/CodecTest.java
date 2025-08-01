@@ -167,14 +167,14 @@ class CodecTest {
 	
 	@Test
 	void keyableCodecFactoryMethods() {
-		assertThrows(NullPointerException.class, () -> Codec.keyable((Codec<Integer>) null, Integer::valueOf));
+		assertThrows(NullPointerException.class, () -> Codec.keyable((Codec<Integer>) null, ResultingFunction.direct(Integer::valueOf)));
 		assertThrows(NullPointerException.class, () -> Codec.keyable(Codec.INTEGER, null));
-		assertInstanceOf(KeyableCodec.class, Codec.keyable(Codec.INTEGER, Integer::valueOf));
+		assertInstanceOf(KeyableCodec.class, Codec.keyable(Codec.INTEGER, ResultingFunction.direct(Integer::valueOf)));
 		
-		assertThrows(NullPointerException.class, () -> Codec.keyable((Codec<Integer>) null, String::valueOf, Integer::valueOf));
-		assertThrows(NullPointerException.class, () -> Codec.keyable(Codec.INTEGER, null, Integer::valueOf));
-		assertThrows(NullPointerException.class, () -> Codec.keyable(Codec.INTEGER, String::valueOf, null));
-		assertInstanceOf(KeyableCodec.class, Codec.keyable(Codec.INTEGER, String::valueOf, Integer::valueOf));
+		assertThrows(NullPointerException.class, () -> Codec.keyable((Codec<Integer>) null, ResultingFunction.direct(String::valueOf), ResultingFunction.direct(Integer::valueOf)));
+		assertThrows(NullPointerException.class, () -> Codec.keyable(Codec.INTEGER, null, ResultingFunction.direct(Integer::valueOf)));
+		assertThrows(NullPointerException.class, () -> Codec.keyable(Codec.INTEGER, ResultingFunction.direct(String::valueOf), null));
+		assertInstanceOf(KeyableCodec.class, Codec.keyable(Codec.INTEGER, ResultingFunction.direct(String::valueOf), ResultingFunction.direct(Integer::valueOf)));
 	}
 	
 	@Test
@@ -239,6 +239,37 @@ class CodecTest {
 	}
 	
 	@Test
+	void stringCodecKeyValidation() {
+		JsonTypeProvider provider = JsonTypeProvider.INSTANCE;
+		KeyableCodec<String> limitedCodec = Codec.string(2);
+		
+		assertTrue(limitedCodec.encodeKey(provider, "ab").isSuccess());
+		assertTrue(limitedCodec.encodeKey(provider, "abc").isError());
+		assertTrue(limitedCodec.encodeKey(provider, "").isSuccess());
+		
+		assertTrue(limitedCodec.decodeKey(provider, "ab").isSuccess());
+		assertTrue(limitedCodec.decodeKey(provider, "abc").isError());
+		assertTrue(limitedCodec.decodeKey(provider, "").isSuccess());
+		
+		KeyableCodec<String> boundedCodec = Codec.string(2, 4);
+		
+		assertTrue(boundedCodec.encodeKey(provider, "a").isError());
+		assertTrue(boundedCodec.encodeKey(provider, "abc").isSuccess());
+		assertTrue(boundedCodec.encodeKey(provider, "abcde").isError());
+		
+		assertTrue(boundedCodec.decodeKey(provider, "a").isError());
+		assertTrue(boundedCodec.decodeKey(provider, "abc").isSuccess());
+		assertTrue(boundedCodec.decodeKey(provider, "abcde").isError());
+		
+		KeyableCodec<String> nonEmptyCodec = Codec.noneEmptyString();
+		
+		assertTrue(nonEmptyCodec.encodeKey(provider, "").isError());
+		assertTrue(nonEmptyCodec.encodeKey(provider, "a").isSuccess());
+		assertTrue(nonEmptyCodec.decodeKey(provider, "").isError());
+		assertTrue(nonEmptyCodec.decodeKey(provider, "a").isSuccess());
+	}
+	
+	@Test
 	void formattedStringCodecs() {
 		JsonTypeProvider provider = JsonTypeProvider.INSTANCE;
 		
@@ -258,6 +289,28 @@ class CodecTest {
 		String invalidEmail = "not-an-email";
 		assertTrue(emailCodec.encodeStart(provider, provider.empty(), invalidEmail).isError());
 		assertTrue(emailCodec.decodeStart(provider, new JsonPrimitive(invalidEmail)).isError());
+	}
+	
+	@Test
+	void formattedStringKeyValidation() {
+		JsonTypeProvider provider = JsonTypeProvider.INSTANCE;
+		Pattern emailPattern = Pattern.compile("^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$");
+		KeyableCodec<String> emailCodec = Codec.formattedString(emailPattern);
+		
+		String validEmail = "test@example.com";
+		String invalidEmail = "not-an-email";
+		
+		assertTrue(emailCodec.encodeKey(provider, validEmail).isSuccess());
+		assertTrue(emailCodec.encodeKey(provider, invalidEmail).isError());
+		
+		assertTrue(emailCodec.decodeKey(provider, validEmail).isSuccess());
+		assertTrue(emailCodec.decodeKey(provider, invalidEmail).isError());
+		
+		KeyableCodec<String> digitsCodec = Codec.formattedString("\\d+");
+		assertTrue(digitsCodec.encodeKey(provider, "12345").isSuccess());
+		assertTrue(digitsCodec.encodeKey(provider, "abc123").isError());
+		assertTrue(digitsCodec.decodeKey(provider, "12345").isSuccess());
+		assertTrue(digitsCodec.decodeKey(provider, "abc123").isError());
 	}
 	
 	@Test
@@ -529,11 +582,9 @@ class CodecTest {
 		assertNotNull(configuredCodec);
 	}
 	
-	//region Internal
 	private enum TestEnum {
 		ONE, TWO, THREE
 	}
 	
 	private record TestObject(@NotNull String name) {}
-	//endregion
 }

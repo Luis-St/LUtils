@@ -119,12 +119,16 @@ public abstract class RangeCodec<C extends Number & Comparable<C>> implements Ke
 		if (value == null) {
 			return Result.error("Unable to encode null as number using '" + this + "'");
 		}
-		return this.encodeNumber(provider, value);
+		if (value.compareTo(this.minInclusive) >= 0 && 0 >= value.compareTo(this.maxInclusive)) {
+			return this.encodeNumber(provider, value);
+		}
+		return Result.error("Number '" + value + "' is out of range: " + this.minInclusive + ".." + this.maxInclusive);
 	}
 	
 	/**
 	 * Encodes the given number value using the given type provider.<br>
 	 * The result contains the encoded value or an error message if the encoding failed.<br>
+	 *
 	 * @param provider The type provider
 	 * @param value The number value
 	 * @return The result of the encoding process
@@ -137,6 +141,11 @@ public abstract class RangeCodec<C extends Number & Comparable<C>> implements Ke
 	public @NotNull <R> Result<String> encodeKey(@NotNull TypeProvider<R> provider, @NotNull C key) {
 		Objects.requireNonNull(provider, "Type provider must not be null");
 		Objects.requireNonNull(key, "Value must not be null");
+		
+		if (!(key.compareTo(this.minInclusive) >= 0 && 0 >= key.compareTo(this.maxInclusive))) {
+			return Result.error("Number '" + key + "' is out of range: " + this.minInclusive + ".." + this.maxInclusive);
+		}
+		
 		String encoded;
 		try {
 			encoded = this.stringEncoder.apply(key);
@@ -171,6 +180,7 @@ public abstract class RangeCodec<C extends Number & Comparable<C>> implements Ke
 	/**
 	 * Decodes the given value using the given type provider.<br>
 	 * The result contains the decoded value or an error message if the decoding failed.<br>
+	 *
 	 * @param provider The type provider
 	 * @param value The value
 	 * @return The result of the decoding process
@@ -192,7 +202,10 @@ public abstract class RangeCodec<C extends Number & Comparable<C>> implements Ke
 		if (decoded == null) {
 			return Result.error("Unable to decode key '" + key + "' with codec '" + this + "'");
 		}
-		return Result.success(decoded);
+		if (decoded.compareTo(this.minInclusive) >= 0 && 0 >= decoded.compareTo(this.maxInclusive)) {
+			return Result.success(decoded);
+		}
+		return Result.error("Number '" + decoded + "' was decoded successfully, but is out of range: " + this.minInclusive + ".." + this.minInclusive);
 	}
 	//endregion
 	

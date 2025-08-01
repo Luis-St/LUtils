@@ -109,18 +109,18 @@ class EncoderTest {
 	}
 	
 	@Test
-	void encodeStartWithSpecialNumbers() {
+	void encodeStartWithSpecialNumbers() { // Currently not supported by the JsonTypeProvider
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Encoder<Double> encoder = Codec.DOUBLE;
 		
 		Result<JsonElement> infinityResult = encoder.encodeStart(typeProvider, typeProvider.empty(), Double.POSITIVE_INFINITY);
-		assertTrue(infinityResult.isSuccess());
+		assertTrue(infinityResult.isError());
 		
 		Result<JsonElement> nanResult = encoder.encodeStart(typeProvider, typeProvider.empty(), Double.NaN);
-		assertTrue(nanResult.isSuccess());
+		assertTrue(nanResult.isError());
 		
 		Result<JsonElement> negInfinityResult = encoder.encodeStart(typeProvider, typeProvider.empty(), Double.NEGATIVE_INFINITY);
-		assertTrue(negInfinityResult.isSuccess());
+		assertTrue(negInfinityResult.isError());
 	}
 	
 	@Test

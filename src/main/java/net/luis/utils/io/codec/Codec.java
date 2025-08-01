@@ -19,7 +19,6 @@
 package net.luis.utils.io.codec;
 
 import com.google.common.collect.Lists;
-import net.luis.utils.function.throwable.ThrowableFunction;
 import net.luis.utils.io.codec.decoder.Decoder;
 import net.luis.utils.io.codec.decoder.KeyableDecoder;
 import net.luis.utils.io.codec.encoder.Encoder;
@@ -30,7 +29,6 @@ import net.luis.utils.util.Either;
 import net.luis.utils.util.Result;
 import org.apache.commons.lang3.ArrayUtils;
 import org.intellij.lang.annotations.Language;
-import org.intellij.lang.annotations.RegExp;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -207,8 +205,8 @@ public interface Codec<C> extends Encoder<C>, Decoder<C> {
 	 * A codec that encodes and decodes strings.<br>
 	 */
 	KeyableCodec<String> STRING = new KeyableCodec<>() {
-		private final KeyableEncoder<String> encoder = KeyableEncoder.of(this, str -> str);
-		private final KeyableDecoder<String> decoder = KeyableDecoder.of(this, str -> str);
+		private final KeyableEncoder<String> encoder = KeyableEncoder.of(this, ResultingFunction.direct(Function.identity()));
+		private final KeyableDecoder<String> decoder = KeyableDecoder.of(this, ResultingFunction.direct(Function.identity()));
 		
 		@Override
 		public <R> @NotNull Result<R> encodeStart(@NotNull TypeProvider<R> provider, @Nullable R current, @Nullable String value) {
@@ -361,7 +359,7 @@ public interface Codec<C> extends Encoder<C>, Decoder<C> {
 	 * A keyable codec that encodes and decodes {@link UUID UUIDs}.<br>
 	 * The underlying UUID is converted to and from a string.<br>
 	 */
-	KeyableCodec<java.util.UUID> UUID = keyable(STRING.mapFlat(java.util.UUID::toString, throwable(java.util.UUID::fromString)).codec("UUIDCodec"), java.util.UUID::fromString);
+	KeyableCodec<java.util.UUID> UUID = keyable(STRING.mapFlat(java.util.UUID::toString, throwable(java.util.UUID::fromString)).codec("UUIDCodec"), ResultingFunction.direct(java.util.UUID::fromString));
 	
 	/**
 	 * A codec that encodes and decodes {@link LocalTime local time} values.<br>
@@ -611,6 +609,7 @@ public interface Codec<C> extends Encoder<C>, Decoder<C> {
 	
 	/**
 	 * Creates a new codec from the given encoder and decoder with the given name.<br>
+	 *
 	 * @param encoder The encoder that is used to encode values of the type {@code C}
 	 * @param decoder The decoder that is used to decode values of the type {@code C}
 	 * @param name The name of the codec
@@ -644,7 +643,7 @@ public interface Codec<C> extends Encoder<C>, Decoder<C> {
 	 * Creates a new keyable codec for the given codec using the given key encoder and key decoder.<br>
 	 * The key encoder is the java built-in {@code toString()} method.<br>
 	 * The key decoder is defined as function that converts keys from strings to values of the type {@code C}.<br>
-	 * If the key decoder is unable to decode a key, it should return null.<br>
+	 *
 	 * @param codec The base codec that is used to encode and decode values of the type {@code C}
 	 * @param keyDecoder The key decoder
 	 * @param <C> The type of the value that is encoded and decoded by the codec
@@ -653,14 +652,14 @@ public interface Codec<C> extends Encoder<C>, Decoder<C> {
 	 * @see #keyable(Codec, KeyableEncoder, KeyableDecoder)
 	 * @see KeyableCodec
 	 */
-	static <C> @NotNull KeyableCodec<C> keyable(@NotNull Codec<C> codec, @NotNull ThrowableFunction<String, @Nullable C, ? extends Exception> keyDecoder) {
-		return keyable(codec, C::toString, keyDecoder);
+	static <C> @NotNull KeyableCodec<C> keyable(@NotNull Codec<C> codec, @NotNull ResultingFunction<String, C> keyDecoder) {
+		return keyable(codec, ResultingFunction.direct(C::toString), keyDecoder);
 	}
 	
 	/**
 	 * Creates a new keyable codec for the given codec using the given key encoder and key decoder.<br>
 	 * The key encoder and key decoder are defined as functions that convert keys of the type {@code C} to and from strings.<br>
-	 * If the key decoder is unable to decode a key, it should return null.<br>
+	 *
 	 * @param codec The base codec that is used to encode and decode values of the type {@code C}
 	 * @param keyEncoder The key encoder
 	 * @param keyDecoder The key decoder
@@ -671,13 +670,14 @@ public interface Codec<C> extends Encoder<C>, Decoder<C> {
 	 * @see KeyableCodec
 	 */
 	static <C> @NotNull KeyableCodec<C> keyable(
-		@NotNull Codec<C> codec, @NotNull ThrowableFunction<C, String, ? extends Exception> keyEncoder, @NotNull ThrowableFunction<String, @Nullable C, ? extends Exception> keyDecoder
+		@NotNull Codec<C> codec, @NotNull ResultingFunction<C, String> keyEncoder, @NotNull ResultingFunction<String, @Nullable C> keyDecoder
 	) {
 		return keyable(codec, KeyableEncoder.of(codec, keyEncoder), KeyableDecoder.of(codec, keyDecoder));
 	}
 	
 	/**
 	 * Creates a new keyable codec for the given codec using the given key encoder and key decoder.<br>
+	 *
 	 * @param codec The base codec that is used to encode and decode values of the type {@code C}
 	 * @param encoder The key encoder that is used to encode keys of the type {@code C}
 	 * @param decoder The key decoder that is used to decode keys of the type {@code C}
@@ -721,6 +721,7 @@ public interface Codec<C> extends Encoder<C>, Decoder<C> {
 	/**
 	 * Creates a new keyable codec for the given enum class.<br>
 	 * The enum value is encoded and decoded using its ordinal value.<br>
+	 *
 	 * @param clazz The enum class
 	 * @param <E> The type of the enum
 	 * @return A new keyable codec
@@ -730,11 +731,11 @@ public interface Codec<C> extends Encoder<C>, Decoder<C> {
 	static <E extends Enum<E>> @NotNull KeyableCodec<E> enumOrdinal(@NotNull Class<E> clazz) {
 		Objects.requireNonNull(clazz, "Enum class must not be null");
 		Map<Integer, E> ordinalLookup = Arrays.stream(clazz.getEnumConstants()).collect(Collectors.toMap(Enum::ordinal, Function.identity()));
-		return INTEGER.xmap(Enum::ordinal, ordinalLookup::get).keyable(constant -> String.valueOf(constant.ordinal()), str -> {
+		return INTEGER.xmap(Enum::ordinal, ordinalLookup::get).keyable(constant -> Result.success(String.valueOf(constant.ordinal())), str -> {
 			try {
-				return ordinalLookup.get(Integer.parseInt(str));
+				return Result.success(ordinalLookup.get(Integer.parseInt(str)));
 			} catch (NumberFormatException e) {
-				return null;
+				return Result.error("Unable to decode enum ordinal from string '" + str + "': " + e.getMessage());
 			}
 		});
 	}
@@ -742,6 +743,7 @@ public interface Codec<C> extends Encoder<C>, Decoder<C> {
 	/**
 	 * Creates a new keyable codec for the given enum class.<br>
 	 * The enum value is encoded and decoded using its name.<br>
+	 *
 	 * @param clazz The enum class
 	 * @param <E> The type of the enum
 	 * @return A new keyable codec
@@ -751,12 +753,19 @@ public interface Codec<C> extends Encoder<C>, Decoder<C> {
 	static <E extends Enum<E>> @NotNull KeyableCodec<E> enumName(@NotNull Class<E> clazz) {
 		Objects.requireNonNull(clazz, "Enum class must not be null");
 		Map<String, E> lookup = Arrays.stream(clazz.getEnumConstants()).collect(Collectors.toMap(Enum::name, Function.identity()));
-		return STRING.xmap(Enum::name, lookup::get).keyable(Enum::name, lookup::get);
+		return STRING.xmap(Enum::name, lookup::get).keyable(ResultingFunction.direct(Enum::name), key ->  {
+			E value = lookup.get(key);
+			if (value == null) {
+				return Result.error("Unable to decode enum value from name '" + key + "': No enum constant found");
+			}
+			return Result.success(value);
+		});
 	}
 	
 	/**
 	 * Creates a new keyable codec for an enum class.<br>
 	 * The enum value is encoded and decoded using a friendly name.<br>
+	 *
 	 * @param friendlyEncoder The function that converts an enum value to a friendly name
 	 * @param friendlyDecoder The function that converts a friendly name to an enum value
 	 * @param <E> The type of the enum
@@ -767,13 +776,14 @@ public interface Codec<C> extends Encoder<C>, Decoder<C> {
 	static <E extends Enum<E>> @NotNull KeyableCodec<E> friendlyEnumName(@NotNull Function<E, String> friendlyEncoder, @NotNull Function<String, E> friendlyDecoder) {
 		Objects.requireNonNull(friendlyEncoder, "Friendly name encoder must not be null");
 		Objects.requireNonNull(friendlyDecoder, "Friendly name decoder must not be null");
-		return STRING.xmap(friendlyEncoder, friendlyDecoder).keyable(friendlyEncoder::apply, friendlyDecoder::apply);
+		return STRING.xmap(friendlyEncoder, friendlyDecoder).keyable(ResultingFunction.direct(friendlyEncoder), ResultingFunction.direct(friendlyDecoder));
 	}
 	
 	/**
 	 * Creates a new keyable codec for an enum class.<br>
 	 * The enum is encoded using the name of the enum value.<br>
 	 * The decoder supports both the name and the ordinal value of the enum.<br>
+	 *
 	 * @param clazz The enum class
 	 * @param <E> The type of the enum
 	 * @return A new keyable codec
@@ -788,11 +798,26 @@ public interface Codec<C> extends Encoder<C>, Decoder<C> {
 		return either(INTEGER, STRING).xmap(
 			constant -> Either.right(constant.name()),
 			either -> either.mapTo(ordinalLookup::get, nameLookup::get)
-		).keyable(Enum::name, nameLookup::get);
+		).keyable(ResultingFunction.direct(Enum::name), key -> {
+			try {
+				int ordinal = Integer.parseInt(key);
+				E value = ordinalLookup.get(ordinal);
+				if (value != null) {
+					return Result.success(value);
+				}
+			} catch (NumberFormatException ignored) {
+			}
+			E value = nameLookup.get(key);
+			if (value != null) {
+				return Result.success(value);
+			}
+			return Result.error("Unable to decode enum value from key '" + key + "': No enum constant found");
+		});
 	}
 	
 	/**
 	 * Creates a new keyable string codec for the given maximum length.<br>
+	 *
 	 * @param length The maximum length of the string (inclusive)
 	 * @return A new keyable string codec
 	 * @throws IllegalArgumentException If the length is less than 0
@@ -807,6 +832,7 @@ public interface Codec<C> extends Encoder<C>, Decoder<C> {
 	
 	/**
 	 * Creates a new keyable string codec for the given minimum and maximum length.<br>
+	 *
 	 * @param minLength The minimum length of the string (inclusive)
 	 * @param maxLength The maximum length of the string (inclusive)
 	 * @return A new keyable string codec
@@ -820,56 +846,67 @@ public interface Codec<C> extends Encoder<C>, Decoder<C> {
 		if (minLength > maxLength) {
 			throw new IllegalArgumentException("Minimum length must be less than or equal to maximum length");
 		}
-		return STRING.map(str -> {
+		
+		ResultingFunction<String, String> encoder = str -> {
 			if (str.length() < minLength) {
-				return Result.error("String must have at least " + minLength + " characters");
+				return Result.error("String '" + str + "' must have at least " + minLength + " characters");
 			}
 			if (str.length() > maxLength) {
-				return Result.error("String must have at most " + maxLength + " characters");
+				return Result.error("String '" + str + "' must have at most " + maxLength + " characters");
 			}
 			return Result.success(str);
-		}, result -> {
-			if (result.isSuccess()) {
-				String value = result.orThrow();
-				if (value.length() < minLength) {
-					return Result.error("String was decoded successfully but has less than " + minLength + " characters");
-				}
-				if (value.length() > maxLength) {
-					return Result.error("String was decoded successfully but has more than " + maxLength + " characters");
-				}
-				return Result.success(value);
+		};
+		ResultingFunction<String, String> decoder = str -> {
+			if (str.length() < minLength) {
+				return Result.error("String '" + str + "' was decoded successfully but has less than " + minLength + " characters");
 			}
-			return result;
-		}).keyable(str -> str, str -> str);
+			if (str.length() > maxLength) {
+				return Result.error("String '" + str + "' was decoded successfully but has more than " + maxLength + " characters");
+			}
+			return Result.success(str);
+		};
+		
+		return STRING.map(encoder, result -> {
+			if (result.isError()) {
+				return result;
+			}
+			return decoder.apply(result.orThrow());
+		}).keyable(encoder, decoder);
 	}
 	
 	/**
 	 * Creates a new keyable string codec for non-empty strings.<br>
 	 * The string must not be empty after encoding and decoding.<br>
+	 *
 	 * @return A new keyable string codec
 	 * @see KeyableCodec
 	 */
 	static @NotNull KeyableCodec<String> noneEmptyString() {
-		return STRING.map(str -> {
+		ResultingFunction<String, String> encoder = str -> {
 			if (str.isEmpty()) {
 				return Result.error("String must not be empty");
 			}
 			return Result.success(str);
-		}, result -> {
-			if (result.isSuccess()) {
-				String value = result.orThrow();
-				if (value.isEmpty()) {
-					return Result.error("String was decoded successfully but is empty");
-				}
-				return Result.success(value);
+		};
+		ResultingFunction<String, String> decoder = str -> {
+			if (str.isEmpty()) {
+				return Result.error("String '" + str + "' must not be empty");
 			}
-			return result;
-		}).keyable(str -> str, str -> str);
+			return Result.success(str);
+		};
+		
+		return STRING.map(encoder, result -> {
+			if (result.isError()) {
+				return result;
+			}
+			return decoder.apply(result.orThrow());
+		}).keyable(encoder, decoder);
 	}
 	
 	/**
 	 * Creates a new keyable string codec that validates strings against the given regular expression.<br>
 	 * The string must match the regex pattern during both encoding and decoding.<br>
+	 *
 	 * @param regex The regular expression pattern as a string
 	 * @return A new keyable string codec that validates against the regex
 	 * @throws NullPointerException If the regex is null
@@ -885,6 +922,7 @@ public interface Codec<C> extends Encoder<C>, Decoder<C> {
 	/**
 	 * Creates a new keyable string codec that validates strings against the given pattern.<br>
 	 * The string must match the pattern during both encoding and decoding.<br>
+	 *
 	 * @param regex The compiled regular expression pattern
 	 * @return A new keyable string codec that validates against the pattern
 	 * @throws NullPointerException If the pattern is null
@@ -893,25 +931,31 @@ public interface Codec<C> extends Encoder<C>, Decoder<C> {
 	 */
 	static @NotNull KeyableCodec<String> formattedString(@NotNull Pattern regex) {
 		Objects.requireNonNull(regex, "Format must not be null");
-		return STRING.map(str -> {
+		
+		ResultingFunction<String, String> encoder = str -> {
 			if (regex.matcher(str).matches()) {
 				return Result.success(str);
 			}
 			return Result.error("String '" + str + "' does not match the expected format '" + regex + "'");
-		}, result -> {
-			if (result.isError()) {
-				return result;
-			}
-			String str = result.orThrow();
+		};
+		ResultingFunction<String, String> decoder = str -> {
 			if (regex.matcher(str).matches()) {
 				return Result.success(str);
 			}
 			return Result.error("String '" + str + "' was decoded successfully but does not match expected format '" + regex + "'");
-		}).keyable(str -> str, str -> str);
+		};
+		
+		return STRING.map(encoder, result -> {
+			if (result.isError()) {
+				return result;
+			}
+			return decoder.apply(result.orThrow());
+		}).keyable(encoder, decoder);
 	}
 	
 	/**
 	 * Creates a new unit codec for the given value.<br>
+	 *
 	 * @param value The value
 	 * @param <C> The type of the value
 	 * @return A new unit codec
@@ -923,6 +967,7 @@ public interface Codec<C> extends Encoder<C>, Decoder<C> {
 	
 	/**
 	 * Creates a new unit codec for the given supplier.<br>
+	 *
 	 * @param supplier The supplier that provides the value
 	 * @param <C> The type of the value
 	 * @return A new unit codec
@@ -948,6 +993,7 @@ public interface Codec<C> extends Encoder<C>, Decoder<C> {
 	/**
 	 * Creates a new list codec for the given codec.<br>
 	 * The created list codec has no size restrictions.<br>
+	 *
 	 * @param codec The base codec
 	 * @param <C> The type of the list elements that are encoded and decoded by the codec
 	 * @return A new list codec
@@ -961,6 +1007,7 @@ public interface Codec<C> extends Encoder<C>, Decoder<C> {
 	/**
 	 * Creates a new list codec for the given codec and maximum size.<br>
 	 * The list must have at most the maximum size after encoding and decoding.<br>
+	 *
 	 * @param codec The base codec
 	 * @param maxSize The maximum size of the list (inclusive)
 	 * @param <C> The type of the list elements that are encoded and decoded by the codec
@@ -976,6 +1023,7 @@ public interface Codec<C> extends Encoder<C>, Decoder<C> {
 	/**
 	 * Creates a new list codec for the given codec and minimum and maximum size.<br>
 	 * The list must have at least the minimum size and at most the maximum size after encoding and decoding.<br>
+	 *
 	 * @param codec The base codec
 	 * @param minSize The minimum size of the list (inclusive)
 	 * @param maxSize The maximum size of the list (inclusive)
@@ -992,6 +1040,7 @@ public interface Codec<C> extends Encoder<C>, Decoder<C> {
 	/**
 	 * Creates a new list codec for the given codec for non-empty lists.<br>
 	 * The list must not be empty after encoding and decoding.<br>
+	 *
 	 * @param codec The base codec
 	 * @param <C> The type of the list elements that are encoded and decoded by the codec
 	 * @return A new list codec
@@ -1004,6 +1053,7 @@ public interface Codec<C> extends Encoder<C>, Decoder<C> {
 	
 	/**
 	 * Creates a new stream codec for the given codec.<br>
+	 *
 	 * @param codec The base codec
 	 * @param <C> The type of the stream elements that are encoded and decoded by the codec
 	 * @return A new stream codec
@@ -1017,6 +1067,7 @@ public interface Codec<C> extends Encoder<C>, Decoder<C> {
 	/**
 	 * Creates a new map codec with {@link #STRING} as key codec and the given value codec.<br>
 	 * The created map codec has no size restrictions.<br>
+	 *
 	 * @param valueCodec The value codec
 	 * @param <C> The type of the map values that are encoded and decoded by the codec
 	 * @return A new map codec
@@ -1030,6 +1081,7 @@ public interface Codec<C> extends Encoder<C>, Decoder<C> {
 	/**
 	 * Creates a new map codec with the given key codec and value codec.<br>
 	 * The created map codec has no size restrictions.<br>
+	 *
 	 * @param keyCodec The key codec
 	 * @param valueCodec The value codec
 	 * @param <K> The type of the map keys that are encoded and decoded by the codec
@@ -1045,6 +1097,7 @@ public interface Codec<C> extends Encoder<C>, Decoder<C> {
 	/**
 	 * Creates a new map codec with the given key codec and value codec and maximum size.<br>
 	 * The map must have at most the maximum size after encoding and decoding.<br>
+	 *
 	 * @param keyCodec The key codec
 	 * @param valueCodec The value codec
 	 * @param maxSize The maximum size of the map (inclusive)
@@ -1062,6 +1115,7 @@ public interface Codec<C> extends Encoder<C>, Decoder<C> {
 	/**
 	 * Creates a new map codec with the given key codec and value codec and minimum and maximum size.<br>
 	 * The map must have at least the minimum size and at most the maximum size after encoding and decoding.<br>
+	 *
 	 * @param keyCodec The key codec
 	 * @param valueCodec The value codec
 	 * @param minSize The minimum size of the map (inclusive)
@@ -1080,6 +1134,7 @@ public interface Codec<C> extends Encoder<C>, Decoder<C> {
 	/**
 	 * Creates a new map codec with the given key codec and value codec for non-empty maps.<br>
 	 * The map must not be empty after encoding and decoding.<br>
+	 *
 	 * @param keyCodec The key codec
 	 * @param valueCodec The value codec
 	 * @param <K> The type of the map keys that are encoded and decoded by the codec
@@ -1101,6 +1156,7 @@ public interface Codec<C> extends Encoder<C>, Decoder<C> {
 	 *     <strong>Note</strong>: If the first codec is a string codec, it will always succeed,<br>
 	 *     so the second codec will never be used.<br>
 	 * </p>
+	 *
 	 * @param firstCodec The first codec
 	 * @param secondCodec The second codec
 	 * @param <F> The type of the first value
@@ -1116,6 +1172,7 @@ public interface Codec<C> extends Encoder<C>, Decoder<C> {
 	/**
 	 * Creates a new codec that uses the given codec as the main codec and the given codec as alternative codec.<br>
 	 * If the main codec fails to encode or decode a value, the alternative codec is used.<br>
+	 *
 	 * @param main The main codec
 	 * @param alternative The alternative codec
 	 * @param <C> The type of the value that is encoded and decoded by the codec
@@ -1133,6 +1190,7 @@ public interface Codec<C> extends Encoder<C>, Decoder<C> {
 	 * Creates a new codec that encodes and decodes values of the type {@code C} to and from strings.<br>
 	 * The string encoder and decoder are defined as functions that convert values of the type {@code C} to and from strings.<br>
 	 * If the decoder is unable to decode a string, it should return null.<br>
+	 *
 	 * @param stringEncoder The encoder function
 	 * @param stringDecoder The decoder function
 	 * @param <E> The type of the value that is encoded and decoded by the codec
@@ -1174,17 +1232,16 @@ public interface Codec<C> extends Encoder<C>, Decoder<C> {
 	/**
 	 * Wraps the current codec into a new keyable codec using the given key encoder and key decoder.<br>
 	 * The key encoder and key decoder are defined as functions that convert keys of the type C to and from strings.<br>
-	 * If the key decoder is unable to decode a key, it should return null.<br>
 	 *
 	 * @param keyEncoder The key encoder
 	 * @param keyDecoder The key decoder
 	 * @return A new keyable codec
 	 * @throws NullPointerException If the key encoder or key decoder is null
-	 * @see #keyable(Codec, ThrowableFunction, ThrowableFunction)
+	 * @see #keyable(Codec, ResultingFunction, ResultingFunction)
 	 * @see KeyableCodec
 	 */
 	default @NotNull KeyableCodec<C> keyable(
-		@NotNull ThrowableFunction<C, String, ? extends Exception> keyEncoder, @NotNull ThrowableFunction<String, @Nullable C, ? extends Exception> keyDecoder
+		@NotNull ResultingFunction<C, String> keyEncoder, @NotNull ResultingFunction<String, C> keyDecoder
 	) {
 		return keyable(this, keyEncoder, keyDecoder);
 	}
@@ -1332,16 +1389,16 @@ public interface Codec<C> extends Encoder<C>, Decoder<C> {
 	 *     The function can return a new result that contains the mapped value or an error message.
 	 * </p>
 	 *
-	 * @param to The encoding mapping function
-	 * @param from The decoding mapping function
+	 * @param encoder The encoding mapping function
+	 * @param decoder The decoding mapping function
 	 * @param <O> The type of the mapped value
 	 * @return A new mapped codec
 	 * @throws NullPointerException If the encoding mapping function or decoding mapping function is null
 	 * @see #xmap(Function, Function)
 	 * @see #mapFlat(Function, ResultMappingFunction)
 	 */
-	default <O> @NotNull Codec<O> map(@NotNull ResultingFunction<O, C> to, @NotNull ResultMappingFunction<C, O> from) {
-		return of(this.mapEncoder(to), this.mapDecoder(from), "MappedCodec[" + this + "]");
+	default <O> @NotNull Codec<O> map(@NotNull ResultingFunction<O, C> encoder, @NotNull ResultMappingFunction<C, O> decoder) {
+		return of(this.mapEncoder(encoder), this.mapDecoder(decoder), "MappedCodec[" + this + "]");
 	}
 	
 	/**
