@@ -54,12 +54,12 @@ public class OptionalCodec<C> implements Codec<Optional<C>> {
 	private final Codec<C> codec;
 	/**
 	 * The supplier used to provide the default value if the optional value is empty.<br>
-	 * Can be null if no default value is provided.<br>
+	 * Empty if no default value is provided.<br>
 	 */
-	private @Nullable Supplier<Optional<C>> defaultProvider;
+	private final Supplier<Optional<C>> defaultProvider;
 	
 	/**
-	 * Constructs a new optional codec using the given codec for the optional value.<br>
+	 * Constructs a new optional codec using the given codec.<br>
 	 * Do not use this constructor directly, use the optional factory methods in {@link Codec} instead.<br>
 	 *
 	 * @param codec The codec for the optional value
@@ -67,20 +67,20 @@ public class OptionalCodec<C> implements Codec<Optional<C>> {
 	 */
 	@ApiStatus.Internal
 	public OptionalCodec(@NotNull Codec<C> codec) {
-		this.codec = Objects.requireNonNull(codec, "Codec must not be null");
+		this(codec, Optional::empty);
 	}
 	
 	/**
-	 * Gets the default value for this codec.<br>
-	 * If no default value is provided, an empty optional is returned.<br>
+	 * Constructs a new optional codec using the given codec and a supplier for the default value.<br>
+	 * Do not use this constructor directly, use the optional factory methods in {@link Codec} instead.<br>
 	 *
-	 * @return The default value
+	 * @param codec The codec for the optional value
+	 * @throws NullPointerException If the codec or the default provider is null
 	 */
-	private @NotNull Optional<C> getDefault() {
-		if (this.defaultProvider == null) {
-			return Optional.empty();
-		}
-		return this.defaultProvider.get();
+	@ApiStatus.Internal
+	public OptionalCodec(@NotNull Codec<C> codec, @NotNull Supplier<Optional<C>> defaultProvider) {
+		this.codec = Objects.requireNonNull(codec, "Codec must not be null");
+		this.defaultProvider = Objects.requireNonNull(defaultProvider, "Default provider must not be null");
 	}
 	
 	@Override
@@ -98,28 +98,27 @@ public class OptionalCodec<C> implements Codec<Optional<C>> {
 	public <R> @NotNull Result<Optional<C>> decodeStart(@NotNull TypeProvider<R> provider, @Nullable R value) {
 		Objects.requireNonNull(provider, "Type provider must not be null");
 		if (value == null) {
-			return Result.success(this.getDefault());
+			return Result.success(this.defaultProvider.get());
 		}
 		Result<R> decoded = provider.getEmpty(value);
 		if (decoded.isSuccess()) {
-			return Result.success(this.getDefault());
+			return Result.success(this.defaultProvider.get());
 		}
 		Result<C> result = this.codec.decodeStart(provider, value);
 		if (result.isError()) {
-			return Result.success(this.getDefault());
+			return Result.success(this.defaultProvider.get());
 		}
 		return result.map(Optional::of);
 	}
 	
 	@Override
-	public @NotNull Codec<Optional<C>> orElse(@Nullable Optional<C> defaultValue) {
-		return this.orElseGet(() -> defaultValue);
+	public @NotNull Codec<Optional<C>> withDefault(@Nullable Optional<C> defaultValue) {
+		return this.withDefaultGet(() -> defaultValue);
 	}
 	
 	@Override
-	public @NotNull Codec<Optional<C>> orElseGet(@NotNull Supplier<Optional<C>> supplier) {
-		this.defaultProvider = Objects.requireNonNull(supplier, "Supplier must not be null");
-		return this;
+	public @NotNull Codec<Optional<C>> withDefaultGet(@NotNull Supplier<Optional<C>> supplier) {
+		return new OptionalCodec<>(this.codec, supplier);
 	}
 	
 	/**
@@ -128,9 +127,10 @@ public class OptionalCodec<C> implements Codec<Optional<C>> {
 	 *
 	 * @param defaultValue The default value
 	 * @return The new codec
+	 * @see #orElseGet(Supplier)
 	 */
-	public @NotNull Codec<C> orElseFlat(@Nullable C defaultValue) {
-		return this.orElseGetFlat(() -> defaultValue);
+	public @NotNull Codec<C> orElse(@Nullable C defaultValue) {
+		return this.orElseGet(() -> defaultValue);
 	}
 	
 	/**
@@ -141,7 +141,7 @@ public class OptionalCodec<C> implements Codec<Optional<C>> {
 	 * @return The new codec
 	 * @throws NullPointerException If the supplier is null
 	 */
-	public @NotNull Codec<C> orElseGetFlat(@NotNull Supplier<C> supplier) {
+	public @NotNull Codec<C> orElseGet(@NotNull Supplier<C> supplier) {
 		Objects.requireNonNull(supplier, "Supplier must not be null");
 		return this.xmap(Optional::ofNullable, optional -> optional.orElseGet(supplier));
 	}

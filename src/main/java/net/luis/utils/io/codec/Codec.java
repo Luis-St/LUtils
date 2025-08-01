@@ -1419,10 +1419,10 @@ public interface Codec<C> extends Encoder<C>, Decoder<C> {
 	 *
 	 * @param defaultValue The default value
 	 * @return A new codec
-	 * @see #orElseGet(Supplier)
+	 * @see #withDefaultGet(Supplier)
 	 */
-	default @NotNull Codec<C> orElse(@Nullable C defaultValue) {
-		return this.orElseGet(() -> defaultValue);
+	default @NotNull Codec<C> withDefault(@Nullable C defaultValue) {
+		return this.withDefaultGet(() -> defaultValue);
 	}
 	
 	/**
@@ -1432,7 +1432,7 @@ public interface Codec<C> extends Encoder<C>, Decoder<C> {
 	 * @return A new codec
 	 * @throws NullPointerException If the default value supplier is null
 	 */
-	default @NotNull Codec<C> orElseGet(@NotNull Supplier<C> supplier) {
+	default @NotNull Codec<C> withDefaultGet(@NotNull Supplier<C> supplier) {
 		Objects.requireNonNull(supplier, "Default value supplier must not be null");
 		return of(this, this.mapDecoder(result -> Result.success(result.orElseGet(supplier))), "OrElseCodec[" + this + "]");
 	}

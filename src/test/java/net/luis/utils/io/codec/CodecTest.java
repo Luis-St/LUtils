@@ -554,12 +554,12 @@ class CodecTest {
 		assertEquals("ab", validatedCodec.decode(provider, new JsonPrimitive("ab")));
 		assertTrue(validatedCodec.decodeStart(provider, new JsonPrimitive("abc")).isError());
 		
-		assertThrows(NullPointerException.class, () -> Codec.STRING.orElseGet(null));
+		assertThrows(NullPointerException.class, () -> Codec.STRING.withDefaultGet(null));
 		
-		Codec<String> orElseCodec = Codec.STRING.orElse("default");
+		Codec<String> orElseCodec = Codec.STRING.withDefault("default");
 		assertEquals("default", orElseCodec.decode(provider, JsonNull.INSTANCE));
 		
-		Codec<String> orElseGetCodec = Codec.STRING.orElseGet(() -> "default");
+		Codec<String> orElseGetCodec = Codec.STRING.withDefaultGet(() -> "default");
 		assertEquals("default", orElseGetCodec.decode(provider, JsonNull.INSTANCE));
 	}
 	
