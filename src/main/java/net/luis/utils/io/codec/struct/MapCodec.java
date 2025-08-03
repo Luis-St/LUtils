@@ -105,20 +105,24 @@ public class MapCodec<K, V> implements Codec<Map<K, V>> {
 	public <R> @NotNull Result<R> encodeStart(@NotNull TypeProvider<R> provider, @NotNull R current, @Nullable Map<K, V> value) {
 		Objects.requireNonNull(provider, "Type provider must not be null");
 		Objects.requireNonNull(current, "Current value must not be null");
+		
 		if (value == null) {
 			return Result.error("Unable to encode null value as map using '" + this + "'");
 		}
 		if (value.size() > this.maxSize || this.minSize > value.size()) {
 			return Result.error("Map size '" + value.size() + "' is out of range: " + this.minSize + ".." + this.maxSize);
 		}
+		
 		List<Result<Map.Entry<String, R>>> encoded = value.entrySet().stream().map(entry -> this.encodeEntry(provider, entry)).toList();
 		if (encoded.stream().anyMatch(Result::isError)) {
 			return Result.error("Unable to encode some entries of map '" + value + "' using '" + this + "': \n" + encoded.stream().filter(Result::isError).map(Result::errorOrThrow).collect(Collectors.joining("\n")));
 		}
+		
 		Result<R> emptyMap = provider.createMap();
 		if (emptyMap.isError()) {
 			return Result.error("Unable to create empty map: " + emptyMap.errorOrThrow());
 		}
+		
 		R resultMap = emptyMap.orThrow();
 		encoded.stream().map(Result::orThrow).filter(entry -> provider.getEmpty(entry.getValue()).isError()).forEach(entry -> {
 			provider.set(resultMap, entry.getKey(), entry.getValue());
@@ -139,10 +143,12 @@ public class MapCodec<K, V> implements Codec<Map<K, V>> {
 	private <R> @NotNull Result<Map.Entry<String, R>> encodeEntry(@NotNull TypeProvider<R> provider, @NotNull Map.Entry<K, V> entry) {
 		Objects.requireNonNull(provider, "Type provider must not be null");
 		Objects.requireNonNull(entry, "Map entry must not be null");
+		
 		Result<String> encodedKey = this.keyCodec.encodeKey(provider, entry.getKey());
 		if (encodedKey.isError()) {
 			return Result.error("Unable to encode key '" + entry.getKey() + "' of map entry '" + entry + "' using codec '" + this.keyCodec + "': \n" + encodedKey.errorOrThrow());
 		}
+		
 		Result<R> encodedValue = this.valueCodec.encodeStart(provider, provider.empty(), entry.getValue());
 		if (encodedValue.isError()) {
 			return Result.error("Unable to encode value '" + entry.getValue() + "' of map entry '" + entry + "' using codec '" + this.valueCodec + "': \n" + encodedValue.errorOrThrow());
@@ -156,10 +162,12 @@ public class MapCodec<K, V> implements Codec<Map<K, V>> {
 		if (value == null) {
 			return Result.error("Unable to decode null value as map using '" + this + "'");
 		}
+		
 		Result<Map<String, R>> decodedMap = provider.getMap(value);
 		if (decodedMap.isError()) {
 			return Result.error("Unable to decode map '" + value + "' using '" + this + "': \n" + decodedMap.errorOrThrow());
 		}
+		
 		List<Result<Map.Entry<K, V>>> decoded = decodedMap.orThrow().entrySet().stream().map(entry -> this.decodeEntry(provider, entry)).toList();
 		if (decoded.stream().anyMatch(Result::isError)) {
 			return Result.error("Unable to decode some entries of map '" + value + "' using '" + this + "': \n" + decoded.stream().filter(Result::isError).map(Result::errorOrThrow).collect(Collectors.joining("\n")));
@@ -183,10 +191,12 @@ public class MapCodec<K, V> implements Codec<Map<K, V>> {
 	private <R> @NotNull Result<Map.Entry<K, V>> decodeEntry(@NotNull TypeProvider<R> provider, @NotNull Map.Entry<String, R> entry) {
 		Objects.requireNonNull(provider, "Type provider must not be null");
 		Objects.requireNonNull(entry, "Map entry must not be null");
+		
 		Result<K> decodedKey = this.keyCodec.decodeKey(provider, entry.getKey());
 		if (decodedKey.isError()) {
 			return Result.error("Unable to decode key '" + entry.getKey() + "' using codec '" + this.keyCodec + "': \n" + decodedKey.errorOrThrow());
 		}
+		
 		Result<V> decodedValue = this.valueCodec.decodeStart(provider, entry.getValue());
 		if (decodedValue.isError()) {
 			return Result.error("Unable to decode value '" + entry.getValue() + "' using codec '" + this.valueCodec + "': \n" + decodedValue.errorOrThrow());

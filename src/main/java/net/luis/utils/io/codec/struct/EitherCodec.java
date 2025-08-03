@@ -73,6 +73,7 @@ public class EitherCodec<F, S> implements Codec<Either<F, S>> {
 	public <R> @NotNull Result<R> encodeStart(@NotNull TypeProvider<R> provider, @NotNull R current, @Nullable Either<F, S> value) {
 		Objects.requireNonNull(provider, "Type provider must not be null");
 		Objects.requireNonNull(current, "Current value must not be null");
+		
 		if (value == null) {
 			return Result.error("Unable to encode null value as either using '" + this + "'");
 		}
@@ -88,6 +89,7 @@ public class EitherCodec<F, S> implements Codec<Either<F, S>> {
 		if (value == null) {
 			return Result.error("Unable to decode null value as either");
 		}
+		
 		Result<F> firstResult = this.firstCodec.decodeStart(provider, value);
 		Result<S> secondResult = this.secondCodec.decodeStart(provider, value);
 		if (firstResult.isError() && secondResult.isError()) {

@@ -89,6 +89,7 @@ public class OptionalCodec<C> implements Codec<Optional<C>> {
 	public <R> @NotNull Result<R> encodeStart(@NotNull TypeProvider<R> provider, @NotNull R current, @Nullable Optional<C> value) {
 		Objects.requireNonNull(provider, "Type provider must not be null");
 		Objects.requireNonNull(current, "Current value must not be null");
+		
 		if (value == null) {
 			return Result.success(current);
 		}
@@ -101,10 +102,12 @@ public class OptionalCodec<C> implements Codec<Optional<C>> {
 		if (value == null) {
 			return Result.success(this.defaultProvider.get());
 		}
+		
 		Result<R> decoded = provider.getEmpty(value);
 		if (decoded.isSuccess()) {
 			return Result.success(this.defaultProvider.get());
 		}
+		
 		Result<C> result = this.codec.decodeStart(provider, value);
 		if (result.isError()) {
 			return Result.success(this.defaultProvider.get());

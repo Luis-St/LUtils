@@ -95,16 +95,19 @@ public class ListCodec<C> implements Codec<List<C>> {
 	public <R> @NotNull Result<R> encodeStart(@NotNull TypeProvider<R> provider, @NotNull R current, @Nullable List<C> value) {
 		Objects.requireNonNull(provider, "Type provider must not be null");
 		Objects.requireNonNull(current, "Current value must not be null");
+		
 		if (value == null) {
 			return Result.error("Unable to encode null value as list using '" + this + "'");
 		}
 		if (value.size() > this.maxSize || this.minSize > value.size()) {
 			return Result.error("List size '" + value.size() + "' is out of range: " + this.minSize + ".." + this.maxSize);
 		}
+		
 		List<Result<R>> encoded = value.stream().map(v -> this.codec.encodeStart(provider, provider.empty(), v)).toList();
 		if (encoded.stream().anyMatch(Result::isError)) {
 			return Result.error("Unable to encode some elements of list '" + value + "' using '" + this + "': \n" + encoded.stream().filter(Result::isError).map(Result::errorOrThrow).collect(Collectors.joining("\n")));
 		}
+		
 		List<R> results = encoded.stream().map(Result::orThrow).filter(result -> provider.getEmpty(result).isError()).toList();
 		return provider.merge(current, provider.createList(results));
 	}
@@ -115,10 +118,12 @@ public class ListCodec<C> implements Codec<List<C>> {
 		if (value == null) {
 			return Result.error("Unable to decode null value as list using'" + this + "'");
 		}
+		
 		Result<List<R>> decoded = provider.getList(value);
 		if (decoded.isError()) {
 			return Result.error("Unable to decode list using '" + this + "': " + decoded.errorOrThrow());
 		}
+		
 		List<Result<C>> results = decoded.orThrow().stream().map(v -> this.codec.decodeStart(provider, v)).toList();
 		if (results.stream().anyMatch(Result::isError)) {
 			return Result.error("Unable to decode some elements of list using '" + this + "': \n" + results.stream().filter(Result::isError).map(Result::errorOrThrow).collect(Collectors.joining("\n")));
@@ -146,7 +151,10 @@ public class ListCodec<C> implements Codec<List<C>> {
 	
 	@Override
 	public String toString() {
-		return "ListCodec[" + this.codec + "]";
+		if (this.minSize == 0 && this.maxSize == Integer.MAX_VALUE) {
+			return "ListCodec[" + this.codec + "]";
+		}
+		return "ListCodec[" + this.codec + "," + this.minSize + ".." + this.maxSize + "]";
 	}
 	//endregion
 }
