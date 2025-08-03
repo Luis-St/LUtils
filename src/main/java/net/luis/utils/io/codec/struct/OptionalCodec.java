@@ -75,6 +75,7 @@ public class OptionalCodec<C> implements Codec<Optional<C>> {
 	 * Do not use this constructor directly, use the optional factory methods in {@link Codec} instead.<br>
 	 *
 	 * @param codec The codec for the optional value
+	 * @param defaultProvider The supplier for the default value if the optional value is empty
 	 * @throws NullPointerException If the codec or the default provider is null
 	 */
 	@ApiStatus.Internal

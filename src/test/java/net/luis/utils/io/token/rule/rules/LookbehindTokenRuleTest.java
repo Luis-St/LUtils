@@ -1,0 +1,369 @@
+/*
+ * LUtils
+ * Copyright (C) 2025 Luis Staudt
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program. If not, see <https://www.gnu.org/licenses/>.
+ */
+
+package net.luis.utils.io.token.rule.rules;
+
+import net.luis.utils.io.token.rule.TokenRuleMatch;
+import net.luis.utils.io.token.tokens.SimpleToken;
+import net.luis.utils.io.token.tokens.Token;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+import org.junit.jupiter.api.Test;
+
+import java.util.Collections;
+import java.util.List;
+import java.util.Objects;
+
+import static org.junit.jupiter.api.Assertions.*;
+
+/**
+ * Test class for {@link LookbehindTokenRule}.<br>
+ *
+ * @author Luis-St
+ */
+class LookbehindTokenRuleTest {
+	
+	private static @NotNull TokenRule createRule(@NotNull String value) {
+		return new TokenRule() {
+			@Override
+			public @Nullable TokenRuleMatch match(@NotNull List<Token> tokens, int startIndex) {
+				Objects.requireNonNull(tokens, "Tokens list must not be null");
+				if (startIndex >= tokens.size() || startIndex < 0) {
+					return null;
+				}
+				
+				Token token = tokens.get(startIndex);
+				if (token.value().equals(value)) {
+					return new TokenRuleMatch(startIndex, startIndex + 1, List.of(token), this);
+				}
+				return null;
+			}
+		};
+	}
+	
+	private static @NotNull Token createToken(@NotNull String value) {
+		return SimpleToken.createUnpositioned(word -> word.equals(value), value);
+	}
+	
+	@Test
+	void constructorWithNullTokenRule() {
+		assertThrows(NullPointerException.class, () -> new LookbehindTokenRule(null, true));
+		assertThrows(NullPointerException.class, () -> new LookbehindTokenRule(null, false));
+	}
+	
+	@Test
+	void constructorWithValidTokenRule() {
+		TokenRule innerRule = createRule("test");
+		
+		assertDoesNotThrow(() -> new LookbehindTokenRule(innerRule, true));
+		assertDoesNotThrow(() -> new LookbehindTokenRule(innerRule, false));
+	}
+	
+	@Test
+	void tokenRuleReturnsCorrectRule() {
+		TokenRule innerRule = createRule("test");
+		LookbehindTokenRule lookbehind = new LookbehindTokenRule(innerRule, true);
+		
+		assertEquals(innerRule, lookbehind.tokenRule());
+	}
+	
+	@Test
+	void positiveReturnsCorrectValue() {
+		TokenRule innerRule = createRule("test");
+		LookbehindTokenRule positiveLookbehind = new LookbehindTokenRule(innerRule, true);
+		LookbehindTokenRule negativeLookbehind = new LookbehindTokenRule(innerRule, false);
+		
+		assertTrue(positiveLookbehind.positive());
+		assertFalse(negativeLookbehind.positive());
+	}
+	
+	@Test
+	void matchWithNullTokenList() {
+		LookbehindTokenRule rule = new LookbehindTokenRule(createRule("test"), true);
+		
+		assertThrows(NullPointerException.class, () -> rule.match(null, 0));
+	}
+	
+	@Test
+	void matchWithEmptyTokenList() {
+		LookbehindTokenRule rule = new LookbehindTokenRule(createRule("test"), true);
+		
+		assertNull(rule.match(Collections.emptyList(), 0));
+	}
+	
+	@Test
+	void matchWithIndexOutOfBounds() {
+		LookbehindTokenRule rule = new LookbehindTokenRule(createRule("test"), true);
+		List<Token> tokens = List.of(createToken("test"));
+		
+		assertNull(rule.match(tokens, 1));
+		assertNull(rule.match(tokens, 5));
+		assertNull(rule.match(tokens, -1));
+	}
+	
+	@Test
+	void matchAtStartWithPositiveLookbehind() {
+		TokenRule innerRule = createRule("before");
+		LookbehindTokenRule lookbehind = new LookbehindTokenRule(innerRule, true);
+		Token first = createToken("first");
+		List<Token> tokens = List.of(first);
+		
+		assertNull(lookbehind.match(tokens, 0));
+	}
+	
+	@Test
+	void matchAtStartWithNegativeLookbehind() {
+		TokenRule innerRule = createRule("before");
+		LookbehindTokenRule lookbehind = new LookbehindTokenRule(innerRule, false);
+		Token first = createToken("first");
+		List<Token> tokens = List.of(first);
+		
+		TokenRuleMatch match = lookbehind.match(tokens, 0);
+		
+		assertNotNull(match);
+		assertEquals(0, match.startIndex());
+		assertEquals(0, match.endIndex());
+		assertTrue(match.matchedTokens().isEmpty());
+	}
+	
+	@Test
+	void positiveLookbehindWithMatchingPrevious() {
+		TokenRule innerRule = createRule("before");
+		LookbehindTokenRule lookbehind = new LookbehindTokenRule(innerRule, true);
+		Token before = createToken("before");
+		Token current = createToken("current");
+		List<Token> tokens = List.of(before, current);
+		
+		TokenRuleMatch match = lookbehind.match(tokens, 1);
+		
+		assertNotNull(match);
+		assertEquals(1, match.startIndex());
+		assertEquals(1, match.endIndex());
+		assertTrue(match.matchedTokens().isEmpty());
+	}
+	
+	@Test
+	void positiveLookbehindWithNonMatchingPrevious() {
+		TokenRule innerRule = createRule("expected");
+		LookbehindTokenRule lookbehind = new LookbehindTokenRule(innerRule, true);
+		Token other = createToken("other");
+		Token current = createToken("current");
+		List<Token> tokens = List.of(other, current);
+		
+		assertNull(lookbehind.match(tokens, 1));
+	}
+	
+	@Test
+	void negativeLookbehindWithMatchingPrevious() {
+		TokenRule innerRule = createRule("before");
+		LookbehindTokenRule lookbehind = new LookbehindTokenRule(innerRule, false);
+		Token before = createToken("before");
+		Token current = createToken("current");
+		List<Token> tokens = List.of(before, current);
+		
+		assertNull(lookbehind.match(tokens, 1));
+	}
+	
+	@Test
+	void negativeLookbehindWithNonMatchingPrevious() {
+		TokenRule innerRule = createRule("expected");
+		LookbehindTokenRule lookbehind = new LookbehindTokenRule(innerRule, false);
+		Token other = createToken("other");
+		Token current = createToken("current");
+		List<Token> tokens = List.of(other, current);
+		
+		TokenRuleMatch match = lookbehind.match(tokens, 1);
+		
+		assertNotNull(match);
+		assertEquals(1, match.startIndex());
+		assertEquals(1, match.endIndex());
+		assertTrue(match.matchedTokens().isEmpty());
+	}
+	
+	@Test
+	void lookbehindDoesNotConsumeTokens() {
+		TokenRule innerRule = createRule("before");
+		LookbehindTokenRule lookbehind = new LookbehindTokenRule(innerRule, true);
+		Token before = createToken("before");
+		Token current = createToken("current");
+		List<Token> tokens = List.of(before, current);
+		
+		TokenRuleMatch match = lookbehind.match(tokens, 1);
+		
+		assertNotNull(match);
+		assertEquals(1, match.startIndex());
+		assertEquals(1, match.endIndex());
+		assertTrue(match.matchedTokens().isEmpty());
+	}
+	
+	@Test
+	void lookbehindWithMultipleTokens() {
+		TokenRule innerRule = createRule("first");
+		LookbehindTokenRule lookbehind = new LookbehindTokenRule(innerRule, true);
+		Token first = createToken("first");
+		Token second = createToken("second");
+		Token third = createToken("third");
+		List<Token> tokens = List.of(first, second, third);
+		
+		TokenRuleMatch matchAtSecond = lookbehind.match(tokens, 1);
+		assertNotNull(matchAtSecond);
+		assertTrue(matchAtSecond.matchedTokens().isEmpty());
+		
+		assertNull(lookbehind.match(tokens, 2));
+	}
+	
+	@Test
+	void lookbehindWithComplexRule() {
+		TokenRule sequence = TokenRules.sequence(createRule("a"), createRule("b"));
+		LookbehindTokenRule lookbehind = new LookbehindTokenRule(sequence, true);
+		Token b = createToken("b");
+		Token a = createToken("a");
+		Token current = createToken("current");
+		List<Token> tokens = List.of(b, a, current);
+		
+		TokenRuleMatch match = lookbehind.match(tokens, 2);
+		
+		assertNotNull(match);
+		assertTrue(match.matchedTokens().isEmpty());
+	}
+	
+	@Test
+	void lookbehindWithLongerSequence() {
+		TokenRule innerRule = createRule("target");
+		LookbehindTokenRule lookbehind = new LookbehindTokenRule(innerRule, true);
+		Token one = createToken("one");
+		Token two = createToken("two");
+		Token target = createToken("target");
+		Token four = createToken("four");
+		Token five = createToken("five");
+		List<Token> tokens = List.of(one, two, target, four, five);
+		
+		assertNull(lookbehind.match(tokens, 1));
+		assertNull(lookbehind.match(tokens, 2));
+		
+		TokenRuleMatch match = lookbehind.match(tokens, 3);
+		assertNotNull(match);
+		assertTrue(match.matchedTokens().isEmpty());
+		
+		assertNull(lookbehind.match(tokens, 4));
+	}
+	
+	@Test
+	void lookbehindWithAlwaysMatchRule() {
+		LookbehindTokenRule lookbehind = new LookbehindTokenRule(TokenRules.alwaysMatch(), true);
+		Token first = createToken("first");
+		Token second = createToken("second");
+		List<Token> tokens = List.of(first, second);
+		
+		assertNull(lookbehind.match(tokens, 0));
+		
+		TokenRuleMatch match = lookbehind.match(tokens, 1);
+		assertNotNull(match);
+		assertTrue(match.matchedTokens().isEmpty());
+	}
+	
+	@Test
+	void lookbehindWithNeverMatchRule() {
+		TokenRule neverMatch = (tokens, startIndex) -> null;
+		
+		LookbehindTokenRule positiveLookbehind = new LookbehindTokenRule(neverMatch, true);
+		LookbehindTokenRule negativeLookbehind = new LookbehindTokenRule(neverMatch, false);
+		Token first = createToken("first");
+		Token second = createToken("second");
+		List<Token> tokens = List.of(first, second);
+		
+		assertNull(positiveLookbehind.match(tokens, 1));
+		
+		TokenRuleMatch negativeMatch = negativeLookbehind.match(tokens, 1);
+		assertNotNull(negativeMatch);
+		assertTrue(negativeMatch.matchedTokens().isEmpty());
+	}
+	
+	@Test
+	void lookbehindAtDifferentPositions() {
+		TokenRule innerRule = createRule("before");
+		LookbehindTokenRule lookbehind = new LookbehindTokenRule(innerRule, true);
+		Token before = createToken("before");
+		Token other = createToken("other");
+		Token current1 = createToken("current1");
+		Token current2 = createToken("current2");
+		List<Token> tokens = List.of(before, other, current1, current2);
+		
+		assertNull(lookbehind.match(tokens, 0));
+		
+		TokenRuleMatch matchAfterBefore = lookbehind.match(tokens, 1);
+		assertNotNull(matchAfterBefore);
+		
+		assertNull(lookbehind.match(tokens, 2));
+		assertNull(lookbehind.match(tokens, 3));
+	}
+	
+	@Test
+	void lookbehindWithReversedSequence() {
+		TokenRule innerRule = createRule("second");
+		LookbehindTokenRule lookbehind = new LookbehindTokenRule(innerRule, true);
+		Token first = createToken("first");
+		Token second = createToken("second");
+		Token third = createToken("third");
+		List<Token> tokens = List.of(first, second, third);
+		
+		assertNull(lookbehind.match(tokens, 1));
+		
+		TokenRuleMatch match = lookbehind.match(tokens, 2);
+		assertNotNull(match);
+		assertTrue(match.matchedTokens().isEmpty());
+	}
+	
+	@Test
+	void matchResultsAreConsistent() {
+		TokenRule innerRule = createRule("before");
+		LookbehindTokenRule lookbehind = new LookbehindTokenRule(innerRule, true);
+		Token before = createToken("before");
+		Token current = createToken("current");
+		List<Token> tokens = List.of(before, current);
+		
+		TokenRuleMatch match1 = lookbehind.match(tokens, 1);
+		TokenRuleMatch match2 = lookbehind.match(tokens, 1);
+		
+		assertNotNull(match1);
+		assertNotNull(match2);
+		assertEquals(match1.startIndex(), match2.startIndex());
+		assertEquals(match1.endIndex(), match2.endIndex());
+		assertEquals(match1.matchedTokens(), match2.matchedTokens());
+		assertSame(match1.matchingTokenRule(), match2.matchingTokenRule());
+	}
+	
+	@Test
+	void equalRulesHaveSameHashCode() {
+		TokenRule innerRule = createRule("test");
+		LookbehindTokenRule rule1 = new LookbehindTokenRule(innerRule, true);
+		LookbehindTokenRule rule2 = new LookbehindTokenRule(innerRule, true);
+		
+		assertEquals(rule1.hashCode(), rule2.hashCode());
+	}
+	
+	@Test
+	void toStringContainsRuleInfo() {
+		TokenRule innerRule = createRule("test");
+		LookbehindTokenRule lookbehind = new LookbehindTokenRule(innerRule, true);
+		String ruleString = lookbehind.toString();
+		
+		assertTrue(ruleString.contains("LookbehindTokenRule"));
+		assertTrue(ruleString.contains("positive"));
+	}
+}
