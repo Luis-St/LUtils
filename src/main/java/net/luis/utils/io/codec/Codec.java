@@ -18,6 +18,7 @@
 
 package net.luis.utils.io.codec;
 
+import com.google.common.collect.Lists;
 import net.luis.utils.io.codec.decoder.Decoder;
 import net.luis.utils.io.codec.decoder.KeyableDecoder;
 import net.luis.utils.io.codec.encoder.Encoder;
@@ -26,6 +27,7 @@ import net.luis.utils.io.codec.provider.TypeProvider;
 import net.luis.utils.io.codec.struct.*;
 import net.luis.utils.util.Either;
 import net.luis.utils.util.Result;
+import org.apache.commons.lang3.ArrayUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -177,6 +179,73 @@ public interface Codec<C> extends Encoder<C>, Decoder<C> {
 	}
 	
 	/**
+	 * Creates a new array codec uses the current codec as element codec for the array codec.<br>
+	 * The created array codec has no length restrictions.<br>
+	 *
+	 * @param type The type of the array elements
+	 * @param codec The codec for the elements of the array
+	 * @return A new array codec for the given codec
+	 * @param <C> The type of the array elements that are encoded and decoded by the codec
+	 * @throws NullPointerException If the type or codec is null
+	 * @see ArrayCodec
+	 */
+	static <C> @NotNull Codec<C[]> array(@NotNull Class<C> type, @NotNull Codec<C> codec) {
+		return new ArrayCodec<>(type, codec);
+	}
+	
+	/**
+	 * Creates a new array codec uses the current codec as element codec for the array codec with the given maximum length.<br>
+	 * The array must have at most the maximum length after encoding and decoding.<br>
+	 *
+	 * @param type The type of the array elements
+	 * @param codec The codec for the elements of the array
+	 * @param maxLength The maximum length of the array (inclusive)
+	 * @return A new array codec for the given codec
+	 * @param <C> The type of the array elements that are encoded and decoded by the codec
+	 * @throws NullPointerException If the type or codec is null
+	 * @throws IllegalArgumentException If the maximum length is less than 0
+	 * @see #array(Class, Codec, int, int)
+	 * @see ArrayCodec
+	 */
+	static <C> @NotNull Codec<C[]> array(@NotNull Class<C> type, @NotNull Codec<C> codec, int maxLength) {
+		return array(type, codec, 0, maxLength);
+	}
+	
+	/**
+	 * Creates a new array codec uses the current codec as element codec for the array codec with the given minimum and maximum length.<br>
+	 * The array must have at least the minimum length and at most the maximum length after encoding and decoding.<br>
+	 *
+	 * @param type The type of the array elements
+	 * @param codec The codec for the elements of the array
+	 * @param minLength The minimum length of the array (inclusive)
+	 * @param maxLength The maximum length of the array (inclusive)
+	 * @return A new array codec for the given codec
+	 * @param <C> The type of the array elements that are encoded and decoded by the codec
+	 * @throws NullPointerException If the type or codec is null
+	 * @throws IllegalArgumentException If the minimum length is less than zero or greater than the maximum length
+	 * @see ArrayCodec
+	 */
+	static <C> @NotNull Codec<C[]> array(@NotNull Class<C> type, @NotNull Codec<C> codec, int minLength, int maxLength) {
+		return new ArrayCodec<>(type, codec, minLength, maxLength);
+	}
+	
+	/**
+	 * Creates a new array codec uses the current codec as element codec for the array codec for non-empty arrays.<br>
+	 * The array must not be empty after encoding and decoding.<br>
+	 *
+	 * @param type The type of the array elements
+	 * @param codec The codec for the elements of the array
+	 * @return A new array codec for the given codec
+	 * @param <C> The type of the array elements that are encoded and decoded by the codec
+	 * @throws NullPointerException If the type or codec is null
+	 * @see #array(Class, Codec, int, int)
+	 * @see ArrayCodec
+	 */
+	static <C> @NotNull Codec<C[]> noneEmptyArray(@NotNull Class<C> type, @NotNull Codec<C> codec) {
+		return array(type, codec, 1, Integer.MAX_VALUE);
+	}
+	
+	/**
 	 * Creates a new list codec for the given codec.<br>
 	 * The created list codec has no size restrictions.<br>
 	 *
@@ -234,7 +303,7 @@ public interface Codec<C> extends Encoder<C>, Decoder<C> {
 	 * @see ListCodec
 	 */
 	static <C> @NotNull Codec<List<C>> noneEmptyList(@NotNull Codec<C> codec) {
-		return list(codec, 1);
+		return list(codec, 1, Integer.MAX_VALUE);
 	}
 	
 	/**
@@ -330,7 +399,7 @@ public interface Codec<C> extends Encoder<C>, Decoder<C> {
 	 * @see MapCodec
 	 */
 	static <K, V> @NotNull Codec<Map<K, V>> noneEmptyMap(@NotNull KeyableCodec<K> keyCodec, @NotNull Codec<V> valueCodec) {
-		return map(keyCodec, valueCodec, 1);
+		return map(keyCodec, valueCodec, 1, Integer.MAX_VALUE);
 	}
 	
 	/**
@@ -388,6 +457,67 @@ public interface Codec<C> extends Encoder<C>, Decoder<C> {
 	 */
 	default @NotNull Codec<Optional<C>> optional() {
 		return optional(this);
+	}
+	
+	/**
+	 * Creates a new array codec uses the current codec as element codec for the array codec.<br>
+	 * The created array codec has no length restrictions.<br>
+	 *
+	 * @param type The type of the array elements
+	 * @return A new array codec for the current codec
+	 * @throws NullPointerException If the type is null
+	 * @see #array(Class, Codec)
+	 * @see ArrayCodec
+	 */
+	default @NotNull Codec<C[]> array(@NotNull Class<C> type) {
+		return array(type, this);
+	}
+	
+	/**
+	 * Creates a new array codec uses the current codec as element codec for the array codec with the given maximum length.<br>
+	 * The array must have at most the maximum length after encoding and decoding.<br>
+	 *
+	 * @param type The type of the array elements
+	 * @param maxSize The maximum length of the array (inclusive)
+	 * @return A new array codec for the current codec
+	 * @throws NullPointerException If the type is null
+	 * @throws IllegalArgumentException If the maximum length is less than 0
+	 * @see #array(Class, Codec, int)
+	 * @see ArrayCodec
+	 */
+	default @NotNull Codec<C[]> array(@NotNull Class<C> type, int maxSize) {
+		return array(type, this, maxSize);
+	}
+	
+	/**
+	 * Creates a new array codec uses the current codec as element codec for the array codec with the given minimum and maximum length.<br>
+	 * The array must have at least the minimum length and at most the maximum length after encoding and decoding.<br>
+	 *
+	 * @param type The type of the array elements
+	 * @param minSize The minimum length of the array (inclusive)
+	 * @param maxSize The maximum length of the array (inclusive)
+	 * @return A new array codec for the current codec
+	 * @throws NullPointerException If the type is null
+	 * @throws IllegalArgumentException If the minimum length is less than zero or greater than the maximum length
+	 * @see #array(Class, Codec, int, int)
+	 * @see ArrayCodec
+	 */
+	default @NotNull Codec<C[]> array(@NotNull Class<C> type, int minSize, int maxSize) {
+		return array(type, this, minSize, maxSize);
+	}
+	
+	/**
+	 * Creates a new array codec uses the current codec as element codec for the array codec for non-empty arrays.<br>
+	 * The array must not be empty after encoding and decoding.<br>
+	 *
+	 * @param type The type of the array elements
+	 * @return A new array codec for the current codec
+	 * @throws NullPointerException If the type is null
+	 * @see #noneEmptyArray(Class, Codec)
+	 * @see ArrayCodec
+	 */
+	default @NotNull Codec<C[]> noneEmptyArray(@NotNull Class<C> type) {
+		return noneEmptyArray(type, this);
 	}
 	
 	/**
