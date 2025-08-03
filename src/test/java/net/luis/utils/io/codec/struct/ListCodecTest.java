@@ -27,6 +27,7 @@ import org.junit.jupiter.api.Test;
 
 import java.util.List;
 
+import static net.luis.utils.io.codec.Codecs.*;
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
@@ -40,16 +41,16 @@ class ListCodecTest {
 	void constructor() {
 		assertThrows(NullPointerException.class, () -> new ListCodec<>(null));
 		assertThrows(NullPointerException.class, () -> new ListCodec<>(null, 0, Integer.MAX_VALUE));
-		assertThrows(IllegalArgumentException.class, () -> new ListCodec<>(Codec.INTEGER, -1, Integer.MAX_VALUE));
-		assertThrows(IllegalArgumentException.class, () -> new ListCodec<>(Codec.INTEGER, 1, 0));
-		assertDoesNotThrow(() -> new ListCodec<>(Codec.INTEGER));
-		assertDoesNotThrow(() -> new ListCodec<>(Codec.INTEGER, 0, 10));
+		assertThrows(IllegalArgumentException.class, () -> new ListCodec<>(INTEGER, -1, Integer.MAX_VALUE));
+		assertThrows(IllegalArgumentException.class, () -> new ListCodec<>(INTEGER, 1, 0));
+		assertDoesNotThrow(() -> new ListCodec<>(INTEGER));
+		assertDoesNotThrow(() -> new ListCodec<>(INTEGER, 0, 10));
 	}
 	
 	@Test
 	void encodeStartNullChecks() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<List<Integer>> codec = new ListCodec<>(Codec.INTEGER);
+		Codec<List<Integer>> codec = new ListCodec<>(INTEGER);
 		List<Integer> list = List.of(1, 2, 3);
 		
 		assertThrows(NullPointerException.class, () -> codec.encodeStart(null, typeProvider.empty(), list));
@@ -59,7 +60,7 @@ class ListCodecTest {
 	@Test
 	void encodeStartWithNull() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<List<Integer>> codec = new ListCodec<>(Codec.INTEGER);
+		Codec<List<Integer>> codec = new ListCodec<>(INTEGER);
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), null);
 		assertTrue(result.isError());
@@ -69,7 +70,7 @@ class ListCodecTest {
 	@Test
 	void encodeStartWithValidList() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<List<Integer>> codec = new ListCodec<>(Codec.INTEGER);
+		Codec<List<Integer>> codec = new ListCodec<>(INTEGER);
 		List<Integer> list = List.of(1, 2, 3);
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), list);
@@ -86,7 +87,7 @@ class ListCodecTest {
 	@Test
 	void encodeStartWithEmptyList() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<List<Integer>> codec = new ListCodec<>(Codec.INTEGER);
+		Codec<List<Integer>> codec = new ListCodec<>(INTEGER);
 		List<Integer> list = List.of();
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), list);
@@ -97,7 +98,7 @@ class ListCodecTest {
 	@Test
 	void encodeStartWithSingleElement() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<List<String>> codec = new ListCodec<>(Codec.STRING);
+		Codec<List<String>> codec = new ListCodec<>(STRING);
 		List<String> list = List.of("hello");
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), list);
@@ -112,11 +113,11 @@ class ListCodecTest {
 	void encodeStartWithDifferentTypes() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		
-		Codec<List<String>> stringCodec = new ListCodec<>(Codec.STRING);
+		Codec<List<String>> stringCodec = new ListCodec<>(STRING);
 		Result<JsonElement> stringResult = stringCodec.encodeStart(typeProvider, typeProvider.empty(), List.of("a", "b"));
 		assertTrue(stringResult.isSuccess());
 		
-		Codec<List<Boolean>> boolCodec = new ListCodec<>(Codec.BOOLEAN);
+		Codec<List<Boolean>> boolCodec = new ListCodec<>(BOOLEAN);
 		Result<JsonElement> boolResult = boolCodec.encodeStart(typeProvider, typeProvider.empty(), List.of(true, false));
 		assertTrue(boolResult.isSuccess());
 	}
@@ -124,7 +125,7 @@ class ListCodecTest {
 	@Test
 	void encodeStartSizedExactMatch() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<List<Integer>> codec = new ListCodec<>(Codec.INTEGER, 3, 3);
+		Codec<List<Integer>> codec = new ListCodec<>(INTEGER, 3, 3);
 		List<Integer> list = List.of(1, 2, 3);
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), list);
@@ -134,7 +135,7 @@ class ListCodecTest {
 	@Test
 	void encodeStartSizedTooSmall() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<List<Integer>> codec = new ListCodec<>(Codec.INTEGER, 3, 5);
+		Codec<List<Integer>> codec = new ListCodec<>(INTEGER, 3, 5);
 		List<Integer> list = List.of(1, 2);
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), list);
@@ -145,7 +146,7 @@ class ListCodecTest {
 	@Test
 	void encodeStartSizedTooLarge() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<List<Integer>> codec = new ListCodec<>(Codec.INTEGER, 1, 3);
+		Codec<List<Integer>> codec = new ListCodec<>(INTEGER, 1, 3);
 		List<Integer> list = List.of(1, 2, 3, 4);
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), list);
@@ -156,7 +157,7 @@ class ListCodecTest {
 	@Test
 	void encodeStartWithInvalidElements() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<List<Integer>> codec = new ListCodec<>(Codec.INTEGER);
+		Codec<List<Integer>> codec = new ListCodec<>(INTEGER);
 		List<Integer> listWithNull = Lists.newArrayList(1, null, 3);
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), listWithNull);
@@ -167,7 +168,7 @@ class ListCodecTest {
 	@Test
 	void decodeStartNullChecks() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<List<Integer>> codec = new ListCodec<>(Codec.INTEGER);
+		Codec<List<Integer>> codec = new ListCodec<>(INTEGER);
 		
 		assertThrows(NullPointerException.class, () -> codec.decodeStart(null, new JsonArray()));
 	}
@@ -175,7 +176,7 @@ class ListCodecTest {
 	@Test
 	void decodeStartWithNull() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<List<Integer>> codec = new ListCodec<>(Codec.INTEGER);
+		Codec<List<Integer>> codec = new ListCodec<>(INTEGER);
 		
 		Result<List<Integer>> result = codec.decodeStart(typeProvider, null);
 		assertTrue(result.isError());
@@ -185,7 +186,7 @@ class ListCodecTest {
 	@Test
 	void decodeStartWithValidArray() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<List<Integer>> codec = new ListCodec<>(Codec.INTEGER);
+		Codec<List<Integer>> codec = new ListCodec<>(INTEGER);
 		
 		JsonArray array = new JsonArray();
 		array.add(new JsonPrimitive(1));
@@ -200,7 +201,7 @@ class ListCodecTest {
 	@Test
 	void decodeStartWithEmptyArray() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<List<Integer>> codec = new ListCodec<>(Codec.INTEGER);
+		Codec<List<Integer>> codec = new ListCodec<>(INTEGER);
 		
 		Result<List<Integer>> result = codec.decodeStart(typeProvider, new JsonArray());
 		assertTrue(result.isSuccess());
@@ -210,7 +211,7 @@ class ListCodecTest {
 	@Test
 	void decodeStartWithSingleElement() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<List<String>> codec = new ListCodec<>(Codec.STRING);
+		Codec<List<String>> codec = new ListCodec<>(STRING);
 		
 		JsonArray array = new JsonArray();
 		array.add(new JsonPrimitive("hello"));
@@ -223,7 +224,7 @@ class ListCodecTest {
 	@Test
 	void decodeStartWithNonArray() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<List<Integer>> codec = new ListCodec<>(Codec.INTEGER);
+		Codec<List<Integer>> codec = new ListCodec<>(INTEGER);
 		
 		Result<List<Integer>> result = codec.decodeStart(typeProvider, new JsonPrimitive(42));
 		assertTrue(result.isError());
@@ -238,7 +239,7 @@ class ListCodecTest {
 		stringArray.add(new JsonPrimitive("a"));
 		stringArray.add(new JsonPrimitive("b"));
 		
-		Codec<List<String>> stringCodec = new ListCodec<>(Codec.STRING);
+		Codec<List<String>> stringCodec = new ListCodec<>(STRING);
 		Result<List<String>> stringResult = stringCodec.decodeStart(typeProvider, stringArray);
 		assertTrue(stringResult.isSuccess());
 		assertEquals(List.of("a", "b"), stringResult.orThrow());
@@ -247,7 +248,7 @@ class ListCodecTest {
 		boolArray.add(new JsonPrimitive(true));
 		boolArray.add(new JsonPrimitive(false));
 		
-		Codec<List<Boolean>> boolCodec = new ListCodec<>(Codec.BOOLEAN);
+		Codec<List<Boolean>> boolCodec = new ListCodec<>(BOOLEAN);
 		Result<List<Boolean>> boolResult = boolCodec.decodeStart(typeProvider, boolArray);
 		assertTrue(boolResult.isSuccess());
 		assertEquals(List.of(true, false), boolResult.orThrow());
@@ -256,7 +257,7 @@ class ListCodecTest {
 	@Test
 	void decodeStartSizedExactMatch() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<List<Integer>> codec = new ListCodec<>(Codec.INTEGER, 2, 2);
+		Codec<List<Integer>> codec = new ListCodec<>(INTEGER, 2, 2);
 		
 		JsonArray array = new JsonArray();
 		array.add(new JsonPrimitive(1));
@@ -270,7 +271,7 @@ class ListCodecTest {
 	@Test
 	void decodeStartSizedTooSmall() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<List<Integer>> codec = new ListCodec<>(Codec.INTEGER, 3, 5);
+		Codec<List<Integer>> codec = new ListCodec<>(INTEGER, 3, 5);
 		
 		JsonArray array = new JsonArray();
 		array.add(new JsonPrimitive(1));
@@ -284,7 +285,7 @@ class ListCodecTest {
 	@Test
 	void decodeStartSizedTooLarge() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<List<Integer>> codec = new ListCodec<>(Codec.INTEGER, 1, 2);
+		Codec<List<Integer>> codec = new ListCodec<>(INTEGER, 1, 2);
 		
 		JsonArray array = new JsonArray();
 		array.add(new JsonPrimitive(1));
@@ -299,7 +300,7 @@ class ListCodecTest {
 	@Test
 	void decodeStartWithInvalidElements() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<List<Integer>> codec = new ListCodec<>(Codec.INTEGER);
+		Codec<List<Integer>> codec = new ListCodec<>(INTEGER);
 		
 		JsonArray array = new JsonArray();
 		array.add(new JsonPrimitive(1));
@@ -314,7 +315,7 @@ class ListCodecTest {
 	@Test
 	void decodeStartWithMixedValidInvalid() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<List<Integer>> codec = new ListCodec<>(Codec.INTEGER);
+		Codec<List<Integer>> codec = new ListCodec<>(INTEGER);
 		
 		JsonArray array = new JsonArray();
 		array.add(new JsonPrimitive(42));
@@ -327,15 +328,15 @@ class ListCodecTest {
 	
 	@Test
 	void equalsAndHashCode() {
-		ListCodec<Integer> codec1 = new ListCodec<>(Codec.INTEGER, 0, 10);
-		ListCodec<Integer> codec2 = new ListCodec<>(Codec.INTEGER, 0, 10);
+		ListCodec<Integer> codec1 = new ListCodec<>(INTEGER, 0, 10);
+		ListCodec<Integer> codec2 = new ListCodec<>(INTEGER, 0, 10);
 		
 		assertEquals(codec1.hashCode(), codec2.hashCode());
 	}
 	
 	@Test
 	void toStringRepresentation() {
-		ListCodec<Integer> codec = new ListCodec<>(Codec.INTEGER);
+		ListCodec<Integer> codec = new ListCodec<>(INTEGER);
 		String result = codec.toString();
 		
 		assertTrue(result.startsWith("ListCodec["));

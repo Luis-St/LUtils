@@ -259,6 +259,126 @@ public final class TokenRules {
 	public static @NotNull TokenRule end() {
 		return EndTokenRule.INSTANCE;
 	}
+	
+	/**
+	 * Creates a token rule that matches when the given rule does NOT match.<br>
+	 *
+	 * @param tokenRule The token rule to negate
+	 * @return The created token rule that matches when the given rule doesn't match
+	 * @throws NullPointerException If the token rule is null
+	 * @see NotTokenRule
+	 */
+	public static @NotNull TokenRule not(@NotNull TokenRule tokenRule) {
+		return new NotTokenRule(tokenRule);
+	}
+	
+	/**
+	 * Creates a positive lookahead token rule that checks if the given rule matches ahead without consuming tokens.<br>
+	 *
+	 * @param tokenRule The token rule to match ahead
+	 * @return The created lookahead token rule
+	 * @throws NullPointerException If the token rule is null
+	 * @see LookaheadTokenRule
+	 */
+	public static @NotNull TokenRule lookahead(@NotNull TokenRule tokenRule) {
+		return new LookaheadTokenRule(tokenRule, true);
+	}
+	
+	/**
+	 * Creates a negative lookahead token rule that checks if the given rule does NOT match ahead without consuming tokens.<br>
+	 *
+	 * @param tokenRule The token rule to check ahead
+	 * @return The created negative lookahead token rule
+	 * @throws NullPointerException If the token rule is null
+	 * @see LookaheadTokenRule
+	 */
+	public static @NotNull TokenRule negativeLookahead(@NotNull TokenRule tokenRule) {
+		return new LookaheadTokenRule(tokenRule, false);
+	}
+	
+	/**
+	 * Creates a positive lookbehind token rule that checks if the given rule matches behind the current position.<br>
+	 *
+	 * @param tokenRule The token rule to match behind
+	 * @return The created lookbehind token rule
+	 * @throws NullPointerException If the token rule is null
+	 * @see LookbehindTokenRule
+	 */
+	public static @NotNull TokenRule lookbehind(@NotNull TokenRule tokenRule) {
+		return new LookbehindTokenRule(tokenRule, true);
+	}
+	
+	/**
+	 * Creates a negative lookbehind token rule that checks if the given rule does NOT match behind the current position.<br>
+	 *
+	 * @param tokenRule The token rule to check behind
+	 * @return The created negative lookbehind token rule
+	 * @throws NullPointerException If the token rule is null
+	 * @see LookbehindTokenRule
+	 */
+	public static @NotNull TokenRule negativeLookbehind(@NotNull TokenRule tokenRule) {
+		return new LookbehindTokenRule(tokenRule, false);
+	}
+	
+	/**
+	 * Provides a token rule that matches only at the start of the input.<br>
+	 *
+	 * @return The token rule
+	 * @apiNote This is the preferred way to access the {@link StartTokenRule#INSTANCE} instance
+	 * @see StartTokenRule
+	 */
+	public static @NotNull TokenRule start() {
+		return StartTokenRule.INSTANCE;
+	}
+	
+	/**
+	 * Creates a token rule that matches tokens based on their length constraints.<br>
+	 *
+	 * @param minLength The minimum length of the token value (inclusive)
+	 * @param maxLength The maximum length of the token value (inclusive)
+	 * @return The created length token rule
+	 * @throws IllegalArgumentException If minLength is negative, maxLength is negative, or maxLength is less than minLength
+	 * @see LengthTokenRule
+	 */
+	public static @NotNull TokenRule lengthBetween(int minLength, int maxLength) {
+		return new LengthTokenRule(minLength, maxLength);
+	}
+	
+	/**
+	 * Creates a token rule that matches tokens with exactly the specified length.<br>
+	 *
+	 * @param exactLength The exact length the token value must have
+	 * @return The created length token rule
+	 * @throws IllegalArgumentException If exactLength is negative
+	 * @see LengthTokenRule
+	 */
+	public static @NotNull TokenRule exactLength(int exactLength) {
+		return LengthTokenRule.exactLength(exactLength);
+	}
+	
+	/**
+	 * Creates a token rule that matches tokens with at least the specified length.<br>
+	 *
+	 * @param minLength The minimum length of the token value (inclusive)
+	 * @return The created length token rule
+	 * @throws IllegalArgumentException If minLength is negative
+	 * @see LengthTokenRule
+	 */
+	public static @NotNull TokenRule minLength(int minLength) {
+		return new LengthTokenRule(minLength, Integer.MAX_VALUE);
+	}
+	
+	/**
+	 * Creates a token rule that matches tokens with at most the specified length.<br>
+	 *
+	 * @param maxLength The maximum length of the token value (inclusive)
+	 * @return The created length token rule
+	 * @throws IllegalArgumentException If maxLength is negative
+	 * @see LengthTokenRule
+	 */
+	public static @NotNull TokenRule maxLength(int maxLength) {
+		return new LengthTokenRule(0, maxLength);
+	}
 	//endregion
 	
 	/**

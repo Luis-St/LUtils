@@ -337,6 +337,204 @@ class TokenRulesTest {
 	}
 	
 	@Test
+	void notCreatesNotTokenRule() {
+		TokenRule innerRule = createRule("test");
+		TokenRule notRule = TokenRules.not(innerRule);
+		
+		assertInstanceOf(NotTokenRule.class, notRule);
+		assertEquals(innerRule, ((NotTokenRule) notRule).tokenRule());
+	}
+	
+	@Test
+	void notWithNullRule() {
+		assertThrows(NullPointerException.class, () -> TokenRules.not(null));
+	}
+	
+	@Test
+	void lookaheadCreatesPositiveLookaheadTokenRule() {
+		TokenRule innerRule = createRule("test");
+		TokenRule lookaheadRule = TokenRules.lookahead(innerRule);
+		
+		assertInstanceOf(LookaheadTokenRule.class, lookaheadRule);
+		LookaheadTokenRule rule = (LookaheadTokenRule) lookaheadRule;
+		assertEquals(innerRule, rule.tokenRule());
+		assertTrue(rule.positive());
+	}
+	
+	@Test
+	void lookaheadWithNullRule() {
+		assertThrows(NullPointerException.class, () -> TokenRules.lookahead(null));
+	}
+	
+	@Test
+	void negativeLookaheadCreatesNegativeLookaheadTokenRule() {
+		TokenRule innerRule = createRule("test");
+		TokenRule negativeLookaheadRule = TokenRules.negativeLookahead(innerRule);
+		
+		assertInstanceOf(LookaheadTokenRule.class, negativeLookaheadRule);
+		LookaheadTokenRule rule = (LookaheadTokenRule) negativeLookaheadRule;
+		assertEquals(innerRule, rule.tokenRule());
+		assertFalse(rule.positive());
+	}
+	
+	@Test
+	void negativeLookaheadWithNullRule() {
+		assertThrows(NullPointerException.class, () -> TokenRules.negativeLookahead(null));
+	}
+	
+	@Test
+	void lookbehindCreatesPositiveLookbehindTokenRule() {
+		TokenRule innerRule = createRule("test");
+		TokenRule lookbehindRule = TokenRules.lookbehind(innerRule);
+		
+		assertInstanceOf(LookbehindTokenRule.class, lookbehindRule);
+		LookbehindTokenRule rule = (LookbehindTokenRule) lookbehindRule;
+		assertEquals(innerRule, rule.tokenRule());
+		assertTrue(rule.positive());
+	}
+	
+	@Test
+	void lookbehindWithNullRule() {
+		assertThrows(NullPointerException.class, () -> TokenRules.lookbehind(null));
+	}
+	
+	@Test
+	void negativeLookbehindCreatesNegativeLookbehindTokenRule() {
+		TokenRule innerRule = createRule("test");
+		TokenRule negativeLookbehindRule = TokenRules.negativeLookbehind(innerRule);
+		
+		assertInstanceOf(LookbehindTokenRule.class, negativeLookbehindRule);
+		LookbehindTokenRule rule = (LookbehindTokenRule) negativeLookbehindRule;
+		assertEquals(innerRule, rule.tokenRule());
+		assertFalse(rule.positive());
+	}
+	
+	@Test
+	void negativeLookbehindWithNullRule() {
+		assertThrows(NullPointerException.class, () -> TokenRules.negativeLookbehind(null));
+	}
+	
+	@Test
+	void startReturnsSingleton() {
+		TokenRule start1 = TokenRules.start();
+		TokenRule start2 = TokenRules.start();
+		
+		assertSame(StartTokenRule.INSTANCE, start1);
+		assertSame(start1, start2);
+		assertInstanceOf(StartTokenRule.class, start1);
+	}
+	
+	@Test
+	void lengthBetweenCreatesLengthTokenRule() {
+		TokenRule lengthRule = TokenRules.lengthBetween(2, 5);
+		
+		assertInstanceOf(LengthTokenRule.class, lengthRule);
+		LengthTokenRule rule = (LengthTokenRule) lengthRule;
+		assertEquals(2, rule.minLength());
+		assertEquals(5, rule.maxLength());
+	}
+	
+	@Test
+	void lengthBetweenWithInvalidParameters() {
+		assertThrows(IllegalArgumentException.class, () -> TokenRules.lengthBetween(-1, 5));
+		assertThrows(IllegalArgumentException.class, () -> TokenRules.lengthBetween(2, -1));
+		assertThrows(IllegalArgumentException.class, () -> TokenRules.lengthBetween(5, 2));
+	}
+	
+	@Test
+	void lengthBetweenWithEqualValues() {
+		TokenRule lengthRule = TokenRules.lengthBetween(3, 3);
+		
+		assertInstanceOf(LengthTokenRule.class, lengthRule);
+		LengthTokenRule rule = (LengthTokenRule) lengthRule;
+		assertEquals(3, rule.minLength());
+		assertEquals(3, rule.maxLength());
+	}
+	
+	@Test
+	void exactLengthCreatesLengthTokenRule() {
+		TokenRule lengthRule = TokenRules.exactLength(7);
+		
+		assertInstanceOf(LengthTokenRule.class, lengthRule);
+		LengthTokenRule rule = (LengthTokenRule) lengthRule;
+		assertEquals(7, rule.minLength());
+		assertEquals(7, rule.maxLength());
+	}
+	
+	@Test
+	void exactLengthWithNegativeValue() {
+		assertThrows(IllegalArgumentException.class, () -> TokenRules.exactLength(-1));
+	}
+	
+	@Test
+	void exactLengthWithZero() {
+		TokenRule lengthRule = TokenRules.exactLength(0);
+		
+		assertInstanceOf(LengthTokenRule.class, lengthRule);
+		LengthTokenRule rule = (LengthTokenRule) lengthRule;
+		assertEquals(0, rule.minLength());
+		assertEquals(0, rule.maxLength());
+	}
+	
+	@Test
+	void minLengthCreatesLengthTokenRule() {
+		TokenRule lengthRule = TokenRules.minLength(3);
+		
+		assertInstanceOf(LengthTokenRule.class, lengthRule);
+		LengthTokenRule rule = (LengthTokenRule) lengthRule;
+		assertEquals(3, rule.minLength());
+		assertEquals(Integer.MAX_VALUE, rule.maxLength());
+	}
+	
+	@Test
+	void minLengthWithNegativeValue() {
+		assertThrows(IllegalArgumentException.class, () -> TokenRules.minLength(-1));
+	}
+	
+	@Test
+	void minLengthWithZero() {
+		TokenRule lengthRule = TokenRules.minLength(0);
+		
+		assertInstanceOf(LengthTokenRule.class, lengthRule);
+		LengthTokenRule rule = (LengthTokenRule) lengthRule;
+		assertEquals(0, rule.minLength());
+		assertEquals(Integer.MAX_VALUE, rule.maxLength());
+	}
+	
+	@Test
+	void maxLengthCreatesLengthTokenRule() {
+		TokenRule lengthRule = TokenRules.maxLength(10);
+		
+		assertInstanceOf(LengthTokenRule.class, lengthRule);
+		LengthTokenRule rule = (LengthTokenRule) lengthRule;
+		assertEquals(0, rule.minLength());
+		assertEquals(10, rule.maxLength());
+	}
+	
+	@Test
+	void maxLengthWithNegativeValue() {
+		assertThrows(IllegalArgumentException.class, () -> TokenRules.maxLength(-1));
+	}
+	
+	@Test
+	void maxLengthWithZero() {
+		TokenRule lengthRule = TokenRules.maxLength(0);
+		
+		assertInstanceOf(LengthTokenRule.class, lengthRule);
+		LengthTokenRule rule = (LengthTokenRule) lengthRule;
+		assertEquals(0, rule.minLength());
+		assertEquals(0, rule.maxLength());
+	}
+	
+	@Test
+	void lengthRulesEdgeCases() {
+		assertDoesNotThrow(() -> TokenRules.lengthBetween(0, Integer.MAX_VALUE));
+		assertDoesNotThrow(() -> TokenRules.exactLength(Integer.MAX_VALUE));
+		assertDoesNotThrow(() -> TokenRules.minLength(Integer.MAX_VALUE));
+		assertDoesNotThrow(() -> TokenRules.maxLength(Integer.MAX_VALUE));
+	}
+	
+	@Test
 	void toRegexWithNullRule() {
 		assertThrows(NullPointerException.class, () -> TokenRules.toRegex(null));
 	}

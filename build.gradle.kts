@@ -52,6 +52,13 @@ tasks.named<Test>("test") {
 	useJUnitPlatform()
 	environment("env.default", "3")
 	environment("env.custom", "c")
+	
+	doLast {
+		delete("./logs/debug.log")
+		delete("./logs/error.log")
+		delete("./logs/errors.log")
+		delete("./logs/info.log")
+	}
 }
 
 java {
@@ -86,7 +93,7 @@ publishing {
 		create<MavenPublication>("mavenJava") {
 			groupId = "net.luis"
 			artifactId = "LUtils"
-			version = "7.5.0"
+			version = "7.6.0"
 			artifact(tasks.named<Jar>("jar"))
 			artifact(tasks.named<Jar>("sourcesJar"))
 			artifact(tasks.named<Jar>("javadocJar"))

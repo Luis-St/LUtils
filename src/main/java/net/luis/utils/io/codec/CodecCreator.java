@@ -84,12 +84,12 @@ public class CodecCreator<O, F extends CodecGroupingFunction> {
 				Optional<Object> optional = this.invokeCreateMethod(function, components);
 				
 				if (optional.isEmpty()) {
-					return (Result<O>) Result.error("Unable to create object with function '" + function + "' and decoded components: " + components);
+					return Result.error("Unable to create object with function '" + function + "' and decoded components: " + components);
 				}
 				
 				return Result.success((O) optional.orElseThrow());
 			} catch (ReflectionException e) {
-				return (Result<O>) Result.error("Unable to create object with function '" + function + "' and decoded components " + components + ": " + e.getMessage());
+				return Result.error("Unable to create object with function '" + function + "' and decoded components " + components + ": " + e.getMessage());
 			} finally {
 				System.setProperty("reflection.exceptions.throw", "false");
 			}

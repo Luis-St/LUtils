@@ -26,6 +26,7 @@ import org.junit.jupiter.api.Test;
 
 import java.util.Optional;
 
+import static net.luis.utils.io.codec.Codecs.*;
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
@@ -38,14 +39,14 @@ class ConfiguredCodecTest {
 	@Test
 	void constructor() {
 		assertThrows(NullPointerException.class, () -> new ConfiguredCodec<>(null, TestObjectOptionalInteger::age));
-		assertThrows(NullPointerException.class, () -> new ConfiguredCodec<>(Codec.INTEGER.optional(), null));
-		assertDoesNotThrow(() -> new ConfiguredCodec<>(Codec.INTEGER.optional(), TestObjectOptionalInteger::age));
+		assertThrows(NullPointerException.class, () -> new ConfiguredCodec<>(INTEGER.optional(), null));
+		assertDoesNotThrow(() -> new ConfiguredCodec<>(INTEGER.optional(), TestObjectOptionalInteger::age));
 	}
 	
 	@Test
 	void encodeStartNullChecks() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		ConfiguredCodec<Optional<Integer>, TestObjectOptionalInteger> codec = new ConfiguredCodec<>(Codec.INTEGER.optional(), TestObjectOptionalInteger::age);
+		ConfiguredCodec<Optional<Integer>, TestObjectOptionalInteger> codec = new ConfiguredCodec<>(INTEGER.optional(), TestObjectOptionalInteger::age);
 		
 		assertThrows(NullPointerException.class, () -> codec.encodeStart(null, typeProvider.empty(), null));
 		assertThrows(NullPointerException.class, () -> codec.encodeStart(typeProvider, null, null));
@@ -54,7 +55,7 @@ class ConfiguredCodecTest {
 	@Test
 	void encodeStartWithNullObject() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		ConfiguredCodec<Optional<Integer>, TestObjectOptionalInteger> codec = new ConfiguredCodec<>(Codec.INTEGER.optional(), TestObjectOptionalInteger::age);
+		ConfiguredCodec<Optional<Integer>, TestObjectOptionalInteger> codec = new ConfiguredCodec<>(INTEGER.optional(), TestObjectOptionalInteger::age);
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), null);
 		assertTrue(result.isError());
@@ -64,7 +65,7 @@ class ConfiguredCodecTest {
 	@Test
 	void encodeStartWithEmptyOptional() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		ConfiguredCodec<Optional<Integer>, TestObjectOptionalInteger> codec = new ConfiguredCodec<>(Codec.INTEGER.optional(), TestObjectOptionalInteger::age);
+		ConfiguredCodec<Optional<Integer>, TestObjectOptionalInteger> codec = new ConfiguredCodec<>(INTEGER.optional(), TestObjectOptionalInteger::age);
 		JsonObject map = new JsonObject();
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, map, new TestObjectOptionalInteger(Optional.empty()));
@@ -76,7 +77,7 @@ class ConfiguredCodecTest {
 	@Test
 	void encodeStartWithPresentOptional() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		ConfiguredCodec<Optional<Integer>, TestObjectOptionalInteger> codec = new ConfiguredCodec<>(Codec.INTEGER.optional(), TestObjectOptionalInteger::age);
+		ConfiguredCodec<Optional<Integer>, TestObjectOptionalInteger> codec = new ConfiguredCodec<>(INTEGER.optional(), TestObjectOptionalInteger::age);
 		JsonObject map = new JsonObject();
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, map, new TestObjectOptionalInteger(Optional.of(42)));
@@ -87,7 +88,7 @@ class ConfiguredCodecTest {
 	@Test
 	void encodeStartWithRequiredCodec() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		ConfiguredCodec<String, TestObjectString> codec = new ConfiguredCodec<>(Codec.STRING, TestObjectString::name);
+		ConfiguredCodec<String, TestObjectString> codec = new ConfiguredCodec<>(STRING, TestObjectString::name);
 		JsonObject map = new JsonObject();
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, map, new TestObjectString("test"));
@@ -98,7 +99,7 @@ class ConfiguredCodecTest {
 	@Test
 	void decodeStartNullChecks() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		ConfiguredCodec<Optional<Integer>, TestObjectOptionalInteger> codec = new ConfiguredCodec<>(Codec.INTEGER.optional(), TestObjectOptionalInteger::age);
+		ConfiguredCodec<Optional<Integer>, TestObjectOptionalInteger> codec = new ConfiguredCodec<>(INTEGER.optional(), TestObjectOptionalInteger::age);
 		
 		assertThrows(NullPointerException.class, () -> codec.decodeStart(null, typeProvider.createMap().orThrow()));
 	}
@@ -106,7 +107,7 @@ class ConfiguredCodecTest {
 	@Test
 	void decodeStartWithNull() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		ConfiguredCodec<Optional<Integer>, TestObjectOptionalInteger> codec = new ConfiguredCodec<>(Codec.INTEGER.optional(), TestObjectOptionalInteger::age);
+		ConfiguredCodec<Optional<Integer>, TestObjectOptionalInteger> codec = new ConfiguredCodec<>(INTEGER.optional(), TestObjectOptionalInteger::age);
 		
 		Result<Optional<Integer>> result = codec.decodeStart(typeProvider, null);
 		assertTrue(result.isSuccess());
@@ -116,7 +117,7 @@ class ConfiguredCodecTest {
 	@Test
 	void decodeStartWithEmpty() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		ConfiguredCodec<Optional<Integer>, TestObjectOptionalInteger> codec = new ConfiguredCodec<>(Codec.INTEGER.optional(), TestObjectOptionalInteger::age);
+		ConfiguredCodec<Optional<Integer>, TestObjectOptionalInteger> codec = new ConfiguredCodec<>(INTEGER.optional(), TestObjectOptionalInteger::age);
 		
 		Result<Optional<Integer>> result = codec.decodeStart(typeProvider, typeProvider.empty());
 		assertTrue(result.isSuccess());
@@ -126,7 +127,7 @@ class ConfiguredCodecTest {
 	@Test
 	void decodeStartWithValidValue() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		ConfiguredCodec<Optional<Integer>, TestObjectOptionalInteger> codec = new ConfiguredCodec<>(Codec.INTEGER.optional(), TestObjectOptionalInteger::age);
+		ConfiguredCodec<Optional<Integer>, TestObjectOptionalInteger> codec = new ConfiguredCodec<>(INTEGER.optional(), TestObjectOptionalInteger::age);
 		
 		Result<Optional<Integer>> result = codec.decodeStart(typeProvider, new JsonPrimitive(42));
 		assertTrue(result.isSuccess());
@@ -137,7 +138,7 @@ class ConfiguredCodecTest {
 	@Test
 	void decodeStartWithInvalidValue() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		ConfiguredCodec<Integer, TestObjectInteger> codec = new ConfiguredCodec<>(Codec.INTEGER, TestObjectInteger::age);
+		ConfiguredCodec<Integer, TestObjectInteger> codec = new ConfiguredCodec<>(INTEGER, TestObjectInteger::age);
 		
 		Result<Integer> result = codec.decodeStart(typeProvider, new JsonPrimitive("not-a-number"));
 		assertTrue(result.isError());
@@ -145,15 +146,15 @@ class ConfiguredCodecTest {
 	
 	@Test
 	void equalsAndHashCode() {
-		ConfiguredCodec<Integer, TestObjectInteger> codec1 = new ConfiguredCodec<>(Codec.INTEGER, TestObjectInteger::age);
-		ConfiguredCodec<Integer, TestObjectInteger> codec2 = new ConfiguredCodec<>(Codec.INTEGER, TestObjectInteger::age);
+		ConfiguredCodec<Integer, TestObjectInteger> codec1 = new ConfiguredCodec<>(INTEGER, TestObjectInteger::age);
+		ConfiguredCodec<Integer, TestObjectInteger> codec2 = new ConfiguredCodec<>(INTEGER, TestObjectInteger::age);
 		
 		assertEquals(codec1.hashCode(), codec2.hashCode());
 	}
 	
 	@Test
 	void toStringRepresentation() {
-		ConfiguredCodec<Integer, TestObjectInteger> codec = new ConfiguredCodec<>(Codec.INTEGER, TestObjectInteger::age);
+		ConfiguredCodec<Integer, TestObjectInteger> codec = new ConfiguredCodec<>(INTEGER, TestObjectInteger::age);
 		String result = codec.toString();
 		
 		assertTrue(result.startsWith("ConfigurableCodec["));

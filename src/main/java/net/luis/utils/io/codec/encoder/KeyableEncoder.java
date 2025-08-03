@@ -18,14 +18,13 @@
 
 package net.luis.utils.io.codec.encoder;
 
-import net.luis.utils.function.throwable.ThrowableFunction;
+import net.luis.utils.io.codec.ResultingFunction;
 import net.luis.utils.io.codec.provider.TypeProvider;
 import net.luis.utils.util.Result;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Objects;
-import java.util.Optional;
 
 /**
  * Extension of {@link Encoder} that allows encoding keys.<br>
@@ -42,7 +41,6 @@ public interface KeyableEncoder<C> extends Encoder<C> {
 	/**
 	 * Creates a new keyable encoder from the specified encoder and key encoder.<br>
 	 * The key encoder function converts a key to a string.<br>
-	 * If the key encoder is not able to handle a key, it can simply return null.<br>
 	 *
 	 * @param encoder The encoder
 	 * @param keyEncoder The key encoder function
@@ -50,7 +48,7 @@ public interface KeyableEncoder<C> extends Encoder<C> {
 	 * @param <C> The type of the value to encode
 	 * @throws NullPointerException If the encoder or the key encoder function is null
 	 */
-	static <C> @NotNull KeyableEncoder<C> of(@NotNull Encoder<C> encoder, @NotNull ThrowableFunction<C, @Nullable String, ? extends Exception> keyEncoder) {
+	static <C> @NotNull KeyableEncoder<C> of(@NotNull Encoder<C> encoder, @NotNull ResultingFunction<C, String> keyEncoder) {
 		Objects.requireNonNull(encoder, "Encoder must not be null");
 		Objects.requireNonNull(keyEncoder, "Key encoder must not be null");
 		return new KeyableEncoder<>() {
@@ -65,15 +63,7 @@ public interface KeyableEncoder<C> extends Encoder<C> {
 			@Override
 			public <R> @NotNull Result<String> encodeKey(@Nullable TypeProvider<R> provider, @NotNull C key) {
 				Objects.requireNonNull(key, "Key must not be null");
-				
-				try {
-					String encodedKey = keyEncoder.apply(key);
-					return Optional.ofNullable(encodedKey).map(Result::success).orElseGet(() -> {
-						return Result.error("Unable to encode key with codec '" + this + "': Value '" + key + "' could not be converted to a string");
-					});
-				} catch (Exception e) {
-					return Result.error("Unable to encode key with codec '" + this + "': Value '" + key + "' could not be converted to a string due to an exception: " + e.getMessage());
-				}
+				return keyEncoder.apply(key);
 			}
 		};
 	}

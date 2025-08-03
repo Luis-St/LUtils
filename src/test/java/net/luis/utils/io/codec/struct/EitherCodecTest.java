@@ -28,6 +28,7 @@ import org.junit.jupiter.api.Test;
 
 import java.util.Optional;
 
+import static net.luis.utils.io.codec.Codecs.*;
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
@@ -39,15 +40,15 @@ class EitherCodecTest {
 	
 	@Test
 	void constructor() {
-		assertThrows(NullPointerException.class, () -> new EitherCodec<>(null, Codec.BOOLEAN));
-		assertThrows(NullPointerException.class, () -> new EitherCodec<>(Codec.INTEGER, null));
-		assertDoesNotThrow(() -> new EitherCodec<>(Codec.INTEGER, Codec.BOOLEAN));
+		assertThrows(NullPointerException.class, () -> new EitherCodec<>(null, BOOLEAN));
+		assertThrows(NullPointerException.class, () -> new EitherCodec<>(INTEGER, null));
+		assertDoesNotThrow(() -> new EitherCodec<>(INTEGER, BOOLEAN));
 	}
 	
 	@Test
 	void encodeStartNullChecks() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Either<Integer, Boolean>> codec = new EitherCodec<>(Codec.INTEGER, Codec.BOOLEAN);
+		Codec<Either<Integer, Boolean>> codec = new EitherCodec<>(INTEGER, BOOLEAN);
 		Either<Integer, Boolean> left = Either.left(1);
 		
 		assertThrows(NullPointerException.class, () -> codec.encodeStart(null, typeProvider.empty(), left));
@@ -57,7 +58,7 @@ class EitherCodecTest {
 	@Test
 	void encodeStartWithNull() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Either<Integer, Boolean>> codec = new EitherCodec<>(Codec.INTEGER, Codec.BOOLEAN);
+		Codec<Either<Integer, Boolean>> codec = new EitherCodec<>(INTEGER, BOOLEAN);
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), null);
 		assertTrue(result.isError());
@@ -67,7 +68,7 @@ class EitherCodecTest {
 	@Test
 	void encodeStartWithLeftValue() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Either<Integer, Boolean>> codec = new EitherCodec<>(Codec.INTEGER, Codec.BOOLEAN);
+		Codec<Either<Integer, Boolean>> codec = new EitherCodec<>(INTEGER, BOOLEAN);
 		Either<Integer, Boolean> left = Either.left(42);
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), left);
@@ -78,7 +79,7 @@ class EitherCodecTest {
 	@Test
 	void encodeStartWithRightValue() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Either<Integer, Boolean>> codec = new EitherCodec<>(Codec.INTEGER, Codec.BOOLEAN);
+		Codec<Either<Integer, Boolean>> codec = new EitherCodec<>(INTEGER, BOOLEAN);
 		Either<Integer, Boolean> right = Either.right(true);
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), right);
@@ -89,7 +90,7 @@ class EitherCodecTest {
 	@Test
 	void encodeStartWithDifferentTypes() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Either<String, Double>> codec = new EitherCodec<>(Codec.STRING, Codec.DOUBLE);
+		Codec<Either<String, Double>> codec = new EitherCodec<>(STRING, DOUBLE);
 		
 		Either<String, Double> leftString = Either.left("hello");
 		Result<JsonElement> leftResult = codec.encodeStart(typeProvider, typeProvider.empty(), leftString);
@@ -105,7 +106,7 @@ class EitherCodecTest {
 	@Test
 	void encodeStartWithNullLeftValue() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Either<Optional<Integer>, Boolean>> codec = new EitherCodec<>(Codec.INTEGER.optional(), Codec.BOOLEAN);
+		Codec<Either<Optional<Integer>, Boolean>> codec = new EitherCodec<>(INTEGER.optional(), BOOLEAN);
 		Either<Optional<Integer>, Boolean> left = Either.left(null);
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), left);
@@ -116,7 +117,7 @@ class EitherCodecTest {
 	@Test
 	void encodeStartWithNullRightValue() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Either<Integer, Optional<Boolean>>> codec = new EitherCodec<>(Codec.INTEGER, Codec.BOOLEAN.optional());
+		Codec<Either<Integer, Optional<Boolean>>> codec = new EitherCodec<>(INTEGER, BOOLEAN.optional());
 		Either<Integer, Optional<Boolean>> right = Either.right(null);
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), right);
@@ -127,7 +128,7 @@ class EitherCodecTest {
 	@Test
 	void decodeStartNullChecks() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Either<Integer, Boolean>> codec = new EitherCodec<>(Codec.INTEGER, Codec.BOOLEAN);
+		Codec<Either<Integer, Boolean>> codec = new EitherCodec<>(INTEGER, BOOLEAN);
 		
 		assertThrows(NullPointerException.class, () -> codec.decodeStart(null, new JsonPrimitive(1)));
 	}
@@ -135,7 +136,7 @@ class EitherCodecTest {
 	@Test
 	void decodeStartWithNull() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Either<Integer, Boolean>> codec = new EitherCodec<>(Codec.INTEGER, Codec.BOOLEAN);
+		Codec<Either<Integer, Boolean>> codec = new EitherCodec<>(INTEGER, BOOLEAN);
 		
 		Result<Either<Integer, Boolean>> result = codec.decodeStart(typeProvider, null);
 		assertTrue(result.isError());
@@ -145,7 +146,7 @@ class EitherCodecTest {
 	@Test
 	void decodeStartWithFirstCodecMatch() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Either<Integer, Boolean>> codec = new EitherCodec<>(Codec.INTEGER, Codec.BOOLEAN);
+		Codec<Either<Integer, Boolean>> codec = new EitherCodec<>(INTEGER, BOOLEAN);
 		
 		Result<Either<Integer, Boolean>> result = codec.decodeStart(typeProvider, new JsonPrimitive(42));
 		assertTrue(result.isSuccess());
@@ -155,7 +156,7 @@ class EitherCodecTest {
 	@Test
 	void decodeStartWithSecondCodecMatch() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Either<Integer, Boolean>> codec = new EitherCodec<>(Codec.INTEGER, Codec.BOOLEAN);
+		Codec<Either<Integer, Boolean>> codec = new EitherCodec<>(INTEGER, BOOLEAN);
 		
 		Result<Either<Integer, Boolean>> result = codec.decodeStart(typeProvider, new JsonPrimitive(true));
 		assertTrue(result.isSuccess());
@@ -165,7 +166,7 @@ class EitherCodecTest {
 	@Test
 	void decodeStartWithNoMatch() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Either<Integer, Boolean>> codec = new EitherCodec<>(Codec.INTEGER, Codec.BOOLEAN);
+		Codec<Either<Integer, Boolean>> codec = new EitherCodec<>(INTEGER, BOOLEAN);
 		
 		Result<Either<Integer, Boolean>> result = codec.decodeStart(typeProvider, new JsonPrimitive("not-int-or-bool"));
 		assertTrue(result.isError());
@@ -175,7 +176,7 @@ class EitherCodecTest {
 	@Test
 	void decodeStartPrefersFirstCodec() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Either<String, String>> codec = new EitherCodec<>(Codec.STRING, Codec.STRING);
+		Codec<Either<String, String>> codec = new EitherCodec<>(STRING, STRING);
 		
 		Result<Either<String, String>> result = codec.decodeStart(typeProvider, new JsonPrimitive("hello"));
 		assertTrue(result.isSuccess());
@@ -186,7 +187,7 @@ class EitherCodecTest {
 	@Test
 	void decodeStartWithDifferentTypes() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Either<String, Double>> codec = new EitherCodec<>(Codec.STRING, Codec.DOUBLE);
+		Codec<Either<String, Double>> codec = new EitherCodec<>(STRING, DOUBLE);
 		
 		Result<Either<String, Double>> stringResult = codec.decodeStart(typeProvider, new JsonPrimitive("text"));
 		assertTrue(stringResult.isSuccess());
@@ -202,7 +203,7 @@ class EitherCodecTest {
 	@Test
 	void decodeStartWithOverlappingTypes() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Either<Double, Integer>> codec = new EitherCodec<>(Codec.DOUBLE, Codec.INTEGER);
+		Codec<Either<Double, Integer>> codec = new EitherCodec<>(DOUBLE, INTEGER);
 		
 		Result<Either<Double, Integer>> result = codec.decodeStart(typeProvider, new JsonPrimitive(42));
 		assertTrue(result.isSuccess());
@@ -213,7 +214,7 @@ class EitherCodecTest {
 	@Test
 	void decodeStartWithOptionalCodecs() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Either<Optional<Integer>, String>> codec = new EitherCodec<>(Codec.INTEGER.optional(), Codec.STRING);
+		Codec<Either<Optional<Integer>, String>> codec = new EitherCodec<>(INTEGER.optional(), STRING);
 		
 		Result<Either<Optional<Integer>, String>> intResult = codec.decodeStart(typeProvider, new JsonPrimitive(42));
 		assertTrue(intResult.isSuccess());
@@ -228,15 +229,15 @@ class EitherCodecTest {
 	
 	@Test
 	void equalsAndHashCode() {
-		EitherCodec<Integer, Boolean> codec1 = new EitherCodec<>(Codec.INTEGER, Codec.BOOLEAN);
-		EitherCodec<Integer, Boolean> codec2 = new EitherCodec<>(Codec.INTEGER, Codec.BOOLEAN);
+		EitherCodec<Integer, Boolean> codec1 = new EitherCodec<>(INTEGER, BOOLEAN);
+		EitherCodec<Integer, Boolean> codec2 = new EitherCodec<>(INTEGER, BOOLEAN);
 		
 		assertEquals(codec1.hashCode(), codec2.hashCode());
 	}
 	
 	@Test
 	void toStringRepresentation() {
-		EitherCodec<Integer, Boolean> codec = new EitherCodec<>(Codec.INTEGER, Codec.BOOLEAN);
+		EitherCodec<Integer, Boolean> codec = new EitherCodec<>(INTEGER, BOOLEAN);
 		String result = codec.toString();
 		
 		assertTrue(result.startsWith("EitherCodec["));

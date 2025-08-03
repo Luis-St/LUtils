@@ -24,7 +24,6 @@ import net.luis.utils.io.codec.*;
 import net.luis.utils.util.Either;
 import net.luis.utils.util.Utils;
 import net.luis.utils.util.unsafe.reflection.ReflectionHelper;
-import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.ClassUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -38,7 +37,7 @@ import java.nio.file.Path;
 import java.time.*;
 import java.util.*;
 import java.util.function.Function;
-import java.util.stream.Stream;
+import java.util.stream.*;
 
 /**
  * A utility class for automatically creating codecs for classes using reflection.<br>
@@ -51,7 +50,7 @@ import java.util.stream.Stream;
  * @author Luis-St
  */
 @SuppressWarnings({ "unchecked", "rawtypes" })
-public class CodecAutoMapping {
+public final class CodecAutoMapping {
 	
 	/**
 	 * An empty array of codec components used as a default return value when no components are found.<br>
@@ -64,26 +63,38 @@ public class CodecAutoMapping {
 	 * This map contains predefined codecs for commonly used Java types like primitives, strings, and date/time classes.<br>
 	 * When creating an auto-mapped codec, this map is consulted first to find an existing codec for a given type.<br>
 	 */
-	private static final Map<Class<?>, Codec<?>> CODEC_LOOKUP = Utils.make(Maps.newHashMap(), map -> {
-		map.put(Boolean.class, Codec.BOOLEAN);
-		map.put(Byte.class, Codec.BYTE);
-		map.put(Short.class, Codec.SHORT);
-		map.put(Integer.class, Codec.INTEGER);
-		map.put(Long.class, Codec.LONG);
-		map.put(Float.class, Codec.FLOAT);
-		map.put(Double.class, Codec.DOUBLE);
-		map.put(String.class, Codec.STRING);
-		map.put(Character.class, Codec.CHARACTER);
-		map.put(UUID.class, Codec.UUID);
-		map.put(LocalTime.class, Codec.LOCAL_TIME);
-		map.put(LocalDate.class, Codec.LOCAL_DATE);
-		map.put(LocalDateTime.class, Codec.LOCAL_DATE_TIME);
-		map.put(ZonedDateTime.class, Codec.ZONED_DATE_TIME);
-		map.put(Charset.class, Codec.CHARSET);
-		map.put(File.class, Codec.FILE);
-		map.put(Path.class, Codec.PATH);
-		map.put(URI.class, Codec.URI);
-		map.put(URL.class, Codec.URL);
+	public static final Map<Class<?>, Codec<?>> CODEC_LOOKUP = Utils.make(Maps.newHashMap(), map -> {
+		map.put(Boolean.class, Codecs.BOOLEAN);
+		map.put(Byte.class, Codecs.BYTE);
+		map.put(Short.class, Codecs.SHORT);
+		map.put(Integer.class, Codecs.INTEGER);
+		map.put(Long.class, Codecs.LONG);
+		map.put(Float.class, Codecs.FLOAT);
+		map.put(Double.class, Codecs.DOUBLE);
+		map.put(String.class, Codecs.STRING);
+		map.put(Character.class, Codecs.CHARACTER);
+		map.put(UUID.class, Codecs.UUID);
+		map.put(LocalTime.class, Codecs.LOCAL_TIME);
+		map.put(LocalDate.class, Codecs.LOCAL_DATE);
+		map.put(LocalDateTime.class, Codecs.LOCAL_DATE_TIME);
+		map.put(ZonedDateTime.class, Codecs.ZONED_DATE_TIME);
+		map.put(Charset.class, Codecs.CHARSET);
+		map.put(File.class, Codecs.FILE);
+		map.put(Path.class, Codecs.PATH);
+		map.put(URI.class, Codecs.URI);
+		map.put(URL.class, Codecs.URL);
+		map.put(IntStream.class, Codecs.INT_STREAM);
+		map.put(LongStream.class, Codecs.LONG_STREAM);
+		map.put(DoubleStream.class, Codecs.DOUBLE_STREAM);
+		
+		map.put(boolean[].class, Codecs.BOOLEAN_ARRAY);
+		map.put(byte[].class, Codecs.BYTE_ARRAY);
+		map.put(short[].class, Codecs.SHORT_ARRAY);
+		map.put(int[].class, Codecs.INTEGER_ARRAY);
+		map.put(long[].class, Codecs.LONG_ARRAY);
+		map.put(float[].class, Codecs.FLOAT_ARRAY);
+		map.put(double[].class, Codecs.DOUBLE_ARRAY);
+		map.put(char[].class, Codecs.CHARACTER_ARRAY);
 	});
 	
 	/**
@@ -130,14 +141,14 @@ public class CodecAutoMapping {
 	 */
 	private static <O> @NotNull Codec<O> createCodec(@NotNull Class<O> clazz) {
 		if (clazz.isEnum()) {
-			return Codec.dynamicEnum((Class<? extends Enum>) clazz);
+			return Codecs.dynamicEnum((Class<? extends Enum>) clazz);
 		}
 		
 		CodecComponent[] components = getComponents(clazz);
 		Constructor<O> constructor = getConstructor(clazz, components);
 		if (components.length == 0) {
 			O instance = ReflectionHelper.newInstance(constructor).orElseThrow();
-			return Codec.unit(instance);
+			return Codecs.unit(instance);
 		}
 		if (components.length > 16) {
 			throw new IllegalArgumentException("Record class has too many components (max 16): " + clazz.getName());
@@ -356,43 +367,11 @@ public class CodecAutoMapping {
 		Objects.requireNonNull(clazz, "Class must not be null");
 		
 		if (clazz.isArray()) {
-			Class<?> componentType = clazz.getComponentType();
-			
-			//region Primitive Arrays
 			// For some reason Array.set(Object, int, Object) does not work with primitive arrays, so we need to handle them separately,
 			// this is also the reason why there is no Codec.array(Class<?> componentType) method
-			if (componentType == boolean.class) {
-				return (Codec<C>) Codec.BOOLEAN_ARRAY;
-			} else if (componentType == byte.class) {
-				return (Codec<C>) Codec.BYTE_ARRAY;
-			} else if (componentType == short.class) {
-				return (Codec<C>) Codec.SHORT_ARRAY;
-			} else if (componentType == int.class) {
-				return (Codec<C>) Codec.INTEGER_ARRAY;
-			} else if (componentType == long.class) {
-				return (Codec<C>) Codec.LONG_ARRAY;
-			} else if (componentType == float.class) {
-				return (Codec<C>) Codec.FLOAT_ARRAY;
-			} else if (componentType == double.class) {
-				return (Codec<C>) Codec.DOUBLE_ARRAY;
-			} else if (componentType == char.class) {
-				return (Codec<C>) Codec.CHARACTER_ARRAY;
-			}
-			//endregion
-			
-			return (Codec<C>) getCodec(componentType, genericInfo).list().xmap(Arrays::asList, list -> {
-				if (list.isEmpty()) {
-					return ArrayUtils.EMPTY_OBJECT_ARRAY;
-				}
-				
-				Object[] array = (Object[]) Array.newInstance(componentType, list.size());
-				for (int i = 0; i < list.size(); i++) {
-					array[i] = list.get(i);
-				}
-				return array;
-			});
+			return CodecArrayHelper.getOrCreateArrayCodec(clazz, componentType -> getCodec(componentType, null));
 		} else if (clazz.isEnum()) {
-			return Codec.dynamicEnum((Class<? extends Enum>) clazz);
+			return Codecs.dynamicEnum((Class<? extends Enum>) clazz);
 		}
 		
 		if (clazz.isAssignableFrom(Optional.class)) {
@@ -407,7 +386,7 @@ public class CodecAutoMapping {
 			}
 			
 			Class<?>[] newGenericInfo = dropElements(genericInfo, 2);
-			return (Codec<C>) Codec.either(
+			return (Codec<C>) Codecs.either(
 				getCodec(genericInfo[0], newGenericInfo),
 				getCodec(genericInfo[1], newGenericInfo)
 			);

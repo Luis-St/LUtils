@@ -18,13 +18,13 @@
 
 package net.luis.utils.io.codec.struct;
 
-import net.luis.utils.io.codec.Codec;
 import net.luis.utils.io.codec.provider.JsonTypeProvider;
 import net.luis.utils.io.data.json.JsonElement;
 import net.luis.utils.io.data.json.JsonPrimitive;
 import net.luis.utils.util.Result;
 import org.junit.jupiter.api.Test;
 
+import static net.luis.utils.io.codec.Codecs.*;
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
@@ -37,7 +37,7 @@ class RangeCodecTest {
 	@Test
 	void encodeIntegerStartNullChecks() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		RangeCodec<Integer> codec = Codec.INTEGER;
+		RangeCodec<Integer> codec = INTEGER;
 		
 		assertThrows(NullPointerException.class, () -> codec.encodeStart(null, typeProvider.empty(), 1));
 		assertThrows(NullPointerException.class, () -> codec.encodeStart(typeProvider, null, 1));
@@ -46,7 +46,7 @@ class RangeCodecTest {
 	@Test
 	void encodeIntegerStartWithNull() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		RangeCodec<Integer> codec = Codec.INTEGER;
+		RangeCodec<Integer> codec = INTEGER;
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), null);
 		assertTrue(result.isError());
@@ -56,7 +56,7 @@ class RangeCodecTest {
 	@Test
 	void encodeIntegerStartWithValidValues() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		RangeCodec<Integer> codec = Codec.INTEGER;
+		RangeCodec<Integer> codec = INTEGER;
 		
 		Result<JsonElement> negativeResult = codec.encodeStart(typeProvider, typeProvider.empty(), -42);
 		assertTrue(negativeResult.isSuccess());
@@ -82,7 +82,7 @@ class RangeCodecTest {
 	@Test
 	void encodeFloatingPointStartWithValidValues() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		RangeCodec<Double> codec = Codec.DOUBLE;
+		RangeCodec<Double> codec = DOUBLE;
 		
 		Result<JsonElement> negativeResult = codec.encodeStart(typeProvider, typeProvider.empty(), -3.14);
 		assertTrue(negativeResult.isSuccess());
@@ -96,17 +96,18 @@ class RangeCodecTest {
 		assertTrue(positiveResult.isSuccess());
 		assertEquals(new JsonPrimitive(3.14), positiveResult.orThrow());
 		
+		// Currently not supported by the JsonTypeProvider
 		Result<JsonElement> infinityResult = codec.encodeStart(typeProvider, typeProvider.empty(), Double.POSITIVE_INFINITY);
-		assertTrue(infinityResult.isSuccess());
+		assertTrue(infinityResult.isError());
 		
 		Result<JsonElement> nanResult = codec.encodeStart(typeProvider, typeProvider.empty(), Double.NaN);
-		assertTrue(nanResult.isSuccess());
+		assertTrue(nanResult.isError());
 	}
 	
 	@Test
 	void encodeIntegerKeyNullChecks() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		RangeCodec<Integer> codec = Codec.INTEGER;
+		RangeCodec<Integer> codec = INTEGER;
 		
 		assertThrows(NullPointerException.class, () -> codec.encodeKey(null, 1));
 		assertThrows(NullPointerException.class, () -> codec.encodeKey(typeProvider, null));
@@ -115,7 +116,7 @@ class RangeCodecTest {
 	@Test
 	void encodeIntegerKeyWithValidValues() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		RangeCodec<Integer> codec = Codec.INTEGER;
+		RangeCodec<Integer> codec = INTEGER;
 		
 		Result<String> negativeResult = codec.encodeKey(typeProvider, -42);
 		assertTrue(negativeResult.isSuccess());
@@ -141,7 +142,7 @@ class RangeCodecTest {
 	@Test
 	void encodeFloatingPointKeyWithValidValues() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		RangeCodec<Double> codec = Codec.DOUBLE;
+		RangeCodec<Double> codec = DOUBLE;
 		
 		Result<String> negativeResult = codec.encodeKey(typeProvider, -3.14);
 		assertTrue(negativeResult.isSuccess());
@@ -159,19 +160,18 @@ class RangeCodecTest {
 		assertTrue(scientificResult.isSuccess());
 		assertEquals("1.23E-4", scientificResult.orThrow());
 		
+		// Currently not supported by the JsonTypeProvider
 		Result<String> infinityResult = codec.encodeKey(typeProvider, Double.POSITIVE_INFINITY);
-		assertTrue(infinityResult.isSuccess());
-		assertEquals("Infinity", infinityResult.orThrow());
+		assertTrue(infinityResult.isError());
 		
 		Result<String> nanResult = codec.encodeKey(typeProvider, Double.NaN);
-		assertTrue(nanResult.isSuccess());
-		assertEquals("NaN", nanResult.orThrow());
+		assertTrue(nanResult.isError());
 	}
 	
 	@Test
 	void decodeIntegerStartNullChecks() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		RangeCodec<Integer> codec = Codec.INTEGER;
+		RangeCodec<Integer> codec = INTEGER;
 		
 		assertThrows(NullPointerException.class, () -> codec.decodeStart(null, new JsonPrimitive(1)));
 	}
@@ -179,7 +179,7 @@ class RangeCodecTest {
 	@Test
 	void decodeIntegerStartWithNull() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		RangeCodec<Integer> codec = Codec.INTEGER;
+		RangeCodec<Integer> codec = INTEGER;
 		
 		Result<Integer> result = codec.decodeStart(typeProvider, null);
 		assertTrue(result.isError());
@@ -189,7 +189,7 @@ class RangeCodecTest {
 	@Test
 	void decodeIntegerStartWithValidValues() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		RangeCodec<Integer> codec = Codec.INTEGER;
+		RangeCodec<Integer> codec = INTEGER;
 		
 		Result<Integer> negativeResult = codec.decodeStart(typeProvider, new JsonPrimitive(-42));
 		assertTrue(negativeResult.isSuccess());
@@ -215,7 +215,7 @@ class RangeCodecTest {
 	@Test
 	void decodeIntegerStartWithInvalidValues() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		RangeCodec<Integer> codec = Codec.INTEGER;
+		RangeCodec<Integer> codec = INTEGER;
 		
 		Result<Integer> stringResult = codec.decodeStart(typeProvider, new JsonPrimitive("not-a-number"));
 		assertTrue(stringResult.isError());
@@ -230,7 +230,7 @@ class RangeCodecTest {
 	@Test
 	void decodeFloatingPointStartWithValidValues() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		RangeCodec<Double> codec = Codec.DOUBLE;
+		RangeCodec<Double> codec = DOUBLE;
 		
 		Result<Double> negativeResult = codec.decodeStart(typeProvider, new JsonPrimitive(-3.14));
 		assertTrue(negativeResult.isSuccess());
@@ -252,7 +252,7 @@ class RangeCodecTest {
 	@Test
 	void decodeFloatingPointStartWithInvalidValues() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		RangeCodec<Double> codec = Codec.DOUBLE;
+		RangeCodec<Double> codec = DOUBLE;
 		
 		Result<Double> stringResult = codec.decodeStart(typeProvider, new JsonPrimitive("not-a-number"));
 		assertTrue(stringResult.isError());
@@ -264,7 +264,7 @@ class RangeCodecTest {
 	@Test
 	void decodeIntegerKeyNullChecks() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		RangeCodec<Integer> codec = Codec.INTEGER;
+		RangeCodec<Integer> codec = INTEGER;
 		
 		assertThrows(NullPointerException.class, () -> codec.decodeKey(null, "1"));
 		assertThrows(NullPointerException.class, () -> codec.decodeKey(typeProvider, null));
@@ -273,7 +273,7 @@ class RangeCodecTest {
 	@Test
 	void decodeIntegerKeyWithValidValues() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		RangeCodec<Integer> codec = Codec.INTEGER;
+		RangeCodec<Integer> codec = INTEGER;
 		
 		Result<Integer> negativeResult = codec.decodeKey(typeProvider, "-42");
 		assertTrue(negativeResult.isSuccess());
@@ -299,7 +299,7 @@ class RangeCodecTest {
 	@Test
 	void decodeIntegerKeyWithInvalidValues() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		RangeCodec<Integer> codec = Codec.INTEGER;
+		RangeCodec<Integer> codec = INTEGER;
 		
 		Result<Integer> invalidResult = codec.decodeKey(typeProvider, "not-a-number");
 		assertTrue(invalidResult.isError());
@@ -320,7 +320,7 @@ class RangeCodecTest {
 	@Test
 	void decodeFloatingPointKeyWithValidValues() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		RangeCodec<Double> codec = Codec.DOUBLE;
+		RangeCodec<Double> codec = DOUBLE;
 		
 		Result<Double> negativeResult = codec.decodeKey(typeProvider, "-3.14");
 		assertTrue(negativeResult.isSuccess());
@@ -346,7 +346,7 @@ class RangeCodecTest {
 	@Test
 	void decodeFloatingPointKeyWithInvalidValues() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		RangeCodec<Double> codec = Codec.DOUBLE;
+		RangeCodec<Double> codec = DOUBLE;
 		
 		Result<Double> invalidResult = codec.decodeKey(typeProvider, "not-a-number");
 		assertTrue(invalidResult.isError());
@@ -361,7 +361,7 @@ class RangeCodecTest {
 	@Test
 	void positiveRangeValidation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		RangeCodec<Integer> codec = Codec.INTEGER.positive();
+		RangeCodec<Integer> codec = INTEGER.positive();
 		
 		Result<Integer> zeroResult = codec.decodeStart(typeProvider, new JsonPrimitive(0));
 		assertTrue(zeroResult.isError());
@@ -376,9 +376,39 @@ class RangeCodecTest {
 	}
 	
 	@Test
+	void positiveRangeKeyValidation() {
+		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
+		RangeCodec<Integer> codec = INTEGER.positive();
+		
+		Result<String> zeroEncodeResult = codec.encodeKey(typeProvider, 0);
+		assertTrue(zeroEncodeResult.isError());
+		assertTrue(zeroEncodeResult.errorOrThrow().contains("out of range"));
+		
+		Result<String> negativeEncodeResult = codec.encodeKey(typeProvider, -1);
+		assertTrue(negativeEncodeResult.isError());
+		assertTrue(negativeEncodeResult.errorOrThrow().contains("out of range"));
+		
+		Result<String> positiveEncodeResult = codec.encodeKey(typeProvider, 1);
+		assertTrue(positiveEncodeResult.isSuccess());
+		assertEquals("1", positiveEncodeResult.orThrow());
+		
+		Result<Integer> zeroDecodeResult = codec.decodeKey(typeProvider, "0");
+		assertTrue(zeroDecodeResult.isError());
+		assertTrue(zeroDecodeResult.errorOrThrow().contains("out of range"));
+		
+		Result<Integer> negativeDecodeResult = codec.decodeKey(typeProvider, "-1");
+		assertTrue(negativeDecodeResult.isError());
+		assertTrue(negativeDecodeResult.errorOrThrow().contains("out of range"));
+		
+		Result<Integer> positiveDecodeResult = codec.decodeKey(typeProvider, "1");
+		assertTrue(positiveDecodeResult.isSuccess());
+		assertEquals(1, positiveDecodeResult.orThrow());
+	}
+	
+	@Test
 	void positiveOrZeroRangeValidation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		RangeCodec<Integer> codec = Codec.INTEGER.positiveOrZero();
+		RangeCodec<Integer> codec = INTEGER.positiveOrZero();
 		
 		Result<Integer> negativeResult = codec.decodeStart(typeProvider, new JsonPrimitive(-1));
 		assertTrue(negativeResult.isError());
@@ -393,9 +423,37 @@ class RangeCodecTest {
 	}
 	
 	@Test
+	void positiveOrZeroRangeKeyValidation() {
+		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
+		RangeCodec<Integer> codec = INTEGER.positiveOrZero();
+		
+		Result<String> negativeEncodeResult = codec.encodeKey(typeProvider, -1);
+		assertTrue(negativeEncodeResult.isError());
+		
+		Result<String> zeroEncodeResult = codec.encodeKey(typeProvider, 0);
+		assertTrue(zeroEncodeResult.isSuccess());
+		assertEquals("0", zeroEncodeResult.orThrow());
+		
+		Result<String> positiveEncodeResult = codec.encodeKey(typeProvider, 1);
+		assertTrue(positiveEncodeResult.isSuccess());
+		assertEquals("1", positiveEncodeResult.orThrow());
+		
+		Result<Integer> negativeDecodeResult = codec.decodeKey(typeProvider, "-1");
+		assertTrue(negativeDecodeResult.isError());
+		
+		Result<Integer> zeroDecodeResult = codec.decodeKey(typeProvider, "0");
+		assertTrue(zeroDecodeResult.isSuccess());
+		assertEquals(0, zeroDecodeResult.orThrow());
+		
+		Result<Integer> positiveDecodeResult = codec.decodeKey(typeProvider, "1");
+		assertTrue(positiveDecodeResult.isSuccess());
+		assertEquals(1, positiveDecodeResult.orThrow());
+	}
+	
+	@Test
 	void negativeRangeValidation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		RangeCodec<Integer> codec = Codec.INTEGER.negative();
+		RangeCodec<Integer> codec = INTEGER.negative();
 		
 		Result<Integer> positiveResult = codec.decodeStart(typeProvider, new JsonPrimitive(1));
 		assertTrue(positiveResult.isError());
@@ -409,9 +467,35 @@ class RangeCodecTest {
 	}
 	
 	@Test
+	void negativeRangeKeyValidation() {
+		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
+		RangeCodec<Integer> codec = INTEGER.negative();
+		
+		Result<String> positiveEncodeResult = codec.encodeKey(typeProvider, 1);
+		assertTrue(positiveEncodeResult.isError());
+		
+		Result<String> zeroEncodeResult = codec.encodeKey(typeProvider, 0);
+		assertTrue(zeroEncodeResult.isError());
+		
+		Result<String> negativeEncodeResult = codec.encodeKey(typeProvider, -1);
+		assertTrue(negativeEncodeResult.isSuccess());
+		assertEquals("-1", negativeEncodeResult.orThrow());
+		
+		Result<Integer> positiveDecodeResult = codec.decodeKey(typeProvider, "1");
+		assertTrue(positiveDecodeResult.isError());
+		
+		Result<Integer> zeroDecodeResult = codec.decodeKey(typeProvider, "0");
+		assertTrue(zeroDecodeResult.isError());
+		
+		Result<Integer> negativeDecodeResult = codec.decodeKey(typeProvider, "-1");
+		assertTrue(negativeDecodeResult.isSuccess());
+		assertEquals(-1, negativeDecodeResult.orThrow());
+	}
+	
+	@Test
 	void negativeOrZeroRangeValidation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		RangeCodec<Integer> codec = Codec.INTEGER.negativeOrZero();
+		RangeCodec<Integer> codec = INTEGER.negativeOrZero();
 		
 		Result<Integer> positiveResult = codec.decodeStart(typeProvider, new JsonPrimitive(1));
 		assertTrue(positiveResult.isError());
@@ -426,9 +510,37 @@ class RangeCodecTest {
 	}
 	
 	@Test
+	void negativeOrZeroRangeKeyValidation() {
+		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
+		RangeCodec<Integer> codec = INTEGER.negativeOrZero();
+		
+		Result<String> positiveEncodeResult = codec.encodeKey(typeProvider, 1);
+		assertTrue(positiveEncodeResult.isError());
+		
+		Result<String> zeroEncodeResult = codec.encodeKey(typeProvider, 0);
+		assertTrue(zeroEncodeResult.isSuccess());
+		assertEquals("0", zeroEncodeResult.orThrow());
+		
+		Result<String> negativeEncodeResult = codec.encodeKey(typeProvider, -1);
+		assertTrue(negativeEncodeResult.isSuccess());
+		assertEquals("-1", negativeEncodeResult.orThrow());
+		
+		Result<Integer> positiveDecodeResult = codec.decodeKey(typeProvider, "1");
+		assertTrue(positiveDecodeResult.isError());
+		
+		Result<Integer> zeroDecodeResult = codec.decodeKey(typeProvider, "0");
+		assertTrue(zeroDecodeResult.isSuccess());
+		assertEquals(0, zeroDecodeResult.orThrow());
+		
+		Result<Integer> negativeDecodeResult = codec.decodeKey(typeProvider, "-1");
+		assertTrue(negativeDecodeResult.isSuccess());
+		assertEquals(-1, negativeDecodeResult.orThrow());
+	}
+	
+	@Test
 	void atLeastRangeValidation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		RangeCodec<Integer> codec = Codec.INTEGER.atLeast(5);
+		RangeCodec<Integer> codec = INTEGER.atLeast(5);
 		
 		Result<Integer> belowResult = codec.decodeStart(typeProvider, new JsonPrimitive(4));
 		assertTrue(belowResult.isError());
@@ -443,9 +555,39 @@ class RangeCodecTest {
 	}
 	
 	@Test
+	void atLeastRangeKeyValidation() {
+		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
+		RangeCodec<Integer> codec = INTEGER.atLeast(5);
+		
+		Result<String> belowEncodeResult = codec.encodeKey(typeProvider, 4);
+		assertTrue(belowEncodeResult.isError());
+		assertTrue(belowEncodeResult.errorOrThrow().contains("out of range"));
+		
+		Result<String> exactEncodeResult = codec.encodeKey(typeProvider, 5);
+		assertTrue(exactEncodeResult.isSuccess());
+		assertEquals("5", exactEncodeResult.orThrow());
+		
+		Result<String> aboveEncodeResult = codec.encodeKey(typeProvider, 10);
+		assertTrue(aboveEncodeResult.isSuccess());
+		assertEquals("10", aboveEncodeResult.orThrow());
+		
+		Result<Integer> belowDecodeResult = codec.decodeKey(typeProvider, "4");
+		assertTrue(belowDecodeResult.isError());
+		assertTrue(belowDecodeResult.errorOrThrow().contains("out of range"));
+		
+		Result<Integer> exactDecodeResult = codec.decodeKey(typeProvider, "5");
+		assertTrue(exactDecodeResult.isSuccess());
+		assertEquals(5, exactDecodeResult.orThrow());
+		
+		Result<Integer> aboveDecodeResult = codec.decodeKey(typeProvider, "10");
+		assertTrue(aboveDecodeResult.isSuccess());
+		assertEquals(10, aboveDecodeResult.orThrow());
+	}
+	
+	@Test
 	void atMostRangeValidation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		RangeCodec<Integer> codec = Codec.INTEGER.atMost(5);
+		RangeCodec<Integer> codec = INTEGER.atMost(5);
 		
 		Result<Integer> aboveResult = codec.decodeStart(typeProvider, new JsonPrimitive(6));
 		assertTrue(aboveResult.isError());
@@ -460,9 +602,39 @@ class RangeCodecTest {
 	}
 	
 	@Test
+	void atMostRangeKeyValidation() {
+		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
+		RangeCodec<Integer> codec = INTEGER.atMost(5);
+		
+		Result<String> aboveEncodeResult = codec.encodeKey(typeProvider, 6);
+		assertTrue(aboveEncodeResult.isError());
+		assertTrue(aboveEncodeResult.errorOrThrow().contains("out of range"));
+		
+		Result<String> exactEncodeResult = codec.encodeKey(typeProvider, 5);
+		assertTrue(exactEncodeResult.isSuccess());
+		assertEquals("5", exactEncodeResult.orThrow());
+		
+		Result<String> belowEncodeResult = codec.encodeKey(typeProvider, 0);
+		assertTrue(belowEncodeResult.isSuccess());
+		assertEquals("0", belowEncodeResult.orThrow());
+		
+		Result<Integer> aboveDecodeResult = codec.decodeKey(typeProvider, "6");
+		assertTrue(aboveDecodeResult.isError());
+		assertTrue(aboveDecodeResult.errorOrThrow().contains("out of range"));
+		
+		Result<Integer> exactDecodeResult = codec.decodeKey(typeProvider, "5");
+		assertTrue(exactDecodeResult.isSuccess());
+		assertEquals(5, exactDecodeResult.orThrow());
+		
+		Result<Integer> belowDecodeResult = codec.decodeKey(typeProvider, "0");
+		assertTrue(belowDecodeResult.isSuccess());
+		assertEquals(0, belowDecodeResult.orThrow());
+	}
+	
+	@Test
 	void customRangeValidation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		RangeCodec<Integer> codec = Codec.INTEGER.range(10, 20);
+		RangeCodec<Integer> codec = INTEGER.range(10, 20);
 		
 		Result<Integer> belowResult = codec.decodeStart(typeProvider, new JsonPrimitive(9));
 		assertTrue(belowResult.isError());
@@ -484,9 +656,55 @@ class RangeCodecTest {
 	}
 	
 	@Test
+	void customRangeKeyValidation() {
+		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
+		RangeCodec<Integer> codec = INTEGER.range(10, 20);
+		
+		Result<String> belowEncodeResult = codec.encodeKey(typeProvider, 9);
+		assertTrue(belowEncodeResult.isError());
+		assertTrue(belowEncodeResult.errorOrThrow().contains("out of range"));
+		
+		Result<String> aboveEncodeResult = codec.encodeKey(typeProvider, 21);
+		assertTrue(aboveEncodeResult.isError());
+		assertTrue(aboveEncodeResult.errorOrThrow().contains("out of range"));
+		
+		Result<String> lowerBoundEncodeResult = codec.encodeKey(typeProvider, 10);
+		assertTrue(lowerBoundEncodeResult.isSuccess());
+		assertEquals("10", lowerBoundEncodeResult.orThrow());
+		
+		Result<String> upperBoundEncodeResult = codec.encodeKey(typeProvider, 20);
+		assertTrue(upperBoundEncodeResult.isSuccess());
+		assertEquals("20", upperBoundEncodeResult.orThrow());
+		
+		Result<String> middleEncodeResult = codec.encodeKey(typeProvider, 15);
+		assertTrue(middleEncodeResult.isSuccess());
+		assertEquals("15", middleEncodeResult.orThrow());
+		
+		Result<Integer> belowDecodeResult = codec.decodeKey(typeProvider, "9");
+		assertTrue(belowDecodeResult.isError());
+		assertTrue(belowDecodeResult.errorOrThrow().contains("out of range"));
+		
+		Result<Integer> aboveDecodeResult = codec.decodeKey(typeProvider, "21");
+		assertTrue(aboveDecodeResult.isError());
+		assertTrue(aboveDecodeResult.errorOrThrow().contains("out of range"));
+		
+		Result<Integer> lowerBoundDecodeResult = codec.decodeKey(typeProvider, "10");
+		assertTrue(lowerBoundDecodeResult.isSuccess());
+		assertEquals(10, lowerBoundDecodeResult.orThrow());
+		
+		Result<Integer> upperBoundDecodeResult = codec.decodeKey(typeProvider, "20");
+		assertTrue(upperBoundDecodeResult.isSuccess());
+		assertEquals(20, upperBoundDecodeResult.orThrow());
+		
+		Result<Integer> middleDecodeResult = codec.decodeKey(typeProvider, "15");
+		assertTrue(middleDecodeResult.isSuccess());
+		assertEquals(15, middleDecodeResult.orThrow());
+	}
+	
+	@Test
 	void doubleRangeValidation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		RangeCodec<Double> codec = Codec.DOUBLE.range(1.0, 10.0);
+		RangeCodec<Double> codec = DOUBLE.range(1.0, 10.0);
 		
 		Result<Double> belowResult = codec.decodeStart(typeProvider, new JsonPrimitive(0.9));
 		assertTrue(belowResult.isError());
@@ -500,21 +718,51 @@ class RangeCodecTest {
 	}
 	
 	@Test
-	void rangeMethodNullChecks() {
-		assertThrows(NullPointerException.class, () -> Codec.INTEGER.atLeast(null));
-		assertThrows(NullPointerException.class, () -> Codec.INTEGER.atMost(null));
-		assertThrows(NullPointerException.class, () -> Codec.INTEGER.range(null, 10));
-		assertThrows(NullPointerException.class, () -> Codec.INTEGER.range(0, null));
+	void doubleRangeKeyValidation() {
+		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
+		RangeCodec<Double> codec = DOUBLE.range(1.0, 10.0);
 		
-		assertThrows(NullPointerException.class, () -> Codec.DOUBLE.atLeast(null));
-		assertThrows(NullPointerException.class, () -> Codec.DOUBLE.atMost(null));
-		assertThrows(NullPointerException.class, () -> Codec.DOUBLE.range(null, 10.0));
-		assertThrows(NullPointerException.class, () -> Codec.DOUBLE.range(0.0, null));
+		Result<String> belowEncodeResult = codec.encodeKey(typeProvider, 0.9);
+		assertTrue(belowEncodeResult.isError());
+		assertTrue(belowEncodeResult.errorOrThrow().contains("out of range"));
+		
+		Result<String> aboveEncodeResult = codec.encodeKey(typeProvider, 10.1);
+		assertTrue(aboveEncodeResult.isError());
+		assertTrue(aboveEncodeResult.errorOrThrow().contains("out of range"));
+		
+		Result<String> validEncodeResult = codec.encodeKey(typeProvider, 5.5);
+		assertTrue(validEncodeResult.isSuccess());
+		assertEquals("5.5", validEncodeResult.orThrow());
+		
+		Result<Double> belowDecodeResult = codec.decodeKey(typeProvider, "0.9");
+		assertTrue(belowDecodeResult.isError());
+		assertTrue(belowDecodeResult.errorOrThrow().contains("out of range"));
+		
+		Result<Double> aboveDecodeResult = codec.decodeKey(typeProvider, "10.1");
+		assertTrue(aboveDecodeResult.isError());
+		assertTrue(aboveDecodeResult.errorOrThrow().contains("out of range"));
+		
+		Result<Double> validDecodeResult = codec.decodeKey(typeProvider, "5.5");
+		assertTrue(validDecodeResult.isSuccess());
+		assertEquals(5.5, validDecodeResult.orThrow());
+	}
+	
+	@Test
+	void rangeMethodNullChecks() {
+		assertThrows(NullPointerException.class, () -> INTEGER.atLeast(null));
+		assertThrows(NullPointerException.class, () -> INTEGER.atMost(null));
+		assertThrows(NullPointerException.class, () -> INTEGER.range(null, 10));
+		assertThrows(NullPointerException.class, () -> INTEGER.range(0, null));
+		
+		assertThrows(NullPointerException.class, () -> DOUBLE.atLeast(null));
+		assertThrows(NullPointerException.class, () -> DOUBLE.atMost(null));
+		assertThrows(NullPointerException.class, () -> DOUBLE.range(null, 10.0));
+		assertThrows(NullPointerException.class, () -> DOUBLE.range(0.0, null));
 	}
 	
 	@Test
 	void rangeMethodsReturnNewInstances() {
-		RangeCodec<Integer> original = Codec.INTEGER;
+		RangeCodec<Integer> original = INTEGER;
 		
 		assertNotSame(original, original.positive());
 		assertNotSame(original, original.positiveOrZero());
@@ -527,15 +775,15 @@ class RangeCodecTest {
 	
 	@Test
 	void equalsAndHashCode() {
-		RangeCodec<Integer> codec1 = Codec.INTEGER.range(0, 100);
-		RangeCodec<Integer> codec2 = Codec.INTEGER.range(0, 100);
+		RangeCodec<Integer> codec1 = INTEGER.range(0, 100);
+		RangeCodec<Integer> codec2 = INTEGER.range(0, 100);
 		
 		assertEquals(codec1.hashCode(), codec2.hashCode());
 	}
 	
 	@Test
 	void toStringRepresentation() {
-		RangeCodec<Integer> codec = Codec.INTEGER.range(0, 100);
+		RangeCodec<Integer> codec = INTEGER.range(0, 100);
 		String result = codec.toString();
 		
 		assertTrue(result.contains("Range"));
