@@ -18,7 +18,6 @@
 
 package net.luis.utils.io.codec.encoder;
 
-import net.luis.utils.io.codec.Codec;
 import net.luis.utils.io.codec.ResultingFunction;
 import net.luis.utils.io.codec.provider.JsonTypeProvider;
 import net.luis.utils.io.data.json.JsonElement;
@@ -26,6 +25,7 @@ import net.luis.utils.io.data.json.JsonPrimitive;
 import net.luis.utils.util.Result;
 import org.junit.jupiter.api.Test;
 
+import static net.luis.utils.io.codec.Codecs.*;
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
@@ -38,7 +38,7 @@ class EncoderTest {
 	@Test
 	void encodeNullChecks() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Encoder<Integer> encoder = Codec.INTEGER;
+		Encoder<Integer> encoder = INTEGER;
 		
 		assertThrows(NullPointerException.class, () -> encoder.encode(null, 1));
 		assertThrows(NullPointerException.class, () -> encoder.encode(null, typeProvider.empty(), 1));
@@ -48,7 +48,7 @@ class EncoderTest {
 	@Test
 	void encodeWithValidValue() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Encoder<Integer> encoder = Codec.INTEGER;
+		Encoder<Integer> encoder = INTEGER;
 		
 		JsonElement result = encoder.encode(typeProvider, 42);
 		assertEquals(new JsonPrimitive(42), result);
@@ -60,7 +60,7 @@ class EncoderTest {
 	@Test
 	void encodeWithNullValue() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Encoder<Integer> encoder = Codec.INTEGER;
+		Encoder<Integer> encoder = INTEGER;
 		
 		assertThrows(EncoderException.class, () -> encoder.encode(typeProvider, null));
 		assertThrows(EncoderException.class, () -> encoder.encode(typeProvider, typeProvider.empty(), null));
@@ -70,20 +70,20 @@ class EncoderTest {
 	void encodeWithDifferentTypes() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		
-		JsonElement stringResult = Codec.STRING.encode(typeProvider, "hello");
+		JsonElement stringResult = STRING.encode(typeProvider, "hello");
 		assertEquals(new JsonPrimitive("hello"), stringResult);
 		
-		JsonElement boolResult = Codec.BOOLEAN.encode(typeProvider, true);
+		JsonElement boolResult = BOOLEAN.encode(typeProvider, true);
 		assertEquals(new JsonPrimitive(true), boolResult);
 		
-		JsonElement doubleResult = Codec.DOUBLE.encode(typeProvider, 3.14);
+		JsonElement doubleResult = DOUBLE.encode(typeProvider, 3.14);
 		assertEquals(new JsonPrimitive(3.14), doubleResult);
 	}
 	
 	@Test
 	void encodeStartNullChecks() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Encoder<Integer> encoder = Codec.INTEGER;
+		Encoder<Integer> encoder = INTEGER;
 		
 		assertThrows(NullPointerException.class, () -> encoder.encodeStart(null, typeProvider.empty(), 1));
 		assertThrows(NullPointerException.class, () -> encoder.encodeStart(typeProvider, null, 1));
@@ -92,7 +92,7 @@ class EncoderTest {
 	@Test
 	void encodeStartWithValidValue() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Encoder<Integer> encoder = Codec.INTEGER;
+		Encoder<Integer> encoder = INTEGER;
 		
 		Result<JsonElement> result = encoder.encodeStart(typeProvider, typeProvider.empty(), 42);
 		assertTrue(result.isSuccess());
@@ -102,7 +102,7 @@ class EncoderTest {
 	@Test
 	void encodeStartWithNullValue() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Encoder<Integer> encoder = Codec.INTEGER;
+		Encoder<Integer> encoder = INTEGER;
 		
 		Result<JsonElement> result = encoder.encodeStart(typeProvider, typeProvider.empty(), null);
 		assertTrue(result.isError());
@@ -111,7 +111,7 @@ class EncoderTest {
 	@Test
 	void encodeStartWithSpecialNumbers() { // Currently not supported by the JsonTypeProvider
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Encoder<Double> encoder = Codec.DOUBLE;
+		Encoder<Double> encoder = DOUBLE;
 		
 		Result<JsonElement> infinityResult = encoder.encodeStart(typeProvider, typeProvider.empty(), Double.POSITIVE_INFINITY);
 		assertTrue(infinityResult.isError());
@@ -125,13 +125,13 @@ class EncoderTest {
 	
 	@Test
 	void mapEncoderNullChecks() {
-		assertThrows(NullPointerException.class, () -> Codec.INTEGER.mapEncoder(null));
+		assertThrows(NullPointerException.class, () -> INTEGER.mapEncoder(null));
 	}
 	
 	@Test
 	void mapEncoderWithSuccessfulMapping() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Encoder<Double> encoder = Codec.INTEGER.mapEncoder(ResultingFunction.direct(Double::intValue));
+		Encoder<Double> encoder = INTEGER.mapEncoder(ResultingFunction.direct(Double::intValue));
 		
 		Result<JsonElement> result = encoder.encodeStart(typeProvider, typeProvider.empty(), 42.7);
 		assertTrue(result.isSuccess());
@@ -141,7 +141,7 @@ class EncoderTest {
 	@Test
 	void mapEncoderWithFailingMapping() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Encoder<Integer> encoder = Codec.INTEGER.mapEncoder(ResultingFunction.throwable(i -> {
+		Encoder<Integer> encoder = INTEGER.mapEncoder(ResultingFunction.throwable(i -> {
 			if (i == 0) {
 				throw new IllegalArgumentException("Zero not allowed");
 			}
@@ -161,7 +161,7 @@ class EncoderTest {
 	@Test
 	void mapEncoderWithNullMapping() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Encoder<String> encoder = Codec.INTEGER.mapEncoder(ResultingFunction.direct(s -> null));
+		Encoder<String> encoder = INTEGER.mapEncoder(ResultingFunction.direct(s -> null));
 		
 		Result<JsonElement> result = encoder.encodeStart(typeProvider, typeProvider.empty(), "anything");
 		assertTrue(result.isError());
@@ -170,7 +170,7 @@ class EncoderTest {
 	@Test
 	void mapEncoderChaining() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Encoder<String> encoder = Codec.INTEGER.mapEncoder(ResultingFunction.direct(Double::intValue)).mapEncoder(ResultingFunction.direct(Double::parseDouble));
+		Encoder<String> encoder = INTEGER.mapEncoder(ResultingFunction.direct(Double::intValue)).mapEncoder(ResultingFunction.direct(Double::parseDouble));
 		
 		Result<JsonElement> result = encoder.encodeStart(typeProvider, typeProvider.empty(), "42");
 		assertTrue(result.isSuccess());
@@ -180,7 +180,7 @@ class EncoderTest {
 	@Test
 	void mapEncoderWithComplexMapping() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Encoder<Person> encoder = Codec.STRING.mapEncoder(ResultingFunction.direct(Person::name));
+		Encoder<Person> encoder = STRING.mapEncoder(ResultingFunction.direct(Person::name));
 		
 		Result<JsonElement> result = encoder.encodeStart(typeProvider, typeProvider.empty(), new Person("John", 25));
 		assertTrue(result.isSuccess());

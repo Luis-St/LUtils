@@ -18,7 +18,6 @@
 
 package net.luis.utils.io.codec.encoder;
 
-import net.luis.utils.io.codec.Codec;
 import net.luis.utils.io.codec.ResultingFunction;
 import net.luis.utils.io.codec.provider.JsonTypeProvider;
 import net.luis.utils.io.data.json.JsonElement;
@@ -26,6 +25,7 @@ import net.luis.utils.io.data.json.JsonPrimitive;
 import net.luis.utils.util.Result;
 import org.junit.jupiter.api.Test;
 
+import static net.luis.utils.io.codec.Codecs.*;
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
@@ -38,12 +38,12 @@ class KeyableEncoderTest {
 	@Test
 	void ofNullChecks() {
 		assertThrows(NullPointerException.class, () -> KeyableEncoder.of(null, ResultingFunction.direct(String::valueOf)));
-		assertThrows(NullPointerException.class, () -> KeyableEncoder.of(Codec.INTEGER, null));
+		assertThrows(NullPointerException.class, () -> KeyableEncoder.of(INTEGER, null));
 	}
 	
 	@Test
 	void ofCreatesValidEncoder() {
-		KeyableEncoder<Integer> encoder = KeyableEncoder.of(Codec.INTEGER, ResultingFunction.direct(String::valueOf));
+		KeyableEncoder<Integer> encoder = KeyableEncoder.of(INTEGER, ResultingFunction.direct(String::valueOf));
 		assertNotNull(encoder);
 		
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
@@ -55,7 +55,7 @@ class KeyableEncoderTest {
 	@Test
 	void encodeKeyNullChecks() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		KeyableEncoder<Integer> encoder = Codec.INTEGER;
+		KeyableEncoder<Integer> encoder = INTEGER;
 		
 		assertThrows(NullPointerException.class, () -> encoder.encodeKey(null, 1));
 		assertThrows(NullPointerException.class, () -> encoder.encodeKey(typeProvider, null));
@@ -64,7 +64,7 @@ class KeyableEncoderTest {
 	@Test
 	void encodeKeyWithValidValues() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		KeyableEncoder<Integer> encoder = Codec.INTEGER;
+		KeyableEncoder<Integer> encoder = INTEGER;
 		
 		Result<String> result = encoder.encodeKey(typeProvider, 42);
 		assertTrue(result.isSuccess());
@@ -82,7 +82,7 @@ class KeyableEncoderTest {
 	@Test
 	void encodeKeyWithDoubleValues() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		KeyableEncoder<Double> encoder = Codec.DOUBLE;
+		KeyableEncoder<Double> encoder = DOUBLE;
 		
 		Result<String> result = encoder.encodeKey(typeProvider, 42.5);
 		assertTrue(result.isSuccess());
@@ -96,7 +96,7 @@ class KeyableEncoderTest {
 	@Test
 	void encodeKeyWithStringValues() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		KeyableEncoder<String> encoder = Codec.STRING;
+		KeyableEncoder<String> encoder = STRING;
 		
 		Result<String> result = encoder.encodeKey(typeProvider, "hello");
 		assertTrue(result.isSuccess());
@@ -114,7 +114,7 @@ class KeyableEncoderTest {
 	@Test
 	void encodeKeyWithSpecialNumbers() { // Currently not supported by the JsonTypeProvider
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		KeyableEncoder<Double> encoder = Codec.DOUBLE;
+		KeyableEncoder<Double> encoder = DOUBLE;
 		
 		Result<String> infinityResult = encoder.encodeKey(typeProvider, Double.POSITIVE_INFINITY);
 		assertTrue(infinityResult.isError());
@@ -128,7 +128,7 @@ class KeyableEncoderTest {
 	
 	@Test
 	void encodeKeyWithCustomKeyEncoder() {
-		KeyableEncoder<Integer> encoder = KeyableEncoder.of(Codec.INTEGER, ResultingFunction.direct(value -> {
+		KeyableEncoder<Integer> encoder = KeyableEncoder.of(INTEGER, ResultingFunction.direct(value -> {
 			if (value == 999) {
 				return "special";
 			}
@@ -148,7 +148,7 @@ class KeyableEncoderTest {
 	
 	@Test
 	void encodeKeyWithResultingKeyEncoder() {
-		KeyableEncoder<Integer> encoder = KeyableEncoder.of(Codec.INTEGER, value -> {
+		KeyableEncoder<Integer> encoder = KeyableEncoder.of(INTEGER, value -> {
 			if (value == 999) {
 				return Result.success("special");
 			}
@@ -175,7 +175,7 @@ class KeyableEncoderTest {
 	
 	@Test
 	void encodeKeyWithNullReturningKeyEncoder() {
-		KeyableEncoder<String> encoder = KeyableEncoder.of(Codec.STRING, ResultingFunction.direct(value -> null));
+		KeyableEncoder<String> encoder = KeyableEncoder.of(STRING, ResultingFunction.direct(value -> null));
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		
 		Result<String> result = encoder.encodeKey(typeProvider, "anything");
@@ -185,7 +185,7 @@ class KeyableEncoderTest {
 	
 	@Test
 	void encodeKeyWithExceptionThrowingKeyEncoder() {
-		KeyableEncoder<String> encoder = KeyableEncoder.of(Codec.STRING, value -> {
+		KeyableEncoder<String> encoder = KeyableEncoder.of(STRING, value -> {
 			if ("bad".equals(value)) {
 				return Result.error("Bad value");
 			}
@@ -206,7 +206,7 @@ class KeyableEncoderTest {
 	@Test
 	void inheritsEncoderBehavior() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		KeyableEncoder<Integer> encoder = Codec.INTEGER;
+		KeyableEncoder<Integer> encoder = INTEGER;
 		
 		Result<JsonElement> normalEncodeResult = encoder.encodeStart(typeProvider, typeProvider.empty(), 42);
 		assertTrue(normalEncodeResult.isSuccess());

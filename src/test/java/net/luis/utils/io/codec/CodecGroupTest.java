@@ -28,6 +28,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.function.Function;
 
+import static net.luis.utils.io.codec.Codecs.*;
 import static net.luis.utils.io.codec.ResultingFunction.*;
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -40,8 +41,8 @@ class CodecGroupTest {
 	
 	private static @NotNull CodecGroup<TestObject> createTestCodecGroup() {
 		List<ConfiguredCodec<?, TestObject>> codecs = List.of(
-			Codec.STRING.configure("name", TestObject::name),
-			Codec.INTEGER.configure("value", TestObject::value)
+			STRING.configure("name", TestObject::name),
+			INTEGER.configure("value", TestObject::value)
 		);
 		return new CodecGroup<>(codecs, direct(components -> new TestObject((String) components.getFirst(), (Integer) components.get(1))));
 	}
@@ -93,9 +94,9 @@ class CodecGroupTest {
 	void encodeStartWithDifferentTypes() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		List<ConfiguredCodec<?, TestObject2>> codecs = List.of(
-			Codec.STRING.configure("text", TestObject2::text),
-			Codec.DOUBLE.configure("number", TestObject2::number),
-			Codec.BOOLEAN.configure("flag", TestObject2::flag)
+			STRING.configure("text", TestObject2::text),
+			DOUBLE.configure("number", TestObject2::number),
+			BOOLEAN.configure("flag", TestObject2::flag)
 		);
 		CodecGroup<TestObject2> codec = new CodecGroup<>(codecs, direct(components -> new TestObject2((String) components.getFirst(), (Double) components.get(1), (Boolean) components.get(2))));
 		
@@ -129,7 +130,7 @@ class CodecGroupTest {
 	void encodeStartWithNullCodec() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		List<ConfiguredCodec<?, TestObject>> codecs = Arrays.asList(
-			Codec.STRING.configure("name", TestObject::name),
+			STRING.configure("name", TestObject::name),
 			null
 		);
 		CodecGroup<TestObject> codec = new CodecGroup<>(codecs, direct(components -> new TestObject("", 0)));
@@ -187,9 +188,9 @@ class CodecGroupTest {
 	void decodeStartWithDifferentTypes() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		List<ConfiguredCodec<?, TestObject2>> codecs = List.of(
-			Codec.STRING.configure("text", TestObject2::text),
-			Codec.DOUBLE.configure("number", TestObject2::number),
-			Codec.BOOLEAN.configure("flag", TestObject2::flag)
+			STRING.configure("text", TestObject2::text),
+			DOUBLE.configure("number", TestObject2::number),
+			BOOLEAN.configure("flag", TestObject2::flag)
 		);
 		CodecGroup<TestObject2> codec = new CodecGroup<>(codecs, direct(components -> new TestObject2((String) components.getFirst(), (Double) components.get(1), (Boolean) components.get(2))));
 		
@@ -224,7 +225,7 @@ class CodecGroupTest {
 	void decodeStartWithNullCodec() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		List<ConfiguredCodec<?, TestObject>> codecs = Arrays.asList(
-			Codec.STRING.configure("name", TestObject::name),
+			STRING.configure("name", TestObject::name),
 			null
 		);
 		CodecGroup<TestObject> codec = new CodecGroup<>(codecs, direct(components -> new TestObject("", 0)));
@@ -238,7 +239,7 @@ class CodecGroupTest {
 	@Test
 	void decodeStartWithFailingCodec() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		ConfiguredCodec<String, TestObject> failingCodec = Codec.STRING.validate(s -> Result.error("Always fails")).configure("name", TestObject::name);
+		ConfiguredCodec<String, TestObject> failingCodec = STRING.validate(s -> Result.error("Always fails")).configure("name", TestObject::name);
 		List<ConfiguredCodec<?, TestObject>> codecs = List.of(failingCodec);
 		CodecGroup<TestObject> codec = new CodecGroup<>(codecs, direct(components -> new TestObject("", 0)));
 		
@@ -267,8 +268,8 @@ class CodecGroupTest {
 	void decodeStartWithFactoryException() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		List<ConfiguredCodec<?, TestObject>> codecs = List.of(
-			Codec.STRING.configure("name", TestObject::name),
-			Codec.INTEGER.configure("value", TestObject::value)
+			STRING.configure("name", TestObject::name),
+			INTEGER.configure("value", TestObject::value)
 		);
 		Function<List<Object>, TestObject> throwingFactory = components -> {
 			throw new RuntimeException("Factory error");
@@ -303,9 +304,9 @@ class CodecGroupTest {
 	void roundTripWithComplexTypes() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		List<ConfiguredCodec<?, TestObject2>> codecs = List.of(
-			Codec.STRING.configure("text", TestObject2::text),
-			Codec.DOUBLE.configure("number", TestObject2::number),
-			Codec.BOOLEAN.configure("flag", TestObject2::flag)
+			STRING.configure("text", TestObject2::text),
+			DOUBLE.configure("number", TestObject2::number),
+			BOOLEAN.configure("flag", TestObject2::flag)
 		);
 		CodecGroup<TestObject2> codec = new CodecGroup<>(codecs, direct(components -> new TestObject2((String) components.getFirst(), (Double) components.get(1), (Boolean) components.get(2))));
 		
@@ -345,7 +346,7 @@ class CodecGroupTest {
 	@Test
 	void toStringWithSingleCodec() {
 		List<ConfiguredCodec<?, TestObject>> codecs = List.of(
-			Codec.STRING.configure("name", TestObject::name)
+			STRING.configure("name", TestObject::name)
 		);
 		CodecGroup<TestObject> codec = new CodecGroup<>(codecs, direct(components -> new TestObject("", 0)));
 		String result = codec.toString();

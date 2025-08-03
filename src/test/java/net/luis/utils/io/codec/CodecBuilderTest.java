@@ -25,7 +25,7 @@ import org.junit.jupiter.api.Test;
 
 import java.util.Optional;
 
-import static net.luis.utils.io.codec.Codec.*;
+import static net.luis.utils.io.codec.Codecs.*;
 import static org.junit.jupiter.api.Assertions.*;
 
 /**

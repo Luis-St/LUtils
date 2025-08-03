@@ -29,6 +29,7 @@ import org.junit.jupiter.api.Test;
 import java.util.List;
 import java.util.function.Function;
 
+import static net.luis.utils.io.codec.Codecs.*;
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
@@ -47,8 +48,8 @@ class CodecCreatorTest {
 	@Test
 	void createWithNullFunction() {
 		CodecCreator<TestObject, TestFunction> creator = new CodecCreator<>(List.of(
-			Codec.STRING.configure("name", TestObject::name),
-			Codec.INTEGER.configure("value", TestObject::value)
+			STRING.configure("name", TestObject::name),
+			INTEGER.configure("value", TestObject::value)
 		));
 		
 		assertThrows(NullPointerException.class, () -> creator.create(null));
@@ -57,8 +58,8 @@ class CodecCreatorTest {
 	@Test
 	void createSuccess() {
 		CodecCreator<TestObject, TestFunction> creator = new CodecCreator<>(List.of(
-			Codec.STRING.configure("name", TestObject::name),
-			Codec.INTEGER.configure("value", TestObject::value)
+			STRING.configure("name", TestObject::name),
+			INTEGER.configure("value", TestObject::value)
 		));
 		TestFunction function = new TestFunction();
 		
@@ -80,9 +81,9 @@ class CodecCreatorTest {
 	@Test
 	void createWithDifferentFunctionTypes() {
 		CodecCreator<TestObject2, TestFunction2> creator = new CodecCreator<>(List.of(
-			Codec.STRING.configure("text", TestObject2::text),
-			Codec.DOUBLE.configure("number", TestObject2::number),
-			Codec.BOOLEAN.configure("flag", TestObject2::flag)
+			STRING.configure("text", TestObject2::text),
+			DOUBLE.configure("number", TestObject2::number),
+			BOOLEAN.configure("flag", TestObject2::flag)
 		));
 		TestFunction2 function = new TestFunction2();
 		
@@ -94,8 +95,8 @@ class CodecCreatorTest {
 	@Test
 	void createdCodecEncodesCorrectly() {
 		CodecCreator<TestObject, TestFunction> creator = new CodecCreator<>(List.of(
-			Codec.STRING.configure("name", TestObject::name),
-			Codec.INTEGER.configure("value", TestObject::value)
+			STRING.configure("name", TestObject::name),
+			INTEGER.configure("value", TestObject::value)
 		));
 		TestFunction function = new TestFunction();
 		Codec<TestObject> codec = creator.create(function);
@@ -116,8 +117,8 @@ class CodecCreatorTest {
 	@Test
 	void createdCodecDecodesCorrectly() {
 		CodecCreator<TestObject, TestFunction> creator = new CodecCreator<>(List.of(
-			Codec.STRING.configure("name", TestObject::name),
-			Codec.INTEGER.configure("value", TestObject::value)
+			STRING.configure("name", TestObject::name),
+			INTEGER.configure("value", TestObject::value)
 		));
 		TestFunction function = new TestFunction();
 		Codec<TestObject> codec = creator.create(function);
@@ -138,8 +139,8 @@ class CodecCreatorTest {
 	@Test
 	void createdCodecRoundTrip() {
 		CodecCreator<TestObject, TestFunction> creator = new CodecCreator<>(List.of(
-			Codec.STRING.configure("name", TestObject::name),
-			Codec.INTEGER.configure("value", TestObject::value)
+			STRING.configure("name", TestObject::name),
+			INTEGER.configure("value", TestObject::value)
 		));
 		TestFunction function = new TestFunction();
 		Codec<TestObject> codec = creator.create(function);
@@ -161,9 +162,9 @@ class CodecCreatorTest {
 	@Test
 	void createdCodecWithComplexTypes() {
 		CodecCreator<TestObject2, TestFunction2> creator = new CodecCreator<>(List.of(
-			Codec.STRING.configure("text", TestObject2::text),
-			Codec.DOUBLE.configure("number", TestObject2::number),
-			Codec.BOOLEAN.configure("flag", TestObject2::flag)
+			STRING.configure("text", TestObject2::text),
+			DOUBLE.configure("number", TestObject2::number),
+			BOOLEAN.configure("flag", TestObject2::flag)
 		));
 		TestFunction2 function = new TestFunction2();
 		Codec<TestObject2> codec = creator.create(function);
@@ -203,8 +204,8 @@ class CodecCreatorTest {
 	@Test
 	void createdCodecWithFailingFunction() {
 		CodecCreator<TestObject, FailingTestFunction> creator = new CodecCreator<>(List.of(
-			Codec.STRING.configure("name", TestObject::name),
-			Codec.INTEGER.configure("value", TestObject::value)
+			STRING.configure("name", TestObject::name),
+			INTEGER.configure("value", TestObject::value)
 		));
 		FailingTestFunction function = new FailingTestFunction();
 		Codec<TestObject> codec = creator.create(function);
@@ -222,8 +223,8 @@ class CodecCreatorTest {
 	@Test
 	void createdCodecWithFunctionReturningNull() {
 		CodecCreator<TestObject, NullReturningTestFunction> creator = new CodecCreator<>(List.of(
-			Codec.STRING.configure("name", TestObject::name),
-			Codec.INTEGER.configure("value", TestObject::value)
+			STRING.configure("name", TestObject::name),
+			INTEGER.configure("value", TestObject::value)
 		));
 		NullReturningTestFunction function = new NullReturningTestFunction();
 		Codec<TestObject> codec = creator.create(function);
@@ -241,7 +242,7 @@ class CodecCreatorTest {
 	@Test
 	void createdCodecWithSingleParameter() {
 		CodecCreator<String, SingleParamFunction> creator = new CodecCreator<>(List.of(
-			Codec.STRING.configure("value", Function.identity())
+			STRING.configure("value", Function.identity())
 		));
 		SingleParamFunction function = new SingleParamFunction();
 		Codec<String> codec = creator.create(function);
@@ -258,11 +259,11 @@ class CodecCreatorTest {
 	@Test
 	void createdCodecWithManyParameters() {
 		CodecCreator<TestObject3, ManyParamFunction> creator = new CodecCreator<>(List.of(
-			Codec.STRING.configure("a", TestObject3::a),
-			Codec.STRING.configure("b", TestObject3::b),
-			Codec.STRING.configure("c", TestObject3::c),
-			Codec.STRING.configure("d", TestObject3::d),
-			Codec.STRING.configure("e", TestObject3::e)
+			STRING.configure("a", TestObject3::a),
+			STRING.configure("b", TestObject3::b),
+			STRING.configure("c", TestObject3::c),
+			STRING.configure("d", TestObject3::d),
+			STRING.configure("e", TestObject3::e)
 		));
 		ManyParamFunction function = new ManyParamFunction();
 		Codec<TestObject3> codec = creator.create(function);

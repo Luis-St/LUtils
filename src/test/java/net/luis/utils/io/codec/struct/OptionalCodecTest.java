@@ -26,6 +26,7 @@ import org.junit.jupiter.api.Test;
 
 import java.util.Optional;
 
+import static net.luis.utils.io.codec.Codecs.*;
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
@@ -38,13 +39,13 @@ class OptionalCodecTest {
 	@Test
 	void constructor() {
 		assertThrows(NullPointerException.class, () -> new OptionalCodec<>(null));
-		assertDoesNotThrow(() -> new OptionalCodec<>(Codec.INTEGER));
+		assertDoesNotThrow(() -> new OptionalCodec<>(INTEGER));
 	}
 	
 	@Test
 	void encodeStartNullChecks() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Optional<Integer>> codec = new OptionalCodec<>(Codec.INTEGER);
+		Codec<Optional<Integer>> codec = new OptionalCodec<>(INTEGER);
 		
 		assertThrows(NullPointerException.class, () -> codec.encodeStart(null, typeProvider.empty(), Optional.of(1)));
 		assertThrows(NullPointerException.class, () -> codec.encodeStart(typeProvider, null, Optional.of(1)));
@@ -53,7 +54,7 @@ class OptionalCodecTest {
 	@Test
 	void encodeStartWithNull() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Optional<Integer>> codec = new OptionalCodec<>(Codec.INTEGER);
+		Codec<Optional<Integer>> codec = new OptionalCodec<>(INTEGER);
 		JsonObject current = new JsonObject();
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, current, null);
@@ -64,7 +65,7 @@ class OptionalCodecTest {
 	@Test
 	void encodeStartWithEmptyOptional() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Optional<Integer>> codec = new OptionalCodec<>(Codec.INTEGER);
+		Codec<Optional<Integer>> codec = new OptionalCodec<>(INTEGER);
 		JsonObject current = new JsonObject();
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, current, Optional.empty());
@@ -75,7 +76,7 @@ class OptionalCodecTest {
 	@Test
 	void encodeStartWithPresentOptional() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Optional<Integer>> codec = new OptionalCodec<>(Codec.INTEGER);
+		Codec<Optional<Integer>> codec = new OptionalCodec<>(INTEGER);
 		JsonObject current = new JsonObject();
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, current, Optional.of(42));
@@ -88,12 +89,12 @@ class OptionalCodecTest {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		JsonObject current = new JsonObject();
 		
-		Codec<Optional<String>> stringCodec = new OptionalCodec<>(Codec.STRING);
+		Codec<Optional<String>> stringCodec = new OptionalCodec<>(STRING);
 		Result<JsonElement> stringResult = stringCodec.encodeStart(typeProvider, current, Optional.of("hello"));
 		assertTrue(stringResult.isSuccess());
 		assertEquals(new JsonPrimitive("hello"), stringResult.orThrow());
 		
-		Codec<Optional<Boolean>> boolCodec = new OptionalCodec<>(Codec.BOOLEAN);
+		Codec<Optional<Boolean>> boolCodec = new OptionalCodec<>(BOOLEAN);
 		Result<JsonElement> boolResult = boolCodec.encodeStart(typeProvider, current, Optional.of(true));
 		assertTrue(boolResult.isSuccess());
 		assertEquals(new JsonPrimitive(true), boolResult.orThrow());
@@ -102,7 +103,7 @@ class OptionalCodecTest {
 	@Test
 	void decodeStartNullChecks() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Optional<Integer>> codec = new OptionalCodec<>(Codec.INTEGER);
+		Codec<Optional<Integer>> codec = new OptionalCodec<>(INTEGER);
 		
 		assertThrows(NullPointerException.class, () -> codec.decodeStart(null, new JsonPrimitive(1)));
 	}
@@ -110,7 +111,7 @@ class OptionalCodecTest {
 	@Test
 	void decodeStartWithNull() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Optional<Integer>> codec = new OptionalCodec<>(Codec.INTEGER);
+		Codec<Optional<Integer>> codec = new OptionalCodec<>(INTEGER);
 		
 		Result<Optional<Integer>> result = codec.decodeStart(typeProvider, null);
 		assertTrue(result.isSuccess());
@@ -120,7 +121,7 @@ class OptionalCodecTest {
 	@Test
 	void decodeStartWithEmpty() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Optional<Integer>> codec = new OptionalCodec<>(Codec.INTEGER);
+		Codec<Optional<Integer>> codec = new OptionalCodec<>(INTEGER);
 		
 		Result<Optional<Integer>> result = codec.decodeStart(typeProvider, JsonNull.INSTANCE);
 		assertTrue(result.isSuccess());
@@ -130,7 +131,7 @@ class OptionalCodecTest {
 	@Test
 	void decodeStartWithValidValue() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Optional<Integer>> codec = new OptionalCodec<>(Codec.INTEGER);
+		Codec<Optional<Integer>> codec = new OptionalCodec<>(INTEGER);
 		
 		Result<Optional<Integer>> result = codec.decodeStart(typeProvider, new JsonPrimitive(42));
 		assertTrue(result.isSuccess());
@@ -141,7 +142,7 @@ class OptionalCodecTest {
 	@Test
 	void decodeStartWithInvalidValue() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Codec<Optional<Integer>> codec = new OptionalCodec<>(Codec.INTEGER);
+		Codec<Optional<Integer>> codec = new OptionalCodec<>(INTEGER);
 		
 		Result<Optional<Integer>> result = codec.decodeStart(typeProvider, new JsonPrimitive("not-a-number"));
 		assertTrue(result.isSuccess());
@@ -152,13 +153,13 @@ class OptionalCodecTest {
 	void decodeStartWithDifferentTypes() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		
-		Codec<Optional<String>> stringCodec = new OptionalCodec<>(Codec.STRING);
+		Codec<Optional<String>> stringCodec = new OptionalCodec<>(STRING);
 		Result<Optional<String>> stringResult = stringCodec.decodeStart(typeProvider, new JsonPrimitive("hello"));
 		assertTrue(stringResult.isSuccess());
 		assertTrue(stringResult.orThrow().isPresent());
 		assertEquals("hello", stringResult.orThrow().orElseThrow());
 		
-		Codec<Optional<Boolean>> boolCodec = new OptionalCodec<>(Codec.BOOLEAN);
+		Codec<Optional<Boolean>> boolCodec = new OptionalCodec<>(BOOLEAN);
 		Result<Optional<Boolean>> boolResult = boolCodec.decodeStart(typeProvider, new JsonPrimitive(true));
 		assertTrue(boolResult.isSuccess());
 		assertTrue(boolResult.orThrow().isPresent());
@@ -167,7 +168,7 @@ class OptionalCodecTest {
 	
 	@Test
 	void withDefaultWithValue() {
-		Codec<Optional<Integer>> codec = new OptionalCodec<>(Codec.INTEGER).withDefault(Optional.of(99));
+		Codec<Optional<Integer>> codec = new OptionalCodec<>(INTEGER).withDefault(Optional.of(99));
 		assertNotNull(codec);
 		
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
@@ -179,7 +180,7 @@ class OptionalCodecTest {
 	
 	@Test
 	void orElseWithEmptyOptional() {
-		Codec<Optional<Integer>> codec = new OptionalCodec<>(Codec.INTEGER).withDefault(Optional.empty());
+		Codec<Optional<Integer>> codec = new OptionalCodec<>(INTEGER).withDefault(Optional.empty());
 		assertNotNull(codec);
 		
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
@@ -190,7 +191,7 @@ class OptionalCodecTest {
 	
 	@Test
 	void withDefaultWithNull() {
-		Codec<Optional<Integer>> codec = new OptionalCodec<>(Codec.INTEGER).withDefault(null);
+		Codec<Optional<Integer>> codec = new OptionalCodec<>(INTEGER).withDefault(null);
 		assertNotNull(codec);
 		
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
@@ -201,13 +202,13 @@ class OptionalCodecTest {
 	
 	@Test
 	void withDefaultGetNullChecks() {
-		OptionalCodec<Integer> codec = new OptionalCodec<>(Codec.INTEGER);
+		OptionalCodec<Integer> codec = new OptionalCodec<>(INTEGER);
 		assertThrows(NullPointerException.class, () -> codec.withDefaultGet(null));
 	}
 	
 	@Test
 	void withDefaultGetWithSupplier() {
-		Codec<Optional<Integer>> codec = new OptionalCodec<>(Codec.INTEGER).withDefaultGet(() -> Optional.of(123));
+		Codec<Optional<Integer>> codec = new OptionalCodec<>(INTEGER).withDefaultGet(() -> Optional.of(123));
 		assertNotNull(codec);
 		
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
@@ -219,7 +220,7 @@ class OptionalCodecTest {
 	
 	@Test
 	void orElseWithValue() {
-		Codec<Integer> codec = new OptionalCodec<>(Codec.INTEGER).orElse(99);
+		Codec<Integer> codec = new OptionalCodec<>(INTEGER).orElse(99);
 		assertNotNull(codec);
 		
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
@@ -234,7 +235,7 @@ class OptionalCodecTest {
 	
 	@Test
 	void orElseWithNull() {
-		Codec<Integer> codec = new OptionalCodec<>(Codec.INTEGER).orElse(null);
+		Codec<Integer> codec = new OptionalCodec<>(INTEGER).orElse(null);
 		assertNotNull(codec);
 		
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
@@ -245,13 +246,13 @@ class OptionalCodecTest {
 	
 	@Test
 	void orElseGetNullChecks() {
-		OptionalCodec<Integer> codec = new OptionalCodec<>(Codec.INTEGER);
+		OptionalCodec<Integer> codec = new OptionalCodec<>(INTEGER);
 		assertThrows(NullPointerException.class, () -> codec.orElseGet(null));
 	}
 	
 	@Test
 	void orElseGetWithSupplier() {
-		Codec<Integer> codec = new OptionalCodec<>(Codec.INTEGER).orElseGet(() -> 123);
+		Codec<Integer> codec = new OptionalCodec<>(INTEGER).orElseGet(() -> 123);
 		assertNotNull(codec);
 		
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
@@ -270,15 +271,15 @@ class OptionalCodecTest {
 	
 	@Test
 	void equalsAndHashCode() {
-		OptionalCodec<Integer> codec1 = new OptionalCodec<>(Codec.INTEGER);
-		OptionalCodec<Integer> codec2 = new OptionalCodec<>(Codec.INTEGER);
+		OptionalCodec<Integer> codec1 = new OptionalCodec<>(INTEGER);
+		OptionalCodec<Integer> codec2 = new OptionalCodec<>(INTEGER);
 		
 		assertEquals(codec1.hashCode(), codec2.hashCode());
 	}
 	
 	@Test
 	void toStringRepresentation() {
-		OptionalCodec<Integer> codec = new OptionalCodec<>(Codec.INTEGER);
+		OptionalCodec<Integer> codec = new OptionalCodec<>(INTEGER);
 		String result = codec.toString();
 		
 		assertTrue(result.startsWith("OptionalCodec["));

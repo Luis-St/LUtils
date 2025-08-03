@@ -25,6 +25,7 @@ import org.junit.jupiter.api.Test;
 
 import java.util.Optional;
 
+import static net.luis.utils.io.codec.Codecs.*;
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
@@ -37,16 +38,16 @@ class NamedCodecTest {
 	@Test
 	void constructor() {
 		assertThrows(NullPointerException.class, () -> new NamedCodec<>(null, "name"));
-		assertThrows(NullPointerException.class, () -> new NamedCodec<>(Codec.INTEGER.optional(), null));
-		assertThrows(NullPointerException.class, () -> new NamedCodec<>(Codec.INTEGER.optional(), "name", (String[]) null));
-		assertDoesNotThrow(() -> new NamedCodec<>(Codec.INTEGER.optional(), "name"));
-		assertDoesNotThrow(() -> new NamedCodec<>(Codec.INTEGER.optional(), "name", "alias"));
+		assertThrows(NullPointerException.class, () -> new NamedCodec<>(INTEGER.optional(), null));
+		assertThrows(NullPointerException.class, () -> new NamedCodec<>(INTEGER.optional(), "name", (String[]) null));
+		assertDoesNotThrow(() -> new NamedCodec<>(INTEGER.optional(), "name"));
+		assertDoesNotThrow(() -> new NamedCodec<>(INTEGER.optional(), "name", "alias"));
 	}
 	
 	@Test
 	void encodeStartNullChecks() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		NamedCodec<Optional<Integer>> codec = new NamedCodec<>(Codec.INTEGER.optional(), "name");
+		NamedCodec<Optional<Integer>> codec = new NamedCodec<>(INTEGER.optional(), "name");
 		JsonObject map = new JsonObject();
 		
 		assertThrows(NullPointerException.class, () -> codec.encodeStart(null, map, Optional.of(42)));
@@ -56,7 +57,7 @@ class NamedCodecTest {
 	@Test
 	void encodeStartWithNullValue() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		NamedCodec<Optional<Integer>> codec = new NamedCodec<>(Codec.INTEGER.optional(), "name");
+		NamedCodec<Optional<Integer>> codec = new NamedCodec<>(INTEGER.optional(), "name");
 		JsonObject map = new JsonObject();
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, map, null);
@@ -67,7 +68,7 @@ class NamedCodecTest {
 	@Test
 	void encodeStartWithEmptyOptional() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		NamedCodec<Optional<Integer>> codec = new NamedCodec<>(Codec.INTEGER.optional(), "name");
+		NamedCodec<Optional<Integer>> codec = new NamedCodec<>(INTEGER.optional(), "name");
 		JsonObject map = new JsonObject();
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, map, Optional.empty());
@@ -78,7 +79,7 @@ class NamedCodecTest {
 	@Test
 	void encodeStartWithNonMapCurrent() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		NamedCodec<Optional<Integer>> codec = new NamedCodec<>(Codec.INTEGER.optional(), "name");
+		NamedCodec<Optional<Integer>> codec = new NamedCodec<>(INTEGER.optional(), "name");
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), Optional.of(42));
 		assertTrue(result.isError());
@@ -87,7 +88,7 @@ class NamedCodecTest {
 	@Test
 	void encodeStartWithValidValue() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		NamedCodec<Optional<Integer>> codec = new NamedCodec<>(Codec.INTEGER.optional(), "name");
+		NamedCodec<Optional<Integer>> codec = new NamedCodec<>(INTEGER.optional(), "name");
 		JsonObject map = new JsonObject();
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, map, Optional.of(42));
@@ -100,7 +101,7 @@ class NamedCodecTest {
 	@Test
 	void encodeStartWithRequiredValue() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		NamedCodec<Integer> codec = new NamedCodec<>(Codec.INTEGER, "number");
+		NamedCodec<Integer> codec = new NamedCodec<>(INTEGER, "number");
 		JsonObject map = new JsonObject();
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, map, 123);
@@ -113,7 +114,7 @@ class NamedCodecTest {
 	@Test
 	void decodeStartNullChecks() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		NamedCodec<Optional<Integer>> codec = new NamedCodec<>(Codec.INTEGER.optional(), "name");
+		NamedCodec<Optional<Integer>> codec = new NamedCodec<>(INTEGER.optional(), "name");
 		
 		assertThrows(NullPointerException.class, () -> codec.decodeStart(null, new JsonObject()));
 	}
@@ -121,7 +122,7 @@ class NamedCodecTest {
 	@Test
 	void decodeStartWithNull() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		NamedCodec<Optional<Integer>> codec = new NamedCodec<>(Codec.INTEGER.optional(), "name");
+		NamedCodec<Optional<Integer>> codec = new NamedCodec<>(INTEGER.optional(), "name");
 		
 		Result<Optional<Integer>> result = codec.decodeStart(typeProvider, null);
 		assertTrue(result.isError());
@@ -131,7 +132,7 @@ class NamedCodecTest {
 	@Test
 	void decodeStartWithEmptyMap() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		NamedCodec<Optional<Integer>> codec = new NamedCodec<>(Codec.INTEGER.optional(), "name");
+		NamedCodec<Optional<Integer>> codec = new NamedCodec<>(INTEGER.optional(), "name");
 		JsonObject map = new JsonObject();
 		
 		Result<Optional<Integer>> result = codec.decodeStart(typeProvider, map);
@@ -142,7 +143,7 @@ class NamedCodecTest {
 	@Test
 	void decodeStartWithNonMapValue() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		NamedCodec<Optional<Integer>> codec = new NamedCodec<>(Codec.INTEGER.optional(), "name");
+		NamedCodec<Optional<Integer>> codec = new NamedCodec<>(INTEGER.optional(), "name");
 		
 		Result<Optional<Integer>> result = codec.decodeStart(typeProvider, typeProvider.empty());
 		assertTrue(result.isError());
@@ -151,7 +152,7 @@ class NamedCodecTest {
 	@Test
 	void decodeStartWithValidValue() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		NamedCodec<Optional<Integer>> codec = new NamedCodec<>(Codec.INTEGER.optional(), "name");
+		NamedCodec<Optional<Integer>> codec = new NamedCodec<>(INTEGER.optional(), "name");
 		JsonObject map = new JsonObject();
 		map.add("name", new JsonPrimitive(42));
 		
@@ -164,7 +165,7 @@ class NamedCodecTest {
 	@Test
 	void decodeStartWithRequiredValue() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		NamedCodec<Integer> codec = new NamedCodec<>(Codec.INTEGER, "number");
+		NamedCodec<Integer> codec = new NamedCodec<>(INTEGER, "number");
 		JsonObject map = new JsonObject();
 		map.add("number", new JsonPrimitive(123));
 		
@@ -176,7 +177,7 @@ class NamedCodecTest {
 	@Test
 	void decodeStartWithMissingRequiredValue() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		NamedCodec<Integer> codec = new NamedCodec<>(Codec.INTEGER, "number");
+		NamedCodec<Integer> codec = new NamedCodec<>(INTEGER, "number");
 		JsonObject map = new JsonObject();
 		
 		Result<Integer> result = codec.decodeStart(typeProvider, map);
@@ -186,7 +187,7 @@ class NamedCodecTest {
 	@Test
 	void decodeStartWithSingleAlias() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		NamedCodec<Integer> codec = new NamedCodec<>(Codec.INTEGER, "name", "alias");
+		NamedCodec<Integer> codec = new NamedCodec<>(INTEGER, "name", "alias");
 		JsonObject map = new JsonObject();
 		map.add("alias", new JsonPrimitive(42));
 		
@@ -198,7 +199,7 @@ class NamedCodecTest {
 	@Test
 	void decodeStartWithMultipleAliases() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		NamedCodec<Integer> codec = new NamedCodec<>(Codec.INTEGER, "name", "alias1", "alias2");
+		NamedCodec<Integer> codec = new NamedCodec<>(INTEGER, "name", "alias1", "alias2");
 		JsonObject map = new JsonObject();
 		map.add("alias2", new JsonPrimitive(42));
 		
@@ -210,7 +211,7 @@ class NamedCodecTest {
 	@Test
 	void decodeStartPrefersPrimaryNameOverAlias() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		NamedCodec<Integer> codec = new NamedCodec<>(Codec.INTEGER, "name", "alias");
+		NamedCodec<Integer> codec = new NamedCodec<>(INTEGER, "name", "alias");
 		JsonObject map = new JsonObject();
 		map.add("name", new JsonPrimitive(43));
 		map.add("alias", new JsonPrimitive(42));
@@ -223,7 +224,7 @@ class NamedCodecTest {
 	@Test
 	void decodeStartWithNoAliasesConfigured() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		NamedCodec<Integer> codec = new NamedCodec<>(Codec.INTEGER, "name");
+		NamedCodec<Integer> codec = new NamedCodec<>(INTEGER, "name");
 		JsonObject map = new JsonObject();
 		
 		Result<Integer> result = codec.decodeStart(typeProvider, map);
@@ -234,7 +235,7 @@ class NamedCodecTest {
 	@Test
 	void decodeStartWithNoMatchingAliases() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		NamedCodec<Integer> codec = new NamedCodec<>(Codec.INTEGER, "name", "alias1", "alias2");
+		NamedCodec<Integer> codec = new NamedCodec<>(INTEGER, "name", "alias1", "alias2");
 		JsonObject map = new JsonObject();
 		map.add("other", new JsonPrimitive(42));
 		
@@ -245,15 +246,15 @@ class NamedCodecTest {
 	
 	@Test
 	void equalsAndHashCode() {
-		NamedCodec<Integer> codec1 = new NamedCodec<>(Codec.INTEGER, "name");
-		NamedCodec<Integer> codec2 = new NamedCodec<>(Codec.INTEGER, "name");
+		NamedCodec<Integer> codec1 = new NamedCodec<>(INTEGER, "name");
+		NamedCodec<Integer> codec2 = new NamedCodec<>(INTEGER, "name");
 		
 		assertEquals(codec1.hashCode(), codec2.hashCode());
 	}
 	
 	@Test
 	void toStringWithoutAliases() {
-		NamedCodec<Integer> codec = new NamedCodec<>(Codec.INTEGER, "name");
+		NamedCodec<Integer> codec = new NamedCodec<>(INTEGER, "name");
 		String result = codec.toString();
 		
 		assertTrue(result.contains("'name'"));
@@ -262,7 +263,7 @@ class NamedCodecTest {
 	
 	@Test
 	void toStringWithAliases() {
-		NamedCodec<Integer> codec = new NamedCodec<>(Codec.INTEGER, "name", "alias");
+		NamedCodec<Integer> codec = new NamedCodec<>(INTEGER, "name", "alias");
 		String result = codec.toString();
 		
 		assertTrue(result.contains("'name'"));

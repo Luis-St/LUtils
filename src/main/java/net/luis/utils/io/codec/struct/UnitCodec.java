@@ -19,6 +19,7 @@
 package net.luis.utils.io.codec.struct;
 
 import net.luis.utils.io.codec.Codec;
+import net.luis.utils.io.codec.Codecs;
 import net.luis.utils.io.codec.provider.TypeProvider;
 import net.luis.utils.util.Result;
 import org.jetbrains.annotations.*;
@@ -52,7 +53,7 @@ public class UnitCodec<C> implements Codec<C> {
 	
 	/**
 	 * Constructs a new unit codec using the given supplier for the unit value.<br>
-	 * Do not use this constructor directly, use any of the unit factory methods in {@link Codec} instead.<br>
+	 * Do not use this constructor directly, use any of the unit factory methods in {@link Codecs} instead.<br>
 	 *
 	 * @param supplier The supplier used to create the unit value
 	 * @throws NullPointerException If the supplier is null

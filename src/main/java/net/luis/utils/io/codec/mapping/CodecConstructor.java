@@ -37,5 +37,5 @@ import java.lang.annotation.*;
  */
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
-@Target({ ElementType.CONSTRUCTOR })
+@Target(ElementType.CONSTRUCTOR)
 public @interface CodecConstructor {}

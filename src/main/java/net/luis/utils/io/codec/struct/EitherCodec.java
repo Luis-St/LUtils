@@ -19,6 +19,7 @@
 package net.luis.utils.io.codec.struct;
 
 import net.luis.utils.io.codec.Codec;
+import net.luis.utils.io.codec.Codecs;
 import net.luis.utils.io.codec.provider.TypeProvider;
 import net.luis.utils.util.Either;
 import net.luis.utils.util.Result;
@@ -56,7 +57,7 @@ public class EitherCodec<F, S> implements Codec<Either<F, S>> {
 	
 	/**
 	 * Constructs a new either codec using the given codecs for the first and second type.<br>
-	 * Do not use this constructor directly, use any of the either factory methods in {@link Codec} instead.<br>
+	 * Do not use this constructor directly, use the either factory method in {@link Codecs} instead.<br>
 	 *
 	 * @param firstCodec The first codec
 	 * @param secondCodec The second codec

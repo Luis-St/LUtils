@@ -27,6 +27,7 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.function.Function;
 
+import static net.luis.utils.io.codec.Codecs.*;
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
@@ -39,7 +40,7 @@ class CodecArrayHelperTest {
 	
 	@Test
 	void nullParametersThrowExceptions() {
-		Function<Class<?>, Codec<Object>> validGetter = clazz -> (Codec) Codec.STRING;
+		Function<Class<?>, Codec<Object>> validGetter = clazz -> (Codec) STRING;
 		
 		assertThrows(NullPointerException.class, () -> CodecArrayHelper.getOrCreateArrayCodec(null, validGetter));
 		assertThrows(NullPointerException.class, () -> CodecArrayHelper.getOrCreateArrayCodec(String[].class, null));
@@ -47,7 +48,7 @@ class CodecArrayHelperTest {
 	
 	@Test
 	void nonArrayClassThrowsException() {
-		Function<Class<?>, Codec<Object>> validGetter = clazz -> (Codec) Codec.STRING;
+		Function<Class<?>, Codec<Object>> validGetter = clazz -> (Codec) STRING;
 		
 		assertThrows(IllegalArgumentException.class, () -> CodecArrayHelper.getOrCreateArrayCodec(String.class, validGetter));
 		assertThrows(IllegalArgumentException.class, () -> CodecArrayHelper.getOrCreateArrayCodec(int.class, validGetter));
@@ -56,7 +57,7 @@ class CodecArrayHelperTest {
 	
 	@Test
 	void singleDimensionalPrimitiveArraysWork() {
-		Function<Class<?>, Codec<Object>> getter = clazz -> (Codec) Codec.STRING;
+		Function<Class<?>, Codec<Object>> getter = clazz -> (Codec) STRING;
 		
 		Codec<boolean[]> booleanCodec = CodecArrayHelper.getOrCreateArrayCodec(boolean[].class, getter);
 		assertNotNull(booleanCodec);
@@ -88,9 +89,9 @@ class CodecArrayHelperTest {
 		JsonTypeProvider provider = JsonTypeProvider.INSTANCE;
 		Function<Class<?>, Codec<Object>> getter = clazz -> {
 			if (clazz == String.class) {
-				return (Codec) Codec.STRING;
+				return (Codec) STRING;
 			} else if (clazz == LocalDate.class) {
-				return (Codec) Codec.LOCAL_DATE;
+				return (Codec) LOCAL_DATE;
 			}
 			throw new IllegalArgumentException("Unsupported type: " + clazz);
 		};
@@ -120,7 +121,7 @@ class CodecArrayHelperTest {
 	void multiDimensionalArraysWork() {
 		Function<Class<?>, Codec<Object>> getter = clazz -> {
 			if (clazz == String.class) {
-				return (Codec) Codec.STRING;
+				return (Codec) STRING;
 			}
 			throw new IllegalArgumentException("Unsupported type: " + clazz);
 		};
@@ -167,7 +168,7 @@ class CodecArrayHelperTest {
 	
 	@Test
 	void emptyArraysAreSupported() {
-		Function<Class<?>, Codec<Object>> getter = clazz -> (Codec) Codec.STRING;
+		Function<Class<?>, Codec<Object>> getter = clazz -> (Codec) STRING;
 		
 		Codec<int[]> intCodec = CodecArrayHelper.getOrCreateArrayCodec(int[].class, getter);
 		int[] emptyIntArray = new int[0];
