@@ -753,7 +753,7 @@ public interface Codec<C> extends Encoder<C>, Decoder<C> {
 	static <E extends Enum<E>> @NotNull KeyableCodec<E> enumName(@NotNull Class<E> clazz) {
 		Objects.requireNonNull(clazz, "Enum class must not be null");
 		Map<String, E> lookup = Arrays.stream(clazz.getEnumConstants()).collect(Collectors.toMap(Enum::name, Function.identity()));
-		return STRING.xmap(Enum::name, lookup::get).keyable(ResultingFunction.direct(Enum::name), key ->  {
+		return STRING.xmap(Enum::name, lookup::get).keyable(ResultingFunction.direct(Enum::name), key -> {
 			E value = lookup.get(key);
 			if (value == null) {
 				return Result.error("Unable to decode enum value from name '" + key + "': No enum constant found");

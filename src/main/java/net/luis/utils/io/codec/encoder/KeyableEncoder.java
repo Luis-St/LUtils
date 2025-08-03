@@ -18,7 +18,6 @@
 
 package net.luis.utils.io.codec.encoder;
 
-import net.luis.utils.function.throwable.ThrowableFunction;
 import net.luis.utils.io.codec.ResultingFunction;
 import net.luis.utils.io.codec.provider.TypeProvider;
 import net.luis.utils.util.Result;
@@ -26,7 +25,6 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Objects;
-import java.util.Optional;
 
 /**
  * Extension of {@link Encoder} that allows encoding keys.<br>

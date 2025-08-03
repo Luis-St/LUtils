@@ -49,17 +49,17 @@ license {
 }
 
 tasks.named<Test>("test") {
-		useJUnitPlatform()
-		environment("env.default", "3")
-		environment("env.custom", "c")
-		
-		doLast {
-			delete("./logs/debug.log")
-			delete("./logs/error.log")
-			delete("./logs/errors.log")
-			delete("./logs/info.log")
-		}
+	useJUnitPlatform()
+	environment("env.default", "3")
+	environment("env.custom", "c")
+	
+	doLast {
+		delete("./logs/debug.log")
+		delete("./logs/error.log")
+		delete("./logs/errors.log")
+		delete("./logs/info.log")
 	}
+}
 
 java {
 	withSourcesJar()
