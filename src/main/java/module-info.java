@@ -64,6 +64,11 @@ module net.luis.utils {
 	exports net.luis.utils.io.token.rule;
 	exports net.luis.utils.io.token.rule.actions;
 	exports net.luis.utils.io.token.rule.rules;
+	exports net.luis.utils.io.token.rule.rules.assertions;
+	exports net.luis.utils.io.token.rule.rules.assertions.anchors;
+	exports net.luis.utils.io.token.rule.rules.combinators;
+	exports net.luis.utils.io.token.rule.rules.matchers;
+	exports net.luis.utils.io.token.rule.rules.quantifiers;
 	exports net.luis.utils.io.token.tokens;
 	
 	exports net.luis.utils.lang;

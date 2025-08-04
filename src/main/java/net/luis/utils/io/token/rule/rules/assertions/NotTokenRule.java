@@ -16,9 +16,10 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-package net.luis.utils.io.token.rule.rules;
+package net.luis.utils.io.token.rule.rules.assertions;
 
 import net.luis.utils.io.token.rule.TokenRuleMatch;
+import net.luis.utils.io.token.rule.rules.TokenRule;
 import net.luis.utils.io.token.tokens.Token;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -27,25 +28,25 @@ import java.util.List;
 import java.util.Objects;
 
 /**
- * A token rule that matches optionally a single token rule.<br>
- * This rule is useful for creating optional matching logic.<br>
- * It will match the token rule if it is present, otherwise it will return an empty match.<br>
+ * A token rule that matches when the inner token rule does NOT match.<br>
+ * This rule is useful for negation logic in token matching.<br>
+ * It will return an empty match if the inner rule doesn't match, otherwise null.<br>
  *
  * @author Luis-St
  *
- * @param tokenRule The token rule to match optionally
+ * @param tokenRule The token rule to negate
  */
-public record OptionalTokenRule(
+public record NotTokenRule(
 	@NotNull TokenRule tokenRule
 ) implements TokenRule {
 	
 	/**
-	 * Constructs a new optional token rule with the given token rule.<br>
+	 * Constructs a new not token rule with the given token rule.<br>
 	 *
-	 * @param tokenRule The token rule to match optionally
+	 * @param tokenRule The token rule to negate
 	 * @throws NullPointerException If the token rule is null
 	 */
-	public OptionalTokenRule {
+	public NotTokenRule {
 		Objects.requireNonNull(tokenRule, "Token rule must not be null");
 	}
 	
@@ -57,9 +58,9 @@ public record OptionalTokenRule(
 		}
 		
 		TokenRuleMatch match = this.tokenRule.match(tokens, startIndex);
-		if (match != null) {
-			return match;
+		if (match == null) {
+			return TokenRuleMatch.empty(startIndex);
 		}
-		return TokenRuleMatch.empty(startIndex);
+		return null;
 	}
 }

@@ -18,10 +18,11 @@
 
 package net.luis.utils.io.token.rule.rules;
 
-import net.luis.utils.io.token.definition.TokenDefinition;
 import net.luis.utils.io.token.rule.TokenRuleMatch;
+import net.luis.utils.io.token.rule.rules.assertions.anchors.EndTokenRule;
+import net.luis.utils.io.token.rule.rules.assertions.*;
+import net.luis.utils.io.token.rule.rules.quantifiers.*;
 import net.luis.utils.io.token.tokens.Token;
-import net.luis.utils.io.token.tokens.TokenGroup;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 

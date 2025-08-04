@@ -16,10 +16,11 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-package net.luis.utils.io.token.rule.rules;
+package net.luis.utils.io.token.rule.rules.assertions;
 
 import com.google.common.collect.Lists;
 import net.luis.utils.io.token.rule.TokenRuleMatch;
+import net.luis.utils.io.token.rule.rules.TokenRule;
 import net.luis.utils.io.token.tokens.Token;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -60,32 +61,19 @@ public record LookbehindTokenRule(
 			return null;
 		}
 		
-		// Check if we can look behind (at start, nothing to look behind to)
 		if (startIndex == 0) {
-			// At start, can only match negative lookbehind
 			return this.positive ? null : TokenRuleMatch.empty(startIndex);
 		}
 		
-		// Create reversed token list
 		List<Token> reversedTokens = Lists.reverse(tokens);
-		
-		// Calculate the position in the reversed list where we want to apply the rule
-		// If startIndex points to position X, we want to check position X-1 in the original list
-		// In the reversed list, original position X-1 becomes: tokens.size() - 1 - (X-1) = tokens.size() - X
 		int reversedLookbehindIndex = tokens.size() - startIndex;
-		
-		// Check bounds for the reversed index
 		if (reversedLookbehindIndex >= reversedTokens.size()) {
-			// This shouldn't happen given our earlier checks, but safety first
 			return this.positive ? null : TokenRuleMatch.empty(startIndex);
 		}
 		
-		// Try to match the rule at the calculated position in the reversed list
 		TokenRuleMatch match = this.tokenRule.match(reversedTokens, reversedLookbehindIndex);
 		boolean ruleMatches = match != null;
-		
 		if ((this.positive && ruleMatches) || (!this.positive && !ruleMatches)) {
-			// Lookbehind matches but doesn't consume tokens
 			return TokenRuleMatch.empty(startIndex);
 		}
 		return null;

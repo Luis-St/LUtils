@@ -16,13 +16,18 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-package net.luis.utils.io.token.rule.rules;
+package net.luis.utils.io.token.rule.rules.combinators;
 
 import net.luis.utils.io.token.rule.TokenRuleMatch;
+import net.luis.utils.io.token.rule.rules.TokenRule;
+import net.luis.utils.io.token.rule.rules.TokenRules;
+import net.luis.utils.io.token.rule.rules.quantifiers.OptionalTokenRule;
+import net.luis.utils.io.token.rule.rules.quantifiers.RepeatedTokenRule;
 import net.luis.utils.io.token.tokens.SimpleToken;
 import net.luis.utils.io.token.tokens.Token;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import java.util.*;
@@ -102,7 +107,7 @@ class BoundaryTokenRuleTest {
 	void betweenTokenRuleReturnsAlwaysMatchByDefault() {
 		BoundaryTokenRule boundary = new BoundaryTokenRule(createRule("start"), createRule("end"));
 		
-		assertEquals(TokenRules.alwaysMatch(), boundary.betweenTokenRule());
+		Assertions.assertEquals(TokenRules.alwaysMatch(), boundary.betweenTokenRule());
 	}
 	
 	@Test

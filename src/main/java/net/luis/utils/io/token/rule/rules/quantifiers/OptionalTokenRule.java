@@ -16,9 +16,10 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-package net.luis.utils.io.token.rule.rules;
+package net.luis.utils.io.token.rule.rules.quantifiers;
 
 import net.luis.utils.io.token.rule.TokenRuleMatch;
+import net.luis.utils.io.token.rule.rules.TokenRule;
 import net.luis.utils.io.token.tokens.Token;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -27,28 +28,25 @@ import java.util.List;
 import java.util.Objects;
 
 /**
- * A token rule that performs lookahead matching without consuming tokens.<br>
- * This rule checks if the inner rule would match at the current position,<br>
- * but doesn't advance the position or consume any tokens.<br>
+ * A token rule that matches optionally a single token rule.<br>
+ * This rule is useful for creating optional matching logic.<br>
+ * It will match the token rule if it is present, otherwise it will return an empty match.<br>
  *
  * @author Luis-St
  *
- * @param tokenRule The token rule to match ahead
- * @param positive If true, match when inner rule matches; if false, match when inner rule doesn't match
+ * @param tokenRule The token rule to match optionally
  */
-public record LookaheadTokenRule(
-	@NotNull TokenRule tokenRule,
-	boolean positive
+public record OptionalTokenRule(
+	@NotNull TokenRule tokenRule
 ) implements TokenRule {
 	
 	/**
-	 * Constructs a new lookahead token rule with the given token rule and positive flag.<br>
+	 * Constructs a new optional token rule with the given token rule.<br>
 	 *
-	 * @param tokenRule The token rule to match ahead
-	 * @param positive If true, match when inner rule matches; if false, match when inner rule doesn't match
+	 * @param tokenRule The token rule to match optionally
 	 * @throws NullPointerException If the token rule is null
 	 */
-	public LookaheadTokenRule {
+	public OptionalTokenRule {
 		Objects.requireNonNull(tokenRule, "Token rule must not be null");
 	}
 	
@@ -60,11 +58,9 @@ public record LookaheadTokenRule(
 		}
 		
 		TokenRuleMatch match = this.tokenRule.match(tokens, startIndex);
-		boolean ruleMatches = match != null;
-		
-		if ((this.positive && ruleMatches) || (!this.positive && !ruleMatches)) {
-			return TokenRuleMatch.empty(startIndex);
+		if (match != null) {
+			return match;
 		}
-		return null;
+		return TokenRuleMatch.empty(startIndex);
 	}
 }

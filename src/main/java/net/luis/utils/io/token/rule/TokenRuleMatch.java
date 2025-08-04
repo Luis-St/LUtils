@@ -19,6 +19,7 @@
 package net.luis.utils.io.token.rule;
 
 import net.luis.utils.io.token.rule.rules.*;
+import net.luis.utils.io.token.rule.rules.quantifiers.OptionalTokenRule;
 import net.luis.utils.io.token.tokens.Token;
 import org.jetbrains.annotations.NotNull;
 

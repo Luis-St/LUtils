@@ -16,13 +16,16 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-package net.luis.utils.io.token.rule.rules;
+package net.luis.utils.io.token.rule.rules.quantifiers;
 
 import net.luis.utils.io.token.rule.TokenRuleMatch;
+import net.luis.utils.io.token.rule.rules.TokenRule;
+import net.luis.utils.io.token.rule.rules.TokenRules;
 import net.luis.utils.io.token.tokens.SimpleToken;
 import net.luis.utils.io.token.tokens.Token;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import java.util.*;
@@ -129,7 +132,7 @@ class OptionalTokenRuleTest {
 		assertEquals(0, match.startIndex());
 		assertEquals(0, match.endIndex());
 		assertTrue(match.matchedTokens().isEmpty());
-		assertEquals(TokenRules.alwaysMatch(), match.matchingTokenRule());
+		Assertions.assertEquals(TokenRules.alwaysMatch(), match.matchingTokenRule());
 	}
 	
 	@Test
