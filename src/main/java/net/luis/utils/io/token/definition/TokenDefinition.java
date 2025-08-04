@@ -123,7 +123,7 @@ public interface TokenDefinition extends TokenRule {
 			return null;
 		}
 		
-		if (this.equals(tokens.get(startIndex).definition())) {
+		if (this.matches(tokens.get(startIndex).value())) {
 			List<Token> matchedTokens = Collections.singletonList(tokens.get(startIndex));
 			return new TokenRuleMatch(startIndex, startIndex + 1, matchedTokens, this);
 		}
