@@ -67,6 +67,7 @@ module net.luis.utils {
 	exports net.luis.utils.io.token.tokens;
 	
 	exports net.luis.utils.lang;
+	exports net.luis.utils.lang.concurrent;
 	
 	exports net.luis.utils.logging;
 	exports net.luis.utils.logging.factory;
