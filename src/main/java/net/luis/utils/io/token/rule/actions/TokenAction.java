@@ -19,6 +19,8 @@
 package net.luis.utils.io.token.rule.actions;
 
 import net.luis.utils.io.token.rule.TokenRuleMatch;
+import net.luis.utils.io.token.rule.actions.transformers.TransformTokenAction;
+import net.luis.utils.io.token.rule.actions.transformers.WrapTokenAction;
 import net.luis.utils.io.token.tokens.Token;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Unmodifiable;
@@ -28,10 +30,6 @@ import java.util.List;
 /**
  * Token action that is applied to a token rule match.<br>
  * With a token action, the tokens of the match can be modified, transformed or removed.<br>
- *
- * @see TransformTokenAction
- * @see GroupingTokenAction
- * @see WrapTokenAction
  *
  * @author Luis-St
  */

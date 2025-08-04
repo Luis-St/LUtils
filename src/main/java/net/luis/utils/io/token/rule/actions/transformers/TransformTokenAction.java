@@ -16,11 +16,11 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-package net.luis.utils.io.token.rule.actions;
+package net.luis.utils.io.token.rule.actions.transformers;
 
-import com.google.common.collect.Lists;
 import net.luis.utils.io.token.rule.TokenRuleMatch;
-import net.luis.utils.io.token.tokens.IndexedToken;
+import net.luis.utils.io.token.rule.actions.TokenAction;
+import net.luis.utils.io.token.rule.actions.core.TokenTransformer;
 import net.luis.utils.io.token.tokens.Token;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Unmodifiable;
@@ -29,29 +29,32 @@ import java.util.List;
 import java.util.Objects;
 
 /**
- * Token action that adds index information to tokens.<br>
- * Each token is wrapped in an {@link IndexedToken} with its position in the matched tokens list.<br>
- * The index starts from 0 for the first token in the match.<br>
+ * Token action that transforms the tokens using a transformer.<br>
+ * The transformer is applied to the tokens, and the result is returned as an immutable list of tokens.<br>
+ *
+ * @see TokenTransformer
  *
  * @author Luis-St
+ *
+ * @param transformer The transformer to apply to tokens
  */
-public record IndexTokenAction() implements TokenAction {
+public record TransformTokenAction(
+	@NotNull TokenTransformer transformer
+) implements TokenAction {
+	
+	/**
+	 * Constructs a new transform token action with the given transformer.<br>
+	 *
+	 * @param transformer The transformer to apply to tokens
+	 * @throws NullPointerException If the transformer is null
+	 */
+	public TransformTokenAction {
+		Objects.requireNonNull(transformer, "Transformer must not be null");
+	}
 	
 	@Override
 	public @NotNull @Unmodifiable List<Token> apply(@NotNull TokenRuleMatch match) {
 		Objects.requireNonNull(match, "Token rule match must not be null");
-		
-		List<Token> matchedTokens = match.matchedTokens();
-		List<Token> result = Lists.newArrayListWithExpectedSize(matchedTokens.size());
-		for (int i = 0; i < matchedTokens.size(); i++) {
-			Token token = matchedTokens.get(i);
-			
-			if (token instanceof IndexedToken existingIndexed) {
-				result.add(existingIndexed);
-			} else {
-				result.add(new IndexedToken(token, i));
-			}
-		}
-		return List.copyOf(result);
+		return List.copyOf(this.transformer.transform(match.matchedTokens()));
 	}
 }

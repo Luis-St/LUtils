@@ -21,6 +21,7 @@ package net.luis.utils.io.token.rule;
 import net.luis.utils.io.token.definition.StringTokenDefinition;
 import net.luis.utils.io.token.definition.TokenDefinition;
 import net.luis.utils.io.token.rule.actions.*;
+import net.luis.utils.io.token.rule.actions.transformers.TransformTokenAction;
 import net.luis.utils.io.token.rule.rules.TokenRules;
 import net.luis.utils.io.token.tokens.*;
 import org.jetbrains.annotations.NotNull;

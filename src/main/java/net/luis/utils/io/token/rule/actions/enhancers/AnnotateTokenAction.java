@@ -16,39 +16,40 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-package net.luis.utils.io.token.rule.actions;
+package net.luis.utils.io.token.rule.actions.enhancers;
 
 import com.google.common.collect.Lists;
 import net.luis.utils.io.token.rule.TokenRuleMatch;
+import net.luis.utils.io.token.rule.actions.TokenAction;
+import net.luis.utils.io.token.tokens.AnnotatedToken;
 import net.luis.utils.io.token.tokens.Token;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Unmodifiable;
 
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 
 /**
- * Token action that converts tokens using a converter.<br>
- * The converter is applied to each token, allowing full control over token transformation.<br>
- *
- * @see TokenConverter
+ * Token action that annotates tokens with metadata.<br>
+ * Each token is wrapped in an {@link AnnotatedToken} with the provided metadata.<br>
+ * If a token is already annotated, the metadata is merged (new metadata takes precedence).<br>
  *
  * @author Luis-St
  *
- * @param converter The converter to apply to tokens
+ * @param metadata The metadata to add to tokens
  */
-public record ConvertTokenAction(
-	@NotNull TokenConverter converter
+public record AnnotateTokenAction(
+	@NotNull Map<String, Object> metadata
 ) implements TokenAction {
 	
 	/**
-	 * Constructs a new convert token action with the given converter.<br>
+	 * Constructs a new annotate token action with the given metadata.<br>
 	 *
-	 * @param converter The converter to apply to tokens
-	 * @throws NullPointerException If the converter is null
+	 * @param metadata The metadata to add to tokens
+	 * @throws NullPointerException If the metadata map is null
 	 */
-	public ConvertTokenAction {
-		Objects.requireNonNull(converter, "Converter must not be null");
+	public AnnotateTokenAction {
+		Objects.requireNonNull(metadata, "Metadata map must not be null");
+		metadata = Map.copyOf(metadata);
 	}
 	
 	@Override
@@ -56,11 +57,15 @@ public record ConvertTokenAction(
 		Objects.requireNonNull(match, "Token rule match must not be null");
 		
 		List<Token> result = Lists.newArrayListWithExpectedSize(match.matchedTokens().size());
-		
 		for (Token token : match.matchedTokens()) {
-			result.add(this.converter.convert(token));
+			if (token instanceof AnnotatedToken existingAnnotated) {
+				Map<String, Object> mergedMetadata = new HashMap<>(existingAnnotated.metadata());
+				mergedMetadata.putAll(this.metadata);
+				result.add(new AnnotatedToken(existingAnnotated.token(), mergedMetadata));
+			} else {
+				result.add(new AnnotatedToken(token, this.metadata));
+			}
 		}
-		
 		return List.copyOf(result);
 	}
 }

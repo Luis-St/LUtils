@@ -16,43 +16,44 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-package net.luis.utils.io.token.rule.actions;
+package net.luis.utils.io.token.rule.actions.filters;
 
 import net.luis.utils.io.token.rule.TokenRuleMatch;
+import net.luis.utils.io.token.rule.actions.TokenAction;
 import net.luis.utils.io.token.tokens.Token;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Unmodifiable;
 
 import java.util.List;
 import java.util.Objects;
+import java.util.function.Predicate;
 
 /**
- * Token action that transforms the tokens using a transformer.<br>
- * The transformer is applied to the tokens, and the result is returned as an immutable list of tokens.<br>
- *
- * @see TokenTransformer
+ * Token action that skips (removes) tokens based on a predicate.<br>
+ * Tokens that match the predicate are removed from the result.<br>
+ * This is the inverse of {@link FilterTokenAction}.<br>
  *
  * @author Luis-St
  *
- * @param transformer The transformer to apply to tokens
+ * @param filter The predicate to identify tokens to skip
  */
-public record TransformTokenAction(
-	@NotNull TokenTransformer transformer
+public record SkipTokenAction(
+	@NotNull Predicate<Token> filter
 ) implements TokenAction {
 	
 	/**
-	 * Constructs a new transform token action with the given transformer.<br>
+	 * Constructs a new skip token action with the given predicate.<br>
 	 *
-	 * @param transformer The transformer to apply to tokens
-	 * @throws NullPointerException If the transformer is null
+	 * @param filter The predicate to identify tokens to skip
+	 * @throws NullPointerException If the predicate is null
 	 */
-	public TransformTokenAction {
-		Objects.requireNonNull(transformer, "Transformer must not be null");
+	public SkipTokenAction {
+		Objects.requireNonNull(filter, "Filter predicate must not be null");
 	}
 	
 	@Override
 	public @NotNull @Unmodifiable List<Token> apply(@NotNull TokenRuleMatch match) {
 		Objects.requireNonNull(match, "Token rule match must not be null");
-		return List.copyOf(this.transformer.transform(match.matchedTokens()));
+		return match.matchedTokens().stream().filter(this.filter.negate()).toList();
 	}
 }

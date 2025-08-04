@@ -16,7 +16,7 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-package net.luis.utils.io.token.rule.actions;
+package net.luis.utils.io.token.rule.actions.core;
 
 import com.google.common.collect.Lists;
 import net.luis.utils.io.token.tokens.SimpleToken;
