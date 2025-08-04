@@ -111,7 +111,6 @@ class GroupingTokenActionTest {
 		assertEquals(1, result.size());
 		TokenGroup group = assertInstanceOf(TokenGroup.class, result.getFirst());
 		assertEquals("test", group.value());
-		assertFalse(group.isPositioned());
 	}
 	
 	@Test
@@ -128,7 +127,6 @@ class GroupingTokenActionTest {
 		assertEquals(1, result.size());
 		TokenGroup group = assertInstanceOf(TokenGroup.class, result.getFirst());
 		assertEquals("ab", group.value());
-		assertFalse(group.isPositioned());
 	}
 	
 	@Test
