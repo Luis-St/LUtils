@@ -535,6 +535,51 @@ class TokenRulesTest {
 	}
 	
 	@Test
+	void groupCreatesTokenGroupRule() {
+		TokenRule innerRule = createRule("test");
+		TokenRule groupRule = TokenRules.group(innerRule);
+		
+		assertInstanceOf(TokenGroupRule.class, groupRule);
+		assertEquals(innerRule, ((TokenGroupRule) groupRule).tokenRule());
+	}
+	
+	@Test
+	void groupWithNullRule() {
+		assertThrows(NullPointerException.class, () -> TokenRules.group(null));
+	}
+	
+	@Test
+	void groupWithAlwaysMatchRule() {
+		TokenRule alwaysMatch = TokenRules.alwaysMatch();
+		TokenRule groupRule = TokenRules.group(alwaysMatch);
+		
+		assertInstanceOf(TokenGroupRule.class, groupRule);
+		assertEquals(alwaysMatch, ((TokenGroupRule) groupRule).tokenRule());
+	}
+	
+	@Test
+	void groupWithPatternRule() {
+		TokenRule patternRule = TokenRules.pattern("\\d+");
+		TokenRule groupRule = TokenRules.group(patternRule);
+		
+		assertInstanceOf(TokenGroupRule.class, groupRule);
+		assertEquals(patternRule, ((TokenGroupRule) groupRule).tokenRule());
+	}
+	
+	@Test
+	void groupWithComplexRule() {
+		TokenRule complexRule = TokenRules.sequence(
+			TokenRules.pattern("start"),
+			TokenRules.repeatInfinitely(TokenRules.pattern("middle")),
+			TokenRules.pattern("end")
+		);
+		TokenRule groupRule = TokenRules.group(complexRule);
+		
+		assertInstanceOf(TokenGroupRule.class, groupRule);
+		assertEquals(complexRule, ((TokenGroupRule) groupRule).tokenRule());
+	}
+	
+	@Test
 	void toRegexWithNullRule() {
 		assertThrows(NullPointerException.class, () -> TokenRules.toRegex(null));
 	}
@@ -564,21 +609,21 @@ class TokenRulesTest {
 	
 	@Test
 	void toRegexWithOptionalRule() {
-		assertEquals("test?", TokenRules.toRegex(TokenRules.optional(TokenRules.pattern("test"))));
+		assertEquals("(test)?", TokenRules.toRegex(TokenRules.optional(TokenRules.pattern("test"))));
 		assertEquals("(.*?)?", TokenRules.toRegex(TokenRules.optional(TokenRules.alwaysMatch())));
 		assertEquals("(\\d+)?", TokenRules.toRegex(TokenRules.optional(TokenRules.pattern("\\d+"))));
 	}
 	
 	@Test
 	void toRegexWithRepeatedRules() {
-		assertEquals("test{3}", TokenRules.toRegex(TokenRules.repeatExactly(TokenRules.pattern("test"), 3)));
+		assertEquals("(test){3}", TokenRules.toRegex(TokenRules.repeatExactly(TokenRules.pattern("test"), 3)));
 		assertEquals("test", TokenRules.toRegex(TokenRules.repeatExactly(TokenRules.pattern("test"), 1)));
-		assertEquals("test{2,}", TokenRules.toRegex(TokenRules.repeatAtLeast(TokenRules.pattern("test"), 2)));
-		assertEquals("test+", TokenRules.toRegex(TokenRules.repeatAtLeast(TokenRules.pattern("test"), 1)));
-		assertEquals("test{0,3}", TokenRules.toRegex(TokenRules.repeatAtMost(TokenRules.pattern("test"), 3)));
-		assertEquals("test?", TokenRules.toRegex(TokenRules.repeatAtMost(TokenRules.pattern("test"), 1)));
-		assertEquals("test*", TokenRules.toRegex(TokenRules.repeatInfinitely(TokenRules.pattern("test"))));
-		assertEquals("test{2,5}", TokenRules.toRegex(TokenRules.repeatBetween(TokenRules.pattern("test"), 2, 5)));
+		assertEquals("(test){2,}", TokenRules.toRegex(TokenRules.repeatAtLeast(TokenRules.pattern("test"), 2)));
+		assertEquals("(test)+", TokenRules.toRegex(TokenRules.repeatAtLeast(TokenRules.pattern("test"), 1)));
+		assertEquals("(test){0,3}", TokenRules.toRegex(TokenRules.repeatAtMost(TokenRules.pattern("test"), 3)));
+		assertEquals("(test)?", TokenRules.toRegex(TokenRules.repeatAtMost(TokenRules.pattern("test"), 1)));
+		assertEquals("(test)*", TokenRules.toRegex(TokenRules.repeatInfinitely(TokenRules.pattern("test"))));
+		assertEquals("(test){2,5}", TokenRules.toRegex(TokenRules.repeatBetween(TokenRules.pattern("test"), 2, 5)));
 	}
 	
 	@Test
@@ -642,6 +687,100 @@ class TokenRulesTest {
 	}
 	
 	@Test
+	void toRegexWithStartRule() {
+		assertEquals("^", TokenRules.toRegex(TokenRules.start()));
+	}
+	
+	@Test
+	void toRegexWithNotRule() {
+		assertEquals("(?!test)", TokenRules.toRegex(TokenRules.not(TokenRules.pattern("test"))));
+		assertEquals("(?!\\d+)", TokenRules.toRegex(TokenRules.not(TokenRules.pattern("\\d+"))));
+	}
+	
+	@Test
+	void toRegexWithLookaheadRules() {
+		assertEquals("(?=test)", TokenRules.toRegex(TokenRules.lookahead(TokenRules.pattern("test"))));
+		assertEquals("(?!test)", TokenRules.toRegex(TokenRules.negativeLookahead(TokenRules.pattern("test"))));
+		assertEquals("(?=\\d+)", TokenRules.toRegex(TokenRules.lookahead(TokenRules.pattern("\\d+"))));
+		assertEquals("(?![a-z])", TokenRules.toRegex(TokenRules.negativeLookahead(TokenRules.pattern("[a-z]"))));
+	}
+	
+	@Test
+	void toRegexWithLookbehindRules() {
+		assertEquals("(?<=test)", TokenRules.toRegex(TokenRules.lookbehind(TokenRules.pattern("test"))));
+		assertEquals("(?<!test)", TokenRules.toRegex(TokenRules.negativeLookbehind(TokenRules.pattern("test"))));
+		assertEquals("(?<=\\d+)", TokenRules.toRegex(TokenRules.lookbehind(TokenRules.pattern("\\d+"))));
+		assertEquals("(?<![a-z])", TokenRules.toRegex(TokenRules.negativeLookbehind(TokenRules.pattern("[a-z]"))));
+	}
+	
+	@Test
+	void toRegexWithLengthRules() {
+		assertEquals(".{5}", TokenRules.toRegex(TokenRules.exactLength(5)));
+		assertEquals(".{0}", TokenRules.toRegex(TokenRules.exactLength(0)));
+		assertEquals(".{3,7}", TokenRules.toRegex(TokenRules.lengthBetween(3, 7)));
+		assertEquals(".{2,}", TokenRules.toRegex(TokenRules.minLength(2)));
+		assertEquals(".{0,10}", TokenRules.toRegex(TokenRules.maxLength(10)));
+	}
+	
+	@Test
+	void toRegexWithLengthRulesEdgeCases() {
+		assertEquals(".{0}", TokenRules.toRegex(TokenRules.lengthBetween(0, 0)));
+		assertEquals(".{" + Integer.MAX_VALUE + "}", TokenRules.toRegex(TokenRules.exactLength(Integer.MAX_VALUE)));
+		assertEquals(".{100,}", TokenRules.toRegex(TokenRules.minLength(100)));
+	}
+	
+	@Test
+	void toRegexWithTokenGroupRuleThrowsException() {
+		TokenRule groupRule = TokenRules.group(TokenRules.pattern("test"));
+		
+		IllegalStateException exception = assertThrows(IllegalStateException.class, () -> TokenRules.toRegex(groupRule));
+		assertTrue(exception.getMessage().contains("TokenGroupRule cannot be converted to regex"));
+	}
+	
+	@Test
+	void toRegexWithComplexLookaroundRules() {
+		TokenRule complexLookahead = TokenRules.sequence(
+			TokenRules.lookahead(TokenRules.pattern("\\d+")),
+			TokenRules.pattern("[a-z]+")
+		);
+		assertEquals("(?=\\d+)[a-z]+", TokenRules.toRegex(complexLookahead));
+		
+		TokenRule complexLookbehind = TokenRules.sequence(
+			TokenRules.negativeLookbehind(TokenRules.pattern("test")),
+			TokenRules.pattern("word")
+		);
+		assertEquals("(?<!test)word", TokenRules.toRegex(complexLookbehind));
+	}
+	
+	@Test
+	void toRegexWithNestedComplexRules() {
+		TokenRule notOptional = TokenRules.not(TokenRules.optional(TokenRules.pattern("skip")));
+		assertEquals("(?!(skip)?)", TokenRules.toRegex(notOptional));
+		
+		TokenRule lookaheadRepeated = TokenRules.lookahead(TokenRules.repeatAtLeast(TokenRules.pattern("x"), 2));
+		assertEquals("(?=x{2,})", TokenRules.toRegex(lookaheadRepeated));
+	}
+	
+	@Test
+	void toRegexWithStartAndEndAnchors() {
+		TokenRule startSequence = TokenRules.sequence(
+			TokenRules.start(),
+			TokenRules.pattern("content"),
+			TokenRules.end()
+		);
+		assertEquals("^content$", TokenRules.toRegex(startSequence));
+	}
+	
+	@Test
+	void toRegexWithMixedLookaroundAndLengthRules() {
+		TokenRule mixedRule = TokenRules.sequence(
+			TokenRules.lookahead(TokenRules.lengthBetween(3, 5)),
+			TokenRules.pattern("[a-z]+")
+		);
+		assertEquals("(?=.{3,5})[a-z]+", TokenRules.toRegex(mixedRule));
+	}
+	
+	@Test
 	void toRegexWithTokenDefinitions() {
 		assertEquals("[a-zA-Z0-9]+", TokenRules.toRegex(WordTokenDefinition.INSTANCE));
 		assertEquals("a", TokenRules.toRegex(new CharTokenDefinition('a')));
@@ -680,7 +819,7 @@ class TokenRulesTest {
 				TokenRules.repeatBetween(TokenRules.pattern("\\w"), 1, 3)
 			)
 		)));
-		assertEquals("option1|prefix\\w{1,3}", TokenRules.toRegex(complex2));
+		assertEquals("option1|prefix(\\w){1,3}", TokenRules.toRegex(complex2));
 	}
 	
 	@Test

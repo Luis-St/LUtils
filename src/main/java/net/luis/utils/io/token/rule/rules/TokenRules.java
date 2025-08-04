@@ -19,6 +19,7 @@
 package net.luis.utils.io.token.rule.rules;
 
 import net.luis.utils.io.token.definition.*;
+import org.apache.commons.lang3.StringUtils;
 import org.intellij.lang.annotations.Language;
 import org.jetbrains.annotations.NotNull;
 
@@ -38,8 +39,6 @@ public final class TokenRules {
 	 * This is a static helper class.<br>
 	 */
 	private TokenRules() {}
-	
-	//region Factory methods
 	
 	/**
 	 * Provides a token rule that always matches.<br>
@@ -227,7 +226,6 @@ public final class TokenRules {
 	 * @throws NullPointerException If the start or end token rule is null
 	 * @throws IllegalArgumentException If the start token rule is invalid
 	 * @see BoundaryTokenRule
-	 * @see BoundaryTokenRule#INVALID_RULES
 	 */
 	public static @NotNull TokenRule boundary(@NotNull TokenRule startTokenRule, @NotNull TokenRule endTokenRule) {
 		return new BoundaryTokenRule(startTokenRule, endTokenRule);
@@ -243,7 +241,6 @@ public final class TokenRules {
 	 * @throws NullPointerException If the start, between, or end token rule is null
 	 * @throws IllegalArgumentException If the start or between token rule is invalid
 	 * @see BoundaryTokenRule
-	 * @see BoundaryTokenRule#INVALID_RULES
 	 */
 	public static @NotNull TokenRule boundary(@NotNull TokenRule startTokenRule, @NotNull TokenRule betweenTokenRule, @NotNull TokenRule endTokenRule) {
 		return new BoundaryTokenRule(startTokenRule, betweenTokenRule, endTokenRule);
@@ -332,6 +329,45 @@ public final class TokenRules {
 	}
 	
 	/**
+	 * Creates a token rule that matches tokens with at least the specified length.<br>
+	 *
+	 * @param minLength The minimum length of the token value (inclusive)
+	 * @return The created length token rule
+	 * @throws IllegalArgumentException If minLength is negative
+	 * @see #lengthBetween(int, int)
+	 * @see LengthTokenRule
+	 */
+	public static @NotNull TokenRule minLength(int minLength) {
+		return lengthBetween(minLength, Integer.MAX_VALUE);
+	}
+	
+	/**
+	 * Creates a token rule that matches tokens with exactly the specified length.<br>
+	 *
+	 * @param exactLength The exact length the token value must have
+	 * @return The created length token rule
+	 * @throws IllegalArgumentException If exactLength is negative
+	 * @see #lengthBetween(int, int)
+	 * @see LengthTokenRule
+	 */
+	public static @NotNull TokenRule exactLength(int exactLength) {
+		return lengthBetween(exactLength, exactLength);
+	}
+	
+	/**
+	 * Creates a token rule that matches tokens with at most the specified length.<br>
+	 *
+	 * @param maxLength The maximum length of the token value (inclusive)
+	 * @return The created length token rule
+	 * @throws IllegalArgumentException If maxLength is negative
+	 * @see #lengthBetween(int, int)
+	 * @see LengthTokenRule
+	 */
+	public static @NotNull TokenRule maxLength(int maxLength) {
+		return lengthBetween(0, maxLength);
+	}
+	
+	/**
 	 * Creates a token rule that matches tokens based on their length constraints.<br>
 	 *
 	 * @param minLength The minimum length of the token value (inclusive)
@@ -345,41 +381,18 @@ public final class TokenRules {
 	}
 	
 	/**
-	 * Creates a token rule that matches tokens with exactly the specified length.<br>
+	 * Creates a token group rule that applies the given token rule to the tokens within a group.<br>
+	 * This rule matches if the token at the current position is a {@link net.luis.utils.io.token.tokens.TokenGroup}
+	 * and the inner rule matches when applied to the tokens contained within that group.<br>
 	 *
-	 * @param exactLength The exact length the token value must have
-	 * @return The created length token rule
-	 * @throws IllegalArgumentException If exactLength is negative
-	 * @see LengthTokenRule
+	 * @param tokenRule The inner token rule to apply to the tokens within the group
+	 * @return The created token group rule
+	 * @throws NullPointerException If the token rule is null
+	 * @see TokenGroupRule
 	 */
-	public static @NotNull TokenRule exactLength(int exactLength) {
-		return LengthTokenRule.exactLength(exactLength);
+	public static @NotNull TokenRule group(@NotNull TokenRule tokenRule) {
+		return new TokenGroupRule(tokenRule);
 	}
-	
-	/**
-	 * Creates a token rule that matches tokens with at least the specified length.<br>
-	 *
-	 * @param minLength The minimum length of the token value (inclusive)
-	 * @return The created length token rule
-	 * @throws IllegalArgumentException If minLength is negative
-	 * @see LengthTokenRule
-	 */
-	public static @NotNull TokenRule minLength(int minLength) {
-		return new LengthTokenRule(minLength, Integer.MAX_VALUE);
-	}
-	
-	/**
-	 * Creates a token rule that matches tokens with at most the specified length.<br>
-	 *
-	 * @param maxLength The maximum length of the token value (inclusive)
-	 * @return The created length token rule
-	 * @throws IllegalArgumentException If maxLength is negative
-	 * @see LengthTokenRule
-	 */
-	public static @NotNull TokenRule maxLength(int maxLength) {
-		return new LengthTokenRule(0, maxLength);
-	}
-	//endregion
 	
 	/**
 	 * Converts the given token rule to a regex string.<br>
@@ -426,16 +439,19 @@ public final class TokenRules {
 			}
 			case OptionalTokenRule(TokenRule rule) -> {
 				String regex = toBaseRegex(rule);
-				if (endsWithSpecialChar(regex)) {
-					return "(" + regex + ")?";
+				if (isSurroundedByBrackets(regex)) {
+					return regex + "?";
 				}
-				return regex + "?";
+				return "(" + regex + ")?";
 			}
 			case RepeatedTokenRule(TokenRule rule, int minOccurrences, int maxOccurrences) -> {
 				String regex = toBaseRegex(rule);
-				if (endsWithSpecialChar(regex)) {
-					regex = "(" + regex + ")";
+				if (!isSurroundedByBrackets(regex) && !(regex.charAt(0) == '[' && isLastChar(regex, ']'))) {
+					if (regex.length() > 1) {
+						regex = "(" + regex + ")";
+					}
 				}
+				
 				if (maxOccurrences == Integer.MAX_VALUE) {
 					if (minOccurrences == 0) {
 						return regex + "*";
@@ -476,6 +492,7 @@ public final class TokenRules {
 				String startRegex = toBaseRegex(startTokenRule);
 				String betweenRegex = toBaseRegex(betweenTokenRule);
 				String endRegex = toBaseRegex(endTokenRule);
+				
 				if (endsWithSpecialChar(startRegex)) {
 					startRegex = "(" + startRegex + ")";
 				}
@@ -486,6 +503,33 @@ public final class TokenRules {
 					endRegex = "(" + endRegex + ")";
 				}
 				return "(" + startRegex + betweenRegex + endRegex + ")";
+			}
+			case NotTokenRule(TokenRule rule) -> {
+				String innerRegex = toBaseRegex(rule);
+				return "(?!" + innerRegex + ")";
+			}
+			case LookaheadTokenRule(TokenRule rule, boolean positive) -> {
+				String innerRegex = toBaseRegex(rule);
+				return (positive ? "(?=" : "(?!") + innerRegex + ")";
+			}
+			case LookbehindTokenRule(TokenRule rule, boolean positive) -> {
+				String innerRegex = toBaseRegex(rule);
+				return (positive ? "(?<=" : "(?<!") + innerRegex + ")";
+			}
+			case StartTokenRule ignored -> {
+				return "^";
+			}
+			case LengthTokenRule(int minLength, int maxLength) -> {
+				if (minLength == maxLength) {
+					return ".{" + minLength + "}";
+				} else if (maxLength == Integer.MAX_VALUE) {
+					return ".{" + minLength + ",}";
+				} else {
+					return ".{" + minLength + "," + maxLength + "}";
+				}
+			}
+			case TokenGroupRule ignored -> {
+				throw new IllegalStateException("TokenGroupRule cannot be converted to regex as it operates on grouped tokens");
 			}
 			default -> {}
 		}
@@ -533,7 +577,11 @@ public final class TokenRules {
 	 */
 	private static boolean isSurroundedByBrackets(@NotNull String regex) {
 		Objects.requireNonNull(regex, "Regex must not be null");
-		return regex.charAt(0) == '(' && isLastChar(regex, ')');
+		
+		if (regex.charAt(0) == '(' && isLastChar(regex, ')')) {
+			return !StringUtils.startsWithAny(regex.substring(1), "?!", "?=", "?<=", "?<!");
+		}
+		return false;
 	}
 	
 	/**
