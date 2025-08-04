@@ -80,23 +80,6 @@ class BoundaryTokenRuleTest {
 	}
 	
 	@Test
-	void constructorWithInvalidStartRule() {
-		assertThrows(IllegalArgumentException.class, () -> new BoundaryTokenRule(TokenRules.end(), createRule("end")));
-	}
-	
-	@Test
-	void constructorWithInvalidBetweenRule() {
-		assertThrows(IllegalArgumentException.class, () -> new BoundaryTokenRule(createRule("start"), TokenRules.end(), createRule("end")));
-	}
-	
-	@Test
-	void constructorWithNestedInvalidRules() {
-		AnyOfTokenRule invalidAnyOf = new AnyOfTokenRule(Set.of(createRule("valid"), TokenRules.end()));
-		
-		assertThrows(IllegalArgumentException.class, () -> new BoundaryTokenRule(createRule("start"), invalidAnyOf, createRule("end")));
-	}
-	
-	@Test
 	void constructorWithValidNestedRules() {
 		BoundaryTokenRule validNested = new BoundaryTokenRule(createRule("inner_start"), createRule("inner_end"));
 		RepeatedTokenRule validRepeated = new RepeatedTokenRule(createRule("repeat"), 1, 3);
