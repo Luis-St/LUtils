@@ -21,6 +21,7 @@ package net.luis.utils.io.token.rule.rules;
 import net.luis.utils.io.token.definition.TokenDefinition;
 import net.luis.utils.io.token.rule.TokenRuleMatch;
 import net.luis.utils.io.token.tokens.Token;
+import net.luis.utils.io.token.tokens.TokenGroup;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -30,16 +31,6 @@ import java.util.List;
  * A functional interface representing a rule for matching tokens in a list.<br>
  * It defines a method to match tokens starting from a given index and returns a {@link TokenRuleMatch} if successful.<br>
  *
- * @see TokenDefinition
- * @see AlwaysMatchTokenRule
- * @see AnyOfTokenRule
- * @see BoundaryTokenRule
- * @see EndTokenRule
- * @see OptionalTokenRule
- * @see PatternTokenRule
- * @see RepeatedTokenRule
- * @see SequenceTokenRule
- * @see TokenRuleMatch
  * @see TokenRules
  *
  * @author Luis-St
@@ -56,7 +47,7 @@ public interface TokenRule {
 	 * @return A token rule match if successful, otherwise null
 	 * @throws NullPointerException If the token list is null
 	 * @apiNote For the most rules, the start index must be less than the size of the token list.<br>
-	 * An exception is the {@link EndTokenRule}, which can match at the end of the list.<br>
+	 * An exception is the {@link EndTokenRule}, which can match at the end of the list.
 	 */
 	@Nullable TokenRuleMatch match(@NotNull List<Token> tokens, int startIndex);
 	
@@ -138,5 +129,82 @@ public interface TokenRule {
 	 */
 	default @NotNull TokenRule repeatBetween(int min, int max) {
 		return TokenRules.repeatBetween(this, min, max);
+	}
+	
+	/**
+	 * Negates this token rule by wrapping it in a {@link NotTokenRule}.<br>
+	 * This means that the new rule will match if this rule does not match.<br>
+	 *
+	 * @return A new negated token rule
+	 * @see TokenRules#not(TokenRule)
+	 * @see NotTokenRule
+	 */
+	default @NotNull TokenRule not() {
+		return TokenRules.not(this);
+	}
+	
+	/**
+	 * Creates a positive lookahead for this token rule by wrapping it in a {@link LookaheadTokenRule}.<br>
+	 * A positive lookahead means that the new rule will match if this rule matches at the current position,<br>
+	 * but without consuming any tokens from the input.<br>
+	 *
+	 * @return A new positive lookahead token rule
+	 * @see TokenRules#lookahead(TokenRule)
+	 * @see LookaheadTokenRule
+	 */
+	default @NotNull TokenRule lookahead() {
+		return TokenRules.lookahead(this);
+	}
+	
+	/**
+	 * Creates a negative lookahead for this token rule by wrapping it in a {@link LookaheadTokenRule}.<br>
+	 * A negative lookahead means that the new rule will match if this rule does NOT match at the current position,<br>
+	 * but without consuming any tokens from the input.<br>
+	 *
+	 * @return A new negative lookahead token rule
+	 * @see TokenRules#negativeLookahead(TokenRule)
+	 * @see LookaheadTokenRule
+	 */
+	default @NotNull TokenRule negativeLookahead() {
+		return TokenRules.negativeLookahead(this);
+	}
+	
+	/**
+	 * Creates a positive lookbehind for this token rule by wrapping it in a {@link LookbehindTokenRule}.<br>
+	 * A positive lookbehind means that the new rule will match if this rule matches behind the current position,<br>
+	 * but without consuming any tokens from the input.<br>
+	 *
+	 * @return A new positive lookbehind token rule
+	 * @see TokenRules#lookbehind(TokenRule)
+	 * @see LookbehindTokenRule
+	 */
+	default @NotNull TokenRule lookbehind() {
+		return TokenRules.lookbehind(this);
+	}
+	
+	/**
+	 * Creates a negative lookbehind for this token rule by wrapping it in a {@link LookbehindTokenRule}.<br>
+	 * A negative lookbehind means that the new rule will match if this rule does NOT match behind the current position,<br>
+	 * but without consuming any tokens from the input.<br>
+	 *
+	 * @return A new negative lookbehind token rule
+	 * @see TokenRules#negativeLookbehind(TokenRule)
+	 * @see LookbehindTokenRule
+	 */
+	default @NotNull TokenRule negativeLookbehind() {
+		return TokenRules.negativeLookbehind(this);
+	}
+	
+	/**
+	 * Creates a token group rule for this token rule by wrapping it in a {@link TokenGroupRule}.<br>
+	 * A token group rule applies this rule to the tokens within a {@link net.luis.utils.io.token.tokens.TokenGroup}<br>
+	 * rather than to the group itself.<br>
+	 *
+	 * @return A new token group rule
+	 * @see TokenRules#group(TokenRule)
+	 * @see TokenGroupRule
+	 */
+	default @NotNull TokenRule group() {
+		return TokenRules.group(this);
 	}
 }
