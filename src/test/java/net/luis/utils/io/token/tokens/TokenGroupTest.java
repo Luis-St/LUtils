@@ -108,7 +108,7 @@ class TokenGroupTest {
 		Token token1 = createToken("AB", new TokenPosition(0, 0, 0), new TokenPosition(0, 1, 1));
 		Token token2 = createToken("CD", new TokenPosition(0, 4, 4), new TokenPosition(0, 5, 5));
 		
-		assertThrows(IllegalArgumentException.class, () -> new TokenGroup(List.of(token1, token2), definition));
+		assertDoesNotThrow(() -> new TokenGroup(List.of(token1, token2), definition));
 	}
 	
 	@Test
@@ -281,46 +281,6 @@ class TokenGroupTest {
 		TokenGroup group = new TokenGroup(List.of(token1, token2, token3, token4, token5), definition);
 		
 		assertEquals("ABCDE", group.value());
-	}
-	
-	@Test
-	void isPositionedWithAllPositionedTokens() {
-		TokenDefinition definition = createAnyDefinition();
-		Token token1 = createToken("hello", new TokenPosition(0, 0, 0), new TokenPosition(0, 4, 4));
-		Token token2 = createToken("world", new TokenPosition(0, 5, 5), new TokenPosition(0, 9, 9));
-		TokenGroup group = new TokenGroup(List.of(token1, token2), definition);
-		
-		assertTrue(group.isPositioned());
-	}
-	
-	@Test
-	void isPositionedWithAllUnpositionedTokens() {
-		TokenDefinition definition = createAnyDefinition();
-		Token token1 = createUnpositionedToken("hello");
-		Token token2 = createUnpositionedToken("world");
-		TokenGroup group = new TokenGroup(List.of(token1, token2), definition);
-		
-		assertFalse(group.isPositioned());
-	}
-	
-	@Test
-	void isPositionedWithMixedTokens() {
-		TokenDefinition definition = createAnyDefinition();
-		Token positionedToken = createToken("hello", new TokenPosition(0, 0, 0), new TokenPosition(0, 4, 4));
-		Token unpositionedToken = createUnpositionedToken("world");
-		TokenGroup group = new TokenGroup(List.of(positionedToken, unpositionedToken), definition);
-		
-		assertFalse(group.isPositioned());
-	}
-	
-	@Test
-	void isPositionedWithPartiallyPositionedTokens() {
-		TokenDefinition definition = createAnyDefinition();
-		Token token1 = createToken("hello", new TokenPosition(0, 0, 0), TokenPosition.UNPOSITIONED);
-		Token token2 = createToken("world", new TokenPosition(0, 5, 5), new TokenPosition(0, 9, 9));
-		TokenGroup group = new TokenGroup(List.of(token1, token2), definition);
-		
-		assertFalse(group.isPositioned());
 	}
 	
 	@Test

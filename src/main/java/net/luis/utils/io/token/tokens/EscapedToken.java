@@ -50,8 +50,7 @@ public record EscapedToken(
 	 * @param startPosition The start position of the token
 	 * @param endPosition The end position of the token
 	 * @throws NullPointerException If any of the parameters are null
-	 * @throws IllegalArgumentException If the token value does not have a length of 2, does not start with a backslash or does not match the token definition.
-	 * If the start and end positions are positioned, the distance between them must be equal to the length of the token value minus 1 (inclusive).
+	 * @throws IllegalArgumentException If the token value does not have a length of 2, does not start with a backslash or does not match the token definition
 	 */
 	public EscapedToken {
 		Objects.requireNonNull(definition, "Token definition must not be null");
@@ -63,11 +62,6 @@ public record EscapedToken(
 		}
 		if (!definition.matches(value)) {
 			throw new IllegalArgumentException("Token value '" + value + "' does not match the token definition '" + definition + "'");
-		}
-		if (startPosition.isPositioned() && endPosition.isPositioned()) {
-			if (endPosition.character() - startPosition.character() != value.length() - 1) { // Use -1 to make it inclusive
-				throw new IllegalArgumentException("Positions of token '" + value + "' do not match the length of the token");
-			}
 		}
 	}
 	

@@ -119,7 +119,7 @@ class EscapedTokenTest {
 		TokenPosition start = new TokenPosition(0, 0, 0);
 		TokenPosition wrongEnd = new TokenPosition(0, 2, 2);
 		
-		assertThrows(IllegalArgumentException.class, () -> new EscapedToken(definition, "\\n", start, wrongEnd));
+		assertDoesNotThrow(() -> new EscapedToken(definition, "\\n", start, wrongEnd));
 	}
 	
 	@Test

@@ -198,7 +198,7 @@ class TokenDefinitionTest {
 	
 	@Test
 	void combineWithUnsupportedDefinition() {
-		TokenDefinition customDefinition = word -> word.equals("custom");
+		TokenDefinition customDefinition = "custom"::equals;
 		
 		assertSame(customDefinition, TokenDefinition.combine(customDefinition));
 		assertThrows(IllegalArgumentException.class, () ->

@@ -29,12 +29,7 @@ import java.util.stream.Collectors;
 /**
  * Token implementation for a group of tokens.<br>
  * A token group is a sequence of tokens that have been grouped together and match the token definition.<br>
- * <p>
- *     The token group must contain at least two tokens.<br>
- *     The tokens must be continuous; this means that no token can be removed in the middle of the group.<br>
- *     The group is continuous if the distance between the start position of the first token and the end position of the last token<br>
- *     is equal to the length of the group value minus one (inclusive).
- * </p>
+ * The token group must contain at least two tokens.<br>
  *
  * @author Luis-St
  *
@@ -52,8 +47,7 @@ public record TokenGroup(
 	 * @param tokens The list of tokens in the group
 	 * @param definition The token definition
 	 * @throws NullPointerException If the list of tokens, the token definition or any of the tokens are null
-	 * @throws IllegalArgumentException If the list of tokens is empty, contains a single element,
-	 * does not match the token definition or the start and end positions do not match the length of the token group
+	 * @throws IllegalArgumentException If the list of tokens is empty, contains a single element or does not match the token definition
 	 */
 	public TokenGroup {
 		Objects.requireNonNull(tokens, "Token list must not be null");
@@ -71,11 +65,6 @@ public record TokenGroup(
 		if (!definition.matches(value)) {
 			throw new IllegalArgumentException("Tokens " + tokens + " of group does not match the defined token definition " + definition);
 		}
-		if (tokens.stream().allMatch(token -> token.startPosition().isPositioned() && token.endPosition().isPositioned())) {
-			if (tokens.getLast().endPosition().character() - tokens.getFirst().startPosition().character() != value.length() - 1) {
-				throw new IllegalArgumentException("Start and end position of token group do not match");
-			}
-		}
 		tokens = List.copyOf(tokens);
 	}
 	
@@ -91,21 +80,10 @@ public record TokenGroup(
 	}
 	
 	/**
-	 * Checks if the token group is positioned.<br>
-	 * A token group is positioned if all tokens in the group are positioned.<br>
-	 * @return True if this token group is positioned, false otherwise
-	 * @see TokenPosition#isPositioned()
-	 */
-	public boolean isPositioned() {
-		return this.tokens.stream().allMatch(token -> token.startPosition().isPositioned() && token.endPosition().isPositioned());
-	}
-	
-	/**
 	 * Returns the start position of the token group.<br>
 	 * The start position is the start position of the first token in the group.<br>
 	 *
 	 * @return The start position
-	 * @apiNote If {@link #isPositioned()} returns false, the start position can be unpositioned
 	 */
 	@Override
 	public @NotNull TokenPosition startPosition() {
@@ -117,7 +95,6 @@ public record TokenGroup(
 	 * The end position is the end position of the last token in the group.<br>
 	 *
 	 * @return The end position
-	 * @apiNote If {@link #isPositioned()} returns false, the end position can be unpositioned
 	 */
 	@Override
 	public @NotNull TokenPosition endPosition() {

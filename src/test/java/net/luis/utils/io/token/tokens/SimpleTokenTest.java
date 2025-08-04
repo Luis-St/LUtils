@@ -97,7 +97,7 @@ class SimpleTokenTest {
 		TokenPosition start = new TokenPosition(0, 0, 0);
 		TokenPosition wrongEnd = new TokenPosition(0, 3, 3);
 		
-		assertThrows(IllegalArgumentException.class, () -> new SimpleToken(definition, "123", start, wrongEnd));
+		assertDoesNotThrow(() -> new SimpleToken(definition, "123", start, wrongEnd));
 	}
 	
 	@Test
