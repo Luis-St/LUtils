@@ -115,7 +115,7 @@ class NotTokenRuleTest {
 	}
 	
 	@Test
-	void matchWithInnerRuleDoesNotMatch() {
+	void matchReturnsEmptyMatch() {
 		TokenRule innerRule = createRule("target");
 		NotTokenRule notRule = new NotTokenRule(innerRule);
 		Token other = createToken("other");
@@ -127,6 +127,7 @@ class NotTokenRuleTest {
 		assertEquals(0, match.startIndex());
 		assertEquals(0, match.endIndex());
 		assertTrue(match.matchedTokens().isEmpty());
+		assertEquals(notRule, match.matchingTokenRule());
 	}
 	
 	@Test

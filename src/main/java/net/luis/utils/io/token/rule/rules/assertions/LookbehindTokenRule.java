@@ -65,18 +65,18 @@ public record LookbehindTokenRule(
 		}
 		
 		if (startIndex == 0) {
-			return this.mode.shouldMatch(true) ? null : TokenRuleMatch.empty(startIndex);
+			return this.mode.shouldMatch(true) ? null : TokenRuleMatch.empty(startIndex, this);
 		}
 		
 		List<Token> reversedTokens = Lists.reverse(tokens);
 		int reversedLookbehindIndex = tokens.size() - startIndex;
 		if (reversedLookbehindIndex >= reversedTokens.size()) {
-			return this.mode.shouldMatch(true) ? null : TokenRuleMatch.empty(startIndex);
+			return this.mode.shouldMatch(true) ? null : TokenRuleMatch.empty(startIndex, this);
 		}
 		
 		TokenRuleMatch match = this.tokenRule.match(reversedTokens, reversedLookbehindIndex);
 		if (this.mode.shouldMatch(match != null)) {
-			return TokenRuleMatch.empty(startIndex);
+			return TokenRuleMatch.empty(startIndex, this);
 		}
 		return null;
 	}

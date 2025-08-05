@@ -61,6 +61,6 @@ public record OptionalTokenRule(
 		if (match != null) {
 			return match;
 		}
-		return TokenRuleMatch.empty(startIndex);
+		return TokenRuleMatch.empty(startIndex, this);
 	}
 }

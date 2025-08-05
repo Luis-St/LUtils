@@ -132,7 +132,7 @@ class OptionalTokenRuleTest {
 		assertEquals(0, match.startIndex());
 		assertEquals(0, match.endIndex());
 		assertTrue(match.matchedTokens().isEmpty());
-		Assertions.assertEquals(TokenRules.alwaysMatch(), match.matchingTokenRule());
+		assertEquals(rule, match.matchingTokenRule());
 	}
 	
 	@Test

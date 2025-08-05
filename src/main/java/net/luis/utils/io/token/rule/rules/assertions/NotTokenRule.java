@@ -59,7 +59,7 @@ public record NotTokenRule(
 		
 		TokenRuleMatch match = this.tokenRule.match(tokens, startIndex);
 		if (match == null) {
-			return TokenRuleMatch.empty(startIndex);
+			return TokenRuleMatch.empty(startIndex, this);
 		}
 		return null;
 	}

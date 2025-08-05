@@ -83,7 +83,7 @@ class TokenRuleMatchTest {
 	
 	@Test
 	void emptyCreatesCorrectMatch() {
-		TokenRuleMatch match = TokenRuleMatch.empty(0);
+		TokenRuleMatch match = TokenRuleMatch.empty(0, TokenRules.alwaysMatch());
 		
 		assertEquals(0, match.startIndex());
 		assertEquals(0, match.endIndex());
@@ -93,7 +93,7 @@ class TokenRuleMatchTest {
 	
 	@Test
 	void emptyWithDifferentIndex() {
-		TokenRuleMatch match = TokenRuleMatch.empty(5);
+		TokenRuleMatch match = TokenRuleMatch.empty(5, TokenRules.alwaysMatch());
 		
 		assertEquals(5, match.startIndex());
 		assertEquals(5, match.endIndex());
@@ -103,7 +103,7 @@ class TokenRuleMatchTest {
 	
 	@Test
 	void emptyWithNegativeIndex() {
-		TokenRuleMatch match = TokenRuleMatch.empty(-1);
+		TokenRuleMatch match = TokenRuleMatch.empty(-1, TokenRules.alwaysMatch());
 		
 		assertEquals(-1, match.startIndex());
 		assertEquals(-1, match.endIndex());

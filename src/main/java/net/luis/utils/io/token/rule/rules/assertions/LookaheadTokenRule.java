@@ -65,7 +65,7 @@ public record LookaheadTokenRule(
 		
 		TokenRuleMatch match = this.tokenRule.match(tokens, startIndex);
 		if (this.mode.shouldMatch(match != null)) {
-			return TokenRuleMatch.empty(startIndex);
+			return TokenRuleMatch.empty(startIndex, this);
 		}
 		return null;
 	}

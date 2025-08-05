@@ -80,7 +80,7 @@ public record StartTokenRule(@NotNull AnchorType anchorType) implements TokenRul
 	 */
 	private @Nullable TokenRuleMatch matchDocumentStart(@NotNull List<Token> tokens, int startIndex) {
 		if (startIndex == 0) {
-			return TokenRuleMatch.empty(startIndex);
+			return TokenRuleMatch.empty(startIndex, this);
 		}
 		return null;
 	}
@@ -96,7 +96,7 @@ public record StartTokenRule(@NotNull AnchorType anchorType) implements TokenRul
 	 */
 	private @Nullable TokenRuleMatch matchLineStart(@NotNull List<Token> tokens, int startIndex) {
 		if (startIndex == 0) {
-			return TokenRuleMatch.empty(startIndex);
+			return TokenRuleMatch.empty(startIndex, this);
 		}
 		
 		if (startIndex > 0 && startIndex <= tokens.size()) {
@@ -105,12 +105,12 @@ public record StartTokenRule(@NotNull AnchorType anchorType) implements TokenRul
 			
 			if (currentToken.endPosition().isPositioned() && previousToken.startPosition().isPositioned()) {
 				if (currentToken.endPosition().line() < previousToken.startPosition().line()) {
-					return TokenRuleMatch.empty(startIndex);
+					return TokenRuleMatch.empty(startIndex, this);
 				}
 			}
 			
 			if (previousToken.value().contains("\n")) {
-				return TokenRuleMatch.empty(startIndex);
+				return TokenRuleMatch.empty(startIndex, this);
 			}
 		}
 		

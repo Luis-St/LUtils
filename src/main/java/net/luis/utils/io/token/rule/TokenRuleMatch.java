@@ -64,10 +64,12 @@ public record TokenRuleMatch(
 	 * This is useful for terminating the token rule matching process without consuming any tokens.<br>
 	 *
 	 * @param index The index of the empty token rule match
+	 * @param matchingTokenRule The matching token rule that for the match
 	 * @return An empty token rule match
+	 * @throws NullPointerException If the matching token rule is null
 	 * @see OptionalTokenRule
 	 */
-	public static @NotNull TokenRuleMatch empty(int index) {
-		return new TokenRuleMatch(index, index, List.of(), TokenRules.alwaysMatch());
+	public static @NotNull TokenRuleMatch empty(int index, @NotNull TokenRule matchingTokenRule) {
+		return new TokenRuleMatch(index, index, List.of(), matchingTokenRule);
 	}
 }
