@@ -32,25 +32,28 @@ import java.util.Objects;
  * This rule checks if the inner rule would match at the current position,<br>
  * but doesn't advance the position or consume any tokens.<br>
  *
+ * @see LookMatchMode
+ *
  * @author Luis-St
  *
  * @param tokenRule The token rule to match ahead
- * @param positive If true, match when inner rule matches; if false, match when inner rule doesn't match
+ * @param mode The mode of lookahead matching, either positive or negative
  */
 public record LookaheadTokenRule(
 	@NotNull TokenRule tokenRule,
-	boolean positive
+	@NotNull LookMatchMode mode
 ) implements TokenRule {
 	
 	/**
 	 * Constructs a new lookahead token rule with the given token rule and positive flag.<br>
 	 *
 	 * @param tokenRule The token rule to match ahead
-	 * @param positive If true, match when inner rule matches; if false, match when inner rule doesn't match
+	 * @param mode The mode of lookahead matching, either positive or negative
 	 * @throws NullPointerException If the token rule is null
 	 */
 	public LookaheadTokenRule {
 		Objects.requireNonNull(tokenRule, "Token rule must not be null");
+		Objects.requireNonNull(mode, "Look match mode must not be null");
 	}
 	
 	@Override
@@ -61,8 +64,7 @@ public record LookaheadTokenRule(
 		}
 		
 		TokenRuleMatch match = this.tokenRule.match(tokens, startIndex);
-		boolean ruleMatches = match != null;
-		if ((this.positive && ruleMatches) || (!this.positive && !ruleMatches)) {
+		if (this.mode.shouldMatch(match != null)) {
 			return TokenRuleMatch.empty(startIndex);
 		}
 		return null;

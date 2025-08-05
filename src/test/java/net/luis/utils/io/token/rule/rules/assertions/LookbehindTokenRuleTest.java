@@ -62,22 +62,29 @@ class LookbehindTokenRuleTest {
 	
 	@Test
 	void constructorWithNullTokenRule() {
-		assertThrows(NullPointerException.class, () -> new LookbehindTokenRule(null, true));
-		assertThrows(NullPointerException.class, () -> new LookbehindTokenRule(null, false));
+		assertThrows(NullPointerException.class, () -> new LookbehindTokenRule(null, LookMatchMode.POSITIVE));
+		assertThrows(NullPointerException.class, () -> new LookbehindTokenRule(null, LookMatchMode.NEGATIVE));
+	}
+	
+	@Test
+	void constructorWithNullMode() {
+		TokenRule innerRule = createRule("test");
+		
+		assertThrows(NullPointerException.class, () -> new LookbehindTokenRule(innerRule, null));
 	}
 	
 	@Test
 	void constructorWithValidTokenRule() {
 		TokenRule innerRule = createRule("test");
 		
-		assertDoesNotThrow(() -> new LookbehindTokenRule(innerRule, true));
-		assertDoesNotThrow(() -> new LookbehindTokenRule(innerRule, false));
+		assertDoesNotThrow(() -> new LookbehindTokenRule(innerRule, LookMatchMode.POSITIVE));
+		assertDoesNotThrow(() -> new LookbehindTokenRule(innerRule, LookMatchMode.NEGATIVE));
 	}
 	
 	@Test
 	void tokenRuleReturnsCorrectRule() {
 		TokenRule innerRule = createRule("test");
-		LookbehindTokenRule lookbehind = new LookbehindTokenRule(innerRule, true);
+		LookbehindTokenRule lookbehind = new LookbehindTokenRule(innerRule, LookMatchMode.POSITIVE);
 		
 		assertEquals(innerRule, lookbehind.tokenRule());
 	}
@@ -85,30 +92,30 @@ class LookbehindTokenRuleTest {
 	@Test
 	void positiveReturnsCorrectValue() {
 		TokenRule innerRule = createRule("test");
-		LookbehindTokenRule positiveLookbehind = new LookbehindTokenRule(innerRule, true);
-		LookbehindTokenRule negativeLookbehind = new LookbehindTokenRule(innerRule, false);
+		LookbehindTokenRule positiveLookbehind = new LookbehindTokenRule(innerRule, LookMatchMode.POSITIVE);
+		LookbehindTokenRule negativeLookbehind = new LookbehindTokenRule(innerRule, LookMatchMode.NEGATIVE);
 		
-		assertTrue(positiveLookbehind.positive());
-		assertFalse(negativeLookbehind.positive());
+		assertEquals(LookMatchMode.POSITIVE, positiveLookbehind.mode());
+		assertEquals(LookMatchMode.NEGATIVE, negativeLookbehind.mode());
 	}
 	
 	@Test
 	void matchWithNullTokenList() {
-		LookbehindTokenRule rule = new LookbehindTokenRule(createRule("test"), true);
+		LookbehindTokenRule rule = new LookbehindTokenRule(createRule("test"), LookMatchMode.POSITIVE);
 		
 		assertThrows(NullPointerException.class, () -> rule.match(null, 0));
 	}
 	
 	@Test
 	void matchWithEmptyTokenList() {
-		LookbehindTokenRule rule = new LookbehindTokenRule(createRule("test"), true);
+		LookbehindTokenRule rule = new LookbehindTokenRule(createRule("test"), LookMatchMode.POSITIVE);
 		
 		assertNull(rule.match(Collections.emptyList(), 0));
 	}
 	
 	@Test
 	void matchWithIndexOutOfBounds() {
-		LookbehindTokenRule rule = new LookbehindTokenRule(createRule("test"), true);
+		LookbehindTokenRule rule = new LookbehindTokenRule(createRule("test"), LookMatchMode.POSITIVE);
 		List<Token> tokens = List.of(createToken("test"));
 		
 		assertNull(rule.match(tokens, 1));
@@ -119,7 +126,7 @@ class LookbehindTokenRuleTest {
 	@Test
 	void matchAtStartWithPositiveLookbehind() {
 		TokenRule innerRule = createRule("before");
-		LookbehindTokenRule lookbehind = new LookbehindTokenRule(innerRule, true);
+		LookbehindTokenRule lookbehind = new LookbehindTokenRule(innerRule, LookMatchMode.POSITIVE);
 		Token first = createToken("first");
 		List<Token> tokens = List.of(first);
 		
@@ -129,7 +136,7 @@ class LookbehindTokenRuleTest {
 	@Test
 	void matchAtStartWithNegativeLookbehind() {
 		TokenRule innerRule = createRule("before");
-		LookbehindTokenRule lookbehind = new LookbehindTokenRule(innerRule, false);
+		LookbehindTokenRule lookbehind = new LookbehindTokenRule(innerRule, LookMatchMode.NEGATIVE);
 		Token first = createToken("first");
 		List<Token> tokens = List.of(first);
 		
@@ -144,7 +151,7 @@ class LookbehindTokenRuleTest {
 	@Test
 	void positiveLookbehindWithMatchingPrevious() {
 		TokenRule innerRule = createRule("before");
-		LookbehindTokenRule lookbehind = new LookbehindTokenRule(innerRule, true);
+		LookbehindTokenRule lookbehind = new LookbehindTokenRule(innerRule, LookMatchMode.POSITIVE);
 		Token before = createToken("before");
 		Token current = createToken("current");
 		List<Token> tokens = List.of(before, current);
@@ -160,7 +167,7 @@ class LookbehindTokenRuleTest {
 	@Test
 	void positiveLookbehindWithNonMatchingPrevious() {
 		TokenRule innerRule = createRule("expected");
-		LookbehindTokenRule lookbehind = new LookbehindTokenRule(innerRule, true);
+		LookbehindTokenRule lookbehind = new LookbehindTokenRule(innerRule, LookMatchMode.POSITIVE);
 		Token other = createToken("other");
 		Token current = createToken("current");
 		List<Token> tokens = List.of(other, current);
@@ -171,7 +178,7 @@ class LookbehindTokenRuleTest {
 	@Test
 	void negativeLookbehindWithMatchingPrevious() {
 		TokenRule innerRule = createRule("before");
-		LookbehindTokenRule lookbehind = new LookbehindTokenRule(innerRule, false);
+		LookbehindTokenRule lookbehind = new LookbehindTokenRule(innerRule, LookMatchMode.NEGATIVE);
 		Token before = createToken("before");
 		Token current = createToken("current");
 		List<Token> tokens = List.of(before, current);
@@ -182,7 +189,7 @@ class LookbehindTokenRuleTest {
 	@Test
 	void negativeLookbehindWithNonMatchingPrevious() {
 		TokenRule innerRule = createRule("expected");
-		LookbehindTokenRule lookbehind = new LookbehindTokenRule(innerRule, false);
+		LookbehindTokenRule lookbehind = new LookbehindTokenRule(innerRule, LookMatchMode.NEGATIVE);
 		Token other = createToken("other");
 		Token current = createToken("current");
 		List<Token> tokens = List.of(other, current);
@@ -198,7 +205,7 @@ class LookbehindTokenRuleTest {
 	@Test
 	void lookbehindDoesNotConsumeTokens() {
 		TokenRule innerRule = createRule("before");
-		LookbehindTokenRule lookbehind = new LookbehindTokenRule(innerRule, true);
+		LookbehindTokenRule lookbehind = new LookbehindTokenRule(innerRule, LookMatchMode.POSITIVE);
 		Token before = createToken("before");
 		Token current = createToken("current");
 		List<Token> tokens = List.of(before, current);
@@ -214,7 +221,7 @@ class LookbehindTokenRuleTest {
 	@Test
 	void lookbehindWithMultipleTokens() {
 		TokenRule innerRule = createRule("first");
-		LookbehindTokenRule lookbehind = new LookbehindTokenRule(innerRule, true);
+		LookbehindTokenRule lookbehind = new LookbehindTokenRule(innerRule, LookMatchMode.POSITIVE);
 		Token first = createToken("first");
 		Token second = createToken("second");
 		Token third = createToken("third");
@@ -230,7 +237,7 @@ class LookbehindTokenRuleTest {
 	@Test
 	void lookbehindWithComplexRule() {
 		TokenRule sequence = TokenRules.sequence(createRule("a"), createRule("b"));
-		LookbehindTokenRule lookbehind = new LookbehindTokenRule(sequence, true);
+		LookbehindTokenRule lookbehind = new LookbehindTokenRule(sequence, LookMatchMode.POSITIVE);
 		Token b = createToken("b");
 		Token a = createToken("a");
 		Token current = createToken("current");
@@ -245,7 +252,7 @@ class LookbehindTokenRuleTest {
 	@Test
 	void lookbehindWithLongerSequence() {
 		TokenRule innerRule = createRule("target");
-		LookbehindTokenRule lookbehind = new LookbehindTokenRule(innerRule, true);
+		LookbehindTokenRule lookbehind = new LookbehindTokenRule(innerRule, LookMatchMode.POSITIVE);
 		Token one = createToken("one");
 		Token two = createToken("two");
 		Token target = createToken("target");
@@ -265,7 +272,7 @@ class LookbehindTokenRuleTest {
 	
 	@Test
 	void lookbehindWithAlwaysMatchRule() {
-		LookbehindTokenRule lookbehind = new LookbehindTokenRule(TokenRules.alwaysMatch(), true);
+		LookbehindTokenRule lookbehind = new LookbehindTokenRule(TokenRules.alwaysMatch(), LookMatchMode.POSITIVE);
 		Token first = createToken("first");
 		Token second = createToken("second");
 		List<Token> tokens = List.of(first, second);
@@ -281,8 +288,8 @@ class LookbehindTokenRuleTest {
 	void lookbehindWithNeverMatchRule() {
 		TokenRule neverMatch = (tokens, startIndex) -> null;
 		
-		LookbehindTokenRule positiveLookbehind = new LookbehindTokenRule(neverMatch, true);
-		LookbehindTokenRule negativeLookbehind = new LookbehindTokenRule(neverMatch, false);
+		LookbehindTokenRule positiveLookbehind = new LookbehindTokenRule(neverMatch, LookMatchMode.POSITIVE);
+		LookbehindTokenRule negativeLookbehind = new LookbehindTokenRule(neverMatch, LookMatchMode.NEGATIVE);
 		Token first = createToken("first");
 		Token second = createToken("second");
 		List<Token> tokens = List.of(first, second);
@@ -297,7 +304,7 @@ class LookbehindTokenRuleTest {
 	@Test
 	void lookbehindAtDifferentPositions() {
 		TokenRule innerRule = createRule("before");
-		LookbehindTokenRule lookbehind = new LookbehindTokenRule(innerRule, true);
+		LookbehindTokenRule lookbehind = new LookbehindTokenRule(innerRule, LookMatchMode.POSITIVE);
 		Token before = createToken("before");
 		Token other = createToken("other");
 		Token current1 = createToken("current1");
@@ -316,7 +323,7 @@ class LookbehindTokenRuleTest {
 	@Test
 	void lookbehindWithReversedSequence() {
 		TokenRule innerRule = createRule("second");
-		LookbehindTokenRule lookbehind = new LookbehindTokenRule(innerRule, true);
+		LookbehindTokenRule lookbehind = new LookbehindTokenRule(innerRule, LookMatchMode.POSITIVE);
 		Token first = createToken("first");
 		Token second = createToken("second");
 		Token third = createToken("third");
@@ -332,7 +339,7 @@ class LookbehindTokenRuleTest {
 	@Test
 	void matchResultsAreConsistent() {
 		TokenRule innerRule = createRule("before");
-		LookbehindTokenRule lookbehind = new LookbehindTokenRule(innerRule, true);
+		LookbehindTokenRule lookbehind = new LookbehindTokenRule(innerRule, LookMatchMode.POSITIVE);
 		Token before = createToken("before");
 		Token current = createToken("current");
 		List<Token> tokens = List.of(before, current);
@@ -351,8 +358,8 @@ class LookbehindTokenRuleTest {
 	@Test
 	void equalRulesHaveSameHashCode() {
 		TokenRule innerRule = createRule("test");
-		LookbehindTokenRule rule1 = new LookbehindTokenRule(innerRule, true);
-		LookbehindTokenRule rule2 = new LookbehindTokenRule(innerRule, true);
+		LookbehindTokenRule rule1 = new LookbehindTokenRule(innerRule, LookMatchMode.POSITIVE);
+		LookbehindTokenRule rule2 = new LookbehindTokenRule(innerRule, LookMatchMode.POSITIVE);
 		
 		assertEquals(rule1.hashCode(), rule2.hashCode());
 	}
@@ -360,10 +367,10 @@ class LookbehindTokenRuleTest {
 	@Test
 	void toStringContainsRuleInfo() {
 		TokenRule innerRule = createRule("test");
-		LookbehindTokenRule lookbehind = new LookbehindTokenRule(innerRule, true);
+		LookbehindTokenRule lookbehind = new LookbehindTokenRule(innerRule, LookMatchMode.POSITIVE);
 		String ruleString = lookbehind.toString();
 		
 		assertTrue(ruleString.contains("LookbehindTokenRule"));
-		assertTrue(ruleString.contains("positive"));
+		assertTrue(ruleString.contains("POSITIVE"));
 	}
 }

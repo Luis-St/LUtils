@@ -62,22 +62,29 @@ class LookaheadTokenRuleTest {
 	
 	@Test
 	void constructorWithNullTokenRule() {
-		assertThrows(NullPointerException.class, () -> new LookaheadTokenRule(null, true));
-		assertThrows(NullPointerException.class, () -> new LookaheadTokenRule(null, false));
+		assertThrows(NullPointerException.class, () -> new LookaheadTokenRule(null, LookMatchMode.POSITIVE));
+		assertThrows(NullPointerException.class, () -> new LookaheadTokenRule(null, LookMatchMode.NEGATIVE));
+	}
+	
+	@Test
+	void constructorWithNullMode() {
+		TokenRule innerRule = createRule("test");
+		
+		assertThrows(NullPointerException.class, () -> new LookaheadTokenRule(innerRule, null));
 	}
 	
 	@Test
 	void constructorWithValidTokenRule() {
 		TokenRule innerRule = createRule("test");
 		
-		assertDoesNotThrow(() -> new LookaheadTokenRule(innerRule, true));
-		assertDoesNotThrow(() -> new LookaheadTokenRule(innerRule, false));
+		assertDoesNotThrow(() -> new LookaheadTokenRule(innerRule, LookMatchMode.POSITIVE));
+		assertDoesNotThrow(() -> new LookaheadTokenRule(innerRule, LookMatchMode.NEGATIVE));
 	}
 	
 	@Test
 	void tokenRuleReturnsCorrectRule() {
 		TokenRule innerRule = createRule("test");
-		LookaheadTokenRule lookahead = new LookaheadTokenRule(innerRule, true);
+		LookaheadTokenRule lookahead = new LookaheadTokenRule(innerRule, LookMatchMode.POSITIVE);
 		
 		assertEquals(innerRule, lookahead.tokenRule());
 	}
@@ -85,30 +92,30 @@ class LookaheadTokenRuleTest {
 	@Test
 	void positiveReturnsCorrectValue() {
 		TokenRule innerRule = createRule("test");
-		LookaheadTokenRule positiveLookahead = new LookaheadTokenRule(innerRule, true);
-		LookaheadTokenRule negativeLookahead = new LookaheadTokenRule(innerRule, false);
+		LookaheadTokenRule positiveLookahead = new LookaheadTokenRule(innerRule, LookMatchMode.POSITIVE);
+		LookaheadTokenRule negativeLookahead = new LookaheadTokenRule(innerRule, LookMatchMode.NEGATIVE);
 		
-		assertTrue(positiveLookahead.positive());
-		assertFalse(negativeLookahead.positive());
+		assertEquals(LookMatchMode.POSITIVE, positiveLookahead.mode());
+		assertEquals(LookMatchMode.NEGATIVE, negativeLookahead.mode());
 	}
 	
 	@Test
 	void matchWithNullTokenList() {
-		LookaheadTokenRule rule = new LookaheadTokenRule(createRule("test"), true);
+		LookaheadTokenRule rule = new LookaheadTokenRule(createRule("test"), LookMatchMode.POSITIVE);
 		
 		assertThrows(NullPointerException.class, () -> rule.match(null, 0));
 	}
 	
 	@Test
 	void matchWithEmptyTokenList() {
-		LookaheadTokenRule rule = new LookaheadTokenRule(createRule("test"), true);
+		LookaheadTokenRule rule = new LookaheadTokenRule(createRule("test"), LookMatchMode.POSITIVE);
 		
 		assertNull(rule.match(Collections.emptyList(), 0));
 	}
 	
 	@Test
 	void matchWithIndexOutOfBounds() {
-		LookaheadTokenRule rule = new LookaheadTokenRule(createRule("test"), true);
+		LookaheadTokenRule rule = new LookaheadTokenRule(createRule("test"), LookMatchMode.POSITIVE);
 		List<Token> tokens = List.of(createToken("test"));
 		
 		assertNull(rule.match(tokens, 1));
@@ -119,7 +126,7 @@ class LookaheadTokenRuleTest {
 	@Test
 	void positiveLookaheadWithMatchingRule() {
 		TokenRule innerRule = createRule("target");
-		LookaheadTokenRule lookahead = new LookaheadTokenRule(innerRule, true);
+		LookaheadTokenRule lookahead = new LookaheadTokenRule(innerRule, LookMatchMode.POSITIVE);
 		Token target = createToken("target");
 		List<Token> tokens = List.of(target);
 		
@@ -134,7 +141,7 @@ class LookaheadTokenRuleTest {
 	@Test
 	void positiveLookaheadWithNonMatchingRule() {
 		TokenRule innerRule = createRule("target");
-		LookaheadTokenRule lookahead = new LookaheadTokenRule(innerRule, true);
+		LookaheadTokenRule lookahead = new LookaheadTokenRule(innerRule, LookMatchMode.POSITIVE);
 		Token other = createToken("other");
 		List<Token> tokens = List.of(other);
 		
@@ -144,7 +151,7 @@ class LookaheadTokenRuleTest {
 	@Test
 	void negativeLookaheadWithMatchingRule() {
 		TokenRule innerRule = createRule("target");
-		LookaheadTokenRule lookahead = new LookaheadTokenRule(innerRule, false);
+		LookaheadTokenRule lookahead = new LookaheadTokenRule(innerRule, LookMatchMode.NEGATIVE);
 		Token target = createToken("target");
 		List<Token> tokens = List.of(target);
 		
@@ -154,7 +161,7 @@ class LookaheadTokenRuleTest {
 	@Test
 	void negativeLookaheadWithNonMatchingRule() {
 		TokenRule innerRule = createRule("target");
-		LookaheadTokenRule lookahead = new LookaheadTokenRule(innerRule, false);
+		LookaheadTokenRule lookahead = new LookaheadTokenRule(innerRule, LookMatchMode.NEGATIVE);
 		Token other = createToken("other");
 		List<Token> tokens = List.of(other);
 		
@@ -169,7 +176,7 @@ class LookaheadTokenRuleTest {
 	@Test
 	void lookaheadDoesNotConsumeTokens() {
 		TokenRule innerRule = createRule("test");
-		LookaheadTokenRule lookahead = new LookaheadTokenRule(innerRule, true);
+		LookaheadTokenRule lookahead = new LookaheadTokenRule(innerRule, LookMatchMode.POSITIVE);
 		Token test = createToken("test");
 		Token other = createToken("other");
 		List<Token> tokens = List.of(test, other);
@@ -185,7 +192,7 @@ class LookaheadTokenRuleTest {
 	@Test
 	void lookaheadWithMultipleTokens() {
 		TokenRule innerRule = createRule("second");
-		LookaheadTokenRule lookahead = new LookaheadTokenRule(innerRule, true);
+		LookaheadTokenRule lookahead = new LookaheadTokenRule(innerRule, LookMatchMode.POSITIVE);
 		Token first = createToken("first");
 		Token second = createToken("second");
 		Token third = createToken("third");
@@ -204,7 +211,7 @@ class LookaheadTokenRuleTest {
 	
 	@Test
 	void lookaheadWithAlwaysMatchRule() {
-		LookaheadTokenRule lookahead = new LookaheadTokenRule(TokenRules.alwaysMatch(), true);
+		LookaheadTokenRule lookahead = new LookaheadTokenRule(TokenRules.alwaysMatch(), LookMatchMode.POSITIVE);
 		Token token = createToken("anything");
 		List<Token> tokens = List.of(token);
 		
@@ -223,8 +230,8 @@ class LookaheadTokenRuleTest {
 			}
 		};
 		
-		LookaheadTokenRule positiveLookahead = new LookaheadTokenRule(neverMatch, true);
-		LookaheadTokenRule negativeLookahead = new LookaheadTokenRule(neverMatch, false);
+		LookaheadTokenRule positiveLookahead = new LookaheadTokenRule(neverMatch, LookMatchMode.POSITIVE);
+		LookaheadTokenRule negativeLookahead = new LookaheadTokenRule(neverMatch, LookMatchMode.NEGATIVE);
 		Token token = createToken("test");
 		List<Token> tokens = List.of(token);
 		
@@ -238,7 +245,7 @@ class LookaheadTokenRuleTest {
 	@Test
 	void lookaheadWithComplexRule() {
 		TokenRule sequence = TokenRules.sequence(createRule("a"), createRule("b"));
-		LookaheadTokenRule lookahead = new LookaheadTokenRule(sequence, true);
+		LookaheadTokenRule lookahead = new LookaheadTokenRule(sequence, LookMatchMode.POSITIVE);
 		Token a = createToken("a");
 		Token b = createToken("b");
 		Token c = createToken("c");
@@ -255,7 +262,7 @@ class LookaheadTokenRuleTest {
 	@Test
 	void lookaheadWithOptionalRule() {
 		TokenRule optional = TokenRules.optional(createRule("maybe"));
-		LookaheadTokenRule lookahead = new LookaheadTokenRule(optional, true);
+		LookaheadTokenRule lookahead = new LookaheadTokenRule(optional, LookMatchMode.POSITIVE);
 		Token maybe = createToken("maybe");
 		Token other = createToken("other");
 		
@@ -273,7 +280,7 @@ class LookaheadTokenRuleTest {
 	@Test
 	void lookaheadDoesNotAdvancePosition() {
 		TokenRule innerRule = createRule("target");
-		LookaheadTokenRule lookahead = new LookaheadTokenRule(innerRule, true);
+		LookaheadTokenRule lookahead = new LookaheadTokenRule(innerRule, LookMatchMode.POSITIVE);
 		Token target = createToken("target");
 		Token after = createToken("after");
 		List<Token> tokens = List.of(target, after);
@@ -292,7 +299,7 @@ class LookaheadTokenRuleTest {
 	@Test
 	void matchResultsAreConsistent() {
 		TokenRule innerRule = createRule("test");
-		LookaheadTokenRule lookahead = new LookaheadTokenRule(innerRule, true);
+		LookaheadTokenRule lookahead = new LookaheadTokenRule(innerRule, LookMatchMode.POSITIVE);
 		Token token = createToken("test");
 		List<Token> tokens = List.of(token);
 		
@@ -310,8 +317,8 @@ class LookaheadTokenRuleTest {
 	@Test
 	void equalRulesHaveSameHashCode() {
 		TokenRule innerRule = createRule("test");
-		LookaheadTokenRule rule1 = new LookaheadTokenRule(innerRule, true);
-		LookaheadTokenRule rule2 = new LookaheadTokenRule(innerRule, true);
+		LookaheadTokenRule rule1 = new LookaheadTokenRule(innerRule, LookMatchMode.POSITIVE);
+		LookaheadTokenRule rule2 = new LookaheadTokenRule(innerRule, LookMatchMode.POSITIVE);
 		
 		assertEquals(rule1.hashCode(), rule2.hashCode());
 	}
@@ -319,10 +326,10 @@ class LookaheadTokenRuleTest {
 	@Test
 	void toStringContainsRuleInfo() {
 		TokenRule innerRule = createRule("test");
-		LookaheadTokenRule lookahead = new LookaheadTokenRule(innerRule, true);
+		LookaheadTokenRule lookahead = new LookaheadTokenRule(innerRule, LookMatchMode.POSITIVE);
 		String ruleString = lookahead.toString();
 		
 		assertTrue(ruleString.contains("LookaheadTokenRule"));
-		assertTrue(ruleString.contains("positive"));
+		assertTrue(ruleString.contains("POSITIVE"));
 	}
 }

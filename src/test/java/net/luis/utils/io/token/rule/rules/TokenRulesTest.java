@@ -20,13 +20,14 @@ package net.luis.utils.io.token.rule.rules;
 
 import net.luis.utils.io.token.definition.*;
 import net.luis.utils.io.token.rule.TokenRuleMatch;
+import net.luis.utils.io.token.rule.rules.assertions.*;
 import net.luis.utils.io.token.rule.rules.assertions.anchors.EndTokenRule;
 import net.luis.utils.io.token.rule.rules.assertions.anchors.StartTokenRule;
-import net.luis.utils.io.token.rule.rules.assertions.*;
 import net.luis.utils.io.token.rule.rules.combinators.*;
 import net.luis.utils.io.token.rule.rules.matchers.LengthTokenRule;
 import net.luis.utils.io.token.rule.rules.matchers.PatternTokenRule;
-import net.luis.utils.io.token.rule.rules.quantifiers.*;
+import net.luis.utils.io.token.rule.rules.quantifiers.OptionalTokenRule;
+import net.luis.utils.io.token.rule.rules.quantifiers.RepeatedTokenRule;
 import net.luis.utils.io.token.tokens.Token;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -67,8 +68,7 @@ class TokenRulesTest {
 	void patternWithStringCreatesPatternTokenRule() {
 		TokenRule rule = TokenRules.pattern("\\d+");
 		
-		assertInstanceOf(PatternTokenRule.class, rule);
-		assertEquals("\\d+", ((PatternTokenRule) rule).pattern().pattern());
+		assertEquals("\\d+", assertInstanceOf(PatternTokenRule.class, rule).pattern().pattern());
 	}
 	
 	@Test
@@ -86,8 +86,7 @@ class TokenRulesTest {
 		Pattern compiled = Pattern.compile("[a-z]+");
 		TokenRule rule = TokenRules.pattern(compiled);
 		
-		assertInstanceOf(PatternTokenRule.class, rule);
-		assertEquals(compiled, ((PatternTokenRule) rule).pattern());
+		assertEquals(compiled, assertInstanceOf(PatternTokenRule.class, rule).pattern());
 	}
 	
 	@Test
@@ -100,8 +99,7 @@ class TokenRulesTest {
 		TokenRule innerRule = createRule("test");
 		TokenRule optional = TokenRules.optional(innerRule);
 		
-		assertInstanceOf(OptionalTokenRule.class, optional);
-		assertEquals(innerRule, ((OptionalTokenRule) optional).tokenRule());
+		assertEquals(innerRule, assertInstanceOf(OptionalTokenRule.class, optional).tokenRule());
 	}
 	
 	@Test
@@ -114,8 +112,7 @@ class TokenRulesTest {
 		TokenRule innerRule = createRule("test");
 		TokenRule repeated = TokenRules.repeatAtLeast(innerRule, 3);
 		
-		assertInstanceOf(RepeatedTokenRule.class, repeated);
-		RepeatedTokenRule repeatedRule = (RepeatedTokenRule) repeated;
+		RepeatedTokenRule repeatedRule = assertInstanceOf(RepeatedTokenRule.class, repeated);
 		assertEquals(innerRule, repeatedRule.tokenRule());
 		assertEquals(3, repeatedRule.minOccurrences());
 		assertEquals(Integer.MAX_VALUE, repeatedRule.maxOccurrences());
@@ -136,8 +133,7 @@ class TokenRulesTest {
 		TokenRule innerRule = createRule("test");
 		TokenRule repeated = TokenRules.repeatExactly(innerRule, 5);
 		
-		assertInstanceOf(RepeatedTokenRule.class, repeated);
-		RepeatedTokenRule repeatedRule = (RepeatedTokenRule) repeated;
+		RepeatedTokenRule repeatedRule = assertInstanceOf(RepeatedTokenRule.class, repeated);
 		assertEquals(innerRule, repeatedRule.tokenRule());
 		assertEquals(5, repeatedRule.minOccurrences());
 		assertEquals(5, repeatedRule.maxOccurrences());
@@ -158,8 +154,7 @@ class TokenRulesTest {
 		TokenRule innerRule = createRule("test");
 		TokenRule repeated = TokenRules.repeatAtMost(innerRule, 4);
 		
-		assertInstanceOf(RepeatedTokenRule.class, repeated);
-		RepeatedTokenRule repeatedRule = (RepeatedTokenRule) repeated;
+		RepeatedTokenRule repeatedRule = assertInstanceOf(RepeatedTokenRule.class, repeated);
 		assertEquals(innerRule, repeatedRule.tokenRule());
 		assertEquals(0, repeatedRule.minOccurrences());
 		assertEquals(4, repeatedRule.maxOccurrences());
@@ -180,8 +175,7 @@ class TokenRulesTest {
 		TokenRule innerRule = createRule("test");
 		TokenRule repeated = TokenRules.repeatInfinitely(innerRule);
 		
-		assertInstanceOf(RepeatedTokenRule.class, repeated);
-		RepeatedTokenRule repeatedRule = (RepeatedTokenRule) repeated;
+		RepeatedTokenRule repeatedRule = assertInstanceOf(RepeatedTokenRule.class, repeated);
 		assertEquals(innerRule, repeatedRule.tokenRule());
 		assertEquals(0, repeatedRule.minOccurrences());
 		assertEquals(Integer.MAX_VALUE, repeatedRule.maxOccurrences());
@@ -197,8 +191,7 @@ class TokenRulesTest {
 		TokenRule innerRule = createRule("test");
 		TokenRule repeated = TokenRules.repeatBetween(innerRule, 2, 7);
 		
-		assertInstanceOf(RepeatedTokenRule.class, repeated);
-		RepeatedTokenRule repeatedRule = (RepeatedTokenRule) repeated;
+		RepeatedTokenRule repeatedRule = assertInstanceOf(RepeatedTokenRule.class, repeated);
 		assertEquals(innerRule, repeatedRule.tokenRule());
 		assertEquals(2, repeatedRule.minOccurrences());
 		assertEquals(7, repeatedRule.maxOccurrences());
@@ -223,8 +216,7 @@ class TokenRulesTest {
 		TokenRule rule2 = createRule("second");
 		TokenRule sequence = TokenRules.sequence(rule1, rule2);
 		
-		assertInstanceOf(SequenceTokenRule.class, sequence);
-		List<TokenRule> rules = ((SequenceTokenRule) sequence).tokenRules();
+		List<TokenRule> rules = assertInstanceOf(SequenceTokenRule.class, sequence).tokenRules();
 		assertEquals(2, rules.size());
 		assertEquals(rule1, rules.get(0));
 		assertEquals(rule2, rules.get(1));
@@ -248,8 +240,7 @@ class TokenRulesTest {
 		List<TokenRule> ruleList = List.of(rule1, rule2, rule3);
 		TokenRule sequence = TokenRules.sequence(ruleList);
 		
-		assertInstanceOf(SequenceTokenRule.class, sequence);
-		assertEquals(ruleList, ((SequenceTokenRule) sequence).tokenRules());
+		assertEquals(ruleList, assertInstanceOf(SequenceTokenRule.class, sequence).tokenRules());
 	}
 	
 	@Test
@@ -263,8 +254,7 @@ class TokenRulesTest {
 		TokenRule rule2 = createRule("option2");
 		TokenRule anyOf = TokenRules.any(rule1, rule2);
 		
-		assertInstanceOf(AnyOfTokenRule.class, anyOf);
-		Set<TokenRule> rules = ((AnyOfTokenRule) anyOf).tokenRules();
+		Set<TokenRule> rules = assertInstanceOf(AnyOfTokenRule.class, anyOf).tokenRules();
 		assertEquals(2, rules.size());
 		assertTrue(rules.contains(rule1));
 		assertTrue(rules.contains(rule2));
@@ -287,8 +277,7 @@ class TokenRulesTest {
 		Set<TokenRule> ruleSet = Set.of(rule1, rule2);
 		TokenRule anyOf = TokenRules.any(ruleSet);
 		
-		assertInstanceOf(AnyOfTokenRule.class, anyOf);
-		assertEquals(ruleSet, ((AnyOfTokenRule) anyOf).tokenRules());
+		assertEquals(ruleSet, assertInstanceOf(AnyOfTokenRule.class, anyOf).tokenRules());
 	}
 	
 	@Test
@@ -302,8 +291,7 @@ class TokenRulesTest {
 		TokenRule end = createRule("end");
 		TokenRule boundary = TokenRules.boundary(start, end);
 		
-		assertInstanceOf(BoundaryTokenRule.class, boundary);
-		BoundaryTokenRule boundaryRule = (BoundaryTokenRule) boundary;
+		BoundaryTokenRule boundaryRule = assertInstanceOf(BoundaryTokenRule.class, boundary);
 		assertEquals(start, boundaryRule.startTokenRule());
 		assertEquals(TokenRules.alwaysMatch(), boundaryRule.betweenTokenRule());
 		assertEquals(end, boundaryRule.endTokenRule());
@@ -316,8 +304,7 @@ class TokenRulesTest {
 		TokenRule end = createRule("end");
 		TokenRule boundary = TokenRules.boundary(start, between, end);
 		
-		assertInstanceOf(BoundaryTokenRule.class, boundary);
-		BoundaryTokenRule boundaryRule = (BoundaryTokenRule) boundary;
+		BoundaryTokenRule boundaryRule = assertInstanceOf(BoundaryTokenRule.class, boundary);
 		assertEquals(start, boundaryRule.startTokenRule());
 		assertEquals(between, boundaryRule.betweenTokenRule());
 		assertEquals(end, boundaryRule.endTokenRule());
@@ -362,10 +349,9 @@ class TokenRulesTest {
 		TokenRule innerRule = createRule("test");
 		TokenRule lookaheadRule = TokenRules.lookahead(innerRule);
 		
-		assertInstanceOf(LookaheadTokenRule.class, lookaheadRule);
-		LookaheadTokenRule rule = (LookaheadTokenRule) lookaheadRule;
+		LookaheadTokenRule rule = assertInstanceOf(LookaheadTokenRule.class, lookaheadRule);
 		assertEquals(innerRule, rule.tokenRule());
-		assertTrue(rule.positive());
+		assertEquals(LookMatchMode.POSITIVE, rule.mode());
 	}
 	
 	@Test
@@ -378,10 +364,9 @@ class TokenRulesTest {
 		TokenRule innerRule = createRule("test");
 		TokenRule negativeLookaheadRule = TokenRules.negativeLookahead(innerRule);
 		
-		assertInstanceOf(LookaheadTokenRule.class, negativeLookaheadRule);
-		LookaheadTokenRule rule = (LookaheadTokenRule) negativeLookaheadRule;
+		LookaheadTokenRule rule = assertInstanceOf(LookaheadTokenRule.class, negativeLookaheadRule);
 		assertEquals(innerRule, rule.tokenRule());
-		assertFalse(rule.positive());
+		assertEquals(LookMatchMode.NEGATIVE, rule.mode());
 	}
 	
 	@Test
@@ -394,10 +379,9 @@ class TokenRulesTest {
 		TokenRule innerRule = createRule("test");
 		TokenRule lookbehindRule = TokenRules.lookbehind(innerRule);
 		
-		assertInstanceOf(LookbehindTokenRule.class, lookbehindRule);
-		LookbehindTokenRule rule = (LookbehindTokenRule) lookbehindRule;
+		LookbehindTokenRule rule = assertInstanceOf(LookbehindTokenRule.class, lookbehindRule);
 		assertEquals(innerRule, rule.tokenRule());
-		assertTrue(rule.positive());
+		assertEquals(LookMatchMode.POSITIVE, rule.mode());
 	}
 	
 	@Test
@@ -410,10 +394,9 @@ class TokenRulesTest {
 		TokenRule innerRule = createRule("test");
 		TokenRule negativeLookbehindRule = TokenRules.negativeLookbehind(innerRule);
 		
-		assertInstanceOf(LookbehindTokenRule.class, negativeLookbehindRule);
-		LookbehindTokenRule rule = (LookbehindTokenRule) negativeLookbehindRule;
+		LookbehindTokenRule rule = assertInstanceOf(LookbehindTokenRule.class, negativeLookbehindRule);
 		assertEquals(innerRule, rule.tokenRule());
-		assertFalse(rule.positive());
+		assertEquals(LookMatchMode.NEGATIVE, rule.mode());
 	}
 	
 	@Test
@@ -435,8 +418,7 @@ class TokenRulesTest {
 	void lengthBetweenCreatesLengthTokenRule() {
 		TokenRule lengthRule = TokenRules.lengthBetween(2, 5);
 		
-		assertInstanceOf(LengthTokenRule.class, lengthRule);
-		LengthTokenRule rule = (LengthTokenRule) lengthRule;
+		LengthTokenRule rule = assertInstanceOf(LengthTokenRule.class, lengthRule);
 		assertEquals(2, rule.minLength());
 		assertEquals(5, rule.maxLength());
 	}
@@ -452,8 +434,7 @@ class TokenRulesTest {
 	void lengthBetweenWithEqualValues() {
 		TokenRule lengthRule = TokenRules.lengthBetween(3, 3);
 		
-		assertInstanceOf(LengthTokenRule.class, lengthRule);
-		LengthTokenRule rule = (LengthTokenRule) lengthRule;
+		LengthTokenRule rule = assertInstanceOf(LengthTokenRule.class, lengthRule);
 		assertEquals(3, rule.minLength());
 		assertEquals(3, rule.maxLength());
 	}
@@ -462,8 +443,7 @@ class TokenRulesTest {
 	void exactLengthCreatesLengthTokenRule() {
 		TokenRule lengthRule = TokenRules.exactLength(7);
 		
-		assertInstanceOf(LengthTokenRule.class, lengthRule);
-		LengthTokenRule rule = (LengthTokenRule) lengthRule;
+		LengthTokenRule rule = assertInstanceOf(LengthTokenRule.class, lengthRule);
 		assertEquals(7, rule.minLength());
 		assertEquals(7, rule.maxLength());
 	}
@@ -477,8 +457,7 @@ class TokenRulesTest {
 	void exactLengthWithZero() {
 		TokenRule lengthRule = TokenRules.exactLength(0);
 		
-		assertInstanceOf(LengthTokenRule.class, lengthRule);
-		LengthTokenRule rule = (LengthTokenRule) lengthRule;
+		LengthTokenRule rule = assertInstanceOf(LengthTokenRule.class, lengthRule);
 		assertEquals(0, rule.minLength());
 		assertEquals(0, rule.maxLength());
 	}
@@ -487,8 +466,7 @@ class TokenRulesTest {
 	void minLengthCreatesLengthTokenRule() {
 		TokenRule lengthRule = TokenRules.minLength(3);
 		
-		assertInstanceOf(LengthTokenRule.class, lengthRule);
-		LengthTokenRule rule = (LengthTokenRule) lengthRule;
+		LengthTokenRule rule = assertInstanceOf(LengthTokenRule.class, lengthRule);
 		assertEquals(3, rule.minLength());
 		assertEquals(Integer.MAX_VALUE, rule.maxLength());
 	}
@@ -502,8 +480,7 @@ class TokenRulesTest {
 	void minLengthWithZero() {
 		TokenRule lengthRule = TokenRules.minLength(0);
 		
-		assertInstanceOf(LengthTokenRule.class, lengthRule);
-		LengthTokenRule rule = (LengthTokenRule) lengthRule;
+		LengthTokenRule rule = assertInstanceOf(LengthTokenRule.class, lengthRule);
 		assertEquals(0, rule.minLength());
 		assertEquals(Integer.MAX_VALUE, rule.maxLength());
 	}
@@ -512,8 +489,7 @@ class TokenRulesTest {
 	void maxLengthCreatesLengthTokenRule() {
 		TokenRule lengthRule = TokenRules.maxLength(10);
 		
-		assertInstanceOf(LengthTokenRule.class, lengthRule);
-		LengthTokenRule rule = (LengthTokenRule) lengthRule;
+		LengthTokenRule rule = assertInstanceOf(LengthTokenRule.class, lengthRule);
 		assertEquals(0, rule.minLength());
 		assertEquals(10, rule.maxLength());
 	}
@@ -527,8 +503,7 @@ class TokenRulesTest {
 	void maxLengthWithZero() {
 		TokenRule lengthRule = TokenRules.maxLength(0);
 		
-		assertInstanceOf(LengthTokenRule.class, lengthRule);
-		LengthTokenRule rule = (LengthTokenRule) lengthRule;
+		LengthTokenRule rule = assertInstanceOf(LengthTokenRule.class, lengthRule);
 		assertEquals(0, rule.minLength());
 		assertEquals(0, rule.maxLength());
 	}
@@ -546,8 +521,7 @@ class TokenRulesTest {
 		TokenRule innerRule = createRule("test");
 		TokenRule groupRule = TokenRules.group(innerRule);
 		
-		assertInstanceOf(TokenGroupRule.class, groupRule);
-		assertEquals(innerRule, ((TokenGroupRule) groupRule).tokenRule());
+		assertEquals(innerRule, assertInstanceOf(TokenGroupRule.class, groupRule).tokenRule());
 	}
 	
 	@Test
@@ -560,8 +534,7 @@ class TokenRulesTest {
 		TokenRule alwaysMatch = TokenRules.alwaysMatch();
 		TokenRule groupRule = TokenRules.group(alwaysMatch);
 		
-		assertInstanceOf(TokenGroupRule.class, groupRule);
-		assertEquals(alwaysMatch, ((TokenGroupRule) groupRule).tokenRule());
+		assertEquals(alwaysMatch, assertInstanceOf(TokenGroupRule.class, groupRule).tokenRule());
 	}
 	
 	@Test
@@ -569,8 +542,7 @@ class TokenRulesTest {
 		TokenRule patternRule = TokenRules.pattern("\\d+");
 		TokenRule groupRule = TokenRules.group(patternRule);
 		
-		assertInstanceOf(TokenGroupRule.class, groupRule);
-		assertEquals(patternRule, ((TokenGroupRule) groupRule).tokenRule());
+		assertEquals(patternRule, assertInstanceOf(TokenGroupRule.class, groupRule).tokenRule());
 	}
 	
 	@Test
@@ -582,8 +554,7 @@ class TokenRulesTest {
 		);
 		TokenRule groupRule = TokenRules.group(complexRule);
 		
-		assertInstanceOf(TokenGroupRule.class, groupRule);
-		assertEquals(complexRule, ((TokenGroupRule) groupRule).tokenRule());
+		assertEquals(complexRule, assertInstanceOf(TokenGroupRule.class, groupRule).tokenRule());
 	}
 	
 	@Test

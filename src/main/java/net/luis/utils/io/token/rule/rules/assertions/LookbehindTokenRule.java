@@ -33,25 +33,28 @@ import java.util.Objects;
  * This rule reverses the token list and checks if the inner rule would match at the corresponding position.<br>
  * This approach provides a more consistent and powerful lookbehind implementation.<br>
  *
+ * @see LookMatchMode
+ *
  * @author Luis-St
  *
  * @param tokenRule The token rule to match behind
- * @param positive If true, match when inner rule matches; if false, match when inner rule doesn't match
+ * @param mode The mode of lookahead matching, either positive or negative
  */
 public record LookbehindTokenRule(
 	@NotNull TokenRule tokenRule,
-	boolean positive
+	@NotNull LookMatchMode mode
 ) implements TokenRule {
 	
 	/**
 	 * Constructs a new lookbehind token rule with the given token rule and positive flag.<br>
 	 *
 	 * @param tokenRule The token rule to match behind
-	 * @param positive If true, match when inner rule matches; if false, match when inner rule doesn't match
+	 * @param mode The mode of lookbehind matching, either positive or negative
 	 * @throws NullPointerException If the token rule is null
 	 */
 	public LookbehindTokenRule {
 		Objects.requireNonNull(tokenRule, "Token rule must not be null");
+		Objects.requireNonNull(mode, "Look match mode must not be null");
 	}
 	
 	@Override
@@ -62,18 +65,17 @@ public record LookbehindTokenRule(
 		}
 		
 		if (startIndex == 0) {
-			return this.positive ? null : TokenRuleMatch.empty(startIndex);
+			return this.mode.shouldMatch(true) ? null : TokenRuleMatch.empty(startIndex);
 		}
 		
 		List<Token> reversedTokens = Lists.reverse(tokens);
 		int reversedLookbehindIndex = tokens.size() - startIndex;
 		if (reversedLookbehindIndex >= reversedTokens.size()) {
-			return this.positive ? null : TokenRuleMatch.empty(startIndex);
+			return this.mode.shouldMatch(true) ? null : TokenRuleMatch.empty(startIndex);
 		}
 		
 		TokenRuleMatch match = this.tokenRule.match(reversedTokens, reversedLookbehindIndex);
-		boolean ruleMatches = match != null;
-		if ((this.positive && ruleMatches) || (!this.positive && !ruleMatches)) {
+		if (this.mode.shouldMatch(match != null)) {
 			return TokenRuleMatch.empty(startIndex);
 		}
 		return null;

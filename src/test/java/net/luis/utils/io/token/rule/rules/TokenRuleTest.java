@@ -238,7 +238,7 @@ class TokenRuleTest {
 		
 		LookaheadTokenRule lookahead = assertInstanceOf(LookaheadTokenRule.class, lookaheadRule);
 		assertEquals(rule, lookahead.tokenRule());
-		assertTrue(lookahead.positive());
+		assertEquals(LookMatchMode.POSITIVE, lookahead.mode());
 	}
 	
 	@Test
@@ -248,11 +248,11 @@ class TokenRuleTest {
 		
 		LookaheadTokenRule lookahead1 = assertInstanceOf(LookaheadTokenRule.class, numberRule.lookahead());
 		assertEquals(numberRule, lookahead1.tokenRule());
-		assertTrue(lookahead1.positive());
+		assertEquals(LookMatchMode.POSITIVE, lookahead1.mode());
 		
 		LookaheadTokenRule lookahead2 = assertInstanceOf(LookaheadTokenRule.class, sequenceRule.lookahead());
 		assertEquals(sequenceRule, lookahead2.tokenRule());
-		assertTrue(lookahead2.positive());
+		assertEquals(LookMatchMode.POSITIVE, lookahead2.mode());
 	}
 	
 	@Test
@@ -263,7 +263,7 @@ class TokenRuleTest {
 		
 		LookaheadTokenRule lookahead = assertInstanceOf(LookaheadTokenRule.class, negativeLookaheadRule);
 		assertEquals(rule, lookahead.tokenRule());
-		assertFalse(lookahead.positive());
+		assertEquals(LookMatchMode.NEGATIVE, lookahead.mode());
 	}
 	
 	@Test
@@ -273,11 +273,11 @@ class TokenRuleTest {
 		
 		LookaheadTokenRule negativeLookahead1 = assertInstanceOf(LookaheadTokenRule.class, patternRule.negativeLookahead());
 		assertEquals(patternRule, negativeLookahead1.tokenRule());
-		assertFalse(negativeLookahead1.positive());
+		assertEquals(LookMatchMode.NEGATIVE, negativeLookahead1.mode());
 		
 		LookaheadTokenRule negativeLookahead2 = assertInstanceOf(LookaheadTokenRule.class, optionalRule.negativeLookahead());
 		assertEquals(optionalRule, negativeLookahead2.tokenRule());
-		assertFalse(negativeLookahead2.positive());
+		assertEquals(LookMatchMode.NEGATIVE, negativeLookahead2.mode());
 	}
 	
 	@Test
@@ -288,7 +288,7 @@ class TokenRuleTest {
 		
 		LookbehindTokenRule lookbehind = assertInstanceOf(LookbehindTokenRule.class, lookbehindRule);
 		assertEquals(rule, lookbehind.tokenRule());
-		assertTrue(lookbehind.positive());
+		assertEquals(LookMatchMode.POSITIVE, lookbehind.mode());
 	}
 	
 	@Test
@@ -298,11 +298,11 @@ class TokenRuleTest {
 		
 		LookbehindTokenRule lookbehind1 = assertInstanceOf(LookbehindTokenRule.class, boundaryRule.lookbehind());
 		assertEquals(boundaryRule, lookbehind1.tokenRule());
-		assertTrue(lookbehind1.positive());
+		assertEquals(LookMatchMode.POSITIVE, lookbehind1.mode());
 		
 		LookbehindTokenRule lookbehind2 = assertInstanceOf(LookbehindTokenRule.class, repeatedRule.lookbehind());
 		assertEquals(repeatedRule, lookbehind2.tokenRule());
-		assertTrue(lookbehind2.positive());
+		assertEquals(LookMatchMode.POSITIVE, lookbehind2.mode());
 	}
 	
 	@Test
@@ -313,7 +313,7 @@ class TokenRuleTest {
 		
 		LookbehindTokenRule lookbehind = assertInstanceOf(LookbehindTokenRule.class, negativeLookbehindRule);
 		assertEquals(rule, lookbehind.tokenRule());
-		assertFalse(lookbehind.positive());
+		assertEquals(LookMatchMode.NEGATIVE, lookbehind.mode());
 	}
 	
 	@Test
@@ -323,11 +323,11 @@ class TokenRuleTest {
 		
 		LookbehindTokenRule negativeLookbehind1 = assertInstanceOf(LookbehindTokenRule.class, lengthRule.negativeLookbehind());
 		assertEquals(lengthRule, negativeLookbehind1.tokenRule());
-		assertFalse(negativeLookbehind1.positive());
+		assertEquals(LookMatchMode.NEGATIVE, negativeLookbehind1.mode());
 		
 		LookbehindTokenRule negativeLookbehind2 = assertInstanceOf(LookbehindTokenRule.class, anyRule.negativeLookbehind());
 		assertEquals(anyRule, negativeLookbehind2.tokenRule());
-		assertFalse(negativeLookbehind2.positive());
+		assertEquals(LookMatchMode.NEGATIVE, negativeLookbehind2.mode());
 	}
 	
 	@Test
@@ -372,12 +372,12 @@ class TokenRuleTest {
 		TokenRule chained1 = rule.lookahead().lookbehind();
 		LookbehindTokenRule lookbehind = assertInstanceOf(LookbehindTokenRule.class, chained1);
 		assertInstanceOf(LookaheadTokenRule.class, lookbehind.tokenRule());
-		assertTrue(lookbehind.positive());
+		assertEquals(LookMatchMode.POSITIVE, lookbehind.mode());
 		
 		TokenRule chained2 = rule.negativeLookahead().negativeLookbehind();
 		LookbehindTokenRule negativeLookbehind = assertInstanceOf(LookbehindTokenRule.class, chained2);
 		assertInstanceOf(LookaheadTokenRule.class, negativeLookbehind.tokenRule());
-		assertFalse(negativeLookbehind.positive());
+		assertEquals(LookMatchMode.NEGATIVE, negativeLookbehind.mode());
 	}
 	
 	@Test
@@ -463,11 +463,11 @@ class TokenRuleTest {
 		
 		LookaheadTokenRule lookahead = assertInstanceOf(LookaheadTokenRule.class, complexRule.lookahead());
 		assertEquals(complexRule, lookahead.tokenRule());
-		assertTrue(lookahead.positive());
+		assertEquals(LookMatchMode.POSITIVE, lookahead.mode());
 		
 		LookbehindTokenRule lookbehind = assertInstanceOf(LookbehindTokenRule.class, complexRule.lookbehind());
 		assertEquals(complexRule, lookbehind.tokenRule());
-		assertTrue(lookbehind.positive());
+		assertEquals(LookMatchMode.POSITIVE, lookbehind.mode());
 		
 		TokenGroupRule group = assertInstanceOf(TokenGroupRule.class, complexRule.group());
 		assertEquals(complexRule, group.tokenRule());

@@ -285,7 +285,7 @@ public final class TokenRules {
 	 * @see LookaheadTokenRule
 	 */
 	public static @NotNull TokenRule lookahead(@NotNull TokenRule tokenRule) {
-		return new LookaheadTokenRule(tokenRule, true);
+		return new LookaheadTokenRule(tokenRule, LookMatchMode.POSITIVE);
 	}
 	
 	/**
@@ -297,7 +297,7 @@ public final class TokenRules {
 	 * @see LookaheadTokenRule
 	 */
 	public static @NotNull TokenRule negativeLookahead(@NotNull TokenRule tokenRule) {
-		return new LookaheadTokenRule(tokenRule, false);
+		return new LookaheadTokenRule(tokenRule, LookMatchMode.NEGATIVE);
 	}
 	
 	/**
@@ -309,7 +309,7 @@ public final class TokenRules {
 	 * @see LookbehindTokenRule
 	 */
 	public static @NotNull TokenRule lookbehind(@NotNull TokenRule tokenRule) {
-		return new LookbehindTokenRule(tokenRule, true);
+		return new LookbehindTokenRule(tokenRule, LookMatchMode.POSITIVE);
 	}
 	
 	/**
@@ -321,7 +321,7 @@ public final class TokenRules {
 	 * @see LookbehindTokenRule
 	 */
 	public static @NotNull TokenRule negativeLookbehind(@NotNull TokenRule tokenRule) {
-		return new LookbehindTokenRule(tokenRule, false);
+		return new LookbehindTokenRule(tokenRule, LookMatchMode.NEGATIVE);
 	}
 	
 	/**
@@ -515,13 +515,13 @@ public final class TokenRules {
 				String innerRegex = toBaseRegex(rule);
 				return "(?!" + innerRegex + ")";
 			}
-			case LookaheadTokenRule(TokenRule rule, boolean positive) -> {
+			case LookaheadTokenRule(TokenRule rule, LookMatchMode mode) -> {
 				String innerRegex = toBaseRegex(rule);
-				return (positive ? "(?=" : "(?!") + innerRegex + ")";
+				return (mode == LookMatchMode.POSITIVE ? "(?=" : "(?!") + innerRegex + ")";
 			}
-			case LookbehindTokenRule(TokenRule rule, boolean positive) -> {
+			case LookbehindTokenRule(TokenRule rule, LookMatchMode mode) -> {
 				String innerRegex = toBaseRegex(rule);
-				return (positive ? "(?<=" : "(?<!") + innerRegex + ")";
+				return (mode == LookMatchMode.POSITIVE ? "(?<=" : "(?<!") + innerRegex + ")";
 			}
 			case StartTokenRule ignored -> {
 				return "^";
