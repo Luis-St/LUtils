@@ -150,7 +150,7 @@ class TokenRuleTest {
 	@Test
 	void repeatInfinitelyWithDifferentRules() {
 		TokenRule numberRule = TokenRules.pattern("\\d+");
-		TokenRule endRule = TokenRules.end();
+		TokenRule endRule = TokenRules.endDocument();
 		
 		RepeatedTokenRule repeated1 = assertInstanceOf(RepeatedTokenRule.class, numberRule.repeatInfinitely());
 		assertEquals(numberRule, repeated1.tokenRule());
@@ -219,7 +219,7 @@ class TokenRuleTest {
 	void notWithDifferentRules() {
 		TokenRule numberRule = TokenRules.pattern("\\d+");
 		TokenRule alwaysRule = TokenRules.alwaysMatch();
-		TokenRule endRule = TokenRules.end();
+		TokenRule endRule = TokenRules.endDocument();
 		
 		assertInstanceOf(NotTokenRule.class, numberRule.not());
 		assertInstanceOf(NotTokenRule.class, alwaysRule.not());
@@ -341,11 +341,11 @@ class TokenRuleTest {
 	
 	@Test
 	void groupWithDifferentRules() {
-		TokenRule startRule = TokenRules.start();
+		TokenRule startRule = TokenRules.startDocument();
 		TokenRule complexRule = TokenRules.sequence(
 			TokenRules.pattern("\\d+"),
 			TokenRules.optional(TokenRules.pattern("[a-z]+")),
-			TokenRules.end()
+			TokenRules.endDocument()
 		);
 		
 		assertEquals(startRule, assertInstanceOf(TokenGroupRule.class, startRule.group()).tokenRule());
@@ -569,7 +569,7 @@ class TokenRuleTest {
 	
 	@Test
 	void operationsWithEndRule() {
-		TokenRule endRule = TokenRules.end();
+		TokenRule endRule = TokenRules.endDocument();
 		
 		assertInstanceOf(OptionalTokenRule.class, endRule.optional());
 		assertInstanceOf(RepeatedTokenRule.class, endRule.repeatAtLeast(1));
@@ -582,8 +582,8 @@ class TokenRuleTest {
 	@Test
 	void newOperationsWithSingletonRules() {
 		TokenRule alwaysMatch = TokenRules.alwaysMatch();
-		TokenRule start = TokenRules.start();
-		TokenRule end = TokenRules.end();
+		TokenRule start = TokenRules.startDocument();
+		TokenRule end = TokenRules.endDocument();
 		
 		TokenRule[] singletonRules = {alwaysMatch, start, end};
 		for (TokenRule singletonRule : singletonRules) {

@@ -174,9 +174,9 @@ class TokenRuleMatchTest {
 	
 	@Test
 	void matchingTokenRuleWithEndRule() {
-		TokenRuleMatch match = new TokenRuleMatch(0, 0, Collections.emptyList(), TokenRules.end());
+		TokenRuleMatch match = new TokenRuleMatch(0, 0, Collections.emptyList(), TokenRules.endDocument());
 		
-		assertSame(TokenRules.end(), match.matchingTokenRule());
+		assertEquals(TokenRules.endDocument(), match.matchingTokenRule());
 	}
 	
 	@Test

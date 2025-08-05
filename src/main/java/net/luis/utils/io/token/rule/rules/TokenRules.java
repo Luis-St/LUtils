@@ -19,8 +19,7 @@
 package net.luis.utils.io.token.rule.rules;
 
 import net.luis.utils.io.token.definition.*;
-import net.luis.utils.io.token.rule.rules.assertions.anchors.EndTokenRule;
-import net.luis.utils.io.token.rule.rules.assertions.anchors.StartTokenRule;
+import net.luis.utils.io.token.rule.rules.assertions.anchors.*;
 import net.luis.utils.io.token.rule.rules.assertions.*;
 import net.luis.utils.io.token.rule.rules.combinators.*;
 import net.luis.utils.io.token.rule.rules.matchers.LengthTokenRule;
@@ -254,14 +253,23 @@ public final class TokenRules {
 	}
 	
 	/**
-	 * Provides a token rule that matches the end of the input.<br>
+	 * Creates a token rule that matches the end of the document (entire token list).<br>
 	 *
 	 * @return The token rule
-	 * @apiNote This is the preferred way to access the {@link EndTokenRule#INSTANCE} instance
 	 * @see EndTokenRule
 	 */
-	public static @NotNull TokenRule end() {
-		return EndTokenRule.INSTANCE;
+	public static @NotNull TokenRule endDocument() {
+		return new EndTokenRule(AnchorType.DOCUMENT);
+	}
+	
+	/**
+	 * Creates a token rule that matches the end of a line.<br>
+	 *
+	 * @return The token rule
+	 * @see EndTokenRule
+	 */
+	public static @NotNull TokenRule endLine() {
+		return new EndTokenRule(AnchorType.LINE);
 	}
 	
 	/**
@@ -325,14 +333,23 @@ public final class TokenRules {
 	}
 	
 	/**
-	 * Provides a token rule that matches only at the start of the input.<br>
+	 * Creates a token rule that matches the start of the document (entire token list).<br>
 	 *
 	 * @return The token rule
-	 * @apiNote This is the preferred way to access the {@link StartTokenRule#INSTANCE} instance
 	 * @see StartTokenRule
 	 */
-	public static @NotNull TokenRule start() {
-		return StartTokenRule.INSTANCE;
+	public static @NotNull TokenRule startDocument() {
+		return new StartTokenRule(AnchorType.DOCUMENT);
+	}
+	
+	/**
+	 * Creates a token rule that matches the start of a line.<br>
+	 *
+	 * @return The token rule
+	 * @see StartTokenRule
+	 */
+	public static @NotNull TokenRule startLine() {
+		return new StartTokenRule(AnchorType.LINE);
 	}
 	
 	/**
@@ -434,8 +451,8 @@ public final class TokenRules {
 			case AlwaysMatchTokenRule ignored -> {
 				return ".*?";
 			}
-			case EndTokenRule ignored -> {
-				return "$";
+			case EndTokenRule(AnchorType anchorType) -> {
+				return anchorType == AnchorType.DOCUMENT ? "$" : "\\n";
 			}
 			case PatternTokenRule(Pattern pattern) -> {
 				String regex = pattern.pattern();
@@ -523,8 +540,8 @@ public final class TokenRules {
 				String innerRegex = toBaseRegex(rule);
 				return (mode == LookMatchMode.POSITIVE ? "(?<=" : "(?<!") + innerRegex + ")";
 			}
-			case StartTokenRule ignored -> {
-				return "^";
+			case StartTokenRule(AnchorType anchorType) -> {
+				return anchorType == AnchorType.DOCUMENT ? "^" : "\\n";
 			}
 			case LengthTokenRule(int minLength, int maxLength) -> {
 				if (minLength == maxLength) {

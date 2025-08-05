@@ -18,7 +18,9 @@
 
 package net.luis.utils.io.token.rule.rules.assertions.anchors;
 
+import net.luis.utils.io.token.TokenPosition;
 import net.luis.utils.io.token.rule.TokenRuleMatch;
+import net.luis.utils.io.token.rule.rules.assertions.anchors.AnchorType;
 import net.luis.utils.io.token.rule.rules.assertions.anchors.EndTokenRule;
 import net.luis.utils.io.token.tokens.SimpleToken;
 import net.luis.utils.io.token.tokens.Token;
@@ -42,20 +44,40 @@ class EndTokenRuleTest {
 		return SimpleToken.createUnpositioned(word -> word.equals(value), value);
 	}
 	
+	private static @NotNull Token createPositionedToken(@NotNull String value, int line, int character) {
+		TokenPosition startPos = new TokenPosition(line, 0, character);
+		TokenPosition endPos = new TokenPosition(line, character + value.length() - 1, character + value.length() - 1);
+		return new SimpleToken(word -> word.equals(value), value, startPos, endPos);
+	}
+	
 	private static @NotNull @Unmodifiable List<Token> createTokenList() {
 		return java.util.stream.IntStream.range(0, 100).mapToObj(i -> createToken("token" + i)).toList();
 	}
 	
 	@Test
-	void matchWithNullTokenList() {
-		EndTokenRule rule = EndTokenRule.INSTANCE;
+	void constructorWithNullAnchorType() {
+		assertThrows(NullPointerException.class, () -> new EndTokenRule(null));
+	}
+	
+	@Test
+	void constructorWithValidAnchorTypes() {
+		EndTokenRule documentRule = new EndTokenRule(AnchorType.DOCUMENT);
+		EndTokenRule lineRule = new EndTokenRule(AnchorType.LINE);
+		
+		assertEquals(AnchorType.DOCUMENT, documentRule.anchorType());
+		assertEquals(AnchorType.LINE, lineRule.anchorType());
+	}
+	
+	@Test
+	void documentMatchWithNullTokenList() {
+		EndTokenRule rule = new EndTokenRule(AnchorType.DOCUMENT);
 		
 		assertThrows(NullPointerException.class, () -> rule.match(null, 0));
 	}
 	
 	@Test
-	void matchWithEmptyTokenListAtIndexZero() {
-		EndTokenRule rule = EndTokenRule.INSTANCE;
+	void documentMatchWithEmptyTokenListAtIndexZero() {
+		EndTokenRule rule = new EndTokenRule(AnchorType.DOCUMENT);
 		
 		TokenRuleMatch match = rule.match(Collections.emptyList(), 0);
 		
@@ -63,12 +85,11 @@ class EndTokenRuleTest {
 		assertEquals(0, match.startIndex());
 		assertEquals(0, match.endIndex());
 		assertTrue(match.matchedTokens().isEmpty());
-		assertSame(rule, match.matchingTokenRule());
 	}
 	
 	@Test
-	void matchWithEmptyTokenListAtHigherIndex() {
-		EndTokenRule rule = EndTokenRule.INSTANCE;
+	void documentMatchWithEmptyTokenListAtHigherIndex() {
+		EndTokenRule rule = new EndTokenRule(AnchorType.DOCUMENT);
 		
 		TokenRuleMatch match = rule.match(Collections.emptyList(), 5);
 		
@@ -79,8 +100,8 @@ class EndTokenRuleTest {
 	}
 	
 	@Test
-	void matchWithTokensAtValidEndIndex() {
-		EndTokenRule rule = EndTokenRule.INSTANCE;
+	void documentMatchWithTokensAtValidEndIndex() {
+		EndTokenRule rule = new EndTokenRule(AnchorType.DOCUMENT);
 		List<Token> tokens = List.of(createToken("first"), createToken("second"));
 		
 		TokenRuleMatch match = rule.match(tokens, 2);
@@ -89,12 +110,11 @@ class EndTokenRuleTest {
 		assertEquals(2, match.startIndex());
 		assertEquals(2, match.endIndex());
 		assertTrue(match.matchedTokens().isEmpty());
-		assertSame(rule, match.matchingTokenRule());
 	}
 	
 	@Test
-	void matchWithTokensAtIndexBeyondEnd() {
-		EndTokenRule rule = EndTokenRule.INSTANCE;
+	void documentMatchWithTokensAtIndexBeyondEnd() {
+		EndTokenRule rule = new EndTokenRule(AnchorType.DOCUMENT);
 		List<Token> tokens = List.of(createToken("test"));
 		
 		TokenRuleMatch match = rule.match(tokens, 5);
@@ -106,8 +126,8 @@ class EndTokenRuleTest {
 	}
 	
 	@Test
-	void noMatchWithTokensAtValidTokenIndex() {
-		EndTokenRule rule = EndTokenRule.INSTANCE;
+	void documentNoMatchWithTokensAtValidTokenIndex() {
+		EndTokenRule rule = new EndTokenRule(AnchorType.DOCUMENT);
 		List<Token> tokens = List.of(createToken("first"), createToken("second"));
 		
 		assertNull(rule.match(tokens, 0));
@@ -115,16 +135,16 @@ class EndTokenRuleTest {
 	}
 	
 	@Test
-	void noMatchWithSingleTokenAtIndexZero() {
-		EndTokenRule rule = EndTokenRule.INSTANCE;
+	void documentNoMatchWithSingleTokenAtIndexZero() {
+		EndTokenRule rule = new EndTokenRule(AnchorType.DOCUMENT);
 		List<Token> tokens = List.of(createToken("single"));
 		
 		assertNull(rule.match(tokens, 0));
 	}
 	
 	@Test
-	void matchWithLargeTokenListAtEnd() {
-		EndTokenRule rule = EndTokenRule.INSTANCE;
+	void documentMatchWithLargeTokenListAtEnd() {
+		EndTokenRule rule = new EndTokenRule(AnchorType.DOCUMENT);
 		List<Token> largeList = createTokenList();
 		
 		TokenRuleMatch match = rule.match(largeList, 100);
@@ -136,8 +156,8 @@ class EndTokenRuleTest {
 	}
 	
 	@Test
-	void noMatchWithLargeTokenListInMiddle() {
-		EndTokenRule rule = EndTokenRule.INSTANCE;
+	void documentNoMatchWithLargeTokenListInMiddle() {
+		EndTokenRule rule = new EndTokenRule(AnchorType.DOCUMENT);
 		List<Token> largeList = createTokenList();
 		
 		assertNull(rule.match(largeList, 50));
@@ -145,90 +165,228 @@ class EndTokenRuleTest {
 	}
 	
 	@Test
-	void matchAtNegativeIndexBeyondSize() {
-		EndTokenRule rule = EndTokenRule.INSTANCE;
+	void documentMatchAtNegativeIndexBeyondSize() {
+		EndTokenRule rule = new EndTokenRule(AnchorType.DOCUMENT);
 		List<Token> tokens = List.of(createToken("test"));
 		
-		TokenRuleMatch match = rule.match(tokens, -5);
-		assertNull(match);
+		assertNull(rule.match(tokens, -5));
 	}
 	
 	@Test
-	void matchConsistencyAcrossMultipleCalls() {
-		EndTokenRule rule = EndTokenRule.INSTANCE;
-		List<Token> tokens = List.of(createToken("test"));
+	void lineMatchWithNullTokenList() {
+		EndTokenRule rule = new EndTokenRule(AnchorType.LINE);
 		
-		TokenRuleMatch match1 = rule.match(tokens, 1);
-		TokenRuleMatch match2 = rule.match(tokens, 1);
-		
-		assertNotNull(match1);
-		assertNotNull(match2);
-		assertEquals(match1.startIndex(), match2.startIndex());
-		assertEquals(match1.endIndex(), match2.endIndex());
-		assertEquals(match1.matchedTokens(), match2.matchedTokens());
-		assertSame(match1.matchingTokenRule(), match2.matchingTokenRule());
+		assertThrows(NullPointerException.class, () -> rule.match(null, 0));
 	}
 	
 	@Test
-	void matchWithDifferentTokenTypes() {
-		EndTokenRule rule = EndTokenRule.INSTANCE;
-		List<Token> tokens = List.of(
-			createToken("text"),
-			createToken("123"),
-			createToken("!@#")
-		);
+	void lineMatchWithEmptyTokenListAtIndexZero() {
+		EndTokenRule rule = new EndTokenRule(AnchorType.LINE);
 		
-		TokenRuleMatch match = rule.match(tokens, 3);
+		TokenRuleMatch match = rule.match(Collections.emptyList(), 0);
 		
 		assertNotNull(match);
-		assertEquals(3, match.startIndex());
-		assertEquals(3, match.endIndex());
+		assertEquals(0, match.startIndex());
+		assertEquals(0, match.endIndex());
 		assertTrue(match.matchedTokens().isEmpty());
 	}
 	
 	@Test
-	void matchEmptyTokensListIsAlwaysEmpty() {
-		EndTokenRule rule = EndTokenRule.INSTANCE;
-		
-		for (int i = 0; i <= 10; i++) {
-			TokenRuleMatch match = rule.match(Collections.emptyList(), i);
-			assertNotNull(match);
-			assertTrue(match.matchedTokens().isEmpty());
-			assertEquals(i, match.startIndex());
-			assertEquals(i, match.endIndex());
-		}
-	}
-	
-	@Test
-	void matchBehaviorWithZeroIndex() {
-		EndTokenRule rule = EndTokenRule.INSTANCE;
-		
-		TokenRuleMatch emptyMatch = rule.match(Collections.emptyList(), 0);
-		assertNotNull(emptyMatch);
-		
-		List<Token> nonEmpty = List.of(createToken("test"));
-		assertNull(rule.match(nonEmpty, 0));
-	}
-	
-	@Test
-	void matchResultsHaveCorrectStructure() {
-		EndTokenRule rule = EndTokenRule.INSTANCE;
-		List<Token> tokens = List.of(createToken("a"), createToken("b"));
+	void lineMatchAtDocumentEnd() {
+		EndTokenRule rule = new EndTokenRule(AnchorType.LINE);
+		List<Token> tokens = List.of(createPositionedToken("first", 1, 1), createPositionedToken("second", 1, 7));
 		
 		TokenRuleMatch match = rule.match(tokens, 2);
 		
 		assertNotNull(match);
 		assertEquals(2, match.startIndex());
 		assertEquals(2, match.endIndex());
-		assertEquals(0, match.matchedTokens().size());
 		assertTrue(match.matchedTokens().isEmpty());
-		assertSame(rule, match.matchingTokenRule());
-		assertThrows(UnsupportedOperationException.class, () -> match.matchedTokens().add(createToken("new")));
+	}
+	
+	@Test
+	void lineMatchWhenNextTokenOnDifferentLine() {
+		EndTokenRule rule = new EndTokenRule(AnchorType.LINE);
+		List<Token> tokens = List.of(
+			createPositionedToken("first", 1, 1),
+			createPositionedToken("second", 2, 1)
+		);
+		
+		TokenRuleMatch match = rule.match(tokens, 0);
+		
+		assertNotNull(match);
+		assertEquals(0, match.startIndex());
+		assertEquals(0, match.endIndex());
+		assertTrue(match.matchedTokens().isEmpty());
+	}
+	
+	@Test
+	void lineMatchWhenCurrentTokenContainsNewline() {
+		EndTokenRule rule = new EndTokenRule(AnchorType.LINE);
+		List<Token> tokens = List.of(
+			createToken("text\n"),
+			createToken("next")
+		);
+		
+		TokenRuleMatch match = rule.match(tokens, 0);
+		
+		assertNotNull(match);
+		assertEquals(0, match.startIndex());
+		assertEquals(0, match.endIndex());
+		assertTrue(match.matchedTokens().isEmpty());
+	}
+	
+	@Test
+	void lineNoMatchWhenTokensOnSameLine() {
+		EndTokenRule rule = new EndTokenRule(AnchorType.LINE);
+		List<Token> tokens = List.of(
+			createPositionedToken("first", 1, 1),
+			createPositionedToken("second", 1, 7)
+		);
+		
+		assertNull(rule.match(tokens, 0));
+	}
+	
+	@Test
+	void lineNoMatchWithUnpositionedTokens() {
+		EndTokenRule rule = new EndTokenRule(AnchorType.LINE);
+		List<Token> tokens = List.of(
+			createToken("first"),
+			createToken("second")
+		);
+		
+		assertNull(rule.match(tokens, 0));
+	}
+	
+	@Test
+	void lineMatchWithMixedPositionedAndUnpositionedTokens() {
+		EndTokenRule rule = new EndTokenRule(AnchorType.LINE);
+		List<Token> tokens = List.of(
+			createPositionedToken("first", 1, 1),
+			createToken("unpositioned")
+		);
+		
+		assertNull(rule.match(tokens, 0));
+	}
+	
+	@Test
+	void lineMatchWithNewlineInMiddleOfToken() {
+		EndTokenRule rule = new EndTokenRule(AnchorType.LINE);
+		List<Token> tokens = List.of(
+			createToken("before\nafter"),
+			createToken("next")
+		);
+		
+		TokenRuleMatch match = rule.match(tokens, 0);
+		
+		assertNotNull(match);
+		assertEquals(0, match.startIndex());
+		assertEquals(0, match.endIndex());
+		assertTrue(match.matchedTokens().isEmpty());
+	}
+	
+	@Test
+	void lineNoMatchAtLastTokenWithoutNewline() {
+		EndTokenRule rule = new EndTokenRule(AnchorType.LINE);
+		List<Token> tokens = List.of(
+			createPositionedToken("first", 1, 1),
+			createPositionedToken("last", 1, 7)
+		);
+		
+		assertNull(rule.match(tokens, 1));
+	}
+	
+	@Test
+	void matchConsistencyAcrossMultipleCalls() {
+		EndTokenRule documentRule = new EndTokenRule(AnchorType.DOCUMENT);
+		EndTokenRule lineRule = new EndTokenRule(AnchorType.LINE);
+		List<Token> tokens = List.of(createToken("test"));
+		
+		TokenRuleMatch docMatch1 = documentRule.match(tokens, 1);
+		TokenRuleMatch docMatch2 = documentRule.match(tokens, 1);
+		
+		assertNotNull(docMatch1);
+		assertNotNull(docMatch2);
+		assertEquals(docMatch1.startIndex(), docMatch2.startIndex());
+		assertEquals(docMatch1.endIndex(), docMatch2.endIndex());
+		assertEquals(docMatch1.matchedTokens(), docMatch2.matchedTokens());
+		
+		TokenRuleMatch lineMatch1 = lineRule.match(tokens, 1);
+		TokenRuleMatch lineMatch2 = lineRule.match(tokens, 1);
+		
+		assertNotNull(lineMatch1);
+		assertNotNull(lineMatch2);
+		assertEquals(lineMatch1.startIndex(), lineMatch2.startIndex());
+		assertEquals(lineMatch1.endIndex(), lineMatch2.endIndex());
+		assertEquals(lineMatch1.matchedTokens(), lineMatch2.matchedTokens());
+	}
+	
+	@Test
+	void matchWithDifferentTokenTypes() {
+		EndTokenRule documentRule = new EndTokenRule(AnchorType.DOCUMENT);
+		EndTokenRule lineRule = new EndTokenRule(AnchorType.LINE);
+		List<Token> tokens = List.of(
+			createToken("text"),
+			createToken("123"),
+			createToken("!@#")
+		);
+		
+		TokenRuleMatch docMatch = documentRule.match(tokens, 3);
+		assertNotNull(docMatch);
+		assertEquals(3, docMatch.startIndex());
+		assertEquals(3, docMatch.endIndex());
+		assertTrue(docMatch.matchedTokens().isEmpty());
+		
+		TokenRuleMatch lineMatch = lineRule.match(tokens, 3);
+		assertNotNull(lineMatch);
+		assertEquals(3, lineMatch.startIndex());
+		assertEquals(3, lineMatch.endIndex());
+		assertTrue(lineMatch.matchedTokens().isEmpty());
 	}
 	
 	@Test
 	void equalInstancesHaveSameHashCode() {
-		assertEquals(EndTokenRule.INSTANCE.hashCode(), EndTokenRule.INSTANCE.hashCode());
+		EndTokenRule rule1 = new EndTokenRule(AnchorType.DOCUMENT);
+		EndTokenRule rule2 = new EndTokenRule(AnchorType.DOCUMENT);
+		EndTokenRule rule3 = new EndTokenRule(AnchorType.LINE);
+		EndTokenRule rule4 = new EndTokenRule(AnchorType.LINE);
+		
+		assertEquals(rule1.hashCode(), rule2.hashCode());
+		assertEquals(rule3.hashCode(), rule4.hashCode());
+		assertNotEquals(rule1.hashCode(), rule3.hashCode());
+	}
+	
+	@Test
+	void equalityBetweenInstances() {
+		EndTokenRule docRule1 = new EndTokenRule(AnchorType.DOCUMENT);
+		EndTokenRule docRule2 = new EndTokenRule(AnchorType.DOCUMENT);
+		EndTokenRule lineRule1 = new EndTokenRule(AnchorType.LINE);
+		EndTokenRule lineRule2 = new EndTokenRule(AnchorType.LINE);
+		
+		assertEquals(docRule1, docRule2);
+		assertEquals(lineRule1, lineRule2);
+		assertNotEquals(docRule1, lineRule1);
+		assertNotEquals(docRule2, lineRule2);
+	}
+	
+	@Test
+	void recordAccessors() {
+		EndTokenRule documentRule = new EndTokenRule(AnchorType.DOCUMENT);
+		EndTokenRule lineRule = new EndTokenRule(AnchorType.LINE);
+		
+		assertEquals(AnchorType.DOCUMENT, documentRule.anchorType());
+		assertEquals(AnchorType.LINE, lineRule.anchorType());
+	}
+	
+	@Test
+	void toStringContainsAnchorType() {
+		EndTokenRule documentRule = new EndTokenRule(AnchorType.DOCUMENT);
+		EndTokenRule lineRule = new EndTokenRule(AnchorType.LINE);
+		
+		String docString = documentRule.toString();
+		String lineString = lineRule.toString();
+		
+		assertTrue(docString.contains("DOCUMENT"));
+		assertTrue(lineString.contains("LINE"));
 	}
 }
-

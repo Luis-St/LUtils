@@ -332,7 +332,7 @@ class TokenGroupRuleTest {
 	
 	@Test
 	void matchWithEmptyGroupTokensHandling() {
-		TokenRule innerRule = TokenRules.start();
+		TokenRule innerRule = TokenRules.startDocument();
 		TokenGroupRule groupRule = new TokenGroupRule(innerRule);
 		Token token1 = createToken("hello");
 		Token token2 = createToken("world");

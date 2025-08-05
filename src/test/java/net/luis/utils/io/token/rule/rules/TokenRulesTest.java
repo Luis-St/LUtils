@@ -21,8 +21,7 @@ package net.luis.utils.io.token.rule.rules;
 import net.luis.utils.io.token.definition.*;
 import net.luis.utils.io.token.rule.TokenRuleMatch;
 import net.luis.utils.io.token.rule.rules.assertions.*;
-import net.luis.utils.io.token.rule.rules.assertions.anchors.EndTokenRule;
-import net.luis.utils.io.token.rule.rules.assertions.anchors.StartTokenRule;
+import net.luis.utils.io.token.rule.rules.assertions.anchors.*;
 import net.luis.utils.io.token.rule.rules.combinators.*;
 import net.luis.utils.io.token.rule.rules.matchers.LengthTokenRule;
 import net.luis.utils.io.token.rule.rules.matchers.PatternTokenRule;
@@ -321,13 +320,17 @@ class TokenRulesTest {
 	}
 	
 	@Test
-	void endReturnsSingleton() {
-		TokenRule end1 = TokenRules.end();
-		TokenRule end2 = TokenRules.end();
+	void endDocumentCreatesEndTokenRule() {
+		TokenRule endRule = TokenRules.endDocument();
 		
-		assertSame(EndTokenRule.INSTANCE, end1);
-		assertSame(end1, end2);
-		assertInstanceOf(EndTokenRule.class, end1);
+		assertEquals(AnchorType.DOCUMENT, assertInstanceOf(EndTokenRule.class, endRule).anchorType());
+	}
+	
+	@Test
+	void endLineCreatesEndTokenRule() {
+		TokenRule endRule = TokenRules.endLine();
+		
+		assertEquals(AnchorType.LINE, assertInstanceOf(EndTokenRule.class, endRule).anchorType());
 	}
 	
 	@Test
@@ -405,13 +408,17 @@ class TokenRulesTest {
 	}
 	
 	@Test
-	void startReturnsSingleton() {
-		TokenRule start1 = TokenRules.start();
-		TokenRule start2 = TokenRules.start();
+	void startDocumentCreatesStartTokenRule() {
+		TokenRule startRule = TokenRules.startDocument();
 		
-		assertSame(StartTokenRule.INSTANCE, start1);
-		assertSame(start1, start2);
-		assertInstanceOf(StartTokenRule.class, start1);
+		assertEquals(AnchorType.DOCUMENT, assertInstanceOf(StartTokenRule.class, startRule).anchorType());
+	}
+	
+	@Test
+	void startLineCreatesStartTokenRule() {
+		TokenRule startRule = TokenRules.startLine();
+		
+		assertEquals(AnchorType.LINE, assertInstanceOf(StartTokenRule.class, startRule).anchorType());
 	}
 	
 	@Test
@@ -568,8 +575,13 @@ class TokenRulesTest {
 	}
 	
 	@Test
-	void toRegexWithEndRule() {
-		assertEquals("$", TokenRules.toRegex(TokenRules.end()));
+	void toRegexWithEndDocumentRule() {
+		assertEquals("$", TokenRules.toRegex(TokenRules.endDocument()));
+	}
+	
+	@Test
+	void toRegexWithEndLineRule() {
+		assertEquals("\\n", TokenRules.toRegex(TokenRules.endLine()));
 	}
 	
 	@Test
@@ -665,8 +677,13 @@ class TokenRulesTest {
 	}
 	
 	@Test
-	void toRegexWithStartRule() {
-		assertEquals("^", TokenRules.toRegex(TokenRules.start()));
+	void toRegexWithStartDocumentRule() {
+		assertEquals("^", TokenRules.toRegex(TokenRules.startDocument()));
+	}
+	
+	@Test
+	void toRegexWithStartLineRule() {
+		assertEquals("\\n", TokenRules.toRegex(TokenRules.startLine()));
 	}
 	
 	@Test
@@ -740,13 +757,23 @@ class TokenRulesTest {
 	}
 	
 	@Test
-	void toRegexWithStartAndEndAnchors() {
+	void toRegexWithStartDocumentAndEndDocumentAnchors() {
 		TokenRule startSequence = TokenRules.sequence(
-			TokenRules.start(),
+			TokenRules.startDocument(),
 			TokenRules.pattern("content"),
-			TokenRules.end()
+			TokenRules.endDocument()
 		);
 		assertEquals("^content$", TokenRules.toRegex(startSequence));
+	}
+	
+	@Test
+	void toRegexWithStartLineAndEndLineAnchors() {
+		TokenRule startSequence = TokenRules.sequence(
+			TokenRules.startLine(),
+			TokenRules.pattern("content"),
+			TokenRules.endLine()
+		);
+		assertEquals("\\ncontent\\n", TokenRules.toRegex(startSequence));
 	}
 	
 	@Test
