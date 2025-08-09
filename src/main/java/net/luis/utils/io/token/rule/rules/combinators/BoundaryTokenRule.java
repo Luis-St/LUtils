@@ -105,6 +105,6 @@ public record BoundaryTokenRule(
 			}
 		}
 		
-		return null;
+		return this.endTokenRule.match(tokens, currentIndex); // Checking the end rule again to include the case where the end rule does not consume any tokens
 	}
 }

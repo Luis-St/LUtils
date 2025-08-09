@@ -51,15 +51,16 @@ public record OptionalTokenRule(
 	}
 	
 	@Override
-	public @Nullable TokenRuleMatch match(@NotNull List<Token> tokens, int startIndex) {
+	public @NotNull TokenRuleMatch match(@NotNull List<Token> tokens, int startIndex) {
 		Objects.requireNonNull(tokens, "Tokens must not be null");
-		if (startIndex >= tokens.size() || startIndex < 0) {
-			return null;
-		}
 		
 		TokenRuleMatch match = this.tokenRule.match(tokens, startIndex);
 		if (match != null) {
 			return match;
+		}
+		
+		if (startIndex >= tokens.size() || startIndex < 0) { // Check after nested rule processed to allow the rule to match at these edge cases
+			return null;
 		}
 		return TokenRuleMatch.empty(startIndex, this);
 	}

@@ -59,9 +59,6 @@ public record LookaheadTokenRule(
 	@Override
 	public @Nullable TokenRuleMatch match(@NotNull List<Token> tokens, int startIndex) {
 		Objects.requireNonNull(tokens, "Tokens must not be null");
-		if (startIndex >= tokens.size() || startIndex < 0) {
-			return null;
-		}
 		
 		TokenRuleMatch match = this.tokenRule.match(tokens, startIndex);
 		if (this.mode.shouldMatch(match != null)) {

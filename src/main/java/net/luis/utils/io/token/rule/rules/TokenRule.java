@@ -48,7 +48,8 @@ public interface TokenRule {
 	 * @return A token rule match if successful, otherwise null
 	 * @throws NullPointerException If the token list is null
 	 * @apiNote For the most rules, the start index must be less than the size of the token list.<br>
-	 * An exception is the {@link EndTokenRule}, which can match at the end of the list.
+	 * However, some rules can match even if the start index is equal to the size of the token list.<br>
+	 * Therefore, the most rules which warp other rules do not include these checks or have a modified behavior.
 	 */
 	@Nullable TokenRuleMatch match(@NotNull List<Token> tokens, int startIndex);
 	
