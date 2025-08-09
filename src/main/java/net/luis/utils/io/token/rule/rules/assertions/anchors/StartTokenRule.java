@@ -94,6 +94,7 @@ public record StartTokenRule(@NotNull AnchorType anchorType) implements TokenRul
 	 * @param startIndex The starting index
 	 * @return A match if at line start, null otherwise
 	 */
+	@SuppressWarnings("DuplicatedCode")
 	private @Nullable TokenRuleMatch matchLineStart(@NotNull List<Token> tokens, int startIndex) {
 		if (startIndex == 0) {
 			return TokenRuleMatch.empty(startIndex, this);

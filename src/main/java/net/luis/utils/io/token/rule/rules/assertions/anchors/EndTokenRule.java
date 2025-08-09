@@ -90,6 +90,7 @@ public record EndTokenRule(@NotNull AnchorType anchorType) implements TokenRule 
 	 * @param startIndex The starting index
 	 * @return A match if at line end, null otherwise
 	 */
+	@SuppressWarnings("DuplicatedCode")
 	private @Nullable TokenRuleMatch matchLineEnd(@NotNull List<Token> tokens, int startIndex) {
 		if (startIndex >= tokens.size()) {
 			return TokenRuleMatch.empty(startIndex, this);
