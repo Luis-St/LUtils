@@ -92,7 +92,7 @@ class StartTokenRuleTest {
 	}
 	
 	@Test
-	void documentMatchAtNonStartIndex() {
+	void documentNoMatchAtNonStartIndex() {
 		StartTokenRule rule = new StartTokenRule(AnchorType.DOCUMENT);
 		Token first = createToken("first");
 		Token second = createToken("second");

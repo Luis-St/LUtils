@@ -331,7 +331,7 @@ class TokenGroupRuleTest {
 	}
 	
 	@Test
-	void matchWithEmptyGroupTokensHandling() {
+	void matchWithNonEmptyGroupAndStartDocumentRule() {
 		TokenRule innerRule = TokenRules.startDocument();
 		TokenGroupRule groupRule = new TokenGroupRule(innerRule);
 		Token token1 = createToken("hello");

@@ -404,7 +404,7 @@ class SplitTokenActionTest {
 	}
 	
 	@Test
-	void applyNotPreservesTokenDefinition() {
+	void applyDoesNotPreserveTokenDefinition() {
 		SplitTokenAction action = new SplitTokenAction(",");
 		Token token = createToken("a,b");
 		List<Token> tokens = List.of(token);
@@ -478,7 +478,7 @@ class SplitTokenActionTest {
 	}
 	
 	@Test
-	void definitionProviderValidationDuringTokenCreation() {
+	void definitionProviderWithStrictPatternMatching() {
 		TokenDefinitionProvider strictProvider = value -> {
 			if (value.matches("\\d+")) {
 				return word -> word.matches("\\d+");

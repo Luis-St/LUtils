@@ -165,7 +165,7 @@ class EndTokenRuleTest {
 	}
 	
 	@Test
-	void documentMatchAtNegativeIndexBeyondSize() {
+	void documentNoMatchAtNegativeIndex() {
 		EndTokenRule rule = new EndTokenRule(AnchorType.DOCUMENT);
 		List<Token> tokens = List.of(createToken("test"));
 		

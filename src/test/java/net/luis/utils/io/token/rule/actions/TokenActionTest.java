@@ -95,7 +95,7 @@ class TokenActionTest {
 	}
 	
 	@Test
-	void identityPreservesTokenOrder() {
+	void identityReturnsEqualList() {
 		TokenAction identity = TokenAction.identity();
 		Token tokenA = createToken("A");
 		Token tokenB = createToken("B");
