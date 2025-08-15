@@ -106,13 +106,13 @@ public class TokenReader {
 			}
 			
 			if (escape) {
-				tokens.add(new EscapedToken(TokenDefinition.ofEscaped(c), "\\" + c, wordStart.toTokenPosition(), current.toTokenPosition()));
+				tokens.add(new EscapedToken(TokenDefinition.ofEscaped(c), "\\" + c, wordStart.toTokenPosition()));
 				escape = false;
 				current.increment();
 				wordStart.copyFrom(current);
 			} else if (this.separators.contains(c)) {
 				if (!currentWord.isEmpty()) {
-					this.addToken(tokens, currentWord.toString(), wordStart.toTokenPosition(), new TokenPosition(current.line, current.charInLine - 1, current.position - 1));
+					this.addToken(tokens, currentWord.toString(), wordStart.toTokenPosition());
 					currentWord = new StringBuilder();
 				}
 				
@@ -126,8 +126,7 @@ public class TokenReader {
 				for (TokenDefinition definition : this.definitions) {
 					String str = String.valueOf(c);
 					if (definition.matches(str)) {
-						TokenPosition position = current.toTokenPosition();
-						tokens.add(new SimpleToken(definition, str, position, position));
+						tokens.add(new SimpleToken(definition, str, current.toTokenPosition()));
 						break;
 					}
 				}
@@ -150,8 +149,7 @@ public class TokenReader {
 		}
 		
 		if (!currentWord.isEmpty()) {
-			TokenPosition endPosition = new TokenPosition(current.line, current.charInLine - 1, current.position - 1);
-			this.addToken(tokens, currentWord.toString(), wordStart.toTokenPosition(), endPosition);
+			this.addToken(tokens, currentWord.toString(), wordStart.toTokenPosition());
 		}
 		return List.copyOf(tokens);
 	}
@@ -164,15 +162,14 @@ public class TokenReader {
 	 * @param tokens The list of tokens to add the new token to
 	 * @param word The word to be added as a token
 	 * @param startPosition The start position of the token in the input string
-	 * @param endPosition The end position of the token in the input string
 	 * @throws NullPointerException If any of the parameters are null
 	 */
-	private void addToken(@NotNull List<Token> tokens, @NotNull String word, @NotNull TokenPosition startPosition, @NotNull TokenPosition endPosition) {
+	private void addToken(@NotNull List<Token> tokens, @NotNull String word, @NotNull TokenPosition startPosition) {
 		Objects.requireNonNull(tokens, "Token list must not be null");
 		Objects.requireNonNull(word, "Word must not be null");
 		
 		TokenDefinition matchedDefinition = this.definitions.stream().filter(definition -> definition.matches(word)).findFirst().orElse(WordTokenDefinition.INSTANCE);
-		tokens.add(new SimpleToken(matchedDefinition, word, startPosition, endPosition));
+		tokens.add(new SimpleToken(matchedDefinition, word, startPosition));
 	}
 	
 	//region Internal

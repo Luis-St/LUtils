@@ -168,19 +168,11 @@ class AnnotatedTokenTest {
 	}
 	
 	@Test
-	void startPositionDelegatesToWrappedToken() {
+	void positionDelegatesToWrappedToken() {
 		Token token = createToken("test");
 		AnnotatedToken annotated = AnnotatedToken.empty(token);
 		
-		assertEquals(token.startPosition(), annotated.startPosition());
-	}
-	
-	@Test
-	void endPositionDelegatesToWrappedToken() {
-		Token token = createToken("test");
-		AnnotatedToken annotated = AnnotatedToken.empty(token);
-		
-		assertEquals(token.endPosition(), annotated.endPosition());
+		assertEquals(token.position(), annotated.position());
 	}
 	
 	@Test

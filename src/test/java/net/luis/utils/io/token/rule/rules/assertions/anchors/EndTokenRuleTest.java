@@ -45,9 +45,7 @@ class EndTokenRuleTest {
 	}
 	
 	private static @NotNull Token createPositionedToken(@NotNull String value, int line, int character) {
-		TokenPosition startPos = new TokenPosition(line, 0, character);
-		TokenPosition endPos = new TokenPosition(line, character + value.length() - 1, character + value.length() - 1);
-		return new SimpleToken(word -> word.equals(value), value, startPos, endPos);
+		return new SimpleToken(word -> word.equals(value), value, new TokenPosition(line, 0, character));
 	}
 	
 	private static @NotNull @Unmodifiable List<Token> createTokenList() {

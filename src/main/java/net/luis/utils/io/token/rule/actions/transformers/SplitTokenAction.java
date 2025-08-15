@@ -104,12 +104,12 @@ public record SplitTokenAction(
 			String[] parts = this.splitPattern.split(originalValue);
 			
 			int currentOffset = 0;
-			boolean isPositioned = token.startPosition().isPositioned() && token.endPosition().isPositioned();
+			boolean isPositioned = token.position().isPositioned();
 			
 			for (String part : parts) {
 				if (!part.isEmpty()) {
 					TokenDefinition partDefinition = this.definitionProvider.provide(part);
-					TokenPosition startPos, endPos;
+					TokenPosition startPos;
 					
 					if (isPositioned) {
 						int partIndex = originalValue.indexOf(part, currentOffset);
@@ -117,29 +117,23 @@ public record SplitTokenAction(
 							partIndex = currentOffset;
 						}
 						
-						int startChar = token.startPosition().character() + partIndex;
-						int endChar = startChar + part.length() - 1;
-						
-						int startCharInLine = token.startPosition().characterInLine() + partIndex;
-						int endCharInLine = startCharInLine + part.length() - 1;
-						
-						startPos = new TokenPosition(token.startPosition().line(), startCharInLine, startChar);
-						endPos = new TokenPosition(token.startPosition().line(), endCharInLine, endChar);
+						int startChar = token.position().character() + partIndex;
+						int startCharInLine = token.position().characterInLine() + partIndex;
+						startPos = new TokenPosition(token.position().line(), startCharInLine, startChar);
 						
 						currentOffset = partIndex + part.length();
 					} else {
 						startPos = TokenPosition.UNPOSITIONED;
-						endPos = TokenPosition.UNPOSITIONED;
 					}
 					
 					Token splitToken = switch (token) {
 						case AnnotatedToken at -> new AnnotatedToken(
-							new SimpleToken(partDefinition, part, startPos, endPos), at.metadata()
+							new SimpleToken(partDefinition, part, startPos), at.metadata()
 						);
 						case IndexedToken it -> new IndexedToken(
-							new SimpleToken(partDefinition, part, startPos, endPos), it.index()
+							new SimpleToken(partDefinition, part, startPos), it.index()
 						);
-						default -> new SimpleToken(partDefinition, part, startPos, endPos);
+						default -> new SimpleToken(partDefinition, part, startPos);
 					};
 					
 					result.add(splitToken);

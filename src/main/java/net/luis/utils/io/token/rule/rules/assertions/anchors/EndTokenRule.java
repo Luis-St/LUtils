@@ -100,8 +100,8 @@ public record EndTokenRule(@NotNull AnchorType anchorType) implements TokenRule 
 			Token currentToken = tokens.get(startIndex);
 			Token nextToken = tokens.get(startIndex + 1);
 			
-			if (currentToken.endPosition().isPositioned() && nextToken.startPosition().isPositioned()) {
-				if (currentToken.endPosition().line() < nextToken.startPosition().line()) {
+			if (currentToken.position().isPositioned() && nextToken.position().isPositioned()) {
+				if (currentToken.position().line() < nextToken.position().line()) {
 					return TokenRuleMatch.empty(startIndex, this);
 				}
 			}

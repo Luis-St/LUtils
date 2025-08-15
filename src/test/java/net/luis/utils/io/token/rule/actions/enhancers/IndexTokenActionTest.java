@@ -160,8 +160,7 @@ class IndexTokenActionTest {
 		IndexedToken indexed = assertInstanceOf(IndexedToken.class, result.getFirst());
 		assertEquals(originalToken.definition(), indexed.definition());
 		assertEquals(originalToken.value(), indexed.value());
-		assertEquals(originalToken.startPosition(), indexed.startPosition());
-		assertEquals(originalToken.endPosition(), indexed.endPosition());
+		assertEquals(originalToken.position(), indexed.position());
 	}
 	
 	@Test

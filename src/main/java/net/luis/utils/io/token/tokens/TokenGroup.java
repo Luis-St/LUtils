@@ -86,18 +86,7 @@ public record TokenGroup(
 	 * @return The start position
 	 */
 	@Override
-	public @NotNull TokenPosition startPosition() {
-		return this.tokens.getFirst().startPosition();
-	}
-	
-	/**
-	 * Returns the end position of the token group.<br>
-	 * The end position is the end position of the last token in the group.<br>
-	 *
-	 * @return The end position
-	 */
-	@Override
-	public @NotNull TokenPosition endPosition() {
-		return this.tokens.getLast().endPosition();
+	public @NotNull TokenPosition position() {
+		return this.tokens.getFirst().position();
 	}
 }

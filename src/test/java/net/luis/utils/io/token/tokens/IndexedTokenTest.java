@@ -112,19 +112,11 @@ class IndexedTokenTest {
 	}
 	
 	@Test
-	void startPositionDelegatesToWrappedToken() {
+	void positionDelegatesToWrappedToken() {
 		Token token = createToken("test");
 		IndexedToken indexed = new IndexedToken(token, 1);
 		
-		assertEquals(token.startPosition(), indexed.startPosition());
-	}
-	
-	@Test
-	void endPositionDelegatesToWrappedToken() {
-		Token token = createToken("test");
-		IndexedToken indexed = new IndexedToken(token, 1);
-		
-		assertEquals(token.endPosition(), indexed.endPosition());
+		assertEquals(token.position(), indexed.position());
 	}
 	
 	@Test
@@ -228,8 +220,7 @@ class IndexedTokenTest {
 		
 		assertEquals(originalToken.definition(), indexed.definition());
 		assertEquals(originalToken.value(), indexed.value());
-		assertEquals(originalToken.startPosition(), indexed.startPosition());
-		assertEquals(originalToken.endPosition(), indexed.endPosition());
+		assertEquals(originalToken.position(), indexed.position());
 	}
 	
 	@Test

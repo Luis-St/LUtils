@@ -245,8 +245,7 @@ class AnnotateTokenActionTest {
 		AnnotatedToken annotated = assertInstanceOf(AnnotatedToken.class, result.getFirst());
 		assertEquals(originalToken.definition(), annotated.definition());
 		assertEquals(originalToken.value(), annotated.value());
-		assertEquals(originalToken.startPosition(), annotated.startPosition());
-		assertEquals(originalToken.endPosition(), annotated.endPosition());
+		assertEquals(originalToken.position(), annotated.position());
 	}
 	
 	@Test

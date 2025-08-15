@@ -104,8 +104,8 @@ public record StartTokenRule(@NotNull AnchorType anchorType) implements TokenRul
 			Token currentToken = tokens.get(startIndex);
 			Token previousToken = tokens.get(startIndex - 1);
 			
-			if (currentToken.endPosition().isPositioned() && previousToken.startPosition().isPositioned()) {
-				if (currentToken.endPosition().line() < previousToken.startPosition().line()) {
+			if (currentToken.position().isPositioned() && previousToken.position().isPositioned()) {
+				if (currentToken.position().line() < previousToken.position().line()) {
 					return TokenRuleMatch.empty(startIndex, this);
 				}
 			}

@@ -352,7 +352,7 @@ class StartTokenRuleTest {
 	}
 	
 	@Test
-	void matchOnlyAtExactStartPosition() {
+	void matchOnlyAtExactPosition() {
 		StartTokenRule documentRule = new StartTokenRule(AnchorType.DOCUMENT);
 		List<Token> tokens = IntStream.range(0, 10).mapToObj(i -> createToken("token" + i)).toList();
 		

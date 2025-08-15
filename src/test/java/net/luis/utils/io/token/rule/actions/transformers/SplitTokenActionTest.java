@@ -45,9 +45,7 @@ class SplitTokenActionTest {
 	}
 	
 	private static @NotNull Token createPositionedToken() {
-		TokenPosition start = new TokenPosition(0, 0, 0);
-		TokenPosition end = new TokenPosition(0, "a,b,c".length() - 1, "a,b,c".length() - 1);
-		return new SimpleToken("a,b,c"::equals, "a,b,c", start, end);
+		return new SimpleToken("a,b,c"::equals, "a,b,c", new TokenPosition(0, 0, 0));
 	}
 	
 	@Test
@@ -288,20 +286,17 @@ class SplitTokenActionTest {
 		
 		assertEquals(3, result.size());
 		
-		Token firstPart = result.get(0);
+		Token firstPart = result.getFirst();
 		assertEquals("a", firstPart.value());
-		assertEquals(0, firstPart.startPosition().character());
-		assertEquals(0, firstPart.endPosition().character());
+		assertEquals(0, firstPart.position().character());
 		
 		Token secondPart = result.get(1);
 		assertEquals("b", secondPart.value());
-		assertEquals(2, secondPart.startPosition().character());
-		assertEquals(2, secondPart.endPosition().character());
+		assertEquals(2, secondPart.position().character());
 		
 		Token thirdPart = result.get(2);
 		assertEquals("c", thirdPart.value());
-		assertEquals(4, thirdPart.startPosition().character());
-		assertEquals(4, thirdPart.endPosition().character());
+		assertEquals(4, thirdPart.position().character());
 	}
 	
 	@Test
@@ -428,8 +423,7 @@ class SplitTokenActionTest {
 		
 		assertEquals(3, result.size());
 		for (Token resultToken : result) {
-			assertEquals(TokenPosition.UNPOSITIONED, resultToken.startPosition());
-			assertEquals(TokenPosition.UNPOSITIONED, resultToken.endPosition());
+			assertEquals(TokenPosition.UNPOSITIONED, resultToken.position());
 		}
 	}
 	

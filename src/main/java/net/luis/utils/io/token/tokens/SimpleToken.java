@@ -31,14 +31,12 @@ import java.util.Objects;
  *
  * @param definition The token definition
  * @param value The string value of the token
- * @param startPosition The start position of the token
- * @param endPosition The end position of the token
+ * @param position The position of the token
  */
 public record SimpleToken(
 	@NotNull TokenDefinition definition,
 	@NotNull String value,
-	@NotNull TokenPosition startPosition,
-	@NotNull TokenPosition endPosition
+	@NotNull TokenPosition position
 ) implements Token {
 	
 	/**
@@ -46,7 +44,7 @@ public record SimpleToken(
 	 *
 	 * @param definition The token definition
 	 * @param value The string value of the token
-	 * @param startPosition The start position of the token
+	 * @param position The start position of the token
 	 * @param endPosition The end position of the token
 	 * @throws NullPointerException If any of the parameters are null
 	 * @throws IllegalArgumentException If the token value does not match the token definition
@@ -54,8 +52,7 @@ public record SimpleToken(
 	public SimpleToken {
 		Objects.requireNonNull(definition, "Token definition must not be null");
 		Objects.requireNonNull(value, "Token value must not be null");
-		Objects.requireNonNull(startPosition, "Token start position must not be null");
-		Objects.requireNonNull(endPosition, "Token end position must not be null");
+		Objects.requireNonNull(position, "Token position must not be null");
 		if (!definition.matches(value)) {
 			throw new IllegalArgumentException("Token value '" + value + "' does not match the token definition '" + definition + "'");
 		}
@@ -71,11 +68,11 @@ public record SimpleToken(
 	 * @throws IllegalArgumentException If the token value does not match the token definition
 	 */
 	public static @NotNull SimpleToken createUnpositioned(@NotNull TokenDefinition definition, @NotNull String value) {
-		return new SimpleToken(definition, value, TokenPosition.UNPOSITIONED, TokenPosition.UNPOSITIONED);
+		return new SimpleToken(definition, value, TokenPosition.UNPOSITIONED);
 	}
 	
 	@Override
 	public @NotNull String toString() {
-		return "SimpleToken[definition=" + this.definition + ",value=" + this.value.replace("\t", "\\t").replace("\n", "\\n") + ",startPosition=" + this.startPosition + ",endPosition=" + this.endPosition + "]";
+		return "SimpleToken[definition=" + this.definition + ",value=" + this.value.replace("\t", "\\t").replace("\n", "\\n") + ",position=" + this.position + "]";
 	}
 }

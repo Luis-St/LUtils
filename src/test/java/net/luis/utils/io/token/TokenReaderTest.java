@@ -245,20 +245,14 @@ class TokenReaderTest {
 		assertEquals(2, tokens.size());
 		
 		Token firstToken = tokens.getFirst();
-		assertEquals(0, firstToken.startPosition().line());
-		assertEquals(0, firstToken.startPosition().characterInLine());
-		assertEquals(0, firstToken.startPosition().character());
-		assertEquals(0, firstToken.endPosition().line());
-		assertEquals(1, firstToken.endPosition().characterInLine());
-		assertEquals(1, firstToken.endPosition().character());
+		assertEquals(0, firstToken.position().line());
+		assertEquals(0, firstToken.position().characterInLine());
+		assertEquals(0, firstToken.position().character());
 		
 		Token secondToken = tokens.get(1);
-		assertEquals(0, secondToken.startPosition().line());
-		assertEquals(3, secondToken.startPosition().characterInLine());
-		assertEquals(3, secondToken.startPosition().character());
-		assertEquals(0, secondToken.endPosition().line());
-		assertEquals(3, secondToken.endPosition().characterInLine());
-		assertEquals(3, secondToken.endPosition().character());
+		assertEquals(0, secondToken.position().line());
+		assertEquals(3, secondToken.position().characterInLine());
+		assertEquals(3, secondToken.position().character());
 	}
 	
 	@Test
@@ -268,9 +262,9 @@ class TokenReaderTest {
 		
 		assertEquals(3, tokens.size());
 		
-		assertEquals(0, tokens.getFirst().startPosition().line());
-		assertEquals(1, tokens.get(1).startPosition().line());
-		assertEquals(2, tokens.get(2).startPosition().line());
+		assertEquals(0, tokens.getFirst().position().line());
+		assertEquals(1, tokens.get(1).position().line());
+		assertEquals(2, tokens.get(2).position().line());
 	}
 	
 	@Test

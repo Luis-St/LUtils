@@ -38,97 +38,64 @@ class EscapedTokenTest {
 	
 	@Test
 	void constructorWithNullDefinition() {
-		TokenPosition start = new TokenPosition(0, 0, 0);
-		TokenPosition end = new TokenPosition(0, 1, 1);
+		TokenPosition position = new TokenPosition(0, 0, 0);
 		
-		assertThrows(NullPointerException.class, () -> new EscapedToken(null, "\\n", start, end));
+		assertThrows(NullPointerException.class, () -> new EscapedToken(null, "\\n", position));
 	}
 	
 	@Test
 	void constructorWithNullValue() {
 		TokenDefinition definition = createEscapedDefinition();
-		TokenPosition start = new TokenPosition(0, 0, 0);
-		TokenPosition end = new TokenPosition(0, 1, 1);
+		TokenPosition position = new TokenPosition(0, 0, 0);
 		
-		assertThrows(NullPointerException.class, () -> new EscapedToken(definition, null, start, end));
+		assertThrows(NullPointerException.class, () -> new EscapedToken(definition, null, position));
 	}
 	
 	@Test
-	void constructorWithNullStartPosition() {
+	void constructorWithNullPosition() {
 		TokenDefinition definition = createEscapedDefinition();
-		TokenPosition end = new TokenPosition(0, 1, 1);
 		
-		assertThrows(NullPointerException.class, () -> new EscapedToken(definition, "\\n", null, end));
-	}
-	
-	@Test
-	void constructorWithNullEndPosition() {
-		TokenDefinition definition = createEscapedDefinition();
-		TokenPosition start = new TokenPosition(0, 0, 0);
-		
-		assertThrows(NullPointerException.class, () -> new EscapedToken(definition, "\\n", start, null));
+		assertThrows(NullPointerException.class, () -> new EscapedToken(definition, "\\n", null));
 	}
 	
 	@Test
 	void constructorWithValidParameters() {
 		TokenDefinition definition = createEscapedDefinition();
-		TokenPosition start = new TokenPosition(0, 0, 0);
-		TokenPosition end = new TokenPosition(0, 1, 1);
+		TokenPosition position = new TokenPosition(0, 0, 0);
 		
-		assertDoesNotThrow(() -> new EscapedToken(definition, "\\n", start, end));
-		assertDoesNotThrow(() -> new EscapedToken(definition, "\\t", start, end));
-		assertDoesNotThrow(() -> new EscapedToken(definition, "\\\\", start, end));
-		assertDoesNotThrow(() -> new EscapedToken(definition, "\\\"", start, end));
+		assertDoesNotThrow(() -> new EscapedToken(definition, "\\n", position));
+		assertDoesNotThrow(() -> new EscapedToken(definition, "\\t", position));
+		assertDoesNotThrow(() -> new EscapedToken(definition, "\\\\", position));
+		assertDoesNotThrow(() -> new EscapedToken(definition, "\\\"", position));
 	}
 	
 	@Test
 	void constructorWithInvalidValueLength() {
 		TokenDefinition definition = createEscapedDefinition();
-		TokenPosition start = new TokenPosition(0, 0, 0);
-		TokenPosition end = new TokenPosition(0, 1, 1);
+		TokenPosition position = new TokenPosition(0, 0, 0);
 		
-		assertThrows(IllegalArgumentException.class, () -> new EscapedToken(definition, "n", start, end));
-		assertThrows(IllegalArgumentException.class, () -> new EscapedToken(definition, "\\\\n", start, end));
-		assertThrows(IllegalArgumentException.class, () -> new EscapedToken(definition, "", start, end));
-		assertThrows(IllegalArgumentException.class, () -> new EscapedToken(definition, "abc", start, end));
+		assertThrows(IllegalArgumentException.class, () -> new EscapedToken(definition, "n", position));
+		assertThrows(IllegalArgumentException.class, () -> new EscapedToken(definition, "\\\\n", position));
+		assertThrows(IllegalArgumentException.class, () -> new EscapedToken(definition, "", position));
+		assertThrows(IllegalArgumentException.class, () -> new EscapedToken(definition, "abc", position));
 	}
 	
 	@Test
 	void constructorWithInvalidValueFormat() {
 		TokenDefinition definition = createEscapedDefinition();
-		TokenPosition start = new TokenPosition(0, 0, 0);
-		TokenPosition end = new TokenPosition(0, 1, 1);
+		TokenPosition position = new TokenPosition(0, 0, 0);
 		
-		assertThrows(IllegalArgumentException.class, () -> new EscapedToken(definition, "nn", start, end));
-		assertThrows(IllegalArgumentException.class, () -> new EscapedToken(definition, "n\\", start, end));
-		assertThrows(IllegalArgumentException.class, () -> new EscapedToken(definition, "ab", start, end));
+		assertThrows(IllegalArgumentException.class, () -> new EscapedToken(definition, "nn", position));
+		assertThrows(IllegalArgumentException.class, () -> new EscapedToken(definition, "n\\", position));
+		assertThrows(IllegalArgumentException.class, () -> new EscapedToken(definition, "ab", position));
 	}
 	
 	@Test
 	void constructorWithNonMatchingDefinition() {
 		TokenDefinition wrongDefinition = word -> word.matches("[a-z]+");
-		TokenPosition start = new TokenPosition(0, 0, 0);
-		TokenPosition end = new TokenPosition(0, 1, 1);
+		TokenPosition position = new TokenPosition(0, 0, 0);
 		
-		assertThrows(IllegalArgumentException.class, () -> new EscapedToken(wrongDefinition, "\\n", start, end));
-	}
-	
-	@Test
-	void constructorWithInconsistentPositions() {
-		TokenDefinition definition = createEscapedDefinition();
-		TokenPosition start = new TokenPosition(0, 0, 0);
-		TokenPosition wrongEnd = new TokenPosition(0, 2, 2);
-		
-		assertDoesNotThrow(() -> new EscapedToken(definition, "\\n", start, wrongEnd));
-	}
-	
-	@Test
-	void constructorWithUnpositionedTokens() {
-		TokenDefinition definition = createEscapedDefinition();
-		
-		assertDoesNotThrow(() -> new EscapedToken(definition, "\\n", TokenPosition.UNPOSITIONED, TokenPosition.UNPOSITIONED));
-		assertDoesNotThrow(() -> new EscapedToken(definition, "\\t", new TokenPosition(0, 0, 0), TokenPosition.UNPOSITIONED));
-		assertDoesNotThrow(() -> new EscapedToken(definition, "\\\\", TokenPosition.UNPOSITIONED, new TokenPosition(0, 1, 1)));
+		assertThrows(IllegalArgumentException.class, () -> new EscapedToken(wrongDefinition, "\\n", position));
 	}
 	
 	@Test
@@ -157,8 +124,7 @@ class EscapedTokenTest {
 		TokenDefinition definition = createEscapedDefinition();
 		
 		EscapedToken token1 = assertDoesNotThrow(() -> EscapedToken.createUnpositioned(definition, "\\n"));
-		assertEquals(TokenPosition.UNPOSITIONED, token1.startPosition());
-		assertEquals(TokenPosition.UNPOSITIONED, token1.endPosition());
+		assertEquals(TokenPosition.UNPOSITIONED, token1.position());
 		
 		EscapedToken token2 = assertDoesNotThrow(() -> EscapedToken.createUnpositioned(definition, "\\t"));
 		assertEquals("\\t", token2.value());
@@ -170,7 +136,7 @@ class EscapedTokenTest {
 	@Test
 	void definitionReturnsCorrectValue() {
 		TokenDefinition definition = createEscapedDefinition();
-		EscapedToken token = new EscapedToken(definition, "\\n", new TokenPosition(0, 0, 0), new TokenPosition(0, 1, 1));
+		EscapedToken token = new EscapedToken(definition, "\\n", new TokenPosition(0, 0, 0));
 		
 		assertEquals(definition, token.definition());
 	}
@@ -178,60 +144,44 @@ class EscapedTokenTest {
 	@Test
 	void valueReturnsCorrectString() {
 		TokenDefinition definition = createEscapedDefinition();
-		TokenPosition start = new TokenPosition(0, 0, 0);
-		TokenPosition end = new TokenPosition(0, 1, 1);
+		TokenPosition position = new TokenPosition(0, 0, 0);
 		
-		assertEquals("\\n", new EscapedToken(definition, "\\n", start, end).value());
-		assertEquals("\\t", new EscapedToken(definition, "\\t", start, end).value());
-		assertEquals("\\\\", new EscapedToken(definition, "\\\\", start, end).value());
-		assertEquals("\\\"", new EscapedToken(definition, "\\\"", start, end).value());
-		assertEquals("\\'", new EscapedToken(definition, "\\'", start, end).value());
-		assertEquals("\\r", new EscapedToken(definition, "\\r", start, end).value());
-		assertEquals("\\0", new EscapedToken(definition, "\\0", start, end).value());
+		assertEquals("\\n", new EscapedToken(definition, "\\n", position).value());
+		assertEquals("\\t", new EscapedToken(definition, "\\t", position).value());
+		assertEquals("\\\\", new EscapedToken(definition, "\\\\", position).value());
+		assertEquals("\\\"", new EscapedToken(definition, "\\\"", position).value());
+		assertEquals("\\'", new EscapedToken(definition, "\\'", position).value());
+		assertEquals("\\r", new EscapedToken(definition, "\\r", position).value());
+		assertEquals("\\0", new EscapedToken(definition, "\\0", position).value());
 	}
 	
 	@Test
 	void valueWithSpecialEscapeSequences() {
 		TokenDefinition definition = createEscapedDefinition();
-		TokenPosition start = new TokenPosition(0, 0, 0);
-		TokenPosition end = new TokenPosition(0, 1, 1);
+		TokenPosition position = new TokenPosition(0, 0, 0);
 		
-		assertEquals("\\n", new EscapedToken(definition, "\\n", start, end).value());
-		assertEquals("\\t", new EscapedToken(definition, "\\t", start, end).value());
-		assertEquals("\\r", new EscapedToken(definition, "\\r", start, end).value());
-		assertEquals("\\b", new EscapedToken(definition, "\\b", start, end).value());
-		assertEquals("\\f", new EscapedToken(definition, "\\f", start, end).value());
+		assertEquals("\\n", new EscapedToken(definition, "\\n", position).value());
+		assertEquals("\\t", new EscapedToken(definition, "\\t", position).value());
+		assertEquals("\\r", new EscapedToken(definition, "\\r", position).value());
+		assertEquals("\\b", new EscapedToken(definition, "\\b", position).value());
+		assertEquals("\\f", new EscapedToken(definition, "\\f", position).value());
 		
-		assertEquals("\\\"", new EscapedToken(definition, "\\\"", start, end).value());
-		assertEquals("\\'", new EscapedToken(definition, "\\'", start, end).value());
+		assertEquals("\\\"", new EscapedToken(definition, "\\\"", position).value());
+		assertEquals("\\'", new EscapedToken(definition, "\\'", position).value());
 		
-		assertEquals("\\\\", new EscapedToken(definition, "\\\\", start, end).value());
+		assertEquals("\\\\", new EscapedToken(definition, "\\\\", position).value());
 	}
 	
 	@Test
-	void startPositionReturnsCorrectValue() {
+	void positionReturnsCorrectValue() {
 		TokenDefinition definition = createEscapedDefinition();
-		TokenPosition start = new TokenPosition(5, 10, 25);
-		TokenPosition end = new TokenPosition(5, 11, 26);
-		EscapedToken token = new EscapedToken(definition, "\\n", start, end);
+		TokenPosition position = new TokenPosition(5, 10, 25);
+		EscapedToken token = new EscapedToken(definition, "\\n", position);
 		
-		assertEquals(start, token.startPosition());
-		assertEquals(5, token.startPosition().line());
-		assertEquals(10, token.startPosition().characterInLine());
-		assertEquals(25, token.startPosition().character());
-	}
-	
-	@Test
-	void endPositionReturnsCorrectValue() {
-		TokenDefinition definition = createEscapedDefinition();
-		TokenPosition start = new TokenPosition(3, 7, 15);
-		TokenPosition end = new TokenPosition(3, 8, 16);
-		EscapedToken token = new EscapedToken(definition, "\\t", start, end);
-		
-		assertEquals(end, token.endPosition());
-		assertEquals(3, token.endPosition().line());
-		assertEquals(8, token.endPosition().characterInLine());
-		assertEquals(16, token.endPosition().character());
+		assertEquals(position, token.position());
+		assertEquals(5, token.position().line());
+		assertEquals(10, token.position().characterInLine());
+		assertEquals(25, token.position().character());
 	}
 	
 	@Test
@@ -239,33 +189,28 @@ class EscapedTokenTest {
 		TokenDefinition definition = createEscapedDefinition();
 		EscapedToken token = EscapedToken.createUnpositioned(definition, "\\n");
 		
-		assertEquals(TokenPosition.UNPOSITIONED, token.startPosition());
-		assertEquals(TokenPosition.UNPOSITIONED, token.endPosition());
-		assertFalse(token.startPosition().isPositioned());
-		assertFalse(token.endPosition().isPositioned());
+		assertEquals(TokenPosition.UNPOSITIONED, token.position());
+		assertFalse(token.position().isPositioned());
 	}
 	
 	@Test
 	void positionsSpanCorrectRange() {
 		TokenDefinition definition = createEscapedDefinition();
 		
-		EscapedToken token1 = new EscapedToken(definition, "\\n", new TokenPosition(0, 0, 0), new TokenPosition(0, 1, 1));
-		assertEquals(0, token1.startPosition().character());
-		assertEquals(1, token1.endPosition().character());
+		EscapedToken token1 = new EscapedToken(definition, "\\n", new TokenPosition(0, 0, 0));
+		assertEquals(0, token1.position().character());
 		
-		EscapedToken token2 = new EscapedToken(definition, "\\t", new TokenPosition(2, 5, 10), new TokenPosition(2, 6, 11));
-		assertEquals(10, token2.startPosition().character());
-		assertEquals(11, token2.endPosition().character());
+		EscapedToken token2 = new EscapedToken(definition, "\\t", new TokenPosition(2, 5, 10));
+		assertEquals(10, token2.position().character());
 		
-		EscapedToken token3 = new EscapedToken(definition, "\\\\", new TokenPosition(1, 0, 50), new TokenPosition(1, 1, 51));
-		assertEquals(50, token3.startPosition().character());
-		assertEquals(51, token3.endPosition().character());
+		EscapedToken token3 = new EscapedToken(definition, "\\\\", new TokenPosition(1, 0, 50));
+		assertEquals(50, token3.position().character());
 	}
 	
 	@Test
 	void toStringContainsEscapeSequence() {
 		TokenDefinition definition = createEscapedDefinition();
-		EscapedToken token = new EscapedToken(definition, "\\n", new TokenPosition(0, 0, 0), new TokenPosition(0, 1, 1));
+		EscapedToken token = new EscapedToken(definition, "\\n", new TokenPosition(0, 0, 0));
 		
 		String tokenString = token.toString();
 		
@@ -273,19 +218,18 @@ class EscapedTokenTest {
 		assertTrue(tokenString.contains("\\n") || tokenString.contains("\\\\n"));
 		assertTrue(tokenString.contains("definition"));
 		assertTrue(tokenString.contains("value"));
-		assertTrue(tokenString.contains("startPosition"));
-		assertTrue(tokenString.contains("endPosition"));
+		assertTrue(tokenString.contains("position"));
 	}
 	
 	@Test
 	void toStringWithSpecialCharacters() {
 		TokenDefinition definition = createEscapedDefinition();
 		
-		EscapedToken tabToken = new EscapedToken(definition, "\\t", TokenPosition.UNPOSITIONED, TokenPosition.UNPOSITIONED);
+		EscapedToken tabToken = new EscapedToken(definition, "\\t", TokenPosition.UNPOSITIONED);
 		String tabString = tabToken.toString();
 		assertTrue(tabString.contains("\\t") || tabString.contains("\\\\t"));
 		
-		EscapedToken newlineToken = new EscapedToken(definition, "\\n", TokenPosition.UNPOSITIONED, TokenPosition.UNPOSITIONED);
+		EscapedToken newlineToken = new EscapedToken(definition, "\\n", TokenPosition.UNPOSITIONED);
 		String newlineString = newlineToken.toString();
 		assertTrue(newlineString.contains("\\n") || newlineString.contains("\\\\n"));
 	}
@@ -293,11 +237,10 @@ class EscapedTokenTest {
 	@Test
 	void equalTokensHaveSameHashCode() {
 		TokenDefinition definition = createEscapedDefinition();
-		TokenPosition start = new TokenPosition(0, 0, 0);
-		TokenPosition end = new TokenPosition(0, 1, 1);
+		TokenPosition position = new TokenPosition(0, 0, 0);
 		
-		EscapedToken token1 = new EscapedToken(definition, "\\n", start, end);
-		EscapedToken token2 = new EscapedToken(definition, "\\n", start, end);
+		EscapedToken token1 = new EscapedToken(definition, "\\n", position);
+		EscapedToken token2 = new EscapedToken(definition, "\\n", position);
 		
 		assertEquals(token1.hashCode(), token2.hashCode());
 	}
@@ -305,15 +248,14 @@ class EscapedTokenTest {
 	@Test
 	void differentValuesWithSameEscapeFormat() {
 		TokenDefinition definition = createEscapedDefinition();
-		TokenPosition start = new TokenPosition(0, 0, 0);
-		TokenPosition end = new TokenPosition(0, 1, 1);
+		TokenPosition position = new TokenPosition(0, 0, 0);
 		
-		assertDoesNotThrow(() -> new EscapedToken(definition, "\\a", start, end));
-		assertDoesNotThrow(() -> new EscapedToken(definition, "\\z", start, end));
-		assertDoesNotThrow(() -> new EscapedToken(definition, "\\1", start, end));
-		assertDoesNotThrow(() -> new EscapedToken(definition, "\\9", start, end));
-		assertDoesNotThrow(() -> new EscapedToken(definition, "\\!", start, end));
-		assertDoesNotThrow(() -> new EscapedToken(definition, "\\@", start, end));
+		assertDoesNotThrow(() -> new EscapedToken(definition, "\\a", position));
+		assertDoesNotThrow(() -> new EscapedToken(definition, "\\z", position));
+		assertDoesNotThrow(() -> new EscapedToken(definition, "\\1", position));
+		assertDoesNotThrow(() -> new EscapedToken(definition, "\\9", position));
+		assertDoesNotThrow(() -> new EscapedToken(definition, "\\!", position));
+		assertDoesNotThrow(() -> new EscapedToken(definition, "\\@", position));
 	}
 	
 	@Test
@@ -324,18 +266,15 @@ class EscapedTokenTest {
 		assertInstanceOf(Token.class, token);
 		assertEquals(definition, token.definition());
 		assertEquals("\\n", token.value());
-		assertNotNull(token.startPosition());
-		assertNotNull(token.endPosition());
+		assertNotNull(token.position());
 	}
 	
 	@Test
 	void immutablePositions() {
 		TokenDefinition definition = createEscapedDefinition();
-		TokenPosition start = new TokenPosition(0, 0, 0);
-		TokenPosition end = new TokenPosition(0, 1, 1);
-		EscapedToken token = new EscapedToken(definition, "\\n", start, end);
+		TokenPosition position = new TokenPosition(0, 0, 0);
+		EscapedToken token = new EscapedToken(definition, "\\n", position);
 		
-		assertSame(start, token.startPosition());
-		assertSame(end, token.endPosition());
+		assertSame(position, token.position());
 	}
 }

@@ -90,13 +90,8 @@ public record AnnotatedToken(
 	}
 	
 	@Override
-	public @NotNull TokenPosition startPosition() {
-		return this.token.startPosition();
-	}
-	
-	@Override
-	public @NotNull TokenPosition endPosition() {
-		return this.token.endPosition();
+	public @NotNull TokenPosition position() {
+		return this.token.position();
 	}
 	
 	/**

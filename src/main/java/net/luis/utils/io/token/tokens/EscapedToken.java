@@ -32,14 +32,12 @@ import java.util.Objects;
  *
  * @param definition The token definition
  * @param value The string value of the token
- * @param startPosition The start position of the token
- * @param endPosition The end position of the token
+ * @param position The position of the token
  */
 public record EscapedToken(
 	@NotNull TokenDefinition definition,
 	@NotNull String value,
-	@NotNull TokenPosition startPosition,
-	@NotNull TokenPosition endPosition
+	@NotNull TokenPosition position
 ) implements Token {
 	
 	/**
@@ -47,16 +45,14 @@ public record EscapedToken(
 	 *
 	 * @param definition The token definition
 	 * @param value The string value of the token
-	 * @param startPosition The start position of the token
-	 * @param endPosition The end position of the token
+	 * @param position The position of the token
 	 * @throws NullPointerException If any of the parameters are null
 	 * @throws IllegalArgumentException If the token value does not have a length of 2, does not start with a backslash or does not match the token definition
 	 */
 	public EscapedToken {
 		Objects.requireNonNull(definition, "Token definition must not be null");
 		Objects.requireNonNull(value, "Token value must not be null");
-		Objects.requireNonNull(startPosition, "Token start position must not be null");
-		Objects.requireNonNull(endPosition, "Token end position must not be null");
+		Objects.requireNonNull(position, "Token position must not be null");
 		if (value.length() != 2 || value.charAt(0) != '\\') {
 			throw new IllegalArgumentException("Escaped token value '" + value + "' must be of length 2 and start with '\\'");
 		}
@@ -75,11 +71,11 @@ public record EscapedToken(
 	 * @throws IllegalArgumentException If the token value does not have a length of 2, does not start with a backslash or does not match the token definition
 	 */
 	public static @NotNull EscapedToken createUnpositioned(@NotNull TokenDefinition definition, @NotNull String value) {
-		return new EscapedToken(definition, value, TokenPosition.UNPOSITIONED, TokenPosition.UNPOSITIONED);
+		return new EscapedToken(definition, value, TokenPosition.UNPOSITIONED);
 	}
 	
 	@Override
 	public @NotNull String toString() {
-		return "EscapedToken[definition=" + this.definition + ",value=" + this.value.replace("\t", "\\t").replace("\n", "\\n") + ",startPosition=" + this.startPosition + ",endPosition=" + this.endPosition + "]";
+		return "EscapedToken[definition=" + this.definition + ",value=" + this.value.replace("\t", "\\t").replace("\n", "\\n") + ",position=" + this.position + "]";
 	}
 }

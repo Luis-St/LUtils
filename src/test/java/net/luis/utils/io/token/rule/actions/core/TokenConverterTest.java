@@ -38,9 +38,7 @@ class TokenConverterTest {
 	}
 	
 	private static @NotNull Token createPositionedToken(@NotNull String value, int line, int charPos) {
-		TokenPosition start = new TokenPosition(line, 5, charPos);
-		TokenPosition end = new TokenPosition(line, 5 + value.length() - 1, charPos + value.length() - 1);
-		return new SimpleToken(word -> word.equals(value), value, start, end);
+		return new SimpleToken(word -> word.equals(value), value, new TokenPosition(line, 5, charPos));
 	}
 	
 	@Test
@@ -262,18 +260,13 @@ class TokenConverterTest {
 	@Test
 	void converterThatModifiesPositions() {
 		TokenConverter positionModifier = token -> {
-			if (token.startPosition().isPositioned()) {
+			if (token.position().isPositioned()) {
 				TokenPosition newStart = new TokenPosition(
-					token.startPosition().line() + 1,
-					token.startPosition().characterInLine(),
-					token.startPosition().character()
+					token.position().line() + 1,
+					token.position().characterInLine(),
+					token.position().character()
 				);
-				TokenPosition newEnd = new TokenPosition(
-					token.endPosition().line() + 1,
-					token.endPosition().characterInLine(),
-					token.endPosition().character()
-				);
-				return new SimpleToken(token.definition(), token.value(), newStart, newEnd);
+				return new SimpleToken(token.definition(), token.value(), newStart);
 			}
 			return token;
 		};
@@ -281,10 +274,9 @@ class TokenConverterTest {
 		Token positioned = createPositionedToken("test", 0, 10);
 		Token result = positionModifier.convert(positioned);
 		
-		assertEquals(1, result.startPosition().line());
-		assertEquals(1, result.endPosition().line());
-		assertEquals(5, result.startPosition().characterInLine());
-		assertEquals(10, result.startPosition().character());
+		assertEquals(1, result.position().line());
+		assertEquals(5, result.position().characterInLine());
+		assertEquals(10, result.position().character());
 	}
 	
 	@Test
@@ -526,12 +518,11 @@ class TokenConverterTest {
 	@Test
 	void converterWithPositionPreservation() {
 		TokenConverter positionPreserver = token -> {
-			if (token.startPosition().isPositioned()) {
+			if (token.position().isPositioned()) {
 				return new SimpleToken(
 					TokenDefinition.of("test", true),
 					token.value().toUpperCase(),
-					token.startPosition(),
-					token.endPosition()
+					token.position()
 				);
 			}
 			return createToken(token.value().toUpperCase());
@@ -544,12 +535,12 @@ class TokenConverterTest {
 		Token unpositionedResult = positionPreserver.convert(unpositioned);
 		
 		assertEquals("TEST", positionedResult.value());
-		assertEquals(2, positionedResult.startPosition().line());
-		assertEquals(5, positionedResult.startPosition().characterInLine());
-		assertEquals(25, positionedResult.startPosition().character());
+		assertEquals(2, positionedResult.position().line());
+		assertEquals(5, positionedResult.position().characterInLine());
+		assertEquals(25, positionedResult.position().character());
 		
 		assertEquals("TEST", unpositionedResult.value());
-		assertEquals(TokenPosition.UNPOSITIONED, unpositionedResult.startPosition());
+		assertEquals(TokenPosition.UNPOSITIONED, unpositionedResult.position());
 	}
 	
 	@Test
