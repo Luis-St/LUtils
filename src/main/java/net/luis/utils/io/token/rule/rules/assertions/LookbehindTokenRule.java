@@ -18,14 +18,12 @@
 
 package net.luis.utils.io.token.rule.rules.assertions;
 
-import com.google.common.collect.Lists;
+import net.luis.utils.io.token.TokenStream;
 import net.luis.utils.io.token.rule.TokenRuleMatch;
 import net.luis.utils.io.token.rule.rules.TokenRule;
-import net.luis.utils.io.token.tokens.Token;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.List;
 import java.util.Objects;
 
 /**
@@ -58,25 +56,15 @@ public record LookbehindTokenRule(
 	}
 	
 	@Override
-	public @Nullable TokenRuleMatch match(@NotNull List<Token> tokens, int startIndex) {
-		Objects.requireNonNull(tokens, "Tokens must not be null");
-		if (startIndex >= tokens.size() || startIndex < 0) {
+	public @Nullable TokenRuleMatch match(@NotNull TokenStream stream) {
+		Objects.requireNonNull(stream, "Token stream must not be null");
+		if (!stream.hasToken()) {
 			return null;
 		}
 		
-		if (startIndex == 0) {
-			return this.mode.shouldMatch(true) ? null : TokenRuleMatch.empty(startIndex, this);
-		}
-		
-		List<Token> reversedTokens = Lists.reverse(tokens);
-		int reversedLookbehindIndex = tokens.size() - startIndex;
-		if (reversedLookbehindIndex >= reversedTokens.size()) {
-			return this.mode.shouldMatch(true) ? null : TokenRuleMatch.empty(startIndex, this);
-		}
-		
-		TokenRuleMatch match = this.tokenRule.match(reversedTokens, reversedLookbehindIndex);
+		TokenRuleMatch match = this.tokenRule.match(stream.lookbehindStream());
 		if (this.mode.shouldMatch(match != null)) {
-			return TokenRuleMatch.empty(startIndex, this);
+			return TokenRuleMatch.empty(stream.getCurrentIndex(), this);
 		}
 		return null;
 	}

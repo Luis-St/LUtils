@@ -18,6 +18,7 @@
 
 package net.luis.utils.io.token.rule.rules;
 
+import net.luis.utils.io.token.TokenStream;
 import net.luis.utils.io.token.rule.TokenRuleMatch;
 import net.luis.utils.io.token.tokens.Token;
 import net.luis.utils.io.token.tokens.TokenGroup;
@@ -51,21 +52,22 @@ public record TokenGroupRule(
 	}
 	
 	@Override
-	public @Nullable TokenRuleMatch match(@NotNull List<Token> tokens, int startIndex) {
-		Objects.requireNonNull(tokens, "Token list must not be null");
-		if (startIndex < 0 || startIndex >= tokens.size()) {
+	public @Nullable TokenRuleMatch match(@NotNull TokenStream stream) {
+		Objects.requireNonNull(stream, "Token stream must not be null");
+		if (!stream.hasToken()) {
 			return null;
 		}
 		
-		Token token = tokens.get(startIndex);
+		int startIndex = stream.getCurrentIndex();
+		Token token = stream.getCurrentToken();
 		if (!(token instanceof TokenGroup tokenGroup)) {
 			return null;
 		}
 		
-		TokenRuleMatch innerMatch = this.tokenRule.match(tokenGroup.tokens(), 0);
+		TokenRuleMatch innerMatch = this.tokenRule.match(new TokenStream(tokenGroup.tokens()));
 		if (innerMatch == null) {
 			return null;
 		}
-		return new TokenRuleMatch(startIndex, startIndex + 1, List.of(tokenGroup), this);
+		return new TokenRuleMatch(startIndex, stream.consumeToken(), List.of(tokenGroup), this);
 	}
 }

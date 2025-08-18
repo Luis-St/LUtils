@@ -18,6 +18,7 @@
 
 package net.luis.utils.io.token.rule.rules.matchers;
 
+import net.luis.utils.io.token.TokenStream;
 import net.luis.utils.io.token.rule.TokenRuleMatch;
 import net.luis.utils.io.token.rule.rules.TokenRule;
 import net.luis.utils.io.token.tokens.Token;
@@ -63,16 +64,19 @@ public record PatternTokenRule(
 	}
 	
 	@Override
-	public @Nullable TokenRuleMatch match(@NotNull List<Token> tokens, int startIndex) {
-		Objects.requireNonNull(tokens, "Tokens must not be null");
-		if (startIndex >= tokens.size() || startIndex < 0) {
+	public @Nullable TokenRuleMatch match(@NotNull TokenStream stream) {
+		Objects.requireNonNull(stream, "Token stream must not be null");
+		if (!stream.hasToken()) {
 			return null;
 		}
 		
-		Matcher matcher = this.pattern.matcher(tokens.get(startIndex).value());
+		int startIndex = stream.getCurrentIndex();
+		Token token = stream.getCurrentToken();
+		Matcher matcher = this.pattern.matcher(token.value());
+		
 		if (matcher.matches()) {
-			List<Token> matchedTokens = Collections.singletonList(tokens.get(startIndex));
-			return new TokenRuleMatch(startIndex, startIndex + 1, matchedTokens, this);
+			List<Token> matchedTokens = Collections.singletonList(token);
+			return new TokenRuleMatch(startIndex, stream.consumeToken(), matchedTokens, this);
 		}
 		return null;
 	}

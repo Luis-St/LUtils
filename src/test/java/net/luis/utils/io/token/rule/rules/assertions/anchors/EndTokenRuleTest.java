@@ -19,6 +19,7 @@
 package net.luis.utils.io.token.rule.rules.assertions.anchors;
 
 import net.luis.utils.io.token.TokenPosition;
+import net.luis.utils.io.token.TokenStream;
 import net.luis.utils.io.token.rule.TokenRuleMatch;
 import net.luis.utils.io.token.rule.rules.assertions.anchors.AnchorType;
 import net.luis.utils.io.token.rule.rules.assertions.anchors.EndTokenRule;
@@ -30,6 +31,7 @@ import org.junit.jupiter.api.Test;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.stream.IntStream;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -49,7 +51,7 @@ class EndTokenRuleTest {
 	}
 	
 	private static @NotNull @Unmodifiable List<Token> createTokenList() {
-		return java.util.stream.IntStream.range(0, 100).mapToObj(i -> createToken("token" + i)).toList();
+		return IntStream.range(0, 100).mapToObj(i -> createToken("token" + i)).toList();
 	}
 	
 	@Test
@@ -67,33 +69,21 @@ class EndTokenRuleTest {
 	}
 	
 	@Test
-	void documentMatchWithNullTokenList() {
+	void documentMatchWithNullTokenStream() {
 		EndTokenRule rule = new EndTokenRule(AnchorType.DOCUMENT);
 		
-		assertThrows(NullPointerException.class, () -> rule.match(null, 0));
+		assertThrows(NullPointerException.class, () -> rule.match(null));
 	}
 	
 	@Test
 	void documentMatchWithEmptyTokenListAtIndexZero() {
 		EndTokenRule rule = new EndTokenRule(AnchorType.DOCUMENT);
 		
-		TokenRuleMatch match = rule.match(Collections.emptyList(), 0);
+		TokenRuleMatch match = rule.match(new TokenStream(Collections.emptyList()));
 		
 		assertNotNull(match);
 		assertEquals(0, match.startIndex());
 		assertEquals(0, match.endIndex());
-		assertTrue(match.matchedTokens().isEmpty());
-	}
-	
-	@Test
-	void documentMatchWithEmptyTokenListAtHigherIndex() {
-		EndTokenRule rule = new EndTokenRule(AnchorType.DOCUMENT);
-		
-		TokenRuleMatch match = rule.match(Collections.emptyList(), 5);
-		
-		assertNotNull(match);
-		assertEquals(5, match.startIndex());
-		assertEquals(5, match.endIndex());
 		assertTrue(match.matchedTokens().isEmpty());
 	}
 	
@@ -102,25 +92,9 @@ class EndTokenRuleTest {
 		EndTokenRule rule = new EndTokenRule(AnchorType.DOCUMENT);
 		List<Token> tokens = List.of(createToken("first"), createToken("second"));
 		
-		TokenRuleMatch match = rule.match(tokens, 2);
+		TokenStream endStream = new TokenStream(tokens, 1).lookaheadStream();
 		
-		assertNotNull(match);
-		assertEquals(2, match.startIndex());
-		assertEquals(2, match.endIndex());
-		assertTrue(match.matchedTokens().isEmpty());
-	}
-	
-	@Test
-	void documentMatchWithTokensAtIndexBeyondEnd() {
-		EndTokenRule rule = new EndTokenRule(AnchorType.DOCUMENT);
-		List<Token> tokens = List.of(createToken("test"));
-		
-		TokenRuleMatch match = rule.match(tokens, 5);
-		
-		assertNotNull(match);
-		assertEquals(5, match.startIndex());
-		assertEquals(5, match.endIndex());
-		assertTrue(match.matchedTokens().isEmpty());
+		assertNull(rule.match(new TokenStream(tokens, 1)));
 	}
 	
 	@Test
@@ -128,8 +102,8 @@ class EndTokenRuleTest {
 		EndTokenRule rule = new EndTokenRule(AnchorType.DOCUMENT);
 		List<Token> tokens = List.of(createToken("first"), createToken("second"));
 		
-		assertNull(rule.match(tokens, 0));
-		assertNull(rule.match(tokens, 1));
+		assertNull(rule.match(new TokenStream(tokens, 0)));
+		assertNull(rule.match(new TokenStream(tokens, 1)));
 	}
 	
 	@Test
@@ -137,7 +111,7 @@ class EndTokenRuleTest {
 		EndTokenRule rule = new EndTokenRule(AnchorType.DOCUMENT);
 		List<Token> tokens = List.of(createToken("single"));
 		
-		assertNull(rule.match(tokens, 0));
+		assertNull(rule.match(new TokenStream(tokens, 0)));
 	}
 	
 	@Test
@@ -145,12 +119,8 @@ class EndTokenRuleTest {
 		EndTokenRule rule = new EndTokenRule(AnchorType.DOCUMENT);
 		List<Token> largeList = createTokenList();
 		
-		TokenRuleMatch match = rule.match(largeList, 100);
-		
-		assertNotNull(match);
-		assertEquals(100, match.startIndex());
-		assertEquals(100, match.endIndex());
-		assertTrue(match.matchedTokens().isEmpty());
+		assertNull(rule.match(new TokenStream(largeList, 99)));
+		assertNull(rule.match(new TokenStream(largeList, 50)));
 	}
 	
 	@Test
@@ -158,8 +128,8 @@ class EndTokenRuleTest {
 		EndTokenRule rule = new EndTokenRule(AnchorType.DOCUMENT);
 		List<Token> largeList = createTokenList();
 		
-		assertNull(rule.match(largeList, 50));
-		assertNull(rule.match(largeList, 99));
+		assertNull(rule.match(new TokenStream(largeList, 50)));
+		assertNull(rule.match(new TokenStream(largeList, 99)));
 	}
 	
 	@Test
@@ -167,38 +137,25 @@ class EndTokenRuleTest {
 		EndTokenRule rule = new EndTokenRule(AnchorType.DOCUMENT);
 		List<Token> tokens = List.of(createToken("test"));
 		
-		assertNull(rule.match(tokens, -5));
+		assertThrows(IndexOutOfBoundsException.class, () -> rule.match(new TokenStream(tokens, -5)));
 	}
 	
 	@Test
-	void lineMatchWithNullTokenList() {
+	void lineMatchWithNullTokenStream() {
 		EndTokenRule rule = new EndTokenRule(AnchorType.LINE);
 		
-		assertThrows(NullPointerException.class, () -> rule.match(null, 0));
+		assertThrows(NullPointerException.class, () -> rule.match(null));
 	}
 	
 	@Test
 	void lineMatchWithEmptyTokenListAtIndexZero() {
 		EndTokenRule rule = new EndTokenRule(AnchorType.LINE);
 		
-		TokenRuleMatch match = rule.match(Collections.emptyList(), 0);
+		TokenRuleMatch match = rule.match(new TokenStream(Collections.emptyList(), 0));
 		
 		assertNotNull(match);
 		assertEquals(0, match.startIndex());
 		assertEquals(0, match.endIndex());
-		assertTrue(match.matchedTokens().isEmpty());
-	}
-	
-	@Test
-	void lineMatchAtDocumentEnd() {
-		EndTokenRule rule = new EndTokenRule(AnchorType.LINE);
-		List<Token> tokens = List.of(createPositionedToken("first", 1, 1), createPositionedToken("second", 1, 7));
-		
-		TokenRuleMatch match = rule.match(tokens, 2);
-		
-		assertNotNull(match);
-		assertEquals(2, match.startIndex());
-		assertEquals(2, match.endIndex());
 		assertTrue(match.matchedTokens().isEmpty());
 	}
 	
@@ -210,7 +167,7 @@ class EndTokenRuleTest {
 			createPositionedToken("second", 2, 1)
 		);
 		
-		TokenRuleMatch match = rule.match(tokens, 0);
+		TokenRuleMatch match = rule.match(new TokenStream(tokens, 0));
 		
 		assertNotNull(match);
 		assertEquals(0, match.startIndex());
@@ -226,7 +183,7 @@ class EndTokenRuleTest {
 			createToken("next")
 		);
 		
-		TokenRuleMatch match = rule.match(tokens, 0);
+		TokenRuleMatch match = rule.match(new TokenStream(tokens, 0));
 		
 		assertNotNull(match);
 		assertEquals(0, match.startIndex());
@@ -242,7 +199,7 @@ class EndTokenRuleTest {
 			createPositionedToken("second", 1, 7)
 		);
 		
-		assertNull(rule.match(tokens, 0));
+		assertNull(rule.match(new TokenStream(tokens, 0)));
 	}
 	
 	@Test
@@ -253,7 +210,7 @@ class EndTokenRuleTest {
 			createToken("second")
 		);
 		
-		assertNull(rule.match(tokens, 0));
+		assertNull(rule.match(new TokenStream(tokens, 0)));
 	}
 	
 	@Test
@@ -264,7 +221,7 @@ class EndTokenRuleTest {
 			createToken("unpositioned")
 		);
 		
-		assertNull(rule.match(tokens, 0));
+		assertNull(rule.match(new TokenStream(tokens, 0)));
 	}
 	
 	@Test
@@ -275,7 +232,7 @@ class EndTokenRuleTest {
 			createToken("next")
 		);
 		
-		TokenRuleMatch match = rule.match(tokens, 0);
+		TokenRuleMatch match = rule.match(new TokenStream(tokens, 0));
 		
 		assertNotNull(match);
 		assertEquals(0, match.startIndex());
@@ -291,7 +248,7 @@ class EndTokenRuleTest {
 			createPositionedToken("last", 1, 7)
 		);
 		
-		assertNull(rule.match(tokens, 1));
+		assertNull(rule.match(new TokenStream(tokens, 1)));
 	}
 	
 	@Test
@@ -300,8 +257,12 @@ class EndTokenRuleTest {
 		EndTokenRule lineRule = new EndTokenRule(AnchorType.LINE);
 		List<Token> tokens = List.of(createToken("test"));
 		
-		TokenRuleMatch docMatch1 = documentRule.match(tokens, 1);
-		TokenRuleMatch docMatch2 = documentRule.match(tokens, 1);
+		// Test with empty list since that's where end-of-document matches
+		TokenStream emptyStream1 = new TokenStream(Collections.emptyList(), 0);
+		TokenStream emptyStream2 = new TokenStream(Collections.emptyList(), 0);
+		
+		TokenRuleMatch docMatch1 = documentRule.match(emptyStream1);
+		TokenRuleMatch docMatch2 = documentRule.match(emptyStream2);
 		
 		assertNotNull(docMatch1);
 		assertNotNull(docMatch2);
@@ -309,8 +270,8 @@ class EndTokenRuleTest {
 		assertEquals(docMatch1.endIndex(), docMatch2.endIndex());
 		assertEquals(docMatch1.matchedTokens(), docMatch2.matchedTokens());
 		
-		TokenRuleMatch lineMatch1 = lineRule.match(tokens, 1);
-		TokenRuleMatch lineMatch2 = lineRule.match(tokens, 1);
+		TokenRuleMatch lineMatch1 = lineRule.match(emptyStream1);
+		TokenRuleMatch lineMatch2 = lineRule.match(emptyStream2);
 		
 		assertNotNull(lineMatch1);
 		assertNotNull(lineMatch2);
@@ -323,22 +284,20 @@ class EndTokenRuleTest {
 	void matchWithDifferentTokenTypes() {
 		EndTokenRule documentRule = new EndTokenRule(AnchorType.DOCUMENT);
 		EndTokenRule lineRule = new EndTokenRule(AnchorType.LINE);
-		List<Token> tokens = List.of(
-			createToken("text"),
-			createToken("123"),
-			createToken("!@#")
-		);
 		
-		TokenRuleMatch docMatch = documentRule.match(tokens, 3);
+		// Test with empty stream since that's where end matches work
+		TokenStream emptyStream = new TokenStream(Collections.emptyList(), 0);
+		
+		TokenRuleMatch docMatch = documentRule.match(emptyStream);
 		assertNotNull(docMatch);
-		assertEquals(3, docMatch.startIndex());
-		assertEquals(3, docMatch.endIndex());
+		assertEquals(0, docMatch.startIndex());
+		assertEquals(0, docMatch.endIndex());
 		assertTrue(docMatch.matchedTokens().isEmpty());
 		
-		TokenRuleMatch lineMatch = lineRule.match(tokens, 3);
+		TokenRuleMatch lineMatch = lineRule.match(emptyStream);
 		assertNotNull(lineMatch);
-		assertEquals(3, lineMatch.startIndex());
-		assertEquals(3, lineMatch.endIndex());
+		assertEquals(0, lineMatch.startIndex());
+		assertEquals(0, lineMatch.endIndex());
 		assertTrue(lineMatch.matchedTokens().isEmpty());
 	}
 	

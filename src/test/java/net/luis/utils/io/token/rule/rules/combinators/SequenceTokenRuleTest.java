@@ -19,6 +19,7 @@
 package net.luis.utils.io.token.rule.rules.combinators;
 
 import com.google.common.collect.Lists;
+import net.luis.utils.io.token.TokenStream;
 import net.luis.utils.io.token.rule.TokenRuleMatch;
 import net.luis.utils.io.token.rule.rules.TokenRule;
 import net.luis.utils.io.token.rule.rules.TokenRules;
@@ -44,15 +45,16 @@ class SequenceTokenRuleTest {
 	private static @NotNull TokenRule createRule(@NotNull String value) {
 		return new TokenRule() {
 			@Override
-			public @Nullable TokenRuleMatch match(@NotNull List<Token> tokens, int startIndex) {
-				Objects.requireNonNull(tokens, "Tokens list must not be null");
-				if (startIndex >= tokens.size() || startIndex < 0) {
+			public @Nullable TokenRuleMatch match(@NotNull TokenStream stream) {
+				Objects.requireNonNull(stream, "Token stream must not be null");
+				if (!stream.hasToken()) {
 					return null;
 				}
 				
-				Token token = tokens.get(startIndex);
+				int startIndex = stream.getCurrentIndex();
+				Token token = stream.getCurrentToken();
 				if (token.value().equals(value)) {
-					return new TokenRuleMatch(startIndex, startIndex + 1, List.of(token), this);
+					return new TokenRuleMatch(startIndex, stream.consumeToken(), List.of(token), this);
 				}
 				return null;
 			}
@@ -122,17 +124,17 @@ class SequenceTokenRuleTest {
 	}
 	
 	@Test
-	void matchWithNullTokenList() {
+	void matchWithNullTokenStream() {
 		SequenceTokenRule rule = new SequenceTokenRule(List.of(createRule("test")));
 		
-		assertThrows(NullPointerException.class, () -> rule.match(null, 0));
+		assertThrows(NullPointerException.class, () -> rule.match(null));
 	}
 	
 	@Test
 	void matchWithEmptyTokenList() {
 		SequenceTokenRule rule = new SequenceTokenRule(List.of(createRule("test1"), createRule("test2")));
 		
-		assertNull(rule.match(Collections.emptyList(), 0));
+		assertNull(rule.match(new TokenStream(Collections.emptyList())));
 	}
 	
 	@Test
@@ -140,9 +142,9 @@ class SequenceTokenRuleTest {
 		SequenceTokenRule rule = new SequenceTokenRule(List.of(createRule("test")));
 		List<Token> tokens = List.of(createToken("test"));
 		
-		assertNull(rule.match(tokens, 1));
-		assertNull(rule.match(tokens, 5));
-		assertNull(rule.match(tokens, -1));
+		assertThrows(IndexOutOfBoundsException.class, () -> rule.match(new TokenStream(tokens, 1)));
+		assertThrows(IndexOutOfBoundsException.class, () -> rule.match(new TokenStream(tokens, 5)));
+		assertThrows(IndexOutOfBoundsException.class, () -> rule.match(new TokenStream(tokens, -1)));
 	}
 	
 	@Test
@@ -151,14 +153,14 @@ class SequenceTokenRuleTest {
 		Token matchingToken = createToken("single");
 		Token nonMatchingToken = createToken("other");
 		
-		TokenRuleMatch match1 = rule.match(List.of(matchingToken), 0);
+		TokenRuleMatch match1 = rule.match(new TokenStream(List.of(matchingToken), 0));
 		assertNotNull(match1);
 		assertEquals(0, match1.startIndex());
 		assertEquals(1, match1.endIndex());
 		assertEquals(1, match1.matchedTokens().size());
 		assertEquals(matchingToken, match1.matchedTokens().getFirst());
 		
-		assertNull(rule.match(List.of(nonMatchingToken), 0));
+		assertNull(rule.match(new TokenStream(List.of(nonMatchingToken), 0)));
 	}
 	
 	@Test
@@ -169,7 +171,7 @@ class SequenceTokenRuleTest {
 		Token wrongToken = createToken("wrong");
 		
 		List<Token> perfectMatch = List.of(firstToken, secondToken);
-		TokenRuleMatch match1 = rule.match(perfectMatch, 0);
+		TokenRuleMatch match1 = rule.match(new TokenStream(perfectMatch, 0));
 		assertNotNull(match1);
 		assertEquals(0, match1.startIndex());
 		assertEquals(2, match1.endIndex());
@@ -178,13 +180,13 @@ class SequenceTokenRuleTest {
 		assertEquals(secondToken, match1.matchedTokens().get(1));
 		
 		List<Token> wrongFirst = List.of(wrongToken, secondToken);
-		assertNull(rule.match(wrongFirst, 0));
+		assertNull(rule.match(new TokenStream(wrongFirst, 0)));
 		
 		List<Token> wrongSecond = List.of(firstToken, wrongToken);
-		assertNull(rule.match(wrongSecond, 0));
+		assertNull(rule.match(new TokenStream(wrongSecond, 0)));
 		
 		List<Token> insufficient = List.of(firstToken);
-		assertNull(rule.match(insufficient, 0));
+		assertNull(rule.match(new TokenStream(insufficient, 0)));
 	}
 	
 	@Test
@@ -196,7 +198,7 @@ class SequenceTokenRuleTest {
 			createToken("a"), createToken("b"), createToken("c"), createToken("d"), createToken("e")
 		);
 		
-		TokenRuleMatch match = rule.match(tokens, 0);
+		TokenRuleMatch match = rule.match(new TokenStream(tokens, 0));
 		
 		assertNotNull(match);
 		assertEquals(0, match.startIndex());
@@ -216,7 +218,7 @@ class SequenceTokenRuleTest {
 			createToken("good"), createToken("good"), createToken("wrong"), createToken("good")
 		);
 		
-		assertNull(rule.match(tokens, 0));
+		assertNull(rule.match(new TokenStream(tokens, 0)));
 	}
 	
 	@Test
@@ -226,9 +228,9 @@ class SequenceTokenRuleTest {
 			createToken("a"), createToken("x"), createToken("y"), createToken("z")
 		);
 		
-		assertNull(rule.match(tokens, 0));
+		assertNull(rule.match(new TokenStream(tokens, 0)));
 		
-		TokenRuleMatch match = rule.match(tokens, 1);
+		TokenRuleMatch match = rule.match(new TokenStream(tokens, 1));
 		assertNotNull(match);
 		assertEquals(1, match.startIndex());
 		assertEquals(3, match.endIndex());
@@ -246,11 +248,11 @@ class SequenceTokenRuleTest {
 		List<Token> matchingTokens = List.of(createToken("123"), createToken("abc"), createToken("456"));
 		List<Token> nonMatchingTokens = List.of(createToken("123"), createToken("ABC"), createToken("456"));
 		
-		TokenRuleMatch match1 = rule.match(matchingTokens, 0);
+		TokenRuleMatch match1 = rule.match(new TokenStream(matchingTokens, 0));
 		assertNotNull(match1);
 		assertEquals(3, match1.matchedTokens().size());
 		
-		assertNull(rule.match(nonMatchingTokens, 0));
+		assertNull(rule.match(new TokenStream(nonMatchingTokens, 0)));
 	}
 	
 	@Test
@@ -259,12 +261,12 @@ class SequenceTokenRuleTest {
 		SequenceTokenRule rule = new SequenceTokenRule(List.of(createRule("start"), optional, createRule("end")));
 		
 		List<Token> withOptional = List.of(createToken("start"), createToken("maybe"), createToken("end"));
-		TokenRuleMatch match1 = rule.match(withOptional, 0);
+		TokenRuleMatch match1 = rule.match(new TokenStream(withOptional, 0));
 		assertNotNull(match1);
 		assertEquals(3, match1.matchedTokens().size());
 		
 		List<Token> withoutOptional = List.of(createToken("start"), createToken("end"));
-		TokenRuleMatch match2 = rule.match(withoutOptional, 0);
+		TokenRuleMatch match2 = rule.match(new TokenStream(withoutOptional, 0));
 		assertNotNull(match2);
 		assertEquals(2, match2.matchedTokens().size());
 	}
@@ -280,7 +282,7 @@ class SequenceTokenRuleTest {
 			createToken("finish")
 		);
 		
-		TokenRuleMatch match = rule.match(tokens, 0);
+		TokenRuleMatch match = rule.match(new TokenStream(tokens, 0));
 		
 		assertNotNull(match);
 		assertEquals(4, match.matchedTokens().size());
@@ -295,7 +297,7 @@ class SequenceTokenRuleTest {
 			createToken("outer"), createToken("inner1"), createToken("inner2")
 		);
 		
-		TokenRuleMatch match = outer.match(tokens, 0);
+		TokenRuleMatch match = outer.match(new TokenStream(tokens, 0));
 		
 		assertNotNull(match);
 		assertEquals(3, match.matchedTokens().size());
@@ -311,7 +313,7 @@ class SequenceTokenRuleTest {
 			createToken("specific"), createToken("anything"), createToken("another")
 		);
 		
-		TokenRuleMatch match = rule.match(tokens, 0);
+		TokenRuleMatch match = rule.match(new TokenStream(tokens, 0));
 		
 		assertNotNull(match);
 		assertEquals(3, match.matchedTokens().size());
@@ -326,7 +328,7 @@ class SequenceTokenRuleTest {
 		
 		List<Token> twoTokens = List.of(createToken("need"), createToken("more"));
 		
-		assertNull(rule.match(twoTokens, 0));
+		assertNull(rule.match(new TokenStream(twoTokens, 0)));
 	}
 	
 	@Test
@@ -334,7 +336,7 @@ class SequenceTokenRuleTest {
 		SequenceTokenRule rule = new SequenceTokenRule(List.of(createRule("exact"), createRule("match")));
 		List<Token> exactTokens = List.of(createToken("exact"), createToken("match"));
 		
-		TokenRuleMatch match = rule.match(exactTokens, 0);
+		TokenRuleMatch match = rule.match(new TokenStream(exactTokens, 0));
 		
 		assertNotNull(match);
 		assertEquals(0, match.startIndex());
@@ -349,7 +351,7 @@ class SequenceTokenRuleTest {
 			createToken("first"), createToken("second"), createToken("extra"), createToken("more")
 		);
 		
-		TokenRuleMatch match = rule.match(tokensWithExtra, 0);
+		TokenRuleMatch match = rule.match(new TokenStream(tokensWithExtra, 0));
 		
 		assertNotNull(match);
 		assertEquals(0, match.startIndex());
@@ -362,8 +364,8 @@ class SequenceTokenRuleTest {
 		SequenceTokenRule rule = new SequenceTokenRule(List.of(createRule("test1"), createRule("test2")));
 		List<Token> tokens = List.of(createToken("test1"), createToken("test2"));
 		
-		TokenRuleMatch match1 = rule.match(tokens, 0);
-		TokenRuleMatch match2 = rule.match(tokens, 0);
+		TokenRuleMatch match1 = rule.match(new TokenStream(tokens, 0));
+		TokenRuleMatch match2 = rule.match(new TokenStream(tokens, 0));
 		
 		assertNotNull(match1);
 		assertNotNull(match2);

@@ -18,13 +18,15 @@
 
 package net.luis.utils.io.token.rule.rules.matchers;
 
+import net.luis.utils.io.token.TokenStream;
 import net.luis.utils.io.token.rule.TokenRuleMatch;
 import net.luis.utils.io.token.rule.rules.TokenRule;
 import net.luis.utils.io.token.tokens.Token;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.*;
+import java.util.Collections;
+import java.util.Objects;
 
 /**
  * A token rule that matches tokens based on their value length.<br>
@@ -71,18 +73,18 @@ public record LengthTokenRule(
 	}
 	
 	@Override
-	public @Nullable TokenRuleMatch match(@NotNull List<Token> tokens, int startIndex) {
-		Objects.requireNonNull(tokens, "Tokens must not be null");
-		if (startIndex >= tokens.size() || startIndex < 0) {
+	public @Nullable TokenRuleMatch match(@NotNull TokenStream stream) {
+		Objects.requireNonNull(stream, "Token stream must not be null");
+		if (!stream.hasToken()) {
 			return null;
 		}
 		
-		Token token = tokens.get(startIndex);
+		int startIndex = stream.getCurrentIndex();
+		Token token = stream.getCurrentToken();
 		int length = token.value().length();
 		
 		if (length >= this.minLength && length <= this.maxLength) {
-			List<Token> matchedTokens = Collections.singletonList(token);
-			return new TokenRuleMatch(startIndex, startIndex + 1, matchedTokens, this);
+			return new TokenRuleMatch(startIndex, stream.consumeToken(), Collections.singletonList(token), this);
 		}
 		return null;
 	}

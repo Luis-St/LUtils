@@ -18,6 +18,7 @@
 
 package net.luis.utils.io.token.rule.rules.combinators;
 
+import net.luis.utils.io.token.TokenStream;
 import net.luis.utils.io.token.rule.TokenRuleMatch;
 import net.luis.utils.io.token.rule.rules.TokenRule;
 import net.luis.utils.io.token.rule.rules.TokenRules;
@@ -27,7 +28,6 @@ import net.luis.utils.io.token.tokens.SimpleToken;
 import net.luis.utils.io.token.tokens.Token;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import java.util.*;
@@ -44,15 +44,16 @@ class BoundaryTokenRuleTest {
 	private static @NotNull TokenRule createRule(@NotNull String value) {
 		return new TokenRule() {
 			@Override
-			public @Nullable TokenRuleMatch match(@NotNull List<Token> tokens, int startIndex) {
-				Objects.requireNonNull(tokens, "Tokens list must not be null");
-				if (startIndex >= tokens.size() || startIndex < 0) {
+			public @Nullable TokenRuleMatch match(@NotNull TokenStream stream) {
+				Objects.requireNonNull(stream, "Token stream must not be null");
+				if (!stream.hasToken()) {
 					return null;
 				}
 				
-				Token token = tokens.get(startIndex);
+				int startIndex = stream.getCurrentIndex();
+				Token token = stream.getCurrentToken();
 				if (token.value().equals(value)) {
-					return new TokenRuleMatch(startIndex, startIndex + 1, List.of(token), this);
+					return new TokenRuleMatch(startIndex, stream.consumeToken(), List.of(token), this);
 				}
 				return null;
 			}
@@ -107,7 +108,7 @@ class BoundaryTokenRuleTest {
 	void betweenTokenRuleReturnsAlwaysMatchByDefault() {
 		BoundaryTokenRule boundary = new BoundaryTokenRule(createRule("start"), createRule("end"));
 		
-		Assertions.assertEquals(TokenRules.alwaysMatch(), boundary.betweenTokenRule());
+		assertEquals(TokenRules.alwaysMatch(), boundary.betweenTokenRule());
 	}
 	
 	@Test
@@ -127,17 +128,17 @@ class BoundaryTokenRuleTest {
 	}
 	
 	@Test
-	void matchWithNullTokenList() {
+	void matchWithNullTokenStream() {
 		BoundaryTokenRule rule = new BoundaryTokenRule(createRule("start"), createRule("end"));
 		
-		assertThrows(NullPointerException.class, () -> rule.match(null, 0));
+		assertThrows(NullPointerException.class, () -> rule.match(null));
 	}
 	
 	@Test
 	void matchWithEmptyTokenList() {
 		BoundaryTokenRule rule = new BoundaryTokenRule(createRule("start"), createRule("end"));
 		
-		assertNull(rule.match(Collections.emptyList(), 0));
+		assertNull(rule.match(new TokenStream(Collections.emptyList())));
 	}
 	
 	@Test
@@ -145,8 +146,7 @@ class BoundaryTokenRuleTest {
 		BoundaryTokenRule rule = new BoundaryTokenRule(createRule("start"), createRule("end"));
 		List<Token> tokens = List.of(createToken("start"));
 		
-		assertNull(rule.match(tokens, 1));
-		assertNull(rule.match(tokens, 5));
+		assertThrows(IndexOutOfBoundsException.class, () -> rule.match(new TokenStream(tokens, 5)));
 	}
 	
 	@Test
@@ -154,7 +154,7 @@ class BoundaryTokenRuleTest {
 		BoundaryTokenRule rule = new BoundaryTokenRule(createRule("start"), createRule("end"));
 		List<Token> tokens = List.of(createToken("other"), createToken("end"));
 		
-		assertNull(rule.match(tokens, 0));
+		assertNull(rule.match(new TokenStream(tokens, 0)));
 	}
 	
 	@Test
@@ -162,7 +162,7 @@ class BoundaryTokenRuleTest {
 		BoundaryTokenRule rule = new BoundaryTokenRule(createRule("start"), createRule("end"));
 		List<Token> tokens = List.of(createToken("start"), createToken("other"));
 		
-		assertNull(rule.match(tokens, 0));
+		assertNull(rule.match(new TokenStream(tokens, 0)));
 	}
 	
 	@Test
@@ -172,7 +172,7 @@ class BoundaryTokenRuleTest {
 		Token endToken = createToken("end");
 		List<Token> tokens = List.of(startToken, endToken);
 		
-		TokenRuleMatch match = rule.match(tokens, 0);
+		TokenRuleMatch match = rule.match(new TokenStream(tokens, 0));
 		
 		assertNotNull(match);
 		assertEquals(0, match.startIndex());
@@ -190,7 +190,7 @@ class BoundaryTokenRuleTest {
 		Token end = createToken(")");
 		List<Token> tokens = List.of(start, content, end);
 		
-		TokenRuleMatch match = rule.match(tokens, 0);
+		TokenRuleMatch match = rule.match(new TokenStream(tokens, 0));
 		
 		assertNotNull(match);
 		assertEquals(0, match.startIndex());
@@ -211,7 +211,7 @@ class BoundaryTokenRuleTest {
 		Token end = createToken(")");
 		List<Token> tokens = List.of(start, content1, content2, content3, end);
 		
-		TokenRuleMatch match = rule.match(tokens, 0);
+		TokenRuleMatch match = rule.match(new TokenStream(tokens, 0));
 		
 		assertNotNull(match);
 		assertEquals(0, match.startIndex());
@@ -228,7 +228,7 @@ class BoundaryTokenRuleTest {
 		Token end = createToken(")");
 		List<Token> tokens = List.of(start, middle1, middle2, end);
 		
-		TokenRuleMatch match = rule.match(tokens, 0);
+		TokenRuleMatch match = rule.match(new TokenStream(tokens, 0));
 		
 		assertNotNull(match);
 		assertEquals(4, match.matchedTokens().size());
@@ -244,12 +244,12 @@ class BoundaryTokenRuleTest {
 		BoundaryTokenRule rule = new BoundaryTokenRule(createRule("start"), optional, createRule("end"));
 		
 		List<Token> withOptional = List.of(createToken("start"), createToken("optional"), createToken("end"));
-		TokenRuleMatch match1 = rule.match(withOptional, 0);
+		TokenRuleMatch match1 = rule.match(new TokenStream(withOptional, 0));
 		assertNotNull(match1);
 		assertEquals(3, match1.matchedTokens().size());
 		
 		List<Token> withoutOptional = List.of(createToken("start"), createToken("end"));
-		TokenRuleMatch match2 = rule.match(withoutOptional, 0);
+		TokenRuleMatch match2 = rule.match(new TokenStream(withoutOptional, 0));
 		assertNotNull(match2);
 		assertEquals(2, match2.matchedTokens().size());
 	}
@@ -260,12 +260,12 @@ class BoundaryTokenRuleTest {
 		BoundaryTokenRule rule = new BoundaryTokenRule(createRule("["), anyOf, createRule("]"));
 		
 		List<Token> withOption1 = List.of(createToken("["), createToken("option1"), createToken("]"));
-		TokenRuleMatch match1 = rule.match(withOption1, 0);
+		TokenRuleMatch match1 = rule.match(new TokenStream(withOption1, 0));
 		assertNotNull(match1);
 		assertEquals("option1", match1.matchedTokens().get(1).value());
 		
 		List<Token> withOption2 = List.of(createToken("["), createToken("option2"), createToken("]"));
-		TokenRuleMatch match2 = rule.match(withOption2, 0);
+		TokenRuleMatch match2 = rule.match(new TokenStream(withOption2, 0));
 		assertNotNull(match2);
 		assertEquals("option2", match2.matchedTokens().get(1).value());
 	}
@@ -276,12 +276,12 @@ class BoundaryTokenRuleTest {
 		BoundaryTokenRule rule = new BoundaryTokenRule(createRule("<"), repeated, createRule(">"));
 		
 		List<Token> minRep = List.of(createToken("<"), createToken("x"), createToken(">"));
-		TokenRuleMatch match1 = rule.match(minRep, 0);
+		TokenRuleMatch match1 = rule.match(new TokenStream(minRep, 0));
 		assertNotNull(match1);
 		assertEquals(3, match1.matchedTokens().size());
 		
 		List<Token> maxRep = List.of(createToken("<"), createToken("x"), createToken("x"), createToken("x"), createToken(">"));
-		TokenRuleMatch match2 = rule.match(maxRep, 0);
+		TokenRuleMatch match2 = rule.match(new TokenStream(maxRep, 0));
 		assertNotNull(match2);
 		assertEquals(5, match2.matchedTokens().size());
 	}
@@ -292,7 +292,7 @@ class BoundaryTokenRuleTest {
 		BoundaryTokenRule rule = new BoundaryTokenRule(createRule("{"), sequence, createRule("}"));
 		
 		List<Token> tokens = List.of(createToken("{"), createToken("a"), createToken("b"), createToken("}"));
-		TokenRuleMatch match = rule.match(tokens, 0);
+		TokenRuleMatch match = rule.match(new TokenStream(tokens, 0));
 		
 		assertNotNull(match);
 		assertEquals(4, match.matchedTokens().size());
@@ -309,7 +309,7 @@ class BoundaryTokenRuleTest {
 		Token end2 = createToken("end");
 		List<Token> tokens = List.of(start, end1, middle, end2);
 		
-		TokenRuleMatch match = rule.match(tokens, 0);
+		TokenRuleMatch match = rule.match(new TokenStream(tokens, 0));
 		
 		assertNotNull(match);
 		assertEquals(0, match.startIndex());
@@ -329,7 +329,7 @@ class BoundaryTokenRuleTest {
 			createToken(")")
 		);
 		
-		TokenRuleMatch match = rule.match(tokens, 1);
+		TokenRuleMatch match = rule.match(new TokenStream(tokens, 1));
 		
 		assertNotNull(match);
 		assertEquals(1, match.startIndex());
@@ -347,4 +347,3 @@ class BoundaryTokenRuleTest {
 		assertEquals(rule1.hashCode(), rule2.hashCode());
 	}
 }
-

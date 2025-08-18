@@ -18,6 +18,7 @@
 
 package net.luis.utils.io.token.rule.rules;
 
+import net.luis.utils.io.token.TokenStream;
 import net.luis.utils.io.token.rule.TokenRuleMatch;
 import net.luis.utils.io.token.tokens.SimpleToken;
 import net.luis.utils.io.token.tokens.Token;
@@ -42,17 +43,17 @@ class AlwaysMatchTokenRuleTest {
 	}
 	
 	@Test
-	void matchWithNullTokenList() {
+	void matchWithNullTokenStream() {
 		AlwaysMatchTokenRule rule = AlwaysMatchTokenRule.INSTANCE;
 		
-		assertThrows(NullPointerException.class, () -> rule.match(null, 0));
+		assertThrows(NullPointerException.class, () -> rule.match(null));
 	}
 	
 	@Test
 	void matchWithEmptyTokenList() {
 		AlwaysMatchTokenRule rule = AlwaysMatchTokenRule.INSTANCE;
 		
-		assertNull(rule.match(Collections.emptyList(), 0));
+		assertNull(rule.match(new TokenStream(Collections.emptyList())));
 	}
 	
 	@Test
@@ -60,9 +61,8 @@ class AlwaysMatchTokenRuleTest {
 		AlwaysMatchTokenRule rule = AlwaysMatchTokenRule.INSTANCE;
 		List<Token> tokens = List.of(createToken("test"));
 		
-		assertNull(rule.match(tokens, 1));
-		assertNull(rule.match(tokens, 5));
-		assertNull(rule.match(tokens, -1));
+		assertThrows(IndexOutOfBoundsException.class, () -> rule.match(new TokenStream(tokens, 5)));
+		assertThrows(IndexOutOfBoundsException.class, () -> rule.match(new TokenStream(tokens, -1)));
 	}
 	
 	@Test
@@ -71,7 +71,7 @@ class AlwaysMatchTokenRuleTest {
 		Token token = createToken("test");
 		List<Token> tokens = List.of(token);
 		
-		TokenRuleMatch match = rule.match(tokens, 0);
+		TokenRuleMatch match = rule.match(new TokenStream(tokens, 0));
 		
 		assertNotNull(match);
 		assertEquals(0, match.startIndex());
@@ -88,7 +88,7 @@ class AlwaysMatchTokenRuleTest {
 		Token second = createToken("second");
 		List<Token> tokens = List.of(first, second);
 		
-		TokenRuleMatch match = rule.match(tokens, 0);
+		TokenRuleMatch match = rule.match(new TokenStream(tokens, 0));
 		
 		assertNotNull(match);
 		assertEquals(0, match.startIndex());
@@ -104,7 +104,7 @@ class AlwaysMatchTokenRuleTest {
 		Token second = createToken("second");
 		List<Token> tokens = List.of(first, second);
 		
-		TokenRuleMatch match = rule.match(tokens, 1);
+		TokenRuleMatch match = rule.match(new TokenStream(tokens, 1));
 		
 		assertNotNull(match);
 		assertEquals(1, match.startIndex());
@@ -121,9 +121,9 @@ class AlwaysMatchTokenRuleTest {
 		Token symbol = createToken("!");
 		List<Token> tokens = List.of(text, number, symbol);
 		
-		TokenRuleMatch textMatch = rule.match(tokens, 0);
-		TokenRuleMatch numberMatch = rule.match(tokens, 1);
-		TokenRuleMatch symbolMatch = rule.match(tokens, 2);
+		TokenRuleMatch textMatch = rule.match(new TokenStream(tokens, 0));
+		TokenRuleMatch numberMatch = rule.match(new TokenStream(tokens, 1));
+		TokenRuleMatch symbolMatch = rule.match(new TokenStream(tokens, 2));
 		
 		assertNotNull(textMatch);
 		assertEquals(text, textMatch.matchedTokens().getFirst());
@@ -144,7 +144,7 @@ class AlwaysMatchTokenRuleTest {
 		List<Token> tokens = List.of(token1, token2, token3);
 		
 		for (int i = 0; i < tokens.size(); i++) {
-			TokenRuleMatch match = rule.match(tokens, i);
+			TokenRuleMatch match = rule.match(new TokenStream(tokens, i));
 			assertNotNull(match);
 			assertEquals(i, match.startIndex());
 			assertEquals(i + 1, match.endIndex());
@@ -158,9 +158,9 @@ class AlwaysMatchTokenRuleTest {
 		AlwaysMatchTokenRule rule = AlwaysMatchTokenRule.INSTANCE;
 		List<Token> largeList = IntStream.range(0, 100).mapToObj(i -> createToken("token" + i)).toList();
 		
-		TokenRuleMatch firstMatch = rule.match(largeList, 0);
-		TokenRuleMatch middleMatch = rule.match(largeList, 50);
-		TokenRuleMatch lastMatch = rule.match(largeList, 99);
+		TokenRuleMatch firstMatch = rule.match(new TokenStream(largeList, 0));
+		TokenRuleMatch middleMatch = rule.match(new TokenStream(largeList, 50));
+		TokenRuleMatch lastMatch = rule.match(new TokenStream(largeList, 99));
 		
 		assertNotNull(firstMatch);
 		assertEquals(0, firstMatch.startIndex());
@@ -183,9 +183,9 @@ class AlwaysMatchTokenRuleTest {
 		Token c = createToken("c");
 		List<Token> tokens = List.of(a, b, c);
 		
-		TokenRuleMatch matchA = rule.match(tokens, 0);
-		TokenRuleMatch matchB = rule.match(tokens, 1);
-		TokenRuleMatch matchC = rule.match(tokens, 2);
+		TokenRuleMatch matchA = rule.match(new TokenStream(tokens, 0));
+		TokenRuleMatch matchB = rule.match(new TokenStream(tokens, 1));
+		TokenRuleMatch matchC = rule.match(new TokenStream(tokens, 2));
 		
 		assertNotNull(matchA);
 		assertEquals("a", matchA.matchedTokens().getFirst().value());
@@ -201,7 +201,7 @@ class AlwaysMatchTokenRuleTest {
 		Token emptyToken = createToken("");
 		List<Token> tokens = List.of(emptyToken);
 		
-		TokenRuleMatch match = rule.match(tokens, 0);
+		TokenRuleMatch match = rule.match(new TokenStream(tokens, 0));
 		
 		assertNotNull(match);
 		assertEquals(emptyToken, match.matchedTokens().getFirst());
@@ -218,7 +218,7 @@ class AlwaysMatchTokenRuleTest {
 		List<Token> tokens = List.of(space, tab, newline, backslash);
 		
 		for (int i = 0; i < tokens.size(); i++) {
-			TokenRuleMatch match = rule.match(tokens, i);
+			TokenRuleMatch match = rule.match(new TokenStream(tokens, i));
 			assertNotNull(match);
 			assertEquals(tokens.get(i), match.matchedTokens().getFirst());
 		}
@@ -230,8 +230,8 @@ class AlwaysMatchTokenRuleTest {
 		Token token = createToken("consistent");
 		List<Token> tokens = List.of(token);
 		
-		TokenRuleMatch match1 = rule.match(tokens, 0);
-		TokenRuleMatch match2 = rule.match(tokens, 0);
+		TokenRuleMatch match1 = rule.match(new TokenStream(tokens, 0));
+		TokenRuleMatch match2 = rule.match(new TokenStream(tokens, 0));
 		
 		assertNotNull(match1);
 		assertNotNull(match2);

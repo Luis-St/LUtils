@@ -19,6 +19,7 @@
 package net.luis.utils.io.token.rule;
 
 import com.google.common.collect.Lists;
+import net.luis.utils.io.token.TokenStream;
 import net.luis.utils.io.token.rule.actions.TokenAction;
 import net.luis.utils.io.token.rule.rules.TokenRule;
 import net.luis.utils.io.token.tokens.Token;
@@ -98,7 +99,7 @@ public class TokenRuleEngine {
 			while (index < result.size()) {
 				boolean matchFound = false;
 				
-				TokenRuleMatch match = ruleAction.tokenRule().match(result, index);
+				TokenRuleMatch match = ruleAction.tokenRule().match(new TokenStream(result, index));
 				if (match != null && !match.matchedTokens().isEmpty()) {
 					List<Token> processed = ruleAction.action().apply(match);
 					

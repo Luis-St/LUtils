@@ -18,6 +18,7 @@
 
 package net.luis.utils.io.token.rule.rules;
 
+import net.luis.utils.io.token.TokenStream;
 import net.luis.utils.io.token.definition.StringTokenDefinition;
 import net.luis.utils.io.token.rule.TokenRuleMatch;
 import net.luis.utils.io.token.rule.rules.*;
@@ -27,6 +28,7 @@ import net.luis.utils.io.token.tokens.TokenGroup;
 import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.Test;
 
+import java.util.Collections;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -68,40 +70,26 @@ class TokenGroupRuleTest {
 	}
 	
 	@Test
-	void matchWithNullTokenList() {
+	void matchWithNullTokenStream() {
 		TokenGroupRule groupRule = new TokenGroupRule(TokenRules.alwaysMatch());
 		
-		assertThrows(NullPointerException.class, () -> groupRule.match(null, 0));
+		assertThrows(NullPointerException.class, () -> groupRule.match(null));
 	}
 	
 	@Test
-	void matchWithNegativeStartIndex() {
+	void matchWithOutOfBoundsIndex() {
 		TokenGroupRule groupRule = new TokenGroupRule(TokenRules.alwaysMatch());
 		List<Token> tokens = List.of(createToken("test"));
 		
-		TokenRuleMatch result = groupRule.match(tokens, -1);
-		
-		assertNull(result);
-	}
-	
-	@Test
-	void matchWithStartIndexOutOfBounds() {
-		TokenGroupRule groupRule = new TokenGroupRule(TokenRules.alwaysMatch());
-		List<Token> tokens = List.of(createToken("test"));
-		
-		TokenRuleMatch result = groupRule.match(tokens, 1);
-		
-		assertNull(result);
+		assertThrows(IndexOutOfBoundsException.class, () -> groupRule.match(new TokenStream(tokens, -1)));
+		assertThrows(IndexOutOfBoundsException.class, () -> groupRule.match(new TokenStream(tokens, 2)));
 	}
 	
 	@Test
 	void matchWithEmptyTokenList() {
 		TokenGroupRule groupRule = new TokenGroupRule(TokenRules.alwaysMatch());
-		List<Token> tokens = List.of();
 		
-		TokenRuleMatch result = groupRule.match(tokens, 0);
-		
-		assertNull(result);
+		assertNull(groupRule.match(new TokenStream(Collections.emptyList())));
 	}
 	
 	@Test
@@ -110,7 +98,7 @@ class TokenGroupRuleTest {
 		Token regularToken = createToken("test");
 		List<Token> tokens = List.of(regularToken);
 		
-		TokenRuleMatch result = groupRule.match(tokens, 0);
+		TokenRuleMatch result = groupRule.match(new TokenStream(tokens, 0));
 		
 		assertNull(result);
 	}
@@ -123,7 +111,7 @@ class TokenGroupRuleTest {
 		TokenGroup tokenGroup = createTokenGroup(List.of(token1, token2));
 		List<Token> tokens = List.of(tokenGroup);
 		
-		TokenRuleMatch result = groupRule.match(tokens, 0);
+		TokenRuleMatch result = groupRule.match(new TokenStream(tokens, 0));
 		
 		assertNotNull(result);
 		assertEquals(0, result.startIndex());
@@ -142,7 +130,7 @@ class TokenGroupRuleTest {
 		TokenGroup tokenGroup = createTokenGroup(List.of(token1, token2));
 		List<Token> tokens = List.of(tokenGroup);
 		
-		TokenRuleMatch result = groupRule.match(tokens, 0);
+		TokenRuleMatch result = groupRule.match(new TokenStream(tokens, 0));
 		
 		assertNull(result);
 	}
@@ -156,7 +144,7 @@ class TokenGroupRuleTest {
 		TokenGroup tokenGroup = createTokenGroup(List.of(token1, token2));
 		List<Token> tokens = List.of(tokenGroup);
 		
-		TokenRuleMatch result = groupRule.match(tokens, 0);
+		TokenRuleMatch result = groupRule.match(new TokenStream(tokens, 0));
 		
 		assertNotNull(result);
 		assertEquals(0, result.startIndex());
@@ -178,7 +166,7 @@ class TokenGroupRuleTest {
 		TokenGroup tokenGroup = createTokenGroup(List.of(token1, token2));
 		List<Token> tokens = List.of(tokenGroup);
 		
-		TokenRuleMatch result = groupRule.match(tokens, 0);
+		TokenRuleMatch result = groupRule.match(new TokenStream(tokens, 0));
 		
 		assertNotNull(result);
 		assertEquals(0, result.startIndex());
@@ -200,7 +188,7 @@ class TokenGroupRuleTest {
 		TokenGroup tokenGroup = createTokenGroup(List.of(token1, token2));
 		List<Token> tokens = List.of(tokenGroup);
 		
-		TokenRuleMatch result = groupRule.match(tokens, 0);
+		TokenRuleMatch result = groupRule.match(new TokenStream(tokens, 0));
 		
 		assertNull(result);
 	}
@@ -214,7 +202,7 @@ class TokenGroupRuleTest {
 		TokenGroup tokenGroup = createTokenGroup(List.of(token1, token2));
 		List<Token> tokens = List.of(tokenGroup);
 		
-		TokenRuleMatch result = groupRule.match(tokens, 0);
+		TokenRuleMatch result = groupRule.match(new TokenStream(tokens, 0));
 		
 		assertNotNull(result);
 		assertEquals(0, result.startIndex());
@@ -234,7 +222,7 @@ class TokenGroupRuleTest {
 		TokenGroup tokenGroup = createTokenGroup(List.of(token1, token2, token3));
 		List<Token> tokens = List.of(tokenGroup);
 		
-		TokenRuleMatch result = groupRule.match(tokens, 0);
+		TokenRuleMatch result = groupRule.match(new TokenStream(tokens, 0));
 		
 		assertNotNull(result);
 		assertEquals(0, result.startIndex());
@@ -253,7 +241,7 @@ class TokenGroupRuleTest {
 		TokenGroup tokenGroup = createTokenGroup(List.of(token1, token2));
 		List<Token> tokens = List.of(tokenGroup);
 		
-		TokenRuleMatch result = groupRule.match(tokens, 0);
+		TokenRuleMatch result = groupRule.match(new TokenStream(tokens, 0));
 		
 		assertNull(result);
 	}
@@ -269,7 +257,7 @@ class TokenGroupRuleTest {
 		Token anotherRegularToken = createToken("another");
 		List<Token> tokens = List.of(regularToken, tokenGroup, anotherRegularToken);
 		
-		TokenRuleMatch result = groupRule.match(tokens, 1);
+		TokenRuleMatch result = groupRule.match(new TokenStream(tokens, 1));
 		
 		assertNotNull(result);
 		assertEquals(1, result.startIndex());
@@ -278,10 +266,10 @@ class TokenGroupRuleTest {
 		assertEquals(tokenGroup, result.matchedTokens().getFirst());
 		assertEquals(groupRule, result.matchingTokenRule());
 		
-		TokenRuleMatch result0 = groupRule.match(tokens, 0);
+		TokenRuleMatch result0 = groupRule.match(new TokenStream(tokens, 0));
 		assertNull(result0);
 		
-		TokenRuleMatch result2 = groupRule.match(tokens, 2);
+		TokenRuleMatch result2 = groupRule.match(new TokenStream(tokens, 2));
 		assertNull(result2);
 	}
 	
@@ -301,7 +289,7 @@ class TokenGroupRuleTest {
 		TokenGroup tokenGroup = createTokenGroup(List.of(start, middle1, middle2, end));
 		List<Token> tokens = List.of(tokenGroup);
 		
-		TokenRuleMatch result = groupRule.match(tokens, 0);
+		TokenRuleMatch result = groupRule.match(new TokenStream(tokens, 0));
 		
 		assertNotNull(result);
 		assertEquals(0, result.startIndex());
@@ -320,7 +308,7 @@ class TokenGroupRuleTest {
 		TokenGroup tokenGroup = createTokenGroup(List.of(token1, token2));
 		List<Token> tokens = List.of(tokenGroup);
 		
-		TokenRuleMatch result = groupRule.match(tokens, 0);
+		TokenRuleMatch result = groupRule.match(new TokenStream(tokens, 0));
 		
 		assertNotNull(result);
 		assertEquals(0, result.startIndex());
@@ -339,7 +327,7 @@ class TokenGroupRuleTest {
 		TokenGroup tokenGroup = createTokenGroup(List.of(token1, token2));
 		List<Token> tokens = List.of(tokenGroup);
 		
-		TokenRuleMatch result = groupRule.match(tokens, 0);
+		TokenRuleMatch result = groupRule.match(new TokenStream(tokens, 0));
 		
 		assertNotNull(result);
 		assertEquals(0, result.startIndex());
@@ -384,11 +372,11 @@ class TokenGroupRuleTest {
 		
 		List<Token> tokens = List.of(matchingGroup, nonMatchingGroup);
 		
-		TokenRuleMatch result1 = groupRule.match(tokens, 0);
+		TokenRuleMatch result1 = groupRule.match(new TokenStream(tokens, 0));
 		assertNotNull(result1);
 		assertEquals(matchingGroup, result1.matchedTokens().getFirst());
 		
-		TokenRuleMatch result2 = groupRule.match(tokens, 1);
+		TokenRuleMatch result2 = groupRule.match(new TokenStream(tokens, 1));
 		assertNull(result2);
 	}
 }

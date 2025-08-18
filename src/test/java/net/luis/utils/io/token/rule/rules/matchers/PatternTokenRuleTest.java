@@ -18,6 +18,7 @@
 
 package net.luis.utils.io.token.rule.rules.matchers;
 
+import net.luis.utils.io.token.TokenStream;
 import net.luis.utils.io.token.rule.TokenRuleMatch;
 import net.luis.utils.io.token.tokens.SimpleToken;
 import net.luis.utils.io.token.tokens.Token;
@@ -93,17 +94,17 @@ class PatternTokenRuleTest {
 	}
 	
 	@Test
-	void matchWithNullTokenList() {
+	void matchWithNullTokenStream() {
 		PatternTokenRule rule = new PatternTokenRule("\\d+");
 		
-		assertThrows(NullPointerException.class, () -> rule.match(null, 0));
+		assertThrows(NullPointerException.class, () -> rule.match(null));
 	}
 	
 	@Test
 	void matchWithEmptyTokenList() {
 		PatternTokenRule rule = new PatternTokenRule("\\d+");
 		
-		assertNull(rule.match(Collections.emptyList(), 0));
+		assertNull(rule.match(new TokenStream(Collections.emptyList())));
 	}
 	
 	@Test
@@ -111,9 +112,8 @@ class PatternTokenRuleTest {
 		PatternTokenRule rule = new PatternTokenRule("\\d+");
 		List<Token> tokens = List.of(createToken("123"));
 		
-		assertNull(rule.match(tokens, 1));
-		assertNull(rule.match(tokens, 5));
-		assertNull(rule.match(tokens, -1));
+		assertThrows(IndexOutOfBoundsException.class, () -> rule.match(new TokenStream(tokens, 5)));
+		assertThrows(IndexOutOfBoundsException.class, () -> rule.match(new TokenStream(tokens, -1)));
 	}
 	
 	@Test
@@ -122,14 +122,14 @@ class PatternTokenRuleTest {
 		Token numberToken = createToken("123");
 		Token textToken = createToken("abc");
 		
-		TokenRuleMatch numberMatch = rule.match(List.of(numberToken), 0);
+		TokenRuleMatch numberMatch = rule.match(new TokenStream(List.of(numberToken), 0));
 		assertNotNull(numberMatch);
 		assertEquals(0, numberMatch.startIndex());
 		assertEquals(1, numberMatch.endIndex());
 		assertEquals(1, numberMatch.matchedTokens().size());
 		assertEquals(numberToken, numberMatch.matchedTokens().getFirst());
 		
-		TokenRuleMatch textMatch = rule.match(List.of(textToken), 0);
+		TokenRuleMatch textMatch = rule.match(new TokenStream(List.of(textToken), 0));
 		assertNull(textMatch);
 	}
 	
@@ -140,12 +140,12 @@ class PatternTokenRuleTest {
 		Token numberToken = createToken("123");
 		Token mixedToken = createToken("Hello123");
 		
-		TokenRuleMatch textMatch = rule.match(List.of(textToken), 0);
+		TokenRuleMatch textMatch = rule.match(new TokenStream(List.of(textToken), 0));
 		assertNotNull(textMatch);
 		assertEquals(textToken, textMatch.matchedTokens().getFirst());
 		
-		assertNull(rule.match(List.of(numberToken), 0));
-		assertNull(rule.match(List.of(mixedToken), 0));
+		assertNull(rule.match(new TokenStream(List.of(numberToken), 0)));
+		assertNull(rule.match(new TokenStream(List.of(mixedToken), 0)));
 	}
 	
 	@Test
@@ -155,12 +155,12 @@ class PatternTokenRuleTest {
 		Token differentToken = createToken("world");
 		Token partialToken = createToken("helloworld");
 		
-		TokenRuleMatch exactMatch = rule.match(List.of(exactToken), 0);
+		TokenRuleMatch exactMatch = rule.match(new TokenStream(List.of(exactToken), 0));
 		assertNotNull(exactMatch);
 		assertEquals(exactToken, exactMatch.matchedTokens().getFirst());
 		
-		assertNull(rule.match(List.of(differentToken), 0));
-		assertNull(rule.match(List.of(partialToken), 0));
+		assertNull(rule.match(new TokenStream(List.of(differentToken), 0)));
+		assertNull(rule.match(new TokenStream(List.of(partialToken), 0)));
 	}
 	
 	@Test
@@ -171,10 +171,10 @@ class PatternTokenRuleTest {
 		Token matchingToken3 = createToken("test123");
 		Token nonMatchingToken = createToken("other");
 		
-		assertNotNull(rule.match(List.of(matchingToken1), 0));
-		assertNotNull(rule.match(List.of(matchingToken2), 0));
-		assertNotNull(rule.match(List.of(matchingToken3), 0));
-		assertNull(rule.match(List.of(nonMatchingToken), 0));
+		assertNotNull(rule.match(new TokenStream(List.of(matchingToken1), 0)));
+		assertNotNull(rule.match(new TokenStream(List.of(matchingToken2), 0)));
+		assertNotNull(rule.match(new TokenStream(List.of(matchingToken3), 0)));
+		assertNull(rule.match(new TokenStream(List.of(nonMatchingToken), 0)));
 	}
 	
 	@Test
@@ -185,10 +185,10 @@ class PatternTokenRuleTest {
 		Token hexToken3 = createToken("0xFF");
 		Token nonHexToken = createToken("xyz");
 		
-		assertNotNull(rule.match(List.of(hexToken1), 0));
-		assertNotNull(rule.match(List.of(hexToken2), 0));
-		assertNull(rule.match(List.of(hexToken3), 0));
-		assertNull(rule.match(List.of(nonHexToken), 0));
+		assertNotNull(rule.match(new TokenStream(List.of(hexToken1), 0)));
+		assertNotNull(rule.match(new TokenStream(List.of(hexToken2), 0)));
+		assertNull(rule.match(new TokenStream(List.of(hexToken3), 0)));
+		assertNull(rule.match(new TokenStream(List.of(nonHexToken), 0)));
 	}
 	
 	@Test
@@ -199,25 +199,25 @@ class PatternTokenRuleTest {
 		PatternTokenRule exactRule = new PatternTokenRule("c{3}");
 		PatternTokenRule rangeRule = new PatternTokenRule("d{2,4}");
 		
-		assertNotNull(optionalRule.match(List.of(createToken("color")), 0));
-		assertNotNull(optionalRule.match(List.of(createToken("colour")), 0));
-		assertNull(optionalRule.match(List.of(createToken("colouur")), 0));
+		assertNotNull(optionalRule.match(new TokenStream(List.of(createToken("color")), 0)));
+		assertNotNull(optionalRule.match(new TokenStream(List.of(createToken("colour")), 0)));
+		assertNull(optionalRule.match(new TokenStream(List.of(createToken("colouur")), 0)));
 		
-		assertNotNull(oneOrMoreRule.match(List.of(createToken("a")), 0));
-		assertNotNull(oneOrMoreRule.match(List.of(createToken("aaa")), 0));
-		assertNull(oneOrMoreRule.match(List.of(createToken("")), 0));
+		assertNotNull(oneOrMoreRule.match(new TokenStream(List.of(createToken("a")), 0)));
+		assertNotNull(oneOrMoreRule.match(new TokenStream(List.of(createToken("aaa")), 0)));
+		assertNull(oneOrMoreRule.match(new TokenStream(List.of(createToken("")), 0)));
 		
-		assertNotNull(zeroOrMoreRule.match(List.of(createToken("")), 0));
-		assertNotNull(zeroOrMoreRule.match(List.of(createToken("bbb")), 0));
+		assertNotNull(zeroOrMoreRule.match(new TokenStream(List.of(createToken("")), 0)));
+		assertNotNull(zeroOrMoreRule.match(new TokenStream(List.of(createToken("bbb")), 0)));
 		
-		assertNotNull(exactRule.match(List.of(createToken("ccc")), 0));
-		assertNull(exactRule.match(List.of(createToken("cc")), 0));
-		assertNull(exactRule.match(List.of(createToken("cccc")), 0));
+		assertNotNull(exactRule.match(new TokenStream(List.of(createToken("ccc")), 0)));
+		assertNull(exactRule.match(new TokenStream(List.of(createToken("cc")), 0)));
+		assertNull(exactRule.match(new TokenStream(List.of(createToken("cccc")), 0)));
 		
-		assertNull(rangeRule.match(List.of(createToken("d")), 0));
-		assertNotNull(rangeRule.match(List.of(createToken("dd")), 0));
-		assertNotNull(rangeRule.match(List.of(createToken("dddd")), 0));
-		assertNull(rangeRule.match(List.of(createToken("ddddd")), 0));
+		assertNull(rangeRule.match(new TokenStream(List.of(createToken("d")), 0)));
+		assertNotNull(rangeRule.match(new TokenStream(List.of(createToken("dd")), 0)));
+		assertNotNull(rangeRule.match(new TokenStream(List.of(createToken("dddd")), 0)));
+		assertNull(rangeRule.match(new TokenStream(List.of(createToken("ddddd")), 0)));
 	}
 	
 	@Test
@@ -226,17 +226,17 @@ class PatternTokenRuleTest {
 		PatternTokenRule endAnchor = new PatternTokenRule("(.*?)test$");
 		PatternTokenRule bothAnchors = new PatternTokenRule("^test$");
 		
-		assertNotNull(startAnchor.match(List.of(createToken("test")), 0));
-		assertNotNull(startAnchor.match(List.of(createToken("testing")), 0));
-		assertNull(startAnchor.match(List.of(createToken("pretest")), 0));
+		assertNotNull(startAnchor.match(new TokenStream(List.of(createToken("test")), 0)));
+		assertNotNull(startAnchor.match(new TokenStream(List.of(createToken("testing")), 0)));
+		assertNull(startAnchor.match(new TokenStream(List.of(createToken("pretest")), 0)));
 		
-		assertNotNull(endAnchor.match(List.of(createToken("test")), 0));
-		assertNotNull(endAnchor.match(List.of(createToken("pretest")), 0));
-		assertNull(endAnchor.match(List.of(createToken("testing")), 0));
+		assertNotNull(endAnchor.match(new TokenStream(List.of(createToken("test")), 0)));
+		assertNotNull(endAnchor.match(new TokenStream(List.of(createToken("pretest")), 0)));
+		assertNull(endAnchor.match(new TokenStream(List.of(createToken("testing")), 0)));
 		
-		assertNotNull(bothAnchors.match(List.of(createToken("test")), 0));
-		assertNull(bothAnchors.match(List.of(createToken("testing")), 0));
-		assertNull(bothAnchors.match(List.of(createToken("pretest")), 0));
+		assertNotNull(bothAnchors.match(new TokenStream(List.of(createToken("test")), 0)));
+		assertNull(bothAnchors.match(new TokenStream(List.of(createToken("testing")), 0)));
+		assertNull(bothAnchors.match(new TokenStream(List.of(createToken("pretest")), 0)));
 	}
 	
 	@Test
@@ -244,13 +244,13 @@ class PatternTokenRuleTest {
 		PatternTokenRule groupRule = new PatternTokenRule("(hello|world)");
 		PatternTokenRule nonCapturingRule = new PatternTokenRule("(?:foo|bar)");
 		
-		assertNotNull(groupRule.match(List.of(createToken("hello")), 0));
-		assertNotNull(groupRule.match(List.of(createToken("world")), 0));
-		assertNull(groupRule.match(List.of(createToken("goodbye")), 0));
+		assertNotNull(groupRule.match(new TokenStream(List.of(createToken("hello")), 0)));
+		assertNotNull(groupRule.match(new TokenStream(List.of(createToken("world")), 0)));
+		assertNull(groupRule.match(new TokenStream(List.of(createToken("goodbye")), 0)));
 		
-		assertNotNull(nonCapturingRule.match(List.of(createToken("foo")), 0));
-		assertNotNull(nonCapturingRule.match(List.of(createToken("bar")), 0));
-		assertNull(nonCapturingRule.match(List.of(createToken("baz")), 0));
+		assertNotNull(nonCapturingRule.match(new TokenStream(List.of(createToken("foo")), 0)));
+		assertNotNull(nonCapturingRule.match(new TokenStream(List.of(createToken("bar")), 0)));
+		assertNull(nonCapturingRule.match(new TokenStream(List.of(createToken("baz")), 0)));
 	}
 	
 	@Test
@@ -258,11 +258,11 @@ class PatternTokenRuleTest {
 		PatternTokenRule escapeRule = new PatternTokenRule("\\.");
 		PatternTokenRule literalRule = new PatternTokenRule("\\$\\^\\*");
 		
-		assertNotNull(escapeRule.match(List.of(createToken(".")), 0));
-		assertNull(escapeRule.match(List.of(createToken("a")), 0));
+		assertNotNull(escapeRule.match(new TokenStream(List.of(createToken(".")), 0)));
+		assertNull(escapeRule.match(new TokenStream(List.of(createToken("a")), 0)));
 		
-		assertNotNull(literalRule.match(List.of(createToken("$^*")), 0));
-		assertNull(literalRule.match(List.of(createToken("abc")), 0));
+		assertNotNull(literalRule.match(new TokenStream(List.of(createToken("$^*")), 0)));
+		assertNull(literalRule.match(new TokenStream(List.of(createToken("abc")), 0)));
 	}
 	
 	@Test
@@ -275,10 +275,10 @@ class PatternTokenRuleTest {
 			createToken("456")
 		);
 		
-		assertNull(rule.match(tokens, 0));
-		assertNotNull(rule.match(tokens, 1));
-		assertNull(rule.match(tokens, 2));
-		assertNotNull(rule.match(tokens, 3));
+		assertNull(rule.match(new TokenStream(tokens, 0)));
+		assertNotNull(rule.match(new TokenStream(tokens, 1)));
+		assertNull(rule.match(new TokenStream(tokens, 2)));
+		assertNotNull(rule.match(new TokenStream(tokens, 3)));
 	}
 	
 	@Test
@@ -287,8 +287,8 @@ class PatternTokenRuleTest {
 		Token emptyToken = createToken("");
 		Token nonEmptyToken = createToken("test");
 		
-		assertNotNull(rule.match(List.of(emptyToken), 0));
-		assertNull(rule.match(List.of(nonEmptyToken), 0));
+		assertNotNull(rule.match(new TokenStream(List.of(emptyToken), 0)));
+		assertNull(rule.match(new TokenStream(List.of(nonEmptyToken), 0)));
 	}
 	
 	@Test
@@ -298,9 +298,9 @@ class PatternTokenRuleTest {
 		Token multiChar = createToken("abc");
 		Token emptyToken = createToken("");
 		
-		assertNotNull(rule.match(List.of(singleChar), 0));
-		assertNull(rule.match(List.of(multiChar), 0));
-		assertNull(rule.match(List.of(emptyToken), 0));
+		assertNotNull(rule.match(new TokenStream(List.of(singleChar), 0)));
+		assertNull(rule.match(new TokenStream(List.of(multiChar), 0)));
+		assertNull(rule.match(new TokenStream(List.of(emptyToken), 0)));
 	}
 	
 	@Test
@@ -309,8 +309,8 @@ class PatternTokenRuleTest {
 		Token token = createToken("123");
 		List<Token> tokens = List.of(token);
 		
-		TokenRuleMatch match1 = rule.match(tokens, 0);
-		TokenRuleMatch match2 = rule.match(tokens, 0);
+		TokenRuleMatch match1 = rule.match(new TokenStream(tokens, 0));
+		TokenRuleMatch match2 = rule.match(new TokenStream(tokens, 0));
 		
 		assertNotNull(match1);
 		assertNotNull(match2);
@@ -324,9 +324,9 @@ class PatternTokenRuleTest {
 		Pattern caseInsensitive = Pattern.compile("hello", Pattern.CASE_INSENSITIVE);
 		PatternTokenRule rule = new PatternTokenRule(caseInsensitive);
 		
-		assertNotNull(rule.match(List.of(createToken("hello")), 0));
-		assertNotNull(rule.match(List.of(createToken("HELLO")), 0));
-		assertNotNull(rule.match(List.of(createToken("Hello")), 0));
-		assertNull(rule.match(List.of(createToken("world")), 0));
+		assertNotNull(rule.match(new TokenStream(List.of(createToken("hello")), 0)));
+		assertNotNull(rule.match(new TokenStream(List.of(createToken("HELLO")), 0)));
+		assertNotNull(rule.match(new TokenStream(List.of(createToken("Hello")), 0)));
+		assertNull(rule.match(new TokenStream(List.of(createToken("world")), 0)));
 	}
 }

@@ -18,6 +18,7 @@
 
 package net.luis.utils.io.token.rule.rules.combinators;
 
+import net.luis.utils.io.token.TokenStream;
 import net.luis.utils.io.token.rule.TokenRuleMatch;
 import net.luis.utils.io.token.rule.rules.TokenRule;
 import net.luis.utils.io.token.tokens.Token;
@@ -58,20 +59,22 @@ public record SequenceTokenRule(
 	}
 	
 	@Override
-	public @Nullable TokenRuleMatch match(@NotNull List<Token> tokens, int startIndex) {
-		Objects.requireNonNull(tokens, "Tokens must not be null");
+	public @Nullable TokenRuleMatch match(@NotNull TokenStream stream) {
+		Objects.requireNonNull(stream, "Token stream must not be null");
 		
-		int currentIndex = startIndex;
+		int startIndex = stream.getCurrentIndex();
+		/*int currentIndex = startIndex;*/
 		List<Token> matchedTokens = new ArrayList<>();
 		for (TokenRule tokenRule : this.tokenRules) {
-			TokenRuleMatch match = tokenRule.match(tokens, currentIndex);
+			
+			TokenRuleMatch match = tokenRule.match(stream);
 			if (match == null) {
 				return null;
 			}
 			
 			matchedTokens.addAll(match.matchedTokens());
-			currentIndex = match.endIndex();
+			/*currentIndex = match.endIndex();*/
 		}
-		return new TokenRuleMatch(startIndex, currentIndex, matchedTokens, this);
+		return new TokenRuleMatch(startIndex, stream.getCurrentIndex(), matchedTokens, this);
 	}
 }

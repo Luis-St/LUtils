@@ -18,6 +18,7 @@
 
 package net.luis.utils.io.token.rule.rules.matchers;
 
+import net.luis.utils.io.token.TokenStream;
 import net.luis.utils.io.token.rule.TokenRuleMatch;
 import net.luis.utils.io.token.tokens.SimpleToken;
 import net.luis.utils.io.token.tokens.Token;
@@ -99,17 +100,17 @@ class LengthTokenRuleTest {
 	}
 	
 	@Test
-	void matchWithNullTokenList() {
+	void matchWithNullTokenStream() {
 		LengthTokenRule rule = new LengthTokenRule(1, 5);
 		
-		assertThrows(NullPointerException.class, () -> rule.match(null, 0));
+		assertThrows(NullPointerException.class, () -> rule.match(null));
 	}
 	
 	@Test
 	void matchWithEmptyTokenList() {
 		LengthTokenRule rule = new LengthTokenRule(1, 5);
 		
-		assertNull(rule.match(Collections.emptyList(), 0));
+		assertNull(rule.match(new TokenStream(Collections.emptyList())));
 	}
 	
 	@Test
@@ -117,9 +118,8 @@ class LengthTokenRuleTest {
 		LengthTokenRule rule = new LengthTokenRule(1, 5);
 		List<Token> tokens = List.of(createToken("test"));
 		
-		assertNull(rule.match(tokens, 1));
-		assertNull(rule.match(tokens, 5));
-		assertNull(rule.match(tokens, -1));
+		assertThrows(IndexOutOfBoundsException.class, () -> rule.match(new TokenStream(tokens, 5)));
+		assertThrows(IndexOutOfBoundsException.class, () -> rule.match(new TokenStream(tokens, -1)));
 	}
 	
 	@Test
@@ -128,7 +128,7 @@ class LengthTokenRuleTest {
 		Token shortToken = createToken("hi");
 		List<Token> tokens = List.of(shortToken);
 		
-		assertNull(rule.match(tokens, 0));
+		assertNull(rule.match(new TokenStream(tokens, 0)));
 	}
 	
 	@Test
@@ -137,7 +137,7 @@ class LengthTokenRuleTest {
 		Token longToken = createToken("verylongtoken");
 		List<Token> tokens = List.of(longToken);
 		
-		assertNull(rule.match(tokens, 0));
+		assertNull(rule.match(new TokenStream(tokens, 0)));
 	}
 	
 	@Test
@@ -146,7 +146,7 @@ class LengthTokenRuleTest {
 		Token token = createToken("abc");
 		List<Token> tokens = List.of(token);
 		
-		TokenRuleMatch match = rule.match(tokens, 0);
+		TokenRuleMatch match = rule.match(new TokenStream(tokens, 0));
 		
 		assertNotNull(match);
 		assertEquals(0, match.startIndex());
@@ -162,7 +162,7 @@ class LengthTokenRuleTest {
 		Token token = createToken("hello");
 		List<Token> tokens = List.of(token);
 		
-		TokenRuleMatch match = rule.match(tokens, 0);
+		TokenRuleMatch match = rule.match(new TokenStream(tokens, 0));
 		
 		assertNotNull(match);
 		assertEquals(0, match.startIndex());
@@ -177,7 +177,7 @@ class LengthTokenRuleTest {
 		Token token = createToken("middle");
 		List<Token> tokens = List.of(token);
 		
-		TokenRuleMatch match = rule.match(tokens, 0);
+		TokenRuleMatch match = rule.match(new TokenStream(tokens, 0));
 		
 		assertNotNull(match);
 		assertEquals(token, match.matchedTokens().getFirst());
@@ -191,15 +191,15 @@ class LengthTokenRuleTest {
 		Token longToken = createToken("toolong");
 		
 		List<Token> exactTokens = List.of(exactToken);
-		TokenRuleMatch exactMatch = rule.match(exactTokens, 0);
+		TokenRuleMatch exactMatch = rule.match(new TokenStream(exactTokens, 0));
 		assertNotNull(exactMatch);
 		assertEquals(exactToken, exactMatch.matchedTokens().getFirst());
 		
 		List<Token> shortTokens = List.of(shortToken);
-		assertNull(rule.match(shortTokens, 0));
+		assertNull(rule.match(new TokenStream(shortTokens, 0)));
 		
 		List<Token> longTokens = List.of(longToken);
-		assertNull(rule.match(longTokens, 0));
+		assertNull(rule.match(new TokenStream(longTokens, 0)));
 	}
 	
 	@Test
@@ -208,7 +208,7 @@ class LengthTokenRuleTest {
 		Token emptyToken = createToken("");
 		List<Token> tokens = List.of(emptyToken);
 		
-		TokenRuleMatch match = rule.match(tokens, 0);
+		TokenRuleMatch match = rule.match(new TokenStream(tokens, 0));
 		
 		assertNotNull(match);
 		assertEquals(emptyToken, match.matchedTokens().getFirst());
@@ -220,7 +220,7 @@ class LengthTokenRuleTest {
 		Token emptyToken = createToken("");
 		List<Token> tokens = List.of(emptyToken);
 		
-		assertNull(rule.match(tokens, 0));
+		assertNull(rule.match(new TokenStream(tokens, 0)));
 	}
 	
 	@Test
@@ -229,7 +229,7 @@ class LengthTokenRuleTest {
 		Token singleChar = createToken("a");
 		List<Token> tokens = List.of(singleChar);
 		
-		TokenRuleMatch match = rule.match(tokens, 0);
+		TokenRuleMatch match = rule.match(new TokenStream(tokens, 0));
 		
 		assertNotNull(match);
 		assertEquals(singleChar, match.matchedTokens().getFirst());
@@ -243,13 +243,13 @@ class LengthTokenRuleTest {
 		Token valid2 = createToken("hello");
 		List<Token> tokens = List.of(valid1, invalid, valid2);
 		
-		TokenRuleMatch match1 = rule.match(tokens, 0);
+		TokenRuleMatch match1 = rule.match(new TokenStream(tokens, 0));
 		assertNotNull(match1);
 		assertEquals(valid1, match1.matchedTokens().getFirst());
 		
-		assertNull(rule.match(tokens, 1));
+		assertNull(rule.match(new TokenStream(tokens, 1)));
 		
-		TokenRuleMatch match3 = rule.match(tokens, 2);
+		TokenRuleMatch match3 = rule.match(new TokenStream(tokens, 2));
 		assertNotNull(match3);
 		assertEquals(valid2, match3.matchedTokens().getFirst());
 	}
@@ -264,7 +264,7 @@ class LengthTokenRuleTest {
 		List<Token> tokens = List.of(space, tab, newline, symbols);
 		
 		for (int i = 0; i < tokens.size(); i++) {
-			TokenRuleMatch match = rule.match(tokens, i);
+			TokenRuleMatch match = rule.match(new TokenStream(tokens, i));
 			assertNotNull(match);
 			assertEquals(tokens.get(i), match.matchedTokens().getFirst());
 		}
@@ -277,11 +277,11 @@ class LengthTokenRuleTest {
 		Token emoji = createToken("😀");
 		List<Token> tokens = List.of(unicode, emoji);
 		
-		TokenRuleMatch unicodeMatch = rule.match(tokens, 0);
+		TokenRuleMatch unicodeMatch = rule.match(new TokenStream(tokens, 0));
 		assertNotNull(unicodeMatch);
 		assertEquals(unicode, unicodeMatch.matchedTokens().getFirst());
 		
-		TokenRuleMatch emojiMatch = rule.match(tokens, 1);
+		TokenRuleMatch emojiMatch = rule.match(new TokenStream(tokens, 1));
 		assertNotNull(emojiMatch);
 		assertEquals(emoji, emojiMatch.matchedTokens().getFirst());
 	}
@@ -295,7 +295,7 @@ class LengthTokenRuleTest {
 		List<Token> tokens = List.of(token1, token2, token3);
 		
 		for (int i = 0; i < tokens.size(); i++) {
-			TokenRuleMatch match = rule.match(tokens, i);
+			TokenRuleMatch match = rule.match(new TokenStream(tokens, i));
 			assertNotNull(match);
 			assertEquals(i, match.startIndex());
 			assertEquals(i + 1, match.endIndex());
@@ -310,11 +310,11 @@ class LengthTokenRuleTest {
 		Token veryLong = createToken("a".repeat(1000));
 		List<Token> tokens = List.of(empty, veryLong);
 		
-		TokenRuleMatch emptyMatch = rule.match(tokens, 0);
+		TokenRuleMatch emptyMatch = rule.match(new TokenStream(tokens, 0));
 		assertNotNull(emptyMatch);
 		assertEquals(empty, emptyMatch.matchedTokens().getFirst());
 		
-		TokenRuleMatch longMatch = rule.match(tokens, 1);
+		TokenRuleMatch longMatch = rule.match(new TokenStream(tokens, 1));
 		assertNotNull(longMatch);
 		assertEquals(veryLong, longMatch.matchedTokens().getFirst());
 	}
@@ -325,8 +325,8 @@ class LengthTokenRuleTest {
 		Token token = createToken("test");
 		List<Token> tokens = List.of(token);
 		
-		TokenRuleMatch match1 = rule.match(tokens, 0);
-		TokenRuleMatch match2 = rule.match(tokens, 0);
+		TokenRuleMatch match1 = rule.match(new TokenStream(tokens, 0));
+		TokenRuleMatch match2 = rule.match(new TokenStream(tokens, 0));
 		
 		assertNotNull(match1);
 		assertNotNull(match2);

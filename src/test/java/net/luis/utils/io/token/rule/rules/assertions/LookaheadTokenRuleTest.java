@@ -18,6 +18,7 @@
 
 package net.luis.utils.io.token.rule.rules.assertions;
 
+import net.luis.utils.io.token.TokenStream;
 import net.luis.utils.io.token.rule.TokenRuleMatch;
 import net.luis.utils.io.token.rule.rules.TokenRule;
 import net.luis.utils.io.token.rule.rules.TokenRules;
@@ -41,15 +42,16 @@ class LookaheadTokenRuleTest {
 	private static @NotNull TokenRule createRule(@NotNull String value) {
 		return new TokenRule() {
 			@Override
-			public @Nullable TokenRuleMatch match(@NotNull List<Token> tokens, int startIndex) {
-				Objects.requireNonNull(tokens, "Tokens list must not be null");
-				if (startIndex >= tokens.size() || startIndex < 0) {
+			public @Nullable TokenRuleMatch match(@NotNull TokenStream stream) {
+				Objects.requireNonNull(stream, "Token stream must not be null");
+				if (!stream.hasToken()) {
 					return null;
 				}
 				
-				Token token = tokens.get(startIndex);
+				int startIndex = stream.getCurrentIndex();
+				Token token = stream.getCurrentToken();
 				if (token.value().equals(value)) {
-					return new TokenRuleMatch(startIndex, startIndex + 1, List.of(token), this);
+					return new TokenRuleMatch(startIndex, stream.consumeToken(), List.of(token), this);
 				}
 				return null;
 			}
@@ -100,17 +102,17 @@ class LookaheadTokenRuleTest {
 	}
 	
 	@Test
-	void matchWithNullTokenList() {
+	void matchWithNullTokenStream() {
 		LookaheadTokenRule rule = new LookaheadTokenRule(createRule("test"), LookMatchMode.POSITIVE);
 		
-		assertThrows(NullPointerException.class, () -> rule.match(null, 0));
+		assertThrows(NullPointerException.class, () -> rule.match(null));
 	}
 	
 	@Test
 	void matchWithEmptyTokenList() {
 		LookaheadTokenRule rule = new LookaheadTokenRule(createRule("test"), LookMatchMode.POSITIVE);
 		
-		assertNull(rule.match(Collections.emptyList(), 0));
+		assertNull(rule.match(new TokenStream(Collections.emptyList())));
 	}
 	
 	@Test
@@ -118,9 +120,9 @@ class LookaheadTokenRuleTest {
 		LookaheadTokenRule rule = new LookaheadTokenRule(createRule("test"), LookMatchMode.POSITIVE);
 		List<Token> tokens = List.of(createToken("test"));
 		
-		assertNull(rule.match(tokens, 1));
-		assertNull(rule.match(tokens, 5));
-		assertNull(rule.match(tokens, -1));
+		assertThrows(IndexOutOfBoundsException.class, () -> rule.match(new TokenStream(tokens, 1)));
+		assertThrows(IndexOutOfBoundsException.class, () -> rule.match(new TokenStream(tokens, 5)));
+		assertThrows(IndexOutOfBoundsException.class, () -> rule.match(new TokenStream(tokens, -1)));
 	}
 	
 	@Test
@@ -130,7 +132,7 @@ class LookaheadTokenRuleTest {
 		Token target = createToken("target");
 		List<Token> tokens = List.of(target);
 		
-		TokenRuleMatch match = lookahead.match(tokens, 0);
+		TokenRuleMatch match = lookahead.match(new TokenStream(tokens, 0));
 		
 		assertNotNull(match);
 		assertEquals(0, match.startIndex());
@@ -145,7 +147,7 @@ class LookaheadTokenRuleTest {
 		Token other = createToken("other");
 		List<Token> tokens = List.of(other);
 		
-		assertNull(lookahead.match(tokens, 0));
+		assertNull(lookahead.match(new TokenStream(tokens, 0)));
 	}
 	
 	@Test
@@ -155,7 +157,7 @@ class LookaheadTokenRuleTest {
 		Token target = createToken("target");
 		List<Token> tokens = List.of(target);
 		
-		assertNull(lookahead.match(tokens, 0));
+		assertNull(lookahead.match(new TokenStream(tokens, 0)));
 	}
 	
 	@Test
@@ -165,7 +167,7 @@ class LookaheadTokenRuleTest {
 		Token other = createToken("other");
 		List<Token> tokens = List.of(other);
 		
-		TokenRuleMatch match = lookahead.match(tokens, 0);
+		TokenRuleMatch match = lookahead.match(new TokenStream(tokens, 0));
 		
 		assertNotNull(match);
 		assertEquals(0, match.startIndex());
@@ -181,7 +183,7 @@ class LookaheadTokenRuleTest {
 		Token other = createToken("other");
 		List<Token> tokens = List.of(test, other);
 		
-		TokenRuleMatch match = lookahead.match(tokens, 0);
+		TokenRuleMatch match = lookahead.match(new TokenStream(tokens, 0));
 		
 		assertNotNull(match);
 		assertEquals(0, match.startIndex());
@@ -198,15 +200,15 @@ class LookaheadTokenRuleTest {
 		Token third = createToken("third");
 		List<Token> tokens = List.of(first, second, third);
 		
-		assertNull(lookahead.match(tokens, 0));
+		assertNull(lookahead.match(new TokenStream(tokens, 0)));
 		
-		TokenRuleMatch match = lookahead.match(tokens, 1);
+		TokenRuleMatch match = lookahead.match(new TokenStream(tokens, 1));
 		assertNotNull(match);
 		assertEquals(1, match.startIndex());
 		assertEquals(1, match.endIndex());
 		assertTrue(match.matchedTokens().isEmpty());
 		
-		assertNull(lookahead.match(tokens, 2));
+		assertNull(lookahead.match(new TokenStream(tokens, 2)));
 	}
 	
 	@Test
@@ -215,7 +217,7 @@ class LookaheadTokenRuleTest {
 		Token token = createToken("anything");
 		List<Token> tokens = List.of(token);
 		
-		TokenRuleMatch match = lookahead.match(tokens, 0);
+		TokenRuleMatch match = lookahead.match(new TokenStream(tokens, 0));
 		
 		assertNotNull(match);
 		assertTrue(match.matchedTokens().isEmpty());
@@ -225,7 +227,7 @@ class LookaheadTokenRuleTest {
 	void lookaheadWithNeverMatchRule() {
 		TokenRule neverMatch = new TokenRule() {
 			@Override
-			public @Nullable TokenRuleMatch match(@NotNull List<Token> tokens, int startIndex) {
+			public @Nullable TokenRuleMatch match(@NotNull TokenStream stream) {
 				return null;
 			}
 		};
@@ -235,9 +237,9 @@ class LookaheadTokenRuleTest {
 		Token token = createToken("test");
 		List<Token> tokens = List.of(token);
 		
-		assertNull(positiveLookahead.match(tokens, 0));
+		assertNull(positiveLookahead.match(new TokenStream(tokens, 0)));
 		
-		TokenRuleMatch negativeMatch = negativeLookahead.match(tokens, 0);
+		TokenRuleMatch negativeMatch = negativeLookahead.match(new TokenStream(tokens, 0));
 		assertNotNull(negativeMatch);
 		assertTrue(negativeMatch.matchedTokens().isEmpty());
 	}
@@ -251,7 +253,7 @@ class LookaheadTokenRuleTest {
 		Token c = createToken("c");
 		List<Token> tokens = List.of(a, b, c);
 		
-		TokenRuleMatch match = lookahead.match(tokens, 0);
+		TokenRuleMatch match = lookahead.match(new TokenStream(tokens, 0));
 		
 		assertNotNull(match);
 		assertEquals(0, match.startIndex());
@@ -267,12 +269,12 @@ class LookaheadTokenRuleTest {
 		Token other = createToken("other");
 		
 		List<Token> withMaybe = List.of(maybe);
-		TokenRuleMatch matchWithMaybe = lookahead.match(withMaybe, 0);
+		TokenRuleMatch matchWithMaybe = lookahead.match(new TokenStream(withMaybe, 0));
 		assertNotNull(matchWithMaybe);
 		assertTrue(matchWithMaybe.matchedTokens().isEmpty());
 		
 		List<Token> withOther = List.of(other);
-		TokenRuleMatch matchWithOther = lookahead.match(withOther, 0);
+		TokenRuleMatch matchWithOther = lookahead.match(new TokenStream(withOther, 0));
 		assertNotNull(matchWithOther);
 		assertTrue(matchWithOther.matchedTokens().isEmpty());
 	}
@@ -285,12 +287,12 @@ class LookaheadTokenRuleTest {
 		Token after = createToken("after");
 		List<Token> tokens = List.of(target, after);
 		
-		TokenRuleMatch match1 = lookahead.match(tokens, 0);
+		TokenRuleMatch match1 = lookahead.match(new TokenStream(tokens, 0));
 		assertNotNull(match1);
 		assertEquals(0, match1.startIndex());
 		assertEquals(0, match1.endIndex());
 		
-		TokenRuleMatch match2 = innerRule.match(tokens, 0);
+		TokenRuleMatch match2 = innerRule.match(new TokenStream(tokens, 0));
 		assertNotNull(match2);
 		assertEquals(0, match2.startIndex());
 		assertEquals(1, match2.endIndex());
@@ -303,8 +305,8 @@ class LookaheadTokenRuleTest {
 		Token token = createToken("test");
 		List<Token> tokens = List.of(token);
 		
-		TokenRuleMatch match1 = lookahead.match(tokens, 0);
-		TokenRuleMatch match2 = lookahead.match(tokens, 0);
+		TokenRuleMatch match1 = lookahead.match(new TokenStream(tokens, 0));
+		TokenRuleMatch match2 = lookahead.match(new TokenStream(tokens, 0));
 		
 		assertNotNull(match1);
 		assertNotNull(match2);

@@ -18,6 +18,7 @@
 
 package net.luis.utils.io.token.rule.rules;
 
+import net.luis.utils.io.token.TokenStream;
 import net.luis.utils.io.token.definition.*;
 import net.luis.utils.io.token.rule.TokenRuleMatch;
 import net.luis.utils.io.token.rule.rules.assertions.*;
@@ -47,7 +48,7 @@ class TokenRulesTest {
 	private static @NotNull TokenRule createRule(@NotNull String value) {
 		return new TokenRule() {
 			@Override
-			public @Nullable TokenRuleMatch match(@NotNull List<Token> tokens, int startIndex) {
+			public @Nullable TokenRuleMatch match(@NotNull TokenStream stream) {
 				return null;
 			}
 		};

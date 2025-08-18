@@ -18,6 +18,7 @@
 
 package net.luis.utils.io.token.rule.rules.assertions.anchors;
 
+import net.luis.utils.io.token.TokenStream;
 import net.luis.utils.io.token.rule.TokenRuleMatch;
 import net.luis.utils.io.token.rule.rules.TokenRules;
 import net.luis.utils.io.token.rule.rules.assertions.anchors.AnchorType;
@@ -59,17 +60,17 @@ class StartTokenRuleTest {
 	}
 	
 	@Test
-	void documentMatchWithNullTokenList() {
+	void documentMatchWithNullTokenStream() {
 		StartTokenRule rule = new StartTokenRule(AnchorType.DOCUMENT);
 		
-		assertThrows(NullPointerException.class, () -> rule.match(null, 0));
+		assertThrows(NullPointerException.class, () -> rule.match(null));
 	}
 	
 	@Test
 	void documentMatchWithEmptyTokenListAtStartIndex() {
 		StartTokenRule rule = new StartTokenRule(AnchorType.DOCUMENT);
 		
-		TokenRuleMatch match = rule.match(Collections.emptyList(), 0);
+		TokenRuleMatch match = rule.match(new TokenStream(Collections.emptyList(), 0));
 		
 		assertNotNull(match);
 		assertEquals(0, match.startIndex());
@@ -83,7 +84,7 @@ class StartTokenRuleTest {
 		Token token = createToken("first");
 		List<Token> tokens = List.of(token);
 		
-		TokenRuleMatch match = rule.match(tokens, 0);
+		TokenRuleMatch match = rule.match(new TokenStream(tokens, 0));
 		
 		assertNotNull(match);
 		assertEquals(0, match.startIndex());
@@ -98,7 +99,7 @@ class StartTokenRuleTest {
 		Token second = createToken("second");
 		List<Token> tokens = List.of(first, second);
 		
-		assertNull(rule.match(tokens, 1));
+		assertNull(rule.match(new TokenStream(tokens, 1)));
 	}
 	
 	@Test
@@ -109,12 +110,12 @@ class StartTokenRuleTest {
 		Token token3 = createToken("token3");
 		List<Token> tokens = List.of(token1, token2, token3);
 		
-		TokenRuleMatch match = rule.match(tokens, 0);
+		TokenRuleMatch match = rule.match(new TokenStream(tokens, 0));
 		assertNotNull(match);
 		assertTrue(match.matchedTokens().isEmpty());
 		
-		assertNull(rule.match(tokens, 1));
-		assertNull(rule.match(tokens, 2));
+		assertNull(rule.match(new TokenStream(tokens, 1)));
+		assertNull(rule.match(new TokenStream(tokens, 2)));
 	}
 	
 	@Test
@@ -123,8 +124,8 @@ class StartTokenRuleTest {
 		Token token = createToken("test");
 		List<Token> tokens = List.of(token);
 		
-		assertNull(rule.match(tokens, -1));
-		assertNull(rule.match(tokens, -5));
+		assertThrows(IndexOutOfBoundsException.class, () -> rule.match(new TokenStream(tokens, -1)));
+		assertThrows(IndexOutOfBoundsException.class, () -> rule.match(new TokenStream(tokens, -5)));
 	}
 	
 	@Test
@@ -133,9 +134,9 @@ class StartTokenRuleTest {
 		Token token = createToken("test");
 		List<Token> tokens = List.of(token);
 		
-		assertNull(rule.match(tokens, 1));
-		assertNull(rule.match(tokens, 5));
-		assertNull(rule.match(tokens, 100));
+		assertThrows(IndexOutOfBoundsException.class, () -> rule.match(new TokenStream(tokens, 1)));
+		assertThrows(IndexOutOfBoundsException.class, () -> rule.match(new TokenStream(tokens, 5)));
+		assertThrows(IndexOutOfBoundsException.class, () -> rule.match(new TokenStream(tokens, 100)));
 	}
 	
 	@Test
@@ -145,7 +146,7 @@ class StartTokenRuleTest {
 		Token second = createToken("second");
 		List<Token> tokens = List.of(first, second);
 		
-		TokenRuleMatch match = rule.match(tokens, 0);
+		TokenRuleMatch match = rule.match(new TokenStream(tokens, 0));
 		
 		assertNotNull(match);
 		assertEquals(0, match.startIndex());
@@ -158,28 +159,28 @@ class StartTokenRuleTest {
 		StartTokenRule rule = new StartTokenRule(AnchorType.DOCUMENT);
 		List<Token> largeList = IntStream.range(0, 100).mapToObj(i -> createToken("token" + i)).toList();
 		
-		TokenRuleMatch match = rule.match(largeList, 0);
+		TokenRuleMatch match = rule.match(new TokenStream(largeList, 0));
 		
 		assertNotNull(match);
 		assertTrue(match.matchedTokens().isEmpty());
 		
 		for (int i = 1; i < largeList.size(); i++) {
-			assertNull(rule.match(largeList, i));
+			assertNull(rule.match(new TokenStream(largeList, i)));
 		}
 	}
 	
 	@Test
-	void lineMatchWithNullTokenList() {
+	void lineMatchWithNullTokenStream() {
 		StartTokenRule rule = new StartTokenRule(AnchorType.LINE);
 		
-		assertThrows(NullPointerException.class, () -> rule.match(null, 0));
+		assertThrows(NullPointerException.class, () -> rule.match(null));
 	}
 	
 	@Test
 	void lineMatchWithEmptyTokenListAtStartIndex() {
 		StartTokenRule rule = new StartTokenRule(AnchorType.LINE);
 		
-		TokenRuleMatch match = rule.match(Collections.emptyList(), 0);
+		TokenRuleMatch match = rule.match(new TokenStream(Collections.emptyList(), 0));
 		
 		assertNotNull(match);
 		assertEquals(0, match.startIndex());
@@ -193,7 +194,7 @@ class StartTokenRuleTest {
 		Token token = createToken("first");
 		List<Token> tokens = List.of(token);
 		
-		TokenRuleMatch match = rule.match(tokens, 0);
+		TokenRuleMatch match = rule.match(new TokenStream(tokens, 0));
 		
 		assertNotNull(match);
 		assertEquals(0, match.startIndex());
@@ -210,7 +211,7 @@ class StartTokenRuleTest {
 			createToken("line2")
 		);
 		
-		TokenRuleMatch match = rule.match(tokens, 2);
+		TokenRuleMatch match = rule.match(new TokenStream(tokens, 2));
 		
 		assertNotNull(match);
 		assertEquals(2, match.startIndex());
@@ -227,7 +228,7 @@ class StartTokenRuleTest {
 			createToken("line2")
 		);
 		
-		assertNull(rule.match(tokens, 2));
+		assertNull(rule.match(new TokenStream(tokens, 2)));
 	}
 	
 	@Test
@@ -239,7 +240,7 @@ class StartTokenRuleTest {
 			createToken("line2")
 		);
 		
-		TokenRuleMatch match = rule.match(tokens, 2);
+		TokenRuleMatch match = rule.match(new TokenStream(tokens, 2));
 		
 		assertNotNull(match);
 		assertEquals(2, match.startIndex());
@@ -256,11 +257,11 @@ class StartTokenRuleTest {
 			createToken("word3")
 		);
 		
-		TokenRuleMatch match = rule.match(tokens, 0);
+		TokenRuleMatch match = rule.match(new TokenStream(tokens, 0));
 		assertNotNull(match);
 		
-		assertNull(rule.match(tokens, 1));
-		assertNull(rule.match(tokens, 2));
+		assertNull(rule.match(new TokenStream(tokens, 1)));
+		assertNull(rule.match(new TokenStream(tokens, 2)));
 	}
 	
 	@Test
@@ -273,16 +274,16 @@ class StartTokenRuleTest {
 			createToken("line3")
 		);
 		
-		TokenRuleMatch match0 = rule.match(tokens, 0);
+		TokenRuleMatch match0 = rule.match(new TokenStream(tokens, 0));
 		assertNotNull(match0);
 		
-		TokenRuleMatch match2 = rule.match(tokens, 2);
+		TokenRuleMatch match2 = rule.match(new TokenStream(tokens, 2));
 		assertNotNull(match2);
 		
-		TokenRuleMatch match3 = rule.match(tokens, 3);
+		TokenRuleMatch match3 = rule.match(new TokenStream(tokens, 3));
 		assertNotNull(match3);
 		
-		assertNull(rule.match(tokens, 1));
+		assertNull(rule.match(new TokenStream(tokens, 1)));
 	}
 	
 	@Test
@@ -294,12 +295,12 @@ class StartTokenRuleTest {
 			createToken("line2")
 		);
 		
-		TokenRuleMatch match = rule.match(tokens, 0);
+		TokenRuleMatch match = rule.match(new TokenStream(tokens, 0));
 		assertNotNull(match);
 		
-		assertNull(rule.match(tokens, 1));
+		assertNull(rule.match(new TokenStream(tokens, 1)));
 		
-		TokenRuleMatch match2 = rule.match(tokens, 2);
+		TokenRuleMatch match2 = rule.match(new TokenStream(tokens, 2));
 		assertNotNull(match2);
 	}
 	
@@ -309,8 +310,8 @@ class StartTokenRuleTest {
 		Token token = createToken("test");
 		List<Token> tokens = List.of(token);
 		
-		assertNull(rule.match(tokens, -1));
-		assertNull(rule.match(tokens, -5));
+		assertThrows(IndexOutOfBoundsException.class, () -> rule.match(new TokenStream(tokens, -1)));
+		assertThrows(IndexOutOfBoundsException.class, () -> rule.match(new TokenStream(tokens, -5)));
 	}
 	
 	@Test
@@ -332,8 +333,8 @@ class StartTokenRuleTest {
 		Token token = createToken("test");
 		List<Token> tokens = List.of(token);
 		
-		TokenRuleMatch docMatch1 = documentRule.match(tokens, 0);
-		TokenRuleMatch docMatch2 = documentRule.match(tokens, 0);
+		TokenRuleMatch docMatch1 = documentRule.match(new TokenStream(tokens, 0));
+		TokenRuleMatch docMatch2 = documentRule.match(new TokenStream(tokens, 0));
 		
 		assertNotNull(docMatch1);
 		assertNotNull(docMatch2);
@@ -341,8 +342,8 @@ class StartTokenRuleTest {
 		assertEquals(docMatch1.endIndex(), docMatch2.endIndex());
 		assertEquals(docMatch1.matchedTokens(), docMatch2.matchedTokens());
 		
-		TokenRuleMatch lineMatch1 = lineRule.match(tokens, 0);
-		TokenRuleMatch lineMatch2 = lineRule.match(tokens, 0);
+		TokenRuleMatch lineMatch1 = lineRule.match(new TokenStream(tokens, 0));
+		TokenRuleMatch lineMatch2 = lineRule.match(new TokenStream(tokens, 0));
 		
 		assertNotNull(lineMatch1);
 		assertNotNull(lineMatch2);
@@ -352,17 +353,17 @@ class StartTokenRuleTest {
 	}
 	
 	@Test
-	void matchOnlyAtExactPosition() {
+	void matchOnlyAtExactStartPosition() {
 		StartTokenRule documentRule = new StartTokenRule(AnchorType.DOCUMENT);
 		List<Token> tokens = IntStream.range(0, 10).mapToObj(i -> createToken("token" + i)).toList();
 		
 		for (int i = 0; i < tokens.size(); i++) {
 			if (i == 0) {
-				TokenRuleMatch match = documentRule.match(tokens, i);
+				TokenRuleMatch match = documentRule.match(new TokenStream(tokens, i));
 				assertNotNull(match);
 				assertTrue(match.matchedTokens().isEmpty());
 			} else {
-				assertNull(documentRule.match(tokens, i));
+				assertNull(documentRule.match(new TokenStream(tokens, i)));
 			}
 		}
 	}
@@ -410,24 +411,24 @@ class StartTokenRuleTest {
 		Token number = createToken("42");
 		
 		List<Token> unicodeTokens = List.of(unicode);
-		TokenRuleMatch unicodeDocMatch = documentRule.match(unicodeTokens, 0);
-		TokenRuleMatch unicodeLineMatch = lineRule.match(unicodeTokens, 0);
+		TokenRuleMatch unicodeDocMatch = documentRule.match(new TokenStream(unicodeTokens, 0));
+		TokenRuleMatch unicodeLineMatch = lineRule.match(new TokenStream(unicodeTokens, 0));
 		assertNotNull(unicodeDocMatch);
 		assertNotNull(unicodeLineMatch);
 		assertTrue(unicodeDocMatch.matchedTokens().isEmpty());
 		assertTrue(unicodeLineMatch.matchedTokens().isEmpty());
 		
 		List<Token> longTokens = List.of(longText);
-		TokenRuleMatch longDocMatch = documentRule.match(longTokens, 0);
-		TokenRuleMatch longLineMatch = lineRule.match(longTokens, 0);
+		TokenRuleMatch longDocMatch = documentRule.match(new TokenStream(longTokens, 0));
+		TokenRuleMatch longLineMatch = lineRule.match(new TokenStream(longTokens, 0));
 		assertNotNull(longDocMatch);
 		assertNotNull(longLineMatch);
 		assertTrue(longDocMatch.matchedTokens().isEmpty());
 		assertTrue(longLineMatch.matchedTokens().isEmpty());
 		
 		List<Token> numberTokens = List.of(number);
-		TokenRuleMatch numberDocMatch = documentRule.match(numberTokens, 0);
-		TokenRuleMatch numberLineMatch = lineRule.match(numberTokens, 0);
+		TokenRuleMatch numberDocMatch = documentRule.match(new TokenStream(numberTokens, 0));
+		TokenRuleMatch numberLineMatch = lineRule.match(new TokenStream(numberTokens, 0));
 		assertNotNull(numberDocMatch);
 		assertNotNull(numberLineMatch);
 		assertTrue(numberDocMatch.matchedTokens().isEmpty());

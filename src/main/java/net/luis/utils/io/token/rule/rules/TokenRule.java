@@ -18,15 +18,13 @@
 
 package net.luis.utils.io.token.rule.rules;
 
+import net.luis.utils.io.token.TokenStream;
 import net.luis.utils.io.token.rule.TokenRuleMatch;
-import net.luis.utils.io.token.rule.rules.assertions.anchors.EndTokenRule;
 import net.luis.utils.io.token.rule.rules.assertions.*;
-import net.luis.utils.io.token.rule.rules.quantifiers.*;
-import net.luis.utils.io.token.tokens.Token;
+import net.luis.utils.io.token.rule.rules.quantifiers.OptionalTokenRule;
+import net.luis.utils.io.token.rule.rules.quantifiers.RepeatedTokenRule;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-
-import java.util.List;
 
 /**
  * A functional interface representing a rule for matching tokens in a list.<br>
@@ -43,15 +41,14 @@ public interface TokenRule {
 	 * Checks if the given tokens match this rule starting from the specified index.<br>
 	 * If the match is successful, a {@link TokenRuleMatch} is returned, otherwise null.<br>
 	 *
-	 * @param tokens The list of tokens to match against
-	 * @param startIndex The index to start matching from
+	 * @param stream The token stream to match against
 	 * @return A token rule match if successful, otherwise null
 	 * @throws NullPointerException If the token list is null
-	 * @apiNote For the most rules, the start index must be less than the size of the token list.<br>
-	 * However, some rules can match even if the start index is equal to the size of the token list.<br>
-	 * Therefore, the most rules which warp other rules do not include these checks or have a modified behavior.
+	 * @apiNote For the most rules, the token stream must have remaining tokens to match.<br>
+	 * However, some rules can match even if the token stream is at the end.<br>
+	 * Therefore, some rules do not include this check or have a modified behavior.
 	 */
-	@Nullable TokenRuleMatch match(@NotNull List<Token> tokens, int startIndex);
+	@Nullable TokenRuleMatch match(@NotNull TokenStream stream);
 	
 	/**
 	 * Makes this token rule optional by wrapping it in an {@link OptionalTokenRule}.<br>

@@ -18,13 +18,14 @@
 
 package net.luis.utils.io.token.rule.rules.assertions.anchors;
 
+import net.luis.utils.io.token.TokenStream;
 import net.luis.utils.io.token.rule.TokenRuleMatch;
 import net.luis.utils.io.token.rule.rules.TokenRule;
 import net.luis.utils.io.token.tokens.Token;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.*;
+import java.util.Objects;
 
 /**
  * A token rule that matches the end of the token list or end of line.<br>
@@ -58,25 +59,27 @@ public record EndTokenRule(@NotNull AnchorType anchorType) implements TokenRule 
 	}
 	
 	@Override
-	public @Nullable TokenRuleMatch match(@NotNull List<Token> tokens, int startIndex) {
-		Objects.requireNonNull(tokens, "Tokens must not be null");
+	public @Nullable TokenRuleMatch match(@NotNull TokenStream stream) {
+		Objects.requireNonNull(stream, "Token stream must not be null");
 		
 		return switch (this.anchorType) {
-			case DOCUMENT -> this.matchDocumentEnd(tokens, startIndex);
-			case LINE -> this.matchLineEnd(tokens, startIndex);
+			case DOCUMENT -> this.matchDocumentEnd(stream);
+			case LINE -> this.matchLineEnd(stream);
 		};
 	}
 	
 	/**
 	 * Matches the end of the entire document (token list).<br>
 	 *
-	 * @param tokens The list of tokens
-	 * @param startIndex The starting index
+	 * @param stream The token stream
 	 * @return A match if at document end, null otherwise
+	 * @throws NullPointerException If the token stream is null
 	 */
-	private @Nullable TokenRuleMatch matchDocumentEnd(@NotNull List<Token> tokens, int startIndex) {
-		if (startIndex >= tokens.size()) {
-			return TokenRuleMatch.empty(startIndex, this);
+	private @Nullable TokenRuleMatch matchDocumentEnd(@NotNull TokenStream stream) {
+		Objects.requireNonNull(stream, "Token stream must not be null");
+		
+		if (!stream.hasToken()) {
+			return TokenRuleMatch.empty(stream.getCurrentIndex(), this);
 		}
 		return null;
 	}
@@ -86,30 +89,38 @@ public record EndTokenRule(@NotNull AnchorType anchorType) implements TokenRule 
 	 * A line end is detected by comparing the line numbers of the current and next tokens,
 	 * or by checking if the current token contains a newline character.<br>
 	 *
-	 * @param tokens The list of tokens
-	 * @param startIndex The starting index
+	 * @param stream The token stream
 	 * @return A match if at line end, null otherwise
+	 * @throws NullPointerException If the token stream is null
 	 */
 	@SuppressWarnings("DuplicatedCode")
-	private @Nullable TokenRuleMatch matchLineEnd(@NotNull List<Token> tokens, int startIndex) {
-		if (startIndex >= tokens.size()) {
-			return TokenRuleMatch.empty(startIndex, this);
+	private @Nullable TokenRuleMatch matchLineEnd(@NotNull TokenStream stream) {
+		Objects.requireNonNull(stream, "Token stream must not be null");
+		
+		if (!stream.hasToken()) {
+			return TokenRuleMatch.empty(stream.getCurrentIndex(), this);
 		}
 		
-		if (startIndex < tokens.size() - 1) {
-			Token currentToken = tokens.get(startIndex);
-			Token nextToken = tokens.get(startIndex + 1);
-			
-			if (currentToken.position().isPositioned() && nextToken.position().isPositioned()) {
-				if (currentToken.position().line() < nextToken.position().line()) {
-					return TokenRuleMatch.empty(startIndex, this);
-				}
-			}
-			
-			if (currentToken.value().contains("\n")) {
-				return TokenRuleMatch.empty(startIndex, this);
+		Token currentToken = stream.getCurrentToken();
+		TokenStream copyStream = stream.copyWithCurrentIndex();
+		copyStream.consumeToken();
+		
+		if (!copyStream.hasToken()) {
+			return null;
+		}
+		
+		Token nextToken = copyStream.readToken();
+		
+		if (currentToken.position().isPositioned() && nextToken.position().isPositioned()) {
+			if (currentToken.position().line() < nextToken.position().line()) {
+				return TokenRuleMatch.empty(stream.getCurrentIndex(), this);
 			}
 		}
+		
+		if (currentToken.value().contains("\n")) {
+			return TokenRuleMatch.empty(stream.getCurrentIndex(), this);
+		}
+		
 		return null;
 	}
 }

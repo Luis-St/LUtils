@@ -18,6 +18,7 @@
 
 package net.luis.utils.io.token.rule.rules.assertions;
 
+import net.luis.utils.io.token.TokenStream;
 import net.luis.utils.io.token.rule.TokenRuleMatch;
 import net.luis.utils.io.token.rule.rules.TokenRule;
 import net.luis.utils.io.token.rule.rules.TokenRules;
@@ -41,15 +42,16 @@ class NotTokenRuleTest {
 	private static @NotNull TokenRule createRule(@NotNull String value) {
 		return new TokenRule() {
 			@Override
-			public @Nullable TokenRuleMatch match(@NotNull List<Token> tokens, int startIndex) {
-				Objects.requireNonNull(tokens, "Tokens list must not be null");
-				if (startIndex >= tokens.size() || startIndex < 0) {
+			public @Nullable TokenRuleMatch match(@NotNull TokenStream stream) {
+				Objects.requireNonNull(stream, "Token stream must not be null");
+				if (!stream.hasToken()) {
 					return null;
 				}
 				
-				Token token = tokens.get(startIndex);
+				int startIndex = stream.getCurrentIndex();
+				Token token = stream.getCurrentToken();
 				if (token.value().equals(value)) {
-					return new TokenRuleMatch(startIndex, startIndex + 1, List.of(token), this);
+					return new TokenRuleMatch(startIndex, stream.consumeToken(), List.of(token), this);
 				}
 				return null;
 			}
@@ -81,17 +83,17 @@ class NotTokenRuleTest {
 	}
 	
 	@Test
-	void matchWithNullTokenList() {
+	void matchWithNullTokenStream() {
 		NotTokenRule rule = new NotTokenRule(createRule("test"));
 		
-		assertThrows(NullPointerException.class, () -> rule.match(null, 0));
+		assertThrows(NullPointerException.class, () -> rule.match(null));
 	}
 	
 	@Test
 	void matchWithEmptyTokenList() {
 		NotTokenRule rule = new NotTokenRule(createRule("test"));
 		
-		assertNull(rule.match(Collections.emptyList(), 0));
+		assertNull(rule.match(new TokenStream(Collections.emptyList())));
 	}
 	
 	@Test
@@ -99,9 +101,8 @@ class NotTokenRuleTest {
 		NotTokenRule rule = new NotTokenRule(createRule("test"));
 		List<Token> tokens = List.of(createToken("test"));
 		
-		assertNull(rule.match(tokens, 1));
-		assertNull(rule.match(tokens, 5));
-		assertNull(rule.match(tokens, -1));
+		assertThrows(IndexOutOfBoundsException.class, () -> rule.match(new TokenStream(tokens, 5)));
+		assertThrows(IndexOutOfBoundsException.class, () -> rule.match(new TokenStream(tokens, -1)));
 	}
 	
 	@Test
@@ -111,7 +112,7 @@ class NotTokenRuleTest {
 		Token target = createToken("target");
 		List<Token> tokens = List.of(target);
 		
-		assertNull(notRule.match(tokens, 0));
+		assertNull(notRule.match(new TokenStream(tokens, 0)));
 	}
 	
 	@Test
@@ -121,7 +122,7 @@ class NotTokenRuleTest {
 		Token other = createToken("other");
 		List<Token> tokens = List.of(other);
 		
-		TokenRuleMatch match = notRule.match(tokens, 0);
+		TokenRuleMatch match = notRule.match(new TokenStream(tokens, 0));
 		
 		assertNotNull(match);
 		assertEquals(0, match.startIndex());
@@ -139,13 +140,13 @@ class NotTokenRuleTest {
 		Token other2 = createToken("other2");
 		List<Token> tokens = List.of(target, other1, other2);
 		
-		assertNull(notRule.match(tokens, 0));
+		assertNull(notRule.match(new TokenStream(tokens, 0)));
 		
-		TokenRuleMatch match1 = notRule.match(tokens, 1);
+		TokenRuleMatch match1 = notRule.match(new TokenStream(tokens, 1));
 		assertNotNull(match1);
 		assertTrue(match1.matchedTokens().isEmpty());
 		
-		TokenRuleMatch match2 = notRule.match(tokens, 2);
+		TokenRuleMatch match2 = notRule.match(new TokenStream(tokens, 2));
 		assertNotNull(match2);
 		assertTrue(match2.matchedTokens().isEmpty());
 	}
@@ -156,18 +157,18 @@ class NotTokenRuleTest {
 		Token token = createToken("anything");
 		List<Token> tokens = List.of(token);
 		
-		assertNull(notRule.match(tokens, 0));
+		assertNull(notRule.match(new TokenStream(tokens, 0)));
 	}
 	
 	@Test
 	void matchWithNeverMatchRule() {
-		TokenRule neverMatch = (tokens, startIndex) -> null;
+		TokenRule neverMatch = (stream) -> null;
 		
 		NotTokenRule notRule = new NotTokenRule(neverMatch);
 		Token token = createToken("test");
 		List<Token> tokens = List.of(token);
 		
-		TokenRuleMatch match = notRule.match(tokens, 0);
+		TokenRuleMatch match = notRule.match(new TokenStream(tokens, 0));
 		
 		assertNotNull(match);
 		assertTrue(match.matchedTokens().isEmpty());
@@ -182,10 +183,10 @@ class NotTokenRuleTest {
 		Token c = createToken("c");
 		
 		List<Token> matchingSequence = List.of(a, b);
-		assertNull(notRule.match(matchingSequence, 0));
+		assertNull(notRule.match(new TokenStream(matchingSequence, 0)));
 		
 		List<Token> nonMatchingSequence = List.of(a, c);
-		TokenRuleMatch match = notRule.match(nonMatchingSequence, 0);
+		TokenRuleMatch match = notRule.match(new TokenStream(nonMatchingSequence, 0));
 		assertNotNull(match);
 		assertTrue(match.matchedTokens().isEmpty());
 	}
@@ -198,10 +199,10 @@ class NotTokenRuleTest {
 		Token other = createToken("other");
 		
 		List<Token> withMaybe = List.of(maybe);
-		assertNull(notRule.match(withMaybe, 0));
+		assertNull(notRule.match(new TokenStream(withMaybe, 0)));
 		
 		List<Token> withOther = List.of(other);
-		assertNull(notRule.match(withOther, 0));
+		assertNull(notRule.match(new TokenStream(withOther, 0)));
 	}
 	
 	@Test
@@ -212,15 +213,15 @@ class NotTokenRuleTest {
 		Token y = createToken("y");
 		
 		List<Token> exactMatch = List.of(x, x);
-		assertNull(notRule.match(exactMatch, 0));
+		assertNull(notRule.match(new TokenStream(exactMatch, 0)));
 		
 		List<Token> noMatch = List.of(x, y);
-		TokenRuleMatch match = notRule.match(noMatch, 0);
+		TokenRuleMatch match = notRule.match(new TokenStream(noMatch, 0));
 		assertNotNull(match);
 		assertTrue(match.matchedTokens().isEmpty());
 		
 		List<Token> singleX = List.of(x);
-		TokenRuleMatch singleMatch = notRule.match(singleX, 0);
+		TokenRuleMatch singleMatch = notRule.match(new TokenStream(singleX, 0));
 		assertNotNull(singleMatch);
 		assertTrue(singleMatch.matchedTokens().isEmpty());
 	}
@@ -234,13 +235,13 @@ class NotTokenRuleTest {
 		Token c = createToken("c");
 		
 		List<Token> matchesA = List.of(a);
-		assertNull(notRule.match(matchesA, 0));
+		assertNull(notRule.match(new TokenStream(matchesA, 0)));
 		
 		List<Token> matchesB = List.of(b);
-		assertNull(notRule.match(matchesB, 0));
+		assertNull(notRule.match(new TokenStream(matchesB, 0)));
 		
 		List<Token> noMatch = List.of(c);
-		TokenRuleMatch match = notRule.match(noMatch, 0);
+		TokenRuleMatch match = notRule.match(new TokenStream(noMatch, 0));
 		assertNotNull(match);
 		assertTrue(match.matchedTokens().isEmpty());
 	}
@@ -252,7 +253,7 @@ class NotTokenRuleTest {
 		Token other = createToken("other");
 		List<Token> tokens = List.of(other);
 		
-		TokenRuleMatch match = notRule.match(tokens, 0);
+		TokenRuleMatch match = notRule.match(new TokenStream(tokens, 0));
 		
 		assertNotNull(match);
 		assertEquals(0, match.startIndex());
@@ -270,19 +271,19 @@ class NotTokenRuleTest {
 		Token number = createToken("number");
 		List<Token> tokens = List.of(text, symbol, space, number);
 		
-		TokenRuleMatch textMatch = notRule.match(tokens, 0);
+		TokenRuleMatch textMatch = notRule.match(new TokenStream(tokens, 0));
 		assertNotNull(textMatch);
 		assertTrue(textMatch.matchedTokens().isEmpty());
 		
-		TokenRuleMatch symbolMatch = notRule.match(tokens, 1);
+		TokenRuleMatch symbolMatch = notRule.match(new TokenStream(tokens, 1));
 		assertNotNull(symbolMatch);
 		assertTrue(symbolMatch.matchedTokens().isEmpty());
 		
-		TokenRuleMatch spaceMatch = notRule.match(tokens, 2);
+		TokenRuleMatch spaceMatch = notRule.match(new TokenStream(tokens, 2));
 		assertNotNull(spaceMatch);
 		assertTrue(spaceMatch.matchedTokens().isEmpty());
 		
-		assertNull(notRule.match(tokens, 3));
+		assertNull(notRule.match(new TokenStream(tokens, 3)));
 	}
 	
 	@Test
@@ -292,8 +293,8 @@ class NotTokenRuleTest {
 		Token other = createToken("other");
 		List<Token> tokens = List.of(other);
 		
-		TokenRuleMatch match1 = notRule.match(tokens, 0);
-		TokenRuleMatch match2 = notRule.match(tokens, 0);
+		TokenRuleMatch match1 = notRule.match(new TokenStream(tokens, 0));
+		TokenRuleMatch match2 = notRule.match(new TokenStream(tokens, 0));
 		
 		assertNotNull(match1);
 		assertNotNull(match2);
@@ -312,12 +313,12 @@ class NotTokenRuleTest {
 		Token other = createToken("other");
 		
 		List<Token> testTokens = List.of(test);
-		TokenRuleMatch testMatch = doubleNot.match(testTokens, 0);
+		TokenRuleMatch testMatch = doubleNot.match(new TokenStream(testTokens, 0));
 		assertNotNull(testMatch);
 		assertTrue(testMatch.matchedTokens().isEmpty());
 		
 		List<Token> otherTokens = List.of(other);
-		assertNull(doubleNot.match(otherTokens, 0));
+		assertNull(doubleNot.match(new TokenStream(otherTokens, 0)));
 	}
 	
 	@Test

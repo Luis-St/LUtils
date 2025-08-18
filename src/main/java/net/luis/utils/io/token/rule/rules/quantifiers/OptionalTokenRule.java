@@ -18,13 +18,11 @@
 
 package net.luis.utils.io.token.rule.rules.quantifiers;
 
+import net.luis.utils.io.token.TokenStream;
 import net.luis.utils.io.token.rule.TokenRuleMatch;
 import net.luis.utils.io.token.rule.rules.TokenRule;
-import net.luis.utils.io.token.tokens.Token;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
-import java.util.List;
 import java.util.Objects;
 
 /**
@@ -51,15 +49,16 @@ public record OptionalTokenRule(
 	}
 	
 	@Override
-	public @NotNull TokenRuleMatch match(@NotNull List<Token> tokens, int startIndex) {
-		Objects.requireNonNull(tokens, "Tokens must not be null");
+	public @NotNull TokenRuleMatch match(@NotNull TokenStream stream) {
+		Objects.requireNonNull(stream, "Token stream must not be null");
 		
-		TokenRuleMatch match = this.tokenRule.match(tokens, startIndex);
+		int startIndex = stream.getCurrentIndex();
+		TokenRuleMatch match = this.tokenRule.match(stream);
 		if (match != null) {
 			return match;
 		}
 		
-		if (startIndex >= tokens.size() || startIndex < 0) { // Check after nested rule processed to allow the rule to match at these edge cases
+		if (startIndex >= stream.size() || startIndex < 0) { // Check after nested rule processed to allow the rule to match at these edge cases
 			return null;
 		}
 		return TokenRuleMatch.empty(startIndex, this);

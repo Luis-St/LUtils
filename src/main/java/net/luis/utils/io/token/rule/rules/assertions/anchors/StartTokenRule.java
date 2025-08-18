@@ -18,13 +18,13 @@
 
 package net.luis.utils.io.token.rule.rules.assertions.anchors;
 
+import net.luis.utils.io.token.TokenStream;
 import net.luis.utils.io.token.rule.TokenRuleMatch;
 import net.luis.utils.io.token.rule.rules.TokenRule;
 import net.luis.utils.io.token.tokens.Token;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.List;
 import java.util.Objects;
 
 /**
@@ -62,25 +62,27 @@ public record StartTokenRule(@NotNull AnchorType anchorType) implements TokenRul
 	}
 	
 	@Override
-	public @Nullable TokenRuleMatch match(@NotNull List<Token> tokens, int startIndex) {
-		Objects.requireNonNull(tokens, "Tokens must not be null");
+	public @Nullable TokenRuleMatch match(@NotNull TokenStream stream) {
+		Objects.requireNonNull(stream, "Token stream must not be null");
 		
 		return switch (this.anchorType) {
-			case DOCUMENT -> this.matchDocumentStart(tokens, startIndex);
-			case LINE -> this.matchLineStart(tokens, startIndex);
+			case DOCUMENT -> this.matchDocumentStart(stream);
+			case LINE -> this.matchLineStart(stream);
 		};
 	}
 	
 	/**
-	 * Matches the start of the entire document (token list).<br>
+	 * Matches the start of the entire document (token stream).<br>
 	 *
-	 * @param tokens The list of tokens
-	 * @param startIndex The starting index
+	 * @param stream The token stream
 	 * @return A match if at document start, null otherwise
+	 * @throws NullPointerException If the token stream is null
 	 */
-	private @Nullable TokenRuleMatch matchDocumentStart(@NotNull List<Token> tokens, int startIndex) {
-		if (startIndex == 0) {
-			return TokenRuleMatch.empty(startIndex, this);
+	private @Nullable TokenRuleMatch matchDocumentStart(@NotNull TokenStream stream) {
+		Objects.requireNonNull(stream, "Token stream must not be null");
+		
+		if (stream.getCurrentIndex() == 0) {
+			return TokenRuleMatch.empty(0, this);
 		}
 		return null;
 	}
@@ -90,29 +92,33 @@ public record StartTokenRule(@NotNull AnchorType anchorType) implements TokenRul
 	 * A line start is detected by comparing the line numbers of the current and previous tokens,
 	 * or by checking if the previous token contains a newline character.<br>
 	 *
-	 * @param tokens The list of tokens
-	 * @param startIndex The starting index
+	 * @param stream The token stream
 	 * @return A match if at line start, null otherwise
+	 * @throws NullPointerException If the token stream is null
 	 */
 	@SuppressWarnings("DuplicatedCode")
-	private @Nullable TokenRuleMatch matchLineStart(@NotNull List<Token> tokens, int startIndex) {
-		if (startIndex == 0) {
-			return TokenRuleMatch.empty(startIndex, this);
+	private @Nullable TokenRuleMatch matchLineStart(@NotNull TokenStream stream) {
+		Objects.requireNonNull(stream, "Token stream must not be null");
+		
+		if (stream.getCurrentIndex() == 0) {
+			return TokenRuleMatch.empty(0, this);
 		}
 		
-		if (startIndex > 0 && startIndex <= tokens.size()) {
-			Token currentToken = tokens.get(startIndex);
-			Token previousToken = tokens.get(startIndex - 1);
-			
-			if (currentToken.position().isPositioned() && previousToken.position().isPositioned()) {
-				if (currentToken.position().line() < previousToken.position().line()) {
-					return TokenRuleMatch.empty(startIndex, this);
-				}
+		Token currentToken = stream.getCurrentToken();
+		TokenStream lookbehindStream = stream.lookbehindStream();
+		if (!lookbehindStream.hasToken()) {
+			return null;
+		}
+		
+		Token previousToken = lookbehindStream.getCurrentToken();
+		if (currentToken.position().isPositioned() && previousToken.position().isPositioned()) {
+			if (currentToken.position().line() > previousToken.position().line()) {
+				return TokenRuleMatch.empty(stream.getCurrentIndex(), this);
 			}
-			
-			if (previousToken.value().contains("\n")) {
-				return TokenRuleMatch.empty(startIndex, this);
-			}
+		}
+		
+		if (previousToken.value().contains("\n")) {
+			return TokenRuleMatch.empty(stream.getCurrentIndex(), this);
 		}
 		
 		return null;

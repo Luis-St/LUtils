@@ -19,6 +19,7 @@
 package net.luis.utils.io.token.rule.rules.combinators;
 
 import com.google.common.collect.Lists;
+import net.luis.utils.io.token.TokenStream;
 import net.luis.utils.io.token.rule.TokenRuleMatch;
 import net.luis.utils.io.token.rule.rules.TokenRule;
 import net.luis.utils.io.token.rule.rules.TokenRules;
@@ -26,7 +27,8 @@ import net.luis.utils.io.token.tokens.Token;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.*;
+import java.util.List;
+import java.util.Objects;
 
 /**
  * A token rule that matches a sequence of tokens with a start, between, and end token rule.<br>
@@ -72,39 +74,35 @@ public record BoundaryTokenRule(
 	}
 	
 	@Override
-	public @Nullable TokenRuleMatch match(@NotNull List<Token> tokens, int startIndex) {
-		Objects.requireNonNull(tokens, "Tokens must not be null");
-		if (startIndex >= tokens.size() || startIndex < 0) {
+	public @Nullable TokenRuleMatch match(@NotNull TokenStream stream) {
+		Objects.requireNonNull(stream, "Token stream must not be null");
+		if (!stream.hasToken()) {
 			return null;
 		}
 		
-		TokenRuleMatch startMatch = this.startTokenRule.match(tokens, startIndex);
+		int startIndex = stream.getCurrentIndex();
+		TokenRuleMatch startMatch = this.startTokenRule.match(stream);
 		if (startMatch == null) {
 			return null;
 		}
 		
-		int currentIndex = startMatch.endIndex();
 		List<Token> matchedTokens = Lists.newArrayList(startMatch.matchedTokens());
-		while (currentIndex < tokens.size()) {
-			TokenRuleMatch endMatch = this.endTokenRule.match(tokens, currentIndex);
+		while (stream.hasToken()) {
+			TokenRuleMatch endMatch = this.endTokenRule.match(stream);
 			if (endMatch != null) {
 				matchedTokens.addAll(endMatch.matchedTokens());
 				return new TokenRuleMatch(startIndex, endMatch.endIndex(), matchedTokens, this);
 			}
 			
-			TokenRuleMatch betweenMatch = this.betweenTokenRule.match(tokens, currentIndex);
+			TokenRuleMatch betweenMatch = this.betweenTokenRule.match(stream);
 			if (betweenMatch == null) {
 				return null;
 			}
-			if (currentIndex - betweenMatch.endIndex() > 1) {
-				throw new IllegalStateException("Between token rule must not match more than one token");
-			}
-			if (currentIndex < tokens.size()) {
+			if (stream.hasToken()) {
 				matchedTokens.addAll(betweenMatch.matchedTokens());
-				currentIndex = betweenMatch.endIndex();
 			}
 		}
 		
-		return this.endTokenRule.match(tokens, currentIndex); // Checking the end rule again to include the case where the end rule does not consume any tokens
+		return this.endTokenRule.match(stream); // Checking the end rule again to include the case where the end rule does not consume any tokens
 	}
 }

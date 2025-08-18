@@ -18,6 +18,7 @@
 
 package net.luis.utils.io.token.definition;
 
+import net.luis.utils.io.token.TokenStream;
 import net.luis.utils.io.token.rule.TokenRuleMatch;
 import net.luis.utils.io.token.tokens.SimpleToken;
 import net.luis.utils.io.token.tokens.Token;
@@ -206,26 +207,17 @@ class TokenDefinitionTest {
 	}
 	
 	@Test
-	void matchWithNullTokenList() {
+	void matchWithNullTokenStream() {
 		TokenDefinition definition = TokenDefinition.of('a');
 		
-		assertThrows(NullPointerException.class, () -> definition.match(null, 0));
+		assertThrows(NullPointerException.class, () -> definition.match(null));
 	}
 	
 	@Test
-	void matchWithIndexOutOfBounds() {
-		TokenDefinition definition = TokenDefinition.of('a');
-		List<Token> tokens = List.of(createToken("a"));
-		
-		assertNull(definition.match(tokens, 1));
-		assertNull(definition.match(tokens, 5));
-	}
-	
-	@Test
-	void matchWithEmptyTokenList() {
+	void matchWithEmptyTokenStream() {
 		TokenDefinition definition = TokenDefinition.of('a');
 		
-		assertNull(definition.match(Collections.emptyList(), 0));
+		assertNull(definition.match(new TokenStream(Collections.emptyList())));
 	}
 	
 	@Test
@@ -233,8 +225,8 @@ class TokenDefinitionTest {
 		TokenDefinition definition = TokenDefinition.of('a');
 		List<Token> tokens = List.of(createToken("b"), createToken("c"));
 		
-		assertNull(definition.match(tokens, 0));
-		assertNull(definition.match(tokens, 1));
+		assertNull(definition.match(new TokenStream(tokens)));
+		assertNull(definition.match(new TokenStream(tokens, 1)));
 	}
 	
 	@Test
@@ -243,7 +235,7 @@ class TokenDefinitionTest {
 		Token matchingToken = createToken(definition, "a");
 		List<Token> tokens = List.of(matchingToken, createToken("b"));
 		
-		TokenRuleMatch match = definition.match(tokens, 0);
+		TokenRuleMatch match = definition.match(new TokenStream(tokens));
 		
 		assertNotNull(match);
 		assertEquals(0, match.startIndex());
@@ -260,7 +252,7 @@ class TokenDefinitionTest {
 		Token matchingToken = createToken(definition, "b");
 		List<Token> tokens = List.of(nonMatchingToken, matchingToken, createToken("c"));
 		
-		TokenRuleMatch match = definition.match(tokens, 1);
+		TokenRuleMatch match = definition.match(new TokenStream(tokens, 1));
 		
 		assertNotNull(match);
 		assertEquals(1, match.startIndex());
@@ -275,7 +267,7 @@ class TokenDefinitionTest {
 		Token matchingToken = createToken(definition, "hello");
 		List<Token> tokens = List.of(matchingToken);
 		
-		TokenRuleMatch match = definition.match(tokens, 0);
+		TokenRuleMatch match = definition.match(new TokenStream(tokens, 0));
 		
 		assertNotNull(match);
 		assertEquals(matchingToken, match.matchedTokens().getFirst());
@@ -287,7 +279,7 @@ class TokenDefinitionTest {
 		Token matchingToken = createToken(definition, "HELLO");
 		List<Token> tokens = List.of(matchingToken);
 		
-		TokenRuleMatch match = definition.match(tokens, 0);
+		TokenRuleMatch match = definition.match(new TokenStream(tokens, 0));
 		
 		assertNotNull(match);
 		assertEquals(matchingToken, match.matchedTokens().getFirst());
@@ -299,7 +291,7 @@ class TokenDefinitionTest {
 		Token matchingToken = createToken(definition, "\\n");
 		List<Token> tokens = List.of(matchingToken);
 		
-		TokenRuleMatch match = definition.match(tokens, 0);
+		TokenRuleMatch match = definition.match(new TokenStream(tokens, 0));
 		
 		assertNotNull(match);
 		assertEquals(matchingToken, match.matchedTokens().getFirst());

@@ -19,6 +19,7 @@
 package net.luis.utils.io.token.rule.rules.quantifiers;
 
 import com.google.common.collect.Lists;
+import net.luis.utils.io.token.TokenStream;
 import net.luis.utils.io.token.rule.TokenRuleMatch;
 import net.luis.utils.io.token.rule.rules.TokenRule;
 import net.luis.utils.io.token.tokens.Token;
@@ -34,8 +35,8 @@ import java.util.Objects;
  * It will match the token rule a number of times between the min and max occurrences.<br>
  * If the min and max occurrences are the same, it will match exactly that number of times.<br>
  *
- * @apiNote This class does not allow the creation of a optional token rule by setting the min and max occurrences to 0.<br>
- * This is because the implementation of {@link #match(List, int)} will return null if there is no match.<br>
+ * @apiNote This class does not allow the creation of an optional token rule by setting the min and max occurrences to 0.<br>
+ * This is because the implementation of {@link #match(TokenStream)} will return null if there is no match.<br>
  * Use {@link OptionalTokenRule} for that purpose.<br>
  *
  * @author Luis-St
@@ -85,28 +86,28 @@ public record RepeatedTokenRule(
 	}
 	
 	@Override
-	public @Nullable TokenRuleMatch match(@NotNull List<Token> tokens, int startIndex) {
-		Objects.requireNonNull(tokens, "Tokens must not be null");
-		if (startIndex >= tokens.size() || startIndex < 0) {
+	public @Nullable TokenRuleMatch match(@NotNull TokenStream stream) {
+		Objects.requireNonNull(stream, "Token stream must not be null");
+		if (!stream.hasToken()) {
 			return null;
 		}
 		
 		int occurrences = 0;
-		int currentIndex = startIndex;
+		int startIndex = stream.getCurrentIndex();
 		List<Token> matchedTokens = Lists.newArrayList();
-		while (currentIndex < tokens.size() && occurrences <= this.maxOccurrences) {
-			TokenRuleMatch match = this.tokenRule.match(tokens, currentIndex);
+		
+		while (stream.hasToken() && occurrences <= this.maxOccurrences) {
+			TokenRuleMatch match = this.tokenRule.match(stream);
 			if (match == null) {
 				break;
 			}
 			
 			matchedTokens.addAll(match.matchedTokens());
-			currentIndex = match.endIndex();
 			occurrences++;
 		}
 		
 		if (this.minOccurrences <= occurrences && occurrences <= this.maxOccurrences) {
-			return new TokenRuleMatch(startIndex, currentIndex, matchedTokens, this);
+			return new TokenRuleMatch(startIndex, stream.getCurrentIndex(), matchedTokens, this);
 		}
 		return null;
 	}

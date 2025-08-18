@@ -18,13 +18,15 @@
 
 package net.luis.utils.io.token.definition;
 
+import net.luis.utils.io.token.TokenStream;
 import net.luis.utils.io.token.rule.TokenRuleMatch;
 import net.luis.utils.io.token.rule.rules.TokenRule;
 import net.luis.utils.io.token.tokens.Token;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.*;
+import java.util.Collections;
+import java.util.Objects;
 
 /**
  * Functional interface for a token definition.<br>
@@ -117,15 +119,16 @@ public interface TokenDefinition extends TokenRule {
 	boolean matches(@NotNull String word);
 	
 	@Override
-	default @Nullable TokenRuleMatch match(@NotNull List<Token> tokens, int startIndex) {
-		Objects.requireNonNull(tokens, "Tokens must not be null");
-		if (startIndex >= tokens.size()) {
+	default @Nullable TokenRuleMatch match(@NotNull TokenStream stream) {
+		Objects.requireNonNull(stream, "Token stream must not be null");
+		if (!stream.hasToken()) {
 			return null;
 		}
 		
-		if (this.matches(tokens.get(startIndex).value())) {
-			List<Token> matchedTokens = Collections.singletonList(tokens.get(startIndex));
-			return new TokenRuleMatch(startIndex, startIndex + 1, matchedTokens, this);
+		int startIndex = stream.getCurrentIndex();
+		Token token = stream.getCurrentToken();
+		if (this.matches(token.value())) {
+			return new TokenRuleMatch(startIndex, stream.consumeToken(), Collections.singletonList(token), this);
 		}
 		return null;
 	}
