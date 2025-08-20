@@ -249,7 +249,7 @@ public class TokenStream {
 	 * @see #copyWithCurrentIndex()
 	 */
 	public @NotNull TokenStream copy(int currentIndex) {
-		return new TokenStream(Lists.newArrayList(this.tokens), currentIndex);
+		return new TokenStream(this.tokens, currentIndex);
 	}
 	
 	/**
