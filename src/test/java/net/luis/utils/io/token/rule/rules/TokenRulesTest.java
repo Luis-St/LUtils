@@ -571,6 +571,16 @@ class TokenRulesTest {
 	}
 	
 	@Test
+	void neverMatchReturnsSingleton() {
+		TokenRule rule1 = TokenRules.neverMatch();
+		TokenRule rule2 = TokenRules.neverMatch();
+		
+		assertSame(NeverMatchTokenRule.INSTANCE, rule1);
+		assertSame(rule1, rule2);
+		assertInstanceOf(NeverMatchTokenRule.class, rule1);
+	}
+	
+	@Test
 	void factoryMethodsWithEdgeCases() {
 		assertDoesNotThrow(() -> TokenRules.repeatBetween(createRule("test"), 0, Integer.MAX_VALUE));
 		assertDoesNotThrow(() -> TokenRules.repeatAtLeast(createRule("test"), Integer.MAX_VALUE));

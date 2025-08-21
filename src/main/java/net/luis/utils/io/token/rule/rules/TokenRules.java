@@ -434,4 +434,15 @@ public final class TokenRules {
 	public static @NotNull TokenRule custom(@NotNull Predicate<Token> condition) {
 		return new CustomTokeRule(condition);
 	}
+	
+	/**
+	 * Provides a token rule that never matches.<br>
+	 *
+	 * @return The token rule
+	 * @apiNote This is the preferred way to access the {@link NeverMatchTokenRule#INSTANCE} instance
+	 * @see NeverMatchTokenRule
+	 */
+	public static @NotNull TokenRule neverMatch() {
+		return NeverMatchTokenRule.INSTANCE;
+	}
 }

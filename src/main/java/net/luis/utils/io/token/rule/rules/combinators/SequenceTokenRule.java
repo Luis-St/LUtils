@@ -63,7 +63,6 @@ public record SequenceTokenRule(
 		Objects.requireNonNull(stream, "Token stream must not be null");
 		
 		int startIndex = stream.getCurrentIndex();
-		/*int currentIndex = startIndex;*/
 		List<Token> matchedTokens = new ArrayList<>();
 		for (TokenRule tokenRule : this.tokenRules) {
 			
@@ -73,7 +72,6 @@ public record SequenceTokenRule(
 			}
 			
 			matchedTokens.addAll(match.matchedTokens());
-			/*currentIndex = match.endIndex();*/
 		}
 		return new TokenRuleMatch(startIndex, stream.getCurrentIndex(), matchedTokens, this);
 	}

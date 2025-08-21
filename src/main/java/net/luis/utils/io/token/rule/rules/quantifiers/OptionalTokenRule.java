@@ -22,6 +22,7 @@ import net.luis.utils.io.token.TokenStream;
 import net.luis.utils.io.token.rule.TokenRuleMatch;
 import net.luis.utils.io.token.rule.rules.TokenRule;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.Objects;
 
@@ -49,7 +50,7 @@ public record OptionalTokenRule(
 	}
 	
 	@Override
-	public @NotNull TokenRuleMatch match(@NotNull TokenStream stream) {
+	public @Nullable TokenRuleMatch match(@NotNull TokenStream stream) {
 		Objects.requireNonNull(stream, "Token stream must not be null");
 		
 		int startIndex = stream.getCurrentIndex();
