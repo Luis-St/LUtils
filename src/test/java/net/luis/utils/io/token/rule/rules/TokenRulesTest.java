@@ -566,6 +566,11 @@ class TokenRulesTest {
 	}
 	
 	@Test
+	void customWithNullRule() {
+		assertThrows(NullPointerException.class, () -> TokenRules.custom(null));
+	}
+	
+	@Test
 	void factoryMethodsWithEdgeCases() {
 		assertDoesNotThrow(() -> TokenRules.repeatBetween(createRule("test"), 0, Integer.MAX_VALUE));
 		assertDoesNotThrow(() -> TokenRules.repeatAtLeast(createRule("test"), Integer.MAX_VALUE));

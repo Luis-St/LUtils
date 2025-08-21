@@ -26,11 +26,13 @@ import net.luis.utils.io.token.rule.rules.matchers.LengthTokenRule;
 import net.luis.utils.io.token.rule.rules.matchers.PatternTokenRule;
 import net.luis.utils.io.token.rule.rules.quantifiers.OptionalTokenRule;
 import net.luis.utils.io.token.rule.rules.quantifiers.RepeatedTokenRule;
+import net.luis.utils.io.token.tokens.Token;
 import org.apache.commons.lang3.StringUtils;
 import org.intellij.lang.annotations.Language;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
+import java.util.function.Predicate;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
@@ -417,5 +419,19 @@ public final class TokenRules {
 	 */
 	public static @NotNull TokenRule group(@NotNull TokenRule tokenRule) {
 		return new TokenGroupRule(tokenRule);
+	}
+	
+	/**
+	 * Creates a custom token rule that matches tokens based on a provided condition.<br>
+	 * The condition is a predicate that takes a {@link Token} and returns true if the token matches the rule.<br>
+	 * This allows for flexible and dynamic token matching based on custom logic.<br>
+	 *
+	 * @param condition The condition to match tokens against
+	 * @return The created custom token rule
+	 * @throws NullPointerException If the condition is null
+	 * @see CustomTokeRule
+	 */
+	public static @NotNull TokenRule custom(@NotNull Predicate<Token> condition) {
+		return new CustomTokeRule(condition);
 	}
 }
