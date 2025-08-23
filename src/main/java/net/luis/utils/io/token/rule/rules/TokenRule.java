@@ -131,15 +131,16 @@ public interface TokenRule {
 	}
 	
 	/**
-	 * Negates this token rule by wrapping it in a {@link NotTokenRule}.<br>
-	 * This means that the new rule will match if this rule does not match.<br>
+	 * Negates this token rule.<br>
+	 * This operation is not supported by default and will throw an {@link UnsupportedOperationException}.<br>
+	 * All rules that are an instance of {@link InvertibleTokenRule} are guaranteed to support negation.<br>
+	 * In addition, rules in the {@link net.luis.utils.io.token.rule.rules.assertions} package are also guaranteed to support negation.<br>
 	 *
 	 * @return A new negated token rule
-	 * @see TokenRules#not(TokenRule)
-	 * @see NotTokenRule
+	 * @see InvertibleTokenRule
 	 */
 	default @NotNull TokenRule not() {
-		return TokenRules.not(this);
+		throw new UnsupportedOperationException("This token rule does not support negation");
 	}
 	
 	/**

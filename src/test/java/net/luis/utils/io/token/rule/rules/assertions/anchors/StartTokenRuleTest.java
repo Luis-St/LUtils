@@ -20,6 +20,7 @@ package net.luis.utils.io.token.rule.rules.assertions.anchors;
 
 import net.luis.utils.io.token.TokenStream;
 import net.luis.utils.io.token.rule.TokenRuleMatch;
+import net.luis.utils.io.token.rule.rules.TokenRule;
 import net.luis.utils.io.token.rule.rules.TokenRules;
 import net.luis.utils.io.token.rule.rules.assertions.anchors.AnchorType;
 import net.luis.utils.io.token.rule.rules.assertions.anchors.StartTokenRule;
@@ -390,18 +391,6 @@ class StartTokenRuleTest {
 	}
 	
 	@Test
-	void toStringContainsAnchorType() {
-		StartTokenRule documentRule = new StartTokenRule(AnchorType.DOCUMENT);
-		StartTokenRule lineRule = new StartTokenRule(AnchorType.LINE);
-		
-		String docString = documentRule.toString();
-		String lineString = lineRule.toString();
-		
-		assertTrue(docString.contains("DOCUMENT"));
-		assertTrue(lineString.contains("LINE"));
-	}
-	
-	@Test
 	void matchBehaviorIndependentOfTokenContent() {
 		StartTokenRule documentRule = new StartTokenRule(AnchorType.DOCUMENT);
 		StartTokenRule lineRule = new StartTokenRule(AnchorType.LINE);
@@ -433,5 +422,206 @@ class StartTokenRuleTest {
 		assertNotNull(numberLineMatch);
 		assertTrue(numberDocMatch.matchedTokens().isEmpty());
 		assertTrue(numberLineMatch.matchedTokens().isEmpty());
+	}
+	
+	@Test
+	void notReturnsNegatedRule() {
+		StartTokenRule documentRule = new StartTokenRule(AnchorType.DOCUMENT);
+		StartTokenRule lineRule = new StartTokenRule(AnchorType.LINE);
+		
+		TokenRule negatedDocumentRule = documentRule.not();
+		TokenRule negatedLineRule = lineRule.not();
+		
+		assertNotNull(negatedDocumentRule);
+		assertNotNull(negatedLineRule);
+		assertNotSame(documentRule, negatedDocumentRule);
+		assertNotSame(lineRule, negatedLineRule);
+	}
+	
+	@Test
+	void doubleNegationReturnsOriginalRule() {
+		StartTokenRule documentRule = new StartTokenRule(AnchorType.DOCUMENT);
+		StartTokenRule lineRule = new StartTokenRule(AnchorType.LINE);
+		
+		TokenRule negatedDocumentRule = documentRule.not();
+		TokenRule doubleNegatedDocumentRule = negatedDocumentRule.not();
+		
+		TokenRule negatedLineRule = lineRule.not();
+		TokenRule doubleNegatedLineRule = negatedLineRule.not();
+		
+		assertSame(documentRule, doubleNegatedDocumentRule);
+		assertSame(lineRule, doubleNegatedLineRule);
+	}
+	
+	@Test
+	void negatedDocumentRuleMatchesWhenOriginalDoesNot() {
+		StartTokenRule documentRule = new StartTokenRule(AnchorType.DOCUMENT);
+		TokenRule negatedRule = documentRule.not();
+		
+		List<Token> tokens = List.of(createToken("first"), createToken("second"));
+		TokenStream stream = new TokenStream(tokens, 1);
+		
+		assertNull(documentRule.match(stream));
+		
+		TokenRuleMatch negatedMatch = negatedRule.match(stream);
+		assertNotNull(negatedMatch);
+		assertEquals(1, negatedMatch.startIndex());
+		assertEquals(1, negatedMatch.endIndex());
+		assertTrue(negatedMatch.matchedTokens().isEmpty());
+	}
+	
+	@Test
+	void negatedDocumentRuleDoesNotMatchWhenOriginalMatches() {
+		StartTokenRule documentRule = new StartTokenRule(AnchorType.DOCUMENT);
+		TokenRule negatedRule = documentRule.not();
+		
+		List<Token> tokens = List.of(createToken("first"));
+		TokenStream stream = new TokenStream(tokens, 0);
+		
+		TokenRuleMatch originalMatch = documentRule.match(stream);
+		assertNotNull(originalMatch);
+		
+		assertNull(negatedRule.match(stream));
+	}
+	
+	@Test
+	void negatedLineRuleMatchesWhenOriginalDoesNot() {
+		StartTokenRule lineRule = new StartTokenRule(AnchorType.LINE);
+		TokenRule negatedRule = lineRule.not();
+		
+		List<Token> tokens = List.of(
+			createToken("word1"),
+			createToken("word2"),
+			createToken("word3")
+		);
+		TokenStream stream = new TokenStream(tokens, 1);
+		
+		assertNull(lineRule.match(stream));
+		
+		TokenRuleMatch negatedMatch = negatedRule.match(stream);
+		assertNotNull(negatedMatch);
+		assertEquals(1, negatedMatch.startIndex());
+		assertEquals(1, negatedMatch.endIndex());
+		assertTrue(negatedMatch.matchedTokens().isEmpty());
+	}
+	
+	@Test
+	void negatedLineRuleDoesNotMatchWhenOriginalMatches() {
+		StartTokenRule lineRule = new StartTokenRule(AnchorType.LINE);
+		TokenRule negatedRule = lineRule.not();
+		
+		List<Token> tokens = List.of(
+			createToken("line1"),
+			createToken("\n"),
+			createToken("line2")
+		);
+		TokenStream stream = new TokenStream(tokens, 2);
+		
+		TokenRuleMatch originalMatch = lineRule.match(stream);
+		assertNotNull(originalMatch);
+		
+		assertNull(negatedRule.match(stream));
+	}
+	
+	@Test
+	void negatedRuleConsistentBehavior() {
+		StartTokenRule documentRule = new StartTokenRule(AnchorType.DOCUMENT);
+		TokenRule negatedRule = documentRule.not();
+		
+		List<Token> tokens = List.of(createToken("first"), createToken("second"));
+		TokenStream stream1 = new TokenStream(tokens, 1);
+		TokenStream stream2 = new TokenStream(tokens, 1);
+		
+		TokenRuleMatch match1 = negatedRule.match(stream1);
+		TokenRuleMatch match2 = negatedRule.match(stream2);
+		
+		if (match1 == null) {
+			assertNull(match2);
+		} else {
+			assertNotNull(match2);
+			assertEquals(match1.startIndex(), match2.startIndex());
+			assertEquals(match1.endIndex(), match2.endIndex());
+			assertEquals(match1.matchedTokens(), match2.matchedTokens());
+		}
+	}
+	
+	@Test
+	void negatedRuleWithNullTokenStream() {
+		StartTokenRule documentRule = new StartTokenRule(AnchorType.DOCUMENT);
+		TokenRule negatedRule = documentRule.not();
+		
+		assertThrows(NullPointerException.class, () -> negatedRule.match(null));
+	}
+	
+	@Test
+	void negatedRuleDoesNotConsumeTokens() {
+		StartTokenRule documentRule = new StartTokenRule(AnchorType.DOCUMENT);
+		TokenRule negatedRule = documentRule.not();
+		
+		List<Token> tokens = List.of(createToken("first"), createToken("second"));
+		TokenStream stream = new TokenStream(tokens, 1);
+		
+		TokenRuleMatch match = negatedRule.match(stream);
+		
+		if (match != null) {
+			assertEquals(1, match.startIndex());
+			assertEquals(1, match.endIndex());
+			assertTrue(match.matchedTokens().isEmpty());
+		}
+	}
+	
+	@Test
+	void negatedRuleComplexScenarios() {
+		StartTokenRule lineRule = new StartTokenRule(AnchorType.LINE);
+		TokenRule negatedRule = lineRule.not();
+		
+		List<Token> tokens = List.of(createToken("first"));
+		TokenStream startStream = new TokenStream(tokens, 0);
+		
+		assertNotNull(lineRule.match(startStream));
+		assertNull(negatedRule.match(startStream));
+		
+		List<Token> tokensWithNewline = List.of(
+			createToken("line1"),
+			createToken("\n"),
+			createToken("line2")
+		);
+		TokenStream afterNewlineStream = new TokenStream(tokensWithNewline, 2);
+		
+		assertNotNull(lineRule.match(afterNewlineStream));
+		assertNull(negatedRule.match(afterNewlineStream));
+		
+		TokenStream middleStream = new TokenStream(tokensWithNewline, 1);
+		
+		assertNull(lineRule.match(middleStream));
+		assertNotNull(negatedRule.match(middleStream));
+	}
+	
+	@Test
+	void negatedRuleWithEmptyTokenList() {
+		StartTokenRule documentRule = new StartTokenRule(AnchorType.DOCUMENT);
+		StartTokenRule lineRule = new StartTokenRule(AnchorType.LINE);
+		TokenRule negatedDocumentRule = documentRule.not();
+		TokenRule negatedLineRule = lineRule.not();
+		
+		TokenStream emptyStream = new TokenStream(Collections.emptyList(), 0);
+		
+		assertNotNull(documentRule.match(emptyStream));
+		assertNotNull(lineRule.match(emptyStream));
+		
+		assertNull(negatedDocumentRule.match(emptyStream));
+		assertNull(negatedLineRule.match(emptyStream));
+	}
+	
+	@Test
+	void toStringContainsAnchorType() {
+		StartTokenRule documentRule = new StartTokenRule(AnchorType.DOCUMENT);
+		StartTokenRule lineRule = new StartTokenRule(AnchorType.LINE);
+		
+		String docString = documentRule.toString();
+		String lineString = lineRule.toString();
+		
+		assertTrue(docString.contains("DOCUMENT"));
+		assertTrue(lineString.contains("LINE"));
 	}
 }

@@ -335,20 +335,6 @@ class TokenRulesTest {
 	}
 	
 	@Test
-	void notCreatesNotTokenRule() {
-		TokenRule innerRule = createRule("test");
-		TokenRule notRule = TokenRules.not(innerRule);
-		
-		assertInstanceOf(NotTokenRule.class, notRule);
-		assertEquals(innerRule, ((NotTokenRule) notRule).tokenRule());
-	}
-	
-	@Test
-	void notWithNullRule() {
-		assertThrows(NullPointerException.class, () -> TokenRules.not(null));
-	}
-	
-	@Test
 	void lookaheadCreatesPositiveLookaheadTokenRule() {
 		TokenRule innerRule = createRule("test");
 		TokenRule lookaheadRule = TokenRules.lookahead(innerRule);

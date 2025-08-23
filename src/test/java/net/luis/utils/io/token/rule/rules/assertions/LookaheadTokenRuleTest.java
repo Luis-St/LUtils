@@ -317,6 +317,216 @@ class LookaheadTokenRuleTest {
 	}
 	
 	@Test
+	void notReturnsNegatedRule() {
+		TokenRule innerRule = createRule("test");
+		LookaheadTokenRule positiveLookahead = new LookaheadTokenRule(innerRule, LookMatchMode.POSITIVE);
+		LookaheadTokenRule negativeLookahead = new LookaheadTokenRule(innerRule, LookMatchMode.NEGATIVE);
+		
+		TokenRule negatedPositive = positiveLookahead.not();
+		TokenRule negatedNegative = negativeLookahead.not();
+		
+		assertNotNull(negatedPositive);
+		assertNotNull(negatedNegative);
+		assertNotSame(positiveLookahead, negatedPositive);
+		assertNotSame(negativeLookahead, negatedNegative);
+		
+		assertEquals(LookMatchMode.NEGATIVE, assertInstanceOf(LookaheadTokenRule.class, negatedPositive).mode());
+		assertEquals(LookMatchMode.POSITIVE, assertInstanceOf(LookaheadTokenRule.class, negatedNegative).mode());
+	}
+	
+	@Test
+	void doubleNegationReturnsOriginalRule() {
+		TokenRule innerRule = createRule("test");
+		LookaheadTokenRule positiveLookahead = new LookaheadTokenRule(innerRule, LookMatchMode.POSITIVE);
+		LookaheadTokenRule negativeLookahead = new LookaheadTokenRule(innerRule, LookMatchMode.NEGATIVE);
+		
+		TokenRule negatedPositive = positiveLookahead.not();
+		TokenRule doubleNegatedPositive = negatedPositive.not();
+		
+		TokenRule negatedNegative = negativeLookahead.not();
+		TokenRule doubleNegatedNegative = negatedNegative.not();
+		
+		assertEquals(LookMatchMode.POSITIVE, assertInstanceOf(LookaheadTokenRule.class, doubleNegatedPositive).mode());
+		assertEquals(LookMatchMode.NEGATIVE, assertInstanceOf(LookaheadTokenRule.class, doubleNegatedNegative).mode());
+		assertEquals(innerRule, ((LookaheadTokenRule) doubleNegatedPositive).tokenRule());
+		assertEquals(innerRule, ((LookaheadTokenRule) doubleNegatedNegative).tokenRule());
+	}
+	
+	@Test
+	void negatedPositiveLookaheadBehavesLikeNegativeLookahead() {
+		TokenRule innerRule = createRule("target");
+		LookaheadTokenRule positiveLookahead = new LookaheadTokenRule(innerRule, LookMatchMode.POSITIVE);
+		LookaheadTokenRule negativeLookahead = new LookaheadTokenRule(innerRule, LookMatchMode.NEGATIVE);
+		TokenRule negatedPositive = positiveLookahead.not();
+		
+		Token target = createToken("target");
+		Token other = createToken("other");
+		
+		List<Token> tokensWithTarget = List.of(target);
+		TokenStream streamWithTarget = new TokenStream(tokensWithTarget, 0);
+		
+		TokenRuleMatch negativeMatch = negativeLookahead.match(streamWithTarget);
+		TokenRuleMatch negatedPositiveMatch = negatedPositive.match(streamWithTarget);
+		
+		if (negativeMatch == null) {
+			assertNull(negatedPositiveMatch);
+		} else {
+			assertNotNull(negatedPositiveMatch);
+			assertEquals(negativeMatch.startIndex(), negatedPositiveMatch.startIndex());
+			assertEquals(negativeMatch.endIndex(), negatedPositiveMatch.endIndex());
+			assertEquals(negativeMatch.matchedTokens(), negatedPositiveMatch.matchedTokens());
+		}
+		
+		List<Token> tokensWithOther = List.of(other);
+		TokenStream streamWithOther = new TokenStream(tokensWithOther, 0);
+		
+		TokenRuleMatch negativeMatchOther = negativeLookahead.match(streamWithOther);
+		TokenRuleMatch negatedPositiveMatchOther = negatedPositive.match(streamWithOther);
+		
+		if (negativeMatchOther == null) {
+			assertNull(negatedPositiveMatchOther);
+		} else {
+			assertNotNull(negatedPositiveMatchOther);
+			assertEquals(negativeMatchOther.startIndex(), negatedPositiveMatchOther.startIndex());
+			assertEquals(negativeMatchOther.endIndex(), negatedPositiveMatchOther.endIndex());
+			assertEquals(negativeMatchOther.matchedTokens(), negatedPositiveMatchOther.matchedTokens());
+		}
+	}
+	
+	@Test
+	void negatedNegativeLookaheadBehavesLikePositiveLookahead() {
+		TokenRule innerRule = createRule("target");
+		LookaheadTokenRule positiveLookahead = new LookaheadTokenRule(innerRule, LookMatchMode.POSITIVE);
+		LookaheadTokenRule negativeLookahead = new LookaheadTokenRule(innerRule, LookMatchMode.NEGATIVE);
+		TokenRule negatedNegative = negativeLookahead.not();
+		
+		Token target = createToken("target");
+		Token other = createToken("other");
+		
+		List<Token> tokensWithTarget = List.of(target);
+		TokenStream streamWithTarget = new TokenStream(tokensWithTarget, 0);
+		
+		TokenRuleMatch positiveMatch = positiveLookahead.match(streamWithTarget);
+		TokenRuleMatch negatedNegativeMatch = negatedNegative.match(streamWithTarget);
+		
+		if (positiveMatch == null) {
+			assertNull(negatedNegativeMatch);
+		} else {
+			assertNotNull(negatedNegativeMatch);
+			assertEquals(positiveMatch.startIndex(), negatedNegativeMatch.startIndex());
+			assertEquals(positiveMatch.endIndex(), negatedNegativeMatch.endIndex());
+			assertEquals(positiveMatch.matchedTokens(), negatedNegativeMatch.matchedTokens());
+		}
+		
+		List<Token> tokensWithOther = List.of(other);
+		TokenStream streamWithOther = new TokenStream(tokensWithOther, 0);
+		
+		TokenRuleMatch positiveMatchOther = positiveLookahead.match(streamWithOther);
+		TokenRuleMatch negatedNegativeMatchOther = negatedNegative.match(streamWithOther);
+		
+		if (positiveMatchOther == null) {
+			assertNull(negatedNegativeMatchOther);
+		} else {
+			assertNotNull(negatedNegativeMatchOther);
+			assertEquals(positiveMatchOther.startIndex(), negatedNegativeMatchOther.startIndex());
+			assertEquals(positiveMatchOther.endIndex(), negatedNegativeMatchOther.endIndex());
+			assertEquals(positiveMatchOther.matchedTokens(), negatedNegativeMatchOther.matchedTokens());
+		}
+	}
+	
+	@Test
+	void negatedRuleConsistentBehavior() {
+		TokenRule innerRule = createRule("test");
+		LookaheadTokenRule positiveLookahead = new LookaheadTokenRule(innerRule, LookMatchMode.POSITIVE);
+		TokenRule negatedRule = positiveLookahead.not();
+		
+		Token test = createToken("test");
+		List<Token> tokens = List.of(test);
+		TokenStream stream1 = new TokenStream(tokens, 0);
+		TokenStream stream2 = new TokenStream(tokens, 0);
+		
+		TokenRuleMatch match1 = negatedRule.match(stream1);
+		TokenRuleMatch match2 = negatedRule.match(stream2);
+		
+		if (match1 == null) {
+			assertNull(match2);
+		} else {
+			assertNotNull(match2);
+			assertEquals(match1.startIndex(), match2.startIndex());
+			assertEquals(match1.endIndex(), match2.endIndex());
+			assertEquals(match1.matchedTokens(), match2.matchedTokens());
+		}
+	}
+	
+	@Test
+	void negatedRuleWithNullTokenStream() {
+		TokenRule innerRule = createRule("test");
+		LookaheadTokenRule positiveLookahead = new LookaheadTokenRule(innerRule, LookMatchMode.POSITIVE);
+		TokenRule negatedRule = positiveLookahead.not();
+		
+		assertThrows(NullPointerException.class, () -> negatedRule.match(null));
+	}
+	
+	@Test
+	void negatedRuleDoesNotConsumeTokens() {
+		TokenRule innerRule = createRule("test");
+		LookaheadTokenRule positiveLookahead = new LookaheadTokenRule(innerRule, LookMatchMode.POSITIVE);
+		TokenRule negatedRule = positiveLookahead.not();
+		
+		Token other = createToken("other");
+		List<Token> tokens = List.of(other);
+		TokenStream stream = new TokenStream(tokens, 0);
+		
+		TokenRuleMatch match = negatedRule.match(stream);
+		
+		if (match != null) {
+			assertEquals(0, match.startIndex());
+			assertEquals(0, match.endIndex());
+			assertTrue(match.matchedTokens().isEmpty());
+		}
+	}
+	
+	@Test
+	void negatedRuleWithComplexInnerRule() {
+		TokenRule sequence = TokenRules.sequence(createRule("a"), createRule("b"));
+		LookaheadTokenRule positiveLookahead = new LookaheadTokenRule(sequence, LookMatchMode.POSITIVE);
+		TokenRule negatedRule = positiveLookahead.not();
+		
+		Token a = createToken("a");
+		Token b = createToken("b");
+		Token c = createToken("c");
+		
+		List<Token> matchingTokens = List.of(a, b, c);
+		TokenStream matchingStream = new TokenStream(matchingTokens, 0);
+		
+		assertNotNull(positiveLookahead.match(matchingStream));
+		assertNull(negatedRule.match(matchingStream));
+		
+		List<Token> nonMatchingTokens = List.of(a, c, b);
+		TokenStream nonMatchingStream = new TokenStream(nonMatchingTokens, 0);
+		
+		assertNull(positiveLookahead.match(nonMatchingStream));
+		assertNotNull(negatedRule.match(nonMatchingStream));
+	}
+	
+	@Test
+	void negatedRuleWithEmptyTokenList() {
+		TokenRule innerRule = createRule("test");
+		LookaheadTokenRule positiveLookahead = new LookaheadTokenRule(innerRule, LookMatchMode.POSITIVE);
+		LookaheadTokenRule negativeLookahead = new LookaheadTokenRule(innerRule, LookMatchMode.NEGATIVE);
+		TokenRule negatedPositive = positiveLookahead.not();
+		TokenRule negatedNegative = negativeLookahead.not();
+		
+		TokenStream emptyStream = new TokenStream(Collections.emptyList(), 0);
+		
+		assertNull(positiveLookahead.match(emptyStream));
+		assertNotNull(negativeLookahead.match(emptyStream));
+		
+		assertNotNull(negatedPositive.match(emptyStream));
+		assertNull(negatedNegative.match(emptyStream));
+	}
+	
+	@Test
 	void equalRulesHaveSameHashCode() {
 		TokenRule innerRule = createRule("test");
 		LookaheadTokenRule rule1 = new LookaheadTokenRule(innerRule, LookMatchMode.POSITIVE);

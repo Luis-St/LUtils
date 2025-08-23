@@ -375,11 +375,27 @@ class SequenceTokenRuleTest {
 	}
 	
 	@Test
+	void notThrowsUnsupportedOperationException() {
+		SequenceTokenRule rule = new SequenceTokenRule(List.of(createRule("test1"), createRule("test2")));
+		
+		assertThrows(UnsupportedOperationException.class, rule::not);
+	}
+	
+	@Test
 	void equalRulesHaveSameHashCode() {
 		List<TokenRule> rules = List.of(createRule("test1"), createRule("test2"));
 		SequenceTokenRule rule1 = new SequenceTokenRule(rules);
 		SequenceTokenRule rule2 = new SequenceTokenRule(rules);
 		
 		assertEquals(rule1.hashCode(), rule2.hashCode());
+	}
+	
+	@Test
+	void toStringContainsRuleInfo() {
+		SequenceTokenRule rule = new SequenceTokenRule(List.of(createRule("test1"), createRule("test2")));
+		String ruleString = rule.toString();
+		
+		assertTrue(ruleString.contains("SequenceTokenRule"));
+		assertTrue(ruleString.contains("tokenRules="));
 	}
 }

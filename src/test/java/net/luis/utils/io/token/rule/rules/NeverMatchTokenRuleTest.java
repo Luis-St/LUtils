@@ -268,6 +268,189 @@ class NeverMatchTokenRuleTest {
 	}
 	
 	@Test
+	void notReturnsAlwaysMatchTokenRule() {
+		NeverMatchTokenRule rule = NeverMatchTokenRule.INSTANCE;
+		
+		TokenRule negatedRule = rule.not();
+		
+		assertNotNull(negatedRule);
+		assertSame(AlwaysMatchTokenRule.INSTANCE, negatedRule);
+	}
+	
+	@Test
+	void notNegatesMatchingLogic() {
+		NeverMatchTokenRule rule = NeverMatchTokenRule.INSTANCE;
+		TokenRule negatedRule = rule.not();
+		
+		Token token = createToken("test");
+		List<Token> tokens = List.of(token);
+		
+		assertNull(rule.match(new TokenStream(tokens, 0)));
+		
+		assertNotNull(negatedRule.match(new TokenStream(tokens, 0)));
+	}
+	
+	@Test
+	void notWithDifferentTokenTypes() {
+		NeverMatchTokenRule rule = NeverMatchTokenRule.INSTANCE;
+		TokenRule negatedRule = rule.not();
+		
+		Token text = createToken("text");
+		Token number = createToken("123");
+		Token symbol = createToken("!");
+		Token empty = createToken("");
+		List<Token> tokens = List.of(text, number, symbol, empty);
+		
+		for (int i = 0; i < tokens.size(); i++) {
+			assertNull(rule.match(new TokenStream(tokens, i)));
+		}
+		
+		for (int i = 0; i < tokens.size(); i++) {
+			assertNotNull(negatedRule.match(new TokenStream(tokens, i)));
+		}
+	}
+	
+	@Test
+	void notWithEmptyTokenList() {
+		NeverMatchTokenRule rule = NeverMatchTokenRule.INSTANCE;
+		TokenRule negatedRule = rule.not();
+		
+		assertNull(rule.match(new TokenStream(Collections.emptyList())));
+		assertNull(negatedRule.match(new TokenStream(Collections.emptyList())));
+	}
+	
+	@Test
+	void notWithMultipleTokensInList() {
+		NeverMatchTokenRule rule = NeverMatchTokenRule.INSTANCE;
+		TokenRule negatedRule = rule.not();
+		
+		Token token1 = createToken("first");
+		Token token2 = createToken("second");
+		Token token3 = createToken("third");
+		List<Token> tokens = List.of(token1, token2, token3);
+		
+		for (int i = 0; i < tokens.size(); i++) {
+			assertNull(rule.match(new TokenStream(tokens, i)));
+		}
+		
+		for (int i = 0; i < tokens.size(); i++) {
+			TokenRuleMatch match = negatedRule.match(new TokenStream(tokens, i));
+			assertNotNull(match);
+			assertEquals(tokens.get(i), match.matchedTokens().getFirst());
+		}
+	}
+	
+	@Test
+	void notConsistencyAcrossMultipleCalls() {
+		NeverMatchTokenRule rule = NeverMatchTokenRule.INSTANCE;
+		TokenRule negatedRule = rule.not();
+		
+		Token token = createToken("consistent");
+		List<Token> tokens = List.of(token);
+		
+		TokenRuleMatch match1 = negatedRule.match(new TokenStream(tokens, 0));
+		TokenRuleMatch match2 = negatedRule.match(new TokenStream(tokens, 0));
+		TokenRuleMatch match3 = negatedRule.match(new TokenStream(tokens, 0));
+		
+		assertNotNull(match1);
+		assertNotNull(match2);
+		assertNotNull(match3);
+		
+		assertEquals(match1.startIndex(), match2.startIndex());
+		assertEquals(match1.endIndex(), match2.endIndex());
+		assertEquals(match1.matchedTokens(), match2.matchedTokens());
+	}
+	
+	@Test
+	void notWithLargeTokenList() {
+		NeverMatchTokenRule rule = NeverMatchTokenRule.INSTANCE;
+		TokenRule negatedRule = rule.not();
+		
+		List<Token> largeList = IntStream.range(0, 100).mapToObj(i -> createToken("token" + i)).toList();
+		
+		assertNull(rule.match(new TokenStream(largeList, 0)));
+		assertNull(rule.match(new TokenStream(largeList, 50)));
+		assertNull(rule.match(new TokenStream(largeList, 99)));
+		
+		assertNotNull(negatedRule.match(new TokenStream(largeList, 0)));
+		assertNotNull(negatedRule.match(new TokenStream(largeList, 50)));
+		assertNotNull(negatedRule.match(new TokenStream(largeList, 99)));
+	}
+	
+	@Test
+	void notWithSpecialCharacterTokens() {
+		NeverMatchTokenRule rule = NeverMatchTokenRule.INSTANCE;
+		TokenRule negatedRule = rule.not();
+		
+		Token space = createToken(" ");
+		Token tab = createToken("\t");
+		Token newline = createToken("\n");
+		Token backslash = createToken("\\");
+		Token quote = createToken("\"");
+		List<Token> tokens = List.of(space, tab, newline, backslash, quote);
+		
+		for (int i = 0; i < tokens.size(); i++) {
+			assertNull(rule.match(new TokenStream(tokens, i)));
+		}
+		
+		for (int i = 0; i < tokens.size(); i++) {
+			TokenRuleMatch match = negatedRule.match(new TokenStream(tokens, i));
+			assertNotNull(match);
+			assertEquals(tokens.get(i), match.matchedTokens().getFirst());
+		}
+	}
+	
+	@Test
+	void notPreservesOriginalRuleReference() {
+		NeverMatchTokenRule rule = NeverMatchTokenRule.INSTANCE;
+		TokenRule negatedRule = rule.not();
+		
+		assertSame(AlwaysMatchTokenRule.INSTANCE, negatedRule);
+		
+		assertSame(NeverMatchTokenRule.INSTANCE, rule);
+	}
+	
+	@Test
+	void notReturnsSameSingletonInstance() {
+		NeverMatchTokenRule rule = NeverMatchTokenRule.INSTANCE;
+		
+		TokenRule negated1 = rule.not();
+		TokenRule negated2 = rule.not();
+		
+		assertSame(negated1, negated2);
+		assertSame(AlwaysMatchTokenRule.INSTANCE, negated1);
+		assertSame(AlwaysMatchTokenRule.INSTANCE, negated2);
+	}
+	
+	@Test
+	void notDoubleNegationReturnsOriginal() {
+		NeverMatchTokenRule originalRule = NeverMatchTokenRule.INSTANCE;
+		
+		TokenRule negatedRule = originalRule.not();
+		TokenRule doubleNegatedRule = negatedRule.not();
+		
+		assertSame(originalRule, doubleNegatedRule);
+		assertSame(NeverMatchTokenRule.INSTANCE, doubleNegatedRule);
+	}
+	
+	@Test
+	void notNegatedRuleHasCorrectMatchInfo() {
+		NeverMatchTokenRule rule = NeverMatchTokenRule.INSTANCE;
+		TokenRule negatedRule = rule.not();
+		
+		Token token = createToken("test");
+		List<Token> tokens = List.of(token);
+		TokenRuleMatch match = negatedRule.match(new TokenStream(tokens, 0));
+		
+		assertNotNull(match);
+		assertEquals(0, match.startIndex());
+		assertEquals(1, match.endIndex());
+		assertEquals(1, match.matchedTokens().size());
+		assertEquals(token, match.matchedTokens().getFirst());
+		assertSame(negatedRule, match.matchingTokenRule());
+	}
+	
+	@Test
 	void equalInstancesHaveSameHashCode() {
 		assertEquals(NeverMatchTokenRule.INSTANCE.hashCode(), NeverMatchTokenRule.INSTANCE.hashCode());
 	}

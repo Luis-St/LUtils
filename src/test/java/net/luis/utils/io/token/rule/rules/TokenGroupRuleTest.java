@@ -338,25 +338,6 @@ class TokenGroupRuleTest {
 	}
 	
 	@Test
-	void equalGroupRulesHaveSameHashCode() {
-		TokenRule innerRule = TokenRules.pattern("test");
-		TokenGroupRule groupRule1 = new TokenGroupRule(innerRule);
-		TokenGroupRule groupRule2 = new TokenGroupRule(innerRule);
-		
-		assertEquals(groupRule1.hashCode(), groupRule2.hashCode());
-	}
-	
-	@Test
-	void toStringContainsInnerRuleInfo() {
-		TokenRule innerRule = TokenRules.pattern("test");
-		TokenGroupRule groupRule = new TokenGroupRule(innerRule);
-		String ruleString = groupRule.toString();
-		
-		assertTrue(ruleString.contains("TokenGroupRule"));
-		assertTrue(ruleString.contains("tokenRule"));
-	}
-	
-	@Test
 	void matchWithDifferentGroupSizes() {
 		TokenRule innerRule = TokenRules.repeatExactly(TokenRules.pattern("item"), 3);
 		TokenGroupRule groupRule = new TokenGroupRule(innerRule);
@@ -378,5 +359,31 @@ class TokenGroupRuleTest {
 		
 		TokenRuleMatch result2 = groupRule.match(new TokenStream(tokens, 1));
 		assertNull(result2);
+	}
+	
+	@Test
+	void notThrowsUnsupportedOperationException() {
+		TokenGroupRule groupRule = new TokenGroupRule(TokenRules.alwaysMatch());
+		
+		assertThrows(UnsupportedOperationException.class, groupRule::not);
+	}
+	
+	@Test
+	void equalGroupRulesHaveSameHashCode() {
+		TokenRule innerRule = TokenRules.pattern("test");
+		TokenGroupRule groupRule1 = new TokenGroupRule(innerRule);
+		TokenGroupRule groupRule2 = new TokenGroupRule(innerRule);
+		
+		assertEquals(groupRule1.hashCode(), groupRule2.hashCode());
+	}
+	
+	@Test
+	void toStringContainsInnerRuleInfo() {
+		TokenRule innerRule = TokenRules.pattern("test");
+		TokenGroupRule groupRule = new TokenGroupRule(innerRule);
+		String ruleString = groupRule.toString();
+		
+		assertTrue(ruleString.contains("TokenGroupRule"));
+		assertTrue(ruleString.contains("tokenRule"));
 	}
 }

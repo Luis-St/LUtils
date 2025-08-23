@@ -22,6 +22,7 @@ import net.luis.utils.io.token.TokenStream;
 import net.luis.utils.io.token.rule.TokenRuleMatch;
 import net.luis.utils.io.token.rule.rules.TokenRule;
 import net.luis.utils.io.token.rule.rules.TokenRules;
+import net.luis.utils.io.token.rule.rules.quantifiers.OptionalTokenRule;
 import net.luis.utils.io.token.tokens.SimpleToken;
 import net.luis.utils.io.token.tokens.Token;
 import org.jetbrains.annotations.NotNull;
@@ -753,6 +754,13 @@ class RecursiveTokenRuleTest {
 		TokenRuleMatch match = rule.match(new TokenStream(tokens));
 		assertNotNull(match);
 		assertEquals(7, match.matchedTokens().size());
+	}
+	
+	@Test
+	void notThrowsUnsupportedOperationException() {
+		RecursiveTokenRule rule = new RecursiveTokenRule(createRule("("), createRule("content"), createRule(")"));
+		
+		assertThrows(UnsupportedOperationException.class, rule::not);
 	}
 	
 	@Test

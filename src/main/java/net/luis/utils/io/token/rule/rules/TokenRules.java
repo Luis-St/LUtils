@@ -276,18 +276,6 @@ public final class TokenRules {
 	}
 	
 	/**
-	 * Creates a token rule that matches when the given rule does NOT match.<br>
-	 *
-	 * @param tokenRule The token rule to negate
-	 * @return The created token rule that matches when the given rule doesn't match
-	 * @throws NullPointerException If the token rule is null
-	 * @see NotTokenRule
-	 */
-	public static @NotNull TokenRule not(@NotNull TokenRule tokenRule) {
-		return new NotTokenRule(tokenRule);
-	}
-	
-	/**
 	 * Creates a positive lookahead token rule that checks if the given rule matches ahead without consuming tokens.<br>
 	 *
 	 * @param tokenRule The token rule to match ahead

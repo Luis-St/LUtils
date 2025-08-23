@@ -20,6 +20,7 @@ package net.luis.utils.io.token.rule.rules.matchers;
 
 import net.luis.utils.io.token.TokenStream;
 import net.luis.utils.io.token.rule.TokenRuleMatch;
+import net.luis.utils.io.token.rule.rules.InvertibleTokenRule;
 import net.luis.utils.io.token.rule.rules.TokenRule;
 import net.luis.utils.io.token.tokens.Token;
 import org.intellij.lang.annotations.Language;
@@ -41,7 +42,7 @@ import java.util.regex.Pattern;
  */
 public record PatternTokenRule(
 	@NotNull Pattern pattern
-) implements TokenRule {
+) implements InvertibleTokenRule {
 	
 	/**
 	 * Constructs a new pattern token rule from the given pattern in string format.<br>
@@ -64,20 +65,9 @@ public record PatternTokenRule(
 	}
 	
 	@Override
-	public @Nullable TokenRuleMatch match(@NotNull TokenStream stream) {
-		Objects.requireNonNull(stream, "Token stream must not be null");
-		if (!stream.hasToken()) {
-			return null;
-		}
+	public boolean match(@NotNull Token token) {
+		Objects.requireNonNull(token, "Token must not be null");
 		
-		int startIndex = stream.getCurrentIndex();
-		Token token = stream.getCurrentToken();
-		Matcher matcher = this.pattern.matcher(token.value());
-		
-		if (matcher.matches()) {
-			List<Token> matchedTokens = Collections.singletonList(token);
-			return new TokenRuleMatch(startIndex, stream.consumeToken(), matchedTokens, this);
-		}
-		return null;
+		return this.pattern.matcher(token.value()).matches();
 	}
 }

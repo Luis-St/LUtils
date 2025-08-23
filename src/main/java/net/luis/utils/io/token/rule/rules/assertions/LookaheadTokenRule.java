@@ -65,4 +65,9 @@ public record LookaheadTokenRule(
 		}
 		return null;
 	}
+	
+	@Override
+	public @NotNull TokenRule not() {
+		return new LookaheadTokenRule(this.tokenRule, this.mode == LookMatchMode.POSITIVE ? LookMatchMode.NEGATIVE : LookMatchMode.POSITIVE);
+	}
 }

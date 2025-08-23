@@ -49,7 +49,6 @@ public record CustomTokeRule(
 		Objects.requireNonNull(condition, "Condition must not be null");
 	}
 	
-	
 	@Override
 	public @Nullable TokenRuleMatch match(@NotNull TokenStream stream) {
 		Objects.requireNonNull(stream, "Token stream must not be null");
@@ -63,5 +62,10 @@ public record CustomTokeRule(
 			return new TokenRuleMatch(startIndex, stream.consumeToken(), Collections.singletonList(currentToken), this);
 		}
 		return null;
+	}
+	
+	@Override
+	public @NotNull TokenRule not() {
+		return new CustomTokeRule(this.condition.negate());
 	}
 }

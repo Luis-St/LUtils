@@ -58,4 +58,9 @@ public final class AlwaysMatchTokenRule implements TokenRule {
 		List<Token> matchedTokens = Collections.singletonList(stream.getCurrentToken());
 		return new TokenRuleMatch(startIndex, stream.consumeToken(), matchedTokens, this);
 	}
+	
+	@Override
+	public @NotNull TokenRule not() {
+		return NeverMatchTokenRule.INSTANCE;
+	}
 }

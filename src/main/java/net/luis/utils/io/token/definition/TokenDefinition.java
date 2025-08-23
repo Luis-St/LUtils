@@ -18,14 +18,11 @@
 
 package net.luis.utils.io.token.definition;
 
-import net.luis.utils.io.token.TokenStream;
-import net.luis.utils.io.token.rule.TokenRuleMatch;
+import net.luis.utils.io.token.rule.rules.InvertibleTokenRule;
 import net.luis.utils.io.token.rule.rules.TokenRule;
 import net.luis.utils.io.token.tokens.Token;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
-import java.util.Collections;
 import java.util.Objects;
 
 /**
@@ -39,7 +36,7 @@ import java.util.Objects;
  * @author Luis-St
  */
 @FunctionalInterface
-public interface TokenDefinition extends TokenRule {
+public interface TokenDefinition extends InvertibleTokenRule {
 	
 	/**
 	 * Creates a new token definition for a single character.<br>
@@ -119,17 +116,9 @@ public interface TokenDefinition extends TokenRule {
 	boolean matches(@NotNull String word);
 	
 	@Override
-	default @Nullable TokenRuleMatch match(@NotNull TokenStream stream) {
-		Objects.requireNonNull(stream, "Token stream must not be null");
-		if (!stream.hasToken()) {
-			return null;
-		}
+	default boolean match(@NotNull Token token) {
+		Objects.requireNonNull(token, "Token must not be null");
 		
-		int startIndex = stream.getCurrentIndex();
-		Token token = stream.getCurrentToken();
-		if (this.matches(token.value())) {
-			return new TokenRuleMatch(startIndex, stream.consumeToken(), Collections.singletonList(token), this);
-		}
-		return null;
+		return this.matches(token.value());
 	}
 }

@@ -338,6 +338,13 @@ class BoundaryTokenRuleTest {
 	}
 	
 	@Test
+	void notThrowsUnsupportedOperationException() {
+		BoundaryTokenRule rule = new BoundaryTokenRule(createRule("start"), createRule("end"));
+		
+		assertThrows(UnsupportedOperationException.class, rule::not);
+	}
+	
+	@Test
 	void equalRulesHaveSameHashCode() {
 		TokenRule start = createRule("start");
 		TokenRule end = createRule("end");
@@ -345,5 +352,16 @@ class BoundaryTokenRuleTest {
 		BoundaryTokenRule rule2 = new BoundaryTokenRule(start, end);
 		
 		assertEquals(rule1.hashCode(), rule2.hashCode());
+	}
+	
+	@Test
+	void toStringContainsRuleInfo() {
+		BoundaryTokenRule rule = new BoundaryTokenRule(createRule("start"), createRule("end"));
+		String ruleString = rule.toString();
+		
+		assertTrue(ruleString.contains("BoundaryTokenRule"));
+		assertTrue(ruleString.contains("startTokenRule="));
+		assertTrue(ruleString.contains("betweenTokenRule="));
+		assertTrue(ruleString.contains("endTokenRule="));
 	}
 }

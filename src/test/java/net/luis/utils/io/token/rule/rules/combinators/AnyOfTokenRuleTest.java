@@ -22,6 +22,7 @@ import net.luis.utils.io.token.TokenStream;
 import net.luis.utils.io.token.rule.TokenRuleMatch;
 import net.luis.utils.io.token.rule.rules.TokenRule;
 import net.luis.utils.io.token.rule.rules.TokenRules;
+import net.luis.utils.io.token.rule.rules.quantifiers.OptionalTokenRule;
 import net.luis.utils.io.token.tokens.SimpleToken;
 import net.luis.utils.io.token.tokens.Token;
 import org.jetbrains.annotations.NotNull;
@@ -295,11 +296,27 @@ class AnyOfTokenRuleTest {
 	}
 	
 	@Test
+	void notThrowsUnsupportedOperationException() {
+		AnyOfTokenRule rule = new AnyOfTokenRule(Set.of(createRule("test")));
+		
+		assertThrows(UnsupportedOperationException.class, rule::not);
+	}
+	
+	@Test
 	void equalRulesHaveSameHashCode() {
 		Set<TokenRule> rules = Set.of(createRule("test1"), createRule("test2"));
 		AnyOfTokenRule rule1 = new AnyOfTokenRule(rules);
 		AnyOfTokenRule rule2 = new AnyOfTokenRule(rules);
 		
 		assertEquals(rule1.hashCode(), rule2.hashCode());
+	}
+	
+	@Test
+	void toStringContainsRuleInfo() {
+		AnyOfTokenRule rule = new AnyOfTokenRule(Set.of(createRule("test")));
+		String ruleString = rule.toString();
+		
+		assertTrue(ruleString.contains("AnyOfTokenRule"));
+		assertTrue(ruleString.contains("tokenRules="));
 	}
 }

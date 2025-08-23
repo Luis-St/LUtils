@@ -20,7 +20,7 @@ package net.luis.utils.io.token.rule.rules.matchers;
 
 import net.luis.utils.io.token.TokenStream;
 import net.luis.utils.io.token.rule.TokenRuleMatch;
-import net.luis.utils.io.token.rule.rules.TokenRule;
+import net.luis.utils.io.token.rule.rules.*;
 import net.luis.utils.io.token.tokens.Token;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -40,7 +40,7 @@ import java.util.Objects;
 public record LengthTokenRule(
 	int minLength,
 	int maxLength
-) implements TokenRule {
+) implements InvertibleTokenRule {
 	
 	/**
 	 * Constructs a new length token rule with the given minimum and maximum length.<br>
@@ -61,31 +61,11 @@ public record LengthTokenRule(
 		}
 	}
 	
-	/**
-	 * Constructs a new length token rule with exact length requirement.<br>
-	 *
-	 * @param exactLength The exact length the token value must have
-	 * @return A new length token rule
-	 * @throws IllegalArgumentException If exactLength is negative
-	 */
-	public static LengthTokenRule exactLength(int exactLength) {
-		return new LengthTokenRule(exactLength, exactLength);
-	}
-	
 	@Override
-	public @Nullable TokenRuleMatch match(@NotNull TokenStream stream) {
-		Objects.requireNonNull(stream, "Token stream must not be null");
-		if (!stream.hasToken()) {
-			return null;
-		}
+	public boolean match(@NotNull Token token) {
+		Objects.requireNonNull(token, "Token must not be null");
 		
-		int startIndex = stream.getCurrentIndex();
-		Token token = stream.getCurrentToken();
 		int length = token.value().length();
-		
-		if (length >= this.minLength && length <= this.maxLength) {
-			return new TokenRuleMatch(startIndex, stream.consumeToken(), Collections.singletonList(token), this);
-		}
-		return null;
+		return length >= this.minLength && length <= this.maxLength;
 	}
 }

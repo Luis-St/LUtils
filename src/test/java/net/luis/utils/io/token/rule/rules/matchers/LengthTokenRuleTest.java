@@ -20,6 +20,7 @@ package net.luis.utils.io.token.rule.rules.matchers;
 
 import net.luis.utils.io.token.TokenStream;
 import net.luis.utils.io.token.rule.TokenRuleMatch;
+import net.luis.utils.io.token.rule.rules.TokenRule;
 import net.luis.utils.io.token.tokens.SimpleToken;
 import net.luis.utils.io.token.tokens.Token;
 import org.jetbrains.annotations.NotNull;
@@ -66,12 +67,12 @@ class LengthTokenRuleTest {
 	
 	@Test
 	void exactLengthWithNegativeLength() {
-		assertThrows(IllegalArgumentException.class, () -> LengthTokenRule.exactLength(-1));
+		assertThrows(IllegalArgumentException.class, () -> new LengthTokenRule(-1, -1));
 	}
 	
 	@Test
 	void exactLengthWithValidLength() {
-		LengthTokenRule rule = LengthTokenRule.exactLength(5);
+		LengthTokenRule rule = new LengthTokenRule(5, 5);
 		
 		assertEquals(5, rule.minLength());
 		assertEquals(5, rule.maxLength());
@@ -79,7 +80,7 @@ class LengthTokenRuleTest {
 	
 	@Test
 	void exactLengthWithZero() {
-		LengthTokenRule rule = LengthTokenRule.exactLength(0);
+		LengthTokenRule rule = new LengthTokenRule(0, 0);
 		
 		assertEquals(0, rule.minLength());
 		assertEquals(0, rule.maxLength());
@@ -103,7 +104,7 @@ class LengthTokenRuleTest {
 	void matchWithNullTokenStream() {
 		LengthTokenRule rule = new LengthTokenRule(1, 5);
 		
-		assertThrows(NullPointerException.class, () -> rule.match(null));
+		assertThrows(NullPointerException.class, () -> rule.match((TokenStream) null));
 	}
 	
 	@Test
@@ -185,7 +186,7 @@ class LengthTokenRuleTest {
 	
 	@Test
 	void matchWithExactLengthRule() {
-		LengthTokenRule rule = LengthTokenRule.exactLength(4);
+		LengthTokenRule rule = new LengthTokenRule(4, 4);
 		Token exactToken = createToken("test");
 		Token shortToken = createToken("hi");
 		Token longToken = createToken("toolong");
@@ -334,6 +335,160 @@ class LengthTokenRuleTest {
 		assertEquals(match1.endIndex(), match2.endIndex());
 		assertEquals(match1.matchedTokens(), match2.matchedTokens());
 		assertSame(match1.matchingTokenRule(), match2.matchingTokenRule());
+	}
+	
+	@Test
+	void notReturnsNegatedRule() {
+		LengthTokenRule rule = new LengthTokenRule(3, 5);
+		
+		TokenRule negatedRule = rule.not();
+		
+		assertNotNull(negatedRule);
+		assertNotSame(rule, negatedRule);
+	}
+	
+	@Test
+	void notNegatesMatchingLogic() {
+		LengthTokenRule rule = new LengthTokenRule(3, 5);
+		TokenRule negatedRule = rule.not();
+		
+		Token matchingToken = createToken("test");
+		Token nonMatchingToken = createToken("hi");
+		
+		assertNotNull(rule.match(new TokenStream(List.of(matchingToken), 0)));
+		assertNull(rule.match(new TokenStream(List.of(nonMatchingToken), 0)));
+		
+		assertNull(negatedRule.match(new TokenStream(List.of(matchingToken), 0)));
+		assertNotNull(negatedRule.match(new TokenStream(List.of(nonMatchingToken), 0)));
+	}
+	
+	@Test
+	void notDoubleNegationReturnsOriginal() {
+		LengthTokenRule originalRule = new LengthTokenRule(2, 6);
+		
+		TokenRule negatedRule = originalRule.not();
+		TokenRule doubleNegatedRule = negatedRule.not();
+		
+		assertSame(originalRule, doubleNegatedRule);
+	}
+	
+	@Test
+	void notWithExactLengthRule() {
+		LengthTokenRule exactRule = new LengthTokenRule(4, 4);
+		TokenRule negatedRule = exactRule.not();
+		
+		Token exactToken = createToken("test");
+		Token shortToken = createToken("hi");
+		Token longToken = createToken("toolong");
+		
+		assertNotNull(exactRule.match(new TokenStream(List.of(exactToken), 0)));
+		assertNull(exactRule.match(new TokenStream(List.of(shortToken), 0)));
+		assertNull(exactRule.match(new TokenStream(List.of(longToken), 0)));
+		
+		assertNull(negatedRule.match(new TokenStream(List.of(exactToken), 0)));
+		assertNotNull(negatedRule.match(new TokenStream(List.of(shortToken), 0)));
+		assertNotNull(negatedRule.match(new TokenStream(List.of(longToken), 0)));
+	}
+	
+	@Test
+	void notWithZeroLengthRule() {
+		LengthTokenRule zeroRule = new LengthTokenRule(0, 0);
+		TokenRule negatedRule = zeroRule.not();
+		
+		Token emptyToken = createToken("");
+		Token nonEmptyToken = createToken("content");
+		
+		assertNotNull(zeroRule.match(new TokenStream(List.of(emptyToken), 0)));
+		assertNull(zeroRule.match(new TokenStream(List.of(nonEmptyToken), 0)));
+		
+		assertNull(negatedRule.match(new TokenStream(List.of(emptyToken), 0)));
+		assertNotNull(negatedRule.match(new TokenStream(List.of(nonEmptyToken), 0)));
+	}
+	
+	@Test
+	void notWithMinLengthOnlyRule() {
+		LengthTokenRule rule = new LengthTokenRule(3, Integer.MAX_VALUE);
+		TokenRule negatedRule = rule.not();
+		
+		Token shortToken = createToken("hi");
+		Token exactToken = createToken("abc");
+		Token longToken = createToken("verylongtoken");
+		
+		assertNull(rule.match(new TokenStream(List.of(shortToken), 0)));
+		assertNotNull(rule.match(new TokenStream(List.of(exactToken), 0)));
+		assertNotNull(rule.match(new TokenStream(List.of(longToken), 0)));
+		
+		assertNotNull(negatedRule.match(new TokenStream(List.of(shortToken), 0)));
+		assertNull(negatedRule.match(new TokenStream(List.of(exactToken), 0)));
+		assertNull(negatedRule.match(new TokenStream(List.of(longToken), 0)));
+	}
+	
+	@Test
+	void notConsistencyAcrossMultipleCalls() {
+		LengthTokenRule rule = new LengthTokenRule(3, 5);
+		TokenRule negatedRule = rule.not();
+		
+		Token token = createToken("test");
+		List<Token> tokens = List.of(token);
+		
+		TokenRuleMatch match1 = negatedRule.match(new TokenStream(tokens, 0));
+		TokenRuleMatch match2 = negatedRule.match(new TokenStream(tokens, 0));
+		
+		assertNull(match1);
+		assertNull(match2);
+	}
+	
+	@Test
+	void notNegatedRuleConsumesToken() {
+		LengthTokenRule rule = new LengthTokenRule(5, 10);
+		TokenRule negatedRule = rule.not();
+		
+		Token shortToken = createToken("hi");
+		List<Token> tokens = List.of(shortToken);
+		TokenStream stream = new TokenStream(tokens, 0);
+		
+		assertEquals(0, stream.getCurrentIndex());
+		TokenRuleMatch match = negatedRule.match(stream);
+		
+		assertNotNull(match);
+		assertEquals(1, stream.getCurrentIndex());
+		assertEquals(1, match.endIndex());
+		assertEquals(shortToken, match.matchedTokens().getFirst());
+	}
+	
+	@Test
+	void notNegatedRuleHasCorrectMatchInfo() {
+		LengthTokenRule rule = new LengthTokenRule(10, 20);
+		TokenRule negatedRule = rule.not();
+		
+		Token token = createToken("short");
+		List<Token> tokens = List.of(token);
+		TokenRuleMatch match = negatedRule.match(new TokenStream(tokens, 0));
+		
+		assertNotNull(match);
+		assertEquals(0, match.startIndex());
+		assertEquals(1, match.endIndex());
+		assertEquals(1, match.matchedTokens().size());
+		assertEquals(token, match.matchedTokens().getFirst());
+		assertSame(negatedRule, match.matchingTokenRule());
+	}
+	
+	@Test
+	void notWithSpecialCharacterTokens() {
+		LengthTokenRule rule = new LengthTokenRule(1, 1);
+		TokenRule negatedRule = rule.not();
+		
+		Token singleChar = createToken("a");
+		Token multiChar = createToken("abc");
+		Token empty = createToken("");
+		
+		assertNotNull(rule.match(new TokenStream(List.of(singleChar), 0)));
+		assertNull(rule.match(new TokenStream(List.of(multiChar), 0)));
+		assertNull(rule.match(new TokenStream(List.of(empty), 0)));
+		
+		assertNull(negatedRule.match(new TokenStream(List.of(singleChar), 0)));
+		assertNotNull(negatedRule.match(new TokenStream(List.of(multiChar), 0)));
+		assertNotNull(negatedRule.match(new TokenStream(List.of(empty), 0)));
 	}
 	
 	@Test

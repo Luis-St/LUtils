@@ -207,31 +207,6 @@ class TokenRuleTest {
 	}
 	
 	@Test
-	void notReturnsNotTokenRule() {
-		TokenRule rule = createRule("test");
-		
-		TokenRule notRule = rule.not();
-		
-		assertInstanceOf(NotTokenRule.class, notRule);
-		assertEquals(rule, ((NotTokenRule) notRule).tokenRule());
-	}
-	
-	@Test
-	void notWithDifferentRules() {
-		TokenRule numberRule = TokenRules.pattern("\\d+");
-		TokenRule alwaysRule = TokenRules.alwaysMatch();
-		TokenRule endRule = TokenRules.endDocument();
-		
-		assertInstanceOf(NotTokenRule.class, numberRule.not());
-		assertInstanceOf(NotTokenRule.class, alwaysRule.not());
-		assertInstanceOf(NotTokenRule.class, endRule.not());
-		
-		assertEquals(numberRule, ((NotTokenRule) numberRule.not()).tokenRule());
-		assertEquals(alwaysRule, ((NotTokenRule) alwaysRule.not()).tokenRule());
-		assertEquals(endRule, ((NotTokenRule) endRule.not()).tokenRule());
-	}
-	
-	@Test
 	void lookaheadReturnsPositiveLookaheadTokenRule() {
 		TokenRule rule = createRule("test");
 		
@@ -382,19 +357,6 @@ class TokenRuleTest {
 	}
 	
 	@Test
-	void chainedNotOperations() {
-		TokenRule rule = createRule("test");
-		
-		TokenRule doubleNot = rule.not().not();
-		NotTokenRule outerNot = assertInstanceOf(NotTokenRule.class, doubleNot);
-		assertInstanceOf(NotTokenRule.class, outerNot.tokenRule());
-		
-		TokenRule notOptional = rule.not().optional();
-		OptionalTokenRule optional = assertInstanceOf(OptionalTokenRule.class, notOptional);
-		assertInstanceOf(NotTokenRule.class, optional.tokenRule());
-	}
-	
-	@Test
 	void chainedGroupOperations() {
 		TokenRule rule = createRule("test");
 		
@@ -424,15 +386,13 @@ class TokenRuleTest {
 		
 		TokenRule complex = rule.optional()
 			.repeatAtLeast(1)
-			.not()
 			.lookahead()
 			.group();
 		
 		
 		TokenGroupRule group = assertInstanceOf(TokenGroupRule.class, complex);
 		LookaheadTokenRule lookahead = assertInstanceOf(LookaheadTokenRule.class, group.tokenRule());
-		NotTokenRule not = assertInstanceOf(NotTokenRule.class, lookahead.tokenRule());
-		RepeatedTokenRule repeated = assertInstanceOf(RepeatedTokenRule.class, not.tokenRule());
+		RepeatedTokenRule repeated = assertInstanceOf(RepeatedTokenRule.class, lookahead.tokenRule());
 		OptionalTokenRule optional = assertInstanceOf(OptionalTokenRule.class, repeated.tokenRule());
 		assertEquals(rule, optional.tokenRule());
 	}
@@ -458,9 +418,6 @@ class TokenRuleTest {
 			TokenRules.any(createRule("a"), createRule("b")),
 			TokenRules.optional(TokenRules.pattern("[A-Z]+"))
 		);
-		
-		NotTokenRule not = assertInstanceOf(NotTokenRule.class, complexRule.not());
-		assertEquals(complexRule, not.tokenRule());
 		
 		LookaheadTokenRule lookahead = assertInstanceOf(LookaheadTokenRule.class, complexRule.lookahead());
 		assertEquals(complexRule, lookahead.tokenRule());
@@ -498,7 +455,6 @@ class TokenRuleTest {
 	void allOperationsPreserveOriginalRule() {
 		TokenRule originalRule = createRule("original");
 		
-		assertEquals(originalRule, ((NotTokenRule) originalRule.not()).tokenRule());
 		assertEquals(originalRule, ((LookaheadTokenRule) originalRule.lookahead()).tokenRule());
 		assertEquals(originalRule, ((LookaheadTokenRule) originalRule.negativeLookahead()).tokenRule());
 		assertEquals(originalRule, ((LookbehindTokenRule) originalRule.lookbehind()).tokenRule());
@@ -543,17 +499,13 @@ class TokenRuleTest {
 	}
 	
 	@Test
-	void notAndGroupOperationsReturnDifferentInstances() {
+	void groupOperationsReturnDifferentInstances() {
 		TokenRule rule = createRule("test");
 		
-		TokenRule not1 = rule.not();
-		TokenRule not2 = rule.not();
 		TokenRule group1 = rule.group();
 		TokenRule group2 = rule.group();
 		
-		assertNotSame(not1, not2);
 		assertNotSame(group1, group2);
-		assertNotSame(not1, group1);
 	}
 	
 	@Test
@@ -588,7 +540,6 @@ class TokenRuleTest {
 		
 		TokenRule[] singletonRules = {alwaysMatch, start, end};
 		for (TokenRule singletonRule : singletonRules) {
-			assertInstanceOf(NotTokenRule.class, singletonRule.not());
 			assertInstanceOf(LookaheadTokenRule.class, singletonRule.lookahead());
 			assertInstanceOf(LookaheadTokenRule.class, singletonRule.negativeLookahead());
 			assertInstanceOf(LookbehindTokenRule.class, singletonRule.lookbehind());
@@ -604,11 +555,7 @@ class TokenRuleTest {
 		TokenRule mixed1 = rule.repeatExactly(2).lookahead().optional();
 		assertInstanceOf(OptionalTokenRule.class, mixed1);
 		
-		TokenRule mixed2 = rule.group().repeatAtMost(5).not();
-		assertInstanceOf(NotTokenRule.class, mixed2);
-		
 		TokenRule mixed3 = rule.optional()
-			.not()
 			.repeatBetween(1, 3)
 			.lookahead()
 			.group()

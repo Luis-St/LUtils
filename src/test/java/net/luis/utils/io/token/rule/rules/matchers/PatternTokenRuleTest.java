@@ -20,6 +20,7 @@ package net.luis.utils.io.token.rule.rules.matchers;
 
 import net.luis.utils.io.token.TokenStream;
 import net.luis.utils.io.token.rule.TokenRuleMatch;
+import net.luis.utils.io.token.rule.rules.TokenRule;
 import net.luis.utils.io.token.tokens.SimpleToken;
 import net.luis.utils.io.token.tokens.Token;
 import org.jetbrains.annotations.NotNull;
@@ -97,7 +98,7 @@ class PatternTokenRuleTest {
 	void matchWithNullTokenStream() {
 		PatternTokenRule rule = new PatternTokenRule("\\d+");
 		
-		assertThrows(NullPointerException.class, () -> rule.match(null));
+		assertThrows(NullPointerException.class, () -> rule.match((TokenStream) null));
 	}
 	
 	@Test
@@ -328,5 +329,235 @@ class PatternTokenRuleTest {
 		assertNotNull(rule.match(new TokenStream(List.of(createToken("HELLO")), 0)));
 		assertNotNull(rule.match(new TokenStream(List.of(createToken("Hello")), 0)));
 		assertNull(rule.match(new TokenStream(List.of(createToken("world")), 0)));
+	}
+	
+	@Test
+	void notReturnsNegatedRule() {
+		PatternTokenRule rule = new PatternTokenRule("\\d+");
+		
+		TokenRule negatedRule = rule.not();
+		
+		assertNotNull(negatedRule);
+		assertNotSame(rule, negatedRule);
+	}
+	
+	@Test
+	void notNegatesMatchingLogic() {
+		PatternTokenRule rule = new PatternTokenRule("\\d+");
+		TokenRule negatedRule = rule.not();
+		
+		Token numberToken = createToken("123");
+		Token textToken = createToken("abc");
+		
+		assertNotNull(rule.match(new TokenStream(List.of(numberToken), 0)));
+		assertNull(rule.match(new TokenStream(List.of(textToken), 0)));
+		
+		assertNull(negatedRule.match(new TokenStream(List.of(numberToken), 0)));
+		assertNotNull(negatedRule.match(new TokenStream(List.of(textToken), 0)));
+	}
+	
+	@Test
+	void notDoubleNegationReturnsOriginal() {
+		PatternTokenRule originalRule = new PatternTokenRule("[a-zA-Z]+");
+		
+		TokenRule negatedRule = originalRule.not();
+		TokenRule doubleNegatedRule = negatedRule.not();
+		
+		assertSame(originalRule, doubleNegatedRule);
+	}
+	
+	@Test
+	void notWithAlphabeticPattern() {
+		PatternTokenRule rule = new PatternTokenRule("[a-zA-Z]+");
+		TokenRule negatedRule = rule.not();
+		
+		Token alphabeticToken = createToken("Hello");
+		Token numericToken = createToken("123");
+		Token mixedToken = createToken("Hello123");
+		Token symbolToken = createToken("!@#");
+		
+		assertNotNull(rule.match(new TokenStream(List.of(alphabeticToken), 0)));
+		assertNull(rule.match(new TokenStream(List.of(numericToken), 0)));
+		assertNull(rule.match(new TokenStream(List.of(mixedToken), 0)));
+		assertNull(rule.match(new TokenStream(List.of(symbolToken), 0)));
+		
+		assertNull(negatedRule.match(new TokenStream(List.of(alphabeticToken), 0)));
+		assertNotNull(negatedRule.match(new TokenStream(List.of(numericToken), 0)));
+		assertNotNull(negatedRule.match(new TokenStream(List.of(mixedToken), 0)));
+		assertNotNull(negatedRule.match(new TokenStream(List.of(symbolToken), 0)));
+	}
+	
+	@Test
+	void notWithExactStringPattern() {
+		PatternTokenRule rule = new PatternTokenRule("hello");
+		TokenRule negatedRule = rule.not();
+		
+		Token exactToken = createToken("hello");
+		Token differentToken = createToken("world");
+		Token partialToken = createToken("helloworld");
+		Token caseToken = createToken("Hello");
+		
+		assertNotNull(rule.match(new TokenStream(List.of(exactToken), 0)));
+		assertNull(rule.match(new TokenStream(List.of(differentToken), 0)));
+		assertNull(rule.match(new TokenStream(List.of(partialToken), 0)));
+		assertNull(rule.match(new TokenStream(List.of(caseToken), 0)));
+		
+		assertNull(negatedRule.match(new TokenStream(List.of(exactToken), 0)));
+		assertNotNull(negatedRule.match(new TokenStream(List.of(differentToken), 0)));
+		assertNotNull(negatedRule.match(new TokenStream(List.of(partialToken), 0)));
+		assertNotNull(negatedRule.match(new TokenStream(List.of(caseToken), 0)));
+	}
+	
+	@Test
+	void notWithWildcardPattern() {
+		PatternTokenRule rule = new PatternTokenRule("test.*");
+		TokenRule negatedRule = rule.not();
+		
+		Token matchingToken1 = createToken("test");
+		Token matchingToken2 = createToken("testing");
+		Token matchingToken3 = createToken("test123");
+		Token nonMatchingToken = createToken("other");
+		
+		assertNotNull(rule.match(new TokenStream(List.of(matchingToken1), 0)));
+		assertNotNull(rule.match(new TokenStream(List.of(matchingToken2), 0)));
+		assertNotNull(rule.match(new TokenStream(List.of(matchingToken3), 0)));
+		assertNull(rule.match(new TokenStream(List.of(nonMatchingToken), 0)));
+		
+		assertNull(negatedRule.match(new TokenStream(List.of(matchingToken1), 0)));
+		assertNull(negatedRule.match(new TokenStream(List.of(matchingToken2), 0)));
+		assertNull(negatedRule.match(new TokenStream(List.of(matchingToken3), 0)));
+		assertNotNull(negatedRule.match(new TokenStream(List.of(nonMatchingToken), 0)));
+	}
+	
+	@Test
+	void notWithEmptyStringPattern() {
+		PatternTokenRule rule = new PatternTokenRule("");
+		TokenRule negatedRule = rule.not();
+		
+		Token emptyToken = createToken("");
+		Token nonEmptyToken = createToken("test");
+		
+		assertNotNull(rule.match(new TokenStream(List.of(emptyToken), 0)));
+		assertNull(rule.match(new TokenStream(List.of(nonEmptyToken), 0)));
+		
+		assertNull(negatedRule.match(new TokenStream(List.of(emptyToken), 0)));
+		assertNotNull(negatedRule.match(new TokenStream(List.of(nonEmptyToken), 0)));
+	}
+	
+	@Test
+	void notWithDotPattern() {
+		PatternTokenRule rule = new PatternTokenRule(".");
+		TokenRule negatedRule = rule.not();
+		
+		Token singleChar = createToken("a");
+		Token multiChar = createToken("abc");
+		Token emptyToken = createToken("");
+		
+		assertNotNull(rule.match(new TokenStream(List.of(singleChar), 0)));
+		assertNull(rule.match(new TokenStream(List.of(multiChar), 0)));
+		assertNull(rule.match(new TokenStream(List.of(emptyToken), 0)));
+		
+		assertNull(negatedRule.match(new TokenStream(List.of(singleChar), 0)));
+		assertNotNull(negatedRule.match(new TokenStream(List.of(multiChar), 0)));
+		assertNotNull(negatedRule.match(new TokenStream(List.of(emptyToken), 0)));
+	}
+	
+	@Test
+	void notWithQuantifierPatterns() {
+		PatternTokenRule optionalRule = new PatternTokenRule("colou?r");
+		PatternTokenRule oneOrMoreRule = new PatternTokenRule("a+");
+		
+		TokenRule negatedOptional = optionalRule.not();
+		TokenRule negatedOneOrMore = oneOrMoreRule.not();
+		
+		assertNull(negatedOptional.match(new TokenStream(List.of(createToken("color")), 0)));
+		assertNull(negatedOptional.match(new TokenStream(List.of(createToken("colour")), 0)));
+		assertNotNull(negatedOptional.match(new TokenStream(List.of(createToken("colouur")), 0)));
+		
+		assertNull(negatedOneOrMore.match(new TokenStream(List.of(createToken("a")), 0)));
+		assertNull(negatedOneOrMore.match(new TokenStream(List.of(createToken("aaa")), 0)));
+		assertNotNull(negatedOneOrMore.match(new TokenStream(List.of(createToken("")), 0)));
+		assertNotNull(negatedOneOrMore.match(new TokenStream(List.of(createToken("b")), 0)));
+	}
+	
+	@Test
+	void notWithCaseInsensitivePattern() {
+		Pattern caseInsensitive = Pattern.compile("hello", Pattern.CASE_INSENSITIVE);
+		PatternTokenRule rule = new PatternTokenRule(caseInsensitive);
+		TokenRule negatedRule = rule.not();
+		
+		Token lowerToken = createToken("hello");
+		Token upperToken = createToken("HELLO");
+		Token mixedToken = createToken("Hello");
+		Token differentToken = createToken("world");
+		
+		assertNotNull(rule.match(new TokenStream(List.of(lowerToken), 0)));
+		assertNotNull(rule.match(new TokenStream(List.of(upperToken), 0)));
+		assertNotNull(rule.match(new TokenStream(List.of(mixedToken), 0)));
+		assertNull(rule.match(new TokenStream(List.of(differentToken), 0)));
+		
+		assertNull(negatedRule.match(new TokenStream(List.of(lowerToken), 0)));
+		assertNull(negatedRule.match(new TokenStream(List.of(upperToken), 0)));
+		assertNull(negatedRule.match(new TokenStream(List.of(mixedToken), 0)));
+		assertNotNull(negatedRule.match(new TokenStream(List.of(differentToken), 0)));
+	}
+	
+	@Test
+	void notConsistencyAcrossMultipleCalls() {
+		PatternTokenRule rule = new PatternTokenRule("\\d+");
+		TokenRule negatedRule = rule.not();
+		
+		Token numberToken = createToken("123");
+		Token textToken = createToken("abc");
+		
+		assertNull(negatedRule.match(new TokenStream(List.of(numberToken), 0)));
+		assertNull(negatedRule.match(new TokenStream(List.of(numberToken), 0)));
+		
+		assertNotNull(negatedRule.match(new TokenStream(List.of(textToken), 0)));
+		assertNotNull(negatedRule.match(new TokenStream(List.of(textToken), 0)));
+	}
+	
+	@Test
+	void notNegatedRuleConsumesToken() {
+		PatternTokenRule rule = new PatternTokenRule("\\d+");
+		TokenRule negatedRule = rule.not();
+		
+		Token textToken = createToken("abc");
+		List<Token> tokens = List.of(textToken);
+		TokenStream stream = new TokenStream(tokens, 0);
+		
+		assertEquals(0, stream.getCurrentIndex());
+		TokenRuleMatch match = negatedRule.match(stream);
+		
+		assertNotNull(match);
+		assertEquals(1, stream.getCurrentIndex());
+		assertEquals(1, match.endIndex());
+		assertEquals(textToken, match.matchedTokens().getFirst());
+	}
+	
+	@Test
+	void notNegatedRuleHasCorrectMatchInfo() {
+		PatternTokenRule rule = new PatternTokenRule("[0-9]+");
+		TokenRule negatedRule = rule.not();
+		
+		Token textToken = createToken("abc");
+		List<Token> tokens = List.of(textToken);
+		TokenRuleMatch match = negatedRule.match(new TokenStream(tokens, 0));
+		
+		assertNotNull(match);
+		assertEquals(0, match.startIndex());
+		assertEquals(1, match.endIndex());
+		assertEquals(1, match.matchedTokens().size());
+		assertEquals(textToken, match.matchedTokens().getFirst());
+		assertSame(negatedRule, match.matchingTokenRule());
+	}
+	
+	@Test
+	void toStringContainsPattern() {
+		PatternTokenRule rule = new PatternTokenRule("[0-9]+");
+		String ruleString = rule.toString();
+		
+		assertTrue(ruleString.contains("PatternTokenRule"));
+		assertTrue(ruleString.contains("[0-9]+"));
 	}
 }

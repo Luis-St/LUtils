@@ -49,4 +49,9 @@ public final class NeverMatchTokenRule implements TokenRule {
 		Objects.requireNonNull(stream, "Token stream must not be null");
 		return null;
 	}
+	
+	@Override
+	public @NotNull TokenRule not() {
+		return AlwaysMatchTokenRule.INSTANCE;
+	}
 }

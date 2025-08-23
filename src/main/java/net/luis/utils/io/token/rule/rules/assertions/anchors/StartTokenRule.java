@@ -49,7 +49,9 @@ import java.util.Objects;
  *
  * @param anchorType The type of anchor to match
  */
-public record StartTokenRule(@NotNull AnchorType anchorType) implements TokenRule {
+public record StartTokenRule(
+	@NotNull AnchorType anchorType
+) implements TokenRule {
 	
 	/**
 	 * Creates a start token rule with the specified anchor type.<br>
@@ -57,8 +59,8 @@ public record StartTokenRule(@NotNull AnchorType anchorType) implements TokenRul
 	 * @param anchorType The type of anchor to match
 	 * @throws NullPointerException If the anchor type is null
 	 */
-	public StartTokenRule(@NotNull AnchorType anchorType) {
-		this.anchorType = Objects.requireNonNull(anchorType, "Anchor type must not be null");
+	public StartTokenRule {
+		Objects.requireNonNull(anchorType, "Anchor type must not be null");
 	}
 	
 	@Override
@@ -122,5 +124,26 @@ public record StartTokenRule(@NotNull AnchorType anchorType) implements TokenRul
 		}
 		
 		return null;
+	}
+	
+	@Override
+	public @NotNull TokenRule not() {
+		return new TokenRule() {
+			private final StartTokenRule self = StartTokenRule.this;
+			
+			@Override
+			public @Nullable TokenRuleMatch match(@NotNull TokenStream stream) {
+				TokenRuleMatch result = this.self.match(stream);
+				if (result != null) {
+					return null;
+				}
+				return TokenRuleMatch.empty(stream.getCurrentIndex(), this);
+			}
+			
+			@Override
+			public @NotNull TokenRule not() {
+				return this.self; // Inverting the not() method returns the original rule, preventing double negation and nesting of classes
+			}
+		};
 	}
 }

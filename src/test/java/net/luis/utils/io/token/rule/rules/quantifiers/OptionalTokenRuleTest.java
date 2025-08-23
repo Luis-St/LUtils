@@ -22,6 +22,7 @@ import net.luis.utils.io.token.TokenStream;
 import net.luis.utils.io.token.rule.TokenRuleMatch;
 import net.luis.utils.io.token.rule.rules.TokenRule;
 import net.luis.utils.io.token.rule.rules.TokenRules;
+import net.luis.utils.io.token.rule.rules.matchers.PatternTokenRule;
 import net.luis.utils.io.token.tokens.SimpleToken;
 import net.luis.utils.io.token.tokens.Token;
 import org.jetbrains.annotations.NotNull;
@@ -301,11 +302,27 @@ class OptionalTokenRuleTest {
 	}
 	
 	@Test
+	void notThrowsUnsupportedOperationException() {
+		OptionalTokenRule rule = new OptionalTokenRule(createRule("test"));
+		
+		assertThrows(UnsupportedOperationException.class, rule::not);
+	}
+	
+	@Test
 	void equalRulesHaveSameHashCode() {
 		TokenRule innerRule = createRule("test");
 		OptionalTokenRule rule1 = new OptionalTokenRule(innerRule);
 		OptionalTokenRule rule2 = new OptionalTokenRule(innerRule);
 		
 		assertEquals(rule1.hashCode(), rule2.hashCode());
+	}
+	
+	@Test
+	void toStringContainsRuleInfo() {
+		OptionalTokenRule rule = new OptionalTokenRule(createRule("test"));
+		String ruleString = rule.toString();
+		
+		assertTrue(ruleString.contains("OptionalTokenRule"));
+		assertTrue(ruleString.contains("tokenRule="));
 	}
 }

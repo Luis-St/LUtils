@@ -364,11 +364,29 @@ class RepeatedTokenRuleTest {
 	}
 	
 	@Test
+	void notThrowsUnsupportedOperationException() {
+		OptionalTokenRule rule = new OptionalTokenRule(createRule("test"));
+		
+		assertThrows(UnsupportedOperationException.class, rule::not);
+	}
+	
+	@Test
 	void equalRulesHaveSameHashCode() {
 		TokenRule innerRule = createRule("test");
 		RepeatedTokenRule rule1 = new RepeatedTokenRule(innerRule, 2, 5);
 		RepeatedTokenRule rule2 = new RepeatedTokenRule(innerRule, 2, 5);
 		
 		assertEquals(rule1.hashCode(), rule2.hashCode());
+	}
+	
+	@Test
+	void toStringContainsRuleInfo() {
+		RepeatedTokenRule rule = new RepeatedTokenRule(createRule("test"), 2, 5);
+		String ruleString = rule.toString();
+		
+		assertTrue(ruleString.contains("RepeatedTokenRule"));
+		assertTrue(ruleString.contains("tokenRule="));
+		assertTrue(ruleString.contains("minOccurrences=2"));
+		assertTrue(ruleString.contains("maxOccurrences=5"));
 	}
 }

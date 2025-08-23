@@ -20,6 +20,8 @@ package net.luis.utils.io.token.definition;
 
 import net.luis.utils.io.token.TokenStream;
 import net.luis.utils.io.token.rule.TokenRuleMatch;
+import net.luis.utils.io.token.rule.rules.InvertibleTokenRule;
+import net.luis.utils.io.token.rule.rules.TokenRule;
 import net.luis.utils.io.token.tokens.SimpleToken;
 import net.luis.utils.io.token.tokens.Token;
 import org.jetbrains.annotations.NotNull;
@@ -210,7 +212,7 @@ class TokenDefinitionTest {
 	void matchWithNullTokenStream() {
 		TokenDefinition definition = TokenDefinition.of('a');
 		
-		assertThrows(NullPointerException.class, () -> definition.match(null));
+		assertThrows(NullPointerException.class, () -> definition.match((TokenStream) null));
 	}
 	
 	@Test
@@ -305,5 +307,289 @@ class TokenDefinitionTest {
 		assertTrue(customDefinition.matches("testing"));
 		assertFalse(customDefinition.matches("abc"));
 		assertFalse(customDefinition.matches(""));
+	}
+	
+	@Test
+	void tokenDefinitionImplementsInvertibleTokenRule() {
+		TokenDefinition charDef = TokenDefinition.of('a');
+		TokenDefinition stringDef = TokenDefinition.of("hello", false);
+		TokenDefinition escapedDef = TokenDefinition.ofEscaped('n');
+		TokenDefinition customDef = word -> word.startsWith("test");
+		
+		assertInstanceOf(InvertibleTokenRule.class, charDef);
+		assertInstanceOf(InvertibleTokenRule.class, stringDef);
+		assertInstanceOf(InvertibleTokenRule.class, escapedDef);
+		assertInstanceOf(InvertibleTokenRule.class, customDef);
+	}
+	
+	@Test
+	void notReturnsNegatedTokenDefinition() {
+		TokenDefinition charDef = TokenDefinition.of('a');
+		TokenDefinition stringDef = TokenDefinition.of("hello", false);
+		TokenDefinition escapedDef = TokenDefinition.ofEscaped('n');
+		TokenDefinition customDef = word -> word.startsWith("test");
+		
+		TokenRule negatedChar = charDef.not();
+		TokenRule negatedString = stringDef.not();
+		TokenRule negatedEscaped = escapedDef.not();
+		TokenRule negatedCustom = customDef.not();
+		
+		assertNotNull(negatedChar);
+		assertNotNull(negatedString);
+		assertNotNull(negatedEscaped);
+		assertNotNull(negatedCustom);
+		assertNotSame(charDef, negatedChar);
+		assertNotSame(stringDef, negatedString);
+		assertNotSame(escapedDef, negatedEscaped);
+		assertNotSame(customDef, negatedCustom);
+	}
+	
+	@Test
+	void doubleNegationReturnsOriginalDefinition() {
+		TokenDefinition charDef = TokenDefinition.of('a');
+		TokenDefinition stringDef = TokenDefinition.of("hello", false);
+		TokenDefinition escapedDef = TokenDefinition.ofEscaped('n');
+		TokenDefinition customDef = word -> word.startsWith("test");
+		
+		TokenRule negatedChar = charDef.not();
+		TokenRule doubleNegatedChar = negatedChar.not();
+		
+		TokenRule negatedString = stringDef.not();
+		TokenRule doubleNegatedString = negatedString.not();
+		
+		TokenRule negatedEscaped = escapedDef.not();
+		TokenRule doubleNegatedEscaped = negatedEscaped.not();
+		
+		TokenRule negatedCustom = customDef.not();
+		TokenRule doubleNegatedCustom = negatedCustom.not();
+		
+		assertSame(charDef, doubleNegatedChar);
+		assertSame(stringDef, doubleNegatedString);
+		assertSame(escapedDef, doubleNegatedEscaped);
+		assertSame(customDef, doubleNegatedCustom);
+	}
+	
+	@Test
+	void negatedCharDefinitionMatchesWhenOriginalDoesNot() {
+		TokenDefinition charDef = TokenDefinition.of('a');
+		TokenRule negatedRule = charDef.not();
+		
+		Token matchingToken = createToken(charDef, "a");
+		Token nonMatchingToken = createToken("b");
+		
+		List<Token> tokensWithA = List.of(matchingToken, nonMatchingToken);
+		TokenStream streamWithA = new TokenStream(tokensWithA, 0);
+		
+		assertNotNull(charDef.match(streamWithA));
+		assertNotNull(negatedRule.match(streamWithA));
+		
+		List<Token> tokensWithB = List.of(nonMatchingToken, matchingToken);
+		TokenStream streamWithB = new TokenStream(tokensWithB, 0);
+		
+		assertNull(charDef.match(streamWithB));
+		TokenRuleMatch negatedMatch = negatedRule.match(streamWithB);
+		assertNotNull(negatedMatch);
+		assertEquals(0, negatedMatch.startIndex());
+		assertEquals(1, negatedMatch.endIndex());
+		assertEquals(1, negatedMatch.matchedTokens().size());
+	}
+	
+	@Test
+	void negatedStringDefinitionMatchesWhenOriginalDoesNot() {
+		TokenDefinition stringDef = TokenDefinition.of("hello", false);
+		TokenRule negatedRule = stringDef.not();
+		
+		Token matchingToken = createToken(stringDef, "hello");
+		Token nonMatchingToken = createToken("world");
+		
+		List<Token> tokensWithHello = List.of(matchingToken);
+		TokenStream streamWithHello = new TokenStream(tokensWithHello, 0);
+		
+		assertNotNull(stringDef.match(streamWithHello));
+		assertNull(negatedRule.match(streamWithHello));
+		
+		List<Token> tokensWithWorld = List.of(nonMatchingToken);
+		TokenStream streamWithWorld = new TokenStream(tokensWithWorld, 0);
+		
+		assertNull(stringDef.match(streamWithWorld));
+		assertNotNull(negatedRule.match(streamWithWorld));
+	}
+	
+	@Test
+	void negatedCaseInsensitiveDefinition() {
+		TokenDefinition caseDef = TokenDefinition.of("hello", true);
+		TokenRule negatedRule = caseDef.not();
+		
+		Token upperToken = createToken(caseDef, "HELLO");
+		Token lowerToken = createToken(caseDef, "hello");
+		Token otherToken = createToken("world");
+		
+		List<Token> tokensWithUpper = List.of(upperToken);
+		List<Token> tokensWithLower = List.of(lowerToken);
+		
+		assertNotNull(caseDef.match(new TokenStream(tokensWithUpper, 0)));
+		assertNotNull(caseDef.match(new TokenStream(tokensWithLower, 0)));
+		
+		assertNull(negatedRule.match(new TokenStream(tokensWithUpper, 0)));
+		assertNull(negatedRule.match(new TokenStream(tokensWithLower, 0)));
+		
+		List<Token> tokensWithOther = List.of(otherToken);
+		assertNull(caseDef.match(new TokenStream(tokensWithOther, 0)));
+		assertNotNull(negatedRule.match(new TokenStream(tokensWithOther, 0)));
+	}
+	
+	@Test
+	void negatedEscapedDefinition() {
+		TokenDefinition escapedDef = TokenDefinition.ofEscaped('n');
+		TokenRule negatedRule = escapedDef.not();
+		
+		Token matchingToken = createToken(escapedDef, "\\n");
+		Token nonMatchingToken = createToken("n");
+		
+		List<Token> tokensWithEscaped = List.of(matchingToken);
+		TokenStream streamWithEscaped = new TokenStream(tokensWithEscaped, 0);
+		
+		assertNotNull(escapedDef.match(streamWithEscaped));
+		assertNull(negatedRule.match(streamWithEscaped));
+		
+		List<Token> tokensWithPlain = List.of(nonMatchingToken);
+		TokenStream streamWithPlain = new TokenStream(tokensWithPlain, 0);
+		
+		assertNull(escapedDef.match(streamWithPlain));
+		assertNotNull(negatedRule.match(streamWithPlain));
+	}
+	
+	@Test
+	void negatedCustomDefinition() {
+		TokenDefinition customDef = word -> word.startsWith("test");
+		TokenRule negatedRule = customDef.not();
+		
+		Token matchingToken = createToken(customDef, "testing");
+		Token nonMatchingToken = createToken("hello");
+		
+		List<Token> tokensWithTest = List.of(matchingToken);
+		TokenStream streamWithTest = new TokenStream(tokensWithTest, 0);
+		
+		assertNotNull(customDef.match(streamWithTest));
+		assertNull(negatedRule.match(streamWithTest));
+		
+		List<Token> tokensWithHello = List.of(nonMatchingToken);
+		TokenStream streamWithHello = new TokenStream(tokensWithHello, 0);
+		
+		assertNull(customDef.match(streamWithHello));
+		assertNotNull(negatedRule.match(streamWithHello));
+	}
+	
+	@Test
+	void negatedCombinedDefinition() {
+		TokenDefinition combined = TokenDefinition.combine(
+			TokenDefinition.of("hello", false),
+			TokenDefinition.of('-'),
+			TokenDefinition.of("world", false)
+		);
+		TokenRule negatedRule = combined.not();
+		
+		Token matchingToken = createToken(combined, "hello-world");
+		Token nonMatchingToken = createToken("goodbye");
+		
+		List<Token> tokensWithCombined = List.of(matchingToken);
+		TokenStream streamWithCombined = new TokenStream(tokensWithCombined, 0);
+		
+		assertNotNull(combined.match(streamWithCombined));
+		assertNull(negatedRule.match(streamWithCombined));
+		
+		List<Token> tokensWithOther = List.of(nonMatchingToken);
+		TokenStream streamWithOther = new TokenStream(tokensWithOther, 0);
+		
+		assertNull(combined.match(streamWithOther));
+		assertNotNull(negatedRule.match(streamWithOther));
+	}
+	
+	@Test
+	void negatedRuleConsistentBehavior() {
+		TokenDefinition definition = TokenDefinition.of('x');
+		TokenRule negatedRule = definition.not();
+		
+		Token nonMatchingToken = createToken("y");
+		List<Token> tokens = List.of(nonMatchingToken);
+		TokenStream stream1 = new TokenStream(tokens, 0);
+		TokenStream stream2 = new TokenStream(tokens, 0);
+		
+		TokenRuleMatch match1 = negatedRule.match(stream1);
+		TokenRuleMatch match2 = negatedRule.match(stream2);
+		
+		assertNotNull(match1);
+		assertNotNull(match2);
+		assertEquals(match1.startIndex(), match2.startIndex());
+		assertEquals(match1.endIndex(), match2.endIndex());
+		assertEquals(match1.matchedTokens(), match2.matchedTokens());
+	}
+	
+	@Test
+	void negatedRuleWithNullTokenStream() {
+		TokenDefinition definition = TokenDefinition.of('a');
+		TokenRule negatedRule = definition.not();
+		
+		assertThrows(NullPointerException.class, () -> negatedRule.match(null));
+	}
+	
+	@Test
+	void negatedRuleWithEmptyTokenStream() {
+		TokenDefinition definition = TokenDefinition.of('a');
+		TokenRule negatedRule = definition.not();
+		
+		TokenStream emptyStream = new TokenStream(Collections.emptyList(), 0);
+		
+		assertNull(definition.match(emptyStream));
+		
+		assertNull(negatedRule.match(emptyStream));
+	}
+	
+	@Test
+	void multipleNegationsWork() {
+		TokenDefinition definition = TokenDefinition.of("test", false);
+		
+		TokenRule negated1 = definition.not();
+		TokenRule negated2 = negated1.not();
+		TokenRule negated3 = negated2.not();
+		TokenRule negated4 = negated3.not();
+		
+		TokenStream streamWithTest = new TokenStream(List.of(createToken(definition, "test")), 0);
+		TokenStream streamWithOther = new TokenStream(List.of(createToken("other")), 0);
+		
+		assertNotNull(definition.match(streamWithTest.copyWithCurrentIndex()));
+		assertNotNull(negated2.match(streamWithTest.copyWithCurrentIndex()));
+		assertNotNull(negated4.match(streamWithTest.copyWithCurrentIndex()));
+		
+		assertNull(definition.match(streamWithOther.copyWithCurrentIndex()));
+		assertNull(negated2.match(streamWithOther.copyWithCurrentIndex()));
+		assertNull(negated4.match(streamWithOther.copyWithCurrentIndex()));
+		
+		assertNull(negated1.match(streamWithTest.copyWithCurrentIndex()));
+		assertNull(negated3.match(streamWithTest.copyWithCurrentIndex()));
+		
+		assertNotNull(negated1.match(streamWithOther.copyWithCurrentIndex()));
+		assertNotNull(negated3.match(streamWithOther.copyWithCurrentIndex()));
+	}
+	
+	@Test
+	void negatedDefinitionWithSpecialCharacters() {
+		TokenDefinition[] specialDefs = {
+			TokenDefinition.of('\n'),
+			TokenDefinition.of('\t'),
+			TokenDefinition.of(' '),
+			TokenDefinition.of('\\'),
+			TokenDefinition.ofEscaped('\n'),
+			TokenDefinition.ofEscaped('\\')
+		};
+		
+		for (TokenDefinition definition : specialDefs) {
+			TokenRule negatedRule = definition.not();
+			
+			assertDoesNotThrow(negatedRule::not);
+			
+			TokenRule doubleNegated = negatedRule.not();
+			assertSame(definition, doubleNegated);
+		}
 	}
 }
