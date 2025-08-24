@@ -1,0 +1,61 @@
+Identifier ::= [a-zA-Z_][a-zA-Z0-9_]*
+QualifiedName ::= Identifier ('.' Identifier)*
+
+
+
+PrimitiveValue ::= 'null' | ''true' | 'false' | NumberLiteral | CharacterLiteral | StringLiteral
+NumberLiteral ::= IntegerLiteral | FloatingPointLiteral
+
+IntegerLiteral ::= (DecimalIntegerLiteral | HexIntegerLiteral | OctalIntegerLiteral | BinaryIntegerLiteral) [lL]?
+DecimalIntegerLiteral ::= '0' | [1-9] [0-9]*
+HexIntegerLiteral ::= '0' [xX] [0-9a-fA-F]+
+OctalIntegerLiteral ::= '0' [0-7]*
+BinaryIntegerLiteral ::= '0' [bB] [01]+
+
+FloatingPointLiteral ::= (DecimalFloatingPointLiteral [fFdD]?) | HexFloatingPointLiteral
+DecimalFloatingPointLiteral ::= ('.' [0-9]+ | [0-9]+ ('.' [0-9]*)?) ([eE] [+-]? [0-9]+)?
+HexFloatingPointLiteral ::= '0' [xX] [0-9a-fA-F]+ '.' [0-9a-fA-F]* ([pP] [+-]? [0-9]+)?
+
+CharacterLiteral ::= '\'' [^'\\] '\''
+StringLiteral ::= '"' [^"\\]* '"'
+
+
+
+AccessModifier ::= 'public' | 'protected' | 'private'
+GenericClassName ::= QualifiedName TypeParameters?
+GenericClassNameList ::= GenericClassName (',' GenericClassName)*
+
+
+
+ClassFile ::= ClassFileHeader TypeDeclaration?
+
+ClassFileHeader ::= PackageDeclaration? ImportDeclaration*
+
+PackageDeclaration ::= 'package' QualifiedName ';'
+
+ImportDeclaration ::= 'import' 'static'? QualifiedName ('.' '*')? ';'
+
+AnnotationDeclaration ::= '@' QualifiedName ('(' ')')? | '@' QualifiedName '(' AnnotationValue ')' | '@' QualifiedName '(' AnnotationParameter (',' AnnotationParameter)* ')'
+
+AnnotationParameter ::= Identifier '=' AnnotationValue
+
+AnnotationValue ::= PrimitiveValue | Identifier | AnnotationDeclaration | '{' AnnotationValue (',' AnnotationValue)* '}'
+
+
+
+TypeDeclaration ::= AnnotationDeclaration* AccessModifier? (ClassDeclaration | EnumClassDeclaration | InterfaceClassDeclaration | AnnotationClassDeclaration | RecordClassDeclaration)
+
+Superclass ::= 'extends' GenericClassName
+InterfaceList ::= 'implements' GenericClassNameList
+ClassDeclaration ::= 'class' Identifier TypeParameters? Superclass? InterfaceList? ClassBody
+
+EnumClassDeclaration ::= 'enum' Identifier InterfaceList? EnumBody
+
+InterfaceClassDeclaration ::= 'interface' Identifier TypeParameters? ('extends' GenericClassNameList)? InterfaceBody
+
+AnnotationClassDeclaration ::= 'annotation' 'interface' Identifier AnnotationBody
+
+RecordClassDeclaration ::= 'record' Identifier TypeParameters? RecordConstructor InterfaceList? RecordBody
+
+
+ToDo: TypeParameters
