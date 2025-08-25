@@ -153,10 +153,8 @@ public class Main {
 		);
 		
 		// ToDo:
-		//  - Add EmptyTokenRule, always true but does not consume any tokens
-		//  - Add missing factory methods for RecursiveTokenRule to TokenRules
-		//  - Add support for recursion without opening and closing rule (AnnotationValue ::= PrimitiveValue | Identifier | AnnotationDeclaration | '{' AnnotationValue (',' AnnotationValue)* '}')
-		//  - Add support for capturing and referencing groups in TokenRules (TokenRules.capture(String id, TokenRule tokenRule), TokenRules.reference(String id))
+		//  - Implement TokenRule#not in some more classes, in rules that are delegating to a inner rule the #not call should be delegated as well
+		//  - Rename InvertibleTokenRule to NegatableTokenRule to make it clearer what it does
 		
 		TokenRule annotationValue = new RecursiveTokenRule(null, null, (Function<TokenRule, TokenRule>) null);
 		
