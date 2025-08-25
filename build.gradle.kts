@@ -55,9 +55,9 @@ tasks.named<Test>("test") {
 	
 	doLast {
 		delete("./logs/debug.log")
+		delete("./logs/info.log")
 		delete("./logs/error.log")
 		delete("./logs/errors.log")
-		delete("./logs/info.log")
 	}
 }
 

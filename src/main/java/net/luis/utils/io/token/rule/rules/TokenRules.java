@@ -18,7 +18,7 @@
 
 package net.luis.utils.io.token.rule.rules;
 
-import net.luis.utils.io.token.definition.*;
+import net.luis.utils.io.token.definition.TokenDefinition;
 import net.luis.utils.io.token.rule.rules.assertions.*;
 import net.luis.utils.io.token.rule.rules.assertions.anchors.*;
 import net.luis.utils.io.token.rule.rules.combinators.*;
@@ -27,14 +27,13 @@ import net.luis.utils.io.token.rule.rules.matchers.PatternTokenRule;
 import net.luis.utils.io.token.rule.rules.quantifiers.OptionalTokenRule;
 import net.luis.utils.io.token.rule.rules.quantifiers.RepeatedTokenRule;
 import net.luis.utils.io.token.tokens.Token;
-import org.apache.commons.lang3.StringUtils;
 import org.intellij.lang.annotations.Language;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
+import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 
 /**
  * A utility class for creating token rules.<br>
@@ -407,6 +406,99 @@ public final class TokenRules {
 	 */
 	public static @NotNull TokenRule group(@NotNull TokenRule tokenRule) {
 		return new TokenGroupRule(tokenRule);
+	}
+	
+	/**
+	 * Creates a separated list token rule that matches elements separated by a delimiter.<br>
+	 * This is equivalent to: {@code sequence(elementRule, sequence(separatorRule, elementRule).repeatInfinitely())}<br>
+	 * <p>
+	 *     This pattern matches one or more elements separated by the specified separator,
+	 *     which is common in many grammar rules like parameter lists, array elements, etc.
+	 * </p>
+	 *
+	 * @param elementRule The token rule for matching list elements
+	 * @param separatorRule The token rule for matching separators between elements
+	 * @return The created separated list token rule
+	 * @throws NullPointerException If the element rule or separator rule is null
+	 * @see #separatedList(TokenRule, String)
+	 * @see #sequence(TokenRule...)
+	 * @see #repeatInfinitely(TokenRule)
+	 */
+	public static @NotNull TokenRule separatedList(@NotNull TokenRule elementRule, @NotNull TokenRule separatorRule) {
+		Objects.requireNonNull(elementRule, "Element rule must not be null");
+		Objects.requireNonNull(separatorRule, "Separator rule must not be null");
+		
+		return sequence(
+			elementRule,
+			sequence(
+				separatorRule, elementRule
+			).repeatInfinitely()
+		);
+	}
+	
+	/**
+	 * Creates a separated list token rule that matches elements separated by a literal string delimiter.<br>
+	 * This is a convenience method equivalent to {@link #separatedList(TokenRule, TokenRule)}
+	 * with a string token definition for the separator.<br>
+	 *
+	 * @param elementRule The token rule for matching list elements
+	 * @param separator The literal string separator (will be converted to a token definition)
+	 * @return The created separated list token rule
+	 * @throws NullPointerException If the element rule or separator string is null
+	 * @see #separatedList(TokenRule, TokenRule)
+	 * @see TokenDefinition#of(String, boolean)
+	 */
+	public static @NotNull TokenRule separatedList(@NotNull TokenRule elementRule, @NotNull String separator) {
+		Objects.requireNonNull(elementRule, "Element rule must not be null");
+		Objects.requireNonNull(separator, "Separator string must not be null");
+		
+		return separatedList(elementRule, TokenDefinition.of(separator, false));
+	}
+	
+	/**
+	 * Creates a recursive token rule using the specified rule factory function.<br>
+	 * The factory function receives the recursive rule itself as a parameter, enabling
+	 * complex recursive grammar definitions.<br>
+	 *
+	 * @param ruleFactory A function that takes the recursive rule and returns the complete rule definition
+	 * @return The created recursive token rule
+	 * @throws NullPointerException If the rule factory is null or if the factory returns null
+	 * @see RecursiveTokenRule
+	 */
+	public static @NotNull TokenRule recursive(@NotNull Function<TokenRule, TokenRule> ruleFactory) {
+		return new RecursiveTokenRule(ruleFactory);
+	}
+	
+	/**
+	 * Creates a recursive token rule for simple opening-content-closing patterns.<br>
+	 * This is a convenience method for backward compatibility with simple boundary patterns.<br>
+	 *
+	 * @param openingRule The rule that must match at the beginning
+	 * @param contentRule The rule for content between opening and closing (may reference recursion)
+	 * @param closingRule The rule that must match at the end
+	 * @return The created recursive token rule
+	 * @throws NullPointerException If the opening, content, or closing rule is null
+	 * @see #recursive(Function)
+	 * @see RecursiveTokenRule
+	 */
+	public static @NotNull TokenRule recursive(@NotNull TokenRule openingRule, @NotNull TokenRule contentRule, @NotNull TokenRule closingRule) {
+		return new RecursiveTokenRule(openingRule, contentRule, closingRule);
+	}
+	
+	/**
+	 * Creates a recursive token rule for opening-closing patterns with flexible content.<br>
+	 * The content rule factory receives the recursive rule itself as a parameter.<br>
+	 *
+	 * @param openingRule The rule that must match at the beginning
+	 * @param closingRule The rule that must match at the end
+	 * @param contentRuleFactory A function that takes the recursive rule and returns the content rule
+	 * @return The created recursive token rule
+	 * @throws NullPointerException If the opening, closing rule, or content rule factory is null
+	 * @see #recursive(Function)
+	 * @see RecursiveTokenRule
+	 */
+	public static @NotNull TokenRule recursive(@NotNull TokenRule openingRule, @NotNull TokenRule closingRule, @NotNull Function<TokenRule, TokenRule> contentRuleFactory) {
+		return new RecursiveTokenRule(openingRule, closingRule, contentRuleFactory);
 	}
 	
 	/**

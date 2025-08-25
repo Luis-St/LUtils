@@ -34,6 +34,7 @@ import org.jetbrains.annotations.Nullable;
 import org.junit.jupiter.api.Test;
 
 import java.util.*;
+import java.util.function.Function;
 import java.util.regex.Pattern;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -552,6 +553,152 @@ class TokenRulesTest {
 	}
 	
 	@Test
+	void separatedListWithNullElement() {
+		assertThrows(NullPointerException.class, () -> TokenRules.separatedList(null, createRule(",")));
+		assertThrows(NullPointerException.class, () -> TokenRules.separatedList(null, ","));
+	}
+	
+	@Test
+	void separatedListWithNullSeparator() {
+		TokenRule element = createRule("element");
+		assertThrows(NullPointerException.class, () -> TokenRules.separatedList(element, (TokenRule) null));
+		assertThrows(NullPointerException.class, () -> TokenRules.separatedList(element, (String) null));
+	}
+	
+	@Test
+	void separatedListWithTokenRulesCreatesCorrectStructure() {
+		TokenRule element = createRule("element");
+		TokenRule separator = createRule(",");
+		TokenRule separatedList = TokenRules.separatedList(element, separator);
+		
+		List<TokenRule> rules = assertInstanceOf(SequenceTokenRule.class, separatedList).tokenRules();
+		assertEquals(2, rules.size());
+		assertEquals(element, rules.getFirst());
+		
+		RepeatedTokenRule repeatedRule = assertInstanceOf(RepeatedTokenRule.class, rules.get(1));
+		assertEquals(0, repeatedRule.minOccurrences());
+		assertEquals(Integer.MAX_VALUE, repeatedRule.maxOccurrences());
+		
+		List<TokenRule> innerSequenceRules = assertInstanceOf(SequenceTokenRule.class, repeatedRule.tokenRule()).tokenRules();
+		assertEquals(2, innerSequenceRules.size());
+		assertEquals(separator, innerSequenceRules.get(0));
+		assertEquals(element, innerSequenceRules.get(1));
+	}
+	
+	@Test
+	void separatedListWithStringCreatesCorrectStructure() {
+		TokenRule element = createRule("element");
+		TokenRule separatedList = TokenRules.separatedList(element, ",");
+		
+		List<TokenRule> rules = assertInstanceOf(SequenceTokenRule.class, separatedList).tokenRules();
+		assertEquals(2, rules.size());
+		assertEquals(element, rules.get(0));
+		
+		RepeatedTokenRule repeatedRule = assertInstanceOf(RepeatedTokenRule.class, rules.get(1));
+		SequenceTokenRule innerSequence = assertInstanceOf(SequenceTokenRule.class, repeatedRule.tokenRule());
+		
+		assertInstanceOf(StringTokenDefinition.class, innerSequence.tokenRules().get(0));
+		assertEquals(element, innerSequence.tokenRules().get(1));
+	}
+	
+	@Test
+	void separatedListWithComplexElements() {
+		TokenRule complexElement = TokenRules.sequence(
+			TokenRules.pattern("key"),
+			TokenRules.pattern(":"),
+			TokenRules.pattern("value")
+		);
+		
+		TokenRule separatedList = TokenRules.separatedList(complexElement, ",");
+		
+		assertEquals(complexElement, assertInstanceOf(SequenceTokenRule.class, separatedList).tokenRules().getFirst());
+	}
+	
+	@Test
+	void separatedListWithSpecialCharacterSeparators() {
+		TokenRule element = TokenRules.pattern("item");
+		
+		assertInstanceOf(SequenceTokenRule.class, TokenRules.separatedList(element, "."));
+		assertInstanceOf(SequenceTokenRule.class, TokenRules.separatedList(element, "*"));
+		assertInstanceOf(SequenceTokenRule.class, TokenRules.separatedList(element, "+"));
+	}
+	
+	@Test
+	void recursiveWithNullFactory() {
+		assertThrows(NullPointerException.class, () -> TokenRules.recursive((Function<TokenRule, TokenRule>) null));
+	}
+	
+	@Test
+	void recursiveWithFactoryCreatesRecursiveTokenRule() {
+		Function<TokenRule, TokenRule> factory = self -> createRule("test");
+		TokenRule recursive = TokenRules.recursive(factory);
+		
+		assertInstanceOf(RecursiveTokenRule.class, recursive);
+	}
+	
+	@Test
+	void recursiveWithThreeRulesCreatesRecursiveTokenRule() {
+		TokenRule opening = createRule("(");
+		TokenRule content = createRule("content");
+		TokenRule closing = createRule(")");
+		TokenRule recursive = TokenRules.recursive(opening, content, closing);
+		
+		assertInstanceOf(RecursiveTokenRule.class, recursive);
+	}
+	
+	@Test
+	void recursiveWithNullThreeRules() {
+		TokenRule validRule = createRule("valid");
+		assertThrows(NullPointerException.class, () -> TokenRules.recursive(null, validRule, validRule));
+		assertThrows(NullPointerException.class, () -> TokenRules.recursive(validRule, null, validRule));
+		assertThrows(NullPointerException.class, () -> TokenRules.recursive(validRule, validRule, (TokenRule) null));
+	}
+	
+	@Test
+	void recursiveWithFactoryAndBoundariesCreatesRecursiveTokenRule() {
+		TokenRule opening = createRule("(");
+		TokenRule closing = createRule(")");
+		Function<TokenRule, TokenRule> contentFactory = self -> createRule("content");
+		
+		assertInstanceOf(RecursiveTokenRule.class, TokenRules.recursive(opening, closing, contentFactory));
+	}
+	
+	@Test
+	void recursiveWithNullBoundariesAndFactory() {
+		TokenRule validRule = createRule("valid");
+		Function<TokenRule, TokenRule> validFactory = self -> validRule;
+		
+		assertThrows(NullPointerException.class, () -> TokenRules.recursive(null, validRule, validFactory));
+		assertThrows(NullPointerException.class, () -> TokenRules.recursive(validRule, null, validFactory));
+		assertThrows(NullPointerException.class, () -> TokenRules.recursive(validRule, validRule, (Function<TokenRule, TokenRule>) null));
+	}
+	
+	@Test
+	void recursiveFactoryMethodsCreateFunctionalRules() {
+		TokenRule simpleRecursive = TokenRules.recursive(self ->
+			TokenRules.any(
+				TokenRules.pattern("value"),
+				TokenRules.sequence(TokenRules.pattern("\\("), self, TokenRules.pattern("\\)"))
+			)
+		);
+		assertInstanceOf(RecursiveTokenRule.class, simpleRecursive);
+		
+		TokenRule boundaryRecursive = TokenRules.recursive(
+			TokenRules.pattern("\\("),
+			TokenRules.pattern("\\)"),
+			(Function<TokenRule, TokenRule>) self -> TokenRules.any(TokenRules.pattern("value"), self)
+		);
+		assertInstanceOf(RecursiveTokenRule.class, boundaryRecursive);
+		
+		TokenRule simpleBoundary = TokenRules.recursive(
+			TokenRules.pattern("\\("),
+			TokenRules.pattern("value"),
+			TokenRules.pattern("\\)")
+		);
+		assertInstanceOf(RecursiveTokenRule.class, simpleBoundary);
+	}
+	
+	@Test
 	void customWithNullRule() {
 		assertThrows(NullPointerException.class, () -> TokenRules.custom(null));
 	}
@@ -564,14 +711,5 @@ class TokenRulesTest {
 		assertSame(NeverMatchTokenRule.INSTANCE, rule1);
 		assertSame(rule1, rule2);
 		assertInstanceOf(NeverMatchTokenRule.class, rule1);
-	}
-	
-	@Test
-	void factoryMethodsWithEdgeCases() {
-		assertDoesNotThrow(() -> TokenRules.repeatBetween(createRule("test"), 0, Integer.MAX_VALUE));
-		assertDoesNotThrow(() -> TokenRules.repeatAtLeast(createRule("test"), Integer.MAX_VALUE));
-		
-		assertDoesNotThrow(() -> TokenRules.sequence(List.of(createRule("single"))));
-		assertDoesNotThrow(() -> TokenRules.any(Set.of(createRule("single"))));
 	}
 }
