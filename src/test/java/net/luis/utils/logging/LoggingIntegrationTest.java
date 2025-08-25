@@ -45,8 +45,7 @@ class LoggingIntegrationTest {
 	
 	@AfterAll
 	static void cleanUp() throws Exception {
-		FileUtils.deleteRecursively(Path.of("integration-test-logs"));
-		FileUtils.deleteRecursively(Path.of("test-logs"));
+		FileUtils.deleteRecursively(Path.of("logs/test-logs"));
 		Files.delete(Path.of("error.log"));
 	}
 	
@@ -56,7 +55,7 @@ class LoggingIntegrationTest {
 			.setStatusLevel(Level.WARN)
 			.enableLogging(LoggingType.CONSOLE)
 			.enableLogging(LoggingType.FILE)
-			.setRootDirectory("./test-logs/")
+			.setRootDirectory("./logs/test-logs/")
 			.setFileSize("25MB")
 			.setArchiveType(".gz")
 			.setCompressionLevel(7)
@@ -257,7 +256,7 @@ class LoggingIntegrationTest {
 	@Test
 	void fileConfigurationIntegration() {
 		LoggerConfiguration config = new LoggerConfiguration("*")
-			.setRootDirectory("./integration-test-logs/")
+			.setRootDirectory("./logs/test-logs/")
 			.setFileSize("5MB")
 			.setArchiveType(".bz2")
 			.setCompressionLevel(9)
