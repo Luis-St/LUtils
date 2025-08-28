@@ -133,11 +133,11 @@ public interface TokenRule {
 	/**
 	 * Negates this token rule.<br>
 	 * This operation is not supported by default and will throw an {@link UnsupportedOperationException}.<br>
-	 * All rules that are an instance of {@link InvertibleTokenRule} are guaranteed to support negation.<br>
+	 * All rules that are an instance of {@link NegatableTokenRule} are guaranteed to support negation.<br>
 	 * In addition, rules in the {@link net.luis.utils.io.token.rule.rules.assertions} package are also guaranteed to support negation.<br>
 	 *
 	 * @return A new negated token rule
-	 * @see InvertibleTokenRule
+	 * @see NegatableTokenRule
 	 */
 	default @NotNull TokenRule not() {
 		throw new UnsupportedOperationException("This token rule does not support negation");

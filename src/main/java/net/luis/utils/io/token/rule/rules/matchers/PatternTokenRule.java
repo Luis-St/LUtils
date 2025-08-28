@@ -18,17 +18,12 @@
 
 package net.luis.utils.io.token.rule.rules.matchers;
 
-import net.luis.utils.io.token.TokenStream;
-import net.luis.utils.io.token.rule.TokenRuleMatch;
-import net.luis.utils.io.token.rule.rules.InvertibleTokenRule;
-import net.luis.utils.io.token.rule.rules.TokenRule;
+import net.luis.utils.io.token.rule.rules.NegatableTokenRule;
 import net.luis.utils.io.token.tokens.Token;
 import org.intellij.lang.annotations.Language;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
-import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
@@ -42,7 +37,7 @@ import java.util.regex.Pattern;
  */
 public record PatternTokenRule(
 	@NotNull Pattern pattern
-) implements InvertibleTokenRule {
+) implements NegatableTokenRule {
 	
 	/**
 	 * Constructs a new pattern token rule from the given pattern in string format.<br>
