@@ -27,6 +27,7 @@ import net.luis.utils.io.token.rule.rules.matchers.PatternTokenRule;
 import net.luis.utils.io.token.rule.rules.quantifiers.OptionalTokenRule;
 import net.luis.utils.io.token.rule.rules.quantifiers.RepeatedTokenRule;
 import net.luis.utils.io.token.tokens.Token;
+import net.luis.utils.util.Lazy;
 import org.intellij.lang.annotations.Language;
 import org.jetbrains.annotations.NotNull;
 
@@ -524,5 +525,19 @@ public final class TokenRules {
 	 */
 	public static @NotNull TokenRule neverMatch() {
 		return NeverMatchTokenRule.INSTANCE;
+	}
+	
+	/**
+	 * Creates a lazily-initialized token rule using the given lazy container.<br>
+	 * The lazy container must be initialized before this rule can successfully match tokens.<br>
+	 * This is useful for defining recursive rules, rules that depend on runtime conditions or cyclic dependencies between rules.<br>
+	 *
+	 * @param lazyTokenRule The lazy initialization container for the token rule
+	 * @return The created lazy token rule
+	 * @throws NullPointerException If the lazy token rule is null
+	 * @see LazyTokenRule
+	 */
+	public static @NotNull TokenRule lazy(@NotNull Lazy<TokenRule> lazyTokenRule) {
+		return new LazyTokenRule(lazyTokenRule);
 	}
 }

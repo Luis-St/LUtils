@@ -19,7 +19,7 @@
 package net.luis.utils.io.token.rule.rules;
 
 import net.luis.utils.io.token.TokenStream;
-import net.luis.utils.io.token.definition.*;
+import net.luis.utils.io.token.definition.StringTokenDefinition;
 import net.luis.utils.io.token.rule.TokenRuleMatch;
 import net.luis.utils.io.token.rule.rules.assertions.*;
 import net.luis.utils.io.token.rule.rules.assertions.anchors.*;
@@ -28,7 +28,7 @@ import net.luis.utils.io.token.rule.rules.matchers.LengthTokenRule;
 import net.luis.utils.io.token.rule.rules.matchers.PatternTokenRule;
 import net.luis.utils.io.token.rule.rules.quantifiers.OptionalTokenRule;
 import net.luis.utils.io.token.rule.rules.quantifiers.RepeatedTokenRule;
-import net.luis.utils.io.token.tokens.Token;
+import net.luis.utils.util.Lazy;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.junit.jupiter.api.Test;
@@ -704,6 +704,18 @@ class TokenRulesTest {
 	}
 	
 	@Test
+	void customFactoryMethodCreatesCustomTokenRule() {
+		TokenRule customRule = TokenRules.custom(token -> {
+			if (token != null && "custom".equals(token.value())) {
+				return true;
+			}
+			return false;
+		});
+		
+		assertInstanceOf(CustomTokeRule.class, customRule);
+	}
+	
+	@Test
 	void neverMatchReturnsSingleton() {
 		TokenRule rule1 = TokenRules.neverMatch();
 		TokenRule rule2 = TokenRules.neverMatch();
@@ -711,5 +723,23 @@ class TokenRulesTest {
 		assertSame(NeverMatchTokenRule.INSTANCE, rule1);
 		assertSame(rule1, rule2);
 		assertInstanceOf(NeverMatchTokenRule.class, rule1);
+	}
+	
+	@Test
+	void lazyWithNullLazy() {
+		assertThrows(NullPointerException.class, () -> TokenRules.lazy(null));
+	}
+	
+	@Test
+	void lazyFactoryMethodCreatesLazyTokenRule() {
+		Lazy<TokenRule> lazy = new Lazy<>();
+		TokenRule lazyRule = TokenRules.lazy(lazy);
+		
+		assertInstanceOf(LazyTokenRule.class, lazyRule);
+		
+		TokenRule innerRule = createRule("inner");
+		lazy.set(innerRule);
+		
+		assertEquals(innerRule, assertInstanceOf(LazyTokenRule.class, lazyRule).lazyTokenRule().get());
 	}
 }
