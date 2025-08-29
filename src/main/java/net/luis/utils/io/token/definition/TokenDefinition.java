@@ -18,7 +18,7 @@
 
 package net.luis.utils.io.token.definition;
 
-import net.luis.utils.io.token.rule.rules.InvertibleTokenRule;
+import net.luis.utils.io.token.rule.rules.NegatableTokenRule;
 import net.luis.utils.io.token.rule.rules.TokenRule;
 import net.luis.utils.io.token.tokens.Token;
 import org.jetbrains.annotations.NotNull;
@@ -36,7 +36,7 @@ import java.util.Objects;
  * @author Luis-St
  */
 @FunctionalInterface
-public interface TokenDefinition extends InvertibleTokenRule {
+public interface TokenDefinition extends NegatableTokenRule {
 	
 	/**
 	 * Creates a new token definition for a single character.<br>

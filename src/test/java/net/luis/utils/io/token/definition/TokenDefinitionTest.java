@@ -20,7 +20,7 @@ package net.luis.utils.io.token.definition;
 
 import net.luis.utils.io.token.TokenStream;
 import net.luis.utils.io.token.rule.TokenRuleMatch;
-import net.luis.utils.io.token.rule.rules.InvertibleTokenRule;
+import net.luis.utils.io.token.rule.rules.NegatableTokenRule;
 import net.luis.utils.io.token.rule.rules.TokenRule;
 import net.luis.utils.io.token.tokens.SimpleToken;
 import net.luis.utils.io.token.tokens.Token;
@@ -310,16 +310,16 @@ class TokenDefinitionTest {
 	}
 	
 	@Test
-	void tokenDefinitionImplementsInvertibleTokenRule() {
+	void tokenDefinitionImplementsNegatableTokenRule() {
 		TokenDefinition charDef = TokenDefinition.of('a');
 		TokenDefinition stringDef = TokenDefinition.of("hello", false);
 		TokenDefinition escapedDef = TokenDefinition.ofEscaped('n');
 		TokenDefinition customDef = word -> word.startsWith("test");
 		
-		assertInstanceOf(InvertibleTokenRule.class, charDef);
-		assertInstanceOf(InvertibleTokenRule.class, stringDef);
-		assertInstanceOf(InvertibleTokenRule.class, escapedDef);
-		assertInstanceOf(InvertibleTokenRule.class, customDef);
+		assertInstanceOf(NegatableTokenRule.class, charDef);
+		assertInstanceOf(NegatableTokenRule.class, stringDef);
+		assertInstanceOf(NegatableTokenRule.class, escapedDef);
+		assertInstanceOf(NegatableTokenRule.class, customDef);
 	}
 	
 	@Test

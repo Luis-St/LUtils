@@ -142,7 +142,7 @@ public record EndTokenRule(
 			
 			@Override
 			public @NotNull TokenRule not() {
-				return this.self; // Inverting the not() method returns the original rule, preventing double negation and nesting of classes
+				return this.self; // Negating the not() method returns the original rule, preventing double negation and nesting of classes
 			}
 		};
 	}

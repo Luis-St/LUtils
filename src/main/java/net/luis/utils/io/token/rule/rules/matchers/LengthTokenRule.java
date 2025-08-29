@@ -18,14 +18,10 @@
 
 package net.luis.utils.io.token.rule.rules.matchers;
 
-import net.luis.utils.io.token.TokenStream;
-import net.luis.utils.io.token.rule.TokenRuleMatch;
 import net.luis.utils.io.token.rule.rules.*;
 import net.luis.utils.io.token.tokens.Token;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
-import java.util.Collections;
 import java.util.Objects;
 
 /**
@@ -40,7 +36,7 @@ import java.util.Objects;
 public record LengthTokenRule(
 	int minLength,
 	int maxLength
-) implements InvertibleTokenRule {
+) implements NegatableTokenRule {
 	
 	/**
 	 * Constructs a new length token rule with the given minimum and maximum length.<br>

@@ -31,49 +31,49 @@ import java.util.List;
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
- * Test class for {@link InvertibleTokenRule}.<br>
+ * Test class for {@link NegatableTokenRule}.<br>
  *
  * @author Luis-St
  */
-class InvertibleTokenRuleTest {
+class NegatableTokenRuleTest {
 	
 	private static @NotNull Token createToken(@NotNull String value) {
 		return SimpleToken.createUnpositioned(word -> word.equals(value), value);
 	}
 	
-	private static @NotNull InvertibleTokenRule createAlwaysTrueRule() {
+	private static @NotNull NegatableTokenRule createAlwaysTrueRule() {
 		return token -> true;
 	}
 	
-	private static @NotNull InvertibleTokenRule createAlwaysFalseRule() {
+	private static @NotNull NegatableTokenRule createAlwaysFalseRule() {
 		return token -> false;
 	}
 	
-	private static @NotNull InvertibleTokenRule createLengthRule(int exactLength) {
+	private static @NotNull NegatableTokenRule createLengthRule(int exactLength) {
 		return token -> token.value().length() == exactLength;
 	}
 	
-	private static @NotNull InvertibleTokenRule createContainsRule() {
+	private static @NotNull NegatableTokenRule createContainsRule() {
 		return token -> token.value().contains("test");
 	}
 	
 	@Test
 	void defaultMatchStreamWithNullTokenStream() {
-		InvertibleTokenRule rule = createAlwaysTrueRule();
+		NegatableTokenRule rule = createAlwaysTrueRule();
 		
 		assertThrows(NullPointerException.class, () -> rule.match((TokenStream) null));
 	}
 	
 	@Test
 	void defaultMatchStreamWithEmptyTokenList() {
-		InvertibleTokenRule rule = createAlwaysTrueRule();
+		NegatableTokenRule rule = createAlwaysTrueRule();
 		
 		assertNull(rule.match(new TokenStream(Collections.emptyList())));
 	}
 	
 	@Test
 	void defaultMatchStreamWithIndexOutOfBounds() {
-		InvertibleTokenRule rule = createAlwaysTrueRule();
+		NegatableTokenRule rule = createAlwaysTrueRule();
 		List<Token> tokens = List.of(createToken("test"));
 		
 		assertThrows(IndexOutOfBoundsException.class, () -> rule.match(new TokenStream(tokens, 5)));
@@ -82,7 +82,7 @@ class InvertibleTokenRuleTest {
 	
 	@Test
 	void defaultMatchStreamWithMatchingToken() {
-		InvertibleTokenRule rule = createAlwaysTrueRule();
+		NegatableTokenRule rule = createAlwaysTrueRule();
 		Token token = createToken("test");
 		List<Token> tokens = List.of(token);
 		
@@ -98,7 +98,7 @@ class InvertibleTokenRuleTest {
 	
 	@Test
 	void defaultMatchStreamWithNonMatchingToken() {
-		InvertibleTokenRule rule = createAlwaysFalseRule();
+		NegatableTokenRule rule = createAlwaysFalseRule();
 		Token token = createToken("test");
 		List<Token> tokens = List.of(token);
 		
@@ -107,7 +107,7 @@ class InvertibleTokenRuleTest {
 	
 	@Test
 	void defaultMatchStreamUsesTokenMatchMethod() {
-		InvertibleTokenRule lengthRule = createLengthRule(4);
+		NegatableTokenRule lengthRule = createLengthRule(4);
 		Token matchingToken = createToken("test");
 		Token nonMatchingToken = createToken("hi");
 		
@@ -122,7 +122,7 @@ class InvertibleTokenRuleTest {
 	
 	@Test
 	void defaultMatchStreamConsumesToken() {
-		InvertibleTokenRule rule = createAlwaysTrueRule();
+		NegatableTokenRule rule = createAlwaysTrueRule();
 		Token token = createToken("test");
 		List<Token> tokens = List.of(token);
 		TokenStream stream = new TokenStream(tokens, 0);
@@ -137,7 +137,7 @@ class InvertibleTokenRuleTest {
 	
 	@Test
 	void defaultMatchStreamAdvancesCorrectly() {
-		InvertibleTokenRule rule = createAlwaysTrueRule();
+		NegatableTokenRule rule = createAlwaysTrueRule();
 		Token token1 = createToken("first");
 		Token token2 = createToken("second");
 		List<Token> tokens = List.of(token1, token2);
@@ -156,7 +156,7 @@ class InvertibleTokenRuleTest {
 	
 	@Test
 	void defaultNotCreateNegatedRule() {
-		InvertibleTokenRule rule = createAlwaysTrueRule();
+		NegatableTokenRule rule = createAlwaysTrueRule();
 		
 		TokenRule negatedRule = rule.not();
 		
@@ -166,8 +166,8 @@ class InvertibleTokenRuleTest {
 	
 	@Test
 	void defaultNotNegatesMatchingLogic() {
-		InvertibleTokenRule alwaysTrueRule = createAlwaysTrueRule();
-		InvertibleTokenRule alwaysFalseRule = createAlwaysFalseRule();
+		NegatableTokenRule alwaysTrueRule = createAlwaysTrueRule();
+		NegatableTokenRule alwaysFalseRule = createAlwaysFalseRule();
 		
 		TokenRule negatedTrue = alwaysTrueRule.not();
 		TokenRule negatedFalse = alwaysFalseRule.not();
@@ -184,7 +184,7 @@ class InvertibleTokenRuleTest {
 	
 	@Test
 	void defaultNotNegatedRuleConsumesToken() {
-		InvertibleTokenRule alwaysFalseRule = createAlwaysFalseRule();
+		NegatableTokenRule alwaysFalseRule = createAlwaysFalseRule();
 		TokenRule negatedRule = alwaysFalseRule.not();
 		
 		Token token = createToken("test");
@@ -202,7 +202,7 @@ class InvertibleTokenRuleTest {
 	
 	@Test
 	void defaultNotDoubleNegationReturnsOriginal() {
-		InvertibleTokenRule originalRule = createAlwaysTrueRule();
+		NegatableTokenRule originalRule = createAlwaysTrueRule();
 		
 		TokenRule negatedRule = originalRule.not();
 		TokenRule doubleNegatedRule = negatedRule.not();
@@ -212,7 +212,7 @@ class InvertibleTokenRuleTest {
 	
 	@Test
 	void defaultNotTripleNegationWorks() {
-		InvertibleTokenRule originalRule = createAlwaysTrueRule();
+		NegatableTokenRule originalRule = createAlwaysTrueRule();
 		
 		TokenRule negatedRule = originalRule.not();
 		TokenRule doubleNegatedRule = negatedRule.not();
@@ -225,7 +225,7 @@ class InvertibleTokenRuleTest {
 	
 	@Test
 	void defaultNotWithComplexRule() {
-		InvertibleTokenRule containsRule = createContainsRule();
+		NegatableTokenRule containsRule = createContainsRule();
 		TokenRule negatedRule = containsRule.not();
 		
 		Token matchingToken = createToken("testing");
@@ -240,7 +240,7 @@ class InvertibleTokenRuleTest {
 	
 	@Test
 	void defaultNotWithMultipleTokensInStream() {
-		InvertibleTokenRule lengthRule = createLengthRule(3);
+		NegatableTokenRule lengthRule = createLengthRule(3);
 		TokenRule negatedRule = lengthRule.not();
 		
 		Token matchingToken = createToken("abc");
@@ -256,7 +256,7 @@ class InvertibleTokenRuleTest {
 	
 	@Test
 	void defaultNotNegatedRuleHasCorrectMatchInfo() {
-		InvertibleTokenRule alwaysFalseRule = createAlwaysFalseRule();
+		NegatableTokenRule alwaysFalseRule = createAlwaysFalseRule();
 		TokenRule negatedRule = alwaysFalseRule.not();
 		
 		Token token = createToken("test");
@@ -273,7 +273,7 @@ class InvertibleTokenRuleTest {
 	
 	@Test
 	void defaultNotWithEmptyTokenValue() {
-		InvertibleTokenRule emptyRule = token -> token.value().isEmpty();
+		NegatableTokenRule emptyRule = token -> token.value().isEmpty();
 		TokenRule negatedRule = emptyRule.not();
 		
 		Token emptyToken = createToken("");
@@ -288,7 +288,7 @@ class InvertibleTokenRuleTest {
 	
 	@Test
 	void defaultNotWithSpecialCharacters() {
-		InvertibleTokenRule specialCharRule = token -> token.value().matches("\\W+");
+		NegatableTokenRule specialCharRule = token -> token.value().matches("\\W+");
 		TokenRule negatedRule = specialCharRule.not();
 		
 		Token specialToken = createToken("!@#");
@@ -303,7 +303,7 @@ class InvertibleTokenRuleTest {
 	
 	@Test
 	void defaultNotConsistencyAcrossMultipleCalls() {
-		InvertibleTokenRule rule = createLengthRule(5);
+		NegatableTokenRule rule = createLengthRule(5);
 		TokenRule negatedRule = rule.not();
 		
 		Token matchingToken = createToken("hello");
@@ -319,7 +319,7 @@ class InvertibleTokenRuleTest {
 	
 	@Test
 	void defaultNotNegatedRuleWorksWithEmptyStream() {
-		InvertibleTokenRule rule = createAlwaysTrueRule();
+		NegatableTokenRule rule = createAlwaysTrueRule();
 		TokenRule negatedRule = rule.not();
 		
 		assertNull(negatedRule.match(new TokenStream(Collections.emptyList())));
@@ -327,7 +327,7 @@ class InvertibleTokenRuleTest {
 	
 	@Test
 	void defaultNotNegatedRuleThrowsWithNullStream() {
-		InvertibleTokenRule rule = createAlwaysTrueRule();
+		NegatableTokenRule rule = createAlwaysTrueRule();
 		TokenRule negatedRule = rule.not();
 		
 		assertThrows(NullPointerException.class, () -> negatedRule.match(null));
@@ -335,7 +335,7 @@ class InvertibleTokenRuleTest {
 	
 	@Test
 	void defaultNotWithCaseInsensitiveRule() {
-		InvertibleTokenRule caseInsensitiveRule = token -> "hello".equalsIgnoreCase(token.value());
+		NegatableTokenRule caseInsensitiveRule = token -> "hello".equalsIgnoreCase(token.value());
 		TokenRule negatedRule = caseInsensitiveRule.not();
 		
 		Token lowerToken = createToken("hello");
@@ -353,7 +353,7 @@ class InvertibleTokenRuleTest {
 	
 	@Test
 	void defaultNotAlternatingNegations() {
-		InvertibleTokenRule originalRule = createAlwaysTrueRule();
+		NegatableTokenRule originalRule = createAlwaysTrueRule();
 		
 		TokenRule firstNegation = originalRule.not();
 		TokenRule secondNegation = firstNegation.not();
@@ -368,7 +368,7 @@ class InvertibleTokenRuleTest {
 	
 	@Test
 	void defaultNotPreservesOriginalRuleBehavior() {
-		InvertibleTokenRule lengthRule = createLengthRule(4);
+		NegatableTokenRule lengthRule = createLengthRule(4);
 		TokenRule doubleNegated = lengthRule.not().not();
 		
 		Token matchingToken = createToken("test");
@@ -389,7 +389,7 @@ class InvertibleTokenRuleTest {
 	
 	@Test
 	void functionalInterfaceWorksWithLambda() {
-		InvertibleTokenRule lambdaRule = token -> token.value().startsWith("prefix");
+		NegatableTokenRule lambdaRule = token -> token.value().startsWith("prefix");
 		
 		Token matchingToken = createToken("prefixTest");
 		Token nonMatchingToken = createToken("test");
@@ -403,7 +403,7 @@ class InvertibleTokenRuleTest {
 	
 	@Test
 	void functionalInterfaceWorksWithMethodReference() {
-		InvertibleTokenRule methodRefRule = token -> token.value().matches("\\d+");
+		NegatableTokenRule methodRefRule = token -> token.value().matches("\\d+");
 		
 		Token numericToken = createToken("123");
 		Token nonNumericToken = createToken("abc");

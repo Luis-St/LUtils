@@ -49,7 +49,7 @@ import java.util.*;
  * @author Luis-St
  */
 @FunctionalInterface
-public interface InvertibleTokenRule extends TokenRule {
+public interface NegatableTokenRule extends TokenRule {
 	
 	/**
 	 * Matches the given token against the logic of the rule.<br>
@@ -91,7 +91,7 @@ public interface InvertibleTokenRule extends TokenRule {
 				int startIndex = stream.getCurrentIndex();
 				Token token = stream.getCurrentToken();
 				
-				if (!InvertibleTokenRule.this.match(token)) {
+				if (!NegatableTokenRule.this.match(token)) {
 					List<Token> matchedTokens = Collections.singletonList(token);
 					return new TokenRuleMatch(startIndex, stream.consumeToken(), matchedTokens, this);
 				}
@@ -100,7 +100,7 @@ public interface InvertibleTokenRule extends TokenRule {
 			
 			@Override
 			public @NotNull TokenRule not() {
-				return InvertibleTokenRule.this; // Inverting the not() method returns the original rule, preventing double negation and nesting of classes
+				return NegatableTokenRule.this; // Negating the not() method returns the original rule, preventing double negation and nesting of classes
 			}
 		};
 	}
