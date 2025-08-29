@@ -63,7 +63,7 @@ class NeverMatchTokenRuleTest {
 	}
 	
 	@Test
-	void matchWithEmptyTokenList() {
+	void matchWithEmptyTokenStream() {
 		NeverMatchTokenRule rule = NeverMatchTokenRule.INSTANCE;
 		
 		assertNull(rule.match(new TokenStream(Collections.emptyList())));
@@ -129,7 +129,7 @@ class NeverMatchTokenRuleTest {
 	}
 	
 	@Test
-	void matchWithLargeTokenList() {
+	void matchWithLargeTokenStream() {
 		NeverMatchTokenRule rule = NeverMatchTokenRule.INSTANCE;
 		List<Token> largeList = IntStream.range(0, 1000).mapToObj(i -> createToken("token" + i)).toList();
 		
@@ -311,7 +311,7 @@ class NeverMatchTokenRuleTest {
 	}
 	
 	@Test
-	void notWithEmptyTokenList() {
+	void notWithEmptyTokenStream() {
 		NeverMatchTokenRule rule = NeverMatchTokenRule.INSTANCE;
 		TokenRule negatedRule = rule.not();
 		
@@ -362,7 +362,7 @@ class NeverMatchTokenRuleTest {
 	}
 	
 	@Test
-	void notWithLargeTokenList() {
+	void notWithLargeTokenStream() {
 		NeverMatchTokenRule rule = NeverMatchTokenRule.INSTANCE;
 		TokenRule negatedRule = rule.not();
 		

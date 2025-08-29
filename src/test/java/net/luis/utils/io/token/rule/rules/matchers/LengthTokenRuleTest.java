@@ -108,7 +108,7 @@ class LengthTokenRuleTest {
 	}
 	
 	@Test
-	void matchWithEmptyTokenList() {
+	void matchWithEmptyTokenStream() {
 		LengthTokenRule rule = new LengthTokenRule(1, 5);
 		
 		assertNull(rule.match(new TokenStream(Collections.emptyList())));

@@ -50,7 +50,7 @@ class AlwaysMatchTokenRuleTest {
 	}
 	
 	@Test
-	void matchWithEmptyTokenList() {
+	void matchWithEmptyTokenStream() {
 		AlwaysMatchTokenRule rule = AlwaysMatchTokenRule.INSTANCE;
 		
 		assertNull(rule.match(new TokenStream(Collections.emptyList())));
@@ -154,7 +154,7 @@ class AlwaysMatchTokenRuleTest {
 	}
 	
 	@Test
-	void matchWithLargeTokenList() {
+	void matchWithLargeTokenStream() {
 		AlwaysMatchTokenRule rule = AlwaysMatchTokenRule.INSTANCE;
 		List<Token> largeList = IntStream.range(0, 100).mapToObj(i -> createToken("token" + i)).toList();
 		
@@ -286,7 +286,7 @@ class AlwaysMatchTokenRuleTest {
 	}
 	
 	@Test
-	void notWithEmptyTokenList() {
+	void notWithEmptyTokenStream() {
 		AlwaysMatchTokenRule rule = AlwaysMatchTokenRule.INSTANCE;
 		TokenRule negatedRule = rule.not();
 		
@@ -327,7 +327,7 @@ class AlwaysMatchTokenRuleTest {
 	}
 	
 	@Test
-	void notWithLargeTokenList() {
+	void notWithLargeTokenStream() {
 		AlwaysMatchTokenRule rule = AlwaysMatchTokenRule.INSTANCE;
 		TokenRule negatedRule = rule.not();
 		

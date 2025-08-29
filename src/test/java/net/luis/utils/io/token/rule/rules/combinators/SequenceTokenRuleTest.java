@@ -131,7 +131,7 @@ class SequenceTokenRuleTest {
 	}
 	
 	@Test
-	void matchWithEmptyTokenList() {
+	void matchWithEmptyTokenStream() {
 		SequenceTokenRule rule = new SequenceTokenRule(List.of(createRule("test1"), createRule("test2")));
 		
 		assertNull(rule.match(new TokenStream(Collections.emptyList())));

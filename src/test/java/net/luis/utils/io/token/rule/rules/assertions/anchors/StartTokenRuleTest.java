@@ -22,8 +22,6 @@ import net.luis.utils.io.token.TokenStream;
 import net.luis.utils.io.token.rule.TokenRuleMatch;
 import net.luis.utils.io.token.rule.rules.TokenRule;
 import net.luis.utils.io.token.rule.rules.TokenRules;
-import net.luis.utils.io.token.rule.rules.assertions.anchors.AnchorType;
-import net.luis.utils.io.token.rule.rules.assertions.anchors.StartTokenRule;
 import net.luis.utils.io.token.tokens.SimpleToken;
 import net.luis.utils.io.token.tokens.Token;
 import org.jetbrains.annotations.NotNull;
@@ -68,7 +66,7 @@ class StartTokenRuleTest {
 	}
 	
 	@Test
-	void documentMatchWithEmptyTokenListAtStartIndex() {
+	void documentMatchWithEmptyTokenStreamAtStartIndex() {
 		StartTokenRule rule = new StartTokenRule(AnchorType.DOCUMENT);
 		
 		TokenRuleMatch match = rule.match(new TokenStream(Collections.emptyList(), 0));
@@ -156,7 +154,7 @@ class StartTokenRuleTest {
 	}
 	
 	@Test
-	void documentMatchWithLargeTokenList() {
+	void documentMatchWithLargeTokenStream() {
 		StartTokenRule rule = new StartTokenRule(AnchorType.DOCUMENT);
 		List<Token> largeList = IntStream.range(0, 100).mapToObj(i -> createToken("token" + i)).toList();
 		
@@ -178,7 +176,7 @@ class StartTokenRuleTest {
 	}
 	
 	@Test
-	void lineMatchWithEmptyTokenListAtStartIndex() {
+	void lineMatchWithEmptyTokenStreamAtStartIndex() {
 		StartTokenRule rule = new StartTokenRule(AnchorType.LINE);
 		
 		TokenRuleMatch match = rule.match(new TokenStream(Collections.emptyList(), 0));
@@ -535,14 +533,11 @@ class StartTokenRuleTest {
 		TokenRuleMatch match1 = negatedRule.match(stream1);
 		TokenRuleMatch match2 = negatedRule.match(stream2);
 		
-		if (match1 == null) {
-			assertNull(match2);
-		} else {
-			assertNotNull(match2);
-			assertEquals(match1.startIndex(), match2.startIndex());
-			assertEquals(match1.endIndex(), match2.endIndex());
-			assertEquals(match1.matchedTokens(), match2.matchedTokens());
-		}
+		assertNotNull(match1);
+		assertNotNull(match2);
+		assertEquals(match1.startIndex(), match2.startIndex());
+		assertEquals(match1.endIndex(), match2.endIndex());
+		assertEquals(match1.matchedTokens(), match2.matchedTokens());
 	}
 	
 	@Test
@@ -563,11 +558,10 @@ class StartTokenRuleTest {
 		
 		TokenRuleMatch match = negatedRule.match(stream);
 		
-		if (match != null) {
-			assertEquals(1, match.startIndex());
-			assertEquals(1, match.endIndex());
-			assertTrue(match.matchedTokens().isEmpty());
-		}
+		assertNotNull(match);
+		assertEquals(1, match.startIndex());
+		assertEquals(1, match.endIndex());
+		assertTrue(match.matchedTokens().isEmpty());
 	}
 	
 	@Test
@@ -598,7 +592,7 @@ class StartTokenRuleTest {
 	}
 	
 	@Test
-	void negatedRuleWithEmptyTokenList() {
+	void negatedRuleWithEmptyTokenStream() {
 		StartTokenRule documentRule = new StartTokenRule(AnchorType.DOCUMENT);
 		StartTokenRule lineRule = new StartTokenRule(AnchorType.LINE);
 		TokenRule negatedDocumentRule = documentRule.not();
