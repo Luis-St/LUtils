@@ -210,7 +210,7 @@ public final class TokenRules {
 	 * @see AnyOfTokenRule
 	 */
 	public static @NotNull TokenRule any(TokenRule @NotNull ... tokenRules) {
-		return any(Set.of(Objects.requireNonNull(tokenRules, "Token rule array must not be null")));
+		return any(List.of(Objects.requireNonNull(tokenRules, "Token rule array must not be null")));
 	}
 	
 	/**
@@ -218,11 +218,11 @@ public final class TokenRules {
 	 *
 	 * @param tokenRules The token rules to match any of
 	 * @return The created token rule
-	 * @throws NullPointerException If the token rule set or any of its elements are null
-	 * @throws IllegalArgumentException If the token rule set is empty
+	 * @throws NullPointerException If the token rule list or any of its elements are null
+	 * @throws IllegalArgumentException If the token rule list is empty
 	 * @see AnyOfTokenRule
 	 */
-	public static @NotNull TokenRule any(@NotNull Set<TokenRule> tokenRules) {
+	public static @NotNull TokenRule any(@NotNull List<TokenRule> tokenRules) {
 		return new AnyOfTokenRule(tokenRules);
 	}
 	

@@ -256,7 +256,7 @@ class BoundaryTokenRuleTest {
 	
 	@Test
 	void matchWithAnyOfBetween() {
-		AnyOfTokenRule anyOf = new AnyOfTokenRule(Set.of(createRule("option1"), createRule("option2")));
+		AnyOfTokenRule anyOf = new AnyOfTokenRule(List.of(createRule("option1"), createRule("option2")));
 		BoundaryTokenRule rule = new BoundaryTokenRule(createRule("["), anyOf, createRule("]"));
 		
 		List<Token> withOption1 = List.of(createToken("["), createToken("option1"), createToken("]"));

@@ -36,13 +36,13 @@ import java.util.*;
  * @param tokenRules The set of token rules to match against
  */
 public record AnyOfTokenRule(
-	@NotNull Set<TokenRule> tokenRules
+	@NotNull List<TokenRule> tokenRules
 ) implements TokenRule {
 	
 	/**
 	 * Constructs a new any of token rule with the given token rules.<br>
 	 *
-	 * @param tokenRules The set of token rules to match against
+	 * @param tokenRules The list of token rules to match against
 	 * @throws NullPointerException If the token rule list is null
 	 */
 	public AnyOfTokenRule {
@@ -50,7 +50,10 @@ public record AnyOfTokenRule(
 		if (tokenRules.isEmpty()) {
 			throw new IllegalArgumentException("Token rule list must not be empty");
 		}
-		tokenRules = Collections.unmodifiableSequencedSet(new LinkedHashSet<>(tokenRules));
+		for (TokenRule tokenRule : tokenRules) {
+			Objects.requireNonNull(tokenRule, "Token rule list must not contain a null element");
+		}
+		tokenRules = List.copyOf(tokenRules);
 	}
 	
 	@Override

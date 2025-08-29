@@ -18,6 +18,7 @@
 
 package net.luis.utils.io.token.rule.rules.combinators;
 
+import com.google.common.collect.Lists;
 import net.luis.utils.io.token.TokenStream;
 import net.luis.utils.io.token.rule.TokenRuleMatch;
 import net.luis.utils.io.token.rule.rules.TokenRule;
@@ -69,19 +70,19 @@ class AnyOfTokenRuleTest {
 	
 	@Test
 	void constructorWithEmptyTokenRules() {
-		assertThrows(IllegalArgumentException.class, () -> new AnyOfTokenRule(Collections.emptySet()));
+		assertThrows(IllegalArgumentException.class, () -> new AnyOfTokenRule(Collections.emptyList()));
 	}
 	
 	@Test
 	void constructorWithValidTokenRules() {
-		Set<TokenRule> rules = Set.of(createRule("test1"), createRule("test2"));
+		List<TokenRule> rules = List.of(createRule("test1"), createRule("test2"));
 		
 		assertDoesNotThrow(() -> new AnyOfTokenRule(rules));
 	}
 	
 	@Test
 	void constructorWithSingleTokenRule() {
-		Set<TokenRule> rules = Set.of(createRule("single"));
+		List<TokenRule> rules = List.of(createRule("single"));
 		
 		assertDoesNotThrow(() -> new AnyOfTokenRule(rules));
 	}
@@ -90,10 +91,10 @@ class AnyOfTokenRuleTest {
 	void tokenRulesReturnsCorrectSet() {
 		TokenRule rule1 = createRule("test1");
 		TokenRule rule2 = createRule("test2");
-		Set<TokenRule> originalRules = Set.of(rule1, rule2);
+		List<TokenRule> originalRules = List.of(rule1, rule2);
 		AnyOfTokenRule anyRule = new AnyOfTokenRule(originalRules);
 		
-		Set<TokenRule> returnedRules = anyRule.tokenRules();
+		List<TokenRule> returnedRules = anyRule.tokenRules();
 		
 		assertEquals(originalRules, returnedRules);
 		assertTrue(returnedRules.contains(rule1));
@@ -102,10 +103,10 @@ class AnyOfTokenRuleTest {
 	
 	@Test
 	void tokenRulesReturnsUnmodifiableSet() {
-		Set<TokenRule> rules = Set.of(createRule("test"));
+		List<TokenRule> rules = List.of(createRule("test"));
 		AnyOfTokenRule anyRule = new AnyOfTokenRule(rules);
 		
-		Set<TokenRule> returnedRules = anyRule.tokenRules();
+		List<TokenRule> returnedRules = anyRule.tokenRules();
 		
 		assertThrows(UnsupportedOperationException.class, () -> returnedRules.add(createRule("new")));
 		assertThrows(UnsupportedOperationException.class, () -> returnedRules.remove(rules.iterator().next()));
@@ -114,21 +115,21 @@ class AnyOfTokenRuleTest {
 	
 	@Test
 	void matchWithNullTokenStream() {
-		AnyOfTokenRule rule = new AnyOfTokenRule(Set.of(createRule("test")));
+		AnyOfTokenRule rule = new AnyOfTokenRule(List.of(createRule("test")));
 		
 		assertThrows(NullPointerException.class, () -> rule.match(null));
 	}
 	
 	@Test
 	void matchWithEmptyTokenStream() {
-		AnyOfTokenRule rule = new AnyOfTokenRule(Set.of(createRule("test")));
+		AnyOfTokenRule rule = new AnyOfTokenRule(List.of(createRule("test")));
 		
 		assertNull(rule.match(new TokenStream(Collections.emptyList())));
 	}
 	
 	@Test
 	void matchWithIndexOutOfBounds() {
-		AnyOfTokenRule rule = new AnyOfTokenRule(Set.of(createRule("test")));
+		AnyOfTokenRule rule = new AnyOfTokenRule(List.of(createRule("test")));
 		List<Token> tokens = List.of(createToken("test"));
 		
 		assertThrows(IndexOutOfBoundsException.class, () -> rule.match(new TokenStream(tokens, 1)));
@@ -140,7 +141,7 @@ class AnyOfTokenRuleTest {
 	void matchWithFirstMatchingRule() {
 		TokenRule rule1 = createRule("match");
 		TokenRule rule2 = createRule("other");
-		AnyOfTokenRule anyRule = new AnyOfTokenRule(Set.of(rule1, rule2));
+		AnyOfTokenRule anyRule = new AnyOfTokenRule(List.of(rule1, rule2));
 		Token token = createToken("match");
 		List<Token> tokens = List.of(token);
 		
@@ -157,7 +158,7 @@ class AnyOfTokenRuleTest {
 	void matchWithSecondMatchingRule() {
 		TokenRule rule1 = createRule("nomatch");
 		TokenRule rule2 = createRule("match");
-		AnyOfTokenRule anyRule = new AnyOfTokenRule(Set.of(rule1, rule2));
+		AnyOfTokenRule anyRule = new AnyOfTokenRule(List.of(rule1, rule2));
 		Token token = createToken("match");
 		List<Token> tokens = List.of(token);
 		
@@ -171,7 +172,7 @@ class AnyOfTokenRuleTest {
 	void matchWithNoMatchingRules() {
 		TokenRule rule1 = createRule("nomatch1");
 		TokenRule rule2 = createRule("nomatch2");
-		AnyOfTokenRule anyRule = new AnyOfTokenRule(Set.of(rule1, rule2));
+		AnyOfTokenRule anyRule = new AnyOfTokenRule(List.of(rule1, rule2));
 		Token token = createToken("different");
 		List<Token> tokens = List.of(token);
 		
@@ -182,9 +183,8 @@ class AnyOfTokenRuleTest {
 	void matchReturnsFirstMatchInOrder() {
 		TokenRule alwaysMatch1 = TokenRules.alwaysMatch();
 		TokenRule alwaysMatch2 = TokenRules.alwaysMatch();
-		LinkedHashSet<TokenRule> orderedRules = new LinkedHashSet<>();
-		orderedRules.add(alwaysMatch1);
-		orderedRules.add(alwaysMatch2);
+		List<TokenRule> orderedRules = Lists.newArrayList(alwaysMatch1, alwaysMatch2);
+		
 		AnyOfTokenRule anyRule = new AnyOfTokenRule(orderedRules);
 		Token token = createToken("test");
 		List<Token> tokens = List.of(token);
@@ -198,7 +198,7 @@ class AnyOfTokenRuleTest {
 	@Test
 	void matchWithSingleRule() {
 		TokenRule rule = createRule("single");
-		AnyOfTokenRule anyRule = new AnyOfTokenRule(Set.of(rule));
+		AnyOfTokenRule anyRule = new AnyOfTokenRule(List.of(rule));
 		Token matchingToken = createToken("single");
 		Token nonMatchingToken = createToken("other");
 		
@@ -216,10 +216,8 @@ class AnyOfTokenRuleTest {
 		TokenRule rule1 = createRule("test");
 		TokenRule rule2 = createRule("test");
 		TokenRule rule3 = createRule("other");
-		LinkedHashSet<TokenRule> rules = new LinkedHashSet<>();
-		rules.add(rule1);
-		rules.add(rule2);
-		rules.add(rule3);
+		
+		List<TokenRule> rules = List.of(rule1, rule2, rule3);
 		AnyOfTokenRule anyRule = new AnyOfTokenRule(rules);
 		Token token = createToken("test");
 		List<Token> tokens = List.of(token);
@@ -234,7 +232,7 @@ class AnyOfTokenRuleTest {
 	void matchAtDifferentIndices() {
 		TokenRule rule1 = createRule("first");
 		TokenRule rule2 = createRule("second");
-		AnyOfTokenRule anyRule = new AnyOfTokenRule(Set.of(rule1, rule2));
+		AnyOfTokenRule anyRule = new AnyOfTokenRule(List.of(rule1, rule2));
 		Token token1 = createToken("first");
 		Token token2 = createToken("second");
 		Token token3 = createToken("other");
@@ -257,7 +255,7 @@ class AnyOfTokenRuleTest {
 	void matchWithComplexRules() {
 		TokenRule patternRule = TokenRules.pattern("\\d+");
 		TokenRule stringRule = createRule("text");
-		AnyOfTokenRule anyRule = new AnyOfTokenRule(Set.of(patternRule, stringRule));
+		AnyOfTokenRule anyRule = new AnyOfTokenRule(List.of(patternRule, stringRule));
 		Token numberToken = createToken("123");
 		Token textToken = createToken("text");
 		Token otherToken = createToken("other");
@@ -277,7 +275,7 @@ class AnyOfTokenRuleTest {
 	
 	@Test
 	void matchWithManyRules() {
-		Set<TokenRule> manyRules = Set.of(
+		List<TokenRule> manyRules = List.of(
 			createRule("rule1"), createRule("rule2"), createRule("rule3"),
 			createRule("rule4"), createRule("rule5"), createRule("rule6")
 		);
@@ -296,14 +294,14 @@ class AnyOfTokenRuleTest {
 	
 	@Test
 	void notThrowsUnsupportedOperationException() {
-		AnyOfTokenRule rule = new AnyOfTokenRule(Set.of(createRule("test")));
+		AnyOfTokenRule rule = new AnyOfTokenRule(List.of(createRule("test")));
 		
 		assertThrows(UnsupportedOperationException.class, rule::not);
 	}
 	
 	@Test
 	void equalRulesHaveSameHashCode() {
-		Set<TokenRule> rules = Set.of(createRule("test1"), createRule("test2"));
+		List<TokenRule> rules = List.of(createRule("test1"), createRule("test2"));
 		AnyOfTokenRule rule1 = new AnyOfTokenRule(rules);
 		AnyOfTokenRule rule2 = new AnyOfTokenRule(rules);
 		
@@ -312,7 +310,7 @@ class AnyOfTokenRuleTest {
 	
 	@Test
 	void toStringContainsRuleInfo() {
-		AnyOfTokenRule rule = new AnyOfTokenRule(Set.of(createRule("test")));
+		AnyOfTokenRule rule = new AnyOfTokenRule(List.of(createRule("test")));
 		String ruleString = rule.toString();
 		
 		assertTrue(ruleString.contains("AnyOfTokenRule"));

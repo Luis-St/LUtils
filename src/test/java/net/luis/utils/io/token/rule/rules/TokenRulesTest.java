@@ -255,7 +255,7 @@ class TokenRulesTest {
 		TokenRule rule2 = createRule("option2");
 		TokenRule anyOf = TokenRules.any(rule1, rule2);
 		
-		Set<TokenRule> rules = assertInstanceOf(AnyOfTokenRule.class, anyOf).tokenRules();
+		List<TokenRule> rules = assertInstanceOf(AnyOfTokenRule.class, anyOf).tokenRules();
 		assertEquals(2, rules.size());
 		assertTrue(rules.contains(rule1));
 		assertTrue(rules.contains(rule2));
@@ -275,7 +275,7 @@ class TokenRulesTest {
 	void anyWithSetCreatesAnyOfTokenRule() {
 		TokenRule rule1 = createRule("x");
 		TokenRule rule2 = createRule("y");
-		Set<TokenRule> ruleSet = Set.of(rule1, rule2);
+		List<TokenRule> ruleSet = List.of(rule1, rule2);
 		TokenRule anyOf = TokenRules.any(ruleSet);
 		
 		assertEquals(ruleSet, assertInstanceOf(AnyOfTokenRule.class, anyOf).tokenRules());
@@ -283,7 +283,7 @@ class TokenRulesTest {
 	
 	@Test
 	void anyWithNullSet() {
-		assertThrows(NullPointerException.class, () -> TokenRules.any((Set<TokenRule>) null));
+		assertThrows(NullPointerException.class, () -> TokenRules.any((List<TokenRule>) null));
 	}
 	
 	@Test
