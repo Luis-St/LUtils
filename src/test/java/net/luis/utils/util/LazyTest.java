@@ -27,30 +27,30 @@ import java.util.concurrent.atomic.AtomicInteger;
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
- * Test class for {@link LazyInitialization}.<br>
+ * Test class for {@link Lazy}.<br>
  *
  * @author Luis-St
  */
-class LazyInitializationTest {
+class LazyTest {
 	
 	@Test
 	void constructorWithoutParameters() {
-		assertDoesNotThrow(() -> new LazyInitialization<>());
+		assertDoesNotThrow(() -> new Lazy<>());
 		
-		LazyInitialization<String> lazy = new LazyInitialization<>();
+		Lazy<String> lazy = new Lazy<>();
 		assertFalse(lazy.isInstantiated());
 	}
 	
 	@Test
 	void constructorWithValue() {
-		assertDoesNotThrow(() -> new LazyInitialization<>(10));
-		assertDoesNotThrow(() -> new LazyInitialization<>((Object) null));
+		assertDoesNotThrow(() -> new Lazy<>(10));
+		assertDoesNotThrow(() -> new Lazy<>((Object) null));
 		
-		LazyInitialization<Integer> lazy = new LazyInitialization<>(10);
+		Lazy<Integer> lazy = new Lazy<>(10);
 		assertTrue(lazy.isInstantiated());
 		assertEquals(Integer.valueOf(10), lazy.get());
 		
-		LazyInitialization<String> lazyNull = new LazyInitialization<>((String) null);
+		Lazy<String> lazyNull = new Lazy<>((String) null);
 		assertTrue(lazyNull.isInstantiated());
 		assertNull(lazyNull.get());
 	}
@@ -59,10 +59,10 @@ class LazyInitializationTest {
 	void constructorWithAction() {
 		AtomicInteger counter = new AtomicInteger(0);
 		
-		assertDoesNotThrow(() -> new LazyInitialization<>(v -> counter.incrementAndGet()));
-		assertThrows(NullPointerException.class, () -> new LazyInitialization<>(null));
+		assertDoesNotThrow(() -> new Lazy<>(v -> counter.incrementAndGet()));
+		assertThrows(NullPointerException.class, () -> new Lazy<>(null));
 		
-		LazyInitialization<String> lazy = new LazyInitialization<>(v -> counter.incrementAndGet());
+		Lazy<String> lazy = new Lazy<>(v -> counter.incrementAndGet());
 		assertFalse(lazy.isInstantiated());
 		assertEquals(0, counter.get());
 	}
@@ -71,11 +71,11 @@ class LazyInitializationTest {
 	void constructorWithValueAndAction() {
 		AtomicInteger counter = new AtomicInteger(0);
 		
-		assertDoesNotThrow(() -> new LazyInitialization<>(10, v -> counter.incrementAndGet()));
-		assertDoesNotThrow(() -> new LazyInitialization<>(null, v -> counter.incrementAndGet()));
-		assertThrows(NullPointerException.class, () -> new LazyInitialization<>(10, null));
+		assertDoesNotThrow(() -> new Lazy<>(10, v -> counter.incrementAndGet()));
+		assertDoesNotThrow(() -> new Lazy<>(null, v -> counter.incrementAndGet()));
+		assertThrows(NullPointerException.class, () -> new Lazy<>(10, null));
 		
-		LazyInitialization<Integer> lazy = new LazyInitialization<>(10, v -> counter.incrementAndGet());
+		Lazy<Integer> lazy = new Lazy<>(10, v -> counter.incrementAndGet());
 		assertTrue(lazy.isInstantiated());
 		assertEquals(Integer.valueOf(10), lazy.get());
 		assertEquals(0, counter.get());
@@ -83,27 +83,27 @@ class LazyInitializationTest {
 	
 	@Test
 	void getWhenNotInitialized() {
-		LazyInitialization<String> lazy = new LazyInitialization<>();
+		Lazy<String> lazy = new Lazy<>();
 		assertThrows(NotInitializedException.class, lazy::get);
 	}
 	
 	@Test
 	void getWhenInitialized() {
-		LazyInitialization<Integer> lazy = new LazyInitialization<>(42);
+		Lazy<Integer> lazy = new Lazy<>(42);
 		assertDoesNotThrow(lazy::get);
 		assertEquals(Integer.valueOf(42), lazy.get());
 	}
 	
 	@Test
 	void getWithNullValue() {
-		LazyInitialization<String> lazy = new LazyInitialization<>((String) null);
+		Lazy<String> lazy = new Lazy<>((String) null);
 		assertDoesNotThrow(lazy::get);
 		assertNull(lazy.get());
 	}
 	
 	@Test
 	void setWhenNotInitialized() {
-		LazyInitialization<String> lazy = new LazyInitialization<>();
+		Lazy<String> lazy = new Lazy<>();
 		assertDoesNotThrow(() -> lazy.set("value"));
 		
 		assertTrue(lazy.isInstantiated());
@@ -112,7 +112,7 @@ class LazyInitializationTest {
 	
 	@Test
 	void setWhenAlreadyInitialized() {
-		LazyInitialization<Integer> lazy = new LazyInitialization<>(10);
+		Lazy<Integer> lazy = new Lazy<>(10);
 		assertThrows(AlreadyInitializedException.class, () -> lazy.set(20));
 		
 		assertEquals(Integer.valueOf(10), lazy.get());
@@ -120,7 +120,7 @@ class LazyInitializationTest {
 	
 	@Test
 	void setWithNullValue() {
-		LazyInitialization<String> lazy = new LazyInitialization<>();
+		Lazy<String> lazy = new Lazy<>();
 		assertDoesNotThrow(() -> lazy.set(null));
 		
 		assertTrue(lazy.isInstantiated());
@@ -130,7 +130,7 @@ class LazyInitializationTest {
 	@Test
 	void setTriggersAction() {
 		AtomicInteger counter = new AtomicInteger(0);
-		LazyInitialization<String> lazy = new LazyInitialization<>(v -> {
+		Lazy<String> lazy = new Lazy<>(v -> {
 			if ("test".equals(v)) {
 				counter.incrementAndGet();
 			}
@@ -139,7 +139,7 @@ class LazyInitializationTest {
 		lazy.set("test");
 		assertEquals(1, counter.get());
 		
-		lazy = new LazyInitialization<>(v -> {
+		lazy = new Lazy<>(v -> {
 			if (v == null) {
 				counter.incrementAndGet();
 			}
@@ -150,19 +150,19 @@ class LazyInitializationTest {
 	
 	@Test
 	void isInstantiatedInitially() {
-		LazyInitialization<String> lazy = new LazyInitialization<>();
+		Lazy<String> lazy = new Lazy<>();
 		assertFalse(lazy.isInstantiated());
 		
-		LazyInitialization<Integer> lazyWithValue = new LazyInitialization<>(10);
+		Lazy<Integer> lazyWithValue = new Lazy<>(10);
 		assertTrue(lazyWithValue.isInstantiated());
 		
-		LazyInitialization<String> lazyWithAction = new LazyInitialization<>(v -> {});
+		Lazy<String> lazyWithAction = new Lazy<>(v -> {});
 		assertFalse(lazyWithAction.isInstantiated());
 	}
 	
 	@Test
 	void isInstantiatedAfterSet() {
-		LazyInitialization<String> lazy = new LazyInitialization<>();
+		Lazy<String> lazy = new Lazy<>();
 		assertFalse(lazy.isInstantiated());
 		
 		lazy.set("value");
@@ -171,23 +171,23 @@ class LazyInitializationTest {
 	
 	@Test
 	void isInstantiatedWithNullValue() {
-		LazyInitialization<String> lazy = new LazyInitialization<>((String) null);
+		Lazy<String> lazy = new Lazy<>((String) null);
 		assertTrue(lazy.isInstantiated());
 		
-		LazyInitialization<String> lazySet = new LazyInitialization<>();
+		Lazy<String> lazySet = new Lazy<>();
 		lazySet.set(null);
 		assertTrue(lazySet.isInstantiated());
 	}
 	
 	@Test
 	void hashCodeConsistency() {
-		LazyInitialization<String> lazy1 = new LazyInitialization<>("same");
-		LazyInitialization<String> lazy2 = new LazyInitialization<>("same");
+		Lazy<String> lazy1 = new Lazy<>("same");
+		Lazy<String> lazy2 = new Lazy<>("same");
 		
 		assertEquals(lazy1.hashCode(), lazy2.hashCode());
 		
-		LazyInitialization<String> lazyUninitialized1 = new LazyInitialization<>();
-		LazyInitialization<String> lazyUninitialized2 = new LazyInitialization<>();
+		Lazy<String> lazyUninitialized1 = new Lazy<>();
+		Lazy<String> lazyUninitialized2 = new Lazy<>();
 		
 		assertEquals(lazyUninitialized1.hashCode(), lazyUninitialized2.hashCode());
 	}

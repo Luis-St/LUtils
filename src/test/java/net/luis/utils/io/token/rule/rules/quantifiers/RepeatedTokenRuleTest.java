@@ -134,7 +134,7 @@ class RepeatedTokenRuleTest {
 	}
 	
 	@Test
-	void matchWithEmptyTokenList() {
+	void matchWithEmptyTokenStream() {
 		RepeatedTokenRule rule = new RepeatedTokenRule(createRule("test"), 1, 3);
 		
 		assertNull(rule.match(new TokenStream(Collections.emptyList())));

@@ -22,8 +22,6 @@ import net.luis.utils.io.token.TokenPosition;
 import net.luis.utils.io.token.TokenStream;
 import net.luis.utils.io.token.rule.TokenRuleMatch;
 import net.luis.utils.io.token.rule.rules.TokenRule;
-import net.luis.utils.io.token.rule.rules.assertions.anchors.AnchorType;
-import net.luis.utils.io.token.rule.rules.assertions.anchors.EndTokenRule;
 import net.luis.utils.io.token.tokens.SimpleToken;
 import net.luis.utils.io.token.tokens.Token;
 import org.jetbrains.annotations.NotNull;
@@ -77,7 +75,7 @@ class EndTokenRuleTest {
 	}
 	
 	@Test
-	void documentMatchWithEmptyTokenListAtIndexZero() {
+	void documentMatchWithTokenStreamListAtIndexZero() {
 		EndTokenRule rule = new EndTokenRule(AnchorType.DOCUMENT);
 		
 		TokenRuleMatch match = rule.match(new TokenStream(Collections.emptyList()));
@@ -116,7 +114,7 @@ class EndTokenRuleTest {
 	}
 	
 	@Test
-	void documentMatchWithLargeTokenListAtEnd() {
+	void documentMatchWithTokenStreamAtEnd() {
 		EndTokenRule rule = new EndTokenRule(AnchorType.DOCUMENT);
 		List<Token> largeList = createTokenList();
 		
@@ -125,7 +123,7 @@ class EndTokenRuleTest {
 	}
 	
 	@Test
-	void documentNoMatchWithLargeTokenListInMiddle() {
+	void documentNoMatchWithLargeTokenStreamInMiddle() {
 		EndTokenRule rule = new EndTokenRule(AnchorType.DOCUMENT);
 		List<Token> largeList = createTokenList();
 		
@@ -149,7 +147,7 @@ class EndTokenRuleTest {
 	}
 	
 	@Test
-	void lineMatchWithEmptyTokenListAtIndexZero() {
+	void lineMatchWithEmptyTokenStreamAtIndexZero() {
 		EndTokenRule rule = new EndTokenRule(AnchorType.LINE);
 		
 		TokenRuleMatch match = rule.match(new TokenStream(Collections.emptyList(), 0));
@@ -444,14 +442,11 @@ class EndTokenRuleTest {
 		TokenRuleMatch match1 = negatedRule.match(stream1);
 		TokenRuleMatch match2 = negatedRule.match(stream2);
 		
-		if (match1 == null) {
-			assertNull(match2);
-		} else {
-			assertNotNull(match2);
-			assertEquals(match1.startIndex(), match2.startIndex());
-			assertEquals(match1.endIndex(), match2.endIndex());
-			assertEquals(match1.matchedTokens(), match2.matchedTokens());
-		}
+		assertNotNull(match1);
+		assertNotNull(match2);
+		assertEquals(match1.startIndex(), match2.startIndex());
+		assertEquals(match1.endIndex(), match2.endIndex());
+		assertEquals(match1.matchedTokens(), match2.matchedTokens());
 	}
 	
 	@Test
@@ -472,11 +467,10 @@ class EndTokenRuleTest {
 		
 		TokenRuleMatch match = negatedRule.match(stream);
 		
-		if (match != null) {
-			assertEquals(0, match.startIndex());
-			assertEquals(0, match.endIndex());
-			assertTrue(match.matchedTokens().isEmpty());
-		}
+		assertNotNull(match);
+		assertEquals(0, match.startIndex());
+		assertEquals(0, match.endIndex());
+		assertTrue(match.matchedTokens().isEmpty());
 	}
 	
 	@Test

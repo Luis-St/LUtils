@@ -135,7 +135,7 @@ class BoundaryTokenRuleTest {
 	}
 	
 	@Test
-	void matchWithEmptyTokenList() {
+	void matchWithEmptyTokenStream() {
 		BoundaryTokenRule rule = new BoundaryTokenRule(createRule("start"), createRule("end"));
 		
 		assertNull(rule.match(new TokenStream(Collections.emptyList())));

@@ -65,7 +65,7 @@ class NegatableTokenRuleTest {
 	}
 	
 	@Test
-	void defaultMatchStreamWithEmptyTokenList() {
+	void matchStreamWithEmptyTokenStream() {
 		NegatableTokenRule rule = createAlwaysTrueRule();
 		
 		assertNull(rule.match(new TokenStream(Collections.emptyList())));

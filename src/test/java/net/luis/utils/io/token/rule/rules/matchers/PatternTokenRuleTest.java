@@ -102,7 +102,7 @@ class PatternTokenRuleTest {
 	}
 	
 	@Test
-	void matchWithEmptyTokenList() {
+	void matchWithEmptyTokenStream() {
 		PatternTokenRule rule = new PatternTokenRule("\\d+");
 		
 		assertNull(rule.match(new TokenStream(Collections.emptyList())));

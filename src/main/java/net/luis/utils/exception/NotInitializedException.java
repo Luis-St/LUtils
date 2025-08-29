@@ -18,14 +18,14 @@
 
 package net.luis.utils.exception;
 
-import net.luis.utils.util.LazyInitialization;
+import net.luis.utils.util.Lazy;
 import org.jetbrains.annotations.Nullable;
 
 /**
  * Thrown when an access or action is attempted on an object that has not been initialized<br>
  * but requires initialization before it can be used.<br>
  *
- * @see LazyInitialization
+ * @see Lazy
  *
  * @author Luis-St
  */

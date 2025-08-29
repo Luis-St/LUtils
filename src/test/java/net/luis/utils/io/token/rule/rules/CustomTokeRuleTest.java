@@ -70,7 +70,7 @@ class CustomTokeRuleTest {
 	}
 	
 	@Test
-	void matchWithEmptyTokenList() {
+	void matchWithEmptyTokenStream() {
 		CustomTokeRule rule = new CustomTokeRule(token -> true);
 		
 		assertNull(rule.match(new TokenStream(Collections.emptyList())));

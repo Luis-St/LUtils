@@ -22,7 +22,6 @@ import net.luis.utils.io.token.TokenStream;
 import net.luis.utils.io.token.rule.TokenRuleMatch;
 import net.luis.utils.io.token.rule.rules.TokenRule;
 import net.luis.utils.io.token.rule.rules.TokenRules;
-import net.luis.utils.io.token.rule.rules.matchers.PatternTokenRule;
 import net.luis.utils.io.token.tokens.SimpleToken;
 import net.luis.utils.io.token.tokens.Token;
 import org.jetbrains.annotations.NotNull;
@@ -91,7 +90,7 @@ class OptionalTokenRuleTest {
 	}
 	
 	@Test
-	void matchWithEmptyTokenList() {
+	void matchWithEmptyTokenStream() {
 		OptionalTokenRule rule = new OptionalTokenRule(createRule("test"));
 		
 		assertNull(rule.match(new TokenStream(Collections.emptyList())));
@@ -254,12 +253,12 @@ class OptionalTokenRuleTest {
 		TokenRuleMatch match1 = rule.match(new TokenStream(tokens, 0));
 		TokenRuleMatch match2 = rule.match(new TokenStream(tokens, 0));
 		
+		assertNotNull(match1);
+		assertNotNull(match2);
 		assertEquals(match1.startIndex(), match2.startIndex());
 		assertEquals(match1.endIndex(), match2.endIndex());
 		assertEquals(match1.matchedTokens().size(), match2.matchedTokens().size());
-		if (!match1.matchedTokens().isEmpty()) {
-			assertEquals(match1.matchedTokens().getFirst(), match2.matchedTokens().getFirst());
-		}
+		assertEquals(match1.matchedTokens().getFirst(), match2.matchedTokens().getFirst());
 	}
 	
 	@Test

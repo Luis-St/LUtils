@@ -21,10 +21,7 @@ package net.luis.utils.io.token.rule.rules;
 import net.luis.utils.io.token.TokenStream;
 import net.luis.utils.io.token.definition.StringTokenDefinition;
 import net.luis.utils.io.token.rule.TokenRuleMatch;
-import net.luis.utils.io.token.rule.rules.*;
-import net.luis.utils.io.token.tokens.SimpleToken;
-import net.luis.utils.io.token.tokens.Token;
-import net.luis.utils.io.token.tokens.TokenGroup;
+import net.luis.utils.io.token.tokens.*;
 import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.Test;
 
@@ -86,7 +83,7 @@ class TokenGroupRuleTest {
 	}
 	
 	@Test
-	void matchWithEmptyTokenList() {
+	void matchWithEmptyTokenStream() {
 		TokenGroupRule groupRule = new TokenGroupRule(TokenRules.alwaysMatch());
 		
 		assertNull(groupRule.match(new TokenStream(Collections.emptyList())));
