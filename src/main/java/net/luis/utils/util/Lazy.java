@@ -26,6 +26,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.Objects;
 import java.util.function.Consumer;
+import java.util.function.Supplier;
 
 /**
  * A class representing a lazy initialization of an object.<br>
@@ -34,7 +35,7 @@ import java.util.function.Consumer;
  *
  * @param <T> The type of the object to initialize
  */
-public class LazyInitialization<T> {
+public class Lazy<T> implements Supplier<T> {
 	
 	/**
 	 * The object to be initialized.<br>
@@ -52,7 +53,7 @@ public class LazyInitialization<T> {
 	/**
 	 * Constructs a new lazy initialization with no value and no initialization action.<br>
 	 */
-	public LazyInitialization() {
+	public Lazy() {
 		this(new MutableObject<>(), (v) -> {}, false);
 	}
 	
@@ -60,7 +61,7 @@ public class LazyInitialization<T> {
 	 * Constructs an already initialized lazy initialization with the given value.<br>
 	 * @param value The value to initialize the object with
 	 */
-	public LazyInitialization(@Nullable T value) {
+	public Lazy(@Nullable T value) {
 		this(new MutableObject<>(value), (v) -> {}, true);
 	}
 	
@@ -70,7 +71,7 @@ public class LazyInitialization<T> {
 	 * @param action The action to perform when the object is initialized
 	 * @throws NullPointerException If the action is null
 	 */
-	public LazyInitialization(@NotNull Consumer<T> action) {
+	public Lazy(@NotNull Consumer<T> action) {
 		this(new MutableObject<>(), action, false);
 	}
 	
@@ -81,7 +82,7 @@ public class LazyInitialization<T> {
 	 * @param action The action to perform when the object is initialized
 	 * @throws NullPointerException If the action is null
 	 */
-	public LazyInitialization(@Nullable T value, @NotNull Consumer<T> action) {
+	public Lazy(@Nullable T value, @NotNull Consumer<T> action) {
 		this(new MutableObject<>(value), action, true);
 	}
 	
@@ -92,11 +93,11 @@ public class LazyInitialization<T> {
 	 * @param action The action to perform when the object is initialized
 	 * @param initialised Whether the object has been initialized or not
 	 * @throws NullPointerException If the mutable or action is null
-	 * @see #LazyInitialization(Object)
-	 * @see #LazyInitialization(Consumer)
-	 * @see #LazyInitialization(Object, Consumer)
+	 * @see #Lazy(Object)
+	 * @see #Lazy(Consumer)
+	 * @see #Lazy(Object, Consumer)
 	 */
-	private LazyInitialization(@NotNull MutableObject<T> mutable, @NotNull Consumer<T> action, boolean initialised) {
+	private Lazy(@NotNull MutableObject<T> mutable, @NotNull Consumer<T> action, boolean initialised) {
 		this.object = Objects.requireNonNull(mutable, "Object must not be null");
 		this.action = Objects.requireNonNull(action, "Action must not be null");
 		this.initialised = initialised;
@@ -108,6 +109,7 @@ public class LazyInitialization<T> {
 	 * @return The value of the object
 	 * @throws NotInitializedException If the object has not been initialized yet
 	 */
+	@Override
 	public @Nullable T get() {
 		if (this.initialised) {
 			return this.object.getValue();
@@ -145,7 +147,7 @@ public class LazyInitialization<T> {
 	@Override
 	public boolean equals(Object o) {
 		if (this == o) return true;
-		if (!(o instanceof LazyInitialization<?> that)) return false;
+		if (!(o instanceof Lazy<?> that)) return false;
 		
 		if (this.initialised != that.initialised) return false;
 		return this.object.equals(that.object);
