@@ -31,6 +31,7 @@ import org.junit.jupiter.api.Test;
 import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 /**
  * Test class for {@link LookbehindTokenRule}.<br>
@@ -409,11 +410,8 @@ class LookbehindTokenRuleTest {
 		TokenRuleMatch negativeMatch = negativeLookbehind.match(new TokenStream(tokensWithBefore, 1));
 		TokenRuleMatch negatedPositiveMatch = negatedPositive.match(new TokenStream(tokensWithBefore, 1));
 		
-		assertNotNull(negativeMatch);
-		assertNotNull(negatedPositiveMatch);
-		assertEquals(negativeMatch.startIndex(), negatedPositiveMatch.startIndex());
-		assertEquals(negativeMatch.endIndex(), negatedPositiveMatch.endIndex());
-		assertEquals(negativeMatch.matchedTokens(), negatedPositiveMatch.matchedTokens());
+		assertNull(negativeMatch);
+		assertNull(negatedPositiveMatch);
 		
 		List<Token> tokensWithOther = List.of(other, current);
 		
@@ -439,34 +437,23 @@ class LookbehindTokenRuleTest {
 		Token current = createToken("current");
 		
 		List<Token> tokensWithBefore = List.of(before, current);
-		TokenStream streamWithBefore = new TokenStream(tokensWithBefore, 1);
 		
-		TokenRuleMatch positiveMatch = positiveLookbehind.match(streamWithBefore);
-		TokenRuleMatch negatedNegativeMatch = negatedNegative.match(streamWithBefore);
+		TokenRuleMatch positiveMatch = positiveLookbehind.match(new TokenStream(tokensWithBefore, 1));
+		TokenRuleMatch negatedNegativeMatch = negatedNegative.match(new TokenStream(tokensWithBefore, 1));
 		
-		if (positiveMatch == null) {
-			assertNull(negatedNegativeMatch);
-		} else {
-			assertNotNull(negatedNegativeMatch);
-			assertEquals(positiveMatch.startIndex(), negatedNegativeMatch.startIndex());
-			assertEquals(positiveMatch.endIndex(), negatedNegativeMatch.endIndex());
-			assertEquals(positiveMatch.matchedTokens(), negatedNegativeMatch.matchedTokens());
-		}
+		assertNotNull(positiveMatch);
+		assertNotNull(negatedNegativeMatch);
+		assertEquals(positiveMatch.startIndex(), negatedNegativeMatch.startIndex());
+		assertEquals(positiveMatch.endIndex(), negatedNegativeMatch.endIndex());
+		assertEquals(positiveMatch.matchedTokens(), negatedNegativeMatch.matchedTokens());
 		
 		List<Token> tokensWithOther = List.of(other, current);
-		TokenStream streamWithOther = new TokenStream(tokensWithOther, 1);
 		
-		TokenRuleMatch positiveMatchOther = positiveLookbehind.match(streamWithOther);
-		TokenRuleMatch negatedNegativeMatchOther = negatedNegative.match(streamWithOther);
+		TokenRuleMatch positiveMatchOther = positiveLookbehind.match(new TokenStream(tokensWithOther, 1));
+		TokenRuleMatch negatedNegativeMatchOther = negatedNegative.match(new TokenStream(tokensWithOther, 1));
 		
-		if (positiveMatchOther == null) {
-			assertNull(negatedNegativeMatchOther);
-		} else {
-			assertNotNull(negatedNegativeMatchOther);
-			assertEquals(positiveMatchOther.startIndex(), negatedNegativeMatchOther.startIndex());
-			assertEquals(positiveMatchOther.endIndex(), negatedNegativeMatchOther.endIndex());
-			assertEquals(positiveMatchOther.matchedTokens(), negatedNegativeMatchOther.matchedTokens());
-		}
+		assertNull(positiveMatchOther);
+		assertNull(negatedNegativeMatchOther);
 	}
 	
 	@Test
@@ -478,11 +465,9 @@ class LookbehindTokenRuleTest {
 		Token other = createToken("other");
 		Token current = createToken("current");
 		List<Token> tokens = List.of(other, current);
-		TokenStream stream1 = new TokenStream(tokens, 1);
-		TokenStream stream2 = new TokenStream(tokens, 1);
 		
-		TokenRuleMatch match1 = negatedRule.match(stream1);
-		TokenRuleMatch match2 = negatedRule.match(stream2);
+		TokenRuleMatch match1 = negatedRule.match(new TokenStream(tokens, 1));
+		TokenRuleMatch match2 = negatedRule.match(new TokenStream(tokens, 1));
 		
 		assertNotNull(match1);
 		assertNotNull(match2);
