@@ -45,7 +45,6 @@ public record SimpleToken(
 	 * @param definition The token definition
 	 * @param value The string value of the token
 	 * @param position The start position of the token
-	 * @param endPosition The end position of the token
 	 * @throws NullPointerException If any of the parameters are null
 	 * @throws IllegalArgumentException If the token value does not match the token definition
 	 */
