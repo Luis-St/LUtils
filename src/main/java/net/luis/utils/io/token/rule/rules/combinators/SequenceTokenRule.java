@@ -75,4 +75,9 @@ public record SequenceTokenRule(
 		}
 		return new TokenRuleMatch(startIndex, stream.getCurrentIndex(), matchedTokens, this);
 	}
+	
+	@Override
+	public @NotNull TokenRule not() {
+		return new AnyOfTokenRule(this.tokenRules.stream().map(TokenRule::not).toList()); // Negation using De Morgan's laws
+	}
 }

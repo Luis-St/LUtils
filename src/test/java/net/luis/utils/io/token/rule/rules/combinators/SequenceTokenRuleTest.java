@@ -375,10 +375,40 @@ class SequenceTokenRuleTest {
 	}
 	
 	@Test
-	void notThrowsUnsupportedOperationException() {
-		SequenceTokenRule rule = new SequenceTokenRule(List.of(createRule("test1"), createRule("test2")));
+	void notReturnsValidRule() {
+		SequenceTokenRule rule = new SequenceTokenRule(List.of(TokenRules.pattern("first"), TokenRules.pattern("second")));
 		
-		assertThrows(UnsupportedOperationException.class, rule::not);
+		assertDoesNotThrow(rule::not);
+		assertNotNull(rule.not());
+	}
+	
+	@Test
+	void notBehavesCorrectlyWithSingleElementSequence() {
+		SequenceTokenRule rule = new SequenceTokenRule(List.of(TokenRules.pattern("single")));
+		TokenRule negatedRule = rule.not();
+		
+		assertNotNull(rule.match(new TokenStream(List.of(createToken("single")), 0)));
+		assertNull(negatedRule.match(new TokenStream(List.of(createToken("single")), 0)));
+		
+		assertNull(rule.match(new TokenStream(List.of(createToken("other")), 0)));
+		assertNotNull(negatedRule.match(new TokenStream(List.of(createToken("other")), 0)));
+	}
+	
+	@Test
+	void notBehavesCorrectlyWithTwoElementSequence() {
+		SequenceTokenRule rule = new SequenceTokenRule(List.of(TokenRules.exactLength(1), TokenRules.exactLength(1)));
+		TokenRule negatedRule = rule.not();
+		
+		List<Token> completeSequence = List.of(createToken("x"), createToken("x"));
+		assertNotNull(rule.match(new TokenStream(completeSequence, 0)));
+		
+		List<Token> incompleteSequence = List.of(createToken("first"), createToken("wrong"));
+		assertNull(rule.match(new TokenStream(incompleteSequence, 0)));
+		assertNotNull(negatedRule.match(new TokenStream(incompleteSequence, 0)));
+		
+		List<Token> differentSequence = List.of(createToken("other"), createToken("sequence"));
+		assertNull(rule.match(new TokenStream(differentSequence, 0)));
+		assertNotNull(negatedRule.match(new TokenStream(differentSequence, 0)));
 	}
 	
 	@Test

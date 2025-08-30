@@ -68,4 +68,9 @@ public record AnyOfTokenRule(
 		}
 		return null;
 	}
+	
+	@Override
+	public @NotNull TokenRule not() {
+		return new SequenceTokenRule(this.tokenRules.stream().map(TokenRule::not).toList()); // Negation using De Morgan's laws
+	}
 }

@@ -377,6 +377,35 @@ class RecursiveTokenRuleTest {
 	}
 	
 	@Test
+	void notReturnsValidRule() {
+		RecursiveTokenRule rule = new RecursiveTokenRule(self -> TokenRules.pattern("test"));
+		
+		assertDoesNotThrow(rule::not);
+		assertNotNull(rule.not());
+	}
+	
+	@Test
+	void notBehavesCorrectlyWithSimpleRule() {
+		RecursiveTokenRule rule = new RecursiveTokenRule(self -> TokenRules.pattern("match"));
+		TokenRule negatedRule = rule.not();
+		
+		assertNotNull(rule.match(new TokenStream(List.of(createToken("match")), 0)));
+		assertNull(negatedRule.match(new TokenStream(List.of(createToken("match")), 0)));
+		
+		assertNull(rule.match(new TokenStream(List.of(createToken("other")), 0)));
+		assertNotNull(negatedRule.match(new TokenStream(List.of(createToken("other")), 0)));
+	}
+	
+	@Test
+	void notDoubleNegationReturnsOriginal() {
+		RecursiveTokenRule rule = new RecursiveTokenRule(self -> TokenRules.pattern("test"));
+		TokenRule negated = rule.not();
+		TokenRule doubleNegated = negated.not();
+		
+		assertEquals(rule, doubleNegated);
+	}
+	
+	@Test
 	void equalityAndHashCode() {
 		TokenRule simpleRule = createRule("test");
 		

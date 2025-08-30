@@ -364,10 +364,25 @@ class RepeatedTokenRuleTest {
 	}
 	
 	@Test
-	void notThrowsUnsupportedOperationException() {
-		OptionalTokenRule rule = new OptionalTokenRule(createRule("test"));
+	void notReturnsValidRule() {
+		RepeatedTokenRule rule = new RepeatedTokenRule(TokenRules.pattern("repeat"), 2, 3);
 		
-		assertThrows(UnsupportedOperationException.class, rule::not);
+		assertDoesNotThrow(rule::not);
+		assertNotNull(rule.not());
+	}
+	
+	@Test
+	void notBehavesCorrectlyWithRepeatedMatch() {
+		RepeatedTokenRule rule = new RepeatedTokenRule(TokenRules.pattern("x"), 2);
+		TokenRule negatedRule = rule.not();
+		
+		List<Token> exactMatch = List.of(createToken("x"), createToken("x"));
+		assertNotNull(rule.match(new TokenStream(exactMatch, 0)));
+		assertNull(negatedRule.match(new TokenStream(exactMatch, 0)));
+		
+		List<Token> insufficient = List.of(createToken("x"));
+		assertNull(rule.match(new TokenStream(insufficient, 0)));
+		assertNotNull(negatedRule.match(new TokenStream(insufficient, 0)));
 	}
 	
 	@Test

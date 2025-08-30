@@ -132,9 +132,16 @@ public interface TokenRule {
 	
 	/**
 	 * Negates this token rule.<br>
-	 * This operation is not supported by default and will throw an {@link UnsupportedOperationException}.<br>
-	 * All rules that are an instance of {@link NegatableTokenRule} are guaranteed to support negation.<br>
-	 * In addition, rules in the {@link net.luis.utils.io.token.rule.rules.assertions} package are also guaranteed to support negation.<br>
+	 * <p>
+	 *     This operation is not supported by default and will throw an {@link UnsupportedOperationException}.<br>
+	 * 	   All rules that are an instance of {@link NegatableTokenRule} are guaranteed to support negation.<br>
+	 * 	   In addition, rules in the {@link net.luis.utils.io.token.rule.rules} package are also guaranteed to support negation.
+	 * </p>
+	 * <p>
+	 *     The {@link UnsupportedOperationException} is thrown to avoid accidental misuse of this method on rules that do not support negation.<br>
+	 *     All default rules support negation when calling this method.<br>
+	 *     You only need to be careful with anonymous implementations or lambdas of this interface.
+	 * </p>
 	 *
 	 * @return A new negated token rule
 	 * @see NegatableTokenRule

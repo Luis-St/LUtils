@@ -105,4 +105,9 @@ public record BoundaryTokenRule(
 		
 		return this.endTokenRule.match(stream); // Checking the end rule again to include the case where the end rule does not consume any tokens
 	}
+	
+	@Override
+	public @NotNull TokenRule not() {
+		return new BoundaryTokenRule(this.startTokenRule.not(), this.betweenTokenRule.not(), this.endTokenRule.not());
+	}
 }

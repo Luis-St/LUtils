@@ -359,10 +359,34 @@ class TokenGroupRuleTest {
 	}
 	
 	@Test
-	void notThrowsUnsupportedOperationException() {
-		TokenGroupRule groupRule = new TokenGroupRule(TokenRules.alwaysMatch());
+	void notReturnsValidRule() {
+		TokenGroupRule rule = new TokenGroupRule(TokenRules.pattern("test"));
 		
-		assertThrows(UnsupportedOperationException.class, groupRule::not);
+		assertDoesNotThrow(rule::not);
+		assertNotNull(rule.not());
+	}
+	
+	@Test
+	void notBehavesCorrectlyWithGroupMatch() {
+		TokenRule innerRule = TokenRules.pattern("hello");
+		TokenGroupRule rule = new TokenGroupRule(innerRule);
+		TokenRule negatedRule = rule.not();
+		
+		Token token1 = createToken("hello");
+		Token token2 = createToken("world");
+		TokenGroup matchingGroup = createTokenGroup(List.of(token1, token2));
+		List<Token> tokens = List.of(matchingGroup);
+		
+		assertNotNull(rule.match(new TokenStream(tokens, 0)));
+		assertNull(negatedRule.match(new TokenStream(tokens, 0)));
+		
+		Token token3 = createToken("goodbye");
+		Token token4 = createToken("world");
+		TokenGroup nonMatchingGroup = createTokenGroup(List.of(token3, token4));
+		List<Token> nonMatchingTokens = List.of(nonMatchingGroup);
+		
+		assertNull(rule.match(new TokenStream(nonMatchingTokens, 0)));
+		assertNotNull(negatedRule.match(new TokenStream(nonMatchingTokens, 0)));
 	}
 	
 	@Test

@@ -293,11 +293,45 @@ class AnyOfTokenRuleTest {
 	}
 	
 	@Test
-	void notThrowsUnsupportedOperationException() {
-		AnyOfTokenRule rule = new AnyOfTokenRule(List.of(createRule("test")));
+	void notReturnsValidRule() {
+		AnyOfTokenRule rule = new AnyOfTokenRule(List.of(TokenRules.pattern("option1"), TokenRules.pattern("option2")));
 		
-		assertThrows(UnsupportedOperationException.class, rule::not);
+		assertDoesNotThrow(rule::not);
+		assertNotNull(rule.not());
 	}
+	
+	@Test
+	void notBehavesCorrectlyWithSingleOption() {
+		AnyOfTokenRule rule = new AnyOfTokenRule(List.of(TokenRules.pattern("match")));
+		TokenRule negatedRule = rule.not();
+		
+		TokenRuleMatch originalMatch = rule.match(new TokenStream(List.of(createToken("match")), 0));
+		TokenRuleMatch negatedMatch = negatedRule.match(new TokenStream(List.of(createToken("match")), 0));
+		
+		assertNotNull(originalMatch);
+		assertNull(negatedMatch);
+		
+		TokenRuleMatch originalNoMatch = rule.match(new TokenStream(List.of(createToken("other")), 0));
+		TokenRuleMatch negatedMatchOther = negatedRule.match(new TokenStream(List.of(createToken("other")), 0));
+		
+		assertNull(originalNoMatch);
+		assertNotNull(negatedMatchOther);
+	}
+	
+	@Test
+	void notBehavesCorrectlyWithMultipleOptions() {
+		AnyOfTokenRule rule = new AnyOfTokenRule(List.of(TokenRules.pattern("option1"), TokenRules.pattern("option2")));
+		TokenRule negatedRule = rule.not();
+		
+		assertNotNull(rule.match(new TokenStream(List.of(createToken("option1")), 0)));
+		assertNotNull(rule.match(new TokenStream(List.of(createToken("option2")), 0)));
+		assertNull(negatedRule.match(new TokenStream(List.of(createToken("option1")), 0)));
+		assertNull(negatedRule.match(new TokenStream(List.of(createToken("option2")), 0)));
+		
+		assertNull(rule.match(new TokenStream(List.of(createToken("other")), 0)));
+		assertNotNull(negatedRule.match(new TokenStream(List.of(createToken("other"), createToken("other")), 0)));
+	}
+
 	
 	@Test
 	void equalRulesHaveSameHashCode() {

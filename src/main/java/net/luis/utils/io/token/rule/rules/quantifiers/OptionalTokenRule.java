@@ -64,4 +64,9 @@ public record OptionalTokenRule(
 		}
 		return TokenRuleMatch.empty(startIndex, this);
 	}
+	
+	@Override
+	public @NotNull TokenRule not() {
+		return new OptionalTokenRule(this.tokenRule.not());
+	}
 }

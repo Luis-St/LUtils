@@ -23,6 +23,7 @@ import net.luis.utils.io.token.TokenStream;
 import net.luis.utils.io.token.rule.TokenRuleMatch;
 import net.luis.utils.io.token.rule.rules.TokenRule;
 import net.luis.utils.io.token.tokens.Token;
+import net.luis.utils.util.Pair;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -85,6 +86,33 @@ public record RepeatedTokenRule(
 		}
 	}
 	
+	/**
+	 * Processes the token rule on the given token stream, returning the matched tokens and the number of occurrences.<br>
+	 * This method will attempt to match the token rule repeatedly until it either fails to match or reaches the maximum number of occurrences.<br>
+	 *
+	 * @param stream The token stream
+	 * @return A pair containing the list of matched tokens and the number of occurrences
+	 * @throws NullPointerException If the token stream is null
+	 */
+	private @NotNull Pair<List<Token>, Integer> processRule(@NotNull TokenStream stream) {
+		Objects.requireNonNull(stream, "Token stream must not be null");
+		
+		int occurrences = 0;
+		List<Token> matchedTokens = Lists.newArrayList();
+		while (stream.hasToken() && occurrences <= this.maxOccurrences) {
+			TokenRuleMatch match = this.tokenRule.match(stream);
+			
+			if (match == null) {
+				return Pair.of(matchedTokens, occurrences);
+			}
+			
+			matchedTokens.addAll(match.matchedTokens());
+			occurrences++;
+		}
+		
+		return Pair.of(matchedTokens, occurrences);
+	}
+	
 	@Override
 	public @Nullable TokenRuleMatch match(@NotNull TokenStream stream) {
 		Objects.requireNonNull(stream, "Token stream must not be null");
@@ -92,23 +120,37 @@ public record RepeatedTokenRule(
 			return null;
 		}
 		
-		int occurrences = 0;
 		int startIndex = stream.getCurrentIndex();
-		List<Token> matchedTokens = Lists.newArrayList();
-		
-		while (stream.hasToken() && occurrences <= this.maxOccurrences) {
-			TokenRuleMatch match = this.tokenRule.match(stream);
-			if (match == null) {
-				break;
-			}
-			
-			matchedTokens.addAll(match.matchedTokens());
-			occurrences++;
-		}
+		Pair<List<Token>, Integer> result = this.processRule(stream);
+		int occurrences = result.getSecond();
 		
 		if (this.minOccurrences <= occurrences && occurrences <= this.maxOccurrences) {
-			return new TokenRuleMatch(startIndex, stream.getCurrentIndex(), matchedTokens, this);
+			return new TokenRuleMatch(startIndex, stream.getCurrentIndex(), result.getFirst(), this);
 		}
 		return null;
+	}
+	
+	@Override
+	public @NotNull TokenRule not() {
+		return new TokenRule() {
+			private final RepeatedTokenRule self = RepeatedTokenRule.this;
+			
+			@Override
+			public @Nullable TokenRuleMatch match(@NotNull TokenStream stream) {
+				int startIndex = stream.getCurrentIndex();
+				Pair<List<Token>, Integer> result = this.self.processRule(stream);
+				int occurrences = result.getSecond();
+				
+				if (!(this.self.minOccurrences <= occurrences && occurrences <= this.self.maxOccurrences)) {
+					return new TokenRuleMatch(startIndex, stream.getCurrentIndex(), result.getFirst(), this);
+				}
+				return null;
+			}
+			
+			@Override
+			public @NotNull TokenRule not() {
+				return this.self;
+			}
+		};
 	}
 }

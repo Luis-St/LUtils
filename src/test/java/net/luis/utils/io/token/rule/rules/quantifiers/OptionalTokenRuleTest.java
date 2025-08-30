@@ -301,11 +301,32 @@ class OptionalTokenRuleTest {
 	}
 	
 	@Test
-	void notThrowsUnsupportedOperationException() {
-		OptionalTokenRule rule = new OptionalTokenRule(createRule("test"));
+	void notReturnsValidRule() {
+		OptionalTokenRule rule = new OptionalTokenRule(TokenRules.pattern("optional"));
 		
-		assertThrows(UnsupportedOperationException.class, rule::not);
+		assertDoesNotThrow(rule::not);
+		assertNotNull(rule.not());
 	}
+	
+	@Test
+	void notBehavesCorrectlyWithOptionalMatch() {
+		OptionalTokenRule rule = new OptionalTokenRule(TokenRules.pattern("optional"));
+		TokenRule negatedRule = rule.not();
+		
+		TokenRuleMatch originalMatch = rule.match(new TokenStream(List.of(createToken("optional")), 0));
+		TokenRuleMatch negatedMatch = negatedRule.match(new TokenStream(List.of(createToken("optional")), 0));
+		
+		assertNotNull(originalMatch);
+		assertEquals(1, originalMatch.matchedTokens().size());
+		
+		TokenRuleMatch originalEmpty = rule.match(new TokenStream(List.of(createToken("other")), 0));
+		TokenRuleMatch negatedOther = negatedRule.match(new TokenStream(List.of(createToken("other")), 0));
+		
+		assertNotNull(originalEmpty);
+		assertTrue(originalEmpty.matchedTokens().isEmpty());
+		assertNotNull(negatedOther);
+	}
+
 	
 	@Test
 	void equalRulesHaveSameHashCode() {
