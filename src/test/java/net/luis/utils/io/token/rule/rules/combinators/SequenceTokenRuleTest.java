@@ -375,6 +375,48 @@ class SequenceTokenRuleTest {
 	}
 	
 	@Test
+	void partialMatchDoesNotConsumeTokens() {
+		TokenRule startRule = TokenRules.pattern("start");
+		TokenRule middleRule = TokenRules.pattern("middle");
+		TokenRule endRule = TokenRules.pattern("end");
+		
+		SequenceTokenRule rule = new SequenceTokenRule(List.of(startRule, middleRule, endRule));
+		
+		List<Token> partialTokens = List.of(
+			createToken("start"),
+			createToken("middle"),
+			createToken("wrong")
+		);
+		
+		TokenStream stream = new TokenStream(partialTokens, 0);
+		int initialIndex = stream.getCurrentIndex();
+		TokenRuleMatch match = rule.match(stream);
+		
+		assertNull(match);
+		assertEquals(initialIndex, stream.getCurrentIndex());
+	}
+	
+	@Test
+	void partialMatchFailsOnFirstRule() {
+		TokenRule firstRule = TokenRules.pattern("expected");
+		TokenRule secondRule = TokenRules.pattern("second");
+		
+		SequenceTokenRule rule = new SequenceTokenRule(List.of(firstRule, secondRule));
+		
+		List<Token> tokens = List.of(
+			createToken("unexpected"),
+			createToken("second")
+		);
+		
+		TokenStream stream = new TokenStream(tokens, 0);
+		int initialIndex = stream.getCurrentIndex();
+		TokenRuleMatch match = rule.match(stream);
+		
+		assertNull(match);
+		assertEquals(initialIndex, stream.getCurrentIndex());
+	}
+	
+	@Test
 	void notReturnsValidRule() {
 		SequenceTokenRule rule = new SequenceTokenRule(List.of(TokenRules.pattern("first"), TokenRules.pattern("second")));
 		

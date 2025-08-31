@@ -61,8 +61,11 @@ public record AnyOfTokenRule(
 		Objects.requireNonNull(stream, "Token stream must not be null");
 		
 		for (TokenRule tokenRule : this.tokenRules) {
-			TokenRuleMatch match = tokenRule.match(stream);
+			TokenStream workingStream = stream.copyWithCurrentIndex();
+			TokenRuleMatch match = tokenRule.match(workingStream);
+			
 			if (match != null) {
+				stream.advanceTo(workingStream);
 				return match;
 			}
 		}

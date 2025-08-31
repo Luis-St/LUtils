@@ -100,12 +100,14 @@ public record RepeatedTokenRule(
 		int occurrences = 0;
 		List<Token> matchedTokens = Lists.newArrayList();
 		while (stream.hasToken() && occurrences <= this.maxOccurrences) {
-			TokenRuleMatch match = this.tokenRule.match(stream);
+			TokenStream workingStream = stream.copyWithCurrentIndex();
+			TokenRuleMatch match = this.tokenRule.match(workingStream);
 			
 			if (match == null) {
 				return Pair.of(matchedTokens, occurrences);
 			}
 			
+			stream.advanceTo(workingStream);
 			matchedTokens.addAll(match.matchedTokens());
 			occurrences++;
 		}

@@ -81,29 +81,41 @@ public record BoundaryTokenRule(
 		}
 		
 		int startIndex = stream.getCurrentIndex();
-		TokenRuleMatch startMatch = this.startTokenRule.match(stream);
+		TokenStream globalWorkingStream = stream.copyWithCurrentIndex();
+		TokenRuleMatch startMatch = this.startTokenRule.match(globalWorkingStream);
 		if (startMatch == null) {
 			return null;
 		}
 		
 		List<Token> matchedTokens = Lists.newArrayList(startMatch.matchedTokens());
-		while (stream.hasToken()) {
-			TokenRuleMatch endMatch = this.endTokenRule.match(stream);
+		while (globalWorkingStream.hasToken()) {
+			TokenStream localWorkingStream = globalWorkingStream.copyWithCurrentIndex();
+			TokenRuleMatch endMatch = this.endTokenRule.match(localWorkingStream);
+			
 			if (endMatch != null) {
+				stream.advanceTo(localWorkingStream);
 				matchedTokens.addAll(endMatch.matchedTokens());
 				return new TokenRuleMatch(startIndex, endMatch.endIndex(), matchedTokens, this);
 			}
 			
-			TokenRuleMatch betweenMatch = this.betweenTokenRule.match(stream);
+			TokenRuleMatch betweenMatch = this.betweenTokenRule.match(localWorkingStream);
 			if (betweenMatch == null) {
 				return null;
 			}
-			if (stream.hasToken()) {
+			
+			globalWorkingStream.advanceTo(localWorkingStream);
+			if (globalWorkingStream.hasToken()) {
 				matchedTokens.addAll(betweenMatch.matchedTokens());
 			}
 		}
 		
-		return this.endTokenRule.match(stream); // Checking the end rule again to include the case where the end rule does not consume any tokens
+		TokenRuleMatch endMatch = this.endTokenRule.match(globalWorkingStream); // Checking the end rule again to include the case where the end rule does not consume any tokens
+		if (endMatch != null) {
+			stream.advanceTo(globalWorkingStream);
+			matchedTokens.addAll(endMatch.matchedTokens());
+			return new TokenRuleMatch(startIndex, endMatch.endIndex(), matchedTokens, this);
+		}
+		return null;
 	}
 	
 	@Override

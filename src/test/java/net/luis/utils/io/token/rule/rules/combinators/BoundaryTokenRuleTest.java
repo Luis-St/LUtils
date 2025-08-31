@@ -338,6 +338,53 @@ class BoundaryTokenRuleTest {
 	}
 	
 	@Test
+	void partialMatchWithIncompleteBoundaryDoesNotConsumeTokens() {
+		TokenRule startRule = TokenRules.pattern("\\[");
+		TokenRule betweenRule = TokenRules.pattern("\\w+");
+		TokenRule endRule = TokenRules.pattern("]");
+		
+		BoundaryTokenRule rule = new BoundaryTokenRule(startRule, betweenRule, endRule);
+		
+		List<Token> incompleteTokens = List.of(
+			createToken("["),
+			createToken("word1"),
+			createToken("word2"),
+			createToken("word3")
+		);
+		
+		TokenStream stream = new TokenStream(incompleteTokens, 0);
+		int initialIndex = stream.getCurrentIndex();
+		TokenRuleMatch match = rule.match(stream);
+		
+		assertNull(match);
+		assertEquals(initialIndex, stream.getCurrentIndex());
+	}
+	
+	@Test
+	void partialMatchWithBetweenRuleFailureDoesNotConsumeTokens() {
+		TokenRule strictBetweenRule = TokenRules.pattern("valid");
+		BoundaryTokenRule strictRule = new BoundaryTokenRule(
+			TokenRules.pattern("\\["),
+			strictBetweenRule,
+			TokenRules.pattern("]")
+		);
+		
+		List<Token> mixedTokens = List.of(
+			createToken("["),
+			createToken("valid"),
+			createToken("invalid"),
+			createToken("]")
+		);
+		
+		TokenStream stream = new TokenStream(mixedTokens, 0);
+		int initialIndex = stream.getCurrentIndex();
+		TokenRuleMatch match = strictRule.match(stream);
+		
+		assertNull(match);
+		assertEquals(initialIndex, stream.getCurrentIndex());
+	}
+	
+	@Test
 	void notReturnsValidRule() {
 		BoundaryTokenRule rule = new BoundaryTokenRule(TokenRules.pattern("start"), TokenRules.pattern("end"));
 		

@@ -293,6 +293,40 @@ class AnyOfTokenRuleTest {
 	}
 	
 	@Test
+	void partialMatchDoesNotConsumeTokens() {
+		TokenRule firstRule = TokenRules.sequence(
+			TokenRules.pattern("start"),
+			TokenRules.pattern("middle"),
+			TokenRules.pattern("nonexistent")
+		);
+		
+		TokenRule secondRule = TokenRules.sequence(
+			TokenRules.pattern("start"),
+			TokenRules.pattern("middle"),
+			TokenRules.pattern("end")
+		);
+		
+		AnyOfTokenRule rule = new AnyOfTokenRule(List.of(firstRule, secondRule));
+		
+		List<Token> tokens = List.of(
+			createToken("start"),
+			createToken("middle"),
+			createToken("end")
+		);
+		
+		TokenStream stream = new TokenStream(tokens, 0);
+		TokenRuleMatch match = rule.match(stream);
+		
+		assertNotNull(match);
+		assertEquals(3, match.matchedTokens().size());
+		assertEquals(3, stream.getCurrentIndex());
+		
+		assertEquals("start", match.matchedTokens().get(0).value());
+		assertEquals("middle", match.matchedTokens().get(1).value());
+		assertEquals("end", match.matchedTokens().get(2).value());
+	}
+	
+	@Test
 	void notReturnsValidRule() {
 		AnyOfTokenRule rule = new AnyOfTokenRule(List.of(TokenRules.pattern("option1"), TokenRules.pattern("option2")));
 		

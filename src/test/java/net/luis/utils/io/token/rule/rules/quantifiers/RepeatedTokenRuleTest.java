@@ -364,6 +364,32 @@ class RepeatedTokenRuleTest {
 	}
 	
 	@Test
+	void partialMatchDoesNotConsumeTokens() {
+		TokenRule innerRule = TokenRules.any(
+			TokenRules.pattern("abc"),
+			TokenRules.pattern("xyz"),
+			TokenRules.sequence(
+				TokenRules.pattern("123"),
+				TokenRules.pattern("456")
+			)
+		);
+		RepeatedTokenRule rule = new RepeatedTokenRule(innerRule, 2, 3);
+		
+		List<Token> interruptedSequenceTokens = List.of(
+			createToken("123"),
+			createToken("456"),
+			createToken("123"),
+			createToken("456"),
+			createToken("123")
+		);
+		TokenStream stream4 = new TokenStream(interruptedSequenceTokens, 0);
+		TokenRuleMatch match4 = rule.match(stream4);
+		assertNotNull(match4);
+		assertEquals(4, match4.matchedTokens().size());
+		assertEquals(4, stream4.getCurrentIndex()); // Ensures the stream does not consume the last unmatched token
+	}
+	
+	@Test
 	void notReturnsValidRule() {
 		RepeatedTokenRule rule = new RepeatedTokenRule(TokenRules.pattern("repeat"), 2, 3);
 		
