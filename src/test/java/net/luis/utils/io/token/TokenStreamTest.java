@@ -213,6 +213,49 @@ class TokenStreamTest {
 	}
 	
 	@Test
+	void advanceToWithNullOtherStream() {
+		List<Token> tokens = List.of(createToken("first"), createToken("second"));
+		TokenStream stream = new TokenStream(tokens);
+		
+		assertThrows(NullPointerException.class, () -> stream.advanceTo(null));
+		assertEquals(0, stream.getCurrentIndex());
+	}
+	
+	@Test
+	void advanceToWithEmptyStreams() {
+		TokenStream stream = new TokenStream(Collections.emptyList());
+		TokenStream otherStream = new TokenStream(Collections.emptyList());
+		
+		assertEquals(0, stream.getCurrentIndex());
+		stream.advanceTo(otherStream);
+		assertEquals(0, stream.getCurrentIndex());
+	}
+	
+	@Test
+	void advanceToWhenOtherStreamIsAhead() {
+		List<Token> tokens = List.of(createToken("first"), createToken("second"), createToken("third"), createToken("fourth"));
+		TokenStream stream = new TokenStream(tokens, 1);
+		TokenStream otherStream = new TokenStream(tokens, 3);
+		
+		assertEquals(1, stream.getCurrentIndex());
+		stream.advanceTo(otherStream);
+		assertEquals(3, stream.getCurrentIndex());
+		assertEquals("fourth", stream.getCurrentToken().value());
+	}
+	
+	@Test
+	void advanceToWhenOtherStreamIsBehind() {
+		List<Token> tokens = List.of(createToken("first"), createToken("second"), createToken("third"), createToken("fourth"));
+		TokenStream stream = new TokenStream(tokens, 3);
+		TokenStream otherStream = new TokenStream(tokens, 1);
+		
+		assertEquals(3, stream.getCurrentIndex());
+		stream.advanceTo(otherStream);
+		assertEquals(3, stream.getCurrentIndex());
+		assertEquals("fourth", stream.getCurrentToken().value());
+	}
+	
+	@Test
 	void reset() {
 		List<Token> tokens = List.of(createToken("first"), createToken("second"), createToken("third"));
 		TokenStream stream = new TokenStream(tokens, 2);

@@ -63,16 +63,24 @@ public record SequenceTokenRule(
 		Objects.requireNonNull(stream, "Token stream must not be null");
 		
 		int startIndex = stream.getCurrentIndex();
+		TokenStream workingStream = stream.copyWithCurrentIndex();
 		List<Token> matchedTokens = new ArrayList<>();
 		for (TokenRule tokenRule : this.tokenRules) {
 			
-			TokenRuleMatch match = tokenRule.match(stream);
+			TokenRuleMatch match = tokenRule.match(workingStream);
 			if (match == null) {
 				return null;
 			}
 			
 			matchedTokens.addAll(match.matchedTokens());
 		}
+		
+		stream.advanceTo(workingStream);
 		return new TokenRuleMatch(startIndex, stream.getCurrentIndex(), matchedTokens, this);
+	}
+	
+	@Override
+	public @NotNull TokenRule not() {
+		return new AnyOfTokenRule(this.tokenRules.stream().map(TokenRule::not).toList()); // Negation using De Morgan's laws
 	}
 }

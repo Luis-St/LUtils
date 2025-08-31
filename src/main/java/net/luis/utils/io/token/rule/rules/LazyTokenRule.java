@@ -86,6 +86,12 @@ public class LazyTokenRule implements TokenRule {
 		this.lazyTokenRule = FunctionUtils.memorize(lazyTokenRule);
 	}
 	
+	/**
+	 * Gets the supplier for the lazily-initialized token rule.<br>
+	 * If the rule has not been initialized yet, calling {@link Supplier#get()} will throw a {@link NotInitializedException}.<br>
+	 *
+	 * @return The supplier for the lazily-initialized token rule
+	 */
 	public @NotNull Supplier<TokenRule> lazyTokenRule() {
 		return this.lazyTokenRule;
 	}

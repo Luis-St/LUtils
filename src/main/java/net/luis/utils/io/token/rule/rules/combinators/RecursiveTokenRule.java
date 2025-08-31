@@ -154,6 +154,16 @@ public class RecursiveTokenRule implements TokenRule {
 		return this.tokenRule.match(stream);
 	}
 	
+	@Override
+	public @NotNull TokenRule not() {
+		return new RecursiveTokenRule(self -> this.tokenRule.not()) {
+			@Override
+			public @NotNull TokenRule getTokenRule() {
+				return RecursiveTokenRule.this; // Negating the not() method returns the original rule, preventing double negation and nesting of classes
+			}
+		};
+	}
+	
 	//region Object overrides
 	@Override
 	public boolean equals(Object o) {

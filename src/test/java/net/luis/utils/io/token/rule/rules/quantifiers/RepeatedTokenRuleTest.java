@@ -364,10 +364,51 @@ class RepeatedTokenRuleTest {
 	}
 	
 	@Test
-	void notThrowsUnsupportedOperationException() {
-		OptionalTokenRule rule = new OptionalTokenRule(createRule("test"));
+	void partialMatchDoesNotConsumeTokens() {
+		TokenRule innerRule = TokenRules.any(
+			TokenRules.pattern("abc"),
+			TokenRules.pattern("xyz"),
+			TokenRules.sequence(
+				TokenRules.pattern("123"),
+				TokenRules.pattern("456")
+			)
+		);
+		RepeatedTokenRule rule = new RepeatedTokenRule(innerRule, 2, 3);
 		
-		assertThrows(UnsupportedOperationException.class, rule::not);
+		List<Token> interruptedSequenceTokens = List.of(
+			createToken("123"),
+			createToken("456"),
+			createToken("123"),
+			createToken("456"),
+			createToken("123")
+		);
+		TokenStream stream4 = new TokenStream(interruptedSequenceTokens, 0);
+		TokenRuleMatch match4 = rule.match(stream4);
+		assertNotNull(match4);
+		assertEquals(4, match4.matchedTokens().size());
+		assertEquals(4, stream4.getCurrentIndex()); // Ensures the stream does not consume the last unmatched token
+	}
+	
+	@Test
+	void notReturnsValidRule() {
+		RepeatedTokenRule rule = new RepeatedTokenRule(TokenRules.pattern("repeat"), 2, 3);
+		
+		assertDoesNotThrow(rule::not);
+		assertNotNull(rule.not());
+	}
+	
+	@Test
+	void notBehavesCorrectlyWithRepeatedMatch() {
+		RepeatedTokenRule rule = new RepeatedTokenRule(TokenRules.pattern("x"), 2);
+		TokenRule negatedRule = rule.not();
+		
+		List<Token> exactMatch = List.of(createToken("x"), createToken("x"));
+		assertNotNull(rule.match(new TokenStream(exactMatch, 0)));
+		assertNull(negatedRule.match(new TokenStream(exactMatch, 0)));
+		
+		List<Token> insufficient = List.of(createToken("x"));
+		assertNull(rule.match(new TokenStream(insufficient, 0)));
+		assertNotNull(negatedRule.match(new TokenStream(insufficient, 0)));
 	}
 	
 	@Test

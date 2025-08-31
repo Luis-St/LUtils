@@ -70,4 +70,9 @@ public record TokenGroupRule(
 		}
 		return new TokenRuleMatch(startIndex, stream.consumeToken(), List.of(tokenGroup), this);
 	}
+	
+	@Override
+	public @NotNull TokenRule not() {
+		return new TokenGroupRule(this.tokenRule.not());
+	}
 }

@@ -177,6 +177,19 @@ public class TokenStream {
 	}
 	
 	/**
+	 * Advances the current index to match the position of the other token stream.<br>
+	 * If the other stream is ahead, this stream's index is moved forward to match it.<br>
+	 * If the other stream is behind or at the same position, this stream's index remains unchanged.<br>
+	 *
+	 * @param other The other token stream to advance to
+	 * @throws NullPointerException If the other token stream is null
+	 */
+	public void advanceTo(@NotNull TokenStream other) {
+		Objects.requireNonNull(other, "Other token stream must not be null");
+		this.currentIndex += Math.max(other.getCurrentIndex() - this.currentIndex, 0);
+	}
+	
+	/**
 	 * Resets the stream position to the beginning (index 0).<br>
 	 * After calling this method, the next token read will be the first token in the stream.<br>
 	 * This operation does not modify the tokens themselves, only the current position.<br>

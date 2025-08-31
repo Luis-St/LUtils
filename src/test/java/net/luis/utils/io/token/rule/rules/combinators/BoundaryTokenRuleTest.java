@@ -256,7 +256,7 @@ class BoundaryTokenRuleTest {
 	
 	@Test
 	void matchWithAnyOfBetween() {
-		AnyOfTokenRule anyOf = new AnyOfTokenRule(Set.of(createRule("option1"), createRule("option2")));
+		AnyOfTokenRule anyOf = new AnyOfTokenRule(List.of(createRule("option1"), createRule("option2")));
 		BoundaryTokenRule rule = new BoundaryTokenRule(createRule("["), anyOf, createRule("]"));
 		
 		List<Token> withOption1 = List.of(createToken("["), createToken("option1"), createToken("]"));
@@ -338,10 +338,86 @@ class BoundaryTokenRuleTest {
 	}
 	
 	@Test
-	void notThrowsUnsupportedOperationException() {
-		BoundaryTokenRule rule = new BoundaryTokenRule(createRule("start"), createRule("end"));
+	void partialMatchWithIncompleteBoundaryDoesNotConsumeTokens() {
+		TokenRule startRule = TokenRules.pattern("\\[");
+		TokenRule betweenRule = TokenRules.pattern("\\w+");
+		TokenRule endRule = TokenRules.pattern("]");
 		
-		assertThrows(UnsupportedOperationException.class, rule::not);
+		BoundaryTokenRule rule = new BoundaryTokenRule(startRule, betweenRule, endRule);
+		
+		List<Token> incompleteTokens = List.of(
+			createToken("["),
+			createToken("word1"),
+			createToken("word2"),
+			createToken("word3")
+		);
+		
+		TokenStream stream = new TokenStream(incompleteTokens, 0);
+		int initialIndex = stream.getCurrentIndex();
+		TokenRuleMatch match = rule.match(stream);
+		
+		assertNull(match);
+		assertEquals(initialIndex, stream.getCurrentIndex());
+	}
+	
+	@Test
+	void partialMatchWithBetweenRuleFailureDoesNotConsumeTokens() {
+		TokenRule strictBetweenRule = TokenRules.pattern("valid");
+		BoundaryTokenRule strictRule = new BoundaryTokenRule(
+			TokenRules.pattern("\\["),
+			strictBetweenRule,
+			TokenRules.pattern("]")
+		);
+		
+		List<Token> mixedTokens = List.of(
+			createToken("["),
+			createToken("valid"),
+			createToken("invalid"),
+			createToken("]")
+		);
+		
+		TokenStream stream = new TokenStream(mixedTokens, 0);
+		int initialIndex = stream.getCurrentIndex();
+		TokenRuleMatch match = strictRule.match(stream);
+		
+		assertNull(match);
+		assertEquals(initialIndex, stream.getCurrentIndex());
+	}
+	
+	@Test
+	void notReturnsValidRule() {
+		BoundaryTokenRule rule = new BoundaryTokenRule(TokenRules.pattern("start"), TokenRules.pattern("end"));
+		
+		assertDoesNotThrow(rule::not);
+		assertNotNull(rule.not());
+	}
+	
+	@Test
+	void notBehavesCorrectlyWithSimpleBoundary() {
+		BoundaryTokenRule rule = new BoundaryTokenRule(TokenRules.pattern("\\("), TokenRules.pattern("\\)"));
+		TokenRule negatedRule = rule.not();
+		
+		List<Token> validBoundary = List.of(createToken("("), createToken("any"), createToken(")"));
+		assertNotNull(rule.match(new TokenStream(validBoundary, 0)));
+		assertNull(negatedRule.match(new TokenStream(validBoundary, 0)));
+		
+		List<Token> invalidBoundary = List.of(createToken("["), createToken("any"), createToken("]"));
+		assertNull(rule.match(new TokenStream(invalidBoundary, 0)));
+		assertNotNull(negatedRule.match(new TokenStream(invalidBoundary, 0)));
+	}
+	
+	@Test
+	void notBehavesCorrectlyWithSpecificBetween() {
+		BoundaryTokenRule rule = new BoundaryTokenRule(TokenRules.pattern("\\("), TokenRules.pattern("content"), TokenRules.pattern("\\)"));
+		TokenRule negatedRule = rule.not();
+		
+		List<Token> exactMatch = List.of(createToken("("), createToken("content"), createToken(")"));
+		assertNotNull(rule.match(new TokenStream(exactMatch, 0)));
+		assertNull(negatedRule.match(new TokenStream(exactMatch, 0)));
+		
+		List<Token> wrongContent = List.of(createToken("{"), createToken("wrong"), createToken("}"));
+		assertNull(rule.match(new TokenStream(wrongContent, 0)));
+		assertNotNull(negatedRule.match(new TokenStream(wrongContent, 0)));
 	}
 	
 	@Test

@@ -36,13 +36,13 @@ import java.util.*;
  * @param tokenRules The set of token rules to match against
  */
 public record AnyOfTokenRule(
-	@NotNull Set<TokenRule> tokenRules
+	@NotNull List<TokenRule> tokenRules
 ) implements TokenRule {
 	
 	/**
 	 * Constructs a new any of token rule with the given token rules.<br>
 	 *
-	 * @param tokenRules The set of token rules to match against
+	 * @param tokenRules The list of token rules to match against
 	 * @throws NullPointerException If the token rule list is null
 	 */
 	public AnyOfTokenRule {
@@ -50,7 +50,10 @@ public record AnyOfTokenRule(
 		if (tokenRules.isEmpty()) {
 			throw new IllegalArgumentException("Token rule list must not be empty");
 		}
-		tokenRules = Collections.unmodifiableSequencedSet(new LinkedHashSet<>(tokenRules));
+		for (TokenRule tokenRule : tokenRules) {
+			Objects.requireNonNull(tokenRule, "Token rule list must not contain a null element");
+		}
+		tokenRules = List.copyOf(tokenRules);
 	}
 	
 	@Override
@@ -58,11 +61,19 @@ public record AnyOfTokenRule(
 		Objects.requireNonNull(stream, "Token stream must not be null");
 		
 		for (TokenRule tokenRule : this.tokenRules) {
-			TokenRuleMatch match = tokenRule.match(stream);
+			TokenStream workingStream = stream.copyWithCurrentIndex();
+			TokenRuleMatch match = tokenRule.match(workingStream);
+			
 			if (match != null) {
+				stream.advanceTo(workingStream);
 				return match;
 			}
 		}
 		return null;
+	}
+	
+	@Override
+	public @NotNull TokenRule not() {
+		return new SequenceTokenRule(this.tokenRules.stream().map(TokenRule::not).toList()); // Negation using De Morgan's laws
 	}
 }
