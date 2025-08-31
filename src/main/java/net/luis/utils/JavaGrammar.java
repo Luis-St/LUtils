@@ -49,7 +49,7 @@ import static net.luis.utils.Tokens.*;
  *
  */
 
-public class Main {
+public class JavaGrammar {
 	
 	private static final Logger LOGGER;
 	
@@ -330,6 +330,6 @@ public class Main {
 	static {
 		System.setProperty("reflection.exceptions.throw", "true");
 		LoggingUtils.initialize(LoggerConfiguration.DEFAULT.disableLogging(LoggingType.FILE).addDefaultLogger(LoggingType.CONSOLE, Level.DEBUG));
-		LOGGER = LogManager.getLogger(Main.class);
+		LOGGER = LogManager.getLogger(JavaGrammar.class);
 	}
 }

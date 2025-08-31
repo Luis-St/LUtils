@@ -81,7 +81,7 @@ artifacts {
 
 tasks.register<JavaExec>("run") {
 	group = "runs"
-	mainClass.set("net.luis.utils.Main")
+	mainClass.set("net.luis.utils.JavaGrammar")
 	classpath = sourceSets["main"].runtimeClasspath
 	enableAssertions = true
 	standardInput = System.`in`
