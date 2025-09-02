@@ -25,11 +25,11 @@ import net.luis.utils.io.token.definition.TokenDefinition;
 import net.luis.utils.io.token.rule.TokenRuleEngine;
 import net.luis.utils.io.token.rule.actions.GroupingTokenAction;
 import net.luis.utils.io.token.rule.actions.filters.ExtractTokenAction;
-import net.luis.utils.io.token.rule.rules.TokenRule;
-import net.luis.utils.io.token.rule.rules.TokenRules;
+import net.luis.utils.io.token.rule.rules.*;
 import net.luis.utils.io.token.rule.rules.combinators.RecursiveTokenRule;
 import net.luis.utils.io.token.tokens.*;
 import net.luis.utils.logging.*;
+import net.luis.utils.util.Lazy;
 import org.apache.logging.log4j.*;
 import org.intellij.lang.annotations.Language;
 import org.jetbrains.annotations.NotNull;
@@ -152,19 +152,26 @@ public class JavaGrammar {
 			importDeclaration.repeatInfinitely()
 		);
 		
-		// ToDo:
-		//  - Implement TokenRule#not in some more classes, in rules that are delegating to a inner rule the #not call should be delegated as well
-		//  - Rename InvertibleTokenRule to NegatableTokenRule to make it clearer what it does
+		LazyTokenRule annotationDeclaration = TokenRules.lazy();
+		LazyTokenRule annotationParameter = TokenRules.lazy();
 		
-		TokenRule annotationValue = new RecursiveTokenRule(null, null, (Function<TokenRule, TokenRule>) null);
+		TokenRule annotationValue = new RecursiveTokenRule(self -> {
+			return TokenRules.any(
+				primitiveValue,
+				identifier,
+				annotationDeclaration,
+				TokenRules.sequence(
+					LEFT_CURLY_BRACKET,
+					TokenRules.separatedList(
+						COMMA,
+						self
+					),
+					RIGHT_CURLY_BRACKET
+				)
+			);
+		});
 		
-		TokenRule annotationParameter = TokenRules.sequence(
-			identifier,
-			EQUALS,
-			annotationValue
-		);
-		
-		TokenRule annotationDeclaration = TokenRules.any(
+		annotationDeclaration.set(TokenRules.any(
 			TokenRules.sequence(
 				AT,
 				qualifiedName,
@@ -179,7 +186,13 @@ public class JavaGrammar {
 				LEFT_BRACKET,
 				RIGHT_BRACKET
 			)
-		);
+		));
+		
+		annotationParameter.set(TokenRules.sequence(
+			identifier,
+			EQUALS,
+			annotationValue
+		));
 		
 		
 		TokenRule singleLineCommentRule = TokenRules.boundary(
