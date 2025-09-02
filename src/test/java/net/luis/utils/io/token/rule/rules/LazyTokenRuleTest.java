@@ -18,16 +18,17 @@
 
 package net.luis.utils.io.token.rule.rules;
 
+import net.luis.utils.exception.NotInitializedException;
 import net.luis.utils.io.token.TokenStream;
 import net.luis.utils.io.token.rule.TokenRuleMatch;
 import net.luis.utils.io.token.tokens.SimpleToken;
 import net.luis.utils.io.token.tokens.Token;
-import net.luis.utils.util.Lazy;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.junit.jupiter.api.Test;
 
 import java.util.*;
+import java.util.function.Supplier;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -62,29 +63,87 @@ class LazyTokenRuleTest {
 	}
 	
 	@Test
-	void constructorWithNullLazy() {
-		assertThrows(NullPointerException.class, () -> new LazyTokenRule((Lazy<TokenRule>) null));
+	void defaultConstructor() {
+		assertDoesNotThrow(() -> new LazyTokenRule());
 	}
 	
 	@Test
-	void constructorWithValidLazy() {
-		Lazy<TokenRule> lazy = new Lazy<>();
+	void getOnUninitializedRule() {
+		LazyTokenRule lazyRule = new LazyTokenRule();
 		
-		assertDoesNotThrow(() -> new LazyTokenRule(lazy));
+		assertThrows(NotInitializedException.class, lazyRule::get);
+	}
+	
+	@Test
+	void setWithNullTokenRule() {
+		LazyTokenRule lazyRule = new LazyTokenRule();
+		
+		assertThrows(NullPointerException.class, () -> lazyRule.set(null));
+	}
+	
+	@Test
+	void setWithValidTokenRule() {
+		LazyTokenRule lazyRule = new LazyTokenRule();
+		TokenRule testRule = createRule("test");
+		
+		assertDoesNotThrow(() -> lazyRule.set(testRule));
+	}
+	
+	@Test
+	void getAfterSet() {
+		LazyTokenRule lazyRule = new LazyTokenRule();
+		TokenRule testRule = createRule("test");
+		
+		lazyRule.set(testRule);
+		
+		assertSame(testRule, lazyRule.get());
+	}
+	
+	@Test
+	void setOverwritesPreviousRule() {
+		LazyTokenRule lazyRule = new LazyTokenRule();
+		TokenRule firstRule = createRule("first");
+		TokenRule secondRule = createRule("second");
+		
+		lazyRule.set(firstRule);
+		assertSame(firstRule, lazyRule.get());
+		
+		lazyRule.set(secondRule);
+		assertSame(secondRule, lazyRule.get());
+	}
+	
+	@Test
+	void lazyTokenRuleReturnsSupplier() {
+		LazyTokenRule lazyRule = new LazyTokenRule();
+		
+		Supplier<TokenRule> supplier = lazyRule.lazyTokenRule();
+		
+		assertNotNull(supplier);
+		assertThrows(NotInitializedException.class, supplier::get);
+	}
+	
+	@Test
+	void lazyTokenRuleSupplierAfterSet() {
+		LazyTokenRule lazyRule = new LazyTokenRule();
+		TokenRule testRule = createRule("test");
+		
+		lazyRule.set(testRule);
+		Supplier<TokenRule> supplier = lazyRule.lazyTokenRule();
+		
+		assertNotNull(supplier);
+		assertSame(testRule, supplier.get());
 	}
 	
 	@Test
 	void matchWithNullTokenStream() {
-		Lazy<TokenRule> lazy = new Lazy<>(TokenRules.alwaysMatch());
-		LazyTokenRule lazyRule = new LazyTokenRule(lazy);
+		LazyTokenRule lazyRule = new LazyTokenRule();
 		
 		assertThrows(NullPointerException.class, () -> lazyRule.match(null));
 	}
 	
 	@Test
-	void matchWithUninitializedLazy() {
-		Lazy<TokenRule> lazy = new Lazy<>();
-		LazyTokenRule lazyRule = new LazyTokenRule(lazy);
+	void matchWithUninitializedRule() {
+		LazyTokenRule lazyRule = new LazyTokenRule();
 		Token token = createToken("test");
 		List<Token> tokens = List.of(token);
 		TokenStream stream = new TokenStream(tokens, 0);
@@ -93,22 +152,10 @@ class LazyTokenRuleTest {
 	}
 	
 	@Test
-	void matchWithNullInitializedLazy() {
-		Lazy<TokenRule> lazy = new Lazy<>((TokenRule) null);
-		LazyTokenRule lazyRule = new LazyTokenRule(lazy);
-		Token token = createToken("test");
-		List<Token> tokens = List.of(token);
-		TokenStream stream = new TokenStream(tokens, 0);
-		
-		assertNull(lazyRule.match(stream));
-	}
-	
-	@Test
-	void matchWithInitializedLazyThatMatches() {
-		Lazy<TokenRule> lazy = new Lazy<>();
-		LazyTokenRule lazyRule = new LazyTokenRule(lazy);
+	void matchWithInitializedRuleThatMatches() {
+		LazyTokenRule lazyRule = new LazyTokenRule();
 		TokenRule testRule = createRule("test");
-		lazy.set(testRule);
+		lazyRule.set(testRule);
 		
 		Token token = createToken("test");
 		List<Token> tokens = List.of(token);
@@ -123,11 +170,10 @@ class LazyTokenRuleTest {
 	}
 	
 	@Test
-	void matchWithInitializedLazyThatDoesNotMatch() {
-		Lazy<TokenRule> lazy = new Lazy<>();
-		LazyTokenRule lazyRule = new LazyTokenRule(lazy);
+	void matchWithInitializedRuleThatDoesNotMatch() {
+		LazyTokenRule lazyRule = new LazyTokenRule();
 		TokenRule testRule = createRule("expected");
-		lazy.set(testRule);
+		lazyRule.set(testRule);
 		
 		Token token = createToken("actual");
 		List<Token> tokens = List.of(token);
@@ -137,38 +183,18 @@ class LazyTokenRuleTest {
 	}
 	
 	@Test
-	void matchWithPreInitializedLazy() {
-		TokenRule testRule = createRule("match");
-		Lazy<TokenRule> lazy = new Lazy<>(testRule);
-		LazyTokenRule lazyRule = new LazyTokenRule(lazy);
-		
-		Token token = createToken("match");
-		List<Token> tokens = List.of(token);
-		TokenStream stream = new TokenStream(tokens, 0);
-		
-		TokenRuleMatch match = lazyRule.match(stream);
-		
-		assertNotNull(match);
-		assertEquals(0, match.startIndex());
-		assertEquals(1, match.endIndex());
-		assertEquals(List.of(token), match.matchedTokens());
-	}
-	
-	@Test
 	void matchWithEmptyTokenStream() {
-		Lazy<TokenRule> lazy = new Lazy<>();
-		LazyTokenRule lazyRule = new LazyTokenRule(lazy);
-		lazy.set(TokenRules.alwaysMatch());
+		LazyTokenRule lazyRule = new LazyTokenRule();
+		lazyRule.set(TokenRules.alwaysMatch());
 		
 		assertNull(lazyRule.match(new TokenStream(Collections.emptyList())));
 	}
 	
 	@Test
 	void matchConsistentBehavior() {
-		Lazy<TokenRule> lazy = new Lazy<>();
-		LazyTokenRule lazyRule = new LazyTokenRule(lazy);
+		LazyTokenRule lazyRule = new LazyTokenRule();
 		TokenRule testRule = createRule("consistent");
-		lazy.set(testRule);
+		lazyRule.set(testRule);
 		
 		Token token = createToken("consistent");
 		List<Token> tokens = List.of(token);
@@ -187,14 +213,13 @@ class LazyTokenRuleTest {
 	
 	@Test
 	void matchWithComplexRule() {
-		Lazy<TokenRule> lazy = new Lazy<>();
-		LazyTokenRule lazyRule = new LazyTokenRule(lazy);
+		LazyTokenRule lazyRule = new LazyTokenRule();
 		
 		TokenRule sequenceRule = TokenRules.sequence(
 			TokenRules.pattern("\\w+"),
 			TokenRules.pattern("\\d+")
 		);
-		lazy.set(sequenceRule);
+		lazyRule.set(sequenceRule);
 		
 		Token word = createToken("word");
 		Token number = createToken("123");
@@ -209,9 +234,8 @@ class LazyTokenRuleTest {
 	}
 	
 	@Test
-	void matchAfterLazyInitialization() {
-		Lazy<TokenRule> lazy = new Lazy<>();
-		LazyTokenRule lazyRule = new LazyTokenRule(lazy);
+	void matchAfterInitialization() {
+		LazyTokenRule lazyRule = new LazyTokenRule();
 		
 		Token token = createToken("test");
 		List<Token> tokens = List.of(token);
@@ -220,7 +244,7 @@ class LazyTokenRuleTest {
 		assertNull(lazyRule.match(stream));
 		
 		TokenRule testRule = createRule("test");
-		lazy.set(testRule);
+		lazyRule.set(testRule);
 		
 		TokenRuleMatch match = lazyRule.match(new TokenStream(tokens, 0));
 		assertNotNull(match);
@@ -228,8 +252,7 @@ class LazyTokenRuleTest {
 	
 	@Test
 	void notReturnsNegatedRule() {
-		Lazy<TokenRule> lazy = new Lazy<>();
-		LazyTokenRule lazyRule = new LazyTokenRule(lazy);
+		LazyTokenRule lazyRule = new LazyTokenRule();
 		
 		TokenRule notRule = lazyRule.not();
 		
@@ -240,8 +263,7 @@ class LazyTokenRuleTest {
 	
 	@Test
 	void doubleNegationReturnsOriginalRule() {
-		Lazy<TokenRule> lazy = new Lazy<>();
-		LazyTokenRule lazyRule = new LazyTokenRule(lazy);
+		LazyTokenRule lazyRule = new LazyTokenRule();
 		
 		TokenRule notRule = lazyRule.not();
 		TokenRule doubleNotRule = notRule.not();
@@ -250,9 +272,8 @@ class LazyTokenRuleTest {
 	}
 	
 	@Test
-	void negatedRuleWithUninitializedLazy() {
-		Lazy<TokenRule> lazy = new Lazy<>();
-		LazyTokenRule lazyRule = new LazyTokenRule(lazy);
+	void negatedRuleWithUninitializedRule() {
+		LazyTokenRule lazyRule = new LazyTokenRule();
 		TokenRule notRule = lazyRule.not();
 		
 		Token token = createToken("test");
@@ -264,10 +285,9 @@ class LazyTokenRuleTest {
 	
 	@Test
 	void negatedRuleMatchesWhenOriginalDoesNot() {
-		Lazy<TokenRule> lazy = new Lazy<>();
-		LazyTokenRule lazyRule = new LazyTokenRule(lazy);
+		LazyTokenRule lazyRule = new LazyTokenRule();
 		TokenRule testRule = TokenRules.pattern("expected");
-		lazy.set(testRule);
+		lazyRule.set(testRule);
 		
 		TokenRule notRule = lazyRule.not();
 		
@@ -286,10 +306,9 @@ class LazyTokenRuleTest {
 	
 	@Test
 	void negatedRuleDoesNotMatchWhenOriginalMatches() {
-		Lazy<TokenRule> lazy = new Lazy<>();
-		LazyTokenRule lazyRule = new LazyTokenRule(lazy);
+		LazyTokenRule lazyRule = new LazyTokenRule();
 		TokenRule testRule = TokenRules.pattern("match");
-		lazy.set(testRule);
+		lazyRule.set(testRule);
 		
 		TokenRule notRule = lazyRule.not();
 		
@@ -305,10 +324,9 @@ class LazyTokenRuleTest {
 	
 	@Test
 	void negatedRuleConsistentBehavior() {
-		Lazy<TokenRule> lazy = new Lazy<>();
-		LazyTokenRule lazyRule = new LazyTokenRule(lazy);
+		LazyTokenRule lazyRule = new LazyTokenRule();
 		TokenRule testRule = TokenRules.pattern("expected");
-		lazy.set(testRule);
+		lazyRule.set(testRule);
 		
 		TokenRule notRule = lazyRule.not();
 		
@@ -329,8 +347,7 @@ class LazyTokenRuleTest {
 	
 	@Test
 	void recursiveRuleExample() {
-		Lazy<TokenRule> lazy = new Lazy<>();
-		LazyTokenRule lazyRule = new LazyTokenRule(lazy);
+		LazyTokenRule lazyRule = new LazyTokenRule();
 		
 		TokenRule recursiveRule = TokenRules.sequence(
 			TokenRules.pattern("\\("),
@@ -343,7 +360,7 @@ class LazyTokenRuleTest {
 			recursiveRule
 		);
 		
-		lazy.set(finalRule);
+		lazyRule.set(finalRule);
 		
 		Token word = createToken("word");
 		List<Token> tokens = List.of(word);
@@ -358,10 +375,9 @@ class LazyTokenRuleTest {
 	
 	@Test
 	void lazyRuleWithTokenRulesOperations() {
-		Lazy<TokenRule> lazy = new Lazy<>();
-		LazyTokenRule lazyRule = new LazyTokenRule(lazy);
+		LazyTokenRule lazyRule = new LazyTokenRule();
 		TokenRule testRule = createRule("test");
-		lazy.set(testRule);
+		lazyRule.set(testRule);
 		
 		TokenRule optional = lazyRule.optional();
 		TokenRule repeated = lazyRule.repeatAtLeast(1);
@@ -374,10 +390,8 @@ class LazyTokenRuleTest {
 	
 	@Test
 	void lazyRuleInComplexExpression() {
-		Lazy<TokenRule> lazy1 = new Lazy<>();
-		Lazy<TokenRule> lazy2 = new Lazy<>();
-		LazyTokenRule lazyRule1 = new LazyTokenRule(lazy1);
-		LazyTokenRule lazyRule2 = new LazyTokenRule(lazy2);
+		LazyTokenRule lazyRule1 = new LazyTokenRule();
+		LazyTokenRule lazyRule2 = new LazyTokenRule();
 		
 		TokenRule complexRule = TokenRules.sequence(
 			lazyRule1,
@@ -385,19 +399,18 @@ class LazyTokenRuleTest {
 			lazyRule2
 		);
 		
-		lazy1.set(TokenRules.pattern("\\w+"));
-		lazy2.set(TokenRules.pattern("\\d+"));
+		lazyRule1.set(TokenRules.pattern("\\w+"));
+		lazyRule2.set(TokenRules.pattern("\\d+"));
 		
 		assertNotNull(complexRule);
 	}
 	
 	@Test
 	void lazyRuleMemorizationBehavior() {
-		Lazy<TokenRule> lazy = new Lazy<>();
-		LazyTokenRule lazyRule = new LazyTokenRule(lazy);
+		LazyTokenRule lazyRule = new LazyTokenRule();
 		
 		TokenRule originalRule = createRule("test");
-		lazy.set(originalRule);
+		lazyRule.set(originalRule);
 		
 		Token token = createToken("test");
 		List<Token> tokens = List.of(token);
@@ -415,12 +428,10 @@ class LazyTokenRuleTest {
 	
 	@Test
 	void lazyRuleStateIndependence() {
-		Lazy<TokenRule> lazy1 = new Lazy<>();
-		Lazy<TokenRule> lazy2 = new Lazy<>();
-		LazyTokenRule lazyRule1 = new LazyTokenRule(lazy1);
-		LazyTokenRule lazyRule2 = new LazyTokenRule(lazy2);
+		LazyTokenRule lazyRule1 = new LazyTokenRule();
+		LazyTokenRule lazyRule2 = new LazyTokenRule();
 		
-		lazy1.set(createRule("first"));
+		lazyRule1.set(createRule("first"));
 		
 		Token token1 = createToken("first");
 		Token token2 = createToken("second");
@@ -432,31 +443,88 @@ class LazyTokenRuleTest {
 		assertNotNull(lazyRule1.match(stream1));
 		assertNull(lazyRule2.match(stream2));
 		
-		lazy2.set(createRule("second"));
+		lazyRule2.set(createRule("second"));
 		
 		assertNotNull(lazyRule1.match(new TokenStream(tokens1, 0)));
 		assertNotNull(lazyRule2.match(stream2));
 	}
 	
 	@Test
-	void equalityAndHashCode() {
-		TokenRule simpleRule = createRule("test");
+	void supplierInterfaceImplementation() {
+		LazyTokenRule lazyRule = new LazyTokenRule();
+		TokenRule testRule = createRule("test");
 		
-		LazyTokenRule rule1 = new LazyTokenRule(new Lazy<>(TokenRules.alwaysMatch()));
-		LazyTokenRule rule2 = new LazyTokenRule(new Lazy<>(TokenRules.alwaysMatch()));
+		assertThrows(NotInitializedException.class, ((Supplier<TokenRule>) lazyRule)::get);
+		
+		lazyRule.set(testRule);
+		assertSame(testRule, lazyRule.get());
+	}
+	
+	@Test
+	void memoizationBehaviorOfInternalSupplier() {
+		LazyTokenRule lazyRule = new LazyTokenRule();
+		TokenRule testRule = createRule("test");
+		lazyRule.set(testRule);
+		
+		TokenRule rule1 = lazyRule.get();
+		TokenRule rule2 = lazyRule.get();
+		
+		assertSame(rule1, rule2);
+		assertSame(testRule, rule1);
+	}
+	
+	@Test
+	void negatedRuleGetBehavior() {
+		LazyTokenRule lazyRule = new LazyTokenRule();
+		TokenRule testRule = TokenRules.pattern("test");
+		lazyRule.set(testRule);
+		
+		TokenRule notRule = lazyRule.not();
+		
+		Supplier<?> supplier = assertInstanceOf(Supplier.class, notRule);
+		TokenRule negatedInner = assertInstanceOf(TokenRule.class, supplier.get());
+		assertNotNull(negatedInner);
+	}
+	
+	@Test
+	void notInitializedExceptionMessage() {
+		LazyTokenRule lazyRule = new LazyTokenRule();
+		
+		NotInitializedException exception = assertThrows(NotInitializedException.class, lazyRule::get);
+		
+		assertTrue(exception.getMessage().contains("not been initialized"));
+	}
+	
+	@Test
+	void equalityAndHashCode() {
+		LazyTokenRule rule1 = new LazyTokenRule();
+		LazyTokenRule rule2 = new LazyTokenRule();
 		
 		assertEquals(rule1, rule2);
+		assertEquals(rule1.hashCode(), rule2.hashCode());
 		
 		assertEquals(rule1, rule1);
 		assertEquals(rule1.hashCode(), rule1.hashCode());
+		
+		rule1.set(createRule("test1"));
+		rule2.set(createRule("test2"));
+		
+		assertEquals(0, rule1.hashCode());
+		assertEquals(0, rule2.hashCode());
 	}
 	
 	@Test
 	void toStringContainsRuleInfo() {
-		LazyTokenRule rule = new LazyTokenRule(new Lazy<>(TokenRules.alwaysMatch()));
+		LazyTokenRule rule = new LazyTokenRule();
 		String ruleString = rule.toString();
 		
 		assertTrue(ruleString.contains("LazyTokenRule"));
 		assertTrue(ruleString.contains("lazyTokenRule="));
+		
+		rule.set(TokenRules.alwaysMatch());
+		String initializedRuleString = rule.toString();
+		
+		assertTrue(initializedRuleString.contains("LazyTokenRule"));
+		assertTrue(initializedRuleString.contains("lazyTokenRule="));
 	}
 }
