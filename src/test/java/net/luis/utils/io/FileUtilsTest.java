@@ -76,6 +76,7 @@ class FileUtilsTest {
 	
 	@Test
 	void splitWithFiles() {
+		assertEquals(Pair.of("", "FileUtils.json"), FileUtils.split("FileUtils.json"));
 		assertEquals(Pair.of("/", "FileUtils.json"), FileUtils.split("/FileUtils.json"));
 		assertEquals(Pair.of("/FileUtils/", "FileUtils.json"), FileUtils.split("/FileUtils/FileUtils.json"));
 		assertEquals(Pair.of("./path/", "file.txt"), FileUtils.split("./path/file.txt"));
