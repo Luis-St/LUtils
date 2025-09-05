@@ -24,7 +24,8 @@ import net.luis.utils.io.token.rule.rules.TokenRule;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.*;
+import java.util.List;
+import java.util.Objects;
 
 /**
  * A token rule that matches any of the provided token rules.<br>

@@ -18,7 +18,7 @@
 
 package net.luis.utils.io.token.rule.rules.matchers;
 
-import net.luis.utils.io.token.rule.rules.*;
+import net.luis.utils.io.token.rule.rules.NegatableTokenRule;
 import net.luis.utils.io.token.tokens.Token;
 import org.jetbrains.annotations.NotNull;
 

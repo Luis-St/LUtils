@@ -324,7 +324,6 @@ class OptionalTokenRuleTest {
 		assertTrue(originalEmpty.matchedTokens().isEmpty());
 		assertNotNull(negatedOther);
 	}
-
 	
 	@Test
 	void equalRulesHaveSameHashCode() {

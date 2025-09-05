@@ -20,7 +20,8 @@ package net.luis.utils.io.token.rule.rules;
 
 import net.luis.utils.io.token.TokenStream;
 import net.luis.utils.io.token.rule.TokenRuleMatch;
-import net.luis.utils.io.token.rule.rules.assertions.*;
+import net.luis.utils.io.token.rule.rules.assertions.LookaheadTokenRule;
+import net.luis.utils.io.token.rule.rules.assertions.LookbehindTokenRule;
 import net.luis.utils.io.token.rule.rules.quantifiers.OptionalTokenRule;
 import net.luis.utils.io.token.rule.rules.quantifiers.RepeatedTokenRule;
 import org.jetbrains.annotations.NotNull;
@@ -144,6 +145,7 @@ public interface TokenRule {
 	 * </p>
 	 *
 	 * @return A new negated token rule
+	 * @throws UnsupportedOperationException If this token rule does not support negation
 	 * @see NegatableTokenRule
 	 */
 	default @NotNull TokenRule not() {

@@ -23,7 +23,7 @@ import net.luis.utils.io.token.tokens.Token;
 import org.intellij.lang.annotations.Language;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.*;
+import java.util.Objects;
 import java.util.regex.Pattern;
 
 /**

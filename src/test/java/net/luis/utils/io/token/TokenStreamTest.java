@@ -364,7 +364,6 @@ class TokenStreamTest {
 		assertEquals("actual", stream.getCurrentToken().value());
 	}
 	
-	
 	@Test
 	void lookaheadStream() {
 		List<Token> tokens = List.of(createToken("first"), createToken("second"), createToken("third"));

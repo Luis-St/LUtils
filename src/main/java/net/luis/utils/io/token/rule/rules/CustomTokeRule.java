@@ -24,7 +24,8 @@ import net.luis.utils.io.token.tokens.Token;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.*;
+import java.util.Collections;
+import java.util.Objects;
 import java.util.function.Predicate;
 
 /**

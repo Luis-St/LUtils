@@ -363,7 +363,6 @@ class AnyOfTokenRuleTest {
 		assertNull(rule.match(new TokenStream(List.of(createToken("other")), 0)));
 		assertNotNull(negatedRule.match(new TokenStream(List.of(createToken("other"), createToken("other")), 0)));
 	}
-
 	
 	@Test
 	void equalRulesHaveSameHashCode() {

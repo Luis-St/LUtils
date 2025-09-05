@@ -22,7 +22,6 @@ import net.luis.utils.exception.NotInitializedException;
 import net.luis.utils.function.FunctionUtils;
 import net.luis.utils.io.token.TokenStream;
 import net.luis.utils.io.token.rule.TokenRuleMatch;
-import net.luis.utils.util.Lazy;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 

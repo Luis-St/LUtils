@@ -28,12 +28,11 @@ import net.luis.utils.io.token.rule.rules.matchers.LengthTokenRule;
 import net.luis.utils.io.token.rule.rules.matchers.PatternTokenRule;
 import net.luis.utils.io.token.rule.rules.quantifiers.OptionalTokenRule;
 import net.luis.utils.io.token.rule.rules.quantifiers.RepeatedTokenRule;
-import net.luis.utils.util.Lazy;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.junit.jupiter.api.Test;
 
-import java.util.*;
+import java.util.List;
 import java.util.function.Function;
 import java.util.regex.Pattern;
 

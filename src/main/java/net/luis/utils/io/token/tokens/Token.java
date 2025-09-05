@@ -18,7 +18,6 @@
 
 package net.luis.utils.io.token.tokens;
 
-import net.luis.utils.Main;
 import net.luis.utils.io.token.TokenPosition;
 import net.luis.utils.io.token.definition.TokenDefinition;
 import org.jetbrains.annotations.NotNull;

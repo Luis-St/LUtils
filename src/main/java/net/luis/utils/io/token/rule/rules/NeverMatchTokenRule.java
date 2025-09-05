@@ -20,11 +20,10 @@ package net.luis.utils.io.token.rule.rules;
 
 import net.luis.utils.io.token.TokenStream;
 import net.luis.utils.io.token.rule.TokenRuleMatch;
-import net.luis.utils.io.token.tokens.Token;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.*;
+import java.util.Objects;
 
 /**
  * A token rule that never matches.<br>

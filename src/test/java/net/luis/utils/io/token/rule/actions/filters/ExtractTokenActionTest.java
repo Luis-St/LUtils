@@ -25,9 +25,7 @@ import net.luis.utils.io.token.tokens.Token;
 import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.Test;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
 
@@ -267,7 +265,7 @@ class ExtractTokenActionTest {
 	
 	@Test
 	void applyWithCountingConsumer() {
-		int[] extractedCount = {0};
+		int[] extractedCount = { 0 };
 		ExtractTokenAction action = new ExtractTokenAction(
 			token -> token.value().startsWith("count"),
 			token -> extractedCount[0]++

@@ -18,7 +18,6 @@
 
 package net.luis.utils.io.codec;
 
-import com.google.common.collect.Lists;
 import net.luis.utils.io.codec.decoder.Decoder;
 import net.luis.utils.io.codec.decoder.KeyableDecoder;
 import net.luis.utils.io.codec.encoder.Encoder;
@@ -27,7 +26,6 @@ import net.luis.utils.io.codec.provider.TypeProvider;
 import net.luis.utils.io.codec.struct.*;
 import net.luis.utils.util.Either;
 import net.luis.utils.util.Result;
-import org.apache.commons.lang3.ArrayUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 

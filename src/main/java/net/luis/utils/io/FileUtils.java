@@ -71,9 +71,9 @@ public final class FileUtils {
 		int dot = str.lastIndexOf(".");
 		if (dash == -1 && dot == -1) {
 			return Pair.of(str, "");
-		}else if (dot == -1 || ".".equals(str)) {
+		} else if (dot == -1 || ".".equals(str)) {
 			return Pair.of(str, "");
-		}else if (dash == -1) {
+		} else if (dash == -1) {
 			return Pair.of("", str);
 		} else {
 			return Pair.of(str.substring(0, dash + 1), str.substring(dash + 1));

@@ -21,13 +21,11 @@ package net.luis.utils.io.token.rule.rules;
 import net.luis.utils.io.token.TokenStream;
 import net.luis.utils.io.token.rule.TokenRuleMatch;
 import net.luis.utils.io.token.rule.rules.assertions.*;
-import net.luis.utils.io.token.rule.rules.quantifiers.*;
-import net.luis.utils.io.token.tokens.Token;
+import net.luis.utils.io.token.rule.rules.quantifiers.OptionalTokenRule;
+import net.luis.utils.io.token.rule.rules.quantifiers.RepeatedTokenRule;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.junit.jupiter.api.Test;
-
-import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -538,7 +536,7 @@ class TokenRuleTest {
 		TokenRule start = TokenRules.startDocument();
 		TokenRule end = TokenRules.endDocument();
 		
-		TokenRule[] singletonRules = {alwaysMatch, start, end};
+		TokenRule[] singletonRules = { alwaysMatch, start, end };
 		for (TokenRule singletonRule : singletonRules) {
 			assertInstanceOf(LookaheadTokenRule.class, singletonRule.lookahead());
 			assertInstanceOf(LookaheadTokenRule.class, singletonRule.negativeLookahead());

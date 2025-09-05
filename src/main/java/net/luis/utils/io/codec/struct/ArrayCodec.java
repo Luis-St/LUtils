@@ -26,7 +26,6 @@ import org.jetbrains.annotations.*;
 
 import java.lang.reflect.Array;
 import java.util.*;
-import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 /**
@@ -121,7 +120,7 @@ public class ArrayCodec<C> implements Codec<C[]> {
 			return Result.error("Array length '" + value.length + "' is out of range: " + this.minLength + ".." + this.maxLength);
 		}
 		
-		List<Result<R>> encoded = 	Arrays.stream(value).map(v -> this.codec.encodeStart(provider, provider.empty(), v)).toList();
+		List<Result<R>> encoded = Arrays.stream(value).map(v -> this.codec.encodeStart(provider, provider.empty(), v)).toList();
 		if (encoded.stream().anyMatch(Result::isError)) {
 			return Result.error("Unable to encode some elements of array '" + Arrays.deepToString(value) + "' using '" + this + "': \n" + encoded.stream().filter(Result::isError).map(Result::errorOrThrow).collect(Collectors.joining("\n")));
 		}
