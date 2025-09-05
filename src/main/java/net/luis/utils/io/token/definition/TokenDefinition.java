@@ -18,25 +18,16 @@
 
 package net.luis.utils.io.token.definition;
 
-import net.luis.utils.io.token.rule.rules.NegatableTokenRule;
-import net.luis.utils.io.token.rule.rules.TokenRule;
-import net.luis.utils.io.token.tokens.Token;
 import org.jetbrains.annotations.NotNull;
-
-import java.util.Objects;
 
 /**
  * Functional interface for a token definition.<br>
  * A token definition defines a token and provides a method to check if a word matches the token.<br>
- * <p>
- *     For easier usage in rules this interface extends {@link TokenRule}.<br>
- *     This means a token definition can be used as a rule in a {@link TokenRule}.
- * </p>
  *
  * @author Luis-St
  */
 @FunctionalInterface
-public interface TokenDefinition extends NegatableTokenRule {
+public interface TokenDefinition {
 	
 	/**
 	 * Creates a new token definition for a single character.<br>
@@ -82,11 +73,4 @@ public interface TokenDefinition extends NegatableTokenRule {
 	 * @throws NullPointerException If the word is null
 	 */
 	boolean matches(@NotNull String word);
-	
-	@Override
-	default boolean match(@NotNull Token token) {
-		Objects.requireNonNull(token, "Token must not be null");
-		
-		return this.matches(token.value());
-	}
 }
