@@ -74,12 +74,11 @@ class TokenGroupRuleTest {
 	}
 	
 	@Test
-	void matchWithOutOfBoundsIndex() {
+	void matchWithNegativeIndex() {
 		TokenGroupRule groupRule = new TokenGroupRule(TokenRules.alwaysMatch());
 		List<Token> tokens = List.of(createToken("test"));
 		
 		assertThrows(IndexOutOfBoundsException.class, () -> groupRule.match(new TokenStream(tokens, -1)));
-		assertThrows(IndexOutOfBoundsException.class, () -> groupRule.match(new TokenStream(tokens, 2)));
 	}
 	
 	@Test

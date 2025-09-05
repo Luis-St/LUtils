@@ -72,11 +72,10 @@ class NegatableTokenRuleTest {
 	}
 	
 	@Test
-	void defaultMatchStreamWithIndexOutOfBounds() {
+	void defaultMatchWithNegativeIndex() {
 		NegatableTokenRule rule = createAlwaysTrueRule();
 		List<Token> tokens = List.of(createToken("test"));
 		
-		assertThrows(IndexOutOfBoundsException.class, () -> rule.match(new TokenStream(tokens, 5)));
 		assertThrows(IndexOutOfBoundsException.class, () -> rule.match(new TokenStream(tokens, -1)));
 	}
 	

@@ -138,12 +138,10 @@ class SequenceTokenRuleTest {
 	}
 	
 	@Test
-	void matchWithIndexOutOfBounds() {
+	void matchWithNegativeIndex() {
 		SequenceTokenRule rule = new SequenceTokenRule(List.of(createRule("test")));
 		List<Token> tokens = List.of(createToken("test"));
 		
-		assertThrows(IndexOutOfBoundsException.class, () -> rule.match(new TokenStream(tokens, 1)));
-		assertThrows(IndexOutOfBoundsException.class, () -> rule.match(new TokenStream(tokens, 5)));
 		assertThrows(IndexOutOfBoundsException.class, () -> rule.match(new TokenStream(tokens, -1)));
 	}
 	

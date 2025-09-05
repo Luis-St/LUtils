@@ -70,11 +70,10 @@ class NeverMatchTokenRuleTest {
 	}
 	
 	@Test
-	void matchWithIndexOutOfBounds() {
+	void matchWithNegativeIndex() {
 		NeverMatchTokenRule rule = NeverMatchTokenRule.INSTANCE;
 		List<Token> tokens = List.of(createToken("test"));
 		
-		assertThrows(IndexOutOfBoundsException.class, () -> rule.match(new TokenStream(tokens, 5)));
 		assertThrows(IndexOutOfBoundsException.class, () -> rule.match(new TokenStream(tokens, -1)));
 	}
 	

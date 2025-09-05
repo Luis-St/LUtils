@@ -141,11 +141,10 @@ class RepeatedTokenRuleTest {
 	}
 	
 	@Test
-	void matchWithIndexOutOfBounds() {
+	void matchWithNegativeIndex() {
 		RepeatedTokenRule rule = new RepeatedTokenRule(createRule("test"), 1, 3);
 		List<Token> tokens = List.of(createToken("test"));
 		
-		assertThrows(IndexOutOfBoundsException.class, () -> rule.match(new TokenStream(tokens, 5)));
 		assertThrows(IndexOutOfBoundsException.class, () -> rule.match(new TokenStream(tokens, -1)));
 	}
 	

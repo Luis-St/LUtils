@@ -78,12 +78,10 @@ class TokenStreamTest {
 	}
 	
 	@Test
-	void constructorWithInvalidIndex() {
+	void constructorWithNegativeIndex() {
 		List<Token> tokens = List.of(createToken("first"), createToken("second"));
 		
 		assertThrows(IndexOutOfBoundsException.class, () -> new TokenStream(tokens, -1));
-		assertThrows(IndexOutOfBoundsException.class, () -> new TokenStream(tokens, 2));
-		assertThrows(IndexOutOfBoundsException.class, () -> new TokenStream(tokens, 10));
 	}
 	
 	@Test
@@ -419,12 +417,11 @@ class TokenStreamTest {
 	}
 	
 	@Test
-	void copyWithInvalidIndex() {
+	void copyWithNegativeIndex() {
 		List<Token> tokens = List.of(createToken("first"), createToken("second"));
 		TokenStream stream = new TokenStream(tokens);
 		
 		assertThrows(IndexOutOfBoundsException.class, () -> stream.copy(-1));
-		assertThrows(IndexOutOfBoundsException.class, () -> stream.copy(3));
 	}
 	
 	@Test

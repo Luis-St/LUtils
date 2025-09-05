@@ -77,14 +77,14 @@ public class TokenStream {
 	 * @param tokens The list of tokens to create the stream from
 	 * @param currentIndex The initial position in the token stream
 	 * @throws NullPointerException If the token list is null
-	 * @throws IndexOutOfBoundsException If the current index is negative or beyond the bounds of the token list (unless the list is empty)
+	 * @throws IndexOutOfBoundsException If the current index is negative
 	 */
 	public TokenStream(@NotNull List<Token> tokens, int currentIndex) {
 		Objects.requireNonNull(tokens, "Token list must not be null");
 		this.tokens = Lists.newArrayList(tokens);
 		this.currentIndex = currentIndex;
-		if (!(this.hasToken() || this.tokens.isEmpty()) || this.currentIndex < 0) {
-			throw new IndexOutOfBoundsException("Current index is out of bounds: " + this.currentIndex);
+		if (this.currentIndex < 0) {
+			throw new IndexOutOfBoundsException("Current index must not be negative");
 		}
 	}
 	
