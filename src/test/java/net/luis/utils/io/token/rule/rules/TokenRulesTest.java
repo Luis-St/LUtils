@@ -726,19 +726,18 @@ class TokenRulesTest {
 	}
 	
 	@Test
-	void lazyWithNullLazy() {
-		assertThrows(NullPointerException.class, () -> TokenRules.lazy(null));
+	void lazyDoesNotThrowAnyException() {
+		assertDoesNotThrow(TokenRules::lazy);
 	}
 	
 	@Test
 	void lazyFactoryMethodCreatesLazyTokenRule() {
-		Lazy<TokenRule> lazy = new Lazy<>();
-		TokenRule lazyRule = TokenRules.lazy(lazy);
+		LazyTokenRule lazyRule = TokenRules.lazy();
 		
 		assertInstanceOf(LazyTokenRule.class, lazyRule);
 		
 		TokenRule innerRule = createRule("inner");
-		lazy.set(innerRule);
+		lazyRule.set(innerRule);
 		
 		assertEquals(innerRule, assertInstanceOf(LazyTokenRule.class, lazyRule).lazyTokenRule().get());
 	}

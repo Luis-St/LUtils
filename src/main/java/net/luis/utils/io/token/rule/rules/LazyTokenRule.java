@@ -37,8 +37,7 @@ import java.util.function.Supplier;
  * <b>Usage example:</b><br>
  * <pre>{@code
  * // Create a lazy container for the rule
- * Lazy<TokenRule> lazy = new Lazy<>();
- * LazyTokenRule lazyTokenRule = new LazyTokenRule(lazy);
+ * LazyTokenRule lazyTokenRule = new LazyTokenRule();
  *
  * // Use lazyTokenRule in other rule definitions
  * TokenRule recursiveRule = TokenRules.sequence(
@@ -48,7 +47,7 @@ import java.util.function.Supplier;
  * );
  *
  * // Initialize the lazy rule with the actual definition
- * lazy.set(TokenRules.any(
+ * lazyTokenRule.set(TokenRules.any(
  *     TokenRules.pattern("\\w+"),
  *     recursiveRule
  * ));
@@ -56,22 +55,20 @@ import java.util.function.Supplier;
  *
  * @author Luis-St
  */
-public class LazyTokenRule implements TokenRule {
+public class LazyTokenRule implements TokenRule, Supplier<TokenRule> {
 	
 	/**
 	 * The supplier for the lazily-initialized token rule.<br>
 	 */
-	private final Supplier<TokenRule> lazyTokenRule;
+	private Supplier<TokenRule> lazyTokenRule;
 	
 	/**
-	 * Constructs a new lazy token rule with the given lazy initialization container.<br>
-	 * The lazy container must be initialized before this rule can successfully match tokens.<br>
-	 *
-	 * @param lazyTokenRule The lazy initialization container for the token rule
-	 * @throws NullPointerException If the lazy token rule is null
+	 * Constructs a new lazy not initialized token rule.<br>
 	 */
-	public LazyTokenRule(@NotNull Lazy<TokenRule> lazyTokenRule) {
-		this.lazyTokenRule = Objects.requireNonNull(lazyTokenRule, "The lazy token rule must not be null");
+	public LazyTokenRule() {
+		this.lazyTokenRule = () -> {
+			throw new NotInitializedException("The lazy token rule has not been initialized yet");
+		};
 	}
 	
 	/**
@@ -87,6 +84,31 @@ public class LazyTokenRule implements TokenRule {
 	}
 	
 	/**
+	 * Gets the token rule.<br>
+	 * If the rule has not been initialized yet, calling this method will throw a {@link NotInitializedException}.<br>
+	 *
+	 * @return The token rule
+	 * @throws NotInitializedException If the rule has not been initialized yet
+	 */
+	@Override
+	public TokenRule get() {
+		return this.lazyTokenRule.get();
+	}
+	
+	/**
+	 * Sets the token rule to the given rule.<br>
+	 * This will replace any previously set rule.<br>
+	 * If the rule has already been initialized, calling this method will overwrite it.<br>
+	 *
+	 * @param tokenRule The token rule to set
+	 * @throws NullPointerException If the token rule is null
+	 */
+	public void set(@NotNull TokenRule tokenRule) {
+		Objects.requireNonNull(tokenRule, "The token rule must not be null");
+		this.lazyTokenRule = FunctionUtils.memorize(() -> tokenRule);
+	}
+	
+	/**
 	 * Gets the supplier for the lazily-initialized token rule.<br>
 	 * If the rule has not been initialized yet, calling {@link Supplier#get()} will throw a {@link NotInitializedException}.<br>
 	 *
@@ -98,6 +120,8 @@ public class LazyTokenRule implements TokenRule {
 	
 	@Override
 	public @Nullable TokenRuleMatch match(@NotNull TokenStream stream) {
+		Objects.requireNonNull(stream, "Token stream must not be null");
+		
 		TokenRule tokenRule = null;
 		try {
 			tokenRule = this.lazyTokenRule.get();
@@ -130,7 +154,7 @@ public class LazyTokenRule implements TokenRule {
 	
 	@Override
 	public int hashCode() {
-		return Objects.hash(this.lazyTokenRule);
+		return 0;
 	}
 	
 	@Override

@@ -528,16 +528,14 @@ public final class TokenRules {
 	}
 	
 	/**
-	 * Creates a lazily-initialized token rule using the given lazy container.<br>
-	 * The lazy container must be initialized before this rule can successfully match tokens.<br>
+	 * Creates a lazily-initialized token rule.<br>
+	 * The lazy token rule must be initialized before this rule can successfully match tokens.<br>
 	 * This is useful for defining recursive rules, rules that depend on runtime conditions or cyclic dependencies between rules.<br>
 	 *
-	 * @param lazyTokenRule The lazy initialization container for the token rule
 	 * @return The created lazy token rule
-	 * @throws NullPointerException If the lazy token rule is null
 	 * @see LazyTokenRule
 	 */
-	public static @NotNull TokenRule lazy(@NotNull Lazy<TokenRule> lazyTokenRule) {
-		return new LazyTokenRule(lazyTokenRule);
+	public static @NotNull LazyTokenRule lazy() {
+		return new LazyTokenRule();
 	}
 }
