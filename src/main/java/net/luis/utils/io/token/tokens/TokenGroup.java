@@ -19,7 +19,6 @@
 package net.luis.utils.io.token.tokens;
 
 import net.luis.utils.io.token.TokenPosition;
-import net.luis.utils.io.token.definition.TokenDefinition;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
@@ -28,30 +27,26 @@ import java.util.stream.Collectors;
 
 /**
  * Token implementation for a group of tokens.<br>
- * A token group is a sequence of tokens that have been grouped together and match the token definition.<br>
+ * A token group is a sequence of tokens that have been grouped together.<br>
  * The token group must contain at least two tokens.<br>
  *
  * @author Luis-St
  *
  * @param tokens The list of tokens in the group
- * @param definition The token definition
  */
 public record TokenGroup(
-	@NotNull List<Token> tokens,
-	@NotNull TokenDefinition definition
+	@NotNull List<Token> tokens
 ) implements Token {
 	
 	/**
 	 * Constructs a new token group for a list of tokens.<br>
 	 *
 	 * @param tokens The list of tokens in the group
-	 * @param definition The token definition
-	 * @throws NullPointerException If the list of tokens, the token definition or any of the tokens are null
-	 * @throws IllegalArgumentException If the list of tokens is empty, contains a single element or does not match the token definition
+	 * @throws NullPointerException If the list of tokens, or any of the tokens are null
+	 * @throws IllegalArgumentException If the list of tokens is empty or contains a single element
 	 */
 	public TokenGroup {
 		Objects.requireNonNull(tokens, "Token list must not be null");
-		Objects.requireNonNull(definition, "Token definition must not be null");
 		for (Token token : tokens) {
 			Objects.requireNonNull(token, "Token list must not be contain a null element");
 		}
@@ -60,10 +55,6 @@ public record TokenGroup(
 		}
 		if (tokens.size() == 1) {
 			throw new IllegalArgumentException("Token list must not contain a single element");
-		}
-		String value = tokens.stream().map(Token::value).collect(Collectors.joining());
-		if (!definition.matches(value)) {
-			throw new IllegalArgumentException("Tokens " + tokens + " of group does not match the defined token definition " + definition);
 		}
 		tokens = List.copyOf(tokens);
 	}

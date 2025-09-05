@@ -106,7 +106,7 @@ public class TokenReader {
 			}
 			
 			if (escape) {
-				tokens.add(new EscapedToken(TokenDefinition.ofEscaped(c), "\\" + c, wordStart.toTokenPosition()));
+				tokens.add(new EscapedToken( "\\" + c, wordStart.toTokenPosition()));
 				escape = false;
 				current.increment();
 				wordStart.copyFrom(current);
@@ -126,7 +126,7 @@ public class TokenReader {
 				for (TokenDefinition definition : this.definitions) {
 					String str = String.valueOf(c);
 					if (definition.matches(str)) {
-						tokens.add(new SimpleToken(definition, str, current.toTokenPosition()));
+						tokens.add(new SimpleToken(str, current.toTokenPosition()));
 						break;
 					}
 				}
@@ -168,8 +168,7 @@ public class TokenReader {
 		Objects.requireNonNull(tokens, "Token list must not be null");
 		Objects.requireNonNull(word, "Word must not be null");
 		
-		TokenDefinition matchedDefinition = this.definitions.stream().filter(definition -> definition.matches(word)).findFirst().orElse(WordTokenDefinition.INSTANCE);
-		tokens.add(new SimpleToken(matchedDefinition, word, startPosition));
+		tokens.add(new SimpleToken(word, startPosition));
 	}
 	
 	//region Internal

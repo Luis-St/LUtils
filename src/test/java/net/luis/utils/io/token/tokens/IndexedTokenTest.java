@@ -31,7 +31,7 @@ import static org.junit.jupiter.api.Assertions.*;
 class IndexedTokenTest {
 	
 	private static @NotNull Token createToken(@NotNull String value) {
-		return SimpleToken.createUnpositioned(word -> word.equals(value), value);
+		return SimpleToken.createUnpositioned(value);
 	}
 	
 	@Test
@@ -93,14 +93,6 @@ class IndexedTokenTest {
 		IndexedToken indexed = new IndexedToken(token, 42);
 		
 		assertEquals(42, indexed.index());
-	}
-	
-	@Test
-	void definitionDelegatesToWrappedToken() {
-		Token token = createToken("test");
-		IndexedToken indexed = new IndexedToken(token, 1);
-		
-		assertEquals(token.definition(), indexed.definition());
 	}
 	
 	@Test
@@ -218,7 +210,6 @@ class IndexedTokenTest {
 		Token originalToken = createToken("original");
 		IndexedToken indexed = new IndexedToken(originalToken, 5);
 		
-		assertEquals(originalToken.definition(), indexed.definition());
 		assertEquals(originalToken.value(), indexed.value());
 		assertEquals(originalToken.position(), indexed.position());
 	}

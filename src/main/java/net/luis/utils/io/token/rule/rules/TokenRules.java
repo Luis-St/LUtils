@@ -18,7 +18,6 @@
 
 package net.luis.utils.io.token.rule.rules;
 
-import net.luis.utils.io.token.definition.TokenDefinition;
 import net.luis.utils.io.token.rule.rules.assertions.*;
 import net.luis.utils.io.token.rule.rules.assertions.anchors.*;
 import net.luis.utils.io.token.rule.rules.combinators.*;
@@ -411,7 +410,15 @@ public final class TokenRules {
 	
 	/**
 	 * Creates a separated list token rule that matches elements separated by a delimiter.<br>
-	 * This is equivalent to: {@code sequence(elementRule, sequence(separatorRule, elementRule).repeatInfinitely())}<br>
+	 * This is equivalent to:
+	 * <pre>{@code
+	 * sequence(elementRule,
+	 *     sequence(
+	 *         separatorRule,
+	 *         elementRule
+	 *     ).repeatInfinitely()
+	 * )
+	 * }</pre>
 	 * <p>
 	 *     This pattern matches one or more elements separated by the specified separator,
 	 *     which is common in many grammar rules like parameter lists, array elements, etc.
@@ -421,7 +428,6 @@ public final class TokenRules {
 	 * @param separatorRule The token rule for matching separators between elements
 	 * @return The created separated list token rule
 	 * @throws NullPointerException If the element rule or separator rule is null
-	 * @see #separatedList(TokenRule, String)
 	 * @see #sequence(TokenRule...)
 	 * @see #repeatInfinitely(TokenRule)
 	 */
@@ -435,25 +441,6 @@ public final class TokenRules {
 				separatorRule, elementRule
 			).repeatInfinitely()
 		);
-	}
-	
-	/**
-	 * Creates a separated list token rule that matches elements separated by a literal string delimiter.<br>
-	 * This is a convenience method equivalent to {@link #separatedList(TokenRule, TokenRule)}
-	 * with a string token definition for the separator.<br>
-	 *
-	 * @param elementRule The token rule for matching list elements
-	 * @param separator The literal string separator (will be converted to a token definition)
-	 * @return The created separated list token rule
-	 * @throws NullPointerException If the element rule or separator string is null
-	 * @see #separatedList(TokenRule, TokenRule)
-	 * @see TokenDefinition#of(String, boolean)
-	 */
-	public static @NotNull TokenRule separatedList(@NotNull TokenRule elementRule, @NotNull String separator) {
-		Objects.requireNonNull(elementRule, "Element rule must not be null");
-		Objects.requireNonNull(separator, "Separator string must not be null");
-		
-		return separatedList(elementRule, TokenDefinition.of(separator, false));
 	}
 	
 	/**

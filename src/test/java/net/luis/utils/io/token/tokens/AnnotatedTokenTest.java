@@ -33,7 +33,7 @@ import static org.junit.jupiter.api.Assertions.*;
 class AnnotatedTokenTest {
 	
 	private static @NotNull Token createToken(@NotNull String value) {
-		return SimpleToken.createUnpositioned(word -> word.equals(value), value);
+		return SimpleToken.createUnpositioned(value);
 	}
 	
 	@Test
@@ -149,14 +149,6 @@ class AnnotatedTokenTest {
 		AnnotatedToken annotated = new AnnotatedToken(token, originalMetadata);
 		
 		assertEquals(originalMetadata, annotated.metadata());
-	}
-	
-	@Test
-	void definitionDelegatesToWrappedToken() {
-		Token token = createToken("test");
-		AnnotatedToken annotated = AnnotatedToken.empty(token);
-		
-		assertEquals(token.definition(), annotated.definition());
 	}
 	
 	@Test

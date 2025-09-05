@@ -19,25 +19,16 @@
 package net.luis.utils.io.token.tokens;
 
 import net.luis.utils.io.token.TokenPosition;
-import net.luis.utils.io.token.definition.TokenDefinition;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Map;
 
 /**
- * Interface for a token.<br>
- * A token is a sequence of characters that matches a token definition.<br>
- * The implementations of this interface serve as a value for a token definition.<br>
+ * Interface for a token, a token is a sequence of characters.<br>
  *
  * @author Luis-St
  */
 public interface Token {
-	
-	/**
-	 * Returns the token definition that this token matches.<br>
-	 * @return The token definition
-	 */
-	@NotNull TokenDefinition definition();
 	
 	/**
 	 * Returns the value of the token.<br>

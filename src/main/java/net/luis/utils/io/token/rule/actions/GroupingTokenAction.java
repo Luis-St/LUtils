@@ -18,7 +18,6 @@
 
 package net.luis.utils.io.token.rule.actions;
 
-import net.luis.utils.io.token.definition.TokenDefinition;
 import net.luis.utils.io.token.rule.TokenRuleEngine;
 import net.luis.utils.io.token.rule.TokenRuleMatch;
 import net.luis.utils.io.token.tokens.Token;
@@ -26,37 +25,34 @@ import net.luis.utils.io.token.tokens.TokenGroup;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Unmodifiable;
 
-import java.util.*;
+import java.util.Collections;
+import java.util.List;
 
 /**
  * Token action that groups the tokens into a single token group.<br>
- * The value of the group must match the definition of this action.<br>
+ * This class is implemented as a singleton and can be accessed via {@link #INSTANCE}.<br>
  *
  * @see TokenAction
  * @see TokenGroup
  * @see TokenRuleEngine
  *
  * @author Luis-St
- *
- * @param definition The definition of the token group
  */
-public record GroupingTokenAction(
-	@NotNull TokenDefinition definition
-) implements TokenAction {
+public final class GroupingTokenAction implements TokenAction {
 	
 	/**
-	 * Constructs a new grouping token action with the given definition.<br>
-	 *
-	 * @param definition The definition of the token group
-	 * @throws NullPointerException If the definition is null
+	 * The singleton instance of this class.<br>
 	 */
-	public GroupingTokenAction {
-		Objects.requireNonNull(definition, "Definition must not be null");
-	}
+	public static final GroupingTokenAction INSTANCE = new GroupingTokenAction();
+	
+	/**
+	 * Private constructor to prevent instantiation.<br>
+	 */
+	private GroupingTokenAction() {}
 	
 	@Override
 	public @NotNull @Unmodifiable List<Token> apply(@NotNull TokenRuleMatch match) {
 		List<Token> tokens = match.matchedTokens();
-		return Collections.singletonList(new TokenGroup(tokens, this.definition));
+		return Collections.singletonList(new TokenGroup(tokens));
 	}
 }

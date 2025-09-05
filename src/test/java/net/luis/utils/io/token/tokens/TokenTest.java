@@ -33,7 +33,7 @@ import static org.junit.jupiter.api.Assertions.*;
 class TokenTest {
 	
 	private static @NotNull Token createToken(@NotNull String value) {
-		return SimpleToken.createUnpositioned(word -> word.equals(value), value);
+		return SimpleToken.createUnpositioned(value);
 	}
 	
 	@Test
@@ -147,7 +147,6 @@ class TokenTest {
 		
 		Token shadowed = token.shadow();
 		
-		assertEquals(token.definition(), shadowed.definition());
 		assertEquals(token.value(), shadowed.value());
 		assertEquals(token.position(), shadowed.position());
 	}

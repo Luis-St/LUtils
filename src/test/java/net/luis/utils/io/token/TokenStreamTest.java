@@ -34,7 +34,7 @@ import static org.junit.jupiter.api.Assertions.*;
 class TokenStreamTest {
 	
 	private static @NotNull Token createToken(@NotNull String value) {
-		return SimpleToken.createUnpositioned(word -> word.equals(value), value);
+		return SimpleToken.createUnpositioned(value);
 	}
 	
 	private static @NotNull Token createShadowToken(@NotNull String value) {

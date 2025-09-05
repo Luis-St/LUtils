@@ -19,7 +19,6 @@
 package net.luis.utils.io.token.tokens;
 
 import net.luis.utils.io.token.TokenPosition;
-import net.luis.utils.io.token.definition.TokenDefinition;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Objects;
@@ -63,11 +62,6 @@ public record IndexedToken(
 	 */
 	public static @NotNull IndexedToken first(@NotNull Token token) {
 		return new IndexedToken(token, 0);
-	}
-	
-	@Override
-	public @NotNull TokenDefinition definition() {
-		return this.token.definition();
 	}
 	
 	@Override

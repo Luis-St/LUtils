@@ -19,7 +19,6 @@
 package net.luis.utils.io.token.tokens;
 
 import net.luis.utils.io.token.TokenPosition;
-import net.luis.utils.io.token.definition.TokenDefinition;
 import org.jetbrains.annotations.*;
 
 import java.util.Map;
@@ -76,11 +75,6 @@ public record AnnotatedToken(
 	 */
 	public static @NotNull AnnotatedToken empty(@NotNull Token token) {
 		return new AnnotatedToken(token, Map.of());
-	}
-	
-	@Override
-	public @NotNull TokenDefinition definition() {
-		return this.token.definition();
 	}
 	
 	@Override

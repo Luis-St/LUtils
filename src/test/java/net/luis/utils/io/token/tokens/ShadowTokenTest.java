@@ -33,7 +33,7 @@ import static org.junit.jupiter.api.Assertions.*;
 class ShadowTokenTest {
 	
 	private static @NotNull Token createToken(@NotNull String value) {
-		return SimpleToken.createUnpositioned(word -> word.equals(value), value);
+		return SimpleToken.createUnpositioned(value);
 	}
 	
 	@Test
@@ -54,14 +54,6 @@ class ShadowTokenTest {
 		ShadowToken shadow = new ShadowToken(originalToken);
 		
 		assertSame(originalToken, shadow.token());
-	}
-	
-	@Test
-	void definitionDelegatesToWrappedToken() {
-		Token token = createToken("test");
-		ShadowToken shadow = new ShadowToken(token);
-		
-		assertEquals(token.definition(), shadow.definition());
 	}
 	
 	@Test
@@ -145,7 +137,6 @@ class ShadowTokenTest {
 		Token originalToken = createToken("original");
 		ShadowToken shadow = new ShadowToken(originalToken);
 		
-		assertEquals(originalToken.definition(), shadow.definition());
 		assertEquals(originalToken.value(), shadow.value());
 		assertEquals(originalToken.position(), shadow.position());
 	}
@@ -191,10 +182,6 @@ class ShadowTokenTest {
 		assertEquals(baseToken.value(), level1.value());
 		assertEquals(baseToken.value(), level2.value());
 		assertEquals(baseToken.value(), level3.value());
-		
-		assertEquals(baseToken.definition(), level1.definition());
-		assertEquals(baseToken.definition(), level2.definition());
-		assertEquals(baseToken.definition(), level3.definition());
 	}
 	
 	@Test

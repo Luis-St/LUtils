@@ -20,10 +20,8 @@ package net.luis.utils.io.token.rule.actions.transformers;
 
 import com.google.common.collect.Lists;
 import net.luis.utils.io.token.TokenPosition;
-import net.luis.utils.io.token.definition.TokenDefinition;
 import net.luis.utils.io.token.rule.TokenRuleMatch;
 import net.luis.utils.io.token.rule.actions.TokenAction;
-import net.luis.utils.io.token.rule.actions.core.TokenDefinitionProvider;
 import net.luis.utils.io.token.tokens.*;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Unmodifiable;
@@ -35,62 +33,34 @@ import java.util.regex.Pattern;
 /**
  * Token action that splits tokens based on a regular expression pattern.<br>
  * Each token's value is split using the pattern, creating multiple tokens from each original token.<br>
- * Empty splits are ignored. The token definition for split parts is provided by a TokenDefinitionProvider.<br>
- * If the original token is positioned, the split tokens will have their positions calculated accordingly.<br>
+ * Empty splits are ignored. If the original token is positioned, the split tokens will have their positions calculated accordingly.<br>
  *
  * @author Luis-St
  *
  * @param splitPattern The pattern to use for splitting token values
- * @param definitionProvider The provider for token definitions of split parts
  */
 public record SplitTokenAction(
-	@NotNull Pattern splitPattern,
-	@NotNull TokenDefinitionProvider definitionProvider
+	@NotNull Pattern splitPattern
 ) implements TokenAction {
 	
 	/**
-	 * Constructs a new split token action with the given split pattern and definition provider.<br>
-	 *
-	 * @param splitPattern The pattern to use for splitting token values
-	 * @param definitionProvider The provider for token definitions of split parts
-	 * @throws NullPointerException If the split pattern or definition provider is null
-	 */
-	public SplitTokenAction {
-		Objects.requireNonNull(splitPattern, "Split pattern must not be null");
-		Objects.requireNonNull(definitionProvider, "Definition provider must not be null");
-	}
-	
-	/**
-	 * Constructs a new split token action with the given split pattern string and definition provider.<br>
-	 *
-	 * @param splitPattern The pattern string to use for splitting token values
-	 * @param definitionProvider The provider for token definitions of split parts
-	 * @throws NullPointerException If the split pattern or definition provider is null
-	 */
-	public SplitTokenAction(@NotNull String splitPattern, @NotNull TokenDefinitionProvider definitionProvider) {
-		this(Pattern.compile(Objects.requireNonNull(splitPattern, "Split pattern must not be null")), definitionProvider);
-	}
-	
-	/**
-	 * Constructs a new split token action with the given split pattern and a default definition provider.<br>
-	 * The default provider accepts any string value.<br>
+	 * Constructs a new split token action with the given split.<br>
 	 *
 	 * @param splitPattern The pattern to use for splitting token values
 	 * @throws NullPointerException If the split pattern is null
 	 */
-	public SplitTokenAction(@NotNull Pattern splitPattern) {
-		this(splitPattern, TokenDefinitionProvider.acceptAll());
+	public SplitTokenAction {
+		Objects.requireNonNull(splitPattern, "Split pattern must not be null");
 	}
 	
 	/**
-	 * Constructs a new split token action with the given split pattern string and a default definition provider.<br>
-	 * The default provider accepts any string value.<br>
+	 * Constructs a new split token action with the given split pattern string.<br>
 	 *
 	 * @param splitPattern The pattern string to use for splitting token values
 	 * @throws NullPointerException If the split pattern is null
 	 */
 	public SplitTokenAction(@NotNull String splitPattern) {
-		this(Pattern.compile(Objects.requireNonNull(splitPattern, "Split pattern must not be null")), TokenDefinitionProvider.acceptAll());
+		this(Pattern.compile(Objects.requireNonNull(splitPattern, "Split pattern must not be null")));
 	}
 	
 	@Override
@@ -108,7 +78,6 @@ public record SplitTokenAction(
 			
 			for (String part : parts) {
 				if (!part.isEmpty()) {
-					TokenDefinition partDefinition = this.definitionProvider.provide(part);
 					TokenPosition startPos;
 					
 					if (isPositioned) {
@@ -128,12 +97,12 @@ public record SplitTokenAction(
 					
 					Token splitToken = switch (token) {
 						case AnnotatedToken at -> new AnnotatedToken(
-							new SimpleToken(partDefinition, part, startPos), at.metadata()
+							new SimpleToken(part, startPos), at.metadata()
 						);
 						case IndexedToken it -> new IndexedToken(
-							new SimpleToken(partDefinition, part, startPos), it.index()
+							new SimpleToken(part, startPos), it.index()
 						);
-						default -> new SimpleToken(partDefinition, part, startPos);
+						default -> new SimpleToken(part, startPos);
 					};
 					
 					result.add(splitToken);

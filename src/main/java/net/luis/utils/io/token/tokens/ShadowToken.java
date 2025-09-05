@@ -19,7 +19,6 @@
 package net.luis.utils.io.token.tokens;
 
 import net.luis.utils.io.token.TokenPosition;
-import net.luis.utils.io.token.definition.TokenDefinition;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Objects;
@@ -46,11 +45,6 @@ public record ShadowToken(
 	 */
 	public ShadowToken {
 		Objects.requireNonNull(token, "Token must not be null");
-	}
-	
-	@Override
-	public @NotNull TokenDefinition definition() {
-		return this.token.definition();
 	}
 	
 	@Override
