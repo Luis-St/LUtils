@@ -64,7 +64,7 @@ public class JavaGrammar {
 		/**
 		 * This is a test class to demonstrate token reading
 		 */
-		public class Main {
+		public /*Incode comment*/ class Main {
 			// This is an inline comment
 		}
 		""";
