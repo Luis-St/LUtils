@@ -75,38 +75,6 @@ public interface TokenDefinition extends NegatableTokenRule {
 	}
 	
 	/**
-	 * Combines multiple token definitions into a single token definition.<br>
-	 * The resulting token definition contains the concatenated string of all token definitions.<br>
-	 * If only one token definition is provided, it is returned as is.<br>
-	 *
-	 * @param definitions The token definitions to combine
-	 * @return The combined token definition
-	 * @throws NullPointerException If the token definition array is null
-	 * @throws IllegalArgumentException If the token definition array is empty or contains an unsupported token definition type
-	 */
-	static @NotNull TokenDefinition combine(TokenDefinition @NotNull ... definitions) {
-		Objects.requireNonNull(definitions, "Token definition array must not be null");
-		if (definitions.length == 0) {
-			throw new IllegalArgumentException("Token definition array must not be empty");
-		}
-		if (definitions.length == 1) {
-			return definitions[0];
-		}
-		
-		StringBuilder combined = new StringBuilder();
-		for (TokenDefinition definition : definitions) {
-			String value = switch (definition) {
-				case StringTokenDefinition(String token, boolean equalsIgnoreCase) -> token;
-				case CharTokenDefinition(char token) -> String.valueOf(token);
-				case EscapedTokenDefinition(char token) -> "\\" + token;
-				default -> throw new IllegalArgumentException("Unsupported token definition type: " + definition.getClass().getName());
-			};
-			combined.append(value);
-		}
-		return new StringTokenDefinition(combined.toString(), false);
-	}
-	
-	/**
 	 * Checks if the given word matches this token definition.<br>
 	 *
 	 * @param word The word to check

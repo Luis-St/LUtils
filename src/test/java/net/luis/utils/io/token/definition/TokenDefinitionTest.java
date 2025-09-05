@@ -118,97 +118,6 @@ class TokenDefinitionTest {
 	}
 	
 	@Test
-	void combineWithNullArray() {
-		assertThrows(NullPointerException.class, () -> TokenDefinition.combine((TokenDefinition[]) null));
-	}
-	
-	@Test
-	void combineWithEmptyArray() {
-		assertThrows(IllegalArgumentException.class, () -> TokenDefinition.combine(new TokenDefinition[0]));
-	}
-	
-	@Test
-	void combineWithSingleDefinition() {
-		TokenDefinition charDefinition = TokenDefinition.of('a');
-		TokenDefinition result = TokenDefinition.combine(charDefinition);
-		
-		assertSame(charDefinition, result);
-	}
-	
-	@Test
-	void combineCharTokenDefinitions() {
-		TokenDefinition combined = TokenDefinition.combine(
-			TokenDefinition.of('a'),
-			TokenDefinition.of('b'),
-			TokenDefinition.of('c')
-		);
-		
-		assertInstanceOf(StringTokenDefinition.class, combined);
-		assertTrue(combined.matches("abc"));
-		assertEquals("abc", ((StringTokenDefinition) combined).token());
-		assertFalse(((StringTokenDefinition) combined).equalsIgnoreCase());
-	}
-	
-	@Test
-	void combineStringTokenDefinitions() {
-		TokenDefinition combined = TokenDefinition.combine(
-			TokenDefinition.of("hello", false),
-			TokenDefinition.of("world", false)
-		);
-		
-		assertInstanceOf(StringTokenDefinition.class, combined);
-		assertTrue(combined.matches("helloworld"));
-		assertEquals("helloworld", ((StringTokenDefinition) combined).token());
-		assertFalse(((StringTokenDefinition) combined).equalsIgnoreCase());
-	}
-	
-	@Test
-	void combineEscapedTokenDefinitions() {
-		TokenDefinition combined = TokenDefinition.combine(
-			TokenDefinition.ofEscaped('\\'),
-			TokenDefinition.of('n')
-		);
-		
-		assertInstanceOf(StringTokenDefinition.class, combined);
-		assertTrue(combined.matches("\\\\n"));
-		assertEquals("\\\\n", ((StringTokenDefinition) combined).token());
-	}
-	
-	@Test
-	void combineMixedTokenDefinitions() {
-		TokenDefinition combined = TokenDefinition.combine(
-			TokenDefinition.of("hello", false),
-			TokenDefinition.of('-'),
-			TokenDefinition.ofEscaped('!')
-		);
-		
-		assertInstanceOf(StringTokenDefinition.class, combined);
-		assertTrue(combined.matches("hello-\\!"));
-		assertEquals("hello-\\!", ((StringTokenDefinition) combined).token());
-	}
-	
-	@Test
-	void combinePreservesCase() {
-		TokenDefinition combined = TokenDefinition.combine(
-			TokenDefinition.of("HELLO", false),
-			TokenDefinition.of("world", false)
-		);
-		
-		assertTrue(combined.matches("HELLOworld"));
-		assertFalse(combined.matches("helloworld"));
-		assertFalse(combined.matches("HELLOWorld"));
-	}
-	
-	@Test
-	void combineWithUnsupportedDefinition() {
-		TokenDefinition customDefinition = "custom"::equals;
-		
-		assertSame(customDefinition, TokenDefinition.combine(customDefinition));
-		assertThrows(IllegalArgumentException.class, () ->
-			TokenDefinition.combine(TokenDefinition.of('a'), customDefinition));
-	}
-	
-	@Test
 	void matchWithNullTokenStream() {
 		TokenDefinition definition = TokenDefinition.of('a');
 		
@@ -478,31 +387,6 @@ class TokenDefinitionTest {
 		
 		assertNull(customDef.match(streamWithHello));
 		assertNotNull(negatedRule.match(streamWithHello));
-	}
-	
-	@Test
-	void negatedCombinedDefinition() {
-		TokenDefinition combined = TokenDefinition.combine(
-			TokenDefinition.of("hello", false),
-			TokenDefinition.of('-'),
-			TokenDefinition.of("world", false)
-		);
-		TokenRule negatedRule = combined.not();
-		
-		Token matchingToken = createToken(combined, "hello-world");
-		Token nonMatchingToken = createToken("goodbye");
-		
-		List<Token> tokensWithCombined = List.of(matchingToken);
-		TokenStream streamWithCombined = new TokenStream(tokensWithCombined, 0);
-		
-		assertNotNull(combined.match(streamWithCombined));
-		assertNull(negatedRule.match(streamWithCombined));
-		
-		List<Token> tokensWithOther = List.of(nonMatchingToken);
-		TokenStream streamWithOther = new TokenStream(tokensWithOther, 0);
-		
-		assertNull(combined.match(streamWithOther));
-		assertNotNull(negatedRule.match(streamWithOther));
 	}
 	
 	@Test
