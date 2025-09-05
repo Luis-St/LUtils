@@ -20,8 +20,7 @@ package net.luis.utils.io.token.tokens;
 
 import net.luis.utils.io.token.TokenPosition;
 import net.luis.utils.io.token.definition.TokenDefinition;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.UnknownNullability;
+import org.jetbrains.annotations.*;
 
 import java.util.Map;
 import java.util.Objects;
@@ -131,5 +130,10 @@ public record AnnotatedToken(
 	public boolean hasMetadata(@NotNull String key) {
 		Objects.requireNonNull(key, "Metadata key must not be null");
 		return this.metadata.containsKey(key);
+	}
+	
+	@Override
+	public @NotNull Token annotate(@Nullable Map<String, Object> annotations) {
+		return this; // Already an annotated token
 	}
 }

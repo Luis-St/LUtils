@@ -98,4 +98,12 @@ public record IndexedToken(
 	public boolean hasIndex(int expectedIndex) {
 		return this.index == expectedIndex;
 	}
+	
+	@Override
+	public @NotNull Token index(int index) {
+		if (this.index == index) {
+			return this; // Same index, return this
+		}
+		return new IndexedToken(this.token, index); // Different index, create new
+	}
 }

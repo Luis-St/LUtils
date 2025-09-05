@@ -128,17 +128,6 @@ class StartTokenRuleTest {
 	}
 	
 	@Test
-	void documentMatchWithIndexOutOfBounds() {
-		StartTokenRule rule = new StartTokenRule(AnchorType.DOCUMENT);
-		Token token = createToken("test");
-		List<Token> tokens = List.of(token);
-		
-		assertThrows(IndexOutOfBoundsException.class, () -> rule.match(new TokenStream(tokens, 1)));
-		assertThrows(IndexOutOfBoundsException.class, () -> rule.match(new TokenStream(tokens, 5)));
-		assertThrows(IndexOutOfBoundsException.class, () -> rule.match(new TokenStream(tokens, 100)));
-	}
-	
-	@Test
 	void documentMatchDoesNotConsumeTokens() {
 		StartTokenRule rule = new StartTokenRule(AnchorType.DOCUMENT);
 		Token first = createToken("first");

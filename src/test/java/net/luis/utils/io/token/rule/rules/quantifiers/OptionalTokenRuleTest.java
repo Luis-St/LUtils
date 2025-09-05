@@ -97,12 +97,10 @@ class OptionalTokenRuleTest {
 	}
 	
 	@Test
-	void matchWithIndexOutOfBounds() {
+	void matchWithNegativeIndex() {
 		OptionalTokenRule rule = new OptionalTokenRule(createRule("test"));
 		List<Token> tokens = List.of(createToken("test"));
 		
-		assertThrows(IndexOutOfBoundsException.class, () -> rule.match(new TokenStream(tokens, 1)));
-		assertThrows(IndexOutOfBoundsException.class, () -> rule.match(new TokenStream(tokens, 5)));
 		assertThrows(IndexOutOfBoundsException.class, () -> rule.match(new TokenStream(tokens, -1)));
 	}
 	

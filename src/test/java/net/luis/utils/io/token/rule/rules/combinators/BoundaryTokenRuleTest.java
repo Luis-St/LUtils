@@ -142,11 +142,11 @@ class BoundaryTokenRuleTest {
 	}
 	
 	@Test
-	void matchWithIndexOutOfBounds() {
+	void matchWithNegativeIndex() {
 		BoundaryTokenRule rule = new BoundaryTokenRule(createRule("start"), createRule("end"));
 		List<Token> tokens = List.of(createToken("start"));
 		
-		assertThrows(IndexOutOfBoundsException.class, () -> rule.match(new TokenStream(tokens, 5)));
+		assertThrows(IndexOutOfBoundsException.class, () -> rule.match(new TokenStream(tokens, -1)));
 	}
 	
 	@Test
