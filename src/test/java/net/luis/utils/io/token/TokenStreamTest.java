@@ -18,14 +18,11 @@
 
 package net.luis.utils.io.token;
 
-import net.luis.utils.io.token.tokens.SimpleToken;
-import net.luis.utils.io.token.tokens.Token;
+import net.luis.utils.io.token.tokens.*;
 import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.Test;
 
-import java.util.Collections;
-import java.util.List;
-import java.util.NoSuchElementException;
+import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -38,6 +35,10 @@ class TokenStreamTest {
 	
 	private static @NotNull Token createToken(@NotNull String value) {
 		return SimpleToken.createUnpositioned(word -> word.equals(value), value);
+	}
+	
+	private static @NotNull Token createShadowToken(@NotNull String value) {
+		return new ShadowToken(createToken(value));
 	}
 	
 	@Test
@@ -100,6 +101,7 @@ class TokenStreamTest {
 	void isEmpty() {
 		assertTrue(new TokenStream(Collections.emptyList()).isEmpty());
 		assertFalse(new TokenStream(List.of(createToken("test"))).isEmpty());
+		assertFalse(new TokenStream(List.of(createShadowToken("comment"))).isEmpty());
 	}
 	
 	@Test
@@ -107,6 +109,7 @@ class TokenStreamTest {
 		assertEquals(0, new TokenStream(Collections.emptyList()).size());
 		assertEquals(1, new TokenStream(List.of(createToken("test"))).size());
 		assertEquals(3, new TokenStream(List.of(createToken("a"), createToken("b"), createToken("c"))).size());
+		assertEquals(3, new TokenStream(List.of(createShadowToken("comment"), createToken("a"), createShadowToken("whitespace"))).size());
 	}
 	
 	@Test
@@ -118,96 +121,174 @@ class TokenStreamTest {
 	}
 	
 	@Test
-	void getCurrentToken() {
-		List<Token> tokens = List.of(createToken("first"), createToken("second"), createToken("third"));
-		TokenStream stream = new TokenStream(tokens, 1);
-		
-		assertEquals("second", stream.getCurrentToken().value());
-	}
-	
-	@Test
-	void getCurrentTokenWithEmptyStream() {
-		TokenStream stream = new TokenStream(Collections.emptyList());
-		assertThrows(IndexOutOfBoundsException.class, stream::getCurrentToken);
-	}
-	
-	@Test
-	void getCurrentTokenAfterConsumingAllTokens() {
-		List<Token> tokens = List.of(createToken("only"));
+	void hasTokenWithMixedTokens() {
+		List<Token> tokens = List.of(
+			createShadowToken("comment"),
+			createToken("actual"),
+			createShadowToken("whitespace")
+		);
 		TokenStream stream = new TokenStream(tokens);
 		
+		assertTrue(stream.hasToken());
+		
 		stream.consumeToken();
-		assertThrows(IndexOutOfBoundsException.class, stream::getCurrentToken);
+		assertFalse(stream.hasToken());
 	}
 	
 	@Test
-	void hasToken() {
+	void hasTokenWithOnlyShadowTokens() {
+		List<Token> tokens = List.of(
+			createShadowToken("comment1"),
+			createShadowToken("comment2"),
+			createShadowToken("whitespace")
+		);
+		TokenStream stream = new TokenStream(tokens);
+		
+		assertFalse(stream.hasToken());
+	}
+	
+	@Test
+	void hasTokenWithOnlyNormalTokens() {
 		List<Token> tokens = List.of(createToken("first"), createToken("second"));
 		TokenStream stream = new TokenStream(tokens);
 		
+		assertTrue(stream.hasToken());
+		stream.consumeToken();
+		assertTrue(stream.hasToken());
+		stream.consumeToken();
+		assertFalse(stream.hasToken());
+	}
+	
+	@Test
+	void getCurrentTokenSkipsShadowTokens() {
+		List<Token> tokens = List.of(
+			createShadowToken("comment"),
+			createShadowToken("whitespace"),
+			createToken("actual"),
+			createShadowToken("trailing")
+		);
+		TokenStream stream = new TokenStream(tokens);
+		
+		assertEquals("actual", stream.getCurrentToken().value());
+		assertFalse(stream.getCurrentToken() instanceof ShadowToken);
+		
 		assertEquals(0, stream.getCurrentIndex());
-		assertTrue(stream.hasToken());
-		stream.consumeToken();
-		assertEquals(1, stream.getCurrentIndex());
-		assertTrue(stream.hasToken());
-		stream.consumeToken();
-		assertEquals(2, stream.getCurrentIndex());
-		assertFalse(stream.hasToken());
 	}
 	
 	@Test
-	void hasTokenWithEmptyStream() {
-		TokenStream stream = new TokenStream(Collections.emptyList());
-		assertFalse(stream.hasToken());
+	void getCurrentTokenAtNonShadowPosition() {
+		List<Token> tokens = List.of(
+			createToken("actual"),
+			createShadowToken("comment")
+		);
+		TokenStream stream = new TokenStream(tokens);
+		
+		assertEquals("actual", stream.getCurrentToken().value());
+		assertEquals(0, stream.getCurrentIndex());
 	}
 	
 	@Test
-	void consumeToken() {
-		List<Token> tokens = List.of(createToken("first"), createToken("second"), createToken("third"));
+	void getCurrentTokenWithOnlyShadowTokens() {
+		List<Token> tokens = List.of(
+			createShadowToken("comment1"),
+			createShadowToken("comment2")
+		);
+		TokenStream stream = new TokenStream(tokens);
+		
+		assertThrows(IndexOutOfBoundsException.class, stream::getCurrentToken);
+	}
+	
+	@Test
+	void consumeTokenSkipsShadowTokens() {
+		List<Token> tokens = List.of(
+			createShadowToken("comment1"),
+			createShadowToken("comment2"),
+			createToken("actual1"),
+			createShadowToken("comment3"),
+			createToken("actual2")
+		);
 		TokenStream stream = new TokenStream(tokens);
 		
 		assertEquals(0, stream.getCurrentIndex());
-		assertEquals(1, stream.consumeToken());
-		assertEquals(1, stream.getCurrentIndex());
-		assertEquals(2, stream.consumeToken());
-		assertEquals(2, stream.getCurrentIndex());
+		
 		assertEquals(3, stream.consumeToken());
 		assertEquals(3, stream.getCurrentIndex());
-	}
-	
-	@Test
-	void consumeTokenWhenNoTokenAvailable() {
-		TokenStream stream = new TokenStream(Collections.emptyList());
-		assertThrows(NoSuchElementException.class, stream::consumeToken);
 		
-		List<Token> tokens = List.of(createToken("only"));
-		TokenStream stream2 = new TokenStream(tokens);
-		stream2.consumeToken();
-		assertThrows(NoSuchElementException.class, stream2::consumeToken);
+		assertEquals(5, stream.consumeToken());
+		assertEquals(5, stream.getCurrentIndex());
+		
+		assertThrows(NoSuchElementException.class, stream::consumeToken);
 	}
 	
 	@Test
-	void readToken() {
-		List<Token> tokens = List.of(createToken("first"), createToken("second"), createToken("third"));
+	void consumeTokenAtNonShadowPosition() {
+		List<Token> tokens = List.of(
+			createToken("actual"),
+			createShadowToken("comment")
+		);
 		TokenStream stream = new TokenStream(tokens);
 		
-		assertEquals("first", stream.readToken().value());
+		assertEquals(1, stream.consumeToken());
 		assertEquals(1, stream.getCurrentIndex());
-		assertEquals("second", stream.readToken().value());
-		assertEquals(2, stream.getCurrentIndex());
-		assertEquals("third", stream.readToken().value());
-		assertEquals(3, stream.getCurrentIndex());
 	}
 	
 	@Test
-	void readTokenWhenNoTokenAvailable() {
-		TokenStream stream = new TokenStream(Collections.emptyList());
-		assertThrows(NoSuchElementException.class, stream::readToken);
+	void consumeTokenWithOnlyShadowTokens() {
+		List<Token> tokens = List.of(
+			createShadowToken("comment1"),
+			createShadowToken("comment2")
+		);
+		TokenStream stream = new TokenStream(tokens);
 		
-		List<Token> tokens = List.of(createToken("only"));
-		TokenStream stream2 = new TokenStream(tokens);
-		stream2.readToken();
-		assertThrows(NoSuchElementException.class, stream2::readToken);
+		assertThrows(NoSuchElementException.class, stream::consumeToken);
+	}
+	
+	@Test
+	void readTokenSkipsShadowTokens() {
+		List<Token> tokens = List.of(
+			createShadowToken("comment1"),
+			createToken("actual1"),
+			createShadowToken("comment2"),
+			createToken("actual2")
+		);
+		TokenStream stream = new TokenStream(tokens);
+		
+		Token token1 = stream.readToken();
+		assertEquals("actual1", token1.value());
+		assertFalse(token1 instanceof ShadowToken);
+		assertEquals(2, stream.getCurrentIndex());
+		
+		Token token2 = stream.readToken();
+		assertEquals("actual2", token2.value());
+		assertFalse(token2 instanceof ShadowToken);
+		assertEquals(4, stream.getCurrentIndex());
+		
+		assertThrows(NoSuchElementException.class, stream::readToken);
+	}
+	
+	@Test
+	void readTokenAtNonShadowPosition() {
+		List<Token> tokens = List.of(
+			createToken("actual"),
+			createShadowToken("comment")
+		);
+		TokenStream stream = new TokenStream(tokens);
+		
+		Token token = stream.readToken();
+		assertEquals("actual", token.value());
+		assertFalse(token instanceof ShadowToken);
+		assertEquals(1, stream.getCurrentIndex());
+	}
+	
+	@Test
+	void readTokenWithOnlyShadowTokens() {
+		List<Token> tokens = List.of(
+			createShadowToken("comment1"),
+			createShadowToken("comment2")
+		);
+		TokenStream stream = new TokenStream(tokens);
+		
+		assertThrows(NoSuchElementException.class, stream::readToken);
 	}
 	
 	@Test
@@ -271,6 +352,20 @@ class TokenStreamTest {
 	}
 	
 	@Test
+	void resetWithShadowTokens() {
+		List<Token> tokens = List.of(
+			createShadowToken("comment"),
+			createToken("actual")
+		);
+		TokenStream stream = new TokenStream(tokens, 2);
+		
+		stream.reset();
+		assertEquals(0, stream.getCurrentIndex());
+		assertEquals("actual", stream.getCurrentToken().value());
+	}
+	
+	
+	@Test
 	void lookaheadStream() {
 		List<Token> tokens = List.of(createToken("first"), createToken("second"), createToken("third"));
 		TokenStream stream = new TokenStream(tokens, 1);
@@ -294,23 +389,18 @@ class TokenStreamTest {
 	}
 	
 	@Test
-	void lookaheadStreamWithEmptyOriginal() {
-		TokenStream stream = new TokenStream(Collections.emptyList());
-		TokenStream lookahead = stream.lookaheadStream();
-		
-		assertTrue(lookahead.isEmpty());
-		assertFalse(lookahead.hasToken());
-	}
-	
-	@Test
-	void lookaheadStreamIndependence() {
-		List<Token> tokens = List.of(createToken("first"), createToken("second"), createToken("third"));
+	void lookaheadStreamWithShadowTokens() {
+		List<Token> tokens = List.of(
+			createToken("actual1"),
+			createShadowToken("comment"),
+			createToken("actual2")
+		);
 		TokenStream stream = new TokenStream(tokens, 1);
-		TokenStream lookahead = stream.lookaheadStream();
 		
-		lookahead.consumeToken();
-		assertEquals(1, stream.getCurrentIndex());
-		assertEquals(1, lookahead.getCurrentIndex());
+		TokenStream lookahead = stream.lookaheadStream();
+		assertEquals(2, lookahead.size());
+		assertTrue(lookahead.hasToken());
+		assertEquals("actual2", lookahead.getCurrentToken().value());
 	}
 	
 	@Test
@@ -336,23 +426,18 @@ class TokenStreamTest {
 	}
 	
 	@Test
-	void lookbehindStreamWithEmptyOriginal() {
-		TokenStream stream = new TokenStream(Collections.emptyList());
-		TokenStream lookbehind = stream.lookbehindStream();
+	void lookbehindStreamWithShadowTokens() {
+		List<Token> tokens = List.of(
+			createToken("actual1"),
+			createShadowToken("comment"),
+			createToken("actual2")
+		);
+		TokenStream stream = new TokenStream(tokens, 3);
 		
-		assertTrue(lookbehind.isEmpty());
-		assertFalse(lookbehind.hasToken());
-	}
-	
-	@Test
-	void lookbehindStreamIndependence() {
-		List<Token> tokens = List.of(createToken("first"), createToken("second"), createToken("third"));
-		TokenStream stream = new TokenStream(tokens, 2);
 		TokenStream lookbehind = stream.lookbehindStream();
-		
-		lookbehind.consumeToken();
-		assertEquals(2, stream.getCurrentIndex());
-		assertEquals(1, lookbehind.getCurrentIndex());
+		assertEquals(3, lookbehind.size());
+		assertTrue(lookbehind.hasToken());
+		assertEquals("actual2", lookbehind.getCurrentToken().value());
 	}
 	
 	@Test
@@ -386,18 +471,16 @@ class TokenStreamTest {
 	}
 	
 	@Test
-	void reverseAtDifferentPositions() {
-		List<Token> tokens = List.of(createToken("a"), createToken("b"), createToken("c"), createToken("d"));
+	void reverseWithShadowTokens() {
+		List<Token> tokens = List.of(
+			createToken("actual1"),
+			createShadowToken("comment"),
+			createToken("actual2")
+		);
+		TokenStream stream = new TokenStream(tokens, 1);
 		
-		TokenStream stream1 = new TokenStream(tokens, 0);
-		stream1.reverse();
-		assertEquals(3, stream1.getCurrentIndex());
-		assertEquals("a", stream1.getCurrentToken().value());
-		
-		TokenStream stream2 = new TokenStream(tokens, 3);
-		stream2.reverse();
-		assertEquals(0, stream2.getCurrentIndex());
-		assertEquals("d", stream2.getCurrentToken().value());
+		stream.reverse();
+		assertEquals("actual1", stream.getCurrentToken().value());
 	}
 	
 	@Test
@@ -472,7 +555,7 @@ class TokenStreamTest {
 	}
 	
 	@Test
-	void fullWorkflow() {
+	void fullWorkflowWithoutShadowTokens() {
 		List<Token> tokens = List.of(createToken("first"), createToken("second"), createToken("third"), createToken("fourth"));
 		TokenStream stream = new TokenStream(tokens);
 		
@@ -500,6 +583,32 @@ class TokenStreamTest {
 	}
 	
 	@Test
+	void fullWorkflowWithShadowTokens() {
+		List<Token> tokens = List.of(
+			createShadowToken("comment1"),
+			createToken("first"),
+			createShadowToken("whitespace"),
+			createToken("second"),
+			createShadowToken("comment2"),
+			createToken("third")
+		);
+		TokenStream stream = new TokenStream(tokens);
+		
+		assertTrue(stream.hasToken());
+		assertEquals("first", stream.getCurrentToken().value());
+		
+		assertEquals("first", stream.readToken().value());
+		assertEquals("second", stream.readToken().value());
+		assertEquals("third", stream.getCurrentToken().value());
+		
+		assertEquals("third", stream.readToken().value());
+		assertFalse(stream.hasToken());
+		
+		stream.reset();
+		assertEquals("first", stream.getCurrentToken().value());
+	}
+	
+	@Test
 	void modificationIndependence() {
 		List<Token> tokens = List.of(createToken("a"), createToken("b"), createToken("c"));
 		TokenStream original = new TokenStream(tokens, 1);
@@ -517,5 +626,41 @@ class TokenStreamTest {
 		assertEquals(1, lookahead.getCurrentIndex());
 		assertEquals(1, lookbehind.getCurrentIndex());
 		assertEquals(1, copy.getCurrentIndex());
+	}
+	
+	@Test
+	void edgeCaseOnlyShadowTokensAtEnd() {
+		List<Token> tokens = List.of(
+			createToken("actual"),
+			createShadowToken("comment1"),
+			createShadowToken("comment2")
+		);
+		TokenStream stream = new TokenStream(tokens);
+		
+		assertTrue(stream.hasToken());
+		assertEquals("actual", stream.readToken().value());
+		assertFalse(stream.hasToken());
+		
+		assertThrows(IndexOutOfBoundsException.class, stream::getCurrentToken);
+		assertThrows(NoSuchElementException.class, stream::readToken);
+		assertThrows(NoSuchElementException.class, stream::consumeToken);
+	}
+	
+	@Test
+	void edgeCaseShadowTokensAtBeginning() {
+		List<Token> tokens = List.of(
+			createShadowToken("comment1"),
+			createShadowToken("comment2"),
+			createToken("actual")
+		);
+		TokenStream stream = new TokenStream(tokens);
+		
+		assertTrue(stream.hasToken());
+		assertEquals("actual", stream.getCurrentToken().value());
+		assertEquals(0, stream.getCurrentIndex());
+		
+		assertEquals("actual", stream.readToken().value());
+		assertEquals(3, stream.getCurrentIndex());
+		assertFalse(stream.hasToken());
 	}
 }

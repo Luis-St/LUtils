@@ -19,6 +19,7 @@
 package net.luis.utils.io.token;
 
 import com.google.common.collect.Lists;
+import net.luis.utils.io.token.tokens.ShadowToken;
 import net.luis.utils.io.token.tokens.Token;
 import org.jetbrains.annotations.NotNull;
 
@@ -33,12 +34,20 @@ import java.util.*;
  *     <li>Lookahead and lookbehind operations</li>
  *     <li>Stream copying and resetting</li>
  *     <li>Stream reversal operations</li>
+ *     <li>Automatic shadow token skipping</li>
  * </ul>
  * <p>
  *     This implementation maintains an internal current index that tracks the position
  *     within the token stream. The stream can be navigated forwards through token
  *     consumption, or reset to the beginning. Additionally, it supports creating
  *     lookahead and lookbehind streams for non-destructive token inspection.
+ * </p>
+ * <p>
+ *     The token stream automatically skips shadow tokens during normal operations.
+ *     Shadow tokens are stored in the internal list but are transparent to stream
+ *     operations like {@link #hasToken()}, {@link #getCurrentToken()}, {@link #readToken()}, etc.
+ *     This allows the stream to retain shadow tokens (e.g., comments, whitespace) while
+ *     making parsing operations focus only on meaningful tokens.
  * </p>
  * <p>
  *     The token stream is designed to be used in parsing scenarios where tokens
@@ -119,61 +128,89 @@ public class TokenStream {
 	}
 	
 	/**
-	 * Returns the token at the current index position without advancing the stream.<br>
-	 * This operation is equivalent to peeking at the current token.<br>
+	 * Advances the current index past any shadow tokens to find the next non-shadow token position.<br>
+	 * This is an internal helper method used by other stream operations.<br>
 	 *
-	 * @return The token at the current position
-	 * @throws IndexOutOfBoundsException If there is no token available at the current position ({@link #hasToken()} returns false)
+	 * @return The index of the next non-shadow token, or the size of the token list if no non-shadow tokens remain
+	 */
+	private int findNextNonShadowIndex() {
+		int index = this.currentIndex;
+		while (index < this.tokens.size() && this.tokens.get(index) instanceof ShadowToken) {
+			index++;
+		}
+		return index;
+	}
+	
+	/**
+	 * Returns the token at the current index position without advancing the stream.<br>
+	 * This operation automatically skips any shadow tokens at the current position.<br>
+	 * This operation is equivalent to peeking at the current non-shadow token.<br>
+	 *
+	 * @return The non-shadow token at or after the current position
+	 * @throws IndexOutOfBoundsException If there is no non-shadow token available at or after the current position ({@link #hasToken()} returns false)
 	 */
 	public @NotNull Token getCurrentToken() {
-		return this.tokens.get(this.currentIndex);
+		int nonShadowIndex = this.findNextNonShadowIndex();
+		if (nonShadowIndex >= this.tokens.size()) {
+			throw new IndexOutOfBoundsException("No non-shadow token available at the current position");
+		}
+		return this.tokens.get(nonShadowIndex);
 	}
 	
 	/**
-	 * Checks whether there is a token available at the current index position.<br>
+	 * Checks whether there is a non-shadow token available at or after the current index position.<br>
+	 * This method automatically skips shadow tokens and returns true only if a non-shadow token is found.<br>
 	 * This method should be called before {@link #getCurrentToken()}, {@link #consumeToken()}, or {@link #readToken()}
-	 * to ensure that a token is available.<br>
+	 * to ensure that a non-shadow token is available.<br>
 	 *
-	 * @return True if a token is available at the current position, otherwise false
+	 * @return True if a non-shadow token is available at or after the current position, otherwise false
 	 */
 	public boolean hasToken() {
-		return 0 <= this.currentIndex && this.currentIndex < this.tokens.size();
+		return this.findNextNonShadowIndex() < this.tokens.size();
 	}
 	
 	/**
-	 * Consumes the current token by advancing the stream position by one.<br>
+	 * Consumes the current non-shadow token by advancing the stream position past it.<br>
+	 * This method automatically skips any shadow tokens to find and consume the next non-shadow token.<br>
+	 * Shadow tokens encountered during the process are also consumed (their positions are passed).<br>
 	 * The token itself is not returned, only the stream position is advanced.<br>
 	 * Use this method when you need to skip over a token without processing its value.<br>
 	 *
-	 * @return The new current index after consuming the token
-	 * @throws NoSuchElementException If there is no token available to consume ({@link #hasToken()} returns false)
+	 * @return The new current index after consuming the non-shadow token
+	 * @throws NoSuchElementException If there is no non-shadow token available to consume ({@link #hasToken()} returns false)
 	 * @see #readToken()
 	 */
 	public int consumeToken() {
-		if (!this.hasToken()) {
-			throw new NoSuchElementException("No token available in the stream");
+		int nonShadowIndex = this.findNextNonShadowIndex();
+		if (nonShadowIndex >= this.tokens.size()) {
+			throw new NoSuchElementException("No non-shadow token available in the stream");
 		}
 		
-		this.currentIndex++;
+		this.currentIndex = nonShadowIndex + 1;
 		return this.currentIndex;
 	}
 	
 	/**
-	 * Reads and returns the current token, then advances the stream position by one.<br>
+	 * Reads and returns the current non-shadow token, then advances the stream position past it.<br>
+	 * This method automatically skips any shadow tokens to find the next non-shadow token.<br>
+	 * Shadow tokens encountered during the process are consumed (their positions are passed) but not returned.<br>
 	 * This is the primary method for sequential token processing, combining
 	 * token retrieval with stream advancement in a single operation.<br>
 	 *
-	 * @return The token at the current position before advancing
-	 * @throws NoSuchElementException If there is no token available to read ({@link #hasToken()} returns false)
+	 * @return The non-shadow token at or after the current position before advancing
+	 * @throws NoSuchElementException If there is no non-shadow token available to read ({@link #hasToken()} returns false)
 	 * @see #consumeToken()
 	 * @see #getCurrentToken()
 	 */
 	public @NotNull Token readToken() {
-		if (!this.hasToken()) {
-			throw new NoSuchElementException("No next token available in the stream");
+		int nonShadowIndex = this.findNextNonShadowIndex();
+		if (nonShadowIndex >= this.tokens.size()) {
+			throw new NoSuchElementException("No non-shadow token available in the stream");
 		}
 		
-		return this.tokens.get(this.currentIndex++);
+		Token token = this.tokens.get(nonShadowIndex);
+		this.currentIndex = nonShadowIndex + 1;
+		return token;
 	}
 	
 	/**
@@ -191,7 +228,7 @@ public class TokenStream {
 	
 	/**
 	 * Resets the stream position to the beginning (index 0).<br>
-	 * After calling this method, the next token read will be the first token in the stream.<br>
+	 * After calling this method, the next token read will be the first non-shadow token in the stream.<br>
 	 * This operation does not modify the tokens themselves, only the current position.<br>
 	 */
 	public void reset() {
@@ -203,8 +240,8 @@ public class TokenStream {
 	 * The lookahead stream starts at index 0 and contains all remaining tokens in the original stream.
 	 * This allows for non-destructive inspection of upcoming tokens without affecting the current stream position.<br>
 	 * <p>
-	 *     If the current stream is at the end (no more tokens available),
-	 *     the returned stream will be empty.
+	 *     If the current stream is at the end (no more non-shadow tokens available),
+	 *     the returned stream will be empty or contain only shadow tokens.
 	 * </p>
 	 *
 	 * @return A new token stream containing the remaining tokens, starting from index 0
