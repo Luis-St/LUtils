@@ -19,10 +19,10 @@
 package net.luis.utils.io.token.rule.rules;
 
 import net.luis.utils.io.token.rule.rules.assertions.*;
-import net.luis.utils.io.token.rule.rules.assertions.anchors.*;
+import net.luis.utils.io.token.rule.rules.assertions.anchors.EndTokenRule;
+import net.luis.utils.io.token.rule.rules.assertions.anchors.StartTokenRule;
 import net.luis.utils.io.token.rule.rules.combinators.*;
-import net.luis.utils.io.token.rule.rules.matchers.LengthTokenRule;
-import net.luis.utils.io.token.rule.rules.matchers.PatternTokenRule;
+import net.luis.utils.io.token.rule.rules.matchers.*;
 import net.luis.utils.io.token.rule.rules.quantifiers.OptionalTokenRule;
 import net.luis.utils.io.token.rule.rules.quantifiers.RepeatedTokenRule;
 import net.luis.utils.io.token.tokens.Token;
@@ -60,6 +60,44 @@ public final class TokenRules {
 	}
 	
 	/**
+	 * Provides a token rule that never matches.<br>
+	 *
+	 * @return The token rule
+	 * @apiNote This is the preferred way to access the {@link NeverMatchTokenRule#INSTANCE} instance
+	 * @see NeverMatchTokenRule
+	 */
+	public static @NotNull TokenRule neverMatch() {
+		return NeverMatchTokenRule.INSTANCE;
+	}
+	
+	/**
+	 * Creates a value token rule that matches the value of a single token against the given character.<br>
+	 *
+	 * @param value The character to match against
+	 * @param ignoreCase Whether to ignore case when matching or not
+	 * @return The created token rule
+	 * @throws IllegalArgumentException If the value is empty
+	 * @see ValueTokenRule
+	 */
+	public static @NotNull TokenRule value(char value, boolean ignoreCase) {
+		return new ValueTokenRule(value, ignoreCase);
+	}
+	
+	/**
+	 * Creates a value token rule that matches the value of a single token against the given string.<br>
+	 *
+	 * @param value The string to match against
+	 * @param ignoreCase Whether to ignore case when matching or not
+	 * @return The created token rule
+	 * @throws NullPointerException If the value is null
+	 * @throws IllegalArgumentException If the value is empty
+	 * @see ValueTokenRule
+	 */
+	public static @NotNull TokenRule value(@NotNull String value, boolean ignoreCase) {
+		return new ValueTokenRule(value, ignoreCase);
+	}
+	
+	/**
 	 * Creates a pattern token rule with the given pattern in string format.<br>
 	 *
 	 * @param pattern The pattern to match
@@ -85,6 +123,58 @@ public final class TokenRules {
 	}
 	
 	/**
+	 * Creates a token rule that matches tokens with at least the specified length.<br>
+	 *
+	 * @param minLength The minimum length of the token value (inclusive)
+	 * @return The created length token rule
+	 * @throws IllegalArgumentException If minLength is negative
+	 * @see #lengthBetween(int, int)
+	 * @see LengthTokenRule
+	 */
+	public static @NotNull TokenRule minLength(int minLength) {
+		return lengthBetween(minLength, Integer.MAX_VALUE);
+	}
+	
+	/**
+	 * Creates a token rule that matches tokens with exactly the specified length.<br>
+	 *
+	 * @param exactLength The exact length the token value must have
+	 * @return The created length token rule
+	 * @throws IllegalArgumentException If exactLength is negative
+	 * @see #lengthBetween(int, int)
+	 * @see LengthTokenRule
+	 */
+	public static @NotNull TokenRule exactLength(int exactLength) {
+		return lengthBetween(exactLength, exactLength);
+	}
+	
+	/**
+	 * Creates a token rule that matches tokens with at most the specified length.<br>
+	 *
+	 * @param maxLength The maximum length of the token value (inclusive)
+	 * @return The created length token rule
+	 * @throws IllegalArgumentException If maxLength is negative
+	 * @see #lengthBetween(int, int)
+	 * @see LengthTokenRule
+	 */
+	public static @NotNull TokenRule maxLength(int maxLength) {
+		return lengthBetween(0, maxLength);
+	}
+	
+	/**
+	 * Creates a token rule that matches tokens based on their length constraints.<br>
+	 *
+	 * @param minLength The minimum length of the token value (inclusive)
+	 * @param maxLength The maximum length of the token value (inclusive)
+	 * @return The created length token rule
+	 * @throws IllegalArgumentException If minLength is negative, maxLength is negative, or maxLength is less than minLength
+	 * @see LengthTokenRule
+	 */
+	public static @NotNull TokenRule lengthBetween(int minLength, int maxLength) {
+		return new LengthTokenRule(minLength, maxLength);
+	}
+	
+	/**
 	 * Creates an optional token rule with the given token rule.<br>
 	 *
 	 * @param tokenRule The token rule to match optionally
@@ -98,64 +188,64 @@ public final class TokenRules {
 	
 	/**
 	 * Creates a repeated token rule with the given token rule and the minimum number of occurrences.<br>
-	 * This method is equivalent to {@link #repeatBetween(TokenRule, int, int)} with the maximum number of occurrences set to {@link Integer#MAX_VALUE}.<br>
+	 * This method is equivalent to {@link #between(TokenRule, int, int)} with the maximum number of occurrences set to {@link Integer#MAX_VALUE}.<br>
 	 *
 	 * @param tokenRule The token rule to match
 	 * @param min The minimum number of occurrences
 	 * @return The created token rule that matches the given token rule at least the given number of times
 	 * @throws NullPointerException If the token rule is null
 	 * @throws IllegalArgumentException If the minimum number of occurrences is less than 0
-	 * @see #repeatBetween(TokenRule, int, int)
+	 * @see #between(TokenRule, int, int)
 	 * @see RepeatedTokenRule
 	 */
-	public static @NotNull TokenRule repeatAtLeast(@NotNull TokenRule tokenRule, int min) {
-		return repeatBetween(tokenRule, min, Integer.MAX_VALUE);
+	public static @NotNull TokenRule atLeast(@NotNull TokenRule tokenRule, int min) {
+		return between(tokenRule, min, Integer.MAX_VALUE);
 	}
 	
 	/**
 	 * Creates a repeated token rule with the given token rule and the exact number of occurrences.<br>
-	 * This method is equivalent to {@link #repeatBetween(TokenRule, int, int)} with the minimum and maximum number of occurrences set to the same value.<br>
+	 * This method is equivalent to {@link #between(TokenRule, int, int)} with the minimum and maximum number of occurrences set to the same value.<br>
 	 *
 	 * @param tokenRule The token rule to match
 	 * @param repeats The exact number of occurrences
 	 * @return The created token rule that matches the given token rule exactly the given number of times
 	 * @throws NullPointerException If the token rule is null
 	 * @throws IllegalArgumentException If the number of occurrences is lower than 0
-	 * @see #repeatBetween(TokenRule, int, int)
+	 * @see #between(TokenRule, int, int)
 	 * @see RepeatedTokenRule
 	 */
-	public static @NotNull TokenRule repeatExactly(@NotNull TokenRule tokenRule, int repeats) {
-		return repeatBetween(tokenRule, repeats, repeats);
+	public static @NotNull TokenRule exactly(@NotNull TokenRule tokenRule, int repeats) {
+		return between(tokenRule, repeats, repeats);
 	}
 	
 	/**
 	 * Creates a repeated token rule with the given token rule and the maximum number of occurrences.<br>
-	 * This method is equivalent to {@link #repeatBetween(TokenRule, int, int)} with the minimum number of occurrences set to 0.<br>
+	 * This method is equivalent to {@link #between(TokenRule, int, int)} with the minimum number of occurrences set to 0.<br>
 	 *
 	 * @param tokenRule The token rule to match
 	 * @param max The maximum number of occurrences
 	 * @return The created token rule that matches the given token rule at most the given number of times
 	 * @throws NullPointerException If the token rule is null
 	 * @throws IllegalArgumentException If the maximum number of occurrences is lower than 0
-	 * @see #repeatBetween(TokenRule, int, int)
+	 * @see #between(TokenRule, int, int)
 	 * @see RepeatedTokenRule
 	 */
-	public static @NotNull TokenRule repeatAtMost(@NotNull TokenRule tokenRule, int max) {
-		return repeatBetween(tokenRule, 0, max);
+	public static @NotNull TokenRule atMost(@NotNull TokenRule tokenRule, int max) {
+		return between(tokenRule, 0, max);
 	}
 	
 	/**
 	 * Creates a repeated token rule with the given token rule and no limit on the number of occurrences.<br>
-	 * This method is equivalent to {@link #repeatBetween(TokenRule, int, int)} with the minimum number of occurrences set to 0 and the maximum number of occurrences set to {@link Integer#MAX_VALUE}.<br>
+	 * This method is equivalent to {@link #between(TokenRule, int, int)} with the minimum number of occurrences set to 0 and the maximum number of occurrences set to {@link Integer#MAX_VALUE}.<br>
 	 *
 	 * @param tokenRule The token rule to match
 	 * @return The created token rule that matches the given token rule any number of times
 	 * @throws NullPointerException If the token rule is null
-	 * @see #repeatBetween(TokenRule, int, int)
+	 * @see #between(TokenRule, int, int)
 	 * @see RepeatedTokenRule
 	 */
-	public static @NotNull TokenRule repeatInfinitely(@NotNull TokenRule tokenRule) {
-		return repeatBetween(tokenRule, 0, Integer.MAX_VALUE);
+	public static @NotNull TokenRule zeroOrMore(@NotNull TokenRule tokenRule) {
+		return between(tokenRule, 0, Integer.MAX_VALUE);
 	}
 	
 	/**
@@ -169,7 +259,7 @@ public final class TokenRules {
 	 * @throws IllegalArgumentException If the minimum or maximum number of occurrences is lower than 0, or if the maximum number of occurrences is lower than the minimum number of occurrences, or if both are 0
 	 * @see RepeatedTokenRule
 	 */
-	public static @NotNull TokenRule repeatBetween(@NotNull TokenRule tokenRule, int min, int max) {
+	public static @NotNull TokenRule between(@NotNull TokenRule tokenRule, int min, int max) {
 		return new RepeatedTokenRule(tokenRule, min, max);
 	}
 	
@@ -255,6 +345,112 @@ public final class TokenRules {
 	}
 	
 	/**
+	 * Creates a recursive token rule using the specified rule factory function.<br>
+	 * The factory function receives the recursive rule itself as a parameter, enabling
+	 * complex recursive grammar definitions.<br>
+	 *
+	 * @param ruleFactory A function that takes the recursive rule and returns the complete rule definition
+	 * @return The created recursive token rule
+	 * @throws NullPointerException If the rule factory is null or if the factory returns null
+	 * @see RecursiveTokenRule
+	 */
+	public static @NotNull TokenRule recursive(@NotNull Function<TokenRule, TokenRule> ruleFactory) {
+		return new RecursiveTokenRule(ruleFactory);
+	}
+	
+	/**
+	 * Creates a recursive token rule for simple opening-content-closing patterns.<br>
+	 * This is a convenience method for backward compatibility with simple boundary patterns.<br>
+	 *
+	 * @param openingRule The rule that must match at the beginning
+	 * @param contentRule The rule for content between opening and closing (may reference recursion)
+	 * @param closingRule The rule that must match at the end
+	 * @return The created recursive token rule
+	 * @throws NullPointerException If the opening, content, or closing rule is null
+	 * @see #recursive(Function)
+	 * @see RecursiveTokenRule
+	 */
+	public static @NotNull TokenRule recursive(@NotNull TokenRule openingRule, @NotNull TokenRule contentRule, @NotNull TokenRule closingRule) {
+		return new RecursiveTokenRule(openingRule, contentRule, closingRule);
+	}
+	
+	/**
+	 * Creates a recursive token rule for opening-closing patterns with flexible content.<br>
+	 * The content rule factory receives the recursive rule itself as a parameter.<br>
+	 *
+	 * @param openingRule The rule that must match at the beginning
+	 * @param closingRule The rule that must match at the end
+	 * @param contentRuleFactory A function that takes the recursive rule and returns the content rule
+	 * @return The created recursive token rule
+	 * @throws NullPointerException If the opening, closing rule, or content rule factory is null
+	 * @see #recursive(Function)
+	 * @see RecursiveTokenRule
+	 */
+	public static @NotNull TokenRule recursive(@NotNull TokenRule openingRule, @NotNull TokenRule closingRule, @NotNull Function<TokenRule, TokenRule> contentRuleFactory) {
+		return new RecursiveTokenRule(openingRule, closingRule, contentRuleFactory);
+	}
+	
+	/**
+	 * Creates a lazily-initialized token rule.<br>
+	 * The lazy token rule must be initialized before this rule can successfully match tokens.<br>
+	 * This is useful for defining recursive rules, rules that depend on runtime conditions or cyclic dependencies between rules.<br>
+	 *
+	 * @return The created lazy token rule
+	 * @see LazyTokenRule
+	 */
+	public static @NotNull LazyTokenRule lazy() {
+		return new LazyTokenRule();
+	}
+	
+	/**
+	 * Creates a token group rule that applies the given token rule to the tokens within a group.<br>
+	 * This rule matches if the token at the current position is a {@link net.luis.utils.io.token.tokens.TokenGroup}
+	 * and the inner rule matches when applied to the tokens contained within that group.<br>
+	 *
+	 * @param tokenRule The inner token rule to apply to the tokens within the group
+	 * @return The created token group rule
+	 * @throws NullPointerException If the token rule is null
+	 * @see TokenGroupRule
+	 */
+	public static @NotNull TokenRule group(@NotNull TokenRule tokenRule) {
+		return new TokenGroupRule(tokenRule);
+	}
+	
+	/**
+	 * Creates a custom token rule that matches tokens based on a provided condition.<br>
+	 * The condition is a predicate that takes a {@link Token} and returns true if the token matches the rule.<br>
+	 * This allows for flexible and dynamic token matching based on custom logic.<br>
+	 *
+	 * @param condition The condition to match tokens against
+	 * @return The created custom token rule
+	 * @throws NullPointerException If the condition is null
+	 * @see CustomTokeRule
+	 */
+	public static @NotNull TokenRule custom(@NotNull Predicate<Token> condition) {
+		return new CustomTokeRule(condition);
+	}
+	
+	/**
+	 * Creates a token rule that matches the start of the document (entire token list).<br>
+	 *
+	 * @return The token rule
+	 * @see StartTokenRule
+	 */
+	public static @NotNull TokenRule startDocument() {
+		return StartTokenRule.DOCUMENT;
+	}
+	
+	/**
+	 * Creates a token rule that matches the start of a line.<br>
+	 *
+	 * @return The token rule
+	 * @see StartTokenRule
+	 */
+	public static @NotNull TokenRule startLine() {
+		return StartTokenRule.LINE;
+	}
+	
+	/**
 	 * Creates a token rule that matches the end of the document (entire token list).<br>
 	 *
 	 * @return The token rule
@@ -320,209 +516,5 @@ public final class TokenRules {
 	 */
 	public static @NotNull TokenRule negativeLookbehind(@NotNull TokenRule tokenRule) {
 		return new LookbehindTokenRule(tokenRule, LookMatchMode.NEGATIVE);
-	}
-	
-	/**
-	 * Creates a token rule that matches the start of the document (entire token list).<br>
-	 *
-	 * @return The token rule
-	 * @see StartTokenRule
-	 */
-	public static @NotNull TokenRule startDocument() {
-		return StartTokenRule.DOCUMENT;
-	}
-	
-	/**
-	 * Creates a token rule that matches the start of a line.<br>
-	 *
-	 * @return The token rule
-	 * @see StartTokenRule
-	 */
-	public static @NotNull TokenRule startLine() {
-		return StartTokenRule.LINE;
-	}
-	
-	/**
-	 * Creates a token rule that matches tokens with at least the specified length.<br>
-	 *
-	 * @param minLength The minimum length of the token value (inclusive)
-	 * @return The created length token rule
-	 * @throws IllegalArgumentException If minLength is negative
-	 * @see #lengthBetween(int, int)
-	 * @see LengthTokenRule
-	 */
-	public static @NotNull TokenRule minLength(int minLength) {
-		return lengthBetween(minLength, Integer.MAX_VALUE);
-	}
-	
-	/**
-	 * Creates a token rule that matches tokens with exactly the specified length.<br>
-	 *
-	 * @param exactLength The exact length the token value must have
-	 * @return The created length token rule
-	 * @throws IllegalArgumentException If exactLength is negative
-	 * @see #lengthBetween(int, int)
-	 * @see LengthTokenRule
-	 */
-	public static @NotNull TokenRule exactLength(int exactLength) {
-		return lengthBetween(exactLength, exactLength);
-	}
-	
-	/**
-	 * Creates a token rule that matches tokens with at most the specified length.<br>
-	 *
-	 * @param maxLength The maximum length of the token value (inclusive)
-	 * @return The created length token rule
-	 * @throws IllegalArgumentException If maxLength is negative
-	 * @see #lengthBetween(int, int)
-	 * @see LengthTokenRule
-	 */
-	public static @NotNull TokenRule maxLength(int maxLength) {
-		return lengthBetween(0, maxLength);
-	}
-	
-	/**
-	 * Creates a token rule that matches tokens based on their length constraints.<br>
-	 *
-	 * @param minLength The minimum length of the token value (inclusive)
-	 * @param maxLength The maximum length of the token value (inclusive)
-	 * @return The created length token rule
-	 * @throws IllegalArgumentException If minLength is negative, maxLength is negative, or maxLength is less than minLength
-	 * @see LengthTokenRule
-	 */
-	public static @NotNull TokenRule lengthBetween(int minLength, int maxLength) {
-		return new LengthTokenRule(minLength, maxLength);
-	}
-	
-	/**
-	 * Creates a token group rule that applies the given token rule to the tokens within a group.<br>
-	 * This rule matches if the token at the current position is a {@link net.luis.utils.io.token.tokens.TokenGroup}
-	 * and the inner rule matches when applied to the tokens contained within that group.<br>
-	 *
-	 * @param tokenRule The inner token rule to apply to the tokens within the group
-	 * @return The created token group rule
-	 * @throws NullPointerException If the token rule is null
-	 * @see TokenGroupRule
-	 */
-	public static @NotNull TokenRule group(@NotNull TokenRule tokenRule) {
-		return new TokenGroupRule(tokenRule);
-	}
-	
-	/**
-	 * Creates a separated list token rule that matches elements separated by a delimiter.<br>
-	 * This is equivalent to:
-	 * <pre>{@code
-	 * sequence(elementRule,
-	 *     sequence(
-	 *         separatorRule,
-	 *         elementRule
-	 *     ).repeatInfinitely()
-	 * )
-	 * }</pre>
-	 * <p>
-	 *     This pattern matches one or more elements separated by the specified separator,
-	 *     which is common in many grammar rules like parameter lists, array elements, etc.
-	 * </p>
-	 *
-	 * @param elementRule The token rule for matching list elements
-	 * @param separatorRule The token rule for matching separators between elements
-	 * @return The created separated list token rule
-	 * @throws NullPointerException If the element rule or separator rule is null
-	 * @see #sequence(TokenRule...)
-	 * @see #repeatInfinitely(TokenRule)
-	 */
-	public static @NotNull TokenRule separatedList(@NotNull TokenRule elementRule, @NotNull TokenRule separatorRule) {
-		Objects.requireNonNull(elementRule, "Element rule must not be null");
-		Objects.requireNonNull(separatorRule, "Separator rule must not be null");
-		
-		return sequence(
-			elementRule,
-			sequence(
-				separatorRule, elementRule
-			).repeatInfinitely()
-		);
-	}
-	
-	/**
-	 * Creates a recursive token rule using the specified rule factory function.<br>
-	 * The factory function receives the recursive rule itself as a parameter, enabling
-	 * complex recursive grammar definitions.<br>
-	 *
-	 * @param ruleFactory A function that takes the recursive rule and returns the complete rule definition
-	 * @return The created recursive token rule
-	 * @throws NullPointerException If the rule factory is null or if the factory returns null
-	 * @see RecursiveTokenRule
-	 */
-	public static @NotNull TokenRule recursive(@NotNull Function<TokenRule, TokenRule> ruleFactory) {
-		return new RecursiveTokenRule(ruleFactory);
-	}
-	
-	/**
-	 * Creates a recursive token rule for simple opening-content-closing patterns.<br>
-	 * This is a convenience method for backward compatibility with simple boundary patterns.<br>
-	 *
-	 * @param openingRule The rule that must match at the beginning
-	 * @param contentRule The rule for content between opening and closing (may reference recursion)
-	 * @param closingRule The rule that must match at the end
-	 * @return The created recursive token rule
-	 * @throws NullPointerException If the opening, content, or closing rule is null
-	 * @see #recursive(Function)
-	 * @see RecursiveTokenRule
-	 */
-	public static @NotNull TokenRule recursive(@NotNull TokenRule openingRule, @NotNull TokenRule contentRule, @NotNull TokenRule closingRule) {
-		return new RecursiveTokenRule(openingRule, contentRule, closingRule);
-	}
-	
-	/**
-	 * Creates a recursive token rule for opening-closing patterns with flexible content.<br>
-	 * The content rule factory receives the recursive rule itself as a parameter.<br>
-	 *
-	 * @param openingRule The rule that must match at the beginning
-	 * @param closingRule The rule that must match at the end
-	 * @param contentRuleFactory A function that takes the recursive rule and returns the content rule
-	 * @return The created recursive token rule
-	 * @throws NullPointerException If the opening, closing rule, or content rule factory is null
-	 * @see #recursive(Function)
-	 * @see RecursiveTokenRule
-	 */
-	public static @NotNull TokenRule recursive(@NotNull TokenRule openingRule, @NotNull TokenRule closingRule, @NotNull Function<TokenRule, TokenRule> contentRuleFactory) {
-		return new RecursiveTokenRule(openingRule, closingRule, contentRuleFactory);
-	}
-	
-	/**
-	 * Creates a custom token rule that matches tokens based on a provided condition.<br>
-	 * The condition is a predicate that takes a {@link Token} and returns true if the token matches the rule.<br>
-	 * This allows for flexible and dynamic token matching based on custom logic.<br>
-	 *
-	 * @param condition The condition to match tokens against
-	 * @return The created custom token rule
-	 * @throws NullPointerException If the condition is null
-	 * @see CustomTokeRule
-	 */
-	public static @NotNull TokenRule custom(@NotNull Predicate<Token> condition) {
-		return new CustomTokeRule(condition);
-	}
-	
-	/**
-	 * Provides a token rule that never matches.<br>
-	 *
-	 * @return The token rule
-	 * @apiNote This is the preferred way to access the {@link NeverMatchTokenRule#INSTANCE} instance
-	 * @see NeverMatchTokenRule
-	 */
-	public static @NotNull TokenRule neverMatch() {
-		return NeverMatchTokenRule.INSTANCE;
-	}
-	
-	/**
-	 * Creates a lazily-initialized token rule.<br>
-	 * The lazy token rule must be initialized before this rule can successfully match tokens.<br>
-	 * This is useful for defining recursive rules, rules that depend on runtime conditions or cyclic dependencies between rules.<br>
-	 *
-	 * @return The created lazy token rule
-	 * @see LazyTokenRule
-	 */
-	public static @NotNull LazyTokenRule lazy() {
-		return new LazyTokenRule();
 	}
 }

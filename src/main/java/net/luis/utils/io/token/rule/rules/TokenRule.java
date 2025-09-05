@@ -72,7 +72,7 @@ public interface TokenRule {
 	 * @see TokenRules#atLeast(TokenRule, int)
 	 * @see RepeatedTokenRule
 	 */
-	default @NotNull TokenRule repeatAtLeast(int min) {
+	default @NotNull TokenRule atLeast(int min) {
 		return TokenRules.atLeast(this, min);
 	}
 	
@@ -86,7 +86,7 @@ public interface TokenRule {
 	 * @see TokenRules#exactly(TokenRule, int)
 	 * @see RepeatedTokenRule
 	 */
-	default @NotNull TokenRule repeatExactly(int repeats) {
+	default @NotNull TokenRule exactly(int repeats) {
 		return TokenRules.exactly(this, repeats);
 	}
 	
@@ -100,7 +100,7 @@ public interface TokenRule {
 	 * @see TokenRules#atMost(TokenRule, int)
 	 * @see RepeatedTokenRule
 	 */
-	default @NotNull TokenRule repeatAtMost(int max) {
+	default @NotNull TokenRule atMost(int max) {
 		return TokenRules.atMost(this, max);
 	}
 	
@@ -112,7 +112,7 @@ public interface TokenRule {
 	 * @see TokenRules#zeroOrMore(TokenRule)
 	 * @see RepeatedTokenRule
 	 */
-	default @NotNull TokenRule repeatInfinitely() {
+	default @NotNull TokenRule zeroOrMore() {
 		return TokenRules.zeroOrMore(this);
 	}
 	
@@ -127,7 +127,7 @@ public interface TokenRule {
 	 * @see TokenRules#between(TokenRule, int, int)
 	 * @see RepeatedTokenRule
 	 */
-	default @NotNull TokenRule repeatBetween(int min, int max) {
+	default @NotNull TokenRule between(int min, int max) {
 		return TokenRules.between(this, min, max);
 	}
 	
@@ -150,6 +150,19 @@ public interface TokenRule {
 	 */
 	default @NotNull TokenRule not() {
 		throw new UnsupportedOperationException("This token rule does not support negation");
+	}
+	
+	/**
+	 * Creates a token group rule for this token rule by wrapping it in a {@link TokenGroupRule}.<br>
+	 * A token group rule applies this rule to the tokens within a {@link net.luis.utils.io.token.tokens.TokenGroup}<br>
+	 * rather than to the group itself.<br>
+	 *
+	 * @return A new token group rule
+	 * @see TokenRules#group(TokenRule)
+	 * @see TokenGroupRule
+	 */
+	default @NotNull TokenRule group() {
+		return TokenRules.group(this);
 	}
 	
 	/**
@@ -202,18 +215,5 @@ public interface TokenRule {
 	 */
 	default @NotNull TokenRule negativeLookbehind() {
 		return TokenRules.negativeLookbehind(this);
-	}
-	
-	/**
-	 * Creates a token group rule for this token rule by wrapping it in a {@link TokenGroupRule}.<br>
-	 * A token group rule applies this rule to the tokens within a {@link net.luis.utils.io.token.tokens.TokenGroup}<br>
-	 * rather than to the group itself.<br>
-	 *
-	 * @return A new token group rule
-	 * @see TokenRules#group(TokenRule)
-	 * @see TokenGroupRule
-	 */
-	default @NotNull TokenRule group() {
-		return TokenRules.group(this);
 	}
 }
