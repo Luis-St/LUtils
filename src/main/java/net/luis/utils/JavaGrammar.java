@@ -171,21 +171,20 @@ public class JavaGrammar {
 			);
 		});
 		
-		annotationDeclaration.set(TokenRules.any(
+		annotationDeclaration.set(TokenRules.sequence(
+			AT,
+			qualifiedName,
 			TokenRules.sequence(
-				AT,
-				qualifiedName,
-				TokenRules.sequence(
-					LEFT_BRACKET,
-					RIGHT_BRACKET
-				).optional()
-			),
-			TokenRules.sequence(
-				AT,
-				qualifiedName,
 				LEFT_BRACKET,
+				TokenRules.any(
+					annotationValue,
+					TokenRules.separatedList(
+						annotationParameter,
+						COMMA
+					)
+				),
 				RIGHT_BRACKET
-			)
+			).optional()
 		));
 		
 		annotationParameter.set(TokenRules.sequence(
