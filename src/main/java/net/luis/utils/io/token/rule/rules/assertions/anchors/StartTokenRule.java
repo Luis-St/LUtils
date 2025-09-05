@@ -30,101 +30,59 @@ import java.util.Objects;
 /**
  * A token rule that matches the start of the token list or start of line.<br>
  * This rule is useful to ensure matching begins at the very start of input or line.<br>
- * <p>
- *     The rule behavior depends on the {@link AnchorType}:
- * </p>
  * <ul>
- *   <li>{@link AnchorType#DOCUMENT} matches only when the start index is 0</li>
- *   <li>{@link AnchorType#LINE} matches when the start index is at the beginning of a line or at the start of the document</li>
+ *   <li>{@link #DOCUMENT} matches only when the start index is 0</li>
+ *   <li>{@link #LINE} matches when the start index is at the beginning of a line or at the start of the document</li>
  * </ul>
  * <p>
- *     <strong>Note</strong>: {@link AnchorType#LINE} might be inconsistent if the token list has been modified (e.g., tokens added or removed) after the initial parsing,
+ *     <strong>Note</strong>: {@link #LINE} might be inconsistent if the token list has been modified (e.g., tokens added or removed) after the initial parsing,
  *     as it relies on line numbers and newline characters to determine line starts.
  *     Ensure the token list is in a consistent state before applying this rule.
  * </p>
  *
- * @see AnchorType
- *
  * @author Luis-St
- *
- * @param anchorType The type of anchor to match
  */
-public record StartTokenRule(
-	@NotNull AnchorType anchorType
-) implements TokenRule {
+public enum StartTokenRule implements TokenRule {
 	
-	/**
-	 * Creates a start token rule with the specified anchor type.<br>
-	 *
-	 * @param anchorType The type of anchor to match
-	 * @throws NullPointerException If the anchor type is null
-	 */
-	public StartTokenRule {
-		Objects.requireNonNull(anchorType, "Anchor type must not be null");
-	}
-	
-	@Override
-	public @Nullable TokenRuleMatch match(@NotNull TokenStream stream) {
-		Objects.requireNonNull(stream, "Token stream must not be null");
-		
-		return switch (this.anchorType) {
-			case DOCUMENT -> this.matchDocumentStart(stream);
-			case LINE -> this.matchLineStart(stream);
-		};
-	}
-	
-	/**
-	 * Matches the start of the entire document (token stream).<br>
-	 *
-	 * @param stream The token stream
-	 * @return A match if at document start, null otherwise
-	 * @throws NullPointerException If the token stream is null
-	 */
-	private @Nullable TokenRuleMatch matchDocumentStart(@NotNull TokenStream stream) {
-		Objects.requireNonNull(stream, "Token stream must not be null");
-		
-		if (stream.getCurrentIndex() == 0) {
-			return TokenRuleMatch.empty(0, this);
-		}
-		return null;
-	}
-	
-	/**
-	 * Matches the start of a line or the start of the document.<br>
-	 * A line start is detected by comparing the line numbers of the current and previous tokens,
-	 * or by checking if the previous token contains a newline character.<br>
-	 *
-	 * @param stream The token stream
-	 * @return A match if at line start, null otherwise
-	 * @throws NullPointerException If the token stream is null
-	 */
-	@SuppressWarnings("DuplicatedCode")
-	private @Nullable TokenRuleMatch matchLineStart(@NotNull TokenStream stream) {
-		Objects.requireNonNull(stream, "Token stream must not be null");
-		
-		if (stream.getCurrentIndex() == 0) {
-			return TokenRuleMatch.empty(0, this);
-		}
-		
-		Token currentToken = stream.getCurrentToken();
-		TokenStream lookbehindStream = stream.lookbehindStream();
-		if (!lookbehindStream.hasToken()) {
+	DOCUMENT {
+		@Override
+		public @Nullable TokenRuleMatch match(@NotNull TokenStream stream) {
+			Objects.requireNonNull(stream, "Token stream must not be null");
+			
+			if (stream.getCurrentIndex() == 0) {
+				return TokenRuleMatch.empty(0, this);
+			}
 			return null;
 		}
-		
-		Token previousToken = lookbehindStream.getCurrentToken();
-		if (currentToken.position().isPositioned() && previousToken.position().isPositioned()) {
-			if (currentToken.position().line() > previousToken.position().line()) {
+	},
+	LINE {
+		@Override
+		@SuppressWarnings("DuplicatedCode")
+		public @Nullable TokenRuleMatch match(@NotNull TokenStream stream) {
+			Objects.requireNonNull(stream, "Token stream must not be null");
+			if (stream.getCurrentIndex() == 0) {
+				return TokenRuleMatch.empty(0, this);
+			}
+			
+			Token currentToken = stream.getCurrentToken();
+			TokenStream lookbehindStream = stream.lookbehindStream();
+			if (!lookbehindStream.hasToken()) {
+				return null;
+			}
+			
+			Token previousToken = lookbehindStream.getCurrentToken();
+			if (currentToken.position().isPositioned() && previousToken.position().isPositioned()) {
+				if (currentToken.position().line() > previousToken.position().line()) {
+					return TokenRuleMatch.empty(stream.getCurrentIndex(), this);
+				}
+			}
+			
+			if (previousToken.value().contains("\n")) {
 				return TokenRuleMatch.empty(stream.getCurrentIndex(), this);
 			}
+			return null;
 		}
-		
-		if (previousToken.value().contains("\n")) {
-			return TokenRuleMatch.empty(stream.getCurrentIndex(), this);
-		}
-		
-		return null;
-	}
+	};
 	
 	@Override
 	public @NotNull TokenRule not() {

@@ -261,7 +261,7 @@ public final class TokenRules {
 	 * @see EndTokenRule
 	 */
 	public static @NotNull TokenRule endDocument() {
-		return new EndTokenRule(AnchorType.DOCUMENT);
+		return EndTokenRule.DOCUMENT;
 	}
 	
 	/**
@@ -271,7 +271,7 @@ public final class TokenRules {
 	 * @see EndTokenRule
 	 */
 	public static @NotNull TokenRule endLine() {
-		return new EndTokenRule(AnchorType.LINE);
+		return EndTokenRule.LINE;
 	}
 	
 	/**
@@ -329,7 +329,7 @@ public final class TokenRules {
 	 * @see StartTokenRule
 	 */
 	public static @NotNull TokenRule startDocument() {
-		return new StartTokenRule(AnchorType.DOCUMENT);
+		return StartTokenRule.DOCUMENT;
 	}
 	
 	/**
@@ -339,7 +339,7 @@ public final class TokenRules {
 	 * @see StartTokenRule
 	 */
 	public static @NotNull TokenRule startLine() {
-		return new StartTokenRule(AnchorType.LINE);
+		return StartTokenRule.LINE;
 	}
 	
 	/**
