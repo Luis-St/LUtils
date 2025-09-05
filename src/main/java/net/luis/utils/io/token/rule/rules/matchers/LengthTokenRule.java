@@ -28,6 +28,8 @@ import java.util.Objects;
  * A token rule that matches tokens based on their value length.<br>
  * This rule is useful for filtering tokens by length constraints.<br>
  *
+ * @see NegatableTokenRule
+ *
  * @author Luis-St
  *
  * @param minLength The minimum length of the token value (inclusive)

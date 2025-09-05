@@ -29,7 +29,8 @@ import java.util.regex.Pattern;
 /**
  * A token rule that matches the value of a single token against a regular expression pattern.<br>
  * This rule is useful for creating complex matching logic by using regular expressions.<br>
- * It will match the token if its value matches the pattern, otherwise it will return null.<br>
+ *
+ * @see NegatableTokenRule
  *
  * @author Luis-St
  *

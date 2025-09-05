@@ -69,11 +69,11 @@ public interface TokenRule {
 	 * @param min The minimum number of times this rule must match
 	 * @return A new at least repeatable token rule
 	 * @throws IllegalArgumentException If min is less than 0
-	 * @see TokenRules#repeatAtLeast(TokenRule, int)
+	 * @see TokenRules#atLeast(TokenRule, int)
 	 * @see RepeatedTokenRule
 	 */
 	default @NotNull TokenRule repeatAtLeast(int min) {
-		return TokenRules.repeatAtLeast(this, min);
+		return TokenRules.atLeast(this, min);
 	}
 	
 	/**
@@ -83,11 +83,11 @@ public interface TokenRule {
 	 * @param repeats The number of times this rule must match
 	 * @return A new exactly repeatable token rule
 	 * @throws IllegalArgumentException If repeats is less than 0
-	 * @see TokenRules#repeatExactly(TokenRule, int)
+	 * @see TokenRules#exactly(TokenRule, int)
 	 * @see RepeatedTokenRule
 	 */
 	default @NotNull TokenRule repeatExactly(int repeats) {
-		return TokenRules.repeatExactly(this, repeats);
+		return TokenRules.exactly(this, repeats);
 	}
 	
 	/**
@@ -97,11 +97,11 @@ public interface TokenRule {
 	 * @param max The maximum number of times this rule can match
 	 * @return A new at most repeatable token rule
 	 * @throws IllegalArgumentException If max is less than 0
-	 * @see TokenRules#repeatAtMost(TokenRule, int)
+	 * @see TokenRules#atMost(TokenRule, int)
 	 * @see RepeatedTokenRule
 	 */
 	default @NotNull TokenRule repeatAtMost(int max) {
-		return TokenRules.repeatAtMost(this, max);
+		return TokenRules.atMost(this, max);
 	}
 	
 	/**
@@ -109,11 +109,11 @@ public interface TokenRule {
 	 * To make the new rule match, this rule must match at least 0 and at most {@link Integer#MAX_VALUE} times.<br>
 	 *
 	 * @return A new infinitely repeatable token rule
-	 * @see TokenRules#repeatInfinitely(TokenRule)
+	 * @see TokenRules#zeroOrMore(TokenRule)
 	 * @see RepeatedTokenRule
 	 */
 	default @NotNull TokenRule repeatInfinitely() {
-		return TokenRules.repeatInfinitely(this);
+		return TokenRules.zeroOrMore(this);
 	}
 	
 	/**
@@ -124,11 +124,11 @@ public interface TokenRule {
 	 * @param max The maximum number of times this rule can match
 	 * @return A new between repeatable token rule
 	 * @throws IllegalArgumentException If min is less than 0 or max is less than min
-	 * @see TokenRules#repeatBetween(TokenRule, int, int)
+	 * @see TokenRules#between(TokenRule, int, int)
 	 * @see RepeatedTokenRule
 	 */
 	default @NotNull TokenRule repeatBetween(int min, int max) {
-		return TokenRules.repeatBetween(this, min, max);
+		return TokenRules.between(this, min, max);
 	}
 	
 	/**
