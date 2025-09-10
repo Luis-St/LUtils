@@ -21,9 +21,9 @@ package net.luis.utils.io.token.rule.rules;
 import com.google.common.collect.Maps;
 import net.luis.utils.io.token.tokens.Token;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 
 /**
  * Context which is passed to token rules when they are processed.<br>
@@ -43,9 +43,9 @@ public class TokenRuleContext {
 	 */
 	protected final Map<String, TokenRule> definedRules = Maps.newHashMap();
 	/**
-	 * Map of captured tokens by their keys.<br>
+	 * Map of captured token lists by their keys.<br>
 	 */
-	protected final Map<String, Token> capturedTokens = Maps.newHashMap();
+	protected final Map<String, List<Token>> capturedTokens = Maps.newHashMap();
 	
 	/**
 	 * Constructs an empty token rule context.<br>
@@ -66,7 +66,7 @@ public class TokenRuleContext {
 	
 	/**
 	 * Defines a token rule with the given key.<br>
-	 * If a rule with the same key already exists, it will be overwritten.<br>
+	 * If a key already exists, it will be overwritten.<br>
 	 *
 	 * @param key The key to associate with the token rule
 	 * @param rule The token rule to define
@@ -80,53 +80,40 @@ public class TokenRuleContext {
 	
 	/**
 	 * Retrieves a defined token rule by its key.<br>
-	 * If no rule is defined for the given key, an exception is thrown.<br>
 	 *
 	 * @param key The key of the token rule to retrieve
-	 * @return The token rule associated with the given key
+	 * @return The token rule associated with the given key or null if no rule is defined for the key
 	 * @throws NullPointerException If the key is null
-	 * @throws IllegalArgumentException If no rule is defined for the given key
 	 */
-	public @NotNull TokenRule getRuleReference(@NotNull String key) {
+	public @Nullable TokenRule getRuleReference(@NotNull String key) {
 		Objects.requireNonNull(key, "Rule key must not be null");
-		
-		TokenRule rule = this.definedRules.get(key);
-		if (rule == null) {
-			throw new IllegalArgumentException("No rule defined for key: " + key);
-		}
-		return rule;
+		return this.definedRules.get(key);
 	}
 	
 	/**
-	 * Captures a token with the given key.<br>
-	 * If a token with the same key already exists, it will be overwritten.<br>
+	 * Captures the given list of tokens with the specified key.<br>
+	 * If a key already exists, it will be overwritten.<br>
 	 *
 	 * @param key The key to associate with the captured token
-	 * @param token The token to capture
+	 * @param tokens The list of tokens to capture
 	 * @throws NullPointerException If the key or token is null
 	 */
-	public void captureToken(@NotNull String key, @NotNull Token token) {
+	public void captureTokens(@NotNull String key, @NotNull List<Token> tokens) {
 		Objects.requireNonNull(key, "Token key must not be null");
-		Objects.requireNonNull(token, "Token must not be null");
-		this.capturedTokens.put(key, token);
+		Objects.requireNonNull(tokens, "List of tokens must not be null");
+		this.capturedTokens.put(key, tokens);
 	}
 	
 	/**
-	 * Retrieves a captured token by its key.<br>
-	 * If no token is captured for the given key, an exception is thrown.<br>
+	 * Retrieves captured tokens by their key.<br>
 	 *
 	 * @param key The key of the captured token to retrieve
-	 * @return The token associated with the given key
+	 * @return The token associated with the given key or null if no token is captured for the key
 	 * @throws NullPointerException If the key is null
-	 * @throws IllegalArgumentException If no token is captured for the given key
 	 */
-	public @NotNull Token getCapturedToken(@NotNull String key) {
-		Objects.requireNonNull(key, "Token key must not be null");
+	public @Nullable List<Token> getCapturedTokens(@NotNull String key) {
+		Objects.requireNonNull(key, "Capture key must not be null");
 		
-		Token token = this.capturedTokens.get(key);
-		if (token == null) {
-			throw new IllegalArgumentException("No token captured for key: " + key);
-		}
-		return token;
+		return this.capturedTokens.get(key);
 	}
 }
