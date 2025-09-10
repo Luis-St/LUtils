@@ -21,6 +21,7 @@ package net.luis.utils.io.token.rule.rules.assertions.anchors;
 import net.luis.utils.io.token.TokenStream;
 import net.luis.utils.io.token.rule.TokenRuleMatch;
 import net.luis.utils.io.token.rule.rules.TokenRule;
+import net.luis.utils.io.token.rule.rules.TokenRuleContext;
 import net.luis.utils.io.token.tokens.Token;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -50,8 +51,9 @@ public enum EndTokenRule implements TokenRule {
 	 */
 	DOCUMENT {
 		@Override
-		public @Nullable TokenRuleMatch match(@NotNull TokenStream stream) {
+		public @Nullable TokenRuleMatch match(@NotNull TokenStream stream, @NotNull TokenRuleContext ctx) {
 			Objects.requireNonNull(stream, "Token stream must not be null");
+			Objects.requireNonNull(ctx, "Token rule context must not be null");
 			
 			if (!stream.hasToken()) {
 				return TokenRuleMatch.empty(stream.getCurrentIndex(), this);
@@ -66,8 +68,9 @@ public enum EndTokenRule implements TokenRule {
 	LINE {
 		@Override
 		@SuppressWarnings("DuplicatedCode")
-		public @Nullable TokenRuleMatch match(@NotNull TokenStream stream) {
+		public @Nullable TokenRuleMatch match(@NotNull TokenStream stream, @NotNull TokenRuleContext ctx) {
 			Objects.requireNonNull(stream, "Token stream must not be null");
+			Objects.requireNonNull(ctx, "Token rule context must not be null");
 			if (!stream.hasToken()) {
 				return TokenRuleMatch.empty(stream.getCurrentIndex(), this);
 			}
@@ -99,8 +102,11 @@ public enum EndTokenRule implements TokenRule {
 			private final EndTokenRule self = EndTokenRule.this;
 			
 			@Override
-			public @Nullable TokenRuleMatch match(@NotNull TokenStream stream) {
-				TokenRuleMatch result = this.self.match(stream);
+			public @Nullable TokenRuleMatch match(@NotNull TokenStream stream, @NotNull TokenRuleContext ctx) {
+				Objects.requireNonNull(stream, "Token stream must not be null");
+				Objects.requireNonNull(ctx, "Token rule context must not be null");
+				
+				TokenRuleMatch result = this.self.match(stream, ctx);
 				if (result != null) {
 					return null;
 				}

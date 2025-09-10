@@ -52,8 +52,9 @@ public record TokenGroupRule(
 	}
 	
 	@Override
-	public @Nullable TokenRuleMatch match(@NotNull TokenStream stream) {
+	public @Nullable TokenRuleMatch match(@NotNull TokenStream stream, @NotNull TokenRuleContext ctx) {
 		Objects.requireNonNull(stream, "Token stream must not be null");
+		Objects.requireNonNull(ctx, "Token rule context must not be null");
 		if (!stream.hasToken()) {
 			return null;
 		}
@@ -64,7 +65,7 @@ public record TokenGroupRule(
 			return null;
 		}
 		
-		TokenRuleMatch innerMatch = this.tokenRule.match(new TokenStream(tokenGroup.tokens()));
+		TokenRuleMatch innerMatch = this.tokenRule.match(new TokenStream(tokenGroup.tokens()), ctx);
 		if (innerMatch == null) {
 			return null;
 		}

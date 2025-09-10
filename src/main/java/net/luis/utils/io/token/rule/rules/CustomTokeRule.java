@@ -18,13 +18,9 @@
 
 package net.luis.utils.io.token.rule.rules;
 
-import net.luis.utils.io.token.TokenStream;
-import net.luis.utils.io.token.rule.TokenRuleMatch;
 import net.luis.utils.io.token.tokens.Token;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
-import java.util.Collections;
 import java.util.Objects;
 import java.util.function.Predicate;
 
@@ -39,7 +35,7 @@ import java.util.function.Predicate;
  */
 public record CustomTokeRule(
 	@NotNull Predicate<Token> condition
-) implements TokenRule {
+) implements NegatableTokenRule {
 	
 	/**
 	 * Creates a new custom token rule with the specified condition.<br>
@@ -51,22 +47,8 @@ public record CustomTokeRule(
 	}
 	
 	@Override
-	public @Nullable TokenRuleMatch match(@NotNull TokenStream stream) {
-		Objects.requireNonNull(stream, "Token stream must not be null");
-		if (!stream.hasToken()) {
-			return null;
-		}
-		
-		int startIndex = stream.getCurrentIndex();
-		Token currentToken = stream.getCurrentToken();
-		if (this.condition.test(currentToken)) {
-			return new TokenRuleMatch(startIndex, stream.consumeToken(), Collections.singletonList(currentToken), this);
-		}
-		return null;
-	}
-	
-	@Override
-	public @NotNull TokenRule not() {
-		return new CustomTokeRule(this.condition.negate());
+	public boolean match(@NotNull Token token) {
+		Objects.requireNonNull(token, "Token must not be null");
+		return this.condition.test(token);
 	}
 }

@@ -21,6 +21,7 @@ package net.luis.utils.io.token.rule.rules.assertions;
 import net.luis.utils.io.token.TokenStream;
 import net.luis.utils.io.token.rule.TokenRuleMatch;
 import net.luis.utils.io.token.rule.rules.TokenRule;
+import net.luis.utils.io.token.rule.rules.TokenRuleContext;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -56,13 +57,14 @@ public record LookbehindTokenRule(
 	}
 	
 	@Override
-	public @Nullable TokenRuleMatch match(@NotNull TokenStream stream) {
+	public @Nullable TokenRuleMatch match(@NotNull TokenStream stream, @NotNull TokenRuleContext ctx) {
 		Objects.requireNonNull(stream, "Token stream must not be null");
+		Objects.requireNonNull(ctx, "Token rule context must not be null");
 		if (!stream.hasToken()) {
 			return null;
 		}
 		
-		TokenRuleMatch match = this.tokenRule.match(stream.lookbehindStream());
+		TokenRuleMatch match = this.tokenRule.match(stream.lookbehindStream(), ctx);
 		if (this.mode.shouldMatch(match != null)) {
 			return TokenRuleMatch.empty(stream.getCurrentIndex(), this);
 		}

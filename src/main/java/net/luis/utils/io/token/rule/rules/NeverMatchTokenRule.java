@@ -44,8 +44,9 @@ public final class NeverMatchTokenRule implements TokenRule {
 	private NeverMatchTokenRule() {}
 	
 	@Override
-	public @Nullable TokenRuleMatch match(@NotNull TokenStream stream) {
+	public @Nullable TokenRuleMatch match(@NotNull TokenStream stream, @NotNull TokenRuleContext ctx) {
 		Objects.requireNonNull(stream, "Token stream must not be null");
+		Objects.requireNonNull(ctx, "Token rule context must not be null");
 		return null;
 	}
 	

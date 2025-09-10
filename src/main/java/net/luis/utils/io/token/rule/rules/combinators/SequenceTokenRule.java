@@ -21,6 +21,7 @@ package net.luis.utils.io.token.rule.rules.combinators;
 import net.luis.utils.io.token.TokenStream;
 import net.luis.utils.io.token.rule.TokenRuleMatch;
 import net.luis.utils.io.token.rule.rules.TokenRule;
+import net.luis.utils.io.token.rule.rules.TokenRuleContext;
 import net.luis.utils.io.token.tokens.Token;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -59,15 +60,16 @@ public record SequenceTokenRule(
 	}
 	
 	@Override
-	public @Nullable TokenRuleMatch match(@NotNull TokenStream stream) {
+	public @Nullable TokenRuleMatch match(@NotNull TokenStream stream, @NotNull TokenRuleContext ctx) {
 		Objects.requireNonNull(stream, "Token stream must not be null");
+		Objects.requireNonNull(ctx, "Token rule context must not be null");
 		
 		int startIndex = stream.getCurrentIndex();
 		TokenStream workingStream = stream.copyWithCurrentIndex();
 		List<Token> matchedTokens = new ArrayList<>();
 		for (TokenRule tokenRule : this.tokenRules) {
 			
-			TokenRuleMatch match = tokenRule.match(workingStream);
+			TokenRuleMatch match = tokenRule.match(workingStream, ctx);
 			if (match == null) {
 				return null;
 			}

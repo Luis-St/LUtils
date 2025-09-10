@@ -22,6 +22,7 @@ import com.google.common.collect.Lists;
 import net.luis.utils.io.token.TokenStream;
 import net.luis.utils.io.token.rule.actions.TokenAction;
 import net.luis.utils.io.token.rule.rules.TokenRule;
+import net.luis.utils.io.token.rule.rules.TokenRuleContext;
 import net.luis.utils.io.token.tokens.Token;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Unmodifiable;
@@ -41,15 +42,32 @@ import java.util.Objects;
 public class TokenRuleEngine {
 	
 	/**
+	 * The context of the token rule engine.<br>
+	 */
+	private final TokenRuleContext ctx;
+	/**
 	 * List of rule actions to be applied to the tokens.<br>
 	 */
 	private final List<RuleAction> ruleActions = Lists.newArrayList();
 	
 	/**
-	 * Constructs a new token rule engine.<br>
+	 * Constructs a new token rule engine with an empty context.<br>
 	 * The engine starts with an empty list of rules.<br>
 	 */
-	public TokenRuleEngine() {}
+	public TokenRuleEngine() {
+		this(TokenRuleContext.empty());
+	}
+	
+	/**
+	 * Constructs a new token rule engine with the given context.<br>
+	 * The engine starts with an empty list of rules.<br>
+	 *
+	 * @param ctx The context of the token rule engine
+	 * @throws NullPointerException If the context is null
+	 */
+	public TokenRuleEngine(@NotNull TokenRuleContext ctx) {
+		this.ctx = Objects.requireNonNull(ctx, "Token rule context must not be null");
+	}
 	
 	/**
 	 * Adds a validation rule to the engine.<br>
@@ -99,7 +117,7 @@ public class TokenRuleEngine {
 			while (index < result.size()) {
 				boolean matchFound = false;
 				
-				TokenRuleMatch match = ruleAction.tokenRule().match(new TokenStream(result, index));
+				TokenRuleMatch match = ruleAction.tokenRule().match(new TokenStream(result, index), this.ctx);
 				if (match != null && !match.matchedTokens().isEmpty()) {
 					List<Token> processed = ruleAction.action().apply(match);
 					

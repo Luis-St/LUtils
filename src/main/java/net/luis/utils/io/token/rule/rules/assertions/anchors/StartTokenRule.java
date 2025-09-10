@@ -21,6 +21,7 @@ package net.luis.utils.io.token.rule.rules.assertions.anchors;
 import net.luis.utils.io.token.TokenStream;
 import net.luis.utils.io.token.rule.TokenRuleMatch;
 import net.luis.utils.io.token.rule.rules.TokenRule;
+import net.luis.utils.io.token.rule.rules.TokenRuleContext;
 import net.luis.utils.io.token.tokens.Token;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -46,8 +47,9 @@ public enum StartTokenRule implements TokenRule {
 	
 	DOCUMENT {
 		@Override
-		public @Nullable TokenRuleMatch match(@NotNull TokenStream stream) {
+		public @Nullable TokenRuleMatch match(@NotNull TokenStream stream, @NotNull TokenRuleContext ctx) {
 			Objects.requireNonNull(stream, "Token stream must not be null");
+			Objects.requireNonNull(ctx, "Token rule context must not be null");
 			
 			if (stream.getCurrentIndex() == 0) {
 				return TokenRuleMatch.empty(0, this);
@@ -58,8 +60,9 @@ public enum StartTokenRule implements TokenRule {
 	LINE {
 		@Override
 		@SuppressWarnings("DuplicatedCode")
-		public @Nullable TokenRuleMatch match(@NotNull TokenStream stream) {
+		public @Nullable TokenRuleMatch match(@NotNull TokenStream stream, @NotNull TokenRuleContext ctx) {
 			Objects.requireNonNull(stream, "Token stream must not be null");
+			Objects.requireNonNull(ctx, "Token rule context must not be null");
 			if (stream.getCurrentIndex() == 0) {
 				return TokenRuleMatch.empty(0, this);
 			}
@@ -90,8 +93,11 @@ public enum StartTokenRule implements TokenRule {
 			private final StartTokenRule self = StartTokenRule.this;
 			
 			@Override
-			public @Nullable TokenRuleMatch match(@NotNull TokenStream stream) {
-				TokenRuleMatch result = this.self.match(stream);
+			public @Nullable TokenRuleMatch match(@NotNull TokenStream stream, @NotNull TokenRuleContext ctx) {
+				Objects.requireNonNull(stream, "Token stream must not be null");
+				Objects.requireNonNull(ctx, "Token rule context must not be null");
+				
+				TokenRuleMatch result = this.self.match(stream, ctx);
 				if (result != null) {
 					return null;
 				}

@@ -32,7 +32,7 @@ import java.util.*;
  * The rule can be negated using the {@link #not()} method, which returns a new {@link TokenRule} that matches tokens not matching the original rule.<br>
  * <p>
  *     The rule only handles a single token at a time, and the matching logic is defined in the {@link #match(Token)} method.<br>
- *     The {@link #match(TokenStream)} method is overridden to provide a default implementation that checks the current token in the stream against the rule.<br>
+ *     The {@link #match(TokenStream, TokenRuleContext)} method is overridden to provide a default implementation that checks the current token in the stream against the rule.<br>
  *     If the token matches, it returns a {@link TokenRuleMatch} containing the matched token; otherwise, it returns null.
  * </p>
  * <p>
@@ -41,7 +41,7 @@ import java.util.*;
  *     If the inverted rule is inverted again, it returns the original rule, allowing for a chain of negations.
  * </p>
  * <p>
- *     It's guaranteed that the {@link #match(TokenStream)} method consumes a token from the stream if it returns a match.<br>
+ *     It's guaranteed that the {@link #match(TokenStream, TokenRuleContext)} method consumes a token from the stream if it returns a match.<br>
  *     The method will never return an empty non-consuming match.<br>
  *     This ensures that the token stream is always advanced when a match is found, preventing infinite loops in token processing.
  * </p>
@@ -62,8 +62,9 @@ public interface NegatableTokenRule extends TokenRule {
 	boolean match(@NotNull Token token);
 	
 	@Override
-	default @Nullable TokenRuleMatch match(@NotNull TokenStream stream) {
+	default @Nullable TokenRuleMatch match(@NotNull TokenStream stream, @NotNull TokenRuleContext ctx) {
 		Objects.requireNonNull(stream, "Token stream must not be null");
+		Objects.requireNonNull(ctx, "Token rule context must not be null");
 		if (!stream.hasToken()) {
 			return null;
 		}
@@ -82,8 +83,9 @@ public interface NegatableTokenRule extends TokenRule {
 	default @NotNull TokenRule not() {
 		return new TokenRule() {
 			@Override
-			public @Nullable TokenRuleMatch match(@NotNull TokenStream stream) {
+			public @Nullable TokenRuleMatch match(@NotNull TokenStream stream, @NotNull TokenRuleContext ctx) {
 				Objects.requireNonNull(stream, "Token stream must not be null");
+				Objects.requireNonNull(ctx, "Token rule context must not be null");
 				if (!stream.hasToken()) {
 					return null;
 				}

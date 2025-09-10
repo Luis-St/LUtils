@@ -21,8 +21,7 @@ package net.luis.utils.io.token.rule.rules.combinators;
 import com.google.common.collect.Lists;
 import net.luis.utils.io.token.TokenStream;
 import net.luis.utils.io.token.rule.TokenRuleMatch;
-import net.luis.utils.io.token.rule.rules.TokenRule;
-import net.luis.utils.io.token.rule.rules.TokenRules;
+import net.luis.utils.io.token.rule.rules.*;
 import net.luis.utils.io.token.tokens.Token;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -74,7 +73,7 @@ public record BoundaryTokenRule(
 	}
 	
 	@Override
-	public @Nullable TokenRuleMatch match(@NotNull TokenStream stream) {
+	public @Nullable TokenRuleMatch match(@NotNull TokenStream stream, @NotNull TokenRuleContext ctx) {
 		Objects.requireNonNull(stream, "Token stream must not be null");
 		if (!stream.hasToken()) {
 			return null;
@@ -82,7 +81,7 @@ public record BoundaryTokenRule(
 		
 		int startIndex = stream.getCurrentIndex();
 		TokenStream globalWorkingStream = stream.copyWithCurrentIndex();
-		TokenRuleMatch startMatch = this.startTokenRule.match(globalWorkingStream);
+		TokenRuleMatch startMatch = this.startTokenRule.match(globalWorkingStream, ctx);
 		if (startMatch == null) {
 			return null;
 		}
@@ -90,7 +89,7 @@ public record BoundaryTokenRule(
 		List<Token> matchedTokens = Lists.newArrayList(startMatch.matchedTokens());
 		while (globalWorkingStream.hasToken()) {
 			TokenStream localWorkingStream = globalWorkingStream.copyWithCurrentIndex();
-			TokenRuleMatch endMatch = this.endTokenRule.match(localWorkingStream);
+			TokenRuleMatch endMatch = this.endTokenRule.match(localWorkingStream, ctx);
 			
 			if (endMatch != null) {
 				stream.advanceTo(localWorkingStream);
@@ -98,7 +97,7 @@ public record BoundaryTokenRule(
 				return new TokenRuleMatch(startIndex, endMatch.endIndex(), matchedTokens, this);
 			}
 			
-			TokenRuleMatch betweenMatch = this.betweenTokenRule.match(localWorkingStream);
+			TokenRuleMatch betweenMatch = this.betweenTokenRule.match(localWorkingStream, ctx);
 			if (betweenMatch == null) {
 				return null;
 			}
@@ -109,7 +108,7 @@ public record BoundaryTokenRule(
 			}
 		}
 		
-		TokenRuleMatch endMatch = this.endTokenRule.match(globalWorkingStream); // Checking the end rule again to include the case where the end rule does not consume any tokens
+		TokenRuleMatch endMatch = this.endTokenRule.match(globalWorkingStream, ctx); // Checking the end rule again to include the case where the end rule does not consume any tokens
 		if (endMatch != null) {
 			stream.advanceTo(globalWorkingStream);
 			matchedTokens.addAll(endMatch.matchedTokens());

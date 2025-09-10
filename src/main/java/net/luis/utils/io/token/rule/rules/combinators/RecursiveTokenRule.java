@@ -20,8 +20,7 @@ package net.luis.utils.io.token.rule.rules.combinators;
 
 import net.luis.utils.io.token.TokenStream;
 import net.luis.utils.io.token.rule.TokenRuleMatch;
-import net.luis.utils.io.token.rule.rules.TokenRule;
-import net.luis.utils.io.token.rule.rules.TokenRules;
+import net.luis.utils.io.token.rule.rules.*;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -149,9 +148,10 @@ public class RecursiveTokenRule implements TokenRule {
 	}
 	
 	@Override
-	public @Nullable TokenRuleMatch match(@NotNull TokenStream stream) {
+	public @Nullable TokenRuleMatch match(@NotNull TokenStream stream, @NotNull TokenRuleContext ctx) {
 		Objects.requireNonNull(stream, "Token stream cannot be null");
-		return this.tokenRule.match(stream);
+		Objects.requireNonNull(ctx, "Token rule context cannot be null");
+		return this.tokenRule.match(stream, ctx);
 	}
 	
 	@Override

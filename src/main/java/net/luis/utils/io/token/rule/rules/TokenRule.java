@@ -39,17 +39,18 @@ import org.jetbrains.annotations.Nullable;
 public interface TokenRule {
 	
 	/**
-	 * Checks if the given tokens match this rule starting from the specified index.<br>
+	 * Checks if the given token stream match this rule.<br>
 	 * If the match is successful, a {@link TokenRuleMatch} is returned, otherwise null.<br>
 	 *
 	 * @param stream The token stream to match against
+	 * @param ctx The context of the token rule match
 	 * @return A token rule match if successful, otherwise null
-	 * @throws NullPointerException If the token list is null
+	 * @throws NullPointerException If the token stream or context is null
 	 * @apiNote For the most rules, the token stream must have remaining tokens to match.<br>
 	 * However, some rules can match even if the token stream is at the end.<br>
 	 * Therefore, some rules do not include this check or have a modified behavior.
 	 */
-	@Nullable TokenRuleMatch match(@NotNull TokenStream stream);
+	@Nullable TokenRuleMatch match(@NotNull TokenStream stream, @NotNull TokenRuleContext ctx);
 	
 	/**
 	 * Makes this token rule optional by wrapping it in an {@link OptionalTokenRule}.<br>
