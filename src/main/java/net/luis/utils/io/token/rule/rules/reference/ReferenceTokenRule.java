@@ -1,3 +1,21 @@
+/*
+ * LUtils
+ * Copyright (C) 2025 Luis Staudt
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program. If not, see <https://www.gnu.org/licenses/>.
+ */
+
 package net.luis.utils.io.token.rule.rules.reference;
 
 import net.luis.utils.io.token.TokenStream;
@@ -15,6 +33,8 @@ import java.util.Objects;
  * The referenced rule or tokens are looked up in the context using the key.<br>
  * The passed reference type determines whether a rule or a list of tokens is referenced.<br>
  *
+ * @see ReferenceType
+ *
  * @author Luis-St
  *
  * @param key The key used to look up the referenced rule or tokens in the context
@@ -29,7 +49,7 @@ public record ReferenceTokenRule(
 	 * Creates a new reference token rule using the given key and reference type.<br>
 	 *
 	 * @param key The key used to look up the referenced rule or tokens in the context
-	 * @param type The type of reference (rule or tokens)
+	 * @param type The type of reference (rule, tokens or dynamic)
 	 * @throws NullPointerException If the key or reference type is null
 	 * @throws IllegalArgumentException If the key is empty
 	 */
@@ -51,6 +71,19 @@ public record ReferenceTokenRule(
 		TokenRuleMatch match = switch (this.type) {
 			case RULE -> this.matchReferencedRule(workingStream, ctx);
 			case TOKENS -> this.matchReferencedTokens(workingStream, ctx);
+			case DYNAMIC -> {
+				TokenRule referencedRule = ctx.getRuleReference(this.key);
+				List<Token> capturedTokens = ctx.getCapturedTokens(this.key);
+				if (referencedRule != null && capturedTokens != null) {
+					yield null;
+				} else if (referencedRule != null) {
+					yield this.matchReferencedRule(workingStream, ctx);
+				} else if (capturedTokens != null) {
+					yield this.matchReferencedTokens(workingStream, ctx);
+				} else {
+					yield null;
+				}
+			}
 		};
 		
 		if (match != null) {
