@@ -420,7 +420,7 @@ final class LoggingHelper {
 				throw new InvalidValueException("Invalid value '" + fileLogging + "' for property '" + LOGGING_FILE + "'");
 			}
 		}
-		String root = System.getProperty(LOGGING_FILE_FOLDER_ROOT, "./").replace("\\", "/");
+		String root = System.getProperty(LOGGING_FILE_FOLDER_ROOT, "./logs/").replace("\\", "/");
 		if (!root.matches(PATH_PATTERN)) {
 			throw new InvalidValueException("Invalid value '" + root + "' for property '" + LOGGING_FILE_FOLDER_ROOT + "', must be a relative or absolute path");
 		}
