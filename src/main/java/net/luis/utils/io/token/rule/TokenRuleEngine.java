@@ -21,7 +21,6 @@ package net.luis.utils.io.token.rule;
 import com.google.common.collect.Lists;
 import net.luis.utils.io.token.rule.actions.TokenAction;
 import net.luis.utils.io.token.rule.rules.TokenRule;
-import net.luis.utils.io.token.rule.rules.TokenRuleContext;
 import net.luis.utils.io.token.stream.TokenStream;
 import net.luis.utils.io.token.tokens.Token;
 import org.jetbrains.annotations.NotNull;

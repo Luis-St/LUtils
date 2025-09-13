@@ -19,6 +19,7 @@
 package net.luis.utils.io.token.rule.rules;
 
 import net.luis.utils.annotation.type.Singleton;
+import net.luis.utils.io.token.rule.TokenRuleContext;
 import net.luis.utils.io.token.rule.TokenRuleMatch;
 import net.luis.utils.io.token.stream.TokenStream;
 import net.luis.utils.io.token.tokens.Token;
