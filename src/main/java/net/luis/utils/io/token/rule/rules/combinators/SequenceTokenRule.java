@@ -18,10 +18,10 @@
 
 package net.luis.utils.io.token.rule.rules.combinators;
 
-import net.luis.utils.io.token.TokenStream;
 import net.luis.utils.io.token.rule.TokenRuleMatch;
 import net.luis.utils.io.token.rule.rules.TokenRule;
 import net.luis.utils.io.token.rule.rules.TokenRuleContext;
+import net.luis.utils.io.token.stream.TokenStream;
 import net.luis.utils.io.token.tokens.Token;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -65,7 +65,7 @@ public record SequenceTokenRule(
 		Objects.requireNonNull(ctx, "Token rule context must not be null");
 		
 		int startIndex = stream.getCurrentIndex();
-		TokenStream workingStream = stream.copyWithCurrentIndex();
+		TokenStream workingStream = stream.copyWithOffset(0);
 		List<Token> matchedTokens = new ArrayList<>();
 		for (TokenRule tokenRule : this.tokenRules) {
 			

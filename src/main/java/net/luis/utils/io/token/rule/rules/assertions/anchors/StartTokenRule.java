@@ -18,10 +18,10 @@
 
 package net.luis.utils.io.token.rule.rules.assertions.anchors;
 
-import net.luis.utils.io.token.TokenStream;
 import net.luis.utils.io.token.rule.TokenRuleMatch;
 import net.luis.utils.io.token.rule.rules.TokenRule;
 import net.luis.utils.io.token.rule.rules.TokenRuleContext;
+import net.luis.utils.io.token.stream.TokenStream;
 import net.luis.utils.io.token.tokens.Token;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -68,8 +68,8 @@ public enum StartTokenRule implements TokenRule {
 			}
 			
 			Token currentToken = stream.getCurrentToken();
-			TokenStream lookbehindStream = stream.lookbehindStream();
-			if (!lookbehindStream.hasToken()) {
+			TokenStream lookbehindStream = stream.createLookbehindStream();
+			if (!lookbehindStream.hasMoreTokens()) {
 				return null;
 			}
 			

@@ -19,10 +19,10 @@
 package net.luis.utils.io.token.rule;
 
 import com.google.common.collect.Lists;
-import net.luis.utils.io.token.TokenStream;
 import net.luis.utils.io.token.rule.actions.TokenAction;
 import net.luis.utils.io.token.rule.rules.TokenRule;
 import net.luis.utils.io.token.rule.rules.TokenRuleContext;
+import net.luis.utils.io.token.stream.TokenStream;
 import net.luis.utils.io.token.tokens.Token;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Unmodifiable;
@@ -117,7 +117,7 @@ public class TokenRuleEngine {
 			while (index < result.size()) {
 				boolean matchFound = false;
 				
-				TokenRuleMatch match = ruleAction.tokenRule().match(new TokenStream(result, index), this.ctx);
+				TokenRuleMatch match = ruleAction.tokenRule().match(TokenStream.createMutable(result, index), this.ctx);
 				if (match != null && !match.matchedTokens().isEmpty()) {
 					List<Token> processed = ruleAction.action().apply(match);
 					

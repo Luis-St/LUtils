@@ -18,8 +18,8 @@
 
 package net.luis.utils.io.token.rule.rules;
 
-import net.luis.utils.io.token.TokenStream;
 import net.luis.utils.io.token.rule.TokenRuleMatch;
+import net.luis.utils.io.token.stream.TokenStream;
 import net.luis.utils.io.token.tokens.Token;
 import net.luis.utils.io.token.tokens.TokenGroup;
 import org.jetbrains.annotations.NotNull;
@@ -55,7 +55,7 @@ public record TokenGroupRule(
 	public @Nullable TokenRuleMatch match(@NotNull TokenStream stream, @NotNull TokenRuleContext ctx) {
 		Objects.requireNonNull(stream, "Token stream must not be null");
 		Objects.requireNonNull(ctx, "Token rule context must not be null");
-		if (!stream.hasToken()) {
+		if (!stream.hasMoreTokens()) {
 			return null;
 		}
 		
@@ -65,11 +65,11 @@ public record TokenGroupRule(
 			return null;
 		}
 		
-		TokenRuleMatch innerMatch = this.tokenRule.match(new TokenStream(tokenGroup.tokens()), ctx);
+		TokenRuleMatch innerMatch = this.tokenRule.match(TokenStream.createMutable(tokenGroup.tokens()), ctx);
 		if (innerMatch == null) {
 			return null;
 		}
-		return new TokenRuleMatch(startIndex, stream.consumeToken(), List.of(tokenGroup), this);
+		return new TokenRuleMatch(startIndex, stream.advance(), List.of(tokenGroup), this);
 	}
 	
 	@Override

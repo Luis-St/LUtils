@@ -19,9 +19,9 @@
 package net.luis.utils.io.token.rule.rules.combinators;
 
 import com.google.common.collect.Lists;
-import net.luis.utils.io.token.TokenStream;
 import net.luis.utils.io.token.rule.TokenRuleMatch;
 import net.luis.utils.io.token.rule.rules.*;
+import net.luis.utils.io.token.stream.TokenStream;
 import net.luis.utils.io.token.tokens.Token;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -75,20 +75,20 @@ public record BoundaryTokenRule(
 	@Override
 	public @Nullable TokenRuleMatch match(@NotNull TokenStream stream, @NotNull TokenRuleContext ctx) {
 		Objects.requireNonNull(stream, "Token stream must not be null");
-		if (!stream.hasToken()) {
+		if (!stream.hasMoreTokens()) {
 			return null;
 		}
 		
 		int startIndex = stream.getCurrentIndex();
-		TokenStream globalWorkingStream = stream.copyWithCurrentIndex();
+		TokenStream globalWorkingStream = stream.copyWithOffset(0);
 		TokenRuleMatch startMatch = this.startTokenRule.match(globalWorkingStream, ctx);
 		if (startMatch == null) {
 			return null;
 		}
 		
 		List<Token> matchedTokens = Lists.newArrayList(startMatch.matchedTokens());
-		while (globalWorkingStream.hasToken()) {
-			TokenStream localWorkingStream = globalWorkingStream.copyWithCurrentIndex();
+		while (globalWorkingStream.hasMoreTokens()) {
+			TokenStream localWorkingStream = globalWorkingStream.copyWithOffset(0);
 			TokenRuleMatch endMatch = this.endTokenRule.match(localWorkingStream, ctx);
 			
 			if (endMatch != null) {
@@ -103,7 +103,7 @@ public record BoundaryTokenRule(
 			}
 			
 			globalWorkingStream.advanceTo(localWorkingStream);
-			if (globalWorkingStream.hasToken()) {
+			if (globalWorkingStream.hasMoreTokens()) {
 				matchedTokens.addAll(betweenMatch.matchedTokens());
 			}
 		}

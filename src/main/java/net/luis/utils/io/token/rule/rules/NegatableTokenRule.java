@@ -18,8 +18,8 @@
 
 package net.luis.utils.io.token.rule.rules;
 
-import net.luis.utils.io.token.TokenStream;
 import net.luis.utils.io.token.rule.TokenRuleMatch;
+import net.luis.utils.io.token.stream.TokenStream;
 import net.luis.utils.io.token.tokens.Token;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -65,7 +65,7 @@ public interface NegatableTokenRule extends TokenRule {
 	default @Nullable TokenRuleMatch match(@NotNull TokenStream stream, @NotNull TokenRuleContext ctx) {
 		Objects.requireNonNull(stream, "Token stream must not be null");
 		Objects.requireNonNull(ctx, "Token rule context must not be null");
-		if (!stream.hasToken()) {
+		if (!stream.hasMoreTokens()) {
 			return null;
 		}
 		
@@ -74,7 +74,7 @@ public interface NegatableTokenRule extends TokenRule {
 		
 		if (this.match(token)) {
 			List<Token> matchedTokens = Collections.singletonList(token);
-			return new TokenRuleMatch(startIndex, stream.consumeToken(), matchedTokens, this);
+			return new TokenRuleMatch(startIndex, stream.advance(), matchedTokens, this);
 		}
 		return null;
 	}
@@ -86,7 +86,7 @@ public interface NegatableTokenRule extends TokenRule {
 			public @Nullable TokenRuleMatch match(@NotNull TokenStream stream, @NotNull TokenRuleContext ctx) {
 				Objects.requireNonNull(stream, "Token stream must not be null");
 				Objects.requireNonNull(ctx, "Token rule context must not be null");
-				if (!stream.hasToken()) {
+				if (!stream.hasMoreTokens()) {
 					return null;
 				}
 				
@@ -95,7 +95,7 @@ public interface NegatableTokenRule extends TokenRule {
 				
 				if (!NegatableTokenRule.this.match(token)) {
 					List<Token> matchedTokens = Collections.singletonList(token);
-					return new TokenRuleMatch(startIndex, stream.consumeToken(), matchedTokens, this);
+					return new TokenRuleMatch(startIndex, stream.advance(), matchedTokens, this);
 				}
 				return null;
 			}

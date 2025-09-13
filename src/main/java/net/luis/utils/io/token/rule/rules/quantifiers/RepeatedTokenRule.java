@@ -19,10 +19,10 @@
 package net.luis.utils.io.token.rule.rules.quantifiers;
 
 import com.google.common.collect.Lists;
-import net.luis.utils.io.token.TokenStream;
 import net.luis.utils.io.token.rule.TokenRuleMatch;
 import net.luis.utils.io.token.rule.rules.TokenRule;
 import net.luis.utils.io.token.rule.rules.TokenRuleContext;
+import net.luis.utils.io.token.stream.TokenStream;
 import net.luis.utils.io.token.tokens.Token;
 import net.luis.utils.util.Pair;
 import org.jetbrains.annotations.NotNull;
@@ -38,7 +38,7 @@ import java.util.Objects;
  * If the min and max occurrences are the same, it will match exactly that number of times.<br>
  *
  * @apiNote This class does not allow the creation of an optional token rule by setting the min and max occurrences to 0.<br>
- * This is because the implementation of {@link #match(TokenStream)} will return null if there is no match.<br>
+ * This is because the implementation of {@link #match(TokenStream, TokenRuleContext)} will return null if there is no match.<br>
  * Use {@link OptionalTokenRule} for that purpose.<br>
  *
  * @author Luis-St
@@ -101,8 +101,8 @@ public record RepeatedTokenRule(
 		
 		int occurrences = 0;
 		List<Token> matchedTokens = Lists.newArrayList();
-		while (stream.hasToken() && occurrences <= this.maxOccurrences) {
-			TokenStream workingStream = stream.copyWithCurrentIndex();
+		while (stream.hasMoreTokens() && occurrences <= this.maxOccurrences) {
+			TokenStream workingStream = stream.copyWithOffset(0);
 			TokenRuleMatch match = this.tokenRule.match(workingStream, ctx);
 			
 			if (match == null) {
@@ -121,7 +121,7 @@ public record RepeatedTokenRule(
 	public @Nullable TokenRuleMatch match(@NotNull TokenStream stream, @NotNull TokenRuleContext ctx) {
 		Objects.requireNonNull(stream, "Token stream must not be null");
 		Objects.requireNonNull(ctx, "Token rule context must not be null");
-		if (!stream.hasToken()) {
+		if (!stream.hasMoreTokens()) {
 			return null;
 		}
 		
@@ -144,7 +144,7 @@ public record RepeatedTokenRule(
 			public @Nullable TokenRuleMatch match(@NotNull TokenStream stream, @NotNull TokenRuleContext ctx) {
 				Objects.requireNonNull(stream, "Token stream must not be null");
 				Objects.requireNonNull(ctx, "Token rule context must not be null");
-				if (!stream.hasToken()) {
+				if (!stream.hasMoreTokens()) {
 					return null;
 				}
 				

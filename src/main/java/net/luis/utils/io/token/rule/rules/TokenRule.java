@@ -18,12 +18,12 @@
 
 package net.luis.utils.io.token.rule.rules;
 
-import net.luis.utils.io.token.TokenStream;
 import net.luis.utils.io.token.rule.TokenRuleMatch;
 import net.luis.utils.io.token.rule.rules.assertions.LookaheadTokenRule;
 import net.luis.utils.io.token.rule.rules.assertions.LookbehindTokenRule;
 import net.luis.utils.io.token.rule.rules.quantifiers.OptionalTokenRule;
 import net.luis.utils.io.token.rule.rules.quantifiers.RepeatedTokenRule;
+import net.luis.utils.io.token.stream.TokenStream;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 

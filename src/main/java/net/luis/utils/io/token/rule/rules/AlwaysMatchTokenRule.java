@@ -19,8 +19,8 @@
 package net.luis.utils.io.token.rule.rules;
 
 import net.luis.utils.annotation.type.Singleton;
-import net.luis.utils.io.token.TokenStream;
 import net.luis.utils.io.token.rule.TokenRuleMatch;
+import net.luis.utils.io.token.stream.TokenStream;
 import net.luis.utils.io.token.tokens.Token;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -51,13 +51,13 @@ public final class AlwaysMatchTokenRule implements TokenRule {
 	public @Nullable TokenRuleMatch match(@NotNull TokenStream stream, @NotNull TokenRuleContext ctx) {
 		Objects.requireNonNull(stream, "Token stream must not be null");
 		Objects.requireNonNull(ctx, "Token rule context must not be null");
-		if (!stream.hasToken()) {
+		if (!stream.hasMoreTokens()) {
 			return null;
 		}
 		
 		int startIndex = stream.getCurrentIndex();
 		List<Token> matchedTokens = Collections.singletonList(stream.getCurrentToken());
-		return new TokenRuleMatch(startIndex, stream.consumeToken(), matchedTokens, this);
+		return new TokenRuleMatch(startIndex, stream.advance(), matchedTokens, this);
 	}
 	
 	@Override

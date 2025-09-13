@@ -18,9 +18,9 @@
 
 package net.luis.utils.io.token.rule.rules.reference;
 
-import net.luis.utils.io.token.TokenStream;
 import net.luis.utils.io.token.rule.TokenRuleMatch;
 import net.luis.utils.io.token.rule.rules.*;
+import net.luis.utils.io.token.stream.TokenStream;
 import net.luis.utils.io.token.tokens.Token;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -67,7 +67,7 @@ public record ReferenceTokenRule(
 		Objects.requireNonNull(stream, "Token stream must not be null");
 		Objects.requireNonNull(ctx, "Token rule context must not be null");
 		
-		TokenStream workingStream = stream.copyWithCurrentIndex();
+		TokenStream workingStream = stream.copyWithOffset(0);
 		TokenRuleMatch match = switch (this.type) {
 			case RULE -> this.matchReferencedRule(workingStream, ctx);
 			case TOKENS -> this.matchReferencedTokens(workingStream, ctx);
@@ -127,7 +127,7 @@ public record ReferenceTokenRule(
 	private @Nullable TokenRuleMatch matchReferencedTokens(@NotNull TokenStream stream, @NotNull TokenRuleContext ctx) {
 		Objects.requireNonNull(stream, "Token stream must not be null");
 		Objects.requireNonNull(ctx, "Token rule context must not be null");
-		if (!stream.hasToken()) {
+		if (!stream.hasMoreTokens()) {
 			return null;
 		}
 		

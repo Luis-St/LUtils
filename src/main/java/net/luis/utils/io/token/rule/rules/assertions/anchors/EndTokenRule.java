@@ -18,10 +18,10 @@
 
 package net.luis.utils.io.token.rule.rules.assertions.anchors;
 
-import net.luis.utils.io.token.TokenStream;
 import net.luis.utils.io.token.rule.TokenRuleMatch;
 import net.luis.utils.io.token.rule.rules.TokenRule;
 import net.luis.utils.io.token.rule.rules.TokenRuleContext;
+import net.luis.utils.io.token.stream.TokenStream;
 import net.luis.utils.io.token.tokens.Token;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -55,7 +55,7 @@ public enum EndTokenRule implements TokenRule {
 			Objects.requireNonNull(stream, "Token stream must not be null");
 			Objects.requireNonNull(ctx, "Token rule context must not be null");
 			
-			if (!stream.hasToken()) {
+			if (!stream.hasMoreTokens()) {
 				return TokenRuleMatch.empty(stream.getCurrentIndex(), this);
 			}
 			return null;
@@ -71,14 +71,14 @@ public enum EndTokenRule implements TokenRule {
 		public @Nullable TokenRuleMatch match(@NotNull TokenStream stream, @NotNull TokenRuleContext ctx) {
 			Objects.requireNonNull(stream, "Token stream must not be null");
 			Objects.requireNonNull(ctx, "Token rule context must not be null");
-			if (!stream.hasToken()) {
+			if (!stream.hasMoreTokens()) {
 				return TokenRuleMatch.empty(stream.getCurrentIndex(), this);
 			}
 			
 			Token currentToken = stream.getCurrentToken();
-			TokenStream copyStream = stream.copyWithCurrentIndex();
-			copyStream.consumeToken();
-			if (!copyStream.hasToken()) {
+			TokenStream copyStream = stream.copyWithOffset(0);
+			copyStream.advance();
+			if (!copyStream.hasMoreTokens()) {
 				return null;
 			}
 			

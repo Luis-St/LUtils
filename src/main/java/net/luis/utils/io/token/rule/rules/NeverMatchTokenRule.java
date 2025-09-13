@@ -18,8 +18,8 @@
 
 package net.luis.utils.io.token.rule.rules;
 
-import net.luis.utils.io.token.TokenStream;
 import net.luis.utils.io.token.rule.TokenRuleMatch;
+import net.luis.utils.io.token.stream.TokenStream;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
