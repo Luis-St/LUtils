@@ -18,10 +18,13 @@
 
 package net.luis.utils.io.token.tokens;
 
+import com.google.common.collect.Sets;
 import net.luis.utils.io.token.TokenPosition;
+import net.luis.utils.io.token.type.TokenType;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Objects;
+import java.util.Set;
 
 /**
  * Special token implementation for escaped tokens.<br>
@@ -31,23 +34,42 @@ import java.util.Objects;
  *
  * @param value The string value of the token
  * @param position The position of the token
+ * @param types The token types of the token
  */
 public record EscapedToken(
 	@NotNull String value,
-	@NotNull TokenPosition position
+	@NotNull TokenPosition position,
+	@NotNull Set<TokenType> types
 ) implements Token {
+	
+	/**
+	 * Constructs a new escaped token for a string value without any types.<br>
+	 *
+	 * @param value The string value of the token
+	 * @param position The position of the token
+	 * @throws NullPointerException If the token value or the position is null
+	 * @throws IllegalArgumentException If the token value does not have a length of 2 or does not start with a backslash
+	 */
+	public EscapedToken(@NotNull String value, @NotNull TokenPosition position) {
+		this(value, position, Set.of());
+	}
 	
 	/**
 	 * Constructs a new escaped token for a string value.<br>
 	 *
 	 * @param value The string value of the token
 	 * @param position The position of the token
-	 * @throws NullPointerException If the token value or the token position is null
+	 * @param types The token types of the token
+	 * @throws NullPointerException If the token value, the position, or the types are null
 	 * @throws IllegalArgumentException If the token value does not have a length of 2 or does not start with a backslash
 	 */
 	public EscapedToken {
 		Objects.requireNonNull(value, "Token value must not be null");
 		Objects.requireNonNull(position, "Token position must not be null");
+		Objects.requireNonNull(types, "Token types must not be null");
+		
+		types = Sets.newHashSet(types);
+		
 		if (value.length() != 2 || value.charAt(0) != '\\') {
 			throw new IllegalArgumentException("Escaped token value '" + value + "' must be of length 2 and start with '\\'");
 		}

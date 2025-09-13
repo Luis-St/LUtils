@@ -19,10 +19,10 @@
 package net.luis.utils.io.token.tokens;
 
 import net.luis.utils.io.token.TokenPosition;
+import net.luis.utils.io.token.type.TokenType;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -79,5 +79,16 @@ public record TokenGroup(
 	@Override
 	public @NotNull TokenPosition position() {
 		return this.tokens.getFirst().position();
+	}
+	
+	/**
+	 * Returns the token types of all tokens in the group.<br>
+	 * The types are collected into a set to avoid duplicates.<br>
+	 *
+	 * @return The set of token types
+	 */
+	@Override
+	public @NotNull Set<TokenType> types() {
+		return this.tokens.stream().flatMap(token -> token.types().stream()).collect(Collectors.toSet());
 	}
 }

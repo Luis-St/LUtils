@@ -19,9 +19,10 @@
 package net.luis.utils.io.token.tokens;
 
 import net.luis.utils.io.token.TokenPosition;
+import net.luis.utils.io.token.type.TokenType;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.Map;
+import java.util.*;
 
 /**
  * Interface for a token, a token is a sequence of characters.<br>
@@ -43,6 +44,20 @@ public interface Token {
 	 * @return The start position
 	 */
 	@NotNull TokenPosition position();
+	
+	/**
+	 * Returns the types of the token.<br>
+	 * <p>
+	 *     This set is by default empty and mutable.<br>
+	 *     Types can be added directly to the token by getting the set and adding the type to it:
+	 * </p>
+	 * <pre>{@code
+	 *     token.types().add(myType);
+	 *}</pre>
+	 *
+	 * @return The set of token types
+	 */
+	@NotNull Set<TokenType> types();
 	
 	/**
 	 * Creates an indexed token that wraps this token with the given index.<br>

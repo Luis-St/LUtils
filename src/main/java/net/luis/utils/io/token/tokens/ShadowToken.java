@@ -19,9 +19,11 @@
 package net.luis.utils.io.token.tokens;
 
 import net.luis.utils.io.token.TokenPosition;
+import net.luis.utils.io.token.type.TokenType;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Objects;
+import java.util.Set;
 
 /**
  * Token implementation that wraps another token to indicate it is a shadow token.<br>
@@ -55,6 +57,11 @@ public record ShadowToken(
 	@Override
 	public @NotNull TokenPosition position() {
 		return this.token.position();
+	}
+	
+	@Override
+	public @NotNull Set<TokenType> types() {
+		return this.token.types();
 	}
 	
 	@Override

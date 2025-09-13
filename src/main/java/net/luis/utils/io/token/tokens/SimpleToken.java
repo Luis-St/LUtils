@@ -18,10 +18,13 @@
 
 package net.luis.utils.io.token.tokens;
 
+import com.google.common.collect.Sets;
 import net.luis.utils.io.token.TokenPosition;
+import net.luis.utils.io.token.type.TokenType;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Objects;
+import java.util.Set;
 
 /**
  * Token implementation for a simple string token.<br>
@@ -30,22 +33,38 @@ import java.util.Objects;
  *
  * @param value The string value of the token
  * @param position The position of the token
+ * @param types The token types of the token
  */
 public record SimpleToken(
 	@NotNull String value,
-	@NotNull TokenPosition position
+	@NotNull TokenPosition position,
+	@NotNull Set<TokenType> types
 ) implements Token {
+	
+	/**
+	 * Constructs a new simple token for a string value without any types.<br>
+	 *
+	 * @param value The string value of the token
+	 * @param position The start position of the token
+	 * @throws NullPointerException If the token value or the position is null
+	 */
+	public SimpleToken(@NotNull String value, @NotNull TokenPosition position) {
+		this(value, position, Set.of());
+	}
 	
 	/**
 	 * Constructs a new simple token for a string value.<br>
 	 *
 	 * @param value The string value of the token
 	 * @param position The start position of the token
-	 * @throws NullPointerException If the token value or the position is null
+	 * @param types The token types of the token
+	 * @throws NullPointerException If the token value, the position, or the types are null
 	 */
 	public SimpleToken {
 		Objects.requireNonNull(value, "Token value must not be null");
 		Objects.requireNonNull(position, "Token position must not be null");
+		Objects.requireNonNull(types, "Token types must not be null");
+		types = Sets.newHashSet(types);
 	}
 	
 	/**

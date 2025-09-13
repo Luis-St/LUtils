@@ -19,9 +19,11 @@
 package net.luis.utils.io.token.tokens;
 
 import net.luis.utils.io.token.TokenPosition;
+import net.luis.utils.io.token.type.TokenType;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Objects;
+import java.util.Set;
 
 /**
  * Token implementation that wraps another token with index information.<br>
@@ -72,6 +74,11 @@ public record IndexedToken(
 	@Override
 	public @NotNull TokenPosition position() {
 		return this.token.position();
+	}
+	
+	@Override
+	public @NotNull Set<TokenType> types() {
+		return this.token.types();
 	}
 	
 	/**

@@ -75,6 +75,7 @@ module net.luis.utils {
 	exports net.luis.utils.io.token.rule.rules.quantifiers;
 	exports net.luis.utils.io.token.stream;
 	exports net.luis.utils.io.token.tokens;
+	exports net.luis.utils.io.token.type;
 	
 	exports net.luis.utils.lang;
 	exports net.luis.utils.lang.concurrent;
