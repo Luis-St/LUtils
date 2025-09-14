@@ -18,7 +18,9 @@
 
 package net.luis.utils.io.token.rule.actions;
 
+import net.luis.utils.io.token.rule.TokenActionContext;
 import net.luis.utils.io.token.rule.TokenRuleMatch;
+import net.luis.utils.io.token.stream.TokenStream;
 import net.luis.utils.io.token.tokens.Token;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Unmodifiable;
@@ -40,10 +42,10 @@ public interface TokenAction {
 	 * The resulting list is an immutable copy of the original list.<br>
 	 *
 	 * @return The identity token action
-	 * @apiNote This method is equivalent to {@code match -> List.copyOf(match.matchedTokens())}
+	 * @apiNote This method is equivalent to {@code (match, ctx) -> List.copyOf(match.matchedTokens())}
 	 */
 	static @NotNull TokenAction identity() {
-		return match -> List.copyOf(match.matchedTokens());
+		return (match, ctx) -> List.copyOf(match.matchedTokens());
 	}
 	
 	/**
@@ -51,9 +53,10 @@ public interface TokenAction {
 	 * The action can modify, transform or remove the tokens of the match.<br>
 	 *
 	 * @param match The token rule match to apply the action to
+	 * @param ctx The context of the token action, containing the token stream and other useful information
 	 * @return The resulting immutable list of tokens after applying the action
 	 * @throws NullPointerException If the match is null
 	 */
 	@NotNull @Unmodifiable
-	List<Token> apply(@NotNull TokenRuleMatch match);
+	List<Token> apply(@NotNull TokenRuleMatch match, @NotNull TokenActionContext ctx);
 }

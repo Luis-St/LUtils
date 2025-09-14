@@ -18,8 +18,10 @@
 
 package net.luis.utils.io.token.rule.actions.filters;
 
+import net.luis.utils.io.token.rule.TokenActionContext;
 import net.luis.utils.io.token.rule.TokenRuleMatch;
 import net.luis.utils.io.token.rule.actions.TokenAction;
+import net.luis.utils.io.token.stream.TokenStream;
 import net.luis.utils.io.token.tokens.Token;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Unmodifiable;
@@ -52,8 +54,10 @@ public record SkipTokenAction(
 	}
 	
 	@Override
-	public @NotNull @Unmodifiable List<Token> apply(@NotNull TokenRuleMatch match) {
+	public @NotNull @Unmodifiable List<Token> apply(@NotNull TokenRuleMatch match, @NotNull TokenActionContext ctx) {
 		Objects.requireNonNull(match, "Token rule match must not be null");
+		Objects.requireNonNull(ctx, "Token action context must not be null");
+		
 		return match.matchedTokens().stream().filter(this.filter.negate()).toList();
 	}
 }

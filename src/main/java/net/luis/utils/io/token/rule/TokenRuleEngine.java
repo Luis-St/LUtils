@@ -41,9 +41,9 @@ import java.util.Objects;
 public class TokenRuleEngine {
 	
 	/**
-	 * The context of the token rule engine.<br>
+	 * The rule context of the engine.<br>
 	 */
-	private final TokenRuleContext ctx;
+	private final TokenRuleContext ruleContext;
 	/**
 	 * List of rule actions to be applied to the tokens.<br>
 	 */
@@ -61,11 +61,11 @@ public class TokenRuleEngine {
 	 * Constructs a new token rule engine with the given context.<br>
 	 * The engine starts with an empty list of rules.<br>
 	 *
-	 * @param ctx The context of the token rule engine
+	 * @param ruleContext The rule context of the engine
 	 * @throws NullPointerException If the context is null
 	 */
-	public TokenRuleEngine(@NotNull TokenRuleContext ctx) {
-		this.ctx = Objects.requireNonNull(ctx, "Token rule context must not be null");
+	public TokenRuleEngine(@NotNull TokenRuleContext ruleContext) {
+		this.ruleContext = Objects.requireNonNull(ruleContext, "Token rule context must not be null");
 	}
 	
 	/**
@@ -98,8 +98,10 @@ public class TokenRuleEngine {
 	/**
 	 * Processes the given list of tokens using the defined rules.<br>
 	 * The rules are applied in the order they were added.<br>
-	 * If a rule matches, the matched tokens are replaced with the result of the action.<br>
-	 * If no rule matches, the engine moves to the next token.<br>
+	 * <p>
+	 *     If a rule matches, the matched tokens are replaced with the result of the action.<br>
+	 *     If no rule matches, the engine moves to the next token.
+	 * </p>
 	 *
 	 * @param tokens The list of tokens to be processed
 	 * @return A new unmodifiable list of tokens after processing
@@ -116,9 +118,10 @@ public class TokenRuleEngine {
 			while (index < result.size()) {
 				boolean matchFound = false;
 				
-				TokenRuleMatch match = ruleAction.tokenRule().match(TokenStream.createMutable(result, index), this.ctx);
+				TokenRuleMatch match = ruleAction.tokenRule().match(TokenStream.createMutable(result, index), this.ruleContext);
 				if (match != null && !match.matchedTokens().isEmpty()) {
-					List<Token> processed = ruleAction.action().apply(match);
+					TokenActionContext actionContext = new TokenActionContext(TokenStream.createImmutable(result, index));
+					List<Token> processed = ruleAction.action().apply(match, actionContext);
 					
 					result.subList(match.startIndex(), match.endIndex()).clear();
 					result.addAll(match.startIndex(), processed);
