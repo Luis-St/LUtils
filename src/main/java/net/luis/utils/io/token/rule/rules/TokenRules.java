@@ -25,6 +25,7 @@ import net.luis.utils.io.token.rule.rules.combinators.*;
 import net.luis.utils.io.token.rule.rules.matchers.*;
 import net.luis.utils.io.token.rule.rules.quantifiers.OptionalTokenRule;
 import net.luis.utils.io.token.rule.rules.quantifiers.RepeatedTokenRule;
+import net.luis.utils.io.token.rule.rules.reference.*;
 import net.luis.utils.io.token.tokens.Token;
 import org.intellij.lang.annotations.Language;
 import org.jetbrains.annotations.NotNull;
@@ -516,5 +517,69 @@ public final class TokenRules {
 	 */
 	public static @NotNull TokenRule negativeLookbehind(@NotNull TokenRule tokenRule) {
 		return new LookbehindTokenRule(tokenRule, LookMatchMode.NEGATIVE);
+	}
+	
+	/**
+	 * Creates a capture token rule that captures the tokens matched by the specified token rule and stores them in the context under a specified key.<br>
+	 * The captured tokens can be retrieved later using the key.<br>
+	 *
+	 * @param key The key under which to store the captured tokens in the context
+	 * @param tokenRule The token rule to capture tokens from
+	 * @return The created capture token rule
+	 * @throws NullPointerException If the token rule or key is null
+	 * @throws IllegalArgumentException If the key is empty
+	 * @see CaptureTokenRule
+	 */
+	public static @NotNull TokenRule capture(@NotNull String key, @NotNull TokenRule tokenRule) {
+		return new CaptureTokenRule(key, tokenRule);
+	}
+	
+	/**
+	 * Creates a reference token rule that dynamically references either another token rule or a list of tokens by its key in the context.<br>
+	 * The rule will only be able to match if either a rule or a list of tokens is found in the context using the key.<br>
+	 *
+	 * @param key The key used to look up the referenced rule or tokens in the context
+	 * @return The created reference token rule
+	 * @throws NullPointerException If the key is null
+	 * @throws IllegalArgumentException If the key is empty
+	 * @see ReferenceTokenRule
+	 * @see ReferenceType#DYNAMIC
+	 * @see #referenceRule(String)
+	 * @see #referenceTokens(String)
+	 */
+	public static @NotNull TokenRule reference(@NotNull String key) {
+		return new ReferenceTokenRule(key, ReferenceType.DYNAMIC);
+	}
+	
+	/**
+	 * Creates a reference token rule that references another token rule by its key in the context.<br>
+	 * The referenced rule is looked up in the context using the key.<br>
+	 * The created rule will match according to the referenced rule.<br>
+	 *
+	 * @param key The key used to look up the referenced rule in the context
+	 * @return The created reference token rule
+	 * @throws NullPointerException If the key is null
+	 * @throws IllegalArgumentException If the key is empty
+	 * @see ReferenceTokenRule
+	 * @see ReferenceType#RULE
+	 */
+	public static @NotNull TokenRule referenceRule(@NotNull String key) {
+		return new ReferenceTokenRule(key, ReferenceType.RULE);
+	}
+	
+	/**
+	 * Creates a reference token rule that references a list of tokens by its key in the context.<br>
+	 * The rule will match if the next tokens in the stream match the referenced list of tokens.<br>
+	 * The referenced tokens are looked up in the context using the key.<br>
+	 *
+	 * @param key The key used to look up the referenced tokens in the context
+	 * @return The created reference token rule
+	 * @throws NullPointerException If the key is null
+	 * @throws IllegalArgumentException If the key is empty
+	 * @see ReferenceTokenRule
+	 * @see ReferenceType#TOKENS
+	 */
+	public static @NotNull TokenRule referenceTokens(@NotNull String key) {
+		return new ReferenceTokenRule(key, ReferenceType.TOKENS);
 	}
 }
