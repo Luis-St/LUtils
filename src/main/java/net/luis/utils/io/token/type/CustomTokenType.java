@@ -24,16 +24,27 @@ import org.jetbrains.annotations.Nullable;
 import java.util.Objects;
 
 /**
+ * Implementation of a custom token type.<br>
+ * Allows the creation of user-defined token types with an optional super type.<br>
  *
  * @author Luis-St
  *
- * @param name
+ * @param name The name of the token type
+ * @param superType The super type of the token type, can be null
  */
 public record CustomTokenType(
 	@NotNull String name,
 	@Nullable TokenType superType
 ) implements TokenType {
 	
+	/**
+	 * Creates a new custom token type with the given name and optional super type.<br>
+	 *
+	 * @param name The name of the token type
+	 * @param superType The super type of the token type, can be null
+	 * @throws NullPointerException If the name is null
+	 * @throws IllegalArgumentException If the name is empty
+	 */
 	public CustomTokenType {
 		Objects.requireNonNull(name, "Token type name must not be null");
 		
