@@ -18,18 +18,35 @@
 
 package net.luis.utils.io.token.rule;
 
+import net.luis.utils.io.token.stream.MutableTokenStream;
 import net.luis.utils.io.token.stream.TokenStream;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Unmodifiable;
 
+import java.util.Objects;
+
 /**
+ * Context for a token action, containing the token stream.<br>
  *
  * @author Luis-St
  *
+ * @param stream The token stream immutable view after the associated token rule was matched
  */
-
 public record TokenActionContext(
 	@NotNull @Unmodifiable TokenStream stream
 ) {
-
+	
+	/**
+	 * Constructs a new token action context with the given token stream.<br>
+	 *
+	 * @param stream The token stream immutable view after the associated token rule was matched
+	 * @throws NullPointerException If the token stream is null
+	 * @throws IllegalArgumentException If the token stream is mutable
+	 */
+	public TokenActionContext {
+		Objects.requireNonNull(stream, "The token stream must not be null");
+		if (stream instanceof MutableTokenStream) {
+			throw new IllegalArgumentException("The token stream must be immutable");
+		}
+	}
 }
