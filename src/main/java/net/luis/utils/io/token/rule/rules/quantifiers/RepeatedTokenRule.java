@@ -92,6 +92,7 @@ public record RepeatedTokenRule(
 	 * This method will attempt to match the token rule repeatedly until it either fails to match or reaches the maximum number of occurrences.<br>
 	 *
 	 * @param stream The token stream
+	 * @param ctx The token rule context
 	 * @return A pair containing the list of matched tokens and the number of occurrences
 	 * @throws NullPointerException If the token stream is null
 	 */

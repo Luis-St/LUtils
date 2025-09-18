@@ -45,6 +45,10 @@ import java.util.Objects;
  */
 public enum StartTokenRule implements TokenRule {
 	
+	/**
+	 * Matches the start of the document.<br>
+	 * This rule matches only when the current index is 0, indicating the very start of the token list.<br>
+	 */
 	DOCUMENT {
 		@Override
 		public @Nullable TokenRuleMatch match(@NotNull TokenStream stream, @NotNull TokenRuleContext ctx) {
@@ -57,6 +61,10 @@ public enum StartTokenRule implements TokenRule {
 			return null;
 		}
 	},
+	/**
+	 * Matches the start of a line or document.<br>
+	 * This rule matches when the current index is at the beginning of a line or at the start of the document.<br>
+	 */
 	LINE {
 		@Override
 		@SuppressWarnings("DuplicatedCode")

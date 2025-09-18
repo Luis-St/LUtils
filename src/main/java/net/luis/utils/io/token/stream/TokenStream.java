@@ -173,7 +173,7 @@ public interface TokenStream {
 	
 	/**
 	 * Advances the current index to the given index.<br>
-	 * If the given index is negative, the current index will be set to zero.<br
+	 * If the given index is negative, the current index will be set to zero.<br>
 	 * If the given index is greater than the size of the token stream, the current index will be set to the size of the token stream.<br>
 	 *
 	 * @param index The index to advance the current index to
