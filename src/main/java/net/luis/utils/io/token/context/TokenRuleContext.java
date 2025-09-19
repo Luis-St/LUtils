@@ -102,7 +102,7 @@ public class TokenRuleContext {
 	public void captureTokens(@NotNull String key, @NotNull List<Token> tokens) {
 		Objects.requireNonNull(key, "Token key must not be null");
 		Objects.requireNonNull(tokens, "List of tokens must not be null");
-		this.capturedTokens.put(key, tokens);
+		this.capturedTokens.put(key, List.copyOf(tokens));
 	}
 	
 	/**
