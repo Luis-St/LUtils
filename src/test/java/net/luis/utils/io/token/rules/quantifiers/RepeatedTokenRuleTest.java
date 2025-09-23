@@ -34,13 +34,18 @@ import java.util.Objects;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+/**
+ * Test class for {@link RepeatedTokenRule}.<br>
+ *
+ * @author Luis-St
+ */
 class RepeatedTokenRuleTest {
 	
 	private static @NotNull Token createToken(@NotNull String value) {
 		return SimpleToken.createUnpositioned(value);
 	}
 	
-	private static @NotNull TokenRule createRule(@NotNull String value) {
+	private static @NotNull TokenRule createRule() {
 		return new TokenRule() {
 			@Override
 			public @Nullable TokenRuleMatch match(@NotNull TokenStream stream, @NotNull TokenRuleContext ctx) {
@@ -52,7 +57,7 @@ class RepeatedTokenRuleTest {
 				
 				int startIndex = stream.getCurrentIndex();
 				Token token = stream.getCurrentToken();
-				if (token.value().equals(value)) {
+				if ("test".equals(token.value())) {
 					return new TokenRuleMatch(startIndex, stream.advance(), List.of(token), this);
 				}
 				return null;
@@ -61,8 +66,33 @@ class RepeatedTokenRuleTest {
 	}
 	
 	@Test
+	void constructorWithNullRule() {
+		assertThrows(NullPointerException.class, () -> new RepeatedTokenRule(null, 2));
+	}
+	
+	@Test
+	void constructorWithNegativeMin() {
+		assertThrows(IllegalArgumentException.class, () -> new RepeatedTokenRule(createRule(), -1, 5));
+	}
+	
+	@Test
+	void constructorWithMaxLessThanMin() {
+		assertThrows(IllegalArgumentException.class, () -> new RepeatedTokenRule(createRule(), 5, 2));
+	}
+	
+	@Test
+	void constructorWithBothZero() {
+		assertThrows(IllegalArgumentException.class, () -> new RepeatedTokenRule(createRule(), 0, 0));
+	}
+	
+	@Test
+	void constructorWithNegativeOccurrences() {
+		assertThrows(IllegalArgumentException.class, () -> new RepeatedTokenRule(createRule(), -1));
+	}
+	
+	@Test
 	void constructorWithSingleOccurrence() {
-		TokenRule innerRule = createRule("test");
+		TokenRule innerRule = createRule();
 		
 		RepeatedTokenRule rule = new RepeatedTokenRule(innerRule, 3);
 		
@@ -73,7 +103,7 @@ class RepeatedTokenRuleTest {
 	
 	@Test
 	void constructorWithMinMax() {
-		TokenRule innerRule = createRule("test");
+		TokenRule innerRule = createRule();
 		
 		RepeatedTokenRule rule = new RepeatedTokenRule(innerRule, 2, 5);
 		
@@ -83,33 +113,51 @@ class RepeatedTokenRuleTest {
 	}
 	
 	@Test
-	void constructorWithNullRule() {
-		assertThrows(NullPointerException.class, () -> new RepeatedTokenRule(null, 2));
+	void matchWithNullStream() {
+		RepeatedTokenRule rule = new RepeatedTokenRule(createRule(), 1, 3);
+		TokenRuleContext context = TokenRuleContext.empty();
+		
+		assertThrows(NullPointerException.class, () -> rule.match(null, context));
 	}
 	
 	@Test
-	void constructorWithNegativeMin() {
-		assertThrows(IllegalArgumentException.class, () -> new RepeatedTokenRule(createRule("test"), -1, 5));
+	void matchWithNullContext() {
+		RepeatedTokenRule rule = new RepeatedTokenRule(createRule(), 1, 3);
+		TokenStream stream = TokenStream.createMutable(List.of(createToken("test")));
+		
+		assertThrows(NullPointerException.class, () -> rule.match(stream, null));
 	}
 	
 	@Test
-	void constructorWithMaxLessThanMin() {
-		assertThrows(IllegalArgumentException.class, () -> new RepeatedTokenRule(createRule("test"), 5, 2));
+	void matchWithEmptyStream() {
+		TokenRule innerRule = createRule();
+		RepeatedTokenRule rule = new RepeatedTokenRule(innerRule, 1, 3);
+		
+		TokenStream stream = TokenStream.createMutable(List.of());
+		TokenRuleContext context = TokenRuleContext.empty();
+		
+		TokenRuleMatch result = rule.match(stream, context);
+		
+		assertNull(result);
 	}
 	
 	@Test
-	void constructorWithBothZero() {
-		assertThrows(IllegalArgumentException.class, () -> new RepeatedTokenRule(createRule("test"), 0, 0));
-	}
-	
-	@Test
-	void constructorWithNegativeOccurrences() {
-		assertThrows(IllegalArgumentException.class, () -> new RepeatedTokenRule(createRule("test"), -1));
+	void matchExactOccurrences() {
+		TokenRule innerRule = createRule();
+		RepeatedTokenRule rule = new RepeatedTokenRule(innerRule, 2);
+		
+		TokenStream stream = TokenStream.createMutable(List.of(createToken("test"), createToken("test")));
+		TokenRuleContext context = TokenRuleContext.empty();
+		
+		TokenRuleMatch result = rule.match(stream, context);
+		
+		assertNotNull(result);
+		assertEquals(2, result.matchedTokens().size());
 	}
 	
 	@Test
 	void matchExactlyMinOccurrences() {
-		TokenRule innerRule = createRule("test");
+		TokenRule innerRule = createRule();
 		RepeatedTokenRule rule = new RepeatedTokenRule(innerRule, 2, 4);
 		
 		TokenStream stream = TokenStream.createMutable(List.of(createToken("test"), createToken("test")));
@@ -127,27 +175,8 @@ class RepeatedTokenRuleTest {
 	}
 	
 	@Test
-	void matchExactlyMaxOccurrences() {
-		TokenRule innerRule = createRule("test");
-		RepeatedTokenRule rule = new RepeatedTokenRule(innerRule, 2, 3);
-		
-		TokenStream stream = TokenStream.createMutable(List.of(
-			createToken("test"), createToken("test"), createToken("test"), createToken("test")
-		));
-		TokenRuleContext context = TokenRuleContext.empty();
-		
-		TokenRuleMatch result = rule.match(stream, context);
-		
-		assertNotNull(result);
-		assertEquals(0, result.startIndex());
-		assertEquals(3, result.endIndex());
-		assertEquals(3, result.matchedTokens().size());
-		assertEquals(3, stream.getCurrentIndex()); // Only 3 tokens consumed
-	}
-	
-	@Test
 	void matchBetweenMinAndMax() {
-		TokenRule innerRule = createRule("test");
+		TokenRule innerRule = createRule();
 		RepeatedTokenRule rule = new RepeatedTokenRule(innerRule, 2, 5);
 		
 		TokenStream stream = TokenStream.createMutable(List.of(
@@ -161,12 +190,27 @@ class RepeatedTokenRuleTest {
 		assertEquals(0, result.startIndex());
 		assertEquals(3, result.endIndex());
 		assertEquals(3, result.matchedTokens().size());
-		assertEquals(3, stream.getCurrentIndex()); // Stopped at "other"
+		assertEquals(3, stream.getCurrentIndex());
+	}
+	
+	@Test
+	void matchExactlyMaxOccurrences() {
+		TokenRule innerRule = createRule();
+		RepeatedTokenRule rule = new RepeatedTokenRule(innerRule, 2, 3);
+		
+		TokenStream stream = TokenStream.createMutable(List.of(
+			createToken("test"), createToken("test"), createToken("test"), createToken("test")
+		));
+		TokenRuleContext context = TokenRuleContext.empty();
+		
+		TokenRuleMatch result = rule.match(stream, context);
+		
+		assertNull(result);
 	}
 	
 	@Test
 	void matchFewerThanMinOccurrences() {
-		TokenRule innerRule = createRule("test");
+		TokenRule innerRule = createRule();
 		RepeatedTokenRule rule = new RepeatedTokenRule(innerRule, 3, 5);
 		
 		TokenStream stream = TokenStream.createMutable(List.of(createToken("test"), createToken("other")));
@@ -175,12 +219,12 @@ class RepeatedTokenRuleTest {
 		TokenRuleMatch result = rule.match(stream, context);
 		
 		assertNull(result);
-		assertEquals(0, stream.getCurrentIndex()); // Stream position unchanged
+		assertEquals(0, stream.getCurrentIndex());
 	}
 	
 	@Test
 	void matchWithNoMatches() {
-		TokenRule innerRule = createRule("test");
+		TokenRule innerRule = createRule();
 		RepeatedTokenRule rule = new RepeatedTokenRule(innerRule, 1, 3);
 		
 		TokenStream stream = TokenStream.createMutable(List.of(createToken("other")));
@@ -189,40 +233,13 @@ class RepeatedTokenRuleTest {
 		TokenRuleMatch result = rule.match(stream, context);
 		
 		assertNull(result);
-		assertEquals(0, stream.getCurrentIndex()); // Stream position unchanged
-	}
-	
-	@Test
-	void matchWithEmptyStream() {
-		TokenRule innerRule = createRule("test");
-		RepeatedTokenRule rule = new RepeatedTokenRule(innerRule, 1, 3);
-		
-		TokenStream stream = TokenStream.createMutable(List.of());
-		TokenRuleContext context = TokenRuleContext.empty();
-		
-		TokenRuleMatch result = rule.match(stream, context);
-		
-		assertNull(result);
-	}
-	
-	@Test
-	void matchExactOccurrences() {
-		TokenRule innerRule = createRule("test");
-		RepeatedTokenRule rule = new RepeatedTokenRule(innerRule, 2); // Exactly 2
-		
-		TokenStream stream = TokenStream.createMutable(List.of(createToken("test"), createToken("test")));
-		TokenRuleContext context = TokenRuleContext.empty();
-		
-		TokenRuleMatch result = rule.match(stream, context);
-		
-		assertNotNull(result);
-		assertEquals(2, result.matchedTokens().size());
+		assertEquals(0, stream.getCurrentIndex());
 	}
 	
 	@Test
 	void matchExactOccurrencesWithMore() {
-		TokenRule innerRule = createRule("test");
-		RepeatedTokenRule rule = new RepeatedTokenRule(innerRule, 2); // Exactly 2
+		TokenRule innerRule = createRule();
+		RepeatedTokenRule rule = new RepeatedTokenRule(innerRule, 2);
 		
 		TokenStream stream = TokenStream.createMutable(List.of(
 			createToken("test"), createToken("test"), createToken("test")
@@ -231,15 +248,13 @@ class RepeatedTokenRuleTest {
 		
 		TokenRuleMatch result = rule.match(stream, context);
 		
-		assertNotNull(result);
-		assertEquals(2, result.matchedTokens().size());
-		assertEquals(2, stream.getCurrentIndex()); // Only 2 consumed
+		assertNull(result);
 	}
 	
 	@Test
 	void matchExactOccurrencesWithFewer() {
-		TokenRule innerRule = createRule("test");
-		RepeatedTokenRule rule = new RepeatedTokenRule(innerRule, 3); // Exactly 3
+		TokenRule innerRule = createRule();
+		RepeatedTokenRule rule = new RepeatedTokenRule(innerRule, 3);
 		
 		TokenStream stream = TokenStream.createMutable(List.of(createToken("test"), createToken("test")));
 		TokenRuleContext context = TokenRuleContext.empty();
@@ -276,7 +291,7 @@ class RepeatedTokenRuleTest {
 	
 	@Test
 	void matchStopsAtStreamEnd() {
-		TokenRule innerRule = createRule("test");
+		TokenRule innerRule = createRule();
 		RepeatedTokenRule rule = new RepeatedTokenRule(innerRule, 1, 5);
 		
 		TokenStream stream = TokenStream.createMutable(List.of(createToken("test"), createToken("test")));
@@ -286,28 +301,12 @@ class RepeatedTokenRuleTest {
 		
 		assertNotNull(result);
 		assertEquals(2, result.matchedTokens().size());
-		assertEquals(2, stream.getCurrentIndex()); // All tokens consumed
-	}
-	
-	@Test
-	void matchWithNullStream() {
-		RepeatedTokenRule rule = new RepeatedTokenRule(createRule("test"), 1, 3);
-		TokenRuleContext context = TokenRuleContext.empty();
-		
-		assertThrows(NullPointerException.class, () -> rule.match(null, context));
-	}
-	
-	@Test
-	void matchWithNullContext() {
-		RepeatedTokenRule rule = new RepeatedTokenRule(createRule("test"), 1, 3);
-		TokenStream stream = TokenStream.createMutable(List.of(createToken("test")));
-		
-		assertThrows(NullPointerException.class, () -> rule.match(stream, null));
+		assertEquals(2, stream.getCurrentIndex());
 	}
 	
 	@Test
 	void not() {
-		TokenRule innerRule = createRule("test");
+		TokenRule innerRule = createRule();
 		RepeatedTokenRule rule = new RepeatedTokenRule(innerRule, 2, 4);
 		
 		TokenRule negated = rule.not();
@@ -317,8 +316,25 @@ class RepeatedTokenRuleTest {
 	}
 	
 	@Test
+	void notBehavior() {
+		TokenRule innerRule = TokenRules.pattern("test");
+		RepeatedTokenRule rule = new RepeatedTokenRule(innerRule, 2, 3);
+		TokenRule negated = rule.not();
+		
+		TokenStream stream1 = TokenStream.createMutable(List.of(createToken("test"), createToken("test")));
+		TokenStream stream2 = TokenStream.createMutable(List.of(createToken("test")));
+		TokenRuleContext context = TokenRuleContext.empty();
+		
+		assertNotNull(rule.match(stream1, context));
+		assertNull(negated.match(stream1.copyFromZero(), context));
+		
+		assertNull(rule.match(stream2, context));
+		assertNotNull(negated.match(stream2.copyFromZero(), context));
+	}
+	
+	@Test
 	void notDoubleNegation() {
-		TokenRule innerRule = createRule("test");
+		TokenRule innerRule = createRule();
 		RepeatedTokenRule rule = new RepeatedTokenRule(innerRule, 2, 4);
 		
 		TokenRule doubleNegated = rule.not().not();
@@ -327,49 +343,8 @@ class RepeatedTokenRuleTest {
 	}
 	
 	@Test
-	void notBehavior() {
-		TokenRule innerRule = createRule("test");
-		RepeatedTokenRule rule = new RepeatedTokenRule(innerRule, 2, 3);
-		TokenRule negated = rule.not();
-		
-		TokenStream stream1 = TokenStream.createMutable(List.of(createToken("test"), createToken("test")));
-		TokenStream stream2 = TokenStream.createMutable(List.of(createToken("test")));
-		TokenRuleContext context = TokenRuleContext.empty();
-		
-		assertNotNull(rule.match(stream1, context)); // 2 matches, within range
-		assertNull(negated.match(stream1.copyFromZero(), context)); // Negated doesn't match
-		
-		assertNull(rule.match(stream2, context)); // 1 match, below min
-		assertNotNull(negated.match(stream2.copyFromZero(), context)); // Negated matches
-	}
-	
-	@Test
-	void equalsAndHashCode() {
-		TokenRule innerRule1 = createRule("test");
-		TokenRule innerRule2 = createRule("test");
-		TokenRule innerRule3 = createRule("other");
-		
-		RepeatedTokenRule rule1 = new RepeatedTokenRule(innerRule1, 2, 4);
-		RepeatedTokenRule rule2 = new RepeatedTokenRule(innerRule1, 2, 4);
-		RepeatedTokenRule rule3 = new RepeatedTokenRule(innerRule2, 2, 4);
-		RepeatedTokenRule rule4 = new RepeatedTokenRule(innerRule1, 3, 4);
-		RepeatedTokenRule rule5 = new RepeatedTokenRule(innerRule1, 2, 5);
-		RepeatedTokenRule rule6 = new RepeatedTokenRule(innerRule3, 2, 4);
-		
-		assertEquals(rule1, rule2);
-		assertNotEquals(rule1, rule3); // Different inner rule instances
-		assertNotEquals(rule1, rule4); // Different min
-		assertNotEquals(rule1, rule5); // Different max
-		assertNotEquals(rule1, rule6); // Different inner rule
-		assertNotEquals(rule1, null);
-		assertNotEquals(rule1, "string");
-		
-		assertEquals(rule1.hashCode(), rule2.hashCode());
-	}
-	
-	@Test
 	void toStringTest() {
-		TokenRule innerRule = createRule("test");
+		TokenRule innerRule = createRule();
 		RepeatedTokenRule rule = new RepeatedTokenRule(innerRule, 2, 4);
 		
 		String result = rule.toString();

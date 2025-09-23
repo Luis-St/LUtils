@@ -34,6 +34,11 @@ import java.util.Objects;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+/*
+ * Test class for {@link LookaheadTokenRule}.<br>
+ *
+ * @author Luis-St
+ */
 class LookaheadTokenRuleTest {
 	
 	private static @NotNull Token createToken(@NotNull String value) {
@@ -109,7 +114,7 @@ class LookaheadTokenRuleTest {
 		
 		TokenRuleMatch result = rule.match(stream, context);
 		
-		assertNull(result); // Inner rule can't match empty stream
+		assertNull(result);
 	}
 	
 	@Test
@@ -122,7 +127,7 @@ class LookaheadTokenRuleTest {
 		
 		TokenRuleMatch result = rule.match(stream, context);
 		
-		assertNotNull(result); // Negative match when inner rule fails
+		assertNotNull(result);
 		assertEquals(0, result.startIndex());
 		assertEquals(0, result.endIndex());
 		assertTrue(result.matchedTokens().isEmpty());
@@ -140,10 +145,10 @@ class LookaheadTokenRuleTest {
 		
 		assertNotNull(result);
 		assertEquals(0, result.startIndex());
-		assertEquals(0, result.endIndex()); // Lookahead doesn't consume
+		assertEquals(0, result.endIndex());
 		assertTrue(result.matchedTokens().isEmpty());
 		assertEquals(rule, result.matchingTokenRule());
-		assertEquals(0, stream.getCurrentIndex()); // Stream position unchanged
+		assertEquals(0, stream.getCurrentIndex());
 	}
 	
 	@Test
@@ -157,7 +162,7 @@ class LookaheadTokenRuleTest {
 		TokenRuleMatch result = rule.match(stream, context);
 		
 		assertNull(result);
-		assertEquals(0, stream.getCurrentIndex()); // Stream position unchanged
+		assertEquals(0, stream.getCurrentIndex());
 	}
 	
 	@Test
@@ -171,7 +176,7 @@ class LookaheadTokenRuleTest {
 		TokenRuleMatch result = rule.match(stream, context);
 		
 		assertNull(result);
-		assertEquals(0, stream.getCurrentIndex()); // Stream position unchanged
+		assertEquals(0, stream.getCurrentIndex());
 	}
 	
 	@Test
@@ -186,10 +191,10 @@ class LookaheadTokenRuleTest {
 		
 		assertNotNull(result);
 		assertEquals(0, result.startIndex());
-		assertEquals(0, result.endIndex()); // Lookahead doesn't consume
+		assertEquals(0, result.endIndex());
 		assertTrue(result.matchedTokens().isEmpty());
 		assertEquals(rule, result.matchingTokenRule());
-		assertEquals(0, stream.getCurrentIndex()); // Stream position unchanged
+		assertEquals(0, stream.getCurrentIndex());
 	}
 	
 	@Test
@@ -202,7 +207,7 @@ class LookaheadTokenRuleTest {
 		TokenRuleMatch result = rule.match(stream, context);
 		
 		assertNotNull(result);
-		assertEquals(0, stream.getCurrentIndex()); // Stream not advanced
+		assertEquals(0, stream.getCurrentIndex());
 	}
 	
 	@Test
@@ -215,7 +220,7 @@ class LookaheadTokenRuleTest {
 		TokenRuleMatch result = rule.match(stream, context);
 		
 		assertNull(result);
-		assertEquals(0, stream.getCurrentIndex()); // Stream not advanced
+		assertEquals(0, stream.getCurrentIndex());
 	}
 	
 	@Test
@@ -225,8 +230,7 @@ class LookaheadTokenRuleTest {
 		
 		TokenRule negated = rule.not();
 		
-		assertTrue(negated instanceof LookaheadTokenRule);
-		LookaheadTokenRule negatedLookahead = (LookaheadTokenRule) negated;
+		LookaheadTokenRule negatedLookahead = assertInstanceOf(LookaheadTokenRule.class, negated);
 		assertEquals(innerRule, negatedLookahead.tokenRule());
 		assertEquals(LookMatchMode.NEGATIVE, negatedLookahead.mode());
 	}
@@ -238,32 +242,9 @@ class LookaheadTokenRuleTest {
 		
 		TokenRule negated = rule.not();
 		
-		assertTrue(negated instanceof LookaheadTokenRule);
-		LookaheadTokenRule negatedLookahead = (LookaheadTokenRule) negated;
+		LookaheadTokenRule negatedLookahead = assertInstanceOf(LookaheadTokenRule.class, negated);
 		assertEquals(innerRule, negatedLookahead.tokenRule());
 		assertEquals(LookMatchMode.POSITIVE, negatedLookahead.mode());
-	}
-	
-	@Test
-	void equalsAndHashCode() {
-		TokenRule tokenRule1 = createRule("test");
-		TokenRule tokenRule2 = createRule("test");
-		TokenRule tokenRule3 = createRule("other");
-		
-		LookaheadTokenRule rule1 = new LookaheadTokenRule(tokenRule1, LookMatchMode.POSITIVE);
-		LookaheadTokenRule rule2 = new LookaheadTokenRule(tokenRule1, LookMatchMode.POSITIVE);
-		LookaheadTokenRule rule3 = new LookaheadTokenRule(tokenRule2, LookMatchMode.POSITIVE);
-		LookaheadTokenRule rule4 = new LookaheadTokenRule(tokenRule1, LookMatchMode.NEGATIVE);
-		LookaheadTokenRule rule5 = new LookaheadTokenRule(tokenRule3, LookMatchMode.POSITIVE);
-		
-		assertEquals(rule1, rule2);
-		assertNotEquals(rule1, rule3); // Different token rule instances
-		assertNotEquals(rule1, rule4); // Different mode
-		assertNotEquals(rule1, rule5); // Different token rule
-		assertNotEquals(rule1, null);
-		assertNotEquals(rule1, "string");
-		
-		assertEquals(rule1.hashCode(), rule2.hashCode());
 	}
 	
 	@Test

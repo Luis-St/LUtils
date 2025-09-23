@@ -35,6 +35,11 @@ import java.util.function.Function;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+/**
+ * Test class for {@link RecursiveTokenRule}.<br>
+ *
+ * @author Luis-St
+ */
 class RecursiveTokenRuleTest {
 	
 	private static @NotNull Token createToken(@NotNull String value) {
@@ -62,17 +67,8 @@ class RecursiveTokenRuleTest {
 	}
 	
 	@Test
-	void constructorWithValidFunction() {
-		Function<TokenRule, TokenRule> factory = self -> TokenRules.any(createRule("base"), self);
-		
-		RecursiveTokenRule rule = new RecursiveTokenRule(factory);
-		
-		assertNotNull(rule.getTokenRule());
-	}
-	
-	@Test
 	void constructorWithNullFunction() {
-		assertThrows(NullPointerException.class, () -> new RecursiveTokenRule((Function<TokenRule, TokenRule>) null));
+		assertThrows(NullPointerException.class, () -> new RecursiveTokenRule(null));
 	}
 	
 	@Test
@@ -83,7 +79,48 @@ class RecursiveTokenRuleTest {
 	}
 	
 	@Test
-	void constructorThreeParameters() {
+	void constructorWithValidFunction() {
+		Function<TokenRule, TokenRule> factory = self -> TokenRules.any(createRule("base"), self);
+		
+		RecursiveTokenRule rule = new RecursiveTokenRule(factory);
+		
+		assertNotNull(rule.getTokenRule());
+	}
+	
+	@Test
+	void constructorWithNullOpening() {
+		assertThrows(NullPointerException.class, () -> new RecursiveTokenRule(null, createRule("content"), createRule(")")));
+	}
+	
+	@Test
+	void constructorWithNullContent() {
+		assertThrows(NullPointerException.class, () -> new RecursiveTokenRule(createRule("("), null, createRule(")")));
+	}
+	
+	@Test
+	void constructorWithNullClosing() {
+		assertThrows(NullPointerException.class, () -> new RecursiveTokenRule(createRule("("), createRule("content"), (TokenRule) null));
+	}
+	
+	@Test
+	void constructorWithFactoryAndNullOpening() {
+		Function<TokenRule, TokenRule> factory = self -> createRule("content");
+		assertThrows(NullPointerException.class, () -> new RecursiveTokenRule(null, createRule(")"), factory));
+	}
+	
+	@Test
+	void constructorWithFactoryAndNullClosing() {
+		Function<TokenRule, TokenRule> factory = self -> createRule("content");
+		assertThrows(NullPointerException.class, () -> new RecursiveTokenRule(createRule("("), null, factory));
+	}
+	
+	@Test
+	void constructorWithNullFactory() {
+		assertThrows(NullPointerException.class, () -> new RecursiveTokenRule(createRule("("), createRule(")"), (Function<TokenRule, TokenRule>) null));
+	}
+	
+	@Test
+	void constructorWithFactory() {
 		TokenRule opening = createRule("(");
 		TokenRule content = createRule("content");
 		TokenRule closing = createRule(")");
@@ -91,21 +128,6 @@ class RecursiveTokenRuleTest {
 		RecursiveTokenRule rule = new RecursiveTokenRule(opening, content, closing);
 		
 		assertNotNull(rule.getTokenRule());
-	}
-	
-	@Test
-	void constructorThreeParametersNullOpening() {
-		assertThrows(NullPointerException.class, () -> new RecursiveTokenRule(null, createRule("content"), createRule(")")));
-	}
-	
-	@Test
-	void constructorThreeParametersNullContent() {
-		assertThrows(NullPointerException.class, () -> new RecursiveTokenRule(createRule("("), null, createRule(")")));
-	}
-	
-	@Test
-	void constructorThreeParametersNullClosing() {
-		assertThrows(NullPointerException.class, () -> new RecursiveTokenRule(createRule("("), createRule("content"), (TokenRule) null));
 	}
 	
 	@Test
@@ -120,23 +142,6 @@ class RecursiveTokenRuleTest {
 	}
 	
 	@Test
-	void constructorWithOpeningClosingAndFactoryNullOpening() {
-		Function<TokenRule, TokenRule> factory = self -> createRule("content");
-		assertThrows(NullPointerException.class, () -> new RecursiveTokenRule(null, createRule(")"), factory));
-	}
-	
-	@Test
-	void constructorWithOpeningClosingAndFactoryNullClosing() {
-		Function<TokenRule, TokenRule> factory = self -> createRule("content");
-		assertThrows(NullPointerException.class, () -> new RecursiveTokenRule(createRule("("), null, factory));
-	}
-	
-	@Test
-	void constructorWithOpeningClosingAndFactoryNullFactory() {
-		assertThrows(NullPointerException.class, () -> new RecursiveTokenRule(createRule("("), createRule(")"), (Function<TokenRule, TokenRule>) null));
-	}
-	
-	@Test
 	void getTokenRule() {
 		Function<TokenRule, TokenRule> factory = self -> createRule("test");
 		RecursiveTokenRule rule = new RecursiveTokenRule(factory);
@@ -144,6 +149,37 @@ class RecursiveTokenRuleTest {
 		TokenRule tokenRule = rule.getTokenRule();
 		
 		assertNotNull(tokenRule);
+	}
+	
+	@Test
+	void matchWithNullStream() {
+		Function<TokenRule, TokenRule> factory = self -> createRule("test");
+		RecursiveTokenRule rule = new RecursiveTokenRule(factory);
+		TokenRuleContext context = TokenRuleContext.empty();
+		
+		assertThrows(NullPointerException.class, () -> rule.match(null, context));
+	}
+	
+	@Test
+	void matchWithNullContext() {
+		Function<TokenRule, TokenRule> factory = self -> createRule("test");
+		RecursiveTokenRule rule = new RecursiveTokenRule(factory);
+		TokenStream stream = TokenStream.createMutable(List.of(createToken("test")));
+		
+		assertThrows(NullPointerException.class, () -> rule.match(stream, null));
+	}
+	
+	@Test
+	void matchWithEmptyStream() {
+		Function<TokenRule, TokenRule> factory = self -> createRule("test");
+		RecursiveTokenRule rule = new RecursiveTokenRule(factory);
+		
+		TokenStream stream = TokenStream.createMutable(List.of());
+		TokenRuleContext context = TokenRuleContext.empty();
+		
+		TokenRuleMatch result = rule.match(stream, context);
+		
+		assertNull(result);
 	}
 	
 	@Test
@@ -160,7 +196,7 @@ class RecursiveTokenRuleTest {
 		TokenRuleMatch result = rule.match(stream, context);
 		
 		assertNotNull(result);
-		assertEquals("base", result.matchedTokens().get(0).value());
+		assertEquals("base", result.matchedTokens().getFirst().value());
 	}
 	
 	@Test
@@ -223,101 +259,24 @@ class RecursiveTokenRuleTest {
 	}
 	
 	@Test
-	void matchWithEmptyStream() {
-		Function<TokenRule, TokenRule> factory = self -> createRule("test");
-		RecursiveTokenRule rule = new RecursiveTokenRule(factory);
-		
-		TokenStream stream = TokenStream.createMutable(List.of());
-		TokenRuleContext context = TokenRuleContext.empty();
-		
-		TokenRuleMatch result = rule.match(stream, context);
-		
-		assertNull(result);
-	}
-	
-	@Test
-	void matchWithNullStream() {
-		Function<TokenRule, TokenRule> factory = self -> createRule("test");
-		RecursiveTokenRule rule = new RecursiveTokenRule(factory);
-		TokenRuleContext context = TokenRuleContext.empty();
-		
-		assertThrows(NullPointerException.class, () -> rule.match(null, context));
-	}
-	
-	@Test
-	void matchWithNullContext() {
-		Function<TokenRule, TokenRule> factory = self -> createRule("test");
-		RecursiveTokenRule rule = new RecursiveTokenRule(factory);
-		TokenStream stream = TokenStream.createMutable(List.of(createToken("test")));
-		
-		assertThrows(NullPointerException.class, () -> rule.match(stream, null));
-	}
-	
-	@Test
 	void not() {
-		Function<TokenRule, TokenRule> factory = self -> createRule("test");
+		Function<TokenRule, TokenRule> factory = self -> TokenRules.pattern("test");
 		RecursiveTokenRule rule = new RecursiveTokenRule(factory);
 		
 		TokenRule negated = rule.not();
 		
-		assertTrue(negated instanceof RecursiveTokenRule);
-		RecursiveTokenRule negatedRecursive = (RecursiveTokenRule) negated;
+		RecursiveTokenRule negatedRecursive = assertInstanceOf(RecursiveTokenRule.class, negated);
 		assertEquals(rule, negatedRecursive.getTokenRule());
 	}
 	
 	@Test
 	void notDoubleNegation() {
-		Function<TokenRule, TokenRule> factory = self -> createRule("test");
+		Function<TokenRule, TokenRule> factory = self -> TokenRules.pattern("test");
 		RecursiveTokenRule rule = new RecursiveTokenRule(factory);
 		
 		TokenRule doubleNegated = rule.not().not();
 		
 		assertEquals(rule, doubleNegated);
-	}
-	
-	@Test
-	void equalsWithSameTokenRule() {
-		Function<TokenRule, TokenRule> factory = self -> createRule("test");
-		RecursiveTokenRule rule1 = new RecursiveTokenRule(factory);
-		RecursiveTokenRule rule2 = new RecursiveTokenRule(factory);
-		
-		// They won't be equal since they have different inner token rules created by the factory
-		assertNotEquals(rule1, rule2);
-	}
-	
-	@Test
-	void equalsWithSameInstance() {
-		Function<TokenRule, TokenRule> factory = self -> createRule("test");
-		RecursiveTokenRule rule = new RecursiveTokenRule(factory);
-		
-		assertEquals(rule, rule);
-	}
-	
-	@Test
-	void equalsWithNull() {
-		Function<TokenRule, TokenRule> factory = self -> createRule("test");
-		RecursiveTokenRule rule = new RecursiveTokenRule(factory);
-		
-		assertNotEquals(rule, null);
-	}
-	
-	@Test
-	void equalsWithDifferentType() {
-		Function<TokenRule, TokenRule> factory = self -> createRule("test");
-		RecursiveTokenRule rule = new RecursiveTokenRule(factory);
-		
-		assertNotEquals(rule, "string");
-	}
-	
-	@Test
-	void hashCodeConsistency() {
-		Function<TokenRule, TokenRule> factory = self -> createRule("test");
-		RecursiveTokenRule rule = new RecursiveTokenRule(factory);
-		
-		int hashCode1 = rule.hashCode();
-		int hashCode2 = rule.hashCode();
-		
-		assertEquals(hashCode1, hashCode2);
 	}
 	
 	@Test

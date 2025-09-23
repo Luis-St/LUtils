@@ -77,6 +77,7 @@ public record BoundaryTokenRule(
 	@Override
 	public @Nullable TokenRuleMatch match(@NotNull TokenStream stream, @NotNull TokenRuleContext ctx) {
 		Objects.requireNonNull(stream, "Token stream must not be null");
+		Objects.requireNonNull(ctx, "Token rule context must not be null");
 		if (!stream.hasMoreTokens()) {
 			return null;
 		}

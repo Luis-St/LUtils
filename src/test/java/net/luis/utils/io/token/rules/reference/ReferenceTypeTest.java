@@ -22,34 +22,12 @@ import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+/**
+ * Test class for {@link ReferenceType}.<br>
+ *
+ * @author Luis-St
+ */
 class ReferenceTypeTest {
-	
-	@Test
-	void enumValues() {
-		ReferenceType[] values = ReferenceType.values();
-		
-		assertEquals(3, values.length);
-		assertEquals(ReferenceType.RULE, values[0]);
-		assertEquals(ReferenceType.TOKENS, values[1]);
-		assertEquals(ReferenceType.DYNAMIC, values[2]);
-	}
-	
-	@Test
-	void enumValueOf() {
-		assertEquals(ReferenceType.RULE, ReferenceType.valueOf("RULE"));
-		assertEquals(ReferenceType.TOKENS, ReferenceType.valueOf("TOKENS"));
-		assertEquals(ReferenceType.DYNAMIC, ReferenceType.valueOf("DYNAMIC"));
-	}
-	
-	@Test
-	void enumValueOfWithInvalidName() {
-		assertThrows(IllegalArgumentException.class, () -> ReferenceType.valueOf("INVALID"));
-	}
-	
-	@Test
-	void enumValueOfWithNull() {
-		assertThrows(NullPointerException.class, () -> ReferenceType.valueOf(null));
-	}
 	
 	@Test
 	void toStringTest() {

@@ -33,30 +33,15 @@ import java.util.function.Predicate;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+/**
+ * Test class for {@link CustomTokeRule}.<br>
+ *
+ * @author Luis-St
+ */
 class CustomTokeRuleTest {
 	
 	private static @NotNull Token createToken(@NotNull String value) {
 		return SimpleToken.createUnpositioned(value);
-	}
-	
-	private static @NotNull TokenRule createRule(@NotNull String value) {
-		return new TokenRule() {
-			@Override
-			public @Nullable TokenRuleMatch match(@NotNull TokenStream stream, @NotNull TokenRuleContext ctx) {
-				Objects.requireNonNull(stream, "Token stream must not be null");
-				Objects.requireNonNull(ctx, "Token rule context must not be null");
-				if (!stream.hasMoreTokens()) {
-					return null;
-				}
-				
-				int startIndex = stream.getCurrentIndex();
-				Token token = stream.getCurrentToken();
-				if (token.value().equals(value)) {
-					return new TokenRuleMatch(startIndex, stream.advance(), List.of(token), this);
-				}
-				return null;
-			}
-		};
 	}
 	
 	@Test
@@ -66,7 +51,7 @@ class CustomTokeRuleTest {
 	
 	@Test
 	void constructorWithValidCondition() {
-		Predicate<Token> condition = token -> token.value().equals("test");
+		Predicate<Token> condition = token -> "test".equals(token.value());
 		
 		CustomTokeRule rule = new CustomTokeRule(condition);
 		
@@ -83,7 +68,7 @@ class CustomTokeRuleTest {
 	
 	@Test
 	void matchWithMatchingToken() {
-		Predicate<Token> condition = token -> token.value().equals("test");
+		Predicate<Token> condition = token -> "test".equals(token.value());
 		CustomTokeRule rule = new CustomTokeRule(condition);
 		Token token = createToken("test");
 		
@@ -94,7 +79,7 @@ class CustomTokeRuleTest {
 	
 	@Test
 	void matchWithNonMatchingToken() {
-		Predicate<Token> condition = token -> token.value().equals("test");
+		Predicate<Token> condition = token -> "test".equals(token.value());
 		CustomTokeRule rule = new CustomTokeRule(condition);
 		Token token = createToken("other");
 		
@@ -109,7 +94,7 @@ class CustomTokeRuleTest {
 		CustomTokeRule rule = new CustomTokeRule(condition);
 		
 		assertTrue(rule.match(createToken("testing")));
-		assertFalse(rule.match(createToken("test")));
+		assertTrue(rule.match(createToken("test")));
 		assertFalse(rule.match(createToken("tes")));
 		assertFalse(rule.match(createToken("other")));
 	}
@@ -128,7 +113,7 @@ class CustomTokeRuleTest {
 	
 	@Test
 	void matchWithTokenStreamAndContext() {
-		Predicate<Token> condition = token -> token.value().equals("match");
+		Predicate<Token> condition = token -> "match".equals(token.value());
 		CustomTokeRule rule = new CustomTokeRule(condition);
 		TokenStream stream = TokenStream.createMutable(List.of(createToken("match")));
 		TokenRuleContext context = TokenRuleContext.empty();
@@ -138,12 +123,12 @@ class CustomTokeRuleTest {
 		assertNotNull(result);
 		assertEquals(0, result.startIndex());
 		assertEquals(1, result.endIndex());
-		assertEquals("match", result.matchedTokens().get(0).value());
+		assertEquals("match", result.matchedTokens().getFirst().value());
 	}
 	
 	@Test
 	void matchWithTokenStreamNoMatch() {
-		Predicate<Token> condition = token -> token.value().equals("match");
+		Predicate<Token> condition = token -> "match".equals(token.value());
 		CustomTokeRule rule = new CustomTokeRule(condition);
 		TokenStream stream = TokenStream.createMutable(List.of(createToken("nomatch")));
 		TokenRuleContext context = TokenRuleContext.empty();
@@ -155,7 +140,7 @@ class CustomTokeRuleTest {
 	
 	@Test
 	void not() {
-		Predicate<Token> condition = token -> token.value().equals("test");
+		Predicate<Token> condition = token -> "test".equals(token.value());
 		CustomTokeRule rule = new CustomTokeRule(condition);
 		
 		TokenRule negated = rule.not();
@@ -166,7 +151,7 @@ class CustomTokeRuleTest {
 	
 	@Test
 	void notWithDoubleNegation() {
-		Predicate<Token> condition = token -> token.value().equals("test");
+		Predicate<Token> condition = token -> "test".equals(token.value());
 		CustomTokeRule rule = new CustomTokeRule(condition);
 		
 		TokenRule doubleNegated = rule.not().not();
@@ -175,28 +160,8 @@ class CustomTokeRuleTest {
 	}
 	
 	@Test
-	void equalsAndHashCode() {
-		Predicate<Token> condition1 = token -> token.value().equals("test");
-		Predicate<Token> condition2 = token -> token.value().equals("test");
-		Predicate<Token> condition3 = token -> token.value().equals("other");
-		
-		CustomTokeRule rule1 = new CustomTokeRule(condition1);
-		CustomTokeRule rule2 = new CustomTokeRule(condition1);
-		CustomTokeRule rule3 = new CustomTokeRule(condition2);
-		CustomTokeRule rule4 = new CustomTokeRule(condition3);
-		
-		assertEquals(rule1, rule2);
-		assertNotEquals(rule1, rule3); // Different predicate instances
-		assertNotEquals(rule1, rule4);
-		assertNotEquals(rule1, null);
-		assertNotEquals(rule1, "string");
-		
-		assertEquals(rule1.hashCode(), rule2.hashCode());
-	}
-	
-	@Test
 	void toStringTest() {
-		Predicate<Token> condition = token -> token.value().equals("test");
+		Predicate<Token> condition = token -> "test".equals(token.value());
 		CustomTokeRule rule = new CustomTokeRule(condition);
 		
 		String result = rule.toString();

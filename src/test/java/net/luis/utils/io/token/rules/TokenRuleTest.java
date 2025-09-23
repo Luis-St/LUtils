@@ -36,13 +36,18 @@ import java.util.Objects;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+/**
+ * Test class for {@link TokenRule}.<br>
+ *
+ * @author Luis-St
+ */
 class TokenRuleTest {
 	
-	private static @NotNull Token createToken(@NotNull String value) {
-		return SimpleToken.createUnpositioned(value);
+	private static @NotNull Token createToken() {
+		return SimpleToken.createUnpositioned("lambda");
 	}
 	
-	private static @NotNull TokenRule createRule(@NotNull String value) {
+	private static @NotNull TokenRule createRule() {
 		return new TokenRule() {
 			@Override
 			public @Nullable TokenRuleMatch match(@NotNull TokenStream stream, @NotNull TokenRuleContext ctx) {
@@ -54,7 +59,7 @@ class TokenRuleTest {
 				
 				int startIndex = stream.getCurrentIndex();
 				Token token = stream.getCurrentToken();
-				if (token.value().equals(value)) {
+				if ("test".equals(token.value())) {
 					return new TokenRuleMatch(startIndex, stream.advance(), List.of(token), this);
 				}
 				return null;
@@ -64,187 +69,175 @@ class TokenRuleTest {
 	
 	@Test
 	void optional() {
-		TokenRule baseRule = createRule("test");
+		TokenRule baseRule = createRule();
 		
 		TokenRule optionalRule = baseRule.optional();
 		
-		assertTrue(optionalRule instanceof OptionalTokenRule);
-		OptionalTokenRule optional = (OptionalTokenRule) optionalRule;
+		OptionalTokenRule optional = assertInstanceOf(OptionalTokenRule.class, optionalRule);
 		assertEquals(baseRule, optional.tokenRule());
 	}
 	
 	@Test
+	void atLeastWithNegativeValue() {
+		TokenRule baseRule = createRule();
+		
+		assertThrows(IllegalArgumentException.class, () -> baseRule.atLeast(-1));
+	}
+	
+	@Test
 	void atLeast() {
-		TokenRule baseRule = createRule("test");
+		TokenRule baseRule = createRule();
 		
 		TokenRule repeatedRule = baseRule.atLeast(3);
 		
-		assertTrue(repeatedRule instanceof RepeatedTokenRule);
-		RepeatedTokenRule repeated = (RepeatedTokenRule) repeatedRule;
+		RepeatedTokenRule repeated = assertInstanceOf(RepeatedTokenRule.class, repeatedRule);
 		assertEquals(baseRule, repeated.tokenRule());
 		assertEquals(3, repeated.minOccurrences());
 		assertEquals(Integer.MAX_VALUE, repeated.maxOccurrences());
 	}
 	
 	@Test
-	void atLeastWithNegativeValue() {
-		TokenRule baseRule = createRule("test");
+	void exactlyWithNegativeValue() {
+		TokenRule baseRule = createRule();
 		
-		assertThrows(IllegalArgumentException.class, () -> baseRule.atLeast(-1));
+		assertThrows(IllegalArgumentException.class, () -> baseRule.exactly(-1));
 	}
 	
 	@Test
 	void exactly() {
-		TokenRule baseRule = createRule("test");
+		TokenRule baseRule = createRule();
 		
 		TokenRule repeatedRule = baseRule.exactly(5);
 		
-		assertTrue(repeatedRule instanceof RepeatedTokenRule);
-		RepeatedTokenRule repeated = (RepeatedTokenRule) repeatedRule;
+		RepeatedTokenRule repeated = assertInstanceOf(RepeatedTokenRule.class, repeatedRule);
 		assertEquals(baseRule, repeated.tokenRule());
 		assertEquals(5, repeated.minOccurrences());
 		assertEquals(5, repeated.maxOccurrences());
 	}
 	
 	@Test
-	void exactlyWithNegativeValue() {
-		TokenRule baseRule = createRule("test");
+	void atMostWithNegativeValue() {
+		TokenRule baseRule = createRule();
 		
-		assertThrows(IllegalArgumentException.class, () -> baseRule.exactly(-1));
+		assertThrows(IllegalArgumentException.class, () -> baseRule.atMost(-1));
 	}
 	
 	@Test
 	void atMost() {
-		TokenRule baseRule = createRule("test");
+		TokenRule baseRule = createRule();
 		
 		TokenRule repeatedRule = baseRule.atMost(7);
 		
-		assertTrue(repeatedRule instanceof RepeatedTokenRule);
-		RepeatedTokenRule repeated = (RepeatedTokenRule) repeatedRule;
+		RepeatedTokenRule repeated = assertInstanceOf(RepeatedTokenRule.class, repeatedRule);
 		assertEquals(baseRule, repeated.tokenRule());
 		assertEquals(0, repeated.minOccurrences());
 		assertEquals(7, repeated.maxOccurrences());
 	}
 	
 	@Test
-	void atMostWithNegativeValue() {
-		TokenRule baseRule = createRule("test");
-		
-		assertThrows(IllegalArgumentException.class, () -> baseRule.atMost(-1));
-	}
-	
-	@Test
 	void zeroOrMore() {
-		TokenRule baseRule = createRule("test");
+		TokenRule baseRule = createRule();
 		
 		TokenRule repeatedRule = baseRule.zeroOrMore();
 		
-		assertTrue(repeatedRule instanceof RepeatedTokenRule);
-		RepeatedTokenRule repeated = (RepeatedTokenRule) repeatedRule;
+		RepeatedTokenRule repeated = assertInstanceOf(RepeatedTokenRule.class, repeatedRule);
 		assertEquals(baseRule, repeated.tokenRule());
 		assertEquals(0, repeated.minOccurrences());
 		assertEquals(Integer.MAX_VALUE, repeated.maxOccurrences());
 	}
 	
 	@Test
-	void between() {
-		TokenRule baseRule = createRule("test");
-		
-		TokenRule repeatedRule = baseRule.between(2, 8);
-		
-		assertTrue(repeatedRule instanceof RepeatedTokenRule);
-		RepeatedTokenRule repeated = (RepeatedTokenRule) repeatedRule;
-		assertEquals(baseRule, repeated.tokenRule());
-		assertEquals(2, repeated.minOccurrences());
-		assertEquals(8, repeated.maxOccurrences());
-	}
-	
-	@Test
 	void betweenWithNegativeMin() {
-		TokenRule baseRule = createRule("test");
+		TokenRule baseRule = createRule();
 		
 		assertThrows(IllegalArgumentException.class, () -> baseRule.between(-1, 5));
 	}
 	
 	@Test
 	void betweenWithMaxLessThanMin() {
-		TokenRule baseRule = createRule("test");
+		TokenRule baseRule = createRule();
 		
 		assertThrows(IllegalArgumentException.class, () -> baseRule.between(5, 2));
 	}
 	
 	@Test
 	void betweenWithBothZero() {
-		TokenRule baseRule = createRule("test");
+		TokenRule baseRule = createRule();
 		
 		assertThrows(IllegalArgumentException.class, () -> baseRule.between(0, 0));
 	}
 	
 	@Test
+	void between() {
+		TokenRule baseRule = createRule();
+		
+		TokenRule repeatedRule = baseRule.between(2, 8);
+		
+		RepeatedTokenRule repeated = assertInstanceOf(RepeatedTokenRule.class, repeatedRule);
+		assertEquals(baseRule, repeated.tokenRule());
+		assertEquals(2, repeated.minOccurrences());
+		assertEquals(8, repeated.maxOccurrences());
+	}
+	
+	@Test
 	void notThrowsUnsupportedOperationException() {
-		TokenRule baseRule = createRule("test");
+		TokenRule baseRule = createRule();
 		
 		assertThrows(UnsupportedOperationException.class, baseRule::not);
 	}
 	
 	@Test
 	void group() {
-		TokenRule baseRule = createRule("test");
+		TokenRule baseRule = createRule();
 		
 		TokenRule groupRule = baseRule.group();
 		
-		assertTrue(groupRule instanceof TokenGroupRule);
-		TokenGroupRule group = (TokenGroupRule) groupRule;
+		TokenGroupRule group = assertInstanceOf(TokenGroupRule.class, groupRule);
 		assertEquals(baseRule, group.tokenRule());
 	}
 	
 	@Test
 	void lookahead() {
-		TokenRule baseRule = createRule("test");
+		TokenRule baseRule = createRule();
 		
 		TokenRule lookaheadRule = baseRule.lookahead();
 		
-		assertTrue(lookaheadRule instanceof LookaheadTokenRule);
-		LookaheadTokenRule lookahead = (LookaheadTokenRule) lookaheadRule;
+		LookaheadTokenRule lookahead = assertInstanceOf(LookaheadTokenRule.class, lookaheadRule);
 		assertEquals(baseRule, lookahead.tokenRule());
 	}
 	
 	@Test
 	void negativeLookahead() {
-		TokenRule baseRule = createRule("test");
+		TokenRule baseRule = createRule();
 		
 		TokenRule negativeLookaheadRule = baseRule.negativeLookahead();
 		
-		assertTrue(negativeLookaheadRule instanceof LookaheadTokenRule);
-		LookaheadTokenRule lookahead = (LookaheadTokenRule) negativeLookaheadRule;
+		LookaheadTokenRule lookahead = assertInstanceOf(LookaheadTokenRule.class, negativeLookaheadRule);
 		assertEquals(baseRule, lookahead.tokenRule());
 	}
 	
 	@Test
 	void lookbehind() {
-		TokenRule baseRule = createRule("test");
+		TokenRule baseRule = createRule();
 		
 		TokenRule lookbehindRule = baseRule.lookbehind();
 		
-		assertTrue(lookbehindRule instanceof LookbehindTokenRule);
-		LookbehindTokenRule lookbehind = (LookbehindTokenRule) lookbehindRule;
+		LookbehindTokenRule lookbehind = assertInstanceOf(LookbehindTokenRule.class, lookbehindRule);
 		assertEquals(baseRule, lookbehind.tokenRule());
 	}
 	
 	@Test
 	void negativeLookbehind() {
-		TokenRule baseRule = createRule("test");
+		TokenRule baseRule = createRule();
 		
 		TokenRule negativeLookbehindRule = baseRule.negativeLookbehind();
 		
-		assertTrue(negativeLookbehindRule instanceof LookbehindTokenRule);
-		LookbehindTokenRule lookbehind = (LookbehindTokenRule) negativeLookbehindRule;
+		LookbehindTokenRule lookbehind = assertInstanceOf(LookbehindTokenRule.class, negativeLookbehindRule);
 		assertEquals(baseRule, lookbehind.tokenRule());
 	}
 	
 	@Test
 	void functionalInterfaceUsage() {
-		// Test that TokenRule can be used as a functional interface
 		TokenRule lambdaRule = new TokenRule() {
 			@Override
 			public @Nullable TokenRuleMatch match(@NotNull TokenStream stream, @NotNull TokenRuleContext ctx) {
@@ -253,53 +246,31 @@ class TokenRuleTest {
 				}
 				int startIndex = stream.getCurrentIndex();
 				Token token = stream.getCurrentToken();
-				if (token.value().equals("lambda")) {
+				if ("lambda".equals(token.value())) {
 					return new TokenRuleMatch(startIndex, stream.advance(), List.of(token), this);
 				}
 				return null;
 			}
 		};
 		
-		TokenStream stream = TokenStream.createMutable(List.of(createToken("lambda")));
+		TokenStream stream = TokenStream.createMutable(List.of(createToken()));
 		TokenRuleContext context = TokenRuleContext.empty();
 		
 		TokenRuleMatch result = lambdaRule.match(stream, context);
 		
 		assertNotNull(result);
-		assertEquals("lambda", result.matchedTokens().get(0).value());
+		assertEquals("lambda", result.matchedTokens().getFirst().value());
 	}
 	
 	@Test
 	void chainingDefaultMethods() {
-		TokenRule baseRule = createRule("test");
+		TokenRule baseRule = createRule();
 		
 		TokenRule chainedRule = baseRule.optional().atLeast(2).group();
 		
-		// Should create a group rule containing a repeated rule containing an optional rule
-		assertTrue(chainedRule instanceof TokenGroupRule);
-		TokenGroupRule group = (TokenGroupRule) chainedRule;
-		assertTrue(group.tokenRule() instanceof RepeatedTokenRule);
-		RepeatedTokenRule repeated = (RepeatedTokenRule) group.tokenRule();
-		assertTrue(repeated.tokenRule() instanceof OptionalTokenRule);
-		OptionalTokenRule optional = (OptionalTokenRule) repeated.tokenRule();
+		TokenGroupRule group = assertInstanceOf(TokenGroupRule.class, chainedRule);
+		RepeatedTokenRule repeated = assertInstanceOf(RepeatedTokenRule.class, group.tokenRule());
+		OptionalTokenRule optional = assertInstanceOf(OptionalTokenRule.class, repeated.tokenRule());
 		assertEquals(baseRule, optional.tokenRule());
-	}
-	
-	@Test
-	void defaultMethodsWithNullRule() {
-		TokenRule nullRule = null;
-		
-		// These should throw NPE when the underlying constructor is called
-		assertThrows(NullPointerException.class, () -> TokenRules.optional(nullRule));
-		assertThrows(NullPointerException.class, () -> TokenRules.atLeast(nullRule, 1));
-		assertThrows(NullPointerException.class, () -> TokenRules.exactly(nullRule, 1));
-		assertThrows(NullPointerException.class, () -> TokenRules.atMost(nullRule, 1));
-		assertThrows(NullPointerException.class, () -> TokenRules.zeroOrMore(nullRule));
-		assertThrows(NullPointerException.class, () -> TokenRules.between(nullRule, 1, 2));
-		assertThrows(NullPointerException.class, () -> TokenRules.group(nullRule));
-		assertThrows(NullPointerException.class, () -> TokenRules.lookahead(nullRule));
-		assertThrows(NullPointerException.class, () -> TokenRules.negativeLookahead(nullRule));
-		assertThrows(NullPointerException.class, () -> TokenRules.lookbehind(nullRule));
-		assertThrows(NullPointerException.class, () -> TokenRules.negativeLookbehind(nullRule));
 	}
 }

@@ -18,23 +18,14 @@
 
 package net.luis.utils.io.token.rules;
 
-import net.luis.utils.io.token.rules.assertions.LookMatchMode;
-import net.luis.utils.io.token.rules.assertions.LookaheadTokenRule;
-import net.luis.utils.io.token.rules.assertions.LookbehindTokenRule;
+import net.luis.utils.io.token.rules.assertions.*;
 import net.luis.utils.io.token.rules.assertions.anchors.EndTokenRule;
 import net.luis.utils.io.token.rules.assertions.anchors.StartTokenRule;
-import net.luis.utils.io.token.rules.combinators.AnyOfTokenRule;
-import net.luis.utils.io.token.rules.combinators.BoundaryTokenRule;
-import net.luis.utils.io.token.rules.combinators.RecursiveTokenRule;
-import net.luis.utils.io.token.rules.combinators.SequenceTokenRule;
-import net.luis.utils.io.token.rules.matchers.LengthTokenRule;
-import net.luis.utils.io.token.rules.matchers.PatternTokenRule;
-import net.luis.utils.io.token.rules.matchers.ValueTokenRule;
+import net.luis.utils.io.token.rules.combinators.*;
+import net.luis.utils.io.token.rules.matchers.*;
 import net.luis.utils.io.token.rules.quantifiers.OptionalTokenRule;
 import net.luis.utils.io.token.rules.quantifiers.RepeatedTokenRule;
-import net.luis.utils.io.token.rules.reference.CaptureTokenRule;
-import net.luis.utils.io.token.rules.reference.ReferenceTokenRule;
-import net.luis.utils.io.token.rules.reference.ReferenceType;
+import net.luis.utils.io.token.rules.reference.*;
 import net.luis.utils.io.token.tokens.SimpleToken;
 import net.luis.utils.io.token.tokens.Token;
 import org.jetbrains.annotations.NotNull;
@@ -47,6 +38,11 @@ import java.util.regex.Pattern;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+/**
+ * Test class for {@link TokenRules}.<br>
+ *
+ * @author Luis-St
+ */
 class TokenRulesTest {
 	
 	private static @NotNull Token createToken(@NotNull String value) {
@@ -68,11 +64,15 @@ class TokenRulesTest {
 	}
 	
 	@Test
+	void valueWithNullString() {
+		assertThrows(NullPointerException.class, () -> TokenRules.value(null, false));
+	}
+	
+	@Test
 	void valueWithCharAndIgnoreCase() {
 		TokenRule result = TokenRules.value('a', true);
 		
-		assertTrue(result instanceof ValueTokenRule);
-		ValueTokenRule valueRule = (ValueTokenRule) result;
+		ValueTokenRule valueRule = assertInstanceOf(ValueTokenRule.class, result);
 		assertEquals("a", valueRule.value());
 		assertTrue(valueRule.ignoreCase());
 	}
@@ -81,8 +81,7 @@ class TokenRulesTest {
 	void valueWithCharAndCaseSensitive() {
 		TokenRule result = TokenRules.value('A', false);
 		
-		assertTrue(result instanceof ValueTokenRule);
-		ValueTokenRule valueRule = (ValueTokenRule) result;
+		ValueTokenRule valueRule = assertInstanceOf(ValueTokenRule.class, result);
 		assertEquals("A", valueRule.value());
 		assertFalse(valueRule.ignoreCase());
 	}
@@ -91,8 +90,7 @@ class TokenRulesTest {
 	void valueWithStringAndIgnoreCase() {
 		TokenRule result = TokenRules.value("test", true);
 		
-		assertTrue(result instanceof ValueTokenRule);
-		ValueTokenRule valueRule = (ValueTokenRule) result;
+		ValueTokenRule valueRule = assertInstanceOf(ValueTokenRule.class, result);
 		assertEquals("test", valueRule.value());
 		assertTrue(valueRule.ignoreCase());
 	}
@@ -101,24 +99,9 @@ class TokenRulesTest {
 	void valueWithStringAndCaseSensitive() {
 		TokenRule result = TokenRules.value("TEST", false);
 		
-		assertTrue(result instanceof ValueTokenRule);
-		ValueTokenRule valueRule = (ValueTokenRule) result;
+		ValueTokenRule valueRule = assertInstanceOf(ValueTokenRule.class, result);
 		assertEquals("TEST", valueRule.value());
 		assertFalse(valueRule.ignoreCase());
-	}
-	
-	@Test
-	void valueWithNullString() {
-		assertThrows(NullPointerException.class, () -> TokenRules.value((String) null, false));
-	}
-	
-	@Test
-	void patternWithString() {
-		TokenRule result = TokenRules.pattern("\\d+");
-		
-		assertTrue(result instanceof PatternTokenRule);
-		PatternTokenRule patternRule = (PatternTokenRule) result;
-		assertEquals("\\d+", patternRule.pattern().pattern());
 	}
 	
 	@Test
@@ -127,14 +110,11 @@ class TokenRulesTest {
 	}
 	
 	@Test
-	void patternWithPatternObject() {
-		Pattern pattern = Pattern.compile("\\w+");
+	void patternWithString() {
+		TokenRule result = TokenRules.pattern("\\d+");
 		
-		TokenRule result = TokenRules.pattern(pattern);
-		
-		assertTrue(result instanceof PatternTokenRule);
-		PatternTokenRule patternRule = (PatternTokenRule) result;
-		assertEquals(pattern, patternRule.pattern());
+		PatternTokenRule patternRule = assertInstanceOf(PatternTokenRule.class, result);
+		assertEquals("\\d+", patternRule.pattern().pattern());
 	}
 	
 	@Test
@@ -143,13 +123,13 @@ class TokenRulesTest {
 	}
 	
 	@Test
-	void minLength() {
-		TokenRule result = TokenRules.minLength(5);
+	void patternWithPatternObject() {
+		Pattern pattern = Pattern.compile("\\w+");
 		
-		assertTrue(result instanceof LengthTokenRule);
-		LengthTokenRule lengthRule = (LengthTokenRule) result;
-		assertEquals(5, lengthRule.minLength());
-		assertEquals(Integer.MAX_VALUE, lengthRule.maxLength());
+		TokenRule result = TokenRules.pattern(pattern);
+		
+		PatternTokenRule patternRule = assertInstanceOf(PatternTokenRule.class, result);
+		assertEquals(pattern, patternRule.pattern());
 	}
 	
 	@Test
@@ -158,13 +138,12 @@ class TokenRulesTest {
 	}
 	
 	@Test
-	void exactLength() {
-		TokenRule result = TokenRules.exactLength(3);
+	void minLength() {
+		TokenRule result = TokenRules.minLength(5);
 		
-		assertTrue(result instanceof LengthTokenRule);
-		LengthTokenRule lengthRule = (LengthTokenRule) result;
-		assertEquals(3, lengthRule.minLength());
-		assertEquals(3, lengthRule.maxLength());
+		LengthTokenRule lengthRule = assertInstanceOf(LengthTokenRule.class, result);
+		assertEquals(5, lengthRule.minLength());
+		assertEquals(Integer.MAX_VALUE, lengthRule.maxLength());
 	}
 	
 	@Test
@@ -173,13 +152,12 @@ class TokenRulesTest {
 	}
 	
 	@Test
-	void maxLength() {
-		TokenRule result = TokenRules.maxLength(10);
+	void exactLength() {
+		TokenRule result = TokenRules.exactLength(3);
 		
-		assertTrue(result instanceof LengthTokenRule);
-		LengthTokenRule lengthRule = (LengthTokenRule) result;
-		assertEquals(0, lengthRule.minLength());
-		assertEquals(10, lengthRule.maxLength());
+		LengthTokenRule lengthRule = assertInstanceOf(LengthTokenRule.class, result);
+		assertEquals(3, lengthRule.minLength());
+		assertEquals(3, lengthRule.maxLength());
 	}
 	
 	@Test
@@ -188,13 +166,12 @@ class TokenRulesTest {
 	}
 	
 	@Test
-	void lengthBetween() {
-		TokenRule result = TokenRules.lengthBetween(2, 8);
+	void maxLength() {
+		TokenRule result = TokenRules.maxLength(10);
 		
-		assertTrue(result instanceof LengthTokenRule);
-		LengthTokenRule lengthRule = (LengthTokenRule) result;
-		assertEquals(2, lengthRule.minLength());
-		assertEquals(8, lengthRule.maxLength());
+		LengthTokenRule lengthRule = assertInstanceOf(LengthTokenRule.class, result);
+		assertEquals(0, lengthRule.minLength());
+		assertEquals(10, lengthRule.maxLength());
 	}
 	
 	@Test
@@ -213,14 +190,12 @@ class TokenRulesTest {
 	}
 	
 	@Test
-	void optional() {
-		TokenRule innerRule = TokenRules.alwaysMatch();
+	void lengthBetween() {
+		TokenRule result = TokenRules.lengthBetween(2, 8);
 		
-		TokenRule result = TokenRules.optional(innerRule);
-		
-		assertTrue(result instanceof OptionalTokenRule);
-		OptionalTokenRule optionalRule = (OptionalTokenRule) result;
-		assertEquals(innerRule, optionalRule.tokenRule());
+		LengthTokenRule lengthRule = assertInstanceOf(LengthTokenRule.class, result);
+		assertEquals(2, lengthRule.minLength());
+		assertEquals(8, lengthRule.maxLength());
 	}
 	
 	@Test
@@ -229,16 +204,13 @@ class TokenRulesTest {
 	}
 	
 	@Test
-	void atLeast() {
+	void optional() {
 		TokenRule innerRule = TokenRules.alwaysMatch();
 		
-		TokenRule result = TokenRules.atLeast(innerRule, 2);
+		TokenRule result = TokenRules.optional(innerRule);
 		
-		assertTrue(result instanceof RepeatedTokenRule);
-		RepeatedTokenRule repeatedRule = (RepeatedTokenRule) result;
-		assertEquals(innerRule, repeatedRule.tokenRule());
-		assertEquals(2, repeatedRule.minOccurrences());
-		assertEquals(Integer.MAX_VALUE, repeatedRule.maxOccurrences());
+		OptionalTokenRule optionalRule = assertInstanceOf(OptionalTokenRule.class, result);
+		assertEquals(innerRule, optionalRule.tokenRule());
 	}
 	
 	@Test
@@ -252,16 +224,15 @@ class TokenRulesTest {
 	}
 	
 	@Test
-	void exactly() {
+	void atLeast() {
 		TokenRule innerRule = TokenRules.alwaysMatch();
 		
-		TokenRule result = TokenRules.exactly(innerRule, 3);
+		TokenRule result = TokenRules.atLeast(innerRule, 2);
 		
-		assertTrue(result instanceof RepeatedTokenRule);
-		RepeatedTokenRule repeatedRule = (RepeatedTokenRule) result;
+		RepeatedTokenRule repeatedRule = assertInstanceOf(RepeatedTokenRule.class, result);
 		assertEquals(innerRule, repeatedRule.tokenRule());
-		assertEquals(3, repeatedRule.minOccurrences());
-		assertEquals(3, repeatedRule.maxOccurrences());
+		assertEquals(2, repeatedRule.minOccurrences());
+		assertEquals(Integer.MAX_VALUE, repeatedRule.maxOccurrences());
 	}
 	
 	@Test
@@ -275,16 +246,15 @@ class TokenRulesTest {
 	}
 	
 	@Test
-	void atMost() {
+	void exactly() {
 		TokenRule innerRule = TokenRules.alwaysMatch();
 		
-		TokenRule result = TokenRules.atMost(innerRule, 5);
+		TokenRule result = TokenRules.exactly(innerRule, 3);
 		
-		assertTrue(result instanceof RepeatedTokenRule);
-		RepeatedTokenRule repeatedRule = (RepeatedTokenRule) result;
+		RepeatedTokenRule repeatedRule = assertInstanceOf(RepeatedTokenRule.class, result);
 		assertEquals(innerRule, repeatedRule.tokenRule());
-		assertEquals(0, repeatedRule.minOccurrences());
-		assertEquals(5, repeatedRule.maxOccurrences());
+		assertEquals(3, repeatedRule.minOccurrences());
+		assertEquals(3, repeatedRule.maxOccurrences());
 	}
 	
 	@Test
@@ -298,16 +268,15 @@ class TokenRulesTest {
 	}
 	
 	@Test
-	void zeroOrMore() {
+	void atMost() {
 		TokenRule innerRule = TokenRules.alwaysMatch();
 		
-		TokenRule result = TokenRules.zeroOrMore(innerRule);
+		TokenRule result = TokenRules.atMost(innerRule, 5);
 		
-		assertTrue(result instanceof RepeatedTokenRule);
-		RepeatedTokenRule repeatedRule = (RepeatedTokenRule) result;
+		RepeatedTokenRule repeatedRule = assertInstanceOf(RepeatedTokenRule.class, result);
 		assertEquals(innerRule, repeatedRule.tokenRule());
 		assertEquals(0, repeatedRule.minOccurrences());
-		assertEquals(Integer.MAX_VALUE, repeatedRule.maxOccurrences());
+		assertEquals(5, repeatedRule.maxOccurrences());
 	}
 	
 	@Test
@@ -316,16 +285,16 @@ class TokenRulesTest {
 	}
 	
 	@Test
-	void between() {
+	void zeroOrMore() {
 		TokenRule innerRule = TokenRules.alwaysMatch();
 		
-		TokenRule result = TokenRules.between(innerRule, 2, 5);
+		TokenRule result = TokenRules.zeroOrMore(innerRule);
 		
-		assertTrue(result instanceof RepeatedTokenRule);
+		assertInstanceOf(RepeatedTokenRule.class, result);
 		RepeatedTokenRule repeatedRule = (RepeatedTokenRule) result;
 		assertEquals(innerRule, repeatedRule.tokenRule());
-		assertEquals(2, repeatedRule.minOccurrences());
-		assertEquals(5, repeatedRule.maxOccurrences());
+		assertEquals(0, repeatedRule.minOccurrences());
+		assertEquals(Integer.MAX_VALUE, repeatedRule.maxOccurrences());
 	}
 	
 	@Test
@@ -349,15 +318,15 @@ class TokenRulesTest {
 	}
 	
 	@Test
-	void sequenceWithVarArgs() {
-		TokenRule rule1 = TokenRules.alwaysMatch();
-		TokenRule rule2 = TokenRules.neverMatch();
+	void between() {
+		TokenRule innerRule = TokenRules.alwaysMatch();
 		
-		TokenRule result = TokenRules.sequence(rule1, rule2);
+		TokenRule result = TokenRules.between(innerRule, 2, 5);
 		
-		assertTrue(result instanceof SequenceTokenRule);
-		SequenceTokenRule sequenceRule = (SequenceTokenRule) result;
-		assertEquals(List.of(rule1, rule2), sequenceRule.tokenRules());
+		RepeatedTokenRule repeatedRule = assertInstanceOf(RepeatedTokenRule.class, result);
+		assertEquals(innerRule, repeatedRule.tokenRule());
+		assertEquals(2, repeatedRule.minOccurrences());
+		assertEquals(5, repeatedRule.maxOccurrences());
 	}
 	
 	@Test
@@ -367,25 +336,23 @@ class TokenRulesTest {
 	
 	@Test
 	void sequenceWithVarArgsEmpty() {
-		assertThrows(IllegalArgumentException.class, () -> TokenRules.sequence());
+		assertThrows(IllegalArgumentException.class, TokenRules::sequence);
 	}
 	
 	@Test
 	void sequenceWithVarArgsContainingNull() {
-		assertThrows(IllegalArgumentException.class, () -> TokenRules.sequence(TokenRules.alwaysMatch(), null));
+		assertThrows(NullPointerException.class, () -> TokenRules.sequence(TokenRules.alwaysMatch(), null));
 	}
 	
 	@Test
-	void sequenceWithList() {
+	void sequenceWithVarArgs() {
 		TokenRule rule1 = TokenRules.alwaysMatch();
 		TokenRule rule2 = TokenRules.neverMatch();
-		List<TokenRule> rules = List.of(rule1, rule2);
 		
-		TokenRule result = TokenRules.sequence(rules);
+		TokenRule result = TokenRules.sequence(rule1, rule2);
 		
-		assertTrue(result instanceof SequenceTokenRule);
-		SequenceTokenRule sequenceRule = (SequenceTokenRule) result;
-		assertEquals(rules, sequenceRule.tokenRules());
+		SequenceTokenRule sequenceRule = assertInstanceOf(SequenceTokenRule.class, result);
+		assertEquals(List.of(rule1, rule2), sequenceRule.tokenRules());
 	}
 	
 	@Test
@@ -399,15 +366,15 @@ class TokenRulesTest {
 	}
 	
 	@Test
-	void anyWithVarArgs() {
+	void sequenceWithList() {
 		TokenRule rule1 = TokenRules.alwaysMatch();
 		TokenRule rule2 = TokenRules.neverMatch();
+		List<TokenRule> rules = List.of(rule1, rule2);
 		
-		TokenRule result = TokenRules.any(rule1, rule2);
+		TokenRule result = TokenRules.sequence(rules);
 		
-		assertTrue(result instanceof AnyOfTokenRule);
-		AnyOfTokenRule anyRule = (AnyOfTokenRule) result;
-		assertEquals(List.of(rule1, rule2), anyRule.tokenRules());
+		SequenceTokenRule sequenceRule = assertInstanceOf(SequenceTokenRule.class, result);
+		assertEquals(rules, sequenceRule.tokenRules());
 	}
 	
 	@Test
@@ -417,25 +384,23 @@ class TokenRulesTest {
 	
 	@Test
 	void anyWithVarArgsEmpty() {
-		assertThrows(IllegalArgumentException.class, () -> TokenRules.any());
+		assertThrows(IllegalArgumentException.class, TokenRules::any);
 	}
 	
 	@Test
 	void anyWithVarArgsContainingNull() {
-		assertThrows(IllegalArgumentException.class, () -> TokenRules.any(TokenRules.alwaysMatch(), null));
+		assertThrows(NullPointerException.class, () -> TokenRules.any(TokenRules.alwaysMatch(), null));
 	}
 	
 	@Test
-	void anyWithList() {
+	void anyWithVarArgs() {
 		TokenRule rule1 = TokenRules.alwaysMatch();
 		TokenRule rule2 = TokenRules.neverMatch();
-		List<TokenRule> rules = List.of(rule1, rule2);
 		
-		TokenRule result = TokenRules.any(rules);
+		TokenRule result = TokenRules.any(rule1, rule2);
 		
-		assertTrue(result instanceof AnyOfTokenRule);
-		AnyOfTokenRule anyRule = (AnyOfTokenRule) result;
-		assertEquals(rules, anyRule.tokenRules());
+		AnyOfTokenRule anyRule = assertInstanceOf(AnyOfTokenRule.class, result);
+		assertEquals(List.of(rule1, rule2), anyRule.tokenRules());
 	}
 	
 	@Test
@@ -449,17 +414,15 @@ class TokenRulesTest {
 	}
 	
 	@Test
-	void boundaryTwoParameters() {
-		TokenRule start = TokenRules.value("(", false);
-		TokenRule end = TokenRules.value(")", false);
+	void anyWithList() {
+		TokenRule rule1 = TokenRules.alwaysMatch();
+		TokenRule rule2 = TokenRules.neverMatch();
+		List<TokenRule> rules = List.of(rule1, rule2);
 		
-		TokenRule result = TokenRules.boundary(start, end);
+		TokenRule result = TokenRules.any(rules);
 		
-		assertTrue(result instanceof BoundaryTokenRule);
-		BoundaryTokenRule boundaryRule = (BoundaryTokenRule) result;
-		assertEquals(start, boundaryRule.startTokenRule());
-		assertEquals(end, boundaryRule.endTokenRule());
-		assertEquals(TokenRules.alwaysMatch().getClass(), boundaryRule.betweenTokenRule().getClass());
+		AnyOfTokenRule anyRule = assertInstanceOf(AnyOfTokenRule.class, result);
+		assertEquals(rules, anyRule.tokenRules());
 	}
 	
 	@Test
@@ -473,18 +436,16 @@ class TokenRulesTest {
 	}
 	
 	@Test
-	void boundaryThreeParameters() {
+	void boundaryTwoParameters() {
 		TokenRule start = TokenRules.value("(", false);
-		TokenRule between = TokenRules.value("content", false);
 		TokenRule end = TokenRules.value(")", false);
 		
-		TokenRule result = TokenRules.boundary(start, between, end);
+		TokenRule result = TokenRules.boundary(start, end);
 		
-		assertTrue(result instanceof BoundaryTokenRule);
-		BoundaryTokenRule boundaryRule = (BoundaryTokenRule) result;
+		BoundaryTokenRule boundaryRule = assertInstanceOf(BoundaryTokenRule.class, result);
 		assertEquals(start, boundaryRule.startTokenRule());
-		assertEquals(between, boundaryRule.betweenTokenRule());
 		assertEquals(end, boundaryRule.endTokenRule());
+		assertEquals(TokenRules.alwaysMatch().getClass(), boundaryRule.betweenTokenRule().getClass());
 	}
 	
 	@Test
@@ -503,28 +464,31 @@ class TokenRulesTest {
 	}
 	
 	@Test
+	void boundaryThreeParameters() {
+		TokenRule start = TokenRules.value("(", false);
+		TokenRule between = TokenRules.value("content", false);
+		TokenRule end = TokenRules.value(")", false);
+		
+		TokenRule result = TokenRules.boundary(start, between, end);
+		
+		BoundaryTokenRule boundaryRule = assertInstanceOf(BoundaryTokenRule.class, result);
+		assertEquals(start, boundaryRule.startTokenRule());
+		assertEquals(between, boundaryRule.betweenTokenRule());
+		assertEquals(end, boundaryRule.endTokenRule());
+	}
+	
+	@Test
+	void recursiveWithNullFunction() {
+		assertThrows(NullPointerException.class, () -> TokenRules.recursive(null));
+	}
+	
+	@Test
 	void recursiveWithFunction() {
 		Function<TokenRule, TokenRule> factory = self -> TokenRules.any(TokenRules.value("base", false), self);
 		
 		TokenRule result = TokenRules.recursive(factory);
 		
-		assertTrue(result instanceof RecursiveTokenRule);
-	}
-	
-	@Test
-	void recursiveWithNullFunction() {
-		assertThrows(NullPointerException.class, () -> TokenRules.recursive((Function<TokenRule, TokenRule>) null));
-	}
-	
-	@Test
-	void recursiveThreeParameters() {
-		TokenRule opening = TokenRules.value("(", false);
-		TokenRule content = TokenRules.alwaysMatch();
-		TokenRule closing = TokenRules.value(")", false);
-		
-		TokenRule result = TokenRules.recursive(opening, content, closing);
-		
-		assertTrue(result instanceof RecursiveTokenRule);
+		assertInstanceOf(RecursiveTokenRule.class, result);
 	}
 	
 	@Test
@@ -543,14 +507,14 @@ class TokenRulesTest {
 	}
 	
 	@Test
-	void recursiveWithOpeningClosingAndFactory() {
+	void recursiveThreeParameters() {
 		TokenRule opening = TokenRules.value("(", false);
+		TokenRule content = TokenRules.alwaysMatch();
 		TokenRule closing = TokenRules.value(")", false);
-		Function<TokenRule, TokenRule> contentFactory = self -> TokenRules.any(TokenRules.alwaysMatch(), self);
 		
-		TokenRule result = TokenRules.recursive(opening, closing, contentFactory);
+		TokenRule result = TokenRules.recursive(opening, content, closing);
 		
-		assertTrue(result instanceof RecursiveTokenRule);
+		assertInstanceOf(RecursiveTokenRule.class, result);
 	}
 	
 	@Test
@@ -571,21 +535,21 @@ class TokenRulesTest {
 	}
 	
 	@Test
-	void lazy() {
-		TokenRule result = TokenRules.lazy();
+	void recursiveWithOpeningClosingAndFactory() {
+		TokenRule opening = TokenRules.value("(", false);
+		TokenRule closing = TokenRules.value(")", false);
+		Function<TokenRule, TokenRule> contentFactory = self -> TokenRules.any(TokenRules.alwaysMatch(), self);
 		
-		assertTrue(result instanceof LazyTokenRule);
+		TokenRule result = TokenRules.recursive(opening, closing, contentFactory);
+		
+		assertInstanceOf(RecursiveTokenRule.class, result);
 	}
 	
 	@Test
-	void group() {
-		TokenRule innerRule = TokenRules.alwaysMatch();
+	void lazy() {
+		TokenRule result = TokenRules.lazy();
 		
-		TokenRule result = TokenRules.group(innerRule);
-		
-		assertTrue(result instanceof TokenGroupRule);
-		TokenGroupRule groupRule = (TokenGroupRule) result;
-		assertEquals(innerRule, groupRule.tokenRule());
+		assertInstanceOf(LazyTokenRule.class, result);
 	}
 	
 	@Test
@@ -594,19 +558,30 @@ class TokenRulesTest {
 	}
 	
 	@Test
-	void custom() {
-		Predicate<Token> condition = token -> token.value().equals("test");
+	void group() {
+		TokenRule innerRule = TokenRules.alwaysMatch();
 		
-		TokenRule result = TokenRules.custom(condition);
+		TokenRule result = TokenRules.group(innerRule);
 		
-		assertTrue(result instanceof CustomTokeRule);
-		CustomTokeRule customRule = (CustomTokeRule) result;
-		assertEquals(condition, customRule.condition());
+		assertInstanceOf(TokenGroupRule.class, result);
+		TokenGroupRule groupRule = (TokenGroupRule) result;
+		assertEquals(innerRule, groupRule.tokenRule());
 	}
 	
 	@Test
 	void customWithNullCondition() {
 		assertThrows(NullPointerException.class, () -> TokenRules.custom(null));
+	}
+	
+	@Test
+	void custom() {
+		Predicate<Token> condition = token -> "test".equals(token.value());
+		
+		TokenRule result = TokenRules.custom(condition);
+		
+		assertInstanceOf(CustomTokeRule.class, result);
+		CustomTokeRule customRule = (CustomTokeRule) result;
+		assertEquals(condition, customRule.condition());
 	}
 	
 	@Test
@@ -638,32 +613,20 @@ class TokenRulesTest {
 	}
 	
 	@Test
-	void lookahead() {
-		TokenRule innerRule = TokenRules.alwaysMatch();
-		
-		TokenRule result = TokenRules.lookahead(innerRule);
-		
-		assertTrue(result instanceof LookaheadTokenRule);
-		LookaheadTokenRule lookaheadRule = (LookaheadTokenRule) result;
-		assertEquals(innerRule, lookaheadRule.tokenRule());
-		assertEquals(LookMatchMode.POSITIVE, lookaheadRule.mode());
-	}
-	
-	@Test
 	void lookaheadWithNullRule() {
 		assertThrows(NullPointerException.class, () -> TokenRules.lookahead(null));
 	}
 	
 	@Test
-	void negativeLookahead() {
+	void lookahead() {
 		TokenRule innerRule = TokenRules.alwaysMatch();
 		
-		TokenRule result = TokenRules.negativeLookahead(innerRule);
+		TokenRule result = TokenRules.lookahead(innerRule);
 		
-		assertTrue(result instanceof LookaheadTokenRule);
+		assertInstanceOf(LookaheadTokenRule.class, result);
 		LookaheadTokenRule lookaheadRule = (LookaheadTokenRule) result;
 		assertEquals(innerRule, lookaheadRule.tokenRule());
-		assertEquals(LookMatchMode.NEGATIVE, lookaheadRule.mode());
+		assertEquals(LookMatchMode.POSITIVE, lookaheadRule.mode());
 	}
 	
 	@Test
@@ -672,15 +635,15 @@ class TokenRulesTest {
 	}
 	
 	@Test
-	void lookbehind() {
+	void negativeLookahead() {
 		TokenRule innerRule = TokenRules.alwaysMatch();
 		
-		TokenRule result = TokenRules.lookbehind(innerRule);
+		TokenRule result = TokenRules.negativeLookahead(innerRule);
 		
-		assertTrue(result instanceof LookbehindTokenRule);
-		LookbehindTokenRule lookbehindRule = (LookbehindTokenRule) result;
-		assertEquals(innerRule, lookbehindRule.tokenRule());
-		assertEquals(LookMatchMode.POSITIVE, lookbehindRule.mode());
+		assertInstanceOf(LookaheadTokenRule.class, result);
+		LookaheadTokenRule lookaheadRule = (LookaheadTokenRule) result;
+		assertEquals(innerRule, lookaheadRule.tokenRule());
+		assertEquals(LookMatchMode.NEGATIVE, lookaheadRule.mode());
 	}
 	
 	@Test
@@ -689,15 +652,15 @@ class TokenRulesTest {
 	}
 	
 	@Test
-	void negativeLookbehind() {
+	void lookbehind() {
 		TokenRule innerRule = TokenRules.alwaysMatch();
 		
-		TokenRule result = TokenRules.negativeLookbehind(innerRule);
+		TokenRule result = TokenRules.lookbehind(innerRule);
 		
-		assertTrue(result instanceof LookbehindTokenRule);
+		assertInstanceOf(LookbehindTokenRule.class, result);
 		LookbehindTokenRule lookbehindRule = (LookbehindTokenRule) result;
 		assertEquals(innerRule, lookbehindRule.tokenRule());
-		assertEquals(LookMatchMode.NEGATIVE, lookbehindRule.mode());
+		assertEquals(LookMatchMode.POSITIVE, lookbehindRule.mode());
 	}
 	
 	@Test
@@ -706,16 +669,15 @@ class TokenRulesTest {
 	}
 	
 	@Test
-	void capture() {
-		String key = "testKey";
+	void negativeLookbehind() {
 		TokenRule innerRule = TokenRules.alwaysMatch();
 		
-		TokenRule result = TokenRules.capture(key, innerRule);
+		TokenRule result = TokenRules.negativeLookbehind(innerRule);
 		
-		assertTrue(result instanceof CaptureTokenRule);
-		CaptureTokenRule captureRule = (CaptureTokenRule) result;
-		assertEquals(key, captureRule.key());
-		assertEquals(innerRule, captureRule.tokenRule());
+		assertInstanceOf(LookbehindTokenRule.class, result);
+		LookbehindTokenRule lookbehindRule = (LookbehindTokenRule) result;
+		assertEquals(innerRule, lookbehindRule.tokenRule());
+		assertEquals(LookMatchMode.NEGATIVE, lookbehindRule.mode());
 	}
 	
 	@Test
@@ -734,15 +696,16 @@ class TokenRulesTest {
 	}
 	
 	@Test
-	void reference() {
+	void capture() {
 		String key = "testKey";
+		TokenRule innerRule = TokenRules.alwaysMatch();
 		
-		TokenRule result = TokenRules.reference(key);
+		TokenRule result = TokenRules.capture(key, innerRule);
 		
-		assertTrue(result instanceof ReferenceTokenRule);
-		ReferenceTokenRule referenceRule = (ReferenceTokenRule) result;
-		assertEquals(key, referenceRule.key());
-		assertEquals(ReferenceType.DYNAMIC, referenceRule.type());
+		assertInstanceOf(CaptureTokenRule.class, result);
+		CaptureTokenRule captureRule = (CaptureTokenRule) result;
+		assertEquals(key, captureRule.key());
+		assertEquals(innerRule, captureRule.tokenRule());
 	}
 	
 	@Test
@@ -756,15 +719,15 @@ class TokenRulesTest {
 	}
 	
 	@Test
-	void referenceRule() {
+	void reference() {
 		String key = "testKey";
 		
-		TokenRule result = TokenRules.referenceRule(key);
+		TokenRule result = TokenRules.reference(key);
 		
-		assertTrue(result instanceof ReferenceTokenRule);
+		assertInstanceOf(ReferenceTokenRule.class, result);
 		ReferenceTokenRule referenceRule = (ReferenceTokenRule) result;
 		assertEquals(key, referenceRule.key());
-		assertEquals(ReferenceType.RULE, referenceRule.type());
+		assertEquals(ReferenceType.DYNAMIC, referenceRule.type());
 	}
 	
 	@Test
@@ -778,15 +741,15 @@ class TokenRulesTest {
 	}
 	
 	@Test
-	void referenceTokens() {
+	void referenceRule() {
 		String key = "testKey";
 		
-		TokenRule result = TokenRules.referenceTokens(key);
+		TokenRule result = TokenRules.referenceRule(key);
 		
-		assertTrue(result instanceof ReferenceTokenRule);
+		assertInstanceOf(ReferenceTokenRule.class, result);
 		ReferenceTokenRule referenceRule = (ReferenceTokenRule) result;
 		assertEquals(key, referenceRule.key());
-		assertEquals(ReferenceType.TOKENS, referenceRule.type());
+		assertEquals(ReferenceType.RULE, referenceRule.type());
 	}
 	
 	@Test
@@ -797,5 +760,17 @@ class TokenRulesTest {
 	@Test
 	void referenceTokensWithEmptyKey() {
 		assertThrows(IllegalArgumentException.class, () -> TokenRules.referenceTokens(""));
+	}
+	
+	@Test
+	void referenceTokens() {
+		String key = "testKey";
+		
+		TokenRule result = TokenRules.referenceTokens(key);
+		
+		assertInstanceOf(ReferenceTokenRule.class, result);
+		ReferenceTokenRule referenceRule = (ReferenceTokenRule) result;
+		assertEquals(key, referenceRule.key());
+		assertEquals(ReferenceType.TOKENS, referenceRule.type());
 	}
 }

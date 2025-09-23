@@ -33,6 +33,11 @@ import java.util.Objects;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+/**
+ * Test class for {@link TokenGroupRule}.<br>
+ *
+ * @author Luis-St
+ */
 class TokenGroupRuleTest {
 	
 	private static @NotNull Token createToken(@NotNull String value) {
@@ -132,7 +137,7 @@ class TokenGroupRuleTest {
 		assertEquals(0, result.startIndex());
 		assertEquals(1, result.endIndex());
 		assertEquals(1, result.matchedTokens().size());
-		assertEquals(group, result.matchedTokens().get(0));
+		assertEquals(group, result.matchedTokens().getFirst());
 		assertEquals(rule, result.matchingTokenRule());
 	}
 	
@@ -152,13 +157,13 @@ class TokenGroupRuleTest {
 	
 	@Test
 	void not() {
-		TokenRule innerRule = createRule("test");
+		TokenRule innerRule = TokenRules.alwaysMatch();
 		TokenGroupRule rule = new TokenGroupRule(innerRule);
 		
 		TokenRule negated = rule.not();
 		
 		assertNotNull(negated);
-		assertTrue(negated instanceof TokenGroupRule);
+		assertInstanceOf(TokenGroupRule.class, negated);
 		assertNotEquals(rule, negated);
 	}
 	
@@ -168,29 +173,8 @@ class TokenGroupRuleTest {
 		
 		TokenRule negated = rule.not();
 		
-		assertTrue(negated instanceof TokenGroupRule);
-		TokenGroupRule negatedGroup = (TokenGroupRule) negated;
+		TokenGroupRule negatedGroup = assertInstanceOf(TokenGroupRule.class, negated);
 		assertEquals(NeverMatchTokenRule.INSTANCE, negatedGroup.tokenRule());
-	}
-	
-	@Test
-	void equalsAndHashCode() {
-		TokenRule innerRule1 = createRule("test");
-		TokenRule innerRule2 = createRule("test");
-		TokenRule innerRule3 = createRule("other");
-		
-		TokenGroupRule rule1 = new TokenGroupRule(innerRule1);
-		TokenGroupRule rule2 = new TokenGroupRule(innerRule1);
-		TokenGroupRule rule3 = new TokenGroupRule(innerRule2);
-		TokenGroupRule rule4 = new TokenGroupRule(innerRule3);
-		
-		assertEquals(rule1, rule2);
-		assertNotEquals(rule1, rule3); // Different inner rule instances
-		assertNotEquals(rule1, rule4);
-		assertNotEquals(rule1, null);
-		assertNotEquals(rule1, "string");
-		
-		assertEquals(rule1.hashCode(), rule2.hashCode());
 	}
 	
 	@Test

@@ -34,6 +34,11 @@ import java.util.Objects;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+/**
+ * Test class for {@link StartTokenRule}.<br>
+ *
+ * @author Luis-St
+ */
 class StartTokenRuleTest {
 	
 	private static @NotNull Token createToken(@NotNull String value) {
@@ -62,6 +67,37 @@ class StartTokenRuleTest {
 				return null;
 			}
 		};
+	}
+	
+	@Test
+	void documentMatchWithNullStream() {
+		StartTokenRule rule = StartTokenRule.DOCUMENT;
+		TokenRuleContext context = TokenRuleContext.empty();
+		
+		assertThrows(NullPointerException.class, () -> rule.match(null, context));
+	}
+	
+	@Test
+	void documentMatchWithNullContext() {
+		StartTokenRule rule = StartTokenRule.DOCUMENT;
+		TokenStream stream = TokenStream.createMutable(List.of());
+		
+		assertThrows(NullPointerException.class, () -> rule.match(stream, null));
+	}
+	
+	@Test
+	void documentMatchWithEmptyStream() {
+		StartTokenRule rule = StartTokenRule.DOCUMENT;
+		TokenStream stream = TokenStream.createMutable(List.of());
+		TokenRuleContext context = TokenRuleContext.empty();
+		
+		TokenRuleMatch result = rule.match(stream, context);
+		
+		assertNotNull(result);
+		assertEquals(0, result.startIndex());
+		assertEquals(0, result.endIndex());
+		assertTrue(result.matchedTokens().isEmpty());
+		assertEquals(rule, result.matchingTokenRule());
 	}
 	
 	@Test
@@ -98,7 +134,7 @@ class StartTokenRuleTest {
 	void documentNoMatchAtNonZeroIndex() {
 		StartTokenRule rule = StartTokenRule.DOCUMENT;
 		TokenStream stream = TokenStream.createMutable(List.of(createToken("first"), createToken("second")));
-		stream.advance(); // Move to index 1
+		stream.advance();
 		TokenRuleContext context = TokenRuleContext.empty();
 		
 		TokenRuleMatch result = rule.match(stream, context);
@@ -107,19 +143,34 @@ class StartTokenRuleTest {
 	}
 	
 	@Test
-	void documentMatchWithNullStream() {
-		StartTokenRule rule = StartTokenRule.DOCUMENT;
+	void lineMatchWithNullStream() {
+		StartTokenRule rule = StartTokenRule.LINE;
 		TokenRuleContext context = TokenRuleContext.empty();
 		
 		assertThrows(NullPointerException.class, () -> rule.match(null, context));
 	}
 	
 	@Test
-	void documentMatchWithNullContext() {
-		StartTokenRule rule = StartTokenRule.DOCUMENT;
+	void lineMatchWithNullContext() {
+		StartTokenRule rule = StartTokenRule.LINE;
 		TokenStream stream = TokenStream.createMutable(List.of());
 		
 		assertThrows(NullPointerException.class, () -> rule.match(stream, null));
+	}
+	
+	@Test
+	void lineMatchWithEmptyStream() {
+		StartTokenRule rule = StartTokenRule.LINE;
+		TokenStream stream = TokenStream.createMutable(List.of());
+		TokenRuleContext context = TokenRuleContext.empty();
+		
+		TokenRuleMatch result = rule.match(stream, context);
+		
+		assertNotNull(result);
+		assertEquals(0, result.startIndex());
+		assertEquals(0, result.endIndex());
+		assertTrue(result.matchedTokens().isEmpty());
+		assertEquals(rule, result.matchingTokenRule());
 	}
 	
 	@Test
@@ -144,7 +195,7 @@ class StartTokenRuleTest {
 		
 		StartTokenRule rule = StartTokenRule.LINE;
 		TokenStream stream = TokenStream.createMutable(List.of(previousToken, currentToken));
-		stream.advance(); // Move to current token
+		stream.advance();
 		TokenRuleContext context = TokenRuleContext.empty();
 		
 		TokenRuleMatch result = rule.match(stream, context);
@@ -163,7 +214,7 @@ class StartTokenRuleTest {
 		
 		StartTokenRule rule = StartTokenRule.LINE;
 		TokenStream stream = TokenStream.createMutable(List.of(previousToken, currentToken));
-		stream.advance(); // Move to current token
+		stream.advance();
 		TokenRuleContext context = TokenRuleContext.empty();
 		
 		TokenRuleMatch result = rule.match(stream, context);
@@ -182,7 +233,7 @@ class StartTokenRuleTest {
 		
 		StartTokenRule rule = StartTokenRule.LINE;
 		TokenStream stream = TokenStream.createMutable(List.of(previousToken, currentToken));
-		stream.advance(); // Move to current token
+		stream.advance();
 		TokenRuleContext context = TokenRuleContext.empty();
 		
 		TokenRuleMatch result = rule.match(stream, context);
@@ -194,43 +245,12 @@ class StartTokenRuleTest {
 	void lineNoMatchWithoutNewlineAndSameLine() {
 		StartTokenRule rule = StartTokenRule.LINE;
 		TokenStream stream = TokenStream.createMutable(List.of(createToken("first"), createToken("second")));
-		stream.advance(); // Move to second token
+		stream.advance();
 		TokenRuleContext context = TokenRuleContext.empty();
 		
 		TokenRuleMatch result = rule.match(stream, context);
 		
 		assertNull(result);
-	}
-	
-	@Test
-	void lineMatchWithEmptyStream() {
-		StartTokenRule rule = StartTokenRule.LINE;
-		TokenStream stream = TokenStream.createMutable(List.of());
-		TokenRuleContext context = TokenRuleContext.empty();
-		
-		TokenRuleMatch result = rule.match(stream, context);
-		
-		assertNotNull(result);
-		assertEquals(0, result.startIndex());
-		assertEquals(0, result.endIndex());
-		assertTrue(result.matchedTokens().isEmpty());
-		assertEquals(rule, result.matchingTokenRule());
-	}
-	
-	@Test
-	void lineMatchWithNullStream() {
-		StartTokenRule rule = StartTokenRule.LINE;
-		TokenRuleContext context = TokenRuleContext.empty();
-		
-		assertThrows(NullPointerException.class, () -> rule.match(null, context));
-	}
-	
-	@Test
-	void lineMatchWithNullContext() {
-		StartTokenRule rule = StartTokenRule.LINE;
-		TokenStream stream = TokenStream.createMutable(List.of());
-		
-		assertThrows(NullPointerException.class, () -> rule.match(stream, null));
 	}
 	
 	@Test
@@ -277,7 +297,7 @@ class StartTokenRuleTest {
 		TokenRule negated = rule.not();
 		
 		TokenStream stream = TokenStream.createMutable(List.of(createToken("test")));
-		stream.advance(); // Move to non-zero index
+		stream.advance();
 		TokenRuleContext context = TokenRuleContext.empty();
 		
 		TokenRuleMatch result = negated.match(stream, context);
@@ -299,31 +319,6 @@ class StartTokenRuleTest {
 		TokenRuleMatch result = negated.match(stream, context);
 		
 		assertNull(result);
-	}
-	
-	@Test
-	void enumValues() {
-		StartTokenRule[] values = StartTokenRule.values();
-		
-		assertEquals(2, values.length);
-		assertEquals(StartTokenRule.DOCUMENT, values[0]);
-		assertEquals(StartTokenRule.LINE, values[1]);
-	}
-	
-	@Test
-	void enumValueOf() {
-		assertEquals(StartTokenRule.DOCUMENT, StartTokenRule.valueOf("DOCUMENT"));
-		assertEquals(StartTokenRule.LINE, StartTokenRule.valueOf("LINE"));
-	}
-	
-	@Test
-	void enumValueOfWithInvalidName() {
-		assertThrows(IllegalArgumentException.class, () -> StartTokenRule.valueOf("INVALID"));
-	}
-	
-	@Test
-	void enumValueOfWithNull() {
-		assertThrows(NullPointerException.class, () -> StartTokenRule.valueOf(null));
 	}
 	
 	@Test

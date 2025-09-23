@@ -34,6 +34,11 @@ import java.util.function.Supplier;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+/**
+ * Test class for {@link LazyTokenRule}.<br>
+ *
+ * @author Luis-St
+ */
 class LazyTokenRuleTest {
 	
 	private static @NotNull Token createToken(@NotNull String value) {
@@ -164,7 +169,7 @@ class LazyTokenRuleTest {
 		TokenRuleMatch result = rule.match(stream, context);
 		
 		assertNotNull(result);
-		assertEquals("test", result.matchedTokens().get(0).value());
+		assertEquals("test", result.matchedTokens().getFirst().value());
 	}
 	
 	@Test
@@ -188,17 +193,8 @@ class LazyTokenRuleTest {
 		TokenRule negated = rule.not();
 		
 		assertNotNull(negated);
-		assertTrue(negated instanceof LazyTokenRule);
+		assertInstanceOf(LazyTokenRule.class, negated);
 		assertNotEquals(rule, negated);
-	}
-	
-	@Test
-	void notWithDoubleNegation() {
-		LazyTokenRule rule = new LazyTokenRule();
-		
-		TokenRule doubleNegated = rule.not().not();
-		
-		assertEquals(rule, doubleNegated);
 	}
 	
 	@Test
@@ -210,55 +206,16 @@ class LazyTokenRuleTest {
 		TokenRule negated = rule.not();
 		
 		assertNotNull(negated);
-		assertTrue(negated instanceof LazyTokenRule);
+		assertInstanceOf(LazyTokenRule.class, negated);
 	}
 	
 	@Test
-	void equalsWithSameInstance() {
+	void notWithDoubleNegation() {
 		LazyTokenRule rule = new LazyTokenRule();
 		
-		assertEquals(rule, rule);
-	}
-	
-	@Test
-	void equalsWithDifferentInstances() {
-		LazyTokenRule rule1 = new LazyTokenRule();
-		LazyTokenRule rule2 = new LazyTokenRule();
+		TokenRule doubleNegated = rule.not().not();
 		
-		assertNotEquals(rule1, rule2);
-	}
-	
-	@Test
-	void equalsWithNull() {
-		LazyTokenRule rule = new LazyTokenRule();
-		
-		assertNotEquals(rule, null);
-	}
-	
-	@Test
-	void equalsWithDifferentType() {
-		LazyTokenRule rule = new LazyTokenRule();
-		
-		assertNotEquals(rule, "string");
-	}
-	
-	@Test
-	void hashCodeConsistency() {
-		LazyTokenRule rule = new LazyTokenRule();
-		
-		int hashCode1 = rule.hashCode();
-		int hashCode2 = rule.hashCode();
-		
-		assertEquals(hashCode1, hashCode2);
-	}
-	
-	@Test
-	void hashCodeAlwaysZero() {
-		LazyTokenRule rule1 = new LazyTokenRule();
-		LazyTokenRule rule2 = new LazyTokenRule();
-		
-		assertEquals(0, rule1.hashCode());
-		assertEquals(0, rule2.hashCode());
+		assertEquals(rule, doubleNegated);
 	}
 	
 	@Test

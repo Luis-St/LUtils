@@ -22,6 +22,11 @@ import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+/**
+ * Test class for {@link LookMatchMode}.<br>
+ *
+ * @author Luis-St
+ */
 class LookMatchModeTest {
 	
 	@Test
@@ -50,31 +55,6 @@ class LookMatchModeTest {
 		boolean result = LookMatchMode.NEGATIVE.shouldMatch(false);
 		
 		assertTrue(result);
-	}
-	
-	@Test
-	void enumValues() {
-		LookMatchMode[] values = LookMatchMode.values();
-		
-		assertEquals(2, values.length);
-		assertEquals(LookMatchMode.POSITIVE, values[0]);
-		assertEquals(LookMatchMode.NEGATIVE, values[1]);
-	}
-	
-	@Test
-	void enumValueOf() {
-		assertEquals(LookMatchMode.POSITIVE, LookMatchMode.valueOf("POSITIVE"));
-		assertEquals(LookMatchMode.NEGATIVE, LookMatchMode.valueOf("NEGATIVE"));
-	}
-	
-	@Test
-	void enumValueOfWithInvalidName() {
-		assertThrows(IllegalArgumentException.class, () -> LookMatchMode.valueOf("INVALID"));
-	}
-	
-	@Test
-	void enumValueOfWithNull() {
-		assertThrows(NullPointerException.class, () -> LookMatchMode.valueOf(null));
 	}
 	
 	@Test

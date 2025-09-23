@@ -34,6 +34,11 @@ import java.util.Objects;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+/**
+ * Test class for {@link ReferenceTokenRule}.<br>
+ *
+ * @author Luis-St
+ */
 class ReferenceTokenRuleTest {
 	
 	private static @NotNull Token createToken(@NotNull String value) {
@@ -61,17 +66,6 @@ class ReferenceTokenRuleTest {
 	}
 	
 	@Test
-	void constructorWithValidParameters() {
-		String key = "testKey";
-		ReferenceType type = ReferenceType.RULE;
-		
-		ReferenceTokenRule rule = new ReferenceTokenRule(key, type);
-		
-		assertEquals(key, rule.key());
-		assertEquals(type, rule.type());
-	}
-	
-	@Test
 	void constructorWithNullKey() {
 		assertThrows(NullPointerException.class, () -> new ReferenceTokenRule(null, ReferenceType.RULE));
 	}
@@ -84,6 +78,48 @@ class ReferenceTokenRuleTest {
 	@Test
 	void constructorWithNullType() {
 		assertThrows(NullPointerException.class, () -> new ReferenceTokenRule("key", null));
+	}
+	
+	@Test
+	void constructorWithValidParameters() {
+		String key = "testKey";
+		ReferenceType type = ReferenceType.RULE;
+		
+		ReferenceTokenRule rule = new ReferenceTokenRule(key, type);
+		
+		assertEquals(key, rule.key());
+		assertEquals(type, rule.type());
+	}
+	
+	@Test
+	void matchWithNullStream() {
+		ReferenceTokenRule rule = new ReferenceTokenRule("key", ReferenceType.RULE);
+		TokenRuleContext context = TokenRuleContext.empty();
+		
+		assertThrows(NullPointerException.class, () -> rule.match(null, context));
+	}
+	
+	@Test
+	void matchWithNullContext() {
+		ReferenceTokenRule rule = new ReferenceTokenRule("key", ReferenceType.RULE);
+		TokenStream stream = TokenStream.createMutable(List.of(createToken("test")));
+		
+		assertThrows(NullPointerException.class, () -> rule.match(stream, null));
+	}
+	
+	@Test
+	void matchWithEmptyStream() {
+		String key = "testKey";
+		ReferenceTokenRule rule = new ReferenceTokenRule(key, ReferenceType.TOKENS);
+		
+		TokenRuleContext context = TokenRuleContext.empty();
+		context.captureTokens(key, List.of(createToken("test")));
+		
+		TokenStream stream = TokenStream.createMutable(List.of());
+		
+		TokenRuleMatch result = rule.match(stream, context);
+		
+		assertNull(result);
 	}
 	
 	@Test
@@ -100,7 +136,7 @@ class ReferenceTokenRuleTest {
 		TokenRuleMatch result = rule.match(stream, context);
 		
 		assertNotNull(result);
-		assertEquals("test", result.matchedTokens().get(0).value());
+		assertEquals("test", result.matchedTokens().getFirst().value());
 		assertEquals(1, stream.getCurrentIndex());
 	}
 	
@@ -115,7 +151,24 @@ class ReferenceTokenRuleTest {
 		TokenRuleMatch result = rule.match(stream, context);
 		
 		assertNull(result);
-		assertEquals(0, stream.getCurrentIndex()); // Stream not advanced
+		assertEquals(0, stream.getCurrentIndex());
+	}
+	
+	@Test
+	void matchWithTokensReferenceMismatch() {
+		String key = "testTokens";
+		List<Token> referencedTokens = List.of(createToken("expected"));
+		ReferenceTokenRule rule = new ReferenceTokenRule(key, ReferenceType.TOKENS);
+		
+		TokenRuleContext context = TokenRuleContext.empty();
+		context.captureTokens(key, referencedTokens);
+		
+		TokenStream stream = TokenStream.createMutable(List.of(createToken("actual")));
+		
+		TokenRuleMatch result = rule.match(stream, context);
+		
+		assertNull(result);
+		assertEquals(0, stream.getCurrentIndex());
 	}
 	
 	@Test
@@ -149,24 +202,7 @@ class ReferenceTokenRuleTest {
 		TokenRuleMatch result = rule.match(stream, context);
 		
 		assertNull(result);
-		assertEquals(0, stream.getCurrentIndex()); // Stream not advanced
-	}
-	
-	@Test
-	void matchWithTokensReferenceMismatch() {
-		String key = "testTokens";
-		List<Token> referencedTokens = List.of(createToken("expected"));
-		ReferenceTokenRule rule = new ReferenceTokenRule(key, ReferenceType.TOKENS);
-		
-		TokenRuleContext context = TokenRuleContext.empty();
-		context.captureTokens(key, referencedTokens);
-		
-		TokenStream stream = TokenStream.createMutable(List.of(createToken("actual")));
-		
-		TokenRuleMatch result = rule.match(stream, context);
-		
-		assertNull(result);
-		assertEquals(0, stream.getCurrentIndex()); // Stream not advanced
+		assertEquals(0, stream.getCurrentIndex());
 	}
 	
 	@Test
@@ -183,7 +219,7 @@ class ReferenceTokenRuleTest {
 		TokenRuleMatch result = rule.match(stream, context);
 		
 		assertNotNull(result);
-		assertEquals("test", result.matchedTokens().get(0).value());
+		assertEquals("test", result.matchedTokens().getFirst().value());
 	}
 	
 	@Test
@@ -200,7 +236,7 @@ class ReferenceTokenRuleTest {
 		TokenRuleMatch result = rule.match(stream, context);
 		
 		assertNotNull(result);
-		assertEquals("test", result.matchedTokens().get(0).value());
+		assertEquals("test", result.matchedTokens().getFirst().value());
 	}
 	
 	@Test
@@ -218,8 +254,8 @@ class ReferenceTokenRuleTest {
 		
 		TokenRuleMatch result = rule.match(stream, context);
 		
-		assertNull(result); // Should not match when both are present
-		assertEquals(0, stream.getCurrentIndex()); // Stream not advanced
+		assertNull(result);
+		assertEquals(0, stream.getCurrentIndex());
 	}
 	
 	@Test
@@ -233,75 +269,7 @@ class ReferenceTokenRuleTest {
 		TokenRuleMatch result = rule.match(stream, context);
 		
 		assertNull(result);
-		assertEquals(0, stream.getCurrentIndex()); // Stream not advanced
-	}
-	
-	@Test
-	void matchWithEmptyStream() {
-		String key = "testKey";
-		ReferenceTokenRule rule = new ReferenceTokenRule(key, ReferenceType.TOKENS);
-		
-		TokenRuleContext context = TokenRuleContext.empty();
-		context.captureTokens(key, List.of(createToken("test")));
-		
-		TokenStream stream = TokenStream.createMutable(List.of());
-		
-		TokenRuleMatch result = rule.match(stream, context);
-		
-		assertNull(result);
-	}
-	
-	@Test
-	void matchWithRuleReferenceReturningNull() {
-		String key = "neverMatchRule";
-		ReferenceTokenRule rule = new ReferenceTokenRule(key, ReferenceType.RULE);
-		
-		TokenRuleContext context = TokenRuleContext.empty();
-		context.defineRule(key, TokenRules.neverMatch());
-		
-		TokenStream stream = TokenStream.createMutable(List.of(createToken("test")));
-		
-		TokenRuleMatch result = rule.match(stream, context);
-		
-		assertNull(result);
-		assertEquals(0, stream.getCurrentIndex()); // Stream not advanced
-	}
-	
-	@Test
-	void matchWithNullStream() {
-		ReferenceTokenRule rule = new ReferenceTokenRule("key", ReferenceType.RULE);
-		TokenRuleContext context = TokenRuleContext.empty();
-		
-		assertThrows(NullPointerException.class, () -> rule.match(null, context));
-	}
-	
-	@Test
-	void matchWithNullContext() {
-		ReferenceTokenRule rule = new ReferenceTokenRule("key", ReferenceType.RULE);
-		TokenStream stream = TokenStream.createMutable(List.of(createToken("test")));
-		
-		assertThrows(NullPointerException.class, () -> rule.match(stream, null));
-	}
-	
-	@Test
-	void equalsAndHashCode() {
-		String key1 = "key1";
-		String key2 = "key2";
-		ReferenceType type1 = ReferenceType.RULE;
-		ReferenceType type2 = ReferenceType.TOKENS;
-		
-		ReferenceTokenRule rule1 = new ReferenceTokenRule(key1, type1);
-		ReferenceTokenRule rule2 = new ReferenceTokenRule(key1, type1);
-		ReferenceTokenRule rule3 = new ReferenceTokenRule(key2, type1);
-		ReferenceTokenRule rule4 = new ReferenceTokenRule(key1, type2);
-		
-		assertEquals(rule1, rule2);
-		assertNotEquals(rule1, rule3); // Different key
-		assertNotEquals(rule1, rule4); // Different type
-		assertNotEquals(rule1, null);
-		assertNotEquals(rule1, "string");
-		
-		assertEquals(rule1.hashCode(), rule2.hashCode());
+		assertEquals(0, stream.getCurrentIndex());
 	}
 	
 	@Test

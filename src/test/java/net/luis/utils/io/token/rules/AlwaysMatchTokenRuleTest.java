@@ -32,30 +32,23 @@ import java.util.Objects;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+/**
+ * Test class for {@link AlwaysMatchTokenRule}.<br>
+ *
+ * @author Luis-St
+ */
 class AlwaysMatchTokenRuleTest {
 	
 	private static @NotNull Token createToken(@NotNull String value) {
 		return SimpleToken.createUnpositioned(value);
 	}
 	
-	private static @NotNull TokenRule createRule(@NotNull String value) {
-		return new TokenRule() {
-			@Override
-			public @Nullable TokenRuleMatch match(@NotNull TokenStream stream, @NotNull TokenRuleContext ctx) {
-				Objects.requireNonNull(stream, "Token stream must not be null");
-				Objects.requireNonNull(ctx, "Token rule context must not be null");
-				if (!stream.hasMoreTokens()) {
-					return null;
-				}
-				
-				int startIndex = stream.getCurrentIndex();
-				Token token = stream.getCurrentToken();
-				if (token.value().equals(value)) {
-					return new TokenRuleMatch(startIndex, stream.advance(), List.of(token), this);
-				}
-				return null;
-			}
-		};
+	@Test
+	void instanceIsSingleton() {
+		AlwaysMatchTokenRule instance1 = AlwaysMatchTokenRule.INSTANCE;
+		AlwaysMatchTokenRule instance2 = AlwaysMatchTokenRule.INSTANCE;
+		
+		assertSame(instance1, instance2);
 	}
 	
 	@Test
@@ -97,7 +90,7 @@ class AlwaysMatchTokenRuleTest {
 		assertEquals(0, match.startIndex());
 		assertEquals(1, match.endIndex());
 		assertEquals(1, match.matchedTokens().size());
-		assertEquals("test", match.matchedTokens().get(0).value());
+		assertEquals("test", match.matchedTokens().getFirst().value());
 		assertEquals(rule, match.matchingTokenRule());
 	}
 	
@@ -113,7 +106,7 @@ class AlwaysMatchTokenRuleTest {
 		assertEquals(0, match.startIndex());
 		assertEquals(1, match.endIndex());
 		assertEquals(1, match.matchedTokens().size());
-		assertEquals("first", match.matchedTokens().get(0).value());
+		assertEquals("first", match.matchedTokens().getFirst().value());
 	}
 	
 	@Test
@@ -123,13 +116,5 @@ class AlwaysMatchTokenRuleTest {
 		TokenRule negated = rule.not();
 		
 		assertEquals(NeverMatchTokenRule.INSTANCE, negated);
-	}
-	
-	@Test
-	void instanceIsSingleton() {
-		AlwaysMatchTokenRule instance1 = AlwaysMatchTokenRule.INSTANCE;
-		AlwaysMatchTokenRule instance2 = AlwaysMatchTokenRule.INSTANCE;
-		
-		assertSame(instance1, instance2);
 	}
 }

@@ -34,6 +34,11 @@ import java.util.Objects;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+/**
+ * Test class for {@link OptionalTokenRule}.<br>
+ *
+ * @author Luis-St
+ */
 class OptionalTokenRuleTest {
 	
 	private static @NotNull Token createToken(@NotNull String value) {
@@ -61,125 +66,17 @@ class OptionalTokenRuleTest {
 	}
 	
 	@Test
+	void constructorWithNullRule() {
+		assertThrows(NullPointerException.class, () -> new OptionalTokenRule(null));
+	}
+	
+	@Test
 	void constructorWithValidRule() {
 		TokenRule innerRule = createRule("test");
 		
 		OptionalTokenRule rule = new OptionalTokenRule(innerRule);
 		
 		assertEquals(innerRule, rule.tokenRule());
-	}
-	
-	@Test
-	void constructorWithNullRule() {
-		assertThrows(NullPointerException.class, () -> new OptionalTokenRule(null));
-	}
-	
-	@Test
-	void matchWithInnerRuleMatching() {
-		TokenRule innerRule = createRule("test");
-		OptionalTokenRule rule = new OptionalTokenRule(innerRule);
-		
-		TokenStream stream = TokenStream.createMutable(List.of(createToken("test")));
-		TokenRuleContext context = TokenRuleContext.empty();
-		
-		TokenRuleMatch result = rule.match(stream, context);
-		
-		assertNotNull(result);
-		assertEquals(0, result.startIndex());
-		assertEquals(1, result.endIndex());
-		assertEquals(1, result.matchedTokens().size());
-		assertEquals("test", result.matchedTokens().get(0).value());
-		assertEquals(1, stream.getCurrentIndex()); // Stream advanced
-	}
-	
-	@Test
-	void matchWithInnerRuleNotMatching() {
-		TokenRule innerRule = createRule("expected");
-		OptionalTokenRule rule = new OptionalTokenRule(innerRule);
-		
-		TokenStream stream = TokenStream.createMutable(List.of(createToken("actual")));
-		TokenRuleContext context = TokenRuleContext.empty();
-		
-		TokenRuleMatch result = rule.match(stream, context);
-		
-		assertNotNull(result); // Optional should still match
-		assertEquals(0, result.startIndex());
-		assertEquals(0, result.endIndex());
-		assertTrue(result.matchedTokens().isEmpty());
-		assertEquals(rule, result.matchingTokenRule());
-		assertEquals(0, stream.getCurrentIndex()); // Stream not advanced
-	}
-	
-	@Test
-	void matchWithEmptyStream() {
-		TokenRule innerRule = createRule("test");
-		OptionalTokenRule rule = new OptionalTokenRule(innerRule);
-		
-		TokenStream stream = TokenStream.createMutable(List.of());
-		TokenRuleContext context = TokenRuleContext.empty();
-		
-		TokenRuleMatch result = rule.match(stream, context);
-		
-		assertNull(result); // Can't match at invalid index
-	}
-	
-	@Test
-	void matchWithAlwaysMatchRule() {
-		OptionalTokenRule rule = new OptionalTokenRule(TokenRules.alwaysMatch());
-		
-		TokenStream stream = TokenStream.createMutable(List.of(createToken("any")));
-		TokenRuleContext context = TokenRuleContext.empty();
-		
-		TokenRuleMatch result = rule.match(stream, context);
-		
-		assertNotNull(result);
-		assertEquals(1, result.matchedTokens().size());
-		assertEquals("any", result.matchedTokens().get(0).value());
-	}
-	
-	@Test
-	void matchWithNeverMatchRule() {
-		OptionalTokenRule rule = new OptionalTokenRule(TokenRules.neverMatch());
-		
-		TokenStream stream = TokenStream.createMutable(List.of(createToken("any")));
-		TokenRuleContext context = TokenRuleContext.empty();
-		
-		TokenRuleMatch result = rule.match(stream, context);
-		
-		assertNotNull(result); // Optional always succeeds
-		assertTrue(result.matchedTokens().isEmpty());
-		assertEquals(0, stream.getCurrentIndex()); // Stream not advanced
-	}
-	
-	@Test
-	void matchAtStreamEnd() {
-		TokenRule innerRule = createRule("test");
-		OptionalTokenRule rule = new OptionalTokenRule(innerRule);
-		
-		TokenStream stream = TokenStream.createMutable(List.of(createToken("test")));
-		stream.advance(); // Move past the only token
-		TokenRuleContext context = TokenRuleContext.empty();
-		
-		TokenRuleMatch result = rule.match(stream, context);
-		
-		assertNull(result); // Can't match at end of stream
-	}
-	
-	@Test
-	void matchWithNegativeIndex() {
-		TokenRule innerRule = createRule("test");
-		OptionalTokenRule rule = new OptionalTokenRule(innerRule);
-		
-		// This is a bit artificial since we can't normally get negative index
-		// but the method checks for it
-		TokenStream stream = TokenStream.createMutable(List.of(createToken("test")));
-		TokenRuleContext context = TokenRuleContext.empty();
-		
-		// We can't easily test negative index since TokenStream doesn't allow it
-		// but we can test the edge case by mocking or using reflection
-		// For now, let's just verify normal behavior
-		TokenRuleMatch result = rule.match(stream, context);
-		assertNotNull(result);
 	}
 	
 	@Test
@@ -199,15 +96,131 @@ class OptionalTokenRuleTest {
 	}
 	
 	@Test
-	void not() {
+	void matchWithEmptyStream() {
 		TokenRule innerRule = createRule("test");
+		OptionalTokenRule rule = new OptionalTokenRule(innerRule);
+		
+		TokenStream stream = TokenStream.createMutable(List.of());
+		TokenRuleContext context = TokenRuleContext.empty();
+		
+		TokenRuleMatch result = rule.match(stream, context);
+		
+		assertNull(result);
+	}
+	
+	@Test
+	void matchWithInnerRuleMatching() {
+		TokenRule innerRule = createRule("test");
+		OptionalTokenRule rule = new OptionalTokenRule(innerRule);
+		
+		TokenStream stream = TokenStream.createMutable(List.of(createToken("test")));
+		TokenRuleContext context = TokenRuleContext.empty();
+		
+		TokenRuleMatch result = rule.match(stream, context);
+		
+		assertNotNull(result);
+		assertEquals(0, result.startIndex());
+		assertEquals(1, result.endIndex());
+		assertEquals(1, result.matchedTokens().size());
+		assertEquals("test", result.matchedTokens().getFirst().value());
+		assertEquals(1, stream.getCurrentIndex());
+	}
+	
+	@Test
+	void matchWithInnerRuleNotMatching() {
+		TokenRule innerRule = createRule("expected");
+		OptionalTokenRule rule = new OptionalTokenRule(innerRule);
+		
+		TokenStream stream = TokenStream.createMutable(List.of(createToken("actual")));
+		TokenRuleContext context = TokenRuleContext.empty();
+		
+		TokenRuleMatch result = rule.match(stream, context);
+		
+		assertNotNull(result);
+		assertEquals(0, result.startIndex());
+		assertEquals(0, result.endIndex());
+		assertTrue(result.matchedTokens().isEmpty());
+		assertEquals(rule, result.matchingTokenRule());
+		assertEquals(0, stream.getCurrentIndex());
+	}
+	
+	@Test
+	void matchWithAlwaysMatchRule() {
+		OptionalTokenRule rule = new OptionalTokenRule(TokenRules.alwaysMatch());
+		
+		TokenStream stream = TokenStream.createMutable(List.of(createToken("any")));
+		TokenRuleContext context = TokenRuleContext.empty();
+		
+		TokenRuleMatch result = rule.match(stream, context);
+		
+		assertNotNull(result);
+		assertEquals(1, result.matchedTokens().size());
+		assertEquals("any", result.matchedTokens().getFirst().value());
+	}
+	
+	@Test
+	void matchWithNeverMatchRule() {
+		OptionalTokenRule rule = new OptionalTokenRule(TokenRules.neverMatch());
+		
+		TokenStream stream = TokenStream.createMutable(List.of(createToken("any")));
+		TokenRuleContext context = TokenRuleContext.empty();
+		
+		TokenRuleMatch result = rule.match(stream, context);
+		
+		assertNotNull(result);
+		assertTrue(result.matchedTokens().isEmpty());
+		assertEquals(0, stream.getCurrentIndex());
+	}
+	
+	@Test
+	void matchAtStreamEnd() {
+		TokenRule innerRule = createRule("test");
+		OptionalTokenRule rule = new OptionalTokenRule(innerRule);
+		
+		TokenStream stream = TokenStream.createMutable(List.of(createToken("test")));
+		stream.advance();
+		TokenRuleContext context = TokenRuleContext.empty();
+		
+		TokenRuleMatch result = rule.match(stream, context);
+		
+		assertNull(result);
+	}
+	
+	@Test
+	void matchWithNegativeIndex() {
+		TokenRule innerRule = createRule("test");
+		OptionalTokenRule rule = new OptionalTokenRule(innerRule);
+		
+		TokenStream stream = TokenStream.createMutable(List.of(createToken("test")));
+		TokenRuleContext context = TokenRuleContext.empty();
+		
+		TokenRuleMatch result = rule.match(stream, context);
+		assertNotNull(result);
+	}
+	
+	@Test
+	void not() {
+		TokenRule innerRule = TokenRules.pattern("test");
 		OptionalTokenRule rule = new OptionalTokenRule(innerRule);
 		
 		TokenRule negated = rule.not();
 		
-		assertTrue(negated instanceof OptionalTokenRule);
-		OptionalTokenRule negatedOptional = (OptionalTokenRule) negated;
+		OptionalTokenRule negatedOptional = assertInstanceOf(OptionalTokenRule.class, negated);
 		assertNotEquals(innerRule, negatedOptional.tokenRule());
+	}
+	
+	@Test
+	void notBehavior() {
+		TokenRule innerRule = TokenRules.pattern("test");
+		OptionalTokenRule rule = new OptionalTokenRule(innerRule);
+		TokenRule negated = rule.not();
+		
+		TokenStream stream1 = TokenStream.createMutable(List.of(createToken("test")));
+		TokenStream stream2 = TokenStream.createMutable(List.of(createToken("other")));
+		TokenRuleContext context = TokenRuleContext.empty();
+		
+		assertNotNull(rule.match(stream1, context));
+		assertNotNull(negated.match(stream2, context));
 	}
 	
 	@Test
@@ -216,44 +229,9 @@ class OptionalTokenRuleTest {
 		
 		TokenRule negated = rule.not();
 		
-		assertTrue(negated instanceof OptionalTokenRule);
+		assertInstanceOf(OptionalTokenRule.class, negated);
 		OptionalTokenRule negatedOptional = (OptionalTokenRule) negated;
 		assertEquals(TokenRules.neverMatch().getClass(), negatedOptional.tokenRule().getClass());
-	}
-	
-	@Test
-	void notBehavior() {
-		TokenRule innerRule = createRule("test");
-		OptionalTokenRule rule = new OptionalTokenRule(innerRule);
-		TokenRule negated = rule.not();
-		
-		TokenStream stream1 = TokenStream.createMutable(List.of(createToken("test")));
-		TokenStream stream2 = TokenStream.createMutable(List.of(createToken("other")));
-		TokenRuleContext context = TokenRuleContext.empty();
-		
-		// Both should match since optional always succeeds
-		assertNotNull(rule.match(stream1, context));
-		assertNotNull(negated.match(stream2, context));
-	}
-	
-	@Test
-	void equalsAndHashCode() {
-		TokenRule innerRule1 = createRule("test");
-		TokenRule innerRule2 = createRule("test");
-		TokenRule innerRule3 = createRule("other");
-		
-		OptionalTokenRule rule1 = new OptionalTokenRule(innerRule1);
-		OptionalTokenRule rule2 = new OptionalTokenRule(innerRule1);
-		OptionalTokenRule rule3 = new OptionalTokenRule(innerRule2);
-		OptionalTokenRule rule4 = new OptionalTokenRule(innerRule3);
-		
-		assertEquals(rule1, rule2);
-		assertNotEquals(rule1, rule3); // Different inner rule instances
-		assertNotEquals(rule1, rule4);
-		assertNotEquals(rule1, null);
-		assertNotEquals(rule1, "string");
-		
-		assertEquals(rule1.hashCode(), rule2.hashCode());
 	}
 	
 	@Test

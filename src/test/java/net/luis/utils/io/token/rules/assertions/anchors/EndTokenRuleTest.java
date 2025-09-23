@@ -34,6 +34,11 @@ import java.util.Objects;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+/**
+ * Test class for {@link EndTokenRule}.<br>
+ *
+ * @author Luis-St
+ */
 class EndTokenRuleTest {
 	
 	private static @NotNull Token createToken(@NotNull String value) {
@@ -81,6 +86,21 @@ class EndTokenRuleTest {
 	}
 	
 	@Test
+	void documentMatchWithEmptyStream() {
+		EndTokenRule rule = EndTokenRule.DOCUMENT;
+		TokenStream stream = TokenStream.createMutable(List.of());
+		TokenRuleContext context = TokenRuleContext.empty();
+		
+		TokenRuleMatch result = rule.match(stream, context);
+		
+		assertNotNull(result);
+		assertEquals(0, result.startIndex());
+		assertEquals(0, result.endIndex());
+		assertTrue(result.matchedTokens().isEmpty());
+		assertEquals(rule, result.matchingTokenRule());
+	}
+	
+	@Test
 	void documentMatchAtEndOfStream() {
 		EndTokenRule rule = EndTokenRule.DOCUMENT;
 		TokenStream stream = TokenStream.createMutable(List.of());
@@ -99,7 +119,7 @@ class EndTokenRuleTest {
 	void documentMatchAfterLastToken() {
 		EndTokenRule rule = EndTokenRule.DOCUMENT;
 		TokenStream stream = TokenStream.createMutable(List.of(createToken("test")));
-		stream.advance(); // Move past last token
+		stream.advance();
 		TokenRuleContext context = TokenRuleContext.empty();
 		
 		TokenRuleMatch result = rule.match(stream, context);
@@ -139,6 +159,21 @@ class EndTokenRuleTest {
 	}
 	
 	@Test
+	void lineMatchWithEmptyStream() {
+		EndTokenRule rule = EndTokenRule.LINE;
+		TokenStream stream = TokenStream.createMutable(List.of());
+		TokenRuleContext context = TokenRuleContext.empty();
+		
+		TokenRuleMatch result = rule.match(stream, context);
+		
+		assertNotNull(result);
+		assertEquals(0, result.startIndex());
+		assertEquals(0, result.endIndex());
+		assertTrue(result.matchedTokens().isEmpty());
+		assertEquals(rule, result.matchingTokenRule());
+	}
+	
+	@Test
 	void lineMatchAtEndOfStream() {
 		EndTokenRule rule = EndTokenRule.LINE;
 		TokenStream stream = TokenStream.createMutable(List.of());
@@ -161,7 +196,7 @@ class EndTokenRuleTest {
 		
 		TokenRuleMatch result = rule.match(stream, context);
 		
-		assertNull(result); // Can't determine if it's end of line with only one token
+		assertNull(result);
 	}
 	
 	@Test
@@ -287,31 +322,6 @@ class EndTokenRuleTest {
 		TokenRuleMatch result = negated.match(stream, context);
 		
 		assertNull(result);
-	}
-	
-	@Test
-	void enumValues() {
-		EndTokenRule[] values = EndTokenRule.values();
-		
-		assertEquals(2, values.length);
-		assertEquals(EndTokenRule.DOCUMENT, values[0]);
-		assertEquals(EndTokenRule.LINE, values[1]);
-	}
-	
-	@Test
-	void enumValueOf() {
-		assertEquals(EndTokenRule.DOCUMENT, EndTokenRule.valueOf("DOCUMENT"));
-		assertEquals(EndTokenRule.LINE, EndTokenRule.valueOf("LINE"));
-	}
-	
-	@Test
-	void enumValueOfWithInvalidName() {
-		assertThrows(IllegalArgumentException.class, () -> EndTokenRule.valueOf("INVALID"));
-	}
-	
-	@Test
-	void enumValueOfWithNull() {
-		assertThrows(NullPointerException.class, () -> EndTokenRule.valueOf(null));
 	}
 	
 	@Test

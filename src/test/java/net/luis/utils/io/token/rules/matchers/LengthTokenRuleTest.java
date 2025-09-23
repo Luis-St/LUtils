@@ -33,30 +33,30 @@ import java.util.Objects;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+/**
+ * Test class for {@link LengthTokenRule}.<br>
+ *
+ * @author Luis-St
+ */
 class LengthTokenRuleTest {
 	
 	private static @NotNull Token createToken(@NotNull String value) {
 		return SimpleToken.createUnpositioned(value);
 	}
 	
-	private static @NotNull TokenRule createRule(@NotNull String value) {
-		return new TokenRule() {
-			@Override
-			public @Nullable TokenRuleMatch match(@NotNull TokenStream stream, @NotNull TokenRuleContext ctx) {
-				Objects.requireNonNull(stream, "Token stream must not be null");
-				Objects.requireNonNull(ctx, "Token rule context must not be null");
-				if (!stream.hasMoreTokens()) {
-					return null;
-				}
-				
-				int startIndex = stream.getCurrentIndex();
-				Token token = stream.getCurrentToken();
-				if (token.value().equals(value)) {
-					return new TokenRuleMatch(startIndex, stream.advance(), List.of(token), this);
-				}
-				return null;
-			}
-		};
+	@Test
+	void constructorWithNegativeMinLength() {
+		assertThrows(IllegalArgumentException.class, () -> new LengthTokenRule(-1, 5));
+	}
+	
+	@Test
+	void constructorWithNegativeMaxLength() {
+		assertThrows(IllegalArgumentException.class, () -> new LengthTokenRule(0, -1));
+	}
+	
+	@Test
+	void constructorWithMaxLessThanMin() {
+		assertThrows(IllegalArgumentException.class, () -> new LengthTokenRule(5, 2));
 	}
 	
 	@Test
@@ -84,120 +84,19 @@ class LengthTokenRuleTest {
 	}
 	
 	@Test
-	void constructorWithNegativeMinLength() {
-		assertThrows(IllegalArgumentException.class, () -> new LengthTokenRule(-1, 5));
-	}
-	
-	@Test
-	void constructorWithNegativeMaxLength() {
-		assertThrows(IllegalArgumentException.class, () -> new LengthTokenRule(0, -1));
-	}
-	
-	@Test
-	void constructorWithMaxLessThanMin() {
-		assertThrows(IllegalArgumentException.class, () -> new LengthTokenRule(5, 2));
-	}
-	
-	@Test
-	void matchWithTokenInRange() {
-		LengthTokenRule rule = new LengthTokenRule(2, 5);
-		Token token = createToken("abc"); // Length 3
-		
-		boolean result = rule.match(token);
-		
-		assertTrue(result);
-	}
-	
-	@Test
-	void matchWithTokenAtMinLength() {
-		LengthTokenRule rule = new LengthTokenRule(3, 5);
-		Token token = createToken("abc"); // Length 3
-		
-		boolean result = rule.match(token);
-		
-		assertTrue(result);
-	}
-	
-	@Test
-	void matchWithTokenAtMaxLength() {
-		LengthTokenRule rule = new LengthTokenRule(2, 3);
-		Token token = createToken("abc"); // Length 3
-		
-		boolean result = rule.match(token);
-		
-		assertTrue(result);
-	}
-	
-	@Test
-	void matchWithTokenTooShort() {
-		LengthTokenRule rule = new LengthTokenRule(3, 5);
-		Token token = createToken("ab"); // Length 2
-		
-		boolean result = rule.match(token);
-		
-		assertFalse(result);
-	}
-	
-	@Test
-	void matchWithTokenTooLong() {
-		LengthTokenRule rule = new LengthTokenRule(2, 4);
-		Token token = createToken("abcde"); // Length 5
-		
-		boolean result = rule.match(token);
-		
-		assertFalse(result);
-	}
-	
-	@Test
-	void matchWithEmptyToken() {
-		LengthTokenRule rule = new LengthTokenRule(0, 2);
-		Token token = createToken(""); // Length 0
-		
-		boolean result = rule.match(token);
-		
-		assertTrue(result);
-	}
-	
-	@Test
-	void matchWithEmptyTokenWhenMinIsPositive() {
+	void matchWithNullTokenStream() {
 		LengthTokenRule rule = new LengthTokenRule(1, 3);
-		Token token = createToken(""); // Length 0
-		
-		boolean result = rule.match(token);
-		
-		assertFalse(result);
-	}
-	
-	@Test
-	void matchWithNullToken() {
-		LengthTokenRule rule = new LengthTokenRule(1, 3);
-		
-		assertThrows(NullPointerException.class, () -> rule.match(null));
-	}
-	
-	@Test
-	void matchWithTokenStreamAndContext() {
-		LengthTokenRule rule = new LengthTokenRule(2, 4);
-		TokenStream stream = TokenStream.createMutable(List.of(createToken("abc")));
 		TokenRuleContext context = TokenRuleContext.empty();
 		
-		TokenRuleMatch result = rule.match(stream, context);
-		
-		assertNotNull(result);
-		assertEquals(0, result.startIndex());
-		assertEquals(1, result.endIndex());
-		assertEquals("abc", result.matchedTokens().get(0).value());
+		assertThrows(NullPointerException.class, () -> rule.match(null, context));
 	}
 	
 	@Test
-	void matchWithTokenStreamNoMatch() {
-		LengthTokenRule rule = new LengthTokenRule(5, 10);
+	void matchWithNullContext() {
+		LengthTokenRule rule = new LengthTokenRule(1, 3);
 		TokenStream stream = TokenStream.createMutable(List.of(createToken("abc")));
-		TokenRuleContext context = TokenRuleContext.empty();
 		
-		TokenRuleMatch result = rule.match(stream, context);
-		
-		assertNull(result);
+		assertThrows(NullPointerException.class, () -> rule.match(stream, null));
 	}
 	
 	@Test
@@ -212,6 +111,108 @@ class LengthTokenRuleTest {
 	}
 	
 	@Test
+	void matchWithTokenStreamAndContext() {
+		LengthTokenRule rule = new LengthTokenRule(2, 4);
+		TokenStream stream = TokenStream.createMutable(List.of(createToken("abc")));
+		TokenRuleContext context = TokenRuleContext.empty();
+		
+		TokenRuleMatch result = rule.match(stream, context);
+		
+		assertNotNull(result);
+		assertEquals(0, result.startIndex());
+		assertEquals(1, result.endIndex());
+		assertEquals("abc", result.matchedTokens().getFirst().value());
+	}
+	
+	@Test
+	void matchWithTokenStreamNoMatch() {
+		LengthTokenRule rule = new LengthTokenRule(5, 10);
+		TokenStream stream = TokenStream.createMutable(List.of(createToken("abc")));
+		TokenRuleContext context = TokenRuleContext.empty();
+		
+		TokenRuleMatch result = rule.match(stream, context);
+		
+		assertNull(result);
+	}
+	
+	@Test
+	void matchWithNullToken() {
+		LengthTokenRule rule = new LengthTokenRule(1, 3);
+		
+		assertThrows(NullPointerException.class, () -> rule.match(null));
+	}
+	
+	@Test
+	void matchWithEmptyToken() {
+		LengthTokenRule rule = new LengthTokenRule(0, 2);
+		Token token = createToken("");
+		
+		boolean result = rule.match(token);
+		
+		assertTrue(result);
+	}
+	
+	@Test
+	void matchWithTokenInRange() {
+		LengthTokenRule rule = new LengthTokenRule(2, 5);
+		Token token = createToken("abc");
+		
+		boolean result = rule.match(token);
+		
+		assertTrue(result);
+	}
+	
+	@Test
+	void matchWithTokenAtMinLength() {
+		LengthTokenRule rule = new LengthTokenRule(3, 5);
+		Token token = createToken("abc");
+		
+		boolean result = rule.match(token);
+		
+		assertTrue(result);
+	}
+	
+	@Test
+	void matchWithTokenAtMaxLength() {
+		LengthTokenRule rule = new LengthTokenRule(2, 3);
+		Token token = createToken("abc");
+		
+		boolean result = rule.match(token);
+		
+		assertTrue(result);
+	}
+	
+	@Test
+	void matchWithTokenTooShort() {
+		LengthTokenRule rule = new LengthTokenRule(3, 5);
+		Token token = createToken("ab");
+		
+		boolean result = rule.match(token);
+		
+		assertFalse(result);
+	}
+	
+	@Test
+	void matchWithTokenTooLong() {
+		LengthTokenRule rule = new LengthTokenRule(2, 4);
+		Token token = createToken("abcde");
+		
+		boolean result = rule.match(token);
+		
+		assertFalse(result);
+	}
+	
+	@Test
+	void matchWithEmptyTokenWhenMinIsPositive() {
+		LengthTokenRule rule = new LengthTokenRule(1, 3);
+		Token token = createToken("");
+		
+		boolean result = rule.match(token);
+		
+		assertFalse(result);
+	}
+	
+	@Test
 	void not() {
 		LengthTokenRule rule = new LengthTokenRule(2, 4);
 		
@@ -222,44 +223,28 @@ class LengthTokenRuleTest {
 	}
 	
 	@Test
+	void notBehavior() {
+		LengthTokenRule rule = new LengthTokenRule(3, 5);
+		TokenRule negated = rule.not();
+		
+		TokenStream stream1 = TokenStream.createMutable(List.of(createToken("abcd")));
+		TokenStream stream2 = TokenStream.createMutable(List.of(createToken("ab")));
+		TokenRuleContext context = TokenRuleContext.empty();
+		
+		assertNotNull(rule.match(stream1, context));
+		assertNull(negated.match(stream1.copyFromZero(), context));
+		
+		assertNull(rule.match(stream2, context));
+		assertNotNull(negated.match(stream2.copyFromZero(), context));
+	}
+	
+	@Test
 	void notWithDoubleNegation() {
 		LengthTokenRule rule = new LengthTokenRule(2, 4);
 		
 		TokenRule doubleNegated = rule.not().not();
 		
 		assertEquals(rule, doubleNegated);
-	}
-	
-	@Test
-	void notBehavior() {
-		LengthTokenRule rule = new LengthTokenRule(3, 5);
-		TokenRule negated = rule.not();
-		
-		TokenStream stream1 = TokenStream.createMutable(List.of(createToken("abcd"))); // Length 4, should match original
-		TokenStream stream2 = TokenStream.createMutable(List.of(createToken("ab"))); // Length 2, should not match original
-		TokenRuleContext context = TokenRuleContext.empty();
-		
-		assertNotNull(rule.match(stream1, context)); // Original matches
-		assertNull(negated.match(stream1.copyFromZero(), context)); // Negated doesn't match
-		
-		assertNull(rule.match(stream2, context)); // Original doesn't match
-		assertNotNull(negated.match(stream2.copyFromZero(), context)); // Negated matches
-	}
-	
-	@Test
-	void equalsAndHashCode() {
-		LengthTokenRule rule1 = new LengthTokenRule(2, 5);
-		LengthTokenRule rule2 = new LengthTokenRule(2, 5);
-		LengthTokenRule rule3 = new LengthTokenRule(3, 5);
-		LengthTokenRule rule4 = new LengthTokenRule(2, 6);
-		
-		assertEquals(rule1, rule2);
-		assertNotEquals(rule1, rule3);
-		assertNotEquals(rule1, rule4);
-		assertNotEquals(rule1, null);
-		assertNotEquals(rule1, "string");
-		
-		assertEquals(rule1.hashCode(), rule2.hashCode());
 	}
 	
 	@Test

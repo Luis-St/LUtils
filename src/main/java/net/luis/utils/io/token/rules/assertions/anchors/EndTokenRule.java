@@ -79,10 +79,13 @@ public enum EndTokenRule implements TokenRule {
 			TokenStream copyStream = stream.copyWithOffset(0);
 			copyStream.advance();
 			if (!copyStream.hasMoreTokens()) {
+				if (currentToken.value().contains("\n")) {
+					return TokenRuleMatch.empty(stream.getCurrentIndex(), this);
+				}
 				return null;
 			}
 			
-			Token nextToken = copyStream.readToken();
+			Token nextToken = copyStream.getCurrentToken();
 			if (currentToken.position().isPositioned() && nextToken.position().isPositioned()) {
 				if (currentToken.position().line() < nextToken.position().line()) {
 					return TokenRuleMatch.empty(stream.getCurrentIndex(), this);

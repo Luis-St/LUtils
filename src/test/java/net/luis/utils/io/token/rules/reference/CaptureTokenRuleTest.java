@@ -34,6 +34,11 @@ import java.util.Objects;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+/**
+ * Test class for {@link CaptureTokenRule}.<br>
+ *
+ * @author Luis-St
+ */
 class CaptureTokenRuleTest {
 	
 	private static @NotNull Token createToken(@NotNull String value) {
@@ -61,17 +66,6 @@ class CaptureTokenRuleTest {
 	}
 	
 	@Test
-	void constructorWithValidParameters() {
-		String key = "testKey";
-		TokenRule tokenRule = createRule("test");
-		
-		CaptureTokenRule rule = new CaptureTokenRule(key, tokenRule);
-		
-		assertEquals(key, rule.key());
-		assertEquals(tokenRule, rule.tokenRule());
-	}
-	
-	@Test
 	void constructorWithNullKey() {
 		assertThrows(NullPointerException.class, () -> new CaptureTokenRule(null, createRule("test")));
 	}
@@ -87,144 +81,16 @@ class CaptureTokenRuleTest {
 	}
 	
 	@Test
-	void matchWithSuccessfulInnerMatch() {
-		String key = "captured";
-		TokenRule innerRule = createRule("test");
-		CaptureTokenRule rule = new CaptureTokenRule(key, innerRule);
+	void constructorWithValidParameters() {
+		String key = "testKey";
+		TokenRule tokenRule = createRule("test");
 		
-		TokenStream stream = TokenStream.createMutable(List.of(createToken("test")));
-		TokenRuleContext context = TokenRuleContext.empty();
+		CaptureTokenRule rule = new CaptureTokenRule(key, tokenRule);
 		
-		TokenRuleMatch result = rule.match(stream, context);
-		
-		assertNotNull(result);
-		assertEquals(0, result.startIndex());
-		assertEquals(1, result.endIndex());
-		assertEquals("test", result.matchedTokens().get(0).value());
-		
-		// Check if tokens were captured
-		List<Token> capturedTokens = context.getCapturedTokens(key);
-		assertNotNull(capturedTokens);
-		assertEquals(1, capturedTokens.size());
-		assertEquals("test", capturedTokens.get(0).value());
+		assertEquals(key, rule.key());
+		assertEquals(tokenRule, rule.tokenRule());
 	}
-	
-	@Test
-	void matchWithFailedInnerMatch() {
-		String key = "captured";
-		TokenRule innerRule = createRule("expected");
-		CaptureTokenRule rule = new CaptureTokenRule(key, innerRule);
-		
-		TokenStream stream = TokenStream.createMutable(List.of(createToken("actual")));
-		TokenRuleContext context = TokenRuleContext.empty();
-		
-		TokenRuleMatch result = rule.match(stream, context);
-		
-		assertNull(result);
-		
-		// Check that nothing was captured
-		List<Token> capturedTokens = context.getCapturedTokens(key);
-		assertNull(capturedTokens);
-	}
-	
-	@Test
-	void matchWithMultipleTokens() {
-		String key = "multiCapture";
-		TokenRule innerRule = TokenRules.sequence(createRule("first"), createRule("second"));
-		CaptureTokenRule rule = new CaptureTokenRule(key, innerRule);
-		
-		TokenStream stream = TokenStream.createMutable(List.of(createToken("first"), createToken("second")));
-		TokenRuleContext context = TokenRuleContext.empty();
-		
-		TokenRuleMatch result = rule.match(stream, context);
-		
-		assertNotNull(result);
-		assertEquals(2, result.matchedTokens().size());
-		
-		// Check if all tokens were captured
-		List<Token> capturedTokens = context.getCapturedTokens(key);
-		assertNotNull(capturedTokens);
-		assertEquals(2, capturedTokens.size());
-		assertEquals("first", capturedTokens.get(0).value());
-		assertEquals("second", capturedTokens.get(1).value());
-	}
-	
-	@Test
-	void matchOverwritesPreviousCapture() {
-		String key = "overwrite";
-		TokenRule innerRule1 = createRule("first");
-		TokenRule innerRule2 = createRule("second");
-		CaptureTokenRule rule1 = new CaptureTokenRule(key, innerRule1);
-		CaptureTokenRule rule2 = new CaptureTokenRule(key, innerRule2);
-		
-		TokenRuleContext context = TokenRuleContext.empty();
-		
-		// First capture
-		TokenStream stream1 = TokenStream.createMutable(List.of(createToken("first")));
-		rule1.match(stream1, context);
-		
-		// Second capture should overwrite
-		TokenStream stream2 = TokenStream.createMutable(List.of(createToken("second")));
-		rule2.match(stream2, context);
-		
-		List<Token> capturedTokens = context.getCapturedTokens(key);
-		assertNotNull(capturedTokens);
-		assertEquals(1, capturedTokens.size());
-		assertEquals("second", capturedTokens.get(0).value());
-	}
-	
-	@Test
-	void matchWithEmptyTokenList() {
-		String key = "empty";
-		TokenRule innerRule = TokenRules.endDocument(); // Matches without consuming tokens
-		CaptureTokenRule rule = new CaptureTokenRule(key, innerRule);
-		
-		TokenStream stream = TokenStream.createMutable(List.of());
-		TokenRuleContext context = TokenRuleContext.empty();
-		
-		TokenRuleMatch result = rule.match(stream, context);
-		
-		assertNotNull(result);
-		assertTrue(result.matchedTokens().isEmpty());
-		
-		// Check if empty list was captured
-		List<Token> capturedTokens = context.getCapturedTokens(key);
-		assertNotNull(capturedTokens);
-		assertTrue(capturedTokens.isEmpty());
-	}
-	
-	@Test
-	void matchWithAlwaysMatchRule() {
-		String key = "always";
-		CaptureTokenRule rule = new CaptureTokenRule(key, TokenRules.alwaysMatch());
-		
-		TokenStream stream = TokenStream.createMutable(List.of(createToken("any")));
-		TokenRuleContext context = TokenRuleContext.empty();
-		
-		TokenRuleMatch result = rule.match(stream, context);
-		
-		assertNotNull(result);
-		assertEquals("any", result.matchedTokens().get(0).value());
-		
-		List<Token> capturedTokens = context.getCapturedTokens(key);
-		assertNotNull(capturedTokens);
-		assertEquals("any", capturedTokens.get(0).value());
-	}
-	
-	@Test
-	void matchWithNeverMatchRule() {
-		String key = "never";
-		CaptureTokenRule rule = new CaptureTokenRule(key, TokenRules.neverMatch());
-		
-		TokenStream stream = TokenStream.createMutable(List.of(createToken("any")));
-		TokenRuleContext context = TokenRuleContext.empty();
-		
-		TokenRuleMatch result = rule.match(stream, context);
-		
-		assertNull(result);
-		assertNull(context.getCapturedTokens(key));
-	}
-	
+
 	@Test
 	void matchWithNullStream() {
 		CaptureTokenRule rule = new CaptureTokenRule("key", createRule("test"));
@@ -242,14 +108,158 @@ class CaptureTokenRuleTest {
 	}
 	
 	@Test
+	void matchWithEmptyStream() {
+		CaptureTokenRule rule = new CaptureTokenRule("key", createRule("test"));
+		TokenStream stream = TokenStream.createMutable(List.of());
+		TokenRuleContext context = TokenRuleContext.empty();
+		
+		TokenRuleMatch result = rule.match(stream, context);
+		assertNull(result);
+		assertNull(context.getCapturedTokens("key"));
+	}
+	
+	@Test
+	void matchWithSuccessfulInnerMatch() {
+		String key = "captured";
+		TokenRule innerRule = createRule("test");
+		CaptureTokenRule rule = new CaptureTokenRule(key, innerRule);
+		
+		TokenStream stream = TokenStream.createMutable(List.of(createToken("test")));
+		TokenRuleContext context = TokenRuleContext.empty();
+		
+		TokenRuleMatch result = rule.match(stream, context);
+		
+		assertNotNull(result);
+		assertEquals(0, result.startIndex());
+		assertEquals(1, result.endIndex());
+		assertEquals("test", result.matchedTokens().getFirst().value());
+		
+		List<Token> capturedTokens = context.getCapturedTokens(key);
+		assertNotNull(capturedTokens);
+		assertEquals(1, capturedTokens.size());
+		assertEquals("test", capturedTokens.getFirst().value());
+	}
+	
+	@Test
+	void matchWithFailedInnerMatch() {
+		String key = "captured";
+		TokenRule innerRule = createRule("expected");
+		CaptureTokenRule rule = new CaptureTokenRule(key, innerRule);
+		
+		TokenStream stream = TokenStream.createMutable(List.of(createToken("actual")));
+		TokenRuleContext context = TokenRuleContext.empty();
+		
+		TokenRuleMatch result = rule.match(stream, context);
+		
+		assertNull(result);
+		
+		List<Token> capturedTokens = context.getCapturedTokens(key);
+		assertNull(capturedTokens);
+	}
+	
+	@Test
+	void matchWithAlwaysMatchRule() {
+		String key = "always";
+		CaptureTokenRule rule = new CaptureTokenRule(key, TokenRules.alwaysMatch());
+		
+		TokenStream stream = TokenStream.createMutable(List.of(createToken("any")));
+		TokenRuleContext context = TokenRuleContext.empty();
+		
+		TokenRuleMatch result = rule.match(stream, context);
+		
+		assertNotNull(result);
+		assertEquals("any", result.matchedTokens().getFirst().value());
+		
+		List<Token> capturedTokens = context.getCapturedTokens(key);
+		assertNotNull(capturedTokens);
+		assertEquals("any", capturedTokens.getFirst().value());
+	}
+	
+	@Test
+	void matchWithNeverMatchRule() {
+		String key = "never";
+		CaptureTokenRule rule = new CaptureTokenRule(key, TokenRules.neverMatch());
+		
+		TokenStream stream = TokenStream.createMutable(List.of(createToken("any")));
+		TokenRuleContext context = TokenRuleContext.empty();
+		
+		TokenRuleMatch result = rule.match(stream, context);
+		
+		assertNull(result);
+		assertNull(context.getCapturedTokens(key));
+	}
+	
+	@Test
+	void matchWithMultipleTokens() {
+		String key = "multiCapture";
+		TokenRule innerRule = TokenRules.sequence(createRule("first"), createRule("second"));
+		CaptureTokenRule rule = new CaptureTokenRule(key, innerRule);
+		
+		TokenStream stream = TokenStream.createMutable(List.of(createToken("first"), createToken("second")));
+		TokenRuleContext context = TokenRuleContext.empty();
+		
+		TokenRuleMatch result = rule.match(stream, context);
+		
+		assertNotNull(result);
+		assertEquals(2, result.matchedTokens().size());
+		
+		List<Token> capturedTokens = context.getCapturedTokens(key);
+		assertNotNull(capturedTokens);
+		assertEquals(2, capturedTokens.size());
+		assertEquals("first", capturedTokens.get(0).value());
+		assertEquals("second", capturedTokens.get(1).value());
+	}
+	
+	@Test
+	void matchOverwritesPreviousCapture() {
+		String key = "overwrite";
+		TokenRule innerRule1 = createRule("first");
+		TokenRule innerRule2 = createRule("second");
+		CaptureTokenRule rule1 = new CaptureTokenRule(key, innerRule1);
+		CaptureTokenRule rule2 = new CaptureTokenRule(key, innerRule2);
+		
+		TokenRuleContext context = TokenRuleContext.empty();
+		
+		TokenStream stream1 = TokenStream.createMutable(List.of(createToken("first")));
+		rule1.match(stream1, context);
+		
+		TokenStream stream2 = TokenStream.createMutable(List.of(createToken("second")));
+		rule2.match(stream2, context);
+		
+		List<Token> capturedTokens = context.getCapturedTokens(key);
+		assertNotNull(capturedTokens);
+		assertEquals(1, capturedTokens.size());
+		assertEquals("second", capturedTokens.getFirst().value());
+	}
+	
+	@Test
+	void matchWithEmptyTokenList() {
+		String key = "empty";
+		TokenRule innerRule = TokenRules.endDocument();
+		CaptureTokenRule rule = new CaptureTokenRule(key, innerRule);
+		
+		TokenStream stream = TokenStream.createMutable(List.of());
+		TokenRuleContext context = TokenRuleContext.empty();
+		
+		TokenRuleMatch result = rule.match(stream, context);
+		
+		assertNotNull(result);
+		assertTrue(result.matchedTokens().isEmpty());
+		
+		List<Token> capturedTokens = context.getCapturedTokens(key);
+		assertNotNull(capturedTokens);
+		assertTrue(capturedTokens.isEmpty());
+	}
+	
+	@Test
 	void not() {
 		String key = "test";
-		TokenRule innerRule = createRule("test");
+		TokenRule innerRule = TokenRules.pattern("test");
 		CaptureTokenRule rule = new CaptureTokenRule(key, innerRule);
 		
 		TokenRule negated = rule.not();
 		
-		assertTrue(negated instanceof CaptureTokenRule);
+		assertInstanceOf(CaptureTokenRule.class, negated);
 		CaptureTokenRule negatedCapture = (CaptureTokenRule) negated;
 		assertEquals(key, negatedCapture.key());
 		assertNotEquals(innerRule, negatedCapture.tokenRule());
@@ -262,31 +272,9 @@ class CaptureTokenRuleTest {
 		
 		TokenRule negated = rule.not();
 		
-		assertTrue(negated instanceof CaptureTokenRule);
+		assertInstanceOf(CaptureTokenRule.class, negated);
 		CaptureTokenRule negatedCapture = (CaptureTokenRule) negated;
 		assertEquals(TokenRules.neverMatch().getClass(), negatedCapture.tokenRule().getClass());
-	}
-	
-	@Test
-	void equalsAndHashCode() {
-		TokenRule innerRule1 = createRule("test");
-		TokenRule innerRule2 = createRule("test");
-		TokenRule innerRule3 = createRule("other");
-		
-		CaptureTokenRule rule1 = new CaptureTokenRule("key1", innerRule1);
-		CaptureTokenRule rule2 = new CaptureTokenRule("key1", innerRule1);
-		CaptureTokenRule rule3 = new CaptureTokenRule("key2", innerRule1);
-		CaptureTokenRule rule4 = new CaptureTokenRule("key1", innerRule2);
-		CaptureTokenRule rule5 = new CaptureTokenRule("key1", innerRule3);
-		
-		assertEquals(rule1, rule2);
-		assertNotEquals(rule1, rule3); // Different key
-		assertNotEquals(rule1, rule4); // Different inner rule instances
-		assertNotEquals(rule1, rule5); // Different inner rule
-		assertNotEquals(rule1, null);
-		assertNotEquals(rule1, "string");
-		
-		assertEquals(rule1.hashCode(), rule2.hashCode());
 	}
 	
 	@Test

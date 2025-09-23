@@ -91,30 +91,27 @@ public record RepeatedTokenRule(
 	 * Processes the token rule on the given token stream, returning the matched tokens and the number of occurrences.<br>
 	 * This method will attempt to match the token rule repeatedly until it either fails to match or reaches the maximum number of occurrences.<br>
 	 *
-	 * @param stream The token stream
+	 * @param workingStream The working token stream (to avoid modifying the original stream)
 	 * @param ctx The token rule context
 	 * @return A pair containing the list of matched tokens and the number of occurrences
 	 * @throws NullPointerException If the token stream is null
 	 */
-	private @NotNull Pair<List<Token>, Integer> processRule(@NotNull TokenStream stream, @NotNull TokenRuleContext ctx) {
-		Objects.requireNonNull(stream, "Token stream must not be null");
+	private @NotNull Pair<List<Token>, Integer> processRule(@NotNull TokenStream workingStream, @NotNull TokenRuleContext ctx) {
+		Objects.requireNonNull(workingStream, "Working token stream must not be null");
 		Objects.requireNonNull(ctx, "Token rule context must not be null");
 		
 		int occurrences = 0;
 		List<Token> matchedTokens = Lists.newArrayList();
-		while (stream.hasMoreTokens() && occurrences <= this.maxOccurrences) {
-			TokenStream workingStream = stream.copyWithOffset(0);
+		while (workingStream.hasMoreTokens() && occurrences <= this.maxOccurrences) {
 			TokenRuleMatch match = this.tokenRule.match(workingStream, ctx);
 			
 			if (match == null) {
 				return Pair.of(matchedTokens, occurrences);
 			}
 			
-			stream.advanceTo(workingStream);
 			matchedTokens.addAll(match.matchedTokens());
 			occurrences++;
 		}
-		
 		return Pair.of(matchedTokens, occurrences);
 	}
 	
@@ -127,10 +124,12 @@ public record RepeatedTokenRule(
 		}
 		
 		int startIndex = stream.getCurrentIndex();
-		Pair<List<Token>, Integer> result = this.processRule(stream, ctx);
+		TokenStream workingStream = stream.copyWithOffset(0);
+		Pair<List<Token>, Integer> result = this.processRule(workingStream, ctx);
 		int occurrences = result.getSecond();
 		
 		if (this.minOccurrences <= occurrences && occurrences <= this.maxOccurrences) {
+			stream.advanceTo(workingStream);
 			return new TokenRuleMatch(startIndex, stream.getCurrentIndex(), result.getFirst(), this);
 		}
 		return null;

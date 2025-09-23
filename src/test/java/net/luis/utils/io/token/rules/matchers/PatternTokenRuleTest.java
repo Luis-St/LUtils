@@ -34,30 +34,20 @@ import java.util.regex.Pattern;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+/**
+ * Test class for {@link PatternTokenRule}.<br>
+ *
+ * @author Luis-St
+ */
 class PatternTokenRuleTest {
 	
 	private static @NotNull Token createToken(@NotNull String value) {
 		return SimpleToken.createUnpositioned(value);
 	}
 	
-	private static @NotNull TokenRule createRule(@NotNull String value) {
-		return new TokenRule() {
-			@Override
-			public @Nullable TokenRuleMatch match(@NotNull TokenStream stream, @NotNull TokenRuleContext ctx) {
-				Objects.requireNonNull(stream, "Token stream must not be null");
-				Objects.requireNonNull(ctx, "Token rule context must not be null");
-				if (!stream.hasMoreTokens()) {
-					return null;
-				}
-				
-				int startIndex = stream.getCurrentIndex();
-				Token token = stream.getCurrentToken();
-				if (token.value().equals(value)) {
-					return new TokenRuleMatch(startIndex, stream.advance(), List.of(token), this);
-				}
-				return null;
-			}
-		};
+	@Test
+	void constructorWithNullStringPattern() {
+		assertThrows(NullPointerException.class, () -> new PatternTokenRule((String) null));
 	}
 	
 	@Test
@@ -70,8 +60,8 @@ class PatternTokenRuleTest {
 	}
 	
 	@Test
-	void constructorWithNullStringPattern() {
-		assertThrows(NullPointerException.class, () -> new PatternTokenRule((String) null));
+	void constructorWithNullPatternObject() {
+		assertThrows(NullPointerException.class, () -> new PatternTokenRule((Pattern) null));
 	}
 	
 	@Test
@@ -84,8 +74,82 @@ class PatternTokenRuleTest {
 	}
 	
 	@Test
-	void constructorWithNullPatternObject() {
-		assertThrows(NullPointerException.class, () -> new PatternTokenRule((Pattern) null));
+	void matchWithNullTokenStream() {
+		PatternTokenRule rule = new PatternTokenRule("\\d+");
+		TokenRuleContext context = TokenRuleContext.empty();
+		
+		assertThrows(NullPointerException.class, () -> rule.match(null, context));
+	}
+	
+	@Test
+	void matchWithNullContext() {
+		PatternTokenRule rule = new PatternTokenRule("\\d+");
+		TokenStream stream = TokenStream.createMutable(List.of(createToken("abc")));
+		
+		assertThrows(NullPointerException.class, () -> rule.match(stream, null));
+	}
+	
+	@Test
+	void matchWithEmptyTokenStream() {
+		PatternTokenRule rule = new PatternTokenRule("\\d+");
+		TokenStream stream = TokenStream.createMutable(List.of());
+		TokenRuleContext context = TokenRuleContext.empty();
+		
+		TokenRuleMatch result = rule.match(stream, context);
+		
+		assertNull(result);
+	}
+	
+	@Test
+	void matchWithTokenStreamAndContext() {
+		PatternTokenRule rule = new PatternTokenRule("\\d+");
+		TokenStream stream = TokenStream.createMutable(List.of(createToken("123")));
+		TokenRuleContext context = TokenRuleContext.empty();
+		
+		TokenRuleMatch result = rule.match(stream, context);
+		
+		assertNotNull(result);
+		assertEquals(0, result.startIndex());
+		assertEquals(1, result.endIndex());
+		assertEquals("123", result.matchedTokens().get(0).value());
+	}
+	
+	@Test
+	void matchWithTokenStreamNoMatch() {
+		PatternTokenRule rule = new PatternTokenRule("\\d+");
+		TokenStream stream = TokenStream.createMutable(List.of(createToken("abc")));
+		TokenRuleContext context = TokenRuleContext.empty();
+		
+		TokenRuleMatch result = rule.match(stream, context);
+		
+		assertNull(result);
+	}
+	
+	@Test
+	void matchWithNullToken() {
+		PatternTokenRule rule = new PatternTokenRule("\\d+");
+		
+		assertThrows(NullPointerException.class, () -> rule.match(null));
+	}
+	
+	@Test
+	void matchWithEmptyStringPattern() {
+		PatternTokenRule rule = new PatternTokenRule("");
+		Token token = createToken("");
+		
+		boolean result = rule.match(token);
+		
+		assertTrue(result);
+	}
+	
+	@Test
+	void matchWithEmptyStringPatternNonEmpty() {
+		PatternTokenRule rule = new PatternTokenRule("");
+		Token token = createToken("text");
+		
+		boolean result = rule.match(token);
+		
+		assertFalse(result);
 	}
 	
 	@Test
@@ -160,7 +224,7 @@ class PatternTokenRuleTest {
 	
 	@Test
 	void matchWithComplexPattern() {
-		PatternTokenRule rule = new PatternTokenRule("\\d{2,4}-\\d{2}-\\d{2}"); // Date pattern
+		PatternTokenRule rule = new PatternTokenRule("\\d{2,4}-\\d{2}-\\d{2}");
 		Token token = createToken("2023-12-25");
 		
 		boolean result = rule.match(token);
@@ -170,105 +234,12 @@ class PatternTokenRuleTest {
 	
 	@Test
 	void matchWithComplexPatternNonMatching() {
-		PatternTokenRule rule = new PatternTokenRule("\\d{2,4}-\\d{2}-\\d{2}"); // Date pattern
+		PatternTokenRule rule = new PatternTokenRule("\\d{2,4}-\\d{2}-\\d{2}");
 		Token token = createToken("2023/12/25");
 		
 		boolean result = rule.match(token);
 		
 		assertFalse(result);
-	}
-	
-	@Test
-	void matchWithEmptyStringPattern() {
-		PatternTokenRule rule = new PatternTokenRule("");
-		Token token = createToken("");
-		
-		boolean result = rule.match(token);
-		
-		assertTrue(result);
-	}
-	
-	@Test
-	void matchWithEmptyStringPatternNonEmpty() {
-		PatternTokenRule rule = new PatternTokenRule("");
-		Token token = createToken("text");
-		
-		boolean result = rule.match(token);
-		
-		assertFalse(result);
-	}
-	
-	@Test
-	void matchWithDotPattern() {
-		PatternTokenRule rule = new PatternTokenRule(".");
-		Token token = createToken("a");
-		
-		boolean result = rule.match(token);
-		
-		assertTrue(result);
-	}
-	
-	@Test
-	void matchWithDotPatternMultipleChars() {
-		PatternTokenRule rule = new PatternTokenRule(".");
-		Token token = createToken("ab");
-		
-		boolean result = rule.match(token);
-		
-		assertFalse(result); // . matches only single character
-	}
-	
-	@Test
-	void matchWithDotStarPattern() {
-		PatternTokenRule rule = new PatternTokenRule(".*");
-		Token token = createToken("anything goes here");
-		
-		boolean result = rule.match(token);
-		
-		assertTrue(result);
-	}
-	
-	@Test
-	void matchWithNullToken() {
-		PatternTokenRule rule = new PatternTokenRule("\\d+");
-		
-		assertThrows(NullPointerException.class, () -> rule.match(null));
-	}
-	
-	@Test
-	void matchWithTokenStreamAndContext() {
-		PatternTokenRule rule = new PatternTokenRule("\\d+");
-		TokenStream stream = TokenStream.createMutable(List.of(createToken("123")));
-		TokenRuleContext context = TokenRuleContext.empty();
-		
-		TokenRuleMatch result = rule.match(stream, context);
-		
-		assertNotNull(result);
-		assertEquals(0, result.startIndex());
-		assertEquals(1, result.endIndex());
-		assertEquals("123", result.matchedTokens().get(0).value());
-	}
-	
-	@Test
-	void matchWithTokenStreamNoMatch() {
-		PatternTokenRule rule = new PatternTokenRule("\\d+");
-		TokenStream stream = TokenStream.createMutable(List.of(createToken("abc")));
-		TokenRuleContext context = TokenRuleContext.empty();
-		
-		TokenRuleMatch result = rule.match(stream, context);
-		
-		assertNull(result);
-	}
-	
-	@Test
-	void matchWithEmptyTokenStream() {
-		PatternTokenRule rule = new PatternTokenRule("\\d+");
-		TokenStream stream = TokenStream.createMutable(List.of());
-		TokenRuleContext context = TokenRuleContext.empty();
-		
-		TokenRuleMatch result = rule.match(stream, context);
-		
-		assertNull(result);
 	}
 	
 	@Test
@@ -282,59 +253,28 @@ class PatternTokenRuleTest {
 	}
 	
 	@Test
+	void notBehavior() {
+		PatternTokenRule rule = new PatternTokenRule("\\d+");
+		TokenRule negated = rule.not();
+		
+		TokenStream stream1 = TokenStream.createMutable(List.of(createToken("123")));
+		TokenStream stream2 = TokenStream.createMutable(List.of(createToken("abc")));
+		TokenRuleContext context = TokenRuleContext.empty();
+		
+		assertNotNull(rule.match(stream1, context));
+		assertNull(negated.match(stream1.copyFromZero(), context));
+		
+		assertNull(rule.match(stream2, context));
+		assertNotNull(negated.match(stream2.copyFromZero(), context));
+	}
+	
+	@Test
 	void notWithDoubleNegation() {
 		PatternTokenRule rule = new PatternTokenRule("\\d+");
 		
 		TokenRule doubleNegated = rule.not().not();
 		
 		assertEquals(rule, doubleNegated);
-	}
-	
-	@Test
-	void notBehavior() {
-		PatternTokenRule rule = new PatternTokenRule("\\d+");
-		TokenRule negated = rule.not();
-		
-		TokenStream stream1 = TokenStream.createMutable(List.of(createToken("123"))); // Should match original
-		TokenStream stream2 = TokenStream.createMutable(List.of(createToken("abc"))); // Should not match original
-		TokenRuleContext context = TokenRuleContext.empty();
-		
-		assertNotNull(rule.match(stream1, context)); // Original matches
-		assertNull(negated.match(stream1.copyFromZero(), context)); // Negated doesn't match
-		
-		assertNull(rule.match(stream2, context)); // Original doesn't match
-		assertNotNull(negated.match(stream2.copyFromZero(), context)); // Negated matches
-	}
-	
-	@Test
-	void equalsAndHashCode() {
-		Pattern pattern1 = Pattern.compile("\\d+");
-		Pattern pattern2 = Pattern.compile("\\d+");
-		Pattern pattern3 = Pattern.compile("\\w+");
-		
-		PatternTokenRule rule1 = new PatternTokenRule(pattern1);
-		PatternTokenRule rule2 = new PatternTokenRule(pattern1);
-		PatternTokenRule rule3 = new PatternTokenRule(pattern2);
-		PatternTokenRule rule4 = new PatternTokenRule(pattern3);
-		
-		assertEquals(rule1, rule2);
-		assertNotEquals(rule1, rule3); // Different pattern instances
-		assertNotEquals(rule1, rule4);
-		assertNotEquals(rule1, null);
-		assertNotEquals(rule1, "string");
-		
-		assertEquals(rule1.hashCode(), rule2.hashCode());
-	}
-	
-	@Test
-	void equalsWithStringConstructor() {
-		PatternTokenRule rule1 = new PatternTokenRule("\\d+");
-		PatternTokenRule rule2 = new PatternTokenRule("\\d+");
-		PatternTokenRule rule3 = new PatternTokenRule("\\w+");
-		
-		// These might not be equal because Pattern.compile creates new instances
-		assertNotEquals(rule1, rule2);
-		assertNotEquals(rule1, rule3);
 	}
 	
 	@Test

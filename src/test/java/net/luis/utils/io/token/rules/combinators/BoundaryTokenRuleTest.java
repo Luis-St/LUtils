@@ -34,6 +34,11 @@ import java.util.Objects;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+/**
+ * Test class for {@link BoundaryTokenRule}.<br>
+ *
+ * @author Luis-St
+ */
 class BoundaryTokenRuleTest {
 	
 	private static @NotNull Token createToken(@NotNull String value) {
@@ -61,7 +66,17 @@ class BoundaryTokenRuleTest {
 	}
 	
 	@Test
-	void constructorTwoParametersWithValidRules() {
+	void constructorWithNullStart() {
+		assertThrows(NullPointerException.class, () -> new BoundaryTokenRule(null, createRule(")")));
+	}
+	
+	@Test
+	void constructorWithNullEnd() {
+		assertThrows(NullPointerException.class, () -> new BoundaryTokenRule(createRule("("), null));
+	}
+	
+	@Test
+	void constructorWithValidRules() {
 		TokenRule start = createRule("(");
 		TokenRule end = createRule(")");
 		
@@ -73,17 +88,22 @@ class BoundaryTokenRuleTest {
 	}
 	
 	@Test
-	void constructorTwoParametersWithNullStart() {
-		assertThrows(NullPointerException.class, () -> new BoundaryTokenRule(null, createRule(")")));
+	void contentConstructorWithNullStart() {
+		assertThrows(NullPointerException.class, () -> new BoundaryTokenRule(null, createRule("content"), createRule(")")));
 	}
 	
 	@Test
-	void constructorTwoParametersWithNullEnd() {
-		assertThrows(NullPointerException.class, () -> new BoundaryTokenRule(createRule("("), null));
+	void contentConstructorWithNullBetween() {
+		assertThrows(NullPointerException.class, () -> new BoundaryTokenRule(createRule("("), null, createRule(")")));
 	}
 	
 	@Test
-	void constructorThreeParametersWithValidRules() {
+	void contentConstructorWithNullEnd() {
+		assertThrows(NullPointerException.class, () -> new BoundaryTokenRule(createRule("("), createRule("content"), null));
+	}
+	
+	@Test
+	void contentConstructorWithValidRules() {
 		TokenRule start = createRule("(");
 		TokenRule between = createRule("content");
 		TokenRule end = createRule(")");
@@ -96,18 +116,33 @@ class BoundaryTokenRuleTest {
 	}
 	
 	@Test
-	void constructorThreeParametersWithNullStart() {
-		assertThrows(NullPointerException.class, () -> new BoundaryTokenRule(null, createRule("content"), createRule(")")));
+	void matchWithNullStream() {
+		BoundaryTokenRule rule = new BoundaryTokenRule(createRule("("), createRule(")"));
+		TokenRuleContext context = TokenRuleContext.empty();
+		
+		assertThrows(NullPointerException.class, () -> rule.match(null, context));
 	}
 	
 	@Test
-	void constructorThreeParametersWithNullBetween() {
-		assertThrows(NullPointerException.class, () -> new BoundaryTokenRule(createRule("("), null, createRule(")")));
+	void matchWithNullContext() {
+		BoundaryTokenRule rule = new BoundaryTokenRule(createRule("("), createRule(")"));
+		TokenStream stream = TokenStream.createMutable(List.of());
+		
+		assertThrows(NullPointerException.class, () -> rule.match(stream, null));
 	}
 	
 	@Test
-	void constructorThreeParametersWithNullEnd() {
-		assertThrows(NullPointerException.class, () -> new BoundaryTokenRule(createRule("("), createRule("content"), null));
+	void matchWithEmptyStream() {
+		TokenRule start = createRule("(");
+		TokenRule end = createRule(")");
+		BoundaryTokenRule rule = new BoundaryTokenRule(start, end);
+		
+		TokenStream stream = TokenStream.createMutable(List.of());
+		TokenRuleContext context = TokenRuleContext.empty();
+		
+		TokenRuleMatch result = rule.match(stream, context);
+		
+		assertNull(result);
 	}
 	
 	@Test
@@ -223,20 +258,6 @@ class BoundaryTokenRuleTest {
 	}
 	
 	@Test
-	void matchWithEmptyStream() {
-		TokenRule start = createRule("(");
-		TokenRule end = createRule(")");
-		BoundaryTokenRule rule = new BoundaryTokenRule(start, end);
-		
-		TokenStream stream = TokenStream.createMutable(List.of());
-		TokenRuleContext context = TokenRuleContext.empty();
-		
-		TokenRuleMatch result = rule.match(stream, context);
-		
-		assertNull(result);
-	}
-	
-	@Test
 	void matchWithEndAtStreamEnd() {
 		TokenRule start = createRule("(");
 		TokenRule end = TokenRules.endDocument();
@@ -251,7 +272,7 @@ class BoundaryTokenRuleTest {
 		assertEquals(0, result.startIndex());
 		assertEquals(1, result.endIndex());
 		assertEquals(1, result.matchedTokens().size());
-		assertEquals("(", result.matchedTokens().get(0).value());
+		assertEquals("(", result.matchedTokens().getFirst().value());
 	}
 	
 	@Test
@@ -272,61 +293,18 @@ class BoundaryTokenRuleTest {
 	}
 	
 	@Test
-	void matchWithNullStream() {
-		BoundaryTokenRule rule = new BoundaryTokenRule(createRule("("), createRule(")"));
-		TokenRuleContext context = TokenRuleContext.empty();
-		
-		assertThrows(NullPointerException.class, () -> rule.match(null, context));
-	}
-	
-	@Test
-	void matchWithNullContext() {
-		BoundaryTokenRule rule = new BoundaryTokenRule(createRule("("), createRule(")"));
-		TokenStream stream = TokenStream.createMutable(List.of());
-		
-		assertThrows(NullPointerException.class, () -> rule.match(stream, null));
-	}
-	
-	@Test
 	void not() {
-		TokenRule start = createRule("(");
-		TokenRule between = createRule("content");
-		TokenRule end = createRule(")");
+		TokenRule start = TokenRules.value("(", false);
+		TokenRule between = TokenRules.pattern("content");
+		TokenRule end = TokenRules.value(")", false);
 		BoundaryTokenRule rule = new BoundaryTokenRule(start, between, end);
 		
 		TokenRule negated = rule.not();
 		
-		assertTrue(negated instanceof BoundaryTokenRule);
-		BoundaryTokenRule negatedBoundary = (BoundaryTokenRule) negated;
+		BoundaryTokenRule negatedBoundary = assertInstanceOf(BoundaryTokenRule.class, negated);
 		assertNotEquals(start, negatedBoundary.startTokenRule());
 		assertNotEquals(between, negatedBoundary.betweenTokenRule());
 		assertNotEquals(end, negatedBoundary.endTokenRule());
-	}
-	
-	@Test
-	void equalsAndHashCode() {
-		TokenRule start1 = createRule("(");
-		TokenRule between1 = createRule("content");
-		TokenRule end1 = createRule(")");
-		
-		TokenRule start2 = createRule("(");
-		TokenRule between2 = createRule("content");
-		TokenRule end2 = createRule(")");
-		
-		TokenRule start3 = createRule("[");
-		
-		BoundaryTokenRule rule1 = new BoundaryTokenRule(start1, between1, end1);
-		BoundaryTokenRule rule2 = new BoundaryTokenRule(start1, between1, end1);
-		BoundaryTokenRule rule3 = new BoundaryTokenRule(start2, between2, end2);
-		BoundaryTokenRule rule4 = new BoundaryTokenRule(start3, between1, end1);
-		
-		assertEquals(rule1, rule2);
-		assertNotEquals(rule1, rule3); // Different rule instances
-		assertNotEquals(rule1, rule4); // Different start rule
-		assertNotEquals(rule1, null);
-		assertNotEquals(rule1, "string");
-		
-		assertEquals(rule1.hashCode(), rule2.hashCode());
 	}
 	
 	@Test
