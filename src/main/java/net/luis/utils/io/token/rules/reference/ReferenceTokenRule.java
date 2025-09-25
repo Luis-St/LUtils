@@ -18,8 +18,8 @@
 
 package net.luis.utils.io.token.rules.reference;
 
-import net.luis.utils.io.token.context.TokenRuleContext;
 import net.luis.utils.io.token.TokenRuleMatch;
+import net.luis.utils.io.token.context.TokenRuleContext;
 import net.luis.utils.io.token.rules.TokenRule;
 import net.luis.utils.io.token.rules.TokenRules;
 import net.luis.utils.io.token.stream.TokenStream;

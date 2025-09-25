@@ -20,8 +20,8 @@ package net.luis.utils.io.token.rules.quantifiers;
 
 import com.google.common.collect.Lists;
 import net.luis.utils.io.token.TokenRuleMatch;
-import net.luis.utils.io.token.rules.TokenRule;
 import net.luis.utils.io.token.context.TokenRuleContext;
+import net.luis.utils.io.token.rules.TokenRule;
 import net.luis.utils.io.token.stream.TokenStream;
 import net.luis.utils.io.token.tokens.Token;
 import net.luis.utils.util.Pair;

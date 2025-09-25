@@ -22,7 +22,8 @@ import net.luis.utils.io.token.TokenPosition;
 import net.luis.utils.io.token.type.TokenType;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.*;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * Interface for a token, a token is a sequence of characters.<br>

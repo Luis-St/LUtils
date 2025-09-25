@@ -19,9 +19,9 @@
 package net.luis.utils.io.token.actions.enhancers;
 
 import com.google.common.collect.Lists;
-import net.luis.utils.io.token.context.TokenActionContext;
 import net.luis.utils.io.token.TokenRuleMatch;
 import net.luis.utils.io.token.actions.TokenAction;
+import net.luis.utils.io.token.context.TokenActionContext;
 import net.luis.utils.io.token.tokens.IndexedToken;
 import net.luis.utils.io.token.tokens.Token;
 import org.jetbrains.annotations.NotNull;

@@ -19,8 +19,8 @@
 package net.luis.utils.io.token.rules;
 
 import net.luis.utils.annotation.type.Singleton;
-import net.luis.utils.io.token.context.TokenRuleContext;
 import net.luis.utils.io.token.TokenRuleMatch;
+import net.luis.utils.io.token.context.TokenRuleContext;
 import net.luis.utils.io.token.stream.TokenStream;
 import net.luis.utils.io.token.tokens.Token;
 import org.jetbrains.annotations.NotNull;

@@ -18,10 +18,10 @@
 
 package net.luis.utils.io.token.actions.transformers;
 
-import net.luis.utils.io.token.context.TokenActionContext;
 import net.luis.utils.io.token.TokenRuleMatch;
 import net.luis.utils.io.token.actions.TokenAction;
 import net.luis.utils.io.token.actions.core.TokenTransformer;
+import net.luis.utils.io.token.context.TokenActionContext;
 import net.luis.utils.io.token.tokens.Token;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Unmodifiable;

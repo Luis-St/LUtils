@@ -19,7 +19,8 @@
 package net.luis.utils.io.token.stream;
 
 import net.luis.utils.io.token.tokens.Token;
-import org.jetbrains.annotations.*;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Unmodifiable;
 
 import java.util.List;
 import java.util.Objects;
