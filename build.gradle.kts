@@ -11,7 +11,6 @@ val mavenPassword: String? = System.getenv("MAVEN_PASSWORD")
 plugins {
 	id("java")
 	id("maven-publish")
-	id("com.github.joschi.licenser") version "0.6.1"
 }
 
 repositories {
@@ -38,16 +37,6 @@ dependencies {
 	testImplementation("org.junit.jupiter:junit-jupiter:${junitJupiter}")
 }
 
-tasks.named<JavaCompile>("compileJava") {
-	dependsOn("updateLicenses")
-}
-
-license {
-	header = file("header.txt")
-	include("**/*.java")
-	exclude("**/Main.java")
-}
-
 tasks.named<Test>("test") {
 	useJUnitPlatform()
 	environment("env.default", "3")
@@ -62,6 +51,10 @@ tasks.named<Test>("test") {
 }
 
 java {
+	sourceCompatibility = JavaVersion.VERSION_25
+	targetCompatibility = JavaVersion.VERSION_25
+	modularity.inferModulePath = true
+	
 	withSourcesJar()
 	withJavadocJar()
 }
