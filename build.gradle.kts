@@ -7,6 +7,7 @@ val log4jCore: String by project
 val apacheLang: String by project
 val jetBrainsAnnotations: String by project
 val junitJupiter: String by project
+val junitPlatformLauncher: String by project
 
 val mavenUserName: String? = System.getenv("MAVEN_USERNAME")
 val mavenPassword: String? = System.getenv("MAVEN_PASSWORD")
@@ -24,12 +25,12 @@ repositories {
 dependencies {
 	// Google
 	implementation("com.google.guava:guava:${googleGuava}") {  // Utility
-		/*exclude(group = "org.checkerframework")
+		exclude(group = "org.checkerframework")
 		exclude(group = "com.google.code.findbugs")
 		exclude(group = "com.google.errorprone")
 		exclude(group = "com.google.j2objc")
 		exclude(group = "com.google.guava", module = "failureaccess")
-		exclude(group = "com.google.guava", module = "listenablefuture")*/
+		exclude(group = "com.google.guava", module = "listenablefuture")
 	}
 	// Apache
 	implementation("org.apache.logging.log4j:log4j-api:${log4jAPI}") // Logging
@@ -39,6 +40,7 @@ dependencies {
 	implementation("org.jetbrains:annotations:${jetBrainsAnnotations}") // Annotations
 	// Test
 	testImplementation("org.junit.jupiter:junit-jupiter:${junitJupiter}")
+	testRuntimeOnly("org.junit.platform:junit-platform-launcher:${junitPlatformLauncher}")
 }
 
 licenseManager {
@@ -70,21 +72,8 @@ tasks.named<Test>("test") {
 }
 
 java {
-	sourceCompatibility = JavaVersion.VERSION_25
-	targetCompatibility = JavaVersion.VERSION_25
-	modularity.inferModulePath = true
-	
 	withSourcesJar()
 	withJavadocJar()
-}
-
-tasks.compileJava {
-	doFirst {
-		options.compilerArgs.addAll(listOf(
-			"--module-path", classpath.asPath
-		))
-		classpath = files()
-	}
 }
 
 tasks.named<Javadoc>("javadoc") {
@@ -93,11 +82,6 @@ tasks.named<Javadoc>("javadoc") {
 		memberLevel = JavadocMemberLevel.PRIVATE
 		(this as StandardJavadocDocletOptions).addStringOption("tag", "apiNote:a:API Note:")
 	}
-}
-
-artifacts {
-	archives(tasks.named<Jar>("sourcesJar"))
-	archives(tasks.named<Jar>("javadocJar"))
 }
 
 tasks.register<JavaExec>("run") {
