@@ -1,3 +1,6 @@
+import net.luis.lm.LineEnding
+import java.time.Year
+
 val googleGuava: String by project
 val log4jAPI: String by project
 val log4jCore: String by project
@@ -11,6 +14,7 @@ val mavenPassword: String? = System.getenv("MAVEN_PASSWORD")
 plugins {
 	id("java")
 	id("maven-publish")
+	id("net.luis.lm")
 }
 
 repositories {
@@ -35,6 +39,21 @@ dependencies {
 	implementation("org.jetbrains:annotations:${jetBrainsAnnotations}") // Annotations
 	// Test
 	testImplementation("org.junit.jupiter:junit-jupiter:${junitJupiter}")
+}
+
+licenseManager {
+	header = "header.txt"
+	lineEnding = LineEnding.LF
+	spacingAfterHeader = 1
+	
+	variable("year", Year.now())
+	variable("author", "Luis Staudt")
+	variable("project", rootProject.name)
+	
+	sourceSets = listOf("main", "test")
+	
+	include("**/*.java")
+	exclude("**/Main.java")
 }
 
 tasks.named<Test>("test") {
