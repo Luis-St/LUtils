@@ -166,6 +166,26 @@ class BoundaryTokenRuleTest {
 	}
 	
 	@Test
+	void matchWithEmptyContent() {
+		TokenRule start = createRule("start");
+		TokenRule between = createRule("specific");
+		TokenRule end = createRule("end");
+		BoundaryTokenRule rule = new BoundaryTokenRule(start, between, end);
+		
+		TokenStream stream = TokenStream.createMutable(List.of(createToken("start"), createToken("end")));
+		TokenRuleContext context = TokenRuleContext.empty();
+		
+		TokenRuleMatch result = rule.match(stream, context);
+		
+		assertNotNull(result);
+		assertEquals(0, result.startIndex());
+		assertEquals(2, result.endIndex());
+		assertEquals(2, result.matchedTokens().size());
+		assertEquals("start", result.matchedTokens().get(0).value());
+		assertEquals("end", result.matchedTokens().get(1).value());
+	}
+	
+	@Test
 	void matchWithContentBetween() {
 		TokenRule start = createRule("(");
 		TokenRule between = createRule("content");
@@ -210,6 +230,119 @@ class BoundaryTokenRuleTest {
 		assertEquals("first", result.matchedTokens().get(1).value());
 		assertEquals("second", result.matchedTokens().get(2).value());
 		assertEquals("}", result.matchedTokens().get(3).value());
+	}
+	
+	@Test
+	void matchAtDifferentStreamPosition() {
+		TokenRule start = createRule("(");
+		TokenRule end = createRule(")");
+		BoundaryTokenRule rule = new BoundaryTokenRule(start, end);
+		
+		TokenStream stream = TokenStream.createMutable(List.of(createToken("prefix"), createToken("("), createToken("content"), createToken(")")));
+		stream.advance();
+		TokenRuleContext context = TokenRuleContext.empty();
+		
+		TokenRuleMatch result = rule.match(stream, context);
+		
+		assertNotNull(result);
+		assertEquals(1, result.startIndex());
+		assertEquals(4, result.endIndex());
+		assertEquals(3, result.matchedTokens().size());
+		assertEquals("(", result.matchedTokens().get(0).value());
+		assertEquals("content", result.matchedTokens().get(1).value());
+		assertEquals(")", result.matchedTokens().get(2).value());
+		assertEquals(4, stream.getCurrentIndex());
+	}
+	
+	@Test
+	void matchWithNestedBoundaries() {
+		TokenRule start = createRule("(");
+		TokenRule between = TokenRules.alwaysMatch();
+		TokenRule end = createRule(")");
+		BoundaryTokenRule rule = new BoundaryTokenRule(start, between, end);
+		
+		TokenStream stream = TokenStream.createMutable(List.of(
+			createToken("("), createToken("("), createToken("nested"), createToken(")")
+		));
+		TokenRuleContext context = TokenRuleContext.empty();
+		
+		TokenRuleMatch result = rule.match(stream, context);
+		
+		assertNotNull(result);
+		assertEquals(0, result.startIndex());
+		assertEquals(4, result.endIndex());
+		assertEquals(4, result.matchedTokens().size());
+		assertEquals("(", result.matchedTokens().get(0).value());
+		assertEquals("(", result.matchedTokens().get(1).value());
+		assertEquals("nested", result.matchedTokens().get(2).value());
+		assertEquals(")", result.matchedTokens().get(3).value());
+	}
+	
+	@Test
+	void matchWithComplexBetweenRule() {
+		TokenRule start = createRule("begin");
+		TokenRule between = TokenRules.sequence(createRule("word"), createRule("number"));
+		TokenRule end = createRule("end");
+		BoundaryTokenRule rule = new BoundaryTokenRule(start, between, end);
+		
+		TokenStream stream = TokenStream.createMutable(List.of(
+			createToken("begin"), createToken("word"), createToken("number"), createToken("end")
+		));
+		TokenRuleContext context = TokenRuleContext.empty();
+		
+		TokenRuleMatch result = rule.match(stream, context);
+		
+		assertNotNull(result);
+		assertEquals(0, result.startIndex());
+		assertEquals(4, result.endIndex());
+		assertEquals(4, result.matchedTokens().size());
+		assertEquals("begin", result.matchedTokens().get(0).value());
+		assertEquals("word", result.matchedTokens().get(1).value());
+		assertEquals("number", result.matchedTokens().get(2).value());
+		assertEquals("end", result.matchedTokens().get(3).value());
+	}
+	
+	@Test
+	void matchWithMultipleValidEndPositions() {
+		TokenRule start = createRule("start");
+		TokenRule between = createRule("item");
+		TokenRule end = createRule("end");
+		BoundaryTokenRule rule = new BoundaryTokenRule(start, between, end);
+		
+		TokenStream stream = TokenStream.createMutable(List.of(
+			createToken("start"), createToken("item"), createToken("end"), createToken("item"), createToken("end")
+		));
+		TokenRuleContext context = TokenRuleContext.empty();
+		
+		TokenRuleMatch result = rule.match(stream, context);
+		
+		assertNotNull(result);
+		assertEquals(0, result.startIndex());
+		assertEquals(3, result.endIndex());
+		assertEquals(3, result.matchedTokens().size());
+		assertEquals("start", result.matchedTokens().get(0).value());
+		assertEquals("item", result.matchedTokens().get(1).value());
+		assertEquals("end", result.matchedTokens().get(2).value());
+	}
+	
+	@Test
+	void matchWithOptionalBetweenContent() {
+		TokenRule start = createRule("start");
+		TokenRule between = TokenRules.optional(createRule("optional"));
+		TokenRule end = createRule("end");
+		BoundaryTokenRule rule = new BoundaryTokenRule(start, between, end);
+		
+		TokenStream stream = TokenStream.createMutable(List.of(createToken("start"), createToken("end")));
+		TokenRuleContext context = TokenRuleContext.empty();
+		
+		TokenRuleMatch result = rule.match(stream, context);
+		
+		assertNotNull(result);
+		assertEquals(0, result.startIndex());
+		assertEquals(2, result.endIndex());
+		assertEquals(2, result.matchedTokens().size());
+		assertEquals("start", result.matchedTokens().get(0).value());
+		assertEquals("end", result.matchedTokens().get(1).value());
 	}
 	
 	@Test
@@ -332,6 +465,32 @@ class BoundaryTokenRuleTest {
 		TokenRuleMatch result = rule.match(stream, context);
 		
 		assertNull(result);
+	}
+	
+	@Test
+	void matchWithGreedyBetweenMatching() {
+		TokenRule start = createRule("start");
+		TokenRule between = TokenRules.alwaysMatch();
+		TokenRule end = createRule("end");
+		BoundaryTokenRule rule = new BoundaryTokenRule(start, between, end);
+		
+		TokenStream stream = TokenStream.createMutable(List.of(
+			createToken("start"), createToken("lots"), createToken("of"), createToken("content"), createToken("here"), createToken("end")
+		));
+		TokenRuleContext context = TokenRuleContext.empty();
+		
+		TokenRuleMatch result = rule.match(stream, context);
+		
+		assertNotNull(result);
+		assertEquals(0, result.startIndex());
+		assertEquals(6, result.endIndex());
+		assertEquals(6, result.matchedTokens().size());
+		assertEquals("start", result.matchedTokens().get(0).value());
+		assertEquals("lots", result.matchedTokens().get(1).value());
+		assertEquals("of", result.matchedTokens().get(2).value());
+		assertEquals("content", result.matchedTokens().get(3).value());
+		assertEquals("here", result.matchedTokens().get(4).value());
+		assertEquals("end", result.matchedTokens().get(5).value());
 	}
 	
 	@Test

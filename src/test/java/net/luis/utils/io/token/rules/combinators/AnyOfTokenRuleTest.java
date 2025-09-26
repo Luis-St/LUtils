@@ -178,6 +178,25 @@ class AnyOfTokenRuleTest {
 	}
 	
 	@Test
+	void matchWithThirdRuleMatching() {
+		TokenRule rule1 = createRule("nomatch1");
+		TokenRule rule2 = createRule("nomatch2");
+		TokenRule rule3 = createRule("match");
+		AnyOfTokenRule anyRule = new AnyOfTokenRule(List.of(rule1, rule2, rule3));
+		
+		TokenStream stream = TokenStream.createMutable(List.of(createToken("match")));
+		TokenRuleContext context = TokenRuleContext.empty();
+		
+		TokenRuleMatch result = anyRule.match(stream, context);
+		
+		assertNotNull(result);
+		assertEquals(0, result.startIndex());
+		assertEquals(1, result.endIndex());
+		assertEquals("match", result.matchedTokens().getFirst().value());
+		assertEquals(1, stream.getCurrentIndex());
+	}
+	
+	@Test
 	void matchWithNoRulesMatching() {
 		TokenRule rule1 = createRule("nomatch1");
 		TokenRule rule2 = createRule("nomatch2");
@@ -190,6 +209,97 @@ class AnyOfTokenRuleTest {
 		
 		assertNull(result);
 		assertEquals(0, stream.getCurrentIndex());
+	}
+	
+	@Test
+	void matchWithStreamPositionPreservation() {
+		TokenRule rule1 = createRule("nomatch1");
+		TokenRule rule2 = createRule("nomatch2");
+		TokenRule rule3 = createRule("nomatch3");
+		AnyOfTokenRule anyRule = new AnyOfTokenRule(List.of(rule1, rule2, rule3));
+		
+		TokenStream stream = TokenStream.createMutable(List.of(createToken("different"), createToken("tokens")));
+		TokenRuleContext context = TokenRuleContext.empty();
+		
+		TokenRuleMatch result = anyRule.match(stream, context);
+		
+		assertNull(result);
+		assertEquals(0, stream.getCurrentIndex());
+	}
+	
+	@Test
+	void matchAtMiddleOfStream() {
+		TokenRule rule1 = createRule("target");
+		TokenRule rule2 = createRule("alternative");
+		AnyOfTokenRule anyRule = new AnyOfTokenRule(List.of(rule1, rule2));
+		
+		TokenStream stream = TokenStream.createMutable(List.of(createToken("first"), createToken("target"), createToken("third")));
+		stream.advance();
+		TokenRuleContext context = TokenRuleContext.empty();
+		
+		TokenRuleMatch result = anyRule.match(stream, context);
+		
+		assertNotNull(result);
+		assertEquals(1, result.startIndex());
+		assertEquals(2, result.endIndex());
+		assertEquals("target", result.matchedTokens().getFirst().value());
+		assertEquals(2, stream.getCurrentIndex());
+	}
+	
+	@Test
+	void matchWithComplexSequenceRules() {
+		TokenRule rule1 = TokenRules.sequence(createRule("if"), createRule("("));
+		TokenRule rule2 = TokenRules.sequence(createRule("while"), createRule("("));
+		AnyOfTokenRule anyRule = new AnyOfTokenRule(List.of(rule1, rule2));
+		
+		TokenStream stream = TokenStream.createMutable(List.of(createToken("while"), createToken("("), createToken("condition")));
+		TokenRuleContext context = TokenRuleContext.empty();
+		
+		TokenRuleMatch result = anyRule.match(stream, context);
+		
+		assertNotNull(result);
+		assertEquals(0, result.startIndex());
+		assertEquals(2, result.endIndex());
+		assertEquals(2, result.matchedTokens().size());
+		assertEquals("while", result.matchedTokens().get(0).value());
+		assertEquals("(", result.matchedTokens().get(1).value());
+		assertEquals(2, stream.getCurrentIndex());
+	}
+	
+	@Test
+	void matchWithDifferentTokenConsumption() {
+		TokenRule rule1 = createRule("single");
+		TokenRule rule2 = TokenRules.sequence(createRule("multi"), createRule("token"));
+		AnyOfTokenRule anyRule = new AnyOfTokenRule(List.of(rule1, rule2));
+		
+		TokenStream stream = TokenStream.createMutable(List.of(createToken("multi"), createToken("token"), createToken("rest")));
+		TokenRuleContext context = TokenRuleContext.empty();
+		
+		TokenRuleMatch result = anyRule.match(stream, context);
+		
+		assertNotNull(result);
+		assertEquals(0, result.startIndex());
+		assertEquals(2, result.endIndex());
+		assertEquals(2, result.matchedTokens().size());
+		assertEquals("multi", result.matchedTokens().get(0).value());
+		assertEquals("token", result.matchedTokens().get(1).value());
+		assertEquals(2, stream.getCurrentIndex());
+	}
+	
+	@Test
+	void matchWithMixedRuleTypes() {
+		TokenRule rule1 = TokenRules.pattern("\\d+");
+		TokenRule rule2 = TokenRules.value("literal", false);
+		TokenRule rule3 = TokenRules.endDocument();
+		AnyOfTokenRule anyRule = new AnyOfTokenRule(List.of(rule1, rule2, rule3));
+		
+		TokenStream stream = TokenStream.createMutable(List.of(createToken("123")));
+		TokenRuleContext context = TokenRuleContext.empty();
+		
+		TokenRuleMatch result = anyRule.match(stream, context);
+		
+		assertNotNull(result);
+		assertEquals("123", result.matchedTokens().getFirst().value());
 	}
 	
 	@Test
@@ -219,6 +329,24 @@ class AnyOfTokenRuleTest {
 		TokenRuleMatch result = anyRule.match(stream, context);
 		
 		assertNull(result);
+	}
+	
+	@Test
+	void matchWithPartiallyMatchingSequences() {
+		TokenRule rule1 = TokenRules.sequence(createRule("start"), createRule("missing"));
+		TokenRule rule2 = TokenRules.sequence(createRule("start"), createRule("correct"));
+		AnyOfTokenRule anyRule = new AnyOfTokenRule(List.of(rule1, rule2));
+		
+		TokenStream stream = TokenStream.createMutable(List.of(createToken("start"), createToken("correct")));
+		TokenRuleContext context = TokenRuleContext.empty();
+		
+		TokenRuleMatch result = anyRule.match(stream, context);
+		
+		assertNotNull(result);
+		assertEquals(0, result.startIndex());
+		assertEquals(2, result.endIndex());
+		assertEquals(2, result.matchedTokens().size());
+		assertEquals(2, stream.getCurrentIndex());
 	}
 	
 	@Test
@@ -254,6 +382,21 @@ class AnyOfTokenRuleTest {
 		
 		assertNotNull(result);
 		assertEquals("option999", result.matchedTokens().getFirst().value());
+	}
+	
+	@Test
+	void matchWithNestedAnyOfRules() {
+		TokenRule inner1 = new AnyOfTokenRule(List.of(createRule("a"), createRule("b")));
+		TokenRule inner2 = new AnyOfTokenRule(List.of(createRule("c"), createRule("d")));
+		AnyOfTokenRule outer = new AnyOfTokenRule(List.of(inner1, inner2));
+		
+		TokenStream stream = TokenStream.createMutable(List.of(createToken("c")));
+		TokenRuleContext context = TokenRuleContext.empty();
+		
+		TokenRuleMatch result = outer.match(stream, context);
+		
+		assertNotNull(result);
+		assertEquals("c", result.matchedTokens().getFirst().value());
 	}
 	
 	@Test

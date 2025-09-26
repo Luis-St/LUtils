@@ -246,6 +246,57 @@ class RecursiveTokenRuleTest {
 	}
 	
 	@Test
+	void matchAtDifferentStreamPosition() {
+		Function<TokenRule, TokenRule> factory = self -> TokenRules.any(
+			createRule("base"),
+			TokenRules.sequence(createRule("("), self, createRule(")"))
+		);
+		RecursiveTokenRule rule = new RecursiveTokenRule(factory);
+		
+		TokenStream stream = TokenStream.createMutable(List.of(
+			createToken("prefix"), createToken("("), createToken("base"), createToken(")"), createToken("suffix")
+		));
+		stream.advance();
+		TokenRuleContext context = TokenRuleContext.empty();
+		
+		TokenRuleMatch result = rule.match(stream, context);
+		
+		assertNotNull(result);
+		assertEquals(1, result.startIndex());
+		assertEquals(4, result.endIndex());
+		assertEquals(3, result.matchedTokens().size());
+		assertEquals("(", result.matchedTokens().get(0).value());
+		assertEquals("base", result.matchedTokens().get(1).value());
+		assertEquals(")", result.matchedTokens().get(2).value());
+		assertEquals(4, stream.getCurrentIndex());
+	}
+	
+	@Test
+	void matchWithAlternatingRecursivePattern() {
+		Function<TokenRule, TokenRule> factory = self -> TokenRules.any(
+			createRule("leaf"),
+			TokenRules.sequence(createRule("A"), self, createRule("B")),
+			TokenRules.sequence(createRule("X"), self, createRule("Y"))
+		);
+		RecursiveTokenRule rule = new RecursiveTokenRule(factory);
+		
+		TokenStream stream = TokenStream.createMutable(List.of(
+			createToken("A"), createToken("X"), createToken("leaf"), createToken("Y"), createToken("B")
+		));
+		TokenRuleContext context = TokenRuleContext.empty();
+		
+		TokenRuleMatch result = rule.match(stream, context);
+		
+		assertNotNull(result);
+		assertEquals(5, result.matchedTokens().size());
+		assertEquals("A", result.matchedTokens().get(0).value());
+		assertEquals("X", result.matchedTokens().get(1).value());
+		assertEquals("leaf", result.matchedTokens().get(2).value());
+		assertEquals("Y", result.matchedTokens().get(3).value());
+		assertEquals("B", result.matchedTokens().get(4).value());
+	}
+	
+	@Test
 	void matchWithNoMatch() {
 		Function<TokenRule, TokenRule> factory = self -> createRule("expected");
 		RecursiveTokenRule rule = new RecursiveTokenRule(factory);
@@ -256,6 +307,55 @@ class RecursiveTokenRuleTest {
 		TokenRuleMatch result = rule.match(stream, context);
 		
 		assertNull(result);
+	}
+	
+	@Test
+	void matchWithPartialRecursiveMatch() {
+		Function<TokenRule, TokenRule> factory = self -> TokenRules.any(
+			createRule("base"),
+			TokenRules.sequence(createRule("("), self, createRule(")"))
+		);
+		RecursiveTokenRule rule = new RecursiveTokenRule(factory);
+		
+		TokenStream stream = TokenStream.createMutable(List.of(
+			createToken("("), createToken("base"), createToken("]")
+		));
+		TokenRuleContext context = TokenRuleContext.empty();
+		
+		TokenRuleMatch result = rule.match(stream, context);
+		
+		assertNull(result);
+	}
+	
+	@Test
+	void matchWithComplexNestedAlternatives() {
+		Function<TokenRule, TokenRule> factory = self -> TokenRules.any(
+			TokenRules.pattern("\\d+"),
+			TokenRules.sequence(
+				createRule("if"),
+				TokenRules.optional(self),
+				createRule("then"),
+				TokenRules.optional(self)
+			),
+			TokenRules.sequence(createRule("("), self, createRule(")"))
+		);
+		RecursiveTokenRule rule = new RecursiveTokenRule(factory);
+		
+		TokenStream stream = TokenStream.createMutable(List.of(
+			createToken("if"), createToken("("), createToken("123"), createToken(")"), createToken("then"), createToken("456")
+		));
+		TokenRuleContext context = TokenRuleContext.empty();
+		
+		TokenRuleMatch result = rule.match(stream, context);
+		
+		assertNotNull(result);
+		assertEquals(6, result.matchedTokens().size());
+		assertEquals("if", result.matchedTokens().get(0).value());
+		assertEquals("(", result.matchedTokens().get(1).value());
+		assertEquals("123", result.matchedTokens().get(2).value());
+		assertEquals(")", result.matchedTokens().get(3).value());
+		assertEquals("then", result.matchedTokens().get(4).value());
+		assertEquals("456", result.matchedTokens().get(5).value());
 	}
 	
 	@Test
@@ -290,6 +390,51 @@ class RecursiveTokenRuleTest {
 		
 		assertNotNull(result);
 		assertEquals(5, result.matchedTokens().size());
+	}
+	
+	@Test
+	void matchWithRecursiveSequenceRepeated() {
+		Function<TokenRule, TokenRule> factory = self -> TokenRules.any(
+			TokenRules.sequence(createRule("base"), self),
+			TokenRules.sequence(createRule(","), createRule("base"))
+		);
+		RecursiveTokenRule rule = new RecursiveTokenRule(factory);
+		
+		TokenStream stream = TokenStream.createMutable(List.of(
+			createToken("base"), createToken(","), createToken("base")
+		));
+		TokenRuleContext context = TokenRuleContext.empty();
+		
+		TokenRuleMatch result = rule.match(stream, context);
+		
+		assertNotNull(result);
+		assertEquals(3, result.matchedTokens().size());
+		assertEquals("base", result.matchedTokens().get(0).value());
+		assertEquals(",", result.matchedTokens().get(1).value());
+		assertEquals("base", result.matchedTokens().get(2).value());
+	}
+	
+	@Test
+	void matchWithMixedRecursiveAndNonRecursive() {
+		Function<TokenRule, TokenRule> factory = self -> TokenRules.any(
+			TokenRules.sequence(createRule("prefix"), createRule("value")),
+			TokenRules.sequence(createRule("recursive"), self, createRule("suffix"))
+		);
+		RecursiveTokenRule rule = new RecursiveTokenRule(factory);
+		
+		TokenStream stream = TokenStream.createMutable(List.of(
+			createToken("recursive"), createToken("prefix"), createToken("value"), createToken("suffix")
+		));
+		TokenRuleContext context = TokenRuleContext.empty();
+		
+		TokenRuleMatch result = rule.match(stream, context);
+		
+		assertNotNull(result);
+		assertEquals(4, result.matchedTokens().size());
+		assertEquals("recursive", result.matchedTokens().get(0).value());
+		assertEquals("prefix", result.matchedTokens().get(1).value());
+		assertEquals("value", result.matchedTokens().get(2).value());
+		assertEquals("suffix", result.matchedTokens().get(3).value());
 	}
 	
 	@Test

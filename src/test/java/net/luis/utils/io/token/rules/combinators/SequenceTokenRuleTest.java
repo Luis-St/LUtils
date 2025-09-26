@@ -185,6 +185,29 @@ class SequenceTokenRuleTest {
 	}
 	
 	@Test
+	void matchAtDifferentStreamPosition() {
+		TokenRule rule1 = createRule("target");
+		TokenRule rule2 = createRule("sequence");
+		SequenceTokenRule sequenceRule = new SequenceTokenRule(List.of(rule1, rule2));
+		
+		TokenStream stream = TokenStream.createMutable(List.of(
+			createToken("prefix"), createToken("target"), createToken("sequence"), createToken("suffix")
+		));
+		stream.advance();
+		TokenRuleContext context = TokenRuleContext.empty();
+		
+		TokenRuleMatch result = sequenceRule.match(stream, context);
+		
+		assertNotNull(result);
+		assertEquals(1, result.startIndex());
+		assertEquals(3, result.endIndex());
+		assertEquals(2, result.matchedTokens().size());
+		assertEquals("target", result.matchedTokens().get(0).value());
+		assertEquals("sequence", result.matchedTokens().get(1).value());
+		assertEquals(3, stream.getCurrentIndex());
+	}
+	
+	@Test
 	void matchWithFirstRuleNotMatching() {
 		TokenRule rule1 = createRule("expected");
 		TokenRule rule2 = createRule("second");
@@ -215,6 +238,42 @@ class SequenceTokenRuleTest {
 	}
 	
 	@Test
+	void matchWithThirdRuleNotMatching() {
+		TokenRule rule1 = createRule("first");
+		TokenRule rule2 = createRule("second");
+		TokenRule rule3 = createRule("expected");
+		SequenceTokenRule sequenceRule = new SequenceTokenRule(List.of(rule1, rule2, rule3));
+		
+		TokenStream stream = TokenStream.createMutable(List.of(
+			createToken("first"), createToken("second"), createToken("actual")
+		));
+		TokenRuleContext context = TokenRuleContext.empty();
+		
+		TokenRuleMatch result = sequenceRule.match(stream, context);
+		
+		assertNull(result);
+		assertEquals(0, stream.getCurrentIndex());
+	}
+	
+	@Test
+	void matchWithMiddleRuleNotMatching() {
+		TokenRule rule1 = createRule("first");
+		TokenRule rule2 = createRule("expected");
+		TokenRule rule3 = createRule("third");
+		SequenceTokenRule sequenceRule = new SequenceTokenRule(List.of(rule1, rule2, rule3));
+		
+		TokenStream stream = TokenStream.createMutable(List.of(
+			createToken("first"), createToken("actual"), createToken("third")
+		));
+		TokenRuleContext context = TokenRuleContext.empty();
+		
+		TokenRuleMatch result = sequenceRule.match(stream, context);
+		
+		assertNull(result);
+		assertEquals(0, stream.getCurrentIndex());
+	}
+	
+	@Test
 	void matchWithInsufficientTokens() {
 		TokenRule rule1 = createRule("first");
 		TokenRule rule2 = createRule("second");
@@ -227,6 +286,89 @@ class SequenceTokenRuleTest {
 		
 		assertNull(result);
 		assertEquals(0, stream.getCurrentIndex());
+	}
+	
+	@Test
+	void matchWithInsufficientTokensAfterPartialMatch() {
+		TokenRule rule1 = createRule("first");
+		TokenRule rule2 = createRule("second");
+		TokenRule rule3 = createRule("third");
+		SequenceTokenRule sequenceRule = new SequenceTokenRule(List.of(rule1, rule2, rule3));
+		
+		TokenStream stream = TokenStream.createMutable(List.of(createToken("first"), createToken("second")));
+		TokenRuleContext context = TokenRuleContext.empty();
+		
+		TokenRuleMatch result = sequenceRule.match(stream, context);
+		
+		assertNull(result);
+		assertEquals(0, stream.getCurrentIndex());
+	}
+	
+	@Test
+	void matchWithComplexNestedRules() {
+		TokenRule rule1 = TokenRules.sequence(createRule("start"), createRule("prefix"));
+		TokenRule rule2 = TokenRules.any(createRule("option1"), createRule("option2"));
+		TokenRule rule3 = createRule("end");
+		SequenceTokenRule sequenceRule = new SequenceTokenRule(List.of(rule1, rule2, rule3));
+		
+		TokenStream stream = TokenStream.createMutable(List.of(
+			createToken("start"), createToken("prefix"), createToken("option2"), createToken("end")
+		));
+		TokenRuleContext context = TokenRuleContext.empty();
+		
+		TokenRuleMatch result = sequenceRule.match(stream, context);
+		
+		assertNotNull(result);
+		assertEquals(0, result.startIndex());
+		assertEquals(4, result.endIndex());
+		assertEquals(4, result.matchedTokens().size());
+		assertEquals("start", result.matchedTokens().get(0).value());
+		assertEquals("prefix", result.matchedTokens().get(1).value());
+		assertEquals("option2", result.matchedTokens().get(2).value());
+		assertEquals("end", result.matchedTokens().get(3).value());
+	}
+	
+	@Test
+	void matchWithDifferentTokenConsumption() {
+		TokenRule rule1 = createRule("single");
+		TokenRule rule2 = TokenRules.sequence(createRule("multi"), createRule("token"));
+		TokenRule rule3 = createRule("final");
+		SequenceTokenRule sequenceRule = new SequenceTokenRule(List.of(rule1, rule2, rule3));
+		
+		TokenStream stream = TokenStream.createMutable(List.of(
+			createToken("single"), createToken("multi"), createToken("token"), createToken("final")
+		));
+		TokenRuleContext context = TokenRuleContext.empty();
+		
+		TokenRuleMatch result = sequenceRule.match(stream, context);
+		
+		assertNotNull(result);
+		assertEquals(0, result.startIndex());
+		assertEquals(4, result.endIndex());
+		assertEquals(4, result.matchedTokens().size());
+		assertEquals("single", result.matchedTokens().get(0).value());
+		assertEquals("multi", result.matchedTokens().get(1).value());
+		assertEquals("token", result.matchedTokens().get(2).value());
+		assertEquals("final", result.matchedTokens().get(3).value());
+	}
+	
+	@Test
+	void matchWithMixedZeroWidthAndConsumingRules() {
+		TokenRule rule1 = StartTokenRule.DOCUMENT;
+		TokenRule rule2 = createRule("content");
+		TokenRule rule3 = TokenRules.endDocument();
+		SequenceTokenRule sequenceRule = new SequenceTokenRule(List.of(rule1, rule2, rule3));
+		
+		TokenStream stream = TokenStream.createMutable(List.of(createToken("content")));
+		TokenRuleContext context = TokenRuleContext.empty();
+		
+		TokenRuleMatch result = sequenceRule.match(stream, context);
+		
+		assertNotNull(result);
+		assertEquals(0, result.startIndex());
+		assertEquals(1, result.endIndex());
+		assertEquals(1, result.matchedTokens().size());
+		assertEquals("content", result.matchedTokens().getFirst().value());
 	}
 	
 	@Test
@@ -258,6 +400,57 @@ class SequenceTokenRuleTest {
 		TokenRuleMatch result = sequenceRule.match(stream, context);
 		
 		assertNull(result);
+	}
+	
+	@Test
+	void matchWithNeverMatchFirstRule() {
+		TokenRule rule1 = TokenRules.neverMatch();
+		TokenRule rule2 = createRule("second");
+		SequenceTokenRule sequenceRule = new SequenceTokenRule(List.of(rule1, rule2));
+		
+		TokenStream stream = TokenStream.createMutable(List.of(createToken("first"), createToken("second")));
+		TokenRuleContext context = TokenRuleContext.empty();
+		
+		TokenRuleMatch result = sequenceRule.match(stream, context);
+		
+		assertNull(result);
+	}
+	
+	@Test
+	void matchWithOptionalRules() {
+		TokenRule rule1 = createRule("required");
+		TokenRule rule2 = TokenRules.optional(createRule("optional"));
+		TokenRule rule3 = createRule("end");
+		SequenceTokenRule sequenceRule = new SequenceTokenRule(List.of(rule1, rule2, rule3));
+		
+		TokenStream stream = TokenStream.createMutable(List.of(createToken("required"), createToken("end")));
+		TokenRuleContext context = TokenRuleContext.empty();
+		
+		TokenRuleMatch result = sequenceRule.match(stream, context);
+		
+		assertNotNull(result);
+		assertEquals(0, result.startIndex());
+		assertEquals(2, result.endIndex());
+		assertEquals(2, result.matchedTokens().size());
+		assertEquals("required", result.matchedTokens().get(0).value());
+		assertEquals("end", result.matchedTokens().get(1).value());
+	}
+	
+	@Test
+	void matchWithStreamPositionRollback() {
+		TokenRule rule1 = createRule("start");
+		TokenRule rule2 = createRule("expected");
+		SequenceTokenRule sequenceRule = new SequenceTokenRule(List.of(rule1, rule2));
+		
+		TokenStream stream = TokenStream.createMutable(List.of(
+			createToken("start"), createToken("wrong"), createToken("tokens"), createToken("here")
+		));
+		TokenRuleContext context = TokenRuleContext.empty();
+		
+		TokenRuleMatch result = sequenceRule.match(stream, context);
+		
+		assertNull(result);
+		assertEquals(0, stream.getCurrentIndex());
 	}
 	
 	@Test
@@ -294,6 +487,29 @@ class SequenceTokenRuleTest {
 		
 		assertNotNull(result);
 		assertEquals(100, result.matchedTokens().size());
+	}
+	
+	@Test
+	void matchWithNestedSequences() {
+		TokenRule inner1 = TokenRules.sequence(createRule("a"), createRule("b"));
+		TokenRule inner2 = TokenRules.sequence(createRule("c"), createRule("d"));
+		SequenceTokenRule outer = new SequenceTokenRule(List.of(inner1, inner2));
+		
+		TokenStream stream = TokenStream.createMutable(List.of(
+			createToken("a"), createToken("b"), createToken("c"), createToken("d")
+		));
+		TokenRuleContext context = TokenRuleContext.empty();
+		
+		TokenRuleMatch result = outer.match(stream, context);
+		
+		assertNotNull(result);
+		assertEquals(0, result.startIndex());
+		assertEquals(4, result.endIndex());
+		assertEquals(4, result.matchedTokens().size());
+		assertEquals("a", result.matchedTokens().get(0).value());
+		assertEquals("b", result.matchedTokens().get(1).value());
+		assertEquals("c", result.matchedTokens().get(2).value());
+		assertEquals("d", result.matchedTokens().get(3).value());
 	}
 	
 	@Test

@@ -153,7 +153,14 @@ public class RecursiveTokenRule implements TokenRule {
 	public @Nullable TokenRuleMatch match(@NotNull TokenStream stream, @NotNull TokenRuleContext ctx) {
 		Objects.requireNonNull(stream, "Token stream cannot be null");
 		Objects.requireNonNull(ctx, "Token rule context cannot be null");
-		return this.tokenRule.match(stream, ctx);
+		
+		TokenStream workingStream = stream.copyWithOffset(0);
+		TokenRuleMatch match = this.tokenRule.match(workingStream, ctx);
+		if (match == null) {
+			return null;
+		}
+		stream.advanceTo(workingStream);
+		return match;
 	}
 	
 	@Override
