@@ -32,18 +32,18 @@ import java.util.List;
 import java.util.Objects;
 
 /**
- * A rule engine for processing tokens based on defined rules.<br>
+ * A rule processor for processing tokens based on defined rules.<br>
  * A rule can either validate or transform tokens.<br>
- * The engine applies the rules in the order they were added.<br>
+ * The processor applies the rules in the order they were added.<br>
  * If a rule matches, it replaces the matched tokens with the result of the action.<br>
- * If no rule matches, the engine moves to the next token.<br>
+ * If no rule matches, the processor moves to the next token.<br>
  *
  * @author Luis-St
  */
-public class TokenRuleEngine {
+public class TokenRuleProcessor {
 	
 	/**
-	 * The rule context of the engine.<br>
+	 * The rule context of the processor.<br>
 	 */
 	private final TokenRuleContext ruleContext;
 	/**
@@ -52,26 +52,26 @@ public class TokenRuleEngine {
 	private final List<RuleAction> ruleActions = Lists.newArrayList();
 	
 	/**
-	 * Constructs a new token rule engine with an empty context.<br>
-	 * The engine starts with an empty list of rules.<br>
+	 * Constructs a new token rule processor with an empty context.<br>
+	 * The processor starts with an empty list of rules.<br>
 	 */
-	public TokenRuleEngine() {
+	public TokenRuleProcessor() {
 		this(TokenRuleContext.empty());
 	}
 	
 	/**
-	 * Constructs a new token rule engine with the given context.<br>
-	 * The engine starts with an empty list of rules.<br>
+	 * Constructs a new token rule processor with the given context.<br>
+	 * The processor starts with an empty list of rules.<br>
 	 *
-	 * @param ruleContext The rule context of the engine
+	 * @param ruleContext The rule context of the processor
 	 * @throws NullPointerException If the context is null
 	 */
-	public TokenRuleEngine(@NotNull TokenRuleContext ruleContext) {
+	public TokenRuleProcessor(@NotNull TokenRuleContext ruleContext) {
 		this.ruleContext = Objects.requireNonNull(ruleContext, "Token rule context must not be null");
 	}
 	
 	/**
-	 * Adds a validation rule to the engine.<br>
+	 * Adds a validation rule to the processor.<br>
 	 * The rule is only used to validate tokens and does not modify them.<br>
 	 *
 	 * @param tokenRule The rule to be added
@@ -83,7 +83,7 @@ public class TokenRuleEngine {
 	}
 	
 	/**
-	 * Adds a transformation rule to the engine.<br>
+	 * Adds a transformation rule to the processor.<br>
 	 * The rule is used to transform tokens and can modify them.<br>
 	 * The rule is applied to the tokens and the result is used to replace the matched tokens.<br>
 	 *
@@ -102,7 +102,7 @@ public class TokenRuleEngine {
 	 * The rules are applied in the order they were added.<br>
 	 * <p>
 	 *     If a rule matches, the matched tokens are replaced with the result of the action.<br>
-	 *     If no rule matches, the engine moves to the next token.
+	 *     If no rule matches, the processor moves to the next token.
 	 * </p>
 	 *
 	 * @param tokens The list of tokens to be processed

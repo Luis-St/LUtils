@@ -33,11 +33,11 @@ import java.util.List;
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
- * Test class for {@link TokenRuleEngine}.<br>
+ * Test class for {@link TokenRuleProcessor}.<br>
  *
  * @author Luis-St
  */
-class TokenRuleEngineTest {
+class TokenRuleProcessorTest {
 	
 	private static @NotNull Token createToken(@NotNull String value) {
 		return SimpleToken.createUnpositioned(value);
@@ -45,77 +45,77 @@ class TokenRuleEngineTest {
 	
 	@Test
 	void constructorDefault() {
-		TokenRuleEngine engine = new TokenRuleEngine();
+		TokenRuleProcessor processor = new TokenRuleProcessor();
 		
-		assertNotNull(engine);
+		assertNotNull(processor);
 	}
 	
 	@Test
 	void constructorWithNullContext() {
-		assertThrows(NullPointerException.class, () -> new TokenRuleEngine(null));
+		assertThrows(NullPointerException.class, () -> new TokenRuleProcessor(null));
 	}
 	
 	@Test
 	void constructorWithValidContext() {
 		TokenRuleContext context = TokenRuleContext.empty();
-		TokenRuleEngine engine = new TokenRuleEngine(context);
+		TokenRuleProcessor processor = new TokenRuleProcessor(context);
 		
-		assertNotNull(engine);
+		assertNotNull(processor);
 	}
 	
 	@Test
 	void addRuleWithNullRule() {
-		TokenRuleEngine engine = new TokenRuleEngine();
+		TokenRuleProcessor processor = new TokenRuleProcessor();
 		
-		assertThrows(NullPointerException.class, () -> engine.addRule(null));
+		assertThrows(NullPointerException.class, () -> processor.addRule(null));
 	}
 	
 	@Test
 	void addRuleWithValidRule() {
-		TokenRuleEngine engine = new TokenRuleEngine();
+		TokenRuleProcessor processor = new TokenRuleProcessor();
 		TokenRule rule = AlwaysMatchTokenRule.INSTANCE;
 		
-		assertDoesNotThrow(() -> engine.addRule(rule));
+		assertDoesNotThrow(() -> processor.addRule(rule));
 	}
 	
 	@Test
 	void addRuleWithNullRuleAndAction() {
-		TokenRuleEngine engine = new TokenRuleEngine();
+		TokenRuleProcessor processor = new TokenRuleProcessor();
 		TokenAction action = TokenAction.identity();
 		
-		assertThrows(NullPointerException.class, () -> engine.addRule(null, action));
+		assertThrows(NullPointerException.class, () -> processor.addRule(null, action));
 	}
 	
 	@Test
 	void addRuleWithRuleAndNullAction() {
-		TokenRuleEngine engine = new TokenRuleEngine();
+		TokenRuleProcessor processor = new TokenRuleProcessor();
 		TokenRule rule = AlwaysMatchTokenRule.INSTANCE;
 		
-		assertThrows(NullPointerException.class, () -> engine.addRule(rule, null));
+		assertThrows(NullPointerException.class, () -> processor.addRule(rule, null));
 	}
 	
 	@Test
 	void addRuleWithValidRuleAndAction() {
-		TokenRuleEngine engine = new TokenRuleEngine();
+		TokenRuleProcessor processor = new TokenRuleProcessor();
 		TokenRule rule = AlwaysMatchTokenRule.INSTANCE;
 		TokenAction action = TokenAction.identity();
 		
-		assertDoesNotThrow(() -> engine.addRule(rule, action));
+		assertDoesNotThrow(() -> processor.addRule(rule, action));
 	}
 	
 	@Test
 	void processWithNullTokens() {
-		TokenRuleEngine engine = new TokenRuleEngine();
+		TokenRuleProcessor processor = new TokenRuleProcessor();
 		
-		assertThrows(NullPointerException.class, () -> engine.process(null));
+		assertThrows(NullPointerException.class, () -> processor.process(null));
 	}
 	
 	@Test
 	void processWithEmptyTokensAndNoRules() {
-		TokenRuleEngine engine = new TokenRuleEngine();
+		TokenRuleProcessor processor = new TokenRuleProcessor();
 		List<Token> emptyTokens = List.of();
 		
-		List<Token> result = engine.process(emptyTokens);
+		List<Token> result = processor.process(emptyTokens);
 		
 		assertNotNull(result);
 		assertTrue(result.isEmpty());
@@ -123,10 +123,10 @@ class TokenRuleEngineTest {
 	
 	@Test
 	void processWithTokensAndNoRules() {
-		TokenRuleEngine engine = new TokenRuleEngine();
+		TokenRuleProcessor processor = new TokenRuleProcessor();
 		List<Token> tokens = List.of(createToken("hello"), createToken("world"));
 		
-		List<Token> result = engine.process(tokens);
+		List<Token> result = processor.process(tokens);
 		
 		assertNotNull(result);
 		assertEquals(2, result.size());
@@ -136,11 +136,11 @@ class TokenRuleEngineTest {
 	
 	@Test
 	void processWithTokensAndNeverMatchingRule() {
-		TokenRuleEngine engine = new TokenRuleEngine();
-		engine.addRule(NeverMatchTokenRule.INSTANCE);
+		TokenRuleProcessor processor = new TokenRuleProcessor();
+		processor.addRule(NeverMatchTokenRule.INSTANCE);
 		List<Token> tokens = List.of(createToken("hello"), createToken("world"));
 		
-		List<Token> result = engine.process(tokens);
+		List<Token> result = processor.process(tokens);
 		
 		assertNotNull(result);
 		assertEquals(2, result.size());
@@ -150,11 +150,11 @@ class TokenRuleEngineTest {
 	
 	@Test
 	void processWithTokensAndAlwaysMatchingRuleWithIdentityAction() {
-		TokenRuleEngine engine = new TokenRuleEngine();
-		engine.addRule(AlwaysMatchTokenRule.INSTANCE, TokenAction.identity());
+		TokenRuleProcessor processor = new TokenRuleProcessor();
+		processor.addRule(AlwaysMatchTokenRule.INSTANCE, TokenAction.identity());
 		List<Token> tokens = List.of(createToken("hello"), createToken("world"));
 		
-		List<Token> result = engine.process(tokens);
+		List<Token> result = processor.process(tokens);
 		
 		assertNotNull(result);
 		assertEquals(2, result.size());
@@ -164,12 +164,12 @@ class TokenRuleEngineTest {
 	
 	@Test
 	void processWithTokensAndAlwaysMatchingRuleWithRemovalAction() {
-		TokenRuleEngine engine = new TokenRuleEngine();
+		TokenRuleProcessor processor = new TokenRuleProcessor();
 		TokenAction removalAction = (match, ctx) -> Collections.emptyList();
-		engine.addRule(AlwaysMatchTokenRule.INSTANCE, removalAction);
+		processor.addRule(AlwaysMatchTokenRule.INSTANCE, removalAction);
 		List<Token> tokens = List.of(createToken("hello"), createToken("world"));
 		
-		List<Token> result = engine.process(tokens);
+		List<Token> result = processor.process(tokens);
 		
 		assertNotNull(result);
 		assertTrue(result.isEmpty());
@@ -177,13 +177,13 @@ class TokenRuleEngineTest {
 	
 	@Test
 	void processWithTokensAndAlwaysMatchingRuleWithReplacementAction() {
-		TokenRuleEngine engine = new TokenRuleEngine();
+		TokenRuleProcessor processor = new TokenRuleProcessor();
 		Token replacementToken = createToken("REPLACED");
 		TokenAction replacementAction = (match, ctx) -> List.of(replacementToken);
-		engine.addRule(AlwaysMatchTokenRule.INSTANCE, replacementAction);
+		processor.addRule(AlwaysMatchTokenRule.INSTANCE, replacementAction);
 		List<Token> tokens = List.of(createToken("hello"), createToken("world"));
 		
-		List<Token> result = engine.process(tokens);
+		List<Token> result = processor.process(tokens);
 		
 		assertNotNull(result);
 		assertEquals(2, result.size());
@@ -193,15 +193,15 @@ class TokenRuleEngineTest {
 	
 	@Test
 	void processWithSpecificValueMatchingRule() {
-		TokenRuleEngine engine = new TokenRuleEngine();
+		TokenRuleProcessor processor = new TokenRuleProcessor();
 		TokenRule valueRule = new ValueTokenRule("hello", false);
 		Token replacementToken = createToken("HELLO");
 		TokenAction replacementAction = (match, ctx) -> List.of(replacementToken);
-		engine.addRule(valueRule, replacementAction);
+		processor.addRule(valueRule, replacementAction);
 		
 		List<Token> tokens = List.of(createToken("hello"), createToken("world"), createToken("hello"));
 		
-		List<Token> result = engine.process(tokens);
+		List<Token> result = processor.process(tokens);
 		
 		assertNotNull(result);
 		assertEquals(3, result.size());
@@ -212,18 +212,18 @@ class TokenRuleEngineTest {
 	
 	@Test
 	void processWithMultipleRules() {
-		TokenRuleEngine engine = new TokenRuleEngine();
+		TokenRuleProcessor processor = new TokenRuleProcessor();
 		
 		TokenRule helloRule = new ValueTokenRule("hello", false);
 		TokenRule worldRule = new ValueTokenRule("world", false);
 		TokenAction upperCaseAction = (match, ctx) -> List.of(createToken(match.matchedTokens().getFirst().value().toUpperCase()));
 		
-		engine.addRule(helloRule, upperCaseAction);
-		engine.addRule(worldRule, upperCaseAction);
+		processor.addRule(helloRule, upperCaseAction);
+		processor.addRule(worldRule, upperCaseAction);
 		
 		List<Token> tokens = List.of(createToken("hello"), createToken("test"), createToken("world"));
 		
-		List<Token> result = engine.process(tokens);
+		List<Token> result = processor.process(tokens);
 		
 		assertNotNull(result);
 		assertEquals(3, result.size());
@@ -234,7 +234,7 @@ class TokenRuleEngineTest {
 	
 	@Test
 	void processWithRuleOrderMatters() {
-		TokenRuleEngine engine = new TokenRuleEngine();
+		TokenRuleProcessor processor = new TokenRuleProcessor();
 		
 		TokenRule firstRule = new ValueTokenRule("test", false);
 		TokenRule secondRule = AlwaysMatchTokenRule.INSTANCE;
@@ -242,12 +242,12 @@ class TokenRuleEngineTest {
 		TokenAction firstAction = (match, ctx) -> List.of(createToken("FIRST"));
 		TokenAction secondAction = (match, ctx) -> List.of(createToken("SECOND"));
 		
-		engine.addRule(firstRule, firstAction);
-		engine.addRule(secondRule, secondAction);
+		processor.addRule(firstRule, firstAction);
+		processor.addRule(secondRule, secondAction);
 		
 		List<Token> tokens = List.of(createToken("test"));
 		
-		List<Token> result = engine.process(tokens);
+		List<Token> result = processor.process(tokens);
 		
 		assertNotNull(result);
 		assertEquals(1, result.size());
@@ -256,14 +256,14 @@ class TokenRuleEngineTest {
 	
 	@Test
 	void processWithActionThatCreatesMultipleTokens() {
-		TokenRuleEngine engine = new TokenRuleEngine();
+		TokenRuleProcessor processor = new TokenRuleProcessor();
 		TokenRule rule = new ValueTokenRule("split", false);
 		TokenAction splitAction = (match, ctx) -> List.of(createToken("part1"), createToken("part2"));
-		engine.addRule(rule, splitAction);
+		processor.addRule(rule, splitAction);
 		
 		List<Token> tokens = List.of(createToken("hello"), createToken("split"), createToken("world"));
 		
-		List<Token> result = engine.process(tokens);
+		List<Token> result = processor.process(tokens);
 		
 		assertNotNull(result);
 		assertEquals(4, result.size());
@@ -275,12 +275,12 @@ class TokenRuleEngineTest {
 	
 	@Test
 	void processWithSingleTokenRule() {
-		TokenRuleEngine engine = new TokenRuleEngine();
-		engine.addRule(AlwaysMatchTokenRule.INSTANCE);
+		TokenRuleProcessor processor = new TokenRuleProcessor();
+		processor.addRule(AlwaysMatchTokenRule.INSTANCE);
 		
 		List<Token> tokens = List.of(createToken("single"));
 		
-		List<Token> result = engine.process(tokens);
+		List<Token> result = processor.process(tokens);
 		
 		assertNotNull(result);
 		assertEquals(1, result.size());
@@ -290,13 +290,13 @@ class TokenRuleEngineTest {
 	@Test
 	void processWithCustomContext() {
 		TokenRuleContext context = TokenRuleContext.empty();
-		TokenRuleEngine engine = new TokenRuleEngine(context);
+		TokenRuleProcessor processor = new TokenRuleProcessor(context);
 		
-		engine.addRule(AlwaysMatchTokenRule.INSTANCE, TokenAction.identity());
+		processor.addRule(AlwaysMatchTokenRule.INSTANCE, TokenAction.identity());
 		
 		List<Token> tokens = List.of(createToken("test"));
 		
-		List<Token> result = engine.process(tokens);
+		List<Token> result = processor.process(tokens);
 		
 		assertNotNull(result);
 		assertEquals(1, result.size());
@@ -305,10 +305,10 @@ class TokenRuleEngineTest {
 	
 	@Test
 	void processReturnsUnmodifiableList() {
-		TokenRuleEngine engine = new TokenRuleEngine();
+		TokenRuleProcessor processor = new TokenRuleProcessor();
 		List<Token> tokens = List.of(createToken("test"));
 		
-		List<Token> result = engine.process(tokens);
+		List<Token> result = processor.process(tokens);
 		
 		assertThrows(UnsupportedOperationException.class, () -> result.add(createToken("new")));
 		assertThrows(UnsupportedOperationException.class, () -> result.remove(0));
@@ -317,12 +317,12 @@ class TokenRuleEngineTest {
 	
 	@Test
 	void processWithEmptyTokensAndRules() {
-		TokenRuleEngine engine = new TokenRuleEngine();
-		engine.addRule(AlwaysMatchTokenRule.INSTANCE, TokenAction.identity());
+		TokenRuleProcessor processor = new TokenRuleProcessor();
+		processor.addRule(AlwaysMatchTokenRule.INSTANCE, TokenAction.identity());
 		
 		List<Token> emptyTokens = List.of();
 		
-		List<Token> result = engine.process(emptyTokens);
+		List<Token> result = processor.process(emptyTokens);
 		
 		assertNotNull(result);
 		assertTrue(result.isEmpty());
