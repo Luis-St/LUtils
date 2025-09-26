@@ -21,7 +21,7 @@ jobs:
       - name: 'Setup Gradle'
         uses: gradle/actions/setup-gradle@v4.2.1
       - name: 'License check with Gradle'
-        run: ./gradlew licenseCheck
+        run: ./gradlew checkLicenses
   compile:
     needs: license-check
     runs-on: ubuntu-latest
