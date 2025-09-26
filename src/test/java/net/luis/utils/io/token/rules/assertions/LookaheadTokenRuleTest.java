@@ -152,11 +152,39 @@ class LookaheadTokenRuleTest {
 	}
 	
 	@Test
+	void matchPositiveWithMatchingRuleAtLaterPosition() {
+		TokenRule innerRule = createRule("target");
+		LookaheadTokenRule rule = new LookaheadTokenRule(innerRule, LookMatchMode.POSITIVE);
+		
+		TokenStream stream = TokenStream.createMutable(List.of(createToken("first"), createToken("target")));
+		TokenRuleContext context = TokenRuleContext.empty();
+		
+		TokenRuleMatch result = rule.match(stream, context);
+		
+		assertNull(result);
+		assertEquals(0, stream.getCurrentIndex());
+	}
+	
+	@Test
 	void matchPositiveWithNonMatchingRule() {
 		TokenRule innerRule = createRule("expected");
 		LookaheadTokenRule rule = new LookaheadTokenRule(innerRule, LookMatchMode.POSITIVE);
 		
 		TokenStream stream = TokenStream.createMutable(List.of(createToken("actual")));
+		TokenRuleContext context = TokenRuleContext.empty();
+		
+		TokenRuleMatch result = rule.match(stream, context);
+		
+		assertNull(result);
+		assertEquals(0, stream.getCurrentIndex());
+	}
+	
+	@Test
+	void matchPositiveWithPartialSequenceMatch() {
+		TokenRule innerRule = TokenRules.sequence(createRule("first"), createRule("missing"));
+		LookaheadTokenRule rule = new LookaheadTokenRule(innerRule, LookMatchMode.POSITIVE);
+		
+		TokenStream stream = TokenStream.createMutable(List.of(createToken("first"), createToken("second")));
 		TokenRuleContext context = TokenRuleContext.empty();
 		
 		TokenRuleMatch result = rule.match(stream, context);
@@ -198,6 +226,24 @@ class LookaheadTokenRuleTest {
 	}
 	
 	@Test
+	void matchNegativeWithPartialSequenceMatch() {
+		TokenRule innerRule = TokenRules.sequence(createRule("first"), createRule("missing"));
+		LookaheadTokenRule rule = new LookaheadTokenRule(innerRule, LookMatchMode.NEGATIVE);
+		
+		TokenStream stream = TokenStream.createMutable(List.of(createToken("first"), createToken("second")));
+		TokenRuleContext context = TokenRuleContext.empty();
+		
+		TokenRuleMatch result = rule.match(stream, context);
+		
+		assertNotNull(result);
+		assertEquals(0, result.startIndex());
+		assertEquals(0, result.endIndex());
+		assertTrue(result.matchedTokens().isEmpty());
+		assertEquals(rule, result.matchingTokenRule());
+		assertEquals(0, stream.getCurrentIndex());
+	}
+	
+	@Test
 	void matchWithAlwaysMatchRule() {
 		LookaheadTokenRule rule = new LookaheadTokenRule(TokenRules.alwaysMatch(), LookMatchMode.POSITIVE);
 		
@@ -220,6 +266,35 @@ class LookaheadTokenRuleTest {
 		TokenRuleMatch result = rule.match(stream, context);
 		
 		assertNull(result);
+		assertEquals(0, stream.getCurrentIndex());
+	}
+	
+	@Test
+	void matchPreservesStreamPositionAfterAdvancingInnerRule() {
+		TokenRule innerRule = TokenRules.sequence(createRule("first"), createRule("second"));
+		LookaheadTokenRule rule = new LookaheadTokenRule(innerRule, LookMatchMode.POSITIVE);
+		
+		TokenStream stream = TokenStream.createMutable(List.of(createToken("first"), createToken("second"), createToken("third")));
+		TokenRuleContext context = TokenRuleContext.empty();
+		
+		TokenRuleMatch result = rule.match(stream, context);
+		
+		assertNotNull(result);
+		assertEquals(0, stream.getCurrentIndex());
+	}
+	
+	@Test
+	void matchWithNestedLookaheadRules() {
+		TokenRule innerInnerRule = createRule("target");
+		TokenRule innerRule = new LookaheadTokenRule(innerInnerRule, LookMatchMode.POSITIVE);
+		LookaheadTokenRule rule = new LookaheadTokenRule(innerRule, LookMatchMode.POSITIVE);
+		
+		TokenStream stream = TokenStream.createMutable(List.of(createToken("target")));
+		TokenRuleContext context = TokenRuleContext.empty();
+		
+		TokenRuleMatch result = rule.match(stream, context);
+		
+		assertNotNull(result);
 		assertEquals(0, stream.getCurrentIndex());
 	}
 	
@@ -251,6 +326,35 @@ class LookaheadTokenRuleTest {
 		assertEquals(0, stream.getCurrentIndex());
 	}
 	
+	@Test
+	void matchWithComplexInnerRuleAtMiddleOfStream() {
+		LookaheadTokenRule rule = new LookaheadTokenRule(
+			TokenRules.sequence(
+				TokenRules.value("if", false),
+				TokenRules.value("(", false),
+				TokenRules.pattern("\\w+"),
+				TokenRules.value(")", false)
+			),
+			LookMatchMode.POSITIVE
+		);
+		List<Token> tokens = List.of(
+			SimpleToken.createUnpositioned("prefix"),
+			SimpleToken.createUnpositioned("if"),
+			SimpleToken.createUnpositioned("("),
+			SimpleToken.createUnpositioned("condition"),
+			SimpleToken.createUnpositioned(")"),
+			SimpleToken.createUnpositioned("statement")
+		);
+		
+		TokenStream stream = TokenStream.createMutable(tokens);
+		stream.advance();
+		TokenRuleContext context = TokenRuleContext.empty();
+		
+		TokenRuleMatch result = rule.match(stream, context);
+		
+		assertNotNull(result);
+		assertEquals(1, stream.getCurrentIndex());
+	}
 	
 	@Test
 	void not() {

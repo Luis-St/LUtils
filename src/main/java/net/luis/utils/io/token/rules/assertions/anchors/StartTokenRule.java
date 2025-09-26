@@ -74,6 +74,9 @@ public enum StartTokenRule implements TokenRule {
 			if (stream.getCurrentIndex() == 0) {
 				return TokenRuleMatch.empty(0, this);
 			}
+			if (!stream.hasMoreTokens()) {
+				return null;
+			}
 			
 			Token currentToken = stream.getCurrentToken();
 			TokenStream lookbehindStream = stream.createLookbehindStream();

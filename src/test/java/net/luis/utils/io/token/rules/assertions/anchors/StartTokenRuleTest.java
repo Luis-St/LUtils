@@ -131,10 +131,37 @@ class StartTokenRuleTest {
 	}
 	
 	@Test
+	void documentMatchAtStartOfMultiTokenStream() {
+		StartTokenRule rule = StartTokenRule.DOCUMENT;
+		TokenStream stream = TokenStream.createMutable(List.of(createToken("first"), createToken("second"), createToken("third")));
+		TokenRuleContext context = TokenRuleContext.empty();
+		
+		TokenRuleMatch result = rule.match(stream, context);
+		
+		assertNotNull(result);
+		assertEquals(0, result.startIndex());
+		assertEquals(0, result.endIndex());
+		assertTrue(result.matchedTokens().isEmpty());
+		assertEquals(rule, result.matchingTokenRule());
+	}
+	
+	@Test
 	void documentNoMatchAtNonZeroIndex() {
 		StartTokenRule rule = StartTokenRule.DOCUMENT;
 		TokenStream stream = TokenStream.createMutable(List.of(createToken("first"), createToken("second")));
 		stream.advance();
+		TokenRuleContext context = TokenRuleContext.empty();
+		
+		TokenRuleMatch result = rule.match(stream, context);
+		
+		assertNull(result);
+	}
+	
+	@Test
+	void documentNoMatchAfterMultipleAdvances() {
+		StartTokenRule rule = StartTokenRule.DOCUMENT;
+		TokenStream stream = TokenStream.createMutable(List.of(createToken("first"), createToken("second"), createToken("third")));
+		stream.advanceTo(2);
 		TokenRuleContext context = TokenRuleContext.empty();
 		
 		TokenRuleMatch result = rule.match(stream, context);
@@ -189,8 +216,42 @@ class StartTokenRuleTest {
 	}
 	
 	@Test
+	void lineMatchAtStartOfMultiTokenStream() {
+		StartTokenRule rule = StartTokenRule.LINE;
+		TokenStream stream = TokenStream.createMutable(List.of(createToken("first"), createToken("second"), createToken("third")));
+		TokenRuleContext context = TokenRuleContext.empty();
+		
+		TokenRuleMatch result = rule.match(stream, context);
+		
+		assertNotNull(result);
+		assertEquals(0, result.startIndex());
+		assertEquals(0, result.endIndex());
+		assertTrue(result.matchedTokens().isEmpty());
+		assertEquals(rule, result.matchingTokenRule());
+	}
+	
+	@Test
 	void lineMatchWithNewlineInPreviousToken() {
 		Token previousToken = createToken("text\n");
+		Token currentToken = createToken("current");
+		
+		StartTokenRule rule = StartTokenRule.LINE;
+		TokenStream stream = TokenStream.createMutable(List.of(previousToken, currentToken));
+		stream.advance();
+		TokenRuleContext context = TokenRuleContext.empty();
+		
+		TokenRuleMatch result = rule.match(stream, context);
+		
+		assertNotNull(result);
+		assertEquals(1, result.startIndex());
+		assertEquals(1, result.endIndex());
+		assertTrue(result.matchedTokens().isEmpty());
+		assertEquals(rule, result.matchingTokenRule());
+	}
+	
+	@Test
+	void lineMatchWithMultipleNewlinesInPreviousToken() {
+		Token previousToken = createToken("text\n\n");
 		Token currentToken = createToken("current");
 		
 		StartTokenRule rule = StartTokenRule.LINE;
@@ -242,9 +303,48 @@ class StartTokenRuleTest {
 	}
 	
 	@Test
+	void lineMatchWithMixedPositionedTokens() {
+		Token previousToken = createToken("previous");
+		Token currentToken = createTokenWithPosition("current", 2, 1);
+		
+		StartTokenRule rule = StartTokenRule.LINE;
+		TokenStream stream = TokenStream.createMutable(List.of(previousToken, currentToken));
+		stream.advance();
+		TokenRuleContext context = TokenRuleContext.empty();
+		
+		TokenRuleMatch result = rule.match(stream, context);
+		
+		assertNull(result);
+	}
+	
+	@Test
 	void lineNoMatchWithoutNewlineAndSameLine() {
 		StartTokenRule rule = StartTokenRule.LINE;
 		TokenStream stream = TokenStream.createMutable(List.of(createToken("first"), createToken("second")));
+		stream.advance();
+		TokenRuleContext context = TokenRuleContext.empty();
+		
+		TokenRuleMatch result = rule.match(stream, context);
+		
+		assertNull(result);
+	}
+	
+	@Test
+	void lineNoMatchInMiddleOfLineSequence() {
+		StartTokenRule rule = StartTokenRule.LINE;
+		TokenStream stream = TokenStream.createMutable(List.of(createToken("first"), createToken("second"), createToken("third")));
+		stream.advanceTo(2);
+		TokenRuleContext context = TokenRuleContext.empty();
+		
+		TokenRuleMatch result = rule.match(stream, context);
+		
+		assertNull(result);
+	}
+	
+	@Test
+	void lineNoMatchWithLookbehindStreamEmpty() {
+		StartTokenRule rule = StartTokenRule.LINE;
+		TokenStream stream = TokenStream.createMutable(List.of(createToken("only")));
 		stream.advance();
 		TokenRuleContext context = TokenRuleContext.empty();
 		
