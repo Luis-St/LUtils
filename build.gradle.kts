@@ -29,8 +29,6 @@ dependencies {
 		exclude(group = "com.google.code.findbugs")
 		exclude(group = "com.google.errorprone")
 		exclude(group = "com.google.j2objc")
-		exclude(group = "com.google.guava", module = "failureaccess")
-		exclude(group = "com.google.guava", module = "listenablefuture")
 	}
 	// Apache
 	implementation("org.apache.logging.log4j:log4j-api:${log4jAPI}") // Logging
@@ -72,6 +70,11 @@ tasks.named<Test>("test") {
 }
 
 java {
+	toolchain {
+		languageVersion.set(JavaLanguageVersion.of(25))
+	}
+	modularity.inferModulePath.set(true)
+	
 	withSourcesJar()
 	withJavadocJar()
 }
