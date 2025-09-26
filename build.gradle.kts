@@ -24,12 +24,12 @@ repositories {
 dependencies {
 	// Google
 	implementation("com.google.guava:guava:${googleGuava}") {  // Utility
-		exclude(group = "org.checkerframework")
+		/*exclude(group = "org.checkerframework")
 		exclude(group = "com.google.code.findbugs")
 		exclude(group = "com.google.errorprone")
 		exclude(group = "com.google.j2objc")
 		exclude(group = "com.google.guava", module = "failureaccess")
-		exclude(group = "com.google.guava", module = "listenablefuture")
+		exclude(group = "com.google.guava", module = "listenablefuture")*/
 	}
 	// Apache
 	implementation("org.apache.logging.log4j:log4j-api:${log4jAPI}") // Logging
@@ -76,6 +76,15 @@ java {
 	
 	withSourcesJar()
 	withJavadocJar()
+}
+
+tasks.compileJava {
+	doFirst {
+		options.compilerArgs.addAll(listOf(
+			"--module-path", classpath.asPath
+		))
+		classpath = files()
+	}
 }
 
 tasks.named<Javadoc>("javadoc") {
