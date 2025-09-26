@@ -213,6 +213,27 @@ class BoundaryTokenRuleTest {
 	}
 	
 	@Test
+	void matchWithSameStartAndEndPatterns() {
+		BoundaryTokenRule rule = new BoundaryTokenRule(
+			TokenRules.value("quote", false),
+			TokenRules.value("quote", false)
+		);
+		List<Token> tokens = List.of(
+			SimpleToken.createUnpositioned("quote"),
+			SimpleToken.createUnpositioned("content"),
+			SimpleToken.createUnpositioned("quote")
+		);
+		
+		TokenRuleContext context = TokenRuleContext.empty();
+		TokenStream stream = TokenStream.createMutable(tokens);
+		
+		TokenRuleMatch result = rule.match(stream, context);
+		
+		assertNotNull(result);
+		assertEquals(3, result.matchedTokens().size());
+	}
+	
+	@Test
 	void matchWithNoStartMatch() {
 		TokenRule start = createRule("(");
 		TokenRule end = createRule(")");
@@ -285,6 +306,27 @@ class BoundaryTokenRuleTest {
 		TokenStream stream = TokenStream.createMutable(List.of(
 			createToken("("), createToken("content"), createToken(")")
 		));
+		TokenRuleContext context = TokenRuleContext.empty();
+		
+		TokenRuleMatch result = rule.match(stream, context);
+		
+		assertNull(result);
+	}
+	
+	@Test
+	void matchWithFailingBetweenRule() {
+		BoundaryTokenRule rule = new BoundaryTokenRule(
+			TokenRules.value("start", false),
+			TokenRules.value("specific", false),
+			TokenRules.value("end", false)
+		);
+		
+		List<Token> tokens = List.of(
+			SimpleToken.createUnpositioned("start"),
+			SimpleToken.createUnpositioned("different"),
+			SimpleToken.createUnpositioned("end")
+		);
+		TokenStream stream = TokenStream.createMutable(tokens);
 		TokenRuleContext context = TokenRuleContext.empty();
 		
 		TokenRuleMatch result = rule.match(stream, context);

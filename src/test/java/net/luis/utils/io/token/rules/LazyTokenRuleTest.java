@@ -187,6 +187,28 @@ class LazyTokenRuleTest {
 	}
 	
 	@Test
+	void matchWithSelfReference() {
+		LazyTokenRule lazy = new LazyTokenRule();
+		lazy.set(TokenRules.any(
+			TokenRules.value("base", false),
+			TokenRules.sequence(TokenRules.value("(", false), lazy, TokenRules.value(")", false))
+		));
+		List<Token> tokens = List.of(
+			SimpleToken.createUnpositioned("("),
+			SimpleToken.createUnpositioned("base"),
+			SimpleToken.createUnpositioned(")")
+		);
+		
+		TokenRuleContext context = TokenRuleContext.empty();
+		TokenStream stream = TokenStream.createMutable(tokens);
+		
+		TokenRuleMatch result = lazy.match(stream, context);
+		
+		assertNotNull(result);
+		assertEquals(3, result.matchedTokens().size());
+	}
+	
+	@Test
 	void not() {
 		LazyTokenRule rule = new LazyTokenRule();
 		

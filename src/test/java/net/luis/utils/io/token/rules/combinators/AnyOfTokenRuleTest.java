@@ -22,6 +22,7 @@ import net.luis.utils.io.token.TokenRuleMatch;
 import net.luis.utils.io.token.context.TokenRuleContext;
 import net.luis.utils.io.token.rules.TokenRule;
 import net.luis.utils.io.token.rules.TokenRules;
+import net.luis.utils.io.token.rules.matchers.PatternTokenRule;
 import net.luis.utils.io.token.stream.TokenStream;
 import net.luis.utils.io.token.tokens.SimpleToken;
 import net.luis.utils.io.token.tokens.Token;
@@ -203,7 +204,7 @@ class AnyOfTokenRuleTest {
 		TokenRuleMatch result = anyRule.match(stream, context);
 		
 		assertNotNull(result);
-		assertEquals("any", result.matchedTokens().get(0).value());
+		assertEquals("any", result.matchedTokens().getFirst().value());
 	}
 	
 	@Test
@@ -218,6 +219,41 @@ class AnyOfTokenRuleTest {
 		TokenRuleMatch result = anyRule.match(stream, context);
 		
 		assertNull(result);
+	}
+	
+	@Test
+	void matchWithPriorityOrder() {
+		AnyOfTokenRule rule = new AnyOfTokenRule(List.of(
+			TokenRules.pattern("\\w+"),
+			TokenRules.value("test", false)
+		));
+		Token token = SimpleToken.createUnpositioned("test");
+		
+		TokenStream stream = TokenStream.createMutable(List.of(token));
+		TokenRuleContext context = TokenRuleContext.empty();
+		
+		TokenRuleMatch result = rule.match(stream, context);
+		
+		assertNotNull(result);
+		assertInstanceOf(PatternTokenRule.class, result.matchingTokenRule());
+	}
+	
+	@Test
+	void matchWithManyAlternatives() {
+		List<TokenRule> rules = new ArrayList<>();
+		for (int i = 0; i < 1000; i++) {
+			rules.add(TokenRules.value("option" + i, false));
+		}
+		AnyOfTokenRule rule = new AnyOfTokenRule(rules);
+		Token token = SimpleToken.createUnpositioned("option999");
+		
+		TokenStream stream = TokenStream.createMutable(List.of(token));
+		TokenRuleContext context = TokenRuleContext.empty();
+		
+		TokenRuleMatch result = rule.match(stream, context);
+		
+		assertNotNull(result);
+		assertEquals("option999", result.matchedTokens().getFirst().value());
 	}
 	
 	@Test

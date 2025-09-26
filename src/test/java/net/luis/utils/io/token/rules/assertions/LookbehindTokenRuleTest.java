@@ -227,6 +227,33 @@ class LookbehindTokenRuleTest {
 	}
 	
 	@Test
+	void matchWithComplexPattern() {
+		LookbehindTokenRule rule = new LookbehindTokenRule(
+			TokenRules.sequence(
+				TokenRules.value(")", false),
+				TokenRules.pattern("\\w+"),
+				TokenRules.value("(", false),
+				TokenRules.value("function", false)
+			),
+			LookMatchMode.POSITIVE
+		);
+		List<Token> tokens = List.of(
+			SimpleToken.createUnpositioned("function"),
+			SimpleToken.createUnpositioned("("),
+			SimpleToken.createUnpositioned("arg"),
+			SimpleToken.createUnpositioned(")"),
+			SimpleToken.createUnpositioned("current")
+		);
+		TokenStream stream = TokenStream.createMutable(tokens);
+		stream.advanceTo(4);
+		TokenRuleContext context = TokenRuleContext.empty();
+		
+		TokenRuleMatch result = rule.match(stream, context);
+		
+		assertNotNull(result);
+	}
+	
+	@Test
 	void not() {
 		TokenRule innerRule = createRule("test");
 		LookbehindTokenRule rule = new LookbehindTokenRule(innerRule, LookMatchMode.POSITIVE);

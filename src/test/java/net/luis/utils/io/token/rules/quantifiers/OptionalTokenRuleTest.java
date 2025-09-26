@@ -198,6 +198,8 @@ class OptionalTokenRuleTest {
 		assertNotNull(result);
 	}
 	
+	
+	
 	@Test
 	void not() {
 		TokenRule innerRule = TokenRules.pattern("test");

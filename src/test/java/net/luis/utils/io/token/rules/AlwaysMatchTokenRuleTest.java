@@ -21,8 +21,7 @@ package net.luis.utils.io.token.rules;
 import net.luis.utils.io.token.TokenRuleMatch;
 import net.luis.utils.io.token.context.TokenRuleContext;
 import net.luis.utils.io.token.stream.TokenStream;
-import net.luis.utils.io.token.tokens.SimpleToken;
-import net.luis.utils.io.token.tokens.Token;
+import net.luis.utils.io.token.tokens.*;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.junit.jupiter.api.Test;
@@ -107,6 +106,47 @@ class AlwaysMatchTokenRuleTest {
 		assertEquals(1, match.endIndex());
 		assertEquals(1, match.matchedTokens().size());
 		assertEquals("first", match.matchedTokens().getFirst().value());
+	}
+	
+	@Test
+	void matchAtEndOfStream() {
+		List<Token> tokens = List.of(createToken("test"));
+		TokenRuleContext context = TokenRuleContext.empty();
+		
+		TokenStream stream = TokenStream.createMutable(tokens);
+		stream.advance();
+		
+		TokenRuleMatch result = AlwaysMatchTokenRule.INSTANCE.match(stream, context);
+		assertNull(result);
+	}
+	
+	@Test
+	void matchWithShadowTokens() {
+		List<Token> tokens = List.of(
+			new ShadowToken(createToken("shadow")),
+			createToken("visible")
+		);
+		TokenRuleContext context = TokenRuleContext.empty();
+		
+		TokenStream stream = TokenStream.createMutable(tokens);
+		TokenRuleMatch result = AlwaysMatchTokenRule.INSTANCE.match(stream, context);
+		
+		assertNotNull(result);
+		assertEquals("visible", result.matchedTokens().getFirst().value());
+	}
+	
+	@Test
+	void matchWithOnlyShadowTokens() {
+		List<Token> tokens = List.of(
+			new ShadowToken(createToken("shadow1")),
+			new ShadowToken(createToken("shadow2"))
+		);
+		TokenRuleContext context = TokenRuleContext.empty();
+		
+		TokenStream stream = TokenStream.createMutable(tokens);
+		TokenRuleMatch result = AlwaysMatchTokenRule.INSTANCE.match(stream, context);
+		
+		assertNull(result);
 	}
 	
 	@Test

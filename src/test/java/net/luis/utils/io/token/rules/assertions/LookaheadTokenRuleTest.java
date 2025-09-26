@@ -224,6 +224,35 @@ class LookaheadTokenRuleTest {
 	}
 	
 	@Test
+	void matchWithComplexInnerRule() {
+		LookaheadTokenRule rule = new LookaheadTokenRule(
+			TokenRules.sequence(
+				TokenRules.value("if", false),
+				TokenRules.value("(", false),
+				TokenRules.pattern("\\w+"),
+				TokenRules.value(")", false)
+			),
+			LookMatchMode.POSITIVE
+		);
+		List<Token> tokens = List.of(
+			SimpleToken.createUnpositioned("if"),
+			SimpleToken.createUnpositioned("("),
+			SimpleToken.createUnpositioned("condition"),
+			SimpleToken.createUnpositioned(")"),
+			SimpleToken.createUnpositioned("statement")
+		);
+		
+		TokenStream stream = TokenStream.createMutable(tokens);
+		TokenRuleContext context = TokenRuleContext.empty();
+		
+		TokenRuleMatch result = rule.match(stream, context);
+		
+		assertNotNull(result);
+		assertEquals(0, stream.getCurrentIndex());
+	}
+	
+	
+	@Test
 	void not() {
 		TokenRule innerRule = createRule("test");
 		LookaheadTokenRule rule = new LookaheadTokenRule(innerRule, LookMatchMode.POSITIVE);

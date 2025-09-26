@@ -24,11 +24,9 @@ import net.luis.utils.io.token.stream.TokenStream;
 import net.luis.utils.io.token.tokens.SimpleToken;
 import net.luis.utils.io.token.tokens.Token;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
-import java.util.Objects;
 import java.util.function.Predicate;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -56,6 +54,73 @@ class CustomTokeRuleTest {
 		CustomTokeRule rule = new CustomTokeRule(condition);
 		
 		assertEquals(condition, rule.condition());
+	}
+	
+	@Test
+	void matchWithNullTokenStream() {
+		Predicate<Token> condition = token -> true;
+		CustomTokeRule rule = new CustomTokeRule(condition);
+		TokenRuleContext context = TokenRuleContext.empty();
+		
+		assertThrows(NullPointerException.class, () -> rule.match(null, context));
+	}
+	
+	@Test
+	void matchWithNullContext() {
+		Predicate<Token> condition = token -> true;
+		CustomTokeRule rule = new CustomTokeRule(condition);
+		TokenStream stream = TokenStream.createMutable(List.of(createToken("test")));
+		
+		assertThrows(NullPointerException.class, () -> rule.match(stream, null));
+	}
+	
+	@Test
+	void matchWithEmptyTokenStream() {
+		Predicate<Token> condition = token -> true;
+		CustomTokeRule rule = new CustomTokeRule(condition);
+		TokenStream stream = TokenStream.createMutable(List.of());
+		TokenRuleContext context = TokenRuleContext.empty();
+		
+		TokenRuleMatch result = rule.match(stream, context);
+		
+		assertNull(result);
+	}
+	
+	@Test
+	void matchWithAlwaysTruePredicate() {
+		CustomTokeRule rule = new CustomTokeRule(token -> true);
+		Token token = SimpleToken.createUnpositioned("anything");
+		TokenStream stream = TokenStream.createMutable(List.of(token));
+		TokenRuleContext context = TokenRuleContext.empty();
+		
+		TokenRuleMatch result = rule.match(stream, context);
+		
+		assertNotNull(result);
+		assertEquals(token, result.matchedTokens().getFirst());
+	}
+	
+	@Test
+	void matchWithAlwaysFalsePredicate() {
+		CustomTokeRule rule = new CustomTokeRule(token -> false);
+		Token token = SimpleToken.createUnpositioned("anything");
+		TokenStream stream = TokenStream.createMutable(List.of(token));
+		TokenRuleContext context = TokenRuleContext.empty();
+		
+		TokenRuleMatch result = rule.match(stream, context);
+		
+		assertNull(result);
+	}
+	
+	@Test
+	void matchWithExceptionThrowingPredicate() {
+		CustomTokeRule rule = new CustomTokeRule(token -> {
+			throw new RuntimeException("Test exception");
+		});
+		Token token = SimpleToken.createUnpositioned("test");
+		TokenStream stream = TokenStream.createMutable(List.of(token));
+		TokenRuleContext context = TokenRuleContext.empty();
+		
+		assertThrows(RuntimeException.class, () -> rule.match(stream, context));
 	}
 	
 	@Test
@@ -100,18 +165,6 @@ class CustomTokeRuleTest {
 	}
 	
 	@Test
-	void matchWithEmptyTokenStream() {
-		Predicate<Token> condition = token -> true;
-		CustomTokeRule rule = new CustomTokeRule(condition);
-		TokenStream stream = TokenStream.createMutable(List.of());
-		TokenRuleContext context = TokenRuleContext.empty();
-		
-		TokenRuleMatch result = rule.match(stream, context);
-		
-		assertNull(result);
-	}
-	
-	@Test
 	void matchWithTokenStreamAndContext() {
 		Predicate<Token> condition = token -> "match".equals(token.value());
 		CustomTokeRule rule = new CustomTokeRule(condition);
@@ -137,6 +190,8 @@ class CustomTokeRuleTest {
 		
 		assertNull(result);
 	}
+	
+	
 	
 	@Test
 	void not() {

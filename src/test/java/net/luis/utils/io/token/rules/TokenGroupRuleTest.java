@@ -21,9 +21,7 @@ package net.luis.utils.io.token.rules;
 import net.luis.utils.io.token.TokenRuleMatch;
 import net.luis.utils.io.token.context.TokenRuleContext;
 import net.luis.utils.io.token.stream.TokenStream;
-import net.luis.utils.io.token.tokens.SimpleToken;
-import net.luis.utils.io.token.tokens.Token;
-import net.luis.utils.io.token.tokens.TokenGroup;
+import net.luis.utils.io.token.tokens.*;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.junit.jupiter.api.Test;
@@ -153,6 +151,55 @@ class TokenGroupRuleTest {
 		TokenRuleMatch result = rule.match(stream, context);
 		
 		assertNull(result);
+	}
+	
+	@Test
+	void matchWithNestedGroups() {
+		TokenGroup innerGroup = new TokenGroup(List.of(
+			SimpleToken.createUnpositioned("inner1"),
+			SimpleToken.createUnpositioned("inner2")
+		));
+		TokenGroup outerGroup = new TokenGroup(List.of(
+			SimpleToken.createUnpositioned("outer"),
+			innerGroup
+		));
+		TokenGroupRule rule = new TokenGroupRule(
+			TokenRules.sequence(
+				TokenRules.value("outer", false),
+				TokenRules.value("inner1inner2", false)
+			)
+		);
+		
+		TokenStream stream = TokenStream.createMutable(List.of(outerGroup));
+		TokenRuleContext context = TokenRuleContext.empty();
+		
+		TokenRuleMatch result = rule.match(stream, context);
+		
+		assertNotNull(result);
+		assertEquals(1, result.matchedTokens().size());
+	}
+	
+	@Test
+	void matchWithShadowTokensInGroup() {
+		TokenGroup group = new TokenGroup(List.of(
+			SimpleToken.createUnpositioned("visible"),
+			new ShadowToken(SimpleToken.createUnpositioned("hidden")),
+			SimpleToken.createUnpositioned("also_visible")
+		));
+		TokenGroupRule rule = new TokenGroupRule(
+			TokenRules.sequence(
+				TokenRules.value("visible", false),
+				TokenRules.value("also_visible", false)
+			)
+		);
+		
+		TokenStream stream = TokenStream.createMutable(List.of(group));
+		TokenRuleContext context = TokenRuleContext.empty();
+		
+		TokenRuleMatch result = rule.match(stream, context);
+		
+		assertNotNull(result);
+		assertEquals(1, result.matchedTokens().size());
 	}
 	
 	@Test

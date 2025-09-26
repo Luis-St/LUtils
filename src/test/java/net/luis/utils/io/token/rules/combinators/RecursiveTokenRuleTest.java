@@ -259,6 +259,40 @@ class RecursiveTokenRuleTest {
 	}
 	
 	@Test
+	void matchWithMultipleRecursivePaths() {
+		RecursiveTokenRule rule = new RecursiveTokenRule(self ->
+			TokenRules.any(
+				TokenRules.pattern("\\d+"),
+				TokenRules.sequence(
+					TokenRules.value("[", false),
+					TokenRules.optional(self),
+					TokenRules.value("]", false)
+				),
+				TokenRules.sequence(
+					TokenRules.value("{", false),
+					TokenRules.optional(self),
+					TokenRules.value("}", false)
+				)
+			)
+		);
+		List<Token> tokens = List.of(
+			SimpleToken.createUnpositioned("["),
+			SimpleToken.createUnpositioned("{"),
+			SimpleToken.createUnpositioned("123"),
+			SimpleToken.createUnpositioned("}"),
+			SimpleToken.createUnpositioned("]")
+		);
+		
+		TokenStream stream = TokenStream.createMutable(tokens);
+		TokenRuleContext context = TokenRuleContext.empty();
+		
+		TokenRuleMatch result = rule.match(stream, context);
+		
+		assertNotNull(result);
+		assertEquals(5, result.matchedTokens().size());
+	}
+	
+	@Test
 	void not() {
 		Function<TokenRule, TokenRule> factory = self -> TokenRules.pattern("test");
 		RecursiveTokenRule rule = new RecursiveTokenRule(factory);

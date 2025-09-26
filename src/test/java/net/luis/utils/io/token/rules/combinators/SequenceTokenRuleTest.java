@@ -22,6 +22,7 @@ import net.luis.utils.io.token.TokenRuleMatch;
 import net.luis.utils.io.token.context.TokenRuleContext;
 import net.luis.utils.io.token.rules.TokenRule;
 import net.luis.utils.io.token.rules.TokenRules;
+import net.luis.utils.io.token.rules.assertions.anchors.StartTokenRule;
 import net.luis.utils.io.token.stream.TokenStream;
 import net.luis.utils.io.token.tokens.SimpleToken;
 import net.luis.utils.io.token.tokens.Token;
@@ -257,6 +258,42 @@ class SequenceTokenRuleTest {
 		TokenRuleMatch result = sequenceRule.match(stream, context);
 		
 		assertNull(result);
+	}
+	
+	@Test
+	void matchWithZeroWidthRules() {
+		SequenceTokenRule rule = new SequenceTokenRule(List.of(
+			StartTokenRule.DOCUMENT,
+			TokenRules.value("test", false)
+		));
+		
+		List<Token> tokens = List.of(SimpleToken.createUnpositioned("test"));
+		TokenStream stream = TokenStream.createMutable(tokens);
+		
+		TokenRuleContext context = TokenRuleContext.empty();
+		TokenRuleMatch result = rule.match(stream, context);
+		
+		assertNotNull(result);
+		assertEquals(1, result.matchedTokens().size());
+	}
+	
+	@Test
+	void matchWithManyRules() {
+		List<TokenRule> rules = new ArrayList<>();
+		List<Token> tokens = new ArrayList<>();
+		
+		for (int i = 0; i < 100; i++) {
+			rules.add(TokenRules.value("token" + i, false));
+			tokens.add(SimpleToken.createUnpositioned("token" + i));
+		}
+		
+		TokenRuleContext context = TokenRuleContext.empty();
+		SequenceTokenRule rule = new SequenceTokenRule(rules);
+		TokenStream stream = TokenStream.createMutable(tokens);
+		TokenRuleMatch result = rule.match(stream, context);
+		
+		assertNotNull(result);
+		assertEquals(100, result.matchedTokens().size());
 	}
 	
 	@Test
