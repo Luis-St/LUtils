@@ -25,11 +25,9 @@ import net.luis.utils.io.token.stream.TokenStream;
 import net.luis.utils.io.token.tokens.SimpleToken;
 import net.luis.utils.io.token.tokens.Token;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
-import java.util.Objects;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -136,6 +134,120 @@ class LengthTokenRuleTest {
 	}
 	
 	@Test
+	void matchAtDifferentStreamPosition() {
+		LengthTokenRule rule = new LengthTokenRule(2, 4);
+		TokenStream stream = TokenStream.createMutable(List.of(createToken("a"), createToken("abc"), createToken("abcde")));
+		stream.advance();
+		TokenRuleContext context = TokenRuleContext.empty();
+		
+		TokenRuleMatch result = rule.match(stream, context);
+		
+		assertNotNull(result);
+		assertEquals(1, result.startIndex());
+		assertEquals(2, result.endIndex());
+		assertEquals("abc", result.matchedTokens().getFirst().value());
+		assertEquals(2, stream.getCurrentIndex());
+	}
+	
+	@Test
+	void matchWithMultipleTokensInStream() {
+		LengthTokenRule rule = new LengthTokenRule(3, 5);
+		TokenStream stream = TokenStream.createMutable(List.of(createToken("ab"), createToken("abc"), createToken("abcd")));
+		TokenRuleContext context = TokenRuleContext.empty();
+		
+		TokenRuleMatch result = rule.match(stream, context);
+		
+		assertNull(result);
+		assertEquals(0, stream.getCurrentIndex());
+	}
+	
+	@Test
+	void matchWithSecondTokenMatching() {
+		LengthTokenRule rule = new LengthTokenRule(3, 5);
+		TokenStream stream = TokenStream.createMutable(List.of(createToken("ab"), createToken("abc"), createToken("abcd")));
+		stream.advance();
+		TokenRuleContext context = TokenRuleContext.empty();
+		
+		TokenRuleMatch result = rule.match(stream, context);
+		
+		assertNotNull(result);
+		assertEquals(1, result.startIndex());
+		assertEquals(2, result.endIndex());
+		assertEquals("abc", result.matchedTokens().getFirst().value());
+	}
+	
+	@Test
+	void matchWithVeryLongToken() {
+		LengthTokenRule rule = new LengthTokenRule(0, 1000);
+		String longValue = "a".repeat(500);
+		TokenStream stream = TokenStream.createMutable(List.of(createToken(longValue)));
+		TokenRuleContext context = TokenRuleContext.empty();
+		
+		TokenRuleMatch result = rule.match(stream, context);
+		
+		assertNotNull(result);
+		assertEquals(longValue, result.matchedTokens().getFirst().value());
+	}
+	
+	@Test
+	void matchWithVeryLongTokenExceedingMax() {
+		LengthTokenRule rule = new LengthTokenRule(0, 10);
+		String longValue = "a".repeat(50);
+		TokenStream stream = TokenStream.createMutable(List.of(createToken(longValue)));
+		TokenRuleContext context = TokenRuleContext.empty();
+		
+		TokenRuleMatch result = rule.match(stream, context);
+		
+		assertNull(result);
+	}
+	
+	@Test
+	void matchWithZeroLengthRange() {
+		LengthTokenRule rule = new LengthTokenRule(0, 0);
+		TokenStream stream = TokenStream.createMutable(List.of(createToken("")));
+		TokenRuleContext context = TokenRuleContext.empty();
+		
+		TokenRuleMatch result = rule.match(stream, context);
+		
+		assertNotNull(result);
+		assertEquals("", result.matchedTokens().getFirst().value());
+	}
+	
+	@Test
+	void matchWithZeroLengthRangeNonEmptyToken() {
+		LengthTokenRule rule = new LengthTokenRule(0, 0);
+		TokenStream stream = TokenStream.createMutable(List.of(createToken("a")));
+		TokenRuleContext context = TokenRuleContext.empty();
+		
+		TokenRuleMatch result = rule.match(stream, context);
+		
+		assertNull(result);
+	}
+	
+	@Test
+	void matchWithSingleCharacterRange() {
+		LengthTokenRule rule = new LengthTokenRule(1, 1);
+		TokenStream stream = TokenStream.createMutable(List.of(createToken("x")));
+		TokenRuleContext context = TokenRuleContext.empty();
+		
+		TokenRuleMatch result = rule.match(stream, context);
+		
+		assertNotNull(result);
+		assertEquals("x", result.matchedTokens().getFirst().value());
+	}
+	
+	@Test
+	void matchWithSingleCharacterRangeTooLong() {
+		LengthTokenRule rule = new LengthTokenRule(1, 1);
+		TokenStream stream = TokenStream.createMutable(List.of(createToken("xy")));
+		TokenRuleContext context = TokenRuleContext.empty();
+		
+		TokenRuleMatch result = rule.match(stream, context);
+		
+		assertNull(result);
+	}
+	
+	@Test
 	void matchWithNullToken() {
 		LengthTokenRule rule = new LengthTokenRule(1, 3);
 		
@@ -210,6 +322,86 @@ class LengthTokenRuleTest {
 		boolean result = rule.match(token);
 		
 		assertFalse(result);
+	}
+	
+	@Test
+	void matchWithSingleCharacterToken() {
+		LengthTokenRule rule = new LengthTokenRule(1, 1);
+		Token token = createToken("a");
+		
+		boolean result = rule.match(token);
+		
+		assertTrue(result);
+	}
+	
+	@Test
+	void matchWithWhitespaceToken() {
+		LengthTokenRule rule = new LengthTokenRule(1, 5);
+		Token token = createToken(" ");
+		
+		boolean result = rule.match(token);
+		
+		assertTrue(result);
+	}
+	
+	@Test
+	void matchWithMultipleWhitespaceToken() {
+		LengthTokenRule rule = new LengthTokenRule(3, 5);
+		Token token = createToken("   ");
+		
+		boolean result = rule.match(token);
+		
+		assertTrue(result);
+	}
+	
+	@Test
+	void matchWithUnicodeToken() {
+		LengthTokenRule rule = new LengthTokenRule(1, 5);
+		Token token = createToken("🌟");
+		
+		boolean result = rule.match(token);
+		
+		assertTrue(result);
+	}
+	
+	@Test
+	void matchWithMultipleUnicodeCharacters() {
+		LengthTokenRule rule = new LengthTokenRule(3, 6);
+		Token token = createToken("🌟🎉🎊");
+		
+		boolean result = rule.match(token);
+		
+		assertTrue(result);
+	}
+	
+	@Test
+	void matchWithSpecialCharactersToken() {
+		LengthTokenRule rule = new LengthTokenRule(3, 10);
+		Token token = createToken("!@#$%");
+		
+		boolean result = rule.match(token);
+		
+		assertTrue(result);
+	}
+	
+	@Test
+	void matchWithNumericToken() {
+		LengthTokenRule rule = new LengthTokenRule(3, 6);
+		Token token = createToken("12345");
+		
+		boolean result = rule.match(token);
+		
+		assertTrue(result);
+	}
+	
+	@Test
+	void matchWithMixedContentToken() {
+		LengthTokenRule rule = new LengthTokenRule(5, 15);
+		Token token = createToken("abc123!@#");
+		
+		boolean result = rule.match(token);
+		
+		assertTrue(result);
 	}
 	
 	@Test

@@ -25,11 +25,9 @@ import net.luis.utils.io.token.stream.TokenStream;
 import net.luis.utils.io.token.tokens.SimpleToken;
 import net.luis.utils.io.token.tokens.Token;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
-import java.util.Objects;
 import java.util.regex.Pattern;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -118,6 +116,145 @@ class PatternTokenRuleTest {
 	void matchWithTokenStreamNoMatch() {
 		PatternTokenRule rule = new PatternTokenRule("\\d+");
 		TokenStream stream = TokenStream.createMutable(List.of(createToken("abc")));
+		TokenRuleContext context = TokenRuleContext.empty();
+		
+		TokenRuleMatch result = rule.match(stream, context);
+		
+		assertNull(result);
+	}
+	
+	@Test
+	void matchAtDifferentStreamPosition() {
+		PatternTokenRule rule = new PatternTokenRule("\\d+");
+		TokenStream stream = TokenStream.createMutable(List.of(createToken("abc"), createToken("123"), createToken("xyz")));
+		stream.advance();
+		TokenRuleContext context = TokenRuleContext.empty();
+		
+		TokenRuleMatch result = rule.match(stream, context);
+		
+		assertNotNull(result);
+		assertEquals(1, result.startIndex());
+		assertEquals(2, result.endIndex());
+		assertEquals("123", result.matchedTokens().get(0).value());
+		assertEquals(2, stream.getCurrentIndex());
+	}
+	
+	@Test
+	void matchWithMultipleTokensInStream() {
+		PatternTokenRule rule = new PatternTokenRule("\\d+");
+		TokenStream stream = TokenStream.createMutable(List.of(createToken("abc"), createToken("123"), createToken("456")));
+		TokenRuleContext context = TokenRuleContext.empty();
+		
+		TokenRuleMatch result = rule.match(stream, context);
+		
+		assertNull(result);
+		assertEquals(0, stream.getCurrentIndex());
+	}
+	
+	@Test
+	void matchWithSecondTokenMatching() {
+		PatternTokenRule rule = new PatternTokenRule("\\w+");
+		TokenStream stream = TokenStream.createMutable(List.of(createToken("123"), createToken("abc"), createToken("xyz")));
+		stream.advance();
+		TokenRuleContext context = TokenRuleContext.empty();
+		
+		TokenRuleMatch result = rule.match(stream, context);
+		
+		assertNotNull(result);
+		assertEquals(1, result.startIndex());
+		assertEquals(2, result.endIndex());
+		assertEquals("abc", result.matchedTokens().get(0).value());
+	}
+	
+	@Test
+	void matchWithPartialTokenMatch() {
+		PatternTokenRule rule = new PatternTokenRule("\\d+");
+		TokenStream stream = TokenStream.createMutable(List.of(createToken("abc123")));
+		TokenRuleContext context = TokenRuleContext.empty();
+		
+		TokenRuleMatch result = rule.match(stream, context);
+		
+		assertNull(result);
+	}
+	
+	@Test
+	void matchWithAnchoredPattern() {
+		PatternTokenRule rule = new PatternTokenRule("^\\d+$");
+		TokenStream stream = TokenStream.createMutable(List.of(createToken("123")));
+		TokenRuleContext context = TokenRuleContext.empty();
+		
+		TokenRuleMatch result = rule.match(stream, context);
+		
+		assertNotNull(result);
+		assertEquals("123", result.matchedTokens().get(0).value());
+	}
+	
+	@Test
+	void matchWithAnchoredPatternNoMatch() {
+		PatternTokenRule rule = new PatternTokenRule("^\\d+$");
+		TokenStream stream = TokenStream.createMutable(List.of(createToken("abc123")));
+		TokenRuleContext context = TokenRuleContext.empty();
+		
+		TokenRuleMatch result = rule.match(stream, context);
+		
+		assertNull(result);
+	}
+	
+	@Test
+	void matchWithDotPattern() {
+		PatternTokenRule rule = new PatternTokenRule("...");
+		TokenStream stream = TokenStream.createMutable(List.of(createToken("abc")));
+		TokenRuleContext context = TokenRuleContext.empty();
+		
+		TokenRuleMatch result = rule.match(stream, context);
+		
+		assertNotNull(result);
+		assertEquals("abc", result.matchedTokens().get(0).value());
+	}
+	
+	@Test
+	void matchWithDotPatternNoMatch() {
+		PatternTokenRule rule = new PatternTokenRule("...");
+		TokenStream stream = TokenStream.createMutable(List.of(createToken("ab")));
+		TokenRuleContext context = TokenRuleContext.empty();
+		
+		TokenRuleMatch result = rule.match(stream, context);
+		
+		assertNull(result);
+	}
+	
+	@Test
+	void matchWithOptionalPattern() {
+		PatternTokenRule rule = new PatternTokenRule("colou?r");
+		TokenStream stream1 = TokenStream.createMutable(List.of(createToken("color")));
+		TokenStream stream2 = TokenStream.createMutable(List.of(createToken("colour")));
+		TokenRuleContext context = TokenRuleContext.empty();
+		
+		TokenRuleMatch result1 = rule.match(stream1, context);
+		TokenRuleMatch result2 = rule.match(stream2, context);
+		
+		assertNotNull(result1);
+		assertNotNull(result2);
+		assertEquals("color", result1.matchedTokens().get(0).value());
+		assertEquals("colour", result2.matchedTokens().get(0).value());
+	}
+	
+	@Test
+	void matchWithAlternationPattern() {
+		PatternTokenRule rule = new PatternTokenRule("cat|dog|bird");
+		TokenStream stream = TokenStream.createMutable(List.of(createToken("dog")));
+		TokenRuleContext context = TokenRuleContext.empty();
+		
+		TokenRuleMatch result = rule.match(stream, context);
+		
+		assertNotNull(result);
+		assertEquals("dog", result.matchedTokens().get(0).value());
+	}
+	
+	@Test
+	void matchWithAlternationPatternNoMatch() {
+		PatternTokenRule rule = new PatternTokenRule("cat|dog|bird");
+		TokenStream stream = TokenStream.createMutable(List.of(createToken("fish")));
 		TokenRuleContext context = TokenRuleContext.empty();
 		
 		TokenRuleMatch result = rule.match(stream, context);
@@ -236,6 +373,116 @@ class PatternTokenRuleTest {
 	void matchWithComplexPatternNonMatching() {
 		PatternTokenRule rule = new PatternTokenRule("\\d{2,4}-\\d{2}-\\d{2}");
 		Token token = createToken("2023/12/25");
+		
+		boolean result = rule.match(token);
+		
+		assertFalse(result);
+	}
+	
+	@Test
+	void matchWithEmailPattern() {
+		PatternTokenRule rule = new PatternTokenRule("[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}");
+		Token token = createToken("user@example.com");
+		
+		boolean result = rule.match(token);
+		
+		assertTrue(result);
+	}
+	
+	@Test
+	void matchWithEmailPatternInvalid() {
+		PatternTokenRule rule = new PatternTokenRule("[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}");
+		Token token = createToken("invalid-email");
+		
+		boolean result = rule.match(token);
+		
+		assertFalse(result);
+	}
+	
+	@Test
+	void matchWithWhitespacePattern() {
+		PatternTokenRule rule = new PatternTokenRule("\\s+");
+		Token token = createToken("   ");
+		
+		boolean result = rule.match(token);
+		
+		assertTrue(result);
+	}
+	
+	@Test
+	void matchWithWhitespacePatternNoWhitespace() {
+		PatternTokenRule rule = new PatternTokenRule("\\s+");
+		Token token = createToken("text");
+		
+		boolean result = rule.match(token);
+		
+		assertFalse(result);
+	}
+	
+	@Test
+	void matchWithHexPattern() {
+		PatternTokenRule rule = new PatternTokenRule("[0-9a-fA-F]+");
+		Token token = createToken("1a2B3c");
+		
+		boolean result = rule.match(token);
+		
+		assertTrue(result);
+	}
+	
+	@Test
+	void matchWithHexPatternInvalid() {
+		PatternTokenRule rule = new PatternTokenRule("[0-9a-fA-F]+");
+		Token token = createToken("xyz123");
+		
+		boolean result = rule.match(token);
+		
+		assertFalse(result);
+	}
+	
+	@Test
+	void matchWithUnicodePattern() {
+		PatternTokenRule rule = new PatternTokenRule("\\p{L}+");
+		Token token = createToken("café");
+		
+		boolean result = rule.match(token);
+		
+		assertTrue(result);
+	}
+	
+	@Test
+	void matchWithUnicodePatternNumbers() {
+		PatternTokenRule rule = new PatternTokenRule("\\p{L}+");
+		Token token = createToken("123");
+		
+		boolean result = rule.match(token);
+		
+		assertFalse(result);
+	}
+	
+	@Test
+	void matchWithQuantifierPattern() {
+		PatternTokenRule rule = new PatternTokenRule("a{3,5}");
+		Token token = createToken("aaaa");
+		
+		boolean result = rule.match(token);
+		
+		assertTrue(result);
+	}
+	
+	@Test
+	void matchWithQuantifierPatternTooFew() {
+		PatternTokenRule rule = new PatternTokenRule("a{3,5}");
+		Token token = createToken("aa");
+		
+		boolean result = rule.match(token);
+		
+		assertFalse(result);
+	}
+	
+	@Test
+	void matchWithQuantifierPatternTooMany() {
+		PatternTokenRule rule = new PatternTokenRule("a{3,5}");
+		Token token = createToken("aaaaaa");
 		
 		boolean result = rule.match(token);
 		

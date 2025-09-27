@@ -25,11 +25,9 @@ import net.luis.utils.io.token.stream.TokenStream;
 import net.luis.utils.io.token.tokens.SimpleToken;
 import net.luis.utils.io.token.tokens.Token;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
-import java.util.Objects;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -131,6 +129,94 @@ class ValueTokenRuleTest {
 	void matchWithTokenStreamNoMatch() {
 		ValueTokenRule rule = new ValueTokenRule("expected", false);
 		TokenStream stream = TokenStream.createMutable(List.of(createToken("actual")));
+		TokenRuleContext context = TokenRuleContext.empty();
+		
+		TokenRuleMatch result = rule.match(stream, context);
+		
+		assertNull(result);
+	}
+	
+	@Test
+	void matchAtDifferentStreamPosition() {
+		ValueTokenRule rule = new ValueTokenRule("target", false);
+		TokenStream stream = TokenStream.createMutable(List.of(createToken("first"), createToken("target"), createToken("last")));
+		stream.advance();
+		TokenRuleContext context = TokenRuleContext.empty();
+		
+		TokenRuleMatch result = rule.match(stream, context);
+		
+		assertNotNull(result);
+		assertEquals(1, result.startIndex());
+		assertEquals(2, result.endIndex());
+		assertEquals("target", result.matchedTokens().getFirst().value());
+		assertEquals(2, stream.getCurrentIndex());
+	}
+	
+	@Test
+	void matchWithMultipleTokensInStream() {
+		ValueTokenRule rule = new ValueTokenRule("target", false);
+		TokenStream stream = TokenStream.createMutable(List.of(createToken("first"), createToken("target"), createToken("target")));
+		TokenRuleContext context = TokenRuleContext.empty();
+		
+		TokenRuleMatch result = rule.match(stream, context);
+		
+		assertNull(result);
+		assertEquals(0, stream.getCurrentIndex());
+	}
+	
+	@Test
+	void matchWithSecondTokenMatching() {
+		ValueTokenRule rule = new ValueTokenRule("target", false);
+		TokenStream stream = TokenStream.createMutable(List.of(createToken("first"), createToken("target"), createToken("last")));
+		stream.advance();
+		TokenRuleContext context = TokenRuleContext.empty();
+		
+		TokenRuleMatch result = rule.match(stream, context);
+		
+		assertNotNull(result);
+		assertEquals(1, result.startIndex());
+		assertEquals(2, result.endIndex());
+		assertEquals("target", result.matchedTokens().getFirst().value());
+	}
+	
+	@Test
+	void matchWithCaseSensitiveNoMatch() {
+		ValueTokenRule rule = new ValueTokenRule("Test", false);
+		TokenStream stream = TokenStream.createMutable(List.of(createToken("test")));
+		TokenRuleContext context = TokenRuleContext.empty();
+		
+		TokenRuleMatch result = rule.match(stream, context);
+		
+		assertNull(result);
+	}
+	
+	@Test
+	void matchWithIgnoreCaseMatch() {
+		ValueTokenRule rule = new ValueTokenRule("Test", true);
+		TokenStream stream = TokenStream.createMutable(List.of(createToken("test")));
+		TokenRuleContext context = TokenRuleContext.empty();
+		
+		TokenRuleMatch result = rule.match(stream, context);
+		
+		assertNotNull(result);
+		assertEquals("test", result.matchedTokens().getFirst().value());
+	}
+	
+	@Test
+	void matchWithPartialMatch() {
+		ValueTokenRule rule = new ValueTokenRule("test", false);
+		TokenStream stream = TokenStream.createMutable(List.of(createToken("testing")));
+		TokenRuleContext context = TokenRuleContext.empty();
+		
+		TokenRuleMatch result = rule.match(stream, context);
+		
+		assertNull(result);
+	}
+	
+	@Test
+	void matchWithSubstring() {
+		ValueTokenRule rule = new ValueTokenRule("testing", false);
+		TokenStream stream = TokenStream.createMutable(List.of(createToken("test")));
 		TokenRuleContext context = TokenRuleContext.empty();
 		
 		TokenRuleMatch result = rule.match(stream, context);
@@ -319,6 +405,148 @@ class ValueTokenRuleTest {
 	void matchWithNewlineCharacter() {
 		ValueTokenRule rule = new ValueTokenRule('\n', false);
 		Token token = createToken("\n");
+		
+		boolean result = rule.match(token);
+		
+		assertTrue(result);
+	}
+	
+	@Test
+	void matchWithNumericString() {
+		ValueTokenRule rule = new ValueTokenRule("123", false);
+		Token token = createToken("123");
+		
+		boolean result = rule.match(token);
+		
+		assertTrue(result);
+	}
+	
+	@Test
+	void matchWithNumericStringDifferent() {
+		ValueTokenRule rule = new ValueTokenRule("123", false);
+		Token token = createToken("456");
+		
+		boolean result = rule.match(token);
+		
+		assertFalse(result);
+	}
+	
+	@Test
+	void matchWithLongString() {
+		String longValue = "a".repeat(1000);
+		ValueTokenRule rule = new ValueTokenRule(longValue, false);
+		Token token = createToken(longValue);
+		
+		boolean result = rule.match(token);
+		
+		assertTrue(result);
+	}
+	
+	@Test
+	void matchWithLongStringPartialMatch() {
+		String longValue = "a".repeat(1000);
+		ValueTokenRule rule = new ValueTokenRule(longValue, false);
+		Token token = createToken(longValue + "b");
+		
+		boolean result = rule.match(token);
+		
+		assertFalse(result);
+	}
+	
+	@Test
+	void matchWithSingleCharacterRule() {
+		ValueTokenRule rule = new ValueTokenRule("x", false);
+		Token token = createToken("x");
+		
+		boolean result = rule.match(token);
+		
+		assertTrue(result);
+	}
+	
+	@Test
+	void matchWithEmojis() {
+		ValueTokenRule rule = new ValueTokenRule("🎉", false);
+		Token token = createToken("🎉");
+		
+		boolean result = rule.match(token);
+		
+		assertTrue(result);
+	}
+	
+	@Test
+	void matchWithEmojisDifferent() {
+		ValueTokenRule rule = new ValueTokenRule("🎉", false);
+		Token token = createToken("🎊");
+		
+		boolean result = rule.match(token);
+		
+		assertFalse(result);
+	}
+	
+	@Test
+	void matchWithMixedLanguageCharacters() {
+		ValueTokenRule rule = new ValueTokenRule("Helloこんにちは", false);
+		Token token = createToken("Helloこんにちは");
+		
+		boolean result = rule.match(token);
+		
+		assertTrue(result);
+	}
+	
+	@Test
+	void matchWithCurrencySymbols() {
+		ValueTokenRule rule = new ValueTokenRule("$€¥£", false);
+		Token token = createToken("$€¥£");
+		
+		boolean result = rule.match(token);
+		
+		assertTrue(result);
+	}
+	
+	@Test
+	void matchWithEscapeSequences() {
+		ValueTokenRule rule = new ValueTokenRule("\"quoted\"", false);
+		Token token = createToken("\"quoted\"");
+		
+		boolean result = rule.match(token);
+		
+		assertTrue(result);
+	}
+	
+	@Test
+	void matchWithBackslashes() {
+		ValueTokenRule rule = new ValueTokenRule("\\path\\to\\file", false);
+		Token token = createToken("\\path\\to\\file");
+		
+		boolean result = rule.match(token);
+		
+		assertTrue(result);
+	}
+	
+	@Test
+	void matchWithUrlLikeString() {
+		ValueTokenRule rule = new ValueTokenRule("https://example.com", false);
+		Token token = createToken("https://example.com");
+		
+		boolean result = rule.match(token);
+		
+		assertTrue(result);
+	}
+	
+	@Test
+	void matchWithJsonLikeString() {
+		ValueTokenRule rule = new ValueTokenRule("{\"key\":\"value\"}", false);
+		Token token = createToken("{\"key\":\"value\"}");
+		
+		boolean result = rule.match(token);
+		
+		assertTrue(result);
+	}
+	
+	@Test
+	void matchWithAccentedCharactersIgnoreCase() {
+		ValueTokenRule rule = new ValueTokenRule("naïve", true);
+		Token token = createToken("NAÏVE");
 		
 		boolean result = rule.match(token);
 		
