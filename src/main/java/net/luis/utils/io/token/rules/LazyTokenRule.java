@@ -126,7 +126,7 @@ public class LazyTokenRule implements TokenRule, Supplier<TokenRule> {
 		TokenRule tokenRule = null;
 		try {
 			tokenRule = this.lazyTokenRule.get();
-		} catch (NotInitializedException ignored) {}
+		} catch (NotInitializedException _) {}
 		
 		if (tokenRule != null) {
 			return tokenRule.match(stream, ctx);

@@ -691,8 +691,8 @@ public final class Codecs {
 				if (value != null) {
 					return Result.success(value);
 				}
-			} catch (NumberFormatException ignored) {
-			}
+			} catch (NumberFormatException _) {}
+			
 			E value = nameLookup.get(key);
 			if (value != null) {
 				return Result.success(value);

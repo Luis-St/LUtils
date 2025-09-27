@@ -164,7 +164,8 @@ public final class ReflectionHelper {
 		Constructor<T> constructor = null;
 		try {
 			constructor = clazz.getDeclaredConstructor(nullToEmpty(parameters));
-		} catch (Exception ignored) {}
+		} catch (Exception _) {}
+		
 		return constructor != null && (predicate == null || predicate.test(constructor));
 	}
 	
@@ -285,7 +286,8 @@ public final class ReflectionHelper {
 		Method method = null;
 		try {
 			method = clazz.getDeclaredMethod(name, nullToEmpty(parameters));
-		} catch (Exception ignored) {}
+		} catch (Exception _) {}
+		
 		return method != null && (predicate == null || predicate.test(method));
 	}
 	
@@ -409,10 +411,12 @@ public final class ReflectionHelper {
 	public static boolean hasField(@NotNull Class<?> clazz, @NotNull String name, @Nullable Predicate<Field> predicate) {
 		Objects.requireNonNull(clazz, "Class must not be null");
 		Objects.requireNonNull(name, "Name must not be null");
+		
 		Field field = null;
 		try {
 			field = clazz.getDeclaredField(name);
-		} catch (Exception ignored) {}
+		} catch (Exception _) {}
+		
 		return field != null && (predicate == null || predicate.test(field));
 	}
 	
