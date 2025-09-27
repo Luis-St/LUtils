@@ -37,7 +37,7 @@ import java.util.Objects;
  * </ul>
  * <p>
  *     <strong>Note</strong>: {@link #LINE} might be inconsistent if the token list has been modified (e.g., tokens added or removed) after the initial parsing,
- *     as it relies on line numbers and newline characters to determine line starts.
+ *     as it relies on line numbers and newline characters to determine line starts.<br>
  *     Ensure the token list is in a consistent state before applying this rule.
  * </p>
  *
