@@ -191,7 +191,116 @@ class CustomTokeRuleTest {
 		assertNull(result);
 	}
 	
+	@Test
+	void matchWithStreamAdvancement() {
+		Predicate<Token> condition = token -> "match".equals(token.value());
+		CustomTokeRule rule = new CustomTokeRule(condition);
+		TokenStream stream = TokenStream.createMutable(List.of(createToken("match"), createToken("remaining")));
+		TokenRuleContext context = TokenRuleContext.empty();
+		
+		TokenRuleMatch result = rule.match(stream, context);
+		
+		assertNotNull(result);
+		assertEquals("match", result.matchedTokens().getFirst().value());
+		assertEquals(1, stream.getCurrentIndex());
+		assertTrue(stream.hasMoreTokens());
+		assertEquals("remaining", stream.getCurrentToken().value());
+	}
 	
+	@Test
+	void matchWithStreamNoAdvancementOnFailure() {
+		Predicate<Token> condition = token -> "expected".equals(token.value());
+		CustomTokeRule rule = new CustomTokeRule(condition);
+		TokenStream stream = TokenStream.createMutable(List.of(createToken("actual"), createToken("remaining")));
+		TokenRuleContext context = TokenRuleContext.empty();
+		
+		TokenRuleMatch result = rule.match(stream, context);
+		
+		assertNull(result);
+		assertEquals(0, stream.getCurrentIndex());
+		assertTrue(stream.hasMoreTokens());
+		assertEquals("actual", stream.getCurrentToken().value());
+	}
+	
+	@Test
+	void matchWithEmptyStringCondition() {
+		Predicate<Token> condition = token -> token.value().isEmpty();
+		CustomTokeRule rule = new CustomTokeRule(condition);
+		TokenStream stream = TokenStream.createMutable(List.of(createToken("")));
+		TokenRuleContext context = TokenRuleContext.empty();
+		
+		TokenRuleMatch result = rule.match(stream, context);
+		
+		assertNotNull(result);
+		assertEquals("", result.matchedTokens().getFirst().value());
+	}
+	
+	@Test
+	void matchWithWhitespaceCondition() {
+		Predicate<Token> condition = token -> token.value().trim().isEmpty();
+		CustomTokeRule rule = new CustomTokeRule(condition);
+		TokenStream stream = TokenStream.createMutable(List.of(createToken("   ")));
+		TokenRuleContext context = TokenRuleContext.empty();
+		
+		TokenRuleMatch result = rule.match(stream, context);
+		
+		assertNotNull(result);
+		assertEquals("   ", result.matchedTokens().getFirst().value());
+	}
+	
+	@Test
+	void matchWithRegexCondition() {
+		Predicate<Token> condition = token -> token.value().matches("\\d+");
+		CustomTokeRule rule = new CustomTokeRule(condition);
+		
+		TokenStream stream1 = TokenStream.createMutable(List.of(createToken("123")));
+		TokenRuleContext context = TokenRuleContext.empty();
+		
+		TokenRuleMatch result1 = rule.match(stream1, context);
+		assertNotNull(result1);
+		assertEquals("123", result1.matchedTokens().getFirst().value());
+		
+		TokenStream stream2 = TokenStream.createMutable(List.of(createToken("abc")));
+		TokenRuleMatch result2 = rule.match(stream2, context);
+		assertNull(result2);
+	}
+	
+	@Test
+	void matchWithCaseSensitiveCondition() {
+		Predicate<Token> condition = token -> "Test".equals(token.value());
+		CustomTokeRule rule = new CustomTokeRule(condition);
+		
+		assertTrue(rule.match(createToken("Test")));
+		assertFalse(rule.match(createToken("test")));
+		assertFalse(rule.match(createToken("TEST")));
+	}
+	
+	@Test
+	void matchWithLengthCondition() {
+		Predicate<Token> condition = token -> token.value().length() == 5;
+		CustomTokeRule rule = new CustomTokeRule(condition);
+		TokenStream stream = TokenStream.createMutable(List.of(createToken("hello"), createToken("world")));
+		TokenRuleContext context = TokenRuleContext.empty();
+		
+		TokenRuleMatch result = rule.match(stream, context);
+		
+		assertNotNull(result);
+		assertEquals("hello", result.matchedTokens().getFirst().value());
+		assertEquals(1, stream.getCurrentIndex());
+	}
+	
+	@Test
+	void matchWithSpecialCharacterCondition() {
+		Predicate<Token> condition = token -> token.value().contains("@");
+		CustomTokeRule rule = new CustomTokeRule(condition);
+		TokenStream stream = TokenStream.createMutable(List.of(createToken("user@domain.com")));
+		TokenRuleContext context = TokenRuleContext.empty();
+		
+		TokenRuleMatch result = rule.match(stream, context);
+		
+		assertNotNull(result);
+		assertEquals("user@domain.com", result.matchedTokens().getFirst().value());
+	}
 	
 	@Test
 	void not() {

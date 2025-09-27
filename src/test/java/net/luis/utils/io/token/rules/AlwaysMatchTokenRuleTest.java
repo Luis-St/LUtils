@@ -18,16 +18,15 @@
 
 package net.luis.utils.io.token.rules;
 
+import net.luis.utils.io.token.TokenPosition;
 import net.luis.utils.io.token.TokenRuleMatch;
 import net.luis.utils.io.token.context.TokenRuleContext;
 import net.luis.utils.io.token.stream.TokenStream;
 import net.luis.utils.io.token.tokens.*;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
-import java.util.Objects;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -147,6 +146,92 @@ class AlwaysMatchTokenRuleTest {
 		TokenRuleMatch result = AlwaysMatchTokenRule.INSTANCE.match(stream, context);
 		
 		assertNull(result);
+	}
+	
+	@Test
+	void matchWithSpecialCharacters() {
+		AlwaysMatchTokenRule rule = AlwaysMatchTokenRule.INSTANCE;
+		TokenStream stream = TokenStream.createMutable(List.of(createToken("!@#$%^&*()")));
+		TokenRuleContext context = TokenRuleContext.empty();
+		
+		TokenRuleMatch match = rule.match(stream, context);
+		
+		assertNotNull(match);
+		assertEquals("!@#$%^&*()", match.matchedTokens().getFirst().value());
+		assertEquals(1, stream.getCurrentIndex());
+	}
+	
+	@Test
+	void matchWithEmptyStringToken() {
+		AlwaysMatchTokenRule rule = AlwaysMatchTokenRule.INSTANCE;
+		TokenStream stream = TokenStream.createMutable(List.of(createToken("")));
+		TokenRuleContext context = TokenRuleContext.empty();
+		
+		TokenRuleMatch match = rule.match(stream, context);
+		
+		assertNotNull(match);
+		assertEquals("", match.matchedTokens().getFirst().value());
+		assertEquals(1, stream.getCurrentIndex());
+	}
+	
+	@Test
+	void matchWithWhitespaceToken() {
+		AlwaysMatchTokenRule rule = AlwaysMatchTokenRule.INSTANCE;
+		TokenStream stream = TokenStream.createMutable(List.of(createToken("   ")));
+		TokenRuleContext context = TokenRuleContext.empty();
+		
+		TokenRuleMatch match = rule.match(stream, context);
+		
+		assertNotNull(match);
+		assertEquals("   ", match.matchedTokens().getFirst().value());
+		assertEquals(1, stream.getCurrentIndex());
+	}
+	
+	@Test
+	void matchWithStreamAdvancement() {
+		AlwaysMatchTokenRule rule = AlwaysMatchTokenRule.INSTANCE;
+		TokenStream stream = TokenStream.createMutable(List.of(createToken("first"), createToken("second"), createToken("third")));
+		TokenRuleContext context = TokenRuleContext.empty();
+		
+		TokenRuleMatch match = rule.match(stream, context);
+		
+		assertNotNull(match);
+		assertEquals("first", match.matchedTokens().getFirst().value());
+		assertEquals(1, stream.getCurrentIndex());
+		assertTrue(stream.hasMoreTokens());
+		assertEquals("second", stream.getCurrentToken().value());
+	}
+	
+	@Test
+	void matchWithMixedShadowAndVisibleTokens() {
+		List<Token> tokens = List.of(
+			new ShadowToken(createToken("shadow1")),
+			createToken("visible1"),
+			new ShadowToken(createToken("shadow2")),
+			createToken("visible2")
+		);
+		TokenRuleContext context = TokenRuleContext.empty();
+		
+		TokenStream stream = TokenStream.createMutable(tokens);
+		TokenRuleMatch result = AlwaysMatchTokenRule.INSTANCE.match(stream, context);
+		
+		assertNotNull(result);
+		assertEquals("visible1", result.matchedTokens().getFirst().value());
+		assertEquals(2, stream.getCurrentIndex());
+	}
+	
+	@Test
+	void matchWithPositionedToken() {
+		Token positionedToken = new SimpleToken("positioned", new TokenPosition(5, 10, 125));
+		AlwaysMatchTokenRule rule = AlwaysMatchTokenRule.INSTANCE;
+		TokenStream stream = TokenStream.createMutable(List.of(positionedToken));
+		TokenRuleContext context = TokenRuleContext.empty();
+		
+		TokenRuleMatch match = rule.match(stream, context);
+		
+		assertNotNull(match);
+		assertEquals(positionedToken, match.matchedTokens().getFirst());
+		assertEquals("positioned", match.matchedTokens().getFirst().value());
 	}
 	
 	@Test

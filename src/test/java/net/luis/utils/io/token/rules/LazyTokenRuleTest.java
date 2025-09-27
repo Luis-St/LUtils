@@ -209,6 +209,115 @@ class LazyTokenRuleTest {
 	}
 	
 	@Test
+	void matchWithEmptyStreamWhenInitialized() {
+		LazyTokenRule rule = new LazyTokenRule();
+		TokenRule targetRule = createRule("test");
+		rule.set(targetRule);
+		
+		TokenStream stream = TokenStream.createMutable(List.of());
+		TokenRuleContext context = TokenRuleContext.empty();
+		
+		TokenRuleMatch result = rule.match(stream, context);
+		
+		assertNull(result);
+		assertEquals(0, stream.getCurrentIndex());
+	}
+	
+	@Test
+	void matchWithComplexSequenceRule() {
+		LazyTokenRule rule = new LazyTokenRule();
+		TokenRule targetRule = TokenRules.sequence(createRule("first"), createRule("second"));
+		rule.set(targetRule);
+		
+		TokenStream stream = TokenStream.createMutable(List.of(createToken("first"), createToken("second")));
+		TokenRuleContext context = TokenRuleContext.empty();
+		
+		TokenRuleMatch result = rule.match(stream, context);
+		
+		assertNotNull(result);
+		assertEquals(2, result.matchedTokens().size());
+		assertEquals("first", result.matchedTokens().get(0).value());
+		assertEquals("second", result.matchedTokens().get(1).value());
+		assertEquals(2, stream.getCurrentIndex());
+	}
+	
+	@Test
+	void matchWithOptionalRule() {
+		LazyTokenRule rule = new LazyTokenRule();
+		TokenRule targetRule = TokenRules.optional(createRule("test"));
+		rule.set(targetRule);
+		
+		TokenStream stream = TokenStream.createMutable(List.of(createToken("different")));
+		TokenRuleContext context = TokenRuleContext.empty();
+		
+		TokenRuleMatch result = rule.match(stream, context);
+		
+		assertNotNull(result);
+		assertTrue(result.matchedTokens().isEmpty());
+		assertEquals(0, stream.getCurrentIndex());
+	}
+	
+	@Test
+	void matchWithStreamAdvancement() {
+		LazyTokenRule rule = new LazyTokenRule();
+		TokenRule targetRule = createRule("match");
+		rule.set(targetRule);
+		
+		TokenStream stream = TokenStream.createMutable(List.of(createToken("match"), createToken("remaining")));
+		TokenRuleContext context = TokenRuleContext.empty();
+		
+		TokenRuleMatch result = rule.match(stream, context);
+		
+		assertNotNull(result);
+		assertEquals("match", result.matchedTokens().getFirst().value());
+		assertEquals(1, stream.getCurrentIndex());
+		assertTrue(stream.hasMoreTokens());
+		assertEquals("remaining", stream.getCurrentToken().value());
+	}
+	
+	@Test
+	void matchWithAlwaysMatchRule() {
+		LazyTokenRule rule = new LazyTokenRule();
+		rule.set(TokenRules.alwaysMatch());
+		
+		TokenStream stream = TokenStream.createMutable(List.of(createToken("any")));
+		TokenRuleContext context = TokenRuleContext.empty();
+		
+		TokenRuleMatch result = rule.match(stream, context);
+		
+		assertNotNull(result);
+		assertEquals("any", result.matchedTokens().getFirst().value());
+		assertEquals(1, stream.getCurrentIndex());
+	}
+	
+	@Test
+	void matchWithNeverMatchRule() {
+		LazyTokenRule rule = new LazyTokenRule();
+		rule.set(TokenRules.neverMatch());
+		
+		TokenStream stream = TokenStream.createMutable(List.of(createToken("any")));
+		TokenRuleContext context = TokenRuleContext.empty();
+		
+		TokenRuleMatch result = rule.match(stream, context);
+		
+		assertNull(result);
+		assertEquals(0, stream.getCurrentIndex());
+	}
+	
+	@Test
+	void matchWithInitializationAndImmediateMatch() {
+		LazyTokenRule rule = new LazyTokenRule();
+		TokenStream stream = TokenStream.createMutable(List.of(createToken("test")));
+		TokenRuleContext context = TokenRuleContext.empty();
+		
+		rule.set(createRule("test"));
+		TokenRuleMatch result = rule.match(stream, context);
+		
+		assertNotNull(result);
+		assertEquals("test", result.matchedTokens().getFirst().value());
+	}
+	
+	@Test
 	void not() {
 		LazyTokenRule rule = new LazyTokenRule();
 		

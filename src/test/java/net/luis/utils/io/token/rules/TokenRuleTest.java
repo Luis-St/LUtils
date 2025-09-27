@@ -68,6 +68,279 @@ class TokenRuleTest {
 	}
 	
 	@Test
+	void functionalInterfaceUsage() {
+		TokenRule lambdaRule = new TokenRule() {
+			@Override
+			public @Nullable TokenRuleMatch match(@NotNull TokenStream stream, @NotNull TokenRuleContext ctx) {
+				if (!stream.hasMoreTokens()) {
+					return null;
+				}
+				int startIndex = stream.getCurrentIndex();
+				Token token = stream.getCurrentToken();
+				if ("lambda".equals(token.value())) {
+					return new TokenRuleMatch(startIndex, stream.advance(), List.of(token), this);
+				}
+				return null;
+			}
+		};
+		
+		TokenStream stream = TokenStream.createMutable(List.of(createToken()));
+		TokenRuleContext context = TokenRuleContext.empty();
+		
+		TokenRuleMatch result = lambdaRule.match(stream, context);
+		
+		assertNotNull(result);
+		assertEquals("lambda", result.matchedTokens().getFirst().value());
+	}
+	
+	@Test
+	void functionalInterfaceWithNullStreamHandling() {
+		TokenRule rule = (stream, ctx) -> {
+			Objects.requireNonNull(stream, "Stream must not be null");
+			Objects.requireNonNull(ctx, "Context must not be null");
+			return null;
+		};
+		
+		TokenRuleContext context = TokenRuleContext.empty();
+		
+		assertThrows(NullPointerException.class, () -> rule.match(null, context));
+	}
+	
+	@Test
+	void functionalInterfaceWithNullContextHandling() {
+		TokenRule rule = (stream, ctx) -> {
+			Objects.requireNonNull(stream, "Stream must not be null");
+			Objects.requireNonNull(ctx, "Context must not be null");
+			return null;
+		};
+		
+		TokenStream stream = TokenStream.createMutable(List.of(createToken()));
+		
+		assertThrows(NullPointerException.class, () -> rule.match(stream, null));
+	}
+	
+	@Test
+	void functionalInterfaceWithEmptyStream() {
+		TokenRule rule = new TokenRule() {
+			@Override
+			public @Nullable TokenRuleMatch match(@NotNull TokenStream stream, @NotNull TokenRuleContext ctx) {
+				if (!stream.hasMoreTokens()) {
+					return null;
+				}
+				int startIndex = stream.getCurrentIndex();
+				Token token = stream.getCurrentToken();
+				return new TokenRuleMatch(startIndex, stream.advance(), List.of(token), this);
+			}
+		};
+		
+		TokenStream stream = TokenStream.createMutable(List.of());
+		TokenRuleContext context = TokenRuleContext.empty();
+		
+		TokenRuleMatch result = rule.match(stream, context);
+		
+		assertNull(result);
+	}
+	
+	@Test
+	void functionalInterfaceWithComplexLogic() {
+		TokenRule complexRule = new TokenRule() {
+			@Override
+			public @Nullable TokenRuleMatch match(@NotNull TokenStream stream, @NotNull TokenRuleContext ctx) {
+				if (!stream.hasMoreTokens()) {
+					return null;
+				}
+				
+				int startIndex = stream.getCurrentIndex();
+				Token token = stream.getCurrentToken();
+				String value = token.value();
+				
+				try {
+					int num = Integer.parseInt(value);
+					if (num > 100) {
+						return new TokenRuleMatch(startIndex, stream.advance(), List.of(token), this);
+					}
+				} catch (NumberFormatException _) {}
+				return null;
+			}
+		};
+		
+		TokenStream stream1 = TokenStream.createMutable(List.of(SimpleToken.createUnpositioned("150")));
+		TokenStream stream2 = TokenStream.createMutable(List.of(SimpleToken.createUnpositioned("50")));
+		TokenRuleContext context = TokenRuleContext.empty();
+		
+		assertNotNull(complexRule.match(stream1, context));
+		assertNull(complexRule.match(stream2, context));
+	}
+	
+	@Test
+	void functionalInterfaceWithStreamAdvancement() {
+		TokenRule rule = new TokenRule() {
+			@Override
+			public @Nullable TokenRuleMatch match(@NotNull TokenStream stream, @NotNull TokenRuleContext ctx) {
+				if (!stream.hasMoreTokens()) {
+					return null;
+				}
+				int startIndex = stream.getCurrentIndex();
+				Token token = stream.getCurrentToken();
+				if ("advance".equals(token.value())) {
+					return new TokenRuleMatch(startIndex, stream.advance(), List.of(token), this);
+				}
+				return null;
+			}
+		};
+		
+		TokenStream stream = TokenStream.createMutable(List.of(
+			SimpleToken.createUnpositioned("advance"),
+			SimpleToken.createUnpositioned("remaining")
+		));
+		TokenRuleContext context = TokenRuleContext.empty();
+		
+		TokenRuleMatch result = rule.match(stream, context);
+		
+		assertNotNull(result);
+		assertEquals("advance", result.matchedTokens().getFirst().value());
+		assertEquals(1, stream.getCurrentIndex());
+		assertTrue(stream.hasMoreTokens());
+		assertEquals("remaining", stream.getCurrentToken().value());
+	}
+	
+	@Test
+	void functionalInterfaceWithMultiTokenMatch() {
+		TokenRule multiTokenRule = new TokenRule() {
+			@Override
+			public @Nullable TokenRuleMatch match(@NotNull TokenStream stream, @NotNull TokenRuleContext ctx) {
+				if (!stream.hasMoreTokens()) {
+					return null;
+				}
+				
+				int startIndex = stream.getCurrentIndex();
+				Token firstToken = stream.getCurrentToken();
+				
+				if (!"multi".equals(firstToken.value())) {
+					return null;
+				}
+				
+				List<Token> matchedTokens = List.of(firstToken);
+				return new TokenRuleMatch(startIndex, stream.advance(), matchedTokens, this);
+			}
+		};
+		
+		TokenStream stream = TokenStream.createMutable(List.of(
+			SimpleToken.createUnpositioned("multi"),
+			SimpleToken.createUnpositioned("token")
+		));
+		TokenRuleContext context = TokenRuleContext.empty();
+		
+		TokenRuleMatch result = multiTokenRule.match(stream, context);
+		
+		assertNotNull(result);
+		assertEquals(1, result.matchedTokens().size());
+		assertEquals("multi", result.matchedTokens().getFirst().value());
+	}
+	
+	@Test
+	void functionalInterfaceWithContextUsage() {
+		TokenRule contextRule = new TokenRule() {
+			@Override
+			public @Nullable TokenRuleMatch match(@NotNull TokenStream stream, @NotNull TokenRuleContext ctx) {
+				if (!stream.hasMoreTokens()) {
+					return null;
+				}
+				
+				int startIndex = stream.getCurrentIndex();
+				Token token = stream.getCurrentToken();
+				
+				if ("context".equals(token.value())) {
+					return new TokenRuleMatch(startIndex, stream.advance(), List.of(token), this);
+				}
+				return null;
+			}
+		};
+		
+		TokenStream stream = TokenStream.createMutable(List.of(SimpleToken.createUnpositioned("context")));
+		TokenRuleContext context = TokenRuleContext.empty();
+		
+		TokenRuleMatch result = contextRule.match(stream, context);
+		
+		assertNotNull(result);
+		assertEquals("context", result.matchedTokens().getFirst().value());
+	}
+	
+	@Test
+	void functionalInterfaceWithExceptionHandling() {
+		TokenRule exceptionRule = new TokenRule() {
+			@Override
+			public @Nullable TokenRuleMatch match(@NotNull TokenStream stream, @NotNull TokenRuleContext ctx) {
+				if (!stream.hasMoreTokens()) {
+					return null;
+				}
+				
+				int startIndex = stream.getCurrentIndex();
+				Token token = stream.getCurrentToken();
+				
+				try {
+					if ("exception".equals(token.value())) {
+						throw new RuntimeException("Test exception");
+					}
+					return new TokenRuleMatch(startIndex, stream.advance(), List.of(token), this);
+				} catch (RuntimeException e) {
+					return null;
+				}
+			}
+		};
+		
+		TokenStream stream1 = TokenStream.createMutable(List.of(SimpleToken.createUnpositioned("exception")));
+		TokenStream stream2 = TokenStream.createMutable(List.of(SimpleToken.createUnpositioned("normal")));
+		TokenRuleContext context = TokenRuleContext.empty();
+		
+		assertNull(exceptionRule.match(stream1, context));
+		assertNotNull(exceptionRule.match(stream2, context));
+	}
+	
+	@Test
+	void functionalInterfaceWithStateTracking() {
+		final boolean[] matched = {false};
+		TokenRule stateRule = new TokenRule() {
+			@Override
+			public @Nullable TokenRuleMatch match(@NotNull TokenStream stream, @NotNull TokenRuleContext ctx) {
+				if (!stream.hasMoreTokens()) {
+					return null;
+				}
+				
+				int startIndex = stream.getCurrentIndex();
+				Token token = stream.getCurrentToken();
+				
+				if ("state".equals(token.value())) {
+					matched[0] = true;
+					return new TokenRuleMatch(startIndex, stream.advance(), List.of(token), this);
+				}
+				return null;
+			}
+		};
+		
+		TokenStream stream = TokenStream.createMutable(List.of(SimpleToken.createUnpositioned("state")));
+		TokenRuleContext context = TokenRuleContext.empty();
+		
+		assertFalse(matched[0]);
+		TokenRuleMatch result = stateRule.match(stream, context);
+		
+		assertNotNull(result);
+		assertTrue(matched[0]);
+	}
+	
+	@Test
+	void chainingDefaultMethods() {
+		TokenRule baseRule = createRule();
+		
+		TokenRule chainedRule = baseRule.optional().atLeast(2).group();
+		
+		TokenGroupRule group = assertInstanceOf(TokenGroupRule.class, chainedRule);
+		RepeatedTokenRule repeated = assertInstanceOf(RepeatedTokenRule.class, group.tokenRule());
+		OptionalTokenRule optional = assertInstanceOf(OptionalTokenRule.class, repeated.tokenRule());
+		assertEquals(baseRule, optional.tokenRule());
+	}
+	
+	@Test
 	void optional() {
 		TokenRule baseRule = createRule();
 		
@@ -234,43 +507,5 @@ class TokenRuleTest {
 		
 		LookbehindTokenRule lookbehind = assertInstanceOf(LookbehindTokenRule.class, negativeLookbehindRule);
 		assertEquals(baseRule, lookbehind.tokenRule());
-	}
-	
-	@Test
-	void functionalInterfaceUsage() {
-		TokenRule lambdaRule = new TokenRule() {
-			@Override
-			public @Nullable TokenRuleMatch match(@NotNull TokenStream stream, @NotNull TokenRuleContext ctx) {
-				if (!stream.hasMoreTokens()) {
-					return null;
-				}
-				int startIndex = stream.getCurrentIndex();
-				Token token = stream.getCurrentToken();
-				if ("lambda".equals(token.value())) {
-					return new TokenRuleMatch(startIndex, stream.advance(), List.of(token), this);
-				}
-				return null;
-			}
-		};
-		
-		TokenStream stream = TokenStream.createMutable(List.of(createToken()));
-		TokenRuleContext context = TokenRuleContext.empty();
-		
-		TokenRuleMatch result = lambdaRule.match(stream, context);
-		
-		assertNotNull(result);
-		assertEquals("lambda", result.matchedTokens().getFirst().value());
-	}
-	
-	@Test
-	void chainingDefaultMethods() {
-		TokenRule baseRule = createRule();
-		
-		TokenRule chainedRule = baseRule.optional().atLeast(2).group();
-		
-		TokenGroupRule group = assertInstanceOf(TokenGroupRule.class, chainedRule);
-		RepeatedTokenRule repeated = assertInstanceOf(RepeatedTokenRule.class, group.tokenRule());
-		OptionalTokenRule optional = assertInstanceOf(OptionalTokenRule.class, repeated.tokenRule());
-		assertEquals(baseRule, optional.tokenRule());
 	}
 }

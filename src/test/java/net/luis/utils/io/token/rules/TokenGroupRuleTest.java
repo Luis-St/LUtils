@@ -154,6 +154,115 @@ class TokenGroupRuleTest {
 	}
 	
 	@Test
+	void matchWithComplexInnerRule() {
+		TokenRule innerRule = TokenRules.sequence(
+			createRule("first"),
+			createRule("second"),
+			createRule("third")
+		);
+		TokenGroupRule rule = new TokenGroupRule(innerRule);
+		
+		TokenGroup group = new TokenGroup(List.of(
+			createToken("first"),
+			createToken("second"),
+			createToken("third")
+		));
+		TokenStream stream = TokenStream.createMutable(List.of(group));
+		TokenRuleContext context = TokenRuleContext.empty();
+		
+		TokenRuleMatch result = rule.match(stream, context);
+		
+		assertNotNull(result);
+		assertEquals(group, result.matchedTokens().getFirst());
+	}
+	
+	@Test
+	void matchWithOptionalInnerRule() {
+		TokenRule innerRule = TokenRules.optional(createRule("optional"));
+		TokenGroupRule rule = new TokenGroupRule(innerRule);
+		
+		TokenGroup group = new TokenGroup(List.of(
+			createToken("different"), createToken("different")
+		));
+		TokenStream stream = TokenStream.createMutable(List.of(group));
+		TokenRuleContext context = TokenRuleContext.empty();
+		
+		TokenRuleMatch result = rule.match(stream, context);
+		
+		assertNotNull(result);
+		assertEquals(group, result.matchedTokens().getFirst());
+	}
+	
+	@Test
+	void matchWithStreamAdvancement() {
+		TokenRule innerRule = createRule("match");
+		TokenGroupRule rule = new TokenGroupRule(innerRule);
+		
+		TokenGroup group = new TokenGroup(List.of(
+			createToken("match"), createToken("match")
+		));
+		TokenStream stream = TokenStream.createMutable(List.of(group, createToken("remaining")));
+		TokenRuleContext context = TokenRuleContext.empty();
+		
+		TokenRuleMatch result = rule.match(stream, context);
+		
+		assertNotNull(result);
+		assertEquals(group, result.matchedTokens().getFirst());
+		assertEquals(1, stream.getCurrentIndex());
+		assertTrue(stream.hasMoreTokens());
+		assertEquals("remaining", stream.getCurrentToken().value());
+	}
+	
+	@Test
+	void matchWithStreamNoAdvancementOnFailure() {
+		TokenRule innerRule = createRule("expected");
+		TokenGroupRule rule = new TokenGroupRule(innerRule);
+		
+		TokenGroup group = new TokenGroup(List.of(
+			createToken("actual"), createToken("actual")
+		));
+		TokenStream stream = TokenStream.createMutable(List.of(group, createToken("remaining")));
+		TokenRuleContext context = TokenRuleContext.empty();
+		
+		TokenRuleMatch result = rule.match(stream, context);
+		
+		assertNull(result);
+		assertEquals(0, stream.getCurrentIndex());
+		assertEquals(group, stream.getCurrentToken());
+	}
+	
+	@Test
+	void matchWithAlwaysMatchInnerRule() {
+		TokenGroupRule rule = new TokenGroupRule(TokenRules.alwaysMatch());
+		
+		TokenGroup group = new TokenGroup(List.of(
+			createToken("any"), createToken("any")
+		));
+		TokenStream stream = TokenStream.createMutable(List.of(group));
+		TokenRuleContext context = TokenRuleContext.empty();
+		
+		TokenRuleMatch result = rule.match(stream, context);
+		
+		assertNotNull(result);
+		assertEquals(group, result.matchedTokens().getFirst());
+	}
+	
+	@Test
+	void matchWithNeverMatchInnerRule() {
+		TokenGroupRule rule = new TokenGroupRule(TokenRules.neverMatch());
+		
+		TokenGroup group = new TokenGroup(List.of(
+			createToken("any"), createToken("any")
+		));
+		TokenStream stream = TokenStream.createMutable(List.of(group));
+		TokenRuleContext context = TokenRuleContext.empty();
+		
+		TokenRuleMatch result = rule.match(stream, context);
+		
+		assertNull(result);
+	}
+	
+	@Test
 	void matchWithNestedGroups() {
 		TokenGroup innerGroup = new TokenGroup(List.of(
 			SimpleToken.createUnpositioned("inner1"),
@@ -200,6 +309,47 @@ class TokenGroupRuleTest {
 		
 		assertNotNull(result);
 		assertEquals(1, result.matchedTokens().size());
+	}
+	
+	@Test
+	void matchWithMultipleGroupsInStream() {
+		TokenRule innerRule = createRule("first");
+		TokenGroupRule rule = new TokenGroupRule(innerRule);
+		
+		TokenGroup group1 = new TokenGroup(List.of(
+			createToken("first"), createToken("first")
+		));
+		TokenGroup group2 = new TokenGroup(List.of(
+			createToken("second"), createToken("second")
+		));
+		TokenStream stream = TokenStream.createMutable(List.of(group1, group2));
+		TokenRuleContext context = TokenRuleContext.empty();
+		
+		TokenRuleMatch result = rule.match(stream, context);
+		
+		assertNotNull(result);
+		assertEquals(group1, result.matchedTokens().getFirst());
+		assertEquals(1, stream.getCurrentIndex());
+		assertEquals(group2, stream.getCurrentToken());
+	}
+	
+	@Test
+	void matchWithRepeatedInnerRule() {
+		TokenRule innerRule = TokenRules.atLeast(createRule("repeat"), 2);
+		TokenGroupRule rule = new TokenGroupRule(innerRule);
+		
+		TokenGroup group = new TokenGroup(List.of(
+			createToken("repeat"),
+			createToken("repeat"),
+			createToken("repeat")
+		));
+		TokenStream stream = TokenStream.createMutable(List.of(group));
+		TokenRuleContext context = TokenRuleContext.empty();
+		
+		TokenRuleMatch result = rule.match(stream, context);
+		
+		assertNotNull(result);
+		assertEquals(group, result.matchedTokens().getFirst());
 	}
 	
 	@Test
