@@ -90,7 +90,7 @@ class CaptureTokenRuleTest {
 		assertEquals(key, rule.key());
 		assertEquals(tokenRule, rule.tokenRule());
 	}
-
+	
 	@Test
 	void matchWithNullStream() {
 		CaptureTokenRule rule = new CaptureTokenRule("key", createRule("test"));
@@ -208,6 +208,64 @@ class CaptureTokenRuleTest {
 		assertEquals(2, capturedTokens.size());
 		assertEquals("first", capturedTokens.get(0).value());
 		assertEquals("second", capturedTokens.get(1).value());
+	}
+	
+	@Test
+	void matchWithPartialTokenSequence() {
+		String key = "partial";
+		TokenRule innerRule = TokenRules.sequence(createRule("first"), createRule("second"));
+		CaptureTokenRule rule = new CaptureTokenRule(key, innerRule);
+		
+		TokenStream stream = TokenStream.createMutable(List.of(createToken("first"), createToken("wrong")));
+		TokenRuleContext context = TokenRuleContext.empty();
+		
+		TokenRuleMatch result = rule.match(stream, context);
+		
+		assertNull(result);
+		assertNull(context.getCapturedTokens(key));
+		assertEquals(0, stream.getCurrentIndex());
+	}
+	
+	@Test
+	void matchWithOptionalRule() {
+		String key = "optional";
+		TokenRule innerRule = TokenRules.optional(createRule("test"));
+		CaptureTokenRule rule = new CaptureTokenRule(key, innerRule);
+		
+		TokenStream stream = TokenStream.createMutable(List.of(createToken("different")));
+		TokenRuleContext context = TokenRuleContext.empty();
+		
+		TokenRuleMatch result = rule.match(stream, context);
+		
+		assertNotNull(result);
+		assertTrue(result.matchedTokens().isEmpty());
+		
+		List<Token> capturedTokens = context.getCapturedTokens(key);
+		assertNotNull(capturedTokens);
+		assertTrue(capturedTokens.isEmpty());
+		assertEquals(0, stream.getCurrentIndex());
+	}
+	
+	@Test
+	void matchWithStreamAdvancement() {
+		String key = "advance";
+		TokenRule innerRule = createRule("match");
+		CaptureTokenRule rule = new CaptureTokenRule(key, innerRule);
+		
+		TokenStream stream = TokenStream.createMutable(List.of(createToken("match"), createToken("remaining")));
+		TokenRuleContext context = TokenRuleContext.empty();
+		
+		TokenRuleMatch result = rule.match(stream, context);
+		
+		assertNotNull(result);
+		assertEquals(1, stream.getCurrentIndex());
+		assertTrue(stream.hasMoreTokens());
+		assertEquals("remaining", stream.getCurrentToken().value());
+		
+		List<Token> capturedTokens = context.getCapturedTokens(key);
+		assertNotNull(capturedTokens);
+		assertEquals(1, capturedTokens.size());
+		assertEquals("match", capturedTokens.getFirst().value());
 	}
 	
 	@Test

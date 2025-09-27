@@ -155,6 +155,45 @@ class ReferenceTokenRuleTest {
 	}
 	
 	@Test
+	void matchWithRuleReferenceFailsToMatch() {
+		String key = "failingRule";
+		TokenRule referencedRule = createRule("expected");
+		ReferenceTokenRule rule = new ReferenceTokenRule(key, ReferenceType.RULE);
+		
+		TokenRuleContext context = TokenRuleContext.empty();
+		context.defineRule(key, referencedRule);
+		
+		TokenStream stream = TokenStream.createMutable(List.of(createToken("actual")));
+		
+		TokenRuleMatch result = rule.match(stream, context);
+		
+		assertNull(result);
+		assertEquals(0, stream.getCurrentIndex());
+	}
+	
+	@Test
+	void matchWithRuleReferenceMultipleTokens() {
+		String key = "multiRule";
+		TokenRule referencedRule = TokenRules.sequence(createRule("first"), createRule("second"));
+		ReferenceTokenRule rule = new ReferenceTokenRule(key, ReferenceType.RULE);
+		
+		TokenRuleContext context = TokenRuleContext.empty();
+		context.defineRule(key, referencedRule);
+		
+		TokenStream stream = TokenStream.createMutable(List.of(createToken("first"), createToken("second"), createToken("third")));
+		
+		TokenRuleMatch result = rule.match(stream, context);
+		
+		assertNotNull(result);
+		assertEquals(2, result.matchedTokens().size());
+		assertEquals("first", result.matchedTokens().get(0).value());
+		assertEquals("second", result.matchedTokens().get(1).value());
+		assertEquals(2, stream.getCurrentIndex());
+		assertTrue(stream.hasMoreTokens());
+		assertEquals("third", stream.getCurrentToken().value());
+	}
+	
+	@Test
 	void matchWithTokensReferenceMismatch() {
 		String key = "testTokens";
 		List<Token> referencedTokens = List.of(createToken("expected"));
@@ -198,6 +237,37 @@ class ReferenceTokenRuleTest {
 		
 		TokenRuleContext context = TokenRuleContext.empty();
 		TokenStream stream = TokenStream.createMutable(List.of(createToken("test")));
+		
+		TokenRuleMatch result = rule.match(stream, context);
+		
+		assertNull(result);
+		assertEquals(0, stream.getCurrentIndex());
+	}
+	
+	@Test
+	void matchWithEmptyCapturedTokens() {
+		String key = "emptyTokens";
+		ReferenceTokenRule rule = new ReferenceTokenRule(key, ReferenceType.TOKENS);
+		
+		TokenRuleContext context = TokenRuleContext.empty();
+		context.captureTokens(key, List.of());
+		
+		TokenStream stream = TokenStream.createMutable(List.of(createToken("test")));
+		
+		IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> rule.match(stream, context));
+		assertEquals("Token rule list must not be empty", exception.getMessage());
+	}
+	
+	@Test
+	void matchWithTokensReferencePartialMatch() {
+		String key = "partialTokens";
+		List<Token> referencedTokens = List.of(createToken("first"), createToken("second"));
+		ReferenceTokenRule rule = new ReferenceTokenRule(key, ReferenceType.TOKENS);
+		
+		TokenRuleContext context = TokenRuleContext.empty();
+		context.captureTokens(key, referencedTokens);
+		
+		TokenStream stream = TokenStream.createMutable(List.of(createToken("first"), createToken("wrong")));
 		
 		TokenRuleMatch result = rule.match(stream, context);
 		
@@ -265,6 +335,40 @@ class ReferenceTokenRuleTest {
 		
 		TokenRuleContext context = TokenRuleContext.empty();
 		TokenStream stream = TokenStream.createMutable(List.of(createToken("test")));
+		
+		TokenRuleMatch result = rule.match(stream, context);
+		
+		assertNull(result);
+		assertEquals(0, stream.getCurrentIndex());
+	}
+	
+	@Test
+	void matchWithDynamicReferenceRuleFailsToMatch() {
+		String key = "dynamicKey";
+		TokenRule referencedRule = createRule("expected");
+		ReferenceTokenRule rule = new ReferenceTokenRule(key, ReferenceType.DYNAMIC);
+		
+		TokenRuleContext context = TokenRuleContext.empty();
+		context.defineRule(key, referencedRule);
+		
+		TokenStream stream = TokenStream.createMutable(List.of(createToken("actual")));
+		
+		TokenRuleMatch result = rule.match(stream, context);
+		
+		assertNull(result);
+		assertEquals(0, stream.getCurrentIndex());
+	}
+	
+	@Test
+	void matchWithDynamicReferenceTokensFailToMatch() {
+		String key = "dynamicKey";
+		List<Token> referencedTokens = List.of(createToken("expected"));
+		ReferenceTokenRule rule = new ReferenceTokenRule(key, ReferenceType.DYNAMIC);
+		
+		TokenRuleContext context = TokenRuleContext.empty();
+		context.captureTokens(key, referencedTokens);
+		
+		TokenStream stream = TokenStream.createMutable(List.of(createToken("actual")));
 		
 		TokenRuleMatch result = rule.match(stream, context);
 		
