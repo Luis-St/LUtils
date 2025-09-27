@@ -102,7 +102,7 @@ public record RepeatedTokenRule(
 		
 		int occurrences = 0;
 		List<Token> matchedTokens = Lists.newArrayList();
-		while (workingStream.hasMoreTokens() && occurrences <= this.maxOccurrences) {
+		while (workingStream.hasMoreTokens() && occurrences < this.maxOccurrences) {
 			TokenRuleMatch match = this.tokenRule.match(workingStream, ctx);
 			
 			if (match == null) {
