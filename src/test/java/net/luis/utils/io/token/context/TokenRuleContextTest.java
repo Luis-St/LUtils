@@ -18,9 +18,7 @@
 
 package net.luis.utils.io.token.context;
 
-import net.luis.utils.io.token.rules.AlwaysMatchTokenRule;
-import net.luis.utils.io.token.rules.NeverMatchTokenRule;
-import net.luis.utils.io.token.rules.TokenRule;
+import net.luis.utils.io.token.rules.*;
 import net.luis.utils.io.token.tokens.SimpleToken;
 import net.luis.utils.io.token.tokens.Token;
 import org.jetbrains.annotations.NotNull;

@@ -299,7 +299,7 @@ class TokenRuleTest {
 	
 	@Test
 	void functionalInterfaceWithStateTracking() {
-		final boolean[] matched = {false};
+		final boolean[] matched = { false };
 		TokenRule stateRule = new TokenRule() {
 			@Override
 			public @Nullable TokenRuleMatch match(@NotNull TokenStream stream, @NotNull TokenRuleContext ctx) {

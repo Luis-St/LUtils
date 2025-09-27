@@ -106,7 +106,7 @@ public class TokenReader {
 			}
 			
 			if (escape) {
-				tokens.add(new EscapedToken( "\\" + c, wordStart.toTokenPosition()));
+				tokens.add(new EscapedToken("\\" + c, wordStart.toTokenPosition()));
 				escape = false;
 				current.increment();
 				wordStart.copyFrom(current);

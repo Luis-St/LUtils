@@ -96,7 +96,7 @@ class SimpleTokenTest {
 	@Test
 	void positionReturnsCorrectValue() {
 		TokenPosition position = new TokenPosition(5, 10, 25);
-		SimpleToken token = new SimpleToken( "123", position);
+		SimpleToken token = new SimpleToken("123", position);
 		
 		assertEquals(position, token.position());
 		assertEquals(5, token.position().line());
@@ -215,7 +215,7 @@ class SimpleTokenTest {
 	void equalTokensHaveSameHashCode() {
 		TokenPosition position = new TokenPosition(0, 0, 0);
 		
-		SimpleToken token1 = new SimpleToken( "123", position);
+		SimpleToken token1 = new SimpleToken("123", position);
 		SimpleToken token2 = new SimpleToken("123", position);
 		
 		assertEquals(token1.hashCode(), token2.hashCode());
