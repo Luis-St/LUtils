@@ -19,7 +19,6 @@
 package net.luis.utils.collection;
 
 import com.google.common.collect.Lists;
-import net.luis.utils.annotation.Ignored;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -195,7 +194,7 @@ public class SortedList<E> extends AbstractList<E> {
 	 * @param comparator The ignored comparator
 	 */
 	@Override
-	public void sort(@Ignored.Always @Nullable Comparator<? super E> comparator) {
+	public void sort(@Nullable Comparator<? super E> comparator) {
 		super.sort(this.comparator);
 	}
 }
