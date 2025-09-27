@@ -41,6 +41,10 @@ dependencies {
 	testRuntimeOnly("org.junit.platform:junit-platform-launcher:${junitPlatformLauncher}")
 }
 
+tasks.compileJava {
+	dependsOn(tasks.named("updateLicenses"))
+}
+
 licenseManager {
 	header = "header.txt"
 	lineEnding = LineEnding.LF
