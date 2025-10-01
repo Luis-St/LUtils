@@ -67,6 +67,7 @@ module net.luis.utils {
 	exports net.luis.utils.io.token.actions.transformers;
 	exports net.luis.utils.io.token.context;
 	exports net.luis.utils.io.token.definition;
+	exports net.luis.utils.io.token.grammar;
 	exports net.luis.utils.io.token.rules;
 	exports net.luis.utils.io.token.rules.assertions;
 	exports net.luis.utils.io.token.rules.assertions.anchors;
