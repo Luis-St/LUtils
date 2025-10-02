@@ -57,6 +57,7 @@ public final class FileUtils {
 	 * split("./") -> ("./", "")
 	 * split("foo") -> ("foo", "")
 	 * split("/foo/") -> ("/foo"/, "")
+	 * split("foo.json") -> ("", "foo.json")
 	 * split("/foo.json") -> ("/", "foo.json")
 	 * split("/bar/foo.json") -> ("/bar"/, "foo.json")
 	 * }</pre>
@@ -70,8 +71,10 @@ public final class FileUtils {
 		int dot = str.lastIndexOf(".");
 		if (dash == -1 && dot == -1) {
 			return Pair.of(str, "");
-		} else if (dash == -1 || dot == -1) {
+		} else if (dot == -1 || ".".equals(str)) {
 			return Pair.of(str, "");
+		} else if (dash == -1) {
+			return Pair.of("", str);
 		} else {
 			return Pair.of(str.substring(0, dash + 1), str.substring(dash + 1));
 		}

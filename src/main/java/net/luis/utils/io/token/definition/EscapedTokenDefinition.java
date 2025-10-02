@@ -23,7 +23,9 @@ import org.jetbrains.annotations.NotNull;
 /**
  * Token definition for escaped characters.<br>
  * This token definition matches a string that starts with a backslash (\) and is followed by the token character.<br>
- * Example:
+ * <p>
+ *     Examples:
+ * </p>
  * <pre>{@code
  * \<token> // Generic
  * \t // Tab

@@ -18,13 +18,13 @@
 
 package net.luis.utils.exception;
 
-import net.luis.utils.util.LazyInitialization;
+import net.luis.utils.util.Lazy;
 import org.jetbrains.annotations.Nullable;
 
 /**
  * Thrown when an initialization is attempted on an object that has already been initialized.<br>
  *
- * @see LazyInitialization
+ * @see Lazy
  *
  * @author Luis-St
  */

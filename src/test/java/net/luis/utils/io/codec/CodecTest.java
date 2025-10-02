@@ -103,7 +103,7 @@ class CodecTest {
 		JsonTypeProvider provider = JsonTypeProvider.INSTANCE;
 		Codec<Integer[]> arrayCodec = INTEGER.array(Integer.class);
 		
-		Integer[] originalArray = new Integer[]{1, 2, 3};
+		Integer[] originalArray = new Integer[] { 1, 2, 3 };
 		JsonElement encoded = arrayCodec.encode(provider, originalArray);
 		assertInstanceOf(JsonArray.class, encoded);
 		assertEquals(3, ((JsonArray) encoded).size());
@@ -112,12 +112,12 @@ class CodecTest {
 		assertArrayEquals(originalArray, decoded);
 		
 		Codec<Integer[]> limitedArrayCodec = INTEGER.array(Integer.class, 2);
-		assertTrue(limitedArrayCodec.encodeStart(provider, provider.empty(), new Integer[]{1, 2}).isSuccess());
-		assertTrue(limitedArrayCodec.encodeStart(provider, provider.empty(), new Integer[]{1, 2, 3}).isError());
+		assertTrue(limitedArrayCodec.encodeStart(provider, provider.empty(), new Integer[] { 1, 2 }).isSuccess());
+		assertTrue(limitedArrayCodec.encodeStart(provider, provider.empty(), new Integer[] { 1, 2, 3 }).isError());
 		
 		Codec<String[]> nonEmptyArrayCodec = STRING.noneEmptyArray(String.class);
-		assertTrue(nonEmptyArrayCodec.encodeStart(provider, provider.empty(), new String[]{"test"}).isSuccess());
-		assertTrue(nonEmptyArrayCodec.encodeStart(provider, provider.empty(), new String[]{}).isError());
+		assertTrue(nonEmptyArrayCodec.encodeStart(provider, provider.empty(), new String[] { "test" }).isSuccess());
+		assertTrue(nonEmptyArrayCodec.encodeStart(provider, provider.empty(), new String[] {}).isError());
 	}
 	
 	@Test
@@ -126,9 +126,9 @@ class CodecTest {
 		
 		Codec<Integer[][]> twoDArrayCodec = Codec.array(Integer[].class, INTEGER.array(Integer.class));
 		
-		Integer[][] originalArray = new Integer[][]{
-			{1, 2, 3},
-			{4, 5, 6}
+		Integer[][] originalArray = new Integer[][] {
+			{ 1, 2, 3 },
+			{ 4, 5, 6 }
 		};
 		
 		JsonElement encoded = twoDArrayCodec.encode(provider, originalArray);
@@ -136,20 +136,20 @@ class CodecTest {
 		
 		Integer[][] decoded = twoDArrayCodec.decode(provider, encoded);
 		assertEquals(2, decoded.length);
-		assertArrayEquals(new Integer[]{1, 2, 3}, decoded[0]);
-		assertArrayEquals(new Integer[]{4, 5, 6}, decoded[1]);
+		assertArrayEquals(new Integer[] { 1, 2, 3 }, decoded[0]);
+		assertArrayEquals(new Integer[] { 4, 5, 6 }, decoded[1]);
 		
 		Codec<String[][][]> threeDArrayCodec = Codec.array(String[][].class,
 			Codec.array(String[].class, STRING.array(String.class)));
 		
-		String[][][] original3D = new String[][][]{
+		String[][][] original3D = new String[][][] {
 			{
-				{"a", "b"},
-				{"c", "d"}
+				{ "a", "b" },
+				{ "c", "d" }
 			},
 			{
-				{"e", "f"},
-				{"g", "h"}
+				{ "e", "f" },
+				{ "g", "h" }
 			}
 		};
 		
@@ -158,10 +158,10 @@ class CodecTest {
 		
 		assertEquals(2, decoded3D.length);
 		assertEquals(2, decoded3D[0].length);
-		assertArrayEquals(new String[]{"a", "b"}, decoded3D[0][0]);
-		assertArrayEquals(new String[]{"c", "d"}, decoded3D[0][1]);
-		assertArrayEquals(new String[]{"e", "f"}, decoded3D[1][0]);
-		assertArrayEquals(new String[]{"g", "h"}, decoded3D[1][1]);
+		assertArrayEquals(new String[] { "a", "b" }, decoded3D[0][0]);
+		assertArrayEquals(new String[] { "c", "d" }, decoded3D[0][1]);
+		assertArrayEquals(new String[] { "e", "f" }, decoded3D[1][0]);
+		assertArrayEquals(new String[] { "g", "h" }, decoded3D[1][1]);
 	}
 	
 	@Test
@@ -170,27 +170,27 @@ class CodecTest {
 		
 		Codec<Integer[]> constrainedArrayCodec = INTEGER.array(Integer.class, 2, 4);
 		
-		Integer[] validArray = new Integer[]{1, 2, 3};
+		Integer[] validArray = new Integer[] { 1, 2, 3 };
 		assertTrue(constrainedArrayCodec.encodeStart(provider, provider.empty(), validArray).isSuccess());
 		
-		Integer[] tooSmall = new Integer[]{1};
+		Integer[] tooSmall = new Integer[] { 1 };
 		assertTrue(constrainedArrayCodec.encodeStart(provider, provider.empty(), tooSmall).isError());
 		
-		Integer[] tooLarge = new Integer[]{1, 2, 3, 4, 5};
+		Integer[] tooLarge = new Integer[] { 1, 2, 3, 4, 5 };
 		assertTrue(constrainedArrayCodec.encodeStart(provider, provider.empty(), tooLarge).isError());
 		
 		Codec<Integer[][]> constrainedNestedCodec = Codec.array(Integer[].class,
 			INTEGER.array(Integer.class, 2, 3), 1, 2);
 		
-		Integer[][] validNested = new Integer[][]{
-			{1, 2, 3},
-			{4, 5}
+		Integer[][] validNested = new Integer[][] {
+			{ 1, 2, 3 },
+			{ 4, 5 }
 		};
 		assertTrue(constrainedNestedCodec.encodeStart(provider, provider.empty(), validNested).isSuccess());
 		
-		Integer[][] invalidNested = new Integer[][]{
-			{1},
-			{2, 3}
+		Integer[][] invalidNested = new Integer[][] {
+			{ 1 },
+			{ 2, 3 }
 		};
 		assertTrue(constrainedNestedCodec.encodeStart(provider, provider.empty(), invalidNested).isError());
 	}

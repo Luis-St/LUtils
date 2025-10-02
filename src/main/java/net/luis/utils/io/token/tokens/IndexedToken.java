@@ -19,10 +19,11 @@
 package net.luis.utils.io.token.tokens;
 
 import net.luis.utils.io.token.TokenPosition;
-import net.luis.utils.io.token.definition.TokenDefinition;
+import net.luis.utils.io.token.type.TokenType;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Objects;
+import java.util.Set;
 
 /**
  * Token implementation that wraps another token with index information.<br>
@@ -66,23 +67,18 @@ public record IndexedToken(
 	}
 	
 	@Override
-	public @NotNull TokenDefinition definition() {
-		return this.token.definition();
-	}
-	
-	@Override
 	public @NotNull String value() {
 		return this.token.value();
 	}
 	
 	@Override
-	public @NotNull TokenPosition startPosition() {
-		return this.token.startPosition();
+	public @NotNull TokenPosition position() {
+		return this.token.position();
 	}
 	
 	@Override
-	public @NotNull TokenPosition endPosition() {
-		return this.token.endPosition();
+	public @NotNull Set<TokenType> types() {
+		return this.token.types();
 	}
 	
 	/**
@@ -102,5 +98,13 @@ public record IndexedToken(
 	 */
 	public boolean hasIndex(int expectedIndex) {
 		return this.index == expectedIndex;
+	}
+	
+	@Override
+	public @NotNull Token index(int index) {
+		if (this.index == index) {
+			return this; // Same index, return this
+		}
+		return new IndexedToken(this.token, index); // Different index, create new
 	}
 }

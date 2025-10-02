@@ -40,7 +40,7 @@ class LoggerConfigurationTest {
 	
 	@AfterAll
 	static void cleanUp() throws Exception {
-		FileUtils.deleteRecursively(Path.of("test-logs"));
+		FileUtils.deleteRecursively(Path.of("logs/test-logs"));
 	}
 	
 	@Test
@@ -473,7 +473,7 @@ class LoggerConfigurationTest {
 			.setStatusLevel(Level.DEBUG)
 			.enableLogging(LoggingType.CONSOLE)
 			.enableLogging(LoggingType.FILE)
-			.setRootDirectory("./test-logs/")
+			.setRootDirectory("./logs/test-logs/")
 			.setFileSize("10MB")
 			.setArchiveType(".zip")
 			.setCompressionLevel(9)

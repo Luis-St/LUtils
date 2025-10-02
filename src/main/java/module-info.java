@@ -60,13 +60,27 @@ module net.luis.utils {
 	exports net.luis.utils.io.data.xml.exception;
 	
 	exports net.luis.utils.io.token;
+	exports net.luis.utils.io.token.actions;
+	exports net.luis.utils.io.token.actions.core;
+	exports net.luis.utils.io.token.actions.enhancers;
+	exports net.luis.utils.io.token.actions.filters;
+	exports net.luis.utils.io.token.actions.transformers;
+	exports net.luis.utils.io.token.context;
 	exports net.luis.utils.io.token.definition;
-	exports net.luis.utils.io.token.rule;
-	exports net.luis.utils.io.token.rule.actions;
-	exports net.luis.utils.io.token.rule.rules;
+	exports net.luis.utils.io.token.grammar;
+	exports net.luis.utils.io.token.rules;
+	exports net.luis.utils.io.token.rules.assertions;
+	exports net.luis.utils.io.token.rules.assertions.anchors;
+	exports net.luis.utils.io.token.rules.combinators;
+	exports net.luis.utils.io.token.rules.matchers;
+	exports net.luis.utils.io.token.rules.quantifiers;
+	exports net.luis.utils.io.token.stream;
 	exports net.luis.utils.io.token.tokens;
+	exports net.luis.utils.io.token.type;
+	exports net.luis.utils.io.token.type.classifier;
 	
 	exports net.luis.utils.lang;
+	exports net.luis.utils.lang.concurrent;
 	
 	exports net.luis.utils.logging;
 	exports net.luis.utils.logging.factory;

@@ -31,7 +31,7 @@ import static org.junit.jupiter.api.Assertions.*;
 class IndexedTokenTest {
 	
 	private static @NotNull Token createToken(@NotNull String value) {
-		return SimpleToken.createUnpositioned(word -> word.equals(value), value);
+		return SimpleToken.createUnpositioned(value);
 	}
 	
 	@Test
@@ -96,14 +96,6 @@ class IndexedTokenTest {
 	}
 	
 	@Test
-	void definitionDelegatesToWrappedToken() {
-		Token token = createToken("test");
-		IndexedToken indexed = new IndexedToken(token, 1);
-		
-		assertEquals(token.definition(), indexed.definition());
-	}
-	
-	@Test
 	void valueDelegatesToWrappedToken() {
 		Token token = createToken("testValue");
 		IndexedToken indexed = new IndexedToken(token, 1);
@@ -112,19 +104,11 @@ class IndexedTokenTest {
 	}
 	
 	@Test
-	void startPositionDelegatesToWrappedToken() {
+	void positionDelegatesToWrappedToken() {
 		Token token = createToken("test");
 		IndexedToken indexed = new IndexedToken(token, 1);
 		
-		assertEquals(token.startPosition(), indexed.startPosition());
-	}
-	
-	@Test
-	void endPositionDelegatesToWrappedToken() {
-		Token token = createToken("test");
-		IndexedToken indexed = new IndexedToken(token, 1);
-		
-		assertEquals(token.endPosition(), indexed.endPosition());
+		assertEquals(token.position(), indexed.position());
 	}
 	
 	@Test
@@ -226,10 +210,8 @@ class IndexedTokenTest {
 		Token originalToken = createToken("original");
 		IndexedToken indexed = new IndexedToken(originalToken, 5);
 		
-		assertEquals(originalToken.definition(), indexed.definition());
 		assertEquals(originalToken.value(), indexed.value());
-		assertEquals(originalToken.startPosition(), indexed.startPosition());
-		assertEquals(originalToken.endPosition(), indexed.endPosition());
+		assertEquals(originalToken.position(), indexed.position());
 	}
 	
 	@Test
@@ -292,6 +274,103 @@ class IndexedTokenTest {
 	}
 	
 	@Test
+	void indexBoundaryValues() {
+		Token token = createToken("test");
+		
+		IndexedToken minIndex = new IndexedToken(token, 0);
+		assertEquals(0, minIndex.index());
+		assertTrue(minIndex.isFirst());
+		
+		IndexedToken maxIndex = new IndexedToken(token, Integer.MAX_VALUE);
+		assertEquals(Integer.MAX_VALUE, maxIndex.index());
+		assertFalse(maxIndex.isFirst());
+		assertTrue(maxIndex.hasIndex(Integer.MAX_VALUE));
+	}
+	
+	@Test
+	void indexWithSameIndexReturnsSelf() {
+		Token baseToken = createToken("test");
+		IndexedToken indexed = new IndexedToken(baseToken, 5);
+		
+		Token result = indexed.index(5);
+		
+		assertSame(indexed, result);
+	}
+	
+	@Test
+	void indexWithDifferentIndexCreatesNewToken() {
+		Token baseToken = createToken("test");
+		IndexedToken indexed = new IndexedToken(baseToken, 5);
+		
+		Token result = indexed.index(10);
+		
+		assertNotSame(indexed, result);
+		assertInstanceOf(IndexedToken.class, result);
+		IndexedToken newIndexed = (IndexedToken) result;
+		assertEquals(baseToken, newIndexed.token());
+		assertEquals(10, newIndexed.index());
+	}
+	
+	@Test
+	void indexWithNegativeIndexThrowsException() {
+		Token baseToken = createToken("test");
+		IndexedToken indexed = new IndexedToken(baseToken, 5);
+		
+		assertThrows(IllegalArgumentException.class, () -> indexed.index(-1));
+		assertThrows(IllegalArgumentException.class, () -> indexed.index(-10));
+	}
+	
+	@Test
+	void indexZeroOnNonZeroIndexedToken() {
+		Token baseToken = createToken("test");
+		IndexedToken indexed = new IndexedToken(baseToken, 5);
+		
+		Token result = indexed.index(0);
+		
+		assertNotSame(indexed, result);
+		assertInstanceOf(IndexedToken.class, result);
+		IndexedToken newIndexed = (IndexedToken) result;
+		assertEquals(baseToken, newIndexed.token());
+		assertEquals(0, newIndexed.index());
+		assertTrue(newIndexed.isFirst());
+	}
+	
+	@Test
+	void indexChaining() {
+		Token baseToken = createToken("test");
+		IndexedToken indexed1 = new IndexedToken(baseToken, 1);
+		
+		Token indexed2 = indexed1.index(2);
+		Token indexed3 = indexed2.index(3);
+		Token indexed1Again = indexed3.index(1);
+		
+		assertInstanceOf(IndexedToken.class, indexed2);
+		assertInstanceOf(IndexedToken.class, indexed3);
+		assertInstanceOf(IndexedToken.class, indexed1Again);
+		
+		assertEquals(2, ((IndexedToken) indexed2).index());
+		assertEquals(3, ((IndexedToken) indexed3).index());
+		assertEquals(1, ((IndexedToken) indexed1Again).index());
+		
+		assertEquals(baseToken, ((IndexedToken) indexed2).token());
+		assertEquals(baseToken, ((IndexedToken) indexed3).token());
+		assertEquals(baseToken, ((IndexedToken) indexed1Again).token());
+	}
+	
+	@Test
+	void indexBoundaryConditions() {
+		Token baseToken = createToken("test");
+		IndexedToken indexed = new IndexedToken(baseToken, Integer.MAX_VALUE);
+		
+		Token same = indexed.index(Integer.MAX_VALUE);
+		assertSame(indexed, same);
+		
+		Token different = indexed.index(0);
+		assertNotSame(indexed, different);
+		assertEquals(0, ((IndexedToken) different).index());
+	}
+	
+	@Test
 	void toStringContainsTokenInfo() {
 		Token token = createToken("test");
 		IndexedToken indexed = new IndexedToken(token, 5);
@@ -310,19 +389,5 @@ class IndexedTokenTest {
 		IndexedToken indexed2 = new IndexedToken(token, 3);
 		
 		assertEquals(indexed1.hashCode(), indexed2.hashCode());
-	}
-	
-	@Test
-	void indexBoundaryValues() {
-		Token token = createToken("test");
-		
-		IndexedToken minIndex = new IndexedToken(token, 0);
-		assertEquals(0, minIndex.index());
-		assertTrue(minIndex.isFirst());
-		
-		IndexedToken maxIndex = new IndexedToken(token, Integer.MAX_VALUE);
-		assertEquals(Integer.MAX_VALUE, maxIndex.index());
-		assertFalse(maxIndex.isFirst());
-		assertTrue(maxIndex.hasIndex(Integer.MAX_VALUE));
 	}
 }

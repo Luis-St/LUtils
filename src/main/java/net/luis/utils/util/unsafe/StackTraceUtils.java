@@ -229,7 +229,7 @@ public final class StackTraceUtils {
 		try {
 			StackTraceElement element = getStackTrace(getDefaultOffset());
 			return Optional.ofNullable(getCallingMethod(element));
-		} catch (Exception ignored) {
+		} catch (Exception _) {
 			return Optional.empty();
 		}
 	}

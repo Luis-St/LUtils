@@ -18,7 +18,6 @@
 
 package net.luis.utils.collection.util;
 
-import net.luis.utils.annotation.Ignored;
 import net.luis.utils.exception.ModificationException;
 import org.jetbrains.annotations.*;
 
@@ -83,7 +82,7 @@ public class SimpleEntry<K, V> implements Map.Entry<K, V> {
 	 * @throws ModificationException Always
 	 */
 	@Override
-	public @Nullable V setValue(@Ignored.Always @Nullable V value) {
+	public @Nullable V setValue(@Nullable V value) {
 		throw new ModificationException("Value of the entry cannot be set to " + value + ", because the entry is muted");
 	}
 	

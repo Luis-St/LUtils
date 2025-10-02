@@ -19,12 +19,10 @@
 package net.luis.utils.io.token.tokens;
 
 import net.luis.utils.io.token.TokenPosition;
-import net.luis.utils.io.token.definition.TokenDefinition;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.UnknownNullability;
+import net.luis.utils.io.token.type.TokenType;
+import org.jetbrains.annotations.*;
 
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 
 /**
  * Token implementation that wraps another token with additional metadata.<br>
@@ -80,23 +78,18 @@ public record AnnotatedToken(
 	}
 	
 	@Override
-	public @NotNull TokenDefinition definition() {
-		return this.token.definition();
-	}
-	
-	@Override
 	public @NotNull String value() {
 		return this.token.value();
 	}
 	
 	@Override
-	public @NotNull TokenPosition startPosition() {
-		return this.token.startPosition();
+	public @NotNull TokenPosition position() {
+		return this.token.position();
 	}
 	
 	@Override
-	public @NotNull TokenPosition endPosition() {
-		return this.token.endPosition();
+	public @NotNull Set<TokenType> types() {
+		return this.token.types();
 	}
 	
 	/**
@@ -136,5 +129,10 @@ public record AnnotatedToken(
 	public boolean hasMetadata(@NotNull String key) {
 		Objects.requireNonNull(key, "Metadata key must not be null");
 		return this.metadata.containsKey(key);
+	}
+	
+	@Override
+	public @NotNull Token annotate(@Nullable Map<String, Object> annotations) {
+		return this; // Already an annotated token
 	}
 }

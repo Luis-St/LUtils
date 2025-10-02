@@ -33,7 +33,7 @@ import static org.junit.jupiter.api.Assertions.*;
 class AnnotatedTokenTest {
 	
 	private static @NotNull Token createToken(@NotNull String value) {
-		return SimpleToken.createUnpositioned(word -> word.equals(value), value);
+		return SimpleToken.createUnpositioned(value);
 	}
 	
 	@Test
@@ -152,14 +152,6 @@ class AnnotatedTokenTest {
 	}
 	
 	@Test
-	void definitionDelegatesToWrappedToken() {
-		Token token = createToken("test");
-		AnnotatedToken annotated = AnnotatedToken.empty(token);
-		
-		assertEquals(token.definition(), annotated.definition());
-	}
-	
-	@Test
 	void valueDelegatesToWrappedToken() {
 		Token token = createToken("testValue");
 		AnnotatedToken annotated = AnnotatedToken.empty(token);
@@ -168,19 +160,11 @@ class AnnotatedTokenTest {
 	}
 	
 	@Test
-	void startPositionDelegatesToWrappedToken() {
+	void positionDelegatesToWrappedToken() {
 		Token token = createToken("test");
 		AnnotatedToken annotated = AnnotatedToken.empty(token);
 		
-		assertEquals(token.startPosition(), annotated.startPosition());
-	}
-	
-	@Test
-	void endPositionDelegatesToWrappedToken() {
-		Token token = createToken("test");
-		AnnotatedToken annotated = AnnotatedToken.empty(token);
-		
-		assertEquals(token.endPosition(), annotated.endPosition());
+		assertEquals(token.position(), annotated.position());
 	}
 	
 	@Test
@@ -305,6 +289,95 @@ class AnnotatedTokenTest {
 		
 		String defaultString = annotated.getMetadata("missing", "default");
 		assertEquals("default", defaultString);
+	}
+	
+	@Test
+	void annotateOnAlreadyAnnotatedTokenReturnsSelf() {
+		Token baseToken = createToken("test");
+		AnnotatedToken annotated = AnnotatedToken.of(baseToken, "type", "identifier");
+		Map<String, Object> newMetadata = Map.of("newKey", "newValue");
+		
+		Token result = annotated.annotate(newMetadata);
+		
+		assertSame(annotated, result);
+	}
+	
+	@Test
+	void annotateOnAlreadyAnnotatedTokenWithNullMap() {
+		Token baseToken = createToken("test");
+		AnnotatedToken annotated = AnnotatedToken.of(baseToken, "type", "identifier");
+		
+		assertDoesNotThrow(() -> annotated.annotate(null));
+	}
+	
+	@Test
+	void annotateOnAlreadyAnnotatedTokenWithEmptyMap() {
+		Token baseToken = createToken("test");
+		AnnotatedToken annotated = AnnotatedToken.of(baseToken, "type", "identifier");
+		Map<String, Object> emptyMap = Map.of();
+		
+		Token result = annotated.annotate(emptyMap);
+		
+		assertSame(annotated, result);
+	}
+	
+	@Test
+	void annotateOnAlreadyAnnotatedTokenWithComplexMap() {
+		Token baseToken = createToken("test");
+		AnnotatedToken annotated = AnnotatedToken.of(baseToken, "type", "identifier");
+		Map<String, Object> complexMetadata = Map.of(
+			"newType", "keyword",
+			"line", 10,
+			"validated", true,
+			"properties", List.of("a", "b", "c")
+		);
+		
+		Token result = annotated.annotate(complexMetadata);
+		
+		assertSame(annotated, result);
+		assertEquals("identifier", annotated.getMetadata("type"));
+		assertNull(annotated.getMetadata("newType"));
+	}
+	
+	@Test
+	void multipleAnnotateCallsOnSameToken() {
+		Token baseToken = createToken("test");
+		AnnotatedToken annotated1 = AnnotatedToken.of(baseToken, "first", "value1");
+		
+		Token annotated2 = annotated1.annotate(Map.of("second", "value2"));
+		Token annotated3 = annotated2.annotate(Map.of("third", "value3"));
+		Token annotated4 = annotated3.annotate(Map.of("fourth", "value4"));
+		
+		assertSame(annotated1, annotated2);
+		assertSame(annotated1, annotated3);
+		assertSame(annotated1, annotated4);
+		assertSame(annotated2, annotated3);
+		assertSame(annotated2, annotated4);
+		assertSame(annotated3, annotated4);
+		
+		assertEquals("value1", annotated1.getMetadata("first"));
+		assertNull(annotated1.getMetadata("second"));
+		assertNull(annotated1.getMetadata("third"));
+		assertNull(annotated1.getMetadata("fourth"));
+	}
+	
+	@Test
+	void annotateNestedAnnotatedTokens() {
+		Token baseToken = createToken("test");
+		AnnotatedToken level1 = AnnotatedToken.of(baseToken, "level", 1);
+		AnnotatedToken level2 = AnnotatedToken.of(level1, "level", 2);
+		AnnotatedToken level3 = AnnotatedToken.of(level2, "level", 3);
+		
+		assertEquals(level1, level2.token());
+		assertEquals(level2, level3.token());
+		
+		Token result1 = level1.annotate(Map.of("new", "value"));
+		Token result2 = level2.annotate(Map.of("new", "value"));
+		Token result3 = level3.annotate(Map.of("new", "value"));
+		
+		assertSame(level1, result1);
+		assertSame(level2, result2);
+		assertSame(level3, result3);
 	}
 	
 	@Test

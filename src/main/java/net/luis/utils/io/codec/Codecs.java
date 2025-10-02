@@ -599,6 +599,12 @@ public final class Codecs {
 	public static final Codec<java.net.URL> URL = codec(URI.map(ResultingFunction.throwable(java.net.URL::toURI), throwable(java.net.URI::toURL)), "URLCodec");
 	
 	/**
+	 * Private constructor to prevent instantiation.<br>
+	 * This is a static helper class.<br>
+	 */
+	private Codecs() {}
+	
+	/**
 	 * Creates a new keyable codec for the given enum class.<br>
 	 * The enum value is encoded and decoded using its ordinal value.<br>
 	 *
@@ -685,8 +691,8 @@ public final class Codecs {
 				if (value != null) {
 					return Result.success(value);
 				}
-			} catch (NumberFormatException ignored) {
-			}
+			} catch (NumberFormatException _) {}
+			
 			E value = nameLookup.get(key);
 			if (value != null) {
 				return Result.success(value);
@@ -909,12 +915,6 @@ public final class Codecs {
 			}
 		);
 	}
-	
-	/**
-	 * Private constructor to prevent instantiation.<br>
-	 * This is a static helper class.<br>
-	 */
-	private Codecs() {}
 	
 	/**
 	 * Wraps the given codec in a new codec with the specified name.<br>

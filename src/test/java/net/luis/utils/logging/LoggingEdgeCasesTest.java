@@ -37,7 +37,7 @@ class LoggingEdgeCasesTest {
 	
 	@AfterAll
 	static void cleanUp() throws Exception {
-		FileUtils.deleteRecursively(Path.of("test"));
+		FileUtils.deleteRecursively(Path.of("logs/test-logs/"));
 	}
 	
 	@Test
@@ -337,7 +337,7 @@ class LoggingEdgeCasesTest {
 			.enableLogging(LoggingType.FILE)
 			.disableLogging(LoggingType.CONSOLE)
 			.enableLogging(LoggingType.CONSOLE)
-			.setRootDirectory("./test/")
+			.setRootDirectory("./logs/test-logs/")
 			.setFileSize("100MB")
 			.setArchiveType(".gz")
 			.setCompressionLevel(5)
