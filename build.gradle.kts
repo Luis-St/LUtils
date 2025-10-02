@@ -41,10 +41,6 @@ dependencies {
 	testRuntimeOnly("org.junit.platform:junit-platform-launcher:${junitPlatformLauncher}")
 }
 
-tasks.compileJava {
-	dependsOn(tasks.named("updateLicenses"))
-}
-
 licenseManager {
 	header = "header.txt"
 	lineEnding = LineEnding.LF
@@ -58,6 +54,30 @@ licenseManager {
 	
 	include("**/*.java")
 	exclude("**/Main.java")
+}
+
+tasks.compileJava {
+	dependsOn(tasks.named("updateLicenses"))
+	
+	doFirst {
+		options.compilerArgs.addAll(listOf("--module-path", classpath.asPath))
+		classpath = files()
+	}
+}
+
+tasks.register<JavaExec>("run") {
+	group = "runs"
+	mainClass.set("net.luis.utils.Main")
+	
+	enableAssertions = true
+	standardInput = System.`in`
+	args = listOf()
+	
+	classpath = files()
+	jvmArgs = listOf(
+		"--module-path",  sourceSets["main"].runtimeClasspath.asPath,
+		"--module", "net.luis.utils/net.luis.utils.Main"
+	)
 }
 
 tasks.named<Test>("test") {
@@ -83,23 +103,6 @@ java {
 	withJavadocJar()
 }
 
-tasks.named<Javadoc>("javadoc") {
-	exclude("**/Main.java")
-	options {
-		memberLevel = JavadocMemberLevel.PRIVATE
-		(this as StandardJavadocDocletOptions).addStringOption("tag", "apiNote:a:API Note:")
-	}
-}
-
-tasks.register<JavaExec>("run") {
-	group = "runs"
-	mainClass.set("net.luis.utils.Main")
-	classpath = sourceSets["main"].runtimeClasspath
-	enableAssertions = true
-	standardInput = System.`in`
-	args = listOf()
-}
-
 publishing {
 	publications {
 		create<MavenPublication>("mavenJava") {
@@ -123,6 +126,14 @@ publishing {
 		} else {
 			System.err.println("No credentials provided. Publishing to maven.luis-st.net not possible.")
 		}
+	}
+}
+
+tasks.named<Javadoc>("javadoc") {
+	exclude("**/Main.java")
+	options {
+		memberLevel = JavadocMemberLevel.PRIVATE
+		(this as StandardJavadocDocletOptions).addStringOption("tag", "apiNote:a:API Note:")
 	}
 }
 
