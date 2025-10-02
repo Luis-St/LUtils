@@ -22,6 +22,9 @@ import com.google.common.collect.Sets;
 import net.luis.utils.io.token.definition.TokenDefinition;
 import net.luis.utils.io.token.definition.WordTokenDefinition;
 import net.luis.utils.io.token.tokens.*;
+import net.luis.utils.io.token.type.StandardTokenType;
+import net.luis.utils.io.token.type.TokenType;
+import net.luis.utils.io.token.type.classifier.TokenClassifier;
 import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.Test;
 
@@ -42,6 +45,10 @@ class TokenReaderTest {
 	}
 	
 	private static @NotNull TokenReader createBasicTokenReader(@NotNull Set<Character> additionalSeparators) {
+		return createBasicTokenReader(additionalSeparators, token -> Set.of());
+	}
+	
+	private static @NotNull TokenReader createBasicTokenReader(@NotNull Set<Character> additionalSeparators, @NotNull TokenClassifier classifier) {
 		Set<TokenDefinition> definitions = Set.of(
 			TokenDefinition.of('('), TokenDefinition.of(')'),
 			TokenDefinition.of('0'), TokenDefinition.of('1'), TokenDefinition.of('2'),
@@ -59,31 +66,43 @@ class TokenReaderTest {
 		
 		Set<Character> separators = Sets.union(Set.of(' '), additionalSeparators);
 		
-		return new TokenReader(definitions, allowedChars, separators);
+		return new TokenReader(definitions, allowedChars, separators, classifier);
 	}
 	
 	@Test
 	void constructorWithNullDefinitions() {
 		Set<Character> allowedChars = Set.of('a', 'b');
 		Set<Character> separators = Set.of(' ');
+		TokenClassifier classifier = token -> Set.of();
 		
-		assertThrows(NullPointerException.class, () -> new TokenReader(null, allowedChars, separators));
+		assertThrows(NullPointerException.class, () -> new TokenReader(null, allowedChars, separators, classifier));
 	}
 	
 	@Test
 	void constructorWithNullAllowedChars() {
 		Set<TokenDefinition> definitions = Set.of(TokenDefinition.of('a'));
 		Set<Character> separators = Set.of(' ');
+		TokenClassifier classifier = token -> Set.of();
 		
-		assertThrows(NullPointerException.class, () -> new TokenReader(definitions, null, separators));
+		assertThrows(NullPointerException.class, () -> new TokenReader(definitions, null, separators, classifier));
 	}
 	
 	@Test
 	void constructorWithNullSeparators() {
 		Set<TokenDefinition> definitions = Set.of(TokenDefinition.of('a'));
 		Set<Character> allowedChars = Set.of('a', 'b');
+		TokenClassifier classifier = token -> Set.of();
 		
-		assertThrows(NullPointerException.class, () -> new TokenReader(definitions, allowedChars, null));
+		assertThrows(NullPointerException.class, () -> new TokenReader(definitions, allowedChars, null, classifier));
+	}
+	
+	@Test
+	void constructorWithNullClassifier() {
+		Set<TokenDefinition> definitions = Set.of(TokenDefinition.of('a'));
+		Set<Character> allowedChars = Set.of('a', 'b');
+		Set<Character> separators = Set.of(' ');
+		
+		assertThrows(NullPointerException.class, () -> new TokenReader(definitions, allowedChars, separators, null));
 	}
 	
 	@Test
@@ -91,8 +110,9 @@ class TokenReaderTest {
 		Set<TokenDefinition> definitions = Set.of(WordTokenDefinition.INSTANCE);
 		Set<Character> allowedChars = Set.of('a', 'b');
 		Set<Character> separators = Set.of(' ');
+		TokenClassifier classifier = token -> Set.of();
 		
-		assertThrows(IllegalArgumentException.class, () -> new TokenReader(definitions, allowedChars, separators));
+		assertThrows(IllegalArgumentException.class, () -> new TokenReader(definitions, allowedChars, separators, classifier));
 	}
 	
 	@Test
@@ -100,8 +120,9 @@ class TokenReaderTest {
 		Set<TokenDefinition> definitions = Set.of(TokenDefinition.of('a'));
 		Set<Character> allowedChars = Set.of();
 		Set<Character> separators = Set.of(' ');
+		TokenClassifier classifier = token -> Set.of();
 		
-		assertThrows(IllegalArgumentException.class, () -> new TokenReader(definitions, allowedChars, separators));
+		assertThrows(IllegalArgumentException.class, () -> new TokenReader(definitions, allowedChars, separators, classifier));
 	}
 	
 	@Test
@@ -109,8 +130,9 @@ class TokenReaderTest {
 		Set<TokenDefinition> definitions = Set.of(TokenDefinition.of('a'));
 		Set<Character> allowedChars = Set.of('a', 'b');
 		Set<Character> separators = Set.of();
+		TokenClassifier classifier = token -> Set.of();
 		
-		assertThrows(IllegalArgumentException.class, () -> new TokenReader(definitions, allowedChars, separators));
+		assertThrows(IllegalArgumentException.class, () -> new TokenReader(definitions, allowedChars, separators, classifier));
 	}
 	
 	@Test
@@ -118,8 +140,9 @@ class TokenReaderTest {
 		Set<TokenDefinition> definitions = Set.of(TokenDefinition.of('a'), TokenDefinition.of('b'));
 		Set<Character> allowedChars = Set.of('a', 'b', ' ');
 		Set<Character> separators = Set.of(' ');
+		TokenClassifier classifier = token -> Set.of();
 		
-		assertDoesNotThrow(() -> new TokenReader(definitions, allowedChars, separators));
+		assertDoesNotThrow(() -> new TokenReader(definitions, allowedChars, separators, classifier));
 	}
 	
 	@Test
@@ -279,5 +302,70 @@ class TokenReaderTest {
 		assertEquals(")", tokens.get(3).value());
 		assertEquals("\\n", tokens.get(4).value());
 		assertEquals("world", tokens.get(5).value());
+	}
+	
+	@Test
+	void readTokensWithClassifierInvocation() {
+		TokenType customType = StandardTokenType.EOF;
+		
+		TokenClassifier classifier = token -> Set.of(customType);
+		TokenReader reader = createBasicTokenReader(Set.of(), classifier);
+		
+		List<Token> tokens = reader.readTokens("abc");
+		
+		assertEquals(1, tokens.size());
+		Token token = tokens.getFirst();
+		assertEquals("abc", token.value());
+		assertTrue(token.types().contains(customType));
+	}
+	
+	@Test
+	void readTokensWithClassifierForMultipleTokens() {
+		TokenType wordType = StandardTokenType.IDENTIFIER;
+		TokenType numberType = StandardTokenType.NUMBER;
+		
+		TokenClassifier classifier = token -> {
+			if (token.value().matches("\\d+")) {
+				return Set.of(numberType);
+			}
+			return Set.of(wordType);
+		};
+		
+		TokenReader reader = createBasicTokenReader(Set.of(), classifier);
+		List<Token> tokens = reader.readTokens("hello 123");
+		
+		assertEquals(2, tokens.size());
+		assertTrue(tokens.get(0).types().contains(wordType));
+		assertTrue(tokens.get(1).types().contains(numberType));
+	}
+	
+	@Test
+	void readTokensWithClassifierReturningEmptySet() {
+		TokenClassifier classifier = token -> Set.of();
+		TokenReader reader = createBasicTokenReader(Set.of(), classifier);
+		
+		List<Token> tokens = reader.readTokens("abc");
+		
+		assertEquals(1, tokens.size());
+		assertTrue(tokens.getFirst().types().isEmpty());
+	}
+	
+	@Test
+	void readTokensWithClassifierForEscapedTokens() {
+		TokenType escapedType = StandardTokenType.STRING;
+		
+		TokenClassifier classifier = token -> {
+			if (token instanceof EscapedToken) {
+				return Set.of(escapedType);
+			}
+			return Set.of();
+		};
+		
+		TokenReader reader = createBasicTokenReader(Set.of(), classifier);
+		List<Token> tokens = reader.readTokens("\\n");
+		
+		assertEquals(1, tokens.size());
+		assertInstanceOf(EscapedToken.class, tokens.getFirst());
+		assertTrue(tokens.getFirst().types().contains(escapedType));
 	}
 }

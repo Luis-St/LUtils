@@ -22,6 +22,7 @@ import com.google.common.collect.Lists;
 import net.luis.utils.io.token.definition.TokenDefinition;
 import net.luis.utils.io.token.definition.WordTokenDefinition;
 import net.luis.utils.io.token.tokens.*;
+import net.luis.utils.io.token.type.classifier.TokenClassifier;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Unmodifiable;
 
@@ -48,6 +49,10 @@ public class TokenReader {
 	 * The set of characters that are considered as separators in the input string.<br>
 	 */
 	private final Set<Character> separators;
+	/**
+	 * The classifier used to classify tokens after they are read.<br>
+	 */
+	private final TokenClassifier classifier;
 	
 	/**
 	 * Constructs a new token reader with the specified token definitions, allowed characters, and separators.<br>
@@ -57,13 +62,15 @@ public class TokenReader {
 	 * @param definitions The set of token definitions
 	 * @param allowedChars The set of allowed characters
 	 * @param separators The set of separators
+	 * @param classifier The token classifier
 	 * @throws NullPointerException If any of the parameters are null
 	 * @throws IllegalArgumentException If the definitions contain the word token definition, or if the allowed characters or separators are empty
 	 */
-	public TokenReader(@NotNull Set<TokenDefinition> definitions, @NotNull Set<Character> allowedChars, @NotNull Set<Character> separators) {
+	public TokenReader(@NotNull Set<TokenDefinition> definitions, @NotNull Set<Character> allowedChars, @NotNull Set<Character> separators, @NotNull TokenClassifier classifier) {
 		this.definitions = new HashSet<>(Objects.requireNonNull(definitions, "Token definitions must not be null"));
 		this.allowedChars = new HashSet<>(Objects.requireNonNull(allowedChars, "Allowed characters must not be null"));
 		this.separators = new HashSet<>(Objects.requireNonNull(separators, "Separators must not be null"));
+		this.classifier = Objects.requireNonNull(classifier, "Token classifier must not be null");
 		
 		if (this.definitions.contains(WordTokenDefinition.INSTANCE)) {
 			throw new IllegalArgumentException("Word token definition must not be part of the definitions");
@@ -106,13 +113,13 @@ public class TokenReader {
 			}
 			
 			if (escape) {
-				tokens.add(new EscapedToken("\\" + c, wordStart.toTokenPosition()));
+				this.addAndClassifyToken(tokens, new EscapedToken("\\" + c, wordStart.toTokenPosition()));
 				escape = false;
 				current.increment();
 				wordStart.copyFrom(current);
 			} else if (this.separators.contains(c)) {
 				if (!currentWord.isEmpty()) {
-					this.addToken(tokens, currentWord.toString(), wordStart.toTokenPosition());
+					this.addAndClassifyToken(tokens, new SimpleToken(currentWord.toString(), wordStart.toTokenPosition()));
 					currentWord = new StringBuilder();
 				}
 				
@@ -126,7 +133,7 @@ public class TokenReader {
 				for (TokenDefinition definition : this.definitions) {
 					String str = String.valueOf(c);
 					if (definition.matches(str)) {
-						tokens.add(new SimpleToken(str, current.toTokenPosition()));
+						this.addAndClassifyToken(tokens, new SimpleToken(str, current.toTokenPosition()));
 						break;
 					}
 				}
@@ -149,26 +156,24 @@ public class TokenReader {
 		}
 		
 		if (!currentWord.isEmpty()) {
-			this.addToken(tokens, currentWord.toString(), wordStart.toTokenPosition());
+			this.addAndClassifyToken(tokens, new SimpleToken(currentWord.toString(), wordStart.toTokenPosition()));
 		}
 		return List.copyOf(tokens);
 	}
 	
 	/**
-	 * Adds a token to the list of tokens.<br>
-	 * It uses the token definitions to determine the type of token and creates a new token object.<br>
-	 * If no matching definition is found, a word token is created.<br>
+	 * Adds a token to the list and classifies it using the token classifier.<br>
 	 *
-	 * @param tokens The list of tokens to add the new token to
-	 * @param word The word to be added as a token
-	 * @param startPosition The start position of the token in the input string
-	 * @throws NullPointerException If any of the parameters are null
+	 * @param tokens The list of tokens to add to
+	 * @param token The token to add and classify
+	 * @throws NullPointerException If either the token list or the token is null
 	 */
-	private void addToken(@NotNull List<Token> tokens, @NotNull String word, @NotNull TokenPosition startPosition) {
+	private void addAndClassifyToken(@NotNull List<Token> tokens, @NotNull Token token) {
 		Objects.requireNonNull(tokens, "Token list must not be null");
-		Objects.requireNonNull(word, "Word must not be null");
+		Objects.requireNonNull(token, "Token must not be null");
 		
-		tokens.add(new SimpleToken(word, startPosition));
+		token.types().addAll(this.classifier.classifyToken(token));
+		tokens.add(token);
 	}
 	
 	//region Internal
