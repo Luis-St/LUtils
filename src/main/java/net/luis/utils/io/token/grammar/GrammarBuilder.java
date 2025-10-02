@@ -18,7 +18,7 @@
 
 package net.luis.utils.io.token.grammar;
 
-import com.google.common.collect.Maps;
+import com.google.common.collect.Lists;
 import net.luis.utils.io.token.actions.GroupingTokenAction;
 import net.luis.utils.io.token.actions.TokenAction;
 import net.luis.utils.io.token.context.TokenRuleContext;
@@ -26,7 +26,8 @@ import net.luis.utils.io.token.rules.*;
 import net.luis.utils.io.token.rules.combinators.AnyOfTokenRule;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.*;
+import java.util.List;
+import java.util.Objects;
 
 /**
  * Builder class for constructing {@link Grammar} instances.<br>
@@ -39,8 +40,14 @@ import java.util.*;
  */
 public class GrammarBuilder {
 	
+	/**
+	 * The context that holds all predefined rules for reference.<br>
+	 */
 	private final TokenRuleContext context = TokenRuleContext.empty();
-	private final LinkedHashMap<String, GrammarRule> rules = Maps.newLinkedHashMap();
+	/**
+	 * The list of grammar rules defined in this builder.<br>
+	 */
+	private final List<GrammarRule> rules = Lists.newArrayList();
 	
 	/**
 	 * Package-private constructor for creating a new grammar builder instance.<br>
@@ -49,32 +56,20 @@ public class GrammarBuilder {
 	GrammarBuilder() {}
 	
 	/**
-	 * Defines a new grammar rule with the specified name and token rule.<br>
-	 * This is a convenience method that uses the identity action, which returns the input tokens unchanged.<br>
-	 *
-	 * @param name The unique name for this rule
-	 * @param rule The token rule to apply
-	 * @throws NullPointerException If name or rule is null
-	 * @throws IllegalArgumentException If name is empty or already defined
-	 */
-	public void define(@NotNull String name, @NotNull TokenRule rule) {
-		this.define(name, rule, TokenAction.identity());
-	}
-	
-	/**
-	 * Defines a new grammar rule with the specified name, token rule, and action.
+	 * Defines a new named rule in the grammar context.<br>
+	 * The rule can be referenced by other rules using its name.<br>
 	 * <p>
-	 *     The rule is automatically wrapped if the action is a {@link GroupingTokenAction} and the rule structure requires it.<br>
-	 *     The rule is registered in the context to allow references from other rules.
+	 *     The rule is not added to the list of grammar rules of this builder and will not be processed unless added separately using {@link #addRule(TokenRule)} or {@link #addRule(TokenRule, TokenAction)}.<br>
+	 *     This allows defining reusable rules that can be referenced multiple times without being created multiple times.
 	 * </p>
 	 *
-	 * @param name The unique name for this rule
-	 * @param rule The token rule to apply
-	 * @param action The action to perform on matched tokens
+	 * @param name The name of the rule
+	 * @param rule The token rule to define
 	 * @throws NullPointerException If name or rule is null
 	 * @throws IllegalArgumentException If name is empty or already defined
+	 * @see TokenRuleContext#defineRule(String, TokenRule)
 	 */
-	public void define(@NotNull String name, @NotNull TokenRule rule, @NotNull TokenAction action) {
+	public void defineRule(@NotNull String name, @NotNull TokenRule rule) {
 		Objects.requireNonNull(name, "Rule name must not be null");
 		Objects.requireNonNull(rule, "Rule must not be null");
 		
@@ -85,9 +80,46 @@ public class GrammarBuilder {
 			throw new IllegalArgumentException("Rule with name '" + name + "' is already defined");
 		}
 		
-		rule = this.wrapRule(rule, action);
-		this.rules.put(name, new GrammarRule(rule, action));
 		this.context.defineRule(name, rule);
+	}
+	
+	/**
+	 * Adds a new rule with the identity action to the grammar.<br>
+	 * The rule is added to the list of grammar rules of this builder but not defined in the context for references.<br>
+	 *
+	 * @param rule The token rule to apply
+	 * @throws NullPointerException If the rule is null
+	 * @see #addRule(TokenRule, TokenAction)
+	 */
+	public void addRule(@NotNull TokenRule rule) {
+		this.addRule(rule, TokenAction.identity());
+	}
+	
+	/**
+	 * Adds a new rule with the specified action to the grammar.<br>
+	 * The rule is added to the list of grammar rules of this builder but not defined in the context for references.<br>
+	 * <p>
+	 *     The rule is automatically wrapped if the action is a {@link GroupingTokenAction} and the rule structure requires it.<br>
+	 *     This ensures that grouping actions are applied correctly without requiring the user to manually wrap rules.<br>
+	 *     The wrapping logic is equivalent to:
+	 * </p>
+	 * <pre>{@code
+	 * TokenRules.any(
+	 *     rule,
+	 *     rule.group()
+	 * );
+	 * }</pre>
+	 *
+	 * @param rule The token rule to apply
+	 * @param action The action to perform on matched tokens
+	 * @throws NullPointerException If name or rule is null
+	 * @throws IllegalArgumentException If name is empty or already defined
+	 */
+	public void addRule(@NotNull TokenRule rule, @NotNull TokenAction action) {
+		Objects.requireNonNull(rule, "Rule must not be null");
+		Objects.requireNonNull(action, "Action must not be null");
+		
+		this.rules.add(new GrammarRule(this.wrapRule(rule, action), action));
 	}
 	
 	/**
