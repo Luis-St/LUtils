@@ -44,7 +44,7 @@ public class Grammar {
 	/**
 	 * The map of named grammar rules.<br>
 	 */
-	private final Map<String, GrammarRule> rules;
+	private final List<GrammarRule> rules;
 	
 	/**
 	 * Constructs a new grammar with the specified context and rules.<br>
@@ -53,10 +53,10 @@ public class Grammar {
 	 * @param rules The map of named grammar rules
 	 * @throws NullPointerException If context or rules is null
 	 */
-	Grammar(@NotNull TokenRuleContext context, @NotNull LinkedHashMap<String, GrammarRule> rules) {
+	Grammar(@NotNull TokenRuleContext context, @NotNull List<GrammarRule> rules) {
 		this.context = Objects.requireNonNull(context, "Context must not be null");
 		Objects.requireNonNull(rules, "Rules must not be null");
-		this.rules = rules;
+		this.rules = List.copyOf(rules);
 	}
 	
 	/**
@@ -83,11 +83,11 @@ public class Grammar {
 	}
 	
 	/**
-	 * Returns an unmodifiable set of all rule names defined in this grammar.<br>
-	 * @return An unmodifiable set of rule names
+	 * Returns an unmodifiable set of all rule added to this grammar.<br>
+	 * @return An unmodifiable set of rules
 	 */
-	public @NotNull Set<String> getRuleNames() {
-		return Collections.unmodifiableSet(this.rules.keySet());
+	public @NotNull List<GrammarRule> getRules() {
+		return Collections.unmodifiableList(this.rules);
 	}
 	
 	/**
@@ -103,7 +103,7 @@ public class Grammar {
 		Objects.requireNonNull(tokens, "Tokens must not be null");
 		
 		TokenRuleEngine engine = new TokenRuleEngine(this.context);
-		this.rules.forEach((_, rule) -> engine.addRule(rule.rule(), rule.action()));
+		this.rules.forEach(rule -> engine.addRule(rule.rule(), rule.action()));
 		
 		return engine.process(tokens);
 	}

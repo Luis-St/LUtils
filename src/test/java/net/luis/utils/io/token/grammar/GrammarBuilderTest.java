@@ -64,105 +64,104 @@ class GrammarBuilderTest {
 	}
 	
 	@Test
-	void defineWithTwoParametersThrowsExceptionForNullName() {
+	void defineRuleThrowsExceptionForNullName() {
 		GrammarBuilder builder = new GrammarBuilder();
 		TokenRule rule = createRule("test");
 		
-		assertThrows(NullPointerException.class, () -> builder.define(null, rule));
+		assertThrows(NullPointerException.class, () -> builder.defineRule(null, rule));
 	}
 	
 	@Test
-	void defineWithTwoParametersThrowsExceptionForNullRule() {
+	void defineRuleThrowsExceptionForNullRule() {
 		GrammarBuilder builder = new GrammarBuilder();
 		
-		assertThrows(NullPointerException.class, () -> builder.define("rule1", null));
+		assertThrows(NullPointerException.class, () -> builder.defineRule("rule1", null));
 	}
 	
 	@Test
-	void defineWithTwoParametersThrowsExceptionForEmptyName() {
-		GrammarBuilder builder = new GrammarBuilder();
-		TokenRule rule = createRule("test");
-		
-		assertThrows(IllegalArgumentException.class, () -> builder.define("", rule));
-	}
-	
-	@Test
-	void defineWithTwoParametersAddsRuleSuccessfully() {
+	void defineRuleThrowsExceptionForEmptyName() {
 		GrammarBuilder builder = new GrammarBuilder();
 		TokenRule rule = createRule("test");
 		
-		assertDoesNotThrow(() -> builder.define("rule1", rule));
+		assertThrows(IllegalArgumentException.class, () -> builder.defineRule("", rule));
 	}
 	
 	@Test
-	void defineWithTwoParametersThrowsExceptionForDuplicateName() {
+	void defineRuleAddsRuleSuccessfully() {
+		GrammarBuilder builder = new GrammarBuilder();
+		TokenRule rule = createRule("test");
+		
+		assertDoesNotThrow(() -> builder.defineRule("rule1", rule));
+	}
+	
+	@Test
+	void defineRuleThrowsExceptionForDuplicateName() {
 		GrammarBuilder builder = new GrammarBuilder();
 		TokenRule rule1 = createRule("test1");
 		TokenRule rule2 = createRule("test2");
 		
-		builder.define("rule1", rule1);
+		builder.defineRule("rule1", rule1);
 		
-		assertThrows(IllegalArgumentException.class, () -> builder.define("rule1", rule2));
+		assertThrows(IllegalArgumentException.class, () -> builder.defineRule("rule1", rule2));
 	}
 	
 	@Test
-	void defineWithThreeParametersThrowsExceptionForNullName() {
+	void addRuleWithOneParameterThrowsExceptionForNullRule() {
+		GrammarBuilder builder = new GrammarBuilder();
+		
+		assertThrows(NullPointerException.class, () -> builder.addRule(null));
+	}
+	
+	@Test
+	void addRuleWithOneParameterAddsRuleSuccessfully() {
+		GrammarBuilder builder = new GrammarBuilder();
+		TokenRule rule = createRule("test");
+		
+		assertDoesNotThrow(() -> builder.addRule(rule));
+	}
+	
+	@Test
+	void addRuleWithTwoParametersThrowsExceptionForNullRule() {
+		GrammarBuilder builder = new GrammarBuilder();
+		TokenAction action = TokenAction.identity();
+		
+		assertThrows(NullPointerException.class, () -> builder.addRule(null, action));
+	}
+	
+	@Test
+	void addRuleWithTwoParametersThrowsExceptionForNullAction() {
+		GrammarBuilder builder = new GrammarBuilder();
+		TokenRule rule = createRule("test");
+		
+		assertThrows(NullPointerException.class, () -> builder.addRule(rule, null));
+	}
+	
+	@Test
+	void addRuleWithTwoParametersAddsRuleSuccessfully() {
 		GrammarBuilder builder = new GrammarBuilder();
 		TokenRule rule = createRule("test");
 		TokenAction action = TokenAction.identity();
 		
-		assertThrows(NullPointerException.class, () -> builder.define(null, rule, action));
+		assertDoesNotThrow(() -> builder.addRule(rule, action));
 	}
 	
 	@Test
-	void defineWithThreeParametersThrowsExceptionForNullRule() {
-		GrammarBuilder builder = new GrammarBuilder();
-		TokenAction action = TokenAction.identity();
-		
-		assertThrows(NullPointerException.class, () -> builder.define("rule1", null, action));
-	}
-	
-	@Test
-	void defineWithThreeParametersThrowsExceptionForEmptyName() {
-		GrammarBuilder builder = new GrammarBuilder();
-		TokenRule rule = createRule("test");
-		TokenAction action = TokenAction.identity();
-		
-		assertThrows(IllegalArgumentException.class, () -> builder.define("", rule, action));
-	}
-	
-	@Test
-	void defineWithThreeParametersAddsRuleSuccessfully() {
-		GrammarBuilder builder = new GrammarBuilder();
-		TokenRule rule = createRule("test");
-		TokenAction action = TokenAction.identity();
-		
-		assertDoesNotThrow(() -> builder.define("rule1", rule, action));
-	}
-	
-	@Test
-	void defineWithThreeParametersThrowsExceptionForDuplicateName() {
-		GrammarBuilder builder = new GrammarBuilder();
-		TokenRule rule1 = createRule("test1");
-		TokenRule rule2 = createRule("test2");
-		TokenAction action = TokenAction.identity();
-		
-		builder.define("rule1", rule1, action);
-		
-		assertThrows(IllegalArgumentException.class, () -> builder.define("rule1", rule2, action));
-	}
-	
-	@Test
-	void defineWithThreeParametersWrapsRuleForGroupingAction() {
+	void addRuleWithGroupingActionWrapsRule() {
 		GrammarBuilder builder = new GrammarBuilder();
 		TokenRule rule = createRule("test");
 		GroupingTokenAction action = GroupingTokenAction.INSTANCE;
 		
-		assertDoesNotThrow(() -> builder.define("rule1", rule, action));
+		assertDoesNotThrow(() -> builder.addRule(rule, action));
+		
+		Grammar grammar = builder.build();
+		List<GrammarRule> rules = grammar.getRules();
+		
+		assertEquals(1, rules.size());
+		assertInstanceOf(AnyOfTokenRule.class, rules.getFirst().rule());
 	}
 	
 	@Test
-	void defineWithThreeParametersWrapsAnyOfRuleForGroupingAction() {
+	void addRuleWithGroupingActionWrapsAnyOfRuleWithThreeRules() {
 		GrammarBuilder builder = new GrammarBuilder();
 		TokenRule innerRule1 = createRule("test1");
 		TokenRule innerRule2 = createRule("test2");
@@ -170,18 +169,64 @@ class GrammarBuilderTest {
 		AnyOfTokenRule rule = new AnyOfTokenRule(List.of(innerRule1, innerRule2, innerRule3));
 		GroupingTokenAction action = GroupingTokenAction.INSTANCE;
 		
-		assertDoesNotThrow(() -> builder.define("rule1", rule, action));
+		assertDoesNotThrow(() -> builder.addRule(rule, action));
+		
+		Grammar grammar = builder.build();
+		List<GrammarRule> rules = grammar.getRules();
+		
+		assertEquals(1, rules.size());
+		assertInstanceOf(AnyOfTokenRule.class, rules.get(0).rule());
 	}
 	
 	@Test
-	void defineWithThreeParametersDoesNotWrapAnyOfRuleWithTwoRulesAndOnlyOneGrouped() {
+	void addRuleWithGroupingActionDoesNotWrapAnyOfRuleWithTwoRulesAndOnlyOneGrouped() {
 		GrammarBuilder builder = new GrammarBuilder();
 		TokenGroupRule groupRule = new TokenGroupRule(createRule("test1"));
 		TokenRule normalRule = createRule("test2");
 		AnyOfTokenRule rule = new AnyOfTokenRule(List.of(groupRule, normalRule));
 		GroupingTokenAction action = GroupingTokenAction.INSTANCE;
 		
-		assertDoesNotThrow(() -> builder.define("rule1", rule, action));
+		assertDoesNotThrow(() -> builder.addRule(rule, action));
+		
+		Grammar grammar = builder.build();
+		List<GrammarRule> rules = grammar.getRules();
+		
+		assertEquals(1, rules.size());
+		assertSame(rule, rules.getFirst().rule());
+	}
+	
+	@Test
+	void addRuleWithGroupingActionWrapsAnyOfRuleWithTwoGroupedRules() {
+		GrammarBuilder builder = new GrammarBuilder();
+		TokenGroupRule groupRule1 = new TokenGroupRule(createRule("test1"));
+		TokenGroupRule groupRule2 = new TokenGroupRule(createRule("test2"));
+		AnyOfTokenRule rule = new AnyOfTokenRule(List.of(groupRule1, groupRule2));
+		GroupingTokenAction action = GroupingTokenAction.INSTANCE;
+		
+		assertDoesNotThrow(() -> builder.addRule(rule, action));
+		
+		Grammar grammar = builder.build();
+		List<GrammarRule> rules = grammar.getRules();
+		
+		assertEquals(1, rules.size());
+		assertInstanceOf(AnyOfTokenRule.class, rules.getFirst().rule());
+	}
+	
+	@Test
+	void addRuleWithGroupingActionWrapsAnyOfRuleWithTwoNonGroupedRules() {
+		GrammarBuilder builder = new GrammarBuilder();
+		TokenRule normalRule1 = createRule("test1");
+		TokenRule normalRule2 = createRule("test2");
+		AnyOfTokenRule rule = new AnyOfTokenRule(List.of(normalRule1, normalRule2));
+		GroupingTokenAction action = GroupingTokenAction.INSTANCE;
+		
+		assertDoesNotThrow(() -> builder.addRule(rule, action));
+		
+		Grammar grammar = builder.build();
+		List<GrammarRule> rules = grammar.getRules();
+		
+		assertEquals(1, rules.size());
+		assertInstanceOf(AnyOfTokenRule.class, rules.getFirst().rule());
 	}
 	
 	@Test
@@ -194,24 +239,62 @@ class GrammarBuilderTest {
 	}
 	
 	@Test
-	void buildReturnsGrammarWithDefinedRules() {
+	void buildReturnsGrammarWithAddedRules() {
 		GrammarBuilder builder = new GrammarBuilder();
 		TokenRule rule = createRule("test");
-		builder.define("rule1", rule);
+		builder.addRule(rule);
 		
 		Grammar grammar = builder.build();
 		
 		assertNotNull(grammar);
-		assertTrue(grammar.getRuleNames().contains("rule1"));
+		assertEquals(1, grammar.getRules().size());
 	}
 	
 	@Test
-	void buildReturnsGrammarWithEmptyRulesForNoDefinedRules() {
+	void buildReturnsGrammarWithEmptyRulesForNoAddedRules() {
 		GrammarBuilder builder = new GrammarBuilder();
 		
 		Grammar grammar = builder.build();
 		
 		assertNotNull(grammar);
-		assertTrue(grammar.getRuleNames().isEmpty());
+		assertTrue(grammar.getRules().isEmpty());
+	}
+	
+	@Test
+	void defineRuleDoesNotAddToRulesList() {
+		GrammarBuilder builder = new GrammarBuilder();
+		TokenRule rule = createRule("test");
+		builder.defineRule("rule1", rule);
+		
+		Grammar grammar = builder.build();
+		
+		assertTrue(grammar.getRules().isEmpty());
+	}
+	
+	@Test
+	void addRuleAddsToRulesListButNotContext() {
+		GrammarBuilder builder = new GrammarBuilder();
+		TokenRule rule = createRule("test");
+		builder.addRule(rule);
+		
+		Grammar grammar = builder.build();
+		
+		assertEquals(1, grammar.getRules().size());
+		assertNull(grammar.getContext().getRuleReference("test"));
+	}
+	
+	@Test
+	void defineRuleAndAddRuleCombinedCorrectly() {
+		GrammarBuilder builder = new GrammarBuilder();
+		TokenRule rule1 = createRule("test1");
+		TokenRule rule2 = createRule("test2");
+		
+		builder.defineRule("rule1", rule1);
+		builder.addRule(rule2);
+		
+		Grammar grammar = builder.build();
+		
+		assertEquals(1, grammar.getRules().size());
+		assertNotNull(grammar.getContext().getRuleReference("rule1"));
 	}
 }

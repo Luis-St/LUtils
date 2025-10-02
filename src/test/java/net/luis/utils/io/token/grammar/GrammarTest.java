@@ -19,6 +19,7 @@
 package net.luis.utils.io.token.grammar;
 
 import net.luis.utils.io.token.TokenRuleMatch;
+import net.luis.utils.io.token.actions.TokenAction;
 import net.luis.utils.io.token.context.TokenRuleContext;
 import net.luis.utils.io.token.rules.TokenRule;
 import net.luis.utils.io.token.stream.TokenStream;
@@ -69,7 +70,7 @@ class GrammarTest {
 		Grammar grammar = Grammar.builder(builder -> {});
 		
 		assertNotNull(grammar);
-		assertTrue(grammar.getRuleNames().isEmpty());
+		assertTrue(grammar.getRules().isEmpty());
 	}
 	
 	@Test
@@ -77,12 +78,11 @@ class GrammarTest {
 		TokenRule rule = createRule("test");
 		
 		Grammar grammar = Grammar.builder(builder -> {
-			builder.define("rule1", rule);
+			builder.addRule(rule);
 		});
 		
 		assertNotNull(grammar);
-		assertEquals(1, grammar.getRuleNames().size());
-		assertTrue(grammar.getRuleNames().contains("rule1"));
+		assertEquals(1, grammar.getRules().size());
 	}
 	
 	@Test
@@ -91,14 +91,28 @@ class GrammarTest {
 		TokenRule rule2 = createRule("test2");
 		
 		Grammar grammar = Grammar.builder(builder -> {
-			builder.define("rule1", rule1);
-			builder.define("rule2", rule2);
+			builder.addRule(rule1);
+			builder.addRule(rule2);
 		});
 		
 		assertNotNull(grammar);
-		assertEquals(2, grammar.getRuleNames().size());
-		assertTrue(grammar.getRuleNames().contains("rule1"));
-		assertTrue(grammar.getRuleNames().contains("rule2"));
+		assertEquals(2, grammar.getRules().size());
+	}
+	
+	@Test
+	void builderCreatesGrammarWithDefinedRules() {
+		TokenRule rule1 = createRule("test1");
+		TokenRule rule2 = createRule("test2");
+		
+		Grammar grammar = Grammar.builder(builder -> {
+			builder.defineRule("rule1", rule1);
+			builder.defineRule("rule2", rule2);
+		});
+		
+		assertNotNull(grammar);
+		assertTrue(grammar.getRules().isEmpty());
+		assertNotNull(grammar.getContext().getRuleReference("rule1"));
+		assertNotNull(grammar.getContext().getRuleReference("rule2"));
 	}
 	
 	@Test
@@ -111,41 +125,39 @@ class GrammarTest {
 	}
 	
 	@Test
-	void getRuleNamesReturnsUnmodifiableSet() {
+	void getRulesReturnsUnmodifiableList() {
 		TokenRule rule = createRule("test");
 		Grammar grammar = Grammar.builder(builder -> {
-			builder.define("rule1", rule);
+			builder.addRule(rule);
 		});
 		
-		Set<String> ruleNames = grammar.getRuleNames();
+		List<GrammarRule> rules = grammar.getRules();
 		
-		assertThrows(UnsupportedOperationException.class, () -> ruleNames.add("rule2"));
+		assertThrows(UnsupportedOperationException.class, () -> rules.add(new GrammarRule(rule, TokenAction.identity())));
 	}
 	
 	@Test
-	void getRuleNamesReturnsEmptySetForNoRules() {
+	void getRulesReturnsEmptyListForNoRules() {
 		Grammar grammar = Grammar.builder(builder -> {});
 		
-		Set<String> ruleNames = grammar.getRuleNames();
+		List<GrammarRule> rules = grammar.getRules();
 		
-		assertTrue(ruleNames.isEmpty());
+		assertTrue(rules.isEmpty());
 	}
 	
 	@Test
-	void getRuleNamesReturnsCorrectRuleNames() {
+	void getRulesReturnsCorrectNumberOfRules() {
 		TokenRule rule1 = createRule("test1");
 		TokenRule rule2 = createRule("test2");
 		
 		Grammar grammar = Grammar.builder(builder -> {
-			builder.define("rule1", rule1);
-			builder.define("rule2", rule2);
+			builder.addRule(rule1);
+			builder.addRule(rule2);
 		});
 		
-		Set<String> ruleNames = grammar.getRuleNames();
+		List<GrammarRule> rules = grammar.getRules();
 		
-		assertEquals(2, ruleNames.size());
-		assertTrue(ruleNames.contains("rule1"));
-		assertTrue(ruleNames.contains("rule2"));
+		assertEquals(2, rules.size());
 	}
 	
 	@Test
@@ -170,7 +182,7 @@ class GrammarTest {
 		Token token = SimpleToken.createUnpositioned("test");
 		
 		Grammar grammar = Grammar.builder(builder -> {
-			builder.define("rule1", rule);
+			builder.addRule(rule);
 		});
 		
 		List<Token> tokens = List.of(token);
