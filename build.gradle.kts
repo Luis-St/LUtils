@@ -11,6 +11,7 @@ val junitPlatformLauncher: String by project
 
 val mavenUserName: String? = System.getenv("MAVEN_USERNAME")
 val mavenPassword: String? = System.getenv("MAVEN_PASSWORD")
+val projectVersion: String? = System.getenv("VERSION")?.replace("v", "", ignoreCase = true)
 
 plugins {
 	id("java")
@@ -106,12 +107,16 @@ java {
 publishing {
 	publications {
 		create<MavenPublication>("mavenJava") {
-			groupId = "net.luis"
-			artifactId = "LUtils"
-			version = "7.6.0"
-			artifact(tasks.named<Jar>("jar"))
-			artifact(tasks.named<Jar>("sourcesJar"))
-			artifact(tasks.named<Jar>("javadocJar"))
+			if (projectVersion != null) {
+				groupId = "net.luis"
+				artifactId = "LUtils"
+				version = projectVersion
+				artifact(tasks.named<Jar>("jar"))
+				artifact(tasks.named<Jar>("sourcesJar"))
+				artifact(tasks.named<Jar>("javadocJar"))
+			} else {
+				System.err.println("No version provided. Set the VERSION environment variable.")
+			}
 		}
 	}
 	repositories {
@@ -146,7 +151,11 @@ tasks.named<Jar>("jar") {
 	manifest {
 		attributes(
 			"Built-By" to "Luis Staudt",
-			"Multi-Release" to "true"
+			"Multi-Release" to "true",
+			"Implementation-Title" to rootProject.name,
+			"Implementation-Version" to (projectVersion ?: "0.0.0"),
+			"Implementation-Vendor" to "Luis Staudt",
+			"Implementation-URL" to "https://www.luis-st.net/",
 		)
 	}
 }
