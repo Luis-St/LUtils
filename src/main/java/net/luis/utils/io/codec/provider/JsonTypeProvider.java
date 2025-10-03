@@ -45,7 +45,6 @@ public final class JsonTypeProvider implements TypeProvider<JsonElement> {
 	 */
 	private JsonTypeProvider() {}
 	
-	//region Creation
 	@Override
 	public @NotNull JsonElement empty() {
 		return JsonNull.INSTANCE;
@@ -108,12 +107,11 @@ public final class JsonTypeProvider implements TypeProvider<JsonElement> {
 		Objects.requireNonNull(values, "Values must not be null");
 		return Result.success(new JsonObject(values));
 	}
-	//endregion
 	
-	//region Getters
 	@Override
 	public @NotNull Result<JsonElement> getEmpty(@NotNull JsonElement type) {
 		Objects.requireNonNull(type, "Type must not be null");
+		
 		if (!type.isJsonNull()) {
 			return Result.error("Json element '" + type + "' is not a json null");
 		}
@@ -123,9 +121,11 @@ public final class JsonTypeProvider implements TypeProvider<JsonElement> {
 	@Override
 	public @NotNull Result<Boolean> getBoolean(@NotNull JsonElement type) {
 		Objects.requireNonNull(type, "Type must not be null");
+		
 		if (!type.isJsonPrimitive()) {
 			return Result.error("Json element '" + type + "' is not a json primitive");
 		}
+		
 		JsonPrimitive primitive = type.getAsJsonPrimitive();
 		try {
 			return Result.success(primitive.getAsBoolean());
@@ -137,9 +137,11 @@ public final class JsonTypeProvider implements TypeProvider<JsonElement> {
 	@Override
 	public @NotNull Result<Byte> getByte(@NotNull JsonElement type) {
 		Objects.requireNonNull(type, "Type must not be null");
+		
 		if (!type.isJsonPrimitive()) {
 			return Result.error("Json element '" + type + "' is not a json primitive");
 		}
+		
 		JsonPrimitive primitive = type.getAsJsonPrimitive();
 		try {
 			return Result.success(primitive.getAsByte());
@@ -151,9 +153,11 @@ public final class JsonTypeProvider implements TypeProvider<JsonElement> {
 	@Override
 	public @NotNull Result<Short> getShort(@NotNull JsonElement type) {
 		Objects.requireNonNull(type, "Type must not be null");
+		
 		if (!type.isJsonPrimitive()) {
 			return Result.error("Json element '" + type + "' is not a json primitive");
 		}
+		
 		JsonPrimitive primitive = type.getAsJsonPrimitive();
 		try {
 			return Result.success(primitive.getAsShort());
@@ -165,9 +169,11 @@ public final class JsonTypeProvider implements TypeProvider<JsonElement> {
 	@Override
 	public @NotNull Result<Integer> getInteger(@NotNull JsonElement type) {
 		Objects.requireNonNull(type, "Type must not be null");
+		
 		if (!type.isJsonPrimitive()) {
 			return Result.error("Json element '" + type + "' is not a json primitive");
 		}
+		
 		JsonPrimitive primitive = type.getAsJsonPrimitive();
 		try {
 			return Result.success(primitive.getAsInteger());
@@ -179,9 +185,11 @@ public final class JsonTypeProvider implements TypeProvider<JsonElement> {
 	@Override
 	public @NotNull Result<Long> getLong(@NotNull JsonElement type) {
 		Objects.requireNonNull(type, "Type must not be null");
+		
 		if (!type.isJsonPrimitive()) {
 			return Result.error("Json element '" + type + "' is not a json primitive");
 		}
+		
 		JsonPrimitive primitive = type.getAsJsonPrimitive();
 		try {
 			return Result.success(primitive.getAsLong());
@@ -193,9 +201,11 @@ public final class JsonTypeProvider implements TypeProvider<JsonElement> {
 	@Override
 	public @NotNull Result<Float> getFloat(@NotNull JsonElement type) {
 		Objects.requireNonNull(type, "Type must not be null");
+		
 		if (!type.isJsonPrimitive()) {
 			return Result.error("Json element '" + type + "' is not a json primitive");
 		}
+		
 		JsonPrimitive primitive = type.getAsJsonPrimitive();
 		try {
 			return Result.success(primitive.getAsFloat());
@@ -207,9 +217,11 @@ public final class JsonTypeProvider implements TypeProvider<JsonElement> {
 	@Override
 	public @NotNull Result<Double> getDouble(@NotNull JsonElement type) {
 		Objects.requireNonNull(type, "Type must not be null");
+		
 		if (!type.isJsonPrimitive()) {
 			return Result.error("Json element '" + type + "' is not a json primitive");
 		}
+		
 		JsonPrimitive primitive = type.getAsJsonPrimitive();
 		try {
 			return Result.success(primitive.getAsDouble());
@@ -221,6 +233,7 @@ public final class JsonTypeProvider implements TypeProvider<JsonElement> {
 	@Override
 	public @NotNull Result<String> getString(@NotNull JsonElement type) {
 		Objects.requireNonNull(type, "Type must not be null");
+		
 		if (!type.isJsonPrimitive()) {
 			return Result.error("Json element '" + type + "' is not a json primitive");
 		}
@@ -230,6 +243,7 @@ public final class JsonTypeProvider implements TypeProvider<JsonElement> {
 	@Override
 	public @NotNull Result<List<JsonElement>> getList(@NotNull JsonElement type) {
 		Objects.requireNonNull(type, "Type must not be null");
+		
 		if (!type.isJsonArray()) {
 			return Result.error("Json element '" + type + "' is not a json array");
 		}
@@ -239,20 +253,21 @@ public final class JsonTypeProvider implements TypeProvider<JsonElement> {
 	@Override
 	public @NotNull Result<Map<String, JsonElement>> getMap(@NotNull JsonElement type) {
 		Objects.requireNonNull(type, "Type must not be null");
+		
 		if (!type.isJsonObject()) {
 			return Result.error("Json element '" + type + "' is not a json object");
 		}
+		
 		Map<String, JsonElement> map = Maps.newLinkedHashMap();
 		type.getAsJsonObject().forEach(map::put);
 		return Result.success(map);
 	}
-	//endregion
 	
-	//region Modification
 	@Override
 	public @NotNull Result<Boolean> has(@NotNull JsonElement type, @NotNull String key) {
 		Objects.requireNonNull(type, "Type must not be null");
 		Objects.requireNonNull(key, "Key must not be null");
+		
 		if (!type.isJsonObject()) {
 			return Result.error("Json element '" + type + "' is not a json object");
 		}
@@ -263,6 +278,7 @@ public final class JsonTypeProvider implements TypeProvider<JsonElement> {
 	public @NotNull Result<JsonElement> get(@NotNull JsonElement type, @NotNull String key) {
 		Objects.requireNonNull(type, "Type must not be null");
 		Objects.requireNonNull(key, "Key must not be null");
+		
 		if (!type.isJsonObject()) {
 			return Result.error("Json element '" + type + "' is not a json object");
 		}
@@ -274,6 +290,7 @@ public final class JsonTypeProvider implements TypeProvider<JsonElement> {
 		Objects.requireNonNull(type, "Type must not be null");
 		Objects.requireNonNull(key, "Key must not be null");
 		Objects.requireNonNull(value, "Value must not be null");
+		
 		if (!type.isJsonObject()) {
 			return Result.error("Json element '" + type + "' is not a json object");
 		}
@@ -284,14 +301,17 @@ public final class JsonTypeProvider implements TypeProvider<JsonElement> {
 	public @NotNull Result<JsonElement> merge(@NotNull JsonElement current, @NotNull JsonElement value) {
 		Objects.requireNonNull(current, "Current value must not be null");
 		Objects.requireNonNull(value, "Value must not be null");
+		
 		if (current.isJsonNull()) {
 			return Result.success(value);
 		}
+		
 		if (current.isJsonArray() && value.isJsonArray()) {
 			JsonArray array = current.getAsJsonArray();
 			array.addAll(value.getAsJsonArray());
 			return Result.success(array);
 		}
+		
 		if (current.isJsonObject() && value.isJsonObject()) {
 			JsonObject object = current.getAsJsonObject();
 			object.addAll(value.getAsJsonObject());
@@ -299,5 +319,4 @@ public final class JsonTypeProvider implements TypeProvider<JsonElement> {
 		}
 		return Result.error("Unable to merge '" + current + "' with '" + value + "'");
 	}
-	//endregion
 }
