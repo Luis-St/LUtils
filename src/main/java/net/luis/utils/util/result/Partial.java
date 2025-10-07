@@ -36,7 +36,7 @@ import java.util.function.Supplier;
  * @param errorMessage The error message describing what went wrong (must not be null)
  */
 record Partial<T>(@Nullable T value, @NotNull String errorMessage) implements Result<T> {
-
+	
 	/**
 	 * Constructs a new partial result with the specified value and error message.<br>
 	 *
@@ -47,69 +47,69 @@ record Partial<T>(@Nullable T value, @NotNull String errorMessage) implements Re
 	Partial {
 		Objects.requireNonNull(errorMessage, "Error must not be null");
 	}
-
+	
 	@Override
 	public boolean isSuccess() {
 		return false;
 	}
-
+	
 	@Override
 	public boolean isError() {
 		return false;
 	}
-
+	
 	@Override
 	public boolean isPartial() {
 		return true;
 	}
-
+	
 	@Override
 	public boolean hasValue() {
 		return true;
 	}
-
+	
 	@Override
 	public boolean hasError() {
 		return true;
 	}
-
+	
 	@Override
 	public @NotNull Optional<T> result() {
 		return Optional.ofNullable(this.value);
 	}
-
+	
 	@Override
 	public @UnknownNullability T resultOrThrow() {
 		return this.value;
 	}
-
+	
 	@Override
 	public <X extends RuntimeException> @UnknownNullability T resultOrThrow(@NotNull Function<String, ? extends X> exceptionSupplier) {
 		Objects.requireNonNull(exceptionSupplier, "Exception supplier must not be null");
 		return this.value;
 	}
-
+	
 	@Override
 	public @NotNull Optional<String> error() {
 		return Optional.of(this.errorMessage);
 	}
-
+	
 	@Override
 	public @NotNull String errorOrThrow() {
 		return this.errorMessage;
 	}
-
+	
 	@Override
 	public <R> @NotNull Result<R> map(@NotNull Function<T, R> mapper) {
 		Objects.requireNonNull(mapper, "Mapper must not be null");
 		return new Partial<>(mapper.apply(this.value), this.errorMessage);
 	}
-
+	
 	@Override
 	public <R> @NotNull Result<R> flatMap(@NotNull Function<T, Result<R>> mapper) {
 		Objects.requireNonNull(mapper, "Mapper must not be null");
 		Result<R> mapped = mapper.apply(this.value);
-
+		
 		// If the mapped result has an error, combine the error messages
 		if (mapped.hasError()) {
 			String combinedError = this.errorMessage + "; " + mapped.errorOrThrow();
@@ -120,17 +120,17 @@ record Partial<T>(@Nullable T value, @NotNull String errorMessage) implements Re
 			// Otherwise return an error with the combined message
 			return Result.error(combinedError);
 		}
-
+		
 		// If the mapped result is successful, return a partial result with the original error
 		return Result.partial(mapped.resultOrThrow(), this.errorMessage);
 	}
-
+	
 	@Override
 	public @UnknownNullability T orElse(@NotNull T fallback) {
 		Objects.requireNonNull(fallback, "Fallback must not be null");
 		return this.value;
 	}
-
+	
 	@Override
 	public @UnknownNullability T orElseGet(@NotNull Supplier<? extends T> supplier) {
 		Objects.requireNonNull(supplier, "Supplier must not be null");

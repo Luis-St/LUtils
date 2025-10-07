@@ -38,9 +38,9 @@ import java.util.function.Supplier;
  * @param <T> The type of the result value
  */
 public sealed interface Result<T> permits Success, Error, Partial {
-
+	
 	//region Static factory methods
-
+	
 	/**
 	 * Creates a new successful result with the specified value.<br>
 	 *
@@ -51,7 +51,7 @@ public sealed interface Result<T> permits Success, Error, Partial {
 	static <T> @NotNull Result<T> success(@Nullable T value) {
 		return new Success<>(value);
 	}
-
+	
 	/**
 	 * Creates a new failed result with the specified error message.<br>
 	 *
@@ -63,7 +63,7 @@ public sealed interface Result<T> permits Success, Error, Partial {
 	static <T> @NotNull Result<T> error(@NotNull String error) {
 		return new Error<>(error);
 	}
-
+	
 	/**
 	 * Creates a new partial result with the specified value and error message.<br>
 	 * A partial result indicates that the operation produced a value but also encountered an error.<br>
@@ -78,51 +78,52 @@ public sealed interface Result<T> permits Success, Error, Partial {
 		return new Partial<>(value, error);
 	}
 	//endregion
-
+	
 	/**
 	 * Checks if the result is successful (not an error or partial result).<br>
 	 * @return True if the result is successful, otherwise false
 	 */
 	boolean isSuccess();
-
+	
 	/**
 	 * Checks if the result is an error (no value available).<br>
 	 * @return True if the result is an error, otherwise false
 	 */
 	boolean isError();
-
+	
 	/**
 	 * Checks if the result is partial (has both a value and an error message).<br>
 	 * @return True if the result is partial, otherwise false
 	 */
 	boolean isPartial();
-
+	
 	/**
 	 * Checks if the result has a value (success or partial).<br>
 	 * @return True if the result has a value, otherwise false
 	 */
 	boolean hasValue();
-
+	
 	/**
 	 * Checks if the result has an error message (error or partial).<br>
 	 * @return True if the result has an error message, otherwise false
 	 */
 	boolean hasError();
-
+	
 	/**
 	 * Returns the result value as an {@link Optional}.<br>
 	 * @return The result value, or empty if this is an error result
 	 */
 	@NotNull Optional<T> result();
-
+	
 	/**
 	 * Gets the result value or throws an exception.<br>
 	 *
 	 * @return The result value
 	 * @throws IllegalStateException If the result is an error (no value available)
 	 */
-	@UnknownNullability T resultOrThrow();
-
+	@UnknownNullability
+	T resultOrThrow();
+	
 	/**
 	 * Gets the result value or throws the specified exception.<br>
 	 *
@@ -133,13 +134,13 @@ public sealed interface Result<T> permits Success, Error, Partial {
 	 * @throws X If the result is an error (no value available)
 	 */
 	<X extends RuntimeException> @UnknownNullability T resultOrThrow(@NotNull Function<String, ? extends X> exceptionSupplier);
-
+	
 	/**
 	 * Returns the error message as an {@link Optional}.<br>
 	 * @return The error message, or empty if this is a success result
 	 */
 	@NotNull Optional<String> error();
-
+	
 	/**
 	 * Gets the error message or throws an exception.<br>
 	 *
@@ -147,7 +148,7 @@ public sealed interface Result<T> permits Success, Error, Partial {
 	 * @throws IllegalStateException If the result does not have an error message
 	 */
 	@NotNull String errorOrThrow();
-
+	
 	/**
 	 * Maps the result value to another type.<br>
 	 * If the result is an error, the mapping is not applied.<br>
@@ -159,7 +160,7 @@ public sealed interface Result<T> permits Success, Error, Partial {
 	 * @throws NullPointerException If the mapper is null
 	 */
 	<R> @NotNull Result<R> map(@NotNull Function<T, R> mapper);
-
+	
 	/**
 	 * Maps the result value to another result.<br>
 	 * This is useful for chaining operations or validating the result.<br>
@@ -172,7 +173,7 @@ public sealed interface Result<T> permits Success, Error, Partial {
 	 * @throws NullPointerException If the mapper is null
 	 */
 	<R> @NotNull Result<R> flatMap(@NotNull Function<T, Result<R>> mapper);
-
+	
 	/**
 	 * Gets the result value or the specified default value.<br>
 	 * This is useful for providing a fallback value if the operation fails.<br>
@@ -183,7 +184,7 @@ public sealed interface Result<T> permits Success, Error, Partial {
 	 */
 	@UnknownNullability
 	T orElse(@NotNull T fallback);
-
+	
 	/**
 	 * Gets the result value or the result of the specified supplier.<br>
 	 * This is useful for providing a fallback value if the operation fails.<br>
@@ -192,5 +193,6 @@ public sealed interface Result<T> permits Success, Error, Partial {
 	 * @return The result value or the fallback value
 	 * @throws NullPointerException If the supplier is null
 	 */
-	@UnknownNullability T orElseGet(@NotNull Supplier<? extends T> supplier);
+	@UnknownNullability
+	T orElseGet(@NotNull Supplier<? extends T> supplier);
 }

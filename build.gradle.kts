@@ -76,7 +76,7 @@ tasks.register<JavaExec>("run") {
 	
 	classpath = files()
 	jvmArgs = listOf(
-		"--module-path",  sourceSets["main"].runtimeClasspath.asPath,
+		"--module-path", sourceSets["main"].runtimeClasspath.asPath,
 		"--module", "net.luis.utils/net.luis.utils.Main"
 	)
 }

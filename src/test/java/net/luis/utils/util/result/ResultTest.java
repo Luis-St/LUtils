@@ -28,7 +28,7 @@ import static org.junit.jupiter.api.Assertions.*;
  * @author Luis-St
  */
 class ResultTest {
-
+	
 	@Test
 	void successCreatesSuccessfulResult() {
 		Result<Integer> result = Result.success(100);
@@ -37,7 +37,7 @@ class ResultTest {
 		assertFalse(result.isError());
 		assertFalse(result.isPartial());
 	}
-
+	
 	@Test
 	void successAcceptsNullValue() {
 		Result<String> result = Result.success(null);
@@ -45,7 +45,7 @@ class ResultTest {
 		assertTrue(result.isSuccess());
 		assertNull(result.resultOrThrow());
 	}
-
+	
 	@Test
 	void errorCreatesFailedResult() {
 		Result<Integer> result = Result.error("Something went wrong");
@@ -54,12 +54,12 @@ class ResultTest {
 		assertTrue(result.isError());
 		assertFalse(result.isPartial());
 	}
-
+	
 	@Test
 	void errorRejectsNullMessage() {
 		assertThrows(NullPointerException.class, () -> Result.error(null));
 	}
-
+	
 	@Test
 	void partialCreatesPartialResult() {
 		Result<Integer> result = Result.partial(50, "Incomplete data");
@@ -68,7 +68,7 @@ class ResultTest {
 		assertFalse(result.isError());
 		assertTrue(result.isPartial());
 	}
-
+	
 	@Test
 	void partialAcceptsNullValue() {
 		Result<String> result = Result.partial(null, "No value but error");
@@ -77,39 +77,39 @@ class ResultTest {
 		assertNull(result.resultOrThrow());
 		assertEquals("No value but error", result.errorOrThrow());
 	}
-
+	
 	@Test
 	void partialRejectsNullErrorMessage() {
 		assertThrows(NullPointerException.class, () -> Result.partial(100, null));
 	}
-
+	
 	@Test
 	void successHasValueButNoError() {
 		Result<Integer> result = Result.success(100);
 		assertTrue(result.hasValue());
 		assertFalse(result.hasError());
 	}
-
+	
 	@Test
 	void errorHasNoValueButHasError() {
 		Result<Integer> result = Result.error("failed");
 		assertFalse(result.hasValue());
 		assertTrue(result.hasError());
 	}
-
+	
 	@Test
 	void partialHasValueAndError() {
 		Result<Integer> result = Result.partial(50, "warning");
 		assertTrue(result.hasValue());
 		assertTrue(result.hasError());
 	}
-
+	
 	@Test
 	void successErrorAndPartialAreMutuallyExclusive() {
 		Result<Integer> success = Result.success(100);
 		Result<Integer> error = Result.error("failed");
 		Result<Integer> partial = Result.partial(50, "warning");
-
+		
 		assertTrue(success.isSuccess() && !success.isError() && !success.isPartial());
 		assertTrue(error.isError() && !error.isSuccess() && !error.isPartial());
 		assertTrue(partial.isPartial() && !partial.isSuccess() && !partial.isError());
