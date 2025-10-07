@@ -20,7 +20,7 @@ package net.luis.utils.io.codec.struct;
 
 import net.luis.utils.io.codec.KeyableCodec;
 import net.luis.utils.io.codec.provider.TypeProvider;
-import net.luis.utils.util.Result;
+import net.luis.utils.util.result.Result;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -170,7 +170,7 @@ public abstract class RangeCodec<C extends Number & Comparable<C>> implements Ke
 		if (result.isError()) {
 			return result;
 		}
-		C decoded = result.orThrow();
+		C decoded = result.resultOrThrow();
 		if (decoded.compareTo(this.minInclusive) >= 0 && 0 >= decoded.compareTo(this.maxInclusive)) {
 			return result;
 		}

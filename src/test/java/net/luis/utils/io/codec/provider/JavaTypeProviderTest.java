@@ -43,14 +43,14 @@ class JavaTypeProviderTest {
 	
 	@Test
 	void createPrimitiveTypes() {
-		assertEquals(true, JavaTypeProvider.INSTANCE.createBoolean(true).orThrow());
-		assertEquals((byte) 42, JavaTypeProvider.INSTANCE.createByte((byte) 42).orThrow());
-		assertEquals((short) 42, JavaTypeProvider.INSTANCE.createShort((short) 42).orThrow());
-		assertEquals(42, JavaTypeProvider.INSTANCE.createInteger(42).orThrow());
-		assertEquals(42L, JavaTypeProvider.INSTANCE.createLong(42L).orThrow());
-		assertEquals(42.5f, JavaTypeProvider.INSTANCE.createFloat(42.5f).orThrow());
-		assertEquals(42.5, JavaTypeProvider.INSTANCE.createDouble(42.5).orThrow());
-		assertEquals("test", JavaTypeProvider.INSTANCE.createString("test").orThrow());
+		assertEquals(true, JavaTypeProvider.INSTANCE.createBoolean(true).resultOrThrow());
+		assertEquals((byte) 42, JavaTypeProvider.INSTANCE.createByte((byte) 42).resultOrThrow());
+		assertEquals((short) 42, JavaTypeProvider.INSTANCE.createShort((short) 42).resultOrThrow());
+		assertEquals(42, JavaTypeProvider.INSTANCE.createInteger(42).resultOrThrow());
+		assertEquals(42L, JavaTypeProvider.INSTANCE.createLong(42L).resultOrThrow());
+		assertEquals(42.5f, JavaTypeProvider.INSTANCE.createFloat(42.5f).resultOrThrow());
+		assertEquals(42.5, JavaTypeProvider.INSTANCE.createDouble(42.5).resultOrThrow());
+		assertEquals("test", JavaTypeProvider.INSTANCE.createString("test").resultOrThrow());
 	}
 	
 	@Test
@@ -65,21 +65,21 @@ class JavaTypeProviderTest {
 		
 		assertThrows(NullPointerException.class, () -> JavaTypeProvider.INSTANCE.createList(null));
 		
-		List<?> emptyList = (List<?>) JavaTypeProvider.INSTANCE.createList(List.of()).orThrow();
+		List<?> emptyList = (List<?>) JavaTypeProvider.INSTANCE.createList(List.of()).resultOrThrow();
 		assertTrue(emptyList.isEmpty());
 		
-		List<?> listWithElements = (List<?>) JavaTypeProvider.INSTANCE.createList(List.of(element1, element2)).orThrow();
+		List<?> listWithElements = (List<?>) JavaTypeProvider.INSTANCE.createList(List.of(element1, element2)).resultOrThrow();
 		assertEquals(2, listWithElements.size());
 		assertEquals(element1, listWithElements.get(0));
 		assertEquals(element2, listWithElements.get(1));
 		
-		Map<?, ?> emptyMap = (Map<?, ?>) JavaTypeProvider.INSTANCE.createMap().orThrow();
+		Map<?, ?> emptyMap = (Map<?, ?>) JavaTypeProvider.INSTANCE.createMap().resultOrThrow();
 		assertTrue(emptyMap.isEmpty());
 		
-		Map<?, ?> emptyMapFromValues = (Map<?, ?>) JavaTypeProvider.INSTANCE.createMap(Map.of()).orThrow();
+		Map<?, ?> emptyMapFromValues = (Map<?, ?>) JavaTypeProvider.INSTANCE.createMap(Map.of()).resultOrThrow();
 		assertTrue(emptyMapFromValues.isEmpty());
 		
-		Map<?, ?> mapWithElements = (Map<?, ?>) JavaTypeProvider.INSTANCE.createMap(Map.of("key1", element1, "key2", element2)).orThrow();
+		Map<?, ?> mapWithElements = (Map<?, ?>) JavaTypeProvider.INSTANCE.createMap(Map.of("key1", element1, "key2", element2)).resultOrThrow();
 		assertEquals(2, mapWithElements.size());
 		assertEquals(element1, mapWithElements.get("key1"));
 		assertEquals(element2, mapWithElements.get("key2"));
@@ -95,7 +95,7 @@ class JavaTypeProviderTest {
 		assertTrue(JavaTypeProvider.INSTANCE.getEmpty("test").isError());
 		
 		Object emptyObject = new Object();
-		assertEquals(emptyObject, JavaTypeProvider.INSTANCE.getEmpty(emptyObject).orThrow());
+		assertEquals(emptyObject, JavaTypeProvider.INSTANCE.getEmpty(emptyObject).resultOrThrow());
 	}
 	
 	@Test
@@ -128,14 +128,14 @@ class JavaTypeProviderTest {
 		assertTrue(JavaTypeProvider.INSTANCE.getFloat(invalidValue).isError());
 		assertTrue(JavaTypeProvider.INSTANCE.getDouble(invalidValue).isError());
 		
-		assertTrue(JavaTypeProvider.INSTANCE.getBoolean(true).orThrow());
-		assertEquals((byte) 42, JavaTypeProvider.INSTANCE.getByte((byte) 42).orThrow());
-		assertEquals((short) 42, JavaTypeProvider.INSTANCE.getShort((short) 42).orThrow());
-		assertEquals(42, JavaTypeProvider.INSTANCE.getInteger(42).orThrow());
-		assertEquals(42L, JavaTypeProvider.INSTANCE.getLong(42L).orThrow());
-		assertEquals(42.5f, JavaTypeProvider.INSTANCE.getFloat(42.5f).orThrow());
-		assertEquals(42.5, JavaTypeProvider.INSTANCE.getDouble(42.5).orThrow());
-		assertEquals("test", JavaTypeProvider.INSTANCE.getString("test").orThrow());
+		assertTrue(JavaTypeProvider.INSTANCE.getBoolean(true).resultOrThrow());
+		assertEquals((byte) 42, JavaTypeProvider.INSTANCE.getByte((byte) 42).resultOrThrow());
+		assertEquals((short) 42, JavaTypeProvider.INSTANCE.getShort((short) 42).resultOrThrow());
+		assertEquals(42, JavaTypeProvider.INSTANCE.getInteger(42).resultOrThrow());
+		assertEquals(42L, JavaTypeProvider.INSTANCE.getLong(42L).resultOrThrow());
+		assertEquals(42.5f, JavaTypeProvider.INSTANCE.getFloat(42.5f).resultOrThrow());
+		assertEquals(42.5, JavaTypeProvider.INSTANCE.getDouble(42.5).resultOrThrow());
+		assertEquals("test", JavaTypeProvider.INSTANCE.getString("test").resultOrThrow());
 	}
 	
 	@Test
@@ -148,19 +148,19 @@ class JavaTypeProviderTest {
 		assertTrue(JavaTypeProvider.INSTANCE.getMap(wrongType).isError());
 		
 		List<Object> emptyList = List.of();
-		assertTrue(JavaTypeProvider.INSTANCE.getList(emptyList).orThrow().isEmpty());
+		assertTrue(JavaTypeProvider.INSTANCE.getList(emptyList).resultOrThrow().isEmpty());
 		
 		List<Object> listWithElements = List.of("a", "b");
-		List<Object> listResult = JavaTypeProvider.INSTANCE.getList(listWithElements).orThrow();
+		List<Object> listResult = JavaTypeProvider.INSTANCE.getList(listWithElements).resultOrThrow();
 		assertEquals(2, listResult.size());
 		assertEquals("a", listResult.get(0));
 		assertEquals("b", listResult.get(1));
 		
 		Map<String, Object> emptyMap = Map.of();
-		assertTrue(JavaTypeProvider.INSTANCE.getMap(emptyMap).orThrow().isEmpty());
+		assertTrue(JavaTypeProvider.INSTANCE.getMap(emptyMap).resultOrThrow().isEmpty());
 		
 		Map<String, Object> mapWithElements = Map.of("key", "value");
-		Map<String, Object> mapResult = JavaTypeProvider.INSTANCE.getMap(mapWithElements).orThrow();
+		Map<String, Object> mapResult = JavaTypeProvider.INSTANCE.getMap(mapWithElements).resultOrThrow();
 		assertEquals(1, mapResult.size());
 		assertEquals("value", mapResult.get("key"));
 	}
@@ -168,7 +168,7 @@ class JavaTypeProviderTest {
 	@Test
 	@SuppressWarnings("unchecked")
 	void mapOperations() {
-		Map<String, Object> map = (Map<String, Object>) JavaTypeProvider.INSTANCE.createMap().orThrow();
+		Map<String, Object> map = (Map<String, Object>) JavaTypeProvider.INSTANCE.createMap().resultOrThrow();
 		Object testValue = "test";
 		
 		assertThrows(NullPointerException.class, () -> JavaTypeProvider.INSTANCE.has(null, "key"));
@@ -184,12 +184,12 @@ class JavaTypeProviderTest {
 		assertTrue(JavaTypeProvider.INSTANCE.get(wrongType, "key").isError());
 		assertTrue(JavaTypeProvider.INSTANCE.set(wrongType, "key", testValue).isError());
 		
-		assertFalse(JavaTypeProvider.INSTANCE.has(map, "key").orThrow());
-		assertNull(JavaTypeProvider.INSTANCE.get(map, "key").orThrow());
+		assertFalse(JavaTypeProvider.INSTANCE.has(map, "key").resultOrThrow());
+		assertNull(JavaTypeProvider.INSTANCE.get(map, "key").resultOrThrow());
 		
-		assertNull(JavaTypeProvider.INSTANCE.set(map, "key", testValue).orThrow());
-		assertTrue(JavaTypeProvider.INSTANCE.has(map, "key").orThrow());
-		assertEquals(testValue, JavaTypeProvider.INSTANCE.get(map, "key").orThrow());
+		assertNull(JavaTypeProvider.INSTANCE.set(map, "key", testValue).resultOrThrow());
+		assertTrue(JavaTypeProvider.INSTANCE.has(map, "key").resultOrThrow());
+		assertEquals(testValue, JavaTypeProvider.INSTANCE.get(map, "key").resultOrThrow());
 	}
 	
 	@Test
@@ -205,19 +205,19 @@ class JavaTypeProviderTest {
 		Map<String, Object> map1 = Map.of("key1", "value1");
 		Map<String, Object> map2 = Map.of("key2", "value2");
 		
-		assertEquals(primitive, JavaTypeProvider.INSTANCE.merge(emptyObject, primitive).orThrow());
-		assertEquals(list1, JavaTypeProvider.INSTANCE.merge(emptyObject, list1).orThrow());
-		assertEquals(map1, JavaTypeProvider.INSTANCE.merge(emptyObject, map1).orThrow());
+		assertEquals(primitive, JavaTypeProvider.INSTANCE.merge(emptyObject, primitive).resultOrThrow());
+		assertEquals(list1, JavaTypeProvider.INSTANCE.merge(emptyObject, list1).resultOrThrow());
+		assertEquals(map1, JavaTypeProvider.INSTANCE.merge(emptyObject, map1).resultOrThrow());
 		
-		List<Object> mutableList1 = (List<Object>) JavaTypeProvider.INSTANCE.createList(Lists.newArrayList("a")).orThrow();
-		Object mergedListResult = JavaTypeProvider.INSTANCE.merge(mutableList1, list2).orThrow();
+		List<Object> mutableList1 = (List<Object>) JavaTypeProvider.INSTANCE.createList(Lists.newArrayList("a")).resultOrThrow();
+		Object mergedListResult = JavaTypeProvider.INSTANCE.merge(mutableList1, list2).resultOrThrow();
 		List<Object> mergedList = (List<Object>) mergedListResult;
 		assertEquals(2, mergedList.size());
 		assertEquals("a", mergedList.get(0));
 		assertEquals("b", mergedList.get(1));
 		
-		Map<String, Object> mutableMap1 = (Map<String, Object>) JavaTypeProvider.INSTANCE.createMap(Maps.newHashMap(Map.of("key1", "value1"))).orThrow();
-		Object mergedMapResult = JavaTypeProvider.INSTANCE.merge(mutableMap1, map2).orThrow();
+		Map<String, Object> mutableMap1 = (Map<String, Object>) JavaTypeProvider.INSTANCE.createMap(Maps.newHashMap(Map.of("key1", "value1"))).resultOrThrow();
+		Object mergedMapResult = JavaTypeProvider.INSTANCE.merge(mutableMap1, map2).resultOrThrow();
 		Map<String, Object> mergedMap = (Map<String, Object>) mergedMapResult;
 		assertEquals(2, mergedMap.size());
 		assertEquals("value1", mergedMap.get("key1"));

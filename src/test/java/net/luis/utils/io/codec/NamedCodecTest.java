@@ -20,7 +20,7 @@ package net.luis.utils.io.codec;
 
 import net.luis.utils.io.codec.provider.JsonTypeProvider;
 import net.luis.utils.io.data.json.*;
-import net.luis.utils.util.Result;
+import net.luis.utils.util.result.Result;
 import org.junit.jupiter.api.Test;
 
 import java.util.Optional;
@@ -73,7 +73,7 @@ class NamedCodecTest {
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, map, Optional.empty());
 		assertTrue(result.isSuccess());
-		assertEquals(JsonNull.INSTANCE, result.orThrow());
+		assertEquals(JsonNull.INSTANCE, result.resultOrThrow());
 	}
 	
 	@Test
@@ -93,7 +93,7 @@ class NamedCodecTest {
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, map, Optional.of(42));
 		assertTrue(result.isSuccess());
-		assertSame(map, result.orThrow());
+		assertSame(map, result.resultOrThrow());
 		assertTrue(map.containsKey("name"));
 		assertEquals(new JsonPrimitive(42), map.get("name"));
 	}
@@ -106,7 +106,7 @@ class NamedCodecTest {
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, map, 123);
 		assertTrue(result.isSuccess());
-		assertSame(map, result.orThrow());
+		assertSame(map, result.resultOrThrow());
 		assertTrue(map.containsKey("number"));
 		assertEquals(new JsonPrimitive(123), map.get("number"));
 	}
@@ -137,7 +137,7 @@ class NamedCodecTest {
 		
 		Result<Optional<Integer>> result = codec.decodeStart(typeProvider, map);
 		assertTrue(result.isSuccess());
-		assertTrue(result.orThrow().isEmpty());
+		assertTrue(result.resultOrThrow().isEmpty());
 	}
 	
 	@Test
@@ -158,8 +158,8 @@ class NamedCodecTest {
 		
 		Result<Optional<Integer>> result = codec.decodeStart(typeProvider, map);
 		assertTrue(result.isSuccess());
-		assertTrue(result.orThrow().isPresent());
-		assertEquals(42, result.orThrow().orElseThrow());
+		assertTrue(result.resultOrThrow().isPresent());
+		assertEquals(42, result.resultOrThrow().orElseThrow());
 	}
 	
 	@Test
@@ -171,7 +171,7 @@ class NamedCodecTest {
 		
 		Result<Integer> result = codec.decodeStart(typeProvider, map);
 		assertTrue(result.isSuccess());
-		assertEquals(123, result.orThrow());
+		assertEquals(123, result.resultOrThrow());
 	}
 	
 	@Test
@@ -193,7 +193,7 @@ class NamedCodecTest {
 		
 		Result<Integer> result = codec.decodeStart(typeProvider, map);
 		assertTrue(result.isSuccess());
-		assertEquals(42, result.orThrow());
+		assertEquals(42, result.resultOrThrow());
 	}
 	
 	@Test
@@ -205,7 +205,7 @@ class NamedCodecTest {
 		
 		Result<Integer> result = codec.decodeStart(typeProvider, map);
 		assertTrue(result.isSuccess());
-		assertEquals(42, result.orThrow());
+		assertEquals(42, result.resultOrThrow());
 	}
 	
 	@Test
@@ -218,7 +218,7 @@ class NamedCodecTest {
 		
 		Result<Integer> result = codec.decodeStart(typeProvider, map);
 		assertTrue(result.isSuccess());
-		assertEquals(43, result.orThrow());
+		assertEquals(43, result.resultOrThrow());
 	}
 	
 	@Test

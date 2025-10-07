@@ -23,7 +23,7 @@ import net.luis.utils.io.codec.provider.JsonTypeProvider;
 import net.luis.utils.io.data.json.JsonElement;
 import net.luis.utils.io.data.json.JsonPrimitive;
 import net.luis.utils.util.Either;
-import net.luis.utils.util.Result;
+import net.luis.utils.util.result.Result;
 import org.junit.jupiter.api.Test;
 
 import java.util.Optional;
@@ -73,7 +73,7 @@ class EitherCodecTest {
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), left);
 		assertTrue(result.isSuccess());
-		assertEquals(new JsonPrimitive(42), result.orThrow());
+		assertEquals(new JsonPrimitive(42), result.resultOrThrow());
 	}
 	
 	@Test
@@ -84,7 +84,7 @@ class EitherCodecTest {
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), right);
 		assertTrue(result.isSuccess());
-		assertEquals(new JsonPrimitive(true), result.orThrow());
+		assertEquals(new JsonPrimitive(true), result.resultOrThrow());
 	}
 	
 	@Test
@@ -95,12 +95,12 @@ class EitherCodecTest {
 		Either<String, Double> leftString = Either.left("hello");
 		Result<JsonElement> leftResult = codec.encodeStart(typeProvider, typeProvider.empty(), leftString);
 		assertTrue(leftResult.isSuccess());
-		assertEquals(new JsonPrimitive("hello"), leftResult.orThrow());
+		assertEquals(new JsonPrimitive("hello"), leftResult.resultOrThrow());
 		
 		Either<String, Double> rightDouble = Either.right(3.14);
 		Result<JsonElement> rightResult = codec.encodeStart(typeProvider, typeProvider.empty(), rightDouble);
 		assertTrue(rightResult.isSuccess());
-		assertEquals(new JsonPrimitive(3.14), rightResult.orThrow());
+		assertEquals(new JsonPrimitive(3.14), rightResult.resultOrThrow());
 	}
 	
 	@Test
@@ -111,7 +111,7 @@ class EitherCodecTest {
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), left);
 		assertTrue(result.isSuccess());
-		assertTrue(result.orThrow().isJsonNull());
+		assertTrue(result.resultOrThrow().isJsonNull());
 	}
 	
 	@Test
@@ -122,7 +122,7 @@ class EitherCodecTest {
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), right);
 		assertTrue(result.isSuccess());
-		assertTrue(result.orThrow().isJsonNull());
+		assertTrue(result.resultOrThrow().isJsonNull());
 	}
 	
 	@Test
@@ -150,7 +150,7 @@ class EitherCodecTest {
 		
 		Result<Either<Integer, Boolean>> result = codec.decodeStart(typeProvider, new JsonPrimitive(42));
 		assertTrue(result.isSuccess());
-		assertEquals(Either.left(42), result.orThrow());
+		assertEquals(Either.left(42), result.resultOrThrow());
 	}
 	
 	@Test
@@ -160,7 +160,7 @@ class EitherCodecTest {
 		
 		Result<Either<Integer, Boolean>> result = codec.decodeStart(typeProvider, new JsonPrimitive(true));
 		assertTrue(result.isSuccess());
-		assertEquals(Either.right(true), result.orThrow());
+		assertEquals(Either.right(true), result.resultOrThrow());
 	}
 	
 	@Test
@@ -180,8 +180,8 @@ class EitherCodecTest {
 		
 		Result<Either<String, String>> result = codec.decodeStart(typeProvider, new JsonPrimitive("hello"));
 		assertTrue(result.isSuccess());
-		assertTrue(result.orThrow().isLeft());
-		assertEquals("hello", result.orThrow().leftOrThrow());
+		assertTrue(result.resultOrThrow().isLeft());
+		assertEquals("hello", result.resultOrThrow().leftOrThrow());
 	}
 	
 	@Test
@@ -191,13 +191,13 @@ class EitherCodecTest {
 		
 		Result<Either<String, Double>> stringResult = codec.decodeStart(typeProvider, new JsonPrimitive("text"));
 		assertTrue(stringResult.isSuccess());
-		assertTrue(stringResult.orThrow().isLeft());
-		assertEquals("text", stringResult.orThrow().leftOrThrow());
+		assertTrue(stringResult.resultOrThrow().isLeft());
+		assertEquals("text", stringResult.resultOrThrow().leftOrThrow());
 		
 		Result<Either<String, Double>> doubleResult = codec.decodeStart(typeProvider, new JsonPrimitive(3.14));
 		assertTrue(doubleResult.isSuccess());
-		assertTrue(doubleResult.orThrow().isLeft());
-		assertEquals("3.14", doubleResult.orThrow().leftOrThrow());
+		assertTrue(doubleResult.resultOrThrow().isLeft());
+		assertEquals("3.14", doubleResult.resultOrThrow().leftOrThrow());
 	}
 	
 	@Test
@@ -207,8 +207,8 @@ class EitherCodecTest {
 		
 		Result<Either<Double, Integer>> result = codec.decodeStart(typeProvider, new JsonPrimitive(42));
 		assertTrue(result.isSuccess());
-		assertTrue(result.orThrow().isLeft());
-		assertEquals(42.0, result.orThrow().leftOrThrow());
+		assertTrue(result.resultOrThrow().isLeft());
+		assertEquals(42.0, result.resultOrThrow().leftOrThrow());
 	}
 	
 	@Test
@@ -218,13 +218,13 @@ class EitherCodecTest {
 		
 		Result<Either<Optional<Integer>, String>> intResult = codec.decodeStart(typeProvider, new JsonPrimitive(42));
 		assertTrue(intResult.isSuccess());
-		assertTrue(intResult.orThrow().isLeft());
-		assertEquals(42, intResult.orThrow().leftOrThrow().orElseThrow());
+		assertTrue(intResult.resultOrThrow().isLeft());
+		assertEquals(42, intResult.resultOrThrow().leftOrThrow().orElseThrow());
 		
 		Result<Either<Optional<Integer>, String>> stringResult = codec.decodeStart(typeProvider, new JsonPrimitive("text"));
 		assertTrue(stringResult.isSuccess());
-		assertTrue(stringResult.orThrow().isLeft());
-		assertTrue(stringResult.orThrow().leftOrThrow().isEmpty());
+		assertTrue(stringResult.resultOrThrow().isLeft());
+		assertTrue(stringResult.resultOrThrow().leftOrThrow().isEmpty());
 	}
 	
 	@Test

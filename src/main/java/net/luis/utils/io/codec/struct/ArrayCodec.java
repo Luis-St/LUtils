@@ -21,7 +21,7 @@ package net.luis.utils.io.codec.struct;
 import net.luis.utils.io.codec.Codec;
 import net.luis.utils.io.codec.Codecs;
 import net.luis.utils.io.codec.provider.TypeProvider;
-import net.luis.utils.util.Result;
+import net.luis.utils.util.result.Result;
 import org.jetbrains.annotations.*;
 
 import java.lang.reflect.Array;
@@ -125,7 +125,7 @@ public class ArrayCodec<C> implements Codec<C[]> {
 			return Result.error("Unable to encode some elements of array '" + Arrays.deepToString(value) + "' using '" + this + "': \n" + encoded.stream().filter(Result::isError).map(Result::errorOrThrow).collect(Collectors.joining("\n")));
 		}
 		
-		List<R> results = encoded.stream().map(Result::orThrow).filter(result -> provider.getEmpty(result).isError()).toList();
+		List<R> results = encoded.stream().map(Result::resultOrThrow).filter(result -> provider.getEmpty(result).isError()).toList();
 		return provider.merge(current, provider.createList(results));
 	}
 	
@@ -142,14 +142,14 @@ public class ArrayCodec<C> implements Codec<C[]> {
 			return Result.error("Unable to decode array using '" + this + "': " + decoded.errorOrThrow());
 		}
 		
-		List<Result<C>> results = decoded.orThrow().stream().map(v -> this.codec.decodeStart(provider, v)).toList();
+		List<Result<C>> results = decoded.resultOrThrow().stream().map(v -> this.codec.decodeStart(provider, v)).toList();
 		if (results.stream().anyMatch(Result::isError)) {
 			return Result.error("Unable to decode some elements of array using '" + this + "': \n" + results.stream().filter(Result::isError).map(Result::errorOrThrow).collect(Collectors.joining("\n")));
 		}
 		if (this.maxLength >= results.size() && results.size() >= this.minLength) {
 			Object array = Array.newInstance(this.type, results.size());
 			for (int i = 0; i < results.size(); i++) {
-				Array.set(array, i, this.type.cast(results.get(i).orThrow()));
+				Array.set(array, i, this.type.cast(results.get(i).resultOrThrow()));
 			}
 			return Result.success((C[]) array);
 		}

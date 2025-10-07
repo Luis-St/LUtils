@@ -19,7 +19,7 @@
 package net.luis.utils.io.codec.provider;
 
 import net.luis.utils.io.codec.Codec;
-import net.luis.utils.util.Result;
+import net.luis.utils.util.result.Result;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
@@ -291,7 +291,7 @@ public interface TypeProvider<T> {
 		Objects.requireNonNull(key, "Key must not be null");
 		Objects.requireNonNull(value, "Value must not be null");
 		if (value.isSuccess()) {
-			return this.set(type, key, value.orThrow());
+			return this.set(type, key, value.resultOrThrow());
 		}
 		return Result.error("Unable to set value for key '" + key + "' in '" + type + "': " + value.errorOrThrow());
 	}
@@ -324,7 +324,7 @@ public interface TypeProvider<T> {
 		Objects.requireNonNull(current, "Current value must not be null");
 		Objects.requireNonNull(value, "Value must not be null");
 		if (value.isSuccess()) {
-			return this.merge(current, value.orThrow());
+			return this.merge(current, value.resultOrThrow());
 		}
 		return Result.error("Unable to merge '" + current + "' with 'value': " + value.errorOrThrow());
 	}

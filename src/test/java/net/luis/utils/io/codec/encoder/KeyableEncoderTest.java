@@ -22,7 +22,7 @@ import net.luis.utils.io.codec.ResultingFunction;
 import net.luis.utils.io.codec.provider.JsonTypeProvider;
 import net.luis.utils.io.data.json.JsonElement;
 import net.luis.utils.io.data.json.JsonPrimitive;
-import net.luis.utils.util.Result;
+import net.luis.utils.util.result.Result;
 import org.junit.jupiter.api.Test;
 
 import static net.luis.utils.io.codec.Codecs.*;
@@ -49,7 +49,7 @@ class KeyableEncoderTest {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Result<JsonElement> result = encoder.encodeStart(typeProvider, typeProvider.empty(), 42);
 		assertTrue(result.isSuccess());
-		assertEquals(new JsonPrimitive(42), result.orThrow());
+		assertEquals(new JsonPrimitive(42), result.resultOrThrow());
 	}
 	
 	@Test
@@ -68,15 +68,15 @@ class KeyableEncoderTest {
 		
 		Result<String> result = encoder.encodeKey(typeProvider, 42);
 		assertTrue(result.isSuccess());
-		assertEquals("42", result.orThrow());
+		assertEquals("42", result.resultOrThrow());
 		
 		Result<String> negativeResult = encoder.encodeKey(typeProvider, -42);
 		assertTrue(negativeResult.isSuccess());
-		assertEquals("-42", negativeResult.orThrow());
+		assertEquals("-42", negativeResult.resultOrThrow());
 		
 		Result<String> zeroResult = encoder.encodeKey(typeProvider, 0);
 		assertTrue(zeroResult.isSuccess());
-		assertEquals("0", zeroResult.orThrow());
+		assertEquals("0", zeroResult.resultOrThrow());
 	}
 	
 	@Test
@@ -86,11 +86,11 @@ class KeyableEncoderTest {
 		
 		Result<String> result = encoder.encodeKey(typeProvider, 42.5);
 		assertTrue(result.isSuccess());
-		assertEquals("42.5", result.orThrow());
+		assertEquals("42.5", result.resultOrThrow());
 		
 		Result<String> scientificResult = encoder.encodeKey(typeProvider, 1.23e-4);
 		assertTrue(scientificResult.isSuccess());
-		assertEquals("1.23E-4", scientificResult.orThrow());
+		assertEquals("1.23E-4", scientificResult.resultOrThrow());
 	}
 	
 	@Test
@@ -100,15 +100,15 @@ class KeyableEncoderTest {
 		
 		Result<String> result = encoder.encodeKey(typeProvider, "hello");
 		assertTrue(result.isSuccess());
-		assertEquals("hello", result.orThrow());
+		assertEquals("hello", result.resultOrThrow());
 		
 		Result<String> emptyResult = encoder.encodeKey(typeProvider, "");
 		assertTrue(emptyResult.isSuccess());
-		assertEquals("", emptyResult.orThrow());
+		assertEquals("", emptyResult.resultOrThrow());
 		
 		Result<String> spaceResult = encoder.encodeKey(typeProvider, " ");
 		assertTrue(spaceResult.isSuccess());
-		assertEquals(" ", spaceResult.orThrow());
+		assertEquals(" ", spaceResult.resultOrThrow());
 	}
 	
 	@Test
@@ -139,11 +139,11 @@ class KeyableEncoderTest {
 		
 		Result<String> specialResult = encoder.encodeKey(typeProvider, 999);
 		assertTrue(specialResult.isSuccess());
-		assertEquals("special", specialResult.orThrow());
+		assertEquals("special", specialResult.resultOrThrow());
 		
 		Result<String> numberResult = encoder.encodeKey(typeProvider, 42);
 		assertTrue(numberResult.isSuccess());
-		assertEquals("42", numberResult.orThrow());
+		assertEquals("42", numberResult.resultOrThrow());
 	}
 	
 	@Test
@@ -162,11 +162,11 @@ class KeyableEncoderTest {
 		
 		Result<String> specialResult = encoder.encodeKey(typeProvider, 999);
 		assertTrue(specialResult.isSuccess());
-		assertEquals("special", specialResult.orThrow());
+		assertEquals("special", specialResult.resultOrThrow());
 		
 		Result<String> numberResult = encoder.encodeKey(typeProvider, 42);
 		assertTrue(numberResult.isSuccess());
-		assertEquals("42", numberResult.orThrow());
+		assertEquals("42", numberResult.resultOrThrow());
 		
 		Result<String> errorResult = encoder.encodeKey(typeProvider, -5);
 		assertTrue(errorResult.isError());
@@ -180,7 +180,7 @@ class KeyableEncoderTest {
 		
 		Result<String> result = encoder.encodeKey(typeProvider, "anything");
 		assertTrue(result.isSuccess());
-		assertNull(result.orThrow());
+		assertNull(result.resultOrThrow());
 	}
 	
 	@Test
@@ -200,7 +200,7 @@ class KeyableEncoderTest {
 		
 		Result<String> successResult = encoder.encodeKey(typeProvider, "good");
 		assertTrue(successResult.isSuccess());
-		assertEquals("good", successResult.orThrow());
+		assertEquals("good", successResult.resultOrThrow());
 	}
 	
 	@Test
@@ -210,7 +210,7 @@ class KeyableEncoderTest {
 		
 		Result<JsonElement> normalEncodeResult = encoder.encodeStart(typeProvider, typeProvider.empty(), 42);
 		assertTrue(normalEncodeResult.isSuccess());
-		assertEquals(new JsonPrimitive(42), normalEncodeResult.orThrow());
+		assertEquals(new JsonPrimitive(42), normalEncodeResult.resultOrThrow());
 		
 		Result<JsonElement> normalEncodeErrorResult = encoder.encodeStart(typeProvider, typeProvider.empty(), null);
 		assertTrue(normalEncodeErrorResult.isError());

@@ -21,7 +21,7 @@ package net.luis.utils.io.codec.decoder;
 import net.luis.utils.io.codec.ResultingFunction;
 import net.luis.utils.io.codec.provider.JsonTypeProvider;
 import net.luis.utils.io.data.json.JsonPrimitive;
-import net.luis.utils.util.Result;
+import net.luis.utils.util.result.Result;
 import org.junit.jupiter.api.Test;
 
 import static net.luis.utils.io.codec.Codecs.*;
@@ -48,7 +48,7 @@ class KeyableDecoderTest {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Result<Integer> result = decoder.decodeStart(typeProvider, new JsonPrimitive(42));
 		assertTrue(result.isSuccess());
-		assertEquals(42, result.orThrow());
+		assertEquals(42, result.resultOrThrow());
 	}
 	
 	@Test
@@ -67,15 +67,15 @@ class KeyableDecoderTest {
 		
 		Result<Integer> result = decoder.decodeKey(typeProvider, "42");
 		assertTrue(result.isSuccess());
-		assertEquals(42, result.orThrow());
+		assertEquals(42, result.resultOrThrow());
 		
 		Result<Integer> negativeResult = decoder.decodeKey(typeProvider, "-42");
 		assertTrue(negativeResult.isSuccess());
-		assertEquals(-42, negativeResult.orThrow());
+		assertEquals(-42, negativeResult.resultOrThrow());
 		
 		Result<Integer> zeroResult = decoder.decodeKey(typeProvider, "0");
 		assertTrue(zeroResult.isSuccess());
-		assertEquals(0, zeroResult.orThrow());
+		assertEquals(0, zeroResult.resultOrThrow());
 	}
 	
 	@Test
@@ -100,11 +100,11 @@ class KeyableDecoderTest {
 		
 		Result<Double> result = decoder.decodeKey(typeProvider, "42.5");
 		assertTrue(result.isSuccess());
-		assertEquals(42.5, result.orThrow());
+		assertEquals(42.5, result.resultOrThrow());
 		
 		Result<Double> scientificResult = decoder.decodeKey(typeProvider, "1.23e-4");
 		assertTrue(scientificResult.isSuccess());
-		assertEquals(1.23e-4, scientificResult.orThrow());
+		assertEquals(1.23e-4, scientificResult.resultOrThrow());
 	}
 	
 	@Test
@@ -114,11 +114,11 @@ class KeyableDecoderTest {
 		
 		Result<String> result = decoder.decodeKey(typeProvider, "hello");
 		assertTrue(result.isSuccess());
-		assertEquals("hello", result.orThrow());
+		assertEquals("hello", result.resultOrThrow());
 		
 		Result<String> emptyResult = decoder.decodeKey(typeProvider, "");
 		assertTrue(emptyResult.isSuccess());
-		assertEquals("", emptyResult.orThrow());
+		assertEquals("", emptyResult.resultOrThrow());
 	}
 	
 	@Test
@@ -138,15 +138,15 @@ class KeyableDecoderTest {
 		
 		Result<Integer> specialResult = decoder.decodeKey(typeProvider, "special");
 		assertTrue(specialResult.isSuccess());
-		assertEquals(999, specialResult.orThrow());
+		assertEquals(999, specialResult.resultOrThrow());
 		
 		Result<Integer> numberResult = decoder.decodeKey(typeProvider, "42");
 		assertTrue(numberResult.isSuccess());
-		assertEquals(42, numberResult.orThrow());
+		assertEquals(42, numberResult.resultOrThrow());
 		
 		Result<Integer> invalidResult = decoder.decodeKey(typeProvider, "invalid");
 		assertTrue(invalidResult.isSuccess());
-		assertNull(invalidResult.orThrow());
+		assertNull(invalidResult.resultOrThrow());
 	}
 	
 	@Test
@@ -166,11 +166,11 @@ class KeyableDecoderTest {
 		
 		Result<Integer> specialResult = decoder.decodeKey(typeProvider, "special");
 		assertTrue(specialResult.isSuccess());
-		assertEquals(999, specialResult.orThrow());
+		assertEquals(999, specialResult.resultOrThrow());
 		
 		Result<Integer> numberResult = decoder.decodeKey(typeProvider, "42");
 		assertTrue(numberResult.isSuccess());
-		assertEquals(42, numberResult.orThrow());
+		assertEquals(42, numberResult.resultOrThrow());
 		
 		Result<Integer> invalidResult = decoder.decodeKey(typeProvider, "invalid");
 		assertTrue(invalidResult.isError());
@@ -184,7 +184,7 @@ class KeyableDecoderTest {
 		
 		Result<String> result = decoder.decodeKey(typeProvider, "anything");
 		assertTrue(result.isSuccess());
-		assertNull(result.orThrow());
+		assertNull(result.resultOrThrow());
 	}
 	
 	@Test
@@ -194,7 +194,7 @@ class KeyableDecoderTest {
 		
 		Result<Integer> normalDecodeResult = decoder.decodeStart(typeProvider, new JsonPrimitive(42));
 		assertTrue(normalDecodeResult.isSuccess());
-		assertEquals(42, normalDecodeResult.orThrow());
+		assertEquals(42, normalDecodeResult.resultOrThrow());
 		
 		Result<Integer> normalDecodeErrorResult = decoder.decodeStart(typeProvider, new JsonPrimitive("invalid"));
 		assertTrue(normalDecodeErrorResult.isError());

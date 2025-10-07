@@ -21,7 +21,7 @@ package net.luis.utils.io.codec.struct;
 import net.luis.utils.io.codec.Codec;
 import net.luis.utils.io.codec.provider.JsonTypeProvider;
 import net.luis.utils.io.data.json.*;
-import net.luis.utils.util.Result;
+import net.luis.utils.util.result.Result;
 import org.junit.jupiter.api.Test;
 
 import java.util.Map;
@@ -81,7 +81,7 @@ class MapCodecTest {
 		expected.add("1", new JsonPrimitive(true));
 		expected.add("2", new JsonPrimitive(false));
 		
-		assertEquals(expected, result.orThrow());
+		assertEquals(expected, result.resultOrThrow());
 	}
 	
 	@Test
@@ -92,7 +92,7 @@ class MapCodecTest {
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), map);
 		assertTrue(result.isSuccess());
-		assertEquals(new JsonObject(), result.orThrow());
+		assertEquals(new JsonObject(), result.resultOrThrow());
 	}
 	
 	@Test
@@ -106,7 +106,7 @@ class MapCodecTest {
 		
 		JsonObject expected = new JsonObject();
 		expected.add("key", new JsonPrimitive(42));
-		assertEquals(expected, result.orThrow());
+		assertEquals(expected, result.resultOrThrow());
 	}
 	
 	@Test
@@ -202,7 +202,7 @@ class MapCodecTest {
 		
 		Result<Map<Integer, Boolean>> result = codec.decodeStart(typeProvider, object);
 		assertTrue(result.isSuccess());
-		assertEquals(Map.of(1, true, 2, false), result.orThrow());
+		assertEquals(Map.of(1, true, 2, false), result.resultOrThrow());
 	}
 	
 	@Test
@@ -212,7 +212,7 @@ class MapCodecTest {
 		
 		Result<Map<Integer, Boolean>> result = codec.decodeStart(typeProvider, new JsonObject());
 		assertTrue(result.isSuccess());
-		assertTrue(result.orThrow().isEmpty());
+		assertTrue(result.resultOrThrow().isEmpty());
 	}
 	
 	@Test
@@ -225,7 +225,7 @@ class MapCodecTest {
 		
 		Result<Map<String, Integer>> result = codec.decodeStart(typeProvider, object);
 		assertTrue(result.isSuccess());
-		assertEquals(Map.of("key", 42), result.orThrow());
+		assertEquals(Map.of("key", 42), result.resultOrThrow());
 	}
 	
 	@Test
@@ -249,7 +249,7 @@ class MapCodecTest {
 		Codec<Map<String, String>> stringCodec = new MapCodec<>(STRING, STRING);
 		Result<Map<String, String>> stringResult = stringCodec.decodeStart(typeProvider, stringObject);
 		assertTrue(stringResult.isSuccess());
-		assertEquals(Map.of("a", "b", "c", "d"), stringResult.orThrow());
+		assertEquals(Map.of("a", "b", "c", "d"), stringResult.resultOrThrow());
 		
 		JsonObject numericObject = new JsonObject();
 		numericObject.add("1", new JsonPrimitive(3.14));
@@ -257,7 +257,7 @@ class MapCodecTest {
 		Codec<Map<Integer, Double>> numericCodec = new MapCodec<>(INTEGER, DOUBLE);
 		Result<Map<Integer, Double>> numericResult = numericCodec.decodeStart(typeProvider, numericObject);
 		assertTrue(numericResult.isSuccess());
-		assertEquals(Map.of(1, 3.14), numericResult.orThrow());
+		assertEquals(Map.of(1, 3.14), numericResult.resultOrThrow());
 	}
 	
 	@Test
@@ -271,7 +271,7 @@ class MapCodecTest {
 		
 		Result<Map<Integer, Boolean>> result = codec.decodeStart(typeProvider, object);
 		assertTrue(result.isSuccess());
-		assertEquals(Map.of(1, true, 2, false), result.orThrow());
+		assertEquals(Map.of(1, true, 2, false), result.resultOrThrow());
 	}
 	
 	@Test

@@ -21,7 +21,7 @@ package net.luis.utils.io.codec.struct;
 import net.luis.utils.io.codec.Codec;
 import net.luis.utils.io.codec.provider.JsonTypeProvider;
 import net.luis.utils.io.data.json.*;
-import net.luis.utils.util.Result;
+import net.luis.utils.util.result.Result;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -54,7 +54,7 @@ class UnitCodecTest {
 		
 		Result<JsonElement> result = codec.encodeStart(null, empty, 1);
 		assertTrue(result.isSuccess());
-		assertSame(empty, result.orThrow());
+		assertSame(empty, result.resultOrThrow());
 	}
 	
 	@Test
@@ -65,7 +65,7 @@ class UnitCodecTest {
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, current, 123);
 		assertTrue(result.isSuccess());
-		assertSame(current, result.orThrow());
+		assertSame(current, result.resultOrThrow());
 	}
 	
 	@Test
@@ -76,7 +76,7 @@ class UnitCodecTest {
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, current, null);
 		assertTrue(result.isSuccess());
-		assertSame(current, result.orThrow());
+		assertSame(current, result.resultOrThrow());
 	}
 	
 	@Test
@@ -87,12 +87,12 @@ class UnitCodecTest {
 		JsonPrimitive primitive = new JsonPrimitive(42);
 		Result<JsonElement> primitiveResult = codec.encodeStart(typeProvider, primitive, "ignored");
 		assertTrue(primitiveResult.isSuccess());
-		assertSame(primitive, primitiveResult.orThrow());
+		assertSame(primitive, primitiveResult.resultOrThrow());
 		
 		JsonArray array = new JsonArray();
 		Result<JsonElement> arrayResult = codec.encodeStart(typeProvider, array, "ignored");
 		assertTrue(arrayResult.isSuccess());
-		assertSame(array, arrayResult.orThrow());
+		assertSame(array, arrayResult.resultOrThrow());
 	}
 	
 	@Test
@@ -101,7 +101,7 @@ class UnitCodecTest {
 		
 		Result<Integer> result = codec.decodeStart(null, JsonNull.INSTANCE);
 		assertTrue(result.isSuccess());
-		assertEquals(42, result.orThrow());
+		assertEquals(42, result.resultOrThrow());
 	}
 	
 	@Test
@@ -111,15 +111,15 @@ class UnitCodecTest {
 		
 		Result<String> nullResult = codec.decodeStart(typeProvider, null);
 		assertTrue(nullResult.isSuccess());
-		assertEquals("unit-value", nullResult.orThrow());
+		assertEquals("unit-value", nullResult.resultOrThrow());
 		
 		Result<String> primitiveResult = codec.decodeStart(typeProvider, new JsonPrimitive(123));
 		assertTrue(primitiveResult.isSuccess());
-		assertEquals("unit-value", primitiveResult.orThrow());
+		assertEquals("unit-value", primitiveResult.resultOrThrow());
 		
 		Result<String> objectResult = codec.decodeStart(typeProvider, new JsonObject());
 		assertTrue(objectResult.isSuccess());
-		assertEquals("unit-value", objectResult.orThrow());
+		assertEquals("unit-value", objectResult.resultOrThrow());
 	}
 	
 	@Test
@@ -129,7 +129,7 @@ class UnitCodecTest {
 		
 		Result<String> result = codec.decodeStart(typeProvider, new JsonPrimitive("anything"));
 		assertTrue(result.isSuccess());
-		assertNull(result.orThrow());
+		assertNull(result.resultOrThrow());
 	}
 	
 	@Test
@@ -139,17 +139,17 @@ class UnitCodecTest {
 		Codec<Integer> intCodec = new UnitCodec<>(() -> 999);
 		Result<Integer> intResult = intCodec.decodeStart(typeProvider, new JsonPrimitive("ignored"));
 		assertTrue(intResult.isSuccess());
-		assertEquals(999, intResult.orThrow());
+		assertEquals(999, intResult.resultOrThrow());
 		
 		Codec<Boolean> boolCodec = new UnitCodec<>(() -> true);
 		Result<Boolean> boolResult = boolCodec.decodeStart(typeProvider, new JsonArray());
 		assertTrue(boolResult.isSuccess());
-		assertTrue(boolResult.orThrow());
+		assertTrue(boolResult.resultOrThrow());
 		
 		Codec<Double> doubleCodec = new UnitCodec<>(() -> 3.14);
 		Result<Double> doubleResult = doubleCodec.decodeStart(typeProvider, null);
 		assertTrue(doubleResult.isSuccess());
-		assertEquals(3.14, doubleResult.orThrow());
+		assertEquals(3.14, doubleResult.resultOrThrow());
 	}
 	
 	@Test
@@ -160,7 +160,7 @@ class UnitCodecTest {
 		
 		Result<Person> result = codec.decodeStart(typeProvider, new JsonObject());
 		assertTrue(result.isSuccess());
-		assertSame(defaultPerson, result.orThrow());
+		assertSame(defaultPerson, result.resultOrThrow());
 	}
 	
 	@Test
@@ -171,11 +171,11 @@ class UnitCodecTest {
 		
 		Result<Integer> firstResult = codec.decodeStart(typeProvider, null);
 		assertTrue(firstResult.isSuccess());
-		assertEquals(1, firstResult.orThrow());
+		assertEquals(1, firstResult.resultOrThrow());
 		
 		Result<Integer> secondResult = codec.decodeStart(typeProvider, JsonNull.INSTANCE);
 		assertTrue(secondResult.isSuccess());
-		assertEquals(2, secondResult.orThrow());
+		assertEquals(2, secondResult.resultOrThrow());
 	}
 	
 	@Test

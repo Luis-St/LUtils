@@ -20,7 +20,7 @@ package net.luis.utils.io.codec.struct;
 
 import net.luis.utils.io.codec.Codec;
 import net.luis.utils.io.codec.provider.TypeProvider;
-import net.luis.utils.util.Result;
+import net.luis.utils.util.result.Result;
 import org.jetbrains.annotations.*;
 
 import java.util.Objects;

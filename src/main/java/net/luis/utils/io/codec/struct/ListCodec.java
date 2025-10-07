@@ -20,7 +20,7 @@ package net.luis.utils.io.codec.struct;
 
 import net.luis.utils.io.codec.Codec;
 import net.luis.utils.io.codec.provider.TypeProvider;
-import net.luis.utils.util.Result;
+import net.luis.utils.util.result.Result;
 import org.jetbrains.annotations.*;
 
 import java.util.List;
@@ -108,7 +108,7 @@ public class ListCodec<C> implements Codec<List<C>> {
 			return Result.error("Unable to encode some elements of list '" + value + "' using '" + this + "': \n" + encoded.stream().filter(Result::isError).map(Result::errorOrThrow).collect(Collectors.joining("\n")));
 		}
 		
-		List<R> results = encoded.stream().map(Result::orThrow).filter(result -> provider.getEmpty(result).isError()).toList();
+		List<R> results = encoded.stream().map(Result::resultOrThrow).filter(result -> provider.getEmpty(result).isError()).toList();
 		return provider.merge(current, provider.createList(results));
 	}
 	
@@ -124,12 +124,12 @@ public class ListCodec<C> implements Codec<List<C>> {
 			return Result.error("Unable to decode list using '" + this + "': " + decoded.errorOrThrow());
 		}
 		
-		List<Result<C>> results = decoded.orThrow().stream().map(v -> this.codec.decodeStart(provider, v)).toList();
+		List<Result<C>> results = decoded.resultOrThrow().stream().map(v -> this.codec.decodeStart(provider, v)).toList();
 		if (results.stream().anyMatch(Result::isError)) {
 			return Result.error("Unable to decode some elements of list using '" + this + "': \n" + results.stream().filter(Result::isError).map(Result::errorOrThrow).collect(Collectors.joining("\n")));
 		}
 		if (this.maxSize >= results.size() && results.size() >= this.minSize) {
-			return Result.success(results.stream().map(Result::orThrow).collect(Collectors.toList()));
+			return Result.success(results.stream().map(Result::resultOrThrow).collect(Collectors.toList()));
 		}
 		return Result.error("List was decoded successfully but size '" + results.size() + "' is out of range: " + this.minSize + ".." + this.maxSize);
 	}

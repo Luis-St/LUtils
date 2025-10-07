@@ -19,7 +19,7 @@
 package net.luis.utils.io.codec.provider;
 
 import com.google.common.collect.Maps;
-import net.luis.utils.util.Result;
+import net.luis.utils.util.result.Result;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.*;

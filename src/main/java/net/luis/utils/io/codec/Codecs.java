@@ -24,7 +24,7 @@ import net.luis.utils.io.codec.encoder.KeyableEncoder;
 import net.luis.utils.io.codec.provider.TypeProvider;
 import net.luis.utils.io.codec.struct.*;
 import net.luis.utils.util.Either;
-import net.luis.utils.util.Result;
+import net.luis.utils.util.result.Result;
 import org.apache.commons.lang3.ArrayUtils;
 import org.intellij.lang.annotations.Language;
 import org.jetbrains.annotations.NotNull;
@@ -269,7 +269,7 @@ public final class Codecs {
 			if (result.isError()) {
 				return Result.error("Unable to decode value as character from a string value using '" + this + "': " + result.errorOrThrow());
 			}
-			String str = result.orThrow();
+			String str = result.resultOrThrow();
 			if (str.length() != 1) {
 				return Result.error("String must have exactly one character to decode as character using '" + this + "'");
 			}
@@ -439,7 +439,7 @@ public final class Codecs {
 				return Result.error("Unable to decode duration from non-string value using '" + this + "': " + stringResult.errorOrThrow());
 			}
 			
-			String str = stringResult.orThrow();
+			String str = stringResult.resultOrThrow();
 			try {
 				String[] parts = str.toLowerCase().split("\\s+");
 				long totalSeconds = 0;
@@ -526,7 +526,7 @@ public final class Codecs {
 				return Result.error("Unable to decode period from non-string value using '" + this + "': " + result.errorOrThrow());
 			}
 			
-			String str = result.orThrow();
+			String str = result.resultOrThrow();
 			try {
 				if ("0d".equalsIgnoreCase(str)) {
 					return Result.success(Period.ZERO);
@@ -803,7 +803,7 @@ public final class Codecs {
 			if (result.isError()) {
 				return result;
 			}
-			return decoder.apply(result.orThrow());
+			return decoder.apply(result.resultOrThrow());
 		}).keyable(encoder, decoder);
 	}
 	
@@ -832,7 +832,7 @@ public final class Codecs {
 			if (result.isError()) {
 				return result;
 			}
-			return decoder.apply(result.orThrow());
+			return decoder.apply(result.resultOrThrow());
 		}).keyable(encoder, decoder);
 	}
 	
@@ -882,7 +882,7 @@ public final class Codecs {
 			if (result.isError()) {
 				return result;
 			}
-			return decoder.apply(result.orThrow());
+			return decoder.apply(result.resultOrThrow());
 		}).keyable(encoder, decoder);
 	}
 	
@@ -905,11 +905,11 @@ public final class Codecs {
 				if (result.isSuccess()) {
 					E value;
 					try {
-						value = stringDecoder.apply(result.orThrow());
+						value = stringDecoder.apply(result.resultOrThrow());
 					} catch (Exception e) {
 						return Result.error("Unable to resolve element: " + e.getMessage());
 					}
-					return Optional.ofNullable(value).map(Result::success).orElseGet(() -> Result.error("Unknown element: " + result.orThrow()));
+					return Optional.ofNullable(value).map(Result::success).orElseGet(() -> Result.error("Unknown element: " + result.resultOrThrow()));
 				}
 				return Result.error("Unable to resolve element: " + result.errorOrThrow());
 			}

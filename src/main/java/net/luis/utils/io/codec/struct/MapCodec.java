@@ -22,7 +22,7 @@ import net.luis.utils.collection.util.SimpleEntry;
 import net.luis.utils.io.codec.Codec;
 import net.luis.utils.io.codec.KeyableCodec;
 import net.luis.utils.io.codec.provider.TypeProvider;
-import net.luis.utils.util.Result;
+import net.luis.utils.util.result.Result;
 import org.jetbrains.annotations.*;
 
 import java.util.*;
@@ -123,8 +123,8 @@ public class MapCodec<K, V> implements Codec<Map<K, V>> {
 			return Result.error("Unable to create empty map: " + emptyMap.errorOrThrow());
 		}
 		
-		R resultMap = emptyMap.orThrow();
-		encoded.stream().map(Result::orThrow).filter(entry -> provider.getEmpty(entry.getValue()).isError()).forEach(entry -> {
+		R resultMap = emptyMap.resultOrThrow();
+		encoded.stream().map(Result::resultOrThrow).filter(entry -> provider.getEmpty(entry.getValue()).isError()).forEach(entry -> {
 			provider.set(resultMap, entry.getKey(), entry.getValue());
 		});
 		return provider.merge(current, resultMap);
@@ -153,7 +153,7 @@ public class MapCodec<K, V> implements Codec<Map<K, V>> {
 		if (encodedValue.isError()) {
 			return Result.error("Unable to encode value '" + entry.getValue() + "' of map entry '" + entry + "' using codec '" + this.valueCodec + "': \n" + encodedValue.errorOrThrow());
 		}
-		return Result.success(new SimpleEntry<>(encodedKey.orThrow(), encodedValue.orThrow()));
+		return Result.success(new SimpleEntry<>(encodedKey.resultOrThrow(), encodedValue.resultOrThrow()));
 	}
 	
 	@Override
@@ -168,12 +168,12 @@ public class MapCodec<K, V> implements Codec<Map<K, V>> {
 			return Result.error("Unable to decode map '" + value + "' using '" + this + "': \n" + decodedMap.errorOrThrow());
 		}
 		
-		List<Result<Map.Entry<K, V>>> decoded = decodedMap.orThrow().entrySet().stream().map(entry -> this.decodeEntry(provider, entry)).toList();
+		List<Result<Map.Entry<K, V>>> decoded = decodedMap.resultOrThrow().entrySet().stream().map(entry -> this.decodeEntry(provider, entry)).toList();
 		if (decoded.stream().anyMatch(Result::isError)) {
 			return Result.error("Unable to decode some entries of map '" + value + "' using '" + this + "': \n" + decoded.stream().filter(Result::isError).map(Result::errorOrThrow).collect(Collectors.joining("\n")));
 		}
 		if (this.maxSize >= decoded.size() && decoded.size() >= this.minSize) {
-			return Result.success(decoded.stream().map(Result::orThrow).collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue)));
+			return Result.success(decoded.stream().map(Result::resultOrThrow).collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue)));
 		}
 		return Result.error("Map was decoded successfully but size '" + decoded.size() + "' is out of range: " + this.minSize + ".." + this.maxSize);
 	}
@@ -201,7 +201,7 @@ public class MapCodec<K, V> implements Codec<Map<K, V>> {
 		if (decodedValue.isError()) {
 			return Result.error("Unable to decode value '" + entry.getValue() + "' using codec '" + this.valueCodec + "': \n" + decodedValue.errorOrThrow());
 		}
-		return Result.success(new SimpleEntry<>(decodedKey.orThrow(), decodedValue.orThrow()));
+		return Result.success(new SimpleEntry<>(decodedKey.resultOrThrow(), decodedValue.resultOrThrow()));
 	}
 	
 	//region Object overrides

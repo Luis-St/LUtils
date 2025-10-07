@@ -20,7 +20,7 @@ package net.luis.utils.io.codec.decoder;
 
 import net.luis.utils.io.codec.ResultMappingFunction;
 import net.luis.utils.io.codec.provider.TypeProvider;
-import net.luis.utils.util.Result;
+import net.luis.utils.util.result.Result;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -51,7 +51,7 @@ public interface Decoder<C> {
 	 */
 	default <R> @NotNull C decode(@NotNull TypeProvider<R> provider, @Nullable R value) {
 		Objects.requireNonNull(provider, "Type provider must not be null");
-		return this.decodeStart(provider, value).orThrow(DecoderException::new);
+		return this.decodeStart(provider, value).resultOrThrow(DecoderException::new);
 	}
 	
 	/**

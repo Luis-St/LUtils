@@ -92,6 +92,7 @@ module net.luis.utils {
 	
 	exports net.luis.utils.util;
 	exports net.luis.utils.util.getter;
+	exports net.luis.utils.util.result;
 	exports net.luis.utils.util.unsafe;
 	exports net.luis.utils.util.unsafe.classpath;
 	exports net.luis.utils.util.unsafe.reflection;

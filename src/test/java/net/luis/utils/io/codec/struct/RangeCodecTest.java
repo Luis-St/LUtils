@@ -21,7 +21,7 @@ package net.luis.utils.io.codec.struct;
 import net.luis.utils.io.codec.provider.JsonTypeProvider;
 import net.luis.utils.io.data.json.JsonElement;
 import net.luis.utils.io.data.json.JsonPrimitive;
-import net.luis.utils.util.Result;
+import net.luis.utils.util.result.Result;
 import org.junit.jupiter.api.Test;
 
 import static net.luis.utils.io.codec.Codecs.*;
@@ -60,23 +60,23 @@ class RangeCodecTest {
 		
 		Result<JsonElement> negativeResult = codec.encodeStart(typeProvider, typeProvider.empty(), -42);
 		assertTrue(negativeResult.isSuccess());
-		assertEquals(new JsonPrimitive(-42), negativeResult.orThrow());
+		assertEquals(new JsonPrimitive(-42), negativeResult.resultOrThrow());
 		
 		Result<JsonElement> zeroResult = codec.encodeStart(typeProvider, typeProvider.empty(), 0);
 		assertTrue(zeroResult.isSuccess());
-		assertEquals(new JsonPrimitive(0), zeroResult.orThrow());
+		assertEquals(new JsonPrimitive(0), zeroResult.resultOrThrow());
 		
 		Result<JsonElement> positiveResult = codec.encodeStart(typeProvider, typeProvider.empty(), 42);
 		assertTrue(positiveResult.isSuccess());
-		assertEquals(new JsonPrimitive(42), positiveResult.orThrow());
+		assertEquals(new JsonPrimitive(42), positiveResult.resultOrThrow());
 		
 		Result<JsonElement> maxResult = codec.encodeStart(typeProvider, typeProvider.empty(), Integer.MAX_VALUE);
 		assertTrue(maxResult.isSuccess());
-		assertEquals(new JsonPrimitive(Integer.MAX_VALUE), maxResult.orThrow());
+		assertEquals(new JsonPrimitive(Integer.MAX_VALUE), maxResult.resultOrThrow());
 		
 		Result<JsonElement> minResult = codec.encodeStart(typeProvider, typeProvider.empty(), Integer.MIN_VALUE);
 		assertTrue(minResult.isSuccess());
-		assertEquals(new JsonPrimitive(Integer.MIN_VALUE), minResult.orThrow());
+		assertEquals(new JsonPrimitive(Integer.MIN_VALUE), minResult.resultOrThrow());
 	}
 	
 	@Test
@@ -86,15 +86,15 @@ class RangeCodecTest {
 		
 		Result<JsonElement> negativeResult = codec.encodeStart(typeProvider, typeProvider.empty(), -3.14);
 		assertTrue(negativeResult.isSuccess());
-		assertEquals(new JsonPrimitive(-3.14), negativeResult.orThrow());
+		assertEquals(new JsonPrimitive(-3.14), negativeResult.resultOrThrow());
 		
 		Result<JsonElement> zeroResult = codec.encodeStart(typeProvider, typeProvider.empty(), 0.0);
 		assertTrue(zeroResult.isSuccess());
-		assertEquals(new JsonPrimitive(0.0), zeroResult.orThrow());
+		assertEquals(new JsonPrimitive(0.0), zeroResult.resultOrThrow());
 		
 		Result<JsonElement> positiveResult = codec.encodeStart(typeProvider, typeProvider.empty(), 3.14);
 		assertTrue(positiveResult.isSuccess());
-		assertEquals(new JsonPrimitive(3.14), positiveResult.orThrow());
+		assertEquals(new JsonPrimitive(3.14), positiveResult.resultOrThrow());
 		
 		// Currently not supported by the JsonTypeProvider
 		Result<JsonElement> infinityResult = codec.encodeStart(typeProvider, typeProvider.empty(), Double.POSITIVE_INFINITY);
@@ -120,23 +120,23 @@ class RangeCodecTest {
 		
 		Result<String> negativeResult = codec.encodeKey(typeProvider, -42);
 		assertTrue(negativeResult.isSuccess());
-		assertEquals("-42", negativeResult.orThrow());
+		assertEquals("-42", negativeResult.resultOrThrow());
 		
 		Result<String> zeroResult = codec.encodeKey(typeProvider, 0);
 		assertTrue(zeroResult.isSuccess());
-		assertEquals("0", zeroResult.orThrow());
+		assertEquals("0", zeroResult.resultOrThrow());
 		
 		Result<String> positiveResult = codec.encodeKey(typeProvider, 42);
 		assertTrue(positiveResult.isSuccess());
-		assertEquals("42", positiveResult.orThrow());
+		assertEquals("42", positiveResult.resultOrThrow());
 		
 		Result<String> maxResult = codec.encodeKey(typeProvider, Integer.MAX_VALUE);
 		assertTrue(maxResult.isSuccess());
-		assertEquals(String.valueOf(Integer.MAX_VALUE), maxResult.orThrow());
+		assertEquals(String.valueOf(Integer.MAX_VALUE), maxResult.resultOrThrow());
 		
 		Result<String> minResult = codec.encodeKey(typeProvider, Integer.MIN_VALUE);
 		assertTrue(minResult.isSuccess());
-		assertEquals(String.valueOf(Integer.MIN_VALUE), minResult.orThrow());
+		assertEquals(String.valueOf(Integer.MIN_VALUE), minResult.resultOrThrow());
 	}
 	
 	@Test
@@ -146,19 +146,19 @@ class RangeCodecTest {
 		
 		Result<String> negativeResult = codec.encodeKey(typeProvider, -3.14);
 		assertTrue(negativeResult.isSuccess());
-		assertEquals("-3.14", negativeResult.orThrow());
+		assertEquals("-3.14", negativeResult.resultOrThrow());
 		
 		Result<String> zeroResult = codec.encodeKey(typeProvider, 0.0);
 		assertTrue(zeroResult.isSuccess());
-		assertEquals("0.0", zeroResult.orThrow());
+		assertEquals("0.0", zeroResult.resultOrThrow());
 		
 		Result<String> positiveResult = codec.encodeKey(typeProvider, 3.14);
 		assertTrue(positiveResult.isSuccess());
-		assertEquals("3.14", positiveResult.orThrow());
+		assertEquals("3.14", positiveResult.resultOrThrow());
 		
 		Result<String> scientificResult = codec.encodeKey(typeProvider, 1.23e-4);
 		assertTrue(scientificResult.isSuccess());
-		assertEquals("1.23E-4", scientificResult.orThrow());
+		assertEquals("1.23E-4", scientificResult.resultOrThrow());
 		
 		// Currently not supported by the JsonTypeProvider
 		Result<String> infinityResult = codec.encodeKey(typeProvider, Double.POSITIVE_INFINITY);
@@ -193,23 +193,23 @@ class RangeCodecTest {
 		
 		Result<Integer> negativeResult = codec.decodeStart(typeProvider, new JsonPrimitive(-42));
 		assertTrue(negativeResult.isSuccess());
-		assertEquals(-42, negativeResult.orThrow());
+		assertEquals(-42, negativeResult.resultOrThrow());
 		
 		Result<Integer> zeroResult = codec.decodeStart(typeProvider, new JsonPrimitive(0));
 		assertTrue(zeroResult.isSuccess());
-		assertEquals(0, zeroResult.orThrow());
+		assertEquals(0, zeroResult.resultOrThrow());
 		
 		Result<Integer> positiveResult = codec.decodeStart(typeProvider, new JsonPrimitive(42));
 		assertTrue(positiveResult.isSuccess());
-		assertEquals(42, positiveResult.orThrow());
+		assertEquals(42, positiveResult.resultOrThrow());
 		
 		Result<Integer> maxResult = codec.decodeStart(typeProvider, new JsonPrimitive(Integer.MAX_VALUE));
 		assertTrue(maxResult.isSuccess());
-		assertEquals(Integer.MAX_VALUE, maxResult.orThrow());
+		assertEquals(Integer.MAX_VALUE, maxResult.resultOrThrow());
 		
 		Result<Integer> minResult = codec.decodeStart(typeProvider, new JsonPrimitive(Integer.MIN_VALUE));
 		assertTrue(minResult.isSuccess());
-		assertEquals(Integer.MIN_VALUE, minResult.orThrow());
+		assertEquals(Integer.MIN_VALUE, minResult.resultOrThrow());
 	}
 	
 	@Test
@@ -234,19 +234,19 @@ class RangeCodecTest {
 		
 		Result<Double> negativeResult = codec.decodeStart(typeProvider, new JsonPrimitive(-3.14));
 		assertTrue(negativeResult.isSuccess());
-		assertEquals(-3.14, negativeResult.orThrow());
+		assertEquals(-3.14, negativeResult.resultOrThrow());
 		
 		Result<Double> zeroResult = codec.decodeStart(typeProvider, new JsonPrimitive(0.0));
 		assertTrue(zeroResult.isSuccess());
-		assertEquals(0.0, zeroResult.orThrow());
+		assertEquals(0.0, zeroResult.resultOrThrow());
 		
 		Result<Double> positiveResult = codec.decodeStart(typeProvider, new JsonPrimitive(3.14));
 		assertTrue(positiveResult.isSuccess());
-		assertEquals(3.14, positiveResult.orThrow());
+		assertEquals(3.14, positiveResult.resultOrThrow());
 		
 		Result<Double> integerResult = codec.decodeStart(typeProvider, new JsonPrimitive(42));
 		assertTrue(integerResult.isSuccess());
-		assertEquals(42.0, integerResult.orThrow());
+		assertEquals(42.0, integerResult.resultOrThrow());
 	}
 	
 	@Test
@@ -277,23 +277,23 @@ class RangeCodecTest {
 		
 		Result<Integer> negativeResult = codec.decodeKey(typeProvider, "-42");
 		assertTrue(negativeResult.isSuccess());
-		assertEquals(-42, negativeResult.orThrow());
+		assertEquals(-42, negativeResult.resultOrThrow());
 		
 		Result<Integer> zeroResult = codec.decodeKey(typeProvider, "0");
 		assertTrue(zeroResult.isSuccess());
-		assertEquals(0, zeroResult.orThrow());
+		assertEquals(0, zeroResult.resultOrThrow());
 		
 		Result<Integer> positiveResult = codec.decodeKey(typeProvider, "42");
 		assertTrue(positiveResult.isSuccess());
-		assertEquals(42, positiveResult.orThrow());
+		assertEquals(42, positiveResult.resultOrThrow());
 		
 		Result<Integer> maxResult = codec.decodeKey(typeProvider, String.valueOf(Integer.MAX_VALUE));
 		assertTrue(maxResult.isSuccess());
-		assertEquals(Integer.MAX_VALUE, maxResult.orThrow());
+		assertEquals(Integer.MAX_VALUE, maxResult.resultOrThrow());
 		
 		Result<Integer> minResult = codec.decodeKey(typeProvider, String.valueOf(Integer.MIN_VALUE));
 		assertTrue(minResult.isSuccess());
-		assertEquals(Integer.MIN_VALUE, minResult.orThrow());
+		assertEquals(Integer.MIN_VALUE, minResult.resultOrThrow());
 	}
 	
 	@Test
@@ -324,23 +324,23 @@ class RangeCodecTest {
 		
 		Result<Double> negativeResult = codec.decodeKey(typeProvider, "-3.14");
 		assertTrue(negativeResult.isSuccess());
-		assertEquals(-3.14, negativeResult.orThrow());
+		assertEquals(-3.14, negativeResult.resultOrThrow());
 		
 		Result<Double> zeroResult = codec.decodeKey(typeProvider, "0.0");
 		assertTrue(zeroResult.isSuccess());
-		assertEquals(0.0, zeroResult.orThrow());
+		assertEquals(0.0, zeroResult.resultOrThrow());
 		
 		Result<Double> positiveResult = codec.decodeKey(typeProvider, "3.14");
 		assertTrue(positiveResult.isSuccess());
-		assertEquals(3.14, positiveResult.orThrow());
+		assertEquals(3.14, positiveResult.resultOrThrow());
 		
 		Result<Double> scientificResult = codec.decodeKey(typeProvider, "1.23e-4");
 		assertTrue(scientificResult.isSuccess());
-		assertEquals(1.23e-4, scientificResult.orThrow());
+		assertEquals(1.23e-4, scientificResult.resultOrThrow());
 		
 		Result<Double> integerResult = codec.decodeKey(typeProvider, "42");
 		assertTrue(integerResult.isSuccess());
-		assertEquals(42.0, integerResult.orThrow());
+		assertEquals(42.0, integerResult.resultOrThrow());
 	}
 	
 	@Test
@@ -372,7 +372,7 @@ class RangeCodecTest {
 		
 		Result<Integer> positiveResult = codec.decodeStart(typeProvider, new JsonPrimitive(1));
 		assertTrue(positiveResult.isSuccess());
-		assertEquals(1, positiveResult.orThrow());
+		assertEquals(1, positiveResult.resultOrThrow());
 	}
 	
 	@Test
@@ -390,7 +390,7 @@ class RangeCodecTest {
 		
 		Result<String> positiveEncodeResult = codec.encodeKey(typeProvider, 1);
 		assertTrue(positiveEncodeResult.isSuccess());
-		assertEquals("1", positiveEncodeResult.orThrow());
+		assertEquals("1", positiveEncodeResult.resultOrThrow());
 		
 		Result<Integer> zeroDecodeResult = codec.decodeKey(typeProvider, "0");
 		assertTrue(zeroDecodeResult.isError());
@@ -402,7 +402,7 @@ class RangeCodecTest {
 		
 		Result<Integer> positiveDecodeResult = codec.decodeKey(typeProvider, "1");
 		assertTrue(positiveDecodeResult.isSuccess());
-		assertEquals(1, positiveDecodeResult.orThrow());
+		assertEquals(1, positiveDecodeResult.resultOrThrow());
 	}
 	
 	@Test
@@ -415,11 +415,11 @@ class RangeCodecTest {
 		
 		Result<Integer> zeroResult = codec.decodeStart(typeProvider, new JsonPrimitive(0));
 		assertTrue(zeroResult.isSuccess());
-		assertEquals(0, zeroResult.orThrow());
+		assertEquals(0, zeroResult.resultOrThrow());
 		
 		Result<Integer> positiveResult = codec.decodeStart(typeProvider, new JsonPrimitive(1));
 		assertTrue(positiveResult.isSuccess());
-		assertEquals(1, positiveResult.orThrow());
+		assertEquals(1, positiveResult.resultOrThrow());
 	}
 	
 	@Test
@@ -432,22 +432,22 @@ class RangeCodecTest {
 		
 		Result<String> zeroEncodeResult = codec.encodeKey(typeProvider, 0);
 		assertTrue(zeroEncodeResult.isSuccess());
-		assertEquals("0", zeroEncodeResult.orThrow());
+		assertEquals("0", zeroEncodeResult.resultOrThrow());
 		
 		Result<String> positiveEncodeResult = codec.encodeKey(typeProvider, 1);
 		assertTrue(positiveEncodeResult.isSuccess());
-		assertEquals("1", positiveEncodeResult.orThrow());
+		assertEquals("1", positiveEncodeResult.resultOrThrow());
 		
 		Result<Integer> negativeDecodeResult = codec.decodeKey(typeProvider, "-1");
 		assertTrue(negativeDecodeResult.isError());
 		
 		Result<Integer> zeroDecodeResult = codec.decodeKey(typeProvider, "0");
 		assertTrue(zeroDecodeResult.isSuccess());
-		assertEquals(0, zeroDecodeResult.orThrow());
+		assertEquals(0, zeroDecodeResult.resultOrThrow());
 		
 		Result<Integer> positiveDecodeResult = codec.decodeKey(typeProvider, "1");
 		assertTrue(positiveDecodeResult.isSuccess());
-		assertEquals(1, positiveDecodeResult.orThrow());
+		assertEquals(1, positiveDecodeResult.resultOrThrow());
 	}
 	
 	@Test
@@ -463,7 +463,7 @@ class RangeCodecTest {
 		
 		Result<Integer> negativeResult = codec.decodeStart(typeProvider, new JsonPrimitive(-1));
 		assertTrue(negativeResult.isSuccess());
-		assertEquals(-1, negativeResult.orThrow());
+		assertEquals(-1, negativeResult.resultOrThrow());
 	}
 	
 	@Test
@@ -479,7 +479,7 @@ class RangeCodecTest {
 		
 		Result<String> negativeEncodeResult = codec.encodeKey(typeProvider, -1);
 		assertTrue(negativeEncodeResult.isSuccess());
-		assertEquals("-1", negativeEncodeResult.orThrow());
+		assertEquals("-1", negativeEncodeResult.resultOrThrow());
 		
 		Result<Integer> positiveDecodeResult = codec.decodeKey(typeProvider, "1");
 		assertTrue(positiveDecodeResult.isError());
@@ -489,7 +489,7 @@ class RangeCodecTest {
 		
 		Result<Integer> negativeDecodeResult = codec.decodeKey(typeProvider, "-1");
 		assertTrue(negativeDecodeResult.isSuccess());
-		assertEquals(-1, negativeDecodeResult.orThrow());
+		assertEquals(-1, negativeDecodeResult.resultOrThrow());
 	}
 	
 	@Test
@@ -502,11 +502,11 @@ class RangeCodecTest {
 		
 		Result<Integer> zeroResult = codec.decodeStart(typeProvider, new JsonPrimitive(0));
 		assertTrue(zeroResult.isSuccess());
-		assertEquals(0, zeroResult.orThrow());
+		assertEquals(0, zeroResult.resultOrThrow());
 		
 		Result<Integer> negativeResult = codec.decodeStart(typeProvider, new JsonPrimitive(-1));
 		assertTrue(negativeResult.isSuccess());
-		assertEquals(-1, negativeResult.orThrow());
+		assertEquals(-1, negativeResult.resultOrThrow());
 	}
 	
 	@Test
@@ -519,22 +519,22 @@ class RangeCodecTest {
 		
 		Result<String> zeroEncodeResult = codec.encodeKey(typeProvider, 0);
 		assertTrue(zeroEncodeResult.isSuccess());
-		assertEquals("0", zeroEncodeResult.orThrow());
+		assertEquals("0", zeroEncodeResult.resultOrThrow());
 		
 		Result<String> negativeEncodeResult = codec.encodeKey(typeProvider, -1);
 		assertTrue(negativeEncodeResult.isSuccess());
-		assertEquals("-1", negativeEncodeResult.orThrow());
+		assertEquals("-1", negativeEncodeResult.resultOrThrow());
 		
 		Result<Integer> positiveDecodeResult = codec.decodeKey(typeProvider, "1");
 		assertTrue(positiveDecodeResult.isError());
 		
 		Result<Integer> zeroDecodeResult = codec.decodeKey(typeProvider, "0");
 		assertTrue(zeroDecodeResult.isSuccess());
-		assertEquals(0, zeroDecodeResult.orThrow());
+		assertEquals(0, zeroDecodeResult.resultOrThrow());
 		
 		Result<Integer> negativeDecodeResult = codec.decodeKey(typeProvider, "-1");
 		assertTrue(negativeDecodeResult.isSuccess());
-		assertEquals(-1, negativeDecodeResult.orThrow());
+		assertEquals(-1, negativeDecodeResult.resultOrThrow());
 	}
 	
 	@Test
@@ -547,11 +547,11 @@ class RangeCodecTest {
 		
 		Result<Integer> exactResult = codec.decodeStart(typeProvider, new JsonPrimitive(5));
 		assertTrue(exactResult.isSuccess());
-		assertEquals(5, exactResult.orThrow());
+		assertEquals(5, exactResult.resultOrThrow());
 		
 		Result<Integer> aboveResult = codec.decodeStart(typeProvider, new JsonPrimitive(10));
 		assertTrue(aboveResult.isSuccess());
-		assertEquals(10, aboveResult.orThrow());
+		assertEquals(10, aboveResult.resultOrThrow());
 	}
 	
 	@Test
@@ -565,11 +565,11 @@ class RangeCodecTest {
 		
 		Result<String> exactEncodeResult = codec.encodeKey(typeProvider, 5);
 		assertTrue(exactEncodeResult.isSuccess());
-		assertEquals("5", exactEncodeResult.orThrow());
+		assertEquals("5", exactEncodeResult.resultOrThrow());
 		
 		Result<String> aboveEncodeResult = codec.encodeKey(typeProvider, 10);
 		assertTrue(aboveEncodeResult.isSuccess());
-		assertEquals("10", aboveEncodeResult.orThrow());
+		assertEquals("10", aboveEncodeResult.resultOrThrow());
 		
 		Result<Integer> belowDecodeResult = codec.decodeKey(typeProvider, "4");
 		assertTrue(belowDecodeResult.isError());
@@ -577,11 +577,11 @@ class RangeCodecTest {
 		
 		Result<Integer> exactDecodeResult = codec.decodeKey(typeProvider, "5");
 		assertTrue(exactDecodeResult.isSuccess());
-		assertEquals(5, exactDecodeResult.orThrow());
+		assertEquals(5, exactDecodeResult.resultOrThrow());
 		
 		Result<Integer> aboveDecodeResult = codec.decodeKey(typeProvider, "10");
 		assertTrue(aboveDecodeResult.isSuccess());
-		assertEquals(10, aboveDecodeResult.orThrow());
+		assertEquals(10, aboveDecodeResult.resultOrThrow());
 	}
 	
 	@Test
@@ -594,11 +594,11 @@ class RangeCodecTest {
 		
 		Result<Integer> exactResult = codec.decodeStart(typeProvider, new JsonPrimitive(5));
 		assertTrue(exactResult.isSuccess());
-		assertEquals(5, exactResult.orThrow());
+		assertEquals(5, exactResult.resultOrThrow());
 		
 		Result<Integer> belowResult = codec.decodeStart(typeProvider, new JsonPrimitive(0));
 		assertTrue(belowResult.isSuccess());
-		assertEquals(0, belowResult.orThrow());
+		assertEquals(0, belowResult.resultOrThrow());
 	}
 	
 	@Test
@@ -612,11 +612,11 @@ class RangeCodecTest {
 		
 		Result<String> exactEncodeResult = codec.encodeKey(typeProvider, 5);
 		assertTrue(exactEncodeResult.isSuccess());
-		assertEquals("5", exactEncodeResult.orThrow());
+		assertEquals("5", exactEncodeResult.resultOrThrow());
 		
 		Result<String> belowEncodeResult = codec.encodeKey(typeProvider, 0);
 		assertTrue(belowEncodeResult.isSuccess());
-		assertEquals("0", belowEncodeResult.orThrow());
+		assertEquals("0", belowEncodeResult.resultOrThrow());
 		
 		Result<Integer> aboveDecodeResult = codec.decodeKey(typeProvider, "6");
 		assertTrue(aboveDecodeResult.isError());
@@ -624,11 +624,11 @@ class RangeCodecTest {
 		
 		Result<Integer> exactDecodeResult = codec.decodeKey(typeProvider, "5");
 		assertTrue(exactDecodeResult.isSuccess());
-		assertEquals(5, exactDecodeResult.orThrow());
+		assertEquals(5, exactDecodeResult.resultOrThrow());
 		
 		Result<Integer> belowDecodeResult = codec.decodeKey(typeProvider, "0");
 		assertTrue(belowDecodeResult.isSuccess());
-		assertEquals(0, belowDecodeResult.orThrow());
+		assertEquals(0, belowDecodeResult.resultOrThrow());
 	}
 	
 	@Test
@@ -644,15 +644,15 @@ class RangeCodecTest {
 		
 		Result<Integer> lowerBoundResult = codec.decodeStart(typeProvider, new JsonPrimitive(10));
 		assertTrue(lowerBoundResult.isSuccess());
-		assertEquals(10, lowerBoundResult.orThrow());
+		assertEquals(10, lowerBoundResult.resultOrThrow());
 		
 		Result<Integer> upperBoundResult = codec.decodeStart(typeProvider, new JsonPrimitive(20));
 		assertTrue(upperBoundResult.isSuccess());
-		assertEquals(20, upperBoundResult.orThrow());
+		assertEquals(20, upperBoundResult.resultOrThrow());
 		
 		Result<Integer> middleResult = codec.decodeStart(typeProvider, new JsonPrimitive(15));
 		assertTrue(middleResult.isSuccess());
-		assertEquals(15, middleResult.orThrow());
+		assertEquals(15, middleResult.resultOrThrow());
 	}
 	
 	@Test
@@ -670,15 +670,15 @@ class RangeCodecTest {
 		
 		Result<String> lowerBoundEncodeResult = codec.encodeKey(typeProvider, 10);
 		assertTrue(lowerBoundEncodeResult.isSuccess());
-		assertEquals("10", lowerBoundEncodeResult.orThrow());
+		assertEquals("10", lowerBoundEncodeResult.resultOrThrow());
 		
 		Result<String> upperBoundEncodeResult = codec.encodeKey(typeProvider, 20);
 		assertTrue(upperBoundEncodeResult.isSuccess());
-		assertEquals("20", upperBoundEncodeResult.orThrow());
+		assertEquals("20", upperBoundEncodeResult.resultOrThrow());
 		
 		Result<String> middleEncodeResult = codec.encodeKey(typeProvider, 15);
 		assertTrue(middleEncodeResult.isSuccess());
-		assertEquals("15", middleEncodeResult.orThrow());
+		assertEquals("15", middleEncodeResult.resultOrThrow());
 		
 		Result<Integer> belowDecodeResult = codec.decodeKey(typeProvider, "9");
 		assertTrue(belowDecodeResult.isError());
@@ -690,15 +690,15 @@ class RangeCodecTest {
 		
 		Result<Integer> lowerBoundDecodeResult = codec.decodeKey(typeProvider, "10");
 		assertTrue(lowerBoundDecodeResult.isSuccess());
-		assertEquals(10, lowerBoundDecodeResult.orThrow());
+		assertEquals(10, lowerBoundDecodeResult.resultOrThrow());
 		
 		Result<Integer> upperBoundDecodeResult = codec.decodeKey(typeProvider, "20");
 		assertTrue(upperBoundDecodeResult.isSuccess());
-		assertEquals(20, upperBoundDecodeResult.orThrow());
+		assertEquals(20, upperBoundDecodeResult.resultOrThrow());
 		
 		Result<Integer> middleDecodeResult = codec.decodeKey(typeProvider, "15");
 		assertTrue(middleDecodeResult.isSuccess());
-		assertEquals(15, middleDecodeResult.orThrow());
+		assertEquals(15, middleDecodeResult.resultOrThrow());
 	}
 	
 	@Test
@@ -714,7 +714,7 @@ class RangeCodecTest {
 		
 		Result<Double> validResult = codec.decodeStart(typeProvider, new JsonPrimitive(5.5));
 		assertTrue(validResult.isSuccess());
-		assertEquals(5.5, validResult.orThrow());
+		assertEquals(5.5, validResult.resultOrThrow());
 	}
 	
 	@Test
@@ -732,7 +732,7 @@ class RangeCodecTest {
 		
 		Result<String> validEncodeResult = codec.encodeKey(typeProvider, 5.5);
 		assertTrue(validEncodeResult.isSuccess());
-		assertEquals("5.5", validEncodeResult.orThrow());
+		assertEquals("5.5", validEncodeResult.resultOrThrow());
 		
 		Result<Double> belowDecodeResult = codec.decodeKey(typeProvider, "0.9");
 		assertTrue(belowDecodeResult.isError());
@@ -744,7 +744,7 @@ class RangeCodecTest {
 		
 		Result<Double> validDecodeResult = codec.decodeKey(typeProvider, "5.5");
 		assertTrue(validDecodeResult.isSuccess());
-		assertEquals(5.5, validDecodeResult.orThrow());
+		assertEquals(5.5, validDecodeResult.resultOrThrow());
 	}
 	
 	@Test

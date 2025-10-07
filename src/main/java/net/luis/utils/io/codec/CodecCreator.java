@@ -20,7 +20,7 @@ package net.luis.utils.io.codec;
 
 import net.luis.utils.exception.ReflectionException;
 import net.luis.utils.io.codec.function.CodecGroupingFunction;
-import net.luis.utils.util.Result;
+import net.luis.utils.util.result.Result;
 import net.luis.utils.util.unsafe.reflection.ReflectionHelper;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;

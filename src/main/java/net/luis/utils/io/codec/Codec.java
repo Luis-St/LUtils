@@ -25,7 +25,7 @@ import net.luis.utils.io.codec.encoder.KeyableEncoder;
 import net.luis.utils.io.codec.provider.TypeProvider;
 import net.luis.utils.io.codec.struct.*;
 import net.luis.utils.util.Either;
-import net.luis.utils.util.Result;
+import net.luis.utils.util.result.Result;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 

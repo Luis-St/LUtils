@@ -21,7 +21,7 @@ package net.luis.utils.io.codec.struct;
 import net.luis.utils.io.codec.Codec;
 import net.luis.utils.io.codec.provider.JsonTypeProvider;
 import net.luis.utils.io.data.json.*;
-import net.luis.utils.util.Result;
+import net.luis.utils.util.result.Result;
 import org.junit.jupiter.api.Test;
 
 import java.util.Optional;
@@ -59,7 +59,7 @@ class OptionalCodecTest {
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, current, null);
 		assertTrue(result.isSuccess());
-		assertSame(current, result.orThrow());
+		assertSame(current, result.resultOrThrow());
 	}
 	
 	@Test
@@ -70,7 +70,7 @@ class OptionalCodecTest {
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, current, Optional.empty());
 		assertTrue(result.isSuccess());
-		assertSame(current, result.orThrow());
+		assertSame(current, result.resultOrThrow());
 	}
 	
 	@Test
@@ -81,7 +81,7 @@ class OptionalCodecTest {
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, current, Optional.of(42));
 		assertTrue(result.isSuccess());
-		assertEquals(new JsonPrimitive(42), result.orThrow());
+		assertEquals(new JsonPrimitive(42), result.resultOrThrow());
 	}
 	
 	@Test
@@ -92,12 +92,12 @@ class OptionalCodecTest {
 		Codec<Optional<String>> stringCodec = new OptionalCodec<>(STRING);
 		Result<JsonElement> stringResult = stringCodec.encodeStart(typeProvider, current, Optional.of("hello"));
 		assertTrue(stringResult.isSuccess());
-		assertEquals(new JsonPrimitive("hello"), stringResult.orThrow());
+		assertEquals(new JsonPrimitive("hello"), stringResult.resultOrThrow());
 		
 		Codec<Optional<Boolean>> boolCodec = new OptionalCodec<>(BOOLEAN);
 		Result<JsonElement> boolResult = boolCodec.encodeStart(typeProvider, current, Optional.of(true));
 		assertTrue(boolResult.isSuccess());
-		assertEquals(new JsonPrimitive(true), boolResult.orThrow());
+		assertEquals(new JsonPrimitive(true), boolResult.resultOrThrow());
 	}
 	
 	@Test
@@ -115,7 +115,7 @@ class OptionalCodecTest {
 		
 		Result<Optional<Integer>> result = codec.decodeStart(typeProvider, null);
 		assertTrue(result.isSuccess());
-		assertTrue(result.orThrow().isEmpty());
+		assertTrue(result.resultOrThrow().isEmpty());
 	}
 	
 	@Test
@@ -125,7 +125,7 @@ class OptionalCodecTest {
 		
 		Result<Optional<Integer>> result = codec.decodeStart(typeProvider, JsonNull.INSTANCE);
 		assertTrue(result.isSuccess());
-		assertTrue(result.orThrow().isEmpty());
+		assertTrue(result.resultOrThrow().isEmpty());
 	}
 	
 	@Test
@@ -135,8 +135,8 @@ class OptionalCodecTest {
 		
 		Result<Optional<Integer>> result = codec.decodeStart(typeProvider, new JsonPrimitive(42));
 		assertTrue(result.isSuccess());
-		assertTrue(result.orThrow().isPresent());
-		assertEquals(42, result.orThrow().orElseThrow());
+		assertTrue(result.resultOrThrow().isPresent());
+		assertEquals(42, result.resultOrThrow().orElseThrow());
 	}
 	
 	@Test
@@ -146,7 +146,7 @@ class OptionalCodecTest {
 		
 		Result<Optional<Integer>> result = codec.decodeStart(typeProvider, new JsonPrimitive("not-a-number"));
 		assertTrue(result.isSuccess());
-		assertTrue(result.orThrow().isEmpty());
+		assertTrue(result.resultOrThrow().isEmpty());
 	}
 	
 	@Test
@@ -156,14 +156,14 @@ class OptionalCodecTest {
 		Codec<Optional<String>> stringCodec = new OptionalCodec<>(STRING);
 		Result<Optional<String>> stringResult = stringCodec.decodeStart(typeProvider, new JsonPrimitive("hello"));
 		assertTrue(stringResult.isSuccess());
-		assertTrue(stringResult.orThrow().isPresent());
-		assertEquals("hello", stringResult.orThrow().orElseThrow());
+		assertTrue(stringResult.resultOrThrow().isPresent());
+		assertEquals("hello", stringResult.resultOrThrow().orElseThrow());
 		
 		Codec<Optional<Boolean>> boolCodec = new OptionalCodec<>(BOOLEAN);
 		Result<Optional<Boolean>> boolResult = boolCodec.decodeStart(typeProvider, new JsonPrimitive(true));
 		assertTrue(boolResult.isSuccess());
-		assertTrue(boolResult.orThrow().isPresent());
-		assertTrue(boolResult.orThrow().orElseThrow());
+		assertTrue(boolResult.resultOrThrow().isPresent());
+		assertTrue(boolResult.resultOrThrow().orElseThrow());
 	}
 	
 	@Test
@@ -174,8 +174,8 @@ class OptionalCodecTest {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Result<Optional<Integer>> result = codec.decodeStart(typeProvider, null);
 		assertTrue(result.isSuccess());
-		assertTrue(result.orThrow().isPresent());
-		assertEquals(99, result.orThrow().orElseThrow());
+		assertTrue(result.resultOrThrow().isPresent());
+		assertEquals(99, result.resultOrThrow().orElseThrow());
 	}
 	
 	@Test
@@ -186,7 +186,7 @@ class OptionalCodecTest {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Result<Optional<Integer>> result = codec.decodeStart(typeProvider, null);
 		assertTrue(result.isSuccess());
-		assertTrue(result.orThrow().isEmpty());
+		assertTrue(result.resultOrThrow().isEmpty());
 	}
 	
 	@Test
@@ -197,7 +197,7 @@ class OptionalCodecTest {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Result<Optional<Integer>> result = codec.decodeStart(typeProvider, null);
 		assertTrue(result.isSuccess());
-		assertNull(result.orThrow());
+		assertNull(result.resultOrThrow());
 	}
 	
 	@Test
@@ -214,8 +214,8 @@ class OptionalCodecTest {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Result<Optional<Integer>> result = codec.decodeStart(typeProvider, null);
 		assertTrue(result.isSuccess());
-		assertTrue(result.orThrow().isPresent());
-		assertEquals(123, result.orThrow().orElseThrow());
+		assertTrue(result.resultOrThrow().isPresent());
+		assertEquals(123, result.resultOrThrow().orElseThrow());
 	}
 	
 	@Test
@@ -226,11 +226,11 @@ class OptionalCodecTest {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Result<Integer> nullResult = codec.decodeStart(typeProvider, null);
 		assertTrue(nullResult.isSuccess());
-		assertEquals(99, nullResult.orThrow());
+		assertEquals(99, nullResult.resultOrThrow());
 		
 		Result<Integer> validResult = codec.decodeStart(typeProvider, new JsonPrimitive(42));
 		assertTrue(validResult.isSuccess());
-		assertEquals(42, validResult.orThrow());
+		assertEquals(42, validResult.resultOrThrow());
 	}
 	
 	@Test
@@ -241,7 +241,7 @@ class OptionalCodecTest {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Result<Integer> result = codec.decodeStart(typeProvider, null);
 		assertTrue(result.isSuccess());
-		assertNull(result.orThrow());
+		assertNull(result.resultOrThrow());
 	}
 	
 	@Test
@@ -258,15 +258,15 @@ class OptionalCodecTest {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Result<Integer> nullResult = codec.decodeStart(typeProvider, null);
 		assertTrue(nullResult.isSuccess());
-		assertEquals(123, nullResult.orThrow());
+		assertEquals(123, nullResult.resultOrThrow());
 		
 		Result<Integer> invalidResult = codec.decodeStart(typeProvider, new JsonPrimitive("invalid"));
 		assertTrue(invalidResult.isSuccess());
-		assertEquals(123, invalidResult.orThrow());
+		assertEquals(123, invalidResult.resultOrThrow());
 		
 		Result<Integer> validResult = codec.decodeStart(typeProvider, new JsonPrimitive(42));
 		assertTrue(validResult.isSuccess());
-		assertEquals(42, validResult.orThrow());
+		assertEquals(42, validResult.resultOrThrow());
 	}
 	
 	@Test

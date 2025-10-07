@@ -18,7 +18,7 @@
 
 package net.luis.utils.io.codec;
 
-import net.luis.utils.util.Result;
+import net.luis.utils.util.result.Result;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -41,7 +41,7 @@ class ResultMappingFunctionTest {
 		
 		Result<Integer> result = function.apply(Result.success("42"));
 		assertTrue(result.isSuccess());
-		assertEquals(42, result.orThrow());
+		assertEquals(42, result.resultOrThrow());
 	}
 	
 	@Test
@@ -71,7 +71,7 @@ class ResultMappingFunctionTest {
 		
 		Result<String> result = function.apply(Result.success("test"));
 		assertTrue(result.isSuccess());
-		assertNull(result.orThrow());
+		assertNull(result.resultOrThrow());
 	}
 	
 	@Test
@@ -85,7 +85,7 @@ class ResultMappingFunctionTest {
 		
 		Result<Integer> result = function.apply(Result.success("42"));
 		assertTrue(result.isSuccess());
-		assertEquals(42, result.orThrow());
+		assertEquals(42, result.resultOrThrow());
 	}
 	
 	@Test
@@ -125,7 +125,7 @@ class ResultMappingFunctionTest {
 		
 		Result<String> result = function.apply(Result.success("test"));
 		assertTrue(result.isSuccess());
-		assertNull(result.orThrow());
+		assertNull(result.resultOrThrow());
 	}
 	
 	@Test
@@ -142,7 +142,7 @@ class ResultMappingFunctionTest {
 		
 		Result<String> result = toString.apply(parseInt.apply(Result.success("42")));
 		assertTrue(result.isSuccess());
-		assertEquals("42", result.orThrow());
+		assertEquals("42", result.resultOrThrow());
 	}
 	
 	@Test

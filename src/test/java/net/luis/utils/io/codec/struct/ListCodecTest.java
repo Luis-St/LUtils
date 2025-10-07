@@ -22,7 +22,7 @@ import com.google.common.collect.Lists;
 import net.luis.utils.io.codec.Codec;
 import net.luis.utils.io.codec.provider.JsonTypeProvider;
 import net.luis.utils.io.data.json.*;
-import net.luis.utils.util.Result;
+import net.luis.utils.util.result.Result;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
@@ -81,7 +81,7 @@ class ListCodecTest {
 		expected.add(new JsonPrimitive(2));
 		expected.add(new JsonPrimitive(3));
 		
-		assertEquals(expected, result.orThrow());
+		assertEquals(expected, result.resultOrThrow());
 	}
 	
 	@Test
@@ -92,7 +92,7 @@ class ListCodecTest {
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), list);
 		assertTrue(result.isSuccess());
-		assertEquals(new JsonArray(), result.orThrow());
+		assertEquals(new JsonArray(), result.resultOrThrow());
 	}
 	
 	@Test
@@ -106,7 +106,7 @@ class ListCodecTest {
 		
 		JsonArray expected = new JsonArray();
 		expected.add(new JsonPrimitive("hello"));
-		assertEquals(expected, result.orThrow());
+		assertEquals(expected, result.resultOrThrow());
 	}
 	
 	@Test
@@ -195,7 +195,7 @@ class ListCodecTest {
 		
 		Result<List<Integer>> result = codec.decodeStart(typeProvider, array);
 		assertTrue(result.isSuccess());
-		assertEquals(List.of(1, 2, 3), result.orThrow());
+		assertEquals(List.of(1, 2, 3), result.resultOrThrow());
 	}
 	
 	@Test
@@ -205,7 +205,7 @@ class ListCodecTest {
 		
 		Result<List<Integer>> result = codec.decodeStart(typeProvider, new JsonArray());
 		assertTrue(result.isSuccess());
-		assertTrue(result.orThrow().isEmpty());
+		assertTrue(result.resultOrThrow().isEmpty());
 	}
 	
 	@Test
@@ -218,7 +218,7 @@ class ListCodecTest {
 		
 		Result<List<String>> result = codec.decodeStart(typeProvider, array);
 		assertTrue(result.isSuccess());
-		assertEquals(List.of("hello"), result.orThrow());
+		assertEquals(List.of("hello"), result.resultOrThrow());
 	}
 	
 	@Test
@@ -242,7 +242,7 @@ class ListCodecTest {
 		Codec<List<String>> stringCodec = new ListCodec<>(STRING);
 		Result<List<String>> stringResult = stringCodec.decodeStart(typeProvider, stringArray);
 		assertTrue(stringResult.isSuccess());
-		assertEquals(List.of("a", "b"), stringResult.orThrow());
+		assertEquals(List.of("a", "b"), stringResult.resultOrThrow());
 		
 		JsonArray boolArray = new JsonArray();
 		boolArray.add(new JsonPrimitive(true));
@@ -251,7 +251,7 @@ class ListCodecTest {
 		Codec<List<Boolean>> boolCodec = new ListCodec<>(BOOLEAN);
 		Result<List<Boolean>> boolResult = boolCodec.decodeStart(typeProvider, boolArray);
 		assertTrue(boolResult.isSuccess());
-		assertEquals(List.of(true, false), boolResult.orThrow());
+		assertEquals(List.of(true, false), boolResult.resultOrThrow());
 	}
 	
 	@Test
@@ -265,7 +265,7 @@ class ListCodecTest {
 		
 		Result<List<Integer>> result = codec.decodeStart(typeProvider, array);
 		assertTrue(result.isSuccess());
-		assertEquals(List.of(1, 2), result.orThrow());
+		assertEquals(List.of(1, 2), result.resultOrThrow());
 	}
 	
 	@Test

@@ -21,7 +21,7 @@ package net.luis.utils.io.codec.struct;
 import net.luis.utils.io.codec.Codec;
 import net.luis.utils.io.codec.provider.JsonTypeProvider;
 import net.luis.utils.io.data.json.*;
-import net.luis.utils.util.Result;
+import net.luis.utils.util.result.Result;
 import org.junit.jupiter.api.Test;
 
 import static net.luis.utils.io.codec.Codecs.*;
@@ -80,7 +80,7 @@ class ArrayCodecTest {
 		expected.add(new JsonPrimitive(2));
 		expected.add(new JsonPrimitive(3));
 		
-		assertEquals(expected, result.orThrow());
+		assertEquals(expected, result.resultOrThrow());
 	}
 	
 	@Test
@@ -91,7 +91,7 @@ class ArrayCodecTest {
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), array);
 		assertTrue(result.isSuccess());
-		assertEquals(new JsonArray(), result.orThrow());
+		assertEquals(new JsonArray(), result.resultOrThrow());
 	}
 	
 	@Test
@@ -105,7 +105,7 @@ class ArrayCodecTest {
 		
 		JsonArray expected = new JsonArray();
 		expected.add(new JsonPrimitive("hello"));
-		assertEquals(expected, result.orThrow());
+		assertEquals(expected, result.resultOrThrow());
 	}
 	
 	@Test
@@ -194,7 +194,7 @@ class ArrayCodecTest {
 		
 		Result<Integer[]> result = codec.decodeStart(typeProvider, array);
 		assertTrue(result.isSuccess());
-		assertArrayEquals(new Integer[] { 1, 2, 3 }, result.orThrow());
+		assertArrayEquals(new Integer[] { 1, 2, 3 }, result.resultOrThrow());
 	}
 	
 	@Test
@@ -204,7 +204,7 @@ class ArrayCodecTest {
 		
 		Result<Integer[]> result = codec.decodeStart(typeProvider, new JsonArray());
 		assertTrue(result.isSuccess());
-		assertEquals(0, result.orThrow().length);
+		assertEquals(0, result.resultOrThrow().length);
 	}
 	
 	@Test
@@ -217,7 +217,7 @@ class ArrayCodecTest {
 		
 		Result<String[]> result = codec.decodeStart(typeProvider, array);
 		assertTrue(result.isSuccess());
-		assertArrayEquals(new String[] { "hello" }, result.orThrow());
+		assertArrayEquals(new String[] { "hello" }, result.resultOrThrow());
 	}
 	
 	@Test
@@ -241,7 +241,7 @@ class ArrayCodecTest {
 		Codec<String[]> stringCodec = new ArrayCodec<>(String.class, STRING);
 		Result<String[]> stringResult = stringCodec.decodeStart(typeProvider, stringArray);
 		assertTrue(stringResult.isSuccess());
-		assertArrayEquals(new String[] { "a", "b" }, stringResult.orThrow());
+		assertArrayEquals(new String[] { "a", "b" }, stringResult.resultOrThrow());
 		
 		JsonArray boolArray = new JsonArray();
 		boolArray.add(new JsonPrimitive(true));
@@ -250,7 +250,7 @@ class ArrayCodecTest {
 		Codec<Boolean[]> boolCodec = new ArrayCodec<>(Boolean.class, BOOLEAN);
 		Result<Boolean[]> boolResult = boolCodec.decodeStart(typeProvider, boolArray);
 		assertTrue(boolResult.isSuccess());
-		assertArrayEquals(new Boolean[] { true, false }, boolResult.orThrow());
+		assertArrayEquals(new Boolean[] { true, false }, boolResult.resultOrThrow());
 	}
 	
 	@Test
@@ -264,7 +264,7 @@ class ArrayCodecTest {
 		
 		Result<Integer[]> result = codec.decodeStart(typeProvider, array);
 		assertTrue(result.isSuccess());
-		assertArrayEquals(new Integer[] { 1, 2 }, result.orThrow());
+		assertArrayEquals(new Integer[] { 1, 2 }, result.resultOrThrow());
 	}
 	
 	@Test
@@ -339,7 +339,7 @@ class ArrayCodecTest {
 		Result<JsonElement> encodeResult = codec.encodeStart(typeProvider, typeProvider.empty(), originalArray);
 		assertTrue(encodeResult.isSuccess());
 		
-		JsonArray outerArray = assertInstanceOf(JsonArray.class, encodeResult.orThrow());
+		JsonArray outerArray = assertInstanceOf(JsonArray.class, encodeResult.resultOrThrow());
 		assertEquals(3, outerArray.size());
 		
 		JsonArray firstInnerArray = outerArray.get(0).getAsJsonArray();
@@ -348,10 +348,10 @@ class ArrayCodecTest {
 		assertEquals(2, firstInnerArray.get(1).getAsJsonPrimitive().getAsInteger());
 		assertEquals(3, firstInnerArray.get(2).getAsJsonPrimitive().getAsInteger());
 		
-		Result<Integer[][]> decodeResult = codec.decodeStart(typeProvider, encodeResult.orThrow());
+		Result<Integer[][]> decodeResult = codec.decodeStart(typeProvider, encodeResult.resultOrThrow());
 		assertTrue(decodeResult.isSuccess());
 		
-		Integer[][] decoded = decodeResult.orThrow();
+		Integer[][] decoded = decodeResult.resultOrThrow();
 		assertEquals(3, decoded.length);
 		assertArrayEquals(new Integer[] { 1, 2, 3 }, decoded[0]);
 		assertArrayEquals(new Integer[] { 4, 5, 6 }, decoded[1]);
@@ -377,10 +377,10 @@ class ArrayCodecTest {
 		Result<JsonElement> encodeResult = codec.encodeStart(typeProvider, typeProvider.empty(), originalArray);
 		assertTrue(encodeResult.isSuccess());
 		
-		Result<Integer[][][]> decodeResult = codec.decodeStart(typeProvider, encodeResult.orThrow());
+		Result<Integer[][][]> decodeResult = codec.decodeStart(typeProvider, encodeResult.resultOrThrow());
 		assertTrue(decodeResult.isSuccess());
 		
-		Integer[][][] decoded = decodeResult.orThrow();
+		Integer[][][] decoded = decodeResult.resultOrThrow();
 		assertEquals(2, decoded.length);
 		assertEquals(2, decoded[0].length);
 		assertEquals(2, decoded[0][0].length);
@@ -408,10 +408,10 @@ class ArrayCodecTest {
 		Result<JsonElement> encodeResult = codec.encodeStart(typeProvider, typeProvider.empty(), jaggedArray);
 		assertTrue(encodeResult.isSuccess());
 		
-		Result<Integer[][]> decodeResult = codec.decodeStart(typeProvider, encodeResult.orThrow());
+		Result<Integer[][]> decodeResult = codec.decodeStart(typeProvider, encodeResult.resultOrThrow());
 		assertTrue(decodeResult.isSuccess());
 		
-		Integer[][] decoded = decodeResult.orThrow();
+		Integer[][] decoded = decodeResult.resultOrThrow();
 		assertEquals(3, decoded.length);
 		assertArrayEquals(new Integer[] { 1, 2, 3, 4, 5 }, decoded[0]);
 		assertArrayEquals(new Integer[] { 6, 7 }, decoded[1]);
@@ -427,11 +427,11 @@ class ArrayCodecTest {
 		
 		Result<JsonElement> encodeResult = codec.encodeStart(typeProvider, typeProvider.empty(), emptyNestedArray);
 		assertTrue(encodeResult.isSuccess());
-		assertEquals(new JsonArray(), encodeResult.orThrow());
+		assertEquals(new JsonArray(), encodeResult.resultOrThrow());
 		
-		Result<String[][]> decodeResult = codec.decodeStart(typeProvider, encodeResult.orThrow());
+		Result<String[][]> decodeResult = codec.decodeStart(typeProvider, encodeResult.resultOrThrow());
 		assertTrue(decodeResult.isSuccess());
-		assertEquals(0, decodeResult.orThrow().length);
+		assertEquals(0, decodeResult.resultOrThrow().length);
 	}
 	
 	@Test
@@ -448,10 +448,10 @@ class ArrayCodecTest {
 		Result<JsonElement> encodeResult = codec.encodeStart(typeProvider, typeProvider.empty(), arrayWithEmptyInner);
 		assertTrue(encodeResult.isSuccess());
 		
-		Result<Integer[][]> decodeResult = codec.decodeStart(typeProvider, encodeResult.orThrow());
+		Result<Integer[][]> decodeResult = codec.decodeStart(typeProvider, encodeResult.resultOrThrow());
 		assertTrue(decodeResult.isSuccess());
 		
-		Integer[][] decoded = decodeResult.orThrow();
+		Integer[][] decoded = decodeResult.resultOrThrow();
 		assertEquals(3, decoded.length);
 		assertArrayEquals(new Integer[] { 1, 2, 3 }, decoded[0]);
 		assertEquals(0, decoded[1].length);
@@ -472,7 +472,7 @@ class ArrayCodecTest {
 		Result<JsonElement> encodeResult = codec.encodeStart(typeProvider, typeProvider.empty(), validArray);
 		assertTrue(encodeResult.isSuccess());
 		
-		Result<Integer[][]> decodeResult = codec.decodeStart(typeProvider, encodeResult.orThrow());
+		Result<Integer[][]> decodeResult = codec.decodeStart(typeProvider, encodeResult.resultOrThrow());
 		assertTrue(decodeResult.isSuccess());
 		
 		Integer[][] invalidInnerArray = new Integer[][] {
@@ -507,9 +507,9 @@ class ArrayCodecTest {
 		Result<JsonElement> stringEncodeResult = stringArrayCodec.encodeStart(typeProvider, typeProvider.empty(), stringArray);
 		assertTrue(stringEncodeResult.isSuccess());
 		
-		Result<String[][]> stringDecodeResult = stringArrayCodec.decodeStart(typeProvider, stringEncodeResult.orThrow());
+		Result<String[][]> stringDecodeResult = stringArrayCodec.decodeStart(typeProvider, stringEncodeResult.resultOrThrow());
 		assertTrue(stringDecodeResult.isSuccess());
-		String[][] decodedStringArray = stringDecodeResult.orThrow();
+		String[][] decodedStringArray = stringDecodeResult.resultOrThrow();
 		assertArrayEquals(new String[] { "hello", "world" }, decodedStringArray[0]);
 		assertArrayEquals(new String[] { "foo", "bar", "baz" }, decodedStringArray[1]);
 		
@@ -522,9 +522,9 @@ class ArrayCodecTest {
 		Result<JsonElement> boolEncodeResult = boolArrayCodec.encodeStart(typeProvider, typeProvider.empty(), boolArray);
 		assertTrue(boolEncodeResult.isSuccess());
 		
-		Result<Boolean[][]> boolDecodeResult = boolArrayCodec.decodeStart(typeProvider, boolEncodeResult.orThrow());
+		Result<Boolean[][]> boolDecodeResult = boolArrayCodec.decodeStart(typeProvider, boolEncodeResult.resultOrThrow());
 		assertTrue(boolDecodeResult.isSuccess());
-		Boolean[][] decodedBoolArray = boolDecodeResult.orThrow();
+		Boolean[][] decodedBoolArray = boolDecodeResult.resultOrThrow();
 		assertArrayEquals(new Boolean[] { true, false }, decodedBoolArray[0]);
 		assertArrayEquals(new Boolean[] { false, true, false }, decodedBoolArray[1]);
 	}

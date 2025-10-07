@@ -22,7 +22,7 @@ import com.google.common.collect.Maps;
 import net.luis.utils.annotation.type.Singleton;
 import net.luis.utils.io.data.xml.*;
 import net.luis.utils.io.data.xml.exception.XmlTypeException;
-import net.luis.utils.util.Result;
+import net.luis.utils.util.result.Result;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 

@@ -19,7 +19,7 @@
 package net.luis.utils.io.codec.provider;
 
 import net.luis.utils.io.data.xml.*;
-import net.luis.utils.util.Result;
+import net.luis.utils.util.result.Result;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
@@ -50,37 +50,37 @@ class XmlTypeProviderTest {
 	
 	@Test
 	void createPrimitiveTypes() {
-		assertTrue(XmlTypeProvider.INSTANCE.createBoolean(true).orThrow().isXmlValue());
-		assertEquals("boolean:generated", XmlTypeProvider.INSTANCE.createBoolean(true).orThrow().getName());
-		assertTrue(XmlTypeProvider.INSTANCE.createBoolean(true).orThrow().getAsXmlValue().getAsBoolean());
+		assertTrue(XmlTypeProvider.INSTANCE.createBoolean(true).resultOrThrow().isXmlValue());
+		assertEquals("boolean:generated", XmlTypeProvider.INSTANCE.createBoolean(true).resultOrThrow().getName());
+		assertTrue(XmlTypeProvider.INSTANCE.createBoolean(true).resultOrThrow().getAsXmlValue().getAsBoolean());
 		
-		assertTrue(XmlTypeProvider.INSTANCE.createByte((byte) 42).orThrow().isXmlValue());
-		assertEquals("byte:generated", XmlTypeProvider.INSTANCE.createByte((byte) 42).orThrow().getName());
-		assertEquals(42, XmlTypeProvider.INSTANCE.createByte((byte) 42).orThrow().getAsXmlValue().getAsByte());
+		assertTrue(XmlTypeProvider.INSTANCE.createByte((byte) 42).resultOrThrow().isXmlValue());
+		assertEquals("byte:generated", XmlTypeProvider.INSTANCE.createByte((byte) 42).resultOrThrow().getName());
+		assertEquals(42, XmlTypeProvider.INSTANCE.createByte((byte) 42).resultOrThrow().getAsXmlValue().getAsByte());
 		
-		assertTrue(XmlTypeProvider.INSTANCE.createShort((short) 42).orThrow().isXmlValue());
-		assertEquals("short:generated", XmlTypeProvider.INSTANCE.createShort((short) 42).orThrow().getName());
-		assertEquals(42, XmlTypeProvider.INSTANCE.createShort((short) 42).orThrow().getAsXmlValue().getAsShort());
+		assertTrue(XmlTypeProvider.INSTANCE.createShort((short) 42).resultOrThrow().isXmlValue());
+		assertEquals("short:generated", XmlTypeProvider.INSTANCE.createShort((short) 42).resultOrThrow().getName());
+		assertEquals(42, XmlTypeProvider.INSTANCE.createShort((short) 42).resultOrThrow().getAsXmlValue().getAsShort());
 		
-		assertTrue(XmlTypeProvider.INSTANCE.createInteger(42).orThrow().isXmlValue());
-		assertEquals("integer:generated", XmlTypeProvider.INSTANCE.createInteger(42).orThrow().getName());
-		assertEquals(42, XmlTypeProvider.INSTANCE.createInteger(42).orThrow().getAsXmlValue().getAsInteger());
+		assertTrue(XmlTypeProvider.INSTANCE.createInteger(42).resultOrThrow().isXmlValue());
+		assertEquals("integer:generated", XmlTypeProvider.INSTANCE.createInteger(42).resultOrThrow().getName());
+		assertEquals(42, XmlTypeProvider.INSTANCE.createInteger(42).resultOrThrow().getAsXmlValue().getAsInteger());
 		
-		assertTrue(XmlTypeProvider.INSTANCE.createLong(42L).orThrow().isXmlValue());
-		assertEquals("long:generated", XmlTypeProvider.INSTANCE.createLong(42L).orThrow().getName());
-		assertEquals(42L, XmlTypeProvider.INSTANCE.createLong(42L).orThrow().getAsXmlValue().getAsLong());
+		assertTrue(XmlTypeProvider.INSTANCE.createLong(42L).resultOrThrow().isXmlValue());
+		assertEquals("long:generated", XmlTypeProvider.INSTANCE.createLong(42L).resultOrThrow().getName());
+		assertEquals(42L, XmlTypeProvider.INSTANCE.createLong(42L).resultOrThrow().getAsXmlValue().getAsLong());
 		
-		assertTrue(XmlTypeProvider.INSTANCE.createFloat(42.5f).orThrow().isXmlValue());
-		assertEquals("float:generated", XmlTypeProvider.INSTANCE.createFloat(42.5f).orThrow().getName());
-		assertEquals(42.5f, XmlTypeProvider.INSTANCE.createFloat(42.5f).orThrow().getAsXmlValue().getAsFloat());
+		assertTrue(XmlTypeProvider.INSTANCE.createFloat(42.5f).resultOrThrow().isXmlValue());
+		assertEquals("float:generated", XmlTypeProvider.INSTANCE.createFloat(42.5f).resultOrThrow().getName());
+		assertEquals(42.5f, XmlTypeProvider.INSTANCE.createFloat(42.5f).resultOrThrow().getAsXmlValue().getAsFloat());
 		
-		assertTrue(XmlTypeProvider.INSTANCE.createDouble(42.5).orThrow().isXmlValue());
-		assertEquals("double:generated", XmlTypeProvider.INSTANCE.createDouble(42.5).orThrow().getName());
-		assertEquals(42.5, XmlTypeProvider.INSTANCE.createDouble(42.5).orThrow().getAsXmlValue().getAsDouble());
+		assertTrue(XmlTypeProvider.INSTANCE.createDouble(42.5).resultOrThrow().isXmlValue());
+		assertEquals("double:generated", XmlTypeProvider.INSTANCE.createDouble(42.5).resultOrThrow().getName());
+		assertEquals(42.5, XmlTypeProvider.INSTANCE.createDouble(42.5).resultOrThrow().getAsXmlValue().getAsDouble());
 		
-		assertTrue(XmlTypeProvider.INSTANCE.createString("test").orThrow().isXmlValue());
-		assertEquals("string:generated", XmlTypeProvider.INSTANCE.createString("test").orThrow().getName());
-		assertEquals("test", XmlTypeProvider.INSTANCE.createString("test").orThrow().getAsXmlValue().getAsString());
+		assertTrue(XmlTypeProvider.INSTANCE.createString("test").resultOrThrow().isXmlValue());
+		assertEquals("string:generated", XmlTypeProvider.INSTANCE.createString("test").resultOrThrow().getName());
+		assertEquals("test", XmlTypeProvider.INSTANCE.createString("test").resultOrThrow().getAsXmlValue().getAsString());
 	}
 	
 	@Test
@@ -92,23 +92,23 @@ class XmlTypeProviderTest {
 	void createCollectionTypes() {
 		assertThrows(NullPointerException.class, () -> XmlTypeProvider.INSTANCE.createList(null));
 		
-		XmlElement emptyList = XmlTypeProvider.INSTANCE.createList(List.of()).orThrow();
+		XmlElement emptyList = XmlTypeProvider.INSTANCE.createList(List.of()).resultOrThrow();
 		assertTrue(emptyList.isXmlContainer());
 		assertEquals("list:generated", emptyList.getName());
 		assertTrue(emptyList.getAsXmlContainer().isEmpty());
 		
 		XmlElement testElement = new XmlValue("test", 42);
-		XmlElement list = XmlTypeProvider.INSTANCE.createList(List.of(testElement)).orThrow();
+		XmlElement list = XmlTypeProvider.INSTANCE.createList(List.of(testElement)).resultOrThrow();
 		assertTrue(list.isXmlContainer());
 		assertEquals("list:generated", list.getName());
 		assertEquals(1, list.getAsXmlContainer().size());
 		assertEquals("element:generated", list.getAsXmlContainer().get(0).getName());
 		
-		XmlElement emptyMap = XmlTypeProvider.INSTANCE.createMap().orThrow();
+		XmlElement emptyMap = XmlTypeProvider.INSTANCE.createMap().resultOrThrow();
 		assertTrue(emptyMap.isXmlContainer());
 		assertEquals("map:generated", emptyMap.getName());
 		
-		XmlElement map = XmlTypeProvider.INSTANCE.createMap(Map.of("test", testElement)).orThrow();
+		XmlElement map = XmlTypeProvider.INSTANCE.createMap(Map.of("test", testElement)).resultOrThrow();
 		assertTrue(map.isXmlContainer());
 		assertEquals("map:generated", map.getName());
 		assertEquals(1, map.getAsXmlContainer().size());
@@ -119,10 +119,10 @@ class XmlTypeProviderTest {
 	void createMapWithRootName() {
 		XmlTypeProvider rootProvider = XmlTypeProvider.INSTANCE.useRoot();
 		
-		XmlElement emptyMap = rootProvider.createMap().orThrow();
+		XmlElement emptyMap = rootProvider.createMap().resultOrThrow();
 		assertEquals("root:generated", emptyMap.getName());
 		
-		XmlElement map = rootProvider.createMap(Map.of("key", new XmlValue("test", 42))).orThrow();
+		XmlElement map = rootProvider.createMap(Map.of("key", new XmlValue("test", 42))).resultOrThrow();
 		assertEquals("root:generated", map.getName());
 	}
 	
@@ -134,7 +134,7 @@ class XmlTypeProviderTest {
 		assertTrue(XmlTypeProvider.INSTANCE.getEmpty(new XmlContainer("test")).isError());
 		
 		XmlElement selfClosing = new XmlElement("empty:generated");
-		assertEquals(selfClosing, XmlTypeProvider.INSTANCE.getEmpty(selfClosing).orThrow());
+		assertEquals(selfClosing, XmlTypeProvider.INSTANCE.getEmpty(selfClosing).resultOrThrow());
 	}
 	
 	@Test
@@ -167,14 +167,14 @@ class XmlTypeProviderTest {
 		assertTrue(XmlTypeProvider.INSTANCE.getFloat(invalidValue).isError());
 		assertTrue(XmlTypeProvider.INSTANCE.getDouble(invalidValue).isError());
 		
-		assertTrue(XmlTypeProvider.INSTANCE.getBoolean(new XmlValue("boolean:generated", true)).orThrow());
-		assertEquals((byte) 42, XmlTypeProvider.INSTANCE.getByte(new XmlValue("byte:generated", (byte) 42)).orThrow());
-		assertEquals((short) 42, XmlTypeProvider.INSTANCE.getShort(new XmlValue("short:generated", (short) 42)).orThrow());
-		assertEquals(42, XmlTypeProvider.INSTANCE.getInteger(new XmlValue("integer:generated", 42)).orThrow());
-		assertEquals(42L, XmlTypeProvider.INSTANCE.getLong(new XmlValue("long:generated", 42L)).orThrow());
-		assertEquals(42.5f, XmlTypeProvider.INSTANCE.getFloat(new XmlValue("float:generated", 42.5f)).orThrow());
-		assertEquals(42.5, XmlTypeProvider.INSTANCE.getDouble(new XmlValue("double:generated", 42.5)).orThrow());
-		assertEquals("test", XmlTypeProvider.INSTANCE.getString(new XmlValue("string:generated", "test")).orThrow());
+		assertTrue(XmlTypeProvider.INSTANCE.getBoolean(new XmlValue("boolean:generated", true)).resultOrThrow());
+		assertEquals((byte) 42, XmlTypeProvider.INSTANCE.getByte(new XmlValue("byte:generated", (byte) 42)).resultOrThrow());
+		assertEquals((short) 42, XmlTypeProvider.INSTANCE.getShort(new XmlValue("short:generated", (short) 42)).resultOrThrow());
+		assertEquals(42, XmlTypeProvider.INSTANCE.getInteger(new XmlValue("integer:generated", 42)).resultOrThrow());
+		assertEquals(42L, XmlTypeProvider.INSTANCE.getLong(new XmlValue("long:generated", 42L)).resultOrThrow());
+		assertEquals(42.5f, XmlTypeProvider.INSTANCE.getFloat(new XmlValue("float:generated", 42.5f)).resultOrThrow());
+		assertEquals(42.5, XmlTypeProvider.INSTANCE.getDouble(new XmlValue("double:generated", 42.5)).resultOrThrow());
+		assertEquals("test", XmlTypeProvider.INSTANCE.getString(new XmlValue("string:generated", "test")).resultOrThrow());
 	}
 	
 	@Test
@@ -187,18 +187,18 @@ class XmlTypeProviderTest {
 		assertTrue(XmlTypeProvider.INSTANCE.getMap(wrongType).isError());
 		
 		XmlContainer emptyContainer = new XmlContainer("test");
-		assertTrue(XmlTypeProvider.INSTANCE.getList(emptyContainer).orThrow().isEmpty());
-		assertTrue(XmlTypeProvider.INSTANCE.getMap(emptyContainer).orThrow().isEmpty());
+		assertTrue(XmlTypeProvider.INSTANCE.getList(emptyContainer).resultOrThrow().isEmpty());
+		assertTrue(XmlTypeProvider.INSTANCE.getMap(emptyContainer).resultOrThrow().isEmpty());
 		
 		XmlContainer arrayContainer = new XmlContainer("list:generated");
 		arrayContainer.add(new XmlValue("element:generated", 1));
 		arrayContainer.add(new XmlValue("element:generated", 2));
-		List<XmlElement> listResult = XmlTypeProvider.INSTANCE.getList(arrayContainer).orThrow();
+		List<XmlElement> listResult = XmlTypeProvider.INSTANCE.getList(arrayContainer).resultOrThrow();
 		assertEquals(2, listResult.size());
 		
 		XmlContainer undefinedListContainer = new XmlContainer("list:generated");
 		undefinedListContainer.add(new XmlValue("test", 42));
-		List<XmlElement> undefinedListResult = XmlTypeProvider.INSTANCE.getList(undefinedListContainer).orThrow();
+		List<XmlElement> undefinedListResult = XmlTypeProvider.INSTANCE.getList(undefinedListContainer).resultOrThrow();
 		assertEquals(1, undefinedListResult.size());
 		
 		XmlContainer objectListContainer = new XmlContainer("list:generated");
@@ -209,14 +209,14 @@ class XmlTypeProviderTest {
 		XmlContainer objectContainer = new XmlContainer("map:generated");
 		objectContainer.add(new XmlValue("key1", 1));
 		objectContainer.add(new XmlValue("key2", 2));
-		Map<String, XmlElement> mapResult = XmlTypeProvider.INSTANCE.getMap(objectContainer).orThrow();
+		Map<String, XmlElement> mapResult = XmlTypeProvider.INSTANCE.getMap(objectContainer).resultOrThrow();
 		assertEquals(2, mapResult.size());
 		assertTrue(mapResult.containsKey("key1"));
 		assertTrue(mapResult.containsKey("key2"));
 		
 		XmlContainer undefinedMapContainer = new XmlContainer("map:generated");
 		undefinedMapContainer.add(new XmlValue("test", 42));
-		Map<String, XmlElement> undefinedMapResult = XmlTypeProvider.INSTANCE.getMap(undefinedMapContainer).orThrow();
+		Map<String, XmlElement> undefinedMapResult = XmlTypeProvider.INSTANCE.getMap(undefinedMapContainer).resultOrThrow();
 		assertEquals(1, undefinedMapResult.size());
 		assertTrue(undefinedMapResult.containsKey("test"));
 		
@@ -250,13 +250,13 @@ class XmlTypeProviderTest {
 		assertTrue(XmlTypeProvider.INSTANCE.get(arrayContainer, "key").isError());
 		assertTrue(XmlTypeProvider.INSTANCE.set(arrayContainer, "key", testValue).isError());
 		
-		assertFalse(XmlTypeProvider.INSTANCE.has(container, "key").orThrow());
-		assertNull(XmlTypeProvider.INSTANCE.get(container, "key").orThrow());
+		assertFalse(XmlTypeProvider.INSTANCE.has(container, "key").resultOrThrow());
+		assertNull(XmlTypeProvider.INSTANCE.get(container, "key").resultOrThrow());
 		
-		assertSame(container, XmlTypeProvider.INSTANCE.set(container, "key", testValue).orThrow());
-		assertTrue(XmlTypeProvider.INSTANCE.has(container, "key").orThrow());
-		assertNotNull(XmlTypeProvider.INSTANCE.get(container, "key").orThrow());
-		assertEquals(testValue.getAsXmlValue().getAsInteger(), XmlTypeProvider.INSTANCE.get(container, "key").orThrow().getAsXmlValue().getAsInteger());
+		assertSame(container, XmlTypeProvider.INSTANCE.set(container, "key", testValue).resultOrThrow());
+		assertTrue(XmlTypeProvider.INSTANCE.has(container, "key").resultOrThrow());
+		assertNotNull(XmlTypeProvider.INSTANCE.get(container, "key").resultOrThrow());
+		assertEquals(testValue.getAsXmlValue().getAsInteger(), XmlTypeProvider.INSTANCE.get(container, "key").resultOrThrow().getAsXmlValue().getAsInteger());
 	}
 	
 	@Test
@@ -281,7 +281,7 @@ class XmlTypeProviderTest {
 		assertThrows(NullPointerException.class, () -> XmlTypeProvider.INSTANCE.merge(null, value1));
 		assertThrows(NullPointerException.class, () -> XmlTypeProvider.INSTANCE.merge(value1, (XmlElement) null));
 		
-		assertSame(value1, XmlTypeProvider.INSTANCE.merge(emptyElement, value1).orThrow());
+		assertSame(value1, XmlTypeProvider.INSTANCE.merge(emptyElement, value1).resultOrThrow());
 		
 		assertTrue(XmlTypeProvider.INSTANCE.merge(value1, value2).isError());
 		assertTrue(XmlTypeProvider.INSTANCE.merge(value1, new XmlContainer("test")).isError());
@@ -294,7 +294,7 @@ class XmlTypeProviderTest {
 		array2.add(new XmlValue("element:generated", 3));
 		array2.add(new XmlValue("element:generated", 4));
 		
-		XmlElement mergedArray = XmlTypeProvider.INSTANCE.merge(array1, array2).orThrow();
+		XmlElement mergedArray = XmlTypeProvider.INSTANCE.merge(array1, array2).resultOrThrow();
 		assertTrue(mergedArray.isXmlContainer());
 		assertEquals(4, mergedArray.getAsXmlContainer().size());
 		
@@ -304,7 +304,7 @@ class XmlTypeProviderTest {
 		XmlContainer object2 = new XmlContainer("test");
 		object2.add(new XmlValue("key2", 2));
 		
-		XmlElement mergedObject = XmlTypeProvider.INSTANCE.merge(object1, object2).orThrow();
+		XmlElement mergedObject = XmlTypeProvider.INSTANCE.merge(object1, object2).resultOrThrow();
 		assertTrue(mergedObject.isXmlContainer());
 		assertEquals(2, mergedObject.getAsXmlContainer().size());
 		
@@ -330,7 +330,7 @@ class XmlTypeProviderTest {
 		assertThrows(NullPointerException.class, () -> XmlTypeProvider.INSTANCE.merge(emptyElement, (Result<XmlElement>) null));
 		
 		assertTrue(XmlTypeProvider.INSTANCE.merge(emptyElement, Result.error("error")).isError());
-		assertEquals(testValue, XmlTypeProvider.INSTANCE.merge(emptyElement, Result.success(testValue)).orThrow());
+		assertEquals(testValue, XmlTypeProvider.INSTANCE.merge(emptyElement, Result.success(testValue)).resultOrThrow());
 	}
 	
 	@Test
@@ -339,11 +339,11 @@ class XmlTypeProviderTest {
 		XmlElement value = new XmlValue("test", 42);
 		
 		assertTrue(XmlTypeProvider.INSTANCE.set(container, "123", value).isSuccess());
-		assertTrue(XmlTypeProvider.INSTANCE.has(container, "123").orThrow());
-		assertNotNull(XmlTypeProvider.INSTANCE.get(container, "123").orThrow());
+		assertTrue(XmlTypeProvider.INSTANCE.has(container, "123").resultOrThrow());
+		assertNotNull(XmlTypeProvider.INSTANCE.get(container, "123").resultOrThrow());
 		
 		assertTrue(XmlTypeProvider.INSTANCE.set(container, "abc", value).isSuccess());
-		assertTrue(XmlTypeProvider.INSTANCE.has(container, "abc").orThrow());
-		assertNotNull(XmlTypeProvider.INSTANCE.get(container, "abc").orThrow());
+		assertTrue(XmlTypeProvider.INSTANCE.has(container, "abc").resultOrThrow());
+		assertNotNull(XmlTypeProvider.INSTANCE.get(container, "abc").resultOrThrow());
 	}
 }
