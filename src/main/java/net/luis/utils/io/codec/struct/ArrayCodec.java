@@ -98,12 +98,14 @@ public class ArrayCodec<C> implements Codec<C[]> {
 	public ArrayCodec(@NotNull Class<C> type, @NotNull Codec<C> codec, int minLength, int maxLength) {
 		this.type = Objects.requireNonNull(type, "Type must not be null");
 		this.codec = Objects.requireNonNull(codec, "Codec must not be null");
+		
 		if (0 > minLength) {
 			throw new IllegalArgumentException("Minimum length must be at least 0");
 		}
 		if (minLength > maxLength) {
 			throw new IllegalArgumentException("Minimum length must be less than or equal to maximum length");
 		}
+		
 		this.minLength = minLength;
 		this.maxLength = maxLength;
 	}
@@ -146,6 +148,7 @@ public class ArrayCodec<C> implements Codec<C[]> {
 		if (results.stream().anyMatch(Result::isError)) {
 			return Result.error("Unable to decode some elements of array using '" + this + "': \n" + results.stream().filter(Result::isError).map(Result::errorOrThrow).collect(Collectors.joining("\n")));
 		}
+		
 		if (this.maxLength >= results.size() && results.size() >= this.minLength) {
 			Object array = Array.newInstance(this.type, results.size());
 			for (int i = 0; i < results.size(); i++) {

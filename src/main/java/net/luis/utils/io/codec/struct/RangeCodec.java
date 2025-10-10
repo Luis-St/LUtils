@@ -111,14 +111,15 @@ public abstract class RangeCodec<C extends Number & Comparable<C>> implements Ke
 		this.stringDecoder = Objects.requireNonNull(stringDecoder, "String decoder must not be null");
 	}
 	
-	//region Encode
 	@Override
 	public @NotNull <R> Result<R> encodeStart(@NotNull TypeProvider<R> provider, @NotNull R current, @Nullable C value) {
 		Objects.requireNonNull(provider, "Type provider must not be null");
 		Objects.requireNonNull(current, "Current value must not be null");
+		
 		if (value == null) {
 			return Result.error("Unable to encode null as number using '" + this + "'");
 		}
+		
 		if (value.compareTo(this.minInclusive) >= 0 && 0 >= value.compareTo(this.maxInclusive)) {
 			return this.encodeNumber(provider, value);
 		}
@@ -150,26 +151,27 @@ public abstract class RangeCodec<C extends Number & Comparable<C>> implements Ke
 		try {
 			encoded = this.stringEncoder.apply(key);
 		} catch (Exception e) {
-			return Result.error("Unable to encode key '" + key + "' with codec '" + this + "': " + e.getMessage());
+			return Result.error("Unable to encode number as key '" + key + "' using'" + this + "': " + e.getMessage());
 		}
+		
 		if (encoded == null) {
-			return Result.error("Unable to encode key '" + key + "' with codec '" + this + "'");
+			return Result.error("Unable to encode number as key '" + key + "' using '" + this + "'");
 		}
 		return Result.success(encoded);
 	}
-	//endregion
 	
-	//region Decode
 	@Override
 	public @NotNull <R> Result<C> decodeStart(@NotNull TypeProvider<R> provider, @Nullable R value) {
 		Objects.requireNonNull(provider, "Type provider must not be null");
 		if (value == null) {
 			return Result.error("Unable to decode null value as number using '" + this + "'");
 		}
+		
 		Result<C> result = this.decodeNumber(provider, value);
 		if (result.isError()) {
 			return result;
 		}
+		
 		C decoded = result.resultOrThrow();
 		if (decoded.compareTo(this.minInclusive) >= 0 && 0 >= decoded.compareTo(this.maxInclusive)) {
 			return result;
@@ -193,21 +195,23 @@ public abstract class RangeCodec<C extends Number & Comparable<C>> implements Ke
 	public @NotNull <R> Result<C> decodeKey(@NotNull TypeProvider<R> provider, @NotNull String key) {
 		Objects.requireNonNull(provider, "Type provider must not be null");
 		Objects.requireNonNull(key, "Value must not be null");
+		
 		C decoded;
 		try {
 			decoded = this.stringDecoder.apply(key);
 		} catch (Exception e) {
-			return Result.error("Unable to decode key '" + key + "' with codec '" + this + "': " + e.getMessage());
+			return Result.error("Unable to decode number from key '" + key + "' using '" + this + "': " + e.getMessage());
 		}
+		
 		if (decoded == null) {
-			return Result.error("Unable to decode key '" + key + "' with codec '" + this + "'");
+			return Result.error("Unable to decode number from key  '" + key + "' using '" + this + "': Internal decoder was unable to decode the value and returned null");
 		}
+		
 		if (decoded.compareTo(this.minInclusive) >= 0 && 0 >= decoded.compareTo(this.maxInclusive)) {
 			return Result.success(decoded);
 		}
 		return Result.error("Number '" + decoded + "' was decoded successfully, but is out of range: " + this.minInclusive + ".." + this.minInclusive);
 	}
-	//endregion
 	
 	/**
 	 * Returns a new range codec that only accepts positive numbers.<br>
@@ -276,6 +280,7 @@ public abstract class RangeCodec<C extends Number & Comparable<C>> implements Ke
 	public @NotNull RangeCodec<C> range(@NotNull C minInclusive, @NotNull C maxInclusive) {
 		Objects.requireNonNull(minInclusive, "Min value must not be null");
 		Objects.requireNonNull(maxInclusive, "Max value must not be null");
+		
 		return new RangeCodec<>(this.name, minInclusive, maxInclusive, this.converter, this.stringEncoder, this.stringDecoder) {
 			@Override
 			protected @NotNull <R> Result<R> encodeNumber(@NotNull TypeProvider<R> provider, @NotNull C value) {

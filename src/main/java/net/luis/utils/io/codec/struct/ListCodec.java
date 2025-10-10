@@ -81,12 +81,14 @@ public class ListCodec<C> implements Codec<List<C>> {
 	@ApiStatus.Internal
 	public ListCodec(@NotNull Codec<C> codec, int minSize, int maxSize) {
 		this.codec = Objects.requireNonNull(codec, "Codec must not be null");
+		
 		if (0 > minSize) {
 			throw new IllegalArgumentException("Minimum size must be at least 0");
 		}
 		if (minSize > maxSize) {
 			throw new IllegalArgumentException("Minimum size must be less than or equal to maximum size");
 		}
+		
 		this.minSize = minSize;
 		this.maxSize = maxSize;
 	}
@@ -128,6 +130,7 @@ public class ListCodec<C> implements Codec<List<C>> {
 		if (results.stream().anyMatch(Result::isError)) {
 			return Result.error("Unable to decode some elements of list using '" + this + "': \n" + results.stream().filter(Result::isError).map(Result::errorOrThrow).collect(Collectors.joining("\n")));
 		}
+		
 		if (this.maxSize >= results.size() && results.size() >= this.minSize) {
 			return Result.success(results.stream().map(Result::resultOrThrow).collect(Collectors.toList()));
 		}

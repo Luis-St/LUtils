@@ -95,6 +95,7 @@ public class EitherCodec<F, S> implements Codec<Either<F, S>> {
 		if (firstResult.isError() && secondResult.isError()) {
 			return Result.error("Unable to decode value as either using '" + this + "': \n" + firstResult.errorOrThrow() + "\n" + secondResult.errorOrThrow());
 		}
+		
 		if (firstResult.isSuccess()) {
 			return firstResult.map(Either::left);
 		}

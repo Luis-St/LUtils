@@ -91,12 +91,14 @@ public class MapCodec<K, V> implements Codec<Map<K, V>> {
 	public MapCodec(@NotNull KeyableCodec<K> keyCodec, @NotNull Codec<V> valueCodec, int minSize, int maxSize) {
 		this.keyCodec = Objects.requireNonNull(keyCodec, "Key codec must not be null");
 		this.valueCodec = Objects.requireNonNull(valueCodec, "Value codec must not be null");
+		
 		if (0 > minSize) {
 			throw new IllegalArgumentException("Minimum size must be at least 0");
 		}
 		if (minSize > maxSize) {
 			throw new IllegalArgumentException("Minimum size must be less than or equal to maximum size");
 		}
+		
 		this.minSize = minSize;
 		this.maxSize = maxSize;
 	}
@@ -172,6 +174,7 @@ public class MapCodec<K, V> implements Codec<Map<K, V>> {
 		if (decoded.stream().anyMatch(Result::isError)) {
 			return Result.error("Unable to decode some entries of map '" + value + "' using '" + this + "': \n" + decoded.stream().filter(Result::isError).map(Result::errorOrThrow).collect(Collectors.joining("\n")));
 		}
+		
 		if (this.maxSize >= decoded.size() && decoded.size() >= this.minSize) {
 			return Result.success(decoded.stream().map(Result::resultOrThrow).collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue)));
 		}
