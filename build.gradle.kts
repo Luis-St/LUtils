@@ -67,6 +67,8 @@ tasks.compileJava {
 }
 
 tasks.register<JavaExec>("run") {
+	dependsOn(tasks.named("classes"))
+	
 	group = "runs"
 	mainClass.set("net.luis.utils.Main")
 	
