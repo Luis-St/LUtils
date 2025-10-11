@@ -16,7 +16,7 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-package net.luis.utils.io.codec.struct;
+package net.luis.utils.io.codec.internal.struct;
 
 import net.luis.utils.io.codec.KeyableCodec;
 import net.luis.utils.io.codec.provider.TypeProvider;

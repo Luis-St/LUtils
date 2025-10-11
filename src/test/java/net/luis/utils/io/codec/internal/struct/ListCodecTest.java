@@ -16,10 +16,11 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-package net.luis.utils.io.codec.struct;
+package net.luis.utils.io.codec.internal.struct;
 
 import com.google.common.collect.Lists;
 import net.luis.utils.io.codec.Codec;
+import net.luis.utils.io.codec.internal.struct.ListCodec;
 import net.luis.utils.io.codec.provider.JsonTypeProvider;
 import net.luis.utils.io.data.json.*;
 import net.luis.utils.util.result.Result;
