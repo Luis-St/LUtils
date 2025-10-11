@@ -43,6 +43,11 @@ public class BooleanArrayCodec implements Codec<boolean[]> {
 	 */
 	private final Codec<List<Boolean>> internalCodec = Codec.list(Codecs.BOOLEAN);
 	
+	/**
+	 * Constructs a new boolean array codec.<br>
+	 */
+	public BooleanArrayCodec() {}
+	
 	@Override
 	public @NotNull <R> Result<R> encodeStart(@NotNull TypeProvider<R> provider, @NotNull R current, boolean @Nullable [] value) {
 		Objects.requireNonNull(provider, "Type provider must not be null");

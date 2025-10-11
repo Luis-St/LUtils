@@ -43,6 +43,11 @@ public class DurationCodec implements Codec<Duration> {
 	 */
 	private static final Pattern DURATION_PATTERN = Pattern.compile("([+-]?\\d+)([a-z]{1,2})", Pattern.CASE_INSENSITIVE);
 	
+	/**
+	 * Constructs a new duration codec.<br>
+	 */
+	public DurationCodec() {}
+	
 	@Override
 	public <R> @NotNull Result<R> encodeStart(@NotNull TypeProvider<R> provider, @NotNull R current, @Nullable Duration value) {
 		Objects.requireNonNull(provider, "Type provider must not be null");

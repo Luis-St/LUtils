@@ -43,6 +43,11 @@ public class IntegerArrayCodec implements Codec<int[]> {
 	 */
 	private final Codec<List<Integer>> internalCodec = Codec.list(Codecs.INTEGER);
 	
+	/**
+	 * Constructs a new integer array codec.<br>
+	 */
+	public IntegerArrayCodec() {}
+	
 	@Override
 	public @NotNull <R> Result<R> encodeStart(@NotNull TypeProvider<R> provider, @NotNull R current, int @Nullable [] value) {
 		Objects.requireNonNull(provider, "Type provider must not be null");

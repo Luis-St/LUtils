@@ -43,6 +43,11 @@ public class ShortArrayCodec implements Codec<short[]> {
 	 */
 	private final Codec<List<Short>> internalCodec = Codec.list(Codecs.SHORT);
 	
+	/**
+	 * Constructs a new short array codec.<br>
+	 */
+	public ShortArrayCodec() {}
+	
 	@Override
 	public @NotNull <R> Result<R> encodeStart(@NotNull TypeProvider<R> provider, @NotNull R current, short @Nullable [] value) {
 		Objects.requireNonNull(provider, "Type provider must not be null");

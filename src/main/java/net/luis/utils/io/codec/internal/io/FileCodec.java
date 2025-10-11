@@ -36,6 +36,11 @@ import java.util.Objects;
 @ApiStatus.Internal
 public class FileCodec implements Codec<File> {
 	
+	/**
+	 * Constructs a new file codec.<br>
+	 */
+	public FileCodec() {}
+	
 	@Override
 	public @NotNull <R> Result<R> encodeStart(@NotNull TypeProvider<R> provider, @NotNull R current, @Nullable File value) {
 		Objects.requireNonNull(provider, "Type provider must not be null");

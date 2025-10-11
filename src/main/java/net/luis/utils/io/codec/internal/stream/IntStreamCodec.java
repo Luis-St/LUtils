@@ -42,6 +42,11 @@ public class IntStreamCodec implements Codec<IntStream> {
 	 */
 	private final Codec<Stream<Integer>> internalCodec = Codec.stream(Codecs.INTEGER);
 	
+	/**
+	 * Constructs a new int stream codec.<br>
+	 */
+	public IntStreamCodec() {}
+	
 	@Override
 	public @NotNull <R> Result<R> encodeStart(@NotNull TypeProvider<R> provider, @NotNull R current, @Nullable IntStream value) {
 		Objects.requireNonNull(provider, "Type provider must not be null");

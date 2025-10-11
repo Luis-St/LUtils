@@ -45,6 +45,11 @@ public class PeriodCodec implements Codec<Period> {
 	 */
 	private static final Pattern PERIOD_PATTERN = Pattern.compile("([+-]?\\d+)([a-z]{1,2})", Pattern.CASE_INSENSITIVE);
 	
+	/**
+	 * Constructs a new period codec.<br>
+	 */
+	public PeriodCodec() {}
+	
 	@Override
 	public <R> @NotNull Result<R> encodeStart(@NotNull TypeProvider<R> provider, @NotNull R current, @Nullable Period value) {
 		Objects.requireNonNull(provider, "Type provider must not be null");

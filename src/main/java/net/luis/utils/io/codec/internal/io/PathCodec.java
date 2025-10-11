@@ -36,6 +36,11 @@ import java.util.Objects;
 @ApiStatus.Internal
 public class PathCodec implements Codec<Path> {
 	
+	/**
+	 * Constructs a new path codec.<br>
+	 */
+	public PathCodec() {}
+	
 	@Override
 	public @NotNull <R> Result<R> encodeStart(@NotNull TypeProvider<R> provider, @NotNull R current, @Nullable Path value) {
 		Objects.requireNonNull(provider, "Type provider must not be null");

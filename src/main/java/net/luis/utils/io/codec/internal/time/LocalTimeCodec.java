@@ -19,7 +19,6 @@
 package net.luis.utils.io.codec.internal.time;
 
 import net.luis.utils.io.codec.Codec;
-import net.luis.utils.io.codec.Codecs;
 import net.luis.utils.io.codec.provider.TypeProvider;
 import net.luis.utils.util.result.Result;
 import org.jetbrains.annotations.*;
@@ -36,6 +35,11 @@ import java.util.Objects;
  */
 @ApiStatus.Internal
 public class LocalTimeCodec implements Codec<LocalTime> {
+	
+	/**
+	 * Constructs a new local time codec.<br>
+	 */
+	public LocalTimeCodec() {}
 	
 	@Override
 	public @NotNull <R> Result<R> encodeStart(@NotNull TypeProvider<R> provider, @NotNull R current, @Nullable LocalTime value) {

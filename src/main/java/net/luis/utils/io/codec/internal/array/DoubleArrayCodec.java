@@ -43,6 +43,11 @@ public class DoubleArrayCodec implements Codec<double[]> {
 	 */
 	private final Codec<List<Double>> internalCodec = Codec.list(Codecs.DOUBLE);
 	
+	/**
+	 * Constructs a new double array codec.<br>
+	 */
+	public DoubleArrayCodec() {}
+	
 	@Override
 	public @NotNull <R> Result<R> encodeStart(@NotNull TypeProvider<R> provider, @NotNull R current, double @Nullable [] value) {
 		Objects.requireNonNull(provider, "Type provider must not be null");

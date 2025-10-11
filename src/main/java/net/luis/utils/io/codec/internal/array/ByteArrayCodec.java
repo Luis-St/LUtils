@@ -43,6 +43,11 @@ public class ByteArrayCodec implements Codec<byte[]> {
 	 */
 	private final Codec<List<Byte>> internalCodec = Codec.list(Codecs.BYTE);
 	
+	/**
+	 * Constructs a new byte array codec.<br>
+	 */
+	public ByteArrayCodec() {}
+	
 	@Override
 	public @NotNull <R> Result<R> encodeStart(@NotNull TypeProvider<R> provider, @NotNull R current, byte @Nullable [] value) {
 		Objects.requireNonNull(provider, "Type provider must not be null");

@@ -36,6 +36,11 @@ import java.util.Objects;
 @ApiStatus.Internal
 public class ZonedDateTimeCodec implements Codec<ZonedDateTime> {
 	
+	/**
+	 * Constructs a new zoned date time codec.<br>
+	 */
+	public ZonedDateTimeCodec() {}
+	
 	@Override
 	public @NotNull <R> Result<R> encodeStart(@NotNull TypeProvider<R> provider, @NotNull R current, @Nullable ZonedDateTime value) {
 		Objects.requireNonNull(provider, "Type provider must not be null");

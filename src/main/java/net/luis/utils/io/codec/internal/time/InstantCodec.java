@@ -36,6 +36,11 @@ import java.util.Objects;
 @ApiStatus.Internal
 public class InstantCodec implements Codec<Instant> {
 	
+	/**
+	 * Constructs a new instant codec.<br>
+	 */
+	public InstantCodec() {}
+	
 	@Override
 	public @NotNull <R> Result<R> encodeStart(@NotNull TypeProvider<R> provider, @NotNull R current, @Nullable Instant value) {
 		Objects.requireNonNull(provider, "Type provider must not be null");

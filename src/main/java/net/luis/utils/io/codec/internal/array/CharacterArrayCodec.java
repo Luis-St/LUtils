@@ -43,6 +43,11 @@ public class CharacterArrayCodec implements Codec<char[]> {
 	 */
 	private final Codec<List<Character>> internalCodec = Codec.list(Codecs.CHARACTER);
 	
+	/**
+	 * Constructs a new character array codec.<br>
+	 */
+	public CharacterArrayCodec() {}
+	
 	@Override
 	public @NotNull <R> Result<R> encodeStart(@NotNull TypeProvider<R> provider, @NotNull R current, char @Nullable [] value) {
 		Objects.requireNonNull(provider, "Type provider must not be null");

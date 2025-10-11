@@ -37,6 +37,11 @@ import java.util.Objects;
 @ApiStatus.Internal
 public class URICodec implements Codec<URI> {
 	
+	/**
+	 * Constructs a new URI codec.<br>
+	 */
+	public URICodec() {}
+	
 	@Override
 	public @NotNull <R> Result<R> encodeStart(@NotNull TypeProvider<R> provider, @NotNull R current, @Nullable URI value) {
 		Objects.requireNonNull(provider, "Type provider must not be null");

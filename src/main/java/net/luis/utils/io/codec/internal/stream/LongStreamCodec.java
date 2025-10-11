@@ -42,6 +42,11 @@ public class LongStreamCodec implements Codec<LongStream> {
 	 */
 	private final Codec<Stream<Long>> internalCodec = Codec.stream(Codecs.LONG);
 	
+	/**
+	 * Constructs a new long stream codec.<br>
+	 */
+	public LongStreamCodec() {}
+	
 	@Override
 	public @NotNull <R> Result<R> encodeStart(@NotNull TypeProvider<R> provider, @NotNull R current, @Nullable LongStream value) {
 		Objects.requireNonNull(provider, "Type provider must not be null");

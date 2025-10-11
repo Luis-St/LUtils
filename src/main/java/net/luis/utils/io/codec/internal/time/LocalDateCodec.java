@@ -36,6 +36,11 @@ import java.util.Objects;
 @ApiStatus.Internal
 public class LocalDateCodec implements Codec<LocalDate> {
 	
+	/**
+	 * Constructs a new local date codec.<br>
+	 */
+	public LocalDateCodec() {}
+	
 	@Override
 	public @NotNull <R> Result<R> encodeStart(@NotNull TypeProvider<R> provider, @NotNull R current, @Nullable LocalDate value) {
 		Objects.requireNonNull(provider, "Type provider must not be null");

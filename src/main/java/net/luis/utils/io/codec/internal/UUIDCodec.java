@@ -35,6 +35,11 @@ import java.util.UUID;
 @ApiStatus.Internal
 public class UUIDCodec implements KeyableCodec<UUID> {
 	
+	/**
+	 * Constructs a new UUID codec.<br>
+	 */
+	public UUIDCodec() {}
+	
 	@Override
 	public @NotNull <R> Result<R> encodeStart(@NotNull TypeProvider<R> provider, @NotNull R current, @Nullable UUID value) {
 		Objects.requireNonNull(provider, "Type provider must not be null");

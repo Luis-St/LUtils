@@ -43,6 +43,11 @@ public class FloatArrayCodec implements Codec<float[]> {
 	 */
 	private final Codec<List<Float>> internalCodec = Codec.list(Codecs.FLOAT);
 	
+	/**
+	 * Constructs a new float array codec.<br>
+	 */
+	public FloatArrayCodec() {}
+	
 	@Override
 	public @NotNull <R> Result<R> encodeStart(@NotNull TypeProvider<R> provider, @NotNull R current, float @Nullable [] value) {
 		Objects.requireNonNull(provider, "Type provider must not be null");

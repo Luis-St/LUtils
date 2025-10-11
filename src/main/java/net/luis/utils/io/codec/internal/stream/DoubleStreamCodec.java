@@ -42,6 +42,11 @@ public class DoubleStreamCodec implements Codec<DoubleStream> {
 	 */
 	private final Codec<Stream<Double>> internalCodec = Codec.stream(Codecs.DOUBLE);
 	
+	/**
+	 * Constructs a new double stream codec.<br>
+	 */
+	public DoubleStreamCodec() {}
+	
 	@Override
 	public @NotNull <R> Result<R> encodeStart(@NotNull TypeProvider<R> provider, @NotNull R current, @Nullable DoubleStream value) {
 		Objects.requireNonNull(provider, "Type provider must not be null");

@@ -43,6 +43,11 @@ public class LongArrayCodec implements Codec<long[]> {
 	 */
 	private final Codec<List<Long>> internalCodec = Codec.list(Codecs.LONG);
 	
+	/**
+	 * Constructs a new long array codec.<br>
+	 */
+	public LongArrayCodec() {}
+	
 	@Override
 	public @NotNull <R> Result<R> encodeStart(@NotNull TypeProvider<R> provider, @NotNull R current, long @Nullable [] value) {
 		Objects.requireNonNull(provider, "Type provider must not be null");
