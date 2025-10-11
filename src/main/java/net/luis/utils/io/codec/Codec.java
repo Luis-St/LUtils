@@ -67,6 +67,7 @@ public interface Codec<C> extends Encoder<C>, Decoder<C> {
 		Objects.requireNonNull(encoder, "Encoder must not be null");
 		Objects.requireNonNull(decoder, "Decoder must not be null");
 		Objects.requireNonNull(name, "Codec name must not be null");
+		
 		return new Codec<>() {
 			@Override
 			public @NotNull <R> Result<R> encodeStart(@NotNull TypeProvider<R> provider, @NotNull R current, @Nullable C value) {
@@ -136,6 +137,7 @@ public interface Codec<C> extends Encoder<C>, Decoder<C> {
 		Objects.requireNonNull(codec, "Base codec must not be null");
 		Objects.requireNonNull(encoder, "Key encoder must not be null");
 		Objects.requireNonNull(decoder, "Key decoder must not be null");
+		
 		return new KeyableCodec<>() {
 			@Override
 			public <R> @NotNull Result<R> encodeStart(@NotNull TypeProvider<R> provider, @NotNull R current, @Nullable C value) {
@@ -174,6 +176,40 @@ public interface Codec<C> extends Encoder<C>, Decoder<C> {
 	 */
 	static <C> @NotNull Codec<Optional<C>> optional(@NotNull Codec<C> codec) {
 		return new OptionalCodec<>(codec);
+	}
+	
+	/**
+	 * Creates a new codec that provides a default value if the optional value is empty.<br>
+	 * The default value is used if the optional value is empty during decoding.<br>
+	 *
+	 * @param codec The base codec
+	 * @param defaultValue The default value
+	 * @param <C> The type of the value that is encoded and decoded by the codec
+	 * @return A new codec for the given codec
+	 * @throws NullPointerException If the codec is null
+	 * @see OptionalCodec
+	 */
+	static <C> @NotNull Codec<C> optionalWithDefault(@NotNull Codec<C> codec, @Nullable C defaultValue) {
+		Objects.requireNonNull(codec, "Codec must not be null");
+		return codec.optional().xmap(Optional::ofNullable, optional -> optional.orElse(defaultValue)).codec("OptionalWithDefault[" + codec + "]");
+	}
+	
+	/**
+	 * Creates a new codec that provides a default value from the given supplier if the optional value is empty.<br>
+	 * The default value is get if the optional value is empty during decoding.<br>
+	 *
+	 * @param codec The base codec
+	 * @param defaultSupplier The supplier for the default value
+	 * @return A new codec for the given codec
+	 * @param <C> The type of the value that is encoded and decoded by the codec
+	 * @throws NullPointerException If the codec or the default supplier is null
+	 * @see OptionalCodec
+	 */
+	static <C> @NotNull Codec<C> optionalWithDefaultFrom(@NotNull Codec<C> codec, @NotNull Supplier<? extends C> defaultSupplier) {
+		Objects.requireNonNull(codec, "Codec must not be null");
+		Objects.requireNonNull(defaultSupplier, "Default supplier must not be null");
+		
+		return codec.optional().xmap(Optional::ofNullable, optional -> optional.orElseGet(defaultSupplier)).codec("OptionalWithDefaultGet[" + codec + "]");
 	}
 	
 	/**
@@ -458,6 +494,33 @@ public interface Codec<C> extends Encoder<C>, Decoder<C> {
 	}
 	
 	/**
+	 * Wraps the current codec into a new codec that provides a default value if the optional value is empty.<br>
+	 * The default value is used if the optional value is empty during decoding.<br>
+	 *
+	 * @param defaultValue The default value
+	 * @return A new codec for the current codec
+	 * @see #optionalWithDefault(Codec, Object)
+	 * @see OptionalCodec
+	 */
+	default @NotNull Codec<C> optionalWithDefault(@Nullable C defaultValue) {
+		return optionalWithDefault(this, defaultValue);
+	}
+	
+	/**
+	 * Wraps the current codec into a new codec that provides a default value from the given supplier if the optional value is empty.<br>
+	 * The default value is get if the optional value is empty during decoding.<br>
+	 *
+	 * @param defaultSupplier The supplier for the default value
+	 * @return A new codec for the current codec
+	 * @throws NullPointerException If the default supplier is null
+	 * @see #optionalWithDefaultFrom(Codec, Supplier)
+	 * @see OptionalCodec
+	 */
+	default @NotNull Codec<C> optionalWithDefaultFrom(@NotNull Supplier<? extends C> defaultSupplier) {
+		return optionalWithDefaultFrom(this, defaultSupplier);
+	}
+	
+	/**
 	 * Creates a new array codec uses the current codec as element codec for the array codec.<br>
 	 * The created array codec has no length restrictions.<br>
 	 *
@@ -680,10 +743,10 @@ public interface Codec<C> extends Encoder<C>, Decoder<C> {
 	 *
 	 * @param defaultValue The default value
 	 * @return A new codec
-	 * @see #withDefaultGet(Supplier)
+	 * @see #orElseGet(Supplier)
 	 */
-	default @NotNull Codec<C> withDefault(@Nullable C defaultValue) {
-		return this.withDefaultGet(() -> defaultValue);
+	default @NotNull Codec<C> orElse(@Nullable C defaultValue) {
+		return this.orElseGet(() -> defaultValue);
 	}
 	
 	/**
@@ -693,7 +756,7 @@ public interface Codec<C> extends Encoder<C>, Decoder<C> {
 	 * @return A new codec
 	 * @throws NullPointerException If the default value supplier is null
 	 */
-	default @NotNull Codec<C> withDefaultGet(@NotNull Supplier<C> supplier) {
+	default @NotNull Codec<C> orElseGet(@NotNull Supplier<C> supplier) {
 		Objects.requireNonNull(supplier, "Default value supplier must not be null");
 		return of(this, this.mapDecoder(result -> Result.success(result.orElseGet(supplier))), "OrElseCodec[" + this + "]");
 	}

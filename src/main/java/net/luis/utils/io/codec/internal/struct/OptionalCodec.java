@@ -116,38 +116,13 @@ public class OptionalCodec<C> implements Codec<Optional<C>> {
 	}
 	
 	@Override
-	public @NotNull Codec<Optional<C>> withDefault(@Nullable Optional<C> defaultValue) {
-		return this.withDefaultGet(() -> defaultValue);
-	}
-	
-	@Override
-	public @NotNull Codec<Optional<C>> withDefaultGet(@NotNull Supplier<Optional<C>> supplier) {
-		return new OptionalCodec<>(this.codec, supplier);
-	}
-	
-	/**
-	 * Returns a new codec that is not optional.<br>
-	 * The new codec will use the given default value if the optional value is empty.<br>
-	 *
-	 * @param defaultValue The default value
-	 * @return The new codec
-	 * @see #orElseGet(Supplier)
-	 */
-	public @NotNull Codec<C> orElse(@Nullable C defaultValue) {
+	public @NotNull Codec<Optional<C>> orElse(@Nullable Optional<C> defaultValue) {
 		return this.orElseGet(() -> defaultValue);
 	}
 	
-	/**
-	 * Returns a new codec that is not optional.<br>
-	 * The new codec will use the default value provided by the given supplier if the optional value is empty.<br>
-	 *
-	 * @param supplier The supplier for the default value
-	 * @return The new codec
-	 * @throws NullPointerException If the supplier is null
-	 */
-	public @NotNull Codec<C> orElseGet(@NotNull Supplier<C> supplier) {
-		Objects.requireNonNull(supplier, "Supplier must not be null");
-		return this.xmap(Optional::ofNullable, optional -> optional.orElseGet(supplier));
+	@Override
+	public @NotNull Codec<Optional<C>> orElseGet(@NotNull Supplier<Optional<C>> supplier) {
+		return new OptionalCodec<>(this.codec, supplier);
 	}
 	
 	//region Object overrides

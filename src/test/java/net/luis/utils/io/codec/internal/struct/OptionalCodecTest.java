@@ -19,7 +19,6 @@
 package net.luis.utils.io.codec.internal.struct;
 
 import net.luis.utils.io.codec.Codec;
-import net.luis.utils.io.codec.internal.struct.OptionalCodec;
 import net.luis.utils.io.codec.provider.JsonTypeProvider;
 import net.luis.utils.io.data.json.*;
 import net.luis.utils.util.result.Result;
@@ -168,8 +167,19 @@ class OptionalCodecTest {
 	}
 	
 	@Test
+	void orElseWithNull() {
+		Codec<Optional<Integer>> codec = new OptionalCodec<>(INTEGER).orElse(null);
+		assertNotNull(codec);
+		
+		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
+		Result<Optional<Integer>> result = codec.decodeStart(typeProvider, null);
+		assertTrue(result.isSuccess());
+		assertNull(result.resultOrThrow());
+	}
+	
+	@Test
 	void withDefaultWithValue() {
-		Codec<Optional<Integer>> codec = new OptionalCodec<>(INTEGER).withDefault(Optional.of(99));
+		Codec<Optional<Integer>> codec = new OptionalCodec<>(INTEGER).orElse(Optional.of(99));
 		assertNotNull(codec);
 		
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
@@ -181,7 +191,7 @@ class OptionalCodecTest {
 	
 	@Test
 	void orElseWithEmptyOptional() {
-		Codec<Optional<Integer>> codec = new OptionalCodec<>(INTEGER).withDefault(Optional.empty());
+		Codec<Optional<Integer>> codec = new OptionalCodec<>(INTEGER).orElse(Optional.empty());
 		assertNotNull(codec);
 		
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
@@ -191,25 +201,14 @@ class OptionalCodecTest {
 	}
 	
 	@Test
-	void withDefaultWithNull() {
-		Codec<Optional<Integer>> codec = new OptionalCodec<>(INTEGER).withDefault(null);
-		assertNotNull(codec);
-		
-		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Result<Optional<Integer>> result = codec.decodeStart(typeProvider, null);
-		assertTrue(result.isSuccess());
-		assertNull(result.resultOrThrow());
-	}
-	
-	@Test
-	void withDefaultGetNullChecks() {
+	void orElseGetWithNull() {
 		OptionalCodec<Integer> codec = new OptionalCodec<>(INTEGER);
-		assertThrows(NullPointerException.class, () -> codec.withDefaultGet(null));
+		assertThrows(NullPointerException.class, () -> codec.orElseGet(null));
 	}
 	
 	@Test
-	void withDefaultGetWithSupplier() {
-		Codec<Optional<Integer>> codec = new OptionalCodec<>(INTEGER).withDefaultGet(() -> Optional.of(123));
+	void orElseGetWithSupplier() {
+		Codec<Optional<Integer>> codec = new OptionalCodec<>(INTEGER).orElseGet(() -> Optional.of(123));
 		assertNotNull(codec);
 		
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
@@ -217,57 +216,6 @@ class OptionalCodecTest {
 		assertTrue(result.isSuccess());
 		assertTrue(result.resultOrThrow().isPresent());
 		assertEquals(123, result.resultOrThrow().orElseThrow());
-	}
-	
-	@Test
-	void orElseWithValue() {
-		Codec<Integer> codec = new OptionalCodec<>(INTEGER).orElse(99);
-		assertNotNull(codec);
-		
-		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Result<Integer> nullResult = codec.decodeStart(typeProvider, null);
-		assertTrue(nullResult.isSuccess());
-		assertEquals(99, nullResult.resultOrThrow());
-		
-		Result<Integer> validResult = codec.decodeStart(typeProvider, new JsonPrimitive(42));
-		assertTrue(validResult.isSuccess());
-		assertEquals(42, validResult.resultOrThrow());
-	}
-	
-	@Test
-	void orElseWithNull() {
-		Codec<Integer> codec = new OptionalCodec<>(INTEGER).orElse(null);
-		assertNotNull(codec);
-		
-		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Result<Integer> result = codec.decodeStart(typeProvider, null);
-		assertTrue(result.isSuccess());
-		assertNull(result.resultOrThrow());
-	}
-	
-	@Test
-	void orElseGetNullChecks() {
-		OptionalCodec<Integer> codec = new OptionalCodec<>(INTEGER);
-		assertThrows(NullPointerException.class, () -> codec.orElseGet(null));
-	}
-	
-	@Test
-	void orElseGetWithSupplier() {
-		Codec<Integer> codec = new OptionalCodec<>(INTEGER).orElseGet(() -> 123);
-		assertNotNull(codec);
-		
-		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Result<Integer> nullResult = codec.decodeStart(typeProvider, null);
-		assertTrue(nullResult.isSuccess());
-		assertEquals(123, nullResult.resultOrThrow());
-		
-		Result<Integer> invalidResult = codec.decodeStart(typeProvider, new JsonPrimitive("invalid"));
-		assertTrue(invalidResult.isSuccess());
-		assertEquals(123, invalidResult.resultOrThrow());
-		
-		Result<Integer> validResult = codec.decodeStart(typeProvider, new JsonPrimitive(42));
-		assertTrue(validResult.isSuccess());
-		assertEquals(42, validResult.resultOrThrow());
 	}
 	
 	@Test

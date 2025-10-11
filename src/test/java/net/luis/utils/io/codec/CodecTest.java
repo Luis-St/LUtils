@@ -81,6 +81,56 @@ class CodecTest {
 	}
 	
 	@Test
+	void optionalWithDefaultCodecs() {
+		assertThrows(NullPointerException.class, () -> Codec.optionalWithDefault(null, 0));
+		
+		JsonTypeProvider provider = JsonTypeProvider.INSTANCE;
+		Codec<Integer> optionalWithDefaultCodec = INTEGER.optionalWithDefault(100);
+		
+		JsonElement encodedPresent = optionalWithDefaultCodec.encode(provider, 42);
+		assertEquals(new JsonPrimitive(42), encodedPresent);
+		Integer decodedPresent = optionalWithDefaultCodec.decode(provider, encodedPresent);
+		assertEquals(42, decodedPresent);
+		
+		JsonElement encodedNull = optionalWithDefaultCodec.encode(provider, null);
+		assertEquals(JsonNull.INSTANCE, encodedNull);
+		Integer decodedNull = optionalWithDefaultCodec.decode(provider, encodedNull);
+		assertEquals(100, decodedNull);
+		
+		Codec<String> stringOptionalCodec = STRING.optionalWithDefault("default");
+		JsonElement encodedDefault = stringOptionalCodec.encode(provider, "default");
+		assertEquals(new JsonPrimitive("default"), encodedDefault);
+		String decodedEmpty = stringOptionalCodec.decode(provider, JsonNull.INSTANCE);
+		assertEquals("default", decodedEmpty);
+	}
+	
+	@Test
+	void optionalWithDefaultFromCodecs() {
+		assertThrows(NullPointerException.class, () -> Codec.optionalWithDefaultFrom(null, () -> 0));
+		assertThrows(NullPointerException.class, () -> Codec.optionalWithDefaultFrom(INTEGER, null));
+		assertThrows(NullPointerException.class, () -> INTEGER.optionalWithDefaultFrom(null));
+		
+		JsonTypeProvider provider = JsonTypeProvider.INSTANCE;
+		Codec<Integer> optionalWithDefaultFromCodec = INTEGER.optionalWithDefaultFrom(() -> 200);
+		
+		JsonElement encodedPresent = optionalWithDefaultFromCodec.encode(provider, 42);
+		assertEquals(new JsonPrimitive(42), encodedPresent);
+		Integer decodedPresent = optionalWithDefaultFromCodec.decode(provider, encodedPresent);
+		assertEquals(42, decodedPresent);
+		
+		JsonElement encodedNull = optionalWithDefaultFromCodec.encode(provider, null);
+		assertEquals(JsonNull.INSTANCE, encodedNull);
+		Integer decodedNull = optionalWithDefaultFromCodec.decode(provider, encodedNull);
+		assertEquals(200, decodedNull);
+		
+		Codec<String> stringOptionalCodec = STRING.optionalWithDefaultFrom(() -> "supplier-default");
+		JsonElement encodedDefault = stringOptionalCodec.encode(provider, "supplier-default");
+		assertEquals(new JsonPrimitive("supplier-default"), encodedDefault);
+		String decodedEmpty = stringOptionalCodec.decode(provider, JsonNull.INSTANCE);
+		assertEquals("supplier-default", decodedEmpty);
+	}
+	
+	@Test
 	void arrayCodecs() {
 		assertThrows(NullPointerException.class, () -> Codec.array(null, INTEGER));
 		assertThrows(NullPointerException.class, () -> Codec.array(Integer.class, null));
@@ -300,12 +350,12 @@ class CodecTest {
 		assertEquals("ab", validatedCodec.decode(provider, new JsonPrimitive("ab")));
 		assertTrue(validatedCodec.decodeStart(provider, new JsonPrimitive("abc")).isError());
 		
-		assertThrows(NullPointerException.class, () -> STRING.withDefaultGet(null));
+		assertThrows(NullPointerException.class, () -> STRING.orElseGet(null));
 		
-		Codec<String> orElseCodec = STRING.withDefault("default");
+		Codec<String> orElseCodec = STRING.orElse("default");
 		assertEquals("default", orElseCodec.decode(provider, JsonNull.INSTANCE));
 		
-		Codec<String> orElseGetCodec = STRING.withDefaultGet(() -> "default");
+		Codec<String> orElseGetCodec = STRING.orElseGet(() -> "default");
 		assertEquals("default", orElseGetCodec.decode(provider, JsonNull.INSTANCE));
 	}
 	
