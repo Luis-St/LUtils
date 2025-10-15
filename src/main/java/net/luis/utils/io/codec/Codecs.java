@@ -18,15 +18,14 @@
 
 package net.luis.utils.io.codec;
 
-import net.luis.utils.io.codec.decoder.KeyableDecoder;
-import net.luis.utils.io.codec.encoder.KeyableEncoder;
 import net.luis.utils.io.codec.internal.UUIDCodec;
 import net.luis.utils.io.codec.internal.array.*;
 import net.luis.utils.io.codec.internal.io.*;
+import net.luis.utils.io.codec.internal.primitiv.numeric.*;
 import net.luis.utils.io.codec.internal.stream.*;
-import net.luis.utils.io.codec.internal.struct.*;
+import net.luis.utils.io.codec.internal.struct.EitherCodec;
+import net.luis.utils.io.codec.internal.struct.UnitCodec;
 import net.luis.utils.io.codec.internal.time.*;
-import net.luis.utils.io.codec.provider.TypeProvider;
 import net.luis.utils.util.Either;
 import net.luis.utils.util.result.Result;
 import org.intellij.lang.annotations.Language;
@@ -83,129 +82,27 @@ public final class Codecs {
 	/**
 	 * A range codec that encodes and decodes byte values.<br>
 	 */
-	public static final RangeCodec<Byte> BYTE = new RangeCodec<>("Byte", Byte.MIN_VALUE, Byte.MAX_VALUE, Number::byteValue, Byte::parseByte) {
-		
-		@Override
-		protected @NotNull <R> Result<R> encodeNumber(@NotNull TypeProvider<R> provider, @NotNull Byte value) {
-			Objects.requireNonNull(provider, "Type provider must not be null");
-			Objects.requireNonNull(value, "Value must not be null");
-			
-			return provider.createByte(value);
-		}
-		
-		@Override
-		protected @NotNull <R> Result<Byte> decodeNumber(@NotNull TypeProvider<R> provider, @NotNull R value) {
-			Objects.requireNonNull(provider, "Type provider must not be null");
-			Objects.requireNonNull(value, "Value must not be null");
-			
-			return provider.getByte(value);
-		}
-	};
+	public static final KeyableCodec<Byte> BYTE = new ByteCodec();
 	/**
 	 * A range codec that encodes and decodes short values.<br>
 	 */
-	public static final RangeCodec<Short> SHORT = new RangeCodec<>("Short", Short.MIN_VALUE, Short.MAX_VALUE, Number::shortValue, Short::parseShort) {
-		
-		@Override
-		protected @NotNull <R> Result<R> encodeNumber(@NotNull TypeProvider<R> provider, @NotNull Short value) {
-			Objects.requireNonNull(provider, "Type provider must not be null");
-			Objects.requireNonNull(value, "Value must not be null");
-			
-			return provider.createShort(value);
-		}
-		
-		@Override
-		protected @NotNull <R> Result<Short> decodeNumber(@NotNull TypeProvider<R> provider, @NotNull R value) {
-			Objects.requireNonNull(provider, "Type provider must not be null");
-			Objects.requireNonNull(value, "Value must not be null");
-			
-			return provider.getShort(value);
-		}
-	};
+	public static final KeyableCodec<Short> SHORT = new ShortCodec();
 	/**
 	 * A range codec that encodes and decodes integer values.<br>
 	 */
-	public static final RangeCodec<Integer> INTEGER = new RangeCodec<>("Integer", Integer.MIN_VALUE, Integer.MAX_VALUE, Number::intValue, Integer::parseInt) {
-		
-		@Override
-		protected @NotNull <R> Result<R> encodeNumber(@NotNull TypeProvider<R> provider, @NotNull Integer value) {
-			Objects.requireNonNull(provider, "Type provider must not be null");
-			Objects.requireNonNull(value, "Value must not be null");
-			
-			return provider.createInteger(value);
-		}
-		
-		@Override
-		protected @NotNull <R> Result<Integer> decodeNumber(@NotNull TypeProvider<R> provider, @NotNull R value) {
-			Objects.requireNonNull(provider, "Type provider must not be null");
-			Objects.requireNonNull(value, "Value must not be null");
-			
-			return provider.getInteger(value);
-		}
-	};
+	public static final KeyableCodec<Integer> INTEGER = new IntegerCodec();
 	/**
 	 * A range codec that encodes and decodes long values.<br>
 	 */
-	public static final RangeCodec<Long> LONG = new RangeCodec<>("Long", Long.MIN_VALUE, Long.MAX_VALUE, Number::longValue, Long::parseLong) {
-		
-		@Override
-		protected @NotNull <R> Result<R> encodeNumber(@NotNull TypeProvider<R> provider, @NotNull Long value) {
-			Objects.requireNonNull(provider, "Type provider must not be null");
-			Objects.requireNonNull(value, "Value must not be null");
-			
-			return provider.createLong(value);
-		}
-		
-		@Override
-		protected @NotNull <R> Result<Long> decodeNumber(@NotNull TypeProvider<R> provider, @NotNull R value) {
-			Objects.requireNonNull(provider, "Type provider must not be null");
-			Objects.requireNonNull(value, "Value must not be null");
-			
-			return provider.getLong(value);
-		}
-	};
+	public static final KeyableCodec<Long> LONG = new LongCodec();
 	/**
 	 * A range codec that encodes and decodes float values.<br>
 	 */
-	public static final RangeCodec<Float> FLOAT = new RangeCodec<>("Float", -Float.MAX_VALUE, Float.MAX_VALUE, Number::floatValue, Float::parseFloat) {
-		
-		@Override
-		protected @NotNull <R> Result<R> encodeNumber(@NotNull TypeProvider<R> provider, @NotNull Float value) {
-			Objects.requireNonNull(provider, "Type provider must not be null");
-			Objects.requireNonNull(value, "Value must not be null");
-			
-			return provider.createFloat(value);
-		}
-		
-		@Override
-		protected @NotNull <R> Result<Float> decodeNumber(@NotNull TypeProvider<R> provider, @NotNull R value) {
-			Objects.requireNonNull(provider, "Type provider must not be null");
-			Objects.requireNonNull(value, "Value must not be null");
-			
-			return provider.getFloat(value);
-		}
-	};
+	public static final KeyableCodec<Float> FLOAT = new FloatCodec();
 	/**
 	 * A range codec that encodes and decodes double values.<br>
 	 */
-	public static final RangeCodec<Double> DOUBLE = new RangeCodec<>("Double", -Double.MAX_VALUE, Double.MAX_VALUE, Number::doubleValue, Double::parseDouble) {
-		
-		@Override
-		protected @NotNull <R> Result<R> encodeNumber(@NotNull TypeProvider<R> provider, @NotNull Double value) {
-			Objects.requireNonNull(provider, "Type provider must not be null");
-			Objects.requireNonNull(value, "Value must not be null");
-			
-			return provider.createDouble(value);
-		}
-		
-		@Override
-		protected @NotNull <R> Result<Double> decodeNumber(@NotNull TypeProvider<R> provider, @NotNull R value) {
-			Objects.requireNonNull(provider, "Type provider must not be null");
-			Objects.requireNonNull(value, "Value must not be null");
-			
-			return provider.getDouble(value);
-		}
-	};
+	public static final KeyableCodec<Double> DOUBLE = new DoubleCodec();
 	/**
 	 * A codec that encodes and decodes strings.<br>
 	 */

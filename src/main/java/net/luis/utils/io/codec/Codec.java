@@ -167,6 +167,123 @@ public interface Codec<C> extends Encoder<C>, Decoder<C> {
 	}
 	
 	/**
+	 * Creates a new codec that only accepts numbers that are at least the given minimum value.<br>
+	 * The minimum value is inclusive.<br>
+	 *
+	 * @param codec The base codec
+	 * @param min The minimum value (inclusive)
+	 * @param <N> The type of the number that is encoded and decoded by the codec
+	 * @param <C> The type of the codec that is used to encode and decode values of the type {@code N}
+	 * @return A new codec for the given codec
+	 * @throws NullPointerException If the codec or minimum value is null
+	 */
+	static <N extends Number & Comparable<N>, C extends KeyableCodec<N>> @NotNull KeyableCodec<N> atLeast(@NotNull C codec, @NotNull N min) {
+		Objects.requireNonNull(codec, "Codec must not be null");
+		Objects.requireNonNull(min, "Minimum value must not be null");
+		
+		return keyable(codec.map(value -> {
+			if (value == null) {
+				return Result.error("Value must not be null");
+			}
+			
+			if (value.compareTo(min) < 0) {
+				return Result.error("Unable to encode value " + value + ": Value must be at least " + min);
+			}
+			return Result.success(value);
+		}, result -> {
+			if (result.isError()) {
+				return result;
+			}
+			
+			N value = result.resultOrThrow();
+			if (value.compareTo(min) < 0) {
+				return Result.error("Unable to decode value " + value + ": Value must be at least " + min);
+			}
+			return Result.success(value);
+		}).codec("AtLeast[" + codec + ", " + min + "]"), codec, codec);
+	}
+	
+	/**
+	 * Creates a new codec that only accepts numbers that are at most the given maximum value.<br>
+	 * The maximum value is inclusive.<br>
+	 *
+	 * @param codec The base codec
+	 * @param max The maximum value (inclusive)
+	 * @param <N> The type of the number that is encoded and decoded by the codec
+	 * @param <C> The type of the codec that is used to encode and decode values of the type {@code N}
+	 * @return A new codec for the given codec
+	 * @throws NullPointerException If the codec or maximum value is null
+	 */
+	static <N extends Number & Comparable<N>, C extends KeyableCodec<N>> @NotNull KeyableCodec<N> atMost(@NotNull C codec, @NotNull N max) {
+		Objects.requireNonNull(codec, "Codec must not be null");
+		Objects.requireNonNull(max, "Maximum value must not be null");
+		
+		return keyable(codec.map(value -> {
+			if (value == null) {
+				return Result.error("Value must not be null");
+			}
+			
+			if (0 < value.compareTo(max)) {
+				return Result.error("Unable to encode value " + value + ": Value must be at most " + max);
+			}
+			return Result.success(value);
+		}, result -> {
+			if (result.isError()) {
+				return result;
+			}
+			
+			N value = result.resultOrThrow();
+			if (0 < value.compareTo(max)) {
+				return Result.error("Unable to decode value " + value + ": Value must be at most " + max);
+			}
+			return Result.success(value);
+		}).codec("AtMost[" + codec + ", " + max + "]"), codec, codec);
+	}
+	
+	/**
+	 * Creates a new codec that only accepts numbers that are in the given range.<br>
+	 * The minimum and maximum values are inclusive.<br>
+	 *
+	 * @param codec The base codec
+	 * @param min The minimum value (inclusive)
+	 * @param max The maximum value (inclusive)
+	 * @param <N> The type of the number that is encoded and decoded by the codec
+	 * @param <C> The type of the codec that is used to encode and decode values of the type {@code N}
+	 * @return A new codec for the given codec
+	 * @throws NullPointerException If the codec, minimum value or maximum value is null
+	 * @throws IllegalArgumentException If the minimum value is greater than the maximum value
+	 */
+	static <N extends Number & Comparable<N>, C extends KeyableCodec<N>> @NotNull KeyableCodec<N> ranged(@NotNull C codec, @NotNull N min, @NotNull N max) {
+		Objects.requireNonNull(codec, "Codec must not be null");
+		Objects.requireNonNull(min, "Minimum value must not be null");
+		Objects.requireNonNull(max, "Maximum value must not be null");
+		if (min.compareTo(max) > 0) {
+			throw new IllegalArgumentException("Minimum value must not be greater than maximum value");
+		}
+		
+		return keyable(codec.map(value -> {
+			if (value == null) {
+				return Result.error("Value must not be null");
+			}
+			
+			if (value.compareTo(min) < 0 || 0 < value.compareTo(max)) {
+				return Result.error("Unable to encode value " + value + ": Value must be in range [" + min + ", " + max + "]");
+			}
+			return Result.success(value);
+		}, result -> {
+			if (result.isError()) {
+				return result;
+			}
+			
+			N value = result.resultOrThrow();
+			if (value.compareTo(min) < 0 || 0 < value.compareTo(max)) {
+				return Result.error("Unable to decode value " + value + ": Value must be in range [" + min + ", " + max + "]");
+			}
+			return Result.success(value);
+		}).codec("Ranged[" + codec + ", " + min + ", " + max + "]"), codec, codec);
+	}
+	
+	/**
 	 * Creates a new optional codec for the given codec.<br>
 	 * @param codec The base codec
 	 * @param <C> The type of the value that is encoded and decoded by the codec
