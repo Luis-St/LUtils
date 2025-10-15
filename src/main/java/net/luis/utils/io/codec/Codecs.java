@@ -21,6 +21,7 @@ package net.luis.utils.io.codec;
 import net.luis.utils.io.codec.internal.UUIDCodec;
 import net.luis.utils.io.codec.internal.array.*;
 import net.luis.utils.io.codec.internal.io.*;
+import net.luis.utils.io.codec.internal.primitiv.*;
 import net.luis.utils.io.codec.internal.primitiv.numeric.*;
 import net.luis.utils.io.codec.internal.stream.*;
 import net.luis.utils.io.codec.internal.struct.EitherCodec;
@@ -54,31 +55,7 @@ public final class Codecs {
 	/**
 	 * A codec that encodes and decodes boolean values.<br>
 	 */
-	public static final Codec<Boolean> BOOLEAN = new Codec<>() {
-		
-		@Override
-		public <R> @NotNull Result<R> encodeStart(@NotNull TypeProvider<R> provider, @Nullable R current, @Nullable Boolean value) {
-			Objects.requireNonNull(provider, "Type provider must not be null");
-			if (value == null) {
-				return Result.error("Unable to encode null as boolean using '" + this + "'");
-			}
-			return provider.createBoolean(value);
-		}
-		
-		@Override
-		public <R> @NotNull Result<Boolean> decodeStart(@NotNull TypeProvider<R> provider, @Nullable R value) {
-			Objects.requireNonNull(provider, "Type provider must not be null");
-			if (value == null) {
-				return Result.error("Unable to decode null value as boolean using '" + this + "'");
-			}
-			return provider.getBoolean(value);
-		}
-		
-		@Override
-		public String toString() {
-			return "BooleanCodec";
-		}
-	};
+	public static final KeyableCodec<Boolean> BOOLEAN = new BooleanCodec();
 	/**
 	 * A range codec that encodes and decodes byte values.<br>
 	 */
@@ -106,100 +83,11 @@ public final class Codecs {
 	/**
 	 * A codec that encodes and decodes strings.<br>
 	 */
-	public static final KeyableCodec<String> STRING = new KeyableCodec<>() {
-		private final KeyableEncoder<String> encoder = KeyableEncoder.of(this, ResultingFunction.direct(Function.identity()));
-		private final KeyableDecoder<String> decoder = KeyableDecoder.of(this, ResultingFunction.direct(Function.identity()));
-		
-		@Override
-		public <R> @NotNull Result<R> encodeStart(@NotNull TypeProvider<R> provider, @Nullable R current, @Nullable String value) {
-			Objects.requireNonNull(provider, "Type provider must not be null");
-			if (value == null) {
-				return Result.error("Unable to encode null as string using '" + this + "'");
-			}
-			return provider.createString(value);
-		}
-		
-		@Override
-		public <R> @NotNull Result<String> encodeKey(@NotNull TypeProvider<R> provider, @NotNull String key) {
-			Objects.requireNonNull(provider, "Type provider must not be null");
-			Objects.requireNonNull(key, "Key must not be null");
-			return this.encoder.encodeKey(provider, key);
-		}
-		
-		@Override
-		public <R> @NotNull Result<String> decodeStart(@NotNull TypeProvider<R> provider, @Nullable R value) {
-			Objects.requireNonNull(provider, "Type provider must not be null");
-			if (value == null) {
-				return Result.error("Unable to decode null value as string using '" + this + "'");
-			}
-			return provider.getString(value);
-		}
-		
-		@Override
-		public <R> @NotNull Result<String> decodeKey(@NotNull TypeProvider<R> provider, @NotNull String key) {
-			Objects.requireNonNull(provider, "Type provider must not be null");
-			Objects.requireNonNull(key, "Key must not be null");
-			return this.decoder.decodeKey(provider, key);
-		}
-		
-		@Override
-		public String toString() {
-			return "StringCodec";
-		}
-	};
+	public static final KeyableCodec<String> STRING = new StringCodec();
 	/**
 	 * A keyable codec that encodes and decodes characters.<br>
 	 */
-	public static final KeyableCodec<Character> CHARACTER = new KeyableCodec<>() {
-		
-		@Override
-		public @NotNull <R> Result<R> encodeStart(@NotNull TypeProvider<R> provider, @NotNull R current, @Nullable Character value) {
-			Objects.requireNonNull(provider, "Type provider must not be null");
-			if (value == null) {
-				return Result.error("Unable to encode null as character using '" + this + "'");
-			}
-			return provider.createString(String.valueOf(value));
-		}
-		
-		@Override
-		public @NotNull <R> Result<String> encodeKey(@NotNull TypeProvider<R> provider, @NotNull Character key) {
-			Objects.requireNonNull(provider, "Type provider must not be null");
-			Objects.requireNonNull(key, "Key must not be null");
-			return Result.success(String.valueOf(key));
-		}
-		
-		@Override
-		public @NotNull <R> Result<Character> decodeStart(@NotNull TypeProvider<R> provider, @Nullable R value) {
-			Objects.requireNonNull(provider, "Type provider must not be null");
-			if (value == null) {
-				return Result.error("Unable to decode null value as character using '" + this + "'");
-			}
-			Result<String> result = provider.getString(value);
-			if (result.isError()) {
-				return Result.error("Unable to decode value as character from a string value using '" + this + "': " + result.errorOrThrow());
-			}
-			String str = result.resultOrThrow();
-			if (str.length() != 1) {
-				return Result.error("String must have exactly one character to decode as character using '" + this + "'");
-			}
-			return Result.success(str.charAt(0));
-		}
-		
-		@Override
-		public @NotNull <R> Result<Character> decodeKey(@NotNull TypeProvider<R> provider, @NotNull String key) {
-			Objects.requireNonNull(provider, "Type provider must not be null");
-			Objects.requireNonNull(key, "Key must not be null");
-			if (key.length() != 1) {
-				return Result.error("Key must have exactly one character to decode as character using '" + this + "'");
-			}
-			return Result.success(key.charAt(0));
-		}
-		
-		@Override
-		public String toString() {
-			return "CharacterCodec";
-		}
-	};
+	public static final KeyableCodec<Character> CHARACTER = new CharacterCodec();
 	/**
 	 * A codec that encodes and decodes boolean arrays.<br>
 	 * The underlying boolean array is converted to and from a list of booleans.<br>
