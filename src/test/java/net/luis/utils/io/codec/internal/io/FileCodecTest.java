@@ -142,8 +142,7 @@ class FileCodecTest {
 		Codec<File> codec = new FileCodec();
 
 		Result<File> result = codec.decodeStart(typeProvider, new JsonPrimitive(42));
-		assertTrue(result.isSuccess());
-		assertEquals(new File("42"), result.resultOrThrow());
+		assertTrue(result.isError());
 	}
 
 	@Test

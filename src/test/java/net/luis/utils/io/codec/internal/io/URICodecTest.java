@@ -174,8 +174,7 @@ class URICodecTest {
 		Codec<URI> codec = new URICodec();
 
 		Result<URI> result = codec.decodeStart(typeProvider, new JsonPrimitive(42));
-		assertTrue(result.isSuccess());
-		assertEquals(URI.create("42"), result.resultOrThrow());
+		assertTrue(result.isError());
 	}
 
 	@Test

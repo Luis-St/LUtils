@@ -317,10 +317,6 @@ public final class Codecs {
 	 * The value which is encoded and decoded by this codec can be either of type {@code F} or {@code S}.<br>
 	 * The codec will try to use the first codec to encode and decode the value,<br>
 	 * if that fails, it will try to use the second codec.<br>
-	 * <p>
-	 *     <strong>Note</strong>: If the first codec is a string codec, it will always succeed,<br>
-	 *     so the second codec will never be used.<br>
-	 * </p>
 	 *
 	 * @param firstCodec The first codec
 	 * @param secondCodec The second codec

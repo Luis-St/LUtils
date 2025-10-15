@@ -197,8 +197,6 @@ class UUIDCodecTest {
 
 		Result<UUID> result = codec.decodeStart(typeProvider, new JsonPrimitive(42));
 		assertTrue(result.isError());
-		assertTrue(result.errorOrThrow().contains("Unable to decode UUID"));
-		assertTrue(result.errorOrThrow().contains("Unable to parse UUID"));
 	}
 
 	@Test

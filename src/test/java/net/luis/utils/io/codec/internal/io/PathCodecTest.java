@@ -142,8 +142,7 @@ class PathCodecTest {
 		Codec<Path> codec = new PathCodec();
 
 		Result<Path> result = codec.decodeStart(typeProvider, new JsonPrimitive(42));
-		assertTrue(result.isSuccess());
-		assertEquals(Path.of("42"), result.resultOrThrow());
+		assertTrue(result.isError());
 	}
 
 	@Test

@@ -131,11 +131,11 @@ class JsonWriterTest {
 		
 		stream.reset();
 		writer.writeJson(new JsonPrimitive("123"));
-		assertEquals("123", stream.toString());
+		assertEquals("\"123\"", stream.toString());
 		
 		stream.reset();
 		writer.writeJson(new JsonPrimitive("true"));
-		assertEquals("true", stream.toString());
+		assertEquals("\"true\"", stream.toString());
 		
 		stream.reset();
 		writer.writeJson(new JsonPrimitive("not_a_number"));

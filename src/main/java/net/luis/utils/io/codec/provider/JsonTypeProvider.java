@@ -127,11 +127,10 @@ public final class JsonTypeProvider implements TypeProvider<JsonElement> {
 		}
 		
 		JsonPrimitive primitive = type.getAsJsonPrimitive();
-		try {
-			return Result.success(primitive.getAsBoolean());
-		} catch (RuntimeException e) {
-			return Result.error("Json element '" + type + "' is not a json boolean: " + e.getMessage());
+		if (!primitive.isJsonBoolean()) {
+			return Result.error("Json element '" + type + "' is not a json boolean");
 		}
+		return Result.success(primitive.getAsBoolean());
 	}
 	
 	@Override
@@ -143,11 +142,10 @@ public final class JsonTypeProvider implements TypeProvider<JsonElement> {
 		}
 		
 		JsonPrimitive primitive = type.getAsJsonPrimitive();
-		try {
-			return Result.success(primitive.getAsByte());
-		} catch (RuntimeException e) {
-			return Result.error("Json element '" + type + "' is not a json byte: " + e.getMessage());
+		if (!primitive.isJsonNumber()) {
+			return Result.error("Json element '" + type + "' is not a json byte");
 		}
+		return Result.success(primitive.getAsByte());
 	}
 	
 	@Override
@@ -159,11 +157,10 @@ public final class JsonTypeProvider implements TypeProvider<JsonElement> {
 		}
 		
 		JsonPrimitive primitive = type.getAsJsonPrimitive();
-		try {
-			return Result.success(primitive.getAsShort());
-		} catch (RuntimeException e) {
-			return Result.error("Json element '" + type + "' is not a json short: " + e.getMessage());
+		if (!primitive.isJsonNumber()) {
+			return Result.error("Json element '" + type + "' is not a json short");
 		}
+		return Result.success(primitive.getAsShort());
 	}
 	
 	@Override
@@ -175,11 +172,10 @@ public final class JsonTypeProvider implements TypeProvider<JsonElement> {
 		}
 		
 		JsonPrimitive primitive = type.getAsJsonPrimitive();
-		try {
-			return Result.success(primitive.getAsInteger());
-		} catch (RuntimeException e) {
-			return Result.error("Json element '" + type + "' is not a json integer: " + e.getMessage());
+		if (!primitive.isJsonNumber()) {
+			return Result.error("Json element '" + type + "' is not a json integer");
 		}
+		return Result.success(primitive.getAsInteger());
 	}
 	
 	@Override
@@ -191,11 +187,10 @@ public final class JsonTypeProvider implements TypeProvider<JsonElement> {
 		}
 		
 		JsonPrimitive primitive = type.getAsJsonPrimitive();
-		try {
-			return Result.success(primitive.getAsLong());
-		} catch (RuntimeException e) {
-			return Result.error("Json element '" + type + "' is not a json long: " + e.getMessage());
+		if (!primitive.isJsonNumber()) {
+			return Result.error("Json element '" + type + "' is not a json long");
 		}
+		return Result.success(primitive.getAsLong());
 	}
 	
 	@Override
@@ -207,11 +202,10 @@ public final class JsonTypeProvider implements TypeProvider<JsonElement> {
 		}
 		
 		JsonPrimitive primitive = type.getAsJsonPrimitive();
-		try {
-			return Result.success(primitive.getAsFloat());
-		} catch (RuntimeException e) {
-			return Result.error("Json element '" + type + "' is not a json float: " + e.getMessage());
+		if (primitive.isJsonString()) {
+			return Result.error("Json element '" + type + "' is a json string, not a json float");
 		}
+		return Result.success(primitive.getAsFloat());
 	}
 	
 	@Override
@@ -223,11 +217,10 @@ public final class JsonTypeProvider implements TypeProvider<JsonElement> {
 		}
 		
 		JsonPrimitive primitive = type.getAsJsonPrimitive();
-		try {
-			return Result.success(primitive.getAsDouble());
-		} catch (RuntimeException e) {
-			return Result.error("Json element '" + type + "' is not a json double: " + e.getMessage());
+		if (!primitive.isJsonNumber()) {
+			return Result.error("Json element '" + type + "' is not a json double");
 		}
+		return Result.success(primitive.getAsDouble());
 	}
 	
 	@Override
@@ -236,6 +229,11 @@ public final class JsonTypeProvider implements TypeProvider<JsonElement> {
 		
 		if (!type.isJsonPrimitive()) {
 			return Result.error("Json element '" + type + "' is not a json primitive");
+		}
+		
+		JsonPrimitive primitive = type.getAsJsonPrimitive();
+		if (!primitive.isJsonString()) {
+			return Result.error("Json element '" + type + "' is not a json string");
 		}
 		return Result.success(type.getAsJsonPrimitive().getAsString());
 	}

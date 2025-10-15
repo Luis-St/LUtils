@@ -19,7 +19,6 @@
 package net.luis.utils.io.codec.internal.struct;
 
 import net.luis.utils.io.codec.Codec;
-import net.luis.utils.io.codec.internal.struct.EitherCodec;
 import net.luis.utils.io.codec.provider.JsonTypeProvider;
 import net.luis.utils.io.data.json.JsonElement;
 import net.luis.utils.io.data.json.JsonPrimitive;
@@ -197,8 +196,8 @@ class EitherCodecTest {
 		
 		Result<Either<String, Double>> doubleResult = codec.decodeStart(typeProvider, new JsonPrimitive(3.14));
 		assertTrue(doubleResult.isSuccess());
-		assertTrue(doubleResult.resultOrThrow().isLeft());
-		assertEquals("3.14", doubleResult.resultOrThrow().leftOrThrow());
+		assertTrue(doubleResult.resultOrThrow().isRight());
+		assertEquals(3.14, doubleResult.resultOrThrow().rightOrThrow());
 	}
 	
 	@Test

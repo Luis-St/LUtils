@@ -175,8 +175,6 @@ class CharsetCodecTest {
 
 		Result<Charset> result = codec.decodeStart(typeProvider, new JsonPrimitive(42));
 		assertTrue(result.isError());
-		assertTrue(result.errorOrThrow().contains("Unable to decode charset"));
-		assertTrue(result.errorOrThrow().contains("Unable to parse charset"));
 	}
 
 	@Test

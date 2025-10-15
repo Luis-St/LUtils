@@ -36,7 +36,6 @@ import java.util.Objects;
  * </p>
  * <p>
  *     The first codec is decoded first and if it fails, the second codec is used to decode the value.<br>
- *     <strong>Note</strong>: If the first codec is a string codec, it will always succeed, so the second codec will never be used.
  * </p>
  *
  * @author Luis-St

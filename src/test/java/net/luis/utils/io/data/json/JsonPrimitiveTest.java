@@ -18,16 +18,12 @@
 
 package net.luis.utils.io.data.json;
 
-import net.luis.utils.function.throwable.ThrowableFunction;
 import net.luis.utils.io.data.json.exception.JsonTypeException;
-import net.luis.utils.io.reader.ScopedStringReader;
-import net.luis.utils.io.reader.StringReader;
 import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.nio.charset.StandardCharsets;
-import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -239,19 +235,6 @@ class JsonPrimitiveTest {
 	}
 	
 	@Test
-	void getAsWithCustomParser() {
-		ThrowableFunction<String, List<Boolean>, Exception> parser = value -> new ScopedStringReader(String.valueOf(value)).readList(StringReader::readBoolean);
-		
-		assertThrows(NullPointerException.class, () -> new JsonPrimitive("[]").getAs(null));
-		
-		List<Boolean> result = new JsonPrimitive("[true, false, true]").getAs(parser);
-		assertEquals(List.of(true, false, true), result);
-		
-		assertThrows(IllegalArgumentException.class, () -> new JsonPrimitive("invalid format").getAs(parser));
-		assertThrows(IllegalArgumentException.class, () -> new JsonPrimitive("()").getAs(parser));
-	}
-	
-	@Test
 	void equalsAndHashCode() {
 		JsonPrimitive primitive1 = new JsonPrimitive("test");
 		JsonPrimitive primitive2 = new JsonPrimitive("test");
@@ -263,7 +246,6 @@ class JsonPrimitiveTest {
 		assertEquals(primitive1.hashCode(), primitive2.hashCode());
 		assertNotEquals(primitive1, primitive3);
 		
-		// Number equality
 		assertEquals(primitive4, primitive5);
 		assertEquals(primitive4.hashCode(), primitive5.hashCode());
 		
