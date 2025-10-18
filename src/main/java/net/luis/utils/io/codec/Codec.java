@@ -326,7 +326,7 @@ public interface Codec<C> extends Encoder<C>, Decoder<C> {
 		Objects.requireNonNull(codec, "Codec must not be null");
 		Objects.requireNonNull(defaultSupplier, "Default supplier must not be null");
 		
-		return codec.optional().xmap(Optional::ofNullable, optional -> optional.orElseGet(defaultSupplier)).codec("OptionalWithDefaultGet[" + codec + "]");
+		return codec.optional().xmap(Optional::ofNullable, optional -> optional.orElseGet(defaultSupplier)).codec("OptionalWithDefaultFrom[" + codec + "]");
 	}
 	
 	/**
