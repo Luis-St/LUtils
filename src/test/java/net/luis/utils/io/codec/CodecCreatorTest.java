@@ -18,7 +18,7 @@
 
 package net.luis.utils.io.codec;
 
-import net.luis.utils.io.codec.function.CodecGroupingFunction;
+import net.luis.utils.io.codec.function.CodecBuilderFunction;
 import net.luis.utils.io.codec.provider.JsonTypeProvider;
 import net.luis.utils.io.data.json.*;
 import net.luis.utils.util.result.Result;
@@ -293,42 +293,42 @@ class CodecCreatorTest {
 	
 	private record TestObject3(@NotNull String a, @NotNull String b, @NotNull String c, @NotNull String d, @NotNull String e) {}
 	
-	private static class TestFunction implements CodecGroupingFunction {
+	private static class TestFunction implements CodecBuilderFunction {
 		
 		public @NotNull TestObject create(@NotNull Object name, @NotNull Object value) {
 			return new TestObject((String) name, (Integer) value);
 		}
 	}
 	
-	private static class TestFunction2 implements CodecGroupingFunction {
+	private static class TestFunction2 implements CodecBuilderFunction {
 		
 		public @NotNull TestObject2 create(@NotNull Object text, @NotNull Object number, @NotNull Object flag) {
 			return new TestObject2((String) text, (Double) number, (Boolean) flag);
 		}
 	}
 	
-	private static class FailingTestFunction implements CodecGroupingFunction {
+	private static class FailingTestFunction implements CodecBuilderFunction {
 		
 		public @Nullable TestObject create(@NotNull Object name, @NotNull Object value) {
 			return null;
 		}
 	}
 	
-	private static class NullReturningTestFunction implements CodecGroupingFunction {
+	private static class NullReturningTestFunction implements CodecBuilderFunction {
 		
 		public @Nullable TestObject create(@NotNull Object name, @NotNull Object value) {
 			return null;
 		}
 	}
 	
-	private static class SingleParamFunction implements CodecGroupingFunction {
+	private static class SingleParamFunction implements CodecBuilderFunction {
 		
 		public @NotNull String create(@NotNull Object value) {
 			return ((String) value).toUpperCase();
 		}
 	}
 	
-	private static class ManyParamFunction implements CodecGroupingFunction {
+	private static class ManyParamFunction implements CodecBuilderFunction {
 		
 		public @NotNull TestObject3 create(@NotNull Object a, @NotNull Object b, @NotNull Object c, @NotNull Object d, @NotNull Object e) {
 			return new TestObject3((String) a, (String) b, (String) c, (String) d, (String) e);

@@ -19,7 +19,7 @@
 package net.luis.utils.io.codec;
 
 import net.luis.utils.exception.ReflectionException;
-import net.luis.utils.io.codec.function.CodecGroupingFunction;
+import net.luis.utils.io.codec.function.CodecBuilderFunction;
 import net.luis.utils.util.result.Result;
 import net.luis.utils.util.unsafe.reflection.ReflectionHelper;
 import org.jetbrains.annotations.ApiStatus;
@@ -29,20 +29,20 @@ import java.lang.reflect.Method;
 import java.util.*;
 
 /**
- * A utility class to create a {@link Codec} from a list of {@link ConfiguredCodec} instances and a {@link CodecGroupingFunction}.<br>
+ * A utility class to create a {@link Codec} from a list of {@link ConfiguredCodec} instances and a {@link CodecBuilderFunction}.<br>
  * This class is used to group multiple codecs together and create an object from the decoded components.<br>
  * It uses reflection to invoke the create method of the provided function with the decoded components.<br>
  * This class is primarily used by the {@link CodecBuilder} to create complex codecs from up to sixteen components.<br>
  *
  * @see CodecBuilder
- * @see CodecGroupingFunction
+ * @see CodecBuilderFunction
  *
  * @author Luis-St
  *
  * @param <O> The type of the object that the codecs will create
  * @param <F> The type of the codec grouping function that will be used to create the object
  */
-public class CodecCreator<O, F extends CodecGroupingFunction> {
+public class CodecCreator<O, F extends CodecBuilderFunction> {
 	
 	/**
 	 * The list of codecs that will be used to decode the components of the object.<br>
