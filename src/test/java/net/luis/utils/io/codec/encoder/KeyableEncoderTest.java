@@ -112,18 +112,21 @@ class KeyableEncoderTest {
 	}
 	
 	@Test
-	void encodeKeyWithSpecialNumbers() { // Currently not supported by the JsonTypeProvider
+	void encodeKeyWithSpecialNumbers() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		KeyableEncoder<Double> encoder = DOUBLE;
 		
 		Result<String> infinityResult = encoder.encodeKey(typeProvider, Double.POSITIVE_INFINITY);
-		assertTrue(infinityResult.isError());
+		assertTrue(infinityResult.isSuccess());
+		assertEquals(String.valueOf(Double.POSITIVE_INFINITY), infinityResult.resultOrThrow());
 		
 		Result<String> negInfinityResult = encoder.encodeKey(typeProvider, Double.NEGATIVE_INFINITY);
-		assertTrue(negInfinityResult.isError());
+		assertTrue(negInfinityResult.isSuccess());
+		assertEquals(String.valueOf(Double.NEGATIVE_INFINITY), negInfinityResult.resultOrThrow());
 		
 		Result<String> nanResult = encoder.encodeKey(typeProvider, Double.NaN);
-		assertTrue(nanResult.isError());
+		assertTrue(nanResult.isSuccess());
+		assertEquals(String.valueOf(Double.NaN), nanResult.resultOrThrow());
 	}
 	
 	@Test

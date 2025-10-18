@@ -305,6 +305,10 @@ public class JsonPrimitive implements JsonElement {
 	public @NotNull String getAsString() {
 		if (this.isJsonString()) {
 			return (String) this.value;
+		} else if (this.isJsonNumber()) {
+			return this.getAsNumber().toString();
+		} else if (this.isJsonBoolean()) {
+			return String.valueOf(this.getAsBoolean());
 		}
 		throw new JsonTypeException("Expected a json string, but found: " + this.getName());
 	}

@@ -122,6 +122,24 @@ class KeyableDecoderTest {
 	}
 	
 	@Test
+	void decodeKeyWithSpecialNumbers() {
+		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
+		KeyableDecoder<Double> encoder = DOUBLE;
+		
+		Result<Double> infinityResult = encoder.decodeKey(typeProvider, String.valueOf(Double.POSITIVE_INFINITY));
+		assertTrue(infinityResult.isSuccess());
+		assertEquals(Double.POSITIVE_INFINITY, infinityResult.resultOrThrow());
+		
+		Result<Double> negInfinityResult = encoder.decodeKey(typeProvider, String.valueOf(Double.NEGATIVE_INFINITY));
+		assertTrue(negInfinityResult.isSuccess());
+		assertEquals(Double.NEGATIVE_INFINITY, negInfinityResult.resultOrThrow());
+		
+		Result<Double> nanResult = encoder.decodeKey(typeProvider, String.valueOf(Double.NaN));
+		assertTrue(nanResult.isSuccess());
+		assertEquals(Double.NaN, nanResult.resultOrThrow());
+	}
+	
+	@Test
 	void decodeKeyWithCustomKeyDecoder() {
 		KeyableDecoder<Integer> decoder = KeyableDecoder.of(INTEGER, ResultingFunction.direct(key -> {
 			if ("special".equals(key)) {
