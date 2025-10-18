@@ -46,6 +46,7 @@ import java.util.function.Supplier;
  *
  * @param <C> The type of the optional value
  */
+@ApiStatus.Internal
 public class OptionalCodec<C> implements Codec<Optional<C>> {
 	
 	/**
@@ -60,25 +61,21 @@ public class OptionalCodec<C> implements Codec<Optional<C>> {
 	
 	/**
 	 * Constructs a new optional codec using the given codec.<br>
-	 * Do not use this constructor directly, use the optional factory methods in {@link Codec} instead.<br>
 	 *
 	 * @param codec The codec for the optional value
 	 * @throws NullPointerException If the codec is null
 	 */
-	@ApiStatus.Internal
 	public OptionalCodec(@NotNull Codec<C> codec) {
 		this(codec, Optional::empty);
 	}
 	
 	/**
 	 * Constructs a new optional codec using the given codec and a supplier for the default value.<br>
-	 * Do not use this constructor directly, use the optional factory methods in {@link Codec} instead.<br>
 	 *
 	 * @param codec The codec for the optional value
 	 * @param defaultProvider The supplier for the default value if the optional value is empty
 	 * @throws NullPointerException If the codec or the default provider is null
 	 */
-	@ApiStatus.Internal
 	public OptionalCodec(@NotNull Codec<C> codec, @NotNull Supplier<Optional<C>> defaultProvider) {
 		this.codec = Objects.requireNonNull(codec, "Codec must not be null");
 		this.defaultProvider = Objects.requireNonNull(defaultProvider, "Default provider must not be null");

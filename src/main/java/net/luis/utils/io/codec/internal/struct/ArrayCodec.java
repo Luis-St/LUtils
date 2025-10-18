@@ -48,6 +48,7 @@ import java.util.stream.Collectors;
  *
  * @param <C> The type of elements in the array
  */
+@ApiStatus.Internal
 public class ArrayCodec<C> implements Codec<C[]> {
 	
 	/**
@@ -72,20 +73,17 @@ public class ArrayCodec<C> implements Codec<C[]> {
 	/**
 	 * Constructs a new array codec using the given codec for the elements.<br>
 	 * The array codec will accept array of any size.<br>
-	 * Do not use this constructor directly, use any of the array factory methods in {@link Codec} instead.<br>
 	 *
 	 * @param type The type of the elements in the array
 	 * @param codec The codec for the elements
 	 * @throws NullPointerException If the type or codec is null
 	 */
-	@ApiStatus.Internal
 	public ArrayCodec(@NotNull Class<C> type, @NotNull Codec<C> codec) {
 		this(type, codec, 0, Integer.MAX_VALUE);
 	}
 	
 	/**
 	 * Constructs a new array codec using the given codec for the elements and the size range of the array.<br>
-	 * Do not use this constructor directly, use any of the array factory methods in {@link Codec} instead.<br>
 	 *
 	 * @param type The type of the elements in the array
 	 * @param codec The codec for the elements
@@ -94,7 +92,6 @@ public class ArrayCodec<C> implements Codec<C[]> {
 	 * @throws NullPointerException If the type or codec is null
 	 * @throws IllegalArgumentException If the minimum size is less than zero or greater than the maximum size
 	 */
-	@ApiStatus.Internal
 	public ArrayCodec(@NotNull Class<C> type, @NotNull Codec<C> codec, int minLength, int maxLength) {
 		this.type = Objects.requireNonNull(type, "Type must not be null");
 		this.codec = Objects.requireNonNull(codec, "Codec must not be null");

@@ -19,7 +19,6 @@
 package net.luis.utils.io.codec.internal.struct;
 
 import net.luis.utils.io.codec.Codec;
-import net.luis.utils.io.codec.Codecs;
 import net.luis.utils.io.codec.provider.TypeProvider;
 import net.luis.utils.util.Either;
 import net.luis.utils.util.result.Result;
@@ -43,6 +42,7 @@ import java.util.Objects;
  * @param <F> The type of the first value
  * @param <S> The type of the second value
  */
+@ApiStatus.Internal
 public class EitherCodec<F, S> implements Codec<Either<F, S>> {
 	
 	/**
@@ -56,13 +56,11 @@ public class EitherCodec<F, S> implements Codec<Either<F, S>> {
 	
 	/**
 	 * Constructs a new either codec using the given codecs for the first and second type.<br>
-	 * Do not use this constructor directly, use the either factory method in {@link Codecs} instead.<br>
 	 *
 	 * @param firstCodec The first codec
 	 * @param secondCodec The second codec
 	 * @throws NullPointerException If the first or second codec is null
 	 */
-	@ApiStatus.Internal
 	public EitherCodec(@NotNull Codec<F> firstCodec, @NotNull Codec<S> secondCodec) {
 		this.firstCodec = Objects.requireNonNull(firstCodec, "First codec must not be null");
 		this.secondCodec = Objects.requireNonNull(secondCodec, "Second codec must not be null");

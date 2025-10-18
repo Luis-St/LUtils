@@ -19,7 +19,6 @@
 package net.luis.utils.io.codec.internal.struct;
 
 import net.luis.utils.io.codec.Codec;
-import net.luis.utils.io.codec.Codecs;
 import net.luis.utils.io.codec.provider.TypeProvider;
 import net.luis.utils.util.result.Result;
 import org.jetbrains.annotations.*;
@@ -44,6 +43,7 @@ import java.util.function.Supplier;
  *
  * @param <C> The type of the unit value
  */
+@ApiStatus.Internal
 public class UnitCodec<C> implements Codec<C> {
 	
 	/**
@@ -53,12 +53,10 @@ public class UnitCodec<C> implements Codec<C> {
 	
 	/**
 	 * Constructs a new unit codec using the given supplier for the unit value.<br>
-	 * Do not use this constructor directly, use any of the unit factory methods in {@link Codecs} instead.<br>
 	 *
 	 * @param supplier The supplier used to create the unit value
 	 * @throws NullPointerException If the supplier is null
 	 */
-	@ApiStatus.Internal
 	public UnitCodec(@NotNull Supplier<C> supplier) {
 		this.supplier = Objects.requireNonNull(supplier, "Unit supplier must not be null");
 	}

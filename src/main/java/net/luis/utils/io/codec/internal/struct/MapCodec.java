@@ -43,6 +43,7 @@ import java.util.stream.Collectors;
  * @param <K> The type of keys in the map
  * @param <V> The type of values in the map
  */
+@ApiStatus.Internal
 public class MapCodec<K, V> implements Codec<Map<K, V>> {
 	
 	/**
@@ -65,20 +66,17 @@ public class MapCodec<K, V> implements Codec<Map<K, V>> {
 	/**
 	 * Constructs a new map codec using the given codecs for the keys and values.<br>
 	 * The map codec will accept maps of any size.<br>
-	 * Do not use this constructor directly, use any of the map factory methods in {@link Codec} instead.<br>
 	 *
 	 * @param keyCodec The key codec
 	 * @param valueCodec The value codec
 	 * @throws NullPointerException If the key or value codec is null
 	 */
-	@ApiStatus.Internal
 	public MapCodec(@NotNull KeyableCodec<K> keyCodec, @NotNull Codec<V> valueCodec) {
 		this(keyCodec, valueCodec, 0, Integer.MAX_VALUE);
 	}
 	
 	/**
 	 * Constructs a new map codec using the given codecs for the keys and values and the size range of the map.<br>
-	 * Do not use this constructor directly, use any of the map factory methods in {@link Codec} instead.<br>
 	 *
 	 * @param keyCodec The key codec
 	 * @param valueCodec The value codec
@@ -87,7 +85,6 @@ public class MapCodec<K, V> implements Codec<Map<K, V>> {
 	 * @throws NullPointerException If the key or value codec is null
 	 * @throws IllegalArgumentException If the minimum size is less than zero or greater than the maximum size
 	 */
-	@ApiStatus.Internal
 	public MapCodec(@NotNull KeyableCodec<K> keyCodec, @NotNull Codec<V> valueCodec, int minSize, int maxSize) {
 		this.keyCodec = Objects.requireNonNull(keyCodec, "Key codec must not be null");
 		this.valueCodec = Objects.requireNonNull(valueCodec, "Value codec must not be null");

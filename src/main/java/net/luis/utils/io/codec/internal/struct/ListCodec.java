@@ -40,6 +40,7 @@ import java.util.stream.Collectors;
  *
  * @param <C> The type of elements in the list
  */
+@ApiStatus.Internal
 public class ListCodec<C> implements Codec<List<C>> {
 	
 	/**
@@ -58,19 +59,16 @@ public class ListCodec<C> implements Codec<List<C>> {
 	/**
 	 * Constructs a new list codec using the given codec for the elements.<br>
 	 * The list codec will accept lists of any size.<br>
-	 * Do not use this constructor directly, use any of the list factory methods in {@link Codec} instead.<br>
 	 *
 	 * @param codec The codec for the elements
 	 * @throws NullPointerException If the codec is null
 	 */
-	@ApiStatus.Internal
 	public ListCodec(@NotNull Codec<C> codec) {
 		this(codec, 0, Integer.MAX_VALUE);
 	}
 	
 	/**
 	 * Constructs a new list codec using the given codec for the elements and the size range of the list.<br>
-	 * Do not use this constructor directly, use any of the list factory methods in {@link Codec} instead.<br>
 	 *
 	 * @param codec The codec for the elements
 	 * @param minSize The minimum size of the list (inclusive)
@@ -78,7 +76,6 @@ public class ListCodec<C> implements Codec<List<C>> {
 	 * @throws NullPointerException If the codec is null
 	 * @throws IllegalArgumentException If the minimum size is less than zero or greater than the maximum size
 	 */
-	@ApiStatus.Internal
 	public ListCodec(@NotNull Codec<C> codec, int minSize, int maxSize) {
 		this.codec = Objects.requireNonNull(codec, "Codec must not be null");
 		
