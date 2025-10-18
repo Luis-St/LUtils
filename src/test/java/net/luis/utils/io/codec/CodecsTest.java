@@ -210,7 +210,10 @@ public class CodecsTest {
 		Codec<String> unitCodec = unit("constant");
 		
 		JsonElement encoded = unitCodec.encode(provider, "anything");
-		assertEquals(JsonNull.INSTANCE, encoded);
+		assertFalse(encoded.isJsonNull());
+		assertFalse(encoded.isJsonPrimitive());
+		assertFalse(encoded.isJsonArray());
+		assertFalse(encoded.isJsonObject());
 		
 		String decoded = unitCodec.decode(provider, JsonNull.INSTANCE);
 		assertEquals("constant", decoded);

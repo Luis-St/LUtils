@@ -36,7 +36,11 @@ class JsonTypeProviderTest {
 	
 	@Test
 	void emptyReturnsJsonNull() {
-		assertEquals(JsonNull.INSTANCE, JsonTypeProvider.INSTANCE.empty());
+		JsonElement element = JsonTypeProvider.INSTANCE.empty();
+		assertFalse(element.isJsonNull());
+		assertFalse(element.isJsonPrimitive());
+		assertFalse(element.isJsonArray());
+		assertFalse(element.isJsonObject());
 	}
 	
 	@Test
@@ -205,9 +209,9 @@ class JsonTypeProviderTest {
 		JsonObject object1 = new JsonObject(Map.of("key1", new JsonPrimitive("value1")));
 		JsonObject object2 = new JsonObject(Map.of("key2", new JsonPrimitive("value2")));
 		
-		assertEquals(primitive, JsonTypeProvider.INSTANCE.merge(JsonNull.INSTANCE, primitive).resultOrThrow());
-		assertEquals(array1, JsonTypeProvider.INSTANCE.merge(JsonNull.INSTANCE, array1).resultOrThrow());
-		assertEquals(object1, JsonTypeProvider.INSTANCE.merge(JsonNull.INSTANCE, object1).resultOrThrow());
+		assertEquals(primitive, JsonTypeProvider.INSTANCE.merge(JsonTypeProvider.INSTANCE.empty(), primitive).resultOrThrow());
+		assertEquals(array1, JsonTypeProvider.INSTANCE.merge(JsonTypeProvider.INSTANCE.empty(), array1).resultOrThrow());
+		assertEquals(object1, JsonTypeProvider.INSTANCE.merge(JsonTypeProvider.INSTANCE.empty(), object1).resultOrThrow());
 		
 		JsonArray mergedArray = JsonTypeProvider.INSTANCE.merge(array1, array2).resultOrThrow().getAsJsonArray();
 		assertEquals(2, mergedArray.size());
@@ -236,6 +240,6 @@ class JsonTypeProviderTest {
 		assertThrows(NullPointerException.class, () -> JsonTypeProvider.INSTANCE.merge(jsonObject, (Result<JsonElement>) null));
 		
 		assertTrue(JsonTypeProvider.INSTANCE.merge(jsonObject, Result.error("error")).isError());
-		assertEquals(testValue, JsonTypeProvider.INSTANCE.merge(JsonNull.INSTANCE, Result.success(testValue)).resultOrThrow());
+		assertEquals(testValue, JsonTypeProvider.INSTANCE.merge(JsonTypeProvider.INSTANCE.empty(), Result.success(testValue)).resultOrThrow());
 	}
 }

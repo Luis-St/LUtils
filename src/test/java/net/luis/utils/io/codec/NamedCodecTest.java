@@ -73,7 +73,7 @@ class NamedCodecTest {
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, map, Optional.empty());
 		assertTrue(result.isSuccess());
-		assertEquals(JsonNull.INSTANCE, result.resultOrThrow());
+		assertSame(map, result.resultOrThrow());
 	}
 	
 	@Test

@@ -172,7 +172,10 @@ class CodecTest {
 		assertEquals(42, decodedPresent.get());
 		
 		JsonElement encodedEmpty = optionalCodec.encode(provider, Optional.empty());
-		assertEquals(JsonNull.INSTANCE, encodedEmpty);
+		assertFalse(encodedEmpty.isJsonNull());
+		assertFalse(encodedEmpty.isJsonPrimitive());
+		assertFalse(encodedEmpty.isJsonArray());
+		assertFalse(encodedEmpty.isJsonObject());
 		Optional<Integer> decodedEmpty = optionalCodec.decode(provider, encodedEmpty);
 		assertTrue(decodedEmpty.isEmpty());
 	}
@@ -190,7 +193,10 @@ class CodecTest {
 		assertEquals(42, decodedPresent);
 		
 		JsonElement encodedNull = optionalWithDefaultCodec.encode(provider, null);
-		assertEquals(JsonNull.INSTANCE, encodedNull);
+		assertFalse(encodedNull.isJsonNull());
+		assertFalse(encodedNull.isJsonPrimitive());
+		assertFalse(encodedNull.isJsonArray());
+		assertFalse(encodedNull.isJsonObject());
 		Integer decodedNull = optionalWithDefaultCodec.decode(provider, encodedNull);
 		assertEquals(100, decodedNull);
 		
@@ -216,7 +222,10 @@ class CodecTest {
 		assertEquals(42, decodedPresent);
 		
 		JsonElement encodedNull = optionalWithDefaultFromCodec.encode(provider, null);
-		assertEquals(JsonNull.INSTANCE, encodedNull);
+		assertFalse(encodedNull.isJsonNull());
+		assertFalse(encodedNull.isJsonPrimitive());
+		assertFalse(encodedNull.isJsonArray());
+		assertFalse(encodedNull.isJsonObject());
 		Integer decodedNull = optionalWithDefaultFromCodec.decode(provider, encodedNull);
 		assertEquals(200, decodedNull);
 		

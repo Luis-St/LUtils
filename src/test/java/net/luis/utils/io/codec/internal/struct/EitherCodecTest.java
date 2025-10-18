@@ -111,7 +111,11 @@ class EitherCodecTest {
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), left);
 		assertTrue(result.isSuccess());
-		assertTrue(result.resultOrThrow().isJsonNull());
+		JsonElement element = result.resultOrThrow();
+		assertFalse(element.isJsonNull());
+		assertFalse(element.isJsonPrimitive());
+		assertFalse(element.isJsonArray());
+		assertFalse(element.isJsonObject());
 	}
 	
 	@Test
@@ -122,7 +126,11 @@ class EitherCodecTest {
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), right);
 		assertTrue(result.isSuccess());
-		assertTrue(result.resultOrThrow().isJsonNull());
+		JsonElement element = result.resultOrThrow();
+		assertFalse(element.isJsonNull());
+		assertFalse(element.isJsonPrimitive());
+		assertFalse(element.isJsonArray());
+		assertFalse(element.isJsonObject());
 	}
 	
 	@Test

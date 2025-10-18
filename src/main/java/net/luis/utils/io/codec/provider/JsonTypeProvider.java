@@ -36,6 +36,18 @@ import java.util.*;
 public final class JsonTypeProvider implements TypeProvider<JsonElement> {
 	
 	/**
+	 * An empty json element instance.<br>
+	 * Used for internal purposes only.<br>
+	 * The json element has no string representation and will throw an exception if {@link JsonElement#toString(JsonConfig)} is called.<br>
+	 */
+	private static final JsonElement EMPTY_ELEMENT = new JsonElement() {
+		@Override
+		public @NotNull String toString(@NotNull JsonConfig config) {
+			throw new UnsupportedOperationException("Empty json element has no string representation");
+		}
+	};
+	
+	/**
 	 * The singleton instance of this class.<br>
 	 */
 	public static final JsonTypeProvider INSTANCE = new JsonTypeProvider();
@@ -47,7 +59,7 @@ public final class JsonTypeProvider implements TypeProvider<JsonElement> {
 	
 	@Override
 	public @NotNull JsonElement empty() {
-		return JsonNull.INSTANCE;
+		return EMPTY_ELEMENT;
 	}
 	
 	@Override
@@ -300,7 +312,7 @@ public final class JsonTypeProvider implements TypeProvider<JsonElement> {
 		Objects.requireNonNull(current, "Current value must not be null");
 		Objects.requireNonNull(value, "Value must not be null");
 		
-		if (current.isJsonNull()) {
+		if (current == EMPTY_ELEMENT) {
 			return Result.success(value);
 		}
 		

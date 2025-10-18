@@ -80,7 +80,10 @@ class CodecAutoMappingTest {
 		
 		EmptyRecord original = new EmptyRecord();
 		JsonElement encoded = codec.encode(provider, original);
-		assertEquals(JsonNull.INSTANCE, encoded);
+		assertFalse(encoded.isJsonNull());
+		assertFalse(encoded.isJsonPrimitive());
+		assertFalse(encoded.isJsonArray());
+		assertFalse(encoded.isJsonObject());
 		
 		EmptyRecord decoded = codec.decode(provider, encoded);
 		assertEquals(original, decoded);
@@ -148,7 +151,10 @@ class CodecAutoMappingTest {
 		
 		EmptyClass original = new EmptyClass();
 		JsonElement encoded = codec.encode(provider, original);
-		assertEquals(JsonNull.INSTANCE, encoded);
+		assertFalse(encoded.isJsonNull());
+		assertFalse(encoded.isJsonPrimitive());
+		assertFalse(encoded.isJsonArray());
+		assertFalse(encoded.isJsonObject());
 		
 		EmptyClass decoded = codec.decode(provider, encoded);
 		assertNotNull(decoded);
