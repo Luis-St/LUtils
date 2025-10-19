@@ -105,7 +105,7 @@ public class PeriodCodec implements Codec<Period> {
 				
 				Matcher matcher = PERIOD_PATTERN.matcher(part);
 				if (!matcher.matches()) {
-					return Result.error("Unable to decode period '" + string + "' using '" + this + "': Invalid period format, expected format like '1y 2mo 3d' but got '" + part + "'");
+					return Result.error("Unable to decode period '" + string + "' using '" + this + "': Invalid period format, expected format like '1y 2m 3d' but got '" + part + "'");
 				}
 				
 				int partValue = Integer.parseInt(matcher.group(1));
@@ -113,10 +113,10 @@ public class PeriodCodec implements Codec<Period> {
 				
 				switch (unit) {
 					case "y" -> years += partValue;
-					case "mo" -> months += partValue;
+					case "m" -> months += partValue;
 					case "d" -> days += partValue;
 					default -> {
-						return Result.error("Unable to decode period '" + string + "' using '" + this + "': Unknown time unit, expected one of 'y', 'mo', or 'd' but got '" + unit + "'");
+						return Result.error("Unable to decode period '" + string + "' using '" + this + "': Unknown time unit, expected one of 'y', 'm', or 'd' but got '" + unit + "'");
 					}
 				}
 			}

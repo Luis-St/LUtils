@@ -152,7 +152,7 @@ class PeriodCodecTest {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Period> codec = new PeriodCodec();
 
-		Result<Period> result = codec.decodeStart(typeProvider, new JsonPrimitive("6mo"));
+		Result<Period> result = codec.decodeStart(typeProvider, new JsonPrimitive("6m"));
 		assertTrue(result.isSuccess());
 		assertEquals(Period.ofMonths(6), result.resultOrThrow());
 	}
@@ -172,7 +172,7 @@ class PeriodCodecTest {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Period> codec = new PeriodCodec();
 
-		Result<Period> result = codec.decodeStart(typeProvider, new JsonPrimitive("1y 6mo 15d"));
+		Result<Period> result = codec.decodeStart(typeProvider, new JsonPrimitive("1y 6m 15d"));
 		assertTrue(result.isSuccess());
 		assertEquals(Period.of(1, 6, 15), result.resultOrThrow());
 	}
