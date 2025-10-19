@@ -21,6 +21,7 @@ package net.luis.utils.io.codec.provider;
 import com.google.common.collect.Maps;
 import net.luis.utils.util.result.Result;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
 
@@ -45,6 +46,11 @@ public final class JavaTypeProvider implements TypeProvider<Object> {
 	@Override
 	public @NotNull Object empty() {
 		return new Object();
+	}
+	
+	@Override
+	public @NotNull Result<Object> createNull() {
+		return Result.success(null);
 	}
 	
 	@Override
@@ -108,11 +114,17 @@ public final class JavaTypeProvider implements TypeProvider<Object> {
 	@Override
 	public @NotNull Result<Object> getEmpty(@NotNull Object type) {
 		Objects.requireNonNull(type, "Type must not be null");
-		
+
 		if (type.getClass() == Object.class) {
 			return Result.success(type);
 		}
 		return Result.error("Object '" + type + "' is not an empty object");
+	}
+
+	@Override
+	public @NotNull Result<Boolean> isNull(@NotNull Object type) {
+		Objects.requireNonNull(type, "Type must not be null");
+		return Result.success(false);
 	}
 	
 	@Override
@@ -254,9 +266,13 @@ public final class JavaTypeProvider implements TypeProvider<Object> {
 	
 	@Override
 	@SuppressWarnings("unchecked")
-	public @NotNull Result<Object> merge(@NotNull Object current, @NotNull Object value) {
-		Objects.requireNonNull(current, "Current value must not be null");
-		Objects.requireNonNull(value, "Value must not be null");
+	public @NotNull Result<Object> merge(@Nullable Object current, @Nullable Object value) {
+		if (current == null) {
+			return Result.success(value);
+		}
+		if (value == null) {
+			return Result.success(current);
+		}
 		
 		if (current.getClass() == Object.class) {
 			return Result.success(value);

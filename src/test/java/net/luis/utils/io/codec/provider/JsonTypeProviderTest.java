@@ -35,12 +35,17 @@ import static org.junit.jupiter.api.Assertions.*;
 class JsonTypeProviderTest {
 	
 	@Test
-	void emptyReturnsJsonNull() {
+	void emptyReturnsJsonElement() {
 		JsonElement element = JsonTypeProvider.INSTANCE.empty();
 		assertFalse(element.isJsonNull());
 		assertFalse(element.isJsonPrimitive());
 		assertFalse(element.isJsonArray());
 		assertFalse(element.isJsonObject());
+	}
+	
+	@Test
+	void createNullReturnsJsonNull() {
+		assertEquals(JsonNull.INSTANCE, JsonTypeProvider.INSTANCE.createNull().resultOrThrow());
 	}
 	
 	@Test
@@ -84,14 +89,27 @@ class JsonTypeProviderTest {
 	@Test
 	void getEmptyValidation() {
 		assertThrows(NullPointerException.class, () -> JsonTypeProvider.INSTANCE.getEmpty(null));
-		
+
 		assertTrue(JsonTypeProvider.INSTANCE.getEmpty(new JsonArray()).isError());
 		assertTrue(JsonTypeProvider.INSTANCE.getEmpty(new JsonPrimitive(1)).isError());
 		assertTrue(JsonTypeProvider.INSTANCE.getEmpty(new JsonObject()).isError());
-		
+
 		assertEquals(JsonNull.INSTANCE, JsonTypeProvider.INSTANCE.getEmpty(JsonNull.INSTANCE).resultOrThrow());
 	}
-	
+
+	@Test
+	void isNullValidation() {
+		assertThrows(NullPointerException.class, () -> JsonTypeProvider.INSTANCE.isNull(null));
+
+		assertTrue(JsonTypeProvider.INSTANCE.isNull(JsonNull.INSTANCE).resultOrThrow());
+
+		assertFalse(JsonTypeProvider.INSTANCE.isNull(new JsonArray()).resultOrThrow());
+		assertFalse(JsonTypeProvider.INSTANCE.isNull(new JsonObject()).resultOrThrow());
+		assertFalse(JsonTypeProvider.INSTANCE.isNull(new JsonPrimitive(1)).resultOrThrow());
+		assertFalse(JsonTypeProvider.INSTANCE.isNull(new JsonPrimitive(true)).resultOrThrow());
+		assertFalse(JsonTypeProvider.INSTANCE.isNull(new JsonPrimitive("test")).resultOrThrow());
+	}
+
 	@Test
 	void getPrimitiveTypes() {
 		assertThrows(NullPointerException.class, () -> JsonTypeProvider.INSTANCE.getBoolean(null));
@@ -212,6 +230,17 @@ class JsonTypeProviderTest {
 		assertEquals(primitive, JsonTypeProvider.INSTANCE.merge(JsonTypeProvider.INSTANCE.empty(), primitive).resultOrThrow());
 		assertEquals(array1, JsonTypeProvider.INSTANCE.merge(JsonTypeProvider.INSTANCE.empty(), array1).resultOrThrow());
 		assertEquals(object1, JsonTypeProvider.INSTANCE.merge(JsonTypeProvider.INSTANCE.empty(), object1).resultOrThrow());
+		
+		assertEquals(JsonNull.INSTANCE, JsonTypeProvider.INSTANCE.merge(JsonTypeProvider.INSTANCE.empty(), JsonNull.INSTANCE).resultOrThrow());
+		
+		assertEquals(primitive, JsonTypeProvider.INSTANCE.merge(primitive, JsonNull.INSTANCE).resultOrThrow());
+		assertEquals(primitive, JsonTypeProvider.INSTANCE.merge(JsonNull.INSTANCE, primitive).resultOrThrow());
+		
+		assertEquals(array1, JsonTypeProvider.INSTANCE.merge(array1, JsonNull.INSTANCE).resultOrThrow());
+		assertEquals(array1, JsonTypeProvider.INSTANCE.merge(JsonNull.INSTANCE, array1).resultOrThrow());
+		
+		assertEquals(object1, JsonTypeProvider.INSTANCE.merge(object1, JsonNull.INSTANCE).resultOrThrow());
+		assertEquals(object1, JsonTypeProvider.INSTANCE.merge(JsonNull.INSTANCE, object1).resultOrThrow());
 		
 		JsonArray mergedArray = JsonTypeProvider.INSTANCE.merge(array1, array2).resultOrThrow().getAsJsonArray();
 		assertEquals(2, mergedArray.size());

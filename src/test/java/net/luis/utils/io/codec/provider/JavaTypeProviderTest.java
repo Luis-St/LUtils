@@ -42,6 +42,11 @@ class JavaTypeProviderTest {
 	}
 	
 	@Test
+	void createNullReturnsNull() {
+		assertNull(JavaTypeProvider.INSTANCE.createNull().resultOrThrow());
+	}
+	
+	@Test
 	void createPrimitiveTypes() {
 		assertEquals(true, JavaTypeProvider.INSTANCE.createBoolean(true).resultOrThrow());
 		assertEquals((byte) 42, JavaTypeProvider.INSTANCE.createByte((byte) 42).resultOrThrow());
@@ -88,16 +93,28 @@ class JavaTypeProviderTest {
 	@Test
 	void getEmptyValidation() {
 		assertThrows(NullPointerException.class, () -> JavaTypeProvider.INSTANCE.getEmpty(null));
-		
+
 		assertTrue(JavaTypeProvider.INSTANCE.getEmpty(List.of()).isError());
 		assertTrue(JavaTypeProvider.INSTANCE.getEmpty(1).isError());
 		assertTrue(JavaTypeProvider.INSTANCE.getEmpty(Map.of()).isError());
 		assertTrue(JavaTypeProvider.INSTANCE.getEmpty("test").isError());
-		
+
 		Object emptyObject = new Object();
 		assertEquals(emptyObject, JavaTypeProvider.INSTANCE.getEmpty(emptyObject).resultOrThrow());
 	}
-	
+
+	@Test
+	void isNullValidation() {
+		assertThrows(NullPointerException.class, () -> JavaTypeProvider.INSTANCE.isNull(null));
+
+		assertFalse(JavaTypeProvider.INSTANCE.isNull(new Object()).resultOrThrow());
+		assertFalse(JavaTypeProvider.INSTANCE.isNull(List.of()).resultOrThrow());
+		assertFalse(JavaTypeProvider.INSTANCE.isNull(Map.of()).resultOrThrow());
+		assertFalse(JavaTypeProvider.INSTANCE.isNull(1).resultOrThrow());
+		assertFalse(JavaTypeProvider.INSTANCE.isNull(true).resultOrThrow());
+		assertFalse(JavaTypeProvider.INSTANCE.isNull("test").resultOrThrow());
+	}
+
 	@Test
 	void getPrimitiveTypes() {
 		assertThrows(NullPointerException.class, () -> JavaTypeProvider.INSTANCE.getBoolean(null));
@@ -195,10 +212,8 @@ class JavaTypeProviderTest {
 	@Test
 	@SuppressWarnings("unchecked")
 	void mergeOperations() {
-		assertThrows(NullPointerException.class, () -> JavaTypeProvider.INSTANCE.merge(null, new Object()));
-		assertThrows(NullPointerException.class, () -> JavaTypeProvider.INSTANCE.merge(new Object(), null));
-		
 		Object emptyObject = new Object();
+		Object nullObject = JavaTypeProvider.INSTANCE.createNull().resultOrThrow();
 		Integer primitive = 1;
 		List<Object> list1 = List.of("a");
 		List<Object> list2 = List.of("b");
@@ -208,6 +223,18 @@ class JavaTypeProviderTest {
 		assertEquals(primitive, JavaTypeProvider.INSTANCE.merge(emptyObject, primitive).resultOrThrow());
 		assertEquals(list1, JavaTypeProvider.INSTANCE.merge(emptyObject, list1).resultOrThrow());
 		assertEquals(map1, JavaTypeProvider.INSTANCE.merge(emptyObject, map1).resultOrThrow());
+		
+		assertEquals(emptyObject, JavaTypeProvider.INSTANCE.merge(emptyObject, nullObject).resultOrThrow());
+		assertEquals(emptyObject, JavaTypeProvider.INSTANCE.merge(nullObject, emptyObject).resultOrThrow());
+		
+		assertEquals(primitive, JavaTypeProvider.INSTANCE.merge(primitive, nullObject).resultOrThrow());
+		assertEquals(primitive, JavaTypeProvider.INSTANCE.merge(nullObject, primitive).resultOrThrow());
+		
+		assertEquals(list1, JavaTypeProvider.INSTANCE.merge(list1, nullObject).resultOrThrow());
+		assertEquals(list1, JavaTypeProvider.INSTANCE.merge(nullObject, list1).resultOrThrow());
+		
+		assertEquals(map1, JavaTypeProvider.INSTANCE.merge(map1, nullObject).resultOrThrow());
+		assertEquals(map1, JavaTypeProvider.INSTANCE.merge(nullObject, map1).resultOrThrow());
 		
 		List<Object> mutableList1 = (List<Object>) JavaTypeProvider.INSTANCE.createList(Lists.newArrayList("a")).resultOrThrow();
 		Object mergedListResult = JavaTypeProvider.INSTANCE.merge(mutableList1, list2).resultOrThrow();

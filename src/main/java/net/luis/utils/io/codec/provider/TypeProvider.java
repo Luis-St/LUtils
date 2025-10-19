@@ -47,10 +47,15 @@ public interface TypeProvider<T> {
 	
 	/**
 	 * Creates an empty value of the type this provider is for.<br>
-	 *
 	 * @return An empty value
 	 */
 	@NotNull T empty();
+	
+	/**
+	 * Creates a null value of the type this provider is for.<br>
+	 * @return A result containing the null value
+	 */
+	@NotNull Result<T> createNull();
 	
 	/**
 	 * Creates a boolean value of the type this provider is for using the given value.<br>
@@ -128,7 +133,6 @@ public interface TypeProvider<T> {
 	
 	/**
 	 * Creates an empty map value of the type this provider is for.<br>
-	 *
 	 * @return A result containing the empty map value
 	 */
 	@NotNull Result<T> createMap();
@@ -150,6 +154,15 @@ public interface TypeProvider<T> {
 	 * @throws NullPointerException If the given value is null
 	 */
 	@NotNull Result<T> getEmpty(@NotNull T type);
+
+	/**
+	 * Checks if the given value is a null value of the type this provider is for.<br>
+	 *
+	 * @param type The value to check
+	 * @return A success result containing true if the value is null, false otherwise, or an error result if the check failed
+	 * @throws NullPointerException If the given value is null
+	 */
+	@NotNull Result<Boolean> isNull(@NotNull T type);
 	
 	/**
 	 * Gets the given value as a boolean value of the type this provider is for.<br>

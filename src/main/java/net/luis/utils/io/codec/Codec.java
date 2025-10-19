@@ -167,6 +167,19 @@ public interface Codec<C> extends Encoder<C>, Decoder<C> {
 	}
 	
 	/**
+	 * Creates a new nullable codec for the given codec.<br>
+	 *
+	 * @param codec The base codec
+	 * @param <C> The type of the value that is encoded and decoded by the codec
+	 * @return A new nullable codec
+	 * @throws NullPointerException If the codec is null
+	 * @see NullableCodec
+	 */
+	static <C> @NotNull Codec<C> nullable(@NotNull Codec<C> codec) {
+		return new NullableCodec<>(codec);
+	}
+	
+	/**
 	 * Creates a new codec that only accepts numbers that are at least the given minimum value.<br>
 	 * The minimum value is inclusive.<br>
 	 *
@@ -597,6 +610,17 @@ public interface Codec<C> extends Encoder<C>, Decoder<C> {
 		@NotNull ResultingFunction<C, String> keyEncoder, @NotNull ResultingFunction<String, C> keyDecoder
 	) {
 		return keyable(this, keyEncoder, keyDecoder);
+	}
+	
+	/**
+	 * Wraps the current codec into a new nullable codec.<br>
+	 *
+	 * @return A new nullable codec
+	 * @see #nullable(Codec)
+	 * @see NullableCodec
+	 */
+	default @NotNull Codec<C> nullable() {
+		return nullable(this);
 	}
 	
 	/**

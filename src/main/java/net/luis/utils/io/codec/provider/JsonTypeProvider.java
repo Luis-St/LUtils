@@ -63,6 +63,11 @@ public final class JsonTypeProvider implements TypeProvider<JsonElement> {
 	}
 	
 	@Override
+	public @NotNull Result<JsonElement> createNull() {
+		return Result.success(JsonNull.INSTANCE);
+	}
+	
+	@Override
 	public @NotNull Result<JsonElement> createBoolean(boolean value) {
 		return Result.success(new JsonPrimitive(value));
 	}
@@ -123,11 +128,17 @@ public final class JsonTypeProvider implements TypeProvider<JsonElement> {
 	@Override
 	public @NotNull Result<JsonElement> getEmpty(@NotNull JsonElement type) {
 		Objects.requireNonNull(type, "Type must not be null");
-		
+
 		if (!type.isJsonNull()) {
 			return Result.error("Json element '" + type + "' is not a json null");
 		}
 		return Result.success(type);
+	}
+
+	@Override
+	public @NotNull Result<Boolean> isNull(@NotNull JsonElement type) {
+		Objects.requireNonNull(type, "Type must not be null");
+		return Result.success(type.isJsonNull());
 	}
 	
 	@Override
@@ -312,8 +323,11 @@ public final class JsonTypeProvider implements TypeProvider<JsonElement> {
 		Objects.requireNonNull(current, "Current value must not be null");
 		Objects.requireNonNull(value, "Value must not be null");
 		
-		if (current == EMPTY_ELEMENT) {
+		if (current == EMPTY_ELEMENT || current.isJsonNull()) {
 			return Result.success(value);
+		}
+		if (value == EMPTY_ELEMENT || value.isJsonNull()) {
+			return Result.success(current);
 		}
 		
 		if (current.isJsonArray() && value.isJsonArray()) {

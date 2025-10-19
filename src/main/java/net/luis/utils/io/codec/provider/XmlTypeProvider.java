@@ -47,6 +47,10 @@ public final class XmlTypeProvider implements TypeProvider<XmlElement> {
 	 */
 	private static final String EMPTY = "empty" + GENERATED;
 	/**
+	 * Constants for the name of null xml element type.<br>
+	 */
+	private static final String NULL = "null" + GENERATED;
+	/**
 	 * Constants for the name of boolean xml element type.<br>
 	 */
 	private static final String BOOLEAN = "boolean" + GENERATED;
@@ -134,6 +138,11 @@ public final class XmlTypeProvider implements TypeProvider<XmlElement> {
 	}
 	
 	@Override
+	public @NotNull Result<XmlElement> createNull() {
+		return Result.success(new XmlElement(NULL));
+	}
+	
+	@Override
 	public @NotNull Result<XmlElement> createBoolean(boolean value) {
 		return Result.success(new XmlValue(BOOLEAN, value));
 	}
@@ -196,11 +205,17 @@ public final class XmlTypeProvider implements TypeProvider<XmlElement> {
 	@Override
 	public @NotNull Result<XmlElement> getEmpty(@NotNull XmlElement type) {
 		Objects.requireNonNull(type, "Type must not be null");
-		
+
 		if (!type.isSelfClosing()) {
 			return Result.error("Xml element '" + type + "' must be self-closing to be empty");
 		}
 		return Result.success(type);
+	}
+
+	@Override
+	public @NotNull Result<Boolean> isNull(@NotNull XmlElement type) {
+		Objects.requireNonNull(type, "Type must not be null");
+		return Result.success(type.isSelfClosing() && type.getName().equals(NULL));
 	}
 	
 	@Override
@@ -439,6 +454,9 @@ public final class XmlTypeProvider implements TypeProvider<XmlElement> {
 		
 		if (current.isSelfClosing()) {
 			return Result.success(value);
+		}
+		if (value.isSelfClosing()) {
+			return Result.success(current);
 		}
 		
 		if (current.isXmlContainer() && value.isXmlContainer()) {
