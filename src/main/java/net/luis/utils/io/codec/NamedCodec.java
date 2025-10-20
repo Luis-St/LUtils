@@ -80,17 +80,17 @@ public class NamedCodec<C> implements Codec<C> {
 	public @NotNull <R> Result<R> encodeStart(@NotNull TypeProvider<R> provider, @NotNull R map, @Nullable C value) {
 		Objects.requireNonNull(provider, "Type provider must not be null");
 		Objects.requireNonNull(map, "Current value must not be null");
-		if (value == null) {
-			return Result.error("Unable to encode named '" + this.name + "' null value using '" + this + "'");
-		}
+		
 		Result<R> encodedResult = this.codec.encodeStart(provider, provider.empty(), value);
 		if (encodedResult.isError()) {
 			return Result.error("Unable to encode named '" + this.name + "' '" + value + "' with '" + this + "': " + encodedResult.errorOrThrow());
 		}
+		
 		R encoded = encodedResult.resultOrThrow();
 		if (provider.getEmpty(encoded).isSuccess()) {
 			return Result.success(provider.empty());
 		}
+		
 		Result<R> result = provider.set(map, this.name, encoded);
 		if (result.isError()) {
 			return Result.error("Unable to encode named '" + this.name + "' '" + value + "' with '" + this + "': " + result.errorOrThrow());
@@ -104,10 +104,12 @@ public class NamedCodec<C> implements Codec<C> {
 		if (map == null) {
 			return Result.error("Unable to decode named '" + this.name + "' null value using '" + this + "'");
 		}
+		
 		Result<R> value = provider.get(map, this.name);
 		if (value.isError()) {
 			return this.decodeStartWithAlias(provider, map, value.errorOrThrow());
 		}
+		
 		Result<C> result = this.codec.decodeStart(provider, value.resultOrThrow());
 		if (result.isError()) { // Required, since TypeProvider#get can return null as success
 			return this.decodeStartWithAlias(provider, map, result.errorOrThrow());

@@ -72,6 +72,7 @@ public class ConfiguredCodec<C, O> {
 	public <R> @NotNull Result<R> encodeStart(@NotNull TypeProvider<R> provider, @NotNull R current, @Nullable O object) {
 		Objects.requireNonNull(provider, "Type provider must not be null");
 		Objects.requireNonNull(current, "Current value must not be null");
+		
 		if (object == null) {
 			return Result.error("Unable to encode component because the component can not be retrieved from a null object");
 		}

@@ -57,12 +57,12 @@ class NamedCodecTest {
 	@Test
 	void encodeStartWithNullValue() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		NamedCodec<Optional<Integer>> codec = new NamedCodec<>(INTEGER.optional(), "name");
+		NamedCodec<Integer> codec = new NamedCodec<>(INTEGER, "name");
 		JsonObject map = new JsonObject();
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, map, null);
 		assertTrue(result.isError());
-		assertTrue(result.errorOrThrow().contains("Unable to encode named 'name' null value"));
+		assertTrue(result.errorOrThrow().contains("Unable to encode named 'name' 'null' with 'NamedCodec"));
 	}
 	
 	@Test
@@ -73,7 +73,12 @@ class NamedCodecTest {
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, map, Optional.empty());
 		assertTrue(result.isSuccess());
-		assertSame(map, result.resultOrThrow());
+		
+		JsonElement element = result.resultOrThrow();
+		assertFalse(element.isJsonNull());
+		assertFalse(element.isJsonPrimitive());
+		assertFalse(element.isJsonArray());
+		assertFalse(element.isJsonObject());
 	}
 	
 	@Test

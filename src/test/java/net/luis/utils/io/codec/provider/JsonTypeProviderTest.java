@@ -93,8 +93,7 @@ class JsonTypeProviderTest {
 		assertTrue(JsonTypeProvider.INSTANCE.getEmpty(new JsonArray()).isError());
 		assertTrue(JsonTypeProvider.INSTANCE.getEmpty(new JsonPrimitive(1)).isError());
 		assertTrue(JsonTypeProvider.INSTANCE.getEmpty(new JsonObject()).isError());
-
-		assertEquals(JsonNull.INSTANCE, JsonTypeProvider.INSTANCE.getEmpty(JsonNull.INSTANCE).resultOrThrow());
+		assertTrue(JsonTypeProvider.INSTANCE.getEmpty(JsonNull.INSTANCE).isError());
 	}
 
 	@Test

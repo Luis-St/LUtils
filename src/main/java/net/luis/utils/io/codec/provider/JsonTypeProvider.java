@@ -43,7 +43,7 @@ public final class JsonTypeProvider implements TypeProvider<JsonElement> {
 	private static final JsonElement EMPTY_ELEMENT = new JsonElement() {
 		@Override
 		public @NotNull String toString(@NotNull JsonConfig config) {
-			throw new UnsupportedOperationException("Empty json element has no string representation");
+			return "Empty json element has no string representation";
 		}
 	};
 	
@@ -129,7 +129,7 @@ public final class JsonTypeProvider implements TypeProvider<JsonElement> {
 	public @NotNull Result<JsonElement> getEmpty(@NotNull JsonElement type) {
 		Objects.requireNonNull(type, "Type must not be null");
 
-		if (!type.isJsonNull()) {
+		if (type != EMPTY_ELEMENT) {
 			return Result.error("Json element '" + type + "' is not a json null");
 		}
 		return Result.success(type);
