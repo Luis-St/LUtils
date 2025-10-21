@@ -62,7 +62,9 @@ class JsonTypeProviderTest {
 	
 	@Test
 	void createStringWithNullThrowsException() {
-		assertThrows(NullPointerException.class, () -> JsonTypeProvider.INSTANCE.createString(null));
+		Result<JsonElement> res = JsonTypeProvider.INSTANCE.createString(null);
+		assertTrue(res.isError());
+		assertTrue(res.errorOrThrow().startsWith("Value 'null'"));
 	}
 	
 	@Test
@@ -70,7 +72,9 @@ class JsonTypeProviderTest {
 		JsonElement element1 = new JsonPrimitive("a");
 		JsonElement element2 = new JsonPrimitive("b");
 		
-		assertThrows(NullPointerException.class, () -> JsonTypeProvider.INSTANCE.createList(null));
+		Result<JsonElement> nullList = JsonTypeProvider.INSTANCE.createList(null);
+		assertTrue(nullList.isError());
+		assertTrue(nullList.errorOrThrow().startsWith("Value 'null'"));
 		
 		JsonArray emptyArray = new JsonArray();
 		assertEquals(emptyArray, JsonTypeProvider.INSTANCE.createList(List.of()).resultOrThrow());
@@ -88,7 +92,9 @@ class JsonTypeProviderTest {
 	
 	@Test
 	void getEmptyValidation() {
-		assertThrows(NullPointerException.class, () -> JsonTypeProvider.INSTANCE.getEmpty(null));
+		Result<JsonElement> nullEmpty = JsonTypeProvider.INSTANCE.getEmpty(null);
+		assertTrue(nullEmpty.isError());
+		assertTrue(nullEmpty.errorOrThrow().startsWith("Value 'null'"));
 
 		assertTrue(JsonTypeProvider.INSTANCE.getEmpty(new JsonArray()).isError());
 		assertTrue(JsonTypeProvider.INSTANCE.getEmpty(new JsonPrimitive(1)).isError());
@@ -98,7 +104,9 @@ class JsonTypeProviderTest {
 
 	@Test
 	void isNullValidation() {
-		assertThrows(NullPointerException.class, () -> JsonTypeProvider.INSTANCE.isNull(null));
+		Result<Boolean> nullIsNull = JsonTypeProvider.INSTANCE.isNull(null);
+		assertTrue(nullIsNull.isError());
+		assertTrue(nullIsNull.errorOrThrow().startsWith("Value 'null'"));
 
 		assertTrue(JsonTypeProvider.INSTANCE.isNull(JsonNull.INSTANCE).resultOrThrow());
 
@@ -111,14 +119,30 @@ class JsonTypeProviderTest {
 
 	@Test
 	void getPrimitiveTypes() {
-		assertThrows(NullPointerException.class, () -> JsonTypeProvider.INSTANCE.getBoolean(null));
-		assertThrows(NullPointerException.class, () -> JsonTypeProvider.INSTANCE.getByte(null));
-		assertThrows(NullPointerException.class, () -> JsonTypeProvider.INSTANCE.getShort(null));
-		assertThrows(NullPointerException.class, () -> JsonTypeProvider.INSTANCE.getInteger(null));
-		assertThrows(NullPointerException.class, () -> JsonTypeProvider.INSTANCE.getLong(null));
-		assertThrows(NullPointerException.class, () -> JsonTypeProvider.INSTANCE.getFloat(null));
-		assertThrows(NullPointerException.class, () -> JsonTypeProvider.INSTANCE.getDouble(null));
-		assertThrows(NullPointerException.class, () -> JsonTypeProvider.INSTANCE.getString(null));
+		Result<Boolean> nullBoolean = JsonTypeProvider.INSTANCE.getBoolean(null);
+		assertTrue(nullBoolean.isError());
+		assertTrue(nullBoolean.errorOrThrow().startsWith("Value 'null'"));
+		Result<Byte> nullByte = JsonTypeProvider.INSTANCE.getByte(null);
+		assertTrue(nullByte.isError());
+		assertTrue(nullByte.errorOrThrow().startsWith("Value 'null'"));
+		Result<Short> nullShort = JsonTypeProvider.INSTANCE.getShort(null);
+		assertTrue(nullShort.isError());
+		assertTrue(nullShort.errorOrThrow().startsWith("Value 'null'"));
+		Result<Integer> nullInteger = JsonTypeProvider.INSTANCE.getInteger(null);
+		assertTrue(nullInteger.isError());
+		assertTrue(nullInteger.errorOrThrow().startsWith("Value 'null'"));
+		Result<Long> nullLong = JsonTypeProvider.INSTANCE.getLong(null);
+		assertTrue(nullLong.isError());
+		assertTrue(nullLong.errorOrThrow().startsWith("Value 'null'"));
+		Result<Float> nullFloat = JsonTypeProvider.INSTANCE.getFloat(null);
+		assertTrue(nullFloat.isError());
+		assertTrue(nullFloat.errorOrThrow().startsWith("Value 'null'"));
+		Result<Double> nullDouble = JsonTypeProvider.INSTANCE.getDouble(null);
+		assertTrue(nullDouble.isError());
+		assertTrue(nullDouble.errorOrThrow().startsWith("Value 'null'"));
+		Result<String> nullString = JsonTypeProvider.INSTANCE.getString(null);
+		assertTrue(nullString.isError());
+		assertTrue(nullString.errorOrThrow().startsWith("Value 'null'"));
 		
 		JsonArray wrongType = new JsonArray();
 		assertTrue(JsonTypeProvider.INSTANCE.getBoolean(wrongType).isError());
@@ -151,8 +175,12 @@ class JsonTypeProviderTest {
 	
 	@Test
 	void getCollectionTypes() {
-		assertThrows(NullPointerException.class, () -> JsonTypeProvider.INSTANCE.getList(null));
-		assertThrows(NullPointerException.class, () -> JsonTypeProvider.INSTANCE.getMap(null));
+		Result<List<JsonElement>> nullList = JsonTypeProvider.INSTANCE.getList(null);
+		assertTrue(nullList.isError());
+		assertTrue(nullList.errorOrThrow().startsWith("Value 'null'"));
+		Result<Map<String, JsonElement>> nullMap = JsonTypeProvider.INSTANCE.getMap(null);
+		assertTrue(nullMap.isError());
+		assertTrue(nullMap.errorOrThrow().startsWith("Value 'null'"));
 		
 		JsonPrimitive wrongType = new JsonPrimitive(1);
 		assertTrue(JsonTypeProvider.INSTANCE.getList(wrongType).isError());
@@ -179,14 +207,28 @@ class JsonTypeProviderTest {
 	void mapOperations() {
 		JsonObject jsonObject = new JsonObject();
 		JsonElement testValue = new JsonPrimitive("test");
-		
-		assertThrows(NullPointerException.class, () -> JsonTypeProvider.INSTANCE.has(null, "key"));
-		assertThrows(NullPointerException.class, () -> JsonTypeProvider.INSTANCE.has(jsonObject, null));
-		assertThrows(NullPointerException.class, () -> JsonTypeProvider.INSTANCE.get(null, "key"));
-		assertThrows(NullPointerException.class, () -> JsonTypeProvider.INSTANCE.get(jsonObject, null));
-		assertThrows(NullPointerException.class, () -> JsonTypeProvider.INSTANCE.set(null, "key", testValue));
-		assertThrows(NullPointerException.class, () -> JsonTypeProvider.INSTANCE.set(jsonObject, null, testValue));
-		assertThrows(NullPointerException.class, () -> JsonTypeProvider.INSTANCE.set(jsonObject, "key", (JsonElement) null));
+
+		Result<Boolean> nullHas = JsonTypeProvider.INSTANCE.has(null, "key");
+		assertTrue(nullHas.isError());
+		assertTrue(nullHas.errorOrThrow().startsWith("Value 'null'"));
+		Result<Boolean> hasNullKey = JsonTypeProvider.INSTANCE.has(jsonObject, null);
+		assertTrue(hasNullKey.isError());
+		assertTrue(hasNullKey.errorOrThrow().startsWith("Value 'null'"));
+		Result<JsonElement> nullGet = JsonTypeProvider.INSTANCE.get(null, "key");
+		assertTrue(nullGet.isError());
+		assertTrue(nullGet.errorOrThrow().startsWith("Value 'null'"));
+		Result<JsonElement> getNullKey = JsonTypeProvider.INSTANCE.get(jsonObject, null);
+		assertTrue(getNullKey.isError());
+		assertTrue(getNullKey.errorOrThrow().startsWith("Value 'null'"));
+		Result<JsonElement> nullSet = JsonTypeProvider.INSTANCE.set(null, "key", testValue);
+		assertTrue(nullSet.isError());
+		assertTrue(nullSet.errorOrThrow().startsWith("Value 'null'"));
+		Result<JsonElement> setNullKey = JsonTypeProvider.INSTANCE.set(jsonObject, null, testValue);
+		assertTrue(setNullKey.isError());
+		assertTrue(setNullKey.errorOrThrow().startsWith("Value 'null'"));
+		Result<JsonElement> nullValueSet = JsonTypeProvider.INSTANCE.set(jsonObject, "key", (JsonElement) null);
+		assertTrue(nullValueSet.isError());
+		assertTrue(nullValueSet.errorOrThrow().startsWith("Value 'null'"));
 		
 		JsonArray wrongType = new JsonArray();
 		assertTrue(JsonTypeProvider.INSTANCE.has(wrongType, "key").isError());
@@ -205,10 +247,16 @@ class JsonTypeProviderTest {
 	void mapOperationsWithResults() {
 		JsonObject jsonObject = new JsonObject();
 		JsonElement testValue = new JsonPrimitive("test");
-		
-		assertThrows(NullPointerException.class, () -> JsonTypeProvider.INSTANCE.set(null, "key", Result.success(testValue)));
-		assertThrows(NullPointerException.class, () -> JsonTypeProvider.INSTANCE.set(jsonObject, null, Result.success(testValue)));
-		assertThrows(NullPointerException.class, () -> JsonTypeProvider.INSTANCE.set(jsonObject, "key", (Result<JsonElement>) null));
+
+		Result<JsonElement> nullType = JsonTypeProvider.INSTANCE.set(null, "key", Result.success(testValue));
+		assertTrue(nullType.isError());
+		assertTrue(nullType.errorOrThrow().startsWith("Type 'null'"));
+		Result<JsonElement> nullKey = JsonTypeProvider.INSTANCE.set(jsonObject, null, Result.success(testValue));
+		assertTrue(nullKey.isError());
+		assertTrue(nullKey.errorOrThrow().startsWith("Key 'null'"));
+		Result<JsonElement> nullValue = JsonTypeProvider.INSTANCE.set(jsonObject, "key", (Result<JsonElement>) null);
+		assertTrue(nullValue.isError());
+		assertTrue(nullValue.errorOrThrow().startsWith("Value 'null'"));
 		
 		assertTrue(JsonTypeProvider.INSTANCE.set(jsonObject, "key", Result.error("error")).isError());
 		assertTrue(JsonTypeProvider.INSTANCE.set(jsonObject, "key", Result.success(testValue)).isSuccess());
@@ -217,8 +265,8 @@ class JsonTypeProviderTest {
 	
 	@Test
 	void mergeOperations() {
-		assertThrows(NullPointerException.class, () -> JsonTypeProvider.INSTANCE.merge(null, JsonNull.INSTANCE));
-		assertThrows(NullPointerException.class, () -> JsonTypeProvider.INSTANCE.merge(JsonNull.INSTANCE, (JsonElement) null));
+		assertEquals(JsonNull.INSTANCE, JsonTypeProvider.INSTANCE.merge(null, JsonNull.INSTANCE).resultOrThrow());
+		assertEquals(JsonNull.INSTANCE, JsonTypeProvider.INSTANCE.merge(JsonNull.INSTANCE, (JsonElement) null).resultOrThrow());
 		
 		JsonElement primitive = new JsonPrimitive(1);
 		JsonArray array1 = new JsonArray(List.of(new JsonPrimitive("a")));
@@ -263,9 +311,13 @@ class JsonTypeProviderTest {
 	void mergeOperationsWithResults() {
 		JsonObject jsonObject = new JsonObject();
 		JsonElement testValue = new JsonPrimitive("test");
-		
-		assertThrows(NullPointerException.class, () -> JsonTypeProvider.INSTANCE.merge(null, Result.success(testValue)));
-		assertThrows(NullPointerException.class, () -> JsonTypeProvider.INSTANCE.merge(jsonObject, (Result<JsonElement>) null));
+
+		Result<JsonElement> nullCurrent = JsonTypeProvider.INSTANCE.merge(null, Result.success(testValue));
+		assertTrue(nullCurrent.isError());
+		assertTrue(nullCurrent.errorOrThrow().startsWith("Current value 'null'"));
+		Result<JsonElement> nullValue = JsonTypeProvider.INSTANCE.merge(jsonObject, (Result<JsonElement>) null);
+		assertTrue(nullValue.isError());
+		assertTrue(nullValue.errorOrThrow().startsWith("Value 'null'"));
 		
 		assertTrue(JsonTypeProvider.INSTANCE.merge(jsonObject, Result.error("error")).isError());
 		assertEquals(testValue, JsonTypeProvider.INSTANCE.merge(JsonTypeProvider.INSTANCE.empty(), Result.success(testValue)).resultOrThrow());

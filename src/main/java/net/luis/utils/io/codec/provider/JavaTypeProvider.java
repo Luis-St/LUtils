@@ -89,14 +89,18 @@ public final class JavaTypeProvider implements TypeProvider<Object> {
 	}
 	
 	@Override
-	public @NotNull Result<Object> createString(@NotNull String value) {
-		Objects.requireNonNull(value, "Value must not be null");
+	public @NotNull Result<Object> createString(@Nullable String value) {
+		if (value == null) {
+			return Result.error("Value 'null' is not a valid string");
+		}
 		return Result.success(value);
 	}
 	
 	@Override
-	public @NotNull Result<Object> createList(@NotNull List<?> values) {
-		Objects.requireNonNull(values, "Values must not be null");
+	public @NotNull Result<Object> createList(@Nullable List<?> values) {
+		if (values == null) {
+			return Result.error("Value 'null' is not a valid list");
+		}
 		return Result.success(values);
 	}
 	
@@ -106,14 +110,19 @@ public final class JavaTypeProvider implements TypeProvider<Object> {
 	}
 	
 	@Override
-	public @NotNull Result<Object> createMap(@NotNull Map<String, ?> values) {
-		Objects.requireNonNull(values, "Values must not be null");
+	public @NotNull Result<Object> createMap(@Nullable Map<String, ?> values) {
+		if (values == null) {
+			return Result.error("Value 'null' is not a valid map");
+		}
+		
 		return Result.success(values);
 	}
 	
 	@Override
-	public @NotNull Result<Object> getEmpty(@NotNull Object type) {
-		Objects.requireNonNull(type, "Type must not be null");
+	public @NotNull Result<Object> getEmpty(@Nullable Object type) {
+		if (type == null) {
+			return Result.error("Value 'null' is not an empty object");
+		}
 
 		if (type.getClass() == Object.class) {
 			return Result.success(type);
@@ -122,15 +131,16 @@ public final class JavaTypeProvider implements TypeProvider<Object> {
 	}
 
 	@Override
-	public @NotNull Result<Boolean> isNull(@NotNull Object type) {
-		Objects.requireNonNull(type, "Type must not be null");
-		return Result.success(false);
+	public @NotNull Result<Boolean> isNull(@Nullable Object type) {
+		return Result.success(type == null);
 	}
 	
 	@Override
-	public @NotNull Result<Boolean> getBoolean(@NotNull Object type) {
-		Objects.requireNonNull(type, "Type must not be null");
-		
+	public @NotNull Result<Boolean> getBoolean(@Nullable Object type) {
+		if (type == null) {
+			return Result.error("Value 'null' is not a boolean");
+		}
+
 		if (type instanceof Boolean booleanValue) {
 			return Result.success(booleanValue);
 		}
@@ -138,9 +148,11 @@ public final class JavaTypeProvider implements TypeProvider<Object> {
 	}
 	
 	@Override
-	public @NotNull Result<Byte> getByte(@NotNull Object type) {
-		Objects.requireNonNull(type, "Type must not be null");
-		
+	public @NotNull Result<Byte> getByte(@Nullable Object type) {
+		if (type == null) {
+			return Result.error("Value 'null' is not a byte");
+		}
+
 		if (type instanceof Byte byteValue) {
 			return Result.success(byteValue);
 		}
@@ -148,9 +160,11 @@ public final class JavaTypeProvider implements TypeProvider<Object> {
 	}
 	
 	@Override
-	public @NotNull Result<Short> getShort(@NotNull Object type) {
-		Objects.requireNonNull(type, "Type must not be null");
-		
+	public @NotNull Result<Short> getShort(@Nullable Object type) {
+		if (type == null) {
+			return Result.error("Value 'null' is not a short");
+		}
+
 		if (type instanceof Short shortValue) {
 			return Result.success(shortValue);
 		}
@@ -158,9 +172,11 @@ public final class JavaTypeProvider implements TypeProvider<Object> {
 	}
 	
 	@Override
-	public @NotNull Result<Integer> getInteger(@NotNull Object type) {
-		Objects.requireNonNull(type, "Type must not be null");
-		
+	public @NotNull Result<Integer> getInteger(@Nullable Object type) {
+		if (type == null) {
+			return Result.error("Value 'null' is not an integer");
+		}
+
 		if (type instanceof Integer intValue) {
 			return Result.success(intValue);
 		}
@@ -168,9 +184,11 @@ public final class JavaTypeProvider implements TypeProvider<Object> {
 	}
 	
 	@Override
-	public @NotNull Result<Long> getLong(@NotNull Object type) {
-		Objects.requireNonNull(type, "Type must not be null");
-		
+	public @NotNull Result<Long> getLong(@Nullable Object type) {
+		if (type == null) {
+			return Result.error("Value 'null' is not a long");
+		}
+
 		if (type instanceof Long longValue) {
 			return Result.success(longValue);
 		}
@@ -178,9 +196,11 @@ public final class JavaTypeProvider implements TypeProvider<Object> {
 	}
 	
 	@Override
-	public @NotNull Result<Float> getFloat(@NotNull Object type) {
-		Objects.requireNonNull(type, "Type must not be null");
-		
+	public @NotNull Result<Float> getFloat(@Nullable Object type) {
+		if (type == null) {
+			return Result.error("Value 'null' is not a float");
+		}
+
 		if (type instanceof Float floatValue) {
 			return Result.success(floatValue);
 		}
@@ -188,9 +208,11 @@ public final class JavaTypeProvider implements TypeProvider<Object> {
 	}
 	
 	@Override
-	public @NotNull Result<Double> getDouble(@NotNull Object type) {
-		Objects.requireNonNull(type, "Type must not be null");
-		
+	public @NotNull Result<Double> getDouble(@Nullable Object type) {
+		if (type == null) {
+			return Result.error("Value 'null' is not a double");
+		}
+
 		if (type instanceof Double doubleValue) {
 			return Result.success(doubleValue);
 		}
@@ -198,9 +220,11 @@ public final class JavaTypeProvider implements TypeProvider<Object> {
 	}
 	
 	@Override
-	public @NotNull Result<String> getString(@NotNull Object type) {
-		Objects.requireNonNull(type, "Type must not be null");
-		
+	public @NotNull Result<String> getString(@Nullable Object type) {
+		if (type == null) {
+			return Result.error("Value 'null' is not a string");
+		}
+
 		if (type instanceof String stringValue) {
 			return Result.success(stringValue);
 		}
@@ -209,9 +233,11 @@ public final class JavaTypeProvider implements TypeProvider<Object> {
 	
 	@Override
 	@SuppressWarnings("unchecked")
-	public @NotNull Result<List<Object>> getList(@NotNull Object type) {
-		Objects.requireNonNull(type, "Type must not be null");
-		
+	public @NotNull Result<List<Object>> getList(@Nullable Object type) {
+		if (type == null) {
+			return Result.error("Value 'null' is not a list");
+		}
+
 		if (type instanceof List<?> list) {
 			return Result.success((List<Object>) list);
 		}
@@ -220,9 +246,11 @@ public final class JavaTypeProvider implements TypeProvider<Object> {
 	
 	@Override
 	@SuppressWarnings("unchecked")
-	public @NotNull Result<Map<String, Object>> getMap(@NotNull Object type) {
-		Objects.requireNonNull(type, "Type must not be null");
-		
+	public @NotNull Result<Map<String, Object>> getMap(@Nullable Object type) {
+		if (type == null) {
+			return Result.error("Value 'null' is not a map");
+		}
+
 		if (type instanceof Map<?, ?> map) {
 			return Result.success((Map<String, Object>) map);
 		}
@@ -230,10 +258,14 @@ public final class JavaTypeProvider implements TypeProvider<Object> {
 	}
 	
 	@Override
-	public @NotNull Result<Boolean> has(@NotNull Object type, @NotNull String key) {
-		Objects.requireNonNull(type, "Type must not be null");
-		Objects.requireNonNull(key, "Key must not be null");
-		
+	public @NotNull Result<Boolean> has(@Nullable Object type, @Nullable String key) {
+		if (type == null) {
+			return Result.error("Value 'null' is not a map");
+		}
+		if (key == null) {
+			return Result.error("Value 'null' is not a valid key");
+		}
+
 		if (type instanceof Map<?, ?> map) {
 			return Result.success(map.containsKey(key));
 		}
@@ -241,10 +273,14 @@ public final class JavaTypeProvider implements TypeProvider<Object> {
 	}
 	
 	@Override
-	public @NotNull Result<Object> get(@NotNull Object type, @NotNull String key) {
-		Objects.requireNonNull(type, "Type must not be null");
-		Objects.requireNonNull(key, "Key must not be null");
-		
+	public @NotNull Result<Object> get(@Nullable Object type, @Nullable String key) {
+		if (type == null) {
+			return Result.error("Value 'null' is not a map");
+		}
+		if (key == null) {
+			return Result.error("Value 'null' is not a valid key");
+		}
+
 		if (type instanceof Map<?, ?> map) {
 			return Result.success(map.get(key));
 		}
@@ -253,11 +289,14 @@ public final class JavaTypeProvider implements TypeProvider<Object> {
 	
 	@Override
 	@SuppressWarnings("unchecked")
-	public @NotNull Result<Object> set(@NotNull Object type, @NotNull String key, @NotNull Object value) {
-		Objects.requireNonNull(type, "Type must not be null");
-		Objects.requireNonNull(key, "Key must not be null");
-		Objects.requireNonNull(value, "Value must not be null");
-		
+	public @NotNull Result<Object> set(@Nullable Object type, @Nullable String key, @Nullable Object value) {
+		if (type == null) {
+			return Result.error("Value 'null' is not a map");
+		}
+		if (key == null) {
+			return Result.error("Value 'null' is not a valid key");
+		}
+
 		if (type instanceof Map<?, ?> map) {
 			return Result.success(((Map<String, Object>) map).put(key, value));
 		}

@@ -23,10 +23,11 @@ import net.luis.utils.annotation.type.Singleton;
 import net.luis.utils.io.data.xml.*;
 import net.luis.utils.io.data.xml.exception.XmlTypeException;
 import net.luis.utils.util.result.Result;
-import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
+import java.util.regex.Pattern;
 
 /**
  * Type provider implementation for xml elements.<br>
@@ -37,6 +38,10 @@ import java.util.*;
 @Singleton
 public final class XmlTypeProvider implements TypeProvider<XmlElement> {
 	
+	/**
+	 * Pattern for valid xml element names.<br>
+	 */
+	private static final Pattern XML_ELEMENT_NAME_PATTERN = Pattern.compile("^[a-z_-][a-z0-9_-]*(:[a-z0-9_-]+)?$", Pattern.CASE_INSENSITIVE);
 	/**
 	 * Constant for the generated namespace of the xml type provider.<br>
 	 * This namespace is used to create unique names for the xml types.<br>
@@ -178,14 +183,19 @@ public final class XmlTypeProvider implements TypeProvider<XmlElement> {
 	}
 	
 	@Override
-	public @NotNull Result<XmlElement> createString(@NotNull String value) {
-		Objects.requireNonNull(value, "Value must not be null");
+	public @NotNull Result<XmlElement> createString(@Nullable String value) {
+		if (value == null) {
+			return Result.error("Value 'null' is not a valid string");
+		}
+		
 		return Result.success(new XmlValue(STRING, value));
 	}
 	
 	@Override
-	public @NotNull Result<XmlElement> createList(@NotNull List<? extends XmlElement> values) {
-		Objects.requireNonNull(values, "Values must not be null");
+	public @NotNull Result<XmlElement> createList(@Nullable List<? extends XmlElement> values) {
+		if (values == null) {
+			return Result.error("Value 'null' is not a valid list");
+		}
 		
 		List<XmlElement> elements = values.stream().map(element -> this.copyWithName(ELEMENT, element)).toList();
 		return Result.success(new XmlContainer(LIST, new XmlElements(elements)));
@@ -197,14 +207,19 @@ public final class XmlTypeProvider implements TypeProvider<XmlElement> {
 	}
 	
 	@Override
-	public @NotNull Result<XmlElement> createMap(@NotNull Map<String, ? extends XmlElement> values) {
-		Objects.requireNonNull(values, "Values must not be null");
+	public @NotNull Result<XmlElement> createMap(@Nullable Map<String, ? extends XmlElement> values) {
+		if (values == null) {
+			return Result.error("Value 'null' is not a valid map");
+		}
+		
 		return Result.success(new XmlContainer(this.getMapName(), new XmlElements(values)));
 	}
 	
 	@Override
-	public @NotNull Result<XmlElement> getEmpty(@NotNull XmlElement type) {
-		Objects.requireNonNull(type, "Type must not be null");
+	public @NotNull Result<XmlElement> getEmpty(@Nullable XmlElement type) {
+		if (type == null) {
+			return Result.error("Value 'null' is not empty");
+		}
 
 		if (!type.isSelfClosing()) {
 			return Result.error("Xml element '" + type + "' must be self-closing to be empty");
@@ -213,14 +228,19 @@ public final class XmlTypeProvider implements TypeProvider<XmlElement> {
 	}
 
 	@Override
-	public @NotNull Result<Boolean> isNull(@NotNull XmlElement type) {
-		Objects.requireNonNull(type, "Type must not be null");
+	public @NotNull Result<Boolean> isNull(@Nullable XmlElement type) {
+		if (type == null) {
+			return Result.error("Value 'null' is not xml null");
+		}
+		
 		return Result.success(type.isSelfClosing() && type.getName().equals(NULL));
 	}
 	
 	@Override
-	public @NotNull Result<Boolean> getBoolean(@NotNull XmlElement type) {
-		Objects.requireNonNull(type, "Type must not be null");
+	public @NotNull Result<Boolean> getBoolean(@Nullable XmlElement type) {
+		if (type == null) {
+			return Result.error("Value 'null' is not a boolean");
+		}
 		
 		if (!type.isXmlValue()) {
 			return Result.error("Xml element '" + type + "' must have a value to be a boolean");
@@ -234,8 +254,10 @@ public final class XmlTypeProvider implements TypeProvider<XmlElement> {
 	}
 	
 	@Override
-	public @NotNull Result<Byte> getByte(@NotNull XmlElement type) {
-		Objects.requireNonNull(type, "Type must not be null");
+	public @NotNull Result<Byte> getByte(@Nullable XmlElement type) {
+		if (type == null) {
+			return Result.error("Value 'null' is not a byte");
+		}
 		
 		if (!type.isXmlValue()) {
 			return Result.error("Xml element '" + type + "' must have a value to be a byte");
@@ -249,8 +271,10 @@ public final class XmlTypeProvider implements TypeProvider<XmlElement> {
 	}
 	
 	@Override
-	public @NotNull Result<Short> getShort(@NotNull XmlElement type) {
-		Objects.requireNonNull(type, "Type must not be null");
+	public @NotNull Result<Short> getShort(@Nullable XmlElement type) {
+		if (type == null) {
+			return Result.error("Value 'null' is not a short");
+		}
 		
 		if (!type.isXmlValue()) {
 			return Result.error("Xml element '" + type + "' must have a value to be a short");
@@ -264,8 +288,10 @@ public final class XmlTypeProvider implements TypeProvider<XmlElement> {
 	}
 	
 	@Override
-	public @NotNull Result<Integer> getInteger(@NotNull XmlElement type) {
-		Objects.requireNonNull(type, "Type must not be null");
+	public @NotNull Result<Integer> getInteger(@Nullable XmlElement type) {
+		if (type == null) {
+			return Result.error("Value 'null' is not an integer");
+		}
 		
 		if (!type.isXmlValue()) {
 			return Result.error("Xml element '" + type + "' must have a value to be an integer");
@@ -279,8 +305,10 @@ public final class XmlTypeProvider implements TypeProvider<XmlElement> {
 	}
 	
 	@Override
-	public @NotNull Result<Long> getLong(@NotNull XmlElement type) {
-		Objects.requireNonNull(type, "Type must not be null");
+	public @NotNull Result<Long> getLong(@Nullable XmlElement type) {
+		if (type == null) {
+			return Result.error("Value 'null' is not a long");
+		}
 		
 		if (!type.isXmlValue()) {
 			return Result.error("Xml element '" + type + "' must have a value to be a long");
@@ -294,8 +322,10 @@ public final class XmlTypeProvider implements TypeProvider<XmlElement> {
 	}
 	
 	@Override
-	public @NotNull Result<Float> getFloat(@NotNull XmlElement type) {
-		Objects.requireNonNull(type, "Type must not be null");
+	public @NotNull Result<Float> getFloat(@Nullable XmlElement type) {
+		if (type == null) {
+			return Result.error("Value 'null' is not a float");
+		}
 		
 		if (!type.isXmlValue()) {
 			return Result.error("Xml element '" + type + "' must have a value to be a float");
@@ -309,8 +339,10 @@ public final class XmlTypeProvider implements TypeProvider<XmlElement> {
 	}
 	
 	@Override
-	public @NotNull Result<Double> getDouble(@NotNull XmlElement type) {
-		Objects.requireNonNull(type, "Type must not be null");
+	public @NotNull Result<Double> getDouble(@Nullable XmlElement type) {
+		if (type == null) {
+			return Result.error("Value 'null' is not a double");
+		}
 		
 		if (!type.isXmlValue()) {
 			return Result.error("Xml element '" + type + "' must have a value to be a double");
@@ -324,8 +356,10 @@ public final class XmlTypeProvider implements TypeProvider<XmlElement> {
 	}
 	
 	@Override
-	public @NotNull Result<String> getString(@NotNull XmlElement type) {
-		Objects.requireNonNull(type, "Type must not be null");
+	public @NotNull Result<String> getString(@Nullable XmlElement type) {
+		if (type == null) {
+			return Result.error("Value 'null' is not a string");
+		}
 		
 		if (!type.isXmlValue()) {
 			return Result.error("Xml element '" + type + "' must have a value to be a string");
@@ -334,8 +368,10 @@ public final class XmlTypeProvider implements TypeProvider<XmlElement> {
 	}
 	
 	@Override
-	public @NotNull Result<List<XmlElement>> getList(@NotNull XmlElement type) {
-		Objects.requireNonNull(type, "Type must not be null");
+	public @NotNull Result<List<XmlElement>> getList(@Nullable XmlElement type) {
+		if (type == null) {
+			return Result.error("Value 'null' is not a valid list");
+		}
 		
 		if (!type.isXmlContainer()) {
 			return Result.error("Xml element '" + type + "' is not a container");
@@ -362,8 +398,10 @@ public final class XmlTypeProvider implements TypeProvider<XmlElement> {
 	}
 	
 	@Override
-	public @NotNull Result<Map<String, XmlElement>> getMap(@NotNull XmlElement type) {
-		Objects.requireNonNull(type, "Type must not be null");
+	public @NotNull Result<Map<String, XmlElement>> getMap(@Nullable XmlElement type) {
+		if (type == null) {
+			return Result.error("Value 'null' is not a valid map");
+		}
 		
 		if (!type.isXmlContainer()) {
 			return Result.error("Xml element '" + type + "' is not a container");
@@ -392,9 +430,14 @@ public final class XmlTypeProvider implements TypeProvider<XmlElement> {
 	}
 	
 	@Override
-	public @NotNull Result<Boolean> has(@NotNull XmlElement type, @NotNull String key) {
-		Objects.requireNonNull(type, "Type must not be null");
-		Objects.requireNonNull(key, "Key must not be null");
+	@SuppressWarnings("DuplicatedCode")
+	public @NotNull Result<Boolean> has(@Nullable XmlElement type, @Nullable String key) {
+		if (type == null) {
+			return Result.error("Value 'null' is not a valid map");
+		}
+		if (key == null) {
+			return Result.error("Value 'null' is not valid");
+		}
 		
 		if (!type.isXmlContainer()) {
 			return Result.error("Xml element '" + type + "' is not a container");
@@ -408,9 +451,14 @@ public final class XmlTypeProvider implements TypeProvider<XmlElement> {
 	}
 	
 	@Override
-	public @NotNull Result<XmlElement> get(@NotNull XmlElement type, @NotNull String key) {
-		Objects.requireNonNull(type, "Type must not be null");
-		Objects.requireNonNull(key, "Key must not be null");
+	@SuppressWarnings("DuplicatedCode")
+	public @NotNull Result<XmlElement> get(@Nullable XmlElement type, @Nullable String key) {
+		if (type == null) {
+			return Result.error("Value 'null' is not a valid map");
+		}
+		if (key == null) {
+			return Result.error("Value 'null' is not valid");
+		}
 		
 		if (!type.isXmlContainer()) {
 			return Result.error("Xml element '" + type + "' is not a container");
@@ -429,10 +477,16 @@ public final class XmlTypeProvider implements TypeProvider<XmlElement> {
 	}
 	
 	@Override
-	public @NotNull Result<XmlElement> set(@NotNull XmlElement type, @NotNull String key, @NotNull XmlElement value) {
-		Objects.requireNonNull(type, "Type must not be null");
-		Objects.requireNonNull(key, "Key must not be null");
-		Objects.requireNonNull(value, "Value must not be null");
+	public @NotNull Result<XmlElement> set(@Nullable XmlElement type, @Nullable String key, @Nullable XmlElement value) {
+		if (type == null) {
+			return Result.error("Value 'null' is not a valid map");
+		}
+		if (key == null) {
+			return Result.error("Value 'null' is not valid");
+		}
+		if (value == null) {
+			return Result.error("Value 'null' is not valid");
+		}
 		
 		if (!type.isXmlContainer()) {
 			return Result.error("Xml element '" + type + "' is not a container");
@@ -448,9 +502,13 @@ public final class XmlTypeProvider implements TypeProvider<XmlElement> {
 	}
 	
 	@Override
-	public @NotNull Result<XmlElement> merge(@NotNull XmlElement current, @NotNull XmlElement value) {
-		Objects.requireNonNull(current, "Current value must not be null");
-		Objects.requireNonNull(value, "Value must not be null");
+	public @NotNull Result<XmlElement> merge(@Nullable XmlElement current, @Nullable XmlElement value) {
+		if (current == null) {
+			return Result.success(value);
+		}
+		if (value == null) {
+			return Result.success(current);
+		}
 		
 		if (current.isSelfClosing()) {
 			return Result.success(value);
@@ -505,7 +563,7 @@ public final class XmlTypeProvider implements TypeProvider<XmlElement> {
 	 */
 	private @NotNull String escapeName(@NotNull String name) {
 		Objects.requireNonNull(name, "Name must not be null");
-		return StringUtils.isNumeric(name) ? "_" + name : name;
+		return !XML_ELEMENT_NAME_PATTERN.matcher(name).matches() ? "_" + name : name;
 	}
 	
 	/**
@@ -520,7 +578,7 @@ public final class XmlTypeProvider implements TypeProvider<XmlElement> {
 	private @NotNull String unescapeName(@NotNull String name) {
 		Objects.requireNonNull(name, "Name must not be null");
 		
-		if (name.startsWith("_") && StringUtils.isNumeric(name.substring(1))) {
+		if (name.startsWith("_") && !XML_ELEMENT_NAME_PATTERN.matcher(name.substring(1)).matches()) {
 			return name.substring(1);
 		}
 		return name;
