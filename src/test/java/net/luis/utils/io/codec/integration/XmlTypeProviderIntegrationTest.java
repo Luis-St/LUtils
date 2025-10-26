@@ -475,21 +475,6 @@ class XmlTypeProviderIntegrationTest {
 	}
 	
 	@Test
-	void encodeAndDecodeWithUseRoot() {
-		XmlTypeProvider providerWithRoot = PROVIDER.useRoot();
-		
-		Map<String, Integer> map = Map.of("key1", 10, "key2", 20);
-		Codec<Map<String, Integer>> mapCodec = Codec.map(STRING, INTEGER);
-		
-		XmlElement encoded = mapCodec.encode(providerWithRoot, map);
-		assertTrue(encoded.isXmlContainer());
-		assertTrue(encoded.getName().contains("root"));
-		
-		Map<String, Integer> decoded = mapCodec.decode(providerWithRoot, encoded);
-		assertEquals(map, decoded);
-	}
-	
-	@Test
 	void encodeAndDecodeNumericKeys() {
 		Map<String, String> mapWithNumericKeys = Map.of(
 			"123", "numeric",

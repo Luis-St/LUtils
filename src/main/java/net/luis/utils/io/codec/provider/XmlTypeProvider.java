@@ -99,43 +99,16 @@ public final class XmlTypeProvider implements TypeProvider<XmlElement> {
 	 * Constants for the name of map xml element type.<br>
 	 */
 	private static final String MAP = "map" + GENERATED;
-	/**
-	 * Constants for the name of root xml element type.<br>
-	 * Used as name for maps if {@link #useRoot} is true.<br>
-	 */
-	private static final String ROOT = "root" + GENERATED;
 	
 	/**
 	 * The singleton instance of this class.<br>
 	 */
-	public static final XmlTypeProvider INSTANCE = new XmlTypeProvider(false);
-	
-	/**
-	 * Whether to use {@link #ROOT} as name for maps.<br>
-	 */
-	private final boolean useRoot;
+	public static final XmlTypeProvider INSTANCE = new XmlTypeProvider();
 	
 	/**
 	 * Private constructor to prevent instantiation.<br>
-	 *
-	 * @param useRoot Whether to use root as name for maps
 	 */
-	private XmlTypeProvider(boolean useRoot) {
-		this.useRoot = useRoot;
-	}
-	
-	/**
-	 * Returns a new instance of this class with {@link #useRoot} set to true.<br>
-	 * If {@link #useRoot} is already true, the same instance is returned.<br>
-	 *
-	 * @return A new instance
-	 */
-	public @NotNull XmlTypeProvider useRoot() {
-		if (this.useRoot) {
-			return this;
-		}
-		return new XmlTypeProvider(true);
-	}
+	private XmlTypeProvider() {}
 	
 	@Override
 	public @NotNull XmlElement empty() {
@@ -203,7 +176,7 @@ public final class XmlTypeProvider implements TypeProvider<XmlElement> {
 	
 	@Override
 	public @NotNull Result<XmlElement> createMap() {
-		return Result.success(new XmlContainer(this.getMapName()));
+		return Result.success(new XmlContainer(MAP));
 	}
 	
 	@Override
@@ -212,7 +185,7 @@ public final class XmlTypeProvider implements TypeProvider<XmlElement> {
 			return Result.error("Value 'null' is not a valid map");
 		}
 		
-		return Result.success(new XmlContainer(this.getMapName(), new XmlElements(values)));
+		return Result.success(new XmlContainer(MAP, new XmlElements(values)));
 	}
 	
 	@Override
@@ -543,14 +516,6 @@ public final class XmlTypeProvider implements TypeProvider<XmlElement> {
 	}
 	
 	//region Helper methods
-	
-	/**
-	 * Returns the name for maps based on {@link #useRoot}.<br>
-	 * @return The name for maps
-	 */
-	private @NotNull String getMapName() {
-		return this.useRoot ? ROOT : MAP;
-	}
 	
 	/**
 	 * Escapes the given name if it is numeric.<br>

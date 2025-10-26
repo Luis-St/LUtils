@@ -35,13 +35,6 @@ import static org.junit.jupiter.api.Assertions.*;
 class XmlTypeProviderTest {
 	
 	@Test
-	void useRootCreatesNewInstanceWhenNeeded() {
-		XmlTypeProvider rootProvider = XmlTypeProvider.INSTANCE.useRoot();
-		assertNotNull(rootProvider);
-		assertSame(rootProvider, rootProvider.useRoot());
-	}
-	
-	@Test
 	void emptyReturnsSelfClosingElement() {
 		XmlElement empty = XmlTypeProvider.INSTANCE.empty();
 		assertTrue(empty.isSelfClosing());
