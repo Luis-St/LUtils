@@ -32,57 +32,57 @@ import static org.junit.jupiter.api.Assertions.*;
  * @author Luis-St
  */
 class BooleanArrayCodecTest {
-
+	
 	@Test
 	void encodeStartNullChecks() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<boolean[]> codec = new BooleanArrayCodec();
-		boolean[] array = {true, false, true};
-
+		boolean[] array = { true, false, true };
+		
 		assertThrows(NullPointerException.class, () -> codec.encodeStart(null, typeProvider.empty(), array));
 		assertThrows(NullPointerException.class, () -> codec.encodeStart(typeProvider, null, array));
 	}
-
+	
 	@Test
 	void encodeStartWithNull() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<boolean[]> codec = new BooleanArrayCodec();
-
+		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), null);
 		assertTrue(result.isError());
 		assertTrue(result.errorOrThrow().contains("Unable to encode null as boolean array"));
 	}
-
+	
 	@Test
 	void encodeStartWithEmptyArray() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<boolean[]> codec = new BooleanArrayCodec();
 		boolean[] array = {};
-
+		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), array);
 		assertTrue(result.isSuccess());
 		assertEquals(new JsonArray(), result.resultOrThrow());
 	}
-
+	
 	@Test
 	void encodeStartWithSingleElement() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<boolean[]> codec = new BooleanArrayCodec();
-		boolean[] array = {true};
-
+		boolean[] array = { true };
+		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), array);
 		assertTrue(result.isSuccess());
 		JsonArray expected = new JsonArray();
 		expected.add(true);
 		assertEquals(expected, result.resultOrThrow());
 	}
-
+	
 	@Test
 	void encodeStartWithMultipleElements() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<boolean[]> codec = new BooleanArrayCodec();
-		boolean[] array = {true, false, true};
-
+		boolean[] array = { true, false, true };
+		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), array);
 		assertTrue(result.isSuccess());
 		JsonArray expected = new JsonArray();
@@ -91,48 +91,48 @@ class BooleanArrayCodecTest {
 		expected.add(true);
 		assertEquals(expected, result.resultOrThrow());
 	}
-
+	
 	@Test
 	void decodeStartNullChecks() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<boolean[]> codec = new BooleanArrayCodec();
-
+		
 		assertThrows(NullPointerException.class, () -> codec.decodeStart(null, new JsonArray()));
 	}
-
+	
 	@Test
 	void decodeStartWithNull() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<boolean[]> codec = new BooleanArrayCodec();
-
+		
 		Result<boolean[]> result = codec.decodeStart(typeProvider, null);
 		assertTrue(result.isError());
 		assertTrue(result.errorOrThrow().contains("Unable to decode null value as boolean array"));
 	}
-
+	
 	@Test
 	void decodeStartWithEmptyArray() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<boolean[]> codec = new BooleanArrayCodec();
 		JsonArray array = new JsonArray();
-
+		
 		Result<boolean[]> result = codec.decodeStart(typeProvider, array);
 		assertTrue(result.isSuccess());
-		assertArrayEquals(new boolean[]{}, result.resultOrThrow());
+		assertArrayEquals(new boolean[] {}, result.resultOrThrow());
 	}
-
+	
 	@Test
 	void decodeStartWithSingleElement() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<boolean[]> codec = new BooleanArrayCodec();
 		JsonArray array = new JsonArray();
 		array.add(true);
-
+		
 		Result<boolean[]> result = codec.decodeStart(typeProvider, array);
 		assertTrue(result.isSuccess());
-		assertArrayEquals(new boolean[]{true}, result.resultOrThrow());
+		assertArrayEquals(new boolean[] { true }, result.resultOrThrow());
 	}
-
+	
 	@Test
 	void decodeStartWithMultipleElements() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
@@ -141,21 +141,21 @@ class BooleanArrayCodecTest {
 		array.add(true);
 		array.add(false);
 		array.add(true);
-
+		
 		Result<boolean[]> result = codec.decodeStart(typeProvider, array);
 		assertTrue(result.isSuccess());
-		assertArrayEquals(new boolean[]{true, false, true}, result.resultOrThrow());
+		assertArrayEquals(new boolean[] { true, false, true }, result.resultOrThrow());
 	}
-
+	
 	@Test
 	void decodeStartWithNonArray() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<boolean[]> codec = new BooleanArrayCodec();
-
+		
 		Result<boolean[]> result = codec.decodeStart(typeProvider, new JsonPrimitive(true));
 		assertTrue(result.isError());
 	}
-
+	
 	@Test
 	void toStringRepresentation() {
 		BooleanArrayCodec codec = new BooleanArrayCodec();

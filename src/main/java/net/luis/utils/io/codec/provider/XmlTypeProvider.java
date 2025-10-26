@@ -193,13 +193,13 @@ public final class XmlTypeProvider implements TypeProvider<XmlElement> {
 		if (type == null) {
 			return Result.error("Value 'null' is not empty");
 		}
-
+		
 		if (!type.isSelfClosing()) {
 			return Result.error("Xml element '" + type + "' must be self-closing to be empty");
 		}
 		return Result.success(type);
 	}
-
+	
 	@Override
 	public @NotNull Result<Boolean> isNull(@Nullable XmlElement type) {
 		if (type == null) {

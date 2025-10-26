@@ -1418,8 +1418,6 @@ class JsonTypeProviderIntegrationTest {
 		assertTrue(decoded.ipAddress().isEmpty());
 	}
 	
-	
-	
 	@Test
 	void encodeAndDecodeDeeplyNestedMixedCodecTypes() {
 		Codec<Map<java.util.UUID, List<Either<LocalDate, Instant>>>> complexNested = Codec.map(
@@ -1574,6 +1572,10 @@ class JsonTypeProviderIntegrationTest {
 		assertEquals(42, decoded.get().getFirst().get().leftOrThrow());
 	}
 	
+	private enum Priority {
+		LOW, MEDIUM, HIGH, URGENT, CRITICAL
+	}
+	
 	private record UltraComplexRecord(
 		@NotNull java.util.UUID id,
 		int age,
@@ -1682,10 +1684,6 @@ class JsonTypeProviderIntegrationTest {
 			result = 31 * result + Arrays.hashCode(this.flags);
 			return result;
 		}
-	}
-	
-	private enum Priority {
-		LOW, MEDIUM, HIGH, URGENT, CRITICAL
 	}
 	
 	private record Person(@NotNull String name, int age, @NotNull String email) {}

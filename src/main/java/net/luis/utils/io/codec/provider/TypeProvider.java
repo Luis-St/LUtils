@@ -23,7 +23,8 @@ import net.luis.utils.util.result.Result;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.*;
+import java.util.List;
+import java.util.Map;
 
 /**
  * A provider for a specific type.<br>
@@ -155,7 +156,7 @@ public interface TypeProvider<T> {
 	 * @return A success result containing the empty value, or an error result if the given value is not an empty value
 	 */
 	@NotNull Result<T> getEmpty(@Nullable T type);
-
+	
 	/**
 	 * Checks if the given value is a null value of the type this provider is for.<br>
 	 *

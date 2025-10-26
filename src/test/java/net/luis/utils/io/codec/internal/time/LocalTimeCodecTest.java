@@ -20,7 +20,8 @@ package net.luis.utils.io.codec.internal.time;
 
 import net.luis.utils.io.codec.Codec;
 import net.luis.utils.io.codec.provider.JsonTypeProvider;
-import net.luis.utils.io.data.json.*;
+import net.luis.utils.io.data.json.JsonElement;
+import net.luis.utils.io.data.json.JsonPrimitive;
 import net.luis.utils.util.result.Result;
 import org.junit.jupiter.api.Test;
 
@@ -34,149 +35,149 @@ import static org.junit.jupiter.api.Assertions.*;
  * @author Luis-St
  */
 class LocalTimeCodecTest {
-
+	
 	@Test
 	void encodeStartNullChecks() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<LocalTime> codec = new LocalTimeCodec();
 		LocalTime time = LocalTime.now();
-
+		
 		assertThrows(NullPointerException.class, () -> codec.encodeStart(null, typeProvider.empty(), time));
 		assertThrows(NullPointerException.class, () -> codec.encodeStart(typeProvider, null, time));
 	}
-
+	
 	@Test
 	void encodeStartWithNull() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<LocalTime> codec = new LocalTimeCodec();
-
+		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), null);
 		assertTrue(result.isError());
 		assertTrue(result.errorOrThrow().contains("Unable to encode null as local time"));
 	}
-
+	
 	@Test
 	void encodeStartWithValidTime() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<LocalTime> codec = new LocalTimeCodec();
 		LocalTime time = LocalTime.parse("10:30:00");
-
+		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), time);
 		assertTrue(result.isSuccess());
 		assertEquals(new JsonPrimitive("10:30"), result.resultOrThrow());
 	}
-
+	
 	@Test
 	void encodeStartWithMidnight() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<LocalTime> codec = new LocalTimeCodec();
 		LocalTime time = LocalTime.parse("00:00:00");
-
+		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), time);
 		assertTrue(result.isSuccess());
 		assertEquals(new JsonPrimitive("00:00"), result.resultOrThrow());
 	}
-
+	
 	@Test
 	void encodeStartWithEndOfDay() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<LocalTime> codec = new LocalTimeCodec();
 		LocalTime time = LocalTime.parse("23:59:59");
-
+		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), time);
 		assertTrue(result.isSuccess());
 		assertEquals(new JsonPrimitive("23:59:59"), result.resultOrThrow());
 	}
-
+	
 	@Test
 	void encodeStartWithNanoseconds() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<LocalTime> codec = new LocalTimeCodec();
 		LocalTime time = LocalTime.parse("10:30:00.123456789");
-
+		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), time);
 		assertTrue(result.isSuccess());
 		assertEquals(new JsonPrimitive("10:30:00.123456789"), result.resultOrThrow());
 	}
-
+	
 	@Test
 	void decodeStartNullChecks() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<LocalTime> codec = new LocalTimeCodec();
-
+		
 		assertThrows(NullPointerException.class, () -> codec.decodeStart(null, new JsonPrimitive("10:30:00")));
 	}
-
+	
 	@Test
 	void decodeStartWithNull() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<LocalTime> codec = new LocalTimeCodec();
-
+		
 		Result<LocalTime> result = codec.decodeStart(typeProvider, null);
 		assertTrue(result.isError());
 		assertTrue(result.errorOrThrow().contains("Unable to decode null value as local time"));
 	}
-
+	
 	@Test
 	void decodeStartWithValidString() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<LocalTime> codec = new LocalTimeCodec();
-
+		
 		Result<LocalTime> result = codec.decodeStart(typeProvider, new JsonPrimitive("10:30:00"));
 		assertTrue(result.isSuccess());
 		assertEquals(LocalTime.parse("10:30:00"), result.resultOrThrow());
 	}
-
+	
 	@Test
 	void decodeStartWithMidnight() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<LocalTime> codec = new LocalTimeCodec();
-
+		
 		Result<LocalTime> result = codec.decodeStart(typeProvider, new JsonPrimitive("00:00:00"));
 		assertTrue(result.isSuccess());
 		assertEquals(LocalTime.parse("00:00:00"), result.resultOrThrow());
 	}
-
+	
 	@Test
 	void decodeStartWithEndOfDay() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<LocalTime> codec = new LocalTimeCodec();
-
+		
 		Result<LocalTime> result = codec.decodeStart(typeProvider, new JsonPrimitive("23:59:59"));
 		assertTrue(result.isSuccess());
 		assertEquals(LocalTime.parse("23:59:59"), result.resultOrThrow());
 	}
-
+	
 	@Test
 	void decodeStartWithNanoseconds() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<LocalTime> codec = new LocalTimeCodec();
-
+		
 		Result<LocalTime> result = codec.decodeStart(typeProvider, new JsonPrimitive("10:30:00.123456789"));
 		assertTrue(result.isSuccess());
 		assertEquals(LocalTime.parse("10:30:00.123456789"), result.resultOrThrow());
 	}
-
+	
 	@Test
 	void decodeStartWithInvalidFormat() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<LocalTime> codec = new LocalTimeCodec();
-
+		
 		Result<LocalTime> result = codec.decodeStart(typeProvider, new JsonPrimitive("invalid-time"));
 		assertTrue(result.isError());
 		assertTrue(result.errorOrThrow().contains("Unable to decode local time"));
 		assertTrue(result.errorOrThrow().contains("Unable to parse local time"));
 	}
-
+	
 	@Test
 	void decodeStartWithNonString() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<LocalTime> codec = new LocalTimeCodec();
-
+		
 		Result<LocalTime> result = codec.decodeStart(typeProvider, new JsonPrimitive(42));
 		assertTrue(result.isError());
 	}
-
+	
 	@Test
 	void toStringRepresentation() {
 		LocalTimeCodec codec = new LocalTimeCodec();

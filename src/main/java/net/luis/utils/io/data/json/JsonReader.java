@@ -364,7 +364,7 @@ public class JsonReader implements AutoCloseable {
 				}
 				this.reader.reset();
 			}
-		
+			
 			if (specialNumber) {
 				return this.readSpecialJsonNumber();
 			}

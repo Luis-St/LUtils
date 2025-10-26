@@ -25,7 +25,8 @@ import net.luis.utils.util.result.Result;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.*;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Type provider implementation for json elements.<br>
@@ -140,13 +141,13 @@ public final class JsonTypeProvider implements TypeProvider<JsonElement> {
 		if (type == null) {
 			return Result.error("Value 'null' is not empty");
 		}
-
+		
 		if (type != EMPTY_ELEMENT) {
 			return Result.error("Json element '" + type + "' is not a json null");
 		}
 		return Result.success(type);
 	}
-
+	
 	@Override
 	public @NotNull Result<Boolean> isNull(@Nullable JsonElement type) {
 		if (type == null) {

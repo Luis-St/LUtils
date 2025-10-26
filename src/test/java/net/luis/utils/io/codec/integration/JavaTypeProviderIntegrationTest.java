@@ -46,6 +46,23 @@ class JavaTypeProviderIntegrationTest {
 	
 	private static final JavaTypeProvider PROVIDER = JavaTypeProvider.INSTANCE;
 	
+	private static @NotNull Codec<UltraComplexRecord> createUltraComplexCodec() {
+		return CodecBuilder.group(
+			UUID.configure("id", UltraComplexRecord::id),
+			Codec.ranged(INTEGER, 0, 150).configure("age", UltraComplexRecord::age),
+			formattedString("[a-zA-Z]+").configure("name", UltraComplexRecord::name),
+			LOCAL_DATE_TIME.configure("timestamp", UltraComplexRecord::timestamp),
+			DURATION.configure("elapsed", UltraComplexRecord::elapsed),
+			Codec.map(UUID, DOUBLE).configure("metrics", UltraComplexRecord::metrics),
+			either(FILE, PATH).configure("location", UltraComplexRecord::location),
+			Codec.nullable(CHARSET).configure("encoding", UltraComplexRecord::encoding),
+			FLOAT_ARRAY.configure("scores", UltraComplexRecord::scores),
+			INT_STREAM.configure("dataStream", UltraComplexRecord::dataStream),
+			Codec.noneEmptyList(URI).configure("endpoints", UltraComplexRecord::endpoints),
+			Codec.optional(ZONED_DATE_TIME).configure("lastModified", UltraComplexRecord::lastModified)
+		).create(UltraComplexRecord::new);
+	}
+	
 	@Test
 	void encodeAndDecodeBooleanValues() {
 		assertTrue(BOOLEAN.decode(PROVIDER, BOOLEAN.encode(PROVIDER, true)));
@@ -1561,21 +1578,8 @@ class JavaTypeProviderIntegrationTest {
 		assertEquals(42, decoded.get().getFirst().get().leftOrThrow());
 	}
 	
-	private static @NotNull Codec<UltraComplexRecord> createUltraComplexCodec() {
-		return CodecBuilder.group(
-			UUID.configure("id", UltraComplexRecord::id),
-			Codec.ranged(INTEGER, 0, 150).configure("age", UltraComplexRecord::age),
-			formattedString("[a-zA-Z]+").configure("name", UltraComplexRecord::name),
-			LOCAL_DATE_TIME.configure("timestamp", UltraComplexRecord::timestamp),
-			DURATION.configure("elapsed", UltraComplexRecord::elapsed),
-			Codec.map(UUID, DOUBLE).configure("metrics", UltraComplexRecord::metrics),
-			either(FILE, PATH).configure("location", UltraComplexRecord::location),
-			Codec.nullable(CHARSET).configure("encoding", UltraComplexRecord::encoding),
-			FLOAT_ARRAY.configure("scores", UltraComplexRecord::scores),
-			INT_STREAM.configure("dataStream", UltraComplexRecord::dataStream),
-			Codec.noneEmptyList(URI).configure("endpoints", UltraComplexRecord::endpoints),
-			Codec.optional(ZONED_DATE_TIME).configure("lastModified", UltraComplexRecord::lastModified)
-		).create(UltraComplexRecord::new);
+	private enum Priority {
+		LOW, MEDIUM, HIGH, URGENT, CRITICAL
 	}
 	
 	private record UltraComplexRecord(
@@ -1684,10 +1688,6 @@ class JavaTypeProviderIntegrationTest {
 		public int hashCode() {
 			return java.util.Objects.hash(this.id, this.numbers, this.metrics, this.optionalField, this.eitherField, java.util.Arrays.hashCode(this.flags), this.timestamp);
 		}
-	}
-	
-	private enum Priority {
-		LOW, MEDIUM, HIGH, URGENT, CRITICAL
 	}
 	
 	private record Person(@NotNull String name, int age, @NotNull String email) {}

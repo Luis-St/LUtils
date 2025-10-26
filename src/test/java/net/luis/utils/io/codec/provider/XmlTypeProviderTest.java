@@ -128,30 +128,30 @@ class XmlTypeProviderTest {
 		Result<XmlElement> nullEmpty = XmlTypeProvider.INSTANCE.getEmpty(null);
 		assertTrue(nullEmpty.isError());
 		assertTrue(nullEmpty.errorOrThrow().startsWith("Value 'null'"));
-
+		
 		assertTrue(XmlTypeProvider.INSTANCE.getEmpty(new XmlValue("test", 42)).isError());
 		assertTrue(XmlTypeProvider.INSTANCE.getEmpty(new XmlContainer("test")).isError());
-
+		
 		XmlElement selfClosing = new XmlElement("empty:generated");
 		assertEquals(selfClosing, XmlTypeProvider.INSTANCE.getEmpty(selfClosing).resultOrThrow());
 	}
-
+	
 	@Test
 	void isNullValidation() {
 		Result<Boolean> nullIsNull = XmlTypeProvider.INSTANCE.isNull(null);
 		assertTrue(nullIsNull.isError());
 		assertTrue(nullIsNull.errorOrThrow().startsWith("Value 'null'"));
-
+		
 		XmlElement xmlNull = XmlTypeProvider.INSTANCE.createNull().resultOrThrow();
 		assertTrue(XmlTypeProvider.INSTANCE.isNull(xmlNull).resultOrThrow());
-
+		
 		assertFalse(XmlTypeProvider.INSTANCE.isNull(new XmlElement("empty:generated")).resultOrThrow());
 		assertFalse(XmlTypeProvider.INSTANCE.isNull(new XmlValue("test", 42)).resultOrThrow());
 		assertFalse(XmlTypeProvider.INSTANCE.isNull(new XmlContainer("test")).resultOrThrow());
 		assertFalse(XmlTypeProvider.INSTANCE.isNull(XmlTypeProvider.INSTANCE.createBoolean(true).resultOrThrow()).resultOrThrow());
 		assertFalse(XmlTypeProvider.INSTANCE.isNull(XmlTypeProvider.INSTANCE.createString("test").resultOrThrow()).resultOrThrow());
 	}
-
+	
 	@Test
 	void getPrimitiveTypes() {
 		Result<Boolean> nullBoolean = XmlTypeProvider.INSTANCE.getBoolean(null);
@@ -265,7 +265,7 @@ class XmlTypeProviderTest {
 	void mapOperations() {
 		XmlContainer container = new XmlContainer("test");
 		XmlElement testValue = new XmlValue("test", 42);
-
+		
 		Result<Boolean> nullHas = XmlTypeProvider.INSTANCE.has(null, "key");
 		assertTrue(nullHas.isError());
 		assertTrue(nullHas.errorOrThrow().startsWith("Value 'null'"));
@@ -312,7 +312,7 @@ class XmlTypeProviderTest {
 	void mapOperationsWithResults() {
 		XmlContainer container = new XmlContainer("test");
 		XmlElement testValue = new XmlValue("test", 42);
-
+		
 		Result<XmlElement> nullType = XmlTypeProvider.INSTANCE.set(null, "key", Result.success(testValue));
 		assertTrue(nullType.isError());
 		assertTrue(nullType.errorOrThrow().startsWith("Type 'null'"));
@@ -392,7 +392,7 @@ class XmlTypeProviderTest {
 	void mergeOperationsWithResults() {
 		XmlElement emptyElement = new XmlElement("empty:generated");
 		XmlValue testValue = new XmlValue("test", 42);
-
+		
 		Result<XmlElement> nullCurrent = XmlTypeProvider.INSTANCE.merge(null, Result.success(testValue));
 		assertTrue(nullCurrent.isError());
 		assertTrue(nullCurrent.errorOrThrow().startsWith("Current value 'null'"));

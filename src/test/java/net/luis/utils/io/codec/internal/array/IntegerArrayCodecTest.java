@@ -32,57 +32,57 @@ import static org.junit.jupiter.api.Assertions.*;
  * @author Luis-St
  */
 class IntegerArrayCodecTest {
-
+	
 	@Test
 	void encodeStartNullChecks() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<int[]> codec = new IntegerArrayCodec();
-		int[] array = {1, 2, 3};
-
+		int[] array = { 1, 2, 3 };
+		
 		assertThrows(NullPointerException.class, () -> codec.encodeStart(null, typeProvider.empty(), array));
 		assertThrows(NullPointerException.class, () -> codec.encodeStart(typeProvider, null, array));
 	}
-
+	
 	@Test
 	void encodeStartWithNull() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<int[]> codec = new IntegerArrayCodec();
-
+		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), null);
 		assertTrue(result.isError());
 		assertTrue(result.errorOrThrow().contains("Unable to encode null as int array"));
 	}
-
+	
 	@Test
 	void encodeStartWithEmptyArray() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<int[]> codec = new IntegerArrayCodec();
 		int[] array = {};
-
+		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), array);
 		assertTrue(result.isSuccess());
 		assertEquals(new JsonArray(), result.resultOrThrow());
 	}
-
+	
 	@Test
 	void encodeStartWithSingleElement() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<int[]> codec = new IntegerArrayCodec();
-		int[] array = {42};
-
+		int[] array = { 42 };
+		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), array);
 		assertTrue(result.isSuccess());
 		JsonArray expected = new JsonArray();
 		expected.add(42);
 		assertEquals(expected, result.resultOrThrow());
 	}
-
+	
 	@Test
 	void encodeStartWithMultipleElements() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<int[]> codec = new IntegerArrayCodec();
-		int[] array = {1, 2, 3};
-
+		int[] array = { 1, 2, 3 };
+		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), array);
 		assertTrue(result.isSuccess());
 		JsonArray expected = new JsonArray();
@@ -91,48 +91,48 @@ class IntegerArrayCodecTest {
 		expected.add(3);
 		assertEquals(expected, result.resultOrThrow());
 	}
-
+	
 	@Test
 	void decodeStartNullChecks() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<int[]> codec = new IntegerArrayCodec();
-
+		
 		assertThrows(NullPointerException.class, () -> codec.decodeStart(null, new JsonArray()));
 	}
-
+	
 	@Test
 	void decodeStartWithNull() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<int[]> codec = new IntegerArrayCodec();
-
+		
 		Result<int[]> result = codec.decodeStart(typeProvider, null);
 		assertTrue(result.isError());
 		assertTrue(result.errorOrThrow().contains("Unable to decode null value as int array"));
 	}
-
+	
 	@Test
 	void decodeStartWithEmptyArray() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<int[]> codec = new IntegerArrayCodec();
 		JsonArray array = new JsonArray();
-
+		
 		Result<int[]> result = codec.decodeStart(typeProvider, array);
 		assertTrue(result.isSuccess());
-		assertArrayEquals(new int[]{}, result.resultOrThrow());
+		assertArrayEquals(new int[] {}, result.resultOrThrow());
 	}
-
+	
 	@Test
 	void decodeStartWithSingleElement() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<int[]> codec = new IntegerArrayCodec();
 		JsonArray array = new JsonArray();
 		array.add(42);
-
+		
 		Result<int[]> result = codec.decodeStart(typeProvider, array);
 		assertTrue(result.isSuccess());
-		assertArrayEquals(new int[]{42}, result.resultOrThrow());
+		assertArrayEquals(new int[] { 42 }, result.resultOrThrow());
 	}
-
+	
 	@Test
 	void decodeStartWithMultipleElements() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
@@ -141,21 +141,21 @@ class IntegerArrayCodecTest {
 		array.add(1);
 		array.add(2);
 		array.add(3);
-
+		
 		Result<int[]> result = codec.decodeStart(typeProvider, array);
 		assertTrue(result.isSuccess());
-		assertArrayEquals(new int[]{1, 2, 3}, result.resultOrThrow());
+		assertArrayEquals(new int[] { 1, 2, 3 }, result.resultOrThrow());
 	}
-
+	
 	@Test
 	void decodeStartWithNonArray() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<int[]> codec = new IntegerArrayCodec();
-
+		
 		Result<int[]> result = codec.decodeStart(typeProvider, new JsonPrimitive(42));
 		assertTrue(result.isError());
 	}
-
+	
 	@Test
 	void toStringRepresentation() {
 		IntegerArrayCodec codec = new IntegerArrayCodec();

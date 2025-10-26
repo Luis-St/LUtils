@@ -20,7 +20,8 @@ package net.luis.utils.io.codec.internal.primitiv.numeric;
 
 import net.luis.utils.io.codec.KeyableCodec;
 import net.luis.utils.io.codec.provider.JsonTypeProvider;
-import net.luis.utils.io.data.json.*;
+import net.luis.utils.io.data.json.JsonElement;
+import net.luis.utils.io.data.json.JsonPrimitive;
 import net.luis.utils.util.result.Result;
 import org.junit.jupiter.api.Test;
 
@@ -32,272 +33,272 @@ import static org.junit.jupiter.api.Assertions.*;
  * @author Luis-St
  */
 class DoubleCodecTest {
-
+	
 	@Test
 	void encodeStartNullChecks() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		KeyableCodec<Double> codec = new DoubleCodec();
 		Double value = 3.141592653589793;
-
+		
 		assertThrows(NullPointerException.class, () -> codec.encodeStart(null, typeProvider.empty(), value));
 		assertThrows(NullPointerException.class, () -> codec.encodeStart(typeProvider, null, value));
 	}
-
+	
 	@Test
 	void encodeStartWithNull() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		KeyableCodec<Double> codec = new DoubleCodec();
-
+		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), null);
 		assertTrue(result.isError());
 		assertTrue(result.errorOrThrow().contains("Unable to encode null as double"));
 	}
-
+	
 	@Test
 	void encodeStartWithPositiveValue() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		KeyableCodec<Double> codec = new DoubleCodec();
-
+		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), 3.141592653589793);
 		assertTrue(result.isSuccess());
 		assertEquals(new JsonPrimitive(3.141592653589793), result.resultOrThrow());
 	}
-
+	
 	@Test
 	void encodeStartWithNegativeValue() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		KeyableCodec<Double> codec = new DoubleCodec();
-
+		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), -3.141592653589793);
 		assertTrue(result.isSuccess());
 		assertEquals(new JsonPrimitive(-3.141592653589793), result.resultOrThrow());
 	}
-
+	
 	@Test
 	void encodeStartWithZero() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		KeyableCodec<Double> codec = new DoubleCodec();
-
+		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), 0.0);
 		assertTrue(result.isSuccess());
 		assertEquals(new JsonPrimitive(0.0), result.resultOrThrow());
 	}
-
+	
 	@Test
 	void encodeStartWithMaxValue() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		KeyableCodec<Double> codec = new DoubleCodec();
-
+		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), Double.MAX_VALUE);
 		assertTrue(result.isSuccess());
 		assertEquals(new JsonPrimitive(Double.MAX_VALUE), result.resultOrThrow());
 	}
-
+	
 	@Test
 	void encodeStartWithMinValue() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		KeyableCodec<Double> codec = new DoubleCodec();
-
+		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), Double.MIN_VALUE);
 		assertTrue(result.isSuccess());
 		assertEquals(new JsonPrimitive(Double.MIN_VALUE), result.resultOrThrow());
 	}
-
+	
 	@Test
 	void encodeStartWithPositiveInfinity() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		KeyableCodec<Double> codec = new DoubleCodec();
-
+		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), Double.POSITIVE_INFINITY);
 		assertTrue(result.isSuccess());
 		assertEquals(new JsonPrimitive(Double.POSITIVE_INFINITY), result.resultOrThrow());
 	}
-
+	
 	@Test
 	void encodeStartWithNegativeInfinity() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		KeyableCodec<Double> codec = new DoubleCodec();
-
+		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), Double.NEGATIVE_INFINITY);
 		assertTrue(result.isSuccess());
 		assertEquals(new JsonPrimitive(Double.NEGATIVE_INFINITY), result.resultOrThrow());
 	}
-
+	
 	@Test
 	void encodeStartWithNaN() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		KeyableCodec<Double> codec = new DoubleCodec();
-
+		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), Double.NaN);
 		assertTrue(result.isSuccess());
 		assertEquals(new JsonPrimitive(Double.NaN), result.resultOrThrow());
 	}
-
+	
 	@Test
 	void encodeKeyNullChecks() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		KeyableCodec<Double> codec = new DoubleCodec();
-
+		
 		assertThrows(NullPointerException.class, () -> codec.encodeKey(null, 3.141592653589793));
 		assertThrows(NullPointerException.class, () -> codec.encodeKey(typeProvider, null));
 	}
-
+	
 	@Test
 	void encodeKeyWithValue() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		KeyableCodec<Double> codec = new DoubleCodec();
-
+		
 		Result<String> result = codec.encodeKey(typeProvider, 3.141592653589793);
 		assertTrue(result.isSuccess());
 		assertEquals("3.141592653589793", result.resultOrThrow());
 	}
-
+	
 	@Test
 	void encodeKeyWithNegativeValue() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		KeyableCodec<Double> codec = new DoubleCodec();
-
+		
 		Result<String> result = codec.encodeKey(typeProvider, -3.141592653589793);
 		assertTrue(result.isSuccess());
 		assertEquals("-3.141592653589793", result.resultOrThrow());
 	}
-
+	
 	@Test
 	void decodeStartNullChecks() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		KeyableCodec<Double> codec = new DoubleCodec();
-
+		
 		assertThrows(NullPointerException.class, () -> codec.decodeStart(null, new JsonPrimitive(3.141592653589793)));
 	}
-
+	
 	@Test
 	void decodeStartWithNull() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		KeyableCodec<Double> codec = new DoubleCodec();
-
+		
 		Result<Double> result = codec.decodeStart(typeProvider, null);
 		assertTrue(result.isError());
 		assertTrue(result.errorOrThrow().contains("Unable to decode null value as double"));
 	}
-
+	
 	@Test
 	void decodeStartWithValidValue() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		KeyableCodec<Double> codec = new DoubleCodec();
-
+		
 		Result<Double> result = codec.decodeStart(typeProvider, new JsonPrimitive(3.141592653589793));
 		assertTrue(result.isSuccess());
 		assertEquals(3.141592653589793, result.resultOrThrow(), 0.000001);
 	}
-
+	
 	@Test
 	void decodeStartWithNegativeValue() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		KeyableCodec<Double> codec = new DoubleCodec();
-
+		
 		Result<Double> result = codec.decodeStart(typeProvider, new JsonPrimitive(-3.141592653589793));
 		assertTrue(result.isSuccess());
 		assertEquals(-3.141592653589793, result.resultOrThrow(), 0.000001);
 	}
-
+	
 	@Test
 	void decodeStartWithMaxValue() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		KeyableCodec<Double> codec = new DoubleCodec();
-
+		
 		Result<Double> result = codec.decodeStart(typeProvider, new JsonPrimitive(Double.MAX_VALUE));
 		assertTrue(result.isSuccess());
 		assertEquals(Double.MAX_VALUE, result.resultOrThrow());
 	}
-
+	
 	@Test
 	void decodeStartWithMinValue() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		KeyableCodec<Double> codec = new DoubleCodec();
-
+		
 		Result<Double> result = codec.decodeStart(typeProvider, new JsonPrimitive(Double.MIN_VALUE));
 		assertTrue(result.isSuccess());
 		assertEquals(Double.MIN_VALUE, result.resultOrThrow());
 	}
-
+	
 	@Test
 	void decodeStartWithNonNumber() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		KeyableCodec<Double> codec = new DoubleCodec();
-
+		
 		Result<Double> result = codec.decodeStart(typeProvider, new JsonPrimitive("not a number"));
 		assertTrue(result.isError());
 	}
-
+	
 	@Test
 	void decodeKeyNullChecks() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		KeyableCodec<Double> codec = new DoubleCodec();
-
+		
 		assertThrows(NullPointerException.class, () -> codec.decodeKey(null, "3.141592653589793"));
 		assertThrows(NullPointerException.class, () -> codec.decodeKey(typeProvider, null));
 	}
-
+	
 	@Test
 	void decodeKeyWithValidValue() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		KeyableCodec<Double> codec = new DoubleCodec();
-
+		
 		Result<Double> result = codec.decodeKey(typeProvider, "3.141592653589793");
 		assertTrue(result.isSuccess());
 		assertEquals(3.141592653589793, result.resultOrThrow(), 0.000001);
 	}
-
+	
 	@Test
 	void decodeKeyWithNegativeValue() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		KeyableCodec<Double> codec = new DoubleCodec();
-
+		
 		Result<Double> result = codec.decodeKey(typeProvider, "-3.141592653589793");
 		assertTrue(result.isSuccess());
 		assertEquals(-3.141592653589793, result.resultOrThrow(), 0.000001);
 	}
-
+	
 	@Test
 	void decodeKeyWithInvalidValue() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		KeyableCodec<Double> codec = new DoubleCodec();
-
+		
 		Result<Double> result = codec.decodeKey(typeProvider, "invalid");
 		assertTrue(result.isError());
 		assertTrue(result.errorOrThrow().contains("Unable to decode key 'invalid' as double"));
 	}
-
+	
 	@Test
 	void decodeKeyWithInfinity() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		KeyableCodec<Double> codec = new DoubleCodec();
-
+		
 		Result<Double> result = codec.decodeKey(typeProvider, "Infinity");
 		assertTrue(result.isSuccess());
 		assertEquals(Double.POSITIVE_INFINITY, result.resultOrThrow());
 	}
-
+	
 	@Test
 	void decodeKeyWithNegativeInfinity() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		KeyableCodec<Double> codec = new DoubleCodec();
-
+		
 		Result<Double> result = codec.decodeKey(typeProvider, "-Infinity");
 		assertTrue(result.isSuccess());
 		assertEquals(Double.NEGATIVE_INFINITY, result.resultOrThrow());
 	}
-
+	
 	@Test
 	void decodeKeyWithNaN() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		KeyableCodec<Double> codec = new DoubleCodec();
-
+		
 		Result<Double> result = codec.decodeKey(typeProvider, "NaN");
 		assertTrue(result.isSuccess());
 		assertTrue(Double.isNaN(result.resultOrThrow()));
 	}
-
+	
 	@Test
 	void toStringRepresentation() {
 		DoubleCodec codec = new DoubleCodec();

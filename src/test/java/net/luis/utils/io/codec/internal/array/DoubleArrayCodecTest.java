@@ -32,57 +32,57 @@ import static org.junit.jupiter.api.Assertions.*;
  * @author Luis-St
  */
 class DoubleArrayCodecTest {
-
+	
 	@Test
 	void encodeStartNullChecks() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<double[]> codec = new DoubleArrayCodec();
-		double[] array = {1.0, 2.0, 3.0};
-
+		double[] array = { 1.0, 2.0, 3.0 };
+		
 		assertThrows(NullPointerException.class, () -> codec.encodeStart(null, typeProvider.empty(), array));
 		assertThrows(NullPointerException.class, () -> codec.encodeStart(typeProvider, null, array));
 	}
-
+	
 	@Test
 	void encodeStartWithNull() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<double[]> codec = new DoubleArrayCodec();
-
+		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), null);
 		assertTrue(result.isError());
 		assertTrue(result.errorOrThrow().contains("Unable to encode null as double array"));
 	}
-
+	
 	@Test
 	void encodeStartWithEmptyArray() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<double[]> codec = new DoubleArrayCodec();
 		double[] array = {};
-
+		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), array);
 		assertTrue(result.isSuccess());
 		assertEquals(new JsonArray(), result.resultOrThrow());
 	}
-
+	
 	@Test
 	void encodeStartWithSingleElement() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<double[]> codec = new DoubleArrayCodec();
-		double[] array = {42.5};
-
+		double[] array = { 42.5 };
+		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), array);
 		assertTrue(result.isSuccess());
 		JsonArray expected = new JsonArray();
 		expected.add(42.5);
 		assertEquals(expected, result.resultOrThrow());
 	}
-
+	
 	@Test
 	void encodeStartWithMultipleElements() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<double[]> codec = new DoubleArrayCodec();
-		double[] array = {1.1, 2.2, 3.3};
-
+		double[] array = { 1.1, 2.2, 3.3 };
+		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), array);
 		assertTrue(result.isSuccess());
 		JsonArray expected = new JsonArray();
@@ -91,48 +91,48 @@ class DoubleArrayCodecTest {
 		expected.add(3.3);
 		assertEquals(expected, result.resultOrThrow());
 	}
-
+	
 	@Test
 	void decodeStartNullChecks() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<double[]> codec = new DoubleArrayCodec();
-
+		
 		assertThrows(NullPointerException.class, () -> codec.decodeStart(null, new JsonArray()));
 	}
-
+	
 	@Test
 	void decodeStartWithNull() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<double[]> codec = new DoubleArrayCodec();
-
+		
 		Result<double[]> result = codec.decodeStart(typeProvider, null);
 		assertTrue(result.isError());
 		assertTrue(result.errorOrThrow().contains("Unable to decode null value as double array"));
 	}
-
+	
 	@Test
 	void decodeStartWithEmptyArray() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<double[]> codec = new DoubleArrayCodec();
 		JsonArray array = new JsonArray();
-
+		
 		Result<double[]> result = codec.decodeStart(typeProvider, array);
 		assertTrue(result.isSuccess());
-		assertArrayEquals(new double[]{}, result.resultOrThrow());
+		assertArrayEquals(new double[] {}, result.resultOrThrow());
 	}
-
+	
 	@Test
 	void decodeStartWithSingleElement() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<double[]> codec = new DoubleArrayCodec();
 		JsonArray array = new JsonArray();
 		array.add(42.5);
-
+		
 		Result<double[]> result = codec.decodeStart(typeProvider, array);
 		assertTrue(result.isSuccess());
-		assertArrayEquals(new double[]{42.5}, result.resultOrThrow());
+		assertArrayEquals(new double[] { 42.5 }, result.resultOrThrow());
 	}
-
+	
 	@Test
 	void decodeStartWithMultipleElements() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
@@ -141,21 +141,21 @@ class DoubleArrayCodecTest {
 		array.add(1.1);
 		array.add(2.2);
 		array.add(3.3);
-
+		
 		Result<double[]> result = codec.decodeStart(typeProvider, array);
 		assertTrue(result.isSuccess());
-		assertArrayEquals(new double[]{1.1, 2.2, 3.3}, result.resultOrThrow());
+		assertArrayEquals(new double[] { 1.1, 2.2, 3.3 }, result.resultOrThrow());
 	}
-
+	
 	@Test
 	void decodeStartWithNonArray() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<double[]> codec = new DoubleArrayCodec();
-
+		
 		Result<double[]> result = codec.decodeStart(typeProvider, new JsonPrimitive(42.5));
 		assertTrue(result.isError());
 	}
-
+	
 	@Test
 	void toStringRepresentation() {
 		DoubleArrayCodec codec = new DoubleArrayCodec();

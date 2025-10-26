@@ -23,7 +23,8 @@ import net.luis.utils.util.result.Result;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.*;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Type provider that uses standard Java types.<br>
@@ -123,13 +124,13 @@ public final class JavaTypeProvider implements TypeProvider<Object> {
 		if (type == null) {
 			return Result.error("Value 'null' is not an empty object");
 		}
-
+		
 		if (type.getClass() == Object.class) {
 			return Result.success(type);
 		}
 		return Result.error("Object '" + type + "' is not an empty object");
 	}
-
+	
 	@Override
 	public @NotNull Result<Boolean> isNull(@Nullable Object type) {
 		return Result.success(type == null);
@@ -140,7 +141,7 @@ public final class JavaTypeProvider implements TypeProvider<Object> {
 		if (type == null) {
 			return Result.error("Value 'null' is not a boolean");
 		}
-
+		
 		if (type instanceof Boolean booleanValue) {
 			return Result.success(booleanValue);
 		}
@@ -152,7 +153,7 @@ public final class JavaTypeProvider implements TypeProvider<Object> {
 		if (type == null) {
 			return Result.error("Value 'null' is not a byte");
 		}
-
+		
 		if (type instanceof Byte byteValue) {
 			return Result.success(byteValue);
 		}
@@ -164,7 +165,7 @@ public final class JavaTypeProvider implements TypeProvider<Object> {
 		if (type == null) {
 			return Result.error("Value 'null' is not a short");
 		}
-
+		
 		if (type instanceof Short shortValue) {
 			return Result.success(shortValue);
 		}
@@ -176,7 +177,7 @@ public final class JavaTypeProvider implements TypeProvider<Object> {
 		if (type == null) {
 			return Result.error("Value 'null' is not an integer");
 		}
-
+		
 		if (type instanceof Integer intValue) {
 			return Result.success(intValue);
 		}
@@ -188,7 +189,7 @@ public final class JavaTypeProvider implements TypeProvider<Object> {
 		if (type == null) {
 			return Result.error("Value 'null' is not a long");
 		}
-
+		
 		if (type instanceof Long longValue) {
 			return Result.success(longValue);
 		}
@@ -200,7 +201,7 @@ public final class JavaTypeProvider implements TypeProvider<Object> {
 		if (type == null) {
 			return Result.error("Value 'null' is not a float");
 		}
-
+		
 		if (type instanceof Float floatValue) {
 			return Result.success(floatValue);
 		}
@@ -212,7 +213,7 @@ public final class JavaTypeProvider implements TypeProvider<Object> {
 		if (type == null) {
 			return Result.error("Value 'null' is not a double");
 		}
-
+		
 		if (type instanceof Double doubleValue) {
 			return Result.success(doubleValue);
 		}
@@ -224,7 +225,7 @@ public final class JavaTypeProvider implements TypeProvider<Object> {
 		if (type == null) {
 			return Result.error("Value 'null' is not a string");
 		}
-
+		
 		if (type instanceof String stringValue) {
 			return Result.success(stringValue);
 		}
@@ -237,7 +238,7 @@ public final class JavaTypeProvider implements TypeProvider<Object> {
 		if (type == null) {
 			return Result.error("Value 'null' is not a list");
 		}
-
+		
 		if (type instanceof List<?> list) {
 			return Result.success((List<Object>) list);
 		}
@@ -250,7 +251,7 @@ public final class JavaTypeProvider implements TypeProvider<Object> {
 		if (type == null) {
 			return Result.error("Value 'null' is not a map");
 		}
-
+		
 		if (type instanceof Map<?, ?> map) {
 			return Result.success((Map<String, Object>) map);
 		}
@@ -265,7 +266,7 @@ public final class JavaTypeProvider implements TypeProvider<Object> {
 		if (key == null) {
 			return Result.error("Value 'null' is not a valid key");
 		}
-
+		
 		if (type instanceof Map<?, ?> map) {
 			return Result.success(map.containsKey(key));
 		}
@@ -280,7 +281,7 @@ public final class JavaTypeProvider implements TypeProvider<Object> {
 		if (key == null) {
 			return Result.error("Value 'null' is not a valid key");
 		}
-
+		
 		if (type instanceof Map<?, ?> map) {
 			return Result.success(map.get(key));
 		}
@@ -296,7 +297,7 @@ public final class JavaTypeProvider implements TypeProvider<Object> {
 		if (key == null) {
 			return Result.error("Value 'null' is not a valid key");
 		}
-
+		
 		if (type instanceof Map<?, ?> map) {
 			return Result.success(((Map<String, Object>) map).put(key, value));
 		}

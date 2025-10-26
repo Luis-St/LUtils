@@ -103,7 +103,8 @@ public interface TokenStream {
 	 *
 	 * @return An unmodifiable list of all tokens in the stream
 	 */
-	@NotNull @Unmodifiable
+	@NotNull
+	@Unmodifiable
 	List<Token> getAllTokens();
 	
 	/**

@@ -104,20 +104,20 @@ class JavaTypeProviderTest {
 		Result<Object> nullEmpty = JavaTypeProvider.INSTANCE.getEmpty(null);
 		assertTrue(nullEmpty.isError());
 		assertTrue(nullEmpty.errorOrThrow().startsWith("Value 'null'"));
-
+		
 		assertTrue(JavaTypeProvider.INSTANCE.getEmpty(List.of()).isError());
 		assertTrue(JavaTypeProvider.INSTANCE.getEmpty(1).isError());
 		assertTrue(JavaTypeProvider.INSTANCE.getEmpty(Map.of()).isError());
 		assertTrue(JavaTypeProvider.INSTANCE.getEmpty("test").isError());
-
+		
 		Object emptyObject = new Object();
 		assertEquals(emptyObject, JavaTypeProvider.INSTANCE.getEmpty(emptyObject).resultOrThrow());
 	}
-
+	
 	@Test
 	void isNullValidation() {
 		assertTrue(JavaTypeProvider.INSTANCE.isNull(null).resultOrThrow());
-
+		
 		assertFalse(JavaTypeProvider.INSTANCE.isNull(new Object()).resultOrThrow());
 		assertFalse(JavaTypeProvider.INSTANCE.isNull(List.of()).resultOrThrow());
 		assertFalse(JavaTypeProvider.INSTANCE.isNull(Map.of()).resultOrThrow());
@@ -125,7 +125,7 @@ class JavaTypeProviderTest {
 		assertFalse(JavaTypeProvider.INSTANCE.isNull(true).resultOrThrow());
 		assertFalse(JavaTypeProvider.INSTANCE.isNull("test").resultOrThrow());
 	}
-
+	
 	@Test
 	void getPrimitiveTypes() {
 		Result<Boolean> nullBoolean = JavaTypeProvider.INSTANCE.getBoolean(null);
@@ -218,7 +218,7 @@ class JavaTypeProviderTest {
 	void mapOperations() {
 		Map<String, Object> map = (Map<String, Object>) JavaTypeProvider.INSTANCE.createMap().resultOrThrow();
 		Object testValue = "test";
-
+		
 		Result<Boolean> nullHas = JavaTypeProvider.INSTANCE.has(null, "key");
 		assertTrue(nullHas.isError());
 		assertTrue(nullHas.errorOrThrow().startsWith("Value 'null'"));

@@ -35,138 +35,138 @@ import static org.junit.jupiter.api.Assertions.*;
  * @author Luis-St
  */
 class IntStreamCodecTest {
-
+	
 	@Test
 	void encodeStartNullChecks() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<IntStream> codec = new IntStreamCodec();
 		IntStream stream = IntStream.of(1, 2, 3);
-
+		
 		assertThrows(NullPointerException.class, () -> codec.encodeStart(null, typeProvider.empty(), stream));
 		assertThrows(NullPointerException.class, () -> codec.encodeStart(typeProvider, null, stream));
 	}
-
+	
 	@Test
 	void encodeStartWithNull() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<IntStream> codec = new IntStreamCodec();
-
+		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), null);
 		assertTrue(result.isError());
 		assertTrue(result.errorOrThrow().contains("Unable to encode null as int stream"));
 	}
-
+	
 	@Test
 	void encodeStartWithValidStream() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<IntStream> codec = new IntStreamCodec();
 		IntStream stream = IntStream.of(1, 2, 3);
-
+		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), stream);
 		assertTrue(result.isSuccess());
 		assertEquals(new JsonArray(List.of(new JsonPrimitive(1), new JsonPrimitive(2), new JsonPrimitive(3))), result.resultOrThrow());
 	}
-
+	
 	@Test
 	void encodeStartWithEmptyStream() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<IntStream> codec = new IntStreamCodec();
 		IntStream stream = IntStream.empty();
-
+		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), stream);
 		assertTrue(result.isSuccess());
 		assertEquals(new JsonArray(List.of()), result.resultOrThrow());
 	}
-
+	
 	@Test
 	void encodeStartWithSingleElement() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<IntStream> codec = new IntStreamCodec();
 		IntStream stream = IntStream.of(42);
-
+		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), stream);
 		assertTrue(result.isSuccess());
 		assertEquals(new JsonArray(List.of(new JsonPrimitive(42))), result.resultOrThrow());
 	}
-
+	
 	@Test
 	void encodeStartWithNegativeValues() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<IntStream> codec = new IntStreamCodec();
 		IntStream stream = IntStream.of(-1, -2, -3);
-
+		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), stream);
 		assertTrue(result.isSuccess());
 		assertEquals(new JsonArray(List.of(new JsonPrimitive(-1), new JsonPrimitive(-2), new JsonPrimitive(-3))), result.resultOrThrow());
 	}
-
+	
 	@Test
 	void decodeStartNullChecks() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<IntStream> codec = new IntStreamCodec();
-
+		
 		assertThrows(NullPointerException.class, () -> codec.decodeStart(null, new JsonArray(List.of(new JsonPrimitive(1)))));
 	}
-
+	
 	@Test
 	void decodeStartWithNull() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<IntStream> codec = new IntStreamCodec();
-
+		
 		Result<IntStream> result = codec.decodeStart(typeProvider, null);
 		assertTrue(result.isError());
 		assertTrue(result.errorOrThrow().contains("Unable to decode null value as int stream"));
 	}
-
+	
 	@Test
 	void decodeStartWithValidArray() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<IntStream> codec = new IntStreamCodec();
-
+		
 		Result<IntStream> result = codec.decodeStart(typeProvider, new JsonArray(List.of(new JsonPrimitive(1), new JsonPrimitive(2), new JsonPrimitive(3))));
 		assertTrue(result.isSuccess());
 		assertArrayEquals(new int[] { 1, 2, 3 }, result.resultOrThrow().toArray());
 	}
-
+	
 	@Test
 	void decodeStartWithEmptyArray() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<IntStream> codec = new IntStreamCodec();
-
+		
 		Result<IntStream> result = codec.decodeStart(typeProvider, new JsonArray(List.of()));
 		assertTrue(result.isSuccess());
 		assertArrayEquals(new int[] {}, result.resultOrThrow().toArray());
 	}
-
+	
 	@Test
 	void decodeStartWithSingleElement() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<IntStream> codec = new IntStreamCodec();
-
+		
 		Result<IntStream> result = codec.decodeStart(typeProvider, new JsonArray(List.of(new JsonPrimitive(42))));
 		assertTrue(result.isSuccess());
 		assertArrayEquals(new int[] { 42 }, result.resultOrThrow().toArray());
 	}
-
+	
 	@Test
 	void decodeStartWithNegativeValues() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<IntStream> codec = new IntStreamCodec();
-
+		
 		Result<IntStream> result = codec.decodeStart(typeProvider, new JsonArray(List.of(new JsonPrimitive(-1), new JsonPrimitive(-2), new JsonPrimitive(-3))));
 		assertTrue(result.isSuccess());
 		assertArrayEquals(new int[] { -1, -2, -3 }, result.resultOrThrow().toArray());
 	}
-
+	
 	@Test
 	void decodeStartWithNonArray() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<IntStream> codec = new IntStreamCodec();
-
+		
 		Result<IntStream> result = codec.decodeStart(typeProvider, new JsonPrimitive(42));
 		assertTrue(result.isError());
 	}
-
+	
 	@Test
 	void toStringRepresentation() {
 		IntStreamCodec codec = new IntStreamCodec();

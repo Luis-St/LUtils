@@ -21,9 +21,7 @@ package net.luis.utils.io.codec.internal.struct;
 import net.luis.utils.io.codec.Codec;
 import net.luis.utils.io.codec.provider.TypeProvider;
 import net.luis.utils.util.result.Result;
-import org.jetbrains.annotations.ApiStatus;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
+import org.jetbrains.annotations.*;
 
 import java.util.Objects;
 
@@ -47,12 +45,12 @@ import java.util.Objects;
  */
 @ApiStatus.Internal
 public class NullableCodec<C> implements Codec<C> {
-
+	
 	/**
 	 * The codec used to encode and decode non-null values.<br>
 	 */
 	private final Codec<C> codec;
-
+	
 	/**
 	 * Constructs a new nullable codec using the given codec.<br>
 	 *
@@ -62,45 +60,45 @@ public class NullableCodec<C> implements Codec<C> {
 	public NullableCodec(@NotNull Codec<C> codec) {
 		this.codec = Objects.requireNonNull(codec, "Codec must not be null");
 	}
-
+	
 	@Override
 	public @NotNull <R> Result<R> encodeStart(@NotNull TypeProvider<R> provider, @NotNull R current, @Nullable C value) {
 		Objects.requireNonNull(provider, "Type provider must not be null");
 		Objects.requireNonNull(current, "Current value must not be null");
-
+		
 		if (value == null) {
 			return provider.createNull();
 		}
 		return this.codec.encodeStart(provider, current, value);
 	}
-
+	
 	@Override
 	public @NotNull <R> Result<C> decodeStart(@NotNull TypeProvider<R> provider, @Nullable R value) {
 		Objects.requireNonNull(provider, "Type provider must not be null");
 		if (value == null) {
 			return Result.success(null);
 		}
-
+		
 		Result<Boolean> isNull = provider.isNull(value);
 		if (isNull.isSuccess() && isNull.resultOrThrow()) {
 			return Result.success(null);
 		}
-
+		
 		return this.codec.decodeStart(provider, value);
 	}
-
+	
 	//region Object overrides
 	@Override
 	public boolean equals(Object o) {
 		if (!(o instanceof NullableCodec<?> that)) return false;
 		return this.codec.equals(that.codec);
 	}
-
+	
 	@Override
 	public int hashCode() {
 		return Objects.hash(this.codec);
 	}
-
+	
 	@Override
 	public String toString() {
 		return "NullableCodec[" + this.codec + "]";

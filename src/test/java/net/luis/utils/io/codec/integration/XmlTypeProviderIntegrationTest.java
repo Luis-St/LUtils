@@ -48,6 +48,23 @@ class XmlTypeProviderIntegrationTest {
 	
 	private static final XmlTypeProvider PROVIDER = XmlTypeProvider.INSTANCE;
 	
+	private static @NotNull Codec<UltraComplexRecord> createUltraComplexCodec() {
+		return CodecBuilder.group(
+			UUID.configure("id", UltraComplexRecord::id),
+			Codec.ranged(INTEGER, 0, 150).configure("age", UltraComplexRecord::age),
+			formattedString("[a-zA-Z]+").configure("name", UltraComplexRecord::name),
+			LOCAL_DATE_TIME.configure("timestamp", UltraComplexRecord::timestamp),
+			DURATION.configure("elapsed", UltraComplexRecord::elapsed),
+			Codec.map(UUID, DOUBLE).configure("metrics", UltraComplexRecord::metrics),
+			Codecs.either(FILE, PATH).configure("location", UltraComplexRecord::location),
+			Codec.nullable(CHARSET).configure("encoding", UltraComplexRecord::encoding),
+			FLOAT_ARRAY.configure("scores", UltraComplexRecord::scores),
+			INT_STREAM.configure("dataStream", UltraComplexRecord::dataStream),
+			Codec.noneEmptyList(URI).configure("endpoints", UltraComplexRecord::endpoints),
+			Codec.optional(ZONED_DATE_TIME).configure("lastModified", UltraComplexRecord::lastModified)
+		).create(UltraComplexRecord::new);
+	}
+	
 	@Test
 	void encodeAndDecodePrimitiveTypes() {
 		XmlElement boolEncoded = BOOLEAN.encode(PROVIDER, true);
@@ -1537,21 +1554,12 @@ class XmlTypeProviderIntegrationTest {
 		assertEquals(42, decoded.get().getFirst().get().leftOrThrow());
 	}
 	
-	private static @NotNull Codec<UltraComplexRecord> createUltraComplexCodec() {
-		return CodecBuilder.group(
-			UUID.configure("id", UltraComplexRecord::id),
-			Codec.ranged(INTEGER, 0, 150).configure("age", UltraComplexRecord::age),
-			formattedString("[a-zA-Z]+").configure("name", UltraComplexRecord::name),
-			LOCAL_DATE_TIME.configure("timestamp", UltraComplexRecord::timestamp),
-			DURATION.configure("elapsed", UltraComplexRecord::elapsed),
-			Codec.map(UUID, DOUBLE).configure("metrics", UltraComplexRecord::metrics),
-			Codecs.either(FILE, PATH).configure("location", UltraComplexRecord::location),
-			Codec.nullable(CHARSET).configure("encoding", UltraComplexRecord::encoding),
-			FLOAT_ARRAY.configure("scores", UltraComplexRecord::scores),
-			INT_STREAM.configure("dataStream", UltraComplexRecord::dataStream),
-			Codec.noneEmptyList(URI).configure("endpoints", UltraComplexRecord::endpoints),
-			Codec.optional(ZONED_DATE_TIME).configure("lastModified", UltraComplexRecord::lastModified)
-		).create(UltraComplexRecord::new);
+	private enum Priority {
+		LOW, MEDIUM, HIGH, URGENT, CRITICAL
+	}
+	
+	private enum TestEnum {
+		FIRST, SECOND, THIRD
 	}
 	
 	private record UltraComplexRecord(
@@ -1633,19 +1641,11 @@ class XmlTypeProviderIntegrationTest {
 		@NotNull List<Either<File, java.net.URI>> configSources
 	) {}
 	
-	private enum Priority {
-		LOW, MEDIUM, HIGH, URGENT, CRITICAL
-	}
-	
 	private record OfficeWithPeople(
 		@NotNull String officeName,
 		@NotNull Address location,
 		@NotNull List<PersonWithAddress> employees
 	) {}
-	
-	private enum TestEnum {
-		FIRST, SECOND, THIRD
-	}
 	
 	private record Person(@NotNull String name, int age) {}
 	

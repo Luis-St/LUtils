@@ -32,57 +32,57 @@ import static org.junit.jupiter.api.Assertions.*;
  * @author Luis-St
  */
 class ByteArrayCodecTest {
-
+	
 	@Test
 	void encodeStartNullChecks() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<byte[]> codec = new ByteArrayCodec();
-		byte[] array = {1, 2, 3};
-
+		byte[] array = { 1, 2, 3 };
+		
 		assertThrows(NullPointerException.class, () -> codec.encodeStart(null, typeProvider.empty(), array));
 		assertThrows(NullPointerException.class, () -> codec.encodeStart(typeProvider, null, array));
 	}
-
+	
 	@Test
 	void encodeStartWithNull() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<byte[]> codec = new ByteArrayCodec();
-
+		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), null);
 		assertTrue(result.isError());
 		assertTrue(result.errorOrThrow().contains("Unable to encode null as byte array"));
 	}
-
+	
 	@Test
 	void encodeStartWithEmptyArray() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<byte[]> codec = new ByteArrayCodec();
 		byte[] array = {};
-
+		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), array);
 		assertTrue(result.isSuccess());
 		assertEquals(new JsonArray(), result.resultOrThrow());
 	}
-
+	
 	@Test
 	void encodeStartWithSingleElement() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<byte[]> codec = new ByteArrayCodec();
-		byte[] array = {42};
-
+		byte[] array = { 42 };
+		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), array);
 		assertTrue(result.isSuccess());
 		JsonArray expected = new JsonArray();
 		expected.add((byte) 42);
 		assertEquals(expected, result.resultOrThrow());
 	}
-
+	
 	@Test
 	void encodeStartWithMultipleElements() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<byte[]> codec = new ByteArrayCodec();
-		byte[] array = {1, 2, 3};
-
+		byte[] array = { 1, 2, 3 };
+		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), array);
 		assertTrue(result.isSuccess());
 		JsonArray expected = new JsonArray();
@@ -91,48 +91,48 @@ class ByteArrayCodecTest {
 		expected.add((byte) 3);
 		assertEquals(expected, result.resultOrThrow());
 	}
-
+	
 	@Test
 	void decodeStartNullChecks() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<byte[]> codec = new ByteArrayCodec();
-
+		
 		assertThrows(NullPointerException.class, () -> codec.decodeStart(null, new JsonArray()));
 	}
-
+	
 	@Test
 	void decodeStartWithNull() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<byte[]> codec = new ByteArrayCodec();
-
+		
 		Result<byte[]> result = codec.decodeStart(typeProvider, null);
 		assertTrue(result.isError());
 		assertTrue(result.errorOrThrow().contains("Unable to decode null value as byte array"));
 	}
-
+	
 	@Test
 	void decodeStartWithEmptyArray() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<byte[]> codec = new ByteArrayCodec();
 		JsonArray array = new JsonArray();
-
+		
 		Result<byte[]> result = codec.decodeStart(typeProvider, array);
 		assertTrue(result.isSuccess());
-		assertArrayEquals(new byte[]{}, result.resultOrThrow());
+		assertArrayEquals(new byte[] {}, result.resultOrThrow());
 	}
-
+	
 	@Test
 	void decodeStartWithSingleElement() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<byte[]> codec = new ByteArrayCodec();
 		JsonArray array = new JsonArray();
 		array.add((byte) 42);
-
+		
 		Result<byte[]> result = codec.decodeStart(typeProvider, array);
 		assertTrue(result.isSuccess());
-		assertArrayEquals(new byte[]{42}, result.resultOrThrow());
+		assertArrayEquals(new byte[] { 42 }, result.resultOrThrow());
 	}
-
+	
 	@Test
 	void decodeStartWithMultipleElements() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
@@ -141,21 +141,21 @@ class ByteArrayCodecTest {
 		array.add((byte) 1);
 		array.add((byte) 2);
 		array.add((byte) 3);
-
+		
 		Result<byte[]> result = codec.decodeStart(typeProvider, array);
 		assertTrue(result.isSuccess());
-		assertArrayEquals(new byte[]{1, 2, 3}, result.resultOrThrow());
+		assertArrayEquals(new byte[] { 1, 2, 3 }, result.resultOrThrow());
 	}
-
+	
 	@Test
 	void decodeStartWithNonArray() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<byte[]> codec = new ByteArrayCodec();
-
+		
 		Result<byte[]> result = codec.decodeStart(typeProvider, new JsonPrimitive((byte) 42));
 		assertTrue(result.isError());
 	}
-
+	
 	@Test
 	void toStringRepresentation() {
 		ByteArrayCodec codec = new ByteArrayCodec();

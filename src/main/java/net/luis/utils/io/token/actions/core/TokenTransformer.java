@@ -41,6 +41,7 @@ public interface TokenTransformer {
 	 * @return The transformed list of tokens
 	 * @apiNote This method should return an unmodifiable list of tokens
 	 */
-	@NotNull @Unmodifiable
+	@NotNull
+	@Unmodifiable
 	List<Token> transform(@NotNull List<Token> tokens);
 }
