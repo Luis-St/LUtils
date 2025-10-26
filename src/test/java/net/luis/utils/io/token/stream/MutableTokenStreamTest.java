@@ -123,7 +123,7 @@ class MutableTokenStreamTest {
 		
 		stream.advanceTo(-1);
 		
-		assertEquals(1, stream.getCurrentIndex()); // Should not move backward when clamped
+		assertEquals(0, stream.getCurrentIndex());
 	}
 	
 	@Test

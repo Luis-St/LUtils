@@ -45,8 +45,13 @@ import java.util.*;
 public class CodecCreator<O, F extends CodecBuilderFunction> {
 	
 	/**
+	 * System property key used by reflection helper to control exception propagation.<br>
+	 */
+	private static final String REFLECTION_EXCEPTIONS_THROW = "reflection.exceptions.throw";
+	
+	/**
 	 * The list of codecs that will be used to decode the components of the object.<br>
-	 * Each codec is responsible for decoding a specific component of the final object.<br>^
+	 * Each codec is responsible for decoding a specific component of the final object.<br>
 	 */
 	private final List<ConfiguredCodec<?, O>> codecs;
 	
@@ -90,8 +95,6 @@ public class CodecCreator<O, F extends CodecBuilderFunction> {
 				return Result.success((O) optional.orElseThrow());
 			} catch (ReflectionException e) {
 				return Result.error("Unable to create object with function '" + function + "' and decoded components " + components + ": " + e.getMessage());
-			} finally {
-				System.setProperty("reflection.exceptions.throw", "false");
 			}
 		});
 	}
@@ -113,14 +116,20 @@ public class CodecCreator<O, F extends CodecBuilderFunction> {
 		Objects.requireNonNull(function, "Function must not be null");
 		Objects.requireNonNull(components, "Components list must not be null");
 		
-		System.setProperty("reflection.exceptions.throw", "true");
-		Class<?>[] parameterTypes = new Class<?>[this.codecs.size()];
-		Arrays.fill(parameterTypes, Object.class);
-		
-		Method method = ReflectionHelper.getMethod(function.getClass(), "create", parameterTypes).orElseThrow();
-		Optional<Object> optional = ReflectionHelper.invoke(method, function, components.toArray());
-		
-		System.setProperty("reflection.exceptions.throw", "false");
-		return optional;
+		String previous = System.getProperty(REFLECTION_EXCEPTIONS_THROW);
+		try {
+			System.setProperty(REFLECTION_EXCEPTIONS_THROW, "true");
+			Class<?>[] parameterTypes = new Class<?>[this.codecs.size()];
+			Arrays.fill(parameterTypes, Object.class);
+			
+			Method method = ReflectionHelper.getMethod(function.getClass(), "create", parameterTypes).orElseThrow();
+			return ReflectionHelper.invoke(method, function, components.toArray());
+		} finally {
+			if (previous != null) {
+				System.setProperty(REFLECTION_EXCEPTIONS_THROW, previous);
+			} else {
+				System.clearProperty(REFLECTION_EXCEPTIONS_THROW);
+			}
+		}
 	}
 }

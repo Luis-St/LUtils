@@ -95,7 +95,8 @@ public class MutableTokenStream implements TokenStream {
 	
 	@Override
 	public void advanceTo(int index) {
-		this.currentIndex += Mth.clamp(index - this.currentIndex, 0, this.tokens.size());
+		this.currentIndex = Mth.clamp(index, 0, this.tokens.size());
+		this.currentIndex = this.findNextNonShadowIndex();
 	}
 	
 	/**
