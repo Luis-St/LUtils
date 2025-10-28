@@ -21,7 +21,7 @@ package net.luis.utils.util.getter;
 import net.luis.utils.exception.InvalidStringException;
 import net.luis.utils.function.throwable.ThrowableFunction;
 import net.luis.utils.io.reader.StringReader;
-import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Objects;
@@ -71,7 +71,7 @@ public interface KeyedValueGetter {
 	 */
 	default boolean getAsBoolean(@NotNull String key) {
 		String value = this.getAsString(key);
-		if (StringUtils.equalsAnyIgnoreCase(value, "true", "false")) {
+		if (Strings.CI.equalsAny(value, "true", "false")) {
 			return Boolean.parseBoolean(value);
 		}
 		throw new IllegalArgumentException("Value '" + value + "' could not be parsed as a boolean, expected 'true' or 'false'");

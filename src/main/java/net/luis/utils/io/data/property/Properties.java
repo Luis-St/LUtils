@@ -160,7 +160,7 @@ public class Properties {
 			String[] keyParts = key.split("\\.");
 			Map<String, Object> currentMap = map;
 			for (int i = 0; i < keyParts.length - 1; i++) {
-				currentMap = (Map<String, Object>) currentMap.computeIfAbsent(keyParts[i], k -> Maps.newLinkedHashMap());
+				currentMap = (Map<String, Object>) currentMap.computeIfAbsent(keyParts[i], _ -> Maps.newLinkedHashMap());
 			}
 			currentMap.put(keyParts[keyParts.length - 1], property.getAsString());
 		});

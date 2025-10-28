@@ -26,6 +26,7 @@ import net.luis.utils.io.reader.ScopedStringReader;
 import net.luis.utils.io.reader.StringScope;
 import net.luis.utils.lang.StringUtils;
 import org.apache.commons.lang3.ArrayUtils;
+import org.apache.commons.lang3.Strings;
 import org.jetbrains.annotations.*;
 
 import java.io.*;
@@ -474,11 +475,11 @@ public class PropertyReader implements AutoCloseable {
 		String targetKey = this.getTargetKey(key, variable, parts);
 		String targetType = parts[0];
 		String value;
-		if (isBlank(targetType) || equalsAnyIgnoreCase(targetType, "prop", "property")) {
+		if (isBlank(targetType) || Strings.CI.equalsAny(targetType, "prop", "property")) {
 			value = this.properties.get(targetKey);
-		} else if (equalsAnyIgnoreCase(targetType, "sys", "system")) {
+		} else if (Strings.CI.equalsAny(targetType, "sys", "system")) {
 			value = System.getProperty(targetKey);
-		} else if (equalsAnyIgnoreCase(targetType, "env", "environment")) {
+		} else if (Strings.CI.equalsAny(targetType, "env", "environment")) {
 			value = System.getenv(targetKey);
 		} else {
 			throw new PropertySyntaxException("Target type '" + targetType + "' of variable key part '${" + variable + "}' must be 'prop', 'sys' or 'env': '" + key + "'");

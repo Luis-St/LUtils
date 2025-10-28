@@ -19,6 +19,7 @@
 package net.luis.utils.util;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -429,7 +430,7 @@ public class Version implements Comparable<Version> {
 		if (build != 0) {
 			return build;
 		}
-		if (StringUtils.equals(this.suffix, o.suffix)) {
+		if (Strings.CS.equals(this.suffix, o.suffix)) {
 			return Integer.compare(this.getSuffixVersion(), o.getSuffixVersion());
 		}
 		if (StringUtils.isEmpty(this.suffix)) {

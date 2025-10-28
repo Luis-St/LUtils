@@ -21,6 +21,7 @@ package net.luis.utils.io;
 import net.luis.utils.io.data.InputProvider;
 import net.luis.utils.util.Pair;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 import org.jetbrains.annotations.*;
 
 import java.io.*;
@@ -101,7 +102,7 @@ public final class FileUtils {
 	 */
 	public static @NotNull String getName(@Nullable String file) {
 		String str;
-		if (StringUtils.containsAny(file, "/", "\\")) {
+		if (Strings.CS.containsAny(file, "/", "\\")) {
 			str = split(file).getSecond();
 		} else {
 			str = StringUtils.stripToEmpty(file);
@@ -162,7 +163,7 @@ public final class FileUtils {
 	 * @return The relative path of the file
 	 */
 	public static @NotNull String getRelativePath(@Nullable String file) {
-		String str = StringUtils.contains(file, ".") ? split(file).getFirst() : StringUtils.stripToEmpty(file).replace("\\", "/");
+		String str = Strings.CS.contains(file, ".") ? split(file).getFirst() : StringUtils.stripToEmpty(file).replace("\\", "/");
 		if (str.isEmpty() || "/".equals(str) || "./".equals(str)) {
 			return "./";
 		}

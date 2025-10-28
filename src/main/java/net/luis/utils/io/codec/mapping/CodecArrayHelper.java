@@ -49,7 +49,7 @@ import static net.luis.utils.io.codec.mapping.CodecAutoMapping.*;
  * @author Luis-St
  */
 @SuppressWarnings("unchecked")
-class CodecArrayHelper {
+final class CodecArrayHelper {
 	
 	/**
 	 * Private constructor to prevent instantiation.<br>

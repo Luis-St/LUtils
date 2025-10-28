@@ -18,8 +18,8 @@
 
 package net.luis.utils.io;
 
-import org.apache.commons.lang3.function.FailableConsumer;
-import org.apache.commons.lang3.function.FailableFunction;
+import net.luis.utils.function.throwable.ThrowableConsumer;
+import net.luis.utils.function.throwable.ThrowableFunction;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
@@ -37,7 +37,7 @@ import java.util.concurrent.locks.ReentrantLock;
  * </p>
  * <p>
  *     To ensure that only one thread accesses the file at a time,<br>
- *     use the {@link FileAccess#access(FailableConsumer)} or {@link FileAccess#access(FailableFunction)} methods.<br>
+ *     use the {@link FileAccess#access(ThrowableConsumer)} or {@link FileAccess#access(ThrowableFunction)} methods.<br>
  *     These methods will lock the file for the calling thread and unlock it when the action is done.
  * </p>
  * <p>
@@ -116,7 +116,7 @@ public class FileAccess implements AutoCloseable {
 	 * @throws IllegalStateException If the file access is closed
 	 * @throws UncheckedIOException If the action throws an IOException
 	 */
-	public void access(@NotNull FailableConsumer<Path, IOException> action) {
+	public void access(@NotNull ThrowableConsumer<Path, IOException> action) {
 		this.ensureOpen();
 		this.lock.lock();
 		try {
@@ -137,7 +137,7 @@ public class FileAccess implements AutoCloseable {
 	 * @throws IllegalStateException If the file access is closed
 	 * @throws UncheckedIOException If the action throws an IOException
 	 */
-	public <T> @NotNull T access(@NotNull FailableFunction<Path, T, IOException> action) {
+	public <T> @NotNull T access(@NotNull ThrowableFunction<Path, T, IOException> action) {
 		this.ensureOpen();
 		this.lock.lock();
 		try {

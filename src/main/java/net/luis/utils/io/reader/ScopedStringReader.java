@@ -19,7 +19,7 @@
 package net.luis.utils.io.reader;
 
 import net.luis.utils.exception.InvalidStringException;
-import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
 
@@ -310,7 +310,7 @@ public class ScopedStringReader extends StringReader {
 	@SuppressWarnings("DuplicatedCode")
 	protected @NotNull String readUntil(@NotNull String terminator, boolean caseSensitive, boolean inclusive) {
 		Objects.requireNonNull(terminator, "Terminator string must not be null");
-		Predicate<String> matcher = s -> caseSensitive ? terminator.startsWith(s) : StringUtils.startsWithIgnoreCase(s, terminator);
+		Predicate<String> matcher = s -> caseSensitive ? terminator.startsWith(s) : Strings.CI.startsWith(s, terminator);
 		Predicate<String> breaker = s -> caseSensitive ? terminator.equals(s) : s.equalsIgnoreCase(terminator);
 		StringBuilder builder = new StringBuilder();
 		StringBuilder terminatorBuilder = new StringBuilder();
