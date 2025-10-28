@@ -49,7 +49,7 @@ public final class CodecBuilder {
 	 * @throws IllegalArgumentException If the class is an interface, annotation, primitive type, or has invalid structure
 	 * @see CodecAutoMapping#createAutoMappedCodec(Class)
 	 */
-	public static @NotNull <O> Codec<O> autoMapCodec(@NotNull Class<O> clazz) {
+	public static @NotNull <O> Codec<O> of(@NotNull Class<O> clazz) {
 		return CodecAutoMapping.createAutoMappedCodec(clazz);
 	}
 	
@@ -67,10 +67,10 @@ public final class CodecBuilder {
 	 * @see CodecGroup
 	 * @see CodecBuilderFunction1
 	 */
-	public static <CI1, O> @NotNull CodecCreator<O, CodecBuilderFunction1<CI1, O>> group(
+	public static <CI1, O> @NotNull CodecCreator<O, CodecBuilderFunction1<CI1, O>> of(
 		@NotNull ConfiguredCodec<CI1, O> codec1
 	) {
-		return CodecBuilder.<O, CodecBuilderFunction1<CI1, O>>groupInternal(codec1);
+		return CodecBuilder.<O, CodecBuilderFunction1<CI1, O>>of(codec1);
 	}
 	
 	/**
@@ -89,11 +89,11 @@ public final class CodecBuilder {
 	 * @see CodecGroup
 	 * @see CodecBuilderFunction2
 	 */
-	public static <CI1, CI2, O> @NotNull CodecCreator<O, CodecBuilderFunction2<CI1, CI2, O>> group(
+	public static <CI1, CI2, O> @NotNull CodecCreator<O, CodecBuilderFunction2<CI1, CI2, O>> of(
 		@NotNull ConfiguredCodec<CI1, O> codec1,
 		@NotNull ConfiguredCodec<CI2, O> codec2
 	) {
-		return CodecBuilder.<O, CodecBuilderFunction2<CI1, CI2, O>>groupInternal(codec1, codec2);
+		return CodecBuilder.<O, CodecBuilderFunction2<CI1, CI2, O>>of(codec1, codec2);
 	}
 	
 	/**
@@ -114,12 +114,12 @@ public final class CodecBuilder {
 	 * @see CodecGroup
 	 * @see CodecBuilderFunction3
 	 */
-	public static <CI1, CI2, CI3, O> @NotNull CodecCreator<O, CodecBuilderFunction3<CI1, CI2, CI3, O>> group(
+	public static <CI1, CI2, CI3, O> @NotNull CodecCreator<O, CodecBuilderFunction3<CI1, CI2, CI3, O>> of(
 		@NotNull ConfiguredCodec<CI1, O> codec1,
 		@NotNull ConfiguredCodec<CI2, O> codec2,
 		@NotNull ConfiguredCodec<CI3, O> codec3
 	) {
-		return CodecBuilder.<O, CodecBuilderFunction3<CI1, CI2, CI3, O>>groupInternal(codec1, codec2, codec3);
+		return CodecBuilder.<O, CodecBuilderFunction3<CI1, CI2, CI3, O>>of(codec1, codec2, codec3);
 	}
 	
 	/**
@@ -142,13 +142,13 @@ public final class CodecBuilder {
 	 * @see CodecGroup
 	 * @see CodecBuilderFunction4
 	 */
-	public static <CI1, CI2, CI3, CI4, O> @NotNull CodecCreator<O, CodecBuilderFunction4<CI1, CI2, CI3, CI4, O>> group(
+	public static <CI1, CI2, CI3, CI4, O> @NotNull CodecCreator<O, CodecBuilderFunction4<CI1, CI2, CI3, CI4, O>> of(
 		@NotNull ConfiguredCodec<CI1, O> codec1,
 		@NotNull ConfiguredCodec<CI2, O> codec2,
 		@NotNull ConfiguredCodec<CI3, O> codec3,
 		@NotNull ConfiguredCodec<CI4, O> codec4
 	) {
-		return CodecBuilder.<O, CodecBuilderFunction4<CI1, CI2, CI3, CI4, O>>groupInternal(codec1, codec2, codec3, codec4);
+		return CodecBuilder.<O, CodecBuilderFunction4<CI1, CI2, CI3, CI4, O>>of(codec1, codec2, codec3, codec4);
 	}
 	
 	/**
@@ -173,14 +173,14 @@ public final class CodecBuilder {
 	 * @see CodecGroup
 	 * @see CodecBuilderFunction5
 	 */
-	public static <CI1, CI2, CI3, CI4, CI5, O> @NotNull CodecCreator<O, CodecBuilderFunction5<CI1, CI2, CI3, CI4, CI5, O>> group(
+	public static <CI1, CI2, CI3, CI4, CI5, O> @NotNull CodecCreator<O, CodecBuilderFunction5<CI1, CI2, CI3, CI4, CI5, O>> of(
 		@NotNull ConfiguredCodec<CI1, O> codec1,
 		@NotNull ConfiguredCodec<CI2, O> codec2,
 		@NotNull ConfiguredCodec<CI3, O> codec3,
 		@NotNull ConfiguredCodec<CI4, O> codec4,
 		@NotNull ConfiguredCodec<CI5, O> codec5
 	) {
-		return CodecBuilder.<O, CodecBuilderFunction5<CI1, CI2, CI3, CI4, CI5, O>>groupInternal(
+		return CodecBuilder.<O, CodecBuilderFunction5<CI1, CI2, CI3, CI4, CI5, O>>of(
 			codec1, codec2, codec3, codec4, codec5
 		);
 	}
@@ -209,7 +209,7 @@ public final class CodecBuilder {
 	 * @see CodecGroup
 	 * @see CodecBuilderFunction6
 	 */
-	public static <CI1, CI2, CI3, CI4, CI5, CI6, O> @NotNull CodecCreator<O, CodecBuilderFunction6<CI1, CI2, CI3, CI4, CI5, CI6, O>> group(
+	public static <CI1, CI2, CI3, CI4, CI5, CI6, O> @NotNull CodecCreator<O, CodecBuilderFunction6<CI1, CI2, CI3, CI4, CI5, CI6, O>> of(
 		@NotNull ConfiguredCodec<CI1, O> codec1,
 		@NotNull ConfiguredCodec<CI2, O> codec2,
 		@NotNull ConfiguredCodec<CI3, O> codec3,
@@ -217,7 +217,7 @@ public final class CodecBuilder {
 		@NotNull ConfiguredCodec<CI5, O> codec5,
 		@NotNull ConfiguredCodec<CI6, O> codec6
 	) {
-		return CodecBuilder.<O, CodecBuilderFunction6<CI1, CI2, CI3, CI4, CI5, CI6, O>>groupInternal(
+		return CodecBuilder.<O, CodecBuilderFunction6<CI1, CI2, CI3, CI4, CI5, CI6, O>>of(
 			codec1, codec2, codec3, codec4, codec5, codec6
 		);
 	}
@@ -248,7 +248,7 @@ public final class CodecBuilder {
 	 * @see CodecGroup
 	 * @see CodecBuilderFunction7
 	 */
-	public static <CI1, CI2, CI3, CI4, CI5, CI6, CI7, O> @NotNull CodecCreator<O, CodecBuilderFunction7<CI1, CI2, CI3, CI4, CI5, CI6, CI7, O>> group(
+	public static <CI1, CI2, CI3, CI4, CI5, CI6, CI7, O> @NotNull CodecCreator<O, CodecBuilderFunction7<CI1, CI2, CI3, CI4, CI5, CI6, CI7, O>> of(
 		@NotNull ConfiguredCodec<CI1, O> codec1,
 		@NotNull ConfiguredCodec<CI2, O> codec2,
 		@NotNull ConfiguredCodec<CI3, O> codec3,
@@ -257,7 +257,7 @@ public final class CodecBuilder {
 		@NotNull ConfiguredCodec<CI6, O> codec6,
 		@NotNull ConfiguredCodec<CI7, O> codec7
 	) {
-		return CodecBuilder.<O, CodecBuilderFunction7<CI1, CI2, CI3, CI4, CI5, CI6, CI7, O>>groupInternal(
+		return CodecBuilder.<O, CodecBuilderFunction7<CI1, CI2, CI3, CI4, CI5, CI6, CI7, O>>of(
 			codec1, codec2, codec3, codec4, codec5, codec6, codec7
 		);
 	}
@@ -290,7 +290,7 @@ public final class CodecBuilder {
 	 * @see CodecGroup
 	 * @see CodecBuilderFunction8
 	 */
-	public static <CI1, CI2, CI3, CI4, CI5, CI6, CI7, CI8, O> @NotNull CodecCreator<O, CodecBuilderFunction8<CI1, CI2, CI3, CI4, CI5, CI6, CI7, CI8, O>> group(
+	public static <CI1, CI2, CI3, CI4, CI5, CI6, CI7, CI8, O> @NotNull CodecCreator<O, CodecBuilderFunction8<CI1, CI2, CI3, CI4, CI5, CI6, CI7, CI8, O>> of(
 		@NotNull ConfiguredCodec<CI1, O> codec1,
 		@NotNull ConfiguredCodec<CI2, O> codec2,
 		@NotNull ConfiguredCodec<CI3, O> codec3,
@@ -300,7 +300,7 @@ public final class CodecBuilder {
 		@NotNull ConfiguredCodec<CI7, O> codec7,
 		@NotNull ConfiguredCodec<CI8, O> codec8
 	) {
-		return CodecBuilder.<O, CodecBuilderFunction8<CI1, CI2, CI3, CI4, CI5, CI6, CI7, CI8, O>>groupInternal(
+		return CodecBuilder.<O, CodecBuilderFunction8<CI1, CI2, CI3, CI4, CI5, CI6, CI7, CI8, O>>of(
 			codec1, codec2, codec3, codec4, codec5, codec6, codec7, codec8
 		);
 	}
@@ -335,7 +335,7 @@ public final class CodecBuilder {
 	 * @see CodecGroup
 	 * @see CodecBuilderFunction9
 	 */
-	public static <CI1, CI2, CI3, CI4, CI5, CI6, CI7, CI8, CI9, O> @NotNull CodecCreator<O, CodecBuilderFunction9<CI1, CI2, CI3, CI4, CI5, CI6, CI7, CI8, CI9, O>> group(
+	public static <CI1, CI2, CI3, CI4, CI5, CI6, CI7, CI8, CI9, O> @NotNull CodecCreator<O, CodecBuilderFunction9<CI1, CI2, CI3, CI4, CI5, CI6, CI7, CI8, CI9, O>> of(
 		@NotNull ConfiguredCodec<CI1, O> codec1,
 		@NotNull ConfiguredCodec<CI2, O> codec2,
 		@NotNull ConfiguredCodec<CI3, O> codec3,
@@ -346,7 +346,7 @@ public final class CodecBuilder {
 		@NotNull ConfiguredCodec<CI8, O> codec8,
 		@NotNull ConfiguredCodec<CI9, O> codec9
 	) {
-		return CodecBuilder.<O, CodecBuilderFunction9<CI1, CI2, CI3, CI4, CI5, CI6, CI7, CI8, CI9, O>>groupInternal(
+		return CodecBuilder.<O, CodecBuilderFunction9<CI1, CI2, CI3, CI4, CI5, CI6, CI7, CI8, CI9, O>>of(
 			codec1, codec2, codec3, codec4, codec5, codec6, codec7, codec8, codec9
 		);
 	}
@@ -383,7 +383,7 @@ public final class CodecBuilder {
 	 * @see CodecGroup
 	 * @see CodecBuilderFunction10
 	 */
-	public static <CI1, CI2, CI3, CI4, CI5, CI6, CI7, CI8, CI9, CI10, O> @NotNull CodecCreator<O, CodecBuilderFunction10<CI1, CI2, CI3, CI4, CI5, CI6, CI7, CI8, CI9, CI10, O>> group(
+	public static <CI1, CI2, CI3, CI4, CI5, CI6, CI7, CI8, CI9, CI10, O> @NotNull CodecCreator<O, CodecBuilderFunction10<CI1, CI2, CI3, CI4, CI5, CI6, CI7, CI8, CI9, CI10, O>> of(
 		@NotNull ConfiguredCodec<CI1, O> codec1,
 		@NotNull ConfiguredCodec<CI2, O> codec2,
 		@NotNull ConfiguredCodec<CI3, O> codec3,
@@ -395,7 +395,7 @@ public final class CodecBuilder {
 		@NotNull ConfiguredCodec<CI9, O> codec9,
 		@NotNull ConfiguredCodec<CI10, O> codec10
 	) {
-		return CodecBuilder.<O, CodecBuilderFunction10<CI1, CI2, CI3, CI4, CI5, CI6, CI7, CI8, CI9, CI10, O>>groupInternal(
+		return CodecBuilder.<O, CodecBuilderFunction10<CI1, CI2, CI3, CI4, CI5, CI6, CI7, CI8, CI9, CI10, O>>of(
 			codec1, codec2, codec3, codec4, codec5, codec6, codec7, codec8, codec9, codec10
 		);
 	}
@@ -434,7 +434,7 @@ public final class CodecBuilder {
 	 * @see CodecGroup
 	 * @see CodecBuilderFunction11
 	 */
-	public static <CI1, CI2, CI3, CI4, CI5, CI6, CI7, CI8, CI9, CI10, CI11, O> @NotNull CodecCreator<O, CodecBuilderFunction11<CI1, CI2, CI3, CI4, CI5, CI6, CI7, CI8, CI9, CI10, CI11, O>> group(
+	public static <CI1, CI2, CI3, CI4, CI5, CI6, CI7, CI8, CI9, CI10, CI11, O> @NotNull CodecCreator<O, CodecBuilderFunction11<CI1, CI2, CI3, CI4, CI5, CI6, CI7, CI8, CI9, CI10, CI11, O>> of(
 		@NotNull ConfiguredCodec<CI1, O> codec1,
 		@NotNull ConfiguredCodec<CI2, O> codec2,
 		@NotNull ConfiguredCodec<CI3, O> codec3,
@@ -447,7 +447,7 @@ public final class CodecBuilder {
 		@NotNull ConfiguredCodec<CI10, O> codec10,
 		@NotNull ConfiguredCodec<CI11, O> codec11
 	) {
-		return CodecBuilder.<O, CodecBuilderFunction11<CI1, CI2, CI3, CI4, CI5, CI6, CI7, CI8, CI9, CI10, CI11, O>>groupInternal(
+		return CodecBuilder.<O, CodecBuilderFunction11<CI1, CI2, CI3, CI4, CI5, CI6, CI7, CI8, CI9, CI10, CI11, O>>of(
 			codec1, codec2, codec3, codec4, codec5, codec6, codec7, codec8, codec9, codec10, codec11
 		);
 	}
@@ -488,7 +488,7 @@ public final class CodecBuilder {
 	 * @see CodecGroup
 	 * @see CodecBuilderFunction12
 	 */
-	public static <CI1, CI2, CI3, CI4, CI5, CI6, CI7, CI8, CI9, CI10, CI11, CI12, O> @NotNull CodecCreator<O, CodecBuilderFunction12<CI1, CI2, CI3, CI4, CI5, CI6, CI7, CI8, CI9, CI10, CI11, CI12, O>> group(
+	public static <CI1, CI2, CI3, CI4, CI5, CI6, CI7, CI8, CI9, CI10, CI11, CI12, O> @NotNull CodecCreator<O, CodecBuilderFunction12<CI1, CI2, CI3, CI4, CI5, CI6, CI7, CI8, CI9, CI10, CI11, CI12, O>> of(
 		@NotNull ConfiguredCodec<CI1, O> codec1,
 		@NotNull ConfiguredCodec<CI2, O> codec2,
 		@NotNull ConfiguredCodec<CI3, O> codec3,
@@ -502,7 +502,7 @@ public final class CodecBuilder {
 		@NotNull ConfiguredCodec<CI11, O> codec11,
 		@NotNull ConfiguredCodec<CI12, O> codec12
 	) {
-		return CodecBuilder.<O, CodecBuilderFunction12<CI1, CI2, CI3, CI4, CI5, CI6, CI7, CI8, CI9, CI10, CI11, CI12, O>>groupInternal(
+		return CodecBuilder.<O, CodecBuilderFunction12<CI1, CI2, CI3, CI4, CI5, CI6, CI7, CI8, CI9, CI10, CI11, CI12, O>>of(
 			codec1, codec2, codec3, codec4, codec5, codec6, codec7, codec8, codec9, codec10, codec11, codec12
 		);
 	}
@@ -545,7 +545,7 @@ public final class CodecBuilder {
 	 * @see CodecGroup
 	 * @see CodecBuilderFunction13
 	 */
-	public static <CI1, CI2, CI3, CI4, CI5, CI6, CI7, CI8, CI9, CI10, CI11, CI12, CI13, O> @NotNull CodecCreator<O, CodecBuilderFunction13<CI1, CI2, CI3, CI4, CI5, CI6, CI7, CI8, CI9, CI10, CI11, CI12, CI13, O>> group(
+	public static <CI1, CI2, CI3, CI4, CI5, CI6, CI7, CI8, CI9, CI10, CI11, CI12, CI13, O> @NotNull CodecCreator<O, CodecBuilderFunction13<CI1, CI2, CI3, CI4, CI5, CI6, CI7, CI8, CI9, CI10, CI11, CI12, CI13, O>> of(
 		@NotNull ConfiguredCodec<CI1, O> codec1,
 		@NotNull ConfiguredCodec<CI2, O> codec2,
 		@NotNull ConfiguredCodec<CI3, O> codec3,
@@ -560,7 +560,7 @@ public final class CodecBuilder {
 		@NotNull ConfiguredCodec<CI12, O> codec12,
 		@NotNull ConfiguredCodec<CI13, O> codec13
 	) {
-		return CodecBuilder.<O, CodecBuilderFunction13<CI1, CI2, CI3, CI4, CI5, CI6, CI7, CI8, CI9, CI10, CI11, CI12, CI13, O>>groupInternal(
+		return CodecBuilder.<O, CodecBuilderFunction13<CI1, CI2, CI3, CI4, CI5, CI6, CI7, CI8, CI9, CI10, CI11, CI12, CI13, O>>of(
 			codec1, codec2, codec3, codec4, codec5, codec6, codec7, codec8, codec9, codec10, codec11, codec12, codec13
 		);
 	}
@@ -605,7 +605,7 @@ public final class CodecBuilder {
 	 * @see CodecGroup
 	 * @see CodecBuilderFunction14
 	 */
-	public static <CI1, CI2, CI3, CI4, CI5, CI6, CI7, CI8, CI9, CI10, CI11, CI12, CI13, CI14, O> @NotNull CodecCreator<O, CodecBuilderFunction14<CI1, CI2, CI3, CI4, CI5, CI6, CI7, CI8, CI9, CI10, CI11, CI12, CI13, CI14, O>> group(
+	public static <CI1, CI2, CI3, CI4, CI5, CI6, CI7, CI8, CI9, CI10, CI11, CI12, CI13, CI14, O> @NotNull CodecCreator<O, CodecBuilderFunction14<CI1, CI2, CI3, CI4, CI5, CI6, CI7, CI8, CI9, CI10, CI11, CI12, CI13, CI14, O>> of(
 		@NotNull ConfiguredCodec<CI1, O> codec1,
 		@NotNull ConfiguredCodec<CI2, O> codec2,
 		@NotNull ConfiguredCodec<CI3, O> codec3,
@@ -621,7 +621,7 @@ public final class CodecBuilder {
 		@NotNull ConfiguredCodec<CI13, O> codec13,
 		@NotNull ConfiguredCodec<CI14, O> codec14
 	) {
-		return CodecBuilder.<O, CodecBuilderFunction14<CI1, CI2, CI3, CI4, CI5, CI6, CI7, CI8, CI9, CI10, CI11, CI12, CI13, CI14, O>>groupInternal(
+		return CodecBuilder.<O, CodecBuilderFunction14<CI1, CI2, CI3, CI4, CI5, CI6, CI7, CI8, CI9, CI10, CI11, CI12, CI13, CI14, O>>of(
 			codec1, codec2, codec3, codec4, codec5, codec6, codec7, codec8, codec9, codec10, codec11, codec12, codec13, codec14
 		);
 	}
@@ -668,7 +668,7 @@ public final class CodecBuilder {
 	 * @see CodecGroup
 	 * @see CodecBuilderFunction15
 	 */
-	public static <CI1, CI2, CI3, CI4, CI5, CI6, CI7, CI8, CI9, CI10, CI11, CI12, CI13, CI14, CI15, O> @NotNull CodecCreator<O, CodecBuilderFunction15<CI1, CI2, CI3, CI4, CI5, CI6, CI7, CI8, CI9, CI10, CI11, CI12, CI13, CI14, CI15, O>> group(
+	public static <CI1, CI2, CI3, CI4, CI5, CI6, CI7, CI8, CI9, CI10, CI11, CI12, CI13, CI14, CI15, O> @NotNull CodecCreator<O, CodecBuilderFunction15<CI1, CI2, CI3, CI4, CI5, CI6, CI7, CI8, CI9, CI10, CI11, CI12, CI13, CI14, CI15, O>> of(
 		@NotNull ConfiguredCodec<CI1, O> codec1,
 		@NotNull ConfiguredCodec<CI2, O> codec2,
 		@NotNull ConfiguredCodec<CI3, O> codec3,
@@ -685,7 +685,7 @@ public final class CodecBuilder {
 		@NotNull ConfiguredCodec<CI14, O> codec14,
 		@NotNull ConfiguredCodec<CI15, O> codec15
 	) {
-		return CodecBuilder.<O, CodecBuilderFunction15<CI1, CI2, CI3, CI4, CI5, CI6, CI7, CI8, CI9, CI10, CI11, CI12, CI13, CI14, CI15, O>>groupInternal(
+		return CodecBuilder.<O, CodecBuilderFunction15<CI1, CI2, CI3, CI4, CI5, CI6, CI7, CI8, CI9, CI10, CI11, CI12, CI13, CI14, CI15, O>>of(
 			codec1, codec2, codec3, codec4, codec5, codec6, codec7, codec8, codec9, codec10, codec11, codec12, codec13, codec14, codec15
 		);
 	}
@@ -734,7 +734,7 @@ public final class CodecBuilder {
 	 * @see CodecGroup
 	 * @see CodecBuilderFunction16
 	 */
-	public static <CI1, CI2, CI3, CI4, CI5, CI6, CI7, CI8, CI9, CI10, CI11, CI12, CI13, CI14, CI15, CI16, O> @NotNull CodecCreator<O, CodecBuilderFunction16<CI1, CI2, CI3, CI4, CI5, CI6, CI7, CI8, CI9, CI10, CI11, CI12, CI13, CI14, CI15, CI16, O>> group(
+	public static <CI1, CI2, CI3, CI4, CI5, CI6, CI7, CI8, CI9, CI10, CI11, CI12, CI13, CI14, CI15, CI16, O> @NotNull CodecCreator<O, CodecBuilderFunction16<CI1, CI2, CI3, CI4, CI5, CI6, CI7, CI8, CI9, CI10, CI11, CI12, CI13, CI14, CI15, CI16, O>> of(
 		@NotNull ConfiguredCodec<CI1, O> codec1,
 		@NotNull ConfiguredCodec<CI2, O> codec2,
 		@NotNull ConfiguredCodec<CI3, O> codec3,
@@ -752,7 +752,7 @@ public final class CodecBuilder {
 		@NotNull ConfiguredCodec<CI15, O> codec15,
 		@NotNull ConfiguredCodec<CI16, O> codec16
 	) {
-		return CodecBuilder.<O, CodecBuilderFunction16<CI1, CI2, CI3, CI4, CI5, CI6, CI7, CI8, CI9, CI10, CI11, CI12, CI13, CI14, CI15, CI16, O>>groupInternal(
+		return CodecBuilder.<O, CodecBuilderFunction16<CI1, CI2, CI3, CI4, CI5, CI6, CI7, CI8, CI9, CI10, CI11, CI12, CI13, CI14, CI15, CI16, O>>of(
 			codec1, codec2, codec3, codec4, codec5, codec6, codec7, codec8, codec9, codec10, codec11, codec12, codec13, codec14, codec15, codec16
 		);
 	}
@@ -768,7 +768,7 @@ public final class CodecBuilder {
 	 * @throws NullPointerException If the provided codec array is null or any of its elements
 	 */
 	@SafeVarargs
-	private static <O, F extends CodecBuilderFunction> @NotNull CodecCreator<O, F> groupInternal(
+	private static <O, F extends CodecBuilderFunction> @NotNull CodecCreator<O, F> of(
 		ConfiguredCodec<?, O> @NotNull ... codecs
 	) {
 		Objects.requireNonNull(codecs, "Codec array must not be null");

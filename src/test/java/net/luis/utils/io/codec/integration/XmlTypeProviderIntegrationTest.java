@@ -49,7 +49,7 @@ class XmlTypeProviderIntegrationTest {
 	private static final XmlTypeProvider PROVIDER = XmlTypeProvider.INSTANCE;
 	
 	private static @NotNull Codec<UltraComplexRecord> createUltraComplexCodec() {
-		return CodecBuilder.group(
+		return CodecBuilder.of(
 			UUID.configure("id", UltraComplexRecord::id),
 			Codec.ranged(INTEGER, 0, 150).configure("age", UltraComplexRecord::age),
 			formattedString("[a-zA-Z]+").configure("name", UltraComplexRecord::name),
@@ -315,7 +315,7 @@ class XmlTypeProviderIntegrationTest {
 	
 	@Test
 	void encodeAndDecodeComplexObjects_SimpleRecord() {
-		Codec<Person> personCodec = CodecBuilder.group(
+		Codec<Person> personCodec = CodecBuilder.of(
 			STRING.configure("name", Person::name),
 			INTEGER.configure("age", Person::age)
 		).create(Person::new);
@@ -336,13 +336,13 @@ class XmlTypeProviderIntegrationTest {
 	
 	@Test
 	void encodeAndDecodeComplexObjects_NestedRecord() {
-		Codec<Address> addressCodec = CodecBuilder.group(
+		Codec<Address> addressCodec = CodecBuilder.of(
 			STRING.configure("street", Address::street),
 			STRING.configure("city", Address::city),
 			INTEGER.configure("zipCode", Address::zipCode)
 		).create(Address::new);
 		
-		Codec<PersonWithAddress> personWithAddressCodec = CodecBuilder.group(
+		Codec<PersonWithAddress> personWithAddressCodec = CodecBuilder.of(
 			STRING.configure("name", PersonWithAddress::name),
 			INTEGER.configure("age", PersonWithAddress::age),
 			addressCodec.configure("address", PersonWithAddress::address)
@@ -361,7 +361,7 @@ class XmlTypeProviderIntegrationTest {
 	
 	@Test
 	void encodeAndDecodeComplexObjects_WithCollections() {
-		Codec<Team> teamCodec = CodecBuilder.group(
+		Codec<Team> teamCodec = CodecBuilder.of(
 			STRING.configure("teamName", Team::teamName),
 			STRING.list().configure("members", Team::members)
 		).create(Team::new);
@@ -383,7 +383,7 @@ class XmlTypeProviderIntegrationTest {
 	
 	@Test
 	void encodeAndDecodeComplexObjects_WithOptionals() {
-		Codec<PersonWithOptionalEmail> personCodec = CodecBuilder.group(
+		Codec<PersonWithOptionalEmail> personCodec = CodecBuilder.of(
 			STRING.configure("name", PersonWithOptionalEmail::name),
 			STRING.optional().configure("email", PersonWithOptionalEmail::email)
 		).create(PersonWithOptionalEmail::new);
@@ -404,7 +404,7 @@ class XmlTypeProviderIntegrationTest {
 	
 	@Test
 	void encodeAndDecodeComplexObjects_WithMaps() {
-		Codec<Config> configCodec = CodecBuilder.group(
+		Codec<Config> configCodec = CodecBuilder.of(
 			STRING.configure("name", Config::name),
 			Codec.map(STRING, INTEGER).configure("settings", Config::settings)
 		).create(Config::new);
@@ -422,7 +422,7 @@ class XmlTypeProviderIntegrationTest {
 	
 	@Test
 	void encodeAndDecodeAutoMappedCodec() {
-		Codec<AutoMappedPerson> autoCodec = CodecBuilder.autoMapCodec(AutoMappedPerson.class);
+		Codec<AutoMappedPerson> autoCodec = CodecBuilder.of(AutoMappedPerson.class);
 		
 		AutoMappedPerson person = new AutoMappedPerson("Charlie", 35, "charlie@example.com");
 		XmlElement personEncoded = autoCodec.encode(PROVIDER, person);
@@ -557,7 +557,7 @@ class XmlTypeProviderIntegrationTest {
 	
 	@Test
 	void encodeAndDecodeListOfComplexObjects() {
-		Codec<Person> personCodec = CodecBuilder.group(
+		Codec<Person> personCodec = CodecBuilder.of(
 			STRING.configure("name", Person::name),
 			INTEGER.configure("age", Person::age)
 		).create(Person::new);
@@ -575,13 +575,13 @@ class XmlTypeProviderIntegrationTest {
 	
 	@Test
 	void encodeAndDecodeEitherWithComplexTypes() {
-		Codec<Address> addressCodec = CodecBuilder.group(
+		Codec<Address> addressCodec = CodecBuilder.of(
 			STRING.configure("street", Address::street),
 			STRING.configure("city", Address::city),
 			INTEGER.configure("zipCode", Address::zipCode)
 		).create(Address::new);
 		
-		Codec<Person> personCodec = CodecBuilder.group(
+		Codec<Person> personCodec = CodecBuilder.of(
 			STRING.configure("name", Person::name),
 			INTEGER.configure("age", Person::age)
 		).create(Person::new);
@@ -753,7 +753,7 @@ class XmlTypeProviderIntegrationTest {
 	
 	@Test
 	void encodeAndDecodeMapWithComplexValues() {
-		Codec<Person> personCodec = CodecBuilder.group(
+		Codec<Person> personCodec = CodecBuilder.of(
 			STRING.configure("name", Person::name),
 			INTEGER.configure("age", Person::age)
 		).create(Person::new);
@@ -782,19 +782,19 @@ class XmlTypeProviderIntegrationTest {
 	
 	@Test
 	void encodeAndDecodeDeeplyNestedStructure() {
-		Codec<Address> addressCodec = CodecBuilder.group(
+		Codec<Address> addressCodec = CodecBuilder.of(
 			STRING.configure("street", Address::street),
 			STRING.configure("city", Address::city),
 			INTEGER.configure("zipCode", Address::zipCode)
 		).create(Address::new);
 		
-		Codec<PersonWithAddress> personCodec = CodecBuilder.group(
+		Codec<PersonWithAddress> personCodec = CodecBuilder.of(
 			STRING.configure("name", PersonWithAddress::name),
 			INTEGER.configure("age", PersonWithAddress::age),
 			addressCodec.configure("address", PersonWithAddress::address)
 		).create(PersonWithAddress::new);
 		
-		Codec<OfficeWithPeople> officeCodec = CodecBuilder.group(
+		Codec<OfficeWithPeople> officeCodec = CodecBuilder.of(
 			STRING.configure("officeName", OfficeWithPeople::officeName),
 			addressCodec.configure("location", OfficeWithPeople::location),
 			personCodec.list().configure("employees", OfficeWithPeople::employees)
@@ -1101,7 +1101,7 @@ class XmlTypeProviderIntegrationTest {
 	
 	@Test
 	void encodeAndDecodeScientificDataRecordWithRangedValues() {
-		Codec<ScientificDataRecord> codec = CodecBuilder.group(
+		Codec<ScientificDataRecord> codec = CodecBuilder.of(
 			UUID.configure("experimentId", ScientificDataRecord::experimentId),
 			Codec.ranged(DOUBLE, -273.15, 1000000.0).configure("temperature", ScientificDataRecord::temperature),
 			Codec.ranged(DOUBLE, 0.0, 100.0).configure("humidity", ScientificDataRecord::humidity),
@@ -1137,7 +1137,7 @@ class XmlTypeProviderIntegrationTest {
 	
 	@Test
 	void encodeAndDecodeScientificDataRecordWithBoundaryValues() {
-		Codec<ScientificDataRecord> codec = CodecBuilder.group(
+		Codec<ScientificDataRecord> codec = CodecBuilder.of(
 			UUID.configure("experimentId", ScientificDataRecord::experimentId),
 			Codec.ranged(DOUBLE, -273.15, 1000000.0).configure("temperature", ScientificDataRecord::temperature),
 			Codec.ranged(DOUBLE, 0.0, 100.0).configure("humidity", ScientificDataRecord::humidity),
@@ -1171,7 +1171,7 @@ class XmlTypeProviderIntegrationTest {
 	
 	@Test
 	void encodeAndDecodeNetworkConfigurationWithSSL() {
-		Codec<NetworkConfigRecord> codec = CodecBuilder.group(
+		Codec<NetworkConfigRecord> codec = CodecBuilder.of(
 			STRING.configure("hostname", NetworkConfigRecord::hostname),
 			Codec.ranged(INTEGER, 1, 65535).configure("port", NetworkConfigRecord::port),
 			URI.list(1, 10).configure("endpoints", NetworkConfigRecord::endpoints),
@@ -1215,7 +1215,7 @@ class XmlTypeProviderIntegrationTest {
 	
 	@Test
 	void encodeAndDecodeNetworkConfigurationWithoutSSL() {
-		Codec<NetworkConfigRecord> codec = CodecBuilder.group(
+		Codec<NetworkConfigRecord> codec = CodecBuilder.of(
 			STRING.configure("hostname", NetworkConfigRecord::hostname),
 			Codec.ranged(INTEGER, 1, 65535).configure("port", NetworkConfigRecord::port),
 			URI.list(1, 10).configure("endpoints", NetworkConfigRecord::endpoints),
@@ -1251,7 +1251,7 @@ class XmlTypeProviderIntegrationTest {
 	
 	@Test
 	void encodeAndDecodeAnalyticsRecordWithTimeSeries() {
-		Codec<DataAnalyticsRecord> codec = CodecBuilder.group(
+		Codec<DataAnalyticsRecord> codec = CodecBuilder.of(
 			STRING.configure("datasetId", DataAnalyticsRecord::datasetId),
 			Codec.map(LONG, DOUBLE).configure("timeSeries", DataAnalyticsRecord::timeSeries),
 			INT_STREAM.configure("samples", DataAnalyticsRecord::samples),
@@ -1284,7 +1284,7 @@ class XmlTypeProviderIntegrationTest {
 	
 	@Test
 	void encodeAndDecodeAnalyticsRecordWithLargeTimeSeries() {
-		Codec<DataAnalyticsRecord> codec = CodecBuilder.group(
+		Codec<DataAnalyticsRecord> codec = CodecBuilder.of(
 			STRING.configure("datasetId", DataAnalyticsRecord::datasetId),
 			Codec.map(LONG, DOUBLE).configure("timeSeries", DataAnalyticsRecord::timeSeries),
 			INT_STREAM.configure("samples", DataAnalyticsRecord::samples),
@@ -1325,7 +1325,7 @@ class XmlTypeProviderIntegrationTest {
 	
 	@Test
 	void encodeAndDecodeConfigurationRecordWithValidation() {
-		Codec<ConfigurationRecord> codec = CodecBuilder.group(
+		Codec<ConfigurationRecord> codec = CodecBuilder.of(
 			STRING.configure("configId", ConfigurationRecord::configId),
 			STRING.optional("default-app").configure("appName", ConfigurationRecord::appName),
 			Codec.ranged(INTEGER, 1, 100).optional(10).configure("threadPoolSize", ConfigurationRecord::threadPoolSize),
@@ -1361,7 +1361,7 @@ class XmlTypeProviderIntegrationTest {
 	
 	@Test
 	void encodeAndDecodeConfigurationRecordWithDefaultValues() {
-		Codec<ConfigurationRecord> codec = CodecBuilder.group(
+		Codec<ConfigurationRecord> codec = CodecBuilder.of(
 			STRING.configure("configId", ConfigurationRecord::configId),
 			STRING.optional("default-app").configure("appName", ConfigurationRecord::appName),
 			Codec.ranged(INTEGER, 1, 100).optional(10).configure("threadPoolSize", ConfigurationRecord::threadPoolSize),
@@ -1424,7 +1424,7 @@ class XmlTypeProviderIntegrationTest {
 	
 	@Test
 	void encodeAndDecodeRecordWithAllTimeAndIOTypes() {
-		Codec<TimeAndIORecord> codec = CodecBuilder.group(
+		Codec<TimeAndIORecord> codec = CodecBuilder.of(
 			LOCAL_TIME.configure("time", TimeAndIORecord::time),
 			LOCAL_DATE.configure("date", TimeAndIORecord::date),
 			INSTANT.configure("instant", TimeAndIORecord::instant),
@@ -1488,7 +1488,7 @@ class XmlTypeProviderIntegrationTest {
 	void encodeAndDecodeEnumMapWithComplexValues() {
 		Codec<Map<Priority, List<Task>>> enumMapCodec = Codec.map(
 			dynamicEnum(Priority.class),
-			CodecBuilder.group(
+			CodecBuilder.of(
 				STRING.configure("id", Task::id),
 				STRING.configure("description", Task::description),
 				LOCAL_DATE_TIME.configure("deadline", Task::deadline),

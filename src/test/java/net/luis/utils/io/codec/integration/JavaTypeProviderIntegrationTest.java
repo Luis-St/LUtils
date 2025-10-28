@@ -47,7 +47,7 @@ class JavaTypeProviderIntegrationTest {
 	private static final JavaTypeProvider PROVIDER = JavaTypeProvider.INSTANCE;
 	
 	private static @NotNull Codec<UltraComplexRecord> createUltraComplexCodec() {
-		return CodecBuilder.group(
+		return CodecBuilder.of(
 			UUID.configure("id", UltraComplexRecord::id),
 			Codec.ranged(INTEGER, 0, 150).configure("age", UltraComplexRecord::age),
 			formattedString("[a-zA-Z]+").configure("name", UltraComplexRecord::name),
@@ -308,7 +308,7 @@ class JavaTypeProviderIntegrationTest {
 	
 	@Test
 	void encodeAndDecodeSimpleRecord() {
-		Codec<Person> personCodec = CodecBuilder.group(
+		Codec<Person> personCodec = CodecBuilder.of(
 			STRING.configure("name", Person::name),
 			INTEGER.configure("age", Person::age),
 			STRING.configure("email", Person::email)
@@ -321,7 +321,7 @@ class JavaTypeProviderIntegrationTest {
 	
 	@Test
 	void encodeAndDecodeNestedRecord() {
-		Codec<Address> addressCodec = CodecBuilder.group(
+		Codec<Address> addressCodec = CodecBuilder.of(
 			STRING.configure("street", Address::street),
 			STRING.configure("city", Address::city),
 			STRING.configure("state", Address::state),
@@ -329,7 +329,7 @@ class JavaTypeProviderIntegrationTest {
 			STRING.configure("country", Address::country)
 		).create(Address::new);
 		
-		Codec<Employee> employeeCodec = CodecBuilder.group(
+		Codec<Employee> employeeCodec = CodecBuilder.of(
 			STRING.configure("id", Employee::id),
 			STRING.configure("name", Employee::name),
 			INTEGER.configure("age", Employee::age),
@@ -346,7 +346,7 @@ class JavaTypeProviderIntegrationTest {
 	
 	@Test
 	void encodeAndDecodeRecordWithCollections() {
-		Codec<Team> teamCodec = CodecBuilder.group(
+		Codec<Team> teamCodec = CodecBuilder.of(
 			STRING.configure("id", Team::id),
 			STRING.configure("name", Team::name),
 			STRING.list().configure("members", Team::members),
@@ -366,7 +366,7 @@ class JavaTypeProviderIntegrationTest {
 	
 	@Test
 	void encodeAndDecodeAutoMappedRecord() {
-		Codec<Product> productCodec = CodecBuilder.autoMapCodec(Product.class);
+		Codec<Product> productCodec = CodecBuilder.of(Product.class);
 		
 		Product product = new Product("PROD123", "Laptop Computer", 1299.99, 50);
 		Product decoded = productCodec.decode(PROVIDER, productCodec.encode(PROVIDER, product));
@@ -375,7 +375,7 @@ class JavaTypeProviderIntegrationTest {
 	
 	@Test
 	void encodeAndDecodeLargeNestedStructure() {
-		Codec<Address> addressCodec = CodecBuilder.group(
+		Codec<Address> addressCodec = CodecBuilder.of(
 			STRING.configure("street", Address::street),
 			STRING.configure("city", Address::city),
 			STRING.configure("state", Address::state),
@@ -383,7 +383,7 @@ class JavaTypeProviderIntegrationTest {
 			STRING.configure("country", Address::country)
 		).create(Address::new);
 		
-		Codec<Employee> employeeCodec = CodecBuilder.group(
+		Codec<Employee> employeeCodec = CodecBuilder.of(
 			STRING.configure("id", Employee::id),
 			STRING.configure("name", Employee::name),
 			INTEGER.configure("age", Employee::age),
@@ -391,7 +391,7 @@ class JavaTypeProviderIntegrationTest {
 			addressCodec.configure("address", Employee::address)
 		).create(Employee::new);
 		
-		Codec<Department> departmentCodec = CodecBuilder.group(
+		Codec<Department> departmentCodec = CodecBuilder.of(
 			STRING.configure("id", Department::id),
 			STRING.configure("name", Department::name),
 			employeeCodec.configure("manager", Department::manager),
@@ -399,7 +399,7 @@ class JavaTypeProviderIntegrationTest {
 			Codec.map(STRING, STRING).configure("metadata", Department::metadata)
 		).create(Department::new);
 		
-		Codec<Company> companyCodec = CodecBuilder.group(
+		Codec<Company> companyCodec = CodecBuilder.of(
 			STRING.configure("id", Company::id),
 			STRING.configure("name", Company::name),
 			addressCodec.configure("headquarters", Company::headquarters),
@@ -524,7 +524,7 @@ class JavaTypeProviderIntegrationTest {
 	
 	@Test
 	void encodeAndDecodeListOfComplexObjects() {
-		Codec<Person> personCodec = CodecBuilder.group(
+		Codec<Person> personCodec = CodecBuilder.of(
 			STRING.configure("name", Person::name),
 			INTEGER.configure("age", Person::age),
 			STRING.configure("email", Person::email)
@@ -542,7 +542,7 @@ class JavaTypeProviderIntegrationTest {
 	
 	@Test
 	void encodeAndDecodeEitherWithComplexTypes() {
-		Codec<Address> addressCodec = CodecBuilder.group(
+		Codec<Address> addressCodec = CodecBuilder.of(
 			STRING.configure("street", Address::street),
 			STRING.configure("city", Address::city),
 			STRING.configure("state", Address::state),
@@ -550,7 +550,7 @@ class JavaTypeProviderIntegrationTest {
 			STRING.configure("country", Address::country)
 		).create(Address::new);
 		
-		Codec<Person> personCodec = CodecBuilder.group(
+		Codec<Person> personCodec = CodecBuilder.of(
 			STRING.configure("name", Person::name),
 			INTEGER.configure("age", Person::age),
 			STRING.configure("email", Person::email)
@@ -738,7 +738,7 @@ class JavaTypeProviderIntegrationTest {
 	
 	@Test
 	void encodeAndDecodeMapWithComplexValues() {
-		Codec<Person> personCodec = CodecBuilder.group(
+		Codec<Person> personCodec = CodecBuilder.of(
 			STRING.configure("name", Person::name),
 			INTEGER.configure("age", Person::age),
 			STRING.configure("email", Person::email)
@@ -767,7 +767,7 @@ class JavaTypeProviderIntegrationTest {
 	
 	@Test
 	void encodeAndDecodeRecordWithAllCodecTypes() {
-		Codec<ComplexRecord> complexCodec = CodecBuilder.group(
+		Codec<ComplexRecord> complexCodec = CodecBuilder.of(
 			STRING.configure("id", ComplexRecord::id),
 			INTEGER.list().configure("numbers", ComplexRecord::numbers),
 			Codec.map(STRING, DOUBLE).configure("metrics", ComplexRecord::metrics),
@@ -797,7 +797,7 @@ class JavaTypeProviderIntegrationTest {
 	
 	@Test
 	void encodeAndDecodeDeeplyNestedCompanyStructure() {
-		Codec<Address> addressCodec = CodecBuilder.group(
+		Codec<Address> addressCodec = CodecBuilder.of(
 			STRING.configure("street", Address::street),
 			STRING.configure("city", Address::city),
 			STRING.configure("state", Address::state),
@@ -805,7 +805,7 @@ class JavaTypeProviderIntegrationTest {
 			STRING.configure("country", Address::country)
 		).create(Address::new);
 		
-		Codec<Employee> employeeCodec = CodecBuilder.group(
+		Codec<Employee> employeeCodec = CodecBuilder.of(
 			STRING.configure("id", Employee::id),
 			STRING.configure("name", Employee::name),
 			INTEGER.configure("age", Employee::age),
@@ -813,7 +813,7 @@ class JavaTypeProviderIntegrationTest {
 			addressCodec.configure("address", Employee::address)
 		).create(Employee::new);
 		
-		Codec<Department> departmentCodec = CodecBuilder.group(
+		Codec<Department> departmentCodec = CodecBuilder.of(
 			STRING.configure("id", Department::id),
 			STRING.configure("name", Department::name),
 			employeeCodec.configure("manager", Department::manager),
@@ -821,7 +821,7 @@ class JavaTypeProviderIntegrationTest {
 			Codec.map(STRING, STRING).configure("metadata", Department::metadata)
 		).create(Department::new);
 		
-		Codec<Company> companyCodec = CodecBuilder.group(
+		Codec<Company> companyCodec = CodecBuilder.of(
 			STRING.configure("id", Company::id),
 			STRING.configure("name", Company::name),
 			addressCodec.configure("headquarters", Company::headquarters),
@@ -1143,7 +1143,7 @@ class JavaTypeProviderIntegrationTest {
 	
 	@Test
 	void encodeAndDecodeScientificDataRecordWithRangedValues() {
-		Codec<ScientificDataRecord> codec = CodecBuilder.group(
+		Codec<ScientificDataRecord> codec = CodecBuilder.of(
 			UUID.configure("experimentId", ScientificDataRecord::experimentId),
 			Codec.ranged(DOUBLE, -273.15, 1000000.0).configure("temperature", ScientificDataRecord::temperature),
 			Codec.ranged(DOUBLE, 0.0, 100.0).configure("humidity", ScientificDataRecord::humidity),
@@ -1178,7 +1178,7 @@ class JavaTypeProviderIntegrationTest {
 	
 	@Test
 	void encodeAndDecodeScientificDataRecordWithBoundaryValues() {
-		Codec<ScientificDataRecord> codec = CodecBuilder.group(
+		Codec<ScientificDataRecord> codec = CodecBuilder.of(
 			UUID.configure("experimentId", ScientificDataRecord::experimentId),
 			Codec.ranged(DOUBLE, -273.15, 1000000.0).configure("temperature", ScientificDataRecord::temperature),
 			Codec.ranged(DOUBLE, 0.0, 100.0).configure("humidity", ScientificDataRecord::humidity),
@@ -1211,7 +1211,7 @@ class JavaTypeProviderIntegrationTest {
 	
 	@Test
 	void encodeAndDecodeNetworkConfigurationWithSSL() {
-		Codec<NetworkConfigRecord> codec = CodecBuilder.group(
+		Codec<NetworkConfigRecord> codec = CodecBuilder.of(
 			STRING.configure("hostname", NetworkConfigRecord::hostname),
 			Codec.ranged(INTEGER, 1, 65535).configure("port", NetworkConfigRecord::port),
 			URI.list(1, 10).configure("endpoints", NetworkConfigRecord::endpoints),
@@ -1254,7 +1254,7 @@ class JavaTypeProviderIntegrationTest {
 	
 	@Test
 	void encodeAndDecodeNetworkConfigurationWithoutSSL() {
-		Codec<NetworkConfigRecord> codec = CodecBuilder.group(
+		Codec<NetworkConfigRecord> codec = CodecBuilder.of(
 			STRING.configure("hostname", NetworkConfigRecord::hostname),
 			Codec.ranged(INTEGER, 1, 65535).configure("port", NetworkConfigRecord::port),
 			URI.list(1, 10).configure("endpoints", NetworkConfigRecord::endpoints),
@@ -1289,7 +1289,7 @@ class JavaTypeProviderIntegrationTest {
 	
 	@Test
 	void encodeAndDecodeAnalyticsRecordWithTimeSeries() {
-		Codec<DataAnalyticsRecord> codec = CodecBuilder.group(
+		Codec<DataAnalyticsRecord> codec = CodecBuilder.of(
 			STRING.configure("datasetId", DataAnalyticsRecord::datasetId),
 			Codec.map(LONG, DOUBLE).configure("timeSeries", DataAnalyticsRecord::timeSeries),
 			INT_STREAM.configure("samples", DataAnalyticsRecord::samples),
@@ -1321,7 +1321,7 @@ class JavaTypeProviderIntegrationTest {
 	
 	@Test
 	void encodeAndDecodeAnalyticsRecordWithLargeTimeSeries() {
-		Codec<DataAnalyticsRecord> codec = CodecBuilder.group(
+		Codec<DataAnalyticsRecord> codec = CodecBuilder.of(
 			STRING.configure("datasetId", DataAnalyticsRecord::datasetId),
 			Codec.map(LONG, DOUBLE).configure("timeSeries", DataAnalyticsRecord::timeSeries),
 			INT_STREAM.configure("samples", DataAnalyticsRecord::samples),
@@ -1361,7 +1361,7 @@ class JavaTypeProviderIntegrationTest {
 	
 	@Test
 	void encodeAndDecodeConfigurationRecordWithValidation() {
-		Codec<ConfigurationRecord> codec = CodecBuilder.group(
+		Codec<ConfigurationRecord> codec = CodecBuilder.of(
 			STRING.configure("configId", ConfigurationRecord::configId),
 			STRING.optional("default-app").configure("appName", ConfigurationRecord::appName),
 			Codec.ranged(INTEGER, 1, 100).optional(10).configure("threadPoolSize", ConfigurationRecord::threadPoolSize),
@@ -1396,7 +1396,7 @@ class JavaTypeProviderIntegrationTest {
 	
 	@Test
 	void encodeAndDecodeConfigurationRecordWithDefaultValues() {
-		Codec<ConfigurationRecord> codec = CodecBuilder.group(
+		Codec<ConfigurationRecord> codec = CodecBuilder.of(
 			STRING.configure("configId", ConfigurationRecord::configId),
 			STRING.optional("default-app").configure("appName", ConfigurationRecord::appName),
 			Codec.ranged(INTEGER, 1, 100).optional(10).configure("threadPoolSize", ConfigurationRecord::threadPoolSize),
@@ -1456,7 +1456,7 @@ class JavaTypeProviderIntegrationTest {
 	
 	@Test
 	void encodeAndDecodeRecordWithAllTimeAndIOTypes() {
-		Codec<TimeAndIORecord> codec = CodecBuilder.group(
+		Codec<TimeAndIORecord> codec = CodecBuilder.of(
 			LOCAL_TIME.configure("time", TimeAndIORecord::time),
 			LOCAL_DATE.configure("date", TimeAndIORecord::date),
 			INSTANT.configure("instant", TimeAndIORecord::instant),
@@ -1517,7 +1517,7 @@ class JavaTypeProviderIntegrationTest {
 	void encodeAndDecodeEnumMapWithComplexValues() {
 		Codec<Map<Priority, List<Task>>> enumMapCodec = Codec.map(
 			dynamicEnum(Priority.class),
-			CodecBuilder.group(
+			CodecBuilder.of(
 				STRING.configure("id", Task::id),
 				STRING.configure("description", Task::description),
 				LOCAL_DATE_TIME.configure("deadline", Task::deadline),

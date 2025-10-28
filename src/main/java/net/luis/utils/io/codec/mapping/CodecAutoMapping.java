@@ -189,69 +189,69 @@ public final class CodecAutoMapping {
 		
 		ConfiguredCodec<?, O>[] configuredCodecs = Stream.of(components).map(CodecAutoMapping::createConfiguredCodec).toArray(ConfiguredCodec[]::new);
 		return switch (components.length) {
-			case 1 -> CodecBuilder.group(
+			case 1 -> CodecBuilder.of(
 				configuredCodecs[0]
 			).create(arg0 -> createInstance(constructor, arg0));
-			case 2 -> CodecBuilder.group(
+			case 2 -> CodecBuilder.of(
 				configuredCodecs[0], configuredCodecs[1]
 			).create((arg0, arg1) -> createInstance(constructor, arg0, arg1));
-			case 3 -> CodecBuilder.group(
+			case 3 -> CodecBuilder.of(
 				configuredCodecs[0], configuredCodecs[1], configuredCodecs[2]
 			).create((arg0, arg1, arg2) -> createInstance(constructor, arg0, arg1, arg2));
-			case 4 -> CodecBuilder.group(
+			case 4 -> CodecBuilder.of(
 				configuredCodecs[0], configuredCodecs[1], configuredCodecs[2], configuredCodecs[3]
 			).create((arg0, arg1, arg2, arg3) -> createInstance(constructor, arg0, arg1, arg2, arg3));
-			case 5 -> CodecBuilder.group(
+			case 5 -> CodecBuilder.of(
 				configuredCodecs[0], configuredCodecs[1], configuredCodecs[2], configuredCodecs[3], configuredCodecs[4]
 			).create((arg0, arg1, arg2, arg3, arg4) -> createInstance(constructor, arg0, arg1, arg2, arg3, arg4));
-			case 6 -> CodecBuilder.group(
+			case 6 -> CodecBuilder.of(
 				configuredCodecs[0], configuredCodecs[1], configuredCodecs[2], configuredCodecs[3], configuredCodecs[4], configuredCodecs[5]
 			).create((arg0, arg1, arg2, arg3, arg4, arg5) -> createInstance(constructor, arg0, arg1, arg2, arg3, arg4, arg5));
-			case 7 -> CodecBuilder.group(
+			case 7 -> CodecBuilder.of(
 				configuredCodecs[0], configuredCodecs[1], configuredCodecs[2], configuredCodecs[3], configuredCodecs[4], configuredCodecs[5], configuredCodecs[6]
 			).create((arg0, arg1, arg2, arg3, arg4, arg5, arg6) -> createInstance(constructor, arg0, arg1, arg2, arg3, arg4, arg5, arg6));
-			case 8 -> CodecBuilder.group(
+			case 8 -> CodecBuilder.of(
 				configuredCodecs[0], configuredCodecs[1], configuredCodecs[2], configuredCodecs[3], configuredCodecs[4], configuredCodecs[5], configuredCodecs[6], configuredCodecs[7]
 			).create((arg0, arg1, arg2, arg3, arg4, arg5, arg6, arg7) -> createInstance(constructor, arg0, arg1, arg2, arg3, arg4, arg5, arg6, arg7));
-			case 9 -> CodecBuilder.group(
+			case 9 -> CodecBuilder.of(
 				configuredCodecs[0], configuredCodecs[1], configuredCodecs[2], configuredCodecs[3], configuredCodecs[4], configuredCodecs[5], configuredCodecs[6], configuredCodecs[7],
 				configuredCodecs[8]
 			).create((arg0, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8) -> createInstance(constructor, arg0, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8));
-			case 10 -> CodecBuilder.group(
+			case 10 -> CodecBuilder.of(
 				configuredCodecs[0], configuredCodecs[1], configuredCodecs[2], configuredCodecs[3], configuredCodecs[4], configuredCodecs[5], configuredCodecs[6], configuredCodecs[7],
 				configuredCodecs[8], configuredCodecs[9]
 			).create((arg0, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9) -> createInstance(constructor, arg0, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9));
-			case 11 -> CodecBuilder.group(
+			case 11 -> CodecBuilder.of(
 				configuredCodecs[0], configuredCodecs[1], configuredCodecs[2], configuredCodecs[3], configuredCodecs[4], configuredCodecs[5], configuredCodecs[6], configuredCodecs[7],
 				configuredCodecs[8], configuredCodecs[9], configuredCodecs[10]
 			).create((arg0, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10) -> createInstance(
 				constructor, arg0, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10
 			));
-			case 12 -> CodecBuilder.group(
+			case 12 -> CodecBuilder.of(
 				configuredCodecs[0], configuredCodecs[1], configuredCodecs[2], configuredCodecs[3], configuredCodecs[4], configuredCodecs[5], configuredCodecs[6], configuredCodecs[7],
 				configuredCodecs[8], configuredCodecs[9], configuredCodecs[10], configuredCodecs[11]
 			).create((arg0, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11) -> createInstance(
 				constructor, arg0, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11
 			));
-			case 13 -> CodecBuilder.group(
+			case 13 -> CodecBuilder.of(
 				configuredCodecs[0], configuredCodecs[1], configuredCodecs[2], configuredCodecs[3], configuredCodecs[4], configuredCodecs[5], configuredCodecs[6], configuredCodecs[7],
 				configuredCodecs[8], configuredCodecs[9], configuredCodecs[10], configuredCodecs[11], configuredCodecs[12]
 			).create((arg0, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12) -> createInstance(
 				constructor, arg0, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12
 			));
-			case 14 -> CodecBuilder.group(
+			case 14 -> CodecBuilder.of(
 				configuredCodecs[0], configuredCodecs[1], configuredCodecs[2], configuredCodecs[3], configuredCodecs[4], configuredCodecs[5], configuredCodecs[6], configuredCodecs[7],
 				configuredCodecs[8], configuredCodecs[9], configuredCodecs[10], configuredCodecs[11], configuredCodecs[12], configuredCodecs[13]
 			).create((arg0, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13) -> createInstance(
 				constructor, arg0, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13
 			));
-			case 15 -> CodecBuilder.group(
+			case 15 -> CodecBuilder.of(
 				configuredCodecs[0], configuredCodecs[1], configuredCodecs[2], configuredCodecs[3], configuredCodecs[4], configuredCodecs[5], configuredCodecs[6], configuredCodecs[7],
 				configuredCodecs[8], configuredCodecs[9], configuredCodecs[10], configuredCodecs[11], configuredCodecs[12], configuredCodecs[13], configuredCodecs[14]
 			).create((arg0, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13, arg14) -> createInstance(
 				constructor, arg0, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13, arg14
 			));
-			case 16 -> CodecBuilder.group(
+			case 16 -> CodecBuilder.of(
 				configuredCodecs[0], configuredCodecs[1], configuredCodecs[2], configuredCodecs[3], configuredCodecs[4], configuredCodecs[5], configuredCodecs[6], configuredCodecs[7],
 				configuredCodecs[8], configuredCodecs[9], configuredCodecs[10], configuredCodecs[11], configuredCodecs[12], configuredCodecs[13], configuredCodecs[14], configuredCodecs[15]
 			).create((arg0, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13, arg14, arg15) -> createInstance(
