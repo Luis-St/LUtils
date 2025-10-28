@@ -319,7 +319,7 @@ public interface Codec<C> extends Encoder<C>, Decoder<C> {
 	 * @throws NullPointerException If the codec is null
 	 * @see OptionalCodec
 	 */
-	static <C> @NotNull Codec<C> optionalWithDefault(@NotNull Codec<C> codec, @Nullable C defaultValue) {
+	static <C> @NotNull Codec<C> optional(@NotNull Codec<C> codec, @Nullable C defaultValue) {
 		Objects.requireNonNull(codec, "Codec must not be null");
 		return codec.optional().xmap(Optional::ofNullable, optional -> optional.orElse(defaultValue)).codec("OptionalWithDefault[" + codec + "]");
 	}
@@ -335,7 +335,7 @@ public interface Codec<C> extends Encoder<C>, Decoder<C> {
 	 * @throws NullPointerException If the codec or the default supplier is null
 	 * @see OptionalCodec
 	 */
-	static <C> @NotNull Codec<C> optionalWithDefaultFrom(@NotNull Codec<C> codec, @NotNull Supplier<? extends C> defaultSupplier) {
+	static <C> @NotNull Codec<C> optional(@NotNull Codec<C> codec, @NotNull Supplier<? extends C> defaultSupplier) {
 		Objects.requireNonNull(codec, "Codec must not be null");
 		Objects.requireNonNull(defaultSupplier, "Default supplier must not be null");
 		
@@ -640,11 +640,11 @@ public interface Codec<C> extends Encoder<C>, Decoder<C> {
 	 *
 	 * @param defaultValue The default value
 	 * @return A new codec for the current codec
-	 * @see #optionalWithDefault(Codec, Object)
+	 * @see #optional(Codec, Object)
 	 * @see OptionalCodec
 	 */
-	default @NotNull Codec<C> optionalWithDefault(@Nullable C defaultValue) {
-		return optionalWithDefault(this, defaultValue);
+	default @NotNull Codec<C> optional(@Nullable C defaultValue) {
+		return optional(this, defaultValue);
 	}
 	
 	/**
@@ -654,11 +654,11 @@ public interface Codec<C> extends Encoder<C>, Decoder<C> {
 	 * @param defaultSupplier The supplier for the default value
 	 * @return A new codec for the current codec
 	 * @throws NullPointerException If the default supplier is null
-	 * @see #optionalWithDefaultFrom(Codec, Supplier)
+	 * @see #optional(Codec, Supplier)
 	 * @see OptionalCodec
 	 */
-	default @NotNull Codec<C> optionalWithDefaultFrom(@NotNull Supplier<? extends C> defaultSupplier) {
-		return optionalWithDefaultFrom(this, defaultSupplier);
+	default @NotNull Codec<C> optional(@NotNull Supplier<? extends C> defaultSupplier) {
+		return optional(this, defaultSupplier);
 	}
 	
 	/**

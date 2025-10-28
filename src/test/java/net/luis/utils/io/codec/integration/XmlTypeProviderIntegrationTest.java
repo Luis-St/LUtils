@@ -931,7 +931,7 @@ class XmlTypeProviderIntegrationTest {
 	
 	@Test
 	void encodeAndDecodeOptionalCodecVariants() {
-		Codec<String> optionalWithSupplier = STRING.optionalWithDefaultFrom(() -> "default-" + System.currentTimeMillis());
+		Codec<String> optionalWithSupplier = STRING.optional(() -> "default-" + System.currentTimeMillis());
 		XmlElement encoded1 = optionalWithSupplier.encode(PROVIDER, "test");
 		String decoded1 = optionalWithSupplier.decode(PROVIDER, encoded1);
 		assertEquals("test", decoded1);
@@ -1327,12 +1327,12 @@ class XmlTypeProviderIntegrationTest {
 	void encodeAndDecodeConfigurationRecordWithValidation() {
 		Codec<ConfigurationRecord> codec = CodecBuilder.group(
 			STRING.configure("configId", ConfigurationRecord::configId),
-			STRING.optionalWithDefault("default-app").configure("appName", ConfigurationRecord::appName),
-			Codec.ranged(INTEGER, 1, 100).optionalWithDefault(10).configure("threadPoolSize", ConfigurationRecord::threadPoolSize),
-			BOOLEAN.optionalWithDefault(false).configure("debugMode", ConfigurationRecord::debugMode),
+			STRING.optional("default-app").configure("appName", ConfigurationRecord::appName),
+			Codec.ranged(INTEGER, 1, 100).optional(10).configure("threadPoolSize", ConfigurationRecord::threadPoolSize),
+			BOOLEAN.optional(false).configure("debugMode", ConfigurationRecord::debugMode),
 			formattedString("[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}").optional().configure("ipAddress", ConfigurationRecord::ipAddress),
 			Codec.map(STRING, STRING).configure("environment", ConfigurationRecord::environment),
-			DURATION.optionalWithDefault(Duration.ofSeconds(30)).configure("timeout", ConfigurationRecord::timeout),
+			DURATION.optional(Duration.ofSeconds(30)).configure("timeout", ConfigurationRecord::timeout),
 			Codecs.either(FILE, URI).list().configure("configSources", ConfigurationRecord::configSources)
 		).create(ConfigurationRecord::new);
 		
@@ -1363,12 +1363,12 @@ class XmlTypeProviderIntegrationTest {
 	void encodeAndDecodeConfigurationRecordWithDefaultValues() {
 		Codec<ConfigurationRecord> codec = CodecBuilder.group(
 			STRING.configure("configId", ConfigurationRecord::configId),
-			STRING.optionalWithDefault("default-app").configure("appName", ConfigurationRecord::appName),
-			Codec.ranged(INTEGER, 1, 100).optionalWithDefault(10).configure("threadPoolSize", ConfigurationRecord::threadPoolSize),
-			BOOLEAN.optionalWithDefault(false).configure("debugMode", ConfigurationRecord::debugMode),
+			STRING.optional("default-app").configure("appName", ConfigurationRecord::appName),
+			Codec.ranged(INTEGER, 1, 100).optional(10).configure("threadPoolSize", ConfigurationRecord::threadPoolSize),
+			BOOLEAN.optional(false).configure("debugMode", ConfigurationRecord::debugMode),
 			formattedString("[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}").optional().configure("ipAddress", ConfigurationRecord::ipAddress),
 			Codec.map(STRING, STRING).configure("environment", ConfigurationRecord::environment),
-			DURATION.optionalWithDefault(Duration.ofSeconds(30)).configure("timeout", ConfigurationRecord::timeout),
+			DURATION.optional(Duration.ofSeconds(30)).configure("timeout", ConfigurationRecord::timeout),
 			Codecs.either(FILE, URI).list().configure("configSources", ConfigurationRecord::configSources)
 		).create(ConfigurationRecord::new);
 		

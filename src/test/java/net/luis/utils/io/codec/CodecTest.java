@@ -27,6 +27,7 @@ import org.junit.jupiter.api.Test;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.function.Supplier;
 import java.util.stream.Stream;
 
 import static net.luis.utils.io.codec.Codecs.*;
@@ -181,11 +182,11 @@ class CodecTest {
 	}
 	
 	@Test
-	void optionalWithDefaultCodecs() {
-		assertThrows(NullPointerException.class, () -> Codec.optionalWithDefault(null, 0));
+	void optionalCodecsWithDefault() {
+		assertThrows(NullPointerException.class, () -> Codec.optional(null, 0));
 		
 		JsonTypeProvider provider = JsonTypeProvider.INSTANCE;
-		Codec<Integer> optionalWithDefaultCodec = INTEGER.optionalWithDefault(100);
+		Codec<Integer> optionalWithDefaultCodec = INTEGER.optional(100);
 		
 		JsonElement encodedPresent = optionalWithDefaultCodec.encode(provider, 42);
 		assertEquals(new JsonPrimitive(42), encodedPresent);
@@ -200,7 +201,7 @@ class CodecTest {
 		Integer decodedNull = optionalWithDefaultCodec.decode(provider, encodedNull);
 		assertEquals(100, decodedNull);
 		
-		Codec<String> stringOptionalCodec = STRING.optionalWithDefault("default");
+		Codec<String> stringOptionalCodec = STRING.optional("default");
 		JsonElement encodedDefault = stringOptionalCodec.encode(provider, "default");
 		assertEquals(new JsonPrimitive("default"), encodedDefault);
 		String decodedEmpty = stringOptionalCodec.decode(provider, JsonNull.INSTANCE);
@@ -208,13 +209,13 @@ class CodecTest {
 	}
 	
 	@Test
-	void optionalWithDefaultFromCodecs() {
-		assertThrows(NullPointerException.class, () -> Codec.optionalWithDefaultFrom(null, () -> 0));
-		assertThrows(NullPointerException.class, () -> Codec.optionalWithDefaultFrom(INTEGER, null));
-		assertThrows(NullPointerException.class, () -> INTEGER.optionalWithDefaultFrom(null));
+	void optionalCodecsWithDefaultSupplier() {
+		assertThrows(NullPointerException.class, () -> Codec.<Supplier<Integer>>optional(null, (Supplier<Integer>) () -> 0));
+		assertThrows(NullPointerException.class, () -> Codec.optional(INTEGER, (Supplier<Integer>) null));
+		assertThrows(NullPointerException.class, () -> INTEGER.optional((Supplier<Integer>) null));
 		
 		JsonTypeProvider provider = JsonTypeProvider.INSTANCE;
-		Codec<Integer> optionalWithDefaultFromCodec = INTEGER.optionalWithDefaultFrom(() -> 200);
+		Codec<Integer> optionalWithDefaultFromCodec = INTEGER.optional(() -> 200);
 		
 		JsonElement encodedPresent = optionalWithDefaultFromCodec.encode(provider, 42);
 		assertEquals(new JsonPrimitive(42), encodedPresent);
@@ -229,7 +230,7 @@ class CodecTest {
 		Integer decodedNull = optionalWithDefaultFromCodec.decode(provider, encodedNull);
 		assertEquals(200, decodedNull);
 		
-		Codec<String> stringOptionalCodec = STRING.optionalWithDefaultFrom(() -> "supplier-default");
+		Codec<String> stringOptionalCodec = STRING.optional(() -> "supplier-default");
 		JsonElement encodedDefault = stringOptionalCodec.encode(provider, "supplier-default");
 		assertEquals(new JsonPrimitive("supplier-default"), encodedDefault);
 		String decodedEmpty = stringOptionalCodec.decode(provider, JsonNull.INSTANCE);
