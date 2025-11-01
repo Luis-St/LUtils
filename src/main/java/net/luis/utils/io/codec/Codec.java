@@ -180,6 +180,41 @@ public interface Codec<C> extends Encoder<C>, Decoder<C> {
 	}
 	
 	/**
+	 * Creates a new union codec that constrains values to a specific set of allowed values.<br>
+	 * This codec validates that encoded and decoded values are within the predefined set of valid values.<br>
+	 * Any value outside this set will cause encoding or decoding to fail with an error.<br>
+	 *
+	 * @param codec The base codec for encoding and decoding individual values
+	 * @param validValues The collection of valid values
+	 * @param <C> The type of the value that is encoded and decoded by the codec
+	 * @return A new union codec
+	 * @throws NullPointerException If the codec or valid values is null
+	 * @throws IllegalArgumentException If the valid values collection is empty
+	 * @see UnionCodec
+	 */
+	static <C> @NotNull Codec<C> union(@NotNull Codec<C> codec, @NotNull Collection<C> validValues) {
+		return new UnionCodec<>(codec, validValues);
+	}
+	
+	/**
+	 * Creates a new union codec that constrains values to a specific set of allowed values.<br>
+	 * This codec validates that encoded and decoded values are within the predefined set of valid values.<br>
+	 * Any value outside this set will cause encoding or decoding to fail with an error.<br>
+	 *
+	 * @param codec The base codec for encoding and decoding individual values
+	 * @param validValues The array of valid values
+	 * @param <C> The type of the value that is encoded and decoded by the codec
+	 * @return A new union codec
+	 * @throws NullPointerException If the codec or valid values is null
+	 * @throws IllegalArgumentException If the valid values array is empty
+	 * @see UnionCodec
+	 */
+	@SafeVarargs
+	static <C> @NotNull Codec<C> union(@NotNull Codec<C> codec, C @NotNull ... validValues) {
+		return new UnionCodec<>(codec, validValues);
+	}
+	
+	/**
 	 * Creates a new codec that only accepts numbers that are at least the given minimum value.<br>
 	 * The minimum value is inclusive.<br>
 	 *
@@ -622,7 +657,40 @@ public interface Codec<C> extends Encoder<C>, Decoder<C> {
 	default @NotNull Codec<C> nullable() {
 		return nullable(this);
 	}
-	
+
+	/**
+	 * Wraps the current codec into a new union codec that constrains values to a specific set of allowed values.<br>
+	 * This codec validates that encoded and decoded values are within the predefined set of valid values.<br>
+	 * Any value outside this set will cause encoding or decoding to fail with an error.<br>
+	 *
+	 * @param validValues The collection of valid values
+	 * @return A new union codec for the current codec
+	 * @throws NullPointerException If the valid values is null
+	 * @throws IllegalArgumentException If the valid values collection is empty
+	 * @see #union(Codec, Collection)
+	 * @see UnionCodec
+	 */
+	default @NotNull Codec<C> union(@NotNull Collection<C> validValues) {
+		return union(this, validValues);
+	}
+
+	/**
+	 * Wraps the current codec into a new union codec that constrains values to a specific set of allowed values.<br>
+	 * This codec validates that encoded and decoded values are within the predefined set of valid values.<br>
+	 * Any value outside this set will cause encoding or decoding to fail with an error.<br>
+	 *
+	 * @param validValues The array of valid values
+	 * @return A new union codec for the current codec
+	 * @throws NullPointerException If the valid values is null
+	 * @throws IllegalArgumentException If the valid values array is empty
+	 * @see #union(Codec, Object[])
+	 * @see UnionCodec
+	 */
+	@SuppressWarnings("unchecked")
+	default @NotNull Codec<C> union(@NotNull C... validValues) {
+		return union(this, validValues);
+	}
+
 	/**
 	 * Wraps the current codec into a new optional codec.<br>
 	 *

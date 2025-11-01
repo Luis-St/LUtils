@@ -158,20 +158,46 @@ class CodecTest {
 	}
 	
 	@Test
+	void unionCodecs() {
+		assertThrows(NullPointerException.class, () -> Codec.union(null, "a", "b"));
+		assertThrows(NullPointerException.class, () -> Codec.union(STRING, (String[]) null));
+		assertThrows(IllegalArgumentException.class, () -> Codec.union(STRING));
+		assertInstanceOf(UnionCodec.class, Codec.union(STRING, "a", "b"));
+		assertInstanceOf(UnionCodec.class, STRING.union("a", "b"));
+
+		JsonTypeProvider provider = JsonTypeProvider.INSTANCE;
+		Codec<String> unionCodec = STRING.union("pending", "active", "completed");
+
+		JsonElement encoded = unionCodec.encode(provider, "active");
+		assertEquals(new JsonPrimitive("active"), encoded);
+		String decoded = unionCodec.decode(provider, encoded);
+		assertEquals("active", decoded);
+
+		assertTrue(unionCodec.encodeStart(provider, provider.empty(), "pending").isSuccess());
+		assertTrue(unionCodec.encodeStart(provider, provider.empty(), "active").isSuccess());
+		assertTrue(unionCodec.encodeStart(provider, provider.empty(), "completed").isSuccess());
+		assertTrue(unionCodec.encodeStart(provider, provider.empty(), "invalid").isError());
+
+		Codec<Integer> integerUnionCodec = INTEGER.union(1, 2, 3);
+		assertTrue(integerUnionCodec.encodeStart(provider, provider.empty(), 2).isSuccess());
+		assertTrue(integerUnionCodec.encodeStart(provider, provider.empty(), 5).isError());
+	}
+
+	@Test
 	void optionalCodecs() {
 		assertThrows(NullPointerException.class, () -> Codec.optional((Codec<Integer>) null));
 		assertInstanceOf(OptionalCodec.class, Codec.optional(INTEGER));
 		assertInstanceOf(OptionalCodec.class, INTEGER.optional());
-		
+
 		JsonTypeProvider provider = JsonTypeProvider.INSTANCE;
 		Codec<Optional<Integer>> optionalCodec = INTEGER.optional();
-		
+
 		JsonElement encodedPresent = optionalCodec.encode(provider, Optional.of(42));
 		assertEquals(new JsonPrimitive(42), encodedPresent);
 		Optional<Integer> decodedPresent = optionalCodec.decode(provider, encodedPresent);
 		assertTrue(decodedPresent.isPresent());
 		assertEquals(42, decodedPresent.get());
-		
+
 		JsonElement encodedEmpty = optionalCodec.encode(provider, Optional.empty());
 		assertFalse(encodedEmpty.isJsonNull());
 		assertFalse(encodedEmpty.isJsonPrimitive());
