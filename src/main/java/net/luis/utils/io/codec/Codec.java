@@ -213,7 +213,48 @@ public interface Codec<C> extends Encoder<C>, Decoder<C> {
 	static <C> @NotNull Codec<C> union(@NotNull Codec<C> codec, C @NotNull ... validValues) {
 		return new UnionCodec<>(codec, validValues);
 	}
-	
+
+	/**
+	 * Creates a new any codec that attempts to encode or decode using multiple codecs in sequence.<br>
+	 * This codec tries each provided codec in order until one succeeds. If all codecs fail,
+	 * an error is returned containing all the individual error messages.<br>
+	 * <p>
+	 * This is particularly useful for polymorphic types where multiple subtypes need to be handled dynamically,
+	 * such as different payment method implementations or various message types.
+	 * </p>
+	 *
+	 * @param codecs The list of codecs to try in sequence
+	 * @param <C> The common supertype of values handled by this codec
+	 * @return A new any codec
+	 * @throws NullPointerException If codecs is null or contains null elements
+	 * @throws IllegalArgumentException If codecs is empty or contains only one codec
+	 * @see AnyCodec
+	 */
+	static <C> @NotNull Codec<C> any(@NotNull List<Codec<? extends C>> codecs) {
+		return new AnyCodec<>(codecs);
+	}
+
+	/**
+	 * Creates a new any codec that attempts to encode or decode using multiple codecs in sequence.<br>
+	 * This codec tries each provided codec in order until one succeeds. If all codecs fail,
+	 * an error is returned containing all the individual error messages.<br>
+	 * <p>
+	 * This is particularly useful for polymorphic types where multiple subtypes need to be handled dynamically,
+	 * such as different payment method implementations or various message types.
+	 * </p>
+	 *
+	 * @param codecs The array of codecs to try in sequence
+	 * @param <C> The common supertype of values handled by this codec
+	 * @return A new any codec
+	 * @throws NullPointerException If codecs is null or contains null elements
+	 * @throws IllegalArgumentException If codecs is empty or contains only one codec
+	 * @see AnyCodec
+	 */
+	@SafeVarargs
+	static <C> @NotNull Codec<C> any(@NotNull Codec<? extends C>... codecs) {
+		return new AnyCodec<>(codecs);
+	}
+
 	/**
 	 * Creates a new codec that only accepts numbers that are at least the given minimum value.<br>
 	 * The minimum value is inclusive.<br>

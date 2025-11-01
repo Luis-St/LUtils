@@ -184,6 +184,34 @@ class CodecTest {
 	}
 
 	@Test
+	void anyCodecs() {
+		assertThrows(NullPointerException.class, () -> Codec.any((List<Codec<? extends String>>) null));
+		assertThrows(IllegalArgumentException.class, () -> Codec.any(List.of()));
+		assertThrows(IllegalArgumentException.class, () -> Codec.any(List.of(STRING)));
+		assertInstanceOf(AnyCodec.class, Codec.any(STRING.union("a", "b"), STRING.union("c", "d")));
+
+		JsonTypeProvider provider = JsonTypeProvider.INSTANCE;
+
+		// Create codecs for different payment methods (simulated with strings)
+		Codec<String> creditCard = STRING.union("cc:visa", "cc:mastercard", "cc:amex");
+		Codec<String> paypal = STRING.union("paypal:user@example.com", "paypal:another@example.com");
+
+		Codec<String> paymentCodec = Codec.any(creditCard, paypal);
+
+		// Test credit card payment
+		assertTrue(paymentCodec.encodeStart(provider, provider.empty(), "cc:visa").isSuccess());
+		assertTrue(paymentCodec.decodeStart(provider, new JsonPrimitive("cc:visa")).isSuccess());
+
+		// Test PayPal payment
+		assertTrue(paymentCodec.encodeStart(provider, provider.empty(), "paypal:user@example.com").isSuccess());
+		assertTrue(paymentCodec.decodeStart(provider, new JsonPrimitive("paypal:user@example.com")).isSuccess());
+
+		// Test invalid payment
+		assertTrue(paymentCodec.encodeStart(provider, provider.empty(), "invalid").isError());
+		assertTrue(paymentCodec.decodeStart(provider, new JsonPrimitive("invalid")).isError());
+	}
+
+	@Test
 	void optionalCodecs() {
 		assertThrows(NullPointerException.class, () -> Codec.optional((Codec<Integer>) null));
 		assertInstanceOf(OptionalCodec.class, Codec.optional(INTEGER));
