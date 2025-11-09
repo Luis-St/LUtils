@@ -16,7 +16,7 @@ val projectVersion: String? = System.getenv("VERSION")?.replace("v", "", ignoreC
 plugins {
 	id("java")
 	id("maven-publish")
-	id("net.luis.lm")
+	id("net.luis.lm") version "1.1.0"
 }
 
 repositories {
