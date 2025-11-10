@@ -20,7 +20,7 @@ package net.luis.utils.io.codec;
 
 import com.google.common.collect.Lists;
 import net.luis.utils.io.codec.provider.TypeProvider;
-import net.luis.utils.util.Result;
+import net.luis.utils.util.result.Result;
 import org.jetbrains.annotations.*;
 
 import java.util.*;
@@ -77,7 +77,7 @@ public class CodecGroup<O> implements Codec<O> {
 		if (mergedMap.isError()) {
 			return Result.error("Unable to encode '" + value + "' with '" + this + "': " + mergedMap.errorOrThrow());
 		}
-		R map = mergedMap.orThrow();
+		R map = mergedMap.resultOrThrow();
 		
 		for (int i = 0; i < this.codecs.size(); i++) {
 			ConfiguredCodec<?, O> codec = this.codecs.get(i);
@@ -113,7 +113,7 @@ public class CodecGroup<O> implements Codec<O> {
 				return Result.error("Unable to decode component of '" + value + "' using '" + codec + "': " + decoded.errorOrThrow());
 			}
 			
-			components.add(decoded.orThrow());
+			components.add(decoded.resultOrThrow());
 		}
 		
 		return this.factory.apply(components);

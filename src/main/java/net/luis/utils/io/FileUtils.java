@@ -21,6 +21,7 @@ package net.luis.utils.io;
 import net.luis.utils.io.data.InputProvider;
 import net.luis.utils.util.Pair;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 import org.jetbrains.annotations.*;
 
 import java.io.*;
@@ -69,9 +70,11 @@ public final class FileUtils {
 		String str = StringUtils.stripToEmpty(file).replace("\\", "/");
 		int dash = str.lastIndexOf("/");
 		int dot = str.lastIndexOf(".");
+		
+		boolean hasDotAfterSlash = dot > dash;
 		if (dash == -1 && dot == -1) {
 			return Pair.of(str, "");
-		} else if (dot == -1 || ".".equals(str)) {
+		} else if (!hasDotAfterSlash || ".".equals(str)) {
 			return Pair.of(str, "");
 		} else if (dash == -1) {
 			return Pair.of("", str);
@@ -99,7 +102,7 @@ public final class FileUtils {
 	 */
 	public static @NotNull String getName(@Nullable String file) {
 		String str;
-		if (StringUtils.containsAny(file, "/", "\\")) {
+		if (Strings.CS.containsAny(file, "/", "\\")) {
 			str = split(file).getSecond();
 		} else {
 			str = StringUtils.stripToEmpty(file);
@@ -160,7 +163,7 @@ public final class FileUtils {
 	 * @return The relative path of the file
 	 */
 	public static @NotNull String getRelativePath(@Nullable String file) {
-		String str = StringUtils.contains(file, ".") ? split(file).getFirst() : StringUtils.stripToEmpty(file).replace("\\", "/");
+		String str = Strings.CS.contains(file, ".") ? split(file).getFirst() : StringUtils.stripToEmpty(file).replace("\\", "/");
 		if (str.isEmpty() || "/".equals(str) || "./".equals(str)) {
 			return "./";
 		}
@@ -178,6 +181,64 @@ public final class FileUtils {
 			return "." + str;
 		}
 		return str;
+	}
+	
+	/**
+	 * Gets the relative path of the given file.<br>
+	 * The file can be a path or a file name.
+	 * <p>
+	 *     Examples:
+	 * </p>
+	 * <pre>{@code
+	 * normalizeDirectoryPath(null) -> "./"
+	 * normalizeDirectoryPath("") -> "./"
+	 * normalizeDirectoryPath("/") -> "./"
+	 * normalizeDirectoryPath("foo") -> "./foo/"
+	 * normalizeDirectoryPath("./foo/") -> "./foo/"
+	 * normalizeDirectoryPath("/foo.json") -> "./"
+	 * normalizeDirectoryPath("/bar/foo.json") -> "./bar/"
+	 * }</pre>
+	 *
+	 * @param file The file to get the relative path of
+	 * @return The relative path of the file
+	 */
+	public static @NotNull String normalizeDirectoryPath(@Nullable String file) {
+		String original = StringUtils.stripToEmpty(file).replace("\\", "/");
+		if (original.isEmpty() || "/".equals(original) || "./".equals(original)) {
+			return "/";
+		}
+		
+		Pair<String, String> parts = split(original);
+		boolean isFile = !parts.getSecond().isEmpty();
+		String dir = parts.getFirst();
+		
+		if (isFile) {
+			if (original.startsWith("./")) {
+				String result = original.substring(1);
+				if (!result.startsWith("/")) {
+					return "/" + result;
+				}
+				return result;
+			} else if (original.startsWith("/")) {
+				if ("/".equals(dir)) {
+					return "/";
+				} else {
+					return original;
+				}
+			}
+		}
+		
+		String result = original;
+		if (!result.endsWith("/")) {
+			result += "/";
+		}
+		if (result.startsWith("./")) {
+			result = result.substring(1);
+		}
+		if (!result.startsWith("/")) {
+			return "/" + result;
+		}
+		return result;
 	}
 	
 	/**

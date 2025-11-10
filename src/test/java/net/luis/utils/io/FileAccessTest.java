@@ -18,8 +18,8 @@
 
 package net.luis.utils.io;
 
-import org.apache.commons.lang3.function.FailableConsumer;
-import org.apache.commons.lang3.function.FailableFunction;
+import net.luis.utils.function.throwable.ThrowableConsumer;
+import net.luis.utils.function.throwable.ThrowableFunction;
 import org.junit.jupiter.api.*;
 
 import java.io.IOException;
@@ -84,7 +84,7 @@ class FileAccessTest {
 	@Test
 	void accessConsumer() {
 		FileAccess fileAccess = new FileAccess(FILE);
-		assertThrows(NullPointerException.class, () -> fileAccess.access((FailableConsumer<Path, IOException>) null));
+		assertThrows(NullPointerException.class, () -> fileAccess.access((ThrowableConsumer<Path, IOException>) null));
 		assertDoesNotThrow(() -> fileAccess.access(file -> {
 			if (Files.notExists(file)) {
 				Files.createDirectories(file.getParent());
@@ -102,7 +102,7 @@ class FileAccessTest {
 	@Test
 	void accessFunction() {
 		FileAccess fileAccess = new FileAccess(FILE);
-		assertThrows(NullPointerException.class, () -> fileAccess.access((FailableFunction<Path, Object, IOException>) null));
+		assertThrows(NullPointerException.class, () -> fileAccess.access((ThrowableFunction<Path, ?, IOException>) null));
 		assertDoesNotThrow(() -> fileAccess.access(file -> {
 			if (Files.notExists(file)) {
 				Files.createDirectories(file.getParent());

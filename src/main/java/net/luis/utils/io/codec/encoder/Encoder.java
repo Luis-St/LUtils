@@ -20,7 +20,7 @@ package net.luis.utils.io.codec.encoder;
 
 import net.luis.utils.io.codec.ResultingFunction;
 import net.luis.utils.io.codec.provider.TypeProvider;
-import net.luis.utils.util.Result;
+import net.luis.utils.util.result.Result;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -73,7 +73,7 @@ public interface Encoder<C> {
 	default <R> @NotNull R encode(@NotNull TypeProvider<R> provider, @NotNull R current, @Nullable C value) {
 		Objects.requireNonNull(provider, "Type provider must not be null");
 		Objects.requireNonNull(current, "Current value must not be null");
-		return this.encodeStart(provider, current, value).orThrow(EncoderException::new);
+		return this.encodeStart(provider, current, value).resultOrThrow(EncoderException::new);
 	}
 	
 	/**
@@ -116,7 +116,7 @@ public interface Encoder<C> {
 				if (result.isError()) {
 					return Result.error("Failed to map value to encode: " + result.errorOrThrow());
 				}
-				return Encoder.this.encodeStart(provider, current, result.orThrow());
+				return Encoder.this.encodeStart(provider, current, result.resultOrThrow());
 			}
 		};
 	}

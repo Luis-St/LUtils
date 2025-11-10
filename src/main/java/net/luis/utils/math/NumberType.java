@@ -411,7 +411,7 @@ public enum NumberType {
 			return false;
 		}
 		if (targetType.isFloatingPoint()) {
-			return this.bitSize <= targetType.bitSize;
+			return true;
 		}
 		return this.minValue.doubleValue() >= targetType.minValue.doubleValue() && this.maxValue.doubleValue() <= targetType.maxValue.doubleValue();
 	}

@@ -18,16 +18,12 @@
 
 package net.luis.utils.io.data.json;
 
-import net.luis.utils.function.throwable.ThrowableFunction;
 import net.luis.utils.io.data.json.exception.JsonTypeException;
-import net.luis.utils.io.reader.ScopedStringReader;
-import net.luis.utils.io.reader.StringReader;
 import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.nio.charset.StandardCharsets;
-import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -45,8 +41,8 @@ class JsonPrimitiveTest {
 		JsonPrimitive trueValue = new JsonPrimitive(true);
 		JsonPrimitive falseValue = new JsonPrimitive(false);
 		
-		assertEquals("true", trueValue.getAsString());
-		assertEquals("false", falseValue.getAsString());
+		assertTrue(trueValue.getAsBoolean());
+		assertFalse(falseValue.getAsBoolean());
 	}
 	
 	@Test
@@ -121,50 +117,50 @@ class JsonPrimitiveTest {
 	void getAsBooleanValid() {
 		assertTrue(new JsonPrimitive(true).getAsBoolean());
 		assertFalse(new JsonPrimitive(false).getAsBoolean());
-		assertTrue(new JsonPrimitive("true").getAsBoolean());
-		assertFalse(new JsonPrimitive("false").getAsBoolean());
-		assertTrue(new JsonPrimitive("TRUE").getAsBoolean());
-		assertFalse(new JsonPrimitive("FALSE").getAsBoolean());
-		assertTrue(new JsonPrimitive("True").getAsBoolean());
-		assertFalse(new JsonPrimitive("False").getAsBoolean());
+		assertThrows(JsonTypeException.class, () -> new JsonPrimitive("true").getAsBoolean());
+		assertThrows(JsonTypeException.class, () -> new JsonPrimitive("false").getAsBoolean());
+		assertThrows(JsonTypeException.class, () -> new JsonPrimitive("TRUE").getAsBoolean());
+		assertThrows(JsonTypeException.class, () -> new JsonPrimitive("FALSE").getAsBoolean());
+		assertThrows(JsonTypeException.class, () -> new JsonPrimitive("True").getAsBoolean());
+		assertThrows(JsonTypeException.class, () -> new JsonPrimitive("False").getAsBoolean());
 	}
 	
 	@Test
 	void getAsBooleanInvalid() {
-		assertThrows(IllegalArgumentException.class, () -> new JsonPrimitive("test").getAsBoolean());
-		assertThrows(IllegalArgumentException.class, () -> new JsonPrimitive("1").getAsBoolean());
-		assertThrows(IllegalArgumentException.class, () -> new JsonPrimitive("0").getAsBoolean());
-		assertThrows(IllegalArgumentException.class, () -> new JsonPrimitive(1).getAsBoolean());
-		assertThrows(IllegalArgumentException.class, () -> new JsonPrimitive(0).getAsBoolean());
-		assertThrows(IllegalArgumentException.class, () -> new JsonPrimitive(3.14).getAsBoolean());
-		assertThrows(IllegalArgumentException.class, () -> new JsonPrimitive("yes").getAsBoolean());
-		assertThrows(IllegalArgumentException.class, () -> new JsonPrimitive("no").getAsBoolean());
+		assertThrows(JsonTypeException.class, () -> new JsonPrimitive("test").getAsBoolean());
+		assertThrows(JsonTypeException.class, () -> new JsonPrimitive("1").getAsBoolean());
+		assertThrows(JsonTypeException.class, () -> new JsonPrimitive("0").getAsBoolean());
+		assertThrows(JsonTypeException.class, () -> new JsonPrimitive(1).getAsBoolean());
+		assertThrows(JsonTypeException.class, () -> new JsonPrimitive(0).getAsBoolean());
+		assertThrows(JsonTypeException.class, () -> new JsonPrimitive(3.14).getAsBoolean());
+		assertThrows(JsonTypeException.class, () -> new JsonPrimitive("yes").getAsBoolean());
+		assertThrows(JsonTypeException.class, () -> new JsonPrimitive("no").getAsBoolean());
 	}
 	
 	@Test
 	void getAsNumberValid() {
-		assertEquals(1L, new JsonPrimitive((byte) 1).getAsNumber());
-		assertEquals(2L, new JsonPrimitive((short) 2).getAsNumber());
-		assertEquals(3L, new JsonPrimitive(3).getAsNumber());
+		assertEquals((byte) 1, new JsonPrimitive((byte) 1).getAsNumber());
+		assertEquals((short) 2, new JsonPrimitive((short) 2).getAsNumber());
+		assertEquals(3, new JsonPrimitive(3).getAsNumber());
 		assertEquals(4L, new JsonPrimitive(4L).getAsNumber());
-		assertEquals(5.5, new JsonPrimitive(5.5f).getAsNumber());
+		assertEquals(5.5f, new JsonPrimitive(5.5f).getAsNumber());
 		assertEquals(6.6, new JsonPrimitive(6.6).getAsNumber());
 		
-		assertEquals((short) 1, new JsonPrimitive("1s").getAsNumber());
-		assertEquals(1.0F, new JsonPrimitive("1.0f").getAsNumber());
-		assertEquals(1L, new JsonPrimitive("1l").getAsNumber());
-		assertEquals(1.0, new JsonPrimitive("1.0d").getAsNumber());
-		assertEquals(1, new JsonPrimitive("1i").getAsNumber());
-		assertEquals((byte) 1, new JsonPrimitive("1b").getAsNumber());
+		assertThrows(JsonTypeException.class, () -> new JsonPrimitive("1s").getAsNumber());
+		assertThrows(JsonTypeException.class, () -> new JsonPrimitive("1.0f").getAsNumber());
+		assertThrows(JsonTypeException.class, () -> new JsonPrimitive("1l").getAsNumber());
+		assertThrows(JsonTypeException.class, () -> new JsonPrimitive("1.0d").getAsNumber());
+		assertThrows(JsonTypeException.class, () -> new JsonPrimitive("1i").getAsNumber());
+		assertThrows(JsonTypeException.class, () -> new JsonPrimitive("1b").getAsNumber());
 	}
 	
 	@Test
 	void getAsNumberInvalid() {
-		assertThrows(IllegalArgumentException.class, () -> new JsonPrimitive(false).getAsNumber());
-		assertThrows(IllegalArgumentException.class, () -> new JsonPrimitive(true).getAsNumber());
-		assertThrows(IllegalArgumentException.class, () -> new JsonPrimitive("test").getAsNumber());
-		assertThrows(IllegalArgumentException.class, () -> new JsonPrimitive("not a number").getAsNumber());
-		assertThrows(IllegalArgumentException.class, () -> new JsonPrimitive("").getAsNumber());
+		assertThrows(JsonTypeException.class, () -> new JsonPrimitive(false).getAsNumber());
+		assertThrows(JsonTypeException.class, () -> new JsonPrimitive(true).getAsNumber());
+		assertThrows(JsonTypeException.class, () -> new JsonPrimitive("test").getAsNumber());
+		assertThrows(JsonTypeException.class, () -> new JsonPrimitive("not a number").getAsNumber());
+		assertThrows(JsonTypeException.class, () -> new JsonPrimitive("").getAsNumber());
 	}
 	
 	@Test
@@ -176,10 +172,10 @@ class JsonPrimitiveTest {
 		assertEquals(42, intValue.getAsInteger());
 		assertEquals(42L, intValue.getAsLong());
 		
-		assertEquals((byte) 1, new JsonPrimitive("1b").getAsByte());
-		assertEquals((short) 1, new JsonPrimitive("1s").getAsShort());
-		assertEquals(1, new JsonPrimitive("1i").getAsInteger());
-		assertEquals(1L, new JsonPrimitive("1l").getAsLong());
+		assertThrows(JsonTypeException.class, () -> new JsonPrimitive("1b").getAsByte());
+		assertThrows(JsonTypeException.class, () -> new JsonPrimitive("1s").getAsShort());
+		assertThrows(JsonTypeException.class, () -> new JsonPrimitive("1i").getAsInteger());
+		assertThrows(JsonTypeException.class, () -> new JsonPrimitive("1l").getAsLong());
 		
 		assertEquals(1, new JsonPrimitive(1L).getAsInteger());
 		assertEquals(1L, new JsonPrimitive((short) 1).getAsLong());
@@ -191,20 +187,20 @@ class JsonPrimitiveTest {
 		JsonPrimitive floatValue = new JsonPrimitive(3.14f);
 		JsonPrimitive doubleValue = new JsonPrimitive(3.14);
 		
-		assertThrows(IllegalArgumentException.class, booleanValue::getAsByte);
-		assertThrows(IllegalArgumentException.class, booleanValue::getAsShort);
-		assertThrows(IllegalArgumentException.class, booleanValue::getAsInteger);
-		assertThrows(IllegalArgumentException.class, booleanValue::getAsLong);
+		assertThrows(JsonTypeException.class, booleanValue::getAsByte);
+		assertThrows(JsonTypeException.class, booleanValue::getAsShort);
+		assertThrows(JsonTypeException.class, booleanValue::getAsInteger);
+		assertThrows(JsonTypeException.class, booleanValue::getAsLong);
 		
-		assertThrows(IllegalArgumentException.class, floatValue::getAsByte);
-		assertThrows(IllegalArgumentException.class, floatValue::getAsShort);
-		assertThrows(IllegalArgumentException.class, floatValue::getAsInteger);
-		assertThrows(IllegalArgumentException.class, floatValue::getAsLong);
+		assertEquals((byte) 3, floatValue.getAsByte());
+		assertEquals((short) 3, floatValue.getAsShort());
+		assertEquals(3, floatValue.getAsInteger());
+		assertEquals(3L, floatValue.getAsLong());
 		
-		assertThrows(IllegalArgumentException.class, doubleValue::getAsByte);
-		assertThrows(IllegalArgumentException.class, doubleValue::getAsShort);
-		assertThrows(IllegalArgumentException.class, doubleValue::getAsInteger);
-		assertThrows(IllegalArgumentException.class, doubleValue::getAsLong);
+		assertEquals((byte) 3, doubleValue.getAsByte());
+		assertEquals((short) 3, doubleValue.getAsShort());
+		assertEquals(3, doubleValue.getAsInteger());
+		assertEquals(3L, doubleValue.getAsLong());
 	}
 	
 	@Test
@@ -222,33 +218,55 @@ class JsonPrimitiveTest {
 		assertEquals(3.14f, new JsonPrimitive(3.14f).getAsFloat());
 		assertEquals(3.14, new JsonPrimitive(3.14).getAsDouble());
 		assertEquals(3.14f, new JsonPrimitive(3.14).getAsFloat());
-		assertEquals(3.14, new JsonPrimitive(3.14f).getAsDouble());
+		assertEquals(3.14, new JsonPrimitive(3.14f).getAsDouble(), 1.0e-6);
 		
-		assertEquals(1.0f, new JsonPrimitive("1f").getAsFloat());
-		assertEquals(1.5f, new JsonPrimitive("1.5f").getAsFloat());
-		assertEquals(1.0, new JsonPrimitive("1d").getAsDouble());
-		assertEquals(1.5, new JsonPrimitive("1.5d").getAsDouble());
+		assertThrows(JsonTypeException.class, () -> new JsonPrimitive("1f").getAsFloat());
+		assertThrows(JsonTypeException.class, () -> new JsonPrimitive("1.5f").getAsFloat());
+		assertThrows(JsonTypeException.class, () -> new JsonPrimitive("1d").getAsDouble());
+		assertThrows(JsonTypeException.class, () -> new JsonPrimitive("1.5d").getAsDouble());
 	}
 	
 	@Test
 	void getAsFloatingPointTypesInvalid() {
 		JsonPrimitive booleanValue = new JsonPrimitive(true);
 		
-		assertThrows(IllegalArgumentException.class, booleanValue::getAsFloat);
-		assertThrows(IllegalArgumentException.class, booleanValue::getAsDouble);
+		assertThrows(JsonTypeException.class, booleanValue::getAsFloat);
+		assertThrows(JsonTypeException.class, booleanValue::getAsDouble);
 	}
 	
 	@Test
-	void getAsWithCustomParser() {
-		ThrowableFunction<String, List<Boolean>, Exception> parser = value -> new ScopedStringReader(String.valueOf(value)).readList(StringReader::readBoolean);
+	void getAsParsedJsonPrimitiveNoString() {
+		JsonPrimitive booleanPrimitive = new JsonPrimitive(true);
+		JsonPrimitive numberPrimitive = new JsonPrimitive(42);
+		JsonPrimitive floatPrimitive = new JsonPrimitive(3.14);
 		
-		assertThrows(NullPointerException.class, () -> new JsonPrimitive("[]").getAs(null));
+		assertSame(booleanPrimitive, booleanPrimitive.getAsParsedJsonPrimitive());
+		assertSame(numberPrimitive, numberPrimitive.getAsParsedJsonPrimitive());
+		assertSame(floatPrimitive, floatPrimitive.getAsParsedJsonPrimitive());
+	}
+	
+	@Test
+	void getAsParsedJsonPrimitiveFromString() {
+		JsonPrimitive trueString = new JsonPrimitive("true");
+		JsonPrimitive falseString = new JsonPrimitive("false");
+		JsonPrimitive intString = new JsonPrimitive("42");
+		JsonPrimitive floatString = new JsonPrimitive("3.14");
+		JsonPrimitive normalString = new JsonPrimitive("test");
 		
-		List<Boolean> result = new JsonPrimitive("[true, false, true]").getAs(parser);
-		assertEquals(List.of(true, false, true), result);
+		JsonPrimitive parsedTrue = trueString.getAsParsedJsonPrimitive();
+		assertTrue(parsedTrue.getAsBoolean());
 		
-		assertThrows(IllegalArgumentException.class, () -> new JsonPrimitive("invalid format").getAs(parser));
-		assertThrows(IllegalArgumentException.class, () -> new JsonPrimitive("()").getAs(parser));
+		JsonPrimitive parsedFalse = falseString.getAsParsedJsonPrimitive();
+		assertFalse(parsedFalse.getAsBoolean());
+		
+		JsonPrimitive parsedInt = intString.getAsParsedJsonPrimitive();
+		assertEquals(42, parsedInt.getAsInteger());
+		
+		JsonPrimitive parsedFloat = floatString.getAsParsedJsonPrimitive();
+		assertEquals(3.14, parsedFloat.getAsDouble());
+		
+		JsonPrimitive parsedNormal = normalString.getAsParsedJsonPrimitive();
+		assertEquals("test", parsedNormal.getAsString());
 	}
 	
 	@Test
@@ -263,7 +281,6 @@ class JsonPrimitiveTest {
 		assertEquals(primitive1.hashCode(), primitive2.hashCode());
 		assertNotEquals(primitive1, primitive3);
 		
-		// Number equality
 		assertEquals(primitive4, primitive5);
 		assertEquals(primitive4.hashCode(), primitive5.hashCode());
 		
@@ -296,8 +313,8 @@ class JsonPrimitiveTest {
 		
 		assertEquals("\"test\"", new JsonPrimitive("test").toString());
 		assertEquals("\"\"", new JsonPrimitive("").toString());
-		assertEquals("true", new JsonPrimitive("true").toString());
-		assertEquals("42", new JsonPrimitive("42").toString());
+		assertEquals("\"true\"", new JsonPrimitive("true").toString());
+		assertEquals("\"42\"", new JsonPrimitive("42").toString());
 		
 		assertEquals("\"hello world\"", new JsonPrimitive("hello world").toString());
 		assertEquals("\"line1\nline2\"", new JsonPrimitive("line1\nline2").toString());
@@ -309,37 +326,27 @@ class JsonPrimitiveTest {
 		JsonPrimitive numberValue = new JsonPrimitive(42);
 		JsonPrimitive stringValue = new JsonPrimitive("test");
 		
+		assertThrows(NullPointerException.class, () -> booleanValue.toString(null));
+		assertThrows(NullPointerException.class, () -> numberValue.toString(null));
+		assertThrows(NullPointerException.class, () -> stringValue.toString(null));
+		
 		assertEquals("true", booleanValue.toString(CUSTOM_CONFIG));
 		assertEquals("42", numberValue.toString(CUSTOM_CONFIG));
 		assertEquals("\"test\"", stringValue.toString(CUSTOM_CONFIG));
-		
-		assertEquals("true", booleanValue.toString(null));
-		assertEquals("42", numberValue.toString(null));
-		assertEquals("\"test\"", stringValue.toString(null));
 	}
 	
 	@Test
 	void toStringTypeParsing() {
-		assertEquals("true", new JsonPrimitive("true").toString());
-		assertEquals("false", new JsonPrimitive("false").toString());
+		assertEquals("\"true\"", new JsonPrimitive("true").toString());
+		assertEquals("\"false\"", new JsonPrimitive("false").toString());
 		
-		assertEquals("123", new JsonPrimitive("123").toString());
-		assertEquals("3.14", new JsonPrimitive("3.14").toString());
-		assertEquals("-42", new JsonPrimitive("-42").toString());
+		assertEquals("\"123\"", new JsonPrimitive("123").toString());
+		assertEquals("\"3.14\"", new JsonPrimitive("3.14").toString());
+		assertEquals("\"-42\"", new JsonPrimitive("-42").toString());
 		
 		assertEquals("\"not_a_boolean\"", new JsonPrimitive("not_a_boolean").toString());
 		assertEquals("\"123abc\"", new JsonPrimitive("123abc").toString());
 		assertEquals("\"\"", new JsonPrimitive("").toString());
-	}
-	
-	@Test
-	void valueTypePersistence() {
-		JsonPrimitive intValue = new JsonPrimitive(42);
-		JsonPrimitive stringValue = new JsonPrimitive("42");
-		
-		assertEquals(intValue, stringValue);
-		assertEquals("42", intValue.toString());
-		assertEquals("42", stringValue.toString());
 	}
 	
 	@Test

@@ -19,7 +19,7 @@
 package net.luis.utils.io.codec;
 
 import net.luis.utils.io.codec.provider.TypeProvider;
-import net.luis.utils.util.Result;
+import net.luis.utils.util.result.Result;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -80,17 +80,17 @@ public class NamedCodec<C> implements Codec<C> {
 	public @NotNull <R> Result<R> encodeStart(@NotNull TypeProvider<R> provider, @NotNull R map, @Nullable C value) {
 		Objects.requireNonNull(provider, "Type provider must not be null");
 		Objects.requireNonNull(map, "Current value must not be null");
-		if (value == null) {
-			return Result.error("Unable to encode named '" + this.name + "' null value using '" + this + "'");
-		}
+		
 		Result<R> encodedResult = this.codec.encodeStart(provider, provider.empty(), value);
 		if (encodedResult.isError()) {
 			return Result.error("Unable to encode named '" + this.name + "' '" + value + "' with '" + this + "': " + encodedResult.errorOrThrow());
 		}
-		R encoded = encodedResult.orThrow();
+		
+		R encoded = encodedResult.resultOrThrow();
 		if (provider.getEmpty(encoded).isSuccess()) {
 			return Result.success(provider.empty());
 		}
+		
 		Result<R> result = provider.set(map, this.name, encoded);
 		if (result.isError()) {
 			return Result.error("Unable to encode named '" + this.name + "' '" + value + "' with '" + this + "': " + result.errorOrThrow());
@@ -104,11 +104,13 @@ public class NamedCodec<C> implements Codec<C> {
 		if (map == null) {
 			return Result.error("Unable to decode named '" + this.name + "' null value using '" + this + "'");
 		}
+		
 		Result<R> value = provider.get(map, this.name);
 		if (value.isError()) {
 			return this.decodeStartWithAlias(provider, map, value.errorOrThrow());
 		}
-		Result<C> result = this.codec.decodeStart(provider, value.orThrow());
+		
+		Result<C> result = this.codec.decodeStart(provider, value.resultOrThrow());
 		if (result.isError()) { // Required, since TypeProvider#get can return null as success
 			return this.decodeStartWithAlias(provider, map, result.errorOrThrow());
 		}
@@ -136,11 +138,11 @@ public class NamedCodec<C> implements Codec<C> {
 		if (name.isError()) {
 			return Result.error("Unable to decode named '" + this.name + "' of '" + map + "' with '" + this + "': " + name.errorOrThrow() + "\nSuppresses actual error: " + error);
 		}
-		Result<R> value = provider.get(map, name.orThrow());
+		Result<R> value = provider.get(map, name.resultOrThrow());
 		if (value.isError()) {
-			return Result.error("Unable to decode named '" + name.orThrow() + "' of '" + map + "' with '" + this + "': " + value.errorOrThrow() + "\nSuppresses actual error: " + error);
+			return Result.error("Unable to decode named '" + name.resultOrThrow() + "' of '" + map + "' with '" + this + "': " + value.errorOrThrow() + "\nSuppresses actual error: " + error);
 		}
-		return this.codec.decodeStart(provider, value.orThrow());
+		return this.codec.decodeStart(provider, value.resultOrThrow());
 	}
 	
 	/**
@@ -161,7 +163,7 @@ public class NamedCodec<C> implements Codec<C> {
 		}
 		return this.aliases.stream().filter(alias -> {
 			Result<Boolean> hasAlias = provider.has(map, alias);
-			return hasAlias.isSuccess() && hasAlias.orThrow();
+			return hasAlias.isSuccess() && hasAlias.resultOrThrow();
 		}).findFirst().map(Result::success).orElse(Result.error("Name and aliases '" + this.name + "' and '" + this.aliases + "' not found in '" + map + "'"));
 	}
 	

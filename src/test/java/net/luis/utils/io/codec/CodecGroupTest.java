@@ -20,7 +20,7 @@ package net.luis.utils.io.codec;
 
 import net.luis.utils.io.codec.provider.JsonTypeProvider;
 import net.luis.utils.io.data.json.*;
-import net.luis.utils.util.Result;
+import net.luis.utils.util.result.Result;
 import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.Test;
 
@@ -83,7 +83,7 @@ class CodecGroupTest {
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), testObject);
 		assertTrue(result.isSuccess());
 		
-		JsonElement element = result.orThrow();
+		JsonElement element = result.resultOrThrow();
 		assertTrue(element.isJsonObject());
 		JsonObject obj = element.getAsJsonObject();
 		assertEquals(new JsonPrimitive("hello"), obj.get("name"));
@@ -104,7 +104,7 @@ class CodecGroupTest {
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), testObject);
 		assertTrue(result.isSuccess());
 		
-		JsonElement element = result.orThrow();
+		JsonElement element = result.resultOrThrow();
 		assertTrue(element.isJsonObject());
 		JsonObject obj = element.getAsJsonObject();
 		assertEquals(new JsonPrimitive("test"), obj.get("text"));
@@ -121,7 +121,7 @@ class CodecGroupTest {
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), testObject);
 		assertTrue(result.isSuccess());
 		
-		JsonElement element = result.orThrow();
+		JsonElement element = result.resultOrThrow();
 		assertTrue(element.isJsonObject());
 		assertTrue(element.getAsJsonObject().isEmpty());
 	}
@@ -179,7 +179,7 @@ class CodecGroupTest {
 		Result<TestObject> result = codec.decodeStart(typeProvider, jsonObj);
 		assertTrue(result.isSuccess());
 		
-		TestObject obj = result.orThrow();
+		TestObject obj = result.resultOrThrow();
 		assertEquals("hello", obj.name);
 		assertEquals(123, obj.value);
 	}
@@ -202,7 +202,7 @@ class CodecGroupTest {
 		Result<TestObject2> result = codec.decodeStart(typeProvider, jsonObj);
 		assertTrue(result.isSuccess());
 		
-		TestObject2 obj = result.orThrow();
+		TestObject2 obj = result.resultOrThrow();
 		assertEquals("test", obj.text);
 		assertEquals(3.14, obj.number);
 		assertTrue(obj.flag);
@@ -216,7 +216,7 @@ class CodecGroupTest {
 		Result<TestObject> result = codec.decodeStart(typeProvider, new JsonObject());
 		assertTrue(result.isSuccess());
 		
-		TestObject obj = result.orThrow();
+		TestObject obj = result.resultOrThrow();
 		assertEquals("default", obj.name);
 		assertEquals(0, obj.value);
 	}
@@ -292,10 +292,10 @@ class CodecGroupTest {
 		Result<JsonElement> encodeResult = codec.encodeStart(typeProvider, typeProvider.empty(), original);
 		assertTrue(encodeResult.isSuccess());
 		
-		Result<TestObject> decodeResult = codec.decodeStart(typeProvider, encodeResult.orThrow());
+		Result<TestObject> decodeResult = codec.decodeStart(typeProvider, encodeResult.resultOrThrow());
 		assertTrue(decodeResult.isSuccess());
 		
-		TestObject decoded = decodeResult.orThrow();
+		TestObject decoded = decodeResult.resultOrThrow();
 		assertEquals(original.name, decoded.name);
 		assertEquals(original.value, decoded.value);
 	}
@@ -315,10 +315,10 @@ class CodecGroupTest {
 		Result<JsonElement> encodeResult = codec.encodeStart(typeProvider, typeProvider.empty(), original);
 		assertTrue(encodeResult.isSuccess());
 		
-		Result<TestObject2> decodeResult = codec.decodeStart(typeProvider, encodeResult.orThrow());
+		Result<TestObject2> decodeResult = codec.decodeStart(typeProvider, encodeResult.resultOrThrow());
 		assertTrue(decodeResult.isSuccess());
 		
-		TestObject2 decoded = decodeResult.orThrow();
+		TestObject2 decoded = decodeResult.resultOrThrow();
 		assertEquals(original.text, decoded.text);
 		assertEquals(original.number, decoded.number);
 		assertEquals(original.flag, decoded.flag);

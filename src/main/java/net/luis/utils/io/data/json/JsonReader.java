@@ -107,11 +107,13 @@ public class JsonReader implements AutoCloseable {
 		if (!this.reader.canRead()) {
 			throw new JsonSyntaxException("Invalid json, expected content but got nothing");
 		}
+		
 		this.scope.clear();
 		JsonElement element = this.readJsonElement();
 		if (!this.scope.isEmpty()) {
 			throw new JsonSyntaxException("Invalid json structure, some elements are not closed properly");
 		}
+		
 		this.reader.skipWhitespaces();
 		if (this.config.strict() && this.reader.canRead()) {
 			throw new JsonSyntaxException("Invalid json element, expected end of input but got: '" + this.reader.peek() + "'");
@@ -134,6 +136,7 @@ public class JsonReader implements AutoCloseable {
 		if (!this.reader.canRead()) {
 			throw new JsonSyntaxException("Invalid json element, expected content but got nothing");
 		}
+		
 		char next = this.reader.peek();
 		JsonElement element;
 		if (next == '{') {
@@ -143,6 +146,7 @@ public class JsonReader implements AutoCloseable {
 		} else {
 			element = this.readJsonValue();
 		}
+		
 		this.reader.skipWhitespaces();
 		return element;
 	}
@@ -178,10 +182,12 @@ public class JsonReader implements AutoCloseable {
 			if (currentScope > this.scope.size()) {
 				throw new JsonSyntaxException("Invalid json structure, some elements are not closed properly");
 			}
+			
 			this.reader.skipWhitespaces();
 			if (!this.reader.canRead()) {
 				throw new JsonSyntaxException("Invalid json array, expected closing bracket ']' or another element but got nothing");
 			}
+			
 			if (this.reader.peek() == ',') {
 				this.reader.skip();
 				this.reader.skipWhitespaces();
@@ -197,6 +203,7 @@ public class JsonReader implements AutoCloseable {
 			if (this.reader.peek() != ']') {
 				throw new JsonSyntaxException("Invalid json array, expected closing bracket ']' but got: '" + this.reader.peek() + "'");
 			}
+			
 			if (this.scope.pop() != '[') {
 				throw new JsonSyntaxException("Invalid json structure, the scope stack is corrupted: " + this.scope);
 			}
@@ -236,6 +243,7 @@ public class JsonReader implements AutoCloseable {
 		while (this.reader.canRead() && this.reader.peek() != '}') {
 			this.reader.skipWhitespaces();
 			String key;
+			
 			if (this.config.strict()) {
 				if (this.reader.peek() != '"') {
 					throw new JsonSyntaxException("Invalid json object, expected quoted key but got: '" + this.reader.peek() + "'");
@@ -245,6 +253,7 @@ public class JsonReader implements AutoCloseable {
 				key = this.reader.readString();
 				this.reader.skipWhitespaces();
 			}
+			
 			if (this.reader.peek() != ':') {
 				throw new JsonSyntaxException("Invalid json object, expected ':' but got: '" + this.reader.peek() + "'");
 			}
@@ -255,10 +264,12 @@ public class JsonReader implements AutoCloseable {
 			if (currentScope > this.scope.size()) {
 				throw new JsonSyntaxException("Invalid json structure, some elements are not closed properly");
 			}
+			
 			this.reader.skipWhitespaces();
 			if (!this.reader.canRead()) {
 				throw new JsonSyntaxException("Invalid json object, expected closing bracket '}' but got nothing");
 			}
+			
 			if (this.reader.peek() == ',') {
 				this.reader.skip();
 				this.reader.skipWhitespaces();
@@ -269,9 +280,11 @@ public class JsonReader implements AutoCloseable {
 				throw new JsonSyntaxException("Invalid json object, expected ',' or '}' but got: '" + this.reader.peek() + "'");
 			}
 		}
+		
 		if (!this.reader.canRead()) {
 			throw new JsonSyntaxException("Invalid json object, expected closing bracket '}' but got nothing");
 		}
+		
 		if (this.scope.size() == currentScope) {
 			if (this.reader.peek() != '}') {
 				throw new JsonSyntaxException("Invalid json object, expected closing bracket '}' but got: '" + this.reader.peek() + "'");
@@ -315,19 +328,126 @@ public class JsonReader implements AutoCloseable {
 		if (!this.reader.canRead()) {
 			throw new JsonSyntaxException("Invalid json value, expected content but got nothing");
 		}
+		
 		char next = Character.toLowerCase(this.reader.peek());
 		if (next == '"') {
 			return new JsonPrimitive(this.reader.readQuotedString());
 		}
+		
+		if (next == '-' || next == '+' || next == 'i' || next == 'n') {
+			boolean specialNumber = true;
+			
+			if (next == '-' || next == '+') {
+				this.reader.mark();
+				this.reader.skip();
+				
+				if (!this.reader.canRead()) {
+					throw new JsonSyntaxException("Invalid json primitive, expected 'Infinity' or 'NaN' but got incomplete value");
+				}
+				
+				char afterSign = Character.toLowerCase(this.reader.peek());
+				if (afterSign != 'i' && afterSign != 'n') {
+					specialNumber = false;
+				}
+				this.reader.reset();
+			}
+			if (specialNumber && next == 'n') {
+				this.reader.mark();
+				this.reader.skip();
+				
+				if (!this.reader.canRead()) {
+					throw new JsonSyntaxException("Invalid json primitive, expected 'null' or 'NaN' but got incomplete value");
+				}
+				
+				if (Character.toLowerCase(this.reader.peek()) != 'a') {
+					specialNumber = false;
+				}
+				this.reader.reset();
+			}
+			
+			if (specialNumber) {
+				return this.readSpecialJsonNumber();
+			}
+		}
+		
 		if (next == 'n') {
 			return this.readJsonNull();
 		} else if (next == 't' || next == 'f') {
 			return this.readJsonBoolean();
 		}
+		
 		try {
 			return new JsonPrimitive(this.reader.readNumber());
 		} catch (Exception e) {
 			throw new JsonSyntaxException("Invalid json primitive, expected a number but got: '" + next + "'", e);
+		}
+	}
+	
+	/**
+	 * Reads a special json number (Infinity or NaN) from the underlying reader.<br>
+	 * The reader expects the next characters to be either 'Infinity' or 'NaN'.<br>
+	 * If the value is 'Infinity', it can be prefixed with either a '+' or '-' sign.<br>
+	 * <p>
+	 *     In strict mode,
+	 * </p>
+	 * <ul>
+	 *     <li>the reader will throw an exception if the value is not 'Infinity' or 'NaN' (with exact casing).</li>
+	 *     <li>'NaN' cannot be prefixed with a sign.</li>
+	 * </ul>
+	 * <p>
+	 *     In non-strict mode,
+	 * </p>
+	 * <ul>
+	 *     <li>the reader will accept any case of 'Infinity' or 'NaN' including mixed-case.</li>
+	 *     <li>'NaN' can be prefixed with a sign.</li>
+	 * </ul>
+	 *
+	 * @return The read special json number
+	 */
+	private @NotNull JsonPrimitive readSpecialJsonNumber() {
+		char sign = '\0';
+		char next = this.reader.peek();
+		if (next == '+' || next == '-') {
+			sign = this.reader.read();
+			
+			if (!this.reader.canRead()) {
+				throw new JsonSyntaxException("Invalid json primitive, expected 'Infinity' or 'NaN' but got incomplete value");
+			}
+			next = this.reader.peek();
+		}
+		
+		if (Character.toLowerCase(next) != 'i' && Character.toLowerCase(next) != 'n') {
+			throw new JsonSyntaxException("Invalid json primitive, expected '" + sign + "Infinity' or 'NaN' but got: '" + next + "'");
+		}
+		
+		if (Character.toLowerCase(next) == 'i') {
+			if (!this.reader.canRead()) {
+				throw new JsonSyntaxException("Invalid json primitive, expected 'Infinity' but got incomplete value");
+			}
+			if (sign == '\0') {
+				sign = '+';
+			}
+			String value = this.reader.read(8);
+			
+			if (this.config.strict() ? !"Infinity".equals(value) : !"infinity".equalsIgnoreCase(value)) {
+				throw new JsonSyntaxException("Invalid json primitive, expected '" + sign + "Infinity' but got: '" + value + "'");
+			}
+			return new JsonPrimitive(sign == '-' ? Double.NEGATIVE_INFINITY : Double.POSITIVE_INFINITY);
+		} else {
+			if (!this.reader.canRead()) {
+				throw new JsonSyntaxException("Invalid json primitive, expected 'NaN' but got incomplete value");
+			}
+			
+			String value = this.reader.read(3);
+			
+			if (this.config.strict() ? !"NaN".equals(value) : !"nan".equalsIgnoreCase(value)) {
+				throw new JsonSyntaxException("Invalid json primitive, expected 'NaN' but got: '" + value + "'");
+			}
+			
+			if (this.config.strict() && sign != '\0') {
+				throw new JsonSyntaxException("Invalid json primitive, 'NaN' cannot be prefixed with a sign");
+			}
+			return new JsonPrimitive(Double.NaN);
 		}
 	}
 	
@@ -346,6 +466,7 @@ public class JsonReader implements AutoCloseable {
 		if (Character.toLowerCase(this.reader.peek()) != 'n') {
 			throw new JsonSyntaxException("Invalid json null, expected 'null' but got: '" + this.reader.peek() + "'");
 		}
+		
 		String value = this.reader.read(4);
 		if (this.config.strict() ? !"null".equals(value) : !"null".equalsIgnoreCase(value)) {
 			throw new JsonSyntaxException("Invalid json null, expected 'null' but got: '" + value + "'");
@@ -369,6 +490,7 @@ public class JsonReader implements AutoCloseable {
 		if (next != 't' && next != 'f') {
 			throw new JsonSyntaxException("Invalid json boolean, expected 'true' or 'false' but got: '" + next + "'");
 		}
+		
 		if (next == 't') {
 			String value = this.reader.read(4);
 			if (this.config.strict() ? !"true".equals(value) : !"true".equalsIgnoreCase(value)) {

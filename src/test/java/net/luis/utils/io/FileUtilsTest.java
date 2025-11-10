@@ -180,6 +180,139 @@ class FileUtilsTest {
 	}
 	
 	@Test
+	void normalizeDirectoryPathReturnsRootForNullFile()
+	{
+		String result = FileUtils.normalizeDirectoryPath(null);
+		assertEquals("/", result);
+	}
+	
+	@Test
+	void normalizeDirectoryPathReturnsRootForEmptyFile()
+	{
+		String result = FileUtils.normalizeDirectoryPath("");
+		assertEquals("/", result);
+	}
+	
+	@Test
+	void normalizeDirectoryPathReturnsRootForSlash()
+	{
+		String result = FileUtils.normalizeDirectoryPath("/");
+		assertEquals("/", result);
+	}
+	
+	@Test
+	void normalizeDirectoryPathReturnsRootForDotSlash()
+	{
+		String result = FileUtils.normalizeDirectoryPath("./");
+		assertEquals("/", result);
+	}
+	
+	@Test
+	void normalizeDirectoryPathAddsLeadingAndTrailingSlashForDirectoryName()
+	{
+		String result = FileUtils.normalizeDirectoryPath("foo");
+		assertEquals("/foo/", result);
+	}
+	
+	@Test
+	void normalizeDirectoryPathNormalizesRelativePath()
+	{
+		String result = FileUtils.normalizeDirectoryPath("./foo/");
+		assertEquals("/foo/", result);
+	}
+	
+	@Test
+	void normalizeDirectoryPathReturnsRootForFileWithoutPath()
+	{
+		String result = FileUtils.normalizeDirectoryPath("/foo.json");
+		assertEquals("/", result);
+	}
+	
+	@Test
+	void normalizeDirectoryPathReturnsDirectoryForFileWithPath()
+	{
+		String result = FileUtils.normalizeDirectoryPath("/bar/foo.json");
+		assertEquals("/bar/foo.json", result);
+	}
+	
+	@Test
+	void normalizeDirectoryPathHandlesBackslashes()
+	{
+		String result = FileUtils.normalizeDirectoryPath("bar\\baz");
+		assertEquals("/bar/baz/", result);
+	}
+	
+	@Test
+	void normalizeDirectoryPathAddsTrailingSlashToAbsolutePath()
+	{
+		String result = FileUtils.normalizeDirectoryPath("/foo/bar");
+		assertEquals("/foo/bar/", result);
+	}
+	
+	@Test
+	void normalizeDirectoryPathPreservesTrailingSlash()
+	{
+		String result = FileUtils.normalizeDirectoryPath("/foo/bar/");
+		assertEquals("/foo/bar/", result);
+	}
+	
+	@Test
+	void normalizeDirectoryPathNormalizesRelativePathWithoutTrailingSlash()
+	{
+		String result = FileUtils.normalizeDirectoryPath("./foo");
+		assertEquals("/foo/", result);
+	}
+	
+	@Test
+	void normalizeDirectoryPathHandlesNestedDirectories()
+	{
+		String result = FileUtils.normalizeDirectoryPath("a/b/c");
+		assertEquals("/a/b/c/", result);
+	}
+	
+	@Test
+	void normalizeDirectoryPathHandlesMultipleDotsInPath()
+	{
+		String result = FileUtils.normalizeDirectoryPath("./path/to/file.tar.gz");
+		assertEquals("/path/to/file.tar.gz", result);
+	}
+	
+	@Test
+	void normalizeDirectoryPathHandlesRelativePathWithMultipleSegments()
+	{
+		String result = FileUtils.normalizeDirectoryPath("./bar/baz");
+		assertEquals("/bar/baz/", result);
+	}
+	
+	@Test
+	void normalizeDirectoryPathHandlesParentDirectoryReference()
+	{
+		String result = FileUtils.normalizeDirectoryPath("../foo");
+		assertEquals("/../foo/", result);
+	}
+	
+	@Test
+	void normalizeDirectoryPathHandlesDottedDirectoryWithSubdir()
+	{
+		String result = FileUtils.normalizeDirectoryPath("/my.dir/subdir");
+		assertEquals("/my.dir/subdir/", result);
+	}
+	
+	@Test
+	void normalizeDirectoryPathHandlesHiddenDirectory()
+	{
+		String result = FileUtils.normalizeDirectoryPath(".config");
+		assertEquals("/.config/", result);
+	}
+	
+	@Test
+	void normalizeDirectoryPathHandlesVersionedDirectory()
+	{
+		String result = FileUtils.normalizeDirectoryPath("project.v2/node_modules");
+		assertEquals("/project.v2/node_modules/", result);
+	}
+	
+	@Test
 	void createWithNullFile() {
 		assertThrows(NullPointerException.class, () -> FileUtils.create(null));
 	}

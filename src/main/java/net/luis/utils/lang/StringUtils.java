@@ -20,8 +20,7 @@ package net.luis.utils.lang;
 
 import com.google.common.base.Objects;
 import com.google.common.collect.Lists;
-import org.apache.commons.lang3.ArrayUtils;
-import org.apache.commons.lang3.ObjectUtils;
+import org.apache.commons.lang3.*;
 import org.intellij.lang.annotations.Language;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -229,12 +228,14 @@ public final class StringUtils {
 	 * @see #levenshteinDistance(String, String)
 	 */
 	private static int baseDifference(@Nullable String base, @Nullable String compare) {
-		if (org.apache.commons.lang3.StringUtils.equals(base, compare)) {
+		if (Strings.CS.equals(base, compare)) {
 			return 0;
 		}
+		
 		if (isEmpty(base)) {
 			return isEmpty(compare) ? 0 : compare.length();
 		}
+		
 		if (isEmpty(compare)) {
 			return base.length();
 		}
@@ -637,7 +638,7 @@ public final class StringUtils {
 			return true;
 		}
 		for (int index : indexes) {
-			if (index + 1 >= str.length() || !startsWithAny(str.substring(index + 1), follows)) {
+			if (index + 1 >= str.length() || !Strings.CS.startsWithAny(str.substring(index + 1), follows)) {
 				return false;
 			}
 		}
@@ -736,7 +737,7 @@ public final class StringUtils {
 		for (int index : indexes) {
 			String before = str.substring(0, index);
 			String reverse = reverseBrackets ? reverseIncludeBrackets(before) : reverse(before);
-			if (!startsWithAny(reverse, surrounded) || !startsWithAny(str.substring(index + 1), surrounded)) {
+			if (!Strings.CS.startsWithAny(reverse, surrounded) || !Strings.CS.startsWithAny(str.substring(index + 1), surrounded)) {
 				return false;
 			}
 		}
@@ -856,11 +857,12 @@ public final class StringUtils {
 		if (isBlank(str) || ObjectUtils.allNull(open, close) || (Objects.equal(open, close) && str.equals(open))) {
 			return true;
 		}
-		assert open != null;
+		
 		// Inverted, keep quotes if system property is set to true
 		if (!Boolean.parseBoolean(System.getProperty(LANG_MATCH_IN_QUOTES, "false"))) {
 			str = removeQuoted(str);
 		}
+		
 		Deque<String> stack = new ArrayDeque<>();
 		for (int i = 0; i < str.length(); i++) {
 			if (str.startsWith(open, i)) {

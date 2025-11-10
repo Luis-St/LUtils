@@ -22,7 +22,7 @@ import net.luis.utils.io.codec.ResultingFunction;
 import net.luis.utils.io.codec.provider.JsonTypeProvider;
 import net.luis.utils.io.data.json.JsonElement;
 import net.luis.utils.io.data.json.JsonPrimitive;
-import net.luis.utils.util.Result;
+import net.luis.utils.util.result.Result;
 import org.junit.jupiter.api.Test;
 
 import static net.luis.utils.io.codec.Codecs.*;
@@ -96,7 +96,7 @@ class EncoderTest {
 		
 		Result<JsonElement> result = encoder.encodeStart(typeProvider, typeProvider.empty(), 42);
 		assertTrue(result.isSuccess());
-		assertEquals(new JsonPrimitive(42), result.orThrow());
+		assertEquals(new JsonPrimitive(42), result.resultOrThrow());
 	}
 	
 	@Test
@@ -109,18 +109,21 @@ class EncoderTest {
 	}
 	
 	@Test
-	void encodeStartWithSpecialNumbers() { // Currently not supported by the JsonTypeProvider
+	void encodeStartWithSpecialNumbers() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Encoder<Double> encoder = DOUBLE;
 		
 		Result<JsonElement> infinityResult = encoder.encodeStart(typeProvider, typeProvider.empty(), Double.POSITIVE_INFINITY);
-		assertTrue(infinityResult.isError());
-		
-		Result<JsonElement> nanResult = encoder.encodeStart(typeProvider, typeProvider.empty(), Double.NaN);
-		assertTrue(nanResult.isError());
+		assertTrue(infinityResult.isSuccess());
+		assertEquals(new JsonPrimitive(Double.POSITIVE_INFINITY), infinityResult.resultOrThrow());
 		
 		Result<JsonElement> negInfinityResult = encoder.encodeStart(typeProvider, typeProvider.empty(), Double.NEGATIVE_INFINITY);
-		assertTrue(negInfinityResult.isError());
+		assertTrue(negInfinityResult.isSuccess());
+		assertEquals(new JsonPrimitive(Double.NEGATIVE_INFINITY), negInfinityResult.resultOrThrow());
+		
+		Result<JsonElement> nanResult = encoder.encodeStart(typeProvider, typeProvider.empty(), Double.NaN);
+		assertTrue(nanResult.isSuccess());
+		assertEquals(new JsonPrimitive(Double.NaN), nanResult.resultOrThrow());
 	}
 	
 	@Test
@@ -135,7 +138,7 @@ class EncoderTest {
 		
 		Result<JsonElement> result = encoder.encodeStart(typeProvider, typeProvider.empty(), 42.7);
 		assertTrue(result.isSuccess());
-		assertEquals(new JsonPrimitive(42), result.orThrow());
+		assertEquals(new JsonPrimitive(42), result.resultOrThrow());
 	}
 	
 	@Test
@@ -155,7 +158,7 @@ class EncoderTest {
 		
 		Result<JsonElement> successResult = encoder.encodeStart(typeProvider, typeProvider.empty(), 42);
 		assertTrue(successResult.isSuccess());
-		assertEquals(new JsonPrimitive(42), successResult.orThrow());
+		assertEquals(new JsonPrimitive(42), successResult.resultOrThrow());
 	}
 	
 	@Test
@@ -174,7 +177,7 @@ class EncoderTest {
 		
 		Result<JsonElement> result = encoder.encodeStart(typeProvider, typeProvider.empty(), "42");
 		assertTrue(result.isSuccess());
-		assertEquals(new JsonPrimitive(42), result.orThrow());
+		assertEquals(new JsonPrimitive(42), result.resultOrThrow());
 	}
 	
 	@Test
@@ -184,7 +187,7 @@ class EncoderTest {
 		
 		Result<JsonElement> result = encoder.encodeStart(typeProvider, typeProvider.empty(), new Person("John", 25));
 		assertTrue(result.isSuccess());
-		assertEquals(new JsonPrimitive("John"), result.orThrow());
+		assertEquals(new JsonPrimitive("John"), result.resultOrThrow());
 	}
 	
 	//region Internal

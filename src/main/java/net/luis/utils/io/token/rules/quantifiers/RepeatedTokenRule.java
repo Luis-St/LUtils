@@ -103,10 +103,15 @@ public record RepeatedTokenRule(
 		int occurrences = 0;
 		List<Token> matchedTokens = Lists.newArrayList();
 		while (workingStream.hasMoreTokens() && occurrences < this.maxOccurrences) {
+			int previousIndex = workingStream.getCurrentIndex();
 			TokenRuleMatch match = this.tokenRule.match(workingStream, ctx);
 			
 			if (match == null) {
-				return Pair.of(matchedTokens, occurrences);
+				break;
+			}
+			
+			if (workingStream.getCurrentIndex() == previousIndex) {
+				break;
 			}
 			
 			matchedTokens.addAll(match.matchedTokens());

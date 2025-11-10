@@ -19,9 +19,7 @@
 package net.luis.utils.io.token.type.classifier;
 
 import net.luis.utils.io.token.TokenPosition;
-import net.luis.utils.io.token.tokens.EscapedToken;
-import net.luis.utils.io.token.tokens.SimpleToken;
-import net.luis.utils.io.token.tokens.Token;
+import net.luis.utils.io.token.tokens.*;
 import net.luis.utils.io.token.type.CustomTokenType;
 import net.luis.utils.io.token.type.TokenType;
 import org.jetbrains.annotations.NotNull;

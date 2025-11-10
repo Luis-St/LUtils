@@ -22,6 +22,7 @@ import com.google.common.collect.*;
 import net.luis.utils.math.Mth;
 import net.luis.utils.util.Utils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.core.Filter;
 import org.apache.logging.log4j.core.appender.ConsoleAppender;
@@ -251,17 +252,17 @@ public class LoggerConfiguration {
 		if (StringUtils.isBlank(pattern)) {
 			throw new IllegalArgumentException("Pattern must not be empty");
 		}
-		if (!StringUtils.containsAny(pattern, "%m", "%msg", "%message", "%throwable", "%ex", "%exception")) {
+		if (!Strings.CS.containsAny(pattern, "%m", "%msg", "%message", "%throwable", "%ex", "%exception")) {
 			throw new IllegalArgumentException("Pattern must contain at least one of the following placeholders: %m, %msg, %message, %throwable, %ex, %exception");
 		}
 		if (level == Level.ALL) {
 			for (Level temp : type.getAllowedLevels()) {
-				this.patternOverrides.computeIfAbsent(type, k -> Maps.newHashMap()).put(temp, pattern);
+				this.patternOverrides.computeIfAbsent(type, _ -> Maps.newHashMap()).put(temp, pattern);
 			}
 		} else if (level == Level.OFF) {
-			this.patternOverrides.computeIfAbsent(type, k -> Maps.newHashMap()).clear();
+			this.patternOverrides.computeIfAbsent(type, _ -> Maps.newHashMap()).clear();
 		} else {
-			this.patternOverrides.computeIfAbsent(type, k -> Maps.newHashMap()).put(level, pattern);
+			this.patternOverrides.computeIfAbsent(type, _ -> Maps.newHashMap()).put(level, pattern);
 		}
 		return this;
 	}
@@ -458,7 +459,7 @@ public class LoggerConfiguration {
 		if (!this.allowedTypes.contains(type)) {
 			throw new IllegalArgumentException("Logging type '" + type.name().toLowerCase() + "' is not allowed");
 		}
-		this.defaultLoggers.computeIfAbsent(type, k -> Lists.newArrayList()).add(level);
+		this.defaultLoggers.computeIfAbsent(type, _ -> Lists.newArrayList()).add(level);
 		return this;
 	}
 	

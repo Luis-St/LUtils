@@ -20,7 +20,7 @@ package net.luis.utils.io.codec;
 
 import net.luis.utils.io.codec.provider.JsonTypeProvider;
 import net.luis.utils.io.data.json.*;
-import net.luis.utils.util.Result;
+import net.luis.utils.util.result.Result;
 import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.Test;
 
@@ -71,7 +71,7 @@ class ConfiguredCodecTest {
 		Result<JsonElement> result = codec.encodeStart(typeProvider, map, new TestObjectOptionalInteger(Optional.empty()));
 		assertTrue(result.isSuccess());
 		assertTrue(map.isEmpty());
-		assertSame(map, result.orThrow());
+		assertSame(map, result.resultOrThrow());
 	}
 	
 	@Test
@@ -82,7 +82,7 @@ class ConfiguredCodecTest {
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, map, new TestObjectOptionalInteger(Optional.of(42)));
 		assertTrue(result.isSuccess());
-		assertEquals(new JsonPrimitive(42), result.orThrow());
+		assertEquals(new JsonPrimitive(42), result.resultOrThrow());
 	}
 	
 	@Test
@@ -93,7 +93,7 @@ class ConfiguredCodecTest {
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, map, new TestObjectString("test"));
 		assertTrue(result.isSuccess());
-		assertEquals(new JsonPrimitive("test"), result.orThrow());
+		assertEquals(new JsonPrimitive("test"), result.resultOrThrow());
 	}
 	
 	@Test
@@ -101,7 +101,7 @@ class ConfiguredCodecTest {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		ConfiguredCodec<Optional<Integer>, TestObjectOptionalInteger> codec = new ConfiguredCodec<>(INTEGER.optional(), TestObjectOptionalInteger::age);
 		
-		assertThrows(NullPointerException.class, () -> codec.decodeStart(null, typeProvider.createMap().orThrow()));
+		assertThrows(NullPointerException.class, () -> codec.decodeStart(null, typeProvider.createMap().resultOrThrow()));
 	}
 	
 	@Test
@@ -111,7 +111,7 @@ class ConfiguredCodecTest {
 		
 		Result<Optional<Integer>> result = codec.decodeStart(typeProvider, null);
 		assertTrue(result.isSuccess());
-		assertTrue(result.orThrow().isEmpty());
+		assertTrue(result.resultOrThrow().isEmpty());
 	}
 	
 	@Test
@@ -121,7 +121,7 @@ class ConfiguredCodecTest {
 		
 		Result<Optional<Integer>> result = codec.decodeStart(typeProvider, typeProvider.empty());
 		assertTrue(result.isSuccess());
-		assertTrue(result.orThrow().isEmpty());
+		assertTrue(result.resultOrThrow().isEmpty());
 	}
 	
 	@Test
@@ -131,8 +131,8 @@ class ConfiguredCodecTest {
 		
 		Result<Optional<Integer>> result = codec.decodeStart(typeProvider, new JsonPrimitive(42));
 		assertTrue(result.isSuccess());
-		assertTrue(result.orThrow().isPresent());
-		assertEquals(42, result.orThrow().orElseThrow());
+		assertTrue(result.resultOrThrow().isPresent());
+		assertEquals(42, result.resultOrThrow().orElseThrow());
 	}
 	
 	@Test

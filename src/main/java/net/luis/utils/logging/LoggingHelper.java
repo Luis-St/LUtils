@@ -22,6 +22,7 @@ import net.luis.utils.exception.InvalidValueException;
 import net.luis.utils.resources.ResourceLocation;
 import net.luis.utils.util.Pair;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 import org.apache.commons.lang3.math.NumberUtils;
 import org.apache.logging.log4j.Level;
 import org.jetbrains.annotations.NotNull;
@@ -361,7 +362,7 @@ final class LoggingHelper {
 		boolean noOverrides = !Boolean.parseBoolean(System.getProperty(LOGGING_CONFIG_OVERRIDE, "false"));
 		try {
 			for (String line : location.getLines().toList()) {
-				if (StringUtils.isBlank(line) || StringUtils.startsWithAny(line, "#", "!")) {
+				if (StringUtils.isBlank(line) || Strings.CS.startsWithAny(line, "#", "!")) {
 					continue;
 				}
 				Matcher matcher = PROPERTY_PATTERN.matcher(line);
@@ -566,7 +567,7 @@ final class LoggingHelper {
 	 * @return True if the property is enabled, false otherwise
 	 */
 	private static boolean isEnabled(@Nullable String property) {
-		return StringUtils.equalsAnyIgnoreCase(property, "true", "enable", "enabled", "1", "on", "yes");
+		return Strings.CI.equalsAny(property, "true", "enable", "enabled", "1", "on", "yes");
 	}
 	
 	/**
@@ -577,7 +578,7 @@ final class LoggingHelper {
 	 * @return True if the property is disabled, false otherwise
 	 */
 	private static boolean isDisabled(@Nullable String property) {
-		return StringUtils.equalsAnyIgnoreCase(property, "false", "disable", "disabled", "0", "off", "no");
+		return Strings.CI.equalsAny(property, "false", "disable", "disabled", "0", "off", "no");
 	}
 	//endregion
 }

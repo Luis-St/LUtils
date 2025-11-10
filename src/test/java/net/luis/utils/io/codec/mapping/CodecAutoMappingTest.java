@@ -19,7 +19,6 @@
 package net.luis.utils.io.codec.mapping;
 
 import net.luis.utils.io.codec.Codec;
-import net.luis.utils.io.codec.CodecBuilder;
 import net.luis.utils.io.codec.provider.JsonTypeProvider;
 import net.luis.utils.io.data.json.*;
 import net.luis.utils.util.Either;
@@ -40,21 +39,21 @@ class CodecAutoMappingTest {
 	
 	@Test
 	void nullClassThrowsException() {
-		assertThrows(NullPointerException.class, () -> CodecBuilder.autoMapCodec(null));
+		assertThrows(NullPointerException.class, () -> CodecAutoMapping.createAutoMappedCodec(null));
 	}
 	
 	@Test
 	void invalidClassTypesThrowExceptions() {
-		assertThrows(IllegalArgumentException.class, () -> CodecBuilder.autoMapCodec(TestInterface.class));
-		assertThrows(IllegalArgumentException.class, () -> CodecBuilder.autoMapCodec(TestAnnotation.class));
-		assertThrows(IllegalArgumentException.class, () -> CodecBuilder.autoMapCodec(int.class));
+		assertThrows(IllegalArgumentException.class, () -> CodecAutoMapping.createAutoMappedCodec(TestInterface.class));
+		assertThrows(IllegalArgumentException.class, () -> CodecAutoMapping.createAutoMappedCodec(TestAnnotation.class));
+		assertThrows(IllegalArgumentException.class, () -> CodecAutoMapping.createAutoMappedCodec(int.class));
 	}
 	
 	@Test
 	void simpleRecordCodecWorks() {
 		record SimpleRecord(String name, int age, double height, boolean active) {}
 		
-		Codec<SimpleRecord> codec = CodecBuilder.autoMapCodec(SimpleRecord.class);
+		Codec<SimpleRecord> codec = CodecAutoMapping.createAutoMappedCodec(SimpleRecord.class);
 		JsonTypeProvider provider = JsonTypeProvider.INSTANCE;
 		
 		SimpleRecord original = new SimpleRecord("Alice", 30, 1.70, true);
@@ -75,12 +74,15 @@ class CodecAutoMappingTest {
 	void emptyRecordCodecWorks() {
 		record EmptyRecord() {}
 		
-		Codec<EmptyRecord> codec = CodecBuilder.autoMapCodec(EmptyRecord.class);
+		Codec<EmptyRecord> codec = CodecAutoMapping.createAutoMappedCodec(EmptyRecord.class);
 		JsonTypeProvider provider = JsonTypeProvider.INSTANCE;
 		
 		EmptyRecord original = new EmptyRecord();
 		JsonElement encoded = codec.encode(provider, original);
-		assertEquals(JsonNull.INSTANCE, encoded);
+		assertFalse(encoded.isJsonNull());
+		assertFalse(encoded.isJsonPrimitive());
+		assertFalse(encoded.isJsonArray());
+		assertFalse(encoded.isJsonObject());
 		
 		EmptyRecord decoded = codec.decode(provider, encoded);
 		assertEquals(original, decoded);
@@ -88,7 +90,7 @@ class CodecAutoMappingTest {
 	
 	@Test
 	void enumCodecWorks() {
-		Codec<TestEnum> codec = CodecBuilder.autoMapCodec(TestEnum.class);
+		Codec<TestEnum> codec = CodecAutoMapping.createAutoMappedCodec(TestEnum.class);
 		JsonTypeProvider provider = JsonTypeProvider.INSTANCE;
 		
 		JsonElement encoded = codec.encode(provider, TestEnum.FIRST);
@@ -103,7 +105,7 @@ class CodecAutoMappingTest {
 	
 	@Test
 	void annotatedFieldsOnlyAreUsed() {
-		Codec<AnnotatedFieldsClass> codec = CodecBuilder.autoMapCodec(AnnotatedFieldsClass.class);
+		Codec<AnnotatedFieldsClass> codec = CodecAutoMapping.createAutoMappedCodec(AnnotatedFieldsClass.class);
 		JsonTypeProvider provider = JsonTypeProvider.INSTANCE;
 		
 		AnnotatedFieldsClass original = new AnnotatedFieldsClass("John", 25);
@@ -123,7 +125,7 @@ class CodecAutoMappingTest {
 	
 	@Test
 	void implicitFinalFieldsAreUsed() {
-		Codec<ImplicitFieldsClass> codec = CodecBuilder.autoMapCodec(ImplicitFieldsClass.class);
+		Codec<ImplicitFieldsClass> codec = CodecAutoMapping.createAutoMappedCodec(ImplicitFieldsClass.class);
 		JsonTypeProvider provider = JsonTypeProvider.INSTANCE;
 		
 		ImplicitFieldsClass original = new ImplicitFieldsClass("Jane", 30);
@@ -143,12 +145,15 @@ class CodecAutoMappingTest {
 	
 	@Test
 	void emptyClassCodecWorks() {
-		Codec<EmptyClass> codec = CodecBuilder.autoMapCodec(EmptyClass.class);
+		Codec<EmptyClass> codec = CodecAutoMapping.createAutoMappedCodec(EmptyClass.class);
 		JsonTypeProvider provider = JsonTypeProvider.INSTANCE;
 		
 		EmptyClass original = new EmptyClass();
 		JsonElement encoded = codec.encode(provider, original);
-		assertEquals(JsonNull.INSTANCE, encoded);
+		assertFalse(encoded.isJsonNull());
+		assertFalse(encoded.isJsonPrimitive());
+		assertFalse(encoded.isJsonArray());
+		assertFalse(encoded.isJsonObject());
 		
 		EmptyClass decoded = codec.decode(provider, encoded);
 		assertNotNull(decoded);
@@ -156,7 +161,7 @@ class CodecAutoMappingTest {
 	
 	@Test
 	void multipleConstructorsWithAnnotation() {
-		Codec<MultiConstructorClass> codec = CodecBuilder.autoMapCodec(MultiConstructorClass.class);
+		Codec<MultiConstructorClass> codec = CodecAutoMapping.createAutoMappedCodec(MultiConstructorClass.class);
 		JsonTypeProvider provider = JsonTypeProvider.INSTANCE;
 		
 		MultiConstructorClass original = new MultiConstructorClass("Test", 25);
@@ -174,7 +179,7 @@ class CodecAutoMappingTest {
 	
 	@Test
 	void invalidConstructorParametersThrowException() {
-		assertThrows(IllegalArgumentException.class, () -> CodecBuilder.autoMapCodec(InvalidConstructorClass.class));
+		assertThrows(IllegalArgumentException.class, () -> CodecAutoMapping.createAutoMappedCodec(InvalidConstructorClass.class));
 	}
 	
 	@Test
@@ -185,7 +190,7 @@ class CodecAutoMappingTest {
 			@GenericInfo({ String.class, LocalDate.class }) Map<String, LocalDate> dates
 		) {}
 		
-		Codec<CollectionRecord> codec = CodecBuilder.autoMapCodec(CollectionRecord.class);
+		Codec<CollectionRecord> codec = CodecAutoMapping.createAutoMappedCodec(CollectionRecord.class);
 		JsonTypeProvider provider = JsonTypeProvider.INSTANCE;
 		
 		List<Integer> numbers = List.of(1, 2, 3);
@@ -227,7 +232,7 @@ class CodecAutoMappingTest {
 			@GenericInfo({ List.class, String.class }) Optional<List<String>> optionalList
 		) {}
 		
-		Codec<NestedGenericRecord> codec = CodecBuilder.autoMapCodec(NestedGenericRecord.class);
+		Codec<NestedGenericRecord> codec = CodecAutoMapping.createAutoMappedCodec(NestedGenericRecord.class);
 		JsonTypeProvider provider = JsonTypeProvider.INSTANCE;
 		
 		List<List<Integer>> nestedList = List.of(List.of(1, 2), List.of(3, 4));
@@ -271,7 +276,7 @@ class CodecAutoMappingTest {
 			@GenericInfo(String.class) Optional<String> nickname
 		) {}
 		
-		Codec<Person> codec = CodecBuilder.autoMapCodec(Person.class);
+		Codec<Person> codec = CodecAutoMapping.createAutoMappedCodec(Person.class);
 		JsonTypeProvider provider = JsonTypeProvider.INSTANCE;
 		
 		Person original = new Person(
@@ -332,7 +337,7 @@ class CodecAutoMappingTest {
 	void missingGenericInfoThrowsException() {
 		record MissingGenericInfo(@NotNull List<String> list) {}
 		
-		IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> CodecBuilder.autoMapCodec(MissingGenericInfo.class));
+		IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> CodecAutoMapping.createAutoMappedCodec(MissingGenericInfo.class));
 		assertTrue(exception.getMessage().contains("Missing generic type information"));
 	}
 	
@@ -343,14 +348,14 @@ class CodecAutoMappingTest {
 			int f9, int f10, int f11, int f12, int f13, int f14, int f15, int f16, int f17
 		) {}
 		
-		assertThrows(IllegalArgumentException.class, () -> CodecBuilder.autoMapCodec(TooManyFieldsRecord.class));
+		assertThrows(IllegalArgumentException.class, () -> CodecAutoMapping.createAutoMappedCodec(TooManyFieldsRecord.class));
 	}
 	
 	@Test
 	void arrayTypesAreSupported() {
 		record ArrayRecord(String[] strings, int[] numbers) {}
 		
-		Codec<ArrayRecord> codec = CodecBuilder.autoMapCodec(ArrayRecord.class);
+		Codec<ArrayRecord> codec = CodecAutoMapping.createAutoMappedCodec(ArrayRecord.class);
 		JsonTypeProvider provider = JsonTypeProvider.INSTANCE;
 		
 		ArrayRecord original = new ArrayRecord(new String[] { "a", "b" }, new int[] { 1, 2 });
@@ -365,7 +370,7 @@ class CodecAutoMappingTest {
 	void twoDimensionalArraysAreSupported() {
 		record Array2DRecord(int[][] matrix, String[][] textGrid, boolean[][] flags) {}
 		
-		Codec<Array2DRecord> codec = CodecBuilder.autoMapCodec(Array2DRecord.class);
+		Codec<Array2DRecord> codec = CodecAutoMapping.createAutoMappedCodec(Array2DRecord.class);
 		JsonTypeProvider provider = JsonTypeProvider.INSTANCE;
 		
 		int[][] matrix = {
@@ -413,7 +418,7 @@ class CodecAutoMappingTest {
 	void threeDimensionalArraysAreSupported() {
 		record Array3DRecord(int[][][] cube, byte[][][] data) {}
 		
-		Codec<Array3DRecord> codec = CodecBuilder.autoMapCodec(Array3DRecord.class);
+		Codec<Array3DRecord> codec = CodecAutoMapping.createAutoMappedCodec(Array3DRecord.class);
 		JsonTypeProvider provider = JsonTypeProvider.INSTANCE;
 		
 		int[][][] cube = {
@@ -463,7 +468,7 @@ class CodecAutoMappingTest {
 	void jaggedArraysAreSupported() {
 		record JaggedArrayRecord(int[][] jaggedMatrix, String[][] jaggedText) {}
 		
-		Codec<JaggedArrayRecord> codec = CodecBuilder.autoMapCodec(JaggedArrayRecord.class);
+		Codec<JaggedArrayRecord> codec = CodecAutoMapping.createAutoMappedCodec(JaggedArrayRecord.class);
 		JsonTypeProvider provider = JsonTypeProvider.INSTANCE;
 		
 		int[][] jaggedMatrix = {
@@ -497,7 +502,7 @@ class CodecAutoMappingTest {
 	void emptyMultiDimensionalArraysAreSupported() {
 		record EmptyArrayRecord(int[][] emptyMatrix, String[][] emptyGrid) {}
 		
-		Codec<EmptyArrayRecord> codec = CodecBuilder.autoMapCodec(EmptyArrayRecord.class);
+		Codec<EmptyArrayRecord> codec = CodecAutoMapping.createAutoMappedCodec(EmptyArrayRecord.class);
 		JsonTypeProvider provider = JsonTypeProvider.INSTANCE;
 		
 		int[][] emptyMatrix = new int[0][];
@@ -515,7 +520,7 @@ class CodecAutoMappingTest {
 	void mixedDimensionalArraysWithComplexTypes() {
 		record ComplexArrayRecord(TestEnum[][] enumMatrix, LocalDate[][][] dateGrid) {}
 		
-		Codec<ComplexArrayRecord> codec = CodecBuilder.autoMapCodec(ComplexArrayRecord.class);
+		Codec<ComplexArrayRecord> codec = CodecAutoMapping.createAutoMappedCodec(ComplexArrayRecord.class);
 		JsonTypeProvider provider = JsonTypeProvider.INSTANCE;
 		
 		TestEnum[][] enumMatrix = {

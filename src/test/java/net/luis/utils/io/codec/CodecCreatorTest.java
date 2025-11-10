@@ -18,10 +18,10 @@
 
 package net.luis.utils.io.codec;
 
-import net.luis.utils.io.codec.function.CodecGroupingFunction;
+import net.luis.utils.io.codec.function.CodecBuilderFunction;
 import net.luis.utils.io.codec.provider.JsonTypeProvider;
 import net.luis.utils.io.data.json.*;
-import net.luis.utils.util.Result;
+import net.luis.utils.util.result.Result;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.junit.jupiter.api.Test;
@@ -107,7 +107,7 @@ class CodecCreatorTest {
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), testObject);
 		assertTrue(result.isSuccess());
 		
-		JsonElement element = result.orThrow();
+		JsonElement element = result.resultOrThrow();
 		assertTrue(element.isJsonObject());
 		JsonObject obj = element.getAsJsonObject();
 		assertEquals(new JsonPrimitive("test"), obj.get("name"));
@@ -131,7 +131,7 @@ class CodecCreatorTest {
 		Result<TestObject> result = codec.decodeStart(typeProvider, jsonObj);
 		assertTrue(result.isSuccess());
 		
-		TestObject obj = result.orThrow();
+		TestObject obj = result.resultOrThrow();
 		assertEquals("decoded", obj.name);
 		assertEquals(123, obj.value);
 	}
@@ -151,10 +151,10 @@ class CodecCreatorTest {
 		Result<JsonElement> encodeResult = codec.encodeStart(typeProvider, typeProvider.empty(), original);
 		assertTrue(encodeResult.isSuccess());
 		
-		Result<TestObject> decodeResult = codec.decodeStart(typeProvider, encodeResult.orThrow());
+		Result<TestObject> decodeResult = codec.decodeStart(typeProvider, encodeResult.resultOrThrow());
 		assertTrue(decodeResult.isSuccess());
 		
-		TestObject decoded = decodeResult.orThrow();
+		TestObject decoded = decodeResult.resultOrThrow();
 		assertEquals(original.name, decoded.name);
 		assertEquals(original.value, decoded.value);
 	}
@@ -175,10 +175,10 @@ class CodecCreatorTest {
 		Result<JsonElement> encodeResult = codec.encodeStart(typeProvider, typeProvider.empty(), original);
 		assertTrue(encodeResult.isSuccess());
 		
-		Result<TestObject2> decodeResult = codec.decodeStart(typeProvider, encodeResult.orThrow());
+		Result<TestObject2> decodeResult = codec.decodeStart(typeProvider, encodeResult.resultOrThrow());
 		assertTrue(decodeResult.isSuccess());
 		
-		TestObject2 decoded = decodeResult.orThrow();
+		TestObject2 decoded = decodeResult.resultOrThrow();
 		assertEquals(original.text, decoded.text);
 		assertEquals(original.number, decoded.number);
 		assertEquals(original.flag, decoded.flag);
@@ -253,7 +253,7 @@ class CodecCreatorTest {
 		
 		Result<String> result = codec.decodeStart(typeProvider, jsonObj);
 		assertTrue(result.isSuccess());
-		assertEquals("SINGLE", result.orThrow());
+		assertEquals("SINGLE", result.resultOrThrow());
 	}
 	
 	@Test
@@ -279,7 +279,7 @@ class CodecCreatorTest {
 		Result<TestObject3> result = codec.decodeStart(typeProvider, jsonObj);
 		assertTrue(result.isSuccess());
 		
-		TestObject3 obj = result.orThrow();
+		TestObject3 obj = result.resultOrThrow();
 		assertEquals("1", obj.a);
 		assertEquals("2", obj.b);
 		assertEquals("3", obj.c);
@@ -293,42 +293,42 @@ class CodecCreatorTest {
 	
 	private record TestObject3(@NotNull String a, @NotNull String b, @NotNull String c, @NotNull String d, @NotNull String e) {}
 	
-	private static class TestFunction implements CodecGroupingFunction {
+	private static class TestFunction implements CodecBuilderFunction {
 		
 		public @NotNull TestObject create(@NotNull Object name, @NotNull Object value) {
 			return new TestObject((String) name, (Integer) value);
 		}
 	}
 	
-	private static class TestFunction2 implements CodecGroupingFunction {
+	private static class TestFunction2 implements CodecBuilderFunction {
 		
 		public @NotNull TestObject2 create(@NotNull Object text, @NotNull Object number, @NotNull Object flag) {
 			return new TestObject2((String) text, (Double) number, (Boolean) flag);
 		}
 	}
 	
-	private static class FailingTestFunction implements CodecGroupingFunction {
+	private static class FailingTestFunction implements CodecBuilderFunction {
 		
 		public @Nullable TestObject create(@NotNull Object name, @NotNull Object value) {
 			return null;
 		}
 	}
 	
-	private static class NullReturningTestFunction implements CodecGroupingFunction {
+	private static class NullReturningTestFunction implements CodecBuilderFunction {
 		
 		public @Nullable TestObject create(@NotNull Object name, @NotNull Object value) {
 			return null;
 		}
 	}
 	
-	private static class SingleParamFunction implements CodecGroupingFunction {
+	private static class SingleParamFunction implements CodecBuilderFunction {
 		
 		public @NotNull String create(@NotNull Object value) {
 			return ((String) value).toUpperCase();
 		}
 	}
 	
-	private static class ManyParamFunction implements CodecGroupingFunction {
+	private static class ManyParamFunction implements CodecBuilderFunction {
 		
 		public @NotNull TestObject3 create(@NotNull Object a, @NotNull Object b, @NotNull Object c, @NotNull Object d, @NotNull Object e) {
 			return new TestObject3((String) a, (String) b, (String) c, (String) d, (String) e);

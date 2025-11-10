@@ -19,7 +19,7 @@
 package net.luis.utils.io.codec;
 
 import net.luis.utils.function.throwable.ThrowableFunction;
-import net.luis.utils.util.Result;
+import net.luis.utils.util.result.Result;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Objects;
@@ -71,7 +71,7 @@ public interface ResultMappingFunction<T, R> extends Function<Result<T>, Result<
 				return Result.error(result.errorOrThrow());
 			}
 			try {
-				return Result.success(function.apply(result.orThrow()));
+				return Result.success(function.apply(result.resultOrThrow()));
 			} catch (Throwable throwable) {
 				String message = throwable.getMessage();
 				return Result.error(message == null ? "Unknown error, no message provided" : message);

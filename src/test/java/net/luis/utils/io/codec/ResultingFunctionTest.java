@@ -18,7 +18,7 @@
 
 package net.luis.utils.io.codec;
 
-import net.luis.utils.util.Result;
+import net.luis.utils.util.result.Result;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -41,7 +41,7 @@ class ResultingFunctionTest {
 		
 		Result<Integer> result = function.apply("42");
 		assertTrue(result.isSuccess());
-		assertEquals(42, result.orThrow());
+		assertEquals(42, result.resultOrThrow());
 	}
 	
 	@Test
@@ -50,7 +50,7 @@ class ResultingFunctionTest {
 		
 		Result<Integer> result = function.apply(null);
 		assertTrue(result.isSuccess());
-		assertEquals(-1, result.orThrow());
+		assertEquals(-1, result.resultOrThrow());
 	}
 	
 	@Test
@@ -59,7 +59,7 @@ class ResultingFunctionTest {
 		
 		Result<String> result = function.apply("anything");
 		assertTrue(result.isSuccess());
-		assertNull(result.orThrow());
+		assertNull(result.resultOrThrow());
 	}
 	
 	@Test
@@ -85,7 +85,7 @@ class ResultingFunctionTest {
 		
 		Result<Integer> result = function.apply("42");
 		assertTrue(result.isSuccess());
-		assertEquals(42, result.orThrow());
+		assertEquals(42, result.resultOrThrow());
 	}
 	
 	@Test
@@ -94,7 +94,7 @@ class ResultingFunctionTest {
 		
 		Result<Integer> result = function.apply(null);
 		assertTrue(result.isSuccess());
-		assertEquals(-1, result.orThrow());
+		assertEquals(-1, result.resultOrThrow());
 	}
 	
 	@Test
@@ -103,7 +103,7 @@ class ResultingFunctionTest {
 		
 		Result<String> result = function.apply("anything");
 		assertTrue(result.isSuccess());
-		assertNull(result.orThrow());
+		assertNull(result.resultOrThrow());
 	}
 	
 	@Test
@@ -161,7 +161,7 @@ class ResultingFunctionTest {
 		
 		Result<String> positiveResult = function.apply(42);
 		assertTrue(positiveResult.isSuccess());
-		assertEquals("Value: 42", positiveResult.orThrow());
+		assertEquals("Value: 42", positiveResult.resultOrThrow());
 	}
 	
 	@Test
@@ -170,15 +170,15 @@ class ResultingFunctionTest {
 		
 		Result<Integer> result1 = function.apply(3.14);
 		assertTrue(result1.isSuccess());
-		assertEquals(3, result1.orThrow());
+		assertEquals(3, result1.resultOrThrow());
 		
 		Result<Integer> result2 = function.apply(3.7);
 		assertTrue(result2.isSuccess());
-		assertEquals(4, result2.orThrow());
+		assertEquals(4, result2.resultOrThrow());
 		
 		Result<Integer> result3 = function.apply(-2.3);
 		assertTrue(result3.isSuccess());
-		assertEquals(-2, result3.orThrow());
+		assertEquals(-2, result3.resultOrThrow());
 	}
 	
 	@Test
@@ -186,9 +186,9 @@ class ResultingFunctionTest {
 		ResultingFunction<String, Integer> parseInt = ResultingFunction.throwable(Integer::parseInt);
 		ResultingFunction<Integer, String> toString = ResultingFunction.direct(Object::toString);
 		
-		Result<String> result = toString.apply(parseInt.apply("42").orThrow());
+		Result<String> result = toString.apply(parseInt.apply("42").resultOrThrow());
 		assertTrue(result.isSuccess());
-		assertEquals("42", result.orThrow());
+		assertEquals("42", result.resultOrThrow());
 	}
 	
 	@Test

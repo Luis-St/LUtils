@@ -322,7 +322,7 @@ class JsonArrayTest {
 		assertEquals(new JsonPrimitive("test"), array.getAsJsonPrimitive(2));
 		
 		assertEquals("test", array.getAsString(2));
-		assertEquals(42L, array.getAsNumber(3));
+		assertEquals(42, array.getAsNumber(3));
 		assertEquals(42, array.getAsInteger(3));
 		assertEquals(42L, array.getAsLong(3));
 		assertEquals(42.0f, array.getAsFloat(3));

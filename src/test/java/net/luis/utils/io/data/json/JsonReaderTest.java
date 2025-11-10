@@ -114,6 +114,28 @@ class JsonReaderTest {
 	}
 	
 	@Test
+	void readSpecialJsonNumbers() {
+		assertEquals(new JsonPrimitive(Double.POSITIVE_INFINITY), new JsonReader("Infinity").readJson());
+		assertEquals(new JsonPrimitive(Double.NEGATIVE_INFINITY), new JsonReader("-Infinity").readJson());
+		assertEquals(new JsonPrimitive(Double.NaN), new JsonReader("NaN").readJson());
+		
+		assertEquals(new JsonPrimitive(Double.POSITIVE_INFINITY), new JsonReader("infinity", NON_STRICT_CONFIG).readJson());
+		assertEquals(new JsonPrimitive(Double.NEGATIVE_INFINITY), new JsonReader("-infinity", NON_STRICT_CONFIG).readJson());
+		assertEquals(new JsonPrimitive(Double.NaN), new JsonReader("nan", NON_STRICT_CONFIG).readJson());
+	}
+	
+	@Test
+	void readSpecialJsonNumbersStrict() {
+		assertEquals(new JsonPrimitive(Double.POSITIVE_INFINITY), new JsonReader("Infinity", STRICT_CONFIG).readJson());
+		assertEquals(new JsonPrimitive(Double.NEGATIVE_INFINITY), new JsonReader("-Infinity", STRICT_CONFIG).readJson());
+		assertEquals(new JsonPrimitive(Double.NaN), new JsonReader("NaN", STRICT_CONFIG).readJson());
+		
+		assertThrows(JsonSyntaxException.class, () -> new JsonReader("infinity", STRICT_CONFIG).readJson());
+		assertThrows(JsonSyntaxException.class, () -> new JsonReader("-infinity", STRICT_CONFIG).readJson());
+		assertThrows(JsonSyntaxException.class, () -> new JsonReader("nan", STRICT_CONFIG).readJson());
+	}
+	
+	@Test
 	void readJsonStrings() {
 		assertEquals(new JsonPrimitive("hello"), new JsonReader("\"hello\"").readJson());
 		assertEquals(new JsonPrimitive(""), new JsonReader("\"\"").readJson());

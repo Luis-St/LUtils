@@ -16,7 +16,7 @@ val projectVersion: String? = System.getenv("VERSION")?.replace("v", "", ignoreC
 plugins {
 	id("java")
 	id("maven-publish")
-	id("net.luis.lm")
+	id("net.luis.lm") version "1.1.0"
 }
 
 repositories {
@@ -67,6 +67,8 @@ tasks.compileJava {
 }
 
 tasks.register<JavaExec>("run") {
+	dependsOn(tasks.named("classes"))
+	
 	group = "runs"
 	mainClass.set("net.luis.utils.Main")
 	
@@ -76,7 +78,7 @@ tasks.register<JavaExec>("run") {
 	
 	classpath = files()
 	jvmArgs = listOf(
-		"--module-path",  sourceSets["main"].runtimeClasspath.asPath,
+		"--module-path", sourceSets["main"].runtimeClasspath.asPath,
 		"--module", "net.luis.utils/net.luis.utils.Main"
 	)
 }

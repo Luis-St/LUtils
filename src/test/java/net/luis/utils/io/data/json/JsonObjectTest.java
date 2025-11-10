@@ -342,7 +342,7 @@ class JsonObjectTest {
 		assertEquals(new JsonPrimitive("stringValue"), object.getJsonPrimitive("stringKey"));
 		
 		assertEquals("stringValue", object.getAsString("stringKey"));
-		assertEquals(42L, object.getAsNumber("numberKey"));
+		assertEquals(42, object.getAsNumber("numberKey"));
 		assertEquals(42, object.getAsInteger("numberKey"));
 		assertEquals(42L, object.getAsLong("numberKey"));
 		assertEquals(42.0f, object.getAsFloat("numberKey"));

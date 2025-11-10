@@ -56,6 +56,7 @@ public interface TokenAction {
 	 * @return The resulting immutable list of tokens after applying the action
 	 * @throws NullPointerException If the match is null
 	 */
-	@NotNull @Unmodifiable
+	@NotNull
+	@Unmodifiable
 	List<Token> apply(@NotNull TokenRuleMatch match, @NotNull TokenActionContext ctx);
 }

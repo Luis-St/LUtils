@@ -37,14 +37,14 @@ class CodecBuilderTest {
 	
 	@Test
 	void autoMapCodecWithNullClass() {
-		assertThrows(NullPointerException.class, () -> CodecBuilder.autoMapCodec(null));
+		assertThrows(NullPointerException.class, () -> CodecBuilder.of((Class<? extends Object>) null));
 	}
 	
 	@Test
 	void autoMapCodecWithValidRecord() {
 		record SimpleRecord(String name, int age) {}
 		
-		Codec<SimpleRecord> codec = CodecBuilder.autoMapCodec(SimpleRecord.class);
+		Codec<SimpleRecord> codec = CodecBuilder.of(SimpleRecord.class);
 		assertNotNull(codec);
 		
 		SimpleRecord record = new SimpleRecord("Test", 25);
@@ -63,7 +63,7 @@ class CodecBuilderTest {
 	void autoMapCodecWithEnum() {
 		enum TestEnum {FIRST, SECOND, THIRD}
 		
-		Codec<TestEnum> codec = CodecBuilder.autoMapCodec(TestEnum.class);
+		Codec<TestEnum> codec = CodecBuilder.of(TestEnum.class);
 		assertNotNull(codec);
 		
 		JsonElement encoded = codec.encode(JsonTypeProvider.INSTANCE, TestEnum.FIRST);
@@ -74,14 +74,14 @@ class CodecBuilderTest {
 	}
 	
 	@Test
-	void groupWithSingleCodec() {
+	void ofWithSingleCodec() {
 		ConfiguredCodec<String, TestObject> nameCodec = STRING.configure("name", TestObject::name);
 		
-		assertThrows(NullPointerException.class, () -> CodecBuilder.group((ConfiguredCodec<String, TestObject>) null));
+		assertThrows(NullPointerException.class, () -> CodecBuilder.of((ConfiguredCodec<String, TestObject>) null));
 		
-		assertNotNull(CodecBuilder.group(nameCodec));
+		assertNotNull(CodecBuilder.of(nameCodec));
 		
-		Codec<TestObject> codec = CodecBuilder.group(nameCodec).create(TestObject::new);
+		Codec<TestObject> codec = CodecBuilder.of(nameCodec).create(TestObject::new);
 		assertNotNull(codec);
 		
 		TestObject obj = new TestObject("John");
@@ -91,16 +91,16 @@ class CodecBuilderTest {
 	}
 	
 	@Test
-	void groupWithTwoCodecs() {
+	void ofWithTwoCodecs() {
 		ConfiguredCodec<String, TestObjectWithAge> nameCodec = STRING.configure("name", TestObjectWithAge::name);
 		ConfiguredCodec<Integer, TestObjectWithAge> ageCodec = INTEGER.configure("age", TestObjectWithAge::age);
 		
-		assertThrows(NullPointerException.class, () -> CodecBuilder.group(null, ageCodec));
-		assertThrows(NullPointerException.class, () -> CodecBuilder.group(nameCodec, null));
+		assertThrows(NullPointerException.class, () -> CodecBuilder.of(null, ageCodec));
+		assertThrows(NullPointerException.class, () -> CodecBuilder.of(nameCodec, null));
 		
-		assertNotNull(CodecBuilder.group(nameCodec, ageCodec));
+		assertNotNull(CodecBuilder.of(nameCodec, ageCodec));
 		
-		Codec<TestObjectWithAge> codec = CodecBuilder.group(nameCodec, ageCodec).create(TestObjectWithAge::new);
+		Codec<TestObjectWithAge> codec = CodecBuilder.of(nameCodec, ageCodec).create(TestObjectWithAge::new);
 		assertNotNull(codec);
 		
 		TestObjectWithAge obj = new TestObjectWithAge("John", 25);
@@ -111,18 +111,18 @@ class CodecBuilderTest {
 	}
 	
 	@Test
-	void groupWithThreeCodecs() {
+	void ofWithThreeCodecs() {
 		ConfiguredCodec<String, TestObjectWithAgeAndHeight> nameCodec = STRING.configure("name", TestObjectWithAgeAndHeight::name);
 		ConfiguredCodec<Integer, TestObjectWithAgeAndHeight> ageCodec = INTEGER.configure("age", TestObjectWithAgeAndHeight::age);
 		ConfiguredCodec<Double, TestObjectWithAgeAndHeight> heightCodec = DOUBLE.configure("height", TestObjectWithAgeAndHeight::height);
 		
-		assertThrows(NullPointerException.class, () -> CodecBuilder.group(null, ageCodec, heightCodec));
-		assertThrows(NullPointerException.class, () -> CodecBuilder.group(nameCodec, null, heightCodec));
-		assertThrows(NullPointerException.class, () -> CodecBuilder.group(nameCodec, ageCodec, null));
+		assertThrows(NullPointerException.class, () -> CodecBuilder.of(null, ageCodec, heightCodec));
+		assertThrows(NullPointerException.class, () -> CodecBuilder.of(nameCodec, null, heightCodec));
+		assertThrows(NullPointerException.class, () -> CodecBuilder.of(nameCodec, ageCodec, null));
 		
-		assertNotNull(CodecBuilder.group(nameCodec, ageCodec, heightCodec));
+		assertNotNull(CodecBuilder.of(nameCodec, ageCodec, heightCodec));
 		
-		Codec<TestObjectWithAgeAndHeight> codec = CodecBuilder.group(nameCodec, ageCodec, heightCodec)
+		Codec<TestObjectWithAgeAndHeight> codec = CodecBuilder.of(nameCodec, ageCodec, heightCodec)
 			.create(TestObjectWithAgeAndHeight::new);
 		assertNotNull(codec);
 		
@@ -135,10 +135,10 @@ class CodecBuilderTest {
 	}
 	
 	@Test
-	void groupWithOptionalField() {
+	void ofWithOptionalField() {
 		ConfiguredCodec<Optional<Integer>, TestObjectWithOptional> ageCodec = INTEGER.optional().configure("age", TestObjectWithOptional::age);
 		
-		Codec<TestObjectWithOptional> codec = CodecBuilder.group(ageCodec).create(TestObjectWithOptional::new);
+		Codec<TestObjectWithOptional> codec = CodecBuilder.of(ageCodec).create(TestObjectWithOptional::new);
 		
 		TestObjectWithOptional objWithValue = new TestObjectWithOptional(Optional.of(25));
 		JsonElement encodedWithValue = codec.encode(JsonTypeProvider.INSTANCE, objWithValue);
@@ -152,7 +152,7 @@ class CodecBuilderTest {
 	}
 	
 	@Test
-	void groupSupportsUpToSixteenCodecs() {
+	void ofSupportsUpToSixteenCodecs() {
 		ConfiguredCodec<String, MultiFieldObject> codec1 = STRING.configure("field1", obj -> "field1");
 		ConfiguredCodec<String, MultiFieldObject> codec2 = STRING.configure("field2", obj -> "field2");
 		ConfiguredCodec<String, MultiFieldObject> codec3 = STRING.configure("field3", obj -> "field3");
@@ -170,12 +170,12 @@ class CodecBuilderTest {
 		ConfiguredCodec<String, MultiFieldObject> codec15 = STRING.configure("field15", obj -> "field15");
 		ConfiguredCodec<String, MultiFieldObject> codec16 = STRING.configure("field16", obj -> "field16");
 		
-		assertNotNull(CodecBuilder.group(
+		assertNotNull(CodecBuilder.of(
 			codec1, codec2, codec3, codec4, codec5, codec6, codec7, codec8,
 			codec9, codec10, codec11, codec12, codec13, codec14, codec15, codec16
 		));
 		
-		Codec<MultiFieldObject> codec = CodecBuilder.group(
+		Codec<MultiFieldObject> codec = CodecBuilder.of(
 			codec1, codec2, codec3, codec4, codec5, codec6, codec7, codec8,
 			codec9, codec10, codec11, codec12, codec13, codec14, codec15, codec16
 		).create((f1, f2, f3, f4, f5, f6, f7, f8, f9, f10, f11, f12, f13, f14, f15, f16) -> new MultiFieldObject());

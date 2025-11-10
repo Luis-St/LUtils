@@ -22,10 +22,10 @@ import net.luis.utils.io.codec.decoder.Decoder;
 import net.luis.utils.io.codec.decoder.KeyableDecoder;
 import net.luis.utils.io.codec.encoder.Encoder;
 import net.luis.utils.io.codec.encoder.KeyableEncoder;
+import net.luis.utils.io.codec.internal.struct.*;
 import net.luis.utils.io.codec.provider.TypeProvider;
-import net.luis.utils.io.codec.struct.*;
 import net.luis.utils.util.Either;
-import net.luis.utils.util.Result;
+import net.luis.utils.util.result.Result;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -67,6 +67,7 @@ public interface Codec<C> extends Encoder<C>, Decoder<C> {
 		Objects.requireNonNull(encoder, "Encoder must not be null");
 		Objects.requireNonNull(decoder, "Decoder must not be null");
 		Objects.requireNonNull(name, "Codec name must not be null");
+		
 		return new Codec<>() {
 			@Override
 			public @NotNull <R> Result<R> encodeStart(@NotNull TypeProvider<R> provider, @NotNull R current, @Nullable C value) {
@@ -136,6 +137,7 @@ public interface Codec<C> extends Encoder<C>, Decoder<C> {
 		Objects.requireNonNull(codec, "Base codec must not be null");
 		Objects.requireNonNull(encoder, "Key encoder must not be null");
 		Objects.requireNonNull(decoder, "Key decoder must not be null");
+		
 		return new KeyableCodec<>() {
 			@Override
 			public <R> @NotNull Result<R> encodeStart(@NotNull TypeProvider<R> provider, @NotNull R current, @Nullable C value) {
@@ -165,6 +167,212 @@ public interface Codec<C> extends Encoder<C>, Decoder<C> {
 	}
 	
 	/**
+	 * Creates a new nullable codec for the given codec.<br>
+	 *
+	 * @param codec The base codec
+	 * @param <C> The type of the value that is encoded and decoded by the codec
+	 * @return A new nullable codec
+	 * @throws NullPointerException If the codec is null
+	 * @see NullableCodec
+	 */
+	static <C> @NotNull Codec<C> nullable(@NotNull Codec<C> codec) {
+		return new NullableCodec<>(codec);
+	}
+	
+	/**
+	 * Creates a new union codec that constrains values to a specific set of allowed values.<br>
+	 * This codec validates that encoded and decoded values are within the predefined set of valid values.<br>
+	 * Any value outside this set will cause encoding or decoding to fail with an error.<br>
+	 *
+	 * @param codec The base codec for encoding and decoding individual values
+	 * @param validValues The collection of valid values
+	 * @param <C> The type of the value that is encoded and decoded by the codec
+	 * @return A new union codec
+	 * @throws NullPointerException If the codec or valid values is null
+	 * @throws IllegalArgumentException If the valid values collection is empty
+	 * @see UnionCodec
+	 */
+	static <C> @NotNull Codec<C> union(@NotNull Codec<C> codec, @NotNull Collection<C> validValues) {
+		return new UnionCodec<>(codec, validValues);
+	}
+	
+	/**
+	 * Creates a new union codec that constrains values to a specific set of allowed values.<br>
+	 * This codec validates that encoded and decoded values are within the predefined set of valid values.<br>
+	 * Any value outside this set will cause encoding or decoding to fail with an error.<br>
+	 *
+	 * @param codec The base codec for encoding and decoding individual values
+	 * @param validValues The array of valid values
+	 * @param <C> The type of the value that is encoded and decoded by the codec
+	 * @return A new union codec
+	 * @throws NullPointerException If the codec or valid values is null
+	 * @throws IllegalArgumentException If the valid values array is empty
+	 * @see UnionCodec
+	 */
+	@SafeVarargs
+	static <C> @NotNull Codec<C> union(@NotNull Codec<C> codec, C @NotNull ... validValues) {
+		return new UnionCodec<>(codec, validValues);
+	}
+
+	/**
+	 * Creates a new any codec that attempts to encode or decode using multiple codecs in sequence.<br>
+	 * This codec tries each provided codec in order until one succeeds. If all codecs fail,
+	 * an error is returned containing all the individual error messages.<br>
+	 * <p>
+	 * This is particularly useful for polymorphic types where multiple subtypes need to be handled dynamically,
+	 * such as different payment method implementations or various message types.
+	 * </p>
+	 *
+	 * @param codecs The list of codecs to try in sequence
+	 * @param <C> The common supertype of values handled by this codec
+	 * @return A new any codec
+	 * @throws NullPointerException If codecs is null or contains null elements
+	 * @throws IllegalArgumentException If codecs is empty or contains only one codec
+	 * @see AnyCodec
+	 */
+	static <C> @NotNull Codec<C> any(@NotNull List<Codec<? extends C>> codecs) {
+		return new AnyCodec<>(codecs);
+	}
+
+	/**
+	 * Creates a new any codec that attempts to encode or decode using multiple codecs in sequence.<br>
+	 * This codec tries each provided codec in order until one succeeds. If all codecs fail,
+	 * an error is returned containing all the individual error messages.<br>
+	 * <p>
+	 * This is particularly useful for polymorphic types where multiple subtypes need to be handled dynamically,
+	 * such as different payment method implementations or various message types.
+	 * </p>
+	 *
+	 * @param codecs The array of codecs to try in sequence
+	 * @param <C> The common supertype of values handled by this codec
+	 * @return A new any codec
+	 * @throws NullPointerException If codecs is null or contains null elements
+	 * @throws IllegalArgumentException If codecs is empty or contains only one codec
+	 * @see AnyCodec
+	 */
+	@SafeVarargs
+	static <C> @NotNull Codec<C> any(@NotNull Codec<? extends C>... codecs) {
+		return new AnyCodec<>(codecs);
+	}
+
+	/**
+	 * Creates a new codec that only accepts numbers that are at least the given minimum value.<br>
+	 * The minimum value is inclusive.<br>
+	 *
+	 * @param codec The base codec
+	 * @param min The minimum value (inclusive)
+	 * @param <N> The type of the number that is encoded and decoded by the codec
+	 * @param <C> The type of the codec that is used to encode and decode values of the type {@code N}
+	 * @return A new codec for the given codec
+	 * @throws NullPointerException If the codec or minimum value is null
+	 */
+	static <N extends Number & Comparable<N>, C extends KeyableCodec<N>> @NotNull KeyableCodec<N> atLeast(@NotNull C codec, @NotNull N min) {
+		Objects.requireNonNull(codec, "Codec must not be null");
+		Objects.requireNonNull(min, "Minimum value must not be null");
+		
+		return keyable(codec.map(value -> {
+			if (value == null) {
+				return Result.error("Value must not be null");
+			}
+			
+			if (value.compareTo(min) < 0) {
+				return Result.error("Unable to encode value " + value + ": Value must be at least " + min);
+			}
+			return Result.success(value);
+		}, result -> {
+			if (result.isError()) {
+				return result;
+			}
+			
+			N value = result.resultOrThrow();
+			if (value.compareTo(min) < 0) {
+				return Result.error("Unable to decode value " + value + ": Value must be at least " + min);
+			}
+			return Result.success(value);
+		}).codec("AtLeast[" + codec + ", " + min + "]"), codec, codec);
+	}
+	
+	/**
+	 * Creates a new codec that only accepts numbers that are at most the given maximum value.<br>
+	 * The maximum value is inclusive.<br>
+	 *
+	 * @param codec The base codec
+	 * @param max The maximum value (inclusive)
+	 * @param <N> The type of the number that is encoded and decoded by the codec
+	 * @param <C> The type of the codec that is used to encode and decode values of the type {@code N}
+	 * @return A new codec for the given codec
+	 * @throws NullPointerException If the codec or maximum value is null
+	 */
+	static <N extends Number & Comparable<N>, C extends KeyableCodec<N>> @NotNull KeyableCodec<N> atMost(@NotNull C codec, @NotNull N max) {
+		Objects.requireNonNull(codec, "Codec must not be null");
+		Objects.requireNonNull(max, "Maximum value must not be null");
+		
+		return keyable(codec.map(value -> {
+			if (value == null) {
+				return Result.error("Value must not be null");
+			}
+			
+			if (0 < value.compareTo(max)) {
+				return Result.error("Unable to encode value " + value + ": Value must be at most " + max);
+			}
+			return Result.success(value);
+		}, result -> {
+			if (result.isError()) {
+				return result;
+			}
+			
+			N value = result.resultOrThrow();
+			if (0 < value.compareTo(max)) {
+				return Result.error("Unable to decode value " + value + ": Value must be at most " + max);
+			}
+			return Result.success(value);
+		}).codec("AtMost[" + codec + ", " + max + "]"), codec, codec);
+	}
+	
+	/**
+	 * Creates a new codec that only accepts numbers that are in the given range.<br>
+	 * The minimum and maximum values are inclusive.<br>
+	 *
+	 * @param codec The base codec
+	 * @param min The minimum value (inclusive)
+	 * @param max The maximum value (inclusive)
+	 * @param <N> The type of the number that is encoded and decoded by the codec
+	 * @param <C> The type of the codec that is used to encode and decode values of the type {@code N}
+	 * @return A new codec for the given codec
+	 * @throws NullPointerException If the codec, minimum value or maximum value is null
+	 * @throws IllegalArgumentException If the minimum value is greater than the maximum value
+	 */
+	static <N extends Number & Comparable<N>, C extends KeyableCodec<N>> @NotNull KeyableCodec<N> ranged(@NotNull C codec, @NotNull N min, @NotNull N max) {
+		Objects.requireNonNull(codec, "Codec must not be null");
+		Objects.requireNonNull(min, "Minimum value must not be null");
+		Objects.requireNonNull(max, "Maximum value must not be null");
+		if (min.compareTo(max) > 0) {
+			throw new IllegalArgumentException("Minimum value must not be greater than maximum value");
+		}
+		
+		return keyable(codec.map(value -> {
+			if (value == null) {
+				return Result.error("Value must not be null");
+			}
+			
+			if (value.compareTo(min) < 0 || 0 < value.compareTo(max)) {
+				return Result.error("Unable to encode value " + value + ": Value must be in range [" + min + ", " + max + "]");
+			}
+			return Result.success(value);
+		}, result -> {
+			if (result.isError()) {
+				return result;
+			}
+			
+			N value = result.resultOrThrow();
+			if (value.compareTo(min) < 0 || 0 < value.compareTo(max)) {
+				return Result.error("Unable to decode value " + value + ": Value must be in range [" + min + ", " + max + "]");
+			}
+			return Result.success(value);
+		}).codec("Ranged[" + codec + ", " + min + ", " + max + "]"), codec, codec);
+	}
+	
+	/**
 	 * Creates a new optional codec for the given codec.<br>
 	 * @param codec The base codec
 	 * @param <C> The type of the value that is encoded and decoded by the codec
@@ -174,6 +382,40 @@ public interface Codec<C> extends Encoder<C>, Decoder<C> {
 	 */
 	static <C> @NotNull Codec<Optional<C>> optional(@NotNull Codec<C> codec) {
 		return new OptionalCodec<>(codec);
+	}
+	
+	/**
+	 * Creates a new codec that provides a default value if the optional value is empty.<br>
+	 * The default value is used if the optional value is empty during decoding.<br>
+	 *
+	 * @param codec The base codec
+	 * @param defaultValue The default value
+	 * @param <C> The type of the value that is encoded and decoded by the codec
+	 * @return A new codec for the given codec
+	 * @throws NullPointerException If the codec is null
+	 * @see OptionalCodec
+	 */
+	static <C> @NotNull Codec<C> optional(@NotNull Codec<C> codec, @Nullable C defaultValue) {
+		Objects.requireNonNull(codec, "Codec must not be null");
+		return codec.optional().xmap(Optional::ofNullable, optional -> optional.orElse(defaultValue)).codec("OptionalWithDefault[" + codec + "]");
+	}
+	
+	/**
+	 * Creates a new codec that provides a default value from the given supplier if the optional value is empty.<br>
+	 * The default value is get if the optional value is empty during decoding.<br>
+	 *
+	 * @param codec The base codec
+	 * @param defaultSupplier The supplier for the default value
+	 * @return A new codec for the given codec
+	 * @param <C> The type of the value that is encoded and decoded by the codec
+	 * @throws NullPointerException If the codec or the default supplier is null
+	 * @see OptionalCodec
+	 */
+	static <C> @NotNull Codec<C> optional(@NotNull Codec<C> codec, @NotNull Supplier<? extends C> defaultSupplier) {
+		Objects.requireNonNull(codec, "Codec must not be null");
+		Objects.requireNonNull(defaultSupplier, "Default supplier must not be null");
+		
+		return codec.optional().xmap(Optional::ofNullable, optional -> optional.orElseGet(defaultSupplier)).codec("OptionalWithDefaultFrom[" + codec + "]");
 	}
 	
 	/**
@@ -447,6 +689,50 @@ public interface Codec<C> extends Encoder<C>, Decoder<C> {
 	}
 	
 	/**
+	 * Wraps the current codec into a new nullable codec.<br>
+	 *
+	 * @return A new nullable codec
+	 * @see #nullable(Codec)
+	 * @see NullableCodec
+	 */
+	default @NotNull Codec<C> nullable() {
+		return nullable(this);
+	}
+
+	/**
+	 * Wraps the current codec into a new union codec that constrains values to a specific set of allowed values.<br>
+	 * This codec validates that encoded and decoded values are within the predefined set of valid values.<br>
+	 * Any value outside this set will cause encoding or decoding to fail with an error.<br>
+	 *
+	 * @param validValues The collection of valid values
+	 * @return A new union codec for the current codec
+	 * @throws NullPointerException If the valid values is null
+	 * @throws IllegalArgumentException If the valid values collection is empty
+	 * @see #union(Codec, Collection)
+	 * @see UnionCodec
+	 */
+	default @NotNull Codec<C> union(@NotNull Collection<C> validValues) {
+		return union(this, validValues);
+	}
+
+	/**
+	 * Wraps the current codec into a new union codec that constrains values to a specific set of allowed values.<br>
+	 * This codec validates that encoded and decoded values are within the predefined set of valid values.<br>
+	 * Any value outside this set will cause encoding or decoding to fail with an error.<br>
+	 *
+	 * @param validValues The array of valid values
+	 * @return A new union codec for the current codec
+	 * @throws NullPointerException If the valid values is null
+	 * @throws IllegalArgumentException If the valid values array is empty
+	 * @see #union(Codec, Object[])
+	 * @see UnionCodec
+	 */
+	@SuppressWarnings("unchecked")
+	default @NotNull Codec<C> union(@NotNull C... validValues) {
+		return union(this, validValues);
+	}
+
+	/**
 	 * Wraps the current codec into a new optional codec.<br>
 	 *
 	 * @return A new optional codec for the current codec
@@ -455,6 +741,33 @@ public interface Codec<C> extends Encoder<C>, Decoder<C> {
 	 */
 	default @NotNull Codec<Optional<C>> optional() {
 		return optional(this);
+	}
+	
+	/**
+	 * Wraps the current codec into a new codec that provides a default value if the optional value is empty.<br>
+	 * The default value is used if the optional value is empty during decoding.<br>
+	 *
+	 * @param defaultValue The default value
+	 * @return A new codec for the current codec
+	 * @see #optional(Codec, Object)
+	 * @see OptionalCodec
+	 */
+	default @NotNull Codec<C> optional(@Nullable C defaultValue) {
+		return optional(this, defaultValue);
+	}
+	
+	/**
+	 * Wraps the current codec into a new codec that provides a default value from the given supplier if the optional value is empty.<br>
+	 * The default value is get if the optional value is empty during decoding.<br>
+	 *
+	 * @param defaultSupplier The supplier for the default value
+	 * @return A new codec for the current codec
+	 * @throws NullPointerException If the default supplier is null
+	 * @see #optional(Codec, Supplier)
+	 * @see OptionalCodec
+	 */
+	default @NotNull Codec<C> optional(@NotNull Supplier<? extends C> defaultSupplier) {
+		return optional(this, defaultSupplier);
 	}
 	
 	/**
@@ -680,10 +993,10 @@ public interface Codec<C> extends Encoder<C>, Decoder<C> {
 	 *
 	 * @param defaultValue The default value
 	 * @return A new codec
-	 * @see #withDefaultGet(Supplier)
+	 * @see #orElseGet(Supplier)
 	 */
-	default @NotNull Codec<C> withDefault(@Nullable C defaultValue) {
-		return this.withDefaultGet(() -> defaultValue);
+	default @NotNull Codec<C> orElse(@Nullable C defaultValue) {
+		return this.orElseGet(() -> defaultValue);
 	}
 	
 	/**
@@ -693,7 +1006,7 @@ public interface Codec<C> extends Encoder<C>, Decoder<C> {
 	 * @return A new codec
 	 * @throws NullPointerException If the default value supplier is null
 	 */
-	default @NotNull Codec<C> withDefaultGet(@NotNull Supplier<C> supplier) {
+	default @NotNull Codec<C> orElseGet(@NotNull Supplier<C> supplier) {
 		Objects.requireNonNull(supplier, "Default value supplier must not be null");
 		return of(this, this.mapDecoder(result -> Result.success(result.orElseGet(supplier))), "OrElseCodec[" + this + "]");
 	}

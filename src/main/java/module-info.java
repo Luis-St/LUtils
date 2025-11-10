@@ -47,8 +47,8 @@ module net.luis.utils {
 	exports net.luis.utils.io.codec.decoder;
 	exports net.luis.utils.io.codec.encoder;
 	exports net.luis.utils.io.codec.function;
+	exports net.luis.utils.io.codec.mapping;
 	exports net.luis.utils.io.codec.provider;
-	exports net.luis.utils.io.codec.struct;
 	
 	exports net.luis.utils.io.data;
 	exports net.luis.utils.io.data.config;
@@ -92,6 +92,7 @@ module net.luis.utils {
 	
 	exports net.luis.utils.util;
 	exports net.luis.utils.util.getter;
+	exports net.luis.utils.util.result;
 	exports net.luis.utils.util.unsafe;
 	exports net.luis.utils.util.unsafe.classpath;
 	exports net.luis.utils.util.unsafe.reflection;

@@ -18,9 +18,9 @@
 
 package net.luis.utils.io.codec;
 
+import net.luis.utils.io.codec.internal.struct.EitherCodec;
+import net.luis.utils.io.codec.internal.struct.UnitCodec;
 import net.luis.utils.io.codec.provider.JsonTypeProvider;
-import net.luis.utils.io.codec.struct.EitherCodec;
-import net.luis.utils.io.codec.struct.UnitCodec;
 import net.luis.utils.io.data.json.*;
 import net.luis.utils.util.Utils;
 import org.junit.jupiter.api.Test;
@@ -210,7 +210,10 @@ public class CodecsTest {
 		Codec<String> unitCodec = unit("constant");
 		
 		JsonElement encoded = unitCodec.encode(provider, "anything");
-		assertEquals(JsonNull.INSTANCE, encoded);
+		assertFalse(encoded.isJsonNull());
+		assertFalse(encoded.isJsonPrimitive());
+		assertFalse(encoded.isJsonArray());
+		assertFalse(encoded.isJsonObject());
 		
 		String decoded = unitCodec.decode(provider, JsonNull.INSTANCE);
 		assertEquals("constant", decoded);

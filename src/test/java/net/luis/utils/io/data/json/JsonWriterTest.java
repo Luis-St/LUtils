@@ -110,6 +110,24 @@ class JsonWriterTest {
 	}
 	
 	@Test
+	void writeJsonPrimitiveSpecialNumbers() {
+		StringOutputStream stream = new StringOutputStream();
+		JsonWriter writer = new JsonWriter(new OutputProvider(stream));
+		
+		stream.reset();
+		writer.writeJson(new JsonPrimitive(Double.POSITIVE_INFINITY));
+		assertEquals("Infinity", stream.toString());
+		
+		stream.reset();
+		writer.writeJson(new JsonPrimitive(Double.NEGATIVE_INFINITY));
+		assertEquals("-Infinity", stream.toString());
+		
+		stream.reset();
+		writer.writeJson(new JsonPrimitive(Double.NaN));
+		assertEquals("NaN", stream.toString());
+	}
+	
+	@Test
 	void writeJsonPrimitiveStrings() {
 		StringOutputStream stream = new StringOutputStream();
 		JsonWriter writer = new JsonWriter(new OutputProvider(stream));
@@ -131,11 +149,11 @@ class JsonWriterTest {
 		
 		stream.reset();
 		writer.writeJson(new JsonPrimitive("123"));
-		assertEquals("123", stream.toString());
+		assertEquals("\"123\"", stream.toString());
 		
 		stream.reset();
 		writer.writeJson(new JsonPrimitive("true"));
-		assertEquals("true", stream.toString());
+		assertEquals("\"true\"", stream.toString());
 		
 		stream.reset();
 		writer.writeJson(new JsonPrimitive("not_a_number"));
