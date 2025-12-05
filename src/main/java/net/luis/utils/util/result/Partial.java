@@ -20,8 +20,7 @@ package net.luis.utils.util.result;
 
 import org.jetbrains.annotations.*;
 
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
@@ -29,23 +28,24 @@ import java.util.function.Supplier;
  * Represents a partial result with both a value and an error message.<br>
  * This indicates that the operation produced a result but also encountered an issue.<br>
  *
- * @author Luis-St
- *
+ * @param value The partial result value
+ * @param errorMessage The error message describing what went wrong
+ * @param causes The list of causes leading to this partial result
  * @param <T> The type of the result value
- * @param value The partial result value (may be null)
- * @param errorMessage The error message describing what went wrong (must not be null)
  */
-record Partial<T>(@Nullable T value, @NotNull String errorMessage) implements Result<T> {
+record Partial<T>(@Nullable T value, @NotNull String errorMessage, @NotNull List<String> causes) implements Result<T> {
 	
 	/**
-	 * Constructs a new partial result with the specified value and error message.<br>
+	 * Constructs a new partial result with the specified value, error message, and list of causes.<br>
 	 *
 	 * @param value The partial result value
-	 * @param errorMessage The error message
+	 * @param errorMessage The error message describing what went wrong
+	 * @param causes The list of causes leading to this partial result
 	 * @throws NullPointerException If the error message is null
 	 */
 	Partial {
 		Objects.requireNonNull(errorMessage, "Error must not be null");
+		Objects.requireNonNull(causes, "List of causes must not be null");
 	}
 	
 	@Override
@@ -89,20 +89,33 @@ record Partial<T>(@Nullable T value, @NotNull String errorMessage) implements Re
 		return this.value;
 	}
 	
+	private @NotNull String buildErrorMessage() {
+		StringBuilder sb = new StringBuilder(this.errorMessage);
+		if (this.causes.isEmpty()) {
+			return sb.toString();
+		}
+		
+		sb.append("\n");
+		for (String cause : this.causes) {
+			sb.append(" - ").append(cause).append("\n");
+		}
+		return sb.toString().stripTrailing();
+	}
+	
 	@Override
 	public @NotNull Optional<String> error() {
-		return Optional.of(this.errorMessage);
+		return Optional.of(this.buildErrorMessage());
 	}
 	
 	@Override
 	public @NotNull String errorOrThrow() {
-		return this.errorMessage;
+		return this.buildErrorMessage();
 	}
 	
 	@Override
 	public <R> @NotNull Result<R> map(@NotNull Function<T, R> mapper) {
 		Objects.requireNonNull(mapper, "Mapper must not be null");
-		return new Partial<>(mapper.apply(this.value), this.errorMessage);
+		return new Partial<>(mapper.apply(this.value), this.errorMessage, this.causes);
 	}
 	
 	@Override
@@ -110,18 +123,13 @@ record Partial<T>(@Nullable T value, @NotNull String errorMessage) implements Re
 		Objects.requireNonNull(mapper, "Mapper must not be null");
 		Result<R> mapped = mapper.apply(this.value);
 		
-		// If the mapped result has an error, combine the error messages
 		if (mapped.hasError()) {
-			String combinedError = this.errorMessage + "; " + mapped.errorOrThrow();
-			// If the mapped result has a value, return a partial result
 			if (mapped.hasValue()) {
-				return Result.partial(mapped.resultOrThrow(), combinedError);
+				return Result.partial(mapped.resultOrThrow(), "Mapping of partial result failed", List.of(this.errorMessage, mapped.errorOrThrow()));
 			}
-			// Otherwise return an error with the combined message
-			return Result.error(combinedError);
+			return Result.error(this.errorMessage + "; " + mapped.errorOrThrow());
 		}
 		
-		// If the mapped result is successful, return a partial result with the original error
 		return Result.partial(mapped.resultOrThrow(), this.errorMessage);
 	}
 	

@@ -18,15 +18,11 @@
 
 package net.luis.utils.io.codec.mapping;
 
-import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
 import net.luis.utils.io.codec.*;
 import net.luis.utils.util.Either;
-import net.luis.utils.util.Utils;
 import net.luis.utils.util.unsafe.reflection.ReflectionHelper;
 import org.apache.commons.lang3.ClassUtils;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
+import org.jetbrains.annotations.*;
 
 import java.io.File;
 import java.lang.reflect.*;
@@ -60,10 +56,6 @@ public final class CodecAutoMapping {
 	 */
 	private static final CodecComponent[] EMPTY_CODEC_COMPONENTS = new CodecComponent[0];
 	/**
-	 * System property key used by reflection helper to control exception propagation.<br>
-	 */
-	private static final String REFLECTION_EXCEPTIONS_THROW = "reflection.exceptions.throw";
-	/**
 	 * Cache to avoid rebuilding identical codecs repeatedly.<br>
 	 */
 	private static final ConcurrentMap<Class<?>, Codec<?>> AUTO_CODEC_CACHE = new ConcurrentHashMap<>();
@@ -72,46 +64,63 @@ public final class CodecAutoMapping {
 	 * A lookup map that associates Java classes with their corresponding codec implementations.<br>
 	 * This map contains predefined codecs for commonly used Java types like primitives, strings, and date/time classes.<br>
 	 * When creating an auto-mapped codec, this map is consulted first to find an existing codec for a given type.<br>
+	 *
+	 * @see #createCodecLookup()
 	 */
-	public static final Map<Class<?>, Codec<?>> CODEC_LOOKUP = Utils.make(Maps.newHashMap(), map -> {
-		map.put(Boolean.class, Codecs.BOOLEAN);
-		map.put(Byte.class, Codecs.BYTE);
-		map.put(Short.class, Codecs.SHORT);
-		map.put(Integer.class, Codecs.INTEGER);
-		map.put(Long.class, Codecs.LONG);
-		map.put(Float.class, Codecs.FLOAT);
-		map.put(Double.class, Codecs.DOUBLE);
-		map.put(String.class, Codecs.STRING);
-		map.put(Character.class, Codecs.CHARACTER);
-		map.put(UUID.class, Codecs.UUID);
-		map.put(LocalTime.class, Codecs.LOCAL_TIME);
-		map.put(LocalDate.class, Codecs.LOCAL_DATE);
-		map.put(LocalDateTime.class, Codecs.LOCAL_DATE_TIME);
-		map.put(ZonedDateTime.class, Codecs.ZONED_DATE_TIME);
-		map.put(Charset.class, Codecs.CHARSET);
-		map.put(File.class, Codecs.FILE);
-		map.put(Path.class, Codecs.PATH);
-		map.put(URI.class, Codecs.URI);
-		map.put(URL.class, Codecs.URL);
-		map.put(IntStream.class, Codecs.INT_STREAM);
-		map.put(LongStream.class, Codecs.LONG_STREAM);
-		map.put(DoubleStream.class, Codecs.DOUBLE_STREAM);
-		
-		map.put(boolean[].class, Codecs.BOOLEAN_ARRAY);
-		map.put(byte[].class, Codecs.BYTE_ARRAY);
-		map.put(short[].class, Codecs.SHORT_ARRAY);
-		map.put(int[].class, Codecs.INTEGER_ARRAY);
-		map.put(long[].class, Codecs.LONG_ARRAY);
-		map.put(float[].class, Codecs.FLOAT_ARRAY);
-		map.put(double[].class, Codecs.DOUBLE_ARRAY);
-		map.put(char[].class, Codecs.CHARACTER_ARRAY);
-	});
+	public static final Map<Class<?>, Codec<?>> CODEC_LOOKUP = createCodecLookup();
 	
 	/**
 	 * Private constructor to prevent instantiation.<br>
 	 * This is a static helper class.<br>
 	 */
 	private CodecAutoMapping() {}
+	
+	/**
+	 * Creates the codec lookup map with predefined codecs for common Java types.<br>
+	 * @return An unmodifiable map associating classes with their codecs
+	 */
+	private static @NotNull @Unmodifiable Map<Class<?>, Codec<?>> createCodecLookup() {
+		Map<Class<?>, Codec<?>> lookup = new HashMap<>();
+		lookup.put(boolean[].class, Codecs.BOOLEAN_ARRAY);
+		lookup.put(byte[].class, Codecs.BYTE_ARRAY);
+		lookup.put(short[].class, Codecs.SHORT_ARRAY);
+		lookup.put(int[].class, Codecs.INTEGER_ARRAY);
+		lookup.put(long[].class, Codecs.LONG_ARRAY);
+		lookup.put(float[].class, Codecs.FLOAT_ARRAY);
+		lookup.put(double[].class, Codecs.DOUBLE_ARRAY);
+		lookup.put(char[].class, Codecs.CHARACTER_ARRAY);
+		
+		lookup.put(Charset.class, Codecs.CHARSET);
+		lookup.put(File.class, Codecs.FILE);
+		lookup.put(Path.class, Codecs.PATH);
+		lookup.put(URI.class, Codecs.URI);
+		lookup.put(URL.class, Codecs.URL);
+		
+		lookup.put(Boolean.class, Codecs.BOOLEAN);
+		lookup.put(Byte.class, Codecs.BYTE);
+		lookup.put(Short.class, Codecs.SHORT);
+		lookup.put(Integer.class, Codecs.INTEGER);
+		lookup.put(Long.class, Codecs.LONG);
+		lookup.put(Float.class, Codecs.FLOAT);
+		lookup.put(Double.class, Codecs.DOUBLE);
+		lookup.put(Character.class, Codecs.CHARACTER);
+		lookup.put(String.class, Codecs.STRING);
+		
+		lookup.put(IntStream.class, Codecs.INT_STREAM);
+		lookup.put(LongStream.class, Codecs.LONG_STREAM);
+		lookup.put(DoubleStream.class, Codecs.DOUBLE_STREAM);
+		
+		lookup.put(Instant.class, Codecs.INSTANT);
+		lookup.put(LocalTime.class, Codecs.LOCAL_TIME);
+		lookup.put(LocalDate.class, Codecs.LOCAL_DATE);
+		lookup.put(LocalDateTime.class, Codecs.LOCAL_DATE_TIME);
+		lookup.put(ZonedDateTime.class, Codecs.ZONED_DATE_TIME);
+		lookup.put(Duration.class, Codecs.DURATION);
+		lookup.put(Period.class, Codecs.PERIOD);
+		
+		lookup.put(UUID.class, Codecs.UUID);
+		return Map.copyOf(lookup);
+	}
 	
 	/**
 	 * Creates an automatically mapped codec for the given class.<br>
@@ -134,17 +143,7 @@ public final class CodecAutoMapping {
 			throw new IllegalArgumentException("Class must not be an interface, annotation or primitive type: " + clazz.getName());
 		}
 		
-		String previous = System.getProperty(REFLECTION_EXCEPTIONS_THROW);
-		try {
-			System.setProperty(REFLECTION_EXCEPTIONS_THROW, "true");
-			return getOrCreateCodec(clazz);
-		} finally {
-			if (previous != null) {
-				System.setProperty(REFLECTION_EXCEPTIONS_THROW, previous);
-			} else {
-				System.clearProperty(REFLECTION_EXCEPTIONS_THROW);
-			}
-		}
+		return getOrCreateCodec(clazz);
 	}
 	
 	/**
@@ -160,7 +159,14 @@ public final class CodecAutoMapping {
 	@SuppressWarnings("unchecked")
 	private static <O> @NotNull Codec<O> getOrCreateCodec(@NotNull Class<O> clazz) {
 		Objects.requireNonNull(clazz, "Class must not be null");
-		return (Codec<O>) AUTO_CODEC_CACHE.computeIfAbsent(clazz, CodecAutoMapping::createCodecInternal);
+		
+		if (AUTO_CODEC_CACHE.containsKey(clazz)) {
+			return (Codec<O>) AUTO_CODEC_CACHE.get(clazz);
+		}
+		
+		Codec<O> codec = createCodecInternal(clazz);
+		AUTO_CODEC_CACHE.put(clazz, codec);
+		return codec;
 	}
 	
 	/**
@@ -187,73 +193,73 @@ public final class CodecAutoMapping {
 			throw new IllegalArgumentException("Record class has too many components (max 16): " + clazz.getName());
 		}
 		
-		ConfiguredCodec<?, O>[] configuredCodecs = Stream.of(components).map(CodecAutoMapping::createConfiguredCodec).toArray(ConfiguredCodec[]::new);
+		FieldCodec<?, O>[] fieldCodecs = Stream.of(components).map(CodecAutoMapping::createFieldCodec).toArray(FieldCodec[]::new);
 		return switch (components.length) {
 			case 1 -> CodecBuilder.of(
-				configuredCodecs[0]
+				fieldCodecs[0]
 			).create(arg0 -> createInstance(constructor, arg0));
 			case 2 -> CodecBuilder.of(
-				configuredCodecs[0], configuredCodecs[1]
+				fieldCodecs[0], fieldCodecs[1]
 			).create((arg0, arg1) -> createInstance(constructor, arg0, arg1));
 			case 3 -> CodecBuilder.of(
-				configuredCodecs[0], configuredCodecs[1], configuredCodecs[2]
+				fieldCodecs[0], fieldCodecs[1], fieldCodecs[2]
 			).create((arg0, arg1, arg2) -> createInstance(constructor, arg0, arg1, arg2));
 			case 4 -> CodecBuilder.of(
-				configuredCodecs[0], configuredCodecs[1], configuredCodecs[2], configuredCodecs[3]
+				fieldCodecs[0], fieldCodecs[1], fieldCodecs[2], fieldCodecs[3]
 			).create((arg0, arg1, arg2, arg3) -> createInstance(constructor, arg0, arg1, arg2, arg3));
 			case 5 -> CodecBuilder.of(
-				configuredCodecs[0], configuredCodecs[1], configuredCodecs[2], configuredCodecs[3], configuredCodecs[4]
+				fieldCodecs[0], fieldCodecs[1], fieldCodecs[2], fieldCodecs[3], fieldCodecs[4]
 			).create((arg0, arg1, arg2, arg3, arg4) -> createInstance(constructor, arg0, arg1, arg2, arg3, arg4));
 			case 6 -> CodecBuilder.of(
-				configuredCodecs[0], configuredCodecs[1], configuredCodecs[2], configuredCodecs[3], configuredCodecs[4], configuredCodecs[5]
+				fieldCodecs[0], fieldCodecs[1], fieldCodecs[2], fieldCodecs[3], fieldCodecs[4], fieldCodecs[5]
 			).create((arg0, arg1, arg2, arg3, arg4, arg5) -> createInstance(constructor, arg0, arg1, arg2, arg3, arg4, arg5));
 			case 7 -> CodecBuilder.of(
-				configuredCodecs[0], configuredCodecs[1], configuredCodecs[2], configuredCodecs[3], configuredCodecs[4], configuredCodecs[5], configuredCodecs[6]
+				fieldCodecs[0], fieldCodecs[1], fieldCodecs[2], fieldCodecs[3], fieldCodecs[4], fieldCodecs[5], fieldCodecs[6]
 			).create((arg0, arg1, arg2, arg3, arg4, arg5, arg6) -> createInstance(constructor, arg0, arg1, arg2, arg3, arg4, arg5, arg6));
 			case 8 -> CodecBuilder.of(
-				configuredCodecs[0], configuredCodecs[1], configuredCodecs[2], configuredCodecs[3], configuredCodecs[4], configuredCodecs[5], configuredCodecs[6], configuredCodecs[7]
+				fieldCodecs[0], fieldCodecs[1], fieldCodecs[2], fieldCodecs[3], fieldCodecs[4], fieldCodecs[5], fieldCodecs[6], fieldCodecs[7]
 			).create((arg0, arg1, arg2, arg3, arg4, arg5, arg6, arg7) -> createInstance(constructor, arg0, arg1, arg2, arg3, arg4, arg5, arg6, arg7));
 			case 9 -> CodecBuilder.of(
-				configuredCodecs[0], configuredCodecs[1], configuredCodecs[2], configuredCodecs[3], configuredCodecs[4], configuredCodecs[5], configuredCodecs[6], configuredCodecs[7],
-				configuredCodecs[8]
+				fieldCodecs[0], fieldCodecs[1], fieldCodecs[2], fieldCodecs[3], fieldCodecs[4], fieldCodecs[5], fieldCodecs[6], fieldCodecs[7],
+				fieldCodecs[8]
 			).create((arg0, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8) -> createInstance(constructor, arg0, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8));
 			case 10 -> CodecBuilder.of(
-				configuredCodecs[0], configuredCodecs[1], configuredCodecs[2], configuredCodecs[3], configuredCodecs[4], configuredCodecs[5], configuredCodecs[6], configuredCodecs[7],
-				configuredCodecs[8], configuredCodecs[9]
+				fieldCodecs[0], fieldCodecs[1], fieldCodecs[2], fieldCodecs[3], fieldCodecs[4], fieldCodecs[5], fieldCodecs[6], fieldCodecs[7],
+				fieldCodecs[8], fieldCodecs[9]
 			).create((arg0, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9) -> createInstance(constructor, arg0, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9));
 			case 11 -> CodecBuilder.of(
-				configuredCodecs[0], configuredCodecs[1], configuredCodecs[2], configuredCodecs[3], configuredCodecs[4], configuredCodecs[5], configuredCodecs[6], configuredCodecs[7],
-				configuredCodecs[8], configuredCodecs[9], configuredCodecs[10]
+				fieldCodecs[0], fieldCodecs[1], fieldCodecs[2], fieldCodecs[3], fieldCodecs[4], fieldCodecs[5], fieldCodecs[6], fieldCodecs[7],
+				fieldCodecs[8], fieldCodecs[9], fieldCodecs[10]
 			).create((arg0, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10) -> createInstance(
 				constructor, arg0, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10
 			));
 			case 12 -> CodecBuilder.of(
-				configuredCodecs[0], configuredCodecs[1], configuredCodecs[2], configuredCodecs[3], configuredCodecs[4], configuredCodecs[5], configuredCodecs[6], configuredCodecs[7],
-				configuredCodecs[8], configuredCodecs[9], configuredCodecs[10], configuredCodecs[11]
+				fieldCodecs[0], fieldCodecs[1], fieldCodecs[2], fieldCodecs[3], fieldCodecs[4], fieldCodecs[5], fieldCodecs[6], fieldCodecs[7],
+				fieldCodecs[8], fieldCodecs[9], fieldCodecs[10], fieldCodecs[11]
 			).create((arg0, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11) -> createInstance(
 				constructor, arg0, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11
 			));
 			case 13 -> CodecBuilder.of(
-				configuredCodecs[0], configuredCodecs[1], configuredCodecs[2], configuredCodecs[3], configuredCodecs[4], configuredCodecs[5], configuredCodecs[6], configuredCodecs[7],
-				configuredCodecs[8], configuredCodecs[9], configuredCodecs[10], configuredCodecs[11], configuredCodecs[12]
+				fieldCodecs[0], fieldCodecs[1], fieldCodecs[2], fieldCodecs[3], fieldCodecs[4], fieldCodecs[5], fieldCodecs[6], fieldCodecs[7],
+				fieldCodecs[8], fieldCodecs[9], fieldCodecs[10], fieldCodecs[11], fieldCodecs[12]
 			).create((arg0, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12) -> createInstance(
 				constructor, arg0, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12
 			));
 			case 14 -> CodecBuilder.of(
-				configuredCodecs[0], configuredCodecs[1], configuredCodecs[2], configuredCodecs[3], configuredCodecs[4], configuredCodecs[5], configuredCodecs[6], configuredCodecs[7],
-				configuredCodecs[8], configuredCodecs[9], configuredCodecs[10], configuredCodecs[11], configuredCodecs[12], configuredCodecs[13]
+				fieldCodecs[0], fieldCodecs[1], fieldCodecs[2], fieldCodecs[3], fieldCodecs[4], fieldCodecs[5], fieldCodecs[6], fieldCodecs[7],
+				fieldCodecs[8], fieldCodecs[9], fieldCodecs[10], fieldCodecs[11], fieldCodecs[12], fieldCodecs[13]
 			).create((arg0, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13) -> createInstance(
 				constructor, arg0, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13
 			));
 			case 15 -> CodecBuilder.of(
-				configuredCodecs[0], configuredCodecs[1], configuredCodecs[2], configuredCodecs[3], configuredCodecs[4], configuredCodecs[5], configuredCodecs[6], configuredCodecs[7],
-				configuredCodecs[8], configuredCodecs[9], configuredCodecs[10], configuredCodecs[11], configuredCodecs[12], configuredCodecs[13], configuredCodecs[14]
+				fieldCodecs[0], fieldCodecs[1], fieldCodecs[2], fieldCodecs[3], fieldCodecs[4], fieldCodecs[5], fieldCodecs[6], fieldCodecs[7],
+				fieldCodecs[8], fieldCodecs[9], fieldCodecs[10], fieldCodecs[11], fieldCodecs[12], fieldCodecs[13], fieldCodecs[14]
 			).create((arg0, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13, arg14) -> createInstance(
 				constructor, arg0, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13, arg14
 			));
 			case 16 -> CodecBuilder.of(
-				configuredCodecs[0], configuredCodecs[1], configuredCodecs[2], configuredCodecs[3], configuredCodecs[4], configuredCodecs[5], configuredCodecs[6], configuredCodecs[7],
-				configuredCodecs[8], configuredCodecs[9], configuredCodecs[10], configuredCodecs[11], configuredCodecs[12], configuredCodecs[13], configuredCodecs[14], configuredCodecs[15]
+				fieldCodecs[0], fieldCodecs[1], fieldCodecs[2], fieldCodecs[3], fieldCodecs[4], fieldCodecs[5], fieldCodecs[6], fieldCodecs[7],
+				fieldCodecs[8], fieldCodecs[9], fieldCodecs[10], fieldCodecs[11], fieldCodecs[12], fieldCodecs[13], fieldCodecs[14], fieldCodecs[15]
 			).create((arg0, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13, arg14, arg15) -> createInstance(
 				constructor, arg0, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13, arg14, arg15
 			));
@@ -278,7 +284,7 @@ public final class CodecAutoMapping {
 			return Arrays.stream(recordComponents).map(CodecComponent::new).toArray(CodecComponent[]::new);
 		}
 		
-		List<Field> fields = Lists.newArrayList(clazz.getDeclaredFields()).stream().filter(field -> !Modifier.isStatic(field.getModifiers())).toList();
+		List<Field> fields = Stream.of(clazz.getDeclaredFields()).filter(field -> !Modifier.isStatic(field.getModifiers())).toList();
 		if (fields.isEmpty()) {
 			return EMPTY_CODEC_COMPONENTS;
 		}
@@ -316,7 +322,7 @@ public final class CodecAutoMapping {
 			return ReflectionHelper.getConstructor(clazz, parameterTypes).orElseThrow();
 		}
 		
-		List<Constructor<?>> constructors = Lists.newArrayList(clazz.getDeclaredConstructors());
+		List<Constructor<?>> constructors = new ArrayList<>(Arrays.asList(clazz.getDeclaredConstructors()));
 		if (constructors.size() == 1) {
 			return validateClassConstructor(clazz, components, constructors);
 		}
@@ -363,17 +369,17 @@ public final class CodecAutoMapping {
 	}
 	
 	/**
-	 * Creates a configured codec for the given component.<br>
+	 * Creates a field codec for the given component.<br>
 	 * This method determines the codec to use for the component's type and configures it with the component's name and a getter function.<br>
 	 *
-	 * @param component The component to create a configured codec for
+	 * @param component The component to create a field codec for
 	 * @param <C> The type of the component
 	 * @param <O> The type of the object containing the component
-	 * @return A configured codec for the component
+	 * @return A field codec for the component
 	 * @throws NullPointerException If the component is null
 	 * @see GenericInfo
 	 */
-	private static <C, O> @NotNull ConfiguredCodec<C, O> createConfiguredCodec(@NotNull CodecComponent component) {
+	private static <C, O> @NotNull FieldCodec<C, O> createFieldCodec(@NotNull CodecComponent component) {
 		Objects.requireNonNull(component, "Component must not be null");
 		
 		GenericInfo genericInfo = component.getAnnotation(GenericInfo.class);
@@ -381,7 +387,7 @@ public final class CodecAutoMapping {
 		String name = component.getName();
 		
 		Function<O, C> getter = o -> (C) component.accessValue(o).orElseThrow();
-		return codec.configure(name, getter);
+		return codec.fieldOf(name, getter);
 	}
 	
 	/**
@@ -412,7 +418,7 @@ public final class CodecAutoMapping {
 				throw new IllegalArgumentException("Missing generic type information for Optional: " + clazz.getName());
 			}
 			
-			return (Codec<C>) Codec.optional(getCodec(genericInfo[0], dropElements(genericInfo, 1)));
+			return (Codec<C>) getCodec(genericInfo[0], dropElements(genericInfo, 1)).optional();
 		} else if (Either.class.isAssignableFrom(clazz)) {
 			if (genericInfo == null || genericInfo.length < 2) {
 				throw new IllegalArgumentException("Missing generic type information for Either: " + clazz.getName());
@@ -430,28 +436,22 @@ public final class CodecAutoMapping {
 			
 			Class<?>[] newGenericInfo = dropElements(genericInfo, 2);
 			Codec<?> keyType = getCodec(genericInfo[0], newGenericInfo);
-			if (!(keyType instanceof KeyableCodec<?> keyableCodec)) {
-				throw new IllegalArgumentException("Key type must be keyable: " + clazz.getName());
-			}
-			
-			return (Codec<C>) Codec.map(
-				keyableCodec, getCodec(genericInfo[1], newGenericInfo)
+			return (Codec<C>) Codecs.map(
+				keyType, getCodec(genericInfo[1], newGenericInfo)
 			);
 		} else if (List.class.isAssignableFrom(clazz)) {
 			if (genericInfo == null) {
 				throw new IllegalArgumentException("Missing generic type information for List: " + clazz.getName());
 			}
 			
-			return (Codec<C>) Codec.list(getCodec(genericInfo[0], dropElements(genericInfo, 1)));
+			return (Codec<C>) getCodec(genericInfo[0], dropElements(genericInfo, 1)).list();
 		} else if (Set.class.isAssignableFrom(clazz)) {
 			if (genericInfo == null) {
 				throw new IllegalArgumentException("Missing generic type information for Set: " + clazz.getName());
 			}
 			
 			// Note: Type of Set<Object> is required to work, if this type notation is not present, java will infer the type as the dynamic type at runtime which causes in some cases errors
-			return (Codec<C>) Codec.list(getCodec(genericInfo[0], dropElements(genericInfo, 1))).xmap((Set<Object> set) -> {
-				return new ArrayList<>(set);
-			}, HashSet::new);
+			return (Codec<C>) getCodec(genericInfo[0], dropElements(genericInfo, 1)).list().xmap((Set<Object> set) -> new ArrayList<>(set), HashSet::new);
 		}
 		
 		Codec<?> codec = CODEC_LOOKUP.get(ClassUtils.primitiveToWrapper(clazz));

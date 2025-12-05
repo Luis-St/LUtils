@@ -18,22 +18,28 @@
 
 package net.luis.utils.io.codec.decoder;
 
-import net.luis.utils.io.codec.ResultMappingFunction;
 import net.luis.utils.io.codec.provider.TypeProvider;
+import net.luis.utils.util.result.ResultMappingFunction;
 import net.luis.utils.util.result.Result;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
+import org.jetbrains.annotations.*;
 
 import java.util.Objects;
 
 /**
  * Represents a decoder for a specific type.<br>
- * The implementation decodes a value of the type specified by the type provider<br>
- * and returns a result containing the decoded value or an error message.<br>
+ * <p>
+ *     The implementation decodes a value of the type specified by the type provider<br>
+ *     and returns a result containing the decoded value or an error message.
+ * </p>
+ * <p>
+ *     The decoder also has the functionality to decode keys (string values).<br>
+ *     This is useful when decoding data structures like maps or dictionaries.<br>
+ *     This is not supported by default and needs to be implemented separately if required.
+ * </p>
  *
  * @author Luis-St
  *
- * @param <C> The type the decoder is for
+ * @param <C> The type of the value to decode
  */
 @FunctionalInterface
 public interface Decoder<C> {
@@ -47,28 +53,76 @@ public interface Decoder<C> {
 	 * @param <R> The type to decode from
 	 * @throws NullPointerException If the type provider is null
 	 * @throws DecoderException If an error occurs during decoding
-	 * @see #decodeStart(TypeProvider, Object)
 	 */
-	default <R> @NotNull C decode(@NotNull TypeProvider<R> provider, @Nullable R value) {
+	default <R> @UnknownNullability C decode(@NotNull TypeProvider<R> provider, @Nullable R value) {
 		Objects.requireNonNull(provider, "Type provider must not be null");
-		return this.decodeStart(provider, value).resultOrThrow(DecoderException::new);
+		return this.decode(provider, provider.empty(), value);
+	}
+	
+	/**
+	 * Decodes the value of the specified type and returns the decoded value directly.<br>
+	 * <p>
+	 *     The current value is the full value that is currently decoded.<br>
+	 *     In the most cases this value should be equal to {@link TypeProvider#empty()}.<br>
+	 *     In the case of decoding a component that is part of a bigger structure, the current value should be the structure.
+	 * </p>
+	 *
+	 * @param provider The type provider
+	 * @param current The current value
+	 * @param value The value to decode
+	 * @param <R> The type to decode from
+	 * @return The decoded value
+	 * @throws NullPointerException If the type provider or the current value is null
+	 * @throws DecoderException If an error occurs during decoding
+	 */
+	default <R> @UnknownNullability C decode(@NotNull TypeProvider<R> provider, @NotNull R current, @Nullable R value) {
+		Objects.requireNonNull(provider, "Type provider must not be null");
+		Objects.requireNonNull(current, "Current value must not be null");
+		
+		return this.decodeStart(provider, current, value).resultOrThrow(DecoderException::new);
 	}
 	
 	/**
 	 * Decodes the value of the specified type and returns the result.<br>
 	 * The result contains the decoded value or an error message.<br>
+	 * <p>
+	 *     The current value is the full value that is currently decoded.<br>
+	 *     In the most cases this value should be equal to {@link TypeProvider#empty()}.<br>
+	 *     In the case of decoding a component that is part of a bigger structure, the current value should be the structure:
+	 * </p>
+	 * <p>
+	 *     For example:
+	 * </p>
+	 * <ul>
+	 *     <li>If decoding a single integer value, the current value should be {@link TypeProvider#empty()}.</li>
+	 *     <li>If decoding an element of an array, the current value should be the full array.</li>
+	 *     <li>If decoding a value of a map, the current value should be the full map.</li>
+	 * </ul>
 	 *
 	 * @param provider The type provider
 	 * @param value The value to decode
-	 * @return The result
+	 * @return The result of the decoding
 	 * @param <R> The type to decode from
-	 * @throws NullPointerException If the type provider is null
+	 * @throws NullPointerException If the type provider or the current value is null
 	 */
-	<R> @NotNull Result<C> decodeStart(@NotNull TypeProvider<R> provider, @Nullable R value);
+	<R> @NotNull Result<C> decodeStart(@NotNull TypeProvider<R> provider, @NotNull R current, @Nullable R value);
+	
+	/**
+	 * Decodes a key to a value of the specified type and returns the result.<br>
+	 * The result contains the decoded key or an error message.<br>
+	 *
+	 * @param key The key to decode
+	 * @return The result
+	 * @throws NullPointerException If the key is null
+	 */
+	default @NotNull Result<C> decodeKey(@NotNull String key) {
+		Objects.requireNonNull(key, "Key to decode must not be null");
+		return Result.error("Decoding keys is not supported by this decoder");
+	}
 	
 	/**
 	 * Maps the type of the decoded value to another type.<br>
-	 * The mapping function is applied to the decoded result of the decoding process.<br>
+	 * The mapping function is applied to the decoded result of {@link #decodeStart(TypeProvider, Object, Object)}.<br>
 	 * The mapping function returns a result containing the mapped value or an error message if the mapping process fails.<br>
 	 *
 	 * @param function The mapping function
@@ -80,9 +134,17 @@ public interface Decoder<C> {
 		Objects.requireNonNull(function, "Decode mapping function must not be null");
 		return new Decoder<>() {
 			@Override
-			public <R> @NotNull Result<O> decodeStart(@NotNull TypeProvider<R> provider, @Nullable R value) {
+			public <R> @NotNull Result<O> decodeStart(@NotNull TypeProvider<R> provider, @NotNull R current, @Nullable R value) {
 				Objects.requireNonNull(provider, "Type provider must not be null");
-				return function.apply(Decoder.this.decodeStart(provider, value));
+				Objects.requireNonNull(current, "Current value must not be null");
+				
+				return function.apply(Decoder.this.decodeStart(provider, current, value));
+			}
+			
+			@Override
+			public @NotNull Result<O> decodeKey(@NotNull String key) {
+				Objects.requireNonNull(key, "Key to decode must not be null");
+				return function.apply(Decoder.this.decodeKey(key));
 			}
 		};
 	}

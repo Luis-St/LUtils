@@ -44,11 +44,20 @@ module net.luis.utils {
 	exports net.luis.utils.io.reader;
 	
 	exports net.luis.utils.io.codec;
+	exports net.luis.utils.io.codec.constraint;
 	exports net.luis.utils.io.codec.decoder;
 	exports net.luis.utils.io.codec.encoder;
 	exports net.luis.utils.io.codec.function;
 	exports net.luis.utils.io.codec.mapping;
 	exports net.luis.utils.io.codec.provider;
+	exports net.luis.utils.io.codec.types;
+	exports net.luis.utils.io.codec.types.array;
+	exports net.luis.utils.io.codec.types.io;
+	exports net.luis.utils.io.codec.types.primitiv;
+	exports net.luis.utils.io.codec.types.primitiv.numeric;
+	exports net.luis.utils.io.codec.types.stream;
+	exports net.luis.utils.io.codec.types.struct;
+	exports net.luis.utils.io.codec.types.time;
 	
 	exports net.luis.utils.io.data;
 	exports net.luis.utils.io.data.config;

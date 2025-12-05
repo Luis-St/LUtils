@@ -20,7 +20,7 @@ package net.luis.utils.util.result;
 
 import org.jetbrains.annotations.*;
 
-import java.util.Optional;
+import java.util.*;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
@@ -75,7 +75,22 @@ public sealed interface Result<T> permits Success, Error, Partial {
 	 * @throws NullPointerException If the error message is null
 	 */
 	static <T> @NotNull Result<T> partial(@Nullable T value, @NotNull String error) {
-		return new Partial<>(value, error);
+		return new Partial<>(value, error, new ArrayList<>());
+	}
+	
+	/**
+	 * Creates a new partial result with the specified value, error message, and list of causes.<br>
+	 * A partial result indicates that the operation produced a value but also encountered an error.<br>
+	 *
+	 * @param value The partial value of the result
+	 * @param error The error message describing what went wrong
+	 * @param causes The list of causes leading to this partial result
+	 * @param <T> The type of the result
+	 * @return The created partial result
+	 * @throws NullPointerException If the error message or causes list is null
+	 */
+	static <T> @NotNull Result<T> partial(@Nullable T value, @NotNull String error, @NotNull List<String> causes) {
+		return new Partial<>(value, error, causes);
 	}
 	//endregion
 	

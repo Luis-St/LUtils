@@ -18,10 +18,11 @@
 
 package net.luis.utils.io.codec;
 
-import com.google.common.collect.Lists;
 import net.luis.utils.io.codec.provider.TypeProvider;
+import net.luis.utils.util.result.ResultingFunction;
 import net.luis.utils.util.result.Result;
-import org.jetbrains.annotations.*;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -38,13 +39,13 @@ import java.util.stream.Collectors;
  *
  * @param <O> The type of the object that this codec encodes and decodes
  */
-public class CodecGroup<O> implements Codec<O> {
+public final class CodecGroup<O> implements Codec<O> {
 	
 	/**
 	 * The list of codecs that are grouped together in this codec.<br>
 	 * Each codec is responsible for encoding and decoding a specific component of the final object.<br>
 	 */
-	private final List<ConfiguredCodec<?, O>> codecs;
+	private final List<FieldCodec<?, O>> codecs;
 	/**
 	 * The factory function that creates the final object from the encoded components.<br>
 	 * This function takes a list of decoded components and returns the final object.<br>
@@ -59,14 +60,13 @@ public class CodecGroup<O> implements Codec<O> {
 	 * @param factory The factory function to create the final object from the encoded components
 	 * @throws NullPointerException If the codecs list or factory function is null
 	 */
-	@ApiStatus.Internal
-	public CodecGroup(@NotNull List<ConfiguredCodec<?, O>> codecs, @NotNull ResultingFunction<List<Object>, O> factory) {
+	public CodecGroup(@NotNull List<FieldCodec<?, O>> codecs, @NotNull ResultingFunction<List<Object>, O> factory) {
 		this.codecs = Objects.requireNonNull(codecs, "Codecs list must not be null");
 		this.factory = Objects.requireNonNull(factory, "Factory function must not be null");
 	}
 	
 	@Override
-	public @NotNull <R> Result<R> encodeStart(@NotNull TypeProvider<R> provider, @NotNull R current, @Nullable O value) {
+	public <R> @NotNull Result<R> encodeStart(@NotNull TypeProvider<R> provider, @NotNull R current, @Nullable O value) {
 		Objects.requireNonNull(provider, "Type provider must not be null");
 		Objects.requireNonNull(current, "Current value must not be null");
 		if (value == null) {
@@ -80,7 +80,7 @@ public class CodecGroup<O> implements Codec<O> {
 		R map = mergedMap.resultOrThrow();
 		
 		for (int i = 0; i < this.codecs.size(); i++) {
-			ConfiguredCodec<?, O> codec = this.codecs.get(i);
+			FieldCodec<?, O> codec = this.codecs.get(i);
 			Objects.requireNonNull(codec, "Codec of component " + i + " must not be null");
 			
 			Result<R> encoded = codec.encodeStart(provider, map, value);
@@ -93,22 +93,24 @@ public class CodecGroup<O> implements Codec<O> {
 	}
 	
 	@Override
-	public @NotNull <R> Result<O> decodeStart(@NotNull TypeProvider<R> provider, @Nullable R value) {
+	public <R> @NotNull Result<O> decodeStart(@NotNull TypeProvider<R> provider, @NotNull R current, @Nullable R value) {
 		Objects.requireNonNull(provider, "Type provider must not be null");
+		Objects.requireNonNull(current, "Current value must not be null");
 		if (value == null) {
-			return Result.error("Unable to decode null value using '" + this);
+			return Result.error("Unable to decode null value using '" + this + "'");
 		}
+		
 		Result<Map<String, R>> decodedMap = provider.getMap(value);
 		if (decodedMap.isError()) {
 			return Result.error("Unable to decode '" + value + "' using '" + this + "': " + decodedMap.errorOrThrow());
 		}
 		
-		List<Object> components = Lists.newArrayListWithCapacity(this.codecs.size());
+		List<Object> components = new ArrayList<>(this.codecs.size());
 		for (int i = 0; i < this.codecs.size(); i++) {
-			ConfiguredCodec<?, O> codec = this.codecs.get(i);
+			FieldCodec<?, O> codec = this.codecs.get(i);
 			Objects.requireNonNull(codec, "Codec of component " + i + " must not be null");
 			
-			Result<?> decoded = codec.decodeStart(provider, value);
+			Result<?> decoded = codec.decodeStart(provider, value, value);
 			if (decoded.isError()) {
 				return Result.error("Unable to decode component of '" + value + "' using '" + codec + "': " + decoded.errorOrThrow());
 			}
@@ -135,7 +137,7 @@ public class CodecGroup<O> implements Codec<O> {
 	
 	@Override
 	public String toString() {
-		return this.codecs.stream().map(ConfiguredCodec::toString).collect(Collectors.joining(", ", "GroupCodec[", "]"));
+		return this.codecs.stream().map(FieldCodec::toString).collect(Collectors.joining(", ", "GroupCodec[", "]"));
 	}
 	//endregion
 }

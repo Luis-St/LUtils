@@ -136,7 +136,7 @@ final class CodecArrayHelper {
 				return array;
 			});
 			
-			return Codec.of(codec, codec, ClassUtils.primitiveToWrapper(componentType).getSimpleName() + "ArrayCodec");
+			return Codec.of((Class<C>) componentType, codec, codec, ClassUtils.primitiveToWrapper(componentType).getSimpleName() + "ArrayCodec");
 		}
 		
 		Codec<?> codec = componentCodec;
@@ -201,7 +201,7 @@ final class CodecArrayHelper {
 		Objects.requireNonNull(componentType, "Component type must not be null");
 		
 		Codec<C> codec = rawListCodec.xmap(CodecArrayHelper::arrayToTypedList, list -> listToTypedArray((List<?>) list, componentType, arrayDimension));
-		return Codec.of(codec, codec, ClassUtils.primitiveToWrapper(componentType).getSimpleName() + arrayDimension + "DArrayCodec");
+		return Codec.of((Class<C>) componentType, codec, codec, ClassUtils.primitiveToWrapper(componentType).getSimpleName() + arrayDimension + "DArrayCodec");
 	}
 	
 	/**
