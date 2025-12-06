@@ -163,6 +163,21 @@ public final class Codecs {
 	 */
 	public static final UUIDCodec UUID = new UUIDCodec();
 	/**
+	 * A codec that encodes and decodes {@link DayOfWeek day of week} values.<br>
+	 * The underlying day of the week is converted to and from a string.<br>
+	 */
+	public static final DayOfWeekCodec DAY_OF_WEEK = new DayOfWeekCodec();
+	/**
+	 * A codec that encodes and decodes {@link Month month} values.<br>
+	 * The underlying month is converted to and from a string.<br>
+	 */
+	public static final MonthCodec MONTH = new MonthCodec();
+	/**
+	 * A codec that encodes and decodes {@link Year year} values.<br>
+	 * The underlying year is converted to and from an integer.<br>
+	 */
+	public static final YearCodec YEAR = new YearCodec();
+	/**
 	 * A codec that encodes and decodes {@link LocalTime local time} values.<br>
 	 * The underlying local time is converted to and from a string.<br>
 	 */

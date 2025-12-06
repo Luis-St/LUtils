@@ -78,6 +78,10 @@ public class CodecsTest {
 		
 		assertEquals(new JsonPrimitive(Utils.EMPTY_UUID.toString()), UUID.encode(provider, Utils.EMPTY_UUID));
 		
+		assertEquals(new JsonPrimitive("MONDAY"), DAY_OF_WEEK.encode(provider, DayOfWeek.MONDAY));
+		assertEquals(new JsonPrimitive("JANUARY"), MONTH.encode(provider, Month.JANUARY));
+		assertEquals(new JsonPrimitive(2025), YEAR.encode(provider, Year.of(2025)));
+		
 		LocalTime time = LocalTime.of(19, 2);
 		assertEquals(new JsonPrimitive(time.toString()), LOCAL_TIME.encode(provider, time));
 		
@@ -162,7 +166,11 @@ public class CodecsTest {
 		assertArrayEquals(new double[] { 42.0 }, DOUBLE_STREAM.decode(provider, new JsonArray(List.of(new JsonPrimitive(42.0)))).toArray());
 		
 		assertEquals(Utils.EMPTY_UUID, UUID.decode(provider, new JsonPrimitive(Utils.EMPTY_UUID.toString())));
-
+		
+		assertEquals(DayOfWeek.MONDAY, DAY_OF_WEEK.decode(provider, new JsonPrimitive("MONDAY")));
+		assertEquals(Month.JANUARY, MONTH.decode(provider, new JsonPrimitive("JANUARY")));
+		assertEquals(Year.of(2025), YEAR.decode(provider, new JsonPrimitive(2025)));
+		
 		LocalTime time = LocalTime.of(19, 2);
 		assertEquals(time, LOCAL_TIME.decode(provider, new JsonPrimitive(time.toString())));
 
