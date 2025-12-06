@@ -123,7 +123,7 @@ final class CodecArrayHelper {
 		}
 		
 		if (arrayDimension == 1) {
-			Codec<C> codec = (Codec<C>) componentCodec.list().xmap(Arrays::asList, list -> {
+			Codec<C> codec = (Codec<C>) componentCodec.list().xmap(Arrays::asList, (List<Object> list) -> {
 				if (list.isEmpty()) {
 					// Return an empty array of the correct type, cast to Object[] to avoid type issues (needed for some reason)
 					return (Object[]) Array.newInstance(componentType, 0);
@@ -143,7 +143,6 @@ final class CodecArrayHelper {
 		for (int i = 0; i < arrayDimension; i++) {
 			codec = codec.list();
 		}
-		
 		return createMultidimensionalArrayCodec(codec, componentType, arrayDimension);
 	}
 	

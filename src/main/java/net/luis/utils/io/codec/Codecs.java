@@ -55,31 +55,31 @@ import java.util.stream.*;
 public final class Codecs {
 	
 	/**
-	 * A codec that encodes and decodes boolean values.<br>
+	 * A codec that encodes and decodes {@link Boolean boolean} values.<br>
 	 */
 	public static final BooleanCodec BOOLEAN = new BooleanCodec();
 	/**
-	 * A range codec that encodes and decodes byte values.<br>
+	 * A range codec that encodes and decodes {@link Byte byte} values.<br>
 	 */
 	public static final ByteCodec BYTE = new ByteCodec();
 	/**
-	 * A range codec that encodes and decodes short values.<br>
+	 * A range codec that encodes and decodes {@link Short short} values.<br>
 	 */
 	public static final ShortCodec SHORT = new ShortCodec();
 	/**
-	 * A range codec that encodes and decodes integer values.<br>
+	 * A range codec that encodes and decodes {@link Integer integer} values.<br>
 	 */
 	public static final IntegerCodec INTEGER = new IntegerCodec();
 	/**
-	 * A range codec that encodes and decodes long values.<br>
+	 * A range codec that encodes and decodes {@link Long long} values.<br>
 	 */
 	public static final LongCodec LONG = new LongCodec();
 	/**
-	 * A range codec that encodes and decodes float values.<br>
+	 * A range codec that encodes and decodes {@link Float float} values.<br>
 	 */
 	public static final FloatCodec FLOAT = new FloatCodec();
 	/**
-	 * A range codec that encodes and decodes double values.<br>
+	 * A range codec that encodes and decodes {@link Double double} values.<br>
 	 */
 	public static final DoubleCodec DOUBLE = new DoubleCodec();
 	/**
@@ -95,7 +95,7 @@ public final class Codecs {
 	 */
 	public static final StringCodec STRING = new StringCodec();
 	/**
-	 * A keyable codec that encodes and decodes characters.<br>
+	 * A keyable codec that encodes and decodes {@link Character characters}.<br>
 	 */
 	public static final CharacterCodec CHARACTER = new CharacterCodec();
 	/**
@@ -247,6 +247,7 @@ public final class Codecs {
 	public static <E extends Enum<E>> @NotNull Codec<E> enumOrdinal(@NotNull Class<E> clazz) {
 		Objects.requireNonNull(clazz, "Enum class must not be null");
 		Map<Integer, E> ordinalLookup = Arrays.stream(clazz.getEnumConstants()).collect(Collectors.toMap(Enum::ordinal, Function.identity()));
+		
 		return INTEGER.xmap(Enum::ordinal, ordinalLookup::get).keyable(constant -> Result.success(String.valueOf(constant.ordinal())), str -> {
 			try {
 				return Result.success(ordinalLookup.get(Integer.parseInt(str)));
@@ -268,6 +269,7 @@ public final class Codecs {
 	public static <E extends Enum<E>> @NotNull Codec<E> enumName(@NotNull Class<E> clazz) {
 		Objects.requireNonNull(clazz, "Enum class must not be null");
 		Map<String, E> lookup = Arrays.stream(clazz.getEnumConstants()).collect(Collectors.toMap(Enum::name, Function.identity()));
+		
 		return STRING.xmap(Enum::name, lookup::get).keyable(ResultingFunction.direct(Enum::name), key -> {
 			E value = lookup.get(key);
 			if (value == null) {
@@ -305,9 +307,11 @@ public final class Codecs {
 	 */
 	public static <E extends Enum<E>> @NotNull Codec<E> dynamicEnum(@NotNull Class<E> clazz) {
 		Objects.requireNonNull(clazz, "Enum class must not be null");
+		
 		E[] constants = clazz.getEnumConstants();
 		Map<Integer, E> ordinalLookup = Arrays.stream(constants).collect(Collectors.toMap(Enum::ordinal, Function.identity()));
 		Map<String, E> nameLookup = Arrays.stream(constants).collect(Collectors.toMap(Enum::name, Function.identity()));
+		
 		return either(INTEGER, STRING).xmap(
 			constant -> Either.right(constant.name()),
 			either -> either.mapTo(ordinalLookup::get, nameLookup::get)
@@ -344,7 +348,7 @@ public final class Codecs {
 	 * @throws IllegalArgumentException If codecs is empty or contains only one codec
 	 * @see AnyCodec
 	 */
-	public static <C> @NotNull Codec<C> any(@NotNull List<Codec<? extends C>> codecs) {
+	public static <C> @NotNull AnyCodec<C> any(@NotNull List<Codec<? extends C>> codecs) {
 		return new AnyCodec<>(codecs);
 	}
 	
@@ -365,7 +369,7 @@ public final class Codecs {
 	 * @see AnyCodec
 	 */
 	@SafeVarargs
-	public static <C> @NotNull Codec<C> any(Codec<? extends C> @NotNull ... codecs) {
+	public static <C> @NotNull AnyCodec<C> any(Codec<? extends C> @NotNull ... codecs) {
 		return new AnyCodec<>(codecs);
 	}
 	
@@ -379,7 +383,7 @@ public final class Codecs {
 	 * @throws NullPointerException If the value codec is null
 	 * @see MapCodec
 	 */
-	public static <C> @NotNull Codec<Map<String, C>> map(@NotNull Codec<C> valueCodec) {
+	public static <C> @NotNull MapCodec<String, C> map(@NotNull Codec<C> valueCodec) {
 		return map(STRING, valueCodec);
 	}
 	
@@ -395,7 +399,7 @@ public final class Codecs {
 	 * @throws NullPointerException If the key codec or value codec is null
 	 * @see MapCodec
 	 */
-	public static <K, V> @NotNull Codec<Map<K, V>> map(@NotNull Codec<K> keyCodec, @NotNull Codec<V> valueCodec) {
+	public static <K, V> @NotNull MapCodec<K, V> map(@NotNull Codec<K> keyCodec, @NotNull Codec<V> valueCodec) {
 		return new MapCodec<>(keyCodec, valueCodec);
 	}
 	
@@ -413,7 +417,7 @@ public final class Codecs {
 	 * @throws NullPointerException If the first codec or second codec is null
 	 * @see EitherCodec
 	 */
-	public static <F, S> @NotNull Codec<Either<F, S>> either(@NotNull Codec<F> firstCodec, @NotNull Codec<S> secondCodec) {
+	public static <F, S> @NotNull EitherCodec<F, S> either(@NotNull Codec<F> firstCodec, @NotNull Codec<S> secondCodec) {
 		return new EitherCodec<>(firstCodec, secondCodec);
 	}
 	
@@ -425,7 +429,7 @@ public final class Codecs {
 	 * @return A new unit codec
 	 * @see UnitCodec
 	 */
-	public static <C> @NotNull Codec<C> unit(@Nullable C value) {
+	public static <C> @NotNull UnitCodec<C> unit(@Nullable C value) {
 		return unit(() -> value);
 	}
 	
@@ -438,7 +442,7 @@ public final class Codecs {
 	 * @throws NullPointerException If the supplier is null
 	 * @see UnitCodec
 	 */
-	public static <C> @NotNull Codec<C> unit(@NotNull Supplier<C> supplier) {
+	public static <C> @NotNull UnitCodec<C> unit(@NotNull Supplier<C> supplier) {
 		return new UnitCodec<>(supplier);
 	}
 	
@@ -455,6 +459,7 @@ public final class Codecs {
 	 */
 	public static <E> @NotNull Codec<E> stringResolver(@NotNull Function<E, String> stringEncoder, @NotNull Function<String, @Nullable E> stringDecoder) {
 		Objects.requireNonNull(stringDecoder, "Element string decoder must not be null");
+		
 		return STRING.mapFlat(
 			stringEncoder,
 			result -> {

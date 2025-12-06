@@ -273,7 +273,7 @@ public sealed interface Codec<C> extends Encoder<C>, Decoder<C> permits Abstract
 	 * @return A new nullable codec
 	 * @see NullableCodec
 	 */
-	default @NotNull Codec<C> nullable() {
+	default @NotNull NullableCodec<C> nullable() {
 		return new NullableCodec<>(this);
 	}
 	
@@ -288,7 +288,7 @@ public sealed interface Codec<C> extends Encoder<C>, Decoder<C> permits Abstract
 	 * @throws IllegalArgumentException If the valid values collection is empty
 	 * @see UnionCodec
 	 */
-	default @NotNull Codec<C> union(@NotNull Collection<C> validValues) {
+	default @NotNull UnionCodec<C> union(@NotNull Collection<C> validValues) {
 		return new UnionCodec<>(this, validValues);
 	}
 	
@@ -304,7 +304,7 @@ public sealed interface Codec<C> extends Encoder<C>, Decoder<C> permits Abstract
 	 * @see UnionCodec
 	 */
 	@SuppressWarnings("unchecked")
-	default @NotNull Codec<C> union(C @NotNull ... validValues) {
+	default @NotNull UnionCodec<C> union(C @NotNull ... validValues) {
 		return new UnionCodec<>(this, Arrays.asList(validValues));
 	}
 	
@@ -314,7 +314,7 @@ public sealed interface Codec<C> extends Encoder<C>, Decoder<C> permits Abstract
 	 * @return A new optional codec for the current codec
 	 * @see OptionalCodec
 	 */
-	default @NotNull Codec<Optional<C>> optional() {
+	default @NotNull OptionalCodec<C> optional() {
 		return new OptionalCodec<>(this);
 	}
 	
@@ -326,7 +326,7 @@ public sealed interface Codec<C> extends Encoder<C>, Decoder<C> permits Abstract
 	 * @return A new optional codec for the current codec
 	 * @see OptionalCodec
 	 */
-	default @NotNull Codec<Optional<C>> optional(@Nullable C defaultValue) {
+	default @NotNull OptionalCodec<C> optional(@Nullable C defaultValue) {
 		return new OptionalCodec<>(this, () -> Optional.ofNullable(defaultValue));
 	}
 	
@@ -351,7 +351,7 @@ public sealed interface Codec<C> extends Encoder<C>, Decoder<C> permits Abstract
 	 * @throws UnsupportedOperationException If the type cannot be inferred
 	 * @see ArrayCodec
 	 */
-	default @NotNull Codec<C[]> array() {
+	default @NotNull ArrayCodec<C> array() {
 		return new ArrayCodec<>(this.getType(), this);
 	}
 	
@@ -361,7 +361,7 @@ public sealed interface Codec<C> extends Encoder<C>, Decoder<C> permits Abstract
 	 * @return A new list codec for the current codec
 	 * @see ListCodec
 	 */
-	default @NotNull Codec<List<C>> list() {
+	default @NotNull ListCodec<C> list() {
 		return new ListCodec<>(this);
 	}
 	
