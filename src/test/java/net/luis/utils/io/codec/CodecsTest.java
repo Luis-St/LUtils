@@ -85,7 +85,13 @@ public class CodecsTest {
 		
 		ZonedDateTime zonedDateTime = ZonedDateTime.of(dateTime, ZoneId.systemDefault());
 		assertEquals(new JsonPrimitive(zonedDateTime.toString()), ZONED_DATE_TIME.encode(provider, zonedDateTime));
-		
+
+		OffsetTime offsetTime = OffsetTime.of(19, 2, 0, 0, ZoneOffset.ofHours(1));
+		assertEquals(new JsonPrimitive(offsetTime.toString()), OFFSET_TIME.encode(provider, offsetTime));
+
+		OffsetDateTime offsetDateTime = OffsetDateTime.of(2025, 1, 6, 19, 2, 0, 0, ZoneOffset.ofHours(1));
+		assertEquals(new JsonPrimitive(offsetDateTime.toString()), OFFSET_DATE_TIME.encode(provider, offsetDateTime));
+
 		Instant instant = Instant.ofEpochMilli(1751059065063L);
 		assertEquals(new JsonPrimitive(instant.toString()), INSTANT.encode(provider, instant));
 		
@@ -138,7 +144,34 @@ public class CodecsTest {
 		assertArrayEquals(new double[] { 42.0 }, DOUBLE_STREAM.decode(provider, new JsonArray(List.of(new JsonPrimitive(42.0)))).toArray());
 		
 		assertEquals(Utils.EMPTY_UUID, UUID.decode(provider, new JsonPrimitive(Utils.EMPTY_UUID.toString())));
-		
+
+		LocalTime time = LocalTime.of(19, 2);
+		assertEquals(time, LOCAL_TIME.decode(provider, new JsonPrimitive(time.toString())));
+
+		LocalDate date = LocalDate.of(2025, 1, 6);
+		assertEquals(date, LOCAL_DATE.decode(provider, new JsonPrimitive(date.toString())));
+
+		LocalDateTime dateTime = LocalDateTime.of(2025, 1, 6, 19, 2);
+		assertEquals(dateTime, LOCAL_DATE_TIME.decode(provider, new JsonPrimitive(dateTime.toString())));
+
+		ZonedDateTime zonedDateTime = ZonedDateTime.of(dateTime, ZoneId.systemDefault());
+		assertEquals(zonedDateTime, ZONED_DATE_TIME.decode(provider, new JsonPrimitive(zonedDateTime.toString())));
+
+		OffsetTime offsetTime = OffsetTime.of(19, 2, 0, 0, ZoneOffset.ofHours(1));
+		assertEquals(offsetTime, OFFSET_TIME.decode(provider, new JsonPrimitive(offsetTime.toString())));
+
+		OffsetDateTime offsetDateTime = OffsetDateTime.of(2025, 1, 6, 19, 2, 0, 0, ZoneOffset.ofHours(1));
+		assertEquals(offsetDateTime, OFFSET_DATE_TIME.decode(provider, new JsonPrimitive(offsetDateTime.toString())));
+
+		Instant instant = Instant.ofEpochMilli(1751059065063L);
+		assertEquals(instant, INSTANT.decode(provider, new JsonPrimitive(instant.toString())));
+
+		Duration duration = Duration.ofMillis(1751059065063L);
+		assertEquals(duration, DURATION.decode(provider, new JsonPrimitive("20266d 21h 17m 45s 63ms")));
+
+		Period period = Period.of(1, 2, 3);
+		assertEquals(period, PERIOD.decode(provider, new JsonPrimitive("1y 2m 3d")));
+
 		assertEquals(StandardCharsets.UTF_8, CHARSET.decode(provider, new JsonPrimitive(StandardCharsets.UTF_8.name())));
 		
 		File file = new File("test.json");
