@@ -52,6 +52,7 @@ module net.luis.utils {
 	exports net.luis.utils.io.codec.provider;
 	exports net.luis.utils.io.codec.types;
 	exports net.luis.utils.io.codec.types.array;
+	exports net.luis.utils.io.codec.types.i18n;
 	exports net.luis.utils.io.codec.types.io;
 	exports net.luis.utils.io.codec.types.network;
 	exports net.luis.utils.io.codec.types.primitiv;

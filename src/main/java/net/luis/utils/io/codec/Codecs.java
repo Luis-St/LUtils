@@ -20,6 +20,8 @@ package net.luis.utils.io.codec;
 
 import net.luis.utils.io.codec.types.UUIDCodec;
 import net.luis.utils.io.codec.types.array.*;
+import net.luis.utils.io.codec.types.i18n.CurrencyCodec;
+import net.luis.utils.io.codec.types.i18n.LocaleCodec;
 import net.luis.utils.io.codec.types.io.*;
 import net.luis.utils.io.codec.types.network.InetAddressCodec;
 import net.luis.utils.io.codec.types.network.InetSocketAddressCodec;
@@ -240,6 +242,16 @@ public final class Codecs {
 	 * The underlying inet socket address is converted to and from a string.<br>
 	 */
 	public static final InetSocketAddressCodec INET_SOCKET_ADDRESS = new InetSocketAddressCodec();
+	/**
+	 * A codec that encodes and decodes {@link Locale locales}.<br>
+	 * The underlying locale is converted to and from a string.<br>
+	 */
+	public static final LocaleCodec LOCALE = new LocaleCodec();
+	/**
+	 * A codec that encodes and decodes {@link Currency currencies}.<br>
+	 * The underlying currency is converted to and from a string.<br>
+	 */
+	public static final CurrencyCodec CURRENCY = new CurrencyCodec();
 	
 	/**
 	 * Private constructor to prevent instantiation.<br>

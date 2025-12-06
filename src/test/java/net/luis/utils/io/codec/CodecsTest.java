@@ -32,7 +32,7 @@ import java.net.*;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.time.*;
-import java.util.List;
+import java.util.*;
 import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.stream.*;
@@ -124,6 +124,9 @@ public class CodecsTest {
 		
 		InetSocketAddress inetSocketAddress = new InetSocketAddress(InetAddress.getByName("127.0.0.1"), 8080);
 		assertEquals(new JsonPrimitive("127.0.0.1:8080"), INET_SOCKET_ADDRESS.encode(provider, inetSocketAddress));
+		
+		assertEquals(new JsonPrimitive("en-US"), LOCALE.encode(provider, Locale.US));
+		assertEquals(new JsonPrimitive("USD"), CURRENCY.encode(provider, Currency.getInstance("USD")));
 	}
 	
 	@Test
@@ -203,6 +206,9 @@ public class CodecsTest {
 		
 		InetSocketAddress inetSocketAddress = new InetSocketAddress(InetAddress.getByName("127.0.0.1"), 8080);
 		assertEquals(inetSocketAddress, INET_SOCKET_ADDRESS.decode(provider, new JsonPrimitive("127.0.0.1:8080")));
+		
+		assertEquals(Locale.US, LOCALE.decode(provider, new JsonPrimitive("en-US")));
+		assertEquals(Currency.getInstance("USD"), CURRENCY.decode(provider, new JsonPrimitive("USD")));
 	}
 	
 	@Test
