@@ -18,7 +18,8 @@
 
 package net.luis.utils.io.codec.encoder;
 
-import net.luis.utils.io.codec.ResultingFunction;
+import net.luis.utils.io.codec.Codecs;
+import net.luis.utils.util.result.ResultingFunction;
 import net.luis.utils.io.codec.provider.JsonTypeProvider;
 import net.luis.utils.io.data.json.JsonElement;
 import net.luis.utils.io.data.json.JsonPrimitive;
@@ -92,9 +93,8 @@ class EncoderTest {
 	@Test
 	void encodeStartWithValidValue() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Encoder<Integer> encoder = INTEGER;
 		
-		Result<JsonElement> result = encoder.encodeStart(typeProvider, typeProvider.empty(), 42);
+		Result<JsonElement> result = Codecs.INTEGER.encodeStart(typeProvider, typeProvider.empty(), 42);
 		assertTrue(result.isSuccess());
 		assertEquals(new JsonPrimitive(42), result.resultOrThrow());
 	}
@@ -102,9 +102,8 @@ class EncoderTest {
 	@Test
 	void encodeStartWithNullValue() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Encoder<Integer> encoder = INTEGER;
 		
-		Result<JsonElement> result = encoder.encodeStart(typeProvider, typeProvider.empty(), null);
+		Result<JsonElement> result = Codecs.INTEGER.encodeStart(typeProvider, typeProvider.empty(), null);
 		assertTrue(result.isError());
 	}
 	

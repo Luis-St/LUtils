@@ -75,9 +75,9 @@ class CodecBuilderTest {
 	
 	@Test
 	void ofWithSingleCodec() {
-		ConfiguredCodec<String, TestObject> nameCodec = STRING.configure("name", TestObject::name);
+		FieldCodec<String, TestObject> nameCodec = STRING.fieldOf("name", TestObject::name);
 		
-		assertThrows(NullPointerException.class, () -> CodecBuilder.of((ConfiguredCodec<String, TestObject>) null));
+		assertThrows(NullPointerException.class, () -> CodecBuilder.of((FieldCodec<String, TestObject>) null));
 		
 		assertNotNull(CodecBuilder.of(nameCodec));
 		
@@ -92,8 +92,8 @@ class CodecBuilderTest {
 	
 	@Test
 	void ofWithTwoCodecs() {
-		ConfiguredCodec<String, TestObjectWithAge> nameCodec = STRING.configure("name", TestObjectWithAge::name);
-		ConfiguredCodec<Integer, TestObjectWithAge> ageCodec = INTEGER.configure("age", TestObjectWithAge::age);
+		FieldCodec<String, TestObjectWithAge> nameCodec = STRING.fieldOf("name", TestObjectWithAge::name);
+		FieldCodec<Integer, TestObjectWithAge> ageCodec = INTEGER.fieldOf("age", TestObjectWithAge::age);
 		
 		assertThrows(NullPointerException.class, () -> CodecBuilder.of(null, ageCodec));
 		assertThrows(NullPointerException.class, () -> CodecBuilder.of(nameCodec, null));
@@ -112,9 +112,9 @@ class CodecBuilderTest {
 	
 	@Test
 	void ofWithThreeCodecs() {
-		ConfiguredCodec<String, TestObjectWithAgeAndHeight> nameCodec = STRING.configure("name", TestObjectWithAgeAndHeight::name);
-		ConfiguredCodec<Integer, TestObjectWithAgeAndHeight> ageCodec = INTEGER.configure("age", TestObjectWithAgeAndHeight::age);
-		ConfiguredCodec<Double, TestObjectWithAgeAndHeight> heightCodec = DOUBLE.configure("height", TestObjectWithAgeAndHeight::height);
+		FieldCodec<String, TestObjectWithAgeAndHeight> nameCodec = STRING.fieldOf("name", TestObjectWithAgeAndHeight::name);
+		FieldCodec<Integer, TestObjectWithAgeAndHeight> ageCodec = INTEGER.fieldOf("age", TestObjectWithAgeAndHeight::age);
+		FieldCodec<Double, TestObjectWithAgeAndHeight> heightCodec = DOUBLE.fieldOf("height", TestObjectWithAgeAndHeight::height);
 		
 		assertThrows(NullPointerException.class, () -> CodecBuilder.of(null, ageCodec, heightCodec));
 		assertThrows(NullPointerException.class, () -> CodecBuilder.of(nameCodec, null, heightCodec));
@@ -136,7 +136,7 @@ class CodecBuilderTest {
 	
 	@Test
 	void ofWithOptionalField() {
-		ConfiguredCodec<Optional<Integer>, TestObjectWithOptional> ageCodec = INTEGER.optional().configure("age", TestObjectWithOptional::age);
+		FieldCodec<Optional<Integer>, TestObjectWithOptional> ageCodec = INTEGER.optional().fieldOf("age", TestObjectWithOptional::age);
 		
 		Codec<TestObjectWithOptional> codec = CodecBuilder.of(ageCodec).create(TestObjectWithOptional::new);
 		
@@ -153,22 +153,22 @@ class CodecBuilderTest {
 	
 	@Test
 	void ofSupportsUpToSixteenCodecs() {
-		ConfiguredCodec<String, MultiFieldObject> codec1 = STRING.configure("field1", obj -> "field1");
-		ConfiguredCodec<String, MultiFieldObject> codec2 = STRING.configure("field2", obj -> "field2");
-		ConfiguredCodec<String, MultiFieldObject> codec3 = STRING.configure("field3", obj -> "field3");
-		ConfiguredCodec<String, MultiFieldObject> codec4 = STRING.configure("field4", obj -> "field4");
-		ConfiguredCodec<String, MultiFieldObject> codec5 = STRING.configure("field5", obj -> "field5");
-		ConfiguredCodec<String, MultiFieldObject> codec6 = STRING.configure("field6", obj -> "field6");
-		ConfiguredCodec<String, MultiFieldObject> codec7 = STRING.configure("field7", obj -> "field7");
-		ConfiguredCodec<String, MultiFieldObject> codec8 = STRING.configure("field8", obj -> "field8");
-		ConfiguredCodec<String, MultiFieldObject> codec9 = STRING.configure("field9", obj -> "field9");
-		ConfiguredCodec<String, MultiFieldObject> codec10 = STRING.configure("field10", obj -> "field10");
-		ConfiguredCodec<String, MultiFieldObject> codec11 = STRING.configure("field11", obj -> "field11");
-		ConfiguredCodec<String, MultiFieldObject> codec12 = STRING.configure("field12", obj -> "field12");
-		ConfiguredCodec<String, MultiFieldObject> codec13 = STRING.configure("field13", obj -> "field13");
-		ConfiguredCodec<String, MultiFieldObject> codec14 = STRING.configure("field14", obj -> "field14");
-		ConfiguredCodec<String, MultiFieldObject> codec15 = STRING.configure("field15", obj -> "field15");
-		ConfiguredCodec<String, MultiFieldObject> codec16 = STRING.configure("field16", obj -> "field16");
+		FieldCodec<String, MultiFieldObject> codec1 = STRING.fieldOf("field1", obj -> "field1");
+		FieldCodec<String, MultiFieldObject> codec2 = STRING.fieldOf("field2", obj -> "field2");
+		FieldCodec<String, MultiFieldObject> codec3 = STRING.fieldOf("field3", obj -> "field3");
+		FieldCodec<String, MultiFieldObject> codec4 = STRING.fieldOf("field4", obj -> "field4");
+		FieldCodec<String, MultiFieldObject> codec5 = STRING.fieldOf("field5", obj -> "field5");
+		FieldCodec<String, MultiFieldObject> codec6 = STRING.fieldOf("field6", obj -> "field6");
+		FieldCodec<String, MultiFieldObject> codec7 = STRING.fieldOf("field7", obj -> "field7");
+		FieldCodec<String, MultiFieldObject> codec8 = STRING.fieldOf("field8", obj -> "field8");
+		FieldCodec<String, MultiFieldObject> codec9 = STRING.fieldOf("field9", obj -> "field9");
+		FieldCodec<String, MultiFieldObject> codec10 = STRING.fieldOf("field10", obj -> "field10");
+		FieldCodec<String, MultiFieldObject> codec11 = STRING.fieldOf("field11", obj -> "field11");
+		FieldCodec<String, MultiFieldObject> codec12 = STRING.fieldOf("field12", obj -> "field12");
+		FieldCodec<String, MultiFieldObject> codec13 = STRING.fieldOf("field13", obj -> "field13");
+		FieldCodec<String, MultiFieldObject> codec14 = STRING.fieldOf("field14", obj -> "field14");
+		FieldCodec<String, MultiFieldObject> codec15 = STRING.fieldOf("field15", obj -> "field15");
+		FieldCodec<String, MultiFieldObject> codec16 = STRING.fieldOf("field16", obj -> "field16");
 		
 		assertNotNull(CodecBuilder.of(
 			codec1, codec2, codec3, codec4, codec5, codec6, codec7, codec8,

@@ -158,7 +158,7 @@ class PartialTest {
 		
 		assertTrue(mapped.isPartial());
 		assertEquals("50", mapped.resultOrThrow());
-		assertEquals("first warning; second warning", mapped.errorOrThrow());
+		assertEquals("Mapping of partial result failed\n - first warning\n - second warning", mapped.errorOrThrow());
 	}
 	
 	@Test

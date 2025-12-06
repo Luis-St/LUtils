@@ -19,7 +19,7 @@
 package net.luis.utils.io.codec.decoder;
 
 import net.luis.utils.io.codec.Codecs;
-import net.luis.utils.io.codec.ResultMappingFunction;
+import net.luis.utils.util.result.ResultMappingFunction;
 import net.luis.utils.io.codec.provider.JsonTypeProvider;
 import net.luis.utils.io.data.json.JsonPrimitive;
 import net.luis.utils.util.result.Result;
@@ -46,7 +46,7 @@ class DecoderTest {
 	void decodeWithValidValue() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		
-		Integer result = Codecs.INTEGER.decode(typeProvider, new JsonPrimitive(42));
+		Integer result = Codecs.INTEGER.decode(typeProvider, typeProvider.empty(), new JsonPrimitive(42));
 		assertEquals(42, result);
 	}
 	
@@ -55,22 +55,23 @@ class DecoderTest {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Decoder<Integer> decoder = INTEGER;
 		
-		assertThrows(DecoderException.class, () -> decoder.decode(typeProvider, null));
-		assertThrows(DecoderException.class, () -> decoder.decode(typeProvider, new JsonPrimitive("not-a-number")));
+		assertThrows(DecoderException.class, () -> decoder.decode(typeProvider, typeProvider.empty(), null));
+		assertThrows(DecoderException.class, () -> decoder.decode(typeProvider, typeProvider.empty(), new JsonPrimitive("not-a-number")));
 	}
 	
 	@Test
 	void decodeStartNullChecks() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		
-		assertThrows(NullPointerException.class, () -> Codecs.INTEGER.decodeStart(null, new JsonPrimitive(1)));
+		JsonPrimitive testValue = new JsonPrimitive(1);
+		assertThrows(NullPointerException.class, () -> Codecs.INTEGER.decodeStart(null, testValue, testValue));
 	}
 	
 	@Test
 	void decodeStartWithValidValue() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		
-		Result<Integer> result = Codecs.INTEGER.decodeStart(typeProvider, new JsonPrimitive(42));
+		Result<Integer> result = Codecs.INTEGER.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive(42));
 		assertTrue(result.isSuccess());
 		assertEquals(42, result.resultOrThrow());
 	}
@@ -79,7 +80,7 @@ class DecoderTest {
 	void decodeStartWithNullValue() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		
-		Result<Integer> result = Codecs.INTEGER.decodeStart(typeProvider, null);
+		Result<Integer> result = Codecs.INTEGER.decodeStart(typeProvider, typeProvider.empty(), null);
 		assertTrue(result.isError());
 	}
 	
@@ -87,7 +88,7 @@ class DecoderTest {
 	void decodeStartWithInvalidValue() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		
-		Result<Integer> result = Codecs.INTEGER.decodeStart(typeProvider, new JsonPrimitive("not-a-number"));
+		Result<Integer> result = Codecs.INTEGER.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive("not-a-number"));
 		assertTrue(result.isError());
 	}
 	
@@ -96,11 +97,11 @@ class DecoderTest {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Decoder<Boolean> decoder = BOOLEAN;
 		
-		Result<Boolean> trueResult = decoder.decodeStart(typeProvider, new JsonPrimitive(true));
+		Result<Boolean> trueResult = decoder.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive(true));
 		assertTrue(trueResult.isSuccess());
 		assertTrue(trueResult.resultOrThrow());
 		
-		Result<Boolean> falseResult = decoder.decodeStart(typeProvider, new JsonPrimitive(false));
+		Result<Boolean> falseResult = decoder.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive(false));
 		assertTrue(falseResult.isSuccess());
 		assertFalse(falseResult.resultOrThrow());
 	}
@@ -110,11 +111,11 @@ class DecoderTest {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Decoder<String> decoder = STRING;
 		
-		Result<String> result = decoder.decodeStart(typeProvider, new JsonPrimitive("hello"));
+		Result<String> result = decoder.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive("hello"));
 		assertTrue(result.isSuccess());
 		assertEquals("hello", result.resultOrThrow());
 		
-		Result<String> emptyResult = decoder.decodeStart(typeProvider, new JsonPrimitive(""));
+		Result<String> emptyResult = decoder.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive(""));
 		assertTrue(emptyResult.isSuccess());
 		assertEquals("", emptyResult.resultOrThrow());
 	}
@@ -124,15 +125,15 @@ class DecoderTest {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Decoder<Double> encoder = DOUBLE;
 		
-		Result<Double> infinityResult = encoder.decodeStart(typeProvider, new JsonPrimitive(Double.POSITIVE_INFINITY));
+		Result<Double> infinityResult = encoder.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive(Double.POSITIVE_INFINITY));
 		assertTrue(infinityResult.isSuccess());
 		assertEquals(Double.POSITIVE_INFINITY, infinityResult.resultOrThrow());
 		
-		Result<Double> negInfinityResult = encoder.decodeStart(typeProvider, new JsonPrimitive(Double.NEGATIVE_INFINITY));
+		Result<Double> negInfinityResult = encoder.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive(Double.NEGATIVE_INFINITY));
 		assertTrue(negInfinityResult.isSuccess());
 		assertEquals(Double.NEGATIVE_INFINITY, negInfinityResult.resultOrThrow());
 		
-		Result<Double> nanResult = encoder.decodeStart(typeProvider, new JsonPrimitive(Double.NaN));
+		Result<Double> nanResult = encoder.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive(Double.NaN));
 		assertTrue(nanResult.isSuccess());
 		assertEquals(Double.NaN, nanResult.resultOrThrow());
 	}
@@ -147,7 +148,7 @@ class DecoderTest {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Decoder<Double> decoder = INTEGER.mapDecoder(ResultMappingFunction.direct(Integer::doubleValue));
 		
-		Result<Double> result = decoder.decodeStart(typeProvider, new JsonPrimitive(42));
+		Result<Double> result = decoder.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive(42));
 		assertTrue(result.isSuccess());
 		assertEquals(42.0, result.resultOrThrow());
 	}
@@ -162,11 +163,11 @@ class DecoderTest {
 			return i;
 		}));
 		
-		Result<Integer> errorResult = decoder.decodeStart(typeProvider, new JsonPrimitive(0));
+		Result<Integer> errorResult = decoder.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive(0));
 		assertTrue(errorResult.isError());
 		assertEquals("Zero not allowed", errorResult.errorOrThrow());
 		
-		Result<Integer> successResult = decoder.decodeStart(typeProvider, new JsonPrimitive(42));
+		Result<Integer> successResult = decoder.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive(42));
 		assertTrue(successResult.isSuccess());
 		assertEquals(42, successResult.resultOrThrow());
 	}
@@ -176,7 +177,7 @@ class DecoderTest {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Decoder<Double> decoder = INTEGER.mapDecoder(ResultMappingFunction.direct(Integer::doubleValue));
 		
-		Result<Double> result = decoder.decodeStart(typeProvider, new JsonPrimitive("not-a-number"));
+		Result<Double> result = decoder.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive("not-a-number"));
 		assertTrue(result.isError());
 	}
 	
@@ -185,7 +186,7 @@ class DecoderTest {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Decoder<String> decoder = INTEGER.mapDecoder(ResultMappingFunction.direct(Integer::doubleValue)).mapDecoder(ResultMappingFunction.direct(Object::toString));
 		
-		Result<String> result = decoder.decodeStart(typeProvider, new JsonPrimitive(42));
+		Result<String> result = decoder.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive(42));
 		assertTrue(result.isSuccess());
 		assertEquals("42.0", result.resultOrThrow());
 	}

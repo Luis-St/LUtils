@@ -48,8 +48,8 @@ class CodecCreatorTest {
 	@Test
 	void createWithNullFunction() {
 		CodecCreator<TestObject, TestFunction> creator = new CodecCreator<>(List.of(
-			STRING.configure("name", TestObject::name),
-			INTEGER.configure("value", TestObject::value)
+			STRING.fieldOf("name", TestObject::name),
+			INTEGER.fieldOf("value", TestObject::value)
 		));
 		
 		assertThrows(NullPointerException.class, () -> creator.create(null));
@@ -58,8 +58,8 @@ class CodecCreatorTest {
 	@Test
 	void createSuccess() {
 		CodecCreator<TestObject, TestFunction> creator = new CodecCreator<>(List.of(
-			STRING.configure("name", TestObject::name),
-			INTEGER.configure("value", TestObject::value)
+			STRING.fieldOf("name", TestObject::name),
+			INTEGER.fieldOf("value", TestObject::value)
 		));
 		TestFunction function = new TestFunction();
 		
@@ -81,9 +81,9 @@ class CodecCreatorTest {
 	@Test
 	void createWithDifferentFunctionTypes() {
 		CodecCreator<TestObject2, TestFunction2> creator = new CodecCreator<>(List.of(
-			STRING.configure("text", TestObject2::text),
-			DOUBLE.configure("number", TestObject2::number),
-			BOOLEAN.configure("flag", TestObject2::flag)
+			STRING.fieldOf("text", TestObject2::text),
+			DOUBLE.fieldOf("number", TestObject2::number),
+			BOOLEAN.fieldOf("flag", TestObject2::flag)
 		));
 		TestFunction2 function = new TestFunction2();
 		
@@ -95,8 +95,8 @@ class CodecCreatorTest {
 	@Test
 	void createdCodecEncodesCorrectly() {
 		CodecCreator<TestObject, TestFunction> creator = new CodecCreator<>(List.of(
-			STRING.configure("name", TestObject::name),
-			INTEGER.configure("value", TestObject::value)
+			STRING.fieldOf("name", TestObject::name),
+			INTEGER.fieldOf("value", TestObject::value)
 		));
 		TestFunction function = new TestFunction();
 		Codec<TestObject> codec = creator.create(function);
@@ -117,8 +117,8 @@ class CodecCreatorTest {
 	@Test
 	void createdCodecDecodesCorrectly() {
 		CodecCreator<TestObject, TestFunction> creator = new CodecCreator<>(List.of(
-			STRING.configure("name", TestObject::name),
-			INTEGER.configure("value", TestObject::value)
+			STRING.fieldOf("name", TestObject::name),
+			INTEGER.fieldOf("value", TestObject::value)
 		));
 		TestFunction function = new TestFunction();
 		Codec<TestObject> codec = creator.create(function);
@@ -128,7 +128,7 @@ class CodecCreatorTest {
 		jsonObj.add("name", new JsonPrimitive("decoded"));
 		jsonObj.add("value", new JsonPrimitive(123));
 		
-		Result<TestObject> result = codec.decodeStart(typeProvider, jsonObj);
+		Result<TestObject> result = codec.decodeStart(typeProvider, jsonObj, jsonObj);
 		assertTrue(result.isSuccess());
 		
 		TestObject obj = result.resultOrThrow();
@@ -139,8 +139,8 @@ class CodecCreatorTest {
 	@Test
 	void createdCodecRoundTrip() {
 		CodecCreator<TestObject, TestFunction> creator = new CodecCreator<>(List.of(
-			STRING.configure("name", TestObject::name),
-			INTEGER.configure("value", TestObject::value)
+			STRING.fieldOf("name", TestObject::name),
+			INTEGER.fieldOf("value", TestObject::value)
 		));
 		TestFunction function = new TestFunction();
 		Codec<TestObject> codec = creator.create(function);
@@ -151,7 +151,7 @@ class CodecCreatorTest {
 		Result<JsonElement> encodeResult = codec.encodeStart(typeProvider, typeProvider.empty(), original);
 		assertTrue(encodeResult.isSuccess());
 		
-		Result<TestObject> decodeResult = codec.decodeStart(typeProvider, encodeResult.resultOrThrow());
+		Result<TestObject> decodeResult = codec.decodeStart(typeProvider, encodeResult.resultOrThrow(), encodeResult.resultOrThrow());
 		assertTrue(decodeResult.isSuccess());
 		
 		TestObject decoded = decodeResult.resultOrThrow();
@@ -162,9 +162,9 @@ class CodecCreatorTest {
 	@Test
 	void createdCodecWithComplexTypes() {
 		CodecCreator<TestObject2, TestFunction2> creator = new CodecCreator<>(List.of(
-			STRING.configure("text", TestObject2::text),
-			DOUBLE.configure("number", TestObject2::number),
-			BOOLEAN.configure("flag", TestObject2::flag)
+			STRING.fieldOf("text", TestObject2::text),
+			DOUBLE.fieldOf("number", TestObject2::number),
+			BOOLEAN.fieldOf("flag", TestObject2::flag)
 		));
 		TestFunction2 function = new TestFunction2();
 		Codec<TestObject2> codec = creator.create(function);
@@ -175,9 +175,9 @@ class CodecCreatorTest {
 		Result<JsonElement> encodeResult = codec.encodeStart(typeProvider, typeProvider.empty(), original);
 		assertTrue(encodeResult.isSuccess());
 		
-		Result<TestObject2> decodeResult = codec.decodeStart(typeProvider, encodeResult.resultOrThrow());
+		Result<TestObject2> decodeResult = codec.decodeStart(typeProvider, encodeResult.resultOrThrow(), encodeResult.resultOrThrow());
 		assertTrue(decodeResult.isSuccess());
-		
+
 		TestObject2 decoded = decodeResult.resultOrThrow();
 		assertEquals(original.text, decoded.text);
 		assertEquals(original.number, decoded.number);
@@ -196,7 +196,8 @@ class CodecCreatorTest {
 		Result<JsonElement> encodeResult = codec.encodeStart(typeProvider, typeProvider.empty(), testObject);
 		assertTrue(encodeResult.isSuccess());
 		
-		Result<TestObject> decodeResult = codec.decodeStart(typeProvider, new JsonObject());
+		JsonObject emptyJson = new JsonObject();
+		Result<TestObject> decodeResult = codec.decodeStart(typeProvider, emptyJson, emptyJson);
 		assertTrue(decodeResult.isError());
 		assertTrue(decodeResult.errorOrThrow().contains("Unable to create object with function"));
 	}
@@ -204,8 +205,8 @@ class CodecCreatorTest {
 	@Test
 	void createdCodecWithFailingFunction() {
 		CodecCreator<TestObject, FailingTestFunction> creator = new CodecCreator<>(List.of(
-			STRING.configure("name", TestObject::name),
-			INTEGER.configure("value", TestObject::value)
+			STRING.fieldOf("name", TestObject::name),
+			INTEGER.fieldOf("value", TestObject::value)
 		));
 		FailingTestFunction function = new FailingTestFunction();
 		Codec<TestObject> codec = creator.create(function);
@@ -215,16 +216,16 @@ class CodecCreatorTest {
 		jsonObj.add("name", new JsonPrimitive("test"));
 		jsonObj.add("value", new JsonPrimitive(42));
 		
-		Result<TestObject> result = codec.decodeStart(typeProvider, jsonObj);
+		Result<TestObject> result = codec.decodeStart(typeProvider, jsonObj, jsonObj);
 		assertTrue(result.isError());
 		assertTrue(result.errorOrThrow().contains("Unable to create object with function"));
 	}
-	
+
 	@Test
 	void createdCodecWithFunctionReturningNull() {
 		CodecCreator<TestObject, NullReturningTestFunction> creator = new CodecCreator<>(List.of(
-			STRING.configure("name", TestObject::name),
-			INTEGER.configure("value", TestObject::value)
+			STRING.fieldOf("name", TestObject::name),
+			INTEGER.fieldOf("value", TestObject::value)
 		));
 		NullReturningTestFunction function = new NullReturningTestFunction();
 		Codec<TestObject> codec = creator.create(function);
@@ -233,16 +234,16 @@ class CodecCreatorTest {
 		JsonObject jsonObj = new JsonObject();
 		jsonObj.add("name", new JsonPrimitive("test"));
 		jsonObj.add("value", new JsonPrimitive(42));
-		
-		Result<TestObject> result = codec.decodeStart(typeProvider, jsonObj);
+
+		Result<TestObject> result = codec.decodeStart(typeProvider, jsonObj, jsonObj);
 		assertTrue(result.isError());
 		assertTrue(result.errorOrThrow().contains("Unable to create object with function"));
 	}
-	
+
 	@Test
 	void createdCodecWithSingleParameter() {
 		CodecCreator<String, SingleParamFunction> creator = new CodecCreator<>(List.of(
-			STRING.configure("value", Function.identity())
+			STRING.fieldOf("value", Function.identity())
 		));
 		SingleParamFunction function = new SingleParamFunction();
 		Codec<String> codec = creator.create(function);
@@ -250,8 +251,8 @@ class CodecCreatorTest {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		JsonObject jsonObj = new JsonObject();
 		jsonObj.add("value", new JsonPrimitive("single"));
-		
-		Result<String> result = codec.decodeStart(typeProvider, jsonObj);
+
+		Result<String> result = codec.decodeStart(typeProvider, jsonObj, jsonObj);
 		assertTrue(result.isSuccess());
 		assertEquals("SINGLE", result.resultOrThrow());
 	}
@@ -259,11 +260,11 @@ class CodecCreatorTest {
 	@Test
 	void createdCodecWithManyParameters() {
 		CodecCreator<TestObject3, ManyParamFunction> creator = new CodecCreator<>(List.of(
-			STRING.configure("a", TestObject3::a),
-			STRING.configure("b", TestObject3::b),
-			STRING.configure("c", TestObject3::c),
-			STRING.configure("d", TestObject3::d),
-			STRING.configure("e", TestObject3::e)
+			STRING.fieldOf("a", TestObject3::a),
+			STRING.fieldOf("b", TestObject3::b),
+			STRING.fieldOf("c", TestObject3::c),
+			STRING.fieldOf("d", TestObject3::d),
+			STRING.fieldOf("e", TestObject3::e)
 		));
 		ManyParamFunction function = new ManyParamFunction();
 		Codec<TestObject3> codec = creator.create(function);
@@ -275,10 +276,10 @@ class CodecCreatorTest {
 		jsonObj.add("c", new JsonPrimitive("3"));
 		jsonObj.add("d", new JsonPrimitive("4"));
 		jsonObj.add("e", new JsonPrimitive("5"));
-		
-		Result<TestObject3> result = codec.decodeStart(typeProvider, jsonObj);
+
+		Result<TestObject3> result = codec.decodeStart(typeProvider, jsonObj, jsonObj);
 		assertTrue(result.isSuccess());
-		
+
 		TestObject3 obj = result.resultOrThrow();
 		assertEquals("1", obj.a);
 		assertEquals("2", obj.b);
