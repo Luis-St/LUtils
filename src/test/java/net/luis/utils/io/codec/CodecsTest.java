@@ -26,9 +26,9 @@ import net.luis.utils.util.Utils;
 import org.junit.jupiter.api.Test;
 
 import java.io.File;
-import java.net.MalformedURLException;
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.net.*;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.time.*;
@@ -48,7 +48,7 @@ import static org.junit.jupiter.api.Assertions.*;
 public class CodecsTest {
 	
 	@Test
-	void constantCodecsEncodeCorrectly() throws MalformedURLException {
+	void constantCodecsEncodeCorrectly() throws Exception {
 		JsonTypeProvider provider = JsonTypeProvider.INSTANCE;
 		
 		assertEquals(new JsonPrimitive(true), BOOLEAN.encode(provider, true));
@@ -118,10 +118,16 @@ public class CodecsTest {
 		
 		java.net.URL url = java.net.URI.create("https://www.luis-st.net").toURL();
 		assertEquals(new JsonPrimitive(url.toString()), URL.encode(provider, url));
+		
+		InetAddress inetAddress = InetAddress.getByName("127.0.0.1");
+		assertEquals(new JsonPrimitive("127.0.0.1"), INET_ADDRESS.encode(provider, inetAddress));
+		
+		InetSocketAddress inetSocketAddress = new InetSocketAddress(InetAddress.getByName("127.0.0.1"), 8080);
+		assertEquals(new JsonPrimitive("127.0.0.1:8080"), INET_SOCKET_ADDRESS.encode(provider, inetSocketAddress));
 	}
 	
 	@Test
-	void constantCodecsDecodeCorrectly() throws MalformedURLException {
+	void constantCodecsDecodeCorrectly() throws Exception {
 		JsonTypeProvider provider = JsonTypeProvider.INSTANCE;
 		
 		assertEquals(true, BOOLEAN.decode(provider, new JsonPrimitive(true)));
@@ -131,6 +137,8 @@ public class CodecsTest {
 		assertEquals(1L, LONG.decode(provider, new JsonPrimitive(1)));
 		assertEquals(1.0F, FLOAT.decode(provider, new JsonPrimitive(1.0F)));
 		assertEquals(1.0, DOUBLE.decode(provider, new JsonPrimitive(1.0)));
+		assertEquals(new BigInteger("12345678901234567890"), BIG_INTEGER.decode(provider, new JsonPrimitive("12345678901234567890")));
+		assertEquals(new BigDecimal("123.456789"), BIG_DECIMAL.decode(provider, new JsonPrimitive("123.456789")));
 		assertEquals("test", STRING.decode(provider, new JsonPrimitive("test")));
 		assertEquals('a', CHARACTER.decode(provider, new JsonPrimitive("a")));
 		
@@ -189,6 +197,12 @@ public class CodecsTest {
 		
 		java.net.URL url = java.net.URI.create("https://www.luis-st.net").toURL();
 		assertEquals(url, URL.decode(provider, new JsonPrimitive(url.toString())));
+		
+		InetAddress inetAddress = InetAddress.getByName("127.0.0.1");
+		assertEquals(inetAddress, INET_ADDRESS.decode(provider, new JsonPrimitive("127.0.0.1")));
+		
+		InetSocketAddress inetSocketAddress = new InetSocketAddress(InetAddress.getByName("127.0.0.1"), 8080);
+		assertEquals(inetSocketAddress, INET_SOCKET_ADDRESS.decode(provider, new JsonPrimitive("127.0.0.1:8080")));
 	}
 	
 	@Test

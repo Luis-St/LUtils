@@ -21,6 +21,8 @@ package net.luis.utils.io.codec;
 import net.luis.utils.io.codec.types.UUIDCodec;
 import net.luis.utils.io.codec.types.array.*;
 import net.luis.utils.io.codec.types.io.*;
+import net.luis.utils.io.codec.types.network.InetAddressCodec;
+import net.luis.utils.io.codec.types.network.InetSocketAddressCodec;
 import net.luis.utils.io.codec.types.primitiv.numeric.BigDecimalCodec;
 import net.luis.utils.io.codec.types.primitiv.numeric.BigIntegerCodec;
 import net.luis.utils.io.codec.types.primitiv.*;
@@ -228,6 +230,16 @@ public final class Codecs {
 	 * The underlying URL is converted to and from a string.<br>
 	 */
 	public static final URLCodec URL = new URLCodec();
+	/**
+	 * A codec that encodes and decodes {@link java.net.InetAddress inet addresses}.<br>
+	 * The underlying inet address is converted to and from a string.<br>
+	 */
+	public static final InetAddressCodec INET_ADDRESS = new InetAddressCodec();
+	/**
+	 * A codec that encodes and decodes {@link java.net.InetSocketAddress inet socket addresses}.<br>
+	 * The underlying inet socket address is converted to and from a string.<br>
+	 */
+	public static final InetSocketAddressCodec INET_SOCKET_ADDRESS = new InetSocketAddressCodec();
 	
 	/**
 	 * Private constructor to prevent instantiation.<br>
