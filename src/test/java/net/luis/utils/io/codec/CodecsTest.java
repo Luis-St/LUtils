@@ -89,6 +89,9 @@ public class CodecsTest {
 		
 		ZonedDateTime zonedDateTime = ZonedDateTime.of(dateTime, ZoneId.systemDefault());
 		assertEquals(new JsonPrimitive(zonedDateTime.toString()), ZONED_DATE_TIME.encode(provider, zonedDateTime));
+		
+		assertEquals(new JsonPrimitive("Europe/Paris"), ZONE_ID.encode(provider, ZoneId.of("Europe/Paris")));
+		assertEquals(new JsonPrimitive("+01:00"), ZONE_OFFSET.encode(provider, ZoneOffset.ofHours(1)));
 
 		OffsetTime offsetTime = OffsetTime.of(19, 2, 0, 0, ZoneOffset.ofHours(1));
 		assertEquals(new JsonPrimitive(offsetTime.toString()), OFFSET_TIME.encode(provider, offsetTime));
@@ -171,6 +174,9 @@ public class CodecsTest {
 
 		ZonedDateTime zonedDateTime = ZonedDateTime.of(dateTime, ZoneId.systemDefault());
 		assertEquals(zonedDateTime, ZONED_DATE_TIME.decode(provider, new JsonPrimitive(zonedDateTime.toString())));
+		
+		assertEquals(ZoneId.of("Europe/Paris"), ZONE_ID.decode(provider, new JsonPrimitive("Europe/Paris")));
+		assertEquals(ZoneOffset.ofHours(1), ZONE_OFFSET.decode(provider, new JsonPrimitive("+01:00")));
 
 		OffsetTime offsetTime = OffsetTime.of(19, 2, 0, 0, ZoneOffset.ofHours(1));
 		assertEquals(offsetTime, OFFSET_TIME.decode(provider, new JsonPrimitive(offsetTime.toString())));

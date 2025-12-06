@@ -193,6 +193,16 @@ public final class Codecs {
 	 */
 	public static final ZonedDateTimeCodec ZONED_DATE_TIME = new ZonedDateTimeCodec();
 	/**
+	 * A codec that encodes and decodes {@link ZoneId zone ID} values.<br>
+	 * The underlying zone ID is converted to and from a string.<br>
+	 */
+	public static final ZoneIdCodec ZONE_ID = new ZoneIdCodec();
+	/**
+	 * A codec that encodes and decodes {@link ZoneOffset zone offset} values.<br>
+	 * The underlying zone offset is converted to and from a string.<br>
+	 */
+	public static final ZoneOffsetCodec ZONE_OFFSET = new ZoneOffsetCodec();
+	/**
 	 * A codec that encodes and decodes {@link Instant instant} values.<br>
 	 * The underlying instant is converted to and from a string using ISO-8601 format.<br>
 	 */
