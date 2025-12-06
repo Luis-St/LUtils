@@ -27,6 +27,8 @@ import org.junit.jupiter.api.Test;
 
 import java.io.File;
 import java.net.MalformedURLException;
+import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.time.*;
@@ -56,6 +58,8 @@ public class CodecsTest {
 		assertEquals(new JsonPrimitive(1L), LONG.encode(provider, 1L));
 		assertEquals(new JsonPrimitive(1.0F), FLOAT.encode(provider, 1.0F));
 		assertEquals(new JsonPrimitive(1.0), DOUBLE.encode(provider, 1.0));
+		assertEquals(new JsonPrimitive("12345678901234567890"), BIG_INTEGER.encode(provider, new BigInteger("12345678901234567890")));
+		assertEquals(new JsonPrimitive("123.456789"), BIG_DECIMAL.encode(provider, new BigDecimal("123.456789")));
 		assertEquals(new JsonPrimitive("test"), STRING.encode(provider, "test"));
 		assertEquals(new JsonPrimitive("a"), CHARACTER.encode(provider, 'a'));
 		

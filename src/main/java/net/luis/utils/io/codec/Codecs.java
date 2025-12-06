@@ -21,6 +21,8 @@ package net.luis.utils.io.codec;
 import net.luis.utils.io.codec.types.UUIDCodec;
 import net.luis.utils.io.codec.types.array.*;
 import net.luis.utils.io.codec.types.io.*;
+import net.luis.utils.io.codec.types.primitiv.numeric.BigDecimalCodec;
+import net.luis.utils.io.codec.types.primitiv.numeric.BigIntegerCodec;
 import net.luis.utils.io.codec.types.primitiv.*;
 import net.luis.utils.io.codec.types.primitiv.numeric.*;
 import net.luis.utils.io.codec.types.stream.*;
@@ -33,6 +35,8 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
+import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.nio.charset.Charset;
 import java.nio.file.Path;
 import java.time.*;
@@ -79,7 +83,15 @@ public final class Codecs {
 	 */
 	public static final DoubleCodec DOUBLE = new DoubleCodec();
 	/**
-	 * A codec that encodes and decodes strings.<br>
+	 * A codec that encodes and decodes {@link BigInteger big integer} values.<br>
+	 */
+	public static final BigIntegerCodec BIG_INTEGER = new BigIntegerCodec();
+	/**
+	 * A codec that encodes and decodes {@link BigDecimal big decimal} values.<br>
+	 */
+	public static final BigDecimalCodec BIG_DECIMAL = new BigDecimalCodec();
+	/**
+	 * A codec that encodes and decodes {@link String strings}.<br>
 	 */
 	public static final StringCodec STRING = new StringCodec();
 	/**
