@@ -366,6 +366,16 @@ public sealed interface Codec<C> extends Encoder<C>, Decoder<C> permits Abstract
 	}
 	
 	/**
+	 * Creates a new set codec uses the current codec as element codec for the set codec.<br>
+	 *
+	 * @return A new set codec for the current codec
+	 * @see SetCodec
+	 */
+	default @NotNull SetCodec<C> set() {
+		return new SetCodec<>(this);
+	}
+	
+	/**
 	 * Creates a new stream codec uses the current codec as element codec for the stream codec.<br>
 	 *
 	 * @return A new stream codec for the current codec

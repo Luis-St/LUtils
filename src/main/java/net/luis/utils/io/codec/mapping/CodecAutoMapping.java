@@ -450,8 +450,7 @@ public final class CodecAutoMapping {
 				throw new IllegalArgumentException("Missing generic type information for Set: " + clazz.getName());
 			}
 			
-			// Note: Type of Set<Object> is required to work, if this type notation is not present, java will infer the type as the dynamic type at runtime which causes in some cases errors
-			return (Codec<C>) getCodec(genericInfo[0], dropElements(genericInfo, 1)).list().xmap((Set<Object> set) -> new ArrayList<>(set), HashSet::new);
+			return (Codec<C>) getCodec(genericInfo[0], dropElements(genericInfo, 1)).set();
 		}
 		
 		Codec<?> codec = CODEC_LOOKUP.get(ClassUtils.primitiveToWrapper(clazz));
