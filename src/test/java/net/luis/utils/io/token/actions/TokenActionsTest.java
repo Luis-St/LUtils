@@ -18,8 +18,7 @@
 
 package net.luis.utils.io.token.actions;
 
-import net.luis.utils.io.token.actions.core.TokenConverter;
-import net.luis.utils.io.token.actions.core.TokenTransformer;
+import net.luis.utils.io.token.actions.core.*;
 import net.luis.utils.io.token.actions.enhancers.AnnotateTokenAction;
 import net.luis.utils.io.token.actions.enhancers.IndexTokenAction;
 import net.luis.utils.io.token.actions.filters.*;
@@ -64,10 +63,24 @@ class TokenActionsTest {
 	}
 	
 	@Test
-	void grouping() {
-		TokenAction result = TokenActions.grouping();
+	void groupingWithNullMode() {
+		assertThrows(NullPointerException.class, () -> TokenActions.grouping(null));
+	}
+	
+	@Test
+	void groupingWithMatchedMode() {
+		TokenAction result = TokenActions.grouping(GroupingMode.MATCHED);
 		
-		assertSame(GroupingTokenAction.INSTANCE, result);
+		assertInstanceOf(GroupingTokenAction.class, result);
+		assertEquals(GroupingMode.MATCHED, ((GroupingTokenAction) result).mode());
+	}
+	
+	@Test
+	void groupingWithAllMode() {
+		TokenAction result = TokenActions.grouping(GroupingMode.ALL);
+		
+		assertInstanceOf(GroupingTokenAction.class, result);
+		assertEquals(GroupingMode.ALL, ((GroupingTokenAction) result).mode());
 	}
 	
 	@Test

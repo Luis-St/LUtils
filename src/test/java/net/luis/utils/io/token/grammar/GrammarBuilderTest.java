@@ -21,6 +21,7 @@ package net.luis.utils.io.token.grammar;
 import net.luis.utils.io.token.TokenRuleMatch;
 import net.luis.utils.io.token.actions.GroupingTokenAction;
 import net.luis.utils.io.token.actions.TokenAction;
+import net.luis.utils.io.token.actions.core.GroupingMode;
 import net.luis.utils.io.token.context.TokenRuleContext;
 import net.luis.utils.io.token.rules.TokenGroupRule;
 import net.luis.utils.io.token.rules.TokenRule;
@@ -149,7 +150,7 @@ class GrammarBuilderTest {
 	void addRuleWithGroupingActionWrapsRule() {
 		GrammarBuilder builder = new GrammarBuilder();
 		TokenRule rule = createRule("test");
-		GroupingTokenAction action = GroupingTokenAction.INSTANCE;
+		GroupingTokenAction action = new GroupingTokenAction(GroupingMode.MATCHED);
 		
 		assertDoesNotThrow(() -> builder.addRule(rule, action));
 		
@@ -167,7 +168,7 @@ class GrammarBuilderTest {
 		TokenRule innerRule2 = createRule("test2");
 		TokenRule innerRule3 = createRule("test3");
 		AnyOfTokenRule rule = new AnyOfTokenRule(List.of(innerRule1, innerRule2, innerRule3));
-		GroupingTokenAction action = GroupingTokenAction.INSTANCE;
+		GroupingTokenAction action = new GroupingTokenAction(GroupingMode.MATCHED);
 		
 		assertDoesNotThrow(() -> builder.addRule(rule, action));
 		
@@ -184,7 +185,7 @@ class GrammarBuilderTest {
 		TokenGroupRule groupRule = new TokenGroupRule(createRule("test1"));
 		TokenRule normalRule = createRule("test2");
 		AnyOfTokenRule rule = new AnyOfTokenRule(List.of(groupRule, normalRule));
-		GroupingTokenAction action = GroupingTokenAction.INSTANCE;
+		GroupingTokenAction action = new GroupingTokenAction(GroupingMode.MATCHED);
 		
 		assertDoesNotThrow(() -> builder.addRule(rule, action));
 		
@@ -201,7 +202,7 @@ class GrammarBuilderTest {
 		TokenGroupRule groupRule1 = new TokenGroupRule(createRule("test1"));
 		TokenGroupRule groupRule2 = new TokenGroupRule(createRule("test2"));
 		AnyOfTokenRule rule = new AnyOfTokenRule(List.of(groupRule1, groupRule2));
-		GroupingTokenAction action = GroupingTokenAction.INSTANCE;
+		GroupingTokenAction action = new GroupingTokenAction(GroupingMode.MATCHED);
 		
 		assertDoesNotThrow(() -> builder.addRule(rule, action));
 		
@@ -218,7 +219,7 @@ class GrammarBuilderTest {
 		TokenRule normalRule1 = createRule("test1");
 		TokenRule normalRule2 = createRule("test2");
 		AnyOfTokenRule rule = new AnyOfTokenRule(List.of(normalRule1, normalRule2));
-		GroupingTokenAction action = GroupingTokenAction.INSTANCE;
+		GroupingTokenAction action = new GroupingTokenAction(GroupingMode.MATCHED);
 		
 		assertDoesNotThrow(() -> builder.addRule(rule, action));
 		
