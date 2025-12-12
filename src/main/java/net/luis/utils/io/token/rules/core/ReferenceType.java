@@ -16,7 +16,9 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-package net.luis.utils.io.token.rules.reference;
+package net.luis.utils.io.token.rules.core;
+
+import net.luis.utils.io.token.rules.reference.ReferenceTokenRule;
 
 /**
  * The type of reference used in a {@link ReferenceTokenRule}.<br>
