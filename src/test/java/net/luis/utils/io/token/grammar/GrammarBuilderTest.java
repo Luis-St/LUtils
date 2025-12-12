@@ -262,6 +262,82 @@ class GrammarBuilderTest {
 	}
 	
 	@Test
+	void addRuleWithWrapParameterFalseDoesNotWrapRule() {
+		GrammarBuilder builder = new GrammarBuilder();
+		TokenRule rule = createRule("test");
+		GroupingTokenAction action = new GroupingTokenAction(GroupingMode.MATCHED);
+		
+		assertDoesNotThrow(() -> builder.addRule(rule, action, false));
+		
+		Grammar grammar = builder.build();
+		List<GrammarRule> rules = grammar.getRules();
+		
+		assertEquals(1, rules.size());
+		assertSame(rule, rules.getFirst().rule());
+	}
+	
+	@Test
+	void addRuleWithWrapParameterTrueWrapsRule() {
+		GrammarBuilder builder = new GrammarBuilder();
+		TokenRule rule = createRule("test");
+		GroupingTokenAction action = new GroupingTokenAction(GroupingMode.MATCHED);
+		
+		assertDoesNotThrow(() -> builder.addRule(rule, action, true));
+		
+		Grammar grammar = builder.build();
+		List<GrammarRule> rules = grammar.getRules();
+		
+		assertEquals(1, rules.size());
+		assertInstanceOf(AnyOfTokenRule.class, rules.getFirst().rule());
+		assertNotSame(rule, rules.getFirst().rule());
+	}
+	
+	@Test
+	void addRuleWithBooleanParameterThrowsExceptionForNullRule() {
+		GrammarBuilder builder = new GrammarBuilder();
+		
+		assertThrows(NullPointerException.class, () -> builder.addRule(null, false));
+	}
+	
+	@Test
+	void addRuleWithBooleanParameterAddsRuleSuccessfully() {
+		GrammarBuilder builder = new GrammarBuilder();
+		TokenRule rule = createRule("test");
+		
+		assertDoesNotThrow(() -> builder.addRule(rule, false));
+	}
+	
+	@Test
+	void addRuleWithThreeParametersThrowsExceptionForNullRule() {
+		GrammarBuilder builder = new GrammarBuilder();
+		TokenAction action = TokenAction.identity();
+		
+		assertThrows(NullPointerException.class, () -> builder.addRule(null, action, false));
+	}
+	
+	@Test
+	void addRuleWithThreeParametersThrowsExceptionForNullAction() {
+		GrammarBuilder builder = new GrammarBuilder();
+		TokenRule rule = createRule("test");
+		
+		assertThrows(NullPointerException.class, () -> builder.addRule(rule, null, false));
+	}
+	
+	@Test
+	void addRuleWithWrapFalseAndIdentityActionDoesNotWrap() {
+		GrammarBuilder builder = new GrammarBuilder();
+		TokenRule rule = createRule("test");
+		
+		assertDoesNotThrow(() -> builder.addRule(rule, false));
+		
+		Grammar grammar = builder.build();
+		List<GrammarRule> rules = grammar.getRules();
+		
+		assertEquals(1, rules.size());
+		assertSame(rule, rules.getFirst().rule());
+	}
+	
+	@Test
 	void defineRuleDoesNotAddToRulesList() {
 		GrammarBuilder builder = new GrammarBuilder();
 		TokenRule rule = createRule("test");
