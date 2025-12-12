@@ -466,13 +466,71 @@ class TokenRulesTest {
 		TokenRule rule1 = TokenRules.alwaysMatch();
 		TokenRule rule2 = TokenRules.neverMatch();
 		List<TokenRule> rules = List.of(rule1, rule2);
-		
+
 		TokenRule result = TokenRules.any(rules);
-		
+
 		AnyOfTokenRule anyRule = assertInstanceOf(AnyOfTokenRule.class, result);
 		assertEquals(rules, anyRule.tokenRules());
 	}
-	
+
+	@Test
+	void allWithVarArgsNull() {
+		assertThrows(NullPointerException.class, () -> TokenRules.all((TokenRule[]) null));
+	}
+
+	@Test
+	void allWithVarArgsEmpty() {
+		assertThrows(IllegalArgumentException.class, TokenRules::all);
+	}
+
+	@Test
+	void allWithVarArgsSingleRule() {
+		assertThrows(IllegalArgumentException.class, () -> TokenRules.all(TokenRules.alwaysMatch()));
+	}
+
+	@Test
+	void allWithVarArgsContainingNull() {
+		assertThrows(NullPointerException.class, () -> TokenRules.all(TokenRules.alwaysMatch(), null));
+	}
+
+	@Test
+	void allWithVarArgs() {
+		TokenRule rule1 = TokenRules.alwaysMatch();
+		TokenRule rule2 = TokenRules.neverMatch();
+
+		TokenRule result = TokenRules.all(rule1, rule2);
+
+		AllOfTokenRule allRule = assertInstanceOf(AllOfTokenRule.class, result);
+		assertEquals(List.of(rule1, rule2), allRule.tokenRules());
+	}
+
+	@Test
+	void allWithListNull() {
+		assertThrows(NullPointerException.class, () -> TokenRules.all((List<TokenRule>) null));
+	}
+
+	@Test
+	void allWithEmptyList() {
+		assertThrows(IllegalArgumentException.class, () -> TokenRules.all(List.of()));
+	}
+
+	@Test
+	void allWithSingleRuleList() {
+		assertThrows(IllegalArgumentException.class, () -> TokenRules.all(List.of(TokenRules.alwaysMatch())));
+	}
+
+	@Test
+	void allWithList() {
+		TokenRule rule1 = TokenRules.alwaysMatch();
+		TokenRule rule2 = TokenRules.neverMatch();
+		List<TokenRule> rules = List.of(rule1, rule2);
+
+		TokenRule result = TokenRules.all(rules);
+
+		AllOfTokenRule allRule = assertInstanceOf(AllOfTokenRule.class, result);
+		assertEquals(rules, allRule.tokenRules());
+	}
+
 	@Test
 	void boundaryTwoParametersNullStart() {
 		assertThrows(NullPointerException.class, () -> TokenRules.boundary(null, TokenRules.value(")", false)));

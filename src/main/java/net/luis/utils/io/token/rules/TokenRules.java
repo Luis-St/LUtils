@@ -345,7 +345,35 @@ public final class TokenRules {
 	public static @NotNull TokenRule any(@NotNull List<TokenRule> tokenRules) {
 		return new AnyOfTokenRule(tokenRules);
 	}
-	
+
+	/**
+	 * Creates a token rule that matches all the given token rules at the same position.<br>
+	 * All rules must match on the same single token for this rule to match.<br>
+	 *
+	 * @param tokenRules The token rules to match all of
+	 * @return The created token rule
+	 * @throws NullPointerException If the token rule array or any of its elements are null
+	 * @throws IllegalArgumentException If the token rule array is empty or contains less than two rules
+	 * @see AllOfTokenRule
+	 */
+	public static @NotNull TokenRule all(TokenRule @NotNull ... tokenRules) {
+		return all(List.of(Objects.requireNonNull(tokenRules, "Token rule array must not be null")));
+	}
+
+	/**
+	 * Creates a token rule that matches all the given token rules at the same position.<br>
+	 * All rules must match on the same single token for this rule to match.<br>
+	 *
+	 * @param tokenRules The token rules to match all of
+	 * @return The created token rule
+	 * @throws NullPointerException If the token rule list or any of its elements are null
+	 * @throws IllegalArgumentException If the token rule list is empty or contains less than two rules
+	 * @see AllOfTokenRule
+	 */
+	public static @NotNull TokenRule all(@NotNull List<TokenRule> tokenRules) {
+		return new AllOfTokenRule(tokenRules);
+	}
+
 	/**
 	 * Creates a token rule that matches a boundary between the given start and end token rules.<br>
 	 *
