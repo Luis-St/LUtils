@@ -96,6 +96,19 @@ public class GrammarBuilder {
 	}
 	
 	/**
+	 * Adds a new rule with the identity action to the grammar.<br>
+	 * The rule is added to the list of grammar rules of this builder but not defined in the context for references.<br>
+	 *
+	 * @param rule The token rule to apply
+	 * @param wrap Whether to automatically wrap the rule if needed for grouping actions
+	 * @throws NullPointerException If the rule is null
+	 * @see #addRule(TokenRule, TokenAction, boolean)
+	 */
+	public void addRule(@NotNull TokenRule rule, boolean wrap) {
+		this.addRule(rule, TokenAction.identity(), wrap);
+	}
+	
+	/**
 	 * Adds a new rule with the specified action to the grammar.<br>
 	 * The rule is added to the list of grammar rules of this builder but not defined in the context for references.<br>
 	 * <p>
@@ -116,10 +129,35 @@ public class GrammarBuilder {
 	 * @throws IllegalArgumentException If name is empty or already defined
 	 */
 	public void addRule(@NotNull TokenRule rule, @NotNull TokenAction action) {
+		this.addRule(rule, action, true);
+	}
+	
+	/**
+	 * Adds a new rule with the specified action to the grammar.<br>
+	 * The rule is added to the list of grammar rules of this builder but not defined in the context for references.<br>
+	 * <p>
+	 *     If wrap is true, the rule is automatically wrapped if the action is a {@link GroupingTokenAction} and the rule structure requires it.<br>
+	 *     This ensures that grouping actions are applied correctly without requiring the user to manually wrap rules.<br>
+	 *     The wrapping logic is equivalent to:
+	 * </p>
+	 * <pre>{@code
+	 * TokenRules.any(
+	 *     rule,
+	 *     rule.group()
+	 * );
+	 * }</pre>
+	 *
+	 * @param rule The token rule to apply
+	 * @param action The action to perform on matched tokens
+	 * @param wrap Whether to automatically wrap the rule if needed for grouping actions
+	 * @throws NullPointerException If name or rule is null
+	 * @throws IllegalArgumentException If name is empty or already defined
+	 */
+	public void addRule(@NotNull TokenRule rule, @NotNull TokenAction action, boolean wrap) {
 		Objects.requireNonNull(rule, "Rule must not be null");
 		Objects.requireNonNull(action, "Action must not be null");
 		
-		this.rules.add(new GrammarRule(this.wrapRule(rule, action), action));
+		this.rules.add(new GrammarRule(wrap ? this.wrapRule(rule, action) : rule, action));
 	}
 	
 	/**
