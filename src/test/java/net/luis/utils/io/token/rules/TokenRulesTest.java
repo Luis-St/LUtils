@@ -30,10 +30,13 @@ import net.luis.utils.io.token.rules.quantifiers.RepeatedTokenRule;
 import net.luis.utils.io.token.rules.reference.*;
 import net.luis.utils.io.token.tokens.SimpleToken;
 import net.luis.utils.io.token.tokens.Token;
+import net.luis.utils.io.token.type.StandardTokenType;
+import net.luis.utils.io.token.type.TokenType;
 import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
+import java.util.Set;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.regex.Pattern;
@@ -127,13 +130,56 @@ class TokenRulesTest {
 	@Test
 	void patternWithPatternObject() {
 		Pattern pattern = Pattern.compile("\\w+");
-		
+
 		TokenRule result = TokenRules.pattern(pattern);
-		
+
 		PatternTokenRule patternRule = assertInstanceOf(PatternTokenRule.class, result);
 		assertEquals(pattern, patternRule.pattern());
 	}
-	
+
+	@Test
+	void typeWithVarArgsNull() {
+		assertThrows(NullPointerException.class, () -> TokenRules.type((TokenType[]) null));
+	}
+
+	@Test
+	void typeWithVarArgsEmpty() {
+		assertThrows(IllegalArgumentException.class, TokenRules::type);
+	}
+
+	@Test
+	void typeWithVarArgs() {
+		TokenType type1 = StandardTokenType.KEYWORD;
+		TokenType type2 = StandardTokenType.IDENTIFIER;
+
+		TokenRule result = TokenRules.type(type1, type2);
+
+		TypeTokenRule typeRule = assertInstanceOf(TypeTokenRule.class, result);
+		assertEquals(Set.of(type1, type2), typeRule.tokenTypes());
+	}
+
+	@Test
+	void typeWithSetNull() {
+		assertThrows(NullPointerException.class, () -> TokenRules.type((Set<TokenType>) null));
+	}
+
+	@Test
+	void typeWithEmptySet() {
+		assertThrows(IllegalArgumentException.class, () -> TokenRules.type(Set.of()));
+	}
+
+	@Test
+	void typeWithSet() {
+		TokenType type1 = StandardTokenType.NUMBER;
+		TokenType type2 = StandardTokenType.LITERAL;
+		Set<TokenType> types = Set.of(type1, type2);
+
+		TokenRule result = TokenRules.type(types);
+
+		TypeTokenRule typeRule = assertInstanceOf(TypeTokenRule.class, result);
+		assertEquals(types, typeRule.tokenTypes());
+	}
+
 	@Test
 	void minLengthNegative() {
 		assertThrows(IllegalArgumentException.class, () -> TokenRules.minLength(-1));
