@@ -45,13 +45,18 @@ public record AnyOfTokenRule(
 	 * Constructs a new any of token rule with the given token rules.<br>
 	 *
 	 * @param tokenRules The list of token rules to match against
-	 * @throws NullPointerException If the token rule list is null
+	 * @throws NullPointerException If the token rule list is null or contains a null element
+	 * @throws IllegalArgumentException If the token rule list is empty or contains less than two rules
 	 */
 	public AnyOfTokenRule {
 		Objects.requireNonNull(tokenRules, "Token rule list must not be null");
 		if (tokenRules.isEmpty()) {
 			throw new IllegalArgumentException("Token rule list must not be empty");
 		}
+		if (tokenRules.size() == 1) {
+			throw new IllegalArgumentException("At least two token rules are required");
+		}
+		
 		for (TokenRule tokenRule : tokenRules) {
 			Objects.requireNonNull(tokenRule, "Token rule list must not contain a null element");
 		}

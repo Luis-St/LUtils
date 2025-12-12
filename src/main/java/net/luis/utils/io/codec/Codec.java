@@ -213,7 +213,7 @@ public interface Codec<C> extends Encoder<C>, Decoder<C> {
 	static <C> @NotNull Codec<C> union(@NotNull Codec<C> codec, C @NotNull ... validValues) {
 		return new UnionCodec<>(codec, validValues);
 	}
-
+	
 	/**
 	 * Creates a new any codec that attempts to encode or decode using multiple codecs in sequence.<br>
 	 * This codec tries each provided codec in order until one succeeds. If all codecs fail,
@@ -233,7 +233,7 @@ public interface Codec<C> extends Encoder<C>, Decoder<C> {
 	static <C> @NotNull Codec<C> any(@NotNull List<Codec<? extends C>> codecs) {
 		return new AnyCodec<>(codecs);
 	}
-
+	
 	/**
 	 * Creates a new any codec that attempts to encode or decode using multiple codecs in sequence.<br>
 	 * This codec tries each provided codec in order until one succeeds. If all codecs fail,
@@ -254,7 +254,7 @@ public interface Codec<C> extends Encoder<C>, Decoder<C> {
 	static <C> @NotNull Codec<C> any(@NotNull Codec<? extends C>... codecs) {
 		return new AnyCodec<>(codecs);
 	}
-
+	
 	/**
 	 * Creates a new codec that only accepts numbers that are at least the given minimum value.<br>
 	 * The minimum value is inclusive.<br>
@@ -698,7 +698,7 @@ public interface Codec<C> extends Encoder<C>, Decoder<C> {
 	default @NotNull Codec<C> nullable() {
 		return nullable(this);
 	}
-
+	
 	/**
 	 * Wraps the current codec into a new union codec that constrains values to a specific set of allowed values.<br>
 	 * This codec validates that encoded and decoded values are within the predefined set of valid values.<br>
@@ -714,7 +714,7 @@ public interface Codec<C> extends Encoder<C>, Decoder<C> {
 	default @NotNull Codec<C> union(@NotNull Collection<C> validValues) {
 		return union(this, validValues);
 	}
-
+	
 	/**
 	 * Wraps the current codec into a new union codec that constrains values to a specific set of allowed values.<br>
 	 * This codec validates that encoded and decoded values are within the predefined set of valid values.<br>
@@ -731,7 +731,7 @@ public interface Codec<C> extends Encoder<C>, Decoder<C> {
 	default @NotNull Codec<C> union(@NotNull C... validValues) {
 		return union(this, validValues);
 	}
-
+	
 	/**
 	 * Wraps the current codec into a new optional codec.<br>
 	 *

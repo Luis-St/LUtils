@@ -18,20 +18,24 @@
 
 package net.luis.utils.io.token.rules;
 
-import net.luis.utils.io.token.rules.assertions.*;
+import net.luis.utils.io.token.rules.assertions.LookaheadTokenRule;
+import net.luis.utils.io.token.rules.assertions.LookbehindTokenRule;
 import net.luis.utils.io.token.rules.assertions.anchors.EndTokenRule;
 import net.luis.utils.io.token.rules.assertions.anchors.StartTokenRule;
 import net.luis.utils.io.token.rules.combinators.*;
+import net.luis.utils.io.token.rules.core.LookMatchMode;
+import net.luis.utils.io.token.rules.core.ReferenceType;
 import net.luis.utils.io.token.rules.matchers.*;
 import net.luis.utils.io.token.rules.quantifiers.OptionalTokenRule;
 import net.luis.utils.io.token.rules.quantifiers.RepeatedTokenRule;
-import net.luis.utils.io.token.rules.reference.*;
+import net.luis.utils.io.token.rules.reference.CaptureTokenRule;
+import net.luis.utils.io.token.rules.reference.ReferenceTokenRule;
 import net.luis.utils.io.token.tokens.Token;
+import net.luis.utils.io.token.type.TokenType;
 import org.intellij.lang.annotations.Language;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.regex.Pattern;
@@ -121,6 +125,32 @@ public final class TokenRules {
 	 */
 	public static @NotNull TokenRule pattern(@NotNull Pattern pattern) {
 		return new PatternTokenRule(pattern);
+	}
+	
+	/**
+	 * Creates a type token rule that matches tokens containing all the specified token types.<br>
+	 *
+	 * @param tokenTypes The token types that must all be present on a matching token
+	 * @return The created token rule
+	 * @throws NullPointerException If the token type array or any of its elements are null
+	 * @throws IllegalArgumentException If the token type array is empty
+	 * @see TypeTokenRule
+	 */
+	public static @NotNull TokenRule type(TokenType @NotNull ... tokenTypes) {
+		return type(Set.of(Objects.requireNonNull(tokenTypes, "Token type array must not be null")));
+	}
+	
+	/**
+	 * Creates a type token rule that matches tokens containing all the specified token types.<br>
+	 *
+	 * @param tokenTypes The set of token types that must all be present on a matching token
+	 * @return The created token rule
+	 * @throws NullPointerException If the token type set is null
+	 * @throws IllegalArgumentException If the token type set is empty
+	 * @see TypeTokenRule
+	 */
+	public static @NotNull TokenRule type(@NotNull Set<TokenType> tokenTypes) {
+		return new TypeTokenRule(tokenTypes);
 	}
 	
 	/**
@@ -314,6 +344,34 @@ public final class TokenRules {
 	 */
 	public static @NotNull TokenRule any(@NotNull List<TokenRule> tokenRules) {
 		return new AnyOfTokenRule(tokenRules);
+	}
+	
+	/**
+	 * Creates a token rule that matches all the given token rules at the same position.<br>
+	 * All rules must match on the same single token for this rule to match.<br>
+	 *
+	 * @param tokenRules The token rules to match all of
+	 * @return The created token rule
+	 * @throws NullPointerException If the token rule array or any of its elements are null
+	 * @throws IllegalArgumentException If the token rule array is empty or contains less than two rules
+	 * @see AllOfTokenRule
+	 */
+	public static @NotNull TokenRule all(TokenRule @NotNull ... tokenRules) {
+		return all(List.of(Objects.requireNonNull(tokenRules, "Token rule array must not be null")));
+	}
+	
+	/**
+	 * Creates a token rule that matches all the given token rules at the same position.<br>
+	 * All rules must match on the same single token for this rule to match.<br>
+	 *
+	 * @param tokenRules The token rules to match all of
+	 * @return The created token rule
+	 * @throws NullPointerException If the token rule list or any of its elements are null
+	 * @throws IllegalArgumentException If the token rule list is empty or contains less than two rules
+	 * @see AllOfTokenRule
+	 */
+	public static @NotNull TokenRule all(@NotNull List<TokenRule> tokenRules) {
+		return new AllOfTokenRule(tokenRules);
 	}
 	
 	/**

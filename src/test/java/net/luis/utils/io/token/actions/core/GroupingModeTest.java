@@ -16,50 +16,22 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-package net.luis.utils.io.token.rules.assertions;
+package net.luis.utils.io.token.actions.core;
 
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
- * Test class for {@link LookMatchMode}.<br>
+ * Test class for {@link GroupingMode}.<br>
  *
  * @author Luis-St
  */
-class LookMatchModeTest {
-	
-	@Test
-	void positiveWithTrueRuleMatches() {
-		boolean result = LookMatchMode.POSITIVE.shouldMatch(true);
-		
-		assertTrue(result);
-	}
-	
-	@Test
-	void positiveWithFalseRuleMatches() {
-		boolean result = LookMatchMode.POSITIVE.shouldMatch(false);
-		
-		assertFalse(result);
-	}
-	
-	@Test
-	void negativeWithTrueRuleMatches() {
-		boolean result = LookMatchMode.NEGATIVE.shouldMatch(true);
-		
-		assertFalse(result);
-	}
-	
-	@Test
-	void negativeWithFalseRuleMatches() {
-		boolean result = LookMatchMode.NEGATIVE.shouldMatch(false);
-		
-		assertTrue(result);
-	}
+class GroupingModeTest {
 	
 	@Test
 	void toStringTest() {
-		assertEquals("POSITIVE", LookMatchMode.POSITIVE.toString());
-		assertEquals("NEGATIVE", LookMatchMode.NEGATIVE.toString());
+		assertEquals("ALL", GroupingMode.ALL.toString());
+		assertEquals("MATCHED", GroupingMode.MATCHED.toString());
 	}
 }
