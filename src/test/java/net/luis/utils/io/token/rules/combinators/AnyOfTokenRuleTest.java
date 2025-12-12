@@ -399,7 +399,7 @@ class AnyOfTokenRuleTest {
 		SequenceTokenRule sequenceRule = assertInstanceOf(SequenceTokenRule.class, negated);
 		assertEquals(2, sequenceRule.tokenRules().size());
 	}
-
+	
 	@Test
 	void toStringTest() {
 		TokenRule rule1 = createRule("first");

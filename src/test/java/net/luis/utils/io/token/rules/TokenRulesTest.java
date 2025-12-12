@@ -18,7 +18,8 @@
 
 package net.luis.utils.io.token.rules;
 
-import net.luis.utils.io.token.rules.assertions.*;
+import net.luis.utils.io.token.rules.assertions.LookaheadTokenRule;
+import net.luis.utils.io.token.rules.assertions.LookbehindTokenRule;
 import net.luis.utils.io.token.rules.assertions.anchors.EndTokenRule;
 import net.luis.utils.io.token.rules.assertions.anchors.StartTokenRule;
 import net.luis.utils.io.token.rules.combinators.*;
@@ -27,7 +28,8 @@ import net.luis.utils.io.token.rules.core.ReferenceType;
 import net.luis.utils.io.token.rules.matchers.*;
 import net.luis.utils.io.token.rules.quantifiers.OptionalTokenRule;
 import net.luis.utils.io.token.rules.quantifiers.RepeatedTokenRule;
-import net.luis.utils.io.token.rules.reference.*;
+import net.luis.utils.io.token.rules.reference.CaptureTokenRule;
+import net.luis.utils.io.token.rules.reference.ReferenceTokenRule;
 import net.luis.utils.io.token.tokens.SimpleToken;
 import net.luis.utils.io.token.tokens.Token;
 import net.luis.utils.io.token.type.StandardTokenType;
@@ -130,56 +132,56 @@ class TokenRulesTest {
 	@Test
 	void patternWithPatternObject() {
 		Pattern pattern = Pattern.compile("\\w+");
-
+		
 		TokenRule result = TokenRules.pattern(pattern);
-
+		
 		PatternTokenRule patternRule = assertInstanceOf(PatternTokenRule.class, result);
 		assertEquals(pattern, patternRule.pattern());
 	}
-
+	
 	@Test
 	void typeWithVarArgsNull() {
 		assertThrows(NullPointerException.class, () -> TokenRules.type((TokenType[]) null));
 	}
-
+	
 	@Test
 	void typeWithVarArgsEmpty() {
 		assertThrows(IllegalArgumentException.class, TokenRules::type);
 	}
-
+	
 	@Test
 	void typeWithVarArgs() {
 		TokenType type1 = StandardTokenType.KEYWORD;
 		TokenType type2 = StandardTokenType.IDENTIFIER;
-
+		
 		TokenRule result = TokenRules.type(type1, type2);
-
+		
 		TypeTokenRule typeRule = assertInstanceOf(TypeTokenRule.class, result);
 		assertEquals(Set.of(type1, type2), typeRule.tokenTypes());
 	}
-
+	
 	@Test
 	void typeWithSetNull() {
 		assertThrows(NullPointerException.class, () -> TokenRules.type((Set<TokenType>) null));
 	}
-
+	
 	@Test
 	void typeWithEmptySet() {
 		assertThrows(IllegalArgumentException.class, () -> TokenRules.type(Set.of()));
 	}
-
+	
 	@Test
 	void typeWithSet() {
 		TokenType type1 = StandardTokenType.NUMBER;
 		TokenType type2 = StandardTokenType.LITERAL;
 		Set<TokenType> types = Set.of(type1, type2);
-
+		
 		TokenRule result = TokenRules.type(types);
-
+		
 		TypeTokenRule typeRule = assertInstanceOf(TypeTokenRule.class, result);
 		assertEquals(types, typeRule.tokenTypes());
 	}
-
+	
 	@Test
 	void minLengthNegative() {
 		assertThrows(IllegalArgumentException.class, () -> TokenRules.minLength(-1));
@@ -466,71 +468,71 @@ class TokenRulesTest {
 		TokenRule rule1 = TokenRules.alwaysMatch();
 		TokenRule rule2 = TokenRules.neverMatch();
 		List<TokenRule> rules = List.of(rule1, rule2);
-
+		
 		TokenRule result = TokenRules.any(rules);
-
+		
 		AnyOfTokenRule anyRule = assertInstanceOf(AnyOfTokenRule.class, result);
 		assertEquals(rules, anyRule.tokenRules());
 	}
-
+	
 	@Test
 	void allWithVarArgsNull() {
 		assertThrows(NullPointerException.class, () -> TokenRules.all((TokenRule[]) null));
 	}
-
+	
 	@Test
 	void allWithVarArgsEmpty() {
 		assertThrows(IllegalArgumentException.class, TokenRules::all);
 	}
-
+	
 	@Test
 	void allWithVarArgsSingleRule() {
 		assertThrows(IllegalArgumentException.class, () -> TokenRules.all(TokenRules.alwaysMatch()));
 	}
-
+	
 	@Test
 	void allWithVarArgsContainingNull() {
 		assertThrows(NullPointerException.class, () -> TokenRules.all(TokenRules.alwaysMatch(), null));
 	}
-
+	
 	@Test
 	void allWithVarArgs() {
 		TokenRule rule1 = TokenRules.alwaysMatch();
 		TokenRule rule2 = TokenRules.neverMatch();
-
+		
 		TokenRule result = TokenRules.all(rule1, rule2);
-
+		
 		AllOfTokenRule allRule = assertInstanceOf(AllOfTokenRule.class, result);
 		assertEquals(List.of(rule1, rule2), allRule.tokenRules());
 	}
-
+	
 	@Test
 	void allWithListNull() {
 		assertThrows(NullPointerException.class, () -> TokenRules.all((List<TokenRule>) null));
 	}
-
+	
 	@Test
 	void allWithEmptyList() {
 		assertThrows(IllegalArgumentException.class, () -> TokenRules.all(List.of()));
 	}
-
+	
 	@Test
 	void allWithSingleRuleList() {
 		assertThrows(IllegalArgumentException.class, () -> TokenRules.all(List.of(TokenRules.alwaysMatch())));
 	}
-
+	
 	@Test
 	void allWithList() {
 		TokenRule rule1 = TokenRules.alwaysMatch();
 		TokenRule rule2 = TokenRules.neverMatch();
 		List<TokenRule> rules = List.of(rule1, rule2);
-
+		
 		TokenRule result = TokenRules.all(rules);
-
+		
 		AllOfTokenRule allRule = assertInstanceOf(AllOfTokenRule.class, result);
 		assertEquals(rules, allRule.tokenRules());
 	}
-
+	
 	@Test
 	void boundaryTwoParametersNullStart() {
 		assertThrows(NullPointerException.class, () -> TokenRules.boundary(null, TokenRules.value(")", false)));
