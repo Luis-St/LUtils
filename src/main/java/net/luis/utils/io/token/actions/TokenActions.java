@@ -18,8 +18,7 @@
 
 package net.luis.utils.io.token.actions;
 
-import net.luis.utils.io.token.actions.core.TokenConverter;
-import net.luis.utils.io.token.actions.core.TokenTransformer;
+import net.luis.utils.io.token.actions.core.*;
 import net.luis.utils.io.token.actions.enhancers.AnnotateTokenAction;
 import net.luis.utils.io.token.actions.enhancers.IndexTokenAction;
 import net.luis.utils.io.token.actions.filters.*;
@@ -60,14 +59,17 @@ public final class TokenActions {
 	}
 	
 	/**
-	 * Provides a token action that groups the tokens into a single token group.<br>
+	 * Creates a token action that groups the tokens into a single token group.<br>
+	 * The grouping behavior depends on the specified {@link GroupingMode}.<br>
 	 *
-	 * @return The grouping token action
-	 * @apiNote This is the preferred way to access the {@link GroupingTokenAction#INSTANCE} instance
+	 * @param mode The grouping mode to use
+	 * @return The created grouping token action
+	 * @throws NullPointerException If the mode is null
 	 * @see GroupingTokenAction
+	 * @see GroupingMode
 	 */
-	public static @NotNull TokenAction grouping() {
-		return GroupingTokenAction.INSTANCE;
+	public static @NotNull TokenAction grouping(@NotNull GroupingMode mode) {
+		return new GroupingTokenAction(mode);
 	}
 	
 	/**

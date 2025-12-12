@@ -19,6 +19,7 @@
 package net.luis.utils.io.token.actions;
 
 import net.luis.utils.io.token.TokenRuleMatch;
+import net.luis.utils.io.token.actions.core.GroupingMode;
 import net.luis.utils.io.token.context.TokenActionContext;
 import net.luis.utils.io.token.tokens.Token;
 import net.luis.utils.io.token.tokens.TokenGroup;
@@ -29,28 +30,42 @@ import java.util.*;
 
 /**
  * Token action that groups the tokens into a single token group.<br>
- * This class is implemented as a singleton and can be accessed via {@link #INSTANCE}.<br>
+ * The grouping behavior depends on the specified {@link GroupingMode}.<br>
  *
  * @author Luis-St
+ *
+ * @param mode The grouping mode to use
  */
-public final class GroupingTokenAction implements TokenAction {
+public record GroupingTokenAction(
+	@NotNull GroupingMode mode
+) implements TokenAction {
 	
 	/**
-	 * The singleton instance of this class.<br>
+	 * Constructs a new grouping token action with the given mode.<br>
+	 *
+	 * @param mode The grouping mode to use
+	 * @throws NullPointerException If the mode is null
 	 */
-	public static final GroupingTokenAction INSTANCE = new GroupingTokenAction();
-	
-	/**
-	 * Private constructor to prevent instantiation.<br>
-	 */
-	private GroupingTokenAction() {}
+	public GroupingTokenAction {
+		Objects.requireNonNull(mode, "Grouping mode must not be null");
+	}
 	
 	@Override
 	public @NotNull @Unmodifiable List<Token> apply(@NotNull TokenRuleMatch match, @NotNull TokenActionContext ctx) {
 		Objects.requireNonNull(match, "Token rule match must not be null");
 		Objects.requireNonNull(ctx, "Token action context must not be null");
 		
-		List<Token> tokens = match.matchedTokens();
+		List<Token> tokens = switch (this.mode) {
+			case MATCHED -> match.matchedTokens();
+			case ALL -> {
+				List<Token> allTokens = ctx.stream().getAllTokens();
+				yield allTokens.subList(match.startIndex(), match.endIndex());
+			}
+		};
+		
+		if (1 >= tokens.size()) {
+			throw new IllegalArgumentException("Cannot group less than 2 tokens: " + match.matchedTokens() + ", rule=" + match.matchingTokenRule());
+		}
 		return Collections.singletonList(new TokenGroup(tokens));
 	}
 }
