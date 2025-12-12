@@ -79,7 +79,7 @@ public record AllOfTokenRule(
 			}
 			
 			if (match.endIndex() - match.startIndex() > 1) {
-				throw new IllegalStateException("AndTokenRule does not support rules that match multiple tokens");
+				throw new IllegalStateException("Token rules that match multiple tokens are not supported by this rule, rule matched from index " + match.startIndex() + " to " + match.endIndex() + ": " + rule);
 			}
 		}
 		

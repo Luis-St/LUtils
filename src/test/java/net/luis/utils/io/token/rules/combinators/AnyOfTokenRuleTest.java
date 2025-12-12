@@ -76,6 +76,11 @@ class AnyOfTokenRuleTest {
 	}
 	
 	@Test
+	void constructorWithSingleRule() {
+		assertThrows(IllegalArgumentException.class, () -> new AnyOfTokenRule(List.of(createRule("test"))));
+	}
+	
+	@Test
 	void constructorWithNullRuleInList() {
 		List<TokenRule> rules = new ArrayList<>();
 		rules.add(createRule("first"));
@@ -97,7 +102,7 @@ class AnyOfTokenRuleTest {
 	
 	@Test
 	void matchWithNullStream() {
-		AnyOfTokenRule anyRule = new AnyOfTokenRule(List.of(createRule("test")));
+		AnyOfTokenRule anyRule = new AnyOfTokenRule(List.of(createRule("first"), createRule("second")));
 		TokenRuleContext context = TokenRuleContext.empty();
 		
 		assertThrows(NullPointerException.class, () -> anyRule.match(null, context));
@@ -105,8 +110,8 @@ class AnyOfTokenRuleTest {
 	
 	@Test
 	void matchWithNullContext() {
-		AnyOfTokenRule anyRule = new AnyOfTokenRule(List.of(createRule("test")));
-		TokenStream stream = TokenStream.createMutable(List.of(createToken("test")));
+		AnyOfTokenRule anyRule = new AnyOfTokenRule(List.of(createRule("first"), createRule("second")));
+		TokenStream stream = TokenStream.createMutable(List.of(createToken("first")));
 		
 		assertThrows(NullPointerException.class, () -> anyRule.match(stream, null));
 	}
@@ -123,20 +128,6 @@ class AnyOfTokenRuleTest {
 		TokenRuleMatch result = anyRule.match(stream, context);
 		
 		assertNull(result);
-	}
-	
-	@Test
-	void matchWithSingleRule() {
-		TokenRule rule = createRule("test");
-		AnyOfTokenRule anyRule = new AnyOfTokenRule(List.of(rule));
-		
-		TokenStream stream = TokenStream.createMutable(List.of(createToken("test")));
-		TokenRuleContext context = TokenRuleContext.empty();
-		
-		TokenRuleMatch result = anyRule.match(stream, context);
-		
-		assertNotNull(result);
-		assertEquals("test", result.matchedTokens().getFirst().value());
 	}
 	
 	@Test
@@ -408,18 +399,7 @@ class AnyOfTokenRuleTest {
 		SequenceTokenRule sequenceRule = assertInstanceOf(SequenceTokenRule.class, negated);
 		assertEquals(2, sequenceRule.tokenRules().size());
 	}
-	
-	@Test
-	void notWithSingleRule() {
-		TokenRule rule = TokenRules.pattern("test");
-		AnyOfTokenRule anyRule = new AnyOfTokenRule(List.of(rule));
-		
-		TokenRule negated = anyRule.not();
-		
-		SequenceTokenRule sequenceRule = assertInstanceOf(SequenceTokenRule.class, negated);
-		assertEquals(1, sequenceRule.tokenRules().size());
-	}
-	
+
 	@Test
 	void toStringTest() {
 		TokenRule rule1 = createRule("first");

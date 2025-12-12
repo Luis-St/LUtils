@@ -255,8 +255,8 @@ class ReferenceTokenRuleTest {
 		
 		TokenStream stream = TokenStream.createMutable(List.of(createToken("test")));
 		
-		IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> rule.match(stream, context));
-		assertEquals("Token rule list must not be empty", exception.getMessage());
+		assertNull(rule.match(stream, context));
+		assertEquals(0, stream.getCurrentIndex());
 	}
 	
 	@Test

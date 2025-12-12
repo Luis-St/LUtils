@@ -46,12 +46,15 @@ public record SequenceTokenRule(
 	 *
 	 * @param tokenRules The list of token rules to match against
 	 * @throws NullPointerException If the token rule list or any of its elements are null
-	 * @throws IllegalArgumentException If the token rule list is empty
+	 * @throws IllegalArgumentException If the token rule list is empty or contains less than two rules
 	 */
 	public SequenceTokenRule {
 		Objects.requireNonNull(tokenRules, "Token rule list must not be null");
 		if (tokenRules.isEmpty()) {
 			throw new IllegalArgumentException("Token rule list must not be empty");
+		}
+		if (tokenRules.size() == 1) {
+			throw new IllegalArgumentException("At least two token rules are required");
 		}
 		
 		for (TokenRule tokenRule : tokenRules) {
