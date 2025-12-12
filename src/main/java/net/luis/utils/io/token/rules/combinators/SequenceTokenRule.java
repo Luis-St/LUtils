@@ -53,6 +53,7 @@ public record SequenceTokenRule(
 		if (tokenRules.isEmpty()) {
 			throw new IllegalArgumentException("Token rule list must not be empty");
 		}
+		
 		for (TokenRule tokenRule : tokenRules) {
 			Objects.requireNonNull(tokenRule, "Token rule list must not contain a null element");
 		}

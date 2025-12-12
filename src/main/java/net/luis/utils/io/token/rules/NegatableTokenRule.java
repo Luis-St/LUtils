@@ -72,7 +72,6 @@ public interface NegatableTokenRule extends TokenRule {
 		
 		int startIndex = stream.getCurrentIndex();
 		Token token = stream.getCurrentToken();
-		
 		if (this.match(token)) {
 			List<Token> matchedTokens = Collections.singletonList(token);
 			return new TokenRuleMatch(startIndex, stream.advance(), matchedTokens, this);

@@ -62,7 +62,6 @@ public record TypeTokenRule(
 	@Override
 	public boolean match(@NotNull Token token) {
 		Objects.requireNonNull(token, "Token must not be null");
-		
 		return token.types().containsAll(this.tokenTypes);
 	}
 }
