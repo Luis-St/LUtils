@@ -43,7 +43,7 @@ public record TokenGroup(
 	 *
 	 * @param tokens The list of tokens in the group
 	 * @throws NullPointerException If the list of tokens, or any of the tokens are null
-	 * @throws IllegalArgumentException If the list of tokens is empty or contains a single element
+	 * @throws IllegalArgumentException If the list of tokens is empty
 	 */
 	public TokenGroup {
 		Objects.requireNonNull(tokens, "Token list must not be null");
@@ -52,9 +52,6 @@ public record TokenGroup(
 		}
 		if (tokens.isEmpty()) {
 			throw new IllegalArgumentException("Token list must not be empty");
-		}
-		if (tokens.size() == 1) {
-			throw new IllegalArgumentException("Token list must not contain a single element");
 		}
 		tokens = List.copyOf(tokens);
 	}
