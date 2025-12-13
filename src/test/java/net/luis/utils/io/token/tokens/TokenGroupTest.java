@@ -59,7 +59,7 @@ class TokenGroupTest {
 	void constructorWithSingleToken() {
 		Token token = createToken("hello", new TokenPosition(0, 0, 0));
 		
-		assertThrows(IllegalArgumentException.class, () -> new TokenGroup(List.of(token)));
+		assertDoesNotThrow(() -> new TokenGroup(List.of(token)));
 	}
 	
 	@Test
