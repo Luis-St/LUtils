@@ -24,10 +24,8 @@ import net.luis.utils.util.unsafe.reflection.ReflectionHelper;
 import org.apache.commons.lang3.ClassUtils;
 import org.jetbrains.annotations.*;
 
-import java.io.File;
 import java.lang.reflect.*;
 import java.net.URI;
-import java.net.URL;
 import java.nio.charset.Charset;
 import java.nio.file.Path;
 import java.time.*;
@@ -91,10 +89,8 @@ public final class CodecAutoMapping {
 		lookup.put(char[].class, Codecs.CHARACTER_ARRAY);
 		
 		lookup.put(Charset.class, Codecs.CHARSET);
-		lookup.put(File.class, Codecs.FILE);
 		lookup.put(Path.class, Codecs.PATH);
 		lookup.put(URI.class, Codecs.URI);
-		lookup.put(URL.class, Codecs.URL);
 		
 		lookup.put(Boolean.class, Codecs.BOOLEAN);
 		lookup.put(Byte.class, Codecs.BYTE);

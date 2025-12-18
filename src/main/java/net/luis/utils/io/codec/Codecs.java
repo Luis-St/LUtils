@@ -25,8 +25,6 @@ import net.luis.utils.io.codec.types.i18n.LocaleCodec;
 import net.luis.utils.io.codec.types.io.*;
 import net.luis.utils.io.codec.types.network.InetAddressCodec;
 import net.luis.utils.io.codec.types.network.InetSocketAddressCodec;
-import net.luis.utils.io.codec.types.primitiv.numeric.BigDecimalCodec;
-import net.luis.utils.io.codec.types.primitiv.numeric.BigIntegerCodec;
 import net.luis.utils.io.codec.types.primitiv.*;
 import net.luis.utils.io.codec.types.primitiv.numeric.*;
 import net.luis.utils.io.codec.types.stream.*;
@@ -38,9 +36,10 @@ import net.luis.utils.util.result.ResultingFunction;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.io.File;
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.net.InetAddress;
+import java.net.InetSocketAddress;
 import java.nio.charset.Charset;
 import java.nio.file.Path;
 import java.time.*;
@@ -238,11 +237,6 @@ public final class Codecs {
 	 */
 	public static final CharsetCodec CHARSET = new CharsetCodec();
 	/**
-	 * A codec that encodes and decodes {@link File files}.<br>
-	 * The underlying file is converted to and from a string.<br>
-	 */
-	public static final FileCodec FILE = new FileCodec();
-	/**
 	 * A codec that encodes and decodes {@link Path paths}.<br>
 	 * The underlying path is converted to and from a string.<br>
 	 */
@@ -253,17 +247,12 @@ public final class Codecs {
 	 */
 	public static final URICodec URI = new URICodec();
 	/**
-	 * A codec that encodes and decodes {@link java.net.URL URLs}.<br>
-	 * The underlying URL is converted to and from a string.<br>
-	 */
-	public static final URLCodec URL = new URLCodec();
-	/**
-	 * A codec that encodes and decodes {@link java.net.InetAddress inet addresses}.<br>
+	 * A codec that encodes and decodes {@link InetAddress inet addresses}.<br>
 	 * The underlying inet address is converted to and from a string.<br>
 	 */
 	public static final InetAddressCodec INET_ADDRESS = new InetAddressCodec();
 	/**
-	 * A codec that encodes and decodes {@link java.net.InetSocketAddress inet socket addresses}.<br>
+	 * A codec that encodes and decodes {@link InetSocketAddress inet socket addresses}.<br>
 	 * The underlying inet socket address is converted to and from a string.<br>
 	 */
 	public static final InetSocketAddressCodec INET_SOCKET_ADDRESS = new InetSocketAddressCodec();

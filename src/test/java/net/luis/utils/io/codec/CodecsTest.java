@@ -25,10 +25,10 @@ import net.luis.utils.io.data.json.*;
 import net.luis.utils.util.Utils;
 import org.junit.jupiter.api.Test;
 
-import java.io.File;
 import java.math.BigDecimal;
 import java.math.BigInteger;
-import java.net.*;
+import java.net.InetAddress;
+import java.net.InetSocketAddress;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.time.*;
@@ -114,17 +114,11 @@ public class CodecsTest {
 		
 		assertEquals(new JsonPrimitive(StandardCharsets.UTF_8.name()), CHARSET.encode(provider, StandardCharsets.UTF_8));
 		
-		File file = new File("test.json");
-		assertEquals(new JsonPrimitive(file.toString()), FILE.encode(provider, file));
-		
 		Path path = Path.of("test.json");
 		assertEquals(new JsonPrimitive(path.toString()), PATH.encode(provider, path));
 		
 		java.net.URI uri = java.net.URI.create("https://www.luis-st.net");
 		assertEquals(new JsonPrimitive(uri.toString()), URI.encode(provider, uri));
-		
-		java.net.URL url = java.net.URI.create("https://www.luis-st.net").toURL();
-		assertEquals(new JsonPrimitive(url.toString()), URL.encode(provider, url));
 		
 		InetAddress inetAddress = InetAddress.getByName("127.0.0.1");
 		assertEquals(new JsonPrimitive("127.0.0.1"), INET_ADDRESS.encode(provider, inetAddress));
@@ -203,17 +197,11 @@ public class CodecsTest {
 
 		assertEquals(StandardCharsets.UTF_8, CHARSET.decode(provider, new JsonPrimitive(StandardCharsets.UTF_8.name())));
 		
-		File file = new File("test.json");
-		assertEquals(file, FILE.decode(provider, new JsonPrimitive(file.toString())));
-		
 		Path path = Path.of("test.json");
 		assertEquals(path, PATH.decode(provider, new JsonPrimitive(path.toString())));
 		
 		java.net.URI uri = java.net.URI.create("https://www.luis-st.net");
 		assertEquals(uri, URI.decode(provider, new JsonPrimitive(uri.toString())));
-		
-		java.net.URL url = java.net.URI.create("https://www.luis-st.net").toURL();
-		assertEquals(url, URL.decode(provider, new JsonPrimitive(url.toString())));
 		
 		InetAddress inetAddress = InetAddress.getByName("127.0.0.1");
 		assertEquals(inetAddress, INET_ADDRESS.decode(provider, new JsonPrimitive("127.0.0.1")));
