@@ -5,8 +5,8 @@
 - `minLength(int)` - Minimum length validation
 - `maxLength(int)` - Maximum length validation
 - `exactLength(int)` - Exact length validation
-- `lengthBetween(int min, int max)` - Range validation (inclusive) [RENAMED from lengthInRange]
-- `lengthIn(Set<Integer>)` - Length must be one of specified values [NEW]
+- `lengthBetween(int min, int max)` - Range validation (inclusive)
+- `lengthIn(Set<Integer>)` - Length must be one of specified values
 - `empty()` - Must be empty (length = 0)
 - `notEmpty()` - Must not be empty (length >= 1)
 
@@ -19,12 +19,12 @@
 - `minSize(int)` - Minimum number of elements
 - `maxSize(int)` - Maximum number of elements
 - `exactSize(int)` - Exact number of elements
-- `sizeBetween(int min, int max)` - Range validation (inclusive) [RENAMED from sizeInRange]
-- `sizeIn(Set<Integer>)` - Size must be one of specified values [NEW]
+- `sizeBetween(int min, int max)` - Range validation (inclusive)
+- `sizeIn(Set<Integer>)` - Size must be one of specified values
 - `empty()` - Must be empty (size = 0)
 - `notEmpty()` - Must not be empty (size >= 1)
 - `singleton()` - Exactly one element (size = 1)
-- `pair()` - Exactly two elements (size = 2) [NEW]
+- `pair()` - Exactly two elements (size = 2)
 
 ---
 
@@ -36,39 +36,32 @@
 - `afterOrEqual(T)` - Must be after or equal to specified time
 - `before(T)` - Must be before specified time (exclusive)
 - `beforeOrEqual(T)` - Must be before or equal to specified time
-- `between(T, T)` - Must be within time range (inclusive)
-- `betweenExclusive(T, T)` - Must be within time range (exclusive) [NEW]
+- `betweenInclusiv(T, T)` - Must be within time range (inclusive)
+- `betweenExclusive(T, T)` - Must be within time range (exclusive)
 - `equalTo(T)` - Must be equal to specified time
-- `notEqualTo(T)` - Must not be equal to specified time [NEW]
+- `notEqualTo(T)` - Must not be equal to specified time
 
 **Relative Time Constraints:**
-- `past()` - Must be in the past (before now) [NOTE: "now" evaluated at validation time]
+- `past()` - Must be in the past (before now)
 - `pastOrPresent()` - Must be in the past or now
 - `future()` - Must be in the future (after now)
 - `futureOrPresent()` - Must be in the future or now
-- `today()` - Same day as today [NEW]
-- `thisMonth()` - Same month as this month [NEW]
-- `thisYear()` - Same year as this year [NEW]
 - `withinLast(Duration/Period)` - Within last X time (e.g., within last 7 days, within last 2 hours)
 - `withinNext(Duration/Period)` - Within next X time (e.g., within next 30 days, within next 1 hour)
 
 **Temporal Component Matching:**
-- `sameDay(T)` - Same calendar day as specified temporal
-- `sameMonth(T)` - Same month as specified temporal
-- `sameYear(T)` - Same year as specified temporal
-- `dayOfWeek(DayOfWeek)` - Must be specific day of week (MONDAY, TUESDAY, etc.)
-- `dayOfWeekIn(Set<DayOfWeek>)` - Must be one of specified days of week
-- `month(Month)` - Must be specific month (JANUARY, FEBRUARY, etc.) [RENAMED from monthOfYear]
+- `day(DayOfWeek)` - Must be specific day of week (MONDAY, TUESDAY, etc.)
+- `dayIn(Set<DayOfWeek>)` - Must be one of specified days of week
+- `weekday()` - Monday to Friday
+- `weekend()` - Saturday or Sunday
+- `month(Month)` - Must be specific month (JANUARY, FEBRUARY, etc.)
 - `monthIn(Set<Month>)` - Must be one of specified months
 
 **Calendar Constraints:**
-- `businessDay()` - Monday through Friday (not weekend)
-- `weekday()` - Alias for businessDay() [NEW]
-- `weekend()` - Saturday or Sunday
 - `dayOfMonth(int)` - Specific day of month (1-31, validated)
 - `dayOfMonthIn(Set<Integer>)` - One of specified days of month
 - `quarter(int)` - Specific quarter (1-4, validated)
-- `quarterIn(Set<Integer>)` - One of specified quarters [NEW]
+- `quarterIn(Set<Integer>)` - One of specified quarters
 
 ---
 
