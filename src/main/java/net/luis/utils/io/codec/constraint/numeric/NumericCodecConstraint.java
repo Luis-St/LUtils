@@ -16,21 +16,28 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-package net.luis.utils.io.codec.constraint;
+package net.luis.utils.io.codec.constraint.numeric;
 
 import net.luis.utils.io.codec.Codec;
+import net.luis.utils.io.codec.constraint.CodecConstraint;
+import net.luis.utils.io.codec.constraint.ComparableConstraint;
 import org.jetbrains.annotations.NotNull;
+import org.jspecify.annotations.NonNull;
 
-/**
- *
- * @author Luis-St
- *
- * @param <T> The type being constrained
- * @param <C> The codec type
- * @param <V> The type of the constraint configuration
- */
-@FunctionalInterface
-public interface CodecConstraint<T, C extends Codec<T>, V> {
+public interface NumericCodecConstraint<T extends Number & Comparable<T>, C extends Codec<T>, V> extends CodecConstraint<T, C, V>, ComparableConstraint<T, C> {
 	
-	@NotNull C applyConstraint(@NotNull V config);
+	@Override
+	@NonNull C applyConstraint(@NonNull V config);
+	
+	@NotNull C positive();
+	
+	@NotNull C negative();
+	
+	@NotNull C nonNegative();
+	
+	@NotNull C nonPositive();
+	
+	@NotNull C zero();
+	
+	@NotNull C nonZero();
 }

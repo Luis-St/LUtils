@@ -100,13 +100,6 @@
 - `notNaN()` - Not NaN (Float/Double)
 - `integral()` - No fractional part (e.g., 5 or 5.0 valid, 5.1 invalid)
 
-**Number Format Constraints:**
-- `binaryFormat()` - Valid binary string representation (for String to Number parsing)
-- `octalFormat()` - Valid octal string representation
-- `decimalFormat()` - Valid decimal string representation
-- `hexFormat()` - Valid hexadecimal string representation
-- `inBase(int)` - Valid representation in specified base (2-36)
-
 ---
 
 ### 5. CodecPatternConstraint
@@ -174,7 +167,7 @@
 **Key Constraints:**
 - `requiredKeys(Set<K>)` - Must contain these keys
 - `forbiddenKeys(Set<K>)` - Must not contain these keys
-- `allowOnlyKeys(Set<K>)` - Only these keys allowed
+- `allowedOnlyKeys(Set<K>)` - Only these keys allowed
 
 ---
 

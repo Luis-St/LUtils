@@ -27,6 +27,7 @@ module net.luis.utils {
 	requires org.jetbrains.annotations;
 	requires com.google.common;
 	requires org.apache.commons.lang3;
+	requires org.jspecify;
 	
 	exports net.luis.utils.annotation;
 	exports net.luis.utils.annotation.type;
@@ -45,6 +46,10 @@ module net.luis.utils {
 	
 	exports net.luis.utils.io.codec;
 	exports net.luis.utils.io.codec.constraint;
+	exports net.luis.utils.io.codec.constraint.config;
+	exports net.luis.utils.io.codec.constraint.config.temporal;
+	exports net.luis.utils.io.codec.constraint.numeric;
+	exports net.luis.utils.io.codec.constraint.temporal;
 	exports net.luis.utils.io.codec.decoder;
 	exports net.luis.utils.io.codec.encoder;
 	exports net.luis.utils.io.codec.function;

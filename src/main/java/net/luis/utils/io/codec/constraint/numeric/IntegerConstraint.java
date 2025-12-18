@@ -16,21 +16,24 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-package net.luis.utils.io.codec.constraint;
+package net.luis.utils.io.codec.constraint.numeric;
 
 import net.luis.utils.io.codec.Codec;
 import org.jetbrains.annotations.NotNull;
 
-/**
- *
- * @author Luis-St
- *
- * @param <T> The type being constrained
- * @param <C> The codec type
- * @param <V> The type of the constraint configuration
- */
-@FunctionalInterface
-public interface CodecConstraint<T, C extends Codec<T>, V> {
+public interface IntegerConstraint<T extends Number & Comparable<T>, C extends Codec<T>, V> extends NumericCodecConstraint<T, C, V> {
 	
-	@NotNull C applyConstraint(@NotNull V config);
+	@NotNull C even();
+	
+	@NotNull C odd();
+	
+	@NotNull C divisibleBy(long divisor);
+	
+	@NotNull C notDivisibleBy(long divisor);
+	
+	@NotNull C multipleOf(long divisor);
+	
+	@NotNull C powerOfTwo();
+	
+	@NotNull C powerOf(int base);
 }
