@@ -19,6 +19,8 @@
 package net.luis.utils.io.codec.constraint.temporal;
 
 import net.luis.utils.io.codec.Codec;
+import net.luis.utils.io.codec.constraint.CodecConstraint;
+import net.luis.utils.io.codec.constraint.config.temporal.MonthConstraintConfig;
 import net.luis.utils.util.Utils;
 import org.jetbrains.annotations.NotNull;
 import org.jspecify.annotations.NonNull;
@@ -28,32 +30,45 @@ import java.time.temporal.Temporal;
 import java.util.*;
 
 @FunctionalInterface
-public interface MonthConstraint<T extends Temporal & Comparable<T>, C extends Codec<T>> {
+public interface MonthConstraint<T extends Temporal & Comparable<T>, C> extends CodecConstraint<T, C, MonthConstraintConfig> {
 	
-	Map<Integer, List<Month>> MONTHS_BY_QUARTER = Utils.make(new HashMap<>(), map -> {
-		map.put(1, List.of(Month.JANUARY, Month.FEBRUARY, Month.MARCH));
-		map.put(2, List.of(Month.APRIL, Month.MAY, Month.JUNE));
-		map.put(3, List.of(Month.JULY, Month.AUGUST, Month.SEPTEMBER));
-		map.put(4, List.of(Month.OCTOBER, Month.NOVEMBER, Month.DECEMBER));
+	Map<Integer, Set<Month>> MONTHS_BY_QUARTER = Utils.make(new HashMap<>(), map -> {
+		map.put(1, Set.of(Month.JANUARY, Month.FEBRUARY, Month.MARCH));
+		map.put(2, Set.of(Month.APRIL, Month.MAY, Month.JUNE));
+		map.put(3, Set.of(Month.JULY, Month.AUGUST, Month.SEPTEMBER));
+		map.put(4, Set.of(Month.OCTOBER, Month.NOVEMBER, Month.DECEMBER));
 	});
 	
-	static <T extends Temporal & Comparable<T>, C extends Codec<T>> @NonNull MonthConstraint<T, C> of(@NotNull TemporalConstraint<T, C> parent) {
+	static <T extends Temporal & Comparable<T>, C extends Codec<T>> @NonNull MonthConstraint<T, C> of(@NotNull TemporalConstraint<T, C> temporalConstraint) {
+		Objects.requireNonNull(temporalConstraint, "Temporal constraint must not be null");
+		
 		return new MonthConstraint<>() {
 			@Override
-			public @NotNull TemporalConstraint<T, C> parent() {
-				return parent;
+			public @NonNull C applyConstraint(@NonNull MonthConstraintConfig config) {
+				return null;
 			}
 		};
 	}
 	
-	@NotNull TemporalConstraint<T, C> parent();
+	@Override
+	@NonNull C applyConstraint(@NonNull MonthConstraintConfig config);
 	
 	default @NotNull C equalTo(@NotNull Month month) {
-		return null;
+		return this.applyConstraint(new MonthConstraintConfig(
+			Optional.of(month),
+			Optional.of(false),
+			Optional.empty(),
+			Optional.empty()
+		));
 	}
 	
 	default @NotNull C notEqualTo(@NotNull Month month) {
-		return null;
+		return this.applyConstraint(new MonthConstraintConfig(
+			Optional.of(month),
+			Optional.of(true),
+			Optional.empty(),
+			Optional.empty()
+		));
 	}
 	
 	default @NotNull C in(Month @NotNull ... months) {
@@ -61,7 +76,12 @@ public interface MonthConstraint<T extends Temporal & Comparable<T>, C extends C
 	}
 	
 	default @NotNull C in(@NotNull Set<Month> months) {
-		return null;
+		return this.applyConstraint(new MonthConstraintConfig(
+			Optional.empty(),
+			Optional.empty(),
+			Optional.of(months),
+			Optional.empty()
+		));
 	}
 	
 	default @NotNull C notIn(Month @NotNull ... months) {
@@ -69,42 +89,33 @@ public interface MonthConstraint<T extends Temporal & Comparable<T>, C extends C
 	}
 	
 	default @NotNull C notIn(@NotNull Set<Month> months) {
-		return null;
+		return this.applyConstraint(new MonthConstraintConfig(
+			Optional.empty(),
+			Optional.empty(),
+			Optional.empty(),
+			Optional.of(months)
+		));
 	}
 	
 	default @NotNull C quarter(int quarter) {
-		return null;
+		if (quarter < 1 || quarter > 4) {
+			throw new IllegalArgumentException("Quarter must be between 1 and 4");
+		}
+		return this.in(MONTHS_BY_QUARTER.get(quarter));
 	}
 	
 	default @NotNull C notQuarter(int quarter) {
-		return null;
-	}
-	
-	default @NotNull C quarterIn(int @NotNull ... quarters) {
-		return this.quarterIn(new HashSet<>(Arrays.stream(quarters).boxed().toList()));
-	}
-	
-	default @NotNull C quarterIn(@NotNull Set<Integer> quarters) {
-		if (quarters.isEmpty()) {
-			throw new IllegalArgumentException("Quarters set must not be empty");
+		if (quarter < 1 || quarter > 4) {
+			throw new IllegalArgumentException("Quarter must be between 1 and 4");
 		}
-		
-		Set<Month> months = EnumSet.noneOf(Month.class);
-		for (int quarter : quarters) {
-			List<Month> quarterMonths = MONTHS_BY_QUARTER.get(quarter);
-			if (quarterMonths == null) {
-				throw new IllegalArgumentException("Invalid quarter: " + quarter);
-			}
-			months.addAll(quarterMonths);
-		}
-		return this.in(months);
+		return this.notIn(MONTHS_BY_QUARTER.get(quarter));
 	}
 	
 	default @NotNull C firstHalf() {
-		return this.quarterIn(1, 2);
+		return this.in(Month.JANUARY, Month.FEBRUARY, Month.MARCH, Month.APRIL, Month.MAY, Month.JUNE);
 	}
 	
 	default @NotNull C secondHalf() {
-		return this.quarterIn(3, 4);
+		return this.in(Month.JULY, Month.AUGUST, Month.SEPTEMBER, Month.OCTOBER, Month.NOVEMBER, Month.DECEMBER);
 	}
 }

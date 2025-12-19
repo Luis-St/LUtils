@@ -19,48 +19,83 @@
 package net.luis.utils.io.codec.constraint.temporal;
 
 import net.luis.utils.io.codec.Codec;
-import net.luis.utils.io.codec.constraint.ComparableConstraint;
+import net.luis.utils.io.codec.constraint.CodecConstraint;
+import net.luis.utils.io.codec.constraint.config.temporal.WeekConstraintConfig;
+import net.luis.utils.util.Pair;
 import org.jetbrains.annotations.NotNull;
 import org.jspecify.annotations.NonNull;
 
 import java.time.temporal.Temporal;
-import java.util.Set;
+import java.util.*;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 @FunctionalInterface
-public interface WeekConstraint<T extends Temporal & Comparable<T>, C extends Codec<T>> {
+public interface WeekConstraint<T extends Temporal & Comparable<T>, C> extends CodecConstraint<T, C, WeekConstraintConfig> {
 	
-	static <T extends Temporal & Comparable<T>, C extends Codec<T>> @NonNull WeekConstraint<T, C> of(@NotNull TemporalConstraint<T, C> parent) {
+	static <T extends Temporal & Comparable<T>, C extends Codec<T>> @NonNull WeekConstraint<T, C> of(@NotNull TemporalConstraint<T, C> temporalConstraint) {
+		Objects.requireNonNull(temporalConstraint, "Temporal constraint must not be null");
+		
 		return new WeekConstraint<>() {
 			@Override
-			public @NotNull TemporalConstraint<T, C> parent() {
-				return parent;
+			public @NonNull C applyConstraint(@NonNull WeekConstraintConfig config) {
+				return null;
 			}
 		};
 	}
 	
-	@NotNull TemporalConstraint<T, C> parent();
+	@Override
+	@NonNull C applyConstraint(@NonNull WeekConstraintConfig config);
 	
 	default @NotNull C equalTo(@NotNull WeekType type, int week) {
-		return null;
+		return this.applyConstraint(new WeekConstraintConfig(
+			Optional.of(Pair.of(type, week)),
+			Optional.of(false),
+			Optional.empty(),
+			Optional.empty()
+		));
 	}
 	
 	default @NotNull C notEqualTo(@NotNull WeekType type, int week) {
-		return null;
+		return this.applyConstraint(new WeekConstraintConfig(
+			Optional.of(Pair.of(type, week)),
+			Optional.of(true),
+			Optional.empty(),
+			Optional.empty()
+		));
 	}
 	
 	default @NotNull C in(@NotNull WeekType type, int @NotNull ... weeks) {
-		return null;
+		return this.in(type, IntStream.of(weeks).boxed().collect(Collectors.toSet()));
 	}
 	
 	default @NotNull C in(@NotNull WeekType type, @NotNull Set<Integer> weeks) {
-		return null;
+		return this.applyConstraint(new WeekConstraintConfig(
+			Optional.empty(),
+			Optional.empty(),
+			Optional.of(Pair.of(type, weeks)),
+			Optional.empty()
+		));
+	}
+	
+	default @NotNull C notIn(@NotNull WeekType type, int @NotNull ... weeks) {
+		return this.notIn(type, IntStream.of(weeks).boxed().collect(Collectors.toSet()));
+	}
+	
+	default @NotNull C notIn(@NotNull WeekType type, @NotNull Set<Integer> weeks) {
+		return this.applyConstraint(new WeekConstraintConfig(
+			Optional.empty(),
+			Optional.empty(),
+			Optional.empty(),
+			Optional.of(Pair.of(type, weeks))
+		));
 	}
 	
 	default @NotNull C first(@NotNull WeekType type) {
-		return null;
+		return this.equalTo(type, 1);
 	}
 	
 	default @NotNull C last(@NotNull WeekType type) {
-		return null;
+		return this.equalTo(type, type.getLast());
 	}
 }

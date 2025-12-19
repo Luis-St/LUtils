@@ -18,7 +18,6 @@
 
 package net.luis.utils.io.codec.constraint;
 
-import net.luis.utils.io.codec.Codec;
 import org.jetbrains.annotations.NotNull;
 
 /**
@@ -26,11 +25,11 @@ import org.jetbrains.annotations.NotNull;
  * @author Luis-St
  *
  * @param <T> The type being constrained
- * @param <C> The codec type
+ * @param <C> The return type of the constraint method (most likely a Codec)
  * @param <V> The type of the constraint configuration
  */
 @FunctionalInterface
-public interface CodecConstraint<T, C extends Codec<T>, V> {
+public interface CodecConstraint<T, C, V> {
 	
 	@NotNull C applyConstraint(@NotNull V config);
 }

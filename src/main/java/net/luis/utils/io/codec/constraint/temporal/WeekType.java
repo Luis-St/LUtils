@@ -8,6 +8,16 @@ package net.luis.utils.io.codec.constraint.temporal;
 
 public enum WeekType {
 	
-	WEEK_OF_MONTH,
-	WEEK_OF_YEAR;
+	WEEK_OF_MONTH(4),
+	WEEK_OF_YEAR(52);
+	
+	private final int last;
+	
+	WeekType(int last) {
+		this.last = last;
+	}
+	
+	public int getLast() {
+		return this.last;
+	}
 }

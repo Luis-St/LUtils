@@ -36,7 +36,7 @@
 - `afterOrEqual(T)` - Must be after or equal to specified time
 - `before(T)` - Must be before specified time (exclusive)
 - `beforeOrEqual(T)` - Must be before or equal to specified time
-- `betweenInclusiv(T, T)` - Must be within time range (inclusive)
+- `between(T, T)` - Must be within time range (inclusive)
 - `betweenExclusive(T, T)` - Must be within time range (exclusive)
 - `equalTo(T)` - Must be equal to specified time
 - `notEqualTo(T)` - Must not be equal to specified time
@@ -46,18 +46,24 @@
 - `pastOrPresent()` - Must be in the past or now
 - `future()` - Must be in the future (after now)
 - `futureOrPresent()` - Must be in the future or now
+- `today()` - Same day as today [NEW]
+- `thisMonth()` - Same month as this month [NEW]
+- `thisYear()` - Same year as this year [NEW]
 - `withinLast(Duration/Period)` - Within last X time (e.g., within last 7 days, within last 2 hours)
 - `withinNext(Duration/Period)` - Within next X time (e.g., within next 30 days, within next 1 hour)
 
 **Temporal Component Matching:**
+- `sameDay(T)` - Same calendar day as specified temporal
+- `sameMonth(T)` - Same month as specified temporal
+- `sameYear(T)` - Same year as specified temporal
 - `day(DayOfWeek)` - Must be specific day of week (MONDAY, TUESDAY, etc.)
 - `dayIn(Set<DayOfWeek>)` - Must be one of specified days of week
-- `weekday()` - Monday to Friday
-- `weekend()` - Saturday or Sunday
 - `month(Month)` - Must be specific month (JANUARY, FEBRUARY, etc.)
 - `monthIn(Set<Month>)` - Must be one of specified months
 
 **Calendar Constraints:**
+- `weekday()` - Alias for businessDay()
+- `weekend()` - Saturday or Sunday
 - `dayOfMonth(int)` - Specific day of month (1-31, validated)
 - `dayOfMonthIn(Set<Integer>)` - One of specified days of month
 - `quarter(int)` - Specific quarter (1-4, validated)
@@ -87,12 +93,10 @@
 - `nonZero()` - Must be != 0
 
 **Integer-Specific (for Byte, Short, Integer, Long, BigInteger):**
-- `even()` - Must be even (divisible by 2) [NEW]
-- `odd()` - Must be odd (not divisible by 2) [NEW]
+- `even()` - Must be even (divisible by 2)
+- `odd()` - Must be odd (not divisible by 2)
 - `divisibleBy(long)` - Divisible by specified number
 - `notDivisibleBy(long)` - Not divisible by specified number
-- `multipleOf(long)` - Alias for divisibleBy [NEW]
-- `powerOfTwo()` - Power of 2 (1, 2, 4, 8, 16, 32, ...)
 - `powerOf(int base)` - Power of specified base (base must be > 1, validated)
 
 **Decimal-Specific (for Float, Double, BigDecimal):**
@@ -102,14 +106,21 @@
 - `scale(int)` - Exact number of decimal places
 - `minScale(int)` - Minimum number of decimal places
 - `maxScale(int)` - Maximum number of decimal places
-- `scaleBetween(int min, int max)` - Scale within range [NEW]
+- `scaleBetween(int min, int max)` - Scale within range
 - `finite()` - Not infinity (Float/Double)
 - `notNaN()` - Not NaN (Float/Double)
 - `integral()` - No fractional part (e.g., 5 or 5.0 valid, 5.1 invalid)
 
 **Common Value Constraints:**
-- `percentage()` - Between 0 and 100 (inclusive) [NEW]
-- `normalized()` - Between 0.0 and 1.0 (inclusive) [NEW - for Float/Double/BigDecimal]
+- `percentage()` - Between 0 and 100 (inclusive)
+- `normalized()` - Between 0.0 and 1.0 (inclusive)
+
+**Number Format Constraints:**
+- `binaryFormat()` - Valid binary number (only 0s and 1s)
+- `octalFormat()` - Valid octal number (digits 0-7)
+- `decimalFormat()` - Valid decimal number (0-9)
+- `hexFormat()` - Valid hexadecimal number (0-9, A-F, a-f)
+- `inBase(int)` - Valid representation in specified base (2-36, validated)
 
 ---
 
@@ -118,22 +129,22 @@
 
 **Pattern Matching:**
 - `matches(Pattern)` - Match compiled pattern
-- `matchesRegex(String)` - Match regex string (compiled internally) [NEW]
+- `matchesRegex(String)` - Match regex string (compiled internally)
 - `notMatches(Pattern)` - Must not match compiled pattern
-- `notMatchesRegex(String)` - Must not match regex string [NEW]
+- `notMatchesRegex(String)` - Must not match regex string
 
 **Common Patterns:**
-- `numeric()` - Only digits [NEW]
+- `numeric()` - Only digits
 - `alphabetic()` - Letters only
 - `alphanumeric()` - Letters and digits only
-- `hexadecimal()` - Valid hexadecimal string (0-9, A-F, a-f) [NEW]
+- `hexadecimal()` - Valid hexadecimal string (0-9, A-F, a-f)
 - `base64()` - Valid base64 string
-- `email()` - Basic email pattern [NEW - note: basic validation only]
-- `uuid()` - UUID format pattern [NEW]
-- `ipv4Address()` - IPv4 address format [NEW]
-- `ipv6Address()` - IPv6 address format [NEW]
+- `email()` - Basic email pattern
+- `uuid()` - UUID format pattern
+- `ipv4Address()` - IPv4 address format
+- `ipv6Address()` - IPv6 address format
 
-**Number Format Constraints:** [MOVED from CodecNumericConstraint]
+**Number Format Constraints:**
 - `binaryFormat()` - Valid binary string representation (for String to Number parsing)
 - `octalFormat()` - Valid octal string representation
 - `decimalFormat()` - Valid decimal string representation
@@ -142,30 +153,29 @@
 
 **String Content:**
 - `startsWith(String)` - Starts with prefix
-- `notStartsWith(String)` - Does not start with prefix [NEW]
-- `startsWithAny(String...)` - Starts with any of the prefixes [NEW]
+- `notStartsWith(String)` - Does not start with prefix
+- `startsWithAny(String...)` - Starts with any of the prefixes
 - `endsWith(String)` - Ends with suffix
-- `notEndsWith(String)` - Does not end with suffix [NEW]
-- `endsWithAny(String...)` - Ends with any of the suffixes [NEW]
+- `notEndsWith(String)` - Does not end with suffix
+- `endsWithAny(String...)` - Ends with any of the suffixes
 - `contains(String)` - Contains substring
 - `notContains(String)` - Does not contain substring
 - `containsAny(String...)` - Contains any of the substrings
 - `containsAll(String...)` - Contains all substrings
-- `containsNone(String...)` - Contains none of the substrings [NEW]
+- `containsNone(String...)` - Contains none of the substrings
 
 **Case Constraints:**
-- `caseIs(CaseType)` - Specific case type (UPPER_CASE, LOWER_CASE, TITLE_CASE, CAMEL_CASE, PASCAL_CASE, SNAKE_CASE, KEBAB_CASE) (chainable) [RENAMED from is]
-- `caseNot(CaseType)` - Not specific case type (chainable) [RENAMED from not]
+- `isCase(CaseType)` - Specific case type (UPPER_CASE, LOWER_CASE, TITLE_CASE, CAMEL_CASE, PASCAL_CASE, SNAKE_CASE, KEBAB_CASE) (chainable)
+- `IsNotCase(CaseType)` - Not specific case type (chainable)
 
 **Character Constraints:**
 - `noWhitespace()` - No whitespace characters
 - `trimmed()` - No leading/trailing whitespace
-- `blank()` - Whitespace-only string (or empty) [NEW]
-- `notBlank()` - Not whitespace-only (contains non-whitespace) [NEW]
+- `blank()` - Whitespace-only string (or empty)
+- `notBlank()` - Not whitespace-only (contains non-whitespace)
 - `singleLine()` - No line breaks
 - `ascii()` - Only ASCII characters (0-127)
-- `latin1()` - Only Latin-1 characters (0-255) [NEW]
-- `printable()` - Only printable characters (no control characters) [NEW]
+- `latin1()` - Only Latin-1 characters (0-255)
 
 ---
 
@@ -173,12 +183,12 @@
 **Applies to:** Duration, Period
 
 **Range Constraints:**
-- `greaterThan(T)` - Greater than specified duration (exclusive) [RENAMED from longerThan]
-- `greaterThanOrEqual(T)` - Greater than or equal to specified duration (inclusive) [RENAMED from longerThanOrEqual]
-- `lessThan(T)` - Less than specified duration (exclusive) [RENAMED from shorterThan]
-- `lessThanOrEqual(T)` - Less than or equal to specified duration (inclusive) [RENAMED from shorterThanOrEqual]
+- `greaterThan(T)` - Greater than specified duration (exclusive)
+- `greaterThanOrEqual(T)` - Greater than or equal to specified duration (inclusive) 
+- `lessThan(T)` - Less than specified duration (exclusive)
+- `lessThanOrEqual(T)` - Less than or equal to specified duration (inclusive)
 - `between(T, T)` - Within duration range (inclusive)
-- `betweenExclusive(T, T)` - Within duration range (exclusive) [NEW]
+- `betweenExclusive(T, T)` - Within duration range (exclusive)
 - `exactDuration(T)` - Exact duration match
 
 **Sign Constraints:**
@@ -190,21 +200,21 @@
 - `nonZero()` - Not zero duration
 
 **Unit-Based Constraints:**
-- `unitMax(ChronoUnit unit, long value)` - Maximum value in specified unit [RENAMED from max]
+- `unitMax(ChronoUnit unit, long value)` - Maximum value in specified unit
   - Duration: DAYS, HOURS, MINUTES, SECONDS, MILLIS, NANOS, etc.
   - Period: YEARS, MONTHS, DAYS
   - (chainable)
-- `unitMin(ChronoUnit unit, long value)` - Minimum value in specified unit [RENAMED from min]
+- `unitMin(ChronoUnit unit, long value)` - Minimum value in specified unit
   - Same units as above
   - (chainable)
-- `unitExact(ChronoUnit unit, long value)` - Exact value in specified unit [RENAMED from exact]
+- `unitExact(ChronoUnit unit, long value)` - Exact value in specified unit
   - Same units as above
   - (chainable)
-- `unitBetween(ChronoUnit unit, long min, long max)` - Value range in specified unit [RENAMED from between to avoid overload conflict]
+- `unitBetween(ChronoUnit unit, long min, long max)` - Value range in specified unit
   - Same units as above
   - (chainable)
 
-**Common Duration Helpers:** [NEW]
+**Common Duration Helpers:**
 - `withinDay()` - Duration <= 24 hours
 - `withinWeek()` - Duration <= 7 days
 - `normalized()` - Duration/Period in normalized form
@@ -217,23 +227,17 @@
 **Applies to:** Map
 
 **Key Constraints:**
-- `requireKey(K)` - Must contain this key [NEW - singular]
-- `requiredKeys(K...)` - Must contain these keys (varargs) [NEW overload]
+- `requireKey(K)` - Must contain this key
+- `requiredKeys(K...)` - Must contain these keys (varargs)
 - `requiredKeys(Set<K>)` - Must contain these keys
-- `forbidKey(K)` - Must not contain this key [NEW - singular]
-- `forbiddenKeys(K...)` - Must not contain these keys (varargs) [NEW overload]
+- `forbidKey(K)` - Must not contain this key
+- `forbiddenKeys(K...)` - Must not contain these keys (varargs)
 - `forbiddenKeys(Set<K>)` - Must not contain these keys
-- `allowOnlyKeys(K...)` - Only these keys allowed (varargs) [NEW overload]
+- `allowOnlyKeys(K...)` - Only these keys allowed (varargs)
 - `allowOnlyKeys(Set<K>)` - Only these keys allowed
 
-**Value Constraints:** [NEW section]
-- `allValuesMatch(Predicate<V>)` - All values satisfy predicate
-- `noValuesMatch(Predicate<V>)` - No values satisfy predicate
-
-**Key Pattern Constraints (for String keys):** [NEW section]
+**Key Pattern Constraints (for String keys):**
 - `keysMatch(Pattern)` - All keys match pattern
-
-**NOTE:** For size constraints on Maps, use CodecSizeConstraint methods (minSize, maxSize, etc.)
 
 ---
 
@@ -243,27 +247,27 @@
 **IP Constraints (InetAddress):**
 - `ipv4()` - Only IPv4 addresses
 - `ipv6()` - Only IPv6 addresses
-- `ipVersion(int)` - Specific IP version (4 or 6) [NEW]
+- `ipVersion(int)` - Specific IP version (4 or 6)
 - `publicIP()` - Not private/loopback/link-local
 - `privateIP()` - Private IP range
 - `notLoopback()` - Not loopback address
 - `notLinkLocal()` - Not link-local address
 - `multicast()` - Multicast address
-- `global()` - Global unicast addresses [NEW]
+- `global()` - Global unicast addresses
 - `inSubnet(String)` - Within specified subnet (CIDR notation)
-- `inAnySubnet(Set<String>)` - Within any of specified subnets (CIDR notation) [FIXED typo from ìnAnySubnet]
-- `notInSubnet(String)` - Not within specified subnet [NEW]
-- `ipInRange(InetAddress, InetAddress)` - IP within range [NEW]
+- `inAnySubnet(Set<String>)` - Within any of specified subnets (CIDR notation)
+- `notInSubnet(String)` - Not within specified subnet
+- `ipInRange(InetAddress, InetAddress)` - IP within range
 
-**Hostname Constraints (InetSocketAddress):** [NEW section]
+**Hostname Constraints (InetSocketAddress):**
 - `hasHostname()` - Has hostname (not just IP)
 - `hostname(String)` - Specific hostname
 - `hostnameMatches(Pattern)` - Hostname pattern
 
 **Port Constraints (InetSocketAddress):**
-- `port(int)` - Specific port number [NEW]
-- `notPort(int)` - Not specific port number [NEW]
-- `portIn(Set<Integer>)` - Port in specified set [RENAMED from anyPortOf]
+- `port(int)` - Specific port number
+- `notPort(int)` - Not specific port number
+- `portIn(Set<Integer>)` - Port in specified set
 - `portInRange(int, int)` - Port within range
 - `wellKnownPort()` - 0-1023
 - `registeredPort()` - 1024-49151
@@ -279,12 +283,11 @@
 
 **Scheme Constraints:**
 - `scheme(String)` - Specific scheme required (e.g., "http", "https", "ftp")
-- `notScheme(String)` - Exclude specific scheme [NEW]
+- `notScheme(String)` - Exclude specific scheme
 - `schemeIn(Set<String>)` - Scheme must be in set
-- `schemeNotIn(Set<String>)` - Scheme must not be in set [NEW]
+- `schemeNotIn(Set<String>)` - Scheme must not be in set
 - `schemeMatches(Pattern)` - Scheme matches regex pattern
-- `httpOrHttps()` - Scheme is http or https [NEW]
-- `secure()` - Uses secure scheme (https, ftps, wss, etc.) [NEW]
+- `secure()` - Uses secure scheme (https, ftps, wss, etc.)
 
 **Component Constraints:**
 - `has(URIComponent)` - Component must be present (e.g., HOST, PORT, PATH, QUERY, FRAGMENT, USER_INFO) (chainable)
@@ -309,7 +312,7 @@
 - `domainName()` - Host is domain name (not IP address)
 - `localhost()` - Must be localhost
 - `rootDomain()` - Host is root domain (e.g., "example.com" but not "sub.example.com")
-- `subdomainOf(String)` - Host is subdomain of given domain (e.g., subdomainOf("example.com") matches "sub.example.com", "api.example.com") [FIXED description]
+- `subdomainOf(String)` - Host is subdomain of given domain (e.g., subdomainOf("example.com") matches "sub.example.com", "api.example.com")
 
 **Port Constraints:**
 - `port(int)` - Specific port number
@@ -319,20 +322,29 @@
 - `registeredPort()` - Port 1024-49151
 - `dynamicPort()` - Port 49152-65535
 
+**Path Constraints:** [NEW section]
+- `path(String)` - Specific path
+- `pathMatches(Pattern)` - Path matches regex pattern
+- `pathNotMatches(Pattern)` - Path does not match regex pattern
+- `pathStartsWith(String)` - Path starts with prefix
+- `pathNotStartsWith(String)` - Path does not start with prefix
+- `pathEndsWith(String)` - Path ends with suffix
+- `pathNotEndsWith(String)` - Path does not end with suffix
+- `containsPathSegment(String)` - Contains specific path segment
+- `notContainsPathSegment(String)` - Does not contain specific path segment
+- `pathSegments(int)` - Specific number of path segments
+- `minPathSegments(int)` - Minimum number of path segments
+- `maxPathSegments(int)` - Maximum number of path segments
+- `pathSegmentsInRange(int, int)` - Number of path segments within range
+- `pathSegmentAt(int, String)` - Specific segment at index
+- `pathSegmentAtMatches(int, Pattern)` - Segment at index matches pattern
+
 **Query Constraints:**
 - `hasQueryParameter(String)` - Has query parameter (any value) (chainable)
-- `hasAnyQueryParameter(Set<String>)` - Has any query parameter from set [RENAMED from anyQueryParameterOf]
-- `queryParameter(String key, String value)` - Specific key-value pair [NEW]
-- `queryParameterIn(String key, Set<String>)` - Parameter value in set [NEW]
-- `queryParameterMatches(String key, Pattern)` - Parameter value pattern [NEW]
-
-**Path Constraints:** [NEW section]
-- `pathSegments(int)` - Specific number of path segments
-- `pathSegmentAt(int, String)` - Specific segment at index
-
-**Authority Constraints:** [NEW section]
-- `authority(String)` - Specific authority section
-- `authorityMatches(Pattern)` - Authority pattern
+- `hasAnyQueryParameter(Set<String>)` - Has any query parameter from set
+- `queryParameter(String key, String value)` - Specific key-value pair
+- `queryParameterIn(String key, Set<String>)` - Parameter value in set
+- `queryParameterMatches(String key, Pattern)` - Parameter value pattern
 
 **URI Type Constraints:**
 - `absolute()` - Absolute URI (has scheme)
@@ -354,7 +366,7 @@
 
 **Structure Constraints:**
 - `depth(int)` - Specific depth level (number of path components)
-- `depthBetween(int, int)` - Depth within range [NEW]
+- `depthBetween(int, int)` - Depth within range
 - `maxDepth(int)` - Maximum depth level
 - `minDepth(int)` - Minimum depth level
 - `root(String)` - Specific root path (e.g., "/", "C:\\", "/dev/")
@@ -367,32 +379,32 @@
 - `matches(PathComponent, Pattern)` - Regex match for a path component
 - `contains(PathComponent, String)` - Path component contains substring
 
-**Filename Constraints:** [NEW section]
+**Filename Constraints:**
 - `filename(String)` - Specific filename
 - `filenameMatches(Pattern)` - Filename pattern
 - `filenameStartsWith(String)` - Filename prefix
 - `filenameEndsWith(String)` - Filename suffix (excluding extension)
 
 **Extension Constraints:**
-- `extension(String)` - Specific extension (e.g., "txt", "java") [NEW]
-- `extensionIn(Set<String>)` - Extension in set [NEW]
-- `extensionMatches(Pattern)` - Extension pattern [NEW]
-- `hasExtension()` - Has any extension [NEW]
+- `extension(String)` - Specific extension (e.g., "txt", "java")
+- `extensionIn(Set<String>)` - Extension in set
+- `extensionMatches(Pattern)` - Extension pattern
+- `hasExtension()` - Has any extension
 - `noExtension()` - No file extension
 
 **Path Matching:** [NEW section]
 - `glob(String)` - Path matches glob pattern (e.g., "*.txt", "**/test/*.java")
 - `pathStartsWith(Path)` - Path starts with another path
 - `pathEndsWith(Path)` - Path ends with another path
-- `ancestorOf(Path)` - This path is ancestor of given path
-- `descendantOf(Path)` - This path is descendant of given path
+- `ancestorOf(Path)` - This path is ancestor of given path (e.g "/a/b" is ancestor of "/a/b/c/d")
+- `descendantOf(Path)` - This path is descendant of given path (e.g "/a/b/c/d" is descendant of "/a/b")
 
 **Platform Constraints:**
 - `validFor(Platform)` - Valid for platform (Platform: CURRENT, UNIX, LINUX, WINDOWS, MAC)
 - `portable()` - Valid for all platforms (no platform-specific chars)
 - `separators(Platform)` - Uses specific path separators (e.g., Platform.WINDOWS uses "\\", Platform.UNIX uses "/")
 
-**Special Path Constraints:** [NEW section]
+**Special Path Constraints:**
 - `hidden()` - Path represents hidden file (starts with "." on Unix, hidden attribute on Windows)
 - `temporary()` - In system temp directory
 
@@ -407,11 +419,11 @@
 **Applies to:** Character
 
 **Character Type:**
-- `charType(CharacterType)` - Specific character type [RENAMED from is]
+- `charType(CharacterType)` - Specific character type
   - CharacterType: LETTER, DIGIT, ALPHANUMERIC, PUNCTUATION (e.g., '.', ','), SYMBOL (e.g., '@', '#'), WHITESPACE, CONTROL (e.g., '\n', '\t')
-- `notCharType(CharacterType)` - Not specific character type [RENAMED from not]
+- `notCharType(CharacterType)` - Not specific character type
 
-**Character Type Helpers:** [NEW section]
+**Character Type Helpers:**
 - `letter()` - Is a letter
 - `digit()` - Is a digit
 - `alphanumeric()` - Is alphanumeric
@@ -419,35 +431,32 @@
 - `punctuation()` - Is punctuation
 - `symbol()` - Is a symbol
 - `control()` - Is a control character
-- `printable()` - Is printable (not control)
 
 **Case:**
-- `isCase(CaseType)` - Specific case [RENAMED from case]
+- `isCase(CaseType)` - Specific case
   - Supported cases: UPPER_CASE, LOWER_CASE
-- `upperCase()` - Is uppercase letter [NEW]
-- `lowerCase()` - Is lowercase letter [NEW]
+- `upperCase()` - Is uppercase letter
+- `lowerCase()` - Is lowercase letter
 
 **Range:**
 - `inRange(char, char)` - Within character range (inclusive)
-- `between(char, char)` - Alias for inRange [NEW]
-- `greaterThan(char)` - Character code greater than [NEW]
-- `lessThan(char)` - Character code less than [NEW]
+- `between(char, char)` - Alias for inRange
 - `ascii()` - ASCII character (0-127)
 - `extendedAscii()` - Extended ASCII (0-255)
-- `nonAscii()` - Non-ASCII Unicode character (> 127) [NEW - clarified from unicode]
+- `nonAscii()` - Non-ASCII Unicode character (> 127)
 
 **Specific Characters:**
-- `oneOf(char...)` - One of specified characters (varargs) [NEW overload]
+- `oneOf(char...)` - One of specified characters (varargs)
 - `oneOf(Set<Character>)` - One of specified characters
-- `notOneOf(char...)` - Not one of specified characters (varargs) [NEW overload]
+- `notOneOf(char...)` - Not one of specified characters (varargs)
 - `notOneOf(Set<Character>)` - Not one of specified characters
 
-**Special Character Helpers:** [NEW section]
+**Special Character Helpers:**
 - `newline()` - Is newline character ('\n')
 - `tab()` - Is tab character ('\t')
 - `space()` - Is space character (' ')
 
-**Unicode Categories:** [NEW section]
+**Unicode Categories:**
 - `unicodeCategory(Character.UnicodeBlock)` - Matches specific Unicode block
 - `unicodeCategoryIn(Set<Character.UnicodeBlock>)` - Unicode block in set
 
@@ -460,31 +469,18 @@
 - `version(int)` - Specific UUID version (1-8, validated)
 - `versionIn(Set<Integer>)` - Version in set
 - `version1()` - Time-based UUID
-- `version2()` - DCE Security UUID [NEW]
-- `version3()` - Name-based (MD5) UUID [NEW]
 - `version4()` - Random UUID
 - `version5()` - Name-based (SHA-1) UUID
-- `version6()` - Reordered time-based UUID [NEW]
 - `version7()` - Unix Epoch time-based UUID
-- `version8()` - Custom UUID [NEW]
 
 **Variant Constraints:**
-- `variant(UUIDVariant)` - Specific UUID variant [NEW]
+- `variant(UUIDVariant)` - Specific UUID variant
   - UUIDVariant: NCS, RFC_4122, MICROSOFT, RESERVED
-- `variantRFC4122()` - Standard RFC 4122 variant [NEW]
 
 **Special UUID Constraints:**
-- `nil()` - All zeros UUID (nil UUID) [RENAMED from empty]
-- `notNil()` - Not all zeros [RENAMED from notEmpty]
-- `max()` - All ones UUID (ffffffff-ffff-ffff-ffff-ffffffffffff) [NEW]
-
-**Timestamp Constraints (for time-based UUIDs):** [NEW section]
-- `timestampAfter(Instant)` - Timestamp after value (version 1, 6, 7)
-- `timestampBefore(Instant)` - Timestamp before value (version 1, 6, 7)
-- `timestampBetween(Instant, Instant)` - Timestamp within range (version 1, 6, 7)
-
-**Node Constraints (for version 1 UUIDs):** [NEW section]
-- `node(long)` - Specific node value (version 1)
+- `nil()` - All zeros UUID (nil UUID)
+- `notNil()` - Not all zeros
+- `max()` - All ones UUID (ffffffff-ffff-ffff-ffff-ffffffffffff)
 
 ---
 
@@ -495,97 +491,57 @@
 - `hasLanguage()` - Has language component
 - `language(String)` - Specific language code (ISO 639)
 - `languageIn(Set<String>)` - Language in set
-- `notLanguage(String)` - Not specific language [NEW]
-- `languageNotIn(Set<String>)` - Language not in set [NEW]
+- `notLanguage(String)` - Not specific language
+- `languageNotIn(Set<String>)` - Language not in set
 
 **Country Constraints:**
 - `hasCountry()` - Has country component
 - `country(String)` - Specific country code (ISO 3166)
 - `countryIn(Set<String>)` - Country in set
-- `notCountry(String)` - Not specific country [NEW]
-- `countryNotIn(Set<String>)` - Country not in set [NEW]
-
-**Script Constraints:** [NEW section]
-- `hasScript()` - Has script component
-- `script(String)` - Specific script code (e.g., "Latn", "Cyrl", "Hans")
-- `scriptIn(Set<String>)` - Script in set
-
-**Variant Constraints:** [NEW section]
-- `hasVariant()` - Has variant component
-- `variant(String)` - Specific variant
-- `variantIn(Set<String>)` - Variant in set
-
-**Extension Constraints:** [NEW section]
-- `hasExtension(char)` - Has specific extension key
-- `extension(char, String)` - Specific extension key-value
-
-**Unicode Locale Extension:** [NEW section]
-- `hasUnicodeLocaleType(String)` - Has Unicode locale extension type
-- `unicodeLocaleType(String, String)` - Specific Unicode extension key-value
-
-**Locale Validation:** [NEW section]
-- `available()` - One of Locale.getAvailableLocales()
-- `wellFormed()` - Well-formed BCP 47 language tag
-- `iso639Language()` - Language is valid ISO 639 code
-- `iso3166Country()` - Country is valid ISO 3166 code
-
-**Locale Matching:** [NEW section]
-- `matches(Locale)` - Fuzzy match (language-country-script)
-- `languageMatches(Locale)` - Language matches (ignoring country/script/variant)
+- `notCountry(String)` - Not specific country
+- `countryNotIn(Set<String>)` - Country not in set
 
 ---
 
 ### 14. CodecZoneIdConstraint
 **Applies to:** ZoneId
-**Priority:** LOW
 
 **Zone Type Constraints:**
 - `normalized()` - Normalized zone ID
 - `regionBased()` - Region-based (e.g., "Europe/Paris")
 - `offsetBased()` - Offset-based (e.g., "+02:00")
-- `fixed()` - Fixed offset zone [NEW]
 - `utc()` - Must be UTC
-- `systemDefault()` - System default zone [NEW]
+- `systemDefault()` - System default zone
 
 **Zone Set Constraints:**
 - `zoneIn(Set<ZoneId>)` - Zone in set
-- `available()` - Zone ID is in ZoneId.getAvailableZoneIds() [NEW]
+- `available()` - Zone ID is in ZoneId.getAvailableZoneIds()
 
-**Region Constraints:** [NEW section]
+**Region Constraints:**
 - `region(String)` - Specific region (e.g., "Europe", "America")
 - `regionIn(Set<String>)` - Region in set
 - `regionMatches(Pattern)` - Region pattern
-
-**Daylight Saving Time:** [NEW section]
-- `hasFixedOffset()` - Zone has same offset for all times
-- `hasDST()` - Zone uses daylight saving time
-
-**Offset Constraints:**
-- `utcOffset(int)` - Fixed UTC offset hours (e.g., +5, -3) [NEW]
 
 ---
 
 ### 15. CodecZoneOffsetConstraint
 **Applies to:** ZoneOffset
-**Priority:** LOW
 
 **Comparison Constraints:**
-- `between(ZoneOffset, ZoneOffset)` - Offset within range (inclusive) [RENAMED from inRange]
-- `greaterThan(ZoneOffset)` - More positive offset [NEW]
-- `lessThan(ZoneOffset)` - More negative offset [NEW]
+- `between(ZoneOffset, ZoneOffset)` - Offset within range (inclusive)
+- `greaterThan(ZoneOffset)` - More positive offset
+- `lessThan(ZoneOffset)` - More negative offset
 
 **Sign Constraints:**
 - `utc()` - UTC offset (00:00)
-- `zero()` - Alias for utc() [NEW]
-- `nonZero()` - Not UTC [NEW]
+- `nonZero()` - Not UTC
 - `positive()` - Positive offset (east of UTC)
 - `negative()` - Negative offset (west of UTC)
 
 **Hour-Based Constraints:**
-- `hoursMin(int)` - Minimum offset in hours (>= value) [RENAMED from min for clarity]
-- `hoursMax(int)` - Maximum offset in hours (<= value) [RENAMED from max for clarity]
-- `hoursBetween(int, int)` - Offset hours within range [NEW]
-- `validOffset()` - Within valid range (-18 to +18 hours) [NEW]
+- `hoursMin(int)` - Minimum offset in hours (>= value)
+- `hoursMax(int)` - Maximum offset in hours (<= value)
+- `hoursBetween(int, int)` - Offset hours within range
 
 **NOTE:** ZoneId and ZoneOffset are now separate constraint interfaces (14 and 15) as they apply to different types with different concerns.
 

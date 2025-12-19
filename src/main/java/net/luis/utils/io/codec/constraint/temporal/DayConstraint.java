@@ -19,34 +19,48 @@
 package net.luis.utils.io.codec.constraint.temporal;
 
 import net.luis.utils.io.codec.Codec;
-import org.jetbrains.annotations.Contract;
+import net.luis.utils.io.codec.constraint.CodecConstraint;
+import net.luis.utils.io.codec.constraint.config.temporal.DayConstraintConfig;
 import org.jetbrains.annotations.NotNull;
 import org.jspecify.annotations.NonNull;
 
 import java.time.DayOfWeek;
 import java.time.temporal.Temporal;
-import java.util.Set;
+import java.util.*;
 
 @FunctionalInterface
-public interface DayConstraint<T extends Temporal & Comparable<T>, C extends Codec<T>> {
+public interface DayConstraint<T extends Temporal & Comparable<T>, C> extends CodecConstraint<T, C, DayConstraintConfig> {
 	
-	static <T extends Temporal & Comparable<T>, C extends Codec<T>> @NonNull DayConstraint<T, C> of(@NotNull TemporalConstraint<T, C> parent) {
+	static <T extends Temporal & Comparable<T>, C extends Codec<T>> @NonNull DayConstraint<T, C> of(@NotNull TemporalConstraint<T, C> temporalConstraint) {
+		Objects.requireNonNull(temporalConstraint, "Temporal constraint must not be null");
+		
 		return new DayConstraint<>() {
 			@Override
-			public @NotNull TemporalConstraint<T, C> parent() {
-				return parent;
+			public @NonNull C applyConstraint(@NonNull DayConstraintConfig config) {
+				return null;
 			}
 		};
 	}
 	
-	@NotNull TemporalConstraint<T, C> parent();
+	@Override
+	@NonNull C applyConstraint(@NonNull DayConstraintConfig config);
 	
 	default @NotNull C equalTo(@NotNull DayOfWeek day) {
-		return null;
+		return this.applyConstraint(new DayConstraintConfig(
+			Optional.of(day),
+			Optional.of(false),
+			Optional.empty(),
+			Optional.empty()
+		));
 	}
 	
 	default @NotNull C notEqualTo(@NotNull DayOfWeek day) {
-		return null;
+		return this.applyConstraint(new DayConstraintConfig(
+			Optional.of(day),
+			Optional.of(true),
+			Optional.empty(),
+			Optional.empty()
+		));
 	}
 	
 	default @NotNull C in(DayOfWeek @NotNull ... days) {
@@ -54,7 +68,12 @@ public interface DayConstraint<T extends Temporal & Comparable<T>, C extends Cod
 	}
 	
 	default @NotNull C in(@NotNull Set<DayOfWeek> days) {
-		return null;
+		return this.applyConstraint(new DayConstraintConfig(
+			Optional.empty(),
+			Optional.empty(),
+			Optional.of(days),
+			Optional.empty()
+		));
 	}
 	
 	default @NotNull C notIn(DayOfWeek @NotNull ... days) {
@@ -62,14 +81,28 @@ public interface DayConstraint<T extends Temporal & Comparable<T>, C extends Cod
 	}
 	
 	default @NotNull C notIn(@NotNull Set<DayOfWeek> days) {
-		return null;
+		return this.applyConstraint(new DayConstraintConfig(
+			Optional.empty(),
+			Optional.empty(),
+			Optional.empty(),
+			Optional.of(days)
+		));
 	}
 	
 	default @NotNull C weekday() {
-		return null;
+		return this.in(Set.of(
+			DayOfWeek.MONDAY,
+			DayOfWeek.TUESDAY,
+			DayOfWeek.WEDNESDAY,
+			DayOfWeek.THURSDAY,
+			DayOfWeek.FRIDAY
+		));
 	}
 	
 	default @NotNull C weekend() {
-		return null;
+		return this.in(Set.of(
+			DayOfWeek.SATURDAY,
+			DayOfWeek.SUNDAY
+		));
 	}
 }

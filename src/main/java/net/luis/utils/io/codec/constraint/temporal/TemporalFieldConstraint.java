@@ -1,7 +1,9 @@
 package net.luis.utils.io.codec.constraint.temporal;
 
 import net.luis.utils.io.codec.Codec;
+import net.luis.utils.io.codec.constraint.CodecConstraint;
 import net.luis.utils.io.codec.constraint.ComparableConstraint;
+import net.luis.utils.io.codec.constraint.config.temporal.TemporalFieldConstraintConfig;
 import org.jetbrains.annotations.NotNull;
 import org.jspecify.annotations.NonNull;
 
@@ -16,16 +18,16 @@ import java.util.Set;
  *
  */
 
-public interface TemporalFieldConstraint<T extends Temporal & Comparable<T>, C extends Codec<T>> extends ComparableConstraint<Integer, C> {
+public interface TemporalFieldConstraint<T extends Temporal & Comparable<T>, C> extends ComparableConstraint<Integer, C>, CodecConstraint<T, C, TemporalFieldConstraintConfig> {
 	
-	static <T extends Temporal & Comparable<T>, C extends Codec<T>> @NonNull TemporalFieldConstraint<T, C> of(@NotNull TemporalConstraint<T, C> parent, @NotNull ChronoField field) {
-		Objects.requireNonNull(parent, "Parent temporal constraint must not be null");
+	static <T extends Temporal & Comparable<T>, C extends Codec<T>> @NonNull TemporalFieldConstraint<T, C> of(@NotNull TemporalConstraint<T, C> temporalConstraint, @NotNull ChronoField field) {
+		Objects.requireNonNull(temporalConstraint, "Temporal constraint must not be null");
 		Objects.requireNonNull(field, "Chrono field must not be null");
 		
 		return new TemporalFieldConstraint<>() {
 			@Override
-			public @NotNull TemporalConstraint<T, C> parent() {
-				return parent;
+			public @NonNull C applyConstraint(@NonNull TemporalFieldConstraintConfig config) {
+				return null;
 			}
 			
 			@Override
@@ -35,7 +37,8 @@ public interface TemporalFieldConstraint<T extends Temporal & Comparable<T>, C e
 		};
 	}
 	
-	@NotNull TemporalConstraint<T, C> parent();
+	@Override
+	@NonNull C applyConstraint(@NonNull TemporalFieldConstraintConfig config);
 	
 	@NotNull ChronoField field();
 	
