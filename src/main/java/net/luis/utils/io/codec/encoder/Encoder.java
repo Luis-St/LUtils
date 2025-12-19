@@ -19,8 +19,8 @@
 package net.luis.utils.io.codec.encoder;
 
 import net.luis.utils.io.codec.provider.TypeProvider;
-import net.luis.utils.util.result.ResultingFunction;
 import net.luis.utils.util.result.Result;
+import net.luis.utils.util.result.ResultingFunction;
 import org.jetbrains.annotations.*;
 
 import java.util.Objects;

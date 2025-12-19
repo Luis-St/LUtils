@@ -19,10 +19,10 @@
 package net.luis.utils.io.codec.decoder;
 
 import net.luis.utils.io.codec.Codecs;
-import net.luis.utils.util.result.ResultMappingFunction;
 import net.luis.utils.io.codec.provider.JsonTypeProvider;
 import net.luis.utils.io.data.json.JsonPrimitive;
 import net.luis.utils.util.result.Result;
+import net.luis.utils.util.result.ResultMappingFunction;
 import org.junit.jupiter.api.Test;
 
 import static net.luis.utils.io.codec.Codecs.*;

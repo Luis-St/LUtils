@@ -22,9 +22,7 @@ import net.luis.utils.io.codec.decoder.Decoder;
 import net.luis.utils.io.codec.encoder.Encoder;
 import net.luis.utils.io.codec.provider.TypeProvider;
 import net.luis.utils.io.codec.types.struct.*;
-import net.luis.utils.util.result.ResultMappingFunction;
-import net.luis.utils.util.result.ResultingFunction;
-import net.luis.utils.util.result.Result;
+import net.luis.utils.util.result.*;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 

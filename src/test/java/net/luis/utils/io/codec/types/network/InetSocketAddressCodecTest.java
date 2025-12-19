@@ -25,9 +25,7 @@ import net.luis.utils.io.data.json.JsonPrimitive;
 import net.luis.utils.util.result.Result;
 import org.junit.jupiter.api.Test;
 
-import java.net.InetAddress;
-import java.net.InetSocketAddress;
-import java.net.UnknownHostException;
+import java.net.*;
 
 import static org.junit.jupiter.api.Assertions.*;
 

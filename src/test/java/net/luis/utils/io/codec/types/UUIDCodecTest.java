@@ -17,8 +17,8 @@
  */
 
 package net.luis.utils.io.codec.types;
-import net.luis.utils.io.codec.Codec;
 
+import net.luis.utils.io.codec.Codec;
 import net.luis.utils.io.codec.provider.JsonTypeProvider;
 import net.luis.utils.io.data.json.JsonElement;
 import net.luis.utils.io.data.json.JsonPrimitive;
