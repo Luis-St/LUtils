@@ -18,22 +18,28 @@
 
 package net.luis.utils.io.codec.encoder;
 
-import net.luis.utils.io.codec.ResultingFunction;
 import net.luis.utils.io.codec.provider.TypeProvider;
 import net.luis.utils.util.result.Result;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
+import net.luis.utils.util.result.ResultingFunction;
+import org.jetbrains.annotations.*;
 
 import java.util.Objects;
 
 /**
  * Represents an encoder for a specific type.<br>
- * The implementation encodes a value of the type specified by the type provider<br>
- * and returns a result containing the encoded value or an error message.<br>
+ * <p>
+ *     The implementation encodes a value of the type specified by the type provider<br>
+ *     and returns a result containing the encoded value or an error message.
+ * </p>
+ * <p>
+ *     The encoder also has the functionality to encode keys (string values).<br>
+ *     This is useful when encoding data structures like maps or dictionaries.<br>
+ *     This is not supported by default and needs to be implemented separately if required.
+ * </p>
  *
  * @author Luis-St
  *
- * @param <C> The type the encoder is for
+ * @param <C> The type of the value to encode
  */
 @FunctionalInterface
 public interface Encoder<C> {
@@ -48,7 +54,7 @@ public interface Encoder<C> {
 	 * @throws NullPointerException If the type provider is null
 	 * @throws EncoderException If an error occurs during encoding
 	 */
-	default <R> @NotNull R encode(@NotNull TypeProvider<R> provider, @Nullable C value) {
+	default <R> @UnknownNullability R encode(@NotNull TypeProvider<R> provider, @Nullable C value) {
 		Objects.requireNonNull(provider, "Type provider must not be null");
 		return this.encode(provider, provider.empty(), value);
 	}
@@ -58,7 +64,7 @@ public interface Encoder<C> {
 	 * <p>
 	 *     The current value is the value that is currently encoded.<br>
 	 *     In the most cases this value should be equal to {@link TypeProvider#empty()}.<br>
-	 *     In the case of encoding a value that is part of a bigger structure, the current value should be the structure.
+	 *     In the case of encoding a component that is part of a bigger structure, the current value should be the structure.
 	 * </p>
 	 *
 	 * @param provider The type provider
@@ -70,9 +76,10 @@ public interface Encoder<C> {
 	 * @throws EncoderException If an error occurs during encoding
 	 * @see #encodeStart(TypeProvider, Object, Object)
 	 */
-	default <R> @NotNull R encode(@NotNull TypeProvider<R> provider, @NotNull R current, @Nullable C value) {
+	default <R> @UnknownNullability R encode(@NotNull TypeProvider<R> provider, @NotNull R current, @Nullable C value) {
 		Objects.requireNonNull(provider, "Type provider must not be null");
 		Objects.requireNonNull(current, "Current value must not be null");
+		
 		return this.encodeStart(provider, current, value).resultOrThrow(EncoderException::new);
 	}
 	
@@ -82,17 +89,30 @@ public interface Encoder<C> {
 	 * <p>
 	 *     The current value is the value that is currently encoded.<br>
 	 *     In the most cases this value should be equal to {@link TypeProvider#empty()}.<br>
-	 *     In the case of encoding a value that is part of a bigger structure, the current value should be the structure.
+	 *     In the case of encoding a component that is part of a bigger structure, the current value should be the structure.
 	 * </p>
 	 *
 	 * @param provider The type provider
 	 * @param current The current value
 	 * @param value The value to encode
-	 * @return The result
+	 * @return The result of the encoding
 	 * @param <R> The type to encode to
 	 * @throws NullPointerException If the type provider is null
 	 */
 	<R> @NotNull Result<R> encodeStart(@NotNull TypeProvider<R> provider, @NotNull R current, @Nullable C value);
+	
+	/**
+	 * Encodes the key of the specified type and returns the encoded key as a result.<br>
+	 * The result contains the encoded key or an error message.<br>
+	 *
+	 * @param key The key to encode
+	 * @return The result
+	 * @throws NullPointerException If the key is null
+	 */
+	default @NotNull Result<String> encodeKey(@NotNull C key) {
+		Objects.requireNonNull(key, "Key to encode must not be null");
+		return Result.error("Encoding keys is not supported by this encoder");
+	}
 	
 	/**
 	 * Maps the type of the encoded value to another type.<br>
@@ -112,11 +132,23 @@ public interface Encoder<C> {
 			public <R> @NotNull Result<R> encodeStart(@NotNull TypeProvider<R> provider, @NotNull R current, @Nullable O value) {
 				Objects.requireNonNull(provider, "Type provider must not be null");
 				Objects.requireNonNull(current, "Current value must not be null");
+				
 				Result<C> result = function.apply(value);
 				if (result.isError()) {
 					return Result.error("Failed to map value to encode: " + result.errorOrThrow());
 				}
 				return Encoder.this.encodeStart(provider, current, result.resultOrThrow());
+			}
+			
+			@Override
+			public @NotNull Result<String> encodeKey(@NotNull O key) {
+				Objects.requireNonNull(key, "Key to encode must not be null");
+				
+				Result<C> result = function.apply(key);
+				if (result.isError()) {
+					return Result.error("Failed to map key to encode: " + result.errorOrThrow());
+				}
+				return Encoder.this.encodeKey(result.resultOrThrow());
 			}
 		};
 	}

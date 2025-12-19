@@ -123,7 +123,7 @@ final class CodecArrayHelper {
 		}
 		
 		if (arrayDimension == 1) {
-			Codec<C> codec = (Codec<C>) componentCodec.list().xmap(Arrays::asList, list -> {
+			Codec<C> codec = (Codec<C>) componentCodec.list().xmap(Arrays::asList, (List<Object> list) -> {
 				if (list.isEmpty()) {
 					// Return an empty array of the correct type, cast to Object[] to avoid type issues (needed for some reason)
 					return (Object[]) Array.newInstance(componentType, 0);
@@ -136,14 +136,13 @@ final class CodecArrayHelper {
 				return array;
 			});
 			
-			return Codec.of(codec, codec, ClassUtils.primitiveToWrapper(componentType).getSimpleName() + "ArrayCodec");
+			return Codec.of((Class<C>) componentType, codec, codec, ClassUtils.primitiveToWrapper(componentType).getSimpleName() + "ArrayCodec");
 		}
 		
 		Codec<?> codec = componentCodec;
 		for (int i = 0; i < arrayDimension; i++) {
 			codec = codec.list();
 		}
-		
 		return createMultidimensionalArrayCodec(codec, componentType, arrayDimension);
 	}
 	
@@ -201,7 +200,7 @@ final class CodecArrayHelper {
 		Objects.requireNonNull(componentType, "Component type must not be null");
 		
 		Codec<C> codec = rawListCodec.xmap(CodecArrayHelper::arrayToTypedList, list -> listToTypedArray((List<?>) list, componentType, arrayDimension));
-		return Codec.of(codec, codec, ClassUtils.primitiveToWrapper(componentType).getSimpleName() + arrayDimension + "DArrayCodec");
+		return Codec.of((Class<C>) componentType, codec, codec, ClassUtils.primitiveToWrapper(componentType).getSimpleName() + arrayDimension + "DArrayCodec");
 	}
 	
 	/**

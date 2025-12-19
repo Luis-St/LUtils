@@ -22,14 +22,13 @@ import net.luis.utils.exception.ReflectionException;
 import net.luis.utils.io.codec.function.CodecBuilderFunction;
 import net.luis.utils.util.result.Result;
 import net.luis.utils.util.unsafe.reflection.ReflectionHelper;
-import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
 
 import java.lang.reflect.Method;
 import java.util.*;
 
 /**
- * A utility class to create a {@link Codec} from a list of {@link ConfiguredCodec} instances and a {@link CodecBuilderFunction}.<br>
+ * A utility class to create a {@link Codec} from a list of {@link FieldCodec} instances and a {@link CodecBuilderFunction}.<br>
  * This class is used to group multiple codecs together and create an object from the decoded components.<br>
  * It uses reflection to invoke the create method of the provided function with the decoded components.<br>
  * This class is primarily used by the {@link CodecBuilder} to create complex codecs from up to sixteen components.<br>
@@ -53,7 +52,7 @@ public class CodecCreator<O, F extends CodecBuilderFunction> {
 	 * The list of codecs that will be used to decode the components of the object.<br>
 	 * Each codec is responsible for decoding a specific component of the final object.<br>
 	 */
-	private final List<ConfiguredCodec<?, O>> codecs;
+	private final List<FieldCodec<?, O>> codecs;
 	
 	/**
 	 * Constructs a new codec creator using the given list of codecs.<br>
@@ -62,8 +61,7 @@ public class CodecCreator<O, F extends CodecBuilderFunction> {
 	 * @param codecs The list of codecs to use for decoding the components of the object
 	 * @throws NullPointerException If the codecs list is null
 	 */
-	@ApiStatus.Internal
-	public CodecCreator(@NotNull List<ConfiguredCodec<?, O>> codecs) {
+	public CodecCreator(@NotNull List<FieldCodec<?, O>> codecs) {
 		this.codecs = Objects.requireNonNull(codecs, "Codecs list must not be null");
 	}
 	
