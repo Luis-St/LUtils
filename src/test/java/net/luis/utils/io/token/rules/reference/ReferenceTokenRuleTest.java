@@ -22,6 +22,7 @@ import net.luis.utils.io.token.TokenRuleMatch;
 import net.luis.utils.io.token.context.TokenRuleContext;
 import net.luis.utils.io.token.rules.TokenRule;
 import net.luis.utils.io.token.rules.TokenRules;
+import net.luis.utils.io.token.rules.core.ReferenceType;
 import net.luis.utils.io.token.stream.TokenStream;
 import net.luis.utils.io.token.tokens.SimpleToken;
 import net.luis.utils.io.token.tokens.Token;
@@ -254,8 +255,8 @@ class ReferenceTokenRuleTest {
 		
 		TokenStream stream = TokenStream.createMutable(List.of(createToken("test")));
 		
-		IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> rule.match(stream, context));
-		assertEquals("Token rule list must not be empty", exception.getMessage());
+		assertNull(rule.match(stream, context));
+		assertEquals(0, stream.getCurrentIndex());
 	}
 	
 	@Test

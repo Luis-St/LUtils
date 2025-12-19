@@ -81,7 +81,7 @@ class GroupingTokenActionTest {
 		TokenActionContext context = new TokenActionContext(TokenStream.createImmutable(tokens));
 		GroupingTokenAction action = new GroupingTokenAction(GroupingMode.MATCHED);
 		
-		assertThrows(IllegalArgumentException.class, () -> action.apply(match, context));
+		assertDoesNotThrow(() -> action.apply(match, context));
 	}
 	
 	@Test

@@ -16,7 +16,7 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-package net.luis.utils.io.token.rules.assertions;
+package net.luis.utils.io.token.rules.core;
 
 /**
  * An enum representing the match mode for lookahead and lookbehind token rules.<br>

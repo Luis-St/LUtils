@@ -29,27 +29,31 @@ import org.jetbrains.annotations.Nullable;
 import java.util.*;
 
 /**
- * A token rule that matches a sequence of token rules.<br>
+ * A token rule that matches all the provided token rules.<br>
  * This rule is useful for creating complex matching logic by combining multiple rules.<br>
- * It will match the token rules in the order they are provided, otherwise it will return null.<br>
+ * <p>
+ *     The order of the token rules matters, as all rules must match in sequence for this rule to match.<br>
+ *     The rule only supports token rules that match a single token.
+ * </p>
  *
  * @author Luis-St
  *
  * @param tokenRules The list of token rules to match against
  */
-public record SequenceTokenRule(
+public record AllOfTokenRule(
 	@NotNull List<TokenRule> tokenRules
 ) implements TokenRule {
 	
 	/**
-	 * Constructs a new sequence token rule with the given token rules.<br>
+	 * Constructs a new all of token rule with the given token rules.<br>
 	 *
 	 * @param tokenRules The list of token rules to match against
-	 * @throws NullPointerException If the token rule list or any of its elements are null
+	 * @throws NullPointerException If the token rule list is null or contains a null element
 	 * @throws IllegalArgumentException If the token rule list is empty or contains less than two rules
 	 */
-	public SequenceTokenRule {
-		Objects.requireNonNull(tokenRules, "Token rule list must not be null");
+	public AllOfTokenRule {
+		Objects.requireNonNull(tokenRules, "Token rules must not be null");
+		
 		if (tokenRules.isEmpty()) {
 			throw new IllegalArgumentException("Token rule list must not be empty");
 		}
@@ -68,25 +72,24 @@ public record SequenceTokenRule(
 		Objects.requireNonNull(stream, "Token stream must not be null");
 		Objects.requireNonNull(ctx, "Token rule context must not be null");
 		
-		int startIndex = stream.getCurrentIndex();
-		TokenStream workingStream = stream.copyWithOffset(0);
-		List<Token> matchedTokens = new ArrayList<>();
-		for (TokenRule tokenRule : this.tokenRules) {
-			
-			TokenRuleMatch match = tokenRule.match(workingStream, ctx);
+		for (TokenRule rule : this.tokenRules()) {
+			TokenRuleMatch match = rule.match(stream.copyWithOffset(0), ctx);
 			if (match == null) {
 				return null;
 			}
 			
-			matchedTokens.addAll(match.matchedTokens());
+			if (match.endIndex() - match.startIndex() > 1) {
+				throw new IllegalStateException("Token rules that match multiple tokens are not supported by this rule, rule matched from index " + match.startIndex() + " to " + match.endIndex() + ": " + rule);
+			}
 		}
 		
-		stream.advanceTo(workingStream);
-		return new TokenRuleMatch(startIndex, stream.getCurrentIndex(), matchedTokens, this);
+		int startIndex = stream.getCurrentIndex();
+		Token token = stream.getCurrentToken();
+		return new TokenRuleMatch(startIndex, stream.advance(), Collections.singletonList(token), this);
 	}
 	
 	@Override
 	public @NotNull TokenRule not() {
-		return new AnyOfTokenRule(this.tokenRules.stream().map(TokenRule::not).toList()); // Negation using De Morgan's laws
+		return new AllOfTokenRule(this.tokenRules().stream().map(TokenRule::not).toList());
 	}
 }

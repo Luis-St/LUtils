@@ -180,134 +180,115 @@ class FileUtilsTest {
 	}
 	
 	@Test
-	void normalizeDirectoryPathReturnsRootForNullFile()
-	{
+	void normalizeDirectoryPathReturnsRootForNullFile() {
 		String result = FileUtils.normalizeDirectoryPath(null);
 		assertEquals("/", result);
 	}
 	
 	@Test
-	void normalizeDirectoryPathReturnsRootForEmptyFile()
-	{
+	void normalizeDirectoryPathReturnsRootForEmptyFile() {
 		String result = FileUtils.normalizeDirectoryPath("");
 		assertEquals("/", result);
 	}
 	
 	@Test
-	void normalizeDirectoryPathReturnsRootForSlash()
-	{
+	void normalizeDirectoryPathReturnsRootForSlash() {
 		String result = FileUtils.normalizeDirectoryPath("/");
 		assertEquals("/", result);
 	}
 	
 	@Test
-	void normalizeDirectoryPathReturnsRootForDotSlash()
-	{
+	void normalizeDirectoryPathReturnsRootForDotSlash() {
 		String result = FileUtils.normalizeDirectoryPath("./");
 		assertEquals("/", result);
 	}
 	
 	@Test
-	void normalizeDirectoryPathAddsLeadingAndTrailingSlashForDirectoryName()
-	{
+	void normalizeDirectoryPathAddsLeadingAndTrailingSlashForDirectoryName() {
 		String result = FileUtils.normalizeDirectoryPath("foo");
 		assertEquals("/foo/", result);
 	}
 	
 	@Test
-	void normalizeDirectoryPathNormalizesRelativePath()
-	{
+	void normalizeDirectoryPathNormalizesRelativePath() {
 		String result = FileUtils.normalizeDirectoryPath("./foo/");
 		assertEquals("/foo/", result);
 	}
 	
 	@Test
-	void normalizeDirectoryPathReturnsRootForFileWithoutPath()
-	{
+	void normalizeDirectoryPathReturnsRootForFileWithoutPath() {
 		String result = FileUtils.normalizeDirectoryPath("/foo.json");
 		assertEquals("/", result);
 	}
 	
 	@Test
-	void normalizeDirectoryPathReturnsDirectoryForFileWithPath()
-	{
+	void normalizeDirectoryPathReturnsDirectoryForFileWithPath() {
 		String result = FileUtils.normalizeDirectoryPath("/bar/foo.json");
 		assertEquals("/bar/foo.json", result);
 	}
 	
 	@Test
-	void normalizeDirectoryPathHandlesBackslashes()
-	{
+	void normalizeDirectoryPathHandlesBackslashes() {
 		String result = FileUtils.normalizeDirectoryPath("bar\\baz");
 		assertEquals("/bar/baz/", result);
 	}
 	
 	@Test
-	void normalizeDirectoryPathAddsTrailingSlashToAbsolutePath()
-	{
+	void normalizeDirectoryPathAddsTrailingSlashToAbsolutePath() {
 		String result = FileUtils.normalizeDirectoryPath("/foo/bar");
 		assertEquals("/foo/bar/", result);
 	}
 	
 	@Test
-	void normalizeDirectoryPathPreservesTrailingSlash()
-	{
+	void normalizeDirectoryPathPreservesTrailingSlash() {
 		String result = FileUtils.normalizeDirectoryPath("/foo/bar/");
 		assertEquals("/foo/bar/", result);
 	}
 	
 	@Test
-	void normalizeDirectoryPathNormalizesRelativePathWithoutTrailingSlash()
-	{
+	void normalizeDirectoryPathNormalizesRelativePathWithoutTrailingSlash() {
 		String result = FileUtils.normalizeDirectoryPath("./foo");
 		assertEquals("/foo/", result);
 	}
 	
 	@Test
-	void normalizeDirectoryPathHandlesNestedDirectories()
-	{
+	void normalizeDirectoryPathHandlesNestedDirectories() {
 		String result = FileUtils.normalizeDirectoryPath("a/b/c");
 		assertEquals("/a/b/c/", result);
 	}
 	
 	@Test
-	void normalizeDirectoryPathHandlesMultipleDotsInPath()
-	{
+	void normalizeDirectoryPathHandlesMultipleDotsInPath() {
 		String result = FileUtils.normalizeDirectoryPath("./path/to/file.tar.gz");
 		assertEquals("/path/to/file.tar.gz", result);
 	}
 	
 	@Test
-	void normalizeDirectoryPathHandlesRelativePathWithMultipleSegments()
-	{
+	void normalizeDirectoryPathHandlesRelativePathWithMultipleSegments() {
 		String result = FileUtils.normalizeDirectoryPath("./bar/baz");
 		assertEquals("/bar/baz/", result);
 	}
 	
 	@Test
-	void normalizeDirectoryPathHandlesParentDirectoryReference()
-	{
+	void normalizeDirectoryPathHandlesParentDirectoryReference() {
 		String result = FileUtils.normalizeDirectoryPath("../foo");
 		assertEquals("/../foo/", result);
 	}
 	
 	@Test
-	void normalizeDirectoryPathHandlesDottedDirectoryWithSubdir()
-	{
+	void normalizeDirectoryPathHandlesDottedDirectoryWithSubdir() {
 		String result = FileUtils.normalizeDirectoryPath("/my.dir/subdir");
 		assertEquals("/my.dir/subdir/", result);
 	}
 	
 	@Test
-	void normalizeDirectoryPathHandlesHiddenDirectory()
-	{
+	void normalizeDirectoryPathHandlesHiddenDirectory() {
 		String result = FileUtils.normalizeDirectoryPath(".config");
 		assertEquals("/.config/", result);
 	}
 	
 	@Test
-	void normalizeDirectoryPathHandlesVersionedDirectory()
-	{
+	void normalizeDirectoryPathHandlesVersionedDirectory() {
 		String result = FileUtils.normalizeDirectoryPath("project.v2/node_modules");
 		assertEquals("/project.v2/node_modules/", result);
 	}

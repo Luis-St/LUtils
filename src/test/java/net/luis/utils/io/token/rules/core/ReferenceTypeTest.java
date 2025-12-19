@@ -16,7 +16,7 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-package net.luis.utils.io.token.rules.reference;
+package net.luis.utils.io.token.rules.core;
 
 import org.junit.jupiter.api.Test;
 

@@ -22,6 +22,7 @@ import net.luis.utils.io.token.TokenRuleMatch;
 import net.luis.utils.io.token.context.TokenRuleContext;
 import net.luis.utils.io.token.rules.TokenRule;
 import net.luis.utils.io.token.rules.TokenRules;
+import net.luis.utils.io.token.rules.core.ReferenceType;
 import net.luis.utils.io.token.stream.TokenStream;
 import net.luis.utils.io.token.tokens.Token;
 import org.jetbrains.annotations.NotNull;
@@ -134,7 +135,12 @@ public record ReferenceTokenRule(
 		}
 		
 		List<Token> tokens = ctx.getCapturedTokens(this.key);
-		if (tokens != null) {
+		if (tokens != null && !tokens.isEmpty()) {
+			if (tokens.size() == 1) {
+				return TokenRules.value(tokens.getFirst().value(), false).match(stream, ctx);
+			}
+			
+			
 			TokenRule rule = TokenRules.sequence(
 				tokens.stream().map(token -> TokenRules.value(token.value(), false)).toList()
 			);

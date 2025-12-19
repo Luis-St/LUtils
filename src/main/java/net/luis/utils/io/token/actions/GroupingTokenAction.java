@@ -62,10 +62,6 @@ public record GroupingTokenAction(
 				yield allTokens.subList(match.startIndex(), match.endIndex());
 			}
 		};
-		
-		if (1 >= tokens.size()) {
-			throw new IllegalArgumentException("Cannot group less than 2 tokens: " + match.matchedTokens() + ", rule=" + match.matchingTokenRule());
-		}
 		return Collections.singletonList(new TokenGroup(tokens));
 	}
 }

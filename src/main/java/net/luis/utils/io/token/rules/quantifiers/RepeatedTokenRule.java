@@ -76,6 +76,7 @@ public record RepeatedTokenRule(
 	 */
 	public RepeatedTokenRule {
 		Objects.requireNonNull(tokenRule, "Token rule must not be null");
+		
 		if (minOccurrences < 0) {
 			throw new IllegalArgumentException("Min occurrences must not be negative");
 		}

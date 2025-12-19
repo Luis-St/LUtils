@@ -63,7 +63,6 @@ public record PatternTokenRule(
 	@Override
 	public boolean match(@NotNull Token token) {
 		Objects.requireNonNull(token, "Token must not be null");
-		
 		return this.pattern.matcher(token.value()).matches();
 	}
 }
