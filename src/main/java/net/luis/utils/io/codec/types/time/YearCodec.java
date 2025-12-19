@@ -35,29 +35,29 @@ import java.util.Objects;
  * @author Luis-St
  */
 public class YearCodec extends AbstractCodec<Year, Object> {
-
+	
 	/**
 	 * Constructs a new year codec.<br>
 	 */
 	public YearCodec() {}
-
+	
 	@Override
 	public <R> @NotNull Result<R> encodeStart(@NotNull TypeProvider<R> provider, @NotNull R current, @Nullable Year value) {
 		Objects.requireNonNull(provider, "Type provider must not be null");
 		Objects.requireNonNull(current, "Current value must not be null");
-
+		
 		if (value == null) {
 			return Result.error("Unable to encode null as year using '" + this + "'");
 		}
 		return provider.createInteger(value.getValue());
 	}
-
+	
 	@Override
 	public @NotNull Result<String> encodeKey(@NotNull Year key) {
 		Objects.requireNonNull(key, "Key must not be null");
 		return Result.success(String.valueOf(key.getValue()));
 	}
-
+	
 	@Override
 	public <R> @NotNull Result<Year> decodeStart(@NotNull TypeProvider<R> provider, @NotNull R current, @Nullable R value) {
 		Objects.requireNonNull(provider, "Type provider must not be null");
@@ -65,12 +65,12 @@ public class YearCodec extends AbstractCodec<Year, Object> {
 		if (value == null) {
 			return Result.error("Unable to decode null value as year using '" + this + "'");
 		}
-
+		
 		Result<Integer> result = provider.getInteger(value);
 		if (result.isError()) {
 			return Result.error(result.errorOrThrow());
 		}
-
+		
 		int yearValue = result.resultOrThrow();
 		try {
 			return Result.success(Year.of(yearValue));
@@ -78,18 +78,18 @@ public class YearCodec extends AbstractCodec<Year, Object> {
 			return Result.error("Unable to decode year '" + yearValue + "' using '" + this + "': " + e.getMessage());
 		}
 	}
-
+	
 	@Override
 	public @NotNull Result<Year> decodeKey(@NotNull String key) {
 		Objects.requireNonNull(key, "Key must not be null");
-
+		
 		try {
 			return Result.success(Year.of(Integer.parseInt(key)));
 		} catch (NumberFormatException | DateTimeParseException e) {
 			return Result.error("Unable to decode key '" + key + "' as year using '" + this + "': " + e.getMessage());
 		}
 	}
-
+	
 	@Override
 	public String toString() {
 		return "YearCodec";

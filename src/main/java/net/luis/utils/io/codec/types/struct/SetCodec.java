@@ -36,12 +36,12 @@ import java.util.*;
  * @param <E> The element type of the set
  */
 public class SetCodec<E> extends AbstractCodec<Set<E>, Object> {
-
+	
 	/**
 	 * The codec used to encode and decode set elements.<br>
 	 */
 	private final Codec<E> codec;
-
+	
 	/**
 	 * Constructs a new set codec.<br>
 	 *
@@ -57,7 +57,7 @@ public class SetCodec<E> extends AbstractCodec<Set<E>, Object> {
 	public @NotNull Class<Set<E>> getType() {
 		return (Class<Set<E>>) (Class<?>) Set.class;
 	}
-
+	
 	@Override
 	@SuppressWarnings("DuplicatedCode")
 	public <R> @NotNull Result<R> encodeStart(@NotNull TypeProvider<R> provider, @NotNull R current, @Nullable Set<E> value) {
@@ -94,7 +94,7 @@ public class SetCodec<E> extends AbstractCodec<Set<E>, Object> {
 		}
 		return Result.partial(merged.resultOrThrow(), "Encoded " + elements.size() + " of " + value.size() + " elements successfully:", errors);
 	}
-
+	
 	@Override
 	@SuppressWarnings("DuplicatedCode")
 	public <R> @NotNull Result<Set<E>> decodeStart(@NotNull TypeProvider<R> provider, @NotNull R current, @Nullable R value) {
@@ -135,12 +135,12 @@ public class SetCodec<E> extends AbstractCodec<Set<E>, Object> {
 		
 		return this.codec.equals(that.codec);
 	}
-
+	
 	@Override
 	public int hashCode() {
 		return Objects.hash(this.codec);
 	}
-
+	
 	@Override
 	public String toString() {
 		return "SetCodec[" + this.codec + "]";

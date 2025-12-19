@@ -35,29 +35,29 @@ import java.util.Objects;
  * @author Luis-St
  */
 public class ZoneIdCodec extends AbstractCodec<ZoneId, Object> {
-
+	
 	/**
 	 * Constructs a new zone id codec.<br>
 	 */
 	public ZoneIdCodec() {}
-
+	
 	@Override
 	public <R> @NotNull Result<R> encodeStart(@NotNull TypeProvider<R> provider, @NotNull R current, @Nullable ZoneId value) {
 		Objects.requireNonNull(provider, "Type provider must not be null");
 		Objects.requireNonNull(current, "Current value must not be null");
-
+		
 		if (value == null) {
 			return Result.error("Unable to encode null as zone id using '" + this + "'");
 		}
 		return provider.createString(value.getId());
 	}
-
+	
 	@Override
 	public @NotNull Result<String> encodeKey(@NotNull ZoneId key) {
 		Objects.requireNonNull(key, "Key must not be null");
 		return Result.success(key.getId());
 	}
-
+	
 	@Override
 	public <R> @NotNull Result<ZoneId> decodeStart(@NotNull TypeProvider<R> provider, @NotNull R current, @Nullable R value) {
 		Objects.requireNonNull(provider, "Type provider must not be null");
@@ -65,12 +65,12 @@ public class ZoneIdCodec extends AbstractCodec<ZoneId, Object> {
 		if (value == null) {
 			return Result.error("Unable to decode null value as zone id using '" + this + "'");
 		}
-
+		
 		Result<String> result = provider.getString(value);
 		if (result.isError()) {
 			return Result.error(result.errorOrThrow());
 		}
-
+		
 		String string = result.resultOrThrow();
 		try {
 			return Result.success(ZoneId.of(string));
@@ -78,18 +78,18 @@ public class ZoneIdCodec extends AbstractCodec<ZoneId, Object> {
 			return Result.error("Unable to decode zone id '" + string + "' using '" + this + "': " + e.getMessage());
 		}
 	}
-
+	
 	@Override
 	public @NotNull Result<ZoneId> decodeKey(@NotNull String key) {
 		Objects.requireNonNull(key, "Key must not be null");
-
+		
 		try {
 			return Result.success(ZoneId.of(key));
 		} catch (ZoneRulesException e) {
 			return Result.error("Unable to decode key '" + key + "' as zone id using '" + this + "': " + e.getMessage());
 		}
 	}
-
+	
 	@Override
 	public String toString() {
 		return "ZoneIdCodec";

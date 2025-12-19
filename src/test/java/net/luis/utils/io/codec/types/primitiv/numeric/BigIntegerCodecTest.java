@@ -35,216 +35,216 @@ import static org.junit.jupiter.api.Assertions.*;
  * @author Luis-St
  */
 class BigIntegerCodecTest {
-
+	
 	@Test
 	void encodeStartNullChecks() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<BigInteger> codec = new BigIntegerCodec();
 		BigInteger value = new BigInteger("12345678901234567890");
-
+		
 		assertThrows(NullPointerException.class, () -> codec.encodeStart(null, typeProvider.empty(), value));
 		assertThrows(NullPointerException.class, () -> codec.encodeStart(typeProvider, null, value));
 	}
-
+	
 	@Test
 	void encodeStartWithNull() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<BigInteger> codec = new BigIntegerCodec();
-
+		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), null);
 		assertTrue(result.isError());
 		assertTrue(result.errorOrThrow().contains("Unable to encode null as big integer"));
 	}
-
+	
 	@Test
 	void encodeStartWithPositiveValue() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<BigInteger> codec = new BigIntegerCodec();
 		BigInteger value = new BigInteger("12345678901234567890");
-
+		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), value);
 		assertTrue(result.isSuccess());
 		assertEquals(new JsonPrimitive("12345678901234567890"), result.resultOrThrow());
 	}
-
+	
 	@Test
 	void encodeStartWithNegativeValue() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<BigInteger> codec = new BigIntegerCodec();
 		BigInteger value = new BigInteger("-98765432109876543210");
-
+		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), value);
 		assertTrue(result.isSuccess());
 		assertEquals(new JsonPrimitive("-98765432109876543210"), result.resultOrThrow());
 	}
-
+	
 	@Test
 	void encodeStartWithZero() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<BigInteger> codec = new BigIntegerCodec();
 		BigInteger value = BigInteger.ZERO;
-
+		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), value);
 		assertTrue(result.isSuccess());
 		assertEquals(new JsonPrimitive("0"), result.resultOrThrow());
 	}
-
+	
 	@Test
 	void encodeStartWithVeryLargeValue() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<BigInteger> codec = new BigIntegerCodec();
 		BigInteger value = new BigInteger("123456789012345678901234567890123456789012345678901234567890");
-
+		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), value);
 		assertTrue(result.isSuccess());
 		assertEquals(new JsonPrimitive("123456789012345678901234567890123456789012345678901234567890"), result.resultOrThrow());
 	}
-
+	
 	@Test
 	void encodeKeyNullChecks() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<BigInteger> codec = new BigIntegerCodec();
-
+		
 		assertThrows(NullPointerException.class, () -> codec.encodeKey(null));
 	}
-
+	
 	@Test
 	void encodeKeyWithValue() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<BigInteger> codec = new BigIntegerCodec();
 		BigInteger value = new BigInteger("12345678901234567890");
-
+		
 		Result<String> result = codec.encodeKey(value);
 		assertTrue(result.isSuccess());
 		assertEquals("12345678901234567890", result.resultOrThrow());
 	}
-
+	
 	@Test
 	void encodeKeyWithNegativeValue() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<BigInteger> codec = new BigIntegerCodec();
 		BigInteger value = new BigInteger("-98765432109876543210");
-
+		
 		Result<String> result = codec.encodeKey(value);
 		assertTrue(result.isSuccess());
 		assertEquals("-98765432109876543210", result.resultOrThrow());
 	}
-
+	
 	@Test
 	void decodeStartNullChecks() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<BigInteger> codec = new BigIntegerCodec();
-
+		
 		assertThrows(NullPointerException.class, () -> codec.decodeStart(null, typeProvider.empty(), new JsonPrimitive("12345678901234567890")));
 	}
-
+	
 	@Test
 	void decodeStartWithNull() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<BigInteger> codec = new BigIntegerCodec();
-
+		
 		Result<BigInteger> result = codec.decodeStart(typeProvider, typeProvider.empty(), null);
 		assertTrue(result.isError());
 		assertTrue(result.errorOrThrow().contains("Unable to decode null value as big integer"));
 	}
-
+	
 	@Test
 	void decodeStartWithValidValue() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<BigInteger> codec = new BigIntegerCodec();
-
+		
 		Result<BigInteger> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive("12345678901234567890"));
 		assertTrue(result.isSuccess());
 		assertEquals(new BigInteger("12345678901234567890"), result.resultOrThrow());
 	}
-
+	
 	@Test
 	void decodeStartWithNegativeValue() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<BigInteger> codec = new BigIntegerCodec();
-
+		
 		Result<BigInteger> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive("-98765432109876543210"));
 		assertTrue(result.isSuccess());
 		assertEquals(new BigInteger("-98765432109876543210"), result.resultOrThrow());
 	}
-
+	
 	@Test
 	void decodeStartWithZero() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<BigInteger> codec = new BigIntegerCodec();
-
+		
 		Result<BigInteger> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive("0"));
 		assertTrue(result.isSuccess());
 		assertEquals(BigInteger.ZERO, result.resultOrThrow());
 	}
-
+	
 	@Test
 	void decodeStartWithVeryLargeValue() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<BigInteger> codec = new BigIntegerCodec();
-
+		
 		Result<BigInteger> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive("123456789012345678901234567890123456789012345678901234567890"));
 		assertTrue(result.isSuccess());
 		assertEquals(new BigInteger("123456789012345678901234567890123456789012345678901234567890"), result.resultOrThrow());
 	}
-
+	
 	@Test
 	void decodeStartWithInvalidFormat() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<BigInteger> codec = new BigIntegerCodec();
-
+		
 		Result<BigInteger> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive("not-a-number"));
 		assertTrue(result.isError());
 		assertTrue(result.errorOrThrow().contains("Unable to decode big integer"));
 	}
-
+	
 	@Test
 	void decodeStartWithNonString() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<BigInteger> codec = new BigIntegerCodec();
-
+		
 		Result<BigInteger> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive(42));
 		assertTrue(result.isError());
 	}
-
+	
 	@Test
 	void decodeKeyNullChecks() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<BigInteger> codec = new BigIntegerCodec();
-
+		
 		assertThrows(NullPointerException.class, () -> codec.decodeKey(null));
 	}
-
+	
 	@Test
 	void decodeKeyWithValidValue() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<BigInteger> codec = new BigIntegerCodec();
-
+		
 		Result<BigInteger> result = codec.decodeKey("12345678901234567890");
 		assertTrue(result.isSuccess());
 		assertEquals(new BigInteger("12345678901234567890"), result.resultOrThrow());
 	}
-
+	
 	@Test
 	void decodeKeyWithNegativeValue() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<BigInteger> codec = new BigIntegerCodec();
-
+		
 		Result<BigInteger> result = codec.decodeKey("-98765432109876543210");
 		assertTrue(result.isSuccess());
 		assertEquals(new BigInteger("-98765432109876543210"), result.resultOrThrow());
 	}
-
+	
 	@Test
 	void decodeKeyWithInvalidValue() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<BigInteger> codec = new BigIntegerCodec();
-
+		
 		Result<BigInteger> result = codec.decodeKey("invalid");
 		assertTrue(result.isError());
 		assertTrue(result.errorOrThrow().contains("Unable to decode key 'invalid' as big integer"));
 	}
-
+	
 	@Test
 	void toStringRepresentation() {
 		BigIntegerCodec codec = new BigIntegerCodec();

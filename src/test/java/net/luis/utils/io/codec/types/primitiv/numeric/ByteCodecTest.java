@@ -109,7 +109,7 @@ class ByteCodecTest {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Byte> codec = new ByteCodec();
 		
-		assertThrows(NullPointerException.class, () -> codec.encodeKey( null));
+		assertThrows(NullPointerException.class, () -> codec.encodeKey(null));
 	}
 	
 	@Test
@@ -117,7 +117,7 @@ class ByteCodecTest {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Byte> codec = new ByteCodec();
 		
-		Result<String> result = codec.encodeKey( (byte) 42);
+		Result<String> result = codec.encodeKey((byte) 42);
 		assertTrue(result.isSuccess());
 		assertEquals("42", result.resultOrThrow());
 	}
@@ -127,7 +127,7 @@ class ByteCodecTest {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Byte> codec = new ByteCodec();
 		
-		Result<String> result = codec.encodeKey( (byte) -42);
+		Result<String> result = codec.encodeKey((byte) -42);
 		assertTrue(result.isSuccess());
 		assertEquals("-42", result.resultOrThrow());
 	}
@@ -205,7 +205,7 @@ class ByteCodecTest {
 		Codec<Byte> codec = new ByteCodec();
 		
 		assertThrows(NullPointerException.class, () -> codec.decodeKey(null));
-		assertThrows(NullPointerException.class, () -> codec.decodeKey( null));
+		assertThrows(NullPointerException.class, () -> codec.decodeKey(null));
 	}
 	
 	@Test
@@ -213,7 +213,7 @@ class ByteCodecTest {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Byte> codec = new ByteCodec();
 		
-		Result<Byte> result = codec.decodeKey( "42");
+		Result<Byte> result = codec.decodeKey("42");
 		assertTrue(result.isSuccess());
 		assertEquals((byte) 42, result.resultOrThrow());
 	}
@@ -223,7 +223,7 @@ class ByteCodecTest {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Byte> codec = new ByteCodec();
 		
-		Result<Byte> result = codec.decodeKey( "-42");
+		Result<Byte> result = codec.decodeKey("-42");
 		assertTrue(result.isSuccess());
 		assertEquals((byte) -42, result.resultOrThrow());
 	}
@@ -233,7 +233,7 @@ class ByteCodecTest {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Byte> codec = new ByteCodec();
 		
-		Result<Byte> result = codec.decodeKey( "invalid");
+		Result<Byte> result = codec.decodeKey("invalid");
 		assertTrue(result.isError());
 		assertTrue(result.errorOrThrow().contains("Unable to decode key 'invalid' as byte"));
 	}
@@ -243,7 +243,7 @@ class ByteCodecTest {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Byte> codec = new ByteCodec();
 		
-		Result<Byte> result = codec.decodeKey( "999");
+		Result<Byte> result = codec.decodeKey("999");
 		assertTrue(result.isError());
 		assertTrue(result.errorOrThrow().contains("Unable to decode key '999' as byte"));
 	}

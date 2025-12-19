@@ -34,29 +34,29 @@ import java.util.Objects;
  * @author Luis-St
  */
 public class LocaleCodec extends AbstractCodec<Locale, Object> {
-
+	
 	/**
 	 * Constructs a new locale codec.<br>
 	 */
 	public LocaleCodec() {}
-
+	
 	@Override
 	public <R> @NotNull Result<R> encodeStart(@NotNull TypeProvider<R> provider, @NotNull R current, @Nullable Locale value) {
 		Objects.requireNonNull(provider, "Type provider must not be null");
 		Objects.requireNonNull(current, "Current value must not be null");
-
+		
 		if (value == null) {
 			return Result.error("Unable to encode null as locale using '" + this + "'");
 		}
 		return provider.createString(value.toLanguageTag());
 	}
-
+	
 	@Override
 	public @NotNull Result<String> encodeKey(@NotNull Locale key) {
 		Objects.requireNonNull(key, "Key must not be null");
 		return Result.success(key.toLanguageTag());
 	}
-
+	
 	@Override
 	public <R> @NotNull Result<Locale> decodeStart(@NotNull TypeProvider<R> provider, @NotNull R current, @Nullable R value) {
 		Objects.requireNonNull(provider, "Type provider must not be null");
@@ -64,12 +64,12 @@ public class LocaleCodec extends AbstractCodec<Locale, Object> {
 		if (value == null) {
 			return Result.error("Unable to decode null value as locale using '" + this + "'");
 		}
-
+		
 		Result<String> result = provider.getString(value);
 		if (result.isError()) {
 			return Result.error(result.errorOrThrow());
 		}
-
+		
 		String string = result.resultOrThrow();
 		try {
 			return Result.success(Locale.forLanguageTag(string));
@@ -77,18 +77,18 @@ public class LocaleCodec extends AbstractCodec<Locale, Object> {
 			return Result.error("Unable to decode locale '" + string + "' using '" + this + "': " + e.getMessage());
 		}
 	}
-
+	
 	@Override
 	public @NotNull Result<Locale> decodeKey(@NotNull String key) {
 		Objects.requireNonNull(key, "Key must not be null");
-
+		
 		try {
 			return Result.success(Locale.forLanguageTag(key));
 		} catch (Exception e) {
 			return Result.error("Unable to decode key '" + key + "' as locale using '" + this + "': " + e.getMessage());
 		}
 	}
-
+	
 	@Override
 	public String toString() {
 		return "LocaleCodec";

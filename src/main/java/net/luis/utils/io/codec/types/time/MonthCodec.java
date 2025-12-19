@@ -34,29 +34,29 @@ import java.util.Objects;
  * @author Luis-St
  */
 public class MonthCodec extends AbstractCodec<Month, Object> {
-
+	
 	/**
 	 * Constructs a new month codec.<br>
 	 */
 	public MonthCodec() {}
-
+	
 	@Override
 	public <R> @NotNull Result<R> encodeStart(@NotNull TypeProvider<R> provider, @NotNull R current, @Nullable Month value) {
 		Objects.requireNonNull(provider, "Type provider must not be null");
 		Objects.requireNonNull(current, "Current value must not be null");
-
+		
 		if (value == null) {
 			return Result.error("Unable to encode null as month using '" + this + "'");
 		}
 		return provider.createString(value.name());
 	}
-
+	
 	@Override
 	public @NotNull Result<String> encodeKey(@NotNull Month key) {
 		Objects.requireNonNull(key, "Key must not be null");
 		return Result.success(key.name());
 	}
-
+	
 	@Override
 	public <R> @NotNull Result<Month> decodeStart(@NotNull TypeProvider<R> provider, @NotNull R current, @Nullable R value) {
 		Objects.requireNonNull(provider, "Type provider must not be null");
@@ -64,12 +64,12 @@ public class MonthCodec extends AbstractCodec<Month, Object> {
 		if (value == null) {
 			return Result.error("Unable to decode null value as month using '" + this + "'");
 		}
-
+		
 		Result<String> result = provider.getString(value);
 		if (result.isError()) {
 			return Result.error(result.errorOrThrow());
 		}
-
+		
 		String string = result.resultOrThrow();
 		try {
 			return Result.success(Month.valueOf(string));
@@ -77,18 +77,18 @@ public class MonthCodec extends AbstractCodec<Month, Object> {
 			return Result.error("Unable to decode month '" + string + "' using '" + this + "': " + e.getMessage());
 		}
 	}
-
+	
 	@Override
 	public @NotNull Result<Month> decodeKey(@NotNull String key) {
 		Objects.requireNonNull(key, "Key must not be null");
-
+		
 		try {
 			return Result.success(Month.valueOf(key));
 		} catch (IllegalArgumentException e) {
 			return Result.error("Unable to decode key '" + key + "' as month using '" + this + "': " + e.getMessage());
 		}
 	}
-
+	
 	@Override
 	public String toString() {
 		return "MonthCodec";

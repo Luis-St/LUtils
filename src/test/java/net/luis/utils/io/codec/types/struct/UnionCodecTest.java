@@ -47,7 +47,6 @@ class UnionCodecTest {
 		assertDoesNotThrow(() -> new UnionCodec(INTEGER, List.of(1, 2, 3)));
 	}
 	
-	
 	@Test
 	void encodeStartNullChecks() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
@@ -207,17 +206,17 @@ class UnionCodecTest {
 	@Test
 	void decodeStartWithDifferentTypes() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-
+		
 		Codec<String> stringCodec = new UnionCodec(STRING, List.of("apple", "banana", "cherry"));
 		Result<String> stringResult = stringCodec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive("banana"));
 		assertTrue(stringResult.isSuccess());
 		assertEquals("banana", stringResult.resultOrThrow());
-
+		
 		Codec<Integer> integerCodec = new UnionCodec(INTEGER, List.of(1, 2, 3));
 		Result<Integer> intResult = integerCodec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive(3));
 		assertTrue(intResult.isSuccess());
 		assertEquals(3, intResult.resultOrThrow());
-
+		
 		Codec<Boolean> booleanCodec = new UnionCodec(BOOLEAN, List.of(true));
 		Result<Boolean> boolResult = booleanCodec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive(true));
 		assertTrue(boolResult.isSuccess());

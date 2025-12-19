@@ -109,7 +109,7 @@ class IntegerCodecTest {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Integer> codec = new IntegerCodec();
 		
-		assertThrows(NullPointerException.class, () -> codec.encodeKey( null));
+		assertThrows(NullPointerException.class, () -> codec.encodeKey(null));
 	}
 	
 	@Test
@@ -117,7 +117,7 @@ class IntegerCodecTest {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Integer> codec = new IntegerCodec();
 		
-		Result<String> result = codec.encodeKey( 42000);
+		Result<String> result = codec.encodeKey(42000);
 		assertTrue(result.isSuccess());
 		assertEquals("42000", result.resultOrThrow());
 	}
@@ -127,7 +127,7 @@ class IntegerCodecTest {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Integer> codec = new IntegerCodec();
 		
-		Result<String> result = codec.encodeKey( -42000);
+		Result<String> result = codec.encodeKey(-42000);
 		assertTrue(result.isSuccess());
 		assertEquals("-42000", result.resultOrThrow());
 	}
@@ -205,7 +205,7 @@ class IntegerCodecTest {
 		Codec<Integer> codec = new IntegerCodec();
 		
 		assertThrows(NullPointerException.class, () -> codec.decodeKey(null));
-		assertThrows(NullPointerException.class, () -> codec.decodeKey( null));
+		assertThrows(NullPointerException.class, () -> codec.decodeKey(null));
 	}
 	
 	@Test
@@ -213,7 +213,7 @@ class IntegerCodecTest {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Integer> codec = new IntegerCodec();
 		
-		Result<Integer> result = codec.decodeKey( "42000");
+		Result<Integer> result = codec.decodeKey("42000");
 		assertTrue(result.isSuccess());
 		assertEquals(42000, result.resultOrThrow());
 	}
@@ -223,7 +223,7 @@ class IntegerCodecTest {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Integer> codec = new IntegerCodec();
 		
-		Result<Integer> result = codec.decodeKey( "-42000");
+		Result<Integer> result = codec.decodeKey("-42000");
 		assertTrue(result.isSuccess());
 		assertEquals(-42000, result.resultOrThrow());
 	}
@@ -233,7 +233,7 @@ class IntegerCodecTest {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Integer> codec = new IntegerCodec();
 		
-		Result<Integer> result = codec.decodeKey( "invalid");
+		Result<Integer> result = codec.decodeKey("invalid");
 		assertTrue(result.isError());
 		assertTrue(result.errorOrThrow().contains("Unable to decode key 'invalid' as integer"));
 	}
@@ -243,7 +243,7 @@ class IntegerCodecTest {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Integer> codec = new IntegerCodec();
 		
-		Result<Integer> result = codec.decodeKey( "9999999999999");
+		Result<Integer> result = codec.decodeKey("9999999999999");
 		assertTrue(result.isError());
 		assertTrue(result.errorOrThrow().contains("Unable to decode key '9999999999999' as integer"));
 	}

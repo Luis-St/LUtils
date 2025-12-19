@@ -35,29 +35,29 @@ import java.util.Objects;
  * @author Luis-St
  */
 public class ZoneOffsetCodec extends AbstractCodec<ZoneOffset, Object> {
-
+	
 	/**
 	 * Constructs a new zone offset codec.<br>
 	 */
 	public ZoneOffsetCodec() {}
-
+	
 	@Override
 	public <R> @NotNull Result<R> encodeStart(@NotNull TypeProvider<R> provider, @NotNull R current, @Nullable ZoneOffset value) {
 		Objects.requireNonNull(provider, "Type provider must not be null");
 		Objects.requireNonNull(current, "Current value must not be null");
-
+		
 		if (value == null) {
 			return Result.error("Unable to encode null as zone offset using '" + this + "'");
 		}
 		return provider.createString(value.getId());
 	}
-
+	
 	@Override
 	public @NotNull Result<String> encodeKey(@NotNull ZoneOffset key) {
 		Objects.requireNonNull(key, "Key must not be null");
 		return Result.success(key.getId());
 	}
-
+	
 	@Override
 	public <R> @NotNull Result<ZoneOffset> decodeStart(@NotNull TypeProvider<R> provider, @NotNull R current, @Nullable R value) {
 		Objects.requireNonNull(provider, "Type provider must not be null");
@@ -65,12 +65,12 @@ public class ZoneOffsetCodec extends AbstractCodec<ZoneOffset, Object> {
 		if (value == null) {
 			return Result.error("Unable to decode null value as zone offset using '" + this + "'");
 		}
-
+		
 		Result<String> result = provider.getString(value);
 		if (result.isError()) {
 			return Result.error(result.errorOrThrow());
 		}
-
+		
 		String string = result.resultOrThrow();
 		try {
 			return Result.success(ZoneOffset.of(string));
@@ -78,18 +78,18 @@ public class ZoneOffsetCodec extends AbstractCodec<ZoneOffset, Object> {
 			return Result.error("Unable to decode zone offset '" + string + "' using '" + this + "': " + e.getMessage());
 		}
 	}
-
+	
 	@Override
 	public @NotNull Result<ZoneOffset> decodeKey(@NotNull String key) {
 		Objects.requireNonNull(key, "Key must not be null");
-
+		
 		try {
 			return Result.success(ZoneOffset.of(key));
 		} catch (DateTimeException e) {
 			return Result.error("Unable to decode key '" + key + "' as zone offset using '" + this + "': " + e.getMessage());
 		}
 	}
-
+	
 	@Override
 	public String toString() {
 		return "ZoneOffsetCodec";

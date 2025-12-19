@@ -139,7 +139,7 @@ class FloatCodecTest {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Float> codec = new FloatCodec();
 		
-		assertThrows(NullPointerException.class, () -> codec.encodeKey( null));
+		assertThrows(NullPointerException.class, () -> codec.encodeKey(null));
 	}
 	
 	@Test
@@ -147,7 +147,7 @@ class FloatCodecTest {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Float> codec = new FloatCodec();
 		
-		Result<String> result = codec.encodeKey( 3.14f);
+		Result<String> result = codec.encodeKey(3.14f);
 		assertTrue(result.isSuccess());
 		assertEquals("3.14", result.resultOrThrow());
 	}
@@ -157,7 +157,7 @@ class FloatCodecTest {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Float> codec = new FloatCodec();
 		
-		Result<String> result = codec.encodeKey( -3.14f);
+		Result<String> result = codec.encodeKey(-3.14f);
 		assertTrue(result.isSuccess());
 		assertEquals("-3.14", result.resultOrThrow());
 	}
@@ -235,7 +235,7 @@ class FloatCodecTest {
 		Codec<Float> codec = new FloatCodec();
 		
 		assertThrows(NullPointerException.class, () -> codec.decodeKey(null));
-		assertThrows(NullPointerException.class, () -> codec.decodeKey( null));
+		assertThrows(NullPointerException.class, () -> codec.decodeKey(null));
 	}
 	
 	@Test
@@ -243,7 +243,7 @@ class FloatCodecTest {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Float> codec = new FloatCodec();
 		
-		Result<Float> result = codec.decodeKey( "3.14");
+		Result<Float> result = codec.decodeKey("3.14");
 		assertTrue(result.isSuccess());
 		assertEquals(3.14f, result.resultOrThrow(), 0.001f);
 	}
@@ -253,7 +253,7 @@ class FloatCodecTest {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Float> codec = new FloatCodec();
 		
-		Result<Float> result = codec.decodeKey( "-3.14");
+		Result<Float> result = codec.decodeKey("-3.14");
 		assertTrue(result.isSuccess());
 		assertEquals(-3.14f, result.resultOrThrow(), 0.001f);
 	}
@@ -263,7 +263,7 @@ class FloatCodecTest {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Float> codec = new FloatCodec();
 		
-		Result<Float> result = codec.decodeKey( "invalid");
+		Result<Float> result = codec.decodeKey("invalid");
 		assertTrue(result.isError());
 		assertTrue(result.errorOrThrow().contains("Unable to decode key 'invalid' as float"));
 	}
@@ -273,7 +273,7 @@ class FloatCodecTest {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Float> codec = new FloatCodec();
 		
-		Result<Float> result = codec.decodeKey( "Infinity");
+		Result<Float> result = codec.decodeKey("Infinity");
 		assertTrue(result.isSuccess());
 		assertEquals(Float.POSITIVE_INFINITY, result.resultOrThrow());
 	}
@@ -283,7 +283,7 @@ class FloatCodecTest {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Float> codec = new FloatCodec();
 		
-		Result<Float> result = codec.decodeKey( "-Infinity");
+		Result<Float> result = codec.decodeKey("-Infinity");
 		assertTrue(result.isSuccess());
 		assertEquals(Float.NEGATIVE_INFINITY, result.resultOrThrow());
 	}
@@ -293,7 +293,7 @@ class FloatCodecTest {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Float> codec = new FloatCodec();
 		
-		Result<Float> result = codec.decodeKey( "NaN");
+		Result<Float> result = codec.decodeKey("NaN");
 		assertTrue(result.isSuccess());
 		assertTrue(Float.isNaN(result.resultOrThrow()));
 	}

@@ -34,29 +34,29 @@ import java.util.Objects;
  * @author Luis-St
  */
 public class BigDecimalCodec extends AbstractCodec<BigDecimal, Object> {
-
+	
 	/**
 	 * Constructs a new big decimal codec.<br>
 	 */
 	public BigDecimalCodec() {}
-
+	
 	@Override
 	public <R> @NotNull Result<R> encodeStart(@NotNull TypeProvider<R> provider, @NotNull R current, @Nullable BigDecimal value) {
 		Objects.requireNonNull(provider, "Type provider must not be null");
 		Objects.requireNonNull(current, "Current value must not be null");
-
+		
 		if (value == null) {
 			return Result.error("Unable to encode null as big decimal using '" + this + "'");
 		}
 		return provider.createString(value.toPlainString());
 	}
-
+	
 	@Override
 	public @NotNull Result<String> encodeKey(@NotNull BigDecimal key) {
 		Objects.requireNonNull(key, "Key must not be null");
 		return Result.success(key.toPlainString());
 	}
-
+	
 	@Override
 	public <R> @NotNull Result<BigDecimal> decodeStart(@NotNull TypeProvider<R> provider, @NotNull R current, @Nullable R value) {
 		Objects.requireNonNull(provider, "Type provider must not be null");
@@ -64,12 +64,12 @@ public class BigDecimalCodec extends AbstractCodec<BigDecimal, Object> {
 		if (value == null) {
 			return Result.error("Unable to decode null value as big decimal using '" + this + "'");
 		}
-
+		
 		Result<String> result = provider.getString(value);
 		if (result.isError()) {
 			return Result.error(result.errorOrThrow());
 		}
-
+		
 		String string = result.resultOrThrow();
 		try {
 			return Result.success(new BigDecimal(string));
@@ -77,18 +77,18 @@ public class BigDecimalCodec extends AbstractCodec<BigDecimal, Object> {
 			return Result.error("Unable to decode big decimal '" + string + "' using '" + this + "': " + e.getMessage());
 		}
 	}
-
+	
 	@Override
 	public @NotNull Result<BigDecimal> decodeKey(@NotNull String key) {
 		Objects.requireNonNull(key, "Key must not be null");
-
+		
 		try {
 			return Result.success(new BigDecimal(key));
 		} catch (NumberFormatException e) {
 			return Result.error("Unable to decode key '" + key + "' as big decimal using '" + this + "': " + e.getMessage());
 		}
 	}
-
+	
 	@Override
 	public String toString() {
 		return "BigDecimalCodec";

@@ -208,19 +208,19 @@ class NullableCodecTest {
 	@Test
 	void decodeStartWithDifferentTypes() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-
+		
 		Codec<String> stringCodec = new NullableCodec<>(STRING);
 		Result<String> stringResult = stringCodec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive("hello"));
 		assertTrue(stringResult.isSuccess());
 		assertNotNull(stringResult.resultOrThrow());
 		assertEquals("hello", stringResult.resultOrThrow());
-
+		
 		Codec<Boolean> boolCodec = new NullableCodec<>(BOOLEAN);
 		Result<Boolean> boolResult = boolCodec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive(true));
 		assertTrue(boolResult.isSuccess());
 		assertNotNull(boolResult.resultOrThrow());
 		assertTrue(boolResult.resultOrThrow());
-
+		
 		Result<String> nullResult = stringCodec.decodeStart(typeProvider, typeProvider.empty(), JsonNull.INSTANCE);
 		assertTrue(nullResult.isSuccess());
 		assertNull(nullResult.resultOrThrow());

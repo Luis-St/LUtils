@@ -107,16 +107,16 @@ class CodecTest {
 	@Test
 	void optional() {
 		assertInstanceOf(OptionalCodec.class, INTEGER.optional());
-
+		
 		JsonTypeProvider provider = JsonTypeProvider.INSTANCE;
 		Codec<Optional<Integer>> optionalCodec = INTEGER.optional();
-
+		
 		JsonElement encodedPresent = optionalCodec.encode(provider, Optional.of(42));
 		assertEquals(new JsonPrimitive(42), encodedPresent);
 		Optional<Integer> decodedPresent = optionalCodec.decode(provider, encodedPresent);
 		assertTrue(decodedPresent.isPresent());
 		assertEquals(42, decodedPresent.get());
-
+		
 		JsonElement encodedEmpty = optionalCodec.encode(provider, Optional.empty());
 		assertFalse(encodedEmpty.isJsonNull());
 		assertFalse(encodedEmpty.isJsonPrimitive());
@@ -471,6 +471,5 @@ class CodecTest {
 		assertEquals("default", decoded.resultOrThrow());
 	}
 	
-
 	private record TestObject(@NotNull String name) {}
 }

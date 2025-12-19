@@ -109,7 +109,7 @@ class ShortCodecTest {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Short> codec = new ShortCodec();
 		
-		assertThrows(NullPointerException.class, () -> codec.encodeKey( null));
+		assertThrows(NullPointerException.class, () -> codec.encodeKey(null));
 	}
 	
 	@Test
@@ -117,7 +117,7 @@ class ShortCodecTest {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Short> codec = new ShortCodec();
 		
-		Result<String> result = codec.encodeKey( (short) 1000);
+		Result<String> result = codec.encodeKey((short) 1000);
 		assertTrue(result.isSuccess());
 		assertEquals("1000", result.resultOrThrow());
 	}
@@ -127,7 +127,7 @@ class ShortCodecTest {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Short> codec = new ShortCodec();
 		
-		Result<String> result = codec.encodeKey( (short) -1000);
+		Result<String> result = codec.encodeKey((short) -1000);
 		assertTrue(result.isSuccess());
 		assertEquals("-1000", result.resultOrThrow());
 	}
@@ -205,7 +205,7 @@ class ShortCodecTest {
 		Codec<Short> codec = new ShortCodec();
 		
 		assertThrows(NullPointerException.class, () -> codec.decodeKey(null));
-		assertThrows(NullPointerException.class, () -> codec.decodeKey( null));
+		assertThrows(NullPointerException.class, () -> codec.decodeKey(null));
 	}
 	
 	@Test
@@ -213,7 +213,7 @@ class ShortCodecTest {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Short> codec = new ShortCodec();
 		
-		Result<Short> result = codec.decodeKey( "1000");
+		Result<Short> result = codec.decodeKey("1000");
 		assertTrue(result.isSuccess());
 		assertEquals((short) 1000, result.resultOrThrow());
 	}
@@ -223,7 +223,7 @@ class ShortCodecTest {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Short> codec = new ShortCodec();
 		
-		Result<Short> result = codec.decodeKey( "-1000");
+		Result<Short> result = codec.decodeKey("-1000");
 		assertTrue(result.isSuccess());
 		assertEquals((short) -1000, result.resultOrThrow());
 	}
@@ -233,7 +233,7 @@ class ShortCodecTest {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Short> codec = new ShortCodec();
 		
-		Result<Short> result = codec.decodeKey( "invalid");
+		Result<Short> result = codec.decodeKey("invalid");
 		assertTrue(result.isError());
 		assertTrue(result.errorOrThrow().contains("Unable to decode key 'invalid' as short"));
 	}
@@ -243,7 +243,7 @@ class ShortCodecTest {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Short> codec = new ShortCodec();
 		
-		Result<Short> result = codec.decodeKey( "99999");
+		Result<Short> result = codec.decodeKey("99999");
 		assertTrue(result.isError());
 		assertTrue(result.errorOrThrow().contains("Unable to decode key '99999' as short"));
 	}

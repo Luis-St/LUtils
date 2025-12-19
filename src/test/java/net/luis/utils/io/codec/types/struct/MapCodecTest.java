@@ -117,12 +117,6 @@ class MapCodecTest {
 		assertTrue(numericResult.isSuccess());
 	}
 	
-
-	
-
-	
-
-	
 	@Test
 	void encodeStartWithInvalidKeys() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
@@ -229,52 +223,46 @@ class MapCodecTest {
 		assertEquals(Map.of(1, 3.14), numericResult.resultOrThrow());
 	}
 	
-
-	
-
-	
-
-	
 	@Test
 	void decodeStartWithInvalidKeys() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Map<Integer, Boolean>> codec = new MapCodec<>(INTEGER, BOOLEAN);
-
+		
 		JsonObject object = new JsonObject();
 		object.add("not-a-number", new JsonPrimitive(true));
 		object.add("2", new JsonPrimitive(false));
-
+		
 		Result<Map<Integer, Boolean>> result = codec.decodeStart(typeProvider, typeProvider.empty(), object);
 		assertTrue(result.isPartial());
 		assertTrue(result.hasError());
 		assertTrue(result.hasValue());
 	}
-
+	
 	@Test
 	void decodeStartWithInvalidValues() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Map<Integer, Boolean>> codec = new MapCodec<>(INTEGER, BOOLEAN);
-
+		
 		JsonObject object = new JsonObject();
 		object.add("1", new JsonPrimitive(true));
 		object.add("2", new JsonPrimitive("not-a-boolean"));
-
+		
 		Result<Map<Integer, Boolean>> result = codec.decodeStart(typeProvider, typeProvider.empty(), object);
 		assertTrue(result.isPartial());
 		assertTrue(result.hasError());
 		assertTrue(result.hasValue());
 	}
-
+	
 	@Test
 	void decodeStartWithMixedValidInvalid() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Map<Integer, Integer>> codec = new MapCodec<>(INTEGER, INTEGER);
-
+		
 		JsonObject object = new JsonObject();
 		object.add("1", new JsonPrimitive(42));
 		object.add("invalid-key", new JsonPrimitive(100));
 		object.add("3", new JsonPrimitive("invalid-value"));
-
+		
 		Result<Map<Integer, Integer>> result = codec.decodeStart(typeProvider, typeProvider.empty(), object);
 		assertTrue(result.isPartial());
 		assertTrue(result.hasError());

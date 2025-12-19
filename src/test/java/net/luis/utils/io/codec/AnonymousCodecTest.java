@@ -38,57 +38,57 @@ import static org.junit.jupiter.api.Assertions.*;
  * @author Luis-St
  */
 class AnonymousCodecTest {
-
+	
 	@Test
 	void constructorNullChecks() {
 		Encoder<String> encoder = STRING;
 		Decoder<String> decoder = STRING;
-
+		
 		assertDoesNotThrow(() -> Codec.of((Class<String>) null, encoder, decoder, "TestCodec"));
 		assertThrows(NullPointerException.class, () -> Codec.of(() -> String.class, null, decoder, "TestCodec"));
 		assertThrows(NullPointerException.class, () -> Codec.of(() -> String.class, encoder, null, "TestCodec"));
 		assertThrows(NullPointerException.class, () -> Codec.of(() -> String.class, encoder, decoder, null));
 	}
-
+	
 	@Test
 	void constructorWithBlankName() {
 		Encoder<String> encoder = STRING;
 		Decoder<String> decoder = STRING;
-
+		
 		assertThrows(IllegalArgumentException.class, () -> Codec.of(() -> String.class, encoder, decoder, ""));
 		assertThrows(IllegalArgumentException.class, () -> Codec.of(() -> String.class, encoder, decoder, "   "));
 	}
-
+	
 	@Test
 	void constructorWithValidParameters() {
 		Encoder<String> encoder = STRING;
 		Decoder<String> decoder = STRING;
-
+		
 		assertDoesNotThrow(() -> Codec.of(() -> String.class, encoder, decoder, "TestCodec"));
 		assertDoesNotThrow(() -> Codec.of(String.class, encoder, decoder, "TestCodec"));
 	}
-
+	
 	@Test
 	void getTypeWithValidTypeSupplier() {
 		Codec<String> codec = Codec.of(() -> String.class, STRING, STRING, "TestCodec");
-
+		
 		assertEquals(String.class, codec.getType());
 	}
-
+	
 	@Test
 	void getTypeWithNullTypeSupplierFallsBackToInference() {
 		Codec<String> codec = Codec.of(() -> null, STRING, STRING, "TestCodec");
-
+		
 		assertThrows(IllegalStateException.class, codec::getType);
 	}
-
+	
 	@Test
 	void getTypeWithClassParameter() {
 		Codec<String> codec = Codec.of(String.class, STRING, STRING, "TestCodec");
-
+		
 		assertEquals(String.class, codec.getType());
 	}
-
+	
 	@Test
 	void encodeStartDelegatesToEncoder() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
@@ -99,14 +99,14 @@ class AnonymousCodecTest {
 			}
 		};
 		Decoder<String> decoder = STRING;
-
+		
 		Codec<String> codec = Codec.of(String.class, encoder, decoder, "TestCodec");
-
+		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), "test");
 		assertTrue(result.isSuccess());
 		assertEquals(new JsonPrimitive("encoded:test"), result.resultOrThrow());
 	}
-
+	
 	@Test
 	void encodeKeyDelegatesToEncoder() {
 		Encoder<String> encoder = new Encoder<>() {
@@ -114,21 +114,21 @@ class AnonymousCodecTest {
 			public <R> @NotNull Result<R> encodeStart(@NotNull TypeProvider<R> provider, @NotNull R current, @Nullable String value) {
 				return Result.success(null);
 			}
-
+			
 			@Override
 			public @NotNull Result<String> encodeKey(@NotNull String key) {
 				return Result.success("key:" + key);
 			}
 		};
 		Decoder<String> decoder = STRING;
-
+		
 		Codec<String> codec = Codec.of(String.class, encoder, decoder, "TestCodec");
-
+		
 		Result<String> result = codec.encodeKey("test");
 		assertTrue(result.isSuccess());
 		assertEquals("key:test", result.resultOrThrow());
 	}
-
+	
 	@Test
 	void decodeStartDelegatesToDecoder() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
@@ -143,14 +143,14 @@ class AnonymousCodecTest {
 				return stringResult.flatMap(s -> Result.success("decoded:" + s));
 			}
 		};
-
+		
 		Codec<String> codec = Codec.of(String.class, encoder, decoder, "TestCodec");
-
+		
 		Result<String> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive("test"));
 		assertTrue(result.isSuccess());
 		assertEquals("decoded:test", result.resultOrThrow());
 	}
-
+	
 	@Test
 	void decodeKeyDelegatesToDecoder() {
 		Encoder<String> encoder = STRING;
@@ -159,57 +159,57 @@ class AnonymousCodecTest {
 			public <R> @NotNull Result<String> decodeStart(@NotNull TypeProvider<R> provider, @NotNull R current, @Nullable R value) {
 				return Result.success(null);
 			}
-
+			
 			@Override
 			public @NotNull Result<String> decodeKey(@NotNull String key) {
 				return Result.success("decoded:" + key);
 			}
 		};
-
+		
 		Codec<String> codec = Codec.of(String.class, encoder, decoder, "TestCodec");
-
+		
 		Result<String> result = codec.decodeKey("test");
 		assertTrue(result.isSuccess());
 		assertEquals("decoded:test", result.resultOrThrow());
 	}
-
+	
 	@Test
 	void equalsAndHashCode() {
 		Encoder<String> encoder = STRING;
 		Decoder<String> decoder = STRING;
-
+		
 		Codec<String> codec1 = Codec.of(String.class, encoder, decoder, "TestCodec");
 		Codec<String> codec2 = Codec.of(String.class, encoder, decoder, "TestCodec");
 		Codec<String> codec3 = Codec.of(String.class, encoder, decoder, "DifferentCodec");
-
+		
 		assertNotEquals(codec1, codec2);
-
+		
 		assertNotEquals(codec1, codec3);
 	}
-
+	
 	@Test
 	void toStringRepresentation() {
 		Codec<String> codec = Codec.of(String.class, STRING, STRING, "CustomTestCodec");
-
+		
 		assertEquals("CustomTestCodec", codec.toString());
 	}
-
+	
 	@Test
 	void roundTripEncodingAndDecoding() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<String> codec = Codec.of(String.class, STRING, STRING, "TestCodec");
-
+		
 		String original = "test-value";
 		JsonElement encoded = codec.encode(typeProvider, original);
 		String decoded = codec.decode(typeProvider, encoded);
-
+		
 		assertEquals(original, decoded);
 	}
-
+	
 	@Test
 	void codecWrappingWithCustomBehavior() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-
+		
 		Encoder<Integer> upperBoundEncoder = new Encoder<>() {
 			@Override
 			public <R> @NotNull Result<R> encodeStart(@NotNull TypeProvider<R> provider, @NotNull R current, @Nullable Integer value) {
@@ -222,7 +222,7 @@ class AnonymousCodecTest {
 				return provider.createInteger(value);
 			}
 		};
-
+		
 		Decoder<Integer> lowerBoundDecoder = new Decoder<>() {
 			@Override
 			public <R> @NotNull Result<Integer> decodeStart(@NotNull TypeProvider<R> provider, @NotNull R current, @Nullable R value) {
@@ -238,20 +238,20 @@ class AnonymousCodecTest {
 				});
 			}
 		};
-
+		
 		Codec<Integer> boundedCodec = Codec.of(Integer.class, upperBoundEncoder, lowerBoundDecoder, "BoundedIntegerCodec");
-
+		
 		Result<JsonElement> validEncode = boundedCodec.encodeStart(typeProvider, typeProvider.empty(), 50);
 		assertTrue(validEncode.isSuccess());
-
+		
 		Result<JsonElement> invalidEncode = boundedCodec.encodeStart(typeProvider, typeProvider.empty(), 150);
 		assertTrue(invalidEncode.isError());
 		assertTrue(invalidEncode.errorOrThrow().contains("exceeds upper bound"));
-
+		
 		Result<Integer> validDecode = boundedCodec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive(50));
 		assertTrue(validDecode.isSuccess());
 		assertEquals(50, validDecode.resultOrThrow());
-
+		
 		Result<Integer> invalidDecode = boundedCodec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive(-10));
 		assertTrue(invalidDecode.isError());
 		assertTrue(invalidDecode.errorOrThrow().contains("below lower bound"));

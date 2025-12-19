@@ -177,7 +177,7 @@ class CodecCreatorTest {
 		
 		Result<TestObject2> decodeResult = codec.decodeStart(typeProvider, encodeResult.resultOrThrow(), encodeResult.resultOrThrow());
 		assertTrue(decodeResult.isSuccess());
-
+		
 		TestObject2 decoded = decodeResult.resultOrThrow();
 		assertEquals(original.text, decoded.text);
 		assertEquals(original.number, decoded.number);
@@ -220,7 +220,7 @@ class CodecCreatorTest {
 		assertTrue(result.isError());
 		assertTrue(result.errorOrThrow().contains("Unable to create object with function"));
 	}
-
+	
 	@Test
 	void createdCodecWithFunctionReturningNull() {
 		CodecCreator<TestObject, NullReturningTestFunction> creator = new CodecCreator<>(List.of(
@@ -234,12 +234,12 @@ class CodecCreatorTest {
 		JsonObject jsonObj = new JsonObject();
 		jsonObj.add("name", new JsonPrimitive("test"));
 		jsonObj.add("value", new JsonPrimitive(42));
-
+		
 		Result<TestObject> result = codec.decodeStart(typeProvider, jsonObj, jsonObj);
 		assertTrue(result.isError());
 		assertTrue(result.errorOrThrow().contains("Unable to create object with function"));
 	}
-
+	
 	@Test
 	void createdCodecWithSingleParameter() {
 		CodecCreator<String, SingleParamFunction> creator = new CodecCreator<>(List.of(
@@ -251,7 +251,7 @@ class CodecCreatorTest {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		JsonObject jsonObj = new JsonObject();
 		jsonObj.add("value", new JsonPrimitive("single"));
-
+		
 		Result<String> result = codec.decodeStart(typeProvider, jsonObj, jsonObj);
 		assertTrue(result.isSuccess());
 		assertEquals("SINGLE", result.resultOrThrow());
@@ -276,10 +276,10 @@ class CodecCreatorTest {
 		jsonObj.add("c", new JsonPrimitive("3"));
 		jsonObj.add("d", new JsonPrimitive("4"));
 		jsonObj.add("e", new JsonPrimitive("5"));
-
+		
 		Result<TestObject3> result = codec.decodeStart(typeProvider, jsonObj, jsonObj);
 		assertTrue(result.isSuccess());
-
+		
 		TestObject3 obj = result.resultOrThrow();
 		assertEquals("1", obj.a);
 		assertEquals("2", obj.b);

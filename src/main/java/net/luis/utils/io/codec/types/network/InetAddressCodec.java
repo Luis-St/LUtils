@@ -36,29 +36,29 @@ import java.util.Objects;
  * @author Luis-St
  */
 public class InetAddressCodec extends AbstractCodec<InetAddress, Object> {
-
+	
 	/**
 	 * Constructs a new inet address codec.<br>
 	 */
 	public InetAddressCodec() {}
-
+	
 	@Override
 	public <R> @NotNull Result<R> encodeStart(@NotNull TypeProvider<R> provider, @NotNull R current, @Nullable InetAddress value) {
 		Objects.requireNonNull(provider, "Type provider must not be null");
 		Objects.requireNonNull(current, "Current value must not be null");
-
+		
 		if (value == null) {
 			return Result.error("Unable to encode null as inet address using '" + this + "'");
 		}
 		return provider.createString(value.getHostAddress());
 	}
-
+	
 	@Override
 	public @NotNull Result<String> encodeKey(@NotNull InetAddress key) {
 		Objects.requireNonNull(key, "Key must not be null");
 		return Result.success(key.getHostAddress());
 	}
-
+	
 	@Override
 	public <R> @NotNull Result<InetAddress> decodeStart(@NotNull TypeProvider<R> provider, @NotNull R current, @Nullable R value) {
 		Objects.requireNonNull(provider, "Type provider must not be null");
@@ -66,12 +66,12 @@ public class InetAddressCodec extends AbstractCodec<InetAddress, Object> {
 		if (value == null) {
 			return Result.error("Unable to decode null value as inet address using '" + this + "'");
 		}
-
+		
 		Result<String> result = provider.getString(value);
 		if (result.isError()) {
 			return Result.error(result.errorOrThrow());
 		}
-
+		
 		String string = result.resultOrThrow();
 		try {
 			return Result.success(InetAddress.getByName(string));
@@ -79,18 +79,18 @@ public class InetAddressCodec extends AbstractCodec<InetAddress, Object> {
 			return Result.error("Unable to decode inet address '" + string + "' using '" + this + "': " + e.getMessage());
 		}
 	}
-
+	
 	@Override
 	public @NotNull Result<InetAddress> decodeKey(@NotNull String key) {
 		Objects.requireNonNull(key, "Key must not be null");
-
+		
 		try {
 			return Result.success(InetAddress.getByName(key));
 		} catch (IOException e) {
 			return Result.error("Unable to decode key '" + key + "' as inet address using '" + this + "': " + e.getMessage());
 		}
 	}
-
+	
 	@Override
 	public String toString() {
 		return "InetAddressCodec";

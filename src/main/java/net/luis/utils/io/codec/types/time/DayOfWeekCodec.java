@@ -34,29 +34,29 @@ import java.util.Objects;
  * @author Luis-St
  */
 public class DayOfWeekCodec extends AbstractCodec<DayOfWeek, Object> {
-
+	
 	/**
 	 * Constructs a new day of week codec.<br>
 	 */
 	public DayOfWeekCodec() {}
-
+	
 	@Override
 	public <R> @NotNull Result<R> encodeStart(@NotNull TypeProvider<R> provider, @NotNull R current, @Nullable DayOfWeek value) {
 		Objects.requireNonNull(provider, "Type provider must not be null");
 		Objects.requireNonNull(current, "Current value must not be null");
-
+		
 		if (value == null) {
 			return Result.error("Unable to encode null as day of week using '" + this + "'");
 		}
 		return provider.createString(value.name());
 	}
-
+	
 	@Override
 	public @NotNull Result<String> encodeKey(@NotNull DayOfWeek key) {
 		Objects.requireNonNull(key, "Key must not be null");
 		return Result.success(key.name());
 	}
-
+	
 	@Override
 	public <R> @NotNull Result<DayOfWeek> decodeStart(@NotNull TypeProvider<R> provider, @NotNull R current, @Nullable R value) {
 		Objects.requireNonNull(provider, "Type provider must not be null");
@@ -64,12 +64,12 @@ public class DayOfWeekCodec extends AbstractCodec<DayOfWeek, Object> {
 		if (value == null) {
 			return Result.error("Unable to decode null value as day of week using '" + this + "'");
 		}
-
+		
 		Result<String> result = provider.getString(value);
 		if (result.isError()) {
 			return Result.error(result.errorOrThrow());
 		}
-
+		
 		String string = result.resultOrThrow();
 		try {
 			return Result.success(DayOfWeek.valueOf(string));
@@ -77,18 +77,18 @@ public class DayOfWeekCodec extends AbstractCodec<DayOfWeek, Object> {
 			return Result.error("Unable to decode day of week '" + string + "' using '" + this + "': " + e.getMessage());
 		}
 	}
-
+	
 	@Override
 	public @NotNull Result<DayOfWeek> decodeKey(@NotNull String key) {
 		Objects.requireNonNull(key, "Key must not be null");
-
+		
 		try {
 			return Result.success(DayOfWeek.valueOf(key));
 		} catch (IllegalArgumentException e) {
 			return Result.error("Unable to decode key '" + key + "' as day of week using '" + this + "': " + e.getMessage());
 		}
 	}
-
+	
 	@Override
 	public String toString() {
 		return "DayOfWeekCodec";

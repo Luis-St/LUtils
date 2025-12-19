@@ -35,216 +35,216 @@ import static org.junit.jupiter.api.Assertions.*;
  * @author Luis-St
  */
 class YearCodecTest {
-
+	
 	@Test
 	void encodeStartNullChecks() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Year> codec = new YearCodec();
 		Year year = Year.of(2025);
-
+		
 		assertThrows(NullPointerException.class, () -> codec.encodeStart(null, typeProvider.empty(), year));
 		assertThrows(NullPointerException.class, () -> codec.encodeStart(typeProvider, null, year));
 	}
-
+	
 	@Test
 	void encodeStartWithNull() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Year> codec = new YearCodec();
-
+		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), null);
 		assertTrue(result.isError());
 		assertTrue(result.errorOrThrow().contains("Unable to encode null as year"));
 	}
-
+	
 	@Test
 	void encodeStartWithCurrentYear() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Year> codec = new YearCodec();
 		Year year = Year.of(2025);
-
+		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), year);
 		assertTrue(result.isSuccess());
 		assertEquals(new JsonPrimitive(2025), result.resultOrThrow());
 	}
-
+	
 	@Test
 	void encodeStartWithPastYear() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Year> codec = new YearCodec();
 		Year year = Year.of(1990);
-
+		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), year);
 		assertTrue(result.isSuccess());
 		assertEquals(new JsonPrimitive(1990), result.resultOrThrow());
 	}
-
+	
 	@Test
 	void encodeStartWithFutureYear() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Year> codec = new YearCodec();
 		Year year = Year.of(3000);
-
+		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), year);
 		assertTrue(result.isSuccess());
 		assertEquals(new JsonPrimitive(3000), result.resultOrThrow());
 	}
-
+	
 	@Test
 	void encodeStartWithMinYear() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Year> codec = new YearCodec();
 		Year year = Year.of(Year.MIN_VALUE);
-
+		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), year);
 		assertTrue(result.isSuccess());
 		assertEquals(new JsonPrimitive(Year.MIN_VALUE), result.resultOrThrow());
 	}
-
+	
 	@Test
 	void encodeStartWithMaxYear() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Year> codec = new YearCodec();
 		Year year = Year.of(Year.MAX_VALUE);
-
+		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), year);
 		assertTrue(result.isSuccess());
 		assertEquals(new JsonPrimitive(Year.MAX_VALUE), result.resultOrThrow());
 	}
-
+	
 	@Test
 	void encodeKeyNullChecks() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Year> codec = new YearCodec();
-
+		
 		assertThrows(NullPointerException.class, () -> codec.encodeKey(null));
 	}
-
+	
 	@Test
 	void encodeKeyWithYear() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Year> codec = new YearCodec();
 		Year year = Year.of(2025);
-
+		
 		Result<String> result = codec.encodeKey(year);
 		assertTrue(result.isSuccess());
 		assertEquals("2025", result.resultOrThrow());
 	}
-
+	
 	@Test
 	void decodeStartNullChecks() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Year> codec = new YearCodec();
-
+		
 		assertThrows(NullPointerException.class, () -> codec.decodeStart(null, typeProvider.empty(), new JsonPrimitive(2025)));
 	}
-
+	
 	@Test
 	void decodeStartWithNull() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Year> codec = new YearCodec();
-
+		
 		Result<Year> result = codec.decodeStart(typeProvider, typeProvider.empty(), null);
 		assertTrue(result.isError());
 		assertTrue(result.errorOrThrow().contains("Unable to decode null value as year"));
 	}
-
+	
 	@Test
 	void decodeStartWithValidYear() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Year> codec = new YearCodec();
-
+		
 		Result<Year> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive(2025));
 		assertTrue(result.isSuccess());
 		assertEquals(Year.of(2025), result.resultOrThrow());
 	}
-
+	
 	@Test
 	void decodeStartWithPastYear() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Year> codec = new YearCodec();
-
+		
 		Result<Year> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive(1990));
 		assertTrue(result.isSuccess());
 		assertEquals(Year.of(1990), result.resultOrThrow());
 	}
-
+	
 	@Test
 	void decodeStartWithFutureYear() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Year> codec = new YearCodec();
-
+		
 		Result<Year> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive(3000));
 		assertTrue(result.isSuccess());
 		assertEquals(Year.of(3000), result.resultOrThrow());
 	}
-
+	
 	@Test
 	void decodeStartWithMinYear() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Year> codec = new YearCodec();
-
+		
 		Result<Year> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive(Year.MIN_VALUE));
 		assertTrue(result.isSuccess());
 		assertEquals(Year.of(Year.MIN_VALUE), result.resultOrThrow());
 	}
-
+	
 	@Test
 	void decodeStartWithMaxYear() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Year> codec = new YearCodec();
-
+		
 		Result<Year> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive(Year.MAX_VALUE));
 		assertTrue(result.isSuccess());
 		assertEquals(Year.of(Year.MAX_VALUE), result.resultOrThrow());
 	}
-
+	
 	@Test
 	void decodeStartWithNonInteger() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Year> codec = new YearCodec();
-
+		
 		Result<Year> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive("not-a-year"));
 		assertTrue(result.isError());
 	}
-
+	
 	@Test
 	void decodeKeyNullChecks() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Year> codec = new YearCodec();
-
+		
 		assertThrows(NullPointerException.class, () -> codec.decodeKey(null));
 	}
-
+	
 	@Test
 	void decodeKeyWithValidYear() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Year> codec = new YearCodec();
-
+		
 		Result<Year> result = codec.decodeKey("2025");
 		assertTrue(result.isSuccess());
 		assertEquals(Year.of(2025), result.resultOrThrow());
 	}
-
+	
 	@Test
 	void decodeKeyWithPastYear() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Year> codec = new YearCodec();
-
+		
 		Result<Year> result = codec.decodeKey("1990");
 		assertTrue(result.isSuccess());
 		assertEquals(Year.of(1990), result.resultOrThrow());
 	}
-
+	
 	@Test
 	void decodeKeyWithInvalidValue() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Year> codec = new YearCodec();
-
+		
 		Result<Year> result = codec.decodeKey("invalid");
 		assertTrue(result.isError());
 		assertTrue(result.errorOrThrow().contains("Unable to decode key 'invalid' as year"));
 	}
-
+	
 	@Test
 	void toStringRepresentation() {
 		YearCodec codec = new YearCodec();

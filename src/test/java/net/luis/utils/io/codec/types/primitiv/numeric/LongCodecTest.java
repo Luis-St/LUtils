@@ -109,7 +109,7 @@ class LongCodecTest {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Long> codec = new LongCodec();
 		
-		assertThrows(NullPointerException.class, () -> codec.encodeKey( null));
+		assertThrows(NullPointerException.class, () -> codec.encodeKey(null));
 	}
 	
 	@Test
@@ -117,7 +117,7 @@ class LongCodecTest {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Long> codec = new LongCodec();
 		
-		Result<String> result = codec.encodeKey( 9999999999L);
+		Result<String> result = codec.encodeKey(9999999999L);
 		assertTrue(result.isSuccess());
 		assertEquals("9999999999", result.resultOrThrow());
 	}
@@ -127,7 +127,7 @@ class LongCodecTest {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Long> codec = new LongCodec();
 		
-		Result<String> result = codec.encodeKey( -9999999999L);
+		Result<String> result = codec.encodeKey(-9999999999L);
 		assertTrue(result.isSuccess());
 		assertEquals("-9999999999", result.resultOrThrow());
 	}
@@ -205,7 +205,7 @@ class LongCodecTest {
 		Codec<Long> codec = new LongCodec();
 		
 		assertThrows(NullPointerException.class, () -> codec.decodeKey(null));
-		assertThrows(NullPointerException.class, () -> codec.decodeKey( null));
+		assertThrows(NullPointerException.class, () -> codec.decodeKey(null));
 	}
 	
 	@Test
@@ -213,7 +213,7 @@ class LongCodecTest {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Long> codec = new LongCodec();
 		
-		Result<Long> result = codec.decodeKey( "9999999999");
+		Result<Long> result = codec.decodeKey("9999999999");
 		assertTrue(result.isSuccess());
 		assertEquals(9999999999L, result.resultOrThrow());
 	}
@@ -223,7 +223,7 @@ class LongCodecTest {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Long> codec = new LongCodec();
 		
-		Result<Long> result = codec.decodeKey( "-9999999999");
+		Result<Long> result = codec.decodeKey("-9999999999");
 		assertTrue(result.isSuccess());
 		assertEquals(-9999999999L, result.resultOrThrow());
 	}
@@ -233,7 +233,7 @@ class LongCodecTest {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Long> codec = new LongCodec();
 		
-		Result<Long> result = codec.decodeKey( "invalid");
+		Result<Long> result = codec.decodeKey("invalid");
 		assertTrue(result.isError());
 		assertTrue(result.errorOrThrow().contains("Unable to decode key 'invalid' as long"));
 	}
@@ -243,7 +243,7 @@ class LongCodecTest {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Long> codec = new LongCodec();
 		
-		Result<Long> result = codec.decodeKey( "99999999999999999999999999999");
+		Result<Long> result = codec.decodeKey("99999999999999999999999999999");
 		assertTrue(result.isError());
 		assertTrue(result.errorOrThrow().contains("Unable to decode key '99999999999999999999999999999' as long"));
 	}

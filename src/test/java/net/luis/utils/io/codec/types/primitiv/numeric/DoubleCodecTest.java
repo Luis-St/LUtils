@@ -147,7 +147,7 @@ class DoubleCodecTest {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Double> codec = new DoubleCodec();
 		
-		Result<String> result = codec.encodeKey( 3.141592653589793);
+		Result<String> result = codec.encodeKey(3.141592653589793);
 		assertTrue(result.isSuccess());
 		assertEquals("3.141592653589793", result.resultOrThrow());
 	}
@@ -157,7 +157,7 @@ class DoubleCodecTest {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Double> codec = new DoubleCodec();
 		
-		Result<String> result = codec.encodeKey( -3.141592653589793);
+		Result<String> result = codec.encodeKey(-3.141592653589793);
 		assertTrue(result.isSuccess());
 		assertEquals("-3.141592653589793", result.resultOrThrow());
 	}
@@ -235,7 +235,7 @@ class DoubleCodecTest {
 		Codec<Double> codec = new DoubleCodec();
 		
 		assertThrows(NullPointerException.class, () -> codec.decodeKey(null));
-		assertThrows(NullPointerException.class, () -> codec.decodeKey( null));
+		assertThrows(NullPointerException.class, () -> codec.decodeKey(null));
 	}
 	
 	@Test
@@ -243,7 +243,7 @@ class DoubleCodecTest {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Double> codec = new DoubleCodec();
 		
-		Result<Double> result = codec.decodeKey( "3.141592653589793");
+		Result<Double> result = codec.decodeKey("3.141592653589793");
 		assertTrue(result.isSuccess());
 		assertEquals(3.141592653589793, result.resultOrThrow(), 0.000001);
 	}
@@ -253,7 +253,7 @@ class DoubleCodecTest {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Double> codec = new DoubleCodec();
 		
-		Result<Double> result = codec.decodeKey( "-3.141592653589793");
+		Result<Double> result = codec.decodeKey("-3.141592653589793");
 		assertTrue(result.isSuccess());
 		assertEquals(-3.141592653589793, result.resultOrThrow(), 0.000001);
 	}
@@ -263,7 +263,7 @@ class DoubleCodecTest {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Double> codec = new DoubleCodec();
 		
-		Result<Double> result = codec.decodeKey( "invalid");
+		Result<Double> result = codec.decodeKey("invalid");
 		assertTrue(result.isError());
 		assertTrue(result.errorOrThrow().contains("Unable to decode key 'invalid' as double"));
 	}
@@ -273,7 +273,7 @@ class DoubleCodecTest {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Double> codec = new DoubleCodec();
 		
-		Result<Double> result = codec.decodeKey( "Infinity");
+		Result<Double> result = codec.decodeKey("Infinity");
 		assertTrue(result.isSuccess());
 		assertEquals(Double.POSITIVE_INFINITY, result.resultOrThrow());
 	}
@@ -283,7 +283,7 @@ class DoubleCodecTest {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Double> codec = new DoubleCodec();
 		
-		Result<Double> result = codec.decodeKey( "-Infinity");
+		Result<Double> result = codec.decodeKey("-Infinity");
 		assertTrue(result.isSuccess());
 		assertEquals(Double.NEGATIVE_INFINITY, result.resultOrThrow());
 	}
@@ -293,7 +293,7 @@ class DoubleCodecTest {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Double> codec = new DoubleCodec();
 		
-		Result<Double> result = codec.decodeKey( "NaN");
+		Result<Double> result = codec.decodeKey("NaN");
 		assertTrue(result.isSuccess());
 		assertTrue(Double.isNaN(result.resultOrThrow()));
 	}

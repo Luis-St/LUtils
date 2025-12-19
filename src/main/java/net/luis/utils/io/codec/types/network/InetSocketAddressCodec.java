@@ -37,12 +37,12 @@ import java.util.Objects;
  * @author Luis-St
  */
 public class InetSocketAddressCodec extends AbstractCodec<InetSocketAddress, Object> {
-
+	
 	/**
 	 * Constructs a new inet socket address codec.<br>
 	 */
 	public InetSocketAddressCodec() {}
-
+	
 	@Override
 	public <R> @NotNull Result<R> encodeStart(@NotNull TypeProvider<R> provider, @NotNull R current, @Nullable InetSocketAddress value) {
 		Objects.requireNonNull(provider, "Type provider must not be null");
@@ -50,10 +50,10 @@ public class InetSocketAddressCodec extends AbstractCodec<InetSocketAddress, Obj
 		if (value == null) {
 			return Result.error("Unable to encode null as inet socket address using '" + this + "'");
 		}
-
+		
 		String address = value.getAddress().getHostAddress();
 		int port = value.getPort();
-
+		
 		String formatted;
 		if (address.contains(":")) {
 			formatted = "[" + address + "]:" + port;
@@ -62,20 +62,20 @@ public class InetSocketAddressCodec extends AbstractCodec<InetSocketAddress, Obj
 		}
 		return provider.createString(formatted);
 	}
-
+	
 	@Override
 	public @NotNull Result<String> encodeKey(@NotNull InetSocketAddress key) {
 		Objects.requireNonNull(key, "Key must not be null");
-
+		
 		String address = key.getAddress().getHostAddress();
 		int port = key.getPort();
-
+		
 		if (address.contains(":")) {
 			return Result.success("[" + address + "]:" + port);
 		}
 		return Result.success(address + ":" + port);
 	}
-
+	
 	@Override
 	public <R> @NotNull Result<InetSocketAddress> decodeStart(@NotNull TypeProvider<R> provider, @NotNull R current, @Nullable R value) {
 		Objects.requireNonNull(provider, "Type provider must not be null");
@@ -83,22 +83,22 @@ public class InetSocketAddressCodec extends AbstractCodec<InetSocketAddress, Obj
 		if (value == null) {
 			return Result.error("Unable to decode null value as inet socket address using '" + this + "'");
 		}
-
+		
 		Result<String> result = provider.getString(value);
 		if (result.isError()) {
 			return Result.error(result.errorOrThrow());
 		}
-
+		
 		String string = result.resultOrThrow();
 		return this.parseSocketAddress(string);
 	}
-
+	
 	@Override
 	public @NotNull Result<InetSocketAddress> decodeKey(@NotNull String key) {
 		Objects.requireNonNull(key, "Key must not be null");
 		return this.parseSocketAddress(key);
 	}
-
+	
 	/**
 	 * Parses a socket address from a string.<br>
 	 * Supports formats: "address:port" and "[ipv6]:port"<br>
@@ -110,7 +110,7 @@ public class InetSocketAddressCodec extends AbstractCodec<InetSocketAddress, Obj
 		try {
 			String address;
 			int port;
-
+			
 			if (string.startsWith("[")) {
 				int closeBracket = string.indexOf(']');
 				if (closeBracket == -1 || closeBracket + 2 >= string.length() || string.charAt(closeBracket + 1) != ':') {
@@ -128,7 +128,7 @@ public class InetSocketAddressCodec extends AbstractCodec<InetSocketAddress, Obj
 				address = string.substring(0, lastColon);
 				port = Integer.parseInt(string.substring(lastColon + 1));
 			}
-
+			
 			if (port < 0 || port > 65535) {
 				return Result.error("Port number out of range: " + port);
 			}
@@ -140,7 +140,7 @@ public class InetSocketAddressCodec extends AbstractCodec<InetSocketAddress, Obj
 			return Result.error("Invalid port number in '" + string + "': " + e.getMessage());
 		}
 	}
-
+	
 	@Override
 	public String toString() {
 		return "InetSocketAddressCodec";
