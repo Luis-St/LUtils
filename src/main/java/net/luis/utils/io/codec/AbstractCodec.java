@@ -18,28 +18,17 @@
 
 package net.luis.utils.io.codec;
 
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
-
-import java.util.Objects;
-
 /**
+ * Abstract non-sealed implementation of the {@link Codec} interface.<br>
+ * Used by all default codecs in the {@link net.luis.utils.io.codec.types} package.<br>
+ * <p>
+ *     The class will be extended in the future to provide a constraint system for all codecs.<br>
+ *     This will allow to define common behaviors and properties for codecs of similar types.
+ * </p>
  *
  * @author Luis-St
  *
- * @param <C>
- * @param <T>
+ * @param <C> The type of the codec
+ * @param <T> The type of the constraint config (currently unused, reserved for future use, can be {@link Void} or {@link Object})
  */
-public abstract non-sealed class AbstractCodec<C, T> implements Codec<C> {
-	
-	protected final @Nullable T config;
-	
-	protected AbstractCodec() {
-		this.config = null;
-	}
-	
-	protected AbstractCodec(@NotNull T config) {
-		this.config = Objects.requireNonNull(config, "Config must not be null");
-	}
-	
-}
+public abstract non-sealed class AbstractCodec<C, T> implements Codec<C> {}
