@@ -521,7 +521,39 @@ public final class Codecs {
 	public static <C> @NotNull UnitCodec<C> unit(@NotNull Supplier<C> supplier) {
 		return new UnitCodec<>(supplier);
 	}
-	
+
+	/**
+	 * Creates a new recursive codec that supports encoding and decoding recursive data structures.<br>
+	 * <p>
+	 *     This method is used to create codecs for types that reference themselves, such as trees or linked lists.<br>
+	 *     The factory function receives a reference to the codec being created and must return the actual codec implementation.<br>
+	 *     This allows the codec to reference itself during construction.
+	 * </p>
+	 * <p>
+	 *     Example usage for a binary tree:
+	 *     <pre>{@code
+	 *     record TreeNode(int value, TreeNode left, TreeNode right) {}
+	 *
+	 *     Codec<TreeNode> treeCodec = Codecs.recursive(self ->
+	 *         CodecBuilder.of(
+	 *             Codecs.INTEGER.fieldOf("value", TreeNode::value),
+	 *             self.nullable().fieldOf("left", TreeNode::left),
+	 *             self.nullable().fieldOf("right", TreeNode::right)
+	 *         ).create(TreeNode::new)
+	 *     );
+	 *     }</pre>
+	 * </p>
+	 *
+	 * @param codecFactory The factory function that creates the codec using a self-reference
+	 * @param <C> The type of the recursive value
+	 * @return A new recursive codec
+	 * @throws NullPointerException If the codec factory is null
+	 * @see RecursiveCodec
+	 */
+	public static <C> @NotNull RecursiveCodec<C> recursive(@NotNull Function<Codec<C>, Codec<C>> codecFactory) {
+		return new RecursiveCodec<>(codecFactory);
+	}
+
 	/**
 	 * Creates a new codec that encodes and decodes values of the type {@code C} to and from strings.<br>
 	 * The string encoder and decoder are defined as functions that convert values of the type {@code C} to and from strings.<br>
