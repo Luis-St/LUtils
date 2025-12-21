@@ -130,6 +130,8 @@ public class CodecsTest {
 		
 		assertEquals(new JsonPrimitive("en-US"), LOCALE.encode(provider, Locale.US));
 		assertEquals(new JsonPrimitive("USD"), CURRENCY.encode(provider, Currency.getInstance("USD")));
+
+		assertEquals(new JsonPrimitive("SGVsbG8="), BASE64.encode(provider, new byte[] { 72, 101, 108, 108, 111 }));
 	}
 	
 	@Test

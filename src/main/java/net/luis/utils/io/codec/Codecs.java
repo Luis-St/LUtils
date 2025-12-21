@@ -266,7 +266,12 @@ public final class Codecs {
 	 * The underlying currency is converted to and from a string.<br>
 	 */
 	public static final CurrencyCodec CURRENCY = new CurrencyCodec();
-	
+	/**
+	 * A codec that encodes and decodes byte arrays using Base64 encoding.<br>
+	 * The underlying byte array is converted to and from a Base64-encoded string.<br>
+	 */
+	public static final Base64Codec BASE64 = new Base64Codec();
+
 	/**
 	 * Private constructor to prevent instantiation.<br>
 	 * This is a static helper class.<br>
