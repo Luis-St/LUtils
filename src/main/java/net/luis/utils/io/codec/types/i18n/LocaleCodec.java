@@ -21,8 +21,8 @@ package net.luis.utils.io.codec.types.i18n;
 import net.luis.utils.io.codec.AbstractCodec;
 import net.luis.utils.io.codec.provider.TypeProvider;
 import net.luis.utils.util.result.Result;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 import java.util.Locale;
 import java.util.Objects;
@@ -41,7 +41,7 @@ public class LocaleCodec extends AbstractCodec<Locale, Object> {
 	public LocaleCodec() {}
 	
 	@Override
-	public <R> @NotNull Result<R> encodeStart(@NotNull TypeProvider<R> provider, @NotNull R current, @Nullable Locale value) {
+	public <R> @NonNull Result<R> encodeStart(@NonNull TypeProvider<R> provider, @NonNull R current, @Nullable Locale value) {
 		Objects.requireNonNull(provider, "Type provider must not be null");
 		Objects.requireNonNull(current, "Current value must not be null");
 		
@@ -52,13 +52,13 @@ public class LocaleCodec extends AbstractCodec<Locale, Object> {
 	}
 	
 	@Override
-	public @NotNull Result<String> encodeKey(@NotNull Locale key) {
+	public @NonNull Result<String> encodeKey(@NonNull Locale key) {
 		Objects.requireNonNull(key, "Key must not be null");
 		return Result.success(key.toLanguageTag());
 	}
 	
 	@Override
-	public <R> @NotNull Result<Locale> decodeStart(@NotNull TypeProvider<R> provider, @NotNull R current, @Nullable R value) {
+	public <R> @NonNull Result<Locale> decodeStart(@NonNull TypeProvider<R> provider, @NonNull R current, @Nullable R value) {
 		Objects.requireNonNull(provider, "Type provider must not be null");
 		Objects.requireNonNull(current, "Current value must not be null");
 		if (value == null) {
@@ -79,7 +79,7 @@ public class LocaleCodec extends AbstractCodec<Locale, Object> {
 	}
 	
 	@Override
-	public @NotNull Result<Locale> decodeKey(@NotNull String key) {
+	public @NonNull Result<Locale> decodeKey(@NonNull String key) {
 		Objects.requireNonNull(key, "Key must not be null");
 		
 		try {

@@ -22,7 +22,9 @@ import net.luis.utils.io.codec.*;
 import net.luis.utils.util.Either;
 import net.luis.utils.util.unsafe.reflection.ReflectionHelper;
 import org.apache.commons.lang3.ClassUtils;
-import org.jetbrains.annotations.*;
+import org.jetbrains.annotations.Unmodifiable;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 import java.lang.reflect.*;
 import java.net.URI;
@@ -77,7 +79,7 @@ public final class CodecAutoMapping {
 	 * Creates the codec lookup map with predefined codecs for common Java types.<br>
 	 * @return An unmodifiable map associating classes with their codecs
 	 */
-	private static @NotNull @Unmodifiable Map<Class<?>, Codec<?>> createCodecLookup() {
+	private static @NonNull @Unmodifiable Map<Class<?>, Codec<?>> createCodecLookup() {
 		Map<Class<?>, Codec<?>> lookup = new HashMap<>();
 		lookup.put(boolean[].class, Codecs.BOOLEAN_ARRAY);
 		lookup.put(byte[].class, Codecs.BYTE_ARRAY);
@@ -133,7 +135,7 @@ public final class CodecAutoMapping {
 	 * @see CodecField
 	 * @see GenericInfo
 	 */
-	public static @NotNull <O> Codec<O> createAutoMappedCodec(@NotNull Class<O> clazz) {
+	public static @NonNull <O> Codec<O> createAutoMappedCodec(@NonNull Class<O> clazz) {
 		Objects.requireNonNull(clazz, "Class must not be null");
 		if (clazz.isInterface() || clazz.isAnnotation() || clazz.isPrimitive()) {
 			throw new IllegalArgumentException("Class must not be an interface, annotation or primitive type: " + clazz.getName());
@@ -153,7 +155,7 @@ public final class CodecAutoMapping {
 	 * @throws NullPointerException If the provided class is null
 	 */
 	@SuppressWarnings("unchecked")
-	private static <O> @NotNull Codec<O> getOrCreateCodec(@NotNull Class<O> clazz) {
+	private static <O> @NonNull Codec<O> getOrCreateCodec(@NonNull Class<O> clazz) {
 		Objects.requireNonNull(clazz, "Class must not be null");
 		
 		if (AUTO_CODEC_CACHE.containsKey(clazz)) {
@@ -174,7 +176,7 @@ public final class CodecAutoMapping {
 	 * @return A codec for the given class
 	 * @throws IllegalArgumentException If the class has more than 16 components or an invalid structure
 	 */
-	private static <O> @NotNull Codec<O> createCodecInternal(@NotNull Class<O> clazz) {
+	private static <O> @NonNull Codec<O> createCodecInternal(@NonNull Class<O> clazz) {
 		if (clazz.isEnum()) {
 			return Codecs.dynamicEnum((Class<? extends Enum>) clazz);
 		}
@@ -273,7 +275,7 @@ public final class CodecAutoMapping {
 	 * @throws NullPointerException If the provided class is null
 	 * @see CodecField
 	 */
-	private static CodecComponent @NotNull [] getComponents(@NotNull Class<?> clazz) {
+	private static CodecComponent @NonNull [] getComponents(@NonNull Class<?> clazz) {
 		Objects.requireNonNull(clazz, "Class must not be null");
 		RecordComponent[] recordComponents = clazz.getRecordComponents();
 		if (recordComponents != null) {
@@ -305,7 +307,7 @@ public final class CodecAutoMapping {
 	 * @throws IllegalArgumentException If no suitable constructor is found or multiple constructors are annotated
 	 * @see CodecConstructor
 	 */
-	private static <O> @NotNull Constructor<O> getConstructor(@NotNull Class<O> clazz, CodecComponent @NotNull [] components) {
+	private static <O> @NonNull Constructor<O> getConstructor(@NonNull Class<O> clazz, CodecComponent @NonNull [] components) {
 		Objects.requireNonNull(clazz, "Class must not be null");
 		Objects.requireNonNull(components, "Components must not be null");
 		
@@ -345,7 +347,7 @@ public final class CodecAutoMapping {
 	 * @throws NullPointerException If the class, components, or constructors are null
 	 * @throws IllegalArgumentException If the constructor doesn't match the components
 	 */
-	private static <O> @NotNull Constructor<O> validateClassConstructor(@NotNull Class<O> clazz, CodecComponent @NotNull [] components, @NotNull List<Constructor<?>> constructors) {
+	private static <O> @NonNull Constructor<O> validateClassConstructor(@NonNull Class<O> clazz, CodecComponent @NonNull [] components, @NonNull List<Constructor<?>> constructors) {
 		Objects.requireNonNull(clazz, "Class must not be null");
 		Objects.requireNonNull(components, "Components must not be null");
 		Objects.requireNonNull(constructors, "Constructors must not be null");
@@ -375,7 +377,7 @@ public final class CodecAutoMapping {
 	 * @throws NullPointerException If the component is null
 	 * @see GenericInfo
 	 */
-	private static <C, O> @NotNull FieldCodec<C, O> createFieldCodec(@NotNull CodecComponent component) {
+	private static <C, O> @NonNull FieldCodec<C, O> createFieldCodec(@NonNull CodecComponent component) {
 		Objects.requireNonNull(component, "Component must not be null");
 		
 		GenericInfo genericInfo = component.getAnnotation(GenericInfo.class);
@@ -398,7 +400,7 @@ public final class CodecAutoMapping {
 	 * @throws IllegalArgumentException If generic type information is missing or invalid
 	 * @see GenericInfo
 	 */
-	private static <C> @NotNull Codec<C> getCodec(@NotNull Class<?> clazz, Class<?> @Nullable [] genericInfo) {
+	private static <C> @NonNull Codec<C> getCodec(@NonNull Class<?> clazz, Class<?> @Nullable [] genericInfo) {
 		Objects.requireNonNull(clazz, "Class must not be null");
 		
 		if (clazz.isArray()) {
@@ -484,7 +486,7 @@ public final class CodecAutoMapping {
 	 * @return A new instance of the class
 	 * @throws NullPointerException If the constructor or args are null
 	 */
-	private static <O> @NotNull O createInstance(@NotNull Constructor<O> constructor, Object @NotNull ... args) {
+	private static <O> @NonNull O createInstance(@NonNull Constructor<O> constructor, Object @NonNull ... args) {
 		return ReflectionHelper.newInstance(constructor, args).orElseThrow();
 	}
 }

@@ -19,7 +19,7 @@
 package net.luis.utils.logging;
 
 import org.apache.logging.log4j.Level;
-import org.jetbrains.annotations.NotNull;
+import org.jspecify.annotations.NonNull;
 
 import java.util.Iterator;
 import java.util.NoSuchElementException;
@@ -54,7 +54,7 @@ public enum LoggingType implements Iterable<Level> {
 	 * @return An array of allowed levels
 	 * @throws IllegalStateException If the logging type is unknown
 	 */
-	public Level @NotNull [] getAllowedLevels() {
+	public Level @NonNull [] getAllowedLevels() {
 		if (this == CONSOLE) {
 			return CONSOLE_LEVELS;
 		} else if (this == FILE) {
@@ -64,7 +64,7 @@ public enum LoggingType implements Iterable<Level> {
 	}
 	
 	@Override
-	public @NotNull Iterator<Level> iterator() {
+	public @NonNull Iterator<Level> iterator() {
 		return this.createIterator(this.getAllowedLevels());
 	}
 	
@@ -74,7 +74,7 @@ public enum LoggingType implements Iterable<Level> {
 	 * @param levels The levels
 	 * @return The created iterator
 	 */
-	private @NotNull Iterator<Level> createIterator(Level @NotNull [] levels) {
+	private @NonNull Iterator<Level> createIterator(Level @NonNull [] levels) {
 		return new Iterator<>() {
 			private int index;
 			
@@ -84,7 +84,7 @@ public enum LoggingType implements Iterable<Level> {
 			}
 			
 			@Override
-			public @NotNull Level next() {
+			public @NonNull Level next() {
 				if (!this.hasNext()) {
 					throw new NoSuchElementException("No more elements left in the iterator");
 				}
@@ -94,7 +94,7 @@ public enum LoggingType implements Iterable<Level> {
 	}
 	
 	@Override
-	public @NotNull String toString() {
+	public @NonNull String toString() {
 		return this.name().toLowerCase();
 	}
 }

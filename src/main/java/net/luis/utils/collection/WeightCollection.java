@@ -19,8 +19,8 @@
 package net.luis.utils.collection;
 
 import com.google.common.collect.Maps;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 import java.util.*;
 
@@ -65,7 +65,7 @@ public class WeightCollection<T> {
 	 * @param rng The random number generator
 	 * @throws NullPointerException If the random number generator is null
 	 */
-	public WeightCollection(@NotNull Random rng) {
+	public WeightCollection(@NonNull Random rng) {
 		this.map = Maps.newTreeMap();
 		this.weights = Maps.newHashMap();
 		this.rng = Objects.requireNonNull(rng, "Random must not be null");
@@ -79,7 +79,7 @@ public class WeightCollection<T> {
 	 * @throws NullPointerException If the value is null
 	 * @throws IllegalArgumentException If the weight is less than or equal to
 	 */
-	public void add(int weight, @NotNull T value) {
+	public void add(int weight, @NonNull T value) {
 		Objects.requireNonNull(value, "Value must not be null");
 		if (0 >= weight) {
 			throw new IllegalArgumentException("The weight must be greater than 0, but it is " + weight);

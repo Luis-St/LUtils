@@ -19,7 +19,7 @@
 package net.luis.utils.io.data.xml;
 
 import net.luis.utils.util.Version;
-import org.jetbrains.annotations.NotNull;
+import org.jspecify.annotations.NonNull;
 
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
@@ -34,7 +34,7 @@ import java.util.Objects;
  * @param encoding The encoding of the xml document
  * @param standalone Whether the xml document is standalone or not
  */
-public record XmlDeclaration(@NotNull Version version, @NotNull Charset encoding, boolean standalone) {
+public record XmlDeclaration(@NonNull Version version, @NonNull Charset encoding, boolean standalone) {
 	
 	/**
 	 * Constructs a new xml declaration with the given version, encoding and standalone flag.<br>
@@ -79,7 +79,7 @@ public record XmlDeclaration(@NotNull Version version, @NotNull Charset encoding
 	 * @throws NullPointerException If the version is null
 	 * @throws IllegalArgumentException If the version is invalid
 	 */
-	public XmlDeclaration(@NotNull Version version) {
+	public XmlDeclaration(@NonNull Version version) {
 		this(version, StandardCharsets.UTF_8, false);
 	}
 	
@@ -92,7 +92,7 @@ public record XmlDeclaration(@NotNull Version version, @NotNull Charset encoding
 	 * @throws NullPointerException If the version or encoding is null
 	 * @throws IllegalArgumentException If the version is invalid
 	 */
-	public XmlDeclaration(@NotNull Version version, @NotNull Charset encoding) {
+	public XmlDeclaration(@NonNull Version version, @NonNull Charset encoding) {
 		this(version, encoding, false);
 	}
 	

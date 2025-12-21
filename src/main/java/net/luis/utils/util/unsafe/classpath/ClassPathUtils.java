@@ -21,8 +21,8 @@ package net.luis.utils.util.unsafe.classpath;
 import com.google.common.collect.Lists;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
@@ -58,7 +58,7 @@ public final class ClassPathUtils {
 	 *
 	 * @return A list of all classes from the classpath
 	 */
-	public static @NotNull List<Class<?>> getAllClasses() {
+	public static @NonNull List<Class<?>> getAllClasses() {
 		List<Class<?>> classes = Lists.newArrayList();
 		try {
 			classes.addAll(ClassPathHelper.getClasses(true, clazz -> true));
@@ -85,7 +85,7 @@ public final class ClassPathUtils {
 	 * @return A list of all classes from the classpath which are related to the project
 	 * @see ClassPathHelper
 	 */
-	public static @NotNull List<Class<?>> getProjectClasses() {
+	public static @NonNull List<Class<?>> getProjectClasses() {
 		List<Class<?>> classes = Lists.newArrayList();
 		try {
 			classes.addAll(ClassPathHelper.getClasses(false, clazz -> true));
@@ -102,7 +102,7 @@ public final class ClassPathUtils {
 	 * @param packageName The package name in which the classes should be
 	 * @return A list of all classes
 	 */
-	public static @NotNull List<Class<?>> getClasses(@Nullable String packageName) {
+	public static @NonNull List<Class<?>> getClasses(@Nullable String packageName) {
 		return getClasses(packageName, Mode.INCLUDE);
 	}
 	
@@ -119,7 +119,7 @@ public final class ClassPathUtils {
 	 * @param mode Whether the classes should be included or excluded
 	 * @return A list of all classes
 	 */
-	public static @NotNull List<Class<?>> getClasses(@Nullable String packageName, @Nullable Mode mode) {
+	public static @NonNull List<Class<?>> getClasses(@Nullable String packageName, @Nullable Mode mode) {
 		return Lists.newArrayList(ClassPathHelper.getClasses(true, clazz -> {
 			return packageName == null || (mode == Mode.EXCLUDE) != clazz.startsWith(packageName);
 		}));
@@ -132,7 +132,7 @@ public final class ClassPathUtils {
 	 * @return A list of all classes
 	 * @throws NullPointerException If the given annotation is null
 	 */
-	public static @NotNull List<Class<?>> getAnnotatedClasses(@NotNull Class<? extends Annotation> annotation) {
+	public static @NonNull List<Class<?>> getAnnotatedClasses(@NonNull Class<? extends Annotation> annotation) {
 		Objects.requireNonNull(annotation, "Annotation must not be null");
 		return getAllClasses().stream().filter(clazz -> clazz.isAnnotationPresent(annotation)).collect(Collectors.toList());
 	}
@@ -145,7 +145,7 @@ public final class ClassPathUtils {
 	 * @return A list of all classes
 	 * @throws NullPointerException If the given annotation is null
 	 */
-	public static @NotNull List<Class<?>> getAnnotatedClasses(@Nullable String packageName, @NotNull Class<? extends Annotation> annotation) {
+	public static @NonNull List<Class<?>> getAnnotatedClasses(@Nullable String packageName, @NonNull Class<? extends Annotation> annotation) {
 		Objects.requireNonNull(annotation, "Annotation must not be null");
 		return getClasses(packageName).stream().filter(clazz -> clazz.isAnnotationPresent(annotation)).collect(Collectors.toList());
 	}
@@ -160,7 +160,7 @@ public final class ClassPathUtils {
 	 * @return A list of all methods
 	 * @throws NullPointerException If the given annotation is null
 	 */
-	public static @NotNull List<Method> getAnnotatedMethods(@NotNull Class<? extends Annotation> annotation) {
+	public static @NonNull List<Method> getAnnotatedMethods(@NonNull Class<? extends Annotation> annotation) {
 		Objects.requireNonNull(annotation, "Annotation must not be null");
 		return getAllClasses().stream().map(Class::getDeclaredMethods).flatMap(methods -> Lists.newArrayList(methods).stream()).filter(method -> method.isAnnotationPresent(annotation)).collect(Collectors.toList());
 	}
@@ -173,7 +173,7 @@ public final class ClassPathUtils {
 	 * @return A list of all methods
 	 * @throws NullPointerException If the given annotation is null
 	 */
-	public static @NotNull List<Method> getAnnotatedMethods(@Nullable String packageName, @NotNull Class<? extends Annotation> annotation) {
+	public static @NonNull List<Method> getAnnotatedMethods(@Nullable String packageName, @NonNull Class<? extends Annotation> annotation) {
 		Objects.requireNonNull(annotation, "Annotation must not be null");
 		return getClasses(packageName).stream().map(Class::getDeclaredMethods).flatMap(methods -> Lists.newArrayList(methods).stream()).filter(method -> method.isAnnotationPresent(annotation)).collect(Collectors.toList());
 	}
@@ -188,7 +188,7 @@ public final class ClassPathUtils {
 	 * @return A list of all fields
 	 * @throws NullPointerException If the given annotation is null
 	 */
-	public static @NotNull List<Field> getAnnotatedFields(@NotNull Class<? extends Annotation> annotation) {
+	public static @NonNull List<Field> getAnnotatedFields(@NonNull Class<? extends Annotation> annotation) {
 		Objects.requireNonNull(annotation, "Annotation must not be null");
 		return getAllClasses().stream().map(Class::getDeclaredFields).flatMap(fields -> Lists.newArrayList(fields).stream()).filter(field -> field.isAnnotationPresent(annotation)).collect(Collectors.toList());
 	}
@@ -201,7 +201,7 @@ public final class ClassPathUtils {
 	 * @return A list of all fields
 	 * @throws NullPointerException If the given annotation is null
 	 */
-	public static @NotNull List<Field> getAnnotatedFields(@Nullable String packageName, @NotNull Class<? extends Annotation> annotation) {
+	public static @NonNull List<Field> getAnnotatedFields(@Nullable String packageName, @NonNull Class<? extends Annotation> annotation) {
 		Objects.requireNonNull(annotation, "Annotation must not be null");
 		return getClasses(packageName).stream().map(Class::getDeclaredFields).flatMap(fields -> Lists.newArrayList(fields).stream()).filter(field -> field.isAnnotationPresent(annotation)).collect(Collectors.toList());
 	}

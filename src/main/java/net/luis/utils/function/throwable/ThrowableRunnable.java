@@ -18,7 +18,7 @@
 
 package net.luis.utils.function.throwable;
 
-import org.jetbrains.annotations.NotNull;
+import org.jspecify.annotations.NonNull;
 
 import java.util.Objects;
 
@@ -41,7 +41,7 @@ public interface ThrowableRunnable<X extends Throwable> {
 	 * @return A caught runnable
 	 * @throws NullPointerException If the throwable runnable is null
 	 */
-	static @NotNull Runnable caught(@NotNull ThrowableRunnable<? extends Throwable> runnable) {
+	static @NonNull Runnable caught(@NonNull ThrowableRunnable<? extends Throwable> runnable) {
 		Objects.requireNonNull(runnable, "Throwable runnable must not be null");
 		return () -> {
 			try {
@@ -67,7 +67,7 @@ public interface ThrowableRunnable<X extends Throwable> {
 	 * @return The composed throwable runnable
 	 * @throws NullPointerException If the after operation is null
 	 */
-	default @NotNull ThrowableRunnable<X> andThen(@NotNull ThrowableRunnable<X> after) {
+	default @NonNull ThrowableRunnable<X> andThen(@NonNull ThrowableRunnable<X> after) {
 		Objects.requireNonNull(after, "After operation must not be null");
 		return () -> {
 			this.run();

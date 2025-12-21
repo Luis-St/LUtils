@@ -25,8 +25,8 @@ import net.luis.utils.io.token.rules.TokenRules;
 import net.luis.utils.io.token.rules.core.ReferenceType;
 import net.luis.utils.io.token.stream.TokenStream;
 import net.luis.utils.io.token.tokens.Token;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 import java.util.List;
 import java.util.Objects;
@@ -44,8 +44,8 @@ import java.util.Objects;
  * @param type The type of reference (rule or tokens)
  */
 public record ReferenceTokenRule(
-	@NotNull String key,
-	@NotNull ReferenceType type
+	@NonNull String key,
+	@NonNull ReferenceType type
 ) implements TokenRule {
 	
 	/**
@@ -66,7 +66,7 @@ public record ReferenceTokenRule(
 	}
 	
 	@Override
-	public @Nullable TokenRuleMatch match(@NotNull TokenStream stream, @NotNull TokenRuleContext ctx) {
+	public @Nullable TokenRuleMatch match(@NonNull TokenStream stream, @NonNull TokenRuleContext ctx) {
 		Objects.requireNonNull(stream, "Token stream must not be null");
 		Objects.requireNonNull(ctx, "Token rule context must not be null");
 		
@@ -106,7 +106,7 @@ public record ReferenceTokenRule(
 	 * @return The resulting token rule match if successful, otherwise null
 	 * @throws NullPointerException If the token stream or context is null
 	 */
-	private @Nullable TokenRuleMatch matchReferencedRule(@NotNull TokenStream stream, @NotNull TokenRuleContext ctx) {
+	private @Nullable TokenRuleMatch matchReferencedRule(@NonNull TokenStream stream, @NonNull TokenRuleContext ctx) {
 		Objects.requireNonNull(stream, "Token stream must not be null");
 		Objects.requireNonNull(ctx, "Token rule context must not be null");
 		
@@ -127,7 +127,7 @@ public record ReferenceTokenRule(
 	 * @return The resulting token rule match if successful, otherwise null
 	 * @throws NullPointerException If the token stream or context is null
 	 */
-	private @Nullable TokenRuleMatch matchReferencedTokens(@NotNull TokenStream stream, @NotNull TokenRuleContext ctx) {
+	private @Nullable TokenRuleMatch matchReferencedTokens(@NonNull TokenStream stream, @NonNull TokenRuleContext ctx) {
 		Objects.requireNonNull(stream, "Token stream must not be null");
 		Objects.requireNonNull(ctx, "Token rule context must not be null");
 		if (!stream.hasMoreTokens()) {

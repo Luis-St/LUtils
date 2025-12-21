@@ -22,8 +22,8 @@ import net.luis.utils.io.codec.AbstractCodec;
 import net.luis.utils.io.codec.Codec;
 import net.luis.utils.io.codec.provider.TypeProvider;
 import net.luis.utils.util.result.Result;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 import java.util.Objects;
 
@@ -58,17 +58,17 @@ public class NullableCodec<C> extends AbstractCodec<C, Object> {
 	 * @param codec The codec for non-null values
 	 * @throws NullPointerException If the codec is null
 	 */
-	public NullableCodec(@NotNull Codec<C> codec) {
+	public NullableCodec(@NonNull Codec<C> codec) {
 		this.codec = Objects.requireNonNull(codec, "Codec must not be null");
 	}
 	
 	@Override
-	public @NotNull Class<C> getType() {
+	public @NonNull Class<C> getType() {
 		return this.codec.getType();
 	}
 	
 	@Override
-	public <R> @NotNull Result<R> encodeStart(@NotNull TypeProvider<R> provider, @NotNull R current, @Nullable C value) {
+	public <R> @NonNull Result<R> encodeStart(@NonNull TypeProvider<R> provider, @NonNull R current, @Nullable C value) {
 		Objects.requireNonNull(provider, "Type provider must not be null");
 		Objects.requireNonNull(current, "Current value must not be null");
 		
@@ -79,7 +79,7 @@ public class NullableCodec<C> extends AbstractCodec<C, Object> {
 	}
 	
 	@Override
-	public <R> @NotNull Result<C> decodeStart(@NotNull TypeProvider<R> provider, @NotNull R current, @Nullable R value) {
+	public <R> @NonNull Result<C> decodeStart(@NonNull TypeProvider<R> provider, @NonNull R current, @Nullable R value) {
 		Objects.requireNonNull(provider, "Type provider must not be null");
 		Objects.requireNonNull(current, "Current value must not be null");
 		if (value == null) {

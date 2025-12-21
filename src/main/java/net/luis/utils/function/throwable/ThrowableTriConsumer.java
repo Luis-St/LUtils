@@ -19,7 +19,7 @@
 package net.luis.utils.function.throwable;
 
 import net.luis.utils.function.TriConsumer;
-import org.jetbrains.annotations.NotNull;
+import org.jspecify.annotations.NonNull;
 
 import java.util.Objects;
 
@@ -48,7 +48,7 @@ public interface ThrowableTriConsumer<T, U, V, X extends Throwable> {
 	 * @param <V> The third argument type
 	 * @throws NullPointerException If the throwable tri-consumer is null
 	 */
-	static <T, U, V> @NotNull TriConsumer<T, U, V> caught(@NotNull ThrowableTriConsumer<T, U, V, ? extends Throwable> consumer) {
+	static <T, U, V> @NonNull TriConsumer<T, U, V> caught(@NonNull ThrowableTriConsumer<T, U, V, ? extends Throwable> consumer) {
 		Objects.requireNonNull(consumer, "Throwable consumer must not be null");
 		return (t, u, v) -> {
 			try {
@@ -77,7 +77,7 @@ public interface ThrowableTriConsumer<T, U, V, X extends Throwable> {
 	 * @return The composed throwable consumer
 	 * @throws NullPointerException If the after operation is null
 	 */
-	default @NotNull ThrowableTriConsumer<T, U, V, X> andThen(@NotNull ThrowableTriConsumer<? super T, ? super U, ? super V, X> after) {
+	default @NonNull ThrowableTriConsumer<T, U, V, X> andThen(@NonNull ThrowableTriConsumer<? super T, ? super U, ? super V, X> after) {
 		Objects.requireNonNull(after, "After operation must not be null");
 		return (t, u, v) -> {
 			this.accept(t, u, v);

@@ -27,8 +27,8 @@ import net.luis.utils.io.token.rules.quantifiers.RepeatedTokenRule;
 import net.luis.utils.io.token.stream.TokenStream;
 import net.luis.utils.io.token.tokens.SimpleToken;
 import net.luis.utils.io.token.tokens.Token;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
@@ -43,14 +43,14 @@ import static org.junit.jupiter.api.Assertions.*;
  */
 class TokenRuleTest {
 	
-	private static @NotNull Token createToken() {
+	private static @NonNull Token createToken() {
 		return SimpleToken.createUnpositioned("lambda");
 	}
 	
-	private static @NotNull TokenRule createRule() {
+	private static @NonNull TokenRule createRule() {
 		return new TokenRule() {
 			@Override
-			public @Nullable TokenRuleMatch match(@NotNull TokenStream stream, @NotNull TokenRuleContext ctx) {
+			public @Nullable TokenRuleMatch match(@NonNull TokenStream stream, @NonNull TokenRuleContext ctx) {
 				Objects.requireNonNull(stream, "Token stream must not be null");
 				Objects.requireNonNull(ctx, "Token rule context must not be null");
 				if (!stream.hasMoreTokens()) {
@@ -71,7 +71,7 @@ class TokenRuleTest {
 	void functionalInterfaceUsage() {
 		TokenRule lambdaRule = new TokenRule() {
 			@Override
-			public @Nullable TokenRuleMatch match(@NotNull TokenStream stream, @NotNull TokenRuleContext ctx) {
+			public @Nullable TokenRuleMatch match(@NonNull TokenStream stream, @NonNull TokenRuleContext ctx) {
 				if (!stream.hasMoreTokens()) {
 					return null;
 				}
@@ -123,7 +123,7 @@ class TokenRuleTest {
 	void functionalInterfaceWithEmptyStream() {
 		TokenRule rule = new TokenRule() {
 			@Override
-			public @Nullable TokenRuleMatch match(@NotNull TokenStream stream, @NotNull TokenRuleContext ctx) {
+			public @Nullable TokenRuleMatch match(@NonNull TokenStream stream, @NonNull TokenRuleContext ctx) {
 				if (!stream.hasMoreTokens()) {
 					return null;
 				}
@@ -145,7 +145,7 @@ class TokenRuleTest {
 	void functionalInterfaceWithComplexLogic() {
 		TokenRule complexRule = new TokenRule() {
 			@Override
-			public @Nullable TokenRuleMatch match(@NotNull TokenStream stream, @NotNull TokenRuleContext ctx) {
+			public @Nullable TokenRuleMatch match(@NonNull TokenStream stream, @NonNull TokenRuleContext ctx) {
 				if (!stream.hasMoreTokens()) {
 					return null;
 				}
@@ -176,7 +176,7 @@ class TokenRuleTest {
 	void functionalInterfaceWithStreamAdvancement() {
 		TokenRule rule = new TokenRule() {
 			@Override
-			public @Nullable TokenRuleMatch match(@NotNull TokenStream stream, @NotNull TokenRuleContext ctx) {
+			public @Nullable TokenRuleMatch match(@NonNull TokenStream stream, @NonNull TokenRuleContext ctx) {
 				if (!stream.hasMoreTokens()) {
 					return null;
 				}
@@ -208,7 +208,7 @@ class TokenRuleTest {
 	void functionalInterfaceWithMultiTokenMatch() {
 		TokenRule multiTokenRule = new TokenRule() {
 			@Override
-			public @Nullable TokenRuleMatch match(@NotNull TokenStream stream, @NotNull TokenRuleContext ctx) {
+			public @Nullable TokenRuleMatch match(@NonNull TokenStream stream, @NonNull TokenRuleContext ctx) {
 				if (!stream.hasMoreTokens()) {
 					return null;
 				}
@@ -242,7 +242,7 @@ class TokenRuleTest {
 	void functionalInterfaceWithContextUsage() {
 		TokenRule contextRule = new TokenRule() {
 			@Override
-			public @Nullable TokenRuleMatch match(@NotNull TokenStream stream, @NotNull TokenRuleContext ctx) {
+			public @Nullable TokenRuleMatch match(@NonNull TokenStream stream, @NonNull TokenRuleContext ctx) {
 				if (!stream.hasMoreTokens()) {
 					return null;
 				}
@@ -270,7 +270,7 @@ class TokenRuleTest {
 	void functionalInterfaceWithExceptionHandling() {
 		TokenRule exceptionRule = new TokenRule() {
 			@Override
-			public @Nullable TokenRuleMatch match(@NotNull TokenStream stream, @NotNull TokenRuleContext ctx) {
+			public @Nullable TokenRuleMatch match(@NonNull TokenStream stream, @NonNull TokenRuleContext ctx) {
 				if (!stream.hasMoreTokens()) {
 					return null;
 				}
@@ -302,7 +302,7 @@ class TokenRuleTest {
 		final boolean[] matched = { false };
 		TokenRule stateRule = new TokenRule() {
 			@Override
-			public @Nullable TokenRuleMatch match(@NotNull TokenStream stream, @NotNull TokenRuleContext ctx) {
+			public @Nullable TokenRuleMatch match(@NonNull TokenStream stream, @NonNull TokenRuleContext ctx) {
 				if (!stream.hasMoreTokens()) {
 					return null;
 				}

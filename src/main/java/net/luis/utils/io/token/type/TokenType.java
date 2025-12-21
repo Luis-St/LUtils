@@ -18,8 +18,8 @@
 
 package net.luis.utils.io.token.type;
 
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 import java.util.Objects;
 
@@ -46,7 +46,7 @@ public sealed interface TokenType permits StandardTokenType, CustomTokenType {
 	 * Gets the name of the token type.<br>
 	 * @return The name of the type
 	 */
-	@NotNull String getName();
+	@NonNull String getName();
 	
 	/**
 	 * Gets the super type of the token type.<br>
@@ -61,7 +61,7 @@ public sealed interface TokenType permits StandardTokenType, CustomTokenType {
 	 *
 	 * @return The base type of the type
 	 */
-	default @NotNull TokenType getBaseType() {
+	default @NonNull TokenType getBaseType() {
 		TokenType current = this;
 		
 		while (current.getSuperType() != null) {
@@ -82,7 +82,7 @@ public sealed interface TokenType permits StandardTokenType, CustomTokenType {
 	 * @return True if the token type is an instance of the given type, false otherwise
 	 * @throws NullPointerException If the given type is null
 	 */
-	default boolean isInstanceOf(@NotNull TokenType type) {
+	default boolean isInstanceOf(@NonNull TokenType type) {
 		Objects.requireNonNull(type, "Type must not be null");
 		
 		TokenType current = this;
@@ -106,7 +106,7 @@ public sealed interface TokenType permits StandardTokenType, CustomTokenType {
 	 *
 	 * @return An array containing the hierarchy of the type, from base type to the type itself
 	 */
-	default TokenType @NotNull [] getHierarchy() {
+	default TokenType @NonNull [] getHierarchy() {
 		int depth = 1;
 		TokenType current = this;
 		while (current.getSuperType() != null) {
@@ -133,7 +133,7 @@ public sealed interface TokenType permits StandardTokenType, CustomTokenType {
 	 *
 	 * @return A string representing the hierarchy path of the type
 	 */
-	default @NotNull String getHierarchyPath() {
+	default @NonNull String getHierarchyPath() {
 		StringBuilder builder = new StringBuilder();
 		
 		for (TokenType type : this.getHierarchy()) {

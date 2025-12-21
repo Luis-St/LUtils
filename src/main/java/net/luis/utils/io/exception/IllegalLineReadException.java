@@ -18,7 +18,7 @@
 
 package net.luis.utils.io.exception;
 
-import org.jetbrains.annotations.Nullable;
+import org.jspecify.annotations.Nullable;
 
 import java.io.IOException;
 

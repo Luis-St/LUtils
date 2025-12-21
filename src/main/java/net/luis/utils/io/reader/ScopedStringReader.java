@@ -20,8 +20,7 @@ package net.luis.utils.io.reader;
 
 import net.luis.utils.exception.InvalidStringException;
 import org.apache.commons.lang3.Strings;
-import org.jetbrains.annotations.ApiStatus;
-import org.jetbrains.annotations.NotNull;
+import org.jspecify.annotations.NonNull;
 
 import java.io.Reader;
 import java.io.UncheckedIOException;
@@ -46,7 +45,7 @@ public class ScopedStringReader extends StringReader {
 	 * @param string The string to read from
 	 * @throws NullPointerException If the string is null
 	 */
-	public ScopedStringReader(@NotNull String string) {
+	public ScopedStringReader(@NonNull String string) {
 		super(string);
 	}
 	
@@ -58,7 +57,7 @@ public class ScopedStringReader extends StringReader {
 	 * @throws NullPointerException If the reader is null
 	 * @throws UncheckedIOException If an I/O error occurs while reading the string
 	 */
-	public ScopedStringReader(@NotNull Reader reader) {
+	public ScopedStringReader(@NonNull Reader reader) {
 		super(reader);
 	}
 	
@@ -80,7 +79,7 @@ public class ScopedStringReader extends StringReader {
 	 * @throws IllegalArgumentException If the next character is not the opening character of the scope
 	 * @throws InvalidStringException If the scope is invalid
 	 */
-	public @NotNull String readScope(@NotNull StringScope scope) {
+	public @NonNull String readScope(@NonNull StringScope scope) {
 		Objects.requireNonNull(scope, "Scope must not be null");
 		if (!this.canRead()) {
 			return "";
@@ -145,7 +144,7 @@ public class ScopedStringReader extends StringReader {
 	 * @throws InvalidStringException If the scope is invalid
 	 */
 	@Override
-	public @NotNull String readUntil(char terminator) {
+	public @NonNull String readUntil(char terminator) {
 		return super.readUntil(terminator);
 	}
 	
@@ -164,7 +163,7 @@ public class ScopedStringReader extends StringReader {
 	 * @throws InvalidStringException If the scope is invalid
 	 */
 	@Override
-	public @NotNull String readUntilInclusive(char terminator) {
+	public @NonNull String readUntilInclusive(char terminator) {
 		return super.readUntilInclusive(terminator);
 	}
 	
@@ -182,7 +181,7 @@ public class ScopedStringReader extends StringReader {
 	 * @throws IllegalArgumentException If the terminators are empty or contain a backslash
 	 */
 	@Override
-	public @NotNull String readUntil(char @NotNull ... terminators) {
+	public @NonNull String readUntil(char @NonNull ... terminators) {
 		return super.readUntil(terminators);
 	}
 	
@@ -200,7 +199,7 @@ public class ScopedStringReader extends StringReader {
 	 * @throws IllegalArgumentException If the terminators are empty or contain a backslash
 	 */
 	@Override
-	public @NotNull String readUntilInclusive(char @NotNull ... terminators) {
+	public @NonNull String readUntilInclusive(char @NonNull ... terminators) {
 		return super.readUntilInclusive(terminators);
 	}
 	
@@ -216,9 +215,8 @@ public class ScopedStringReader extends StringReader {
 	 * @see #readUntilInclusive(char...)
 	 */
 	@Override
-	@ApiStatus.Internal
 	@SuppressWarnings("DuplicatedCode")
-	protected @NotNull String readUntil(@NotNull Predicate<Character> predicate, boolean inclusive) {
+	protected @NonNull String readUntil(@NonNull Predicate<Character> predicate, boolean inclusive) {
 		StringBuilder builder = new StringBuilder();
 		boolean escaped = false;
 		boolean inSingleQuotes = false;
@@ -270,7 +268,7 @@ public class ScopedStringReader extends StringReader {
 	 * @throws IllegalArgumentException If the terminator string is empty or contains a backslash
 	 */
 	@Override
-	public @NotNull String readUntil(@NotNull String terminator, boolean caseSensitive) {
+	public @NonNull String readUntil(@NonNull String terminator, boolean caseSensitive) {
 		return super.readUntil(terminator, caseSensitive);
 	}
 	
@@ -290,7 +288,7 @@ public class ScopedStringReader extends StringReader {
 	 * @throws IllegalArgumentException If the terminator string is empty or contains a backslash
 	 */
 	@Override
-	public @NotNull String readUntilInclusive(@NotNull String terminator, boolean caseSensitive) {
+	public @NonNull String readUntilInclusive(@NonNull String terminator, boolean caseSensitive) {
 		return super.readUntilInclusive(terminator, caseSensitive);
 	}
 	
@@ -306,9 +304,8 @@ public class ScopedStringReader extends StringReader {
 	 * @see #readUntilInclusive(String, boolean)
 	 */
 	@Override
-	@ApiStatus.Internal
 	@SuppressWarnings("DuplicatedCode")
-	protected @NotNull String readUntil(@NotNull String terminator, boolean caseSensitive, boolean inclusive) {
+	protected @NonNull String readUntil(@NonNull String terminator, boolean caseSensitive, boolean inclusive) {
 		Objects.requireNonNull(terminator, "Terminator string must not be null");
 		Predicate<String> matcher = s -> caseSensitive ? terminator.startsWith(s) : Strings.CI.startsWith(s, terminator);
 		Predicate<String> breaker = s -> caseSensitive ? terminator.equals(s) : s.equalsIgnoreCase(terminator);
@@ -386,7 +383,7 @@ public class ScopedStringReader extends StringReader {
 	 * @throws NullPointerException If the scope or parser is null
 	 * @throws IllegalArgumentException If an error occurs while reading the collection
 	 */
-	private <T> @NotNull Collection<T> readCollection(@NotNull StringScope scope, @NotNull Function<ScopedStringReader, T> parser) {
+	private <T> @NonNull Collection<T> readCollection(@NonNull StringScope scope, @NonNull Function<ScopedStringReader, T> parser) {
 		Objects.requireNonNull(scope, "Scope must not be null");
 		Objects.requireNonNull(parser, "Parser must not be null");
 		ScopedStringReader reader = new ScopedStringReader(this.readScope(scope));
@@ -429,7 +426,7 @@ public class ScopedStringReader extends StringReader {
 	 * @throws InvalidStringException If an error occurs while reading the list
 	 * @see #readCollection(StringScope, Function)
 	 */
-	public <T> @NotNull List<T> readList(@NotNull Function<ScopedStringReader, T> parser) {
+	public <T> @NonNull List<T> readList(@NonNull Function<ScopedStringReader, T> parser) {
 		Objects.requireNonNull(parser, "List element parser must not be null");
 		if (!this.canRead()) {
 			return new ArrayList<>();
@@ -452,7 +449,7 @@ public class ScopedStringReader extends StringReader {
 	 * @throws InvalidStringException If an error occurs while reading the set
 	 * @see #readCollection(StringScope, Function)
 	 */
-	public <T> @NotNull Set<T> readSet(@NotNull Function<ScopedStringReader, T> parser) {
+	public <T> @NonNull Set<T> readSet(@NonNull Function<ScopedStringReader, T> parser) {
 		Objects.requireNonNull(parser, "Set element parser must not be null");
 		if (!this.canRead()) {
 			return new HashSet<>();
@@ -480,7 +477,7 @@ public class ScopedStringReader extends StringReader {
 	 * @throws InvalidStringException If an error occurs while reading the map
 	 * @see #readCollection(StringScope, Function)
 	 */
-	public <K, V> @NotNull Map<K, V> readMap(@NotNull Function<ScopedStringReader, K> keyParser, @NotNull Function<ScopedStringReader, V> valueParser) {
+	public <K, V> @NonNull Map<K, V> readMap(@NonNull Function<ScopedStringReader, K> keyParser, @NonNull Function<ScopedStringReader, V> valueParser) {
 		Objects.requireNonNull(keyParser, "Map key parser must not be null");
 		Objects.requireNonNull(valueParser, "Map value parser must not be null");
 		if (!this.canRead()) {

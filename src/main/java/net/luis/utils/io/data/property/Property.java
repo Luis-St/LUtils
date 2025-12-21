@@ -20,8 +20,8 @@ package net.luis.utils.io.data.property;
 
 import net.luis.utils.util.getter.DefaultValueGetter;
 import org.apache.commons.lang3.StringUtils;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 import java.util.Objects;
 
@@ -50,7 +50,7 @@ public class Property implements DefaultValueGetter {
 	 * @param value The value of the property
 	 * @throws NullPointerException If the key or the value is null
 	 */
-	protected Property(@NotNull String key, @NotNull String value) { // protected to prevent instantiation from outside but allow inheritance
+	protected Property(@NonNull String key, @NonNull String value) { // protected to prevent instantiation from outside but allow inheritance
 		this.key = Objects.requireNonNull(key, "Key must not be null");
 		this.value = Objects.requireNonNull(value, "Value must not be null");
 	}
@@ -63,7 +63,7 @@ public class Property implements DefaultValueGetter {
 	 * @return A new property
 	 * @throws NullPointerException If the key or the value is null
 	 */
-	public static @NotNull Property of(@NotNull String key, @NotNull String value) {
+	public static @NonNull Property of(@NonNull String key, @NonNull String value) {
 		return new Property(key, value);
 	}
 	
@@ -71,7 +71,7 @@ public class Property implements DefaultValueGetter {
 	 * Returns the key of the property as a string.<br>
 	 * @return The key of the property
 	 */
-	public @NotNull String getKey() {
+	public @NonNull String getKey() {
 		return this.key;
 	}
 	
@@ -79,7 +79,7 @@ public class Property implements DefaultValueGetter {
 	 * Returns the value of the property as a string.<br>
 	 * @return The value of the property
 	 */
-	public @NotNull String getRawValue() {
+	public @NonNull String getRawValue() {
 		return this.value;
 	}
 	
@@ -89,7 +89,7 @@ public class Property implements DefaultValueGetter {
 	 * @return The value of the property
 	 */
 	@Override
-	public @NotNull String getAsString() {
+	public @NonNull String getAsString() {
 		return this.value;
 	}
 	
@@ -157,7 +157,7 @@ public class Property implements DefaultValueGetter {
 	 * @return The property as a string
 	 * @throws NullPointerException If the configuration is null
 	 */
-	public @NotNull String toString(@NotNull PropertyConfig config) {
+	public @NonNull String toString(@NonNull PropertyConfig config) {
 		Objects.requireNonNull(config, "Property config must not be null");
 		String alignment = " ".repeat(config.alignment());
 		return this.key + alignment + config.separator() + alignment + this.value;

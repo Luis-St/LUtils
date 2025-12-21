@@ -18,7 +18,7 @@
 
 package net.luis.utils.io.codec.encoder;
 
-import org.jetbrains.annotations.Nullable;
+import org.jspecify.annotations.Nullable;
 
 /**
  * Thrown when an error occurs during encoding an object.<br>

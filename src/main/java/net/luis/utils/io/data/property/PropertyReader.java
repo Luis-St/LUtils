@@ -27,7 +27,9 @@ import net.luis.utils.io.reader.StringScope;
 import net.luis.utils.lang.StringUtils;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.Strings;
-import org.jetbrains.annotations.*;
+import org.jetbrains.annotations.Unmodifiable;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 import java.io.*;
 import java.util.*;
@@ -105,7 +107,7 @@ public class PropertyReader implements AutoCloseable {
 	 * @param input The input to create the reader for
 	 * @throws NullPointerException If the input is null
 	 */
-	public PropertyReader(@NotNull InputProvider input) {
+	public PropertyReader(@NonNull InputProvider input) {
 		this(input, PropertyConfig.DEFAULT);
 	}
 	
@@ -116,7 +118,7 @@ public class PropertyReader implements AutoCloseable {
 	 * @param config The configuration for this reader
 	 * @throws NullPointerException If the input or the configuration is null
 	 */
-	public PropertyReader(@NotNull InputProvider input, @NotNull PropertyConfig config) {
+	public PropertyReader(@NonNull InputProvider input, @NonNull PropertyConfig config) {
 		this.config = Objects.requireNonNull(config, "Property config must not be null");
 		this.reader = new BufferedReader(new InputStreamReader(Objects.requireNonNull(input, "Input must not be null").getStream(), config.charset()));
 	}
@@ -130,7 +132,7 @@ public class PropertyReader implements AutoCloseable {
 	 * @param scope The scope which is expected
 	 * @return The content of the reader without the scope
 	 */
-	private static @NotNull String readScopeExclude(@NotNull ScopedStringReader reader, @NotNull StringScope scope) {
+	private static @NonNull String readScopeExclude(@NonNull ScopedStringReader reader, @NonNull StringScope scope) {
 		Objects.requireNonNull(reader, "Reader must not be null");
 		Objects.requireNonNull(scope, "Scope must not be null");
 		String result = reader.readScope(scope);
@@ -144,7 +146,7 @@ public class PropertyReader implements AutoCloseable {
 	 * @return The properties that have been read
 	 * @throws PropertySyntaxException If an error occurs while reading the properties
 	 */
-	public @NotNull Properties readProperties() {
+	public @NonNull Properties readProperties() {
 		List<Property> properties = Lists.newArrayList();
 		while (true) {
 			String line;
@@ -176,7 +178,7 @@ public class PropertyReader implements AutoCloseable {
 	 * @throws NullPointerException If the line is null
 	 * @throws PropertySyntaxException If the line is not parsable
 	 */
-	private @NotNull @Unmodifiable List<Property> parseLine(@NotNull String rawLine) {
+	private @NonNull @Unmodifiable List<Property> parseLine(@NonNull String rawLine) {
 		Objects.requireNonNull(rawLine, "Line must not be null");
 		String line = rawLine.stripLeading();
 		if (line.isBlank() || this.config.commentCharacters().contains(line.charAt(0))) {
@@ -201,7 +203,7 @@ public class PropertyReader implements AutoCloseable {
 	 * @return The value part of the line
 	 * @throws NullPointerException If the value parts are null
 	 */
-	private @NotNull String getValuePart(String @NotNull [] valueParts) {
+	private @NonNull String getValuePart(String @NonNull [] valueParts) {
 		Objects.requireNonNull(valueParts, "Value parts must not be null");
 		if (valueParts.length == 1) {
 			return "";
@@ -226,7 +228,7 @@ public class PropertyReader implements AutoCloseable {
 	 * @see #parsePropertySimple(String, String)
 	 * @see #resolveAdvancedKeys(String)
 	 */
-	private @NotNull @Unmodifiable List<Property> parseProperty(@NotNull String rawKey, @NotNull String rawValue) {
+	private @NonNull @Unmodifiable List<Property> parseProperty(@NonNull String rawKey, @NonNull String rawValue) {
 		Objects.requireNonNull(rawKey, "Key must not be null");
 		Objects.requireNonNull(rawValue, "Value must not be null");
 		int alignment = this.getWhitespaceAlignmentCount(rawKey);
@@ -255,7 +257,7 @@ public class PropertyReader implements AutoCloseable {
 	 * @param key The key to check
 	 * @return True if the key is advanced, otherwise false
 	 */
-	private boolean isAdvancedKey(@NotNull String key) {
+	private boolean isAdvancedKey(@NonNull String key) {
 		Objects.requireNonNull(key, "Key must not be null");
 		return COMPACTED_KEY_PATTERN.matcher(key).matches() || VARIABLE_KEY_PATTERN.matcher(key).matches();
 	}
@@ -268,7 +270,7 @@ public class PropertyReader implements AutoCloseable {
 	 * @return The alignment count of the key
 	 * @throws NullPointerException If the key is null
 	 */
-	private int getWhitespaceAlignmentCount(@NotNull String key) {
+	private int getWhitespaceAlignmentCount(@NonNull String key) {
 		Objects.requireNonNull(key, "Key must not be null");
 		int count = 0;
 		for (int i = key.length() - 1; i >= 0; i--) {
@@ -292,7 +294,7 @@ public class PropertyReader implements AutoCloseable {
 	 * @return The string without the alignment
 	 * @throws NullPointerException If the string is null
 	 */
-	private @NotNull String removeAlignment(@NotNull String str, int alignment, boolean isKey) {
+	private @NonNull String removeAlignment(@NonNull String str, int alignment, boolean isKey) {
 		Objects.requireNonNull(str, "String must not be null");
 		if (0 >= alignment) {
 			return str;
@@ -315,7 +317,7 @@ public class PropertyReader implements AutoCloseable {
 	 * @return The property that has been read
 	 * @throws PropertySyntaxException If an error occurs while parsing the key or value
 	 */
-	private @NotNull Property parsePropertySimple(@NotNull String key, @NotNull String value) {
+	private @NonNull Property parsePropertySimple(@NonNull String key, @NonNull String value) {
 		this.config.ensureKeyMatches(key);
 		this.config.ensureValueMatches(value);
 		return Property.of(key, value);
@@ -335,7 +337,7 @@ public class PropertyReader implements AutoCloseable {
 	 * @see #resolveCompactedKeyPart(String, String)
 	 * @see #resolveVariableKeyPart(String, String)
 	 */
-	private @NotNull @Unmodifiable List<String> resolveAdvancedKeys(@NotNull String key) {
+	private @NonNull @Unmodifiable List<String> resolveAdvancedKeys(@NonNull String key) {
 		Objects.requireNonNull(key, "Key must not be null");
 		List<String> resolvedKeys = Lists.newArrayList();
 		ScopedStringReader reader = new ScopedStringReader(key);
@@ -398,7 +400,7 @@ public class PropertyReader implements AutoCloseable {
 	 * @throws NullPointerException If the key or compacted key part is null
 	 * @throws PropertySyntaxException If the compacted key part does not match the expected format
 	 */
-	private String @NotNull [] resolveCompactedKeyPart(@NotNull String key, @NotNull String compacted) {
+	private String @NonNull [] resolveCompactedKeyPart(@NonNull String key, @NonNull String compacted) {
 		Objects.requireNonNull(key, "Key must not be null");
 		Objects.requireNonNull(compacted, "Compacted key part must not be null");
 		String[] compactedValues = compacted.split("\\|");
@@ -441,7 +443,7 @@ public class PropertyReader implements AutoCloseable {
 	 * @throws PropertySyntaxException If the variable key part does not match the expected format or the value could not be resolved
 	 * @see #resolveVariableValue(String, String)
 	 */
-	private @NotNull String resolveVariableKeyPart(@NotNull String key, @NotNull String variable) {
+	private @NonNull String resolveVariableKeyPart(@NonNull String key, @NonNull String variable) {
 		Objects.requireNonNull(key, "Key must not be null");
 		Objects.requireNonNull(variable, "Variable key part must not be null");
 		int questionMarkCount = countMatches(variable, '?');
@@ -468,7 +470,7 @@ public class PropertyReader implements AutoCloseable {
 	 * @throws NullPointerException If the key or variable key part is null
 	 * @throws PropertySyntaxException If the target type is not valid or the resolved value is null
 	 */
-	private @NotNull String resolveVariableValue(@NotNull String key, @NotNull String variable) {
+	private @NonNull String resolveVariableValue(@NonNull String key, @NonNull String variable) {
 		Objects.requireNonNull(key, "Key must not be null");
 		Objects.requireNonNull(variable, "Variable key part must not be null");
 		String[] parts = variable.split("\\?");
@@ -505,7 +507,7 @@ public class PropertyReader implements AutoCloseable {
 	 * @throws NullPointerException If the key, variable key part or parts are null
 	 * @throws PropertySyntaxException If the target key is not valid
 	 */
-	private @NotNull String getTargetKey(@NotNull String key, @NotNull String variable, String @NotNull [] parts) {
+	private @NonNull String getTargetKey(@NonNull String key, @NonNull String variable, String @NonNull [] parts) {
 		Objects.requireNonNull(key, "Key must not be null");
 		Objects.requireNonNull(variable, "Variable key part must not be null");
 		Objects.requireNonNull(parts, "Parts must not be null");
@@ -533,7 +535,7 @@ public class PropertyReader implements AutoCloseable {
 	 * @return The extended resolved keys
 	 * @throws NullPointerException If the resolved keys are null
 	 */
-	private @NotNull List<String> extendResolvedKeys(@NotNull List<String> resolvedKeys, String @Nullable ... keyParts) {
+	private @NonNull List<String> extendResolvedKeys(@NonNull List<String> resolvedKeys, String @Nullable ... keyParts) {
 		Objects.requireNonNull(resolvedKeys, "Resolved keys must not be null");
 		List<String> result = Lists.newArrayList();
 		if (resolvedKeys.isEmpty() && keyParts != null) {

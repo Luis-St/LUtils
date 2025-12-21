@@ -22,7 +22,9 @@ import net.luis.utils.io.data.InputProvider;
 import net.luis.utils.util.Pair;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Strings;
-import org.jetbrains.annotations.*;
+import org.jetbrains.annotations.Blocking;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 import java.io.*;
 import java.nio.charset.Charset;
@@ -66,7 +68,7 @@ public final class FileUtils {
 	 * @param file The file to split as a string
 	 * @return The pair of the folder and the file name
 	 */
-	public static @NotNull Pair<String, String> split(@Nullable String file) {
+	public static @NonNull Pair<String, String> split(@Nullable String file) {
 		String str = StringUtils.stripToEmpty(file).replace("\\", "/");
 		int dash = str.lastIndexOf("/");
 		int dot = str.lastIndexOf(".");
@@ -100,7 +102,7 @@ public final class FileUtils {
 	 * @param file The file to get the name of
 	 * @return The name of the file or an empty string if the file has no name
 	 */
-	public static @NotNull String getName(@Nullable String file) {
+	public static @NonNull String getName(@Nullable String file) {
 		String str;
 		if (Strings.CS.containsAny(file, "/", "\\")) {
 			str = split(file).getSecond();
@@ -133,7 +135,7 @@ public final class FileUtils {
 	 * @param file The file to get the extension of
 	 * @return The extension of the file or an empty string if the file has no extension
 	 */
-	public static @NotNull String getExtension(@Nullable String file) {
+	public static @NonNull String getExtension(@Nullable String file) {
 		String str = StringUtils.stripToEmpty(file);
 		int index = str.lastIndexOf(".");
 		if (index == -1) {
@@ -162,7 +164,7 @@ public final class FileUtils {
 	 * @param file The file to get the relative path of
 	 * @return The relative path of the file
 	 */
-	public static @NotNull String getRelativePath(@Nullable String file) {
+	public static @NonNull String getRelativePath(@Nullable String file) {
 		String str = Strings.CS.contains(file, ".") ? split(file).getFirst() : StringUtils.stripToEmpty(file).replace("\\", "/");
 		if (str.isEmpty() || "/".equals(str) || "./".equals(str)) {
 			return "./";
@@ -202,7 +204,7 @@ public final class FileUtils {
 	 * @param file The file to get the relative path of
 	 * @return The relative path of the file
 	 */
-	public static @NotNull String normalizeDirectoryPath(@Nullable String file) {
+	public static @NonNull String normalizeDirectoryPath(@Nullable String file) {
 		String original = StringUtils.stripToEmpty(file).replace("\\", "/");
 		if (original.isEmpty() || "/".equals(original) || "./".equals(original)) {
 			return "/";
@@ -250,7 +252,7 @@ public final class FileUtils {
 	 * @throws IOException If an I/O error occurs
 	 */
 	@Blocking
-	public static void create(@NotNull Path file) throws IOException {
+	public static void create(@NonNull Path file) throws IOException {
 		Objects.requireNonNull(file, "File must not be null");
 		if (Files.exists(file)) {
 			throw new FileAlreadyExistsException("File '" + file + "' already exists");
@@ -275,7 +277,7 @@ public final class FileUtils {
 	 * @see #create(Path)
 	 */
 	@Blocking
-	public static void createIfNotExists(@NotNull Path file) throws IOException {
+	public static void createIfNotExists(@NonNull Path file) throws IOException {
 		Objects.requireNonNull(file, "File must not be null");
 		if (Files.notExists(file)) {
 			create(file);
@@ -292,7 +294,7 @@ public final class FileUtils {
 	 * @see Files#createTempDirectory(String, FileAttribute[])
 	 */
 	@Blocking
-	public static @NotNull Path createSessionDirectory(@Nullable String prefix) throws IOException {
+	public static @NonNull Path createSessionDirectory(@Nullable String prefix) throws IOException {
 		Path path = Files.createTempDirectory(prefix == null ? "temp" : prefix);
 		Runtime.getRuntime().addShutdownHook(new Thread(() -> {
 			try {
@@ -312,7 +314,7 @@ public final class FileUtils {
 	 * @throws IOException If an I/O error occurs
 	 */
 	@Blocking
-	public static void deleteRecursively(@NotNull Path path) throws IOException {
+	public static void deleteRecursively(@NonNull Path path) throws IOException {
 		Objects.requireNonNull(path, "Path must not be null");
 		if (!Files.exists(path)) {
 			throw new FileNotFoundException("Path '" + path + "' does not exist");
@@ -331,7 +333,7 @@ public final class FileUtils {
 	 * @throws IOException If an I/O error occurs
 	 */
 	@Blocking
-	public static @NotNull String readString(@NotNull InputProvider provider) throws IOException {
+	public static @NonNull String readString(@NonNull InputProvider provider) throws IOException {
 		Objects.requireNonNull(provider, "Provider must not be null");
 		return readString(new InputStreamReader(provider.getStream()));
 	}
@@ -346,7 +348,7 @@ public final class FileUtils {
 	 * @throws IOException If an I/O error occurs
 	 */
 	@Blocking
-	public static @NotNull String readString(@NotNull InputProvider provider, @NotNull Charset charset) throws IOException {
+	public static @NonNull String readString(@NonNull InputProvider provider, @NonNull Charset charset) throws IOException {
 		Objects.requireNonNull(provider, "Provider must not be null");
 		Objects.requireNonNull(charset, "Charset must not be null");
 		return readString(new InputStreamReader(provider.getStream(), charset));
@@ -362,7 +364,7 @@ public final class FileUtils {
 	 */
 	@Blocking
 	@SuppressWarnings("NestedAssignment")
-	public static @NotNull String readString(@NotNull Reader reader) throws IOException {
+	public static @NonNull String readString(@NonNull Reader reader) throws IOException {
 		Objects.requireNonNull(reader, "Reader must not be null");
 		try (BufferedReader buffer = new BufferedReader(reader)) {
 			StringBuilder builder = new StringBuilder();

@@ -21,8 +21,8 @@ package net.luis.utils.util;
 import com.google.common.collect.Lists;
 import net.luis.utils.annotation.ReflectiveUsage;
 import net.luis.utils.lang.EnumLike;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 import java.math.BigInteger;
 import java.util.List;
@@ -49,7 +49,7 @@ import java.util.stream.Stream;
  * @param priority The priority value
  */
 public record Priority(
-	@NotNull String name,
+	@NonNull String name,
 	long priority
 ) implements EnumLike<Priority> {
 	
@@ -112,7 +112,7 @@ public record Priority(
 	 * @param priority The target priority
 	 * @return The created priority
 	 */
-	public static @NotNull Priority createBelow(@NotNull Priority priority) {
+	public static @NonNull Priority createBelow(@NonNull Priority priority) {
 		Objects.requireNonNull(priority, "Priority must not be null");
 		return new Priority(priority.name() + "-1", priority.priority() - 1);
 	}
@@ -123,7 +123,7 @@ public record Priority(
 	 * @param priority The target priority
 	 * @return The created priority
 	 */
-	public static @NotNull Priority createAbove(@NotNull Priority priority) {
+	public static @NonNull Priority createAbove(@NonNull Priority priority) {
 		Objects.requireNonNull(priority, "Priority must not be null");
 		return new Priority(priority.name() + "+1", priority.priority() + 1);
 	}
@@ -135,7 +135,7 @@ public record Priority(
 	 * @param second The second priority
 	 * @return The created priority
 	 */
-	public static @NotNull Priority createBetween(@NotNull Priority first, @NotNull Priority second) {
+	public static @NonNull Priority createBetween(@NonNull Priority first, @NonNull Priority second) {
 		Objects.requireNonNull(first, "First priority must not be null");
 		Objects.requireNonNull(second, "Second priority must not be null");
 		return new Priority(first.name() + "-" + second.name(), (first.priority() + second.priority()) / 2);
@@ -148,7 +148,7 @@ public record Priority(
 	 * @param priorities The list of priorities
 	 * @return The lowest priority
 	 */
-	public static @NotNull Priority lowest(Priority @Nullable ... priorities) {
+	public static @NonNull Priority lowest(Priority @Nullable ... priorities) {
 		if (priorities == null || priorities.length == 0) {
 			return getNearest(Long.MIN_VALUE);
 		}
@@ -162,7 +162,7 @@ public record Priority(
 	 * @param priorities The list of priorities
 	 * @return The highest priority
 	 */
-	public static @NotNull Priority highest(Priority @Nullable ... priorities) {
+	public static @NonNull Priority highest(Priority @Nullable ... priorities) {
 		if (priorities == null || priorities.length == 0) {
 			return getNearest(Long.MAX_VALUE);
 		}
@@ -175,7 +175,7 @@ public record Priority(
 	 * @param priority The target priority
 	 * @return The nearest priority
 	 */
-	public static @NotNull Priority getNearest(long priority) {
+	public static @NonNull Priority getNearest(long priority) {
 		BigInteger target = BigInteger.valueOf(priority);
 		return VALUES.stream().reduce((p1, p2) -> {
 			BigInteger diff1 = BigInteger.valueOf(p1.priority()).subtract(target).abs();
@@ -186,7 +186,7 @@ public record Priority(
 	//endregion
 	
 	@Override
-	public int compareTo(@NotNull Priority object) {
+	public int compareTo(@NonNull Priority object) {
 		return Long.compare(this.priority, object.priority);
 	}
 }

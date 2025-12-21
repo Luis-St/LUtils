@@ -20,7 +20,7 @@ package net.luis.utils.io.token.stream;
 
 import net.luis.utils.io.token.TokenPosition;
 import net.luis.utils.io.token.tokens.*;
-import org.jetbrains.annotations.NotNull;
+import org.jspecify.annotations.NonNull;
 import org.junit.jupiter.api.Test;
 
 import java.util.Collections;
@@ -35,7 +35,7 @@ import static org.junit.jupiter.api.Assertions.*;
  */
 class MutableTokenStreamTest {
 	
-	private static @NotNull Token createToken(@NotNull String value) {
+	private static @NonNull Token createToken(@NonNull String value) {
 		return new SimpleToken(value, TokenPosition.UNPOSITIONED);
 	}
 	

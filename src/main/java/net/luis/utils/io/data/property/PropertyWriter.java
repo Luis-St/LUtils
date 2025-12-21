@@ -19,7 +19,7 @@
 package net.luis.utils.io.data.property;
 
 import net.luis.utils.io.data.OutputProvider;
-import org.jetbrains.annotations.NotNull;
+import org.jspecify.annotations.NonNull;
 
 import java.io.*;
 import java.util.Objects;
@@ -47,7 +47,7 @@ public class PropertyWriter implements AutoCloseable {
 	 * @param output The output provider to create the writer for
 	 * @throws NullPointerException If the output is null
 	 */
-	public PropertyWriter(@NotNull OutputProvider output) {
+	public PropertyWriter(@NonNull OutputProvider output) {
 		this(output, PropertyConfig.DEFAULT);
 	}
 	
@@ -58,7 +58,7 @@ public class PropertyWriter implements AutoCloseable {
 	 * @param config The configuration for the properties writer
 	 * @throws NullPointerException If the output or the configuration is null
 	 */
-	public PropertyWriter(@NotNull OutputProvider output, @NotNull PropertyConfig config) {
+	public PropertyWriter(@NonNull OutputProvider output, @NonNull PropertyConfig config) {
 		this.config = Objects.requireNonNull(config, "Property config must not be null");
 		this.writer = new BufferedWriter(new OutputStreamWriter(Objects.requireNonNull(output, "Output must not be null").getStream(), config.charset()));
 	}
@@ -71,7 +71,7 @@ public class PropertyWriter implements AutoCloseable {
 	 * @throws NullPointerException If the key or the value is null
 	 * @throws UncheckedIOException If an I/O error occurs (optional)
 	 */
-	public void writeProperty(@NotNull String key, @NotNull Object value) {
+	public void writeProperty(@NonNull String key, @NonNull Object value) {
 		this.writeProperty(Property.of(key, value.toString()));
 	}
 	
@@ -86,7 +86,7 @@ public class PropertyWriter implements AutoCloseable {
 	 * @throws NullPointerException If the key, the value or the converter is null
 	 * @throws UncheckedIOException If an I/O error occurs (optional)
 	 */
-	public <T> void writeProperty(@NotNull String key, @NotNull T value, @NotNull Function<T, String> converter) {
+	public <T> void writeProperty(@NonNull String key, @NonNull T value, @NonNull Function<T, String> converter) {
 		Objects.requireNonNull(value, "Value must not be null");
 		Objects.requireNonNull(converter, "Converter must not be null");
 		this.writeProperty(Property.of(key, converter.apply(value)));
@@ -99,7 +99,7 @@ public class PropertyWriter implements AutoCloseable {
 	 * @throws NullPointerException If the properties are null
 	 * @throws UncheckedIOException If an I/O error occurs (optional)
 	 */
-	public void writeProperty(@NotNull Properties properties) {
+	public void writeProperty(@NonNull Properties properties) {
 		Objects.requireNonNull(properties, "Properties must not be null");
 		properties.getProperties().forEach(this::writeProperty);
 	}
@@ -111,7 +111,7 @@ public class PropertyWriter implements AutoCloseable {
 	 * @throws NullPointerException If the property is null
 	 * @throws UncheckedIOException If an I/O error occurs (optional)
 	 */
-	public void writeProperty(@NotNull Property property) {
+	public void writeProperty(@NonNull Property property) {
 		Objects.requireNonNull(property, "Property must not be null");
 		try {
 			this.config.ensureKeyMatches(property.getKey());

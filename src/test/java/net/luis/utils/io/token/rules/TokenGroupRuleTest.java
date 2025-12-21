@@ -22,8 +22,8 @@ import net.luis.utils.io.token.TokenRuleMatch;
 import net.luis.utils.io.token.context.TokenRuleContext;
 import net.luis.utils.io.token.stream.TokenStream;
 import net.luis.utils.io.token.tokens.*;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
@@ -38,14 +38,14 @@ import static org.junit.jupiter.api.Assertions.*;
  */
 class TokenGroupRuleTest {
 	
-	private static @NotNull Token createToken(@NotNull String value) {
+	private static @NonNull Token createToken(@NonNull String value) {
 		return SimpleToken.createUnpositioned(value);
 	}
 	
-	private static @NotNull TokenRule createRule(@NotNull String value) {
+	private static @NonNull TokenRule createRule(@NonNull String value) {
 		return new TokenRule() {
 			@Override
-			public @Nullable TokenRuleMatch match(@NotNull TokenStream stream, @NotNull TokenRuleContext ctx) {
+			public @Nullable TokenRuleMatch match(@NonNull TokenStream stream, @NonNull TokenRuleContext ctx) {
 				Objects.requireNonNull(stream, "Token stream must not be null");
 				Objects.requireNonNull(ctx, "Token rule context must not be null");
 				if (!stream.hasMoreTokens()) {

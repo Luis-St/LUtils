@@ -20,7 +20,7 @@ package net.luis.utils.io.data.json;
 
 import net.luis.utils.io.data.json.exception.JsonTypeException;
 import net.luis.utils.lang.StringUtils;
-import org.jetbrains.annotations.NotNull;
+import org.jspecify.annotations.NonNull;
 
 /**
  * A generic class representing a json element.<br>
@@ -38,7 +38,7 @@ public interface JsonElement {
 	 *
 	 * @return The name of the class in a human-readable format
 	 */
-	private @NotNull String getName() {
+	private @NonNull String getName() {
 		return StringUtils.getReadableString(this.getClass().getSimpleName(), Character::isUpperCase).toLowerCase();
 	}
 	
@@ -80,7 +80,7 @@ public interface JsonElement {
 	 * @return This json element as a json object
 	 * @throws JsonTypeException If this json element is not a json object
 	 */
-	default @NotNull JsonObject getAsJsonObject() {
+	default @NonNull JsonObject getAsJsonObject() {
 		if (this instanceof JsonObject object) {
 			return object;
 		}
@@ -93,7 +93,7 @@ public interface JsonElement {
 	 * @return This json element as a json array
 	 * @throws JsonTypeException If this json element is not a json array
 	 */
-	default @NotNull JsonArray getAsJsonArray() {
+	default @NonNull JsonArray getAsJsonArray() {
 		if (this instanceof JsonArray array) {
 			return array;
 		}
@@ -106,7 +106,7 @@ public interface JsonElement {
 	 * @return This json element as a json primitive
 	 * @throws JsonTypeException If this json element is not a json primitive
 	 */
-	default @NotNull JsonPrimitive getAsJsonPrimitive() {
+	default @NonNull JsonPrimitive getAsJsonPrimitive() {
 		if (this instanceof JsonPrimitive primitive) {
 			return primitive;
 		}
@@ -120,5 +120,5 @@ public interface JsonElement {
 	 * @param config The json config to use
 	 * @return The string representation of this json element
 	 */
-	@NotNull String toString(@NotNull JsonConfig config);
+	@NonNull String toString(@NonNull JsonConfig config);
 }

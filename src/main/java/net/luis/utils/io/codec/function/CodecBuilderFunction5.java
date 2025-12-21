@@ -19,7 +19,7 @@
 package net.luis.utils.io.codec.function;
 
 import net.luis.utils.io.codec.Codec;
-import org.jetbrains.annotations.NotNull;
+import org.jspecify.annotations.NonNull;
 
 /**
  * Represents a codec grouping function that accepts five arguments and produces a result.<br>
@@ -47,11 +47,11 @@ public interface CodecBuilderFunction5<CI1, CI2, CI3, CI4, CI5, R> extends Codec
 	 * @param input5 The fifth input
 	 * @return The constructed object
 	 */
-	@NotNull R create(
-		@NotNull CI1 input1,
-		@NotNull CI2 input2,
-		@NotNull CI3 input3,
-		@NotNull CI4 input4,
-		@NotNull CI5 input5
+	@NonNull R create(
+		@NonNull CI1 input1,
+		@NonNull CI2 input2,
+		@NonNull CI3 input3,
+		@NonNull CI4 input4,
+		@NonNull CI5 input5
 	);
 }

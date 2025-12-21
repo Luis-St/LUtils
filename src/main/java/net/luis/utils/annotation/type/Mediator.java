@@ -18,7 +18,7 @@
 
 package net.luis.utils.annotation.type;
 
-import org.jetbrains.annotations.NotNull;
+import org.jspecify.annotations.NonNull;
 
 import java.lang.annotation.*;
 
@@ -38,5 +38,5 @@ public @interface Mediator {
 	 * Returns the types that are mediated by this class.<br>
 	 * @return The types
 	 */
-	@NotNull Class<?>[] value() default {};
+	@NonNull Class<?>[] value() default {};
 }

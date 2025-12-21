@@ -19,8 +19,8 @@
 package net.luis.utils.collection;
 
 import com.google.common.collect.Lists;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 import java.util.*;
 
@@ -70,7 +70,7 @@ public class SortedList<E> extends AbstractList<E> {
 	 * @param elements The elements to add
 	 */
 	@SafeVarargs
-	public SortedList(E @NotNull ... elements) {
+	public SortedList(E @NonNull ... elements) {
 		this(createList(elements));
 	}
 	
@@ -82,7 +82,7 @@ public class SortedList<E> extends AbstractList<E> {
 	 * @param elements The elements to add
 	 */
 	@SafeVarargs
-	public SortedList(@Nullable Comparator<E> comparator, E @NotNull ... elements) {
+	public SortedList(@Nullable Comparator<E> comparator, E @NonNull ... elements) {
 		this(createList(elements), comparator);
 	}
 	
@@ -94,7 +94,7 @@ public class SortedList<E> extends AbstractList<E> {
 	 * @param elements The list to use
 	 * @throws NullPointerException If the list is null
 	 */
-	public SortedList(@NotNull List<E> elements) {
+	public SortedList(@NonNull List<E> elements) {
 		this(elements, null);
 	}
 	
@@ -106,7 +106,7 @@ public class SortedList<E> extends AbstractList<E> {
 	 * @param comparator The comparator used to sort the list
 	 * @throws NullPointerException If the list is null
 	 */
-	public SortedList(@NotNull List<E> elements, @Nullable Comparator<E> comparator) {
+	public SortedList(@NonNull List<E> elements, @Nullable Comparator<E> comparator) {
 		Objects.requireNonNull(elements, "List must not be null");
 		this.internalList = Lists.newArrayList(elements);
 		this.comparator = comparator;
@@ -123,7 +123,7 @@ public class SortedList<E> extends AbstractList<E> {
 	 * @throws NullPointerException If the elements are null
 	 */
 	@SafeVarargs
-	private static <E> @NotNull List<E> createList(E @NotNull ... elements) {
+	private static <E> @NonNull List<E> createList(E @NonNull ... elements) {
 		Objects.requireNonNull(elements, "Elements must not be null");
 		return Lists.newArrayList(elements);
 	}
@@ -143,7 +143,7 @@ public class SortedList<E> extends AbstractList<E> {
 	 * The list is sorted after the element is added.
 	 */
 	@Override
-	public E set(int index, @NotNull E element) {
+	public E set(int index, @NonNull E element) {
 		Objects.requireNonNull(element, "Element must not be null");
 		E old = this.internalList.set(index, element);
 		this.internalList.sort(this.comparator);
@@ -156,7 +156,7 @@ public class SortedList<E> extends AbstractList<E> {
 	 * The list is sorted after the element is added.
 	 */
 	@Override
-	public void add(int index, @NotNull E element) {
+	public void add(int index, @NonNull E element) {
 		Objects.requireNonNull(element, "Element must not be null");
 		this.internalList.add(index, element);
 		this.internalList.sort(this.comparator);
@@ -175,7 +175,7 @@ public class SortedList<E> extends AbstractList<E> {
 	}
 	
 	@Override
-	public @NotNull E get(int index) {
+	public @NonNull E get(int index) {
 		return this.internalList.get(index);
 	}
 	

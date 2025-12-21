@@ -21,7 +21,7 @@ package net.luis.utils.io.data.property;
 import net.luis.utils.io.data.config.ReadOnly;
 import net.luis.utils.io.data.config.WriteOnly;
 import net.luis.utils.io.data.property.exception.PropertySyntaxException;
-import org.jetbrains.annotations.NotNull;
+import org.jspecify.annotations.NonNull;
 
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
@@ -45,11 +45,11 @@ import java.util.regex.Pattern;
 public record PropertyConfig(
 	char separator,
 	@WriteOnly int alignment,
-	@ReadOnly @NotNull Set<Character> commentCharacters,
-	@NotNull Pattern keyPattern,
-	@NotNull Pattern valuePattern,
+	@ReadOnly @NonNull Set<Character> commentCharacters,
+	@NonNull Pattern keyPattern,
+	@NonNull Pattern valuePattern,
 	@ReadOnly boolean advancedParsing,
-	@NotNull Charset charset
+	@NonNull Charset charset
 ) {
 	
 	/**
@@ -98,7 +98,7 @@ public record PropertyConfig(
 	 * @throws NullPointerException If the key is null
 	 * @throws PropertySyntaxException If the key is blank or does not match the key pattern
 	 */
-	public void ensureKeyMatches(@NotNull String key) {
+	public void ensureKeyMatches(@NonNull String key) {
 		Objects.requireNonNull(key, "Key must not be null");
 		if (key.isBlank()) {
 			throw new PropertySyntaxException("Property key must not be empty");
@@ -115,7 +115,7 @@ public record PropertyConfig(
 	 * @throws NullPointerException If the value is null
 	 * @throws PropertySyntaxException If the value does not match the value pattern
 	 */
-	public void ensureValueMatches(@NotNull String value) {
+	public void ensureValueMatches(@NonNull String value) {
 		Objects.requireNonNull(value, "Value must not be null");
 		if (!this.valuePattern.matcher(value).matches()) {
 			throw new PropertySyntaxException("Property value '" + value + "' does not match the pattern '" + this.valuePattern.pattern() + "' defined in property config");

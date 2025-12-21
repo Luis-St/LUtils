@@ -23,8 +23,8 @@ import net.luis.utils.io.token.definition.TokenDefinition;
 import net.luis.utils.io.token.definition.WordTokenDefinition;
 import net.luis.utils.io.token.tokens.*;
 import net.luis.utils.io.token.type.classifier.TokenClassifier;
-import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Unmodifiable;
+import org.jspecify.annotations.NonNull;
 
 import java.util.*;
 
@@ -66,7 +66,7 @@ public class TokenReader {
 	 * @throws NullPointerException If any of the parameters are null
 	 * @throws IllegalArgumentException If the definitions contain the word token definition, or if the allowed characters or separators are empty
 	 */
-	public TokenReader(@NotNull Set<TokenDefinition> definitions, @NotNull Set<Character> allowedChars, @NotNull Set<Character> separators, @NotNull TokenClassifier classifier) {
+	public TokenReader(@NonNull Set<TokenDefinition> definitions, @NonNull Set<Character> allowedChars, @NonNull Set<Character> separators, @NonNull TokenClassifier classifier) {
 		this.definitions = new HashSet<>(Objects.requireNonNull(definitions, "Token definitions must not be null"));
 		this.allowedChars = new HashSet<>(Objects.requireNonNull(allowedChars, "Allowed characters must not be null"));
 		this.separators = new HashSet<>(Objects.requireNonNull(separators, "Separators must not be null"));
@@ -97,7 +97,7 @@ public class TokenReader {
 	 * @see SimpleToken
 	 * @see EscapedToken
 	 */
-	public @NotNull @Unmodifiable List<Token> readTokens(@NotNull String input) {
+	public @NonNull @Unmodifiable List<Token> readTokens(@NonNull String input) {
 		Objects.requireNonNull(input, "Input string must not be null");
 		List<Token> tokens = Lists.newArrayList();
 		
@@ -168,7 +168,7 @@ public class TokenReader {
 	 * @param token The token to add and classify
 	 * @throws NullPointerException If either the token list or the token is null
 	 */
-	private void addAndClassifyToken(@NotNull List<Token> tokens, @NotNull Token token) {
+	private void addAndClassifyToken(@NonNull List<Token> tokens, @NonNull Token token) {
 		Objects.requireNonNull(tokens, "Token list must not be null");
 		Objects.requireNonNull(token, "Token must not be null");
 		
@@ -228,7 +228,7 @@ public class TokenReader {
 		 * @param other The other position tracker to copy from
 		 * @throws NullPointerException If the other position tracker is null
 		 */
-		private void copyFrom(@NotNull PositionTracker other) {
+		private void copyFrom(@NonNull PositionTracker other) {
 			Objects.requireNonNull(other, "Position tracker must not be null");
 			this.line = other.line;
 			this.position = other.position;
@@ -240,7 +240,7 @@ public class TokenReader {
 		 *
 		 * @return A new token position
 		 */
-		private @NotNull TokenPosition toTokenPosition() {
+		private @NonNull TokenPosition toTokenPosition() {
 			return new TokenPosition(this.line, this.charInLine, this.position);
 		}
 	}

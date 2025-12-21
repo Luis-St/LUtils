@@ -22,7 +22,7 @@ import net.luis.utils.io.codec.Codec;
 import net.luis.utils.io.codec.provider.JsonTypeProvider;
 import net.luis.utils.io.data.json.*;
 import net.luis.utils.util.Either;
-import org.jetbrains.annotations.NotNull;
+import org.jspecify.annotations.NonNull;
 import org.junit.jupiter.api.Test;
 
 import java.time.LocalDate;
@@ -335,7 +335,7 @@ class CodecAutoMappingTest {
 	
 	@Test
 	void missingGenericInfoThrowsException() {
-		record MissingGenericInfo(@NotNull List<String> list) {}
+		record MissingGenericInfo(@NonNull List<String> list) {}
 		
 		IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> CodecAutoMapping.createAutoMappedCodec(MissingGenericInfo.class));
 		assertTrue(exception.getMessage().contains("Missing generic type information"));
@@ -581,7 +581,7 @@ class CodecAutoMappingTest {
 		private final int age;
 		private transient final String transientField = "transient";
 		
-		private ImplicitFieldsClass(@NotNull String name, int age) {
+		private ImplicitFieldsClass(@NonNull String name, int age) {
 			this.name = name;
 			this.age = age;
 		}
@@ -594,12 +594,12 @@ class CodecAutoMappingTest {
 		private final String name;
 		private final int age;
 		
-		private MultiConstructorClass(@NotNull String name) {
+		private MultiConstructorClass(@NonNull String name) {
 			this(name, 0);
 		}
 		
 		@CodecConstructor
-		private MultiConstructorClass(@NotNull String name, int age) {
+		private MultiConstructorClass(@NonNull String name, int age) {
 			this.name = name;
 			this.age = age;
 		}
@@ -613,7 +613,7 @@ class CodecAutoMappingTest {
 		private final int age;
 		
 		@CodecConstructor
-		private InvalidConstructorClass(@NotNull String name, @NotNull String age) {
+		private InvalidConstructorClass(@NonNull String name, @NonNull String age) {
 			this.name = name;
 			this.age = Integer.parseInt(age);
 		}

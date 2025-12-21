@@ -18,7 +18,7 @@
 
 package net.luis.utils.io.data.xml;
 
-import org.jetbrains.annotations.NotNull;
+import org.jspecify.annotations.NonNull;
 
 import java.util.Objects;
 
@@ -30,7 +30,7 @@ import java.util.Objects;
  * @param declaration The XML declaration (e.g., {@code <?xml version="1.0" encoding="UTF-8"?>})
  * @param rootElement The root element of the XML document
  */
-public record XmlDocument(@NotNull XmlDeclaration declaration, @NotNull XmlElement rootElement) {
+public record XmlDocument(@NonNull XmlDeclaration declaration, @NonNull XmlElement rootElement) {
 	
 	/**
 	 * Creates a new XML document with the specified declaration and root element.<br>
@@ -51,7 +51,7 @@ public record XmlDocument(@NotNull XmlDeclaration declaration, @NotNull XmlEleme
 	 * @return The XML string representation
 	 */
 	@Override
-	public @NotNull String toString() {
+	public @NonNull String toString() {
 		return this.toString(XmlConfig.DEFAULT);
 	}
 	
@@ -61,7 +61,7 @@ public record XmlDocument(@NotNull XmlDeclaration declaration, @NotNull XmlEleme
 	 * @param config The XML configuration to use
 	 * @return The XML string representation
 	 */
-	public @NotNull String toString(@NotNull XmlConfig config) {
+	public @NonNull String toString(@NonNull XmlConfig config) {
 		Objects.requireNonNull(config, "Config must not be null");
 		StringBuilder xml = new StringBuilder();
 		xml.append(this.declaration);

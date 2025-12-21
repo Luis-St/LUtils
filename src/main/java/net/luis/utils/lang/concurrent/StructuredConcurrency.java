@@ -22,8 +22,8 @@ import com.google.common.collect.Lists;
 import net.luis.utils.exception.StructuredConcurrencyException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Unmodifiable;
+import org.jspecify.annotations.NonNull;
 
 import java.time.Duration;
 import java.util.*;
@@ -102,7 +102,7 @@ public class StructuredConcurrency implements AutoCloseable {
 	 * @throws NullPointerException If executor is null
 	 * @throws IllegalStateException If the executor is already shut down
 	 */
-	public StructuredConcurrency(@NotNull ExecutorService executor) {
+	public StructuredConcurrency(@NonNull ExecutorService executor) {
 		this(executor, false);
 	}
 	
@@ -114,7 +114,7 @@ public class StructuredConcurrency implements AutoCloseable {
 	 * @throws NullPointerException If executor is null
 	 * @throws IllegalStateException If the executor is already shut down
 	 */
-	public StructuredConcurrency(@NotNull ExecutorService executor, boolean ownsExecutor) {
+	public StructuredConcurrency(@NonNull ExecutorService executor, boolean ownsExecutor) {
 		this.executor = Objects.requireNonNull(executor, "ExecutorService must not be null");
 		this.ownsExecutor = ownsExecutor;
 		
@@ -146,7 +146,7 @@ public class StructuredConcurrency implements AutoCloseable {
 	 *
 	 * @return An unmodifiable list of suppressed exceptions
 	 */
-	public @NotNull @Unmodifiable List<Throwable> getSuppressedExceptions() {
+	public @NonNull @Unmodifiable List<Throwable> getSuppressedExceptions() {
 		return List.copyOf(this.suppressedExceptions);
 	}
 	
@@ -158,7 +158,7 @@ public class StructuredConcurrency implements AutoCloseable {
 	 * @throws NullPointerException If the action is null
 	 * @throws IllegalStateException If this scope is not in an open state
 	 */
-	public @NotNull Future<?> fork(@NotNull Runnable action) {
+	public @NonNull Future<?> fork(@NonNull Runnable action) {
 		Objects.requireNonNull(action, "Runnable action must not be null");
 		this.ensureOpenState();
 		
@@ -186,7 +186,7 @@ public class StructuredConcurrency implements AutoCloseable {
 	 * @throws NullPointerException If the action is null
 	 * @throws IllegalStateException If this scope is not in an open state
 	 */
-	public <T> @NotNull Future<T> fork(@NotNull Callable<T> action) {
+	public <T> @NonNull Future<T> fork(@NonNull Callable<T> action) {
 		Objects.requireNonNull(action, "Callable action must not be null");
 		this.ensureOpenState();
 		
@@ -222,7 +222,7 @@ public class StructuredConcurrency implements AutoCloseable {
 	 * @throws IllegalStateException If this scope is already closed
 	 * @throws NullPointerException If timeout is null
 	 */
-	public void join(@NotNull Duration timeout) throws StructuredConcurrencyException {
+	public void join(@NonNull Duration timeout) throws StructuredConcurrencyException {
 		Objects.requireNonNull(timeout, "Timeout must not be null");
 		this.join(timeout.toMillis(), TimeUnit.MILLISECONDS);
 	}
@@ -236,7 +236,7 @@ public class StructuredConcurrency implements AutoCloseable {
 	 * @throws IllegalStateException If this scope is already closed
 	 * @throws NullPointerException If the unit is null
 	 */
-	public void join(long timeout, @NotNull TimeUnit unit) throws StructuredConcurrencyException {
+	public void join(long timeout, @NonNull TimeUnit unit) throws StructuredConcurrencyException {
 		Objects.requireNonNull(unit, "TimeUnit must not be null");
 		if (!this.state.compareAndSet(State.OPEN, State.JOINING)) {
 			throw new IllegalStateException("Cannot join: scope is " + this.state.get().name().toLowerCase());
@@ -317,7 +317,7 @@ public class StructuredConcurrency implements AutoCloseable {
 	 *
 	 * @param t The exception thrown by the task
 	 */
-	private void handleTaskException(@NotNull Throwable t) {
+	private void handleTaskException(@NonNull Throwable t) {
 		this.failureCount.incrementAndGet();
 		this.suppressedExceptions.add(t);
 	}

@@ -23,8 +23,8 @@ import net.luis.utils.io.token.context.TokenRuleContext;
 import net.luis.utils.io.token.rules.TokenRule;
 import net.luis.utils.io.token.stream.TokenStream;
 import net.luis.utils.io.token.tokens.Token;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 import java.util.*;
 
@@ -41,7 +41,7 @@ import java.util.*;
  * @param tokenRules The list of token rules to match against
  */
 public record AllOfTokenRule(
-	@NotNull List<TokenRule> tokenRules
+	@NonNull List<TokenRule> tokenRules
 ) implements TokenRule {
 	
 	/**
@@ -68,7 +68,7 @@ public record AllOfTokenRule(
 	}
 	
 	@Override
-	public @Nullable TokenRuleMatch match(@NotNull TokenStream stream, @NotNull TokenRuleContext ctx) {
+	public @Nullable TokenRuleMatch match(@NonNull TokenStream stream, @NonNull TokenRuleContext ctx) {
 		Objects.requireNonNull(stream, "Token stream must not be null");
 		Objects.requireNonNull(ctx, "Token rule context must not be null");
 		
@@ -89,7 +89,7 @@ public record AllOfTokenRule(
 	}
 	
 	@Override
-	public @NotNull TokenRule not() {
+	public @NonNull TokenRule not() {
 		return new AllOfTokenRule(this.tokenRules().stream().map(TokenRule::not).toList());
 	}
 }

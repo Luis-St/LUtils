@@ -18,7 +18,7 @@
 
 package net.luis.utils.exception;
 
-import org.jetbrains.annotations.Nullable;
+import org.jspecify.annotations.Nullable;
 
 /**
  * Thrown to indicate that a string is invalid.<br>

@@ -19,7 +19,7 @@
 package net.luis.utils.io.token.tokens;
 
 import net.luis.utils.io.token.TokenPosition;
-import org.jetbrains.annotations.NotNull;
+import org.jspecify.annotations.NonNull;
 import org.junit.jupiter.api.Test;
 
 import java.util.Collections;
@@ -34,7 +34,7 @@ import static org.junit.jupiter.api.Assertions.*;
  */
 class TokenGroupTest {
 	
-	private static @NotNull Token createToken(@NotNull String value, @NotNull TokenPosition position) {
+	private static @NonNull Token createToken(@NonNull String value, @NonNull TokenPosition position) {
 		return new SimpleToken(value, position);
 	}
 	

@@ -20,8 +20,8 @@ package net.luis.utils.util.unsafe.classpath;
 
 import com.google.common.collect.Lists;
 import net.luis.utils.util.unsafe.StackTraceUtils;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 import java.io.File;
 import java.io.FilenameFilter;
@@ -97,7 +97,7 @@ final class ClassPathHelper {
 	 * @param condition A condition to filter the classes
 	 * @return A list of all classes
 	 */
-	static @NotNull List<Class<?>> getClasses(boolean includeDependencies, @NotNull Predicate<String> condition) {
+	static @NonNull List<Class<?>> getClasses(boolean includeDependencies, @NonNull Predicate<String> condition) {
 		List<Class<?>> classes = Lists.newArrayList();
 		for (File file : getClassPathFiles()) {
 			if (file.isDirectory()) {
@@ -129,7 +129,7 @@ final class ClassPathHelper {
 	 *
 	 * @return A condition to filter the classes which should be ignored
 	 */
-	private static @NotNull Predicate<String> getIgnoreCondition() {
+	private static @NonNull Predicate<String> getIgnoreCondition() {
 		String property = System.getProperty(UNSAFE_CLASSES_IGNORED, "");
 		List<String> classes = Arrays.stream(property.split("[,;]")).map(String::trim).filter(s -> !s.isEmpty()).toList();
 		if (classes.isEmpty()) {
@@ -159,7 +159,7 @@ final class ClassPathHelper {
 	 * @return A list of all classes in the given jar file
 	 * @throws NullPointerException If the given file is null
 	 */
-	private static @NotNull List<Class<?>> getClassesFromJar(@NotNull File file, @NotNull Predicate<String> condition) {
+	private static @NonNull List<Class<?>> getClassesFromJar(@NonNull File file, @NonNull Predicate<String> condition) {
 		Objects.requireNonNull(file, "File must not be null");
 		List<Class<?>> classes = Lists.newArrayList();
 		Predicate<String> ignore = getIgnoreCondition();
@@ -198,7 +198,7 @@ final class ClassPathHelper {
 	 * @return A list of all classes in the given directory
 	 * @throws NullPointerException If the given directory is null
 	 */
-	private static @NotNull List<Class<?>> getClassesFromDirectory(@NotNull File directory, @NotNull Predicate<String> condition) {
+	private static @NonNull List<Class<?>> getClassesFromDirectory(@NonNull File directory, @NonNull Predicate<String> condition) {
 		Objects.requireNonNull(directory, "Path must not be null");
 		List<Class<?>> classes = Lists.newArrayList();
 		for (File file : listFiles(directory, (dir, name) -> name.endsWith(".jar"), false)) {
@@ -230,7 +230,7 @@ final class ClassPathHelper {
 	 * @return A list of all files in the given directory
 	 * @throws NullPointerException If the given directory is null
 	 */
-	private static @NotNull List<File> listFiles(@NotNull File directory, @Nullable FilenameFilter filter, boolean recurse) {
+	private static @NonNull List<File> listFiles(@NonNull File directory, @Nullable FilenameFilter filter, boolean recurse) {
 		Objects.requireNonNull(directory, "Directory must not be null");
 		List<File> files = Lists.newArrayList();
 		for (File entry : Objects.requireNonNull(directory.listFiles())) {
@@ -251,7 +251,7 @@ final class ClassPathHelper {
 	 *
 	 * @return A list of all files from the classpath
 	 */
-	private static @NotNull List<File> getClassPathFiles() {
+	private static @NonNull List<File> getClassPathFiles() {
 		List<File> files = Lists.newArrayList();
 		String classPath = System.getProperty("java.class.path");
 		if (classPath != null) {
@@ -269,7 +269,7 @@ final class ClassPathHelper {
 	 * @return The converted class name
 	 * @throws NullPointerException If the given file name is null
 	 */
-	private static @NotNull String convertToClass(@NotNull String fileName) {
+	private static @NonNull String convertToClass(@NonNull String fileName) {
 		Objects.requireNonNull(fileName, "File name must not be null");
 		return fileName.substring(0, fileName.length() - 6).replace("/", ".").replace("\\", ".");
 	}

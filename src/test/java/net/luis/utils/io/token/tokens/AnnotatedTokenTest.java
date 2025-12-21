@@ -18,7 +18,7 @@
 
 package net.luis.utils.io.token.tokens;
 
-import org.jetbrains.annotations.NotNull;
+import org.jspecify.annotations.NonNull;
 import org.junit.jupiter.api.Test;
 
 import java.util.*;
@@ -32,7 +32,7 @@ import static org.junit.jupiter.api.Assertions.*;
  */
 class AnnotatedTokenTest {
 	
-	private static @NotNull Token createToken(@NotNull String value) {
+	private static @NonNull Token createToken(@NonNull String value) {
 		return SimpleToken.createUnpositioned(value);
 	}
 	

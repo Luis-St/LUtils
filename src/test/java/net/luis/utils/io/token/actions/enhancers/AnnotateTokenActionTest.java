@@ -23,7 +23,7 @@ import net.luis.utils.io.token.context.TokenActionContext;
 import net.luis.utils.io.token.rules.AlwaysMatchTokenRule;
 import net.luis.utils.io.token.stream.TokenStream;
 import net.luis.utils.io.token.tokens.*;
-import org.jetbrains.annotations.NotNull;
+import org.jspecify.annotations.NonNull;
 import org.junit.jupiter.api.Test;
 
 import java.util.*;
@@ -37,7 +37,7 @@ import static org.junit.jupiter.api.Assertions.*;
  */
 class AnnotateTokenActionTest {
 	
-	private static @NotNull Token createToken(@NotNull String value) {
+	private static @NonNull Token createToken(@NonNull String value) {
 		return SimpleToken.createUnpositioned(value);
 	}
 	

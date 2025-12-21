@@ -19,7 +19,7 @@
 package net.luis.utils.io.codec.function;
 
 import net.luis.utils.io.codec.Codec;
-import org.jetbrains.annotations.NotNull;
+import org.jspecify.annotations.NonNull;
 
 /**
  * Represents a codec grouping function that accepts one argument and produces a result.<br>
@@ -39,7 +39,7 @@ public interface CodecBuilderFunction1<CI1, R> extends CodecBuilderFunction {
 	 * @param input1 The first input
 	 * @return The constructed object
 	 */
-	@NotNull R create(
-		@NotNull CI1 input1
+	@NonNull R create(
+		@NonNull CI1 input1
 	);
 }

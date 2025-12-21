@@ -23,8 +23,8 @@ import net.luis.utils.util.Pair;
 import net.luis.utils.util.Utils;
 import org.apache.commons.lang3.ClassUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.*;
@@ -58,7 +58,7 @@ public final class ReflectionUtils {
 	 * @return The raw name of the given method or {@link Method#getName()} as fallback
 	 * @throws NullPointerException If the given method is null
 	 */
-	public static @NotNull String getRawName(@NotNull Method method, String @Nullable ... prefixes) {
+	public static @NonNull String getRawName(@NonNull Method method, String @Nullable ... prefixes) {
 		String name = Objects.requireNonNull(method, "Method must not be null").getName();
 		if (name.startsWith("get")) {
 			return name.substring(3);
@@ -88,7 +88,7 @@ public final class ReflectionUtils {
 	 * @return A list of all methods
 	 * @throws NullPointerException If the given class or annotation is null
 	 */
-	public static @NotNull List<Method> getAnnotatedMethods(@NotNull Class<?> clazz, @NotNull Class<? extends Annotation> annotation) {
+	public static @NonNull List<Method> getAnnotatedMethods(@NonNull Class<?> clazz, @NonNull Class<? extends Annotation> annotation) {
 		Objects.requireNonNull(clazz, "Class must not be null");
 		Objects.requireNonNull(annotation, "Annotation must not be null");
 		return Lists.newArrayList(clazz.getDeclaredMethods()).stream().filter(method -> method.isAnnotationPresent(annotation)).collect(Collectors.toList());
@@ -104,7 +104,7 @@ public final class ReflectionUtils {
 	 * @return An optional containing the method or an empty optional if the method was not found
 	 * @throws NullPointerException If the given class, name or annotation is null
 	 */
-	public static @NotNull Optional<Method> getAnnotatedMethod(@NotNull Class<?> clazz, @NotNull String name, @NotNull Class<? extends Annotation> annotation, Class<?> @Nullable ... parameters) {
+	public static @NonNull Optional<Method> getAnnotatedMethod(@NonNull Class<?> clazz, @NonNull String name, @NonNull Class<? extends Annotation> annotation, Class<?> @Nullable ... parameters) {
 		Objects.requireNonNull(clazz, "Class must not be null");
 		Objects.requireNonNull(name, "Name must not be null");
 		Objects.requireNonNull(annotation, "Annotation must not be null");
@@ -124,7 +124,7 @@ public final class ReflectionUtils {
 	 * @return A list of all methods from the given class for the given name
 	 * @throws NullPointerException If the given class is null
 	 */
-	public static @NotNull List<Method> getMethodsForName(@NotNull Class<?> clazz, @Nullable String name) {
+	public static @NonNull List<Method> getMethodsForName(@NonNull Class<?> clazz, @Nullable String name) {
 		Objects.requireNonNull(clazz, "Class must not be null");
 		return Arrays.stream(clazz.getDeclaredMethods()).filter(method -> method.getName().equals(name) || name == null).sorted(Comparator.comparingInt(Method::getParameterCount)).collect(Collectors.toList());
 	}
@@ -138,7 +138,7 @@ public final class ReflectionUtils {
 	 * @return An optional containing the method or an empty optional if the method was not found
 	 * @throws NullPointerException If the given class is null
 	 */
-	public static @NotNull Optional<Method> getMethodForName(@NotNull Class<?> clazz, @Nullable String name) {
+	public static @NonNull Optional<Method> getMethodForName(@NonNull Class<?> clazz, @Nullable String name) {
 		Objects.requireNonNull(clazz, "Class must not be null");
 		List<Method> methods = getMethodsForName(clazz, name);
 		if (methods.size() == 1) {
@@ -164,7 +164,7 @@ public final class ReflectionUtils {
 	 * @throws IllegalArgumentException If no value for a parameter could be found
 	 * @see #findParameter(Parameter, List)
 	 */
-	public static Object @NotNull [] findParameters(@NotNull Executable executable, Object @Nullable ... values) {
+	public static Object @NonNull [] findParameters(@NonNull Executable executable, Object @Nullable ... values) {
 		Objects.requireNonNull(executable, "Executable must not be null");
 		return findParameters(executable, Utils.mapList(Lists.newArrayList(nullToEmpty(values)), value -> {
 			String name = value.getClass().getSimpleName();
@@ -189,7 +189,7 @@ public final class ReflectionUtils {
 	 * @throws IllegalArgumentException If no value for a parameter could be found
 	 * @see #findParameter(Parameter, List)
 	 */
-	public static Object @NotNull [] findParameters(@NotNull Executable executable, @Nullable List<Pair<Object, String>> values) {
+	public static Object @NonNull [] findParameters(@NonNull Executable executable, @Nullable List<Pair<Object, String>> values) {
 		Parameter[] parameters = Objects.requireNonNull(executable, "Executable must not be null").getParameters();
 		Object[] arguments = new Object[parameters.length];
 		for (int i = 0; i < parameters.length; i++) {
@@ -209,7 +209,7 @@ public final class ReflectionUtils {
 	 * @return A list of all fields
 	 * @throws NullPointerException If the given class or annotation is null
 	 */
-	public static @NotNull List<Field> getAnnotatedFields(@NotNull Class<?> clazz, @NotNull Class<? extends Annotation> annotation) {
+	public static @NonNull List<Field> getAnnotatedFields(@NonNull Class<?> clazz, @NonNull Class<? extends Annotation> annotation) {
 		Objects.requireNonNull(clazz, "Class must not be null");
 		Objects.requireNonNull(annotation, "Annotation must not be null");
 		return Lists.newArrayList(clazz.getDeclaredFields()).stream().filter(field -> field.isAnnotationPresent(annotation)).collect(Collectors.toList());
@@ -225,7 +225,7 @@ public final class ReflectionUtils {
 	 * @return An optional containing the field or an empty optional if the field was not found
 	 * @throws NullPointerException If the given class, name or annotation is null
 	 */
-	public static @NotNull Optional<Field> getAnnotatedField(@NotNull Class<?> clazz, @NotNull String name, @NotNull Class<? extends Annotation> annotation) {
+	public static @NonNull Optional<Field> getAnnotatedField(@NonNull Class<?> clazz, @NonNull String name, @NonNull Class<? extends Annotation> annotation) {
 		Objects.requireNonNull(clazz, "Class must not be null");
 		Objects.requireNonNull(name, "Name must not be null");
 		Objects.requireNonNull(annotation, "Annotation must not be null");
@@ -244,7 +244,7 @@ public final class ReflectionUtils {
 	 * @return A list of all fields from the given class for the given type
 	 * @throws NullPointerException If the given class is null
 	 */
-	public static @NotNull List<Field> getFieldsForType(@NotNull Class<?> clazz, @Nullable Class<?> type) {
+	public static @NonNull List<Field> getFieldsForType(@NonNull Class<?> clazz, @Nullable Class<?> type) {
 		Objects.requireNonNull(clazz, "Class must not be null");
 		return Arrays.stream(clazz.getDeclaredFields()).filter(field -> field.getType().equals(type)).collect(Collectors.toList());
 	}
@@ -264,7 +264,7 @@ public final class ReflectionUtils {
 	 * @throws IllegalArgumentException If the type of the parameter is ambiguous and the name is not present
 	 * @throws IllegalStateException If no value for the parameter could be found
 	 */
-	private static @NotNull Object findParameter(@NotNull Parameter parameter, @NotNull List<Pair<Object, String>> values) {
+	private static @NonNull Object findParameter(@NonNull Parameter parameter, @NonNull List<Pair<Object, String>> values) {
 		Objects.requireNonNull(parameter, "Parameter must not be null");
 		Objects.requireNonNull(values, "Values must not be null");
 		Executable executable = parameter.getDeclaringExecutable();

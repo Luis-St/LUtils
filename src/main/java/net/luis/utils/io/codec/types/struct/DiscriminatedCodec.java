@@ -22,8 +22,8 @@ import net.luis.utils.io.codec.AbstractCodec;
 import net.luis.utils.io.codec.Codec;
 import net.luis.utils.io.codec.provider.TypeProvider;
 import net.luis.utils.util.result.Result;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 import java.util.Objects;
 
@@ -113,19 +113,19 @@ public class DiscriminatedCodec<C, T> extends AbstractCodec<C, Object> {
 	 * @param provider The provider that maps discriminator values to their corresponding codecs
 	 * @throws NullPointerException If discriminated field, discriminated codec, or provider is null
 	 */
-	public DiscriminatedCodec(@NotNull String discriminatedField, @NotNull Codec<T> discriminatedCodec, @NotNull DiscriminatedCodecProvider<C, T> provider) {
+	public DiscriminatedCodec(@NonNull String discriminatedField, @NonNull Codec<T> discriminatedCodec, @NonNull DiscriminatedCodecProvider<C, T> provider) {
 		this.discriminatedField = Objects.requireNonNull(discriminatedField, "Discriminated field must not be null");
 		this.discriminatedCodec = Objects.requireNonNull(discriminatedCodec, "Discriminated codec must not be null");
 		this.provider = Objects.requireNonNull(provider, "Provider must not be null");
 	}
 	
 	@Override
-	public @NotNull Class<C> getType() {
+	public @NonNull Class<C> getType() {
 		return this.provider.getCodecType();
 	}
 	
 	@Override
-	public @NotNull <R> Result<R> encodeStart(@NotNull TypeProvider<R> provider, @NotNull R current, @Nullable C value) {
+	public @NonNull <R> Result<R> encodeStart(@NonNull TypeProvider<R> provider, @NonNull R current, @Nullable C value) {
 		Objects.requireNonNull(provider, "Type provider must not be null");
 		Objects.requireNonNull(current, "Current value must not be null");
 		
@@ -152,7 +152,7 @@ public class DiscriminatedCodec<C, T> extends AbstractCodec<C, Object> {
 	}
 	
 	@Override
-	public @NotNull <R> Result<C> decodeStart(@NotNull TypeProvider<R> provider, @NotNull R current, @Nullable R value) {
+	public @NonNull <R> Result<C> decodeStart(@NonNull TypeProvider<R> provider, @NonNull R current, @Nullable R value) {
 		Objects.requireNonNull(provider, "Type provider must not be null");
 		Objects.requireNonNull(current, "Current value must not be null");
 		if (value == null) {

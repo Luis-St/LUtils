@@ -20,7 +20,7 @@ package net.luis.utils.io.token.tokens;
 
 import net.luis.utils.io.token.TokenPosition;
 import net.luis.utils.io.token.type.TokenType;
-import org.jetbrains.annotations.NotNull;
+import org.jspecify.annotations.NonNull;
 
 import java.util.Objects;
 import java.util.Set;
@@ -36,7 +36,7 @@ import java.util.Set;
  * @param token The wrapped token
  */
 public record ShadowToken(
-	@NotNull Token token
+	@NonNull Token token
 ) implements Token {
 	
 	/**
@@ -50,27 +50,27 @@ public record ShadowToken(
 	}
 	
 	@Override
-	public @NotNull String value() {
+	public @NonNull String value() {
 		return this.token.value();
 	}
 	
 	@Override
-	public @NotNull TokenPosition position() {
+	public @NonNull TokenPosition position() {
 		return this.token.position();
 	}
 	
 	@Override
-	public @NotNull Set<TokenType> types() {
+	public @NonNull Set<TokenType> types() {
 		return this.token.types();
 	}
 	
 	@Override
-	public @NotNull Token shadow() {
+	public @NonNull Token shadow() {
 		return this; // Already a shadow token
 	}
 	
 	@Override
-	public @NotNull Token unshadow() {
+	public @NonNull Token unshadow() {
 		return this.token;
 	}
 }

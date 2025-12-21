@@ -20,8 +20,8 @@ package net.luis.utils.io.codec.provider;
 
 import net.luis.utils.io.codec.Codec;
 import net.luis.utils.util.result.Result;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 import java.util.List;
 import java.util.Map;
@@ -55,13 +55,13 @@ public interface TypeProvider<T> {
 	 * Creates an empty value of the type this provider is for.<br>
 	 * @return An empty value
 	 */
-	@NotNull T empty();
+	@NonNull T empty();
 	
 	/**
 	 * Creates a null value of the type this provider is for.<br>
 	 * @return A result containing the null value
 	 */
-	@NotNull Result<T> createNull();
+	@NonNull Result<T> createNull();
 	
 	/**
 	 * Creates a boolean value of the type this provider is for using the given value.<br>
@@ -69,7 +69,7 @@ public interface TypeProvider<T> {
 	 * @param value The value to create the boolean value from
 	 * @return A result containing the boolean value
 	 */
-	@NotNull Result<T> createBoolean(boolean value);
+	@NonNull Result<T> createBoolean(boolean value);
 	
 	/**
 	 * Creates a byte value of the type this provider is for using the given value.<br>
@@ -77,7 +77,7 @@ public interface TypeProvider<T> {
 	 * @param value The value to create the byte value from
 	 * @return A result containing the byte value
 	 */
-	@NotNull Result<T> createByte(byte value);
+	@NonNull Result<T> createByte(byte value);
 	
 	/**
 	 * Creates a short value of the type this provider is for using the given value.<br>
@@ -85,7 +85,7 @@ public interface TypeProvider<T> {
 	 * @param value The value to create the short value from
 	 * @return A result containing the short value
 	 */
-	@NotNull Result<T> createShort(short value);
+	@NonNull Result<T> createShort(short value);
 	
 	/**
 	 * Creates an integer value of the type this provider is for using the given value.<br>
@@ -93,7 +93,7 @@ public interface TypeProvider<T> {
 	 * @param value The value to create the integer value from
 	 * @return A result containing the integer value
 	 */
-	@NotNull Result<T> createInteger(int value);
+	@NonNull Result<T> createInteger(int value);
 	
 	/**
 	 * Creates a long value of the type this provider is for using the given value.<br>
@@ -101,7 +101,7 @@ public interface TypeProvider<T> {
 	 * @param value The value to create the long value from
 	 * @return A result containing the long value
 	 */
-	@NotNull Result<T> createLong(long value);
+	@NonNull Result<T> createLong(long value);
 	
 	/**
 	 * Creates a float value of the type this provider is for using the given value.<br>
@@ -109,7 +109,7 @@ public interface TypeProvider<T> {
 	 * @param value The value to create the float value from
 	 * @return A result containing the float value
 	 */
-	@NotNull Result<T> createFloat(float value);
+	@NonNull Result<T> createFloat(float value);
 	
 	/**
 	 * Creates a double value of the type this provider is for using the given value.<br>
@@ -117,7 +117,7 @@ public interface TypeProvider<T> {
 	 * @param value The value to create the double value from
 	 * @return A result containing the double value
 	 */
-	@NotNull Result<T> createDouble(double value);
+	@NonNull Result<T> createDouble(double value);
 	
 	/**
 	 * Creates a string value of the type this provider is for using the given value.<br>
@@ -125,7 +125,7 @@ public interface TypeProvider<T> {
 	 * @param value The value to create the string value from
 	 * @return A result containing the string value
 	 */
-	@NotNull Result<T> createString(@Nullable String value);
+	@NonNull Result<T> createString(@Nullable String value);
 	
 	/**
 	 * Creates a list value of the type this provider is for using the given values.<br>
@@ -133,13 +133,13 @@ public interface TypeProvider<T> {
 	 * @param values The values to create the list value from
 	 * @return A result containing the list value
 	 */
-	@NotNull Result<T> createList(@Nullable List<? extends T> values);
+	@NonNull Result<T> createList(@Nullable List<? extends T> values);
 	
 	/**
 	 * Creates an empty map value of the type this provider is for.<br>
 	 * @return A result containing the empty map value
 	 */
-	@NotNull Result<T> createMap();
+	@NonNull Result<T> createMap();
 	
 	/**
 	 * Creates a map value of the type this provider is for using the given values.<br>
@@ -147,7 +147,7 @@ public interface TypeProvider<T> {
 	 * @param values The values to create the map value from
 	 * @return A result containing the map value
 	 */
-	@NotNull Result<T> createMap(@Nullable Map<String, ? extends T> values);
+	@NonNull Result<T> createMap(@Nullable Map<String, ? extends T> values);
 	
 	/**
 	 * Gets the given value as an empty value of the type this provider is for.<br>
@@ -155,7 +155,7 @@ public interface TypeProvider<T> {
 	 * @param type The value to get as an empty value
 	 * @return A success result containing the empty value, or an error result if the given value is not an empty value
 	 */
-	@NotNull Result<T> getEmpty(@Nullable T type);
+	@NonNull Result<T> getEmpty(@Nullable T type);
 	
 	/**
 	 * Checks if the given value is a null value of the type this provider is for.<br>
@@ -163,7 +163,7 @@ public interface TypeProvider<T> {
 	 * @param type The value to check
 	 * @return A success result containing true if the value is null, false otherwise, or an error result if the check failed
 	 */
-	@NotNull Result<Boolean> isNull(@Nullable T type);
+	@NonNull Result<Boolean> isNull(@Nullable T type);
 	
 	/**
 	 * Gets the given value as a boolean value of the type this provider is for.<br>
@@ -171,14 +171,14 @@ public interface TypeProvider<T> {
 	 * @param type The value to get as a boolean value
 	 * @return A success result containing the boolean value, or an error result if the given value is not a boolean value
 	 */
-	@NotNull Result<Boolean> getBoolean(@Nullable T type);
+	@NonNull Result<Boolean> getBoolean(@Nullable T type);
 	
 	/**
 	 * Gets the given value as a byte value of the type this provider is for.<br>
 	 * @param type The value to get as a byte value
 	 * @return A success result containing the byte value, or an error result if the given value is not a byte value
 	 */
-	@NotNull Result<Byte> getByte(@Nullable T type);
+	@NonNull Result<Byte> getByte(@Nullable T type);
 	
 	/**
 	 * Gets the given value as a short value of the type this provider is for.<br>
@@ -186,7 +186,7 @@ public interface TypeProvider<T> {
 	 * @param type The value to get as a short value
 	 * @return A success result containing the short value, or an error result if the given value is not a short value
 	 */
-	@NotNull Result<Short> getShort(@Nullable T type);
+	@NonNull Result<Short> getShort(@Nullable T type);
 	
 	/**
 	 * Gets the given value as an integer value of the type this provider is for.<br>
@@ -194,14 +194,14 @@ public interface TypeProvider<T> {
 	 * @param type The value to get as an integer value
 	 * @return A success result containing the integer value, or an error result if the given value is not an integer value
 	 */
-	@NotNull Result<Integer> getInteger(@Nullable T type);
+	@NonNull Result<Integer> getInteger(@Nullable T type);
 	
 	/**
 	 * Gets the given value as a long value of the type this provider is for.<br>
 	 * @param type The value to get as a long value
 	 * @return A success result containing the long value, or an error result if the given value is not a long value
 	 */
-	@NotNull Result<Long> getLong(@Nullable T type);
+	@NonNull Result<Long> getLong(@Nullable T type);
 	
 	/**
 	 * Gets the given value as a float value of the type this provider is for.<br>
@@ -209,7 +209,7 @@ public interface TypeProvider<T> {
 	 * @param type The value to get as a float value
 	 * @return A success result containing the float value, or an error result if the given value is not a float value
 	 */
-	@NotNull Result<Float> getFloat(@Nullable T type);
+	@NonNull Result<Float> getFloat(@Nullable T type);
 	
 	/**
 	 * Gets the given value as a double value of the type this provider is for.<br>
@@ -217,7 +217,7 @@ public interface TypeProvider<T> {
 	 * @param type The value to get as a double value
 	 * @return A success result containing the double value, or an error result if the given value is not a double value
 	 */
-	@NotNull Result<Double> getDouble(@Nullable T type);
+	@NonNull Result<Double> getDouble(@Nullable T type);
 	
 	/**
 	 * Gets the given value as a string value of the type this provider is for.<br>
@@ -225,7 +225,7 @@ public interface TypeProvider<T> {
 	 * @param type The value to get as a string value
 	 * @return A success result containing the string value, or an error result if the given value is not a string value
 	 */
-	@NotNull Result<String> getString(@Nullable T type);
+	@NonNull Result<String> getString(@Nullable T type);
 	
 	/**
 	 * Gets the given value as a list value of the type this provider is for.<br>
@@ -233,7 +233,7 @@ public interface TypeProvider<T> {
 	 * @param type The value to get as a list value
 	 * @return A success result containing the list value, or an error result if the given value is not a list value
 	 */
-	@NotNull Result<List<T>> getList(@Nullable T type);
+	@NonNull Result<List<T>> getList(@Nullable T type);
 	
 	/**
 	 * Gets the given value as a map value of the type this provider is for.<br>
@@ -241,7 +241,7 @@ public interface TypeProvider<T> {
 	 * @param type The value to get as a map value
 	 * @return A success result containing the map value, or an error result if the given value is not a map value
 	 */
-	@NotNull Result<Map<String, T>> getMap(@Nullable T type);
+	@NonNull Result<Map<String, T>> getMap(@Nullable T type);
 	
 	/**
 	 * Checks if the given value is a map and contains the given key.<br>
@@ -251,7 +251,7 @@ public interface TypeProvider<T> {
 	 * @param key The key to check
 	 * @return A success result containing true if the map contains the key or false if not, or an error result if the given value is not a map
 	 */
-	@NotNull Result<Boolean> has(@Nullable T type, @Nullable String key);
+	@NonNull Result<Boolean> has(@Nullable T type, @Nullable String key);
 	
 	/**
 	 * Gets the value of the given key from the given value.<br>
@@ -261,7 +261,7 @@ public interface TypeProvider<T> {
 	 * @param key The key to get the value for
 	 * @return A success result containing the value for the key, or an error result if the given value is not a map
 	 */
-	@NotNull Result<T> get(@Nullable T type, @Nullable String key);
+	@NonNull Result<T> get(@Nullable T type, @Nullable String key);
 	
 	/**
 	 * Sets the value for the given key in the given value.<br>
@@ -272,7 +272,7 @@ public interface TypeProvider<T> {
 	 * @param value The value to set
 	 * @return A success result containing the result of the set operation, or an error result if the given value is not a map
 	 */
-	@NotNull Result<T> set(@Nullable T type, @Nullable String key, @Nullable T value);
+	@NonNull Result<T> set(@Nullable T type, @Nullable String key, @Nullable T value);
 	
 	/**
 	 * Sets the value for the given key in the given value.<br>
@@ -286,7 +286,7 @@ public interface TypeProvider<T> {
 	 * @return A success result containing the result of the set operation, or an error result if the given value is not a map, or the given value is an error
 	 * @see #set(Object, String, Object)
 	 */
-	default @NotNull Result<T> set(@Nullable T type, @Nullable String key, @Nullable Result<T> value) {
+	default @NonNull Result<T> set(@Nullable T type, @Nullable String key, @Nullable Result<T> value) {
 		if (type == null) {
 			return Result.error("Type 'null' is not a map");
 		}
@@ -311,7 +311,7 @@ public interface TypeProvider<T> {
 	 * @param value The value to merge
 	 * @return A success result containing the result of the merge operation, or an error result if the merge operation failed
 	 */
-	@NotNull Result<T> merge(@Nullable T current, @Nullable T value);
+	@NonNull Result<T> merge(@Nullable T current, @Nullable T value);
 	
 	/**
 	 * Merges the given value with the current value.<br>
@@ -325,7 +325,7 @@ public interface TypeProvider<T> {
 	 * @return A success result containing the result of the merge operation, or an error result if the merge operation failed, or the given value is an error
 	 * @see #merge(Object, Object)
 	 */
-	default @NotNull Result<T> merge(@Nullable T current, @Nullable Result<T> value) {
+	default @NonNull Result<T> merge(@Nullable T current, @Nullable Result<T> value) {
 		if (current == null) {
 			return Result.error("Current value 'null' is not valid");
 		}

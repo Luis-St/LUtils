@@ -21,7 +21,9 @@ package net.luis.utils.io.data.property;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import org.apache.commons.lang3.StringUtils;
-import org.jetbrains.annotations.*;
+import org.jetbrains.annotations.Unmodifiable;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 import java.util.*;
 
@@ -45,7 +47,7 @@ public class Properties {
 	 * @param properties The list of properties to construct the instance from
 	 * @throws NullPointerException If the list of properties is null
 	 */
-	public Properties(@NotNull List<Property> properties) {
+	public Properties(@NonNull List<Property> properties) {
 		Objects.requireNonNull(properties, "Properties must not be null");
 		properties.forEach(property -> this.properties.put(property.getKey(), property));
 	}
@@ -56,7 +58,7 @@ public class Properties {
 	 * @param properties The map of properties to construct the instance from
 	 * @throws NullPointerException If the map of properties is null
 	 */
-	public Properties(@NotNull Map<String, Property> properties) {
+	public Properties(@NonNull Map<String, Property> properties) {
 		Objects.requireNonNull(properties, "Properties must not be null");
 		this.properties.putAll(properties);
 	}
@@ -73,7 +75,7 @@ public class Properties {
 	 * @throws NullPointerException If the property is null
 	 * @throws IllegalArgumentException If the property is not part of the specified subgroup
 	 */
-	private static @NotNull Property copyPropertyAndRemoveGroup(@NotNull Property property, @Nullable String subgroup) {
+	private static @NonNull Property copyPropertyAndRemoveGroup(@NonNull Property property, @Nullable String subgroup) {
 		Objects.requireNonNull(property, "Property must not be null");
 		if (!property.isPartOfGroup(subgroup)) {
 			throw new IllegalArgumentException("Property '" + property.getKey() + "' is not part of subgroup '" + subgroup + "'");
@@ -101,7 +103,7 @@ public class Properties {
 	 * Returns an unmodifiable collection of all properties in this instance.<br>
 	 * @return A collection of all properties
 	 */
-	public @NotNull @Unmodifiable Collection<Property> getProperties() {
+	public @NonNull @Unmodifiable Collection<Property> getProperties() {
 		return Collections.unmodifiableCollection(this.properties.values());
 	}
 	
@@ -112,7 +114,7 @@ public class Properties {
 	 * @return True if a property with the specified key exists, otherwise false
 	 * @throws NullPointerException If the key is null
 	 */
-	public boolean hasProperty(@NotNull String key) {
+	public boolean hasProperty(@NonNull String key) {
 		Objects.requireNonNull(key, "Key must not be null");
 		return this.properties.containsKey(key);
 	}
@@ -124,7 +126,7 @@ public class Properties {
 	 * @return The property with the specified key or null
 	 * @throws NullPointerException If the key is null
 	 */
-	public @Nullable Property getProperty(@NotNull String key) {
+	public @Nullable Property getProperty(@NonNull String key) {
 		Objects.requireNonNull(key, "Key must not be null");
 		return this.properties.get(key);
 	}
@@ -137,7 +139,7 @@ public class Properties {
 	 * @param subgroup The subgroup to get the properties for
 	 * @return A new properties instance containing all properties that are part of the specified subgroup
 	 */
-	public @NotNull Properties getPropertiesOfSubgroup(@Nullable String subgroup) {
+	public @NonNull Properties getPropertiesOfSubgroup(@Nullable String subgroup) {
 		List<Property> properties = Lists.newArrayList();
 		this.properties.values().forEach(property -> {
 			if (property.isPartOfGroup(subgroup)) {
@@ -154,7 +156,7 @@ public class Properties {
 	 * @return A map of all properties grouped by their subgroups
 	 */
 	@SuppressWarnings("unchecked")
-	public @NotNull Map<String, Object> getGroupedMap() {
+	public @NonNull Map<String, Object> getGroupedMap() {
 		Map<String, Object> map = Maps.newLinkedHashMap();
 		this.properties.forEach((key, property) -> {
 			String[] keyParts = key.split("\\.");

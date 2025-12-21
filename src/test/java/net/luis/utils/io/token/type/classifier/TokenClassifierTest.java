@@ -22,7 +22,7 @@ import net.luis.utils.io.token.TokenPosition;
 import net.luis.utils.io.token.tokens.*;
 import net.luis.utils.io.token.type.CustomTokenType;
 import net.luis.utils.io.token.type.TokenType;
-import org.jetbrains.annotations.NotNull;
+import org.jspecify.annotations.NonNull;
 import org.junit.jupiter.api.Test;
 
 import java.util.Set;
@@ -38,7 +38,7 @@ class TokenClassifierTest {
 	
 	private static final TokenPosition TEST_POSITION = new TokenPosition(0, 0, 0);
 	
-	private static @NotNull TokenType createTestTokenType(@NotNull String name) {
+	private static @NonNull TokenType createTestTokenType(@NonNull String name) {
 		return new CustomTokenType(name, null);
 	}
 	

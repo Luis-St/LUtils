@@ -18,7 +18,7 @@
 
 package net.luis.utils.exception;
 
-import org.jetbrains.annotations.Nullable;
+import org.jspecify.annotations.Nullable;
 
 /**
  * Thrown when a method is called on an object which will modify it,<br>

@@ -19,8 +19,8 @@
 package net.luis.utils.io.data.xml;
 
 import net.luis.utils.util.getter.DefaultValueGetter;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 import java.util.Objects;
 
@@ -45,7 +45,7 @@ public final class XmlValue extends XmlElement implements DefaultValueGetter {
 	 * @param value The value of the xml element
 	 * @throws NullPointerException If the name is null
 	 */
-	public XmlValue(@NotNull String name, boolean value) {
+	public XmlValue(@NonNull String name, boolean value) {
 		this(name, String.valueOf(value));
 	}
 	
@@ -56,7 +56,7 @@ public final class XmlValue extends XmlElement implements DefaultValueGetter {
 	 * @param value The value of the xml element
 	 * @throws NullPointerException If the name is null
 	 */
-	public XmlValue(@NotNull String name, @Nullable Number value) {
+	public XmlValue(@NonNull String name, @Nullable Number value) {
 		this(name, String.valueOf(value));
 	}
 	
@@ -68,7 +68,7 @@ public final class XmlValue extends XmlElement implements DefaultValueGetter {
 	 * @param value The value of the xml element
 	 * @throws NullPointerException If the name is null
 	 */
-	public XmlValue(@NotNull String name, @Nullable String value) {
+	public XmlValue(@NonNull String name, @Nullable String value) {
 		super(name);
 		this.value = escapeXml(String.valueOf(value));
 	}
@@ -81,7 +81,7 @@ public final class XmlValue extends XmlElement implements DefaultValueGetter {
 	 * @param value The value of the xml element
 	 * @throws NullPointerException If the name or attributes are null
 	 */
-	public XmlValue(@NotNull String name, @NotNull XmlAttributes attributes, boolean value) {
+	public XmlValue(@NonNull String name, @NonNull XmlAttributes attributes, boolean value) {
 		this(name, attributes, String.valueOf(value));
 	}
 	
@@ -92,7 +92,7 @@ public final class XmlValue extends XmlElement implements DefaultValueGetter {
 	 * @param attributes The attributes of the xml element
 	 * @param value The value of the xml element
 	 */
-	public XmlValue(@NotNull String name, @NotNull XmlAttributes attributes, @Nullable Number value) {
+	public XmlValue(@NonNull String name, @NonNull XmlAttributes attributes, @Nullable Number value) {
 		this(name, attributes, String.valueOf(value));
 	}
 	
@@ -105,13 +105,13 @@ public final class XmlValue extends XmlElement implements DefaultValueGetter {
 	 * @param value The value of the xml element
 	 * @throws NullPointerException If the name or attributes are null
 	 */
-	public XmlValue(@NotNull String name, @NotNull XmlAttributes attributes, @Nullable String value) {
+	public XmlValue(@NonNull String name, @NonNull XmlAttributes attributes, @Nullable String value) {
 		super(name, attributes);
 		this.value = escapeXml(String.valueOf(value));
 	}
 	
 	@Override
-	protected @NotNull String getElementType() {
+	protected @NonNull String getElementType() {
 		return "xml value";
 	}
 	
@@ -127,7 +127,7 @@ public final class XmlValue extends XmlElement implements DefaultValueGetter {
 	 * Returns the raw unescaped value of the element.<br>
 	 * @return The raw value
 	 */
-	public @NotNull String getRawValue() {
+	public @NonNull String getRawValue() {
 		return this.value;
 	}
 	
@@ -135,7 +135,7 @@ public final class XmlValue extends XmlElement implements DefaultValueGetter {
 	 * Returns the unescaped value of the element.<br>
 	 * @return The unescaped value
 	 */
-	public @NotNull String getUnescapedValue() {
+	public @NonNull String getUnescapedValue() {
 		return unescapeXml(this.value);
 	}
 	
@@ -145,7 +145,7 @@ public final class XmlValue extends XmlElement implements DefaultValueGetter {
 	 * @return The value as a string
 	 */
 	@Override
-	public @NotNull String getAsString() {
+	public @NonNull String getAsString() {
 		return this.getUnescapedValue();
 	}
 	
@@ -171,7 +171,7 @@ public final class XmlValue extends XmlElement implements DefaultValueGetter {
 	 * @throws NullPointerException If the config is null
 	 */
 	@Override
-	public @NotNull String toString(@NotNull XmlConfig config) {
+	public @NonNull String toString(@NonNull XmlConfig config) {
 		Objects.requireNonNull(config, "Config must not be null");
 		StringBuilder builder = this.toBaseString(config);
 		if (config.prettyPrint() && !config.simplifyValues()) {

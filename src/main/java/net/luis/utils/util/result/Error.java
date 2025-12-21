@@ -18,8 +18,8 @@
 
 package net.luis.utils.util.result;
 
-import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.UnknownNullability;
+import org.jspecify.annotations.NonNull;
 
 import java.util.Objects;
 import java.util.Optional;
@@ -34,7 +34,7 @@ import java.util.function.Supplier;
  * @param <T> The type of the result value
  * @param errorMessage The error message (must not be null)
  */
-record Error<T>(@NotNull String errorMessage) implements Result<T> {
+record Error<T>(@NonNull String errorMessage) implements Result<T> {
 	
 	/**
 	 * Constructs a new error result with the specified error message.<br>
@@ -72,7 +72,7 @@ record Error<T>(@NotNull String errorMessage) implements Result<T> {
 	}
 	
 	@Override
-	public @NotNull Optional<T> result() {
+	public @NonNull Optional<T> result() {
 		return Optional.empty();
 	}
 	
@@ -82,49 +82,49 @@ record Error<T>(@NotNull String errorMessage) implements Result<T> {
 	}
 	
 	@Override
-	public <X extends RuntimeException> @UnknownNullability T resultOrThrow(@NotNull Function<String, ? extends X> exceptionSupplier) {
+	public <X extends RuntimeException> @UnknownNullability T resultOrThrow(@NonNull Function<String, ? extends X> exceptionSupplier) {
 		Objects.requireNonNull(exceptionSupplier, "Exception supplier must not be null");
 		throw exceptionSupplier.apply(this.errorMessage);
 	}
 	
 	@Override
-	public @NotNull Optional<String> error() {
+	public @NonNull Optional<String> error() {
 		return Optional.of(this.errorMessage);
 	}
 	
 	@Override
-	public @NotNull String errorOrThrow() {
+	public @NonNull String errorOrThrow() {
 		return this.errorMessage;
 	}
 	
 	@Override
 	@SuppressWarnings("unchecked")
-	public <R> @NotNull Result<R> map(@NotNull Function<T, R> mapper) {
+	public <R> @NonNull Result<R> map(@NonNull Function<T, R> mapper) {
 		Objects.requireNonNull(mapper, "Mapper must not be null");
 		return (Result<R>) this;
 	}
 	
 	@Override
 	@SuppressWarnings("unchecked")
-	public <R> @NotNull Result<R> flatMap(@NotNull Function<T, Result<R>> mapper) {
+	public <R> @NonNull Result<R> flatMap(@NonNull Function<T, Result<R>> mapper) {
 		Objects.requireNonNull(mapper, "Mapper must not be null");
 		return (Result<R>) this;
 	}
 	
 	@Override
-	public @UnknownNullability T orElse(@NotNull T fallback) {
+	public @UnknownNullability T orElse(@NonNull T fallback) {
 		Objects.requireNonNull(fallback, "Fallback must not be null");
 		return fallback;
 	}
 	
 	@Override
-	public @UnknownNullability T orElseGet(@NotNull Supplier<? extends T> supplier) {
+	public @UnknownNullability T orElseGet(@NonNull Supplier<? extends T> supplier) {
 		Objects.requireNonNull(supplier, "Supplier must not be null");
 		return supplier.get();
 	}
 	
 	@Override
-	public @NotNull String toString() {
+	public @NonNull String toString() {
 		return "Error[" + this.errorMessage + "]";
 	}
 }

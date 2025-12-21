@@ -18,7 +18,7 @@
 
 package net.luis.utils.io.data.json.exception;
 
-import org.jetbrains.annotations.Nullable;
+import org.jspecify.annotations.Nullable;
 
 /**
  * Thrown to indicate that an index of a json array is out of bounds.<br>

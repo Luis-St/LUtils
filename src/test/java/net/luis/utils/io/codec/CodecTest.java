@@ -23,7 +23,7 @@ import net.luis.utils.io.codec.types.struct.*;
 import net.luis.utils.io.data.json.*;
 import net.luis.utils.util.result.Result;
 import net.luis.utils.util.result.ResultingFunction;
-import org.jetbrains.annotations.NotNull;
+import org.jspecify.annotations.NonNull;
 import org.junit.jupiter.api.Test;
 
 import java.util.*;
@@ -471,5 +471,5 @@ class CodecTest {
 		assertEquals("default", decoded.resultOrThrow());
 	}
 	
-	private record TestObject(@NotNull String name) {}
+	private record TestObject(@NonNull String name) {}
 }

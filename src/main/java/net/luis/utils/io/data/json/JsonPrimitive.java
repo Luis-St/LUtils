@@ -20,7 +20,7 @@ package net.luis.utils.io.data.json;
 
 import net.luis.utils.io.data.json.exception.JsonTypeException;
 import net.luis.utils.io.reader.StringReader;
-import org.jetbrains.annotations.NotNull;
+import org.jspecify.annotations.NonNull;
 
 import java.util.Objects;
 
@@ -51,7 +51,7 @@ public class JsonPrimitive implements JsonElement {
 	 * @param value The number value
 	 * @throws NullPointerException If the value is null
 	 */
-	public JsonPrimitive(@NotNull Number value) {
+	public JsonPrimitive(@NonNull Number value) {
 		this.value = Objects.requireNonNull(value, "Value must not be null");
 	}
 	
@@ -69,7 +69,7 @@ public class JsonPrimitive implements JsonElement {
 	 * @param value The string value
 	 * @throws NullPointerException If the value is null
 	 */
-	public JsonPrimitive(@NotNull String value) {
+	public JsonPrimitive(@NonNull String value) {
 		this.value = Objects.requireNonNull(value, "Value must not be null");
 	}
 	
@@ -81,7 +81,7 @@ public class JsonPrimitive implements JsonElement {
 	 * @param string The string
 	 * @return The parsed value or the string if it could not be parsed
 	 */
-	private static @NotNull Object tryParse(@NotNull String string) {
+	private static @NonNull Object tryParse(@NonNull String string) {
 		if ("true".equalsIgnoreCase(string) || "false".equalsIgnoreCase(string)) {
 			return Boolean.parseBoolean(string);
 		}
@@ -106,7 +106,7 @@ public class JsonPrimitive implements JsonElement {
 	 * @return The name of the type of this json primitive in a human-readable format
 	 * @throws IllegalStateException If the type of this json primitive is unknown
 	 */
-	private @NotNull String getName() {
+	private @NonNull String getName() {
 		if (this.isJsonBoolean()) {
 			return "json boolean";
 		} else if (this.isJsonNumber()) {
@@ -150,7 +150,7 @@ public class JsonPrimitive implements JsonElement {
 	 * @return This json primitive as a number
 	 * @throws JsonTypeException If this json primitive is not a json number
 	 */
-	public @NotNull Number getAsNumber() {
+	public @NonNull Number getAsNumber() {
 		if (this.isJsonNumber()) {
 			return (Number) this.value;
 		}
@@ -302,7 +302,7 @@ public class JsonPrimitive implements JsonElement {
 	 * @return This json primitive as a string
 	 * @throws JsonTypeException If this json primitive is not a json string
 	 */
-	public @NotNull String getAsString() {
+	public @NonNull String getAsString() {
 		if (this.isJsonString()) {
 			return (String) this.value;
 		} else if (this.isJsonNumber()) {
@@ -319,7 +319,7 @@ public class JsonPrimitive implements JsonElement {
 	 *
 	 * @return A json primitive with the parsed value or this json primitive if the parsing fails
 	 */
-	public @NotNull JsonPrimitive getAsParsedJsonPrimitive() {
+	public @NonNull JsonPrimitive getAsParsedJsonPrimitive() {
 		if (this.isJsonString()) {
 			Object parsed = tryParse(this.getAsString());
 			
@@ -353,7 +353,7 @@ public class JsonPrimitive implements JsonElement {
 	}
 	
 	@Override
-	public @NotNull String toString(@NotNull JsonConfig config) {
+	public @NonNull String toString(@NonNull JsonConfig config) {
 		Objects.requireNonNull(config, "Config must not be null");
 		
 		if (this.value instanceof String string) {

@@ -18,7 +18,7 @@
 
 package net.luis.utils.io.data.property.exception;
 
-import org.jetbrains.annotations.Nullable;
+import org.jspecify.annotations.Nullable;
 
 /**
  * Thrown to indicate that the syntax of a property string is invalid.<br>

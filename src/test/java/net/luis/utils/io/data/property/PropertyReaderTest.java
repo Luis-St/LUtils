@@ -21,7 +21,7 @@ package net.luis.utils.io.data.property;
 import net.luis.utils.annotation.type.MockObject;
 import net.luis.utils.io.data.InputProvider;
 import net.luis.utils.io.data.property.exception.PropertySyntaxException;
-import org.jetbrains.annotations.NotNull;
+import org.jspecify.annotations.NonNull;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
@@ -44,11 +44,11 @@ class PropertyReaderTest {
 	private static final PropertyConfig ADVANCED_DEFAULT_CONFIG = new PropertyConfig('=', 1, Set.of('#'), Pattern.compile("^[a-zA-Z0-9._-]+$"), Pattern.compile(".*"), true, StandardCharsets.UTF_8);
 	private static final PropertyConfig CUSTOM_CONFIG = new PropertyConfig(':', 0, Set.of(';'), Pattern.compile("^[a-z._]+$"), Pattern.compile("^[ a-zA-Z0-9._-]*$"), true, StandardCharsets.UTF_8);
 	
-	private static @NotNull PropertyReader createReader(@NotNull String content) {
+	private static @NonNull PropertyReader createReader(@NonNull String content) {
 		return new PropertyReader(new InputProvider(new StringInputStream(content)));
 	}
 	
-	private static @NotNull PropertyReader createReader(@NotNull String content, @NotNull PropertyConfig config) {
+	private static @NonNull PropertyReader createReader(@NonNull String content, @NonNull PropertyConfig config) {
 		return new PropertyReader(new InputProvider(new StringInputStream(content)), config);
 	}
 	
@@ -376,7 +376,7 @@ class PropertyReaderTest {
 		private final String string;
 		private int index;
 		
-		private StringInputStream(@NotNull String string) {
+		private StringInputStream(@NonNull String string) {
 			this.string = Objects.requireNonNull(string, "String must not be null");
 		}
 		

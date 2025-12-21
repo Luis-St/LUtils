@@ -18,7 +18,9 @@
 
 package net.luis.utils.util.result;
 
-import org.jetbrains.annotations.*;
+import org.jetbrains.annotations.UnknownNullability;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 import java.util.*;
 import java.util.function.Function;
@@ -48,7 +50,7 @@ public sealed interface Result<T> permits Success, Error, Partial {
 	 * @return The created result
 	 * @param <T> The type of the result
 	 */
-	static <T> @NotNull Result<T> success(@Nullable T value) {
+	static <T> @NonNull Result<T> success(@Nullable T value) {
 		return new Success<>(value);
 	}
 	
@@ -60,7 +62,7 @@ public sealed interface Result<T> permits Success, Error, Partial {
 	 * @param <T> The type of the result
 	 * @throws NullPointerException If the error message is null
 	 */
-	static <T> @NotNull Result<T> error(@NotNull String error) {
+	static <T> @NonNull Result<T> error(@NonNull String error) {
 		return new Error<>(error);
 	}
 	
@@ -74,7 +76,7 @@ public sealed interface Result<T> permits Success, Error, Partial {
 	 * @param <T> The type of the result
 	 * @throws NullPointerException If the error message is null
 	 */
-	static <T> @NotNull Result<T> partial(@Nullable T value, @NotNull String error) {
+	static <T> @NonNull Result<T> partial(@Nullable T value, @NonNull String error) {
 		return new Partial<>(value, error, new ArrayList<>());
 	}
 	
@@ -89,7 +91,7 @@ public sealed interface Result<T> permits Success, Error, Partial {
 	 * @return The created partial result
 	 * @throws NullPointerException If the error message or causes list is null
 	 */
-	static <T> @NotNull Result<T> partial(@Nullable T value, @NotNull String error, @NotNull List<String> causes) {
+	static <T> @NonNull Result<T> partial(@Nullable T value, @NonNull String error, @NonNull List<String> causes) {
 		return new Partial<>(value, error, causes);
 	}
 	//endregion
@@ -128,7 +130,7 @@ public sealed interface Result<T> permits Success, Error, Partial {
 	 * Returns the result value as an {@link Optional}.<br>
 	 * @return The result value, or empty if this is an error result
 	 */
-	@NotNull Optional<T> result();
+	@NonNull Optional<T> result();
 	
 	/**
 	 * Gets the result value or throws an exception.<br>
@@ -148,13 +150,13 @@ public sealed interface Result<T> permits Success, Error, Partial {
 	 * @throws NullPointerException If the exception supplier is null
 	 * @throws X If the result is an error (no value available)
 	 */
-	<X extends RuntimeException> @UnknownNullability T resultOrThrow(@NotNull Function<String, ? extends X> exceptionSupplier);
+	<X extends RuntimeException> @UnknownNullability T resultOrThrow(@NonNull Function<String, ? extends X> exceptionSupplier);
 	
 	/**
 	 * Returns the error message as an {@link Optional}.<br>
 	 * @return The error message, or empty if this is a success result
 	 */
-	@NotNull Optional<String> error();
+	@NonNull Optional<String> error();
 	
 	/**
 	 * Gets the error message or throws an exception.<br>
@@ -162,7 +164,7 @@ public sealed interface Result<T> permits Success, Error, Partial {
 	 * @return The error message
 	 * @throws IllegalStateException If the result does not have an error message
 	 */
-	@NotNull String errorOrThrow();
+	@NonNull String errorOrThrow();
 	
 	/**
 	 * Maps the result value to another type.<br>
@@ -174,7 +176,7 @@ public sealed interface Result<T> permits Success, Error, Partial {
 	 * @param <R> The type of the mapped result
 	 * @throws NullPointerException If the mapper is null
 	 */
-	<R> @NotNull Result<R> map(@NotNull Function<T, R> mapper);
+	<R> @NonNull Result<R> map(@NonNull Function<T, R> mapper);
 	
 	/**
 	 * Maps the result value to another result.<br>
@@ -187,7 +189,7 @@ public sealed interface Result<T> permits Success, Error, Partial {
 	 * @param <R> The type of the mapped result
 	 * @throws NullPointerException If the mapper is null
 	 */
-	<R> @NotNull Result<R> flatMap(@NotNull Function<T, Result<R>> mapper);
+	<R> @NonNull Result<R> flatMap(@NonNull Function<T, Result<R>> mapper);
 	
 	/**
 	 * Gets the result value or the specified default value.<br>
@@ -198,7 +200,7 @@ public sealed interface Result<T> permits Success, Error, Partial {
 	 * @throws NullPointerException If the fallback value is null
 	 */
 	@UnknownNullability
-	T orElse(@NotNull T fallback);
+	T orElse(@NonNull T fallback);
 	
 	/**
 	 * Gets the result value or the result of the specified supplier.<br>
@@ -209,5 +211,5 @@ public sealed interface Result<T> permits Success, Error, Partial {
 	 * @throws NullPointerException If the supplier is null
 	 */
 	@UnknownNullability
-	T orElseGet(@NotNull Supplier<? extends T> supplier);
+	T orElseGet(@NonNull Supplier<? extends T> supplier);
 }

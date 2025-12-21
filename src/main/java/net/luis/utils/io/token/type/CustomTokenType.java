@@ -18,8 +18,8 @@
 
 package net.luis.utils.io.token.type;
 
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 import java.util.Objects;
 
@@ -33,7 +33,7 @@ import java.util.Objects;
  * @param superType The super type of the token type, can be null
  */
 public record CustomTokenType(
-	@NotNull String name,
+	@NonNull String name,
 	@Nullable TokenType superType
 ) implements TokenType {
 	
@@ -54,7 +54,7 @@ public record CustomTokenType(
 	}
 	
 	@Override
-	public @NotNull String getName() {
+	public @NonNull String getName() {
 		return this.name;
 	}
 	

@@ -24,8 +24,8 @@ import net.luis.utils.io.token.TokenRuleMatch;
 import net.luis.utils.io.token.actions.TokenAction;
 import net.luis.utils.io.token.context.TokenActionContext;
 import net.luis.utils.io.token.tokens.*;
-import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Unmodifiable;
+import org.jspecify.annotations.NonNull;
 
 import java.util.List;
 import java.util.Objects;
@@ -41,7 +41,7 @@ import java.util.regex.Pattern;
  * @param splitPattern The pattern to use for splitting token values
  */
 public record SplitTokenAction(
-	@NotNull Pattern splitPattern
+	@NonNull Pattern splitPattern
 ) implements TokenAction {
 	
 	/**
@@ -60,12 +60,12 @@ public record SplitTokenAction(
 	 * @param splitPattern The pattern string to use for splitting token values
 	 * @throws NullPointerException If the split pattern is null
 	 */
-	public SplitTokenAction(@NotNull String splitPattern) {
+	public SplitTokenAction(@NonNull String splitPattern) {
 		this(Pattern.compile(Objects.requireNonNull(splitPattern, "Split pattern must not be null")));
 	}
 	
 	@Override
-	public @NotNull @Unmodifiable List<Token> apply(@NotNull TokenRuleMatch match, @NotNull TokenActionContext ctx) {
+	public @NonNull @Unmodifiable List<Token> apply(@NonNull TokenRuleMatch match, @NonNull TokenActionContext ctx) {
 		Objects.requireNonNull(match, "Token rule match must not be null");
 		Objects.requireNonNull(ctx, "Token action context must not be null");
 		

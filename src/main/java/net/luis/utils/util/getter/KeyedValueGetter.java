@@ -22,7 +22,7 @@ import net.luis.utils.exception.InvalidStringException;
 import net.luis.utils.function.throwable.ThrowableFunction;
 import net.luis.utils.io.reader.StringReader;
 import org.apache.commons.lang3.Strings;
-import org.jetbrains.annotations.NotNull;
+import org.jspecify.annotations.NonNull;
 
 import java.util.Objects;
 
@@ -59,7 +59,7 @@ public interface KeyedValueGetter {
 	 * @return The value as a string
 	 * @throws NullPointerException If the key is null
 	 */
-	@NotNull String getAsString(@NotNull String key);
+	@NonNull String getAsString(@NonNull String key);
 	
 	/**
 	 * Returns the value which is hold by this object as a boolean for the given key.<br>
@@ -69,7 +69,7 @@ public interface KeyedValueGetter {
 	 * @throws NullPointerException If the key is null
 	 * @throws IllegalArgumentException If the value is not a boolean (e.g. not "true" or "false")
 	 */
-	default boolean getAsBoolean(@NotNull String key) {
+	default boolean getAsBoolean(@NonNull String key) {
 		String value = this.getAsString(key);
 		if (Strings.CI.equalsAny(value, "true", "false")) {
 			return Boolean.parseBoolean(value);
@@ -85,7 +85,7 @@ public interface KeyedValueGetter {
 	 * @throws NullPointerException If the key is null
 	 * @throws IllegalArgumentException If the value is not a number
 	 */
-	default @NotNull Number getAsNumber(@NotNull String key) {
+	default @NonNull Number getAsNumber(@NonNull String key) {
 		String value = this.getAsString(key);
 		try {
 			return new StringReader(value).readNumber();
@@ -102,7 +102,7 @@ public interface KeyedValueGetter {
 	 * @throws NullPointerException If the key is null
 	 * @throws IllegalArgumentException If the value is not a byte
 	 */
-	default byte getAsByte(@NotNull String key) {
+	default byte getAsByte(@NonNull String key) {
 		String value = this.getAsString(key);
 		try {
 			return new StringReader(value).readByte();
@@ -119,7 +119,7 @@ public interface KeyedValueGetter {
 	 * @throws NullPointerException If the key is null
 	 * @throws IllegalArgumentException If the value is not a short
 	 */
-	default short getAsShort(@NotNull String key) {
+	default short getAsShort(@NonNull String key) {
 		String value = this.getAsString(key);
 		try {
 			return new StringReader(value).readShort();
@@ -136,7 +136,7 @@ public interface KeyedValueGetter {
 	 * @throws NullPointerException If the key is null
 	 * @throws IllegalArgumentException If the value is not an integer
 	 */
-	default int getAsInteger(@NotNull String key) {
+	default int getAsInteger(@NonNull String key) {
 		String value = this.getAsString(key);
 		try {
 			return new StringReader(value).readInt();
@@ -153,7 +153,7 @@ public interface KeyedValueGetter {
 	 * @throws NullPointerException If the key is null
 	 * @throws IllegalArgumentException If the value is not a long
 	 */
-	default long getAsLong(@NotNull String key) {
+	default long getAsLong(@NonNull String key) {
 		String value = this.getAsString(key);
 		try {
 			return new StringReader(value).readLong();
@@ -170,7 +170,7 @@ public interface KeyedValueGetter {
 	 * @throws NullPointerException If the key is null
 	 * @throws IllegalArgumentException If the value is not a float
 	 */
-	default float getAsFloat(@NotNull String key) {
+	default float getAsFloat(@NonNull String key) {
 		String value = this.getAsString(key);
 		try {
 			return new StringReader(value).readFloat();
@@ -187,7 +187,7 @@ public interface KeyedValueGetter {
 	 * @throws NullPointerException If the key is null
 	 * @throws IllegalArgumentException If the value is not a double
 	 */
-	default double getAsDouble(@NotNull String key) {
+	default double getAsDouble(@NonNull String key) {
 		String value = this.getAsString(key);
 		try {
 			return new StringReader(value).readDouble();
@@ -210,7 +210,7 @@ public interface KeyedValueGetter {
 	 * @throws IndexOutOfBoundsException If the index is out of bounds
 	 * @throws IllegalArgumentException If the value could not be parsed
 	 */
-	default <T> @NotNull T getAs(@NotNull String key, @NotNull ThrowableFunction<String, T, ? extends Exception> parser) {
+	default <T> @NonNull T getAs(@NonNull String key, @NonNull ThrowableFunction<String, T, ? extends Exception> parser) {
 		Objects.requireNonNull(parser, "Parser must not be null");
 		String value = this.getAsString(key);
 		try {

@@ -21,8 +21,8 @@ package net.luis.utils.io.codec.types.time;
 import net.luis.utils.io.codec.AbstractCodec;
 import net.luis.utils.io.codec.provider.TypeProvider;
 import net.luis.utils.util.result.Result;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeParseException;
@@ -42,7 +42,7 @@ public class LocalDateTimeCodec extends AbstractCodec<LocalDateTime, Object> {
 	public LocalDateTimeCodec() {}
 	
 	@Override
-	public <R> @NotNull Result<R> encodeStart(@NotNull TypeProvider<R> provider, @NotNull R current, @Nullable LocalDateTime value) {
+	public <R> @NonNull Result<R> encodeStart(@NonNull TypeProvider<R> provider, @NonNull R current, @Nullable LocalDateTime value) {
 		Objects.requireNonNull(provider, "Type provider must not be null");
 		Objects.requireNonNull(current, "Current value must not be null");
 		
@@ -53,13 +53,13 @@ public class LocalDateTimeCodec extends AbstractCodec<LocalDateTime, Object> {
 	}
 	
 	@Override
-	public @NotNull Result<String> encodeKey(@NotNull LocalDateTime key) {
+	public @NonNull Result<String> encodeKey(@NonNull LocalDateTime key) {
 		Objects.requireNonNull(key, "Key must not be null");
 		return Result.success(key.toString());
 	}
 	
 	@Override
-	public <R> @NotNull Result<LocalDateTime> decodeStart(@NotNull TypeProvider<R> provider, @NotNull R current, @Nullable R value) {
+	public <R> @NonNull Result<LocalDateTime> decodeStart(@NonNull TypeProvider<R> provider, @NonNull R current, @Nullable R value) {
 		Objects.requireNonNull(provider, "Type provider must not be null");
 		Objects.requireNonNull(current, "Current value must not be null");
 		if (value == null) {
@@ -80,7 +80,7 @@ public class LocalDateTimeCodec extends AbstractCodec<LocalDateTime, Object> {
 	}
 	
 	@Override
-	public @NotNull Result<LocalDateTime> decodeKey(@NotNull String key) {
+	public @NonNull Result<LocalDateTime> decodeKey(@NonNull String key) {
 		Objects.requireNonNull(key, "Key must not be null");
 		try {
 			return Result.success(LocalDateTime.parse(key));

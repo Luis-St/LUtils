@@ -23,8 +23,8 @@ import net.luis.utils.io.token.actions.TokenAction;
 import net.luis.utils.io.token.actions.core.TokenTransformer;
 import net.luis.utils.io.token.context.TokenActionContext;
 import net.luis.utils.io.token.tokens.Token;
-import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Unmodifiable;
+import org.jspecify.annotations.NonNull;
 
 import java.util.List;
 import java.util.Objects;
@@ -40,7 +40,7 @@ import java.util.Objects;
  * @param transformer The transformer to apply to tokens
  */
 public record TransformTokenAction(
-	@NotNull TokenTransformer transformer
+	@NonNull TokenTransformer transformer
 ) implements TokenAction {
 	
 	/**
@@ -54,7 +54,7 @@ public record TransformTokenAction(
 	}
 	
 	@Override
-	public @NotNull @Unmodifiable List<Token> apply(@NotNull TokenRuleMatch match, @NotNull TokenActionContext ctx) {
+	public @NonNull @Unmodifiable List<Token> apply(@NonNull TokenRuleMatch match, @NonNull TokenActionContext ctx) {
 		Objects.requireNonNull(match, "Token rule match must not be null");
 		Objects.requireNonNull(ctx, "Token action context must not be null");
 		

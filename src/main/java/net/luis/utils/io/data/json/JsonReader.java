@@ -21,7 +21,7 @@ package net.luis.utils.io.data.json;
 import net.luis.utils.io.data.InputProvider;
 import net.luis.utils.io.data.json.exception.JsonSyntaxException;
 import net.luis.utils.io.reader.StringReader;
-import org.jetbrains.annotations.NotNull;
+import org.jspecify.annotations.NonNull;
 
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -55,7 +55,7 @@ public class JsonReader implements AutoCloseable {
 	 * @param string The string to read from
 	 * @throws NullPointerException If the string is null
 	 */
-	public JsonReader(@NotNull String string) {
+	public JsonReader(@NonNull String string) {
 		this(string, JsonConfig.DEFAULT);
 	}
 	
@@ -66,7 +66,7 @@ public class JsonReader implements AutoCloseable {
 	 * @param config The configuration to use
 	 * @throws NullPointerException If the string or configuration is null
 	 */
-	public JsonReader(@NotNull String string, @NotNull JsonConfig config) {
+	public JsonReader(@NonNull String string, @NonNull JsonConfig config) {
 		this.config = Objects.requireNonNull(config, "Json config must not be null");
 		this.reader = new StringReader(Objects.requireNonNull(string, "String must not be null"));
 	}
@@ -77,7 +77,7 @@ public class JsonReader implements AutoCloseable {
 	 * @param input The input to create the reader for
 	 * @throws NullPointerException If the input is null
 	 */
-	public JsonReader(@NotNull InputProvider input) {
+	public JsonReader(@NonNull InputProvider input) {
 		this(input, JsonConfig.DEFAULT);
 	}
 	
@@ -88,7 +88,7 @@ public class JsonReader implements AutoCloseable {
 	 * @param config The configuration to use
 	 * @throws NullPointerException If the input or configuration is null
 	 */
-	public JsonReader(@NotNull InputProvider input, @NotNull JsonConfig config) {
+	public JsonReader(@NonNull InputProvider input, @NonNull JsonConfig config) {
 		this.config = Objects.requireNonNull(config, "Json config must not be null");
 		this.reader = new StringReader(new InputStreamReader(Objects.requireNonNull(input, "Input must not be null").getStream(), config.charset()));
 	}
@@ -103,7 +103,7 @@ public class JsonReader implements AutoCloseable {
 	 * @throws JsonSyntaxException If the json is invalid
 	 * @see #readJsonElement()
 	 */
-	public @NotNull JsonElement readJson() {
+	public @NonNull JsonElement readJson() {
 		if (!this.reader.canRead()) {
 			throw new JsonSyntaxException("Invalid json, expected content but got nothing");
 		}
@@ -131,7 +131,7 @@ public class JsonReader implements AutoCloseable {
 	 * @see #readJsonObject()
 	 * @see #readJsonValue()
 	 */
-	private @NotNull JsonElement readJsonElement() {
+	private @NonNull JsonElement readJsonElement() {
 		this.reader.skipWhitespaces();
 		if (!this.reader.canRead()) {
 			throw new JsonSyntaxException("Invalid json element, expected content but got nothing");
@@ -166,7 +166,7 @@ public class JsonReader implements AutoCloseable {
 	 * @return The read json array
 	 * @throws JsonSyntaxException If the json array is invalid
 	 */
-	private @NotNull JsonArray readJsonArray() {
+	private @NonNull JsonArray readJsonArray() {
 		if (this.reader.peek() != '[') {
 			throw new JsonSyntaxException("Invalid json array, expected opening bracket '[' but got: '" + this.reader.peek() + "'");
 		}
@@ -229,7 +229,7 @@ public class JsonReader implements AutoCloseable {
 	 * @return The read json object
 	 * @throws JsonSyntaxException If the json object is invalid
 	 */
-	private @NotNull JsonObject readJsonObject() {
+	private @NonNull JsonObject readJsonObject() {
 		if (this.reader.peek() != '{') {
 			throw new JsonSyntaxException("Invalid json object, expected opening bracket '{' but got: '" + this.reader.peek() + "'");
 		}
@@ -323,7 +323,7 @@ public class JsonReader implements AutoCloseable {
 	 * @return The read json value
 	 * @throws JsonSyntaxException If the json value is invalid (depends on the configuration)
 	 */
-	private @NotNull JsonElement readJsonValue() {
+	private @NonNull JsonElement readJsonValue() {
 		this.reader.skipWhitespaces();
 		if (!this.reader.canRead()) {
 			throw new JsonSyntaxException("Invalid json value, expected content but got nothing");
@@ -404,7 +404,7 @@ public class JsonReader implements AutoCloseable {
 	 *
 	 * @return The read special json number
 	 */
-	private @NotNull JsonPrimitive readSpecialJsonNumber() {
+	private @NonNull JsonPrimitive readSpecialJsonNumber() {
 		char sign = '\0';
 		char next = this.reader.peek();
 		if (next == '+' || next == '-') {
@@ -462,7 +462,7 @@ public class JsonReader implements AutoCloseable {
 	 * @return The read json null value (always {@link JsonNull#INSTANCE})
 	 * @throws JsonSyntaxException If the json null value is invalid (depends on the configuration)
 	 */
-	private @NotNull JsonNull readJsonNull() {
+	private @NonNull JsonNull readJsonNull() {
 		if (Character.toLowerCase(this.reader.peek()) != 'n') {
 			throw new JsonSyntaxException("Invalid json null, expected 'null' but got: '" + this.reader.peek() + "'");
 		}
@@ -485,7 +485,7 @@ public class JsonReader implements AutoCloseable {
 	 * @return The read json boolean value
 	 * @throws JsonSyntaxException If the json boolean value is invalid (depends on the configuration)
 	 */
-	private @NotNull JsonPrimitive readJsonBoolean() {
+	private @NonNull JsonPrimitive readJsonBoolean() {
 		char next = Character.toLowerCase(this.reader.peek());
 		if (next != 't' && next != 'f') {
 			throw new JsonSyntaxException("Invalid json boolean, expected 'true' or 'false' but got: '" + next + "'");

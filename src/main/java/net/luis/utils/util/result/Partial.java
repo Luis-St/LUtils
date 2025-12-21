@@ -18,7 +18,9 @@
 
 package net.luis.utils.util.result;
 
-import org.jetbrains.annotations.*;
+import org.jetbrains.annotations.UnknownNullability;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 import java.util.*;
 import java.util.function.Function;
@@ -33,7 +35,7 @@ import java.util.function.Supplier;
  * @param causes The list of causes leading to this partial result
  * @param <T> The type of the result value
  */
-record Partial<T>(@Nullable T value, @NotNull String errorMessage, @NotNull List<String> causes) implements Result<T> {
+record Partial<T>(@Nullable T value, @NonNull String errorMessage, @NonNull List<String> causes) implements Result<T> {
 	
 	/**
 	 * Constructs a new partial result with the specified value, error message, and list of causes.<br>
@@ -74,7 +76,7 @@ record Partial<T>(@Nullable T value, @NotNull String errorMessage, @NotNull List
 	}
 	
 	@Override
-	public @NotNull Optional<T> result() {
+	public @NonNull Optional<T> result() {
 		return Optional.ofNullable(this.value);
 	}
 	
@@ -84,12 +86,12 @@ record Partial<T>(@Nullable T value, @NotNull String errorMessage, @NotNull List
 	}
 	
 	@Override
-	public <X extends RuntimeException> @UnknownNullability T resultOrThrow(@NotNull Function<String, ? extends X> exceptionSupplier) {
+	public <X extends RuntimeException> @UnknownNullability T resultOrThrow(@NonNull Function<String, ? extends X> exceptionSupplier) {
 		Objects.requireNonNull(exceptionSupplier, "Exception supplier must not be null");
 		return this.value;
 	}
 	
-	private @NotNull String buildErrorMessage() {
+	private @NonNull String buildErrorMessage() {
 		StringBuilder sb = new StringBuilder(this.errorMessage);
 		if (this.causes.isEmpty()) {
 			return sb.toString();
@@ -103,23 +105,23 @@ record Partial<T>(@Nullable T value, @NotNull String errorMessage, @NotNull List
 	}
 	
 	@Override
-	public @NotNull Optional<String> error() {
+	public @NonNull Optional<String> error() {
 		return Optional.of(this.buildErrorMessage());
 	}
 	
 	@Override
-	public @NotNull String errorOrThrow() {
+	public @NonNull String errorOrThrow() {
 		return this.buildErrorMessage();
 	}
 	
 	@Override
-	public <R> @NotNull Result<R> map(@NotNull Function<T, R> mapper) {
+	public <R> @NonNull Result<R> map(@NonNull Function<T, R> mapper) {
 		Objects.requireNonNull(mapper, "Mapper must not be null");
 		return new Partial<>(mapper.apply(this.value), this.errorMessage, this.causes);
 	}
 	
 	@Override
-	public <R> @NotNull Result<R> flatMap(@NotNull Function<T, Result<R>> mapper) {
+	public <R> @NonNull Result<R> flatMap(@NonNull Function<T, Result<R>> mapper) {
 		Objects.requireNonNull(mapper, "Mapper must not be null");
 		Result<R> mapped = mapper.apply(this.value);
 		
@@ -134,19 +136,19 @@ record Partial<T>(@Nullable T value, @NotNull String errorMessage, @NotNull List
 	}
 	
 	@Override
-	public @UnknownNullability T orElse(@NotNull T fallback) {
+	public @UnknownNullability T orElse(@NonNull T fallback) {
 		Objects.requireNonNull(fallback, "Fallback must not be null");
 		return this.value;
 	}
 	
 	@Override
-	public @UnknownNullability T orElseGet(@NotNull Supplier<? extends T> supplier) {
+	public @UnknownNullability T orElseGet(@NonNull Supplier<? extends T> supplier) {
 		Objects.requireNonNull(supplier, "Supplier must not be null");
 		return this.value;
 	}
 	
 	@Override
-	public @NotNull String toString() {
+	public @NonNull String toString() {
 		return "Partial[value=" + this.value + ", error=" + this.errorMessage + "]";
 	}
 }

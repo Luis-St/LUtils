@@ -18,7 +18,7 @@
 
 package net.luis.utils.io.token.stream;
 
-import org.jetbrains.annotations.Nullable;
+import org.jspecify.annotations.Nullable;
 
 /**
  * Thrown when the end of a token stream is reached unexpectedly.<br>

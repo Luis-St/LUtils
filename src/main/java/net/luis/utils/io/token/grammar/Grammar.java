@@ -21,7 +21,7 @@ package net.luis.utils.io.token.grammar;
 import net.luis.utils.io.token.TokenRuleEngine;
 import net.luis.utils.io.token.context.TokenRuleContext;
 import net.luis.utils.io.token.tokens.Token;
-import org.jetbrains.annotations.NotNull;
+import org.jspecify.annotations.NonNull;
 
 import java.util.*;
 import java.util.function.Consumer;
@@ -53,7 +53,7 @@ public class Grammar {
 	 * @param rules The map of named grammar rules
 	 * @throws NullPointerException If context or rules is null
 	 */
-	Grammar(@NotNull TokenRuleContext context, @NotNull List<GrammarRule> rules) {
+	Grammar(@NonNull TokenRuleContext context, @NonNull List<GrammarRule> rules) {
 		this.context = Objects.requireNonNull(context, "Context must not be null");
 		Objects.requireNonNull(rules, "Rules must not be null");
 		this.rules = List.copyOf(rules);
@@ -67,7 +67,7 @@ public class Grammar {
 	 * @return A new Grammar instance
 	 * @throws NullPointerException If builder function is null
 	 */
-	public static @NotNull Grammar builder(@NotNull Consumer<GrammarBuilder> builderFunction) {
+	public static @NonNull Grammar builder(@NonNull Consumer<GrammarBuilder> builderFunction) {
 		Objects.requireNonNull(builderFunction, "Builder function must not be null");
 		GrammarBuilder builder = new GrammarBuilder();
 		builderFunction.accept(builder);
@@ -78,7 +78,7 @@ public class Grammar {
 	 * Returns the token rule context associated with this grammar.<br>
 	 * @return The token rule context
 	 */
-	public @NotNull TokenRuleContext getContext() {
+	public @NonNull TokenRuleContext getContext() {
 		return this.context;
 	}
 	
@@ -86,7 +86,7 @@ public class Grammar {
 	 * Returns an unmodifiable set of all rule added to this grammar.<br>
 	 * @return An unmodifiable set of rules
 	 */
-	public @NotNull List<GrammarRule> getRules() {
+	public @NonNull List<GrammarRule> getRules() {
 		return Collections.unmodifiableList(this.rules);
 	}
 	
@@ -99,7 +99,7 @@ public class Grammar {
 	 * @throws NullPointerException If the list of tokens is null
 	 * @see TokenRuleEngine
 	 */
-	public @NotNull List<Token> parse(@NotNull List<Token> tokens) {
+	public @NonNull List<Token> parse(@NonNull List<Token> tokens) {
 		Objects.requireNonNull(tokens, "Tokens must not be null");
 		
 		TokenRuleEngine engine = new TokenRuleEngine(this.context);

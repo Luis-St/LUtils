@@ -19,7 +19,7 @@
 package net.luis.utils.util.unsafe.reflection;
 
 import net.luis.utils.exception.ReflectionException;
-import org.jetbrains.annotations.Nullable;
+import org.jspecify.annotations.Nullable;
 import org.junit.jupiter.api.*;
 
 import java.lang.reflect.*;

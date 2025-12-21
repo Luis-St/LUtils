@@ -18,7 +18,7 @@
 
 package net.luis.utils.io.codec.mapping;
 
-import org.jetbrains.annotations.NotNull;
+import org.jspecify.annotations.NonNull;
 
 import java.lang.annotation.*;
 
@@ -52,5 +52,5 @@ public @interface GenericInfo {
 	 *
 	 * @return An array of classes representing the generic type parameters
 	 */
-	Class<?> @NotNull [] value() default {};
+	Class<?> @NonNull [] value() default {};
 }

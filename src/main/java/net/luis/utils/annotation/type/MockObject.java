@@ -18,7 +18,7 @@
 
 package net.luis.utils.annotation.type;
 
-import org.jetbrains.annotations.NotNull;
+import org.jspecify.annotations.NonNull;
 
 import java.lang.annotation.*;
 
@@ -52,5 +52,5 @@ public @interface MockObject {
 	 * Returns the class mocked by this mock object.<br>
 	 * @return The class
 	 */
-	@NotNull Class<?> value();
+	@NonNull Class<?> value();
 }

@@ -22,7 +22,9 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import net.luis.utils.io.data.xml.exception.NoSuchXmlElementException;
 import net.luis.utils.io.data.xml.exception.XmlTypeException;
-import org.jetbrains.annotations.*;
+import org.jetbrains.annotations.Unmodifiable;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 import java.util.*;
 
@@ -65,7 +67,7 @@ public class XmlElements {
 	 * @throws NullPointerException If the elements are null
 	 * @throws XmlTypeException If the elements are not valid for the collection type
 	 */
-	public XmlElements(@NotNull List<? extends XmlElement> elements) {
+	public XmlElements(@NonNull List<? extends XmlElement> elements) {
 		Objects.requireNonNull(elements, "Elements must not be null").forEach(this::add);
 	}
 	
@@ -77,7 +79,7 @@ public class XmlElements {
 	 * @throws NullPointerException If the elements are null
 	 * @throws XmlTypeException If the elements are not valid for the collection type
 	 */
-	public XmlElements(@NotNull Map<String, ? extends XmlElement> elements) {
+	public XmlElements(@NonNull Map<String, ? extends XmlElement> elements) {
 		Objects.requireNonNull(elements, "Elements must not be null").forEach((name, element) -> this.add(element));
 	}
 	
@@ -158,7 +160,7 @@ public class XmlElements {
 	 * Returns an unmodifiable set of all element names in the collection.<br>
 	 * @return The set of element names
 	 */
-	public @NotNull @Unmodifiable Set<String> nameSet() {
+	public @NonNull @Unmodifiable Set<String> nameSet() {
 		return Set.copyOf(this.elements.keySet());
 	}
 	
@@ -166,7 +168,7 @@ public class XmlElements {
 	 * Returns an unmodifiable collection of all elements in the collection considering the type.<br>
 	 * @return The collection of elements
 	 */
-	public @NotNull @Unmodifiable Collection<XmlElement> elements() {
+	public @NonNull @Unmodifiable Collection<XmlElement> elements() {
 		if (this.isEmpty()) {
 			return Collections.emptyList();
 		} else if (this.isArray()) {
@@ -185,7 +187,7 @@ public class XmlElements {
 	 * @throws NullPointerException If the element is null
 	 * @throws XmlTypeException If the element is not valid for the collection type
 	 */
-	public void add(@NotNull XmlElement element) {
+	public void add(@NonNull XmlElement element) {
 		Objects.requireNonNull(element, "Element must not be null");
 		String name = element.getName();
 		if (this.elements.isEmpty() || this.isUndefined()) {
@@ -220,7 +222,7 @@ public class XmlElements {
 	 * @throws NullPointerException If the container is null
 	 * @throws XmlTypeException If the container is not valid for the collection type
 	 */
-	public void addContainer(@NotNull XmlContainer container) {
+	public void addContainer(@NonNull XmlContainer container) {
 		Objects.requireNonNull(container, "Container must not be null");
 		this.add(container);
 	}
@@ -232,7 +234,7 @@ public class XmlElements {
 	 * @throws NullPointerException If the value is null
 	 * @throws XmlTypeException If the value is not valid for the collection type
 	 */
-	public void addValue(@NotNull XmlValue value) {
+	public void addValue(@NonNull XmlValue value) {
 		Objects.requireNonNull(value, "Value must not be null");
 		this.add(value);
 	}
@@ -247,7 +249,7 @@ public class XmlElements {
 	 * @return True if the element was removed, false otherwise
 	 * @throws NullPointerException If the element is null
 	 */
-	public boolean remove(@NotNull XmlElement element) {
+	public boolean remove(@NonNull XmlElement element) {
 		Objects.requireNonNull(element, "Element must not be null");
 		if (!this.elements.containsKey(element.getName())) {
 			return false;
@@ -337,7 +339,7 @@ public class XmlElements {
 	 * @throws NoSuchXmlElementException If no element with the given name exists
 	 * @see #get(String)
 	 */
-	public @NotNull XmlContainer getAsContainer(@Nullable String name) {
+	public @NonNull XmlContainer getAsContainer(@Nullable String name) {
 		XmlElement element = this.get(name);
 		if (element == null) {
 			throw new NoSuchXmlElementException("Expected xml element for name '" + name + "' but found none");
@@ -355,7 +357,7 @@ public class XmlElements {
 	 * @throws NoSuchXmlElementException If no element with the given name exists
 	 * @see #get(String)
 	 */
-	public @NotNull XmlValue getAsValue(@Nullable String name) {
+	public @NonNull XmlValue getAsValue(@Nullable String name) {
 		XmlElement element = this.get(name);
 		if (element == null) {
 			throw new NoSuchXmlElementException("Expected xml element for name '" + name + "' but found none");
@@ -392,7 +394,7 @@ public class XmlElements {
 	 * @throws NoSuchXmlElementException If no element with the given index exists
 	 * @see #get(int)
 	 */
-	public @NotNull XmlContainer getAsContainer(int index) {
+	public @NonNull XmlContainer getAsContainer(int index) {
 		XmlElement element = this.get(index);
 		if (element == null) {
 			throw new NoSuchXmlElementException("Expected xml element for index '" + index + "' but found none");
@@ -410,7 +412,7 @@ public class XmlElements {
 	 * @throws NoSuchXmlElementException If no element with the given index exists
 	 * @see #get(int)
 	 */
-	public @NotNull XmlValue getAsValue(int index) {
+	public @NonNull XmlValue getAsValue(int index) {
 		XmlElement element = this.get(index);
 		if (element == null) {
 			throw new NoSuchXmlElementException("Expected xml element for index '" + index + "' but found none");
@@ -425,7 +427,7 @@ public class XmlElements {
 	 * @return The elements of the collection
 	 * @throws XmlTypeException If the collection is an object
 	 */
-	public @NotNull @Unmodifiable List<XmlElement> getAsArray() {
+	public @NonNull @Unmodifiable List<XmlElement> getAsArray() {
 		if (!this.isArray()) {
 			throw new XmlTypeException("Unable to get an xml array from an xml object");
 		}
@@ -439,7 +441,7 @@ public class XmlElements {
 	 * @return The elements of the collection
 	 * @throws XmlTypeException If the collection is an array
 	 */
-	public @NotNull @Unmodifiable Map<String, XmlElement> getAsObject() {
+	public @NonNull @Unmodifiable Map<String, XmlElement> getAsObject() {
 		if (!this.isObject()) {
 			throw new XmlTypeException("Unable to get an xml object from an xml array");
 		}
@@ -474,7 +476,7 @@ public class XmlElements {
 	 * @return The string representation of the collection
 	 * @throws NullPointerException If the xml config is null
 	 */
-	public @NotNull String toString(@NotNull XmlConfig config) {
+	public @NonNull String toString(@NonNull XmlConfig config) {
 		Objects.requireNonNull(config, "Xml config must not be null");
 		StringBuilder builder = new StringBuilder();
 		if (this.isUndefined()) {

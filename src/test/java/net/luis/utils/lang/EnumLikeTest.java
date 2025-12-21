@@ -20,7 +20,7 @@ package net.luis.utils.lang;
 
 import com.google.common.collect.Lists;
 import net.luis.utils.annotation.ReflectiveUsage;
-import org.jetbrains.annotations.NotNull;
+import org.jspecify.annotations.NonNull;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
@@ -185,7 +185,7 @@ class EnumLikeTest {
 		}
 		
 		@Override
-		public @NotNull String name() {
+		public @NonNull String name() {
 			return this.name;
 		}
 	}
@@ -201,7 +201,7 @@ class EnumLikeTest {
 		}
 		
 		@Override
-		public @NotNull String name() {
+		public @NonNull String name() {
 			return this.name;
 		}
 	}

@@ -23,8 +23,8 @@ import net.luis.utils.io.codec.encoder.Encoder;
 import net.luis.utils.io.codec.provider.TypeProvider;
 import net.luis.utils.io.codec.types.struct.*;
 import net.luis.utils.util.result.*;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
@@ -63,7 +63,7 @@ public sealed interface Codec<C> extends Encoder<C>, Decoder<C> permits Abstract
 	 * @see AnonymousCodec
 	 * @see #of(Supplier, Encoder, Decoder, String)
 	 */
-	static <C> @NotNull Codec<C> of(@Nullable Class<C> type, @NotNull Encoder<C> encoder, @NotNull Decoder<C> decoder, @NotNull String name) {
+	static <C> @NonNull Codec<C> of(@Nullable Class<C> type, @NonNull Encoder<C> encoder, @NonNull Decoder<C> decoder, @NonNull String name) {
 		return new AnonymousCodec<>(() -> type, name, encoder, decoder);
 	}
 	
@@ -79,7 +79,7 @@ public sealed interface Codec<C> extends Encoder<C>, Decoder<C> permits Abstract
 	 * @throws NullPointerException If the type provider, encoder, decoder or name is null
 	 * @see AnonymousCodec
 	 */
-	static <C> @NotNull Codec<C> of(@NotNull Supplier<Class<C>> typeSupplier, @NotNull Encoder<C> encoder, @NotNull Decoder<C> decoder, @NotNull String name) {
+	static <C> @NonNull Codec<C> of(@NonNull Supplier<Class<C>> typeSupplier, @NonNull Encoder<C> encoder, @NonNull Decoder<C> decoder, @NonNull String name) {
 		return new AnonymousCodec<>(typeSupplier, name, encoder, decoder);
 	}
 	
@@ -97,7 +97,7 @@ public sealed interface Codec<C> extends Encoder<C>, Decoder<C> permits Abstract
 	 * @throws IllegalStateException If the type cannot be inferred
 	 */
 	@SuppressWarnings("unchecked")
-	default @NotNull Class<C> getType() {
+	default @NonNull Class<C> getType() {
 		try {
 			Type[] interfaces = this.getClass().getGenericInterfaces();
 			for (Type iface : interfaces) {
@@ -128,18 +128,18 @@ public sealed interface Codec<C> extends Encoder<C>, Decoder<C> permits Abstract
 	}
 	
 	@Override
-	<R> @NotNull Result<R> encodeStart(@NotNull TypeProvider<R> provider, @NotNull R current, @Nullable C value);
+	<R> @NonNull Result<R> encodeStart(@NonNull TypeProvider<R> provider, @NonNull R current, @Nullable C value);
 	
 	@Override
-	default @NotNull Result<String> encodeKey(@NotNull C key) {
+	default @NonNull Result<String> encodeKey(@NonNull C key) {
 		return Encoder.super.encodeKey(key);
 	}
 	
 	@Override
-	<R> @NotNull Result<C> decodeStart(@NotNull TypeProvider<R> provider, @NotNull R current, @Nullable R value);
+	<R> @NonNull Result<C> decodeStart(@NonNull TypeProvider<R> provider, @NonNull R current, @Nullable R value);
 	
 	@Override
-	default @NotNull Result<C> decodeKey(@NotNull String key) {
+	default @NonNull Result<C> decodeKey(@NonNull String key) {
 		return Decoder.super.decodeKey(key);
 	}
 	
@@ -150,7 +150,7 @@ public sealed interface Codec<C> extends Encoder<C>, Decoder<C> permits Abstract
 	 * @param name The name of the new codec, can be null
 	 * @return A supplier that provides the type of the current codec
 	 */
-	private @NotNull Supplier<Class<C>> createDelegateTypeSupplier(@Nullable String name) {
+	private @NonNull Supplier<Class<C>> createDelegateTypeSupplier(@Nullable String name) {
 		return () -> {
 			try {
 				return this.getType();
@@ -173,7 +173,7 @@ public sealed interface Codec<C> extends Encoder<C>, Decoder<C> permits Abstract
 	 * @see #of(Supplier, Encoder, Decoder, String)
 	 * @see #getType()
 	 */
-	private @NotNull Codec<C> codec(@NotNull String name) {
+	private @NonNull Codec<C> codec(@NonNull String name) {
 		return of(this.createDelegateTypeSupplier(name), this, this, name);
 	}
 	
@@ -191,7 +191,7 @@ public sealed interface Codec<C> extends Encoder<C>, Decoder<C> permits Abstract
 	 * @return A new typed codec
 	 * @throws NullPointerException If the type is null
 	 */
-	default @NotNull Codec<C> typed(@NotNull Class<C> type) {
+	default @NonNull Codec<C> typed(@NonNull Class<C> type) {
 		return Codec.of(type, this, this, "TypedCodec[" + this + "]");
 	}
 	
@@ -210,7 +210,7 @@ public sealed interface Codec<C> extends Encoder<C>, Decoder<C> permits Abstract
 	 * @return A new keyable codec
 	 * @throws NullPointerException If the key decoder is null
 	 */
-	default @NotNull Codec<C> keyable(@NotNull ResultingFunction<String, C> keyDecoder) {
+	default @NonNull Codec<C> keyable(@NonNull ResultingFunction<String, C> keyDecoder) {
 		return this.keyable(ResultingFunction.direct(String::valueOf), keyDecoder);
 	}
 	
@@ -232,30 +232,30 @@ public sealed interface Codec<C> extends Encoder<C>, Decoder<C> permits Abstract
 	 * @see Encoder#encodeKey(Object)
 	 * @see Decoder#decodeKey(String)
 	 */
-	default @NotNull Codec<C> keyable(@NotNull ResultingFunction<C, String> keyEncoder, @NotNull ResultingFunction<String, C> keyDecoder) {
+	default @NonNull Codec<C> keyable(@NonNull ResultingFunction<C, String> keyEncoder, @NonNull ResultingFunction<String, C> keyDecoder) {
 		Objects.requireNonNull(keyEncoder, "Key encoder must not be null");
 		Objects.requireNonNull(keyDecoder, "Key decoder must not be null");
 		
 		Encoder<C> encoder = new Encoder<>() {
 			@Override
-			public <R> @NotNull Result<R> encodeStart(@NotNull TypeProvider<R> provider, @NotNull R current, @Nullable C value) {
+			public <R> @NonNull Result<R> encodeStart(@NonNull TypeProvider<R> provider, @NonNull R current, @Nullable C value) {
 				return Codec.this.encodeStart(provider, current, value);
 			}
 			
 			@Override
-			public @NotNull Result<String> encodeKey(@NotNull C key) {
+			public @NonNull Result<String> encodeKey(@NonNull C key) {
 				Objects.requireNonNull(key, "Key to encode must not be null");
 				return keyEncoder.apply(key);
 			}
 		};
 		Decoder<C> decoder = new Decoder<>() {
 			@Override
-			public <R> @NotNull Result<C> decodeStart(@NotNull TypeProvider<R> provider, @NotNull R current, @Nullable R value) {
+			public <R> @NonNull Result<C> decodeStart(@NonNull TypeProvider<R> provider, @NonNull R current, @Nullable R value) {
 				return Codec.this.decodeStart(provider, current, value);
 			}
 			
 			@Override
-			public @NotNull Result<C> decodeKey(@NotNull String key) {
+			public @NonNull Result<C> decodeKey(@NonNull String key) {
 				Objects.requireNonNull(key, "Key to decode must not be null");
 				return keyDecoder.apply(key);
 			}
@@ -271,7 +271,7 @@ public sealed interface Codec<C> extends Encoder<C>, Decoder<C> permits Abstract
 	 * @return A new nullable codec
 	 * @see NullableCodec
 	 */
-	default @NotNull NullableCodec<C> nullable() {
+	default @NonNull NullableCodec<C> nullable() {
 		return new NullableCodec<>(this);
 	}
 	
@@ -286,7 +286,7 @@ public sealed interface Codec<C> extends Encoder<C>, Decoder<C> permits Abstract
 	 * @throws IllegalArgumentException If the valid values collection is empty
 	 * @see UnionCodec
 	 */
-	default @NotNull UnionCodec<C> union(@NotNull Collection<C> validValues) {
+	default @NonNull UnionCodec<C> union(@NonNull Collection<C> validValues) {
 		return new UnionCodec<>(this, validValues);
 	}
 	
@@ -302,7 +302,7 @@ public sealed interface Codec<C> extends Encoder<C>, Decoder<C> permits Abstract
 	 * @see UnionCodec
 	 */
 	@SuppressWarnings("unchecked")
-	default @NotNull UnionCodec<C> union(C @NotNull ... validValues) {
+	default @NonNull UnionCodec<C> union(C @NonNull ... validValues) {
 		return new UnionCodec<>(this, Arrays.asList(validValues));
 	}
 	
@@ -312,7 +312,7 @@ public sealed interface Codec<C> extends Encoder<C>, Decoder<C> permits Abstract
 	 * @return A new optional codec for the current codec
 	 * @see OptionalCodec
 	 */
-	default @NotNull OptionalCodec<C> optional() {
+	default @NonNull OptionalCodec<C> optional() {
 		return new OptionalCodec<>(this);
 	}
 	
@@ -324,7 +324,7 @@ public sealed interface Codec<C> extends Encoder<C>, Decoder<C> permits Abstract
 	 * @return A new optional codec for the current codec
 	 * @see OptionalCodec
 	 */
-	default @NotNull OptionalCodec<C> optional(@Nullable C defaultValue) {
+	default @NonNull OptionalCodec<C> optional(@Nullable C defaultValue) {
 		return new OptionalCodec<>(this, () -> Optional.ofNullable(defaultValue));
 	}
 	
@@ -337,7 +337,7 @@ public sealed interface Codec<C> extends Encoder<C>, Decoder<C> permits Abstract
 	 * @throws NullPointerException If the default supplier is null
 	 * @see OptionalCodec
 	 */
-	default @NotNull Codec<Optional<C>> optional(@NotNull Supplier<C> defaultSupplier) {
+	default @NonNull Codec<Optional<C>> optional(@NonNull Supplier<C> defaultSupplier) {
 		Objects.requireNonNull(defaultSupplier, "Default value supplier must not be null");
 		return new OptionalCodec<>(this, () -> Optional.ofNullable(defaultSupplier.get()));
 	}
@@ -349,7 +349,7 @@ public sealed interface Codec<C> extends Encoder<C>, Decoder<C> permits Abstract
 	 * @throws UnsupportedOperationException If the type cannot be inferred
 	 * @see ArrayCodec
 	 */
-	default @NotNull ArrayCodec<C> array() {
+	default @NonNull ArrayCodec<C> array() {
 		return new ArrayCodec<>(this.getType(), this);
 	}
 	
@@ -359,7 +359,7 @@ public sealed interface Codec<C> extends Encoder<C>, Decoder<C> permits Abstract
 	 * @return A new list codec for the current codec
 	 * @see ListCodec
 	 */
-	default @NotNull ListCodec<C> list() {
+	default @NonNull ListCodec<C> list() {
 		return new ListCodec<>(this);
 	}
 	
@@ -369,7 +369,7 @@ public sealed interface Codec<C> extends Encoder<C>, Decoder<C> permits Abstract
 	 * @return A new set codec for the current codec
 	 * @see SetCodec
 	 */
-	default @NotNull SetCodec<C> set() {
+	default @NonNull SetCodec<C> set() {
 		return new SetCodec<>(this);
 	}
 	
@@ -378,7 +378,7 @@ public sealed interface Codec<C> extends Encoder<C>, Decoder<C> permits Abstract
 	 *
 	 * @return A new stream codec for the current codec
 	 */
-	default @NotNull Codec<Stream<C>> stream() {
+	default @NonNull Codec<Stream<C>> stream() {
 		return this.list().xmap(Stream::toList, List::stream).codec("StreamCodec[" + this + "]");
 	}
 	
@@ -390,7 +390,7 @@ public sealed interface Codec<C> extends Encoder<C>, Decoder<C> permits Abstract
 	 * @return A new codec
 	 * @throws NullPointerException If the fallback codec is null
 	 */
-	default @NotNull Codec<C> withFallback(@NotNull Codec<? extends C> fallback) {
+	default @NonNull Codec<C> withFallback(@NonNull Codec<? extends C> fallback) {
 		return Codecs.any(this, fallback);
 	}
 	
@@ -410,7 +410,7 @@ public sealed interface Codec<C> extends Encoder<C>, Decoder<C> permits Abstract
 	 * @see #mapFlat(Function, ResultMappingFunction)
 	 * @see #map(ResultingFunction, ResultMappingFunction)
 	 */
-	default <O> @NotNull Codec<O> xmap(@NotNull Function<O, C> to, @NotNull Function<C, O> from) {
+	default <O> @NonNull Codec<O> xmap(@NonNull Function<O, C> to, @NonNull Function<C, O> from) {
 		return this.map(ResultingFunction.direct(to), direct(from));
 	}
 	
@@ -434,7 +434,7 @@ public sealed interface Codec<C> extends Encoder<C>, Decoder<C> permits Abstract
 	 * @see #xmap(Function, Function)
 	 * @see #map(ResultingFunction, ResultMappingFunction)
 	 */
-	default <O> @NotNull Codec<O> mapFlat(@NotNull Function<O, C> to, @NotNull ResultMappingFunction<C, O> from) {
+	default <O> @NonNull Codec<O> mapFlat(@NonNull Function<O, C> to, @NonNull ResultMappingFunction<C, O> from) {
 		return this.map(ResultingFunction.direct(to), from);
 	}
 	
@@ -458,7 +458,7 @@ public sealed interface Codec<C> extends Encoder<C>, Decoder<C> permits Abstract
 	 * @see #xmap(Function, Function)
 	 * @see #mapFlat(Function, ResultMappingFunction)
 	 */
-	default <O> @NotNull Codec<O> map(@NotNull ResultingFunction<O, C> encoder, @NotNull ResultMappingFunction<C, O> decoder) {
+	default <O> @NonNull Codec<O> map(@NonNull ResultingFunction<O, C> encoder, @NonNull ResultMappingFunction<C, O> decoder) {
 		return of((Class<O>) null, this.mapEncoder(encoder), this.mapDecoder(decoder), "MappedCodec[" + this + "]");
 	}
 	
@@ -470,7 +470,7 @@ public sealed interface Codec<C> extends Encoder<C>, Decoder<C> permits Abstract
 	 * @return A new codec
 	 * @throws NullPointerException If the validator function is null
 	 */
-	default @NotNull Codec<C> validate(@NotNull ResultingFunction<C, C> validator) {
+	default @NonNull Codec<C> validate(@NonNull ResultingFunction<C, C> validator) {
 		Objects.requireNonNull(validator, "Validator function must not be null");
 		return this.map(validator, result -> result.flatMap(validator));
 	}
@@ -482,7 +482,7 @@ public sealed interface Codec<C> extends Encoder<C>, Decoder<C> permits Abstract
 	 * @return A new codec
 	 * @see #orElseGet(Supplier)
 	 */
-	default @NotNull Codec<C> orElse(@Nullable C defaultValue) {
+	default @NonNull Codec<C> orElse(@Nullable C defaultValue) {
 		return this.orElseGet(() -> defaultValue);
 	}
 	
@@ -493,7 +493,7 @@ public sealed interface Codec<C> extends Encoder<C>, Decoder<C> permits Abstract
 	 * @return A new codec
 	 * @throws NullPointerException If the default value supplier is null
 	 */
-	default @NotNull Codec<C> orElseGet(@NotNull Supplier<C> supplier) {
+	default @NonNull Codec<C> orElseGet(@NonNull Supplier<C> supplier) {
 		Objects.requireNonNull(supplier, "Default value supplier must not be null");
 		
 		String name = "OrElseCodec[" + this + "]";
@@ -514,7 +514,7 @@ public sealed interface Codec<C> extends Encoder<C>, Decoder<C> permits Abstract
 	 * @see #fieldOf(String, Set, Function)
 	 * @see FieldCodec
 	 */
-	default <O> @NotNull FieldCodec<C, O> fieldOf(@NotNull String name, @NotNull Function<O, C> getter) {
+	default <O> @NonNull FieldCodec<C, O> fieldOf(@NonNull String name, @NonNull Function<O, C> getter) {
 		return this.fieldOf(name, Set.of(), getter);
 	}
 	
@@ -533,7 +533,7 @@ public sealed interface Codec<C> extends Encoder<C>, Decoder<C> permits Abstract
 	 * @see #fieldOf(String, Set, Function)
 	 * @see FieldCodec
 	 */
-	default <O> @NotNull FieldCodec<C, O> fieldOf(@NotNull String name, @NotNull String alias, @NotNull Function<O, C> getter) {
+	default <O> @NonNull FieldCodec<C, O> fieldOf(@NonNull String name, @NonNull String alias, @NonNull Function<O, C> getter) {
 		return this.fieldOf(name, Set.of(alias), getter);
 	}
 	
@@ -552,7 +552,7 @@ public sealed interface Codec<C> extends Encoder<C>, Decoder<C> permits Abstract
 	 * @see #fieldOf(String, String, Function)
 	 * @see FieldCodec
 	 */
-	default <O> @NotNull FieldCodec<C, O> fieldOf(@NotNull String name, @NotNull Set<String> aliases, @NotNull Function<O, C> getter) {
+	default <O> @NonNull FieldCodec<C, O> fieldOf(@NonNull String name, @NonNull Set<String> aliases, @NonNull Function<O, C> getter) {
 		return new FieldCodec<>(this, name, aliases, getter);
 	}
 	
@@ -572,7 +572,7 @@ public sealed interface Codec<C> extends Encoder<C>, Decoder<C> permits Abstract
 	 * @see #optionalFieldOf(String, Set, Object, Function)
 	 * @see FieldCodec
 	 */
-	default <O> @NotNull FieldCodec<C, O> optionalFieldOf(@NotNull String name, @Nullable C defaultValue, @NotNull Function<O, C> getter) {
+	default <O> @NonNull FieldCodec<C, O> optionalFieldOf(@NonNull String name, @Nullable C defaultValue, @NonNull Function<O, C> getter) {
 		return this.optionalFieldOf(name, Set.of(), () -> defaultValue, getter);
 	}
 	
@@ -592,7 +592,7 @@ public sealed interface Codec<C> extends Encoder<C>, Decoder<C> permits Abstract
 	 * @see #optionalFieldOf(String, Set, Supplier, Function)
 	 * @see FieldCodec
 	 */
-	default <O> @NotNull FieldCodec<C, O> optionalFieldOf(@NotNull String name, @NotNull Supplier<C> defaultSupplier, @NotNull Function<O, C> getter) {
+	default <O> @NonNull FieldCodec<C, O> optionalFieldOf(@NonNull String name, @NonNull Supplier<C> defaultSupplier, @NonNull Function<O, C> getter) {
 		return this.optionalFieldOf(name, Set.of(), defaultSupplier, getter);
 	}
 	
@@ -613,7 +613,7 @@ public sealed interface Codec<C> extends Encoder<C>, Decoder<C> permits Abstract
 	 * @see #optionalFieldOf(String, Set, Object, Function)
 	 * @see FieldCodec
 	 */
-	default <O> @NotNull FieldCodec<C, O> optionalFieldOf(@NotNull String name, @NotNull String alias, @Nullable C defaultValue, @NotNull Function<O, C> getter) {
+	default <O> @NonNull FieldCodec<C, O> optionalFieldOf(@NonNull String name, @NonNull String alias, @Nullable C defaultValue, @NonNull Function<O, C> getter) {
 		return this.optionalFieldOf(name, Set.of(alias), () -> defaultValue, getter);
 	}
 	
@@ -634,7 +634,7 @@ public sealed interface Codec<C> extends Encoder<C>, Decoder<C> permits Abstract
 	 * @see #optionalFieldOf(String, Set, Supplier, Function)
 	 * @see FieldCodec
 	 */
-	default <O> @NotNull FieldCodec<C, O> optionalFieldOf(@NotNull String name, @NotNull String alias, @NotNull Supplier<C> defaultSupplier, @NotNull Function<O, C> getter) {
+	default <O> @NonNull FieldCodec<C, O> optionalFieldOf(@NonNull String name, @NonNull String alias, @NonNull Supplier<C> defaultSupplier, @NonNull Function<O, C> getter) {
 		return this.optionalFieldOf(name, Set.of(alias), defaultSupplier, getter);
 	}
 	
@@ -655,7 +655,7 @@ public sealed interface Codec<C> extends Encoder<C>, Decoder<C> permits Abstract
 	 * @see #optionalFieldOf(String, String, Object, Function)
 	 * @see FieldCodec
 	 */
-	default <O> @NotNull FieldCodec<C, O> optionalFieldOf(@NotNull String name, @NotNull Set<String> aliases, @Nullable C defaultValue, @NotNull Function<O, C> getter) {
+	default <O> @NonNull FieldCodec<C, O> optionalFieldOf(@NonNull String name, @NonNull Set<String> aliases, @Nullable C defaultValue, @NonNull Function<O, C> getter) {
 		return this.optionalFieldOf(name, aliases, () -> defaultValue, getter);
 	}
 	
@@ -676,7 +676,7 @@ public sealed interface Codec<C> extends Encoder<C>, Decoder<C> permits Abstract
 	 * @see #optionalFieldOf(String, String, Supplier, Function)
 	 * @see FieldCodec
 	 */
-	default <O> @NotNull FieldCodec<C, O> optionalFieldOf(@NotNull String name, @NotNull Set<String> aliases, @NotNull Supplier<C> defaultSupplier, @NotNull Function<O, C> getter) {
+	default <O> @NonNull FieldCodec<C, O> optionalFieldOf(@NonNull String name, @NonNull Set<String> aliases, @NonNull Supplier<C> defaultSupplier, @NonNull Function<O, C> getter) {
 		Objects.requireNonNull(defaultSupplier, "Default value supplier must not be null");
 		return new FieldCodec<>(
 			this.optional().xmap(Optional::ofNullable, optional -> optional.orElseGet(defaultSupplier)).codec("OptionalFieldCodec[" + this + "]"),

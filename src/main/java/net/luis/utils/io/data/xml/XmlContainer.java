@@ -20,7 +20,9 @@ package net.luis.utils.io.data.xml;
 
 import net.luis.utils.io.data.xml.exception.NoSuchXmlElementException;
 import net.luis.utils.io.data.xml.exception.XmlTypeException;
-import org.jetbrains.annotations.*;
+import org.jetbrains.annotations.Unmodifiable;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 import java.util.*;
 
@@ -43,7 +45,7 @@ public final class XmlContainer extends XmlElement {
 	 * @param name The name of the container
 	 * @throws NullPointerException If the name is null
 	 */
-	public XmlContainer(@NotNull String name) {
+	public XmlContainer(@NonNull String name) {
 		this(name, new XmlElements());
 	}
 	
@@ -54,7 +56,7 @@ public final class XmlContainer extends XmlElement {
 	 * @param elements The elements of the container
 	 * @throws NullPointerException If the name or elements are null
 	 */
-	public XmlContainer(@NotNull String name, @NotNull XmlElements elements) {
+	public XmlContainer(@NonNull String name, @NonNull XmlElements elements) {
 		this(name, new XmlAttributes(), elements);
 	}
 	
@@ -65,7 +67,7 @@ public final class XmlContainer extends XmlElement {
 	 * @param attributes The attributes of the container
 	 * @throws NullPointerException If the name or attributes are null
 	 */
-	public XmlContainer(@NotNull String name, @NotNull XmlAttributes attributes) {
+	public XmlContainer(@NonNull String name, @NonNull XmlAttributes attributes) {
 		this(name, attributes, new XmlElements());
 	}
 	
@@ -77,13 +79,13 @@ public final class XmlContainer extends XmlElement {
 	 * @param elements The elements of the container
 	 * @throws NullPointerException If the name, attributes or elements are null
 	 */
-	public XmlContainer(@NotNull String name, @NotNull XmlAttributes attributes, @NotNull XmlElements elements) {
+	public XmlContainer(@NonNull String name, @NonNull XmlAttributes attributes, @NonNull XmlElements elements) {
 		super(name, attributes);
 		this.elements = Objects.requireNonNull(elements, "Elements must not be null");
 	}
 	
 	@Override
-	protected @NotNull String getElementType() {
+	protected @NonNull String getElementType() {
 		return "xml container";
 	}
 	
@@ -101,7 +103,7 @@ public final class XmlContainer extends XmlElement {
 	 * Returns the elements of this container.<br>
 	 * @return The elements of this container (modifiable)
 	 */
-	public @NotNull XmlElements getElements() {
+	public @NonNull XmlElements getElements() {
 		return this.elements;
 	}
 	
@@ -169,7 +171,7 @@ public final class XmlContainer extends XmlElement {
 	 * Returns an unmodifiable set of the names of the elements in this container.<br>
 	 * @return The set of names
 	 */
-	public @NotNull @Unmodifiable Set<String> nameSet() {
+	public @NonNull @Unmodifiable Set<String> nameSet() {
 		return this.elements.nameSet();
 	}
 	
@@ -177,7 +179,7 @@ public final class XmlContainer extends XmlElement {
 	 * Returns an unmodifiable collection of the elements in this container.<br>
 	 * @return The collection of elements
 	 */
-	public @NotNull @Unmodifiable Collection<XmlElement> elements() {
+	public @NonNull @Unmodifiable Collection<XmlElement> elements() {
 		return this.elements.elements();
 	}
 	//endregion
@@ -191,7 +193,7 @@ public final class XmlContainer extends XmlElement {
 	 * @throws NullPointerException If the element is null
 	 * @throws XmlTypeException If the element is not valid for the collection type
 	 */
-	public void add(@NotNull XmlElement element) {
+	public void add(@NonNull XmlElement element) {
 		this.elements.add(element);
 	}
 	
@@ -202,7 +204,7 @@ public final class XmlContainer extends XmlElement {
 	 * @throws NullPointerException If the container is null
 	 * @throws XmlTypeException If the container is not valid for the collection type
 	 */
-	public void addContainer(@NotNull XmlContainer container) {
+	public void addContainer(@NonNull XmlContainer container) {
 		this.elements.addContainer(container);
 	}
 	
@@ -213,7 +215,7 @@ public final class XmlContainer extends XmlElement {
 	 * @throws NullPointerException If the value is null
 	 * @throws XmlTypeException If the value is not valid for the collection type
 	 */
-	public void addValue(@NotNull XmlValue value) {
+	public void addValue(@NonNull XmlValue value) {
 		this.elements.addValue(value);
 	}
 	//endregion
@@ -226,7 +228,7 @@ public final class XmlContainer extends XmlElement {
 	 * @param element The element to remove
 	 * @return True if the element was removed, otherwise false
 	 */
-	public boolean remove(@NotNull XmlElement element) {
+	public boolean remove(@NonNull XmlElement element) {
 		return this.elements.remove(element);
 	}
 	
@@ -287,7 +289,7 @@ public final class XmlContainer extends XmlElement {
 	 * @throws NoSuchXmlElementException If the element does not exist
 	 * @see #get(String)
 	 */
-	public @NotNull XmlContainer getAsContainer(@Nullable String name) {
+	public @NonNull XmlContainer getAsContainer(@Nullable String name) {
 		return this.elements.getAsContainer(name);
 	}
 	
@@ -301,7 +303,7 @@ public final class XmlContainer extends XmlElement {
 	 * @throws NoSuchXmlElementException If the element does not exist
 	 * @see #get(String)
 	 */
-	public @NotNull XmlValue getAsValue(@Nullable String name) {
+	public @NonNull XmlValue getAsValue(@Nullable String name) {
 		return this.elements.getAsValue(name);
 	}
 	
@@ -328,7 +330,7 @@ public final class XmlContainer extends XmlElement {
 	 * @throws NoSuchXmlElementException If no element with the given index exists
 	 * @see #get(int)
 	 */
-	public @NotNull XmlContainer getAsContainer(int index) {
+	public @NonNull XmlContainer getAsContainer(int index) {
 		return this.elements.getAsContainer(index);
 	}
 	
@@ -342,7 +344,7 @@ public final class XmlContainer extends XmlElement {
 	 * @throws NoSuchXmlElementException If no element with the given index exists
 	 * @see #get(int)
 	 */
-	public @NotNull XmlValue getAsValue(int index) {
+	public @NonNull XmlValue getAsValue(int index) {
 		return this.elements.getAsValue(index);
 	}
 	//endregion
@@ -369,7 +371,7 @@ public final class XmlContainer extends XmlElement {
 	 * @throws NullPointerException If the config is null
 	 */
 	@Override
-	public @NotNull String toString(@NotNull XmlConfig config) {
+	public @NonNull String toString(@NonNull XmlConfig config) {
 		Objects.requireNonNull(config, "Config must not be null");
 		StringBuilder builder = this.toBaseString(config);
 		if (!this.elements.isEmpty()) {

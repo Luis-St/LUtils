@@ -22,8 +22,8 @@ import com.google.common.collect.Lists;
 import net.luis.utils.io.token.tokens.ShadowToken;
 import net.luis.utils.io.token.tokens.Token;
 import net.luis.utils.math.Mth;
-import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Unmodifiable;
+import org.jspecify.annotations.NonNull;
 
 import java.util.*;
 
@@ -57,7 +57,7 @@ public class MutableTokenStream implements TokenStream {
 	 * @throws NullPointerException If the list of tokens is null
 	 * @throws IndexOutOfBoundsException If the current index is negative
 	 */
-	MutableTokenStream(@NotNull List<Token> tokens, int currentIndex) {
+	MutableTokenStream(@NonNull List<Token> tokens, int currentIndex) {
 		Objects.requireNonNull(tokens, "Token list must not be null");
 		
 		this.tokens = Lists.newArrayList(tokens);
@@ -84,7 +84,7 @@ public class MutableTokenStream implements TokenStream {
 	}
 	
 	@Override
-	public @NotNull @Unmodifiable List<Token> getAllTokens() {
+	public @NonNull @Unmodifiable List<Token> getAllTokens() {
 		return Collections.unmodifiableList(this.tokens);
 	}
 	
@@ -107,7 +107,7 @@ public class MutableTokenStream implements TokenStream {
 	 * @see #findNextNonShadowIndex()
 	 */
 	@Override
-	public @NotNull Token getCurrentToken() {
+	public @NonNull Token getCurrentToken() {
 		int nonShadowIndex = this.findNextNonShadowIndex();
 		if (nonShadowIndex >= this.tokens.size()) {
 			throw new EndOfTokenStreamException("No non-shadow token available at the current position");
@@ -137,7 +137,7 @@ public class MutableTokenStream implements TokenStream {
 	 * @see #findNextNonShadowIndex()
 	 */
 	@Override
-	public @NotNull Token readToken() {
+	public @NonNull Token readToken() {
 		int nonShadowIndex = this.findNextNonShadowIndex();
 		if (nonShadowIndex >= this.tokens.size()) {
 			throw new EndOfTokenStreamException("No non-shadow token available in the stream");
@@ -149,12 +149,12 @@ public class MutableTokenStream implements TokenStream {
 	}
 	
 	@Override
-	public @NotNull TokenStream copyWithIndex(int index) {
+	public @NonNull TokenStream copyWithIndex(int index) {
 		return new MutableTokenStream(this.tokens, Mth.clamp(index, 0, this.tokens.size()));
 	}
 	
 	@Override
-	public @NotNull TokenStream reversed() {
+	public @NonNull TokenStream reversed() {
 		List<Token> reversedTokens = new ArrayList<>(this.tokens);
 		Collections.reverse(reversedTokens);
 		int newIndex = Mth.clamp(this.tokens.size() - 1 - this.currentIndex, 0, this.tokens.size());
@@ -162,13 +162,13 @@ public class MutableTokenStream implements TokenStream {
 	}
 	
 	@Override
-	public @NotNull TokenStream createLookaheadStream() {
+	public @NonNull TokenStream createLookaheadStream() {
 		return new MutableTokenStream(this.tokens.subList(this.currentIndex, this.tokens.size()), 0);
 	}
 	
 	@Override
 	@SuppressWarnings("DuplicatedCode")
-	public @NotNull TokenStream createLookbehindStream() {
+	public @NonNull TokenStream createLookbehindStream() {
 		if (this.currentIndex == 0) {
 			return new MutableTokenStream(Collections.emptyList(), 0);
 		}

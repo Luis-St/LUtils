@@ -19,10 +19,7 @@
 package net.luis.utils.io.codec;
 
 import net.luis.utils.io.codec.provider.JsonTypeProvider;
-import net.luis.utils.io.codec.types.struct.DiscriminatedCodec;
-import net.luis.utils.io.codec.types.struct.DiscriminatedCodecProvider;
-import net.luis.utils.io.codec.types.struct.EitherCodec;
-import net.luis.utils.io.codec.types.struct.UnitCodec;
+import net.luis.utils.io.codec.types.struct.*;
 import net.luis.utils.io.data.json.*;
 import net.luis.utils.util.Utils;
 import org.junit.jupiter.api.Test;

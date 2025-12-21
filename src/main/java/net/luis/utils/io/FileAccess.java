@@ -20,7 +20,7 @@ package net.luis.utils.io;
 
 import net.luis.utils.function.throwable.ThrowableConsumer;
 import net.luis.utils.function.throwable.ThrowableFunction;
-import org.jetbrains.annotations.NotNull;
+import org.jspecify.annotations.NonNull;
 
 import java.io.IOException;
 import java.io.UncheckedIOException;
@@ -75,7 +75,7 @@ public class FileAccess implements AutoCloseable {
 	 * @throws NullPointerException If the file is null
 	 * @throws IllegalStateException If the file is already accessed by another instance of this class
 	 */
-	public FileAccess(@NotNull Path file) {
+	public FileAccess(@NonNull Path file) {
 		this.file = Objects.requireNonNull(file, "File must not be null");
 		if (ACCESSED_FILES.containsKey(file.toString())) {
 			throw new IllegalStateException("File already accessed: " + file);
@@ -97,7 +97,7 @@ public class FileAccess implements AutoCloseable {
 	 * Returns the file accessed by this instance of the class.<br>
 	 * @return The file
 	 */
-	public @NotNull Path getFile() {
+	public @NonNull Path getFile() {
 		return this.file;
 	}
 	
@@ -116,7 +116,7 @@ public class FileAccess implements AutoCloseable {
 	 * @throws IllegalStateException If the file access is closed
 	 * @throws UncheckedIOException If the action throws an IOException
 	 */
-	public void access(@NotNull ThrowableConsumer<Path, IOException> action) {
+	public void access(@NonNull ThrowableConsumer<Path, IOException> action) {
 		this.ensureOpen();
 		this.lock.lock();
 		try {
@@ -137,7 +137,7 @@ public class FileAccess implements AutoCloseable {
 	 * @throws IllegalStateException If the file access is closed
 	 * @throws UncheckedIOException If the action throws an IOException
 	 */
-	public <T> @NotNull T access(@NotNull ThrowableFunction<Path, T, IOException> action) {
+	public <T> @NonNull T access(@NonNull ThrowableFunction<Path, T, IOException> action) {
 		this.ensureOpen();
 		this.lock.lock();
 		try {

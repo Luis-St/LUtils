@@ -19,8 +19,8 @@
 package net.luis.utils.io.codec.types.struct;
 
 import net.luis.utils.io.codec.Codec;
-import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.UnknownNullability;
+import org.jspecify.annotations.NonNull;
 
 import java.util.Map;
 import java.util.Objects;
@@ -102,19 +102,19 @@ public interface DiscriminatedCodecProvider<C, T> {
 	 * @return A new discriminated codec provider
 	 * @throws NullPointerException If codec type or codec provider is null
 	 */
-	static <C, T> @NotNull DiscriminatedCodecProvider<C, T> create(@NotNull Class<C> codecType, @NotNull Function<T, Codec<? extends C>> codecProvider) {
+	static <C, T> @NonNull DiscriminatedCodecProvider<C, T> create(@NonNull Class<C> codecType, @NonNull Function<T, Codec<? extends C>> codecProvider) {
 		Objects.requireNonNull(codecType, "Codec type must not be null");
 		Objects.requireNonNull(codecProvider, "Codec provider must not be null");
 		
 		return new DiscriminatedCodecProvider<C, T>() {
 			@Override
-			public @NotNull Class<C> getCodecType() {
+			public @NonNull Class<C> getCodecType() {
 				return codecType;
 			}
 			
 			@Override
 			@SuppressWarnings("unchecked")
-			public @NotNull Codec<C> getCodec(@NotNull T discriminator) {
+			public @NonNull Codec<C> getCodec(@NonNull T discriminator) {
 				return (Codec<C>) codecProvider.apply(discriminator);
 			}
 		};
@@ -135,19 +135,19 @@ public interface DiscriminatedCodecProvider<C, T> {
 	 * @return A new discriminated codec provider
 	 * @throws NullPointerException If codec type or codec provider is null
 	 */
-	static <C, T> @NotNull DiscriminatedCodecProvider<C, T> create(@NotNull Class<C> codecType, @NotNull Map<T, Codec<? extends C>> codecProvider) {
+	static <C, T> @NonNull DiscriminatedCodecProvider<C, T> create(@NonNull Class<C> codecType, @NonNull Map<T, Codec<? extends C>> codecProvider) {
 		Objects.requireNonNull(codecType, "Codec type must not be null");
 		Objects.requireNonNull(codecProvider, "Codec provider must not be null");
 		
 		return new DiscriminatedCodecProvider<C, T>() {
 			@Override
-			public @NotNull Class<C> getCodecType() {
+			public @NonNull Class<C> getCodecType() {
 				return codecType;
 			}
 			
 			@Override
 			@SuppressWarnings("unchecked")
-			public @NotNull Codec<C> getCodec(@NotNull T discriminator) {
+			public @NonNull Codec<C> getCodec(@NonNull T discriminator) {
 				return (Codec<C>) codecProvider.get(discriminator);
 			}
 		};
@@ -159,7 +159,7 @@ public interface DiscriminatedCodecProvider<C, T> {
 	 *
 	 * @return The base class type of values handled by the codecs
 	 */
-	@NotNull Class<C> getCodecType();
+	@NonNull Class<C> getCodecType();
 	
 	/**
 	 * Returns the codec corresponding to the given discriminator value.<br>
@@ -170,5 +170,5 @@ public interface DiscriminatedCodecProvider<C, T> {
 	 * @throws NullPointerException If the discriminator is null
 	 */
 	@UnknownNullability
-	Codec<C> getCodec(@NotNull T discriminator);
+	Codec<C> getCodec(@NonNull T discriminator);
 }

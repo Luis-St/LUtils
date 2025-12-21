@@ -25,8 +25,8 @@ import net.luis.utils.io.token.context.TokenRuleContext;
 import net.luis.utils.io.token.rules.TokenRule;
 import net.luis.utils.io.token.stream.TokenStream;
 import net.luis.utils.io.token.tokens.Token;
-import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Unmodifiable;
+import org.jspecify.annotations.NonNull;
 
 import java.util.List;
 import java.util.Objects;
@@ -66,7 +66,7 @@ public class TokenRuleEngine {
 	 * @param ruleContext The rule context of the engine
 	 * @throws NullPointerException If the context is null
 	 */
-	public TokenRuleEngine(@NotNull TokenRuleContext ruleContext) {
+	public TokenRuleEngine(@NonNull TokenRuleContext ruleContext) {
 		this.ruleContext = Objects.requireNonNull(ruleContext, "Token rule context must not be null");
 	}
 	
@@ -77,7 +77,7 @@ public class TokenRuleEngine {
 	 * @param tokenRule The rule to be added
 	 * @throws NullPointerException If the rule is null
 	 */
-	public void addRule(@NotNull TokenRule tokenRule) {
+	public void addRule(@NonNull TokenRule tokenRule) {
 		Objects.requireNonNull(tokenRule, "Token rule must not be null");
 		this.addRule(tokenRule, TokenAction.identity());
 	}
@@ -91,7 +91,7 @@ public class TokenRuleEngine {
 	 * @param action The action to be applied to the matched tokens
 	 * @throws NullPointerException If the rule or action is null
 	 */
-	public void addRule(@NotNull TokenRule tokenRule, @NotNull TokenAction action) {
+	public void addRule(@NonNull TokenRule tokenRule, @NonNull TokenAction action) {
 		Objects.requireNonNull(tokenRule, "Token rule must not be null");
 		Objects.requireNonNull(action, "Token action must not be null");
 		this.ruleActions.add(new RuleAction(tokenRule, action));
@@ -109,7 +109,7 @@ public class TokenRuleEngine {
 	 * @return A new unmodifiable list of tokens after processing
 	 * @throws NullPointerException If the list of tokens is null
 	 */
-	public @NotNull @Unmodifiable List<Token> process(@NotNull List<Token> tokens) {
+	public @NonNull @Unmodifiable List<Token> process(@NonNull List<Token> tokens) {
 		Objects.requireNonNull(tokens, "Tokens must not be null");
 		
 		List<Token> result = Lists.newArrayList(tokens);
@@ -150,7 +150,7 @@ public class TokenRuleEngine {
 	 * @param tokenRule The token rule
 	 * @param action The action to be applied to the matched tokens
 	 */
-	private record RuleAction(@NotNull TokenRule tokenRule, @NotNull TokenAction action) {
+	private record RuleAction(@NonNull TokenRule tokenRule, @NonNull TokenAction action) {
 		
 		/**
 		 * Constructs a new rule action with the given token rule and action.<br>

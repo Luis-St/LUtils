@@ -20,7 +20,7 @@ package net.luis.utils.io.token.rules.matchers;
 
 import net.luis.utils.io.token.rules.NegatableTokenRule;
 import net.luis.utils.io.token.tokens.Token;
-import org.jetbrains.annotations.NotNull;
+import org.jspecify.annotations.NonNull;
 
 import java.util.Objects;
 
@@ -60,7 +60,7 @@ public record LengthTokenRule(
 	}
 	
 	@Override
-	public boolean match(@NotNull Token token) {
+	public boolean match(@NonNull Token token) {
 		Objects.requireNonNull(token, "Token must not be null");
 		
 		int length = token.value().length();

@@ -19,7 +19,7 @@
 package net.luis.utils.io.data.xml;
 
 import net.luis.utils.io.data.config.WriteOnly;
-import org.jetbrains.annotations.NotNull;
+import org.jspecify.annotations.NonNull;
 
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
@@ -40,10 +40,10 @@ import java.util.Objects;
 public record XmlConfig(
 	boolean strict,
 	@WriteOnly boolean prettyPrint,
-	@WriteOnly("prettyPrint") @NotNull String indent,
+	@WriteOnly("prettyPrint") @NonNull String indent,
 	boolean allowAttributes,
 	@WriteOnly boolean simplifyValues,
-	@NotNull Charset charset
+	@NonNull Charset charset
 ) {
 	
 	/**

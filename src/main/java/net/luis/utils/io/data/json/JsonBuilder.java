@@ -18,8 +18,8 @@
 
 package net.luis.utils.io.data.json;
 
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 import java.util.*;
 
@@ -85,7 +85,7 @@ public final class JsonBuilder {
 	 * @param initialContext The initial context type
 	 * @param initialElement The initial json element
 	 */
-	private JsonBuilder(@NotNull BuilderContext initialContext, @NotNull JsonElement initialElement) {
+	private JsonBuilder(@NonNull BuilderContext initialContext, @NonNull JsonElement initialElement) {
 		this.root = initialElement;
 		this.contextStack.push(new ContextFrame(initialContext, initialElement));
 	}
@@ -96,7 +96,7 @@ public final class JsonBuilder {
 	 *
 	 * @return A new JsonBuilder configured for object construction
 	 */
-	public static @NotNull JsonBuilder object() {
+	public static @NonNull JsonBuilder object() {
 		return new JsonBuilder(BuilderContext.OBJECT, new JsonObject());
 	}
 	
@@ -106,7 +106,7 @@ public final class JsonBuilder {
 	 *
 	 * @return A new JsonBuilder configured for array construction
 	 */
-	public static @NotNull JsonBuilder array() {
+	public static @NonNull JsonBuilder array() {
 		return new JsonBuilder(BuilderContext.ARRAY, new JsonArray());
 	}
 	
@@ -116,7 +116,7 @@ public final class JsonBuilder {
 	 * @return The current context frame
 	 * @throws IllegalStateException If the context stack is empty
 	 */
-	private @NotNull ContextFrame getCurrentContext() {
+	private @NonNull ContextFrame getCurrentContext() {
 		if (this.contextStack.isEmpty()) {
 			throw new IllegalStateException("No active building context");
 		}
@@ -157,7 +157,7 @@ public final class JsonBuilder {
 	 * @throws IllegalStateException If the current context is not an object
 	 * @throws NullPointerException If the key is null
 	 */
-	public @NotNull JsonBuilder add(@NotNull String key, @Nullable JsonElement element) {
+	public @NonNull JsonBuilder add(@NonNull String key, @Nullable JsonElement element) {
 		this.ensureObjectContext();
 		Objects.requireNonNull(key, "Key must not be null");
 		
@@ -176,7 +176,7 @@ public final class JsonBuilder {
 	 * @throws IllegalStateException If the current context is not an object
 	 * @throws NullPointerException If the key is null
 	 */
-	public @NotNull JsonBuilder add(@NotNull String key, @Nullable String value) {
+	public @NonNull JsonBuilder add(@NonNull String key, @Nullable String value) {
 		return this.add(key, value == null ? null : new JsonPrimitive(value));
 	}
 	
@@ -189,7 +189,7 @@ public final class JsonBuilder {
 	 * @throws IllegalStateException If the current context is not an object
 	 * @throws NullPointerException If the key is null
 	 */
-	public @NotNull JsonBuilder add(@NotNull String key, boolean value) {
+	public @NonNull JsonBuilder add(@NonNull String key, boolean value) {
 		return this.add(key, new JsonPrimitive(value));
 	}
 	
@@ -203,7 +203,7 @@ public final class JsonBuilder {
 	 * @throws IllegalStateException If the current context is not an object
 	 * @throws NullPointerException If the key is null
 	 */
-	public @NotNull JsonBuilder add(@NotNull String key, @Nullable Number value) {
+	public @NonNull JsonBuilder add(@NonNull String key, @Nullable Number value) {
 		return this.add(key, value == null ? null : new JsonPrimitive(value));
 	}
 	
@@ -216,7 +216,7 @@ public final class JsonBuilder {
 	 * @throws IllegalStateException If the current context is not an object
 	 * @throws NullPointerException If the key is null
 	 */
-	public @NotNull JsonBuilder add(@NotNull String key, byte value) {
+	public @NonNull JsonBuilder add(@NonNull String key, byte value) {
 		return this.add(key, new JsonPrimitive(value));
 	}
 	
@@ -229,7 +229,7 @@ public final class JsonBuilder {
 	 * @throws IllegalStateException If the current context is not an object
 	 * @throws NullPointerException If the key is null
 	 */
-	public @NotNull JsonBuilder add(@NotNull String key, short value) {
+	public @NonNull JsonBuilder add(@NonNull String key, short value) {
 		return this.add(key, new JsonPrimitive(value));
 	}
 	
@@ -242,7 +242,7 @@ public final class JsonBuilder {
 	 * @throws IllegalStateException If the current context is not an object
 	 * @throws NullPointerException If the key is null
 	 */
-	public @NotNull JsonBuilder add(@NotNull String key, int value) {
+	public @NonNull JsonBuilder add(@NonNull String key, int value) {
 		return this.add(key, new JsonPrimitive(value));
 	}
 	
@@ -255,7 +255,7 @@ public final class JsonBuilder {
 	 * @throws IllegalStateException If the current context is not an object
 	 * @throws NullPointerException If the key is null
 	 */
-	public @NotNull JsonBuilder add(@NotNull String key, long value) {
+	public @NonNull JsonBuilder add(@NonNull String key, long value) {
 		return this.add(key, new JsonPrimitive(value));
 	}
 	
@@ -268,7 +268,7 @@ public final class JsonBuilder {
 	 * @throws IllegalStateException If the current context is not an object
 	 * @throws NullPointerException If the key is null
 	 */
-	public @NotNull JsonBuilder add(@NotNull String key, float value) {
+	public @NonNull JsonBuilder add(@NonNull String key, float value) {
 		return this.add(key, new JsonPrimitive(value));
 	}
 	
@@ -281,7 +281,7 @@ public final class JsonBuilder {
 	 * @throws IllegalStateException If the current context is not an object
 	 * @throws NullPointerException If the key is null
 	 */
-	public @NotNull JsonBuilder add(@NotNull String key, double value) {
+	public @NonNull JsonBuilder add(@NonNull String key, double value) {
 		return this.add(key, new JsonPrimitive(value));
 	}
 	
@@ -295,7 +295,7 @@ public final class JsonBuilder {
 	 * @throws IllegalStateException If the current context is not an object
 	 * @throws NullPointerException If the key or objectBuilder is null
 	 */
-	public @NotNull JsonBuilder addObject(@NotNull String key, @NotNull JsonBuilder objectBuilder) {
+	public @NonNull JsonBuilder addObject(@NonNull String key, @NonNull JsonBuilder objectBuilder) {
 		Objects.requireNonNull(objectBuilder, "Object builder must not be null");
 		return this.add(key, objectBuilder.build());
 	}
@@ -310,7 +310,7 @@ public final class JsonBuilder {
 	 * @throws IllegalStateException If the current context is not an object
 	 * @throws NullPointerException If the key or arrayBuilder is null
 	 */
-	public @NotNull JsonBuilder addArray(@NotNull String key, @NotNull JsonBuilder arrayBuilder) {
+	public @NonNull JsonBuilder addArray(@NonNull String key, @NonNull JsonBuilder arrayBuilder) {
 		Objects.requireNonNull(arrayBuilder, "Array builder must not be null");
 		return this.add(key, arrayBuilder.build());
 	}
@@ -323,7 +323,7 @@ public final class JsonBuilder {
 	 * @return This builder for method chaining
 	 * @throws IllegalStateException If the current context is not an array
 	 */
-	public @NotNull JsonBuilder add(@Nullable JsonElement element) {
+	public @NonNull JsonBuilder add(@Nullable JsonElement element) {
 		this.ensureArrayContext();
 		
 		JsonArray array = (JsonArray) this.getCurrentContext().element;
@@ -339,7 +339,7 @@ public final class JsonBuilder {
 	 * @return This builder for method chaining
 	 * @throws IllegalStateException If the current context is not an array
 	 */
-	public @NotNull JsonBuilder add(@Nullable String value) {
+	public @NonNull JsonBuilder add(@Nullable String value) {
 		return this.add(value == null ? null : new JsonPrimitive(value));
 	}
 	
@@ -350,7 +350,7 @@ public final class JsonBuilder {
 	 * @return This builder for method chaining
 	 * @throws IllegalStateException If the current context is not an array
 	 */
-	public @NotNull JsonBuilder add(boolean value) {
+	public @NonNull JsonBuilder add(boolean value) {
 		return this.add(new JsonPrimitive(value));
 	}
 	
@@ -362,7 +362,7 @@ public final class JsonBuilder {
 	 * @return This builder for method chaining
 	 * @throws IllegalStateException If the current context is not an array
 	 */
-	public @NotNull JsonBuilder add(@Nullable Number value) {
+	public @NonNull JsonBuilder add(@Nullable Number value) {
 		return this.add(value == null ? null : new JsonPrimitive(value));
 	}
 	
@@ -373,7 +373,7 @@ public final class JsonBuilder {
 	 * @return This builder for method chaining
 	 * @throws IllegalStateException If the current context is not an array
 	 */
-	public @NotNull JsonBuilder add(byte value) {
+	public @NonNull JsonBuilder add(byte value) {
 		return this.add(new JsonPrimitive(value));
 	}
 	
@@ -384,7 +384,7 @@ public final class JsonBuilder {
 	 * @return This builder for method chaining
 	 * @throws IllegalStateException If the current context is not an array
 	 */
-	public @NotNull JsonBuilder add(short value) {
+	public @NonNull JsonBuilder add(short value) {
 		return this.add(new JsonPrimitive(value));
 	}
 	
@@ -395,7 +395,7 @@ public final class JsonBuilder {
 	 * @return This builder for method chaining
 	 * @throws IllegalStateException If the current context is not an array
 	 */
-	public @NotNull JsonBuilder add(int value) {
+	public @NonNull JsonBuilder add(int value) {
 		return this.add(new JsonPrimitive(value));
 	}
 	
@@ -406,7 +406,7 @@ public final class JsonBuilder {
 	 * @return This builder for method chaining
 	 * @throws IllegalStateException If the current context is not an array
 	 */
-	public @NotNull JsonBuilder add(long value) {
+	public @NonNull JsonBuilder add(long value) {
 		return this.add(new JsonPrimitive(value));
 	}
 	
@@ -417,7 +417,7 @@ public final class JsonBuilder {
 	 * @return This builder for method chaining
 	 * @throws IllegalStateException If the current context is not an array
 	 */
-	public @NotNull JsonBuilder add(float value) {
+	public @NonNull JsonBuilder add(float value) {
 		return this.add(new JsonPrimitive(value));
 	}
 	
@@ -428,7 +428,7 @@ public final class JsonBuilder {
 	 * @return This builder for method chaining
 	 * @throws IllegalStateException If the current context is not an array
 	 */
-	public @NotNull JsonBuilder add(double value) {
+	public @NonNull JsonBuilder add(double value) {
 		return this.add(new JsonPrimitive(value));
 	}
 	
@@ -441,7 +441,7 @@ public final class JsonBuilder {
 	 * @throws IllegalStateException If the current context is not an array
 	 * @throws NullPointerException If the objectBuilder is null
 	 */
-	public @NotNull JsonBuilder addObject(@NotNull JsonBuilder objectBuilder) {
+	public @NonNull JsonBuilder addObject(@NonNull JsonBuilder objectBuilder) {
 		Objects.requireNonNull(objectBuilder, "Object builder must not be null");
 		return this.add(objectBuilder.build());
 	}
@@ -455,7 +455,7 @@ public final class JsonBuilder {
 	 * @throws IllegalStateException If the current context is not an array
 	 * @throws NullPointerException If the arrayBuilder is null
 	 */
-	public @NotNull JsonBuilder addArray(@NotNull JsonBuilder arrayBuilder) {
+	public @NonNull JsonBuilder addArray(@NonNull JsonBuilder arrayBuilder) {
 		Objects.requireNonNull(arrayBuilder, "Array builder must not be null");
 		return this.add(arrayBuilder.build());
 	}
@@ -469,7 +469,7 @@ public final class JsonBuilder {
 	 * @throws IllegalStateException If the current context is not an array
 	 * @throws NullPointerException If the values array is null
 	 */
-	public @NotNull JsonBuilder addAll(@NotNull String... values) {
+	public @NonNull JsonBuilder addAll(@NonNull String... values) {
 		Objects.requireNonNull(values, "Values array must not be null");
 		for (String value : values) {
 			this.add(value);
@@ -486,7 +486,7 @@ public final class JsonBuilder {
 	 * @throws IllegalStateException If the current context is not an array
 	 * @throws NullPointerException If the values array is null
 	 */
-	public @NotNull JsonBuilder addAll(@NotNull Number... values) {
+	public @NonNull JsonBuilder addAll(@NonNull Number... values) {
 		Objects.requireNonNull(values, "Values array must not be null");
 		for (Number value : values) {
 			this.add(value);
@@ -503,7 +503,7 @@ public final class JsonBuilder {
 	 * @throws IllegalStateException If the current context is not an array
 	 * @throws NullPointerException If the values array is null
 	 */
-	public @NotNull JsonBuilder addAll(boolean... values) {
+	public @NonNull JsonBuilder addAll(boolean... values) {
 		Objects.requireNonNull(values, "Values array must not be null");
 		for (boolean value : values) {
 			this.add(value);
@@ -521,7 +521,7 @@ public final class JsonBuilder {
 	 * @throws IllegalStateException If the current context is not an object
 	 * @throws NullPointerException If the key is null
 	 */
-	public @NotNull JsonBuilder startObject(@NotNull String key) {
+	public @NonNull JsonBuilder startObject(@NonNull String key) {
 		this.ensureObjectContext();
 		Objects.requireNonNull(key, "Key must not be null");
 		
@@ -541,7 +541,7 @@ public final class JsonBuilder {
 	 * @return This builder for method chaining, now in object context
 	 * @throws IllegalStateException If the current context is not an array
 	 */
-	public @NotNull JsonBuilder startObject() {
+	public @NonNull JsonBuilder startObject() {
 		this.ensureArrayContext();
 		
 		JsonObject nestedObject = new JsonObject();
@@ -560,7 +560,7 @@ public final class JsonBuilder {
 	 * @return This builder for method chaining, now in the parent context
 	 * @throws IllegalStateException If the current context is not an object or if no parent context exists
 	 */
-	public @NotNull JsonBuilder endObject() {
+	public @NonNull JsonBuilder endObject() {
 		ContextFrame current = this.getCurrentContext();
 		if (current.type != BuilderContext.OBJECT) {
 			throw new IllegalStateException("Current context is not an object");
@@ -584,7 +584,7 @@ public final class JsonBuilder {
 	 * @throws IllegalStateException If the current context is not an object
 	 * @throws NullPointerException If the key is null
 	 */
-	public @NotNull JsonBuilder startArray(@NotNull String key) {
+	public @NonNull JsonBuilder startArray(@NonNull String key) {
 		this.ensureObjectContext();
 		Objects.requireNonNull(key, "Key must not be null");
 		
@@ -604,7 +604,7 @@ public final class JsonBuilder {
 	 * @return This builder for method chaining, now in array context
 	 * @throws IllegalStateException If the current context is not an array
 	 */
-	public @NotNull JsonBuilder startArray() {
+	public @NonNull JsonBuilder startArray() {
 		this.ensureArrayContext();
 		
 		JsonArray nestedArray = new JsonArray();
@@ -623,7 +623,7 @@ public final class JsonBuilder {
 	 * @return This builder for method chaining, now in the parent context
 	 * @throws IllegalStateException If the current context is not an array or if no parent context exists
 	 */
-	public @NotNull JsonBuilder endArray() {
+	public @NonNull JsonBuilder endArray() {
 		ContextFrame current = this.getCurrentContext();
 		if (current.type != BuilderContext.ARRAY) {
 			throw new IllegalStateException("Current context is not an array");
@@ -649,7 +649,7 @@ public final class JsonBuilder {
 	 * @throws IllegalStateException If the current context is not an object
 	 * @throws NullPointerException If the key is null and condition is true
 	 */
-	public @NotNull JsonBuilder addIf(boolean condition, @NotNull String key, @Nullable String value) {
+	public @NonNull JsonBuilder addIf(boolean condition, @NonNull String key, @Nullable String value) {
 		if (condition) {
 			this.add(key, value);
 		}
@@ -667,7 +667,7 @@ public final class JsonBuilder {
 	 * @throws IllegalStateException If the current context is not an object
 	 * @throws NullPointerException If the key is null and condition is true
 	 */
-	public @NotNull JsonBuilder addIf(boolean condition, @NotNull String key, boolean value) {
+	public @NonNull JsonBuilder addIf(boolean condition, @NonNull String key, boolean value) {
 		if (condition) {
 			this.add(key, value);
 		}
@@ -685,7 +685,7 @@ public final class JsonBuilder {
 	 * @throws IllegalStateException If the current context is not an object
 	 * @throws NullPointerException If the key is null and condition is true
 	 */
-	public @NotNull JsonBuilder addIf(boolean condition, @NotNull String key, @Nullable Number value) {
+	public @NonNull JsonBuilder addIf(boolean condition, @NonNull String key, @Nullable Number value) {
 		if (condition) {
 			this.add(key, value);
 		}
@@ -701,7 +701,7 @@ public final class JsonBuilder {
 	 * @return This builder for method chaining
 	 * @throws IllegalStateException If the current context is not an array
 	 */
-	public @NotNull JsonBuilder addIf(boolean condition, @Nullable String value) {
+	public @NonNull JsonBuilder addIf(boolean condition, @Nullable String value) {
 		if (condition) {
 			this.add(value);
 		}
@@ -716,7 +716,7 @@ public final class JsonBuilder {
 	 * @return The constructed json element
 	 * @throws IllegalStateException If there are unclosed nested contexts
 	 */
-	public @NotNull JsonElement build() {
+	public @NonNull JsonElement build() {
 		if (this.contextStack.size() != 1) {
 			throw new IllegalStateException("Cannot build with unclosed nested contexts. Current nesting depth: " + (this.contextStack.size() - 1));
 		}
@@ -730,7 +730,7 @@ public final class JsonBuilder {
 	 * @return The constructed json object
 	 * @throws IllegalStateException If there are unclosed nested contexts or if the root is not an object
 	 */
-	public @NotNull JsonObject buildObject() {
+	public @NonNull JsonObject buildObject() {
 		JsonElement element = this.build();
 		if (!(element instanceof JsonObject object)) {
 			throw new IllegalStateException("Root element is not a JsonObject");
@@ -747,7 +747,7 @@ public final class JsonBuilder {
 	 * @return The constructed json array
 	 * @throws IllegalStateException If there are unclosed nested contexts or if the root is not an array
 	 */
-	public @NotNull JsonArray buildArray() {
+	public @NonNull JsonArray buildArray() {
 		JsonElement element = this.build();
 		if (!(element instanceof JsonArray array)) {
 			throw new IllegalStateException("Root element is not a JsonArray");
@@ -814,7 +814,7 @@ public final class JsonBuilder {
 	 * @return A string representation of the current json structure
 	 * @throws NullPointerException If the config is null
 	 */
-	public @NotNull String toString(@NotNull JsonConfig config) {
+	public @NonNull String toString(@NonNull JsonConfig config) {
 		Objects.requireNonNull(config, "Config must not be null");
 		return this.root.toString(config);
 	}
@@ -840,7 +840,7 @@ public final class JsonBuilder {
 	 * @param type The type of context (object or array)
 	 * @param element The json element associated with this context
 	 */
-	private record ContextFrame(@NotNull BuilderContext type, @NotNull JsonElement element) {
+	private record ContextFrame(@NonNull BuilderContext type, @NonNull JsonElement element) {
 		
 		/**
 		 * Constructs a new context frame with the specified type and element.<br>

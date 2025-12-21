@@ -19,7 +19,7 @@
 package net.luis.utils.io.token.definition;
 
 import net.luis.utils.annotation.type.Singleton;
-import org.jetbrains.annotations.NotNull;
+import org.jspecify.annotations.NonNull;
 
 import java.util.Objects;
 
@@ -45,7 +45,7 @@ public final class WordTokenDefinition implements TokenDefinition {
 	private WordTokenDefinition() {}
 	
 	@Override
-	public boolean matches(@NotNull String word) {
+	public boolean matches(@NonNull String word) {
 		Objects.requireNonNull(word, "Word must not be null");
 		return !word.isEmpty();
 	}

@@ -21,7 +21,7 @@ package net.luis.utils.io;
 import net.luis.utils.annotation.type.MockObject;
 import net.luis.utils.io.data.InputProvider;
 import net.luis.utils.util.Pair;
-import org.jetbrains.annotations.NotNull;
+import org.jspecify.annotations.NonNull;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Test;
 
@@ -518,7 +518,7 @@ class FileUtilsTest {
 		private final String string;
 		private int index;
 		
-		private StringInputStream(@NotNull String string) {
+		private StringInputStream(@NonNull String string) {
 			this.string = Objects.requireNonNull(string, "String must not be null");
 		}
 		

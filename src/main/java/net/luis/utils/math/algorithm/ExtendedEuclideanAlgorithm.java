@@ -18,7 +18,7 @@
 
 package net.luis.utils.math.algorithm;
 
-import org.jetbrains.annotations.NotNull;
+import org.jspecify.annotations.NonNull;
 
 import java.math.BigInteger;
 import java.util.*;
@@ -99,7 +99,7 @@ public class ExtendedEuclideanAlgorithm {
 	 * @param divisor The divisor of the EEA
 	 * @throws IllegalArgumentException If the value or divisor is 0
 	 */
-	public ExtendedEuclideanAlgorithm(@NotNull BigInteger value, @NotNull BigInteger divisor) {
+	public ExtendedEuclideanAlgorithm(@NonNull BigInteger value, @NonNull BigInteger divisor) {
 		//region Validation
 		if (value.equals(ZERO)) {
 			throw new IllegalArgumentException("The value must not be 0");
@@ -150,7 +150,7 @@ public class ExtendedEuclideanAlgorithm {
 	 * @return The GCD of the given value and divisor
 	 * @throws IllegalArgumentException If the value or divisor is 0
 	 */
-	public static @NotNull BigInteger gcd(@NotNull BigInteger value, @NotNull BigInteger divisor) {
+	public static @NonNull BigInteger gcd(@NonNull BigInteger value, @NonNull BigInteger divisor) {
 		ExtendedEuclideanAlgorithm eea = new ExtendedEuclideanAlgorithm(value, divisor);
 		eea.execute();
 		return eea.getDivisor();
@@ -170,7 +170,7 @@ public class ExtendedEuclideanAlgorithm {
 	 * Returns the initial value of the EEA.<br>
 	 * @return The initial value
 	 */
-	public @NotNull BigInteger getInitialValue() {
+	public @NonNull BigInteger getInitialValue() {
 		return this.initialValue;
 	}
 	
@@ -178,7 +178,7 @@ public class ExtendedEuclideanAlgorithm {
 	 * Returns the initial divisor of the EEA.<br>
 	 * @return The initial divisor
 	 */
-	public @NotNull BigInteger getInitialDivisor() {
+	public @NonNull BigInteger getInitialDivisor() {
 		return this.initialDivisor;
 	}
 	
@@ -186,7 +186,7 @@ public class ExtendedEuclideanAlgorithm {
 	 * Returns the current value of the EEA.<br>
 	 * @return The current value
 	 */
-	public @NotNull BigInteger getValue() {
+	public @NonNull BigInteger getValue() {
 		return this.value;
 	}
 	
@@ -194,7 +194,7 @@ public class ExtendedEuclideanAlgorithm {
 	 * Returns the current divisor of the EEA.<br>
 	 * @return The current divisor
 	 */
-	public @NotNull BigInteger getDivisor() {
+	public @NonNull BigInteger getDivisor() {
 		return this.divisor;
 	}
 	
@@ -202,7 +202,7 @@ public class ExtendedEuclideanAlgorithm {
 	 * Returns the current remainder of the EEA.<br>
 	 * @return The current remainder
 	 */
-	public @NotNull BigInteger getRemainder() {
+	public @NonNull BigInteger getRemainder() {
 		return this.remainder;
 	}
 	
@@ -210,7 +210,7 @@ public class ExtendedEuclideanAlgorithm {
 	 * Returns the current quotient of the EEA.<br>
 	 * @return The current quotient
 	 */
-	public @NotNull BigInteger getQuotient() {
+	public @NonNull BigInteger getQuotient() {
 		return this.quotient;
 	}
 	
@@ -226,7 +226,7 @@ public class ExtendedEuclideanAlgorithm {
 	 * Returns the first coefficient of the EEA.<br>
 	 * @return The first coefficient
 	 */
-	public @NotNull BigInteger getFirstCoefficient() {
+	public @NonNull BigInteger getFirstCoefficient() {
 		return this.getFirstCoefficient(1);
 	}
 	
@@ -234,7 +234,7 @@ public class ExtendedEuclideanAlgorithm {
 	 * Returns the second coefficient of the EEA.<br>
 	 * @return The second coefficient
 	 */
-	public @NotNull BigInteger getSecondCoefficient() {
+	public @NonNull BigInteger getSecondCoefficient() {
 		return this.getSecondCoefficient(1);
 	}
 	//endregion
@@ -279,7 +279,7 @@ public class ExtendedEuclideanAlgorithm {
 	 * @param step The number of steps to go back
 	 * @return The first coefficient of the EEA
 	 */
-	private @NotNull BigInteger getFirstCoefficient(int step) {
+	private @NonNull BigInteger getFirstCoefficient(int step) {
 		return this.firstCoefficients.get(this.firstCoefficients.size() - Math.abs(step));
 	}
 	
@@ -290,7 +290,7 @@ public class ExtendedEuclideanAlgorithm {
 	 * @param step The number of steps to go back
 	 * @return The second coefficient of the EEA
 	 */
-	private @NotNull BigInteger getSecondCoefficient(int step) {
+	private @NonNull BigInteger getSecondCoefficient(int step) {
 		return this.secondCoefficients.get(this.secondCoefficients.size() - Math.abs(step));
 	}
 	
@@ -318,7 +318,7 @@ public class ExtendedEuclideanAlgorithm {
 	 * @param remainder The new remainder
 	 * @param quotient The new quotient
 	 */
-	private void update(@NotNull BigInteger value, @NotNull BigInteger divisor, @NotNull BigInteger remainder, @NotNull BigInteger quotient) {
+	private void update(@NonNull BigInteger value, @NonNull BigInteger divisor, @NonNull BigInteger remainder, @NonNull BigInteger quotient) {
 		BigInteger first = this.getFirstCoefficient(-2).subtract(this.quotient.multiply(this.getFirstCoefficient(-1)));
 		BigInteger second = this.getSecondCoefficient(-2).subtract(this.quotient.multiply(this.getSecondCoefficient(-1)));
 		this.firstCoefficients.add(first);

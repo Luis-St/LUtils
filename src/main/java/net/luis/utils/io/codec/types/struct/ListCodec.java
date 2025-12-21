@@ -22,8 +22,8 @@ import net.luis.utils.io.codec.AbstractCodec;
 import net.luis.utils.io.codec.Codec;
 import net.luis.utils.io.codec.provider.TypeProvider;
 import net.luis.utils.util.result.Result;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 import java.util.*;
 
@@ -48,19 +48,19 @@ public class ListCodec<C> extends AbstractCodec<List<C>, Object> {
 	 * @param codec The codec for the elements
 	 * @throws NullPointerException If the codec is null
 	 */
-	public ListCodec(@NotNull Codec<C> codec) {
+	public ListCodec(@NonNull Codec<C> codec) {
 		this.codec = Objects.requireNonNull(codec, "Codec must not be null");
 	}
 	
 	@Override
 	@SuppressWarnings("unchecked")
-	public @NotNull Class<List<C>> getType() {
+	public @NonNull Class<List<C>> getType() {
 		return (Class<List<C>>) (Class<?>) List.class;
 	}
 	
 	@Override
 	@SuppressWarnings("DuplicatedCode")
-	public <R> @NotNull Result<R> encodeStart(@NotNull TypeProvider<R> provider, @NotNull R current, @Nullable List<C> value) {
+	public <R> @NonNull Result<R> encodeStart(@NonNull TypeProvider<R> provider, @NonNull R current, @Nullable List<C> value) {
 		Objects.requireNonNull(provider, "Type provider must not be null");
 		Objects.requireNonNull(current, "Current value must not be null");
 		if (value == null) {
@@ -95,7 +95,7 @@ public class ListCodec<C> extends AbstractCodec<List<C>, Object> {
 	
 	@Override
 	@SuppressWarnings("DuplicatedCode")
-	public <R> @NotNull Result<List<C>> decodeStart(@NotNull TypeProvider<R> provider, @NotNull R current, @Nullable R value) {
+	public <R> @NonNull Result<List<C>> decodeStart(@NonNull TypeProvider<R> provider, @NonNull R current, @Nullable R value) {
 		Objects.requireNonNull(provider, "Type provider must not be null");
 		Objects.requireNonNull(current, "Current value must not be null");
 		if (value == null) {

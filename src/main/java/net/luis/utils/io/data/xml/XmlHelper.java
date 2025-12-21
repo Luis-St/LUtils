@@ -18,7 +18,7 @@
 
 package net.luis.utils.io.data.xml;
 
-import org.jetbrains.annotations.NotNull;
+import org.jspecify.annotations.NonNull;
 
 import java.util.Objects;
 import java.util.regex.Pattern;
@@ -54,7 +54,7 @@ final class XmlHelper {
 	 * @throws NullPointerException If the string is null
 	 * @throws IllegalArgumentException If the string is empty or blank
 	 */
-	private static void validateBase(@NotNull String str, @NotNull String message) {
+	private static void validateBase(@NonNull String str, @NonNull String message) {
 		Objects.requireNonNull(str, message + " must not be null");
 		if (str.isEmpty()) {
 			throw new IllegalArgumentException(message + " must not be empty");
@@ -73,7 +73,7 @@ final class XmlHelper {
 	 * @throws NullPointerException If the name is null
 	 * @throws IllegalArgumentException If the base validation fails or the name does not match the pattern
 	 */
-	static @NotNull String validateElementName(@NotNull String name) {
+	static @NonNull String validateElementName(@NonNull String name) {
 		validateBase(name, "Xml element name");
 		if (!XML_ELEMENT_NAME_PATTERN.matcher(name).matches()) {
 			throw new IllegalArgumentException("Xml element name must match the pattern '" + XML_ELEMENT_NAME_PATTERN.pattern() + "', but was: '" + name + "'");
@@ -90,7 +90,7 @@ final class XmlHelper {
 	 * @throws NullPointerException If the name is null
 	 * @throws IllegalArgumentException If the base validation fails or the name does not match the pattern
 	 */
-	static @NotNull String validateAttributeKey(@NotNull String name) {
+	static @NonNull String validateAttributeKey(@NonNull String name) {
 		validateBase(name, "Xml attribute name");
 		if (!XML_ATTRIBUTE_NAME_PATTERN.matcher(name).matches()) {
 			throw new IllegalArgumentException("Xml attribute name must match the pattern '" + XML_ATTRIBUTE_NAME_PATTERN.pattern() + "', but was: '" + name + "'");
@@ -113,7 +113,7 @@ final class XmlHelper {
 	 * @return The escaped value
 	 * @throws NullPointerException If the value is null
 	 */
-	static @NotNull String escapeXml(@NotNull String value) {
+	static @NonNull String escapeXml(@NonNull String value) {
 		Objects.requireNonNull(value, "Value must not be null");
 		return value.replace("&", "&amp;").replace("\"", "&quot;").replace("'", "&apos;").replace("<", "&lt;").replace(">", "&gt;");
 	}
@@ -133,7 +133,7 @@ final class XmlHelper {
 	 * @return The unescaped value
 	 * @throws NullPointerException If the value is null
 	 */
-	static @NotNull String unescapeXml(@NotNull String value) {
+	static @NonNull String unescapeXml(@NonNull String value) {
 		Objects.requireNonNull(value, "Value must not be null");
 		return value.replace("&quot;", "\"").replace("&apos;", "'").replace("&lt;", "<").replace("&gt;", ">").replace("&amp;", "&");
 	}

@@ -33,8 +33,8 @@ import net.luis.utils.io.codec.types.time.*;
 import net.luis.utils.util.Either;
 import net.luis.utils.util.result.Result;
 import net.luis.utils.util.result.ResultingFunction;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
@@ -287,7 +287,7 @@ public final class Codecs {
 	 * @return A new keyable codec
 	 * @throws NullPointerException If the enum class is null
 	 */
-	public static <E extends Enum<E>> @NotNull Codec<E> enumOrdinal(@NotNull Class<E> clazz) {
+	public static <E extends Enum<E>> @NonNull Codec<E> enumOrdinal(@NonNull Class<E> clazz) {
 		Objects.requireNonNull(clazz, "Enum class must not be null");
 		Map<Integer, E> ordinalLookup = Arrays.stream(clazz.getEnumConstants()).collect(Collectors.toMap(Enum::ordinal, Function.identity()));
 		
@@ -309,7 +309,7 @@ public final class Codecs {
 	 * @return A new keyable codec
 	 * @throws NullPointerException If the enum class is null
 	 */
-	public static <E extends Enum<E>> @NotNull Codec<E> enumName(@NotNull Class<E> clazz) {
+	public static <E extends Enum<E>> @NonNull Codec<E> enumName(@NonNull Class<E> clazz) {
 		Objects.requireNonNull(clazz, "Enum class must not be null");
 		Map<String, E> lookup = Arrays.stream(clazz.getEnumConstants()).collect(Collectors.toMap(Enum::name, Function.identity()));
 		
@@ -332,7 +332,7 @@ public final class Codecs {
 	 * @return A new keyable codec
 	 * @throws NullPointerException If the friendly name encoder or decoder is null
 	 */
-	public static <E extends Enum<E>> @NotNull Codec<E> friendlyEnumName(@NotNull Function<E, String> friendlyEncoder, @NotNull Function<String, E> friendlyDecoder) {
+	public static <E extends Enum<E>> @NonNull Codec<E> friendlyEnumName(@NonNull Function<E, String> friendlyEncoder, @NonNull Function<String, E> friendlyDecoder) {
 		Objects.requireNonNull(friendlyEncoder, "Friendly name encoder must not be null");
 		Objects.requireNonNull(friendlyDecoder, "Friendly name decoder must not be null");
 		return STRING.xmap(friendlyEncoder, friendlyDecoder).keyable(ResultingFunction.direct(friendlyEncoder), ResultingFunction.direct(friendlyDecoder));
@@ -348,7 +348,7 @@ public final class Codecs {
 	 * @return A new keyable codec
 	 * @throws NullPointerException If the enum class is null
 	 */
-	public static <E extends Enum<E>> @NotNull Codec<E> dynamicEnum(@NotNull Class<E> clazz) {
+	public static <E extends Enum<E>> @NonNull Codec<E> dynamicEnum(@NonNull Class<E> clazz) {
 		Objects.requireNonNull(clazz, "Enum class must not be null");
 		
 		E[] constants = clazz.getEnumConstants();
@@ -391,7 +391,7 @@ public final class Codecs {
 	 * @throws IllegalArgumentException If codecs is empty or contains only one codec
 	 * @see AnyCodec
 	 */
-	public static <C> @NotNull AnyCodec<C> any(@NotNull List<Codec<? extends C>> codecs) {
+	public static <C> @NonNull AnyCodec<C> any(@NonNull List<Codec<? extends C>> codecs) {
 		return new AnyCodec<>(codecs);
 	}
 	
@@ -412,7 +412,7 @@ public final class Codecs {
 	 * @see AnyCodec
 	 */
 	@SafeVarargs
-	public static <C> @NotNull AnyCodec<C> any(Codec<? extends C> @NotNull ... codecs) {
+	public static <C> @NonNull AnyCodec<C> any(Codec<? extends C> @NonNull ... codecs) {
 		return new AnyCodec<>(codecs);
 	}
 	
@@ -426,7 +426,7 @@ public final class Codecs {
 	 * @throws NullPointerException If the value codec is null
 	 * @see MapCodec
 	 */
-	public static <C> @NotNull MapCodec<String, C> map(@NotNull Codec<C> valueCodec) {
+	public static <C> @NonNull MapCodec<String, C> map(@NonNull Codec<C> valueCodec) {
 		return map(STRING, valueCodec);
 	}
 	
@@ -442,7 +442,7 @@ public final class Codecs {
 	 * @throws NullPointerException If the key codec or value codec is null
 	 * @see MapCodec
 	 */
-	public static <K, V> @NotNull MapCodec<K, V> map(@NotNull Codec<K> keyCodec, @NotNull Codec<V> valueCodec) {
+	public static <K, V> @NonNull MapCodec<K, V> map(@NonNull Codec<K> keyCodec, @NonNull Codec<V> valueCodec) {
 		return new MapCodec<>(keyCodec, valueCodec);
 	}
 	
@@ -460,7 +460,7 @@ public final class Codecs {
 	 * @throws NullPointerException If the first codec or second codec is null
 	 * @see EitherCodec
 	 */
-	public static <F, S> @NotNull EitherCodec<F, S> either(@NotNull Codec<F> firstCodec, @NotNull Codec<S> secondCodec) {
+	public static <F, S> @NonNull EitherCodec<F, S> either(@NonNull Codec<F> firstCodec, @NonNull Codec<S> secondCodec) {
 		return new EitherCodec<>(firstCodec, secondCodec);
 	}
 	
@@ -493,7 +493,7 @@ public final class Codecs {
 	 * @see DiscriminatedCodec
 	 * @see DiscriminatedCodecProvider
 	 */
-	public static <C, T> @NotNull DiscriminatedCodec<C, T> discriminatedBy(@NotNull String discriminatedField, @NotNull Codec<T> discriminatedCodec, @NotNull DiscriminatedCodecProvider<C, T> provider) {
+	public static <C, T> @NonNull DiscriminatedCodec<C, T> discriminatedBy(@NonNull String discriminatedField, @NonNull Codec<T> discriminatedCodec, @NonNull DiscriminatedCodecProvider<C, T> provider) {
 		return new DiscriminatedCodec<>(discriminatedField, discriminatedCodec, provider);
 	}
 	
@@ -505,7 +505,7 @@ public final class Codecs {
 	 * @return A new unit codec
 	 * @see UnitCodec
 	 */
-	public static <C> @NotNull UnitCodec<C> unit(@Nullable C value) {
+	public static <C> @NonNull UnitCodec<C> unit(@Nullable C value) {
 		return unit(() -> value);
 	}
 	
@@ -518,7 +518,7 @@ public final class Codecs {
 	 * @throws NullPointerException If the supplier is null
 	 * @see UnitCodec
 	 */
-	public static <C> @NotNull UnitCodec<C> unit(@NotNull Supplier<C> supplier) {
+	public static <C> @NonNull UnitCodec<C> unit(@NonNull Supplier<C> supplier) {
 		return new UnitCodec<>(supplier);
 	}
 
@@ -550,7 +550,7 @@ public final class Codecs {
 	 * @throws NullPointerException If the codec factory is null
 	 * @see RecursiveCodec
 	 */
-	public static <C> @NotNull RecursiveCodec<C> recursive(@NotNull Function<Codec<C>, Codec<C>> codecFactory) {
+	public static <C> @NonNull RecursiveCodec<C> recursive(@NonNull Function<Codec<C>, Codec<C>> codecFactory) {
 		return new RecursiveCodec<>(codecFactory);
 	}
 
@@ -565,7 +565,7 @@ public final class Codecs {
 	 * @return A new codec
 	 * @throws NullPointerException If the string encoder or decoder is null
 	 */
-	public static <E> @NotNull Codec<E> stringResolver(@NotNull Function<E, String> stringEncoder, @NotNull Function<String, @Nullable E> stringDecoder) {
+	public static <E> @NonNull Codec<E> stringResolver(@NonNull Function<E, String> stringEncoder, @NonNull Function<String, @Nullable E> stringDecoder) {
 		Objects.requireNonNull(stringDecoder, "Element string decoder must not be null");
 		
 		return STRING.mapFlat(

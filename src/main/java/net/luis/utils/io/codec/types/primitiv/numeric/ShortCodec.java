@@ -21,8 +21,8 @@ package net.luis.utils.io.codec.types.primitiv.numeric;
 import net.luis.utils.io.codec.AbstractCodec;
 import net.luis.utils.io.codec.provider.TypeProvider;
 import net.luis.utils.util.result.Result;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 import java.util.Objects;
 
@@ -39,7 +39,7 @@ public class ShortCodec extends AbstractCodec<Short, Object> {
 	public ShortCodec() {}
 	
 	@Override
-	public <R> @NotNull Result<R> encodeStart(@NotNull TypeProvider<R> provider, @NotNull R current, @Nullable Short value) {
+	public <R> @NonNull Result<R> encodeStart(@NonNull TypeProvider<R> provider, @NonNull R current, @Nullable Short value) {
 		Objects.requireNonNull(provider, "Type provider must not be null");
 		Objects.requireNonNull(current, "Current value must not be null");
 		
@@ -50,13 +50,13 @@ public class ShortCodec extends AbstractCodec<Short, Object> {
 	}
 	
 	@Override
-	public @NotNull Result<String> encodeKey(@NotNull Short key) {
+	public @NonNull Result<String> encodeKey(@NonNull Short key) {
 		Objects.requireNonNull(key, "Key must not be null");
 		return Result.success(Short.toString(key));
 	}
 	
 	@Override
-	public <R> @NotNull Result<Short> decodeStart(@NotNull TypeProvider<R> provider, @NotNull R current, @Nullable R value) {
+	public <R> @NonNull Result<Short> decodeStart(@NonNull TypeProvider<R> provider, @NonNull R current, @Nullable R value) {
 		Objects.requireNonNull(provider, "Type provider must not be null");
 		Objects.requireNonNull(current, "Current value must not be null");
 		if (value == null) {
@@ -67,7 +67,7 @@ public class ShortCodec extends AbstractCodec<Short, Object> {
 	}
 	
 	@Override
-	public @NotNull Result<Short> decodeKey(@NotNull String key) {
+	public @NonNull Result<Short> decodeKey(@NonNull String key) {
 		Objects.requireNonNull(key, "Key must not be null");
 		
 		try {

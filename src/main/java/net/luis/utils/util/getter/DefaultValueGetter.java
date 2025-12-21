@@ -19,7 +19,7 @@
 package net.luis.utils.util.getter;
 
 import net.luis.utils.function.throwable.ThrowableFunction;
-import org.jetbrains.annotations.NotNull;
+import org.jspecify.annotations.NonNull;
 
 import java.util.Objects;
 
@@ -71,7 +71,7 @@ public interface DefaultValueGetter extends ValueGetter {
 	 * @return The value as a number or the default value
 	 * @throws NullPointerException If the default value is null
 	 */
-	default @NotNull Number getAsNumber(@NotNull Number defaultValue) {
+	default @NonNull Number getAsNumber(@NonNull Number defaultValue) {
 		Objects.requireNonNull(defaultValue, "Default value must not be null");
 		try {
 			return this.getAsNumber();
@@ -182,7 +182,7 @@ public interface DefaultValueGetter extends ValueGetter {
 	 * @param <T> The type of the parsed value
 	 * @throws NullPointerException If the parser or the default value is null
 	 */
-	default <T> @NotNull T getAs(@NotNull ThrowableFunction<String, T, ? extends Exception> parser, @NotNull T defaultValue) {
+	default <T> @NonNull T getAs(@NonNull ThrowableFunction<String, T, ? extends Exception> parser, @NonNull T defaultValue) {
 		Objects.requireNonNull(parser, "Parser must not be null");
 		Objects.requireNonNull(defaultValue, "Default value must not be null");
 		try {

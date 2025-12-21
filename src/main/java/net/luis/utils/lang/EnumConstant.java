@@ -18,7 +18,7 @@
 
 package net.luis.utils.lang;
 
-import org.jetbrains.annotations.NotNull;
+import org.jspecify.annotations.NonNull;
 
 import java.util.Objects;
 
@@ -33,9 +33,9 @@ import java.util.Objects;
  * @param <T> The type of the enum constant
  */
 public record EnumConstant<T>(
-	@NotNull String name,
+	@NonNull String name,
 	int ordinal,
-	@NotNull T value
+	@NonNull T value
 ) {
 	
 	/**

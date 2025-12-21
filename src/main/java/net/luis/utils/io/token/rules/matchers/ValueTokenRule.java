@@ -20,7 +20,7 @@ package net.luis.utils.io.token.rules.matchers;
 
 import net.luis.utils.io.token.rules.NegatableTokenRule;
 import net.luis.utils.io.token.tokens.Token;
-import org.jetbrains.annotations.NotNull;
+import org.jspecify.annotations.NonNull;
 
 import java.util.Objects;
 
@@ -36,7 +36,7 @@ import java.util.Objects;
  * @param ignoreCase Whether to ignore case when matching or not
  */
 public record ValueTokenRule(
-	@NotNull String value,
+	@NonNull String value,
 	boolean ignoreCase
 ) implements NegatableTokenRule {
 	
@@ -67,7 +67,7 @@ public record ValueTokenRule(
 	}
 	
 	@Override
-	public boolean match(@NotNull Token token) {
+	public boolean match(@NonNull Token token) {
 		Objects.requireNonNull(token, "Token must not be null");
 		return this.ignoreCase ? token.value().equalsIgnoreCase(this.value) : token.value().equals(this.value);
 	}

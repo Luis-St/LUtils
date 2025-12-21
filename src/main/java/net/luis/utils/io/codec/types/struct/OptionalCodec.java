@@ -22,8 +22,8 @@ import net.luis.utils.io.codec.AbstractCodec;
 import net.luis.utils.io.codec.Codec;
 import net.luis.utils.io.codec.provider.TypeProvider;
 import net.luis.utils.util.result.Result;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 import java.util.Objects;
 import java.util.Optional;
@@ -66,7 +66,7 @@ public class OptionalCodec<C> extends AbstractCodec<Optional<C>, Object> {
 	 * @param codec The codec for the optional value
 	 * @throws NullPointerException If the codec is null
 	 */
-	public OptionalCodec(@NotNull Codec<C> codec) {
+	public OptionalCodec(@NonNull Codec<C> codec) {
 		this(codec, Optional::empty);
 	}
 	
@@ -77,20 +77,20 @@ public class OptionalCodec<C> extends AbstractCodec<Optional<C>, Object> {
 	 * @param defaultProvider The supplier for the default value if the optional value is empty
 	 * @throws NullPointerException If the codec or the default provider is null
 	 */
-	public OptionalCodec(@NotNull Codec<C> codec, @NotNull Supplier<Optional<C>> defaultProvider) {
+	public OptionalCodec(@NonNull Codec<C> codec, @NonNull Supplier<Optional<C>> defaultProvider) {
 		this.codec = Objects.requireNonNull(codec, "Codec must not be null");
 		this.defaultProvider = Objects.requireNonNull(defaultProvider, "Default provider must not be null");
 	}
 	
 	@Override
 	@SuppressWarnings("unchecked")
-	public @NotNull Class<Optional<C>> getType() {
+	public @NonNull Class<Optional<C>> getType() {
 		return (Class<Optional<C>>) (Class<?>) Optional.class;
 	}
 	
 	@Override
 	@SuppressWarnings("OptionalAssignedToNull")
-	public <R> @NotNull Result<R> encodeStart(@NotNull TypeProvider<R> provider, @NotNull R current, @Nullable Optional<C> value) {
+	public <R> @NonNull Result<R> encodeStart(@NonNull TypeProvider<R> provider, @NonNull R current, @Nullable Optional<C> value) {
 		Objects.requireNonNull(provider, "Type provider must not be null");
 		Objects.requireNonNull(current, "Current value must not be null");
 		
@@ -101,7 +101,7 @@ public class OptionalCodec<C> extends AbstractCodec<Optional<C>, Object> {
 	}
 	
 	@Override
-	public <R> @NotNull Result<Optional<C>> decodeStart(@NotNull TypeProvider<R> provider, @NotNull R current, @Nullable R value) {
+	public <R> @NonNull Result<Optional<C>> decodeStart(@NonNull TypeProvider<R> provider, @NonNull R current, @Nullable R value) {
 		Objects.requireNonNull(provider, "Type provider must not be null");
 		Objects.requireNonNull(current, "Current value must not be null");
 		if (value == null) {
@@ -121,12 +121,12 @@ public class OptionalCodec<C> extends AbstractCodec<Optional<C>, Object> {
 	}
 	
 	@Override
-	public @NotNull Codec<Optional<C>> orElse(@Nullable Optional<C> defaultValue) {
+	public @NonNull Codec<Optional<C>> orElse(@Nullable Optional<C> defaultValue) {
 		return this.orElseGet(() -> defaultValue);
 	}
 	
 	@Override
-	public @NotNull Codec<Optional<C>> orElseGet(@NotNull Supplier<Optional<C>> supplier) {
+	public @NonNull Codec<Optional<C>> orElseGet(@NonNull Supplier<Optional<C>> supplier) {
 		return new OptionalCodec<>(this.codec, supplier);
 	}
 	

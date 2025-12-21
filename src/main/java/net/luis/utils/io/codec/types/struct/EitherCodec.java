@@ -23,8 +23,8 @@ import net.luis.utils.io.codec.Codec;
 import net.luis.utils.io.codec.provider.TypeProvider;
 import net.luis.utils.util.Either;
 import net.luis.utils.util.result.Result;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 import java.util.Objects;
 
@@ -62,19 +62,19 @@ public class EitherCodec<F, S> extends AbstractCodec<Either<F, S>, Object> {
 	 * @param secondCodec The second codec
 	 * @throws NullPointerException If the first or second codec is null
 	 */
-	public EitherCodec(@NotNull Codec<F> firstCodec, @NotNull Codec<S> secondCodec) {
+	public EitherCodec(@NonNull Codec<F> firstCodec, @NonNull Codec<S> secondCodec) {
 		this.firstCodec = Objects.requireNonNull(firstCodec, "First codec must not be null");
 		this.secondCodec = Objects.requireNonNull(secondCodec, "Second codec must not be null");
 	}
 	
 	@Override
 	@SuppressWarnings("unchecked")
-	public @NotNull Class<Either<F, S>> getType() {
+	public @NonNull Class<Either<F, S>> getType() {
 		return (Class<Either<F, S>>) (Class<?>) Either.class;
 	}
 	
 	@Override
-	public <R> @NotNull Result<R> encodeStart(@NotNull TypeProvider<R> provider, @NotNull R current, @Nullable Either<F, S> value) {
+	public <R> @NonNull Result<R> encodeStart(@NonNull TypeProvider<R> provider, @NonNull R current, @Nullable Either<F, S> value) {
 		Objects.requireNonNull(provider, "Type provider must not be null");
 		Objects.requireNonNull(current, "Current value must not be null");
 		
@@ -88,7 +88,7 @@ public class EitherCodec<F, S> extends AbstractCodec<Either<F, S>, Object> {
 	}
 	
 	@Override
-	public <R> @NotNull Result<Either<F, S>> decodeStart(@NotNull TypeProvider<R> provider, @NotNull R current, @Nullable R value) {
+	public <R> @NonNull Result<Either<F, S>> decodeStart(@NonNull TypeProvider<R> provider, @NonNull R current, @Nullable R value) {
 		Objects.requireNonNull(provider, "Type provider must not be null");
 		Objects.requireNonNull(current, "Current value must not be null");
 		if (value == null) {

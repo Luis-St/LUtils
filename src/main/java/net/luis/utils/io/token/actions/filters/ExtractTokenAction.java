@@ -22,8 +22,8 @@ import net.luis.utils.io.token.TokenRuleMatch;
 import net.luis.utils.io.token.actions.TokenAction;
 import net.luis.utils.io.token.context.TokenActionContext;
 import net.luis.utils.io.token.tokens.Token;
-import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Unmodifiable;
+import org.jspecify.annotations.NonNull;
 
 import java.util.List;
 import java.util.Objects;
@@ -41,8 +41,8 @@ import java.util.function.Predicate;
  * @param extractor The consumer to process extracted tokens
  */
 public record ExtractTokenAction(
-	@NotNull Predicate<Token> filter,
-	@NotNull Consumer<Token> extractor
+	@NonNull Predicate<Token> filter,
+	@NonNull Consumer<Token> extractor
 ) implements TokenAction {
 	
 	/**
@@ -58,7 +58,7 @@ public record ExtractTokenAction(
 	}
 	
 	@Override
-	public @NotNull @Unmodifiable List<Token> apply(@NotNull TokenRuleMatch match, @NotNull TokenActionContext ctx) {
+	public @NonNull @Unmodifiable List<Token> apply(@NonNull TokenRuleMatch match, @NonNull TokenActionContext ctx) {
 		Objects.requireNonNull(match, "Token rule match must not be null");
 		Objects.requireNonNull(ctx, "Token action context must not be null");
 		

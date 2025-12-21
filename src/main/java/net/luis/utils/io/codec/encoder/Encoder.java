@@ -21,7 +21,9 @@ package net.luis.utils.io.codec.encoder;
 import net.luis.utils.io.codec.provider.TypeProvider;
 import net.luis.utils.util.result.Result;
 import net.luis.utils.util.result.ResultingFunction;
-import org.jetbrains.annotations.*;
+import org.jetbrains.annotations.UnknownNullability;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 import java.util.Objects;
 
@@ -54,7 +56,7 @@ public interface Encoder<C> {
 	 * @throws NullPointerException If the type provider is null
 	 * @throws EncoderException If an error occurs during encoding
 	 */
-	default <R> @UnknownNullability R encode(@NotNull TypeProvider<R> provider, @Nullable C value) {
+	default <R> @UnknownNullability R encode(@NonNull TypeProvider<R> provider, @Nullable C value) {
 		Objects.requireNonNull(provider, "Type provider must not be null");
 		return this.encode(provider, provider.empty(), value);
 	}
@@ -76,7 +78,7 @@ public interface Encoder<C> {
 	 * @throws EncoderException If an error occurs during encoding
 	 * @see #encodeStart(TypeProvider, Object, Object)
 	 */
-	default <R> @UnknownNullability R encode(@NotNull TypeProvider<R> provider, @NotNull R current, @Nullable C value) {
+	default <R> @UnknownNullability R encode(@NonNull TypeProvider<R> provider, @NonNull R current, @Nullable C value) {
 		Objects.requireNonNull(provider, "Type provider must not be null");
 		Objects.requireNonNull(current, "Current value must not be null");
 		
@@ -99,7 +101,7 @@ public interface Encoder<C> {
 	 * @param <R> The type to encode to
 	 * @throws NullPointerException If the type provider is null
 	 */
-	<R> @NotNull Result<R> encodeStart(@NotNull TypeProvider<R> provider, @NotNull R current, @Nullable C value);
+	<R> @NonNull Result<R> encodeStart(@NonNull TypeProvider<R> provider, @NonNull R current, @Nullable C value);
 	
 	/**
 	 * Encodes the key of the specified type and returns the encoded key as a result.<br>
@@ -109,7 +111,7 @@ public interface Encoder<C> {
 	 * @return The result
 	 * @throws NullPointerException If the key is null
 	 */
-	default @NotNull Result<String> encodeKey(@NotNull C key) {
+	default @NonNull Result<String> encodeKey(@NonNull C key) {
 		Objects.requireNonNull(key, "Key to encode must not be null");
 		return Result.error("Encoding keys is not supported by this encoder");
 	}
@@ -125,11 +127,11 @@ public interface Encoder<C> {
 	 * @param <O> The type to map to
 	 * @throws NullPointerException If the mapping function is null
 	 */
-	default <O> @NotNull Encoder<O> mapEncoder(@NotNull ResultingFunction<O, C> function) {
+	default <O> @NonNull Encoder<O> mapEncoder(@NonNull ResultingFunction<O, C> function) {
 		Objects.requireNonNull(function, "Encode mapping function must not be null");
 		return new Encoder<>() {
 			@Override
-			public <R> @NotNull Result<R> encodeStart(@NotNull TypeProvider<R> provider, @NotNull R current, @Nullable O value) {
+			public <R> @NonNull Result<R> encodeStart(@NonNull TypeProvider<R> provider, @NonNull R current, @Nullable O value) {
 				Objects.requireNonNull(provider, "Type provider must not be null");
 				Objects.requireNonNull(current, "Current value must not be null");
 				
@@ -141,7 +143,7 @@ public interface Encoder<C> {
 			}
 			
 			@Override
-			public @NotNull Result<String> encodeKey(@NotNull O key) {
+			public @NonNull Result<String> encodeKey(@NonNull O key) {
 				Objects.requireNonNull(key, "Key to encode must not be null");
 				
 				Result<C> result = function.apply(key);

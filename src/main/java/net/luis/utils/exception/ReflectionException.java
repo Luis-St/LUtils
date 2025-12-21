@@ -19,7 +19,7 @@
 package net.luis.utils.exception;
 
 import net.luis.utils.util.unsafe.reflection.ReflectionHelper;
-import org.jetbrains.annotations.Nullable;
+import org.jspecify.annotations.Nullable;
 
 /**
  * Thrown when an error occurs during reflection.<br>

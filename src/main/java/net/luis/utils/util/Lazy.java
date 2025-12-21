@@ -21,8 +21,8 @@ package net.luis.utils.util;
 import net.luis.utils.exception.AlreadyInitializedException;
 import net.luis.utils.exception.NotInitializedException;
 import org.apache.commons.lang3.mutable.MutableObject;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 import java.util.Objects;
 import java.util.function.Consumer;
@@ -71,7 +71,7 @@ public class Lazy<T> implements Supplier<T> {
 	 * @param action The action to perform when the object is initialized
 	 * @throws NullPointerException If the action is null
 	 */
-	public Lazy(@NotNull Consumer<T> action) {
+	public Lazy(@NonNull Consumer<T> action) {
 		this(new MutableObject<>(), action, false);
 	}
 	
@@ -82,7 +82,7 @@ public class Lazy<T> implements Supplier<T> {
 	 * @param action The action to perform when the object is initialized
 	 * @throws NullPointerException If the action is null
 	 */
-	public Lazy(@Nullable T value, @NotNull Consumer<T> action) {
+	public Lazy(@Nullable T value, @NonNull Consumer<T> action) {
 		this(new MutableObject<>(value), action, true);
 	}
 	
@@ -97,7 +97,7 @@ public class Lazy<T> implements Supplier<T> {
 	 * @see #Lazy(Consumer)
 	 * @see #Lazy(Object, Consumer)
 	 */
-	private Lazy(@NotNull MutableObject<T> mutable, @NotNull Consumer<T> action, boolean initialised) {
+	private Lazy(@NonNull MutableObject<T> mutable, @NonNull Consumer<T> action, boolean initialised) {
 		this.object = Objects.requireNonNull(mutable, "Object must not be null");
 		this.action = Objects.requireNonNull(action, "Action must not be null");
 		this.initialised = initialised;

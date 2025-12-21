@@ -22,8 +22,8 @@ import net.luis.utils.io.codec.AbstractCodec;
 import net.luis.utils.io.codec.Codec;
 import net.luis.utils.io.codec.provider.TypeProvider;
 import net.luis.utils.util.result.Result;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 import java.util.*;
 
@@ -48,19 +48,19 @@ public class SetCodec<E> extends AbstractCodec<Set<E>, Object> {
 	 * @param codec The codec for set elements
 	 * @throws NullPointerException If the element codec is null
 	 */
-	public SetCodec(@NotNull Codec<E> codec) {
+	public SetCodec(@NonNull Codec<E> codec) {
 		this.codec = Objects.requireNonNull(codec, "Element codec must not be null");
 	}
 	
 	@Override
 	@SuppressWarnings("unchecked")
-	public @NotNull Class<Set<E>> getType() {
+	public @NonNull Class<Set<E>> getType() {
 		return (Class<Set<E>>) (Class<?>) Set.class;
 	}
 	
 	@Override
 	@SuppressWarnings("DuplicatedCode")
-	public <R> @NotNull Result<R> encodeStart(@NotNull TypeProvider<R> provider, @NotNull R current, @Nullable Set<E> value) {
+	public <R> @NonNull Result<R> encodeStart(@NonNull TypeProvider<R> provider, @NonNull R current, @Nullable Set<E> value) {
 		Objects.requireNonNull(provider, "Type provider must not be null");
 		Objects.requireNonNull(current, "Current value must not be null");
 		if (value == null) {
@@ -97,7 +97,7 @@ public class SetCodec<E> extends AbstractCodec<Set<E>, Object> {
 	
 	@Override
 	@SuppressWarnings("DuplicatedCode")
-	public <R> @NotNull Result<Set<E>> decodeStart(@NotNull TypeProvider<R> provider, @NotNull R current, @Nullable R value) {
+	public <R> @NonNull Result<Set<E>> decodeStart(@NonNull TypeProvider<R> provider, @NonNull R current, @Nullable R value) {
 		Objects.requireNonNull(provider, "Type provider must not be null");
 		Objects.requireNonNull(current, "Current value must not be null");
 		if (value == null) {

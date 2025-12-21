@@ -19,7 +19,7 @@
 package net.luis.utils.function;
 
 import net.luis.utils.function.throwable.*;
-import org.jetbrains.annotations.NotNull;
+import org.jspecify.annotations.NonNull;
 
 import java.util.*;
 import java.util.function.*;
@@ -46,14 +46,14 @@ public final class FunctionUtils {
 	 * @param <T> The type of the result
 	 * @throws NullPointerException If the delegate supplier is null
 	 */
-	public static <T> @NotNull Supplier<T> memorize(@NotNull Supplier<T> delegate) {
+	public static <T> @NonNull Supplier<T> memorize(@NonNull Supplier<T> delegate) {
 		Objects.requireNonNull(delegate, "Delegate supplier must not be null");
 		return new Supplier<>() {
 			private boolean initialized;
 			private T value;
 			
 			@Override
-			public @NotNull T get() {
+			public @NonNull T get() {
 				if (!this.initialized) {
 					this.value = delegate.get();
 					this.initialized = true;
@@ -72,14 +72,14 @@ public final class FunctionUtils {
 	 * @return A new supplier that caches the result of the first call
 	 * @throws NullPointerException If the delegate supplier is null
 	 */
-	public static <T, X extends Throwable> @NotNull ThrowableSupplier<T, X> memorizeThrowable(@NotNull ThrowableSupplier<T, X> delegate) {
+	public static <T, X extends Throwable> @NonNull ThrowableSupplier<T, X> memorizeThrowable(@NonNull ThrowableSupplier<T, X> delegate) {
 		Objects.requireNonNull(delegate, "Delegate supplier must not be null");
 		return new ThrowableSupplier<>() {
 			private boolean initialized;
 			private T value;
 			
 			@Override
-			public @NotNull T get() throws X {
+			public @NonNull T get() throws X {
 				if (!this.initialized) {
 					this.value = delegate.get();
 					this.initialized = true;
@@ -100,13 +100,13 @@ public final class FunctionUtils {
 	 * @return A new function that caches the result for each input
 	 * @throws NullPointerException If the delegate function is null
 	 */
-	public static <T, R> @NotNull Function<T, R> memorize(@NotNull Function<T, R> delegate) {
+	public static <T, R> @NonNull Function<T, R> memorize(@NonNull Function<T, R> delegate) {
 		Objects.requireNonNull(delegate, "Delegate function must not be null");
 		return new Function<>() {
 			private final Map<T, R> cache = new WeakHashMap<>();
 			
 			@Override
-			public @NotNull R apply(@NotNull T value) {
+			public @NonNull R apply(@NonNull T value) {
 				return this.cache.computeIfAbsent(value, delegate);
 			}
 		};
@@ -123,13 +123,13 @@ public final class FunctionUtils {
 	 * @param <X> The type of the exception
 	 * @return A new function that caches the result for each input
 	 */
-	public static <T, R, X extends Throwable> @NotNull ThrowableFunction<T, R, X> memorizeThrowable(@NotNull ThrowableFunction<T, R, X> delegate) {
+	public static <T, R, X extends Throwable> @NonNull ThrowableFunction<T, R, X> memorizeThrowable(@NonNull ThrowableFunction<T, R, X> delegate) {
 		Objects.requireNonNull(delegate, "Delegate function must not be null");
 		return new ThrowableFunction<>() {
 			private final Map<T, R> cache = new WeakHashMap<>();
 			
 			@Override
-			public @NotNull R apply(@NotNull T value) throws X {
+			public @NonNull R apply(@NonNull T value) throws X {
 				if (this.cache.containsKey(value)) {
 					return this.cache.get(value);
 				}
@@ -152,13 +152,13 @@ public final class FunctionUtils {
 	 * @param <R> The type of the result
 	 * @return A new function that caches the result for each input
 	 */
-	public static <T, U, R> @NotNull BiFunction<T, U, R> memorize(@NotNull BiFunction<T, U, R> function) {
+	public static <T, U, R> @NonNull BiFunction<T, U, R> memorize(@NonNull BiFunction<T, U, R> function) {
 		Objects.requireNonNull(function, "Delegate function must not be null");
 		return new BiFunction<>() {
 			private final Map<T, Map<U, R>> cache = new WeakHashMap<>();
 			
 			@Override
-			public @NotNull R apply(@NotNull T first, @NotNull U second) {
+			public @NonNull R apply(@NonNull T first, @NonNull U second) {
 				if (this.cache.containsKey(first)) {
 					Map<U, R> secondMap = this.cache.get(first);
 					if (secondMap.containsKey(second)) {
@@ -187,13 +187,13 @@ public final class FunctionUtils {
 	 * @param <X> The type of the exception
 	 * @return A new function that caches the result for each input
 	 */
-	public static <T, U, R, X extends Throwable> @NotNull ThrowableBiFunction<T, U, R, X> memorizeThrowable(@NotNull ThrowableBiFunction<T, U, R, X> function) {
+	public static <T, U, R, X extends Throwable> @NonNull ThrowableBiFunction<T, U, R, X> memorizeThrowable(@NonNull ThrowableBiFunction<T, U, R, X> function) {
 		Objects.requireNonNull(function, "Delegate function must not be null");
 		return new ThrowableBiFunction<>() {
 			private final Map<T, Map<U, R>> cache = new WeakHashMap<>();
 			
 			@Override
-			public @NotNull R apply(@NotNull T first, @NotNull U second) throws X {
+			public @NonNull R apply(@NonNull T first, @NonNull U second) throws X {
 				if (this.cache.containsKey(first)) {
 					Map<U, R> secondMap = this.cache.get(first);
 					if (secondMap.containsKey(second)) {
@@ -222,13 +222,13 @@ public final class FunctionUtils {
 	 * @param <R> The type of the result
 	 * @return A new function that caches the result for each input
 	 */
-	public static <T, U, V, R> @NotNull TriFunction<T, U, V, R> memorize(@NotNull TriFunction<T, U, V, R> function) {
+	public static <T, U, V, R> @NonNull TriFunction<T, U, V, R> memorize(@NonNull TriFunction<T, U, V, R> function) {
 		Objects.requireNonNull(function, "Delegate function must not be null");
 		return new TriFunction<>() {
 			private final Map<T, Map<U, Map<V, R>>> cache = new WeakHashMap<>();
 			
 			@Override
-			public @NotNull R apply(@NotNull T first, @NotNull U second, @NotNull V third) {
+			public @NonNull R apply(@NonNull T first, @NonNull U second, @NonNull V third) {
 				if (this.cache.containsKey(first)) {
 					Map<U, Map<V, R>> secondMap = this.cache.get(first);
 					if (secondMap.containsKey(second)) {
@@ -265,13 +265,13 @@ public final class FunctionUtils {
 	 * @param <X> The type of the exception
 	 * @return A new function that caches the result for each input
 	 */
-	public static <T, U, V, R, X extends Throwable> @NotNull ThrowableTriFunction<T, U, V, R, X> memorizeThrowable(@NotNull ThrowableTriFunction<T, U, V, R, X> function) {
+	public static <T, U, V, R, X extends Throwable> @NonNull ThrowableTriFunction<T, U, V, R, X> memorizeThrowable(@NonNull ThrowableTriFunction<T, U, V, R, X> function) {
 		Objects.requireNonNull(function, "Delegate function must not be null");
 		return new ThrowableTriFunction<>() {
 			private final Map<T, Map<U, Map<V, R>>> cache = new WeakHashMap<>();
 			
 			@Override
-			public @NotNull R apply(@NotNull T first, @NotNull U second, @NotNull V third) throws X {
+			public @NonNull R apply(@NonNull T first, @NonNull U second, @NonNull V third) throws X {
 				if (this.cache.containsKey(first)) {
 					Map<U, Map<V, R>> secondMap = this.cache.get(first);
 					if (secondMap.containsKey(second)) {
@@ -308,13 +308,13 @@ public final class FunctionUtils {
 	 * @param <R> The type of the result
 	 * @return A new function that caches the result for each input
 	 */
-	public static <T, U, V, W, R> @NotNull QuadFunction<T, U, V, W, R> memorize(@NotNull QuadFunction<T, U, V, W, R> function) {
+	public static <T, U, V, W, R> @NonNull QuadFunction<T, U, V, W, R> memorize(@NonNull QuadFunction<T, U, V, W, R> function) {
 		Objects.requireNonNull(function, "Delegate function must not be null");
 		return new QuadFunction<>() {
 			private final Map<T, Map<U, Map<V, Map<W, R>>>> cache = new WeakHashMap<>();
 			
 			@Override
-			public @NotNull R apply(@NotNull T first, @NotNull U second, @NotNull V third, @NotNull W fourth) {
+			public @NonNull R apply(@NonNull T first, @NonNull U second, @NonNull V third, @NonNull W fourth) {
 				if (this.cache.containsKey(first)) {
 					Map<U, Map<V, Map<W, R>>> secondMap = this.cache.get(first);
 					if (secondMap.containsKey(second)) {
@@ -361,13 +361,13 @@ public final class FunctionUtils {
 	 * @param <X> The type of the exception
 	 * @return A new function that caches the result for each input
 	 */
-	public static <T, U, V, W, R, X extends Throwable> @NotNull ThrowableQuadFunction<T, U, V, W, R, X> memorizeThrowable(@NotNull ThrowableQuadFunction<T, U, V, W, R, X> function) {
+	public static <T, U, V, W, R, X extends Throwable> @NonNull ThrowableQuadFunction<T, U, V, W, R, X> memorizeThrowable(@NonNull ThrowableQuadFunction<T, U, V, W, R, X> function) {
 		Objects.requireNonNull(function, "Delegate function must not be null");
 		return new ThrowableQuadFunction<>() {
 			private final Map<T, Map<U, Map<V, Map<W, R>>>> cache = new WeakHashMap<>();
 			
 			@Override
-			public @NotNull R apply(@NotNull T first, @NotNull U second, @NotNull V third, @NotNull W fourth) throws X {
+			public @NonNull R apply(@NonNull T first, @NonNull U second, @NonNull V third, @NonNull W fourth) throws X {
 				if (this.cache.containsKey(first)) {
 					Map<U, Map<V, Map<W, R>>> secondMap = this.cache.get(first);
 					if (secondMap.containsKey(second)) {

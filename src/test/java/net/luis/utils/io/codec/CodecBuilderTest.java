@@ -20,7 +20,7 @@ package net.luis.utils.io.codec;
 
 import net.luis.utils.io.codec.provider.JsonTypeProvider;
 import net.luis.utils.io.data.json.*;
-import org.jetbrains.annotations.NotNull;
+import org.jspecify.annotations.NonNull;
 import org.junit.jupiter.api.Test;
 
 import java.util.Optional;
@@ -193,13 +193,13 @@ class CodecBuilderTest {
 	}
 	
 	//region Internal
-	private record TestObject(@NotNull String name) {}
+	private record TestObject(@NonNull String name) {}
 	
-	private record TestObjectWithAge(@NotNull String name, int age) {}
+	private record TestObjectWithAge(@NonNull String name, int age) {}
 	
-	private record TestObjectWithAgeAndHeight(@NotNull String name, int age, double height) {}
+	private record TestObjectWithAgeAndHeight(@NonNull String name, int age, double height) {}
 	
-	private record TestObjectWithOptional(@NotNull Optional<Integer> age) {}
+	private record TestObjectWithOptional(@NonNull Optional<Integer> age) {}
 	
 	private static class MultiFieldObject {}
 	//endregion

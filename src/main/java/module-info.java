@@ -22,11 +22,12 @@
  * @author Luis-St
  */
 module net.luis.utils {
-	requires org.apache.logging.log4j.core;
-	requires org.apache.logging.log4j;
-	requires org.jetbrains.annotations;
+	requires org.jspecify;
 	requires com.google.common;
 	requires org.apache.commons.lang3;
+	requires org.apache.logging.log4j;
+	requires org.jetbrains.annotations;
+	requires org.apache.logging.log4j.core;
 	
 	exports net.luis.utils.annotation;
 	exports net.luis.utils.annotation.type;

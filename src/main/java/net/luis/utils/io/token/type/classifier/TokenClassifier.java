@@ -21,7 +21,7 @@ package net.luis.utils.io.token.type.classifier;
 import net.luis.utils.io.token.TokenReader;
 import net.luis.utils.io.token.tokens.Token;
 import net.luis.utils.io.token.type.TokenType;
-import org.jetbrains.annotations.NotNull;
+import org.jspecify.annotations.NonNull;
 
 import java.util.Set;
 
@@ -43,5 +43,5 @@ public interface TokenClassifier {
 	 * @throws NullPointerException If the token is null
 	 * @see TokenReader
 	 */
-	@NotNull Set<TokenType> classifyToken(@NotNull Token token);
+	@NonNull Set<TokenType> classifyToken(@NonNull Token token);
 }

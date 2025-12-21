@@ -19,8 +19,8 @@
 package net.luis.utils.io.token.stream;
 
 import net.luis.utils.io.token.tokens.Token;
-import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Unmodifiable;
+import org.jspecify.annotations.NonNull;
 
 import java.util.List;
 import java.util.Objects;
@@ -51,7 +51,7 @@ public interface TokenStream {
 	 * @throws NullPointerException If the list of tokens is null
 	 * @see #createMutable(List, int)
 	 */
-	static @NotNull TokenStream createMutable(@NotNull List<Token> tokens) {
+	static @NonNull TokenStream createMutable(@NonNull List<Token> tokens) {
 		return createMutable(tokens, 0);
 	}
 	
@@ -66,7 +66,7 @@ public interface TokenStream {
 	 * @see MutableTokenStream
 	 * @see MutableTokenStream#MutableTokenStream(List, int)
 	 */
-	static @NotNull TokenStream createMutable(@NotNull List<Token> tokens, int currentIndex) {
+	static @NonNull TokenStream createMutable(@NonNull List<Token> tokens, int currentIndex) {
 		return new MutableTokenStream(tokens, currentIndex);
 	}
 	
@@ -78,7 +78,7 @@ public interface TokenStream {
 	 * @throws NullPointerException If the list of tokens is null
 	 * @see #createImmutable(List, int)
 	 */
-	static @NotNull TokenStream createImmutable(@NotNull List<Token> tokens) {
+	static @NonNull TokenStream createImmutable(@NonNull List<Token> tokens) {
 		return createImmutable(tokens, 0);
 	}
 	
@@ -93,7 +93,7 @@ public interface TokenStream {
 	 * @see ImmutableTokenStream
 	 * @see ImmutableTokenStream#ImmutableTokenStream(List, int)
 	 */
-	static @NotNull TokenStream createImmutable(@NotNull List<Token> tokens, int currentIndex) {
+	static @NonNull TokenStream createImmutable(@NonNull List<Token> tokens, int currentIndex) {
 		return new ImmutableTokenStream(tokens, currentIndex);
 	}
 	
@@ -103,7 +103,7 @@ public interface TokenStream {
 	 *
 	 * @return An unmodifiable list of all tokens in the stream
 	 */
-	@NotNull
+	@NonNull
 	@Unmodifiable
 	List<Token> getAllTokens();
 	
@@ -191,7 +191,7 @@ public interface TokenStream {
 	 * @throws UnsupportedOperationException If the token stream is immutable
 	 * @see #advanceTo(int)
 	 */
-	default void advanceTo(@NotNull TokenStream other) {
+	default void advanceTo(@NonNull TokenStream other) {
 		Objects.requireNonNull(other, "Other token stream must not be null");
 		this.advanceTo(other.getCurrentIndex());
 	}
@@ -202,7 +202,7 @@ public interface TokenStream {
 	 * @return The current token in the stream
 	 * @throws EndOfTokenStreamException If the index is at or beyond the end of the stream
 	 */
-	@NotNull Token getCurrentToken();
+	@NonNull Token getCurrentToken();
 	
 	/**
 	 * Checks if there are more tokens to read in the stream.<br>
@@ -223,7 +223,7 @@ public interface TokenStream {
 	 * @throws EndOfTokenStreamException If there are no more tokens to read
 	 * @throws UnsupportedOperationException If the token stream is immutable
 	 */
-	@NotNull Token readToken();
+	@NonNull Token readToken();
 	
 	/**
 	 * Creates a copy of the token stream with the current index set to zero.<br>
@@ -231,7 +231,7 @@ public interface TokenStream {
 	 *
 	 * @return A copy of the token stream with the current index set to zero
 	 */
-	default @NotNull TokenStream copyFromZero() {
+	default @NonNull TokenStream copyFromZero() {
 		return this.copyWithIndex(0);
 	}
 	
@@ -243,7 +243,7 @@ public interface TokenStream {
 	 * @param index The index to set the current index to in the copied token stream
 	 * @return A copy of the token stream with the current index set to the given index
 	 */
-	@NotNull TokenStream copyWithIndex(int index);
+	@NonNull TokenStream copyWithIndex(int index);
 	
 	/**
 	 * Creates a copy of the token stream with the current index offset by the given amount.<br>
@@ -254,7 +254,7 @@ public interface TokenStream {
 	 * @return A copy of the token stream with the current index offset by the given amount
 	 * @see #copyWithIndex(int)
 	 */
-	default @NotNull TokenStream copyWithOffset(int offset) {
+	default @NonNull TokenStream copyWithOffset(int offset) {
 		return this.copyWithIndex(this.getCurrentIndex() + offset);
 	}
 	
@@ -270,7 +270,7 @@ public interface TokenStream {
 	 *
 	 * @return A copy of the token stream with the tokens in reverse order
 	 */
-	@NotNull TokenStream reversed();
+	@NonNull TokenStream reversed();
 	
 	/**
 	 * Creates a lookahead stream containing all tokens from the current position onwards.<br>
@@ -283,7 +283,7 @@ public interface TokenStream {
 	 *
 	 * @return A new token stream containing the remaining tokens, starting from index 0
 	 */
-	@NotNull TokenStream createLookaheadStream();
+	@NonNull TokenStream createLookaheadStream();
 	
 	/**
 	 * Creates a lookbehind stream containing all tokens before the current position in reverse order.<br>
@@ -295,5 +295,5 @@ public interface TokenStream {
 	 *
 	 * @return A new token stream containing the previous tokens in reverse order, starting from index 0
 	 */
-	@NotNull TokenStream createLookbehindStream();
+	@NonNull TokenStream createLookbehindStream();
 }

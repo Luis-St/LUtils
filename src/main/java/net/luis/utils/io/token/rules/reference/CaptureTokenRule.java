@@ -22,8 +22,8 @@ import net.luis.utils.io.token.TokenRuleMatch;
 import net.luis.utils.io.token.context.TokenRuleContext;
 import net.luis.utils.io.token.rules.TokenRule;
 import net.luis.utils.io.token.stream.TokenStream;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 import java.util.Objects;
 
@@ -37,8 +37,8 @@ import java.util.Objects;
  * @param key The key under which to store the captured tokens in the context
  */
 public record CaptureTokenRule(
-	@NotNull String key,
-	@NotNull TokenRule tokenRule
+	@NonNull String key,
+	@NonNull TokenRule tokenRule
 ) implements TokenRule {
 	
 	/**
@@ -59,7 +59,7 @@ public record CaptureTokenRule(
 	}
 	
 	@Override
-	public @Nullable TokenRuleMatch match(@NotNull TokenStream stream, @NotNull TokenRuleContext ctx) {
+	public @Nullable TokenRuleMatch match(@NonNull TokenStream stream, @NonNull TokenRuleContext ctx) {
 		Objects.requireNonNull(stream, "Token stream must not be null");
 		Objects.requireNonNull(ctx, "Token rule context must not be null");
 		
@@ -72,7 +72,7 @@ public record CaptureTokenRule(
 	}
 	
 	@Override
-	public @NotNull TokenRule not() {
+	public @NonNull TokenRule not() {
 		return new CaptureTokenRule(this.key, this.tokenRule.not());
 	}
 }

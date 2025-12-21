@@ -19,7 +19,7 @@
 package net.luis.utils.exception;
 
 import net.luis.utils.util.Lazy;
-import org.jetbrains.annotations.Nullable;
+import org.jspecify.annotations.Nullable;
 
 /**
  * Thrown when an access or action is attempted on an object that has not been initialized<br>

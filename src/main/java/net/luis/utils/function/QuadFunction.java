@@ -18,7 +18,7 @@
 
 package net.luis.utils.function;
 
-import org.jetbrains.annotations.NotNull;
+import org.jspecify.annotations.NonNull;
 
 import java.util.Objects;
 import java.util.function.Function;
@@ -58,7 +58,7 @@ public interface QuadFunction<T, U, V, W, R> {
 	 * @param <S> The type of the output of the {@code after} function, and of the composed function
 	 * @throws NullPointerException If the after function is null
 	 */
-	default <S> @NotNull QuadFunction<T, U, V, W, S> andThen(@NotNull Function<? super R, ? extends S> after) {
+	default <S> @NonNull QuadFunction<T, U, V, W, S> andThen(@NonNull Function<? super R, ? extends S> after) {
 		Objects.requireNonNull(after, "After function must not be null");
 		return (t, u, v, w) -> after.apply(this.apply(t, u, v, w));
 	}

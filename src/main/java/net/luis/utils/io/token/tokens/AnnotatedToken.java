@@ -20,7 +20,9 @@ package net.luis.utils.io.token.tokens;
 
 import net.luis.utils.io.token.TokenPosition;
 import net.luis.utils.io.token.type.TokenType;
-import org.jetbrains.annotations.*;
+import org.jetbrains.annotations.UnknownNullability;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 import java.util.*;
 
@@ -35,8 +37,8 @@ import java.util.*;
  * @param metadata The metadata associated with the token
  */
 public record AnnotatedToken(
-	@NotNull Token token,
-	@NotNull Map<String, Object> metadata
+	@NonNull Token token,
+	@NonNull Map<String, Object> metadata
 ) implements Token {
 	
 	/**
@@ -61,7 +63,7 @@ public record AnnotatedToken(
 	 * @return A new annotated token
 	 * @throws NullPointerException If the token or key is null
 	 */
-	public static @NotNull AnnotatedToken of(@NotNull Token token, @NotNull String key, Object value) {
+	public static @NonNull AnnotatedToken of(@NonNull Token token, @NonNull String key, Object value) {
 		Objects.requireNonNull(key, "Metadata key must not be null");
 		return new AnnotatedToken(token, Map.of(key, value));
 	}
@@ -73,22 +75,22 @@ public record AnnotatedToken(
 	 * @return A new annotated token with empty metadata
 	 * @throws NullPointerException If the token is null
 	 */
-	public static @NotNull AnnotatedToken empty(@NotNull Token token) {
+	public static @NonNull AnnotatedToken empty(@NonNull Token token) {
 		return new AnnotatedToken(token, Map.of());
 	}
 	
 	@Override
-	public @NotNull String value() {
+	public @NonNull String value() {
 		return this.token.value();
 	}
 	
 	@Override
-	public @NotNull TokenPosition position() {
+	public @NonNull TokenPosition position() {
 		return this.token.position();
 	}
 	
 	@Override
-	public @NotNull Set<TokenType> types() {
+	public @NonNull Set<TokenType> types() {
 		return this.token.types();
 	}
 	
@@ -99,7 +101,7 @@ public record AnnotatedToken(
 	 * @return The metadata value, or null if not present
 	 * @throws NullPointerException If the key is null
 	 */
-	public @UnknownNullability Object getMetadata(@NotNull String key) {
+	public @UnknownNullability Object getMetadata(@NonNull String key) {
 		Objects.requireNonNull(key, "Metadata key must not be null");
 		return this.metadata.get(key);
 	}
@@ -114,7 +116,7 @@ public record AnnotatedToken(
 	 * @throws NullPointerException If the key is null
 	 */
 	@SuppressWarnings("unchecked")
-	public <T> @UnknownNullability T getMetadata(@NotNull String key, T defaultValue) {
+	public <T> @UnknownNullability T getMetadata(@NonNull String key, T defaultValue) {
 		Objects.requireNonNull(key, "Metadata key must not be null");
 		return (T) this.metadata.getOrDefault(key, defaultValue);
 	}
@@ -126,13 +128,13 @@ public record AnnotatedToken(
 	 * @return True if the metadata contains the key, false otherwise
 	 * @throws NullPointerException If the key is null
 	 */
-	public boolean hasMetadata(@NotNull String key) {
+	public boolean hasMetadata(@NonNull String key) {
 		Objects.requireNonNull(key, "Metadata key must not be null");
 		return this.metadata.containsKey(key);
 	}
 	
 	@Override
-	public @NotNull Token annotate(@Nullable Map<String, Object> annotations) {
+	public @NonNull Token annotate(@Nullable Map<String, Object> annotations) {
 		return this; // Already an annotated token
 	}
 }

@@ -20,8 +20,8 @@ package net.luis.utils.logging;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 /**
  * Implementation of {@link Thread.UncaughtExceptionHandler} that logs uncaught exceptions.<br>
@@ -41,7 +41,7 @@ public class LoggingExceptionHandler implements Thread.UncaughtExceptionHandler 
 	public LoggingExceptionHandler() {}
 	
 	@Override
-	public void uncaughtException(@NotNull Thread thread, @Nullable Throwable throwable) {
+	public void uncaughtException(@NonNull Thread thread, @Nullable Throwable throwable) {
 		LOGGER.error("Error in thread {}: {}", thread.getName(), throwable);
 	}
 }

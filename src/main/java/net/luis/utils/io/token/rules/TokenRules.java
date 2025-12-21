@@ -33,7 +33,7 @@ import net.luis.utils.io.token.rules.reference.ReferenceTokenRule;
 import net.luis.utils.io.token.tokens.Token;
 import net.luis.utils.io.token.type.TokenType;
 import org.intellij.lang.annotations.Language;
-import org.jetbrains.annotations.NotNull;
+import org.jspecify.annotations.NonNull;
 
 import java.util.*;
 import java.util.function.Function;
@@ -60,7 +60,7 @@ public final class TokenRules {
 	 * @apiNote This is the preferred way to access the {@link AlwaysMatchTokenRule#INSTANCE} instance
 	 * @see AlwaysMatchTokenRule
 	 */
-	public static @NotNull TokenRule alwaysMatch() {
+	public static @NonNull TokenRule alwaysMatch() {
 		return AlwaysMatchTokenRule.INSTANCE;
 	}
 	
@@ -71,7 +71,7 @@ public final class TokenRules {
 	 * @apiNote This is the preferred way to access the {@link NeverMatchTokenRule#INSTANCE} instance
 	 * @see NeverMatchTokenRule
 	 */
-	public static @NotNull TokenRule neverMatch() {
+	public static @NonNull TokenRule neverMatch() {
 		return NeverMatchTokenRule.INSTANCE;
 	}
 	
@@ -84,7 +84,7 @@ public final class TokenRules {
 	 * @throws IllegalArgumentException If the value is empty
 	 * @see ValueTokenRule
 	 */
-	public static @NotNull TokenRule value(char value, boolean ignoreCase) {
+	public static @NonNull TokenRule value(char value, boolean ignoreCase) {
 		return new ValueTokenRule(value, ignoreCase);
 	}
 	
@@ -98,7 +98,7 @@ public final class TokenRules {
 	 * @throws IllegalArgumentException If the value is empty
 	 * @see ValueTokenRule
 	 */
-	public static @NotNull TokenRule value(@NotNull String value, boolean ignoreCase) {
+	public static @NonNull TokenRule value(@NonNull String value, boolean ignoreCase) {
 		return new ValueTokenRule(value, ignoreCase);
 	}
 	
@@ -111,7 +111,7 @@ public final class TokenRules {
 	 * @see #pattern(Pattern)
 	 * @see Pattern
 	 */
-	public static @NotNull TokenRule pattern(@Language("RegExp") @NotNull String pattern) {
+	public static @NonNull TokenRule pattern(@Language("RegExp") @NonNull String pattern) {
 		return new PatternTokenRule(pattern);
 	}
 	
@@ -123,7 +123,7 @@ public final class TokenRules {
 	 * @throws NullPointerException If the pattern is null
 	 * @see Pattern
 	 */
-	public static @NotNull TokenRule pattern(@NotNull Pattern pattern) {
+	public static @NonNull TokenRule pattern(@NonNull Pattern pattern) {
 		return new PatternTokenRule(pattern);
 	}
 	
@@ -136,7 +136,7 @@ public final class TokenRules {
 	 * @throws IllegalArgumentException If the token type array is empty
 	 * @see TypeTokenRule
 	 */
-	public static @NotNull TokenRule type(TokenType @NotNull ... tokenTypes) {
+	public static @NonNull TokenRule type(TokenType @NonNull ... tokenTypes) {
 		return type(Set.of(Objects.requireNonNull(tokenTypes, "Token type array must not be null")));
 	}
 	
@@ -149,7 +149,7 @@ public final class TokenRules {
 	 * @throws IllegalArgumentException If the token type set is empty
 	 * @see TypeTokenRule
 	 */
-	public static @NotNull TokenRule type(@NotNull Set<TokenType> tokenTypes) {
+	public static @NonNull TokenRule type(@NonNull Set<TokenType> tokenTypes) {
 		return new TypeTokenRule(tokenTypes);
 	}
 	
@@ -162,7 +162,7 @@ public final class TokenRules {
 	 * @see #lengthBetween(int, int)
 	 * @see LengthTokenRule
 	 */
-	public static @NotNull TokenRule minLength(int minLength) {
+	public static @NonNull TokenRule minLength(int minLength) {
 		return lengthBetween(minLength, Integer.MAX_VALUE);
 	}
 	
@@ -175,7 +175,7 @@ public final class TokenRules {
 	 * @see #lengthBetween(int, int)
 	 * @see LengthTokenRule
 	 */
-	public static @NotNull TokenRule exactLength(int exactLength) {
+	public static @NonNull TokenRule exactLength(int exactLength) {
 		return lengthBetween(exactLength, exactLength);
 	}
 	
@@ -188,7 +188,7 @@ public final class TokenRules {
 	 * @see #lengthBetween(int, int)
 	 * @see LengthTokenRule
 	 */
-	public static @NotNull TokenRule maxLength(int maxLength) {
+	public static @NonNull TokenRule maxLength(int maxLength) {
 		return lengthBetween(0, maxLength);
 	}
 	
@@ -201,7 +201,7 @@ public final class TokenRules {
 	 * @throws IllegalArgumentException If minLength is negative, maxLength is negative, or maxLength is less than minLength
 	 * @see LengthTokenRule
 	 */
-	public static @NotNull TokenRule lengthBetween(int minLength, int maxLength) {
+	public static @NonNull TokenRule lengthBetween(int minLength, int maxLength) {
 		return new LengthTokenRule(minLength, maxLength);
 	}
 	
@@ -213,7 +213,7 @@ public final class TokenRules {
 	 * @throws NullPointerException If the token rule is null
 	 * @see OptionalTokenRule
 	 */
-	public static @NotNull TokenRule optional(@NotNull TokenRule tokenRule) {
+	public static @NonNull TokenRule optional(@NonNull TokenRule tokenRule) {
 		return new OptionalTokenRule(tokenRule);
 	}
 	
@@ -229,7 +229,7 @@ public final class TokenRules {
 	 * @see #between(TokenRule, int, int)
 	 * @see RepeatedTokenRule
 	 */
-	public static @NotNull TokenRule atLeast(@NotNull TokenRule tokenRule, int min) {
+	public static @NonNull TokenRule atLeast(@NonNull TokenRule tokenRule, int min) {
 		return between(tokenRule, min, Integer.MAX_VALUE);
 	}
 	
@@ -245,7 +245,7 @@ public final class TokenRules {
 	 * @see #between(TokenRule, int, int)
 	 * @see RepeatedTokenRule
 	 */
-	public static @NotNull TokenRule exactly(@NotNull TokenRule tokenRule, int repeats) {
+	public static @NonNull TokenRule exactly(@NonNull TokenRule tokenRule, int repeats) {
 		return between(tokenRule, repeats, repeats);
 	}
 	
@@ -261,7 +261,7 @@ public final class TokenRules {
 	 * @see #between(TokenRule, int, int)
 	 * @see RepeatedTokenRule
 	 */
-	public static @NotNull TokenRule atMost(@NotNull TokenRule tokenRule, int max) {
+	public static @NonNull TokenRule atMost(@NonNull TokenRule tokenRule, int max) {
 		return between(tokenRule, 0, max);
 	}
 	
@@ -275,7 +275,7 @@ public final class TokenRules {
 	 * @see #between(TokenRule, int, int)
 	 * @see RepeatedTokenRule
 	 */
-	public static @NotNull TokenRule zeroOrMore(@NotNull TokenRule tokenRule) {
+	public static @NonNull TokenRule zeroOrMore(@NonNull TokenRule tokenRule) {
 		return between(tokenRule, 0, Integer.MAX_VALUE);
 	}
 	
@@ -290,7 +290,7 @@ public final class TokenRules {
 	 * @throws IllegalArgumentException If the minimum or maximum number of occurrences is lower than 0, or if the maximum number of occurrences is lower than the minimum number of occurrences, or if both are 0
 	 * @see RepeatedTokenRule
 	 */
-	public static @NotNull TokenRule between(@NotNull TokenRule tokenRule, int min, int max) {
+	public static @NonNull TokenRule between(@NonNull TokenRule tokenRule, int min, int max) {
 		return new RepeatedTokenRule(tokenRule, min, max);
 	}
 	
@@ -303,7 +303,7 @@ public final class TokenRules {
 	 * @throws IllegalArgumentException If the token rule array is empty
 	 * @see SequenceTokenRule
 	 */
-	public static @NotNull TokenRule sequence(TokenRule @NotNull ... tokenRules) {
+	public static @NonNull TokenRule sequence(TokenRule @NonNull ... tokenRules) {
 		return sequence(List.of(Objects.requireNonNull(tokenRules, "Token rule array must not be null")));
 	}
 	
@@ -316,7 +316,7 @@ public final class TokenRules {
 	 * @throws IllegalArgumentException If the token rule list is empty
 	 * @see SequenceTokenRule
 	 */
-	public static @NotNull TokenRule sequence(@NotNull List<TokenRule> tokenRules) {
+	public static @NonNull TokenRule sequence(@NonNull List<TokenRule> tokenRules) {
 		return new SequenceTokenRule(tokenRules);
 	}
 	
@@ -329,7 +329,7 @@ public final class TokenRules {
 	 * @throws IllegalArgumentException If the token rule array is empty
 	 * @see AnyOfTokenRule
 	 */
-	public static @NotNull TokenRule any(TokenRule @NotNull ... tokenRules) {
+	public static @NonNull TokenRule any(TokenRule @NonNull ... tokenRules) {
 		return any(List.of(Objects.requireNonNull(tokenRules, "Token rule array must not be null")));
 	}
 	
@@ -342,7 +342,7 @@ public final class TokenRules {
 	 * @throws IllegalArgumentException If the token rule list is empty
 	 * @see AnyOfTokenRule
 	 */
-	public static @NotNull TokenRule any(@NotNull List<TokenRule> tokenRules) {
+	public static @NonNull TokenRule any(@NonNull List<TokenRule> tokenRules) {
 		return new AnyOfTokenRule(tokenRules);
 	}
 	
@@ -356,7 +356,7 @@ public final class TokenRules {
 	 * @throws IllegalArgumentException If the token rule array is empty or contains less than two rules
 	 * @see AllOfTokenRule
 	 */
-	public static @NotNull TokenRule all(TokenRule @NotNull ... tokenRules) {
+	public static @NonNull TokenRule all(TokenRule @NonNull ... tokenRules) {
 		return all(List.of(Objects.requireNonNull(tokenRules, "Token rule array must not be null")));
 	}
 	
@@ -370,7 +370,7 @@ public final class TokenRules {
 	 * @throws IllegalArgumentException If the token rule list is empty or contains less than two rules
 	 * @see AllOfTokenRule
 	 */
-	public static @NotNull TokenRule all(@NotNull List<TokenRule> tokenRules) {
+	public static @NonNull TokenRule all(@NonNull List<TokenRule> tokenRules) {
 		return new AllOfTokenRule(tokenRules);
 	}
 	
@@ -384,7 +384,7 @@ public final class TokenRules {
 	 * @throws IllegalArgumentException If the start token rule is invalid
 	 * @see BoundaryTokenRule
 	 */
-	public static @NotNull TokenRule boundary(@NotNull TokenRule startTokenRule, @NotNull TokenRule endTokenRule) {
+	public static @NonNull TokenRule boundary(@NonNull TokenRule startTokenRule, @NonNull TokenRule endTokenRule) {
 		return new BoundaryTokenRule(startTokenRule, endTokenRule);
 	}
 	
@@ -399,7 +399,7 @@ public final class TokenRules {
 	 * @throws IllegalArgumentException If the start or between token rule is invalid
 	 * @see BoundaryTokenRule
 	 */
-	public static @NotNull TokenRule boundary(@NotNull TokenRule startTokenRule, @NotNull TokenRule betweenTokenRule, @NotNull TokenRule endTokenRule) {
+	public static @NonNull TokenRule boundary(@NonNull TokenRule startTokenRule, @NonNull TokenRule betweenTokenRule, @NonNull TokenRule endTokenRule) {
 		return new BoundaryTokenRule(startTokenRule, betweenTokenRule, endTokenRule);
 	}
 	
@@ -413,7 +413,7 @@ public final class TokenRules {
 	 * @throws NullPointerException If the rule factory is null or if the factory returns null
 	 * @see RecursiveTokenRule
 	 */
-	public static @NotNull TokenRule recursive(@NotNull Function<TokenRule, TokenRule> ruleFactory) {
+	public static @NonNull TokenRule recursive(@NonNull Function<TokenRule, TokenRule> ruleFactory) {
 		return new RecursiveTokenRule(ruleFactory);
 	}
 	
@@ -429,7 +429,7 @@ public final class TokenRules {
 	 * @see #recursive(Function)
 	 * @see RecursiveTokenRule
 	 */
-	public static @NotNull TokenRule recursive(@NotNull TokenRule openingRule, @NotNull TokenRule contentRule, @NotNull TokenRule closingRule) {
+	public static @NonNull TokenRule recursive(@NonNull TokenRule openingRule, @NonNull TokenRule contentRule, @NonNull TokenRule closingRule) {
 		return new RecursiveTokenRule(openingRule, contentRule, closingRule);
 	}
 	
@@ -445,7 +445,7 @@ public final class TokenRules {
 	 * @see #recursive(Function)
 	 * @see RecursiveTokenRule
 	 */
-	public static @NotNull TokenRule recursive(@NotNull TokenRule openingRule, @NotNull TokenRule closingRule, @NotNull Function<TokenRule, TokenRule> contentRuleFactory) {
+	public static @NonNull TokenRule recursive(@NonNull TokenRule openingRule, @NonNull TokenRule closingRule, @NonNull Function<TokenRule, TokenRule> contentRuleFactory) {
 		return new RecursiveTokenRule(openingRule, closingRule, contentRuleFactory);
 	}
 	
@@ -457,7 +457,7 @@ public final class TokenRules {
 	 * @return The created lazy token rule
 	 * @see LazyTokenRule
 	 */
-	public static @NotNull LazyTokenRule lazy() {
+	public static @NonNull LazyTokenRule lazy() {
 		return new LazyTokenRule();
 	}
 	
@@ -471,7 +471,7 @@ public final class TokenRules {
 	 * @throws NullPointerException If the token rule is null
 	 * @see TokenGroupRule
 	 */
-	public static @NotNull TokenRule group(@NotNull TokenRule tokenRule) {
+	public static @NonNull TokenRule group(@NonNull TokenRule tokenRule) {
 		return new TokenGroupRule(tokenRule);
 	}
 	
@@ -485,7 +485,7 @@ public final class TokenRules {
 	 * @throws NullPointerException If the condition is null
 	 * @see CustomTokeRule
 	 */
-	public static @NotNull TokenRule custom(@NotNull Predicate<Token> condition) {
+	public static @NonNull TokenRule custom(@NonNull Predicate<Token> condition) {
 		return new CustomTokeRule(condition);
 	}
 	
@@ -495,7 +495,7 @@ public final class TokenRules {
 	 * @return The token rule
 	 * @see StartTokenRule
 	 */
-	public static @NotNull TokenRule startDocument() {
+	public static @NonNull TokenRule startDocument() {
 		return StartTokenRule.DOCUMENT;
 	}
 	
@@ -505,7 +505,7 @@ public final class TokenRules {
 	 * @return The token rule
 	 * @see StartTokenRule
 	 */
-	public static @NotNull TokenRule startLine() {
+	public static @NonNull TokenRule startLine() {
 		return StartTokenRule.LINE;
 	}
 	
@@ -515,7 +515,7 @@ public final class TokenRules {
 	 * @return The token rule
 	 * @see EndTokenRule
 	 */
-	public static @NotNull TokenRule endDocument() {
+	public static @NonNull TokenRule endDocument() {
 		return EndTokenRule.DOCUMENT;
 	}
 	
@@ -525,7 +525,7 @@ public final class TokenRules {
 	 * @return The token rule
 	 * @see EndTokenRule
 	 */
-	public static @NotNull TokenRule endLine() {
+	public static @NonNull TokenRule endLine() {
 		return EndTokenRule.LINE;
 	}
 	
@@ -537,7 +537,7 @@ public final class TokenRules {
 	 * @throws NullPointerException If the token rule is null
 	 * @see LookaheadTokenRule
 	 */
-	public static @NotNull TokenRule lookahead(@NotNull TokenRule tokenRule) {
+	public static @NonNull TokenRule lookahead(@NonNull TokenRule tokenRule) {
 		return new LookaheadTokenRule(tokenRule, LookMatchMode.POSITIVE);
 	}
 	
@@ -549,7 +549,7 @@ public final class TokenRules {
 	 * @throws NullPointerException If the token rule is null
 	 * @see LookaheadTokenRule
 	 */
-	public static @NotNull TokenRule negativeLookahead(@NotNull TokenRule tokenRule) {
+	public static @NonNull TokenRule negativeLookahead(@NonNull TokenRule tokenRule) {
 		return new LookaheadTokenRule(tokenRule, LookMatchMode.NEGATIVE);
 	}
 	
@@ -561,7 +561,7 @@ public final class TokenRules {
 	 * @throws NullPointerException If the token rule is null
 	 * @see LookbehindTokenRule
 	 */
-	public static @NotNull TokenRule lookbehind(@NotNull TokenRule tokenRule) {
+	public static @NonNull TokenRule lookbehind(@NonNull TokenRule tokenRule) {
 		return new LookbehindTokenRule(tokenRule, LookMatchMode.POSITIVE);
 	}
 	
@@ -573,7 +573,7 @@ public final class TokenRules {
 	 * @throws NullPointerException If the token rule is null
 	 * @see LookbehindTokenRule
 	 */
-	public static @NotNull TokenRule negativeLookbehind(@NotNull TokenRule tokenRule) {
+	public static @NonNull TokenRule negativeLookbehind(@NonNull TokenRule tokenRule) {
 		return new LookbehindTokenRule(tokenRule, LookMatchMode.NEGATIVE);
 	}
 	
@@ -588,7 +588,7 @@ public final class TokenRules {
 	 * @throws IllegalArgumentException If the key is empty
 	 * @see CaptureTokenRule
 	 */
-	public static @NotNull TokenRule capture(@NotNull String key, @NotNull TokenRule tokenRule) {
+	public static @NonNull TokenRule capture(@NonNull String key, @NonNull TokenRule tokenRule) {
 		return new CaptureTokenRule(key, tokenRule);
 	}
 	
@@ -605,7 +605,7 @@ public final class TokenRules {
 	 * @see #referenceRule(String)
 	 * @see #referenceTokens(String)
 	 */
-	public static @NotNull TokenRule reference(@NotNull String key) {
+	public static @NonNull TokenRule reference(@NonNull String key) {
 		return new ReferenceTokenRule(key, ReferenceType.DYNAMIC);
 	}
 	
@@ -621,7 +621,7 @@ public final class TokenRules {
 	 * @see ReferenceTokenRule
 	 * @see ReferenceType#RULE
 	 */
-	public static @NotNull TokenRule referenceRule(@NotNull String key) {
+	public static @NonNull TokenRule referenceRule(@NonNull String key) {
 		return new ReferenceTokenRule(key, ReferenceType.RULE);
 	}
 	
@@ -637,7 +637,7 @@ public final class TokenRules {
 	 * @see ReferenceTokenRule
 	 * @see ReferenceType#TOKENS
 	 */
-	public static @NotNull TokenRule referenceTokens(@NotNull String key) {
+	public static @NonNull TokenRule referenceTokens(@NonNull String key) {
 		return new ReferenceTokenRule(key, ReferenceType.TOKENS);
 	}
 }

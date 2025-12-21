@@ -18,7 +18,7 @@
 
 package net.luis.utils.io.data.config;
 
-import org.jetbrains.annotations.NotNull;
+import org.jspecify.annotations.NonNull;
 
 import java.lang.annotation.*;
 
@@ -51,5 +51,5 @@ public @interface WriteOnly {
 	 * Each dependency must be a boolean expression.<br>
 	 * @return The dependencies
 	 */
-	String @NotNull [] value() default {};
+	String @NonNull [] value() default {};
 }

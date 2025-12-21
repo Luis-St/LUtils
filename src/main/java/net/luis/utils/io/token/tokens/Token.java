@@ -20,7 +20,7 @@ package net.luis.utils.io.token.tokens;
 
 import net.luis.utils.io.token.TokenPosition;
 import net.luis.utils.io.token.type.TokenType;
-import org.jetbrains.annotations.NotNull;
+import org.jspecify.annotations.NonNull;
 
 import java.util.Map;
 import java.util.Set;
@@ -36,7 +36,7 @@ public interface Token {
 	 * Returns the value of the token.<br>
 	 * @return The value
 	 */
-	@NotNull String value();
+	@NonNull String value();
 	
 	/**
 	 * Returns the start position of the token.<br>
@@ -44,7 +44,7 @@ public interface Token {
 	 *
 	 * @return The start position
 	 */
-	@NotNull TokenPosition position();
+	@NonNull TokenPosition position();
 	
 	/**
 	 * Returns the types of the token.<br>
@@ -58,7 +58,7 @@ public interface Token {
 	 *
 	 * @return The set of token types
 	 */
-	@NotNull Set<TokenType> types();
+	@NonNull Set<TokenType> types();
 	
 	/**
 	 * Creates an indexed token that wraps this token with the given index.<br>
@@ -70,7 +70,7 @@ public interface Token {
 	 * If you call this method on an already indexed token, it will create a new indexed token only if the index is different.
 	 * @see IndexedToken#IndexedToken(Token, int)
 	 */
-	default @NotNull Token index(int index) {
+	default @NonNull Token index(int index) {
 		return new IndexedToken(this, index);
 	}
 	
@@ -85,7 +85,7 @@ public interface Token {
 	 * If you call this method on an already annotated token, it will return itself.
 	 * @see AnnotatedToken#AnnotatedToken(Token, Map)
 	 */
-	default @NotNull Token annotate(@NotNull Map<String, Object> annotations) {
+	default @NonNull Token annotate(@NonNull Map<String, Object> annotations) {
 		return new AnnotatedToken(this, annotations);
 	}
 	
@@ -100,7 +100,7 @@ public interface Token {
 	 * If you call this method on an already shadow token, it will return itself.
 	 * @see ShadowToken#ShadowToken(Token)
 	 */
-	default @NotNull Token shadow() {
+	default @NonNull Token shadow() {
 		return new ShadowToken(this);
 	}
 	
@@ -114,7 +114,7 @@ public interface Token {
 	 * If you call this method on an already unshadowed token, it will return itself.
 	 * @see ShadowToken#token()
 	 */
-	default @NotNull Token unshadow() {
+	default @NonNull Token unshadow() {
 		return this;
 	}
 }

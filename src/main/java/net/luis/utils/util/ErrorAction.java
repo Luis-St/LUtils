@@ -18,7 +18,7 @@
 
 package net.luis.utils.util;
 
-import org.jetbrains.annotations.NotNull;
+import org.jspecify.annotations.NonNull;
 
 /**
  * Represents an action to be taken when an error or exception occurs.<br>
@@ -37,7 +37,7 @@ public enum ErrorAction {
 	 */
 	THROW {
 		@Override
-		public void handle(@NotNull Throwable e) {
+		public void handle(@NonNull Throwable e) {
 			Utils.throwSneaky(e);
 		}
 	};
@@ -48,5 +48,5 @@ public enum ErrorAction {
 	 * @param e The throwable to handle
 	 * @throws NullPointerException If the throwable is null (optional)
 	 */
-	public void handle(@NotNull Throwable e) {}
+	public void handle(@NonNull Throwable e) {}
 }

@@ -18,7 +18,7 @@
 
 package net.luis.utils.io.data.xml.exception;
 
-import org.jetbrains.annotations.Nullable;
+import org.jspecify.annotations.Nullable;
 
 import java.util.NoSuchElementException;
 

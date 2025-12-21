@@ -23,8 +23,8 @@ import net.luis.utils.io.token.context.TokenRuleContext;
 import net.luis.utils.io.token.stream.TokenStream;
 import net.luis.utils.io.token.tokens.Token;
 import net.luis.utils.io.token.tokens.TokenGroup;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 import java.util.List;
 import java.util.Objects;
@@ -39,7 +39,7 @@ import java.util.Objects;
  * @param tokenRule The inner token rule to apply to the tokens within the group
  */
 public record TokenGroupRule(
-	@NotNull TokenRule tokenRule
+	@NonNull TokenRule tokenRule
 ) implements TokenRule {
 	
 	/**
@@ -53,7 +53,7 @@ public record TokenGroupRule(
 	}
 	
 	@Override
-	public @Nullable TokenRuleMatch match(@NotNull TokenStream stream, @NotNull TokenRuleContext ctx) {
+	public @Nullable TokenRuleMatch match(@NonNull TokenStream stream, @NonNull TokenRuleContext ctx) {
 		Objects.requireNonNull(stream, "Token stream must not be null");
 		Objects.requireNonNull(ctx, "Token rule context must not be null");
 		if (!stream.hasMoreTokens()) {
@@ -74,7 +74,7 @@ public record TokenGroupRule(
 	}
 	
 	@Override
-	public @NotNull TokenRule not() {
+	public @NonNull TokenRule not() {
 		return new TokenGroupRule(this.tokenRule.not());
 	}
 }

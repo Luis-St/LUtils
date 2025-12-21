@@ -21,8 +21,8 @@ package net.luis.utils.io.codec.types.time;
 import net.luis.utils.io.codec.AbstractCodec;
 import net.luis.utils.io.codec.provider.TypeProvider;
 import net.luis.utils.util.result.Result;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 import java.time.ZoneId;
 import java.time.zone.ZoneRulesException;
@@ -42,7 +42,7 @@ public class ZoneIdCodec extends AbstractCodec<ZoneId, Object> {
 	public ZoneIdCodec() {}
 	
 	@Override
-	public <R> @NotNull Result<R> encodeStart(@NotNull TypeProvider<R> provider, @NotNull R current, @Nullable ZoneId value) {
+	public <R> @NonNull Result<R> encodeStart(@NonNull TypeProvider<R> provider, @NonNull R current, @Nullable ZoneId value) {
 		Objects.requireNonNull(provider, "Type provider must not be null");
 		Objects.requireNonNull(current, "Current value must not be null");
 		
@@ -53,13 +53,13 @@ public class ZoneIdCodec extends AbstractCodec<ZoneId, Object> {
 	}
 	
 	@Override
-	public @NotNull Result<String> encodeKey(@NotNull ZoneId key) {
+	public @NonNull Result<String> encodeKey(@NonNull ZoneId key) {
 		Objects.requireNonNull(key, "Key must not be null");
 		return Result.success(key.getId());
 	}
 	
 	@Override
-	public <R> @NotNull Result<ZoneId> decodeStart(@NotNull TypeProvider<R> provider, @NotNull R current, @Nullable R value) {
+	public <R> @NonNull Result<ZoneId> decodeStart(@NonNull TypeProvider<R> provider, @NonNull R current, @Nullable R value) {
 		Objects.requireNonNull(provider, "Type provider must not be null");
 		Objects.requireNonNull(current, "Current value must not be null");
 		if (value == null) {
@@ -80,7 +80,7 @@ public class ZoneIdCodec extends AbstractCodec<ZoneId, Object> {
 	}
 	
 	@Override
-	public @NotNull Result<ZoneId> decodeKey(@NotNull String key) {
+	public @NonNull Result<ZoneId> decodeKey(@NonNull String key) {
 		Objects.requireNonNull(key, "Key must not be null");
 		
 		try {

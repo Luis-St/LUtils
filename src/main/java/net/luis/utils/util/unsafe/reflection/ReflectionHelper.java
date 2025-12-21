@@ -22,8 +22,8 @@ import com.google.common.collect.Lists;
 import net.luis.utils.exception.ReflectionException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 import java.lang.reflect.*;
 import java.util.*;
@@ -79,7 +79,7 @@ public final class ReflectionHelper {
 	 * @throws NullPointerException If the given class name is null
 	 * @throws RuntimeException If the class could not be found and throwing exceptions is enabled
 	 */
-	public static @Nullable Class<?> getClassForName(@NotNull String className) {
+	public static @Nullable Class<?> getClassForName(@NonNull String className) {
 		Objects.requireNonNull(className, "Class name must not be null");
 		try {
 			return Class.forName(className);
@@ -98,7 +98,7 @@ public final class ReflectionHelper {
 	 * @return True if the given class is an instance of the given interface, otherwise false
 	 * @throws NullPointerException If the given class or interface is null
 	 */
-	public static boolean hasInterface(@NotNull Class<?> clazz, @NotNull Class<?> iface) {
+	public static boolean hasInterface(@NonNull Class<?> clazz, @NonNull Class<?> iface) {
 		Objects.requireNonNull(clazz, "Class must not be null");
 		Objects.requireNonNull(iface, "Interface must not be null");
 		if (iface.isInterface()) {
@@ -120,7 +120,7 @@ public final class ReflectionHelper {
 	 * @throws NullPointerException If the given class is null
 	 * @see #handleException(Exception)
 	 */
-	public static <T> @NotNull Optional<Constructor<T>> getConstructor(@NotNull Class<T> clazz, Class<?> @Nullable ... parameters) {
+	public static <T> @NonNull Optional<Constructor<T>> getConstructor(@NonNull Class<T> clazz, Class<?> @Nullable ... parameters) {
 		Objects.requireNonNull(clazz, "Class must not be null");
 		try {
 			return Optional.of(clazz.getDeclaredConstructor(nullToEmpty(parameters)));
@@ -144,7 +144,7 @@ public final class ReflectionHelper {
 	 * @throws NullPointerException If the given class is null
 	 * @see #hasConstructor(Class, Predicate, Class[])
 	 */
-	public static boolean hasConstructor(@NotNull Class<?> clazz, Class<?> @Nullable ... parameters) {
+	public static boolean hasConstructor(@NonNull Class<?> clazz, Class<?> @Nullable ... parameters) {
 		return hasConstructor(clazz, null, parameters);
 	}
 	
@@ -159,7 +159,7 @@ public final class ReflectionHelper {
 	 * @param <T> The type of the class
 	 * @throws NullPointerException If the given class is null
 	 */
-	public static <T> boolean hasConstructor(@NotNull Class<T> clazz, @Nullable Predicate<Constructor<T>> predicate, Class<?> @Nullable ... parameters) {
+	public static <T> boolean hasConstructor(@NonNull Class<T> clazz, @Nullable Predicate<Constructor<T>> predicate, Class<?> @Nullable ... parameters) {
 		Objects.requireNonNull(clazz, "Class must not be null");
 		Constructor<T> constructor = null;
 		try {
@@ -180,7 +180,7 @@ public final class ReflectionHelper {
 	 * @throws NullPointerException If the given constructor is null
 	 * @see #handleException(Exception)
 	 */
-	public static <T> @NotNull Optional<T> newInstance(@NotNull Constructor<T> constructor, Object @Nullable ... parameters) {
+	public static <T> @NonNull Optional<T> newInstance(@NonNull Constructor<T> constructor, Object @Nullable ... parameters) {
 		Objects.requireNonNull(constructor, "Constructor must not be null");
 		try {
 			if (constructor.trySetAccessible()) {
@@ -216,7 +216,7 @@ public final class ReflectionHelper {
 	 * @see #getConstructor(Class, Class[])
 	 * @see #newInstance(Constructor, Object...)
 	 */
-	public static <T> @NotNull Optional<T> newInstance(@NotNull Class<T> clazz, Object @Nullable ... parameters) {
+	public static <T> @NonNull Optional<T> newInstance(@NonNull Class<T> clazz, Object @Nullable ... parameters) {
 		Objects.requireNonNull(clazz, "Class must not be null");
 		Object[] params = nullToEmpty(parameters);
 		Optional<Constructor<T>> constructor = getConstructor(clazz, Lists.newArrayList(params).stream().map(Object::getClass).toArray(Class<?>[]::new));
@@ -240,7 +240,7 @@ public final class ReflectionHelper {
 	 * @throws NullPointerException If the given class or name is null
 	 * @see #handleException(Exception)
 	 */
-	public static @NotNull Optional<Method> getMethod(@NotNull Class<?> clazz, @NotNull String name, Class<?> @Nullable ... parameters) {
+	public static @NonNull Optional<Method> getMethod(@NonNull Class<?> clazz, @NonNull String name, Class<?> @Nullable ... parameters) {
 		Objects.requireNonNull(clazz, "Class must not be null");
 		Objects.requireNonNull(name, "Name must not be null");
 		try {
@@ -265,7 +265,7 @@ public final class ReflectionHelper {
 	 * @return True if the given class has a method with the given name and parameters, otherwise false
 	 * @throws NullPointerException If the given class or name is null
 	 */
-	public static boolean hasMethod(@NotNull Class<?> clazz, @NotNull String name, Class<?> @Nullable ... parameters) {
+	public static boolean hasMethod(@NonNull Class<?> clazz, @NonNull String name, Class<?> @Nullable ... parameters) {
 		return hasMethod(clazz, name, null, parameters);
 	}
 	
@@ -280,7 +280,7 @@ public final class ReflectionHelper {
 	 * @return True if the given class has a method with the given name and parameters, otherwise false
 	 * @throws NullPointerException If the given class or name is null
 	 */
-	public static boolean hasMethod(@NotNull Class<?> clazz, @NotNull String name, @Nullable Predicate<Method> predicate, Class<?> @Nullable ... parameters) {
+	public static boolean hasMethod(@NonNull Class<?> clazz, @NonNull String name, @Nullable Predicate<Method> predicate, Class<?> @Nullable ... parameters) {
 		Objects.requireNonNull(clazz, "Class must not be null");
 		Objects.requireNonNull(name, "Name must not be null");
 		Method method = null;
@@ -308,7 +308,7 @@ public final class ReflectionHelper {
 	 * @throws NullPointerException If the given method is null
 	 * @see #handleException(Exception)
 	 */
-	public static @NotNull Optional<Object> invoke(@NotNull Method method, @Nullable Object instance, Object @Nullable ... parameters) {
+	public static @NonNull Optional<Object> invoke(@NonNull Method method, @Nullable Object instance, Object @Nullable ... parameters) {
 		Objects.requireNonNull(method, "Method must not be null");
 		try {
 			if (method.trySetAccessible()) {
@@ -346,7 +346,7 @@ public final class ReflectionHelper {
 	 * @see #getMethod(Class, String, Class[])
 	 * @see #invoke(Method, Object, Object...)
 	 */
-	public static @NotNull Optional<Object> invoke(@NotNull Class<?> clazz, @NotNull String name, @Nullable Object instance, Object @Nullable ... parameters) {
+	public static @NonNull Optional<Object> invoke(@NonNull Class<?> clazz, @NonNull String name, @Nullable Object instance, Object @Nullable ... parameters) {
 		Objects.requireNonNull(clazz, "Class must not be null");
 		Objects.requireNonNull(name, "Name must not be null");
 		Object[] params = nullToEmpty(parameters);
@@ -370,7 +370,7 @@ public final class ReflectionHelper {
 	 * @throws NullPointerException If the given class or name is null
 	 * @see #handleException(Exception)
 	 */
-	public static @NotNull Optional<Field> getField(@NotNull Class<?> clazz, @NotNull String name) {
+	public static @NonNull Optional<Field> getField(@NonNull Class<?> clazz, @NonNull String name) {
 		Objects.requireNonNull(clazz, "Class must not be null");
 		Objects.requireNonNull(name, "Name must not be null");
 		try {
@@ -394,7 +394,7 @@ public final class ReflectionHelper {
 	 * @return True if the given class has a field with the given name, otherwise false
 	 * @throws NullPointerException If the given class or name is null
 	 */
-	public static boolean hasField(@NotNull Class<?> clazz, @NotNull String name) {
+	public static boolean hasField(@NonNull Class<?> clazz, @NonNull String name) {
 		return hasField(clazz, name, null);
 	}
 	
@@ -408,7 +408,7 @@ public final class ReflectionHelper {
 	 * @return True if the given class has a field with the given name, otherwise false
 	 * @throws NullPointerException If the given class or name is null
 	 */
-	public static boolean hasField(@NotNull Class<?> clazz, @NotNull String name, @Nullable Predicate<Field> predicate) {
+	public static boolean hasField(@NonNull Class<?> clazz, @NonNull String name, @Nullable Predicate<Field> predicate) {
 		Objects.requireNonNull(clazz, "Class must not be null");
 		Objects.requireNonNull(name, "Name must not be null");
 		
@@ -430,7 +430,7 @@ public final class ReflectionHelper {
 	 * @throws NullPointerException If the given field is null
 	 * @see #handleException(Exception)
 	 */
-	public static @NotNull Optional<Object> get(@NotNull Field field, @Nullable Object instance) {
+	public static @NonNull Optional<Object> get(@NonNull Field field, @Nullable Object instance) {
 		Objects.requireNonNull(field, "Field must not be null");
 		try {
 			if (field.trySetAccessible()) {
@@ -460,7 +460,7 @@ public final class ReflectionHelper {
 	 * @see #getField(Class, String)
 	 * @see #get(Field, Object)
 	 */
-	public static @NotNull Optional<Object> get(@NotNull Class<?> clazz, @NotNull String name, @Nullable Object instance) {
+	public static @NonNull Optional<Object> get(@NonNull Class<?> clazz, @NonNull String name, @Nullable Object instance) {
 		Objects.requireNonNull(clazz, "Class must not be null");
 		Objects.requireNonNull(name, "Name must not be null");
 		Optional<Field> field = getField(clazz, name);
@@ -480,7 +480,7 @@ public final class ReflectionHelper {
 	 * @throws NullPointerException If the given field is null
 	 * @see #handleException(Exception)
 	 */
-	public static void set(@NotNull Field field, @Nullable Object instance, @Nullable Object value) {
+	public static void set(@NonNull Field field, @Nullable Object instance, @Nullable Object value) {
 		Objects.requireNonNull(field, "Field must not be null");
 		try {
 			if (field.trySetAccessible()) {
@@ -509,7 +509,7 @@ public final class ReflectionHelper {
 	 * @see #getField(Class, String)
 	 * @see #set(Field, Object, Object)
 	 */
-	public static void set(@NotNull Class<?> clazz, @NotNull String name, @Nullable Object instance, @Nullable Object value) {
+	public static void set(@NonNull Class<?> clazz, @NonNull String name, @Nullable Object instance, @Nullable Object value) {
 		Objects.requireNonNull(clazz, "Class must not be null");
 		Objects.requireNonNull(name, "Name must not be null");
 		Optional<Field> field = getField(clazz, name);
@@ -529,7 +529,7 @@ public final class ReflectionHelper {
 	 *
 	 * @param e The exception to handle
 	 */
-	private static void handleException(@NotNull Exception e) {
+	private static void handleException(@NonNull Exception e) {
 		if (Boolean.parseBoolean(System.getProperty(REFLECTION_EXCEPTIONS_LOG, "false"))) {
 			LOGGER.error(e);
 		}
@@ -545,7 +545,7 @@ public final class ReflectionHelper {
 	 * @param classes The list of classes
 	 * @return A list containing the simple names
 	 */
-	private static @NotNull List<String> getSimpleNames(Class<?> @Nullable ... classes) {
+	private static @NonNull List<String> getSimpleNames(Class<?> @Nullable ... classes) {
 		if (classes == null || classes.length == 0) {
 			return Lists.newArrayList();
 		}
@@ -559,7 +559,7 @@ public final class ReflectionHelper {
 	 * @param objects The list of objects
 	 * @return A list containing the simple names
 	 */
-	private static @NotNull List<String> getSimpleNames(Object @Nullable ... objects) {
+	private static @NonNull List<String> getSimpleNames(Object @Nullable ... objects) {
 		if (objects == null || objects.length == 0) {
 			return Lists.newArrayList();
 		}

@@ -18,8 +18,8 @@
 
 package net.luis.utils.math;
 
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 import java.math.*;
 import java.util.Objects;
@@ -91,7 +91,7 @@ public final class Mth {
 	 * @throws NullPointerException If the given random number generator is null
 	 * @throws IllegalArgumentException If the given minimum value is greater than or equal to the given maximum value
 	 */
-	public static int randomInt(@NotNull Random rng, int min, int max) {
+	public static int randomInt(@NonNull Random rng, int min, int max) {
 		Objects.requireNonNull(rng, "Random must not be null");
 		if (min >= max) {
 			throw new IllegalArgumentException("The minimum value must be less than the maximum value");
@@ -110,7 +110,7 @@ public final class Mth {
 	 * @throws NullPointerException If the given random number generator is null
 	 * @throws IllegalArgumentException If the given minimum value is greater than or equal to the given maximum value
 	 */
-	public static int randomExclusiveInt(@NotNull Random rng, int min, int max) {
+	public static int randomExclusiveInt(@NonNull Random rng, int min, int max) {
 		Objects.requireNonNull(rng, "Random must not be null");
 		if (min >= max) {
 			throw new IllegalArgumentException("The minimum value must be less than the maximum value");
@@ -129,7 +129,7 @@ public final class Mth {
 	 * @throws NullPointerException If the given random number generator is null
 	 * @throws IllegalArgumentException If the given minimum value is greater than or equal to the given maximum value
 	 */
-	public static int randomInclusiveInt(@NotNull Random rng, int min, int max) {
+	public static int randomInclusiveInt(@NonNull Random rng, int min, int max) {
 		Objects.requireNonNull(rng, "Random must not be null");
 		if (min >= max) {
 			throw new IllegalArgumentException("The minimum value must be less than the maximum value");
@@ -447,7 +447,7 @@ public final class Mth {
 	 * @throws NullPointerException If the given hexadecimal string is null
 	 * @throws NumberFormatException If the given hexadecimal string is not a valid hexadecimal floating point constant
 	 */
-	public static @NotNull BigDecimal parseHexToBigDecimal(@NotNull String hex) {
+	public static @NonNull BigDecimal parseHexToBigDecimal(@NonNull String hex) {
 		Objects.requireNonNull(hex, "Hexadecimal string must not be null");
 		
 		Pattern pattern = Pattern.compile(

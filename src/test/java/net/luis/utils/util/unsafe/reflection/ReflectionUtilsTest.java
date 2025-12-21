@@ -20,8 +20,8 @@ package net.luis.utils.util.unsafe.reflection;
 
 import com.google.common.collect.Lists;
 import net.luis.utils.util.Pair;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 import org.junit.jupiter.api.Test;
 
 import java.lang.reflect.Method;
@@ -111,7 +111,7 @@ class ReflectionUtilsTest {
 			this.str = str;
 		}
 		
-		public void setString(@Nullable String str, @NotNull Consumer<String> oldAction) {
+		public void setString(@Nullable String str, @NonNull Consumer<String> oldAction) {
 			oldAction.accept(this.str);
 			this.str = str;
 		}

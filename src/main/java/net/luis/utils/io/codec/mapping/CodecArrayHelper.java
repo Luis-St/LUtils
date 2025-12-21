@@ -20,7 +20,7 @@ package net.luis.utils.io.codec.mapping;
 
 import net.luis.utils.io.codec.Codec;
 import org.apache.commons.lang3.ClassUtils;
-import org.jetbrains.annotations.NotNull;
+import org.jspecify.annotations.NonNull;
 
 import java.lang.reflect.Array;
 import java.util.*;
@@ -78,7 +78,7 @@ final class CodecArrayHelper {
 	 * @see #createObjectArrayCodec(Codec, Class, int)
 	 * @see #getOrCreatePrimitiveArrayCodec(Class, int)
 	 */
-	static <C> @NotNull Codec<C> getOrCreateArrayCodec(@NotNull Class<?> clazz, @NotNull Function<Class<?>, Codec<Object>> baseCodecGetter) {
+	static <C> @NonNull Codec<C> getOrCreateArrayCodec(@NonNull Class<?> clazz, @NonNull Function<Class<?>, Codec<Object>> baseCodecGetter) {
 		Objects.requireNonNull(clazz, "Class must not be null");
 		Objects.requireNonNull(baseCodecGetter, "Base codec getter must not be null");
 		
@@ -114,7 +114,7 @@ final class CodecArrayHelper {
 	 * @throws IllegalArgumentException If the component type is a primitive type
 	 * @see #createMultidimensionalArrayCodec(Codec, Class, int)
 	 */
-	private static <C> @NotNull Codec<C> createObjectArrayCodec(@NotNull Codec<Object> componentCodec, @NotNull Class<?> componentType, int arrayDimension) {
+	private static <C> @NonNull Codec<C> createObjectArrayCodec(@NonNull Codec<Object> componentCodec, @NonNull Class<?> componentType, int arrayDimension) {
 		Objects.requireNonNull(componentCodec, "Component codec must not be null");
 		Objects.requireNonNull(componentType, "Component type must not be null");
 		
@@ -160,7 +160,7 @@ final class CodecArrayHelper {
 	 * @see #createMultidimensionalArrayCodec(Codec, Class, int)
 	 * @see CodecAutoMapping#CODEC_LOOKUP
 	 */
-	private static <C> @NotNull Codec<C> getOrCreatePrimitiveArrayCodec(@NotNull Class<?> componentType, int arrayDimension) {
+	private static <C> @NonNull Codec<C> getOrCreatePrimitiveArrayCodec(@NonNull Class<?> componentType, int arrayDimension) {
 		Objects.requireNonNull(componentType, "Component type must not be null");
 		
 		if (arrayDimension == 1) {
@@ -195,7 +195,7 @@ final class CodecArrayHelper {
 	 * @see #arrayToTypedList(Object)
 	 * @see #listToTypedArray(List, Class, int)
 	 */
-	private static <C> @NotNull Codec<C> createMultidimensionalArrayCodec(@NotNull Codec<?> rawListCodec, @NotNull Class<?> componentType, int arrayDimension) {
+	private static <C> @NonNull Codec<C> createMultidimensionalArrayCodec(@NonNull Codec<?> rawListCodec, @NonNull Class<?> componentType, int arrayDimension) {
 		Objects.requireNonNull(rawListCodec, "Raw list codec must not be null");
 		Objects.requireNonNull(componentType, "Component type must not be null");
 		
@@ -213,7 +213,7 @@ final class CodecArrayHelper {
 	 * @throws NullPointerException If the array is null
 	 * @see #arrayToList(Object)
 	 */
-	public static <T> @NotNull T arrayToTypedList(@NotNull Object array) {
+	public static <T> @NonNull T arrayToTypedList(@NonNull Object array) {
 		Objects.requireNonNull(array, "Array must not be null");
 		return (T) arrayToList(array);
 	}
@@ -233,7 +233,7 @@ final class CodecArrayHelper {
 	 * @return A nested list structure representing the array
 	 * @throws NullPointerException If the array is null
 	 */
-	private static @NotNull Object arrayToList(@NotNull Object array) {
+	private static @NonNull Object arrayToList(@NonNull Object array) {
 		Objects.requireNonNull(array, "Array must not be null");
 		
 		int length = Array.getLength(array);
@@ -270,7 +270,7 @@ final class CodecArrayHelper {
 	 * @see #createJaggedArray(List, Class)
 	 * @see #fillJaggedArray(Object, List)
 	 */
-	public static <T> @NotNull T listToTypedArray(@NotNull List<?> list, @NotNull Class<?> componentType, int arrayDimension) {
+	public static <T> @NonNull T listToTypedArray(@NonNull List<?> list, @NonNull Class<?> componentType, int arrayDimension) {
 		Objects.requireNonNull(list, "List must not be null");
 		Objects.requireNonNull(componentType, "Component type must not be null");
 		
@@ -300,7 +300,7 @@ final class CodecArrayHelper {
 	 * @see #getDepth(Object)
 	 * @see #getArrayType(Class, int)
 	 */
-	private static @NotNull Object createJaggedArray(@NotNull List<?> list, @NotNull Class<?> componentType) {
+	private static @NonNull Object createJaggedArray(@NonNull List<?> list, @NonNull Class<?> componentType) {
 		Objects.requireNonNull(list, "List must not be null");
 		Objects.requireNonNull(componentType, "Component type must not be null");
 		
@@ -342,7 +342,7 @@ final class CodecArrayHelper {
 	 * @return The depth of list nesting (0 for non-lists, 1+ for nested lists)
 	 * @throws NullPointerException If the element is null
 	 */
-	private static int getDepth(@NotNull Object element) {
+	private static int getDepth(@NonNull Object element) {
 		Objects.requireNonNull(element, "Element must not be null");
 		
 		if (!(element instanceof List<?> list)) {
@@ -367,7 +367,7 @@ final class CodecArrayHelper {
 	 * @throws NullPointerException If the array or list is null
 	 * @see #createJaggedArray(List, Class)
 	 */
-	private static void fillJaggedArray(@NotNull Object array, @NotNull List<?> list) {
+	private static void fillJaggedArray(@NonNull Object array, @NonNull List<?> list) {
 		Objects.requireNonNull(array, "Array must not be null");
 		Objects.requireNonNull(list, "List must not be null");
 		
@@ -400,7 +400,7 @@ final class CodecArrayHelper {
 	 * @return The class representing the array type with the specified dimensions
 	 * @throws NullPointerException If the component type is null
 	 */
-	private static @NotNull Class<?> getArrayType(@NotNull Class<?> componentType, int depth) {
+	private static @NonNull Class<?> getArrayType(@NonNull Class<?> componentType, int depth) {
 		Objects.requireNonNull(componentType, "Component type must not be null");
 		
 		Class<?> result = componentType;

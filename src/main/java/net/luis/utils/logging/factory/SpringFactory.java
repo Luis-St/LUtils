@@ -23,7 +23,7 @@ import net.luis.utils.logging.LoggingUtils;
 import org.apache.logging.log4j.core.LoggerContext;
 import org.apache.logging.log4j.core.config.*;
 import org.apache.logging.log4j.core.config.plugins.Plugin;
-import org.jetbrains.annotations.NotNull;
+import org.jspecify.annotations.NonNull;
 
 import java.net.URI;
 import java.util.Objects;
@@ -54,7 +54,7 @@ public class SpringFactory extends ConfigurationFactory {
 	 * @return The supported file extensions
 	 */
 	@Override
-	protected String @NotNull [] getSupportedTypes() {
+	protected String @NonNull [] getSupportedTypes() {
 		return new String[] { "*" };
 	}
 	
@@ -62,7 +62,7 @@ public class SpringFactory extends ConfigurationFactory {
 	 * Creates a new configuration with no additional changes.<br>
 	 * @return The default configuration
 	 */
-	private @NotNull Configuration defaultConfiguration() {
+	private @NonNull Configuration defaultConfiguration() {
 		return new LoggerConfiguration("*").build();
 	}
 	
@@ -73,7 +73,7 @@ public class SpringFactory extends ConfigurationFactory {
 	 * @throws NullPointerException If the context or source is null
 	 */
 	@Override
-	public @NotNull Configuration getConfiguration(@NotNull LoggerContext context, @NotNull ConfigurationSource source) {
+	public @NonNull Configuration getConfiguration(@NonNull LoggerContext context, @NonNull ConfigurationSource source) {
 		Objects.requireNonNull(context, "Logger context must not be null");
 		Objects.requireNonNull(source, "Configuration source must not be null");
 		
@@ -93,7 +93,7 @@ public class SpringFactory extends ConfigurationFactory {
 	 * @throws NullPointerException If the context, name, or location is null
 	 */
 	@Override
-	public @NotNull Configuration getConfiguration(@NotNull LoggerContext context, @NotNull String name, @NotNull URI location) {
+	public @NonNull Configuration getConfiguration(@NonNull LoggerContext context, @NonNull String name, @NonNull URI location) {
 		Objects.requireNonNull(context, "Logger context must not be null");
 		Objects.requireNonNull(name, "Configuration name must not be null");
 		Objects.requireNonNull(location, "Configuration location must not be null");

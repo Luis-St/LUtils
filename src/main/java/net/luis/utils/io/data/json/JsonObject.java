@@ -21,7 +21,9 @@ package net.luis.utils.io.data.json;
 import com.google.common.collect.Maps;
 import net.luis.utils.io.data.json.exception.JsonTypeException;
 import net.luis.utils.io.data.json.exception.NoSuchJsonElementException;
-import org.jetbrains.annotations.*;
+import org.jetbrains.annotations.Unmodifiable;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 import java.util.*;
 import java.util.function.BiConsumer;
@@ -52,7 +54,7 @@ public class JsonObject implements JsonElement {
 	 * @param elements The map of elements to add
 	 * @throws NullPointerException If the given elements are null
 	 */
-	public JsonObject(@NotNull Map<String, ? extends JsonElement> elements) {
+	public JsonObject(@NonNull Map<String, ? extends JsonElement> elements) {
 		this.elements.putAll(Objects.requireNonNull(elements, "Json elements must not be null"));
 	}
 	
@@ -98,7 +100,7 @@ public class JsonObject implements JsonElement {
 	 * Returns the set of keys in this json object.<br>
 	 * @return The keys of this json object
 	 */
-	public @NotNull Set<String> keySet() {
+	public @NonNull Set<String> keySet() {
 		return this.elements.keySet();
 	}
 	
@@ -106,7 +108,7 @@ public class JsonObject implements JsonElement {
 	 * Returns the collection of values in this json object.<br>
 	 * @return The values of this json object
 	 */
-	public @NotNull @Unmodifiable Collection<JsonElement> elements() {
+	public @NonNull @Unmodifiable Collection<JsonElement> elements() {
 		return Collections.unmodifiableCollection(this.elements.values());
 	}
 	
@@ -114,7 +116,7 @@ public class JsonObject implements JsonElement {
 	 * Returns the set of entries in this json object.<br>
 	 * @return The entries of this json object
 	 */
-	public @NotNull Set<Map.Entry<String, JsonElement>> entrySet() {
+	public @NonNull Set<Map.Entry<String, JsonElement>> entrySet() {
 		return this.elements.entrySet();
 	}
 	
@@ -124,7 +126,7 @@ public class JsonObject implements JsonElement {
 	 * @param action The action to apply to each entry
 	 * @throws NullPointerException If the given action is null
 	 */
-	public void forEach(@NotNull BiConsumer<? super String, ? super JsonElement> action) {
+	public void forEach(@NonNull BiConsumer<? super String, ? super JsonElement> action) {
 		this.elements.forEach(Objects.requireNonNull(action, "Action must not be null"));
 	}
 	//endregion
@@ -141,7 +143,7 @@ public class JsonObject implements JsonElement {
 	 * @return The previous element associated with the key, or null if the key was not present
 	 * @throws NullPointerException If the given key is null
 	 */
-	public @Nullable JsonElement add(@NotNull String key, @Nullable JsonElement element) {
+	public @Nullable JsonElement add(@NonNull String key, @Nullable JsonElement element) {
 		Objects.requireNonNull(key, "Key must not be null");
 		return this.elements.put(key, element == null ? JsonNull.INSTANCE : element);
 	}
@@ -157,7 +159,7 @@ public class JsonObject implements JsonElement {
 	 * @throws NullPointerException If the given key is null
 	 * @see #add(String, JsonElement)
 	 */
-	public @Nullable JsonElement add(@NotNull String key, @Nullable String value) {
+	public @Nullable JsonElement add(@NonNull String key, @Nullable String value) {
 		return this.add(key, value == null ? null : new JsonPrimitive(value));
 	}
 	
@@ -171,7 +173,7 @@ public class JsonObject implements JsonElement {
 	 * @throws NullPointerException If the given key is null
 	 * @see #add(String, JsonElement)
 	 */
-	public @Nullable JsonElement add(@NotNull String key, boolean value) {
+	public @Nullable JsonElement add(@NonNull String key, boolean value) {
 		return this.add(key, new JsonPrimitive(value));
 	}
 	
@@ -186,7 +188,7 @@ public class JsonObject implements JsonElement {
 	 * @throws NullPointerException If the given key is null
 	 * @see #add(String, JsonElement)
 	 */
-	public @Nullable JsonElement add(@NotNull String key, @Nullable Number value) {
+	public @Nullable JsonElement add(@NonNull String key, @Nullable Number value) {
 		return this.add(key, value == null ? null : new JsonPrimitive(value));
 	}
 	
@@ -200,7 +202,7 @@ public class JsonObject implements JsonElement {
 	 * @throws NullPointerException If the given key is null
 	 * @see #add(String, JsonElement)
 	 */
-	public @Nullable JsonElement add(@NotNull String key, byte value) {
+	public @Nullable JsonElement add(@NonNull String key, byte value) {
 		return this.add(key, new JsonPrimitive(value));
 	}
 	
@@ -214,7 +216,7 @@ public class JsonObject implements JsonElement {
 	 * @throws NullPointerException If the given key is null
 	 * @see #add(String, JsonElement)
 	 */
-	public @Nullable JsonElement add(@NotNull String key, short value) {
+	public @Nullable JsonElement add(@NonNull String key, short value) {
 		return this.add(key, new JsonPrimitive(value));
 	}
 	
@@ -228,7 +230,7 @@ public class JsonObject implements JsonElement {
 	 * @throws NullPointerException If the given key is null
 	 * @see #add(String, JsonElement)
 	 */
-	public @Nullable JsonElement add(@NotNull String key, int value) {
+	public @Nullable JsonElement add(@NonNull String key, int value) {
 		return this.add(key, new JsonPrimitive(value));
 	}
 	
@@ -242,7 +244,7 @@ public class JsonObject implements JsonElement {
 	 * @throws NullPointerException If the given key is null
 	 * @see #add(String, JsonElement)
 	 */
-	public @Nullable JsonElement add(@NotNull String key, long value) {
+	public @Nullable JsonElement add(@NonNull String key, long value) {
 		return this.add(key, new JsonPrimitive(value));
 	}
 	
@@ -256,7 +258,7 @@ public class JsonObject implements JsonElement {
 	 * @throws NullPointerException If the given key is null
 	 * @see #add(String, JsonElement)
 	 */
-	public @Nullable JsonElement add(@NotNull String key, float value) {
+	public @Nullable JsonElement add(@NonNull String key, float value) {
 		return this.add(key, new JsonPrimitive(value));
 	}
 	
@@ -270,7 +272,7 @@ public class JsonObject implements JsonElement {
 	 * @throws NullPointerException If the given key is null
 	 * @see #add(String, JsonElement)
 	 */
-	public @Nullable JsonElement add(@NotNull String key, double value) {
+	public @Nullable JsonElement add(@NonNull String key, double value) {
 		return this.add(key, new JsonPrimitive(value));
 	}
 	
@@ -280,7 +282,7 @@ public class JsonObject implements JsonElement {
 	 * @param object The json object of elements to add
 	 * @throws NullPointerException If the given json object is null
 	 */
-	public void addAll(@NotNull JsonObject object) {
+	public void addAll(@NonNull JsonObject object) {
 		this.elements.putAll(Objects.requireNonNull(object, "Json object must not be null").elements);
 	}
 	
@@ -290,7 +292,7 @@ public class JsonObject implements JsonElement {
 	 * @param elements The map of elements to add
 	 * @throws NullPointerException If the given elements are null
 	 */
-	public void addAll(@NotNull Map<String, ? extends JsonElement> elements) {
+	public void addAll(@NonNull Map<String, ? extends JsonElement> elements) {
 		this.elements.putAll(Objects.requireNonNull(elements, "Json elements must not be null"));
 	}
 	//endregion
@@ -326,7 +328,7 @@ public class JsonObject implements JsonElement {
 	 * @return The previous element associated with the key, or null if the key was not present
 	 * @throws NullPointerException If the given key is null
 	 */
-	public @Nullable JsonElement replace(@NotNull String key, @Nullable JsonElement newElement) {
+	public @Nullable JsonElement replace(@NonNull String key, @Nullable JsonElement newElement) {
 		Objects.requireNonNull(key, "Key must not be null");
 		return this.elements.replace(key, newElement == null ? JsonNull.INSTANCE : newElement);
 	}
@@ -340,7 +342,7 @@ public class JsonObject implements JsonElement {
 	 * @return True if the element was replaced, false otherwise
 	 * @throws NullPointerException If the given key or old element is null
 	 */
-	public boolean replace(@NotNull String key, @NotNull JsonElement oldElement, @Nullable JsonElement newElement) {
+	public boolean replace(@NonNull String key, @NonNull JsonElement oldElement, @Nullable JsonElement newElement) {
 		Objects.requireNonNull(key, "Key must not be null");
 		Objects.requireNonNull(oldElement, "Old value must not be null");
 		return this.elements.replace(key, oldElement, newElement == null ? JsonNull.INSTANCE : newElement);
@@ -356,7 +358,7 @@ public class JsonObject implements JsonElement {
 	 * @return The element associated with the key, or null if the key was not present
 	 * @throws NullPointerException If the given key is null
 	 */
-	public @Nullable JsonElement get(@NotNull String key) {
+	public @Nullable JsonElement get(@NonNull String key) {
 		Objects.requireNonNull(key, "Key must not be null");
 		return this.elements.get(key);
 	}
@@ -371,7 +373,7 @@ public class JsonObject implements JsonElement {
 	 * @throws JsonTypeException If the element is not a json object
 	 * @see #get(String)
 	 */
-	public @NotNull JsonObject getAsJsonObject(@NotNull String key) {
+	public @NonNull JsonObject getAsJsonObject(@NonNull String key) {
 		JsonElement json = this.get(key);
 		if (json == null) {
 			throw new NoSuchJsonElementException("Expected json object for key '" + key + "', but found none");
@@ -392,7 +394,7 @@ public class JsonObject implements JsonElement {
 	 * @throws JsonTypeException If the element is not a json array
 	 * @see #get(String)
 	 */
-	public @NotNull JsonArray getAsJsonArray(@NotNull String key) {
+	public @NonNull JsonArray getAsJsonArray(@NonNull String key) {
 		JsonElement json = this.get(key);
 		if (json == null) {
 			throw new NoSuchJsonElementException("Expected json array for key '" + key + "', but found none");
@@ -413,7 +415,7 @@ public class JsonObject implements JsonElement {
 	 * @throws JsonTypeException If the element is not a json primitive
 	 * @see #get(String)
 	 */
-	public @NotNull JsonPrimitive getJsonPrimitive(@NotNull String key) {
+	public @NonNull JsonPrimitive getJsonPrimitive(@NonNull String key) {
 		JsonElement json = this.get(key);
 		if (json == null) {
 			throw new NoSuchJsonElementException("Expected json primitive for key '" + key + "', but found none");
@@ -435,7 +437,7 @@ public class JsonObject implements JsonElement {
 	 * @throws JsonTypeException If the element is not a string
 	 * @see #getAsJsonPrimitive()
 	 */
-	public @NotNull String getAsString(@NotNull String key) {
+	public @NonNull String getAsString(@NonNull String key) {
 		return this.getJsonPrimitive(key).getAsString();
 	}
 	
@@ -450,7 +452,7 @@ public class JsonObject implements JsonElement {
 	 * @throws JsonTypeException If the element is not a boolean
 	 * @see #getAsJsonPrimitive()
 	 */
-	public boolean getAsBoolean(@NotNull String key) {
+	public boolean getAsBoolean(@NonNull String key) {
 		return this.getJsonPrimitive(key).getAsBoolean();
 	}
 	
@@ -465,7 +467,7 @@ public class JsonObject implements JsonElement {
 	 * @throws JsonTypeException If the element is not a number
 	 * @see #getAsJsonPrimitive()
 	 */
-	public @NotNull Number getAsNumber(@NotNull String key) {
+	public @NonNull Number getAsNumber(@NonNull String key) {
 		return this.getJsonPrimitive(key).getAsNumber();
 	}
 	
@@ -480,7 +482,7 @@ public class JsonObject implements JsonElement {
 	 * @throws JsonTypeException If the element is not a byte
 	 * @see #getAsJsonPrimitive()
 	 */
-	public byte getAsByte(@NotNull String key) {
+	public byte getAsByte(@NonNull String key) {
 		return this.getJsonPrimitive(key).getAsByte();
 	}
 	
@@ -495,7 +497,7 @@ public class JsonObject implements JsonElement {
 	 * @throws JsonTypeException If the element is not a short
 	 * @see #getAsJsonPrimitive()
 	 */
-	public short getAsShort(@NotNull String key) {
+	public short getAsShort(@NonNull String key) {
 		return this.getJsonPrimitive(key).getAsShort();
 	}
 	
@@ -510,7 +512,7 @@ public class JsonObject implements JsonElement {
 	 * @throws JsonTypeException If the element is not an integer
 	 * @see #getAsJsonPrimitive()
 	 */
-	public int getAsInteger(@NotNull String key) {
+	public int getAsInteger(@NonNull String key) {
 		return this.getJsonPrimitive(key).getAsInteger();
 	}
 	
@@ -525,7 +527,7 @@ public class JsonObject implements JsonElement {
 	 * @throws JsonTypeException If the element is not a long
 	 * @see #getAsJsonPrimitive()
 	 */
-	public long getAsLong(@NotNull String key) {
+	public long getAsLong(@NonNull String key) {
 		return this.getJsonPrimitive(key).getAsLong();
 	}
 	
@@ -540,7 +542,7 @@ public class JsonObject implements JsonElement {
 	 * @throws JsonTypeException If the element is not a float
 	 * @see #getAsJsonPrimitive()
 	 */
-	public float getAsFloat(@NotNull String key) {
+	public float getAsFloat(@NonNull String key) {
 		return this.getJsonPrimitive(key).getAsFloat();
 	}
 	
@@ -555,7 +557,7 @@ public class JsonObject implements JsonElement {
 	 * @throws JsonTypeException If the element is not a double
 	 * @see #getAsJsonPrimitive()
 	 */
-	public double getAsDouble(@NotNull String key) {
+	public double getAsDouble(@NonNull String key) {
 		return this.getJsonPrimitive(key).getAsDouble();
 	}
 	//endregion
@@ -581,7 +583,7 @@ public class JsonObject implements JsonElement {
 	
 	@Override
 	@SuppressWarnings("DuplicatedCode")
-	public @NotNull String toString(@NotNull JsonConfig config) {
+	public @NonNull String toString(@NonNull JsonConfig config) {
 		Objects.requireNonNull(config, "Config must not be null");
 		StringBuilder builder = new StringBuilder("{");
 		List<Map.Entry<String, JsonElement>> entries = List.copyOf(this.elements.entrySet());

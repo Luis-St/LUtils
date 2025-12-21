@@ -19,8 +19,8 @@
 package net.luis.utils.io.token.actions.core;
 
 import net.luis.utils.io.token.tokens.Token;
-import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Unmodifiable;
+import org.jspecify.annotations.NonNull;
 
 import java.util.List;
 
@@ -41,7 +41,7 @@ public interface TokenTransformer {
 	 * @return The transformed list of tokens
 	 * @apiNote This method should return an unmodifiable list of tokens
 	 */
-	@NotNull
+	@NonNull
 	@Unmodifiable
-	List<Token> transform(@NotNull List<Token> tokens);
+	List<Token> transform(@NonNull List<Token> tokens);
 }

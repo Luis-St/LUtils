@@ -21,7 +21,9 @@ package net.luis.utils.io.data.json;
 import com.google.common.collect.Lists;
 import net.luis.utils.io.data.json.exception.JsonArrayIndexOutOfBoundsException;
 import net.luis.utils.io.data.json.exception.JsonTypeException;
-import org.jetbrains.annotations.*;
+import org.jetbrains.annotations.Unmodifiable;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 import java.util.*;
 
@@ -50,7 +52,7 @@ public class JsonArray implements JsonElement, Iterable<JsonElement> {
 	 * @param elements The list of json elements to add
 	 * @throws NullPointerException If the list of json elements is null
 	 */
-	public JsonArray(@NotNull List<? extends JsonElement> elements) {
+	public JsonArray(@NonNull List<? extends JsonElement> elements) {
 		this.elements.addAll(Objects.requireNonNull(elements, "Json elements must not be null"));
 	}
 	
@@ -87,7 +89,7 @@ public class JsonArray implements JsonElement, Iterable<JsonElement> {
 	 * @return The iterator over the elements
 	 */
 	@Override
-	public @NotNull Iterator<JsonElement> iterator() {
+	public @NonNull Iterator<JsonElement> iterator() {
 		return this.elements.iterator();
 	}
 	
@@ -95,7 +97,7 @@ public class JsonArray implements JsonElement, Iterable<JsonElement> {
 	 * Returns an unmodifiable collection of the json elements in this json array.<br>
 	 * @return The collection of json elements
 	 */
-	public @NotNull @Unmodifiable Collection<JsonElement> elements() {
+	public @NonNull @Unmodifiable Collection<JsonElement> elements() {
 		return Collections.unmodifiableCollection(this.elements);
 	}
 	
@@ -103,7 +105,7 @@ public class JsonArray implements JsonElement, Iterable<JsonElement> {
 	 * Returns an unmodifiable list of the json elements in this json array.<br>
 	 * @return The list of json elements
 	 */
-	public @NotNull @Unmodifiable List<JsonElement> getElements() {
+	public @NonNull @Unmodifiable List<JsonElement> getElements() {
 		return List.copyOf(this.elements);
 	}
 	//endregion
@@ -119,7 +121,7 @@ public class JsonArray implements JsonElement, Iterable<JsonElement> {
 	 * @return The previous element at the given index
 	 * @throws JsonArrayIndexOutOfBoundsException If the index is negative or greater than the size of this json array
 	 */
-	public @NotNull JsonElement set(int index, @Nullable JsonElement json) {
+	public @NonNull JsonElement set(int index, @Nullable JsonElement json) {
 		if (0 > index) {
 			throw new JsonArrayIndexOutOfBoundsException(index);
 		}
@@ -140,7 +142,7 @@ public class JsonArray implements JsonElement, Iterable<JsonElement> {
 	 * @throws JsonArrayIndexOutOfBoundsException If the index is negative or greater than the size of this json array
 	 * @see #set(int, JsonElement)
 	 */
-	public @NotNull JsonElement set(int index, @Nullable String value) {
+	public @NonNull JsonElement set(int index, @Nullable String value) {
 		return this.set(index, value == null ? null : new JsonPrimitive(value));
 	}
 	
@@ -154,7 +156,7 @@ public class JsonArray implements JsonElement, Iterable<JsonElement> {
 	 * @throws JsonArrayIndexOutOfBoundsException If the index is negative or greater than the size of this json array
 	 * @see #set(int, JsonElement)
 	 */
-	public @NotNull JsonElement set(int index, boolean value) {
+	public @NonNull JsonElement set(int index, boolean value) {
 		return this.set(index, new JsonPrimitive(value));
 	}
 	
@@ -169,7 +171,7 @@ public class JsonArray implements JsonElement, Iterable<JsonElement> {
 	 * @throws JsonArrayIndexOutOfBoundsException If the index is negative or greater than the size of this json array
 	 * @see #set(int, JsonElement)
 	 */
-	public @NotNull JsonElement set(int index, @Nullable Number value) {
+	public @NonNull JsonElement set(int index, @Nullable Number value) {
 		return this.set(index, value == null ? null : new JsonPrimitive(value));
 	}
 	
@@ -183,7 +185,7 @@ public class JsonArray implements JsonElement, Iterable<JsonElement> {
 	 * @throws JsonArrayIndexOutOfBoundsException If the index is negative or greater than the size of this json array
 	 * @see #set(int, JsonElement)
 	 */
-	public @NotNull JsonElement set(int index, byte value) {
+	public @NonNull JsonElement set(int index, byte value) {
 		return this.set(index, new JsonPrimitive(value));
 	}
 	
@@ -197,7 +199,7 @@ public class JsonArray implements JsonElement, Iterable<JsonElement> {
 	 * @throws JsonArrayIndexOutOfBoundsException If the index is negative or greater than the size of this json array
 	 * @see #set(int, JsonElement)
 	 */
-	public @NotNull JsonElement set(int index, short value) {
+	public @NonNull JsonElement set(int index, short value) {
 		return this.set(index, new JsonPrimitive(value));
 	}
 	
@@ -211,7 +213,7 @@ public class JsonArray implements JsonElement, Iterable<JsonElement> {
 	 * @throws JsonArrayIndexOutOfBoundsException If the index is negative or greater than the size of this json array
 	 * @see #set(int, JsonElement)
 	 */
-	public @NotNull JsonElement set(int index, int value) {
+	public @NonNull JsonElement set(int index, int value) {
 		return this.set(index, new JsonPrimitive(value));
 	}
 	
@@ -225,7 +227,7 @@ public class JsonArray implements JsonElement, Iterable<JsonElement> {
 	 * @throws JsonArrayIndexOutOfBoundsException If the index is negative or greater than the size of this json array
 	 * @see #set(int, JsonElement)
 	 */
-	public @NotNull JsonElement set(int index, long value) {
+	public @NonNull JsonElement set(int index, long value) {
 		return this.set(index, new JsonPrimitive(value));
 	}
 	
@@ -239,7 +241,7 @@ public class JsonArray implements JsonElement, Iterable<JsonElement> {
 	 * @throws JsonArrayIndexOutOfBoundsException If the index is negative or greater than the size of this json array
 	 * @see #set(int, JsonElement)
 	 */
-	public @NotNull JsonElement set(int index, float value) {
+	public @NonNull JsonElement set(int index, float value) {
 		return this.set(index, new JsonPrimitive(value));
 	}
 	
@@ -253,7 +255,7 @@ public class JsonArray implements JsonElement, Iterable<JsonElement> {
 	 * @throws JsonArrayIndexOutOfBoundsException If the index is negative or greater than the size of this json array
 	 * @see #set(int, JsonElement)
 	 */
-	public @NotNull JsonElement set(int index, double value) {
+	public @NonNull JsonElement set(int index, double value) {
 		return this.set(index, new JsonPrimitive(value));
 	}
 	//endregion
@@ -368,7 +370,7 @@ public class JsonArray implements JsonElement, Iterable<JsonElement> {
 	 * @param array The json array to add
 	 * @throws NullPointerException If the json array is null
 	 */
-	public void addAll(@NotNull JsonArray array) {
+	public void addAll(@NonNull JsonArray array) {
 		this.addAll(Objects.requireNonNull(array, "Json array must not be null").elements);
 	}
 	
@@ -376,7 +378,7 @@ public class JsonArray implements JsonElement, Iterable<JsonElement> {
 	 * Adds all json elements from the given array to this json array.<br>
 	 * @param elements The array of json elements to add
 	 */
-	public void addAll(JsonElement @NotNull ... elements) {
+	public void addAll(JsonElement @NonNull ... elements) {
 		Objects.requireNonNull(elements, "Json elements must not be null");
 		this.addAll(Arrays.asList(elements));
 	}
@@ -387,7 +389,7 @@ public class JsonArray implements JsonElement, Iterable<JsonElement> {
 	 * @param elements The list of json elements to add
 	 * @throws NullPointerException If the list of json elements is null
 	 */
-	public void addAll(@NotNull List<? extends JsonElement> elements) {
+	public void addAll(@NonNull List<? extends JsonElement> elements) {
 		this.elements.addAll(Objects.requireNonNull(elements, "Json elements must not be null"));
 	}
 	//endregion
@@ -401,7 +403,7 @@ public class JsonArray implements JsonElement, Iterable<JsonElement> {
 	 * @return The removed element
 	 * @throws JsonArrayIndexOutOfBoundsException If the index is negative or greater than the size of this json array
 	 */
-	public @NotNull JsonElement remove(int index) {
+	public @NonNull JsonElement remove(int index) {
 		if (0 > index) {
 			throw new JsonArrayIndexOutOfBoundsException(index);
 		}
@@ -438,7 +440,7 @@ public class JsonArray implements JsonElement, Iterable<JsonElement> {
 	 * @return The json element at the given index
 	 * @throws JsonArrayIndexOutOfBoundsException If the index is negative or greater than the size of this json array
 	 */
-	public @NotNull JsonElement get(int index) {
+	public @NonNull JsonElement get(int index) {
 		if (0 > index) {
 			throw new JsonArrayIndexOutOfBoundsException(index);
 		}
@@ -457,7 +459,7 @@ public class JsonArray implements JsonElement, Iterable<JsonElement> {
 	 * @throws JsonTypeException If the json element at the given index is not a json object
 	 * @see #get(int)
 	 */
-	public @NotNull JsonObject getAsJsonObject(int index) {
+	public @NonNull JsonObject getAsJsonObject(int index) {
 		JsonElement json = this.get(index);
 		if (json instanceof JsonObject object) {
 			return object;
@@ -474,7 +476,7 @@ public class JsonArray implements JsonElement, Iterable<JsonElement> {
 	 * @throws JsonTypeException If the json element at the given index is not a json array
 	 * @see #get(int)
 	 */
-	public @NotNull JsonArray getAsJsonArray(int index) {
+	public @NonNull JsonArray getAsJsonArray(int index) {
 		JsonElement json = this.get(index);
 		if (json instanceof JsonArray array) {
 			return array;
@@ -491,7 +493,7 @@ public class JsonArray implements JsonElement, Iterable<JsonElement> {
 	 * @throws JsonTypeException If the json element at the given index is not a json primitive
 	 * @see #get(int)
 	 */
-	public @NotNull JsonPrimitive getAsJsonPrimitive(int index) {
+	public @NonNull JsonPrimitive getAsJsonPrimitive(int index) {
 		JsonElement json = this.get(index);
 		if (json instanceof JsonPrimitive primitive) {
 			return primitive;
@@ -509,7 +511,7 @@ public class JsonArray implements JsonElement, Iterable<JsonElement> {
 	 * @throws JsonTypeException If the json element at the given index is not a json primitive
 	 * @see #getAsJsonPrimitive(int)
 	 */
-	public @NotNull String getAsString(int index) {
+	public @NonNull String getAsString(int index) {
 		return this.getAsJsonPrimitive(index).getAsString();
 	}
 	
@@ -537,7 +539,7 @@ public class JsonArray implements JsonElement, Iterable<JsonElement> {
 	 * @throws JsonTypeException If the json element at the given index is not a json primitive
 	 * @see #getAsJsonPrimitive(int)
 	 */
-	public @NotNull Number getAsNumber(int index) {
+	public @NonNull Number getAsNumber(int index) {
 		return this.getAsJsonPrimitive(index).getAsNumber();
 	}
 	
@@ -647,7 +649,7 @@ public class JsonArray implements JsonElement, Iterable<JsonElement> {
 	
 	@Override
 	@SuppressWarnings("DuplicatedCode")
-	public @NotNull String toString(@NotNull JsonConfig config) {
+	public @NonNull String toString(@NonNull JsonConfig config) {
 		Objects.requireNonNull(config, "Config must not be null");
 		StringBuilder builder = new StringBuilder("[");
 		boolean shouldSimplify = config.simplifyArrays() && config.maxArraySimplificationSize() >= this.size();

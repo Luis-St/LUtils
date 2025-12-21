@@ -25,8 +25,8 @@ import net.luis.utils.io.token.rules.TokenRule;
 import net.luis.utils.io.token.stream.TokenStream;
 import net.luis.utils.io.token.tokens.Token;
 import net.luis.utils.util.Pair;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 import java.util.List;
 import java.util.Objects;
@@ -48,7 +48,7 @@ import java.util.Objects;
  * @param maxOccurrences The maximum number of occurrences
  */
 public record RepeatedTokenRule(
-	@NotNull TokenRule tokenRule,
+	@NonNull TokenRule tokenRule,
 	int minOccurrences,
 	int maxOccurrences
 ) implements TokenRule {
@@ -61,7 +61,7 @@ public record RepeatedTokenRule(
 	 * @throws NullPointerException If the token rule is null
 	 * @throws IllegalArgumentException If the number of occurrences is lower than 0
 	 */
-	public RepeatedTokenRule(@NotNull TokenRule tokenRule, int occurrences) {
+	public RepeatedTokenRule(@NonNull TokenRule tokenRule, int occurrences) {
 		this(tokenRule, occurrences, occurrences);
 	}
 	
@@ -97,7 +97,7 @@ public record RepeatedTokenRule(
 	 * @return A pair containing the list of matched tokens and the number of occurrences
 	 * @throws NullPointerException If the token stream is null
 	 */
-	private @NotNull Pair<List<Token>, Integer> processRule(@NotNull TokenStream workingStream, @NotNull TokenRuleContext ctx) {
+	private @NonNull Pair<List<Token>, Integer> processRule(@NonNull TokenStream workingStream, @NonNull TokenRuleContext ctx) {
 		Objects.requireNonNull(workingStream, "Working token stream must not be null");
 		Objects.requireNonNull(ctx, "Token rule context must not be null");
 		
@@ -122,7 +122,7 @@ public record RepeatedTokenRule(
 	}
 	
 	@Override
-	public @Nullable TokenRuleMatch match(@NotNull TokenStream stream, @NotNull TokenRuleContext ctx) {
+	public @Nullable TokenRuleMatch match(@NonNull TokenStream stream, @NonNull TokenRuleContext ctx) {
 		Objects.requireNonNull(stream, "Token stream must not be null");
 		Objects.requireNonNull(ctx, "Token rule context must not be null");
 		if (!stream.hasMoreTokens()) {
@@ -142,12 +142,12 @@ public record RepeatedTokenRule(
 	}
 	
 	@Override
-	public @NotNull TokenRule not() {
+	public @NonNull TokenRule not() {
 		return new TokenRule() {
 			private final RepeatedTokenRule self = RepeatedTokenRule.this;
 			
 			@Override
-			public @Nullable TokenRuleMatch match(@NotNull TokenStream stream, @NotNull TokenRuleContext ctx) {
+			public @Nullable TokenRuleMatch match(@NonNull TokenStream stream, @NonNull TokenRuleContext ctx) {
 				Objects.requireNonNull(stream, "Token stream must not be null");
 				Objects.requireNonNull(ctx, "Token rule context must not be null");
 				if (!stream.hasMoreTokens()) {
@@ -165,7 +165,7 @@ public record RepeatedTokenRule(
 			}
 			
 			@Override
-			public @NotNull TokenRule not() {
+			public @NonNull TokenRule not() {
 				return this.self;
 			}
 		};

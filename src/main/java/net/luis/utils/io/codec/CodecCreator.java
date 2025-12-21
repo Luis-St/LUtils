@@ -22,7 +22,7 @@ import net.luis.utils.exception.ReflectionException;
 import net.luis.utils.io.codec.function.CodecBuilderFunction;
 import net.luis.utils.util.result.Result;
 import net.luis.utils.util.unsafe.reflection.ReflectionHelper;
-import org.jetbrains.annotations.NotNull;
+import org.jspecify.annotations.NonNull;
 
 import java.lang.reflect.Method;
 import java.util.*;
@@ -61,7 +61,7 @@ public class CodecCreator<O, F extends CodecBuilderFunction> {
 	 * @param codecs The list of codecs to use for decoding the components of the object
 	 * @throws NullPointerException If the codecs list is null
 	 */
-	public CodecCreator(@NotNull List<FieldCodec<?, O>> codecs) {
+	public CodecCreator(@NonNull List<FieldCodec<?, O>> codecs) {
 		this.codecs = Objects.requireNonNull(codecs, "Codecs list must not be null");
 	}
 	
@@ -79,7 +79,7 @@ public class CodecCreator<O, F extends CodecBuilderFunction> {
 	 * @throws NullPointerException If the function is null
 	 */
 	@SuppressWarnings("unchecked")
-	public @NotNull Codec<O> create(@NotNull F function) {
+	public @NonNull Codec<O> create(@NonNull F function) {
 		Objects.requireNonNull(function, "Function must not be null");
 		
 		return new CodecGroup<>(this.codecs, components -> {
@@ -110,7 +110,7 @@ public class CodecCreator<O, F extends CodecBuilderFunction> {
 	 * @throws ReflectionException If the create method cannot be found or invoked successfully
 	 * @see ReflectionHelper
 	 */
-	private @NotNull Optional<Object> invokeCreateMethod(@NotNull F function, @NotNull List<Object> components) {
+	private @NonNull Optional<Object> invokeCreateMethod(@NonNull F function, @NonNull List<Object> components) {
 		Objects.requireNonNull(function, "Function must not be null");
 		Objects.requireNonNull(components, "Components list must not be null");
 		

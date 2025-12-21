@@ -21,8 +21,8 @@ package net.luis.utils.io.token.context;
 import com.google.common.collect.Maps;
 import net.luis.utils.io.token.rules.TokenRule;
 import net.luis.utils.io.token.tokens.Token;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 import java.util.*;
 
@@ -61,7 +61,7 @@ public class TokenRuleContext {
 	 *
 	 * @return A new instance of an empty token rule context
 	 */
-	public static @NotNull TokenRuleContext empty() {
+	public static @NonNull TokenRuleContext empty() {
 		return new TokenRuleContext();
 	}
 	
@@ -73,7 +73,7 @@ public class TokenRuleContext {
 	 * @param rule The token rule to define
 	 * @throws NullPointerException If the key or rule is null
 	 */
-	public void defineRule(@NotNull String key, @NotNull TokenRule rule) {
+	public void defineRule(@NonNull String key, @NonNull TokenRule rule) {
 		Objects.requireNonNull(key, "Rule key must not be null");
 		Objects.requireNonNull(rule, "Token rule must not be null");
 		this.definedRules.put(key, rule);
@@ -86,7 +86,7 @@ public class TokenRuleContext {
 	 * @return The token rule associated with the given key or null if no rule is defined for the key
 	 * @throws NullPointerException If the key is null
 	 */
-	public @Nullable TokenRule getRuleReference(@NotNull String key) {
+	public @Nullable TokenRule getRuleReference(@NonNull String key) {
 		Objects.requireNonNull(key, "Rule key must not be null");
 		return this.definedRules.get(key);
 	}
@@ -99,7 +99,7 @@ public class TokenRuleContext {
 	 * @param tokens The list of tokens to capture
 	 * @throws NullPointerException If the key or token is null
 	 */
-	public void captureTokens(@NotNull String key, @NotNull List<Token> tokens) {
+	public void captureTokens(@NonNull String key, @NonNull List<Token> tokens) {
 		Objects.requireNonNull(key, "Token key must not be null");
 		Objects.requireNonNull(tokens, "List of tokens must not be null");
 		this.capturedTokens.put(key, List.copyOf(tokens));
@@ -112,7 +112,7 @@ public class TokenRuleContext {
 	 * @return The token associated with the given key or null if no token is captured for the key
 	 * @throws NullPointerException If the key is null
 	 */
-	public @Nullable List<Token> getCapturedTokens(@NotNull String key) {
+	public @Nullable List<Token> getCapturedTokens(@NonNull String key) {
 		Objects.requireNonNull(key, "Capture key must not be null");
 		
 		return this.capturedTokens.get(key);

@@ -20,8 +20,8 @@ package net.luis.utils.io.token.context;
 
 import net.luis.utils.io.token.stream.MutableTokenStream;
 import net.luis.utils.io.token.stream.TokenStream;
-import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Unmodifiable;
+import org.jspecify.annotations.NonNull;
 
 import java.util.Objects;
 
@@ -33,7 +33,7 @@ import java.util.Objects;
  * @param stream The token stream immutable view after the associated token rule was matched
  */
 public record TokenActionContext(
-	@NotNull @Unmodifiable TokenStream stream
+	@NonNull @Unmodifiable TokenStream stream
 ) {
 	
 	/**

@@ -23,8 +23,8 @@ import net.luis.utils.annotation.type.Singleton;
 import net.luis.utils.io.data.xml.*;
 import net.luis.utils.io.data.xml.exception.XmlTypeException;
 import net.luis.utils.util.result.Result;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 import java.util.*;
 import java.util.regex.Pattern;
@@ -111,52 +111,52 @@ public final class XmlTypeProvider implements TypeProvider<XmlElement> {
 	private XmlTypeProvider() {}
 	
 	@Override
-	public @NotNull XmlElement empty() {
+	public @NonNull XmlElement empty() {
 		return new XmlElement(EMPTY);
 	}
 	
 	@Override
-	public @NotNull Result<XmlElement> createNull() {
+	public @NonNull Result<XmlElement> createNull() {
 		return Result.success(new XmlElement(NULL));
 	}
 	
 	@Override
-	public @NotNull Result<XmlElement> createBoolean(boolean value) {
+	public @NonNull Result<XmlElement> createBoolean(boolean value) {
 		return Result.success(new XmlValue(BOOLEAN, value));
 	}
 	
 	@Override
-	public @NotNull Result<XmlElement> createByte(byte value) {
+	public @NonNull Result<XmlElement> createByte(byte value) {
 		return Result.success(new XmlValue(BYTE, value));
 	}
 	
 	@Override
-	public @NotNull Result<XmlElement> createShort(short value) {
+	public @NonNull Result<XmlElement> createShort(short value) {
 		return Result.success(new XmlValue(SHORT, value));
 	}
 	
 	@Override
-	public @NotNull Result<XmlElement> createInteger(int value) {
+	public @NonNull Result<XmlElement> createInteger(int value) {
 		return Result.success(new XmlValue(INTEGER, value));
 	}
 	
 	@Override
-	public @NotNull Result<XmlElement> createLong(long value) {
+	public @NonNull Result<XmlElement> createLong(long value) {
 		return Result.success(new XmlValue(LONG, value));
 	}
 	
 	@Override
-	public @NotNull Result<XmlElement> createFloat(float value) {
+	public @NonNull Result<XmlElement> createFloat(float value) {
 		return Result.success(new XmlValue(FLOAT, value));
 	}
 	
 	@Override
-	public @NotNull Result<XmlElement> createDouble(double value) {
+	public @NonNull Result<XmlElement> createDouble(double value) {
 		return Result.success(new XmlValue(DOUBLE, value));
 	}
 	
 	@Override
-	public @NotNull Result<XmlElement> createString(@Nullable String value) {
+	public @NonNull Result<XmlElement> createString(@Nullable String value) {
 		if (value == null) {
 			return Result.error("Value 'null' is not a valid string");
 		}
@@ -165,7 +165,7 @@ public final class XmlTypeProvider implements TypeProvider<XmlElement> {
 	}
 	
 	@Override
-	public @NotNull Result<XmlElement> createList(@Nullable List<? extends XmlElement> values) {
+	public @NonNull Result<XmlElement> createList(@Nullable List<? extends XmlElement> values) {
 		if (values == null) {
 			return Result.error("Value 'null' is not a valid list");
 		}
@@ -175,12 +175,12 @@ public final class XmlTypeProvider implements TypeProvider<XmlElement> {
 	}
 	
 	@Override
-	public @NotNull Result<XmlElement> createMap() {
+	public @NonNull Result<XmlElement> createMap() {
 		return Result.success(new XmlContainer(MAP));
 	}
 	
 	@Override
-	public @NotNull Result<XmlElement> createMap(@Nullable Map<String, ? extends XmlElement> values) {
+	public @NonNull Result<XmlElement> createMap(@Nullable Map<String, ? extends XmlElement> values) {
 		if (values == null) {
 			return Result.error("Value 'null' is not a valid map");
 		}
@@ -189,7 +189,7 @@ public final class XmlTypeProvider implements TypeProvider<XmlElement> {
 	}
 	
 	@Override
-	public @NotNull Result<XmlElement> getEmpty(@Nullable XmlElement type) {
+	public @NonNull Result<XmlElement> getEmpty(@Nullable XmlElement type) {
 		if (type == null) {
 			return Result.error("Value 'null' is not empty");
 		}
@@ -201,7 +201,7 @@ public final class XmlTypeProvider implements TypeProvider<XmlElement> {
 	}
 	
 	@Override
-	public @NotNull Result<Boolean> isNull(@Nullable XmlElement type) {
+	public @NonNull Result<Boolean> isNull(@Nullable XmlElement type) {
 		if (type == null) {
 			return Result.error("Value 'null' is not xml null");
 		}
@@ -210,7 +210,7 @@ public final class XmlTypeProvider implements TypeProvider<XmlElement> {
 	}
 	
 	@Override
-	public @NotNull Result<Boolean> getBoolean(@Nullable XmlElement type) {
+	public @NonNull Result<Boolean> getBoolean(@Nullable XmlElement type) {
 		if (type == null) {
 			return Result.error("Value 'null' is not a boolean");
 		}
@@ -227,7 +227,7 @@ public final class XmlTypeProvider implements TypeProvider<XmlElement> {
 	}
 	
 	@Override
-	public @NotNull Result<Byte> getByte(@Nullable XmlElement type) {
+	public @NonNull Result<Byte> getByte(@Nullable XmlElement type) {
 		if (type == null) {
 			return Result.error("Value 'null' is not a byte");
 		}
@@ -244,7 +244,7 @@ public final class XmlTypeProvider implements TypeProvider<XmlElement> {
 	}
 	
 	@Override
-	public @NotNull Result<Short> getShort(@Nullable XmlElement type) {
+	public @NonNull Result<Short> getShort(@Nullable XmlElement type) {
 		if (type == null) {
 			return Result.error("Value 'null' is not a short");
 		}
@@ -261,7 +261,7 @@ public final class XmlTypeProvider implements TypeProvider<XmlElement> {
 	}
 	
 	@Override
-	public @NotNull Result<Integer> getInteger(@Nullable XmlElement type) {
+	public @NonNull Result<Integer> getInteger(@Nullable XmlElement type) {
 		if (type == null) {
 			return Result.error("Value 'null' is not an integer");
 		}
@@ -278,7 +278,7 @@ public final class XmlTypeProvider implements TypeProvider<XmlElement> {
 	}
 	
 	@Override
-	public @NotNull Result<Long> getLong(@Nullable XmlElement type) {
+	public @NonNull Result<Long> getLong(@Nullable XmlElement type) {
 		if (type == null) {
 			return Result.error("Value 'null' is not a long");
 		}
@@ -295,7 +295,7 @@ public final class XmlTypeProvider implements TypeProvider<XmlElement> {
 	}
 	
 	@Override
-	public @NotNull Result<Float> getFloat(@Nullable XmlElement type) {
+	public @NonNull Result<Float> getFloat(@Nullable XmlElement type) {
 		if (type == null) {
 			return Result.error("Value 'null' is not a float");
 		}
@@ -312,7 +312,7 @@ public final class XmlTypeProvider implements TypeProvider<XmlElement> {
 	}
 	
 	@Override
-	public @NotNull Result<Double> getDouble(@Nullable XmlElement type) {
+	public @NonNull Result<Double> getDouble(@Nullable XmlElement type) {
 		if (type == null) {
 			return Result.error("Value 'null' is not a double");
 		}
@@ -329,7 +329,7 @@ public final class XmlTypeProvider implements TypeProvider<XmlElement> {
 	}
 	
 	@Override
-	public @NotNull Result<String> getString(@Nullable XmlElement type) {
+	public @NonNull Result<String> getString(@Nullable XmlElement type) {
 		if (type == null) {
 			return Result.error("Value 'null' is not a string");
 		}
@@ -341,7 +341,7 @@ public final class XmlTypeProvider implements TypeProvider<XmlElement> {
 	}
 	
 	@Override
-	public @NotNull Result<List<XmlElement>> getList(@Nullable XmlElement type) {
+	public @NonNull Result<List<XmlElement>> getList(@Nullable XmlElement type) {
 		if (type == null) {
 			return Result.error("Value 'null' is not a valid list");
 		}
@@ -371,7 +371,7 @@ public final class XmlTypeProvider implements TypeProvider<XmlElement> {
 	}
 	
 	@Override
-	public @NotNull Result<Map<String, XmlElement>> getMap(@Nullable XmlElement type) {
+	public @NonNull Result<Map<String, XmlElement>> getMap(@Nullable XmlElement type) {
 		if (type == null) {
 			return Result.error("Value 'null' is not a valid map");
 		}
@@ -404,7 +404,7 @@ public final class XmlTypeProvider implements TypeProvider<XmlElement> {
 	
 	@Override
 	@SuppressWarnings("DuplicatedCode")
-	public @NotNull Result<Boolean> has(@Nullable XmlElement type, @Nullable String key) {
+	public @NonNull Result<Boolean> has(@Nullable XmlElement type, @Nullable String key) {
 		if (type == null) {
 			return Result.error("Value 'null' is not a valid map");
 		}
@@ -425,7 +425,7 @@ public final class XmlTypeProvider implements TypeProvider<XmlElement> {
 	
 	@Override
 	@SuppressWarnings("DuplicatedCode")
-	public @NotNull Result<XmlElement> get(@Nullable XmlElement type, @Nullable String key) {
+	public @NonNull Result<XmlElement> get(@Nullable XmlElement type, @Nullable String key) {
 		if (type == null) {
 			return Result.error("Value 'null' is not a valid map");
 		}
@@ -450,7 +450,7 @@ public final class XmlTypeProvider implements TypeProvider<XmlElement> {
 	}
 	
 	@Override
-	public @NotNull Result<XmlElement> set(@Nullable XmlElement type, @Nullable String key, @Nullable XmlElement value) {
+	public @NonNull Result<XmlElement> set(@Nullable XmlElement type, @Nullable String key, @Nullable XmlElement value) {
 		if (type == null) {
 			return Result.error("Value 'null' is not a valid map");
 		}
@@ -475,7 +475,7 @@ public final class XmlTypeProvider implements TypeProvider<XmlElement> {
 	}
 	
 	@Override
-	public @NotNull Result<XmlElement> merge(@Nullable XmlElement current, @Nullable XmlElement value) {
+	public @NonNull Result<XmlElement> merge(@Nullable XmlElement current, @Nullable XmlElement value) {
 		if (current == null) {
 			return Result.success(value);
 		}
@@ -526,7 +526,7 @@ public final class XmlTypeProvider implements TypeProvider<XmlElement> {
 	 * @return The escaped name
 	 * @throws NullPointerException If the name is null
 	 */
-	private @NotNull String escapeName(@NotNull String name) {
+	private @NonNull String escapeName(@NonNull String name) {
 		Objects.requireNonNull(name, "Name must not be null");
 		return !XML_ELEMENT_NAME_PATTERN.matcher(name).matches() ? "_" + name : name;
 	}
@@ -540,7 +540,7 @@ public final class XmlTypeProvider implements TypeProvider<XmlElement> {
 	 * @return The unescaped name
 	 * @throws NullPointerException If the name is null
 	 */
-	private @NotNull String unescapeName(@NotNull String name) {
+	private @NonNull String unescapeName(@NonNull String name) {
 		Objects.requireNonNull(name, "Name must not be null");
 		
 		if (name.startsWith("_") && !XML_ELEMENT_NAME_PATTERN.matcher(name.substring(1)).matches()) {
@@ -560,7 +560,7 @@ public final class XmlTypeProvider implements TypeProvider<XmlElement> {
 	 * @throws NullPointerException If the name or value is null
 	 * @throws IllegalStateException If the value is not a valid xml element (should not happen)
 	 */
-	private @NotNull XmlElement copyWithName(@NotNull String name, @NotNull XmlElement value) {
+	private @NonNull XmlElement copyWithName(@NonNull String name, @NonNull XmlElement value) {
 		Objects.requireNonNull(name, "Name must not be null");
 		Objects.requireNonNull(value, "Value must not be null");
 		
@@ -585,7 +585,7 @@ public final class XmlTypeProvider implements TypeProvider<XmlElement> {
 	 * @throws NullPointerException If the current or value elements are null
 	 * @throws XmlTypeException If the current or value elements are not arrays
 	 */
-	private @NotNull List<XmlElement> mergeArray(@NotNull XmlElements current, @NotNull XmlElements value) {
+	private @NonNull List<XmlElement> mergeArray(@NonNull XmlElements current, @NonNull XmlElements value) {
 		Objects.requireNonNull(current, "Current elements must not be null");
 		Objects.requireNonNull(value, "Value elements must not be null");
 		
@@ -606,7 +606,7 @@ public final class XmlTypeProvider implements TypeProvider<XmlElement> {
 	 * @throws NullPointerException If the current or value elements are null
 	 * @throws XmlTypeException If the current or value elements are not objects
 	 */
-	private @NotNull Map<String, XmlElement> mergeObject(@NotNull XmlElements current, @NotNull XmlElements value) {
+	private @NonNull Map<String, XmlElement> mergeObject(@NonNull XmlElements current, @NonNull XmlElements value) {
 		Objects.requireNonNull(current, "Current elements must not be null");
 		Objects.requireNonNull(value, "Value elements must not be null");
 		
@@ -625,7 +625,7 @@ public final class XmlTypeProvider implements TypeProvider<XmlElement> {
 	 * @return A result containing the merged container or an error
 	 * @throws NullPointerException If the current or value elements are null
 	 */
-	private @NotNull Result<XmlElement> mergeUndefined(@NotNull XmlElements current, @NotNull XmlElements value) {
+	private @NonNull Result<XmlElement> mergeUndefined(@NonNull XmlElements current, @NonNull XmlElements value) {
 		Objects.requireNonNull(current, "Current elements must not be null");
 		Objects.requireNonNull(value, "Value elements must not be null");
 		
