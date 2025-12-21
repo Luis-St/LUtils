@@ -460,6 +460,39 @@ public final class Codecs {
 	}
 	
 	/**
+	 * Creates a new discriminated codec that selects the appropriate codec based on a discriminator field.<br>
+	 * This codec reads a discriminator field from the parent object to determine which codec to use
+	 * for encoding or decoding the actual value.<br>
+	 * <p>
+	 *     This is particularly useful for polymorphic types where the specific subtype is determined
+	 *     by a discriminator field value, such as payment method types, message types, or entity types.
+	 * </p>
+	 * <p>
+	 *     The discriminator field is expected to be present in the same parent object as the field
+	 *     being encoded/decoded. During both encoding and decoding, the codec will:
+	 * </p>
+	 * <ol>
+	 *     <li>Read the discriminator field from the parent object</li>
+	 *     <li>Decode the discriminator value using the discriminator codec</li>
+	 *     <li>Query the provider to get the appropriate codec for that discriminator value</li>
+	 *     <li>Use that codec to encode or decode the actual value</li>
+	 * </ol>
+	 *
+	 * @param discriminatedField The name of the discriminator field in the parent object
+	 * @param discriminatedCodec The codec to use for encoding/decoding the discriminator value
+	 * @param provider The provider that maps discriminator values to their corresponding codecs
+	 * @param <C> The base type of values handled by this codec
+	 * @param <T> The type of the discriminator value
+	 * @return A new discriminated codec
+	 * @throws NullPointerException If discriminated field, discriminated codec, or provider is null
+	 * @see DiscriminatedCodec
+	 * @see DiscriminatedCodecProvider
+	 */
+	public static <C, T> @NotNull DiscriminatedCodec<C, T> discriminatedBy(@NotNull String discriminatedField, @NotNull Codec<T> discriminatedCodec, @NotNull DiscriminatedCodecProvider<C, T> provider) {
+		return new DiscriminatedCodec<>(discriminatedField, discriminatedCodec, provider);
+	}
+	
+	/**
 	 * Creates a new unit codec for the given value.<br>
 	 *
 	 * @param value The value

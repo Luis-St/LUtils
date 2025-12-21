@@ -19,6 +19,8 @@
 package net.luis.utils.io.codec;
 
 import net.luis.utils.io.codec.provider.JsonTypeProvider;
+import net.luis.utils.io.codec.types.struct.DiscriminatedCodec;
+import net.luis.utils.io.codec.types.struct.DiscriminatedCodecProvider;
 import net.luis.utils.io.codec.types.struct.EitherCodec;
 import net.luis.utils.io.codec.types.struct.UnitCodec;
 import net.luis.utils.io.data.json.*;
@@ -254,7 +256,18 @@ public class CodecsTest {
 		assertThrows(NullPointerException.class, () -> either(INTEGER, (Codec<Boolean>) null));
 		assertInstanceOf(EitherCodec.class, either(INTEGER, BOOLEAN));
 	}
-	
+
+	@Test
+	void discriminatedBy() {
+		Map<String, Codec<? extends String>> codecs = Map.of("a", STRING, "b", STRING);
+		DiscriminatedCodecProvider<String, String> provider = DiscriminatedCodecProvider.create(String.class, codecs);
+
+		assertThrows(NullPointerException.class, () -> Codecs.discriminatedBy(null, STRING, provider));
+		assertThrows(NullPointerException.class, () -> Codecs.discriminatedBy("field", null, provider));
+		assertThrows(NullPointerException.class, () -> Codecs.discriminatedBy("field", STRING, null));
+		assertInstanceOf(DiscriminatedCodec.class, Codecs.discriminatedBy("field", STRING, provider));
+	}
+
 	@Test
 	void unitCodecs() {
 		assertDoesNotThrow(() -> unit((Object) null));
