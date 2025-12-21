@@ -52,7 +52,7 @@ class Base64CodecTest {
 
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), null);
 		assertTrue(result.isError());
-		assertTrue(result.errorOrThrow().contains("Unable to encode null as Base64"));
+		assertTrue(result.errorOrThrow().contains("Unable to encode null as base 64"));
 	}
 
 	@Test
@@ -106,7 +106,7 @@ class Base64CodecTest {
 
 		Result<byte[]> result = codec.decodeStart(typeProvider, typeProvider.empty(), null);
 		assertTrue(result.isError());
-		assertTrue(result.errorOrThrow().contains("Unable to decode null value as Base64"));
+		assertTrue(result.errorOrThrow().contains("Unable to decode null value as base 64"));
 	}
 
 	@Test
@@ -141,7 +141,7 @@ class Base64CodecTest {
 
 		Result<byte[]> result = codec.decodeStart(typeProvider, typeProvider.empty(), value);
 		assertTrue(result.isError());
-		assertTrue(result.errorOrThrow().contains("Unable to decode Base64 string"));
+		assertTrue(result.errorOrThrow().contains("Unable to decode base 64 string"));
 	}
 
 	@Test
@@ -152,7 +152,7 @@ class Base64CodecTest {
 
 		Result<byte[]> result = codec.decodeStart(typeProvider, typeProvider.empty(), value);
 		assertTrue(result.isError());
-		assertTrue(result.errorOrThrow().contains("Unable to decode Base64 from a non-string value"));
+		assertTrue(result.errorOrThrow().contains("Unable to decode base 64 from a non-string value"));
 	}
 
 	@Test
