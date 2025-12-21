@@ -44,6 +44,17 @@ public sealed interface Result<T> permits Success, Error, Partial {
 	//region Static factory methods
 	
 	/**
+	 * Creates a new successful result with no value (null).<br>
+	 * This is helpful when the operation succeeds but does not produce a meaningful value.<br>
+	 *
+	 * @return The created result with no value
+	 * @param <T> The type of the result
+	 */
+	static <T> @NonNull Result<T> success() {
+		return new Success<>(null);
+	}
+	
+	/**
 	 * Creates a new successful result with the specified value.<br>
 	 *
 	 * @param value The value of the result

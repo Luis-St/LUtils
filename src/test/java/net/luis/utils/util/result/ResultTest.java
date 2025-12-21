@@ -30,6 +30,15 @@ import static org.junit.jupiter.api.Assertions.*;
 class ResultTest {
 	
 	@Test
+	void successWithoutValueCreatesSuccessfulResult() {
+		Result<Integer> result = Result.success();
+		assertNotNull(result);
+		assertTrue(result.isSuccess());
+		assertFalse(result.isError());
+		assertFalse(result.isPartial());
+	}
+	
+	@Test
 	void successCreatesSuccessfulResult() {
 		Result<Integer> result = Result.success(100);
 		assertNotNull(result);
