@@ -531,18 +531,18 @@ public final class Codecs {
 	 * </p>
 	 * <p>
 	 *     Example usage for a binary tree:
-	 *     <pre>{@code
-	 *     record TreeNode(int value, TreeNode left, TreeNode right) {}
-	 *
-	 *     Codec<TreeNode> treeCodec = Codecs.recursive(self ->
-	 *         CodecBuilder.of(
-	 *             Codecs.INTEGER.fieldOf("value", TreeNode::value),
-	 *             self.nullable().fieldOf("left", TreeNode::left),
-	 *             self.nullable().fieldOf("right", TreeNode::right)
-	 *         ).create(TreeNode::new)
-	 *     );
-	 *     }</pre>
 	 * </p>
+	 * <pre>{@code
+	 * record TreeNode(int value, TreeNode left, TreeNode right) {}
+	 *
+	 * Codec<TreeNode> treeCodec = Codecs.recursive(self ->
+	 *     CodecBuilder.of(
+	 *         Codecs.INTEGER.fieldOf("value", TreeNode::value),
+	 *         self.nullable().fieldOf("left", TreeNode::left),
+	 *         self.nullable().fieldOf("right", TreeNode::right)
+	 *     ).create(TreeNode::new)
+	 * );
+	 * }</pre>
 	 *
 	 * @param codecFactory The factory function that creates the codec using a self-reference
 	 * @param <C> The type of the recursive value
