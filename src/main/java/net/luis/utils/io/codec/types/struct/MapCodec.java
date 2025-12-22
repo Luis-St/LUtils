@@ -21,6 +21,8 @@ package net.luis.utils.io.codec.types.struct;
 import net.luis.utils.collection.util.SimpleEntry;
 import net.luis.utils.io.codec.AbstractCodec;
 import net.luis.utils.io.codec.Codec;
+import net.luis.utils.io.codec.constraint.SizeConstraint;
+import net.luis.utils.io.codec.constraint.config.SizeConstraintConfig;
 import net.luis.utils.io.codec.provider.TypeProvider;
 import net.luis.utils.util.result.Result;
 import org.jspecify.annotations.NonNull;
@@ -37,7 +39,7 @@ import java.util.*;
  * @param <K> The type of keys in the map
  * @param <V> The type of values in the map
  */
-public class MapCodec<K, V> extends AbstractCodec<Map<K, V>, Object> {
+public class MapCodec<K, V> extends AbstractCodec<Map<K, V>, SizeConstraintConfig> implements SizeConstraint<Map<K, V>, MapCodec<K, V>> {
 	
 	/**
 	 * The codec used to encode and decode the keys of the map.<br>
@@ -59,13 +61,44 @@ public class MapCodec<K, V> extends AbstractCodec<Map<K, V>, Object> {
 		this.keyCodec = Objects.requireNonNull(keyCodec, "Key codec must not be null");
 		this.valueCodec = Objects.requireNonNull(valueCodec, "Value codec must not be null");
 	}
+
+	/**
+	 * Constructs a new map codec using the given codecs for the keys and values and the given size constraint configuration.<br>
+	 *
+	 * @param keyCodec The key codec
+	 * @param valueCodec The value codec
+	 * @param constraintConfig The size constraint configuration
+	 * @throws NullPointerException If the key or value codec is null
+	 */
+	public MapCodec(@NonNull Codec<K> keyCodec, @NonNull Codec<V> valueCodec, @NonNull SizeConstraintConfig constraintConfig) {
+		this.keyCodec = Objects.requireNonNull(keyCodec, "Key codec must not be null");
+		this.valueCodec = Objects.requireNonNull(valueCodec, "Value codec must not be null");
+		super(constraintConfig);
+	}
 	
 	@Override
 	@SuppressWarnings("unchecked")
 	public @NonNull Class<Map<K, V>> getType() {
 		return (Class<Map<K, V>>) (Class<?>) Map.class;
 	}
-	
+
+	@Override
+	public @NonNull MapCodec<K, V> applyConstraint(@NonNull SizeConstraintConfig config) {
+		return new MapCodec<>(this.keyCodec, this.valueCodec, config);
+	}
+
+	@Override
+	protected @NonNull Result<Void> checkConstraints(@NonNull Map<K, V> value) {
+		Objects.requireNonNull(value, "Value must not be null");
+
+		Result<Void> constraintResult = this.getConstraintConfig().map(config -> config.matches(value.size())).orElseGet(Result::success);
+		if (constraintResult.isError()) {
+			return Result.error("Map " + value + " does not meet constraints: " + constraintResult.errorOrThrow());
+		}
+		
+		return Result.success();
+	}
+
 	@Override
 	public <R> @NonNull Result<R> encodeStart(@NonNull TypeProvider<R> provider, @NonNull R current, @Nullable Map<K, V> value) {
 		Objects.requireNonNull(provider, "Type provider must not be null");
@@ -73,7 +106,12 @@ public class MapCodec<K, V> extends AbstractCodec<Map<K, V>, Object> {
 		if (value == null) {
 			return Result.error("Unable to encode null value as map using '" + this + "'");
 		}
-		
+
+		Result<Void> constraintResult = this.checkConstraints(value);
+		if (constraintResult.isError()) {
+			return Result.error("Unable to encode map using '" + this + "': " + constraintResult.errorOrThrow());
+		}
+
 		Result<R> emptyMap = provider.createMap();
 		if (emptyMap.isError()) {
 			return Result.error("Unable to create empty map: " + emptyMap.errorOrThrow());
@@ -159,7 +197,15 @@ public class MapCodec<K, V> extends AbstractCodec<Map<K, V>, Object> {
 				errors.add("Key '" + entry.getKey() + "': " + result.errorOrThrow());
 			}
 		}
-		
+
+		if (entries.isEmpty() && !errors.isEmpty()) {
+			return Result.error("Unable to decode any entries of the map using '" + this + "': " + String.join("\n - ", errors));
+		}
+		Result<Void> constraintResult = this.checkConstraints(entries);
+		if (constraintResult.isError()) {
+			return Result.error("Unable to decode map using '" + this + "': " + constraintResult.errorOrThrow());
+		}
+
 		if (errors.isEmpty()) {
 			return Result.success(entries);
 		}
@@ -209,7 +255,9 @@ public class MapCodec<K, V> extends AbstractCodec<Map<K, V>, Object> {
 	
 	@Override
 	public String toString() {
-		return "MapCodec[" + this.keyCodec + ", " + this.valueCodec + "]";
+		return this.getConstraintConfig().map(sizeConstraintConfig -> {
+			return "ConstrainedMapCodec[" + this.keyCodec + ", " + this.valueCodec + ",constraints=" + sizeConstraintConfig + "]";
+		}).orElse("MapCodec[" + this.keyCodec + ", " + this.valueCodec + "]");
 	}
 	//endregion
 }

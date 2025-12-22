@@ -20,6 +20,8 @@ package net.luis.utils.io.codec.types.struct;
 
 import net.luis.utils.io.codec.AbstractCodec;
 import net.luis.utils.io.codec.Codec;
+import net.luis.utils.io.codec.constraint.SizeConstraint;
+import net.luis.utils.io.codec.constraint.config.SizeConstraintConfig;
 import net.luis.utils.io.codec.provider.TypeProvider;
 import net.luis.utils.util.result.Result;
 import org.jspecify.annotations.NonNull;
@@ -35,7 +37,7 @@ import java.util.*;
  *
  * @param <E> The element type of the set
  */
-public class SetCodec<E> extends AbstractCodec<Set<E>, Object> {
+public class SetCodec<E> extends AbstractCodec<Set<E>, SizeConstraintConfig> implements SizeConstraint<Set<E>, SetCodec<E>> {
 	
 	/**
 	 * The codec used to encode and decode set elements.<br>
@@ -51,13 +53,42 @@ public class SetCodec<E> extends AbstractCodec<Set<E>, Object> {
 	public SetCodec(@NonNull Codec<E> codec) {
 		this.codec = Objects.requireNonNull(codec, "Element codec must not be null");
 	}
+
+	/**
+	 * Constructs a new set codec using the given codec for the elements and the given size constraint configuration.<br>
+	 *
+	 * @param codec The codec for the elements
+	 * @param constraintConfig The size constraint configuration
+	 * @throws NullPointerException If the codec is null
+	 */
+	public SetCodec(@NonNull Codec<E> codec, @NonNull SizeConstraintConfig constraintConfig) {
+		this.codec = Objects.requireNonNull(codec, "Element codec must not be null");
+		super(constraintConfig);
+	}
 	
 	@Override
 	@SuppressWarnings("unchecked")
 	public @NonNull Class<Set<E>> getType() {
 		return (Class<Set<E>>) (Class<?>) Set.class;
 	}
-	
+
+	@Override
+	public @NonNull SetCodec<E> applyConstraint(@NonNull SizeConstraintConfig config) {
+		return new SetCodec<>(this.codec, config);
+	}
+
+	@Override
+	protected @NonNull Result<Void> checkConstraints(@NonNull Set<E> value) {
+		Objects.requireNonNull(value, "Value must not be null");
+
+		Result<Void> constraintResult = this.getConstraintConfig().map(config -> config.matches(value.size())).orElseGet(Result::success);
+		if (constraintResult.isError()) {
+			return Result.error("Set " + value + " does not meet constraints: " + constraintResult.errorOrThrow());
+		}
+		
+		return Result.success();
+	}
+
 	@Override
 	@SuppressWarnings("DuplicatedCode")
 	public <R> @NonNull Result<R> encodeStart(@NonNull TypeProvider<R> provider, @NonNull R current, @Nullable Set<E> value) {
@@ -66,7 +97,12 @@ public class SetCodec<E> extends AbstractCodec<Set<E>, Object> {
 		if (value == null) {
 			return Result.error("Unable to encode null value as set using '" + this + "'");
 		}
-		
+
+		Result<Void> constraintResult = this.checkConstraints(value);
+		if (constraintResult.isError()) {
+			return Result.error("Unable to encode set using '" + this + "': " + constraintResult.errorOrThrow());
+		}
+
 		List<R> elements = new ArrayList<>();
 		List<String> errors = new ArrayList<>();
 		int i = 0;
@@ -121,7 +157,15 @@ public class SetCodec<E> extends AbstractCodec<Set<E>, Object> {
 				errors.add("Index " + i + ": " + result.errorOrThrow());
 			}
 		}
-		
+
+		if (elements.isEmpty() && !errors.isEmpty()) {
+			return Result.error("Unable to decode any elements of the set using '" + this + "': " + String.join("\n - ", errors));
+		}
+		Result<Void> constraintResult = this.checkConstraints(elements);
+		if (constraintResult.isError()) {
+			return Result.error("Unable to decode set using '" + this + "': " + constraintResult.errorOrThrow());
+		}
+
 		if (errors.isEmpty()) {
 			return Result.success(elements);
 		}
@@ -143,7 +187,9 @@ public class SetCodec<E> extends AbstractCodec<Set<E>, Object> {
 	
 	@Override
 	public String toString() {
-		return "SetCodec[" + this.codec + "]";
+		return this.getConstraintConfig().map(sizeConstraintConfig -> {
+			return "ConstrainedSetCodec[" + this.codec + ",constraints=" + sizeConstraintConfig + "]";
+		}).orElse("SetCodec[" + this.codec + "]");
 	}
 	//endregion
 }
