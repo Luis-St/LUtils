@@ -19,6 +19,8 @@
 package net.luis.utils.io.codec.types.primitiv;
 
 import net.luis.utils.io.codec.AbstractCodec;
+import net.luis.utils.io.codec.constraint.LengthConstraint;
+import net.luis.utils.io.codec.constraint.config.LengthConstraintConfig;
 import net.luis.utils.io.codec.provider.TypeProvider;
 import net.luis.utils.util.result.Result;
 import org.jspecify.annotations.NonNull;
@@ -31,18 +33,50 @@ import java.util.Objects;
  *
  * @author Luis-St
  */
-public class StringCodec extends AbstractCodec<String, Object> {
+public class StringCodec extends AbstractCodec<String, LengthConstraintConfig> implements LengthConstraint<String, StringCodec> {
 	
 	/**
 	 * Constructs a new string codec.<br>
 	 */
 	public StringCodec() {}
 	
+	/**
+	 * Constructs a new string codec with the specified length constraint configuration.<br>
+	 *
+	 * @param constraintConfig The length constraint configuration
+	 */
+	public StringCodec(@NonNull LengthConstraintConfig constraintConfig) {
+		super(constraintConfig);
+	}
+	
+	@Override
+	public @NonNull StringCodec applyConstraint(@NonNull LengthConstraintConfig config) {
+		Objects.requireNonNull(config, "Constraint config must not be null");
+		return new StringCodec(config);
+	}
+	
+	@Override
+	protected @NonNull Result<Void> checkConstraints(@NonNull String value) {
+		Objects.requireNonNull(value, "Value must not be null");
+		
+		Result<Void> constraintResult = this.getConstraintConfig().map(config -> config.matches(value.length())).orElseGet(Result::success);
+		if (constraintResult.isError()) {
+			return Result.error("String " + value + " does not meet constraints: " + constraintResult.errorOrThrow());
+		}
+		
+		return Result.success();
+	}
+	
 	@Override
 	public <R> @NonNull Result<R> encodeStart(@NonNull TypeProvider<R> provider, @NonNull R current, @Nullable String value) {
 		Objects.requireNonNull(provider, "Type provider must not be null");
 		if (value == null) {
 			return Result.error("Unable to encode null as string using '" + this + "'");
+		}
+		
+		Result<Void> constraintResult = this.checkConstraints(value);
+		if (constraintResult.isError()) {
+			return Result.error(constraintResult.errorOrThrow());
 		}
 		
 		return provider.createString(value);
@@ -62,7 +96,17 @@ public class StringCodec extends AbstractCodec<String, Object> {
 			return Result.error("Unable to decode null value as string using '" + this + "'");
 		}
 		
-		return provider.getString(value);
+		Result<String> stringResult = provider.getString(value);
+		if (stringResult.isError()) {
+			return stringResult;
+		}
+		
+		Result<Void> constraintResult = this.checkConstraints(stringResult.resultOrThrow());
+		if (constraintResult.isError()) {
+			return Result.error(constraintResult.errorOrThrow());
+		}
+		
+		return stringResult;
 	}
 	
 	@Override
@@ -73,6 +117,8 @@ public class StringCodec extends AbstractCodec<String, Object> {
 	
 	@Override
 	public String toString() {
-		return "StringCodec";
+		return this.getConstraintConfig().map(config -> {
+			return "ConstrainedStringCodec[constraints=" + config + "]";
+		}).orElse("StringCodec");
 	}
 }

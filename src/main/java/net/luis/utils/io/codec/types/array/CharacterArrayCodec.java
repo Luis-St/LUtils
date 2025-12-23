@@ -19,6 +19,8 @@
 package net.luis.utils.io.codec.types.array;
 
 import net.luis.utils.io.codec.*;
+import net.luis.utils.io.codec.constraint.LengthConstraint;
+import net.luis.utils.io.codec.constraint.config.LengthConstraintConfig;
 import net.luis.utils.io.codec.provider.TypeProvider;
 import net.luis.utils.util.result.Result;
 import org.apache.commons.lang3.ArrayUtils;
@@ -33,7 +35,7 @@ import java.util.*;
  *
  * @author Luis-St
  */
-public class CharacterArrayCodec extends AbstractCodec<char[], Object> {
+public class CharacterArrayCodec extends AbstractCodec<char[], LengthConstraintConfig> implements LengthConstraint<char[], CharacterArrayCodec> {
 	
 	/**
 	 * The internal codec that handles the conversion between a list of characters and the array representation.<br>
@@ -45,6 +47,33 @@ public class CharacterArrayCodec extends AbstractCodec<char[], Object> {
 	 */
 	public CharacterArrayCodec() {}
 	
+	/**
+	 * Constructs a new character array codec with the specified length constraint configuration.<br>
+	 *
+	 * @param constraintConfig The length constraint configuration
+	 */
+	public CharacterArrayCodec(@NonNull LengthConstraintConfig constraintConfig) {
+		super(constraintConfig);
+	}
+	
+	@Override
+	public @NonNull CharacterArrayCodec applyConstraint(@NonNull LengthConstraintConfig config) {
+		Objects.requireNonNull(config, "Constraint config must not be null");
+		return new CharacterArrayCodec(config);
+	}
+	
+	@Override
+	protected @NonNull Result<Void> checkConstraints(char @NonNull [] value) {
+		Objects.requireNonNull(value, "Value must not be null");
+		
+		Result<Void> constraintResult = this.getConstraintConfig().map(config -> config.matches(value.length)).orElseGet(Result::success);
+		if (constraintResult.isError()) {
+			return Result.error("Character array " + Arrays.toString(value) + " does not meet constraints: " + constraintResult.errorOrThrow());
+		}
+		
+		return Result.success();
+	}
+	
 	@Override
 	public <R> @NonNull Result<R> encodeStart(@NonNull TypeProvider<R> provider, @NonNull R current, char @Nullable [] value) {
 		Objects.requireNonNull(provider, "Type provider must not be null");
@@ -53,6 +82,12 @@ public class CharacterArrayCodec extends AbstractCodec<char[], Object> {
 		if (value == null) {
 			return Result.error("Unable to encode null as char array using '" + this + "'");
 		}
+		
+		Result<Void> constraintResult = this.checkConstraints(value);
+		if (constraintResult.isError()) {
+			return Result.error(constraintResult.errorOrThrow());
+		}
+		
 		return this.internalCodec.encodeStart(provider, current, Arrays.asList(ArrayUtils.toObject(value)));
 	}
 	
@@ -70,11 +105,20 @@ public class CharacterArrayCodec extends AbstractCodec<char[], Object> {
 		}
 		
 		List<Character> list = result.resultOrThrow();
-		return Result.success(ArrayUtils.toPrimitive(list.toArray(Character[]::new)));
+		char[] array = ArrayUtils.toPrimitive(list.toArray(Character[]::new));
+		
+		Result<Void> constraintResult = this.checkConstraints(array);
+		if (constraintResult.isError()) {
+			return Result.error(constraintResult.errorOrThrow());
+		}
+		
+		return Result.success(array);
 	}
 	
 	@Override
 	public String toString() {
-		return "CharacterArrayCodec";
+		return this.getConstraintConfig().map(config -> {
+			return "ConstrainedCharacterArrayCodec[constraints=" + config + "]";
+		}).orElse("CharacterArrayCodec");
 	}
 }

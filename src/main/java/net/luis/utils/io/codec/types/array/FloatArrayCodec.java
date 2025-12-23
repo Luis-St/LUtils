@@ -19,6 +19,8 @@
 package net.luis.utils.io.codec.types.array;
 
 import net.luis.utils.io.codec.*;
+import net.luis.utils.io.codec.constraint.LengthConstraint;
+import net.luis.utils.io.codec.constraint.config.LengthConstraintConfig;
 import net.luis.utils.io.codec.provider.TypeProvider;
 import net.luis.utils.util.result.Result;
 import org.apache.commons.lang3.ArrayUtils;
@@ -33,7 +35,7 @@ import java.util.*;
  *
  * @author Luis-St
  */
-public class FloatArrayCodec extends AbstractCodec<float[], Object> {
+public class FloatArrayCodec extends AbstractCodec<float[], LengthConstraintConfig> implements LengthConstraint<float[], FloatArrayCodec> {
 	
 	/**
 	 * The internal codec that handles the conversion between a list of floats and the array representation.<br>
@@ -45,6 +47,33 @@ public class FloatArrayCodec extends AbstractCodec<float[], Object> {
 	 */
 	public FloatArrayCodec() {}
 	
+	/**
+	 * Constructs a new float array codec with the specified length constraint configuration.<br>
+	 *
+	 * @param constraintConfig The length constraint configuration
+	 */
+	public FloatArrayCodec(@NonNull LengthConstraintConfig constraintConfig) {
+		super(constraintConfig);
+	}
+	
+	@Override
+	public @NonNull FloatArrayCodec applyConstraint(@NonNull LengthConstraintConfig config) {
+		Objects.requireNonNull(config, "Constraint config must not be null");
+		return new FloatArrayCodec(config);
+	}
+	
+	@Override
+	protected @NonNull Result<Void> checkConstraints(float @NonNull [] value) {
+		Objects.requireNonNull(value, "Value must not be null");
+		
+		Result<Void> constraintResult = this.getConstraintConfig().map(config -> config.matches(value.length)).orElseGet(Result::success);
+		if (constraintResult.isError()) {
+			return Result.error("Float array " + Arrays.toString(value) + " does not meet constraints: " + constraintResult.errorOrThrow());
+		}
+		
+		return Result.success();
+	}
+	
 	@Override
 	public <R> @NonNull Result<R> encodeStart(@NonNull TypeProvider<R> provider, @NonNull R current, float @Nullable [] value) {
 		Objects.requireNonNull(provider, "Type provider must not be null");
@@ -53,6 +82,12 @@ public class FloatArrayCodec extends AbstractCodec<float[], Object> {
 		if (value == null) {
 			return Result.error("Unable to encode null as float array using '" + this + "'");
 		}
+		
+		Result<Void> constraintResult = this.checkConstraints(value);
+		if (constraintResult.isError()) {
+			return Result.error(constraintResult.errorOrThrow());
+		}
+		
 		return this.internalCodec.encodeStart(provider, current, Arrays.asList(ArrayUtils.toObject(value)));
 	}
 	
@@ -70,11 +105,20 @@ public class FloatArrayCodec extends AbstractCodec<float[], Object> {
 		}
 		
 		List<Float> list = result.resultOrThrow();
-		return Result.success(ArrayUtils.toPrimitive(list.toArray(Float[]::new)));
+		float[] array = ArrayUtils.toPrimitive(list.toArray(Float[]::new));
+		
+		Result<Void> constraintResult = this.checkConstraints(array);
+		if (constraintResult.isError()) {
+			return Result.error(constraintResult.errorOrThrow());
+		}
+		
+		return Result.success(array);
 	}
 	
 	@Override
 	public String toString() {
-		return "FloatArrayCodec";
+		return this.getConstraintConfig().map(config -> {
+			return "ConstrainedFloatArrayCodec[constraints=" + config + "]";
+		}).orElse("FloatArrayCodec");
 	}
 }

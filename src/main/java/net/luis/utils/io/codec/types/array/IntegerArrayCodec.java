@@ -19,6 +19,8 @@
 package net.luis.utils.io.codec.types.array;
 
 import net.luis.utils.io.codec.*;
+import net.luis.utils.io.codec.constraint.LengthConstraint;
+import net.luis.utils.io.codec.constraint.config.LengthConstraintConfig;
 import net.luis.utils.io.codec.provider.TypeProvider;
 import net.luis.utils.util.result.Result;
 import org.apache.commons.lang3.ArrayUtils;
@@ -33,7 +35,7 @@ import java.util.*;
  *
  * @author Luis-St
  */
-public class IntegerArrayCodec extends AbstractCodec<int[], Object> {
+public class IntegerArrayCodec extends AbstractCodec<int[], LengthConstraintConfig> implements LengthConstraint<int[], IntegerArrayCodec> {
 	
 	/**
 	 * The internal codec that handles the conversion between a list of integers and the array representation.<br>
@@ -45,6 +47,33 @@ public class IntegerArrayCodec extends AbstractCodec<int[], Object> {
 	 */
 	public IntegerArrayCodec() {}
 	
+	/**
+	 * Constructs a new integer array codec with the specified length constraint configuration.<br>
+	 *
+	 * @param constraintConfig The length constraint configuration
+	 */
+	public IntegerArrayCodec(@NonNull LengthConstraintConfig constraintConfig) {
+		super(constraintConfig);
+	}
+	
+	@Override
+	public @NonNull IntegerArrayCodec applyConstraint(@NonNull LengthConstraintConfig config) {
+		Objects.requireNonNull(config, "Constraint config must not be null");
+		return new IntegerArrayCodec(config);
+	}
+	
+	@Override
+	protected @NonNull Result<Void> checkConstraints(int @NonNull [] value) {
+		Objects.requireNonNull(value, "Value must not be null");
+		
+		Result<Void> constraintResult = this.getConstraintConfig().map(config -> config.matches(value.length)).orElseGet(Result::success);
+		if (constraintResult.isError()) {
+			return Result.error("Integer array " + Arrays.toString(value) + " does not meet constraints: " + constraintResult.errorOrThrow());
+		}
+		
+		return Result.success();
+	}
+	
 	@Override
 	public <R> @NonNull Result<R> encodeStart(@NonNull TypeProvider<R> provider, @NonNull R current, int @Nullable [] value) {
 		Objects.requireNonNull(provider, "Type provider must not be null");
@@ -53,6 +82,12 @@ public class IntegerArrayCodec extends AbstractCodec<int[], Object> {
 		if (value == null) {
 			return Result.error("Unable to encode null as int array using '" + this + "'");
 		}
+		
+		Result<Void> constraintResult = this.checkConstraints(value);
+		if (constraintResult.isError()) {
+			return Result.error(constraintResult.errorOrThrow());
+		}
+		
 		return this.internalCodec.encodeStart(provider, current, Arrays.asList(ArrayUtils.toObject(value)));
 	}
 	
@@ -70,11 +105,20 @@ public class IntegerArrayCodec extends AbstractCodec<int[], Object> {
 		}
 		
 		List<Integer> list = result.resultOrThrow();
-		return Result.success(ArrayUtils.toPrimitive(list.toArray(Integer[]::new)));
+		int[] array = ArrayUtils.toPrimitive(list.toArray(Integer[]::new));
+		
+		Result<Void> constraintResult = this.checkConstraints(array);
+		if (constraintResult.isError()) {
+			return Result.error(constraintResult.errorOrThrow());
+		}
+		
+		return Result.success(array);
 	}
 	
 	@Override
 	public String toString() {
-		return "IntegerArrayCodec";
+		return this.getConstraintConfig().map(config -> {
+			return "ConstrainedIntegerArrayCodec[constraints=" + config + "]";
+		}).orElse("IntegerArrayCodec");
 	}
 }

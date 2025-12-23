@@ -19,6 +19,8 @@
 package net.luis.utils.io.codec.types.struct;
 
 import net.luis.utils.io.codec.*;
+import net.luis.utils.io.codec.constraint.LengthConstraint;
+import net.luis.utils.io.codec.constraint.config.LengthConstraintConfig;
 import net.luis.utils.io.codec.provider.TypeProvider;
 import net.luis.utils.util.result.Result;
 import org.jspecify.annotations.NonNull;
@@ -44,7 +46,7 @@ import java.util.*;
  *
  * @param <C> The type of elements in the array
  */
-public class ArrayCodec<C> extends AbstractCodec<C[], Object> {
+public class ArrayCodec<C> extends AbstractCodec<C[], LengthConstraintConfig> implements LengthConstraint<C[], ArrayCodec<C>> {
 	
 	/**
 	 * The type of the elements in the array.<br>
@@ -71,6 +73,38 @@ public class ArrayCodec<C> extends AbstractCodec<C[], Object> {
 		this.codec = Objects.requireNonNull(codec, "Codec must not be null");
 	}
 	
+	/**
+	 * Constructs a new array codec using the given codec for the elements and the specified length constraint configuration.<br>
+	 *
+	 * @param type The type of the elements in the array
+	 * @param codec The codec for the elements
+	 * @param constraintConfig The length constraint configuration
+	 * @throws NullPointerException If the type, codec, or constraint configuration is null
+	 */
+	public ArrayCodec(@NonNull Class<C> type, @NonNull Codec<C> codec, @NonNull LengthConstraintConfig constraintConfig) {
+		super(constraintConfig);
+		this.type = Objects.requireNonNull(type, "Type must not be null");
+		this.codec = Objects.requireNonNull(codec, "Codec must not be null");
+	}
+	
+	@Override
+	public @NonNull ArrayCodec<C> applyConstraint(@NonNull LengthConstraintConfig config) {
+		Objects.requireNonNull(config, "Constraint config must not be null");
+		return new ArrayCodec<>(this.type, this.codec, config);
+	}
+	
+	@Override
+	protected @NonNull Result<Void> checkConstraints(C @NonNull [] value) {
+		Objects.requireNonNull(value, "Value must not be null");
+		
+		Result<Void> constraintResult = this.getConstraintConfig().map(config -> config.matches(value.length)).orElseGet(Result::success);
+		if (constraintResult.isError()) {
+			return Result.error("Array " + Arrays.toString(value) + " does not meet constraints: " + constraintResult.errorOrThrow());
+		}
+		
+		return Result.success();
+	}
+	
 	@Override
 	@SuppressWarnings("unchecked")
 	public @NonNull Class<C[]> getType() {
@@ -85,6 +119,11 @@ public class ArrayCodec<C> extends AbstractCodec<C[], Object> {
 		
 		if (value == null) {
 			return Result.error("Unable to encode null value as array using '" + this + "'");
+		}
+		
+		Result<Void> constraintResult = this.checkConstraints(value);
+		if (constraintResult.isError()) {
+			return Result.error(constraintResult.errorOrThrow());
 		}
 		
 		List<R> elements = new ArrayList<>();
@@ -145,10 +184,16 @@ public class ArrayCodec<C> extends AbstractCodec<C[], Object> {
 			Array.set(array, i, this.type.cast(elements.get(i)));
 		}
 		
-		if (errors.isEmpty()) {
-			return Result.success((C[]) array);
+		C[] typedArray = (C[]) array;
+		Result<Void> constraintResult = this.checkConstraints(typedArray);
+		if (constraintResult.isError()) {
+			return Result.error(constraintResult.errorOrThrow());
 		}
-		return Result.partial((C[]) array, "Decoded " + elements.size() + " of " + results.size() + " elements successfully:", errors);
+		
+		if (errors.isEmpty()) {
+			return Result.success(typedArray);
+		}
+		return Result.partial(typedArray, "Decoded " + elements.size() + " of " + results.size() + " elements successfully:", errors);
 	}
 	
 	//region Object overrides
@@ -167,7 +212,9 @@ public class ArrayCodec<C> extends AbstractCodec<C[], Object> {
 	
 	@Override
 	public String toString() {
-		return "ArrayCodec[" + this.codec + "]";
+		return this.getConstraintConfig().map(config -> {
+			return "ConstrainedArrayCodec[" + this.codec + ",constraints=" + config + "]";
+		}).orElse("ArrayCodec[" + this.codec + "]");
 	}
 	//endregion
 }
