@@ -137,6 +137,42 @@ class SizeConstraintConfigTest {
 	}
 
 	@Test
+	void withSize() {
+		SizeConstraintConfig config = SizeConstraintConfig.UNCONSTRAINED.withSize(5, 10);
+
+		assertTrue(config.minSize().isPresent());
+		assertEquals(5, config.minSize().getAsInt());
+		assertTrue(config.maxSize().isPresent());
+		assertEquals(10, config.maxSize().getAsInt());
+	}
+
+	@Test
+	void withSizeReplacesExistingConstraints() {
+		SizeConstraintConfig initial = new SizeConstraintConfig(OptionalInt.of(1), OptionalInt.of(100));
+		SizeConstraintConfig config = initial.withSize(10, 20);
+
+		assertTrue(config.minSize().isPresent());
+		assertEquals(10, config.minSize().getAsInt());
+		assertTrue(config.maxSize().isPresent());
+		assertEquals(20, config.maxSize().getAsInt());
+	}
+
+	@Test
+	void withSizeNegativeMinSize() {
+		assertThrows(IllegalArgumentException.class, () -> SizeConstraintConfig.UNCONSTRAINED.withSize(-1, 10));
+	}
+
+	@Test
+	void withSizeNegativeMaxSize() {
+		assertThrows(IllegalArgumentException.class, () -> SizeConstraintConfig.UNCONSTRAINED.withSize(5, -1));
+	}
+
+	@Test
+	void withSizeMaxLessThanMin() {
+		assertThrows(IllegalArgumentException.class, () -> SizeConstraintConfig.UNCONSTRAINED.withSize(10, 5));
+	}
+
+	@Test
 	void matchesUnconstrained() {
 		SizeConstraintConfig config = SizeConstraintConfig.UNCONSTRAINED;
 

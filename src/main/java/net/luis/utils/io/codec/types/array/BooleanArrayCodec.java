@@ -28,6 +28,7 @@ import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
 import java.util.*;
+import java.util.function.UnaryOperator;
 
 /**
  * Internal codec implementation for boolean arrays.<br>
@@ -51,15 +52,19 @@ public class BooleanArrayCodec extends AbstractCodec<boolean[], LengthConstraint
 	 * Constructs a new boolean array codec with the specified length constraint configuration.<br>
 	 *
 	 * @param constraintConfig The length constraint configuration
+	 * @throws NullPointerException If the constraint config is null
 	 */
 	public BooleanArrayCodec(@NonNull LengthConstraintConfig constraintConfig) {
 		super(constraintConfig);
 	}
 	
 	@Override
-	public @NonNull BooleanArrayCodec applyConstraint(@NonNull LengthConstraintConfig config) {
-		Objects.requireNonNull(config, "Constraint config must not be null");
-		return new BooleanArrayCodec(config);
+	public @NonNull BooleanArrayCodec applyConstraint(@NonNull UnaryOperator<LengthConstraintConfig> configModifier) {
+		Objects.requireNonNull(configModifier, "Config modifier must not be null");
+		
+		return new BooleanArrayCodec(configModifier.apply(
+			this.getConstraintConfig().orElse(LengthConstraintConfig.UNCONSTRAINED)
+		));
 	}
 	
 	@Override

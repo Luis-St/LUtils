@@ -315,6 +315,140 @@ class ConstrainedFloatArrayCodecTest {
 		assertTrue(result.errorOrThrow().contains("minimum length constraint"));
 	}
 
+
+	@Test
+	void encodeWithChainedConstraintsSuccess() {
+		Codec<float[]> codec = FLOAT_ARRAY.minLength(2).maxLength(5);
+		float[] array = {1.0f, 2.0f, 3.0f};
+
+		Result<JsonElement> result = codec.encodeStart(this.provider, this.provider.empty(), array);
+		assertTrue(result.isSuccess());
+	}
+
+	@Test
+	void encodeWithChainedConstraintsFailureMin() {
+		Codec<float[]> codec = FLOAT_ARRAY.minLength(5).maxLength(10);
+		float[] array = {1.0f, 2.0f};
+
+		Result<JsonElement> result = codec.encodeStart(this.provider, this.provider.empty(), array);
+		assertTrue(result.isError());
+		assertTrue(result.errorOrThrow().contains("minimum length constraint"));
+	}
+
+	@Test
+	void encodeWithChainedConstraintsFailureMax() {
+		Codec<float[]> codec = FLOAT_ARRAY.minLength(1).maxLength(2);
+		float[] array = {1.0f, 2.0f, 3.0f};
+
+		Result<JsonElement> result = codec.encodeStart(this.provider, this.provider.empty(), array);
+		assertTrue(result.isError());
+		assertTrue(result.errorOrThrow().contains("maximum length constraint"));
+	}
+
+	@Test
+	void encodeWithOverwrittenMinConstraintSuccess() {
+		Codec<float[]> codec = FLOAT_ARRAY.minLength(10).minLength(2);
+		float[] array = {1.0f, 2.0f, 3.0f};
+
+		Result<JsonElement> result = codec.encodeStart(this.provider, this.provider.empty(), array);
+		assertTrue(result.isSuccess());
+	}
+
+	@Test
+	void encodeWithOverwrittenMaxConstraintSuccess() {
+		Codec<float[]> codec = FLOAT_ARRAY.maxLength(2).maxLength(5);
+		float[] array = {1.0f, 2.0f, 3.0f};
+
+		Result<JsonElement> result = codec.encodeStart(this.provider, this.provider.empty(), array);
+		assertTrue(result.isSuccess());
+	}
+
+	@Test
+	void encodeWithOverwrittenExactConstraintSuccess() {
+		Codec<float[]> codec = FLOAT_ARRAY.exactLength(5).exactLength(3);
+		float[] array = {1.0f, 2.0f, 3.0f};
+
+		Result<JsonElement> result = codec.encodeStart(this.provider, this.provider.empty(), array);
+		assertTrue(result.isSuccess());
+	}
+
+	@Test
+	void decodeWithChainedConstraintsSuccess() {
+		Codec<float[]> codec = FLOAT_ARRAY.minLength(2).maxLength(5);
+		JsonArray array = new JsonArray();
+		array.add(new JsonPrimitive(1.0f));
+		array.add(new JsonPrimitive(2.0f));
+		array.add(new JsonPrimitive(3.0f));
+
+		Result<float[]> result = codec.decodeStart(this.provider, this.provider.empty(), array);
+		assertTrue(result.isSuccess());
+		assertEquals(3, result.resultOrThrow().length);
+	}
+
+	@Test
+	void decodeWithChainedConstraintsFailureMin() {
+		Codec<float[]> codec = FLOAT_ARRAY.minLength(5).maxLength(10);
+		JsonArray array = new JsonArray();
+		array.add(new JsonPrimitive(1.0f));
+		array.add(new JsonPrimitive(2.0f));
+
+		Result<float[]> result = codec.decodeStart(this.provider, this.provider.empty(), array);
+		assertTrue(result.isError());
+		assertTrue(result.errorOrThrow().contains("minimum length constraint"));
+	}
+
+	@Test
+	void decodeWithChainedConstraintsFailureMax() {
+		Codec<float[]> codec = FLOAT_ARRAY.minLength(1).maxLength(2);
+		JsonArray array = new JsonArray();
+		array.add(new JsonPrimitive(1.0f));
+		array.add(new JsonPrimitive(2.0f));
+		array.add(new JsonPrimitive(3.0f));
+
+		Result<float[]> result = codec.decodeStart(this.provider, this.provider.empty(), array);
+		assertTrue(result.isError());
+		assertTrue(result.errorOrThrow().contains("maximum length constraint"));
+	}
+
+	@Test
+	void decodeWithOverwrittenMinConstraintSuccess() {
+		Codec<float[]> codec = FLOAT_ARRAY.minLength(10).minLength(2);
+		JsonArray array = new JsonArray();
+		array.add(new JsonPrimitive(1.0f));
+		array.add(new JsonPrimitive(2.0f));
+		array.add(new JsonPrimitive(3.0f));
+
+		Result<float[]> result = codec.decodeStart(this.provider, this.provider.empty(), array);
+		assertTrue(result.isSuccess());
+		assertEquals(3, result.resultOrThrow().length);
+	}
+
+	@Test
+	void decodeWithOverwrittenMaxConstraintSuccess() {
+		Codec<float[]> codec = FLOAT_ARRAY.maxLength(2).maxLength(5);
+		JsonArray array = new JsonArray();
+		array.add(new JsonPrimitive(1.0f));
+		array.add(new JsonPrimitive(2.0f));
+		array.add(new JsonPrimitive(3.0f));
+
+		Result<float[]> result = codec.decodeStart(this.provider, this.provider.empty(), array);
+		assertTrue(result.isSuccess());
+		assertEquals(3, result.resultOrThrow().length);
+	}
+
+	@Test
+	void decodeWithOverwrittenExactConstraintSuccess() {
+		Codec<float[]> codec = FLOAT_ARRAY.exactLength(5).exactLength(3);
+		JsonArray array = new JsonArray();
+		array.add(new JsonPrimitive(1.0f));
+		array.add(new JsonPrimitive(2.0f));
+		array.add(new JsonPrimitive(3.0f));
+
+		Result<float[]> result = codec.decodeStart(this.provider, this.provider.empty(), array);
+		assertTrue(result.isSuccess());
+		assertEquals(3, result.resultOrThrow().length);
+	}
+
 	@Test
 	void toStringWithoutConstraints() {
 		Codec<float[]> codec = FLOAT_ARRAY;

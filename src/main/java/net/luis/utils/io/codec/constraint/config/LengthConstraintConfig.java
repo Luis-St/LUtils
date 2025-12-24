@@ -99,6 +99,7 @@ public record LengthConstraintConfig(
 	 * @return A new length constraint configuration with the specified minimum length
 	 * @throws IllegalArgumentException If the minimum length is negative, or if it exceeds the current maximum length
 	 * @see #withMaxLength(int)
+	 * @see #withLength(int, int)
 	 */
 	public @NonNull LengthConstraintConfig withMinLength(int minLength) {
 		return new LengthConstraintConfig(OptionalInt.of(minLength), this.maxLength);
@@ -115,11 +116,30 @@ public record LengthConstraintConfig(
 	 * @return A new length constraint configuration with the specified maximum length
 	 * @throws IllegalArgumentException If the maximum length is negative, or if it is less than the current minimum length
 	 * @see #withMinLength(int)
+	 * @see #withLength(int, int)
 	 */
 	public @NonNull LengthConstraintConfig withMaxLength(int maxLength) {
 		return new LengthConstraintConfig(this.minLength, OptionalInt.of(maxLength));
 	}
-
+	
+	/**
+	 * Creates a new length constraint configuration with the specified minimum and maximum lengths.<br>
+	 * <p>
+	 *     This method allows setting both length constraints simultaneously, replacing any existing constraints.<br>
+	 *     It is useful for defining a complete length range in one step.
+	 * </p>
+	 *
+	 * @param minLength The minimum length to set (must be non-negative)
+	 * @param maxLength The maximum length to set (must be non-negative)
+	 * @return A new length constraint configuration with the specified minimum and maximum lengths
+	 * @throws IllegalArgumentException If the minimum or maximum length is negative, or if the maximum length is less than the minimum length
+	 * @see #withMinLength(int)
+	 * @see #withMaxLength(int)
+	 */
+	public @NonNull LengthConstraintConfig withLength(int minLength, int maxLength) {
+		return new LengthConstraintConfig(OptionalInt.of(minLength), OptionalInt.of(maxLength));
+	}
+	
 	/**
 	 * Validates whether the given length matches the constraints defined in this configuration.<br>
 	 * <p>

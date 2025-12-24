@@ -28,6 +28,7 @@ import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
 import java.util.*;
+import java.util.function.UnaryOperator;
 
 /**
  * Internal codec implementation for long arrays.<br>
@@ -51,15 +52,19 @@ public class LongArrayCodec extends AbstractCodec<long[], LengthConstraintConfig
 	 * Constructs a new long array codec with the specified length constraint configuration.<br>
 	 *
 	 * @param constraintConfig The length constraint configuration
+	 * @throws NullPointerException If the constraint config is null
 	 */
 	public LongArrayCodec(@NonNull LengthConstraintConfig constraintConfig) {
 		super(constraintConfig);
 	}
 	
 	@Override
-	public @NonNull LongArrayCodec applyConstraint(@NonNull LengthConstraintConfig config) {
-		Objects.requireNonNull(config, "Constraint config must not be null");
-		return new LongArrayCodec(config);
+	public @NonNull LongArrayCodec applyConstraint(@NonNull UnaryOperator<LengthConstraintConfig> configModifier) {
+		Objects.requireNonNull(configModifier, "Config modifier must not be null");
+		
+		return new LongArrayCodec(configModifier.apply(
+			this.getConstraintConfig().orElse(LengthConstraintConfig.UNCONSTRAINED)
+		));
 	}
 	
 	@Override

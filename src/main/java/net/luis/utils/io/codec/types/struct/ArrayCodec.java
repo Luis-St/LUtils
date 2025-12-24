@@ -28,6 +28,7 @@ import org.jspecify.annotations.Nullable;
 
 import java.lang.reflect.Array;
 import java.util.*;
+import java.util.function.UnaryOperator;
 
 /**
  * A codec for encoding and decoding arrays of elements.<br>
@@ -82,15 +83,18 @@ public class ArrayCodec<C> extends AbstractCodec<C[], LengthConstraintConfig> im
 	 * @throws NullPointerException If the type, codec, or constraint configuration is null
 	 */
 	public ArrayCodec(@NonNull Class<C> type, @NonNull Codec<C> codec, @NonNull LengthConstraintConfig constraintConfig) {
-		super(constraintConfig);
 		this.type = Objects.requireNonNull(type, "Type must not be null");
 		this.codec = Objects.requireNonNull(codec, "Codec must not be null");
+		super(constraintConfig);
 	}
 	
 	@Override
-	public @NonNull ArrayCodec<C> applyConstraint(@NonNull LengthConstraintConfig config) {
-		Objects.requireNonNull(config, "Constraint config must not be null");
-		return new ArrayCodec<>(this.type, this.codec, config);
+	public @NonNull ArrayCodec<C> applyConstraint(@NonNull UnaryOperator<LengthConstraintConfig> configModifier) {
+		Objects.requireNonNull(configModifier, "Config modifier must not be null");
+		
+		return new ArrayCodec<>(this.type, this.codec, configModifier.apply(
+			this.getConstraintConfig().orElse(LengthConstraintConfig.UNCONSTRAINED)
+		));
 	}
 	
 	@Override

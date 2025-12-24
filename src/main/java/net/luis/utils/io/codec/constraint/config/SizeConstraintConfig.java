@@ -98,6 +98,7 @@ public record SizeConstraintConfig(
 	 * @return A new size constraint configuration with the specified minimum size
 	 * @throws IllegalArgumentException If the minimum size is negative, or if it exceeds the current maximum size
 	 * @see #withMaxSize(int)
+	 * @see #withSize(int, int)
 	 */
 	public @NonNull SizeConstraintConfig withMinSize(int minSize) {
 		return new SizeConstraintConfig(OptionalInt.of(minSize), this.maxSize);
@@ -114,11 +115,30 @@ public record SizeConstraintConfig(
 	 * @return A new size constraint configuration with the specified maximum size
 	 * @throws IllegalArgumentException If the maximum size is negative, or if it is less than the current minimum size
 	 * @see #withMinSize(int)
+	 * @see #withSize(int, int)
 	 */
 	public @NonNull SizeConstraintConfig withMaxSize(int maxSize) {
 		return new SizeConstraintConfig(this.minSize, OptionalInt.of(maxSize));
 	}
-
+	
+	/**
+	 * Creates a new size constraint configuration with the specified minimum and maximum sizes.<br>
+	 * <p>
+	 *     This method allows setting both size constraints simultaneously, replacing any existing constraints.<br>
+	 *     It is useful for defining a complete size range in one step.
+	 * </p>
+	 *
+	 * @param minSize The minimum size to set (must be non-negative)
+	 * @param maxSize The maximum size to set (must be non-negative)
+	 * @return A new size constraint configuration with the specified minimum and maximum sizes
+	 * @throws IllegalArgumentException If the minimum size or maximum size is negative, or if the maximum size is less than the minimum size
+	 * @see #withMinSize(int)
+	 * @see #withMaxSize(int)
+	 */
+	public @NonNull SizeConstraintConfig withSize(int minSize, int maxSize) {
+		return new SizeConstraintConfig(OptionalInt.of(minSize), OptionalInt.of(maxSize));
+	}
+	
 	/**
 	 * Validates whether the given size matches the constraints defined in this configuration.<br>
 	 * <p>

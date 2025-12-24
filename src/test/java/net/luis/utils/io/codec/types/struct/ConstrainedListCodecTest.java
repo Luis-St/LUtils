@@ -398,6 +398,140 @@ class ConstrainedListCodecTest {
 		assertTrue(result.isError());
 	}
 
+
+	@Test
+	void encodeWithChainedConstraintsSuccess() {
+		Codec<List<Integer>> codec = INTEGER.list().minSize(2).maxSize(5);
+		List<Integer> list = List.of(1, 2, 3);
+
+		Result<JsonElement> result = codec.encodeStart(this.provider, this.provider.empty(), list);
+		assertTrue(result.isSuccess());
+	}
+
+	@Test
+	void encodeWithChainedConstraintsFailureMin() {
+		Codec<List<Integer>> codec = INTEGER.list().minSize(5).maxSize(10);
+		List<Integer> list = List.of(1, 2);
+
+		Result<JsonElement> result = codec.encodeStart(this.provider, this.provider.empty(), list);
+		assertTrue(result.isError());
+		assertTrue(result.errorOrThrow().contains("minimum size constraint"));
+	}
+
+	@Test
+	void encodeWithChainedConstraintsFailureMax() {
+		Codec<List<Integer>> codec = INTEGER.list().minSize(1).maxSize(2);
+		List<Integer> list = List.of(1, 2, 3);
+
+		Result<JsonElement> result = codec.encodeStart(this.provider, this.provider.empty(), list);
+		assertTrue(result.isError());
+		assertTrue(result.errorOrThrow().contains("maximum size constraint"));
+	}
+
+	@Test
+	void encodeWithOverwrittenMinConstraintSuccess() {
+		Codec<List<Integer>> codec = INTEGER.list().minSize(10).minSize(2);
+		List<Integer> list = List.of(1, 2, 3);
+
+		Result<JsonElement> result = codec.encodeStart(this.provider, this.provider.empty(), list);
+		assertTrue(result.isSuccess());
+	}
+
+	@Test
+	void encodeWithOverwrittenMaxConstraintSuccess() {
+		Codec<List<Integer>> codec = INTEGER.list().maxSize(2).maxSize(5);
+		List<Integer> list = List.of(1, 2, 3);
+
+		Result<JsonElement> result = codec.encodeStart(this.provider, this.provider.empty(), list);
+		assertTrue(result.isSuccess());
+	}
+
+	@Test
+	void encodeWithOverwrittenExactConstraintSuccess() {
+		Codec<List<Integer>> codec = INTEGER.list().exactSize(5).exactSize(3);
+		List<Integer> list = List.of(1, 2, 3);
+
+		Result<JsonElement> result = codec.encodeStart(this.provider, this.provider.empty(), list);
+		assertTrue(result.isSuccess());
+	}
+
+	@Test
+	void decodeWithChainedConstraintsSuccess() {
+		Codec<List<Integer>> codec = INTEGER.list().minSize(2).maxSize(5);
+		JsonArray array = new JsonArray();
+		array.add(new JsonPrimitive(1));
+		array.add(new JsonPrimitive(2));
+		array.add(new JsonPrimitive(3));
+
+		Result<List<Integer>> result = codec.decodeStart(this.provider, this.provider.empty(), array);
+		assertTrue(result.isSuccess());
+		assertEquals(3, result.resultOrThrow().size());
+	}
+
+	@Test
+	void decodeWithChainedConstraintsFailureMin() {
+		Codec<List<Integer>> codec = INTEGER.list().minSize(5).maxSize(10);
+		JsonArray array = new JsonArray();
+		array.add(new JsonPrimitive(1));
+		array.add(new JsonPrimitive(2));
+
+		Result<List<Integer>> result = codec.decodeStart(this.provider, this.provider.empty(), array);
+		assertTrue(result.isError());
+		assertTrue(result.errorOrThrow().contains("minimum size constraint"));
+	}
+
+	@Test
+	void decodeWithChainedConstraintsFailureMax() {
+		Codec<List<Integer>> codec = INTEGER.list().minSize(1).maxSize(2);
+		JsonArray array = new JsonArray();
+		array.add(new JsonPrimitive(1));
+		array.add(new JsonPrimitive(2));
+		array.add(new JsonPrimitive(3));
+
+		Result<List<Integer>> result = codec.decodeStart(this.provider, this.provider.empty(), array);
+		assertTrue(result.isError());
+		assertTrue(result.errorOrThrow().contains("maximum size constraint"));
+	}
+
+	@Test
+	void decodeWithOverwrittenMinConstraintSuccess() {
+		Codec<List<Integer>> codec = INTEGER.list().minSize(10).minSize(2);
+		JsonArray array = new JsonArray();
+		array.add(new JsonPrimitive(1));
+		array.add(new JsonPrimitive(2));
+		array.add(new JsonPrimitive(3));
+
+		Result<List<Integer>> result = codec.decodeStart(this.provider, this.provider.empty(), array);
+		assertTrue(result.isSuccess());
+		assertEquals(3, result.resultOrThrow().size());
+	}
+
+	@Test
+	void decodeWithOverwrittenMaxConstraintSuccess() {
+		Codec<List<Integer>> codec = INTEGER.list().maxSize(2).maxSize(5);
+		JsonArray array = new JsonArray();
+		array.add(new JsonPrimitive(1));
+		array.add(new JsonPrimitive(2));
+		array.add(new JsonPrimitive(3));
+
+		Result<List<Integer>> result = codec.decodeStart(this.provider, this.provider.empty(), array);
+		assertTrue(result.isSuccess());
+		assertEquals(3, result.resultOrThrow().size());
+	}
+
+	@Test
+	void decodeWithOverwrittenExactConstraintSuccess() {
+		Codec<List<Integer>> codec = INTEGER.list().exactSize(5).exactSize(3);
+		JsonArray array = new JsonArray();
+		array.add(new JsonPrimitive(1));
+		array.add(new JsonPrimitive(2));
+		array.add(new JsonPrimitive(3));
+
+		Result<List<Integer>> result = codec.decodeStart(this.provider, this.provider.empty(), array);
+		assertTrue(result.isSuccess());
+		assertEquals(3, result.resultOrThrow().size());
+	}
+
 	@Test
 	void toStringWithoutConstraints() {
 		Codec<List<Integer>> codec = INTEGER.list();

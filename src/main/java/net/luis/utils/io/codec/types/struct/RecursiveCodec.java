@@ -22,6 +22,8 @@ import net.luis.utils.io.codec.AbstractCodec;
 import net.luis.utils.io.codec.Codec;
 import net.luis.utils.io.codec.provider.TypeProvider;
 import net.luis.utils.util.result.Result;
+import org.apache.commons.lang3.mutable.Mutable;
+import org.apache.commons.lang3.mutable.MutableObject;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
@@ -75,11 +77,10 @@ public class RecursiveCodec<C> extends AbstractCodec<C, Object> {
 	 */
 	public RecursiveCodec(@NonNull Function<Codec<C>, Codec<C>> codecFactory) {
 		Objects.requireNonNull(codecFactory, "Codec factory must not be null");
-
-		Codec<C>[] codecHolder = new Codec[1];
-		codecHolder[0] = codecFactory.apply(new LazyCodec<>(() -> codecHolder[0]));
-
-		this.codecSupplier = () -> codecHolder[0];
+		
+		Mutable<Codec<C>> codecHolder = new MutableObject<>();
+		codecHolder.setValue(codecFactory.apply(new LazyCodec<>(codecHolder)));
+		this.codecSupplier = codecHolder;
 	}
 
 	@Override
@@ -109,7 +110,7 @@ public class RecursiveCodec<C> extends AbstractCodec<C, Object> {
 	 *
 	 * @param <C> The type of the value
 	 */
-	private static class LazyCodec<C> extends AbstractCodec<C, Object> {
+	private static final class LazyCodec<C> extends AbstractCodec<C, Object> {
 
 		/**
 		 * Supplier that provides the actual codec.<br>

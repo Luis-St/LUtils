@@ -398,6 +398,140 @@ class ConstrainedMapCodecTest {
 		assertTrue(result.isError());
 	}
 
+
+	@Test
+	void encodeWithChainedConstraintsSuccess() {
+		Codec<Map<Integer, String>> codec = new MapCodec<>(Codecs.INTEGER, Codecs.STRING).minSize(2).maxSize(5);
+		Map<Integer, String> map = Map.of(1, "a", 2, "b", 3, "c");
+
+		Result<JsonElement> result = codec.encodeStart(this.provider, this.provider.empty(), map);
+		assertTrue(result.isSuccess());
+	}
+
+	@Test
+	void encodeWithChainedConstraintsFailureMin() {
+		Codec<Map<Integer, String>> codec = new MapCodec<>(Codecs.INTEGER, Codecs.STRING).minSize(5).maxSize(10);
+		Map<Integer, String> map = Map.of(1, "a", 2, "b");
+
+		Result<JsonElement> result = codec.encodeStart(this.provider, this.provider.empty(), map);
+		assertTrue(result.isError());
+		assertTrue(result.errorOrThrow().contains("minimum size constraint"));
+	}
+
+	@Test
+	void encodeWithChainedConstraintsFailureMax() {
+		Codec<Map<Integer, String>> codec = new MapCodec<>(Codecs.INTEGER, Codecs.STRING).minSize(1).maxSize(2);
+		Map<Integer, String> map = Map.of(1, "a", 2, "b", 3, "c");
+
+		Result<JsonElement> result = codec.encodeStart(this.provider, this.provider.empty(), map);
+		assertTrue(result.isError());
+		assertTrue(result.errorOrThrow().contains("maximum size constraint"));
+	}
+
+	@Test
+	void encodeWithOverwrittenMinConstraintSuccess() {
+		Codec<Map<Integer, String>> codec = new MapCodec<>(Codecs.INTEGER, Codecs.STRING).minSize(10).minSize(2);
+		Map<Integer, String> map = Map.of(1, "a", 2, "b", 3, "c");
+
+		Result<JsonElement> result = codec.encodeStart(this.provider, this.provider.empty(), map);
+		assertTrue(result.isSuccess());
+	}
+
+	@Test
+	void encodeWithOverwrittenMaxConstraintSuccess() {
+		Codec<Map<Integer, String>> codec = new MapCodec<>(Codecs.INTEGER, Codecs.STRING).maxSize(2).maxSize(5);
+		Map<Integer, String> map = Map.of(1, "a", 2, "b", 3, "c");
+
+		Result<JsonElement> result = codec.encodeStart(this.provider, this.provider.empty(), map);
+		assertTrue(result.isSuccess());
+	}
+
+	@Test
+	void encodeWithOverwrittenExactConstraintSuccess() {
+		Codec<Map<Integer, String>> codec = new MapCodec<>(Codecs.INTEGER, Codecs.STRING).exactSize(5).exactSize(3);
+		Map<Integer, String> map = Map.of(1, "a", 2, "b", 3, "c");
+
+		Result<JsonElement> result = codec.encodeStart(this.provider, this.provider.empty(), map);
+		assertTrue(result.isSuccess());
+	}
+
+	@Test
+	void decodeWithChainedConstraintsSuccess() {
+		Codec<Map<Integer, String>> codec = new MapCodec<>(Codecs.INTEGER, Codecs.STRING).minSize(2).maxSize(5);
+		JsonObject object = new JsonObject();
+		object.add("1", new JsonPrimitive("a"));
+		object.add("2", new JsonPrimitive("b"));
+		object.add("3", new JsonPrimitive("c"));
+
+		Result<Map<Integer, String>> result = codec.decodeStart(this.provider, this.provider.empty(), object);
+		assertTrue(result.isSuccess());
+		assertEquals(3, result.resultOrThrow().size());
+	}
+
+	@Test
+	void decodeWithChainedConstraintsFailureMin() {
+		Codec<Map<Integer, String>> codec = new MapCodec<>(Codecs.INTEGER, Codecs.STRING).minSize(5).maxSize(10);
+		JsonObject object = new JsonObject();
+		object.add("1", new JsonPrimitive("a"));
+		object.add("2", new JsonPrimitive("b"));
+
+		Result<Map<Integer, String>> result = codec.decodeStart(this.provider, this.provider.empty(), object);
+		assertTrue(result.isError());
+		assertTrue(result.errorOrThrow().contains("minimum size constraint"));
+	}
+
+	@Test
+	void decodeWithChainedConstraintsFailureMax() {
+		Codec<Map<Integer, String>> codec = new MapCodec<>(Codecs.INTEGER, Codecs.STRING).minSize(1).maxSize(2);
+		JsonObject object = new JsonObject();
+		object.add("1", new JsonPrimitive("a"));
+		object.add("2", new JsonPrimitive("b"));
+		object.add("3", new JsonPrimitive("c"));
+
+		Result<Map<Integer, String>> result = codec.decodeStart(this.provider, this.provider.empty(), object);
+		assertTrue(result.isError());
+		assertTrue(result.errorOrThrow().contains("maximum size constraint"));
+	}
+
+	@Test
+	void decodeWithOverwrittenMinConstraintSuccess() {
+		Codec<Map<Integer, String>> codec = new MapCodec<>(Codecs.INTEGER, Codecs.STRING).minSize(10).minSize(2);
+		JsonObject object = new JsonObject();
+		object.add("1", new JsonPrimitive("a"));
+		object.add("2", new JsonPrimitive("b"));
+		object.add("3", new JsonPrimitive("c"));
+
+		Result<Map<Integer, String>> result = codec.decodeStart(this.provider, this.provider.empty(), object);
+		assertTrue(result.isSuccess());
+		assertEquals(3, result.resultOrThrow().size());
+	}
+
+	@Test
+	void decodeWithOverwrittenMaxConstraintSuccess() {
+		Codec<Map<Integer, String>> codec = new MapCodec<>(Codecs.INTEGER, Codecs.STRING).maxSize(2).maxSize(5);
+		JsonObject object = new JsonObject();
+		object.add("1", new JsonPrimitive("a"));
+		object.add("2", new JsonPrimitive("b"));
+		object.add("3", new JsonPrimitive("c"));
+
+		Result<Map<Integer, String>> result = codec.decodeStart(this.provider, this.provider.empty(), object);
+		assertTrue(result.isSuccess());
+		assertEquals(3, result.resultOrThrow().size());
+	}
+
+	@Test
+	void decodeWithOverwrittenExactConstraintSuccess() {
+		Codec<Map<Integer, String>> codec = new MapCodec<>(Codecs.INTEGER, Codecs.STRING).exactSize(5).exactSize(3);
+		JsonObject object = new JsonObject();
+		object.add("1", new JsonPrimitive("a"));
+		object.add("2", new JsonPrimitive("b"));
+		object.add("3", new JsonPrimitive("c"));
+
+		Result<Map<Integer, String>> result = codec.decodeStart(this.provider, this.provider.empty(), object);
+		assertTrue(result.isSuccess());
+		assertEquals(3, result.resultOrThrow().size());
+	}
+
 	@Test
 	void toStringWithoutConstraints() {
 		Codec<Map<Integer, String>> codec = new MapCodec<>(Codecs.INTEGER, Codecs.STRING);

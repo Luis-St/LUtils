@@ -27,6 +27,7 @@ import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
 import java.util.Objects;
+import java.util.function.UnaryOperator;
 
 /**
  * Internal codec implementation for strings.<br>
@@ -50,9 +51,12 @@ public class StringCodec extends AbstractCodec<String, LengthConstraintConfig> i
 	}
 	
 	@Override
-	public @NonNull StringCodec applyConstraint(@NonNull LengthConstraintConfig config) {
-		Objects.requireNonNull(config, "Constraint config must not be null");
-		return new StringCodec(config);
+	public @NonNull StringCodec applyConstraint(@NonNull UnaryOperator<LengthConstraintConfig> configModifier) {
+		Objects.requireNonNull(configModifier, "Config modifier must not be null");
+		
+		return new StringCodec(configModifier.apply(
+			this.getConstraintConfig().orElse(LengthConstraintConfig.UNCONSTRAINED)
+		));
 	}
 	
 	@Override

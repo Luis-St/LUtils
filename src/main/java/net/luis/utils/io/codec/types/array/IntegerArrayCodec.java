@@ -28,6 +28,7 @@ import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
 import java.util.*;
+import java.util.function.UnaryOperator;
 
 /**
  * Internal codec implementation for integer arrays.<br>
@@ -51,15 +52,19 @@ public class IntegerArrayCodec extends AbstractCodec<int[], LengthConstraintConf
 	 * Constructs a new integer array codec with the specified length constraint configuration.<br>
 	 *
 	 * @param constraintConfig The length constraint configuration
+	 * @throws NullPointerException If the constraint config is null
 	 */
 	public IntegerArrayCodec(@NonNull LengthConstraintConfig constraintConfig) {
 		super(constraintConfig);
 	}
 	
 	@Override
-	public @NonNull IntegerArrayCodec applyConstraint(@NonNull LengthConstraintConfig config) {
-		Objects.requireNonNull(config, "Constraint config must not be null");
-		return new IntegerArrayCodec(config);
+	public @NonNull IntegerArrayCodec applyConstraint(@NonNull UnaryOperator<LengthConstraintConfig> configModifier) {
+		Objects.requireNonNull(configModifier, "Config modifier must not be null");
+		
+		return new IntegerArrayCodec(configModifier.apply(
+			this.getConstraintConfig().orElse(LengthConstraintConfig.UNCONSTRAINED)
+		));
 	}
 	
 	@Override

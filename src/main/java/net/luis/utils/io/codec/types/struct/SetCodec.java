@@ -28,6 +28,7 @@ import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
 import java.util.*;
+import java.util.function.UnaryOperator;
 
 /**
  * Internal codec implementation for sets.<br>
@@ -73,8 +74,12 @@ public class SetCodec<E> extends AbstractCodec<Set<E>, SizeConstraintConfig> imp
 	}
 
 	@Override
-	public @NonNull SetCodec<E> applyConstraint(@NonNull SizeConstraintConfig config) {
-		return new SetCodec<>(this.codec, config);
+	public @NonNull SetCodec<E> applyConstraint(@NonNull UnaryOperator<SizeConstraintConfig> configModifier) {
+		Objects.requireNonNull(configModifier, "Config modifier must not be null");
+		
+		return new SetCodec<>(this.codec, configModifier.apply(
+			this.getConstraintConfig().orElse(SizeConstraintConfig.UNCONSTRAINED)
+		));
 	}
 
 	@Override

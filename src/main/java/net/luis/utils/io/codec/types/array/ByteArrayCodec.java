@@ -28,6 +28,7 @@ import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
 import java.util.*;
+import java.util.function.UnaryOperator;
 
 /**
  * Internal codec implementation for byte arrays.<br>
@@ -51,15 +52,19 @@ public class ByteArrayCodec extends AbstractCodec<byte[], LengthConstraintConfig
 	 * Constructs a new byte array codec with the specified length constraint configuration.<br>
 	 *
 	 * @param constraintConfig The length constraint configuration
+	 * @throws NullPointerException If the constraint config is null
 	 */
 	public ByteArrayCodec(@NonNull LengthConstraintConfig constraintConfig) {
 		super(constraintConfig);
 	}
 
 	@Override
-	public @NonNull ByteArrayCodec applyConstraint(@NonNull LengthConstraintConfig config) {
-		Objects.requireNonNull(config, "Constraint config must not be null");
-		return new ByteArrayCodec(config);
+	public @NonNull ByteArrayCodec applyConstraint(@NonNull UnaryOperator<LengthConstraintConfig> configModifier) {
+		Objects.requireNonNull(configModifier, "Config modifier must not be null");
+		
+		return new ByteArrayCodec(configModifier.apply(
+			this.getConstraintConfig().orElse(LengthConstraintConfig.UNCONSTRAINED)
+		));
 	}
 
 	@Override

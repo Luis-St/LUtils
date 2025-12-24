@@ -28,6 +28,7 @@ import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
 import java.util.*;
+import java.util.function.UnaryOperator;
 
 /**
  * Internal codec implementation for short arrays.<br>
@@ -51,15 +52,19 @@ public class ShortArrayCodec extends AbstractCodec<short[], LengthConstraintConf
 	 * Constructs a new short array codec with the specified length constraint configuration.<br>
 	 *
 	 * @param constraintConfig The length constraint configuration
+	 * @throws NullPointerException If the constraint config is null
 	 */
 	public ShortArrayCodec(@NonNull LengthConstraintConfig constraintConfig) {
 		super(constraintConfig);
 	}
 	
 	@Override
-	public @NonNull ShortArrayCodec applyConstraint(@NonNull LengthConstraintConfig config) {
-		Objects.requireNonNull(config, "Constraint config must not be null");
-		return new ShortArrayCodec(config);
+	public @NonNull ShortArrayCodec applyConstraint(@NonNull UnaryOperator<LengthConstraintConfig> configModifier) {
+		Objects.requireNonNull(configModifier, "Config modifier must not be null");
+		
+		return new ShortArrayCodec(configModifier.apply(
+			this.getConstraintConfig().orElse(LengthConstraintConfig.UNCONSTRAINED)
+		));
 	}
 	
 	@Override

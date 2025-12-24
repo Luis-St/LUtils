@@ -23,6 +23,7 @@ import net.luis.utils.io.codec.constraint.config.SizeConstraintConfig;
 import org.jspecify.annotations.NonNull;
 
 import java.util.*;
+import java.util.function.UnaryOperator;
 
 /**
  * A constraint interface for size-based validation of collections, maps, and other sized types.<br>
@@ -32,7 +33,7 @@ import java.util.*;
  *     meeting the size requirements are successfully processed.
  * </p>
  * <p>
- *     Implementations of this interface must provide the {@link #applyConstraint(SizeConstraintConfig)} method,
+ *     Implementations of this interface must provide the {@link #applyConstraint(UnaryOperator)} method,
  *     which creates a new codec instance with the given size constraint configuration applied.
  * </p>
  *
@@ -46,21 +47,9 @@ import java.util.*;
  */
 @FunctionalInterface
 public interface SizeConstraint<T, C extends Codec<T>> extends CodecConstraint<T, C, SizeConstraintConfig> {
-
-	/**
-	 * Applies the given size constraint configuration to the codec.<br>
-	 * <p>
-	 *     This method creates a new codec instance with the specified size constraints applied.<br>
-	 *     The original codec remains unchanged.
-	 * </p>
-	 *
-	 * @param config The size constraint configuration to apply
-	 * @return A new codec with the applied size constraint
-	 * @throws NullPointerException If the constraint configuration is null
-	 * @see SizeConstraintConfig
-	 */
+	
 	@Override
-	@NonNull C applyConstraint(@NonNull SizeConstraintConfig config);
+	@NonNull C applyConstraint(@NonNull UnaryOperator<SizeConstraintConfig> configModifier);
 
 	/**
 	 * Applies a minimum size constraint to the codec.<br>
@@ -76,7 +65,7 @@ public interface SizeConstraint<T, C extends Codec<T>> extends CodecConstraint<T
 	 * @see #sizeBetween(int, int)
 	 */
 	default @NonNull C minSize(int minSize) {
-		return this.applyConstraint(SizeConstraintConfig.UNCONSTRAINED.withMinSize(minSize));
+		return this.applyConstraint(config -> config.withMinSize(minSize));
 	}
 
 	/**
@@ -93,7 +82,7 @@ public interface SizeConstraint<T, C extends Codec<T>> extends CodecConstraint<T
 	 * @see #sizeBetween(int, int)
 	 */
 	default @NonNull C maxSize(int maxSize) {
-		return this.applyConstraint(SizeConstraintConfig.UNCONSTRAINED.withMaxSize(maxSize));
+		return this.applyConstraint(config -> config.withMaxSize(maxSize));
 	}
 
 	/**
@@ -109,7 +98,7 @@ public interface SizeConstraint<T, C extends Codec<T>> extends CodecConstraint<T
 	 * @see #sizeBetween(int, int)
 	 */
 	default @NonNull C exactSize(int exactSize) {
-		return this.applyConstraint(new SizeConstraintConfig(OptionalInt.of(exactSize), OptionalInt.of(exactSize)));
+		return this.applyConstraint(config -> config.withSize(exactSize, exactSize));
 	}
 
 	/**
@@ -127,7 +116,7 @@ public interface SizeConstraint<T, C extends Codec<T>> extends CodecConstraint<T
 	 * @see #maxSize(int)
 	 */
 	default @NonNull C sizeBetween(int minSize, int maxSize) {
-		return this.applyConstraint(new SizeConstraintConfig(OptionalInt.of(minSize), OptionalInt.of(maxSize)));
+		return this.applyConstraint(config -> config.withSize(minSize, maxSize));
 	}
 
 	/**

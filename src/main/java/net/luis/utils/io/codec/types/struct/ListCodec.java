@@ -28,6 +28,7 @@ import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
 import java.util.*;
+import java.util.function.UnaryOperator;
 import java.util.stream.Collectors;
 
 /**
@@ -74,8 +75,12 @@ public class ListCodec<C> extends AbstractCodec<List<C>, SizeConstraintConfig> i
 	}
 	
 	@Override
-	public @NonNull ListCodec<C> applyConstraint(@NonNull SizeConstraintConfig config) {
-		return new ListCodec<>(this.codec, config);
+	public @NonNull ListCodec<C> applyConstraint(@NonNull UnaryOperator<SizeConstraintConfig> configModifier) {
+		Objects.requireNonNull(configModifier, "Config modifier must not be null");
+		
+		return new ListCodec<>(this.codec, configModifier.apply(
+			this.getConstraintConfig().orElse(SizeConstraintConfig.UNCONSTRAINED)
+		));
 	}
 	
 	@Override

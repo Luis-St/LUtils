@@ -23,6 +23,7 @@ import net.luis.utils.io.codec.constraint.config.LengthConstraintConfig;
 import org.jspecify.annotations.NonNull;
 
 import java.util.*;
+import java.util.function.UnaryOperator;
 
 /**
  * A constraint interface for length-based validation of strings, arrays, and other sequential types.<br>
@@ -32,7 +33,7 @@ import java.util.*;
  *     meeting the length requirements are successfully processed.
  * </p>
  * <p>
- *     Implementations of this interface must provide the {@link #applyConstraint(LengthConstraintConfig)} method,
+ *     Implementations of this interface must provide the {@link #applyConstraint(UnaryOperator)} method,
  *     which creates a new codec instance with the given length constraint configuration applied.
  * </p>
  *
@@ -46,21 +47,9 @@ import java.util.*;
  */
 @FunctionalInterface
 public interface LengthConstraint<T, C extends Codec<T>> extends CodecConstraint<T, C, LengthConstraintConfig> {
-
-	/**
-	 * Applies the given length constraint configuration to the codec.<br>
-	 * <p>
-	 *     This method creates a new codec instance with the specified length constraints applied.<br>
-	 *     The original codec remains unchanged.
-	 * </p>
-	 *
-	 * @param config The length constraint configuration to apply
-	 * @return A new codec with the applied length constraint
-	 * @throws NullPointerException If the constraint configuration is null
-	 * @see LengthConstraintConfig
-	 */
+	
 	@Override
-	@NonNull C applyConstraint(@NonNull LengthConstraintConfig config);
+	@NonNull C applyConstraint(@NonNull UnaryOperator<LengthConstraintConfig> configModifier);
 
 	/**
 	 * Applies a minimum length constraint to the codec.<br>
@@ -76,7 +65,7 @@ public interface LengthConstraint<T, C extends Codec<T>> extends CodecConstraint
 	 * @see #lengthBetween(int, int)
 	 */
 	default @NonNull C minLength(int minLength) {
-		return this.applyConstraint(LengthConstraintConfig.UNCONSTRAINED.withMinLength(minLength));
+		return this.applyConstraint(config -> config.withMinLength(minLength));
 	}
 
 	/**
@@ -93,7 +82,7 @@ public interface LengthConstraint<T, C extends Codec<T>> extends CodecConstraint
 	 * @see #lengthBetween(int, int)
 	 */
 	default @NonNull C maxLength(int maxLength) {
-		return this.applyConstraint(LengthConstraintConfig.UNCONSTRAINED.withMaxLength(maxLength));
+		return this.applyConstraint(config -> config.withMaxLength(maxLength));
 	}
 
 	/**
@@ -109,7 +98,7 @@ public interface LengthConstraint<T, C extends Codec<T>> extends CodecConstraint
 	 * @see #lengthBetween(int, int)
 	 */
 	default @NonNull C exactLength(int exactLength) {
-		return this.applyConstraint(new LengthConstraintConfig(OptionalInt.of(exactLength), OptionalInt.of(exactLength)));
+		return this.applyConstraint(config -> config.withLength(exactLength, exactLength));
 	}
 
 	/**
@@ -127,7 +116,7 @@ public interface LengthConstraint<T, C extends Codec<T>> extends CodecConstraint
 	 * @see #maxLength(int)
 	 */
 	default @NonNull C lengthBetween(int minLength, int maxLength) {
-		return this.applyConstraint(new LengthConstraintConfig(OptionalInt.of(minLength), OptionalInt.of(maxLength)));
+		return this.applyConstraint(config -> config.withLength(minLength, maxLength));
 	}
 
 	/**

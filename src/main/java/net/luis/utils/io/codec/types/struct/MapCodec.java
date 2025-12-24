@@ -29,6 +29,7 @@ import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
 import java.util.*;
+import java.util.function.UnaryOperator;
 
 /**
  * A codec for encoding and decoding maps of key-value pairs.<br>
@@ -83,8 +84,12 @@ public class MapCodec<K, V> extends AbstractCodec<Map<K, V>, SizeConstraintConfi
 	}
 
 	@Override
-	public @NonNull MapCodec<K, V> applyConstraint(@NonNull SizeConstraintConfig config) {
-		return new MapCodec<>(this.keyCodec, this.valueCodec, config);
+	public @NonNull MapCodec<K, V> applyConstraint(@NonNull UnaryOperator<SizeConstraintConfig> configModifier) {
+		Objects.requireNonNull(configModifier, "Config modifier must not be null");
+		
+		return new MapCodec<>(this.keyCodec, this.valueCodec, configModifier.apply(
+			this.getConstraintConfig().orElse(SizeConstraintConfig.UNCONSTRAINED)
+		));
 	}
 
 	@Override

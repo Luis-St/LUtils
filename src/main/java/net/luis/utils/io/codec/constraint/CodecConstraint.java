@@ -20,6 +20,8 @@ package net.luis.utils.io.codec.constraint;
 
 import org.jspecify.annotations.NonNull;
 
+import java.util.function.UnaryOperator;
+
 /**
  * A functional interface for applying constraints to codecs.<br>
  * Provides a method to apply a constraint configuration and return a constrained codec.<br>
@@ -36,9 +38,9 @@ public interface CodecConstraint<T, C, V> {
 	/**
 	 * Applies the given constraint configuration and returns a constrained codec.<br>
 	 *
-	 * @param config The constraint configuration to apply
+	 * @param configModifier Applies modifications to the current constraint configuration
 	 * @return The constrained codec
 	 * @throws NullPointerException If the constraint configuration is null
 	 */
-	@NonNull C applyConstraint(@NonNull V config);
+	@NonNull C applyConstraint(@NonNull UnaryOperator<V> configModifier);
 }
