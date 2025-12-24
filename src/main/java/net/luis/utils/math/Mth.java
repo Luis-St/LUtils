@@ -205,7 +205,17 @@ public final class Mth {
 	}
 	
 	/**
-	 * Returns the fractional (decimal) part of the given value.<br>
+	 * Returns the fractional (decimal) part of the given float value.<br>
+	 *
+	 * @param f The value
+	 * @return The fractional part of the given value
+	 */
+	public static float frac(float f) {
+		return f - ((int) f);
+	}
+	
+	/**
+	 * Returns the fractional (decimal) part of the given double value.<br>
 	 *
 	 * @param f The value
 	 * @return The fractional part of the given value
