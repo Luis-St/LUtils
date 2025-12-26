@@ -156,9 +156,9 @@ public interface NumericConstraint<T extends Number & Comparable<T>, C extends C
 	 * </p>
 	 *
 	 * @return A new codec with the applied percentage constraint
-	 * @see #between(Comparable, Comparable)
+	 * @see #betweenOrEqual(Comparable, Comparable)
 	 */
 	default @NonNull C percentage() {
-		return this.between(this.provider().zero(), this.provider().hundred());
+		return this.betweenOrEqual(this.provider().zero(), this.provider().hundred());
 	}
 }

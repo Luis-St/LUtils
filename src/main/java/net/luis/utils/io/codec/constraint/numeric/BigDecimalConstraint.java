@@ -76,7 +76,7 @@ public interface BigDecimalConstraint<C extends Codec<BigDecimal>> extends Numer
 	}
 	
 	@Override
-	default @NonNull C between(@NonNull BigDecimal min, @NonNull BigDecimal max) {
+	default @NonNull C betweenOrEqual(@NonNull BigDecimal min, @NonNull BigDecimal max) {
 		return this.applyConstraint(config -> config.withNumericConfig(numericConfig -> numericConfig.withRange(min, max, true)));
 	}
 	

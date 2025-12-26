@@ -170,8 +170,8 @@ class ConstrainedShortCodecTest {
 	}
 
 	@Test
-	void encodeWithBetweenConstraintSuccess() {
-		Codec<Short> codec = SHORT.between((short) 0, (short) 100);
+	void encodeWithBetweenOrEqualConstraintSuccess() {
+		Codec<Short> codec = SHORT.betweenOrEqual((short) 0, (short) 100);
 		short value = 50;
 
 		Result<JsonElement> result = codec.encodeStart(this.provider, this.provider.empty(), value);
@@ -179,8 +179,8 @@ class ConstrainedShortCodecTest {
 	}
 
 	@Test
-	void encodeWithBetweenConstraintFailure() {
-		Codec<Short> codec = SHORT.between((short) 0, (short) 100);
+	void encodeWithBetweenOrEqualConstraintFailure() {
+		Codec<Short> codec = SHORT.betweenOrEqual((short) 0, (short) 100);
 		short value = 127;
 
 		Result<JsonElement> result = codec.encodeStart(this.provider, this.provider.empty(), value);

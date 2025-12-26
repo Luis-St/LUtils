@@ -174,8 +174,8 @@ class ConstrainedFloatCodecTest {
 	}
 
 	@Test
-	void encodeWithBetweenConstraintSuccess() {
-		Codec<Float> codec = FLOAT.between(0.0f, 100.0f);
+	void encodeWithBetweenOrEqualConstraintSuccess() {
+		Codec<Float> codec = FLOAT.betweenOrEqual(0.0f, 100.0f);
 		float value = 50.5f;
 
 		Result<JsonElement> result = codec.encodeStart(this.provider, this.provider.empty(), value);
@@ -183,8 +183,8 @@ class ConstrainedFloatCodecTest {
 	}
 
 	@Test
-	void encodeWithBetweenConstraintFailure() {
-		Codec<Float> codec = FLOAT.between(0.0f, 100.0f);
+	void encodeWithBetweenOrEqualConstraintFailure() {
+		Codec<Float> codec = FLOAT.betweenOrEqual(0.0f, 100.0f);
 		float value = 127.5f;
 
 		Result<JsonElement> result = codec.encodeStart(this.provider, this.provider.empty(), value);
@@ -277,7 +277,7 @@ class ConstrainedFloatCodecTest {
 
 	@Test
 	void encodeWithChainedConstraintsSuccess() {
-		Codec<Float> codec = FLOAT.finite().positive().between(0.0f, 100.0f);
+		Codec<Float> codec = FLOAT.finite().positive().betweenOrEqual(0.0f, 100.0f);
 		float value = 50.5f;
 
 		Result<JsonElement> result = codec.encodeStart(this.provider, this.provider.empty(), value);

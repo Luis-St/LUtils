@@ -72,7 +72,7 @@ public interface IntegerConstraint<T extends Number & Comparable<T>, C extends C
 	}
 	
 	@Override
-	default @NonNull C between(@NonNull T min, @NonNull T max) {
+	default @NonNull C betweenOrEqual(@NonNull T min, @NonNull T max) {
 		return this.applyConstraint(config -> config.withNumericConfig(numericConfig -> numericConfig.withRange(min, max, true)));
 	}
 	

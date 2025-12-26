@@ -170,8 +170,8 @@ class ConstrainedByteCodecTest {
 	}
 
 	@Test
-	void encodeWithBetweenConstraintSuccess() {
-		Codec<Byte> codec = BYTE.between((byte) 0, (byte) 100);
+	void encodeWithBetweenOrEqualConstraintSuccess() {
+		Codec<Byte> codec = BYTE.betweenOrEqual((byte) 0, (byte) 100);
 		byte value = 50;
 
 		Result<JsonElement> result = codec.encodeStart(this.provider, this.provider.empty(), value);
@@ -179,8 +179,8 @@ class ConstrainedByteCodecTest {
 	}
 
 	@Test
-	void encodeWithBetweenConstraintFailure() {
-		Codec<Byte> codec = BYTE.between((byte) 0, (byte) 100);
+	void encodeWithBetweenOrEqualConstraintFailure() {
+		Codec<Byte> codec = BYTE.betweenOrEqual((byte) 0, (byte) 100);
 		byte value = 127;
 
 		Result<JsonElement> result = codec.encodeStart(this.provider, this.provider.empty(), value);

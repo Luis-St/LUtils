@@ -172,8 +172,8 @@ class ConstrainedBigIntegerCodecTest {
 	}
 
 	@Test
-	void encodeWithBetweenConstraintSuccess() {
-		Codec<BigInteger> codec = BIG_INTEGER.between(BigInteger.ZERO, BigInteger.valueOf(100));
+	void encodeWithBetweenOrEqualConstraintSuccess() {
+		Codec<BigInteger> codec = BIG_INTEGER.betweenOrEqual(BigInteger.ZERO, BigInteger.valueOf(100));
 		BigInteger value = BigInteger.valueOf(50);
 
 		Result<JsonElement> result = codec.encodeStart(this.provider, this.provider.empty(), value);
@@ -181,8 +181,8 @@ class ConstrainedBigIntegerCodecTest {
 	}
 
 	@Test
-	void encodeWithBetweenConstraintFailure() {
-		Codec<BigInteger> codec = BIG_INTEGER.between(BigInteger.ZERO, BigInteger.valueOf(100));
+	void encodeWithBetweenOrEqualConstraintFailure() {
+		Codec<BigInteger> codec = BIG_INTEGER.betweenOrEqual(BigInteger.ZERO, BigInteger.valueOf(100));
 		BigInteger value = BigInteger.valueOf(127);
 
 		Result<JsonElement> result = codec.encodeStart(this.provider, this.provider.empty(), value);

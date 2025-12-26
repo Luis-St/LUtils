@@ -79,7 +79,7 @@ public interface ComparableConstraint<T extends Comparable<T>, C> {
 	 * @return The codec with the constraint applied
 	 * @throws IllegalArgumentException If {@code min > max}
 	 */
-	@NonNull C between(@NonNull T min, @NonNull T max);
+	@NonNull C betweenOrEqual(@NonNull T min, @NonNull T max);
 	
 	/**
 	 * Constrains the value to be within the specified range (exclusive on both bounds).<br>

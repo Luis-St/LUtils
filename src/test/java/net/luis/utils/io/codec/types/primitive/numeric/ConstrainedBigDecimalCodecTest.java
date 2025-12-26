@@ -294,8 +294,8 @@ class ConstrainedBigDecimalCodecTest {
 	}
 
 	@Test
-	void encodeWithBetweenConstraintSuccess() {
-		Codec<BigDecimal> codec = BIG_DECIMAL.between(BigDecimal.ZERO, new BigDecimal("100.0"));
+	void encodeWithBetweenOrEqualConstraintSuccess() {
+		Codec<BigDecimal> codec = BIG_DECIMAL.betweenOrEqual(BigDecimal.ZERO, new BigDecimal("100.0"));
 		BigDecimal value = new BigDecimal("50.5");
 
 		Result<JsonElement> result = codec.encodeStart(this.provider, this.provider.empty(), value);
@@ -303,8 +303,8 @@ class ConstrainedBigDecimalCodecTest {
 	}
 
 	@Test
-	void encodeWithBetweenConstraintFailure() {
-		Codec<BigDecimal> codec = BIG_DECIMAL.between(BigDecimal.ZERO, new BigDecimal("100.0"));
+	void encodeWithBetweenOrEqualConstraintFailure() {
+		Codec<BigDecimal> codec = BIG_DECIMAL.betweenOrEqual(BigDecimal.ZERO, new BigDecimal("100.0"));
 		BigDecimal value = new BigDecimal("127.5");
 
 		Result<JsonElement> result = codec.encodeStart(this.provider, this.provider.empty(), value);

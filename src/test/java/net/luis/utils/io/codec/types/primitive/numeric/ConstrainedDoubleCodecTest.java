@@ -174,8 +174,8 @@ class ConstrainedDoubleCodecTest {
 	}
 
 	@Test
-	void encodeWithBetweenConstraintSuccess() {
-		Codec<Double> codec = DOUBLE.between(0.0, 100.0);
+	void encodeWithBetweenOrEqualConstraintSuccess() {
+		Codec<Double> codec = DOUBLE.betweenOrEqual(0.0, 100.0);
 		double value = 50.5;
 
 		Result<JsonElement> result = codec.encodeStart(this.provider, this.provider.empty(), value);
@@ -183,8 +183,8 @@ class ConstrainedDoubleCodecTest {
 	}
 
 	@Test
-	void encodeWithBetweenConstraintFailure() {
-		Codec<Double> codec = DOUBLE.between(0.0, 100.0);
+	void encodeWithBetweenOrEqualConstraintFailure() {
+		Codec<Double> codec = DOUBLE.betweenOrEqual(0.0, 100.0);
 		double value = 127.5;
 
 		Result<JsonElement> result = codec.encodeStart(this.provider, this.provider.empty(), value);
@@ -277,7 +277,7 @@ class ConstrainedDoubleCodecTest {
 
 	@Test
 	void encodeWithChainedConstraintsSuccess() {
-		Codec<Double> codec = DOUBLE.finite().positive().between(0.0, 100.0);
+		Codec<Double> codec = DOUBLE.finite().positive().betweenOrEqual(0.0, 100.0);
 		double value = 50.5;
 
 		Result<JsonElement> result = codec.encodeStart(this.provider, this.provider.empty(), value);

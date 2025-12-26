@@ -170,8 +170,8 @@ class ConstrainedLongCodecTest {
 	}
 
 	@Test
-	void encodeWithBetweenConstraintSuccess() {
-		Codec<Long> codec = LONG.between(0L, 100L);
+	void encodeWithBetweenOrEqualConstraintSuccess() {
+		Codec<Long> codec = LONG.betweenOrEqual(0L, 100L);
 		long value = 50L;
 
 		Result<JsonElement> result = codec.encodeStart(this.provider, this.provider.empty(), value);
@@ -179,8 +179,8 @@ class ConstrainedLongCodecTest {
 	}
 
 	@Test
-	void encodeWithBetweenConstraintFailure() {
-		Codec<Long> codec = LONG.between(0L, 100L);
+	void encodeWithBetweenOrEqualConstraintFailure() {
+		Codec<Long> codec = LONG.betweenOrEqual(0L, 100L);
 		long value = 127L;
 
 		Result<JsonElement> result = codec.encodeStart(this.provider, this.provider.empty(), value);

@@ -170,16 +170,16 @@ class ConstrainedIntegerCodecTest {
 	}
 
 	@Test
-	void encodeWithBetweenConstraintSuccess() {
-		Codec<Integer> codec = INTEGER.between(0, 100);
+	void encodeWithBetweenOrEqualConstraintSuccess() {
+		Codec<Integer> codec = INTEGER.betweenOrEqual(0, 100);
 
 		Result<JsonElement> result = codec.encodeStart(this.provider, this.provider.empty(), 50);
 		assertTrue(result.isSuccess());
 	}
 
 	@Test
-	void encodeWithBetweenConstraintFailure() {
-		Codec<Integer> codec = INTEGER.between(0, 100);
+	void encodeWithBetweenOrEqualConstraintFailure() {
+		Codec<Integer> codec = INTEGER.betweenOrEqual(0, 100);
 		int value = 127;
 
 		Result<JsonElement> result = codec.encodeStart(this.provider, this.provider.empty(), value);
