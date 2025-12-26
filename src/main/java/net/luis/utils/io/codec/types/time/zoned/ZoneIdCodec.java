@@ -16,7 +16,7 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-package net.luis.utils.io.codec.types.time;
+package net.luis.utils.io.codec.types.time.zoned;
 
 import net.luis.utils.io.codec.AbstractCodec;
 import net.luis.utils.io.codec.provider.TypeProvider;
@@ -24,46 +24,46 @@ import net.luis.utils.util.result.Result;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
-import java.time.OffsetDateTime;
-import java.time.format.DateTimeParseException;
+import java.time.ZoneId;
+import java.time.zone.ZoneRulesException;
 import java.util.Objects;
 
 /**
- * Internal codec implementation for offset date times.<br>
- * Uses the ISO-8601 string format as an internal representation.<br>
+ * Internal codec implementation for zone ids.<br>
+ * Uses the string format as an internal representation.<br>
  *
  * @author Luis-St
  */
-public class OffsetDateTimeCodec extends AbstractCodec<OffsetDateTime, Object> {
+public class ZoneIdCodec extends AbstractCodec<ZoneId, Object> {
 	
 	/**
-	 * Constructs a new offset date time codec.<br>
+	 * Constructs a new zone id codec.<br>
 	 */
-	public OffsetDateTimeCodec() {}
+	public ZoneIdCodec() {}
 	
 	@Override
-	public <R> @NonNull Result<R> encodeStart(@NonNull TypeProvider<R> provider, @NonNull R current, @Nullable OffsetDateTime value) {
+	public <R> @NonNull Result<R> encodeStart(@NonNull TypeProvider<R> provider, @NonNull R current, @Nullable ZoneId value) {
 		Objects.requireNonNull(provider, "Type provider must not be null");
 		Objects.requireNonNull(current, "Current value must not be null");
 		
 		if (value == null) {
-			return Result.error("Unable to encode null as offset date time using '" + this + "'");
+			return Result.error("Unable to encode null as zone id using '" + this + "'");
 		}
-		return provider.createString(value.toString());
+		return provider.createString(value.getId());
 	}
 	
 	@Override
-	public @NonNull Result<String> encodeKey(@NonNull OffsetDateTime key) {
+	public @NonNull Result<String> encodeKey(@NonNull ZoneId key) {
 		Objects.requireNonNull(key, "Key must not be null");
-		return Result.success(key.toString());
+		return Result.success(key.getId());
 	}
 	
 	@Override
-	public <R> @NonNull Result<OffsetDateTime> decodeStart(@NonNull TypeProvider<R> provider, @NonNull R current, @Nullable R value) {
+	public <R> @NonNull Result<ZoneId> decodeStart(@NonNull TypeProvider<R> provider, @NonNull R current, @Nullable R value) {
 		Objects.requireNonNull(provider, "Type provider must not be null");
 		Objects.requireNonNull(current, "Current value must not be null");
 		if (value == null) {
-			return Result.error("Unable to decode null value as offset date time using '" + this + "'");
+			return Result.error("Unable to decode null value as zone id using '" + this + "'");
 		}
 		
 		Result<String> result = provider.getString(value);
@@ -73,24 +73,25 @@ public class OffsetDateTimeCodec extends AbstractCodec<OffsetDateTime, Object> {
 		
 		String string = result.resultOrThrow();
 		try {
-			return Result.success(OffsetDateTime.parse(string));
-		} catch (DateTimeParseException e) {
-			return Result.error("Unable to decode offset date time '" + string + "' using '" + this + "': Unable to parse offset date time: " + e.getMessage());
+			return Result.success(ZoneId.of(string));
+		} catch (ZoneRulesException e) {
+			return Result.error("Unable to decode zone id '" + string + "' using '" + this + "': " + e.getMessage());
 		}
 	}
 	
 	@Override
-	public @NonNull Result<OffsetDateTime> decodeKey(@NonNull String key) {
+	public @NonNull Result<ZoneId> decodeKey(@NonNull String key) {
 		Objects.requireNonNull(key, "Key must not be null");
+		
 		try {
-			return Result.success(OffsetDateTime.parse(key));
-		} catch (DateTimeParseException e) {
-			return Result.error("Unable to decode key '" + key + "' as offset date time using '" + this + "': " + e.getMessage());
+			return Result.success(ZoneId.of(key));
+		} catch (ZoneRulesException e) {
+			return Result.error("Unable to decode key '" + key + "' as zone id using '" + this + "': " + e.getMessage());
 		}
 	}
 	
 	@Override
 	public String toString() {
-		return "OffsetDateTimeCodec";
+		return "ZoneIdCodec";
 	}
 }

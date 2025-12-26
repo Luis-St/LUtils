@@ -16,7 +16,7 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-package net.luis.utils.io.codec.types.time;
+package net.luis.utils.io.codec.types.time.local;
 
 import net.luis.utils.io.codec.AbstractCodec;
 import net.luis.utils.io.codec.provider.TypeProvider;
@@ -24,46 +24,45 @@ import net.luis.utils.util.result.Result;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
-import java.time.DateTimeException;
-import java.time.ZoneOffset;
+import java.time.DayOfWeek;
 import java.util.Objects;
 
 /**
- * Internal codec implementation for zone offsets.<br>
- * Uses the string format as an internal representation.<br>
+ * Internal codec implementation for day of week.<br>
+ * Uses the string name as an internal representation.<br>
  *
  * @author Luis-St
  */
-public class ZoneOffsetCodec extends AbstractCodec<ZoneOffset, Object> {
+public class DayOfWeekCodec extends AbstractCodec<DayOfWeek, Object> {
 	
 	/**
-	 * Constructs a new zone offset codec.<br>
+	 * Constructs a new day of week codec.<br>
 	 */
-	public ZoneOffsetCodec() {}
+	public DayOfWeekCodec() {}
 	
 	@Override
-	public <R> @NonNull Result<R> encodeStart(@NonNull TypeProvider<R> provider, @NonNull R current, @Nullable ZoneOffset value) {
+	public <R> @NonNull Result<R> encodeStart(@NonNull TypeProvider<R> provider, @NonNull R current, @Nullable DayOfWeek value) {
 		Objects.requireNonNull(provider, "Type provider must not be null");
 		Objects.requireNonNull(current, "Current value must not be null");
 		
 		if (value == null) {
-			return Result.error("Unable to encode null as zone offset using '" + this + "'");
+			return Result.error("Unable to encode null as day of week using '" + this + "'");
 		}
-		return provider.createString(value.getId());
+		return provider.createString(value.name());
 	}
 	
 	@Override
-	public @NonNull Result<String> encodeKey(@NonNull ZoneOffset key) {
+	public @NonNull Result<String> encodeKey(@NonNull DayOfWeek key) {
 		Objects.requireNonNull(key, "Key must not be null");
-		return Result.success(key.getId());
+		return Result.success(key.name());
 	}
 	
 	@Override
-	public <R> @NonNull Result<ZoneOffset> decodeStart(@NonNull TypeProvider<R> provider, @NonNull R current, @Nullable R value) {
+	public <R> @NonNull Result<DayOfWeek> decodeStart(@NonNull TypeProvider<R> provider, @NonNull R current, @Nullable R value) {
 		Objects.requireNonNull(provider, "Type provider must not be null");
 		Objects.requireNonNull(current, "Current value must not be null");
 		if (value == null) {
-			return Result.error("Unable to decode null value as zone offset using '" + this + "'");
+			return Result.error("Unable to decode null value as day of week using '" + this + "'");
 		}
 		
 		Result<String> result = provider.getString(value);
@@ -73,25 +72,25 @@ public class ZoneOffsetCodec extends AbstractCodec<ZoneOffset, Object> {
 		
 		String string = result.resultOrThrow();
 		try {
-			return Result.success(ZoneOffset.of(string));
-		} catch (DateTimeException e) {
-			return Result.error("Unable to decode zone offset '" + string + "' using '" + this + "': " + e.getMessage());
+			return Result.success(DayOfWeek.valueOf(string));
+		} catch (IllegalArgumentException e) {
+			return Result.error("Unable to decode day of week '" + string + "' using '" + this + "': " + e.getMessage());
 		}
 	}
 	
 	@Override
-	public @NonNull Result<ZoneOffset> decodeKey(@NonNull String key) {
+	public @NonNull Result<DayOfWeek> decodeKey(@NonNull String key) {
 		Objects.requireNonNull(key, "Key must not be null");
 		
 		try {
-			return Result.success(ZoneOffset.of(key));
-		} catch (DateTimeException e) {
-			return Result.error("Unable to decode key '" + key + "' as zone offset using '" + this + "': " + e.getMessage());
+			return Result.success(DayOfWeek.valueOf(key));
+		} catch (IllegalArgumentException e) {
+			return Result.error("Unable to decode key '" + key + "' as day of week using '" + this + "': " + e.getMessage());
 		}
 	}
 	
 	@Override
 	public String toString() {
-		return "ZoneOffsetCodec";
+		return "DayOfWeekCodec";
 	}
 }

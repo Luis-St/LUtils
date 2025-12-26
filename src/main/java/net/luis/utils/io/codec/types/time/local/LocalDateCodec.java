@@ -16,7 +16,7 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-package net.luis.utils.io.codec.types.time;
+package net.luis.utils.io.codec.types.time.local;
 
 import net.luis.utils.io.codec.AbstractCodec;
 import net.luis.utils.io.codec.provider.TypeProvider;
@@ -24,74 +24,73 @@ import net.luis.utils.util.result.Result;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
-import java.time.Year;
+import java.time.LocalDate;
 import java.time.format.DateTimeParseException;
 import java.util.Objects;
 
 /**
- * Internal codec implementation for years.<br>
- * Uses the ISO-8601 integer format as an internal representation.<br>
+ * Internal codec implementation for local dates.<br>
+ * Uses the ISO-8601 string format as an internal representation.<br>
  *
  * @author Luis-St
  */
-public class YearCodec extends AbstractCodec<Year, Object> {
+public class LocalDateCodec extends AbstractCodec<LocalDate, Object> {
 	
 	/**
-	 * Constructs a new year codec.<br>
+	 * Constructs a new local date codec.<br>
 	 */
-	public YearCodec() {}
+	public LocalDateCodec() {}
 	
 	@Override
-	public <R> @NonNull Result<R> encodeStart(@NonNull TypeProvider<R> provider, @NonNull R current, @Nullable Year value) {
+	public <R> @NonNull Result<R> encodeStart(@NonNull TypeProvider<R> provider, @NonNull R current, @Nullable LocalDate value) {
 		Objects.requireNonNull(provider, "Type provider must not be null");
 		Objects.requireNonNull(current, "Current value must not be null");
 		
 		if (value == null) {
-			return Result.error("Unable to encode null as year using '" + this + "'");
+			return Result.error("Unable to encode null as local date using '" + this + "'");
 		}
-		return provider.createInteger(value.getValue());
+		return provider.createString(value.toString());
 	}
 	
 	@Override
-	public @NonNull Result<String> encodeKey(@NonNull Year key) {
+	public @NonNull Result<String> encodeKey(@NonNull LocalDate key) {
 		Objects.requireNonNull(key, "Key must not be null");
-		return Result.success(String.valueOf(key.getValue()));
+		return Result.success(key.toString());
 	}
 	
 	@Override
-	public <R> @NonNull Result<Year> decodeStart(@NonNull TypeProvider<R> provider, @NonNull R current, @Nullable R value) {
+	public <R> @NonNull Result<LocalDate> decodeStart(@NonNull TypeProvider<R> provider, @NonNull R current, @Nullable R value) {
 		Objects.requireNonNull(provider, "Type provider must not be null");
 		Objects.requireNonNull(current, "Current value must not be null");
 		if (value == null) {
-			return Result.error("Unable to decode null value as year using '" + this + "'");
+			return Result.error("Unable to decode null value as local date using '" + this + "'");
 		}
 		
-		Result<Integer> result = provider.getInteger(value);
+		Result<String> result = provider.getString(value);
 		if (result.isError()) {
 			return Result.error(result.errorOrThrow());
 		}
 		
-		int yearValue = result.resultOrThrow();
+		String string = result.resultOrThrow();
 		try {
-			return Result.success(Year.of(yearValue));
+			return Result.success(LocalDate.parse(string));
 		} catch (DateTimeParseException e) {
-			return Result.error("Unable to decode year '" + yearValue + "' using '" + this + "': " + e.getMessage());
+			return Result.error("Unable to decode local date '" + string + "' using '" + this + "': Unable to parse local date: " + e.getMessage());
 		}
 	}
 	
 	@Override
-	public @NonNull Result<Year> decodeKey(@NonNull String key) {
+	public @NonNull Result<LocalDate> decodeKey(@NonNull String key) {
 		Objects.requireNonNull(key, "Key must not be null");
-		
 		try {
-			return Result.success(Year.of(Integer.parseInt(key)));
-		} catch (NumberFormatException | DateTimeParseException e) {
-			return Result.error("Unable to decode key '" + key + "' as year using '" + this + "': " + e.getMessage());
+			return Result.success(LocalDate.parse(key));
+		} catch (DateTimeParseException e) {
+			return Result.error("Unable to decode key '" + key + "' as local date using '" + this + "': " + e.getMessage());
 		}
 	}
 	
 	@Override
 	public String toString() {
-		return "YearCodec";
+		return "LocalDateCodec";
 	}
 }

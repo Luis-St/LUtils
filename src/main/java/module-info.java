@@ -66,6 +66,9 @@ module net.luis.utils {
 	exports net.luis.utils.io.codec.types.struct;
 	exports net.luis.utils.io.codec.types.struct.collection;
 	exports net.luis.utils.io.codec.types.time;
+	exports net.luis.utils.io.codec.types.time.local;
+	exports net.luis.utils.io.codec.types.time.offset;
+	exports net.luis.utils.io.codec.types.time.zoned;
 	
 	exports net.luis.utils.io.data;
 	exports net.luis.utils.io.data.config;

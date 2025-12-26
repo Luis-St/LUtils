@@ -16,7 +16,7 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-package net.luis.utils.io.codec.types.time;
+package net.luis.utils.io.codec.types.time.offset;
 
 import net.luis.utils.io.codec.AbstractCodec;
 import net.luis.utils.io.codec.provider.TypeProvider;
@@ -24,45 +24,46 @@ import net.luis.utils.util.result.Result;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
-import java.time.Month;
+import java.time.OffsetDateTime;
+import java.time.format.DateTimeParseException;
 import java.util.Objects;
 
 /**
- * Internal codec implementation for month.<br>
- * Uses the string name as an internal representation.<br>
+ * Internal codec implementation for offset date times.<br>
+ * Uses the ISO-8601 string format as an internal representation.<br>
  *
  * @author Luis-St
  */
-public class MonthCodec extends AbstractCodec<Month, Object> {
+public class OffsetDateTimeCodec extends AbstractCodec<OffsetDateTime, Object> {
 	
 	/**
-	 * Constructs a new month codec.<br>
+	 * Constructs a new offset date time codec.<br>
 	 */
-	public MonthCodec() {}
+	public OffsetDateTimeCodec() {}
 	
 	@Override
-	public <R> @NonNull Result<R> encodeStart(@NonNull TypeProvider<R> provider, @NonNull R current, @Nullable Month value) {
+	public <R> @NonNull Result<R> encodeStart(@NonNull TypeProvider<R> provider, @NonNull R current, @Nullable OffsetDateTime value) {
 		Objects.requireNonNull(provider, "Type provider must not be null");
 		Objects.requireNonNull(current, "Current value must not be null");
 		
 		if (value == null) {
-			return Result.error("Unable to encode null as month using '" + this + "'");
+			return Result.error("Unable to encode null as offset date time using '" + this + "'");
 		}
-		return provider.createString(value.name());
+		return provider.createString(value.toString());
 	}
 	
 	@Override
-	public @NonNull Result<String> encodeKey(@NonNull Month key) {
+	public @NonNull Result<String> encodeKey(@NonNull OffsetDateTime key) {
 		Objects.requireNonNull(key, "Key must not be null");
-		return Result.success(key.name());
+		return Result.success(key.toString());
 	}
 	
 	@Override
-	public <R> @NonNull Result<Month> decodeStart(@NonNull TypeProvider<R> provider, @NonNull R current, @Nullable R value) {
+	public <R> @NonNull Result<OffsetDateTime> decodeStart(@NonNull TypeProvider<R> provider, @NonNull R current, @Nullable R value) {
 		Objects.requireNonNull(provider, "Type provider must not be null");
 		Objects.requireNonNull(current, "Current value must not be null");
 		if (value == null) {
-			return Result.error("Unable to decode null value as month using '" + this + "'");
+			return Result.error("Unable to decode null value as offset date time using '" + this + "'");
 		}
 		
 		Result<String> result = provider.getString(value);
@@ -72,25 +73,24 @@ public class MonthCodec extends AbstractCodec<Month, Object> {
 		
 		String string = result.resultOrThrow();
 		try {
-			return Result.success(Month.valueOf(string));
-		} catch (IllegalArgumentException e) {
-			return Result.error("Unable to decode month '" + string + "' using '" + this + "': " + e.getMessage());
+			return Result.success(OffsetDateTime.parse(string));
+		} catch (DateTimeParseException e) {
+			return Result.error("Unable to decode offset date time '" + string + "' using '" + this + "': Unable to parse offset date time: " + e.getMessage());
 		}
 	}
 	
 	@Override
-	public @NonNull Result<Month> decodeKey(@NonNull String key) {
+	public @NonNull Result<OffsetDateTime> decodeKey(@NonNull String key) {
 		Objects.requireNonNull(key, "Key must not be null");
-		
 		try {
-			return Result.success(Month.valueOf(key));
-		} catch (IllegalArgumentException e) {
-			return Result.error("Unable to decode key '" + key + "' as month using '" + this + "': " + e.getMessage());
+			return Result.success(OffsetDateTime.parse(key));
+		} catch (DateTimeParseException e) {
+			return Result.error("Unable to decode key '" + key + "' as offset date time using '" + this + "': " + e.getMessage());
 		}
 	}
 	
 	@Override
 	public String toString() {
-		return "MonthCodec";
+		return "OffsetDateTimeCodec";
 	}
 }

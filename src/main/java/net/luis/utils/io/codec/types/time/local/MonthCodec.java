@@ -16,7 +16,7 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-package net.luis.utils.io.codec.types.time;
+package net.luis.utils.io.codec.types.time.local;
 
 import net.luis.utils.io.codec.AbstractCodec;
 import net.luis.utils.io.codec.provider.TypeProvider;
@@ -24,46 +24,45 @@ import net.luis.utils.util.result.Result;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
-import java.time.ZonedDateTime;
-import java.time.format.DateTimeParseException;
+import java.time.Month;
 import java.util.Objects;
 
 /**
- * Internal codec implementation for zoned date times.<br>
- * Uses the ISO-8601 string format as an internal representation.<br>
+ * Internal codec implementation for month.<br>
+ * Uses the string name as an internal representation.<br>
  *
  * @author Luis-St
  */
-public class ZonedDateTimeCodec extends AbstractCodec<ZonedDateTime, Object> {
+public class MonthCodec extends AbstractCodec<Month, Object> {
 	
 	/**
-	 * Constructs a new zoned date time codec.<br>
+	 * Constructs a new month codec.<br>
 	 */
-	public ZonedDateTimeCodec() {}
+	public MonthCodec() {}
 	
 	@Override
-	public <R> @NonNull Result<R> encodeStart(@NonNull TypeProvider<R> provider, @NonNull R current, @Nullable ZonedDateTime value) {
+	public <R> @NonNull Result<R> encodeStart(@NonNull TypeProvider<R> provider, @NonNull R current, @Nullable Month value) {
 		Objects.requireNonNull(provider, "Type provider must not be null");
 		Objects.requireNonNull(current, "Current value must not be null");
 		
 		if (value == null) {
-			return Result.error("Unable to encode null as zoned date time using '" + this + "'");
+			return Result.error("Unable to encode null as month using '" + this + "'");
 		}
-		return provider.createString(value.toString());
+		return provider.createString(value.name());
 	}
 	
 	@Override
-	public @NonNull Result<String> encodeKey(@NonNull ZonedDateTime key) {
+	public @NonNull Result<String> encodeKey(@NonNull Month key) {
 		Objects.requireNonNull(key, "Key must not be null");
-		return Result.success(key.toString());
+		return Result.success(key.name());
 	}
 	
 	@Override
-	public <R> @NonNull Result<ZonedDateTime> decodeStart(@NonNull TypeProvider<R> provider, @NonNull R current, @Nullable R value) {
+	public <R> @NonNull Result<Month> decodeStart(@NonNull TypeProvider<R> provider, @NonNull R current, @Nullable R value) {
 		Objects.requireNonNull(provider, "Type provider must not be null");
 		Objects.requireNonNull(current, "Current value must not be null");
 		if (value == null) {
-			return Result.error("Unable to decode null value as zoned date time using '" + this + "'");
+			return Result.error("Unable to decode null value as month using '" + this + "'");
 		}
 		
 		Result<String> result = provider.getString(value);
@@ -73,24 +72,25 @@ public class ZonedDateTimeCodec extends AbstractCodec<ZonedDateTime, Object> {
 		
 		String string = result.resultOrThrow();
 		try {
-			return Result.success(ZonedDateTime.parse(string));
-		} catch (DateTimeParseException e) {
-			return Result.error("Unable to decode zoned date time '" + string + "' using '" + this + "': Unable to parse zoned date time: " + e.getMessage());
+			return Result.success(Month.valueOf(string));
+		} catch (IllegalArgumentException e) {
+			return Result.error("Unable to decode month '" + string + "' using '" + this + "': " + e.getMessage());
 		}
 	}
 	
 	@Override
-	public @NonNull Result<ZonedDateTime> decodeKey(@NonNull String key) {
+	public @NonNull Result<Month> decodeKey(@NonNull String key) {
 		Objects.requireNonNull(key, "Key must not be null");
+		
 		try {
-			return Result.success(ZonedDateTime.parse(key));
-		} catch (DateTimeParseException e) {
-			return Result.error("Unable to decode key '" + key + "' as zoned date time using '" + this + "': " + e.getMessage());
+			return Result.success(Month.valueOf(key));
+		} catch (IllegalArgumentException e) {
+			return Result.error("Unable to decode key '" + key + "' as month using '" + this + "': " + e.getMessage());
 		}
 	}
 	
 	@Override
 	public String toString() {
-		return "ZonedDateTimeCodec";
+		return "MonthCodec";
 	}
 }
