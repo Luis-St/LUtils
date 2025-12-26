@@ -64,6 +64,7 @@ module net.luis.utils {
 	exports net.luis.utils.io.codec.types.primitive.numeric;
 	exports net.luis.utils.io.codec.types.stream;
 	exports net.luis.utils.io.codec.types.struct;
+	exports net.luis.utils.io.codec.types.struct.collection;
 	exports net.luis.utils.io.codec.types.time;
 	
 	exports net.luis.utils.io.data;

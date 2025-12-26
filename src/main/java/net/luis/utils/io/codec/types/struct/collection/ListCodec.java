@@ -16,7 +16,7 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-package net.luis.utils.io.codec.types.struct;
+package net.luis.utils.io.codec.types.struct.collection;
 
 import net.luis.utils.io.codec.AbstractCodec;
 import net.luis.utils.io.codec.Codec;
@@ -29,90 +29,90 @@ import org.jspecify.annotations.Nullable;
 
 import java.util.*;
 import java.util.function.UnaryOperator;
+import java.util.stream.Collectors;
 
 /**
- * Internal codec implementation for sets.<br>
- * Uses a list representation internally and converts to/from a set.<br>
+ * A codec for encoding and decoding lists of elements.<br>
+ * This codec uses another codec to encode and decode the elements of the list.<br>
  *
  * @author Luis-St
  *
- * @param <E> The element type of the set
+ * @param <C> The type of elements in the list
  */
-public class SetCodec<E> extends AbstractCodec<Set<E>, SizeConstraintConfig> implements SizeConstraint<Set<E>, SetCodec<E>> {
+public class ListCodec<C> extends AbstractCodec<List<C>, SizeConstraintConfig> implements SizeConstraint<List<C>, ListCodec<C>> {
 	
 	/**
-	 * The codec used to encode and decode set elements.<br>
+	 * The codec used to encode and decode the elements of the list.<br>
 	 */
-	private final Codec<E> codec;
+	private final Codec<C> codec;
 	
 	/**
-	 * Constructs a new set codec.<br>
+	 * Constructs a new list codec using the given codec for the elements.<br>
 	 *
-	 * @param codec The codec for set elements
-	 * @throws NullPointerException If the element codec is null
+	 * @param codec The codec for the elements
+	 * @throws NullPointerException If the codec is null
 	 */
-	public SetCodec(@NonNull Codec<E> codec) {
-		this.codec = Objects.requireNonNull(codec, "Element codec must not be null");
+	public ListCodec(@NonNull Codec<C> codec) {
+		this.codec = Objects.requireNonNull(codec, "Codec must not be null");
 	}
-
+	
 	/**
-	 * Constructs a new set codec using the given codec for the elements and the given size constraint configuration.<br>
+	 * Constructs a new list codec using the given codec for the elements and the given size constraint configuration.<br>
 	 *
 	 * @param codec The codec for the elements
 	 * @param constraintConfig The size constraint configuration
 	 * @throws NullPointerException If the codec is null
 	 */
-	public SetCodec(@NonNull Codec<E> codec, @NonNull SizeConstraintConfig constraintConfig) {
-		this.codec = Objects.requireNonNull(codec, "Element codec must not be null");
+	public ListCodec(@NonNull Codec<C> codec, @NonNull SizeConstraintConfig constraintConfig) {
+		this.codec = Objects.requireNonNull(codec, "Codec must not be null");
 		super(constraintConfig);
 	}
 	
 	@Override
 	@SuppressWarnings("unchecked")
-	public @NonNull Class<Set<E>> getType() {
-		return (Class<Set<E>>) (Class<?>) Set.class;
+	public @NonNull Class<List<C>> getType() {
+		return (Class<List<C>>) (Class<?>) List.class;
 	}
-
+	
 	@Override
-	public @NonNull SetCodec<E> applyConstraint(@NonNull UnaryOperator<SizeConstraintConfig> configModifier) {
+	public @NonNull ListCodec<C> applyConstraint(@NonNull UnaryOperator<SizeConstraintConfig> configModifier) {
 		Objects.requireNonNull(configModifier, "Config modifier must not be null");
 		
-		return new SetCodec<>(this.codec, configModifier.apply(
+		return new ListCodec<>(this.codec, configModifier.apply(
 			this.getConstraintConfig().orElse(SizeConstraintConfig.UNCONSTRAINED)
 		));
 	}
-
+	
 	@Override
-	protected @NonNull Result<Void> checkConstraints(@NonNull Set<E> value) {
+	protected @NonNull Result<Void> checkConstraints(@NonNull List<C> value) {
 		Objects.requireNonNull(value, "Value must not be null");
-
+		
 		Result<Void> constraintResult = this.getConstraintConfig().map(config -> config.matches(value.size())).orElseGet(Result::success);
 		if (constraintResult.isError()) {
-			return Result.error("Set " + value + " does not meet constraints: " + constraintResult.errorOrThrow());
+			return Result.error("List " + value + " does not meet constraints: " + constraintResult.errorOrThrow());
 		}
 		
 		return Result.success();
 	}
-
+	
 	@Override
 	@SuppressWarnings("DuplicatedCode")
-	public <R> @NonNull Result<R> encodeStart(@NonNull TypeProvider<R> provider, @NonNull R current, @Nullable Set<E> value) {
+	public <R> @NonNull Result<R> encodeStart(@NonNull TypeProvider<R> provider, @NonNull R current, @Nullable List<C> value) {
 		Objects.requireNonNull(provider, "Type provider must not be null");
 		Objects.requireNonNull(current, "Current value must not be null");
 		if (value == null) {
-			return Result.error("Unable to encode null value as set using '" + this + "'");
+			return Result.error("Unable to encode null value as list using '" + this + "'");
 		}
-
+		
 		Result<Void> constraintResult = this.checkConstraints(value);
 		if (constraintResult.isError()) {
-			return Result.error("Unable to encode set using '" + this + "': " + constraintResult.errorOrThrow());
+			return Result.error("Unable to encode list using '" + this + "': " + constraintResult.errorOrThrow());
 		}
-
+		
 		List<R> elements = new ArrayList<>();
 		List<String> errors = new ArrayList<>();
-		int i = 0;
-		for (E element : value) {
-			Result<R> result = this.codec.encodeStart(provider, provider.empty(), element);
+		for (int i = 0; i < value.size(); i++) {
+			Result<R> result = this.codec.encodeStart(provider, provider.empty(), value.get(i));
 			
 			if (result.hasValue()) {
 				R encodedValue = result.resultOrThrow();
@@ -123,7 +123,6 @@ public class SetCodec<E> extends AbstractCodec<Set<E>, SizeConstraintConfig> imp
 			if (result.hasError()) {
 				errors.add("Index " + i + ": " + result.errorOrThrow());
 			}
-			i++;
 		}
 		
 		Result<R> merged = provider.merge(current, provider.createList(elements));
@@ -138,23 +137,23 @@ public class SetCodec<E> extends AbstractCodec<Set<E>, SizeConstraintConfig> imp
 	
 	@Override
 	@SuppressWarnings("DuplicatedCode")
-	public <R> @NonNull Result<Set<E>> decodeStart(@NonNull TypeProvider<R> provider, @NonNull R current, @Nullable R value) {
+	public <R> @NonNull Result<List<C>> decodeStart(@NonNull TypeProvider<R> provider, @NonNull R current, @Nullable R value) {
 		Objects.requireNonNull(provider, "Type provider must not be null");
 		Objects.requireNonNull(current, "Current value must not be null");
 		if (value == null) {
-			return Result.error("Unable to decode null value as set using '" + this + "'");
+			return Result.error("Unable to decode null value as list using'" + this + "'");
 		}
 		
 		Result<List<R>> decoded = provider.getList(value);
 		if (decoded.isError()) {
-			return Result.error("Unable to decode set using '" + this + "': " + decoded.errorOrThrow());
+			return Result.error("Unable to decode list using '" + this + "': " + decoded.errorOrThrow());
 		}
-		List<Result<E>> results = decoded.resultOrThrow().stream().map(element -> this.codec.decodeStart(provider, value, element)).toList();
+		List<Result<C>> results = decoded.resultOrThrow().stream().map(element -> this.codec.decodeStart(provider, value, element)).toList();
 		
-		Set<E> elements = new LinkedHashSet<>();
+		List<C> elements = new ArrayList<>();
 		List<String> errors = new ArrayList<>();
 		for (int i = 0; i < results.size(); i++) {
-			Result<E> result = results.get(i);
+			Result<C> result = results.get(i);
 			if (result.hasValue()) {
 				elements.add(result.resultOrThrow());
 			}
@@ -162,15 +161,15 @@ public class SetCodec<E> extends AbstractCodec<Set<E>, SizeConstraintConfig> imp
 				errors.add("Index " + i + ": " + result.errorOrThrow());
 			}
 		}
-
+		
 		if (elements.isEmpty() && !errors.isEmpty()) {
-			return Result.error("Unable to decode any elements of the set using '" + this + "': " + String.join("\n - ", errors));
+			return Result.error("Unable to decode any elements of the list using '" + this + "': " + errors.stream().collect(Collectors.joining("\n - ", "", "\n")));
 		}
 		Result<Void> constraintResult = this.checkConstraints(elements);
 		if (constraintResult.isError()) {
-			return Result.error("Unable to decode set using '" + this + "': " + constraintResult.errorOrThrow());
+			return Result.error("Unable to decode list using '" + this + "': " + constraintResult.errorOrThrow());
 		}
-
+		
 		if (errors.isEmpty()) {
 			return Result.success(elements);
 		}
@@ -179,10 +178,10 @@ public class SetCodec<E> extends AbstractCodec<Set<E>, SizeConstraintConfig> imp
 	
 	//region Object overrides
 	@Override
-	public boolean equals(Object object) {
-		if (!(object instanceof SetCodec<?> that)) return false;
+	public boolean equals(Object o) {
+		if (!(o instanceof ListCodec<?> listCodec)) return false;
 		
-		return this.codec.equals(that.codec);
+		return this.codec.equals(listCodec.codec);
 	}
 	
 	@Override
@@ -193,8 +192,8 @@ public class SetCodec<E> extends AbstractCodec<Set<E>, SizeConstraintConfig> imp
 	@Override
 	public String toString() {
 		return this.getConstraintConfig().map(sizeConstraintConfig -> {
-			return "ConstrainedSetCodec[" + this.codec + ",constraints=" + sizeConstraintConfig + "]";
-		}).orElse("SetCodec[" + this.codec + "]");
+			return "ConstrainedListCodec[" + this.codec + ",constraints=" + sizeConstraintConfig + "]";
+		}).orElse("ListCodec[" + this.codec + "]");
 	}
 	//endregion
 }

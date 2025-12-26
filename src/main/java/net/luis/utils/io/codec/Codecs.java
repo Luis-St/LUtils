@@ -29,6 +29,7 @@ import net.luis.utils.io.codec.types.primitive.*;
 import net.luis.utils.io.codec.types.primitive.numeric.*;
 import net.luis.utils.io.codec.types.stream.*;
 import net.luis.utils.io.codec.types.struct.*;
+import net.luis.utils.io.codec.types.struct.collection.MapCodec;
 import net.luis.utils.io.codec.types.time.*;
 import net.luis.utils.util.Either;
 import net.luis.utils.util.result.Result;
