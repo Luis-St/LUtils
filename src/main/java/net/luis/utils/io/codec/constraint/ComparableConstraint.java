@@ -71,6 +71,17 @@ public interface ComparableConstraint<T extends Comparable<T>, C> {
 	@NonNull C lessThanOrEqual(@NonNull T value);
 	
 	/**
+	 * Constrains the value to be within the specified range (exclusive on both bounds).<br>
+	 * The constraint passes if {@code min < value < max}.<br>
+	 *
+	 * @param min The minimum value (exclusive)
+	 * @param max The maximum value (exclusive)
+	 * @return The codec with the constraint applied
+	 * @throws IllegalArgumentException If {@code min >= max}
+	 */
+	@NonNull C between(@NonNull T min, @NonNull T max);
+	
+	/**
 	 * Constrains the value to be within the specified range (inclusive on both bounds).<br>
 	 * The constraint passes if {@code min <= value <= max}.<br>
 	 *
@@ -80,17 +91,6 @@ public interface ComparableConstraint<T extends Comparable<T>, C> {
 	 * @throws IllegalArgumentException If {@code min > max}
 	 */
 	@NonNull C betweenOrEqual(@NonNull T min, @NonNull T max);
-	
-	/**
-	 * Constrains the value to be within the specified range (exclusive on both bounds).<br>
-	 * The constraint passes if {@code min < value < max}.<br>
-	 *
-	 * @param min The minimum value (exclusive)
-	 * @param max The maximum value (exclusive)
-	 * @return The codec with the constraint applied
-	 * @throws IllegalArgumentException If {@code min >= max}
-	 */
-	@NonNull C betweenExclusive(@NonNull T min, @NonNull T max);
 	
 	/**
 	 * Constrains the value to be equal to the specified value.<br>

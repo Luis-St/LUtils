@@ -44,7 +44,6 @@ import java.util.function.UnaryOperator;
  *
  * @author Luis-St
  *
- * @param <T> The BigDecimal type being constrained
  * @param <C> The codec type
  */
 public interface BigDecimalConstraint<C extends Codec<BigDecimal>> extends NumericConstraint<BigDecimal, C, BigDecimalConstraintConfig> {
@@ -76,13 +75,13 @@ public interface BigDecimalConstraint<C extends Codec<BigDecimal>> extends Numer
 	}
 	
 	@Override
-	default @NonNull C betweenOrEqual(@NonNull BigDecimal min, @NonNull BigDecimal max) {
-		return this.applyConstraint(config -> config.withNumericConfig(numericConfig -> numericConfig.withRange(min, max, true)));
+	default @NonNull C between(@NonNull BigDecimal min, @NonNull BigDecimal max) {
+		return this.applyConstraint(config -> config.withNumericConfig(numericConfig -> numericConfig.withRange(min, max, false)));
 	}
 	
 	@Override
-	default @NonNull C betweenExclusive(@NonNull BigDecimal min, @NonNull BigDecimal max) {
-		return this.applyConstraint(config -> config.withNumericConfig(numericConfig -> numericConfig.withRange(min, max, false)));
+	default @NonNull C betweenOrEqual(@NonNull BigDecimal min, @NonNull BigDecimal max) {
+		return this.applyConstraint(config -> config.withNumericConfig(numericConfig -> numericConfig.withRange(min, max, true)));
 	}
 	
 	@Override
