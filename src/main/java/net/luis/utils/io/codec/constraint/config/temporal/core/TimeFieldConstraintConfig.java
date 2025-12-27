@@ -16,8 +16,9 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-package net.luis.utils.io.codec.constraint.config.temporal;
+package net.luis.utils.io.codec.constraint.config.temporal.core;
 
+import net.luis.utils.io.codec.constraint.config.temporal.provider.TimeFieldProvider;
 import net.luis.utils.util.result.Result;
 import org.jspecify.annotations.NonNull;
 
@@ -119,7 +120,43 @@ public record TimeFieldConstraintConfig(
 	}
 
 	/**
-	 * Validates the time field constraints against the given LocalTime value.<br>
+	 * Validates the time field constraints using the provided field provider.<br>
+	 *
+	 * @param provider The provider that supplies time field values
+	 * @return A success result if the value meets the constraints, or an error result with a descriptive message
+	 * @throws NullPointerException If the provider is null
+	 */
+	private @NonNull Result<Void> matches(@NonNull TimeFieldProvider provider) {
+		Objects.requireNonNull(provider, "Provider must not be null");
+		if (this.isUnconstrained()) {
+			return Result.success();
+		}
+
+		if (this.hour.isPresent()) {
+			Result<Void> hourResult = this.hour.get().matches("hour", provider.hour().getAsInt());
+			if (hourResult.isError()) return hourResult;
+		}
+
+		if (this.minute.isPresent()) {
+			Result<Void> minuteResult = this.minute.get().matches("minute", provider.minute().getAsInt());
+			if (minuteResult.isError()) return minuteResult;
+		}
+
+		if (this.second.isPresent()) {
+			Result<Void> secondResult = this.second.get().matches("second", provider.second().getAsInt());
+			if (secondResult.isError()) return secondResult;
+		}
+
+		if (this.millisecond.isPresent()) {
+			Result<Void> millisecondResult = this.millisecond.get().matches("millisecond", provider.millisecond().getAsInt());
+			if (millisecondResult.isError()) return millisecondResult;
+		}
+
+		return Result.success();
+	}
+
+	/**
+	 * Validates the time field constraints against the given {@link LocalTime} value.<br>
 	 *
 	 * @param value The value to validate
 	 * @return A success result if the value meets the constraints, or an error result with a descriptive message
@@ -127,35 +164,11 @@ public record TimeFieldConstraintConfig(
 	 */
 	public @NonNull Result<Void> matches(@NonNull LocalTime value) {
 		Objects.requireNonNull(value, "Value must not be null");
-		if (this.isUnconstrained()) {
-			return Result.success();
-		}
-
-		if (this.hour.isPresent()) {
-			Result<Void> hourResult = this.hour.get().matches("hour", value.getHour());
-			if (hourResult.isError()) return hourResult;
-		}
-
-		if (this.minute.isPresent()) {
-			Result<Void> minuteResult = this.minute.get().matches("minute", value.getMinute());
-			if (minuteResult.isError()) return minuteResult;
-		}
-
-		if (this.second.isPresent()) {
-			Result<Void> secondResult = this.second.get().matches("second", value.getSecond());
-			if (secondResult.isError()) return secondResult;
-		}
-
-		if (this.millisecond.isPresent()) {
-			Result<Void> millisecondResult = this.millisecond.get().matches("millisecond", value.getNano() / 1_000_000);
-			if (millisecondResult.isError()) return millisecondResult;
-		}
-
-		return Result.success();
+		return this.matches(TimeFieldProvider.create(value::getHour, value::getMinute, value::getSecond, () -> value.getNano() / 1_000_000));
 	}
 
 	/**
-	 * Validates the time field constraints against the given LocalDateTime value.<br>
+	 * Validates the time field constraints against the given {@link LocalDateTime} value.<br>
 	 *
 	 * @param value The value to validate
 	 * @return A success result if the value meets the constraints, or an error result with a descriptive message
@@ -163,35 +176,11 @@ public record TimeFieldConstraintConfig(
 	 */
 	public @NonNull Result<Void> matches(@NonNull LocalDateTime value) {
 		Objects.requireNonNull(value, "Value must not be null");
-		if (this.isUnconstrained()) {
-			return Result.success();
-		}
-
-		if (this.hour.isPresent()) {
-			Result<Void> hourResult = this.hour.get().matches("hour", value.getHour());
-			if (hourResult.isError()) return hourResult;
-		}
-
-		if (this.minute.isPresent()) {
-			Result<Void> minuteResult = this.minute.get().matches("minute", value.getMinute());
-			if (minuteResult.isError()) return minuteResult;
-		}
-
-		if (this.second.isPresent()) {
-			Result<Void> secondResult = this.second.get().matches("second", value.getSecond());
-			if (secondResult.isError()) return secondResult;
-		}
-
-		if (this.millisecond.isPresent()) {
-			Result<Void> millisecondResult = this.millisecond.get().matches("millisecond", value.getNano() / 1_000_000);
-			if (millisecondResult.isError()) return millisecondResult;
-		}
-
-		return Result.success();
+		return this.matches(TimeFieldProvider.create(value::getHour, value::getMinute, value::getSecond, () -> value.getNano() / 1_000_000));
 	}
 
 	/**
-	 * Validates the time field constraints against the given OffsetTime value.<br>
+	 * Validates the time field constraints against the given {@link OffsetTime} value.<br>
 	 *
 	 * @param value The value to validate
 	 * @return A success result if the value meets the constraints, or an error result with a descriptive message
@@ -199,35 +188,11 @@ public record TimeFieldConstraintConfig(
 	 */
 	public @NonNull Result<Void> matches(@NonNull OffsetTime value) {
 		Objects.requireNonNull(value, "Value must not be null");
-		if (this.isUnconstrained()) {
-			return Result.success();
-		}
-
-		if (this.hour.isPresent()) {
-			Result<Void> hourResult = this.hour.get().matches("hour", value.getHour());
-			if (hourResult.isError()) return hourResult;
-		}
-
-		if (this.minute.isPresent()) {
-			Result<Void> minuteResult = this.minute.get().matches("minute", value.getMinute());
-			if (minuteResult.isError()) return minuteResult;
-		}
-
-		if (this.second.isPresent()) {
-			Result<Void> secondResult = this.second.get().matches("second", value.getSecond());
-			if (secondResult.isError()) return secondResult;
-		}
-
-		if (this.millisecond.isPresent()) {
-			Result<Void> millisecondResult = this.millisecond.get().matches("millisecond", value.getNano() / 1_000_000);
-			if (millisecondResult.isError()) return millisecondResult;
-		}
-
-		return Result.success();
+		return this.matches(TimeFieldProvider.create(value::getHour, value::getMinute, value::getSecond, () -> value.getNano() / 1_000_000));
 	}
 
 	/**
-	 * Validates the time field constraints against the given OffsetDateTime value.<br>
+	 * Validates the time field constraints against the given {@link OffsetDateTime} value.<br>
 	 *
 	 * @param value The value to validate
 	 * @return A success result if the value meets the constraints, or an error result with a descriptive message
@@ -235,35 +200,11 @@ public record TimeFieldConstraintConfig(
 	 */
 	public @NonNull Result<Void> matches(@NonNull OffsetDateTime value) {
 		Objects.requireNonNull(value, "Value must not be null");
-		if (this.isUnconstrained()) {
-			return Result.success();
-		}
-
-		if (this.hour.isPresent()) {
-			Result<Void> hourResult = this.hour.get().matches("hour", value.getHour());
-			if (hourResult.isError()) return hourResult;
-		}
-
-		if (this.minute.isPresent()) {
-			Result<Void> minuteResult = this.minute.get().matches("minute", value.getMinute());
-			if (minuteResult.isError()) return minuteResult;
-		}
-
-		if (this.second.isPresent()) {
-			Result<Void> secondResult = this.second.get().matches("second", value.getSecond());
-			if (secondResult.isError()) return secondResult;
-		}
-
-		if (this.millisecond.isPresent()) {
-			Result<Void> millisecondResult = this.millisecond.get().matches("millisecond", value.getNano() / 1_000_000);
-			if (millisecondResult.isError()) return millisecondResult;
-		}
-
-		return Result.success();
+		return this.matches(TimeFieldProvider.create(value::getHour, value::getMinute, value::getSecond, () -> value.getNano() / 1_000_000));
 	}
 
 	/**
-	 * Validates the time field constraints against the given ZonedDateTime value.<br>
+	 * Validates the time field constraints against the given {@link ZonedDateTime} value.<br>
 	 *
 	 * @param value The value to validate
 	 * @return A success result if the value meets the constraints, or an error result with a descriptive message
@@ -271,31 +212,7 @@ public record TimeFieldConstraintConfig(
 	 */
 	public @NonNull Result<Void> matches(@NonNull ZonedDateTime value) {
 		Objects.requireNonNull(value, "Value must not be null");
-		if (this.isUnconstrained()) {
-			return Result.success();
-		}
-
-		if (this.hour.isPresent()) {
-			Result<Void> hourResult = this.hour.get().matches("hour", value.getHour());
-			if (hourResult.isError()) return hourResult;
-		}
-
-		if (this.minute.isPresent()) {
-			Result<Void> minuteResult = this.minute.get().matches("minute", value.getMinute());
-			if (minuteResult.isError()) return minuteResult;
-		}
-
-		if (this.second.isPresent()) {
-			Result<Void> secondResult = this.second.get().matches("second", value.getSecond());
-			if (secondResult.isError()) return secondResult;
-		}
-
-		if (this.millisecond.isPresent()) {
-			Result<Void> millisecondResult = this.millisecond.get().matches("millisecond", value.getNano() / 1_000_000);
-			if (millisecondResult.isError()) return millisecondResult;
-		}
-
-		return Result.success();
+		return this.matches(TimeFieldProvider.create(value::getHour, value::getMinute, value::getSecond, () -> value.getNano() / 1_000_000));
 	}
 	
 	/**

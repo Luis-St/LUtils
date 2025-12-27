@@ -18,6 +18,7 @@
 
 package net.luis.utils.io.codec.constraint.config.temporal;
 
+import net.luis.utils.io.codec.constraint.config.temporal.core.TemporalConstraintConfig;
 import net.luis.utils.io.codec.constraint.core.provider.TemporalConstraintConfigProvider;
 import net.luis.utils.util.result.Result;
 import org.jspecify.annotations.NonNull;

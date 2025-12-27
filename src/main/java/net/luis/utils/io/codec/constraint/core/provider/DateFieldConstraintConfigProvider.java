@@ -18,7 +18,7 @@
 
 package net.luis.utils.io.codec.constraint.core.provider;
 
-import net.luis.utils.io.codec.constraint.config.temporal.FieldConstraintConfig;
+import net.luis.utils.io.codec.constraint.config.temporal.core.FieldConstraintConfig;
 import org.jspecify.annotations.NonNull;
 
 import java.time.DayOfWeek;

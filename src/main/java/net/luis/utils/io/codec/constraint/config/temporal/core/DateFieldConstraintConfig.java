@@ -16,8 +16,9 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-package net.luis.utils.io.codec.constraint.config.temporal;
+package net.luis.utils.io.codec.constraint.config.temporal.core;
 
+import net.luis.utils.io.codec.constraint.config.temporal.provider.DateFieldProvider;
 import net.luis.utils.util.result.Result;
 import org.jspecify.annotations.NonNull;
 
@@ -129,39 +130,39 @@ public record DateFieldConstraintConfig(
 	}
 
 	/**
-	 * Validates the date field constraints against the given LocalDate value.<br>
+	 * Validates the date field constraints using the provided field provider.<br>
 	 *
-	 * @param value The value to validate
+	 * @param provider The provider that supplies date field values
 	 * @return A success result if the value meets the constraints, or an error result with a descriptive message
-	 * @throws NullPointerException If the value is null
+	 * @throws NullPointerException If the provider is null
 	 */
-	public @NonNull Result<Void> matches(@NonNull LocalDate value) {
-		Objects.requireNonNull(value, "Value must not be null");
+	private @NonNull Result<Void> matches(@NonNull DateFieldProvider provider) {
+		Objects.requireNonNull(provider, "Provider must not be null");
 		if (this.isUnconstrained()) {
 			return Result.success();
 		}
 
 		if (this.daysOfWeek.isPresent()) {
-			if (!this.daysOfWeek.get().contains(value.getDayOfWeek())) {
-				return Result.error("Violated day of week constraint: value day of week (" + value.getDayOfWeek() + ") is not in allowed days (" + this.daysOfWeek.get() + ")");
+			if (!this.daysOfWeek.get().contains(provider.dayOfWeek().get())) {
+				return Result.error("Violated day of week constraint: value day of week (" + provider.dayOfWeek().get() + ") is not in allowed days (" + this.daysOfWeek.get() + ")");
 			}
 		}
 
 		if (this.dayOfMonth.isPresent()) {
-			Result<Void> dayOfMonthResult = this.dayOfMonth.get().matches("dayOfMonth", value.getDayOfMonth());
+			Result<Void> dayOfMonthResult = this.dayOfMonth.get().matches("dayOfMonth", provider.dayOfMonth().getAsInt());
 			if (dayOfMonthResult.isError()) {
 				return dayOfMonthResult;
 			}
 		}
 
 		if (this.months.isPresent()) {
-			if (!this.months.get().contains(value.getMonth())) {
-				return Result.error("Violated month constraint: value month (" + value.getMonth() + ") is not in allowed months (" + this.months.get() + ")");
+			if (!this.months.get().contains(provider.month().get())) {
+				return Result.error("Violated month constraint: value month (" + provider.month().get() + ") is not in allowed months (" + this.months.get() + ")");
 			}
 		}
 
 		if (this.year.isPresent()) {
-			Result<Void> yearResult = this.year.get().matches("year", value.getYear());
+			Result<Void> yearResult = this.year.get().matches("year", provider.year().getAsInt());
 			if (yearResult.isError()) {
 				return yearResult;
 			}
@@ -171,7 +172,19 @@ public record DateFieldConstraintConfig(
 	}
 
 	/**
-	 * Validates the date field constraints against the given LocalDateTime value.<br>
+	 * Validates the date field constraints against the given {@link LocalDate} value.<br>
+	 *
+	 * @param value The value to validate
+	 * @return A success result if the value meets the constraints, or an error result with a descriptive message
+	 * @throws NullPointerException If the value is null
+	 */
+	public @NonNull Result<Void> matches(@NonNull LocalDate value) {
+		Objects.requireNonNull(value, "Value must not be null");
+		return this.matches(DateFieldProvider.create(value::getDayOfWeek, value::getDayOfMonth, value::getMonth, value::getYear));
+	}
+
+	/**
+	 * Validates the date field constraints against the given {@link LocalDateTime} value.<br>
 	 *
 	 * @param value The value to validate
 	 * @return A success result if the value meets the constraints, or an error result with a descriptive message
@@ -179,33 +192,11 @@ public record DateFieldConstraintConfig(
 	 */
 	public @NonNull Result<Void> matches(@NonNull LocalDateTime value) {
 		Objects.requireNonNull(value, "Value must not be null");
-		if (this.isUnconstrained()) {
-			return Result.success();
-		}
-
-		if (this.daysOfWeek.isPresent() && !this.daysOfWeek.get().contains(value.getDayOfWeek())) {
-			return Result.error("Violated day of week constraint: value day of week (" + value.getDayOfWeek() + ") is not in allowed days (" + this.daysOfWeek.get() + ")");
-		}
-
-		if (this.dayOfMonth.isPresent()) {
-			Result<Void> dayOfMonthResult = this.dayOfMonth.get().matches("dayOfMonth", value.getDayOfMonth());
-			if (dayOfMonthResult.isError()) return dayOfMonthResult;
-		}
-
-		if (this.months.isPresent() && !this.months.get().contains(value.getMonth())) {
-			return Result.error("Violated month constraint: value month (" + value.getMonth() + ") is not in allowed months (" + this.months.get() + ")");
-		}
-
-		if (this.year.isPresent()) {
-			Result<Void> yearResult = this.year.get().matches("year", value.getYear());
-			if (yearResult.isError()) return yearResult;
-		}
-
-		return Result.success();
+		return this.matches(DateFieldProvider.create(value::getDayOfWeek, value::getDayOfMonth, value::getMonth, value::getYear));
 	}
 
 	/**
-	 * Validates the date field constraints against the given OffsetDateTime value.<br>
+	 * Validates the date field constraints against the given {@link LocalDateTime} value.<br>
 	 *
 	 * @param value The value to validate
 	 * @return A success result if the value meets the constraints, or an error result with a descriptive message
@@ -213,33 +204,11 @@ public record DateFieldConstraintConfig(
 	 */
 	public @NonNull Result<Void> matches(@NonNull OffsetDateTime value) {
 		Objects.requireNonNull(value, "Value must not be null");
-		if (this.isUnconstrained()) {
-			return Result.success();
-		}
-
-		if (this.daysOfWeek.isPresent() && !this.daysOfWeek.get().contains(value.getDayOfWeek())) {
-			return Result.error("Violated day of week constraint: value day of week (" + value.getDayOfWeek() + ") is not in allowed days (" + this.daysOfWeek.get() + ")");
-		}
-
-		if (this.dayOfMonth.isPresent()) {
-			Result<Void> dayOfMonthResult = this.dayOfMonth.get().matches("dayOfMonth", value.getDayOfMonth());
-			if (dayOfMonthResult.isError()) return dayOfMonthResult;
-		}
-
-		if (this.months.isPresent() && !this.months.get().contains(value.getMonth())) {
-			return Result.error("Violated month constraint: value month (" + value.getMonth() + ") is not in allowed months (" + this.months.get() + ")");
-		}
-
-		if (this.year.isPresent()) {
-			Result<Void> yearResult = this.year.get().matches("year", value.getYear());
-			if (yearResult.isError()) return yearResult;
-		}
-
-		return Result.success();
+		return this.matches(DateFieldProvider.create(value::getDayOfWeek, value::getDayOfMonth, value::getMonth, value::getYear));
 	}
 
 	/**
-	 * Validates the date field constraints against the given ZonedDateTime value.<br>
+	 * Validates the date field constraints against the given {@link ZonedDateTime} value.<br>
 	 *
 	 * @param value The value to validate
 	 * @return A success result if the value meets the constraints, or an error result with a descriptive message
@@ -247,29 +216,7 @@ public record DateFieldConstraintConfig(
 	 */
 	public @NonNull Result<Void> matches(@NonNull ZonedDateTime value) {
 		Objects.requireNonNull(value, "Value must not be null");
-		if (this.isUnconstrained()) {
-			return Result.success();
-		}
-
-		if (this.daysOfWeek.isPresent() && !this.daysOfWeek.get().contains(value.getDayOfWeek())) {
-			return Result.error("Violated day of week constraint: value day of week (" + value.getDayOfWeek() + ") is not in allowed days (" + this.daysOfWeek.get() + ")");
-		}
-
-		if (this.dayOfMonth.isPresent()) {
-			Result<Void> dayOfMonthResult = this.dayOfMonth.get().matches("dayOfMonth", value.getDayOfMonth());
-			if (dayOfMonthResult.isError()) return dayOfMonthResult;
-		}
-
-		if (this.months.isPresent() && !this.months.get().contains(value.getMonth())) {
-			return Result.error("Violated month constraint: value month (" + value.getMonth() + ") is not in allowed months (" + this.months.get() + ")");
-		}
-
-		if (this.year.isPresent()) {
-			Result<Void> yearResult = this.year.get().matches("year", value.getYear());
-			if (yearResult.isError()) return yearResult;
-		}
-
-		return Result.success();
+		return this.matches(DateFieldProvider.create(value::getDayOfWeek, value::getDayOfMonth, value::getMonth, value::getYear));
 	}
 	
 	/**

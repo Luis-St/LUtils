@@ -16,12 +16,14 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-package net.luis.utils.io.codec.constraint.config.temporal;
+package net.luis.utils.io.codec.constraint.config.temporal.core;
 
+import net.luis.utils.io.codec.constraint.config.temporal.provider.SpanProvider;
 import net.luis.utils.util.result.Result;
 import org.jspecify.annotations.NonNull;
 
 import java.time.*;
+import java.time.temporal.Temporal;
 import java.util.*;
 
 /**
@@ -91,7 +93,40 @@ public record SpanConstraintConfig(
 	}
 
 	/**
-	 * Validates the span constraints against the given LocalDate value.<br>
+	 * Validates the span constraints using the provided span provider.<br>
+	 *
+	 * @param value The value to validate
+	 * @param provider The provider that supplies temporal operations
+	 * @param <T> The temporal type
+	 * @return A success result if the value meets the constraints, or an error result with a descriptive message
+	 * @throws NullPointerException If the value or provider is null
+	 */
+	private <T extends Temporal & Comparable<? super T>> @NonNull Result<Void> matches(@NonNull T value, @NonNull SpanProvider<T> provider) {
+		Objects.requireNonNull(value, "Value must not be null");
+		Objects.requireNonNull(provider, "Provider must not be null");
+		if (this.isUnconstrained()) {
+			return Result.success();
+		}
+
+		if (this.withinLast.isPresent()) {
+			T threshold = provider.minus(provider.now().get(), this.withinLast.get());
+			if (provider.isBefore(value, threshold)) {
+				return Result.error("Violated within-last constraint: value (" + value + ") is before threshold (" + threshold + "), but it should be within the last " + this.withinLast.get());
+			}
+		}
+
+		if (this.withinNext.isPresent()) {
+			T threshold = provider.plus(provider.now().get(), this.withinNext.get());
+			if (provider.isAfter(value, threshold)) {
+				return Result.error("Violated within-next constraint: value (" + value + ") is after threshold (" + threshold + "), but it should be within the next " + this.withinNext.get());
+			}
+		}
+
+		return Result.success();
+	}
+
+	/**
+	 * Validates the span constraints against the given {@link LocalDate} value.<br>
 	 *
 	 * @param value The value to validate
 	 * @return A success result if the value meets the constraints, or an error result with a descriptive message
@@ -99,29 +134,11 @@ public record SpanConstraintConfig(
 	 */
 	public @NonNull Result<Void> matches(@NonNull LocalDate value) {
 		Objects.requireNonNull(value, "Value must not be null");
-		if (this.isUnconstrained()) {
-			return Result.success();
-		}
-
-		if (this.withinLast.isPresent()) {
-			LocalDate threshold = LocalDate.now().minus(this.withinLast.get());
-			if (value.isBefore(threshold)) {
-				return Result.error("Violated within-last constraint: value (" + value + ") is before threshold (" + threshold + "), but it should be within the last " + this.withinLast.get());
-			}
-		}
-
-		if (this.withinNext.isPresent()) {
-			LocalDate threshold = LocalDate.now().plus(this.withinNext.get());
-			if (value.isAfter(threshold)) {
-				return Result.error("Violated within-next constraint: value (" + value + ") is after threshold (" + threshold + "), but it should be within the next " + this.withinNext.get());
-			}
-		}
-
-		return Result.success();
+		return this.matches(value, () -> LocalDate::now);
 	}
 
 	/**
-	 * Validates the span constraints against the given LocalTime value.<br>
+	 * Validates the span constraints against the given {@link LocalTime} value.<br>
 	 *
 	 * @param value The value to validate
 	 * @return A success result if the value meets the constraints, or an error result with a descriptive message
@@ -129,29 +146,11 @@ public record SpanConstraintConfig(
 	 */
 	public @NonNull Result<Void> matches(@NonNull LocalTime value) {
 		Objects.requireNonNull(value, "Value must not be null");
-		if (this.isUnconstrained()) {
-			return Result.success();
-		}
-
-		if (this.withinLast.isPresent()) {
-			LocalTime threshold = LocalTime.now().minus(this.withinLast.get());
-			if (value.isBefore(threshold)) {
-				return Result.error("Violated within-last constraint: value (" + value + ") is before threshold (" + threshold + "), but it should be within the last " + this.withinLast.get());
-			}
-		}
-
-		if (this.withinNext.isPresent()) {
-			LocalTime threshold = LocalTime.now().plus(this.withinNext.get());
-			if (value.isAfter(threshold)) {
-				return Result.error("Violated within-next constraint: value (" + value + ") is after threshold (" + threshold + "), but it should be within the next " + this.withinNext.get());
-			}
-		}
-
-		return Result.success();
+		return this.matches(value, () -> LocalTime::now);
 	}
 
 	/**
-	 * Validates the span constraints against the given LocalDateTime value.<br>
+	 * Validates the span constraints against the given {@link LocalDateTime} value.<br>
 	 *
 	 * @param value The value to validate
 	 * @return A success result if the value meets the constraints, or an error result with a descriptive message
@@ -159,29 +158,11 @@ public record SpanConstraintConfig(
 	 */
 	public @NonNull Result<Void> matches(@NonNull LocalDateTime value) {
 		Objects.requireNonNull(value, "Value must not be null");
-		if (this.isUnconstrained()) {
-			return Result.success();
-		}
-
-		if (this.withinLast.isPresent()) {
-			LocalDateTime threshold = LocalDateTime.now().minus(this.withinLast.get());
-			if (value.isBefore(threshold)) {
-				return Result.error("Violated within-last constraint: value (" + value + ") is before threshold (" + threshold + "), but it should be within the last " + this.withinLast.get());
-			}
-		}
-
-		if (this.withinNext.isPresent()) {
-			LocalDateTime threshold = LocalDateTime.now().plus(this.withinNext.get());
-			if (value.isAfter(threshold)) {
-				return Result.error("Violated within-next constraint: value (" + value + ") is after threshold (" + threshold + "), but it should be within the next " + this.withinNext.get());
-			}
-		}
-
-		return Result.success();
+		return this.matches(value, () -> LocalDateTime::now);
 	}
 
 	/**
-	 * Validates the span constraints against the given OffsetTime value.<br>
+	 * Validates the span constraints against the given {@link OffsetTime} value.<br>
 	 *
 	 * @param value The value to validate
 	 * @return A success result if the value meets the constraints, or an error result with a descriptive message
@@ -189,29 +170,11 @@ public record SpanConstraintConfig(
 	 */
 	public @NonNull Result<Void> matches(@NonNull OffsetTime value) {
 		Objects.requireNonNull(value, "Value must not be null");
-		if (this.isUnconstrained()) {
-			return Result.success();
-		}
-
-		if (this.withinLast.isPresent()) {
-			OffsetTime threshold = OffsetTime.now().minus(this.withinLast.get());
-			if (value.isBefore(threshold)) {
-				return Result.error("Violated within-last constraint: value (" + value + ") is before threshold (" + threshold + "), but it should be within the last " + this.withinLast.get());
-			}
-		}
-
-		if (this.withinNext.isPresent()) {
-			OffsetTime threshold = OffsetTime.now().plus(this.withinNext.get());
-			if (value.isAfter(threshold)) {
-				return Result.error("Violated within-next constraint: value (" + value + ") is after threshold (" + threshold + "), but it should be within the next " + this.withinNext.get());
-			}
-		}
-
-		return Result.success();
+		return this.matches(value, () -> OffsetTime::now);
 	}
 
 	/**
-	 * Validates the span constraints against the given OffsetDateTime value.<br>
+	 * Validates the span constraints against the given {@link OffsetDateTime} value.<br>
 	 *
 	 * @param value The value to validate
 	 * @return A success result if the value meets the constraints, or an error result with a descriptive message
@@ -219,29 +182,11 @@ public record SpanConstraintConfig(
 	 */
 	public @NonNull Result<Void> matches(@NonNull OffsetDateTime value) {
 		Objects.requireNonNull(value, "Value must not be null");
-		if (this.isUnconstrained()) {
-			return Result.success();
-		}
-
-		if (this.withinLast.isPresent()) {
-			OffsetDateTime threshold = OffsetDateTime.now().minus(this.withinLast.get());
-			if (value.isBefore(threshold)) {
-				return Result.error("Violated within-last constraint: value (" + value + ") is before threshold (" + threshold + "), but it should be within the last " + this.withinLast.get());
-			}
-		}
-
-		if (this.withinNext.isPresent()) {
-			OffsetDateTime threshold = OffsetDateTime.now().plus(this.withinNext.get());
-			if (value.isAfter(threshold)) {
-				return Result.error("Violated within-next constraint: value (" + value + ") is after threshold (" + threshold + "), but it should be within the next " + this.withinNext.get());
-			}
-		}
-
-		return Result.success();
+		return this.matches(value, () -> OffsetDateTime::now);
 	}
 
 	/**
-	 * Validates the span constraints against the given ZonedDateTime value.<br>
+	 * Validates the span constraints against the given {@link ZonedDateTime} value.<br>
 	 *
 	 * @param value The value to validate
 	 * @return A success result if the value meets the constraints, or an error result with a descriptive message
@@ -249,25 +194,7 @@ public record SpanConstraintConfig(
 	 */
 	public @NonNull Result<Void> matches(@NonNull ZonedDateTime value) {
 		Objects.requireNonNull(value, "Value must not be null");
-		if (this.isUnconstrained()) {
-			return Result.success();
-		}
-
-		if (this.withinLast.isPresent()) {
-			ZonedDateTime threshold = ZonedDateTime.now().minus(this.withinLast.get());
-			if (value.isBefore(threshold)) {
-				return Result.error("Violated within-last constraint: value (" + value + ") is before threshold (" + threshold + "), but it should be within the last " + this.withinLast.get());
-			}
-		}
-
-		if (this.withinNext.isPresent()) {
-			ZonedDateTime threshold = ZonedDateTime.now().plus(this.withinNext.get());
-			if (value.isAfter(threshold)) {
-				return Result.error("Violated within-next constraint: value (" + value + ") is after threshold (" + threshold + "), but it should be within the next " + this.withinNext.get());
-			}
-		}
-
-		return Result.success();
+		return this.matches(value, () -> ZonedDateTime::now);
 	}
 	
 	/**

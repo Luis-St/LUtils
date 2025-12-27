@@ -18,7 +18,7 @@
 
 package net.luis.utils.io.codec.constraint.temporal;
 
-import net.luis.utils.io.codec.constraint.config.temporal.FieldConstraintConfig;
+import net.luis.utils.io.codec.constraint.config.temporal.core.FieldConstraintConfig;
 import net.luis.utils.io.codec.constraint.core.ComparableConstraintBuilder;
 import net.luis.utils.io.codec.constraint.core.provider.DateFieldConstraintConfigProvider;
 import org.jspecify.annotations.NonNull;
