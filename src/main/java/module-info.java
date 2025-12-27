@@ -48,8 +48,11 @@ module net.luis.utils {
 	exports net.luis.utils.io.codec.constraint;
 	exports net.luis.utils.io.codec.constraint.config;
 	exports net.luis.utils.io.codec.constraint.config.numeric;
+	exports net.luis.utils.io.codec.constraint.config.temporal;
 	exports net.luis.utils.io.codec.constraint.core;
+	exports net.luis.utils.io.codec.constraint.core.provider;
 	exports net.luis.utils.io.codec.constraint.numeric;
+	exports net.luis.utils.io.codec.constraint.temporal;
 	exports net.luis.utils.io.codec.decoder;
 	exports net.luis.utils.io.codec.encoder;
 	exports net.luis.utils.io.codec.function;

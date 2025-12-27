@@ -183,7 +183,7 @@ class OffsetTimeCodecTest {
 		Result<OffsetTime> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive("invalid-time"));
 		assertTrue(result.isError());
 		assertTrue(result.errorOrThrow().contains("Unable to decode offset time"));
-		assertTrue(result.errorOrThrow().contains("Unable to offset local time"));
+		assertTrue(result.errorOrThrow().contains("Unable to parse offset time"));
 	}
 	
 	@Test
