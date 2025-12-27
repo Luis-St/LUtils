@@ -21,7 +21,6 @@ package net.luis.utils.io.codec.constraint.config.temporal;
 import net.luis.utils.io.codec.constraint.core.provider.DateFieldConstraintConfigProvider;
 import net.luis.utils.io.codec.constraint.core.provider.TemporalConstraintConfigProvider;
 import net.luis.utils.io.codec.constraint.core.provider.TimeFieldConstraintConfigProvider;
-import net.luis.utils.util.Pair;
 import net.luis.utils.util.result.Result;
 import org.jspecify.annotations.NonNull;
 
@@ -37,22 +36,18 @@ import java.util.*;
  * </p>
  *
  * @author Luis-St
+ *
+ * @param config The base temporal constraint configuration
+ * @param spanConfig The span constraint configuration (withinLast, withinNext)
+ * @param timeFieldConfig The time field constraint configuration (hour, minute, second, millisecond)
+ * @param dateFieldConfig The date field constraint configuration (daysOfWeek, dayOfMonth, months, year)
  */
 @SuppressWarnings("OptionalContainsCollection")
 public record LocalDateTimeConstraintConfig(
-	@NonNull Optional<Pair<LocalDateTime, Boolean>> min,
-	@NonNull Optional<Pair<LocalDateTime, Boolean>> max,
-	@NonNull Optional<Pair<LocalDateTime, Boolean>> equals,
-	@NonNull Optional<Duration> withinLast,
-	@NonNull Optional<Duration> withinNext,
-	@NonNull Optional<FieldConstraintConfig> hour,
-	@NonNull Optional<FieldConstraintConfig> minute,
-	@NonNull Optional<FieldConstraintConfig> second,
-	@NonNull Optional<FieldConstraintConfig> millisecond,
-	@NonNull Optional<Set<DayOfWeek>> daysOfWeek,
-	@NonNull Optional<FieldConstraintConfig> dayOfMonth,
-	@NonNull Optional<Set<Month>> months,
-	@NonNull Optional<FieldConstraintConfig> year
+	@NonNull TemporalConstraintConfig<LocalDateTime> config,
+	@NonNull SpanConstraintConfig spanConfig,
+	@NonNull TimeFieldConstraintConfig timeFieldConfig,
+	@NonNull DateFieldConstraintConfig dateFieldConfig
 ) implements TemporalConstraintConfigProvider<LocalDateTime, LocalDateTimeConstraintConfig>,
 	TimeFieldConstraintConfigProvider<LocalDateTimeConstraintConfig>,
 	DateFieldConstraintConfigProvider<LocalDateTimeConstraintConfig> {
@@ -65,61 +60,24 @@ public record LocalDateTimeConstraintConfig(
 	 * </p>
 	 */
 	public static final LocalDateTimeConstraintConfig UNCONSTRAINED = new LocalDateTimeConstraintConfig(
-		Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(),
-		Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(),
-		Optional.empty(), Optional.empty(), Optional.empty()
+		TemporalConstraintConfig.unconstrained(), SpanConstraintConfig.UNCONSTRAINED, TimeFieldConstraintConfig.UNCONSTRAINED, DateFieldConstraintConfig.UNCONSTRAINED
 	);
 
 	/**
 	 * Constructs a new LocalDateTime constraint configuration with the specified constraints.<br>
 	 *
-	 * @param min The minimum value constraint (empty if unconstrained)
-	 * @param max The maximum value constraint (empty if unconstrained)
-	 * @param equals The exact value constraint (empty if unconstrained)
-	 * @param withinLast The "within last" duration constraint (empty if unconstrained)
-	 * @param withinNext The "within next" duration constraint (empty if unconstrained)
-	 * @param hour The hour constraint (empty if unconstrained)
-	 * @param minute The minute constraint (empty if unconstrained)
-	 * @param second The second constraint (empty if unconstrained)
-	 * @param millisecond The millisecond constraint (empty if unconstrained)
-	 * @param daysOfWeek The allowed days of week (empty if unconstrained)
-	 * @param dayOfMonth The day of month constraint (empty if unconstrained)
-	 * @param months The allowed months (empty if unconstrained)
-	 * @param year The year constraint (empty if unconstrained)
+	 * @param config The base temporal constraint configuration
+	 * @param spanConfig The span constraint configuration (withinLast, withinNext)
+	 * @param timeFieldConfig The time field constraint configuration (hour, minute, second, millisecond)
+	 * @param dateFieldConfig The date field constraint configuration (daysOfWeek, dayOfMonth, months, year)
 	 * @throws NullPointerException If any parameter is null
 	 * @throws IllegalArgumentException If constraints are invalid
 	 */
 	public LocalDateTimeConstraintConfig {
-		Objects.requireNonNull(min, "Min constraint must not be null");
-		Objects.requireNonNull(max, "Max constraint must not be null");
-		Objects.requireNonNull(equals, "Equals constraint must not be null");
-		Objects.requireNonNull(withinLast, "Within last constraint must not be null");
-		Objects.requireNonNull(withinNext, "Within next constraint must not be null");
-		Objects.requireNonNull(hour, "Hour constraint must not be null");
-		Objects.requireNonNull(minute, "Minute constraint must not be null");
-		Objects.requireNonNull(second, "Second constraint must not be null");
-		Objects.requireNonNull(millisecond, "Millisecond constraint must not be null");
-		Objects.requireNonNull(daysOfWeek, "Days of week constraint must not be null");
-		Objects.requireNonNull(dayOfMonth, "Day of month constraint must not be null");
-		Objects.requireNonNull(months, "Months constraint must not be null");
-		Objects.requireNonNull(year, "Year constraint must not be null");
-
-		if (min.isPresent() && max.isPresent()) {
-			Pair<LocalDateTime, Boolean> minPair = min.get();
-			Pair<LocalDateTime, Boolean> maxPair = max.get();
-			int comparison = minPair.getFirst().compareTo(maxPair.getFirst());
-			if (comparison > 0 || (comparison == 0 && (!minPair.getSecond() || !maxPair.getSecond()))) {
-				throw new IllegalArgumentException("Minimum value must not be greater than maximum value: min=" + minPair + ", max=" + maxPair);
-			}
-		}
-
-		if (daysOfWeek.isPresent() && daysOfWeek.get().isEmpty()) {
-			throw new IllegalArgumentException("Days of week constraint must not be empty when present");
-		}
-
-		if (months.isPresent() && months.get().isEmpty()) {
-			throw new IllegalArgumentException("Months constraint must not be empty when present");
-		}
+		Objects.requireNonNull(config, "Config must not be null");
+		Objects.requireNonNull(spanConfig, "Span config must not be null");
+		Objects.requireNonNull(timeFieldConfig, "Time field config must not be null");
+		Objects.requireNonNull(dateFieldConfig, "Date field config must not be null");
 	}
 
 	/**
@@ -128,77 +86,77 @@ public record LocalDateTimeConstraintConfig(
 	 * @return True if unconstrained, false otherwise
 	 */
 	public boolean isUnconstrained() {
-		return this == UNCONSTRAINED || (this.min.isEmpty() && this.max.isEmpty() && this.equals.isEmpty() && this.withinLast.isEmpty() && this.withinNext.isEmpty() && (this.hour.isEmpty() || this.hour.get().isUnconstrained()) && (this.minute.isEmpty() || this.minute.get().isUnconstrained()) && (this.second.isEmpty() || this.second.get().isUnconstrained()) && (this.millisecond.isEmpty() || this.millisecond.get().isUnconstrained()) && this.daysOfWeek.isEmpty() && (this.dayOfMonth.isEmpty() || this.dayOfMonth.get().isUnconstrained()) && this.months.isEmpty() && (this.year.isEmpty() || this.year.get().isUnconstrained()));
+		return this == UNCONSTRAINED || (this.config.isUnconstrained() && this.spanConfig.isUnconstrained() && this.timeFieldConfig.isUnconstrained() && this.dateFieldConfig.isUnconstrained());
 	}
 
 	@Override
 	public @NonNull LocalDateTimeConstraintConfig withEquals(@NonNull LocalDateTime value, boolean negated) {
-		return new LocalDateTimeConstraintConfig(this.min, this.max, Optional.of(Pair.of(value, negated)), this.withinLast, this.withinNext, this.hour, this.minute, this.second, this.millisecond, this.daysOfWeek, this.dayOfMonth, this.months, this.year);
+		return new LocalDateTimeConstraintConfig(this.config.withEquals(value, negated), this.spanConfig, this.timeFieldConfig, this.dateFieldConfig);
 	}
 
 	@Override
 	public @NonNull LocalDateTimeConstraintConfig withMin(@NonNull LocalDateTime min, boolean inclusive) {
-		return new LocalDateTimeConstraintConfig(Optional.of(Pair.of(min, inclusive)), this.max, this.equals, this.withinLast, this.withinNext, this.hour, this.minute, this.second, this.millisecond, this.daysOfWeek, this.dayOfMonth, this.months, this.year);
+		return new LocalDateTimeConstraintConfig(this.config.withMin(min, inclusive), this.spanConfig, this.timeFieldConfig, this.dateFieldConfig);
 	}
 
 	@Override
 	public @NonNull LocalDateTimeConstraintConfig withMax(@NonNull LocalDateTime max, boolean inclusive) {
-		return new LocalDateTimeConstraintConfig(this.min, Optional.of(Pair.of(max, inclusive)), this.equals, this.withinLast, this.withinNext, this.hour, this.minute, this.second, this.millisecond, this.daysOfWeek, this.dayOfMonth, this.months, this.year);
+		return new LocalDateTimeConstraintConfig(this.config.withMax(max, inclusive), this.spanConfig, this.timeFieldConfig, this.dateFieldConfig);
 	}
 
 	@Override
 	public @NonNull LocalDateTimeConstraintConfig withRange(@NonNull LocalDateTime min, @NonNull LocalDateTime max, boolean inclusive) {
-		return new LocalDateTimeConstraintConfig(Optional.of(Pair.of(min, inclusive)), Optional.of(Pair.of(max, inclusive)), this.equals, this.withinLast, this.withinNext, this.hour, this.minute, this.second, this.millisecond, this.daysOfWeek, this.dayOfMonth, this.months, this.year);
+		return new LocalDateTimeConstraintConfig(this.config.withRange(min, max, inclusive), this.spanConfig, this.timeFieldConfig, this.dateFieldConfig);
 	}
 
 	@Override
 	public @NonNull LocalDateTimeConstraintConfig withWithinLast(@NonNull Duration duration) {
-		return new LocalDateTimeConstraintConfig(this.min, this.max, this.equals, Optional.of(duration), this.withinNext, this.hour, this.minute, this.second, this.millisecond, this.daysOfWeek, this.dayOfMonth, this.months, this.year);
+		return new LocalDateTimeConstraintConfig(this.config, this.spanConfig.withWithinLast(duration), this.timeFieldConfig, this.dateFieldConfig);
 	}
 
 	@Override
 	public @NonNull LocalDateTimeConstraintConfig withWithinNext(@NonNull Duration duration) {
-		return new LocalDateTimeConstraintConfig(this.min, this.max, this.equals, this.withinLast, Optional.of(duration), this.hour, this.minute, this.second, this.millisecond, this.daysOfWeek, this.dayOfMonth, this.months, this.year);
+		return new LocalDateTimeConstraintConfig(this.config, this.spanConfig.withWithinNext(duration), this.timeFieldConfig, this.dateFieldConfig);
 	}
 
 	@Override
 	public @NonNull LocalDateTimeConstraintConfig withHour(@NonNull FieldConstraintConfig hourConfig) {
-		return new LocalDateTimeConstraintConfig(this.min, this.max, this.equals, this.withinLast, this.withinNext, Optional.of(hourConfig), this.minute, this.second, this.millisecond, this.daysOfWeek, this.dayOfMonth, this.months, this.year);
+		return new LocalDateTimeConstraintConfig(this.config, this.spanConfig, this.timeFieldConfig.withHour(hourConfig), this.dateFieldConfig);
 	}
 
 	@Override
 	public @NonNull LocalDateTimeConstraintConfig withMinute(@NonNull FieldConstraintConfig minuteConfig) {
-		return new LocalDateTimeConstraintConfig(this.min, this.max, this.equals, this.withinLast, this.withinNext, this.hour, Optional.of(minuteConfig), this.second, this.millisecond, this.daysOfWeek, this.dayOfMonth, this.months, this.year);
+		return new LocalDateTimeConstraintConfig(this.config, this.spanConfig, this.timeFieldConfig.withMinute(minuteConfig), this.dateFieldConfig);
 	}
 
 	@Override
 	public @NonNull LocalDateTimeConstraintConfig withSecond(@NonNull FieldConstraintConfig secondConfig) {
-		return new LocalDateTimeConstraintConfig(this.min, this.max, this.equals, this.withinLast, this.withinNext, this.hour, this.minute, Optional.of(secondConfig), this.millisecond, this.daysOfWeek, this.dayOfMonth, this.months, this.year);
+		return new LocalDateTimeConstraintConfig(this.config, this.spanConfig, this.timeFieldConfig.withSecond(secondConfig), this.dateFieldConfig);
 	}
 
 	@Override
 	public @NonNull LocalDateTimeConstraintConfig withMillisecond(@NonNull FieldConstraintConfig millisecondConfig) {
-		return new LocalDateTimeConstraintConfig(this.min, this.max, this.equals, this.withinLast, this.withinNext, this.hour, this.minute, this.second, Optional.of(millisecondConfig), this.daysOfWeek, this.dayOfMonth, this.months, this.year);
+		return new LocalDateTimeConstraintConfig(this.config, this.spanConfig, this.timeFieldConfig.withMillisecond(millisecondConfig), this.dateFieldConfig);
 	}
 
 	@Override
 	public @NonNull LocalDateTimeConstraintConfig withDayOfWeek(@NonNull Set<DayOfWeek> daysOfWeek) {
-		return new LocalDateTimeConstraintConfig(this.min, this.max, this.equals, this.withinLast, this.withinNext, this.hour, this.minute, this.second, this.millisecond, Optional.of(Set.copyOf(daysOfWeek)), this.dayOfMonth, this.months, this.year);
+		return new LocalDateTimeConstraintConfig(this.config, this.spanConfig, this.timeFieldConfig, this.dateFieldConfig.withDayOfWeek(daysOfWeek));
 	}
 
 	@Override
 	public @NonNull LocalDateTimeConstraintConfig withDayOfMonth(@NonNull FieldConstraintConfig monthConfig) {
-		return new LocalDateTimeConstraintConfig(this.min, this.max, this.equals, this.withinLast, this.withinNext, this.hour, this.minute, this.second, this.millisecond, this.daysOfWeek, Optional.of(monthConfig), this.months, this.year);
+		return new LocalDateTimeConstraintConfig(this.config, this.spanConfig, this.timeFieldConfig, this.dateFieldConfig.withDayOfMonth(monthConfig));
 	}
 
 	@Override
 	public @NonNull LocalDateTimeConstraintConfig withMonth(@NonNull Set<Month> months) {
-		return new LocalDateTimeConstraintConfig(this.min, this.max, this.equals, this.withinLast, this.withinNext, this.hour, this.minute, this.second, this.millisecond, this.daysOfWeek, this.dayOfMonth, Optional.of(Set.copyOf(months)), this.year);
+		return new LocalDateTimeConstraintConfig(this.config, this.spanConfig, this.timeFieldConfig, this.dateFieldConfig.withMonth(months));
 	}
 
 	@Override
 	public @NonNull LocalDateTimeConstraintConfig withYear(@NonNull FieldConstraintConfig yearConfig) {
-		return new LocalDateTimeConstraintConfig(this.min, this.max, this.equals, this.withinLast, this.withinNext, this.hour, this.minute, this.second, this.millisecond, this.daysOfWeek, this.dayOfMonth, this.months, Optional.of(yearConfig));
+		return new LocalDateTimeConstraintConfig(this.config, this.spanConfig, this.timeFieldConfig, this.dateFieldConfig.withYear(yearConfig));
 	}
 
 	/**
@@ -214,99 +172,24 @@ public record LocalDateTimeConstraintConfig(
 			return Result.success();
 		}
 
-		if (this.equals.isPresent()) {
-			Pair<LocalDateTime, Boolean> pair = this.equals.get();
-			if (pair.getSecond()) {
-				if (!value.equals(pair.getFirst())) {
-					return Result.success();
-				}
-				return Result.error("Violated equals constraint: value (" + value + ") is equal to expected (" + pair.getFirst() + "), but it should not be");
-			} else {
-				if (value.equals(pair.getFirst())) {
-					return Result.success();
-				}
-				return Result.error("Violated equals constraint: value (" + value + ") is not equal to expected (" + pair.getFirst() + "), but it should be");
-			}
+		Result<Void> baseResult = this.config.matches(value);
+		if (baseResult.isError()) {
+			return baseResult;
 		}
 
-		if (this.withinLast.isPresent()) {
-			LocalDateTime threshold = LocalDateTime.now().minus(this.withinLast.get());
-			if (value.isBefore(threshold)) {
-				return Result.error("Violated within-last constraint: value (" + value + ") is before threshold (" + threshold + "), but it should be within the last " + this.withinLast.get());
-			}
+		Result<Void> spanResult = this.spanConfig.matches(value);
+		if (spanResult.isError()) {
+			return spanResult;
 		}
 
-		if (this.withinNext.isPresent()) {
-			LocalDateTime threshold = LocalDateTime.now().plus(this.withinNext.get());
-			if (value.isAfter(threshold)) {
-				return Result.error("Violated within-next constraint: value (" + value + ") is after threshold (" + threshold + "), but it should be within the next " + this.withinNext.get());
-			}
+		Result<Void> timeFieldResult = this.timeFieldConfig.matches(value);
+		if (timeFieldResult.isError()) {
+			return timeFieldResult;
 		}
 
-		if (this.min.isPresent()) {
-			Pair<LocalDateTime, Boolean> pair = this.min.get();
-			int comparison = value.compareTo(pair.getFirst());
-			if (pair.getSecond()) {
-				if (comparison < 0) {
-					return Result.error("Violated minimum constraint: value (" + value + ") is before min (" + pair.getFirst() + "), but it should be at least min");
-				}
-			} else {
-				if (comparison <= 0) {
-					return Result.error("Violated minimum constraint (exclusive): value (" + value + ") is before or equal to min (" + pair.getFirst() + "), but it should be after min");
-				}
-			}
-		}
-
-		if (this.max.isPresent()) {
-			Pair<LocalDateTime, Boolean> pair = this.max.get();
-			int comparison = value.compareTo(pair.getFirst());
-			if (pair.getSecond()) {
-				if (comparison > 0) {
-					return Result.error("Violated maximum constraint: value (" + value + ") is after max (" + pair.getFirst() + "), but it should be at most max");
-				}
-			} else {
-				if (comparison >= 0) {
-					return Result.error("Violated maximum constraint (exclusive): value (" + value + ") is after or equal to max (" + pair.getFirst() + "), but it should be before max");
-				}
-			}
-		}
-
-		if (this.hour.isPresent()) {
-			Result<Void> hourResult = this.hour.get().matches("hour", value.getHour());
-			if (hourResult.isError()) return hourResult;
-		}
-
-		if (this.minute.isPresent()) {
-			Result<Void> minuteResult = this.minute.get().matches("minute", value.getMinute());
-			if (minuteResult.isError()) return minuteResult;
-		}
-
-		if (this.second.isPresent()) {
-			Result<Void> secondResult = this.second.get().matches("second", value.getSecond());
-			if (secondResult.isError()) return secondResult;
-		}
-
-		if (this.millisecond.isPresent()) {
-			Result<Void> millisecondResult = this.millisecond.get().matches("millisecond", value.getNano() / 1_000_000);
-			if (millisecondResult.isError()) return millisecondResult;
-		}
-
-		if (this.daysOfWeek.isPresent() && !this.daysOfWeek.get().contains(value.getDayOfWeek())) {
-			return Result.error("Violated day of week constraint: value day of week (" + value.getDayOfWeek() + ") is not in allowed days (" + this.daysOfWeek.get() + ")");
-		}
-
-		if (this.dayOfMonth.isPresent()) {
-			Result<Void> dayOfMonthResult = this.dayOfMonth.get().matches("dayOfMonth", value.getDayOfMonth());
-			if (dayOfMonthResult.isError()) return dayOfMonthResult;
-		}
-
-		if (this.months.isPresent() && !this.months.get().contains(value.getMonth())) {
-			return Result.error("Violated month constraint: value month (" + value.getMonth() + ") is not in allowed months (" + this.months.get() + ")");
-		}
-
-		if (this.year.isPresent()) {
-			Result<Void> yearResult = this.year.get().matches("year", value.getYear());
-			if (yearResult.isError()) return yearResult;
+		Result<Void> dateFieldResult = this.dateFieldConfig.matches(value);
+		if (dateFieldResult.isError()) {
+			return dateFieldResult;
 		}
 
 		return Result.success();
@@ -317,20 +200,12 @@ public record LocalDateTimeConstraintConfig(
 		if (this.isUnconstrained()) {
 			return "LocalDateTimeConstraintConfig[unconstrained]";
 		}
+		
 		List<String> constraints = new ArrayList<>();
-		this.min.ifPresent(pair -> constraints.add("min=" + pair.getFirst()));
-		this.max.ifPresent(pair -> constraints.add("max=" + pair.getFirst()));
-		this.equals.ifPresent(pair -> constraints.add("equals=" + pair.getFirst()));
-		this.withinLast.ifPresent(d -> constraints.add("withinLast=" + d));
-		this.withinNext.ifPresent(d -> constraints.add("withinNext=" + d));
-		this.hour.ifPresent(h -> h.appendConstraints("hour", constraints));
-		this.minute.ifPresent(m -> m.appendConstraints("minute", constraints));
-		this.second.ifPresent(s -> s.appendConstraints("second", constraints));
-		this.millisecond.ifPresent(ms -> ms.appendConstraints("millisecond", constraints));
-		this.daysOfWeek.ifPresent(days -> constraints.add("daysOfWeek=" + days));
-		this.dayOfMonth.ifPresent(dom -> dom.appendConstraints("dayOfMonth", constraints));
-		this.months.ifPresent(mon -> constraints.add("months=" + mon));
-		this.year.ifPresent(y -> y.appendConstraints("year", constraints));
+		this.config.appendConstraints(constraints);
+		this.spanConfig.appendConstraints(constraints);
+		this.timeFieldConfig.appendConstraints(constraints);
+		this.dateFieldConfig.appendConstraints(constraints);
 		return "LocalDateTimeConstraintConfig[" + String.join(", ", constraints) + "]";
 	}
 }
