@@ -69,13 +69,9 @@ public record IntegerConstraintConfig<T extends Number & Comparable<T>>(
 	 * </p>
 	 *
 	 * @see #unconstrained()
-	 * @see #withNumericConfig(UnaryOperator)
 	 */
 	private static final IntegerConstraintConfig<? extends Number> UNCONSTRAINED = new IntegerConstraintConfig<>(
-		Optional.empty(),
-		Optional.empty(),
-		OptionalLong.empty(),
-		OptionalInt.empty()
+		Optional.empty(), Optional.empty(), OptionalLong.empty(), OptionalInt.empty()
 	);
 
 	/**

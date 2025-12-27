@@ -40,7 +40,7 @@ public interface CodecConstraint<T, C, V> {
 	 *
 	 * @param configModifier Applies modifications to the current constraint configuration
 	 * @return The constrained codec
-	 * @throws NullPointerException If the constraint configuration is null
+	 * @throws NullPointerException If the constraint config modifier is null
 	 */
 	@NonNull C applyConstraint(@NonNull UnaryOperator<V> configModifier);
 }

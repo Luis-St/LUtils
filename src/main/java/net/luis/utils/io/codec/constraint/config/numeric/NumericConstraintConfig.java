@@ -47,11 +47,11 @@ public record NumericConstraintConfig<T extends Number & Comparable<T>>(
 	 *     This constant represents a configuration where all numeric values are valid.<br>
 	 *     It can be used as a starting point to build constrained configurations.
 	 * </p>
+	 *
+	 * @see #unconstrained()
 	 */
 	private static final NumericConstraintConfig<? extends Number> UNCONSTRAINED = new NumericConstraintConfig<>(
-		Optional.empty(),
-		Optional.empty(),
-		Optional.empty()
+		Optional.empty(), Optional.empty(), Optional.empty()
 	);
 	
 	/**

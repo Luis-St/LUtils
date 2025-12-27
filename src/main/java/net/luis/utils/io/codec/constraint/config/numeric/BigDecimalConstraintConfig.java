@@ -71,19 +71,10 @@ public record BigDecimalConstraintConfig(
 	 *     It can be used as a starting point to build constrained configurations using
 	 *     the various {@code with*} methods.
 	 * </p>
-	 *
-	 * @see #withNumericConfig(UnaryOperator)
-	 * @see #withIntegral()
-	 * @see #withNormalized()
 	 */
 	public static final BigDecimalConstraintConfig UNCONSTRAINED = new BigDecimalConstraintConfig(
-		Optional.empty(),
-		Optional.empty(),
-		Optional.empty(),
-		OptionalInt.empty(),
-		OptionalInt.empty(),
-		OptionalInt.empty(),
-		OptionalInt.empty()
+		Optional.empty(), Optional.empty(), Optional.empty(),
+		OptionalInt.empty(), OptionalInt.empty(), OptionalInt.empty(), OptionalInt.empty()
 	);
 
 	/**

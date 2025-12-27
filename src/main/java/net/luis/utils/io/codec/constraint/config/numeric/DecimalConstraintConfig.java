@@ -69,14 +69,9 @@ public record DecimalConstraintConfig<T extends Number & Comparable<T>>(
 	 * </p>
 	 *
 	 * @see #unconstrained()
-	 * @see #withNumericConfig(UnaryOperator)
 	 */
 	private static final DecimalConstraintConfig<? extends Number> UNCONSTRAINED = new DecimalConstraintConfig<>(
-		Optional.empty(), 
-		Optional.empty(), 
-		Optional.empty(), 
-		Optional.empty(), 
-		Optional.empty()
+		Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty()
 	);
 
 	/**
