@@ -30,7 +30,6 @@ import org.jspecify.annotations.Nullable;
 import java.time.LocalDate;
 import java.time.format.DateTimeParseException;
 import java.util.Objects;
-import java.util.function.Function;
 import java.util.function.UnaryOperator;
 
 /**
@@ -68,20 +67,10 @@ public class LocalDateCodec extends AbstractCodec<LocalDate, LocalDateConstraint
 	}
 
 	@Override
-	public @NonNull LocalDateCodec applyDateFieldConstraint(@NonNull UnaryOperator<LocalDateConstraintConfig> configModifier) {
-		Objects.requireNonNull(configModifier, "Config modifier must not be null");
-		return new LocalDateCodec(configModifier.apply(
-			this.getConstraintConfig().orElse(LocalDateConstraintConfig.UNCONSTRAINED)
-		));
-	}
-
-	@Override
 	protected @NonNull Result<Void> checkConstraints(@NonNull LocalDate value) {
 		Objects.requireNonNull(value, "Value must not be null");
 
-		Result<Void> constraintResult = this.getConstraintConfig()
-			.map(config -> config.matches(value))
-			.orElseGet(Result::success);
+		Result<Void> constraintResult = this.getConstraintConfig().map(config -> config.matches(value)).orElseGet(Result::success);
 		if (constraintResult.isError()) {
 			return Result.error("LocalDate value " + value + " does not meet constraints: " + constraintResult.errorOrThrow());
 		}

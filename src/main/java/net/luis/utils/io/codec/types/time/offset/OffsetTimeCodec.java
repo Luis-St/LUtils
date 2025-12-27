@@ -30,7 +30,6 @@ import org.jspecify.annotations.Nullable;
 import java.time.OffsetTime;
 import java.time.format.DateTimeParseException;
 import java.util.Objects;
-import java.util.function.Function;
 import java.util.function.UnaryOperator;
 
 /**
@@ -68,20 +67,10 @@ public class OffsetTimeCodec extends AbstractCodec<OffsetTime, OffsetTimeConstra
 	}
 
 	@Override
-	public @NonNull OffsetTimeCodec applyTimeFieldConstraint(@NonNull UnaryOperator<OffsetTimeConstraintConfig> configModifier) {
-		Objects.requireNonNull(configModifier, "Config modifier must not be null");
-		return new OffsetTimeCodec(configModifier.apply(
-			this.getConstraintConfig().orElse(OffsetTimeConstraintConfig.UNCONSTRAINED)
-		));
-	}
-
-	@Override
 	protected @NonNull Result<Void> checkConstraints(@NonNull OffsetTime value) {
 		Objects.requireNonNull(value, "Value must not be null");
 
-		Result<Void> constraintResult = this.getConstraintConfig()
-			.map(config -> config.matches(value))
-			.orElseGet(Result::success);
+		Result<Void> constraintResult = this.getConstraintConfig().map(config -> config.matches(value)).orElseGet(Result::success);
 		if (constraintResult.isError()) {
 			return Result.error("OffsetTime value " + value + " does not meet constraints: " + constraintResult.errorOrThrow());
 		}

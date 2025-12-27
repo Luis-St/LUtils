@@ -20,9 +20,7 @@ package net.luis.utils.io.codec.types.time.offset;
 
 import net.luis.utils.io.codec.AbstractCodec;
 import net.luis.utils.io.codec.constraint.config.temporal.OffsetDateTimeConstraintConfig;
-import net.luis.utils.io.codec.constraint.temporal.DateFieldConstraint;
-import net.luis.utils.io.codec.constraint.temporal.TemporalSpanConstraint;
-import net.luis.utils.io.codec.constraint.temporal.TimeFieldConstraint;
+import net.luis.utils.io.codec.constraint.temporal.*;
 import net.luis.utils.io.codec.provider.TypeProvider;
 import net.luis.utils.util.result.Result;
 import org.jspecify.annotations.NonNull;
@@ -31,7 +29,6 @@ import org.jspecify.annotations.Nullable;
 import java.time.OffsetDateTime;
 import java.time.format.DateTimeParseException;
 import java.util.Objects;
-import java.util.function.Function;
 import java.util.function.UnaryOperator;
 
 /**
@@ -69,28 +66,10 @@ public class OffsetDateTimeCodec extends AbstractCodec<OffsetDateTime, OffsetDat
 	}
 
 	@Override
-	public @NonNull OffsetDateTimeCodec applyTimeFieldConstraint(@NonNull UnaryOperator<OffsetDateTimeConstraintConfig> configModifier) {
-		Objects.requireNonNull(configModifier, "Config modifier must not be null");
-		return new OffsetDateTimeCodec(configModifier.apply(
-			this.getConstraintConfig().orElse(OffsetDateTimeConstraintConfig.UNCONSTRAINED)
-		));
-	}
-
-	@Override
-	public @NonNull OffsetDateTimeCodec applyDateFieldConstraint(@NonNull UnaryOperator<OffsetDateTimeConstraintConfig> configModifier) {
-		Objects.requireNonNull(configModifier, "Config modifier must not be null");
-		return new OffsetDateTimeCodec(configModifier.apply(
-			this.getConstraintConfig().orElse(OffsetDateTimeConstraintConfig.UNCONSTRAINED)
-		));
-	}
-
-	@Override
 	protected @NonNull Result<Void> checkConstraints(@NonNull OffsetDateTime value) {
 		Objects.requireNonNull(value, "Value must not be null");
 
-		Result<Void> constraintResult = this.getConstraintConfig()
-			.map(config -> config.matches(value))
-			.orElseGet(Result::success);
+		Result<Void> constraintResult = this.getConstraintConfig().map(config -> config.matches(value)).orElseGet(Result::success);
 		if (constraintResult.isError()) {
 			return Result.error("OffsetDateTime value " + value + " does not meet constraints: " + constraintResult.errorOrThrow());
 		}

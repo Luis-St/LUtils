@@ -18,6 +18,7 @@
 
 package net.luis.utils.io.codec.constraint.temporal;
 
+import net.luis.utils.io.codec.constraint.CodecConstraint;
 import net.luis.utils.io.codec.constraint.config.temporal.core.FieldConstraintConfig;
 import net.luis.utils.io.codec.constraint.core.ComparableConstraintBuilder;
 import net.luis.utils.io.codec.constraint.core.provider.DateFieldConstraintConfigProvider;
@@ -67,19 +68,10 @@ import java.util.function.UnaryOperator;
  * @param <V> The constraint configuration type
  */
 @FunctionalInterface
-public interface DateFieldConstraint<C, V extends DateFieldConstraintConfigProvider<V>> {
+public interface DateFieldConstraint<C, V extends DateFieldConstraintConfigProvider<V>> extends CodecConstraint<C, V> {
 	
-	/**
-	 * Applies a date field constraint to the codec.<br>
-	 * <p>
-	 *     This method must be implemented by codecs to handle the application of date field constraints.
-	 * </p>
-	 *
-	 * @param configModifier A function that modifies the constraint configuration
-	 * @return A new codec with the applied constraint
-	 * @throws NullPointerException If the constraint config modifier is null
-	 */
-	@NonNull C applyDateFieldConstraint(@NonNull UnaryOperator<V> configModifier);
+	@Override
+	@NonNull C applyConstraint(@NonNull UnaryOperator<V> configModifier);
 	
 	/**
 	 * Applies a day of week constraint to the codec.<br>
@@ -94,7 +86,7 @@ public interface DateFieldConstraint<C, V extends DateFieldConstraintConfigProvi
 	 * @see #dayOfWeekIn(Set)
 	 */
 	default @NonNull C dayOfWeek(@NonNull DayOfWeek day) {
-		return this.applyDateFieldConstraint(config -> config.withDayOfWeek(Set.of(day)));
+		return this.applyConstraint(config -> config.withDayOfWeek(Set.of(day)));
 	}
 
 	/**
@@ -111,7 +103,7 @@ public interface DateFieldConstraint<C, V extends DateFieldConstraintConfigProvi
 	 * @see #dayOfWeek(DayOfWeek)
 	 */
 	default @NonNull C dayOfWeekIn(@NonNull Set<DayOfWeek> daysOfWeek) {
-		return this.applyDateFieldConstraint(config -> config.withDayOfWeek(daysOfWeek));
+		return this.applyConstraint(config -> config.withDayOfWeek(daysOfWeek));
 	}
 
 	/**
@@ -130,7 +122,7 @@ public interface DateFieldConstraint<C, V extends DateFieldConstraintConfigProvi
 		Objects.requireNonNull(builderFunction, "Builder function must not be null");
 		
 		FieldConstraintConfig fieldConfig = builderFunction.apply(new ComparableConstraintBuilder()).build();
-		return this.applyDateFieldConstraint(config -> config.withDayOfMonth(fieldConfig));
+		return this.applyConstraint(config -> config.withDayOfMonth(fieldConfig));
 	}
 
 	/**
@@ -146,7 +138,7 @@ public interface DateFieldConstraint<C, V extends DateFieldConstraintConfigProvi
 	 * @see #monthIn(Set)
 	 */
 	default @NonNull C month(@NonNull Month month) {
-		return this.applyDateFieldConstraint(config -> config.withMonth(Set.of(month)));
+		return this.applyConstraint(config -> config.withMonth(Set.of(month)));
 	}
 
 	/**
@@ -163,7 +155,7 @@ public interface DateFieldConstraint<C, V extends DateFieldConstraintConfigProvi
 	 * @see #month(Month)
 	 */
 	default @NonNull C monthIn(@NonNull Set<Month> months) {
-		return this.applyDateFieldConstraint(config -> config.withMonth(months));
+		return this.applyConstraint(config -> config.withMonth(months));
 	}
 
 	/**
@@ -181,6 +173,6 @@ public interface DateFieldConstraint<C, V extends DateFieldConstraintConfigProvi
 		Objects.requireNonNull(builderFunction, "Builder function must not be null");
 		
 		FieldConstraintConfig fieldConfig = builderFunction.apply(new ComparableConstraintBuilder()).build();
-		return this.applyDateFieldConstraint(config -> config.withYear(fieldConfig));
+		return this.applyConstraint(config -> config.withYear(fieldConfig));
 	}
 }

@@ -30,7 +30,6 @@ import org.jspecify.annotations.Nullable;
 import java.time.LocalTime;
 import java.time.format.DateTimeParseException;
 import java.util.Objects;
-import java.util.function.Function;
 import java.util.function.UnaryOperator;
 
 /**
@@ -68,24 +67,13 @@ public class LocalTimeCodec extends AbstractCodec<LocalTime, LocalTimeConstraint
 	}
 
 	@Override
-	public @NonNull LocalTimeCodec applyTimeFieldConstraint(@NonNull UnaryOperator<LocalTimeConstraintConfig> configModifier) {
-		Objects.requireNonNull(configModifier, "Config modifier must not be null");
-		return new LocalTimeCodec(configModifier.apply(
-			this.getConstraintConfig().orElse(LocalTimeConstraintConfig.UNCONSTRAINED)
-		));
-	}
-
-	@Override
 	protected @NonNull Result<Void> checkConstraints(@NonNull LocalTime value) {
 		Objects.requireNonNull(value, "Value must not be null");
 
-		Result<Void> constraintResult = this.getConstraintConfig()
-			.map(config -> config.matches(value))
-			.orElseGet(Result::success);
+		Result<Void> constraintResult = this.getConstraintConfig().map(config -> config.matches(value)).orElseGet(Result::success);
 		if (constraintResult.isError()) {
 			return Result.error("LocalTime value " + value + " does not meet constraints: " + constraintResult.errorOrThrow());
 		}
-
 		return Result.success();
 	}
 
@@ -102,7 +90,6 @@ public class LocalTimeCodec extends AbstractCodec<LocalTime, LocalTimeConstraint
 		if (constraintResult.isError()) {
 			return Result.error(constraintResult.errorOrThrow());
 		}
-
 		return provider.createString(value.toString());
 	}
 
@@ -133,7 +120,6 @@ public class LocalTimeCodec extends AbstractCodec<LocalTime, LocalTimeConstraint
 			if (constraintResult.isError()) {
 				return Result.error(constraintResult.errorOrThrow());
 			}
-
 			return Result.success(time);
 		} catch (DateTimeParseException e) {
 			return Result.error("Unable to decode local time '" + string + "' using '" + this + "': Unable to parse local time: " + e.getMessage());
@@ -143,6 +129,7 @@ public class LocalTimeCodec extends AbstractCodec<LocalTime, LocalTimeConstraint
 	@Override
 	public @NonNull Result<LocalTime> decodeKey(@NonNull String key) {
 		Objects.requireNonNull(key, "Key must not be null");
+		
 		try {
 			return Result.success(LocalTime.parse(key));
 		} catch (DateTimeParseException e) {

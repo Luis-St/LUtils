@@ -28,12 +28,11 @@ import java.util.function.UnaryOperator;
  *
  * @author Luis-St
  *
- * @param <T> The type being constrained
  * @param <C> The return type of the constraint method (most likely a Codec)
  * @param <V> The type of the constraint configuration
  */
 @FunctionalInterface
-public interface CodecConstraint<T, C, V> {
+public interface CodecConstraint<C, V> {
 	
 	/**
 	 * Applies the given constraint configuration and returns a constrained codec.<br>

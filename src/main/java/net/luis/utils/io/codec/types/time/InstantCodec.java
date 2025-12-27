@@ -69,9 +69,7 @@ public class InstantCodec extends AbstractCodec<Instant, InstantConstraintConfig
 	protected @NonNull Result<Void> checkConstraints(@NonNull Instant value) {
 		Objects.requireNonNull(value, "Value must not be null");
 
-		Result<Void> constraintResult = this.getConstraintConfig()
-			.map(config -> config.matches(value))
-			.orElseGet(Result::success);
+		Result<Void> constraintResult = this.getConstraintConfig().map(config -> config.matches(value)).orElseGet(Result::success);
 		if (constraintResult.isError()) {
 			return Result.error("Instant value " + value + " does not meet constraints: " + constraintResult.errorOrThrow());
 		}

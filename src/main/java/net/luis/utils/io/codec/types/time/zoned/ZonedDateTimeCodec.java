@@ -20,9 +20,7 @@ package net.luis.utils.io.codec.types.time.zoned;
 
 import net.luis.utils.io.codec.AbstractCodec;
 import net.luis.utils.io.codec.constraint.config.temporal.ZonedDateTimeConstraintConfig;
-import net.luis.utils.io.codec.constraint.temporal.DateFieldConstraint;
-import net.luis.utils.io.codec.constraint.temporal.TemporalSpanConstraint;
-import net.luis.utils.io.codec.constraint.temporal.TimeFieldConstraint;
+import net.luis.utils.io.codec.constraint.temporal.*;
 import net.luis.utils.io.codec.provider.TypeProvider;
 import net.luis.utils.util.result.Result;
 import org.jspecify.annotations.NonNull;
@@ -31,7 +29,6 @@ import org.jspecify.annotations.Nullable;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeParseException;
 import java.util.Objects;
-import java.util.function.Function;
 import java.util.function.UnaryOperator;
 
 /**
@@ -69,28 +66,10 @@ public class ZonedDateTimeCodec extends AbstractCodec<ZonedDateTime, ZonedDateTi
 	}
 
 	@Override
-	public @NonNull ZonedDateTimeCodec applyTimeFieldConstraint(@NonNull UnaryOperator<ZonedDateTimeConstraintConfig> configModifier) {
-		Objects.requireNonNull(configModifier, "Config modifier must not be null");
-		return new ZonedDateTimeCodec(configModifier.apply(
-			this.getConstraintConfig().orElse(ZonedDateTimeConstraintConfig.UNCONSTRAINED)
-		));
-	}
-
-	@Override
-	public @NonNull ZonedDateTimeCodec applyDateFieldConstraint(@NonNull UnaryOperator<ZonedDateTimeConstraintConfig> configModifier) {
-		Objects.requireNonNull(configModifier, "Config modifier must not be null");
-		return new ZonedDateTimeCodec(configModifier.apply(
-			this.getConstraintConfig().orElse(ZonedDateTimeConstraintConfig.UNCONSTRAINED)
-		));
-	}
-
-	@Override
 	protected @NonNull Result<Void> checkConstraints(@NonNull ZonedDateTime value) {
 		Objects.requireNonNull(value, "Value must not be null");
 
-		Result<Void> constraintResult = this.getConstraintConfig()
-			.map(config -> config.matches(value))
-			.orElseGet(Result::success);
+		Result<Void> constraintResult = this.getConstraintConfig().map(config -> config.matches(value)).orElseGet(Result::success);
 		if (constraintResult.isError()) {
 			return Result.error("ZonedDateTime value " + value + " does not meet constraints: " + constraintResult.errorOrThrow());
 		}

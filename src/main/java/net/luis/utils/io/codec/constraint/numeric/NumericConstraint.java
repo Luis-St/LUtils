@@ -45,7 +45,7 @@ import org.jspecify.annotations.NonNull;
  * @param <C> The codec type
  * @param <V> The constraint configuration type
  */
-public interface NumericConstraint<T extends Number & Comparable<T>, C extends Codec<T>, V> extends CodecConstraint<T, C, V>, ComparableConstraint<T, C> {
+public interface NumericConstraint<T extends Number & Comparable<T>, C extends Codec<T>, V> extends CodecConstraint<C, V>, ComparableConstraint<T, C> {
 	
 	/**
 	 * Provides numeric constants for the constrained type.<br>

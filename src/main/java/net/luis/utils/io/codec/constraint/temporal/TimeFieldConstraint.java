@@ -18,6 +18,7 @@
 
 package net.luis.utils.io.codec.constraint.temporal;
 
+import net.luis.utils.io.codec.constraint.CodecConstraint;
 import net.luis.utils.io.codec.constraint.config.temporal.core.FieldConstraintConfig;
 import net.luis.utils.io.codec.constraint.core.ComparableConstraintBuilder;
 import net.luis.utils.io.codec.constraint.core.provider.TimeFieldConstraintConfigProvider;
@@ -61,19 +62,10 @@ import java.util.function.UnaryOperator;
  * @param <V> The constraint configuration type
  */
 @FunctionalInterface
-public interface TimeFieldConstraint<C, V extends TimeFieldConstraintConfigProvider<V>> {
+public interface TimeFieldConstraint<C, V extends TimeFieldConstraintConfigProvider<V>> extends CodecConstraint<C, V> {
 	
-	/**
-	 * Applies a time field constraint to the codec.<br>
-	 * <p>
-	 *     This method must be implemented by codecs to handle the application of time field constraints.
-	 * </p>
-	 *
-	 * @param configModifier A function that modifies the constraint configuration
-	 * @return A new codec with the applied constraint
-	 * @throws NullPointerException If the constraint config modifier is null
-	 */
-	@NonNull C applyTimeFieldConstraint(@NonNull UnaryOperator<V> configModifier);
+	@Override
+	@NonNull C applyConstraint(@NonNull UnaryOperator<V> configModifier);
 	
 	/**
 	 * Applies a constraint to the hour field of the temporal value.<br>
@@ -91,7 +83,7 @@ public interface TimeFieldConstraint<C, V extends TimeFieldConstraintConfigProvi
 		Objects.requireNonNull(builderFunction, "Builder function must not be null");
 		
 		FieldConstraintConfig fieldConfig = builderFunction.apply(new ComparableConstraintBuilder()).build();
-		return this.applyTimeFieldConstraint(config -> config.withHour(fieldConfig));
+		return this.applyConstraint(config -> config.withHour(fieldConfig));
 	}
 
 	/**
@@ -111,7 +103,7 @@ public interface TimeFieldConstraint<C, V extends TimeFieldConstraintConfigProvi
 		Objects.requireNonNull(builderFunction, "Builder function must not be null");
 		
 		FieldConstraintConfig fieldConfig = builderFunction.apply(new ComparableConstraintBuilder()).build();
-		return this.applyTimeFieldConstraint(config -> config.withMinute(fieldConfig));
+		return this.applyConstraint(config -> config.withMinute(fieldConfig));
 	}
 
 	/**
@@ -131,7 +123,7 @@ public interface TimeFieldConstraint<C, V extends TimeFieldConstraintConfigProvi
 		Objects.requireNonNull(builderFunction, "Builder function must not be null");
 		
 		FieldConstraintConfig fieldConfig = builderFunction.apply(new ComparableConstraintBuilder()).build();
-		return this.applyTimeFieldConstraint(config -> config.withSecond(fieldConfig));
+		return this.applyConstraint(config -> config.withSecond(fieldConfig));
 	}
 
 	/**
@@ -150,6 +142,6 @@ public interface TimeFieldConstraint<C, V extends TimeFieldConstraintConfigProvi
 		Objects.requireNonNull(builderFunction, "Builder function must not be null");
 		
 		FieldConstraintConfig fieldConfig = builderFunction.apply(new ComparableConstraintBuilder()).build();
-		return this.applyTimeFieldConstraint(config -> config.withMillisecond(fieldConfig));
+		return this.applyConstraint(config -> config.withMillisecond(fieldConfig));
 	}
 }

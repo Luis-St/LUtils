@@ -20,9 +20,7 @@ package net.luis.utils.io.codec.types.time.local;
 
 import net.luis.utils.io.codec.AbstractCodec;
 import net.luis.utils.io.codec.constraint.config.temporal.LocalDateTimeConstraintConfig;
-import net.luis.utils.io.codec.constraint.temporal.DateFieldConstraint;
-import net.luis.utils.io.codec.constraint.temporal.TemporalSpanConstraint;
-import net.luis.utils.io.codec.constraint.temporal.TimeFieldConstraint;
+import net.luis.utils.io.codec.constraint.temporal.*;
 import net.luis.utils.io.codec.provider.TypeProvider;
 import net.luis.utils.util.result.Result;
 import org.jspecify.annotations.NonNull;
@@ -31,7 +29,6 @@ import org.jspecify.annotations.Nullable;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeParseException;
 import java.util.Objects;
-import java.util.function.Function;
 import java.util.function.UnaryOperator;
 
 /**
@@ -69,28 +66,10 @@ public class LocalDateTimeCodec extends AbstractCodec<LocalDateTime, LocalDateTi
 	}
 
 	@Override
-	public @NonNull LocalDateTimeCodec applyTimeFieldConstraint(@NonNull UnaryOperator<LocalDateTimeConstraintConfig> configModifier) {
-		Objects.requireNonNull(configModifier, "Config modifier must not be null");
-		return new LocalDateTimeCodec(configModifier.apply(
-			this.getConstraintConfig().orElse(LocalDateTimeConstraintConfig.UNCONSTRAINED)
-		));
-	}
-
-	@Override
-	public @NonNull LocalDateTimeCodec applyDateFieldConstraint(@NonNull UnaryOperator<LocalDateTimeConstraintConfig> configModifier) {
-		Objects.requireNonNull(configModifier, "Config modifier must not be null");
-		return new LocalDateTimeCodec(configModifier.apply(
-			this.getConstraintConfig().orElse(LocalDateTimeConstraintConfig.UNCONSTRAINED)
-		));
-	}
-
-	@Override
 	protected @NonNull Result<Void> checkConstraints(@NonNull LocalDateTime value) {
 		Objects.requireNonNull(value, "Value must not be null");
 
-		Result<Void> constraintResult = this.getConstraintConfig()
-			.map(config -> config.matches(value))
-			.orElseGet(Result::success);
+		Result<Void> constraintResult = this.getConstraintConfig().map(config -> config.matches(value)).orElseGet(Result::success);
 		if (constraintResult.isError()) {
 			return Result.error("LocalDateTime value " + value + " does not meet constraints: " + constraintResult.errorOrThrow());
 		}

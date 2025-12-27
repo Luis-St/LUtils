@@ -22,7 +22,6 @@ import net.luis.utils.io.codec.Codec;
 import net.luis.utils.io.codec.constraint.config.SizeConstraintConfig;
 import org.jspecify.annotations.NonNull;
 
-import java.util.*;
 import java.util.function.UnaryOperator;
 
 /**
@@ -46,7 +45,7 @@ import java.util.function.UnaryOperator;
  * @param <C> The codec type
  */
 @FunctionalInterface
-public interface SizeConstraint<T, C extends Codec<T>> extends CodecConstraint<T, C, SizeConstraintConfig> {
+public interface SizeConstraint<T, C extends Codec<T>> extends CodecConstraint<C, SizeConstraintConfig> {
 	
 	@Override
 	@NonNull C applyConstraint(@NonNull UnaryOperator<SizeConstraintConfig> configModifier);

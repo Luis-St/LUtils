@@ -50,7 +50,7 @@ import java.util.function.UnaryOperator;
  * @param <V> The constraint configuration type
  */
 @FunctionalInterface
-public interface TemporalConstraint<T extends Temporal, C extends Codec<T>, V extends TemporalConstraintConfigProvider<T, V>> extends CodecConstraint<T, C, V> {
+public interface TemporalConstraint<T extends Temporal, C extends Codec<T>, V extends TemporalConstraintConfigProvider<T, V>> extends CodecConstraint<C, V> {
 	
 	@Override
 	@NonNull C applyConstraint(@NonNull UnaryOperator<V> configModifier);
