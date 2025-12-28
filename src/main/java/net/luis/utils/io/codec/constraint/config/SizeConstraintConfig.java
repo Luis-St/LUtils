@@ -22,7 +22,8 @@ import net.luis.utils.io.codec.constraint.SizeConstraint;
 import net.luis.utils.util.result.Result;
 import org.jspecify.annotations.NonNull;
 
-import java.util.*;
+import java.util.Objects;
+import java.util.OptionalInt;
 
 /**
  * Configuration class for size constraints on collections, maps, and other sized types.<br>
