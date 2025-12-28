@@ -127,7 +127,7 @@ public class CodecsTest {
 		
 		assertEquals(new JsonPrimitive("en-US"), LOCALE.encode(provider, Locale.US));
 		assertEquals(new JsonPrimitive("USD"), CURRENCY.encode(provider, Currency.getInstance("USD")));
-
+		
 		assertEquals(new JsonPrimitive("SGVsbG8="), BASE64.encode(provider, new byte[] { 72, 101, 108, 108, 111 }));
 	}
 	
@@ -212,7 +212,7 @@ public class CodecsTest {
 		
 		assertEquals(Locale.US, LOCALE.decode(provider, new JsonPrimitive("en-US")));
 		assertEquals(Currency.getInstance("USD"), CURRENCY.decode(provider, new JsonPrimitive("USD")));
-
+		
 		assertArrayEquals(new byte[] { 72, 101, 108, 108, 111 }, BASE64.decode(provider, new JsonPrimitive("SGVsbG8=")));
 	}
 	
@@ -257,18 +257,18 @@ public class CodecsTest {
 		assertThrows(NullPointerException.class, () -> either(INTEGER, (Codec<Boolean>) null));
 		assertInstanceOf(EitherCodec.class, either(INTEGER, BOOLEAN));
 	}
-
+	
 	@Test
 	void discriminatedBy() {
 		Map<String, Codec<? extends String>> codecs = Map.of("a", STRING, "b", STRING);
 		DiscriminatedCodecProvider<String, String> provider = DiscriminatedCodecProvider.create(String.class, codecs);
-
+		
 		assertThrows(NullPointerException.class, () -> Codecs.discriminatedBy(null, STRING, provider));
 		assertThrows(NullPointerException.class, () -> Codecs.discriminatedBy("field", null, provider));
 		assertThrows(NullPointerException.class, () -> Codecs.discriminatedBy("field", STRING, null));
 		assertInstanceOf(DiscriminatedCodec.class, Codecs.discriminatedBy("field", STRING, provider));
 	}
-
+	
 	@Test
 	void unitCodecs() {
 		assertDoesNotThrow(() -> unit((Object) null));
@@ -294,25 +294,25 @@ public class CodecsTest {
 	void stringResolverCodecs() {
 		assertThrows(NullPointerException.class, () -> stringResolver(null, Integer::valueOf));
 		assertThrows(NullPointerException.class, () -> stringResolver(String::valueOf, null));
-
+		
 		JsonTypeProvider provider = JsonTypeProvider.INSTANCE;
 		Codec<Integer> stringResolverCodec = stringResolver(String::valueOf, Integer::valueOf);
-
+		
 		JsonElement encoded = stringResolverCodec.encode(provider, 42);
 		assertEquals(new JsonPrimitive("42"), encoded);
-
+		
 		Integer decoded = stringResolverCodec.decode(provider, new JsonPrimitive("42"));
 		assertEquals(42, decoded);
-
+		
 		assertTrue(stringResolverCodec.decodeStart(provider, provider.empty(), new JsonPrimitive("invalid")).isError());
 	}
-
+	
 	@Test
 	void recursiveCodecs() {
 		assertThrows(NullPointerException.class, () -> recursive(null));
-
+		
 		record LinkedListNode(int value, LinkedListNode next) {}
-
+		
 		JsonTypeProvider provider = JsonTypeProvider.INSTANCE;
 		Codec<LinkedListNode> recursiveCodec = recursive(self ->
 			CodecBuilder.of(
@@ -320,21 +320,21 @@ public class CodecsTest {
 				self.nullable().fieldOf("next", LinkedListNode::next)
 			).create(LinkedListNode::new)
 		);
-
+		
 		assertNotNull(recursiveCodec);
-
+		
 		LinkedListNode list = new LinkedListNode(1, new LinkedListNode(2, new LinkedListNode(3, null)));
 		JsonElement encoded = recursiveCodec.encode(provider, list);
-
+		
 		assertInstanceOf(JsonObject.class, encoded);
 		JsonObject obj = (JsonObject) encoded;
 		assertEquals(1, obj.get("value").getAsJsonPrimitive().getAsInteger());
 		assertNotNull(obj.get("next"));
-
+		
 		LinkedListNode decoded = recursiveCodec.decode(provider, encoded);
 		assertEquals(list, decoded);
 	}
-
+	
 	private enum TestEnum {
 		ONE, TWO, THREE
 	}

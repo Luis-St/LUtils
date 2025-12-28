@@ -37,12 +37,12 @@ import java.util.function.UnaryOperator;
  * @author Luis-St
  */
 public class FloatCodec extends AbstractCodec<Float, DecimalConstraintConfig<Float>> implements DecimalConstraint<Float, FloatCodec> {
-
+	
 	/**
 	 * Constructs a new float codec.<br>
 	 */
 	public FloatCodec() {}
-
+	
 	/**
 	 * Constructs a new float codec with the specified decimal constraint configuration.<br>
 	 *
@@ -52,32 +52,32 @@ public class FloatCodec extends AbstractCodec<Float, DecimalConstraintConfig<Flo
 	public FloatCodec(@NonNull DecimalConstraintConfig<Float> constraintConfig) {
 		super(constraintConfig);
 	}
-
+	
 	@Override
 	public @NonNull FloatCodec applyConstraint(@NonNull UnaryOperator<DecimalConstraintConfig<Float>> configModifier) {
 		Objects.requireNonNull(configModifier, "Config modifier must not be null");
-
+		
 		return new FloatCodec(configModifier.apply(
 			this.getConstraintConfig().orElse(DecimalConstraintConfig.unconstrained())
 		));
 	}
-
+	
 	@Override
 	public @NonNull NumberProvider<Float> provider() {
 		return NumberProvider.of(0.0F, 1.0F, 100.0F);
 	}
-
+	
 	@Override
 	protected @NonNull Result<Void> checkConstraints(@NonNull Float value) {
 		Objects.requireNonNull(value, "Value must not be null");
-
+		
 		Result<Void> constraintResult = this.getConstraintConfig().map(config -> config.matches(NumberType.FLOAT, value)).orElseGet(Result::success);
 		if (constraintResult.isError()) {
 			return Result.error("Float value " + value + " does not meet constraints: " + constraintResult.errorOrThrow());
 		}
 		return Result.success();
 	}
-
+	
 	@Override
 	public <R> @NonNull Result<R> encodeStart(@NonNull TypeProvider<R> provider, @NonNull R current, @Nullable Float value) {
 		Objects.requireNonNull(provider, "Type provider must not be null");
@@ -85,20 +85,20 @@ public class FloatCodec extends AbstractCodec<Float, DecimalConstraintConfig<Flo
 		if (value == null) {
 			return Result.error("Unable to encode null as float using '" + this + "'");
 		}
-
+		
 		Result<Void> constraintResult = this.checkConstraints(value);
 		if (constraintResult.isError()) {
 			return Result.error(constraintResult.errorOrThrow());
 		}
 		return provider.createFloat(value);
 	}
-
+	
 	@Override
 	public @NonNull Result<String> encodeKey(@NonNull Float key) {
 		Objects.requireNonNull(key, "Key must not be null");
 		return Result.success(Float.toString(key));
 	}
-
+	
 	@Override
 	public <R> @NonNull Result<Float> decodeStart(@NonNull TypeProvider<R> provider, @NonNull R current, @Nullable R value) {
 		Objects.requireNonNull(provider, "Type provider must not be null");
@@ -106,12 +106,12 @@ public class FloatCodec extends AbstractCodec<Float, DecimalConstraintConfig<Flo
 		if (value == null) {
 			return Result.error("Unable to decode null value as float using '" + this + "'");
 		}
-
+		
 		Result<Float> result = provider.getFloat(value);
 		if (result.isError()) {
 			return result;
 		}
-
+		
 		Float floatValue = result.resultOrThrow();
 		Result<Void> constraintResult = this.checkConstraints(floatValue);
 		if (constraintResult.isError()) {
@@ -119,18 +119,18 @@ public class FloatCodec extends AbstractCodec<Float, DecimalConstraintConfig<Flo
 		}
 		return Result.success(floatValue);
 	}
-
+	
 	@Override
 	public @NonNull Result<Float> decodeKey(@NonNull String key) {
 		Objects.requireNonNull(key, "Key must not be null");
-
+		
 		try {
 			return Result.success(Float.parseFloat(key));
 		} catch (Exception e) {
 			return Result.error("Unable to decode key '" + key + "' as float using '" + this + "': " + e.getMessage());
 		}
 	}
-
+	
 	@Override
 	public String toString() {
 		return this.getConstraintConfig().map(config -> {

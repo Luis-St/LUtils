@@ -37,7 +37,7 @@ import java.util.Set;
  * @param <V> The constraint configuration type
  */
 public interface DateFieldConstraintConfigProvider<V> {
-
+	
 	/**
 	 * Creates a new configuration with a day of week constraint.<br>
 	 *
@@ -46,7 +46,7 @@ public interface DateFieldConstraintConfigProvider<V> {
 	 * @throws NullPointerException If the given set of days is null
 	 */
 	@NonNull V withDayOfWeek(@NonNull Set<DayOfWeek> daysOfWeek);
-
+	
 	/**
 	 * Creates a new configuration with a day of month constraint.<br>
 	 *
@@ -55,7 +55,7 @@ public interface DateFieldConstraintConfigProvider<V> {
 	 * @throws NullPointerException If the given configuration is null
 	 */
 	@NonNull V withDayOfMonth(@NonNull FieldConstraintConfig monthConfig);
-
+	
 	/**
 	 * Creates a new configuration with a month constraint.<br>
 	 *
@@ -64,7 +64,7 @@ public interface DateFieldConstraintConfigProvider<V> {
 	 * @throws NullPointerException If the given set of months is null
 	 */
 	@NonNull V withMonth(@NonNull Set<Month> months);
-
+	
 	/**
 	 * Creates a new configuration with a year constraint.<br>
 	 *

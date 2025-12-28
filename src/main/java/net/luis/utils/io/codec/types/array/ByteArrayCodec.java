@@ -37,17 +37,17 @@ import java.util.function.UnaryOperator;
  * @author Luis-St
  */
 public class ByteArrayCodec extends AbstractCodec<byte[], LengthConstraintConfig> implements LengthConstraint<byte[], ByteArrayCodec> {
-
+	
 	/**
 	 * The internal codec that handles the conversion between a list of bytes and the array representation.<br>
 	 */
 	private final Codec<List<Byte>> internalCodec = Codecs.BYTE.list();
-
+	
 	/**
 	 * Constructs a new byte array codec.<br>
 	 */
 	public ByteArrayCodec() {}
-
+	
 	/**
 	 * Constructs a new byte array codec with the specified length constraint configuration.<br>
 	 *
@@ -57,7 +57,7 @@ public class ByteArrayCodec extends AbstractCodec<byte[], LengthConstraintConfig
 	public ByteArrayCodec(@NonNull LengthConstraintConfig constraintConfig) {
 		super(constraintConfig);
 	}
-
+	
 	@Override
 	public @NonNull ByteArrayCodec applyConstraint(@NonNull UnaryOperator<LengthConstraintConfig> configModifier) {
 		Objects.requireNonNull(configModifier, "Config modifier must not be null");
@@ -66,7 +66,7 @@ public class ByteArrayCodec extends AbstractCodec<byte[], LengthConstraintConfig
 			this.getConstraintConfig().orElse(LengthConstraintConfig.UNCONSTRAINED)
 		));
 	}
-
+	
 	@Override
 	protected @NonNull Result<Void> checkConstraints(byte @NonNull [] value) {
 		Objects.requireNonNull(value, "Value must not be null");
@@ -85,14 +85,14 @@ public class ByteArrayCodec extends AbstractCodec<byte[], LengthConstraintConfig
 		if (value == null) {
 			return Result.error("Unable to encode null as byte array using '" + this + "'");
 		}
-
+		
 		Result<Void> constraintResult = this.checkConstraints(value);
 		if (constraintResult.isError()) {
 			return Result.error(constraintResult.errorOrThrow());
 		}
 		return this.internalCodec.encodeStart(provider, current, Arrays.asList(ArrayUtils.toObject(value)));
 	}
-
+	
 	@Override
 	public <R> @NonNull Result<byte[]> decodeStart(@NonNull TypeProvider<R> provider, @NonNull R current, @Nullable R value) {
 		Objects.requireNonNull(provider, "Type provider must not be null");
@@ -100,22 +100,22 @@ public class ByteArrayCodec extends AbstractCodec<byte[], LengthConstraintConfig
 		if (value == null) {
 			return Result.error("Unable to decode null value as byte array using '" + this + "'");
 		}
-
+		
 		Result<List<Byte>> result = this.internalCodec.decodeStart(provider, current, value);
 		if (result.isError()) {
 			return Result.error(result.errorOrThrow());
 		}
-
+		
 		List<Byte> list = result.resultOrThrow();
 		byte[] array = ArrayUtils.toPrimitive(list.toArray(Byte[]::new));
-
+		
 		Result<Void> constraintResult = this.checkConstraints(array);
 		if (constraintResult.isError()) {
 			return Result.error(constraintResult.errorOrThrow());
 		}
 		return Result.success(array);
 	}
-
+	
 	@Override
 	public String toString() {
 		if (this.getConstraintConfig().isPresent()) {

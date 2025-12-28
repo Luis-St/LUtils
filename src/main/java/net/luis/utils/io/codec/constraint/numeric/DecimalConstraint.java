@@ -47,25 +47,25 @@ public interface DecimalConstraint<T extends Number & Comparable<T>, C extends C
 	
 	@Override
 	@NonNull C applyConstraint(@NonNull UnaryOperator<DecimalConstraintConfig<T>> configModifier);
-
+	
 	@Override
 	@NonNull NumberProvider<T> provider();
-
+	
 	@Override
 	default @NonNull C greaterThan(@NonNull T value) {
 		return this.applyConstraint(config -> config.withNumericConfig(numericConfig -> numericConfig.withMin(value, false)));
 	}
-
+	
 	@Override
 	default @NonNull C greaterThanOrEqual(@NonNull T value) {
 		return this.applyConstraint(config -> config.withNumericConfig(numericConfig -> numericConfig.withMin(value, true)));
 	}
-
+	
 	@Override
 	default @NonNull C lessThan(@NonNull T value) {
 		return this.applyConstraint(config -> config.withNumericConfig(numericConfig -> numericConfig.withMax(value, false)));
 	}
-
+	
 	@Override
 	default @NonNull C lessThanOrEqual(@NonNull T value) {
 		return this.applyConstraint(config -> config.withNumericConfig(numericConfig -> numericConfig.withMax(value, true)));
@@ -80,17 +80,17 @@ public interface DecimalConstraint<T extends Number & Comparable<T>, C extends C
 	default @NonNull C betweenOrEqual(@NonNull T min, @NonNull T max) {
 		return this.applyConstraint(config -> config.withNumericConfig(numericConfig -> numericConfig.withRange(min, max, true)));
 	}
-
+	
 	@Override
 	default @NonNull C equalTo(@NonNull T value) {
 		return this.applyConstraint(config -> config.withNumericConfig(numericConfig -> numericConfig.withEquals(value, false)));
 	}
-
+	
 	@Override
 	default @NonNull C notEqualTo(@NonNull T value) {
 		return this.applyConstraint(config -> config.withNumericConfig(numericConfig -> numericConfig.withEquals(value, true)));
 	}
-
+	
 	/**
 	 * Applies a finite value constraint to the codec.<br>
 	 * <p>
@@ -104,7 +104,7 @@ public interface DecimalConstraint<T extends Number & Comparable<T>, C extends C
 	default @NonNull C finite() {
 		return this.applyConstraint(DecimalConstraintConfig::withFinite);
 	}
-
+	
 	/**
 	 * Applies a not-NaN constraint to the codec.<br>
 	 * <p>
@@ -118,7 +118,7 @@ public interface DecimalConstraint<T extends Number & Comparable<T>, C extends C
 	default @NonNull C notNaN() {
 		return this.applyConstraint(DecimalConstraintConfig::withNotNaN);
 	}
-
+	
 	/**
 	 * Applies an integral value constraint to the codec.<br>
 	 * <p>
@@ -131,7 +131,7 @@ public interface DecimalConstraint<T extends Number & Comparable<T>, C extends C
 	default @NonNull C integral() {
 		return this.applyConstraint(DecimalConstraintConfig::withIntegral);
 	}
-
+	
 	/**
 	 * Applies a normalized form constraint to the codec.<br>
 	 * <p>

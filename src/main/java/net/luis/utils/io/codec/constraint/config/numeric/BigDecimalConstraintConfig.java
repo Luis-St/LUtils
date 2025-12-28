@@ -63,7 +63,7 @@ public record BigDecimalConstraintConfig(
 	@NonNull OptionalInt minPrecision,
 	@NonNull OptionalInt maxPrecision
 ) {
-
+	
 	/**
 	 * A predefined unconstrained configuration with no constraints.<br>
 	 * <p>
@@ -76,7 +76,7 @@ public record BigDecimalConstraintConfig(
 		Optional.empty(), Optional.empty(), Optional.empty(),
 		OptionalInt.empty(), OptionalInt.empty(), OptionalInt.empty(), OptionalInt.empty()
 	);
-
+	
 	/**
 	 * Constructs a new big decimal constraint configuration with the specified constraints.<br>
 	 *
@@ -120,7 +120,7 @@ public record BigDecimalConstraintConfig(
 			}
 		}
 	}
-
+	
 	/**
 	 * Checks if the configuration is unconstrained (no constraints set).<br>
 	 *
@@ -129,7 +129,7 @@ public record BigDecimalConstraintConfig(
 	public boolean isUnconstrained() {
 		return this == UNCONSTRAINED || (this.numericConfig.isEmpty() && this.integral.isEmpty() && this.normalized.isEmpty() && this.minScale.isEmpty() && this.maxScale.isEmpty() && this.minPrecision.isEmpty() && this.maxPrecision.isEmpty());
 	}
-
+	
 	/**
 	 * Creates a new big decimal constraint configuration with the modified numeric configuration.<br>
 	 * <p>
@@ -150,7 +150,7 @@ public record BigDecimalConstraintConfig(
 			Optional.of(numericConfigModifier.apply(this.numericConfig.orElse(NumericConstraintConfig.unconstrained()))), this.integral, this.normalized, this.minScale, this.maxScale, this.minPrecision, this.maxPrecision
 		);
 	}
-
+	
 	/**
 	 * Creates a new big decimal constraint configuration with an integral constraint.<br>
 	 * <p>
@@ -163,7 +163,7 @@ public record BigDecimalConstraintConfig(
 	public @NonNull BigDecimalConstraintConfig withIntegral() {
 		return new BigDecimalConstraintConfig(this.numericConfig, Optional.of(true), this.normalized, this.minScale, this.maxScale, this.minPrecision, this.maxPrecision);
 	}
-
+	
 	/**
 	 * Creates a new big decimal constraint configuration with a normalized constraint.<br>
 	 * <p>
@@ -176,7 +176,7 @@ public record BigDecimalConstraintConfig(
 	public @NonNull BigDecimalConstraintConfig withNormalized() {
 		return new BigDecimalConstraintConfig(this.numericConfig, this.integral, Optional.of(true), this.minScale, this.maxScale, this.minPrecision, this.maxPrecision);
 	}
-
+	
 	/**
 	 * Creates a new big decimal constraint configuration with the specified minimum scale.<br>
 	 * <p>
@@ -192,7 +192,7 @@ public record BigDecimalConstraintConfig(
 	public @NonNull BigDecimalConstraintConfig withMinScale(int minScale) {
 		return new BigDecimalConstraintConfig(this.numericConfig, this.integral, this.normalized, OptionalInt.of(minScale), this.maxScale, this.minPrecision, this.maxPrecision);
 	}
-
+	
 	/**
 	 * Creates a new big decimal constraint configuration with the specified maximum scale.<br>
 	 * <p>
@@ -208,7 +208,7 @@ public record BigDecimalConstraintConfig(
 	public @NonNull BigDecimalConstraintConfig withMaxScale(int maxScale) {
 		return new BigDecimalConstraintConfig(this.numericConfig, this.integral, this.normalized, this.minScale, OptionalInt.of(maxScale), this.minPrecision, this.maxPrecision);
 	}
-
+	
 	/**
 	 * Creates a new big decimal constraint configuration with the specified minimum and maximum scale.<br>
 	 * <p>
@@ -226,7 +226,7 @@ public record BigDecimalConstraintConfig(
 	public @NonNull BigDecimalConstraintConfig withScale(int minScale, int maxScale) {
 		return new BigDecimalConstraintConfig(this.numericConfig, this.integral, this.normalized, OptionalInt.of(minScale), OptionalInt.of(maxScale), this.minPrecision, this.maxPrecision);
 	}
-
+	
 	/**
 	 * Creates a new big decimal constraint configuration with the specified minimum precision.<br>
 	 * <p>
@@ -243,7 +243,7 @@ public record BigDecimalConstraintConfig(
 	public @NonNull BigDecimalConstraintConfig withMinPrecision(int minPrecision) {
 		return new BigDecimalConstraintConfig(this.numericConfig, this.integral, this.normalized, this.minScale, this.maxScale, OptionalInt.of(minPrecision), this.maxPrecision);
 	}
-
+	
 	/**
 	 * Creates a new big decimal constraint configuration with the specified maximum precision.<br>
 	 * <p>
@@ -260,7 +260,7 @@ public record BigDecimalConstraintConfig(
 	public @NonNull BigDecimalConstraintConfig withMaxPrecision(int maxPrecision) {
 		return new BigDecimalConstraintConfig(this.numericConfig, this.integral, this.normalized, this.minScale, this.maxScale, this.minPrecision, OptionalInt.of(maxPrecision));
 	}
-
+	
 	/**
 	 * Creates a new big decimal constraint configuration with the specified minimum and maximum precision.<br>
 	 * <p>
@@ -317,7 +317,7 @@ public record BigDecimalConstraintConfig(
 		if (this.normalized.isPresent() && (value.compareTo(BigDecimal.ZERO) < 0 || value.compareTo(BigDecimal.ONE) > 0)) {
 			return Result.error("Violated normalized constraint: " + value + " is not normalized, must be in range [0.0, 1.0]");
 		}
-
+		
 		int scale = value.scale();
 		if (this.minScale.isPresent() && this.maxScale.isPresent()) {
 			if (this.minScale.getAsInt() == this.maxScale.getAsInt()) {
@@ -337,7 +337,7 @@ public record BigDecimalConstraintConfig(
 				return Result.error("Violated maximum scale constraint: " + value + " has scale " + scale + ", maximum allowed is " + this.maxScale.getAsInt());
 			}
 		}
-
+		
 		int precision = value.precision();
 		if (this.minPrecision.isPresent() && this.maxPrecision.isPresent()) {
 			if (this.minPrecision.getAsInt() == this.maxPrecision.getAsInt()) {
@@ -357,10 +357,10 @@ public record BigDecimalConstraintConfig(
 				return Result.error("Violated maximum precision constraint: " + value + " has precision " + precision + ", maximum allowed is " + this.maxPrecision.getAsInt());
 			}
 		}
-
+		
 		return Result.success();
 	}
-
+	
 	@Override
 	public @NonNull String toString() {
 		if (this.isUnconstrained()) {

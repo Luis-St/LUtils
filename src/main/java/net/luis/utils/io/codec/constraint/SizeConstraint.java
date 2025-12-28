@@ -49,7 +49,7 @@ public interface SizeConstraint<T, C extends Codec<T>> extends CodecConstraint<C
 	
 	@Override
 	@NonNull C applyConstraint(@NonNull UnaryOperator<SizeConstraintConfig> configModifier);
-
+	
 	/**
 	 * Applies a minimum size constraint to the codec.<br>
 	 * <p>
@@ -66,7 +66,7 @@ public interface SizeConstraint<T, C extends Codec<T>> extends CodecConstraint<C
 	default @NonNull C minSize(int minSize) {
 		return this.applyConstraint(config -> config.withMinSize(minSize));
 	}
-
+	
 	/**
 	 * Applies a maximum size constraint to the codec.<br>
 	 * <p>
@@ -83,7 +83,7 @@ public interface SizeConstraint<T, C extends Codec<T>> extends CodecConstraint<C
 	default @NonNull C maxSize(int maxSize) {
 		return this.applyConstraint(config -> config.withMaxSize(maxSize));
 	}
-
+	
 	/**
 	 * Applies an exact size constraint to the codec.<br>
 	 * <p>
@@ -99,7 +99,7 @@ public interface SizeConstraint<T, C extends Codec<T>> extends CodecConstraint<C
 	default @NonNull C exactSize(int exactSize) {
 		return this.applyConstraint(config -> config.withSize(exactSize, exactSize));
 	}
-
+	
 	/**
 	 * Applies a size range constraint to the codec.<br>
 	 * <p>
@@ -117,7 +117,7 @@ public interface SizeConstraint<T, C extends Codec<T>> extends CodecConstraint<C
 	default @NonNull C sizeBetween(int minSize, int maxSize) {
 		return this.applyConstraint(config -> config.withSize(minSize, maxSize));
 	}
-
+	
 	/**
 	 * Applies an empty size constraint to the codec.<br>
 	 * <p>
@@ -132,7 +132,7 @@ public interface SizeConstraint<T, C extends Codec<T>> extends CodecConstraint<C
 	default @NonNull C empty() {
 		return this.exactSize(0);
 	}
-
+	
 	/**
 	 * Applies a non-empty size constraint to the codec.<br>
 	 * <p>
@@ -147,7 +147,7 @@ public interface SizeConstraint<T, C extends Codec<T>> extends CodecConstraint<C
 	default @NonNull C notEmpty() {
 		return this.minSize(1);
 	}
-
+	
 	/**
 	 * Applies a singleton size constraint to the codec.<br>
 	 * <p>
@@ -162,7 +162,7 @@ public interface SizeConstraint<T, C extends Codec<T>> extends CodecConstraint<C
 	default @NonNull C singleton() {
 		return this.exactSize(1);
 	}
-
+	
 	/**
 	 * Applies a pair size constraint to the codec.<br>
 	 * <p>

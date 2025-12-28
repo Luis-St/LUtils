@@ -33,7 +33,7 @@ import org.jspecify.annotations.NonNull;
  * @param <V> The constraint configuration type
  */
 public interface TimeFieldConstraintConfigProvider<V> {
-
+	
 	/**
 	 * Creates a new configuration with an hour constraint.<br>
 	 *
@@ -41,7 +41,7 @@ public interface TimeFieldConstraintConfigProvider<V> {
 	 * @return A new configuration with the hour constraint applied
 	 */
 	@NonNull V withHour(@NonNull FieldConstraintConfig hourConfig);
-
+	
 	/**
 	 * Creates a new configuration with a minute constraint.<br>
 	 *
@@ -49,7 +49,7 @@ public interface TimeFieldConstraintConfigProvider<V> {
 	 * @return A new configuration with the minute constraint applied
 	 */
 	@NonNull V withMinute(@NonNull FieldConstraintConfig minuteConfig);
-
+	
 	/**
 	 * Creates a new configuration with a second constraint.<br>
 	 *
@@ -57,7 +57,7 @@ public interface TimeFieldConstraintConfigProvider<V> {
 	 * @return A new configuration with the second constraint applied
 	 */
 	@NonNull V withSecond(@NonNull FieldConstraintConfig secondConfig);
-
+	
 	/**
 	 * Creates a new configuration with a millisecond constraint.<br>
 	 *

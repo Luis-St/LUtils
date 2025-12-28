@@ -54,7 +54,7 @@ public class SetCodec<E> extends AbstractCodec<Set<E>, SizeConstraintConfig> imp
 	public SetCodec(@NonNull Codec<E> codec) {
 		this.codec = Objects.requireNonNull(codec, "Element codec must not be null");
 	}
-
+	
 	/**
 	 * Constructs a new set codec using the given codec for the elements and the given size constraint configuration.<br>
 	 *
@@ -72,7 +72,7 @@ public class SetCodec<E> extends AbstractCodec<Set<E>, SizeConstraintConfig> imp
 	public @NonNull Class<Set<E>> getType() {
 		return (Class<Set<E>>) (Class<?>) Set.class;
 	}
-
+	
 	@Override
 	public @NonNull SetCodec<E> applyConstraint(@NonNull UnaryOperator<SizeConstraintConfig> configModifier) {
 		Objects.requireNonNull(configModifier, "Config modifier must not be null");
@@ -81,18 +81,18 @@ public class SetCodec<E> extends AbstractCodec<Set<E>, SizeConstraintConfig> imp
 			this.getConstraintConfig().orElse(SizeConstraintConfig.UNCONSTRAINED)
 		));
 	}
-
+	
 	@Override
 	protected @NonNull Result<Void> checkConstraints(@NonNull Set<E> value) {
 		Objects.requireNonNull(value, "Value must not be null");
-
+		
 		Result<Void> constraintResult = this.getConstraintConfig().map(config -> config.matches(value.size())).orElseGet(Result::success);
 		if (constraintResult.isError()) {
 			return Result.error("Set " + value + " does not meet constraints: " + constraintResult.errorOrThrow());
 		}
 		return Result.success();
 	}
-
+	
 	@Override
 	@SuppressWarnings("DuplicatedCode")
 	public <R> @NonNull Result<R> encodeStart(@NonNull TypeProvider<R> provider, @NonNull R current, @Nullable Set<E> value) {
@@ -101,12 +101,12 @@ public class SetCodec<E> extends AbstractCodec<Set<E>, SizeConstraintConfig> imp
 		if (value == null) {
 			return Result.error("Unable to encode null value as set using '" + this + "'");
 		}
-
+		
 		Result<Void> constraintResult = this.checkConstraints(value);
 		if (constraintResult.isError()) {
 			return Result.error("Unable to encode set using '" + this + "': " + constraintResult.errorOrThrow());
 		}
-
+		
 		List<R> elements = new ArrayList<>();
 		List<String> errors = new ArrayList<>();
 		int i = 0;
@@ -161,7 +161,7 @@ public class SetCodec<E> extends AbstractCodec<Set<E>, SizeConstraintConfig> imp
 				errors.add("Index " + i + ": " + result.errorOrThrow());
 			}
 		}
-
+		
 		if (elements.isEmpty() && !errors.isEmpty()) {
 			return Result.error("Unable to decode any elements of the set using '" + this + "': " + String.join("\n - ", errors));
 		}
@@ -169,7 +169,7 @@ public class SetCodec<E> extends AbstractCodec<Set<E>, SizeConstraintConfig> imp
 		if (constraintResult.isError()) {
 			return Result.error("Unable to decode set using '" + this + "': " + constraintResult.errorOrThrow());
 		}
-
+		
 		if (errors.isEmpty()) {
 			return Result.success(elements);
 		}

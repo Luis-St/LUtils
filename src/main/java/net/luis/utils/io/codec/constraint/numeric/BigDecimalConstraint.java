@@ -47,7 +47,7 @@ import java.util.function.UnaryOperator;
  * @param <C> The codec type
  */
 public interface BigDecimalConstraint<C extends Codec<BigDecimal>> extends NumericConstraint<BigDecimal, C, BigDecimalConstraintConfig> {
-
+	
 	@Override
 	@NonNull C applyConstraint(@NonNull UnaryOperator<BigDecimalConstraintConfig> configModifier);
 	
@@ -134,7 +134,7 @@ public interface BigDecimalConstraint<C extends Codec<BigDecimal>> extends Numer
 	default @NonNull C scale(int scale) {
 		return this.applyConstraint(config -> config.withScale(scale, scale));
 	}
-
+	
 	/**
 	 * Applies a minimum scale constraint to the codec.<br>
 	 * <p>
@@ -149,7 +149,7 @@ public interface BigDecimalConstraint<C extends Codec<BigDecimal>> extends Numer
 	default @NonNull C minScale(int minScale) {
 		return this.applyConstraint(config -> config.withMinScale(minScale));
 	}
-
+	
 	/**
 	 * Applies a maximum scale constraint to the codec.<br>
 	 * <p>
@@ -164,7 +164,7 @@ public interface BigDecimalConstraint<C extends Codec<BigDecimal>> extends Numer
 	default @NonNull C maxScale(int maxScale) {
 		return this.applyConstraint(config -> config.withMaxScale(maxScale));
 	}
-
+	
 	/**
 	 * Applies a scale range constraint to the codec.<br>
 	 * <p>
@@ -180,7 +180,7 @@ public interface BigDecimalConstraint<C extends Codec<BigDecimal>> extends Numer
 	default @NonNull C scaleBetween(int minScale, int maxScale) {
 		return this.applyConstraint(config -> config.withScale(minScale, maxScale));
 	}
-
+	
 	/**
 	 * Applies an exact precision constraint to the codec.<br>
 	 * <p>
@@ -195,7 +195,7 @@ public interface BigDecimalConstraint<C extends Codec<BigDecimal>> extends Numer
 	default @NonNull C precision(int precision) {
 		return this.applyConstraint(config -> config.withPrecision(precision, precision));
 	}
-
+	
 	/**
 	 * Applies a minimum precision constraint to the codec.<br>
 	 * <p>
@@ -210,7 +210,7 @@ public interface BigDecimalConstraint<C extends Codec<BigDecimal>> extends Numer
 	default @NonNull C minPrecision(int minPrecision) {
 		return this.applyConstraint(config -> config.withMinPrecision(minPrecision));
 	}
-
+	
 	/**
 	 * Applies a maximum precision constraint to the codec.<br>
 	 * <p>
@@ -225,7 +225,7 @@ public interface BigDecimalConstraint<C extends Codec<BigDecimal>> extends Numer
 	default @NonNull C maxPrecision(int maxPrecision) {
 		return this.applyConstraint(config -> config.withMaxPrecision(maxPrecision));
 	}
-
+	
 	/**
 	 * Applies a precision range constraint to the codec.<br>
 	 * <p>

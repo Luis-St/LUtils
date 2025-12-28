@@ -41,7 +41,7 @@ import java.util.*;
 public record YearConstraintConfig(
 	@NonNull TemporalConstraintConfig<Year> config
 ) implements TemporalConstraintConfigProvider<Year, YearConstraintConfig> {
-
+	
 	/**
 	 * A predefined unconstrained configuration with no constraints.<br>
 	 * <p>
@@ -52,7 +52,7 @@ public record YearConstraintConfig(
 	public static final YearConstraintConfig UNCONSTRAINED = new YearConstraintConfig(
 		TemporalConstraintConfig.unconstrained()
 	);
-
+	
 	/**
 	 * Constructs a new Year constraint configuration with the specified base configuration.<br>
 	 *
@@ -62,7 +62,7 @@ public record YearConstraintConfig(
 	public YearConstraintConfig {
 		Objects.requireNonNull(config, "Config must not be null");
 	}
-
+	
 	/**
 	 * Checks if the configuration is unconstrained (no constraints set).<br>
 	 *
@@ -71,37 +71,37 @@ public record YearConstraintConfig(
 	public boolean isUnconstrained() {
 		return this.config.isUnconstrained();
 	}
-
+	
 	@Override
 	public @NonNull YearConstraintConfig withEquals(@NonNull Year value, boolean negated) {
 		return new YearConstraintConfig(this.config.withEquals(value, negated));
 	}
-
+	
 	@Override
 	public @NonNull YearConstraintConfig withMin(@NonNull Year min, boolean inclusive) {
 		return new YearConstraintConfig(this.config.withMin(min, inclusive));
 	}
-
+	
 	@Override
 	public @NonNull YearConstraintConfig withMax(@NonNull Year max, boolean inclusive) {
 		return new YearConstraintConfig(this.config.withMax(max, inclusive));
 	}
-
+	
 	@Override
 	public @NonNull YearConstraintConfig withRange(@NonNull Year min, @NonNull Year max, boolean inclusive) {
 		return new YearConstraintConfig(this.config.withRange(min, max, inclusive));
 	}
-
+	
 	@Override
 	public @NonNull YearConstraintConfig withWithinLast(@NonNull Duration duration) {
 		throw new UnsupportedOperationException("Year does not support withinLast constraint");
 	}
-
+	
 	@Override
 	public @NonNull YearConstraintConfig withWithinNext(@NonNull Duration duration) {
 		throw new UnsupportedOperationException("Year does not support withinNext constraint");
 	}
-
+	
 	/**
 	 * Validates the constraints against the given value.<br>
 	 *
@@ -112,13 +112,13 @@ public record YearConstraintConfig(
 	public @NonNull Result<Void> matches(@NonNull Year value) {
 		return this.config.matches(value);
 	}
-
+	
 	@Override
 	public @NonNull String toString() {
 		if (this.isUnconstrained()) {
 			return "YearConstraintConfig[unconstrained]";
 		}
-
+		
 		List<String> constraints = new ArrayList<>();
 		this.config.appendConstraints(constraints);
 		return "YearConstraintConfig[" + String.join(", ", constraints) + "]";

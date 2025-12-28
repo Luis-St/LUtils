@@ -59,7 +59,7 @@ public record DecimalConstraintConfig<T extends Number & Comparable<T>>(
 	@NonNull Optional</*Value Ignored*/ Boolean> integral,
 	@NonNull Optional</*Value Ignored*/ Boolean> normalized
 ) {
-
+	
 	/**
 	 * A predefined unconstrained configuration with no constraints.<br>
 	 * <p>
@@ -73,7 +73,7 @@ public record DecimalConstraintConfig<T extends Number & Comparable<T>>(
 	private static final DecimalConstraintConfig<? extends Number> UNCONSTRAINED = new DecimalConstraintConfig<>(
 		Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty()
 	);
-
+	
 	/**
 	 * Constructs a new decimal constraint configuration with the specified constraints.<br>
 	 *
@@ -91,7 +91,7 @@ public record DecimalConstraintConfig<T extends Number & Comparable<T>>(
 		Objects.requireNonNull(integral, "Integral constraint must not be null");
 		Objects.requireNonNull(normalized, "Normalized constraint must not be null");
 	}
-
+	
 	/**
 	 * Returns an unconstrained configuration for the specified type.<br>
 	 * <p>
@@ -105,7 +105,7 @@ public record DecimalConstraintConfig<T extends Number & Comparable<T>>(
 	public static <T extends Number & Comparable<T>> @NonNull DecimalConstraintConfig<T> unconstrained() {
 		return (DecimalConstraintConfig<T>) UNCONSTRAINED;
 	}
-
+	
 	/**
 	 * Checks if the configuration is unconstrained (no constraints set).<br>
 	 *
@@ -114,7 +114,7 @@ public record DecimalConstraintConfig<T extends Number & Comparable<T>>(
 	public boolean isUnconstrained() {
 		return this == UNCONSTRAINED || (this.numericConfig.isEmpty() && this.finite.isEmpty() && this.notNaN.isEmpty() && this.integral.isEmpty() && this.normalized.isEmpty());
 	}
-
+	
 	/**
 	 * Creates a new decimal constraint configuration with the modified numeric configuration.<br>
 	 * <p>
@@ -133,7 +133,7 @@ public record DecimalConstraintConfig<T extends Number & Comparable<T>>(
 		
 		return new DecimalConstraintConfig<>(Optional.of(numericConfigModifier.apply(this.numericConfig.orElse(NumericConstraintConfig.unconstrained()))), this.finite, this.notNaN, this.integral, this.normalized);
 	}
-
+	
 	/**
 	 * Creates a new decimal constraint configuration with a finite constraint.<br>
 	 * <p>
@@ -147,7 +147,7 @@ public record DecimalConstraintConfig<T extends Number & Comparable<T>>(
 	public @NonNull DecimalConstraintConfig<T> withFinite() {
 		return new DecimalConstraintConfig<>(this.numericConfig, Optional.of(true), this.notNaN, this.integral, this.normalized);
 	}
-
+	
 	/**
 	 * Creates a new decimal constraint configuration with a not-NaN constraint.<br>
 	 * <p>
@@ -162,7 +162,7 @@ public record DecimalConstraintConfig<T extends Number & Comparable<T>>(
 	public @NonNull DecimalConstraintConfig<T> withNotNaN() {
 		return new DecimalConstraintConfig<>(this.numericConfig, this.finite, Optional.of(true), this.integral, this.normalized);
 	}
-
+	
 	/**
 	 * Creates a new decimal constraint configuration with an integral constraint.<br>
 	 * <p>
@@ -176,7 +176,7 @@ public record DecimalConstraintConfig<T extends Number & Comparable<T>>(
 	public @NonNull DecimalConstraintConfig<T> withIntegral() {
 		return new DecimalConstraintConfig<>(this.numericConfig, this.finite, this.notNaN, Optional.of(true), this.normalized);
 	}
-
+	
 	/**
 	 * Creates a new decimal constraint configuration with a normalized constraint.<br>
 	 * <p>
@@ -190,7 +190,7 @@ public record DecimalConstraintConfig<T extends Number & Comparable<T>>(
 	public @NonNull DecimalConstraintConfig<T> withNormalized() {
 		return new DecimalConstraintConfig<>(this.numericConfig, this.finite, this.notNaN, this.integral, Optional.of(true));
 	}
-
+	
 	/**
 	 * Validates whether the given decimal value matches all constraints defined in this configuration.<br>
 	 * <p>
@@ -238,7 +238,7 @@ public record DecimalConstraintConfig<T extends Number & Comparable<T>>(
 		}
 		throw new IllegalStateException("Unsupported decimal (floating-point) number type: " + type);
 	}
-
+	
 	/**
 	 * Validates float-specific constraints against the given value.<br>
 	 * <p>
@@ -268,7 +268,7 @@ public record DecimalConstraintConfig<T extends Number & Comparable<T>>(
 		}
 		return Result.success();
 	}
-
+	
 	/**
 	 * Validates double-specific constraints against the given value.<br>
 	 * <p>

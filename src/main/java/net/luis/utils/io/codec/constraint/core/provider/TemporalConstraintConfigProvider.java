@@ -37,7 +37,7 @@ import java.time.temporal.Temporal;
  * @param <V> The constraint configuration type
  */
 public interface TemporalConstraintConfigProvider<T extends Temporal, V> {
-
+	
 	/**
 	 * Creates a new configuration with an equality constraint.<br>
 	 *
@@ -47,7 +47,7 @@ public interface TemporalConstraintConfigProvider<T extends Temporal, V> {
 	 * @throws NullPointerException If the value is null
 	 */
 	@NonNull V withEquals(@NonNull T value, boolean negated);
-
+	
 	/**
 	 * Creates a new configuration with a minimum boundary constraint.<br>
 	 *
@@ -57,7 +57,7 @@ public interface TemporalConstraintConfigProvider<T extends Temporal, V> {
 	 * @throws NullPointerException If the min value is null
 	 */
 	@NonNull V withMin(@NonNull T min, boolean inclusive);
-
+	
 	/**
 	 * Creates a new configuration with a maximum boundary constraint.<br>
 	 *
@@ -67,7 +67,7 @@ public interface TemporalConstraintConfigProvider<T extends Temporal, V> {
 	 * @throws NullPointerException If the max value is null
 	 */
 	@NonNull V withMax(@NonNull T max, boolean inclusive);
-
+	
 	/**
 	 * Creates a new configuration with a range constraint.<br>
 	 *
@@ -78,7 +78,7 @@ public interface TemporalConstraintConfigProvider<T extends Temporal, V> {
 	 * @throws NullPointerException If the min or max value is null
 	 */
 	@NonNull V withRange(@NonNull T min, @NonNull T max, boolean inclusive);
-
+	
 	/**
 	 * Creates a new configuration with a "within last" duration constraint.<br>
 	 *
@@ -87,7 +87,7 @@ public interface TemporalConstraintConfigProvider<T extends Temporal, V> {
 	 * @throws NullPointerException If the duration is null
 	 */
 	@NonNull V withWithinLast(@NonNull Duration duration);
-
+	
 	/**
 	 * Creates a new configuration with a "within next" duration constraint.<br>
 	 *

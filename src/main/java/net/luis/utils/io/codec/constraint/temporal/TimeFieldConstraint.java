@@ -85,7 +85,7 @@ public interface TimeFieldConstraint<C, V extends TimeFieldConstraintConfigProvi
 		FieldConstraintConfig fieldConfig = builderFunction.apply(new ComparableConstraintBuilder()).build();
 		return this.applyConstraint(config -> config.withHour(fieldConfig));
 	}
-
+	
 	/**
 	 * Applies a constraint to the minute field of the temporal value.<br>
 	 * <p>
@@ -105,7 +105,7 @@ public interface TimeFieldConstraint<C, V extends TimeFieldConstraintConfigProvi
 		FieldConstraintConfig fieldConfig = builderFunction.apply(new ComparableConstraintBuilder()).build();
 		return this.applyConstraint(config -> config.withMinute(fieldConfig));
 	}
-
+	
 	/**
 	 * Applies a constraint to the second field of the temporal value.<br>
 	 * <p>
@@ -125,7 +125,7 @@ public interface TimeFieldConstraint<C, V extends TimeFieldConstraintConfigProvi
 		FieldConstraintConfig fieldConfig = builderFunction.apply(new ComparableConstraintBuilder()).build();
 		return this.applyConstraint(config -> config.withSecond(fieldConfig));
 	}
-
+	
 	/**
 	 * Applies a constraint to the millisecond field of the temporal value.<br>
 	 * <p>

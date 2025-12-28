@@ -88,7 +88,7 @@ public interface DateFieldConstraint<C, V extends DateFieldConstraintConfigProvi
 	default @NonNull C dayOfWeek(@NonNull DayOfWeek day) {
 		return this.applyConstraint(config -> config.withDayOfWeek(Set.of(day)));
 	}
-
+	
 	/**
 	 * Applies a day of week set constraint to the codec.<br>
 	 * <p>
@@ -105,7 +105,7 @@ public interface DateFieldConstraint<C, V extends DateFieldConstraintConfigProvi
 	default @NonNull C dayOfWeekIn(@NonNull Set<DayOfWeek> daysOfWeek) {
 		return this.applyConstraint(config -> config.withDayOfWeek(daysOfWeek));
 	}
-
+	
 	/**
 	 * Applies a constraint to the day of month field of the temporal value.<br>
 	 * <p>
@@ -124,7 +124,7 @@ public interface DateFieldConstraint<C, V extends DateFieldConstraintConfigProvi
 		FieldConstraintConfig fieldConfig = builderFunction.apply(new ComparableConstraintBuilder()).build();
 		return this.applyConstraint(config -> config.withDayOfMonth(fieldConfig));
 	}
-
+	
 	/**
 	 * Applies a month constraint to the codec.<br>
 	 * <p>
@@ -140,7 +140,7 @@ public interface DateFieldConstraint<C, V extends DateFieldConstraintConfigProvi
 	default @NonNull C month(@NonNull Month month) {
 		return this.applyConstraint(config -> config.withMonth(Set.of(month)));
 	}
-
+	
 	/**
 	 * Applies a month set constraint to the codec.<br>
 	 * <p>
@@ -157,7 +157,7 @@ public interface DateFieldConstraint<C, V extends DateFieldConstraintConfigProvi
 	default @NonNull C monthIn(@NonNull Set<Month> months) {
 		return this.applyConstraint(config -> config.withMonth(months));
 	}
-
+	
 	/**
 	 * Applies a constraint to the year field of the temporal value.<br>
 	 * <p>

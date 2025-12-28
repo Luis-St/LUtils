@@ -37,12 +37,12 @@ import java.util.function.UnaryOperator;
  * @author Luis-St
  */
 public class DoubleCodec extends AbstractCodec<Double, DecimalConstraintConfig<Double>> implements DecimalConstraint<Double, DoubleCodec> {
-
+	
 	/**
 	 * Creates a new double codec.<br>
 	 */
 	public DoubleCodec() {}
-
+	
 	/**
 	 * Creates a new double codec with the specified decimal constraint configuration.<br>
 	 *
@@ -52,32 +52,32 @@ public class DoubleCodec extends AbstractCodec<Double, DecimalConstraintConfig<D
 	public DoubleCodec(@NonNull DecimalConstraintConfig<Double> constraintConfig) {
 		super(constraintConfig);
 	}
-
+	
 	@Override
 	public @NonNull DoubleCodec applyConstraint(@NonNull UnaryOperator<DecimalConstraintConfig<Double>> configModifier) {
 		Objects.requireNonNull(configModifier, "Config modifier must not be null");
-
+		
 		return new DoubleCodec(configModifier.apply(
 			this.getConstraintConfig().orElse(DecimalConstraintConfig.unconstrained())
 		));
 	}
-
+	
 	@Override
 	public @NonNull NumberProvider<Double> provider() {
 		return NumberProvider.of(0.0, 1.0, 100.0);
 	}
-
+	
 	@Override
 	protected @NonNull Result<Void> checkConstraints(@NonNull Double value) {
 		Objects.requireNonNull(value, "Value must not be null");
-
+		
 		Result<Void> constraintResult = this.getConstraintConfig().map(config -> config.matches(NumberType.DOUBLE, value)).orElseGet(Result::success);
 		if (constraintResult.isError()) {
 			return Result.error("Double value " + value + " does not meet constraints: " + constraintResult.errorOrThrow());
 		}
 		return Result.success();
 	}
-
+	
 	@Override
 	public <R> @NonNull Result<R> encodeStart(@NonNull TypeProvider<R> provider, @NonNull R current, @Nullable Double value) {
 		Objects.requireNonNull(provider, "Type provider must not be null");
@@ -85,20 +85,20 @@ public class DoubleCodec extends AbstractCodec<Double, DecimalConstraintConfig<D
 		if (value == null) {
 			return Result.error("Unable to encode null as double using '" + this + "'");
 		}
-
+		
 		Result<Void> constraintResult = this.checkConstraints(value);
 		if (constraintResult.isError()) {
 			return Result.error(constraintResult.errorOrThrow());
 		}
 		return provider.createDouble(value);
 	}
-
+	
 	@Override
 	public @NonNull Result<String> encodeKey(@NonNull Double key) {
 		Objects.requireNonNull(key, "Key must not be null");
 		return Result.success(Double.toString(key));
 	}
-
+	
 	@Override
 	public <R> @NonNull Result<Double> decodeStart(@NonNull TypeProvider<R> provider, @NonNull R current, @Nullable R value) {
 		Objects.requireNonNull(provider, "Type provider must not be null");
@@ -106,12 +106,12 @@ public class DoubleCodec extends AbstractCodec<Double, DecimalConstraintConfig<D
 		if (value == null) {
 			return Result.error("Unable to decode null value as double using '" + this + "'");
 		}
-
+		
 		Result<Double> result = provider.getDouble(value);
 		if (result.isError()) {
 			return result;
 		}
-
+		
 		Double doubleValue = result.resultOrThrow();
 		Result<Void> constraintResult = this.checkConstraints(doubleValue);
 		if (constraintResult.isError()) {
@@ -119,18 +119,18 @@ public class DoubleCodec extends AbstractCodec<Double, DecimalConstraintConfig<D
 		}
 		return Result.success(doubleValue);
 	}
-
+	
 	@Override
 	public @NonNull Result<Double> decodeKey(@NonNull String key) {
 		Objects.requireNonNull(key, "Key must not be null");
-
+		
 		try {
 			return Result.success(Double.parseDouble(key));
 		} catch (Exception e) {
 			return Result.error("Unable to decode key '" + key + "' as double using '" + this + "': " + e.getMessage());
 		}
 	}
-
+	
 	@Override
 	public String toString() {
 		return this.getConstraintConfig().map(config -> {

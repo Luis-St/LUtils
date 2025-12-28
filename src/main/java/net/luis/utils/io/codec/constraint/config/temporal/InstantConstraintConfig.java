@@ -41,7 +41,7 @@ import java.util.*;
 public record InstantConstraintConfig(
 	@NonNull TemporalConstraintConfig<Instant> config
 ) implements TemporalConstraintConfigProvider<Instant, InstantConstraintConfig> {
-
+	
 	/**
 	 * A predefined unconstrained configuration with no constraints.<br>
 	 * <p>
@@ -52,7 +52,7 @@ public record InstantConstraintConfig(
 	public static final InstantConstraintConfig UNCONSTRAINED = new InstantConstraintConfig(
 		TemporalConstraintConfig.unconstrained()
 	);
-
+	
 	/**
 	 * Constructs a new Instant constraint configuration with the specified base configuration.<br>
 	 *
@@ -62,7 +62,7 @@ public record InstantConstraintConfig(
 	public InstantConstraintConfig {
 		Objects.requireNonNull(config, "Config must not be null");
 	}
-
+	
 	/**
 	 * Checks if the configuration is unconstrained (no constraints set).<br>
 	 *
@@ -71,37 +71,37 @@ public record InstantConstraintConfig(
 	public boolean isUnconstrained() {
 		return this.config.isUnconstrained();
 	}
-
+	
 	@Override
 	public @NonNull InstantConstraintConfig withEquals(@NonNull Instant value, boolean negated) {
 		return new InstantConstraintConfig(this.config.withEquals(value, negated));
 	}
-
+	
 	@Override
 	public @NonNull InstantConstraintConfig withMin(@NonNull Instant min, boolean inclusive) {
 		return new InstantConstraintConfig(this.config.withMin(min, inclusive));
 	}
-
+	
 	@Override
 	public @NonNull InstantConstraintConfig withMax(@NonNull Instant max, boolean inclusive) {
 		return new InstantConstraintConfig(this.config.withMax(max, inclusive));
 	}
-
+	
 	@Override
 	public @NonNull InstantConstraintConfig withRange(@NonNull Instant min, @NonNull Instant max, boolean inclusive) {
 		return new InstantConstraintConfig(this.config.withRange(min, max, inclusive));
 	}
-
+	
 	@Override
 	public @NonNull InstantConstraintConfig withWithinLast(@NonNull Duration duration) {
 		throw new UnsupportedOperationException("Instant does not support withinLast constraint");
 	}
-
+	
 	@Override
 	public @NonNull InstantConstraintConfig withWithinNext(@NonNull Duration duration) {
 		throw new UnsupportedOperationException("Instant does not support withinNext constraint");
 	}
-
+	
 	/**
 	 * Validates the constraints against the given value.<br>
 	 *
@@ -112,13 +112,13 @@ public record InstantConstraintConfig(
 	public @NonNull Result<Void> matches(@NonNull Instant value) {
 		return this.config.matches(value);
 	}
-
+	
 	@Override
 	public @NonNull String toString() {
 		if (this.isUnconstrained()) {
 			return "InstantConstraintConfig[unconstrained]";
 		}
-
+		
 		List<String> constraints = new ArrayList<>();
 		this.config.appendConstraints(constraints);
 		return "InstantConstraintConfig[" + String.join(", ", constraints) + "]";

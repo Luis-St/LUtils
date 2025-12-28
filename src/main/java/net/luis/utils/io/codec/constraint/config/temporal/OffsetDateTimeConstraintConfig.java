@@ -49,7 +49,7 @@ public record OffsetDateTimeConstraintConfig(
 ) implements TemporalConstraintConfigProvider<OffsetDateTime, OffsetDateTimeConstraintConfig>,
 	TimeFieldConstraintConfigProvider<OffsetDateTimeConstraintConfig>,
 	DateFieldConstraintConfigProvider<OffsetDateTimeConstraintConfig> {
-
+	
 	/**
 	 * A predefined unconstrained configuration with no constraints.<br>
 	 * <p>
@@ -60,7 +60,7 @@ public record OffsetDateTimeConstraintConfig(
 	public static final OffsetDateTimeConstraintConfig UNCONSTRAINED = new OffsetDateTimeConstraintConfig(
 		TemporalConstraintConfig.unconstrained(), SpanConstraintConfig.UNCONSTRAINED, TimeFieldConstraintConfig.UNCONSTRAINED, DateFieldConstraintConfig.UNCONSTRAINED
 	);
-
+	
 	/**
 	 * Constructs a new OffsetDateTime constraint configuration with the specified constraints.<br>
 	 *
@@ -77,7 +77,7 @@ public record OffsetDateTimeConstraintConfig(
 		Objects.requireNonNull(timeFieldConfig, "Time field config must not be null");
 		Objects.requireNonNull(dateFieldConfig, "Date field config must not be null");
 	}
-
+	
 	/**
 	 * Checks if the configuration is unconstrained (no constraints set).<br>
 	 *
@@ -86,77 +86,77 @@ public record OffsetDateTimeConstraintConfig(
 	public boolean isUnconstrained() {
 		return this == UNCONSTRAINED || (this.config.isUnconstrained() && this.spanConfig.isUnconstrained() && this.timeFieldConfig.isUnconstrained() && this.dateFieldConfig.isUnconstrained());
 	}
-
+	
 	@Override
 	public @NonNull OffsetDateTimeConstraintConfig withEquals(@NonNull OffsetDateTime value, boolean negated) {
 		return new OffsetDateTimeConstraintConfig(this.config.withEquals(value, negated), this.spanConfig, this.timeFieldConfig, this.dateFieldConfig);
 	}
-
+	
 	@Override
 	public @NonNull OffsetDateTimeConstraintConfig withMin(@NonNull OffsetDateTime min, boolean inclusive) {
 		return new OffsetDateTimeConstraintConfig(this.config.withMin(min, inclusive), this.spanConfig, this.timeFieldConfig, this.dateFieldConfig);
 	}
-
+	
 	@Override
 	public @NonNull OffsetDateTimeConstraintConfig withMax(@NonNull OffsetDateTime max, boolean inclusive) {
 		return new OffsetDateTimeConstraintConfig(this.config.withMax(max, inclusive), this.spanConfig, this.timeFieldConfig, this.dateFieldConfig);
 	}
-
+	
 	@Override
 	public @NonNull OffsetDateTimeConstraintConfig withRange(@NonNull OffsetDateTime min, @NonNull OffsetDateTime max, boolean inclusive) {
 		return new OffsetDateTimeConstraintConfig(this.config.withRange(min, max, inclusive), this.spanConfig, this.timeFieldConfig, this.dateFieldConfig);
 	}
-
+	
 	@Override
 	public @NonNull OffsetDateTimeConstraintConfig withWithinLast(@NonNull Duration duration) {
 		return new OffsetDateTimeConstraintConfig(this.config, this.spanConfig.withWithinLast(duration), this.timeFieldConfig, this.dateFieldConfig);
 	}
-
+	
 	@Override
 	public @NonNull OffsetDateTimeConstraintConfig withWithinNext(@NonNull Duration duration) {
 		return new OffsetDateTimeConstraintConfig(this.config, this.spanConfig.withWithinNext(duration), this.timeFieldConfig, this.dateFieldConfig);
 	}
-
+	
 	@Override
 	public @NonNull OffsetDateTimeConstraintConfig withHour(@NonNull FieldConstraintConfig hourConfig) {
 		return new OffsetDateTimeConstraintConfig(this.config, this.spanConfig, this.timeFieldConfig.withHour(hourConfig), this.dateFieldConfig);
 	}
-
+	
 	@Override
 	public @NonNull OffsetDateTimeConstraintConfig withMinute(@NonNull FieldConstraintConfig minuteConfig) {
 		return new OffsetDateTimeConstraintConfig(this.config, this.spanConfig, this.timeFieldConfig.withMinute(minuteConfig), this.dateFieldConfig);
 	}
-
+	
 	@Override
 	public @NonNull OffsetDateTimeConstraintConfig withSecond(@NonNull FieldConstraintConfig secondConfig) {
 		return new OffsetDateTimeConstraintConfig(this.config, this.spanConfig, this.timeFieldConfig.withSecond(secondConfig), this.dateFieldConfig);
 	}
-
+	
 	@Override
 	public @NonNull OffsetDateTimeConstraintConfig withMillisecond(@NonNull FieldConstraintConfig millisecondConfig) {
 		return new OffsetDateTimeConstraintConfig(this.config, this.spanConfig, this.timeFieldConfig.withMillisecond(millisecondConfig), this.dateFieldConfig);
 	}
-
+	
 	@Override
 	public @NonNull OffsetDateTimeConstraintConfig withDayOfWeek(@NonNull Set<DayOfWeek> daysOfWeek) {
 		return new OffsetDateTimeConstraintConfig(this.config, this.spanConfig, this.timeFieldConfig, this.dateFieldConfig.withDayOfWeek(daysOfWeek));
 	}
-
+	
 	@Override
 	public @NonNull OffsetDateTimeConstraintConfig withDayOfMonth(@NonNull FieldConstraintConfig monthConfig) {
 		return new OffsetDateTimeConstraintConfig(this.config, this.spanConfig, this.timeFieldConfig, this.dateFieldConfig.withDayOfMonth(monthConfig));
 	}
-
+	
 	@Override
 	public @NonNull OffsetDateTimeConstraintConfig withMonth(@NonNull Set<Month> months) {
 		return new OffsetDateTimeConstraintConfig(this.config, this.spanConfig, this.timeFieldConfig, this.dateFieldConfig.withMonth(months));
 	}
-
+	
 	@Override
 	public @NonNull OffsetDateTimeConstraintConfig withYear(@NonNull FieldConstraintConfig yearConfig) {
 		return new OffsetDateTimeConstraintConfig(this.config, this.spanConfig, this.timeFieldConfig, this.dateFieldConfig.withYear(yearConfig));
 	}
-
+	
 	/**
 	 * Validates the constraints against the given value.<br>
 	 *
@@ -169,30 +169,30 @@ public record OffsetDateTimeConstraintConfig(
 		if (this.isUnconstrained()) {
 			return Result.success();
 		}
-
+		
 		Result<Void> baseResult = this.config.matches(value);
 		if (baseResult.isError()) {
 			return baseResult;
 		}
-
+		
 		Result<Void> spanResult = this.spanConfig.matches(value);
 		if (spanResult.isError()) {
 			return spanResult;
 		}
-
+		
 		Result<Void> timeFieldResult = this.timeFieldConfig.matches(value);
 		if (timeFieldResult.isError()) {
 			return timeFieldResult;
 		}
-
+		
 		Result<Void> dateFieldResult = this.dateFieldConfig.matches(value);
 		if (dateFieldResult.isError()) {
 			return dateFieldResult;
 		}
-
+		
 		return Result.success();
 	}
-
+	
 	@Override
 	public @NonNull String toString() {
 		if (this.isUnconstrained()) {

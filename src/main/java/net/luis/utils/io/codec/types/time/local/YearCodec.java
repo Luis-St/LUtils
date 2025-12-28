@@ -41,12 +41,12 @@ import java.util.function.UnaryOperator;
  * @author Luis-St
  */
 public class YearCodec extends AbstractCodec<Year, YearConstraintConfig> implements TemporalComparisonConstraint<Year, YearCodec, YearConstraintConfig> {
-
+	
 	/**
 	 * Constructs a new year codec.<br>
 	 */
 	public YearCodec() {}
-
+	
 	/**
 	 * Constructs a new year codec with the specified constraint configuration.<br>
 	 *
@@ -56,7 +56,7 @@ public class YearCodec extends AbstractCodec<Year, YearConstraintConfig> impleme
 	public YearCodec(@NonNull YearConstraintConfig constraintConfig) {
 		super(constraintConfig);
 	}
-
+	
 	@Override
 	public @NonNull YearCodec applyConstraint(@NonNull UnaryOperator<YearConstraintConfig> configModifier) {
 		Objects.requireNonNull(configModifier, "Config modifier must not be null");
@@ -65,18 +65,18 @@ public class YearCodec extends AbstractCodec<Year, YearConstraintConfig> impleme
 			this.getConstraintConfig().orElse(YearConstraintConfig.UNCONSTRAINED)
 		));
 	}
-
+	
 	@Override
 	protected @NonNull Result<Void> checkConstraints(@NonNull Year value) {
 		Objects.requireNonNull(value, "Value must not be null");
-
+		
 		Result<Void> constraintResult = this.getConstraintConfig().map(config -> config.matches(value)).orElseGet(Result::success);
 		if (constraintResult.isError()) {
 			return Result.error("Year value " + value + " does not meet constraints: " + constraintResult.errorOrThrow());
 		}
 		return Result.success();
 	}
-
+	
 	@Override
 	public <R> @NonNull Result<R> encodeStart(@NonNull TypeProvider<R> provider, @NonNull R current, @Nullable Year value) {
 		Objects.requireNonNull(provider, "Type provider must not be null");
@@ -84,20 +84,20 @@ public class YearCodec extends AbstractCodec<Year, YearConstraintConfig> impleme
 		if (value == null) {
 			return Result.error("Unable to encode null as year using '" + this + "'");
 		}
-
+		
 		Result<Void> constraintResult = this.checkConstraints(value);
 		if (constraintResult.isError()) {
 			return Result.error(constraintResult.errorOrThrow());
 		}
 		return provider.createInteger(value.getValue());
 	}
-
+	
 	@Override
 	public @NonNull Result<String> encodeKey(@NonNull Year key) {
 		Objects.requireNonNull(key, "Key must not be null");
 		return Result.success(String.valueOf(key.getValue()));
 	}
-
+	
 	@Override
 	public <R> @NonNull Result<Year> decodeStart(@NonNull TypeProvider<R> provider, @NonNull R current, @Nullable R value) {
 		Objects.requireNonNull(provider, "Type provider must not be null");
@@ -105,38 +105,38 @@ public class YearCodec extends AbstractCodec<Year, YearConstraintConfig> impleme
 		if (value == null) {
 			return Result.error("Unable to decode null value as year using '" + this + "'");
 		}
-
+		
 		Result<Integer> result = provider.getInteger(value);
 		if (result.isError()) {
 			return Result.error(result.errorOrThrow());
 		}
-
+		
 		int yearValue = result.resultOrThrow();
 		try {
 			Year year = Year.of(yearValue);
-
+			
 			Result<Void> constraintResult = this.checkConstraints(year);
 			if (constraintResult.isError()) {
 				return Result.error(constraintResult.errorOrThrow());
 			}
-
+			
 			return Result.success(year);
 		} catch (DateTimeParseException e) {
 			return Result.error("Unable to decode year '" + yearValue + "' using '" + this + "': " + e.getMessage());
 		}
 	}
-
+	
 	@Override
 	public @NonNull Result<Year> decodeKey(@NonNull String key) {
 		Objects.requireNonNull(key, "Key must not be null");
-
+		
 		try {
 			return Result.success(Year.of(Integer.parseInt(key)));
 		} catch (NumberFormatException | DateTimeParseException e) {
 			return Result.error("Unable to decode key '" + key + "' as year using '" + this + "': " + e.getMessage());
 		}
 	}
-
+	
 	@Override
 	public String toString() {
 		return this.getConstraintConfig().map(config -> {

@@ -46,7 +46,7 @@ public record LocalTimeConstraintConfig(
 	@NonNull SpanConstraintConfig spanConfig,
 	@NonNull TimeFieldConstraintConfig timeFieldConfig
 ) implements TemporalConstraintConfigProvider<LocalTime, LocalTimeConstraintConfig>, TimeFieldConstraintConfigProvider<LocalTimeConstraintConfig> {
-
+	
 	/**
 	 * A predefined unconstrained configuration with no constraints.<br>
 	 * <p>
@@ -57,7 +57,7 @@ public record LocalTimeConstraintConfig(
 	public static final LocalTimeConstraintConfig UNCONSTRAINED = new LocalTimeConstraintConfig(
 		TemporalConstraintConfig.unconstrained(), SpanConstraintConfig.UNCONSTRAINED, TimeFieldConstraintConfig.UNCONSTRAINED
 	);
-
+	
 	/**
 	 * Constructs a new LocalTime constraint configuration with the specified constraints.<br>
 	 *
@@ -71,7 +71,7 @@ public record LocalTimeConstraintConfig(
 		Objects.requireNonNull(spanConfig, "Span config must not be null");
 		Objects.requireNonNull(timeFieldConfig, "Time field config must not be null");
 	}
-
+	
 	/**
 	 * Checks if the configuration is unconstrained (no constraints set).<br>
 	 *
@@ -80,57 +80,57 @@ public record LocalTimeConstraintConfig(
 	public boolean isUnconstrained() {
 		return this == UNCONSTRAINED || (this.config.isUnconstrained() && this.spanConfig.isUnconstrained() && this.timeFieldConfig.isUnconstrained());
 	}
-
+	
 	@Override
 	public @NonNull LocalTimeConstraintConfig withEquals(@NonNull LocalTime value, boolean negated) {
 		return new LocalTimeConstraintConfig(this.config.withEquals(value, negated), this.spanConfig, this.timeFieldConfig);
 	}
-
+	
 	@Override
 	public @NonNull LocalTimeConstraintConfig withMin(@NonNull LocalTime min, boolean inclusive) {
 		return new LocalTimeConstraintConfig(this.config.withMin(min, inclusive), this.spanConfig, this.timeFieldConfig);
 	}
-
+	
 	@Override
 	public @NonNull LocalTimeConstraintConfig withMax(@NonNull LocalTime max, boolean inclusive) {
 		return new LocalTimeConstraintConfig(this.config.withMax(max, inclusive), this.spanConfig, this.timeFieldConfig);
 	}
-
+	
 	@Override
 	public @NonNull LocalTimeConstraintConfig withRange(@NonNull LocalTime min, @NonNull LocalTime max, boolean inclusive) {
 		return new LocalTimeConstraintConfig(this.config.withRange(min, max, inclusive), this.spanConfig, this.timeFieldConfig);
 	}
-
+	
 	@Override
 	public @NonNull LocalTimeConstraintConfig withWithinLast(@NonNull Duration duration) {
 		return new LocalTimeConstraintConfig(this.config, this.spanConfig.withWithinLast(duration), this.timeFieldConfig);
 	}
-
+	
 	@Override
 	public @NonNull LocalTimeConstraintConfig withWithinNext(@NonNull Duration duration) {
 		return new LocalTimeConstraintConfig(this.config, this.spanConfig.withWithinNext(duration), this.timeFieldConfig);
 	}
-
+	
 	@Override
 	public @NonNull LocalTimeConstraintConfig withHour(@NonNull FieldConstraintConfig hourConfig) {
 		return new LocalTimeConstraintConfig(this.config, this.spanConfig, this.timeFieldConfig.withHour(hourConfig));
 	}
-
+	
 	@Override
 	public @NonNull LocalTimeConstraintConfig withMinute(@NonNull FieldConstraintConfig minuteConfig) {
 		return new LocalTimeConstraintConfig(this.config, this.spanConfig, this.timeFieldConfig.withMinute(minuteConfig));
 	}
-
+	
 	@Override
 	public @NonNull LocalTimeConstraintConfig withSecond(@NonNull FieldConstraintConfig secondConfig) {
 		return new LocalTimeConstraintConfig(this.config, this.spanConfig, this.timeFieldConfig.withSecond(secondConfig));
 	}
-
+	
 	@Override
 	public @NonNull LocalTimeConstraintConfig withMillisecond(@NonNull FieldConstraintConfig millisecondConfig) {
 		return new LocalTimeConstraintConfig(this.config, this.spanConfig, this.timeFieldConfig.withMillisecond(millisecondConfig));
 	}
-
+	
 	/**
 	 * Validates the constraints against the given value.<br>
 	 *
@@ -143,31 +143,31 @@ public record LocalTimeConstraintConfig(
 		if (this.isUnconstrained()) {
 			return Result.success();
 		}
-
+		
 		Result<Void> baseResult = this.config.matches(value);
 		if (baseResult.isError()) {
 			return baseResult;
 		}
-
+		
 		Result<Void> spanResult = this.spanConfig.matches(value);
 		if (spanResult.isError()) {
 			return spanResult;
 		}
-
+		
 		Result<Void> timeFieldResult = this.timeFieldConfig.matches(value);
 		if (timeFieldResult.isError()) {
 			return timeFieldResult;
 		}
-
+		
 		return Result.success();
 	}
-
+	
 	@Override
 	public @NonNull String toString() {
 		if (this.isUnconstrained()) {
 			return "LocalTimeConstraintConfig[unconstrained]";
 		}
-
+		
 		List<String> constraints = new ArrayList<>();
 		this.config.appendConstraints(constraints);
 		this.spanConfig.appendConstraints(constraints);

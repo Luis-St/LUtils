@@ -42,12 +42,12 @@ import java.util.function.UnaryOperator;
  * @author Luis-St
  */
 public class LocalTimeCodec extends AbstractCodec<LocalTime, LocalTimeConstraintConfig> implements TemporalSpanConstraint<LocalTime, LocalTimeCodec, LocalTimeConstraintConfig>, TimeFieldConstraint<LocalTimeCodec, LocalTimeConstraintConfig> {
-
+	
 	/**
 	 * Constructs a new local time codec.<br>
 	 */
 	public LocalTimeCodec() {}
-
+	
 	/**
 	 * Constructs a new local time codec with the specified constraint configuration.<br>
 	 *
@@ -66,18 +66,18 @@ public class LocalTimeCodec extends AbstractCodec<LocalTime, LocalTimeConstraint
 			this.getConstraintConfig().orElse(LocalTimeConstraintConfig.UNCONSTRAINED)
 		));
 	}
-
+	
 	@Override
 	protected @NonNull Result<Void> checkConstraints(@NonNull LocalTime value) {
 		Objects.requireNonNull(value, "Value must not be null");
-
+		
 		Result<Void> constraintResult = this.getConstraintConfig().map(config -> config.matches(value)).orElseGet(Result::success);
 		if (constraintResult.isError()) {
 			return Result.error("LocalTime value " + value + " does not meet constraints: " + constraintResult.errorOrThrow());
 		}
 		return Result.success();
 	}
-
+	
 	@Override
 	public <R> @NonNull Result<R> encodeStart(@NonNull TypeProvider<R> provider, @NonNull R current, @Nullable LocalTime value) {
 		Objects.requireNonNull(provider, "Type provider must not be null");
@@ -85,20 +85,20 @@ public class LocalTimeCodec extends AbstractCodec<LocalTime, LocalTimeConstraint
 		if (value == null) {
 			return Result.error("Unable to encode null as local time using '" + this + "'");
 		}
-
+		
 		Result<Void> constraintResult = this.checkConstraints(value);
 		if (constraintResult.isError()) {
 			return Result.error(constraintResult.errorOrThrow());
 		}
 		return provider.createString(value.toString());
 	}
-
+	
 	@Override
 	public @NonNull Result<String> encodeKey(@NonNull LocalTime key) {
 		Objects.requireNonNull(key, "Key must not be null");
 		return Result.success(key.toString());
 	}
-
+	
 	@Override
 	public <R> @NonNull Result<LocalTime> decodeStart(@NonNull TypeProvider<R> provider, @NonNull R current, @Nullable R value) {
 		Objects.requireNonNull(provider, "Type provider must not be null");
@@ -106,16 +106,16 @@ public class LocalTimeCodec extends AbstractCodec<LocalTime, LocalTimeConstraint
 		if (value == null) {
 			return Result.error("Unable to decode null value as local time using '" + this + "'");
 		}
-
+		
 		Result<String> result = provider.getString(value);
 		if (result.isError()) {
 			return Result.error(result.errorOrThrow());
 		}
-
+		
 		String string = result.resultOrThrow();
 		try {
 			LocalTime time = LocalTime.parse(string);
-
+			
 			Result<Void> constraintResult = this.checkConstraints(time);
 			if (constraintResult.isError()) {
 				return Result.error(constraintResult.errorOrThrow());
@@ -125,7 +125,7 @@ public class LocalTimeCodec extends AbstractCodec<LocalTime, LocalTimeConstraint
 			return Result.error("Unable to decode local time '" + string + "' using '" + this + "': Unable to parse local time: " + e.getMessage());
 		}
 	}
-
+	
 	@Override
 	public @NonNull Result<LocalTime> decodeKey(@NonNull String key) {
 		Objects.requireNonNull(key, "Key must not be null");
@@ -136,7 +136,7 @@ public class LocalTimeCodec extends AbstractCodec<LocalTime, LocalTimeConstraint
 			return Result.error("Unable to decode key '" + key + "' as local time using '" + this + "': " + e.getMessage());
 		}
 	}
-
+	
 	@Override
 	public String toString() {
 		return this.getConstraintConfig().map(config -> {

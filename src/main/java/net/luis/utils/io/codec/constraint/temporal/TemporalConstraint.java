@@ -70,7 +70,7 @@ public interface TemporalConstraint<T extends Temporal, C extends Codec<T>, V ex
 	default @NonNull C equalTo(@NonNull T value) {
 		return this.applyConstraint(config -> config.withEquals(value, false));
 	}
-
+	
 	/**
 	 * Applies a non-equality constraint to the codec.<br>
 	 * <p>

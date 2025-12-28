@@ -50,7 +50,7 @@ public record LocalDateTimeConstraintConfig(
 ) implements TemporalConstraintConfigProvider<LocalDateTime, LocalDateTimeConstraintConfig>,
 	TimeFieldConstraintConfigProvider<LocalDateTimeConstraintConfig>,
 	DateFieldConstraintConfigProvider<LocalDateTimeConstraintConfig> {
-
+	
 	/**
 	 * A predefined unconstrained configuration with no constraints.<br>
 	 * <p>
@@ -61,7 +61,7 @@ public record LocalDateTimeConstraintConfig(
 	public static final LocalDateTimeConstraintConfig UNCONSTRAINED = new LocalDateTimeConstraintConfig(
 		TemporalConstraintConfig.unconstrained(), SpanConstraintConfig.UNCONSTRAINED, TimeFieldConstraintConfig.UNCONSTRAINED, DateFieldConstraintConfig.UNCONSTRAINED
 	);
-
+	
 	/**
 	 * Constructs a new LocalDateTime constraint configuration with the specified constraints.<br>
 	 *
@@ -78,7 +78,7 @@ public record LocalDateTimeConstraintConfig(
 		Objects.requireNonNull(timeFieldConfig, "Time field config must not be null");
 		Objects.requireNonNull(dateFieldConfig, "Date field config must not be null");
 	}
-
+	
 	/**
 	 * Checks if the configuration is unconstrained (no constraints set).<br>
 	 *
@@ -87,77 +87,77 @@ public record LocalDateTimeConstraintConfig(
 	public boolean isUnconstrained() {
 		return this == UNCONSTRAINED || (this.config.isUnconstrained() && this.spanConfig.isUnconstrained() && this.timeFieldConfig.isUnconstrained() && this.dateFieldConfig.isUnconstrained());
 	}
-
+	
 	@Override
 	public @NonNull LocalDateTimeConstraintConfig withEquals(@NonNull LocalDateTime value, boolean negated) {
 		return new LocalDateTimeConstraintConfig(this.config.withEquals(value, negated), this.spanConfig, this.timeFieldConfig, this.dateFieldConfig);
 	}
-
+	
 	@Override
 	public @NonNull LocalDateTimeConstraintConfig withMin(@NonNull LocalDateTime min, boolean inclusive) {
 		return new LocalDateTimeConstraintConfig(this.config.withMin(min, inclusive), this.spanConfig, this.timeFieldConfig, this.dateFieldConfig);
 	}
-
+	
 	@Override
 	public @NonNull LocalDateTimeConstraintConfig withMax(@NonNull LocalDateTime max, boolean inclusive) {
 		return new LocalDateTimeConstraintConfig(this.config.withMax(max, inclusive), this.spanConfig, this.timeFieldConfig, this.dateFieldConfig);
 	}
-
+	
 	@Override
 	public @NonNull LocalDateTimeConstraintConfig withRange(@NonNull LocalDateTime min, @NonNull LocalDateTime max, boolean inclusive) {
 		return new LocalDateTimeConstraintConfig(this.config.withRange(min, max, inclusive), this.spanConfig, this.timeFieldConfig, this.dateFieldConfig);
 	}
-
+	
 	@Override
 	public @NonNull LocalDateTimeConstraintConfig withWithinLast(@NonNull Duration duration) {
 		return new LocalDateTimeConstraintConfig(this.config, this.spanConfig.withWithinLast(duration), this.timeFieldConfig, this.dateFieldConfig);
 	}
-
+	
 	@Override
 	public @NonNull LocalDateTimeConstraintConfig withWithinNext(@NonNull Duration duration) {
 		return new LocalDateTimeConstraintConfig(this.config, this.spanConfig.withWithinNext(duration), this.timeFieldConfig, this.dateFieldConfig);
 	}
-
+	
 	@Override
 	public @NonNull LocalDateTimeConstraintConfig withHour(@NonNull FieldConstraintConfig hourConfig) {
 		return new LocalDateTimeConstraintConfig(this.config, this.spanConfig, this.timeFieldConfig.withHour(hourConfig), this.dateFieldConfig);
 	}
-
+	
 	@Override
 	public @NonNull LocalDateTimeConstraintConfig withMinute(@NonNull FieldConstraintConfig minuteConfig) {
 		return new LocalDateTimeConstraintConfig(this.config, this.spanConfig, this.timeFieldConfig.withMinute(minuteConfig), this.dateFieldConfig);
 	}
-
+	
 	@Override
 	public @NonNull LocalDateTimeConstraintConfig withSecond(@NonNull FieldConstraintConfig secondConfig) {
 		return new LocalDateTimeConstraintConfig(this.config, this.spanConfig, this.timeFieldConfig.withSecond(secondConfig), this.dateFieldConfig);
 	}
-
+	
 	@Override
 	public @NonNull LocalDateTimeConstraintConfig withMillisecond(@NonNull FieldConstraintConfig millisecondConfig) {
 		return new LocalDateTimeConstraintConfig(this.config, this.spanConfig, this.timeFieldConfig.withMillisecond(millisecondConfig), this.dateFieldConfig);
 	}
-
+	
 	@Override
 	public @NonNull LocalDateTimeConstraintConfig withDayOfWeek(@NonNull Set<DayOfWeek> daysOfWeek) {
 		return new LocalDateTimeConstraintConfig(this.config, this.spanConfig, this.timeFieldConfig, this.dateFieldConfig.withDayOfWeek(daysOfWeek));
 	}
-
+	
 	@Override
 	public @NonNull LocalDateTimeConstraintConfig withDayOfMonth(@NonNull FieldConstraintConfig monthConfig) {
 		return new LocalDateTimeConstraintConfig(this.config, this.spanConfig, this.timeFieldConfig, this.dateFieldConfig.withDayOfMonth(monthConfig));
 	}
-
+	
 	@Override
 	public @NonNull LocalDateTimeConstraintConfig withMonth(@NonNull Set<Month> months) {
 		return new LocalDateTimeConstraintConfig(this.config, this.spanConfig, this.timeFieldConfig, this.dateFieldConfig.withMonth(months));
 	}
-
+	
 	@Override
 	public @NonNull LocalDateTimeConstraintConfig withYear(@NonNull FieldConstraintConfig yearConfig) {
 		return new LocalDateTimeConstraintConfig(this.config, this.spanConfig, this.timeFieldConfig, this.dateFieldConfig.withYear(yearConfig));
 	}
-
+	
 	/**
 	 * Validates the constraints against the given value.<br>
 	 *
@@ -170,30 +170,30 @@ public record LocalDateTimeConstraintConfig(
 		if (this.isUnconstrained()) {
 			return Result.success();
 		}
-
+		
 		Result<Void> baseResult = this.config.matches(value);
 		if (baseResult.isError()) {
 			return baseResult;
 		}
-
+		
 		Result<Void> spanResult = this.spanConfig.matches(value);
 		if (spanResult.isError()) {
 			return spanResult;
 		}
-
+		
 		Result<Void> timeFieldResult = this.timeFieldConfig.matches(value);
 		if (timeFieldResult.isError()) {
 			return timeFieldResult;
 		}
-
+		
 		Result<Void> dateFieldResult = this.dateFieldConfig.matches(value);
 		if (dateFieldResult.isError()) {
 			return dateFieldResult;
 		}
-
+		
 		return Result.success();
 	}
-
+	
 	@Override
 	public @NonNull String toString() {
 		if (this.isUnconstrained()) {

@@ -276,7 +276,7 @@ public final class Codecs {
 	 * The underlying byte array is converted to and from a Base64-encoded string.<br>
 	 */
 	public static final Base64Codec BASE64 = new Base64Codec();
-
+	
 	/**
 	 * Private constructor to prevent instantiation.<br>
 	 * This is a static helper class.<br>
@@ -526,7 +526,7 @@ public final class Codecs {
 	public static <C> @NonNull UnitCodec<C> unit(@NonNull Supplier<C> supplier) {
 		return new UnitCodec<>(supplier);
 	}
-
+	
 	/**
 	 * Creates a new recursive codec that supports encoding and decoding recursive data structures.<br>
 	 * <p>
@@ -558,7 +558,7 @@ public final class Codecs {
 	public static <C> @NonNull RecursiveCodec<C> recursive(@NonNull Function<Codec<C>, Codec<C>> codecFactory) {
 		return new RecursiveCodec<>(codecFactory);
 	}
-
+	
 	/**
 	 * Creates a new codec that encodes and decodes values of the type {@code C} to and from strings.<br>
 	 * The string encoder and decoder are defined as functions that convert values of the type {@code C} to and from strings.<br>

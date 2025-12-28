@@ -55,17 +55,17 @@ public interface TimeFieldProvider {
 			public @NonNull IntSupplier hour() {
 				return hourSupplier;
 			}
-
+			
 			@Override
 			public @NonNull IntSupplier minute() {
 				return minuteSupplier;
 			}
-
+			
 			@Override
 			public @NonNull IntSupplier second() {
 				return secondSupplier;
 			}
-
+			
 			@Override
 			public @NonNull IntSupplier millisecond() {
 				return millisecondSupplier;
@@ -78,22 +78,22 @@ public interface TimeFieldProvider {
 	 * @return An IntSupplier that provides the hour value
 	 */
 	@NonNull IntSupplier hour();
-
+	
 	/**
 	 * Gets the minute of hour (0-59).<br>
 	 * @return An IntSupplier that provides the minute value
 	 */
 	@NonNull IntSupplier minute();
-
+	
 	/**
 	 * Gets the second of minute (0-59).<br>
 	 * @return An IntSupplier that provides the second value
 	 */
 	@NonNull IntSupplier second();
-
+	
 	/**
 	 * Gets the millisecond of second (0-999).<br>
 	 * @return An IntSupplier that provides the millisecond value
 	 */
-	 @NonNull IntSupplier millisecond();
+	@NonNull IntSupplier millisecond();
 }

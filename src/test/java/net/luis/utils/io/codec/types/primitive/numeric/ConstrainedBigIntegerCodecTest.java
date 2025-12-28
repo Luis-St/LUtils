@@ -27,7 +27,7 @@ import org.junit.jupiter.api.Test;
 
 import java.math.BigInteger;
 
-import static net.luis.utils.io.codec.Codecs.BIG_INTEGER;
+import static net.luis.utils.io.codec.Codecs.*;
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
@@ -36,265 +36,265 @@ import static org.junit.jupiter.api.Assertions.*;
  * @author Luis-St
  */
 class ConstrainedBigIntegerCodecTest {
-
+	
 	private final JsonTypeProvider provider = JsonTypeProvider.INSTANCE;
-
+	
 	@Test
 	void encodeWithPositiveConstraintSuccess() {
 		Codec<BigInteger> codec = BIG_INTEGER.positive();
 		BigInteger value = BigInteger.valueOf(10);
-
+		
 		Result<JsonElement> result = codec.encodeStart(this.provider, this.provider.empty(), value);
 		assertTrue(result.isSuccess());
 	}
-
+	
 	@Test
 	void encodeWithPositiveConstraintFailure() {
 		Codec<BigInteger> codec = BIG_INTEGER.positive();
 		BigInteger value = BigInteger.valueOf(-5);
-
+		
 		Result<JsonElement> result = codec.encodeStart(this.provider, this.provider.empty(), value);
 		assertTrue(result.isError());
 		assertTrue(result.errorOrThrow().contains("does not meet constraints"));
 	}
-
+	
 	@Test
 	void encodeWithNegativeConstraintSuccess() {
 		Codec<BigInteger> codec = BIG_INTEGER.negative();
 		BigInteger value = BigInteger.valueOf(-10);
-
+		
 		Result<JsonElement> result = codec.encodeStart(this.provider, this.provider.empty(), value);
 		assertTrue(result.isSuccess());
 	}
-
+	
 	@Test
 	void encodeWithNegativeConstraintFailure() {
 		Codec<BigInteger> codec = BIG_INTEGER.negative();
 		BigInteger value = BigInteger.valueOf(5);
-
+		
 		Result<JsonElement> result = codec.encodeStart(this.provider, this.provider.empty(), value);
 		assertTrue(result.isError());
 		assertTrue(result.errorOrThrow().contains("does not meet constraints"));
 	}
-
+	
 	@Test
 	void encodeWithNonNegativeConstraintSuccess() {
 		Codec<BigInteger> codec = BIG_INTEGER.nonNegative();
 		BigInteger value = BigInteger.ZERO;
-
+		
 		Result<JsonElement> result = codec.encodeStart(this.provider, this.provider.empty(), value);
 		assertTrue(result.isSuccess());
 	}
-
+	
 	@Test
 	void encodeWithNonNegativeConstraintFailure() {
 		Codec<BigInteger> codec = BIG_INTEGER.nonNegative();
 		BigInteger value = BigInteger.valueOf(-1);
-
+		
 		Result<JsonElement> result = codec.encodeStart(this.provider, this.provider.empty(), value);
 		assertTrue(result.isError());
 	}
-
+	
 	@Test
 	void encodeWithEvenConstraintSuccess() {
 		Codec<BigInteger> codec = BIG_INTEGER.even();
 		BigInteger value = BigInteger.valueOf(10);
-
+		
 		Result<JsonElement> result = codec.encodeStart(this.provider, this.provider.empty(), value);
 		assertTrue(result.isSuccess());
 	}
-
+	
 	@Test
 	void encodeWithEvenConstraintFailure() {
 		Codec<BigInteger> codec = BIG_INTEGER.even();
 		BigInteger value = BigInteger.valueOf(7);
-
+		
 		Result<JsonElement> result = codec.encodeStart(this.provider, this.provider.empty(), value);
 		assertTrue(result.isError());
 		assertTrue(result.errorOrThrow().contains("Violated even constraint"));
 	}
-
+	
 	@Test
 	void encodeWithOddConstraintSuccess() {
 		Codec<BigInteger> codec = BIG_INTEGER.odd();
 		BigInteger value = BigInteger.valueOf(7);
-
+		
 		Result<JsonElement> result = codec.encodeStart(this.provider, this.provider.empty(), value);
 		assertTrue(result.isSuccess());
 	}
-
+	
 	@Test
 	void encodeWithOddConstraintFailure() {
 		Codec<BigInteger> codec = BIG_INTEGER.odd();
 		BigInteger value = BigInteger.valueOf(10);
-
+		
 		Result<JsonElement> result = codec.encodeStart(this.provider, this.provider.empty(), value);
 		assertTrue(result.isError());
 		assertTrue(result.errorOrThrow().contains("Violated odd constraint"));
 	}
-
+	
 	@Test
 	void encodeWithDivisibleByConstraintSuccess() {
 		Codec<BigInteger> codec = BIG_INTEGER.divisibleBy(5);
 		BigInteger value = BigInteger.valueOf(25);
-
+		
 		Result<JsonElement> result = codec.encodeStart(this.provider, this.provider.empty(), value);
 		assertTrue(result.isSuccess());
 	}
-
+	
 	@Test
 	void encodeWithDivisibleByConstraintFailure() {
 		Codec<BigInteger> codec = BIG_INTEGER.divisibleBy(5);
 		BigInteger value = BigInteger.valueOf(23);
-
+		
 		Result<JsonElement> result = codec.encodeStart(this.provider, this.provider.empty(), value);
 		assertTrue(result.isError());
 		assertTrue(result.errorOrThrow().contains("Violated divisibility constraint"));
 	}
-
+	
 	@Test
 	void encodeWithPowerOfTwoConstraintSuccess() {
 		Codec<BigInteger> codec = BIG_INTEGER.powerOfTwo();
 		BigInteger value = BigInteger.valueOf(64);
-
+		
 		Result<JsonElement> result = codec.encodeStart(this.provider, this.provider.empty(), value);
 		assertTrue(result.isSuccess());
 	}
-
+	
 	@Test
 	void encodeWithPowerOfTwoConstraintFailure() {
 		Codec<BigInteger> codec = BIG_INTEGER.powerOfTwo();
 		BigInteger value = BigInteger.valueOf(63);
-
+		
 		Result<JsonElement> result = codec.encodeStart(this.provider, this.provider.empty(), value);
 		assertTrue(result.isError());
 		assertTrue(result.errorOrThrow().contains("Violated power-of-2 constraint"));
 	}
-
+	
 	@Test
 	void encodeWithBetweenOrEqualConstraintSuccess() {
 		Codec<BigInteger> codec = BIG_INTEGER.betweenOrEqual(BigInteger.ZERO, BigInteger.valueOf(100));
 		BigInteger value = BigInteger.valueOf(50);
-
+		
 		Result<JsonElement> result = codec.encodeStart(this.provider, this.provider.empty(), value);
 		assertTrue(result.isSuccess());
 	}
-
+	
 	@Test
 	void encodeWithBetweenOrEqualConstraintFailure() {
 		Codec<BigInteger> codec = BIG_INTEGER.betweenOrEqual(BigInteger.ZERO, BigInteger.valueOf(100));
 		BigInteger value = BigInteger.valueOf(127);
-
+		
 		Result<JsonElement> result = codec.encodeStart(this.provider, this.provider.empty(), value);
 		assertTrue(result.isError());
 	}
-
+	
 	@Test
 	void decodeWithPositiveConstraintSuccess() {
 		Codec<BigInteger> codec = BIG_INTEGER.positive();
 		JsonPrimitive json = new JsonPrimitive("10");
-
+		
 		Result<BigInteger> result = codec.decodeStart(this.provider, this.provider.empty(), json);
 		assertTrue(result.isSuccess());
 		assertEquals(BigInteger.valueOf(10), result.resultOrThrow());
 	}
-
+	
 	@Test
 	void decodeWithPositiveConstraintFailure() {
 		Codec<BigInteger> codec = BIG_INTEGER.positive();
 		JsonPrimitive json = new JsonPrimitive("-5");
-
+		
 		Result<BigInteger> result = codec.decodeStart(this.provider, this.provider.empty(), json);
 		assertTrue(result.isError());
 		assertTrue(result.errorOrThrow().contains("does not meet constraints"));
 	}
-
+	
 	@Test
 	void decodeWithEvenConstraintSuccess() {
 		Codec<BigInteger> codec = BIG_INTEGER.even();
 		JsonPrimitive json = new JsonPrimitive("10");
-
+		
 		Result<BigInteger> result = codec.decodeStart(this.provider, this.provider.empty(), json);
 		assertTrue(result.isSuccess());
 		assertEquals(BigInteger.valueOf(10), result.resultOrThrow());
 	}
-
+	
 	@Test
 	void decodeWithEvenConstraintFailure() {
 		Codec<BigInteger> codec = BIG_INTEGER.even();
 		JsonPrimitive json = new JsonPrimitive("7");
-
+		
 		Result<BigInteger> result = codec.decodeStart(this.provider, this.provider.empty(), json);
 		assertTrue(result.isError());
 		assertTrue(result.errorOrThrow().contains("Violated even constraint"));
 	}
-
+	
 	@Test
 	void decodeWithDivisibleByConstraintSuccess() {
 		Codec<BigInteger> codec = BIG_INTEGER.divisibleBy(5);
 		JsonPrimitive json = new JsonPrimitive("25");
-
+		
 		Result<BigInteger> result = codec.decodeStart(this.provider, this.provider.empty(), json);
 		assertTrue(result.isSuccess());
 		assertEquals(BigInteger.valueOf(25), result.resultOrThrow());
 	}
-
+	
 	@Test
 	void decodeWithDivisibleByConstraintFailure() {
 		Codec<BigInteger> codec = BIG_INTEGER.divisibleBy(5);
 		JsonPrimitive json = new JsonPrimitive("23");
-
+		
 		Result<BigInteger> result = codec.decodeStart(this.provider, this.provider.empty(), json);
 		assertTrue(result.isError());
 		assertTrue(result.errorOrThrow().contains("Violated divisibility constraint"));
 	}
-
+	
 	@Test
 	void encodeWithChainedConstraintsSuccess() {
 		Codec<BigInteger> codec = BIG_INTEGER.positive().even().divisibleBy(10);
 		BigInteger value = BigInteger.valueOf(50);
-
+		
 		Result<JsonElement> result = codec.encodeStart(this.provider, this.provider.empty(), value);
 		assertTrue(result.isSuccess());
 	}
-
+	
 	@Test
 	void encodeWithChainedConstraintsFailure() {
 		Codec<BigInteger> codec = BIG_INTEGER.positive().even().divisibleBy(10);
 		BigInteger value = BigInteger.valueOf(12);
-
+		
 		Result<JsonElement> result = codec.encodeStart(this.provider, this.provider.empty(), value);
 		assertTrue(result.isError());
 		assertTrue(result.errorOrThrow().contains("Violated divisibility constraint"));
 	}
-
+	
 	@Test
 	void decodeWithChainedConstraintsSuccess() {
 		Codec<BigInteger> codec = BIG_INTEGER.nonNegative().even();
 		JsonPrimitive json = new JsonPrimitive("10");
-
+		
 		Result<BigInteger> result = codec.decodeStart(this.provider, this.provider.empty(), json);
 		assertTrue(result.isSuccess());
 		assertEquals(BigInteger.valueOf(10), result.resultOrThrow());
 	}
-
+	
 	@Test
 	void decodeWithChainedConstraintsFailure() {
 		Codec<BigInteger> codec = BIG_INTEGER.positive().even();
 		JsonPrimitive json = new JsonPrimitive("7");
-
+		
 		Result<BigInteger> result = codec.decodeStart(this.provider, this.provider.empty(), json);
 		assertTrue(result.isError());
 		assertTrue(result.errorOrThrow().contains("Violated even constraint"));
 	}
-
+	
 	@Test
 	void toStringWithoutConstraints() {
 		Codec<BigInteger> codec = BIG_INTEGER;
 		String str = codec.toString();
 		assertEquals("BigIntegerCodec", str);
 	}
-
+	
 	@Test
 	void toStringWithConstraints() {
 		Codec<BigInteger> codec = BIG_INTEGER.positive().even();

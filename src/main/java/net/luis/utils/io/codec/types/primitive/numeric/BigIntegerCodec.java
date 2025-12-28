@@ -39,12 +39,12 @@ import java.util.function.UnaryOperator;
  * @author Luis-St
  */
 public class BigIntegerCodec extends AbstractCodec<BigInteger, IntegerConstraintConfig<BigInteger>> implements IntegerConstraint<BigInteger, BigIntegerCodec> {
-
+	
 	/**
 	 * Constructs a new big integer codec.<br>
 	 */
 	public BigIntegerCodec() {}
-
+	
 	/**
 	 * Constructs a new big integer codec with the specified integer constraint configuration.<br>
 	 *
@@ -54,32 +54,32 @@ public class BigIntegerCodec extends AbstractCodec<BigInteger, IntegerConstraint
 	public BigIntegerCodec(@NonNull IntegerConstraintConfig<BigInteger> constraintConfig) {
 		super(constraintConfig);
 	}
-
+	
 	@Override
 	public @NonNull BigIntegerCodec applyConstraint(@NonNull UnaryOperator<IntegerConstraintConfig<BigInteger>> configModifier) {
 		Objects.requireNonNull(configModifier, "Config modifier must not be null");
-
+		
 		return new BigIntegerCodec(configModifier.apply(
 			this.getConstraintConfig().orElse(IntegerConstraintConfig.unconstrained())
 		));
 	}
-
+	
 	@Override
 	public @NonNull NumberProvider<BigInteger> provider() {
 		return NumberProvider.of(BigInteger.ZERO, BigInteger.ONE, BigInteger.valueOf(100));
 	}
-
+	
 	@Override
 	protected @NonNull Result<Void> checkConstraints(@NonNull BigInteger value) {
 		Objects.requireNonNull(value, "Value must not be null");
-
+		
 		Result<Void> constraintResult = this.getConstraintConfig().map(config -> config.matches(NumberType.BIG_INTEGER, value)).orElseGet(Result::success);
 		if (constraintResult.isError()) {
 			return Result.error("BigInteger value " + value + " does not meet constraints: " + constraintResult.errorOrThrow());
 		}
 		return Result.success();
 	}
-
+	
 	@Override
 	public <R> @NonNull Result<R> encodeStart(@NonNull TypeProvider<R> provider, @NonNull R current, @Nullable BigInteger value) {
 		Objects.requireNonNull(provider, "Type provider must not be null");
@@ -87,20 +87,20 @@ public class BigIntegerCodec extends AbstractCodec<BigInteger, IntegerConstraint
 		if (value == null) {
 			return Result.error("Unable to encode null as big integer using '" + this + "'");
 		}
-
+		
 		Result<Void> constraintResult = this.checkConstraints(value);
 		if (constraintResult.isError()) {
 			return Result.error(constraintResult.errorOrThrow());
 		}
 		return provider.createString(value.toString());
 	}
-
+	
 	@Override
 	public @NonNull Result<String> encodeKey(@NonNull BigInteger key) {
 		Objects.requireNonNull(key, "Key must not be null");
 		return Result.success(key.toString());
 	}
-
+	
 	@Override
 	public <R> @NonNull Result<BigInteger> decodeStart(@NonNull TypeProvider<R> provider, @NonNull R current, @Nullable R value) {
 		Objects.requireNonNull(provider, "Type provider must not be null");
@@ -108,16 +108,16 @@ public class BigIntegerCodec extends AbstractCodec<BigInteger, IntegerConstraint
 		if (value == null) {
 			return Result.error("Unable to decode null value as big integer using '" + this + "'");
 		}
-
+		
 		Result<String> result = provider.getString(value);
 		if (result.isError()) {
 			return Result.error(result.errorOrThrow());
 		}
-
+		
 		String string = result.resultOrThrow();
 		try {
 			BigInteger bigInteger = new BigInteger(string);
-
+			
 			Result<Void> constraintResult = this.checkConstraints(bigInteger);
 			if (constraintResult.isError()) {
 				return Result.error(constraintResult.errorOrThrow());
@@ -127,18 +127,18 @@ public class BigIntegerCodec extends AbstractCodec<BigInteger, IntegerConstraint
 			return Result.error("Unable to decode big integer '" + string + "' using '" + this + "': " + e.getMessage());
 		}
 	}
-
+	
 	@Override
 	public @NonNull Result<BigInteger> decodeKey(@NonNull String key) {
 		Objects.requireNonNull(key, "Key must not be null");
-
+		
 		try {
 			return Result.success(new BigInteger(key));
 		} catch (NumberFormatException e) {
 			return Result.error("Unable to decode key '" + key + "' as big integer using '" + this + "': " + e.getMessage());
 		}
 	}
-
+	
 	@Override
 	public String toString() {
 		return this.getConstraintConfig().map(config -> {

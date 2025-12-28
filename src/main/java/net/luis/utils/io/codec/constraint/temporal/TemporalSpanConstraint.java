@@ -75,7 +75,7 @@ public interface TemporalSpanConstraint<T extends Temporal & Comparable<? super 
 	default @NonNull C withinLast(@NonNull Duration duration) {
 		return this.applyConstraint(config -> config.withWithinLast(duration));
 	}
-
+	
 	/**
 	 * Applies a "within next" duration constraint to the codec.<br>
 	 * <p>

@@ -66,7 +66,7 @@ public interface TemporalComparisonConstraint<T extends Temporal & Comparable<? 
 	default @NonNull C after(@NonNull T value) {
 		return this.applyConstraint(config -> config.withMin(value, false));
 	}
-
+	
 	/**
 	 * Applies an "after or equal" constraint to the codec (inclusive).<br>
 	 * <p>
@@ -83,7 +83,7 @@ public interface TemporalComparisonConstraint<T extends Temporal & Comparable<? 
 	default @NonNull C afterOrEqual(@NonNull T value) {
 		return this.applyConstraint(config -> config.withMin(value, true));
 	}
-
+	
 	/**
 	 * Applies a "before" constraint to the codec (exclusive).<br>
 	 * <p>
@@ -100,7 +100,7 @@ public interface TemporalComparisonConstraint<T extends Temporal & Comparable<? 
 	default @NonNull C before(@NonNull T value) {
 		return this.applyConstraint(config -> config.withMax(value, false));
 	}
-
+	
 	/**
 	 * Applies a "before or equal" constraint to the codec (inclusive).<br>
 	 * <p>
@@ -117,7 +117,7 @@ public interface TemporalComparisonConstraint<T extends Temporal & Comparable<? 
 	default @NonNull C beforeOrEqual(@NonNull T value) {
 		return this.applyConstraint(config -> config.withMax(value, true));
 	}
-
+	
 	/**
 	 * Applies a temporal range constraint to the codec (exclusive bounds).<br>
 	 * <p>
@@ -135,7 +135,7 @@ public interface TemporalComparisonConstraint<T extends Temporal & Comparable<? 
 	default @NonNull C between(@NonNull T min, @NonNull T max) {
 		return this.applyConstraint(config -> config.withRange(min, max, false));
 	}
-
+	
 	/**
 	 * Applies a temporal range constraint to the codec (inclusive bounds).<br>
 	 * <p>

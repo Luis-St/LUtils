@@ -58,13 +58,13 @@ import java.util.function.Supplier;
  * @param <C> The type of the recursive value
  */
 public class RecursiveCodec<C> extends AbstractCodec<C, Object> {
-
+	
 	/**
 	 * Supplier that lazily provides the actual codec.<br>
 	 * This is used to break the circular dependency during codec construction.
 	 */
 	private final Supplier<Codec<C>> codecSupplier;
-
+	
 	/**
 	 * Constructs a new recursive codec using the given factory function.<br>
 	 * <p>
@@ -82,28 +82,28 @@ public class RecursiveCodec<C> extends AbstractCodec<C, Object> {
 		codecHolder.setValue(codecFactory.apply(new LazyCodec<>(codecHolder)));
 		this.codecSupplier = codecHolder;
 	}
-
+	
 	@Override
 	public <R> @NonNull Result<R> encodeStart(@NonNull TypeProvider<R> provider, @NonNull R current, @Nullable C value) {
 		Objects.requireNonNull(provider, "Type provider must not be null");
 		Objects.requireNonNull(current, "Current value must not be null");
-
+		
 		return this.codecSupplier.get().encodeStart(provider, current, value);
 	}
-
+	
 	@Override
 	public <R> @NonNull Result<C> decodeStart(@NonNull TypeProvider<R> provider, @NonNull R current, @Nullable R value) {
 		Objects.requireNonNull(provider, "Type provider must not be null");
 		Objects.requireNonNull(current, "Current value must not be null");
-
+		
 		return this.codecSupplier.get().decodeStart(provider, current, value);
 	}
-
+	
 	@Override
 	public String toString() {
 		return "RecursiveCodec[" + this.codecSupplier.get() + "]";
 	}
-
+	
 	/**
 	 * Internal lazy codec that delegates to the actual codec once it's initialized.<br>
 	 * This is used to break the circular dependency during codec construction.
@@ -111,12 +111,12 @@ public class RecursiveCodec<C> extends AbstractCodec<C, Object> {
 	 * @param <C> The type of the value
 	 */
 	private static final class LazyCodec<C> extends AbstractCodec<C, Object> {
-
+		
 		/**
 		 * Supplier that provides the actual codec.<br>
 		 */
 		private final Supplier<Codec<C>> codecSupplier;
-
+		
 		/**
 		 * Constructs a new lazy codec.<br>
 		 *
@@ -125,17 +125,17 @@ public class RecursiveCodec<C> extends AbstractCodec<C, Object> {
 		private LazyCodec(@NonNull Supplier<Codec<C>> codecSupplier) {
 			this.codecSupplier = Objects.requireNonNull(codecSupplier, "Codec supplier must not be null");
 		}
-
+		
 		@Override
 		public <R> @NonNull Result<R> encodeStart(@NonNull TypeProvider<R> provider, @NonNull R current, @Nullable C value) {
 			return this.codecSupplier.get().encodeStart(provider, current, value);
 		}
-
+		
 		@Override
 		public <R> @NonNull Result<C> decodeStart(@NonNull TypeProvider<R> provider, @NonNull R current, @Nullable R value) {
 			return this.codecSupplier.get().decodeStart(provider, current, value);
 		}
-
+		
 		@Override
 		public String toString() {
 			return "LazyCodec";

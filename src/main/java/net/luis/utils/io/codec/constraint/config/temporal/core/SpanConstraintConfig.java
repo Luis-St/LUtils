@@ -39,7 +39,7 @@ public record SpanConstraintConfig(
 	@NonNull Optional<Duration> withinLast,
 	@NonNull Optional<Duration> withinNext
 ) {
-
+	
 	/**
 	 * A predefined unconstrained configuration with no constraints.<br>
 	 * <p>
@@ -50,7 +50,7 @@ public record SpanConstraintConfig(
 	public static final SpanConstraintConfig UNCONSTRAINED = new SpanConstraintConfig(
 		Optional.empty(), Optional.empty()
 	);
-
+	
 	/**
 	 * Constructs a new span constraint configuration with the specified constraints.<br>
 	 *
@@ -62,7 +62,7 @@ public record SpanConstraintConfig(
 		Objects.requireNonNull(withinLast, "Within last constraint must not be null");
 		Objects.requireNonNull(withinNext, "Within next constraint must not be null");
 	}
-
+	
 	/**
 	 * Checks if the configuration is unconstrained (no constraints set).<br>
 	 *
@@ -71,7 +71,7 @@ public record SpanConstraintConfig(
 	public boolean isUnconstrained() {
 		return this == UNCONSTRAINED || (this.withinLast.isEmpty() && this.withinNext.isEmpty());
 	}
-
+	
 	/**
 	 * Creates a new configuration with a "within last" duration constraint.<br>
 	 *
@@ -81,7 +81,7 @@ public record SpanConstraintConfig(
 	public @NonNull SpanConstraintConfig withWithinLast(@NonNull Duration duration) {
 		return new SpanConstraintConfig(Optional.of(duration), this.withinNext);
 	}
-
+	
 	/**
 	 * Creates a new configuration with a "within next" duration constraint.<br>
 	 *
@@ -91,7 +91,7 @@ public record SpanConstraintConfig(
 	public @NonNull SpanConstraintConfig withWithinNext(@NonNull Duration duration) {
 		return new SpanConstraintConfig(this.withinLast, Optional.of(duration));
 	}
-
+	
 	/**
 	 * Validates the span constraints using the provided span provider.<br>
 	 *
@@ -107,24 +107,24 @@ public record SpanConstraintConfig(
 		if (this.isUnconstrained()) {
 			return Result.success();
 		}
-
+		
 		if (this.withinLast.isPresent()) {
 			T threshold = provider.minus(provider.now().get(), this.withinLast.get());
 			if (provider.isBefore(value, threshold)) {
 				return Result.error("Violated within-last constraint: value (" + value + ") is before threshold (" + threshold + "), but it should be within the last " + this.withinLast.get());
 			}
 		}
-
+		
 		if (this.withinNext.isPresent()) {
 			T threshold = provider.plus(provider.now().get(), this.withinNext.get());
 			if (provider.isAfter(value, threshold)) {
 				return Result.error("Violated within-next constraint: value (" + value + ") is after threshold (" + threshold + "), but it should be within the next " + this.withinNext.get());
 			}
 		}
-
+		
 		return Result.success();
 	}
-
+	
 	/**
 	 * Validates the span constraints against the given {@link LocalDate} value.<br>
 	 *
@@ -136,7 +136,7 @@ public record SpanConstraintConfig(
 		Objects.requireNonNull(value, "Value must not be null");
 		return this.matches(value, () -> LocalDate::now);
 	}
-
+	
 	/**
 	 * Validates the span constraints against the given {@link LocalTime} value.<br>
 	 *
@@ -148,7 +148,7 @@ public record SpanConstraintConfig(
 		Objects.requireNonNull(value, "Value must not be null");
 		return this.matches(value, () -> LocalTime::now);
 	}
-
+	
 	/**
 	 * Validates the span constraints against the given {@link LocalDateTime} value.<br>
 	 *
@@ -160,7 +160,7 @@ public record SpanConstraintConfig(
 		Objects.requireNonNull(value, "Value must not be null");
 		return this.matches(value, () -> LocalDateTime::now);
 	}
-
+	
 	/**
 	 * Validates the span constraints against the given {@link OffsetTime} value.<br>
 	 *
@@ -172,7 +172,7 @@ public record SpanConstraintConfig(
 		Objects.requireNonNull(value, "Value must not be null");
 		return this.matches(value, () -> OffsetTime::now);
 	}
-
+	
 	/**
 	 * Validates the span constraints against the given {@link OffsetDateTime} value.<br>
 	 *
@@ -184,7 +184,7 @@ public record SpanConstraintConfig(
 		Objects.requireNonNull(value, "Value must not be null");
 		return this.matches(value, () -> OffsetDateTime::now);
 	}
-
+	
 	/**
 	 * Validates the span constraints against the given {@link ZonedDateTime} value.<br>
 	 *
@@ -206,17 +206,17 @@ public record SpanConstraintConfig(
 		if (this.isUnconstrained()) {
 			return;
 		}
-
+		
 		this.withinLast.ifPresent(d -> constraints.add("withinLast=" + d));
 		this.withinNext.ifPresent(d -> constraints.add("withinNext=" + d));
 	}
-
+	
 	@Override
 	public @NonNull String toString() {
 		if (this.isUnconstrained()) {
 			return "SpanConstraintConfig[unconstrained]";
 		}
-
+		
 		List<String> constraints = new ArrayList<>();
 		this.appendConstraints(constraints);
 		return "SpanConstraintConfig[" + String.join(",", constraints) + "]";

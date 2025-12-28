@@ -41,12 +41,12 @@ import java.util.function.UnaryOperator;
  * @author Luis-St
  */
 public class OffsetDateTimeCodec extends AbstractCodec<OffsetDateTime, OffsetDateTimeConstraintConfig> implements TemporalSpanConstraint<OffsetDateTime, OffsetDateTimeCodec, OffsetDateTimeConstraintConfig>, TimeFieldConstraint<OffsetDateTimeCodec, OffsetDateTimeConstraintConfig>, DateFieldConstraint<OffsetDateTimeCodec, OffsetDateTimeConstraintConfig> {
-
+	
 	/**
 	 * Constructs a new offset date time codec.<br>
 	 */
 	public OffsetDateTimeCodec() {}
-
+	
 	/**
 	 * Constructs a new offset date time codec with the specified constraint configuration.<br>
 	 *
@@ -56,7 +56,7 @@ public class OffsetDateTimeCodec extends AbstractCodec<OffsetDateTime, OffsetDat
 	public OffsetDateTimeCodec(@NonNull OffsetDateTimeConstraintConfig constraintConfig) {
 		super(constraintConfig);
 	}
-
+	
 	@Override
 	public @NonNull OffsetDateTimeCodec applyConstraint(@NonNull UnaryOperator<OffsetDateTimeConstraintConfig> configModifier) {
 		Objects.requireNonNull(configModifier, "Config modifier must not be null");
@@ -65,11 +65,11 @@ public class OffsetDateTimeCodec extends AbstractCodec<OffsetDateTime, OffsetDat
 			this.getConstraintConfig().orElse(OffsetDateTimeConstraintConfig.UNCONSTRAINED)
 		));
 	}
-
+	
 	@Override
 	protected @NonNull Result<Void> checkConstraints(@NonNull OffsetDateTime value) {
 		Objects.requireNonNull(value, "Value must not be null");
-
+		
 		Result<Void> constraintResult = this.getConstraintConfig().map(config -> config.matches(value)).orElseGet(Result::success);
 		if (constraintResult.isError()) {
 			return Result.error("OffsetDateTime value " + value + " does not meet constraints: " + constraintResult.errorOrThrow());
@@ -81,11 +81,11 @@ public class OffsetDateTimeCodec extends AbstractCodec<OffsetDateTime, OffsetDat
 	public <R> @NonNull Result<R> encodeStart(@NonNull TypeProvider<R> provider, @NonNull R current, @Nullable OffsetDateTime value) {
 		Objects.requireNonNull(provider, "Type provider must not be null");
 		Objects.requireNonNull(current, "Current value must not be null");
-
+		
 		if (value == null) {
 			return Result.error("Unable to encode null as offset date time using '" + this + "'");
 		}
-
+		
 		Result<Void> constraintResult = this.checkConstraints(value);
 		if (constraintResult.isError()) {
 			return Result.error(constraintResult.errorOrThrow());
@@ -106,16 +106,16 @@ public class OffsetDateTimeCodec extends AbstractCodec<OffsetDateTime, OffsetDat
 		if (value == null) {
 			return Result.error("Unable to decode null value as offset date time using '" + this + "'");
 		}
-
+		
 		Result<String> result = provider.getString(value);
 		if (result.isError()) {
 			return Result.error(result.errorOrThrow());
 		}
-
+		
 		String string = result.resultOrThrow();
 		try {
 			OffsetDateTime dateTime = OffsetDateTime.parse(string);
-
+			
 			Result<Void> constraintResult = this.checkConstraints(dateTime);
 			if (constraintResult.isError()) {
 				return Result.error(constraintResult.errorOrThrow());

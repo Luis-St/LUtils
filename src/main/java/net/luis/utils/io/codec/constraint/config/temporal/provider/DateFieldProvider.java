@@ -58,17 +58,17 @@ public interface DateFieldProvider {
 			public @NonNull Supplier<DayOfWeek> dayOfWeek() {
 				return dayOfWeekSupplier;
 			}
-
+			
 			@Override
 			public @NonNull IntSupplier dayOfMonth() {
 				return dayOfMonthSupplier;
 			}
-
+			
 			@Override
 			public @NonNull Supplier<Month> month() {
 				return monthSupplier;
 			}
-
+			
 			@Override
 			public @NonNull IntSupplier year() {
 				return yearSupplier;
@@ -81,19 +81,19 @@ public interface DateFieldProvider {
 	 * @return A Supplier that provides the DayOfWeek value
 	 */
 	@NonNull Supplier<DayOfWeek> dayOfWeek();
-
+	
 	/**
 	 * Gets the day of month (1-31).<br>
 	 * @return An IntSupplier that provides the day of month value
 	 */
 	@NonNull IntSupplier dayOfMonth();
-
+	
 	/**
 	 * Gets the month.<br>
 	 * @return A Supplier that provides the Month value
 	 */
 	@NonNull Supplier<Month> month();
-
+	
 	/**
 	 * Gets the year.<br>
 	 * @return An IntSupplier that provides the year value

@@ -40,7 +40,7 @@ public record TemporalConstraintConfig<T extends Comparable<? super T>>(
 	@NonNull Optional<Pair<T, /*Inclusive*/ Boolean>> max,
 	@NonNull Optional<Pair<T, /*Negated*/ Boolean>> equals
 ) {
-
+	
 	/**
 	 * A predefined unconstrained configuration with no constraints.<br>
 	 * <p>
@@ -53,7 +53,7 @@ public record TemporalConstraintConfig<T extends Comparable<? super T>>(
 	private static final TemporalConstraintConfig<?> UNCONSTRAINED = new TemporalConstraintConfig<>(
 		Optional.empty(), Optional.empty(), Optional.empty()
 	);
-
+	
 	/**
 	 * Constructs a new temporal constraint configuration with the specified minimum, maximum, and equals constraints.<br>
 	 *
@@ -67,18 +67,18 @@ public record TemporalConstraintConfig<T extends Comparable<? super T>>(
 		Objects.requireNonNull(min, "Min constraint must not be null");
 		Objects.requireNonNull(max, "Max constraint must not be null");
 		Objects.requireNonNull(equals, "Equals constraint must not be null");
-
+		
 		if (min.isPresent() && max.isPresent()) {
 			Pair<T, Boolean> minPair = min.get();
 			Pair<T, Boolean> maxPair = max.get();
-
+			
 			int comparison = minPair.getFirst().compareTo(maxPair.getFirst());
 			if (comparison > 0 || (comparison == 0 && (!minPair.getSecond() || !maxPair.getSecond()))) {
 				throw new IllegalArgumentException("Minimum value must not be greater than maximum value: min=" + minPair + ", max=" + maxPair);
 			}
 		}
 	}
-
+	
 	/**
 	 * Returns an unconstrained configuration for the specified type.<br>
 	 * This method provides a type-safe way to get an unconstrained configuration without raw type warnings.
@@ -90,7 +90,7 @@ public record TemporalConstraintConfig<T extends Comparable<? super T>>(
 	public static @NonNull <T extends Comparable<? super T>> TemporalConstraintConfig<T> unconstrained() {
 		return (TemporalConstraintConfig<T>) UNCONSTRAINED;
 	}
-
+	
 	/**
 	 * Checks if the configuration is unconstrained (no constraints set).<br>
 	 *
@@ -99,7 +99,7 @@ public record TemporalConstraintConfig<T extends Comparable<? super T>>(
 	public boolean isUnconstrained() {
 		return this == UNCONSTRAINED || (this.min.isEmpty() && this.max.isEmpty() && this.equals.isEmpty());
 	}
-
+	
 	/**
 	 * Creates a new configuration with a minimum value constraint.<br>
 	 *
@@ -110,7 +110,7 @@ public record TemporalConstraintConfig<T extends Comparable<? super T>>(
 	public @NonNull TemporalConstraintConfig<T> withMin(@NonNull T min, boolean inclusive) {
 		return new TemporalConstraintConfig<>(Optional.of(Pair.of(min, inclusive)), this.max, this.equals);
 	}
-
+	
 	/**
 	 * Creates a new configuration with a maximum value constraint.<br>
 	 *
@@ -121,7 +121,7 @@ public record TemporalConstraintConfig<T extends Comparable<? super T>>(
 	public @NonNull TemporalConstraintConfig<T> withMax(@NonNull T max, boolean inclusive) {
 		return new TemporalConstraintConfig<>(this.min, Optional.of(Pair.of(max, inclusive)), this.equals);
 	}
-
+	
 	/**
 	 * Creates a new configuration with a range constraint.<br>
 	 *
@@ -133,7 +133,7 @@ public record TemporalConstraintConfig<T extends Comparable<? super T>>(
 	public @NonNull TemporalConstraintConfig<T> withRange(@NonNull T min, @NonNull T max, boolean inclusive) {
 		return new TemporalConstraintConfig<>(Optional.of(Pair.of(min, inclusive)), Optional.of(Pair.of(max, inclusive)), this.equals);
 	}
-
+	
 	/**
 	 * Creates a new configuration with an equality constraint.<br>
 	 *
@@ -144,7 +144,7 @@ public record TemporalConstraintConfig<T extends Comparable<? super T>>(
 	public @NonNull TemporalConstraintConfig<T> withEquals(@NonNull T equals, boolean negated) {
 		return new TemporalConstraintConfig<>(this.min, this.max, Optional.of(Pair.of(equals, negated)));
 	}
-
+	
 	/**
 	 * Validates the constraints against the given value.<br>
 	 *
@@ -157,7 +157,7 @@ public record TemporalConstraintConfig<T extends Comparable<? super T>>(
 		if (this.isUnconstrained()) {
 			return Result.success();
 		}
-
+		
 		if (this.equals.isPresent()) {
 			Pair<T, Boolean> pair = this.equals.get();
 			if (pair.getSecond()) {
@@ -172,10 +172,10 @@ public record TemporalConstraintConfig<T extends Comparable<? super T>>(
 				return Result.error("Violated equals constraint: value (" + value + ") is not equal to expected (" + pair.getFirst() + "), but it should be");
 			}
 		}
-
+		
 		if (this.min.isPresent()) {
 			Pair<T, Boolean> pair = this.min.get();
-
+			
 			int comparison = value.compareTo(pair.getFirst());
 			if (pair.getSecond()) {
 				if (comparison < 0) {
@@ -187,10 +187,10 @@ public record TemporalConstraintConfig<T extends Comparable<? super T>>(
 				}
 			}
 		}
-
+		
 		if (this.max.isPresent()) {
 			Pair<T, Boolean> pair = this.max.get();
-
+			
 			int comparison = value.compareTo(pair.getFirst());
 			if (pair.getSecond()) {
 				if (comparison > 0) {
@@ -202,10 +202,10 @@ public record TemporalConstraintConfig<T extends Comparable<? super T>>(
 				}
 			}
 		}
-
+		
 		return Result.success();
 	}
-
+	
 	/**
 	 * Appends the constraint description to the provided list.<br>
 	 *
@@ -215,18 +215,18 @@ public record TemporalConstraintConfig<T extends Comparable<? super T>>(
 		if (this.isUnconstrained()) {
 			return;
 		}
-
+		
 		this.min.ifPresent(pair -> constraints.add("min=" + pair.getFirst() + (pair.getSecond() ? " (inclusive)" : " (exclusive)")));
 		this.max.ifPresent(pair -> constraints.add("max=" + pair.getFirst() + (pair.getSecond() ? " (inclusive)" : " (exclusive)")));
 		this.equals.ifPresent(pair -> constraints.add("equals=" + pair.getFirst() + (pair.getSecond() ? " (negated)" : "")));
 	}
-
+	
 	@Override
 	public @NonNull String toString() {
 		if (this.isUnconstrained()) {
 			return "TemporalConstraintConfig[unconstrained]";
 		}
-
+		
 		List<String> constraints = new ArrayList<>();
 		this.appendConstraints(constraints);
 		return "TemporalConstraintConfig[" + String.join(",", constraints) + "]";

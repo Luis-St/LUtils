@@ -42,12 +42,12 @@ import java.util.function.UnaryOperator;
  * @author Luis-St
  */
 public class OffsetTimeCodec extends AbstractCodec<OffsetTime, OffsetTimeConstraintConfig> implements TemporalSpanConstraint<OffsetTime, OffsetTimeCodec, OffsetTimeConstraintConfig>, TimeFieldConstraint<OffsetTimeCodec, OffsetTimeConstraintConfig> {
-
+	
 	/**
 	 * Constructs a new offset time codec.<br>
 	 */
 	public OffsetTimeCodec() {}
-
+	
 	/**
 	 * Constructs a new offset time codec with the specified constraint configuration.<br>
 	 *
@@ -57,7 +57,7 @@ public class OffsetTimeCodec extends AbstractCodec<OffsetTime, OffsetTimeConstra
 	public OffsetTimeCodec(@NonNull OffsetTimeConstraintConfig constraintConfig) {
 		super(constraintConfig);
 	}
-
+	
 	@Override
 	public @NonNull OffsetTimeCodec applyConstraint(@NonNull UnaryOperator<OffsetTimeConstraintConfig> configModifier) {
 		Objects.requireNonNull(configModifier, "Config modifier must not be null");
@@ -66,11 +66,11 @@ public class OffsetTimeCodec extends AbstractCodec<OffsetTime, OffsetTimeConstra
 			this.getConstraintConfig().orElse(OffsetTimeConstraintConfig.UNCONSTRAINED)
 		));
 	}
-
+	
 	@Override
 	protected @NonNull Result<Void> checkConstraints(@NonNull OffsetTime value) {
 		Objects.requireNonNull(value, "Value must not be null");
-
+		
 		Result<Void> constraintResult = this.getConstraintConfig().map(config -> config.matches(value)).orElseGet(Result::success);
 		if (constraintResult.isError()) {
 			return Result.error("OffsetTime value " + value + " does not meet constraints: " + constraintResult.errorOrThrow());
@@ -85,7 +85,7 @@ public class OffsetTimeCodec extends AbstractCodec<OffsetTime, OffsetTimeConstra
 		if (value == null) {
 			return Result.error("Unable to encode null as offset time using '" + this + "'");
 		}
-
+		
 		Result<Void> constraintResult = this.checkConstraints(value);
 		if (constraintResult.isError()) {
 			return Result.error(constraintResult.errorOrThrow());
@@ -106,16 +106,16 @@ public class OffsetTimeCodec extends AbstractCodec<OffsetTime, OffsetTimeConstra
 		if (value == null) {
 			return Result.error("Unable to decode null value as offset time using '" + this + "'");
 		}
-
+		
 		Result<String> result = provider.getString(value);
 		if (result.isError()) {
 			return Result.error(result.errorOrThrow());
 		}
-
+		
 		String string = result.resultOrThrow();
 		try {
 			OffsetTime time = OffsetTime.parse(string);
-
+			
 			Result<Void> constraintResult = this.checkConstraints(time);
 			if (constraintResult.isError()) {
 				return Result.error(constraintResult.errorOrThrow());

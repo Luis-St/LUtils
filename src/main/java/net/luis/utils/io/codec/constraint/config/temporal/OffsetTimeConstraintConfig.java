@@ -46,7 +46,7 @@ public record OffsetTimeConstraintConfig(
 	@NonNull SpanConstraintConfig spanConfig,
 	@NonNull TimeFieldConstraintConfig timeFieldConfig
 ) implements TemporalConstraintConfigProvider<OffsetTime, OffsetTimeConstraintConfig>, TimeFieldConstraintConfigProvider<OffsetTimeConstraintConfig> {
-
+	
 	/**
 	 * A predefined unconstrained configuration with no constraints.<br>
 	 * <p>
@@ -57,7 +57,7 @@ public record OffsetTimeConstraintConfig(
 	public static final OffsetTimeConstraintConfig UNCONSTRAINED = new OffsetTimeConstraintConfig(
 		TemporalConstraintConfig.unconstrained(), SpanConstraintConfig.UNCONSTRAINED, TimeFieldConstraintConfig.UNCONSTRAINED
 	);
-
+	
 	/**
 	 * Constructs a new OffsetTime constraint configuration with the specified constraints.<br>
 	 *
@@ -71,7 +71,7 @@ public record OffsetTimeConstraintConfig(
 		Objects.requireNonNull(spanConfig, "Span config must not be null");
 		Objects.requireNonNull(timeFieldConfig, "Time field config must not be null");
 	}
-
+	
 	/**
 	 * Checks if the configuration is unconstrained (no constraints set).<br>
 	 *
@@ -80,57 +80,57 @@ public record OffsetTimeConstraintConfig(
 	public boolean isUnconstrained() {
 		return this == UNCONSTRAINED || (this.config.isUnconstrained() && this.spanConfig.isUnconstrained() && this.timeFieldConfig.isUnconstrained());
 	}
-
+	
 	@Override
 	public @NonNull OffsetTimeConstraintConfig withEquals(@NonNull OffsetTime value, boolean negated) {
 		return new OffsetTimeConstraintConfig(this.config.withEquals(value, negated), this.spanConfig, this.timeFieldConfig);
 	}
-
+	
 	@Override
 	public @NonNull OffsetTimeConstraintConfig withMin(@NonNull OffsetTime min, boolean inclusive) {
 		return new OffsetTimeConstraintConfig(this.config.withMin(min, inclusive), this.spanConfig, this.timeFieldConfig);
 	}
-
+	
 	@Override
 	public @NonNull OffsetTimeConstraintConfig withMax(@NonNull OffsetTime max, boolean inclusive) {
 		return new OffsetTimeConstraintConfig(this.config.withMax(max, inclusive), this.spanConfig, this.timeFieldConfig);
 	}
-
+	
 	@Override
 	public @NonNull OffsetTimeConstraintConfig withRange(@NonNull OffsetTime min, @NonNull OffsetTime max, boolean inclusive) {
 		return new OffsetTimeConstraintConfig(this.config.withRange(min, max, inclusive), this.spanConfig, this.timeFieldConfig);
 	}
-
+	
 	@Override
 	public @NonNull OffsetTimeConstraintConfig withWithinLast(@NonNull Duration duration) {
 		return new OffsetTimeConstraintConfig(this.config, this.spanConfig.withWithinLast(duration), this.timeFieldConfig);
 	}
-
+	
 	@Override
 	public @NonNull OffsetTimeConstraintConfig withWithinNext(@NonNull Duration duration) {
 		return new OffsetTimeConstraintConfig(this.config, this.spanConfig.withWithinNext(duration), this.timeFieldConfig);
 	}
-
+	
 	@Override
 	public @NonNull OffsetTimeConstraintConfig withHour(@NonNull FieldConstraintConfig hourConfig) {
 		return new OffsetTimeConstraintConfig(this.config, this.spanConfig, this.timeFieldConfig.withHour(hourConfig));
 	}
-
+	
 	@Override
 	public @NonNull OffsetTimeConstraintConfig withMinute(@NonNull FieldConstraintConfig minuteConfig) {
 		return new OffsetTimeConstraintConfig(this.config, this.spanConfig, this.timeFieldConfig.withMinute(minuteConfig));
 	}
-
+	
 	@Override
 	public @NonNull OffsetTimeConstraintConfig withSecond(@NonNull FieldConstraintConfig secondConfig) {
 		return new OffsetTimeConstraintConfig(this.config, this.spanConfig, this.timeFieldConfig.withSecond(secondConfig));
 	}
-
+	
 	@Override
 	public @NonNull OffsetTimeConstraintConfig withMillisecond(@NonNull FieldConstraintConfig millisecondConfig) {
 		return new OffsetTimeConstraintConfig(this.config, this.spanConfig, this.timeFieldConfig.withMillisecond(millisecondConfig));
 	}
-
+	
 	/**
 	 * Validates the constraints against the given value.<br>
 	 *
@@ -143,31 +143,31 @@ public record OffsetTimeConstraintConfig(
 		if (this.isUnconstrained()) {
 			return Result.success();
 		}
-
+		
 		Result<Void> baseResult = this.config.matches(value);
 		if (baseResult.isError()) {
 			return baseResult;
 		}
-
+		
 		Result<Void> spanResult = this.spanConfig.matches(value);
 		if (spanResult.isError()) {
 			return spanResult;
 		}
-
+		
 		Result<Void> timeFieldResult = this.timeFieldConfig.matches(value);
 		if (timeFieldResult.isError()) {
 			return timeFieldResult;
 		}
-
+		
 		return Result.success();
 	}
-
+	
 	@Override
 	public @NonNull String toString() {
 		if (this.isUnconstrained()) {
 			return "OffsetTimeConstraintConfig[unconstrained]";
 		}
-
+		
 		List<String> constraints = new ArrayList<>();
 		this.config.appendConstraints(constraints);
 		this.spanConfig.appendConstraints(constraints);

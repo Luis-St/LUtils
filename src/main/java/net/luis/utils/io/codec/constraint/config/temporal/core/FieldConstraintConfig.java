@@ -43,7 +43,7 @@ public record FieldConstraintConfig(
 	@NonNull Optional<Pair<Integer, /*Inclusive*/ Boolean>> max,
 	@NonNull Optional<Pair<Integer, /*Negated*/ Boolean>> equals
 ) {
-
+	
 	/**
 	 * A predefined unconstrained configuration with no constraints.<br>
 	 * <p>
@@ -54,7 +54,7 @@ public record FieldConstraintConfig(
 	public static final FieldConstraintConfig UNCONSTRAINED = new FieldConstraintConfig(
 		Optional.empty(), Optional.empty(), Optional.empty()
 	);
-
+	
 	/**
 	 * Constructs a new field constraint configuration with the specified minimum, maximum, and equals constraints.<br>
 	 *
@@ -68,18 +68,18 @@ public record FieldConstraintConfig(
 		Objects.requireNonNull(min, "Min constraint must not be null");
 		Objects.requireNonNull(max, "Max constraint must not be null");
 		Objects.requireNonNull(equals, "Equals constraint must not be null");
-
+		
 		if (min.isPresent() && max.isPresent()) {
 			Pair<Integer, Boolean> minPair = min.get();
 			Pair<Integer, Boolean> maxPair = max.get();
-
+			
 			int comparison = minPair.getFirst().compareTo(maxPair.getFirst());
 			if (comparison > 0 || (comparison == 0 && (!minPair.getSecond() || !maxPair.getSecond()))) {
 				throw new IllegalArgumentException("Minimum value must not be greater than maximum value: min=" + minPair + ", max=" + maxPair);
 			}
 		}
 	}
-
+	
 	/**
 	 * Checks if the configuration is unconstrained (no constraints set).<br>
 	 *
@@ -88,7 +88,7 @@ public record FieldConstraintConfig(
 	public boolean isUnconstrained() {
 		return this == UNCONSTRAINED || (this.min.isEmpty() && this.max.isEmpty() && this.equals.isEmpty());
 	}
-
+	
 	/**
 	 * Creates a new configuration with a minimum value constraint.<br>
 	 *
@@ -99,7 +99,7 @@ public record FieldConstraintConfig(
 	public @NonNull FieldConstraintConfig withMin(int min, boolean inclusive) {
 		return new FieldConstraintConfig(Optional.of(Pair.of(min, inclusive)), this.max, this.equals);
 	}
-
+	
 	/**
 	 * Creates a new configuration with a maximum value constraint.<br>
 	 *
@@ -110,7 +110,7 @@ public record FieldConstraintConfig(
 	public @NonNull FieldConstraintConfig withMax(int max, boolean inclusive) {
 		return new FieldConstraintConfig(this.min, Optional.of(Pair.of(max, inclusive)), this.equals);
 	}
-
+	
 	/**
 	 * Creates a new configuration with a range constraint.<br>
 	 *
@@ -122,7 +122,7 @@ public record FieldConstraintConfig(
 	public @NonNull FieldConstraintConfig withRange(int min, int max, boolean inclusive) {
 		return new FieldConstraintConfig(Optional.of(Pair.of(min, inclusive)), Optional.of(Pair.of(max, inclusive)), this.equals);
 	}
-
+	
 	/**
 	 * Creates a new configuration with an equality constraint.<br>
 	 *
@@ -133,7 +133,7 @@ public record FieldConstraintConfig(
 	public @NonNull FieldConstraintConfig withEquals(int equals, boolean negated) {
 		return new FieldConstraintConfig(this.min, this.max, Optional.of(Pair.of(equals, negated)));
 	}
-
+	
 	/**
 	 * Validates the constraints against the given field value.<br>
 	 *
@@ -146,7 +146,7 @@ public record FieldConstraintConfig(
 		if (this.isUnconstrained()) {
 			return Result.success();
 		}
-
+		
 		if (this.equals.isPresent()) {
 			Pair<Integer, Boolean> pair = this.equals.get();
 			if (pair.getSecond()) {
@@ -161,7 +161,7 @@ public record FieldConstraintConfig(
 				return Result.error("Violated equals constraint for " + fieldName + ": value (" + value + ") is not equal to expected (" + pair.getFirst() + "), but it should be");
 			}
 		}
-
+		
 		if (this.min.isPresent()) {
 			Pair<Integer, Boolean> pair = this.min.get();
 			int comparison = Integer.compare(value, pair.getFirst());
@@ -175,7 +175,7 @@ public record FieldConstraintConfig(
 				}
 			}
 		}
-
+		
 		if (this.max.isPresent()) {
 			Pair<Integer, Boolean> pair = this.max.get();
 			int comparison = Integer.compare(value, pair.getFirst());
@@ -189,10 +189,10 @@ public record FieldConstraintConfig(
 				}
 			}
 		}
-
+		
 		return Result.success();
 	}
-
+	
 	/**
 	 * Appends the constraint description to the provided list.<br>
 	 *
@@ -203,18 +203,18 @@ public record FieldConstraintConfig(
 		if (this.isUnconstrained()) {
 			return;
 		}
-
+		
 		this.min.ifPresent(pair -> constraints.add(fieldName + ".min=" + pair.getFirst() + (pair.getSecond() ? " (inclusive)" : " (exclusive)")));
 		this.max.ifPresent(pair -> constraints.add(fieldName + ".max=" + pair.getFirst() + (pair.getSecond() ? " (inclusive)" : " (exclusive)")));
 		this.equals.ifPresent(pair -> constraints.add(fieldName + ".equals=" + pair.getFirst() + (pair.getSecond() ? " (negated)" : "")));
 	}
-
+	
 	@Override
 	public @NonNull String toString() {
 		if (this.isUnconstrained()) {
 			return "FieldConstraintConfig[unconstrained]";
 		}
-
+		
 		List<String> constraints = new ArrayList<>();
 		this.min.ifPresent(pair -> constraints.add("min=" + pair.getFirst() + (pair.getSecond() ? " (inclusive)" : " (exclusive)")));
 		this.max.ifPresent(pair -> constraints.add("max=" + pair.getFirst() + (pair.getSecond() ? " (inclusive)" : " (exclusive)")));

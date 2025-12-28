@@ -62,7 +62,7 @@ public class MapCodec<K, V> extends AbstractCodec<Map<K, V>, SizeConstraintConfi
 		this.keyCodec = Objects.requireNonNull(keyCodec, "Key codec must not be null");
 		this.valueCodec = Objects.requireNonNull(valueCodec, "Value codec must not be null");
 	}
-
+	
 	/**
 	 * Constructs a new map codec using the given codecs for the keys and values and the given size constraint configuration.<br>
 	 *
@@ -82,7 +82,7 @@ public class MapCodec<K, V> extends AbstractCodec<Map<K, V>, SizeConstraintConfi
 	public @NonNull Class<Map<K, V>> getType() {
 		return (Class<Map<K, V>>) (Class<?>) Map.class;
 	}
-
+	
 	@Override
 	public @NonNull MapCodec<K, V> applyConstraint(@NonNull UnaryOperator<SizeConstraintConfig> configModifier) {
 		Objects.requireNonNull(configModifier, "Config modifier must not be null");
@@ -91,18 +91,18 @@ public class MapCodec<K, V> extends AbstractCodec<Map<K, V>, SizeConstraintConfi
 			this.getConstraintConfig().orElse(SizeConstraintConfig.UNCONSTRAINED)
 		));
 	}
-
+	
 	@Override
 	protected @NonNull Result<Void> checkConstraints(@NonNull Map<K, V> value) {
 		Objects.requireNonNull(value, "Value must not be null");
-
+		
 		Result<Void> constraintResult = this.getConstraintConfig().map(config -> config.matches(value.size())).orElseGet(Result::success);
 		if (constraintResult.isError()) {
 			return Result.error("Map " + value + " does not meet constraints: " + constraintResult.errorOrThrow());
 		}
 		return Result.success();
 	}
-
+	
 	@Override
 	public <R> @NonNull Result<R> encodeStart(@NonNull TypeProvider<R> provider, @NonNull R current, @Nullable Map<K, V> value) {
 		Objects.requireNonNull(provider, "Type provider must not be null");
@@ -110,12 +110,12 @@ public class MapCodec<K, V> extends AbstractCodec<Map<K, V>, SizeConstraintConfi
 		if (value == null) {
 			return Result.error("Unable to encode null value as map using '" + this + "'");
 		}
-
+		
 		Result<Void> constraintResult = this.checkConstraints(value);
 		if (constraintResult.isError()) {
 			return Result.error("Unable to encode map using '" + this + "': " + constraintResult.errorOrThrow());
 		}
-
+		
 		Result<R> emptyMap = provider.createMap();
 		if (emptyMap.isError()) {
 			return Result.error("Unable to create empty map: " + emptyMap.errorOrThrow());
@@ -201,7 +201,7 @@ public class MapCodec<K, V> extends AbstractCodec<Map<K, V>, SizeConstraintConfi
 				errors.add("Key '" + entry.getKey() + "': " + result.errorOrThrow());
 			}
 		}
-
+		
 		if (entries.isEmpty() && !errors.isEmpty()) {
 			return Result.error("Unable to decode any entries of the map using '" + this + "': " + String.join("\n - ", errors));
 		}
@@ -209,7 +209,7 @@ public class MapCodec<K, V> extends AbstractCodec<Map<K, V>, SizeConstraintConfi
 		if (constraintResult.isError()) {
 			return Result.error("Unable to decode map using '" + this + "': " + constraintResult.errorOrThrow());
 		}
-
+		
 		if (errors.isEmpty()) {
 			return Result.success(entries);
 		}

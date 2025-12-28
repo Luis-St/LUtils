@@ -33,145 +33,145 @@ import static org.junit.jupiter.api.Assertions.*;
  * @author Luis-St
  */
 class ConstrainedLongArrayCodecTest {
-
+	
 	private final JsonTypeProvider provider = JsonTypeProvider.INSTANCE;
-
+	
 	@Test
 	void encodeWithMinLengthConstraintSuccess() {
 		Codec<long[]> codec = LONG_ARRAY.minLength(2);
-		long[] array = {1L, 2L, 3L};
-
+		long[] array = { 1L, 2L, 3L };
+		
 		Result<JsonElement> result = codec.encodeStart(this.provider, this.provider.empty(), array);
 		assertTrue(result.isSuccess());
 	}
-
+	
 	@Test
 	void encodeWithMinLengthConstraintFailure() {
 		Codec<long[]> codec = LONG_ARRAY.minLength(5);
-		long[] array = {1L, 2L};
-
+		long[] array = { 1L, 2L };
+		
 		Result<JsonElement> result = codec.encodeStart(this.provider, this.provider.empty(), array);
 		assertTrue(result.isError());
 		assertTrue(result.errorOrThrow().contains("does not meet constraints"));
 		assertTrue(result.errorOrThrow().contains("minimum length constraint"));
 	}
-
+	
 	@Test
 	void encodeWithMaxLengthConstraintSuccess() {
 		Codec<long[]> codec = LONG_ARRAY.maxLength(5);
-		long[] array = {1L, 2L, 3L};
-
+		long[] array = { 1L, 2L, 3L };
+		
 		Result<JsonElement> result = codec.encodeStart(this.provider, this.provider.empty(), array);
 		assertTrue(result.isSuccess());
 	}
-
+	
 	@Test
 	void encodeWithMaxLengthConstraintFailure() {
 		Codec<long[]> codec = LONG_ARRAY.maxLength(2);
-		long[] array = {1L, 2L, 3L};
-
+		long[] array = { 1L, 2L, 3L };
+		
 		Result<JsonElement> result = codec.encodeStart(this.provider, this.provider.empty(), array);
 		assertTrue(result.isError());
 		assertTrue(result.errorOrThrow().contains("does not meet constraints"));
 		assertTrue(result.errorOrThrow().contains("maximum length constraint"));
 	}
-
+	
 	@Test
 	void encodeWithExactLengthConstraintSuccess() {
 		Codec<long[]> codec = LONG_ARRAY.exactLength(3);
-		long[] array = {1L, 2L, 3L};
-
+		long[] array = { 1L, 2L, 3L };
+		
 		Result<JsonElement> result = codec.encodeStart(this.provider, this.provider.empty(), array);
 		assertTrue(result.isSuccess());
 	}
-
+	
 	@Test
 	void encodeWithExactLengthConstraintFailureTooSmall() {
 		Codec<long[]> codec = LONG_ARRAY.exactLength(5);
-		long[] array = {1L, 2L};
-
+		long[] array = { 1L, 2L };
+		
 		Result<JsonElement> result = codec.encodeStart(this.provider, this.provider.empty(), array);
 		assertTrue(result.isError());
 		assertTrue(result.errorOrThrow().contains("minimum length constraint"));
 	}
-
+	
 	@Test
 	void encodeWithExactLengthConstraintFailureTooLarge() {
 		Codec<long[]> codec = LONG_ARRAY.exactLength(2);
-		long[] array = {1L, 2L, 3L};
-
+		long[] array = { 1L, 2L, 3L };
+		
 		Result<JsonElement> result = codec.encodeStart(this.provider, this.provider.empty(), array);
 		assertTrue(result.isError());
 		assertTrue(result.errorOrThrow().contains("maximum length constraint"));
 	}
-
+	
 	@Test
 	void encodeWithLengthBetweenConstraintSuccess() {
 		Codec<long[]> codec = LONG_ARRAY.lengthBetween(2, 5);
-		long[] array = {1L, 2L, 3L};
-
+		long[] array = { 1L, 2L, 3L };
+		
 		Result<JsonElement> result = codec.encodeStart(this.provider, this.provider.empty(), array);
 		assertTrue(result.isSuccess());
 	}
-
+	
 	@Test
 	void encodeWithLengthBetweenConstraintFailureBelow() {
 		Codec<long[]> codec = LONG_ARRAY.lengthBetween(5, 10);
-		long[] array = {1L, 2L};
-
+		long[] array = { 1L, 2L };
+		
 		Result<JsonElement> result = codec.encodeStart(this.provider, this.provider.empty(), array);
 		assertTrue(result.isError());
 		assertTrue(result.errorOrThrow().contains("minimum length constraint"));
 	}
-
+	
 	@Test
 	void encodeWithLengthBetweenConstraintFailureAbove() {
 		Codec<long[]> codec = LONG_ARRAY.lengthBetween(1, 2);
-		long[] array = {1L, 2L, 3L};
-
+		long[] array = { 1L, 2L, 3L };
+		
 		Result<JsonElement> result = codec.encodeStart(this.provider, this.provider.empty(), array);
 		assertTrue(result.isError());
 		assertTrue(result.errorOrThrow().contains("maximum length constraint"));
 	}
-
+	
 	@Test
 	void encodeWithEmptyConstraintSuccess() {
 		Codec<long[]> codec = LONG_ARRAY.empty();
 		long[] array = {};
-
+		
 		Result<JsonElement> result = codec.encodeStart(this.provider, this.provider.empty(), array);
 		assertTrue(result.isSuccess());
 	}
-
+	
 	@Test
 	void encodeWithEmptyConstraintFailure() {
 		Codec<long[]> codec = LONG_ARRAY.empty();
-		long[] array = {1L};
-
+		long[] array = { 1L };
+		
 		Result<JsonElement> result = codec.encodeStart(this.provider, this.provider.empty(), array);
 		assertTrue(result.isError());
 		assertTrue(result.errorOrThrow().contains("maximum length constraint"));
 	}
-
+	
 	@Test
 	void encodeWithNotEmptyConstraintSuccess() {
 		Codec<long[]> codec = LONG_ARRAY.notEmpty();
-		long[] array = {1L, 2L};
-
+		long[] array = { 1L, 2L };
+		
 		Result<JsonElement> result = codec.encodeStart(this.provider, this.provider.empty(), array);
 		assertTrue(result.isSuccess());
 	}
-
+	
 	@Test
 	void encodeWithNotEmptyConstraintFailure() {
 		Codec<long[]> codec = LONG_ARRAY.notEmpty();
 		long[] array = {};
-
+		
 		Result<JsonElement> result = codec.encodeStart(this.provider, this.provider.empty(), array);
 		assertTrue(result.isError());
 		assertTrue(result.errorOrThrow().contains("minimum length constraint"));
 	}
-
+	
 	@Test
 	void decodeWithMinLengthConstraintSuccess() {
 		Codec<long[]> codec = LONG_ARRAY.minLength(2);
@@ -179,37 +179,37 @@ class ConstrainedLongArrayCodecTest {
 		array.add(new JsonPrimitive(1));
 		array.add(new JsonPrimitive(2));
 		array.add(new JsonPrimitive(3));
-
+		
 		Result<long[]> result = codec.decodeStart(this.provider, this.provider.empty(), array);
 		assertTrue(result.isSuccess());
 		assertEquals(3, result.resultOrThrow().length);
 	}
-
+	
 	@Test
 	void decodeWithMinLengthConstraintFailure() {
 		Codec<long[]> codec = LONG_ARRAY.minLength(5);
 		JsonArray array = new JsonArray();
 		array.add(new JsonPrimitive(1));
 		array.add(new JsonPrimitive(2));
-
+		
 		Result<long[]> result = codec.decodeStart(this.provider, this.provider.empty(), array);
 		assertTrue(result.isError());
 		assertTrue(result.errorOrThrow().contains("does not meet constraints"));
 		assertTrue(result.errorOrThrow().contains("minimum length constraint"));
 	}
-
+	
 	@Test
 	void decodeWithMaxLengthConstraintSuccess() {
 		Codec<long[]> codec = LONG_ARRAY.maxLength(5);
 		JsonArray array = new JsonArray();
 		array.add(new JsonPrimitive(1));
 		array.add(new JsonPrimitive(2));
-
+		
 		Result<long[]> result = codec.decodeStart(this.provider, this.provider.empty(), array);
 		assertTrue(result.isSuccess());
 		assertEquals(2, result.resultOrThrow().length);
 	}
-
+	
 	@Test
 	void decodeWithMaxLengthConstraintFailure() {
 		Codec<long[]> codec = LONG_ARRAY.maxLength(2);
@@ -217,13 +217,13 @@ class ConstrainedLongArrayCodecTest {
 		array.add(new JsonPrimitive(1));
 		array.add(new JsonPrimitive(2));
 		array.add(new JsonPrimitive(3));
-
+		
 		Result<long[]> result = codec.decodeStart(this.provider, this.provider.empty(), array);
 		assertTrue(result.isError());
 		assertTrue(result.errorOrThrow().contains("does not meet constraints"));
 		assertTrue(result.errorOrThrow().contains("maximum length constraint"));
 	}
-
+	
 	@Test
 	void decodeWithExactLengthConstraintSuccess() {
 		Codec<long[]> codec = LONG_ARRAY.exactLength(3);
@@ -231,24 +231,24 @@ class ConstrainedLongArrayCodecTest {
 		array.add(new JsonPrimitive(1));
 		array.add(new JsonPrimitive(2));
 		array.add(new JsonPrimitive(3));
-
+		
 		Result<long[]> result = codec.decodeStart(this.provider, this.provider.empty(), array);
 		assertTrue(result.isSuccess());
 		assertEquals(3, result.resultOrThrow().length);
 	}
-
+	
 	@Test
 	void decodeWithExactLengthConstraintFailure() {
 		Codec<long[]> codec = LONG_ARRAY.exactLength(3);
 		JsonArray array = new JsonArray();
 		array.add(new JsonPrimitive(1));
 		array.add(new JsonPrimitive(2));
-
+		
 		Result<long[]> result = codec.decodeStart(this.provider, this.provider.empty(), array);
 		assertTrue(result.isError());
 		assertTrue(result.errorOrThrow().contains("minimum length constraint"));
 	}
-
+	
 	@Test
 	void decodeWithLengthBetweenConstraintSuccess() {
 		Codec<long[]> codec = LONG_ARRAY.lengthBetween(2, 5);
@@ -256,122 +256,121 @@ class ConstrainedLongArrayCodecTest {
 		array.add(new JsonPrimitive(1));
 		array.add(new JsonPrimitive(2));
 		array.add(new JsonPrimitive(3));
-
+		
 		Result<long[]> result = codec.decodeStart(this.provider, this.provider.empty(), array);
 		assertTrue(result.isSuccess());
 		assertEquals(3, result.resultOrThrow().length);
 	}
-
+	
 	@Test
 	void decodeWithLengthBetweenConstraintFailure() {
 		Codec<long[]> codec = LONG_ARRAY.lengthBetween(5, 10);
 		JsonArray array = new JsonArray();
 		array.add(new JsonPrimitive(1));
 		array.add(new JsonPrimitive(2));
-
+		
 		Result<long[]> result = codec.decodeStart(this.provider, this.provider.empty(), array);
 		assertTrue(result.isError());
 		assertTrue(result.errorOrThrow().contains("minimum length constraint"));
 	}
-
+	
 	@Test
 	void decodeWithEmptyConstraintSuccess() {
 		Codec<long[]> codec = LONG_ARRAY.empty();
 		JsonArray array = new JsonArray();
-
+		
 		Result<long[]> result = codec.decodeStart(this.provider, this.provider.empty(), array);
 		assertTrue(result.isSuccess());
 		assertEquals(0, result.resultOrThrow().length);
 	}
-
+	
 	@Test
 	void decodeWithEmptyConstraintFailure() {
 		Codec<long[]> codec = LONG_ARRAY.empty();
 		JsonArray array = new JsonArray();
 		array.add(new JsonPrimitive(1));
-
+		
 		Result<long[]> result = codec.decodeStart(this.provider, this.provider.empty(), array);
 		assertTrue(result.isError());
 	}
-
+	
 	@Test
 	void decodeWithNotEmptyConstraintSuccess() {
 		Codec<long[]> codec = LONG_ARRAY.notEmpty();
 		JsonArray array = new JsonArray();
 		array.add(new JsonPrimitive(1));
-
+		
 		Result<long[]> result = codec.decodeStart(this.provider, this.provider.empty(), array);
 		assertTrue(result.isSuccess());
 		assertEquals(1, result.resultOrThrow().length);
 	}
-
+	
 	@Test
 	void decodeWithNotEmptyConstraintFailure() {
 		Codec<long[]> codec = LONG_ARRAY.notEmpty();
 		JsonArray array = new JsonArray();
-
+		
 		Result<long[]> result = codec.decodeStart(this.provider, this.provider.empty(), array);
 		assertTrue(result.isError());
 		assertTrue(result.errorOrThrow().contains("minimum length constraint"));
 	}
-
-
+	
 	@Test
 	void encodeWithChainedConstraintsSuccess() {
 		Codec<long[]> codec = LONG_ARRAY.minLength(2).maxLength(5);
-		long[] array = {1L, 2L, 3L};
-
+		long[] array = { 1L, 2L, 3L };
+		
 		Result<JsonElement> result = codec.encodeStart(this.provider, this.provider.empty(), array);
 		assertTrue(result.isSuccess());
 	}
-
+	
 	@Test
 	void encodeWithChainedConstraintsFailureMin() {
 		Codec<long[]> codec = LONG_ARRAY.minLength(5).maxLength(10);
-		long[] array = {1L, 2L};
-
+		long[] array = { 1L, 2L };
+		
 		Result<JsonElement> result = codec.encodeStart(this.provider, this.provider.empty(), array);
 		assertTrue(result.isError());
 		assertTrue(result.errorOrThrow().contains("minimum length constraint"));
 	}
-
+	
 	@Test
 	void encodeWithChainedConstraintsFailureMax() {
 		Codec<long[]> codec = LONG_ARRAY.minLength(1).maxLength(2);
-		long[] array = {1L, 2L, 3L};
-
+		long[] array = { 1L, 2L, 3L };
+		
 		Result<JsonElement> result = codec.encodeStart(this.provider, this.provider.empty(), array);
 		assertTrue(result.isError());
 		assertTrue(result.errorOrThrow().contains("maximum length constraint"));
 	}
-
+	
 	@Test
 	void encodeWithOverwrittenMinConstraintSuccess() {
 		Codec<long[]> codec = LONG_ARRAY.minLength(10).minLength(2);
-		long[] array = {1L, 2L, 3L};
-
+		long[] array = { 1L, 2L, 3L };
+		
 		Result<JsonElement> result = codec.encodeStart(this.provider, this.provider.empty(), array);
 		assertTrue(result.isSuccess());
 	}
-
+	
 	@Test
 	void encodeWithOverwrittenMaxConstraintSuccess() {
 		Codec<long[]> codec = LONG_ARRAY.maxLength(2).maxLength(5);
-		long[] array = {1L, 2L, 3L};
-
+		long[] array = { 1L, 2L, 3L };
+		
 		Result<JsonElement> result = codec.encodeStart(this.provider, this.provider.empty(), array);
 		assertTrue(result.isSuccess());
 	}
-
+	
 	@Test
 	void encodeWithOverwrittenExactConstraintSuccess() {
 		Codec<long[]> codec = LONG_ARRAY.exactLength(5).exactLength(3);
-		long[] array = {1L, 2L, 3L};
-
+		long[] array = { 1L, 2L, 3L };
+		
 		Result<JsonElement> result = codec.encodeStart(this.provider, this.provider.empty(), array);
 		assertTrue(result.isSuccess());
 	}
-
+	
 	@Test
 	void decodeWithChainedConstraintsSuccess() {
 		Codec<long[]> codec = LONG_ARRAY.minLength(2).maxLength(5);
@@ -379,24 +378,24 @@ class ConstrainedLongArrayCodecTest {
 		array.add(new JsonPrimitive(1L));
 		array.add(new JsonPrimitive(2L));
 		array.add(new JsonPrimitive(3L));
-
+		
 		Result<long[]> result = codec.decodeStart(this.provider, this.provider.empty(), array);
 		assertTrue(result.isSuccess());
 		assertEquals(3, result.resultOrThrow().length);
 	}
-
+	
 	@Test
 	void decodeWithChainedConstraintsFailureMin() {
 		Codec<long[]> codec = LONG_ARRAY.minLength(5).maxLength(10);
 		JsonArray array = new JsonArray();
 		array.add(new JsonPrimitive(1L));
 		array.add(new JsonPrimitive(2L));
-
+		
 		Result<long[]> result = codec.decodeStart(this.provider, this.provider.empty(), array);
 		assertTrue(result.isError());
 		assertTrue(result.errorOrThrow().contains("minimum length constraint"));
 	}
-
+	
 	@Test
 	void decodeWithChainedConstraintsFailureMax() {
 		Codec<long[]> codec = LONG_ARRAY.minLength(1).maxLength(2);
@@ -404,12 +403,12 @@ class ConstrainedLongArrayCodecTest {
 		array.add(new JsonPrimitive(1L));
 		array.add(new JsonPrimitive(2L));
 		array.add(new JsonPrimitive(3L));
-
+		
 		Result<long[]> result = codec.decodeStart(this.provider, this.provider.empty(), array);
 		assertTrue(result.isError());
 		assertTrue(result.errorOrThrow().contains("maximum length constraint"));
 	}
-
+	
 	@Test
 	void decodeWithOverwrittenMinConstraintSuccess() {
 		Codec<long[]> codec = LONG_ARRAY.minLength(10).minLength(2);
@@ -417,12 +416,12 @@ class ConstrainedLongArrayCodecTest {
 		array.add(new JsonPrimitive(1L));
 		array.add(new JsonPrimitive(2L));
 		array.add(new JsonPrimitive(3L));
-
+		
 		Result<long[]> result = codec.decodeStart(this.provider, this.provider.empty(), array);
 		assertTrue(result.isSuccess());
 		assertEquals(3, result.resultOrThrow().length);
 	}
-
+	
 	@Test
 	void decodeWithOverwrittenMaxConstraintSuccess() {
 		Codec<long[]> codec = LONG_ARRAY.maxLength(2).maxLength(5);
@@ -430,12 +429,12 @@ class ConstrainedLongArrayCodecTest {
 		array.add(new JsonPrimitive(1L));
 		array.add(new JsonPrimitive(2L));
 		array.add(new JsonPrimitive(3L));
-
+		
 		Result<long[]> result = codec.decodeStart(this.provider, this.provider.empty(), array);
 		assertTrue(result.isSuccess());
 		assertEquals(3, result.resultOrThrow().length);
 	}
-
+	
 	@Test
 	void decodeWithOverwrittenExactConstraintSuccess() {
 		Codec<long[]> codec = LONG_ARRAY.exactLength(5).exactLength(3);
@@ -443,19 +442,19 @@ class ConstrainedLongArrayCodecTest {
 		array.add(new JsonPrimitive(1L));
 		array.add(new JsonPrimitive(2L));
 		array.add(new JsonPrimitive(3L));
-
+		
 		Result<long[]> result = codec.decodeStart(this.provider, this.provider.empty(), array);
 		assertTrue(result.isSuccess());
 		assertEquals(3, result.resultOrThrow().length);
 	}
-
+	
 	@Test
 	void toStringWithoutConstraints() {
 		Codec<long[]> codec = LONG_ARRAY;
 		String str = codec.toString();
 		assertEquals("LongArrayCodec", str);
 	}
-
+	
 	@Test
 	void toStringWithConstraints() {
 		Codec<long[]> codec = LONG_ARRAY.minLength(1).maxLength(10);

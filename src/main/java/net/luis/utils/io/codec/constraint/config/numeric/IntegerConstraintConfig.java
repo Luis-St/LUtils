@@ -59,7 +59,7 @@ public record IntegerConstraintConfig<T extends Number & Comparable<T>>(
 	@NonNull OptionalInt powerBase
 
 ) {
-
+	
 	/**
 	 * A predefined unconstrained configuration with no constraints.<br>
 	 * <p>
@@ -73,7 +73,7 @@ public record IntegerConstraintConfig<T extends Number & Comparable<T>>(
 	private static final IntegerConstraintConfig<? extends Number> UNCONSTRAINED = new IntegerConstraintConfig<>(
 		Optional.empty(), Optional.empty(), OptionalLong.empty(), OptionalInt.empty()
 	);
-
+	
 	/**
 	 * Constructs a new integer constraint configuration with the specified constraints.<br>
 	 *
@@ -97,7 +97,7 @@ public record IntegerConstraintConfig<T extends Number & Comparable<T>>(
 			throw new IllegalArgumentException("Power base must be at least 2 when present");
 		}
 	}
-
+	
 	/**
 	 * Returns an unconstrained configuration for the specified type.<br>
 	 * <p>
@@ -111,7 +111,7 @@ public record IntegerConstraintConfig<T extends Number & Comparable<T>>(
 	public static <T extends Number & Comparable<T>> @NonNull IntegerConstraintConfig<T> unconstrained() {
 		return (IntegerConstraintConfig<T>) UNCONSTRAINED;
 	}
-
+	
 	/**
 	 * Checks if a primitive long value is a power of the specified base.<br>
 	 * <p>
@@ -139,7 +139,7 @@ public record IntegerConstraintConfig<T extends Number & Comparable<T>>(
 		}
 		return true;
 	}
-
+	
 	/**
 	 * Checks if a big integer value is a power of the specified base.<br>
 	 * <p>
@@ -170,7 +170,7 @@ public record IntegerConstraintConfig<T extends Number & Comparable<T>>(
 		}
 		return true;
 	}
-
+	
 	/**
 	 * Checks if the configuration is unconstrained (no constraints set).<br>
 	 *
@@ -179,7 +179,7 @@ public record IntegerConstraintConfig<T extends Number & Comparable<T>>(
 	public boolean isUnconstrained() {
 		return this == UNCONSTRAINED || (this.numericConfig.isEmpty() && this.even.isEmpty() && this.divisor.isEmpty() && this.powerBase.isEmpty());
 	}
-
+	
 	/**
 	 * Creates a new integer constraint configuration with the modified numeric configuration.<br>
 	 * <p>
@@ -198,7 +198,7 @@ public record IntegerConstraintConfig<T extends Number & Comparable<T>>(
 		
 		return new IntegerConstraintConfig<>(Optional.of(numericConfigModifier.apply(this.numericConfig.orElse(NumericConstraintConfig.unconstrained()))), this.even, this.divisor, this.powerBase);
 	}
-
+	
 	/**
 	 * Creates a new integer constraint configuration with an even constraint.<br>
 	 * <p>
@@ -212,7 +212,7 @@ public record IntegerConstraintConfig<T extends Number & Comparable<T>>(
 	public @NonNull IntegerConstraintConfig<T> withEven() {
 		return new IntegerConstraintConfig<>(this.numericConfig, Optional.of(true), this.divisor, this.powerBase);
 	}
-
+	
 	/**
 	 * Creates a new integer constraint configuration with an odd constraint.<br>
 	 * <p>
@@ -226,7 +226,7 @@ public record IntegerConstraintConfig<T extends Number & Comparable<T>>(
 	public @NonNull IntegerConstraintConfig<T> withOdd() {
 		return new IntegerConstraintConfig<>(this.numericConfig, Optional.of(false), this.divisor, this.powerBase);
 	}
-
+	
 	/**
 	 * Creates a new integer constraint configuration with a divisor constraint.<br>
 	 * <p>
@@ -241,7 +241,7 @@ public record IntegerConstraintConfig<T extends Number & Comparable<T>>(
 	public @NonNull IntegerConstraintConfig<T> withDivisor(long divisor) {
 		return new IntegerConstraintConfig<>(this.numericConfig, this.even, OptionalLong.of(divisor), this.powerBase);
 	}
-
+	
 	/**
 	 * Creates a new integer constraint configuration with a power-of-base constraint.<br>
 	 * <p>
@@ -257,7 +257,7 @@ public record IntegerConstraintConfig<T extends Number & Comparable<T>>(
 	public @NonNull IntegerConstraintConfig<T> withPowerBase(int base) {
 		return new IntegerConstraintConfig<>(this.numericConfig, this.even, this.divisor, OptionalInt.of(base));
 	}
-
+	
 	/**
 	 * Validates whether the given integer value matches all constraints defined in this configuration.<br>
 	 * <p>
@@ -283,25 +283,25 @@ public record IntegerConstraintConfig<T extends Number & Comparable<T>>(
 		if (type.isFloatingPoint()) {
 			throw new IllegalArgumentException("Number type " + type + " is not an integer type");
 		}
-
+		
 		if (this.isUnconstrained()) {
 			return Result.success();
 		}
-
+		
 		if (this.numericConfig.isPresent()) {
 			Result<Void> numericResult = this.numericConfig.get().matches(value);
 			if (numericResult.isError()) {
 				return numericResult;
 			}
 		}
-
+		
 		if (type == NumberType.BIG_INTEGER) {
 			return this.matchesBigInteger((BigInteger) value);
 		} else {
 			return this.matchesPrimitive(value);
 		}
 	}
-
+	
 	/**
 	 * Validates primitive integer-specific constraints against the given value.<br>
 	 * <p>
@@ -322,11 +322,11 @@ public record IntegerConstraintConfig<T extends Number & Comparable<T>>(
 				return Result.error("Violated odd constraint: " + value + " is not odd");
 			}
 		}
-
+		
 		if (this.divisor.isPresent() && value.longValue() % this.divisor.getAsLong() != 0) {
 			return Result.error("Violated divisibility constraint: " + value + " is not divisible by " + this.divisor.getAsLong());
 		}
-
+		
 		if (this.powerBase.isPresent()) {
 			int base = this.powerBase.getAsInt();
 			if (!isPowerOf(value.longValue(), base)) {
@@ -335,7 +335,7 @@ public record IntegerConstraintConfig<T extends Number & Comparable<T>>(
 		}
 		return Result.success();
 	}
-
+	
 	/**
 	 * Validates big integer specific constraints against the given value.<br>
 	 * <p>
@@ -356,14 +356,14 @@ public record IntegerConstraintConfig<T extends Number & Comparable<T>>(
 				return Result.error("Violated odd constraint: " + value + " is not odd");
 			}
 		}
-
+		
 		if (this.divisor.isPresent()) {
 			BigInteger divisor = BigInteger.valueOf(this.divisor.getAsLong());
 			if (!value.mod(divisor).equals(BigInteger.ZERO)) {
 				return Result.error("Violated divisibility constraint: " + value + " is not divisible by " + this.divisor.getAsLong());
 			}
 		}
-
+		
 		if (this.powerBase.isPresent()) {
 			int base = this.powerBase.getAsInt();
 			if (!isPowerOf(value, base)) {

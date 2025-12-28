@@ -42,7 +42,7 @@ public record TimeFieldConstraintConfig(
 	@NonNull Optional<FieldConstraintConfig> second,
 	@NonNull Optional<FieldConstraintConfig> millisecond
 ) {
-
+	
 	/**
 	 * A predefined unconstrained configuration with no constraints.<br>
 	 * <p>
@@ -53,7 +53,7 @@ public record TimeFieldConstraintConfig(
 	public static final TimeFieldConstraintConfig UNCONSTRAINED = new TimeFieldConstraintConfig(
 		Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty()
 	);
-
+	
 	/**
 	 * Constructs a new time field constraint configuration with the specified constraints.<br>
 	 *
@@ -69,7 +69,7 @@ public record TimeFieldConstraintConfig(
 		Objects.requireNonNull(second, "Second constraint must not be null");
 		Objects.requireNonNull(millisecond, "Millisecond constraint must not be null");
 	}
-
+	
 	/**
 	 * Checks if the configuration is unconstrained (no constraints set).<br>
 	 *
@@ -78,7 +78,7 @@ public record TimeFieldConstraintConfig(
 	public boolean isUnconstrained() {
 		return this == UNCONSTRAINED || ((this.hour.isEmpty() || this.hour.get().isUnconstrained()) && (this.minute.isEmpty() || this.minute.get().isUnconstrained()) && (this.second.isEmpty() || this.second.get().isUnconstrained()) && (this.millisecond.isEmpty() || this.millisecond.get().isUnconstrained()));
 	}
-
+	
 	/**
 	 * Creates a new configuration with an hour field constraint.<br>
 	 *
@@ -88,7 +88,7 @@ public record TimeFieldConstraintConfig(
 	public @NonNull TimeFieldConstraintConfig withHour(@NonNull FieldConstraintConfig hourConfig) {
 		return new TimeFieldConstraintConfig(Optional.of(hourConfig), this.minute, this.second, this.millisecond);
 	}
-
+	
 	/**
 	 * Creates a new configuration with a minute field constraint.<br>
 	 *
@@ -98,7 +98,7 @@ public record TimeFieldConstraintConfig(
 	public @NonNull TimeFieldConstraintConfig withMinute(@NonNull FieldConstraintConfig minuteConfig) {
 		return new TimeFieldConstraintConfig(this.hour, Optional.of(minuteConfig), this.second, this.millisecond);
 	}
-
+	
 	/**
 	 * Creates a new configuration with a second field constraint.<br>
 	 *
@@ -108,7 +108,7 @@ public record TimeFieldConstraintConfig(
 	public @NonNull TimeFieldConstraintConfig withSecond(@NonNull FieldConstraintConfig secondConfig) {
 		return new TimeFieldConstraintConfig(this.hour, this.minute, Optional.of(secondConfig), this.millisecond);
 	}
-
+	
 	/**
 	 * Creates a new configuration with a millisecond field constraint.<br>
 	 *
@@ -118,7 +118,7 @@ public record TimeFieldConstraintConfig(
 	public @NonNull TimeFieldConstraintConfig withMillisecond(@NonNull FieldConstraintConfig millisecondConfig) {
 		return new TimeFieldConstraintConfig(this.hour, this.minute, this.second, Optional.of(millisecondConfig));
 	}
-
+	
 	/**
 	 * Validates the time field constraints using the provided field provider.<br>
 	 *
@@ -131,30 +131,30 @@ public record TimeFieldConstraintConfig(
 		if (this.isUnconstrained()) {
 			return Result.success();
 		}
-
+		
 		if (this.hour.isPresent()) {
 			Result<Void> hourResult = this.hour.get().matches("hour", provider.hour().getAsInt());
 			if (hourResult.isError()) return hourResult;
 		}
-
+		
 		if (this.minute.isPresent()) {
 			Result<Void> minuteResult = this.minute.get().matches("minute", provider.minute().getAsInt());
 			if (minuteResult.isError()) return minuteResult;
 		}
-
+		
 		if (this.second.isPresent()) {
 			Result<Void> secondResult = this.second.get().matches("second", provider.second().getAsInt());
 			if (secondResult.isError()) return secondResult;
 		}
-
+		
 		if (this.millisecond.isPresent()) {
 			Result<Void> millisecondResult = this.millisecond.get().matches("millisecond", provider.millisecond().getAsInt());
 			if (millisecondResult.isError()) return millisecondResult;
 		}
-
+		
 		return Result.success();
 	}
-
+	
 	/**
 	 * Validates the time field constraints against the given {@link LocalTime} value.<br>
 	 *
@@ -166,7 +166,7 @@ public record TimeFieldConstraintConfig(
 		Objects.requireNonNull(value, "Value must not be null");
 		return this.matches(TimeFieldProvider.create(value::getHour, value::getMinute, value::getSecond, () -> value.getNano() / 1_000_000));
 	}
-
+	
 	/**
 	 * Validates the time field constraints against the given {@link LocalDateTime} value.<br>
 	 *
@@ -178,7 +178,7 @@ public record TimeFieldConstraintConfig(
 		Objects.requireNonNull(value, "Value must not be null");
 		return this.matches(TimeFieldProvider.create(value::getHour, value::getMinute, value::getSecond, () -> value.getNano() / 1_000_000));
 	}
-
+	
 	/**
 	 * Validates the time field constraints against the given {@link OffsetTime} value.<br>
 	 *
@@ -190,7 +190,7 @@ public record TimeFieldConstraintConfig(
 		Objects.requireNonNull(value, "Value must not be null");
 		return this.matches(TimeFieldProvider.create(value::getHour, value::getMinute, value::getSecond, () -> value.getNano() / 1_000_000));
 	}
-
+	
 	/**
 	 * Validates the time field constraints against the given {@link OffsetDateTime} value.<br>
 	 *
@@ -202,7 +202,7 @@ public record TimeFieldConstraintConfig(
 		Objects.requireNonNull(value, "Value must not be null");
 		return this.matches(TimeFieldProvider.create(value::getHour, value::getMinute, value::getSecond, () -> value.getNano() / 1_000_000));
 	}
-
+	
 	/**
 	 * Validates the time field constraints against the given {@link ZonedDateTime} value.<br>
 	 *
@@ -224,19 +224,19 @@ public record TimeFieldConstraintConfig(
 		if (this.isUnconstrained()) {
 			return;
 		}
-
+		
 		this.hour.ifPresent(h -> h.appendConstraints("hour", constraints));
 		this.minute.ifPresent(m -> m.appendConstraints("minute", constraints));
 		this.second.ifPresent(s -> s.appendConstraints("second", constraints));
 		this.millisecond.ifPresent(ms -> ms.appendConstraints("millisecond", constraints));
 	}
-
+	
 	@Override
 	public @NonNull String toString() {
 		if (this.isUnconstrained()) {
 			return "TimeFieldConstraintConfig[unconstrained]";
 		}
-
+		
 		List<String> constraints = new ArrayList<>();
 		this.appendConstraints(constraints);
 		return "TimeFieldConstraintConfig[" + String.join(",", constraints) + "]";

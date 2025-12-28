@@ -49,7 +49,7 @@ public record LengthConstraintConfig(
 	@NonNull OptionalInt minLength,
 	@NonNull OptionalInt maxLength
 ) {
-
+	
 	/**
 	 * A predefined unconstrained configuration with no minimum or maximum length limits.<br>
 	 * <p>
@@ -62,7 +62,7 @@ public record LengthConstraintConfig(
 	 * @see #withMaxLength(int)
 	 */
 	public static final LengthConstraintConfig UNCONSTRAINED = new LengthConstraintConfig(OptionalInt.empty(), OptionalInt.empty());
-
+	
 	/**
 	 * Constructs a new length constraint configuration with the specified minimum and maximum lengths.<br>
 	 *
@@ -76,7 +76,7 @@ public record LengthConstraintConfig(
 	public LengthConstraintConfig {
 		Objects.requireNonNull(minLength, "Minimum length must not be null");
 		Objects.requireNonNull(maxLength, "Maximum length must not be null");
-
+		
 		if (minLength.isPresent() && minLength.getAsInt() < 0) {
 			throw new IllegalArgumentException("Minimum length must not be negative when present");
 		}
@@ -87,7 +87,7 @@ public record LengthConstraintConfig(
 			throw new IllegalArgumentException("Maximum length must not be less than minimum length when both are present");
 		}
 	}
-
+	
 	/**
 	 * Creates a new length constraint configuration with the specified minimum length.<br>
 	 * <p>
@@ -104,7 +104,7 @@ public record LengthConstraintConfig(
 	public @NonNull LengthConstraintConfig withMinLength(int minLength) {
 		return new LengthConstraintConfig(OptionalInt.of(minLength), this.maxLength);
 	}
-
+	
 	/**
 	 * Creates a new length constraint configuration with the specified maximum length.<br>
 	 * <p>
@@ -164,13 +164,13 @@ public record LengthConstraintConfig(
 		}
 		return Result.success();
 	}
-
+	
 	@Override
 	public @NonNull String toString() {
 		if (this == UNCONSTRAINED || (this.minLength.isEmpty() && this.maxLength.isEmpty())) {
 			return "LengthConstraintConfig[unconstrained]";
 		}
-
+		
 		if (this.minLength.isPresent() && this.maxLength.isPresent()) {
 			if (this.minLength.getAsInt() == this.maxLength.getAsInt()) {
 				return "LengthConstraintConfig[length=" + this.minLength.getAsInt() + "]";

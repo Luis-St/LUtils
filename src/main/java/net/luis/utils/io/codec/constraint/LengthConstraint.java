@@ -49,7 +49,7 @@ public interface LengthConstraint<T, C extends Codec<T>> extends CodecConstraint
 	
 	@Override
 	@NonNull C applyConstraint(@NonNull UnaryOperator<LengthConstraintConfig> configModifier);
-
+	
 	/**
 	 * Applies a minimum length constraint to the codec.<br>
 	 * <p>
@@ -66,7 +66,7 @@ public interface LengthConstraint<T, C extends Codec<T>> extends CodecConstraint
 	default @NonNull C minLength(int minLength) {
 		return this.applyConstraint(config -> config.withMinLength(minLength));
 	}
-
+	
 	/**
 	 * Applies a maximum length constraint to the codec.<br>
 	 * <p>
@@ -83,7 +83,7 @@ public interface LengthConstraint<T, C extends Codec<T>> extends CodecConstraint
 	default @NonNull C maxLength(int maxLength) {
 		return this.applyConstraint(config -> config.withMaxLength(maxLength));
 	}
-
+	
 	/**
 	 * Applies an exact length constraint to the codec.<br>
 	 * <p>
@@ -99,7 +99,7 @@ public interface LengthConstraint<T, C extends Codec<T>> extends CodecConstraint
 	default @NonNull C exactLength(int exactLength) {
 		return this.applyConstraint(config -> config.withLength(exactLength, exactLength));
 	}
-
+	
 	/**
 	 * Applies a length range constraint to the codec.<br>
 	 * <p>
@@ -117,7 +117,7 @@ public interface LengthConstraint<T, C extends Codec<T>> extends CodecConstraint
 	default @NonNull C lengthBetween(int minLength, int maxLength) {
 		return this.applyConstraint(config -> config.withLength(minLength, maxLength));
 	}
-
+	
 	/**
 	 * Applies an empty length constraint to the codec.<br>
 	 * <p>
@@ -132,7 +132,7 @@ public interface LengthConstraint<T, C extends Codec<T>> extends CodecConstraint
 	default @NonNull C empty() {
 		return this.exactLength(0);
 	}
-
+	
 	/**
 	 * Applies a non-empty length constraint to the codec.<br>
 	 * <p>

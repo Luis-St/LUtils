@@ -44,10 +44,10 @@ import java.util.function.UnaryOperator;
  * @param <C> The codec type
  */
 public interface IntegerConstraint<T extends Number & Comparable<T>, C extends Codec<T>> extends NumericConstraint<T, C, IntegerConstraintConfig<T>> {
-
+	
 	@Override
 	@NonNull C applyConstraint(@NonNull UnaryOperator<IntegerConstraintConfig<T>> configModifier);
-
+	
 	@Override
 	@NonNull NumberProvider<T> provider();
 	
@@ -104,7 +104,7 @@ public interface IntegerConstraint<T extends Number & Comparable<T>, C extends C
 	default @NonNull C even() {
 		return this.applyConstraint(IntegerConstraintConfig::withEven);
 	}
-
+	
 	/**
 	 * Applies an odd number constraint to the codec.<br>
 	 * <p>
@@ -117,7 +117,7 @@ public interface IntegerConstraint<T extends Number & Comparable<T>, C extends C
 	default @NonNull C odd() {
 		return this.applyConstraint(IntegerConstraintConfig::withOdd);
 	}
-
+	
 	/**
 	 * Applies a divisibility constraint to the codec.<br>
 	 * <p>

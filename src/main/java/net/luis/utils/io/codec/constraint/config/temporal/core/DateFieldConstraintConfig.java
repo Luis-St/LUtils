@@ -43,7 +43,7 @@ public record DateFieldConstraintConfig(
 	@NonNull Optional<Set<Month>> months,
 	@NonNull Optional<FieldConstraintConfig> year
 ) {
-
+	
 	/**
 	 * A predefined unconstrained configuration with no constraints.<br>
 	 * <p>
@@ -54,7 +54,7 @@ public record DateFieldConstraintConfig(
 	public static final DateFieldConstraintConfig UNCONSTRAINED = new DateFieldConstraintConfig(
 		Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty()
 	);
-
+	
 	/**
 	 * Constructs a new date field constraint configuration with the specified constraints.<br>
 	 *
@@ -70,16 +70,16 @@ public record DateFieldConstraintConfig(
 		Objects.requireNonNull(dayOfMonth, "Day of month constraint must not be null");
 		Objects.requireNonNull(months, "Months constraint must not be null");
 		Objects.requireNonNull(year, "Year constraint must not be null");
-
+		
 		if (daysOfWeek.isPresent() && daysOfWeek.get().isEmpty()) {
 			throw new IllegalArgumentException("Days of week constraint must not be empty when present");
 		}
-
+		
 		if (months.isPresent() && months.get().isEmpty()) {
 			throw new IllegalArgumentException("Months constraint must not be empty when present");
 		}
 	}
-
+	
 	/**
 	 * Checks if the configuration is unconstrained (no constraints set).<br>
 	 *
@@ -88,7 +88,7 @@ public record DateFieldConstraintConfig(
 	public boolean isUnconstrained() {
 		return this == UNCONSTRAINED || (this.daysOfWeek.isEmpty() && (this.dayOfMonth.isEmpty() || this.dayOfMonth.get().isUnconstrained()) && this.months.isEmpty() && (this.year.isEmpty() || this.year.get().isUnconstrained()));
 	}
-
+	
 	/**
 	 * Creates a new configuration with a day of week constraint.<br>
 	 *
@@ -98,7 +98,7 @@ public record DateFieldConstraintConfig(
 	public @NonNull DateFieldConstraintConfig withDayOfWeek(@NonNull Set<DayOfWeek> daysOfWeek) {
 		return new DateFieldConstraintConfig(Optional.of(Set.copyOf(daysOfWeek)), this.dayOfMonth, this.months, this.year);
 	}
-
+	
 	/**
 	 * Creates a new configuration with a day of month field constraint.<br>
 	 *
@@ -108,7 +108,7 @@ public record DateFieldConstraintConfig(
 	public @NonNull DateFieldConstraintConfig withDayOfMonth(@NonNull FieldConstraintConfig monthConfig) {
 		return new DateFieldConstraintConfig(this.daysOfWeek, Optional.of(monthConfig), this.months, this.year);
 	}
-
+	
 	/**
 	 * Creates a new configuration with a month constraint.<br>
 	 *
@@ -118,7 +118,7 @@ public record DateFieldConstraintConfig(
 	public @NonNull DateFieldConstraintConfig withMonth(@NonNull Set<Month> months) {
 		return new DateFieldConstraintConfig(this.daysOfWeek, this.dayOfMonth, Optional.of(Set.copyOf(months)), this.year);
 	}
-
+	
 	/**
 	 * Creates a new configuration with a year field constraint.<br>
 	 *
@@ -128,7 +128,7 @@ public record DateFieldConstraintConfig(
 	public @NonNull DateFieldConstraintConfig withYear(@NonNull FieldConstraintConfig yearConfig) {
 		return new DateFieldConstraintConfig(this.daysOfWeek, this.dayOfMonth, this.months, Optional.of(yearConfig));
 	}
-
+	
 	/**
 	 * Validates the date field constraints using the provided field provider.<br>
 	 *
@@ -141,36 +141,36 @@ public record DateFieldConstraintConfig(
 		if (this.isUnconstrained()) {
 			return Result.success();
 		}
-
+		
 		if (this.daysOfWeek.isPresent()) {
 			if (!this.daysOfWeek.get().contains(provider.dayOfWeek().get())) {
 				return Result.error("Violated day of week constraint: value day of week (" + provider.dayOfWeek().get() + ") is not in allowed days (" + this.daysOfWeek.get() + ")");
 			}
 		}
-
+		
 		if (this.dayOfMonth.isPresent()) {
 			Result<Void> dayOfMonthResult = this.dayOfMonth.get().matches("dayOfMonth", provider.dayOfMonth().getAsInt());
 			if (dayOfMonthResult.isError()) {
 				return dayOfMonthResult;
 			}
 		}
-
+		
 		if (this.months.isPresent()) {
 			if (!this.months.get().contains(provider.month().get())) {
 				return Result.error("Violated month constraint: value month (" + provider.month().get() + ") is not in allowed months (" + this.months.get() + ")");
 			}
 		}
-
+		
 		if (this.year.isPresent()) {
 			Result<Void> yearResult = this.year.get().matches("year", provider.year().getAsInt());
 			if (yearResult.isError()) {
 				return yearResult;
 			}
 		}
-
+		
 		return Result.success();
 	}
-
+	
 	/**
 	 * Validates the date field constraints against the given {@link LocalDate} value.<br>
 	 *
@@ -182,7 +182,7 @@ public record DateFieldConstraintConfig(
 		Objects.requireNonNull(value, "Value must not be null");
 		return this.matches(DateFieldProvider.create(value::getDayOfWeek, value::getDayOfMonth, value::getMonth, value::getYear));
 	}
-
+	
 	/**
 	 * Validates the date field constraints against the given {@link LocalDateTime} value.<br>
 	 *
@@ -194,7 +194,7 @@ public record DateFieldConstraintConfig(
 		Objects.requireNonNull(value, "Value must not be null");
 		return this.matches(DateFieldProvider.create(value::getDayOfWeek, value::getDayOfMonth, value::getMonth, value::getYear));
 	}
-
+	
 	/**
 	 * Validates the date field constraints against the given {@link LocalDateTime} value.<br>
 	 *
@@ -206,7 +206,7 @@ public record DateFieldConstraintConfig(
 		Objects.requireNonNull(value, "Value must not be null");
 		return this.matches(DateFieldProvider.create(value::getDayOfWeek, value::getDayOfMonth, value::getMonth, value::getYear));
 	}
-
+	
 	/**
 	 * Validates the date field constraints against the given {@link ZonedDateTime} value.<br>
 	 *
@@ -228,19 +228,19 @@ public record DateFieldConstraintConfig(
 		if (this.isUnconstrained()) {
 			return;
 		}
-
+		
 		this.daysOfWeek.ifPresent(days -> constraints.add("daysOfWeek=" + days));
 		this.dayOfMonth.ifPresent(dom -> dom.appendConstraints("dayOfMonth", constraints));
 		this.months.ifPresent(m -> constraints.add("months=" + m));
 		this.year.ifPresent(y -> y.appendConstraints("year", constraints));
 	}
-
+	
 	@Override
 	public @NonNull String toString() {
 		if (this.isUnconstrained()) {
 			return "DateFieldConstraintConfig[unconstrained]";
 		}
-
+		
 		List<String> constraints = new ArrayList<>();
 		this.appendConstraints(constraints);
 		return "DateFieldConstraintConfig[" + String.join(",", constraints) + "]";

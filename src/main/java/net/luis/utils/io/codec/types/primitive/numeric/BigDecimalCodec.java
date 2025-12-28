@@ -38,12 +38,12 @@ import java.util.function.UnaryOperator;
  * @author Luis-St
  */
 public class BigDecimalCodec extends AbstractCodec<BigDecimal, BigDecimalConstraintConfig> implements BigDecimalConstraint<BigDecimalCodec> {
-
+	
 	/**
 	 * Constructs a new big decimal codec.<br>
 	 */
 	public BigDecimalCodec() {}
-
+	
 	/**
 	 * Constructs a new big decimal codec with the specified big decimal constraint configuration.<br>
 	 *
@@ -53,32 +53,32 @@ public class BigDecimalCodec extends AbstractCodec<BigDecimal, BigDecimalConstra
 	public BigDecimalCodec(@NonNull BigDecimalConstraintConfig constraintConfig) {
 		super(constraintConfig);
 	}
-
+	
 	@Override
 	public @NonNull BigDecimalCodec applyConstraint(@NonNull UnaryOperator<BigDecimalConstraintConfig> configModifier) {
 		Objects.requireNonNull(configModifier, "Config modifier must not be null");
-
+		
 		return new BigDecimalCodec(configModifier.apply(
 			this.getConstraintConfig().orElse(BigDecimalConstraintConfig.UNCONSTRAINED)
 		));
 	}
-
+	
 	@Override
 	public @NonNull NumberProvider<BigDecimal> provider() {
 		return NumberProvider.of(BigDecimal.ZERO, BigDecimal.ONE, BigDecimal.valueOf(100));
 	}
-
+	
 	@Override
 	protected @NonNull Result<Void> checkConstraints(@NonNull BigDecimal value) {
 		Objects.requireNonNull(value, "Value must not be null");
-
+		
 		Result<Void> constraintResult = this.getConstraintConfig().map(config -> config.matches(value)).orElseGet(Result::success);
 		if (constraintResult.isError()) {
 			return Result.error("BigDecimal value " + value + " does not meet constraints: " + constraintResult.errorOrThrow());
 		}
 		return Result.success();
 	}
-
+	
 	@Override
 	public <R> @NonNull Result<R> encodeStart(@NonNull TypeProvider<R> provider, @NonNull R current, @Nullable BigDecimal value) {
 		Objects.requireNonNull(provider, "Type provider must not be null");
@@ -86,20 +86,20 @@ public class BigDecimalCodec extends AbstractCodec<BigDecimal, BigDecimalConstra
 		if (value == null) {
 			return Result.error("Unable to encode null as big decimal using '" + this + "'");
 		}
-
+		
 		Result<Void> constraintResult = this.checkConstraints(value);
 		if (constraintResult.isError()) {
 			return Result.error(constraintResult.errorOrThrow());
 		}
 		return provider.createString(value.toPlainString());
 	}
-
+	
 	@Override
 	public @NonNull Result<String> encodeKey(@NonNull BigDecimal key) {
 		Objects.requireNonNull(key, "Key must not be null");
 		return Result.success(key.toPlainString());
 	}
-
+	
 	@Override
 	public <R> @NonNull Result<BigDecimal> decodeStart(@NonNull TypeProvider<R> provider, @NonNull R current, @Nullable R value) {
 		Objects.requireNonNull(provider, "Type provider must not be null");
@@ -107,16 +107,16 @@ public class BigDecimalCodec extends AbstractCodec<BigDecimal, BigDecimalConstra
 		if (value == null) {
 			return Result.error("Unable to decode null value as big decimal using '" + this + "'");
 		}
-
+		
 		Result<String> result = provider.getString(value);
 		if (result.isError()) {
 			return Result.error(result.errorOrThrow());
 		}
-
+		
 		String string = result.resultOrThrow();
 		try {
 			BigDecimal bigDecimal = new BigDecimal(string);
-
+			
 			Result<Void> constraintResult = this.checkConstraints(bigDecimal);
 			if (constraintResult.isError()) {
 				return Result.error(constraintResult.errorOrThrow());
@@ -126,18 +126,18 @@ public class BigDecimalCodec extends AbstractCodec<BigDecimal, BigDecimalConstra
 			return Result.error("Unable to decode big decimal '" + string + "' using '" + this + "': " + e.getMessage());
 		}
 	}
-
+	
 	@Override
 	public @NonNull Result<BigDecimal> decodeKey(@NonNull String key) {
 		Objects.requireNonNull(key, "Key must not be null");
-
+		
 		try {
 			return Result.success(new BigDecimal(key));
 		} catch (NumberFormatException e) {
 			return Result.error("Unable to decode key '" + key + "' as big decimal using '" + this + "': " + e.getMessage());
 		}
 	}
-
+	
 	@Override
 	public String toString() {
 		return this.getConstraintConfig().map(config -> {

@@ -37,12 +37,12 @@ import java.util.function.UnaryOperator;
  * @author Luis-St
  */
 public class LongCodec extends AbstractCodec<Long, IntegerConstraintConfig<Long>> implements IntegerConstraint<Long, LongCodec> {
-
+	
 	/**
 	 * Constructs a new long codec.<br>
 	 */
 	public LongCodec() {}
-
+	
 	/**
 	 * Constructs a new long codec with the specified integer constraint configuration.<br>
 	 *
@@ -52,32 +52,32 @@ public class LongCodec extends AbstractCodec<Long, IntegerConstraintConfig<Long>
 	public LongCodec(@NonNull IntegerConstraintConfig<Long> constraintConfig) {
 		super(constraintConfig);
 	}
-
+	
 	@Override
 	public @NonNull LongCodec applyConstraint(@NonNull UnaryOperator<IntegerConstraintConfig<Long>> configModifier) {
 		Objects.requireNonNull(configModifier, "Config modifier must not be null");
-
+		
 		return new LongCodec(configModifier.apply(
 			this.getConstraintConfig().orElse(IntegerConstraintConfig.unconstrained())
 		));
 	}
-
+	
 	@Override
 	public @NonNull NumberProvider<Long> provider() {
 		return NumberProvider.of(0L, 1L, 100L);
 	}
-
+	
 	@Override
 	protected @NonNull Result<Void> checkConstraints(@NonNull Long value) {
 		Objects.requireNonNull(value, "Value must not be null");
-
+		
 		Result<Void> constraintResult = this.getConstraintConfig().map(config -> config.matches(NumberType.LONG, value)).orElseGet(Result::success);
 		if (constraintResult.isError()) {
 			return Result.error("Long value " + value + " does not meet constraints: " + constraintResult.errorOrThrow());
 		}
 		return Result.success();
 	}
-
+	
 	@Override
 	public <R> @NonNull Result<R> encodeStart(@NonNull TypeProvider<R> provider, @NonNull R current, @Nullable Long value) {
 		Objects.requireNonNull(provider, "Type provider must not be null");
@@ -85,20 +85,20 @@ public class LongCodec extends AbstractCodec<Long, IntegerConstraintConfig<Long>
 		if (value == null) {
 			return Result.error("Unable to encode null as long using '" + this + "'");
 		}
-
+		
 		Result<Void> constraintResult = this.checkConstraints(value);
 		if (constraintResult.isError()) {
 			return Result.error(constraintResult.errorOrThrow());
 		}
 		return provider.createLong(value);
 	}
-
+	
 	@Override
 	public @NonNull Result<String> encodeKey(@NonNull Long key) {
 		Objects.requireNonNull(key, "Key must not be null");
 		return Result.success(Long.toString(key));
 	}
-
+	
 	@Override
 	public <R> @NonNull Result<Long> decodeStart(@NonNull TypeProvider<R> provider, @NonNull R current, @Nullable R value) {
 		Objects.requireNonNull(provider, "Type provider must not be null");
@@ -106,12 +106,12 @@ public class LongCodec extends AbstractCodec<Long, IntegerConstraintConfig<Long>
 		if (value == null) {
 			return Result.error("Unable to decode null value as long using '" + this + "'");
 		}
-
+		
 		Result<Long> result = provider.getLong(value);
 		if (result.isError()) {
 			return result;
 		}
-
+		
 		Long longValue = result.resultOrThrow();
 		Result<Void> constraintResult = this.checkConstraints(longValue);
 		if (constraintResult.isError()) {
@@ -119,18 +119,18 @@ public class LongCodec extends AbstractCodec<Long, IntegerConstraintConfig<Long>
 		}
 		return Result.success(longValue);
 	}
-
+	
 	@Override
 	public @NonNull Result<Long> decodeKey(@NonNull String key) {
 		Objects.requireNonNull(key, "Key must not be null");
-
+		
 		try {
 			return Result.success(Long.parseLong(key));
 		} catch (Exception e) {
 			return Result.error("Unable to decode key '" + key + "' as long using '" + this + "': " + e.getMessage());
 		}
 	}
-
+	
 	@Override
 	public String toString() {
 		return this.getConstraintConfig().map(config -> {

@@ -41,12 +41,12 @@ import java.util.function.UnaryOperator;
  * @author Luis-St
  */
 public class InstantCodec extends AbstractCodec<Instant, InstantConstraintConfig> implements TemporalComparisonConstraint<Instant, InstantCodec, InstantConstraintConfig> {
-
+	
 	/**
 	 * Constructs a new instant codec.<br>
 	 */
 	public InstantCodec() {}
-
+	
 	/**
 	 * Constructs a new instant codec with the specified constraint configuration.<br>
 	 *
@@ -56,7 +56,7 @@ public class InstantCodec extends AbstractCodec<Instant, InstantConstraintConfig
 	public InstantCodec(@NonNull InstantConstraintConfig constraintConfig) {
 		super(constraintConfig);
 	}
-
+	
 	@Override
 	public @NonNull InstantCodec applyConstraint(@NonNull UnaryOperator<InstantConstraintConfig> configModifier) {
 		Objects.requireNonNull(configModifier, "Config modifier must not be null");
@@ -65,18 +65,18 @@ public class InstantCodec extends AbstractCodec<Instant, InstantConstraintConfig
 			this.getConstraintConfig().orElse(InstantConstraintConfig.UNCONSTRAINED)
 		));
 	}
-
+	
 	@Override
 	protected @NonNull Result<Void> checkConstraints(@NonNull Instant value) {
 		Objects.requireNonNull(value, "Value must not be null");
-
+		
 		Result<Void> constraintResult = this.getConstraintConfig().map(config -> config.matches(value)).orElseGet(Result::success);
 		if (constraintResult.isError()) {
 			return Result.error("Instant value " + value + " does not meet constraints: " + constraintResult.errorOrThrow());
 		}
 		return Result.success();
 	}
-
+	
 	@Override
 	public <R> @NonNull Result<R> encodeStart(@NonNull TypeProvider<R> provider, @NonNull R current, @Nullable Instant value) {
 		Objects.requireNonNull(provider, "Type provider must not be null");
@@ -84,20 +84,20 @@ public class InstantCodec extends AbstractCodec<Instant, InstantConstraintConfig
 		if (value == null) {
 			return Result.error("Unable to encode null as instant using '" + this + "'");
 		}
-
+		
 		Result<Void> constraintResult = this.checkConstraints(value);
 		if (constraintResult.isError()) {
 			return Result.error(constraintResult.errorOrThrow());
 		}
 		return provider.createString(value.toString());
 	}
-
+	
 	@Override
 	public @NonNull Result<String> encodeKey(@NonNull Instant key) {
 		Objects.requireNonNull(key, "Key must not be null");
 		return Result.success(key.toString());
 	}
-
+	
 	@Override
 	public <R> @NonNull Result<Instant> decodeStart(@NonNull TypeProvider<R> provider, @NonNull R current, @Nullable R value) {
 		Objects.requireNonNull(provider, "Type provider must not be null");
@@ -105,16 +105,16 @@ public class InstantCodec extends AbstractCodec<Instant, InstantConstraintConfig
 		if (value == null) {
 			return Result.error("Unable to decode null value as instant using '" + this + "'");
 		}
-
+		
 		Result<String> result = provider.getString(value);
 		if (result.isError()) {
 			return Result.error(result.errorOrThrow());
 		}
-
+		
 		String string = result.resultOrThrow();
 		try {
 			Instant instant = Instant.parse(string);
-
+			
 			Result<Void> constraintResult = this.checkConstraints(instant);
 			if (constraintResult.isError()) {
 				return Result.error(constraintResult.errorOrThrow());
@@ -124,7 +124,7 @@ public class InstantCodec extends AbstractCodec<Instant, InstantConstraintConfig
 			return Result.error("Unable to decode instant '" + string + "' using '" + this + "': Unable to parse instant: " + e.getMessage());
 		}
 	}
-
+	
 	@Override
 	public @NonNull Result<Instant> decodeKey(@NonNull String key) {
 		Objects.requireNonNull(key, "Key must not be null");
@@ -135,7 +135,7 @@ public class InstantCodec extends AbstractCodec<Instant, InstantConstraintConfig
 			return Result.error("Unable to decode key '" + key + "' as instant using '" + this + "': " + e.getMessage());
 		}
 	}
-
+	
 	@Override
 	public String toString() {
 		return this.getConstraintConfig().map(config -> {

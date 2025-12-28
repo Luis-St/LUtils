@@ -58,12 +58,12 @@ public interface NumberProvider<T extends Number & Comparable<T>> {
 			public @NonNull T zero() {
 				return zero;
 			}
-
+			
 			@Override
 			public @NonNull T one() {
 				return one;
 			}
-
+			
 			@Override
 			public @NonNull T hundred() {
 				return hundred;
@@ -77,14 +77,14 @@ public interface NumberProvider<T extends Number & Comparable<T>> {
 	 * @return The zero constant
 	 */
 	@NonNull T zero();
-
+	
 	/**
 	 * Returns the one value for the numeric type.<br>
 	 *
 	 * @return The one constant
 	 */
 	@NonNull T one();
-
+	
 	/**
 	 * Returns the hundred value for the numeric type.<br>
 	 *

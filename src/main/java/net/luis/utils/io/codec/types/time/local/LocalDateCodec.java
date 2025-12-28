@@ -42,12 +42,12 @@ import java.util.function.UnaryOperator;
  * @author Luis-St
  */
 public class LocalDateCodec extends AbstractCodec<LocalDate, LocalDateConstraintConfig> implements TemporalSpanConstraint<LocalDate, LocalDateCodec, LocalDateConstraintConfig>, DateFieldConstraint<LocalDateCodec, LocalDateConstraintConfig> {
-
+	
 	/**
 	 * Constructs a new local date codec.<br>
 	 */
 	public LocalDateCodec() {}
-
+	
 	/**
 	 * Constructs a new local date codec with the specified constraint configuration.<br>
 	 *
@@ -66,27 +66,27 @@ public class LocalDateCodec extends AbstractCodec<LocalDate, LocalDateConstraint
 			this.getConstraintConfig().orElse(LocalDateConstraintConfig.UNCONSTRAINED)
 		));
 	}
-
+	
 	@Override
 	protected @NonNull Result<Void> checkConstraints(@NonNull LocalDate value) {
 		Objects.requireNonNull(value, "Value must not be null");
-
+		
 		Result<Void> constraintResult = this.getConstraintConfig().map(config -> config.matches(value)).orElseGet(Result::success);
 		if (constraintResult.isError()) {
 			return Result.error("LocalDate value " + value + " does not meet constraints: " + constraintResult.errorOrThrow());
 		}
 		return Result.success();
 	}
-
+	
 	@Override
 	public <R> @NonNull Result<R> encodeStart(@NonNull TypeProvider<R> provider, @NonNull R current, @Nullable LocalDate value) {
 		Objects.requireNonNull(provider, "Type provider must not be null");
 		Objects.requireNonNull(current, "Current value must not be null");
-
+		
 		if (value == null) {
 			return Result.error("Unable to encode null as local date using '" + this + "'");
 		}
-
+		
 		Result<Void> constraintResult = this.checkConstraints(value);
 		if (constraintResult.isError()) {
 			return Result.error(constraintResult.errorOrThrow());
@@ -107,16 +107,16 @@ public class LocalDateCodec extends AbstractCodec<LocalDate, LocalDateConstraint
 		if (value == null) {
 			return Result.error("Unable to decode null value as local date using '" + this + "'");
 		}
-
+		
 		Result<String> result = provider.getString(value);
 		if (result.isError()) {
 			return Result.error(result.errorOrThrow());
 		}
-
+		
 		String string = result.resultOrThrow();
 		try {
 			LocalDate date = LocalDate.parse(string);
-
+			
 			Result<Void> constraintResult = this.checkConstraints(date);
 			if (constraintResult.isError()) {
 				return Result.error(constraintResult.errorOrThrow());

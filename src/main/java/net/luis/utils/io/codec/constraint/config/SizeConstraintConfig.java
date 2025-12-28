@@ -49,7 +49,7 @@ public record SizeConstraintConfig(
 	@NonNull OptionalInt minSize,
 	@NonNull OptionalInt maxSize
 ) {
-
+	
 	/**
 	 * A predefined unconstrained configuration with no minimum or maximum size limits.<br>
 	 * <p>
@@ -87,7 +87,7 @@ public record SizeConstraintConfig(
 			throw new IllegalArgumentException("Maximum size must not be less than minimum size when both are present");
 		}
 	}
-
+	
 	/**
 	 * Creates a new size constraint configuration with the specified minimum size.<br>
 	 * <p>
@@ -104,7 +104,7 @@ public record SizeConstraintConfig(
 	public @NonNull SizeConstraintConfig withMinSize(int minSize) {
 		return new SizeConstraintConfig(OptionalInt.of(minSize), this.maxSize);
 	}
-
+	
 	/**
 	 * Creates a new size constraint configuration with the specified maximum size.<br>
 	 * <p>

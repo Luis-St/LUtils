@@ -41,12 +41,12 @@ import java.util.function.UnaryOperator;
  * @author Luis-St
  */
 public class LocalDateTimeCodec extends AbstractCodec<LocalDateTime, LocalDateTimeConstraintConfig> implements TemporalSpanConstraint<LocalDateTime, LocalDateTimeCodec, LocalDateTimeConstraintConfig>, TimeFieldConstraint<LocalDateTimeCodec, LocalDateTimeConstraintConfig>, DateFieldConstraint<LocalDateTimeCodec, LocalDateTimeConstraintConfig> {
-
+	
 	/**
 	 * Constructs a new local date time codec.<br>
 	 */
 	public LocalDateTimeCodec() {}
-
+	
 	/**
 	 * Constructs a new local date time codec with the specified constraint configuration.<br>
 	 *
@@ -56,7 +56,7 @@ public class LocalDateTimeCodec extends AbstractCodec<LocalDateTime, LocalDateTi
 	public LocalDateTimeCodec(@NonNull LocalDateTimeConstraintConfig constraintConfig) {
 		super(constraintConfig);
 	}
-
+	
 	@Override
 	public @NonNull LocalDateTimeCodec applyConstraint(@NonNull UnaryOperator<LocalDateTimeConstraintConfig> configModifier) {
 		Objects.requireNonNull(configModifier, "Config modifier must not be null");
@@ -65,18 +65,18 @@ public class LocalDateTimeCodec extends AbstractCodec<LocalDateTime, LocalDateTi
 			this.getConstraintConfig().orElse(LocalDateTimeConstraintConfig.UNCONSTRAINED)
 		));
 	}
-
+	
 	@Override
 	protected @NonNull Result<Void> checkConstraints(@NonNull LocalDateTime value) {
 		Objects.requireNonNull(value, "Value must not be null");
-
+		
 		Result<Void> constraintResult = this.getConstraintConfig().map(config -> config.matches(value)).orElseGet(Result::success);
 		if (constraintResult.isError()) {
 			return Result.error("LocalDateTime value " + value + " does not meet constraints: " + constraintResult.errorOrThrow());
 		}
 		return Result.success();
 	}
-
+	
 	@Override
 	public <R> @NonNull Result<R> encodeStart(@NonNull TypeProvider<R> provider, @NonNull R current, @Nullable LocalDateTime value) {
 		Objects.requireNonNull(provider, "Type provider must not be null");
@@ -84,20 +84,20 @@ public class LocalDateTimeCodec extends AbstractCodec<LocalDateTime, LocalDateTi
 		if (value == null) {
 			return Result.error("Unable to encode null as local date time using '" + this + "'");
 		}
-
+		
 		Result<Void> constraintResult = this.checkConstraints(value);
 		if (constraintResult.isError()) {
 			return Result.error(constraintResult.errorOrThrow());
 		}
 		return provider.createString(value.toString());
 	}
-
+	
 	@Override
 	public @NonNull Result<String> encodeKey(@NonNull LocalDateTime key) {
 		Objects.requireNonNull(key, "Key must not be null");
 		return Result.success(key.toString());
 	}
-
+	
 	@Override
 	public <R> @NonNull Result<LocalDateTime> decodeStart(@NonNull TypeProvider<R> provider, @NonNull R current, @Nullable R value) {
 		Objects.requireNonNull(provider, "Type provider must not be null");
@@ -105,16 +105,16 @@ public class LocalDateTimeCodec extends AbstractCodec<LocalDateTime, LocalDateTi
 		if (value == null) {
 			return Result.error("Unable to decode null value as local date time using '" + this + "'");
 		}
-
+		
 		Result<String> result = provider.getString(value);
 		if (result.isError()) {
 			return Result.error(result.errorOrThrow());
 		}
-
+		
 		String string = result.resultOrThrow();
 		try {
 			LocalDateTime dateTime = LocalDateTime.parse(string);
-
+			
 			Result<Void> constraintResult = this.checkConstraints(dateTime);
 			if (constraintResult.isError()) {
 				return Result.error(constraintResult.errorOrThrow());
@@ -124,7 +124,7 @@ public class LocalDateTimeCodec extends AbstractCodec<LocalDateTime, LocalDateTi
 			return Result.error("Unable to decode local date time '" + string + "' using '" + this + "': Unable to parse local date time: " + e.getMessage());
 		}
 	}
-
+	
 	@Override
 	public @NonNull Result<LocalDateTime> decodeKey(@NonNull String key) {
 		Objects.requireNonNull(key, "Key must not be null");
@@ -135,7 +135,7 @@ public class LocalDateTimeCodec extends AbstractCodec<LocalDateTime, LocalDateTi
 			return Result.error("Unable to decode key '" + key + "' as local date time using '" + this + "': " + e.getMessage());
 		}
 	}
-
+	
 	@Override
 	public String toString() {
 		return this.getConstraintConfig().map(config -> {

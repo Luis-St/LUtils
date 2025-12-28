@@ -50,14 +50,14 @@ public class ComparableConstraintBuilder {
 	 * The current configuration being built.<br>
 	 */
 	private FieldConstraintConfig config;
-
+	
 	/**
 	 * Constructs a new comparable constraint builder with no constraints.<br>
 	 */
 	public ComparableConstraintBuilder() {
 		this.config = FieldConstraintConfig.UNCONSTRAINED;
 	}
-
+	
 	/**
 	 * Applies a "greater than" constraint (exclusive).<br>
 	 * <p>
@@ -72,7 +72,7 @@ public class ComparableConstraintBuilder {
 		this.config = this.config.withMin(value, false);
 		return this;
 	}
-
+	
 	/**
 	 * Applies a "greater than or equal" constraint (inclusive).<br>
 	 * <p>
@@ -87,7 +87,7 @@ public class ComparableConstraintBuilder {
 		this.config = this.config.withMin(value, true);
 		return this;
 	}
-
+	
 	/**
 	 * Applies a "less than" constraint (exclusive).<br>
 	 * <p>
@@ -102,7 +102,7 @@ public class ComparableConstraintBuilder {
 		this.config = this.config.withMax(value, false);
 		return this;
 	}
-
+	
 	/**
 	 * Applies a "less than or equal" constraint (inclusive).<br>
 	 * <p>
@@ -117,7 +117,7 @@ public class ComparableConstraintBuilder {
 		this.config = this.config.withMax(value, true);
 		return this;
 	}
-
+	
 	/**
 	 * Applies a range constraint (exclusive bounds).<br>
 	 * <p>
@@ -134,7 +134,7 @@ public class ComparableConstraintBuilder {
 		this.config = this.config.withRange(min, max, false);
 		return this;
 	}
-
+	
 	/**
 	 * Applies a range constraint (inclusive bounds).<br>
 	 * <p>
@@ -151,7 +151,7 @@ public class ComparableConstraintBuilder {
 		this.config = this.config.withRange(min, max, true);
 		return this;
 	}
-
+	
 	/**
 	 * Applies an equality constraint.<br>
 	 * <p>
@@ -166,7 +166,7 @@ public class ComparableConstraintBuilder {
 		this.config = this.config.withEquals(value, false);
 		return this;
 	}
-
+	
 	/**
 	 * Applies a non-equality constraint.<br>
 	 * <p>
@@ -181,7 +181,7 @@ public class ComparableConstraintBuilder {
 		this.config = this.config.withEquals(value, true);
 		return this;
 	}
-
+	
 	/**
 	 * Builds and returns the field constraint configuration.<br>
 	 *

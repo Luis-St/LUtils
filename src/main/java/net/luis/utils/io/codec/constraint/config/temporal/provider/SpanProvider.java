@@ -37,14 +37,14 @@ import java.util.function.Supplier;
  */
 @FunctionalInterface
 public interface SpanProvider<T extends Temporal & Comparable<? super T>> {
-
+	
 	/**
 	 * Gets the current time for this temporal type.<br>
 	 *
 	 * @return A Supplier that provides the current temporal value
 	 */
 	@NonNull Supplier<T> now();
-
+	
 	/**
 	 * Subtracts a duration from a temporal value.<br>
 	 *
@@ -56,7 +56,7 @@ public interface SpanProvider<T extends Temporal & Comparable<? super T>> {
 	default @NonNull T minus(@NonNull T value, @NonNull Duration duration) {
 		return (T) value.minus(duration);
 	}
-
+	
 	/**
 	 * Adds a duration to a temporal value.<br>
 	 *
@@ -68,7 +68,7 @@ public interface SpanProvider<T extends Temporal & Comparable<? super T>> {
 	default @NonNull T plus(@NonNull T value, @NonNull Duration duration) {
 		return (T) value.plus(duration);
 	}
-
+	
 	/**
 	 * Checks if a temporal value is before another.<br>
 	 *
@@ -79,7 +79,7 @@ public interface SpanProvider<T extends Temporal & Comparable<? super T>> {
 	default boolean isBefore(@NonNull T value, @NonNull T other) {
 		return value.compareTo(other) < 0;
 	}
-
+	
 	/**
 	 * Checks if a temporal value is after another.<br>
 	 *
