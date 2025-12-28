@@ -29,7 +29,7 @@ import java.net.InetAddress;
 import java.util.Objects;
 
 /**
- * Internal codec implementation for inet addresses.<br>
+ * Internal codec implementation for network addresses.<br>
  * Supports IPv4, IPv6, and domain names.<br>
  * Uses the string representation as an internal format.<br>
  *
@@ -38,7 +38,7 @@ import java.util.Objects;
 public class InetAddressCodec extends AbstractCodec<InetAddress, Object> {
 	
 	/**
-	 * Constructs a new inet address codec.<br>
+	 * Constructs a new network address codec.<br>
 	 */
 	public InetAddressCodec() {}
 	

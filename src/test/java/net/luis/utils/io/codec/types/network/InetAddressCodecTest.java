@@ -54,7 +54,7 @@ class InetAddressCodecTest {
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), null);
 		assertTrue(result.isError());
-		assertTrue(result.errorOrThrow().contains("Unable to encode null as inet address"));
+		assertTrue(result.errorOrThrow().contains("Unable to encode null as network address"));
 	}
 	
 	@Test
@@ -135,7 +135,7 @@ class InetAddressCodecTest {
 		
 		Result<InetAddress> result = codec.decodeStart(typeProvider, typeProvider.empty(), null);
 		assertTrue(result.isError());
-		assertTrue(result.errorOrThrow().contains("Unable to decode null value as inet address"));
+		assertTrue(result.errorOrThrow().contains("Unable to decode null value as network address"));
 	}
 	
 	@Test
@@ -185,7 +185,7 @@ class InetAddressCodecTest {
 		
 		Result<InetAddress> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive("999.999.999.999"));
 		assertTrue(result.isError());
-		assertTrue(result.errorOrThrow().contains("Unable to decode inet address"));
+		assertTrue(result.errorOrThrow().contains("Unable to decode network address"));
 	}
 	
 	@Test
@@ -232,7 +232,7 @@ class InetAddressCodecTest {
 		
 		Result<InetAddress> result = codec.decodeKey("999.999.999.999");
 		assertTrue(result.isError());
-		assertTrue(result.errorOrThrow().contains("Unable to decode key '999.999.999.999' as inet address"));
+		assertTrue(result.errorOrThrow().contains("Unable to decode key '999.999.999.999' as network address"));
 	}
 	
 	@Test
