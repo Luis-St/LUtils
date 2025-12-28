@@ -75,7 +75,6 @@ public class BooleanArrayCodec extends AbstractCodec<boolean[], LengthConstraint
 		if (constraintResult.isError()) {
 			return Result.error("Boolean array " + Arrays.toString(value) + " does not meet constraints: " + constraintResult.errorOrThrow());
 		}
-		
 		return Result.success();
 	}
 	
@@ -83,7 +82,6 @@ public class BooleanArrayCodec extends AbstractCodec<boolean[], LengthConstraint
 	public <R> @NonNull Result<R> encodeStart(@NonNull TypeProvider<R> provider, @NonNull R current, boolean @Nullable [] value) {
 		Objects.requireNonNull(provider, "Type provider must not be null");
 		Objects.requireNonNull(current, "Current value must not be null");
-		
 		if (value == null) {
 			return Result.error("Unable to encode null as boolean array using '" + this + "'");
 		}
@@ -116,7 +114,6 @@ public class BooleanArrayCodec extends AbstractCodec<boolean[], LengthConstraint
 		if (constraintResult.isError()) {
 			return Result.error(constraintResult.errorOrThrow());
 		}
-		
 		return Result.success(array);
 	}
 	

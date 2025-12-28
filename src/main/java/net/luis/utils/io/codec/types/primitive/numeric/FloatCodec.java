@@ -64,22 +64,7 @@ public class FloatCodec extends AbstractCodec<Float, DecimalConstraintConfig<Flo
 
 	@Override
 	public @NonNull NumberProvider<Float> provider() {
-		return new NumberProvider<>() {
-			@Override
-			public @NonNull Float zero() {
-				return 0.0F;
-			}
-
-			@Override
-			public @NonNull Float one() {
-				return 1.0F;
-			}
-
-			@Override
-			public @NonNull Float hundred() {
-				return 100.0F;
-			}
-		};
+		return NumberProvider.of(0.0F, 1.0F, 100.0F);
 	}
 
 	@Override
@@ -90,7 +75,6 @@ public class FloatCodec extends AbstractCodec<Float, DecimalConstraintConfig<Flo
 		if (constraintResult.isError()) {
 			return Result.error("Float value " + value + " does not meet constraints: " + constraintResult.errorOrThrow());
 		}
-
 		return Result.success();
 	}
 
@@ -106,7 +90,6 @@ public class FloatCodec extends AbstractCodec<Float, DecimalConstraintConfig<Flo
 		if (constraintResult.isError()) {
 			return Result.error(constraintResult.errorOrThrow());
 		}
-
 		return provider.createFloat(value);
 	}
 
@@ -134,7 +117,6 @@ public class FloatCodec extends AbstractCodec<Float, DecimalConstraintConfig<Flo
 		if (constraintResult.isError()) {
 			return Result.error(constraintResult.errorOrThrow());
 		}
-
 		return Result.success(floatValue);
 	}
 

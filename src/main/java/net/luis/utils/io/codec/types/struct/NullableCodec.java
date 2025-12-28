@@ -71,10 +71,10 @@ public class NullableCodec<C> extends AbstractCodec<C, Object> {
 	public <R> @NonNull Result<R> encodeStart(@NonNull TypeProvider<R> provider, @NonNull R current, @Nullable C value) {
 		Objects.requireNonNull(provider, "Type provider must not be null");
 		Objects.requireNonNull(current, "Current value must not be null");
-		
 		if (value == null) {
 			return provider.createNull();
 		}
+		
 		return this.codec.encodeStart(provider, current, value);
 	}
 	
@@ -90,7 +90,6 @@ public class NullableCodec<C> extends AbstractCodec<C, Object> {
 		if (isNull.isSuccess() && isNull.resultOrThrow()) {
 			return Result.success(null);
 		}
-		
 		return this.codec.decodeStart(provider, current, value);
 	}
 	

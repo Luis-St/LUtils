@@ -75,7 +75,6 @@ public class ShortArrayCodec extends AbstractCodec<short[], LengthConstraintConf
 		if (constraintResult.isError()) {
 			return Result.error("Short array " + Arrays.toString(value) + " does not meet constraints: " + constraintResult.errorOrThrow());
 		}
-		
 		return Result.success();
 	}
 	
@@ -83,7 +82,6 @@ public class ShortArrayCodec extends AbstractCodec<short[], LengthConstraintConf
 	public <R> @NonNull Result<R> encodeStart(@NonNull TypeProvider<R> provider, @NonNull R current, short @Nullable [] value) {
 		Objects.requireNonNull(provider, "Type provider must not be null");
 		Objects.requireNonNull(current, "Current value must not be null");
-		
 		if (value == null) {
 			return Result.error("Unable to encode null as short array using '" + this + "'");
 		}
@@ -92,7 +90,6 @@ public class ShortArrayCodec extends AbstractCodec<short[], LengthConstraintConf
 		if (constraintResult.isError()) {
 			return Result.error(constraintResult.errorOrThrow());
 		}
-		
 		return this.internalCodec.encodeStart(provider, current, Arrays.asList(ArrayUtils.toObject(value)));
 	}
 	
@@ -116,7 +113,6 @@ public class ShortArrayCodec extends AbstractCodec<short[], LengthConstraintConf
 		if (constraintResult.isError()) {
 			return Result.error(constraintResult.errorOrThrow());
 		}
-		
 		return Result.success(array);
 	}
 	

@@ -60,6 +60,7 @@ public class LocalDateTimeCodec extends AbstractCodec<LocalDateTime, LocalDateTi
 	@Override
 	public @NonNull LocalDateTimeCodec applyConstraint(@NonNull UnaryOperator<LocalDateTimeConstraintConfig> configModifier) {
 		Objects.requireNonNull(configModifier, "Config modifier must not be null");
+		
 		return new LocalDateTimeCodec(configModifier.apply(
 			this.getConstraintConfig().orElse(LocalDateTimeConstraintConfig.UNCONSTRAINED)
 		));
@@ -73,7 +74,6 @@ public class LocalDateTimeCodec extends AbstractCodec<LocalDateTime, LocalDateTi
 		if (constraintResult.isError()) {
 			return Result.error("LocalDateTime value " + value + " does not meet constraints: " + constraintResult.errorOrThrow());
 		}
-
 		return Result.success();
 	}
 
@@ -81,7 +81,6 @@ public class LocalDateTimeCodec extends AbstractCodec<LocalDateTime, LocalDateTi
 	public <R> @NonNull Result<R> encodeStart(@NonNull TypeProvider<R> provider, @NonNull R current, @Nullable LocalDateTime value) {
 		Objects.requireNonNull(provider, "Type provider must not be null");
 		Objects.requireNonNull(current, "Current value must not be null");
-
 		if (value == null) {
 			return Result.error("Unable to encode null as local date time using '" + this + "'");
 		}
@@ -90,7 +89,6 @@ public class LocalDateTimeCodec extends AbstractCodec<LocalDateTime, LocalDateTi
 		if (constraintResult.isError()) {
 			return Result.error(constraintResult.errorOrThrow());
 		}
-
 		return provider.createString(value.toString());
 	}
 
@@ -121,7 +119,6 @@ public class LocalDateTimeCodec extends AbstractCodec<LocalDateTime, LocalDateTi
 			if (constraintResult.isError()) {
 				return Result.error(constraintResult.errorOrThrow());
 			}
-
 			return Result.success(dateTime);
 		} catch (DateTimeParseException e) {
 			return Result.error("Unable to decode local date time '" + string + "' using '" + this + "': Unable to parse local date time: " + e.getMessage());
@@ -131,6 +128,7 @@ public class LocalDateTimeCodec extends AbstractCodec<LocalDateTime, LocalDateTi
 	@Override
 	public @NonNull Result<LocalDateTime> decodeKey(@NonNull String key) {
 		Objects.requireNonNull(key, "Key must not be null");
+		
 		try {
 			return Result.success(LocalDateTime.parse(key));
 		} catch (DateTimeParseException e) {

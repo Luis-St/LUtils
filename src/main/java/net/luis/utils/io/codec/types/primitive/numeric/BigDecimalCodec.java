@@ -65,22 +65,7 @@ public class BigDecimalCodec extends AbstractCodec<BigDecimal, BigDecimalConstra
 
 	@Override
 	public @NonNull NumberProvider<BigDecimal> provider() {
-		return new NumberProvider<>() {
-			@Override
-			public @NonNull BigDecimal zero() {
-				return BigDecimal.ZERO;
-			}
-
-			@Override
-			public @NonNull BigDecimal one() {
-				return BigDecimal.ONE;
-			}
-
-			@Override
-			public @NonNull BigDecimal hundred() {
-				return BigDecimal.valueOf(100);
-			}
-		};
+		return NumberProvider.of(BigDecimal.ZERO, BigDecimal.ONE, BigDecimal.valueOf(100));
 	}
 
 	@Override
@@ -91,7 +76,6 @@ public class BigDecimalCodec extends AbstractCodec<BigDecimal, BigDecimalConstra
 		if (constraintResult.isError()) {
 			return Result.error("BigDecimal value " + value + " does not meet constraints: " + constraintResult.errorOrThrow());
 		}
-
 		return Result.success();
 	}
 
@@ -107,7 +91,6 @@ public class BigDecimalCodec extends AbstractCodec<BigDecimal, BigDecimalConstra
 		if (constraintResult.isError()) {
 			return Result.error(constraintResult.errorOrThrow());
 		}
-
 		return provider.createString(value.toPlainString());
 	}
 
@@ -138,7 +121,6 @@ public class BigDecimalCodec extends AbstractCodec<BigDecimal, BigDecimalConstra
 			if (constraintResult.isError()) {
 				return Result.error(constraintResult.errorOrThrow());
 			}
-
 			return Result.success(bigDecimal);
 		} catch (NumberFormatException e) {
 			return Result.error("Unable to decode big decimal '" + string + "' using '" + this + "': " + e.getMessage());

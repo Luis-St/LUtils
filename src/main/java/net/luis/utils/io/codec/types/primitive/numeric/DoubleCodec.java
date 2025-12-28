@@ -64,22 +64,7 @@ public class DoubleCodec extends AbstractCodec<Double, DecimalConstraintConfig<D
 
 	@Override
 	public @NonNull NumberProvider<Double> provider() {
-		return new NumberProvider<>() {
-			@Override
-			public @NonNull Double zero() {
-				return 0.0;
-			}
-
-			@Override
-			public @NonNull Double one() {
-				return 1.0;
-			}
-
-			@Override
-			public @NonNull Double hundred() {
-				return 100.0;
-			}
-		};
+		return NumberProvider.of(0.0, 1.0, 100.0);
 	}
 
 	@Override
@@ -90,7 +75,6 @@ public class DoubleCodec extends AbstractCodec<Double, DecimalConstraintConfig<D
 		if (constraintResult.isError()) {
 			return Result.error("Double value " + value + " does not meet constraints: " + constraintResult.errorOrThrow());
 		}
-
 		return Result.success();
 	}
 
@@ -106,7 +90,6 @@ public class DoubleCodec extends AbstractCodec<Double, DecimalConstraintConfig<D
 		if (constraintResult.isError()) {
 			return Result.error(constraintResult.errorOrThrow());
 		}
-
 		return provider.createDouble(value);
 	}
 
@@ -134,7 +117,6 @@ public class DoubleCodec extends AbstractCodec<Double, DecimalConstraintConfig<D
 		if (constraintResult.isError()) {
 			return Result.error(constraintResult.errorOrThrow());
 		}
-
 		return Result.success(doubleValue);
 	}
 

@@ -105,7 +105,6 @@ public class ArrayCodec<C> extends AbstractCodec<C[], LengthConstraintConfig> im
 		if (constraintResult.isError()) {
 			return Result.error("Array " + Arrays.toString(value) + " does not meet constraints: " + constraintResult.errorOrThrow());
 		}
-		
 		return Result.success();
 	}
 	
@@ -120,7 +119,6 @@ public class ArrayCodec<C> extends AbstractCodec<C[], LengthConstraintConfig> im
 	public <R> @NonNull Result<R> encodeStart(@NonNull TypeProvider<R> provider, @NonNull R current, C @Nullable [] value) {
 		Objects.requireNonNull(provider, "Type provider must not be null");
 		Objects.requireNonNull(current, "Current value must not be null");
-		
 		if (value == null) {
 			return Result.error("Unable to encode null value as array using '" + this + "'");
 		}

@@ -91,7 +91,6 @@ public class ListCodec<C> extends AbstractCodec<List<C>, SizeConstraintConfig> i
 		if (constraintResult.isError()) {
 			return Result.error("List " + value + " does not meet constraints: " + constraintResult.errorOrThrow());
 		}
-		
 		return Result.success();
 	}
 	

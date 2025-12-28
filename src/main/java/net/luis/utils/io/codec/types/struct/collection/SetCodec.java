@@ -90,7 +90,6 @@ public class SetCodec<E> extends AbstractCodec<Set<E>, SizeConstraintConfig> imp
 		if (constraintResult.isError()) {
 			return Result.error("Set " + value + " does not meet constraints: " + constraintResult.errorOrThrow());
 		}
-		
 		return Result.success();
 	}
 

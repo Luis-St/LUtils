@@ -112,7 +112,6 @@ public class AnyCodec<C> extends AbstractCodec<C, Object> {
 	public <R> @NonNull Result<R> encodeStart(@NonNull TypeProvider<R> provider, @NonNull R current, @Nullable C value) {
 		Objects.requireNonNull(provider, "Type provider must not be null");
 		Objects.requireNonNull(current, "Current value must not be null");
-		
 		if (value == null) {
 			return Result.error("Unable to encode null value as any using '" + this + "'");
 		}
@@ -138,7 +137,6 @@ public class AnyCodec<C> extends AbstractCodec<C, Object> {
 	public <R> @NonNull Result<C> decodeStart(@NonNull TypeProvider<R> provider, @NonNull R current, @Nullable R value) {
 		Objects.requireNonNull(provider, "Type provider must not be null");
 		Objects.requireNonNull(current, "Current value must not be null");
-		
 		if (value == null) {
 			return Result.error("Unable to decode null value as any using '" + this + "'");
 		}

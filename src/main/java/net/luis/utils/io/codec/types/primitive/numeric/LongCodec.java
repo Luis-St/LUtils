@@ -64,22 +64,7 @@ public class LongCodec extends AbstractCodec<Long, IntegerConstraintConfig<Long>
 
 	@Override
 	public @NonNull NumberProvider<Long> provider() {
-		return new NumberProvider<>() {
-			@Override
-			public @NonNull Long zero() {
-				return 0L;
-			}
-
-			@Override
-			public @NonNull Long one() {
-				return 1L;
-			}
-
-			@Override
-			public @NonNull Long hundred() {
-				return 100L;
-			}
-		};
+		return NumberProvider.of(0L, 1L, 100L);
 	}
 
 	@Override
@@ -90,7 +75,6 @@ public class LongCodec extends AbstractCodec<Long, IntegerConstraintConfig<Long>
 		if (constraintResult.isError()) {
 			return Result.error("Long value " + value + " does not meet constraints: " + constraintResult.errorOrThrow());
 		}
-
 		return Result.success();
 	}
 
@@ -106,7 +90,6 @@ public class LongCodec extends AbstractCodec<Long, IntegerConstraintConfig<Long>
 		if (constraintResult.isError()) {
 			return Result.error(constraintResult.errorOrThrow());
 		}
-
 		return provider.createLong(value);
 	}
 
@@ -134,7 +117,6 @@ public class LongCodec extends AbstractCodec<Long, IntegerConstraintConfig<Long>
 		if (constraintResult.isError()) {
 			return Result.error(constraintResult.errorOrThrow());
 		}
-
 		return Result.success(longValue);
 	}
 

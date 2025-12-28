@@ -60,6 +60,7 @@ public class OffsetDateTimeCodec extends AbstractCodec<OffsetDateTime, OffsetDat
 	@Override
 	public @NonNull OffsetDateTimeCodec applyConstraint(@NonNull UnaryOperator<OffsetDateTimeConstraintConfig> configModifier) {
 		Objects.requireNonNull(configModifier, "Config modifier must not be null");
+		
 		return new OffsetDateTimeCodec(configModifier.apply(
 			this.getConstraintConfig().orElse(OffsetDateTimeConstraintConfig.UNCONSTRAINED)
 		));
@@ -73,7 +74,6 @@ public class OffsetDateTimeCodec extends AbstractCodec<OffsetDateTime, OffsetDat
 		if (constraintResult.isError()) {
 			return Result.error("OffsetDateTime value " + value + " does not meet constraints: " + constraintResult.errorOrThrow());
 		}
-
 		return Result.success();
 	}
 	
@@ -90,7 +90,6 @@ public class OffsetDateTimeCodec extends AbstractCodec<OffsetDateTime, OffsetDat
 		if (constraintResult.isError()) {
 			return Result.error(constraintResult.errorOrThrow());
 		}
-
 		return provider.createString(value.toString());
 	}
 	
@@ -121,7 +120,6 @@ public class OffsetDateTimeCodec extends AbstractCodec<OffsetDateTime, OffsetDat
 			if (constraintResult.isError()) {
 				return Result.error(constraintResult.errorOrThrow());
 			}
-
 			return Result.success(dateTime);
 		} catch (DateTimeParseException e) {
 			return Result.error("Unable to decode offset date time '" + string + "' using '" + this + "': Unable to parse offset date time: " + e.getMessage());
@@ -131,6 +129,7 @@ public class OffsetDateTimeCodec extends AbstractCodec<OffsetDateTime, OffsetDat
 	@Override
 	public @NonNull Result<OffsetDateTime> decodeKey(@NonNull String key) {
 		Objects.requireNonNull(key, "Key must not be null");
+		
 		try {
 			return Result.success(OffsetDateTime.parse(key));
 		} catch (DateTimeParseException e) {

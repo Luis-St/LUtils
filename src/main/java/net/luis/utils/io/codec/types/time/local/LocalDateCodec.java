@@ -61,6 +61,7 @@ public class LocalDateCodec extends AbstractCodec<LocalDate, LocalDateConstraint
 	@Override
 	public @NonNull LocalDateCodec applyConstraint(@NonNull UnaryOperator<LocalDateConstraintConfig> configModifier) {
 		Objects.requireNonNull(configModifier, "Config modifier must not be null");
+		
 		return new LocalDateCodec(configModifier.apply(
 			this.getConstraintConfig().orElse(LocalDateConstraintConfig.UNCONSTRAINED)
 		));
@@ -74,7 +75,6 @@ public class LocalDateCodec extends AbstractCodec<LocalDate, LocalDateConstraint
 		if (constraintResult.isError()) {
 			return Result.error("LocalDate value " + value + " does not meet constraints: " + constraintResult.errorOrThrow());
 		}
-
 		return Result.success();
 	}
 
@@ -91,7 +91,6 @@ public class LocalDateCodec extends AbstractCodec<LocalDate, LocalDateConstraint
 		if (constraintResult.isError()) {
 			return Result.error(constraintResult.errorOrThrow());
 		}
-
 		return provider.createString(value.toString());
 	}
 	
@@ -122,7 +121,6 @@ public class LocalDateCodec extends AbstractCodec<LocalDate, LocalDateConstraint
 			if (constraintResult.isError()) {
 				return Result.error(constraintResult.errorOrThrow());
 			}
-
 			return Result.success(date);
 		} catch (DateTimeParseException e) {
 			return Result.error("Unable to decode local date '" + string + "' using '" + this + "': Unable to parse local date: " + e.getMessage());
@@ -132,6 +130,7 @@ public class LocalDateCodec extends AbstractCodec<LocalDate, LocalDateConstraint
 	@Override
 	public @NonNull Result<LocalDate> decodeKey(@NonNull String key) {
 		Objects.requireNonNull(key, "Key must not be null");
+		
 		try {
 			return Result.success(LocalDate.parse(key));
 		} catch (DateTimeParseException e) {

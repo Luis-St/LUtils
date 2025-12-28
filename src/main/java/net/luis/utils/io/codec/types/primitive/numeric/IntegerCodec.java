@@ -64,22 +64,7 @@ public class IntegerCodec extends AbstractCodec<Integer, IntegerConstraintConfig
 
 	@Override
 	public @NonNull NumberProvider<Integer> provider() {
-		return new NumberProvider<>() {
-			@Override
-			public @NonNull Integer zero() {
-				return 0;
-			}
-
-			@Override
-			public @NonNull Integer one() {
-				return 1;
-			}
-
-			@Override
-			public @NonNull Integer hundred() {
-				return 100;
-			}
-		};
+		return NumberProvider.of(0, 1, 100);
 	}
 
 	@Override
@@ -90,7 +75,6 @@ public class IntegerCodec extends AbstractCodec<Integer, IntegerConstraintConfig
 		if (constraintResult.isError()) {
 			return Result.error("Integer value " + value + " does not meet constraints: " + constraintResult.errorOrThrow());
 		}
-
 		return Result.success();
 	}
 
@@ -106,7 +90,6 @@ public class IntegerCodec extends AbstractCodec<Integer, IntegerConstraintConfig
 		if (constraintResult.isError()) {
 			return Result.error(constraintResult.errorOrThrow());
 		}
-
 		return provider.createInteger(value);
 	}
 
@@ -134,7 +117,6 @@ public class IntegerCodec extends AbstractCodec<Integer, IntegerConstraintConfig
 		if (constraintResult.isError()) {
 			return Result.error(constraintResult.errorOrThrow());
 		}
-
 		return Result.success(intValue);
 	}
 

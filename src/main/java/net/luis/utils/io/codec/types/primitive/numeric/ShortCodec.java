@@ -64,22 +64,7 @@ public class ShortCodec extends AbstractCodec<Short, IntegerConstraintConfig<Sho
 
 	@Override
 	public @NonNull NumberProvider<Short> provider() {
-		return new NumberProvider<>() {
-			@Override
-			public @NonNull Short zero() {
-				return (short) 0;
-			}
-
-			@Override
-			public @NonNull Short one() {
-				return (short) 1;
-			}
-
-			@Override
-			public @NonNull Short hundred() {
-				return (short) 100;
-			}
-		};
+		return NumberProvider.of((short) 0, (short) 1, (short) 100);
 	}
 
 	@Override
@@ -90,7 +75,6 @@ public class ShortCodec extends AbstractCodec<Short, IntegerConstraintConfig<Sho
 		if (constraintResult.isError()) {
 			return Result.error("Short value " + value + " does not meet constraints: " + constraintResult.errorOrThrow());
 		}
-
 		return Result.success();
 	}
 
@@ -106,7 +90,6 @@ public class ShortCodec extends AbstractCodec<Short, IntegerConstraintConfig<Sho
 		if (constraintResult.isError()) {
 			return Result.error(constraintResult.errorOrThrow());
 		}
-
 		return provider.createShort(value);
 	}
 
@@ -134,7 +117,6 @@ public class ShortCodec extends AbstractCodec<Short, IntegerConstraintConfig<Sho
 		if (constraintResult.isError()) {
 			return Result.error(constraintResult.errorOrThrow());
 		}
-
 		return Result.success(shortValue);
 	}
 

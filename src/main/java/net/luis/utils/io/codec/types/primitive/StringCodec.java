@@ -67,7 +67,6 @@ public class StringCodec extends AbstractCodec<String, LengthConstraintConfig> i
 		if (constraintResult.isError()) {
 			return Result.error("String " + value + " does not meet constraints: " + constraintResult.errorOrThrow());
 		}
-		
 		return Result.success();
 	}
 	
@@ -82,7 +81,6 @@ public class StringCodec extends AbstractCodec<String, LengthConstraintConfig> i
 		if (constraintResult.isError()) {
 			return Result.error(constraintResult.errorOrThrow());
 		}
-		
 		return provider.createString(value);
 	}
 	
@@ -109,7 +107,6 @@ public class StringCodec extends AbstractCodec<String, LengthConstraintConfig> i
 		if (constraintResult.isError()) {
 			return Result.error(constraintResult.errorOrThrow());
 		}
-		
 		return stringResult;
 	}
 	

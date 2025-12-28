@@ -61,6 +61,7 @@ public class LocalTimeCodec extends AbstractCodec<LocalTime, LocalTimeConstraint
 	@Override
 	public @NonNull LocalTimeCodec applyConstraint(@NonNull UnaryOperator<LocalTimeConstraintConfig> configModifier) {
 		Objects.requireNonNull(configModifier, "Config modifier must not be null");
+		
 		return new LocalTimeCodec(configModifier.apply(
 			this.getConstraintConfig().orElse(LocalTimeConstraintConfig.UNCONSTRAINED)
 		));
@@ -81,7 +82,6 @@ public class LocalTimeCodec extends AbstractCodec<LocalTime, LocalTimeConstraint
 	public <R> @NonNull Result<R> encodeStart(@NonNull TypeProvider<R> provider, @NonNull R current, @Nullable LocalTime value) {
 		Objects.requireNonNull(provider, "Type provider must not be null");
 		Objects.requireNonNull(current, "Current value must not be null");
-
 		if (value == null) {
 			return Result.error("Unable to encode null as local time using '" + this + "'");
 		}

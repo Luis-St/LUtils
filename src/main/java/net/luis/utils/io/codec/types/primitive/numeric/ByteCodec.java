@@ -64,22 +64,7 @@ public class ByteCodec extends AbstractCodec<Byte, IntegerConstraintConfig<Byte>
 
 	@Override
 	public @NonNull NumberProvider<Byte> provider() {
-		return new NumberProvider<>() {
-			@Override
-			public @NonNull Byte zero() {
-				return (byte) 0;
-			}
-
-			@Override
-			public @NonNull Byte one() {
-				return (byte) 1;
-			}
-
-			@Override
-			public @NonNull Byte hundred() {
-				return (byte) 100;
-			}
-		};
+		return NumberProvider.of((byte) 0, (byte) 1, (byte) 100);
 	}
 
 	@Override
@@ -90,7 +75,6 @@ public class ByteCodec extends AbstractCodec<Byte, IntegerConstraintConfig<Byte>
 		if (constraintResult.isError()) {
 			return Result.error("Byte value " + value + " does not meet constraints: " + constraintResult.errorOrThrow());
 		}
-
 		return Result.success();
 	}
 
@@ -106,7 +90,6 @@ public class ByteCodec extends AbstractCodec<Byte, IntegerConstraintConfig<Byte>
 		if (constraintResult.isError()) {
 			return Result.error(constraintResult.errorOrThrow());
 		}
-
 		return provider.createByte(value);
 	}
 
@@ -134,7 +117,6 @@ public class ByteCodec extends AbstractCodec<Byte, IntegerConstraintConfig<Byte>
 		if (constraintResult.isError()) {
 			return Result.error(constraintResult.errorOrThrow());
 		}
-
 		return Result.success(byteValue);
 	}
 

@@ -100,7 +100,6 @@ public class MapCodec<K, V> extends AbstractCodec<Map<K, V>, SizeConstraintConfi
 		if (constraintResult.isError()) {
 			return Result.error("Map " + value + " does not meet constraints: " + constraintResult.errorOrThrow());
 		}
-		
 		return Result.success();
 	}
 

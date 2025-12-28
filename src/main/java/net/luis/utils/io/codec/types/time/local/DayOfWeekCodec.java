@@ -44,10 +44,10 @@ public class DayOfWeekCodec extends AbstractCodec<DayOfWeek, Object> {
 	public <R> @NonNull Result<R> encodeStart(@NonNull TypeProvider<R> provider, @NonNull R current, @Nullable DayOfWeek value) {
 		Objects.requireNonNull(provider, "Type provider must not be null");
 		Objects.requireNonNull(current, "Current value must not be null");
-		
 		if (value == null) {
 			return Result.error("Unable to encode null as day of week using '" + this + "'");
 		}
+		
 		return provider.createString(value.name());
 	}
 	

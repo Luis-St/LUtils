@@ -60,6 +60,7 @@ public class ZonedDateTimeCodec extends AbstractCodec<ZonedDateTime, ZonedDateTi
 	@Override
 	public @NonNull ZonedDateTimeCodec applyConstraint(@NonNull UnaryOperator<ZonedDateTimeConstraintConfig> configModifier) {
 		Objects.requireNonNull(configModifier, "Config modifier must not be null");
+		
 		return new ZonedDateTimeCodec(configModifier.apply(
 			this.getConstraintConfig().orElse(ZonedDateTimeConstraintConfig.UNCONSTRAINED)
 		));
@@ -73,7 +74,6 @@ public class ZonedDateTimeCodec extends AbstractCodec<ZonedDateTime, ZonedDateTi
 		if (constraintResult.isError()) {
 			return Result.error("ZonedDateTime value " + value + " does not meet constraints: " + constraintResult.errorOrThrow());
 		}
-
 		return Result.success();
 	}
 
@@ -81,7 +81,6 @@ public class ZonedDateTimeCodec extends AbstractCodec<ZonedDateTime, ZonedDateTi
 	public <R> @NonNull Result<R> encodeStart(@NonNull TypeProvider<R> provider, @NonNull R current, @Nullable ZonedDateTime value) {
 		Objects.requireNonNull(provider, "Type provider must not be null");
 		Objects.requireNonNull(current, "Current value must not be null");
-
 		if (value == null) {
 			return Result.error("Unable to encode null as zoned date time using '" + this + "'");
 		}
@@ -90,7 +89,6 @@ public class ZonedDateTimeCodec extends AbstractCodec<ZonedDateTime, ZonedDateTi
 		if (constraintResult.isError()) {
 			return Result.error(constraintResult.errorOrThrow());
 		}
-
 		return provider.createString(value.toString());
 	}
 
@@ -121,7 +119,6 @@ public class ZonedDateTimeCodec extends AbstractCodec<ZonedDateTime, ZonedDateTi
 			if (constraintResult.isError()) {
 				return Result.error(constraintResult.errorOrThrow());
 			}
-
 			return Result.success(dateTime);
 		} catch (DateTimeParseException e) {
 			return Result.error("Unable to decode zoned date time '" + string + "' using '" + this + "': Unable to parse zoned date time: " + e.getMessage());
@@ -131,6 +128,7 @@ public class ZonedDateTimeCodec extends AbstractCodec<ZonedDateTime, ZonedDateTi
 	@Override
 	public @NonNull Result<ZonedDateTime> decodeKey(@NonNull String key) {
 		Objects.requireNonNull(key, "Key must not be null");
+		
 		try {
 			return Result.success(ZonedDateTime.parse(key));
 		} catch (DateTimeParseException e) {

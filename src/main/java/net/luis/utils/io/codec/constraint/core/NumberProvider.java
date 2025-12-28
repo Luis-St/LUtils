@@ -20,6 +20,8 @@ package net.luis.utils.io.codec.constraint.core;
 
 import org.jspecify.annotations.NonNull;
 
+import java.util.Objects;
+
 /**
  * Provides numeric constant values for a specific number type.<br>
  * <p>
@@ -35,7 +37,40 @@ import org.jspecify.annotations.NonNull;
  * @param <T> The numeric type for which constants are provided
  */
 public interface NumberProvider<T extends Number & Comparable<T>> {
+	
+	/**
+	 * Creates a number provider from the given constant values.<br>
+	 *
+	 * @param zero The zero value
+	 * @param one The one value
+	 * @param hundred The hundred value
+	 * @param <T> The numeric type
+	 * @return A number provider for the specified numeric type
+	 * @throws NullPointerException If any of the values is null
+	 */
+	static <T extends Number & Comparable<T>> @NonNull NumberProvider<T> of(@NonNull T zero, @NonNull T one, @NonNull T hundred) {
+		Objects.requireNonNull(zero, "Zero value must not be null");
+		Objects.requireNonNull(one, "One value must not be null");
+		Objects.requireNonNull(hundred, "Hundred value must not be null");
+		
+		return new NumberProvider<>() {
+			@Override
+			public @NonNull T zero() {
+				return zero;
+			}
 
+			@Override
+			public @NonNull T one() {
+				return one;
+			}
+
+			@Override
+			public @NonNull T hundred() {
+				return hundred;
+			}
+		};
+	}
+	
 	/**
 	 * Returns the zero value for the numeric type.<br>
 	 *

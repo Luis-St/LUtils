@@ -60,6 +60,7 @@ public class YearCodec extends AbstractCodec<Year, YearConstraintConfig> impleme
 	@Override
 	public @NonNull YearCodec applyConstraint(@NonNull UnaryOperator<YearConstraintConfig> configModifier) {
 		Objects.requireNonNull(configModifier, "Config modifier must not be null");
+		
 		return new YearCodec(configModifier.apply(
 			this.getConstraintConfig().orElse(YearConstraintConfig.UNCONSTRAINED)
 		));
@@ -69,13 +70,10 @@ public class YearCodec extends AbstractCodec<Year, YearConstraintConfig> impleme
 	protected @NonNull Result<Void> checkConstraints(@NonNull Year value) {
 		Objects.requireNonNull(value, "Value must not be null");
 
-		Result<Void> constraintResult = this.getConstraintConfig()
-			.map(config -> config.matches(value))
-			.orElseGet(Result::success);
+		Result<Void> constraintResult = this.getConstraintConfig().map(config -> config.matches(value)).orElseGet(Result::success);
 		if (constraintResult.isError()) {
 			return Result.error("Year value " + value + " does not meet constraints: " + constraintResult.errorOrThrow());
 		}
-
 		return Result.success();
 	}
 
@@ -83,7 +81,6 @@ public class YearCodec extends AbstractCodec<Year, YearConstraintConfig> impleme
 	public <R> @NonNull Result<R> encodeStart(@NonNull TypeProvider<R> provider, @NonNull R current, @Nullable Year value) {
 		Objects.requireNonNull(provider, "Type provider must not be null");
 		Objects.requireNonNull(current, "Current value must not be null");
-
 		if (value == null) {
 			return Result.error("Unable to encode null as year using '" + this + "'");
 		}
@@ -92,7 +89,6 @@ public class YearCodec extends AbstractCodec<Year, YearConstraintConfig> impleme
 		if (constraintResult.isError()) {
 			return Result.error(constraintResult.errorOrThrow());
 		}
-
 		return provider.createInteger(value.getValue());
 	}
 

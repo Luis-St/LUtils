@@ -70,6 +70,7 @@ public class ByteArrayCodec extends AbstractCodec<byte[], LengthConstraintConfig
 	@Override
 	protected @NonNull Result<Void> checkConstraints(byte @NonNull [] value) {
 		Objects.requireNonNull(value, "Value must not be null");
+		
 		Result<Void> constraintResult = this.getConstraintConfig().map(config -> config.matches(value.length)).orElseGet(Result::success);
 		if (constraintResult.isError()) {
 			return Result.error("Byte array " + Arrays.toString(value) + " does not meet constraints: " + constraintResult.errorOrThrow());
@@ -81,7 +82,6 @@ public class ByteArrayCodec extends AbstractCodec<byte[], LengthConstraintConfig
 	public <R> @NonNull Result<R> encodeStart(@NonNull TypeProvider<R> provider, @NonNull R current, byte @Nullable [] value) {
 		Objects.requireNonNull(provider, "Type provider must not be null");
 		Objects.requireNonNull(current, "Current value must not be null");
-
 		if (value == null) {
 			return Result.error("Unable to encode null as byte array using '" + this + "'");
 		}
@@ -90,7 +90,6 @@ public class ByteArrayCodec extends AbstractCodec<byte[], LengthConstraintConfig
 		if (constraintResult.isError()) {
 			return Result.error(constraintResult.errorOrThrow());
 		}
-
 		return this.internalCodec.encodeStart(provider, current, Arrays.asList(ArrayUtils.toObject(value)));
 	}
 
@@ -114,7 +113,6 @@ public class ByteArrayCodec extends AbstractCodec<byte[], LengthConstraintConfig
 		if (constraintResult.isError()) {
 			return Result.error(constraintResult.errorOrThrow());
 		}
-
 		return Result.success(array);
 	}
 

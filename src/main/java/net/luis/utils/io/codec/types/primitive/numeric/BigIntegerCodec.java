@@ -66,22 +66,7 @@ public class BigIntegerCodec extends AbstractCodec<BigInteger, IntegerConstraint
 
 	@Override
 	public @NonNull NumberProvider<BigInteger> provider() {
-		return new NumberProvider<>() {
-			@Override
-			public @NonNull BigInteger zero() {
-				return BigInteger.ZERO;
-			}
-
-			@Override
-			public @NonNull BigInteger one() {
-				return BigInteger.ONE;
-			}
-
-			@Override
-			public @NonNull BigInteger hundred() {
-				return BigInteger.valueOf(100);
-			}
-		};
+		return NumberProvider.of(BigInteger.ZERO, BigInteger.ONE, BigInteger.valueOf(100));
 	}
 
 	@Override
@@ -92,7 +77,6 @@ public class BigIntegerCodec extends AbstractCodec<BigInteger, IntegerConstraint
 		if (constraintResult.isError()) {
 			return Result.error("BigInteger value " + value + " does not meet constraints: " + constraintResult.errorOrThrow());
 		}
-
 		return Result.success();
 	}
 
@@ -108,7 +92,6 @@ public class BigIntegerCodec extends AbstractCodec<BigInteger, IntegerConstraint
 		if (constraintResult.isError()) {
 			return Result.error(constraintResult.errorOrThrow());
 		}
-
 		return provider.createString(value.toString());
 	}
 
@@ -139,7 +122,6 @@ public class BigIntegerCodec extends AbstractCodec<BigInteger, IntegerConstraint
 			if (constraintResult.isError()) {
 				return Result.error(constraintResult.errorOrThrow());
 			}
-
 			return Result.success(bigInteger);
 		} catch (NumberFormatException e) {
 			return Result.error("Unable to decode big integer '" + string + "' using '" + this + "': " + e.getMessage());

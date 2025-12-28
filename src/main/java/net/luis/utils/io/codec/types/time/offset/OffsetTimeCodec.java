@@ -61,6 +61,7 @@ public class OffsetTimeCodec extends AbstractCodec<OffsetTime, OffsetTimeConstra
 	@Override
 	public @NonNull OffsetTimeCodec applyConstraint(@NonNull UnaryOperator<OffsetTimeConstraintConfig> configModifier) {
 		Objects.requireNonNull(configModifier, "Config modifier must not be null");
+		
 		return new OffsetTimeCodec(configModifier.apply(
 			this.getConstraintConfig().orElse(OffsetTimeConstraintConfig.UNCONSTRAINED)
 		));
@@ -74,7 +75,6 @@ public class OffsetTimeCodec extends AbstractCodec<OffsetTime, OffsetTimeConstra
 		if (constraintResult.isError()) {
 			return Result.error("OffsetTime value " + value + " does not meet constraints: " + constraintResult.errorOrThrow());
 		}
-
 		return Result.success();
 	}
 	
@@ -82,7 +82,6 @@ public class OffsetTimeCodec extends AbstractCodec<OffsetTime, OffsetTimeConstra
 	public <R> @NonNull Result<R> encodeStart(@NonNull TypeProvider<R> provider, @NonNull R current, @Nullable OffsetTime value) {
 		Objects.requireNonNull(provider, "Type provider must not be null");
 		Objects.requireNonNull(current, "Current value must not be null");
-
 		if (value == null) {
 			return Result.error("Unable to encode null as offset time using '" + this + "'");
 		}
@@ -91,7 +90,6 @@ public class OffsetTimeCodec extends AbstractCodec<OffsetTime, OffsetTimeConstra
 		if (constraintResult.isError()) {
 			return Result.error(constraintResult.errorOrThrow());
 		}
-
 		return provider.createString(value.toString());
 	}
 	
@@ -122,7 +120,6 @@ public class OffsetTimeCodec extends AbstractCodec<OffsetTime, OffsetTimeConstra
 			if (constraintResult.isError()) {
 				return Result.error(constraintResult.errorOrThrow());
 			}
-
 			return Result.success(time);
 		} catch (DateTimeParseException e) {
 			return Result.error("Unable to decode offset time '" + string + "' using '" + this + "': Unable to parse offset time: " + e.getMessage());
@@ -132,6 +129,7 @@ public class OffsetTimeCodec extends AbstractCodec<OffsetTime, OffsetTimeConstra
 	@Override
 	public @NonNull Result<OffsetTime> decodeKey(@NonNull String key) {
 		Objects.requireNonNull(key, "Key must not be null");
+		
 		try {
 			return Result.success(OffsetTime.parse(key));
 		} catch (DateTimeParseException e) {

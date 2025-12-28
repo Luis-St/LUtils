@@ -48,7 +48,7 @@ public class InetAddressCodec extends AbstractCodec<InetAddress, Object> {
 		Objects.requireNonNull(current, "Current value must not be null");
 		
 		if (value == null) {
-			return Result.error("Unable to encode null as inet address using '" + this + "'");
+			return Result.error("Unable to encode null as network address using '" + this + "'");
 		}
 		return provider.createString(value.getHostAddress());
 	}
@@ -64,7 +64,7 @@ public class InetAddressCodec extends AbstractCodec<InetAddress, Object> {
 		Objects.requireNonNull(provider, "Type provider must not be null");
 		Objects.requireNonNull(current, "Current value must not be null");
 		if (value == null) {
-			return Result.error("Unable to decode null value as inet address using '" + this + "'");
+			return Result.error("Unable to decode null value as network address using '" + this + "'");
 		}
 		
 		Result<String> result = provider.getString(value);
@@ -76,7 +76,7 @@ public class InetAddressCodec extends AbstractCodec<InetAddress, Object> {
 		try {
 			return Result.success(InetAddress.getByName(string));
 		} catch (IOException e) {
-			return Result.error("Unable to decode inet address '" + string + "' using '" + this + "': " + e.getMessage());
+			return Result.error("Unable to decode network address '" + string + "' using '" + this + "': " + e.getMessage());
 		}
 	}
 	
@@ -87,7 +87,7 @@ public class InetAddressCodec extends AbstractCodec<InetAddress, Object> {
 		try {
 			return Result.success(InetAddress.getByName(key));
 		} catch (IOException e) {
-			return Result.error("Unable to decode key '" + key + "' as inet address using '" + this + "': " + e.getMessage());
+			return Result.error("Unable to decode key '" + key + "' as network address using '" + this + "': " + e.getMessage());
 		}
 	}
 	

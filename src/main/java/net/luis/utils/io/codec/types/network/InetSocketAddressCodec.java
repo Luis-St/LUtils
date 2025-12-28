@@ -48,7 +48,7 @@ public class InetSocketAddressCodec extends AbstractCodec<InetSocketAddress, Obj
 		Objects.requireNonNull(provider, "Type provider must not be null");
 		Objects.requireNonNull(current, "Current value must not be null");
 		if (value == null) {
-			return Result.error("Unable to encode null as inet socket address using '" + this + "'");
+			return Result.error("Unable to encode null as network socket address using '" + this + "'");
 		}
 		
 		String address = value.getAddress().getHostAddress();
@@ -81,7 +81,7 @@ public class InetSocketAddressCodec extends AbstractCodec<InetSocketAddress, Obj
 		Objects.requireNonNull(provider, "Type provider must not be null");
 		Objects.requireNonNull(current, "Current value must not be null");
 		if (value == null) {
-			return Result.error("Unable to decode null value as inet socket address using '" + this + "'");
+			return Result.error("Unable to decode null value as network socket address using '" + this + "'");
 		}
 		
 		Result<String> result = provider.getString(value);
@@ -122,7 +122,7 @@ public class InetSocketAddressCodec extends AbstractCodec<InetSocketAddress, Obj
 			} else {
 				int lastColon = string.lastIndexOf(':');
 				if (lastColon == -1) {
-					return Result.error("Invalid socket address format '" + string + "', expected 'address:port'");
+					return Result.error("Invalid network socket address format '" + string + "', expected 'address:port'");
 				}
 				
 				address = string.substring(0, lastColon);
@@ -132,10 +132,11 @@ public class InetSocketAddressCodec extends AbstractCodec<InetSocketAddress, Obj
 			if (port < 0 || port > 65535) {
 				return Result.error("Port number out of range: " + port);
 			}
+			
 			InetAddress inetAddress = InetAddress.getByName(address);
 			return Result.success(new InetSocketAddress(inetAddress, port));
 		} catch (IOException e) {
-			return Result.error("Unable to decode inet socket address '" + string + "' using '" + this + "': " + e.getMessage());
+			return Result.error("Unable to decode network socket address '" + string + "' using '" + this + "': " + e.getMessage());
 		} catch (NumberFormatException e) {
 			return Result.error("Invalid port number in '" + string + "': " + e.getMessage());
 		}

@@ -77,10 +77,10 @@ public class EitherCodec<F, S> extends AbstractCodec<Either<F, S>, Object> {
 	public <R> @NonNull Result<R> encodeStart(@NonNull TypeProvider<R> provider, @NonNull R current, @Nullable Either<F, S> value) {
 		Objects.requireNonNull(provider, "Type provider must not be null");
 		Objects.requireNonNull(current, "Current value must not be null");
-		
 		if (value == null) {
 			return Result.error("Unable to encode null value as either using '" + this + "'");
 		}
+		
 		return value.mapTo(
 			first -> this.firstCodec.encodeStart(provider, current, first),
 			second -> this.secondCodec.encodeStart(provider, current, second)

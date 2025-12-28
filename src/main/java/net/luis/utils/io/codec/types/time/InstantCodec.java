@@ -60,6 +60,7 @@ public class InstantCodec extends AbstractCodec<Instant, InstantConstraintConfig
 	@Override
 	public @NonNull InstantCodec applyConstraint(@NonNull UnaryOperator<InstantConstraintConfig> configModifier) {
 		Objects.requireNonNull(configModifier, "Config modifier must not be null");
+		
 		return new InstantCodec(configModifier.apply(
 			this.getConstraintConfig().orElse(InstantConstraintConfig.UNCONSTRAINED)
 		));
@@ -73,7 +74,6 @@ public class InstantCodec extends AbstractCodec<Instant, InstantConstraintConfig
 		if (constraintResult.isError()) {
 			return Result.error("Instant value " + value + " does not meet constraints: " + constraintResult.errorOrThrow());
 		}
-
 		return Result.success();
 	}
 
@@ -81,7 +81,6 @@ public class InstantCodec extends AbstractCodec<Instant, InstantConstraintConfig
 	public <R> @NonNull Result<R> encodeStart(@NonNull TypeProvider<R> provider, @NonNull R current, @Nullable Instant value) {
 		Objects.requireNonNull(provider, "Type provider must not be null");
 		Objects.requireNonNull(current, "Current value must not be null");
-
 		if (value == null) {
 			return Result.error("Unable to encode null as instant using '" + this + "'");
 		}
@@ -90,7 +89,6 @@ public class InstantCodec extends AbstractCodec<Instant, InstantConstraintConfig
 		if (constraintResult.isError()) {
 			return Result.error(constraintResult.errorOrThrow());
 		}
-
 		return provider.createString(value.toString());
 	}
 
@@ -121,7 +119,6 @@ public class InstantCodec extends AbstractCodec<Instant, InstantConstraintConfig
 			if (constraintResult.isError()) {
 				return Result.error(constraintResult.errorOrThrow());
 			}
-
 			return Result.success(instant);
 		} catch (DateTimeParseException e) {
 			return Result.error("Unable to decode instant '" + string + "' using '" + this + "': Unable to parse instant: " + e.getMessage());
@@ -131,6 +128,7 @@ public class InstantCodec extends AbstractCodec<Instant, InstantConstraintConfig
 	@Override
 	public @NonNull Result<Instant> decodeKey(@NonNull String key) {
 		Objects.requireNonNull(key, "Key must not be null");
+		
 		try {
 			return Result.success(Instant.parse(key));
 		} catch (DateTimeParseException e) {

@@ -45,10 +45,10 @@ public class ZoneIdCodec extends AbstractCodec<ZoneId, Object> {
 	public <R> @NonNull Result<R> encodeStart(@NonNull TypeProvider<R> provider, @NonNull R current, @Nullable ZoneId value) {
 		Objects.requireNonNull(provider, "Type provider must not be null");
 		Objects.requireNonNull(current, "Current value must not be null");
-		
 		if (value == null) {
 			return Result.error("Unable to encode null as zone id using '" + this + "'");
 		}
+		
 		return provider.createString(value.getId());
 	}
 	

@@ -69,7 +69,6 @@ public class PeriodCodec extends AbstractCodec<Period, Object> {
 		if (value.getDays() != 0) {
 			parts.add(value.getDays() + "d");
 		}
-		
 		return provider.createString(String.join(" ", parts));
 	}
 	
@@ -119,6 +118,7 @@ public class PeriodCodec extends AbstractCodec<Period, Object> {
 					}
 				}
 			}
+			
 			return Result.success(Period.of(years, months, days));
 		} catch (Exception e) {
 			return Result.error("Unable to decode period '" + string + "' using '" + this + "': Failed to parse period '" + string + "': " + e.getMessage());

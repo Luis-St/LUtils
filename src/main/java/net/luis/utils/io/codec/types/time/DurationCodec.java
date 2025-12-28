@@ -87,7 +87,6 @@ public class DurationCodec extends AbstractCodec<Duration, Object> {
 		if (encoded.isEmpty()) {
 			encoded = "0s";
 		}
-		
 		return provider.createString(encoded);
 	}
 	
@@ -137,6 +136,7 @@ public class DurationCodec extends AbstractCodec<Duration, Object> {
 					}
 				}
 			}
+			
 			return Result.success(Duration.ofSeconds(totalSeconds, nanos));
 		} catch (Exception e) {
 			return Result.error("Unable to decode duration '" + string + "' using '" + this + "': Failed to parse duration '" + string + "': " + e.getMessage());
