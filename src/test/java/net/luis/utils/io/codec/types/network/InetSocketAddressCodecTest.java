@@ -53,7 +53,7 @@ class InetSocketAddressCodecTest {
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), null);
 		assertTrue(result.isError());
-		assertTrue(result.errorOrThrow().contains("Unable to encode null as inet socket address"));
+		assertTrue(result.errorOrThrow().contains("Unable to encode null as network socket address"));
 	}
 	
 	@Test
@@ -167,7 +167,7 @@ class InetSocketAddressCodecTest {
 		
 		Result<InetSocketAddress> result = codec.decodeStart(typeProvider, typeProvider.empty(), null);
 		assertTrue(result.isError());
-		assertTrue(result.errorOrThrow().contains("Unable to decode null value as inet socket address"));
+		assertTrue(result.errorOrThrow().contains("Unable to decode null value as network socket address"));
 	}
 	
 	@Test
@@ -237,7 +237,7 @@ class InetSocketAddressCodecTest {
 		
 		Result<InetSocketAddress> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive("192.168.1.1"));
 		assertTrue(result.isError());
-		assertTrue(result.errorOrThrow().contains("Invalid socket address format"));
+		assertTrue(result.errorOrThrow().contains("Invalid network socket address format"));
 	}
 	
 	@Test
@@ -314,7 +314,7 @@ class InetSocketAddressCodecTest {
 		
 		Result<InetSocketAddress> result = codec.decodeKey("192.168.1.1");
 		assertTrue(result.isError());
-		assertTrue(result.errorOrThrow().contains("Invalid socket address format"));
+		assertTrue(result.errorOrThrow().contains("Invalid network socket address format"));
 	}
 	
 	@Test
