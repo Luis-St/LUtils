@@ -149,7 +149,7 @@ public record LocalDateConstraintConfig(
 			return baseResult;
 		}
 		
-		Result<Void> spanResult = this.spanConfig.matches(value);
+		Result<Void> spanResult = this.spanConfig.matches(value, LocalDate::now);
 		if (spanResult.isError()) {
 			return spanResult;
 		}

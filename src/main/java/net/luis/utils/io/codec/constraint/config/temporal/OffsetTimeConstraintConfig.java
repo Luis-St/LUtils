@@ -149,7 +149,7 @@ public record OffsetTimeConstraintConfig(
 			return baseResult;
 		}
 		
-		Result<Void> spanResult = this.spanConfig.matches(value);
+		Result<Void> spanResult = this.spanConfig.matches(value, OffsetTime::now);
 		if (spanResult.isError()) {
 			return spanResult;
 		}

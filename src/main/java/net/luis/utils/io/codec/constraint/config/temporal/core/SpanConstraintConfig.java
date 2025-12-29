@@ -25,6 +25,7 @@ import org.jspecify.annotations.NonNull;
 import java.time.*;
 import java.time.temporal.Temporal;
 import java.util.*;
+import java.util.function.Supplier;
 
 /**
  * Configuration class for temporal span constraints (withinLast and withinNext).<br>
@@ -124,77 +125,109 @@ public record SpanConstraintConfig(
 		
 		return Result.success();
 	}
-	
+
 	/**
-	 * Validates the span constraints against the given {@link LocalDate} value.<br>
+	 * Validates the span constraints against the given {@link LocalDate} value using a custom "now" reference.<br>
 	 *
 	 * @param value The value to validate
+	 * @param nowProvider Supplier that provides the reference "now" time
 	 * @return A success result if the value meets the constraints, or an error result with a descriptive message
-	 * @throws NullPointerException If the value is null
+	 * @throws NullPointerException If the value or now provider is null
 	 */
-	public @NonNull Result<Void> matches(@NonNull LocalDate value) {
+	public @NonNull Result<Void> matches(@NonNull LocalDate value, @NonNull Supplier<LocalDate> nowProvider) {
 		Objects.requireNonNull(value, "Value must not be null");
-		return this.matches(value, () -> LocalDate::now);
+		Objects.requireNonNull(nowProvider, "Now provider must not be null");
+		
+		return this.matches(value, new SpanProvider<LocalDate>() {
+			@Override
+			public @NonNull Supplier<LocalDate> now() {
+				return nowProvider;
+			}
+
+			@Override
+			public @NonNull LocalDate minus(@NonNull LocalDate v, @NonNull Duration duration) {
+				return v.minusDays(duration.toDays());
+			}
+
+			@Override
+			public @NonNull LocalDate plus(@NonNull LocalDate v, @NonNull Duration duration) {
+				return v.plusDays(duration.toDays());
+			}
+		});
 	}
-	
+
 	/**
-	 * Validates the span constraints against the given {@link LocalTime} value.<br>
+	 * Validates the span constraints against the given {@link LocalTime} value using a custom "now" reference.<br>
 	 *
 	 * @param value The value to validate
+	 * @param nowProvider Supplier that provides the reference "now" time
 	 * @return A success result if the value meets the constraints, or an error result with a descriptive message
-	 * @throws NullPointerException If the value is null
+	 * @throws NullPointerException If the value or now provider is null
 	 */
-	public @NonNull Result<Void> matches(@NonNull LocalTime value) {
+	public @NonNull Result<Void> matches(@NonNull LocalTime value, @NonNull Supplier<LocalTime> nowProvider) {
 		Objects.requireNonNull(value, "Value must not be null");
-		return this.matches(value, () -> LocalTime::now);
+		Objects.requireNonNull(nowProvider, "Now provider must not be null");
+		
+		return this.matches(value, () -> nowProvider);
 	}
-	
+
 	/**
-	 * Validates the span constraints against the given {@link LocalDateTime} value.<br>
+	 * Validates the span constraints against the given {@link LocalDateTime} value using a custom "now" reference.<br>
 	 *
 	 * @param value The value to validate
+	 * @param nowProvider Supplier that provides the reference "now" time
 	 * @return A success result if the value meets the constraints, or an error result with a descriptive message
-	 * @throws NullPointerException If the value is null
+	 * @throws NullPointerException If the value or now provider is null
 	 */
-	public @NonNull Result<Void> matches(@NonNull LocalDateTime value) {
+	public @NonNull Result<Void> matches(@NonNull LocalDateTime value, @NonNull Supplier<LocalDateTime> nowProvider) {
 		Objects.requireNonNull(value, "Value must not be null");
-		return this.matches(value, () -> LocalDateTime::now);
+		Objects.requireNonNull(nowProvider, "Now provider must not be null");
+		
+		return this.matches(value, () -> nowProvider);
 	}
-	
+
 	/**
-	 * Validates the span constraints against the given {@link OffsetTime} value.<br>
+	 * Validates the span constraints against the given {@link OffsetTime} value using a custom "now" reference.<br>
 	 *
 	 * @param value The value to validate
+	 * @param nowProvider Supplier that provides the reference "now" time
 	 * @return A success result if the value meets the constraints, or an error result with a descriptive message
-	 * @throws NullPointerException If the value is null
+	 * @throws NullPointerException If the value or now provider is null
 	 */
-	public @NonNull Result<Void> matches(@NonNull OffsetTime value) {
+	public @NonNull Result<Void> matches(@NonNull OffsetTime value, @NonNull Supplier<OffsetTime> nowProvider) {
 		Objects.requireNonNull(value, "Value must not be null");
-		return this.matches(value, () -> OffsetTime::now);
+		Objects.requireNonNull(nowProvider, "Now provider must not be null");
+		
+		return this.matches(value, () -> nowProvider);
 	}
-	
+
 	/**
-	 * Validates the span constraints against the given {@link OffsetDateTime} value.<br>
+	 * Validates the span constraints against the given {@link OffsetDateTime} value using a custom "now" reference.<br>
 	 *
 	 * @param value The value to validate
+	 * @param nowSupplier Supplier that provides the reference "now" time
 	 * @return A success result if the value meets the constraints, or an error result with a descriptive message
-	 * @throws NullPointerException If the value is null
+	 * @throws NullPointerException If the value or nowSupplier is null
 	 */
-	public @NonNull Result<Void> matches(@NonNull OffsetDateTime value) {
+	public @NonNull Result<Void> matches(@NonNull OffsetDateTime value, @NonNull Supplier<OffsetDateTime> nowSupplier) {
 		Objects.requireNonNull(value, "Value must not be null");
-		return this.matches(value, () -> OffsetDateTime::now);
+		Objects.requireNonNull(nowSupplier, "Now provider must not be null");
+		return this.matches(value, () -> nowSupplier);
 	}
-	
+
 	/**
-	 * Validates the span constraints against the given {@link ZonedDateTime} value.<br>
+	 * Validates the span constraints against the given {@link ZonedDateTime} value using a custom "now" reference.<br>
 	 *
 	 * @param value The value to validate
+	 * @param nowProvider Supplier that provides the reference "now" time
 	 * @return A success result if the value meets the constraints, or an error result with a descriptive message
-	 * @throws NullPointerException If the value is null
+	 * @throws NullPointerException If the value or now provider is null
 	 */
-	public @NonNull Result<Void> matches(@NonNull ZonedDateTime value) {
+	public @NonNull Result<Void> matches(@NonNull ZonedDateTime value, @NonNull Supplier<ZonedDateTime> nowProvider) {
 		Objects.requireNonNull(value, "Value must not be null");
-		return this.matches(value, () -> ZonedDateTime::now);
+		Objects.requireNonNull(nowProvider, "Now provider must not be null");
+		
+		return this.matches(value, () -> nowProvider);
 	}
 	
 	/**

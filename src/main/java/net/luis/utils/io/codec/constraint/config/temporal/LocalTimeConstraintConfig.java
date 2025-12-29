@@ -149,7 +149,7 @@ public record LocalTimeConstraintConfig(
 			return baseResult;
 		}
 		
-		Result<Void> spanResult = this.spanConfig.matches(value);
+		Result<Void> spanResult = this.spanConfig.matches(value, LocalTime::now);
 		if (spanResult.isError()) {
 			return spanResult;
 		}

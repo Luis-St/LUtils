@@ -173,7 +173,7 @@ public record ZonedDateTimeConstraintConfig(
 			return baseResult;
 		}
 		
-		Result<Void> spanResult = this.spanConfig.matches(value);
+		Result<Void> spanResult = this.spanConfig.matches(value, ZonedDateTime::now);
 		if (spanResult.isError()) {
 			return spanResult;
 		}

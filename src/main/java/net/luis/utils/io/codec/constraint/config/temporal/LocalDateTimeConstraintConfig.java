@@ -176,7 +176,7 @@ public record LocalDateTimeConstraintConfig(
 			return baseResult;
 		}
 		
-		Result<Void> spanResult = this.spanConfig.matches(value);
+		Result<Void> spanResult = this.spanConfig.matches(value, LocalDateTime::now);
 		if (spanResult.isError()) {
 			return spanResult;
 		}
