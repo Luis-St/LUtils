@@ -70,10 +70,10 @@ module net.luis.utils {
 	exports net.luis.utils.io.codec.types.stream;
 	exports net.luis.utils.io.codec.types.struct;
 	exports net.luis.utils.io.codec.types.struct.collection;
-	exports net.luis.utils.io.codec.types.time;
-	exports net.luis.utils.io.codec.types.time.local;
-	exports net.luis.utils.io.codec.types.time.offset;
-	exports net.luis.utils.io.codec.types.time.zoned;
+	exports net.luis.utils.io.codec.types.temporal;
+	exports net.luis.utils.io.codec.types.temporal.local;
+	exports net.luis.utils.io.codec.types.temporal.offset;
+	exports net.luis.utils.io.codec.types.temporal.zoned;
 	
 	exports net.luis.utils.io.data;
 	exports net.luis.utils.io.data.config;
