@@ -18,7 +18,7 @@
 
 package net.luis.utils.io.data.yaml.exception;
 
-import org.jetbrains.annotations.Nullable;
+import org.jspecify.annotations.Nullable;
 
 /**
  * Thrown when a yaml syntax error is encountered during parsing.<br>

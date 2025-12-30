@@ -21,7 +21,9 @@ package net.luis.utils.io.data.yaml;
 import com.google.common.collect.Lists;
 import net.luis.utils.io.data.yaml.exception.YamlSequenceIndexOutOfBoundsException;
 import net.luis.utils.io.data.yaml.exception.YamlTypeException;
-import org.jetbrains.annotations.*;
+import org.jetbrains.annotations.Unmodifiable;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 import java.util.*;
 
@@ -50,7 +52,7 @@ public class YamlSequence implements YamlElement, Iterable<YamlElement> {
 	 * @param elements The list of yaml elements to add
 	 * @throws NullPointerException If the list of yaml elements is null
 	 */
-	public YamlSequence(@NotNull List<? extends YamlElement> elements) {
+	public YamlSequence(@NonNull List<? extends YamlElement> elements) {
 		this.elements.addAll(Objects.requireNonNull(elements, "Yaml elements must not be null"));
 	}
 	
@@ -87,7 +89,7 @@ public class YamlSequence implements YamlElement, Iterable<YamlElement> {
 	 * @return The iterator over the elements
 	 */
 	@Override
-	public @NotNull Iterator<YamlElement> iterator() {
+	public @NonNull Iterator<YamlElement> iterator() {
 		return this.elements.iterator();
 	}
 	
@@ -95,7 +97,7 @@ public class YamlSequence implements YamlElement, Iterable<YamlElement> {
 	 * Returns an unmodifiable collection of the yaml elements in this yaml sequence.<br>
 	 * @return The collection of yaml elements
 	 */
-	public @NotNull @Unmodifiable Collection<YamlElement> elements() {
+	public @NonNull @Unmodifiable Collection<YamlElement> elements() {
 		return Collections.unmodifiableCollection(this.elements);
 	}
 	
@@ -103,7 +105,7 @@ public class YamlSequence implements YamlElement, Iterable<YamlElement> {
 	 * Returns an unmodifiable list of the yaml elements in this yaml sequence.<br>
 	 * @return The list of yaml elements
 	 */
-	public @NotNull @Unmodifiable List<YamlElement> getElements() {
+	public @NonNull @Unmodifiable List<YamlElement> getElements() {
 		return List.copyOf(this.elements);
 	}
 	//endregion
@@ -119,7 +121,7 @@ public class YamlSequence implements YamlElement, Iterable<YamlElement> {
 	 * @return The previous element at the given index
 	 * @throws YamlSequenceIndexOutOfBoundsException If the index is negative or greater than the size of this yaml sequence
 	 */
-	public @NotNull YamlElement set(int index, @Nullable YamlElement yaml) {
+	public @NonNull YamlElement set(int index, @Nullable YamlElement yaml) {
 		if (0 > index) {
 			throw new YamlSequenceIndexOutOfBoundsException(index);
 		}
@@ -140,7 +142,7 @@ public class YamlSequence implements YamlElement, Iterable<YamlElement> {
 	 * @throws YamlSequenceIndexOutOfBoundsException If the index is negative or greater than the size of this yaml sequence
 	 * @see #set(int, YamlElement)
 	 */
-	public @NotNull YamlElement set(int index, @Nullable String value) {
+	public @NonNull YamlElement set(int index, @Nullable String value) {
 		return this.set(index, value == null ? null : new YamlScalar(value));
 	}
 	
@@ -154,7 +156,7 @@ public class YamlSequence implements YamlElement, Iterable<YamlElement> {
 	 * @throws YamlSequenceIndexOutOfBoundsException If the index is negative or greater than the size of this yaml sequence
 	 * @see #set(int, YamlElement)
 	 */
-	public @NotNull YamlElement set(int index, boolean value) {
+	public @NonNull YamlElement set(int index, boolean value) {
 		return this.set(index, new YamlScalar(value));
 	}
 	
@@ -169,7 +171,7 @@ public class YamlSequence implements YamlElement, Iterable<YamlElement> {
 	 * @throws YamlSequenceIndexOutOfBoundsException If the index is negative or greater than the size of this yaml sequence
 	 * @see #set(int, YamlElement)
 	 */
-	public @NotNull YamlElement set(int index, @Nullable Number value) {
+	public @NonNull YamlElement set(int index, @Nullable Number value) {
 		return this.set(index, value == null ? null : new YamlScalar(value));
 	}
 	//endregion
@@ -224,7 +226,7 @@ public class YamlSequence implements YamlElement, Iterable<YamlElement> {
 	 * @param sequence The yaml sequence to add
 	 * @throws NullPointerException If the yaml sequence is null
 	 */
-	public void addAll(@NotNull YamlSequence sequence) {
+	public void addAll(@NonNull YamlSequence sequence) {
 		this.addAll(Objects.requireNonNull(sequence, "Yaml sequence must not be null").elements);
 	}
 	
@@ -232,7 +234,7 @@ public class YamlSequence implements YamlElement, Iterable<YamlElement> {
 	 * Adds all yaml elements from the given array to this yaml sequence.<br>
 	 * @param elements The array of yaml elements to add
 	 */
-	public void addAll(YamlElement @NotNull ... elements) {
+	public void addAll(YamlElement @NonNull ... elements) {
 		Objects.requireNonNull(elements, "Yaml elements must not be null");
 		this.addAll(Arrays.asList(elements));
 	}
@@ -243,7 +245,7 @@ public class YamlSequence implements YamlElement, Iterable<YamlElement> {
 	 * @param elements The list of yaml elements to add
 	 * @throws NullPointerException If the list of yaml elements is null
 	 */
-	public void addAll(@NotNull List<? extends YamlElement> elements) {
+	public void addAll(@NonNull List<? extends YamlElement> elements) {
 		this.elements.addAll(Objects.requireNonNull(elements, "Yaml elements must not be null"));
 	}
 	//endregion
@@ -257,7 +259,7 @@ public class YamlSequence implements YamlElement, Iterable<YamlElement> {
 	 * @return The removed element
 	 * @throws YamlSequenceIndexOutOfBoundsException If the index is negative or greater than the size of this yaml sequence
 	 */
-	public @NotNull YamlElement remove(int index) {
+	public @NonNull YamlElement remove(int index) {
 		if (0 > index) {
 			throw new YamlSequenceIndexOutOfBoundsException(index);
 		}
@@ -294,7 +296,7 @@ public class YamlSequence implements YamlElement, Iterable<YamlElement> {
 	 * @return The yaml element at the given index
 	 * @throws YamlSequenceIndexOutOfBoundsException If the index is negative or greater than the size of this yaml sequence
 	 */
-	public @NotNull YamlElement get(int index) {
+	public @NonNull YamlElement get(int index) {
 		if (0 > index) {
 			throw new YamlSequenceIndexOutOfBoundsException(index);
 		}
@@ -313,7 +315,7 @@ public class YamlSequence implements YamlElement, Iterable<YamlElement> {
 	 * @throws YamlTypeException If the yaml element at the given index is not a yaml mapping
 	 * @see #get(int)
 	 */
-	public @NotNull YamlMapping getAsYamlMapping(int index) {
+	public @NonNull YamlMapping getAsYamlMapping(int index) {
 		YamlElement yaml = this.get(index);
 		if (yaml instanceof YamlMapping mapping) {
 			return mapping;
@@ -330,7 +332,7 @@ public class YamlSequence implements YamlElement, Iterable<YamlElement> {
 	 * @throws YamlTypeException If the yaml element at the given index is not a yaml sequence
 	 * @see #get(int)
 	 */
-	public @NotNull YamlSequence getAsYamlSequence(int index) {
+	public @NonNull YamlSequence getAsYamlSequence(int index) {
 		YamlElement yaml = this.get(index);
 		if (yaml instanceof YamlSequence sequence) {
 			return sequence;
@@ -347,7 +349,7 @@ public class YamlSequence implements YamlElement, Iterable<YamlElement> {
 	 * @throws YamlTypeException If the yaml element at the given index is not a yaml scalar
 	 * @see #get(int)
 	 */
-	public @NotNull YamlScalar getAsYamlScalar(int index) {
+	public @NonNull YamlScalar getAsYamlScalar(int index) {
 		YamlElement yaml = this.get(index);
 		if (yaml instanceof YamlScalar scalar) {
 			return scalar;
@@ -365,7 +367,7 @@ public class YamlSequence implements YamlElement, Iterable<YamlElement> {
 	 * @throws YamlTypeException If the yaml element at the given index is not a yaml scalar
 	 * @see #getAsYamlScalar(int)
 	 */
-	public @NotNull String getAsString(int index) {
+	public @NonNull String getAsString(int index) {
 		return this.getAsYamlScalar(index).getAsString();
 	}
 	
@@ -393,7 +395,7 @@ public class YamlSequence implements YamlElement, Iterable<YamlElement> {
 	 * @throws YamlTypeException If the yaml element at the given index is not a yaml scalar
 	 * @see #getAsYamlScalar(int)
 	 */
-	public @NotNull Number getAsNumber(int index) {
+	public @NonNull Number getAsNumber(int index) {
 		return this.getAsYamlScalar(index).getAsNumber();
 	}
 	
@@ -460,7 +462,7 @@ public class YamlSequence implements YamlElement, Iterable<YamlElement> {
 	}
 	
 	@Override
-	public @NotNull String toString(@NotNull YamlConfig config) {
+	public @NonNull String toString(@NonNull YamlConfig config) {
 		Objects.requireNonNull(config, "Config must not be null");
 		
 		if (this.elements.isEmpty()) {
@@ -481,7 +483,7 @@ public class YamlSequence implements YamlElement, Iterable<YamlElement> {
 	 * @param config The yaml config to use
 	 * @return The flow style string representation
 	 */
-	private @NotNull String toFlowString(@NotNull YamlConfig config) {
+	private @NonNull String toFlowString(@NonNull YamlConfig config) {
 		StringBuilder builder = new StringBuilder("[");
 		for (int i = 0; i < this.elements.size(); i++) {
 			if (i > 0) {
@@ -498,7 +500,7 @@ public class YamlSequence implements YamlElement, Iterable<YamlElement> {
 	 * @param config The yaml config to use
 	 * @return The block style string representation
 	 */
-	private @NotNull String toBlockString(@NotNull YamlConfig config) {
+	private @NonNull String toBlockString(@NonNull YamlConfig config) {
 		StringBuilder builder = new StringBuilder();
 		for (int i = 0; i < this.elements.size(); i++) {
 			if (i > 0) {

@@ -21,8 +21,8 @@ package net.luis.utils.io.data.yaml;
 import net.luis.utils.io.data.InputProvider;
 import net.luis.utils.io.data.yaml.exception.YamlSyntaxException;
 import net.luis.utils.io.reader.StringReader;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -64,7 +64,7 @@ public class YamlReader implements AutoCloseable {
 	 * @param string The string to read from
 	 * @throws NullPointerException If the string is null
 	 */
-	public YamlReader(@NotNull String string) {
+	public YamlReader(@NonNull String string) {
 		this(string, YamlConfig.DEFAULT);
 	}
 	
@@ -75,7 +75,7 @@ public class YamlReader implements AutoCloseable {
 	 * @param config The configuration to use
 	 * @throws NullPointerException If the string or configuration is null
 	 */
-	public YamlReader(@NotNull String string, @NotNull YamlConfig config) {
+	public YamlReader(@NonNull String string, @NonNull YamlConfig config) {
 		this.config = Objects.requireNonNull(config, "Yaml config must not be null");
 		this.reader = new StringReader(Objects.requireNonNull(string, "String must not be null"));
 		this.splitLines(string);
@@ -87,7 +87,7 @@ public class YamlReader implements AutoCloseable {
 	 * @param input The input to create the reader for
 	 * @throws NullPointerException If the input is null
 	 */
-	public YamlReader(@NotNull InputProvider input) {
+	public YamlReader(@NonNull InputProvider input) {
 		this(input, YamlConfig.DEFAULT);
 	}
 	
@@ -98,7 +98,7 @@ public class YamlReader implements AutoCloseable {
 	 * @param config The configuration to use
 	 * @throws NullPointerException If the input or configuration is null
 	 */
-	public YamlReader(@NotNull InputProvider input, @NotNull YamlConfig config) {
+	public YamlReader(@NonNull InputProvider input, @NonNull YamlConfig config) {
 		this.config = Objects.requireNonNull(config, "Yaml config must not be null");
 		StringReader tempReader = new StringReader(new InputStreamReader(Objects.requireNonNull(input, "Input must not be null").getStream(), config.charset()));
 		String content = tempReader.readRemaining();
@@ -111,7 +111,7 @@ public class YamlReader implements AutoCloseable {
 	 *
 	 * @param content The content to split
 	 */
-	private void splitLines(@NotNull String content) {
+	private void splitLines(@NonNull String content) {
 		String[] split = content.split("\r\n|\r|\n", -1);
 		this.lines.addAll(Arrays.asList(split));
 	}
@@ -125,7 +125,7 @@ public class YamlReader implements AutoCloseable {
 	 * @return The next yaml element
 	 * @throws YamlSyntaxException If the yaml is invalid
 	 */
-	public @NotNull YamlElement readYaml() {
+	public @NonNull YamlElement readYaml() {
 		this.anchors.clear();
 		this.lineIndex = 0;
 		
@@ -185,7 +185,7 @@ public class YamlReader implements AutoCloseable {
 	 * @param line The line to check
 	 * @return The number of leading spaces
 	 */
-	private int getIndent(@NotNull String line) {
+	private int getIndent(@NonNull String line) {
 		int indent = 0;
 		for (int i = 0; i < line.length(); i++) {
 			if (line.charAt(i) == ' ') {
@@ -205,7 +205,7 @@ public class YamlReader implements AutoCloseable {
 	 * @param expectedIndent The expected minimum indentation level
 	 * @return The parsed yaml element
 	 */
-	private @NotNull YamlElement readElement(int expectedIndent) {
+	private @NonNull YamlElement readElement(int expectedIndent) {
 		this.skipEmptyLinesAndComments();
 		if (this.lineIndex >= this.lines.size()) {
 			return YamlNull.INSTANCE;
@@ -294,7 +294,7 @@ public class YamlReader implements AutoCloseable {
 	 * @param text The text potentially containing an anchor name
 	 * @return The extracted anchor name
 	 */
-	private @NotNull String extractAnchorName(@NotNull String text) {
+	private @NonNull String extractAnchorName(@NonNull String text) {
 		StringBuilder name = new StringBuilder();
 		for (int i = 0; i < text.length(); i++) {
 			char c = text.charAt(i);
@@ -317,7 +317,7 @@ public class YamlReader implements AutoCloseable {
 	 * @param line The line to search
 	 * @return The index of the colon, or -1 if not found
 	 */
-	private int findKeyColonIndex(@NotNull String line) {
+	private int findKeyColonIndex(@NonNull String line) {
 		boolean inSingleQuote = false;
 		boolean inDoubleQuote = false;
 		boolean escaped = false;
@@ -355,7 +355,7 @@ public class YamlReader implements AutoCloseable {
 	 * @param baseIndent The base indentation level
 	 * @return The parsed yaml mapping
 	 */
-	private @NotNull YamlMapping readBlockMapping(int baseIndent) {
+	private @NonNull YamlMapping readBlockMapping(int baseIndent) {
 		YamlMapping mapping = new YamlMapping();
 		int mappingIndent = -1;
 		
@@ -463,7 +463,7 @@ public class YamlReader implements AutoCloseable {
 	 * @param keyStr The key string
 	 * @return The parsed key
 	 */
-	private @NotNull String parseKeyString(@NotNull String keyStr) {
+	private @NonNull String parseKeyString(@NonNull String keyStr) {
 		if (keyStr.isEmpty()) {
 			throw new YamlSyntaxException("Empty key is not allowed");
 		}
@@ -484,7 +484,7 @@ public class YamlReader implements AutoCloseable {
 	 * @param currentIndent The current indentation level
 	 * @return The parsed yaml element
 	 */
-	private @NotNull YamlElement parseInlineValue(@NotNull String valueStr, int currentIndent) {
+	private @NonNull YamlElement parseInlineValue(@NonNull String valueStr, int currentIndent) {
 		// Remove trailing comment
 		valueStr = this.removeTrailingComment(valueStr);
 		
@@ -552,7 +552,7 @@ public class YamlReader implements AutoCloseable {
 	 * @param value The value string
 	 * @return The value without trailing comments
 	 */
-	private @NotNull String removeTrailingComment(@NotNull String value) {
+	private @NonNull String removeTrailingComment(@NonNull String value) {
 		boolean inSingleQuote = false;
 		boolean inDoubleQuote = false;
 		boolean escaped = false;
@@ -588,7 +588,7 @@ public class YamlReader implements AutoCloseable {
 	 * @param baseIndent The base indentation level
 	 * @return The parsed yaml sequence
 	 */
-	private @NotNull YamlSequence readBlockSequence(int baseIndent) {
+	private @NonNull YamlSequence readBlockSequence(int baseIndent) {
 		YamlSequence sequence = new YamlSequence();
 		int sequenceIndent = -1;
 		
@@ -680,7 +680,7 @@ public class YamlReader implements AutoCloseable {
 	 * @param firstPair The first key-value pair string
 	 * @return The parsed mapping
 	 */
-	private @NotNull YamlElement readNestedMappingInSequence(int expectedIndent, @NotNull String firstPair) {
+	private @NonNull YamlElement readNestedMappingInSequence(int expectedIndent, @NonNull String firstPair) {
 		YamlMapping mapping = new YamlMapping();
 		
 		// Parse the first pair
@@ -775,7 +775,7 @@ public class YamlReader implements AutoCloseable {
 	 *
 	 * @return The parsed yaml mapping
 	 */
-	private @NotNull YamlMapping readFlowMapping() {
+	private @NonNull YamlMapping readFlowMapping() {
 		StringBuilder sb = new StringBuilder();
 		int braceCount = 0;
 		
@@ -806,7 +806,7 @@ public class YamlReader implements AutoCloseable {
 	 * @param str The string containing the flow mapping
 	 * @return The parsed yaml mapping
 	 */
-	private @NotNull YamlMapping parseFlowMappingFromString(@NotNull String str) {
+	private @NonNull YamlMapping parseFlowMappingFromString(@NonNull String str) {
 		str = str.trim();
 		if (!str.startsWith("{") || !str.endsWith("}")) {
 			throw new YamlSyntaxException("Invalid flow mapping: " + str);
@@ -850,7 +850,7 @@ public class YamlReader implements AutoCloseable {
 	 *
 	 * @return The parsed yaml sequence
 	 */
-	private @NotNull YamlSequence readFlowSequence() {
+	private @NonNull YamlSequence readFlowSequence() {
 		StringBuilder sb = new StringBuilder();
 		int bracketCount = 0;
 		
@@ -881,7 +881,7 @@ public class YamlReader implements AutoCloseable {
 	 * @param str The string containing the flow sequence
 	 * @return The parsed yaml sequence
 	 */
-	private @NotNull YamlSequence parseFlowSequenceFromString(@NotNull String str) {
+	private @NonNull YamlSequence parseFlowSequenceFromString(@NonNull String str) {
 		str = str.trim();
 		if (!str.startsWith("[") || !str.endsWith("]")) {
 			throw new YamlSyntaxException("Invalid flow sequence: " + str);
@@ -912,7 +912,7 @@ public class YamlReader implements AutoCloseable {
 	 * @param content The content to split
 	 * @return List of items
 	 */
-	private @NotNull List<String> splitFlowItems(@NotNull String content) {
+	private @NonNull List<String> splitFlowItems(@NonNull String content) {
 		List<String> items = new ArrayList<>();
 		StringBuilder current = new StringBuilder();
 		int braceCount = 0;
@@ -974,7 +974,7 @@ public class YamlReader implements AutoCloseable {
 	 * @param valueStr The value string
 	 * @return The parsed yaml element
 	 */
-	private @NotNull YamlElement parseFlowValue(@NotNull String valueStr) {
+	private @NonNull YamlElement parseFlowValue(@NonNull String valueStr) {
 		valueStr = valueStr.trim();
 		
 		// Check for alias
@@ -1008,7 +1008,7 @@ public class YamlReader implements AutoCloseable {
 	 * @param indicator The block indicator (|, |+, |-)
 	 * @return The parsed scalar
 	 */
-	private @NotNull YamlScalar readLiteralBlockScalar(int baseIndent, @NotNull String indicator) {
+	private @NonNull YamlScalar readLiteralBlockScalar(int baseIndent, @NonNull String indicator) {
 		boolean keepTrailing = indicator.contains("+");
 		boolean stripTrailing = indicator.contains("-");
 		
@@ -1074,7 +1074,7 @@ public class YamlReader implements AutoCloseable {
 	 * @param indicator The block indicator (>, >+, >-)
 	 * @return The parsed scalar
 	 */
-	private @NotNull YamlScalar readFoldedBlockScalar(int baseIndent, @NotNull String indicator) {
+	private @NonNull YamlScalar readFoldedBlockScalar(int baseIndent, @NonNull String indicator) {
 		boolean keepTrailing = indicator.contains("+");
 		boolean stripTrailing = indicator.contains("-");
 		
@@ -1141,7 +1141,7 @@ public class YamlReader implements AutoCloseable {
 	 * @param value The value string
 	 * @return The parsed yaml element
 	 */
-	private @NotNull YamlElement parseScalar(@NotNull String value) {
+	private @NonNull YamlElement parseScalar(@NonNull String value) {
 		value = value.trim();
 		
 		if (value.isEmpty()) {
@@ -1193,7 +1193,7 @@ public class YamlReader implements AutoCloseable {
 	 * @param quoteChar The quote character used
 	 * @return The processed string
 	 */
-	private @NotNull String processEscapeSequences(@NotNull String value, char quoteChar) {
+	private @NonNull String processEscapeSequences(@NonNull String value, char quoteChar) {
 		if (quoteChar == '\'') {
 			// Single-quoted strings only escape ''
 			return value.replace("''", "'");
@@ -1271,7 +1271,7 @@ public class YamlReader implements AutoCloseable {
 	 * @param value The value to parse
 	 * @return The parsed number, or null if not a valid number
 	 */
-	private @Nullable Number tryParseNumber(@NotNull String value) {
+	private @Nullable Number tryParseNumber(@NonNull String value) {
 		if (value.isEmpty()) {
 			return null;
 		}

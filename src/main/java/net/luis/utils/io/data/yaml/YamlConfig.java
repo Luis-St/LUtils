@@ -20,7 +20,7 @@ package net.luis.utils.io.data.yaml;
 
 import net.luis.utils.io.data.config.ReadOnly;
 import net.luis.utils.io.data.config.WriteOnly;
-import org.jetbrains.annotations.NotNull;
+import org.jspecify.annotations.NonNull;
 
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
@@ -44,13 +44,13 @@ import java.util.Objects;
 public record YamlConfig(
 	@ReadOnly boolean strict,
 	@WriteOnly boolean prettyPrint,
-	@WriteOnly("prettyPrint") @NotNull String indent,
+	@WriteOnly("prettyPrint") @NonNull String indent,
 	@WriteOnly("prettyPrint") boolean useBlockStyle,
 	@WriteOnly boolean useDocumentMarkers,
-	@WriteOnly @NotNull NullStyle nullStyle,
+	@WriteOnly @NonNull NullStyle nullStyle,
 	@ReadOnly boolean resolveAnchors,
 	@ReadOnly boolean allowDuplicateKeys,
-	@NotNull Charset charset
+	@NonNull Charset charset
 ) {
 	
 	/**

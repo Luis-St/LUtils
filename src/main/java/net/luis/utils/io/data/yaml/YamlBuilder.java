@@ -18,8 +18,8 @@
 
 package net.luis.utils.io.data.yaml;
 
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 import java.util.*;
 
@@ -78,7 +78,7 @@ public final class YamlBuilder {
 	 * @param initialContext The initial context type
 	 * @param initialElement The initial yaml element
 	 */
-	private YamlBuilder(@NotNull BuilderContext initialContext, @NotNull YamlElement initialElement) {
+	private YamlBuilder(@NonNull BuilderContext initialContext, @NonNull YamlElement initialElement) {
 		this.root = initialElement;
 		this.contextStack.push(new ContextFrame(initialContext, initialElement));
 	}
@@ -91,7 +91,7 @@ public final class YamlBuilder {
 	 *
 	 * @return A new YamlBuilder configured for mapping construction
 	 */
-	public static @NotNull YamlBuilder mapping() {
+	public static @NonNull YamlBuilder mapping() {
 		return new YamlBuilder(BuilderContext.MAPPING, new YamlMapping());
 	}
 	
@@ -101,7 +101,7 @@ public final class YamlBuilder {
 	 *
 	 * @return A new YamlBuilder configured for sequence construction
 	 */
-	public static @NotNull YamlBuilder sequence() {
+	public static @NonNull YamlBuilder sequence() {
 		return new YamlBuilder(BuilderContext.SEQUENCE, new YamlSequence());
 	}
 	//endregion
@@ -114,7 +114,7 @@ public final class YamlBuilder {
 	 * @return The current context frame
 	 * @throws IllegalStateException If the context stack is empty
 	 */
-	private @NotNull ContextFrame getCurrentContext() {
+	private @NonNull ContextFrame getCurrentContext() {
 		if (this.contextStack.isEmpty()) {
 			throw new IllegalStateException("No active building context");
 		}
@@ -158,7 +158,7 @@ public final class YamlBuilder {
 	 * @throws IllegalStateException If the current context is not a mapping
 	 * @throws NullPointerException If the key is null
 	 */
-	public @NotNull YamlBuilder add(@NotNull String key, @Nullable YamlElement element) {
+	public @NonNull YamlBuilder add(@NonNull String key, @Nullable YamlElement element) {
 		this.ensureMappingContext();
 		Objects.requireNonNull(key, "Key must not be null");
 		
@@ -177,7 +177,7 @@ public final class YamlBuilder {
 	 * @throws IllegalStateException If the current context is not a mapping
 	 * @throws NullPointerException If the key is null
 	 */
-	public @NotNull YamlBuilder add(@NotNull String key, @Nullable String value) {
+	public @NonNull YamlBuilder add(@NonNull String key, @Nullable String value) {
 		return this.add(key, value == null ? null : new YamlScalar(value));
 	}
 	
@@ -190,7 +190,7 @@ public final class YamlBuilder {
 	 * @throws IllegalStateException If the current context is not a mapping
 	 * @throws NullPointerException If the key is null
 	 */
-	public @NotNull YamlBuilder add(@NotNull String key, boolean value) {
+	public @NonNull YamlBuilder add(@NonNull String key, boolean value) {
 		return this.add(key, new YamlScalar(value));
 	}
 	
@@ -204,7 +204,7 @@ public final class YamlBuilder {
 	 * @throws IllegalStateException If the current context is not a mapping
 	 * @throws NullPointerException If the key is null
 	 */
-	public @NotNull YamlBuilder add(@NotNull String key, @Nullable Number value) {
+	public @NonNull YamlBuilder add(@NonNull String key, @Nullable Number value) {
 		return this.add(key, value == null ? null : new YamlScalar(value));
 	}
 	
@@ -218,7 +218,7 @@ public final class YamlBuilder {
 	 * @throws IllegalStateException If the current context is not a mapping
 	 * @throws NullPointerException If the key or mappingBuilder is null
 	 */
-	public @NotNull YamlBuilder addMapping(@NotNull String key, @NotNull YamlBuilder mappingBuilder) {
+	public @NonNull YamlBuilder addMapping(@NonNull String key, @NonNull YamlBuilder mappingBuilder) {
 		Objects.requireNonNull(mappingBuilder, "Mapping builder must not be null");
 		return this.add(key, mappingBuilder.build());
 	}
@@ -233,7 +233,7 @@ public final class YamlBuilder {
 	 * @throws IllegalStateException If the current context is not a mapping
 	 * @throws NullPointerException If the key or sequenceBuilder is null
 	 */
-	public @NotNull YamlBuilder addSequence(@NotNull String key, @NotNull YamlBuilder sequenceBuilder) {
+	public @NonNull YamlBuilder addSequence(@NonNull String key, @NonNull YamlBuilder sequenceBuilder) {
 		Objects.requireNonNull(sequenceBuilder, "Sequence builder must not be null");
 		return this.add(key, sequenceBuilder.build());
 	}
@@ -251,7 +251,7 @@ public final class YamlBuilder {
 	 * @throws IllegalStateException If the current context is not a mapping
 	 * @throws NullPointerException If key, element, or anchorName is null
 	 */
-	public @NotNull YamlBuilder addWithAnchor(@NotNull String key, @NotNull YamlElement element, @NotNull String anchorName) {
+	public @NonNull YamlBuilder addWithAnchor(@NonNull String key, @NonNull YamlElement element, @NonNull String anchorName) {
 		Objects.requireNonNull(element, "Element must not be null");
 		Objects.requireNonNull(anchorName, "Anchor name must not be null");
 		return this.add(key, new YamlAnchor(anchorName, element));
@@ -267,7 +267,7 @@ public final class YamlBuilder {
 	 * @throws IllegalStateException If the current context is not a mapping
 	 * @throws NullPointerException If key or anchorName is null
 	 */
-	public @NotNull YamlBuilder addWithAnchor(@NotNull String key, @Nullable String value, @NotNull String anchorName) {
+	public @NonNull YamlBuilder addWithAnchor(@NonNull String key, @Nullable String value, @NonNull String anchorName) {
 		YamlElement element = value == null ? YamlNull.INSTANCE : new YamlScalar(value);
 		return this.addWithAnchor(key, element, anchorName);
 	}
@@ -282,7 +282,7 @@ public final class YamlBuilder {
 	 * @throws IllegalStateException If the current context is not a mapping
 	 * @throws NullPointerException If key or anchorName is null
 	 */
-	public @NotNull YamlBuilder addWithAnchor(@NotNull String key, boolean value, @NotNull String anchorName) {
+	public @NonNull YamlBuilder addWithAnchor(@NonNull String key, boolean value, @NonNull String anchorName) {
 		return this.addWithAnchor(key, new YamlScalar(value), anchorName);
 	}
 	
@@ -296,7 +296,7 @@ public final class YamlBuilder {
 	 * @throws IllegalStateException If the current context is not a mapping
 	 * @throws NullPointerException If key or anchorName is null
 	 */
-	public @NotNull YamlBuilder addWithAnchor(@NotNull String key, @Nullable Number value, @NotNull String anchorName) {
+	public @NonNull YamlBuilder addWithAnchor(@NonNull String key, @Nullable Number value, @NonNull String anchorName) {
 		YamlElement element = value == null ? YamlNull.INSTANCE : new YamlScalar(value);
 		return this.addWithAnchor(key, element, anchorName);
 	}
@@ -310,7 +310,7 @@ public final class YamlBuilder {
 	 * @throws IllegalStateException If the current context is not a mapping
 	 * @throws NullPointerException If key or anchorName is null
 	 */
-	public @NotNull YamlBuilder addAlias(@NotNull String key, @NotNull String anchorName) {
+	public @NonNull YamlBuilder addAlias(@NonNull String key, @NonNull String anchorName) {
 		Objects.requireNonNull(anchorName, "Anchor name must not be null");
 		return this.add(key, new YamlAlias(anchorName));
 	}
@@ -326,7 +326,7 @@ public final class YamlBuilder {
 	 * @return This builder for method chaining
 	 * @throws IllegalStateException If the current context is not a sequence
 	 */
-	public @NotNull YamlBuilder add(@Nullable YamlElement element) {
+	public @NonNull YamlBuilder add(@Nullable YamlElement element) {
 		this.ensureSequenceContext();
 		
 		YamlSequence sequence = (YamlSequence) this.getCurrentContext().element;
@@ -342,7 +342,7 @@ public final class YamlBuilder {
 	 * @return This builder for method chaining
 	 * @throws IllegalStateException If the current context is not a sequence
 	 */
-	public @NotNull YamlBuilder add(@Nullable String value) {
+	public @NonNull YamlBuilder add(@Nullable String value) {
 		return this.add(value == null ? null : new YamlScalar(value));
 	}
 	
@@ -353,7 +353,7 @@ public final class YamlBuilder {
 	 * @return This builder for method chaining
 	 * @throws IllegalStateException If the current context is not a sequence
 	 */
-	public @NotNull YamlBuilder add(boolean value) {
+	public @NonNull YamlBuilder add(boolean value) {
 		return this.add(new YamlScalar(value));
 	}
 	
@@ -365,7 +365,7 @@ public final class YamlBuilder {
 	 * @return This builder for method chaining
 	 * @throws IllegalStateException If the current context is not a sequence
 	 */
-	public @NotNull YamlBuilder add(@Nullable Number value) {
+	public @NonNull YamlBuilder add(@Nullable Number value) {
 		return this.add(value == null ? null : new YamlScalar(value));
 	}
 	
@@ -378,7 +378,7 @@ public final class YamlBuilder {
 	 * @throws IllegalStateException If the current context is not a sequence
 	 * @throws NullPointerException If the mappingBuilder is null
 	 */
-	public @NotNull YamlBuilder addMapping(@NotNull YamlBuilder mappingBuilder) {
+	public @NonNull YamlBuilder addMapping(@NonNull YamlBuilder mappingBuilder) {
 		Objects.requireNonNull(mappingBuilder, "Mapping builder must not be null");
 		return this.add(mappingBuilder.build());
 	}
@@ -392,7 +392,7 @@ public final class YamlBuilder {
 	 * @throws IllegalStateException If the current context is not a sequence
 	 * @throws NullPointerException If the sequenceBuilder is null
 	 */
-	public @NotNull YamlBuilder addSequence(@NotNull YamlBuilder sequenceBuilder) {
+	public @NonNull YamlBuilder addSequence(@NonNull YamlBuilder sequenceBuilder) {
 		Objects.requireNonNull(sequenceBuilder, "Sequence builder must not be null");
 		return this.add(sequenceBuilder.build());
 	}
@@ -405,7 +405,7 @@ public final class YamlBuilder {
 	 * @throws IllegalStateException If the current context is not a sequence
 	 * @throws NullPointerException If the values array is null
 	 */
-	public @NotNull YamlBuilder addAll(@NotNull String... values) {
+	public @NonNull YamlBuilder addAll(@NonNull String... values) {
 		Objects.requireNonNull(values, "Values array must not be null");
 		for (String value : values) {
 			this.add(value);
@@ -421,7 +421,7 @@ public final class YamlBuilder {
 	 * @throws IllegalStateException If the current context is not a sequence
 	 * @throws NullPointerException If the values array is null
 	 */
-	public @NotNull YamlBuilder addAll(@NotNull Number... values) {
+	public @NonNull YamlBuilder addAll(@NonNull Number... values) {
 		Objects.requireNonNull(values, "Values array must not be null");
 		for (Number value : values) {
 			this.add(value);
@@ -441,7 +441,7 @@ public final class YamlBuilder {
 	 * @throws IllegalStateException If the current context is not a sequence
 	 * @throws NullPointerException If element or anchorName is null
 	 */
-	public @NotNull YamlBuilder addWithAnchor(@NotNull YamlElement element, @NotNull String anchorName) {
+	public @NonNull YamlBuilder addWithAnchor(@NonNull YamlElement element, @NonNull String anchorName) {
 		Objects.requireNonNull(element, "Element must not be null");
 		Objects.requireNonNull(anchorName, "Anchor name must not be null");
 		return this.add(new YamlAnchor(anchorName, element));
@@ -456,7 +456,7 @@ public final class YamlBuilder {
 	 * @throws IllegalStateException If the current context is not a sequence
 	 * @throws NullPointerException If anchorName is null
 	 */
-	public @NotNull YamlBuilder addWithAnchor(@Nullable String value, @NotNull String anchorName) {
+	public @NonNull YamlBuilder addWithAnchor(@Nullable String value, @NonNull String anchorName) {
 		YamlElement element = value == null ? YamlNull.INSTANCE : new YamlScalar(value);
 		return this.addWithAnchor(element, anchorName);
 	}
@@ -469,7 +469,7 @@ public final class YamlBuilder {
 	 * @throws IllegalStateException If the current context is not a sequence
 	 * @throws NullPointerException If anchorName is null
 	 */
-	public @NotNull YamlBuilder addAlias(@NotNull String anchorName) {
+	public @NonNull YamlBuilder addAlias(@NonNull String anchorName) {
 		Objects.requireNonNull(anchorName, "Anchor name must not be null");
 		return this.add(new YamlAlias(anchorName));
 	}
@@ -486,7 +486,7 @@ public final class YamlBuilder {
 	 * @throws IllegalStateException If the current context is not a mapping
 	 * @throws NullPointerException If the key is null
 	 */
-	public @NotNull YamlBuilder startMapping(@NotNull String key) {
+	public @NonNull YamlBuilder startMapping(@NonNull String key) {
 		this.ensureMappingContext();
 		Objects.requireNonNull(key, "Key must not be null");
 		
@@ -508,7 +508,7 @@ public final class YamlBuilder {
 	 * @throws IllegalStateException If the current context is not a mapping
 	 * @throws NullPointerException If key or anchorName is null
 	 */
-	public @NotNull YamlBuilder startMappingWithAnchor(@NotNull String key, @NotNull String anchorName) {
+	public @NonNull YamlBuilder startMappingWithAnchor(@NonNull String key, @NonNull String anchorName) {
 		this.ensureMappingContext();
 		Objects.requireNonNull(key, "Key must not be null");
 		Objects.requireNonNull(anchorName, "Anchor name must not be null");
@@ -528,7 +528,7 @@ public final class YamlBuilder {
 	 * @return This builder for method chaining, now in mapping context
 	 * @throws IllegalStateException If the current context is not a sequence
 	 */
-	public @NotNull YamlBuilder startMapping() {
+	public @NonNull YamlBuilder startMapping() {
 		this.ensureSequenceContext();
 		
 		YamlMapping nestedMapping = new YamlMapping();
@@ -548,7 +548,7 @@ public final class YamlBuilder {
 	 * @throws IllegalStateException If the current context is not a sequence
 	 * @throws NullPointerException If anchorName is null
 	 */
-	public @NotNull YamlBuilder startMappingWithAnchor(@NotNull String anchorName) {
+	public @NonNull YamlBuilder startMappingWithAnchor(@NonNull String anchorName) {
 		this.ensureSequenceContext();
 		Objects.requireNonNull(anchorName, "Anchor name must not be null");
 		
@@ -566,7 +566,7 @@ public final class YamlBuilder {
 	 * @return This builder for method chaining, now in the parent context
 	 * @throws IllegalStateException If the current context is not a mapping or if no parent context exists
 	 */
-	public @NotNull YamlBuilder endMapping() {
+	public @NonNull YamlBuilder endMapping() {
 		ContextFrame current = this.getCurrentContext();
 		if (current.type != BuilderContext.MAPPING) {
 			throw new IllegalStateException("Current context is not a mapping");
@@ -592,7 +592,7 @@ public final class YamlBuilder {
 	 * @throws IllegalStateException If the current context is not a mapping
 	 * @throws NullPointerException If the key is null
 	 */
-	public @NotNull YamlBuilder startSequence(@NotNull String key) {
+	public @NonNull YamlBuilder startSequence(@NonNull String key) {
 		this.ensureMappingContext();
 		Objects.requireNonNull(key, "Key must not be null");
 		
@@ -614,7 +614,7 @@ public final class YamlBuilder {
 	 * @throws IllegalStateException If the current context is not a mapping
 	 * @throws NullPointerException If key or anchorName is null
 	 */
-	public @NotNull YamlBuilder startSequenceWithAnchor(@NotNull String key, @NotNull String anchorName) {
+	public @NonNull YamlBuilder startSequenceWithAnchor(@NonNull String key, @NonNull String anchorName) {
 		this.ensureMappingContext();
 		Objects.requireNonNull(key, "Key must not be null");
 		Objects.requireNonNull(anchorName, "Anchor name must not be null");
@@ -634,7 +634,7 @@ public final class YamlBuilder {
 	 * @return This builder for method chaining, now in sequence context
 	 * @throws IllegalStateException If the current context is not a sequence
 	 */
-	public @NotNull YamlBuilder startSequence() {
+	public @NonNull YamlBuilder startSequence() {
 		this.ensureSequenceContext();
 		
 		YamlSequence nestedSequence = new YamlSequence();
@@ -654,7 +654,7 @@ public final class YamlBuilder {
 	 * @throws IllegalStateException If the current context is not a sequence
 	 * @throws NullPointerException If anchorName is null
 	 */
-	public @NotNull YamlBuilder startSequenceWithAnchor(@NotNull String anchorName) {
+	public @NonNull YamlBuilder startSequenceWithAnchor(@NonNull String anchorName) {
 		this.ensureSequenceContext();
 		Objects.requireNonNull(anchorName, "Anchor name must not be null");
 		
@@ -672,7 +672,7 @@ public final class YamlBuilder {
 	 * @return This builder for method chaining, now in the parent context
 	 * @throws IllegalStateException If the current context is not a sequence or if no parent context exists
 	 */
-	public @NotNull YamlBuilder endSequence() {
+	public @NonNull YamlBuilder endSequence() {
 		ContextFrame current = this.getCurrentContext();
 		if (current.type != BuilderContext.SEQUENCE) {
 			throw new IllegalStateException("Current context is not a sequence");
@@ -698,7 +698,7 @@ public final class YamlBuilder {
 	 * @return This builder for method chaining
 	 * @throws IllegalStateException If the current context is not a mapping
 	 */
-	public @NotNull YamlBuilder addIf(boolean condition, @NotNull String key, @Nullable String value) {
+	public @NonNull YamlBuilder addIf(boolean condition, @NonNull String key, @Nullable String value) {
 		if (condition) {
 			this.add(key, value);
 		}
@@ -714,7 +714,7 @@ public final class YamlBuilder {
 	 * @return This builder for method chaining
 	 * @throws IllegalStateException If the current context is not a mapping
 	 */
-	public @NotNull YamlBuilder addIf(boolean condition, @NotNull String key, boolean value) {
+	public @NonNull YamlBuilder addIf(boolean condition, @NonNull String key, boolean value) {
 		if (condition) {
 			this.add(key, value);
 		}
@@ -730,7 +730,7 @@ public final class YamlBuilder {
 	 * @return This builder for method chaining
 	 * @throws IllegalStateException If the current context is not a mapping
 	 */
-	public @NotNull YamlBuilder addIf(boolean condition, @NotNull String key, @Nullable Number value) {
+	public @NonNull YamlBuilder addIf(boolean condition, @NonNull String key, @Nullable Number value) {
 		if (condition) {
 			this.add(key, value);
 		}
@@ -746,7 +746,7 @@ public final class YamlBuilder {
 	 * @return This builder for method chaining
 	 * @throws IllegalStateException If the current context is not a mapping
 	 */
-	public @NotNull YamlBuilder addAliasIf(boolean condition, @NotNull String key, @NotNull String anchorName) {
+	public @NonNull YamlBuilder addAliasIf(boolean condition, @NonNull String key, @NonNull String anchorName) {
 		if (condition) {
 			this.addAlias(key, anchorName);
 		}
@@ -762,7 +762,7 @@ public final class YamlBuilder {
 	 * @return The constructed yaml element
 	 * @throws IllegalStateException If there are unclosed nested contexts
 	 */
-	public @NotNull YamlElement build() {
+	public @NonNull YamlElement build() {
 		if (this.contextStack.size() != 1) {
 			throw new IllegalStateException("Cannot build with unclosed nested contexts. Current nesting depth: " + (this.contextStack.size() - 1));
 		}
@@ -775,7 +775,7 @@ public final class YamlBuilder {
 	 * @return The constructed yaml mapping
 	 * @throws IllegalStateException If there are unclosed nested contexts or if the root is not a mapping
 	 */
-	public @NotNull YamlMapping buildMapping() {
+	public @NonNull YamlMapping buildMapping() {
 		YamlElement element = this.build();
 		if (!(element instanceof YamlMapping mapping)) {
 			throw new IllegalStateException("Root element is not a YamlMapping");
@@ -791,7 +791,7 @@ public final class YamlBuilder {
 	 * @return The constructed yaml sequence
 	 * @throws IllegalStateException If there are unclosed nested contexts or if the root is not a sequence
 	 */
-	public @NotNull YamlSequence buildSequence() {
+	public @NonNull YamlSequence buildSequence() {
 		YamlElement element = this.build();
 		if (!(element instanceof YamlSequence sequence)) {
 			throw new IllegalStateException("Root element is not a YamlSequence");
@@ -852,7 +852,7 @@ public final class YamlBuilder {
 	 * @return A string representation of the current yaml structure
 	 * @throws NullPointerException If the config is null
 	 */
-	public @NotNull String toString(@NotNull YamlConfig config) {
+	public @NonNull String toString(@NonNull YamlConfig config) {
 		Objects.requireNonNull(config, "Config must not be null");
 		return this.root.toString(config);
 	}
@@ -878,7 +878,7 @@ public final class YamlBuilder {
 	 * @param type The type of context (mapping or sequence)
 	 * @param element The yaml element associated with this context
 	 */
-	private record ContextFrame(@NotNull BuilderContext type, @NotNull YamlElement element) {
+	private record ContextFrame(@NonNull BuilderContext type, @NonNull YamlElement element) {
 		
 		/**
 		 * Constructs a new context frame with the specified type and element.<br>

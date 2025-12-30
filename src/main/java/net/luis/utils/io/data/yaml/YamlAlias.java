@@ -18,7 +18,6 @@
 
 package net.luis.utils.io.data.yaml;
 
-import org.jetbrains.annotations.NotNull;
 import org.jspecify.annotations.NonNull;
 
 import java.util.Objects;
@@ -28,11 +27,14 @@ import java.util.Objects;
  * When resolved, the alias points to the element defined by the corresponding anchor.<br>
  *
  * @author Luis-St
- * @param anchorName
-The name of the anchor this alias references.<br>
  */
-public record YamlAlias(@NotNull String anchorName) implements YamlElement {
-	
+public class YamlAlias implements YamlElement {
+
+	/**
+	 * The name of the anchor this alias references.<br>
+	 */
+	private final String anchorName;
+
 	/**
 	 * Constructs a new yaml alias referencing the given anchor name.<br>
 	 *
@@ -40,8 +42,8 @@ public record YamlAlias(@NotNull String anchorName) implements YamlElement {
 	 * @throws NullPointerException If the anchor name is null
 	 * @throws IllegalArgumentException If the anchor name is blank or contains invalid characters
 	 */
-	public YamlAlias {
-		Objects.requireNonNull(anchorName, "Anchor name must not be null");
+	public YamlAlias(@NonNull String anchorName) {
+		this.anchorName = Objects.requireNonNull(anchorName, "Anchor name must not be null");
 		if (anchorName.isBlank()) {
 			throw new IllegalArgumentException("Anchor name must not be blank");
 		}
@@ -49,7 +51,7 @@ public record YamlAlias(@NotNull String anchorName) implements YamlElement {
 			throw new IllegalArgumentException("Invalid anchor name: '" + anchorName + "'. Anchor names must contain only alphanumeric characters, underscores, and hyphens");
 		}
 	}
-	
+
 	/**
 	 * Checks if the given name is a valid anchor name.<br>
 	 * Valid anchor names contain only alphanumeric characters, underscores, and hyphens.<br>
@@ -57,7 +59,7 @@ public record YamlAlias(@NotNull String anchorName) implements YamlElement {
 	 * @param name The name to check
 	 * @return True if the name is valid, false otherwise
 	 */
-	private static boolean isValidAnchorName(@NotNull String name) {
+	private static boolean isValidAnchorName(@NonNull String name) {
 		for (int i = 0; i < name.length(); i++) {
 			char c = name.charAt(i);
 			if (!Character.isLetterOrDigit(c) && c != '_' && c != '-') {
@@ -66,32 +68,37 @@ public record YamlAlias(@NotNull String anchorName) implements YamlElement {
 		}
 		return true;
 	}
-	
+
 	/**
 	 * Returns the name of the referenced anchor.<br>
 	 * @return The anchor name without the '*' prefix
 	 */
-	@Override
-	public @NotNull String anchorName() {
+	public @NonNull String anchorName() {
 		return this.anchorName;
 	}
-	
+
 	//region Object overrides
 	@Override
 	public boolean equals(Object o) {
 		if (this == o) return true;
-		if (!(o instanceof YamlAlias(String name))) return false;
-		
-		return this.anchorName.equals(name);
+		if (!(o instanceof YamlAlias that)) return false;
+
+		return this.anchorName.equals(that.anchorName);
 	}
-	
+
+	@Override
+	public int hashCode() {
+		return Objects.hash(this.anchorName);
+	}
+
 	@Override
 	public @NonNull String toString() {
 		return this.toString(YamlConfig.DEFAULT);
 	}
-	
+
 	@Override
-	public @NotNull String toString(@NotNull YamlConfig config) {
+	public @NonNull String toString(@NonNull YamlConfig config) {
 		return "*" + this.anchorName;
 	}
+	//endregion
 }

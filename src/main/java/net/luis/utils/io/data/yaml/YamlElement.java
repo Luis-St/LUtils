@@ -20,7 +20,7 @@ package net.luis.utils.io.data.yaml;
 
 import net.luis.utils.io.data.yaml.exception.YamlTypeException;
 import net.luis.utils.lang.StringUtils;
-import org.jetbrains.annotations.NotNull;
+import org.jspecify.annotations.NonNull;
 
 /**
  * A generic class representing a yaml element.<br>
@@ -39,7 +39,7 @@ public interface YamlElement {
 	 *
 	 * @return The name of the class in a human-readable format
 	 */
-	private @NotNull String getName() {
+	private @NonNull String getName() {
 		return StringUtils.getReadableString(this.getClass().getSimpleName(), Character::isUpperCase).toLowerCase();
 	}
 	
@@ -103,7 +103,7 @@ public interface YamlElement {
 	 * @return This yaml element as a yaml mapping
 	 * @throws YamlTypeException If this yaml element is not a yaml mapping
 	 */
-	default @NotNull YamlMapping getAsYamlMapping() {
+	default @NonNull YamlMapping getAsYamlMapping() {
 		if (this instanceof YamlMapping mapping) {
 			return mapping;
 		}
@@ -120,7 +120,7 @@ public interface YamlElement {
 	 * @return This yaml element as a yaml sequence
 	 * @throws YamlTypeException If this yaml element is not a yaml sequence
 	 */
-	default @NotNull YamlSequence getAsYamlSequence() {
+	default @NonNull YamlSequence getAsYamlSequence() {
 		if (this instanceof YamlSequence sequence) {
 			return sequence;
 		}
@@ -137,7 +137,7 @@ public interface YamlElement {
 	 * @return This yaml element as a yaml scalar
 	 * @throws YamlTypeException If this yaml element is not a yaml scalar
 	 */
-	default @NotNull YamlScalar getAsYamlScalar() {
+	default @NonNull YamlScalar getAsYamlScalar() {
 		if (this instanceof YamlScalar scalar) {
 			return scalar;
 		}
@@ -153,7 +153,7 @@ public interface YamlElement {
 	 * @return This yaml element as a yaml anchor
 	 * @throws YamlTypeException If this yaml element is not a yaml anchor
 	 */
-	default @NotNull YamlAnchor getAsYamlAnchor() {
+	default @NonNull YamlAnchor getAsYamlAnchor() {
 		if (this instanceof YamlAnchor anchor) {
 			return anchor;
 		}
@@ -166,7 +166,7 @@ public interface YamlElement {
 	 * @return This yaml element as a yaml alias
 	 * @throws YamlTypeException If this yaml element is not a yaml alias
 	 */
-	default @NotNull YamlAlias getAsYamlAlias() {
+	default @NonNull YamlAlias getAsYamlAlias() {
 		if (this instanceof YamlAlias alias) {
 			return alias;
 		}
@@ -180,7 +180,7 @@ public interface YamlElement {
 	 *
 	 * @return The unwrapped element
 	 */
-	default @NotNull YamlElement unwrap() {
+	default @NonNull YamlElement unwrap() {
 		if (this instanceof YamlAnchor anchor) {
 			return anchor.unwrap();
 		}
@@ -194,5 +194,5 @@ public interface YamlElement {
 	 * @param config The yaml config to use
 	 * @return The string representation of this yaml element
 	 */
-	@NotNull String toString(@NotNull YamlConfig config);
+	@NonNull String toString(@NonNull YamlConfig config);
 }

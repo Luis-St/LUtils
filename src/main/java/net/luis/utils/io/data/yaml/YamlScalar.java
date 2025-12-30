@@ -20,7 +20,7 @@ package net.luis.utils.io.data.yaml;
 
 import net.luis.utils.io.data.yaml.exception.YamlTypeException;
 import net.luis.utils.io.reader.StringReader;
-import org.jetbrains.annotations.NotNull;
+import org.jspecify.annotations.NonNull;
 
 import java.util.Objects;
 
@@ -51,7 +51,7 @@ public class YamlScalar implements YamlElement {
 	 * @param value The number value
 	 * @throws NullPointerException If the value is null
 	 */
-	public YamlScalar(@NotNull Number value) {
+	public YamlScalar(@NonNull Number value) {
 		this.value = Objects.requireNonNull(value, "Value must not be null");
 	}
 	
@@ -69,7 +69,7 @@ public class YamlScalar implements YamlElement {
 	 * @param value The string value
 	 * @throws NullPointerException If the value is null
 	 */
-	public YamlScalar(@NotNull String value) {
+	public YamlScalar(@NonNull String value) {
 		this.value = Objects.requireNonNull(value, "Value must not be null");
 	}
 	
@@ -81,7 +81,7 @@ public class YamlScalar implements YamlElement {
 	 * @param string The string
 	 * @return The parsed value or the string if it could not be parsed
 	 */
-	private static @NotNull Object tryParse(@NotNull String string) {
+	private static @NonNull Object tryParse(@NonNull String string) {
 		// YAML 1.2 boolean values: true, false (case-insensitive for common parsers)
 		if ("true".equalsIgnoreCase(string) || "false".equalsIgnoreCase(string)) {
 			return Boolean.parseBoolean(string);
@@ -115,7 +115,7 @@ public class YamlScalar implements YamlElement {
 	 * @param value The string value to check
 	 * @return True if the string needs to be quoted, false otherwise
 	 */
-	private static boolean needsQuoting(@NotNull String value) {
+	private static boolean needsQuoting(@NonNull String value) {
 		if (value.isEmpty()) {
 			return true;
 		}
@@ -151,7 +151,7 @@ public class YamlScalar implements YamlElement {
 	 * @param string The string to escape
 	 * @return The escaped string
 	 */
-	private static @NotNull String escapeString(@NotNull String string) {
+	private static @NonNull String escapeString(@NonNull String string) {
 		StringBuilder builder = new StringBuilder();
 		for (int i = 0; i < string.length(); i++) {
 			char c = string.charAt(i);
@@ -176,7 +176,7 @@ public class YamlScalar implements YamlElement {
 	 * @return The name of the type of this yaml scalar in a human-readable format
 	 * @throws IllegalStateException If the type of this yaml scalar is unknown
 	 */
-	private @NotNull String getName() {
+	private @NonNull String getName() {
 		if (this.isBoolean()) {
 			return "yaml boolean";
 		} else if (this.isNumber()) {
@@ -279,7 +279,7 @@ public class YamlScalar implements YamlElement {
 	 * @return This yaml scalar as a number
 	 * @throws YamlTypeException If this yaml scalar is not a number
 	 */
-	public @NotNull Number getAsNumber() {
+	public @NonNull Number getAsNumber() {
 		if (this.isNumber()) {
 			return (Number) this.value;
 		}
@@ -375,7 +375,7 @@ public class YamlScalar implements YamlElement {
 	 * Converts this yaml scalar to a string.<br>
 	 * @return This yaml scalar as a string
 	 */
-	public @NotNull String getAsString() {
+	public @NonNull String getAsString() {
 		if (this.isString()) {
 			return (String) this.value;
 		} else if (this.isNumber()) {
@@ -392,7 +392,7 @@ public class YamlScalar implements YamlElement {
 	 *
 	 * @return A yaml scalar with the parsed value or this yaml scalar if the parsing fails
 	 */
-	public @NotNull YamlScalar getAsParsedYamlScalar() {
+	public @NonNull YamlScalar getAsParsedYamlScalar() {
 		if (this.isString()) {
 			Object parsed = tryParse(this.getAsString());
 			
@@ -426,7 +426,7 @@ public class YamlScalar implements YamlElement {
 	}
 	
 	@Override
-	public @NotNull String toString(@NotNull YamlConfig config) {
+	public @NonNull String toString(@NonNull YamlConfig config) {
 		Objects.requireNonNull(config, "Config must not be null");
 		
 		if (this.value instanceof String string) {

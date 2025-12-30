@@ -18,7 +18,7 @@
 
 package net.luis.utils.io.data.yaml.exception;
 
-import org.jetbrains.annotations.Nullable;
+import org.jspecify.annotations.Nullable;
 
 /**
  * Thrown when a yaml element is not of the expected type.<br>

@@ -21,7 +21,9 @@ package net.luis.utils.io.data.yaml;
 import com.google.common.collect.Maps;
 import net.luis.utils.io.data.yaml.exception.NoSuchYamlElementException;
 import net.luis.utils.io.data.yaml.exception.YamlTypeException;
-import org.jetbrains.annotations.*;
+import org.jetbrains.annotations.Unmodifiable;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 import java.util.*;
 import java.util.function.BiConsumer;
@@ -52,7 +54,7 @@ public class YamlMapping implements YamlElement {
 	 * @param elements The map of elements to add
 	 * @throws NullPointerException If the given elements are null
 	 */
-	public YamlMapping(@NotNull Map<String, ? extends YamlElement> elements) {
+	public YamlMapping(@NonNull Map<String, ? extends YamlElement> elements) {
 		this.elements.putAll(Objects.requireNonNull(elements, "Yaml elements must not be null"));
 	}
 	
@@ -64,7 +66,7 @@ public class YamlMapping implements YamlElement {
 	 * @param key The key to format
 	 * @return The formatted key
 	 */
-	private static @NotNull String formatKey(@NotNull String key) {
+	private static @NonNull String formatKey(@NonNull String key) {
 		if (key.isEmpty() || needsQuoting(key)) {
 			return "\"" + escapeString(key) + "\"";
 		}
@@ -77,7 +79,7 @@ public class YamlMapping implements YamlElement {
 	 * @param key The key to check
 	 * @return True if the key needs quoting, false otherwise
 	 */
-	private static boolean needsQuoting(@NotNull String key) {
+	private static boolean needsQuoting(@NonNull String key) {
 		if (key.isEmpty()) {
 			return true;
 		}
@@ -105,7 +107,7 @@ public class YamlMapping implements YamlElement {
 	 * @param string The string to escape
 	 * @return The escaped string
 	 */
-	private static @NotNull String escapeString(@NotNull String string) {
+	private static @NonNull String escapeString(@NonNull String string) {
 		StringBuilder builder = new StringBuilder();
 		for (int i = 0; i < string.length(); i++) {
 			char c = string.charAt(i);
@@ -161,7 +163,7 @@ public class YamlMapping implements YamlElement {
 	 * Returns the set of keys in this yaml mapping.<br>
 	 * @return The keys of this yaml mapping
 	 */
-	public @NotNull Set<String> keySet() {
+	public @NonNull Set<String> keySet() {
 		return this.elements.keySet();
 	}
 	//endregion
@@ -172,7 +174,7 @@ public class YamlMapping implements YamlElement {
 	 * Returns the collection of values in this yaml mapping.<br>
 	 * @return The values of this yaml mapping
 	 */
-	public @NotNull @Unmodifiable Collection<YamlElement> elements() {
+	public @NonNull @Unmodifiable Collection<YamlElement> elements() {
 		return Collections.unmodifiableCollection(this.elements.values());
 	}
 	
@@ -180,7 +182,7 @@ public class YamlMapping implements YamlElement {
 	 * Returns the set of entries in this yaml mapping.<br>
 	 * @return The entries of this yaml mapping
 	 */
-	public @NotNull Set<Map.Entry<String, YamlElement>> entrySet() {
+	public @NonNull Set<Map.Entry<String, YamlElement>> entrySet() {
 		return this.elements.entrySet();
 	}
 	
@@ -190,7 +192,7 @@ public class YamlMapping implements YamlElement {
 	 * @param action The action to apply to each entry
 	 * @throws NullPointerException If the given action is null
 	 */
-	public void forEach(@NotNull BiConsumer<? super String, ? super YamlElement> action) {
+	public void forEach(@NonNull BiConsumer<? super String, ? super YamlElement> action) {
 		this.elements.forEach(Objects.requireNonNull(action, "Action must not be null"));
 	}
 	
@@ -204,7 +206,7 @@ public class YamlMapping implements YamlElement {
 	 * @return The previous element associated with the key, or null if the key was not present
 	 * @throws NullPointerException If the given key is null
 	 */
-	public @Nullable YamlElement add(@NotNull String key, @Nullable YamlElement element) {
+	public @Nullable YamlElement add(@NonNull String key, @Nullable YamlElement element) {
 		Objects.requireNonNull(key, "Key must not be null");
 		return this.elements.put(key, element == null ? YamlNull.INSTANCE : element);
 	}
@@ -220,7 +222,7 @@ public class YamlMapping implements YamlElement {
 	 * @throws NullPointerException If the given key is null
 	 * @see #add(String, YamlElement)
 	 */
-	public @Nullable YamlElement add(@NotNull String key, @Nullable String value) {
+	public @Nullable YamlElement add(@NonNull String key, @Nullable String value) {
 		return this.add(key, value == null ? null : new YamlScalar(value));
 	}
 	
@@ -234,7 +236,7 @@ public class YamlMapping implements YamlElement {
 	 * @throws NullPointerException If the given key is null
 	 * @see #add(String, YamlElement)
 	 */
-	public @Nullable YamlElement add(@NotNull String key, boolean value) {
+	public @Nullable YamlElement add(@NonNull String key, boolean value) {
 		return this.add(key, new YamlScalar(value));
 	}
 	//endregion
@@ -252,7 +254,7 @@ public class YamlMapping implements YamlElement {
 	 * @throws NullPointerException If the given key is null
 	 * @see #add(String, YamlElement)
 	 */
-	public @Nullable YamlElement add(@NotNull String key, @Nullable Number value) {
+	public @Nullable YamlElement add(@NonNull String key, @Nullable Number value) {
 		return this.add(key, value == null ? null : new YamlScalar(value));
 	}
 	
@@ -262,7 +264,7 @@ public class YamlMapping implements YamlElement {
 	 * @param mapping The yaml mapping of elements to add
 	 * @throws NullPointerException If the given yaml mapping is null
 	 */
-	public void addAll(@NotNull YamlMapping mapping) {
+	public void addAll(@NonNull YamlMapping mapping) {
 		this.elements.putAll(Objects.requireNonNull(mapping, "Yaml mapping must not be null").elements);
 	}
 	//endregion
@@ -275,7 +277,7 @@ public class YamlMapping implements YamlElement {
 	 * @param elements The map of elements to add
 	 * @throws NullPointerException If the given elements are null
 	 */
-	public void addAll(@NotNull Map<String, ? extends YamlElement> elements) {
+	public void addAll(@NonNull Map<String, ? extends YamlElement> elements) {
 		this.elements.putAll(Objects.requireNonNull(elements, "Yaml elements must not be null"));
 	}
 	
@@ -308,7 +310,7 @@ public class YamlMapping implements YamlElement {
 	 * @return The previous element associated with the key, or null if the key was not present
 	 * @throws NullPointerException If the given key is null
 	 */
-	public @Nullable YamlElement replace(@NotNull String key, @Nullable YamlElement newElement) {
+	public @Nullable YamlElement replace(@NonNull String key, @Nullable YamlElement newElement) {
 		Objects.requireNonNull(key, "Key must not be null");
 		return this.elements.replace(key, newElement == null ? YamlNull.INSTANCE : newElement);
 	}
@@ -322,7 +324,7 @@ public class YamlMapping implements YamlElement {
 	 * @return True if the element was replaced, false otherwise
 	 * @throws NullPointerException If the given key or old element is null
 	 */
-	public boolean replace(@NotNull String key, @NotNull YamlElement oldElement, @Nullable YamlElement newElement) {
+	public boolean replace(@NonNull String key, @NonNull YamlElement oldElement, @Nullable YamlElement newElement) {
 		Objects.requireNonNull(key, "Key must not be null");
 		Objects.requireNonNull(oldElement, "Old value must not be null");
 		return this.elements.replace(key, oldElement, newElement == null ? YamlNull.INSTANCE : newElement);
@@ -335,7 +337,7 @@ public class YamlMapping implements YamlElement {
 	 * @return The element associated with the key, or null if the key was not present
 	 * @throws NullPointerException If the given key is null
 	 */
-	public @Nullable YamlElement get(@NotNull String key) {
+	public @Nullable YamlElement get(@NonNull String key) {
 		Objects.requireNonNull(key, "Key must not be null");
 		return this.elements.get(key);
 	}
@@ -350,7 +352,7 @@ public class YamlMapping implements YamlElement {
 	 * @throws YamlTypeException If the element is not a yaml mapping
 	 * @see #get(String)
 	 */
-	public @NotNull YamlMapping getAsYamlMapping(@NotNull String key) {
+	public @NonNull YamlMapping getAsYamlMapping(@NonNull String key) {
 		YamlElement yaml = this.get(key);
 		if (yaml == null) {
 			throw new NoSuchYamlElementException("Expected yaml mapping for key '" + key + "', but found none");
@@ -371,7 +373,7 @@ public class YamlMapping implements YamlElement {
 	 * @throws YamlTypeException If the element is not a yaml sequence
 	 * @see #get(String)
 	 */
-	public @NotNull YamlSequence getAsYamlSequence(@NotNull String key) {
+	public @NonNull YamlSequence getAsYamlSequence(@NonNull String key) {
 		YamlElement yaml = this.get(key);
 		if (yaml == null) {
 			throw new NoSuchYamlElementException("Expected yaml sequence for key '" + key + "', but found none");
@@ -392,7 +394,7 @@ public class YamlMapping implements YamlElement {
 	 * @throws YamlTypeException If the element is not a yaml scalar
 	 * @see #get(String)
 	 */
-	public @NotNull YamlScalar getAsYamlScalar(@NotNull String key) {
+	public @NonNull YamlScalar getAsYamlScalar(@NonNull String key) {
 		YamlElement yaml = this.get(key);
 		if (yaml == null) {
 			throw new NoSuchYamlElementException("Expected yaml scalar for key '" + key + "', but found none");
@@ -414,7 +416,7 @@ public class YamlMapping implements YamlElement {
 	 * @throws YamlTypeException If the element is not a string
 	 * @see #getAsYamlScalar(String)
 	 */
-	public @NotNull String getAsString(@NotNull String key) {
+	public @NonNull String getAsString(@NonNull String key) {
 		return this.getAsYamlScalar(key).getAsString();
 	}
 	
@@ -429,7 +431,7 @@ public class YamlMapping implements YamlElement {
 	 * @throws YamlTypeException If the element is not a boolean
 	 * @see #getAsYamlScalar(String)
 	 */
-	public boolean getAsBoolean(@NotNull String key) {
+	public boolean getAsBoolean(@NonNull String key) {
 		return this.getAsYamlScalar(key).getAsBoolean();
 	}
 	
@@ -444,7 +446,7 @@ public class YamlMapping implements YamlElement {
 	 * @throws YamlTypeException If the element is not a number
 	 * @see #getAsYamlScalar(String)
 	 */
-	public @NotNull Number getAsNumber(@NotNull String key) {
+	public @NonNull Number getAsNumber(@NonNull String key) {
 		return this.getAsYamlScalar(key).getAsNumber();
 	}
 	//endregion
@@ -460,7 +462,7 @@ public class YamlMapping implements YamlElement {
 	 * @throws YamlTypeException If the element is not an integer
 	 * @see #getAsYamlScalar(String)
 	 */
-	public int getAsInteger(@NotNull String key) {
+	public int getAsInteger(@NonNull String key) {
 		return this.getAsYamlScalar(key).getAsInteger();
 	}
 	
@@ -475,7 +477,7 @@ public class YamlMapping implements YamlElement {
 	 * @throws YamlTypeException If the element is not a long
 	 * @see #getAsYamlScalar(String)
 	 */
-	public long getAsLong(@NotNull String key) {
+	public long getAsLong(@NonNull String key) {
 		return this.getAsYamlScalar(key).getAsLong();
 	}
 	
@@ -490,7 +492,7 @@ public class YamlMapping implements YamlElement {
 	 * @throws YamlTypeException If the element is not a double
 	 * @see #getAsYamlScalar(String)
 	 */
-	public double getAsDouble(@NotNull String key) {
+	public double getAsDouble(@NonNull String key) {
 		return this.getAsYamlScalar(key).getAsDouble();
 	}
 	
@@ -514,7 +516,7 @@ public class YamlMapping implements YamlElement {
 	}
 	
 	@Override
-	public @NotNull String toString(@NotNull YamlConfig config) {
+	public @NonNull String toString(@NonNull YamlConfig config) {
 		Objects.requireNonNull(config, "Config must not be null");
 		
 		if (this.elements.isEmpty()) {
@@ -535,7 +537,7 @@ public class YamlMapping implements YamlElement {
 	 * @param config The yaml config to use
 	 * @return The flow style string representation
 	 */
-	private @NotNull String toFlowString(@NotNull YamlConfig config) {
+	private @NonNull String toFlowString(@NonNull YamlConfig config) {
 		StringBuilder builder = new StringBuilder("{");
 		List<Map.Entry<String, YamlElement>> entries = List.copyOf(this.elements.entrySet());
 		for (int i = 0; i < entries.size(); i++) {
@@ -555,7 +557,7 @@ public class YamlMapping implements YamlElement {
 	 * @param config The yaml config to use
 	 * @return The block style string representation
 	 */
-	private @NotNull String toBlockString(@NotNull YamlConfig config) {
+	private @NonNull String toBlockString(@NonNull YamlConfig config) {
 		StringBuilder builder = new StringBuilder();
 		List<Map.Entry<String, YamlElement>> entries = List.copyOf(this.elements.entrySet());
 		for (int i = 0; i < entries.size(); i++) {

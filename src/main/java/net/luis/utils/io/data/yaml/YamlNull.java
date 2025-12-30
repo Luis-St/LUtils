@@ -19,8 +19,8 @@
 package net.luis.utils.io.data.yaml;
 
 import net.luis.utils.annotation.type.Singleton;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 /**
  * Represents a yaml null value.<br>
@@ -51,7 +51,7 @@ public final class YamlNull implements YamlElement {
 	}
 	
 	@Override
-	public @NotNull String toString(@Nullable YamlConfig config) {
+	public @NonNull String toString(@Nullable YamlConfig config) {
 		YamlConfig cfg = config == null ? YamlConfig.DEFAULT : config;
 		return switch (cfg.nullStyle()) {
 			case NULL -> "null";

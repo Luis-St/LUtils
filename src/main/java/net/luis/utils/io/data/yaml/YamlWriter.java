@@ -19,7 +19,7 @@
 package net.luis.utils.io.data.yaml;
 
 import net.luis.utils.io.data.OutputProvider;
-import org.jetbrains.annotations.NotNull;
+import org.jspecify.annotations.NonNull;
 
 import java.io.*;
 import java.util.Objects;
@@ -48,7 +48,7 @@ public class YamlWriter implements AutoCloseable {
 	 * @param output The output to create the writer for
 	 * @throws NullPointerException If the output is null
 	 */
-	public YamlWriter(@NotNull OutputProvider output) {
+	public YamlWriter(@NonNull OutputProvider output) {
 		this(output, YamlConfig.DEFAULT);
 	}
 	
@@ -59,7 +59,7 @@ public class YamlWriter implements AutoCloseable {
 	 * @param config The configuration to use for the writer
 	 * @throws NullPointerException If the output or the configuration is null
 	 */
-	public YamlWriter(@NotNull OutputProvider output, @NotNull YamlConfig config) {
+	public YamlWriter(@NonNull OutputProvider output, @NonNull YamlConfig config) {
 		this.config = Objects.requireNonNull(config, "Yaml config must not be null");
 		this.writer = new BufferedWriter(new OutputStreamWriter(Objects.requireNonNull(output, "Output must not be null").getStream(), config.charset()));
 	}
@@ -72,7 +72,7 @@ public class YamlWriter implements AutoCloseable {
 	 * @throws NullPointerException If the yaml element is null
 	 * @throws UncheckedIOException If an I/O error occurs
 	 */
-	public void writeYaml(@NotNull YamlElement yaml) {
+	public void writeYaml(@NonNull YamlElement yaml) {
 		Objects.requireNonNull(yaml, "Yaml element must not be null");
 		try {
 			if (this.config.useDocumentMarkers()) {
