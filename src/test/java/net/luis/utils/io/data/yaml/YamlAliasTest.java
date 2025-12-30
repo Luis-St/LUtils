@@ -37,7 +37,7 @@ class YamlAliasTest {
 	@Test
 	void constructorValid() {
 		YamlAlias alias = new YamlAlias("myAlias");
-		assertEquals("myAlias", alias.getAnchorName());
+		assertEquals("myAlias", alias.anchorName());
 	}
 
 	@Test
@@ -73,7 +73,7 @@ class YamlAliasTest {
 	@Test
 	void getAnchorName() {
 		YamlAlias alias = new YamlAlias("testAlias");
-		assertEquals("testAlias", alias.getAnchorName());
+		assertEquals("testAlias", alias.anchorName());
 	}
 
 	@Test

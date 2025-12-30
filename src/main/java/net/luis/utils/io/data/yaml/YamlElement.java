@@ -31,7 +31,7 @@ import org.jetbrains.annotations.NotNull;
  */
 @FunctionalInterface
 public interface YamlElement {
-
+	
 	/**
 	 * Returns the name of the class in a human-readable format.<br>
 	 * The name is the class name with spaces between the words and all letters in lower-case.<br>
@@ -42,9 +42,9 @@ public interface YamlElement {
 	private @NotNull String getName() {
 		return StringUtils.getReadableString(this.getClass().getSimpleName(), Character::isUpperCase).toLowerCase();
 	}
-
+	
 	//region Type checks
-
+	
 	/**
 	 * Checks if this yaml element is a yaml null.<br>
 	 * @return True if this yaml element is a yaml null, false otherwise
@@ -52,7 +52,7 @@ public interface YamlElement {
 	default boolean isYamlNull() {
 		return this instanceof YamlNull;
 	}
-
+	
 	/**
 	 * Checks if this yaml element is a yaml mapping.<br>
 	 * @return True if this yaml element is a yaml mapping, false otherwise
@@ -60,7 +60,7 @@ public interface YamlElement {
 	default boolean isYamlMapping() {
 		return this instanceof YamlMapping;
 	}
-
+	
 	/**
 	 * Checks if this yaml element is a yaml sequence.<br>
 	 * @return True if this yaml element is a yaml sequence, false otherwise
@@ -68,7 +68,7 @@ public interface YamlElement {
 	default boolean isYamlSequence() {
 		return this instanceof YamlSequence;
 	}
-
+	
 	/**
 	 * Checks if this yaml element is a yaml scalar.<br>
 	 * @return True if this yaml element is a yaml scalar, false otherwise
@@ -76,7 +76,7 @@ public interface YamlElement {
 	default boolean isYamlScalar() {
 		return this instanceof YamlScalar;
 	}
-
+	
 	/**
 	 * Checks if this yaml element is a yaml anchor.<br>
 	 * @return True if this yaml element is a yaml anchor, false otherwise
@@ -84,7 +84,7 @@ public interface YamlElement {
 	default boolean isYamlAnchor() {
 		return this instanceof YamlAnchor;
 	}
-
+	
 	/**
 	 * Checks if this yaml element is a yaml alias.<br>
 	 * @return True if this yaml element is a yaml alias, false otherwise
@@ -93,9 +93,9 @@ public interface YamlElement {
 		return this instanceof YamlAlias;
 	}
 	//endregion
-
+	
 	//region Type conversions
-
+	
 	/**
 	 * Converts this yaml element to a yaml mapping.<br>
 	 * If this element is a yaml anchor containing a mapping, the mapping is returned.<br>
@@ -107,12 +107,12 @@ public interface YamlElement {
 		if (this instanceof YamlMapping mapping) {
 			return mapping;
 		}
-		if (this instanceof YamlAnchor anchor && anchor.getElement() instanceof YamlMapping mapping) {
+		if (this instanceof YamlAnchor anchor && anchor.element() instanceof YamlMapping mapping) {
 			return mapping;
 		}
 		throw new YamlTypeException("Expected a yaml mapping, but found: " + this.getName());
 	}
-
+	
 	/**
 	 * Converts this yaml element to a yaml sequence.<br>
 	 * If this element is a yaml anchor containing a sequence, the sequence is returned.<br>
@@ -124,12 +124,12 @@ public interface YamlElement {
 		if (this instanceof YamlSequence sequence) {
 			return sequence;
 		}
-		if (this instanceof YamlAnchor anchor && anchor.getElement() instanceof YamlSequence sequence) {
+		if (this instanceof YamlAnchor anchor && anchor.element() instanceof YamlSequence sequence) {
 			return sequence;
 		}
 		throw new YamlTypeException("Expected a yaml sequence, but found: " + this.getName());
 	}
-
+	
 	/**
 	 * Converts this yaml element to a yaml scalar.<br>
 	 * If this element is a yaml anchor containing a scalar, the scalar is returned.<br>
@@ -141,12 +141,12 @@ public interface YamlElement {
 		if (this instanceof YamlScalar scalar) {
 			return scalar;
 		}
-		if (this instanceof YamlAnchor anchor && anchor.getElement() instanceof YamlScalar scalar) {
+		if (this instanceof YamlAnchor anchor && anchor.element() instanceof YamlScalar scalar) {
 			return scalar;
 		}
 		throw new YamlTypeException("Expected a yaml scalar, but found: " + this.getName());
 	}
-
+	
 	/**
 	 * Converts this yaml element to a yaml anchor.<br>
 	 *
@@ -159,7 +159,7 @@ public interface YamlElement {
 		}
 		throw new YamlTypeException("Expected a yaml anchor, but found: " + this.getName());
 	}
-
+	
 	/**
 	 * Converts this yaml element to a yaml alias.<br>
 	 *
@@ -173,7 +173,7 @@ public interface YamlElement {
 		throw new YamlTypeException("Expected a yaml alias, but found: " + this.getName());
 	}
 	//endregion
-
+	
 	/**
 	 * Unwraps this element if it's an anchor, otherwise returns itself.<br>
 	 * Useful for getting the actual content regardless of anchor wrapping.<br>
@@ -186,7 +186,7 @@ public interface YamlElement {
 		}
 		return this;
 	}
-
+	
 	/**
 	 * Returns a string representation of this yaml element based on the given yaml config.<br>
 	 * The yaml config specifies how the yaml element should be formatted.<br>

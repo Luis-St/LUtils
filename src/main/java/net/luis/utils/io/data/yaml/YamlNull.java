@@ -22,8 +22,6 @@ import net.luis.utils.annotation.type.Singleton;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.Objects;
-
 /**
  * Represents a yaml null value.<br>
  * This class is a singleton.<br>
@@ -32,26 +30,26 @@ import java.util.Objects;
  */
 @Singleton
 public final class YamlNull implements YamlElement {
-
+	
 	/**
 	 * The singleton instance of {@link YamlNull}.<br>
 	 * This instance is immutable and can be used for all null values.<br>
 	 */
 	public static final YamlNull INSTANCE = new YamlNull();
-
+	
 	/**
 	 * Constructs a new yaml null.<br>
 	 * Should not be used, use {@link #INSTANCE} instead.<br>
 	 */
 	private YamlNull() {}
-
+	
 	//region Object overrides
-
+	
 	@Override
 	public String toString() {
 		return this.toString(YamlConfig.DEFAULT);
 	}
-
+	
 	@Override
 	public @NotNull String toString(@Nullable YamlConfig config) {
 		YamlConfig cfg = config == null ? YamlConfig.DEFAULT : config;

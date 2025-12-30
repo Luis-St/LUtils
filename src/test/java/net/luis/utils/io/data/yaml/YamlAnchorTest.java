@@ -40,8 +40,8 @@ class YamlAnchorTest {
 		YamlScalar element = new YamlScalar("value");
 		YamlAnchor anchor = new YamlAnchor("myAnchor", element);
 
-		assertEquals("myAnchor", anchor.getName());
-		assertEquals(element, anchor.getElement());
+		assertEquals("myAnchor", anchor.name());
+		assertEquals(element, anchor.element());
 	}
 
 	@Test
@@ -88,7 +88,7 @@ class YamlAnchorTest {
 	@Test
 	void getName() {
 		YamlAnchor anchor = new YamlAnchor("testName", new YamlScalar("value"));
-		assertEquals("testName", anchor.getName());
+		assertEquals("testName", anchor.name());
 	}
 
 	@Test
@@ -97,9 +97,9 @@ class YamlAnchorTest {
 		YamlMapping mapping = new YamlMapping();
 		YamlSequence sequence = new YamlSequence();
 
-		assertEquals(scalar, new YamlAnchor("a", scalar).getElement());
-		assertEquals(mapping, new YamlAnchor("b", mapping).getElement());
-		assertEquals(sequence, new YamlAnchor("c", sequence).getElement());
+		assertEquals(scalar, new YamlAnchor("a", scalar).element());
+		assertEquals(mapping, new YamlAnchor("b", mapping).element());
+		assertEquals(sequence, new YamlAnchor("c", sequence).element());
 	}
 
 	@Test
@@ -259,8 +259,8 @@ class YamlAnchorTest {
 		YamlAnchor boolAnchor = new YamlAnchor("bool", new YamlScalar(true));
 		YamlAnchor nullAnchor = new YamlAnchor("null", YamlNull.INSTANCE);
 
-		assertEquals(new YamlScalar(42), scalarAnchor.getElement());
-		assertEquals(new YamlScalar(true), boolAnchor.getElement());
-		assertEquals(YamlNull.INSTANCE, nullAnchor.getElement());
+		assertEquals(new YamlScalar(42), scalarAnchor.element());
+		assertEquals(new YamlScalar(true), boolAnchor.element());
+		assertEquals(YamlNull.INSTANCE, nullAnchor.element());
 	}
 }

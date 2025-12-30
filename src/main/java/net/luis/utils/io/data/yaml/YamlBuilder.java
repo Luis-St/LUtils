@@ -62,7 +62,7 @@ import java.util.*;
  * @author Luis-St
  */
 public final class YamlBuilder {
-
+	
 	/**
 	 * Stack to track nested contexts for proper structure building.
 	 */
@@ -71,7 +71,7 @@ public final class YamlBuilder {
 	 * The root element being built.
 	 */
 	private final YamlElement root;
-
+	
 	/**
 	 * Private constructor to enforce factory method usage.
 	 *
@@ -82,9 +82,9 @@ public final class YamlBuilder {
 		this.root = initialElement;
 		this.contextStack.push(new ContextFrame(initialContext, initialElement));
 	}
-
+	
 	//region Factory methods
-
+	
 	/**
 	 * Creates a new builder for constructing a yaml mapping.<br>
 	 * The builder will start in mapping context, allowing you to add key-value pairs.
@@ -94,7 +94,7 @@ public final class YamlBuilder {
 	public static @NotNull YamlBuilder mapping() {
 		return new YamlBuilder(BuilderContext.MAPPING, new YamlMapping());
 	}
-
+	
 	/**
 	 * Creates a new builder for constructing a yaml sequence.<br>
 	 * The builder will start in sequence context, allowing you to add elements.
@@ -105,9 +105,9 @@ public final class YamlBuilder {
 		return new YamlBuilder(BuilderContext.SEQUENCE, new YamlSequence());
 	}
 	//endregion
-
+	
 	//region Context management
-
+	
 	/**
 	 * Gets the current context frame from the stack.
 	 *
@@ -120,7 +120,7 @@ public final class YamlBuilder {
 		}
 		return this.contextStack.peek();
 	}
-
+	
 	/**
 	 * Ensures the current context is a mapping context.
 	 *
@@ -132,7 +132,7 @@ public final class YamlBuilder {
 			throw new IllegalStateException("Current context is not a mapping. Use add(value) for sequences.");
 		}
 	}
-
+	
 	/**
 	 * Ensures the current context is a sequence context.
 	 *
@@ -145,9 +145,9 @@ public final class YamlBuilder {
 		}
 	}
 	//endregion
-
+	
 	//region Mapping add methods
-
+	
 	/**
 	 * Adds a yaml element with the specified key to the current mapping.<br>
 	 * If the element is null, it will be converted to YamlNull.
@@ -161,12 +161,12 @@ public final class YamlBuilder {
 	public @NotNull YamlBuilder add(@NotNull String key, @Nullable YamlElement element) {
 		this.ensureMappingContext();
 		Objects.requireNonNull(key, "Key must not be null");
-
+		
 		YamlMapping mapping = (YamlMapping) this.getCurrentContext().element;
 		mapping.add(key, element);
 		return this;
 	}
-
+	
 	/**
 	 * Adds a string value with the specified key to the current mapping.<br>
 	 * If the value is null, it will be converted to YamlNull.
@@ -180,7 +180,7 @@ public final class YamlBuilder {
 	public @NotNull YamlBuilder add(@NotNull String key, @Nullable String value) {
 		return this.add(key, value == null ? null : new YamlScalar(value));
 	}
-
+	
 	/**
 	 * Adds a boolean value with the specified key to the current mapping.
 	 *
@@ -193,7 +193,7 @@ public final class YamlBuilder {
 	public @NotNull YamlBuilder add(@NotNull String key, boolean value) {
 		return this.add(key, new YamlScalar(value));
 	}
-
+	
 	/**
 	 * Adds a number value with the specified key to the current mapping.<br>
 	 * If the value is null, it will be converted to YamlNull.
@@ -207,7 +207,7 @@ public final class YamlBuilder {
 	public @NotNull YamlBuilder add(@NotNull String key, @Nullable Number value) {
 		return this.add(key, value == null ? null : new YamlScalar(value));
 	}
-
+	
 	/**
 	 * Adds a nested yaml mapping with the specified key to the current mapping.<br>
 	 * This method allows you to add pre-built YamlBuilder results as nested mappings.
@@ -222,7 +222,7 @@ public final class YamlBuilder {
 		Objects.requireNonNull(mappingBuilder, "Mapping builder must not be null");
 		return this.add(key, mappingBuilder.build());
 	}
-
+	
 	/**
 	 * Adds a nested yaml sequence with the specified key to the current mapping.<br>
 	 * This method allows you to add pre-built YamlBuilder results as nested sequences.
@@ -238,9 +238,9 @@ public final class YamlBuilder {
 		return this.add(key, sequenceBuilder.build());
 	}
 	//endregion
-
+	
 	//region Mapping anchor methods
-
+	
 	/**
 	 * Adds an element with an anchor to the current mapping.<br>
 	 *
@@ -256,7 +256,7 @@ public final class YamlBuilder {
 		Objects.requireNonNull(anchorName, "Anchor name must not be null");
 		return this.add(key, new YamlAnchor(anchorName, element));
 	}
-
+	
 	/**
 	 * Adds a string value with an anchor to the current mapping.<br>
 	 *
@@ -271,7 +271,7 @@ public final class YamlBuilder {
 		YamlElement element = value == null ? YamlNull.INSTANCE : new YamlScalar(value);
 		return this.addWithAnchor(key, element, anchorName);
 	}
-
+	
 	/**
 	 * Adds a boolean value with an anchor to the current mapping.<br>
 	 *
@@ -285,7 +285,7 @@ public final class YamlBuilder {
 	public @NotNull YamlBuilder addWithAnchor(@NotNull String key, boolean value, @NotNull String anchorName) {
 		return this.addWithAnchor(key, new YamlScalar(value), anchorName);
 	}
-
+	
 	/**
 	 * Adds a number value with an anchor to the current mapping.<br>
 	 *
@@ -300,7 +300,7 @@ public final class YamlBuilder {
 		YamlElement element = value == null ? YamlNull.INSTANCE : new YamlScalar(value);
 		return this.addWithAnchor(key, element, anchorName);
 	}
-
+	
 	/**
 	 * Adds an alias (reference to an anchor) to the current mapping.<br>
 	 *
@@ -315,9 +315,9 @@ public final class YamlBuilder {
 		return this.add(key, new YamlAlias(anchorName));
 	}
 	//endregion
-
+	
 	//region Sequence add methods
-
+	
 	/**
 	 * Adds a yaml element to the current sequence.<br>
 	 * If the element is null, it will be converted to YamlNull.
@@ -328,12 +328,12 @@ public final class YamlBuilder {
 	 */
 	public @NotNull YamlBuilder add(@Nullable YamlElement element) {
 		this.ensureSequenceContext();
-
+		
 		YamlSequence sequence = (YamlSequence) this.getCurrentContext().element;
 		sequence.add(element);
 		return this;
 	}
-
+	
 	/**
 	 * Adds a string value to the current sequence.<br>
 	 * If the value is null, it will be converted to YamlNull.
@@ -345,7 +345,7 @@ public final class YamlBuilder {
 	public @NotNull YamlBuilder add(@Nullable String value) {
 		return this.add(value == null ? null : new YamlScalar(value));
 	}
-
+	
 	/**
 	 * Adds a boolean value to the current sequence.
 	 *
@@ -356,7 +356,7 @@ public final class YamlBuilder {
 	public @NotNull YamlBuilder add(boolean value) {
 		return this.add(new YamlScalar(value));
 	}
-
+	
 	/**
 	 * Adds a number value to the current sequence.<br>
 	 * If the value is null, it will be converted to YamlNull.
@@ -368,7 +368,7 @@ public final class YamlBuilder {
 	public @NotNull YamlBuilder add(@Nullable Number value) {
 		return this.add(value == null ? null : new YamlScalar(value));
 	}
-
+	
 	/**
 	 * Adds a nested yaml mapping to the current sequence.<br>
 	 * This method allows you to add pre-built YamlBuilder results as nested mappings.
@@ -382,7 +382,7 @@ public final class YamlBuilder {
 		Objects.requireNonNull(mappingBuilder, "Mapping builder must not be null");
 		return this.add(mappingBuilder.build());
 	}
-
+	
 	/**
 	 * Adds a nested yaml sequence to the current sequence.<br>
 	 * This method allows you to add pre-built YamlBuilder results as nested sequences.
@@ -396,7 +396,7 @@ public final class YamlBuilder {
 		Objects.requireNonNull(sequenceBuilder, "Sequence builder must not be null");
 		return this.add(sequenceBuilder.build());
 	}
-
+	
 	/**
 	 * Adds multiple string values to the current sequence at once.<br>
 	 *
@@ -412,7 +412,7 @@ public final class YamlBuilder {
 		}
 		return this;
 	}
-
+	
 	/**
 	 * Adds multiple number values to the current sequence at once.<br>
 	 *
@@ -429,9 +429,9 @@ public final class YamlBuilder {
 		return this;
 	}
 	//endregion
-
+	
 	//region Sequence anchor methods
-
+	
 	/**
 	 * Adds an element with an anchor to the current sequence.<br>
 	 *
@@ -446,7 +446,7 @@ public final class YamlBuilder {
 		Objects.requireNonNull(anchorName, "Anchor name must not be null");
 		return this.add(new YamlAnchor(anchorName, element));
 	}
-
+	
 	/**
 	 * Adds a string value with an anchor to the current sequence.<br>
 	 *
@@ -460,7 +460,7 @@ public final class YamlBuilder {
 		YamlElement element = value == null ? YamlNull.INSTANCE : new YamlScalar(value);
 		return this.addWithAnchor(element, anchorName);
 	}
-
+	
 	/**
 	 * Adds an alias (reference to an anchor) to the current sequence.<br>
 	 *
@@ -474,9 +474,9 @@ public final class YamlBuilder {
 		return this.add(new YamlAlias(anchorName));
 	}
 	//endregion
-
+	
 	//region Nesting - start nested mapping
-
+	
 	/**
 	 * Starts building a nested mapping with the specified key in the current mapping.<br>
 	 * Use {@link #endMapping()} to return to the parent context.
@@ -489,15 +489,15 @@ public final class YamlBuilder {
 	public @NotNull YamlBuilder startMapping(@NotNull String key) {
 		this.ensureMappingContext();
 		Objects.requireNonNull(key, "Key must not be null");
-
+		
 		YamlMapping nestedMapping = new YamlMapping();
 		YamlMapping currentMapping = (YamlMapping) this.getCurrentContext().element;
 		currentMapping.add(key, nestedMapping);
-
+		
 		this.contextStack.push(new ContextFrame(BuilderContext.MAPPING, nestedMapping));
 		return this;
 	}
-
+	
 	/**
 	 * Starts building a nested mapping with an anchor in the current mapping.<br>
 	 * Use {@link #endMapping()} to return to the parent context.
@@ -512,15 +512,15 @@ public final class YamlBuilder {
 		this.ensureMappingContext();
 		Objects.requireNonNull(key, "Key must not be null");
 		Objects.requireNonNull(anchorName, "Anchor name must not be null");
-
+		
 		YamlMapping nestedMapping = new YamlMapping();
 		YamlMapping currentMapping = (YamlMapping) this.getCurrentContext().element;
 		currentMapping.add(key, new YamlAnchor(anchorName, nestedMapping));
-
+		
 		this.contextStack.push(new ContextFrame(BuilderContext.MAPPING, nestedMapping));
 		return this;
 	}
-
+	
 	/**
 	 * Starts building a nested mapping in the current sequence.<br>
 	 * Use {@link #endMapping()} to return to the parent context.
@@ -530,15 +530,15 @@ public final class YamlBuilder {
 	 */
 	public @NotNull YamlBuilder startMapping() {
 		this.ensureSequenceContext();
-
+		
 		YamlMapping nestedMapping = new YamlMapping();
 		YamlSequence currentSequence = (YamlSequence) this.getCurrentContext().element;
 		currentSequence.add(nestedMapping);
-
+		
 		this.contextStack.push(new ContextFrame(BuilderContext.MAPPING, nestedMapping));
 		return this;
 	}
-
+	
 	/**
 	 * Starts building a nested mapping with an anchor in the current sequence.<br>
 	 * Use {@link #endMapping()} to return to the parent context.
@@ -551,15 +551,15 @@ public final class YamlBuilder {
 	public @NotNull YamlBuilder startMappingWithAnchor(@NotNull String anchorName) {
 		this.ensureSequenceContext();
 		Objects.requireNonNull(anchorName, "Anchor name must not be null");
-
+		
 		YamlMapping nestedMapping = new YamlMapping();
 		YamlSequence currentSequence = (YamlSequence) this.getCurrentContext().element;
 		currentSequence.add(new YamlAnchor(anchorName, nestedMapping));
-
+		
 		this.contextStack.push(new ContextFrame(BuilderContext.MAPPING, nestedMapping));
 		return this;
 	}
-
+	
 	/**
 	 * Ends the current mapping building context and returns to the parent context.<br>
 	 *
@@ -571,18 +571,18 @@ public final class YamlBuilder {
 		if (current.type != BuilderContext.MAPPING) {
 			throw new IllegalStateException("Current context is not a mapping");
 		}
-
+		
 		if (this.contextStack.size() == 1) {
 			throw new IllegalStateException("Cannot end root mapping context. Use build() instead.");
 		}
-
+		
 		this.contextStack.pop();
 		return this;
 	}
 	//endregion
-
+	
 	//region Nesting - start nested sequence
-
+	
 	/**
 	 * Starts building a nested sequence with the specified key in the current mapping.<br>
 	 * Use {@link #endSequence()} to return to the parent context.
@@ -595,15 +595,15 @@ public final class YamlBuilder {
 	public @NotNull YamlBuilder startSequence(@NotNull String key) {
 		this.ensureMappingContext();
 		Objects.requireNonNull(key, "Key must not be null");
-
+		
 		YamlSequence nestedSequence = new YamlSequence();
 		YamlMapping currentMapping = (YamlMapping) this.getCurrentContext().element;
 		currentMapping.add(key, nestedSequence);
-
+		
 		this.contextStack.push(new ContextFrame(BuilderContext.SEQUENCE, nestedSequence));
 		return this;
 	}
-
+	
 	/**
 	 * Starts building a nested sequence with an anchor in the current mapping.<br>
 	 * Use {@link #endSequence()} to return to the parent context.
@@ -618,15 +618,15 @@ public final class YamlBuilder {
 		this.ensureMappingContext();
 		Objects.requireNonNull(key, "Key must not be null");
 		Objects.requireNonNull(anchorName, "Anchor name must not be null");
-
+		
 		YamlSequence nestedSequence = new YamlSequence();
 		YamlMapping currentMapping = (YamlMapping) this.getCurrentContext().element;
 		currentMapping.add(key, new YamlAnchor(anchorName, nestedSequence));
-
+		
 		this.contextStack.push(new ContextFrame(BuilderContext.SEQUENCE, nestedSequence));
 		return this;
 	}
-
+	
 	/**
 	 * Starts building a nested sequence in the current sequence.<br>
 	 * Use {@link #endSequence()} to return to the parent context.
@@ -636,15 +636,15 @@ public final class YamlBuilder {
 	 */
 	public @NotNull YamlBuilder startSequence() {
 		this.ensureSequenceContext();
-
+		
 		YamlSequence nestedSequence = new YamlSequence();
 		YamlSequence currentSequence = (YamlSequence) this.getCurrentContext().element;
 		currentSequence.add(nestedSequence);
-
+		
 		this.contextStack.push(new ContextFrame(BuilderContext.SEQUENCE, nestedSequence));
 		return this;
 	}
-
+	
 	/**
 	 * Starts building a nested sequence with an anchor in the current sequence.<br>
 	 * Use {@link #endSequence()} to return to the parent context.
@@ -657,15 +657,15 @@ public final class YamlBuilder {
 	public @NotNull YamlBuilder startSequenceWithAnchor(@NotNull String anchorName) {
 		this.ensureSequenceContext();
 		Objects.requireNonNull(anchorName, "Anchor name must not be null");
-
+		
 		YamlSequence nestedSequence = new YamlSequence();
 		YamlSequence currentSequence = (YamlSequence) this.getCurrentContext().element;
 		currentSequence.add(new YamlAnchor(anchorName, nestedSequence));
-
+		
 		this.contextStack.push(new ContextFrame(BuilderContext.SEQUENCE, nestedSequence));
 		return this;
 	}
-
+	
 	/**
 	 * Ends the current sequence building context and returns to the parent context.<br>
 	 *
@@ -677,18 +677,18 @@ public final class YamlBuilder {
 		if (current.type != BuilderContext.SEQUENCE) {
 			throw new IllegalStateException("Current context is not a sequence");
 		}
-
+		
 		if (this.contextStack.size() == 1) {
 			throw new IllegalStateException("Cannot end root sequence context. Use build() instead.");
 		}
-
+		
 		this.contextStack.pop();
 		return this;
 	}
 	//endregion
-
+	
 	//region Conditional adding
-
+	
 	/**
 	 * Conditionally adds a key-value pair to the current mapping only if the condition is true.<br>
 	 *
@@ -704,7 +704,7 @@ public final class YamlBuilder {
 		}
 		return this;
 	}
-
+	
 	/**
 	 * Conditionally adds a key-value pair to the current mapping only if the condition is true.<br>
 	 *
@@ -720,7 +720,7 @@ public final class YamlBuilder {
 		}
 		return this;
 	}
-
+	
 	/**
 	 * Conditionally adds a key-value pair to the current mapping only if the condition is true.<br>
 	 *
@@ -736,7 +736,7 @@ public final class YamlBuilder {
 		}
 		return this;
 	}
-
+	
 	/**
 	 * Conditionally adds an alias to the current mapping only if the condition is true.<br>
 	 *
@@ -753,9 +753,9 @@ public final class YamlBuilder {
 		return this;
 	}
 	//endregion
-
+	
 	//region Build methods
-
+	
 	/**
 	 * Builds and returns the constructed yaml element.<br>
 	 *
@@ -768,7 +768,7 @@ public final class YamlBuilder {
 		}
 		return this.root;
 	}
-
+	
 	/**
 	 * Builds and returns the constructed yaml element as a YamlMapping.<br>
 	 *
@@ -784,7 +784,7 @@ public final class YamlBuilder {
 		result.addAll(mapping);
 		return result;
 	}
-
+	
 	/**
 	 * Builds and returns the constructed yaml element as a YamlSequence.<br>
 	 *
@@ -801,9 +801,9 @@ public final class YamlBuilder {
 		return result;
 	}
 	//endregion
-
+	
 	//region Utility methods
-
+	
 	/**
 	 * Returns the current nesting depth of the builder.<br>
 	 *
@@ -812,7 +812,7 @@ public final class YamlBuilder {
 	public int getNestingDepth() {
 		return this.contextStack.size();
 	}
-
+	
 	/**
 	 * Checks if the builder is currently in a mapping context.
 	 *
@@ -821,7 +821,7 @@ public final class YamlBuilder {
 	public boolean isInMappingContext() {
 		return !this.contextStack.isEmpty() && this.getCurrentContext().type == BuilderContext.MAPPING;
 	}
-
+	
 	/**
 	 * Checks if the builder is currently in a sequence context.
 	 *
@@ -830,7 +830,7 @@ public final class YamlBuilder {
 	public boolean isInSequenceContext() {
 		return !this.contextStack.isEmpty() && this.getCurrentContext().type == BuilderContext.SEQUENCE;
 	}
-
+	
 	/**
 	 * Checks if the builder is at the root level (no nested contexts).
 	 *
@@ -839,12 +839,12 @@ public final class YamlBuilder {
 	public boolean isAtRootLevel() {
 		return this.contextStack.size() == 1;
 	}
-
+	
 	@Override
 	public String toString() {
 		return this.root.toString();
 	}
-
+	
 	/**
 	 * Returns a string representation of the current yaml structure using the specified configuration.
 	 *
@@ -857,7 +857,7 @@ public final class YamlBuilder {
 		return this.root.toString(config);
 	}
 	//endregion
-
+	
 	/**
 	 * Enumeration of builder contexts to track whether we're building a mapping or sequence.
 	 */
@@ -871,7 +871,7 @@ public final class YamlBuilder {
 		 */
 		SEQUENCE
 	}
-
+	
 	/**
 	 * Internal class to track nesting state.<br>
 	 *
@@ -879,7 +879,7 @@ public final class YamlBuilder {
 	 * @param element The yaml element associated with this context
 	 */
 	private record ContextFrame(@NotNull BuilderContext type, @NotNull YamlElement element) {
-
+		
 		/**
 		 * Constructs a new context frame with the specified type and element.<br>
 		 *

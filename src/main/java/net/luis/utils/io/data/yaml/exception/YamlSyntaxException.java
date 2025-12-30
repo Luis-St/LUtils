@@ -27,12 +27,12 @@ import org.jetbrains.annotations.Nullable;
  * @author Luis-St
  */
 public class YamlSyntaxException extends RuntimeException {
-
+	
 	/**
 	 * Constructs a new yaml syntax exception with no details.<br>
 	 */
 	public YamlSyntaxException() {}
-
+	
 	/**
 	 * Constructs a new yaml syntax exception with the specified message.<br>
 	 * @param message The message of the exception
@@ -40,7 +40,7 @@ public class YamlSyntaxException extends RuntimeException {
 	public YamlSyntaxException(@Nullable String message) {
 		super(message);
 	}
-
+	
 	/**
 	 * Constructs a new yaml syntax exception with the specified message and cause.<br>
 	 * @param message The message of the exception
@@ -49,7 +49,7 @@ public class YamlSyntaxException extends RuntimeException {
 	public YamlSyntaxException(@Nullable String message, @Nullable Throwable cause) {
 		super(message, cause);
 	}
-
+	
 	/**
 	 * Constructs a new yaml syntax exception with the specified cause.<br>
 	 * @param cause The cause of the exception

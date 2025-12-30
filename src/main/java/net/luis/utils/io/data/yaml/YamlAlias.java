@@ -19,6 +19,7 @@
 package net.luis.utils.io.data.yaml;
 
 import org.jetbrains.annotations.NotNull;
+import org.jspecify.annotations.NonNull;
 
 import java.util.Objects;
 
@@ -27,14 +28,11 @@ import java.util.Objects;
  * When resolved, the alias points to the element defined by the corresponding anchor.<br>
  *
  * @author Luis-St
+ * @param anchorName
+The name of the anchor this alias references.<br>
  */
-public class YamlAlias implements YamlElement {
-
-	/**
-	 * The name of the anchor this alias references.<br>
-	 */
-	private final String anchorName;
-
+public record YamlAlias(@NotNull String anchorName) implements YamlElement {
+	
 	/**
 	 * Constructs a new yaml alias referencing the given anchor name.<br>
 	 *
@@ -42,8 +40,8 @@ public class YamlAlias implements YamlElement {
 	 * @throws NullPointerException If the anchor name is null
 	 * @throws IllegalArgumentException If the anchor name is blank or contains invalid characters
 	 */
-	public YamlAlias(@NotNull String anchorName) {
-		this.anchorName = Objects.requireNonNull(anchorName, "Anchor name must not be null");
+	public YamlAlias {
+		Objects.requireNonNull(anchorName, "Anchor name must not be null");
 		if (anchorName.isBlank()) {
 			throw new IllegalArgumentException("Anchor name must not be blank");
 		}
@@ -51,7 +49,7 @@ public class YamlAlias implements YamlElement {
 			throw new IllegalArgumentException("Invalid anchor name: '" + anchorName + "'. Anchor names must contain only alphanumeric characters, underscores, and hyphens");
 		}
 	}
-
+	
 	/**
 	 * Checks if the given name is a valid anchor name.<br>
 	 * Valid anchor names contain only alphanumeric characters, underscores, and hyphens.<br>
@@ -68,37 +66,32 @@ public class YamlAlias implements YamlElement {
 		}
 		return true;
 	}
-
+	
 	/**
 	 * Returns the name of the referenced anchor.<br>
 	 * @return The anchor name without the '*' prefix
 	 */
-	public @NotNull String getAnchorName() {
+	@Override
+	public @NotNull String anchorName() {
 		return this.anchorName;
 	}
-
+	
 	//region Object overrides
 	@Override
 	public boolean equals(Object o) {
 		if (this == o) return true;
-		if (!(o instanceof YamlAlias that)) return false;
-
-		return this.anchorName.equals(that.anchorName);
+		if (!(o instanceof YamlAlias(String name))) return false;
+		
+		return this.anchorName.equals(name);
 	}
-
+	
 	@Override
-	public int hashCode() {
-		return this.anchorName.hashCode();
-	}
-
-	@Override
-	public String toString() {
+	public @NonNull String toString() {
 		return this.toString(YamlConfig.DEFAULT);
 	}
-
+	
 	@Override
 	public @NotNull String toString(@NotNull YamlConfig config) {
 		return "*" + this.anchorName;
 	}
-	//endregion
 }

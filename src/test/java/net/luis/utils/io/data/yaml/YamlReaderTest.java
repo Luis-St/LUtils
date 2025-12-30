@@ -576,8 +576,8 @@ class YamlReaderTest {
 			YamlMapping mapping = result.getAsYamlMapping();
 			assertTrue(mapping.get("anchor").isYamlAnchor());
 			assertTrue(mapping.get("alias").isYamlAlias());
-			assertEquals("myValue", mapping.get("anchor").getAsYamlAnchor().getName());
-			assertEquals("myValue", mapping.get("alias").getAsYamlAlias().getAnchorName());
+			assertEquals("myValue", mapping.get("anchor").getAsYamlAnchor().name());
+			assertEquals("myValue", mapping.get("alias").getAsYamlAlias().anchorName());
 		}
 	}
 

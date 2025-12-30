@@ -33,18 +33,18 @@ import java.util.*;
  * @author Luis-St
  */
 public class YamlSequence implements YamlElement, Iterable<YamlElement> {
-
+	
 	/**
 	 * The internal linked list of yaml elements.<br>
 	 * The elements are stored in the order they were added.<br>
 	 */
 	private final List<YamlElement> elements = Lists.newLinkedList();
-
+	
 	/**
 	 * Constructs an empty yaml sequence.<br>
 	 */
 	public YamlSequence() {}
-
+	
 	/**
 	 * Constructs a yaml sequence with the given list of yaml elements.<br>
 	 * @param elements The list of yaml elements to add
@@ -53,9 +53,9 @@ public class YamlSequence implements YamlElement, Iterable<YamlElement> {
 	public YamlSequence(@NotNull List<? extends YamlElement> elements) {
 		this.elements.addAll(Objects.requireNonNull(elements, "Yaml elements must not be null"));
 	}
-
+	
 	//region Query operations
-
+	
 	/**
 	 * Returns the number of elements in this yaml sequence.<br>
 	 * @return The size of this yaml sequence
@@ -63,7 +63,7 @@ public class YamlSequence implements YamlElement, Iterable<YamlElement> {
 	public int size() {
 		return this.elements.size();
 	}
-
+	
 	/**
 	 * Checks if this yaml sequence is empty.<br>
 	 * @return True if this yaml sequence is empty, false otherwise
@@ -71,7 +71,7 @@ public class YamlSequence implements YamlElement, Iterable<YamlElement> {
 	public boolean isEmpty() {
 		return this.elements.isEmpty();
 	}
-
+	
 	/**
 	 * Checks if this yaml sequence contains the given yaml element.<br>
 	 *
@@ -81,7 +81,7 @@ public class YamlSequence implements YamlElement, Iterable<YamlElement> {
 	public boolean contains(@Nullable YamlElement yaml) {
 		return this.elements.contains(yaml);
 	}
-
+	
 	/**
 	 * Returns an iterator over the elements in this yaml sequence.<br>
 	 * @return The iterator over the elements
@@ -90,7 +90,7 @@ public class YamlSequence implements YamlElement, Iterable<YamlElement> {
 	public @NotNull Iterator<YamlElement> iterator() {
 		return this.elements.iterator();
 	}
-
+	
 	/**
 	 * Returns an unmodifiable collection of the yaml elements in this yaml sequence.<br>
 	 * @return The collection of yaml elements
@@ -98,7 +98,7 @@ public class YamlSequence implements YamlElement, Iterable<YamlElement> {
 	public @NotNull @Unmodifiable Collection<YamlElement> elements() {
 		return Collections.unmodifiableCollection(this.elements);
 	}
-
+	
 	/**
 	 * Returns an unmodifiable list of the yaml elements in this yaml sequence.<br>
 	 * @return The list of yaml elements
@@ -107,9 +107,9 @@ public class YamlSequence implements YamlElement, Iterable<YamlElement> {
 		return List.copyOf(this.elements);
 	}
 	//endregion
-
+	
 	//region Set operations
-
+	
 	/**
 	 * Sets the element at the given index to the given yaml element.<br>
 	 * If the yaml element is null, it will be replaced with a yaml null element.<br>
@@ -128,7 +128,7 @@ public class YamlSequence implements YamlElement, Iterable<YamlElement> {
 		}
 		return this.elements.set(index, yaml == null ? YamlNull.INSTANCE : yaml);
 	}
-
+	
 	/**
 	 * Sets the element at the given index to the given string.<br>
 	 * The string will be converted to a yaml scalar element.<br>
@@ -143,7 +143,7 @@ public class YamlSequence implements YamlElement, Iterable<YamlElement> {
 	public @NotNull YamlElement set(int index, @Nullable String value) {
 		return this.set(index, value == null ? null : new YamlScalar(value));
 	}
-
+	
 	/**
 	 * Sets the element at the given index to the given boolean.<br>
 	 * The boolean will be converted to a yaml scalar element.<br>
@@ -157,7 +157,7 @@ public class YamlSequence implements YamlElement, Iterable<YamlElement> {
 	public @NotNull YamlElement set(int index, boolean value) {
 		return this.set(index, new YamlScalar(value));
 	}
-
+	
 	/**
 	 * Sets the element at the given index to the given number.<br>
 	 * The number will be converted to a yaml scalar element.<br>
@@ -173,9 +173,9 @@ public class YamlSequence implements YamlElement, Iterable<YamlElement> {
 		return this.set(index, value == null ? null : new YamlScalar(value));
 	}
 	//endregion
-
+	
 	//region Add operations
-
+	
 	/**
 	 * Adds the given yaml element to this yaml sequence.<br>
 	 * If the yaml element is null, it will be replaced with a yaml null element.<br>
@@ -185,7 +185,7 @@ public class YamlSequence implements YamlElement, Iterable<YamlElement> {
 	public void add(@Nullable YamlElement yaml) {
 		this.elements.add(yaml == null ? YamlNull.INSTANCE : yaml);
 	}
-
+	
 	/**
 	 * Adds the given string to this yaml sequence.<br>
 	 * The string will be converted to a yaml scalar element.<br>
@@ -196,7 +196,7 @@ public class YamlSequence implements YamlElement, Iterable<YamlElement> {
 	public void add(@Nullable String value) {
 		this.add(value == null ? null : new YamlScalar(value));
 	}
-
+	
 	/**
 	 * Adds the given boolean to this yaml sequence.<br>
 	 * The boolean will be converted to a yaml scalar element.<br>
@@ -206,7 +206,7 @@ public class YamlSequence implements YamlElement, Iterable<YamlElement> {
 	public void add(boolean value) {
 		this.add(new YamlScalar(value));
 	}
-
+	
 	/**
 	 * Adds the given number to this yaml sequence.<br>
 	 * The number will be converted to a yaml scalar element.<br>
@@ -217,7 +217,7 @@ public class YamlSequence implements YamlElement, Iterable<YamlElement> {
 	public void add(@Nullable Number value) {
 		this.add(value == null ? null : new YamlScalar(value));
 	}
-
+	
 	/**
 	 * Adds all yaml elements from the given yaml sequence to this yaml sequence.<br>
 	 *
@@ -227,7 +227,7 @@ public class YamlSequence implements YamlElement, Iterable<YamlElement> {
 	public void addAll(@NotNull YamlSequence sequence) {
 		this.addAll(Objects.requireNonNull(sequence, "Yaml sequence must not be null").elements);
 	}
-
+	
 	/**
 	 * Adds all yaml elements from the given array to this yaml sequence.<br>
 	 * @param elements The array of yaml elements to add
@@ -236,7 +236,7 @@ public class YamlSequence implements YamlElement, Iterable<YamlElement> {
 		Objects.requireNonNull(elements, "Yaml elements must not be null");
 		this.addAll(Arrays.asList(elements));
 	}
-
+	
 	/**
 	 * Adds all yaml elements from the given list to this yaml sequence.<br>
 	 *
@@ -247,9 +247,9 @@ public class YamlSequence implements YamlElement, Iterable<YamlElement> {
 		this.elements.addAll(Objects.requireNonNull(elements, "Yaml elements must not be null"));
 	}
 	//endregion
-
+	
 	//region Remove operations
-
+	
 	/**
 	 * Removes the element at the given index from this yaml sequence.<br>
 	 *
@@ -266,7 +266,7 @@ public class YamlSequence implements YamlElement, Iterable<YamlElement> {
 		}
 		return this.elements.remove(index);
 	}
-
+	
 	/**
 	 * Removes the given yaml element from this yaml sequence.<br>
 	 *
@@ -276,7 +276,7 @@ public class YamlSequence implements YamlElement, Iterable<YamlElement> {
 	public boolean remove(@Nullable YamlElement yaml) {
 		return this.elements.remove(yaml);
 	}
-
+	
 	/**
 	 * Removes all elements from this yaml sequence.<br>
 	 */
@@ -284,9 +284,9 @@ public class YamlSequence implements YamlElement, Iterable<YamlElement> {
 		this.elements.clear();
 	}
 	//endregion
-
+	
 	//region Get operations
-
+	
 	/**
 	 * Gets the yaml element at the given index from this yaml sequence.<br>
 	 *
@@ -303,7 +303,7 @@ public class YamlSequence implements YamlElement, Iterable<YamlElement> {
 		}
 		return this.elements.get(index);
 	}
-
+	
 	/**
 	 * Gets the yaml element at the given index from this yaml sequence as a yaml mapping.<br>
 	 *
@@ -320,7 +320,7 @@ public class YamlSequence implements YamlElement, Iterable<YamlElement> {
 		}
 		return yaml.getAsYamlMapping(); // throws YamlTypeException
 	}
-
+	
 	/**
 	 * Gets the yaml element at the given index from this yaml sequence as a yaml sequence.<br>
 	 *
@@ -337,7 +337,7 @@ public class YamlSequence implements YamlElement, Iterable<YamlElement> {
 		}
 		return yaml.getAsYamlSequence(); // throws YamlTypeException
 	}
-
+	
 	/**
 	 * Gets the yaml element at the given index from this yaml sequence as a yaml scalar.<br>
 	 *
@@ -354,7 +354,7 @@ public class YamlSequence implements YamlElement, Iterable<YamlElement> {
 		}
 		return yaml.getAsYamlScalar(); // throws YamlTypeException
 	}
-
+	
 	/**
 	 * Gets the yaml element at the given index from this yaml sequence as a string.<br>
 	 * The element will be converted to a yaml scalar and then to a string.<br>
@@ -368,7 +368,7 @@ public class YamlSequence implements YamlElement, Iterable<YamlElement> {
 	public @NotNull String getAsString(int index) {
 		return this.getAsYamlScalar(index).getAsString();
 	}
-
+	
 	/**
 	 * Gets the yaml element at the given index from this yaml sequence as a boolean.<br>
 	 * The element will be converted to a yaml scalar and then to a boolean.<br>
@@ -382,7 +382,7 @@ public class YamlSequence implements YamlElement, Iterable<YamlElement> {
 	public boolean getAsBoolean(int index) {
 		return this.getAsYamlScalar(index).getAsBoolean();
 	}
-
+	
 	/**
 	 * Gets the yaml element at the given index from this yaml sequence as a number.<br>
 	 * The element will be converted to a yaml scalar and then to a number.<br>
@@ -396,7 +396,7 @@ public class YamlSequence implements YamlElement, Iterable<YamlElement> {
 	public @NotNull Number getAsNumber(int index) {
 		return this.getAsYamlScalar(index).getAsNumber();
 	}
-
+	
 	/**
 	 * Gets the yaml element at the given index from this yaml sequence as an integer.<br>
 	 * The element will be converted to a yaml scalar and then to an integer.<br>
@@ -410,7 +410,7 @@ public class YamlSequence implements YamlElement, Iterable<YamlElement> {
 	public int getAsInteger(int index) {
 		return this.getAsYamlScalar(index).getAsInteger();
 	}
-
+	
 	/**
 	 * Gets the yaml element at the given index from this yaml sequence as a long.<br>
 	 * The element will be converted to a yaml scalar and then to a long.<br>
@@ -424,7 +424,7 @@ public class YamlSequence implements YamlElement, Iterable<YamlElement> {
 	public long getAsLong(int index) {
 		return this.getAsYamlScalar(index).getAsLong();
 	}
-
+	
 	/**
 	 * Gets the yaml element at the given index from this yaml sequence as a double.<br>
 	 * The element will be converted to a yaml scalar and then to a double.<br>
@@ -439,42 +439,42 @@ public class YamlSequence implements YamlElement, Iterable<YamlElement> {
 		return this.getAsYamlScalar(index).getAsDouble();
 	}
 	//endregion
-
+	
 	//region Object overrides
 	@Override
 	public boolean equals(Object o) {
 		if (this == o) return true;
 		if (!(o instanceof YamlSequence sequence)) return false;
-
+		
 		return this.elements.equals(sequence.elements);
 	}
-
+	
 	@Override
 	public int hashCode() {
 		return Objects.hash(this.elements);
 	}
-
+	
 	@Override
 	public String toString() {
 		return this.toString(YamlConfig.DEFAULT);
 	}
-
+	
 	@Override
 	public @NotNull String toString(@NotNull YamlConfig config) {
 		Objects.requireNonNull(config, "Config must not be null");
-
+		
 		if (this.elements.isEmpty()) {
 			return "[]";
 		}
-
+		
 		// Use flow style if configured or for simple sequences
 		if (!config.useBlockStyle()) {
 			return this.toFlowString(config);
 		}
-
+		
 		return this.toBlockString(config);
 	}
-
+	
 	/**
 	 * Returns the flow style string representation of this yaml sequence.<br>
 	 *
@@ -491,7 +491,7 @@ public class YamlSequence implements YamlElement, Iterable<YamlElement> {
 		}
 		return builder.append("]").toString();
 	}
-
+	
 	/**
 	 * Returns the block style string representation of this yaml sequence.<br>
 	 *

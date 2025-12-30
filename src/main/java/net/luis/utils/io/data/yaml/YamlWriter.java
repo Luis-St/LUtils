@@ -32,7 +32,7 @@ import java.util.Objects;
  * @author Luis-St
  */
 public class YamlWriter implements AutoCloseable {
-
+	
 	/**
 	 * The yaml config used by the writer.<br>
 	 */
@@ -41,7 +41,7 @@ public class YamlWriter implements AutoCloseable {
 	 * The internal writer used to write the yaml elements.<br>
 	 */
 	private final BufferedWriter writer;
-
+	
 	/**
 	 * Constructs a new yaml writer with the default configuration.<br>
 	 *
@@ -51,7 +51,7 @@ public class YamlWriter implements AutoCloseable {
 	public YamlWriter(@NotNull OutputProvider output) {
 		this(output, YamlConfig.DEFAULT);
 	}
-
+	
 	/**
 	 * Constructs a new yaml writer with the given configuration.<br>
 	 *
@@ -63,7 +63,7 @@ public class YamlWriter implements AutoCloseable {
 		this.config = Objects.requireNonNull(config, "Yaml config must not be null");
 		this.writer = new BufferedWriter(new OutputStreamWriter(Objects.requireNonNull(output, "Output must not be null").getStream(), config.charset()));
 	}
-
+	
 	/**
 	 * Writes the given yaml element to the output.<br>
 	 * The yaml element is written as a string with the configuration of the writer.<br>
@@ -89,7 +89,7 @@ public class YamlWriter implements AutoCloseable {
 			throw new UncheckedIOException("An I/O error occurred while writing the yaml element", e);
 		}
 	}
-
+	
 	@Override
 	public void close() throws IOException {
 		this.writer.close();

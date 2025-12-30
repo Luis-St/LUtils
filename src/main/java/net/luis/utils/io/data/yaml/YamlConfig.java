@@ -52,25 +52,7 @@ public record YamlConfig(
 	@ReadOnly boolean allowDuplicateKeys,
 	@NotNull Charset charset
 ) {
-
-	/**
-	 * The style to use for null values when writing yaml.<br>
-	 */
-	public enum NullStyle {
-		/**
-		 * Outputs null values as "null".<br>
-		 */
-		NULL,
-		/**
-		 * Outputs null values as "~".<br>
-		 */
-		TILDE,
-		/**
-		 * Outputs null values as empty string.<br>
-		 */
-		EMPTY
-	}
-
+	
 	/**
 	 * The default yaml configuration.<br>
 	 * Strict: true<br>
@@ -84,13 +66,12 @@ public record YamlConfig(
 	 * Charset: UTF-8<br>
 	 */
 	public static final YamlConfig DEFAULT = new YamlConfig(true, true, "  ", true, false, NullStyle.NULL, true, false, StandardCharsets.UTF_8);
-
 	/**
 	 * Configuration that preserves anchor/alias structure for inspection.<br>
 	 * Same as default but with resolveAnchors set to false.<br>
 	 */
 	public static final YamlConfig PRESERVE_ANCHORS = new YamlConfig(true, true, "  ", true, false, NullStyle.NULL, false, false, StandardCharsets.UTF_8);
-
+	
 	/**
 	 * Constructs a new yaml configuration.<br>
 	 *
@@ -109,5 +90,23 @@ public record YamlConfig(
 		Objects.requireNonNull(indent, "Indent must not be null");
 		Objects.requireNonNull(nullStyle, "Null style must not be null");
 		Objects.requireNonNull(charset, "Charset must not be null");
+	}
+	
+	/**
+	 * The style to use for null values when writing yaml.<br>
+	 */
+	public enum NullStyle {
+		/**
+		 * Outputs null values as "null".<br>
+		 */
+		NULL,
+		/**
+		 * Outputs null values as "~".<br>
+		 */
+		TILDE,
+		/**
+		 * Outputs null values as empty string.<br>
+		 */
+		EMPTY
 	}
 }

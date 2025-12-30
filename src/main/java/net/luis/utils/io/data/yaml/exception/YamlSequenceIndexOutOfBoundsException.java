@@ -25,12 +25,12 @@ package net.luis.utils.io.data.yaml.exception;
  * @author Luis-St
  */
 public class YamlSequenceIndexOutOfBoundsException extends IndexOutOfBoundsException {
-
+	
 	/**
 	 * Constructs a new yaml sequence index out of bounds exception with no details.<br>
 	 */
 	public YamlSequenceIndexOutOfBoundsException() {}
-
+	
 	/**
 	 * Constructs a new yaml sequence index out of bounds exception with the specified index.<br>
 	 * @param index The index that was out of bounds
@@ -38,7 +38,7 @@ public class YamlSequenceIndexOutOfBoundsException extends IndexOutOfBoundsExcep
 	public YamlSequenceIndexOutOfBoundsException(int index) {
 		super("Yaml sequence index out of bounds: " + index);
 	}
-
+	
 	/**
 	 * Constructs a new yaml sequence index out of bounds exception with the specified index and size.<br>
 	 * @param index The index that was out of bounds
@@ -47,7 +47,7 @@ public class YamlSequenceIndexOutOfBoundsException extends IndexOutOfBoundsExcep
 	public YamlSequenceIndexOutOfBoundsException(int index, int size) {
 		super("Yaml sequence index out of bounds: " + index + ", size: " + size);
 	}
-
+	
 	/**
 	 * Constructs a new yaml sequence index out of bounds exception with the specified message.<br>
 	 * @param message The message of the exception

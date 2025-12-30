@@ -174,8 +174,8 @@ class YamlBuilderTest {
 
 		YamlElement element = result.get("key");
 		assertTrue(element.isYamlAnchor());
-		assertEquals("myAnchor", element.getAsYamlAnchor().getName());
-		assertEquals(new YamlScalar("value"), element.getAsYamlAnchor().getElement());
+		assertEquals("myAnchor", element.getAsYamlAnchor().name());
+		assertEquals(new YamlScalar("value"), element.getAsYamlAnchor().element());
 	}
 
 	@Test
@@ -186,7 +186,7 @@ class YamlBuilderTest {
 
 		YamlElement element = result.get("key");
 		assertTrue(element.isYamlAnchor());
-		assertEquals("strAnchor", element.getAsYamlAnchor().getName());
+		assertEquals("strAnchor", element.getAsYamlAnchor().name());
 	}
 
 	@Test
@@ -197,7 +197,7 @@ class YamlBuilderTest {
 
 		YamlElement element = result.get("key");
 		assertTrue(element.isYamlAnchor());
-		assertEquals(YamlNull.INSTANCE, element.getAsYamlAnchor().getElement());
+		assertEquals(YamlNull.INSTANCE, element.getAsYamlAnchor().element());
 	}
 
 	@Test
@@ -208,7 +208,7 @@ class YamlBuilderTest {
 
 		YamlElement element = result.get("key");
 		assertTrue(element.isYamlAnchor());
-		assertEquals(new YamlScalar(true), element.getAsYamlAnchor().getElement());
+		assertEquals(new YamlScalar(true), element.getAsYamlAnchor().element());
 	}
 
 	@Test
@@ -219,7 +219,7 @@ class YamlBuilderTest {
 
 		YamlElement element = result.get("key");
 		assertTrue(element.isYamlAnchor());
-		assertEquals(new YamlScalar(42), element.getAsYamlAnchor().getElement());
+		assertEquals(new YamlScalar(42), element.getAsYamlAnchor().element());
 	}
 
 	@Test
@@ -230,7 +230,7 @@ class YamlBuilderTest {
 
 		YamlElement element = result.get("key");
 		assertTrue(element.isYamlAnchor());
-		assertEquals(YamlNull.INSTANCE, element.getAsYamlAnchor().getElement());
+		assertEquals(YamlNull.INSTANCE, element.getAsYamlAnchor().element());
 	}
 
 	@Test
@@ -241,7 +241,7 @@ class YamlBuilderTest {
 
 		YamlElement element = result.get("ref");
 		assertTrue(element.isYamlAlias());
-		assertEquals("targetAnchor", element.getAsYamlAlias().getAnchorName());
+		assertEquals("targetAnchor", element.getAsYamlAlias().anchorName());
 	}
 
 	@Test
@@ -402,7 +402,7 @@ class YamlBuilderTest {
 
 		YamlElement element = result.get(0);
 		assertTrue(element.isYamlAnchor());
-		assertEquals("seqAnchor", element.getAsYamlAnchor().getName());
+		assertEquals("seqAnchor", element.getAsYamlAnchor().name());
 	}
 
 	@Test
@@ -423,7 +423,7 @@ class YamlBuilderTest {
 
 		YamlElement element = result.get(0);
 		assertTrue(element.isYamlAnchor());
-		assertEquals(YamlNull.INSTANCE, element.getAsYamlAnchor().getElement());
+		assertEquals(YamlNull.INSTANCE, element.getAsYamlAnchor().element());
 	}
 
 	@Test
@@ -434,7 +434,7 @@ class YamlBuilderTest {
 
 		YamlElement element = result.get(0);
 		assertTrue(element.isYamlAlias());
-		assertEquals("targetAnchor", element.getAsYamlAlias().getAnchorName());
+		assertEquals("targetAnchor", element.getAsYamlAlias().anchorName());
 	}
 	//endregion
 
@@ -481,7 +481,7 @@ class YamlBuilderTest {
 
 		YamlElement element = result.get("nested");
 		assertTrue(element.isYamlAnchor());
-		assertEquals("nestedAnchor", element.getAsYamlAnchor().getName());
+		assertEquals("nestedAnchor", element.getAsYamlAnchor().name());
 	}
 
 	@Test
@@ -528,7 +528,7 @@ class YamlBuilderTest {
 
 		YamlElement element = result.get("items");
 		assertTrue(element.isYamlAnchor());
-		assertEquals("itemsAnchor", element.getAsYamlAnchor().getName());
+		assertEquals("itemsAnchor", element.getAsYamlAnchor().name());
 	}
 	//endregion
 
@@ -924,7 +924,7 @@ class YamlBuilderTest {
 		assertTrue(result.get("defaults").isYamlAnchor());
 		YamlMapping prod = result.get("production").getAsYamlMapping();
 		assertTrue(prod.get("settings").isYamlAlias());
-		assertEquals("defaultSettings", prod.get("settings").getAsYamlAlias().getAnchorName());
+		assertEquals("defaultSettings", prod.get("settings").getAsYamlAlias().anchorName());
 	}
 
 	@Test
