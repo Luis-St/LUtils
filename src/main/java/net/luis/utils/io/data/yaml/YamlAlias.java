@@ -29,12 +29,12 @@ import java.util.Objects;
  * @author Luis-St
  */
 public class YamlAlias implements YamlElement {
-
+	
 	/**
 	 * The name of the anchor this alias references.<br>
 	 */
 	private final String anchorName;
-
+	
 	/**
 	 * Constructs a new yaml alias referencing the given anchor name.<br>
 	 *
@@ -52,7 +52,7 @@ public class YamlAlias implements YamlElement {
 			throw new IllegalArgumentException("Invalid anchor name: '" + anchorName + "'. Anchor names must contain only alphanumeric characters, underscores, and hyphens");
 		}
 	}
-
+	
 	/**
 	 * Checks if the given name is a valid anchor name.<br>
 	 * Valid anchor names contain only alphanumeric characters, underscores, and hyphens.<br>
@@ -69,7 +69,7 @@ public class YamlAlias implements YamlElement {
 		}
 		return true;
 	}
-
+	
 	/**
 	 * Returns the name of the referenced anchor.<br>
 	 * @return The anchor name without the '*' prefix
@@ -77,26 +77,26 @@ public class YamlAlias implements YamlElement {
 	public @NonNull String getAnchorName() {
 		return this.anchorName;
 	}
-
+	
 	//region Object overrides
 	@Override
 	public boolean equals(Object o) {
 		if (this == o) return true;
 		if (!(o instanceof YamlAlias that)) return false;
-
+		
 		return this.anchorName.equals(that.anchorName);
 	}
-
+	
 	@Override
 	public int hashCode() {
 		return Objects.hash(this.anchorName);
 	}
-
+	
 	@Override
 	public @NonNull String toString() {
 		return this.toString(YamlConfig.DEFAULT);
 	}
-
+	
 	@Override
 	public @NonNull String toString(@NonNull YamlConfig config) {
 		return "*" + this.anchorName;

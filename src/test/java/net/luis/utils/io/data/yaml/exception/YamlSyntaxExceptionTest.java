@@ -28,14 +28,14 @@ import static org.junit.jupiter.api.Assertions.*;
  * @author Luis-St
  */
 class YamlSyntaxExceptionTest {
-
+	
 	@Test
 	void constructorNoArgs() {
 		YamlSyntaxException exception = new YamlSyntaxException();
 		assertNull(exception.getMessage());
 		assertNull(exception.getCause());
 	}
-
+	
 	@Test
 	void constructorWithMessage() {
 		String message = "Invalid yaml syntax";
@@ -43,13 +43,13 @@ class YamlSyntaxExceptionTest {
 		assertEquals(message, exception.getMessage());
 		assertNull(exception.getCause());
 	}
-
+	
 	@Test
 	void constructorWithNullMessage() {
 		YamlSyntaxException exception = new YamlSyntaxException((String) null);
 		assertNull(exception.getMessage());
 	}
-
+	
 	@Test
 	void constructorWithMessageAndCause() {
 		String message = "Syntax error at line 5";
@@ -58,7 +58,7 @@ class YamlSyntaxExceptionTest {
 		assertEquals(message, exception.getMessage());
 		assertEquals(cause, exception.getCause());
 	}
-
+	
 	@Test
 	void constructorWithNullMessageAndCause() {
 		Throwable cause = new RuntimeException("Root cause");
@@ -66,7 +66,7 @@ class YamlSyntaxExceptionTest {
 		assertNull(exception.getMessage());
 		assertEquals(cause, exception.getCause());
 	}
-
+	
 	@Test
 	void constructorWithMessageAndNullCause() {
 		String message = "Error message";
@@ -74,7 +74,7 @@ class YamlSyntaxExceptionTest {
 		assertEquals(message, exception.getMessage());
 		assertNull(exception.getCause());
 	}
-
+	
 	@Test
 	void constructorWithCause() {
 		Throwable cause = new IllegalArgumentException("Invalid argument");
@@ -82,27 +82,27 @@ class YamlSyntaxExceptionTest {
 		assertEquals(cause.toString(), exception.getMessage());
 		assertEquals(cause, exception.getCause());
 	}
-
+	
 	@Test
 	void constructorWithNullCause() {
 		YamlSyntaxException exception = new YamlSyntaxException((Throwable) null);
 		assertNull(exception.getMessage());
 		assertNull(exception.getCause());
 	}
-
+	
 	@Test
 	void isRuntimeException() {
 		YamlSyntaxException exception = new YamlSyntaxException();
-		assertTrue(exception instanceof RuntimeException);
+		assertInstanceOf(RuntimeException.class, exception);
 	}
-
+	
 	@Test
 	void canBeThrown() {
 		assertThrows(YamlSyntaxException.class, () -> {
 			throw new YamlSyntaxException("Test exception");
 		});
 	}
-
+	
 	@Test
 	void canBeCaught() {
 		try {
@@ -111,18 +111,19 @@ class YamlSyntaxExceptionTest {
 			assertEquals("Caught exception", e.getMessage());
 		}
 	}
-
+	
 	@Test
 	void chainedExceptionPreservesCause() {
 		IOException originalCause = new IOException("IO error");
 		YamlSyntaxException exception = new YamlSyntaxException("Failed to parse", originalCause);
-
+		
 		assertNotNull(exception.getCause());
-		assertTrue(exception.getCause() instanceof IOException);
+		assertInstanceOf(IOException.class, exception.getCause());
 		assertEquals("IO error", exception.getCause().getMessage());
 	}
-
+	
 	private static class IOException extends Exception {
+		
 		public IOException(String message) {
 			super(message);
 		}

@@ -34,49 +34,49 @@ import static org.junit.jupiter.api.Assertions.*;
  * @author Luis-St
  */
 class YamlReaderTest {
-
+	
 	private static final YamlConfig DEFAULT_CONFIG = YamlConfig.DEFAULT;
 	private static final YamlConfig PRESERVE_ANCHORS = YamlConfig.PRESERVE_ANCHORS;
 	private static final YamlConfig NON_STRICT = new YamlConfig(false, true, "  ", true, false, YamlConfig.NullStyle.NULL, true, false, StandardCharsets.UTF_8);
 	private static final YamlConfig ALLOW_DUPLICATES = new YamlConfig(true, true, "  ", true, false, YamlConfig.NullStyle.NULL, true, true, StandardCharsets.UTF_8);
-
+	
 	@Test
 	void constructorWithString() {
 		assertDoesNotThrow(() -> new YamlReader("key: value"));
 	}
-
+	
 	@Test
 	void constructorWithStringAndConfig() {
 		assertDoesNotThrow(() -> new YamlReader("key: value", DEFAULT_CONFIG));
 	}
-
+	
 	@Test
 	void constructorWithInputProvider() {
 		InputProvider input = new InputProvider(new ByteArrayInputStream("key: value".getBytes(StandardCharsets.UTF_8)));
 		assertDoesNotThrow(() -> new YamlReader(input));
 	}
-
+	
 	@Test
 	void constructorWithInputProviderAndConfig() {
 		InputProvider input = new InputProvider(new ByteArrayInputStream("key: value".getBytes(StandardCharsets.UTF_8)));
 		assertDoesNotThrow(() -> new YamlReader(input, DEFAULT_CONFIG));
 	}
-
+	
 	@Test
 	void constructorWithNullString() {
 		assertThrows(NullPointerException.class, () -> new YamlReader((String) null));
 	}
-
+	
 	@Test
 	void constructorWithNullConfig() {
 		assertThrows(NullPointerException.class, () -> new YamlReader("yaml", null));
 	}
-
+	
 	@Test
 	void constructorWithNullInput() {
 		assertThrows(NullPointerException.class, () -> new YamlReader((InputProvider) null));
 	}
-
+	
 	@Test
 	void readEmptyInput() throws IOException {
 		try (YamlReader reader = new YamlReader("")) {
@@ -84,7 +84,7 @@ class YamlReaderTest {
 			assertTrue(result.isYamlNull());
 		}
 	}
-
+	
 	@Test
 	void readNullKeyword() throws IOException {
 		try (YamlReader reader = new YamlReader("null")) {
@@ -92,7 +92,7 @@ class YamlReaderTest {
 			assertTrue(result.isYamlNull());
 		}
 	}
-
+	
 	@Test
 	void readTildeNull() throws IOException {
 		try (YamlReader reader = new YamlReader("~")) {
@@ -100,7 +100,7 @@ class YamlReaderTest {
 			assertTrue(result.isYamlNull());
 		}
 	}
-
+	
 	@Test
 	void readWhitespaceOnly() throws IOException {
 		try (YamlReader reader = new YamlReader("   \n  \n  ")) {
@@ -108,7 +108,7 @@ class YamlReaderTest {
 			assertTrue(result.isYamlNull());
 		}
 	}
-
+	
 	@Test
 	void readStringScalar() throws IOException {
 		try (YamlReader reader = new YamlReader("hello world")) {
@@ -117,7 +117,7 @@ class YamlReaderTest {
 			assertEquals("hello world", result.getAsYamlScalar().getAsString());
 		}
 	}
-
+	
 	@Test
 	void readQuotedString() throws IOException {
 		try (YamlReader reader = new YamlReader("\"hello world\"")) {
@@ -126,7 +126,7 @@ class YamlReaderTest {
 			assertEquals("hello world", result.getAsYamlScalar().getAsString());
 		}
 	}
-
+	
 	@Test
 	void readSingleQuotedString() throws IOException {
 		try (YamlReader reader = new YamlReader("'hello world'")) {
@@ -135,7 +135,7 @@ class YamlReaderTest {
 			assertEquals("hello world", result.getAsYamlScalar().getAsString());
 		}
 	}
-
+	
 	@Test
 	void readIntegerScalar() throws IOException {
 		try (YamlReader reader = new YamlReader("42")) {
@@ -144,7 +144,7 @@ class YamlReaderTest {
 			assertEquals(42, result.getAsYamlScalar().getAsInteger());
 		}
 	}
-
+	
 	@Test
 	void readNegativeInteger() throws IOException {
 		try (YamlReader reader = new YamlReader("-123")) {
@@ -153,7 +153,7 @@ class YamlReaderTest {
 			assertEquals(-123, result.getAsYamlScalar().getAsInteger());
 		}
 	}
-
+	
 	@Test
 	void readLongScalar() throws IOException {
 		try (YamlReader reader = new YamlReader("9999999999999")) {
@@ -162,7 +162,7 @@ class YamlReaderTest {
 			assertEquals(9999999999999L, result.getAsYamlScalar().getAsLong());
 		}
 	}
-
+	
 	@Test
 	void readDoubleScalar() throws IOException {
 		try (YamlReader reader = new YamlReader("3.14159")) {
@@ -171,16 +171,16 @@ class YamlReaderTest {
 			assertEquals(3.14159, result.getAsYamlScalar().getAsDouble(), 0.00001);
 		}
 	}
-
+	
 	@Test
 	void readScientificNotation() throws IOException {
 		try (YamlReader reader = new YamlReader("1.5e10")) {
 			YamlElement result = reader.readYaml();
 			assertTrue(result.isYamlScalar());
-			assertEquals(1.5e10, result.getAsYamlScalar().getAsDouble(), 1e5);
+			assertEquals(1.5e10, result.getAsYamlScalar().getAsDouble(), 1.0e5);
 		}
 	}
-
+	
 	@Test
 	void readBooleanTrue() throws IOException {
 		try (YamlReader reader = new YamlReader("true")) {
@@ -189,7 +189,7 @@ class YamlReaderTest {
 			assertTrue(result.getAsYamlScalar().getAsBoolean());
 		}
 	}
-
+	
 	@Test
 	void readBooleanFalse() throws IOException {
 		try (YamlReader reader = new YamlReader("false")) {
@@ -198,7 +198,7 @@ class YamlReaderTest {
 			assertFalse(result.getAsYamlScalar().getAsBoolean());
 		}
 	}
-
+	
 	@Test
 	void readHexadecimalNumber() throws IOException {
 		try (YamlReader reader = new YamlReader("0xFF")) {
@@ -207,7 +207,7 @@ class YamlReaderTest {
 			assertEquals(255L, result.getAsYamlScalar().getAsLong());
 		}
 	}
-
+	
 	@Test
 	void readOctalNumber() throws IOException {
 		try (YamlReader reader = new YamlReader("0o77")) {
@@ -216,7 +216,7 @@ class YamlReaderTest {
 			assertEquals(63L, result.getAsYamlScalar().getAsLong());
 		}
 	}
-
+	
 	@Test
 	void readBinaryNumber() throws IOException {
 		try (YamlReader reader = new YamlReader("0b1010")) {
@@ -225,7 +225,7 @@ class YamlReaderTest {
 			assertEquals(10L, result.getAsYamlScalar().getAsLong());
 		}
 	}
-
+	
 	@Test
 	void readPositiveInfinity() throws IOException {
 		try (YamlReader reader = new YamlReader(".inf")) {
@@ -234,7 +234,7 @@ class YamlReaderTest {
 			assertEquals(Double.POSITIVE_INFINITY, result.getAsYamlScalar().getAsDouble());
 		}
 	}
-
+	
 	@Test
 	void readNegativeInfinity() throws IOException {
 		try (YamlReader reader = new YamlReader("-.inf")) {
@@ -243,7 +243,7 @@ class YamlReaderTest {
 			assertEquals(Double.NEGATIVE_INFINITY, result.getAsYamlScalar().getAsDouble());
 		}
 	}
-
+	
 	@Test
 	void readNaN() throws IOException {
 		try (YamlReader reader = new YamlReader(".nan")) {
@@ -252,7 +252,7 @@ class YamlReaderTest {
 			assertTrue(Double.isNaN(result.getAsYamlScalar().getAsDouble()));
 		}
 	}
-
+	
 	@Test
 	void readSimpleMapping() throws IOException {
 		String yaml = "key: value";
@@ -263,7 +263,7 @@ class YamlReaderTest {
 			assertEquals(new YamlScalar("value"), mapping.get("key"));
 		}
 	}
-
+	
 	@Test
 	void readMultiKeyMapping() throws IOException {
 		String yaml = """
@@ -280,7 +280,7 @@ class YamlReaderTest {
 			assertEquals(new YamlScalar(true), mapping.get("active"));
 		}
 	}
-
+	
 	@Test
 	void readNestedMapping() throws IOException {
 		String yaml = """
@@ -299,7 +299,7 @@ class YamlReaderTest {
 			assertEquals(new YamlScalar("data"), nested.get("deep"));
 		}
 	}
-
+	
 	@Test
 	void readMappingWithNullValue() throws IOException {
 		String yaml = "key:";
@@ -310,7 +310,7 @@ class YamlReaderTest {
 			assertTrue(mapping.get("key").isYamlNull());
 		}
 	}
-
+	
 	@Test
 	void readMappingWithQuotedKey() throws IOException {
 		String yaml = "\"quoted key\": value";
@@ -321,7 +321,7 @@ class YamlReaderTest {
 			assertEquals(new YamlScalar("value"), mapping.get("quoted key"));
 		}
 	}
-
+	
 	@Test
 	void readDuplicateKeyThrows() {
 		String yaml = """
@@ -332,7 +332,7 @@ class YamlReaderTest {
 			assertThrows(YamlSyntaxException.class, reader::readYaml);
 		}
 	}
-
+	
 	@Test
 	void readDuplicateKeyAllowed() throws IOException {
 		String yaml = """
@@ -345,7 +345,7 @@ class YamlReaderTest {
 			assertEquals(new YamlScalar("value2"), result.getAsYamlMapping().get("key"));
 		}
 	}
-
+	
 	@Test
 	void readSimpleSequence() throws IOException {
 		String yaml = """
@@ -363,7 +363,7 @@ class YamlReaderTest {
 			assertEquals(new YamlScalar("c"), sequence.get(2));
 		}
 	}
-
+	
 	@Test
 	void readSequenceWithNumbers() throws IOException {
 		String yaml = """
@@ -380,7 +380,7 @@ class YamlReaderTest {
 			assertEquals(new YamlScalar(3), sequence.get(2));
 		}
 	}
-
+	
 	@Test
 	void readNestedSequence() throws IOException {
 		String yaml = """
@@ -397,7 +397,7 @@ class YamlReaderTest {
 			assertEquals(2, outer.get(0).getAsYamlSequence().size());
 		}
 	}
-
+	
 	@Test
 	void readSequenceWithMappings() throws IOException {
 		String yaml = """
@@ -417,7 +417,7 @@ class YamlReaderTest {
 			assertEquals(new YamlScalar("Jane"), sequence.get(1).getAsYamlMapping().get("name"));
 		}
 	}
-
+	
 	@Test
 	void readSequenceWithNullItem() throws IOException {
 		String yaml = """
@@ -433,7 +433,7 @@ class YamlReaderTest {
 			assertTrue(sequence.get(1).isYamlNull());
 		}
 	}
-
+	
 	@Test
 	void readFlowMapping() throws IOException {
 		String yaml = "{key1: value1, key2: value2}";
@@ -446,7 +446,7 @@ class YamlReaderTest {
 			assertEquals(new YamlScalar("value2"), mapping.get("key2"));
 		}
 	}
-
+	
 	@Test
 	void readFlowSequence() throws IOException {
 		String yaml = "[a, b, c]";
@@ -460,7 +460,7 @@ class YamlReaderTest {
 			assertEquals(new YamlScalar("c"), sequence.get(2));
 		}
 	}
-
+	
 	@Test
 	void readEmptyFlowMapping() throws IOException {
 		String yaml = "{}";
@@ -470,7 +470,7 @@ class YamlReaderTest {
 			assertEquals(0, result.getAsYamlMapping().size());
 		}
 	}
-
+	
 	@Test
 	void readEmptyFlowSequence() throws IOException {
 		String yaml = "[]";
@@ -480,7 +480,7 @@ class YamlReaderTest {
 			assertEquals(0, result.getAsYamlSequence().size());
 		}
 	}
-
+	
 	@Test
 	void readNestedFlowCollections() throws IOException {
 		String yaml = "{outer: {inner: [1, 2, 3]}}";
@@ -493,7 +493,7 @@ class YamlReaderTest {
 			assertEquals(3, sequence.size());
 		}
 	}
-
+	
 	@Test
 	void readFlowMappingInBlockMapping() throws IOException {
 		String yaml = """
@@ -508,7 +508,7 @@ class YamlReaderTest {
 			assertEquals(new YamlScalar(false), settings.get("verbose"));
 		}
 	}
-
+	
 	@Test
 	void readFlowSequenceInBlockMapping() throws IOException {
 		String yaml = """
@@ -521,7 +521,7 @@ class YamlReaderTest {
 			assertEquals(new YamlScalar("java"), tags.get(0));
 		}
 	}
-
+	
 	@Test
 	void readAnchorAndAliasResolved() throws IOException {
 		String yaml = """
@@ -544,7 +544,7 @@ class YamlReaderTest {
 			assertEquals(new YamlScalar("test"), mapping.get("alias"));
 		}
 	}
-
+	
 	@Test
 	void readAnchorPreserved() throws IOException {
 		String yaml = """
@@ -561,7 +561,7 @@ class YamlReaderTest {
 			assertEquals("myValue", mapping.get("alias").getAsYamlAlias().getAnchorName());
 		}
 	}
-
+	
 	@Test
 	void readUndefinedAliasThrows() {
 		String yaml = "ref: *undefined";
@@ -569,7 +569,7 @@ class YamlReaderTest {
 			assertThrows(YamlSyntaxException.class, reader::readYaml);
 		}
 	}
-
+	
 	@Test
 	void readAnchorOnMapping() throws IOException {
 		String yaml = "data: &mapAnchor {key: value}\nref: *mapAnchor\n";
@@ -580,7 +580,7 @@ class YamlReaderTest {
 			assertTrue(root.get("ref").isYamlMapping());
 		}
 	}
-
+	
 	@Test
 	void readAnchorOnSequence() throws IOException {
 		String yaml = "items: &seqAnchor [a, b]\ncopy: *seqAnchor\n";
@@ -591,7 +591,7 @@ class YamlReaderTest {
 			assertTrue(root.get("copy").isYamlSequence());
 		}
 	}
-
+	
 	@Test
 	void readWithDocumentStart() throws IOException {
 		String yaml = """
@@ -604,7 +604,7 @@ class YamlReaderTest {
 			assertEquals(new YamlScalar("value"), result.getAsYamlMapping().get("key"));
 		}
 	}
-
+	
 	@Test
 	void readWithDocumentEnd() throws IOException {
 		String yaml = """
@@ -617,7 +617,7 @@ class YamlReaderTest {
 			assertEquals(new YamlScalar("value"), result.getAsYamlMapping().get("key"));
 		}
 	}
-
+	
 	@Test
 	void readWithBothMarkers() throws IOException {
 		String yaml = """
@@ -631,7 +631,7 @@ class YamlReaderTest {
 			assertEquals(new YamlScalar("value"), result.getAsYamlMapping().get("key"));
 		}
 	}
-
+	
 	@Test
 	void readWithLineComment() throws IOException {
 		String yaml = """
@@ -644,7 +644,7 @@ class YamlReaderTest {
 			assertEquals(new YamlScalar("value"), result.getAsYamlMapping().get("key"));
 		}
 	}
-
+	
 	@Test
 	void readWithInlineComment() throws IOException {
 		String yaml = "key: value # inline comment";
@@ -654,7 +654,7 @@ class YamlReaderTest {
 			assertEquals(new YamlScalar("value"), result.getAsYamlMapping().get("key"));
 		}
 	}
-
+	
 	@Test
 	void readWithMultipleComments() throws IOException {
 		String yaml = """
@@ -670,7 +670,7 @@ class YamlReaderTest {
 			assertEquals(2, result.getAsYamlMapping().size());
 		}
 	}
-
+	
 	@Test
 	void readLiteralBlockScalar() throws IOException {
 		String yaml = """
@@ -688,7 +688,7 @@ class YamlReaderTest {
 			assertTrue(value.contains("Line 3"));
 		}
 	}
-
+	
 	@Test
 	void readFoldedBlockScalar() throws IOException {
 		String yaml = """
@@ -704,7 +704,7 @@ class YamlReaderTest {
 			assertTrue(value.contains("This is a long"));
 		}
 	}
-
+	
 	@Test
 	void readLiteralBlockStripChomp() throws IOException {
 		String yaml = """
@@ -718,14 +718,14 @@ class YamlReaderTest {
 			assertFalse(value.endsWith("\n"));
 		}
 	}
-
+	
 	@Test
 	void readLiteralBlockKeepChomp() throws IOException {
 		String yaml = """
 			text: |+
 			  Line with preserved newlines
-
-
+			
+			
 			""";
 		try (YamlReader reader = new YamlReader(yaml)) {
 			YamlElement result = reader.readYaml();
@@ -733,7 +733,7 @@ class YamlReaderTest {
 			assertNotNull(text.getAsString());
 		}
 	}
-
+	
 	@Test
 	void readDoubleQuotedEscapes() throws IOException {
 		String yaml = "text: \"line1\\nline2\\ttab\"";
@@ -744,7 +744,7 @@ class YamlReaderTest {
 			assertTrue(value.contains("\t"));
 		}
 	}
-
+	
 	@Test
 	void readSingleQuotedEscape() throws IOException {
 		String yaml = "text: 'It''s a test'";
@@ -754,7 +754,7 @@ class YamlReaderTest {
 			assertEquals("It's a test", value);
 		}
 	}
-
+	
 	@Test
 	void readUnicodeEscape() throws IOException {
 		String yaml = "text: \"\\u0041\\u0042\\u0043\"";
@@ -764,7 +764,7 @@ class YamlReaderTest {
 			assertEquals("ABC", value);
 		}
 	}
-
+	
 	@Test
 	void readHexEscape() throws IOException {
 		String yaml = "text: \"\\x41\\x42\"";
@@ -774,7 +774,7 @@ class YamlReaderTest {
 			assertEquals("AB", value);
 		}
 	}
-
+	
 	@Test
 	void readTabIndentThrows() {
 		String yaml = "\tkey: value";
@@ -782,7 +782,7 @@ class YamlReaderTest {
 			assertThrows(YamlSyntaxException.class, reader::readYaml);
 		}
 	}
-
+	
 	@Test
 	void readInconsistentIndentThrows() {
 		String yaml = """
@@ -794,7 +794,7 @@ class YamlReaderTest {
 			assertThrows(YamlSyntaxException.class, reader::readYaml);
 		}
 	}
-
+	
 	@Test
 	void readUnclosedFlowMappingThrows() {
 		String yaml = "{key: value";
@@ -802,7 +802,7 @@ class YamlReaderTest {
 			assertThrows(YamlSyntaxException.class, reader::readYaml);
 		}
 	}
-
+	
 	@Test
 	void readUnclosedFlowSequenceThrows() {
 		String yaml = "[a, b, c";
@@ -810,7 +810,7 @@ class YamlReaderTest {
 			assertThrows(YamlSyntaxException.class, reader::readYaml);
 		}
 	}
-
+	
 	@Test
 	void readInvalidAnchorNameThrows() {
 		String yaml = "&";
@@ -818,7 +818,7 @@ class YamlReaderTest {
 			assertThrows(YamlSyntaxException.class, reader::readYaml);
 		}
 	}
-
+	
 	@Test
 	void strictModeRejectsExtraContent() {
 		String yaml = "key: value\n...\nextra content\n";
@@ -826,7 +826,7 @@ class YamlReaderTest {
 			assertThrows(YamlSyntaxException.class, reader::readYaml);
 		}
 	}
-
+	
 	@Test
 	void nonStrictModeAllowsExtraContent() throws IOException {
 		String yaml = "key: value\n...\nextra content\n";
@@ -835,7 +835,7 @@ class YamlReaderTest {
 			assertNotNull(result);
 		}
 	}
-
+	
 	@Test
 	void readComplexNestedStructure() throws IOException {
 		String yaml = """
@@ -862,25 +862,25 @@ class YamlReaderTest {
 			YamlElement result = reader.readYaml();
 			assertTrue(result.isYamlMapping());
 			YamlMapping app = result.getAsYamlMapping().get("application").getAsYamlMapping();
-
+			
 			assertEquals(new YamlScalar("MyApp"), app.get("name"));
 			assertEquals(new YamlScalar("1.0.0"), app.get("version"));
-
+			
 			YamlMapping db = app.get("database").getAsYamlMapping();
 			assertEquals(new YamlScalar("localhost"), db.get("host"));
 			assertEquals(new YamlScalar(5432), db.get("port"));
-
+			
 			YamlMapping creds = db.get("credentials").getAsYamlMapping();
 			assertEquals(new YamlScalar("admin"), creds.get("username"));
-
+			
 			YamlSequence servers = app.get("servers").getAsYamlSequence();
 			assertEquals(2, servers.size());
-
+			
 			YamlSequence features = app.get("features").getAsYamlSequence();
 			assertEquals(3, features.size());
 		}
 	}
-
+	
 	@Test
 	void readMixedBlockAndFlowStyles() throws IOException {
 		String yaml = """
@@ -897,27 +897,27 @@ class YamlReaderTest {
 			YamlElement result = reader.readYaml();
 			assertTrue(result.isYamlMapping());
 			YamlMapping config = result.getAsYamlMapping().get("config").getAsYamlMapping();
-
+			
 			assertEquals(new YamlScalar("value"), config.get("simple"));
-
+			
 			YamlSequence list = config.get("list").getAsYamlSequence();
 			assertEquals(3, list.size());
-
+			
 			YamlMapping nested = config.get("nested").getAsYamlMapping();
 			YamlMapping map = nested.get("map").getAsYamlMapping();
 			assertEquals(new YamlScalar(1), map.get("a"));
-
+			
 			YamlSequence items = nested.get("items").getAsYamlSequence();
 			assertEquals(2, items.size());
 		}
 	}
-
+	
 	@Test
 	void closeDoesNotThrow() {
 		YamlReader reader = new YamlReader("key: value");
 		assertDoesNotThrow(reader::close);
 	}
-
+	
 	@Test
 	void multipleClosesDoNotThrow() throws IOException {
 		YamlReader reader = new YamlReader("key: value");

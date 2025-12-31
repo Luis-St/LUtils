@@ -31,15 +31,15 @@ import static org.junit.jupiter.api.Assertions.*;
  * @author Luis-St
  */
 class YamlAliasTest {
-
+	
 	private static final YamlConfig DEFAULT_CONFIG = new YamlConfig(true, true, "  ", true, false, YamlConfig.NullStyle.NULL, true, false, StandardCharsets.UTF_8);
-
+	
 	@Test
 	void constructorValid() {
 		YamlAlias alias = new YamlAlias("myAlias");
 		assertEquals("myAlias", alias.getAnchorName());
 	}
-
+	
 	@Test
 	void constructorWithValidNames() {
 		assertDoesNotThrow(() -> new YamlAlias("simple"));
@@ -49,18 +49,18 @@ class YamlAliasTest {
 		assertDoesNotThrow(() -> new YamlAlias("MixedCase"));
 		assertDoesNotThrow(() -> new YamlAlias("a"));
 	}
-
+	
 	@Test
 	void constructorWithNullName() {
 		assertThrows(NullPointerException.class, () -> new YamlAlias(null));
 	}
-
+	
 	@Test
 	void constructorWithBlankName() {
 		assertThrows(IllegalArgumentException.class, () -> new YamlAlias(""));
 		assertThrows(IllegalArgumentException.class, () -> new YamlAlias("   "));
 	}
-
+	
 	@Test
 	void constructorWithInvalidNames() {
 		assertThrows(IllegalArgumentException.class, () -> new YamlAlias("with space"));
@@ -69,17 +69,17 @@ class YamlAliasTest {
 		assertThrows(IllegalArgumentException.class, () -> new YamlAlias("with@symbol"));
 		assertThrows(IllegalArgumentException.class, () -> new YamlAlias("with#hash"));
 	}
-
+	
 	@Test
 	void getGetAnchorName() {
 		YamlAlias alias = new YamlAlias("testAlias");
 		assertEquals("testAlias", alias.getAnchorName());
 	}
-
+	
 	@Test
 	void yamlElementTypeChecks() {
 		YamlAlias alias = new YamlAlias("alias");
-
+		
 		assertFalse(alias.isYamlNull());
 		assertFalse(alias.isYamlMapping());
 		assertFalse(alias.isYamlSequence());
@@ -87,61 +87,61 @@ class YamlAliasTest {
 		assertFalse(alias.isYamlAnchor());
 		assertTrue(alias.isYamlAlias());
 	}
-
+	
 	@Test
 	void yamlElementConversions() {
 		YamlAlias alias = new YamlAlias("alias");
-
+		
 		assertThrows(YamlTypeException.class, alias::getAsYamlMapping);
 		assertThrows(YamlTypeException.class, alias::getAsYamlSequence);
 		assertThrows(YamlTypeException.class, alias::getAsYamlScalar);
 		assertThrows(YamlTypeException.class, alias::getAsYamlAnchor);
 		assertSame(alias, alias.getAsYamlAlias());
 	}
-
+	
 	@Test
 	void unwrap() {
 		YamlAlias alias = new YamlAlias("alias");
 		assertSame(alias, alias.unwrap());
 	}
-
+	
 	@Test
 	void equalsAndHashCode() {
 		YamlAlias alias1 = new YamlAlias("alias");
 		YamlAlias alias2 = new YamlAlias("alias");
 		YamlAlias alias3 = new YamlAlias("differentAlias");
-
+		
 		assertEquals(alias1, alias2);
 		assertEquals(alias1.hashCode(), alias2.hashCode());
-
+		
 		assertNotEquals(alias1, alias3);
-
+		
 		assertEquals(alias1, alias1);
 		assertNotEquals(alias1, null);
 		assertNotEquals(alias1, "not an alias");
 	}
-
+	
 	@Test
 	void toStringWithDefaultConfig() {
 		YamlAlias alias = new YamlAlias("myAlias");
 		assertEquals("*myAlias", alias.toString());
 	}
-
+	
 	@Test
 	void toStringWithCustomConfig() {
 		YamlAlias alias = new YamlAlias("testAlias");
 		assertEquals("*testAlias", alias.toString(DEFAULT_CONFIG));
 	}
-
+	
 	@Test
 	void toStringFormat() {
 		YamlAlias alias = new YamlAlias("anchorName");
 		String result = alias.toString();
-
+		
 		assertTrue(result.startsWith("*"));
 		assertEquals("*anchorName", result);
 	}
-
+	
 	@Test
 	void aliasWithDifferentNameFormats() {
 		assertEquals("*simple", new YamlAlias("simple").toString());
@@ -150,23 +150,23 @@ class YamlAliasTest {
 		assertEquals("*with123", new YamlAlias("with123").toString());
 		assertEquals("*CamelCase", new YamlAlias("CamelCase").toString());
 	}
-
+	
 	@Test
 	void aliasInteractionWithSequence() {
 		YamlSequence sequence = new YamlSequence();
 		YamlAlias alias = new YamlAlias("myAlias");
 		sequence.add(alias);
-
+		
 		assertEquals(alias, sequence.get(0));
 		assertTrue(sequence.contains(alias));
 	}
-
+	
 	@Test
 	void aliasInteractionWithMapping() {
 		YamlMapping mapping = new YamlMapping();
 		YamlAlias alias = new YamlAlias("myAlias");
 		mapping.add("ref", alias);
-
+		
 		assertEquals(alias, mapping.get("ref"));
 		assertTrue(mapping.containsValue(alias));
 	}

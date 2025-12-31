@@ -28,14 +28,14 @@ import static org.junit.jupiter.api.Assertions.*;
  * @author Luis-St
  */
 class YamlTypeExceptionTest {
-
+	
 	@Test
 	void constructorNoArgs() {
 		YamlTypeException exception = new YamlTypeException();
 		assertNull(exception.getMessage());
 		assertNull(exception.getCause());
 	}
-
+	
 	@Test
 	void constructorWithMessage() {
 		String message = "Expected YamlMapping but got YamlScalar";
@@ -43,13 +43,13 @@ class YamlTypeExceptionTest {
 		assertEquals(message, exception.getMessage());
 		assertNull(exception.getCause());
 	}
-
+	
 	@Test
 	void constructorWithNullMessage() {
 		YamlTypeException exception = new YamlTypeException((String) null);
 		assertNull(exception.getMessage());
 	}
-
+	
 	@Test
 	void constructorWithMessageAndCause() {
 		String message = "Type mismatch";
@@ -58,7 +58,7 @@ class YamlTypeExceptionTest {
 		assertEquals(message, exception.getMessage());
 		assertEquals(cause, exception.getCause());
 	}
-
+	
 	@Test
 	void constructorWithNullMessageAndCause() {
 		Throwable cause = new RuntimeException("Root cause");
@@ -66,7 +66,7 @@ class YamlTypeExceptionTest {
 		assertNull(exception.getMessage());
 		assertEquals(cause, exception.getCause());
 	}
-
+	
 	@Test
 	void constructorWithMessageAndNullCause() {
 		String message = "Type error";
@@ -74,7 +74,7 @@ class YamlTypeExceptionTest {
 		assertEquals(message, exception.getMessage());
 		assertNull(exception.getCause());
 	}
-
+	
 	@Test
 	void constructorWithCause() {
 		Throwable cause = new ClassCastException("Invalid cast");
@@ -82,27 +82,27 @@ class YamlTypeExceptionTest {
 		assertEquals(cause.toString(), exception.getMessage());
 		assertEquals(cause, exception.getCause());
 	}
-
+	
 	@Test
 	void constructorWithNullCause() {
 		YamlTypeException exception = new YamlTypeException((Throwable) null);
 		assertNull(exception.getMessage());
 		assertNull(exception.getCause());
 	}
-
+	
 	@Test
 	void isRuntimeException() {
 		YamlTypeException exception = new YamlTypeException();
-		assertTrue(exception instanceof RuntimeException);
+		assertInstanceOf(RuntimeException.class, exception);
 	}
-
+	
 	@Test
 	void canBeThrown() {
 		assertThrows(YamlTypeException.class, () -> {
 			throw new YamlTypeException("Test exception");
 		});
 	}
-
+	
 	@Test
 	void canBeCaught() {
 		try {
@@ -111,26 +111,26 @@ class YamlTypeExceptionTest {
 			assertEquals("Caught exception", e.getMessage());
 		}
 	}
-
+	
 	@Test
 	void messageContainsTypeInfo() {
 		String expectedType = "YamlMapping";
 		String actualType = "YamlScalar";
 		String message = "Expected " + expectedType + " but got " + actualType;
-
+		
 		YamlTypeException exception = new YamlTypeException(message);
-
+		
 		assertTrue(exception.getMessage().contains(expectedType));
 		assertTrue(exception.getMessage().contains(actualType));
 	}
-
+	
 	@Test
 	void chainedExceptionPreservesCause() {
 		ClassCastException originalCause = new ClassCastException("Cast failed");
 		YamlTypeException exception = new YamlTypeException("Type conversion failed", originalCause);
-
+		
 		assertNotNull(exception.getCause());
-		assertTrue(exception.getCause() instanceof ClassCastException);
+		assertInstanceOf(ClassCastException.class, exception.getCause());
 		assertEquals("Cast failed", exception.getCause().getMessage());
 	}
 }

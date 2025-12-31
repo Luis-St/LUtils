@@ -28,14 +28,14 @@ import static org.junit.jupiter.api.Assertions.*;
  * @author Luis-St
  */
 class NoSuchYamlElementExceptionTest {
-
+	
 	@Test
 	void constructorNoArgs() {
 		NoSuchYamlElementException exception = new NoSuchYamlElementException();
 		assertNull(exception.getMessage());
 		assertNull(exception.getCause());
 	}
-
+	
 	@Test
 	void constructorWithMessage() {
 		String message = "Element 'config' not found";
@@ -43,13 +43,13 @@ class NoSuchYamlElementExceptionTest {
 		assertEquals(message, exception.getMessage());
 		assertNull(exception.getCause());
 	}
-
+	
 	@Test
 	void constructorWithNullMessage() {
 		NoSuchYamlElementException exception = new NoSuchYamlElementException((String) null);
 		assertNull(exception.getMessage());
 	}
-
+	
 	@Test
 	void constructorWithMessageAndCause() {
 		String message = "Missing required element";
@@ -58,7 +58,7 @@ class NoSuchYamlElementExceptionTest {
 		assertEquals(message, exception.getMessage());
 		assertEquals(cause, exception.getCause());
 	}
-
+	
 	@Test
 	void constructorWithNullMessageAndCause() {
 		Throwable cause = new RuntimeException("Root cause");
@@ -66,7 +66,7 @@ class NoSuchYamlElementExceptionTest {
 		assertNull(exception.getMessage());
 		assertEquals(cause, exception.getCause());
 	}
-
+	
 	@Test
 	void constructorWithMessageAndNullCause() {
 		String message = "Element not found";
@@ -74,7 +74,7 @@ class NoSuchYamlElementExceptionTest {
 		assertEquals(message, exception.getMessage());
 		assertNull(exception.getCause());
 	}
-
+	
 	@Test
 	void constructorWithCause() {
 		Throwable cause = new IllegalStateException("Invalid state");
@@ -82,27 +82,27 @@ class NoSuchYamlElementExceptionTest {
 		assertEquals(cause.toString(), exception.getMessage());
 		assertEquals(cause, exception.getCause());
 	}
-
+	
 	@Test
 	void constructorWithNullCause() {
 		NoSuchYamlElementException exception = new NoSuchYamlElementException((Throwable) null);
 		assertNull(exception.getMessage());
 		assertNull(exception.getCause());
 	}
-
+	
 	@Test
 	void isRuntimeException() {
 		NoSuchYamlElementException exception = new NoSuchYamlElementException();
-		assertTrue(exception instanceof RuntimeException);
+		assertInstanceOf(RuntimeException.class, exception);
 	}
-
+	
 	@Test
 	void canBeThrown() {
 		assertThrows(NoSuchYamlElementException.class, () -> {
 			throw new NoSuchYamlElementException("Test exception");
 		});
 	}
-
+	
 	@Test
 	void canBeCaught() {
 		try {
@@ -111,24 +111,24 @@ class NoSuchYamlElementExceptionTest {
 			assertEquals("Caught exception", e.getMessage());
 		}
 	}
-
+	
 	@Test
 	void messageContainsKeyInfo() {
 		String key = "database.connection.host";
 		String message = "No such yaml element: '" + key + "'";
-
+		
 		NoSuchYamlElementException exception = new NoSuchYamlElementException(message);
-
+		
 		assertTrue(exception.getMessage().contains(key));
 	}
-
+	
 	@Test
 	void chainedExceptionPreservesCause() {
 		NullPointerException originalCause = new NullPointerException("Null key");
 		NoSuchYamlElementException exception = new NoSuchYamlElementException("Element lookup failed", originalCause);
-
+		
 		assertNotNull(exception.getCause());
-		assertTrue(exception.getCause() instanceof NullPointerException);
+		assertInstanceOf(NullPointerException.class, exception.getCause());
 		assertEquals("Null key", exception.getCause().getMessage());
 	}
 }

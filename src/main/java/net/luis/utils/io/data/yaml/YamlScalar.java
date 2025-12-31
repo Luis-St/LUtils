@@ -127,7 +127,7 @@ public class YamlScalar implements YamlElement {
 		char first = value.charAt(0);
 		if (
 			first == '#' || first == '&' || first == '*' || first == '!' || first == '|' || first == '>' || first == '\'' || first == '"' ||
-			first == '%' || first == '@' || first == '`' || first == '{' || first == '[' || first == '-' || first == '?' || first == ':'
+				first == '%' || first == '@' || first == '`' || first == '{' || first == '[' || first == '-' || first == '?' || first == ':'
 		) {
 			return true;
 		}

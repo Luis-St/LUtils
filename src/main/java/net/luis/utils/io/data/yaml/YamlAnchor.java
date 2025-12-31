@@ -29,7 +29,7 @@ import java.util.Objects;
  * @author Luis-St
  */
 public class YamlAnchor implements YamlElement {
-
+	
 	/**
 	 * The name of this anchor.<br>
 	 */
@@ -38,7 +38,7 @@ public class YamlAnchor implements YamlElement {
 	 * The element wrapped by this anchor.<br>
 	 */
 	private final YamlElement element;
-
+	
 	/**
 	 * Constructs a new yaml anchor with the given name and element.<br>
 	 *
@@ -61,7 +61,7 @@ public class YamlAnchor implements YamlElement {
 			throw new IllegalArgumentException("Cannot anchor an alias");
 		}
 	}
-
+	
 	/**
 	 * Checks if the given name is a valid anchor name.<br>
 	 * Valid anchor names contain only alphanumeric characters, underscores, and hyphens.<br>
@@ -78,7 +78,7 @@ public class YamlAnchor implements YamlElement {
 		}
 		return true;
 	}
-
+	
 	/**
 	 * Returns the anchor name.<br>
 	 * @return The anchor name without the '&amp;' prefix
@@ -86,7 +86,7 @@ public class YamlAnchor implements YamlElement {
 	public @NonNull String getName() {
 		return this.name;
 	}
-
+	
 	/**
 	 * Returns the anchored element.<br>
 	 * @return The wrapped element
@@ -94,7 +94,7 @@ public class YamlAnchor implements YamlElement {
 	public @NonNull YamlElement getElement() {
 		return this.element;
 	}
-
+	
 	/**
 	 * Unwraps the anchor and returns the underlying element.<br>
 	 * If the element is also an anchor, it recursively unwraps.<br>
@@ -107,31 +107,31 @@ public class YamlAnchor implements YamlElement {
 		}
 		return this.element;
 	}
-
+	
 	//region Object overrides
 	@Override
 	public boolean equals(Object o) {
 		if (this == o) return true;
 		if (!(o instanceof YamlAnchor that)) return false;
-
+		
 		return this.name.equals(that.name) && this.element.equals(that.element);
 	}
-
+	
 	@Override
 	public int hashCode() {
 		return Objects.hash(this.name, this.element);
 	}
-
+	
 	@Override
 	public String toString() {
 		return this.toString(YamlConfig.DEFAULT);
 	}
-
+	
 	@Override
 	public @NonNull String toString(@NonNull YamlConfig config) {
 		Objects.requireNonNull(config, "Config must not be null");
 		String elementStr = this.element.toString(config);
-
+		
 		if (this.element instanceof YamlMapping || this.element instanceof YamlSequence) {
 			if (config.useBlockStyle() && !elementStr.startsWith("{") && !elementStr.startsWith("[")) {
 				return "&" + this.name + System.lineSeparator() + elementStr;
