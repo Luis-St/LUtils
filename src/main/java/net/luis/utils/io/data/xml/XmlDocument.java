@@ -63,12 +63,14 @@ public record XmlDocument(@NonNull XmlDeclaration declaration, @NonNull XmlEleme
 	 */
 	public @NonNull String toString(@NonNull XmlConfig config) {
 		Objects.requireNonNull(config, "Config must not be null");
+		
 		StringBuilder xml = new StringBuilder();
 		xml.append(this.declaration);
 		if (config.prettyPrint()) {
 			xml.append(System.lineSeparator());
 		}
 		xml.append(this.rootElement.toString(config));
+		
 		return xml.toString();
 	}
 }

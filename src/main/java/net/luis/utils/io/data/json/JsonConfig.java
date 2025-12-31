@@ -81,6 +81,7 @@ public record JsonConfig(
 	public JsonConfig {
 		Objects.requireNonNull(indent, "Indent must not be null");
 		Objects.requireNonNull(charset, "Charset must not be null");
+		
 		if (simplifyArrays && 1 > maxArraySimplificationSize) {
 			throw new IllegalArgumentException("Max array simplification size must be greater than 0 if json array should be simplified");
 		}

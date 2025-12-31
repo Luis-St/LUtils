@@ -56,8 +56,6 @@ public class XmlAttributes {
 		this.attributes.putAll(Objects.requireNonNull(attributes, "Attributes must not be null"));
 	}
 	
-	//region Query operations
-	
 	/**
 	 * Returns the number of attributes in this collection.<br>
 	 * @return The size of this collection
@@ -109,9 +107,6 @@ public class XmlAttributes {
 	public @NonNull @Unmodifiable Collection<XmlAttribute> attributes() {
 		return Collections.unmodifiableCollection(this.attributes.values());
 	}
-	//endregion
-	
-	//region Add operations
 	
 	/**
 	 * Adds the given attribute to this collection.<br>
@@ -250,9 +245,7 @@ public class XmlAttributes {
 	public @Nullable XmlAttribute add(@NonNull String name, double value) {
 		return this.add(new XmlAttribute(name, value));
 	}
-	//endregion
 	
-	//region Remove operations
 	
 	/**
 	 * Removes the attribute with the given name from this collection.<br>
@@ -283,9 +276,7 @@ public class XmlAttributes {
 	public void clear() {
 		this.attributes.clear();
 	}
-	//endregion
 	
-	//region Replace operations
 	
 	/**
 	 * Replaces the attribute with the given name in this collection with the new attribute.<br>
@@ -316,9 +307,6 @@ public class XmlAttributes {
 		Objects.requireNonNull(newAttribute, "New attribute must not be null");
 		return this.attributes.replace(name, currentAttribute, newAttribute);
 	}
-	//endregion
-	
-	//region Get operations
 	
 	/**
 	 * Returns the attribute with the given name from this collection.<br>
@@ -342,6 +330,7 @@ public class XmlAttributes {
 	 */
 	public @NonNull String getAsString(@NonNull String name) {
 		XmlAttribute attribute = this.get(name);
+		
 		if (attribute == null) {
 			throw new NoSuchXmlAttributeException("Expected xml attribute for name '" + name + "' but found none");
 		}
@@ -358,6 +347,7 @@ public class XmlAttributes {
 	 */
 	public boolean getAsBoolean(@NonNull String name) {
 		XmlAttribute attribute = this.get(name);
+		
 		if (attribute == null) {
 			throw new NoSuchXmlAttributeException("Expected xml attribute for name '" + name + "' but found none");
 		}
@@ -374,6 +364,7 @@ public class XmlAttributes {
 	 */
 	public @NonNull Number getAsNumber(@NonNull String name) {
 		XmlAttribute attribute = this.get(name);
+		
 		if (attribute == null) {
 			throw new NoSuchXmlAttributeException("Expected xml attribute for name '" + name + "' but found none");
 		}
@@ -390,6 +381,7 @@ public class XmlAttributes {
 	 */
 	public byte getAsByte(@NonNull String name) {
 		XmlAttribute attribute = this.get(name);
+		
 		if (attribute == null) {
 			throw new NoSuchXmlAttributeException("Expected xml attribute for name '" + name + "' but found none");
 		}
@@ -406,6 +398,7 @@ public class XmlAttributes {
 	 */
 	public short getAsShort(@NonNull String name) {
 		XmlAttribute attribute = this.get(name);
+		
 		if (attribute == null) {
 			throw new NoSuchXmlAttributeException("Expected xml attribute for name '" + name + "' but found none");
 		}
@@ -422,6 +415,7 @@ public class XmlAttributes {
 	 */
 	public int getAsInteger(@NonNull String name) {
 		XmlAttribute attribute = this.get(name);
+		
 		if (attribute == null) {
 			throw new NoSuchXmlAttributeException("Expected xml attribute for name '" + name + "' but found none");
 		}
@@ -438,6 +432,7 @@ public class XmlAttributes {
 	 */
 	public long getAsLong(@NonNull String name) {
 		XmlAttribute attribute = this.get(name);
+		
 		if (attribute == null) {
 			throw new NoSuchXmlAttributeException("Expected xml attribute for name '" + name + "' but found none");
 		}
@@ -454,6 +449,7 @@ public class XmlAttributes {
 	 */
 	public float getAsFloat(@NonNull String name) {
 		XmlAttribute attribute = this.get(name);
+		
 		if (attribute == null) {
 			throw new NoSuchXmlAttributeException("Expected xml attribute for name '" + name + "' but found none");
 		}
@@ -470,6 +466,7 @@ public class XmlAttributes {
 	 */
 	public double getAsDouble(@NonNull String name) {
 		XmlAttribute attribute = this.get(name);
+		
 		if (attribute == null) {
 			throw new NoSuchXmlAttributeException("Expected xml attribute for name '" + name + "' but found none");
 		}
@@ -489,12 +486,12 @@ public class XmlAttributes {
 	public <T> @NonNull T getAs(@NonNull String name, @NonNull ThrowableFunction<String, T, ? extends Exception> parser) {
 		Objects.requireNonNull(parser, "Parser must not be null");
 		XmlAttribute attribute = this.get(name);
+		
 		if (attribute == null) {
 			throw new NoSuchXmlAttributeException("Expected xml attribute for name '" + name + "' but found none");
 		}
 		return attribute.getAs(parser);
 	}
-	//endregion
 	
 	//region Object overrides
 	@Override

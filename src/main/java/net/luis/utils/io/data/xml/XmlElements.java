@@ -83,8 +83,6 @@ public class XmlElements {
 		Objects.requireNonNull(elements, "Elements must not be null").forEach((name, element) -> this.add(element));
 	}
 	
-	//region Query operations
-	
 	/**
 	 * Checks whether the collection is undefined.<br>
 	 * @return True if the collection is neither an object nor an array, false otherwise
@@ -176,9 +174,6 @@ public class XmlElements {
 		}
 		return this.elements.values().stream().flatMap(List::stream).toList();
 	}
-	//endregion
-	
-	//region Add operations
 	
 	/**
 	 * Adds the given element to the collection.<br>
@@ -189,6 +184,7 @@ public class XmlElements {
 	 */
 	public void add(@NonNull XmlElement element) {
 		Objects.requireNonNull(element, "Element must not be null");
+		
 		String name = element.getName();
 		if (this.elements.isEmpty() || this.isUndefined()) {
 			if (this.elements.size() == 1) {
@@ -238,9 +234,6 @@ public class XmlElements {
 		Objects.requireNonNull(value, "Value must not be null");
 		this.add(value);
 	}
-	//endregion
-	
-	//region Remove operations
 	
 	/**
 	 * Removes the given element from the collection considering the type.<br>
@@ -251,9 +244,11 @@ public class XmlElements {
 	 */
 	public boolean remove(@NonNull XmlElement element) {
 		Objects.requireNonNull(element, "Element must not be null");
+		
 		if (!this.elements.containsKey(element.getName())) {
 			return false;
 		}
+		
 		boolean result = this.elements.get(element.getName()).remove(element);
 		if (this.elements.get(element.getName()).isEmpty()) {
 			this.elements.remove(element.getName());
@@ -306,9 +301,6 @@ public class XmlElements {
 	public void clear() {
 		this.elements.clear();
 	}
-	//endregion
-	
-	//region Get operations
 	
 	/**
 	 * Returns the element with the given name from the collection.<br>
@@ -341,6 +333,7 @@ public class XmlElements {
 	 */
 	public @NonNull XmlContainer getAsContainer(@Nullable String name) {
 		XmlElement element = this.get(name);
+		
 		if (element == null) {
 			throw new NoSuchXmlElementException("Expected xml element for name '" + name + "' but found none");
 		}
@@ -359,6 +352,7 @@ public class XmlElements {
 	 */
 	public @NonNull XmlValue getAsValue(@Nullable String name) {
 		XmlElement element = this.get(name);
+		
 		if (element == null) {
 			throw new NoSuchXmlElementException("Expected xml element for name '" + name + "' but found none");
 		}
@@ -377,6 +371,7 @@ public class XmlElements {
 		if (this.isObject()) {
 			throw new XmlTypeException("Unable to get an element by index from an xml object");
 		}
+		
 		try {
 			return this.elements.firstEntry().getValue().get(index);
 		} catch (Exception e) {
@@ -396,6 +391,7 @@ public class XmlElements {
 	 */
 	public @NonNull XmlContainer getAsContainer(int index) {
 		XmlElement element = this.get(index);
+		
 		if (element == null) {
 			throw new NoSuchXmlElementException("Expected xml element for index '" + index + "' but found none");
 		}
@@ -414,6 +410,7 @@ public class XmlElements {
 	 */
 	public @NonNull XmlValue getAsValue(int index) {
 		XmlElement element = this.get(index);
+		
 		if (element == null) {
 			throw new NoSuchXmlElementException("Expected xml element for index '" + index + "' but found none");
 		}
@@ -445,11 +442,11 @@ public class XmlElements {
 		if (!this.isObject()) {
 			throw new XmlTypeException("Unable to get an xml object from an xml array");
 		}
+		
 		Map<String, XmlElement> elements = Maps.newLinkedHashMap();
 		this.elements.forEach((name, list) -> elements.put(name, list.getFirst()));
 		return Collections.unmodifiableMap(elements);
 	}
-	//endregion
 	
 	//region Object overrides
 	@Override

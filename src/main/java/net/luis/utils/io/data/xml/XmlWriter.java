@@ -84,6 +84,7 @@ public class XmlWriter implements AutoCloseable {
 				if (this.config.prettyPrint()) {
 					this.writer.newLine();
 				}
+				
 				this.writer.flush();
 				this.wroteDeclaration = true;
 			} catch (IOException e) {

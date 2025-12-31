@@ -56,8 +56,6 @@ public class JsonArray implements JsonElement, Iterable<JsonElement> {
 		this.elements.addAll(Objects.requireNonNull(elements, "Json elements must not be null"));
 	}
 	
-	//region Query operations
-	
 	/**
 	 * Returns the number of elements in this json array.<br>
 	 * @return The size of this json array
@@ -108,9 +106,6 @@ public class JsonArray implements JsonElement, Iterable<JsonElement> {
 	public @NonNull @Unmodifiable List<JsonElement> getElements() {
 		return List.copyOf(this.elements);
 	}
-	//endregion
-	
-	//region Set operations
 	
 	/**
 	 * Sets the element at the given index to the given json element.<br>
@@ -128,6 +123,7 @@ public class JsonArray implements JsonElement, Iterable<JsonElement> {
 		if (index >= this.size()) {
 			throw new JsonArrayIndexOutOfBoundsException(index, this.size());
 		}
+		
 		return this.elements.set(index, json == null ? JsonNull.INSTANCE : json);
 	}
 	
@@ -258,9 +254,6 @@ public class JsonArray implements JsonElement, Iterable<JsonElement> {
 	public @NonNull JsonElement set(int index, double value) {
 		return this.set(index, new JsonPrimitive(value));
 	}
-	//endregion
-	
-	//region Add operations
 	
 	/**
 	 * Adds the given json element to this json array.<br>
@@ -392,9 +385,6 @@ public class JsonArray implements JsonElement, Iterable<JsonElement> {
 	public void addAll(@NonNull List<? extends JsonElement> elements) {
 		this.elements.addAll(Objects.requireNonNull(elements, "Json elements must not be null"));
 	}
-	//endregion
-	
-	//region Remove operations
 	
 	/**
 	 * Removes the element at the given index from this json array.<br>
@@ -410,6 +400,7 @@ public class JsonArray implements JsonElement, Iterable<JsonElement> {
 		if (index >= this.size()) {
 			throw new JsonArrayIndexOutOfBoundsException(index, this.size());
 		}
+		
 		return this.elements.remove(index);
 	}
 	
@@ -429,9 +420,6 @@ public class JsonArray implements JsonElement, Iterable<JsonElement> {
 	public void clear() {
 		this.elements.clear();
 	}
-	//endregion
-	
-	//region Get operations
 	
 	/**
 	 * Gets the json element at the given index from this json array.<br>
@@ -447,6 +435,7 @@ public class JsonArray implements JsonElement, Iterable<JsonElement> {
 		if (index >= this.size()) {
 			throw new JsonArrayIndexOutOfBoundsException(index, this.size());
 		}
+		
 		return this.elements.get(index);
 	}
 	
@@ -461,10 +450,11 @@ public class JsonArray implements JsonElement, Iterable<JsonElement> {
 	 */
 	public @NonNull JsonObject getAsJsonObject(int index) {
 		JsonElement json = this.get(index);
+		
 		if (json instanceof JsonObject object) {
 			return object;
 		}
-		return json.getAsJsonObject(); // throws JsonTypeException
+		return json.getAsJsonObject();
 	}
 	
 	/**
@@ -478,10 +468,11 @@ public class JsonArray implements JsonElement, Iterable<JsonElement> {
 	 */
 	public @NonNull JsonArray getAsJsonArray(int index) {
 		JsonElement json = this.get(index);
+		
 		if (json instanceof JsonArray array) {
 			return array;
 		}
-		return json.getAsJsonArray(); // throws JsonTypeException
+		return json.getAsJsonArray();
 	}
 	
 	/**
@@ -495,10 +486,11 @@ public class JsonArray implements JsonElement, Iterable<JsonElement> {
 	 */
 	public @NonNull JsonPrimitive getAsJsonPrimitive(int index) {
 		JsonElement json = this.get(index);
+		
 		if (json instanceof JsonPrimitive primitive) {
 			return primitive;
 		}
-		return json.getAsJsonPrimitive(); // throws JsonTypeException
+		return json.getAsJsonPrimitive();
 	}
 	
 	/**
@@ -626,7 +618,6 @@ public class JsonArray implements JsonElement, Iterable<JsonElement> {
 	public double getAsDouble(int index) {
 		return this.getAsJsonPrimitive(index).getAsDouble();
 	}
-	//endregion
 	
 	//region Object overrides
 	@Override

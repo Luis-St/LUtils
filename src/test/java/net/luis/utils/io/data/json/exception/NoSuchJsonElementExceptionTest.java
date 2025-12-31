@@ -46,11 +46,9 @@ class NoSuchJsonElementExceptionTest {
 		assertEquals(message, exception.getMessage());
 		assertNull(exception.getCause());
 		
-		// Test with null message
 		NoSuchJsonElementException nullMessageException = new NoSuchJsonElementException((String) null);
 		assertNull(nullMessageException.getMessage());
 		
-		// Test with empty message
 		NoSuchJsonElementException emptyMessageException = new NoSuchJsonElementException("");
 		assertEquals("", emptyMessageException.getMessage());
 	}
@@ -64,17 +62,14 @@ class NoSuchJsonElementExceptionTest {
 		assertEquals(message, exception.getMessage());
 		assertSame(cause, exception.getCause());
 		
-		// Test with null message and valid cause
 		NoSuchJsonElementException nullMessageException = new NoSuchJsonElementException(null, cause);
 		assertNull(nullMessageException.getMessage());
 		assertSame(cause, nullMessageException.getCause());
 		
-		// Test with valid message and null cause
 		NoSuchJsonElementException nullCauseException = new NoSuchJsonElementException(message, null);
 		assertEquals(message, nullCauseException.getMessage());
 		assertNull(nullCauseException.getCause());
 		
-		// Test with both null
 		NoSuchJsonElementException bothNullException = new NoSuchJsonElementException(null, null);
 		assertNull(bothNullException.getMessage());
 		assertNull(bothNullException.getCause());
@@ -85,19 +80,16 @@ class NoSuchJsonElementExceptionTest {
 		IllegalArgumentException cause = new IllegalArgumentException("Invalid key provided");
 		NoSuchJsonElementException exception = new NoSuchJsonElementException(cause);
 		
-		// Message should be derived from the cause
 		assertTrue(exception.getMessage().contains("IllegalArgumentException"));
 		assertTrue(exception.getMessage().contains("Invalid key provided"));
 		assertSame(cause, exception.getCause());
 		
-		// Test with null cause
 		NoSuchJsonElementException nullCauseException = new NoSuchJsonElementException((Throwable) null);
 		assertNull(nullCauseException.getCause());
 	}
 	
 	@Test
 	void constructorWithDifferentCauseTypes() {
-		// Test with different exception types as causes
 		NullPointerException nullCause = new NullPointerException("Key was null");
 		NoSuchJsonElementException nullException = new NoSuchJsonElementException("Null key error", nullCause);
 		assertSame(nullCause, nullException.getCause());
@@ -115,40 +107,29 @@ class NoSuchJsonElementExceptionTest {
 	void exceptionInheritance() {
 		NoSuchJsonElementException exception = new NoSuchJsonElementException();
 		
-		// Should be an instance of NoSuchElementException
 		assertInstanceOf(NoSuchElementException.class, exception);
-		
-		// Should also be an instance of RuntimeException
 		assertInstanceOf(RuntimeException.class, exception);
-		
-		// Should also be an instance of Exception
 		assertInstanceOf(Exception.class, exception);
-		
-		// Should also be an instance of Throwable
 		assertInstanceOf(Throwable.class, exception);
 	}
 	
 	@Test
 	void exceptionCanBeThrownAndCaught() {
-		// Test that the exception can be thrown and caught as itself
 		NoSuchJsonElementException thrownException = assertThrows(NoSuchJsonElementException.class, () -> {
 			throw new NoSuchJsonElementException("Element not found");
 		});
 		assertEquals("Element not found", thrownException.getMessage());
 		
-		// Test that it can be caught as its parent type
 		NoSuchElementException caughtAsParent = assertThrows(NoSuchElementException.class, () -> {
 			throw new NoSuchJsonElementException("Another element not found");
 		});
 		assertInstanceOf(NoSuchJsonElementException.class, caughtAsParent);
 		
-		// Test that it can be caught as RuntimeException
 		RuntimeException caughtAsRuntime = assertThrows(RuntimeException.class, () -> {
 			throw new NoSuchJsonElementException("Yet another element not found");
 		});
 		assertInstanceOf(NoSuchJsonElementException.class, caughtAsRuntime);
 		
-		// Test that it can be caught as Exception
 		Exception caughtAsException = assertThrows(Exception.class, () -> {
 			throw new NoSuchJsonElementException("Final element not found");
 		});
@@ -162,7 +143,6 @@ class NoSuchJsonElementExceptionTest {
 		
 		assertEquals(originalMessage, exception.getMessage());
 		
-		// Message should remain the same through multiple calls
 		assertEquals(originalMessage, exception.getMessage());
 		assertEquals(originalMessage, exception.getMessage());
 	}
@@ -174,7 +154,6 @@ class NoSuchJsonElementExceptionTest {
 		
 		assertSame(originalCause, exception.getCause());
 		
-		// Cause should remain the same through multiple calls
 		assertSame(originalCause, exception.getCause());
 		assertSame(originalCause, exception.getCause());
 	}
@@ -187,7 +166,6 @@ class NoSuchJsonElementExceptionTest {
 			assertNotNull(e.getStackTrace());
 			assertTrue(e.getStackTrace().length > 0);
 			
-			// The top of the stack trace should reference this test method
 			StackTraceElement topElement = e.getStackTrace()[0];
 			assertEquals("stackTracePreservation", topElement.getMethodName());
 		}
@@ -195,7 +173,6 @@ class NoSuchJsonElementExceptionTest {
 	
 	@Test
 	void causeChaining() {
-		// Test that cause chaining works correctly
 		IllegalArgumentException rootCause = new IllegalArgumentException("Invalid argument");
 		NullPointerException intermediateCause = new NullPointerException("Null pointer");
 		intermediateCause.initCause(rootCause);
@@ -205,14 +182,13 @@ class NoSuchJsonElementExceptionTest {
 		assertSame(intermediateCause, topException.getCause());
 		assertSame(rootCause, topException.getCause().getCause());
 		
-		// Test the full chain
 		Throwable current = topException;
 		int chainLength = 0;
 		while (current != null) {
 			chainLength++;
 			current = current.getCause();
 		}
-		assertEquals(3, chainLength); // topException -> intermediateCause -> rootCause
+		assertEquals(3, chainLength);
 	}
 	
 	@Test
@@ -232,38 +208,30 @@ class NoSuchJsonElementExceptionTest {
 	
 	@Test
 	void realWorldElementNotFoundScenarios() {
-		// Test scenarios that might occur in actual JSON element lookup
-		
-		// Scenario 1: Missing key in object
 		NoSuchJsonElementException missingKeyException = new NoSuchJsonElementException("Expected json object for key 'username', but found none");
 		assertTrue(missingKeyException.getMessage().contains("Expected json object"));
 		assertTrue(missingKeyException.getMessage().contains("key 'username'"));
 		assertTrue(missingKeyException.getMessage().contains("found none"));
 		
-		// Scenario 2: Missing array element
 		NoSuchJsonElementException missingArrayException = new NoSuchJsonElementException("Expected json array for key 'items', but found none");
 		assertTrue(missingArrayException.getMessage().contains("Expected json array"));
 		assertTrue(missingArrayException.getMessage().contains("key 'items'"));
 		
-		// Scenario 3: Missing primitive value
 		NoSuchJsonElementException missingPrimitiveException = new NoSuchJsonElementException("Expected json primitive for key 'count', but found none");
 		assertTrue(missingPrimitiveException.getMessage().contains("Expected json primitive"));
 		assertTrue(missingPrimitiveException.getMessage().contains("key 'count'"));
 		
-		// Scenario 4: Element exists but wrong type requested
 		NoSuchJsonElementException wrongTypeException = new NoSuchJsonElementException("Expected boolean value for key 'active', but element is not a boolean");
 		assertTrue(wrongTypeException.getMessage().contains("Expected boolean value"));
 		assertTrue(wrongTypeException.getMessage().contains("key 'active'"));
 		assertTrue(wrongTypeException.getMessage().contains("not a boolean"));
 		
-		// Scenario 5: Nested key not found
 		NoSuchJsonElementException nestedKeyException = new NoSuchJsonElementException("Expected element at path 'user.profile.email', but found none");
 		assertTrue(nestedKeyException.getMessage().contains("path 'user.profile.email'"));
 	}
 	
 	@Test
 	void messageFormatsForDifferentElementTypes() {
-		// Test common message formats used for different JSON element types
 		String[] commonMessages = {
 			"Expected json object for key 'user', but found none",
 			"Expected json array for key 'items', but found none",
@@ -286,13 +254,11 @@ class NoSuchJsonElementExceptionTest {
 	
 	@Test
 	void nullToleranceInConstructors() {
-		// All constructors should handle null inputs gracefully without throwing NPE
 		assertDoesNotThrow(() -> new NoSuchJsonElementException());
 		assertDoesNotThrow(() -> new NoSuchJsonElementException((String) null));
 		assertDoesNotThrow(() -> new NoSuchJsonElementException((Throwable) null));
 		assertDoesNotThrow(() -> new NoSuchJsonElementException(null, null));
 		
-		// Verify the null values are preserved
 		NoSuchJsonElementException nullMessageException = new NoSuchJsonElementException((String) null);
 		assertNull(nullMessageException.getMessage());
 		
@@ -306,42 +272,30 @@ class NoSuchJsonElementExceptionTest {
 	
 	@Test
 	void exceptionUsageInJsonAccess() {
-		// Simulate how this exception would be used in actual JSON element access scenarios
-		
-		// Example: trying to get a non-existent key from an object
 		assertThrows(NoSuchJsonElementException.class, () -> {
-			// This would be thrown when calling getAsString("nonexistent") on a JsonObject
 			throw new NoSuchJsonElementException("Expected string for key 'nonexistent', but found none");
 		});
 		
-		// Example: trying to get an element at an invalid array index
 		assertThrows(NoSuchJsonElementException.class, () -> {
-			// This would be thrown when accessing an out-of-bounds array index
 			throw new NoSuchJsonElementException("Array index 10 is out of bounds for array of size 5");
 		});
 		
-		// Example: trying to get a specific type that doesn't exist
 		assertThrows(NoSuchJsonElementException.class, () -> {
-			// This would be thrown when calling getAsJsonObject() on a key that has a primitive value
 			throw new NoSuchJsonElementException("Expected json object for key 'count', but found json primitive");
 		});
 	}
 	
 	@Test
 	void compatibilityWithNoSuchElementException() {
-		// Verify that NoSuchJsonElementException can be used wherever NoSuchElementException is expected
 		NoSuchJsonElementException jsonException = new NoSuchJsonElementException("JSON element not found");
 		
-		// Should be usable as NoSuchElementException
 		NoSuchElementException genericException = jsonException;
 		assertEquals("JSON element not found", genericException.getMessage());
 		
-		// Should work in contexts expecting NoSuchElementException
 		assertThrows(NoSuchElementException.class, () -> {
 			throw new NoSuchJsonElementException("Test");
 		});
 		
-		// Should maintain its specific type when caught as the parent type
 		try {
 			throw new NoSuchJsonElementException("Specific test");
 		} catch (NoSuchElementException e) {

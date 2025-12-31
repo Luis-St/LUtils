@@ -104,6 +104,7 @@ public class XmlReader implements AutoCloseable {
 	 */
 	public XmlReader(@NonNull InputProvider input, @NonNull XmlConfig config) {
 		Objects.requireNonNull(input, "Input must not be null");
+		
 		this.config = Objects.requireNonNull(config, "Xml config must not be null");
 		try {
 			String content = FileUtils.readString(input, config.charset());
@@ -140,6 +141,7 @@ public class XmlReader implements AutoCloseable {
 				}
 				return new XmlDeclaration(Version.of(1, 0));
 			}
+			
 			this.reader.skipWhitespaces();
 			StringReader declarationReader = new StringReader(this.reader.readScope(StringScope.ANGLE_BRACKETS));
 			String type = declarationReader.readUntil(' ');
@@ -184,6 +186,7 @@ public class XmlReader implements AutoCloseable {
 			if (!declarationAttributes.containsKey("version")) {
 				throw new XmlSyntaxException("Missing required attribute 'version' in xml declaration");
 			}
+			
 			Version version = Version.parse(declarationAttributes.get("version"));
 			Charset charset = declarationAttributes.containsKey("encoding") ? Charset.forName(declarationAttributes.get("encoding")) : this.config.charset();
 			boolean standalone = declarationAttributes.containsKey("standalone") && "yes".equalsIgnoreCase(declarationAttributes.get("standalone"));
@@ -213,6 +216,7 @@ public class XmlReader implements AutoCloseable {
 				this.readDeclaration();
 			}
 		}
+		
 		XmlElement element = this.readXmlElement(this.reader);
 		this.reader.skipWhitespaces();
 		return element;
@@ -230,6 +234,7 @@ public class XmlReader implements AutoCloseable {
 			xmlReader.skipWhitespaces();
 			StringReader elementReader = new StringReader(xmlReader.readScope(StringScope.ANGLE_BRACKETS));
 			elementReader.skip();
+			
 			if (!this.config.strict()) {
 				elementReader.skipWhitespaces();
 			}
@@ -241,13 +246,16 @@ public class XmlReader implements AutoCloseable {
 			if (!this.config.strict()) {
 				elementReader.skipWhitespaces();
 			}
+			
 			XmlAttributes attributes = new XmlAttributes();
 			if (elementReader.canRead() && elementReader.peek() != '/' && elementReader.peek() != '>') {
 				attributes = this.readXmlAttributes(elementReader);
+				
 				if (elementReader.peek() == '/') {
 					elementReader.skip();
 					this.skipWhitespacesConfigBased(elementReader);
 					char next = elementReader.read();
+					
 					if (next != '>') {
 						throw new XmlSyntaxException("Expected '>' after self-closing element, but found: '" + next + "'");
 					}
@@ -261,6 +269,7 @@ public class XmlReader implements AutoCloseable {
 				if (name.charAt(name.length() - 1) != '>') {
 					throw new XmlSyntaxException("Expected closing '>' after element name, but found: '" + name + "'");
 				}
+				
 				name = name.substring(0, name.length() - 1).stripTrailing();
 				if (name.isEmpty()) {
 					throw new XmlSyntaxException("Expected element name, but found empty element");
@@ -272,15 +281,19 @@ public class XmlReader implements AutoCloseable {
 			int closingIndex = this.getClosingElement(xmlReader, name);
 			String content = closingIndex > 0 ? xmlReader.read(closingIndex).stripIndent() : "";
 			String next = xmlReader.read(2);
+			
 			if (!"</".equals(next)) {
 				throw new XmlSyntaxException("Expected closing element for '" + name + "', but found: '" + next + "'");
 			}
+			
 			this.skipWhitespacesConfigBased(xmlReader);
 			xmlReader.readExpected(name, false);
 			this.skipWhitespacesConfigBased(xmlReader);
+			
 			if (xmlReader.peek() != '>') {
 				throw new XmlSyntaxException("Expected closing '>' after element name, but found: '" + xmlReader.peek() + "'");
 			}
+			
 			xmlReader.skip();
 			if (content.contains("<")) {
 				return new XmlContainer(name, attributes, this.readeXmlElements(new ScopedStringReader(content)));
@@ -303,9 +316,11 @@ public class XmlReader implements AutoCloseable {
 		attributeReader.skipWhitespaces();
 		while (attributeReader.peek() != '>' && attributeReader.peek() != '/') {
 			char[] terminators = { '=', ' ' };
+			
 			if (this.config.strict()) {
 				terminators = new char[] { '=' };
 			}
+			
 			String name = attributeReader.readUntilInclusive(terminators);
 			if (this.config.strict()) {
 				name = name.substring(0, name.length() - 1);
@@ -320,13 +335,16 @@ public class XmlReader implements AutoCloseable {
 					name = name.substring(0, name.length() - 1);
 				}
 			}
+			
 			if (!this.config.strict()) {
 				attributeReader.skipWhitespaces();
 			}
+			
 			String value = attributeReader.readQuotedString();
 			attributeReader.skipWhitespaces();
 			attributes.add(name.strip(), value);
 		}
+		
 		if (!attributes.isEmpty() && !this.config.allowAttributes()) {
 			throw new XmlSyntaxException("Attributes are not allowed in xml elements according to the xml config");
 		}
@@ -347,21 +365,26 @@ public class XmlReader implements AutoCloseable {
 		Deque<String> scope = new ArrayDeque<>();
 		while (reader.canRead()) {
 			reader.skipWhitespaces();
+			
 			if (reader.peek() == '\'' || reader.peek() == '"') {
 				reader.readQuotedString();
 			} else if (reader.peek() == '<') {
 				int resultIndex = reader.getIndex();
 				reader.skip();
+				
 				if (reader.peek() == '/') {
 					reader.skip();
 					this.skipWhitespacesConfigBased(reader);
+					
 					if (this.config.strict() && reader.peek() == ' ') {
 						throw new XmlSyntaxException("Expected element name, but found too many whitespaces after '/'");
 					}
+					
 					String elementName = reader.readUntil('>').strip();
 					if (elementName.isEmpty()) {
 						throw new XmlSyntaxException("Expected closing element for '" + name + "', but found none");
 					}
+					
 					if (scope.isEmpty() && elementName.equalsIgnoreCase(name)) {
 						return resultIndex;
 					} else if (!scope.isEmpty() && scope.peek().equalsIgnoreCase(elementName)) {
@@ -375,6 +398,7 @@ public class XmlReader implements AutoCloseable {
 					if (elementName.isBlank()) {
 						throw new XmlSyntaxException("Expected element name, but found none");
 					}
+					
 					if (elementName.charAt(elementName.length() - 1) == ' ') {
 						String remainingElement = reader.readUntil('>').stripTrailing();
 						if (remainingElement.charAt(remainingElement.length() - 1) == '/') {
