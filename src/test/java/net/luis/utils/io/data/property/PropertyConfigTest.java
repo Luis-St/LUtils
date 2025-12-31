@@ -22,6 +22,7 @@ import net.luis.utils.io.data.property.exception.PropertySyntaxException;
 import org.junit.jupiter.api.Test;
 
 import java.nio.charset.StandardCharsets;
+import java.util.Map;
 import java.util.Set;
 import java.util.regex.Pattern;
 
@@ -34,98 +35,590 @@ import static org.junit.jupiter.api.Assertions.*;
  */
 class PropertyConfigTest {
 	
-	private static final PropertyConfig DEFAULT_CONFIG = PropertyConfig.DEFAULT;
-	private static final PropertyConfig CUSTOM_CONFIG = new PropertyConfig(':', 0, Set.of(';'), Pattern.compile("^[a-z._]+$"), Pattern.compile("^[ a-zA-Z0-9._-]*$"), true, StandardCharsets.UTF_16);
+	@Test
+	void defaultConfiguration() {
+		PropertyConfig config = PropertyConfig.DEFAULT;
+		
+		assertEquals('=', config.separator());
+		assertEquals(1, config.alignment());
+		assertEquals(Set.of('#'), config.commentCharacters());
+		assertNotNull(config.keyPattern());
+		assertNotNull(config.valuePattern());
+		assertFalse(config.advancedParsing());
+		assertEquals(StandardCharsets.UTF_8, config.charset());
+		assertFalse(config.prettyPrint());
+		assertEquals("", config.indent());
+		assertEquals('[', config.arrayOpenChar());
+		assertEquals(']', config.arrayCloseChar());
+		assertEquals(',', config.arraySeparator());
+		assertTrue(config.allowMultiLineArrays());
+		assertFalse(config.parseTypedValues());
+		assertEquals(PropertyConfig.NullStyle.EMPTY, config.nullStyle());
+		assertFalse(config.enableWriteCompaction());
+		assertEquals(2, config.minCompactionGroupSize());
+		assertEquals(':', config.variableTypeSeparator());
+		assertEquals(":-", config.defaultValueMarker());
+		assertNull(config.customVariables());
+	}
 	
 	@Test
-	void constructor() {
-		assertThrows(NullPointerException.class, () -> new PropertyConfig('=', 1, null, Pattern.compile(""), Pattern.compile(""), false, StandardCharsets.UTF_8));
-		assertThrows(NullPointerException.class, () -> new PropertyConfig('=', 1, Set.of('#'), null, Pattern.compile(""), false, StandardCharsets.UTF_8));
-		assertThrows(NullPointerException.class, () -> new PropertyConfig('=', 1, Set.of('#'), Pattern.compile(""), null, false, StandardCharsets.UTF_8));
-		assertThrows(NullPointerException.class, () -> new PropertyConfig('=', 1, Set.of('#'), Pattern.compile(""), Pattern.compile(""), false, null));
+	void advancedConfiguration() {
+		PropertyConfig config = PropertyConfig.ADVANCED;
 		
-		assertThrows(IllegalArgumentException.class, () -> new PropertyConfig('\0', 1, Set.of('#'), Pattern.compile(""), Pattern.compile(""), false, StandardCharsets.UTF_8));
-		assertThrows(IllegalArgumentException.class, () -> new PropertyConfig('\t', 1, Set.of('#'), Pattern.compile(""), Pattern.compile(""), false, StandardCharsets.UTF_8));
-		assertThrows(IllegalArgumentException.class, () -> new PropertyConfig('#', 1, Set.of('#'), Pattern.compile(""), Pattern.compile(""), false, StandardCharsets.UTF_8));
+		assertEquals('=', config.separator());
+		assertEquals(1, config.alignment());
+		assertTrue(config.advancedParsing());
+		assertTrue(config.prettyPrint());
+		assertEquals("\t", config.indent());
+		assertTrue(config.allowMultiLineArrays());
+		assertTrue(config.parseTypedValues());
+		assertTrue(config.enableWriteCompaction());
+		assertEquals(2, config.minCompactionGroupSize());
+	}
+	
+	@Test
+	void constructorWithNullValues() {
+		assertThrows(NullPointerException.class, () -> new PropertyConfig(
+			'=', 1, null,
+			Pattern.compile(".*"), Pattern.compile(".*"),
+			false, StandardCharsets.UTF_8,
+			false, "",
+			'[', ']', ',',
+			true, false,
+			PropertyConfig.NullStyle.EMPTY,
+			false, 2,
+			':', ":-",
+			null
+		));
+		
+		assertThrows(NullPointerException.class, () -> new PropertyConfig(
+			'=', 1, Set.of('#'),
+			null, Pattern.compile(".*"),
+			false, StandardCharsets.UTF_8,
+			false, "",
+			'[', ']', ',',
+			true, false,
+			PropertyConfig.NullStyle.EMPTY,
+			false, 2,
+			':', ":-",
+			null
+		));
+		
+		assertThrows(NullPointerException.class, () -> new PropertyConfig(
+			'=', 1, Set.of('#'),
+			Pattern.compile(".*"), null,
+			false, StandardCharsets.UTF_8,
+			false, "",
+			'[', ']', ',',
+			true, false,
+			PropertyConfig.NullStyle.EMPTY,
+			false, 2,
+			':', ":-",
+			null
+		));
+		
+		assertThrows(NullPointerException.class, () -> new PropertyConfig(
+			'=', 1, Set.of('#'),
+			Pattern.compile(".*"), Pattern.compile(".*"),
+			false, null,
+			false, "",
+			'[', ']', ',',
+			true, false,
+			PropertyConfig.NullStyle.EMPTY,
+			false, 2,
+			':', ":-",
+			null
+		));
+		
+		assertThrows(NullPointerException.class, () -> new PropertyConfig(
+			'=', 1, Set.of('#'),
+			Pattern.compile(".*"), Pattern.compile(".*"),
+			false, StandardCharsets.UTF_8,
+			false, null,
+			'[', ']', ',',
+			true, false,
+			PropertyConfig.NullStyle.EMPTY,
+			false, 2,
+			':', ":-",
+			null
+		));
+		
+		assertThrows(NullPointerException.class, () -> new PropertyConfig(
+			'=', 1, Set.of('#'),
+			Pattern.compile(".*"), Pattern.compile(".*"),
+			false, StandardCharsets.UTF_8,
+			false, "",
+			'[', ']', ',',
+			true, false,
+			null,
+			false, 2,
+			':', ":-",
+			null
+		));
+		
+		assertThrows(NullPointerException.class, () -> new PropertyConfig(
+			'=', 1, Set.of('#'),
+			Pattern.compile(".*"), Pattern.compile(".*"),
+			false, StandardCharsets.UTF_8,
+			false, "",
+			'[', ']', ',',
+			true, false,
+			PropertyConfig.NullStyle.EMPTY,
+			false, 2,
+			':', null,
+			null
+		));
+	}
+	
+	@Test
+	void constructorWithInvalidSeparator() {
+		assertThrows(IllegalArgumentException.class, () -> new PropertyConfig(
+			'\0', 1, Set.of('#'),
+			Pattern.compile(".*"), Pattern.compile(".*"),
+			false, StandardCharsets.UTF_8,
+			false, "",
+			'[', ']', ',',
+			true, false,
+			PropertyConfig.NullStyle.EMPTY,
+			false, 2,
+			':', ":-",
+			null
+		));
+		
+		assertThrows(IllegalArgumentException.class, () -> new PropertyConfig(
+			' ', 1, Set.of('#'),
+			Pattern.compile(".*"), Pattern.compile(".*"),
+			false, StandardCharsets.UTF_8,
+			false, "",
+			'[', ']', ',',
+			true, false,
+			PropertyConfig.NullStyle.EMPTY,
+			false, 2,
+			':', ":-",
+			null
+		));
+		
+		assertThrows(IllegalArgumentException.class, () -> new PropertyConfig(
+			'\t', 1, Set.of('#'),
+			Pattern.compile(".*"), Pattern.compile(".*"),
+			false, StandardCharsets.UTF_8,
+			false, "",
+			'[', ']', ',',
+			true, false,
+			PropertyConfig.NullStyle.EMPTY,
+			false, 2,
+			':', ":-",
+			null
+		));
+		
+		assertThrows(IllegalArgumentException.class, () -> new PropertyConfig(
+			'\n', 1, Set.of('#'),
+			Pattern.compile(".*"), Pattern.compile(".*"),
+			false, StandardCharsets.UTF_8,
+			false, "",
+			'[', ']', ',',
+			true, false,
+			PropertyConfig.NullStyle.EMPTY,
+			false, 2,
+			':', ":-",
+			null
+		));
+	}
+	
+	@Test
+	void constructorWithSeparatorAsCommentCharacter() {
+		assertThrows(IllegalArgumentException.class, () -> new PropertyConfig(
+			'#', 1, Set.of('#'),
+			Pattern.compile(".*"), Pattern.compile(".*"),
+			false, StandardCharsets.UTF_8,
+			false, "",
+			'[', ']', ',',
+			true, false,
+			PropertyConfig.NullStyle.EMPTY,
+			false, 2,
+			':', ":-",
+			null
+		));
+	}
+	
+	@Test
+	void constructorWithNegativeAlignment() {
+		assertThrows(IllegalArgumentException.class, () -> new PropertyConfig(
+			'=', -1, Set.of('#'),
+			Pattern.compile(".*"), Pattern.compile(".*"),
+			false, StandardCharsets.UTF_8,
+			false, "",
+			'[', ']', ',',
+			true, false,
+			PropertyConfig.NullStyle.EMPTY,
+			false, 2,
+			':', ":-",
+			null
+		));
+	}
+	
+	@Test
+	void constructorWithInvalidCompactionGroupSize() {
+		assertThrows(IllegalArgumentException.class, () -> new PropertyConfig(
+			'=', 1, Set.of('#'),
+			Pattern.compile(".*"), Pattern.compile(".*"),
+			false, StandardCharsets.UTF_8,
+			false, "",
+			'[', ']', ',',
+			true, false,
+			PropertyConfig.NullStyle.EMPTY,
+			false, 1,
+			':', ":-",
+			null
+		));
+		
+		assertThrows(IllegalArgumentException.class, () -> new PropertyConfig(
+			'=', 1, Set.of('#'),
+			Pattern.compile(".*"), Pattern.compile(".*"),
+			false, StandardCharsets.UTF_8,
+			false, "",
+			'[', ']', ',',
+			true, false,
+			PropertyConfig.NullStyle.EMPTY,
+			false, 0,
+			':', ":-",
+			null
+		));
+	}
+	
+	@Test
+	void constructorWithInvalidArrayCharacters() {
+		assertThrows(IllegalArgumentException.class, () -> new PropertyConfig(
+			'=', 1, Set.of('#'),
+			Pattern.compile(".*"), Pattern.compile(".*"),
+			false, StandardCharsets.UTF_8,
+			false, "",
+			'[', '[', ',',
+			true, false,
+			PropertyConfig.NullStyle.EMPTY,
+			false, 2,
+			':', ":-",
+			null
+		));
+		
+		assertThrows(IllegalArgumentException.class, () -> new PropertyConfig(
+			'=', 1, Set.of('#'),
+			Pattern.compile(".*"), Pattern.compile(".*"),
+			false, StandardCharsets.UTF_8,
+			false, "",
+			'[', ']', '[',
+			true, false,
+			PropertyConfig.NullStyle.EMPTY,
+			false, 2,
+			':', ":-",
+			null
+		));
+		
+		assertThrows(IllegalArgumentException.class, () -> new PropertyConfig(
+			'=', 1, Set.of('#'),
+			Pattern.compile(".*"), Pattern.compile(".*"),
+			false, StandardCharsets.UTF_8,
+			false, "",
+			'[', ']', ']',
+			true, false,
+			PropertyConfig.NullStyle.EMPTY,
+			false, 2,
+			':', ":-",
+			null
+		));
+	}
+	
+	@Test
+	void constructorWithEmptyDefaultValueMarker() {
+		assertThrows(IllegalArgumentException.class, () -> new PropertyConfig(
+			'=', 1, Set.of('#'),
+			Pattern.compile(".*"), Pattern.compile(".*"),
+			false, StandardCharsets.UTF_8,
+			false, "",
+			'[', ']', ',',
+			true, false,
+			PropertyConfig.NullStyle.EMPTY,
+			false, 2,
+			':', "",
+			null
+		));
 	}
 	
 	@Test
 	void ensureKeyMatches() {
-		assertThrows(NullPointerException.class, () -> DEFAULT_CONFIG.ensureKeyMatches(null));
-		assertThrows(PropertySyntaxException.class, () -> DEFAULT_CONFIG.ensureKeyMatches(""));
-		assertThrows(PropertySyntaxException.class, () -> DEFAULT_CONFIG.ensureKeyMatches(" "));
-		assertDoesNotThrow(() -> DEFAULT_CONFIG.ensureKeyMatches("this.is-a_key.123_example"));
-		assertDoesNotThrow(() -> DEFAULT_CONFIG.ensureKeyMatches("THIS.IS-A_KEY.123_EXAMPLE"));
+		PropertyConfig config = PropertyConfig.DEFAULT;
 		
-		assertThrows(NullPointerException.class, () -> CUSTOM_CONFIG.ensureKeyMatches(null));
-		assertThrows(PropertySyntaxException.class, () -> CUSTOM_CONFIG.ensureKeyMatches(""));
-		assertThrows(PropertySyntaxException.class, () -> CUSTOM_CONFIG.ensureKeyMatches(" "));
-		assertThrows(PropertySyntaxException.class, () -> CUSTOM_CONFIG.ensureKeyMatches("this.is-a.key"));
-		assertThrows(PropertySyntaxException.class, () -> CUSTOM_CONFIG.ensureKeyMatches("this.123.key"));
-		assertDoesNotThrow(() -> CUSTOM_CONFIG.ensureKeyMatches("this.is.a_key.example"));
+		assertThrows(NullPointerException.class, () -> config.ensureKeyMatches(null));
+		assertThrows(PropertySyntaxException.class, () -> config.ensureKeyMatches(""));
+		assertThrows(PropertySyntaxException.class, () -> config.ensureKeyMatches("   "));
+		
+		assertDoesNotThrow(() -> config.ensureKeyMatches("validKey"));
+		assertDoesNotThrow(() -> config.ensureKeyMatches("key.with.dots"));
+		assertDoesNotThrow(() -> config.ensureKeyMatches("key_with_underscores"));
+		assertDoesNotThrow(() -> config.ensureKeyMatches("key-with-hyphens"));
+		assertDoesNotThrow(() -> config.ensureKeyMatches("key123"));
+	}
+	
+	@Test
+	void ensureKeyMatchesWithCustomPattern() {
+		PropertyConfig config = new PropertyConfig(
+			'=', 1, Set.of('#'),
+			Pattern.compile("^[a-z]+$"), Pattern.compile(".*"),
+			false, StandardCharsets.UTF_8,
+			false, "",
+			'[', ']', ',',
+			true, false,
+			PropertyConfig.NullStyle.EMPTY,
+			false, 2,
+			':', ":-",
+			null
+		);
+		
+		assertDoesNotThrow(() -> config.ensureKeyMatches("lowercase"));
+		assertThrows(PropertySyntaxException.class, () -> config.ensureKeyMatches("UPPERCASE"));
+		assertThrows(PropertySyntaxException.class, () -> config.ensureKeyMatches("mixed123"));
+		assertThrows(PropertySyntaxException.class, () -> config.ensureKeyMatches("with.dot"));
 	}
 	
 	@Test
 	void ensureValueMatches() {
-		assertThrows(NullPointerException.class, () -> DEFAULT_CONFIG.ensureValueMatches(null));
-		assertDoesNotThrow(() -> DEFAULT_CONFIG.ensureValueMatches(""));
-		assertDoesNotThrow(() -> DEFAULT_CONFIG.ensureValueMatches("abc"));
-		assertDoesNotThrow(() -> DEFAULT_CONFIG.ensureValueMatches("[10, 20, 30]"));
+		PropertyConfig config = PropertyConfig.DEFAULT;
 		
-		assertThrows(NullPointerException.class, () -> CUSTOM_CONFIG.ensureValueMatches(null));
-		assertThrows(PropertySyntaxException.class, () -> CUSTOM_CONFIG.ensureValueMatches("$abc"));
-		assertThrows(PropertySyntaxException.class, () -> CUSTOM_CONFIG.ensureValueMatches("[10, 20, 30]"));
-		assertDoesNotThrow(() -> CUSTOM_CONFIG.ensureValueMatches(""));
-		assertDoesNotThrow(() -> CUSTOM_CONFIG.ensureValueMatches("abc"));
+		assertThrows(NullPointerException.class, () -> config.ensureValueMatches(null));
+		
+		assertDoesNotThrow(() -> config.ensureValueMatches("any value"));
+		assertDoesNotThrow(() -> config.ensureValueMatches(""));
+		assertDoesNotThrow(() -> config.ensureValueMatches("   "));
+		assertDoesNotThrow(() -> config.ensureValueMatches("123"));
+		assertDoesNotThrow(() -> config.ensureValueMatches("special!@#$%"));
 	}
 	
 	@Test
-	void separator() {
-		assertEquals('=', DEFAULT_CONFIG.separator());
-		assertEquals(':', CUSTOM_CONFIG.separator());
+	void ensureValueMatchesWithCustomPattern() {
+		PropertyConfig config = new PropertyConfig(
+			'=', 1, Set.of('#'),
+			Pattern.compile(".*"), Pattern.compile("^[0-9]+$"),
+			false, StandardCharsets.UTF_8,
+			false, "",
+			'[', ']', ',',
+			true, false,
+			PropertyConfig.NullStyle.EMPTY,
+			false, 2,
+			':', ":-",
+			null
+		);
+		
+		assertDoesNotThrow(() -> config.ensureValueMatches("123"));
+		assertDoesNotThrow(() -> config.ensureValueMatches("0"));
+		assertThrows(PropertySyntaxException.class, () -> config.ensureValueMatches("abc"));
+		assertThrows(PropertySyntaxException.class, () -> config.ensureValueMatches("12.34"));
 	}
 	
 	@Test
-	void alignment() {
-		assertEquals(1, DEFAULT_CONFIG.alignment());
-		assertEquals(0, CUSTOM_CONFIG.alignment());
+	void getCustomVariables() {
+		PropertyConfig configWithNull = PropertyConfig.DEFAULT;
+		assertEquals(Map.of(), configWithNull.getCustomVariables());
+		
+		Map<String, String> customVars = Map.of("key1", "value1", "key2", "value2");
+		PropertyConfig configWithVars = new PropertyConfig(
+			'=', 1, Set.of('#'),
+			Pattern.compile(".*"), Pattern.compile(".*"),
+			false, StandardCharsets.UTF_8,
+			false, "",
+			'[', ']', ',',
+			true, false,
+			PropertyConfig.NullStyle.EMPTY,
+			false, 2,
+			':', ":-",
+			customVars
+		);
+		
+		Map<String, String> retrieved = configWithVars.getCustomVariables();
+		assertEquals(customVars, retrieved);
+		assertThrows(UnsupportedOperationException.class, () -> retrieved.put("new", "value"));
 	}
 	
 	@Test
-	void commentCharacters() {
-		assertNotNull(DEFAULT_CONFIG.commentCharacters());
-		assertEquals(Set.of('#'), DEFAULT_CONFIG.commentCharacters());
-		assertNotNull(CUSTOM_CONFIG.commentCharacters());
-		assertEquals(Set.of(';'), CUSTOM_CONFIG.commentCharacters());
+	void nullStyleEnumValues() {
+		assertEquals(3, PropertyConfig.NullStyle.values().length);
+		assertEquals(PropertyConfig.NullStyle.EMPTY, PropertyConfig.NullStyle.valueOf("EMPTY"));
+		assertEquals(PropertyConfig.NullStyle.NULL_STRING, PropertyConfig.NullStyle.valueOf("NULL_STRING"));
+		assertEquals(PropertyConfig.NullStyle.TILDE, PropertyConfig.NullStyle.valueOf("TILDE"));
 	}
 	
 	@Test
-	void keyPattern() {
-		assertNotNull(DEFAULT_CONFIG.keyPattern());
-		assertEquals("^[a-zA-Z0-9._-]+$", DEFAULT_CONFIG.keyPattern().pattern());
-		assertNotNull(CUSTOM_CONFIG.keyPattern());
-		assertEquals("^[a-z._]+$", CUSTOM_CONFIG.keyPattern().pattern());
+	void recordEquality() {
+		PropertyConfig config1 = new PropertyConfig(
+			'=', 1, Set.of('#'),
+			Pattern.compile(".*"), Pattern.compile(".*"),
+			false, StandardCharsets.UTF_8,
+			false, "",
+			'[', ']', ',',
+			true, false,
+			PropertyConfig.NullStyle.EMPTY,
+			false, 2,
+			':', ":-",
+			null
+		);
+		
+		PropertyConfig config2 = new PropertyConfig(
+			'=', 1, Set.of('#'),
+			Pattern.compile(".*"), Pattern.compile(".*"),
+			false, StandardCharsets.UTF_8,
+			false, "",
+			'[', ']', ',',
+			true, false,
+			PropertyConfig.NullStyle.EMPTY,
+			false, 2,
+			':', ":-",
+			null
+		);
+		
+		PropertyConfig config3 = new PropertyConfig(
+			':', 1, Set.of('#'),
+			Pattern.compile(".*"), Pattern.compile(".*"),
+			false, StandardCharsets.UTF_8,
+			false, "",
+			'[', ']', ',',
+			true, false,
+			PropertyConfig.NullStyle.EMPTY,
+			false, 2,
+			':', ":-",
+			null
+		);
+		
+		assertNotEquals(config1, config3);
 	}
 	
 	@Test
-	void valuePattern() {
-		assertNotNull(DEFAULT_CONFIG.valuePattern());
-		assertEquals(".*", DEFAULT_CONFIG.valuePattern().pattern());
-		assertNotNull(CUSTOM_CONFIG.valuePattern());
-		assertEquals("^[ a-zA-Z0-9._-]*$", CUSTOM_CONFIG.valuePattern().pattern());
+	void customConfiguration() {
+		PropertyConfig config = new PropertyConfig(
+			':',
+			2,
+			Set.of('#', ';', '!'),
+			Pattern.compile("^\\w+$"),
+			Pattern.compile("^[^=]+$"),
+			true,
+			StandardCharsets.ISO_8859_1,
+			true,
+			"    ",
+			'(',
+			')',
+			';',
+			false,
+			true,
+			PropertyConfig.NullStyle.TILDE,
+			true,
+			3,
+			'|',
+			"||",
+			Map.of("ENV", "production")
+		);
+		
+		assertEquals(':', config.separator());
+		assertEquals(2, config.alignment());
+		assertEquals(Set.of('#', ';', '!'), config.commentCharacters());
+		assertTrue(config.advancedParsing());
+		assertEquals(StandardCharsets.ISO_8859_1, config.charset());
+		assertTrue(config.prettyPrint());
+		assertEquals("    ", config.indent());
+		assertEquals('(', config.arrayOpenChar());
+		assertEquals(')', config.arrayCloseChar());
+		assertEquals(';', config.arraySeparator());
+		assertFalse(config.allowMultiLineArrays());
+		assertTrue(config.parseTypedValues());
+		assertEquals(PropertyConfig.NullStyle.TILDE, config.nullStyle());
+		assertTrue(config.enableWriteCompaction());
+		assertEquals(3, config.minCompactionGroupSize());
+		assertEquals('|', config.variableTypeSeparator());
+		assertEquals("||", config.defaultValueMarker());
+		assertEquals(Map.of("ENV", "production"), config.getCustomVariables());
 	}
 	
 	@Test
-	void advancedParsing() {
-		assertFalse(DEFAULT_CONFIG.advancedParsing());
-		assertTrue(CUSTOM_CONFIG.advancedParsing());
+	void validSeparators() {
+		assertDoesNotThrow(() -> new PropertyConfig(
+			':', 1, Set.of('#'),
+			Pattern.compile(".*"), Pattern.compile(".*"),
+			false, StandardCharsets.UTF_8,
+			false, "",
+			'[', ']', ',',
+			true, false,
+			PropertyConfig.NullStyle.EMPTY,
+			false, 2,
+			':', ":-",
+			null
+		));
+		
+		assertDoesNotThrow(() -> new PropertyConfig(
+			'|', 1, Set.of('#'),
+			Pattern.compile(".*"), Pattern.compile(".*"),
+			false, StandardCharsets.UTF_8,
+			false, "",
+			'[', ']', ',',
+			true, false,
+			PropertyConfig.NullStyle.EMPTY,
+			false, 2,
+			':', ":-",
+			null
+		));
+		
+		assertDoesNotThrow(() -> new PropertyConfig(
+			'-', 1, Set.of('#'),
+			Pattern.compile(".*"), Pattern.compile(".*"),
+			false, StandardCharsets.UTF_8,
+			false, "",
+			'[', ']', ',',
+			true, false,
+			PropertyConfig.NullStyle.EMPTY,
+			false, 2,
+			':', ":-",
+			null
+		));
 	}
 	
 	@Test
-	void charset() {
-		assertNotNull(DEFAULT_CONFIG.charset());
-		assertEquals(StandardCharsets.UTF_8, DEFAULT_CONFIG.charset());
-		assertNotNull(CUSTOM_CONFIG.charset());
-		assertEquals(StandardCharsets.UTF_16, CUSTOM_CONFIG.charset());
+	void zeroAlignment() {
+		assertDoesNotThrow(() -> new PropertyConfig(
+			'=', 0, Set.of('#'),
+			Pattern.compile(".*"), Pattern.compile(".*"),
+			false, StandardCharsets.UTF_8,
+			false, "",
+			'[', ']', ',',
+			true, false,
+			PropertyConfig.NullStyle.EMPTY,
+			false, 2,
+			':', ":-",
+			null
+		));
+	}
+	
+	@Test
+	void edgeCaseCompactionGroupSize() {
+		assertDoesNotThrow(() -> new PropertyConfig(
+			'=', 1, Set.of('#'),
+			Pattern.compile(".*"), Pattern.compile(".*"),
+			false, StandardCharsets.UTF_8,
+			false, "",
+			'[', ']', ',',
+			true, false,
+			PropertyConfig.NullStyle.EMPTY,
+			false, 2,
+			':', ":-",
+			null
+		));
+		
+		assertDoesNotThrow(() -> new PropertyConfig(
+			'=', 1, Set.of('#'),
+			Pattern.compile(".*"), Pattern.compile(".*"),
+			false, StandardCharsets.UTF_8,
+			false, "",
+			'[', ']', ',',
+			true, false,
+			PropertyConfig.NullStyle.EMPTY,
+			false, 100,
+			':', ":-",
+			null
+		));
 	}
 }
