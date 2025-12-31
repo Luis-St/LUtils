@@ -117,19 +117,12 @@ public class JsonPrimitive implements JsonElement {
 		throw new IllegalStateException("Unknown json primitive type");
 	}
 	
-	/**
-	 * Checks if this json primitive is a json boolean.<br>
-	 * @return True if this json primitive is a json boolean, false otherwise
-	 */
+	@Override
 	public boolean isJsonBoolean() {
 		return this.value instanceof Boolean;
 	}
 	
-	/**
-	 * Converts this json primitive to a boolean.<br>
-	 * @return This json primitive as a boolean
-	 * @throws JsonTypeException If this json primitive is not a json boolean
-	 */
+	@Override
 	public boolean getAsBoolean() {
 		if (this.isJsonBoolean()) {
 			return (boolean) this.value;
@@ -137,19 +130,12 @@ public class JsonPrimitive implements JsonElement {
 		throw new JsonTypeException("Expected a json boolean, but found: " + this.getName());
 	}
 	
-	/**
-	 * Checks if this json primitive is a json number.<br>
-	 * @return True if this json primitive is a json number, false otherwise
-	 */
+	@Override
 	public boolean isJsonNumber() {
 		return this.value instanceof Number;
 	}
 	
-	/**
-	 * Converts this json primitive to a number.<br>
-	 * @return This json primitive as a number
-	 * @throws JsonTypeException If this json primitive is not a json number
-	 */
+	@Override
 	public @NonNull Number getAsNumber() {
 		if (this.isJsonNumber()) {
 			return (Number) this.value;
@@ -157,19 +143,12 @@ public class JsonPrimitive implements JsonElement {
 		throw new JsonTypeException("Expected a json number, but found: " + this.getName());
 	}
 	
-	/**
-	 * Checks if this json primitive is a json byte.<br>
-	 * @return True if this json primitive is a json byte, false otherwise
-	 */
+	@Override
 	public boolean isJsonByte() {
 		return this.value instanceof Byte;
 	}
 	
-	/**
-	 * Converts this json primitive to a byte.<br>
-	 * @return This json primitive as a byte
-	 * @throws JsonTypeException If this json primitive is not a json byte
-	 */
+	@Override
 	public byte getAsByte() {
 		if (this.isJsonByte()) {
 			return (byte) this.value;
@@ -179,19 +158,12 @@ public class JsonPrimitive implements JsonElement {
 		throw new JsonTypeException("Expected a json byte, but found: " + this.getName());
 	}
 	
-	/**
-	 * Checks if this json primitive is a json short.<br>
-	 * @return True if this json primitive is a json short, false otherwise
-	 */
+	@Override
 	public boolean isJsonShort() {
 		return this.value instanceof Short;
 	}
 	
-	/**
-	 * Converts this json primitive to a short.<br>
-	 * @return This json primitive as a short
-	 * @throws JsonTypeException If this json primitive is not a json short
-	 */
+	@Override
 	public short getAsShort() {
 		if (this.isJsonShort()) {
 			return (short) this.value;
@@ -201,19 +173,12 @@ public class JsonPrimitive implements JsonElement {
 		throw new JsonTypeException("Expected a json short, but found: " + this.getName());
 	}
 	
-	/**
-	 * Checks if this json primitive is a json integer.<br>
-	 * @return True if this json primitive is a json integer, false otherwise
-	 */
+	@Override
 	public boolean isJsonInteger() {
 		return this.value instanceof Integer;
 	}
 	
-	/**
-	 * Converts this json primitive to an integer.<br>
-	 * @return This json primitive as an integer
-	 * @throws JsonTypeException If this json primitive is not a json integer
-	 */
+	@Override
 	public int getAsInteger() {
 		if (this.isJsonInteger()) {
 			return (int) this.value;
@@ -223,19 +188,12 @@ public class JsonPrimitive implements JsonElement {
 		throw new JsonTypeException("Expected a json integer, but found: " + this.getName());
 	}
 	
-	/**
-	 * Checks if this json primitive is a json long.<br>
-	 * @return True if this json primitive is a json long, false otherwise
-	 */
+	@Override
 	public boolean isJsonLong() {
 		return this.value instanceof Long;
 	}
 	
-	/**
-	 * Converts this json primitive to a long.<br>
-	 * @return This json primitive as a long
-	 * @throws JsonTypeException If this json primitive is not a json long
-	 */
+	@Override
 	public long getAsLong() {
 		if (this.isJsonLong()) {
 			return (long) this.value;
@@ -245,19 +203,13 @@ public class JsonPrimitive implements JsonElement {
 		throw new JsonTypeException("Expected a json long, but found: " + this.getName());
 	}
 	
-	/**
-	 * Checks if this json primitive is a json float.<br>
-	 * @return True if this json primitive is a json float, false otherwise
-	 */
+	@Override
 	public boolean isJsonFloat() {
 		return this.value instanceof Float;
 	}
 	
-	/**
-	 * Converts this json primitive to a float.<br>
-	 * @return This json primitive as a float
-	 * @throws JsonTypeException If this json primitive is not a json float
-	 */
+
+	@Override
 	public float getAsFloat() {
 		if (this.isJsonFloat()) {
 			return (float) this.value;
@@ -267,19 +219,12 @@ public class JsonPrimitive implements JsonElement {
 		throw new JsonTypeException("Expected a json float, but found: " + this.getName());
 	}
 	
-	/**
-	 * Checks if this json primitive is a json double.<br>
-	 * @return True if this json primitive is a json double, false otherwise
-	 */
+	@Override
 	public boolean isJsonDouble() {
 		return this.value instanceof Double;
 	}
 	
-	/**
-	 * Converts this json primitive to a double.<br>
-	 * @return This json primitive as a double
-	 * @throws JsonTypeException If this json primitive is not a json double
-	 */
+	@Override
 	public double getAsDouble() {
 		if (this.isJsonDouble()) {
 			return (double) this.value;
@@ -289,19 +234,13 @@ public class JsonPrimitive implements JsonElement {
 		throw new JsonTypeException("Expected a json double, but found: " + this.getName());
 	}
 	
-	/**
-	 * Checks if this json primitive is a json string.<br>
-	 * @return True if this json primitive is a json string, false otherwise
-	 */
+	@Override
 	public boolean isJsonString() {
 		return this.value instanceof String;
 	}
 	
-	/**
-	 * Converts this json primitive to a string.<br>
-	 * @return This json primitive as a string
-	 * @throws JsonTypeException If this json primitive is not a json string
-	 */
+
+	@Override
 	public @NonNull String getAsString() {
 		if (this.isJsonString()) {
 			return (String) this.value;
