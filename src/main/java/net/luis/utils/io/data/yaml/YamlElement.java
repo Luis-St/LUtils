@@ -24,8 +24,7 @@ import org.jspecify.annotations.NonNull;
 
 /**
  * A generic class representing a yaml element.<br>
- * A yaml element can be a yaml mapping, a yaml sequence, a yaml scalar, a yaml null,
- * a yaml anchor, or a yaml alias.<br>
+ * A yaml element can be a yaml mapping, a yaml sequence, a yaml scalar, a yaml null, a yaml anchor, or a yaml alias.<br>
  *
  * @author Luis-St
  */
@@ -42,8 +41,6 @@ public interface YamlElement {
 	private @NonNull String getName() {
 		return StringUtils.getReadableString(this.getClass().getSimpleName(), Character::isUpperCase).toLowerCase();
 	}
-	
-	//region Type checks
 	
 	/**
 	 * Checks if this yaml element is a yaml null.<br>
@@ -92,9 +89,6 @@ public interface YamlElement {
 	default boolean isYamlAlias() {
 		return this instanceof YamlAlias;
 	}
-	//endregion
-	
-	//region Type conversions
 	
 	/**
 	 * Converts this yaml element to a yaml mapping.<br>
@@ -107,7 +101,7 @@ public interface YamlElement {
 		if (this instanceof YamlMapping mapping) {
 			return mapping;
 		}
-		if (this instanceof YamlAnchor anchor && anchor.element() instanceof YamlMapping mapping) {
+		if (this instanceof YamlAnchor anchor && anchor.getElement() instanceof YamlMapping mapping) {
 			return mapping;
 		}
 		throw new YamlTypeException("Expected a yaml mapping, but found: " + this.getName());
@@ -124,7 +118,7 @@ public interface YamlElement {
 		if (this instanceof YamlSequence sequence) {
 			return sequence;
 		}
-		if (this instanceof YamlAnchor anchor && anchor.element() instanceof YamlSequence sequence) {
+		if (this instanceof YamlAnchor anchor && anchor.getElement() instanceof YamlSequence sequence) {
 			return sequence;
 		}
 		throw new YamlTypeException("Expected a yaml sequence, but found: " + this.getName());
@@ -141,7 +135,7 @@ public interface YamlElement {
 		if (this instanceof YamlScalar scalar) {
 			return scalar;
 		}
-		if (this instanceof YamlAnchor anchor && anchor.element() instanceof YamlScalar scalar) {
+		if (this instanceof YamlAnchor anchor && anchor.getElement() instanceof YamlScalar scalar) {
 			return scalar;
 		}
 		throw new YamlTypeException("Expected a yaml scalar, but found: " + this.getName());
@@ -172,7 +166,6 @@ public interface YamlElement {
 		}
 		throw new YamlTypeException("Expected a yaml alias, but found: " + this.getName());
 	}
-	//endregion
 	
 	/**
 	 * Unwraps this element if it's an anchor, otherwise returns itself.<br>

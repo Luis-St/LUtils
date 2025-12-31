@@ -261,10 +261,8 @@ class YamlMappingTest {
 		assertEquals(new YamlScalar("oldValue"), previous);
 		assertEquals(new YamlScalar("newValue"), mapping.get("key"));
 
-		// Replace non-existent key
 		assertNull(mapping.replace("nonexistent", new YamlScalar("value")));
 
-		// Replace with null
 		mapping.replace("key", null);
 		assertEquals(YamlNull.INSTANCE, mapping.get("key"));
 	}
@@ -274,12 +272,10 @@ class YamlMappingTest {
 		YamlMapping mapping = new YamlMapping();
 		mapping.add("key", "oldValue");
 
-		// Successful replace
 		boolean replaced = mapping.replace("key", new YamlScalar("oldValue"), new YamlScalar("newValue"));
 		assertTrue(replaced);
 		assertEquals(new YamlScalar("newValue"), mapping.get("key"));
 
-		// Failed replace (old value doesn't match)
 		replaced = mapping.replace("key", new YamlScalar("wrongValue"), new YamlScalar("anotherValue"));
 		assertFalse(replaced);
 		assertEquals(new YamlScalar("newValue"), mapping.get("key"));

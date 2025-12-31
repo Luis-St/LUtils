@@ -56,8 +56,6 @@ public class YamlSequence implements YamlElement, Iterable<YamlElement> {
 		this.elements.addAll(Objects.requireNonNull(elements, "Yaml elements must not be null"));
 	}
 	
-	//region Query operations
-	
 	/**
 	 * Returns the number of elements in this yaml sequence.<br>
 	 * @return The size of this yaml sequence
@@ -108,9 +106,6 @@ public class YamlSequence implements YamlElement, Iterable<YamlElement> {
 	public @NonNull @Unmodifiable List<YamlElement> getElements() {
 		return List.copyOf(this.elements);
 	}
-	//endregion
-	
-	//region Set operations
 	
 	/**
 	 * Sets the element at the given index to the given yaml element.<br>
@@ -174,9 +169,6 @@ public class YamlSequence implements YamlElement, Iterable<YamlElement> {
 	public @NonNull YamlElement set(int index, @Nullable Number value) {
 		return this.set(index, value == null ? null : new YamlScalar(value));
 	}
-	//endregion
-	
-	//region Add operations
 	
 	/**
 	 * Adds the given yaml element to this yaml sequence.<br>
@@ -248,9 +240,6 @@ public class YamlSequence implements YamlElement, Iterable<YamlElement> {
 	public void addAll(@NonNull List<? extends YamlElement> elements) {
 		this.elements.addAll(Objects.requireNonNull(elements, "Yaml elements must not be null"));
 	}
-	//endregion
-	
-	//region Remove operations
 	
 	/**
 	 * Removes the element at the given index from this yaml sequence.<br>
@@ -285,9 +274,6 @@ public class YamlSequence implements YamlElement, Iterable<YamlElement> {
 	public void clear() {
 		this.elements.clear();
 	}
-	//endregion
-	
-	//region Get operations
 	
 	/**
 	 * Gets the yaml element at the given index from this yaml sequence.<br>
@@ -440,7 +426,6 @@ public class YamlSequence implements YamlElement, Iterable<YamlElement> {
 	public double getAsDouble(int index) {
 		return this.getAsYamlScalar(index).getAsDouble();
 	}
-	//endregion
 	
 	//region Object overrides
 	@Override

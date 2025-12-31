@@ -298,8 +298,7 @@ class YamlWriterTest {
 		writer.writeYaml(new YamlScalar("test"));
 		writer.close();
 
-		// Writer should be closed - subsequent operations should fail or be no-ops
-		assertDoesNotThrow(writer::close); // Closing again should not throw
+		assertDoesNotThrow(writer::close);
 	}
 
 	@Test
@@ -319,12 +318,12 @@ class YamlWriterTest {
 
 		@Override
 		public void write(int b) {
-			builder.append((char) b);
+			this.builder.append((char) b);
 		}
 
 		@Override
 		public String toString() {
-			return builder.toString();
+			return this.builder.toString();
 		}
 	}
 
@@ -332,20 +331,18 @@ class YamlWriterTest {
 	 * Helper class to track flush calls.
 	 */
 	private static class FlushTrackingOutputStream extends OutputStream {
-		private boolean flushed = false;
+		private boolean flushed;
 
 		@Override
-		public void write(int b) {
-			// No-op
-		}
+		public void write(int b) {}
 
 		@Override
 		public void flush() {
-			flushed = true;
+			this.flushed = true;
 		}
 
 		public boolean wasFlushed() {
-			return flushed;
+			return this.flushed;
 		}
 	}
 }

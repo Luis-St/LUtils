@@ -58,7 +58,7 @@ public class YamlMapping implements YamlElement {
 		this.elements.putAll(Objects.requireNonNull(elements, "Yaml elements must not be null"));
 	}
 	
-	//region Query operations
+	//region Internal methods
 	
 	/**
 	 * Formats a key for YAML output, quoting if necessary.<br>
@@ -122,6 +122,7 @@ public class YamlMapping implements YamlElement {
 		}
 		return builder.toString();
 	}
+	//endregion
 	
 	/**
 	 * Returns the number of elements in this yaml mapping.<br>
@@ -166,9 +167,6 @@ public class YamlMapping implements YamlElement {
 	public @NonNull Set<String> keySet() {
 		return this.elements.keySet();
 	}
-	//endregion
-	
-	//region Add operations
 	
 	/**
 	 * Returns the collection of values in this yaml mapping.<br>
@@ -239,9 +237,6 @@ public class YamlMapping implements YamlElement {
 	public @Nullable YamlElement add(@NonNull String key, boolean value) {
 		return this.add(key, new YamlScalar(value));
 	}
-	//endregion
-	
-	//region Remove operations
 	
 	/**
 	 * Adds the given number with the given key to this yaml mapping.<br>
@@ -267,9 +262,6 @@ public class YamlMapping implements YamlElement {
 	public void addAll(@NonNull YamlMapping mapping) {
 		this.elements.putAll(Objects.requireNonNull(mapping, "Yaml mapping must not be null").elements);
 	}
-	//endregion
-	
-	//region Replace operations
 	
 	/**
 	 * Adds all elements from the given map to this yaml mapping.<br>
@@ -290,9 +282,6 @@ public class YamlMapping implements YamlElement {
 	public @Nullable YamlElement remove(@Nullable String key) {
 		return this.elements.remove(key);
 	}
-	//endregion
-	
-	//region Get operations
 	
 	/**
 	 * Removes all element pairs from this yaml mapping.<br>
@@ -449,7 +438,6 @@ public class YamlMapping implements YamlElement {
 	public @NonNull Number getAsNumber(@NonNull String key) {
 		return this.getAsYamlScalar(key).getAsNumber();
 	}
-	//endregion
 	
 	/**
 	 * Gets the element with the given key from this yaml mapping as an integer.<br>

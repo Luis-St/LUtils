@@ -362,7 +362,6 @@ class YamlScalarTest {
 
 	@Test
 	void toStringWithQuoting() {
-		// Strings that need quoting
 		assertEquals("\"#comment\"", new YamlScalar("#comment").toString());
 		assertEquals("\"&anchor\"", new YamlScalar("&anchor").toString());
 		assertEquals("\"*alias\"", new YamlScalar("*alias").toString());
@@ -376,7 +375,6 @@ class YamlScalarTest {
 
 	@Test
 	void toStringWithoutQuoting() {
-		// Strings that don't need quoting
 		assertEquals("simple", new YamlScalar("simple").toString());
 		assertEquals("hello_world", new YamlScalar("hello_world").toString());
 		assertEquals("CamelCase", new YamlScalar("CamelCase").toString());
@@ -434,13 +432,11 @@ class YamlScalarTest {
 		YamlScalar floatValue = new YamlScalar(3.14f);
 		YamlScalar doubleValue = new YamlScalar(3.14);
 
-		// Float to integral types (truncates)
 		assertEquals((byte) 3, floatValue.getAsByte());
 		assertEquals((short) 3, floatValue.getAsShort());
 		assertEquals(3, floatValue.getAsInteger());
 		assertEquals(3L, floatValue.getAsLong());
 
-		// Double to integral types (truncates)
 		assertEquals((byte) 3, doubleValue.getAsByte());
 		assertEquals((short) 3, doubleValue.getAsShort());
 		assertEquals(3, doubleValue.getAsInteger());

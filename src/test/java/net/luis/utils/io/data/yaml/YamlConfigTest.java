@@ -57,7 +57,7 @@ class YamlConfigTest {
 		assertTrue(config.useBlockStyle());
 		assertFalse(config.useDocumentMarkers());
 		assertEquals(YamlConfig.NullStyle.NULL, config.nullStyle());
-		assertFalse(config.resolveAnchors()); // Key difference
+		assertFalse(config.resolveAnchors());
 		assertFalse(config.allowDuplicateKeys());
 		assertEquals(StandardCharsets.UTF_8, config.charset());
 	}
@@ -230,9 +230,8 @@ class YamlConfigTest {
 	void recordCopyFunctionality() {
 		YamlConfig original = YamlConfig.DEFAULT;
 
-		// Create a modified copy by creating a new instance with different values
 		YamlConfig modified = new YamlConfig(
-			false, // changed
+			false,
 			original.prettyPrint(),
 			original.indent(),
 			original.useBlockStyle(),

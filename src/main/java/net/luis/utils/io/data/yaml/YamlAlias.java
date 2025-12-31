@@ -44,6 +44,7 @@ public class YamlAlias implements YamlElement {
 	 */
 	public YamlAlias(@NonNull String anchorName) {
 		this.anchorName = Objects.requireNonNull(anchorName, "Anchor name must not be null");
+		
 		if (anchorName.isBlank()) {
 			throw new IllegalArgumentException("Anchor name must not be blank");
 		}
@@ -73,7 +74,7 @@ public class YamlAlias implements YamlElement {
 	 * Returns the name of the referenced anchor.<br>
 	 * @return The anchor name without the '*' prefix
 	 */
-	public @NonNull String anchorName() {
+	public @NonNull String getAnchorName() {
 		return this.anchorName;
 	}
 

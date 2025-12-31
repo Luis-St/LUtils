@@ -24,7 +24,6 @@ import net.luis.utils.io.reader.StringReader;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
-import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.*;
 
@@ -56,7 +55,7 @@ public class YamlReader implements AutoCloseable {
 	/**
 	 * The current line index.<br>
 	 */
-	private int lineIndex = 0;
+	private int lineIndex;
 	
 	/**
 	 * Constructs a new yaml reader with the given string and the default configuration.<br>
@@ -129,11 +128,10 @@ public class YamlReader implements AutoCloseable {
 		this.anchors.clear();
 		this.lineIndex = 0;
 		
-		// Skip document start marker if present
 		this.skipEmptyLinesAndComments();
 		if (this.lineIndex < this.lines.size()) {
 			String line = this.lines.get(this.lineIndex).trim();
-			if (line.equals("---")) {
+			if ("---".equals(line)) {
 				this.lineIndex++;
 			}
 		}
@@ -145,11 +143,10 @@ public class YamlReader implements AutoCloseable {
 		
 		YamlElement element = this.readElement(0);
 		
-		// Skip document end marker if present
 		this.skipEmptyLinesAndComments();
 		if (this.lineIndex < this.lines.size()) {
 			String line = this.lines.get(this.lineIndex).trim();
-			if (line.equals("...")) {
+			if ("...".equals(line)) {
 				this.lineIndex++;
 			}
 		}
@@ -161,7 +158,6 @@ public class YamlReader implements AutoCloseable {
 				throw new YamlSyntaxException("Invalid yaml, expected end of input but got: '" + remaining + "'");
 			}
 		}
-		
 		return element;
 	}
 	
@@ -193,7 +189,7 @@ public class YamlReader implements AutoCloseable {
 			} else if (line.charAt(i) == '\t') {
 				throw new YamlSyntaxException("Tabs are not allowed for indentation in yaml");
 			} else {
-				break;
+				return indent;
 			}
 		}
 		return indent;
@@ -214,7 +210,6 @@ public class YamlReader implements AutoCloseable {
 		String line = this.lines.get(this.lineIndex);
 		String trimmed = line.trim();
 		
-		// Check for flow style collections
 		if (trimmed.startsWith("{")) {
 			return this.readFlowMapping();
 		}
@@ -222,7 +217,6 @@ public class YamlReader implements AutoCloseable {
 			return this.readFlowSequence();
 		}
 		
-		// Check for alias
 		if (trimmed.startsWith("*")) {
 			this.lineIndex++;
 			String anchorName = this.extractAnchorName(trimmed.substring(1));
@@ -237,28 +231,26 @@ public class YamlReader implements AutoCloseable {
 			return alias;
 		}
 		
-		// Check for anchor definition
 		String anchorName = null;
 		if (trimmed.startsWith("&")) {
 			int spaceIndex = trimmed.indexOf(' ');
 			if (spaceIndex == -1) {
-				// Anchor on its own line - element follows
 				anchorName = this.extractAnchorName(trimmed.substring(1));
+				
 				this.lineIndex++;
 				YamlElement element = this.readElement(expectedIndent);
 				YamlAnchor anchor = new YamlAnchor(anchorName, element);
+				
 				this.anchors.put(anchorName, element);
 				return this.config.resolveAnchors() ? element : anchor;
 			} else {
 				anchorName = this.extractAnchorName(trimmed.substring(1, spaceIndex));
 				trimmed = trimmed.substring(spaceIndex + 1).trim();
-				// Update the line for further processing
 				line = " ".repeat(this.getIndent(line)) + trimmed;
 			}
 		}
 		
-		// Check for block sequence (- item)
-		if (trimmed.startsWith("- ") || trimmed.equals("-")) {
+		if (trimmed.startsWith("- ") || "-".equals(trimmed)) {
 			YamlElement element = this.readBlockSequence(expectedIndent);
 			if (anchorName != null) {
 				this.anchors.put(anchorName, element);
@@ -267,7 +259,6 @@ public class YamlReader implements AutoCloseable {
 			return element;
 		}
 		
-		// Check for mapping (key: value)
 		int colonIndex = this.findKeyColonIndex(trimmed);
 		if (colonIndex > 0) {
 			YamlElement element = this.readBlockMapping(expectedIndent);
@@ -278,7 +269,6 @@ public class YamlReader implements AutoCloseable {
 			return element;
 		}
 		
-		// It's a scalar value
 		this.lineIndex++;
 		YamlElement element = this.parseScalar(trimmed);
 		if (anchorName != null) {
@@ -340,7 +330,6 @@ public class YamlReader implements AutoCloseable {
 			} else if (c == '"' && !inSingleQuote) {
 				inDoubleQuote = !inDoubleQuote;
 			} else if (c == ':' && !inSingleQuote && !inDoubleQuote) {
-				// Check if followed by space, newline, or end of line
 				if (i + 1 >= line.length() || Character.isWhitespace(line.charAt(i + 1))) {
 					return i;
 				}
@@ -362,7 +351,7 @@ public class YamlReader implements AutoCloseable {
 		while (this.lineIndex < this.lines.size()) {
 			this.skipEmptyLinesAndComments();
 			if (this.lineIndex >= this.lines.size()) {
-				break;
+				return mapping;
 			}
 			
 			String line = this.lines.get(this.lineIndex);
@@ -373,31 +362,26 @@ public class YamlReader implements AutoCloseable {
 			
 			int currentIndent = this.getIndent(line);
 			
-			// First entry establishes the mapping indent
 			if (mappingIndent == -1) {
 				if (currentIndent < baseIndent) {
-					break;
+					return mapping;
 				}
 				mappingIndent = currentIndent;
 			}
 			
-			// Check if we've moved out of this mapping
 			if (currentIndent < mappingIndent) {
-				break;
+				return mapping;
 			}
 			
-			// Check for document markers
 			String trimmed = line.trim();
-			if (trimmed.equals("---") || trimmed.equals("...")) {
-				break;
+			if ("---".equals(trimmed) || "...".equals(trimmed)) {
+				return mapping;
 			}
 			
-			// Must be at the same indentation level for this mapping
 			if (currentIndent != mappingIndent) {
 				throw new YamlSyntaxException("Inconsistent indentation in mapping at line " + (this.lineIndex + 1));
 			}
 			
-			// Parse key-value pair
 			int colonIndex = this.findKeyColonIndex(trimmed);
 			if (colonIndex == -1) {
 				throw new YamlSyntaxException("Expected key-value pair but found: '" + trimmed + "' at line " + (this.lineIndex + 1));
@@ -406,7 +390,6 @@ public class YamlReader implements AutoCloseable {
 			String keyStr = trimmed.substring(0, colonIndex).trim();
 			String valueStr = trimmed.substring(colonIndex + 1).trim();
 			
-			// Handle anchor on key
 			String keyAnchor = null;
 			if (keyStr.startsWith("&")) {
 				int spaceIdx = keyStr.indexOf(' ');
@@ -416,20 +399,15 @@ public class YamlReader implements AutoCloseable {
 				}
 			}
 			
-			// Parse the key
 			String key = this.parseKeyString(keyStr);
-			
-			// Check for duplicate keys
 			if (!this.config.allowDuplicateKeys() && mapping.containsKey(key)) {
 				throw new YamlSyntaxException("Duplicate key '" + key + "' found at line " + (this.lineIndex + 1));
 			}
 			
 			this.lineIndex++;
 			
-			// Parse the value
 			YamlElement value;
 			if (valueStr.isEmpty()) {
-				// Value is on next line(s)
 				this.skipEmptyLinesAndComments();
 				if (this.lineIndex < this.lines.size()) {
 					String nextLine = this.lines.get(this.lineIndex);
@@ -443,17 +421,14 @@ public class YamlReader implements AutoCloseable {
 					value = YamlNull.INSTANCE;
 				}
 			} else {
-				// Value is inline
 				value = this.parseInlineValue(valueStr, mappingIndent);
 			}
 			
 			if (keyAnchor != null) {
 				this.anchors.put(keyAnchor, new YamlScalar(key));
 			}
-			
 			mapping.add(key, value);
 		}
-		
 		return mapping;
 	}
 	
@@ -468,12 +443,10 @@ public class YamlReader implements AutoCloseable {
 			throw new YamlSyntaxException("Empty key is not allowed");
 		}
 		
-		// Handle quoted keys
 		if ((keyStr.startsWith("\"") && keyStr.endsWith("\"")) ||
 			(keyStr.startsWith("'") && keyStr.endsWith("'"))) {
 			return keyStr.substring(1, keyStr.length() - 1);
 		}
-		
 		return keyStr;
 	}
 	
@@ -485,10 +458,8 @@ public class YamlReader implements AutoCloseable {
 	 * @return The parsed yaml element
 	 */
 	private @NonNull YamlElement parseInlineValue(@NonNull String valueStr, int currentIndent) {
-		// Remove trailing comment
 		valueStr = this.removeTrailingComment(valueStr);
 		
-		// Check for anchor
 		String anchorName = null;
 		if (valueStr.startsWith("&")) {
 			int spaceIndex = valueStr.indexOf(' ');
@@ -498,7 +469,6 @@ public class YamlReader implements AutoCloseable {
 			}
 		}
 		
-		// Check for alias
 		if (valueStr.startsWith("*")) {
 			String aliasName = this.extractAnchorName(valueStr.substring(1));
 			if (this.config.resolveAnchors()) {
@@ -511,7 +481,6 @@ public class YamlReader implements AutoCloseable {
 			return new YamlAlias(aliasName);
 		}
 		
-		// Check for flow collections
 		if (valueStr.startsWith("{")) {
 			YamlElement element = this.parseFlowMappingFromString(valueStr);
 			if (anchorName != null) {
@@ -529,15 +498,13 @@ public class YamlReader implements AutoCloseable {
 			return element;
 		}
 		
-		// Check for multi-line string indicators
-		if (valueStr.equals("|") || valueStr.startsWith("| ") || valueStr.equals("|+") || valueStr.equals("|-")) {
+		if ("|".equals(valueStr) || valueStr.startsWith("| ") || "|+".equals(valueStr) || "|-".equals(valueStr)) {
 			return this.readLiteralBlockScalar(currentIndent, valueStr);
 		}
-		if (valueStr.equals(">") || valueStr.startsWith("> ") || valueStr.equals(">+") || valueStr.equals(">-")) {
+		if (">".equals(valueStr) || valueStr.startsWith("> ") || ">+".equals(valueStr) || ">-".equals(valueStr)) {
 			return this.readFoldedBlockScalar(currentIndent, valueStr);
 		}
 		
-		// Parse as scalar
 		YamlElement element = this.parseScalar(valueStr);
 		if (anchorName != null) {
 			this.anchors.put(anchorName, element);
@@ -575,7 +542,6 @@ public class YamlReader implements AutoCloseable {
 			} else if (c == '"' && !inSingleQuote) {
 				inDoubleQuote = !inDoubleQuote;
 			} else if (c == '#' && !inSingleQuote && !inDoubleQuote) {
-				// Found a comment
 				return value.substring(0, i).trim();
 			}
 		}
@@ -595,7 +561,7 @@ public class YamlReader implements AutoCloseable {
 		while (this.lineIndex < this.lines.size()) {
 			this.skipEmptyLinesAndComments();
 			if (this.lineIndex >= this.lines.size()) {
-				break;
+				return sequence;
 			}
 			
 			String line = this.lines.get(this.lineIndex);
@@ -607,31 +573,27 @@ public class YamlReader implements AutoCloseable {
 			int currentIndent = this.getIndent(line);
 			String trimmed = line.trim();
 			
-			// First entry establishes the sequence indent
 			if (sequenceIndent == -1) {
 				if (currentIndent < baseIndent) {
-					break;
+					return sequence;
 				}
 				sequenceIndent = currentIndent;
 			}
 			
-			// Check if we've moved out of this sequence
 			if (currentIndent < sequenceIndent) {
-				break;
+				return sequence;
 			}
 			
-			// Must start with - at this level
 			if (!trimmed.startsWith("-")) {
-				break;
+				return sequence;
 			}
 			
 			if (currentIndent != sequenceIndent) {
 				throw new YamlSyntaxException("Inconsistent indentation in sequence at line " + (this.lineIndex + 1));
 			}
 			
-			// Parse the sequence item
 			String itemValue;
-			if (trimmed.equals("-")) {
+			if ("-".equals(trimmed)) {
 				itemValue = "";
 			} else {
 				itemValue = trimmed.substring(1).trim();
@@ -641,7 +603,6 @@ public class YamlReader implements AutoCloseable {
 			
 			YamlElement element;
 			if (itemValue.isEmpty()) {
-				// Value is on next line(s)
 				this.skipEmptyLinesAndComments();
 				if (this.lineIndex < this.lines.size()) {
 					String nextLine = this.lines.get(this.lineIndex);
@@ -655,21 +616,16 @@ public class YamlReader implements AutoCloseable {
 					element = YamlNull.INSTANCE;
 				}
 			} else {
-				// Check if it's an inline mapping (key: value after -)
 				int colonIndex = this.findKeyColonIndex(itemValue);
 				if (colonIndex > 0) {
-					// It's a mapping - we need to go back and read it properly
 					this.lineIndex--;
-					// Create a pseudo-line at the item's position
 					element = this.readNestedMappingInSequence(sequenceIndent + 2, itemValue);
 				} else {
 					element = this.parseInlineValue(itemValue, sequenceIndent);
 				}
 			}
-			
 			sequence.add(element);
 		}
-		
 		return sequence;
 	}
 	
@@ -683,7 +639,6 @@ public class YamlReader implements AutoCloseable {
 	private @NonNull YamlElement readNestedMappingInSequence(int expectedIndent, @NonNull String firstPair) {
 		YamlMapping mapping = new YamlMapping();
 		
-		// Parse the first pair
 		int colonIndex = this.findKeyColonIndex(firstPair);
 		String keyStr = firstPair.substring(0, colonIndex).trim();
 		String valueStr = firstPair.substring(colonIndex + 1).trim();
@@ -711,11 +666,10 @@ public class YamlReader implements AutoCloseable {
 		
 		mapping.add(key, value);
 		
-		// Read any additional pairs at the same or greater indentation
 		while (this.lineIndex < this.lines.size()) {
 			this.skipEmptyLinesAndComments();
 			if (this.lineIndex >= this.lines.size()) {
-				break;
+				return mapping;
 			}
 			
 			String line = this.lines.get(this.lineIndex);
@@ -727,14 +681,13 @@ public class YamlReader implements AutoCloseable {
 			int currentIndent = this.getIndent(line);
 			String trimmed = line.trim();
 			
-			// Check if we're still in the nested mapping
 			if (currentIndent < expectedIndent || trimmed.startsWith("-")) {
-				break;
+				return mapping;
 			}
 			
 			colonIndex = this.findKeyColonIndex(trimmed);
 			if (colonIndex == -1) {
-				break;
+				return mapping;
 			}
 			
 			keyStr = trimmed.substring(0, colonIndex).trim();
@@ -763,10 +716,8 @@ public class YamlReader implements AutoCloseable {
 			} else {
 				value = this.parseInlineValue(valueStr, currentIndent);
 			}
-			
 			mapping.add(key, value);
 		}
-		
 		return mapping;
 	}
 	
@@ -796,7 +747,6 @@ public class YamlReader implements AutoCloseable {
 			}
 			sb.append(' ');
 		}
-		
 		throw new YamlSyntaxException("Unclosed flow mapping");
 	}
 	
@@ -841,7 +791,6 @@ public class YamlReader implements AutoCloseable {
 			YamlElement value = this.parseFlowValue(valueStr);
 			mapping.add(key, value);
 		}
-		
 		return mapping;
 	}
 	
@@ -871,7 +820,6 @@ public class YamlReader implements AutoCloseable {
 			}
 			sb.append(' ');
 		}
-		
 		throw new YamlSyntaxException("Unclosed flow sequence");
 	}
 	
@@ -902,7 +850,6 @@ public class YamlReader implements AutoCloseable {
 			}
 			sequence.add(this.parseFlowValue(item));
 		}
-		
 		return sequence;
 	}
 	
@@ -957,14 +904,12 @@ public class YamlReader implements AutoCloseable {
 					continue;
 				}
 			}
-			
 			current.append(c);
 		}
 		
 		if (!current.isEmpty()) {
 			items.add(current.toString());
 		}
-		
 		return items;
 	}
 	
@@ -977,7 +922,6 @@ public class YamlReader implements AutoCloseable {
 	private @NonNull YamlElement parseFlowValue(@NonNull String valueStr) {
 		valueStr = valueStr.trim();
 		
-		// Check for alias
 		if (valueStr.startsWith("*")) {
 			String aliasName = this.extractAnchorName(valueStr.substring(1));
 			if (this.config.resolveAnchors()) {
@@ -990,14 +934,12 @@ public class YamlReader implements AutoCloseable {
 			return new YamlAlias(aliasName);
 		}
 		
-		// Check for nested flow collections
 		if (valueStr.startsWith("{")) {
 			return this.parseFlowMappingFromString(valueStr);
 		}
 		if (valueStr.startsWith("[")) {
 			return this.parseFlowSequenceFromString(valueStr);
 		}
-		
 		return this.parseScalar(valueStr);
 	}
 	
@@ -1018,7 +960,6 @@ public class YamlReader implements AutoCloseable {
 		while (this.lineIndex < this.lines.size()) {
 			String line = this.lines.get(this.lineIndex);
 			
-			// Empty lines are preserved in literal blocks
 			if (line.trim().isEmpty()) {
 				content.append(System.lineSeparator());
 				this.lineIndex++;
@@ -1026,8 +967,6 @@ public class YamlReader implements AutoCloseable {
 			}
 			
 			int currentIndent = this.getIndent(line);
-			
-			// First content line establishes the indent
 			if (contentIndent == -1) {
 				if (currentIndent <= baseIndent) {
 					break;
@@ -1035,35 +974,27 @@ public class YamlReader implements AutoCloseable {
 				contentIndent = currentIndent;
 			}
 			
-			// Check if we've moved out of the block
-			if (currentIndent < contentIndent && !line.trim().isEmpty()) {
+			if (currentIndent < contentIndent) {
 				break;
 			}
 			
-			// Add the line content (minus the indent)
-			if (currentIndent >= contentIndent) {
-				if (!content.isEmpty()) {
-					content.append(System.lineSeparator());
-				}
-				content.append(line.substring(contentIndent));
+			if (!content.isEmpty()) {
+				content.append(System.lineSeparator());
 			}
-			
+			content.append(line.substring(contentIndent));
 			this.lineIndex++;
 		}
 		
 		String result = content.toString();
 		
-		// Handle trailing newlines based on chomping indicator
 		if (stripTrailing) {
 			result = result.replaceAll("[\r\n]+$", "");
 		} else if (!keepTrailing) {
-			// Default: single trailing newline
 			result = result.replaceAll("[\r\n]+$", "") + System.lineSeparator();
 			if (result.equals(System.lineSeparator())) {
 				result = "";
 			}
 		}
-		
 		return new YamlScalar(result);
 	}
 	
@@ -1085,7 +1016,6 @@ public class YamlReader implements AutoCloseable {
 		while (this.lineIndex < this.lines.size()) {
 			String line = this.lines.get(this.lineIndex);
 			
-			// Handle empty lines
 			if (line.trim().isEmpty()) {
 				if (!content.isEmpty()) {
 					content.append(System.lineSeparator());
@@ -1096,8 +1026,6 @@ public class YamlReader implements AutoCloseable {
 			}
 			
 			int currentIndent = this.getIndent(line);
-			
-			// First content line establishes the indent
 			if (contentIndent == -1) {
 				if (currentIndent <= baseIndent) {
 					break;
@@ -1105,12 +1033,10 @@ public class YamlReader implements AutoCloseable {
 				contentIndent = currentIndent;
 			}
 			
-			// Check if we've moved out of the block
 			if (currentIndent < contentIndent) {
 				break;
 			}
 			
-			// Add space or newline based on context
 			if (!content.isEmpty() && !lastWasEmpty) {
 				content.append(" ");
 			}
@@ -1121,8 +1047,6 @@ public class YamlReader implements AutoCloseable {
 		}
 		
 		String result = content.toString();
-		
-		// Handle trailing newlines based on chomping indicator
 		if (stripTrailing) {
 			result = result.replaceAll("[\r\n\\s]+$", "");
 		} else if (!keepTrailing) {
@@ -1131,7 +1055,6 @@ public class YamlReader implements AutoCloseable {
 				result = result + System.lineSeparator();
 			}
 		}
-		
 		return new YamlScalar(result);
 	}
 	
@@ -1148,41 +1071,35 @@ public class YamlReader implements AutoCloseable {
 			return YamlNull.INSTANCE;
 		}
 		
-		// Handle quoted strings
 		if ((value.startsWith("\"") && value.endsWith("\"")) ||
 			(value.startsWith("'") && value.endsWith("'"))) {
 			String unquoted = value.substring(1, value.length() - 1);
 			return new YamlScalar(this.processEscapeSequences(unquoted, value.charAt(0)));
 		}
 		
-		// Handle null values
 		String lower = value.toLowerCase();
-		if (lower.equals("null") || lower.equals("~") || lower.equals("")) {
-			return YamlNull.INSTANCE;
-		}
-		
-		// Handle boolean values
-		if (lower.equals("true") || lower.equals("yes") || lower.equals("on")) {
-			return new YamlScalar(true);
-		}
-		if (lower.equals("false") || lower.equals("no") || lower.equals("off")) {
-			return new YamlScalar(false);
-		}
-		
-		// In strict mode, only accept true/false for booleans
-		if (this.config.strict()) {
-			if (lower.equals("yes") || lower.equals("no") || lower.equals("on") || lower.equals("off")) {
-				return new YamlScalar(value);
+		switch (lower) {
+			case "null", "~", "" -> {
+				return YamlNull.INSTANCE;
+			}
+			case "true", "yes", "on" -> {
+				if (this.config.strict() && !"true".equals(lower)) {
+					return new YamlScalar(value);
+				}
+				return new YamlScalar(true);
+			}
+			case "false", "no", "off" -> {
+				if (this.config.strict() && !"false".equals(lower)) {
+					return new YamlScalar(value);
+				}
+				return new YamlScalar(false);
 			}
 		}
 		
-		// Try to parse as number
 		Number number = this.tryParseNumber(value);
 		if (number != null) {
 			return new YamlScalar(number);
 		}
-		
-		// Default to string
 		return new YamlScalar(value);
 	}
 	
@@ -1195,17 +1112,13 @@ public class YamlReader implements AutoCloseable {
 	 */
 	private @NonNull String processEscapeSequences(@NonNull String value, char quoteChar) {
 		if (quoteChar == '\'') {
-			// Single-quoted strings only escape ''
 			return value.replace("''", "'");
 		}
 		
-		// Double-quoted strings support escape sequences
 		StringBuilder result = new StringBuilder();
 		boolean escaped = false;
-		
 		for (int i = 0; i < value.length(); i++) {
 			char c = value.charAt(i);
-			
 			if (escaped) {
 				switch (c) {
 					case 'n' -> result.append('\n');
@@ -1225,7 +1138,6 @@ public class YamlReader implements AutoCloseable {
 					case 'L' -> result.append('\u2028');
 					case 'P' -> result.append('\u2029');
 					case 'x' -> {
-						// \xNN - 2 hex digits
 						if (i + 2 < value.length()) {
 							String hex = value.substring(i + 1, i + 3);
 							try {
@@ -1239,7 +1151,6 @@ public class YamlReader implements AutoCloseable {
 						}
 					}
 					case 'u' -> {
-						// \\uNNNN - 4 hex digits
 						if (i + 4 < value.length()) {
 							String hex = value.substring(i + 1, i + 5);
 							try {
@@ -1276,19 +1187,19 @@ public class YamlReader implements AutoCloseable {
 			return null;
 		}
 		
-		// Handle special float values
 		String lower = value.toLowerCase();
-		if (lower.equals(".inf") || lower.equals("+.inf")) {
-			return Double.POSITIVE_INFINITY;
-		}
-		if (lower.equals("-.inf")) {
-			return Double.NEGATIVE_INFINITY;
-		}
-		if (lower.equals(".nan")) {
-			return Double.NaN;
+		switch (lower) {
+			case ".inf", "+.inf" -> {
+				return Double.POSITIVE_INFINITY;
+			}
+			case "-.inf" -> {
+				return Double.NEGATIVE_INFINITY;
+			}
+			case ".nan" -> {
+				return Double.NaN;
+			}
 		}
 		
-		// Handle hexadecimal
 		if (value.startsWith("0x") || value.startsWith("0X")) {
 			try {
 				return Long.parseLong(value.substring(2), 16);
@@ -1297,7 +1208,6 @@ public class YamlReader implements AutoCloseable {
 			}
 		}
 		
-		// Handle octal
 		if (value.startsWith("0o") || value.startsWith("0O")) {
 			try {
 				return Long.parseLong(value.substring(2), 8);
@@ -1306,7 +1216,6 @@ public class YamlReader implements AutoCloseable {
 			}
 		}
 		
-		// Handle binary
 		if (value.startsWith("0b") || value.startsWith("0B")) {
 			try {
 				return Long.parseLong(value.substring(2), 2);
@@ -1315,7 +1224,6 @@ public class YamlReader implements AutoCloseable {
 			}
 		}
 		
-		// Try parsing as integer first
 		try {
 			if (!value.contains(".") && !value.toLowerCase().contains("e")) {
 				long longValue = Long.parseLong(value);
@@ -1327,7 +1235,6 @@ public class YamlReader implements AutoCloseable {
 		} catch (NumberFormatException ignored) {
 		}
 		
-		// Try parsing as floating point
 		try {
 			return Double.parseDouble(value);
 		} catch (NumberFormatException e) {
@@ -1336,7 +1243,7 @@ public class YamlReader implements AutoCloseable {
 	}
 	
 	@Override
-	public void close() throws IOException {
+	public void close() {
 		// StringReader doesn't need closing, but we implement the interface for consistency
 	}
 }

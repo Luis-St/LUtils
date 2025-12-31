@@ -82,11 +82,9 @@ public class YamlScalar implements YamlElement {
 	 * @return The parsed value or the string if it could not be parsed
 	 */
 	private static @NonNull Object tryParse(@NonNull String string) {
-		// YAML 1.2 boolean values: true, false (case-insensitive for common parsers)
 		if ("true".equalsIgnoreCase(string) || "false".equalsIgnoreCase(string)) {
 			return Boolean.parseBoolean(string);
 		}
-		// YAML special float values
 		if (".inf".equalsIgnoreCase(string) || "+.inf".equalsIgnoreCase(string)) {
 			return Double.POSITIVE_INFINITY;
 		}
@@ -96,6 +94,7 @@ public class YamlScalar implements YamlElement {
 		if (".nan".equalsIgnoreCase(string)) {
 			return Double.NaN;
 		}
+		
 		StringReader reader = new StringReader(string);
 		try {
 			Number number = reader.readNumber();
@@ -119,22 +118,20 @@ public class YamlScalar implements YamlElement {
 		if (value.isEmpty()) {
 			return true;
 		}
-		// Check for special YAML values that need quoting
+		
 		String lower = value.toLowerCase();
-		if ("true".equals(lower) || "false".equals(lower) || "null".equals(lower) ||
-			".inf".equals(lower) || "+.inf".equals(lower) || "-.inf".equals(lower) ||
-			".nan".equals(lower) || "~".equals(lower)) {
-			return false; // These are valid YAML values, don't quote them as strings here
+		if ("true".equals(lower) || "false".equals(lower) || "null".equals(lower) || ".inf".equals(lower) || "+.inf".equals(lower) || "-.inf".equals(lower) || ".nan".equals(lower) || "~".equals(lower)) {
+			return false;
 		}
-		// Check for characters that require quoting
+		
 		char first = value.charAt(0);
-		if (first == '#' || first == '&' || first == '*' || first == '!' ||
-			first == '|' || first == '>' || first == '\'' || first == '"' ||
-			first == '%' || first == '@' || first == '`' || first == '{' ||
-			first == '[' || first == '-' || first == '?' || first == ':') {
+		if (
+			first == '#' || first == '&' || first == '*' || first == '!' || first == '|' || first == '>' || first == '\'' || first == '"' ||
+			first == '%' || first == '@' || first == '`' || first == '{' || first == '[' || first == '-' || first == '?' || first == ':'
+		) {
 			return true;
 		}
-		// Check for special characters within the string
+		
 		for (int i = 0; i < value.length(); i++) {
 			char c = value.charAt(i);
 			if (c == ':' || c == '#' || c == '\n' || c == '\r' || c == '\t') {
@@ -166,8 +163,6 @@ public class YamlScalar implements YamlElement {
 		}
 		return builder.toString();
 	}
-	
-	//region Type checks
 	
 	/**
 	 * Returns the name of the type of this yaml scalar in a human-readable format.<br>
@@ -250,9 +245,6 @@ public class YamlScalar implements YamlElement {
 	public boolean isDouble() {
 		return this.value instanceof Double;
 	}
-	//endregion
-	
-	//region Getters
 	
 	/**
 	 * Checks if this yaml scalar is a string.<br>
@@ -369,7 +361,6 @@ public class YamlScalar implements YamlElement {
 		}
 		throw new YamlTypeException("Expected a yaml double, but found: " + this.getName());
 	}
-	//endregion
 	
 	/**
 	 * Converts this yaml scalar to a string.<br>

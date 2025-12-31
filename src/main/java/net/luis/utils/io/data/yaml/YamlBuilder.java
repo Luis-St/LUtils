@@ -83,8 +83,6 @@ public final class YamlBuilder {
 		this.contextStack.push(new ContextFrame(initialContext, initialElement));
 	}
 	
-	//region Factory methods
-	
 	/**
 	 * Creates a new builder for constructing a yaml mapping.<br>
 	 * The builder will start in mapping context, allowing you to add key-value pairs.
@@ -104,9 +102,6 @@ public final class YamlBuilder {
 	public static @NonNull YamlBuilder sequence() {
 		return new YamlBuilder(BuilderContext.SEQUENCE, new YamlSequence());
 	}
-	//endregion
-	
-	//region Context management
 	
 	/**
 	 * Gets the current context frame from the stack.
@@ -128,6 +123,7 @@ public final class YamlBuilder {
 	 */
 	private void ensureMappingContext() {
 		ContextFrame current = this.getCurrentContext();
+		
 		if (current.type != BuilderContext.MAPPING) {
 			throw new IllegalStateException("Current context is not a mapping. Use add(value) for sequences.");
 		}
@@ -140,13 +136,11 @@ public final class YamlBuilder {
 	 */
 	private void ensureSequenceContext() {
 		ContextFrame current = this.getCurrentContext();
+		
 		if (current.type != BuilderContext.SEQUENCE) {
 			throw new IllegalStateException("Current context is not a sequence. Use add(key, value) for mappings.");
 		}
 	}
-	//endregion
-	
-	//region Mapping add methods
 	
 	/**
 	 * Adds a yaml element with the specified key to the current mapping.<br>
@@ -237,9 +231,6 @@ public final class YamlBuilder {
 		Objects.requireNonNull(sequenceBuilder, "Sequence builder must not be null");
 		return this.add(key, sequenceBuilder.build());
 	}
-	//endregion
-	
-	//region Mapping anchor methods
 	
 	/**
 	 * Adds an element with an anchor to the current mapping.<br>
@@ -314,9 +305,6 @@ public final class YamlBuilder {
 		Objects.requireNonNull(anchorName, "Anchor name must not be null");
 		return this.add(key, new YamlAlias(anchorName));
 	}
-	//endregion
-	
-	//region Sequence add methods
 	
 	/**
 	 * Adds a yaml element to the current sequence.<br>
@@ -405,8 +393,9 @@ public final class YamlBuilder {
 	 * @throws IllegalStateException If the current context is not a sequence
 	 * @throws NullPointerException If the values array is null
 	 */
-	public @NonNull YamlBuilder addAll(@NonNull String... values) {
+	public @NonNull YamlBuilder addAll(String @NonNull ... values) {
 		Objects.requireNonNull(values, "Values array must not be null");
+		
 		for (String value : values) {
 			this.add(value);
 		}
@@ -421,16 +410,14 @@ public final class YamlBuilder {
 	 * @throws IllegalStateException If the current context is not a sequence
 	 * @throws NullPointerException If the values array is null
 	 */
-	public @NonNull YamlBuilder addAll(@NonNull Number... values) {
+	public @NonNull YamlBuilder addAll(Number @NonNull ... values) {
 		Objects.requireNonNull(values, "Values array must not be null");
+		
 		for (Number value : values) {
 			this.add(value);
 		}
 		return this;
 	}
-	//endregion
-	
-	//region Sequence anchor methods
 	
 	/**
 	 * Adds an element with an anchor to the current sequence.<br>
@@ -473,9 +460,6 @@ public final class YamlBuilder {
 		Objects.requireNonNull(anchorName, "Anchor name must not be null");
 		return this.add(new YamlAlias(anchorName));
 	}
-	//endregion
-	
-	//region Nesting - start nested mapping
 	
 	/**
 	 * Starts building a nested mapping with the specified key in the current mapping.<br>
@@ -579,9 +563,6 @@ public final class YamlBuilder {
 		this.contextStack.pop();
 		return this;
 	}
-	//endregion
-	
-	//region Nesting - start nested sequence
 	
 	/**
 	 * Starts building a nested sequence with the specified key in the current mapping.<br>
@@ -685,9 +666,6 @@ public final class YamlBuilder {
 		this.contextStack.pop();
 		return this;
 	}
-	//endregion
-	
-	//region Conditional adding
 	
 	/**
 	 * Conditionally adds a key-value pair to the current mapping only if the condition is true.<br>
@@ -752,9 +730,6 @@ public final class YamlBuilder {
 		}
 		return this;
 	}
-	//endregion
-	
-	//region Build methods
 	
 	/**
 	 * Builds and returns the constructed yaml element.<br>
@@ -800,7 +775,6 @@ public final class YamlBuilder {
 		result.addAll(sequence);
 		return result;
 	}
-	//endregion
 	
 	//region Utility methods
 	

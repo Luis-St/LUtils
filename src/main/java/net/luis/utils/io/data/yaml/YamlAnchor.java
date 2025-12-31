@@ -50,6 +50,7 @@ public class YamlAnchor implements YamlElement {
 	public YamlAnchor(@NonNull String name, @NonNull YamlElement element) {
 		this.name = Objects.requireNonNull(name, "Anchor name must not be null");
 		this.element = Objects.requireNonNull(element, "Anchored element must not be null");
+		
 		if (name.isBlank()) {
 			throw new IllegalArgumentException("Anchor name must not be blank");
 		}
@@ -82,7 +83,7 @@ public class YamlAnchor implements YamlElement {
 	 * Returns the anchor name.<br>
 	 * @return The anchor name without the '&amp;' prefix
 	 */
-	public @NonNull String name() {
+	public @NonNull String getName() {
 		return this.name;
 	}
 
@@ -90,7 +91,7 @@ public class YamlAnchor implements YamlElement {
 	 * Returns the anchored element.<br>
 	 * @return The wrapped element
 	 */
-	public @NonNull YamlElement element() {
+	public @NonNull YamlElement getElement() {
 		return this.element;
 	}
 
@@ -131,15 +132,11 @@ public class YamlAnchor implements YamlElement {
 		Objects.requireNonNull(config, "Config must not be null");
 		String elementStr = this.element.toString(config);
 
-		// For block style collections, the anchor goes before the element
 		if (this.element instanceof YamlMapping || this.element instanceof YamlSequence) {
 			if (config.useBlockStyle() && !elementStr.startsWith("{") && !elementStr.startsWith("[")) {
-				// Block style: &anchor\n  element content
 				return "&" + this.name + System.lineSeparator() + elementStr;
 			}
 		}
-
-		// For scalars and flow style, anchor is inline
 		return "&" + this.name + " " + elementStr;
 	}
 	//endregion

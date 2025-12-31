@@ -40,7 +40,6 @@ class YamlReaderTest {
 	private static final YamlConfig NON_STRICT = new YamlConfig(false, true, "  ", true, false, YamlConfig.NullStyle.NULL, true, false, StandardCharsets.UTF_8);
 	private static final YamlConfig ALLOW_DUPLICATES = new YamlConfig(true, true, "  ", true, false, YamlConfig.NullStyle.NULL, true, true, StandardCharsets.UTF_8);
 
-	//region Constructor tests
 	@Test
 	void constructorWithString() {
 		assertDoesNotThrow(() -> new YamlReader("key: value"));
@@ -77,9 +76,7 @@ class YamlReaderTest {
 	void constructorWithNullInput() {
 		assertThrows(NullPointerException.class, () -> new YamlReader((InputProvider) null));
 	}
-	//endregion
 
-	//region Empty and null values
 	@Test
 	void readEmptyInput() throws IOException {
 		try (YamlReader reader = new YamlReader("")) {
@@ -111,9 +108,7 @@ class YamlReaderTest {
 			assertTrue(result.isYamlNull());
 		}
 	}
-	//endregion
 
-	//region Scalar types
 	@Test
 	void readStringScalar() throws IOException {
 		try (YamlReader reader = new YamlReader("hello world")) {
@@ -257,9 +252,7 @@ class YamlReaderTest {
 			assertTrue(Double.isNaN(result.getAsYamlScalar().getAsDouble()));
 		}
 	}
-	//endregion
 
-	//region Block mapping
 	@Test
 	void readSimpleMapping() throws IOException {
 		String yaml = "key: value";
@@ -337,8 +330,6 @@ class YamlReaderTest {
 			""";
 		try (YamlReader reader = new YamlReader(yaml, DEFAULT_CONFIG)) {
 			assertThrows(YamlSyntaxException.class, reader::readYaml);
-		} catch (IOException e) {
-			fail("Unexpected IOException");
 		}
 	}
 
@@ -351,13 +342,10 @@ class YamlReaderTest {
 		try (YamlReader reader = new YamlReader(yaml, ALLOW_DUPLICATES)) {
 			YamlElement result = reader.readYaml();
 			assertTrue(result.isYamlMapping());
-			// Last value wins
 			assertEquals(new YamlScalar("value2"), result.getAsYamlMapping().get("key"));
 		}
 	}
-	//endregion
 
-	//region Block sequence
 	@Test
 	void readSimpleSequence() throws IOException {
 		String yaml = """
@@ -445,9 +433,7 @@ class YamlReaderTest {
 			assertTrue(sequence.get(1).isYamlNull());
 		}
 	}
-	//endregion
 
-	//region Flow collections
 	@Test
 	void readFlowMapping() throws IOException {
 		String yaml = "{key1: value1, key2: value2}";
@@ -535,9 +521,7 @@ class YamlReaderTest {
 			assertEquals(new YamlScalar("java"), tags.get(0));
 		}
 	}
-	//endregion
 
-	//region Anchors and aliases
 	@Test
 	void readAnchorAndAliasResolved() throws IOException {
 		String yaml = """
@@ -548,8 +532,6 @@ class YamlReaderTest {
 			  database: prod_db
 			  <<: *defaults
 			""";
-		// Note: This is a simplified test - the << merge key isn't implemented
-		// Testing basic anchor/alias resolution
 		String simpleYaml = """
 			anchor: &myValue test
 			alias: *myValue
@@ -558,7 +540,6 @@ class YamlReaderTest {
 			YamlElement result = reader.readYaml();
 			assertTrue(result.isYamlMapping());
 			YamlMapping mapping = result.getAsYamlMapping();
-			// Both should resolve to the same value
 			assertEquals(new YamlScalar("test"), mapping.get("anchor"));
 			assertEquals(new YamlScalar("test"), mapping.get("alias"));
 		}
@@ -576,8 +557,8 @@ class YamlReaderTest {
 			YamlMapping mapping = result.getAsYamlMapping();
 			assertTrue(mapping.get("anchor").isYamlAnchor());
 			assertTrue(mapping.get("alias").isYamlAlias());
-			assertEquals("myValue", mapping.get("anchor").getAsYamlAnchor().name());
-			assertEquals("myValue", mapping.get("alias").getAsYamlAlias().anchorName());
+			assertEquals("myValue", mapping.get("anchor").getAsYamlAnchor().getName());
+			assertEquals("myValue", mapping.get("alias").getAsYamlAlias().getAnchorName());
 		}
 	}
 
@@ -586,19 +567,15 @@ class YamlReaderTest {
 		String yaml = "ref: *undefined";
 		try (YamlReader reader = new YamlReader(yaml, DEFAULT_CONFIG)) {
 			assertThrows(YamlSyntaxException.class, reader::readYaml);
-		} catch (IOException e) {
-			fail("Unexpected IOException");
 		}
 	}
 
 	@Test
 	void readAnchorOnMapping() throws IOException {
-		// Use flow style for anchored mapping
 		String yaml = "data: &mapAnchor {key: value}\nref: *mapAnchor\n";
 		try (YamlReader reader = new YamlReader(yaml, DEFAULT_CONFIG)) {
 			YamlElement result = reader.readYaml();
 			YamlMapping root = result.getAsYamlMapping();
-			// Both should resolve to the same mapping content
 			assertTrue(root.get("data").isYamlMapping());
 			assertTrue(root.get("ref").isYamlMapping());
 		}
@@ -606,7 +583,6 @@ class YamlReaderTest {
 
 	@Test
 	void readAnchorOnSequence() throws IOException {
-		// Use flow style for anchored sequence
 		String yaml = "items: &seqAnchor [a, b]\ncopy: *seqAnchor\n";
 		try (YamlReader reader = new YamlReader(yaml, DEFAULT_CONFIG)) {
 			YamlElement result = reader.readYaml();
@@ -615,9 +591,7 @@ class YamlReaderTest {
 			assertTrue(root.get("copy").isYamlSequence());
 		}
 	}
-	//endregion
 
-	//region Document markers
 	@Test
 	void readWithDocumentStart() throws IOException {
 		String yaml = """
@@ -657,9 +631,7 @@ class YamlReaderTest {
 			assertEquals(new YamlScalar("value"), result.getAsYamlMapping().get("key"));
 		}
 	}
-	//endregion
 
-	//region Comments
 	@Test
 	void readWithLineComment() throws IOException {
 		String yaml = """
@@ -698,9 +670,7 @@ class YamlReaderTest {
 			assertEquals(2, result.getAsYamlMapping().size());
 		}
 	}
-	//endregion
 
-	//region Multi-line strings
 	@Test
 	void readLiteralBlockScalar() throws IOException {
 		String yaml = """
@@ -731,7 +701,6 @@ class YamlReaderTest {
 			YamlElement result = reader.readYaml();
 			YamlScalar text = result.getAsYamlMapping().get("text").getAsYamlScalar();
 			String value = text.getAsString();
-			// Folded should join lines with space
 			assertTrue(value.contains("This is a long"));
 		}
 	}
@@ -761,13 +730,10 @@ class YamlReaderTest {
 		try (YamlReader reader = new YamlReader(yaml)) {
 			YamlElement result = reader.readYaml();
 			YamlScalar text = result.getAsYamlMapping().get("text").getAsYamlScalar();
-			// Keep chomping preserves trailing newlines
 			assertNotNull(text.getAsString());
 		}
 	}
-	//endregion
 
-	//region Escape sequences
 	@Test
 	void readDoubleQuotedEscapes() throws IOException {
 		String yaml = "text: \"line1\\nline2\\ttab\"";
@@ -791,7 +757,7 @@ class YamlReaderTest {
 
 	@Test
 	void readUnicodeEscape() throws IOException {
-		String yaml = "text: \"\\u0041\\u0042\\u0043\""; // ABC
+		String yaml = "text: \"\\u0041\\u0042\\u0043\"";
 		try (YamlReader reader = new YamlReader(yaml)) {
 			YamlElement result = reader.readYaml();
 			String value = result.getAsYamlMapping().get("text").getAsYamlScalar().getAsString();
@@ -801,23 +767,19 @@ class YamlReaderTest {
 
 	@Test
 	void readHexEscape() throws IOException {
-		String yaml = "text: \"\\x41\\x42\""; // AB
+		String yaml = "text: \"\\x41\\x42\"";
 		try (YamlReader reader = new YamlReader(yaml)) {
 			YamlElement result = reader.readYaml();
 			String value = result.getAsYamlMapping().get("text").getAsYamlScalar().getAsString();
 			assertEquals("AB", value);
 		}
 	}
-	//endregion
 
-	//region Syntax errors
 	@Test
 	void readTabIndentThrows() {
 		String yaml = "\tkey: value";
 		try (YamlReader reader = new YamlReader(yaml)) {
 			assertThrows(YamlSyntaxException.class, reader::readYaml);
-		} catch (IOException e) {
-			fail("Unexpected IOException");
 		}
 	}
 
@@ -830,8 +792,6 @@ class YamlReaderTest {
 			""";
 		try (YamlReader reader = new YamlReader(yaml)) {
 			assertThrows(YamlSyntaxException.class, reader::readYaml);
-		} catch (IOException e) {
-			fail("Unexpected IOException");
 		}
 	}
 
@@ -840,8 +800,6 @@ class YamlReaderTest {
 		String yaml = "{key: value";
 		try (YamlReader reader = new YamlReader(yaml)) {
 			assertThrows(YamlSyntaxException.class, reader::readYaml);
-		} catch (IOException e) {
-			fail("Unexpected IOException");
 		}
 	}
 
@@ -850,48 +808,34 @@ class YamlReaderTest {
 		String yaml = "[a, b, c";
 		try (YamlReader reader = new YamlReader(yaml)) {
 			assertThrows(YamlSyntaxException.class, reader::readYaml);
-		} catch (IOException e) {
-			fail("Unexpected IOException");
 		}
 	}
 
 	@Test
 	void readInvalidAnchorNameThrows() {
-		// Anchor at top level with no name throws
 		String yaml = "&";
 		try (YamlReader reader = new YamlReader(yaml)) {
 			assertThrows(YamlSyntaxException.class, reader::readYaml);
-		} catch (IOException e) {
-			fail("Unexpected IOException");
 		}
 	}
-	//endregion
 
-	//region Strict mode
 	@Test
 	void strictModeRejectsExtraContent() {
-		// Content after document end marker should fail in strict mode
 		String yaml = "key: value\n...\nextra content\n";
 		try (YamlReader reader = new YamlReader(yaml, DEFAULT_CONFIG)) {
 			assertThrows(YamlSyntaxException.class, reader::readYaml);
-		} catch (IOException e) {
-			fail("Unexpected IOException");
 		}
 	}
 
 	@Test
 	void nonStrictModeAllowsExtraContent() throws IOException {
-		// Content after document end marker should be ignored in non-strict mode
 		String yaml = "key: value\n...\nextra content\n";
 		try (YamlReader reader = new YamlReader(yaml, NON_STRICT)) {
-			// Should not throw in non-strict mode
 			YamlElement result = reader.readYaml();
 			assertNotNull(result);
 		}
 	}
-	//endregion
 
-	//region Complex structures
 	@Test
 	void readComplexNestedStructure() throws IOException {
 		String yaml = """
@@ -967,9 +911,7 @@ class YamlReaderTest {
 			assertEquals(2, items.size());
 		}
 	}
-	//endregion
 
-	//region Close behavior
 	@Test
 	void closeDoesNotThrow() {
 		YamlReader reader = new YamlReader("key: value");
@@ -982,5 +924,4 @@ class YamlReaderTest {
 		reader.close();
 		assertDoesNotThrow(reader::close);
 	}
-	//endregion
 }

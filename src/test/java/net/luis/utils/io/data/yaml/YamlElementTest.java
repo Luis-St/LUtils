@@ -95,7 +95,6 @@ class YamlElementTest {
 		YamlMapping mapping = new YamlMapping();
 		assertSame(mapping, mapping.getAsYamlMapping());
 
-		// Anchor containing mapping should return the mapping
 		YamlAnchor anchor = new YamlAnchor("anchor", mapping);
 		assertEquals(mapping, anchor.getAsYamlMapping());
 	}
@@ -107,7 +106,6 @@ class YamlElementTest {
 		assertThrows(YamlTypeException.class, () -> new YamlSequence().getAsYamlMapping());
 		assertThrows(YamlTypeException.class, () -> new YamlAlias("alias").getAsYamlMapping());
 
-		// Anchor containing non-mapping should fail
 		YamlAnchor anchor = new YamlAnchor("anchor", new YamlScalar("value"));
 		assertThrows(YamlTypeException.class, anchor::getAsYamlMapping);
 	}
@@ -117,7 +115,6 @@ class YamlElementTest {
 		YamlSequence sequence = new YamlSequence();
 		assertSame(sequence, sequence.getAsYamlSequence());
 
-		// Anchor containing sequence should return the sequence
 		YamlAnchor anchor = new YamlAnchor("anchor", sequence);
 		assertEquals(sequence, anchor.getAsYamlSequence());
 	}
@@ -129,7 +126,6 @@ class YamlElementTest {
 		assertThrows(YamlTypeException.class, () -> new YamlMapping().getAsYamlSequence());
 		assertThrows(YamlTypeException.class, () -> new YamlAlias("alias").getAsYamlSequence());
 
-		// Anchor containing non-sequence should fail
 		YamlAnchor anchor = new YamlAnchor("anchor", new YamlScalar("value"));
 		assertThrows(YamlTypeException.class, anchor::getAsYamlSequence);
 	}
@@ -139,7 +135,6 @@ class YamlElementTest {
 		YamlScalar scalar = new YamlScalar("test");
 		assertSame(scalar, scalar.getAsYamlScalar());
 
-		// Anchor containing scalar should return the scalar
 		YamlAnchor anchor = new YamlAnchor("anchor", scalar);
 		assertEquals(scalar, anchor.getAsYamlScalar());
 	}
@@ -151,7 +146,6 @@ class YamlElementTest {
 		assertThrows(YamlTypeException.class, () -> new YamlSequence().getAsYamlScalar());
 		assertThrows(YamlTypeException.class, () -> new YamlAlias("alias").getAsYamlScalar());
 
-		// Anchor containing non-scalar should fail
 		YamlAnchor anchor = new YamlAnchor("anchor", new YamlMapping());
 		assertThrows(YamlTypeException.class, anchor::getAsYamlScalar);
 	}

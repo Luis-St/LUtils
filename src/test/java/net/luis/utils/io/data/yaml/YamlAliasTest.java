@@ -37,7 +37,7 @@ class YamlAliasTest {
 	@Test
 	void constructorValid() {
 		YamlAlias alias = new YamlAlias("myAlias");
-		assertEquals("myAlias", alias.anchorName());
+		assertEquals("myAlias", alias.getAnchorName());
 	}
 
 	@Test
@@ -71,9 +71,9 @@ class YamlAliasTest {
 	}
 
 	@Test
-	void getAnchorName() {
+	void getGetAnchorName() {
 		YamlAlias alias = new YamlAlias("testAlias");
-		assertEquals("testAlias", alias.anchorName());
+		assertEquals("testAlias", alias.getAnchorName());
 	}
 
 	@Test
@@ -102,7 +102,6 @@ class YamlAliasTest {
 	@Test
 	void unwrap() {
 		YamlAlias alias = new YamlAlias("alias");
-		// Alias doesn't unwrap to anything else
 		assertSame(alias, alias.unwrap());
 	}
 
@@ -136,7 +135,6 @@ class YamlAliasTest {
 
 	@Test
 	void toStringFormat() {
-		// Verify the * prefix is always present
 		YamlAlias alias = new YamlAlias("anchorName");
 		String result = alias.toString();
 

@@ -29,7 +29,6 @@ import static org.junit.jupiter.api.Assertions.*;
  */
 class YamlBuilderTest {
 
-	//region Factory methods
 	@Test
 	void mappingFactory() {
 		YamlBuilder builder = YamlBuilder.mapping();
@@ -47,9 +46,7 @@ class YamlBuilderTest {
 		assertFalse(builder.isInMappingContext());
 		assertTrue(builder.isAtRootLevel());
 	}
-	//endregion
 
-	//region Mapping add methods
 	@Test
 	void addElementToMapping() {
 		YamlMapping result = YamlBuilder.mapping()
@@ -163,9 +160,7 @@ class YamlBuilderTest {
 		YamlBuilder builder = YamlBuilder.mapping();
 		assertThrows(NullPointerException.class, () -> builder.addSequence("key", null));
 	}
-	//endregion
 
-	//region Mapping anchor methods
 	@Test
 	void addWithAnchorElement() {
 		YamlMapping result = YamlBuilder.mapping()
@@ -174,8 +169,8 @@ class YamlBuilderTest {
 
 		YamlElement element = result.get("key");
 		assertTrue(element.isYamlAnchor());
-		assertEquals("myAnchor", element.getAsYamlAnchor().name());
-		assertEquals(new YamlScalar("value"), element.getAsYamlAnchor().element());
+		assertEquals("myAnchor", element.getAsYamlAnchor().getName());
+		assertEquals(new YamlScalar("value"), element.getAsYamlAnchor().getElement());
 	}
 
 	@Test
@@ -186,7 +181,7 @@ class YamlBuilderTest {
 
 		YamlElement element = result.get("key");
 		assertTrue(element.isYamlAnchor());
-		assertEquals("strAnchor", element.getAsYamlAnchor().name());
+		assertEquals("strAnchor", element.getAsYamlAnchor().getName());
 	}
 
 	@Test
@@ -197,7 +192,7 @@ class YamlBuilderTest {
 
 		YamlElement element = result.get("key");
 		assertTrue(element.isYamlAnchor());
-		assertEquals(YamlNull.INSTANCE, element.getAsYamlAnchor().element());
+		assertEquals(YamlNull.INSTANCE, element.getAsYamlAnchor().getElement());
 	}
 
 	@Test
@@ -208,7 +203,7 @@ class YamlBuilderTest {
 
 		YamlElement element = result.get("key");
 		assertTrue(element.isYamlAnchor());
-		assertEquals(new YamlScalar(true), element.getAsYamlAnchor().element());
+		assertEquals(new YamlScalar(true), element.getAsYamlAnchor().getElement());
 	}
 
 	@Test
@@ -219,7 +214,7 @@ class YamlBuilderTest {
 
 		YamlElement element = result.get("key");
 		assertTrue(element.isYamlAnchor());
-		assertEquals(new YamlScalar(42), element.getAsYamlAnchor().element());
+		assertEquals(new YamlScalar(42), element.getAsYamlAnchor().getElement());
 	}
 
 	@Test
@@ -230,7 +225,7 @@ class YamlBuilderTest {
 
 		YamlElement element = result.get("key");
 		assertTrue(element.isYamlAnchor());
-		assertEquals(YamlNull.INSTANCE, element.getAsYamlAnchor().element());
+		assertEquals(YamlNull.INSTANCE, element.getAsYamlAnchor().getElement());
 	}
 
 	@Test
@@ -241,7 +236,7 @@ class YamlBuilderTest {
 
 		YamlElement element = result.get("ref");
 		assertTrue(element.isYamlAlias());
-		assertEquals("targetAnchor", element.getAsYamlAlias().anchorName());
+		assertEquals("targetAnchor", element.getAsYamlAlias().getAnchorName());
 	}
 
 	@Test
@@ -261,9 +256,7 @@ class YamlBuilderTest {
 		YamlBuilder builder = YamlBuilder.mapping();
 		assertThrows(NullPointerException.class, () -> builder.addAlias("key", null));
 	}
-	//endregion
 
-	//region Sequence add methods
 	@Test
 	void addElementToSequence() {
 		YamlSequence result = YamlBuilder.sequence()
@@ -391,9 +384,7 @@ class YamlBuilderTest {
 		assertThrows(NullPointerException.class, () -> builder.addAll((String[]) null));
 		assertThrows(NullPointerException.class, () -> builder.addAll((Number[]) null));
 	}
-	//endregion
 
-	//region Sequence anchor methods
 	@Test
 	void addWithAnchorToSequence() {
 		YamlSequence result = YamlBuilder.sequence()
@@ -402,7 +393,7 @@ class YamlBuilderTest {
 
 		YamlElement element = result.get(0);
 		assertTrue(element.isYamlAnchor());
-		assertEquals("seqAnchor", element.getAsYamlAnchor().name());
+		assertEquals("seqAnchor", element.getAsYamlAnchor().getName());
 	}
 
 	@Test
@@ -423,7 +414,7 @@ class YamlBuilderTest {
 
 		YamlElement element = result.get(0);
 		assertTrue(element.isYamlAnchor());
-		assertEquals(YamlNull.INSTANCE, element.getAsYamlAnchor().element());
+		assertEquals(YamlNull.INSTANCE, element.getAsYamlAnchor().getElement());
 	}
 
 	@Test
@@ -434,11 +425,9 @@ class YamlBuilderTest {
 
 		YamlElement element = result.get(0);
 		assertTrue(element.isYamlAlias());
-		assertEquals("targetAnchor", element.getAsYamlAlias().anchorName());
+		assertEquals("targetAnchor", element.getAsYamlAlias().getAnchorName());
 	}
-	//endregion
 
-	//region Context enforcement
 	@Test
 	void addKeyValueToSequenceThrows() {
 		YamlBuilder builder = YamlBuilder.sequence();
@@ -456,9 +445,7 @@ class YamlBuilderTest {
 		YamlBuilder builder = YamlBuilder.mapping();
 		assertThrows(IllegalStateException.class, () -> builder.addAll("a", "b"));
 	}
-	//endregion
 
-	//region Nesting - mapping within mapping
 	@Test
 	void startMappingInMapping() {
 		YamlMapping result = YamlBuilder.mapping()
@@ -481,7 +468,7 @@ class YamlBuilderTest {
 
 		YamlElement element = result.get("nested");
 		assertTrue(element.isYamlAnchor());
-		assertEquals("nestedAnchor", element.getAsYamlAnchor().name());
+		assertEquals("nestedAnchor", element.getAsYamlAnchor().getName());
 	}
 
 	@Test
@@ -501,9 +488,7 @@ class YamlBuilderTest {
 		YamlMapping level3 = level2.get("level3").getAsYamlMapping();
 		assertEquals(new YamlScalar("value"), level3.get("deep"));
 	}
-	//endregion
 
-	//region Nesting - sequence within mapping
 	@Test
 	void startSequenceInMapping() {
 		YamlMapping result = YamlBuilder.mapping()
@@ -528,11 +513,9 @@ class YamlBuilderTest {
 
 		YamlElement element = result.get("items");
 		assertTrue(element.isYamlAnchor());
-		assertEquals("itemsAnchor", element.getAsYamlAnchor().name());
+		assertEquals("itemsAnchor", element.getAsYamlAnchor().getName());
 	}
-	//endregion
 
-	//region Nesting - mapping within sequence
 	@Test
 	void startMappingInSequence() {
 		YamlSequence result = YamlBuilder.sequence()
@@ -556,9 +539,7 @@ class YamlBuilderTest {
 		YamlElement element = result.get(0);
 		assertTrue(element.isYamlAnchor());
 	}
-	//endregion
 
-	//region Nesting - sequence within sequence
 	@Test
 	void startSequenceInSequence() {
 		YamlSequence result = YamlBuilder.sequence()
@@ -583,9 +564,7 @@ class YamlBuilderTest {
 		YamlElement element = result.get(0);
 		assertTrue(element.isYamlAnchor());
 	}
-	//endregion
 
-	//region Nesting errors
 	@Test
 	void startMappingWithKeyInSequenceThrows() {
 		YamlBuilder builder = YamlBuilder.sequence();
@@ -657,9 +636,7 @@ class YamlBuilderTest {
 		YamlBuilder builder = YamlBuilder.mapping();
 		assertThrows(NullPointerException.class, () -> builder.startSequenceWithAnchor("key", null));
 	}
-	//endregion
 
-	//region Conditional adding
 	@Test
 	void addIfTrueAdds() {
 		YamlMapping result = YamlBuilder.mapping()
@@ -731,9 +708,7 @@ class YamlBuilderTest {
 
 		assertFalse(result.containsKey("ref"));
 	}
-	//endregion
 
-	//region Build methods
 	@Test
 	void buildReturnsElement() {
 		YamlElement result = YamlBuilder.mapping()
@@ -780,13 +755,10 @@ class YamlBuilderTest {
 		YamlBuilder builder = YamlBuilder.mapping()
 			.startMapping("nested")
 			.add("key", "value");
-		// Not calling endMapping()
 
 		assertThrows(IllegalStateException.class, builder::build);
 	}
-	//endregion
 
-	//region Utility methods
 	@Test
 	void getNestingDepthAtRoot() {
 		YamlBuilder builder = YamlBuilder.mapping();
@@ -860,9 +832,7 @@ class YamlBuilderTest {
 		YamlBuilder builder = YamlBuilder.mapping();
 		assertThrows(NullPointerException.class, () -> builder.toString(null));
 	}
-	//endregion
 
-	//region Complex scenarios
 	@Test
 	void complexMappingStructure() {
 		YamlMapping result = YamlBuilder.mapping()
@@ -920,16 +890,14 @@ class YamlBuilderTest {
 			.endMapping()
 			.buildMapping();
 
-		// Verify anchors and aliases are in place
 		assertTrue(result.get("defaults").isYamlAnchor());
 		YamlMapping prod = result.get("production").getAsYamlMapping();
 		assertTrue(prod.get("settings").isYamlAlias());
-		assertEquals("defaultSettings", prod.get("settings").getAsYamlAlias().anchorName());
+		assertEquals("defaultSettings", prod.get("settings").getAsYamlAlias().getAnchorName());
 	}
 
 	@Test
 	void methodChaining() {
-		// Test that all methods properly return the builder for chaining
 		YamlMapping result = YamlBuilder.mapping()
 			.add("a", "1")
 			.add("b", 2)
@@ -946,7 +914,7 @@ class YamlBuilderTest {
 			.endSequence()
 			.buildMapping();
 
-		assertEquals(7, result.size()); // a, b, c, d, e, nested, list (f excluded)
+		assertEquals(7, result.size());
 	}
 
 	@Test
@@ -962,5 +930,4 @@ class YamlBuilderTest {
 		assertNotNull(result);
 		assertEquals(0, result.size());
 	}
-	//endregion
 }
