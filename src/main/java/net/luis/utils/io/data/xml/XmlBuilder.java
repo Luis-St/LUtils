@@ -1,6 +1,6 @@
 /*
  * LUtils
- * Copyright (C) 2025 Luis Staudt
+ * Copyright (C) 2026 Luis Staudt
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,7 +19,6 @@
 package net.luis.utils.io.data.xml;
 
 import net.luis.utils.util.Version;
-import org.jetbrains.annotations.UnknownNullability;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
@@ -79,7 +78,7 @@ public final class XmlBuilder {
 	/**
 	 * The current element being built.<br>
 	 */
-	private @UnknownNullability XmlElement currentElement;
+	private @Nullable XmlElement currentElement;
 	
 	/**
 	 * Private constructor for creating a new XML builder with the specified configuration.<br>
@@ -145,6 +144,7 @@ public final class XmlBuilder {
 	public @NonNull XmlBuilder element(@NonNull String name) {
 		Objects.requireNonNull(name, "Name must not be null");
 		this.ensureNoCurrentElement();
+		
 		this.currentElement = new XmlElement(name);
 		return this;
 	}
@@ -162,6 +162,7 @@ public final class XmlBuilder {
 	public @NonNull XmlBuilder container(@NonNull String name) {
 		Objects.requireNonNull(name, "Name must not be null");
 		this.ensureNoCurrentElement();
+		
 		XmlContainer container = new XmlContainer(name);
 		this.contextStack.push(new BuilderContext(container));
 		this.currentElement = container; // Set as current element so attributes can be added
@@ -180,6 +181,7 @@ public final class XmlBuilder {
 	public @NonNull XmlBuilder value(@NonNull String name, boolean value) {
 		Objects.requireNonNull(name, "Name must not be null");
 		this.ensureNoCurrentElement();
+		
 		this.currentElement = new XmlValue(name, value);
 		return this;
 	}
@@ -196,6 +198,7 @@ public final class XmlBuilder {
 	public @NonNull XmlBuilder value(@NonNull String name, @Nullable Number value) {
 		Objects.requireNonNull(name, "Name must not be null");
 		this.ensureNoCurrentElement();
+		
 		this.currentElement = new XmlValue(name, value);
 		return this;
 	}
@@ -212,6 +215,7 @@ public final class XmlBuilder {
 	public @NonNull XmlBuilder value(@NonNull String name, @Nullable String value) {
 		Objects.requireNonNull(name, "Name must not be null");
 		this.ensureNoCurrentElement();
+		
 		this.currentElement = new XmlValue(name, value);
 		return this;
 	}
@@ -228,6 +232,7 @@ public final class XmlBuilder {
 	public @NonNull XmlBuilder attribute(@NonNull String name, @Nullable String value) {
 		Objects.requireNonNull(name, "Name must not be null");
 		this.ensureCurrentElement();
+		
 		this.currentElement.addAttribute(name, value);
 		return this;
 	}
@@ -244,6 +249,7 @@ public final class XmlBuilder {
 	public @NonNull XmlBuilder attribute(@NonNull String name, boolean value) {
 		Objects.requireNonNull(name, "Name must not be null");
 		this.ensureCurrentElement();
+		
 		this.currentElement.addAttribute(name, value);
 		return this;
 	}
@@ -260,6 +266,7 @@ public final class XmlBuilder {
 	public @NonNull XmlBuilder attribute(@NonNull String name, @Nullable Number value) {
 		Objects.requireNonNull(name, "Name must not be null");
 		this.ensureCurrentElement();
+		
 		this.currentElement.addAttribute(name, value);
 		return this;
 	}
@@ -285,6 +292,7 @@ public final class XmlBuilder {
 	public @NonNull XmlBuilder attributes(@NonNull Consumer<XmlBuilder> configurator) {
 		Objects.requireNonNull(configurator, "Configurator must not be null");
 		this.ensureCurrentElement();
+		
 		configurator.accept(this);
 		return this;
 	}
@@ -302,6 +310,7 @@ public final class XmlBuilder {
 		Objects.requireNonNull(element, "Element must not be null");
 		this.ensureNoCurrentElement();
 		this.ensureInContainer();
+		
 		this.getCurrentContainer().add(element);
 		return this;
 	}
@@ -334,7 +343,6 @@ public final class XmlBuilder {
 		if (childBuilder.currentElement != null) {
 			this.getCurrentContainer().add(childBuilder.currentElement);
 		}
-		
 		return this;
 	}
 	
@@ -352,26 +360,17 @@ public final class XmlBuilder {
 		
 		BuilderContext context = this.contextStack.peek();
 		
-		// Complete any current element before ending the container
 		if (this.currentElement != null && this.currentElement != context.container) {
-			// Current element is a child element, add it to the container
 			context.container.add(this.currentElement);
 		}
-		// If currentElement is the container itself, we just clear it
 		this.currentElement = null;
 		
-		// Pop the completed container
 		this.contextStack.pop();
-		
 		if (this.contextStack.isEmpty()) {
-			// No more parent containers, set the completed container as currentElement
 			this.currentElement = context.container;
 		} else {
-			// Add the completed container to its parent
 			this.getCurrentContainer().add(context.container);
-			// currentElement remains null
 		}
-		
 		return this;
 	}
 	
@@ -390,7 +389,7 @@ public final class XmlBuilder {
 			throw new IllegalStateException("No element to build. Start building an element first.");
 		}
 		XmlElement result = this.currentElement;
-		this.currentElement = null; // Clear after building to prevent reuse
+		this.currentElement = null;
 		return result;
 	}
 	
@@ -403,6 +402,7 @@ public final class XmlBuilder {
 	 */
 	public @NonNull XmlContainer buildContainer() {
 		XmlElement element = this.build();
+		
 		if (!(element instanceof XmlContainer)) {
 			throw new IllegalStateException("Built element is not a container: " + element.getClass().getSimpleName());
 		}
@@ -418,6 +418,7 @@ public final class XmlBuilder {
 	 */
 	public @NonNull XmlValue buildValue() {
 		XmlElement element = this.build();
+		
 		if (!(element instanceof XmlValue)) {
 			throw new IllegalStateException("Built element is not a value: " + element.getClass().getSimpleName());
 		}
@@ -453,7 +454,6 @@ public final class XmlBuilder {
 			xml.append(System.lineSeparator());
 		}
 		xml.append(element.toString(this.config));
-		
 		return xml.toString();
 	}
 	
@@ -517,18 +517,13 @@ public final class XmlBuilder {
 	 */
 	private void ensureNoCurrentElement() {
 		if (this.currentElement != null) {
-			if (!this.isInContainer()) {
-				throw new IllegalStateException("Another element is currently being built. Call build() or end() first.");
-			} else {
-				// Check if currentElement is the same as the current container
-				// If so, we're just transitioning from adding attributes to adding children
-				if (this.currentElement == this.getCurrentContainer()) {
-					this.currentElement = null; // Clear but don't add to itself
-				} else {
-					// Different element, add it to the container
+			if (this.isInContainer()) {
+				if (this.currentElement != this.getCurrentContainer()) {
 					this.getCurrentContainer().add(this.currentElement);
-					this.currentElement = null;
 				}
+				this.currentElement = null;
+			} else {
+				throw new IllegalStateException("Another element is currently being built. Call build() or end() first.");
 			}
 		}
 	}

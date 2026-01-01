@@ -1,6 +1,6 @@
 /*
  * LUtils
- * Copyright (C) 2025 Luis Staudt
+ * Copyright (C) 2026 Luis Staudt
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -48,6 +48,7 @@ public record XmlDeclaration(@NonNull Version version, @NonNull Charset encoding
 	public XmlDeclaration {
 		Objects.requireNonNull(version, "Version must not be null");
 		Objects.requireNonNull(encoding, "Charset must not be null");
+		
 		if (version.getMajor() <= 0) {
 			throw new IllegalArgumentException("Major version must be greater than 0, but was " + version.getMajor());
 		}

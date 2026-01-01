@@ -1,6 +1,6 @@
 /*
  * LUtils
- * Copyright (C) 2025 Luis Staudt
+ * Copyright (C) 2026 Luis Staudt
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -75,6 +75,78 @@ public interface JsonElement {
 	}
 	
 	/**
+	 * Checks if this json primitive is a json boolean.<br>
+	 * @return True if this json primitive is a json boolean, false otherwise
+	 */
+	default boolean isJsonBoolean() {
+		return this.isJsonPrimitive() && this.getAsJsonPrimitive().isJsonBoolean();
+	}
+	
+	/**
+	 * Checks if this json primitive is a json number.<br>
+	 * @return True if this json primitive is a json number, false otherwise
+	 */
+	default boolean isJsonNumber() {
+		return this.isJsonPrimitive() && this.getAsJsonPrimitive().isJsonNumber();
+	}
+	
+	/**
+	 * Checks if this json primitive is a json byte.<br>
+	 * @return True if this json primitive is a json byte, false otherwise
+	 */
+	default boolean isJsonByte() {
+		return this.isJsonPrimitive() && this.getAsJsonPrimitive().isJsonByte();
+	}
+	
+	/**
+	 * Checks if this json primitive is a json short.<br>
+	 * @return True if this json primitive is a json short, false otherwise
+	 */
+	default boolean isJsonShort() {
+		return this.isJsonPrimitive() && this.getAsJsonPrimitive().isJsonShort();
+	}
+	
+	/**
+	 * Checks if this json primitive is a json integer.<br>
+	 * @return True if this json primitive is a json integer, false otherwise
+	 */
+	default boolean isJsonInteger() {
+		return this.isJsonPrimitive() && this.getAsJsonPrimitive().isJsonInteger();
+	}
+	
+	/**
+	 * Checks if this json primitive is a json long.<br>
+	 * @return True if this json primitive is a json long, false otherwise
+	 */
+	default boolean isJsonLong() {
+		return this.isJsonPrimitive() && this.getAsJsonPrimitive().isJsonLong();
+	}
+	
+	/**
+	 * Checks if this json primitive is a json float.<br>
+	 * @return True if this json primitive is a json float, false otherwise
+	 */
+	default boolean isJsonFloat() {
+		return this.isJsonPrimitive() && this.getAsJsonPrimitive().isJsonFloat();
+	}
+	
+	/**
+	 * Checks if this json primitive is a json double.<br>
+	 * @return True if this json primitive is a json double, false otherwise
+	 */
+	default boolean isJsonDouble() {
+		return this.isJsonPrimitive() && this.getAsJsonPrimitive().isJsonDouble();
+	}
+	
+	/**
+	 * Checks if this json primitive is a json string.<br>
+	 * @return True if this json primitive is a json string, false otherwise
+	 */
+	default boolean isJsonString() {
+		return this.isJsonPrimitive() && this.getAsJsonPrimitive().isJsonString();
+	}
+	
+	/**
 	 * Converts this json element to a json object.<br>
 	 *
 	 * @return This json element as a json object
@@ -111,6 +183,96 @@ public interface JsonElement {
 			return primitive;
 		}
 		throw new JsonTypeException("Expected a json primitive, but found: " + this.getName());
+	}
+	
+	/**
+	 * Converts this json element to a boolean.<br>
+	 *
+	 * @return This json primitive as a boolean
+	 * @throws JsonTypeException If this json primitive is not a json boolean
+	 */
+	default boolean getAsBoolean() {
+		return this.getAsJsonPrimitive().getAsBoolean();
+	}
+	
+	/**
+	 * Converts this json element to a number.<br>
+	 *
+	 * @return This json primitive as a number
+	 * @throws JsonTypeException If this json primitive is not a json number
+	 */
+	default @NonNull Number getAsNumber() {
+		return this.getAsJsonPrimitive().getAsNumber();
+	}
+	
+	/**
+	 * Converts this json element to a byte.<br>
+	 *
+	 * @return This json primitive as a byte
+	 * @throws JsonTypeException If this json primitive is not a json byte
+	 */
+	default byte getAsByte() {
+		return this.getAsJsonPrimitive().getAsByte();
+	}
+	
+	/**
+	 * Converts this json element to a short.<br>
+	 *
+	 * @return This json primitive as a short
+	 * @throws JsonTypeException If this json primitive is not a json short
+	 */
+	default short getAsShort() {
+		return this.getAsJsonPrimitive().getAsShort();
+	}
+	
+	/**
+	 * Converts this json element to an integer.<br>
+	 *
+	 * @return This json primitive as an integer
+	 * @throws JsonTypeException If this json primitive is not a json integer
+	 */
+	default int getAsInteger() {
+		return this.getAsJsonPrimitive().getAsInteger();
+	}
+	
+	/**
+	 * Converts this json element to a long.<br>
+	 *
+	 * @return This json primitive as a long
+	 * @throws JsonTypeException If this json primitive is not a json long
+	 */
+	default long getAsLong() {
+		return this.getAsJsonPrimitive().getAsLong();
+	}
+	
+	/**
+	 * Converts this json element to a float.<br>
+	 *
+	 * @return This json primitive as a float
+	 * @throws JsonTypeException If this json primitive is not a json float
+	 */
+	default float getAsFloat() {
+		return this.getAsJsonPrimitive().getAsFloat();
+	}
+	
+	/**
+	 * Converts this json element to a double.<br>
+	 *
+	 * @return This json primitive as a double
+	 * @throws JsonTypeException If this json primitive is not a json double
+	 */
+	default double getAsDouble() {
+		return this.getAsJsonPrimitive().getAsDouble();
+	}
+	
+	/**
+	 * Converts this json element to a string.<br>
+	 *
+	 * @return This json primitive as a string
+	 * @throws JsonTypeException If this json primitive is not a json string
+	 */
+	default @NonNull String getAsString() {
+		return this.getAsJsonPrimitive().getAsString();
 	}
 	
 	/**

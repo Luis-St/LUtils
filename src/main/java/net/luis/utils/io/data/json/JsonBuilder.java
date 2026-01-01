@@ -1,6 +1,6 @@
 /*
  * LUtils
- * Copyright (C) 2025 Luis Staudt
+ * Copyright (C) 2026 Luis Staudt
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -471,6 +471,7 @@ public final class JsonBuilder {
 	 */
 	public @NonNull JsonBuilder addAll(@NonNull String... values) {
 		Objects.requireNonNull(values, "Values array must not be null");
+		
 		for (String value : values) {
 			this.add(value);
 		}
@@ -488,6 +489,7 @@ public final class JsonBuilder {
 	 */
 	public @NonNull JsonBuilder addAll(@NonNull Number... values) {
 		Objects.requireNonNull(values, "Values array must not be null");
+		
 		for (Number value : values) {
 			this.add(value);
 		}
@@ -505,6 +507,7 @@ public final class JsonBuilder {
 	 */
 	public @NonNull JsonBuilder addAll(boolean... values) {
 		Objects.requireNonNull(values, "Values array must not be null");
+		
 		for (boolean value : values) {
 			this.add(value);
 		}
@@ -630,11 +633,9 @@ public final class JsonBuilder {
 		}
 		
 		this.contextStack.pop();
-		
 		if (this.contextStack.isEmpty()) {
 			throw new IllegalStateException("Cannot end root array context. Use build() instead.");
 		}
-		
 		return this;
 	}
 	
@@ -735,6 +736,7 @@ public final class JsonBuilder {
 		if (!(element instanceof JsonObject object)) {
 			throw new IllegalStateException("Root element is not a JsonObject");
 		}
+		
 		JsonObject result = new JsonObject();
 		result.addAll(object);
 		return result;
@@ -752,6 +754,7 @@ public final class JsonBuilder {
 		if (!(element instanceof JsonArray array)) {
 			throw new IllegalStateException("Root element is not a JsonArray");
 		}
+		
 		JsonArray result = new JsonArray();
 		result.addAll(array);
 		return result;
@@ -776,8 +779,6 @@ public final class JsonBuilder {
 		return !this.contextStack.isEmpty() && this.getCurrentContext().type == BuilderContext.OBJECT;
 	}
 	
-	//region Utility methods
-	
 	/**
 	 * Checks if the builder is currently in an array context.
 	 *
@@ -796,6 +797,7 @@ public final class JsonBuilder {
 		return this.contextStack.size() == 1;
 	}
 	
+	//region Object overrides
 	/**
 	 * Returns a string representation of the current json structure being built.<br>
 	 * This method uses the default json configuration for formatting.

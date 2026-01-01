@@ -1,6 +1,6 @@
 /*
  * LUtils
- * Copyright (C) 2025 Luis Staudt
+ * Copyright (C) 2026 Luis Staudt
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -97,8 +97,6 @@ public final class XmlContainer extends XmlElement {
 		return false;
 	}
 	
-	//region Query operations
-	
 	/**
 	 * Returns the elements of this container.<br>
 	 * @return The elements of this container (modifiable)
@@ -182,9 +180,6 @@ public final class XmlContainer extends XmlElement {
 	public @NonNull @Unmodifiable Collection<XmlElement> elements() {
 		return this.elements.elements();
 	}
-	//endregion
-	
-	//region Add operations
 	
 	/**
 	 * Adds the given element to this container.<br>
@@ -218,9 +213,6 @@ public final class XmlContainer extends XmlElement {
 	public void addValue(@NonNull XmlValue value) {
 		this.elements.addValue(value);
 	}
-	//endregion
-	
-	//region Remove operations
 	
 	/**
 	 * Removes the given element from this container.<br>
@@ -262,9 +254,6 @@ public final class XmlContainer extends XmlElement {
 	public void clear() {
 		this.elements.clear();
 	}
-	//endregion
-	
-	//region Get operations
 	
 	/**
 	 * Returns the element with the given name from this container.<br>
@@ -347,7 +336,6 @@ public final class XmlContainer extends XmlElement {
 	public @NonNull XmlValue getAsValue(int index) {
 		return this.elements.getAsValue(index);
 	}
-	//endregion
 	
 	//region Object overrides
 	@Override

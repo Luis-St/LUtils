@@ -1,6 +1,6 @@
 /*
  * LUtils
- * Copyright (C) 2025 Luis Staudt
+ * Copyright (C) 2026 Luis Staudt
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -81,6 +81,7 @@ public record JsonConfig(
 	public JsonConfig {
 		Objects.requireNonNull(indent, "Indent must not be null");
 		Objects.requireNonNull(charset, "Charset must not be null");
+		
 		if (simplifyArrays && 1 > maxArraySimplificationSize) {
 			throw new IllegalArgumentException("Max array simplification size must be greater than 0 if json array should be simplified");
 		}

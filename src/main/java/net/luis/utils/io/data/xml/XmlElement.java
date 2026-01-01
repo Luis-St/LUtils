@@ -1,6 +1,6 @@
 /*
  * LUtils
- * Copyright (C) 2025 Luis Staudt
+ * Copyright (C) 2026 Luis Staudt
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -161,8 +161,6 @@ public sealed class XmlElement permits XmlContainer, XmlValue {
 		return this.attributes;
 	}
 	
-	//region Add attribute
-	
 	/**
 	 * Adds the specified attribute to the element.<br>
 	 *
@@ -281,9 +279,6 @@ public sealed class XmlElement permits XmlContainer, XmlValue {
 	public @Nullable XmlAttribute addAttribute(@NonNull String key, double value) {
 		return this.attributes.add(key, value);
 	}
-	//endregion
-	
-	//region Get attribute
 	
 	/**
 	 * Returns the attribute with the specified key, or null if there is no such attribute in this element.<br>
@@ -407,7 +402,6 @@ public sealed class XmlElement permits XmlContainer, XmlValue {
 	public <T> @NonNull T getAttributeAs(@NonNull String key, @NonNull ThrowableFunction<String, T, ? extends Exception> parser) {
 		return this.attributes.getAs(key, parser);
 	}
-	//endregion
 	
 	//region Object overrides
 	@Override

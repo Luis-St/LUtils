@@ -1,6 +1,6 @@
 /*
  * LUtils
- * Copyright (C) 2025 Luis Staudt
+ * Copyright (C) 2026 Luis Staudt
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -63,12 +63,14 @@ public record XmlDocument(@NonNull XmlDeclaration declaration, @NonNull XmlEleme
 	 */
 	public @NonNull String toString(@NonNull XmlConfig config) {
 		Objects.requireNonNull(config, "Config must not be null");
+		
 		StringBuilder xml = new StringBuilder();
 		xml.append(this.declaration);
 		if (config.prettyPrint()) {
 			xml.append(System.lineSeparator());
 		}
 		xml.append(this.rootElement.toString(config));
+		
 		return xml.toString();
 	}
 }

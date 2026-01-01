@@ -1,6 +1,6 @@
 /*
  * LUtils
- * Copyright (C) 2025 Luis Staudt
+ * Copyright (C) 2026 Luis Staudt
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -57,8 +57,6 @@ public class JsonObject implements JsonElement {
 	public JsonObject(@NonNull Map<String, ? extends JsonElement> elements) {
 		this.elements.putAll(Objects.requireNonNull(elements, "Json elements must not be null"));
 	}
-	
-	//region Query operations
 	
 	/**
 	 * Returns the number of elements in this json object.<br>
@@ -129,9 +127,6 @@ public class JsonObject implements JsonElement {
 	public void forEach(@NonNull BiConsumer<? super String, ? super JsonElement> action) {
 		this.elements.forEach(Objects.requireNonNull(action, "Action must not be null"));
 	}
-	//endregion
-	
-	//region Add operations
 	
 	/**
 	 * Adds the given element with the given key to this json object.<br>
@@ -295,9 +290,6 @@ public class JsonObject implements JsonElement {
 	public void addAll(@NonNull Map<String, ? extends JsonElement> elements) {
 		this.elements.putAll(Objects.requireNonNull(elements, "Json elements must not be null"));
 	}
-	//endregion
-	
-	//region Remove operations
 	
 	/**
 	 * Removes the element with the given key from this json object.<br>
@@ -315,9 +307,6 @@ public class JsonObject implements JsonElement {
 	public void clear() {
 		this.elements.clear();
 	}
-	//endregion
-	
-	//region Replace operations
 	
 	/**
 	 * Replaces the element with the given key in this json object with the new given element.<br>
@@ -345,11 +334,9 @@ public class JsonObject implements JsonElement {
 	public boolean replace(@NonNull String key, @NonNull JsonElement oldElement, @Nullable JsonElement newElement) {
 		Objects.requireNonNull(key, "Key must not be null");
 		Objects.requireNonNull(oldElement, "Old value must not be null");
+		
 		return this.elements.replace(key, oldElement, newElement == null ? JsonNull.INSTANCE : newElement);
 	}
-	//endregion
-	
-	//region Get operations
 	
 	/**
 	 * Gets the element with the given key from this json object.<br>
@@ -375,13 +362,15 @@ public class JsonObject implements JsonElement {
 	 */
 	public @NonNull JsonObject getAsJsonObject(@NonNull String key) {
 		JsonElement json = this.get(key);
+		
 		if (json == null) {
 			throw new NoSuchJsonElementException("Expected json object for key '" + key + "', but found none");
 		}
 		if (json instanceof JsonObject object) {
 			return object;
 		}
-		return json.getAsJsonObject(); // throws JsonTypeException
+		
+		return json.getAsJsonObject();
 	}
 	
 	/**
@@ -396,13 +385,15 @@ public class JsonObject implements JsonElement {
 	 */
 	public @NonNull JsonArray getAsJsonArray(@NonNull String key) {
 		JsonElement json = this.get(key);
+		
 		if (json == null) {
 			throw new NoSuchJsonElementException("Expected json array for key '" + key + "', but found none");
 		}
 		if (json instanceof JsonArray array) {
 			return array;
 		}
-		return json.getAsJsonArray(); // throws JsonTypeException
+		
+		return json.getAsJsonArray();
 	}
 	
 	/**
@@ -423,7 +414,7 @@ public class JsonObject implements JsonElement {
 		if (json instanceof JsonPrimitive primitive) {
 			return primitive;
 		}
-		return json.getAsJsonPrimitive(); // throws JsonTypeException
+		return json.getAsJsonPrimitive();
 	}
 	
 	/**
@@ -560,7 +551,6 @@ public class JsonObject implements JsonElement {
 	public double getAsDouble(@NonNull String key) {
 		return this.getJsonPrimitive(key).getAsDouble();
 	}
-	//endregion
 	
 	//region Object overrides
 	@Override
