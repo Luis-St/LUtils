@@ -779,8 +779,6 @@ public final class JsonBuilder {
 		return !this.contextStack.isEmpty() && this.getCurrentContext().type == BuilderContext.OBJECT;
 	}
 	
-	//region Utility methods
-	
 	/**
 	 * Checks if the builder is currently in an array context.
 	 *
@@ -799,6 +797,7 @@ public final class JsonBuilder {
 		return this.contextStack.size() == 1;
 	}
 	
+	//region Object overrides
 	/**
 	 * Returns a string representation of the current json structure being built.<br>
 	 * This method uses the default json configuration for formatting.
