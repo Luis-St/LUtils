@@ -48,7 +48,7 @@ class XmlTypeProviderIntegrationTest {
 	
 	private static final XmlTypeProvider PROVIDER = XmlTypeProvider.INSTANCE;
 	
-	private static @NotNull Codec<UltraComplexRecord> createUltraComplexCodec() {
+	private static @NonNull Codec<UltraComplexRecord> createUltraComplexCodec() {
 		return CodecBuilder.of(
 			UUID.fieldOf("id", UltraComplexRecord::id),
 			Codec.ranged(INTEGER, 0, 150).fieldOf("age", UltraComplexRecord::age),
@@ -1563,101 +1563,101 @@ class XmlTypeProviderIntegrationTest {
 	}
 	
 	private record UltraComplexRecord(
-		@NotNull java.util.UUID id,
+		@NonNull java.util.UUID id,
 		int age,
-		@NotNull String name,
-		@NotNull LocalDateTime timestamp,
-		@NotNull Duration elapsed,
-		@NotNull Map<java.util.UUID, Double> metrics,
-		@NotNull Either<File, Path> location,
+		@NonNull String name,
+		@NonNull LocalDateTime timestamp,
+		@NonNull Duration elapsed,
+		@NonNull Map<java.util.UUID, Double> metrics,
+		@NonNull Either<File, Path> location,
 		Charset encoding,
 		float[] scores,
-		@NotNull IntStream dataStream,
-		@NotNull List<java.net.URI> endpoints,
-		@NotNull Optional<ZonedDateTime> lastModified
+		@NonNull IntStream dataStream,
+		@NonNull List<java.net.URI> endpoints,
+		@NonNull Optional<ZonedDateTime> lastModified
 	) {}
 	
 	private record TimeAndIORecord(
-		@NotNull LocalTime time,
-		@NotNull LocalDate date,
-		@NotNull Instant instant,
-		@NotNull Period period,
-		@NotNull File file,
-		@NotNull Path path,
-		@NotNull java.net.URI uri,
-		@NotNull java.net.URL url,
-		@NotNull Charset charset
+		@NonNull LocalTime time,
+		@NonNull LocalDate date,
+		@NonNull Instant instant,
+		@NonNull Period period,
+		@NonNull File file,
+		@NonNull Path path,
+		@NonNull java.net.URI uri,
+		@NonNull java.net.URL url,
+		@NonNull Charset charset
 	) {}
 	
 	private record Task(
-		@NotNull String id,
-		@NotNull String description,
-		@NotNull LocalDateTime deadline,
-		@NotNull List<Integer> tags
+		@NonNull String id,
+		@NonNull String description,
+		@NonNull LocalDateTime deadline,
+		@NonNull List<Integer> tags
 	) {}
 	
 	private record ScientificDataRecord(
-		@NotNull java.util.UUID experimentId,
+		@NonNull java.util.UUID experimentId,
 		double temperature,
 		double humidity,
 		double[] measurements,
-		@NotNull Map<Integer, Double> statisticsByHour,
-		@NotNull Instant recordedAt,
-		@NotNull Duration observationPeriod,
-		@NotNull Either<String, Integer> sensorId,
-		@NotNull LongStream rawData
+		@NonNull Map<Integer, Double> statisticsByHour,
+		@NonNull Instant recordedAt,
+		@NonNull Duration observationPeriod,
+		@NonNull Either<String, Integer> sensorId,
+		@NonNull LongStream rawData
 	) {}
 	
 	private record NetworkConfigRecord(
-		@NotNull String hostname,
+		@NonNull String hostname,
 		int port,
-		@NotNull List<java.net.URI> endpoints,
-		@NotNull Map<String, java.net.URL> services,
-		@NotNull Either<Integer, String> timeout,
+		@NonNull List<java.net.URI> endpoints,
+		@NonNull Map<String, java.net.URL> services,
+		@NonNull Either<Integer, String> timeout,
 		boolean sslEnabled,
-		@NotNull Optional<Path> certificatePath,
-		@NotNull Map<Integer, String> portMapping
+		@NonNull Optional<Path> certificatePath,
+		@NonNull Map<Integer, String> portMapping
 	) {}
 	
 	private record DataAnalyticsRecord(
-		@NotNull String datasetId,
-		@NotNull Map<Long, Double> timeSeries,
-		@NotNull IntStream samples,
-		@NotNull DoubleStream normalizedData,
-		@NotNull Map<String, Integer> categoryCounts,
-		@NotNull LocalDate analysisDate,
-		@NotNull Duration processingTime,
-		@NotNull Either<Double, String> confidence
+		@NonNull String datasetId,
+		@NonNull Map<Long, Double> timeSeries,
+		@NonNull IntStream samples,
+		@NonNull DoubleStream normalizedData,
+		@NonNull Map<String, Integer> categoryCounts,
+		@NonNull LocalDate analysisDate,
+		@NonNull Duration processingTime,
+		@NonNull Either<Double, String> confidence
 	) {}
 	
 	private record ConfigurationRecord(
-		@NotNull String configId,
-		@NotNull String appName,
+		@NonNull String configId,
+		@NonNull String appName,
 		int threadPoolSize,
 		boolean debugMode,
-		@NotNull Optional<String> ipAddress,
-		@NotNull Map<String, String> environment,
-		@NotNull Duration timeout,
-		@NotNull List<Either<File, java.net.URI>> configSources
+		@NonNull Optional<String> ipAddress,
+		@NonNull Map<String, String> environment,
+		@NonNull Duration timeout,
+		@NonNull List<Either<File, java.net.URI>> configSources
 	) {}
 	
 	private record OfficeWithPeople(
-		@NotNull String officeName,
-		@NotNull Address location,
-		@NotNull List<PersonWithAddress> employees
+		@NonNull String officeName,
+		@NonNull Address location,
+		@NonNull List<PersonWithAddress> employees
 	) {}
 	
-	private record Person(@NotNull String name, int age) {}
+	private record Person(@NonNull String name, int age) {}
 	
-	private record Address(@NotNull String street, @NotNull String city, int zipCode) {}
+	private record Address(@NonNull String street, @NonNull String city, int zipCode) {}
 	
-	private record PersonWithAddress(@NotNull String name, int age, @NotNull Address address) {}
+	private record PersonWithAddress(@NonNull String name, int age, @NonNull Address address) {}
 	
-	private record Team(@NotNull String teamName, @NotNull List<String> members) {}
+	private record Team(@NonNull String teamName, @NonNull List<String> members) {}
 	
-	private record PersonWithOptionalEmail(@NotNull String name, @NotNull Optional<String> email) {}
+	private record PersonWithOptionalEmail(@NonNull String name, @NonNull Optional<String> email) {}
 	
-	private record Config(@NotNull String name, @NotNull Map<String, Integer> settings) {}
+	private record Config(@NonNull String name, @NonNull Map<String, Integer> settings) {}
 	
-	private record AutoMappedPerson(@NotNull String name, int age, @NotNull String email) {}
+	private record AutoMappedPerson(@NonNull String name, int age, @NonNull String email) {}
 }

@@ -1,6 +1,6 @@
 /*
  * LUtils
- * Copyright (C) 2025 Luis Staudt
+ * Copyright (C) 2026 Luis Staudt
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -21,7 +21,7 @@ package net.luis.utils.io.token.type.classifier;
 import net.luis.utils.io.token.TokenReader;
 import net.luis.utils.io.token.tokens.Token;
 import net.luis.utils.io.token.type.TokenType;
-import org.jetbrains.annotations.NotNull;
+import org.jspecify.annotations.NonNull;
 
 import java.util.Set;
 
@@ -43,5 +43,5 @@ public interface TokenClassifier {
 	 * @throws NullPointerException If the token is null
 	 * @see TokenReader
 	 */
-	@NotNull Set<TokenType> classifyToken(@NotNull Token token);
+	@NonNull Set<TokenType> classifyToken(@NonNull Token token);
 }

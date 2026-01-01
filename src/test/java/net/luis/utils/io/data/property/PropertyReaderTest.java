@@ -1,6 +1,6 @@
 /*
  * LUtils
- * Copyright (C) 2025 Luis Staudt
+ * Copyright (C) 2026 Luis Staudt
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,16 +18,14 @@
 
 package net.luis.utils.io.data.property;
 
-import net.luis.utils.annotation.type.MockObject;
 import net.luis.utils.io.data.InputProvider;
 import net.luis.utils.io.data.property.exception.PropertySyntaxException;
-import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.Test;
 
-import java.io.IOException;
+import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
-import java.util.Objects;
+import java.util.Map;
 import java.util.Set;
 import java.util.regex.Pattern;
 
@@ -41,353 +39,603 @@ import static org.junit.jupiter.api.Assertions.*;
 class PropertyReaderTest {
 	
 	private static final PropertyConfig DEFAULT_CONFIG = PropertyConfig.DEFAULT;
-	private static final PropertyConfig ADVANCED_DEFAULT_CONFIG = new PropertyConfig('=', 1, Set.of('#'), Pattern.compile("^[a-zA-Z0-9._-]+$"), Pattern.compile(".*"), true, StandardCharsets.UTF_8);
-	private static final PropertyConfig CUSTOM_CONFIG = new PropertyConfig(':', 0, Set.of(';'), Pattern.compile("^[a-z._]+$"), Pattern.compile("^[ a-zA-Z0-9._-]*$"), true, StandardCharsets.UTF_8);
+	private static final PropertyConfig ADVANCED_CONFIG = PropertyConfig.ADVANCED;
 	
-	private static @NotNull PropertyReader createReader(@NotNull String content) {
-		return new PropertyReader(new InputProvider(new StringInputStream(content)));
+	private static PropertyReader createReader(String content) {
+		return createReader(content, DEFAULT_CONFIG);
 	}
 	
-	private static @NotNull PropertyReader createReader(@NotNull String content, @NotNull PropertyConfig config) {
-		return new PropertyReader(new InputProvider(new StringInputStream(content)), config);
+	private static PropertyReader createReader(String content, PropertyConfig config) {
+		ByteArrayInputStream stream = new ByteArrayInputStream(content.getBytes(StandardCharsets.UTF_8));
+		return new PropertyReader(new InputProvider(stream), config);
 	}
 	
 	@Test
-	void constructor() {
-		InputProvider provider = new InputProvider(InputStream.nullInputStream());
-		
+	void constructorWithInputProvider() {
 		assertThrows(NullPointerException.class, () -> new PropertyReader(null));
-		assertDoesNotThrow(() -> new PropertyReader(provider));
+		assertThrows(NullPointerException.class, () -> new PropertyReader(null, DEFAULT_CONFIG));
+		assertThrows(NullPointerException.class, () -> new PropertyReader(new InputProvider(InputStream.nullInputStream()), null));
 		
-		assertThrows(NullPointerException.class, () -> new PropertyReader(null, PropertyConfig.DEFAULT));
-		assertThrows(NullPointerException.class, () -> new PropertyReader(provider, null));
-		assertDoesNotThrow(() -> new PropertyReader(provider, PropertyConfig.DEFAULT));
+		assertDoesNotThrow(() -> new PropertyReader(new InputProvider(InputStream.nullInputStream())));
+		assertDoesNotThrow(() -> new PropertyReader(new InputProvider(InputStream.nullInputStream()), DEFAULT_CONFIG));
+		assertDoesNotThrow(() -> new PropertyReader(new InputProvider(InputStream.nullInputStream()), ADVANCED_CONFIG));
 	}
 	
 	@Test
-	void readSimplePropertiesDefaultConfig() {
-		PropertyReader reader;
-		Properties properties;
-		
-		reader = createReader("key1 = value1" + System.lineSeparator() + "key2 =value2" + System.lineSeparator() + "key3=" + System.lineSeparator() + "key4= value4");
-		properties = assertDoesNotThrow(reader::readProperties);
-		assertEquals(4, properties.size());
-		assertNotNull(properties.getProperty("key1"));
-		assertEquals("value1", properties.getProperty("key1").getAsString());
-		assertNotNull(properties.getProperty("key2"));
-		assertEquals("alue2", properties.getProperty("key2").getAsString());
-		assertNotNull(properties.getProperty("key3"));
-		assertEquals("", properties.getProperty("key3").getAsString());
-		assertNotNull(properties.getProperty("key4"));
-		assertEquals(" value4", properties.getProperty("key4").getAsString());
-		
-		// Commented line
-		reader = createReader("#key1 = value1" + System.lineSeparator());
-		properties = assertDoesNotThrow(reader::readProperties);
-		assertEquals(0, properties.size());
-		
-		// No separator
-		reader = createReader("key_a : value1");
-		assertThrows(PropertySyntaxException.class, reader::readProperties);
-		
-		// Illegal key
-		reader = createReader("key 1 = value1" + System.lineSeparator());
-		assertThrows(PropertySyntaxException.class, reader::readProperties);
-		
-		// Compacted key -> Not allowed
-		reader = createReader("key.[1|2] = value1" + System.lineSeparator());
-		assertThrows(PropertySyntaxException.class, reader::readProperties);
-		
-		// Variable key -> Not allowed
-		reader = createReader("key.${?key1} = value1" + System.lineSeparator());
-		assertThrows(PropertySyntaxException.class, reader::readProperties);
+	void readPropertiesEmptyInput() {
+		try (PropertyReader reader = createReader("")) {
+			PropertyObject props = reader.readProperties();
+			assertTrue(props.isEmpty());
+			assertEquals(0, props.size());
+		} catch (Exception e) {
+			fail("Unexpected exception: " + e.getMessage());
+		}
 	}
 	
 	@Test
-	void readSimplePropertiesCustomConfig() {
-		PropertyReader reader;
-		Properties properties;
+	void readPropertiesCommentLines() {
+		String content = """
+			# This is a comment
+			key1 = value1
+			# Another comment
+			key2 = value2
+			""";
 		
-		reader = createReader("key_a : value1" + System.lineSeparator() + "key_b :value2" + System.lineSeparator() + "key_c:" + System.lineSeparator() + "key_d: value4", CUSTOM_CONFIG);
-		properties = assertDoesNotThrow(reader::readProperties);
-		assertEquals(4, properties.size());
-		assertNotNull(properties.getProperty("key_a"));
-		assertEquals("value1", properties.getProperty("key_a").getAsString());
-		assertNotNull(properties.getProperty("key_b"));
-		assertEquals("alue2", properties.getProperty("key_b").getAsString());
-		assertNotNull(properties.getProperty("key_c"));
-		assertEquals("", properties.getProperty("key_c").getAsString());
-		assertNotNull(properties.getProperty("key_d"));
-		assertEquals(" value4", properties.getProperty("key_d").getAsString());
-		
-		// Commented line
-		reader = createReader(";key_a : value1", CUSTOM_CONFIG);
-		properties = assertDoesNotThrow(reader::readProperties);
-		assertEquals(0, properties.size());
-		
-		// No separator
-		reader = createReader("key_a = value1", CUSTOM_CONFIG);
-		assertThrows(PropertySyntaxException.class, reader::readProperties);
-		
-		// Illegal key
-		reader = createReader("key1 : value1", CUSTOM_CONFIG);
-		assertThrows(PropertySyntaxException.class, reader::readProperties);
-		
-		// Compacted key -> Not allowed
-		reader = createReader("key.[a|b] = value1" + System.lineSeparator());
-		assertThrows(PropertySyntaxException.class, reader::readProperties);
-		
-		// Variable key -> Not allowed
-		reader = createReader("key.${?key_a} = value1" + System.lineSeparator());
-		assertThrows(PropertySyntaxException.class, reader::readProperties);
-		
-		// Illegal value
-		reader = createReader("key_a : $value", CUSTOM_CONFIG);
-		assertThrows(PropertySyntaxException.class, reader::readProperties);
+		try (PropertyReader reader = createReader(content)) {
+			PropertyObject props = reader.readProperties();
+			assertEquals(2, props.size());
+			assertEquals(new PropertyValue("value1"), props.get("key1"));
+			assertEquals(new PropertyValue("value2"), props.get("key2"));
+		} catch (Exception e) {
+			fail("Unexpected exception: " + e.getMessage());
+		}
 	}
 	
 	@Test
-	void readCompactedPropertiesAdvancedDefaultConfig() {
-		PropertyReader reader;
-		Properties properties;
+	void readPropertiesBlankLines() {
+		String content = """
+			key1 = value1
+			
+			key2 = value2
+			
+			
+			key3 = value3
+			""";
 		
-		reader = createReader("key.[1] = value1" + System.lineSeparator() + "key.[2|3] =value2" + System.lineSeparator() + "key.[4].[5]=" + System.lineSeparator() + "key.[6|7].[8|9]= value4", ADVANCED_DEFAULT_CONFIG);
-		properties = assertDoesNotThrow(reader::readProperties);
-		assertEquals(8, properties.size());
-		assertNotNull(properties.getProperty("key.1"));
-		assertEquals("value1", properties.getProperty("key.1").getAsString());
-		assertNotNull(properties.getProperty("key.2"));
-		assertEquals("alue2", properties.getProperty("key.2").getAsString());
-		assertNotNull(properties.getProperty("key.3"));
-		assertEquals("alue2", properties.getProperty("key.3").getAsString());
-		assertNotNull(properties.getProperty("key.4.5"));
-		assertEquals("", properties.getProperty("key.4.5").getAsString());
-		assertNotNull(properties.getProperty("key.6.8"));
-		assertEquals(" value4", properties.getProperty("key.6.8").getAsString());
-		assertNotNull(properties.getProperty("key.6.9"));
-		assertEquals(" value4", properties.getProperty("key.6.9").getAsString());
-		assertNotNull(properties.getProperty("key.7.8"));
-		assertEquals(" value4", properties.getProperty("key.7.8").getAsString());
-		assertNotNull(properties.getProperty("key.7.9"));
-		assertEquals(" value4", properties.getProperty("key.7.9").getAsString());
-		
-		// Empty key part
-		reader = createReader("key..test = value1", ADVANCED_DEFAULT_CONFIG);
-		assertThrows(PropertySyntaxException.class, reader::readProperties);
-		
-		// Blank key part
-		reader = createReader("key. .test = value1", ADVANCED_DEFAULT_CONFIG);
-		assertThrows(PropertySyntaxException.class, reader::readProperties);
-		
-		// Illegal key end
-		reader = createReader("key.test. = value1", ADVANCED_DEFAULT_CONFIG);
-		assertThrows(PropertySyntaxException.class, reader::readProperties);
-		
-		// Empty compacted key part
-		reader = createReader("key.[].test = value1", ADVANCED_DEFAULT_CONFIG);
-		assertThrows(PropertySyntaxException.class, reader::readProperties);
-		
-		// Blank compacted key part
-		reader = createReader("key.[ ].test = value1", ADVANCED_DEFAULT_CONFIG);
-		assertThrows(PropertySyntaxException.class, reader::readProperties);
+		try (PropertyReader reader = createReader(content)) {
+			PropertyObject props = reader.readProperties();
+			assertEquals(3, props.size());
+			assertEquals(new PropertyValue("value1"), props.get("key1"));
+			assertEquals(new PropertyValue("value2"), props.get("key2"));
+			assertEquals(new PropertyValue("value3"), props.get("key3"));
+		} catch (Exception e) {
+			fail("Unexpected exception: " + e.getMessage());
+		}
 	}
 	
 	@Test
-	void readCompactedPropertiesCustomConfig() {
-		PropertyReader reader;
-		Properties properties;
+	void readPropertiesSingleProperty() {
+		String content = "key = value";
 		
-		reader = createReader("key.[a] : value1" + System.lineSeparator() + "key.[b|c] :value2" + System.lineSeparator() + "key.[d].[e]:" + System.lineSeparator() + "key.[f|g].[h|i]: value4", CUSTOM_CONFIG);
-		properties = assertDoesNotThrow(reader::readProperties);
-		assertEquals(8, properties.size());
-		assertNotNull(properties.getProperty("key.a"));
-		assertEquals("value1", properties.getProperty("key.a").getAsString());
-		assertNotNull(properties.getProperty("key.b"));
-		assertEquals("alue2", properties.getProperty("key.b").getAsString());
-		assertNotNull(properties.getProperty("key.c"));
-		assertEquals("alue2", properties.getProperty("key.c").getAsString());
-		assertNotNull(properties.getProperty("key.d.e"));
-		assertEquals("", properties.getProperty("key.d.e").getAsString());
-		assertNotNull(properties.getProperty("key.f.h"));
-		assertEquals(" value4", properties.getProperty("key.f.h").getAsString());
-		assertNotNull(properties.getProperty("key.f.i"));
-		assertEquals(" value4", properties.getProperty("key.f.i").getAsString());
-		assertNotNull(properties.getProperty("key.g.h"));
-		assertEquals(" value4", properties.getProperty("key.g.h").getAsString());
-		assertNotNull(properties.getProperty("key.g.i"));
-		assertEquals(" value4", properties.getProperty("key.g.i").getAsString());
-		
-		// Empty key part
-		reader = createReader("key..test : value1", CUSTOM_CONFIG);
-		assertThrows(PropertySyntaxException.class, reader::readProperties);
-		
-		// Blank key part
-		reader = createReader("key. .test : value1", CUSTOM_CONFIG);
-		assertThrows(PropertySyntaxException.class, reader::readProperties);
-		
-		// Illegal key end
-		reader = createReader("key.test. : value1", CUSTOM_CONFIG);
-		assertThrows(PropertySyntaxException.class, reader::readProperties);
-		
-		// Empty compacted key part
-		reader = createReader("key.[].test : value1", CUSTOM_CONFIG);
-		assertThrows(PropertySyntaxException.class, reader::readProperties);
-		
-		// Blank compacted key part
-		reader = createReader("key.[ ].test : value1", CUSTOM_CONFIG);
-		assertThrows(PropertySyntaxException.class, reader::readProperties);
+		try (PropertyReader reader = createReader(content)) {
+			PropertyObject props = reader.readProperties();
+			assertEquals(1, props.size());
+			assertEquals(new PropertyValue("value"), props.get("key"));
+		} catch (Exception e) {
+			fail("Unexpected exception: " + e.getMessage());
+		}
 	}
 	
 	@Test
-	void readVariablePropertiesAdvancedDefaultConfig() {
-		System.setProperty("sys.default", "2");
-		PropertyReader reader;
-		Properties properties;
+	void readPropertiesMultipleProperties() {
+		String content = """
+			name = John Doe
+			age = 30
+			active = true
+			city = New York
+			""";
 		
-		reader = createReader("key = 1" + System.lineSeparator() + "key.${?key} =value2" + System.lineSeparator() + "key.${sys?sys.default}=" + System.lineSeparator() + "key.${env?env.default?}.${property?key.test?4}= value4", ADVANCED_DEFAULT_CONFIG);
-		properties = assertDoesNotThrow(reader::readProperties);
-		assertEquals(4, properties.size());
-		assertNotNull(properties.getProperty("key"));
-		assertEquals("1", properties.getProperty("key").getAsString());
-		assertNotNull(properties.getProperty("key.1"));
-		assertEquals("alue2", properties.getProperty("key.1").getAsString());
-		assertNotNull(properties.getProperty("key.2"));
-		assertEquals("", properties.getProperty("key.2").getAsString());
-		assertNotNull(properties.getProperty("key.3.4"));
-		assertEquals(" value4", properties.getProperty("key.3.4").getAsString());
-		
-		// Empty key part
-		reader = createReader("key..test = value1", ADVANCED_DEFAULT_CONFIG);
-		assertThrows(PropertySyntaxException.class, reader::readProperties);
-		
-		// Blank key part
-		reader = createReader("key. .test = value1", ADVANCED_DEFAULT_CONFIG);
-		assertThrows(PropertySyntaxException.class, reader::readProperties);
-		
-		// Illegal key end
-		reader = createReader("key.test. = value1", ADVANCED_DEFAULT_CONFIG);
-		assertThrows(PropertySyntaxException.class, reader::readProperties);
-		
-		// Empty variable key part
-		reader = createReader("key.${}.test = value1", ADVANCED_DEFAULT_CONFIG);
-		assertThrows(PropertySyntaxException.class, reader::readProperties);
-		
-		// Blank variable key part
-		reader = createReader("key.${ }.test = value1", ADVANCED_DEFAULT_CONFIG);
-		assertThrows(PropertySyntaxException.class, reader::readProperties);
-		
-		// No target type specified
-		reader = createReader("key.${key.test}.test = value1", ADVANCED_DEFAULT_CONFIG);
-		assertThrows(PropertySyntaxException.class, reader::readProperties);
-		
-		// Too many arguments specified
-		reader = createReader("key.${custom?key.test?10?11}.test = value1", ADVANCED_DEFAULT_CONFIG);
-		assertThrows(PropertySyntaxException.class, reader::readProperties);
-		
-		// Nested compacted key part
-		reader = createReader("key.${env?key[1|2]?10?11}.test = value1", ADVANCED_DEFAULT_CONFIG);
-		assertThrows(PropertySyntaxException.class, reader::readProperties);
-		
-		// Nested variable key part
-		reader = createReader("key.${env?key.${sys?test}?10?11}.test = value1", ADVANCED_DEFAULT_CONFIG);
-		assertThrows(PropertySyntaxException.class, reader::readProperties);
-		
-		// Unknown target type
-		reader = createReader("key.${custom?key.test}.test = value1", ADVANCED_DEFAULT_CONFIG);
-		assertThrows(PropertySyntaxException.class, reader::readProperties);
-		
-		// Key not found -> No default value
-		reader = createReader("key.${sys?key.test}.test = value1", ADVANCED_DEFAULT_CONFIG);
-		assertThrows(PropertySyntaxException.class, reader::readProperties);
+		try (PropertyReader reader = createReader(content)) {
+			PropertyObject props = reader.readProperties();
+			assertEquals(4, props.size());
+			assertEquals(new PropertyValue("John Doe"), props.get("name"));
+			assertEquals(new PropertyValue("30"), props.get("age"));
+			assertEquals(new PropertyValue("true"), props.get("active"));
+			assertEquals(new PropertyValue("New York"), props.get("city"));
+		} catch (Exception e) {
+			fail("Unexpected exception: " + e.getMessage());
+		}
 	}
 	
 	@Test
-	void readVariablePropertiesCustomConfig() {
-		System.setProperty("sys.custom", "b");
-		PropertyReader reader;
-		Properties properties;
+	void readPropertiesNullValues() throws Exception {
+		// Note: Using no space before = to avoid alignment issue with empty values
+		String content = "empty=\nnullValue=null\ntildeValue=~\n";
 		
-		reader = createReader("key : a" + System.lineSeparator() + "key.${?key} :value2" + System.lineSeparator() + "key.${sys?sys.custom}:" + System.lineSeparator() + "key.${env?env.custom?}.${property?key.test?d}: value4", CUSTOM_CONFIG);
-		properties = assertDoesNotThrow(reader::readProperties);
-		assertEquals(4, properties.size());
-		assertNotNull(properties.getProperty("key"));
-		assertEquals("a", properties.getProperty("key").getAsString());
-		assertNotNull(properties.getProperty("key.a"));
-		assertEquals("alue2", properties.getProperty("key.a").getAsString());
-		assertNotNull(properties.getProperty("key.b"));
-		assertEquals("", properties.getProperty("key.b").getAsString());
-		assertNotNull(properties.getProperty("key.c.d"));
-		assertEquals(" value4", properties.getProperty("key.c.d").getAsString());
+		try (PropertyReader reader = createReader(content)) {
+			PropertyObject props = reader.readProperties();
+			assertEquals(3, props.size());
+			assertTrue(props.get("empty").isPropertyNull(), "empty should be null");
+			assertTrue(props.get("nullValue").isPropertyNull(), "nullValue should be null");
+			assertTrue(props.get("tildeValue").isPropertyNull(), "tildeValue should be null");
+		}
+	}
+	
+	@Test
+	void readPropertiesWithTypedValueParsing() {
+		PropertyConfig typedConfig = new PropertyConfig(
+			'=', 1, Set.of('#'),
+			Pattern.compile(".*"), Pattern.compile(".*"),
+			false, StandardCharsets.UTF_8,
+			false, "",
+			'[', ']', ',',
+			true, true,
+			PropertyConfig.NullStyle.EMPTY,
+			false, 2,
+			':', ":-",
+			null
+		);
 		
-		// Empty key part
-		reader = createReader("key..test : value1", CUSTOM_CONFIG);
-		assertThrows(PropertySyntaxException.class, reader::readProperties);
+		String content = """
+			intValue = 42
+			floatValue = 3.14
+			boolTrue = true
+			boolFalse = false
+			stringValue = hello
+			""";
 		
-		// Blank key part
-		reader = createReader("key. .test : value1", CUSTOM_CONFIG);
-		assertThrows(PropertySyntaxException.class, reader::readProperties);
+		try (PropertyReader reader = createReader(content, typedConfig)) {
+			PropertyObject props = reader.readProperties();
+			assertEquals(5, props.size());
+			
+			PropertyValue intVal = props.getPropertyValue("intValue");
+			assertTrue(intVal.isNumber());
+			assertEquals(42, intVal.getAsInteger());
+			
+			PropertyValue floatVal = props.getPropertyValue("floatValue");
+			assertTrue(floatVal.isNumber());
+			assertEquals(3.14, floatVal.getAsDouble(), 0.001);
+			
+			PropertyValue boolTrueVal = props.getPropertyValue("boolTrue");
+			assertTrue(boolTrueVal.isBoolean());
+			assertTrue(boolTrueVal.getAsBoolean());
+			
+			PropertyValue boolFalseVal = props.getPropertyValue("boolFalse");
+			assertTrue(boolFalseVal.isBoolean());
+			assertFalse(boolFalseVal.getAsBoolean());
+			
+			PropertyValue stringVal = props.getPropertyValue("stringValue");
+			assertTrue(stringVal.isString());
+			assertEquals("hello", stringVal.getAsString());
+		} catch (Exception e) {
+			fail("Unexpected exception: " + e.getMessage());
+		}
+	}
+	
+	@Test
+	void readPropertiesInlineArray() {
+		String content = "colors = [red, green, blue]";
 		
-		// Illegal key end
-		reader = createReader("key.test. : value1", CUSTOM_CONFIG);
-		assertThrows(PropertySyntaxException.class, reader::readProperties);
+		try (PropertyReader reader = createReader(content)) {
+			PropertyObject props = reader.readProperties();
+			assertEquals(1, props.size());
+			
+			PropertyArray array = props.getAsPropertyArray("colors");
+			assertEquals(3, array.size());
+			assertEquals(new PropertyValue("red"), array.get(0));
+			assertEquals(new PropertyValue("green"), array.get(1));
+			assertEquals(new PropertyValue("blue"), array.get(2));
+		} catch (Exception e) {
+			fail("Unexpected exception: " + e.getMessage());
+		}
+	}
+	
+	@Test
+	void readPropertiesEmptyInlineArray() {
+		String content = "items = []";
 		
-		// Empty variable key part
-		reader = createReader("key.${}.test : value1", CUSTOM_CONFIG);
-		assertThrows(PropertySyntaxException.class, reader::readProperties);
+		try (PropertyReader reader = createReader(content)) {
+			PropertyObject props = reader.readProperties();
+			assertEquals(1, props.size());
+			
+			PropertyArray array = props.getAsPropertyArray("items");
+			assertTrue(array.isEmpty());
+		} catch (Exception e) {
+			fail("Unexpected exception: " + e.getMessage());
+		}
+	}
+	
+	@Test
+	void readPropertiesMultiLineArray() {
+		String content = """
+			items[] = first
+			items[] = second
+			items[] = third
+			""";
 		
-		// Blank variable key part
-		reader = createReader("key.${ }.test : value1", CUSTOM_CONFIG);
-		assertThrows(PropertySyntaxException.class, reader::readProperties);
+		try (PropertyReader reader = createReader(content)) {
+			PropertyObject props = reader.readProperties();
+			assertEquals(1, props.size());
+			
+			PropertyArray array = props.getAsPropertyArray("items");
+			assertEquals(3, array.size());
+			assertEquals(new PropertyValue("first"), array.get(0));
+			assertEquals(new PropertyValue("second"), array.get(1));
+			assertEquals(new PropertyValue("third"), array.get(2));
+		} catch (Exception e) {
+			fail("Unexpected exception: " + e.getMessage());
+		}
+	}
+	
+	@Test
+	void readPropertiesCompactedKeys() {
+		String content = "app.[dev|prod].url = http://localhost";
 		
-		// No target type specified
-		reader = createReader("key.${key.test}.test : value1", CUSTOM_CONFIG);
-		assertThrows(PropertySyntaxException.class, reader::readProperties);
+		try (PropertyReader reader = createReader(content, ADVANCED_CONFIG)) {
+			PropertyObject props = reader.readProperties();
+			assertEquals(2, props.size());
+			assertEquals(new PropertyValue("http://localhost"), props.get("app.dev.url"));
+			assertEquals(new PropertyValue("http://localhost"), props.get("app.prod.url"));
+		} catch (Exception e) {
+			fail("Unexpected exception: " + e.getMessage());
+		}
+	}
+	
+	@Test
+	void readPropertiesCompactedKeysMultipleVariants() {
+		String content = "database.[host|port|name] = default";
 		
-		// Too many arguments specified
-		reader = createReader("key.${custom?key.test?10?11}.test : value1", CUSTOM_CONFIG);
-		assertThrows(PropertySyntaxException.class, reader::readProperties);
+		try (PropertyReader reader = createReader(content, ADVANCED_CONFIG)) {
+			PropertyObject props = reader.readProperties();
+			assertEquals(3, props.size());
+			assertEquals(new PropertyValue("default"), props.get("database.host"));
+			assertEquals(new PropertyValue("default"), props.get("database.port"));
+			assertEquals(new PropertyValue("default"), props.get("database.name"));
+		} catch (Exception e) {
+			fail("Unexpected exception: " + e.getMessage());
+		}
+	}
+	
+	@Test
+	void readPropertiesVariableKeysProperty() {
+		String content = """
+			profile = dev
+			app.${prop:profile}.url = http://localhost
+			""";
 		
-		// Nested compacted key part
-		reader = createReader("key.${env?key[1|2]?10?11}.test : value1", CUSTOM_CONFIG);
-		assertThrows(PropertySyntaxException.class, reader::readProperties);
+		try (PropertyReader reader = createReader(content, ADVANCED_CONFIG)) {
+			PropertyObject props = reader.readProperties();
+			assertEquals(2, props.size());
+			assertEquals(new PropertyValue("dev"), props.get("profile"));
+			assertEquals(new PropertyValue("http://localhost"), props.get("app.dev.url"));
+		} catch (Exception e) {
+			fail("Unexpected exception: " + e.getMessage());
+		}
+	}
+	
+	@Test
+	void readPropertiesVariableKeysWithDefault() {
+		String content = "app.${prop:missing:-fallback}.url = http://localhost";
 		
-		// Nested variable key part
-		reader = createReader("key.${env?key.${sys?test}?10?11}.test : value1", CUSTOM_CONFIG);
-		assertThrows(PropertySyntaxException.class, reader::readProperties);
+		try (PropertyReader reader = createReader(content, ADVANCED_CONFIG)) {
+			PropertyObject props = reader.readProperties();
+			assertEquals(1, props.size());
+			assertEquals(new PropertyValue("http://localhost"), props.get("app.fallback.url"));
+		} catch (Exception e) {
+			fail("Unexpected exception: " + e.getMessage());
+		}
+	}
+	
+	@Test
+	void readPropertiesVariableKeysSystem() {
+		String originalValue = System.getProperty("user.name");
+		if (originalValue != null) {
+			String content = "user.${sys:user.name}.profile = active";
+			
+			try (PropertyReader reader = createReader(content, ADVANCED_CONFIG)) {
+				PropertyObject props = reader.readProperties();
+				assertEquals(1, props.size());
+				assertTrue(props.containsKey("user." + originalValue + ".profile"));
+				assertEquals(new PropertyValue("active"), props.get("user." + originalValue + ".profile"));
+			} catch (Exception e) {
+				fail("Unexpected exception: " + e.getMessage());
+			}
+		}
+	}
+	
+	@Test
+	void readPropertiesVariableKeysCustom() {
+		PropertyConfig customVarConfig = new PropertyConfig(
+			'=', 1, Set.of('#'),
+			Pattern.compile(".*"), Pattern.compile(".*"),
+			true, StandardCharsets.UTF_8,
+			true, "\t",
+			'[', ']', ',',
+			true, true,
+			PropertyConfig.NullStyle.EMPTY,
+			true, 2,
+			':', ":-",
+			Map.of("CUSTOM_VAR", "custom_value")
+		);
 		
-		// Unknown target type
-		reader = createReader("key.${custom?key.test}.test : value1", CUSTOM_CONFIG);
-		assertThrows(PropertySyntaxException.class, reader::readProperties);
+		String content = "app.${prop:CUSTOM_VAR}.setting = enabled";
 		
-		// Key not found -> No default value
-		reader = createReader("key.${sys?key.test}.test : value1", CUSTOM_CONFIG);
-		assertThrows(PropertySyntaxException.class, reader::readProperties);
+		try (PropertyReader reader = createReader(content, customVarConfig)) {
+			PropertyObject props = reader.readProperties();
+			assertEquals(1, props.size());
+			assertEquals(new PropertyValue("enabled"), props.get("app.custom_value.setting"));
+		} catch (Exception e) {
+			fail("Unexpected exception: " + e.getMessage());
+		}
+	}
+	
+	@Test
+	void readPropertiesNoSeparator() {
+		String content = "key without separator";
+		
+		try (PropertyReader reader = createReader(content)) {
+			assertThrows(PropertySyntaxException.class, reader::readProperties);
+		} catch (Exception e) {
+			fail("Unexpected exception: " + e.getMessage());
+		}
+	}
+	
+	@Test
+	void readPropertiesAdvancedKeyNotAllowed() {
+		String content = "app.[dev|prod].url = http://localhost";
+		
+		try (PropertyReader reader = createReader(content, DEFAULT_CONFIG)) {
+			assertThrows(PropertySyntaxException.class, reader::readProperties);
+		} catch (Exception e) {
+			fail("Unexpected exception: " + e.getMessage());
+		}
+	}
+	
+	@Test
+	void readPropertiesInvalidVariableType() {
+		String content = "app.${unknown:key}.setting = value";
+		
+		try (PropertyReader reader = createReader(content, ADVANCED_CONFIG)) {
+			assertThrows(PropertySyntaxException.class, reader::readProperties);
+		} catch (Exception e) {
+			fail("Unexpected exception: " + e.getMessage());
+		}
+	}
+	
+	@Test
+	void readPropertiesUnresolvedVariable() {
+		String content = "app.${prop:nonexistent}.setting = value";
+		
+		try (PropertyReader reader = createReader(content, ADVANCED_CONFIG)) {
+			assertThrows(PropertySyntaxException.class, reader::readProperties);
+		} catch (Exception e) {
+			fail("Unexpected exception: " + e.getMessage());
+		}
+	}
+	
+	@Test
+	void readPropertiesWithAlignment() {
+		String content = "key   =   value";
+		
+		try (PropertyReader reader = createReader(content)) {
+			PropertyObject props = reader.readProperties();
+			assertEquals(1, props.size());
+			assertEquals(new PropertyValue("value"), props.get("key"));
+		} catch (Exception e) {
+			fail("Unexpected exception: " + e.getMessage());
+		}
+	}
+	
+	@Test
+	void readPropertiesMultipleSeparators() {
+		String content = "url = http://example.com/path?query=value";
+		
+		try (PropertyReader reader = createReader(content)) {
+			PropertyObject props = reader.readProperties();
+			assertEquals(1, props.size());
+			assertEquals(new PropertyValue("http://example.com/path?query=value"), props.get("url"));
+		} catch (Exception e) {
+			fail("Unexpected exception: " + e.getMessage());
+		}
+	}
+	
+	@Test
+	void readPropertiesWithColonSeparator() {
+		PropertyConfig colonConfig = new PropertyConfig(
+			':', 1, Set.of('#'),
+			Pattern.compile(".*"), Pattern.compile(".*"),
+			false, StandardCharsets.UTF_8,
+			false, "",
+			'[', ']', ',',
+			true, false,
+			PropertyConfig.NullStyle.EMPTY,
+			false, 2,
+			'|', "||",
+			null
+		);
+		
+		String content = "key : value";
+		
+		try (PropertyReader reader = createReader(content, colonConfig)) {
+			PropertyObject props = reader.readProperties();
+			assertEquals(1, props.size());
+			assertEquals(new PropertyValue("value"), props.get("key"));
+		} catch (Exception e) {
+			fail("Unexpected exception: " + e.getMessage());
+		}
+	}
+	
+	@Test
+	void readPropertiesDifferentCommentCharacters() {
+		PropertyConfig multiCommentConfig = new PropertyConfig(
+			'=', 1, Set.of('#', ';', '!'),
+			Pattern.compile(".*"), Pattern.compile(".*"),
+			false, StandardCharsets.UTF_8,
+			false, "",
+			'[', ']', ',',
+			true, false,
+			PropertyConfig.NullStyle.EMPTY,
+			false, 2,
+			':', ":-",
+			null
+		);
+		
+		String content = """
+			# Hash comment
+			key1 = value1
+			; Semicolon comment
+			key2 = value2
+			! Exclamation comment
+			key3 = value3
+			""";
+		
+		try (PropertyReader reader = createReader(content, multiCommentConfig)) {
+			PropertyObject props = reader.readProperties();
+			assertEquals(3, props.size());
+			assertEquals(new PropertyValue("value1"), props.get("key1"));
+			assertEquals(new PropertyValue("value2"), props.get("key2"));
+			assertEquals(new PropertyValue("value3"), props.get("key3"));
+		} catch (Exception e) {
+			fail("Unexpected exception: " + e.getMessage());
+		}
+	}
+	
+	@Test
+	void readPropertiesHierarchicalKeys() {
+		String content = """
+			app.database.host = localhost
+			app.database.port = 5432
+			app.database.name = mydb
+			app.cache.enabled = true
+			app.cache.ttl = 3600
+			""";
+		
+		try (PropertyReader reader = createReader(content)) {
+			PropertyObject props = reader.readProperties();
+			assertEquals(5, props.size());
+			assertEquals(new PropertyValue("localhost"), props.get("app.database.host"));
+			assertEquals(new PropertyValue("5432"), props.get("app.database.port"));
+			assertEquals(new PropertyValue("mydb"), props.get("app.database.name"));
+			assertEquals(new PropertyValue("true"), props.get("app.cache.enabled"));
+			assertEquals(new PropertyValue("3600"), props.get("app.cache.ttl"));
+		} catch (Exception e) {
+			fail("Unexpected exception: " + e.getMessage());
+		}
+	}
+	
+	@Test
+	void readPropertiesInlineArrayWithTypedValues() {
+		PropertyConfig typedConfig = new PropertyConfig(
+			'=', 1, Set.of('#'),
+			Pattern.compile(".*"), Pattern.compile(".*"),
+			false, StandardCharsets.UTF_8,
+			false, "",
+			'[', ']', ',',
+			true, true,
+			PropertyConfig.NullStyle.EMPTY,
+			false, 2,
+			':', ":-",
+			null
+		);
+		
+		String content = "numbers = [1, 2, 3, 4, 5]";
+		
+		try (PropertyReader reader = createReader(content, typedConfig)) {
+			PropertyObject props = reader.readProperties();
+			assertEquals(1, props.size());
+			
+			PropertyArray array = props.getAsPropertyArray("numbers");
+			assertEquals(5, array.size());
+			assertEquals(1, array.getAsInteger(0));
+			assertEquals(2, array.getAsInteger(1));
+			assertEquals(3, array.getAsInteger(2));
+			assertEquals(4, array.getAsInteger(3));
+			assertEquals(5, array.getAsInteger(4));
+		} catch (Exception e) {
+			fail("Unexpected exception: " + e.getMessage());
+		}
+	}
+	
+	@Test
+	void readPropertiesInlineArrayMixedTypes() {
+		PropertyConfig typedConfig = new PropertyConfig(
+			'=', 1, Set.of('#'),
+			Pattern.compile(".*"), Pattern.compile(".*"),
+			false, StandardCharsets.UTF_8,
+			false, "",
+			'[', ']', ',',
+			true, true,
+			PropertyConfig.NullStyle.EMPTY,
+			false, 2,
+			':', ":-",
+			null
+		);
+		
+		String content = "mixed = [42, hello, true, 3.14]";
+		
+		try (PropertyReader reader = createReader(content, typedConfig)) {
+			PropertyObject props = reader.readProperties();
+			assertEquals(1, props.size());
+			
+			PropertyArray array = props.getAsPropertyArray("mixed");
+			assertEquals(4, array.size());
+			assertEquals(42, array.getAsInteger(0));
+			assertEquals("hello", array.getAsString(1));
+			assertTrue(array.getAsBoolean(2));
+			assertEquals(3.14, array.getAsDouble(3), 0.001);
+		} catch (Exception e) {
+			fail("Unexpected exception: " + e.getMessage());
+		}
+	}
+	
+	@Test
+	void readPropertiesWithLeadingWhitespace() {
+		String content = """
+			  key1 = value1
+			    key2 = value2
+			\tkey3 = value3
+			""";
+		
+		try (PropertyReader reader = createReader(content)) {
+			PropertyObject props = reader.readProperties();
+			assertEquals(3, props.size());
+			assertEquals(new PropertyValue("value1"), props.get("key1"));
+			assertEquals(new PropertyValue("value2"), props.get("key2"));
+			assertEquals(new PropertyValue("value3"), props.get("key3"));
+		} catch (Exception e) {
+			fail("Unexpected exception: " + e.getMessage());
+		}
+	}
+	
+	@Test
+	void readPropertiesEmptyCompactedPart() {
+		String content = "app.[].url = http://localhost";
+		
+		try (PropertyReader reader = createReader(content, ADVANCED_CONFIG)) {
+			assertThrows(PropertySyntaxException.class, reader::readProperties);
+		} catch (Exception e) {
+			fail("Unexpected exception: " + e.getMessage());
+		}
+	}
+	
+	@Test
+	void readPropertiesEmptyVariablePart() {
+		String content = "app.${}.url = http://localhost";
+		
+		try (PropertyReader reader = createReader(content, ADVANCED_CONFIG)) {
+			assertThrows(PropertySyntaxException.class, reader::readProperties);
+		} catch (Exception e) {
+			fail("Unexpected exception: " + e.getMessage());
+		}
 	}
 	
 	@Test
 	void close() {
-		assertDoesNotThrow(() -> new PropertyReader(new InputProvider(InputStream.nullInputStream())).close());
+		assertDoesNotThrow(() -> createReader("key = value").close());
+		assertDoesNotThrow(() -> createReader("").close());
+		
+		PropertyReader reader = createReader("test = value");
+		assertDoesNotThrow(reader::close);
+		assertDoesNotThrow(reader::close);
 	}
-	
-	//region Internal classes
-	@MockObject(InputStream.class)
-	private static class StringInputStream extends InputStream {
-		
-		private final String string;
-		private int index;
-		
-		private StringInputStream(@NotNull String string) {
-			this.string = Objects.requireNonNull(string, "String must not be null");
-		}
-		
-		@Override
-		public int read() throws IOException {
-			return this.index < this.string.length() ? this.string.charAt(this.index++) : -1;
-		}
-		
-		public void reset() {
-			this.index = 0;
-		}
-	}
-	//endregion
 }

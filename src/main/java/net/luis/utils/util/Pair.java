@@ -1,6 +1,6 @@
 /*
  * LUtils
- * Copyright (C) 2025 Luis Staudt
+ * Copyright (C) 2026 Luis Staudt
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,8 +18,8 @@
 
 package net.luis.utils.util;
 
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 import java.util.Objects;
 import java.util.function.Function;
@@ -64,7 +64,7 @@ public class Pair<F, S> {
 	 * @param <T> The type of the first value
 	 * @param <U> The type of the second value
 	 */
-	public static <T, U> @NotNull Pair<T, U> of(@Nullable T first, @Nullable U second) {
+	public static <T, U> @NonNull Pair<T, U> of(@Nullable T first, @Nullable U second) {
 		return new Pair<>(first, second);
 	}
 	
@@ -88,7 +88,7 @@ public class Pair<F, S> {
 	 * Swaps the first and second value of the pair.<br>
 	 * @return A new pair with the swapped values
 	 */
-	public @NotNull Pair<S, F> swap() {
+	public @NonNull Pair<S, F> swap() {
 		return Pair.of(this.second, this.first);
 	}
 	
@@ -99,7 +99,7 @@ public class Pair<F, S> {
 	 * @return A new pair with the mapped first value
 	 * @param <T> The new type of the first value
 	 */
-	public <T> @NotNull Pair<T, S> mapFirst(@NotNull Function<? super F, ? extends T> mapper) {
+	public <T> @NonNull Pair<T, S> mapFirst(@NonNull Function<? super F, ? extends T> mapper) {
 		return Pair.of(Objects.requireNonNull(mapper, "Mapper must not be null").apply(this.first), this.second);
 	}
 	
@@ -110,7 +110,7 @@ public class Pair<F, S> {
 	 * @return A new pair with the mapped second value
 	 * @param <T> The new type of the second value
 	 */
-	public <T> @NotNull Pair<F, T> mapSecond(@NotNull Function<? super S, ? extends T> mapper) {
+	public <T> @NonNull Pair<F, T> mapSecond(@NonNull Function<? super S, ? extends T> mapper) {
 		return Pair.of(this.first, Objects.requireNonNull(mapper, "Mapper must not be null").apply(this.second));
 	}
 	
@@ -121,7 +121,7 @@ public class Pair<F, S> {
 	 * @return A new pair with the specified first value
 	 * @param <T> The new type of the first value
 	 */
-	public <T> @NotNull Pair<T, S> withFirst(@Nullable T first) {
+	public <T> @NonNull Pair<T, S> withFirst(@Nullable T first) {
 		return Pair.of(first, this.second);
 	}
 	
@@ -132,7 +132,7 @@ public class Pair<F, S> {
 	 * @return A new pair with the specified second value
 	 * @param <T> The new type of the second value
 	 */
-	public <T> @NotNull Pair<F, T> withSecond(@Nullable T second) {
+	public <T> @NonNull Pair<F, T> withSecond(@Nullable T second) {
 		return Pair.of(this.first, second);
 	}
 	

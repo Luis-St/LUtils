@@ -1,6 +1,6 @@
 /*
  * LUtils
- * Copyright (C) 2025 Luis Staudt
+ * Copyright (C) 2026 Luis Staudt
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,7 +18,7 @@
 
 package net.luis.utils.annotation.type;
 
-import org.jetbrains.annotations.NotNull;
+import org.jspecify.annotations.NonNull;
 
 import java.lang.annotation.*;
 
@@ -44,7 +44,7 @@ public @interface Singleton {
 	 * Returns the method to get the instance of the singleton class.<br>
 	 * @return The method to get the singleton
 	 */
-	@NotNull Method value() default Method.UNDEFINED;
+	@NonNull Method value() default Method.UNDEFINED;
 	
 	/**
 	 * The method to obtain the instance of the singleton class.

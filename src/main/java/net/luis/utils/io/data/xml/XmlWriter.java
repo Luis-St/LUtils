@@ -1,6 +1,6 @@
 /*
  * LUtils
- * Copyright (C) 2025 Luis Staudt
+ * Copyright (C) 2026 Luis Staudt
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,7 +20,7 @@ package net.luis.utils.io.data.xml;
 
 import net.luis.utils.io.data.OutputProvider;
 import net.luis.utils.util.Version;
-import org.jetbrains.annotations.NotNull;
+import org.jspecify.annotations.NonNull;
 
 import java.io.*;
 import java.util.Objects;
@@ -52,7 +52,7 @@ public class XmlWriter implements AutoCloseable {
 	 * @param output The output to create the writer for
 	 * @throws NullPointerException If the output is null
 	 */
-	public XmlWriter(@NotNull OutputProvider output) {
+	public XmlWriter(@NonNull OutputProvider output) {
 		this(output, XmlConfig.DEFAULT);
 	}
 	
@@ -63,7 +63,7 @@ public class XmlWriter implements AutoCloseable {
 	 * @param config The configuration to use for the writer
 	 * @throws NullPointerException If the output or the configuration is null
 	 */
-	public XmlWriter(@NotNull OutputProvider output, @NotNull XmlConfig config) {
+	public XmlWriter(@NonNull OutputProvider output, @NonNull XmlConfig config) {
 		this.config = Objects.requireNonNull(config, "Xml config must not be null");
 		this.writer = new BufferedWriter(new OutputStreamWriter(Objects.requireNonNull(output, "Output must not be null").getStream(), config.charset()));
 	}
@@ -76,7 +76,7 @@ public class XmlWriter implements AutoCloseable {
 	 * @throws IllegalStateException If the xml declaration was already written (strict mode)
 	 * @throws UncheckedIOException If an I/O error occurs
 	 */
-	public void writeDeclaration(@NotNull XmlDeclaration declaration) {
+	public void writeDeclaration(@NonNull XmlDeclaration declaration) {
 		Objects.requireNonNull(declaration, "Xml declaration must not be null");
 		if (!this.wroteDeclaration) {
 			try {
@@ -84,6 +84,7 @@ public class XmlWriter implements AutoCloseable {
 				if (this.config.prettyPrint()) {
 					this.writer.newLine();
 				}
+				
 				this.writer.flush();
 				this.wroteDeclaration = true;
 			} catch (IOException e) {
@@ -102,7 +103,7 @@ public class XmlWriter implements AutoCloseable {
 	 * @throws IllegalStateException If the xml declaration was not written before the xml element (strict mode)
 	 * @throws UncheckedIOException If an I/O error occurs
 	 */
-	public void writeXml(@NotNull XmlElement element) {
+	public void writeXml(@NonNull XmlElement element) {
 		Objects.requireNonNull(element, "Xml element must not be null");
 		if (!this.wroteDeclaration) {
 			if (this.config.strict()) {

@@ -1,6 +1,6 @@
 /*
  * LUtils
- * Copyright (C) 2025 Luis Staudt
+ * Copyright (C) 2026 Luis Staudt
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,6 +18,7 @@
 
 package net.luis.utils.logging;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.Lists;
 import net.luis.utils.logging.factory.SpringFactory;
 import org.apache.commons.lang3.StringUtils;
@@ -25,7 +26,9 @@ import org.apache.logging.log4j.*;
 import org.apache.logging.log4j.core.Appender;
 import org.apache.logging.log4j.core.LoggerContext;
 import org.apache.logging.log4j.core.config.*;
-import org.jetbrains.annotations.*;
+import org.jetbrains.annotations.Unmodifiable;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 import java.util.*;
 
@@ -72,7 +75,7 @@ public final class LoggingUtils {
 	 * @throws IllegalStateException If the logging system has already been initialized
 	 * @see #load(List)
 	 */
-	public static void load(String @NotNull ... loggers) {
+	public static void load(String @NonNull ... loggers) {
 		Objects.requireNonNull(loggers, "Logger list must not be null");
 		load(Arrays.asList(loggers));
 	}
@@ -88,7 +91,7 @@ public final class LoggingUtils {
 	 * @throws IllegalStateException If the logging system has already been initialized
 	 * @see #initialize(LoggerConfiguration, boolean)
 	 */
-	public static void load(@NotNull List<String> loggers) {
+	public static void load(@NonNull List<String> loggers) {
 		Objects.requireNonNull(loggers, "Logger list must not be null");
 		reconfigure(LoggingHelper.load(loggers)); // No idea why initialize does not work here
 		LoggingHelper.configure();
@@ -109,7 +112,7 @@ public final class LoggingUtils {
 	 * @throws IllegalStateException If the logging system has already been initialized
 	 * @see #initialize(LoggerConfiguration, boolean)
 	 */
-	public static void initialize(@NotNull LoggerConfiguration configuration) {
+	public static void initialize(@NonNull LoggerConfiguration configuration) {
 		Objects.requireNonNull(configuration, "Logger configuration must not be null");
 		initialize(configuration, false);
 	}
@@ -145,7 +148,7 @@ public final class LoggingUtils {
 	 * @throws IllegalStateException If the logging system has already been initialized and override is false
 	 * @see #registerSpringFactory()
 	 */
-	public static void initialize(@NotNull LoggerConfiguration configuration, boolean override) {
+	public static void initialize(@NonNull LoggerConfiguration configuration, boolean override) {
 		Objects.requireNonNull(configuration, "Logger configuration must not be null");
 		if (!isInitialized()) {
 			initializeInternal(Objects.requireNonNull(configuration, "Logger configuration must not be null"));
@@ -165,7 +168,7 @@ public final class LoggingUtils {
 	 * @see #initialize(LoggerConfiguration)
 	 * @see #initialize(LoggerConfiguration, boolean)
 	 */
-	public static boolean initializeSafe(@NotNull LoggerConfiguration configuration) {
+	public static boolean initializeSafe(@NonNull LoggerConfiguration configuration) {
 		Objects.requireNonNull(configuration, "Logger configuration must not be null");
 		if (!isInitialized()) {
 			initialize(configuration);
@@ -180,7 +183,7 @@ public final class LoggingUtils {
 	 * @param configuration The configuration to use
 	 * @throws NullPointerException If the configuration is null
 	 */
-	private static void initializeInternal(@NotNull LoggerConfiguration configuration) {
+	private static void initializeInternal(@NonNull LoggerConfiguration configuration) {
 		Objects.requireNonNull(configuration, "Logger configuration must not be null");
 		Configuration config = configuration.build();
 		Configurator.initialize(config);
@@ -198,7 +201,7 @@ public final class LoggingUtils {
 	 * @param configuration The configuration to use
 	 * @throws NullPointerException If the configuration is null
 	 */
-	public static void reconfigure(@NotNull LoggerConfiguration configuration) {
+	public static void reconfigure(@NonNull LoggerConfiguration configuration) {
 		Objects.requireNonNull(configuration, "Logger configuration must not be null");
 		Configuration config = configuration.build();
 		Configurator.reconfigure(config);
@@ -216,7 +219,7 @@ public final class LoggingUtils {
 	 * @param configuration The configuration to use
 	 * @throws NullPointerException If the configuration is null
 	 */
-	public static void initializeOrReconfigure(@NotNull LoggerConfiguration configuration) {
+	public static void initializeOrReconfigure(@NonNull LoggerConfiguration configuration) {
 		if (!initializeSafe(configuration)) {
 			reconfigure(configuration);
 		}
@@ -252,7 +255,7 @@ public final class LoggingUtils {
 	 * @return The names of all the configured loggers as an unmodifiable list
 	 */
 	@Unmodifiable
-	public static @NotNull List<String> getConfiguredLoggers() {
+	public static @NonNull List<String> getConfiguredLoggers() {
 		return List.copyOf(CONFIGURED_LOGGERS);
 	}
 	
@@ -314,7 +317,7 @@ public final class LoggingUtils {
 	 * @throws IllegalArgumentException If the combination of logging type and level is invalid
 	 * @throws IllegalStateException If the appender for the given logging type and level was not found (file logging only)
 	 */
-	public static void enable(@NotNull LoggingType type, @NotNull Level level) {
+	public static void enable(@NonNull LoggingType type, @NonNull Level level) {
 		enableAppender(getLogger(type, level));
 	}
 	
@@ -325,7 +328,7 @@ public final class LoggingUtils {
 	 * @throws NullPointerException If the level is null
 	 * @throws IllegalArgumentException If the level is not supported by console logging
 	 */
-	public static void enableConsole(@NotNull Level level) {
+	public static void enableConsole(@NonNull Level level) {
 		enable(LoggingType.CONSOLE, level);
 	}
 	
@@ -345,7 +348,7 @@ public final class LoggingUtils {
 	 * @throws IllegalArgumentException If the level is not supported by file logging
 	 * @throws IllegalStateException If the appender for the given file logging level was not found
 	 */
-	public static void enableFile(@NotNull Level level) {
+	public static void enableFile(@NonNull Level level) {
 		enable(LoggingType.FILE, level);
 	}
 	
@@ -370,7 +373,7 @@ public final class LoggingUtils {
 	 * @throws NullPointerException If the level or logging type is null
 	 * @throws IllegalArgumentException If the combination of logging type and level is invalid
 	 */
-	public static void disable(@NotNull LoggingType type, @NotNull Level level) {
+	public static void disable(@NonNull LoggingType type, @NonNull Level level) {
 		disableAppender(getLogger(type, level));
 	}
 	
@@ -381,7 +384,7 @@ public final class LoggingUtils {
 	 * @throws NullPointerException If the level is null
 	 * @throws IllegalArgumentException If the level is not supported by console logging
 	 */
-	public static void disableConsole(@NotNull Level level) {
+	public static void disableConsole(@NonNull Level level) {
 		disable(LoggingType.CONSOLE, level);
 	}
 	
@@ -402,7 +405,7 @@ public final class LoggingUtils {
 	 * @throws NullPointerException If the level is null
 	 * @throws IllegalArgumentException If the level is not supported by file logging
 	 */
-	public static void disableFile(@NotNull Level level) {
+	public static void disableFile(@NonNull Level level) {
 		disable(LoggingType.FILE, level);
 	}
 	
@@ -436,7 +439,7 @@ public final class LoggingUtils {
 	 * @return A new reference marker
 	 * @throws IllegalArgumentException If the length is less than 1 or greater than 32
 	 */
-	public static @NotNull Marker createRefrenceMarker(int length) {
+	public static @NonNull Marker createRefrenceMarker(int length) {
 		if (1 > length) {
 			throw new IllegalArgumentException("Reference marker length must be 1 or greater");
 		}
@@ -456,7 +459,7 @@ public final class LoggingUtils {
 	 * @throws NullPointerException If the name of the appender is null
 	 * @throws IllegalStateException If the appender was not found (file logging only)
 	 */
-	private static void enableAppender(@NotNull String name) {
+	private static void enableAppender(@NonNull String name) {
 		LoggerContext context = (LoggerContext) LogManager.getContext(false);
 		Configuration config = context.getConfiguration();
 		Appender appender = config.getAppender(Objects.requireNonNull(name, "Appender name must not be null"));
@@ -481,7 +484,7 @@ public final class LoggingUtils {
 	 * Disables the given appender.<br>
 	 * @param name The name of the appender to disable
 	 */
-	private static void disableAppender(@NotNull String name) {
+	private static void disableAppender(@NonNull String name) {
 		LoggerContext context = (LoggerContext) LogManager.getContext(false);
 		Configuration config = context.getConfiguration();
 		if (isRootLoggerConfigured()) {
@@ -505,7 +508,7 @@ public final class LoggingUtils {
 	 * @param level The level
 	 * @return The name of the logger in upper camel case
 	 */
-	static @NotNull String getLogger(@NotNull LoggingType type, @NotNull Level level) {
+	static @NonNull String getLogger(@NonNull LoggingType type, @NonNull Level level) {
 		checkLevel(type, level);
 		String levelName = level.name().toLowerCase();
 		String typeName = type.name().toLowerCase();
@@ -524,7 +527,7 @@ public final class LoggingUtils {
 	 * @param level The level to check
 	 * @throws IllegalArgumentException If the combination of logging type and level is invalid
 	 */
-	static void checkLevel(@NotNull LoggingType type, @NotNull Level level) {
+	static void checkLevel(@NonNull LoggingType type, @NonNull Level level) {
 		Objects.requireNonNull(type, "Logging type must not be null");
 		Objects.requireNonNull(level, "Level must not be null");
 		if (level == Level.ALL || level == Level.OFF) {

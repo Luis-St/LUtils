@@ -1,6 +1,6 @@
 /*
  * LUtils
- * Copyright (C) 2025 Luis Staudt
+ * Copyright (C) 2026 Luis Staudt
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,7 +19,7 @@
 package net.luis.utils.io.data.json;
 
 import net.luis.utils.io.data.OutputProvider;
-import org.jetbrains.annotations.NotNull;
+import org.jspecify.annotations.NonNull;
 
 import java.io.*;
 import java.util.Objects;
@@ -48,7 +48,7 @@ public class JsonWriter implements AutoCloseable {
 	 * @param output The output to create the writer for
 	 * @throws NullPointerException If the output is null
 	 */
-	public JsonWriter(@NotNull OutputProvider output) {
+	public JsonWriter(@NonNull OutputProvider output) {
 		this(output, JsonConfig.DEFAULT);
 	}
 	
@@ -59,7 +59,7 @@ public class JsonWriter implements AutoCloseable {
 	 * @param config The configuration to use for the writer
 	 * @throws NullPointerException If the output or the configuration is null
 	 */
-	public JsonWriter(@NotNull OutputProvider output, @NotNull JsonConfig config) {
+	public JsonWriter(@NonNull OutputProvider output, @NonNull JsonConfig config) {
 		this.config = Objects.requireNonNull(config, "Json config must not be null");
 		this.writer = new BufferedWriter(new OutputStreamWriter(Objects.requireNonNull(output, "Output must not be null").getStream(), config.charset()));
 	}
@@ -72,7 +72,7 @@ public class JsonWriter implements AutoCloseable {
 	 * @throws NullPointerException If the json element is null
 	 * @throws UncheckedIOException If an I/O error occurs
 	 */
-	public void writeJson(@NotNull JsonElement json) {
+	public void writeJson(@NonNull JsonElement json) {
 		Objects.requireNonNull(json, "Json element must not be null");
 		try {
 			this.writer.write(json.toString(this.config));

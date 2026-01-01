@@ -1,6 +1,6 @@
 /*
  * LUtils
- * Copyright (C) 2025 Luis Staudt
+ * Copyright (C) 2026 Luis Staudt
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,7 +18,7 @@
 
 package net.luis.utils.io.token.definition;
 
-import org.jetbrains.annotations.NotNull;
+import org.jspecify.annotations.NonNull;
 
 /**
  * Token definition for escaped characters.<br>
@@ -42,7 +42,7 @@ public record EscapedTokenDefinition(
 ) implements TokenDefinition {
 	
 	@Override
-	public boolean matches(@NotNull String word) {
+	public boolean matches(@NonNull String word) {
 		if (word.length() != 2) {
 			return false;
 		}
@@ -50,7 +50,7 @@ public record EscapedTokenDefinition(
 	}
 	
 	@Override
-	public @NotNull String toString() {
+	public @NonNull String toString() {
 		return "CharTokenDefinition[token=" + ("\\" + this.token).replace("\t", "\\t").replace("\n", "\\n") + "]";
 	}
 }

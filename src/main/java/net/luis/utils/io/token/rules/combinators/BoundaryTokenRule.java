@@ -1,6 +1,6 @@
 /*
  * LUtils
- * Copyright (C) 2025 Luis Staudt
+ * Copyright (C) 2026 Luis Staudt
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -25,8 +25,8 @@ import net.luis.utils.io.token.rules.TokenRule;
 import net.luis.utils.io.token.rules.TokenRules;
 import net.luis.utils.io.token.stream.TokenStream;
 import net.luis.utils.io.token.tokens.Token;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 import java.util.List;
 import java.util.Objects;
@@ -43,9 +43,9 @@ import java.util.Objects;
  * @param endTokenRule The token rule that marks the end of the sequence
  */
 public record BoundaryTokenRule(
-	@NotNull TokenRule startTokenRule,
-	@NotNull TokenRule betweenTokenRule,
-	@NotNull TokenRule endTokenRule
+	@NonNull TokenRule startTokenRule,
+	@NonNull TokenRule betweenTokenRule,
+	@NonNull TokenRule endTokenRule
 ) implements TokenRule {
 	
 	/**
@@ -56,7 +56,7 @@ public record BoundaryTokenRule(
 	 * @param endTokenRule The token rule that marks the end of the sequence
 	 * @throws NullPointerException If the start or end token rule is null
 	 */
-	public BoundaryTokenRule(@NotNull TokenRule startTokenRule, @NotNull TokenRule endTokenRule) {
+	public BoundaryTokenRule(@NonNull TokenRule startTokenRule, @NonNull TokenRule endTokenRule) {
 		this(Objects.requireNonNull(startTokenRule, "Start rule must not be null"), TokenRules.alwaysMatch(), Objects.requireNonNull(endTokenRule, "End rule must not be null"));
 	}
 	
@@ -75,7 +75,7 @@ public record BoundaryTokenRule(
 	}
 	
 	@Override
-	public @Nullable TokenRuleMatch match(@NotNull TokenStream stream, @NotNull TokenRuleContext ctx) {
+	public @Nullable TokenRuleMatch match(@NonNull TokenStream stream, @NonNull TokenRuleContext ctx) {
 		Objects.requireNonNull(stream, "Token stream must not be null");
 		Objects.requireNonNull(ctx, "Token rule context must not be null");
 		if (!stream.hasMoreTokens()) {
@@ -121,7 +121,7 @@ public record BoundaryTokenRule(
 	}
 	
 	@Override
-	public @NotNull TokenRule not() {
+	public @NonNull TokenRule not() {
 		return new BoundaryTokenRule(this.startTokenRule.not(), this.betweenTokenRule.not(), this.endTokenRule.not());
 	}
 }

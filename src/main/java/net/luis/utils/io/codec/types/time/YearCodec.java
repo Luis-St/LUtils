@@ -1,6 +1,6 @@
 /*
  * LUtils
- * Copyright (C) 2025 Luis Staudt
+ * Copyright (C) 2026 Luis Staudt
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -21,8 +21,8 @@ package net.luis.utils.io.codec.types.time;
 import net.luis.utils.io.codec.AbstractCodec;
 import net.luis.utils.io.codec.provider.TypeProvider;
 import net.luis.utils.util.result.Result;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 import java.time.Year;
 import java.time.format.DateTimeParseException;
@@ -42,7 +42,7 @@ public class YearCodec extends AbstractCodec<Year, Object> {
 	public YearCodec() {}
 	
 	@Override
-	public <R> @NotNull Result<R> encodeStart(@NotNull TypeProvider<R> provider, @NotNull R current, @Nullable Year value) {
+	public <R> @NonNull Result<R> encodeStart(@NonNull TypeProvider<R> provider, @NonNull R current, @Nullable Year value) {
 		Objects.requireNonNull(provider, "Type provider must not be null");
 		Objects.requireNonNull(current, "Current value must not be null");
 		
@@ -53,13 +53,13 @@ public class YearCodec extends AbstractCodec<Year, Object> {
 	}
 	
 	@Override
-	public @NotNull Result<String> encodeKey(@NotNull Year key) {
+	public @NonNull Result<String> encodeKey(@NonNull Year key) {
 		Objects.requireNonNull(key, "Key must not be null");
 		return Result.success(String.valueOf(key.getValue()));
 	}
 	
 	@Override
-	public <R> @NotNull Result<Year> decodeStart(@NotNull TypeProvider<R> provider, @NotNull R current, @Nullable R value) {
+	public <R> @NonNull Result<Year> decodeStart(@NonNull TypeProvider<R> provider, @NonNull R current, @Nullable R value) {
 		Objects.requireNonNull(provider, "Type provider must not be null");
 		Objects.requireNonNull(current, "Current value must not be null");
 		if (value == null) {
@@ -80,7 +80,7 @@ public class YearCodec extends AbstractCodec<Year, Object> {
 	}
 	
 	@Override
-	public @NotNull Result<Year> decodeKey(@NotNull String key) {
+	public @NonNull Result<Year> decodeKey(@NonNull String key) {
 		Objects.requireNonNull(key, "Key must not be null");
 		
 		try {

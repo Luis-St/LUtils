@@ -1,6 +1,6 @@
 /*
  * LUtils
- * Copyright (C) 2025 Luis Staudt
+ * Copyright (C) 2026 Luis Staudt
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -22,7 +22,9 @@ import com.google.common.collect.Lists;
 import net.luis.utils.annotation.ReflectiveUsage;
 import net.luis.utils.util.unsafe.reflection.ReflectionHelper;
 import net.luis.utils.util.unsafe.reflection.ReflectionUtils;
-import org.jetbrains.annotations.*;
+import org.jetbrains.annotations.Unmodifiable;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
@@ -62,7 +64,7 @@ import java.util.function.Predicate;
  *     VALUES.add(this);
  *   }
  *
- *   public @NotNull String name() {
+ *   public @NonNull String name() {
  *     return this.name;
  *   }
  *
@@ -90,7 +92,7 @@ public interface EnumLike<T extends EnumLike<T>> extends Comparable<T> {
 	 * @return True, if the given field is a constant, otherwise false
 	 * @throws NullPointerException If the given field is null
 	 */
-	private static boolean isConstant(@NotNull Field field) {
+	private static boolean isConstant(@NonNull Field field) {
 		Objects.requireNonNull(field, "Field must not be null");
 		return Modifier.isStatic(field.getModifiers()) && Modifier.isFinal(field.getModifiers());
 	}
@@ -105,7 +107,7 @@ public interface EnumLike<T extends EnumLike<T>> extends Comparable<T> {
 	 * @throws NullPointerException If the given enum-like class is null
 	 */
 	@Unmodifiable
-	static <T extends EnumLike<T>> @NotNull List<EnumConstant<T>> getPredefinedConstants(@NotNull Class<T> enumType) {
+	static <T extends EnumLike<T>> @NonNull List<EnumConstant<T>> getPredefinedConstants(@NonNull Class<T> enumType) {
 		Objects.requireNonNull(enumType, "Enum type must not be null");
 		List<EnumConstant<T>> values = Lists.newArrayList();
 		List<Field> constants = ReflectionUtils.getFieldsForType(enumType, enumType);
@@ -139,7 +141,7 @@ public interface EnumLike<T extends EnumLike<T>> extends Comparable<T> {
 	 * @throws IllegalStateException If no 'VALUES' field in the given enum-like class exists
 	 */
 	@Unmodifiable
-	static <T extends EnumLike<T>> @NotNull List<T> values(@NotNull Class<T> enumType) {
+	static <T extends EnumLike<T>> @NonNull List<T> values(@NonNull Class<T> enumType) {
 		Objects.requireNonNull(enumType, "Enum type must not be null");
 		Predicate<Field> isConstant = field -> field.isAnnotationPresent(ReflectiveUsage.class) && Modifier.isPrivate(field.getModifiers()) && isConstant(field);
 		if (ReflectionHelper.hasField(enumType, "VALUES", isConstant)) {
@@ -159,7 +161,7 @@ public interface EnumLike<T extends EnumLike<T>> extends Comparable<T> {
 	 * @throws NullPointerException If the given enum-like class is null
 	 * @throws IllegalStateException If no constant with the given name exists
 	 */
-	static <T extends EnumLike<T>> T valueOf(@NotNull Class<T> enumType, @Nullable String name) {
+	static <T extends EnumLike<T>> T valueOf(@NonNull Class<T> enumType, @Nullable String name) {
 		return values(enumType).stream().filter(constant -> constant.name().equalsIgnoreCase(name)).findFirst().orElseThrow(() -> new IllegalStateException("No constant '" + name + "' in " + enumType.getSimpleName() + " found"));
 	}
 	
@@ -167,7 +169,7 @@ public interface EnumLike<T extends EnumLike<T>> extends Comparable<T> {
 	 * Returns the name of the given enum-like constant.<br>
 	 * @return The name of the constant
 	 */
-	@NotNull String name();
+	@NonNull String name();
 	
 	/**
 	 * Returns the ordinal of the given enum-like constant.<br>
@@ -184,7 +186,7 @@ public interface EnumLike<T extends EnumLike<T>> extends Comparable<T> {
 	}
 	
 	@Override
-	default int compareTo(@NotNull T object) {
+	default int compareTo(@NonNull T object) {
 		Objects.requireNonNull(object, "Object to compare must not be null");
 		return Integer.compare(this.ordinal(), object.ordinal());
 	}

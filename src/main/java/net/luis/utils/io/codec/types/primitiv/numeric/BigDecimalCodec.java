@@ -1,6 +1,6 @@
 /*
  * LUtils
- * Copyright (C) 2025 Luis Staudt
+ * Copyright (C) 2026 Luis Staudt
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -21,8 +21,8 @@ package net.luis.utils.io.codec.types.primitiv.numeric;
 import net.luis.utils.io.codec.AbstractCodec;
 import net.luis.utils.io.codec.provider.TypeProvider;
 import net.luis.utils.util.result.Result;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 import java.math.BigDecimal;
 import java.util.Objects;
@@ -41,7 +41,7 @@ public class BigDecimalCodec extends AbstractCodec<BigDecimal, Object> {
 	public BigDecimalCodec() {}
 	
 	@Override
-	public <R> @NotNull Result<R> encodeStart(@NotNull TypeProvider<R> provider, @NotNull R current, @Nullable BigDecimal value) {
+	public <R> @NonNull Result<R> encodeStart(@NonNull TypeProvider<R> provider, @NonNull R current, @Nullable BigDecimal value) {
 		Objects.requireNonNull(provider, "Type provider must not be null");
 		Objects.requireNonNull(current, "Current value must not be null");
 		
@@ -52,13 +52,13 @@ public class BigDecimalCodec extends AbstractCodec<BigDecimal, Object> {
 	}
 	
 	@Override
-	public @NotNull Result<String> encodeKey(@NotNull BigDecimal key) {
+	public @NonNull Result<String> encodeKey(@NonNull BigDecimal key) {
 		Objects.requireNonNull(key, "Key must not be null");
 		return Result.success(key.toPlainString());
 	}
 	
 	@Override
-	public <R> @NotNull Result<BigDecimal> decodeStart(@NotNull TypeProvider<R> provider, @NotNull R current, @Nullable R value) {
+	public <R> @NonNull Result<BigDecimal> decodeStart(@NonNull TypeProvider<R> provider, @NonNull R current, @Nullable R value) {
 		Objects.requireNonNull(provider, "Type provider must not be null");
 		Objects.requireNonNull(current, "Current value must not be null");
 		if (value == null) {
@@ -79,7 +79,7 @@ public class BigDecimalCodec extends AbstractCodec<BigDecimal, Object> {
 	}
 	
 	@Override
-	public @NotNull Result<BigDecimal> decodeKey(@NotNull String key) {
+	public @NonNull Result<BigDecimal> decodeKey(@NonNull String key) {
 		Objects.requireNonNull(key, "Key must not be null");
 		
 		try {

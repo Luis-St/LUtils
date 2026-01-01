@@ -1,6 +1,6 @@
 /*
  * LUtils
- * Copyright (C) 2025 Luis Staudt
+ * Copyright (C) 2026 Luis Staudt
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,7 +20,7 @@ package net.luis.utils.io.data.xml;
 
 import net.luis.utils.io.data.OutputProvider;
 import net.luis.utils.util.Version;
-import org.jetbrains.annotations.NotNull;
+import org.jspecify.annotations.NonNull;
 import org.junit.jupiter.api.Test;
 
 import java.io.*;
@@ -454,12 +454,12 @@ class XmlWriterTest {
 		}
 		
 		@Override
-		public void write(byte @NotNull [] b) throws IOException {
+		public void write(byte @NonNull [] b) throws IOException {
 			this.delegate.write(b);
 		}
 		
 		@Override
-		public void write(byte @NotNull [] b, int off, int len) throws IOException {
+		public void write(byte @NonNull [] b, int off, int len) throws IOException {
 			this.delegate.write(b, off, len);
 		}
 		

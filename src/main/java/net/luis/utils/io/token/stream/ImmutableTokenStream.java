@@ -1,6 +1,6 @@
 /*
  * LUtils
- * Copyright (C) 2025 Luis Staudt
+ * Copyright (C) 2026 Luis Staudt
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -22,8 +22,8 @@ import com.google.common.collect.Lists;
 import net.luis.utils.io.token.tokens.ShadowToken;
 import net.luis.utils.io.token.tokens.Token;
 import net.luis.utils.math.Mth;
-import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Unmodifiable;
+import org.jspecify.annotations.NonNull;
 
 import java.util.*;
 
@@ -68,7 +68,7 @@ public class ImmutableTokenStream implements TokenStream {
 	 * @throws NullPointerException If the list of tokens is null
 	 * @throws IndexOutOfBoundsException If the current index is negative
 	 */
-	ImmutableTokenStream(@NotNull List<Token> tokens, int currentIndex) {
+	ImmutableTokenStream(@NonNull List<Token> tokens, int currentIndex) {
 		Objects.requireNonNull(tokens, "Token list must not be null");
 		
 		this.tokens = List.copyOf(tokens);
@@ -83,7 +83,7 @@ public class ImmutableTokenStream implements TokenStream {
 	}
 	
 	@Override
-	public @NotNull @Unmodifiable List<Token> getAllTokens() {
+	public @NonNull @Unmodifiable List<Token> getAllTokens() {
 		return this.tokens;
 	}
 	
@@ -103,7 +103,7 @@ public class ImmutableTokenStream implements TokenStream {
 	}
 	
 	@Override
-	public @NotNull Token getCurrentToken() {
+	public @NonNull Token getCurrentToken() {
 		if (!this.hasMoreTokens()) {
 			throw new EndOfTokenStreamException("No more tokens available");
 		}
@@ -111,17 +111,17 @@ public class ImmutableTokenStream implements TokenStream {
 	}
 	
 	@Override
-	public @NotNull Token readToken() {
+	public @NonNull Token readToken() {
 		throw new UnsupportedOperationException("Immutable token stream cannot be modified");
 	}
 	
 	@Override
-	public @NotNull TokenStream copyWithIndex(int index) {
+	public @NonNull TokenStream copyWithIndex(int index) {
 		return new ImmutableTokenStream(this.tokens, Mth.clamp(index, 0, this.tokens.size()));
 	}
 	
 	@Override
-	public @NotNull TokenStream reversed() {
+	public @NonNull TokenStream reversed() {
 		List<Token> reversedTokens = new ArrayList<>(this.tokens);
 		Collections.reverse(reversedTokens);
 		int newIndex = Mth.clamp(this.tokens.size() - 1 - this.currentIndex, 0, this.tokens.size());
@@ -129,13 +129,13 @@ public class ImmutableTokenStream implements TokenStream {
 	}
 	
 	@Override
-	public @NotNull TokenStream createLookaheadStream() {
+	public @NonNull TokenStream createLookaheadStream() {
 		return new ImmutableTokenStream(this.tokens.subList(this.currentIndex, this.tokens.size()), 0);
 	}
 	
 	@Override
 	@SuppressWarnings("DuplicatedCode")
-	public @NotNull TokenStream createLookbehindStream() {
+	public @NonNull TokenStream createLookbehindStream() {
 		if (this.currentIndex == 0) {
 			return new ImmutableTokenStream(Collections.emptyList(), 0);
 		}

@@ -1,6 +1,6 @@
 /*
  * LUtils
- * Copyright (C) 2025 Luis Staudt
+ * Copyright (C) 2026 Luis Staudt
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -21,7 +21,9 @@ package net.luis.utils.io.codec.decoder;
 import net.luis.utils.io.codec.provider.TypeProvider;
 import net.luis.utils.util.result.Result;
 import net.luis.utils.util.result.ResultMappingFunction;
-import org.jetbrains.annotations.*;
+import org.jetbrains.annotations.UnknownNullability;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 import java.util.Objects;
 
@@ -54,7 +56,7 @@ public interface Decoder<C> {
 	 * @throws NullPointerException If the type provider is null
 	 * @throws DecoderException If an error occurs during decoding
 	 */
-	default <R> @UnknownNullability C decode(@NotNull TypeProvider<R> provider, @Nullable R value) {
+	default <R> @UnknownNullability C decode(@NonNull TypeProvider<R> provider, @Nullable R value) {
 		Objects.requireNonNull(provider, "Type provider must not be null");
 		return this.decode(provider, provider.empty(), value);
 	}
@@ -75,7 +77,7 @@ public interface Decoder<C> {
 	 * @throws NullPointerException If the type provider or the current value is null
 	 * @throws DecoderException If an error occurs during decoding
 	 */
-	default <R> @UnknownNullability C decode(@NotNull TypeProvider<R> provider, @NotNull R current, @Nullable R value) {
+	default <R> @UnknownNullability C decode(@NonNull TypeProvider<R> provider, @NonNull R current, @Nullable R value) {
 		Objects.requireNonNull(provider, "Type provider must not be null");
 		Objects.requireNonNull(current, "Current value must not be null");
 		
@@ -105,7 +107,7 @@ public interface Decoder<C> {
 	 * @param <R> The type to decode from
 	 * @throws NullPointerException If the type provider or the current value is null
 	 */
-	<R> @NotNull Result<C> decodeStart(@NotNull TypeProvider<R> provider, @NotNull R current, @Nullable R value);
+	<R> @NonNull Result<C> decodeStart(@NonNull TypeProvider<R> provider, @NonNull R current, @Nullable R value);
 	
 	/**
 	 * Decodes a key to a value of the specified type and returns the result.<br>
@@ -115,7 +117,7 @@ public interface Decoder<C> {
 	 * @return The result
 	 * @throws NullPointerException If the key is null
 	 */
-	default @NotNull Result<C> decodeKey(@NotNull String key) {
+	default @NonNull Result<C> decodeKey(@NonNull String key) {
 		Objects.requireNonNull(key, "Key to decode must not be null");
 		return Result.error("Decoding keys is not supported by this decoder");
 	}
@@ -130,11 +132,11 @@ public interface Decoder<C> {
 	 * @param <O> The type to map to
 	 * @throws NullPointerException If the mapping function is null
 	 */
-	default <O> @NotNull Decoder<O> mapDecoder(@NotNull ResultMappingFunction<C, O> function) {
+	default <O> @NonNull Decoder<O> mapDecoder(@NonNull ResultMappingFunction<C, O> function) {
 		Objects.requireNonNull(function, "Decode mapping function must not be null");
 		return new Decoder<>() {
 			@Override
-			public <R> @NotNull Result<O> decodeStart(@NotNull TypeProvider<R> provider, @NotNull R current, @Nullable R value) {
+			public <R> @NonNull Result<O> decodeStart(@NonNull TypeProvider<R> provider, @NonNull R current, @Nullable R value) {
 				Objects.requireNonNull(provider, "Type provider must not be null");
 				Objects.requireNonNull(current, "Current value must not be null");
 				
@@ -142,7 +144,7 @@ public interface Decoder<C> {
 			}
 			
 			@Override
-			public @NotNull Result<O> decodeKey(@NotNull String key) {
+			public @NonNull Result<O> decodeKey(@NonNull String key) {
 				Objects.requireNonNull(key, "Key to decode must not be null");
 				return function.apply(Decoder.this.decodeKey(key));
 			}

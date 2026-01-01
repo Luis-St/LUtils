@@ -1,6 +1,6 @@
 /*
  * LUtils
- * Copyright (C) 2025 Luis Staudt
+ * Copyright (C) 2026 Luis Staudt
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -28,6 +28,15 @@ import static org.junit.jupiter.api.Assertions.*;
  * @author Luis-St
  */
 class ResultTest {
+	
+	@Test
+	void successWithoutValueCreatesSuccessfulResult() {
+		Result<Integer> result = Result.success();
+		assertNotNull(result);
+		assertTrue(result.isSuccess());
+		assertFalse(result.isError());
+		assertFalse(result.isPartial());
+	}
 	
 	@Test
 	void successCreatesSuccessfulResult() {

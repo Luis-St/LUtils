@@ -1,6 +1,6 @@
 /*
  * LUtils
- * Copyright (C) 2025 Luis Staudt
+ * Copyright (C) 2026 Luis Staudt
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -21,7 +21,9 @@ package net.luis.utils.io.data.xml;
 import com.google.common.collect.Maps;
 import net.luis.utils.function.throwable.ThrowableFunction;
 import net.luis.utils.io.data.xml.exception.NoSuchXmlAttributeException;
-import org.jetbrains.annotations.*;
+import org.jetbrains.annotations.Unmodifiable;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 import java.util.*;
 
@@ -50,11 +52,9 @@ public class XmlAttributes {
 	 * @param attributes The attributes
 	 * @throws NullPointerException If the given attributes are null
 	 */
-	public XmlAttributes(@NotNull Map<String, XmlAttribute> attributes) {
+	public XmlAttributes(@NonNull Map<String, XmlAttribute> attributes) {
 		this.attributes.putAll(Objects.requireNonNull(attributes, "Attributes must not be null"));
 	}
-	
-	//region Query operations
 	
 	/**
 	 * Returns the number of attributes in this collection.<br>
@@ -96,7 +96,7 @@ public class XmlAttributes {
 	 * Returns an unmodifiable set of all attribute names in this collection.<br>
 	 * @return The set of attribute names
 	 */
-	public @NotNull @Unmodifiable Set<String> nameSet() {
+	public @NonNull @Unmodifiable Set<String> nameSet() {
 		return Set.copyOf(this.attributes.keySet());
 	}
 	
@@ -104,12 +104,9 @@ public class XmlAttributes {
 	 * Returns an unmodifiable collection of all attributes in this collection.<br>
 	 * @return The collection of attributes
 	 */
-	public @NotNull @Unmodifiable Collection<XmlAttribute> attributes() {
+	public @NonNull @Unmodifiable Collection<XmlAttribute> attributes() {
 		return Collections.unmodifiableCollection(this.attributes.values());
 	}
-	//endregion
-	
-	//region Add operations
 	
 	/**
 	 * Adds the given attribute to this collection.<br>
@@ -118,7 +115,7 @@ public class XmlAttributes {
 	 * @return The previous attribute with the same name, or null if there was none
 	 * @throws NullPointerException If the given attribute is null
 	 */
-	public @Nullable XmlAttribute add(@NotNull XmlAttribute attribute) {
+	public @Nullable XmlAttribute add(@NonNull XmlAttribute attribute) {
 		Objects.requireNonNull(attribute, "Attribute must not be null");
 		return this.attributes.put(attribute.getName(), attribute);
 	}
@@ -133,7 +130,7 @@ public class XmlAttributes {
 	 * @see #add(XmlAttribute)
 	 * @see XmlAttribute#XmlAttribute(String, String)
 	 */
-	public @Nullable XmlAttribute add(@NotNull String name, @Nullable String value) {
+	public @Nullable XmlAttribute add(@NonNull String name, @Nullable String value) {
 		return this.add(new XmlAttribute(name, value));
 	}
 	
@@ -147,7 +144,7 @@ public class XmlAttributes {
 	 * @see #add(XmlAttribute)
 	 * @see XmlAttribute#XmlAttribute(String, boolean)
 	 */
-	public @Nullable XmlAttribute add(@NotNull String name, boolean value) {
+	public @Nullable XmlAttribute add(@NonNull String name, boolean value) {
 		return this.add(new XmlAttribute(name, value));
 	}
 	
@@ -161,7 +158,7 @@ public class XmlAttributes {
 	 * @see #add(XmlAttribute)
 	 * @see XmlAttribute#XmlAttribute(String, Number)
 	 */
-	public @Nullable XmlAttribute add(@NotNull String name, @Nullable Number value) {
+	public @Nullable XmlAttribute add(@NonNull String name, @Nullable Number value) {
 		return this.add(new XmlAttribute(name, value));
 	}
 	
@@ -175,7 +172,7 @@ public class XmlAttributes {
 	 * @see #add(XmlAttribute)
 	 * @see XmlAttribute#XmlAttribute(String, Number)
 	 */
-	public @Nullable XmlAttribute add(@NotNull String name, byte value) {
+	public @Nullable XmlAttribute add(@NonNull String name, byte value) {
 		return this.add(new XmlAttribute(name, value));
 	}
 	
@@ -189,7 +186,7 @@ public class XmlAttributes {
 	 * @see #add(XmlAttribute)
 	 * @see XmlAttribute#XmlAttribute(String, Number)
 	 */
-	public @Nullable XmlAttribute add(@NotNull String name, short value) {
+	public @Nullable XmlAttribute add(@NonNull String name, short value) {
 		return this.add(new XmlAttribute(name, value));
 	}
 	
@@ -203,7 +200,7 @@ public class XmlAttributes {
 	 * @see #add(XmlAttribute)
 	 * @see XmlAttribute#XmlAttribute(String, Number)
 	 */
-	public @Nullable XmlAttribute add(@NotNull String name, int value) {
+	public @Nullable XmlAttribute add(@NonNull String name, int value) {
 		return this.add(new XmlAttribute(name, value));
 	}
 	
@@ -217,7 +214,7 @@ public class XmlAttributes {
 	 * @see #add(XmlAttribute)
 	 * @see XmlAttribute#XmlAttribute(String, Number)
 	 */
-	public @Nullable XmlAttribute add(@NotNull String name, long value) {
+	public @Nullable XmlAttribute add(@NonNull String name, long value) {
 		return this.add(new XmlAttribute(name, value));
 	}
 	
@@ -231,7 +228,7 @@ public class XmlAttributes {
 	 * @see #add(XmlAttribute)
 	 * @see XmlAttribute#XmlAttribute(String, Number)
 	 */
-	public @Nullable XmlAttribute add(@NotNull String name, float value) {
+	public @Nullable XmlAttribute add(@NonNull String name, float value) {
 		return this.add(new XmlAttribute(name, value));
 	}
 	
@@ -245,12 +242,10 @@ public class XmlAttributes {
 	 * @see #add(XmlAttribute)
 	 * @see XmlAttribute#XmlAttribute(String, Number)
 	 */
-	public @Nullable XmlAttribute add(@NotNull String name, double value) {
+	public @Nullable XmlAttribute add(@NonNull String name, double value) {
 		return this.add(new XmlAttribute(name, value));
 	}
-	//endregion
 	
-	//region Remove operations
 	
 	/**
 	 * Removes the attribute with the given name from this collection.<br>
@@ -270,7 +265,7 @@ public class XmlAttributes {
 	 * @throws NullPointerException If the given attribute is null
 	 * @see #remove(String)
 	 */
-	public @Nullable XmlAttribute remove(@NotNull XmlAttribute attribute) {
+	public @Nullable XmlAttribute remove(@NonNull XmlAttribute attribute) {
 		Objects.requireNonNull(attribute, "Attribute must not be null");
 		return this.remove(attribute.getName());
 	}
@@ -281,9 +276,7 @@ public class XmlAttributes {
 	public void clear() {
 		this.attributes.clear();
 	}
-	//endregion
 	
-	//region Replace operations
 	
 	/**
 	 * Replaces the attribute with the given name in this collection with the new attribute.<br>
@@ -293,7 +286,7 @@ public class XmlAttributes {
 	 * @return The replaced attribute, or null if there was none
 	 * @throws NullPointerException If the given name or new attribute is null
 	 */
-	public @Nullable XmlAttribute replace(@NotNull String name, @NotNull XmlAttribute newAttribute) {
+	public @Nullable XmlAttribute replace(@NonNull String name, @NonNull XmlAttribute newAttribute) {
 		Objects.requireNonNull(name, "Name must not be null");
 		Objects.requireNonNull(newAttribute, "New attribute must not be null");
 		return this.attributes.replace(name, newAttribute);
@@ -309,14 +302,11 @@ public class XmlAttributes {
 	 * @return True if the replacement was successful, otherwise false
 	 * @throws NullPointerException If the given name or new attribute is null
 	 */
-	public boolean replace(@NotNull String name, @Nullable XmlAttribute currentAttribute, @NotNull XmlAttribute newAttribute) {
+	public boolean replace(@NonNull String name, @Nullable XmlAttribute currentAttribute, @NonNull XmlAttribute newAttribute) {
 		Objects.requireNonNull(name, "Name must not be null");
 		Objects.requireNonNull(newAttribute, "New attribute must not be null");
 		return this.attributes.replace(name, currentAttribute, newAttribute);
 	}
-	//endregion
-	
-	//region Get operations
 	
 	/**
 	 * Returns the attribute with the given name from this collection.<br>
@@ -325,7 +315,7 @@ public class XmlAttributes {
 	 * @return The attribute, or null if there was none
 	 * @throws NullPointerException If the given name is null
 	 */
-	public @Nullable XmlAttribute get(@NotNull String name) {
+	public @Nullable XmlAttribute get(@NonNull String name) {
 		Objects.requireNonNull(name, "Name must not be null");
 		return this.attributes.get(name);
 	}
@@ -338,8 +328,9 @@ public class XmlAttributes {
 	 * @throws NullPointerException If the given name is null
 	 * @throws NoSuchXmlAttributeException If there is no attribute with the given name
 	 */
-	public @NotNull String getAsString(@NotNull String name) {
+	public @NonNull String getAsString(@NonNull String name) {
 		XmlAttribute attribute = this.get(name);
+		
 		if (attribute == null) {
 			throw new NoSuchXmlAttributeException("Expected xml attribute for name '" + name + "' but found none");
 		}
@@ -354,8 +345,9 @@ public class XmlAttributes {
 	 * @throws NullPointerException If the given name is null
 	 * @throws NoSuchXmlAttributeException If there is no attribute with the given name
 	 */
-	public boolean getAsBoolean(@NotNull String name) {
+	public boolean getAsBoolean(@NonNull String name) {
 		XmlAttribute attribute = this.get(name);
+		
 		if (attribute == null) {
 			throw new NoSuchXmlAttributeException("Expected xml attribute for name '" + name + "' but found none");
 		}
@@ -370,8 +362,9 @@ public class XmlAttributes {
 	 * @throws NullPointerException If the given name is null
 	 * @throws NoSuchXmlAttributeException If there is no attribute with the given name
 	 */
-	public @NotNull Number getAsNumber(@NotNull String name) {
+	public @NonNull Number getAsNumber(@NonNull String name) {
 		XmlAttribute attribute = this.get(name);
+		
 		if (attribute == null) {
 			throw new NoSuchXmlAttributeException("Expected xml attribute for name '" + name + "' but found none");
 		}
@@ -386,8 +379,9 @@ public class XmlAttributes {
 	 * @throws NullPointerException If the given name is null
 	 * @throws NoSuchXmlAttributeException If there is no attribute with the given name
 	 */
-	public byte getAsByte(@NotNull String name) {
+	public byte getAsByte(@NonNull String name) {
 		XmlAttribute attribute = this.get(name);
+		
 		if (attribute == null) {
 			throw new NoSuchXmlAttributeException("Expected xml attribute for name '" + name + "' but found none");
 		}
@@ -402,8 +396,9 @@ public class XmlAttributes {
 	 * @throws NullPointerException If the given name is null
 	 * @throws NoSuchXmlAttributeException If there is no attribute with the given name
 	 */
-	public short getAsShort(@NotNull String name) {
+	public short getAsShort(@NonNull String name) {
 		XmlAttribute attribute = this.get(name);
+		
 		if (attribute == null) {
 			throw new NoSuchXmlAttributeException("Expected xml attribute for name '" + name + "' but found none");
 		}
@@ -418,8 +413,9 @@ public class XmlAttributes {
 	 * @throws NullPointerException If the given name is null
 	 * @throws NoSuchXmlAttributeException If there is no attribute with the given name
 	 */
-	public int getAsInteger(@NotNull String name) {
+	public int getAsInteger(@NonNull String name) {
 		XmlAttribute attribute = this.get(name);
+		
 		if (attribute == null) {
 			throw new NoSuchXmlAttributeException("Expected xml attribute for name '" + name + "' but found none");
 		}
@@ -434,8 +430,9 @@ public class XmlAttributes {
 	 * @throws NullPointerException If the given name is null
 	 * @throws NoSuchXmlAttributeException If there is no attribute with the given name
 	 */
-	public long getAsLong(@NotNull String name) {
+	public long getAsLong(@NonNull String name) {
 		XmlAttribute attribute = this.get(name);
+		
 		if (attribute == null) {
 			throw new NoSuchXmlAttributeException("Expected xml attribute for name '" + name + "' but found none");
 		}
@@ -450,8 +447,9 @@ public class XmlAttributes {
 	 * @throws NullPointerException If the given name is null
 	 * @throws NoSuchXmlAttributeException If there is no attribute with the given name
 	 */
-	public float getAsFloat(@NotNull String name) {
+	public float getAsFloat(@NonNull String name) {
 		XmlAttribute attribute = this.get(name);
+		
 		if (attribute == null) {
 			throw new NoSuchXmlAttributeException("Expected xml attribute for name '" + name + "' but found none");
 		}
@@ -466,8 +464,9 @@ public class XmlAttributes {
 	 * @throws NullPointerException If the given name is null
 	 * @throws NoSuchXmlAttributeException If there is no attribute with the given name
 	 */
-	public double getAsDouble(@NotNull String name) {
+	public double getAsDouble(@NonNull String name) {
 		XmlAttribute attribute = this.get(name);
+		
 		if (attribute == null) {
 			throw new NoSuchXmlAttributeException("Expected xml attribute for name '" + name + "' but found none");
 		}
@@ -484,15 +483,15 @@ public class XmlAttributes {
 	 * @throws NullPointerException If the given name or parser is null
 	 * @throws NoSuchXmlAttributeException If there is no attribute with the given name
 	 */
-	public <T> @NotNull T getAs(@NotNull String name, @NotNull ThrowableFunction<String, T, ? extends Exception> parser) {
+	public <T> @NonNull T getAs(@NonNull String name, @NonNull ThrowableFunction<String, T, ? extends Exception> parser) {
 		Objects.requireNonNull(parser, "Parser must not be null");
 		XmlAttribute attribute = this.get(name);
+		
 		if (attribute == null) {
 			throw new NoSuchXmlAttributeException("Expected xml attribute for name '" + name + "' but found none");
 		}
 		return attribute.getAs(parser);
 	}
-	//endregion
 	
 	//region Object overrides
 	@Override
@@ -518,7 +517,7 @@ public class XmlAttributes {
 	 * @param config The xml config to use
 	 * @return The string representation
 	 */
-	public @NotNull String toString(@Nullable XmlConfig config) {
+	public @NonNull String toString(@Nullable XmlConfig config) {
 		StringBuilder builder = new StringBuilder();
 		this.attributes.forEach((name, value) -> builder.append(value.toString(config)).append(" "));
 		return builder.toString().strip();

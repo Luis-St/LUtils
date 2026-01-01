@@ -1,6 +1,6 @@
 /*
  * LUtils
- * Copyright (C) 2025 Luis Staudt
+ * Copyright (C) 2026 Luis Staudt
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,8 +20,8 @@ package net.luis.utils.util.unsafe;
 
 import net.luis.utils.util.unsafe.reflection.ReflectionHelper;
 import net.luis.utils.util.unsafe.reflection.ReflectionUtils;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 import java.lang.reflect.Method;
 import java.util.*;
@@ -152,7 +152,7 @@ public final class StackTraceUtils {
 	 * @see StackTraceUtils#getCallingMethod(int)
 	 * @see StackTraceUtils#getStackTrace(int)
 	 */
-	public static @NotNull Method getCallingMethod() {
+	public static @NonNull Method getCallingMethod() {
 		StackTraceElement element = getStackTrace(getDefaultOffset());
 		Method method = getCallingMethod(element);
 		if (method != null) {
@@ -190,7 +190,7 @@ public final class StackTraceUtils {
 	 * @see StackTraceUtils#getCallingMethod()
 	 * @see StackTraceUtils#getStackTrace(int)
 	 */
-	public static @NotNull Method getCallingMethod(int callsBefore) {
+	public static @NonNull Method getCallingMethod(int callsBefore) {
 		StackTraceElement element = getStackTrace(getDefaultOffset() + callsBefore);
 		Method method = getCallingMethod(element);
 		if (method != null) {
@@ -225,7 +225,7 @@ public final class StackTraceUtils {
 	 * @see StackTraceUtils#getCallingMethodSafe(int)
 	 * @see StackTraceUtils#getStackTrace(int)
 	 */
-	public static @NotNull Optional<Method> getCallingMethodSafe() {
+	public static @NonNull Optional<Method> getCallingMethodSafe() {
 		try {
 			StackTraceElement element = getStackTrace(getDefaultOffset());
 			return Optional.ofNullable(getCallingMethod(element));
@@ -262,7 +262,7 @@ public final class StackTraceUtils {
 	 * @see StackTraceUtils#getCallingMethodSafe()
 	 * @see StackTraceUtils#getStackTrace(int)
 	 */
-	public static @NotNull Optional<Method> getCallingMethodSafe(int callsBefore) {
+	public static @NonNull Optional<Method> getCallingMethodSafe(int callsBefore) {
 		try {
 			StackTraceElement element = getStackTrace(getDefaultOffset() + callsBefore);
 			return Optional.ofNullable(getCallingMethod(element));
@@ -314,7 +314,7 @@ public final class StackTraceUtils {
 	 * @throws IndexOutOfBoundsException If the specified position is out of bounds
 	 * @throws IllegalCallerException If called from the {@code main} method and 'unsafe.calls.main' is {@code false}
 	 */
-	private static @NotNull StackTraceElement getStackTrace(int callsBefore) {
+	private static @NonNull StackTraceElement getStackTrace(int callsBefore) {
 		StackTraceElement[] elements = Thread.currentThread().getStackTrace();
 		if (0 >= callsBefore) {
 			throw new IllegalArgumentException("The calls before value must be greater than 0");
@@ -339,7 +339,7 @@ public final class StackTraceUtils {
 	 * @return The calling method or {@code null} if the method could not be identified
 	 * @throws NullPointerException If the specified stack trace element is {@code null}
 	 */
-	private static @Nullable Method getCallingMethod(@NotNull StackTraceElement element) {
+	private static @Nullable Method getCallingMethod(@NonNull StackTraceElement element) {
 		Objects.requireNonNull(element, "Stack trace element must not be null");
 		Class<?> clazz = Objects.requireNonNull(ReflectionHelper.getClassForName(element.getClassName()));
 		List<Method> methods = ReflectionUtils.getMethodsForName(clazz, element.getMethodName());

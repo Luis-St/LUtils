@@ -1,6 +1,6 @@
 /*
  * LUtils
- * Copyright (C) 2025 Luis Staudt
+ * Copyright (C) 2026 Luis Staudt
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,7 +19,7 @@
 package net.luis.utils.io.token.actions.core;
 
 import net.luis.utils.io.token.tokens.Token;
-import org.jetbrains.annotations.NotNull;
+import org.jspecify.annotations.NonNull;
 
 /**
  * Token converter that transforms a token into another token.<br>
@@ -39,5 +39,5 @@ public interface TokenConverter {
 	 * @throws NullPointerException If the token is null
 	 * @apiNote This method should return a non-null token
 	 */
-	@NotNull Token convert(@NotNull Token token);
+	@NonNull Token convert(@NonNull Token token);
 }

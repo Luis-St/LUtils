@@ -1,6 +1,6 @@
 /*
  * LUtils
- * Copyright (C) 2025 Luis Staudt
+ * Copyright (C) 2026 Luis Staudt
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -22,8 +22,8 @@ import net.luis.utils.io.token.TokenRuleMatch;
 import net.luis.utils.io.token.context.TokenRuleContext;
 import net.luis.utils.io.token.rules.TokenRule;
 import net.luis.utils.io.token.stream.TokenStream;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 import java.util.Objects;
 
@@ -37,7 +37,7 @@ import java.util.Objects;
  * @param tokenRule The token rule to match optionally
  */
 public record OptionalTokenRule(
-	@NotNull TokenRule tokenRule
+	@NonNull TokenRule tokenRule
 ) implements TokenRule {
 	
 	/**
@@ -51,7 +51,7 @@ public record OptionalTokenRule(
 	}
 	
 	@Override
-	public @Nullable TokenRuleMatch match(@NotNull TokenStream stream, @NotNull TokenRuleContext ctx) {
+	public @Nullable TokenRuleMatch match(@NonNull TokenStream stream, @NonNull TokenRuleContext ctx) {
 		Objects.requireNonNull(stream, "Token stream must not be null");
 		Objects.requireNonNull(ctx, "Token rule context must not be null");
 		
@@ -68,7 +68,7 @@ public record OptionalTokenRule(
 	}
 	
 	@Override
-	public @NotNull TokenRule not() {
+	public @NonNull TokenRule not() {
 		return new OptionalTokenRule(this.tokenRule.not());
 	}
 }

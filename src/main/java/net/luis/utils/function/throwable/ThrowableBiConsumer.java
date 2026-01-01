@@ -1,6 +1,6 @@
 /*
  * LUtils
- * Copyright (C) 2025 Luis Staudt
+ * Copyright (C) 2026 Luis Staudt
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,7 +18,7 @@
 
 package net.luis.utils.function.throwable;
 
-import org.jetbrains.annotations.NotNull;
+import org.jspecify.annotations.NonNull;
 
 import java.util.Objects;
 import java.util.function.BiConsumer;
@@ -46,7 +46,7 @@ public interface ThrowableBiConsumer<T, U, X extends Throwable> {
 	 * @param <U> The second argument type
 	 * @throws NullPointerException If the throwable bi-consumer is null
 	 */
-	static <T, U> @NotNull BiConsumer<T, U> caught(@NotNull ThrowableBiConsumer<T, U, ? extends Throwable> consumer) {
+	static <T, U> @NonNull BiConsumer<T, U> caught(@NonNull ThrowableBiConsumer<T, U, ? extends Throwable> consumer) {
 		Objects.requireNonNull(consumer, "Throwable consumer must not be null");
 		return (t, u) -> {
 			try {
@@ -74,7 +74,7 @@ public interface ThrowableBiConsumer<T, U, X extends Throwable> {
 	 * @return The composed throwable consumer
 	 * @throws NullPointerException If the after operation is null
 	 */
-	default @NotNull ThrowableBiConsumer<T, U, X> andThen(@NotNull ThrowableBiConsumer<? super T, ? super U, X> after) {
+	default @NonNull ThrowableBiConsumer<T, U, X> andThen(@NonNull ThrowableBiConsumer<? super T, ? super U, X> after) {
 		Objects.requireNonNull(after, "After operation must not be null");
 		return (t, u) -> {
 			this.accept(t, u);

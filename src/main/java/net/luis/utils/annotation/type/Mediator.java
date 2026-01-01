@@ -1,6 +1,6 @@
 /*
  * LUtils
- * Copyright (C) 2025 Luis Staudt
+ * Copyright (C) 2026 Luis Staudt
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,7 +18,7 @@
 
 package net.luis.utils.annotation.type;
 
-import org.jetbrains.annotations.NotNull;
+import org.jspecify.annotations.NonNull;
 
 import java.lang.annotation.*;
 
@@ -38,5 +38,5 @@ public @interface Mediator {
 	 * Returns the types that are mediated by this class.<br>
 	 * @return The types
 	 */
-	@NotNull Class<?>[] value() default {};
+	@NonNull Class<?>[] value() default {};
 }

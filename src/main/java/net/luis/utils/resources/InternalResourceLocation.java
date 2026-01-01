@@ -1,6 +1,6 @@
 /*
  * LUtils
- * Copyright (C) 2025 Luis Staudt
+ * Copyright (C) 2026 Luis Staudt
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -22,8 +22,8 @@ import com.google.common.collect.Lists;
 import net.luis.utils.io.FileUtils;
 import net.luis.utils.util.Pair;
 import org.apache.commons.lang3.StringUtils;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 import java.io.*;
 import java.net.URL;
@@ -52,7 +52,7 @@ final class InternalResourceLocation extends ResourceLocation {
 	 * @param pair The pair
 	 * @throws NullPointerException If the pair is null
 	 */
-	InternalResourceLocation(@NotNull Pair<String, String> pair) {
+	InternalResourceLocation(@NonNull Pair<String, String> pair) {
 		this(pair.getFirst(), pair.getSecond());
 	}
 	
@@ -63,14 +63,14 @@ final class InternalResourceLocation extends ResourceLocation {
 	 * @param name The name of the resource
 	 * @throws NullPointerException If the name is null
 	 */
-	InternalResourceLocation(@Nullable String path, @NotNull String name) {
+	InternalResourceLocation(@Nullable String path, @NonNull String name) {
 		super(path, name);
 		this.url = this.getClass().getResource(this.getPath() + this.getFile());
 	}
 	
 	//region Constructor modifications
 	@Override
-	protected @NotNull String modifyPath(@Nullable String path) {
+	protected @NonNull String modifyPath(@Nullable String path) {
 		String strPath = StringUtils.stripToEmpty(path);
 		if (strPath.isEmpty()) {
 			return "/";
@@ -83,17 +83,17 @@ final class InternalResourceLocation extends ResourceLocation {
 	//endregion
 	
 	@Override
-	public @NotNull Type getType() {
+	public @NonNull Type getType() {
 		return Type.INTERNAL;
 	}
 	
 	@Override
-	public @NotNull File asFile() {
+	public @NonNull File asFile() {
 		throw new UnsupportedOperationException("Internal resources can not be converted into a file");
 	}
 	
 	@Override
-	public @NotNull Path asPath() {
+	public @NonNull Path asPath() {
 		throw new UnsupportedOperationException("Internal resources can not be converted into a path");
 	}
 	
@@ -103,24 +103,24 @@ final class InternalResourceLocation extends ResourceLocation {
 	}
 	
 	@Override
-	public @NotNull InputStream getStream() throws IOException {
+	public @NonNull InputStream getStream() throws IOException {
 		return this.url.openStream();
 	}
 	
 	@Override
-	public byte @NotNull [] getBytes() throws IOException {
+	public byte @NonNull [] getBytes() throws IOException {
 		try (InputStream stream = this.getStream()) {
 			return stream.readAllBytes();
 		}
 	}
 	
 	@Override
-	public @NotNull String getString() throws IOException {
+	public @NonNull String getString() throws IOException {
 		return this.getLines().collect(Collectors.joining(System.lineSeparator()));
 	}
 	
 	@Override
-	public @NotNull Stream<String> getLines() throws IOException {
+	public @NonNull Stream<String> getLines() throws IOException {
 		try (BufferedReader reader = new BufferedReader(new InputStreamReader(this.getStream()))) {
 			List<String> lines = Lists.newArrayList();
 			while (true) {
@@ -135,7 +135,7 @@ final class InternalResourceLocation extends ResourceLocation {
 	}
 	
 	@Override
-	public @NotNull Path copy() throws IOException {
+	public @NonNull Path copy() throws IOException {
 		String path = this.getPath();
 		Path target = TEMP.get().resolve(path.startsWith("/") ? path.substring(1) : path).resolve(this.getFile());
 		FileUtils.createIfNotExists(target);
@@ -146,7 +146,7 @@ final class InternalResourceLocation extends ResourceLocation {
 	}
 	
 	@Override
-	public @NotNull Path copy(@NotNull Path target) throws IOException {
+	public @NonNull Path copy(@NonNull Path target) throws IOException {
 		FileUtils.createIfNotExists(target);
 		InputStream stream = this.getStream();
 		Files.copy(stream, target, StandardCopyOption.REPLACE_EXISTING);

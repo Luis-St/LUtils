@@ -1,6 +1,6 @@
 /*
  * LUtils
- * Copyright (C) 2025 Luis Staudt
+ * Copyright (C) 2026 Luis Staudt
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -25,7 +25,7 @@ import net.luis.utils.io.token.actions.filters.*;
 import net.luis.utils.io.token.actions.transformers.*;
 import net.luis.utils.io.token.tokens.Token;
 import org.intellij.lang.annotations.Language;
-import org.jetbrains.annotations.NotNull;
+import org.jspecify.annotations.NonNull;
 
 import java.util.Map;
 import java.util.function.Consumer;
@@ -54,7 +54,7 @@ public final class TokenActions {
 	 * @apiNote This is the preferred way to access the {@link TokenAction#identity()} method
 	 * @see TokenAction#identity()
 	 */
-	public static @NotNull TokenAction identity() {
+	public static @NonNull TokenAction identity() {
 		return TokenAction.identity();
 	}
 	
@@ -68,7 +68,7 @@ public final class TokenActions {
 	 * @see GroupingTokenAction
 	 * @see GroupingMode
 	 */
-	public static @NotNull TokenAction grouping(@NotNull GroupingMode mode) {
+	public static @NonNull TokenAction grouping(@NonNull GroupingMode mode) {
 		return new GroupingTokenAction(mode);
 	}
 	
@@ -82,7 +82,7 @@ public final class TokenActions {
 	 * @throws NullPointerException If the metadata map is null
 	 * @see AnnotateTokenAction
 	 */
-	public static @NotNull TokenAction annotate(@NotNull Map<String, Object> metadata) {
+	public static @NonNull TokenAction annotate(@NonNull Map<String, Object> metadata) {
 		return new AnnotateTokenAction(metadata);
 	}
 	
@@ -94,7 +94,7 @@ public final class TokenActions {
 	 * @return The created index token action with starting index of 0
 	 * @see IndexTokenAction
 	 */
-	public static @NotNull TokenAction index() {
+	public static @NonNull TokenAction index() {
 		return new IndexTokenAction();
 	}
 	
@@ -108,7 +108,7 @@ public final class TokenActions {
 	 * @throws IllegalArgumentException If the starting index is negative
 	 * @see IndexTokenAction
 	 */
-	public static @NotNull TokenAction index(int startIndex) {
+	public static @NonNull TokenAction index(int startIndex) {
 		return new IndexTokenAction(startIndex);
 	}
 	
@@ -123,7 +123,7 @@ public final class TokenActions {
 	 * @throws NullPointerException If the predicate or consumer is null
 	 * @see ExtractTokenAction
 	 */
-	public static @NotNull TokenAction extract(@NotNull Predicate<Token> filter, @NotNull Consumer<Token> extractor) {
+	public static @NonNull TokenAction extract(@NonNull Predicate<Token> filter, @NonNull Consumer<Token> extractor) {
 		return new ExtractTokenAction(filter, extractor);
 	}
 	
@@ -136,7 +136,7 @@ public final class TokenActions {
 	 * @throws NullPointerException If the predicate is null
 	 * @see FilterTokenAction
 	 */
-	public static @NotNull TokenAction filter(@NotNull Predicate<Token> filter) {
+	public static @NonNull TokenAction filter(@NonNull Predicate<Token> filter) {
 		return new FilterTokenAction(filter);
 	}
 	
@@ -150,7 +150,7 @@ public final class TokenActions {
 	 * @throws NullPointerException If the predicate is null
 	 * @see SkipTokenAction
 	 */
-	public static @NotNull TokenAction skip(@NotNull Predicate<Token> filter) {
+	public static @NonNull TokenAction skip(@NonNull Predicate<Token> filter) {
 		return new SkipTokenAction(filter);
 	}
 	
@@ -164,7 +164,7 @@ public final class TokenActions {
 	 * @see ConvertTokenAction
 	 * @see TokenConverter
 	 */
-	public static @NotNull TokenAction convert(@NotNull TokenConverter converter) {
+	public static @NonNull TokenAction convert(@NonNull TokenConverter converter) {
 		return new ConvertTokenAction(converter);
 	}
 	
@@ -179,7 +179,7 @@ public final class TokenActions {
 	 * @see SplitTokenAction
 	 * @see #split(Pattern)
 	 */
-	public static @NotNull TokenAction split(@Language("RegExp") @NotNull String splitPattern) {
+	public static @NonNull TokenAction split(@Language("RegExp") @NonNull String splitPattern) {
 		return new SplitTokenAction(splitPattern);
 	}
 	
@@ -193,7 +193,7 @@ public final class TokenActions {
 	 * @throws NullPointerException If the split pattern is null
 	 * @see SplitTokenAction
 	 */
-	public static @NotNull TokenAction split(@NotNull Pattern splitPattern) {
+	public static @NonNull TokenAction split(@NonNull Pattern splitPattern) {
 		return new SplitTokenAction(splitPattern);
 	}
 	
@@ -207,7 +207,7 @@ public final class TokenActions {
 	 * @see TransformTokenAction
 	 * @see TokenTransformer
 	 */
-	public static @NotNull TokenAction transform(@NotNull TokenTransformer transformer) {
+	public static @NonNull TokenAction transform(@NonNull TokenTransformer transformer) {
 		return new TransformTokenAction(transformer);
 	}
 	
@@ -221,7 +221,7 @@ public final class TokenActions {
 	 * @throws NullPointerException If the prefix or suffix token is null
 	 * @see WrapTokenAction
 	 */
-	public static @NotNull TokenAction wrap(@NotNull Token prefixToken, @NotNull Token suffixToken) {
+	public static @NonNull TokenAction wrap(@NonNull Token prefixToken, @NonNull Token suffixToken) {
 		return new WrapTokenAction(prefixToken, suffixToken);
 	}
 }

@@ -1,6 +1,6 @@
 /*
  * LUtils
- * Copyright (C) 2025 Luis Staudt
+ * Copyright (C) 2026 Luis Staudt
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,8 +19,8 @@
 package net.luis.utils.util.result;
 
 import net.luis.utils.function.throwable.ThrowableFunction;
-import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.UnknownNullability;
+import org.jspecify.annotations.NonNull;
 
 import java.util.Objects;
 import java.util.function.Function;
@@ -45,7 +45,7 @@ public interface ResultingFunction<T, R> extends Function<T, Result<R>> {
 	 * @param <T> The type of the input and output value
 	 * @return The resulting function
 	 */
-	static <T> @NotNull ResultingFunction<T, T> identity() {
+	static <T> @NonNull ResultingFunction<T, T> identity() {
 		return direct(Function.identity());
 	}
 	
@@ -59,7 +59,7 @@ public interface ResultingFunction<T, R> extends Function<T, Result<R>> {
 	 * @return The resulting function
 	 * @throws NullPointerException If the function is null
 	 */
-	static <T, R> @NotNull ResultingFunction<T, R> direct(@NotNull Function<T, R> function) {
+	static <T, R> @NonNull ResultingFunction<T, R> direct(@NonNull Function<T, R> function) {
 		Objects.requireNonNull(function, "Function must not be null");
 		return value -> Result.success(function.apply(value));
 	}
@@ -75,7 +75,7 @@ public interface ResultingFunction<T, R> extends Function<T, Result<R>> {
 	 * @return The resulting function
 	 * @throws NullPointerException If the throwable function is null
 	 */
-	static <T, R> @NotNull ResultingFunction<T, R> throwable(@NotNull ThrowableFunction<T, R, ? extends Throwable> function) {
+	static <T, R> @NonNull ResultingFunction<T, R> throwable(@NonNull ThrowableFunction<T, R, ? extends Throwable> function) {
 		Objects.requireNonNull(function, "Function must not be null");
 		return value -> {
 			try {
@@ -88,5 +88,5 @@ public interface ResultingFunction<T, R> extends Function<T, Result<R>> {
 	}
 	
 	@Override
-	@NotNull Result<R> apply(@UnknownNullability T value);
+	@NonNull Result<R> apply(@UnknownNullability T value);
 }

@@ -1,6 +1,6 @@
 /*
  * LUtils
- * Copyright (C) 2025 Luis Staudt
+ * Copyright (C) 2026 Luis Staudt
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,7 +19,7 @@
 package net.luis.utils.io.codec.function;
 
 import net.luis.utils.io.codec.Codec;
-import org.jetbrains.annotations.NotNull;
+import org.jspecify.annotations.NonNull;
 
 /**
  * Represents a codec grouping function that accepts nine arguments and produces a result.<br>
@@ -55,15 +55,15 @@ public interface CodecBuilderFunction9<CI1, CI2, CI3, CI4, CI5, CI6, CI7, CI8, C
 	 * @param input9 The ninth input
 	 * @return The constructed object
 	 */
-	@NotNull R create(
-		@NotNull CI1 input1,
-		@NotNull CI2 input2,
-		@NotNull CI3 input3,
-		@NotNull CI4 input4,
-		@NotNull CI5 input5,
-		@NotNull CI6 input6,
-		@NotNull CI7 input7,
-		@NotNull CI8 input8,
-		@NotNull CI9 input9
+	@NonNull R create(
+		@NonNull CI1 input1,
+		@NonNull CI2 input2,
+		@NonNull CI3 input3,
+		@NonNull CI4 input4,
+		@NonNull CI5 input5,
+		@NonNull CI6 input6,
+		@NonNull CI7 input7,
+		@NonNull CI8 input8,
+		@NonNull CI9 input9
 	);
 }

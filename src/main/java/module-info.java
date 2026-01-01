@@ -1,6 +1,6 @@
 /*
  * LUtils
- * Copyright (C) 2025 Luis Staudt
+ * Copyright (C) 2026 Luis Staudt
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -22,11 +22,12 @@
  * @author Luis-St
  */
 module net.luis.utils {
-	requires org.apache.logging.log4j.core;
-	requires org.apache.logging.log4j;
-	requires org.jetbrains.annotations;
+	requires org.jspecify;
 	requires com.google.common;
 	requires org.apache.commons.lang3;
+	requires org.apache.logging.log4j;
+	requires org.jetbrains.annotations;
+	requires org.apache.logging.log4j.core;
 	
 	exports net.luis.utils.annotation;
 	exports net.luis.utils.annotation.type;

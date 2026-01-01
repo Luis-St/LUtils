@@ -1,6 +1,6 @@
 /*
  * LUtils
- * Copyright (C) 2025 Luis Staudt
+ * Copyright (C) 2026 Luis Staudt
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -24,7 +24,7 @@ import net.luis.utils.io.token.actions.TokenAction;
 import net.luis.utils.io.token.context.TokenRuleContext;
 import net.luis.utils.io.token.rules.*;
 import net.luis.utils.io.token.rules.combinators.AnyOfTokenRule;
-import org.jetbrains.annotations.NotNull;
+import org.jspecify.annotations.NonNull;
 
 import java.util.List;
 import java.util.Objects;
@@ -69,7 +69,7 @@ public class GrammarBuilder {
 	 * @throws IllegalArgumentException If name is empty or already defined
 	 * @see TokenRuleContext#defineRule(String, TokenRule)
 	 */
-	public void defineRule(@NotNull String name, @NotNull TokenRule rule) {
+	public void defineRule(@NonNull String name, @NonNull TokenRule rule) {
 		Objects.requireNonNull(name, "Rule name must not be null");
 		Objects.requireNonNull(rule, "Rule must not be null");
 		
@@ -91,7 +91,7 @@ public class GrammarBuilder {
 	 * @throws NullPointerException If the rule is null
 	 * @see #addRule(TokenRule, TokenAction)
 	 */
-	public void addRule(@NotNull TokenRule rule) {
+	public void addRule(@NonNull TokenRule rule) {
 		this.addRule(rule, TokenAction.identity());
 	}
 	
@@ -104,7 +104,7 @@ public class GrammarBuilder {
 	 * @throws NullPointerException If the rule is null
 	 * @see #addRule(TokenRule, TokenAction, boolean)
 	 */
-	public void addRule(@NotNull TokenRule rule, boolean wrap) {
+	public void addRule(@NonNull TokenRule rule, boolean wrap) {
 		this.addRule(rule, TokenAction.identity(), wrap);
 	}
 	
@@ -128,7 +128,7 @@ public class GrammarBuilder {
 	 * @throws NullPointerException If name or rule is null
 	 * @throws IllegalArgumentException If name is empty or already defined
 	 */
-	public void addRule(@NotNull TokenRule rule, @NotNull TokenAction action) {
+	public void addRule(@NonNull TokenRule rule, @NonNull TokenAction action) {
 		this.addRule(rule, action, true);
 	}
 	
@@ -153,7 +153,7 @@ public class GrammarBuilder {
 	 * @throws NullPointerException If name or rule is null
 	 * @throws IllegalArgumentException If name is empty or already defined
 	 */
-	public void addRule(@NotNull TokenRule rule, @NotNull TokenAction action, boolean wrap) {
+	public void addRule(@NonNull TokenRule rule, @NonNull TokenAction action, boolean wrap) {
 		Objects.requireNonNull(rule, "Rule must not be null");
 		Objects.requireNonNull(action, "Action must not be null");
 		
@@ -171,7 +171,7 @@ public class GrammarBuilder {
 	 * @param action The action associated with the rule
 	 * @return The wrapped or original rule
 	 */
-	private @NotNull TokenRule wrapRule(@NotNull TokenRule rule, @NotNull TokenAction action) {
+	private @NonNull TokenRule wrapRule(@NonNull TokenRule rule, @NonNull TokenAction action) {
 		if (action instanceof GroupingTokenAction) {
 			if (!(rule instanceof AnyOfTokenRule(List<TokenRule> tokenRules))) {
 				return TokenRules.any(
@@ -204,7 +204,7 @@ public class GrammarBuilder {
 	 * Builds and returns a new {@link Grammar} instance with all defined rules.<br>
 	 * @return A new Grammar containing all defined rules and their context
 	 */
-	public @NotNull Grammar build() {
+	public @NonNull Grammar build() {
 		return new Grammar(this.context, this.rules);
 	}
 }

@@ -1,6 +1,6 @@
 /*
  * LUtils
- * Copyright (C) 2025 Luis Staudt
+ * Copyright (C) 2026 Luis Staudt
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -25,8 +25,8 @@ import net.luis.utils.io.codec.provider.TypeProvider;
 import net.luis.utils.io.data.json.JsonElement;
 import net.luis.utils.io.data.json.JsonPrimitive;
 import net.luis.utils.util.result.Result;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 import org.junit.jupiter.api.Test;
 
 import static net.luis.utils.io.codec.Codecs.*;
@@ -94,7 +94,7 @@ class AnonymousCodecTest {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Encoder<String> encoder = new Encoder<>() {
 			@Override
-			public <R> @NotNull Result<R> encodeStart(@NotNull TypeProvider<R> provider, @NotNull R current, @Nullable String value) {
+			public <R> @NonNull Result<R> encodeStart(@NonNull TypeProvider<R> provider, @NonNull R current, @Nullable String value) {
 				return provider.createString("encoded:" + value);
 			}
 		};
@@ -111,12 +111,12 @@ class AnonymousCodecTest {
 	void encodeKeyDelegatesToEncoder() {
 		Encoder<String> encoder = new Encoder<>() {
 			@Override
-			public <R> @NotNull Result<R> encodeStart(@NotNull TypeProvider<R> provider, @NotNull R current, @Nullable String value) {
+			public <R> @NonNull Result<R> encodeStart(@NonNull TypeProvider<R> provider, @NonNull R current, @Nullable String value) {
 				return Result.success(null);
 			}
 			
 			@Override
-			public @NotNull Result<String> encodeKey(@NotNull String key) {
+			public @NonNull Result<String> encodeKey(@NonNull String key) {
 				return Result.success("key:" + key);
 			}
 		};
@@ -135,7 +135,7 @@ class AnonymousCodecTest {
 		Encoder<String> encoder = STRING;
 		Decoder<String> decoder = new Decoder<>() {
 			@Override
-			public <R> @NotNull Result<String> decodeStart(@NotNull TypeProvider<R> provider, @NotNull R current, @Nullable R value) {
+			public <R> @NonNull Result<String> decodeStart(@NonNull TypeProvider<R> provider, @NonNull R current, @Nullable R value) {
 				if (value == null) {
 					return Result.error("null value");
 				}
@@ -156,12 +156,12 @@ class AnonymousCodecTest {
 		Encoder<String> encoder = STRING;
 		Decoder<String> decoder = new Decoder<>() {
 			@Override
-			public <R> @NotNull Result<String> decodeStart(@NotNull TypeProvider<R> provider, @NotNull R current, @Nullable R value) {
+			public <R> @NonNull Result<String> decodeStart(@NonNull TypeProvider<R> provider, @NonNull R current, @Nullable R value) {
 				return Result.success(null);
 			}
 			
 			@Override
-			public @NotNull Result<String> decodeKey(@NotNull String key) {
+			public @NonNull Result<String> decodeKey(@NonNull String key) {
 				return Result.success("decoded:" + key);
 			}
 		};
@@ -212,7 +212,7 @@ class AnonymousCodecTest {
 		
 		Encoder<Integer> upperBoundEncoder = new Encoder<>() {
 			@Override
-			public <R> @NotNull Result<R> encodeStart(@NotNull TypeProvider<R> provider, @NotNull R current, @Nullable Integer value) {
+			public <R> @NonNull Result<R> encodeStart(@NonNull TypeProvider<R> provider, @NonNull R current, @Nullable Integer value) {
 				if (value == null) {
 					return Result.error("Cannot encode null");
 				}
@@ -225,7 +225,7 @@ class AnonymousCodecTest {
 		
 		Decoder<Integer> lowerBoundDecoder = new Decoder<>() {
 			@Override
-			public <R> @NotNull Result<Integer> decodeStart(@NotNull TypeProvider<R> provider, @NotNull R current, @Nullable R value) {
+			public <R> @NonNull Result<Integer> decodeStart(@NonNull TypeProvider<R> provider, @NonNull R current, @Nullable R value) {
 				if (value == null) {
 					return Result.error("Cannot decode null");
 				}

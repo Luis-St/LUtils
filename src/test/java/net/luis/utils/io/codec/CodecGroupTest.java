@@ -1,6 +1,6 @@
 /*
  * LUtils
- * Copyright (C) 2025 Luis Staudt
+ * Copyright (C) 2026 Luis Staudt
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -21,7 +21,7 @@ package net.luis.utils.io.codec;
 import net.luis.utils.io.codec.provider.JsonTypeProvider;
 import net.luis.utils.io.data.json.*;
 import net.luis.utils.util.result.Result;
-import org.jetbrains.annotations.NotNull;
+import org.jspecify.annotations.NonNull;
 import org.junit.jupiter.api.Test;
 
 import java.util.Arrays;
@@ -39,7 +39,7 @@ import static org.junit.jupiter.api.Assertions.*;
  */
 class CodecGroupTest {
 	
-	private static @NotNull CodecGroup<TestObject> createTestCodecGroup() {
+	private static @NonNull CodecGroup<TestObject> createTestCodecGroup() {
 		List<FieldCodec<?, TestObject>> codecs = List.of(
 			STRING.fieldOf("name", TestObject::name),
 			INTEGER.fieldOf("value", TestObject::value)
@@ -357,7 +357,7 @@ class CodecGroupTest {
 		assertTrue(result.endsWith("]"));
 	}
 	
-	private record TestObject(@NotNull String name, int value) {}
+	private record TestObject(@NonNull String name, int value) {}
 	
-	private record TestObject2(@NotNull String text, double number, boolean flag) {}
+	private record TestObject2(@NonNull String text, double number, boolean flag) {}
 }

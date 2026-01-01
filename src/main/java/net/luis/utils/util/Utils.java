@@ -1,6 +1,6 @@
 /*
  * LUtils
- * Copyright (C) 2025 Luis Staudt
+ * Copyright (C) 2026 Luis Staudt
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,8 +20,8 @@ package net.luis.utils.util;
 
 import com.google.common.collect.*;
 import org.apache.commons.lang3.ArrayUtils;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 import java.util.*;
 import java.util.Map.Entry;
@@ -67,7 +67,7 @@ public final class Utils {
 	 * @throws NullPointerException If the object or action is null
 	 * @param <T> The type of the object
 	 */
-	public static <T> @NotNull T make(@NotNull T object, @NotNull Consumer<T> action) {
+	public static <T> @NonNull T make(@NonNull T object, @NonNull Consumer<T> action) {
 		Objects.requireNonNull(object, "Object must not be null");
 		Objects.requireNonNull(action, "Action must not be null").accept(object);
 		return object;
@@ -88,7 +88,7 @@ public final class Utils {
 	 * @param <V> The type of the map value
 	 * @param <T> The type of the list
 	 */
-	public static <K, V, T> @NotNull List<T> mapToList(@Nullable Map<K, V> map, @Nullable BiFunction<K, V, T> function) {
+	public static <K, V, T> @NonNull List<T> mapToList(@Nullable Map<K, V> map, @Nullable BiFunction<K, V, T> function) {
 		List<T> list = Lists.newArrayList();
 		if (map == null || map.isEmpty() || function == null) {
 			return list;
@@ -114,7 +114,7 @@ public final class Utils {
 	 * @param <K> The type of the map key
 	 * @param <V> The type of the map value
 	 */
-	public static <T, K, V> @NotNull Map<K, V> listToMap(@Nullable List<T> list, @Nullable Function<T, Entry<K, V>> function) {
+	public static <T, K, V> @NonNull Map<K, V> listToMap(@Nullable List<T> list, @Nullable Function<T, Entry<K, V>> function) {
 		Map<K, V> map = Maps.newHashMap();
 		if (list == null || list.isEmpty() || function == null) {
 			return map;
@@ -147,7 +147,7 @@ public final class Utils {
 	 * @param <T> The type of the list
 	 * @param <U> The type of the resulting list
 	 */
-	public static <T, U> @NotNull List<U> mapList(@Nullable List<T> list, @Nullable Function<T, U> function) {
+	public static <T, U> @NonNull List<U> mapList(@Nullable List<T> list, @Nullable Function<T, U> function) {
 		if (list == null || list.isEmpty()) {
 			return Lists.newArrayList();
 		}
@@ -178,7 +178,7 @@ public final class Utils {
 	 * @param <U> The type of the list after the first mapper
 	 * @param <V> The type of the resulting list
 	 */
-	public static <T, U, V> @NotNull List<V> mapList(@Nullable List<T> list, @Nullable Function<T, U> first, @Nullable Function<U, V> second) {
+	public static <T, U, V> @NonNull List<V> mapList(@Nullable List<T> list, @Nullable Function<T, U> first, @Nullable Function<U, V> second) {
 		if (list == null || list.isEmpty()) {
 			return Lists.newArrayList();
 		}
@@ -208,7 +208,7 @@ public final class Utils {
 	 * @param <T> The type of the key in the resulting map
 	 * @param <V> The type of the map value
 	 */
-	public static <K, T, V> @NotNull Map<T, V> mapKey(@Nullable Map<K, V> map, @Nullable Function<K, T> function) {
+	public static <K, T, V> @NonNull Map<T, V> mapKey(@Nullable Map<K, V> map, @Nullable Function<K, T> function) {
 		Map<T, V> mapped = Maps.newHashMap();
 		if (map == null || map.isEmpty() || function == null) {
 			return mapped;
@@ -239,7 +239,7 @@ public final class Utils {
 	 * @param <V> The type of the map value
 	 * @param <T> The type of the value in the resulting map
 	 */
-	public static <K, V, T> @NotNull Map<K, T> mapValue(@Nullable Map<K, V> map, @Nullable Function<V, T> function) {
+	public static <K, V, T> @NonNull Map<K, T> mapValue(@Nullable Map<K, V> map, @Nullable Function<V, T> function) {
 		Map<K, T> mapped = Maps.newHashMap();
 		if (map == null || map.isEmpty() || function == null) {
 			return mapped;
@@ -322,7 +322,7 @@ public final class Utils {
 	 * @throws NullPointerException If the fallback value is null
 	 * @param <T> The type of the value
 	 */
-	public static <T> @NotNull T warpNullTo(@Nullable T value, @NotNull T nullFallback) {
+	public static <T> @NonNull T warpNullTo(@Nullable T value, @NonNull T nullFallback) {
 		Objects.requireNonNull(nullFallback, "Fallback value must not be null");
 		if (value == null) {
 			return nullFallback;
@@ -340,7 +340,7 @@ public final class Utils {
 	 * @throws NullPointerException If the fallback supplier is null
 	 * @param <T> The type of the value
 	 */
-	public static <T> @NotNull T warpNullTo(@Nullable T value, @NotNull Supplier<T> nullFallback) {
+	public static <T> @NonNull T warpNullTo(@Nullable T value, @NonNull Supplier<T> nullFallback) {
 		Objects.requireNonNull(nullFallback, "Fallback supplier must not be null");
 		if (value == null) {
 			return nullFallback.get();
@@ -356,7 +356,7 @@ public final class Utils {
 	 * @throws NullPointerException If the action is null
 	 * @param <T> The type of the value
 	 */
-	public static <T> void executeIfNotNull(@Nullable T value, @NotNull Consumer<T> action) {
+	public static <T> void executeIfNotNull(@Nullable T value, @NonNull Consumer<T> action) {
 		Objects.requireNonNull(action, "Action must not be null");
 		if (value != null) {
 			action.accept(value);
@@ -370,7 +370,7 @@ public final class Utils {
 	 * Returns a new {@link Random} instance using the current system time as seed.<br>
 	 * @return A new random number generator
 	 */
-	public static @NotNull Random systemRandom() {
+	public static @NonNull Random systemRandom() {
 		return new Random(System.currentTimeMillis());
 	}
 	
@@ -385,7 +385,7 @@ public final class Utils {
 	 * @param <T> The type of the array
 	 */
 	@SafeVarargs
-	public static <T> @NotNull T getRandom(@NotNull Random rng, T @NotNull ... values) {
+	public static <T> @NonNull T getRandom(@NonNull Random rng, T @NonNull ... values) {
 		Objects.requireNonNull(rng, "Random must not be null");
 		Objects.requireNonNull(values, "Values must not be null");
 		return values[rng.nextInt(values.length)];
@@ -403,7 +403,7 @@ public final class Utils {
 	 * @param <T> The type of the array
 	 */
 	@SafeVarargs
-	public static <T> @NotNull Optional<T> getRandomSafe(@NotNull Random rng, T @Nullable ... values) {
+	public static <T> @NonNull Optional<T> getRandomSafe(@NonNull Random rng, T @Nullable ... values) {
 		Objects.requireNonNull(rng, "Random must not be null");
 		if (values == null || values.length == 0) {
 			return Optional.empty();
@@ -420,7 +420,7 @@ public final class Utils {
 	 * @throws NullPointerException If the random number generator or list is null
 	 * @param <T> The type of the list
 	 */
-	public static <T> @NotNull T getRandom(@NotNull Random rng, @NotNull List<T> values) {
+	public static <T> @NonNull T getRandom(@NonNull Random rng, @NonNull List<T> values) {
 		Objects.requireNonNull(rng, "Random must not be null");
 		Objects.requireNonNull(values, "Values must not be null");
 		return values.get(rng.nextInt(values.size()));
@@ -437,7 +437,7 @@ public final class Utils {
 	 * @see #getRandom(Random, List)
 	 * @param <T> The type of the list
 	 */
-	public static <T> @NotNull Optional<T> getRandomSafe(@NotNull Random rng, @Nullable List<T> values) {
+	public static <T> @NonNull Optional<T> getRandomSafe(@NonNull Random rng, @Nullable List<T> values) {
 		Objects.requireNonNull(rng, "Random must not be null");
 		if (values == null || values.isEmpty()) {
 			return Optional.empty();
@@ -455,7 +455,7 @@ public final class Utils {
 	 * @throws NullPointerException If the exception is null
 	 */
 	@SuppressWarnings("unchecked")
-	public static <E extends Throwable> void throwSneaky(@NotNull Throwable e) throws E {
+	public static <E extends Throwable> void throwSneaky(@NonNull Throwable e) throws E {
 		Objects.requireNonNull(e, "Exception must not be null");
 		throw (E) e;
 	}

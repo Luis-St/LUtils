@@ -1,6 +1,6 @@
 /*
  * LUtils
- * Copyright (C) 2025 Luis Staudt
+ * Copyright (C) 2026 Luis Staudt
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,7 +19,7 @@
 package net.luis.utils.io.token.tokens;
 
 import net.luis.utils.io.token.TokenPosition;
-import org.jetbrains.annotations.NotNull;
+import org.jspecify.annotations.NonNull;
 import org.junit.jupiter.api.Test;
 
 import java.util.Collections;
@@ -34,7 +34,7 @@ import static org.junit.jupiter.api.Assertions.*;
  */
 class TokenGroupTest {
 	
-	private static @NotNull Token createToken(@NotNull String value, @NotNull TokenPosition position) {
+	private static @NonNull Token createToken(@NonNull String value, @NonNull TokenPosition position) {
 		return new SimpleToken(value, position);
 	}
 	

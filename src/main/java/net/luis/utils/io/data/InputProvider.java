@@ -1,6 +1,6 @@
 /*
  * LUtils
- * Copyright (C) 2025 Luis Staudt
+ * Copyright (C) 2026 Luis Staudt
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,7 +19,7 @@
 package net.luis.utils.io.data;
 
 import net.luis.utils.resources.ResourceLocation;
-import org.jetbrains.annotations.NotNull;
+import org.jspecify.annotations.NonNull;
 
 import java.io.*;
 import java.nio.file.Path;
@@ -50,7 +50,7 @@ public class InputProvider implements AutoCloseable {
 	 * @throws NullPointerException If the file is null
 	 * @throws UncheckedIOException If the file is not found
 	 */
-	public InputProvider(@NotNull String file) {
+	public InputProvider(@NonNull String file) {
 		this(new File(Objects.requireNonNull(file, "File must not be null")));
 	}
 	
@@ -63,7 +63,7 @@ public class InputProvider implements AutoCloseable {
 	 * @throws NullPointerException If the path or file name is null
 	 * @throws UncheckedIOException If the file is not found
 	 */
-	public InputProvider(@NotNull String path, @NotNull String fileName) {
+	public InputProvider(@NonNull String path, @NonNull String fileName) {
 		this(new File(Objects.requireNonNull(path, "Path must not be null"), Objects.requireNonNull(fileName, "File name must not be null")));
 	}
 	
@@ -74,7 +74,7 @@ public class InputProvider implements AutoCloseable {
 	 * @throws NullPointerException If the path is null
 	 * @throws UncheckedIOException If the file is not found
 	 */
-	public InputProvider(@NotNull Path path) {
+	public InputProvider(@NonNull Path path) {
 		this(Objects.requireNonNull(path, "Path must not be null").toFile());
 	}
 	
@@ -85,7 +85,7 @@ public class InputProvider implements AutoCloseable {
 	 * @throws NullPointerException If the file is null
 	 * @throws UncheckedIOException If the file is not found
 	 */
-	public InputProvider(@NotNull File file) {
+	public InputProvider(@NonNull File file) {
 		Objects.requireNonNull(file, "File must not be null");
 		try {
 			this.stream = new FileInputStream(file);
@@ -101,7 +101,7 @@ public class InputProvider implements AutoCloseable {
 	 * @throws NullPointerException If the resource location is null
 	 * @throws UncheckedIOException If the resource could not be opened
 	 */
-	public InputProvider(@NotNull ResourceLocation location) {
+	public InputProvider(@NonNull ResourceLocation location) {
 		Objects.requireNonNull(location, "Resource location must not be null");
 		try {
 			this.stream = location.getStream();
@@ -116,7 +116,7 @@ public class InputProvider implements AutoCloseable {
 	 * @param stream The input stream to read data from
 	 * @throws NullPointerException If the input stream is null
 	 */
-	public InputProvider(@NotNull InputStream stream) {
+	public InputProvider(@NonNull InputStream stream) {
 		Objects.requireNonNull(stream, "Input stream must not be null");
 		this.stream = stream;
 	}
@@ -127,7 +127,7 @@ public class InputProvider implements AutoCloseable {
 	 *
 	 * @return The input stream
 	 */
-	public @NotNull InputStream getStream() {
+	public @NonNull InputStream getStream() {
 		return this.stream;
 	}
 	

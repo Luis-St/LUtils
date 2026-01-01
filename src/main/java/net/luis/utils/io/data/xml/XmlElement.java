@@ -1,6 +1,6 @@
 /*
  * LUtils
- * Copyright (C) 2025 Luis Staudt
+ * Copyright (C) 2026 Luis Staudt
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,8 +20,8 @@ package net.luis.utils.io.data.xml;
 
 import net.luis.utils.function.throwable.ThrowableFunction;
 import net.luis.utils.io.data.xml.exception.XmlTypeException;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 import java.util.Objects;
 
@@ -68,7 +68,7 @@ public sealed class XmlElement permits XmlContainer, XmlValue {
 	 * @throws NullPointerException If the name is null
 	 * @throws IllegalArgumentException If the name is invalid
 	 */
-	public XmlElement(@NotNull String name) {
+	public XmlElement(@NonNull String name) {
 		this(name, new XmlAttributes());
 	}
 	
@@ -80,7 +80,7 @@ public sealed class XmlElement permits XmlContainer, XmlValue {
 	 * @throws NullPointerException If the name or attributes are null
 	 * @throws IllegalArgumentException If the name is invalid
 	 */
-	public XmlElement(@NotNull String name, @NotNull XmlAttributes attributes) {
+	public XmlElement(@NonNull String name, @NonNull XmlAttributes attributes) {
 		this.name = validateElementName(name);
 		this.attributes = Objects.requireNonNull(attributes, "Attributes must not be null");
 	}
@@ -91,7 +91,7 @@ public sealed class XmlElement permits XmlContainer, XmlValue {
 	 *
 	 * @return The type of the xml element
 	 */
-	protected @NotNull String getElementType() {
+	protected @NonNull String getElementType() {
 		return "xml self-closing element";
 	}
 	
@@ -125,7 +125,7 @@ public sealed class XmlElement permits XmlContainer, XmlValue {
 	 * @return This xml element as a xml container
 	 * @throws XmlTypeException If this xml element is not a xml container
 	 */
-	public @NotNull XmlContainer getAsXmlContainer() {
+	public @NonNull XmlContainer getAsXmlContainer() {
 		if (this instanceof XmlContainer container) {
 			return container;
 		}
@@ -138,7 +138,7 @@ public sealed class XmlElement permits XmlContainer, XmlValue {
 	 * @return This xml element as a xml value
 	 * @throws XmlTypeException If this xml element is not a xml value
 	 */
-	public @NotNull XmlValue getAsXmlValue() {
+	public @NonNull XmlValue getAsXmlValue() {
 		if (this instanceof XmlValue value) {
 			return value;
 		}
@@ -149,7 +149,7 @@ public sealed class XmlElement permits XmlContainer, XmlValue {
 	 * Returns the name of the xml element.<br>
 	 * @return The element name
 	 */
-	public @NotNull String getName() {
+	public @NonNull String getName() {
 		return this.name;
 	}
 	
@@ -157,11 +157,9 @@ public sealed class XmlElement permits XmlContainer, XmlValue {
 	 * Returns the attributes of the xml element.<br>
 	 * @return The element attributes (modifiable)
 	 */
-	public @NotNull XmlAttributes getAttributes() {
+	public @NonNull XmlAttributes getAttributes() {
 		return this.attributes;
 	}
-	
-	//region Add attribute
 	
 	/**
 	 * Adds the specified attribute to the element.<br>
@@ -170,7 +168,7 @@ public sealed class XmlElement permits XmlContainer, XmlValue {
 	 * @return The previous attribute with the same key, or null if there was no previous attribute
 	 * @see XmlAttributes#add(XmlAttribute)
 	 */
-	public @Nullable XmlAttribute addAttribute(@NotNull XmlAttribute attribute) {
+	public @Nullable XmlAttribute addAttribute(@NonNull XmlAttribute attribute) {
 		return this.attributes.add(attribute);
 	}
 	
@@ -182,7 +180,7 @@ public sealed class XmlElement permits XmlContainer, XmlValue {
 	 * @return The previous attribute with the same key, or null if there was no previous attribute
 	 * @see XmlAttributes#add(String, String)
 	 */
-	public @Nullable XmlAttribute addAttribute(@NotNull String key, @Nullable String value) {
+	public @Nullable XmlAttribute addAttribute(@NonNull String key, @Nullable String value) {
 		return this.attributes.add(key, value);
 	}
 	
@@ -194,7 +192,7 @@ public sealed class XmlElement permits XmlContainer, XmlValue {
 	 * @return The previous attribute with the same key, or null if there was no previous attribute
 	 * @see XmlAttributes#add(String, boolean)
 	 */
-	public @Nullable XmlAttribute addAttribute(@NotNull String key, boolean value) {
+	public @Nullable XmlAttribute addAttribute(@NonNull String key, boolean value) {
 		return this.attributes.add(key, value);
 	}
 	
@@ -206,7 +204,7 @@ public sealed class XmlElement permits XmlContainer, XmlValue {
 	 * @return The previous attribute with the same key, or null if there was no previous attribute
 	 * @see XmlAttributes#add(String, Number)
 	 */
-	public @Nullable XmlAttribute addAttribute(@NotNull String key, @Nullable Number value) {
+	public @Nullable XmlAttribute addAttribute(@NonNull String key, @Nullable Number value) {
 		return this.attributes.add(key, value);
 	}
 	
@@ -218,7 +216,7 @@ public sealed class XmlElement permits XmlContainer, XmlValue {
 	 * @return The previous attribute with the same key, or null if there was no previous attribute
 	 * @see XmlAttributes#add(String, byte)
 	 */
-	public @Nullable XmlAttribute addAttribute(@NotNull String key, byte value) {
+	public @Nullable XmlAttribute addAttribute(@NonNull String key, byte value) {
 		return this.attributes.add(key, value);
 	}
 	
@@ -230,7 +228,7 @@ public sealed class XmlElement permits XmlContainer, XmlValue {
 	 * @return The previous attribute with the same key, or null if there was no previous attribute
 	 * @see XmlAttributes#add(String, short)
 	 */
-	public @Nullable XmlAttribute addAttribute(@NotNull String key, short value) {
+	public @Nullable XmlAttribute addAttribute(@NonNull String key, short value) {
 		return this.attributes.add(key, value);
 	}
 	
@@ -242,7 +240,7 @@ public sealed class XmlElement permits XmlContainer, XmlValue {
 	 * @return The previous attribute with the same key, or null if there was no previous attribute
 	 * @see XmlAttributes#add(String, int)
 	 */
-	public @Nullable XmlAttribute addAttribute(@NotNull String key, int value) {
+	public @Nullable XmlAttribute addAttribute(@NonNull String key, int value) {
 		return this.attributes.add(key, value);
 	}
 	
@@ -254,7 +252,7 @@ public sealed class XmlElement permits XmlContainer, XmlValue {
 	 * @return The previous attribute with the same key, or null if there was no previous attribute
 	 * @see XmlAttributes#add(String, long)
 	 */
-	public @Nullable XmlAttribute addAttribute(@NotNull String key, long value) {
+	public @Nullable XmlAttribute addAttribute(@NonNull String key, long value) {
 		return this.attributes.add(key, value);
 	}
 	
@@ -266,7 +264,7 @@ public sealed class XmlElement permits XmlContainer, XmlValue {
 	 * @return The previous attribute with the same key, or null if there was no previous attribute
 	 * @see XmlAttributes#add(String, float)
 	 */
-	public @Nullable XmlAttribute addAttribute(@NotNull String key, float value) {
+	public @Nullable XmlAttribute addAttribute(@NonNull String key, float value) {
 		return this.attributes.add(key, value);
 	}
 	
@@ -278,12 +276,9 @@ public sealed class XmlElement permits XmlContainer, XmlValue {
 	 * @return The previous attribute with the same key, or null if there was no previous attribute
 	 * @see XmlAttributes#add(String, double)
 	 */
-	public @Nullable XmlAttribute addAttribute(@NotNull String key, double value) {
+	public @Nullable XmlAttribute addAttribute(@NonNull String key, double value) {
 		return this.attributes.add(key, value);
 	}
-	//endregion
-	
-	//region Get attribute
 	
 	/**
 	 * Returns the attribute with the specified key, or null if there is no such attribute in this element.<br>
@@ -292,7 +287,7 @@ public sealed class XmlElement permits XmlContainer, XmlValue {
 	 * @return The attribute with the specified key, or null if there is no such attribute
 	 * @see XmlAttributes#get(String)
 	 */
-	public @Nullable XmlAttribute getAttribute(@NotNull String key) {
+	public @Nullable XmlAttribute getAttribute(@NonNull String key) {
 		return this.attributes.get(key);
 	}
 	
@@ -303,7 +298,7 @@ public sealed class XmlElement permits XmlContainer, XmlValue {
 	 * @return The value of the attribute as a string
 	 * @see XmlAttributes#getAsString(String)
 	 */
-	public @NotNull String getAttributeAsString(@NotNull String key) {
+	public @NonNull String getAttributeAsString(@NonNull String key) {
 		return this.attributes.getAsString(key);
 	}
 	
@@ -314,7 +309,7 @@ public sealed class XmlElement permits XmlContainer, XmlValue {
 	 * @return The value of the attribute as a boolean
 	 * @see XmlAttributes#getAsBoolean(String)
 	 */
-	public boolean getAttributeAsBoolean(@NotNull String key) {
+	public boolean getAttributeAsBoolean(@NonNull String key) {
 		return this.attributes.getAsBoolean(key);
 	}
 	
@@ -325,7 +320,7 @@ public sealed class XmlElement permits XmlContainer, XmlValue {
 	 * @return The value of the attribute as a number
 	 * @see XmlAttributes#getAsNumber(String)
 	 */
-	public @NotNull Number getAttributeAsNumber(@NotNull String key) {
+	public @NonNull Number getAttributeAsNumber(@NonNull String key) {
 		return this.attributes.getAsNumber(key);
 	}
 	
@@ -336,7 +331,7 @@ public sealed class XmlElement permits XmlContainer, XmlValue {
 	 * @return The value of the attribute as a byte
 	 * @see XmlAttributes#getAsByte(String)
 	 */
-	public byte getAttributeAsByte(@NotNull String key) {
+	public byte getAttributeAsByte(@NonNull String key) {
 		return this.attributes.getAsByte(key);
 	}
 	
@@ -347,7 +342,7 @@ public sealed class XmlElement permits XmlContainer, XmlValue {
 	 * @return The value of the attribute as a short
 	 * @see XmlAttributes#getAsShort(String)
 	 */
-	public short getAttributeAsShort(@NotNull String key) {
+	public short getAttributeAsShort(@NonNull String key) {
 		return this.attributes.getAsShort(key);
 	}
 	
@@ -358,7 +353,7 @@ public sealed class XmlElement permits XmlContainer, XmlValue {
 	 * @return The value of the attribute as an integer
 	 * @see XmlAttributes#getAsInteger(String)
 	 */
-	public int getAttributeAsInteger(@NotNull String key) {
+	public int getAttributeAsInteger(@NonNull String key) {
 		return this.attributes.getAsInteger(key);
 	}
 	
@@ -369,7 +364,7 @@ public sealed class XmlElement permits XmlContainer, XmlValue {
 	 * @return The value of the attribute as a long
 	 * @see XmlAttributes#getAsLong(String)
 	 */
-	public long getAttributeAsLong(@NotNull String key) {
+	public long getAttributeAsLong(@NonNull String key) {
 		return this.attributes.getAsLong(key);
 	}
 	
@@ -380,7 +375,7 @@ public sealed class XmlElement permits XmlContainer, XmlValue {
 	 * @return The value of the attribute as a float
 	 * @see XmlAttributes#getAsFloat(String)
 	 */
-	public float getAttributeAsFloat(@NotNull String key) {
+	public float getAttributeAsFloat(@NonNull String key) {
 		return this.attributes.getAsFloat(key);
 	}
 	
@@ -391,7 +386,7 @@ public sealed class XmlElement permits XmlContainer, XmlValue {
 	 * @return The value of the attribute as a double
 	 * @see XmlAttributes#getAsDouble(String)
 	 */
-	public double getAttributeAsDouble(@NotNull String key) {
+	public double getAttributeAsDouble(@NonNull String key) {
 		return this.attributes.getAsDouble(key);
 	}
 	
@@ -404,10 +399,9 @@ public sealed class XmlElement permits XmlContainer, XmlValue {
 	 * @param <T> The type of the value
 	 * @see XmlAttributes#getAs(String, ThrowableFunction)
 	 */
-	public <T> @NotNull T getAttributeAs(@NotNull String key, @NotNull ThrowableFunction<String, T, ? extends Exception> parser) {
+	public <T> @NonNull T getAttributeAs(@NonNull String key, @NonNull ThrowableFunction<String, T, ? extends Exception> parser) {
 		return this.attributes.getAs(key, parser);
 	}
-	//endregion
 	
 	//region Object overrides
 	@Override
@@ -437,7 +431,7 @@ public sealed class XmlElement permits XmlContainer, XmlValue {
 	 * @throws NullPointerException If the xml config is null
 	 * @throws IllegalStateException If the element cannot be represented as a string because of the xml config
 	 */
-	protected @NotNull StringBuilder toBaseString(@NotNull XmlConfig config) {
+	protected @NonNull StringBuilder toBaseString(@NonNull XmlConfig config) {
 		Objects.requireNonNull(config, "Xml config must not be null");
 		StringBuilder builder = new StringBuilder();
 		builder.append("<").append(this.name);
@@ -461,7 +455,7 @@ public sealed class XmlElement permits XmlContainer, XmlValue {
 	 * @return The string representation
 	 * @throws NullPointerException If the xml config is null
 	 */
-	public @NotNull String toString(@NotNull XmlConfig config) {
+	public @NonNull String toString(@NonNull XmlConfig config) {
 		return this.toBaseString(config).toString();
 	}
 	//endregion

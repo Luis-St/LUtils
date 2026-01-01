@@ -1,6 +1,6 @@
 /*
  * LUtils
- * Copyright (C) 2025 Luis Staudt
+ * Copyright (C) 2026 Luis Staudt
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -22,8 +22,8 @@ import net.luis.utils.function.FunctionUtils;
 import net.luis.utils.io.FileUtils;
 import net.luis.utils.util.Pair;
 import org.apache.commons.lang3.StringUtils;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 import java.io.*;
 import java.nio.file.Path;
@@ -60,7 +60,7 @@ public abstract sealed class ResourceLocation permits ExternalResourceLocation, 
 	 * @param file The name of the resource
 	 * @throws NullPointerException If the file is null
 	 */
-	ResourceLocation(@Nullable String path, @NotNull String file) {
+	ResourceLocation(@Nullable String path, @NonNull String file) {
 		this.path = this.modifyPath(StringUtils.stripToEmpty(path));
 		this.file = Objects.requireNonNull(file, "File must not be null").strip();
 	}
@@ -74,7 +74,7 @@ public abstract sealed class ResourceLocation permits ExternalResourceLocation, 
 	 * @return A new resource location
 	 * @throws NullPointerException If the file is null
 	 */
-	public static @NotNull ResourceLocation internal(@NotNull String file) {
+	public static @NonNull ResourceLocation internal(@NonNull String file) {
 		return new InternalResourceLocation(splitPath(file));
 	}
 	
@@ -86,7 +86,7 @@ public abstract sealed class ResourceLocation permits ExternalResourceLocation, 
 	 * @return A new resource location
 	 * @throws NullPointerException If the name is null
 	 */
-	public static @NotNull ResourceLocation internal(@Nullable String path, @NotNull String name) {
+	public static @NonNull ResourceLocation internal(@Nullable String path, @NonNull String name) {
 		return new InternalResourceLocation(path, name);
 	}
 	
@@ -97,7 +97,7 @@ public abstract sealed class ResourceLocation permits ExternalResourceLocation, 
 	 * @return A new resource location
 	 * @throws NullPointerException If the file is null
 	 */
-	public static @NotNull ResourceLocation external(@NotNull String file) {
+	public static @NonNull ResourceLocation external(@NonNull String file) {
 		return new ExternalResourceLocation(splitPath(file));
 	}
 	
@@ -109,7 +109,7 @@ public abstract sealed class ResourceLocation permits ExternalResourceLocation, 
 	 * @return A new resource location
 	 * @throws NullPointerException If the name is null
 	 */
-	public static @NotNull ResourceLocation external(@Nullable String path, @NotNull String name) {
+	public static @NonNull ResourceLocation external(@Nullable String path, @NonNull String name) {
 		return new ExternalResourceLocation(path, name);
 	}
 	
@@ -126,7 +126,7 @@ public abstract sealed class ResourceLocation permits ExternalResourceLocation, 
 	 * @throws IllegalArgumentException If the resource was not found
 	 * @see #getResource(String, String, Type)
 	 */
-	public static @NotNull ResourceLocation getResource(@Nullable String path, @NotNull String name) {
+	public static @NonNull ResourceLocation getResource(@Nullable String path, @NonNull String name) {
 		return getResource(path, name, Type.EXTERNAL);
 	}
 	
@@ -144,7 +144,7 @@ public abstract sealed class ResourceLocation permits ExternalResourceLocation, 
 	 * @throws NullPointerException If the path is null
 	 * @throws IllegalArgumentException If the resource was not found
 	 */
-	public static @NotNull ResourceLocation getResource(@Nullable String path, @NotNull String name, @Nullable Type preferredType) {
+	public static @NonNull ResourceLocation getResource(@Nullable String path, @NonNull String name, @Nullable Type preferredType) {
 		ResourceLocation internal = internal(path, name);
 		ResourceLocation external = external(path, name);
 		if (preferredType == Type.INTERNAL && internal.exists()) {
@@ -174,7 +174,7 @@ public abstract sealed class ResourceLocation permits ExternalResourceLocation, 
 	 * @return A pair of the path and the name
 	 * @throws NullPointerException If the file is null
 	 */
-	static @NotNull Pair<String, String> splitPath(@NotNull String file) {
+	static @NonNull Pair<String, String> splitPath(@NonNull String file) {
 		Objects.requireNonNull(file, "File must not be null");
 		String str = file.strip().replace("\\", "/");
 		int index = str.lastIndexOf("/");
@@ -192,19 +192,19 @@ public abstract sealed class ResourceLocation permits ExternalResourceLocation, 
 	 * @param path The path to modify
 	 * @return The modified path
 	 */
-	protected abstract @NotNull String modifyPath(@Nullable String path);
+	protected abstract @NonNull String modifyPath(@Nullable String path);
 	
 	/**
 	 * Returns the type of the resource.<br>
 	 * @return The type
 	 */
-	public abstract @NotNull Type getType();
+	public abstract @NonNull Type getType();
 	
 	/**
 	 * Returns the path of the resource.<br>
 	 * @return The path
 	 */
-	public final @NotNull String getPath() {
+	public final @NonNull String getPath() {
 		return this.path;
 	}
 	
@@ -212,7 +212,7 @@ public abstract sealed class ResourceLocation permits ExternalResourceLocation, 
 	 * Returns the (file) name of the resource as a string.<br>
 	 * @return The (file) name
 	 */
-	public final @NotNull String getFile() {
+	public final @NonNull String getFile() {
 		return this.file;
 	}
 	
@@ -223,7 +223,7 @@ public abstract sealed class ResourceLocation permits ExternalResourceLocation, 
 	 * @return The resource as a {@link File}
 	 * @throws UnsupportedOperationException If the resource is on the classpath
 	 */
-	public abstract @NotNull File asFile();
+	public abstract @NonNull File asFile();
 	
 	/**
 	 * Constructs a new {@link Path} from the resource.<br>
@@ -232,7 +232,7 @@ public abstract sealed class ResourceLocation permits ExternalResourceLocation, 
 	 * @return The resource as a {@link Path}
 	 * @throws UnsupportedOperationException If the resource is on the classpath
 	 */
-	public abstract @NotNull Path asPath();
+	public abstract @NonNull Path asPath();
 	
 	/**
 	 * Checks if the resource exists.<br>
@@ -246,7 +246,7 @@ public abstract sealed class ResourceLocation permits ExternalResourceLocation, 
 	 * @return An input stream
 	 * @throws IOException If an I/O error occurs
 	 */
-	public abstract @NotNull InputStream getStream() throws IOException;
+	public abstract @NonNull InputStream getStream() throws IOException;
 	
 	/**
 	 * Reads the content of the resource as a byte array.<br>
@@ -254,7 +254,7 @@ public abstract sealed class ResourceLocation permits ExternalResourceLocation, 
 	 * @return The bytes of the resource
 	 * @throws IOException If an I/O error occurs
 	 */
-	public abstract byte @NotNull [] getBytes() throws IOException;
+	public abstract byte @NonNull [] getBytes() throws IOException;
 	
 	/**
 	 * Reads the content of the resource as a single string.<br>
@@ -262,7 +262,7 @@ public abstract sealed class ResourceLocation permits ExternalResourceLocation, 
 	 * @return The resource content
 	 * @throws IOException If an I/O error occurs
 	 */
-	public abstract @NotNull String getString() throws IOException;
+	public abstract @NonNull String getString() throws IOException;
 	
 	/**
 	 * Reads the content of the resource as a stream of lines.<br>
@@ -270,7 +270,7 @@ public abstract sealed class ResourceLocation permits ExternalResourceLocation, 
 	 * @return The resource content
 	 * @throws IOException If an I/O error occurs
 	 */
-	public abstract @NotNull Stream<String> getLines() throws IOException;
+	public abstract @NonNull Stream<String> getLines() throws IOException;
 	
 	/**
 	 * Copies the resource to the {@link #TEMP temporary directory}.<br>
@@ -279,7 +279,7 @@ public abstract sealed class ResourceLocation permits ExternalResourceLocation, 
 	 * @return The path of the copied resource
 	 * @throws IOException If an I/O error occurs
 	 */
-	public abstract @NotNull Path copy() throws IOException;
+	public abstract @NonNull Path copy() throws IOException;
 	
 	/**
 	 * Copies the resource to the given target path.<br>
@@ -290,7 +290,7 @@ public abstract sealed class ResourceLocation permits ExternalResourceLocation, 
 	 * @return The path of the copied resource
 	 * @throws IOException If an I/O error occurs
 	 */
-	public abstract @NotNull Path copy(@NotNull Path target) throws IOException;
+	public abstract @NonNull Path copy(@NonNull Path target) throws IOException;
 	
 	//region Object overrides
 	@Override

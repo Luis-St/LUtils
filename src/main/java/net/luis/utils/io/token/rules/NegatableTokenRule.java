@@ -1,6 +1,6 @@
 /*
  * LUtils
- * Copyright (C) 2025 Luis Staudt
+ * Copyright (C) 2026 Luis Staudt
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -22,8 +22,8 @@ import net.luis.utils.io.token.TokenRuleMatch;
 import net.luis.utils.io.token.context.TokenRuleContext;
 import net.luis.utils.io.token.stream.TokenStream;
 import net.luis.utils.io.token.tokens.Token;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 import java.util.*;
 
@@ -60,10 +60,10 @@ public interface NegatableTokenRule extends TokenRule {
 	 * @return True if the token matches the rule, false otherwise
 	 * @throws NullPointerException If the token is null
 	 */
-	boolean match(@NotNull Token token);
+	boolean match(@NonNull Token token);
 	
 	@Override
-	default @Nullable TokenRuleMatch match(@NotNull TokenStream stream, @NotNull TokenRuleContext ctx) {
+	default @Nullable TokenRuleMatch match(@NonNull TokenStream stream, @NonNull TokenRuleContext ctx) {
 		Objects.requireNonNull(stream, "Token stream must not be null");
 		Objects.requireNonNull(ctx, "Token rule context must not be null");
 		if (!stream.hasMoreTokens()) {
@@ -80,10 +80,10 @@ public interface NegatableTokenRule extends TokenRule {
 	}
 	
 	@Override
-	default @NotNull TokenRule not() {
+	default @NonNull TokenRule not() {
 		return new TokenRule() {
 			@Override
-			public @Nullable TokenRuleMatch match(@NotNull TokenStream stream, @NotNull TokenRuleContext ctx) {
+			public @Nullable TokenRuleMatch match(@NonNull TokenStream stream, @NonNull TokenRuleContext ctx) {
 				Objects.requireNonNull(stream, "Token stream must not be null");
 				Objects.requireNonNull(ctx, "Token rule context must not be null");
 				if (!stream.hasMoreTokens()) {
@@ -101,7 +101,7 @@ public interface NegatableTokenRule extends TokenRule {
 			}
 			
 			@Override
-			public @NotNull TokenRule not() {
+			public @NonNull TokenRule not() {
 				return NegatableTokenRule.this; // Negating the not() method returns the original rule, preventing double negation and nesting of classes
 			}
 		};

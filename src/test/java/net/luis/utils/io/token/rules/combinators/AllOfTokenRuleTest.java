@@ -1,6 +1,6 @@
 /*
  * LUtils
- * Copyright (C) 2025 Luis Staudt
+ * Copyright (C) 2026 Luis Staudt
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -27,8 +27,8 @@ import net.luis.utils.io.token.stream.TokenStream;
 import net.luis.utils.io.token.tokens.SimpleToken;
 import net.luis.utils.io.token.tokens.Token;
 import net.luis.utils.io.token.type.StandardTokenType;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 import org.junit.jupiter.api.Test;
 
 import java.util.*;
@@ -42,18 +42,18 @@ import static org.junit.jupiter.api.Assertions.*;
  */
 class AllOfTokenRuleTest {
 	
-	private static @NotNull Token createToken(@NotNull String value) {
+	private static @NonNull Token createToken(@NonNull String value) {
 		return SimpleToken.createUnpositioned(value);
 	}
 	
-	private static @NotNull Token createToken(@NotNull String value, StandardTokenType... types) {
+	private static @NonNull Token createToken(@NonNull String value, StandardTokenType... types) {
 		return new SimpleToken(value, TokenPosition.UNPOSITIONED, Set.of(types));
 	}
 	
-	private static @NotNull TokenRule createRule(@NotNull String value) {
+	private static @NonNull TokenRule createRule(@NonNull String value) {
 		return new TokenRule() {
 			@Override
-			public @Nullable TokenRuleMatch match(@NotNull TokenStream stream, @NotNull TokenRuleContext ctx) {
+			public @Nullable TokenRuleMatch match(@NonNull TokenStream stream, @NonNull TokenRuleContext ctx) {
 				Objects.requireNonNull(stream, "Token stream must not be null");
 				Objects.requireNonNull(ctx, "Token rule context must not be null");
 				if (!stream.hasMoreTokens()) {

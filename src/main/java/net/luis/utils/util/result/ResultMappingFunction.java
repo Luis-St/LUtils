@@ -1,6 +1,6 @@
 /*
  * LUtils
- * Copyright (C) 2025 Luis Staudt
+ * Copyright (C) 2026 Luis Staudt
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,7 +19,7 @@
 package net.luis.utils.util.result;
 
 import net.luis.utils.function.throwable.ThrowableFunction;
-import org.jetbrains.annotations.NotNull;
+import org.jspecify.annotations.NonNull;
 
 import java.util.Objects;
 import java.util.function.Function;
@@ -43,7 +43,7 @@ public interface ResultMappingFunction<T, R> extends Function<Result<T>, Result<
 	 * @param <T> The type of the input and output result
 	 * @return The result mapping function
 	 */
-	static <T> @NotNull ResultMappingFunction<T, T> identity() {
+	static <T> @NonNull ResultMappingFunction<T, T> identity() {
 		return direct(Function.identity());
 	}
 	
@@ -57,7 +57,7 @@ public interface ResultMappingFunction<T, R> extends Function<Result<T>, Result<
 	 * @return The result mapping function
 	 * @throws NullPointerException If the function is null
 	 */
-	static <T, R> @NotNull ResultMappingFunction<T, R> direct(@NotNull Function<T, R> function) {
+	static <T, R> @NonNull ResultMappingFunction<T, R> direct(@NonNull Function<T, R> function) {
 		Objects.requireNonNull(function, "Function must not be null");
 		return result -> result.map(function);
 	}
@@ -74,7 +74,7 @@ public interface ResultMappingFunction<T, R> extends Function<Result<T>, Result<
 	 * @return The result mapping function
 	 * @throws NullPointerException If the throwable function is null
 	 */
-	static <T, R> @NotNull ResultMappingFunction<T, R> throwable(@NotNull ThrowableFunction<T, R, ? extends Throwable> function) {
+	static <T, R> @NonNull ResultMappingFunction<T, R> throwable(@NonNull ThrowableFunction<T, R, ? extends Throwable> function) {
 		Objects.requireNonNull(function, "Function must not be null");
 		return result -> {
 			if (result.isError()) {
@@ -90,5 +90,5 @@ public interface ResultMappingFunction<T, R> extends Function<Result<T>, Result<
 	}
 	
 	@Override
-	@NotNull Result<R> apply(@NotNull Result<T> input);
+	@NonNull Result<R> apply(@NonNull Result<T> input);
 }

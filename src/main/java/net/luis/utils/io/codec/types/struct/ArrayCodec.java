@@ -1,6 +1,6 @@
 /*
  * LUtils
- * Copyright (C) 2025 Luis Staudt
+ * Copyright (C) 2026 Luis Staudt
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -21,8 +21,8 @@ package net.luis.utils.io.codec.types.struct;
 import net.luis.utils.io.codec.*;
 import net.luis.utils.io.codec.provider.TypeProvider;
 import net.luis.utils.util.result.Result;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 import java.lang.reflect.Array;
 import java.util.*;
@@ -66,20 +66,20 @@ public class ArrayCodec<C> extends AbstractCodec<C[], Object> {
 	 * @param codec The codec for the elements
 	 * @throws NullPointerException If the type or codec is null
 	 */
-	public ArrayCodec(@NotNull Class<C> type, @NotNull Codec<C> codec) {
+	public ArrayCodec(@NonNull Class<C> type, @NonNull Codec<C> codec) {
 		this.type = Objects.requireNonNull(type, "Type must not be null");
 		this.codec = Objects.requireNonNull(codec, "Codec must not be null");
 	}
 	
 	@Override
 	@SuppressWarnings("unchecked")
-	public @NotNull Class<C[]> getType() {
+	public @NonNull Class<C[]> getType() {
 		return (Class<C[]>) Array.newInstance(this.type, 0).getClass();
 	}
 	
 	@Override
 	@SuppressWarnings("DuplicatedCode")
-	public <R> @NotNull Result<R> encodeStart(@NotNull TypeProvider<R> provider, @NotNull R current, C @Nullable [] value) {
+	public <R> @NonNull Result<R> encodeStart(@NonNull TypeProvider<R> provider, @NonNull R current, C @Nullable [] value) {
 		Objects.requireNonNull(provider, "Type provider must not be null");
 		Objects.requireNonNull(current, "Current value must not be null");
 		
@@ -115,7 +115,7 @@ public class ArrayCodec<C> extends AbstractCodec<C[], Object> {
 	
 	@Override
 	@SuppressWarnings({ "unchecked", "DuplicatedCode" })
-	public <R> @NotNull Result<C[]> decodeStart(@NotNull TypeProvider<R> provider, @NotNull R current, @Nullable R value) {
+	public <R> @NonNull Result<C[]> decodeStart(@NonNull TypeProvider<R> provider, @NonNull R current, @Nullable R value) {
 		Objects.requireNonNull(provider, "Type provider must not be null");
 		Objects.requireNonNull(current, "Current value must not be null");
 		if (value == null) {

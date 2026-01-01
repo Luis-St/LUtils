@@ -1,6 +1,6 @@
 /*
  * LUtils
- * Copyright (C) 2025 Luis Staudt
+ * Copyright (C) 2026 Luis Staudt
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,7 +18,7 @@
 
 package net.luis.utils.function.throwable;
 
-import org.jetbrains.annotations.NotNull;
+import org.jspecify.annotations.NonNull;
 
 import java.util.Objects;
 import java.util.function.Supplier;
@@ -44,7 +44,7 @@ public interface ThrowableSupplier<T, X extends Throwable> {
 	 * @param <T> The type of the result
 	 * @throws NullPointerException If the throwable supplier is null
 	 */
-	static <T> @NotNull Supplier<T> caught(@NotNull ThrowableSupplier<T, ? extends Throwable> supplier) {
+	static <T> @NonNull Supplier<T> caught(@NonNull ThrowableSupplier<T, ? extends Throwable> supplier) {
 		Objects.requireNonNull(supplier, "Throwable supplier must not be null");
 		return () -> {
 			try {

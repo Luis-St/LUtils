@@ -1,6 +1,6 @@
 /*
  * LUtils
- * Copyright (C) 2025 Luis Staudt
+ * Copyright (C) 2026 Luis Staudt
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,8 +18,8 @@
 
 package net.luis.utils.io.token.type;
 
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 import java.util.Objects;
 
@@ -293,7 +293,7 @@ public enum StandardTokenType implements TokenType {
 	 * @param name The name of the token type, must not be null
 	 * @throws NullPointerException If the name is null
 	 */
-	StandardTokenType(@NotNull String name) {
+	StandardTokenType(@NonNull String name) {
 		this(name, null);
 	}
 	
@@ -304,13 +304,13 @@ public enum StandardTokenType implements TokenType {
 	 * @param superType The super type of the token type, or null if it has no super type
 	 * @throws NullPointerException If the name is null
 	 */
-	StandardTokenType(@NotNull String name, @Nullable TokenType superType) {
+	StandardTokenType(@NonNull String name, @Nullable TokenType superType) {
 		this.name = Objects.requireNonNull(name, "Token type name must not be null");
 		this.superType = superType;
 	}
 	
 	@Override
-	public @NotNull String getName() {
+	public @NonNull String getName() {
 		return this.name;
 	}
 	

@@ -1,6 +1,6 @@
 /*
  * LUtils
- * Copyright (C) 2025 Luis Staudt
+ * Copyright (C) 2026 Luis Staudt
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,7 +18,7 @@
 
 package net.luis.utils.annotation.type;
 
-import org.jetbrains.annotations.NotNull;
+import org.jspecify.annotations.NonNull;
 
 import java.lang.annotation.*;
 
@@ -42,7 +42,7 @@ public @interface Observable {
 	 *
 	 * @return The type of the observer
 	 */
-	@NotNull Class<?> value() default Object.class;
+	@NonNull Class<?> value() default Object.class;
 	
 	/**
 	 * Returns the methods that are used to add remove listeners.<br>
@@ -52,5 +52,5 @@ public @interface Observable {
 	 *
 	 * @return The methods that are used to add and remove listeners
 	 */
-	@NotNull String[] methods() default {};
+	@NonNull String[] methods() default {};
 }

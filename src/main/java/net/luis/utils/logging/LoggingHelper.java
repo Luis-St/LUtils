@@ -1,6 +1,6 @@
 /*
  * LUtils
- * Copyright (C) 2025 Luis Staudt
+ * Copyright (C) 2026 Luis Staudt
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -25,8 +25,8 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Strings;
 import org.apache.commons.lang3.math.NumberUtils;
 import org.apache.logging.log4j.Level;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 import java.io.IOException;
 import java.util.List;
@@ -334,7 +334,7 @@ final class LoggingHelper {
 	 * @see #loadInternal(List)
 	 * @see #loadProperties(ResourceLocation)
 	 */
-	public static @NotNull LoggerConfiguration load(@NotNull List<String> loggers) {
+	public static @NonNull LoggerConfiguration load(@NonNull List<String> loggers) {
 		String config = System.getProperty(LOGGING_CONFIG);
 		if (StringUtils.isNotBlank(config)) {
 			String file = config.replace("\\", "/");
@@ -357,7 +357,7 @@ final class LoggingHelper {
 	 * @throws RuntimeException If the properties file could not be loaded
 	 * @see #PROPERTY_PATTERN
 	 */
-	private static void loadProperties(@NotNull ResourceLocation location) {
+	private static void loadProperties(@NonNull ResourceLocation location) {
 		Objects.requireNonNull(location, "Location must not be null");
 		boolean noOverrides = !Boolean.parseBoolean(System.getProperty(LOGGING_CONFIG_OVERRIDE, "false"));
 		try {
@@ -390,7 +390,7 @@ final class LoggingHelper {
 	 * @throws InvalidValueException If the value of a system property is invalid
 	 * @see #load(List)
 	 */
-	private static @NotNull LoggerConfiguration loadInternal(@NotNull List<String> loggers) {
+	private static @NonNull LoggerConfiguration loadInternal(@NonNull List<String> loggers) {
 		LoggerConfiguration config = new LoggerConfiguration(loggers);
 		String statusLevel = System.getProperty(LOGGING_LEVEL_STATUS);
 		if (StringUtils.isNotBlank(statusLevel)) {
@@ -463,7 +463,7 @@ final class LoggingHelper {
 		//region Local record
 		record LogFile(Level level, String folder, String file, String archive) {
 			
-			public static @NotNull LogFile forLevel(@NotNull Level level) {
+			public static @NonNull LogFile forLevel(@NonNull Level level) {
 				Objects.requireNonNull(level, "Level must not be null");
 				String folder = System.getProperty("logging.file.folder." + level.name().toLowerCase(), null);
 				String file = System.getProperty("logging.file.folder." + level.name().toLowerCase() + ".file", null);
@@ -471,17 +471,17 @@ final class LoggingHelper {
 				return new LogFile(level, folder, file, archive);
 			}
 			
-			public @NotNull String folderOr(@NotNull String defaultFolder) {
+			public @NonNull String folderOr(@NonNull String defaultFolder) {
 				String folder = this.folder != null ? this.folder : Objects.requireNonNull(defaultFolder, "Default folder must not be null");
 				return StringUtils.strip(folder.replace("\\", "/"), "/ ");
 			}
 			
-			public @NotNull String fileOr(@NotNull String defaultFile) {
+			public @NonNull String fileOr(@NonNull String defaultFile) {
 				String file = this.file != null ? this.file : Objects.requireNonNull(defaultFile, "Default file must not be null");
 				return StringUtils.strip(file.replace("\\", "/"), "/ ");
 			}
 			
-			public @NotNull String archiveOr(@NotNull String defaultArchive) {
+			public @NonNull String archiveOr(@NonNull String defaultArchive) {
 				String archive = this.archive != null ? this.archive : Objects.requireNonNull(defaultArchive, "Default archive must not be null");
 				return StringUtils.strip(archive.replace("\\", "/"), "/ ");
 			}

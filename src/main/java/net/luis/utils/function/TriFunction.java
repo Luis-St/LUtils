@@ -1,6 +1,6 @@
 /*
  * LUtils
- * Copyright (C) 2025 Luis Staudt
+ * Copyright (C) 2026 Luis Staudt
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,7 +18,7 @@
 
 package net.luis.utils.function;
 
-import org.jetbrains.annotations.NotNull;
+import org.jspecify.annotations.NonNull;
 
 import java.util.Objects;
 import java.util.function.Function;
@@ -55,7 +55,7 @@ public interface TriFunction<T, U, V, R> {
 	 * @param <S> The type of the output of the {@code after} function, and of the composed function
 	 * @throws NullPointerException If the after function is null
 	 */
-	default <S> @NotNull TriFunction<T, U, V, S> andThen(@NotNull Function<? super R, ? extends S> after) {
+	default <S> @NonNull TriFunction<T, U, V, S> andThen(@NonNull Function<? super R, ? extends S> after) {
 		Objects.requireNonNull(after, "After function must not be null");
 		return (t, u, v) -> after.apply(this.apply(t, u, v));
 	}

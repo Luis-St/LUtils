@@ -1,6 +1,6 @@
 /*
  * LUtils
- * Copyright (C) 2025 Luis Staudt
+ * Copyright (C) 2026 Luis Staudt
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -21,7 +21,7 @@ package net.luis.utils.io.token.tokens;
 import com.google.common.collect.Sets;
 import net.luis.utils.io.token.TokenPosition;
 import net.luis.utils.io.token.type.TokenType;
-import org.jetbrains.annotations.NotNull;
+import org.jspecify.annotations.NonNull;
 
 import java.util.Objects;
 import java.util.Set;
@@ -37,9 +37,9 @@ import java.util.Set;
  * @param types The token types of the token
  */
 public record EscapedToken(
-	@NotNull String value,
-	@NotNull TokenPosition position,
-	@NotNull Set<TokenType> types
+	@NonNull String value,
+	@NonNull TokenPosition position,
+	@NonNull Set<TokenType> types
 ) implements Token {
 	
 	/**
@@ -50,7 +50,7 @@ public record EscapedToken(
 	 * @throws NullPointerException If the token value or the position is null
 	 * @throws IllegalArgumentException If the token value does not have a length of 2 or does not start with a backslash
 	 */
-	public EscapedToken(@NotNull String value, @NotNull TokenPosition position) {
+	public EscapedToken(@NonNull String value, @NonNull TokenPosition position) {
 		this(value, position, Set.of());
 	}
 	
@@ -83,12 +83,12 @@ public record EscapedToken(
 	 * @throws NullPointerException If the token value is null
 	 * @throws IllegalArgumentException If the token value does not have a length of 2 or does not start with a backslash
 	 */
-	public static @NotNull EscapedToken createUnpositioned(@NotNull String value) {
+	public static @NonNull EscapedToken createUnpositioned(@NonNull String value) {
 		return new EscapedToken(value, TokenPosition.UNPOSITIONED);
 	}
 	
 	@Override
-	public @NotNull String toString() {
+	public @NonNull String toString() {
 		return "EscapedToken[value=" + this.value.replace("\\", "\\\\") + ",position=" + this.position + "]";
 	}
 }

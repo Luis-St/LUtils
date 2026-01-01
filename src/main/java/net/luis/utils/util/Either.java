@@ -1,6 +1,6 @@
 /*
  * LUtils
- * Copyright (C) 2025 Luis Staudt
+ * Copyright (C) 2026 Luis Staudt
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,7 +18,9 @@
 
 package net.luis.utils.util;
 
-import org.jetbrains.annotations.*;
+import org.jetbrains.annotations.UnknownNullability;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 import java.util.Objects;
 import java.util.Optional;
@@ -57,7 +59,7 @@ public abstract sealed class Either<L, R> permits Either.Left, Either.Right {
 	 * @param <L> The type of the left value
 	 * @param <R> The type of the right value
 	 */
-	public static <L, R> @NotNull Either<L, R> left(@Nullable L value) {
+	public static <L, R> @NonNull Either<L, R> left(@Nullable L value) {
 		return new Left<>(value);
 	}
 	
@@ -69,7 +71,7 @@ public abstract sealed class Either<L, R> permits Either.Left, Either.Right {
 	 * @param <L> The type of the left value
 	 * @param <R> The type of the right value
 	 */
-	public static <L, R> @NotNull Either<L, R> right(@Nullable R value) {
+	public static <L, R> @NonNull Either<L, R> right(@Nullable R value) {
 		return new Right<>(value);
 	}
 	//endregion
@@ -92,7 +94,7 @@ public abstract sealed class Either<L, R> permits Either.Left, Either.Right {
 	 * @param action The action to perform
 	 * @throws NullPointerException If the action is null
 	 */
-	public abstract void ifLeft(@NotNull Consumer<? super L> action);
+	public abstract void ifLeft(@NonNull Consumer<? super L> action);
 	
 	/**
 	 * Performs the given action if this either instance is a right instance.<br>
@@ -100,19 +102,19 @@ public abstract sealed class Either<L, R> permits Either.Left, Either.Right {
 	 * @param action The action to perform
 	 * @throws NullPointerException If the action is null
 	 */
-	public abstract void ifRight(@NotNull Consumer<? super R> action);
+	public abstract void ifRight(@NonNull Consumer<? super R> action);
 	
 	/**
 	 * Returns the left value as an {@link Optional}.<br>
 	 * @return The left value
 	 */
-	public abstract @NotNull Optional<L> left();
+	public abstract @NonNull Optional<L> left();
 	
 	/**
 	 * Returns the right value as an {@link Optional}.<br>
 	 * @return The right value
 	 */
-	public abstract @NotNull Optional<R> right();
+	public abstract @NonNull Optional<R> right();
 	
 	/**
 	 * Returns the left value or throws an exception if it is a right either.<br>
@@ -134,7 +136,7 @@ public abstract sealed class Either<L, R> permits Either.Left, Either.Right {
 	 * Swaps the left and right values of this either instance.<br>
 	 * @return A new either instance with the swapped values
 	 */
-	public @NotNull Either<R, L> swap() {
+	public @NonNull Either<R, L> swap() {
 		return this.mapTo(Either::right, Either::left);
 	}
 	
@@ -148,7 +150,7 @@ public abstract sealed class Either<L, R> permits Either.Left, Either.Right {
 	 * @param <D> The new type of the right value
 	 * @throws NullPointerException If the mapper used in this either implementation is null
 	 */
-	public abstract <C, D> @NotNull Either<C, D> mapBoth(@NotNull Function<? super L, ? extends C> leftMapper, @NotNull Function<? super R, ? extends D> rightMapper);
+	public abstract <C, D> @NonNull Either<C, D> mapBoth(@NonNull Function<? super L, ? extends C> leftMapper, @NonNull Function<? super R, ? extends D> rightMapper);
 	
 	/**
 	 * Maps the left and right values of this either instance to a new value.<br>
@@ -159,7 +161,7 @@ public abstract sealed class Either<L, R> permits Either.Left, Either.Right {
 	 * @param <T> The type of the mapped value
 	 * @throws NullPointerException If the mapper used in this either implementation is null
 	 */
-	public abstract <T> T mapTo(@NotNull Function<? super L, ? extends T> leftMapper, @NotNull Function<? super R, ? extends T> rightMapper);
+	public abstract <T> T mapTo(@NonNull Function<? super L, ? extends T> leftMapper, @NonNull Function<? super R, ? extends T> rightMapper);
 	
 	/**
 	 * Maps the left value of this either instance to a new value.<br>
@@ -170,7 +172,7 @@ public abstract sealed class Either<L, R> permits Either.Left, Either.Right {
 	 * @param <T> The new type of the left value
 	 * @throws NullPointerException If the mapper is null
 	 */
-	public <T> Either<T, R> mapLeft(@NotNull Function<? super L, ? extends T> mapper) {
+	public <T> Either<T, R> mapLeft(@NonNull Function<? super L, ? extends T> mapper) {
 		return this.mapTo((value) -> Either.left(Objects.requireNonNull(mapper, "Mapper must not be null").apply(value)), Either::right);
 	}
 	
@@ -183,7 +185,7 @@ public abstract sealed class Either<L, R> permits Either.Left, Either.Right {
 	 * @param <T> The new type of the right value
 	 * @throws NullPointerException If the mapper is null
 	 */
-	public <T> Either<L, T> mapRight(@NotNull Function<? super R, ? extends T> mapper) {
+	public <T> Either<L, T> mapRight(@NonNull Function<? super R, ? extends T> mapper) {
 		return this.mapTo(Either::left, (value) -> Either.right(Objects.requireNonNull(mapper, "Mapper must not be null").apply(value)));
 	}
 	
@@ -223,7 +225,7 @@ public abstract sealed class Either<L, R> permits Either.Left, Either.Right {
 		}
 		
 		@Override
-		public void ifLeft(@NotNull Consumer<? super L> action) {
+		public void ifLeft(@NonNull Consumer<? super L> action) {
 			Objects.requireNonNull(action, "Action must not be null").accept(this.value);
 		}
 		
@@ -231,12 +233,12 @@ public abstract sealed class Either<L, R> permits Either.Left, Either.Right {
 		public void ifRight(@Nullable Consumer<? super R> action) {}
 		
 		@Override
-		public @NotNull Optional<L> left() {
+		public @NonNull Optional<L> left() {
 			return Optional.ofNullable(this.value);
 		}
 		
 		@Override
-		public @NotNull Optional<R> right() {
+		public @NonNull Optional<R> right() {
 			return Optional.empty();
 		}
 		
@@ -246,17 +248,17 @@ public abstract sealed class Either<L, R> permits Either.Left, Either.Right {
 		}
 		
 		@Override
-		public @NotNull R rightOrThrow() {
+		public @NonNull R rightOrThrow() {
 			throw new IllegalStateException("Either is a left instance");
 		}
 		
 		@Override
-		public <C, D> @NotNull Either<C, D> mapBoth(@NotNull Function<? super L, ? extends C> leftMapper, @NotNull Function<? super R, ? extends D> rightMapper) {
+		public <C, D> @NonNull Either<C, D> mapBoth(@NonNull Function<? super L, ? extends C> leftMapper, @NonNull Function<? super R, ? extends D> rightMapper) {
 			return new Left<>(Objects.requireNonNull(leftMapper, "Left mapper must nut be null").apply(this.value));
 		}
 		
 		@Override
-		public <T> T mapTo(@NotNull Function<? super L, ? extends T> leftMapper, @NotNull Function<? super R, ? extends T> rightMapper) {
+		public <T> T mapTo(@NonNull Function<? super L, ? extends T> leftMapper, @NonNull Function<? super R, ? extends T> rightMapper) {
 			return Objects.requireNonNull(leftMapper, "Left mapper must nut be null").apply(this.value);
 		}
 		//endregion
@@ -321,22 +323,22 @@ public abstract sealed class Either<L, R> permits Either.Left, Either.Right {
 		public void ifLeft(@Nullable Consumer<? super L> action) {}
 		
 		@Override
-		public void ifRight(@NotNull Consumer<? super R> action) {
+		public void ifRight(@NonNull Consumer<? super R> action) {
 			Objects.requireNonNull(action, "Action must not be null").accept(this.value);
 		}
 		
 		@Override
-		public @NotNull Optional<L> left() {
+		public @NonNull Optional<L> left() {
 			return Optional.empty();
 		}
 		
 		@Override
-		public @NotNull Optional<R> right() {
+		public @NonNull Optional<R> right() {
 			return Optional.ofNullable(this.value);
 		}
 		
 		@Override
-		public @NotNull L leftOrThrow() {
+		public @NonNull L leftOrThrow() {
 			throw new IllegalStateException("Either is a right instance");
 		}
 		
@@ -346,12 +348,12 @@ public abstract sealed class Either<L, R> permits Either.Left, Either.Right {
 		}
 		
 		@Override
-		public <C, D> @NotNull Either<C, D> mapBoth(@NotNull Function<? super L, ? extends C> leftMapper, @NotNull Function<? super R, ? extends D> rightMapper) {
+		public <C, D> @NonNull Either<C, D> mapBoth(@NonNull Function<? super L, ? extends C> leftMapper, @NonNull Function<? super R, ? extends D> rightMapper) {
 			return new Right<>(Objects.requireNonNull(rightMapper, "Right mapper must nut be null").apply(this.value));
 		}
 		
 		@Override
-		public <T> T mapTo(@NotNull Function<? super L, ? extends T> leftMapper, @NotNull Function<? super R, ? extends T> rightMapper) {
+		public <T> T mapTo(@NonNull Function<? super L, ? extends T> leftMapper, @NonNull Function<? super R, ? extends T> rightMapper) {
 			return Objects.requireNonNull(rightMapper, "Right mapper must nut be null").apply(this.value);
 		}
 		//endregion

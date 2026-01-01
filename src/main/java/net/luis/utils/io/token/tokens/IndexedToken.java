@@ -1,6 +1,6 @@
 /*
  * LUtils
- * Copyright (C) 2025 Luis Staudt
+ * Copyright (C) 2026 Luis Staudt
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,7 +20,7 @@ package net.luis.utils.io.token.tokens;
 
 import net.luis.utils.io.token.TokenPosition;
 import net.luis.utils.io.token.type.TokenType;
-import org.jetbrains.annotations.NotNull;
+import org.jspecify.annotations.NonNull;
 
 import java.util.Objects;
 import java.util.Set;
@@ -36,7 +36,7 @@ import java.util.Set;
  * @param index The index associated with the token
  */
 public record IndexedToken(
-	@NotNull Token token,
+	@NonNull Token token,
 	int index
 ) implements Token {
 	
@@ -62,22 +62,22 @@ public record IndexedToken(
 	 * @return A new indexed token with index 0
 	 * @throws NullPointerException If the token is null
 	 */
-	public static @NotNull IndexedToken first(@NotNull Token token) {
+	public static @NonNull IndexedToken first(@NonNull Token token) {
 		return new IndexedToken(token, 0);
 	}
 	
 	@Override
-	public @NotNull String value() {
+	public @NonNull String value() {
 		return this.token.value();
 	}
 	
 	@Override
-	public @NotNull TokenPosition position() {
+	public @NonNull TokenPosition position() {
 		return this.token.position();
 	}
 	
 	@Override
-	public @NotNull Set<TokenType> types() {
+	public @NonNull Set<TokenType> types() {
 		return this.token.types();
 	}
 	
@@ -101,7 +101,7 @@ public record IndexedToken(
 	}
 	
 	@Override
-	public @NotNull Token index(int index) {
+	public @NonNull Token index(int index) {
 		if (this.index == index) {
 			return this; // Same index, return this
 		}

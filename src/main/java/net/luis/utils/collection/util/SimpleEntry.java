@@ -1,6 +1,6 @@
 /*
  * LUtils
- * Copyright (C) 2025 Luis Staudt
+ * Copyright (C) 2026 Luis Staudt
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,7 +19,9 @@
 package net.luis.utils.collection.util;
 
 import net.luis.utils.exception.ModificationException;
-import org.jetbrains.annotations.*;
+import org.jetbrains.annotations.Unmodifiable;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 import java.util.Map;
 import java.util.Objects;
@@ -53,7 +55,7 @@ public class SimpleEntry<K, V> implements Map.Entry<K, V> {
 	 * @param value The value of the entry
 	 * @throws NullPointerException If the key is null
 	 */
-	public SimpleEntry(@NotNull K key, @Nullable V value) {
+	public SimpleEntry(@NonNull K key, @Nullable V value) {
 		this.key = Objects.requireNonNull(key, "Key must not be null");
 		this.value = value;
 	}
@@ -62,7 +64,7 @@ public class SimpleEntry<K, V> implements Map.Entry<K, V> {
 	 * @return The key of the entry
 	 */
 	@Override
-	public @NotNull K getKey() {
+	public @NonNull K getKey() {
 		return this.key;
 	}
 	

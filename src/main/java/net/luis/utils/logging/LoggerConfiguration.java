@@ -1,6 +1,6 @@
 /*
  * LUtils
- * Copyright (C) 2025 Luis Staudt
+ * Copyright (C) 2026 Luis Staudt
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -29,8 +29,8 @@ import org.apache.logging.log4j.core.appender.ConsoleAppender;
 import org.apache.logging.log4j.core.config.Configuration;
 import org.apache.logging.log4j.core.config.builder.api.*;
 import org.apache.logging.log4j.core.config.builder.impl.BuiltConfiguration;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 import java.util.*;
 import java.util.regex.Pattern;
@@ -164,7 +164,7 @@ public class LoggerConfiguration {
 	 * @throws IllegalArgumentException If the given list is empty or does not contain any valid logger name
 	 * @see #LoggerConfiguration(List)
 	 */
-	public LoggerConfiguration(String @NotNull ... loggers) {
+	public LoggerConfiguration(String @NonNull ... loggers) {
 		this(Lists.newArrayList(Objects.requireNonNull(loggers, "Loggers must not be null")));
 	}
 	
@@ -178,7 +178,7 @@ public class LoggerConfiguration {
 	 * @throws NullPointerException If the given list is null
 	 * @throws IllegalArgumentException If the given list is empty or does not contain any valid logger name
 	 */
-	public LoggerConfiguration(@NotNull List<String> loggers) {
+	public LoggerConfiguration(@NonNull List<String> loggers) {
 		Objects.requireNonNull(loggers, "Loggers must not be null");
 		loggers = Lists.newArrayList(loggers);
 		if (loggers.isEmpty()) {
@@ -200,7 +200,7 @@ public class LoggerConfiguration {
 	 * @return The current configuration builder
 	 * @throws NullPointerException If the given level is null
 	 */
-	public @NotNull LoggerConfiguration setStatusLevel(@NotNull Level level) {
+	public @NonNull LoggerConfiguration setStatusLevel(@NonNull Level level) {
 		this.statusLevel = Objects.requireNonNull(level, "Level must not be null");
 		return this;
 	}
@@ -215,7 +215,7 @@ public class LoggerConfiguration {
 	 * @return The current configuration builder
 	 * @throws NullPointerException If the given type is null
 	 */
-	public @NotNull LoggerConfiguration enableLogging(@NotNull LoggingType type) {
+	public @NonNull LoggerConfiguration enableLogging(@NonNull LoggingType type) {
 		this.allowedTypes.add(Objects.requireNonNull(type, "Logging type must not be null"));
 		return this;
 	}
@@ -226,7 +226,7 @@ public class LoggerConfiguration {
 	 * @param type The type to disable
 	 * @return The current configuration builder
 	 */
-	public @NotNull LoggerConfiguration disableLogging(@Nullable LoggingType type) {
+	public @NonNull LoggerConfiguration disableLogging(@Nullable LoggingType type) {
 		this.allowedTypes.remove(type);
 		return this;
 	}
@@ -245,7 +245,7 @@ public class LoggerConfiguration {
 	 * @throws NullPointerException If the given type, level or pattern is null
 	 * @throws IllegalArgumentException If the given pattern is empty or does not contain any of the following placeholders: %m, %msg, %message, %throwable, %ex, %exception
 	 */
-	public @NotNull LoggerConfiguration overridePattern(@NotNull LoggingType type, @NotNull Level level, @NotNull String pattern) {
+	public @NonNull LoggerConfiguration overridePattern(@NonNull LoggingType type, @NonNull Level level, @NonNull String pattern) {
 		Objects.requireNonNull(type, "Logging type must not be null");
 		Objects.requireNonNull(level, "Level must not be null");
 		Objects.requireNonNull(pattern, "Pattern must not be null");
@@ -277,7 +277,7 @@ public class LoggerConfiguration {
 	 * @throws IllegalArgumentException If the given pattern is empty or does not contain any of the following placeholders: %m, %msg, %message, %throwable, %ex, %exception
 	 * @see LoggerConfiguration#overridePattern(LoggingType, Level, String)
 	 */
-	public @NotNull LoggerConfiguration overrideConsolePattern(@NotNull Level level, @NotNull String pattern) {
+	public @NonNull LoggerConfiguration overrideConsolePattern(@NonNull Level level, @NonNull String pattern) {
 		return this.overridePattern(LoggingType.CONSOLE, level, pattern);
 	}
 	
@@ -291,7 +291,7 @@ public class LoggerConfiguration {
 	 * @throws IllegalArgumentException If the given pattern is empty or does not contain any of the following placeholders: %m, %msg, %message, %throwable, %ex, %exception
 	 * @see LoggerConfiguration#overridePattern(LoggingType, Level, String)
 	 */
-	public @NotNull LoggerConfiguration overrideFilePattern(@NotNull Level level, @NotNull String pattern) {
+	public @NonNull LoggerConfiguration overrideFilePattern(@NonNull Level level, @NonNull String pattern) {
 		return this.overridePattern(LoggingType.FILE, level, pattern);
 	}
 	//endregion
@@ -308,7 +308,7 @@ public class LoggerConfiguration {
 	 * @throws NullPointerException If the given root folder is null
 	 * @throws IllegalArgumentException If the given root folder is empty or not relative or absolute
 	 */
-	public @NotNull LoggerConfiguration setRootDirectory(@NotNull String rootDirectory) {
+	public @NonNull LoggerConfiguration setRootDirectory(@NonNull String rootDirectory) {
 		Objects.requireNonNull(rootDirectory, "Root directory must not be null");
 		if (StringUtils.isBlank(rootDirectory)) {
 			throw new IllegalArgumentException("Root folder must not be empty");
@@ -336,7 +336,7 @@ public class LoggerConfiguration {
 	 * @throws NullPointerException If the given level, file name or file pattern is null
 	 * @throws IllegalArgumentException If the given level is not valid, or if the given files are empty, absolute or relative
 	 */
-	public @NotNull LoggerConfiguration overrideLog(@NotNull Level level, @NotNull String file, @NotNull String archive) {
+	public @NonNull LoggerConfiguration overrideLog(@NonNull Level level, @NonNull String file, @NonNull String archive) {
 		this.validateLevel(level);
 		Objects.requireNonNull(file, "File must not be null");
 		Objects.requireNonNull(archive, "Archive must not be null");
@@ -373,7 +373,7 @@ public class LoggerConfiguration {
 	 * @throws IllegalArgumentException If the given level is not valid, or if the given files are empty, absolute or relative
 	 * @see LoggerConfiguration#overrideLog(Level, String, String)
 	 */
-	public @NotNull LoggerConfiguration overrideDebugLog(@NotNull String file, @NotNull String archive) {
+	public @NonNull LoggerConfiguration overrideDebugLog(@NonNull String file, @NonNull String archive) {
 		return this.overrideLog(Level.DEBUG, file, archive);
 	}
 	
@@ -392,7 +392,7 @@ public class LoggerConfiguration {
 	 * @throws IllegalArgumentException If the given level is not valid, or if the given files are empty or absolute
 	 * @see LoggerConfiguration#overrideLog(Level, String, String)
 	 */
-	public @NotNull LoggerConfiguration overrideInfoLog(@NotNull String file, @NotNull String archive) {
+	public @NonNull LoggerConfiguration overrideInfoLog(@NonNull String file, @NonNull String archive) {
 		return this.overrideLog(Level.INFO, file, archive);
 	}
 	
@@ -411,7 +411,7 @@ public class LoggerConfiguration {
 	 * @throws IllegalArgumentException If the given level is not valid, or if the given files are empty, absolute or relative
 	 * @see LoggerConfiguration#overrideLog(Level, String, String)
 	 */
-	public @NotNull LoggerConfiguration overrideErrorLog(@NotNull String file, @NotNull String archive) {
+	public @NonNull LoggerConfiguration overrideErrorLog(@NonNull String file, @NonNull String archive) {
 		return this.overrideLog(Level.ERROR, file, archive);
 	}
 	
@@ -422,7 +422,7 @@ public class LoggerConfiguration {
 	 * @throws NullPointerException If the given level is null
 	 * @throws IllegalArgumentException If the given level is not {@link Level#DEBUG}, {@link Level#INFO} or {@link Level#ERROR}
 	 */
-	private void validateLevel(@NotNull Level level) {
+	private void validateLevel(@NonNull Level level) {
 		Objects.requireNonNull(level, "Level must not be null");
 		if (level == Level.ALL || level == Level.OFF) {
 			throw new IllegalArgumentException("Level must not be 'all' or 'off'");
@@ -454,7 +454,7 @@ public class LoggerConfiguration {
 	 * @throws NullPointerException If the given type or level is null
 	 * @throws IllegalArgumentException If the given type is not allowed
 	 */
-	public @NotNull LoggerConfiguration addDefaultLogger(@NotNull LoggingType type, @NotNull Level level) {
+	public @NonNull LoggerConfiguration addDefaultLogger(@NonNull LoggingType type, @NonNull Level level) {
 		LoggingUtils.checkLevel(type, level);
 		if (!this.allowedTypes.contains(type)) {
 			throw new IllegalArgumentException("Logging type '" + type.name().toLowerCase() + "' is not allowed");
@@ -480,7 +480,7 @@ public class LoggerConfiguration {
 	 * @param level The level to remove the default logger for
 	 * @return The current configuration builder
 	 */
-	public @NotNull LoggerConfiguration removeDefaultLogger(@Nullable LoggingType type, @Nullable Level level) {
+	public @NonNull LoggerConfiguration removeDefaultLogger(@Nullable LoggingType type, @Nullable Level level) {
 		this.defaultLoggers.getOrDefault(type, Lists.newArrayList()).remove(level);
 		return this;
 	}
@@ -497,7 +497,7 @@ public class LoggerConfiguration {
 	 * @throws NullPointerException If the given file size is null
 	 * @throws IllegalArgumentException If the given file size is not valid
 	 */
-	public @NotNull LoggerConfiguration setFileSize(@NotNull String fileSize) {
+	public @NonNull LoggerConfiguration setFileSize(@NonNull String fileSize) {
 		Objects.requireNonNull(fileSize, "File size must not be null");
 		if (StringUtils.isBlank(fileSize)) {
 			throw new IllegalArgumentException("File size must not be empty");
@@ -518,7 +518,7 @@ public class LoggerConfiguration {
 	 * @throws NullPointerException If the given archive type is null
 	 * @throws IllegalArgumentException If the given archive type is not valid
 	 */
-	public @NotNull LoggerConfiguration setArchiveType(@NotNull String archiveType) {
+	public @NonNull LoggerConfiguration setArchiveType(@NonNull String archiveType) {
 		Objects.requireNonNull(archiveType, "Archive type must not be null");
 		if (StringUtils.isBlank(archiveType)) {
 			throw new IllegalArgumentException("Archive type must not be empty");
@@ -541,7 +541,7 @@ public class LoggerConfiguration {
 	 * @param compressionLevel The compression level to set
 	 * @return The current configuration builder
 	 */
-	public @NotNull LoggerConfiguration setCompressionLevel(int compressionLevel) {
+	public @NonNull LoggerConfiguration setCompressionLevel(int compressionLevel) {
 		this.compressionLevel = Mth.clamp(compressionLevel, 0, 9);
 		return this;
 	}
@@ -554,7 +554,7 @@ public class LoggerConfiguration {
 	 * @param maxArchiveFiles The maximum number of archived log files to keep
 	 * @return The current configuration builder
 	 */
-	public @NotNull LoggerConfiguration setMaxArchiveFiles(int maxArchiveFiles) {
+	public @NonNull LoggerConfiguration setMaxArchiveFiles(int maxArchiveFiles) {
 		this.maxArchiveFiles = Math.max(1, maxArchiveFiles);
 		return this;
 	}
@@ -567,7 +567,7 @@ public class LoggerConfiguration {
 	 * @param archiveAutoDeletionDepth The depth in which archived log files should be deleted
 	 * @return The current configuration builder
 	 */
-	public @NotNull LoggerConfiguration setArchiveAutoDeletionDepth(int archiveAutoDeletionDepth) {
+	public @NonNull LoggerConfiguration setArchiveAutoDeletionDepth(int archiveAutoDeletionDepth) {
 		this.archiveAutoDeletionDepth = Math.max(1, archiveAutoDeletionDepth);
 		return this;
 	}
@@ -580,7 +580,7 @@ public class LoggerConfiguration {
 	 * @param archiveAutoDeletionAge The age in days after which archived log files should be deleted
 	 * @return The current configuration builder
 	 */
-	public @NotNull LoggerConfiguration setArchiveAutoDeletionAge(int archiveAutoDeletionAge) {
+	public @NonNull LoggerConfiguration setArchiveAutoDeletionAge(int archiveAutoDeletionAge) {
 		this.archiveAutoDeletionAge = Math.max(1, archiveAutoDeletionAge);
 		return this;
 	}
@@ -590,7 +590,7 @@ public class LoggerConfiguration {
 	 * Builds the configuration.<br>
 	 * @return The built configuration
 	 */
-	public @NotNull Configuration build() {
+	public @NonNull Configuration build() {
 		ConfigurationBuilder<BuiltConfiguration> builder = ConfigurationBuilderFactory.newConfigurationBuilder();
 		builder.setConfigurationName("RuntimeConfiguration");
 		builder.setStatusLevel(this.statusLevel);
@@ -675,7 +675,7 @@ public class LoggerConfiguration {
 	 * @param level The level to get the pattern for
 	 * @return The pattern for the given type and level, or the default pattern if there is no override
 	 */
-	private @NotNull String getPattern(@NotNull LoggingType type, @NotNull Level level) {
+	private @NonNull String getPattern(@NonNull LoggingType type, @NonNull Level level) {
 		String pattern = this.patternOverrides.getOrDefault(type, Maps.newHashMap()).getOrDefault(level, DEFAULT_PATTERNS.get(level));
 		return "%replace{" + pattern + "}{] \\[]}{]}";
 	}

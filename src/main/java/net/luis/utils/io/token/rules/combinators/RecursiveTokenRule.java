@@ -1,6 +1,6 @@
 /*
  * LUtils
- * Copyright (C) 2025 Luis Staudt
+ * Copyright (C) 2026 Luis Staudt
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -23,8 +23,8 @@ import net.luis.utils.io.token.context.TokenRuleContext;
 import net.luis.utils.io.token.rules.TokenRule;
 import net.luis.utils.io.token.rules.TokenRules;
 import net.luis.utils.io.token.stream.TokenStream;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 import java.util.Objects;
 import java.util.function.Function;
@@ -95,7 +95,7 @@ public class RecursiveTokenRule implements TokenRule {
 	 * @param ruleFactory A function that takes the recursive rule and returns the complete rule definition
 	 * @throws NullPointerException If the rule factory is null or if the factory returns null
 	 */
-	public RecursiveTokenRule(@NotNull Function<TokenRule, TokenRule> ruleFactory) {
+	public RecursiveTokenRule(@NonNull Function<TokenRule, TokenRule> ruleFactory) {
 		Objects.requireNonNull(ruleFactory, "Rule factory must not be null");
 		this.tokenRule = Objects.requireNonNull(ruleFactory.apply(this), "Rule factory must return a non-null rule");
 	}
@@ -114,7 +114,7 @@ public class RecursiveTokenRule implements TokenRule {
 	 * @param closingRule The rule that must match at the end
 	 * @throws NullPointerException If the opening, content, or closing rule is null
 	 */
-	public RecursiveTokenRule(@NotNull TokenRule openingRule, @NotNull TokenRule contentRule, @NotNull TokenRule closingRule) {
+	public RecursiveTokenRule(@NonNull TokenRule openingRule, @NonNull TokenRule contentRule, @NonNull TokenRule closingRule) {
 		this(self -> TokenRules.sequence(
 			Objects.requireNonNull(openingRule, "Opening rule must not be null"),
 			Objects.requireNonNull(contentRule, "Content rule must not be null"),
@@ -131,7 +131,7 @@ public class RecursiveTokenRule implements TokenRule {
 	 * @param contentRuleFactory A function that takes the recursive rule and returns the content rule
 	 * @throws NullPointerException If the opening, closing rule, or content rule factory is null
 	 */
-	public RecursiveTokenRule(@NotNull TokenRule openingRule, @NotNull TokenRule closingRule, @NotNull Function<TokenRule, TokenRule> contentRuleFactory) {
+	public RecursiveTokenRule(@NonNull TokenRule openingRule, @NonNull TokenRule closingRule, @NonNull Function<TokenRule, TokenRule> contentRuleFactory) {
 		this(self -> TokenRules.sequence(
 			Objects.requireNonNull(openingRule, "Opening rule must not be null"),
 			Objects.requireNonNull(contentRuleFactory, "Content rule factory must not be null").apply(self),
@@ -145,12 +145,12 @@ public class RecursiveTokenRule implements TokenRule {
 	 *
 	 * @return The actual rule defining the recursive pattern
 	 */
-	public @NotNull TokenRule getTokenRule() {
+	public @NonNull TokenRule getTokenRule() {
 		return this.tokenRule;
 	}
 	
 	@Override
-	public @Nullable TokenRuleMatch match(@NotNull TokenStream stream, @NotNull TokenRuleContext ctx) {
+	public @Nullable TokenRuleMatch match(@NonNull TokenStream stream, @NonNull TokenRuleContext ctx) {
 		Objects.requireNonNull(stream, "Token stream cannot be null");
 		Objects.requireNonNull(ctx, "Token rule context cannot be null");
 		
@@ -164,10 +164,10 @@ public class RecursiveTokenRule implements TokenRule {
 	}
 	
 	@Override
-	public @NotNull TokenRule not() {
+	public @NonNull TokenRule not() {
 		return new RecursiveTokenRule(self -> this.tokenRule.not()) {
 			@Override
-			public @NotNull TokenRule getTokenRule() {
+			public @NonNull TokenRule getTokenRule() {
 				return RecursiveTokenRule.this; // Negating the not() method returns the original rule, preventing double negation and nesting of classes
 			}
 		};

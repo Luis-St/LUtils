@@ -1,6 +1,6 @@
 /*
  * LUtils
- * Copyright (C) 2025 Luis Staudt
+ * Copyright (C) 2026 Luis Staudt
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -21,7 +21,7 @@ package net.luis.utils.io.token.tokens;
 import com.google.common.collect.Sets;
 import net.luis.utils.io.token.TokenPosition;
 import net.luis.utils.io.token.type.TokenType;
-import org.jetbrains.annotations.NotNull;
+import org.jspecify.annotations.NonNull;
 
 import java.util.Objects;
 import java.util.Set;
@@ -36,9 +36,9 @@ import java.util.Set;
  * @param types The token types of the token
  */
 public record SimpleToken(
-	@NotNull String value,
-	@NotNull TokenPosition position,
-	@NotNull Set<TokenType> types
+	@NonNull String value,
+	@NonNull TokenPosition position,
+	@NonNull Set<TokenType> types
 ) implements Token {
 	
 	/**
@@ -48,7 +48,7 @@ public record SimpleToken(
 	 * @param position The start position of the token
 	 * @throws NullPointerException If the token value or the position is null
 	 */
-	public SimpleToken(@NotNull String value, @NotNull TokenPosition position) {
+	public SimpleToken(@NonNull String value, @NonNull TokenPosition position) {
 		this(value, position, Set.of());
 	}
 	
@@ -74,12 +74,12 @@ public record SimpleToken(
 	 * @return The unpositioned simple token
 	 * @throws NullPointerException If the token value is null
 	 */
-	public static @NotNull SimpleToken createUnpositioned(@NotNull String value) {
+	public static @NonNull SimpleToken createUnpositioned(@NonNull String value) {
 		return new SimpleToken(value, TokenPosition.UNPOSITIONED);
 	}
 	
 	@Override
-	public @NotNull String toString() {
+	public @NonNull String toString() {
 		return "SimpleToken[value=" + this.value.replace("\t", "\\\\t").replace("\n", "\\\\n") + ",position=" + this.position + "]";
 	}
 }

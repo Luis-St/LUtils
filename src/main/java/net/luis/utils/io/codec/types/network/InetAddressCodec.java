@@ -1,6 +1,6 @@
 /*
  * LUtils
- * Copyright (C) 2025 Luis Staudt
+ * Copyright (C) 2026 Luis Staudt
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -21,8 +21,8 @@ package net.luis.utils.io.codec.types.network;
 import net.luis.utils.io.codec.AbstractCodec;
 import net.luis.utils.io.codec.provider.TypeProvider;
 import net.luis.utils.util.result.Result;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 import java.io.IOException;
 import java.net.InetAddress;
@@ -43,7 +43,7 @@ public class InetAddressCodec extends AbstractCodec<InetAddress, Object> {
 	public InetAddressCodec() {}
 	
 	@Override
-	public <R> @NotNull Result<R> encodeStart(@NotNull TypeProvider<R> provider, @NotNull R current, @Nullable InetAddress value) {
+	public <R> @NonNull Result<R> encodeStart(@NonNull TypeProvider<R> provider, @NonNull R current, @Nullable InetAddress value) {
 		Objects.requireNonNull(provider, "Type provider must not be null");
 		Objects.requireNonNull(current, "Current value must not be null");
 		
@@ -54,13 +54,13 @@ public class InetAddressCodec extends AbstractCodec<InetAddress, Object> {
 	}
 	
 	@Override
-	public @NotNull Result<String> encodeKey(@NotNull InetAddress key) {
+	public @NonNull Result<String> encodeKey(@NonNull InetAddress key) {
 		Objects.requireNonNull(key, "Key must not be null");
 		return Result.success(key.getHostAddress());
 	}
 	
 	@Override
-	public <R> @NotNull Result<InetAddress> decodeStart(@NotNull TypeProvider<R> provider, @NotNull R current, @Nullable R value) {
+	public <R> @NonNull Result<InetAddress> decodeStart(@NonNull TypeProvider<R> provider, @NonNull R current, @Nullable R value) {
 		Objects.requireNonNull(provider, "Type provider must not be null");
 		Objects.requireNonNull(current, "Current value must not be null");
 		if (value == null) {
@@ -81,7 +81,7 @@ public class InetAddressCodec extends AbstractCodec<InetAddress, Object> {
 	}
 	
 	@Override
-	public @NotNull Result<InetAddress> decodeKey(@NotNull String key) {
+	public @NonNull Result<InetAddress> decodeKey(@NonNull String key) {
 		Objects.requireNonNull(key, "Key must not be null");
 		
 		try {

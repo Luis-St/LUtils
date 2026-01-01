@@ -1,6 +1,6 @@
 /*
  * LUtils
- * Copyright (C) 2025 Luis Staudt
+ * Copyright (C) 2026 Luis Staudt
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -25,7 +25,7 @@ import net.luis.utils.io.token.actions.filters.*;
 import net.luis.utils.io.token.actions.transformers.*;
 import net.luis.utils.io.token.tokens.SimpleToken;
 import net.luis.utils.io.token.tokens.Token;
-import org.jetbrains.annotations.NotNull;
+import org.jspecify.annotations.NonNull;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
@@ -43,15 +43,15 @@ import static org.junit.jupiter.api.Assertions.*;
  */
 class TokenActionsTest {
 	
-	private static @NotNull Token createToken(@NotNull String value) {
+	private static @NonNull Token createToken(@NonNull String value) {
 		return SimpleToken.createUnpositioned(value);
 	}
 	
-	private static @NotNull Predicate<Token> createTestPredicate() {
+	private static @NonNull Predicate<Token> createTestPredicate() {
 		return token -> "test".equals(token.value());
 	}
 	
-	private static @NotNull Consumer<Token> createTestConsumer() {
+	private static @NonNull Consumer<Token> createTestConsumer() {
 		return token -> {};
 	}
 	

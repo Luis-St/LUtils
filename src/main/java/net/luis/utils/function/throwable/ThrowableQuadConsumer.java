@@ -1,6 +1,6 @@
 /*
  * LUtils
- * Copyright (C) 2025 Luis Staudt
+ * Copyright (C) 2026 Luis Staudt
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,7 +19,7 @@
 package net.luis.utils.function.throwable;
 
 import net.luis.utils.function.QuadConsumer;
-import org.jetbrains.annotations.NotNull;
+import org.jspecify.annotations.NonNull;
 
 import java.util.Objects;
 
@@ -50,7 +50,7 @@ public interface ThrowableQuadConsumer<T, U, V, W, X extends Throwable> {
 	 * @param <W> The fourth argument type
 	 * @throws NullPointerException If the throwable quad-consumer is null
 	 */
-	static <T, U, V, W> @NotNull QuadConsumer<T, U, V, W> caught(@NotNull ThrowableQuadConsumer<T, U, V, W, ? extends Throwable> consumer) {
+	static <T, U, V, W> @NonNull QuadConsumer<T, U, V, W> caught(@NonNull ThrowableQuadConsumer<T, U, V, W, ? extends Throwable> consumer) {
 		Objects.requireNonNull(consumer, "Throwable consumer must not be null");
 		return (t, u, v, w) -> {
 			try {
@@ -80,7 +80,7 @@ public interface ThrowableQuadConsumer<T, U, V, W, X extends Throwable> {
 	 * @return The composed throwable consumer
 	 * @throws NullPointerException If the after operation is null
 	 */
-	default @NotNull ThrowableQuadConsumer<T, U, V, W, X> andThen(@NotNull ThrowableQuadConsumer<? super T, ? super U, ? super V, ? super W, X> after) {
+	default @NonNull ThrowableQuadConsumer<T, U, V, W, X> andThen(@NonNull ThrowableQuadConsumer<? super T, ? super U, ? super V, ? super W, X> after) {
 		Objects.requireNonNull(after, "After operation must not be null");
 		return (t, u, v, w) -> {
 			this.accept(t, u, v, w);

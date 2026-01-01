@@ -1,6 +1,6 @@
 /*
  * LUtils
- * Copyright (C) 2025 Luis Staudt
+ * Copyright (C) 2026 Luis Staudt
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,7 +18,7 @@
 
 package net.luis.utils.math;
 
-import org.jetbrains.annotations.NotNull;
+import org.jspecify.annotations.NonNull;
 
 import java.util.Objects;
 
@@ -71,7 +71,7 @@ public enum Radix {
 	 * @throws IllegalArgumentException If the radix is less than or equal to 0
 	 * @throws NullPointerException If the prefix is null
 	 */
-	Radix(int radix, @NotNull String prefix) {
+	Radix(int radix, @NonNull String prefix) {
 		if (0 >= radix) {
 			throw new IllegalArgumentException("Radix must be greater than 0 but found: " + radix);
 		}
@@ -91,7 +91,7 @@ public enum Radix {
 	 * Returns the prefix for the radix used in string conversion.<br>
 	 * @return The prefix for the radix
 	 */
-	public @NotNull String getPrefix() {
+	public @NonNull String getPrefix() {
 		return this.prefix;
 	}
 	

@@ -1,6 +1,6 @@
 /*
  * LUtils
- * Copyright (C) 2025 Luis Staudt
+ * Copyright (C) 2026 Luis Staudt
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,8 +20,8 @@ package net.luis.utils.io.token.context;
 
 import net.luis.utils.io.token.stream.MutableTokenStream;
 import net.luis.utils.io.token.stream.TokenStream;
-import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Unmodifiable;
+import org.jspecify.annotations.NonNull;
 
 import java.util.Objects;
 
@@ -33,7 +33,7 @@ import java.util.Objects;
  * @param stream The token stream immutable view after the associated token rule was matched
  */
 public record TokenActionContext(
-	@NotNull @Unmodifiable TokenStream stream
+	@NonNull @Unmodifiable TokenStream stream
 ) {
 	
 	/**

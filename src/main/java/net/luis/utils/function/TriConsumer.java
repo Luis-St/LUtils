@@ -1,6 +1,6 @@
 /*
  * LUtils
- * Copyright (C) 2025 Luis Staudt
+ * Copyright (C) 2026 Luis Staudt
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,7 +18,7 @@
 
 package net.luis.utils.function;
 
-import org.jetbrains.annotations.NotNull;
+import org.jspecify.annotations.NonNull;
 
 import java.util.Objects;
 
@@ -52,7 +52,7 @@ public interface TriConsumer<T, U, V> {
 	 * @return The composed consumer
 	 * @throws NullPointerException If the after operation is null
 	 */
-	default @NotNull TriConsumer<T, U, V> andThen(@NotNull TriConsumer<? super T, ? super U, ? super V> after) {
+	default @NonNull TriConsumer<T, U, V> andThen(@NonNull TriConsumer<? super T, ? super U, ? super V> after) {
 		Objects.requireNonNull(after, "After operation must not be null");
 		return (t, u, v) -> {
 			this.accept(t, u, v);

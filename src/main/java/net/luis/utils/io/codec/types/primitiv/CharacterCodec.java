@@ -1,6 +1,6 @@
 /*
  * LUtils
- * Copyright (C) 2025 Luis Staudt
+ * Copyright (C) 2026 Luis Staudt
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -21,8 +21,8 @@ package net.luis.utils.io.codec.types.primitiv;
 import net.luis.utils.io.codec.AbstractCodec;
 import net.luis.utils.io.codec.provider.TypeProvider;
 import net.luis.utils.util.result.Result;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 import java.util.Objects;
 
@@ -39,7 +39,7 @@ public class CharacterCodec extends AbstractCodec<Character, Object> {
 	public CharacterCodec() {}
 	
 	@Override
-	public <R> @NotNull Result<R> encodeStart(@NotNull TypeProvider<R> provider, @NotNull R current, @Nullable Character value) {
+	public <R> @NonNull Result<R> encodeStart(@NonNull TypeProvider<R> provider, @NonNull R current, @Nullable Character value) {
 		Objects.requireNonNull(provider, "Type provider must not be null");
 		if (value == null) {
 			return Result.error("Unable to encode null as character using '" + this + "'");
@@ -49,13 +49,13 @@ public class CharacterCodec extends AbstractCodec<Character, Object> {
 	}
 	
 	@Override
-	public @NotNull Result<String> encodeKey(@NotNull Character key) {
+	public @NonNull Result<String> encodeKey(@NonNull Character key) {
 		Objects.requireNonNull(key, "Key must not be null");
 		return Result.success(String.valueOf(key));
 	}
 	
 	@Override
-	public <R> @NotNull Result<Character> decodeStart(@NotNull TypeProvider<R> provider, @NotNull R current, @Nullable R value) {
+	public <R> @NonNull Result<Character> decodeStart(@NonNull TypeProvider<R> provider, @NonNull R current, @Nullable R value) {
 		Objects.requireNonNull(provider, "Type provider must not be null");
 		Objects.requireNonNull(current, "Current value must not be null");
 		if (value == null) {
@@ -75,7 +75,7 @@ public class CharacterCodec extends AbstractCodec<Character, Object> {
 	}
 	
 	@Override
-	public @NotNull Result<Character> decodeKey(@NotNull String key) {
+	public @NonNull Result<Character> decodeKey(@NonNull String key) {
 		Objects.requireNonNull(key, "Key must not be null");
 		
 		if (key.length() != 1) {

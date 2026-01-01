@@ -1,6 +1,6 @@
 /*
  * LUtils
- * Copyright (C) 2025 Luis Staudt
+ * Copyright (C) 2026 Luis Staudt
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,8 +19,8 @@
 package net.luis.utils.io.data.json;
 
 import net.luis.utils.annotation.type.Singleton;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 /**
  * Represents a json null value.<br>
@@ -51,7 +51,7 @@ public final class JsonNull implements JsonElement {
 	}
 	
 	@Override
-	public @NotNull String toString(@Nullable JsonConfig config) {
+	public @NonNull String toString(@Nullable JsonConfig config) {
 		return "null";
 	}
 	//endregion

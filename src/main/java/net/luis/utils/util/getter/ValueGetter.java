@@ -1,6 +1,6 @@
 /*
  * LUtils
- * Copyright (C) 2025 Luis Staudt
+ * Copyright (C) 2026 Luis Staudt
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -22,7 +22,7 @@ import net.luis.utils.exception.InvalidStringException;
 import net.luis.utils.function.throwable.ThrowableFunction;
 import net.luis.utils.io.reader.StringReader;
 import org.apache.commons.lang3.Strings;
-import org.jetbrains.annotations.NotNull;
+import org.jspecify.annotations.NonNull;
 
 import java.util.Objects;
 
@@ -56,7 +56,7 @@ public interface ValueGetter {
 	 * Returns the value which is hold by this object as a string.<br>
 	 * @return The value as a string
 	 */
-	@NotNull String getAsString();
+	@NonNull String getAsString();
 	
 	/**
 	 * Returns the value which is hold by this object as a boolean.<br>
@@ -78,7 +78,7 @@ public interface ValueGetter {
 	 * @return The value as a number
 	 * @throws IllegalArgumentException If the value is not a number
 	 */
-	default @NotNull Number getAsNumber() {
+	default @NonNull Number getAsNumber() {
 		String value = this.getAsString();
 		try {
 			return new StringReader(value).readNumber();
@@ -188,7 +188,7 @@ public interface ValueGetter {
 	 * @throws NullPointerException If the parser is null
 	 * @throws IllegalArgumentException If the value could not be parsed
 	 */
-	default <T> @NotNull T getAs(@NotNull ThrowableFunction<String, T, ? extends Exception> parser) {
+	default <T> @NonNull T getAs(@NonNull ThrowableFunction<String, T, ? extends Exception> parser) {
 		Objects.requireNonNull(parser, "Parser must not be null");
 		String value = this.getAsString();
 		try {

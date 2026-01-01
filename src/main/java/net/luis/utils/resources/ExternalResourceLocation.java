@@ -1,6 +1,6 @@
 /*
  * LUtils
- * Copyright (C) 2025 Luis Staudt
+ * Copyright (C) 2026 Luis Staudt
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,8 +20,8 @@ package net.luis.utils.resources;
 
 import net.luis.utils.util.Pair;
 import org.apache.commons.lang3.StringUtils;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 import java.io.*;
 import java.nio.file.*;
@@ -51,7 +51,7 @@ final class ExternalResourceLocation extends ResourceLocation {
 	 * @param pair The pair
 	 * @throws NullPointerException If the pair is null
 	 */
-	ExternalResourceLocation(@NotNull Pair<String, String> pair) {
+	ExternalResourceLocation(@NonNull Pair<String, String> pair) {
 		this(pair.getFirst(), pair.getSecond());
 	}
 	
@@ -62,7 +62,7 @@ final class ExternalResourceLocation extends ResourceLocation {
 	 * @param name The name of the resource
 	 * @throws NullPointerException If the name is null
 	 */
-	ExternalResourceLocation(@Nullable String path, @NotNull String name) {
+	ExternalResourceLocation(@Nullable String path, @NonNull String name) {
 		super(path, name);
 		this.file = new File(this.getPath() + this.getFile());
 		this.path = Paths.get(this.getPath() + this.getFile());
@@ -70,7 +70,7 @@ final class ExternalResourceLocation extends ResourceLocation {
 	
 	//region Constructor modifications
 	@Override
-	protected @NotNull String modifyPath(@Nullable String path) {
+	protected @NonNull String modifyPath(@Nullable String path) {
 		String strPath = StringUtils.stripToEmpty(path);
 		if (strPath.isEmpty()) {
 			return "./";
@@ -87,17 +87,17 @@ final class ExternalResourceLocation extends ResourceLocation {
 	//endregion
 	
 	@Override
-	public @NotNull Type getType() {
+	public @NonNull Type getType() {
 		return Type.EXTERNAL;
 	}
 	
 	@Override
-	public @NotNull File asFile() {
+	public @NonNull File asFile() {
 		return this.file;
 	}
 	
 	@Override
-	public @NotNull Path asPath() {
+	public @NonNull Path asPath() {
 		return this.path;
 	}
 	
@@ -107,34 +107,34 @@ final class ExternalResourceLocation extends ResourceLocation {
 	}
 	
 	@Override
-	public @NotNull InputStream getStream() throws IOException {
+	public @NonNull InputStream getStream() throws IOException {
 		return Files.newInputStream(this.path);
 	}
 	
 	@Override
-	public byte @NotNull [] getBytes() throws IOException {
+	public byte @NonNull [] getBytes() throws IOException {
 		return Files.readAllBytes(this.path);
 	}
 	
 	@Override
-	public @NotNull String getString() throws IOException {
+	public @NonNull String getString() throws IOException {
 		return Files.readString(this.path);
 	}
 	
 	@Override
-	public @NotNull Stream<String> getLines() throws IOException {
+	public @NonNull Stream<String> getLines() throws IOException {
 		return Files.readAllLines(this.path).stream();
 	}
 	
 	@Override
-	public @NotNull Path copy() throws IOException {
+	public @NonNull Path copy() throws IOException {
 		String path = this.getPath();
 		Path target = TEMP.get().resolve(path.startsWith("./") ? path.substring(2) : path).resolve(this.getFile());
 		return Files.copy(this.path, target, StandardCopyOption.REPLACE_EXISTING);
 	}
 	
 	@Override
-	public @NotNull Path copy(@NotNull Path target) throws IOException {
+	public @NonNull Path copy(@NonNull Path target) throws IOException {
 		return Files.copy(this.path, target, StandardCopyOption.REPLACE_EXISTING);
 	}
 }

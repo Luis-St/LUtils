@@ -1,6 +1,6 @@
 /*
  * LUtils
- * Copyright (C) 2025 Luis Staudt
+ * Copyright (C) 2026 Luis Staudt
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,7 +19,7 @@
 package net.luis.utils.function.throwable;
 
 import net.luis.utils.function.TriFunction;
-import org.jetbrains.annotations.NotNull;
+import org.jspecify.annotations.NonNull;
 
 import java.util.Objects;
 
@@ -50,7 +50,7 @@ public interface ThrowableTriFunction<T, U, V, R, X extends Throwable> {
 	 * @param <R> The return type
 	 * @throws NullPointerException If the throwable tri-function is null
 	 */
-	static <T, U, V, R> @NotNull TriFunction<T, U, V, R> caught(@NotNull ThrowableTriFunction<T, U, V, R, ? extends Throwable> function) {
+	static <T, U, V, R> @NonNull TriFunction<T, U, V, R> caught(@NonNull ThrowableTriFunction<T, U, V, R, ? extends Throwable> function) {
 		Objects.requireNonNull(function, "Throwable function must not be null");
 		return (t, u, v) -> {
 			try {
@@ -81,7 +81,7 @@ public interface ThrowableTriFunction<T, U, V, R, X extends Throwable> {
 	 * @param <S> The type of the output of the {@code after} function, and of the composed function
 	 * @throws NullPointerException If the after function is null
 	 */
-	default <S> @NotNull ThrowableTriFunction<T, U, V, S, X> andThen(@NotNull ThrowableFunction<? super R, ? extends S, X> after) {
+	default <S> @NonNull ThrowableTriFunction<T, U, V, S, X> andThen(@NonNull ThrowableFunction<? super R, ? extends S, X> after) {
 		Objects.requireNonNull(after, "After function must not be null");
 		return (t, u, v) -> after.apply(this.apply(t, u, v));
 	}

@@ -1,6 +1,6 @@
 /*
  * LUtils
- * Copyright (C) 2025 Luis Staudt
+ * Copyright (C) 2026 Luis Staudt
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -22,8 +22,8 @@ import net.luis.utils.io.codec.function.CodecBuilderFunction;
 import net.luis.utils.io.codec.provider.JsonTypeProvider;
 import net.luis.utils.io.data.json.*;
 import net.luis.utils.util.result.Result;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
@@ -288,50 +288,50 @@ class CodecCreatorTest {
 		assertEquals("5", obj.e);
 	}
 	
-	private record TestObject(@NotNull String name, int value) {}
+	private record TestObject(@NonNull String name, int value) {}
 	
-	private record TestObject2(@NotNull String text, double number, boolean flag) {}
+	private record TestObject2(@NonNull String text, double number, boolean flag) {}
 	
-	private record TestObject3(@NotNull String a, @NotNull String b, @NotNull String c, @NotNull String d, @NotNull String e) {}
+	private record TestObject3(@NonNull String a, @NonNull String b, @NonNull String c, @NonNull String d, @NonNull String e) {}
 	
 	private static class TestFunction implements CodecBuilderFunction {
 		
-		public @NotNull TestObject create(@NotNull Object name, @NotNull Object value) {
+		public @NonNull TestObject create(@NonNull Object name, @NonNull Object value) {
 			return new TestObject((String) name, (Integer) value);
 		}
 	}
 	
 	private static class TestFunction2 implements CodecBuilderFunction {
 		
-		public @NotNull TestObject2 create(@NotNull Object text, @NotNull Object number, @NotNull Object flag) {
+		public @NonNull TestObject2 create(@NonNull Object text, @NonNull Object number, @NonNull Object flag) {
 			return new TestObject2((String) text, (Double) number, (Boolean) flag);
 		}
 	}
 	
 	private static class FailingTestFunction implements CodecBuilderFunction {
 		
-		public @Nullable TestObject create(@NotNull Object name, @NotNull Object value) {
+		public @Nullable TestObject create(@NonNull Object name, @NonNull Object value) {
 			return null;
 		}
 	}
 	
 	private static class NullReturningTestFunction implements CodecBuilderFunction {
 		
-		public @Nullable TestObject create(@NotNull Object name, @NotNull Object value) {
+		public @Nullable TestObject create(@NonNull Object name, @NonNull Object value) {
 			return null;
 		}
 	}
 	
 	private static class SingleParamFunction implements CodecBuilderFunction {
 		
-		public @NotNull String create(@NotNull Object value) {
+		public @NonNull String create(@NonNull Object value) {
 			return ((String) value).toUpperCase();
 		}
 	}
 	
 	private static class ManyParamFunction implements CodecBuilderFunction {
 		
-		public @NotNull TestObject3 create(@NotNull Object a, @NotNull Object b, @NotNull Object c, @NotNull Object d, @NotNull Object e) {
+		public @NonNull TestObject3 create(@NonNull Object a, @NonNull Object b, @NonNull Object c, @NonNull Object d, @NonNull Object e) {
 			return new TestObject3((String) a, (String) b, (String) c, (String) d, (String) e);
 		}
 	}

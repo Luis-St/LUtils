@@ -1,6 +1,6 @@
 /*
  * LUtils
- * Copyright (C) 2025 Luis Staudt
+ * Copyright (C) 2026 Luis Staudt
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -22,8 +22,8 @@ import net.luis.utils.io.codec.AbstractCodec;
 import net.luis.utils.io.codec.Codec;
 import net.luis.utils.io.codec.provider.TypeProvider;
 import net.luis.utils.util.result.Result;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 import java.util.*;
 
@@ -67,7 +67,7 @@ public class UnionCodec<C> extends AbstractCodec<C, Object> {
 	 * @throws NullPointerException if codec or validValues is null
 	 * @throws IllegalArgumentException if validValues is empty
 	 */
-	public UnionCodec(@NotNull Codec<C> codec, @NotNull Collection<C> validValues) {
+	public UnionCodec(@NonNull Codec<C> codec, @NonNull Collection<C> validValues) {
 		this.codec = Objects.requireNonNull(codec, "Codec must not be null");
 		Objects.requireNonNull(validValues, "Valid values must not be null");
 		
@@ -78,12 +78,12 @@ public class UnionCodec<C> extends AbstractCodec<C, Object> {
 	}
 	
 	@Override
-	public @NotNull Class<C> getType() {
+	public @NonNull Class<C> getType() {
 		return this.codec.getType();
 	}
 	
 	@Override
-	public <R> @NotNull Result<R> encodeStart(@NotNull TypeProvider<R> provider, @NotNull R current, @Nullable C value) {
+	public <R> @NonNull Result<R> encodeStart(@NonNull TypeProvider<R> provider, @NonNull R current, @Nullable C value) {
 		Objects.requireNonNull(provider, "Type provider must not be null");
 		Objects.requireNonNull(current, "Current value must not be null");
 		
@@ -98,7 +98,7 @@ public class UnionCodec<C> extends AbstractCodec<C, Object> {
 	}
 	
 	@Override
-	public <R> @NotNull Result<C> decodeStart(@NotNull TypeProvider<R> provider, @NotNull R current, @Nullable R value) {
+	public <R> @NonNull Result<C> decodeStart(@NonNull TypeProvider<R> provider, @NonNull R current, @Nullable R value) {
 		Objects.requireNonNull(provider, "Type provider must not be null");
 		Objects.requireNonNull(current, "Current value must not be null");
 		

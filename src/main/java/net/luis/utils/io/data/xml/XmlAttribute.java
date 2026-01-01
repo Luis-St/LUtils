@@ -1,6 +1,6 @@
 /*
  * LUtils
- * Copyright (C) 2025 Luis Staudt
+ * Copyright (C) 2026 Luis Staudt
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,8 +19,8 @@
 package net.luis.utils.io.data.xml;
 
 import net.luis.utils.util.getter.DefaultValueGetter;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 import java.util.Objects;
 
@@ -51,7 +51,7 @@ public class XmlAttribute implements DefaultValueGetter {
 	 * @param value The boolean value of the attribute
 	 * @throws IllegalArgumentException If the name is invalid (e.g. empty, blank, or does not match the pattern {@link XmlHelper#XML_ATTRIBUTE_NAME_PATTERN})
 	 */
-	public XmlAttribute(@NotNull String name, boolean value) {
+	public XmlAttribute(@NonNull String name, boolean value) {
 		this(name, String.valueOf(value));
 	}
 	
@@ -62,7 +62,7 @@ public class XmlAttribute implements DefaultValueGetter {
 	 * @param value The number value of the attribute
 	 * @throws IllegalArgumentException If the name is invalid (e.g. empty, blank, or does not match the pattern {@link XmlHelper#XML_ATTRIBUTE_NAME_PATTERN})
 	 */
-	public XmlAttribute(@NotNull String name, @Nullable Number value) {
+	public XmlAttribute(@NonNull String name, @Nullable Number value) {
 		this(name, String.valueOf(value));
 	}
 	
@@ -74,7 +74,7 @@ public class XmlAttribute implements DefaultValueGetter {
 	 * @param value The string value of the attribute
 	 * @throws IllegalArgumentException If the name is invalid (e.g. empty, blank, or does not match the pattern {@link XmlHelper#XML_ATTRIBUTE_NAME_PATTERN})
 	 */
-	public XmlAttribute(@NotNull String name, @Nullable String value) {
+	public XmlAttribute(@NonNull String name, @Nullable String value) {
 		this.name = validateAttributeKey(name);
 		this.value = escapeXml(String.valueOf(value));
 	}
@@ -83,7 +83,7 @@ public class XmlAttribute implements DefaultValueGetter {
 	 * Returns the name of the attribute.<br>
 	 * @return The name
 	 */
-	public @NotNull String getName() {
+	public @NonNull String getName() {
 		return this.name;
 	}
 	
@@ -91,7 +91,7 @@ public class XmlAttribute implements DefaultValueGetter {
 	 * Returns the raw unescaped value of the attribute.<br>
 	 * @return The raw value
 	 */
-	public @NotNull String getRawValue() {
+	public @NonNull String getRawValue() {
 		return this.value;
 	}
 	
@@ -99,7 +99,7 @@ public class XmlAttribute implements DefaultValueGetter {
 	 * Returns the unescaped value of the attribute.<br>
 	 * @return The unescaped value
 	 */
-	public @NotNull String getUnescapedValue() {
+	public @NonNull String getUnescapedValue() {
 		return unescapeXml(this.value);
 	}
 	
@@ -109,7 +109,7 @@ public class XmlAttribute implements DefaultValueGetter {
 	 * @return The value as a string
 	 */
 	@Override
-	public @NotNull String getAsString() {
+	public @NonNull String getAsString() {
 		return this.getUnescapedValue();
 	}
 	
@@ -139,7 +139,7 @@ public class XmlAttribute implements DefaultValueGetter {
 	 * @param config The xml config to use for the string representation (unused)
 	 * @return The string representation
 	 */
-	public @NotNull String toString(@Nullable XmlConfig config) {
+	public @NonNull String toString(@Nullable XmlConfig config) {
 		return this.name + "=\"" + this.value + "\"";
 	}
 	//endregion

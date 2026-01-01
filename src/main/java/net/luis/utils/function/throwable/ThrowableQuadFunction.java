@@ -1,6 +1,6 @@
 /*
  * LUtils
- * Copyright (C) 2025 Luis Staudt
+ * Copyright (C) 2026 Luis Staudt
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,7 +19,7 @@
 package net.luis.utils.function.throwable;
 
 import net.luis.utils.function.QuadFunction;
-import org.jetbrains.annotations.NotNull;
+import org.jspecify.annotations.NonNull;
 
 import java.util.Objects;
 
@@ -52,7 +52,7 @@ public interface ThrowableQuadFunction<T, U, V, W, R, X extends Throwable> {
 	 * @param <R> The return type
 	 * @throws NullPointerException If the throwable quad-function is null
 	 */
-	static <T, U, V, W, R> @NotNull QuadFunction<T, U, V, W, R> caught(@NotNull ThrowableQuadFunction<T, U, V, W, R, ? extends Throwable> function) {
+	static <T, U, V, W, R> @NonNull QuadFunction<T, U, V, W, R> caught(@NonNull ThrowableQuadFunction<T, U, V, W, R, ? extends Throwable> function) {
 		Objects.requireNonNull(function, "Throwable function must not be null");
 		return (t, u, v, w) -> {
 			try {
@@ -84,7 +84,7 @@ public interface ThrowableQuadFunction<T, U, V, W, R, X extends Throwable> {
 	 * @param <S> The type of the output of the {@code after} function, and of the composed function
 	 * @throws NullPointerException If the after function is null
 	 */
-	default <S> @NotNull ThrowableQuadFunction<T, U, V, W, S, X> andThen(@NotNull ThrowableFunction<? super R, ? extends S, X> after) {
+	default <S> @NonNull ThrowableQuadFunction<T, U, V, W, S, X> andThen(@NonNull ThrowableFunction<? super R, ? extends S, X> after) {
 		Objects.requireNonNull(after, "After function must not be null");
 		return (t, u, v, w) -> after.apply(this.apply(t, u, v, w));
 	}

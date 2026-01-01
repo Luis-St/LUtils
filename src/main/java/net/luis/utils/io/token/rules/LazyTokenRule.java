@@ -1,6 +1,6 @@
 /*
  * LUtils
- * Copyright (C) 2025 Luis Staudt
+ * Copyright (C) 2026 Luis Staudt
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -23,8 +23,8 @@ import net.luis.utils.function.FunctionUtils;
 import net.luis.utils.io.token.TokenRuleMatch;
 import net.luis.utils.io.token.context.TokenRuleContext;
 import net.luis.utils.io.token.stream.TokenStream;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 import java.util.Objects;
 import java.util.function.Supplier;
@@ -78,7 +78,7 @@ public class LazyTokenRule implements TokenRule, Supplier<TokenRule> {
 	 * @param lazyTokenRule The supplier for the token rule
 	 * @throws NullPointerException If the supplier is null
 	 */
-	private LazyTokenRule(@NotNull Supplier<TokenRule> lazyTokenRule) {
+	private LazyTokenRule(@NonNull Supplier<TokenRule> lazyTokenRule) {
 		Objects.requireNonNull(lazyTokenRule, "The lazy token rule supplier must not be null");
 		this.lazyTokenRule = FunctionUtils.memorize(lazyTokenRule);
 	}
@@ -103,7 +103,7 @@ public class LazyTokenRule implements TokenRule, Supplier<TokenRule> {
 	 * @param tokenRule The token rule to set
 	 * @throws NullPointerException If the token rule is null
 	 */
-	public void set(@NotNull TokenRule tokenRule) {
+	public void set(@NonNull TokenRule tokenRule) {
 		Objects.requireNonNull(tokenRule, "The token rule must not be null");
 		this.lazyTokenRule = FunctionUtils.memorize(() -> tokenRule);
 	}
@@ -114,12 +114,12 @@ public class LazyTokenRule implements TokenRule, Supplier<TokenRule> {
 	 *
 	 * @return The supplier for the lazily-initialized token rule
 	 */
-	public @NotNull Supplier<TokenRule> lazyTokenRule() {
+	public @NonNull Supplier<TokenRule> lazyTokenRule() {
 		return this.lazyTokenRule;
 	}
 	
 	@Override
-	public @Nullable TokenRuleMatch match(@NotNull TokenStream stream, @NotNull TokenRuleContext ctx) {
+	public @Nullable TokenRuleMatch match(@NonNull TokenStream stream, @NonNull TokenRuleContext ctx) {
 		Objects.requireNonNull(stream, "Token stream must not be null");
 		Objects.requireNonNull(ctx, "Token rule context must not be null");
 		
@@ -135,11 +135,11 @@ public class LazyTokenRule implements TokenRule, Supplier<TokenRule> {
 	}
 	
 	@Override
-	public @NotNull TokenRule not() {
+	public @NonNull TokenRule not() {
 		return new LazyTokenRule(() -> this.lazyTokenRule.get().not()) {
 			
 			@Override
-			public @NotNull TokenRule not() {
+			public @NonNull TokenRule not() {
 				return LazyTokenRule.this; // Negating the not() method returns the original rule, preventing double negation and nesting of classes
 			}
 		};

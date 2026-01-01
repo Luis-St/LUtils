@@ -1,6 +1,6 @@
 /*
  * LUtils
- * Copyright (C) 2025 Luis Staudt
+ * Copyright (C) 2026 Luis Staudt
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -22,7 +22,7 @@ import net.luis.utils.exception.InvalidStringException;
 import net.luis.utils.function.throwable.ThrowableFunction;
 import net.luis.utils.io.reader.StringReader;
 import org.apache.commons.lang3.Strings;
-import org.jetbrains.annotations.NotNull;
+import org.jspecify.annotations.NonNull;
 
 import java.util.Objects;
 
@@ -59,7 +59,7 @@ public interface IndexedValueGetter {
 	 * @return The value as a string
 	 * @throws IndexOutOfBoundsException If the index is out of bounds
 	 */
-	@NotNull String getAsString(int index);
+	@NonNull String getAsString(int index);
 	
 	/**
 	 * Returns the value which is hold by this object as a boolean at the given index.<br>
@@ -85,7 +85,7 @@ public interface IndexedValueGetter {
 	 * @throws IndexOutOfBoundsException If the index is out of bounds
 	 * @throws IllegalArgumentException If the value is not a number
 	 */
-	default @NotNull Number getAsNumber(int index) {
+	default @NonNull Number getAsNumber(int index) {
 		String value = this.getAsString(index);
 		try {
 			return new StringReader(value).readNumber();
@@ -210,7 +210,7 @@ public interface IndexedValueGetter {
 	 * @throws IndexOutOfBoundsException If the index is out of bounds
 	 * @throws IllegalArgumentException If the value could not be parsed
 	 */
-	default <T> @NotNull T getAs(int index, @NotNull ThrowableFunction<String, T, ? extends Exception> parser) {
+	default <T> @NonNull T getAs(int index, @NonNull ThrowableFunction<String, T, ? extends Exception> parser) {
 		Objects.requireNonNull(parser, "Parser must not be null");
 		String value = this.getAsString(index);
 		try {

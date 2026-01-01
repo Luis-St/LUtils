@@ -1,6 +1,6 @@
 /*
  * LUtils
- * Copyright (C) 2025 Luis Staudt
+ * Copyright (C) 2026 Luis Staudt
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -21,8 +21,8 @@ package net.luis.utils.io.codec.types.struct;
 import net.luis.utils.io.codec.AbstractCodec;
 import net.luis.utils.io.codec.provider.TypeProvider;
 import net.luis.utils.util.result.Result;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 import java.util.Objects;
 import java.util.function.Supplier;
@@ -57,18 +57,18 @@ public class UnitCodec<C> extends AbstractCodec<C, Object> {
 	 * @param supplier The supplier used to create the unit value
 	 * @throws NullPointerException If the supplier is null
 	 */
-	public UnitCodec(@NotNull Supplier<C> supplier) {
+	public UnitCodec(@NonNull Supplier<C> supplier) {
 		this.supplier = Objects.requireNonNull(supplier, "Unit supplier must not be null");
 	}
 	
 	@Override
-	public <R> @NotNull Result<R> encodeStart(@Nullable TypeProvider<R> provider, @NotNull R current, @Nullable C value) {
+	public <R> @NonNull Result<R> encodeStart(@Nullable TypeProvider<R> provider, @NonNull R current, @Nullable C value) {
 		Objects.requireNonNull(current, "Current value must not be null");
 		return Result.success(current);
 	}
 	
 	@Override
-	public <R> @NotNull Result<C> decodeStart(@Nullable TypeProvider<R> provider, @Nullable R current, @Nullable R value) {
+	public <R> @NonNull Result<C> decodeStart(@Nullable TypeProvider<R> provider, @Nullable R current, @Nullable R value) {
 		return Result.success(this.supplier.get());
 	}
 	

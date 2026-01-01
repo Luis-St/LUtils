@@ -1,6 +1,6 @@
 /*
  * LUtils
- * Copyright (C) 2025 Luis Staudt
+ * Copyright (C) 2026 Luis Staudt
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,7 +18,7 @@
 
 package net.luis.utils.io.data;
 
-import org.jetbrains.annotations.NotNull;
+import org.jspecify.annotations.NonNull;
 
 import java.io.*;
 import java.nio.file.Path;
@@ -49,7 +49,7 @@ public class OutputProvider implements AutoCloseable {
 	 * @throws NullPointerException If the file is null
 	 * @throws UncheckedIOException If the file is not found
 	 */
-	public OutputProvider(@NotNull String file) {
+	public OutputProvider(@NonNull String file) {
 		this(new File(Objects.requireNonNull(file, "File must not be null")));
 	}
 	
@@ -62,7 +62,7 @@ public class OutputProvider implements AutoCloseable {
 	 * @throws NullPointerException If the path or file name is null
 	 * @throws UncheckedIOException If the file is not found
 	 */
-	public OutputProvider(@NotNull String path, @NotNull String fileName) {
+	public OutputProvider(@NonNull String path, @NonNull String fileName) {
 		this(new File(Objects.requireNonNull(path, "Path must not be null"), Objects.requireNonNull(fileName, "File name must not be null")));
 	}
 	
@@ -73,7 +73,7 @@ public class OutputProvider implements AutoCloseable {
 	 * @throws NullPointerException If the path is null
 	 * @throws UncheckedIOException If the file is not found
 	 */
-	public OutputProvider(@NotNull Path path) {
+	public OutputProvider(@NonNull Path path) {
 		this(Objects.requireNonNull(path, "Path must not be null").toFile());
 	}
 	
@@ -84,7 +84,7 @@ public class OutputProvider implements AutoCloseable {
 	 * @throws NullPointerException If the file is null
 	 * @throws UncheckedIOException If the file is not found
 	 */
-	public OutputProvider(@NotNull File file) {
+	public OutputProvider(@NonNull File file) {
 		Objects.requireNonNull(file, "File must not be null");
 		try {
 			this.stream = new FileOutputStream(file);
@@ -99,7 +99,7 @@ public class OutputProvider implements AutoCloseable {
 	 * @param stream The output stream to write data to
 	 * @throws NullPointerException If the stream is null
 	 */
-	public OutputProvider(@NotNull OutputStream stream) {
+	public OutputProvider(@NonNull OutputStream stream) {
 		Objects.requireNonNull(stream, "Output stream must not be null");
 		this.stream = stream;
 	}
@@ -110,7 +110,7 @@ public class OutputProvider implements AutoCloseable {
 	 *
 	 * @return The output stream
 	 */
-	public @NotNull OutputStream getStream() {
+	public @NonNull OutputStream getStream() {
 		return this.stream;
 	}
 	

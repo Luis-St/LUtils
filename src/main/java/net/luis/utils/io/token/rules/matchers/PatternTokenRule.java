@@ -1,6 +1,6 @@
 /*
  * LUtils
- * Copyright (C) 2025 Luis Staudt
+ * Copyright (C) 2026 Luis Staudt
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -21,7 +21,7 @@ package net.luis.utils.io.token.rules.matchers;
 import net.luis.utils.io.token.rules.NegatableTokenRule;
 import net.luis.utils.io.token.tokens.Token;
 import org.intellij.lang.annotations.Language;
-import org.jetbrains.annotations.NotNull;
+import org.jspecify.annotations.NonNull;
 
 import java.util.Objects;
 import java.util.regex.Pattern;
@@ -37,7 +37,7 @@ import java.util.regex.Pattern;
  * @param pattern The pattern to match against
  */
 public record PatternTokenRule(
-	@NotNull Pattern pattern
+	@NonNull Pattern pattern
 ) implements NegatableTokenRule {
 	
 	/**
@@ -46,7 +46,7 @@ public record PatternTokenRule(
 	 * @param regex The regex pattern to match against
 	 * @throws NullPointerException If the regex pattern is null
 	 */
-	public PatternTokenRule(@Language("RegExp") @NotNull String regex) {
+	public PatternTokenRule(@Language("RegExp") @NonNull String regex) {
 		this(Pattern.compile(Objects.requireNonNull(regex, "Regex must not be null")));
 	}
 	
@@ -61,7 +61,7 @@ public record PatternTokenRule(
 	}
 	
 	@Override
-	public boolean match(@NotNull Token token) {
+	public boolean match(@NonNull Token token) {
 		Objects.requireNonNull(token, "Token must not be null");
 		return this.pattern.matcher(token.value()).matches();
 	}

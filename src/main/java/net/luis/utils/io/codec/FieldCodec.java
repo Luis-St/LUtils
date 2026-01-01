@@ -1,6 +1,6 @@
 /*
  * LUtils
- * Copyright (C) 2025 Luis Staudt
+ * Copyright (C) 2026 Luis Staudt
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,8 +20,8 @@ package net.luis.utils.io.codec;
 
 import net.luis.utils.io.codec.provider.TypeProvider;
 import net.luis.utils.util.result.Result;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 import java.util.Objects;
 import java.util.Set;
@@ -77,7 +77,7 @@ public class FieldCodec<C, O> {
 	 * @param getter The getter for the component
 	 * @throws NullPointerException If the codec, name, aliases or getter is null
 	 */
-	FieldCodec(@NotNull Codec<C> codec, @NotNull String name, Set<String> aliases, @NotNull Function<O, C> getter) {
+	FieldCodec(@NonNull Codec<C> codec, @NonNull String name, Set<String> aliases, @NonNull Function<O, C> getter) {
 		this.codec = Objects.requireNonNull(codec, "Codec must not be null");
 		this.name = Objects.requireNonNull(name, "Name must not be null");
 		this.aliases = Set.copyOf(Objects.requireNonNull(aliases, "Aliases must not be null"));
@@ -96,7 +96,7 @@ public class FieldCodec<C, O> {
 	 * @throws NullPointerException If the type provider or current value is null
 	 * @see #encodeInternal(TypeProvider, Object, Object)
 	 */
-	public <R> @NotNull Result<R> encodeStart(@NotNull TypeProvider<R> provider, @NotNull R current, @Nullable O object) {
+	public <R> @NonNull Result<R> encodeStart(@NonNull TypeProvider<R> provider, @NonNull R current, @Nullable O object) {
 		Objects.requireNonNull(provider, "Type provider must not be null");
 		Objects.requireNonNull(current, "Current value must not be null");
 		
@@ -117,7 +117,7 @@ public class FieldCodec<C, O> {
 	 * @return The result
 	 * @throws NullPointerException If the provider or map is null
 	 */
-	private <R> @NotNull Result<R> encodeInternal(@NotNull TypeProvider<R> provider, @NotNull R map, @Nullable C value) {
+	private <R> @NonNull Result<R> encodeInternal(@NonNull TypeProvider<R> provider, @NonNull R map, @Nullable C value) {
 		Objects.requireNonNull(provider, "Type provider must not be null");
 		Objects.requireNonNull(map, "Current value must not be null");
 		
@@ -148,7 +148,7 @@ public class FieldCodec<C, O> {
 	 * @return The result
 	 * @throws NullPointerException If the provider is null
 	 */
-	public <R> @NotNull Result<C> decodeStart(@NotNull TypeProvider<R> provider, @NotNull R current, @Nullable R map) {
+	public <R> @NonNull Result<C> decodeStart(@NonNull TypeProvider<R> provider, @NonNull R current, @Nullable R map) {
 		Objects.requireNonNull(provider, "Type provider must not be null");
 		Objects.requireNonNull(current, "Current value must not be null");
 		if (map == null) {
@@ -180,7 +180,7 @@ public class FieldCodec<C, O> {
 	 * @param <R> The type to decode from
 	 * @throws NullPointerException If the provider, map or error is null
 	 */
-	private <R> @NotNull Result<C> decodeStartWithAlias(@NotNull TypeProvider<R> provider, @NotNull R map, @NotNull String error) {
+	private <R> @NonNull Result<C> decodeStartWithAlias(@NonNull TypeProvider<R> provider, @NonNull R map, @NonNull String error) {
 		Objects.requireNonNull(provider, "Type provider must not be null");
 		Objects.requireNonNull(map, "Map must not be null");
 		Objects.requireNonNull(error, "Error message must not be null");
@@ -207,7 +207,7 @@ public class FieldCodec<C, O> {
 	 * @param <R> The type to decode from
 	 * @throws NullPointerException If the provider or map is null
 	 */
-	private <R> @NotNull Result<String> getDecodeName(@NotNull TypeProvider<R> provider, @NotNull R map) {
+	private <R> @NonNull Result<String> getDecodeName(@NonNull TypeProvider<R> provider, @NonNull R map) {
 		Objects.requireNonNull(provider, "Type provider must not be null");
 		Objects.requireNonNull(map, "Map must not be null");
 		if (this.aliases.isEmpty()) {

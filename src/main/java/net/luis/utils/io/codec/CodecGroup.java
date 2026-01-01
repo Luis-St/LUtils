@@ -1,6 +1,6 @@
 /*
  * LUtils
- * Copyright (C) 2025 Luis Staudt
+ * Copyright (C) 2026 Luis Staudt
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -21,8 +21,8 @@ package net.luis.utils.io.codec;
 import net.luis.utils.io.codec.provider.TypeProvider;
 import net.luis.utils.util.result.Result;
 import net.luis.utils.util.result.ResultingFunction;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -60,13 +60,13 @@ public final class CodecGroup<O> implements Codec<O> {
 	 * @param factory The factory function to create the final object from the encoded components
 	 * @throws NullPointerException If the codecs list or factory function is null
 	 */
-	public CodecGroup(@NotNull List<FieldCodec<?, O>> codecs, @NotNull ResultingFunction<List<Object>, O> factory) {
+	public CodecGroup(@NonNull List<FieldCodec<?, O>> codecs, @NonNull ResultingFunction<List<Object>, O> factory) {
 		this.codecs = Objects.requireNonNull(codecs, "Codecs list must not be null");
 		this.factory = Objects.requireNonNull(factory, "Factory function must not be null");
 	}
 	
 	@Override
-	public <R> @NotNull Result<R> encodeStart(@NotNull TypeProvider<R> provider, @NotNull R current, @Nullable O value) {
+	public <R> @NonNull Result<R> encodeStart(@NonNull TypeProvider<R> provider, @NonNull R current, @Nullable O value) {
 		Objects.requireNonNull(provider, "Type provider must not be null");
 		Objects.requireNonNull(current, "Current value must not be null");
 		if (value == null) {
@@ -93,7 +93,7 @@ public final class CodecGroup<O> implements Codec<O> {
 	}
 	
 	@Override
-	public <R> @NotNull Result<O> decodeStart(@NotNull TypeProvider<R> provider, @NotNull R current, @Nullable R value) {
+	public <R> @NonNull Result<O> decodeStart(@NonNull TypeProvider<R> provider, @NonNull R current, @Nullable R value) {
 		Objects.requireNonNull(provider, "Type provider must not be null");
 		Objects.requireNonNull(current, "Current value must not be null");
 		if (value == null) {

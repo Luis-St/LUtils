@@ -1,6 +1,6 @@
 /*
  * LUtils
- * Copyright (C) 2025 Luis Staudt
+ * Copyright (C) 2026 Luis Staudt
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -33,8 +33,8 @@ import net.luis.utils.io.codec.types.time.*;
 import net.luis.utils.util.Either;
 import net.luis.utils.util.result.Result;
 import net.luis.utils.util.result.ResultingFunction;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
@@ -266,7 +266,12 @@ public final class Codecs {
 	 * The underlying currency is converted to and from a string.<br>
 	 */
 	public static final CurrencyCodec CURRENCY = new CurrencyCodec();
-	
+	/**
+	 * A codec that encodes and decodes byte arrays using Base64 encoding.<br>
+	 * The underlying byte array is converted to and from a Base64-encoded string.<br>
+	 */
+	public static final Base64Codec BASE64 = new Base64Codec();
+
 	/**
 	 * Private constructor to prevent instantiation.<br>
 	 * This is a static helper class.<br>
@@ -282,7 +287,7 @@ public final class Codecs {
 	 * @return A new keyable codec
 	 * @throws NullPointerException If the enum class is null
 	 */
-	public static <E extends Enum<E>> @NotNull Codec<E> enumOrdinal(@NotNull Class<E> clazz) {
+	public static <E extends Enum<E>> @NonNull Codec<E> enumOrdinal(@NonNull Class<E> clazz) {
 		Objects.requireNonNull(clazz, "Enum class must not be null");
 		Map<Integer, E> ordinalLookup = Arrays.stream(clazz.getEnumConstants()).collect(Collectors.toMap(Enum::ordinal, Function.identity()));
 		
@@ -304,7 +309,7 @@ public final class Codecs {
 	 * @return A new keyable codec
 	 * @throws NullPointerException If the enum class is null
 	 */
-	public static <E extends Enum<E>> @NotNull Codec<E> enumName(@NotNull Class<E> clazz) {
+	public static <E extends Enum<E>> @NonNull Codec<E> enumName(@NonNull Class<E> clazz) {
 		Objects.requireNonNull(clazz, "Enum class must not be null");
 		Map<String, E> lookup = Arrays.stream(clazz.getEnumConstants()).collect(Collectors.toMap(Enum::name, Function.identity()));
 		
@@ -327,7 +332,7 @@ public final class Codecs {
 	 * @return A new keyable codec
 	 * @throws NullPointerException If the friendly name encoder or decoder is null
 	 */
-	public static <E extends Enum<E>> @NotNull Codec<E> friendlyEnumName(@NotNull Function<E, String> friendlyEncoder, @NotNull Function<String, E> friendlyDecoder) {
+	public static <E extends Enum<E>> @NonNull Codec<E> friendlyEnumName(@NonNull Function<E, String> friendlyEncoder, @NonNull Function<String, E> friendlyDecoder) {
 		Objects.requireNonNull(friendlyEncoder, "Friendly name encoder must not be null");
 		Objects.requireNonNull(friendlyDecoder, "Friendly name decoder must not be null");
 		return STRING.xmap(friendlyEncoder, friendlyDecoder).keyable(ResultingFunction.direct(friendlyEncoder), ResultingFunction.direct(friendlyDecoder));
@@ -343,7 +348,7 @@ public final class Codecs {
 	 * @return A new keyable codec
 	 * @throws NullPointerException If the enum class is null
 	 */
-	public static <E extends Enum<E>> @NotNull Codec<E> dynamicEnum(@NotNull Class<E> clazz) {
+	public static <E extends Enum<E>> @NonNull Codec<E> dynamicEnum(@NonNull Class<E> clazz) {
 		Objects.requireNonNull(clazz, "Enum class must not be null");
 		
 		E[] constants = clazz.getEnumConstants();
@@ -386,7 +391,7 @@ public final class Codecs {
 	 * @throws IllegalArgumentException If codecs is empty or contains only one codec
 	 * @see AnyCodec
 	 */
-	public static <C> @NotNull AnyCodec<C> any(@NotNull List<Codec<? extends C>> codecs) {
+	public static <C> @NonNull AnyCodec<C> any(@NonNull List<Codec<? extends C>> codecs) {
 		return new AnyCodec<>(codecs);
 	}
 	
@@ -407,7 +412,7 @@ public final class Codecs {
 	 * @see AnyCodec
 	 */
 	@SafeVarargs
-	public static <C> @NotNull AnyCodec<C> any(Codec<? extends C> @NotNull ... codecs) {
+	public static <C> @NonNull AnyCodec<C> any(Codec<? extends C> @NonNull ... codecs) {
 		return new AnyCodec<>(codecs);
 	}
 	
@@ -421,7 +426,7 @@ public final class Codecs {
 	 * @throws NullPointerException If the value codec is null
 	 * @see MapCodec
 	 */
-	public static <C> @NotNull MapCodec<String, C> map(@NotNull Codec<C> valueCodec) {
+	public static <C> @NonNull MapCodec<String, C> map(@NonNull Codec<C> valueCodec) {
 		return map(STRING, valueCodec);
 	}
 	
@@ -437,7 +442,7 @@ public final class Codecs {
 	 * @throws NullPointerException If the key codec or value codec is null
 	 * @see MapCodec
 	 */
-	public static <K, V> @NotNull MapCodec<K, V> map(@NotNull Codec<K> keyCodec, @NotNull Codec<V> valueCodec) {
+	public static <K, V> @NonNull MapCodec<K, V> map(@NonNull Codec<K> keyCodec, @NonNull Codec<V> valueCodec) {
 		return new MapCodec<>(keyCodec, valueCodec);
 	}
 	
@@ -455,8 +460,41 @@ public final class Codecs {
 	 * @throws NullPointerException If the first codec or second codec is null
 	 * @see EitherCodec
 	 */
-	public static <F, S> @NotNull EitherCodec<F, S> either(@NotNull Codec<F> firstCodec, @NotNull Codec<S> secondCodec) {
+	public static <F, S> @NonNull EitherCodec<F, S> either(@NonNull Codec<F> firstCodec, @NonNull Codec<S> secondCodec) {
 		return new EitherCodec<>(firstCodec, secondCodec);
+	}
+	
+	/**
+	 * Creates a new discriminated codec that selects the appropriate codec based on a discriminator field.<br>
+	 * This codec reads a discriminator field from the parent object to determine which codec to use
+	 * for encoding or decoding the actual value.<br>
+	 * <p>
+	 *     This is particularly useful for polymorphic types where the specific subtype is determined
+	 *     by a discriminator field value, such as payment method types, message types, or entity types.
+	 * </p>
+	 * <p>
+	 *     The discriminator field is expected to be present in the same parent object as the field
+	 *     being encoded/decoded. During both encoding and decoding, the codec will:
+	 * </p>
+	 * <ol>
+	 *     <li>Read the discriminator field from the parent object</li>
+	 *     <li>Decode the discriminator value using the discriminator codec</li>
+	 *     <li>Query the provider to get the appropriate codec for that discriminator value</li>
+	 *     <li>Use that codec to encode or decode the actual value</li>
+	 * </ol>
+	 *
+	 * @param discriminatedField The name of the discriminator field in the parent object
+	 * @param discriminatedCodec The codec to use for encoding/decoding the discriminator value
+	 * @param provider The provider that maps discriminator values to their corresponding codecs
+	 * @param <C> The base type of values handled by this codec
+	 * @param <T> The type of the discriminator value
+	 * @return A new discriminated codec
+	 * @throws NullPointerException If discriminated field, discriminated codec, or provider is null
+	 * @see DiscriminatedCodec
+	 * @see DiscriminatedCodecProvider
+	 */
+	public static <C, T> @NonNull DiscriminatedCodec<C, T> discriminatedBy(@NonNull String discriminatedField, @NonNull Codec<T> discriminatedCodec, @NonNull DiscriminatedCodecProvider<C, T> provider) {
+		return new DiscriminatedCodec<>(discriminatedField, discriminatedCodec, provider);
 	}
 	
 	/**
@@ -467,7 +505,7 @@ public final class Codecs {
 	 * @return A new unit codec
 	 * @see UnitCodec
 	 */
-	public static <C> @NotNull UnitCodec<C> unit(@Nullable C value) {
+	public static <C> @NonNull UnitCodec<C> unit(@Nullable C value) {
 		return unit(() -> value);
 	}
 	
@@ -480,10 +518,42 @@ public final class Codecs {
 	 * @throws NullPointerException If the supplier is null
 	 * @see UnitCodec
 	 */
-	public static <C> @NotNull UnitCodec<C> unit(@NotNull Supplier<C> supplier) {
+	public static <C> @NonNull UnitCodec<C> unit(@NonNull Supplier<C> supplier) {
 		return new UnitCodec<>(supplier);
 	}
-	
+
+	/**
+	 * Creates a new recursive codec that supports encoding and decoding recursive data structures.<br>
+	 * <p>
+	 *     This method is used to create codecs for types that reference themselves, such as trees or linked lists.<br>
+	 *     The factory function receives a reference to the codec being created and must return the actual codec implementation.<br>
+	 *     This allows the codec to reference itself during construction.
+	 * </p>
+	 * <p>
+	 *     Example usage for a binary tree:
+	 * </p>
+	 * <pre>{@code
+	 * record TreeNode(int value, TreeNode left, TreeNode right) {}
+	 *
+	 * Codec<TreeNode> treeCodec = Codecs.recursive(self ->
+	 *     CodecBuilder.of(
+	 *         Codecs.INTEGER.fieldOf("value", TreeNode::value),
+	 *         self.nullable().fieldOf("left", TreeNode::left),
+	 *         self.nullable().fieldOf("right", TreeNode::right)
+	 *     ).create(TreeNode::new)
+	 * );
+	 * }</pre>
+	 *
+	 * @param codecFactory The factory function that creates the codec using a self-reference
+	 * @param <C> The type of the recursive value
+	 * @return A new recursive codec
+	 * @throws NullPointerException If the codec factory is null
+	 * @see RecursiveCodec
+	 */
+	public static <C> @NonNull RecursiveCodec<C> recursive(@NonNull Function<Codec<C>, Codec<C>> codecFactory) {
+		return new RecursiveCodec<>(codecFactory);
+	}
+
 	/**
 	 * Creates a new codec that encodes and decodes values of the type {@code C} to and from strings.<br>
 	 * The string encoder and decoder are defined as functions that convert values of the type {@code C} to and from strings.<br>
@@ -495,7 +565,7 @@ public final class Codecs {
 	 * @return A new codec
 	 * @throws NullPointerException If the string encoder or decoder is null
 	 */
-	public static <E> @NotNull Codec<E> stringResolver(@NotNull Function<E, String> stringEncoder, @NotNull Function<String, @Nullable E> stringDecoder) {
+	public static <E> @NonNull Codec<E> stringResolver(@NonNull Function<E, String> stringEncoder, @NonNull Function<String, @Nullable E> stringDecoder) {
 		Objects.requireNonNull(stringDecoder, "Element string decoder must not be null");
 		
 		return STRING.mapFlat(

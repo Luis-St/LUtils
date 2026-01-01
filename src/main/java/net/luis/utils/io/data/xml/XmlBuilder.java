@@ -1,6 +1,6 @@
 /*
  * LUtils
- * Copyright (C) 2025 Luis Staudt
+ * Copyright (C) 2026 Luis Staudt
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,7 +19,8 @@
 package net.luis.utils.io.data.xml;
 
 import net.luis.utils.util.Version;
-import org.jetbrains.annotations.*;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 import java.util.*;
 import java.util.function.Consumer;
@@ -77,14 +78,14 @@ public final class XmlBuilder {
 	/**
 	 * The current element being built.<br>
 	 */
-	private @UnknownNullability XmlElement currentElement;
+	private @Nullable XmlElement currentElement;
 	
 	/**
 	 * Private constructor for creating a new XML builder with the specified configuration.<br>
 	 *
 	 * @param config The XML configuration to use
 	 */
-	private XmlBuilder(@NotNull XmlConfig config) {
+	private XmlBuilder(@NonNull XmlConfig config) {
 		this.config = Objects.requireNonNull(config, "Config must not be null");
 	}
 	
@@ -93,7 +94,7 @@ public final class XmlBuilder {
 	 *
 	 * @return A new XML builder instance
 	 */
-	public static @NotNull XmlBuilder create() {
+	public static @NonNull XmlBuilder create() {
 		return new XmlBuilder(XmlConfig.DEFAULT);
 	}
 	
@@ -104,7 +105,7 @@ public final class XmlBuilder {
 	 * @return A new XML builder instance
 	 * @throws NullPointerException If the config is null
 	 */
-	public static @NotNull XmlBuilder create(@NotNull XmlConfig config) {
+	public static @NonNull XmlBuilder create(@NonNull XmlConfig config) {
 		return new XmlBuilder(config);
 	}
 	
@@ -115,7 +116,7 @@ public final class XmlBuilder {
 	 * @return A new XML builder instance with the container started
 	 * @throws NullPointerException If the container name is null
 	 */
-	public static @NotNull XmlBuilder createContainer(@NotNull String containerName) {
+	public static @NonNull XmlBuilder createContainer(@NonNull String containerName) {
 		return new XmlBuilder(XmlConfig.DEFAULT).container(containerName);
 	}
 	
@@ -127,7 +128,7 @@ public final class XmlBuilder {
 	 * @return A new XML builder instance with the container started
 	 * @throws NullPointerException If the container name or config is null
 	 */
-	public static @NotNull XmlBuilder createContainer(@NotNull String containerName, @NotNull XmlConfig config) {
+	public static @NonNull XmlBuilder createContainer(@NonNull String containerName, @NonNull XmlConfig config) {
 		return new XmlBuilder(config).container(containerName);
 	}
 	
@@ -140,9 +141,10 @@ public final class XmlBuilder {
 	 * @throws NullPointerException If the name is null
 	 * @throws IllegalStateException If another element is currently being built
 	 */
-	public @NotNull XmlBuilder element(@NotNull String name) {
+	public @NonNull XmlBuilder element(@NonNull String name) {
 		Objects.requireNonNull(name, "Name must not be null");
 		this.ensureNoCurrentElement();
+		
 		this.currentElement = new XmlElement(name);
 		return this;
 	}
@@ -157,9 +159,10 @@ public final class XmlBuilder {
 	 * @throws NullPointerException If the name is null
 	 * @throws IllegalStateException If another element is currently being built
 	 */
-	public @NotNull XmlBuilder container(@NotNull String name) {
+	public @NonNull XmlBuilder container(@NonNull String name) {
 		Objects.requireNonNull(name, "Name must not be null");
 		this.ensureNoCurrentElement();
+		
 		XmlContainer container = new XmlContainer(name);
 		this.contextStack.push(new BuilderContext(container));
 		this.currentElement = container; // Set as current element so attributes can be added
@@ -175,9 +178,10 @@ public final class XmlBuilder {
 	 * @throws NullPointerException If the name is null
 	 * @throws IllegalStateException If another element is currently being built
 	 */
-	public @NotNull XmlBuilder value(@NotNull String name, boolean value) {
+	public @NonNull XmlBuilder value(@NonNull String name, boolean value) {
 		Objects.requireNonNull(name, "Name must not be null");
 		this.ensureNoCurrentElement();
+		
 		this.currentElement = new XmlValue(name, value);
 		return this;
 	}
@@ -191,9 +195,10 @@ public final class XmlBuilder {
 	 * @throws NullPointerException If the name is null
 	 * @throws IllegalStateException If another element is currently being built
 	 */
-	public @NotNull XmlBuilder value(@NotNull String name, @Nullable Number value) {
+	public @NonNull XmlBuilder value(@NonNull String name, @Nullable Number value) {
 		Objects.requireNonNull(name, "Name must not be null");
 		this.ensureNoCurrentElement();
+		
 		this.currentElement = new XmlValue(name, value);
 		return this;
 	}
@@ -207,9 +212,10 @@ public final class XmlBuilder {
 	 * @throws NullPointerException If the name is null
 	 * @throws IllegalStateException If another element is currently being built
 	 */
-	public @NotNull XmlBuilder value(@NotNull String name, @Nullable String value) {
+	public @NonNull XmlBuilder value(@NonNull String name, @Nullable String value) {
 		Objects.requireNonNull(name, "Name must not be null");
 		this.ensureNoCurrentElement();
+		
 		this.currentElement = new XmlValue(name, value);
 		return this;
 	}
@@ -223,9 +229,10 @@ public final class XmlBuilder {
 	 * @throws NullPointerException If the name is null
 	 * @throws IllegalStateException If no element is currently being built
 	 */
-	public @NotNull XmlBuilder attribute(@NotNull String name, @Nullable String value) {
+	public @NonNull XmlBuilder attribute(@NonNull String name, @Nullable String value) {
 		Objects.requireNonNull(name, "Name must not be null");
 		this.ensureCurrentElement();
+		
 		this.currentElement.addAttribute(name, value);
 		return this;
 	}
@@ -239,9 +246,10 @@ public final class XmlBuilder {
 	 * @throws NullPointerException If the name is null
 	 * @throws IllegalStateException If no element is currently being built
 	 */
-	public @NotNull XmlBuilder attribute(@NotNull String name, boolean value) {
+	public @NonNull XmlBuilder attribute(@NonNull String name, boolean value) {
 		Objects.requireNonNull(name, "Name must not be null");
 		this.ensureCurrentElement();
+		
 		this.currentElement.addAttribute(name, value);
 		return this;
 	}
@@ -255,9 +263,10 @@ public final class XmlBuilder {
 	 * @throws NullPointerException If the name is null
 	 * @throws IllegalStateException If no element is currently being built
 	 */
-	public @NotNull XmlBuilder attribute(@NotNull String name, @Nullable Number value) {
+	public @NonNull XmlBuilder attribute(@NonNull String name, @Nullable Number value) {
 		Objects.requireNonNull(name, "Name must not be null");
 		this.ensureCurrentElement();
+		
 		this.currentElement.addAttribute(name, value);
 		return this;
 	}
@@ -280,9 +289,10 @@ public final class XmlBuilder {
 	 * @throws NullPointerException If the configurator is null
 	 * @throws IllegalStateException If no element is currently being built
 	 */
-	public @NotNull XmlBuilder attributes(@NotNull Consumer<XmlBuilder> configurator) {
+	public @NonNull XmlBuilder attributes(@NonNull Consumer<XmlBuilder> configurator) {
 		Objects.requireNonNull(configurator, "Configurator must not be null");
 		this.ensureCurrentElement();
+		
 		configurator.accept(this);
 		return this;
 	}
@@ -296,10 +306,11 @@ public final class XmlBuilder {
 	 * @throws NullPointerException If the element is null
 	 * @throws IllegalStateException If not currently building a container or if another element is being built
 	 */
-	public @NotNull XmlBuilder add(@NotNull XmlElement element) {
+	public @NonNull XmlBuilder add(@NonNull XmlElement element) {
 		Objects.requireNonNull(element, "Element must not be null");
 		this.ensureNoCurrentElement();
 		this.ensureInContainer();
+		
 		this.getCurrentContainer().add(element);
 		return this;
 	}
@@ -321,7 +332,7 @@ public final class XmlBuilder {
 	 * @throws NullPointerException If the configurator is null
 	 * @throws IllegalStateException If not currently building a container or if another element is being built
 	 */
-	public @NotNull XmlBuilder child(@NotNull Consumer<XmlBuilder> configurator) {
+	public @NonNull XmlBuilder child(@NonNull Consumer<XmlBuilder> configurator) {
 		Objects.requireNonNull(configurator, "Configurator must not be null");
 		this.ensureNoCurrentElement();
 		this.ensureInContainer();
@@ -332,7 +343,6 @@ public final class XmlBuilder {
 		if (childBuilder.currentElement != null) {
 			this.getCurrentContainer().add(childBuilder.currentElement);
 		}
-		
 		return this;
 	}
 	
@@ -343,33 +353,24 @@ public final class XmlBuilder {
 	 * @return This builder instance for method chaining
 	 * @throws IllegalStateException If not currently building a container
 	 */
-	public @NotNull XmlBuilder end() {
+	public @NonNull XmlBuilder end() {
 		if (this.contextStack.isEmpty()) {
 			throw new IllegalStateException("No container context to end");
 		}
 		
 		BuilderContext context = this.contextStack.peek();
 		
-		// Complete any current element before ending the container
 		if (this.currentElement != null && this.currentElement != context.container) {
-			// Current element is a child element, add it to the container
 			context.container.add(this.currentElement);
 		}
-		// If currentElement is the container itself, we just clear it
 		this.currentElement = null;
 		
-		// Pop the completed container
 		this.contextStack.pop();
-		
 		if (this.contextStack.isEmpty()) {
-			// No more parent containers, set the completed container as currentElement
 			this.currentElement = context.container;
 		} else {
-			// Add the completed container to its parent
 			this.getCurrentContainer().add(context.container);
-			// currentElement remains null
 		}
-		
 		return this;
 	}
 	
@@ -380,7 +381,7 @@ public final class XmlBuilder {
 	 * @return The built XML element
 	 * @throws IllegalStateException If no element has been built or if there are unclosed containers
 	 */
-	public @NotNull XmlElement build() {
+	public @NonNull XmlElement build() {
 		if (!this.contextStack.isEmpty()) {
 			throw new IllegalStateException("Unclosed container contexts. Call end() to close all containers.");
 		}
@@ -388,7 +389,7 @@ public final class XmlBuilder {
 			throw new IllegalStateException("No element to build. Start building an element first.");
 		}
 		XmlElement result = this.currentElement;
-		this.currentElement = null; // Clear after building to prevent reuse
+		this.currentElement = null;
 		return result;
 	}
 	
@@ -399,8 +400,9 @@ public final class XmlBuilder {
 	 * @return The built XML container
 	 * @throws IllegalStateException If no element has been built, if there are unclosed containers, or if the element is not a container
 	 */
-	public @NotNull XmlContainer buildContainer() {
+	public @NonNull XmlContainer buildContainer() {
 		XmlElement element = this.build();
+		
 		if (!(element instanceof XmlContainer)) {
 			throw new IllegalStateException("Built element is not a container: " + element.getClass().getSimpleName());
 		}
@@ -414,8 +416,9 @@ public final class XmlBuilder {
 	 * @return The built XML value
 	 * @throws IllegalStateException If no element has been built, if there are unclosed containers, or if the element is not a value
 	 */
-	public @NotNull XmlValue buildValue() {
+	public @NonNull XmlValue buildValue() {
 		XmlElement element = this.build();
+		
 		if (!(element instanceof XmlValue)) {
 			throw new IllegalStateException("Built element is not a value: " + element.getClass().getSimpleName());
 		}
@@ -429,7 +432,7 @@ public final class XmlBuilder {
 	 * @return The XML string representation
 	 * @throws IllegalStateException If no element has been built or if there are unclosed containers
 	 */
-	public @NotNull String toXml() {
+	public @NonNull String toXml() {
 		return this.toXml(new XmlDeclaration(Version.of(1, 0), this.config.charset()));
 	}
 	
@@ -441,7 +444,7 @@ public final class XmlBuilder {
 	 * @throws NullPointerException If the declaration is null
 	 * @throws IllegalStateException If no element has been built or if there are unclosed containers
 	 */
-	public @NotNull String toXml(@NotNull XmlDeclaration declaration) {
+	public @NonNull String toXml(@NonNull XmlDeclaration declaration) {
 		Objects.requireNonNull(declaration, "Declaration must not be null");
 		XmlElement element = this.build();
 		
@@ -451,7 +454,6 @@ public final class XmlBuilder {
 			xml.append(System.lineSeparator());
 		}
 		xml.append(element.toString(this.config));
-		
 		return xml.toString();
 	}
 	
@@ -462,7 +464,7 @@ public final class XmlBuilder {
 	 * @return An XML document representation
 	 * @throws IllegalStateException If no element has been built or if there are unclosed containers
 	 */
-	public @NotNull XmlDocument toDocument() {
+	public @NonNull XmlDocument toDocument() {
 		return this.toDocument(new XmlDeclaration(Version.of(1, 0), this.config.charset()));
 	}
 	
@@ -474,7 +476,7 @@ public final class XmlBuilder {
 	 * @throws NullPointerException If the declaration is null
 	 * @throws IllegalStateException If no element has been built or if there are unclosed containers
 	 */
-	public @NotNull XmlDocument toDocument(@NotNull XmlDeclaration declaration) {
+	public @NonNull XmlDocument toDocument(@NonNull XmlDeclaration declaration) {
 		Objects.requireNonNull(declaration, "Declaration must not be null");
 		return new XmlDocument(declaration, this.build());
 	}
@@ -484,7 +486,7 @@ public final class XmlBuilder {
 	 *
 	 * @return The XML configuration
 	 */
-	public @NotNull XmlConfig getConfig() {
+	public @NonNull XmlConfig getConfig() {
 		return this.config;
 	}
 	
@@ -515,18 +517,13 @@ public final class XmlBuilder {
 	 */
 	private void ensureNoCurrentElement() {
 		if (this.currentElement != null) {
-			if (!this.isInContainer()) {
-				throw new IllegalStateException("Another element is currently being built. Call build() or end() first.");
-			} else {
-				// Check if currentElement is the same as the current container
-				// If so, we're just transitioning from adding attributes to adding children
-				if (this.currentElement == this.getCurrentContainer()) {
-					this.currentElement = null; // Clear but don't add to itself
-				} else {
-					// Different element, add it to the container
+			if (this.isInContainer()) {
+				if (this.currentElement != this.getCurrentContainer()) {
 					this.getCurrentContainer().add(this.currentElement);
-					this.currentElement = null;
 				}
+				this.currentElement = null;
+			} else {
+				throw new IllegalStateException("Another element is currently being built. Call build() or end() first.");
 			}
 		}
 	}
@@ -559,7 +556,7 @@ public final class XmlBuilder {
 	 * @return The current container
 	 * @throws IllegalStateException If not currently building a container
 	 */
-	private @NotNull XmlContainer getCurrentContainer() {
+	private @NonNull XmlContainer getCurrentContainer() {
 		this.ensureInContainer();
 		return this.contextStack.peek().container;
 	}
@@ -569,7 +566,7 @@ public final class XmlBuilder {
 	 *
 	 * @param container The container being built
 	 */
-	private record BuilderContext(@NotNull XmlContainer container) {
+	private record BuilderContext(@NonNull XmlContainer container) {
 		
 		/**
 		 * Creates a new builder context for the specified container.<br>

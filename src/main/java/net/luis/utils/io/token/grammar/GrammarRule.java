@@ -1,6 +1,6 @@
 /*
  * LUtils
- * Copyright (C) 2025 Luis Staudt
+ * Copyright (C) 2026 Luis Staudt
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,7 +20,7 @@ package net.luis.utils.io.token.grammar;
 
 import net.luis.utils.io.token.actions.TokenAction;
 import net.luis.utils.io.token.rules.TokenRule;
-import org.jetbrains.annotations.NotNull;
+import org.jspecify.annotations.NonNull;
 
 import java.util.Objects;
 
@@ -37,8 +37,8 @@ import java.util.Objects;
  * @param action The action to perform on tokens matched by this rule
  */
 public record GrammarRule(
-	@NotNull TokenRule rule,
-	@NotNull TokenAction action
+	@NonNull TokenRule rule,
+	@NonNull TokenAction action
 ) {
 	
 	/**

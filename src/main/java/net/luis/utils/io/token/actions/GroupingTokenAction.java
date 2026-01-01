@@ -1,6 +1,6 @@
 /*
  * LUtils
- * Copyright (C) 2025 Luis Staudt
+ * Copyright (C) 2026 Luis Staudt
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -23,8 +23,8 @@ import net.luis.utils.io.token.actions.core.GroupingMode;
 import net.luis.utils.io.token.context.TokenActionContext;
 import net.luis.utils.io.token.tokens.Token;
 import net.luis.utils.io.token.tokens.TokenGroup;
-import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Unmodifiable;
+import org.jspecify.annotations.NonNull;
 
 import java.util.*;
 
@@ -37,7 +37,7 @@ import java.util.*;
  * @param mode The grouping mode to use
  */
 public record GroupingTokenAction(
-	@NotNull GroupingMode mode
+	@NonNull GroupingMode mode
 ) implements TokenAction {
 	
 	/**
@@ -51,7 +51,7 @@ public record GroupingTokenAction(
 	}
 	
 	@Override
-	public @NotNull @Unmodifiable List<Token> apply(@NotNull TokenRuleMatch match, @NotNull TokenActionContext ctx) {
+	public @NonNull @Unmodifiable List<Token> apply(@NonNull TokenRuleMatch match, @NonNull TokenActionContext ctx) {
 		Objects.requireNonNull(match, "Token rule match must not be null");
 		Objects.requireNonNull(ctx, "Token action context must not be null");
 		

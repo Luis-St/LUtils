@@ -1,6 +1,6 @@
 /*
  * LUtils
- * Copyright (C) 2025 Luis Staudt
+ * Copyright (C) 2026 Luis Staudt
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -21,8 +21,8 @@ package net.luis.utils.io.codec.types.time;
 import net.luis.utils.io.codec.AbstractCodec;
 import net.luis.utils.io.codec.provider.TypeProvider;
 import net.luis.utils.util.result.Result;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 import java.time.LocalTime;
 import java.time.format.DateTimeParseException;
@@ -42,7 +42,7 @@ public class LocalTimeCodec extends AbstractCodec<LocalTime, Object> {
 	public LocalTimeCodec() {}
 	
 	@Override
-	public <R> @NotNull Result<R> encodeStart(@NotNull TypeProvider<R> provider, @NotNull R current, @Nullable LocalTime value) {
+	public <R> @NonNull Result<R> encodeStart(@NonNull TypeProvider<R> provider, @NonNull R current, @Nullable LocalTime value) {
 		Objects.requireNonNull(provider, "Type provider must not be null");
 		Objects.requireNonNull(current, "Current value must not be null");
 		
@@ -53,13 +53,13 @@ public class LocalTimeCodec extends AbstractCodec<LocalTime, Object> {
 	}
 	
 	@Override
-	public @NotNull Result<String> encodeKey(@NotNull LocalTime key) {
+	public @NonNull Result<String> encodeKey(@NonNull LocalTime key) {
 		Objects.requireNonNull(key, "Key must not be null");
 		return Result.success(key.toString());
 	}
 	
 	@Override
-	public <R> @NotNull Result<LocalTime> decodeStart(@NotNull TypeProvider<R> provider, @NotNull R current, @Nullable R value) {
+	public <R> @NonNull Result<LocalTime> decodeStart(@NonNull TypeProvider<R> provider, @NonNull R current, @Nullable R value) {
 		Objects.requireNonNull(provider, "Type provider must not be null");
 		Objects.requireNonNull(current, "Current value must not be null");
 		if (value == null) {
@@ -80,7 +80,7 @@ public class LocalTimeCodec extends AbstractCodec<LocalTime, Object> {
 	}
 	
 	@Override
-	public @NotNull Result<LocalTime> decodeKey(@NotNull String key) {
+	public @NonNull Result<LocalTime> decodeKey(@NonNull String key) {
 		Objects.requireNonNull(key, "Key must not be null");
 		try {
 			return Result.success(LocalTime.parse(key));

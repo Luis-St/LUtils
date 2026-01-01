@@ -1,6 +1,6 @@
 /*
  * LUtils
- * Copyright (C) 2025 Luis Staudt
+ * Copyright (C) 2026 Luis Staudt
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,7 +18,7 @@
 
 package net.luis.utils.io.token.definition;
 
-import org.jetbrains.annotations.NotNull;
+import org.jspecify.annotations.NonNull;
 
 import java.util.Objects;
 
@@ -35,13 +35,13 @@ public record CharTokenDefinition(
 ) implements TokenDefinition {
 	
 	@Override
-	public boolean matches(@NotNull String word) {
+	public boolean matches(@NonNull String word) {
 		Objects.requireNonNull(word, "Word must not be null");
 		return word.length() == 1 && word.charAt(0) == this.token;
 	}
 	
 	@Override
-	public @NotNull String toString() {
+	public @NonNull String toString() {
 		return "CharTokenDefinition[token=" + ("" + this.token).replace("\t", "\\t").replace("\n", "\\n") + "]";
 	}
 }

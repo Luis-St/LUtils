@@ -1,6 +1,6 @@
 /*
  * LUtils
- * Copyright (C) 2025 Luis Staudt
+ * Copyright (C) 2026 Luis Staudt
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,7 +18,7 @@
 
 package net.luis.utils.io.token.definition;
 
-import org.jetbrains.annotations.NotNull;
+import org.jspecify.annotations.NonNull;
 
 /**
  * Functional interface for a token definition.<br>
@@ -36,7 +36,7 @@ public interface TokenDefinition {
 	 * @return The token definition
 	 * @see CharTokenDefinition
 	 */
-	static @NotNull TokenDefinition of(char token) {
+	static @NonNull TokenDefinition of(char token) {
 		return new CharTokenDefinition(token);
 	}
 	
@@ -50,7 +50,7 @@ public interface TokenDefinition {
 	 * @throws IllegalArgumentException If the token is empty
 	 * @see StringTokenDefinition
 	 */
-	static @NotNull TokenDefinition of(@NotNull String token, boolean equalsIgnoreCase) {
+	static @NonNull TokenDefinition of(@NonNull String token, boolean equalsIgnoreCase) {
 		return new StringTokenDefinition(token, equalsIgnoreCase);
 	}
 	
@@ -61,7 +61,7 @@ public interface TokenDefinition {
 	 * @return The token definition
 	 * @see EscapedTokenDefinition
 	 */
-	static @NotNull TokenDefinition ofEscaped(char token) {
+	static @NonNull TokenDefinition ofEscaped(char token) {
 		return new EscapedTokenDefinition(token);
 	}
 	
@@ -72,5 +72,5 @@ public interface TokenDefinition {
 	 * @return True if the word matches this token definition, false otherwise
 	 * @throws NullPointerException If the word is null
 	 */
-	boolean matches(@NotNull String word);
+	boolean matches(@NonNull String word);
 }

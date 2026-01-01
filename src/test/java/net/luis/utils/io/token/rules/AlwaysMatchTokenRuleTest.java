@@ -1,6 +1,6 @@
 /*
  * LUtils
- * Copyright (C) 2025 Luis Staudt
+ * Copyright (C) 2026 Luis Staudt
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -23,7 +23,7 @@ import net.luis.utils.io.token.TokenRuleMatch;
 import net.luis.utils.io.token.context.TokenRuleContext;
 import net.luis.utils.io.token.stream.TokenStream;
 import net.luis.utils.io.token.tokens.*;
-import org.jetbrains.annotations.NotNull;
+import org.jspecify.annotations.NonNull;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
@@ -37,7 +37,7 @@ import static org.junit.jupiter.api.Assertions.*;
  */
 class AlwaysMatchTokenRuleTest {
 	
-	private static @NotNull Token createToken(@NotNull String value) {
+	private static @NonNull Token createToken(@NonNull String value) {
 		return SimpleToken.createUnpositioned(value);
 	}
 	

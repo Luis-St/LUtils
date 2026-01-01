@@ -1,6 +1,6 @@
 /*
  * LUtils
- * Copyright (C) 2025 Luis Staudt
+ * Copyright (C) 2026 Luis Staudt
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -22,8 +22,8 @@ import com.google.common.collect.Maps;
 import net.luis.utils.annotation.type.Singleton;
 import net.luis.utils.io.data.json.*;
 import net.luis.utils.util.result.Result;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 import java.util.List;
 import java.util.Map;
@@ -44,7 +44,7 @@ public final class JsonTypeProvider implements TypeProvider<JsonElement> {
 	 */
 	private static final JsonElement EMPTY_ELEMENT = new JsonElement() {
 		@Override
-		public @NotNull String toString(@NotNull JsonConfig config) {
+		public @NonNull String toString(@NonNull JsonConfig config) {
 			return "Empty json element has no string representation";
 		}
 	};
@@ -60,52 +60,52 @@ public final class JsonTypeProvider implements TypeProvider<JsonElement> {
 	private JsonTypeProvider() {}
 	
 	@Override
-	public @NotNull JsonElement empty() {
+	public @NonNull JsonElement empty() {
 		return EMPTY_ELEMENT;
 	}
 	
 	@Override
-	public @NotNull Result<JsonElement> createNull() {
+	public @NonNull Result<JsonElement> createNull() {
 		return Result.success(JsonNull.INSTANCE);
 	}
 	
 	@Override
-	public @NotNull Result<JsonElement> createBoolean(boolean value) {
+	public @NonNull Result<JsonElement> createBoolean(boolean value) {
 		return Result.success(new JsonPrimitive(value));
 	}
 	
 	@Override
-	public @NotNull Result<JsonElement> createByte(byte value) {
+	public @NonNull Result<JsonElement> createByte(byte value) {
 		return Result.success(new JsonPrimitive(value));
 	}
 	
 	@Override
-	public @NotNull Result<JsonElement> createShort(short value) {
+	public @NonNull Result<JsonElement> createShort(short value) {
 		return Result.success(new JsonPrimitive(value));
 	}
 	
 	@Override
-	public @NotNull Result<JsonElement> createInteger(int value) {
+	public @NonNull Result<JsonElement> createInteger(int value) {
 		return Result.success(new JsonPrimitive(value));
 	}
 	
 	@Override
-	public @NotNull Result<JsonElement> createLong(long value) {
+	public @NonNull Result<JsonElement> createLong(long value) {
 		return Result.success(new JsonPrimitive(value));
 	}
 	
 	@Override
-	public @NotNull Result<JsonElement> createFloat(float value) {
+	public @NonNull Result<JsonElement> createFloat(float value) {
 		return Result.success(new JsonPrimitive(value));
 	}
 	
 	@Override
-	public @NotNull Result<JsonElement> createDouble(double value) {
+	public @NonNull Result<JsonElement> createDouble(double value) {
 		return Result.success(new JsonPrimitive(value));
 	}
 	
 	@Override
-	public @NotNull Result<JsonElement> createString(@Nullable String value) {
+	public @NonNull Result<JsonElement> createString(@Nullable String value) {
 		if (value == null) {
 			return Result.error("Value 'null' is not a valid string");
 		}
@@ -114,7 +114,7 @@ public final class JsonTypeProvider implements TypeProvider<JsonElement> {
 	}
 	
 	@Override
-	public @NotNull Result<JsonElement> createList(@Nullable List<? extends JsonElement> values) {
+	public @NonNull Result<JsonElement> createList(@Nullable List<? extends JsonElement> values) {
 		if (values == null) {
 			return Result.error("Value 'null' is not a valid list");
 		}
@@ -123,12 +123,12 @@ public final class JsonTypeProvider implements TypeProvider<JsonElement> {
 	}
 	
 	@Override
-	public @NotNull Result<JsonElement> createMap() {
+	public @NonNull Result<JsonElement> createMap() {
 		return Result.success(new JsonObject());
 	}
 	
 	@Override
-	public @NotNull Result<JsonElement> createMap(@Nullable Map<String, ? extends JsonElement> values) {
+	public @NonNull Result<JsonElement> createMap(@Nullable Map<String, ? extends JsonElement> values) {
 		if (values == null) {
 			return Result.error("Value 'null' is not a valid map");
 		}
@@ -137,7 +137,7 @@ public final class JsonTypeProvider implements TypeProvider<JsonElement> {
 	}
 	
 	@Override
-	public @NotNull Result<JsonElement> getEmpty(@Nullable JsonElement type) {
+	public @NonNull Result<JsonElement> getEmpty(@Nullable JsonElement type) {
 		if (type == null) {
 			return Result.error("Value 'null' is not empty");
 		}
@@ -149,7 +149,7 @@ public final class JsonTypeProvider implements TypeProvider<JsonElement> {
 	}
 	
 	@Override
-	public @NotNull Result<Boolean> isNull(@Nullable JsonElement type) {
+	public @NonNull Result<Boolean> isNull(@Nullable JsonElement type) {
 		if (type == null) {
 			return Result.error("Value 'null' is not json null");
 		}
@@ -158,7 +158,7 @@ public final class JsonTypeProvider implements TypeProvider<JsonElement> {
 	}
 	
 	@Override
-	public @NotNull Result<Boolean> getBoolean(@Nullable JsonElement type) {
+	public @NonNull Result<Boolean> getBoolean(@Nullable JsonElement type) {
 		if (type == null) {
 			return Result.error("Value 'null' is not a boolean");
 		}
@@ -175,7 +175,7 @@ public final class JsonTypeProvider implements TypeProvider<JsonElement> {
 	}
 	
 	@Override
-	public @NotNull Result<Byte> getByte(@Nullable JsonElement type) {
+	public @NonNull Result<Byte> getByte(@Nullable JsonElement type) {
 		if (type == null) {
 			return Result.error("Value 'null' is not a byte");
 		}
@@ -192,7 +192,7 @@ public final class JsonTypeProvider implements TypeProvider<JsonElement> {
 	}
 	
 	@Override
-	public @NotNull Result<Short> getShort(@Nullable JsonElement type) {
+	public @NonNull Result<Short> getShort(@Nullable JsonElement type) {
 		if (type == null) {
 			return Result.error("Value 'null' is not a short");
 		}
@@ -209,7 +209,7 @@ public final class JsonTypeProvider implements TypeProvider<JsonElement> {
 	}
 	
 	@Override
-	public @NotNull Result<Integer> getInteger(@Nullable JsonElement type) {
+	public @NonNull Result<Integer> getInteger(@Nullable JsonElement type) {
 		if (type == null) {
 			return Result.error("Value 'null' is not an integer");
 		}
@@ -226,7 +226,7 @@ public final class JsonTypeProvider implements TypeProvider<JsonElement> {
 	}
 	
 	@Override
-	public @NotNull Result<Long> getLong(@Nullable JsonElement type) {
+	public @NonNull Result<Long> getLong(@Nullable JsonElement type) {
 		if (type == null) {
 			return Result.error("Value 'null' is not a long");
 		}
@@ -243,7 +243,7 @@ public final class JsonTypeProvider implements TypeProvider<JsonElement> {
 	}
 	
 	@Override
-	public @NotNull Result<Float> getFloat(@Nullable JsonElement type) {
+	public @NonNull Result<Float> getFloat(@Nullable JsonElement type) {
 		if (type == null) {
 			return Result.error("Value 'null' is not a float");
 		}
@@ -260,7 +260,7 @@ public final class JsonTypeProvider implements TypeProvider<JsonElement> {
 	}
 	
 	@Override
-	public @NotNull Result<Double> getDouble(@Nullable JsonElement type) {
+	public @NonNull Result<Double> getDouble(@Nullable JsonElement type) {
 		if (type == null) {
 			return Result.error("Value 'null' is not a double");
 		}
@@ -277,7 +277,7 @@ public final class JsonTypeProvider implements TypeProvider<JsonElement> {
 	}
 	
 	@Override
-	public @NotNull Result<String> getString(@Nullable JsonElement type) {
+	public @NonNull Result<String> getString(@Nullable JsonElement type) {
 		if (type == null) {
 			return Result.error("Value 'null' is not a string");
 		}
@@ -294,7 +294,7 @@ public final class JsonTypeProvider implements TypeProvider<JsonElement> {
 	}
 	
 	@Override
-	public @NotNull Result<List<JsonElement>> getList(@Nullable JsonElement type) {
+	public @NonNull Result<List<JsonElement>> getList(@Nullable JsonElement type) {
 		if (type == null) {
 			return Result.error("Value 'null' is not a valid list");
 		}
@@ -306,7 +306,7 @@ public final class JsonTypeProvider implements TypeProvider<JsonElement> {
 	}
 	
 	@Override
-	public @NotNull Result<Map<String, JsonElement>> getMap(@Nullable JsonElement type) {
+	public @NonNull Result<Map<String, JsonElement>> getMap(@Nullable JsonElement type) {
 		if (type == null) {
 			return Result.error("Value 'null' is not a valid map");
 		}
@@ -321,7 +321,7 @@ public final class JsonTypeProvider implements TypeProvider<JsonElement> {
 	}
 	
 	@Override
-	public @NotNull Result<Boolean> has(@Nullable JsonElement type, @Nullable String key) {
+	public @NonNull Result<Boolean> has(@Nullable JsonElement type, @Nullable String key) {
 		if (type == null) {
 			return Result.error("Value 'null' is not a valid map");
 		}
@@ -336,7 +336,7 @@ public final class JsonTypeProvider implements TypeProvider<JsonElement> {
 	}
 	
 	@Override
-	public @NotNull Result<JsonElement> get(@Nullable JsonElement type, @Nullable String key) {
+	public @NonNull Result<JsonElement> get(@Nullable JsonElement type, @Nullable String key) {
 		if (type == null) {
 			return Result.error("Value 'null' is not a valid map");
 		}
@@ -351,7 +351,7 @@ public final class JsonTypeProvider implements TypeProvider<JsonElement> {
 	}
 	
 	@Override
-	public @NotNull Result<JsonElement> set(@Nullable JsonElement type, @Nullable String key, @Nullable JsonElement value) {
+	public @NonNull Result<JsonElement> set(@Nullable JsonElement type, @Nullable String key, @Nullable JsonElement value) {
 		if (type == null) {
 			return Result.error("Value 'null' is not a valid map");
 		}
@@ -369,7 +369,7 @@ public final class JsonTypeProvider implements TypeProvider<JsonElement> {
 	}
 	
 	@Override
-	public @NotNull Result<JsonElement> merge(@Nullable JsonElement current, @Nullable JsonElement value) {
+	public @NonNull Result<JsonElement> merge(@Nullable JsonElement current, @Nullable JsonElement value) {
 		if (current == null) {
 			return Result.success(value);
 		}

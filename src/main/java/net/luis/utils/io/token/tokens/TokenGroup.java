@@ -1,6 +1,6 @@
 /*
  * LUtils
- * Copyright (C) 2025 Luis Staudt
+ * Copyright (C) 2026 Luis Staudt
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,7 +20,7 @@ package net.luis.utils.io.token.tokens;
 
 import net.luis.utils.io.token.TokenPosition;
 import net.luis.utils.io.token.type.TokenType;
-import org.jetbrains.annotations.NotNull;
+import org.jspecify.annotations.NonNull;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -35,7 +35,7 @@ import java.util.stream.Collectors;
  * @param tokens The list of tokens in the group
  */
 public record TokenGroup(
-	@NotNull List<Token> tokens
+	@NonNull List<Token> tokens
 ) implements Token {
 	
 	/**
@@ -63,7 +63,7 @@ public record TokenGroup(
 	 * @return The concatenated values
 	 */
 	@Override
-	public @NotNull String value() {
+	public @NonNull String value() {
 		return this.tokens.stream().map(Token::value).collect(Collectors.joining());
 	}
 	
@@ -74,7 +74,7 @@ public record TokenGroup(
 	 * @return The start position
 	 */
 	@Override
-	public @NotNull TokenPosition position() {
+	public @NonNull TokenPosition position() {
 		return this.tokens.getFirst().position();
 	}
 	
@@ -85,7 +85,7 @@ public record TokenGroup(
 	 * @return The set of token types
 	 */
 	@Override
-	public @NotNull Set<TokenType> types() {
+	public @NonNull Set<TokenType> types() {
 		return this.tokens.stream().flatMap(token -> token.types().stream()).collect(Collectors.toSet());
 	}
 }

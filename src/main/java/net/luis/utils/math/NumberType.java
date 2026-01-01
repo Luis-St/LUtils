@@ -1,6 +1,6 @@
 /*
  * LUtils
- * Copyright (C) 2025 Luis Staudt
+ * Copyright (C) 2026 Luis Staudt
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,7 +19,9 @@
 package net.luis.utils.math;
 
 import org.apache.commons.lang3.StringUtils;
-import org.jetbrains.annotations.*;
+import org.jetbrains.annotations.Unmodifiable;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
@@ -121,7 +123,7 @@ public enum NumberType {
 	 * @throws IllegalArgumentException If the minimum and maximum values are not both null or not null
 	 * @throws NullPointerException If any of the parameters are null
 	 */
-	NumberType(@NotNull Class<? extends Number> numberClass, int bitSize, @Nullable Number minValue, @Nullable Number maxValue, boolean floatingPoint, char suffix, @NotNull Set<Radix> supportedRadices, @NotNull BiFunction<String, Radix, ? extends Number> radixParser) {
+	NumberType(@NonNull Class<? extends Number> numberClass, int bitSize, @Nullable Number minValue, @Nullable Number maxValue, boolean floatingPoint, char suffix, @NonNull Set<Radix> supportedRadices, @NonNull BiFunction<String, Radix, ? extends Number> radixParser) {
 		this.numberClass = Objects.requireNonNull(numberClass, "Number class must not be null");
 		this.bitSize = bitSize;
 		this.minValue = minValue;
@@ -145,7 +147,7 @@ public enum NumberType {
 	 * @return The wrapped parser function
 	 * @throws NullPointerException If the parser is null
 	 */
-	private static @NotNull BiFunction<String, Radix, ? extends Number> wrapIntegerParser(@NotNull BiFunction<String, Integer, ? extends Number> parser) {
+	private static @NonNull BiFunction<String, Radix, ? extends Number> wrapIntegerParser(@NonNull BiFunction<String, Integer, ? extends Number> parser) {
 		Objects.requireNonNull(parser, "Parser must not be null");
 		return (value, radix) -> parser.apply(value, radix.getRadix());
 	}
@@ -158,7 +160,7 @@ public enum NumberType {
 	 * @return The wrapped parser function
 	 * @throws NullPointerException If the parser is null
 	 */
-	private static @NotNull BiFunction<String, Radix, ? extends Number> wrapFloatingPointParser(@NotNull Function<String, ? extends Number> parser) {
+	private static @NonNull BiFunction<String, Radix, ? extends Number> wrapFloatingPointParser(@NonNull Function<String, ? extends Number> parser) {
 		Objects.requireNonNull(parser, "Parser must not be null");
 		return (value, radix) -> parser.apply(insertRadixPrefix(value, radix));
 	}
@@ -170,7 +172,7 @@ public enum NumberType {
 	 * @return The big decimal parser function
 	 * @see Mth#parseHexToBigDecimal(String)
 	 */
-	private static @NotNull BiFunction<String, Radix, ? extends Number> createBigDecimalParser() {
+	private static @NonNull BiFunction<String, Radix, ? extends Number> createBigDecimalParser() {
 		return (value, radix) -> {
 			if (radix == Radix.DECIMAL) {
 				return new BigDecimal(value);
@@ -192,7 +194,7 @@ public enum NumberType {
 	 * @return The value with the radix prefix inserted
 	 * @throws NullPointerException If the value or radix is null
 	 */
-	private static @NotNull String insertRadixPrefix(@NotNull String value, @NotNull Radix radix) {
+	private static @NonNull String insertRadixPrefix(@NonNull String value, @NonNull Radix radix) {
 		Objects.requireNonNull(value, "Value must not be null");
 		Objects.requireNonNull(radix, "Radix must not be null");
 		char sign = value.charAt(0);
@@ -218,7 +220,7 @@ public enum NumberType {
 	 * @return The value with the radix prefixes removed
 	 * @throws NullPointerException If the value is null
 	 */
-	private static @NotNull String removeRadixPrefixes(@NotNull String value, Radix @NotNull ... radices) {
+	private static @NonNull String removeRadixPrefixes(@NonNull String value, Radix @NonNull ... radices) {
 		Objects.requireNonNull(value, "Value must not be null");
 		String result = value;
 		for (Radix radix : radices) {
@@ -238,7 +240,7 @@ public enum NumberType {
 	 * @throws NullPointerException If the value, type or radix is null
 	 * @throws IllegalArgumentException If the suffix is present but does not match the type suffix of the number type
 	 */
-	private static @NotNull String removeTypeSuffix(@NotNull String value, @NotNull NumberType type, @NotNull Radix radix) {
+	private static @NonNull String removeTypeSuffix(@NonNull String value, @NonNull NumberType type, @NonNull Radix radix) {
 		Objects.requireNonNull(value, "Value must not be null");
 		Objects.requireNonNull(type, "Type must not be null");
 		Objects.requireNonNull(radix, "Radix must not be null");
@@ -285,7 +287,7 @@ public enum NumberType {
 	 * Returns the java number class that this type represents.<br>
 	 * @return The number class
 	 */
-	public @NotNull Class<? extends Number> getNumberClass() {
+	public @NonNull Class<? extends Number> getNumberClass() {
 		return this.numberClass;
 	}
 	
@@ -329,7 +331,7 @@ public enum NumberType {
 	 * @return True if the number is in the range, false otherwise
 	 * @throws NullPointerException If the number is null
 	 */
-	public boolean isInRange(@NotNull Number number) {
+	public boolean isInRange(@NonNull Number number) {
 		Objects.requireNonNull(number, "Number must not be null");
 		if (this.minValue == null || this.maxValue == null) {
 			return true;
@@ -357,7 +359,7 @@ public enum NumberType {
 	 * Returns the radices supported by the number type.<br>
 	 * @return The supported radices
 	 */
-	public @NotNull @Unmodifiable Set<Radix> getSupportedRadices() {
+	public @NonNull @Unmodifiable Set<Radix> getSupportedRadices() {
 		return Set.copyOf(this.supportedRadices);
 	}
 	
@@ -393,7 +395,7 @@ public enum NumberType {
 	 * @return True if the number type can be converted to the target type, false otherwise
 	 * @throws NullPointerException If the target type is null
 	 */
-	public boolean canConvertTo(@NotNull NumberType targetType) {
+	public boolean canConvertTo(@NonNull NumberType targetType) {
 		Objects.requireNonNull(targetType, "Target type must not be null");
 		if (this == targetType) {
 			return true;
@@ -431,7 +433,7 @@ public enum NumberType {
 	 * @return True if the number type can be converted to the target type, false otherwise
 	 * @throws NullPointerException If the radix is null
 	 */
-	public boolean canConvertTo(@Nullable String value, @NotNull Radix radix) {
+	public boolean canConvertTo(@Nullable String value, @NonNull Radix radix) {
 		Objects.requireNonNull(radix, "Radix must not be null");
 		if (StringUtils.isBlank(value)) {
 			return false;
@@ -474,7 +476,7 @@ public enum NumberType {
 	 * @throws NumberFormatException If the value cannot be parsed
 	 * @see #parseNumberStrict(String, Radix)
 	 */
-	public <T extends Number> @NotNull T parseNumber(@Nullable String value, @Nullable Radix radix) {
+	public <T extends Number> @NonNull T parseNumber(@Nullable String value, @Nullable Radix radix) {
 		if (radix == null) {
 			if (StringUtils.isBlank(value)) {
 				return this.parseNumberStrict("0", Radix.DECIMAL);
@@ -510,7 +512,7 @@ public enum NumberType {
 	 * @see #parseNumber(String, Radix)
 	 */
 	@SuppressWarnings("unchecked")
-	public <T extends Number> @NotNull T parseNumberStrict(@NotNull String value, @NotNull Radix radix) {
+	public <T extends Number> @NonNull T parseNumberStrict(@NonNull String value, @NonNull Radix radix) {
 		Objects.requireNonNull(value, "Value must not be null");
 		Objects.requireNonNull(radix, "Radix must not be null");
 		if (value.isBlank()) {

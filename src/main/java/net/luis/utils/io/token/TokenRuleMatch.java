@@ -1,6 +1,6 @@
 /*
  * LUtils
- * Copyright (C) 2025 Luis Staudt
+ * Copyright (C) 2026 Luis Staudt
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -21,7 +21,7 @@ package net.luis.utils.io.token;
 import net.luis.utils.io.token.rules.TokenRule;
 import net.luis.utils.io.token.rules.quantifiers.OptionalTokenRule;
 import net.luis.utils.io.token.tokens.Token;
-import org.jetbrains.annotations.NotNull;
+import org.jspecify.annotations.NonNull;
 
 import java.util.List;
 import java.util.Objects;
@@ -40,8 +40,8 @@ import java.util.Objects;
 public record TokenRuleMatch(
 	int startIndex,
 	int endIndex,
-	@NotNull List<Token> matchedTokens,
-	@NotNull TokenRule matchingTokenRule
+	@NonNull List<Token> matchedTokens,
+	@NonNull TokenRule matchingTokenRule
 ) {
 	
 	/**
@@ -69,7 +69,7 @@ public record TokenRuleMatch(
 	 * @throws NullPointerException If the matching token rule is null
 	 * @see OptionalTokenRule
 	 */
-	public static @NotNull TokenRuleMatch empty(int index, @NotNull TokenRule matchingTokenRule) {
+	public static @NonNull TokenRuleMatch empty(int index, @NonNull TokenRule matchingTokenRule) {
 		return new TokenRuleMatch(index, index, List.of(), matchingTokenRule);
 	}
 }

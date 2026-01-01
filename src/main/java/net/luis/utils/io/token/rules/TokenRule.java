@@ -1,6 +1,6 @@
 /*
  * LUtils
- * Copyright (C) 2025 Luis Staudt
+ * Copyright (C) 2026 Luis Staudt
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -25,8 +25,8 @@ import net.luis.utils.io.token.rules.assertions.LookbehindTokenRule;
 import net.luis.utils.io.token.rules.quantifiers.OptionalTokenRule;
 import net.luis.utils.io.token.rules.quantifiers.RepeatedTokenRule;
 import net.luis.utils.io.token.stream.TokenStream;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 /**
  * A functional interface representing a rule for matching tokens in a stream.<br>
@@ -51,7 +51,7 @@ public interface TokenRule {
 	 * However, some rules can match even if the token stream is at the end.<br>
 	 * Therefore, some rules do not include this check or have a modified behavior.
 	 */
-	@Nullable TokenRuleMatch match(@NotNull TokenStream stream, @NotNull TokenRuleContext ctx);
+	@Nullable TokenRuleMatch match(@NonNull TokenStream stream, @NonNull TokenRuleContext ctx);
 	
 	/**
 	 * Makes this token rule optional by wrapping it in an {@link OptionalTokenRule}.<br>
@@ -60,7 +60,7 @@ public interface TokenRule {
 	 * @see TokenRules#optional(TokenRule)
 	 * @see OptionalTokenRule
 	 */
-	default @NotNull TokenRule optional() {
+	default @NonNull TokenRule optional() {
 		return TokenRules.optional(this);
 	}
 	
@@ -74,7 +74,7 @@ public interface TokenRule {
 	 * @see TokenRules#atLeast(TokenRule, int)
 	 * @see RepeatedTokenRule
 	 */
-	default @NotNull TokenRule atLeast(int min) {
+	default @NonNull TokenRule atLeast(int min) {
 		return TokenRules.atLeast(this, min);
 	}
 	
@@ -88,7 +88,7 @@ public interface TokenRule {
 	 * @see TokenRules#exactly(TokenRule, int)
 	 * @see RepeatedTokenRule
 	 */
-	default @NotNull TokenRule exactly(int repeats) {
+	default @NonNull TokenRule exactly(int repeats) {
 		return TokenRules.exactly(this, repeats);
 	}
 	
@@ -102,7 +102,7 @@ public interface TokenRule {
 	 * @see TokenRules#atMost(TokenRule, int)
 	 * @see RepeatedTokenRule
 	 */
-	default @NotNull TokenRule atMost(int max) {
+	default @NonNull TokenRule atMost(int max) {
 		return TokenRules.atMost(this, max);
 	}
 	
@@ -114,7 +114,7 @@ public interface TokenRule {
 	 * @see TokenRules#zeroOrMore(TokenRule)
 	 * @see RepeatedTokenRule
 	 */
-	default @NotNull TokenRule zeroOrMore() {
+	default @NonNull TokenRule zeroOrMore() {
 		return TokenRules.zeroOrMore(this);
 	}
 	
@@ -129,7 +129,7 @@ public interface TokenRule {
 	 * @see TokenRules#between(TokenRule, int, int)
 	 * @see RepeatedTokenRule
 	 */
-	default @NotNull TokenRule between(int min, int max) {
+	default @NonNull TokenRule between(int min, int max) {
 		return TokenRules.between(this, min, max);
 	}
 	
@@ -150,7 +150,7 @@ public interface TokenRule {
 	 * @throws UnsupportedOperationException If this token rule does not support negation
 	 * @see NegatableTokenRule
 	 */
-	default @NotNull TokenRule not() {
+	default @NonNull TokenRule not() {
 		throw new UnsupportedOperationException("This token rule does not support negation");
 	}
 	
@@ -163,7 +163,7 @@ public interface TokenRule {
 	 * @see TokenRules#group(TokenRule)
 	 * @see TokenGroupRule
 	 */
-	default @NotNull TokenRule group() {
+	default @NonNull TokenRule group() {
 		return TokenRules.group(this);
 	}
 	
@@ -176,7 +176,7 @@ public interface TokenRule {
 	 * @see TokenRules#lookahead(TokenRule)
 	 * @see LookaheadTokenRule
 	 */
-	default @NotNull TokenRule lookahead() {
+	default @NonNull TokenRule lookahead() {
 		return TokenRules.lookahead(this);
 	}
 	
@@ -189,7 +189,7 @@ public interface TokenRule {
 	 * @see TokenRules#negativeLookahead(TokenRule)
 	 * @see LookaheadTokenRule
 	 */
-	default @NotNull TokenRule negativeLookahead() {
+	default @NonNull TokenRule negativeLookahead() {
 		return TokenRules.negativeLookahead(this);
 	}
 	
@@ -202,7 +202,7 @@ public interface TokenRule {
 	 * @see TokenRules#lookbehind(TokenRule)
 	 * @see LookbehindTokenRule
 	 */
-	default @NotNull TokenRule lookbehind() {
+	default @NonNull TokenRule lookbehind() {
 		return TokenRules.lookbehind(this);
 	}
 	
@@ -215,7 +215,7 @@ public interface TokenRule {
 	 * @see TokenRules#negativeLookbehind(TokenRule)
 	 * @see LookbehindTokenRule
 	 */
-	default @NotNull TokenRule negativeLookbehind() {
+	default @NonNull TokenRule negativeLookbehind() {
 		return TokenRules.negativeLookbehind(this);
 	}
 }

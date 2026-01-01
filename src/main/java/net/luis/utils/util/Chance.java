@@ -1,6 +1,6 @@
 /*
  * LUtils
- * Copyright (C) 2025 Luis Staudt
+ * Copyright (C) 2026 Luis Staudt
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,8 +20,8 @@ package net.luis.utils.util;
 
 import net.luis.utils.math.Mth;
 import org.apache.commons.lang3.StringUtils;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 import java.util.Objects;
 import java.util.Random;
@@ -83,7 +83,7 @@ public class Chance {
 	 * @param chance The chance as a double
 	 * @return The created chance
 	 */
-	public static @NotNull Chance of(double chance) {
+	public static @NonNull Chance of(double chance) {
 		if (0.0 >= chance) {
 			return ZERO;
 		} else if (chance >= 1.0) {
@@ -107,7 +107,7 @@ public class Chance {
 	 * @param chance The chance string to parse
 	 * @return The parsed chance or {@link #ZERO}
 	 */
-	public static @NotNull Chance parse(@Nullable String chance) {
+	public static @NonNull Chance parse(@Nullable String chance) {
 		if (StringUtils.isBlank(chance)) {
 			return ZERO;
 		}

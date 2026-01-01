@@ -1,6 +1,6 @@
 /*
  * LUtils
- * Copyright (C) 2025 Luis Staudt
+ * Copyright (C) 2026 Luis Staudt
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -21,8 +21,8 @@ package net.luis.utils.io.codec.types.network;
 import net.luis.utils.io.codec.AbstractCodec;
 import net.luis.utils.io.codec.provider.TypeProvider;
 import net.luis.utils.util.result.Result;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 import java.io.IOException;
 import java.net.InetAddress;
@@ -44,7 +44,7 @@ public class InetSocketAddressCodec extends AbstractCodec<InetSocketAddress, Obj
 	public InetSocketAddressCodec() {}
 	
 	@Override
-	public <R> @NotNull Result<R> encodeStart(@NotNull TypeProvider<R> provider, @NotNull R current, @Nullable InetSocketAddress value) {
+	public <R> @NonNull Result<R> encodeStart(@NonNull TypeProvider<R> provider, @NonNull R current, @Nullable InetSocketAddress value) {
 		Objects.requireNonNull(provider, "Type provider must not be null");
 		Objects.requireNonNull(current, "Current value must not be null");
 		if (value == null) {
@@ -64,7 +64,7 @@ public class InetSocketAddressCodec extends AbstractCodec<InetSocketAddress, Obj
 	}
 	
 	@Override
-	public @NotNull Result<String> encodeKey(@NotNull InetSocketAddress key) {
+	public @NonNull Result<String> encodeKey(@NonNull InetSocketAddress key) {
 		Objects.requireNonNull(key, "Key must not be null");
 		
 		String address = key.getAddress().getHostAddress();
@@ -77,7 +77,7 @@ public class InetSocketAddressCodec extends AbstractCodec<InetSocketAddress, Obj
 	}
 	
 	@Override
-	public <R> @NotNull Result<InetSocketAddress> decodeStart(@NotNull TypeProvider<R> provider, @NotNull R current, @Nullable R value) {
+	public <R> @NonNull Result<InetSocketAddress> decodeStart(@NonNull TypeProvider<R> provider, @NonNull R current, @Nullable R value) {
 		Objects.requireNonNull(provider, "Type provider must not be null");
 		Objects.requireNonNull(current, "Current value must not be null");
 		if (value == null) {
@@ -94,7 +94,7 @@ public class InetSocketAddressCodec extends AbstractCodec<InetSocketAddress, Obj
 	}
 	
 	@Override
-	public @NotNull Result<InetSocketAddress> decodeKey(@NotNull String key) {
+	public @NonNull Result<InetSocketAddress> decodeKey(@NonNull String key) {
 		Objects.requireNonNull(key, "Key must not be null");
 		return this.parseSocketAddress(key);
 	}
@@ -106,7 +106,7 @@ public class InetSocketAddressCodec extends AbstractCodec<InetSocketAddress, Obj
 	 * @param string The string to parse
 	 * @return The result containing the socket address or an error
 	 */
-	private @NotNull Result<InetSocketAddress> parseSocketAddress(@NotNull String string) {
+	private @NonNull Result<InetSocketAddress> parseSocketAddress(@NonNull String string) {
 		try {
 			String address;
 			int port;

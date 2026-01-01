@@ -1,6 +1,6 @@
 /*
  * LUtils
- * Copyright (C) 2025 Luis Staudt
+ * Copyright (C) 2026 Luis Staudt
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,8 +20,8 @@ package net.luis.utils.io.codec.mapping;
 
 import net.luis.utils.util.Either;
 import net.luis.utils.util.unsafe.reflection.ReflectionHelper;
-import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.UnknownNullability;
+import org.jspecify.annotations.NonNull;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
@@ -51,7 +51,7 @@ public class CodecComponent {
 	 * @param component The record component to wrap
 	 * @throws NullPointerException If the record component is null
 	 */
-	public CodecComponent(@NotNull RecordComponent component) {
+	public CodecComponent(@NonNull RecordComponent component) {
 		this.component = Either.left(Objects.requireNonNull(component, "Record component must not be null"));
 	}
 	
@@ -61,7 +61,7 @@ public class CodecComponent {
 	 * @param component The field to wrap
 	 * @throws NullPointerException If the field is null
 	 */
-	public CodecComponent(@NotNull Field component) {
+	public CodecComponent(@NonNull Field component) {
 		this.component = Either.right(Objects.requireNonNull(component, "Field must not be null"));
 	}
 	
@@ -69,7 +69,7 @@ public class CodecComponent {
 	 * Gets the name of this component.<br>
 	 * @return The name
 	 */
-	public @NotNull String getName() {
+	public @NonNull String getName() {
 		return this.component.mapTo(
 			RecordComponent::getName,
 			Field::getName
@@ -80,7 +80,7 @@ public class CodecComponent {
 	 * Gets the type of this component.<br>
 	 * @return The type as a class
 	 */
-	public @NotNull Class<?> getType() {
+	public @NonNull Class<?> getType() {
 		return this.component.mapTo(
 			RecordComponent::getType,
 			Field::getType
@@ -95,7 +95,7 @@ public class CodecComponent {
 	 * @return The annotation if present, or null if not
 	 * @throws NullPointerException If the annotation class is null
 	 */
-	public <T extends Annotation> @UnknownNullability T getAnnotation(@NotNull Class<T> annotationClass) {
+	public <T extends Annotation> @UnknownNullability T getAnnotation(@NonNull Class<T> annotationClass) {
 		Objects.requireNonNull(annotationClass, "Annotation class must not be null");
 		return this.component.mapTo(
 			component -> component.getAnnotation(annotationClass),
@@ -112,7 +112,7 @@ public class CodecComponent {
 	 * @return An optional containing the value of the component, or an empty optional if access failed
 	 * @throws NullPointerException If the instance is null
 	 */
-	public @NotNull Optional<Object> accessValue(@NotNull Object instance) {
+	public @NonNull Optional<Object> accessValue(@NonNull Object instance) {
 		Objects.requireNonNull(instance, "Instance must not be null");
 		return this.component.mapTo(
 			component -> ReflectionHelper.invoke(component.getAccessor(), instance),

@@ -1,6 +1,6 @@
 /*
  * LUtils
- * Copyright (C) 2025 Luis Staudt
+ * Copyright (C) 2026 Luis Staudt
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,8 +20,8 @@ package net.luis.utils.util;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Strings;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 import java.util.Objects;
 import java.util.regex.Matcher;
@@ -134,7 +134,7 @@ public class Version implements Comparable<Version> {
 	 * @param suffixVersion The appendable suffix version number, containing the separator and the version number
 	 * @throws NullPointerException If the build or suffix version is null
 	 */
-	protected Version(int major, int minor, int patch, @NotNull AppendingVersion buildVersion, @Nullable String suffix, @NotNull AppendingVersion suffixVersion) { // protected to prevent instantiation from outside but allow inheritance
+	protected Version(int major, int minor, int patch, @NonNull AppendingVersion buildVersion, @Nullable String suffix, @NonNull AppendingVersion suffixVersion) { // protected to prevent instantiation from outside but allow inheritance
 		this.major = Math.max(0, major);
 		this.minor = Math.max(0, minor);
 		this.patch = Math.max(0, patch);
@@ -155,7 +155,7 @@ public class Version implements Comparable<Version> {
 	 * @return The created version
 	 * @see Builder
 	 */
-	public static @NotNull Version of(int major, int minor) {
+	public static @NonNull Version of(int major, int minor) {
 		if (0 >= major && 0 >= minor) {
 			return ZERO;
 		}
@@ -175,7 +175,7 @@ public class Version implements Comparable<Version> {
 	 * @return The created version
 	 * @see Builder
 	 */
-	public static @NotNull Version of(int major, int minor, int patch) {
+	public static @NonNull Version of(int major, int minor, int patch) {
 		if (0 >= major && 0 >= minor && 0 >= patch) {
 			return ZERO;
 		}
@@ -191,7 +191,7 @@ public class Version implements Comparable<Version> {
 	 * @return The created version builder
 	 * @see Builder
 	 */
-	public static @NotNull Builder builder(int major, int minor) {
+	public static @NonNull Builder builder(int major, int minor) {
 		return new Builder(major, minor);
 	}
 	
@@ -205,7 +205,7 @@ public class Version implements Comparable<Version> {
 	 * @return The created version builder
 	 * @see Builder
 	 */
-	public static @NotNull Builder builder(int major, int minor, int patch) {
+	public static @NonNull Builder builder(int major, int minor, int patch) {
 		return new Builder(major, minor, patch);
 	}
 	
@@ -256,7 +256,7 @@ public class Version implements Comparable<Version> {
 	 * @param version The version string to parse
 	 * @return The parsed version or {@link #ZERO}
 	 */
-	public static @NotNull Version parse(@Nullable String version) {
+	public static @NonNull Version parse(@Nullable String version) {
 		if (StringUtils.isBlank(version)) {
 			return ZERO;
 		}
@@ -327,7 +327,7 @@ public class Version implements Comparable<Version> {
 	 * Returns the suffix or pre-release identifier.<br>
 	 * @return The suffix or pre-release identifier or an empty string if not present
 	 */
-	public @NotNull String getSuffix() {
+	public @NonNull String getSuffix() {
 		return this.suffix;
 	}
 	
@@ -369,7 +369,7 @@ public class Version implements Comparable<Version> {
 	 * Returns the version as a builder for modifications.<br>
 	 * @return The version as a builder
 	 */
-	public @NotNull Builder asBuilder() {
+	public @NonNull Builder asBuilder() {
 		Builder builder = new Builder(this.major, this.minor, this.patch).withSuffix(this.suffix);
 		if (this.suffixVersion.isNotEmpty()) {
 			builder.withSuffixVersion(this.suffixVersion.version());
@@ -413,7 +413,7 @@ public class Version implements Comparable<Version> {
 	 * positive if this version is greater than the given version, and zero if both versions are equal
 	 */
 	@Override
-	public int compareTo(@NotNull Version o) {
+	public int compareTo(@NonNull Version o) {
 		int major = Integer.compare(this.major, o.major);
 		if (major != 0) {
 			return major;
@@ -477,7 +477,7 @@ public class Version implements Comparable<Version> {
 	 * @return The version as a string
 	 * @see #toString(boolean, boolean)
 	 */
-	public @NotNull String toString(boolean prefixed) {
+	public @NonNull String toString(boolean prefixed) {
 		return this.toString(prefixed, true);
 	}
 	
@@ -496,7 +496,7 @@ public class Version implements Comparable<Version> {
 	 * @param omitZeros If the patch version should be omitted if it is 0
 	 * @return The version as a string
 	 */
-	public @NotNull String toString(boolean prefixed, boolean omitZeros) {
+	public @NonNull String toString(boolean prefixed, boolean omitZeros) {
 		StringBuilder builder = new StringBuilder(prefixed ? "v" : "");
 		builder.append(this.major).append('.').append(this.minor);
 		if (!omitZeros || this.patch != 0) {
@@ -583,7 +583,7 @@ public class Version implements Comparable<Version> {
 		 * @param major The major version number
 		 * @return This builder
 		 */
-		public @NotNull Builder withMajor(int major) {
+		public @NonNull Builder withMajor(int major) {
 			this.major = Math.max(0, major);
 			return this;
 		}
@@ -595,7 +595,7 @@ public class Version implements Comparable<Version> {
 		 * @param minor The minor version number
 		 * @return This builder
 		 */
-		public @NotNull Builder withMinor(int minor) {
+		public @NonNull Builder withMinor(int minor) {
 			this.minor = Math.max(0, minor);
 			return this;
 		}
@@ -607,7 +607,7 @@ public class Version implements Comparable<Version> {
 		 * @param patch The patch or fix version number
 		 * @return This builder
 		 */
-		public @NotNull Builder withPatch(int patch) {
+		public @NonNull Builder withPatch(int patch) {
 			this.patch = Math.max(0, patch);
 			return this;
 		}
@@ -621,7 +621,7 @@ public class Version implements Comparable<Version> {
 		 * @return This builder
 		 * @throws IllegalArgumentException If the separator is not '.', '-', or 'r'
 		 */
-		public @NotNull Builder withBuild(char separator, int version) {
+		public @NonNull Builder withBuild(char separator, int version) {
 			if (separator != '.' && separator != '-' && separator != 'r') {
 				throw new IllegalArgumentException("Invalid build version separator: '" + separator + "' (expected '.', '-', or 'r')");
 			}
@@ -637,7 +637,7 @@ public class Version implements Comparable<Version> {
 		 * @param suffix The suffix or pre-release identifier
 		 * @return This builder
 		 */
-		public @NotNull Builder withSuffix(@Nullable String suffix) {
+		public @NonNull Builder withSuffix(@Nullable String suffix) {
 			this.suffix = StringUtils.stripToEmpty(suffix);
 			return this;
 		}
@@ -649,7 +649,7 @@ public class Version implements Comparable<Version> {
 		 * @param version The suffix version number
 		 * @return This builder
 		 */
-		public @NotNull Builder withSuffixVersion(int version) {
+		public @NonNull Builder withSuffixVersion(int version) {
 			this.suffixVersion = new AppendingVersion('+', Math.max(0, version));
 			return this;
 		}
@@ -658,7 +658,7 @@ public class Version implements Comparable<Version> {
 		 * Builds the version with the given version numbers.<br>
 		 * @return The created version
 		 */
-		public @NotNull Version build() {
+		public @NonNull Version build() {
 			return new Version(this.major, this.minor, this.patch, this.build, this.suffix, this.suffixVersion);
 		}
 		
@@ -724,7 +724,7 @@ public class Version implements Comparable<Version> {
 		 * @return The comparison result
 		 */
 		@Override
-		public int compareTo(@NotNull AppendingVersion o) {
+		public int compareTo(@NonNull AppendingVersion o) {
 			if (this.version == -1 && o.version == -1) {
 				return 0;
 			}
@@ -753,7 +753,7 @@ public class Version implements Comparable<Version> {
 		}
 		
 		@Override
-		public @NotNull String toString() {
+		public @NonNull String toString() {
 			return this.separator + String.valueOf(this.version);
 		}
 		//endregion

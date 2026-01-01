@@ -1,6 +1,6 @@
 /*
  * LUtils
- * Copyright (C) 2025 Luis Staudt
+ * Copyright (C) 2026 Luis Staudt
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,8 +19,8 @@
 package net.luis.utils.collection.util;
 
 import com.google.common.collect.Table;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 import java.util.Objects;
 
@@ -37,8 +37,8 @@ import java.util.Objects;
  * @param <V> The type of the value
  */
 public record SimpleCell<R, C, V>(
-	@NotNull R getRowKey,
-	@NotNull C getColumnKey,
+	@NonNull R getRowKey,
+	@NonNull C getColumnKey,
 	@Nullable V getValue
 ) implements Table.Cell<R, C, V> {
 	
@@ -72,7 +72,7 @@ public record SimpleCell<R, C, V>(
 	}
 	
 	@Override
-	public @NotNull String toString() {
+	public @NonNull String toString() {
 		return "(" + this.getRowKey + "," + this.getColumnKey + ")=" + this.getValue;
 	}
 	//endregion

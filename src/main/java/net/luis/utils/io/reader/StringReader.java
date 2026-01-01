@@ -1,6 +1,6 @@
 /*
  * LUtils
- * Copyright (C) 2025 Luis Staudt
+ * Copyright (C) 2026 Luis Staudt
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -26,7 +26,8 @@ import net.luis.utils.math.NumberType;
 import net.luis.utils.math.Radix;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.Strings;
-import org.jetbrains.annotations.*;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 import java.io.*;
 import java.math.BigDecimal;
@@ -72,7 +73,7 @@ public class StringReader {
 	 * @param string The string to read from
 	 * @throws NullPointerException If the string is null
 	 */
-	public StringReader(@NotNull String string) {
+	public StringReader(@NonNull String string) {
 		this.string = Objects.requireNonNull(string, "String must not be null");
 	}
 	
@@ -84,7 +85,7 @@ public class StringReader {
 	 * @throws NullPointerException If the reader is null
 	 * @throws UncheckedIOException If an I/O error occurs while reading the string
 	 */
-	public StringReader(@NotNull Reader reader) {
+	public StringReader(@NonNull Reader reader) {
 		Objects.requireNonNull(reader, "Reader must not be null");
 		try {
 			this.string = FileUtils.readString(reader);
@@ -97,7 +98,7 @@ public class StringReader {
 	 * Returns the string to read from.<br>
 	 * @return The string
 	 */
-	public @NotNull String getString() {
+	public @NonNull String getString() {
 		return this.string;
 	}
 	
@@ -127,7 +128,7 @@ public class StringReader {
 	 * @throws IllegalArgumentException If the amount is less than or equal to zero
 	 * @throws IndexOutOfBoundsException If there are not enough characters to read ({@link #canRead(int)} returns false)
 	 */
-	public @NotNull String read(int amount) {
+	public @NonNull String read(int amount) {
 		if (0 >= amount) {
 			throw new IllegalArgumentException("Amount must be greater than zero");
 		}
@@ -170,7 +171,7 @@ public class StringReader {
 	 * @param predicate The predicate to match the characters
 	 * @return True if the number of characters to read matches the predicate, otherwise false
 	 */
-	public boolean canRead(int amount, @NotNull Predicate<Character> predicate) {
+	public boolean canRead(int amount, @NonNull Predicate<Character> predicate) {
 		Objects.requireNonNull(predicate, "Predicate must not be null");
 		if (0 >= amount) {
 			throw new IllegalArgumentException("Amount must be greater than zero");
@@ -233,7 +234,7 @@ public class StringReader {
 	 * @param predicate The predicate to match
 	 * @throws NullPointerException If the predicate is null
 	 */
-	public void skip(@NotNull Predicate<Character> predicate) {
+	public void skip(@NonNull Predicate<Character> predicate) {
 		Objects.requireNonNull(predicate, "Predicate must not be null");
 		while (this.canRead() && predicate.test(this.peek())) {
 			this.skip();
@@ -277,7 +278,7 @@ public class StringReader {
 	 * @param includeLineBreak Whether the line break should be included in the result or not
 	 * @return The line which was read
 	 */
-	public @NotNull String readLine(boolean includeLineBreak) {
+	public @NonNull String readLine(boolean includeLineBreak) {
 		if (!this.canRead()) {
 			return "";
 		}
@@ -318,7 +319,7 @@ public class StringReader {
 	 * Reads the remaining string.<br>
 	 * @return The remaining string
 	 */
-	public @NotNull String readRemaining() {
+	public @NonNull String readRemaining() {
 		if (!this.canRead()) {
 			return "";
 		}
@@ -336,7 +337,7 @@ public class StringReader {
 	 * @return The string read until the default terminator
 	 * @see #readUnquotedString(char)
 	 */
-	public @NotNull String readUnquotedString() {
+	public @NonNull String readUnquotedString() {
 		return this.readUnquotedString(' ');
 	}
 	
@@ -349,7 +350,7 @@ public class StringReader {
 	 * @return The string which was read until the terminator
 	 * @throws StringIndexOutOfBoundsException If there are no more characters to read
 	 */
-	public @NotNull String readUnquotedString(char terminator) {
+	public @NonNull String readUnquotedString(char terminator) {
 		if (!this.canRead()) {
 			throw new StringIndexOutOfBoundsException("Expected an unquoted string but found nothing");
 		}
@@ -373,7 +374,7 @@ public class StringReader {
 	 * @throws StringIndexOutOfBoundsException If there are no more characters to read
 	 * @throws InvalidStringException If the next read character is not a single or double quote
 	 */
-	public @NotNull String readQuotedString() {
+	public @NonNull String readQuotedString() {
 		if (!this.canRead()) {
 			throw new StringIndexOutOfBoundsException("Expected a quoted string but found nothing");
 		}
@@ -414,7 +415,7 @@ public class StringReader {
 	 * @see #readQuotedString()
 	 * @see #readUnquotedString()
 	 */
-	public @NotNull String readString() {
+	public @NonNull String readString() {
 		if (!this.canRead()) {
 			throw new StringIndexOutOfBoundsException("Expected a string value but found nothing");
 		}
@@ -442,7 +443,7 @@ public class StringReader {
 	 * @return The string which was read until the terminator
 	 * @throws IllegalArgumentException If the terminator is a backslash
 	 */
-	public @NotNull String readUntil(char terminator) {
+	public @NonNull String readUntil(char terminator) {
 		if (terminator == '\\') {
 			throw new IllegalArgumentException("Terminator must not be a backslash");
 		}
@@ -462,7 +463,7 @@ public class StringReader {
 	 * @return The string which was read until the terminator
 	 * @throws IllegalArgumentException If the terminator is a backslash
 	 */
-	public @NotNull String readUntilInclusive(char terminator) {
+	public @NonNull String readUntilInclusive(char terminator) {
 		if (terminator == '\\') {
 			throw new IllegalArgumentException("Terminator must not be a backslash");
 		}
@@ -482,7 +483,7 @@ public class StringReader {
 	 * @return The string which was read until the terminator
 	 * @throws IllegalArgumentException If the terminators are empty or contain a backslash
 	 */
-	public @NotNull String readUntil(char @NotNull ... terminators) {
+	public @NonNull String readUntil(char @NonNull ... terminators) {
 		Set<Character> uniqueTerminators = Sets.newHashSet(ArrayUtils.toObject(terminators));
 		if (uniqueTerminators.isEmpty()) {
 			throw new IllegalArgumentException("Terminators must not be empty");
@@ -506,7 +507,7 @@ public class StringReader {
 	 * @return The string which was read until the terminator
 	 * @throws IllegalArgumentException If the terminators are empty or contain a backslash
 	 */
-	public @NotNull String readUntilInclusive(char... terminators) {
+	public @NonNull String readUntilInclusive(char... terminators) {
 		Set<Character> uniqueTerminators = Sets.newHashSet(ArrayUtils.toObject(terminators));
 		if (uniqueTerminators.isEmpty()) {
 			throw new IllegalArgumentException("Terminators must not be empty");
@@ -528,8 +529,7 @@ public class StringReader {
 	 * @see #readUntil(char...)
 	 * @see #readUntilInclusive(char...)
 	 */
-	@ApiStatus.Internal
-	protected @NotNull String readUntil(@NotNull Predicate<Character> predicate, boolean inclusive) {
+	protected @NonNull String readUntil(@NonNull Predicate<Character> predicate, boolean inclusive) {
 		StringBuilder builder = new StringBuilder();
 		boolean escaped = false;
 		boolean inSingleQuotes = false;
@@ -571,7 +571,7 @@ public class StringReader {
 	 * @throws NullPointerException If the terminator string is null
 	 * @throws IllegalArgumentException If the terminator string is empty or contains a backslash
 	 */
-	public @NotNull String readUntil(@NotNull String terminator, boolean caseSensitive) {
+	public @NonNull String readUntil(@NonNull String terminator, boolean caseSensitive) {
 		Objects.requireNonNull(terminator, "Terminator string must not be null");
 		if (terminator.isEmpty()) {
 			throw new IllegalArgumentException("Terminator string must not be empty");
@@ -600,7 +600,7 @@ public class StringReader {
 	 * @throws NullPointerException If the terminator string is null
 	 * @throws IllegalArgumentException If the terminator string is empty or contains a backslash
 	 */
-	public @NotNull String readUntilInclusive(@NotNull String terminator, boolean caseSensitive) {
+	public @NonNull String readUntilInclusive(@NonNull String terminator, boolean caseSensitive) {
 		Objects.requireNonNull(terminator, "Terminator string must not be null");
 		if (terminator.isEmpty()) {
 			throw new IllegalArgumentException("Terminators string must not be empty");
@@ -625,9 +625,8 @@ public class StringReader {
 	 * @see #readUntil(String, boolean)
 	 * @see #readUntilInclusive(String, boolean)
 	 */
-	@ApiStatus.Internal
 	@SuppressWarnings("DuplicatedCode")
-	protected @NotNull String readUntil(@NotNull String terminator, boolean caseSensitive, boolean inclusive) {
+	protected @NonNull String readUntil(@NonNull String terminator, boolean caseSensitive, boolean inclusive) {
 		Objects.requireNonNull(terminator, "Terminator string must not be null");
 		Predicate<String> matcher = s -> caseSensitive ? terminator.startsWith(s) : Strings.CI.startsWith(s, terminator);
 		Predicate<String> breaker = s -> caseSensitive ? terminator.equals(s) : s.equalsIgnoreCase(terminator);
@@ -692,7 +691,7 @@ public class StringReader {
 	 * @throws IllegalArgumentException If the expected string is empty
 	 * @throws InvalidStringException If the string read does not match the expected string
 	 */
-	public @NotNull String readExpected(@NotNull String expected, boolean caseSensitive) {
+	public @NonNull String readExpected(@NonNull String expected, boolean caseSensitive) {
 		Objects.requireNonNull(expected, "Expected string must not be null");
 		if (!this.canRead()) {
 			throw new StringIndexOutOfBoundsException("Expected '" + expected + "' but found nothing");
@@ -745,7 +744,7 @@ public class StringReader {
 	 * @throws IllegalArgumentException If the list of expected strings is empty
 	 * @throws InvalidStringException If the string read does not match any of the expected strings
 	 */
-	public @NotNull String readExpected(@NotNull List<String> expected, boolean caseSensitive) {
+	public @NonNull String readExpected(@NonNull List<String> expected, boolean caseSensitive) {
 		Objects.requireNonNull(expected, "Expected strings must not be null");
 		if (!this.canRead()) {
 			throw new StringIndexOutOfBoundsException("Expected one of '" + expected + "' but found nothing");
@@ -995,7 +994,7 @@ public class StringReader {
 	 * @throws InvalidStringException If the read value is not a (valid) number
 	 * @see #readNumberAsString(NumberType)
 	 */
-	public @NotNull Number readNumber() {
+	public @NonNull Number readNumber() {
 		if (!this.canRead()) {
 			throw new StringIndexOutOfBoundsException("Expected a number but found nothing");
 		}
@@ -1183,7 +1182,7 @@ public class StringReader {
 	 * @throws InvalidStringException If the read value is not a (valid) big integer
 	 * @see #readNumberAsString(NumberType)
 	 */
-	public @NotNull BigInteger readBigInteger() {
+	public @NonNull BigInteger readBigInteger() {
 		if (!this.canRead()) {
 			throw new StringIndexOutOfBoundsException("Expected a big integer value but found nothing");
 		}
@@ -1209,7 +1208,7 @@ public class StringReader {
 	 * @throws InvalidStringException If the read value is not a (valid) big decimal
 	 * @see #readNumberAsString(NumberType)
 	 */
-	public @NotNull BigDecimal readBigDecimal() {
+	public @NonNull BigDecimal readBigDecimal() {
 		if (!this.canRead()) {
 			throw new StringIndexOutOfBoundsException("Expected a big decimal value but found nothing");
 		}
@@ -1253,7 +1252,7 @@ public class StringReader {
 	 * @param type The type of the number
 	 * @param radix The radix of the number
 	 */
-	private record ParsedNumber(char sign, @NotNull String value, @NotNull NumberType type, @NotNull Radix radix) {
+	private record ParsedNumber(char sign, @NonNull String value, @NonNull NumberType type, @NonNull Radix radix) {
 		
 		/**
 		 * Constructs a new parsed number.<br>
@@ -1274,13 +1273,13 @@ public class StringReader {
 		 * The value is prefixed with the sign.<br>
 		 * @return The signed value
 		 */
-		public @NotNull String getSignedValue() {
+		public @NonNull String getSignedValue() {
 			return this.sign + this.value;
 		}
 		
 		//region Object overrides
 		@Override
-		public @NotNull String toString() {
+		public @NonNull String toString() {
 			return this.sign + this.value + " of type " + this.type + " with radix " + this.radix;
 		}
 		//endregion

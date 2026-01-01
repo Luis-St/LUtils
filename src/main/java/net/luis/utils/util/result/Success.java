@@ -1,6 +1,6 @@
 /*
  * LUtils
- * Copyright (C) 2025 Luis Staudt
+ * Copyright (C) 2026 Luis Staudt
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,7 +18,9 @@
 
 package net.luis.utils.util.result;
 
-import org.jetbrains.annotations.*;
+import org.jetbrains.annotations.UnknownNullability;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 import java.util.Objects;
 import java.util.Optional;
@@ -61,7 +63,7 @@ record Success<T>(@Nullable T value) implements Result<T> {
 	}
 	
 	@Override
-	public @NotNull Optional<T> result() {
+	public @NonNull Optional<T> result() {
 		return Optional.ofNullable(this.value);
 	}
 	
@@ -71,47 +73,47 @@ record Success<T>(@Nullable T value) implements Result<T> {
 	}
 	
 	@Override
-	public <X extends RuntimeException> @UnknownNullability T resultOrThrow(@NotNull Function<String, ? extends X> exceptionSupplier) {
+	public <X extends RuntimeException> @UnknownNullability T resultOrThrow(@NonNull Function<String, ? extends X> exceptionSupplier) {
 		Objects.requireNonNull(exceptionSupplier, "Exception supplier must not be null");
 		return this.value;
 	}
 	
 	@Override
-	public @NotNull Optional<String> error() {
+	public @NonNull Optional<String> error() {
 		return Optional.empty();
 	}
 	
 	@Override
-	public @NotNull String errorOrThrow() {
+	public @NonNull String errorOrThrow() {
 		throw new IllegalStateException("Result is not an error");
 	}
 	
 	@Override
-	public <R> @NotNull Result<R> map(@NotNull Function<T, R> mapper) {
+	public <R> @NonNull Result<R> map(@NonNull Function<T, R> mapper) {
 		Objects.requireNonNull(mapper, "Mapper must not be null");
 		return new Success<>(mapper.apply(this.value));
 	}
 	
 	@Override
-	public <R> @NotNull Result<R> flatMap(@NotNull Function<T, Result<R>> mapper) {
+	public <R> @NonNull Result<R> flatMap(@NonNull Function<T, Result<R>> mapper) {
 		Objects.requireNonNull(mapper, "Mapper must not be null");
 		return mapper.apply(this.value);
 	}
 	
 	@Override
-	public @UnknownNullability T orElse(@NotNull T fallback) {
+	public @UnknownNullability T orElse(@NonNull T fallback) {
 		Objects.requireNonNull(fallback, "Fallback must not be null");
 		return this.value;
 	}
 	
 	@Override
-	public @UnknownNullability T orElseGet(@NotNull Supplier<? extends T> supplier) {
+	public @UnknownNullability T orElseGet(@NonNull Supplier<? extends T> supplier) {
 		Objects.requireNonNull(supplier, "Supplier must not be null");
 		return this.value;
 	}
 	
 	@Override
-	public @NotNull String toString() {
+	public @NonNull String toString() {
 		return "Success[" + this.value + "]";
 	}
 }

@@ -1,6 +1,6 @@
 /*
  * LUtils
- * Copyright (C) 2025 Luis Staudt
+ * Copyright (C) 2026 Luis Staudt
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,7 +18,7 @@
 
 package net.luis.utils.function.throwable;
 
-import org.jetbrains.annotations.NotNull;
+import org.jspecify.annotations.NonNull;
 
 import java.util.Objects;
 import java.util.function.Function;
@@ -46,7 +46,7 @@ public interface ThrowableFunction<T, R, X extends Throwable> {
 	 * @param <R> The return type
 	 * @throws NullPointerException If the throwable function is null
 	 */
-	static <T, R> @NotNull Function<T, R> caught(@NotNull ThrowableFunction<T, R, ? extends Throwable> function) {
+	static <T, R> @NonNull Function<T, R> caught(@NonNull ThrowableFunction<T, R, ? extends Throwable> function) {
 		Objects.requireNonNull(function, "Throwable function must not be null");
 		return (t) -> {
 			try {
@@ -75,7 +75,7 @@ public interface ThrowableFunction<T, R, X extends Throwable> {
 	 * @param <S> The type of the output of the {@code after} function, and of the composed function
 	 * @throws NullPointerException If the after function is null
 	 */
-	default <S> @NotNull ThrowableFunction<T, S, X> andThen(@NotNull ThrowableFunction<? super R, ? extends S, X> after) {
+	default <S> @NonNull ThrowableFunction<T, S, X> andThen(@NonNull ThrowableFunction<? super R, ? extends S, X> after) {
 		Objects.requireNonNull(after, "After function must not be null");
 		return (t) -> after.apply(this.apply(t));
 	}

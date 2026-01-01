@@ -1,6 +1,6 @@
 /*
  * LUtils
- * Copyright (C) 2025 Luis Staudt
+ * Copyright (C) 2026 Luis Staudt
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,7 +18,7 @@
 
 package net.luis.utils.util;
 
-import org.jetbrains.annotations.NotNull;
+import org.jspecify.annotations.NonNull;
 
 import java.util.Objects;
 import java.util.function.Supplier;
@@ -48,7 +48,7 @@ public class LazyLoad<T> implements Supplier<T> {
 	 * @param supplier The supplier of the value to be loaded lazily
 	 * @throws NullPointerException If the supplier is null
 	 */
-	public LazyLoad(@NotNull Supplier<T> supplier) {
+	public LazyLoad(@NonNull Supplier<T> supplier) {
 		this.supplier = Objects.requireNonNull(supplier, "Supplied value must not be null");
 	}
 	

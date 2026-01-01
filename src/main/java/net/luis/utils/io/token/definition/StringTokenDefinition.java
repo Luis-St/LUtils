@@ -1,6 +1,6 @@
 /*
  * LUtils
- * Copyright (C) 2025 Luis Staudt
+ * Copyright (C) 2026 Luis Staudt
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,7 +18,7 @@
 
 package net.luis.utils.io.token.definition;
 
-import org.jetbrains.annotations.NotNull;
+import org.jspecify.annotations.NonNull;
 
 import java.util.Objects;
 
@@ -32,7 +32,7 @@ import java.util.Objects;
  * @param equalsIgnoreCase If the token should be compared case-insensitive
  */
 public record StringTokenDefinition(
-	@NotNull String token,
+	@NonNull String token,
 	boolean equalsIgnoreCase
 ) implements TokenDefinition {
 	
@@ -52,13 +52,13 @@ public record StringTokenDefinition(
 	}
 	
 	@Override
-	public boolean matches(@NotNull String word) {
+	public boolean matches(@NonNull String word) {
 		Objects.requireNonNull(word, "Word must not be null");
 		return this.equalsIgnoreCase ? word.equalsIgnoreCase(this.token) : word.equals(this.token);
 	}
 	
 	@Override
-	public @NotNull String toString() {
+	public @NonNull String toString() {
 		return "StringTokenDefinition[token=" + this.token.replace("\t", "\\t").replace("\n", "\\n") + ",equalsIgnoreCase=" + this.equalsIgnoreCase + "]";
 	}
 }

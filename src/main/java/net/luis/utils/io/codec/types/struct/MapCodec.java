@@ -1,6 +1,6 @@
 /*
  * LUtils
- * Copyright (C) 2025 Luis Staudt
+ * Copyright (C) 2026 Luis Staudt
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -23,8 +23,8 @@ import net.luis.utils.io.codec.AbstractCodec;
 import net.luis.utils.io.codec.Codec;
 import net.luis.utils.io.codec.provider.TypeProvider;
 import net.luis.utils.util.result.Result;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 import java.util.*;
 
@@ -55,19 +55,19 @@ public class MapCodec<K, V> extends AbstractCodec<Map<K, V>, Object> {
 	 * @param valueCodec The value codec
 	 * @throws NullPointerException If the key or value codec is null
 	 */
-	public MapCodec(@NotNull Codec<K> keyCodec, @NotNull Codec<V> valueCodec) {
+	public MapCodec(@NonNull Codec<K> keyCodec, @NonNull Codec<V> valueCodec) {
 		this.keyCodec = Objects.requireNonNull(keyCodec, "Key codec must not be null");
 		this.valueCodec = Objects.requireNonNull(valueCodec, "Value codec must not be null");
 	}
 	
 	@Override
 	@SuppressWarnings("unchecked")
-	public @NotNull Class<Map<K, V>> getType() {
+	public @NonNull Class<Map<K, V>> getType() {
 		return (Class<Map<K, V>>) (Class<?>) Map.class;
 	}
 	
 	@Override
-	public <R> @NotNull Result<R> encodeStart(@NotNull TypeProvider<R> provider, @NotNull R current, @Nullable Map<K, V> value) {
+	public <R> @NonNull Result<R> encodeStart(@NonNull TypeProvider<R> provider, @NonNull R current, @Nullable Map<K, V> value) {
 		Objects.requireNonNull(provider, "Type provider must not be null");
 		Objects.requireNonNull(current, "Current value must not be null");
 		if (value == null) {
@@ -117,7 +117,7 @@ public class MapCodec<K, V> extends AbstractCodec<Map<K, V>, Object> {
 	 * @param <R> The type of the encoded value
 	 * @throws NullPointerException If the type provider or map entry is null
 	 */
-	private <R> @NotNull Result<Map.Entry<String, R>> encodeEntry(@NotNull TypeProvider<R> provider, @NotNull Map.Entry<K, V> entry) {
+	private <R> @NonNull Result<Map.Entry<String, R>> encodeEntry(@NonNull TypeProvider<R> provider, Map.@NonNull Entry<K, V> entry) {
 		Objects.requireNonNull(provider, "Type provider must not be null");
 		Objects.requireNonNull(entry, "Map entry must not be null");
 		
@@ -134,7 +134,7 @@ public class MapCodec<K, V> extends AbstractCodec<Map<K, V>, Object> {
 	}
 	
 	@Override
-	public <R> @NotNull Result<Map<K, V>> decodeStart(@NotNull TypeProvider<R> provider, @NotNull R current, @Nullable R value) {
+	public <R> @NonNull Result<Map<K, V>> decodeStart(@NonNull TypeProvider<R> provider, @NonNull R current, @Nullable R value) {
 		Objects.requireNonNull(provider, "Type provider must not be null");
 		Objects.requireNonNull(current, "Current value must not be null");
 		if (value == null) {
@@ -177,7 +177,7 @@ public class MapCodec<K, V> extends AbstractCodec<Map<K, V>, Object> {
 	 * @param <R> The type of the decoded value
 	 * @throws NullPointerException If the type provider or map entry is null
 	 */
-	private <R> @NotNull Result<Map.Entry<K, V>> decodeEntry(@NotNull TypeProvider<R> provider, @NotNull R current, @NotNull Map.Entry<String, R> entry) {
+	private <R> @NonNull Result<Map.Entry<K, V>> decodeEntry(@NonNull TypeProvider<R> provider, @NonNull R current, Map.@NonNull Entry<String, R> entry) {
 		Objects.requireNonNull(provider, "Type provider must not be null");
 		Objects.requireNonNull(entry, "Map entry must not be null");
 		

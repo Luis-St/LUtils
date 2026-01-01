@@ -1,6 +1,6 @@
 /*
  * LUtils
- * Copyright (C) 2025 Luis Staudt
+ * Copyright (C) 2026 Luis Staudt
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,8 +18,8 @@
 
 package net.luis.utils.collection.util;
 
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 /**
  * A mutable implementation of the {@link java.util.Map.Entry} interface.<br>
@@ -39,7 +39,7 @@ public class MutableEntry<K, V> extends SimpleEntry<K, V> {
 	 * @param value The value of the entry
 	 * @throws NullPointerException If the key is null
 	 */
-	public MutableEntry(@NotNull K key, @Nullable V value) {
+	public MutableEntry(@NonNull K key, @Nullable V value) {
 		super(key, value);
 	}
 	

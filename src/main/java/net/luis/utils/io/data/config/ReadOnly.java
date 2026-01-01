@@ -1,6 +1,6 @@
 /*
  * LUtils
- * Copyright (C) 2025 Luis Staudt
+ * Copyright (C) 2026 Luis Staudt
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,7 +18,7 @@
 
 package net.luis.utils.io.data.config;
 
-import org.jetbrains.annotations.NotNull;
+import org.jspecify.annotations.NonNull;
 
 import java.lang.annotation.*;
 
@@ -51,5 +51,5 @@ public @interface ReadOnly {
 	 * Each dependency must be a boolean expression.<br>
 	 * @return The dependencies
 	 */
-	String @NotNull [] value() default {};
+	String @NonNull [] value() default {};
 }

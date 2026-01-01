@@ -1,6 +1,6 @@
 /*
  * LUtils
- * Copyright (C) 2025 Luis Staudt
+ * Copyright (C) 2026 Luis Staudt
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -22,8 +22,8 @@ import com.google.common.base.Objects;
 import com.google.common.collect.Lists;
 import org.apache.commons.lang3.*;
 import org.intellij.lang.annotations.Language;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 import java.util.*;
 import java.util.function.Predicate;
@@ -127,7 +127,7 @@ public final class StringUtils {
 	 * @param str The string to reverse
 	 * @return The reversed string including brackets
 	 */
-	public static @NotNull String reverseIncludeBrackets(@Nullable String str) {
+	public static @NonNull String reverseIncludeBrackets(@Nullable String str) {
 		if (isEmpty(str)) {
 			return "";
 		}
@@ -160,7 +160,7 @@ public final class StringUtils {
 	 * @param search The character to search for
 	 * @return A list with the indexes of all occurrences in the given character
 	 */
-	public static @NotNull List<Integer> indexOfAll(@Nullable String str, char search) {
+	public static @NonNull List<Integer> indexOfAll(@Nullable String str, char search) {
 		List<Integer> indexes = Lists.newArrayList();
 		if (isEmpty(str)) {
 			return indexes;
@@ -192,7 +192,7 @@ public final class StringUtils {
 	 * @param search The string to search for
 	 * @return A list with the indexes of all occurrences in the given string
 	 */
-	public static @NotNull List<Integer> indexOfAll(@Nullable String str, @Nullable String search) {
+	public static @NonNull List<Integer> indexOfAll(@Nullable String str, @Nullable String search) {
 		List<Integer> indexes = Lists.newArrayList();
 		if (isEmpty(str) || isEmpty(search)) {
 			return indexes;
@@ -513,7 +513,7 @@ public final class StringUtils {
 	 * @return A list with all similar strings to the base string
 	 * @see #findSimilar(String, int, ToIntBiFunction, List)
 	 */
-	public static @NotNull List<String> findSimilar(@Nullable String base, int allowDifference, String @Nullable ... values) {
+	public static @NonNull List<String> findSimilar(@Nullable String base, int allowDifference, String @Nullable ... values) {
 		return findSimilar(base, allowDifference, StringUtils::countDifference, Arrays.asList(ArrayUtils.nullToEmpty(values)));
 	}
 	
@@ -548,7 +548,7 @@ public final class StringUtils {
 	 * @return A list with all similar strings to the base string
 	 * @see #findSimilar(String, int, ToIntBiFunction, List)
 	 */
-	public static @NotNull List<String> findSimilar(@Nullable String base, int allowDifference, @Nullable List<String> values) {
+	public static @NonNull List<String> findSimilar(@Nullable String base, int allowDifference, @Nullable List<String> values) {
 		return findSimilar(base, allowDifference, StringUtils::countDifference, values);
 	}
 	
@@ -582,7 +582,7 @@ public final class StringUtils {
 	 * @param values The list of values to check
 	 * @return A list with all similar strings to the base string
 	 */
-	public static @NotNull List<String> findSimilar(@Nullable String base, int allowDifference, @Nullable ToIntBiFunction<String, String> counter, @Nullable List<String> values) {
+	public static @NonNull List<String> findSimilar(@Nullable String base, int allowDifference, @Nullable ToIntBiFunction<String, String> counter, @Nullable List<String> values) {
 		List<String> similar = Lists.newArrayList();
 		if (isEmpty(base) || allowDifference < 0 || counter == null || values == null || values.isEmpty()) {
 			return similar;
@@ -767,7 +767,7 @@ public final class StringUtils {
 	 * @param str The string to remove the quoted parts from
 	 * @return The string without the quoted parts
 	 */
-	public static @NotNull String removeQuoted(@Nullable String str) {
+	public static @NonNull String removeQuoted(@Nullable String str) {
 		if (isEmpty(str)) {
 			return "";
 		}
@@ -964,7 +964,7 @@ public final class StringUtils {
 	 * @param target The target character to split by
 	 * @return The parts of the string split by the target character
 	 */
-	public static String @NotNull [] splitNotEscaped(@Nullable String str, char target) {
+	public static String @NonNull [] splitNotEscaped(@Nullable String str, char target) {
 		if (isEmpty(str)) {
 			return ArrayUtils.EMPTY_STRING_ARRAY;
 		}
@@ -1015,7 +1015,7 @@ public final class StringUtils {
 	 * @param regex The regex to match
 	 * @return The extracted groups
 	 */
-	public static String @NotNull [] extract(@Nullable String str, @Language("RegExp") @Nullable String regex) {
+	public static String @NonNull [] extract(@Nullable String str, @Language("RegExp") @Nullable String regex) {
 		if (isEmpty(str) || isEmpty(regex)) {
 			return ArrayUtils.EMPTY_STRING_ARRAY;
 		}
@@ -1044,7 +1044,7 @@ public final class StringUtils {
 	 * @param pattern The pattern to match
 	 * @return The extracted groups
 	 */
-	public static String @NotNull [] extract(@Nullable String str, @Nullable Pattern pattern) {
+	public static String @NonNull [] extract(@Nullable String str, @Nullable Pattern pattern) {
 		if (isEmpty(str) || pattern == null) {
 			return ArrayUtils.EMPTY_STRING_ARRAY;
 		}
@@ -1083,7 +1083,7 @@ public final class StringUtils {
 	 * @param condition The condition to split the string by
 	 * @return The readable string
 	 */
-	public static @NotNull String getReadableString(@Nullable String str, @Nullable Predicate<Character> condition) {
+	public static @NonNull String getReadableString(@Nullable String str, @Nullable Predicate<Character> condition) {
 		if (isEmpty(str)) {
 			return "";
 		}

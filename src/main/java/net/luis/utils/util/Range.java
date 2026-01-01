@@ -1,6 +1,6 @@
 /*
  * LUtils
- * Copyright (C) 2025 Luis Staudt
+ * Copyright (C) 2026 Luis Staudt
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,8 +20,8 @@ package net.luis.utils.util;
 
 import net.luis.utils.math.Mth;
 import org.apache.commons.lang3.StringUtils;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 import java.util.Objects;
 
@@ -70,7 +70,7 @@ public class Range {
 	 * @return The created range or an empty range if the maximum value is less than 0
 	 * @see #of(double, double)
 	 */
-	public static @NotNull Range of(double max) {
+	public static @NonNull Range of(double max) {
 		return of(0.0, max);
 	}
 	
@@ -83,7 +83,7 @@ public class Range {
 	 * @return The created range or an empty range if the maximum value is less than the minimum value
 	 * @see #of(double, double)
 	 */
-	public static @NotNull Range of(char min, char max) {
+	public static @NonNull Range of(char min, char max) {
 		return of(min, (double) max);
 	}
 	
@@ -95,7 +95,7 @@ public class Range {
 	 * @return The created range or an empty range if the maximum value is less than the minimum value
 	 * @see #EMPTY
 	 */
-	public static @NotNull Range of(double min, double max) {
+	public static @NonNull Range of(double min, double max) {
 		if (min > max) {
 			return EMPTY;
 		}
@@ -109,7 +109,7 @@ public class Range {
 	 * @param str The string to parse
 	 * @return The parsed range, or an empty range if the string is invalid
 	 */
-	public static @NotNull Range parse(@Nullable String str) {
+	public static @NonNull Range parse(@Nullable String str) {
 		if (StringUtils.isBlank(str)) {
 			return EMPTY;
 		}
@@ -156,7 +156,7 @@ public class Range {
 	 * @param value The value to move the range by
 	 * @return The moved range
 	 */
-	public @NotNull Range move(double value) {
+	public @NonNull Range move(double value) {
 		return of(this.min + value, this.max + value);
 	}
 	
@@ -170,7 +170,7 @@ public class Range {
 	 * @param value The value to expand the range by
 	 * @return The expanded range
 	 */
-	public @NotNull Range expand(double value) {
+	public @NonNull Range expand(double value) {
 		return of(this.min - Math.abs(value), this.max + Math.abs(value));
 	}
 	
@@ -180,7 +180,7 @@ public class Range {
 	 * @param value The value to expand the maximum value by
 	 * @return The expanded range
 	 */
-	public @NotNull Range expandMax(double value) {
+	public @NonNull Range expandMax(double value) {
 		return of(this.min, this.max + Math.abs(value));
 	}
 	
@@ -191,7 +191,7 @@ public class Range {
 	 * @param value The value to expand the minimum value by
 	 * @return The expanded range
 	 */
-	public @NotNull Range expandMin(double value) {
+	public @NonNull Range expandMin(double value) {
 		return of(this.min - Math.abs(value), this.max);
 	}
 	

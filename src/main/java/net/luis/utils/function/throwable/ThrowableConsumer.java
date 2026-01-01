@@ -1,6 +1,6 @@
 /*
  * LUtils
- * Copyright (C) 2025 Luis Staudt
+ * Copyright (C) 2026 Luis Staudt
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,7 +18,7 @@
 
 package net.luis.utils.function.throwable;
 
-import org.jetbrains.annotations.NotNull;
+import org.jspecify.annotations.NonNull;
 
 import java.util.Objects;
 import java.util.function.Consumer;
@@ -44,7 +44,7 @@ public interface ThrowableConsumer<T, X extends Throwable> {
 	 * @param <T> The argument type
 	 * @throws NullPointerException If the throwable consumer is null
 	 */
-	static <T> @NotNull Consumer<T> caught(@NotNull ThrowableConsumer<T, ? extends Throwable> consumer) {
+	static <T> @NonNull Consumer<T> caught(@NonNull ThrowableConsumer<T, ? extends Throwable> consumer) {
 		Objects.requireNonNull(consumer, "Throwable consumer must not be null");
 		return (t) -> {
 			try {
@@ -71,7 +71,7 @@ public interface ThrowableConsumer<T, X extends Throwable> {
 	 * @return The composed throwable consumer
 	 * @throws NullPointerException If the after operation is null
 	 */
-	default @NotNull ThrowableConsumer<T, X> andThen(@NotNull ThrowableConsumer<? super T, X> after) {
+	default @NonNull ThrowableConsumer<T, X> andThen(@NonNull ThrowableConsumer<? super T, X> after) {
 		Objects.requireNonNull(after, "After operation must not be null");
 		return (t) -> {
 			this.accept(t);
