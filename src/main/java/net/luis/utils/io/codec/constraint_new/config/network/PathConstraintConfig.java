@@ -1,0 +1,416 @@
+/*
+ * LUtils
+ * Copyright (C) 2026 Luis Staudt
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program. If not, see <https://www.gnu.org/licenses/>.
+ */
+
+package net.luis.utils.io.codec.constraint_new.config.network;
+
+import net.luis.utils.io.codec.constraint_new.Constraint;
+import net.luis.utils.io.codec.constraint_new.config.StringConstraintConfig;
+import net.luis.utils.io.codec.constraint_new.core.Platform;
+import net.luis.utils.util.Pair;
+import org.jspecify.annotations.NonNull;
+
+import java.nio.file.Path;
+import java.util.*;
+
+/**
+ * Configuration record for file path constraints.<br>
+ * <p>
+ *     This record stores the constraint values for path codecs.<br>
+ *     It includes base constraints, length constraints, depth constraints,
+ *     and path-specific constraints for structure, components, and platform compatibility.
+ * </p>
+ *
+ * @author Luis-St
+ *
+ * @param equalTo The exact path that should be matched
+ * @param notEqualTo The path that should be excluded
+ * @param in The set of paths that are allowed
+ * @param notIn The set of paths that are not allowed
+ * @param minLength The minimum length constraint as a pair of (value, inclusive)
+ * @param maxLength The maximum length constraint as a pair of (value, inclusive)
+ * @param minDepth The minimum depth constraint as a pair of (value, inclusive)
+ * @param maxDepth The maximum depth constraint as a pair of (value, inclusive)
+ * @param absolute If present, requires paths to be absolute
+ * @param relative If present, requires paths to be relative
+ * @param normalized If present, requires paths to be normalized
+ * @param canonical If present, requires paths to be canonical
+ * @param path The string constraint config for path validation
+ * @param root The string constraint config for root component validation
+ * @param parent The string constraint config for parent directory validation
+ * @param segment The string constraint config for segment validation
+ * @param file The string constraint config for file name validation
+ * @param withoutExtension If present, requires paths to have no extension
+ * @param extension The string constraint config for extension validation
+ * @param ancestorOf The set of paths that constrained paths must be ancestors of
+ * @param descendantOf The set of paths that constrained paths must be descendants of
+ * @param validFor The platform to validate against
+ * @param portable If present, requires paths to be portable across platforms
+ * @param separator The platform whose separator should be used
+ * @param custom A custom constraint implementation
+ */
+public record PathConstraintConfig(
+	// BaseConstraint fields
+	@NonNull Optional<Path> equalTo,
+	@NonNull Optional<Path> notEqualTo,
+	@NonNull Optional<Set<Path>> in,
+	@NonNull Optional<Set<Path>> notIn,
+	// LengthConstraint fields
+	@NonNull Optional<Pair<Integer, Boolean>> minLength,
+	@NonNull Optional<Pair<Integer, Boolean>> maxLength,
+	// DepthConstraint fields
+	@NonNull Optional<Pair<Integer, Boolean>> minDepth,
+	@NonNull Optional<Pair<Integer, Boolean>> maxDepth,
+	// PathConstraint structure flags
+	@NonNull Optional<Void> absolute,
+	@NonNull Optional<Void> relative,
+	@NonNull Optional<Void> normalized,
+	@NonNull Optional<Void> canonical,
+	// PathConstraint component constraints
+	@NonNull Optional<StringConstraintConfig> path,
+	@NonNull Optional<StringConstraintConfig> root,
+	@NonNull Optional<StringConstraintConfig> parent,
+	@NonNull Optional<StringConstraintConfig> segment,
+	@NonNull Optional<StringConstraintConfig> file,
+	@NonNull Optional<Void> withoutExtension,
+	@NonNull Optional<StringConstraintConfig> extension,
+	// PathConstraint relationship constraints
+	@NonNull Optional<Set<String>> ancestorOf,
+	@NonNull Optional<Set<String>> descendantOf,
+	// PathConstraint platform constraints
+	@NonNull Optional<Platform> validFor,
+	@NonNull Optional<Void> portable,
+	@NonNull Optional<Platform> separator,
+	// Custom constraint
+	@NonNull Optional<Constraint<Path>> custom
+) {
+
+	/**
+	 * An unconstrained path configuration with no constraints applied.<br>
+	 */
+	public static final PathConstraintConfig UNCONSTRAINED = new PathConstraintConfig(
+		Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(),
+		Optional.empty(), Optional.empty(),
+		Optional.empty(), Optional.empty(),
+		Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(),
+		Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(),
+		Optional.empty(), Optional.empty(),
+		Optional.empty(), Optional.empty(),
+		Optional.empty(), Optional.empty(), Optional.empty(),
+		Optional.empty()
+	);
+
+	// BaseConstraint with methods
+
+	/**
+	 * Creates a new config with the specified equal-to constraint.<br>
+	 *
+	 * @param value The exact path that should be matched
+	 * @return A new config with the constraint applied
+	 */
+	public @NonNull PathConstraintConfig withEqualTo(@NonNull Path value) {
+		return new PathConstraintConfig(Optional.of(Objects.requireNonNull(value)), this.notEqualTo, this.in, this.notIn, this.minLength, this.maxLength, this.minDepth, this.maxDepth, this.absolute, this.relative, this.normalized, this.canonical, this.path, this.root, this.parent, this.segment, this.file, this.withoutExtension, this.extension, this.ancestorOf, this.descendantOf, this.validFor, this.portable, this.separator, this.custom);
+	}
+
+	/**
+	 * Creates a new config with the specified not-equal-to constraint.<br>
+	 *
+	 * @param value The path that should be excluded
+	 * @return A new config with the constraint applied
+	 */
+	public @NonNull PathConstraintConfig withNotEqualTo(@NonNull Path value) {
+		return new PathConstraintConfig(this.equalTo, Optional.of(Objects.requireNonNull(value)), this.in, this.notIn, this.minLength, this.maxLength, this.minDepth, this.maxDepth, this.absolute, this.relative, this.normalized, this.canonical, this.path, this.root, this.parent, this.segment, this.file, this.withoutExtension, this.extension, this.ancestorOf, this.descendantOf, this.validFor, this.portable, this.separator, this.custom);
+	}
+
+	/**
+	 * Creates a new config with the specified inclusion constraint.<br>
+	 *
+	 * @param values The collection of paths that are allowed
+	 * @return A new config with the constraint applied
+	 */
+	public @NonNull PathConstraintConfig withIn(@NonNull Collection<Path> values) {
+		return new PathConstraintConfig(this.equalTo, this.notEqualTo, Optional.of(Set.copyOf(values)), this.notIn, this.minLength, this.maxLength, this.minDepth, this.maxDepth, this.absolute, this.relative, this.normalized, this.canonical, this.path, this.root, this.parent, this.segment, this.file, this.withoutExtension, this.extension, this.ancestorOf, this.descendantOf, this.validFor, this.portable, this.separator, this.custom);
+	}
+
+	/**
+	 * Creates a new config with the specified exclusion constraint.<br>
+	 *
+	 * @param values The collection of paths that are not allowed
+	 * @return A new config with the constraint applied
+	 */
+	public @NonNull PathConstraintConfig withNotIn(@NonNull Collection<Path> values) {
+		return new PathConstraintConfig(this.equalTo, this.notEqualTo, this.in, Optional.of(Set.copyOf(values)), this.minLength, this.maxLength, this.minDepth, this.maxDepth, this.absolute, this.relative, this.normalized, this.canonical, this.path, this.root, this.parent, this.segment, this.file, this.withoutExtension, this.extension, this.ancestorOf, this.descendantOf, this.validFor, this.portable, this.separator, this.custom);
+	}
+
+	// LengthConstraint with methods
+
+	/**
+	 * Creates a new config with the specified minimum length constraint (inclusive).<br>
+	 *
+	 * @param minLength The minimum path length (inclusive)
+	 * @return A new config with the constraint applied
+	 */
+	public @NonNull PathConstraintConfig withMinLength(int minLength) {
+		return new PathConstraintConfig(this.equalTo, this.notEqualTo, this.in, this.notIn, Optional.of(Pair.of(minLength, true)), this.maxLength, this.minDepth, this.maxDepth, this.absolute, this.relative, this.normalized, this.canonical, this.path, this.root, this.parent, this.segment, this.file, this.withoutExtension, this.extension, this.ancestorOf, this.descendantOf, this.validFor, this.portable, this.separator, this.custom);
+	}
+
+	/**
+	 * Creates a new config with the specified maximum length constraint (inclusive).<br>
+	 *
+	 * @param maxLength The maximum path length (inclusive)
+	 * @return A new config with the constraint applied
+	 */
+	public @NonNull PathConstraintConfig withMaxLength(int maxLength) {
+		return new PathConstraintConfig(this.equalTo, this.notEqualTo, this.in, this.notIn, this.minLength, Optional.of(Pair.of(maxLength, true)), this.minDepth, this.maxDepth, this.absolute, this.relative, this.normalized, this.canonical, this.path, this.root, this.parent, this.segment, this.file, this.withoutExtension, this.extension, this.ancestorOf, this.descendantOf, this.validFor, this.portable, this.separator, this.custom);
+	}
+
+	/**
+	 * Creates a new config with the specified exact length constraint.<br>
+	 *
+	 * @param exactLength The exact path length required
+	 * @return A new config with the constraint applied
+	 */
+	public @NonNull PathConstraintConfig withExactLength(int exactLength) {
+		return new PathConstraintConfig(this.equalTo, this.notEqualTo, this.in, this.notIn, Optional.of(Pair.of(exactLength, true)), Optional.of(Pair.of(exactLength, true)), this.minDepth, this.maxDepth, this.absolute, this.relative, this.normalized, this.canonical, this.path, this.root, this.parent, this.segment, this.file, this.withoutExtension, this.extension, this.ancestorOf, this.descendantOf, this.validFor, this.portable, this.separator, this.custom);
+	}
+
+	/**
+	 * Creates a new config with the specified length range constraint (inclusive).<br>
+	 *
+	 * @param minLength The minimum path length (inclusive)
+	 * @param maxLength The maximum path length (inclusive)
+	 * @return A new config with the constraint applied
+	 */
+	public @NonNull PathConstraintConfig withLengthBetween(int minLength, int maxLength) {
+		return new PathConstraintConfig(this.equalTo, this.notEqualTo, this.in, this.notIn, Optional.of(Pair.of(minLength, true)), Optional.of(Pair.of(maxLength, true)), this.minDepth, this.maxDepth, this.absolute, this.relative, this.normalized, this.canonical, this.path, this.root, this.parent, this.segment, this.file, this.withoutExtension, this.extension, this.ancestorOf, this.descendantOf, this.validFor, this.portable, this.separator, this.custom);
+	}
+
+	// DepthConstraint with methods
+
+	/**
+	 * Creates a new config with the specified minimum depth constraint (inclusive).<br>
+	 *
+	 * @param minDepth The minimum path depth (inclusive)
+	 * @return A new config with the constraint applied
+	 */
+	public @NonNull PathConstraintConfig withMinDepth(int minDepth) {
+		return new PathConstraintConfig(this.equalTo, this.notEqualTo, this.in, this.notIn, this.minLength, this.maxLength, Optional.of(Pair.of(minDepth, true)), this.maxDepth, this.absolute, this.relative, this.normalized, this.canonical, this.path, this.root, this.parent, this.segment, this.file, this.withoutExtension, this.extension, this.ancestorOf, this.descendantOf, this.validFor, this.portable, this.separator, this.custom);
+	}
+
+	/**
+	 * Creates a new config with the specified maximum depth constraint (inclusive).<br>
+	 *
+	 * @param maxDepth The maximum path depth (inclusive)
+	 * @return A new config with the constraint applied
+	 */
+	public @NonNull PathConstraintConfig withMaxDepth(int maxDepth) {
+		return new PathConstraintConfig(this.equalTo, this.notEqualTo, this.in, this.notIn, this.minLength, this.maxLength, this.minDepth, Optional.of(Pair.of(maxDepth, true)), this.absolute, this.relative, this.normalized, this.canonical, this.path, this.root, this.parent, this.segment, this.file, this.withoutExtension, this.extension, this.ancestorOf, this.descendantOf, this.validFor, this.portable, this.separator, this.custom);
+	}
+
+	/**
+	 * Creates a new config with the specified exact depth constraint.<br>
+	 *
+	 * @param exactDepth The exact path depth required
+	 * @return A new config with the constraint applied
+	 */
+	public @NonNull PathConstraintConfig withExactDepth(int exactDepth) {
+		return new PathConstraintConfig(this.equalTo, this.notEqualTo, this.in, this.notIn, this.minLength, this.maxLength, Optional.of(Pair.of(exactDepth, true)), Optional.of(Pair.of(exactDepth, true)), this.absolute, this.relative, this.normalized, this.canonical, this.path, this.root, this.parent, this.segment, this.file, this.withoutExtension, this.extension, this.ancestorOf, this.descendantOf, this.validFor, this.portable, this.separator, this.custom);
+	}
+
+	/**
+	 * Creates a new config with the specified depth range constraint (inclusive).<br>
+	 *
+	 * @param minDepth The minimum path depth (inclusive)
+	 * @param maxDepth The maximum path depth (inclusive)
+	 * @return A new config with the constraint applied
+	 */
+	public @NonNull PathConstraintConfig withDepthBetween(int minDepth, int maxDepth) {
+		return new PathConstraintConfig(this.equalTo, this.notEqualTo, this.in, this.notIn, this.minLength, this.maxLength, Optional.of(Pair.of(minDepth, true)), Optional.of(Pair.of(maxDepth, true)), this.absolute, this.relative, this.normalized, this.canonical, this.path, this.root, this.parent, this.segment, this.file, this.withoutExtension, this.extension, this.ancestorOf, this.descendantOf, this.validFor, this.portable, this.separator, this.custom);
+	}
+
+	// PathConstraint structure with methods
+
+	/**
+	 * Creates a new config with the absolute path constraint.<br>
+	 *
+	 * @return A new config with the constraint applied
+	 */
+	public @NonNull PathConstraintConfig withAbsolute() {
+		return new PathConstraintConfig(this.equalTo, this.notEqualTo, this.in, this.notIn, this.minLength, this.maxLength, this.minDepth, this.maxDepth, Optional.of(null), this.relative, this.normalized, this.canonical, this.path, this.root, this.parent, this.segment, this.file, this.withoutExtension, this.extension, this.ancestorOf, this.descendantOf, this.validFor, this.portable, this.separator, this.custom);
+	}
+
+	/**
+	 * Creates a new config with the relative path constraint.<br>
+	 *
+	 * @return A new config with the constraint applied
+	 */
+	public @NonNull PathConstraintConfig withRelative() {
+		return new PathConstraintConfig(this.equalTo, this.notEqualTo, this.in, this.notIn, this.minLength, this.maxLength, this.minDepth, this.maxDepth, this.absolute, Optional.of(null), this.normalized, this.canonical, this.path, this.root, this.parent, this.segment, this.file, this.withoutExtension, this.extension, this.ancestorOf, this.descendantOf, this.validFor, this.portable, this.separator, this.custom);
+	}
+
+	/**
+	 * Creates a new config with the normalized path constraint.<br>
+	 *
+	 * @return A new config with the constraint applied
+	 */
+	public @NonNull PathConstraintConfig withNormalized() {
+		return new PathConstraintConfig(this.equalTo, this.notEqualTo, this.in, this.notIn, this.minLength, this.maxLength, this.minDepth, this.maxDepth, this.absolute, this.relative, Optional.of(null), this.canonical, this.path, this.root, this.parent, this.segment, this.file, this.withoutExtension, this.extension, this.ancestorOf, this.descendantOf, this.validFor, this.portable, this.separator, this.custom);
+	}
+
+	/**
+	 * Creates a new config with the canonical path constraint.<br>
+	 *
+	 * @return A new config with the constraint applied
+	 */
+	public @NonNull PathConstraintConfig withCanonical() {
+		return new PathConstraintConfig(this.equalTo, this.notEqualTo, this.in, this.notIn, this.minLength, this.maxLength, this.minDepth, this.maxDepth, this.absolute, this.relative, this.normalized, Optional.of(null), this.path, this.root, this.parent, this.segment, this.file, this.withoutExtension, this.extension, this.ancestorOf, this.descendantOf, this.validFor, this.portable, this.separator, this.custom);
+	}
+
+	// PathConstraint component with methods
+
+	/**
+	 * Creates a new config with the specified path string constraint.<br>
+	 *
+	 * @param config The string constraint config for path validation
+	 * @return A new config with the constraint applied
+	 */
+	public @NonNull PathConstraintConfig withPath(@NonNull StringConstraintConfig config) {
+		return new PathConstraintConfig(this.equalTo, this.notEqualTo, this.in, this.notIn, this.minLength, this.maxLength, this.minDepth, this.maxDepth, this.absolute, this.relative, this.normalized, this.canonical, Optional.of(Objects.requireNonNull(config)), this.root, this.parent, this.segment, this.file, this.withoutExtension, this.extension, this.ancestorOf, this.descendantOf, this.validFor, this.portable, this.separator, this.custom);
+	}
+
+	/**
+	 * Creates a new config with the specified root constraint.<br>
+	 *
+	 * @param config The string constraint config for root component validation
+	 * @return A new config with the constraint applied
+	 */
+	public @NonNull PathConstraintConfig withRoot(@NonNull StringConstraintConfig config) {
+		return new PathConstraintConfig(this.equalTo, this.notEqualTo, this.in, this.notIn, this.minLength, this.maxLength, this.minDepth, this.maxDepth, this.absolute, this.relative, this.normalized, this.canonical, this.path, Optional.of(Objects.requireNonNull(config)), this.parent, this.segment, this.file, this.withoutExtension, this.extension, this.ancestorOf, this.descendantOf, this.validFor, this.portable, this.separator, this.custom);
+	}
+
+	/**
+	 * Creates a new config with the specified parent constraint.<br>
+	 *
+	 * @param config The string constraint config for parent directory validation
+	 * @return A new config with the constraint applied
+	 */
+	public @NonNull PathConstraintConfig withParent(@NonNull StringConstraintConfig config) {
+		return new PathConstraintConfig(this.equalTo, this.notEqualTo, this.in, this.notIn, this.minLength, this.maxLength, this.minDepth, this.maxDepth, this.absolute, this.relative, this.normalized, this.canonical, this.path, this.root, Optional.of(Objects.requireNonNull(config)), this.segment, this.file, this.withoutExtension, this.extension, this.ancestorOf, this.descendantOf, this.validFor, this.portable, this.separator, this.custom);
+	}
+
+	/**
+	 * Creates a new config with the specified segment constraint.<br>
+	 *
+	 * @param config The string constraint config for segment validation
+	 * @return A new config with the constraint applied
+	 */
+	public @NonNull PathConstraintConfig withSegment(@NonNull StringConstraintConfig config) {
+		return new PathConstraintConfig(this.equalTo, this.notEqualTo, this.in, this.notIn, this.minLength, this.maxLength, this.minDepth, this.maxDepth, this.absolute, this.relative, this.normalized, this.canonical, this.path, this.root, this.parent, Optional.of(Objects.requireNonNull(config)), this.file, this.withoutExtension, this.extension, this.ancestorOf, this.descendantOf, this.validFor, this.portable, this.separator, this.custom);
+	}
+
+	/**
+	 * Creates a new config with the specified file name constraint.<br>
+	 *
+	 * @param config The string constraint config for file name validation
+	 * @return A new config with the constraint applied
+	 */
+	public @NonNull PathConstraintConfig withFile(@NonNull StringConstraintConfig config) {
+		return new PathConstraintConfig(this.equalTo, this.notEqualTo, this.in, this.notIn, this.minLength, this.maxLength, this.minDepth, this.maxDepth, this.absolute, this.relative, this.normalized, this.canonical, this.path, this.root, this.parent, this.segment, Optional.of(Objects.requireNonNull(config)), this.withoutExtension, this.extension, this.ancestorOf, this.descendantOf, this.validFor, this.portable, this.separator, this.custom);
+	}
+
+	/**
+	 * Creates a new config with the no-extension constraint.<br>
+	 *
+	 * @return A new config with the constraint applied
+	 */
+	public @NonNull PathConstraintConfig withWithoutExtension() {
+		return new PathConstraintConfig(this.equalTo, this.notEqualTo, this.in, this.notIn, this.minLength, this.maxLength, this.minDepth, this.maxDepth, this.absolute, this.relative, this.normalized, this.canonical, this.path, this.root, this.parent, this.segment, this.file, Optional.of(null), this.extension, this.ancestorOf, this.descendantOf, this.validFor, this.portable, this.separator, this.custom);
+	}
+
+	/**
+	 * Creates a new config with the specified extension constraint.<br>
+	 *
+	 * @param config The string constraint config for extension validation
+	 * @return A new config with the constraint applied
+	 */
+	public @NonNull PathConstraintConfig withExtension(@NonNull StringConstraintConfig config) {
+		return new PathConstraintConfig(this.equalTo, this.notEqualTo, this.in, this.notIn, this.minLength, this.maxLength, this.minDepth, this.maxDepth, this.absolute, this.relative, this.normalized, this.canonical, this.path, this.root, this.parent, this.segment, this.file, this.withoutExtension, Optional.of(Objects.requireNonNull(config)), this.ancestorOf, this.descendantOf, this.validFor, this.portable, this.separator, this.custom);
+	}
+
+	// PathConstraint relationship with methods
+
+	/**
+	 * Creates a new config with the specified ancestor-of constraint.<br>
+	 *
+	 * @param paths The collection of paths that constrained paths must be ancestors of
+	 * @return A new config with the constraint applied
+	 */
+	public @NonNull PathConstraintConfig withAncestorOf(@NonNull Collection<String> paths) {
+		return new PathConstraintConfig(this.equalTo, this.notEqualTo, this.in, this.notIn, this.minLength, this.maxLength, this.minDepth, this.maxDepth, this.absolute, this.relative, this.normalized, this.canonical, this.path, this.root, this.parent, this.segment, this.file, this.withoutExtension, this.extension, Optional.of(Set.copyOf(paths)), this.descendantOf, this.validFor, this.portable, this.separator, this.custom);
+	}
+
+	/**
+	 * Creates a new config with the specified descendant-of constraint.<br>
+	 *
+	 * @param paths The collection of paths that constrained paths must be descendants of
+	 * @return A new config with the constraint applied
+	 */
+	public @NonNull PathConstraintConfig withDescendantOf(@NonNull Collection<String> paths) {
+		return new PathConstraintConfig(this.equalTo, this.notEqualTo, this.in, this.notIn, this.minLength, this.maxLength, this.minDepth, this.maxDepth, this.absolute, this.relative, this.normalized, this.canonical, this.path, this.root, this.parent, this.segment, this.file, this.withoutExtension, this.extension, this.ancestorOf, Optional.of(Set.copyOf(paths)), this.validFor, this.portable, this.separator, this.custom);
+	}
+
+	// PathConstraint platform with methods
+
+	/**
+	 * Creates a new config with the specified platform validity constraint.<br>
+	 *
+	 * @param platform The platform to validate against
+	 * @return A new config with the constraint applied
+	 */
+	public @NonNull PathConstraintConfig withValidFor(@NonNull Platform platform) {
+		return new PathConstraintConfig(this.equalTo, this.notEqualTo, this.in, this.notIn, this.minLength, this.maxLength, this.minDepth, this.maxDepth, this.absolute, this.relative, this.normalized, this.canonical, this.path, this.root, this.parent, this.segment, this.file, this.withoutExtension, this.extension, this.ancestorOf, this.descendantOf, Optional.of(Objects.requireNonNull(platform)), this.portable, this.separator, this.custom);
+	}
+
+	/**
+	 * Creates a new config with the portable path constraint.<br>
+	 *
+	 * @return A new config with the constraint applied
+	 */
+	public @NonNull PathConstraintConfig withPortable() {
+		return new PathConstraintConfig(this.equalTo, this.notEqualTo, this.in, this.notIn, this.minLength, this.maxLength, this.minDepth, this.maxDepth, this.absolute, this.relative, this.normalized, this.canonical, this.path, this.root, this.parent, this.segment, this.file, this.withoutExtension, this.extension, this.ancestorOf, this.descendantOf, this.validFor, Optional.of(null), this.separator, this.custom);
+	}
+
+	/**
+	 * Creates a new config with the specified separator platform constraint.<br>
+	 *
+	 * @param platform The platform whose separator should be used
+	 * @return A new config with the constraint applied
+	 */
+	public @NonNull PathConstraintConfig withSeparator(@NonNull Platform platform) {
+		return new PathConstraintConfig(this.equalTo, this.notEqualTo, this.in, this.notIn, this.minLength, this.maxLength, this.minDepth, this.maxDepth, this.absolute, this.relative, this.normalized, this.canonical, this.path, this.root, this.parent, this.segment, this.file, this.withoutExtension, this.extension, this.ancestorOf, this.descendantOf, this.validFor, this.portable, Optional.of(Objects.requireNonNull(platform)), this.custom);
+	}
+
+	/**
+	 * Creates a new config with the specified custom constraint.<br>
+	 *
+	 * @param constraint The custom constraint implementation
+	 * @return A new config with the constraint applied
+	 */
+	public @NonNull PathConstraintConfig withCustom(@NonNull Constraint<Path> constraint) {
+		return new PathConstraintConfig(this.equalTo, this.notEqualTo, this.in, this.notIn, this.minLength, this.maxLength, this.minDepth, this.maxDepth, this.absolute, this.relative, this.normalized, this.canonical, this.path, this.root, this.parent, this.segment, this.file, this.withoutExtension, this.extension, this.ancestorOf, this.descendantOf, this.validFor, this.portable, this.separator, Optional.of(Objects.requireNonNull(constraint)));
+	}
+}
