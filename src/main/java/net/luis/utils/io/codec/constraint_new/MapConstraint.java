@@ -1,0 +1,125 @@
+/*
+ * LUtils
+ * Copyright (C) 2026 Luis Staudt
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program. If not, see <https://www.gnu.org/licenses/>.
+ */
+
+package net.luis.utils.io.codec.constraint_new;
+
+import org.jspecify.annotations.NonNull;
+
+import java.util.Collection;
+import java.util.Map;
+
+/**
+ * Constraint interface for map types that provides key-based validation operations.<br>
+ * <p>
+ *     This interface extends {@link SizeConstraint} with methods for constraining maps based on
+ *     required, forbidden, and allowed keys.<br>
+ *     It allows validation of map structure by specifying which keys must be present,
+ *     which keys must not be present, and which keys are the only ones allowed.
+ * </p>
+ *
+ * @author Luis-St
+ *
+ * @param <K> The type of the keys in the map
+ * @param <V> The type of the values in the map
+ * @param <C> The return type of the constraint method (for fluent method chaining)
+ */
+public interface MapConstraint<K, V, C> extends SizeConstraint<Map<K, V>, C> {
+
+	/**
+	 * Applies a required key constraint to the map.<br>
+	 * <p>
+	 *     The returned type will validate that maps contain the specified key.
+	 * </p>
+	 *
+	 * @param key The key that must be present in the map
+	 * @return A new type with the applied required key constraint
+	 * @throws NullPointerException If the key is null
+	 * @see #requiredKeys(Collection)
+	 * @see #forbiddenKey(Object)
+	 */
+	@NonNull C requiredKey(@NonNull K key);
+
+	/**
+	 * Applies a multiple required keys constraint to the map.<br>
+	 * <p>
+	 *     The returned type will validate that maps contain all of the specified keys.
+	 * </p>
+	 *
+	 * @param keys The collection of keys that must all be present in the map
+	 * @return A new type with the applied required keys constraint
+	 * @throws NullPointerException If the collection is null
+	 * @see #requiredKey(Object)
+	 * @see #forbiddenKeys(Collection)
+	 */
+	@NonNull C requiredKeys(@NonNull Collection<K> keys);
+
+	/**
+	 * Applies a forbidden key constraint to the map.<br>
+	 * <p>
+	 *     The returned type will validate that maps do not contain the specified key.
+	 * </p>
+	 *
+	 * @param key The key that must not be present in the map
+	 * @return A new type with the applied forbidden key constraint
+	 * @throws NullPointerException If the key is null
+	 * @see #forbiddenKeys(Collection)
+	 * @see #requiredKey(Object)
+	 */
+	@NonNull C forbiddenKey(@NonNull K key);
+
+	/**
+	 * Applies a multiple forbidden keys constraint to the map.<br>
+	 * <p>
+	 *     The returned type will validate that maps do not contain any of the specified keys.
+	 * </p>
+	 *
+	 * @param keys The collection of keys that must not be present in the map
+	 * @return A new type with the applied forbidden keys constraint
+	 * @throws NullPointerException If the collection is null
+	 * @see #forbiddenKey(Object)
+	 * @see #requiredKeys(Collection)
+	 */
+	@NonNull C forbiddenKeys(@NonNull Collection<K> keys);
+
+	/**
+	 * Applies an allowed key constraint to the map.<br>
+	 * <p>
+	 *     The returned type will validate that maps only contain the specified key (and no other keys).
+	 * </p>
+	 *
+	 * @param key The only key that is allowed in the map
+	 * @return A new type with the applied allowed key constraint
+	 * @throws NullPointerException If the key is null
+	 * @see #allowedKeys(Collection)
+	 */
+	@NonNull C allowedKey(@NonNull K key);
+
+	/**
+	 * Applies a multiple allowed keys constraint to the map.<br>
+	 * <p>
+	 *     The returned type will validate that maps only contain keys from the specified collection.<br>
+	 *     Any key not in the collection will cause validation to fail.
+	 * </p>
+	 *
+	 * @param keys The collection of keys that are allowed in the map
+	 * @return A new type with the applied allowed keys constraint
+	 * @throws NullPointerException If the collection is null
+	 * @see #allowedKey(Object)
+	 */
+	@NonNull C allowedKeys(@NonNull Collection<K> keys);
+}
