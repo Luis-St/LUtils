@@ -18,6 +18,7 @@
 
 package net.luis.utils.io.codec.constraint_new.builder;
 
+import net.luis.utils.io.codec.constraint_new.Constraint;
 import net.luis.utils.io.codec.constraint_new.core.Platform;
 import net.luis.utils.io.codec.constraint_new.network.PathConstraint;
 import org.jspecify.annotations.NonNull;
@@ -56,6 +57,11 @@ public class PathConstraintBuilder implements PathConstraint<String, PathConstra
 	
 	@Override
 	public @NonNull PathConstraintBuilder notIn(@NonNull Collection<String> values) {
+		return null;
+	}
+	
+	@Override
+	public @NonNull PathConstraintBuilder custom(@NonNull Constraint<String> constraint) {
 		return null;
 	}
 	

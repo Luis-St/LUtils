@@ -19,6 +19,7 @@
 package net.luis.utils.io.codec.constraint_new.builder;
 
 import net.luis.utils.io.codec.constraint_new.ComparableConstraint;
+import net.luis.utils.io.codec.constraint_new.Constraint;
 import org.jspecify.annotations.NonNull;
 
 import java.util.Collection;
@@ -36,6 +37,31 @@ import java.util.Collection;
  */
 
 public class NumericConstraintBuilder implements ComparableConstraint<Integer, NumericConstraintBuilder> {
+	
+	@Override
+	public @NonNull NumericConstraintBuilder equalTo(@NonNull Integer value) {
+		return null;
+	}
+	
+	@Override
+	public @NonNull NumericConstraintBuilder notEqualTo(@NonNull Integer value) {
+		return null;
+	}
+	
+	@Override
+	public @NonNull NumericConstraintBuilder in(@NonNull Collection<Integer> values) {
+		return null;
+	}
+	
+	@Override
+	public @NonNull NumericConstraintBuilder notIn(@NonNull Collection<Integer> values) {
+		return null;
+	}
+	
+	@Override
+	public @NonNull NumericConstraintBuilder custom(@NonNull Constraint<Integer> constraint) {
+		return null;
+	}
 	
 	@Override
 	public @NonNull NumericConstraintBuilder greaterThan(@NonNull Integer value) {
@@ -64,26 +90,6 @@ public class NumericConstraintBuilder implements ComparableConstraint<Integer, N
 	
 	@Override
 	public @NonNull NumericConstraintBuilder betweenOrEqual(@NonNull Integer min, @NonNull Integer max) {
-		return null;
-	}
-	
-	@Override
-	public @NonNull NumericConstraintBuilder equalTo(@NonNull Integer value) {
-		return null;
-	}
-	
-	@Override
-	public @NonNull NumericConstraintBuilder notEqualTo(@NonNull Integer value) {
-		return null;
-	}
-	
-	@Override
-	public @NonNull NumericConstraintBuilder in(@NonNull Collection<Integer> values) {
-		return null;
-	}
-	
-	@Override
-	public @NonNull NumericConstraintBuilder notIn(@NonNull Collection<Integer> values) {
 		return null;
 	}
 }

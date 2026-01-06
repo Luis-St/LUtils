@@ -92,4 +92,17 @@ public interface BaseConstraint<T, C> {
 	 * @see #in(Collection)
 	 */
 	@NonNull C notIn(@NonNull Collection<T> values);
+	
+	/**
+	 * Applies a custom constraint to the type.<br>
+	 * <p>
+	 *     The returned type will validate values using the provided constraint implementation.<br>
+	 *     This allows for flexible and complex validation logic beyond the predefined constraints.
+	 * </p>
+	 *
+	 * @param constraint The custom constraint implementation to be applied
+	 * @return A new type with the applied custom constraint
+	 * @throws NullPointerException If the constraint is null
+	 */
+	@NonNull C custom(@NonNull Constraint<T> constraint);
 }

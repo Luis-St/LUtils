@@ -18,6 +18,7 @@
 
 package net.luis.utils.io.codec.constraint_new.builder;
 
+import net.luis.utils.io.codec.constraint_new.Constraint;
 import net.luis.utils.io.codec.constraint_new.core.PortRange;
 import net.luis.utils.io.codec.constraint_new.network.PortConstraint;
 import org.jspecify.annotations.NonNull;
@@ -56,6 +57,11 @@ public class PortConstraintBuilder implements PortConstraint<Integer, PortConstr
 	
 	@Override
 	public @NonNull PortConstraintBuilder notIn(@NonNull Collection<Integer> values) {
+		return null;
+	}
+	
+	@Override
+	public @NonNull PortConstraintBuilder custom(@NonNull Constraint<Integer> constraint) {
 		return null;
 	}
 	

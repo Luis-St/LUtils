@@ -18,6 +18,7 @@
 
 package net.luis.utils.io.codec.constraint_new.builder;
 
+import net.luis.utils.io.codec.constraint_new.Constraint;
 import net.luis.utils.io.codec.constraint_new.core.IpAddressType;
 import net.luis.utils.io.codec.constraint_new.network.HostConstraint;
 import org.jspecify.annotations.NonNull;
@@ -57,6 +58,11 @@ public class HostConstraintBuilder implements HostConstraint<String, HostConstra
 	
 	@Override
 	public @NonNull HostConstraintBuilder notIn(@NonNull Collection<String> values) {
+		return null;
+	}
+	
+	@Override
+	public @NonNull HostConstraintBuilder custom(@NonNull Constraint<String> constraint) {
 		return null;
 	}
 	

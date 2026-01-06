@@ -18,6 +18,7 @@
 
 package net.luis.utils.io.codec.constraint_new.builder;
 
+import net.luis.utils.io.codec.constraint_new.Constraint;
 import net.luis.utils.io.codec.constraint_new.StringConstraint;
 import org.jspecify.annotations.NonNull;
 
@@ -75,6 +76,11 @@ public class StringConstraintBuilder implements StringConstraint<String, StringC
 	
 	@Override
 	public @NonNull StringConstraintBuilder notInIgnoreCase(@NonNull Collection<String> values) {
+		return null;
+	}
+	
+	@Override
+	public @NonNull StringConstraintBuilder custom(@NonNull Constraint<String> constraint) {
 		return null;
 	}
 	

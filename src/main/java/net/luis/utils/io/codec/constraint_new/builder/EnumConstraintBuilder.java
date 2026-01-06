@@ -19,6 +19,7 @@
 package net.luis.utils.io.codec.constraint_new.builder;
 
 import net.luis.utils.io.codec.constraint_new.BaseConstraint;
+import net.luis.utils.io.codec.constraint_new.Constraint;
 import org.jspecify.annotations.NonNull;
 
 import java.util.Collection;
@@ -55,6 +56,11 @@ public class EnumConstraintBuilder<T extends Enum<T>> implements BaseConstraint<
 	
 	@Override
 	public @NonNull EnumConstraintBuilder<T> notIn(@NonNull Collection<T> values) {
+		return null;
+	}
+	
+	@Override
+	public @NonNull EnumConstraintBuilder<T> custom(@NonNull Constraint<T> constraint) {
 		return null;
 	}
 }

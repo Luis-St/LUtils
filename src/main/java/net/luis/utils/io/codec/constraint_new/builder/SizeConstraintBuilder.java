@@ -18,6 +18,7 @@
 
 package net.luis.utils.io.codec.constraint_new.builder;
 
+import net.luis.utils.io.codec.constraint_new.Constraint;
 import net.luis.utils.io.codec.constraint_new.SizeConstraint;
 import org.jspecify.annotations.NonNull;
 
@@ -54,6 +55,11 @@ public class SizeConstraintBuilder implements SizeConstraint<Integer, SizeConstr
 	
 	@Override
 	public @NonNull SizeConstraintBuilder notIn(@NonNull Collection<Integer> values) {
+		return null;
+	}
+	
+	@Override
+	public @NonNull SizeConstraintBuilder custom(@NonNull Constraint<Integer> constraint) {
 		return null;
 	}
 	

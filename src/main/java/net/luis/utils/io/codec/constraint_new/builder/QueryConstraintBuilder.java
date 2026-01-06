@@ -18,6 +18,7 @@
 
 package net.luis.utils.io.codec.constraint_new.builder;
 
+import net.luis.utils.io.codec.constraint_new.Constraint;
 import net.luis.utils.io.codec.constraint_new.network.QueryConstraint;
 import org.jspecify.annotations.NonNull;
 
@@ -56,6 +57,11 @@ public class QueryConstraintBuilder implements QueryConstraint<QueryConstraintBu
 	
 	@Override
 	public @NonNull QueryConstraintBuilder notIn(@NonNull Collection<Map<String, List<String>>> values) {
+		return null;
+	}
+	
+	@Override
+	public @NonNull QueryConstraintBuilder custom(@NonNull Constraint<Map<String, List<String>>> constraint) {
 		return null;
 	}
 	
