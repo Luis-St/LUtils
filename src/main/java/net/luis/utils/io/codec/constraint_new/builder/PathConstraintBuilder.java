@@ -35,9 +35,7 @@ import java.util.function.UnaryOperator;
  * </p>
  *
  * @author Luis-St
- *
  */
-
 public class PathConstraintBuilder implements PathConstraint<String, PathConstraintBuilder> {
 	
 	@Override

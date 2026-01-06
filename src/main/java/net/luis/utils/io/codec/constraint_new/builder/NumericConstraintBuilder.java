@@ -33,9 +33,7 @@ import java.util.Collection;
  * </p>
  *
  * @author Luis-St
- *
  */
-
 public class NumericConstraintBuilder implements ComparableConstraint<Integer, NumericConstraintBuilder> {
 	
 	@Override

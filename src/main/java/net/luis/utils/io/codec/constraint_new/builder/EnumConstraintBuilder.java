@@ -36,7 +36,6 @@ import java.util.Collection;
  *
  * @param <T> The enum type being constrained
  */
-
 public class EnumConstraintBuilder<T extends Enum<T>> implements BaseConstraint<T, EnumConstraintBuilder<T>> {
 	
 	@Override

@@ -36,9 +36,7 @@ import java.util.regex.Pattern;
  * </p>
  *
  * @author Luis-St
- *
  */
-
 public class HostConstraintBuilder implements HostConstraint<String, HostConstraintBuilder> {
 	
 	@Override

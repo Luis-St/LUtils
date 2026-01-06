@@ -33,9 +33,7 @@ import java.util.Collection;
  * </p>
  *
  * @author Luis-St
- *
  */
-
 public class SizeConstraintBuilder implements SizeConstraint<Integer, SizeConstraintBuilder> {
 	
 	@Override

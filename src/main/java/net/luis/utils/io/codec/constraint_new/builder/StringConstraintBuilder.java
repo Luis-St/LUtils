@@ -34,9 +34,7 @@ import java.util.regex.Pattern;
  * </p>
  *
  * @author Luis-St
- *
  */
-
 public class StringConstraintBuilder implements StringConstraint<String, StringConstraintBuilder> {
 	
 	@Override

@@ -35,9 +35,7 @@ import java.util.regex.Pattern;
  * </p>
  *
  * @author Luis-St
- *
  */
-
 public class QueryConstraintBuilder implements QueryConstraint<QueryConstraintBuilder> {
 	
 	@Override
