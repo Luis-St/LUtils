@@ -79,6 +79,16 @@ public class StringConstraintBuilder implements StringConstraint<String, StringC
 	}
 	
 	@Override
+	public @NonNull StringConstraintBuilder lowerCase() {
+		return null;
+	}
+	
+	@Override
+	public @NonNull StringConstraintBuilder upperCase() {
+		return null;
+	}
+	
+	@Override
 	public @NonNull StringConstraintBuilder minLength(int minLength) {
 		return null;
 	}
@@ -135,6 +145,16 @@ public class StringConstraintBuilder implements StringConstraint<String, StringC
 	
 	@Override
 	public @NonNull StringConstraintBuilder containsNone(@NonNull Collection<String> substrings) {
+		return null;
+	}
+	
+	@Override
+	public @NonNull StringConstraintBuilder containsAll(@NonNull Collection<String> substrings) {
+		return null;
+	}
+	
+	@Override
+	public @NonNull StringConstraintBuilder containsOnly(@NonNull Collection<String> substrings) {
 		return null;
 	}
 	

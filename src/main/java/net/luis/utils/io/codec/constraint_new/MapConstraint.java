@@ -122,4 +122,40 @@ public interface MapConstraint<K, V, C> extends SizeConstraint<Map<K, V>, C> {
 	 * @see #allowedKey(Object)
 	 */
 	@NonNull C allowedKeys(@NonNull Collection<K> keys);
+	
+	/**
+	 * Applies a non-null keys constraint to the map.<br>
+	 * <p>
+	 *     The returned type will validate that all keys in the map are non-null.
+	 * </p>
+	 *
+	 * @return A new type with the applied non-null keys constraint
+	 * @see #uniqueValues()
+	 * @see #nonNullValues()
+	 */
+	@NonNull C nonNullKeys();
+	
+	/**
+	 * Applies a unique values constraint to the map.<br>
+	 * <p>
+	 *     The returned type will validate that all values in the map are unique (no duplicates).
+	 * </p>
+	 *
+	 * @return A new type with the applied unique values constraint
+	 * @see #nonNullKeys()
+	 * @see #nonNullValues()
+	 */
+	@NonNull C uniqueValues();
+	
+	/**
+	 * Applies a non-null values constraint to the map.<br>
+	 * <p>
+	 *     The returned type will validate that all values in the map are non-null.
+	 * </p>
+	 *
+	 * @return A new type with the applied non-null values constraint
+	 * @see #nonNullKeys()
+	 * @see #uniqueValues()
+	 */
+	@NonNull C nonNullValues();
 }

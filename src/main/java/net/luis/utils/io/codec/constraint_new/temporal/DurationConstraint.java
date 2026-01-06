@@ -34,4 +34,4 @@ import net.luis.utils.io.codec.constraint_new.SignedConstraint;
  * @param <T> The type of the constraint configuration
  * @param <C> The return type of the constraint method (for fluent method chaining)
  */
-public interface DurationConstraint<T, C> extends SignedConstraint<T, C>, TimeFieldConstraint<T, C> {}
+public interface DurationConstraint<T, C> extends SignedConstraint<T, C>, TimeFieldConstraint<T, C>, TemporalSpanConstraint<T, C> {}

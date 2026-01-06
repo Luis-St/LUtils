@@ -105,6 +105,9 @@ public interface CharSequenceConstraint<T, C> extends LengthConstraint<T, C> {
 	 * @throws NullPointerException If the substring is null
 	 * @see #notContains(Object)
 	 * @see #containsAny(Collection)
+	 * @see #containsNone(Collection)
+	 * @see #containsAll(Collection)
+	 * @see #containsOnly(Collection)
 	 */
 	@NonNull C contains(@NonNull T substring);
 
@@ -119,6 +122,9 @@ public interface CharSequenceConstraint<T, C> extends LengthConstraint<T, C> {
 	 * @throws NullPointerException If the substring is null
 	 * @see #contains(Object)
 	 * @see #containsNone(Collection)
+	 * @see #containsAny(Collection)
+	 * @see #containsAll(Collection)
+	 * @see #containsOnly(Collection)
 	 */
 	@NonNull C notContains(@NonNull T substring);
 
@@ -132,7 +138,10 @@ public interface CharSequenceConstraint<T, C> extends LengthConstraint<T, C> {
 	 * @return A new type with the applied multi-containment constraint
 	 * @throws NullPointerException If the collection is null
 	 * @see #contains(Object)
+	 * @see #notContains(Object)
 	 * @see #containsNone(Collection)
+	 * @see #containsAll(Collection)
+	 * @see #containsOnly(Collection)
 	 */
 	@NonNull C containsAny(@NonNull Collection<T> substrings);
 
@@ -145,11 +154,48 @@ public interface CharSequenceConstraint<T, C> extends LengthConstraint<T, C> {
 	 * @param substrings The collection of substrings that values must not contain
 	 * @return A new type with the applied negative multi-containment constraint
 	 * @throws NullPointerException If the collection is null
+	 * @see #contains(Object)
 	 * @see #notContains(Object)
 	 * @see #containsAny(Collection)
+	 * @see #containsAll(Collection)
+	 * @see #containsOnly(Collection)
 	 */
 	@NonNull C containsNone(@NonNull Collection<T> substrings);
-
+	
+	/**
+	 * Applies an all-substring containment constraint to the type.<br>
+	 * <p>
+	 *     The returned type will validate that values contain all of the specified substrings.
+	 * </p>
+	 *
+	 * @param substrings The collection of substrings that values must contain
+	 * @return A new type with the applied all-containment constraint
+	 * @throws NullPointerException If the collection is null
+	 * @see #contains(Object)
+	 * @see #notContains(Object)
+	 * @see #containsAny(Collection)
+	 * @see #containsNone(Collection)
+	 * @see #containsOnly(Collection)
+	 */
+	@NonNull C containsAll(@NonNull Collection<T> substrings);
+	
+	/**
+	 * Applies an only-substring containment constraint to the type.<br>
+	 * <p>
+	 *     The returned type will validate that values contain only the specified substrings.
+	 * </p>
+	 *
+	 * @param substrings The collection of substrings that values must contain exclusively
+	 * @return A new type with the applied only-containment constraint
+	 * @throws NullPointerException If the collection is null
+	 * @see #contains(Object)
+	 * @see #notContains(Object)
+	 * @see #containsAny(Collection)
+	 * @see #containsNone(Collection)
+	 * @see #containsAll(Collection)
+	 */
+	@NonNull C containsOnly(@NonNull Collection<T> substrings);
+	
 	/**
 	 * Applies a suffix constraint to the type.<br>
 	 * <p>

@@ -92,7 +92,29 @@ public interface StringConstraint<T, C> extends CharSequenceConstraint<T, C> {
 	 * @see #notIn(Collection)
 	 */
 	@NonNull C notInIgnoreCase(@NonNull Collection<T> values);
-
+	
+	/**
+	 * Applies an upper case constraint to the string.<br>
+	 * <p>
+	 *     The returned type will validate that characters are upper case letters (as defined by {@link Character#isUpperCase(char)}).
+	 * </p>
+	 *
+	 * @return A new type with the applied upper case constraint
+	 * @see #lowerCase()
+	 */
+	@NonNull C upperCase();
+	
+	/**
+	 * Applies a lower case constraint to the string.<br>
+	 * <p>
+	 *     The returned type will validate that characters are lower case letters (as defined by {@link Character#isLowerCase(char)}).
+	 * </p>
+	 *
+	 * @return A new type with the applied lower case constraint
+	 * @see #upperCase()
+	 */
+	@NonNull C lowerCase();
+	
 	/**
 	 * Applies a trimmed constraint to the string.<br>
 	 * <p>
