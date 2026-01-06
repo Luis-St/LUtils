@@ -39,7 +39,7 @@ import java.util.Map;
  * @param <C> The return type of the constraint method (for fluent method chaining)
  */
 public interface MapConstraint<K, V, C> extends SizeConstraint<Map<K, V>, C> {
-
+	
 	/**
 	 * Applies a required key constraint to the map.<br>
 	 * <p>
@@ -53,7 +53,7 @@ public interface MapConstraint<K, V, C> extends SizeConstraint<Map<K, V>, C> {
 	 * @see #forbiddenKey(Object)
 	 */
 	@NonNull C requiredKey(@NonNull K key);
-
+	
 	/**
 	 * Applies a multiple required keys constraint to the map.<br>
 	 * <p>
@@ -67,7 +67,7 @@ public interface MapConstraint<K, V, C> extends SizeConstraint<Map<K, V>, C> {
 	 * @see #forbiddenKeys(Collection)
 	 */
 	@NonNull C requiredKeys(@NonNull Collection<K> keys);
-
+	
 	/**
 	 * Applies a forbidden key constraint to the map.<br>
 	 * <p>
@@ -81,7 +81,7 @@ public interface MapConstraint<K, V, C> extends SizeConstraint<Map<K, V>, C> {
 	 * @see #requiredKey(Object)
 	 */
 	@NonNull C forbiddenKey(@NonNull K key);
-
+	
 	/**
 	 * Applies a multiple forbidden keys constraint to the map.<br>
 	 * <p>
@@ -95,7 +95,7 @@ public interface MapConstraint<K, V, C> extends SizeConstraint<Map<K, V>, C> {
 	 * @see #requiredKeys(Collection)
 	 */
 	@NonNull C forbiddenKeys(@NonNull Collection<K> keys);
-
+	
 	/**
 	 * Applies an allowed key constraint to the map.<br>
 	 * <p>
@@ -108,7 +108,7 @@ public interface MapConstraint<K, V, C> extends SizeConstraint<Map<K, V>, C> {
 	 * @see #allowedKeys(Collection)
 	 */
 	@NonNull C allowedKey(@NonNull K key);
-
+	
 	/**
 	 * Applies a multiple allowed keys constraint to the map.<br>
 	 * <p>

@@ -31,7 +31,7 @@ package net.luis.utils.io.codec.constraint_new.core;
  */
 
 public enum Platform {
-
+	
 	/**
 	 * Microsoft Windows platform.<br>
 	 * <p>
@@ -40,7 +40,7 @@ public enum Platform {
 	 * </p>
 	 */
 	WINDOWS,
-
+	
 	/**
 	 * Apple macOS platform.<br>
 	 * <p>
@@ -49,7 +49,7 @@ public enum Platform {
 	 * </p>
 	 */
 	MAC,
-
+	
 	/**
 	 * Linux platform.<br>
 	 * <p>
@@ -58,7 +58,7 @@ public enum Platform {
 	 * </p>
 	 */
 	LINUX,
-
+	
 	/**
 	 * Generic POSIX-compliant platform.<br>
 	 * <p>

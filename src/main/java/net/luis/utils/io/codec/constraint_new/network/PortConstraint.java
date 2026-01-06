@@ -39,7 +39,7 @@ import java.util.function.UnaryOperator;
  * @param <C> The return type of the constraint method (for fluent method chaining)
  */
 public interface PortConstraint<T, C> extends BaseConstraint<T, C> {
-
+	
 	/**
 	 * Applies a port range constraint to the type.<br>
 	 * <p>
@@ -53,7 +53,7 @@ public interface PortConstraint<T, C> extends BaseConstraint<T, C> {
 	 * @see #notInRange(int, int)
 	 */
 	@NonNull C inRange(int min, int max);
-
+	
 	/**
 	 * Applies a negative port range constraint to the type.<br>
 	 * <p>
@@ -67,7 +67,7 @@ public interface PortConstraint<T, C> extends BaseConstraint<T, C> {
 	 * @see #inRange(int, int)
 	 */
 	@NonNull C notInRange(int min, int max);
-
+	
 	/**
 	 * Applies a port type constraint to the type using a builder.<br>
 	 * <p>

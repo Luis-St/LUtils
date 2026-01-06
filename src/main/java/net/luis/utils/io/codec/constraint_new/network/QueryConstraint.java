@@ -19,8 +19,8 @@
 package net.luis.utils.io.codec.constraint_new.network;
 
 import net.luis.utils.io.codec.constraint_new.MapConstraint;
-import net.luis.utils.io.codec.constraint_new.builder.StringConstraintBuilder;
 import net.luis.utils.io.codec.constraint_new.builder.SizeConstraintBuilder;
+import net.luis.utils.io.codec.constraint_new.builder.StringConstraintBuilder;
 import org.jspecify.annotations.NonNull;
 
 import java.util.List;
@@ -40,7 +40,7 @@ import java.util.regex.Pattern;
  * @param <C> The return type of the constraint method (for fluent method chaining)
  */
 public interface QueryConstraint<C> extends MapConstraint<String, List<String>, C> {
-
+	
 	/**
 	 * Applies a value constraint to a specific query parameter key using a builder.<br>
 	 * <p>
@@ -55,7 +55,7 @@ public interface QueryConstraint<C> extends MapConstraint<String, List<String>, 
 	 * @see #values(String, UnaryOperator)
 	 */
 	@NonNull C value(@NonNull String key, @NonNull UnaryOperator<StringConstraintBuilder> builder);
-
+	
 	/**
 	 * Applies a value constraint to query parameter keys matching a regex pattern using a builder.<br>
 	 * <p>
@@ -71,7 +71,7 @@ public interface QueryConstraint<C> extends MapConstraint<String, List<String>, 
 	 * @see #value(String, UnaryOperator)
 	 */
 	@NonNull C values(@NonNull String regex, @NonNull UnaryOperator<StringConstraintBuilder> builder);
-
+	
 	/**
 	 * Applies a value constraint to query parameter keys matching a compiled pattern using a builder.<br>
 	 * <p>
@@ -87,7 +87,7 @@ public interface QueryConstraint<C> extends MapConstraint<String, List<String>, 
 	 * @see #values(String, UnaryOperator)
 	 */
 	@NonNull C values(@NonNull Pattern pattern, @NonNull UnaryOperator<StringConstraintBuilder> builder);
-
+	
 	/**
 	 * Applies a single-valued constraint to the query parameters.<br>
 	 * <p>
@@ -98,7 +98,7 @@ public interface QueryConstraint<C> extends MapConstraint<String, List<String>, 
 	 * @see #multiValued(String, UnaryOperator)
 	 */
 	@NonNull C singleValued();
-
+	
 	/**
 	 * Applies a multi-valued constraint to a specific query parameter key using a builder.<br>
 	 * <p>

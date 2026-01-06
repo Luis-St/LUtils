@@ -38,7 +38,7 @@ import java.util.function.UnaryOperator;
  * @param <C> The return type of the constraint method (for fluent method chaining)
  */
 public interface ZoneIdConstraint<T, C> extends BaseConstraint<T, C> {
-
+	
 	/**
 	 * Applies a normalized zone constraint to the type.<br>
 	 * <p>
@@ -48,7 +48,7 @@ public interface ZoneIdConstraint<T, C> extends BaseConstraint<T, C> {
 	 * @return A new type with the applied normalized constraint
 	 */
 	@NonNull C normalized();
-
+	
 	/**
 	 * Applies a region-based zone constraint to the type.<br>
 	 * <p>
@@ -60,7 +60,7 @@ public interface ZoneIdConstraint<T, C> extends BaseConstraint<T, C> {
 	 * @see #offsetBased()
 	 */
 	@NonNull C regionBased();
-
+	
 	/**
 	 * Applies an offset-based zone constraint to the type.<br>
 	 * <p>
@@ -73,7 +73,7 @@ public interface ZoneIdConstraint<T, C> extends BaseConstraint<T, C> {
 	 * @see #fixedOffset()
 	 */
 	@NonNull C offsetBased();
-
+	
 	/**
 	 * Applies a fixed offset zone constraint to the type.<br>
 	 * <p>
@@ -84,7 +84,7 @@ public interface ZoneIdConstraint<T, C> extends BaseConstraint<T, C> {
 	 * @see #offsetBased()
 	 */
 	@NonNull C fixedOffset();
-
+	
 	/**
 	 * Applies a UTC zone constraint to the type.<br>
 	 * <p>
@@ -94,7 +94,7 @@ public interface ZoneIdConstraint<T, C> extends BaseConstraint<T, C> {
 	 * @return A new type with the applied UTC constraint
 	 */
 	@NonNull C utc();
-
+	
 	/**
 	 * Applies a system default zone constraint to the type.<br>
 	 * <p>
@@ -104,7 +104,7 @@ public interface ZoneIdConstraint<T, C> extends BaseConstraint<T, C> {
 	 * @return A new type with the applied system default constraint
 	 */
 	@NonNull C systemDefault();
-
+	
 	/**
 	 * Applies an available zone constraint to the type.<br>
 	 * <p>
@@ -114,7 +114,7 @@ public interface ZoneIdConstraint<T, C> extends BaseConstraint<T, C> {
 	 * @return A new type with the applied available constraint
 	 */
 	@NonNull C available();
-
+	
 	/**
 	 * Applies a region constraint to the zone using a builder.<br>
 	 * <p>

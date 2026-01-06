@@ -30,7 +30,7 @@ package net.luis.utils.io.codec.constraint_new.core;
  */
 
 public enum IpAddressType {
-
+	
 	/**
 	 * Public (globally routable) IP address.<br>
 	 * <p>
@@ -39,7 +39,7 @@ public enum IpAddressType {
 	 * </p>
 	 */
 	PUBLIC,
-
+	
 	/**
 	 * Private (non-routable) IP address.<br>
 	 * <p>
@@ -48,7 +48,7 @@ public enum IpAddressType {
 	 * </p>
 	 */
 	PRIVATE,
-
+	
 	/**
 	 * Loopback IP address.<br>
 	 * <p>
@@ -57,7 +57,7 @@ public enum IpAddressType {
 	 * </p>
 	 */
 	LOOPBACK,
-
+	
 	/**
 	 * Link-local IP address.<br>
 	 * <p>
@@ -66,7 +66,7 @@ public enum IpAddressType {
 	 * </p>
 	 */
 	LINK_LOCAL,
-
+	
 	/**
 	 * Multicast IP address.<br>
 	 * <p>
@@ -75,7 +75,7 @@ public enum IpAddressType {
 	 * </p>
 	 */
 	MULTICAST,
-
+	
 	/**
 	 * Broadcast IP address.<br>
 	 * <p>
@@ -84,7 +84,7 @@ public enum IpAddressType {
 	 * </p>
 	 */
 	BROADCAST,
-
+	
 	/**
 	 * Unspecified IP address.<br>
 	 * <p>

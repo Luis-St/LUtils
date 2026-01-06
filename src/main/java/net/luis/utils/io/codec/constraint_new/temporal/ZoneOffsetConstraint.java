@@ -38,7 +38,7 @@ import java.util.function.UnaryOperator;
  * @param <C> The return type of the constraint method (for fluent method chaining)
  */
 public interface ZoneOffsetConstraint<T, C> extends SignedConstraint<T, C> {
-
+	
 	/**
 	 * Applies a UTC offset constraint to the type.<br>
 	 * <p>
@@ -52,7 +52,7 @@ public interface ZoneOffsetConstraint<T, C> extends SignedConstraint<T, C> {
 	default @NonNull C utc() {
 		return this.zero();
 	}
-
+	
 	/**
 	 * Applies a hours constraint to the zone offset using a builder.<br>
 	 * <p>

@@ -36,7 +36,7 @@ import java.util.Collection;
  * @param <C> The return type of the constraint method (for fluent method chaining)
  */
 public interface StringConstraint<T, C> extends CharSequenceConstraint<T, C> {
-
+	
 	/**
 	 * Applies a case-insensitive equality constraint to the string.<br>
 	 * <p>
@@ -50,7 +50,7 @@ public interface StringConstraint<T, C> extends CharSequenceConstraint<T, C> {
 	 * @see #equalTo(Object)
 	 */
 	@NonNull C equalToIgnoreCase(@NonNull T value);
-
+	
 	/**
 	 * Applies a case-insensitive non-equality constraint to the string.<br>
 	 * <p>
@@ -64,7 +64,7 @@ public interface StringConstraint<T, C> extends CharSequenceConstraint<T, C> {
 	 * @see #notEqualTo(Object)
 	 */
 	@NonNull C notEqualToIgnoreCase(@NonNull T value);
-
+	
 	/**
 	 * Applies a case-insensitive inclusion constraint to the string.<br>
 	 * <p>
@@ -78,7 +78,7 @@ public interface StringConstraint<T, C> extends CharSequenceConstraint<T, C> {
 	 * @see #in(Collection)
 	 */
 	@NonNull C inIgnoreCase(@NonNull Collection<T> values);
-
+	
 	/**
 	 * Applies a case-insensitive exclusion constraint to the string.<br>
 	 * <p>
@@ -127,7 +127,7 @@ public interface StringConstraint<T, C> extends CharSequenceConstraint<T, C> {
 	 * @see #notBlank()
 	 */
 	@NonNull C trimmed();
-
+	
 	/**
 	 * Applies a blank constraint to the string.<br>
 	 * <p>
@@ -139,7 +139,7 @@ public interface StringConstraint<T, C> extends CharSequenceConstraint<T, C> {
 	 * @see #empty()
 	 */
 	@NonNull C blank();
-
+	
 	/**
 	 * Applies a non-blank constraint to the string.<br>
 	 * <p>
@@ -151,7 +151,7 @@ public interface StringConstraint<T, C> extends CharSequenceConstraint<T, C> {
 	 * @see #notEmpty()
 	 */
 	@NonNull C notBlank();
-
+	
 	/**
 	 * Applies a numeric constraint to the string.<br>
 	 * <p>
@@ -163,7 +163,7 @@ public interface StringConstraint<T, C> extends CharSequenceConstraint<T, C> {
 	 * @see #alphanumeric()
 	 */
 	@NonNull C numeric();
-
+	
 	/**
 	 * Applies an alphabetic constraint to the string.<br>
 	 * <p>
@@ -175,7 +175,7 @@ public interface StringConstraint<T, C> extends CharSequenceConstraint<T, C> {
 	 * @see #alphanumeric()
 	 */
 	@NonNull C alphabetic();
-
+	
 	/**
 	 * Applies an alphanumeric constraint to the string.<br>
 	 * <p>
@@ -187,7 +187,7 @@ public interface StringConstraint<T, C> extends CharSequenceConstraint<T, C> {
 	 * @see #numeric()
 	 */
 	@NonNull C alphanumeric();
-
+	
 	/**
 	 * Applies an ASCII constraint to the string.<br>
 	 * <p>
@@ -198,7 +198,7 @@ public interface StringConstraint<T, C> extends CharSequenceConstraint<T, C> {
 	 * @see #latin1()
 	 */
 	@NonNull C ascii();
-
+	
 	/**
 	 * Applies a Latin-1 constraint to the string.<br>
 	 * <p>

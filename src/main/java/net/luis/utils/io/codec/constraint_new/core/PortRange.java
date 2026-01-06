@@ -30,7 +30,7 @@ package net.luis.utils.io.codec.constraint_new.core;
  */
 
 public enum PortRange {
-
+	
 	/**
 	 * System port range (0-1023).<br>
 	 * <p>
@@ -39,7 +39,7 @@ public enum PortRange {
 	 * </p>
 	 */
 	SYSTEM,
-
+	
 	/**
 	 * Registered port range (1024-49151).<br>
 	 * <p>
@@ -48,7 +48,7 @@ public enum PortRange {
 	 * </p>
 	 */
 	REGISTERED,
-
+	
 	/**
 	 * Dynamic port range (49152-65535).<br>
 	 * <p>

@@ -33,7 +33,7 @@ import org.jspecify.annotations.NonNull;
  * @param <C> The return type of the constraint method (for fluent method chaining)
  */
 public interface CharacterConstraint<C> extends ComparableConstraint<Character, C> {
-
+	
 	/**
 	 * Applies a letter constraint to the character.<br>
 	 * <p>
@@ -45,7 +45,7 @@ public interface CharacterConstraint<C> extends ComparableConstraint<Character, 
 	 * @see #alphanumeric()
 	 */
 	@NonNull C letter();
-
+	
 	/**
 	 * Applies a digit constraint to the character.<br>
 	 * <p>
@@ -57,7 +57,7 @@ public interface CharacterConstraint<C> extends ComparableConstraint<Character, 
 	 * @see #alphanumeric()
 	 */
 	@NonNull C digit();
-
+	
 	/**
 	 * Applies an alphanumeric constraint to the character.<br>
 	 * <p>
@@ -69,7 +69,7 @@ public interface CharacterConstraint<C> extends ComparableConstraint<Character, 
 	 * @see #digit()
 	 */
 	@NonNull C alphanumeric();
-
+	
 	/**
 	 * Applies a whitespace constraint to the character.<br>
 	 * <p>
@@ -79,7 +79,7 @@ public interface CharacterConstraint<C> extends ComparableConstraint<Character, 
 	 * @return A new type with the applied whitespace constraint
 	 */
 	@NonNull C whitespace();
-
+	
 	/**
 	 * Applies a punctuation constraint to the character.<br>
 	 * <p>
@@ -90,7 +90,7 @@ public interface CharacterConstraint<C> extends ComparableConstraint<Character, 
 	 * @see #symbol()
 	 */
 	@NonNull C punctuation();
-
+	
 	/**
 	 * Applies a symbol constraint to the character.<br>
 	 * <p>
@@ -101,7 +101,7 @@ public interface CharacterConstraint<C> extends ComparableConstraint<Character, 
 	 * @see #punctuation()
 	 */
 	@NonNull C symbol();
-
+	
 	/**
 	 * Applies a control character constraint to the character.<br>
 	 * <p>
@@ -111,7 +111,7 @@ public interface CharacterConstraint<C> extends ComparableConstraint<Character, 
 	 * @return A new type with the applied control constraint
 	 */
 	@NonNull C control();
-
+	
 	/**
 	 * Applies an upper case constraint to the character.<br>
 	 * <p>
@@ -122,7 +122,7 @@ public interface CharacterConstraint<C> extends ComparableConstraint<Character, 
 	 * @see #lowerCase()
 	 */
 	@NonNull C upperCase();
-
+	
 	/**
 	 * Applies a lower case constraint to the character.<br>
 	 * <p>
@@ -133,7 +133,7 @@ public interface CharacterConstraint<C> extends ComparableConstraint<Character, 
 	 * @see #upperCase()
 	 */
 	@NonNull C lowerCase();
-
+	
 	/**
 	 * Applies an ASCII character constraint to the character.<br>
 	 * <p>
@@ -147,7 +147,7 @@ public interface CharacterConstraint<C> extends ComparableConstraint<Character, 
 	default @NonNull C ascii() {
 		return this.betweenOrEqual('\u0000', '\u007F');
 	}
-
+	
 	/**
 	 * Applies a Latin-1 character constraint to the character.<br>
 	 * <p>

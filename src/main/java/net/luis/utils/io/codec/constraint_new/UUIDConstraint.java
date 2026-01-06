@@ -39,7 +39,7 @@ import java.util.function.UnaryOperator;
  * @param <C> The return type of the constraint method (for fluent method chaining)
  */
 public interface UUIDConstraint<C> extends BaseConstraint<UUID, C> {
-
+	
 	/**
 	 * Applies a version 1 (time-based) constraint to the UUID.<br>
 	 * <p>
@@ -53,7 +53,7 @@ public interface UUIDConstraint<C> extends BaseConstraint<UUID, C> {
 	default @NonNull C version1() {
 		return this.version(1);
 	}
-
+	
 	/**
 	 * Applies a version 4 (random) constraint to the UUID.<br>
 	 * <p>
@@ -67,7 +67,7 @@ public interface UUIDConstraint<C> extends BaseConstraint<UUID, C> {
 	default @NonNull C version4() {
 		return this.version(4);
 	}
-
+	
 	/**
 	 * Applies a version 5 (name-based SHA-1) constraint to the UUID.<br>
 	 * <p>
@@ -81,7 +81,7 @@ public interface UUIDConstraint<C> extends BaseConstraint<UUID, C> {
 	default @NonNull C version5() {
 		return this.version(5);
 	}
-
+	
 	/**
 	 * Applies a version 7 (Unix epoch time-based) constraint to the UUID.<br>
 	 * <p>
@@ -95,7 +95,7 @@ public interface UUIDConstraint<C> extends BaseConstraint<UUID, C> {
 	default @NonNull C version7() {
 		return this.version(7);
 	}
-
+	
 	/**
 	 * Applies a specific version constraint to the UUID.<br>
 	 * <p>
@@ -110,7 +110,7 @@ public interface UUIDConstraint<C> extends BaseConstraint<UUID, C> {
 	default @NonNull C version(int version) {
 		return this.version(builder -> builder.equalTo(version));
 	}
-
+	
 	/**
 	 * Applies a version constraint to the UUID using a builder.<br>
 	 * <p>
@@ -124,7 +124,7 @@ public interface UUIDConstraint<C> extends BaseConstraint<UUID, C> {
 	 * @see #version(int)
 	 */
 	@NonNull C version(@NonNull UnaryOperator<NumericConstraintBuilder> builder);
-
+	
 	/**
 	 * Applies a variant constraint to the UUID using a builder.<br>
 	 * <p>
@@ -138,7 +138,7 @@ public interface UUIDConstraint<C> extends BaseConstraint<UUID, C> {
 	 * @see UUIDVariant
 	 */
 	@NonNull C variant(@NonNull UnaryOperator<EnumConstraintBuilder<UUIDVariant>> builder);
-
+	
 	/**
 	 * Applies a nil UUID constraint to the type.<br>
 	 * <p>
@@ -149,7 +149,7 @@ public interface UUIDConstraint<C> extends BaseConstraint<UUID, C> {
 	 * @see #notNil()
 	 */
 	@NonNull C nil();
-
+	
 	/**
 	 * Applies a non-nil UUID constraint to the type.<br>
 	 * <p>
@@ -160,7 +160,7 @@ public interface UUIDConstraint<C> extends BaseConstraint<UUID, C> {
 	 * @see #nil()
 	 */
 	@NonNull C notNil();
-
+	
 	/**
 	 * Applies a max UUID constraint to the type.<br>
 	 * <p>

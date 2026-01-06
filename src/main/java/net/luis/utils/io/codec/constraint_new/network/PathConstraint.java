@@ -41,7 +41,7 @@ import java.util.function.UnaryOperator;
  * @param <C> The return type of the constraint method (for fluent method chaining)
  */
 public interface PathConstraint<T, C> extends LengthConstraint<T, C>, DepthConstraint<T, C> {
-
+	
 	/**
 	 * Applies an absolute path constraint to the type.<br>
 	 * <p>
@@ -52,7 +52,7 @@ public interface PathConstraint<T, C> extends LengthConstraint<T, C>, DepthConst
 	 * @see #relative()
 	 */
 	@NonNull C absolute();
-
+	
 	/**
 	 * Applies a relative path constraint to the type.<br>
 	 * <p>
@@ -63,7 +63,7 @@ public interface PathConstraint<T, C> extends LengthConstraint<T, C>, DepthConst
 	 * @see #absolute()
 	 */
 	@NonNull C relative();
-
+	
 	/**
 	 * Applies a normalized path constraint to the type.<br>
 	 * <p>
@@ -74,7 +74,7 @@ public interface PathConstraint<T, C> extends LengthConstraint<T, C>, DepthConst
 	 * @see #canonical()
 	 */
 	@NonNull C normalized();
-
+	
 	/**
 	 * Applies a canonical path constraint to the type.<br>
 	 * <p>
@@ -85,7 +85,7 @@ public interface PathConstraint<T, C> extends LengthConstraint<T, C>, DepthConst
 	 * @see #normalized()
 	 */
 	@NonNull C canonical();
-
+	
 	/**
 	 * Applies a path string constraint using a builder.<br>
 	 * <p>
@@ -97,7 +97,7 @@ public interface PathConstraint<T, C> extends LengthConstraint<T, C>, DepthConst
 	 * @throws NullPointerException If the builder is null
 	 */
 	@NonNull C path(@NonNull UnaryOperator<StringConstraintBuilder> builder);
-
+	
 	/**
 	 * Applies a root constraint to the path using a builder.<br>
 	 * <p>
@@ -109,7 +109,7 @@ public interface PathConstraint<T, C> extends LengthConstraint<T, C>, DepthConst
 	 * @throws NullPointerException If the builder is null
 	 */
 	@NonNull C root(@NonNull UnaryOperator<StringConstraintBuilder> builder);
-
+	
 	/**
 	 * Applies a parent constraint to the path using a builder.<br>
 	 * <p>
@@ -121,7 +121,7 @@ public interface PathConstraint<T, C> extends LengthConstraint<T, C>, DepthConst
 	 * @throws NullPointerException If the builder is null
 	 */
 	@NonNull C parent(@NonNull UnaryOperator<StringConstraintBuilder> builder);
-
+	
 	/**
 	 * Applies a segment constraint to the path using a builder.<br>
 	 * <p>
@@ -133,7 +133,7 @@ public interface PathConstraint<T, C> extends LengthConstraint<T, C>, DepthConst
 	 * @throws NullPointerException If the builder is null
 	 */
 	@NonNull C segment(@NonNull UnaryOperator<StringConstraintBuilder> builder);
-
+	
 	/**
 	 * Applies a file name constraint to the path using a builder.<br>
 	 * <p>
@@ -146,7 +146,7 @@ public interface PathConstraint<T, C> extends LengthConstraint<T, C>, DepthConst
 	 * @see #extension(UnaryOperator)
 	 */
 	@NonNull C file(@NonNull UnaryOperator<StringConstraintBuilder> builder);
-
+	
 	/**
 	 * Applies a constraint requiring the path to have no file extension.<br>
 	 * <p>
@@ -157,7 +157,7 @@ public interface PathConstraint<T, C> extends LengthConstraint<T, C>, DepthConst
 	 * @see #extension(UnaryOperator)
 	 */
 	@NonNull C withoutExtension();
-
+	
 	/**
 	 * Applies a file extension constraint to the path using a builder.<br>
 	 * <p>
@@ -170,7 +170,7 @@ public interface PathConstraint<T, C> extends LengthConstraint<T, C>, DepthConst
 	 * @see #withoutExtension()
 	 */
 	@NonNull C extension(@NonNull UnaryOperator<StringConstraintBuilder> builder);
-
+	
 	/**
 	 * Applies an ancestor-of constraint to the path.<br>
 	 * <p>
@@ -184,7 +184,7 @@ public interface PathConstraint<T, C> extends LengthConstraint<T, C>, DepthConst
 	 * @see #descendantOf(String)
 	 */
 	@NonNull C ancestorOf(@NonNull String path);
-
+	
 	/**
 	 * Applies a multi-ancestor-of constraint to the path.<br>
 	 * <p>
@@ -198,7 +198,7 @@ public interface PathConstraint<T, C> extends LengthConstraint<T, C>, DepthConst
 	 * @see #descendantOf(Collection)
 	 */
 	@NonNull C ancestorOf(@NonNull Collection<String> paths);
-
+	
 	/**
 	 * Applies a descendant-of constraint to the path.<br>
 	 * <p>
@@ -212,7 +212,7 @@ public interface PathConstraint<T, C> extends LengthConstraint<T, C>, DepthConst
 	 * @see #ancestorOf(String)
 	 */
 	@NonNull C descendantOf(@NonNull String path);
-
+	
 	/**
 	 * Applies a multi-descendant-of constraint to the path.<br>
 	 * <p>
@@ -226,7 +226,7 @@ public interface PathConstraint<T, C> extends LengthConstraint<T, C>, DepthConst
 	 * @see #ancestorOf(Collection)
 	 */
 	@NonNull C descendantOf(@NonNull Collection<String> paths);
-
+	
 	/**
 	 * Applies a platform validity constraint to the path.<br>
 	 * <p>
@@ -240,7 +240,7 @@ public interface PathConstraint<T, C> extends LengthConstraint<T, C>, DepthConst
 	 * @see Platform
 	 */
 	@NonNull C validFor(@NonNull Platform platform);
-
+	
 	/**
 	 * Applies a portable path constraint to the type.<br>
 	 * <p>
@@ -251,7 +251,7 @@ public interface PathConstraint<T, C> extends LengthConstraint<T, C>, DepthConst
 	 * @see #validFor(Platform)
 	 */
 	@NonNull C portable();
-
+	
 	/**
 	 * Applies a path separator constraint based on platform.<br>
 	 * <p>

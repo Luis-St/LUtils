@@ -37,7 +37,7 @@ import java.util.regex.Pattern;
  * @param <C> The return type of the constraint method (for fluent method chaining)
  */
 public interface CharSequenceConstraint<T, C> extends LengthConstraint<T, C> {
-
+	
 	/**
 	 * Applies a prefix constraint to the type.<br>
 	 * <p>
@@ -51,7 +51,7 @@ public interface CharSequenceConstraint<T, C> extends LengthConstraint<T, C> {
 	 * @see #startsWithAny(Collection)
 	 */
 	@NonNull C startsWith(@NonNull T prefix);
-
+	
 	/**
 	 * Applies a negative prefix constraint to the type.<br>
 	 * <p>
@@ -65,7 +65,7 @@ public interface CharSequenceConstraint<T, C> extends LengthConstraint<T, C> {
 	 * @see #startsWithNone(Collection)
 	 */
 	@NonNull C notStartsWith(@NonNull T prefix);
-
+	
 	/**
 	 * Applies a multi-prefix constraint to the type.<br>
 	 * <p>
@@ -79,7 +79,7 @@ public interface CharSequenceConstraint<T, C> extends LengthConstraint<T, C> {
 	 * @see #startsWithNone(Collection)
 	 */
 	@NonNull C startsWithAny(@NonNull Collection<T> prefixes);
-
+	
 	/**
 	 * Applies a negative multi-prefix constraint to the type.<br>
 	 * <p>
@@ -93,7 +93,7 @@ public interface CharSequenceConstraint<T, C> extends LengthConstraint<T, C> {
 	 * @see #startsWithAny(Collection)
 	 */
 	@NonNull C startsWithNone(@NonNull Collection<T> prefixes);
-
+	
 	/**
 	 * Applies a substring containment constraint to the type.<br>
 	 * <p>
@@ -110,7 +110,7 @@ public interface CharSequenceConstraint<T, C> extends LengthConstraint<T, C> {
 	 * @see #containsOnly(Collection)
 	 */
 	@NonNull C contains(@NonNull T substring);
-
+	
 	/**
 	 * Applies a negative substring containment constraint to the type.<br>
 	 * <p>
@@ -127,7 +127,7 @@ public interface CharSequenceConstraint<T, C> extends LengthConstraint<T, C> {
 	 * @see #containsOnly(Collection)
 	 */
 	@NonNull C notContains(@NonNull T substring);
-
+	
 	/**
 	 * Applies a multi-substring containment constraint to the type.<br>
 	 * <p>
@@ -144,7 +144,7 @@ public interface CharSequenceConstraint<T, C> extends LengthConstraint<T, C> {
 	 * @see #containsOnly(Collection)
 	 */
 	@NonNull C containsAny(@NonNull Collection<T> substrings);
-
+	
 	/**
 	 * Applies a negative multi-substring containment constraint to the type.<br>
 	 * <p>
@@ -209,7 +209,7 @@ public interface CharSequenceConstraint<T, C> extends LengthConstraint<T, C> {
 	 * @see #endsWithAny(Collection)
 	 */
 	@NonNull C endsWith(@NonNull T suffix);
-
+	
 	/**
 	 * Applies a negative suffix constraint to the type.<br>
 	 * <p>
@@ -223,7 +223,7 @@ public interface CharSequenceConstraint<T, C> extends LengthConstraint<T, C> {
 	 * @see #endsWithNone(Collection)
 	 */
 	@NonNull C notEndsWith(@NonNull T suffix);
-
+	
 	/**
 	 * Applies a multi-suffix constraint to the type.<br>
 	 * <p>
@@ -237,7 +237,7 @@ public interface CharSequenceConstraint<T, C> extends LengthConstraint<T, C> {
 	 * @see #endsWithNone(Collection)
 	 */
 	@NonNull C endsWithAny(@NonNull Collection<T> suffixes);
-
+	
 	/**
 	 * Applies a negative multi-suffix constraint to the type.<br>
 	 * <p>
@@ -251,7 +251,7 @@ public interface CharSequenceConstraint<T, C> extends LengthConstraint<T, C> {
 	 * @see #endsWithAny(Collection)
 	 */
 	@NonNull C endsWithNone(@NonNull Collection<T> suffixes);
-
+	
 	/**
 	 * Applies a regular expression constraint to the type.<br>
 	 * <p>
@@ -265,7 +265,7 @@ public interface CharSequenceConstraint<T, C> extends LengthConstraint<T, C> {
 	 * @see #matches(Pattern)
 	 */
 	@NonNull C matches(@NonNull String regex);
-
+	
 	/**
 	 * Applies a negative regular expression constraint to the type.<br>
 	 * <p>
@@ -279,7 +279,7 @@ public interface CharSequenceConstraint<T, C> extends LengthConstraint<T, C> {
 	 * @see #notMatches(Pattern)
 	 */
 	@NonNull C notMatches(@NonNull String regex);
-
+	
 	/**
 	 * Applies a compiled pattern constraint to the type.<br>
 	 * <p>
@@ -294,7 +294,7 @@ public interface CharSequenceConstraint<T, C> extends LengthConstraint<T, C> {
 	 * @see #matches(String)
 	 */
 	@NonNull C matches(@NonNull Pattern pattern);
-
+	
 	/**
 	 * Applies a negative compiled pattern constraint to the type.<br>
 	 * <p>

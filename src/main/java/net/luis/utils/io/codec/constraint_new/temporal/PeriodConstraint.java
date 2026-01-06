@@ -38,7 +38,7 @@ import java.util.function.UnaryOperator;
  * @param <C> The return type of the constraint method (for fluent method chaining)
  */
 public interface PeriodConstraint<T, C> extends SignedConstraint<T, C> {
-
+	
 	/**
 	 * Applies a day constraint to the period using a builder.<br>
 	 * <p>
@@ -53,7 +53,7 @@ public interface PeriodConstraint<T, C> extends SignedConstraint<T, C> {
 	 * @see #year(UnaryOperator)
 	 */
 	@NonNull C day(@NonNull UnaryOperator<NumericConstraintBuilder> builder);
-
+	
 	/**
 	 * Applies a month constraint to the period using a builder.<br>
 	 * <p>
@@ -68,7 +68,7 @@ public interface PeriodConstraint<T, C> extends SignedConstraint<T, C> {
 	 * @see #year(UnaryOperator)
 	 */
 	@NonNull C month(@NonNull UnaryOperator<NumericConstraintBuilder> builder);
-
+	
 	/**
 	 * Applies a year constraint to the period using a builder.<br>
 	 * <p>

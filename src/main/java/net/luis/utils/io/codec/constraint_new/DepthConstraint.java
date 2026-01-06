@@ -33,7 +33,7 @@ import org.jspecify.annotations.NonNull;
  * @param <C> The return type of the constraint method (for fluent method chaining)
  */
 public interface DepthConstraint<T, C> extends BaseConstraint<T, C> {
-
+	
 	/**
 	 * Applies a minimum depth constraint to the type.<br>
 	 * <p>
@@ -48,7 +48,7 @@ public interface DepthConstraint<T, C> extends BaseConstraint<T, C> {
 	 * @see #depthBetween(int, int)
 	 */
 	@NonNull C minDepth(int minDepth);
-
+	
 	/**
 	 * Applies a maximum depth constraint to the type.<br>
 	 * <p>
@@ -63,7 +63,7 @@ public interface DepthConstraint<T, C> extends BaseConstraint<T, C> {
 	 * @see #depthBetween(int, int)
 	 */
 	@NonNull C maxDepth(int maxDepth);
-
+	
 	/**
 	 * Applies an exact depth constraint to the type.<br>
 	 * <p>
@@ -77,7 +77,7 @@ public interface DepthConstraint<T, C> extends BaseConstraint<T, C> {
 	 * @see #depthBetween(int, int)
 	 */
 	@NonNull C exactDepth(int exactDepth);
-
+	
 	/**
 	 * Applies a depth range constraint to the type.<br>
 	 * <p>

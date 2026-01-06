@@ -38,7 +38,7 @@ import java.util.function.UnaryOperator;
  * @param <C> The return type of the constraint method (for fluent method chaining)
  */
 public interface URIConstraint<T, C> extends BaseConstraint<T, C> {
-
+	
 	/**
 	 * Applies a scheme constraint to the URI using a builder.<br>
 	 * <p>
@@ -50,7 +50,7 @@ public interface URIConstraint<T, C> extends BaseConstraint<T, C> {
 	 * @throws NullPointerException If the builder is null
 	 */
 	@NonNull C scheme(@NonNull UnaryOperator<StringConstraintBuilder> builder);
-
+	
 	/**
 	 * Applies a host constraint to the URI using a builder.<br>
 	 * <p>
@@ -62,7 +62,7 @@ public interface URIConstraint<T, C> extends BaseConstraint<T, C> {
 	 * @throws NullPointerException If the builder is null
 	 */
 	@NonNull C host(@NonNull UnaryOperator<HostConstraintBuilder> builder);
-
+	
 	/**
 	 * Applies a constraint requiring the URI to have no user info component.<br>
 	 * <p>
@@ -73,7 +73,7 @@ public interface URIConstraint<T, C> extends BaseConstraint<T, C> {
 	 * @see #userInfo(UnaryOperator)
 	 */
 	@NonNull C withoutUserInfo();
-
+	
 	/**
 	 * Applies a user info constraint to the URI using a builder.<br>
 	 * <p>
@@ -86,7 +86,7 @@ public interface URIConstraint<T, C> extends BaseConstraint<T, C> {
 	 * @see #withoutUserInfo()
 	 */
 	@NonNull C userInfo(@NonNull UnaryOperator<StringConstraintBuilder> builder);
-
+	
 	/**
 	 * Applies a constraint requiring the URI to have no port component.<br>
 	 * <p>
@@ -97,7 +97,7 @@ public interface URIConstraint<T, C> extends BaseConstraint<T, C> {
 	 * @see #port(UnaryOperator)
 	 */
 	@NonNull C withoutPort();
-
+	
 	/**
 	 * Applies a port constraint to the URI using a builder.<br>
 	 * <p>
@@ -110,7 +110,7 @@ public interface URIConstraint<T, C> extends BaseConstraint<T, C> {
 	 * @see #withoutPort()
 	 */
 	@NonNull C port(@NonNull UnaryOperator<PortConstraintBuilder> builder);
-
+	
 	/**
 	 * Applies a constraint requiring the URI to have no path component.<br>
 	 * <p>
@@ -121,7 +121,7 @@ public interface URIConstraint<T, C> extends BaseConstraint<T, C> {
 	 * @see #path(UnaryOperator)
 	 */
 	@NonNull C withoutPath();
-
+	
 	/**
 	 * Applies a path constraint to the URI using a builder.<br>
 	 * <p>
@@ -134,7 +134,7 @@ public interface URIConstraint<T, C> extends BaseConstraint<T, C> {
 	 * @see #withoutPath()
 	 */
 	@NonNull C path(@NonNull UnaryOperator<PathConstraintBuilder> builder);
-
+	
 	/**
 	 * Applies a constraint requiring the URI to have no query component.<br>
 	 * <p>
@@ -145,7 +145,7 @@ public interface URIConstraint<T, C> extends BaseConstraint<T, C> {
 	 * @see #query(UnaryOperator)
 	 */
 	@NonNull C withoutQuery();
-
+	
 	/**
 	 * Applies a query constraint to the URI using a builder.<br>
 	 * <p>
@@ -158,7 +158,7 @@ public interface URIConstraint<T, C> extends BaseConstraint<T, C> {
 	 * @see #withoutQuery()
 	 */
 	@NonNull C query(@NonNull UnaryOperator<QueryConstraintBuilder> builder);
-
+	
 	/**
 	 * Applies a constraint requiring the URI to have no fragment component.<br>
 	 * <p>
@@ -169,7 +169,7 @@ public interface URIConstraint<T, C> extends BaseConstraint<T, C> {
 	 * @see #fragment(UnaryOperator)
 	 */
 	@NonNull C withoutFragment();
-
+	
 	/**
 	 * Applies a fragment constraint to the URI using a builder.<br>
 	 * <p>
@@ -182,7 +182,7 @@ public interface URIConstraint<T, C> extends BaseConstraint<T, C> {
 	 * @see #withoutFragment()
 	 */
 	@NonNull C fragment(@NonNull UnaryOperator<StringConstraintBuilder> builder);
-
+	
 	/**
 	 * Applies an absolute URI constraint to the type.<br>
 	 * <p>
@@ -193,7 +193,7 @@ public interface URIConstraint<T, C> extends BaseConstraint<T, C> {
 	 * @see #relative()
 	 */
 	@NonNull C absolute();
-
+	
 	/**
 	 * Applies a relative URI constraint to the type.<br>
 	 * <p>
@@ -204,7 +204,7 @@ public interface URIConstraint<T, C> extends BaseConstraint<T, C> {
 	 * @see #absolute()
 	 */
 	@NonNull C relative();
-
+	
 	/**
 	 * Applies an opaque URI constraint to the type.<br>
 	 * <p>
@@ -215,7 +215,7 @@ public interface URIConstraint<T, C> extends BaseConstraint<T, C> {
 	 * @see #hierarchical()
 	 */
 	@NonNull C opaque();
-
+	
 	/**
 	 * Applies a hierarchical URI constraint to the type.<br>
 	 * <p>

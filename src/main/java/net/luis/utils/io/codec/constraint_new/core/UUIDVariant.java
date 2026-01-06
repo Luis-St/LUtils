@@ -30,7 +30,7 @@ package net.luis.utils.io.codec.constraint_new.core;
  */
 
 public enum UUIDVariant {
-
+	
 	/**
 	 * NCS backward compatibility variant.<br>
 	 * <p>
@@ -39,7 +39,7 @@ public enum UUIDVariant {
 	 * </p>
 	 */
 	NFC,
-
+	
 	/**
 	 * RFC 4122 variant (Leach-Salz).<br>
 	 * <p>
@@ -48,7 +48,7 @@ public enum UUIDVariant {
 	 * </p>
 	 */
 	RFC_4122,
-
+	
 	/**
 	 * Microsoft GUID variant.<br>
 	 * <p>
@@ -57,7 +57,7 @@ public enum UUIDVariant {
 	 * </p>
 	 */
 	MICROSOFT,
-
+	
 	/**
 	 * Reserved for future definition.<br>
 	 * <p>

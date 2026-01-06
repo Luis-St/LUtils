@@ -19,8 +19,8 @@
 package net.luis.utils.io.codec.constraint_new.network;
 
 import net.luis.utils.io.codec.constraint_new.CharSequenceConstraint;
-import net.luis.utils.io.codec.constraint_new.builder.StringConstraintBuilder;
 import net.luis.utils.io.codec.constraint_new.builder.EnumConstraintBuilder;
+import net.luis.utils.io.codec.constraint_new.builder.StringConstraintBuilder;
 import net.luis.utils.io.codec.constraint_new.core.IpAddressType;
 import org.jspecify.annotations.NonNull;
 
@@ -42,7 +42,7 @@ import java.util.function.UnaryOperator;
  * @param <C> The return type of the constraint method (for fluent method chaining)
  */
 public interface HostConstraint<T, C> extends CharSequenceConstraint<T, C> {
-
+	
 	/**
 	 * Applies an IPv4 constraint to the host.<br>
 	 * <p>
@@ -54,7 +54,7 @@ public interface HostConstraint<T, C> extends CharSequenceConstraint<T, C> {
 	 * @see #ip()
 	 */
 	@NonNull C ipv4();
-
+	
 	/**
 	 * Applies an IPv6 constraint to the host.<br>
 	 * <p>
@@ -66,7 +66,7 @@ public interface HostConstraint<T, C> extends CharSequenceConstraint<T, C> {
 	 * @see #ip()
 	 */
 	@NonNull C ipv6();
-
+	
 	/**
 	 * Applies an IP address constraint to the host.<br>
 	 * <p>
@@ -82,7 +82,7 @@ public interface HostConstraint<T, C> extends CharSequenceConstraint<T, C> {
 	default @NonNull C ip() {
 		return this.ip(UnaryOperator.identity());
 	}
-
+	
 	/**
 	 * Applies an IP address constraint to the host using a builder.<br>
 	 * <p>
@@ -96,7 +96,7 @@ public interface HostConstraint<T, C> extends CharSequenceConstraint<T, C> {
 	 * @see #ip()
 	 */
 	@NonNull C ip(@NonNull UnaryOperator<StringConstraintBuilder> builder);
-
+	
 	/**
 	 * Applies an IP type constraint to the host using a builder.<br>
 	 * <p>
@@ -110,7 +110,7 @@ public interface HostConstraint<T, C> extends CharSequenceConstraint<T, C> {
 	 * @see IpAddressType
 	 */
 	@NonNull C ipType(@NonNull UnaryOperator<EnumConstraintBuilder<IpAddressType>> builder);
-
+	
 	/**
 	 * Applies a subnet membership constraint to the host.<br>
 	 * <p>
@@ -127,7 +127,7 @@ public interface HostConstraint<T, C> extends CharSequenceConstraint<T, C> {
 	default @NonNull C inSubnet(@NonNull String cidr) {
 		return this.inAnySubnet(Collections.singletonList(cidr));
 	}
-
+	
 	/**
 	 * Applies a negative subnet membership constraint to the host.<br>
 	 * <p>
@@ -144,7 +144,7 @@ public interface HostConstraint<T, C> extends CharSequenceConstraint<T, C> {
 	default @NonNull C notInSubnet(@NonNull String cidr) {
 		return this.notInAnySubnet(Collections.singletonList(cidr));
 	}
-
+	
 	/**
 	 * Applies a multi-subnet membership constraint to the host.<br>
 	 * <p>
@@ -158,7 +158,7 @@ public interface HostConstraint<T, C> extends CharSequenceConstraint<T, C> {
 	 * @see #notInAnySubnet(Collection)
 	 */
 	@NonNull C inAnySubnet(@NonNull Collection<String> cidrs);
-
+	
 	/**
 	 * Applies a negative multi-subnet membership constraint to the host.<br>
 	 * <p>
@@ -172,7 +172,7 @@ public interface HostConstraint<T, C> extends CharSequenceConstraint<T, C> {
 	 * @see #inAnySubnet(Collection)
 	 */
 	@NonNull C notInAnySubnet(@NonNull Collection<String> cidrs);
-
+	
 	/**
 	 * Applies a domain constraint to the host.<br>
 	 * <p>
@@ -186,7 +186,7 @@ public interface HostConstraint<T, C> extends CharSequenceConstraint<T, C> {
 	default @NonNull C domain() {
 		return this.domain(UnaryOperator.identity());
 	}
-
+	
 	/**
 	 * Applies a domain constraint to the host using a builder.<br>
 	 * <p>
@@ -200,7 +200,7 @@ public interface HostConstraint<T, C> extends CharSequenceConstraint<T, C> {
 	 * @see #domain()
 	 */
 	@NonNull C domain(@NonNull UnaryOperator<StringConstraintBuilder> builder);
-
+	
 	/**
 	 * Applies a root domain constraint to the host.<br>
 	 * <p>
@@ -211,7 +211,7 @@ public interface HostConstraint<T, C> extends CharSequenceConstraint<T, C> {
 	 * @see #subDomain()
 	 */
 	@NonNull C rootDomain();
-
+	
 	/**
 	 * Applies a subdomain constraint to the host.<br>
 	 * <p>
