@@ -37,21 +37,24 @@ import java.util.*;
  *     The min and max fields use {@link Pair} where the first value is the bound
  *     and the second value indicates whether the bound is inclusive (true) or exclusive (false).
  * </p>
+ * <p>
+ *     The equalTo field uses {@link Pair} where the first value is the Duration and
+ *     the second value indicates negation (false=equalTo, true=notEqualTo).
+ * </p>
+ * <p>
+ *     The in field uses {@link Pair} where the first value is the set of Durations and
+ *     the second value indicates negation (false=in, true=notIn).
+ * </p>
  *
  * @author Luis-St
  *
- * @param equalTo The exact Duration that should be matched
- * @param notEqualTo The Duration that should be excluded
- * @param in The set of Durations that are allowed
- * @param notIn The set of Durations that are not allowed
+ * @param equalTo The Duration equality constraint as a pair of (value, negated) where negated=false means equalTo and negated=true means notEqualTo
+ * @param in The Duration set constraint as a pair of (values, negated) where negated=false means in and negated=true means notIn
  * @param min The minimum Duration constraint as a pair of (value, inclusive)
  * @param max The maximum Duration constraint as a pair of (value, inclusive)
- * @param positive If present, requires the duration to be positive
- * @param negative If present, requires the duration to be negative
- * @param nonNegative If present, requires the duration to be non-negative
- * @param nonPositive If present, requires the duration to be non-positive
- * @param zero If present, requires the duration to be zero
- * @param nonZero If present, requires the duration to be non-zero
+ * @param positive The positive constraint as a Boolean where false means positive and true means nonPositive
+ * @param negative The negative constraint as a Boolean where false means negative and true means nonNegative
+ * @param zero The zero constraint as a Boolean where false means zero and true means nonZero
  * @param withinLast A Duration specifying how far back from now values must fall
  * @param withinNext A Duration specifying how far ahead from now values must fall
  * @param hour A nested config for hour component constraints
@@ -62,18 +65,13 @@ import java.util.*;
  * @param custom A custom constraint implementation
  */
 public record DurationConstraintConfig(
-	@NonNull Optional<Duration> equalTo,
-	@NonNull Optional<Duration> notEqualTo,
-	@NonNull Optional<Set<Duration>> in,
-	@NonNull Optional<Set<Duration>> notIn,
+	@NonNull Optional<Pair<Duration, Boolean>> equalTo,
+	@NonNull Optional<Pair<Set<Duration>, Boolean>> in,
 	@NonNull Optional<Pair<Duration, Boolean>> min,
 	@NonNull Optional<Pair<Duration, Boolean>> max,
-	@NonNull Optional<Void> positive,
-	@NonNull Optional<Void> negative,
-	@NonNull Optional<Void> nonNegative,
-	@NonNull Optional<Void> nonPositive,
-	@NonNull Optional<Void> zero,
-	@NonNull Optional<Void> nonZero,
+	@NonNull Optional<Boolean> positive,
+	@NonNull Optional<Boolean> negative,
+	@NonNull Optional<Boolean> zero,
 	@NonNull Optional<Duration> withinLast,
 	@NonNull Optional<Duration> withinNext,
 	@NonNull Optional<NumericFieldConstraintConfig> hour,
@@ -89,9 +87,7 @@ public record DurationConstraintConfig(
 	 */
 	public static final DurationConstraintConfig UNCONSTRAINED = new DurationConstraintConfig(
 		Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(),
-		Optional.empty(), Optional.empty(),
-		Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(),
-		Optional.empty(), Optional.empty(),
+		Optional.empty(), Optional.empty(), Optional.empty(),
 		Optional.empty(), Optional.empty(),
 		Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(),
 		Optional.empty()
@@ -104,7 +100,7 @@ public record DurationConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull DurationConstraintConfig withEqualTo(@NonNull Duration value) {
-		return new DurationConstraintConfig(Optional.of(Objects.requireNonNull(value)), this.notEqualTo, this.in, this.notIn, this.min, this.max, this.positive, this.negative, this.nonNegative, this.nonPositive, this.zero, this.nonZero, this.withinLast, this.withinNext, this.hour, this.minute, this.second, this.millisecond, this.nanosecond, this.custom);
+		return new DurationConstraintConfig(Optional.of(Pair.of(Objects.requireNonNull(value), false)), this.in, this.min, this.max, this.positive, this.negative, this.zero, this.withinLast, this.withinNext, this.hour, this.minute, this.second, this.millisecond, this.nanosecond, this.custom);
 	}
 
 	/**
@@ -114,7 +110,7 @@ public record DurationConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull DurationConstraintConfig withNotEqualTo(@NonNull Duration value) {
-		return new DurationConstraintConfig(this.equalTo, Optional.of(Objects.requireNonNull(value)), this.in, this.notIn, this.min, this.max, this.positive, this.negative, this.nonNegative, this.nonPositive, this.zero, this.nonZero, this.withinLast, this.withinNext, this.hour, this.minute, this.second, this.millisecond, this.nanosecond, this.custom);
+		return new DurationConstraintConfig(Optional.of(Pair.of(Objects.requireNonNull(value), true)), this.in, this.min, this.max, this.positive, this.negative, this.zero, this.withinLast, this.withinNext, this.hour, this.minute, this.second, this.millisecond, this.nanosecond, this.custom);
 	}
 
 	/**
@@ -124,7 +120,7 @@ public record DurationConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull DurationConstraintConfig withIn(@NonNull Collection<Duration> values) {
-		return new DurationConstraintConfig(this.equalTo, this.notEqualTo, Optional.of(Set.copyOf(values)), this.notIn, this.min, this.max, this.positive, this.negative, this.nonNegative, this.nonPositive, this.zero, this.nonZero, this.withinLast, this.withinNext, this.hour, this.minute, this.second, this.millisecond, this.nanosecond, this.custom);
+		return new DurationConstraintConfig(this.equalTo, Optional.of(Pair.of(Set.copyOf(values), false)), this.min, this.max, this.positive, this.negative, this.zero, this.withinLast, this.withinNext, this.hour, this.minute, this.second, this.millisecond, this.nanosecond, this.custom);
 	}
 
 	/**
@@ -134,7 +130,7 @@ public record DurationConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull DurationConstraintConfig withNotIn(@NonNull Collection<Duration> values) {
-		return new DurationConstraintConfig(this.equalTo, this.notEqualTo, this.in, Optional.of(Set.copyOf(values)), this.min, this.max, this.positive, this.negative, this.nonNegative, this.nonPositive, this.zero, this.nonZero, this.withinLast, this.withinNext, this.hour, this.minute, this.second, this.millisecond, this.nanosecond, this.custom);
+		return new DurationConstraintConfig(this.equalTo, Optional.of(Pair.of(Set.copyOf(values), true)), this.min, this.max, this.positive, this.negative, this.zero, this.withinLast, this.withinNext, this.hour, this.minute, this.second, this.millisecond, this.nanosecond, this.custom);
 	}
 
 	/**
@@ -144,7 +140,7 @@ public record DurationConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull DurationConstraintConfig withGreaterThan(@NonNull Duration value) {
-		return new DurationConstraintConfig(this.equalTo, this.notEqualTo, this.in, this.notIn, Optional.of(Pair.of(Objects.requireNonNull(value), false)), this.max, this.positive, this.negative, this.nonNegative, this.nonPositive, this.zero, this.nonZero, this.withinLast, this.withinNext, this.hour, this.minute, this.second, this.millisecond, this.nanosecond, this.custom);
+		return new DurationConstraintConfig(this.equalTo, this.in, Optional.of(Pair.of(Objects.requireNonNull(value), false)), this.max, this.positive, this.negative, this.zero, this.withinLast, this.withinNext, this.hour, this.minute, this.second, this.millisecond, this.nanosecond, this.custom);
 	}
 
 	/**
@@ -154,7 +150,7 @@ public record DurationConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull DurationConstraintConfig withGreaterThanOrEqual(@NonNull Duration value) {
-		return new DurationConstraintConfig(this.equalTo, this.notEqualTo, this.in, this.notIn, Optional.of(Pair.of(Objects.requireNonNull(value), true)), this.max, this.positive, this.negative, this.nonNegative, this.nonPositive, this.zero, this.nonZero, this.withinLast, this.withinNext, this.hour, this.minute, this.second, this.millisecond, this.nanosecond, this.custom);
+		return new DurationConstraintConfig(this.equalTo, this.in, Optional.of(Pair.of(Objects.requireNonNull(value), true)), this.max, this.positive, this.negative, this.zero, this.withinLast, this.withinNext, this.hour, this.minute, this.second, this.millisecond, this.nanosecond, this.custom);
 	}
 
 	/**
@@ -164,7 +160,7 @@ public record DurationConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull DurationConstraintConfig withLessThan(@NonNull Duration value) {
-		return new DurationConstraintConfig(this.equalTo, this.notEqualTo, this.in, this.notIn, this.min, Optional.of(Pair.of(Objects.requireNonNull(value), false)), this.positive, this.negative, this.nonNegative, this.nonPositive, this.zero, this.nonZero, this.withinLast, this.withinNext, this.hour, this.minute, this.second, this.millisecond, this.nanosecond, this.custom);
+		return new DurationConstraintConfig(this.equalTo, this.in, this.min, Optional.of(Pair.of(Objects.requireNonNull(value), false)), this.positive, this.negative, this.zero, this.withinLast, this.withinNext, this.hour, this.minute, this.second, this.millisecond, this.nanosecond, this.custom);
 	}
 
 	/**
@@ -174,7 +170,7 @@ public record DurationConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull DurationConstraintConfig withLessThanOrEqual(@NonNull Duration value) {
-		return new DurationConstraintConfig(this.equalTo, this.notEqualTo, this.in, this.notIn, this.min, Optional.of(Pair.of(Objects.requireNonNull(value), true)), this.positive, this.negative, this.nonNegative, this.nonPositive, this.zero, this.nonZero, this.withinLast, this.withinNext, this.hour, this.minute, this.second, this.millisecond, this.nanosecond, this.custom);
+		return new DurationConstraintConfig(this.equalTo, this.in, this.min, Optional.of(Pair.of(Objects.requireNonNull(value), true)), this.positive, this.negative, this.zero, this.withinLast, this.withinNext, this.hour, this.minute, this.second, this.millisecond, this.nanosecond, this.custom);
 	}
 
 	/**
@@ -185,7 +181,7 @@ public record DurationConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull DurationConstraintConfig withBetween(@NonNull Duration min, @NonNull Duration max) {
-		return new DurationConstraintConfig(this.equalTo, this.notEqualTo, this.in, this.notIn, Optional.of(Pair.of(Objects.requireNonNull(min), false)), Optional.of(Pair.of(Objects.requireNonNull(max), false)), this.positive, this.negative, this.nonNegative, this.nonPositive, this.zero, this.nonZero, this.withinLast, this.withinNext, this.hour, this.minute, this.second, this.millisecond, this.nanosecond, this.custom);
+		return new DurationConstraintConfig(this.equalTo, this.in, Optional.of(Pair.of(Objects.requireNonNull(min), false)), Optional.of(Pair.of(Objects.requireNonNull(max), false)), this.positive, this.negative, this.zero, this.withinLast, this.withinNext, this.hour, this.minute, this.second, this.millisecond, this.nanosecond, this.custom);
 	}
 
 	/**
@@ -196,7 +192,7 @@ public record DurationConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull DurationConstraintConfig withBetweenOrEqual(@NonNull Duration min, @NonNull Duration max) {
-		return new DurationConstraintConfig(this.equalTo, this.notEqualTo, this.in, this.notIn, Optional.of(Pair.of(Objects.requireNonNull(min), true)), Optional.of(Pair.of(Objects.requireNonNull(max), true)), this.positive, this.negative, this.nonNegative, this.nonPositive, this.zero, this.nonZero, this.withinLast, this.withinNext, this.hour, this.minute, this.second, this.millisecond, this.nanosecond, this.custom);
+		return new DurationConstraintConfig(this.equalTo, this.in, Optional.of(Pair.of(Objects.requireNonNull(min), true)), Optional.of(Pair.of(Objects.requireNonNull(max), true)), this.positive, this.negative, this.zero, this.withinLast, this.withinNext, this.hour, this.minute, this.second, this.millisecond, this.nanosecond, this.custom);
 	}
 
 	/**
@@ -205,25 +201,7 @@ public record DurationConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull DurationConstraintConfig withPositive() {
-		return new DurationConstraintConfig(this.equalTo, this.notEqualTo, this.in, this.notIn, this.min, this.max, Optional.of(null), this.negative, this.nonNegative, this.nonPositive, this.zero, this.nonZero, this.withinLast, this.withinNext, this.hour, this.minute, this.second, this.millisecond, this.nanosecond, this.custom);
-	}
-
-	/**
-	 * Creates a new config with the negative constraint enabled.<br>
-	 *
-	 * @return A new config with the constraint applied
-	 */
-	public @NonNull DurationConstraintConfig withNegative() {
-		return new DurationConstraintConfig(this.equalTo, this.notEqualTo, this.in, this.notIn, this.min, this.max, this.positive, Optional.of(null), this.nonNegative, this.nonPositive, this.zero, this.nonZero, this.withinLast, this.withinNext, this.hour, this.minute, this.second, this.millisecond, this.nanosecond, this.custom);
-	}
-
-	/**
-	 * Creates a new config with the non-negative constraint enabled.<br>
-	 *
-	 * @return A new config with the constraint applied
-	 */
-	public @NonNull DurationConstraintConfig withNonNegative() {
-		return new DurationConstraintConfig(this.equalTo, this.notEqualTo, this.in, this.notIn, this.min, this.max, this.positive, this.negative, Optional.of(null), this.nonPositive, this.zero, this.nonZero, this.withinLast, this.withinNext, this.hour, this.minute, this.second, this.millisecond, this.nanosecond, this.custom);
+		return new DurationConstraintConfig(this.equalTo, this.in, this.min, this.max, Optional.of(false), this.negative, this.zero, this.withinLast, this.withinNext, this.hour, this.minute, this.second, this.millisecond, this.nanosecond, this.custom);
 	}
 
 	/**
@@ -232,7 +210,25 @@ public record DurationConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull DurationConstraintConfig withNonPositive() {
-		return new DurationConstraintConfig(this.equalTo, this.notEqualTo, this.in, this.notIn, this.min, this.max, this.positive, this.negative, this.nonNegative, Optional.of(null), this.zero, this.nonZero, this.withinLast, this.withinNext, this.hour, this.minute, this.second, this.millisecond, this.nanosecond, this.custom);
+		return new DurationConstraintConfig(this.equalTo, this.in, this.min, this.max, Optional.of(true), this.negative, this.zero, this.withinLast, this.withinNext, this.hour, this.minute, this.second, this.millisecond, this.nanosecond, this.custom);
+	}
+
+	/**
+	 * Creates a new config with the negative constraint enabled.<br>
+	 *
+	 * @return A new config with the constraint applied
+	 */
+	public @NonNull DurationConstraintConfig withNegative() {
+		return new DurationConstraintConfig(this.equalTo, this.in, this.min, this.max, this.positive, Optional.of(false), this.zero, this.withinLast, this.withinNext, this.hour, this.minute, this.second, this.millisecond, this.nanosecond, this.custom);
+	}
+
+	/**
+	 * Creates a new config with the non-negative constraint enabled.<br>
+	 *
+	 * @return A new config with the constraint applied
+	 */
+	public @NonNull DurationConstraintConfig withNonNegative() {
+		return new DurationConstraintConfig(this.equalTo, this.in, this.min, this.max, this.positive, Optional.of(true), this.zero, this.withinLast, this.withinNext, this.hour, this.minute, this.second, this.millisecond, this.nanosecond, this.custom);
 	}
 
 	/**
@@ -241,7 +237,7 @@ public record DurationConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull DurationConstraintConfig withZero() {
-		return new DurationConstraintConfig(this.equalTo, this.notEqualTo, this.in, this.notIn, this.min, this.max, this.positive, this.negative, this.nonNegative, this.nonPositive, Optional.of(null), this.nonZero, this.withinLast, this.withinNext, this.hour, this.minute, this.second, this.millisecond, this.nanosecond, this.custom);
+		return new DurationConstraintConfig(this.equalTo, this.in, this.min, this.max, this.positive, this.negative, Optional.of(false), this.withinLast, this.withinNext, this.hour, this.minute, this.second, this.millisecond, this.nanosecond, this.custom);
 	}
 
 	/**
@@ -250,7 +246,7 @@ public record DurationConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull DurationConstraintConfig withNonZero() {
-		return new DurationConstraintConfig(this.equalTo, this.notEqualTo, this.in, this.notIn, this.min, this.max, this.positive, this.negative, this.nonNegative, this.nonPositive, this.zero, Optional.of(null), this.withinLast, this.withinNext, this.hour, this.minute, this.second, this.millisecond, this.nanosecond, this.custom);
+		return new DurationConstraintConfig(this.equalTo, this.in, this.min, this.max, this.positive, this.negative, Optional.of(true), this.withinLast, this.withinNext, this.hour, this.minute, this.second, this.millisecond, this.nanosecond, this.custom);
 	}
 
 	/**
@@ -260,7 +256,7 @@ public record DurationConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull DurationConstraintConfig withWithinLast(@NonNull Duration duration) {
-		return new DurationConstraintConfig(this.equalTo, this.notEqualTo, this.in, this.notIn, this.min, this.max, this.positive, this.negative, this.nonNegative, this.nonPositive, this.zero, this.nonZero, Optional.of(Objects.requireNonNull(duration)), this.withinNext, this.hour, this.minute, this.second, this.millisecond, this.nanosecond, this.custom);
+		return new DurationConstraintConfig(this.equalTo, this.in, this.min, this.max, this.positive, this.negative, this.zero, Optional.of(Objects.requireNonNull(duration)), this.withinNext, this.hour, this.minute, this.second, this.millisecond, this.nanosecond, this.custom);
 	}
 
 	/**
@@ -270,7 +266,7 @@ public record DurationConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull DurationConstraintConfig withWithinNext(@NonNull Duration duration) {
-		return new DurationConstraintConfig(this.equalTo, this.notEqualTo, this.in, this.notIn, this.min, this.max, this.positive, this.negative, this.nonNegative, this.nonPositive, this.zero, this.nonZero, this.withinLast, Optional.of(Objects.requireNonNull(duration)), this.hour, this.minute, this.second, this.millisecond, this.nanosecond, this.custom);
+		return new DurationConstraintConfig(this.equalTo, this.in, this.min, this.max, this.positive, this.negative, this.zero, this.withinLast, Optional.of(Objects.requireNonNull(duration)), this.hour, this.minute, this.second, this.millisecond, this.nanosecond, this.custom);
 	}
 
 	/**
@@ -280,7 +276,7 @@ public record DurationConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull DurationConstraintConfig withHour(@NonNull NumericFieldConstraintConfig hourConfig) {
-		return new DurationConstraintConfig(this.equalTo, this.notEqualTo, this.in, this.notIn, this.min, this.max, this.positive, this.negative, this.nonNegative, this.nonPositive, this.zero, this.nonZero, this.withinLast, this.withinNext, Optional.of(Objects.requireNonNull(hourConfig)), this.minute, this.second, this.millisecond, this.nanosecond, this.custom);
+		return new DurationConstraintConfig(this.equalTo, this.in, this.min, this.max, this.positive, this.negative, this.zero, this.withinLast, this.withinNext, Optional.of(Objects.requireNonNull(hourConfig)), this.minute, this.second, this.millisecond, this.nanosecond, this.custom);
 	}
 
 	/**
@@ -290,7 +286,7 @@ public record DurationConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull DurationConstraintConfig withMinute(@NonNull NumericFieldConstraintConfig minuteConfig) {
-		return new DurationConstraintConfig(this.equalTo, this.notEqualTo, this.in, this.notIn, this.min, this.max, this.positive, this.negative, this.nonNegative, this.nonPositive, this.zero, this.nonZero, this.withinLast, this.withinNext, this.hour, Optional.of(Objects.requireNonNull(minuteConfig)), this.second, this.millisecond, this.nanosecond, this.custom);
+		return new DurationConstraintConfig(this.equalTo, this.in, this.min, this.max, this.positive, this.negative, this.zero, this.withinLast, this.withinNext, this.hour, Optional.of(Objects.requireNonNull(minuteConfig)), this.second, this.millisecond, this.nanosecond, this.custom);
 	}
 
 	/**
@@ -300,7 +296,7 @@ public record DurationConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull DurationConstraintConfig withSecond(@NonNull NumericFieldConstraintConfig secondConfig) {
-		return new DurationConstraintConfig(this.equalTo, this.notEqualTo, this.in, this.notIn, this.min, this.max, this.positive, this.negative, this.nonNegative, this.nonPositive, this.zero, this.nonZero, this.withinLast, this.withinNext, this.hour, this.minute, Optional.of(Objects.requireNonNull(secondConfig)), this.millisecond, this.nanosecond, this.custom);
+		return new DurationConstraintConfig(this.equalTo, this.in, this.min, this.max, this.positive, this.negative, this.zero, this.withinLast, this.withinNext, this.hour, this.minute, Optional.of(Objects.requireNonNull(secondConfig)), this.millisecond, this.nanosecond, this.custom);
 	}
 
 	/**
@@ -310,7 +306,7 @@ public record DurationConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull DurationConstraintConfig withMillisecond(@NonNull NumericFieldConstraintConfig millisecondConfig) {
-		return new DurationConstraintConfig(this.equalTo, this.notEqualTo, this.in, this.notIn, this.min, this.max, this.positive, this.negative, this.nonNegative, this.nonPositive, this.zero, this.nonZero, this.withinLast, this.withinNext, this.hour, this.minute, this.second, Optional.of(Objects.requireNonNull(millisecondConfig)), this.nanosecond, this.custom);
+		return new DurationConstraintConfig(this.equalTo, this.in, this.min, this.max, this.positive, this.negative, this.zero, this.withinLast, this.withinNext, this.hour, this.minute, this.second, Optional.of(Objects.requireNonNull(millisecondConfig)), this.nanosecond, this.custom);
 	}
 
 	/**
@@ -320,7 +316,7 @@ public record DurationConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull DurationConstraintConfig withNanosecond(@NonNull NumericFieldConstraintConfig nanosecondConfig) {
-		return new DurationConstraintConfig(this.equalTo, this.notEqualTo, this.in, this.notIn, this.min, this.max, this.positive, this.negative, this.nonNegative, this.nonPositive, this.zero, this.nonZero, this.withinLast, this.withinNext, this.hour, this.minute, this.second, this.millisecond, Optional.of(Objects.requireNonNull(nanosecondConfig)), this.custom);
+		return new DurationConstraintConfig(this.equalTo, this.in, this.min, this.max, this.positive, this.negative, this.zero, this.withinLast, this.withinNext, this.hour, this.minute, this.second, this.millisecond, Optional.of(Objects.requireNonNull(nanosecondConfig)), this.custom);
 	}
 
 	/**
@@ -330,6 +326,6 @@ public record DurationConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull DurationConstraintConfig withCustom(@NonNull Constraint<Duration> constraint) {
-		return new DurationConstraintConfig(this.equalTo, this.notEqualTo, this.in, this.notIn, this.min, this.max, this.positive, this.negative, this.nonNegative, this.nonPositive, this.zero, this.nonZero, this.withinLast, this.withinNext, this.hour, this.minute, this.second, this.millisecond, this.nanosecond, Optional.of(Objects.requireNonNull(constraint)));
+		return new DurationConstraintConfig(this.equalTo, this.in, this.min, this.max, this.positive, this.negative, this.zero, this.withinLast, this.withinNext, this.hour, this.minute, this.second, this.millisecond, this.nanosecond, Optional.of(Objects.requireNonNull(constraint)));
 	}
 }

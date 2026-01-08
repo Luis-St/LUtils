@@ -37,10 +37,8 @@ import java.util.*;
  *
  * @author Luis-St
  *
- * @param equalTo The exact path that should be matched
- * @param notEqualTo The path that should be excluded
- * @param in The set of paths that are allowed
- * @param notIn The set of paths that are not allowed
+ * @param equalTo The equality constraint as a pair of (value, negated) where negated=false means equalTo and negated=true means notEqualTo
+ * @param in The inclusion constraint as a pair of (values, negated) where negated=false means in and negated=true means notIn
  * @param minLength The minimum length constraint as a pair of (value, inclusive)
  * @param maxLength The maximum length constraint as a pair of (value, inclusive)
  * @param minDepth The minimum depth constraint as a pair of (value, inclusive)
@@ -65,10 +63,8 @@ import java.util.*;
  */
 public record PathConstraintConfig(
 	// BaseConstraint fields
-	@NonNull Optional<Path> equalTo,
-	@NonNull Optional<Path> notEqualTo,
-	@NonNull Optional<Set<Path>> in,
-	@NonNull Optional<Set<Path>> notIn,
+	@NonNull Optional<Pair<Path, Boolean>> equalTo,
+	@NonNull Optional<Pair<Set<Path>, Boolean>> in,
 	// LengthConstraint fields
 	@NonNull Optional<Pair<Integer, Boolean>> minLength,
 	@NonNull Optional<Pair<Integer, Boolean>> maxLength,
@@ -103,7 +99,7 @@ public record PathConstraintConfig(
 	 * An unconstrained path configuration with no constraints applied.<br>
 	 */
 	public static final PathConstraintConfig UNCONSTRAINED = new PathConstraintConfig(
-		Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(),
+		Optional.empty(), Optional.empty(),
 		Optional.empty(), Optional.empty(),
 		Optional.empty(), Optional.empty(),
 		Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(),
@@ -123,7 +119,7 @@ public record PathConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull PathConstraintConfig withEqualTo(@NonNull Path value) {
-		return new PathConstraintConfig(Optional.of(Objects.requireNonNull(value)), this.notEqualTo, this.in, this.notIn, this.minLength, this.maxLength, this.minDepth, this.maxDepth, this.absolute, this.relative, this.normalized, this.canonical, this.path, this.root, this.parent, this.segment, this.file, this.withoutExtension, this.extension, this.ancestorOf, this.descendantOf, this.validFor, this.portable, this.separator, this.custom);
+		return new PathConstraintConfig(Optional.of(Pair.of(Objects.requireNonNull(value), false)), this.in, this.minLength, this.maxLength, this.minDepth, this.maxDepth, this.absolute, this.relative, this.normalized, this.canonical, this.path, this.root, this.parent, this.segment, this.file, this.withoutExtension, this.extension, this.ancestorOf, this.descendantOf, this.validFor, this.portable, this.separator, this.custom);
 	}
 
 	/**
@@ -133,7 +129,7 @@ public record PathConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull PathConstraintConfig withNotEqualTo(@NonNull Path value) {
-		return new PathConstraintConfig(this.equalTo, Optional.of(Objects.requireNonNull(value)), this.in, this.notIn, this.minLength, this.maxLength, this.minDepth, this.maxDepth, this.absolute, this.relative, this.normalized, this.canonical, this.path, this.root, this.parent, this.segment, this.file, this.withoutExtension, this.extension, this.ancestorOf, this.descendantOf, this.validFor, this.portable, this.separator, this.custom);
+		return new PathConstraintConfig(Optional.of(Pair.of(Objects.requireNonNull(value), true)), this.in, this.minLength, this.maxLength, this.minDepth, this.maxDepth, this.absolute, this.relative, this.normalized, this.canonical, this.path, this.root, this.parent, this.segment, this.file, this.withoutExtension, this.extension, this.ancestorOf, this.descendantOf, this.validFor, this.portable, this.separator, this.custom);
 	}
 
 	/**
@@ -143,7 +139,7 @@ public record PathConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull PathConstraintConfig withIn(@NonNull Collection<Path> values) {
-		return new PathConstraintConfig(this.equalTo, this.notEqualTo, Optional.of(Set.copyOf(values)), this.notIn, this.minLength, this.maxLength, this.minDepth, this.maxDepth, this.absolute, this.relative, this.normalized, this.canonical, this.path, this.root, this.parent, this.segment, this.file, this.withoutExtension, this.extension, this.ancestorOf, this.descendantOf, this.validFor, this.portable, this.separator, this.custom);
+		return new PathConstraintConfig(this.equalTo, Optional.of(Pair.of(Set.copyOf(values), false)), this.minLength, this.maxLength, this.minDepth, this.maxDepth, this.absolute, this.relative, this.normalized, this.canonical, this.path, this.root, this.parent, this.segment, this.file, this.withoutExtension, this.extension, this.ancestorOf, this.descendantOf, this.validFor, this.portable, this.separator, this.custom);
 	}
 
 	/**
@@ -153,7 +149,7 @@ public record PathConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull PathConstraintConfig withNotIn(@NonNull Collection<Path> values) {
-		return new PathConstraintConfig(this.equalTo, this.notEqualTo, this.in, Optional.of(Set.copyOf(values)), this.minLength, this.maxLength, this.minDepth, this.maxDepth, this.absolute, this.relative, this.normalized, this.canonical, this.path, this.root, this.parent, this.segment, this.file, this.withoutExtension, this.extension, this.ancestorOf, this.descendantOf, this.validFor, this.portable, this.separator, this.custom);
+		return new PathConstraintConfig(this.equalTo, Optional.of(Pair.of(Set.copyOf(values), true)), this.minLength, this.maxLength, this.minDepth, this.maxDepth, this.absolute, this.relative, this.normalized, this.canonical, this.path, this.root, this.parent, this.segment, this.file, this.withoutExtension, this.extension, this.ancestorOf, this.descendantOf, this.validFor, this.portable, this.separator, this.custom);
 	}
 
 	// LengthConstraint with methods
@@ -165,7 +161,7 @@ public record PathConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull PathConstraintConfig withMinLength(int minLength) {
-		return new PathConstraintConfig(this.equalTo, this.notEqualTo, this.in, this.notIn, Optional.of(Pair.of(minLength, true)), this.maxLength, this.minDepth, this.maxDepth, this.absolute, this.relative, this.normalized, this.canonical, this.path, this.root, this.parent, this.segment, this.file, this.withoutExtension, this.extension, this.ancestorOf, this.descendantOf, this.validFor, this.portable, this.separator, this.custom);
+		return new PathConstraintConfig(this.equalTo, this.in, Optional.of(Pair.of(minLength, true)), this.maxLength, this.minDepth, this.maxDepth, this.absolute, this.relative, this.normalized, this.canonical, this.path, this.root, this.parent, this.segment, this.file, this.withoutExtension, this.extension, this.ancestorOf, this.descendantOf, this.validFor, this.portable, this.separator, this.custom);
 	}
 
 	/**
@@ -175,7 +171,7 @@ public record PathConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull PathConstraintConfig withMaxLength(int maxLength) {
-		return new PathConstraintConfig(this.equalTo, this.notEqualTo, this.in, this.notIn, this.minLength, Optional.of(Pair.of(maxLength, true)), this.minDepth, this.maxDepth, this.absolute, this.relative, this.normalized, this.canonical, this.path, this.root, this.parent, this.segment, this.file, this.withoutExtension, this.extension, this.ancestorOf, this.descendantOf, this.validFor, this.portable, this.separator, this.custom);
+		return new PathConstraintConfig(this.equalTo, this.in, this.minLength, Optional.of(Pair.of(maxLength, true)), this.minDepth, this.maxDepth, this.absolute, this.relative, this.normalized, this.canonical, this.path, this.root, this.parent, this.segment, this.file, this.withoutExtension, this.extension, this.ancestorOf, this.descendantOf, this.validFor, this.portable, this.separator, this.custom);
 	}
 
 	/**
@@ -185,7 +181,7 @@ public record PathConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull PathConstraintConfig withExactLength(int exactLength) {
-		return new PathConstraintConfig(this.equalTo, this.notEqualTo, this.in, this.notIn, Optional.of(Pair.of(exactLength, true)), Optional.of(Pair.of(exactLength, true)), this.minDepth, this.maxDepth, this.absolute, this.relative, this.normalized, this.canonical, this.path, this.root, this.parent, this.segment, this.file, this.withoutExtension, this.extension, this.ancestorOf, this.descendantOf, this.validFor, this.portable, this.separator, this.custom);
+		return new PathConstraintConfig(this.equalTo, this.in, Optional.of(Pair.of(exactLength, true)), Optional.of(Pair.of(exactLength, true)), this.minDepth, this.maxDepth, this.absolute, this.relative, this.normalized, this.canonical, this.path, this.root, this.parent, this.segment, this.file, this.withoutExtension, this.extension, this.ancestorOf, this.descendantOf, this.validFor, this.portable, this.separator, this.custom);
 	}
 
 	/**
@@ -196,7 +192,7 @@ public record PathConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull PathConstraintConfig withLengthBetween(int minLength, int maxLength) {
-		return new PathConstraintConfig(this.equalTo, this.notEqualTo, this.in, this.notIn, Optional.of(Pair.of(minLength, true)), Optional.of(Pair.of(maxLength, true)), this.minDepth, this.maxDepth, this.absolute, this.relative, this.normalized, this.canonical, this.path, this.root, this.parent, this.segment, this.file, this.withoutExtension, this.extension, this.ancestorOf, this.descendantOf, this.validFor, this.portable, this.separator, this.custom);
+		return new PathConstraintConfig(this.equalTo, this.in, Optional.of(Pair.of(minLength, true)), Optional.of(Pair.of(maxLength, true)), this.minDepth, this.maxDepth, this.absolute, this.relative, this.normalized, this.canonical, this.path, this.root, this.parent, this.segment, this.file, this.withoutExtension, this.extension, this.ancestorOf, this.descendantOf, this.validFor, this.portable, this.separator, this.custom);
 	}
 
 	// DepthConstraint with methods
@@ -208,7 +204,7 @@ public record PathConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull PathConstraintConfig withMinDepth(int minDepth) {
-		return new PathConstraintConfig(this.equalTo, this.notEqualTo, this.in, this.notIn, this.minLength, this.maxLength, Optional.of(Pair.of(minDepth, true)), this.maxDepth, this.absolute, this.relative, this.normalized, this.canonical, this.path, this.root, this.parent, this.segment, this.file, this.withoutExtension, this.extension, this.ancestorOf, this.descendantOf, this.validFor, this.portable, this.separator, this.custom);
+		return new PathConstraintConfig(this.equalTo, this.in, this.minLength, this.maxLength, Optional.of(Pair.of(minDepth, true)), this.maxDepth, this.absolute, this.relative, this.normalized, this.canonical, this.path, this.root, this.parent, this.segment, this.file, this.withoutExtension, this.extension, this.ancestorOf, this.descendantOf, this.validFor, this.portable, this.separator, this.custom);
 	}
 
 	/**
@@ -218,7 +214,7 @@ public record PathConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull PathConstraintConfig withMaxDepth(int maxDepth) {
-		return new PathConstraintConfig(this.equalTo, this.notEqualTo, this.in, this.notIn, this.minLength, this.maxLength, this.minDepth, Optional.of(Pair.of(maxDepth, true)), this.absolute, this.relative, this.normalized, this.canonical, this.path, this.root, this.parent, this.segment, this.file, this.withoutExtension, this.extension, this.ancestorOf, this.descendantOf, this.validFor, this.portable, this.separator, this.custom);
+		return new PathConstraintConfig(this.equalTo, this.in, this.minLength, this.maxLength, this.minDepth, Optional.of(Pair.of(maxDepth, true)), this.absolute, this.relative, this.normalized, this.canonical, this.path, this.root, this.parent, this.segment, this.file, this.withoutExtension, this.extension, this.ancestorOf, this.descendantOf, this.validFor, this.portable, this.separator, this.custom);
 	}
 
 	/**
@@ -228,7 +224,7 @@ public record PathConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull PathConstraintConfig withExactDepth(int exactDepth) {
-		return new PathConstraintConfig(this.equalTo, this.notEqualTo, this.in, this.notIn, this.minLength, this.maxLength, Optional.of(Pair.of(exactDepth, true)), Optional.of(Pair.of(exactDepth, true)), this.absolute, this.relative, this.normalized, this.canonical, this.path, this.root, this.parent, this.segment, this.file, this.withoutExtension, this.extension, this.ancestorOf, this.descendantOf, this.validFor, this.portable, this.separator, this.custom);
+		return new PathConstraintConfig(this.equalTo, this.in, this.minLength, this.maxLength, Optional.of(Pair.of(exactDepth, true)), Optional.of(Pair.of(exactDepth, true)), this.absolute, this.relative, this.normalized, this.canonical, this.path, this.root, this.parent, this.segment, this.file, this.withoutExtension, this.extension, this.ancestorOf, this.descendantOf, this.validFor, this.portable, this.separator, this.custom);
 	}
 
 	/**
@@ -239,7 +235,7 @@ public record PathConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull PathConstraintConfig withDepthBetween(int minDepth, int maxDepth) {
-		return new PathConstraintConfig(this.equalTo, this.notEqualTo, this.in, this.notIn, this.minLength, this.maxLength, Optional.of(Pair.of(minDepth, true)), Optional.of(Pair.of(maxDepth, true)), this.absolute, this.relative, this.normalized, this.canonical, this.path, this.root, this.parent, this.segment, this.file, this.withoutExtension, this.extension, this.ancestorOf, this.descendantOf, this.validFor, this.portable, this.separator, this.custom);
+		return new PathConstraintConfig(this.equalTo, this.in, this.minLength, this.maxLength, Optional.of(Pair.of(minDepth, true)), Optional.of(Pair.of(maxDepth, true)), this.absolute, this.relative, this.normalized, this.canonical, this.path, this.root, this.parent, this.segment, this.file, this.withoutExtension, this.extension, this.ancestorOf, this.descendantOf, this.validFor, this.portable, this.separator, this.custom);
 	}
 
 	// PathConstraint structure with methods
@@ -250,7 +246,7 @@ public record PathConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull PathConstraintConfig withAbsolute() {
-		return new PathConstraintConfig(this.equalTo, this.notEqualTo, this.in, this.notIn, this.minLength, this.maxLength, this.minDepth, this.maxDepth, Optional.of(null), this.relative, this.normalized, this.canonical, this.path, this.root, this.parent, this.segment, this.file, this.withoutExtension, this.extension, this.ancestorOf, this.descendantOf, this.validFor, this.portable, this.separator, this.custom);
+		return new PathConstraintConfig(this.equalTo, this.in, this.minLength, this.maxLength, this.minDepth, this.maxDepth, Optional.of(null), this.relative, this.normalized, this.canonical, this.path, this.root, this.parent, this.segment, this.file, this.withoutExtension, this.extension, this.ancestorOf, this.descendantOf, this.validFor, this.portable, this.separator, this.custom);
 	}
 
 	/**
@@ -259,7 +255,7 @@ public record PathConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull PathConstraintConfig withRelative() {
-		return new PathConstraintConfig(this.equalTo, this.notEqualTo, this.in, this.notIn, this.minLength, this.maxLength, this.minDepth, this.maxDepth, this.absolute, Optional.of(null), this.normalized, this.canonical, this.path, this.root, this.parent, this.segment, this.file, this.withoutExtension, this.extension, this.ancestorOf, this.descendantOf, this.validFor, this.portable, this.separator, this.custom);
+		return new PathConstraintConfig(this.equalTo, this.in, this.minLength, this.maxLength, this.minDepth, this.maxDepth, this.absolute, Optional.of(null), this.normalized, this.canonical, this.path, this.root, this.parent, this.segment, this.file, this.withoutExtension, this.extension, this.ancestorOf, this.descendantOf, this.validFor, this.portable, this.separator, this.custom);
 	}
 
 	/**
@@ -268,7 +264,7 @@ public record PathConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull PathConstraintConfig withNormalized() {
-		return new PathConstraintConfig(this.equalTo, this.notEqualTo, this.in, this.notIn, this.minLength, this.maxLength, this.minDepth, this.maxDepth, this.absolute, this.relative, Optional.of(null), this.canonical, this.path, this.root, this.parent, this.segment, this.file, this.withoutExtension, this.extension, this.ancestorOf, this.descendantOf, this.validFor, this.portable, this.separator, this.custom);
+		return new PathConstraintConfig(this.equalTo, this.in, this.minLength, this.maxLength, this.minDepth, this.maxDepth, this.absolute, this.relative, Optional.of(null), this.canonical, this.path, this.root, this.parent, this.segment, this.file, this.withoutExtension, this.extension, this.ancestorOf, this.descendantOf, this.validFor, this.portable, this.separator, this.custom);
 	}
 
 	/**
@@ -277,7 +273,7 @@ public record PathConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull PathConstraintConfig withCanonical() {
-		return new PathConstraintConfig(this.equalTo, this.notEqualTo, this.in, this.notIn, this.minLength, this.maxLength, this.minDepth, this.maxDepth, this.absolute, this.relative, this.normalized, Optional.of(null), this.path, this.root, this.parent, this.segment, this.file, this.withoutExtension, this.extension, this.ancestorOf, this.descendantOf, this.validFor, this.portable, this.separator, this.custom);
+		return new PathConstraintConfig(this.equalTo, this.in, this.minLength, this.maxLength, this.minDepth, this.maxDepth, this.absolute, this.relative, this.normalized, Optional.of(null), this.path, this.root, this.parent, this.segment, this.file, this.withoutExtension, this.extension, this.ancestorOf, this.descendantOf, this.validFor, this.portable, this.separator, this.custom);
 	}
 
 	// PathConstraint component with methods
@@ -289,7 +285,7 @@ public record PathConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull PathConstraintConfig withPath(@NonNull StringConstraintConfig config) {
-		return new PathConstraintConfig(this.equalTo, this.notEqualTo, this.in, this.notIn, this.minLength, this.maxLength, this.minDepth, this.maxDepth, this.absolute, this.relative, this.normalized, this.canonical, Optional.of(Objects.requireNonNull(config)), this.root, this.parent, this.segment, this.file, this.withoutExtension, this.extension, this.ancestorOf, this.descendantOf, this.validFor, this.portable, this.separator, this.custom);
+		return new PathConstraintConfig(this.equalTo, this.in, this.minLength, this.maxLength, this.minDepth, this.maxDepth, this.absolute, this.relative, this.normalized, this.canonical, Optional.of(Objects.requireNonNull(config)), this.root, this.parent, this.segment, this.file, this.withoutExtension, this.extension, this.ancestorOf, this.descendantOf, this.validFor, this.portable, this.separator, this.custom);
 	}
 
 	/**
@@ -299,7 +295,7 @@ public record PathConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull PathConstraintConfig withRoot(@NonNull StringConstraintConfig config) {
-		return new PathConstraintConfig(this.equalTo, this.notEqualTo, this.in, this.notIn, this.minLength, this.maxLength, this.minDepth, this.maxDepth, this.absolute, this.relative, this.normalized, this.canonical, this.path, Optional.of(Objects.requireNonNull(config)), this.parent, this.segment, this.file, this.withoutExtension, this.extension, this.ancestorOf, this.descendantOf, this.validFor, this.portable, this.separator, this.custom);
+		return new PathConstraintConfig(this.equalTo, this.in, this.minLength, this.maxLength, this.minDepth, this.maxDepth, this.absolute, this.relative, this.normalized, this.canonical, this.path, Optional.of(Objects.requireNonNull(config)), this.parent, this.segment, this.file, this.withoutExtension, this.extension, this.ancestorOf, this.descendantOf, this.validFor, this.portable, this.separator, this.custom);
 	}
 
 	/**
@@ -309,7 +305,7 @@ public record PathConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull PathConstraintConfig withParent(@NonNull StringConstraintConfig config) {
-		return new PathConstraintConfig(this.equalTo, this.notEqualTo, this.in, this.notIn, this.minLength, this.maxLength, this.minDepth, this.maxDepth, this.absolute, this.relative, this.normalized, this.canonical, this.path, this.root, Optional.of(Objects.requireNonNull(config)), this.segment, this.file, this.withoutExtension, this.extension, this.ancestorOf, this.descendantOf, this.validFor, this.portable, this.separator, this.custom);
+		return new PathConstraintConfig(this.equalTo, this.in, this.minLength, this.maxLength, this.minDepth, this.maxDepth, this.absolute, this.relative, this.normalized, this.canonical, this.path, this.root, Optional.of(Objects.requireNonNull(config)), this.segment, this.file, this.withoutExtension, this.extension, this.ancestorOf, this.descendantOf, this.validFor, this.portable, this.separator, this.custom);
 	}
 
 	/**
@@ -319,7 +315,7 @@ public record PathConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull PathConstraintConfig withSegment(@NonNull StringConstraintConfig config) {
-		return new PathConstraintConfig(this.equalTo, this.notEqualTo, this.in, this.notIn, this.minLength, this.maxLength, this.minDepth, this.maxDepth, this.absolute, this.relative, this.normalized, this.canonical, this.path, this.root, this.parent, Optional.of(Objects.requireNonNull(config)), this.file, this.withoutExtension, this.extension, this.ancestorOf, this.descendantOf, this.validFor, this.portable, this.separator, this.custom);
+		return new PathConstraintConfig(this.equalTo, this.in, this.minLength, this.maxLength, this.minDepth, this.maxDepth, this.absolute, this.relative, this.normalized, this.canonical, this.path, this.root, this.parent, Optional.of(Objects.requireNonNull(config)), this.file, this.withoutExtension, this.extension, this.ancestorOf, this.descendantOf, this.validFor, this.portable, this.separator, this.custom);
 	}
 
 	/**
@@ -329,7 +325,7 @@ public record PathConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull PathConstraintConfig withFile(@NonNull StringConstraintConfig config) {
-		return new PathConstraintConfig(this.equalTo, this.notEqualTo, this.in, this.notIn, this.minLength, this.maxLength, this.minDepth, this.maxDepth, this.absolute, this.relative, this.normalized, this.canonical, this.path, this.root, this.parent, this.segment, Optional.of(Objects.requireNonNull(config)), this.withoutExtension, this.extension, this.ancestorOf, this.descendantOf, this.validFor, this.portable, this.separator, this.custom);
+		return new PathConstraintConfig(this.equalTo, this.in, this.minLength, this.maxLength, this.minDepth, this.maxDepth, this.absolute, this.relative, this.normalized, this.canonical, this.path, this.root, this.parent, this.segment, Optional.of(Objects.requireNonNull(config)), this.withoutExtension, this.extension, this.ancestorOf, this.descendantOf, this.validFor, this.portable, this.separator, this.custom);
 	}
 
 	/**
@@ -338,7 +334,7 @@ public record PathConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull PathConstraintConfig withWithoutExtension() {
-		return new PathConstraintConfig(this.equalTo, this.notEqualTo, this.in, this.notIn, this.minLength, this.maxLength, this.minDepth, this.maxDepth, this.absolute, this.relative, this.normalized, this.canonical, this.path, this.root, this.parent, this.segment, this.file, Optional.of(null), this.extension, this.ancestorOf, this.descendantOf, this.validFor, this.portable, this.separator, this.custom);
+		return new PathConstraintConfig(this.equalTo, this.in, this.minLength, this.maxLength, this.minDepth, this.maxDepth, this.absolute, this.relative, this.normalized, this.canonical, this.path, this.root, this.parent, this.segment, this.file, Optional.of(null), this.extension, this.ancestorOf, this.descendantOf, this.validFor, this.portable, this.separator, this.custom);
 	}
 
 	/**
@@ -348,7 +344,7 @@ public record PathConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull PathConstraintConfig withExtension(@NonNull StringConstraintConfig config) {
-		return new PathConstraintConfig(this.equalTo, this.notEqualTo, this.in, this.notIn, this.minLength, this.maxLength, this.minDepth, this.maxDepth, this.absolute, this.relative, this.normalized, this.canonical, this.path, this.root, this.parent, this.segment, this.file, this.withoutExtension, Optional.of(Objects.requireNonNull(config)), this.ancestorOf, this.descendantOf, this.validFor, this.portable, this.separator, this.custom);
+		return new PathConstraintConfig(this.equalTo, this.in, this.minLength, this.maxLength, this.minDepth, this.maxDepth, this.absolute, this.relative, this.normalized, this.canonical, this.path, this.root, this.parent, this.segment, this.file, this.withoutExtension, Optional.of(Objects.requireNonNull(config)), this.ancestorOf, this.descendantOf, this.validFor, this.portable, this.separator, this.custom);
 	}
 
 	// PathConstraint relationship with methods
@@ -360,7 +356,7 @@ public record PathConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull PathConstraintConfig withAncestorOf(@NonNull Collection<String> paths) {
-		return new PathConstraintConfig(this.equalTo, this.notEqualTo, this.in, this.notIn, this.minLength, this.maxLength, this.minDepth, this.maxDepth, this.absolute, this.relative, this.normalized, this.canonical, this.path, this.root, this.parent, this.segment, this.file, this.withoutExtension, this.extension, Optional.of(Set.copyOf(paths)), this.descendantOf, this.validFor, this.portable, this.separator, this.custom);
+		return new PathConstraintConfig(this.equalTo, this.in, this.minLength, this.maxLength, this.minDepth, this.maxDepth, this.absolute, this.relative, this.normalized, this.canonical, this.path, this.root, this.parent, this.segment, this.file, this.withoutExtension, this.extension, Optional.of(Set.copyOf(paths)), this.descendantOf, this.validFor, this.portable, this.separator, this.custom);
 	}
 
 	/**
@@ -370,7 +366,7 @@ public record PathConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull PathConstraintConfig withDescendantOf(@NonNull Collection<String> paths) {
-		return new PathConstraintConfig(this.equalTo, this.notEqualTo, this.in, this.notIn, this.minLength, this.maxLength, this.minDepth, this.maxDepth, this.absolute, this.relative, this.normalized, this.canonical, this.path, this.root, this.parent, this.segment, this.file, this.withoutExtension, this.extension, this.ancestorOf, Optional.of(Set.copyOf(paths)), this.validFor, this.portable, this.separator, this.custom);
+		return new PathConstraintConfig(this.equalTo, this.in, this.minLength, this.maxLength, this.minDepth, this.maxDepth, this.absolute, this.relative, this.normalized, this.canonical, this.path, this.root, this.parent, this.segment, this.file, this.withoutExtension, this.extension, this.ancestorOf, Optional.of(Set.copyOf(paths)), this.validFor, this.portable, this.separator, this.custom);
 	}
 
 	// PathConstraint platform with methods
@@ -382,7 +378,7 @@ public record PathConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull PathConstraintConfig withValidFor(@NonNull Platform platform) {
-		return new PathConstraintConfig(this.equalTo, this.notEqualTo, this.in, this.notIn, this.minLength, this.maxLength, this.minDepth, this.maxDepth, this.absolute, this.relative, this.normalized, this.canonical, this.path, this.root, this.parent, this.segment, this.file, this.withoutExtension, this.extension, this.ancestorOf, this.descendantOf, Optional.of(Objects.requireNonNull(platform)), this.portable, this.separator, this.custom);
+		return new PathConstraintConfig(this.equalTo, this.in, this.minLength, this.maxLength, this.minDepth, this.maxDepth, this.absolute, this.relative, this.normalized, this.canonical, this.path, this.root, this.parent, this.segment, this.file, this.withoutExtension, this.extension, this.ancestorOf, this.descendantOf, Optional.of(Objects.requireNonNull(platform)), this.portable, this.separator, this.custom);
 	}
 
 	/**
@@ -391,7 +387,7 @@ public record PathConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull PathConstraintConfig withPortable() {
-		return new PathConstraintConfig(this.equalTo, this.notEqualTo, this.in, this.notIn, this.minLength, this.maxLength, this.minDepth, this.maxDepth, this.absolute, this.relative, this.normalized, this.canonical, this.path, this.root, this.parent, this.segment, this.file, this.withoutExtension, this.extension, this.ancestorOf, this.descendantOf, this.validFor, Optional.of(null), this.separator, this.custom);
+		return new PathConstraintConfig(this.equalTo, this.in, this.minLength, this.maxLength, this.minDepth, this.maxDepth, this.absolute, this.relative, this.normalized, this.canonical, this.path, this.root, this.parent, this.segment, this.file, this.withoutExtension, this.extension, this.ancestorOf, this.descendantOf, this.validFor, Optional.of(null), this.separator, this.custom);
 	}
 
 	/**
@@ -401,7 +397,7 @@ public record PathConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull PathConstraintConfig withSeparator(@NonNull Platform platform) {
-		return new PathConstraintConfig(this.equalTo, this.notEqualTo, this.in, this.notIn, this.minLength, this.maxLength, this.minDepth, this.maxDepth, this.absolute, this.relative, this.normalized, this.canonical, this.path, this.root, this.parent, this.segment, this.file, this.withoutExtension, this.extension, this.ancestorOf, this.descendantOf, this.validFor, this.portable, Optional.of(Objects.requireNonNull(platform)), this.custom);
+		return new PathConstraintConfig(this.equalTo, this.in, this.minLength, this.maxLength, this.minDepth, this.maxDepth, this.absolute, this.relative, this.normalized, this.canonical, this.path, this.root, this.parent, this.segment, this.file, this.withoutExtension, this.extension, this.ancestorOf, this.descendantOf, this.validFor, this.portable, Optional.of(Objects.requireNonNull(platform)), this.custom);
 	}
 
 	/**
@@ -411,6 +407,6 @@ public record PathConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull PathConstraintConfig withCustom(@NonNull Constraint<Path> constraint) {
-		return new PathConstraintConfig(this.equalTo, this.notEqualTo, this.in, this.notIn, this.minLength, this.maxLength, this.minDepth, this.maxDepth, this.absolute, this.relative, this.normalized, this.canonical, this.path, this.root, this.parent, this.segment, this.file, this.withoutExtension, this.extension, this.ancestorOf, this.descendantOf, this.validFor, this.portable, this.separator, Optional.of(Objects.requireNonNull(constraint)));
+		return new PathConstraintConfig(this.equalTo, this.in, this.minLength, this.maxLength, this.minDepth, this.maxDepth, this.absolute, this.relative, this.normalized, this.canonical, this.path, this.root, this.parent, this.segment, this.file, this.withoutExtension, this.extension, this.ancestorOf, this.descendantOf, this.validFor, this.portable, this.separator, Optional.of(Objects.requireNonNull(constraint)));
 	}
 }

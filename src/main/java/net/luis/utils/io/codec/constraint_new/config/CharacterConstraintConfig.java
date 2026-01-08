@@ -33,10 +33,8 @@ import java.util.*;
  *
  * @author Luis-St
  *
- * @param equalTo The exact character value that should be matched
- * @param notEqualTo The character value that should be excluded
- * @param in The set of characters that are allowed
- * @param notIn The set of characters that are not allowed
+ * @param equalTo The character equality constraint as a pair of (value, negated) where negated=false means equalTo and negated=true means notEqualTo
+ * @param in The character set constraint as a pair of (values, negated) where negated=false means in and negated=true means notIn
  * @param min The minimum character constraint as a pair of (value, inclusive)
  * @param max The maximum character constraint as a pair of (value, inclusive)
  * @param letter If present, requires the character to be a letter
@@ -51,10 +49,8 @@ import java.util.*;
  * @param custom A custom constraint implementation
  */
 public record CharacterConstraintConfig(
-	@NonNull Optional<Character> equalTo,
-	@NonNull Optional<Character> notEqualTo,
-	@NonNull Optional<Set<Character>> in,
-	@NonNull Optional<Set<Character>> notIn,
+	@NonNull Optional<Pair<Character, Boolean>> equalTo,
+	@NonNull Optional<Pair<Set<Character>, Boolean>> in,
 	@NonNull Optional<Pair<Character, Boolean>> min,
 	@NonNull Optional<Pair<Character, Boolean>> max,
 	@NonNull Optional<Void> letter,
@@ -74,7 +70,6 @@ public record CharacterConstraintConfig(
 	 */
 	public static final CharacterConstraintConfig UNCONSTRAINED = new CharacterConstraintConfig(
 		Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(),
-		Optional.empty(), Optional.empty(),
 		Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(),
 		Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(),
 		Optional.empty(), Optional.empty()
@@ -87,7 +82,7 @@ public record CharacterConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull CharacterConstraintConfig withEqualTo(char value) {
-		return new CharacterConstraintConfig(Optional.of(value), this.notEqualTo, this.in, this.notIn, this.min, this.max, this.letter, this.digit, this.alphanumeric, this.whitespace, this.punctuation, this.symbol, this.control, this.upperCase, this.lowerCase, this.custom);
+		return new CharacterConstraintConfig(Optional.of(Pair.of(value, false)), this.in, this.min, this.max, this.letter, this.digit, this.alphanumeric, this.whitespace, this.punctuation, this.symbol, this.control, this.upperCase, this.lowerCase, this.custom);
 	}
 
 	/**
@@ -97,7 +92,7 @@ public record CharacterConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull CharacterConstraintConfig withNotEqualTo(char value) {
-		return new CharacterConstraintConfig(this.equalTo, Optional.of(value), this.in, this.notIn, this.min, this.max, this.letter, this.digit, this.alphanumeric, this.whitespace, this.punctuation, this.symbol, this.control, this.upperCase, this.lowerCase, this.custom);
+		return new CharacterConstraintConfig(Optional.of(Pair.of(value, true)), this.in, this.min, this.max, this.letter, this.digit, this.alphanumeric, this.whitespace, this.punctuation, this.symbol, this.control, this.upperCase, this.lowerCase, this.custom);
 	}
 
 	/**
@@ -107,7 +102,7 @@ public record CharacterConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull CharacterConstraintConfig withIn(@NonNull Collection<Character> values) {
-		return new CharacterConstraintConfig(this.equalTo, this.notEqualTo, Optional.of(Set.copyOf(values)), this.notIn, this.min, this.max, this.letter, this.digit, this.alphanumeric, this.whitespace, this.punctuation, this.symbol, this.control, this.upperCase, this.lowerCase, this.custom);
+		return new CharacterConstraintConfig(this.equalTo, Optional.of(Pair.of(Set.copyOf(values), false)), this.min, this.max, this.letter, this.digit, this.alphanumeric, this.whitespace, this.punctuation, this.symbol, this.control, this.upperCase, this.lowerCase, this.custom);
 	}
 
 	/**
@@ -117,7 +112,7 @@ public record CharacterConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull CharacterConstraintConfig withNotIn(@NonNull Collection<Character> values) {
-		return new CharacterConstraintConfig(this.equalTo, this.notEqualTo, this.in, Optional.of(Set.copyOf(values)), this.min, this.max, this.letter, this.digit, this.alphanumeric, this.whitespace, this.punctuation, this.symbol, this.control, this.upperCase, this.lowerCase, this.custom);
+		return new CharacterConstraintConfig(this.equalTo, Optional.of(Pair.of(Set.copyOf(values), true)), this.min, this.max, this.letter, this.digit, this.alphanumeric, this.whitespace, this.punctuation, this.symbol, this.control, this.upperCase, this.lowerCase, this.custom);
 	}
 
 	/**
@@ -127,7 +122,7 @@ public record CharacterConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull CharacterConstraintConfig withGreaterThan(char value) {
-		return new CharacterConstraintConfig(this.equalTo, this.notEqualTo, this.in, this.notIn, Optional.of(Pair.of(value, false)), this.max, this.letter, this.digit, this.alphanumeric, this.whitespace, this.punctuation, this.symbol, this.control, this.upperCase, this.lowerCase, this.custom);
+		return new CharacterConstraintConfig(this.equalTo, this.in, Optional.of(Pair.of(value, false)), this.max, this.letter, this.digit, this.alphanumeric, this.whitespace, this.punctuation, this.symbol, this.control, this.upperCase, this.lowerCase, this.custom);
 	}
 
 	/**
@@ -137,7 +132,7 @@ public record CharacterConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull CharacterConstraintConfig withGreaterThanOrEqual(char value) {
-		return new CharacterConstraintConfig(this.equalTo, this.notEqualTo, this.in, this.notIn, Optional.of(Pair.of(value, true)), this.max, this.letter, this.digit, this.alphanumeric, this.whitespace, this.punctuation, this.symbol, this.control, this.upperCase, this.lowerCase, this.custom);
+		return new CharacterConstraintConfig(this.equalTo, this.in, Optional.of(Pair.of(value, true)), this.max, this.letter, this.digit, this.alphanumeric, this.whitespace, this.punctuation, this.symbol, this.control, this.upperCase, this.lowerCase, this.custom);
 	}
 
 	/**
@@ -147,7 +142,7 @@ public record CharacterConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull CharacterConstraintConfig withLessThan(char value) {
-		return new CharacterConstraintConfig(this.equalTo, this.notEqualTo, this.in, this.notIn, this.min, Optional.of(Pair.of(value, false)), this.letter, this.digit, this.alphanumeric, this.whitespace, this.punctuation, this.symbol, this.control, this.upperCase, this.lowerCase, this.custom);
+		return new CharacterConstraintConfig(this.equalTo, this.in, this.min, Optional.of(Pair.of(value, false)), this.letter, this.digit, this.alphanumeric, this.whitespace, this.punctuation, this.symbol, this.control, this.upperCase, this.lowerCase, this.custom);
 	}
 
 	/**
@@ -157,7 +152,7 @@ public record CharacterConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull CharacterConstraintConfig withLessThanOrEqual(char value) {
-		return new CharacterConstraintConfig(this.equalTo, this.notEqualTo, this.in, this.notIn, this.min, Optional.of(Pair.of(value, true)), this.letter, this.digit, this.alphanumeric, this.whitespace, this.punctuation, this.symbol, this.control, this.upperCase, this.lowerCase, this.custom);
+		return new CharacterConstraintConfig(this.equalTo, this.in, this.min, Optional.of(Pair.of(value, true)), this.letter, this.digit, this.alphanumeric, this.whitespace, this.punctuation, this.symbol, this.control, this.upperCase, this.lowerCase, this.custom);
 	}
 
 	/**
@@ -168,7 +163,7 @@ public record CharacterConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull CharacterConstraintConfig withBetween(char min, char max) {
-		return new CharacterConstraintConfig(this.equalTo, this.notEqualTo, this.in, this.notIn, Optional.of(Pair.of(min, false)), Optional.of(Pair.of(max, false)), this.letter, this.digit, this.alphanumeric, this.whitespace, this.punctuation, this.symbol, this.control, this.upperCase, this.lowerCase, this.custom);
+		return new CharacterConstraintConfig(this.equalTo, this.in, Optional.of(Pair.of(min, false)), Optional.of(Pair.of(max, false)), this.letter, this.digit, this.alphanumeric, this.whitespace, this.punctuation, this.symbol, this.control, this.upperCase, this.lowerCase, this.custom);
 	}
 
 	/**
@@ -179,7 +174,7 @@ public record CharacterConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull CharacterConstraintConfig withBetweenOrEqual(char min, char max) {
-		return new CharacterConstraintConfig(this.equalTo, this.notEqualTo, this.in, this.notIn, Optional.of(Pair.of(min, true)), Optional.of(Pair.of(max, true)), this.letter, this.digit, this.alphanumeric, this.whitespace, this.punctuation, this.symbol, this.control, this.upperCase, this.lowerCase, this.custom);
+		return new CharacterConstraintConfig(this.equalTo, this.in, Optional.of(Pair.of(min, true)), Optional.of(Pair.of(max, true)), this.letter, this.digit, this.alphanumeric, this.whitespace, this.punctuation, this.symbol, this.control, this.upperCase, this.lowerCase, this.custom);
 	}
 
 	/**
@@ -188,7 +183,7 @@ public record CharacterConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull CharacterConstraintConfig withLetter() {
-		return new CharacterConstraintConfig(this.equalTo, this.notEqualTo, this.in, this.notIn, this.min, this.max, Optional.of(null), this.digit, this.alphanumeric, this.whitespace, this.punctuation, this.symbol, this.control, this.upperCase, this.lowerCase, this.custom);
+		return new CharacterConstraintConfig(this.equalTo, this.in, this.min, this.max, Optional.of(null), this.digit, this.alphanumeric, this.whitespace, this.punctuation, this.symbol, this.control, this.upperCase, this.lowerCase, this.custom);
 	}
 
 	/**
@@ -197,7 +192,7 @@ public record CharacterConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull CharacterConstraintConfig withDigit() {
-		return new CharacterConstraintConfig(this.equalTo, this.notEqualTo, this.in, this.notIn, this.min, this.max, this.letter, Optional.of(null), this.alphanumeric, this.whitespace, this.punctuation, this.symbol, this.control, this.upperCase, this.lowerCase, this.custom);
+		return new CharacterConstraintConfig(this.equalTo, this.in, this.min, this.max, this.letter, Optional.of(null), this.alphanumeric, this.whitespace, this.punctuation, this.symbol, this.control, this.upperCase, this.lowerCase, this.custom);
 	}
 
 	/**
@@ -206,7 +201,7 @@ public record CharacterConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull CharacterConstraintConfig withAlphanumeric() {
-		return new CharacterConstraintConfig(this.equalTo, this.notEqualTo, this.in, this.notIn, this.min, this.max, this.letter, this.digit, Optional.of(null), this.whitespace, this.punctuation, this.symbol, this.control, this.upperCase, this.lowerCase, this.custom);
+		return new CharacterConstraintConfig(this.equalTo, this.in, this.min, this.max, this.letter, this.digit, Optional.of(null), this.whitespace, this.punctuation, this.symbol, this.control, this.upperCase, this.lowerCase, this.custom);
 	}
 
 	/**
@@ -215,7 +210,7 @@ public record CharacterConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull CharacterConstraintConfig withWhitespace() {
-		return new CharacterConstraintConfig(this.equalTo, this.notEqualTo, this.in, this.notIn, this.min, this.max, this.letter, this.digit, this.alphanumeric, Optional.of(null), this.punctuation, this.symbol, this.control, this.upperCase, this.lowerCase, this.custom);
+		return new CharacterConstraintConfig(this.equalTo, this.in, this.min, this.max, this.letter, this.digit, this.alphanumeric, Optional.of(null), this.punctuation, this.symbol, this.control, this.upperCase, this.lowerCase, this.custom);
 	}
 
 	/**
@@ -224,7 +219,7 @@ public record CharacterConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull CharacterConstraintConfig withPunctuation() {
-		return new CharacterConstraintConfig(this.equalTo, this.notEqualTo, this.in, this.notIn, this.min, this.max, this.letter, this.digit, this.alphanumeric, this.whitespace, Optional.of(null), this.symbol, this.control, this.upperCase, this.lowerCase, this.custom);
+		return new CharacterConstraintConfig(this.equalTo, this.in, this.min, this.max, this.letter, this.digit, this.alphanumeric, this.whitespace, Optional.of(null), this.symbol, this.control, this.upperCase, this.lowerCase, this.custom);
 	}
 
 	/**
@@ -233,7 +228,7 @@ public record CharacterConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull CharacterConstraintConfig withSymbol() {
-		return new CharacterConstraintConfig(this.equalTo, this.notEqualTo, this.in, this.notIn, this.min, this.max, this.letter, this.digit, this.alphanumeric, this.whitespace, this.punctuation, Optional.of(null), this.control, this.upperCase, this.lowerCase, this.custom);
+		return new CharacterConstraintConfig(this.equalTo, this.in, this.min, this.max, this.letter, this.digit, this.alphanumeric, this.whitespace, this.punctuation, Optional.of(null), this.control, this.upperCase, this.lowerCase, this.custom);
 	}
 
 	/**
@@ -242,7 +237,7 @@ public record CharacterConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull CharacterConstraintConfig withControl() {
-		return new CharacterConstraintConfig(this.equalTo, this.notEqualTo, this.in, this.notIn, this.min, this.max, this.letter, this.digit, this.alphanumeric, this.whitespace, this.punctuation, this.symbol, Optional.of(null), this.upperCase, this.lowerCase, this.custom);
+		return new CharacterConstraintConfig(this.equalTo, this.in, this.min, this.max, this.letter, this.digit, this.alphanumeric, this.whitespace, this.punctuation, this.symbol, Optional.of(null), this.upperCase, this.lowerCase, this.custom);
 	}
 
 	/**
@@ -251,7 +246,7 @@ public record CharacterConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull CharacterConstraintConfig withUpperCase() {
-		return new CharacterConstraintConfig(this.equalTo, this.notEqualTo, this.in, this.notIn, this.min, this.max, this.letter, this.digit, this.alphanumeric, this.whitespace, this.punctuation, this.symbol, this.control, Optional.of(null), this.lowerCase, this.custom);
+		return new CharacterConstraintConfig(this.equalTo, this.in, this.min, this.max, this.letter, this.digit, this.alphanumeric, this.whitespace, this.punctuation, this.symbol, this.control, Optional.of(null), this.lowerCase, this.custom);
 	}
 
 	/**
@@ -260,7 +255,7 @@ public record CharacterConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull CharacterConstraintConfig withLowerCase() {
-		return new CharacterConstraintConfig(this.equalTo, this.notEqualTo, this.in, this.notIn, this.min, this.max, this.letter, this.digit, this.alphanumeric, this.whitespace, this.punctuation, this.symbol, this.control, this.upperCase, Optional.of(null), this.custom);
+		return new CharacterConstraintConfig(this.equalTo, this.in, this.min, this.max, this.letter, this.digit, this.alphanumeric, this.whitespace, this.punctuation, this.symbol, this.control, this.upperCase, Optional.of(null), this.custom);
 	}
 
 	/**
@@ -270,6 +265,6 @@ public record CharacterConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull CharacterConstraintConfig withCustom(@NonNull Constraint<Character> constraint) {
-		return new CharacterConstraintConfig(this.equalTo, this.notEqualTo, this.in, this.notIn, this.min, this.max, this.letter, this.digit, this.alphanumeric, this.whitespace, this.punctuation, this.symbol, this.control, this.upperCase, this.lowerCase, Optional.of(Objects.requireNonNull(constraint, "Constraint must not be null")));
+		return new CharacterConstraintConfig(this.equalTo, this.in, this.min, this.max, this.letter, this.digit, this.alphanumeric, this.whitespace, this.punctuation, this.symbol, this.control, this.upperCase, this.lowerCase, Optional.of(Objects.requireNonNull(constraint, "Constraint must not be null")));
 	}
 }

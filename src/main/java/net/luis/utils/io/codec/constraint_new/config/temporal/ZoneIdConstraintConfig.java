@@ -20,6 +20,7 @@ package net.luis.utils.io.codec.constraint_new.config.temporal;
 
 import net.luis.utils.io.codec.constraint_new.Constraint;
 import net.luis.utils.io.codec.constraint_new.config.StringConstraintConfig;
+import net.luis.utils.util.Pair;
 import org.jspecify.annotations.NonNull;
 
 import java.time.ZoneId;
@@ -31,13 +32,19 @@ import java.util.*;
  *     This record stores the constraint values for ZoneId codecs.<br>
  *     It includes base constraints and zone-specific flags for type validation.
  * </p>
+ * <p>
+ *     The equalTo field uses {@link Pair} where the first value is the ZoneId and
+ *     the second value indicates negation (false=equalTo, true=notEqualTo).
+ * </p>
+ * <p>
+ *     The in field uses {@link Pair} where the first value is the set of ZoneIds and
+ *     the second value indicates negation (false=in, true=notIn).
+ * </p>
  *
  * @author Luis-St
  *
- * @param equalTo The exact ZoneId that should be matched
- * @param notEqualTo The ZoneId that should be excluded
- * @param in The set of ZoneIds that are allowed
- * @param notIn The set of ZoneIds that are not allowed
+ * @param equalTo The ZoneId equality constraint as a pair of (value, negated) where negated=false means equalTo and negated=true means notEqualTo
+ * @param in The ZoneId set constraint as a pair of (values, negated) where negated=false means in and negated=true means notIn
  * @param normalized If present, requires the zone to be in normalized form
  * @param regionBased If present, requires the zone to be region-based
  * @param offsetBased If present, requires the zone to be offset-based
@@ -49,10 +56,8 @@ import java.util.*;
  * @param custom A custom constraint implementation
  */
 public record ZoneIdConstraintConfig(
-	@NonNull Optional<ZoneId> equalTo,
-	@NonNull Optional<ZoneId> notEqualTo,
-	@NonNull Optional<Set<ZoneId>> in,
-	@NonNull Optional<Set<ZoneId>> notIn,
+	@NonNull Optional<Pair<ZoneId, Boolean>> equalTo,
+	@NonNull Optional<Pair<Set<ZoneId>, Boolean>> in,
 	@NonNull Optional<Void> normalized,
 	@NonNull Optional<Void> regionBased,
 	@NonNull Optional<Void> offsetBased,
@@ -68,7 +73,7 @@ public record ZoneIdConstraintConfig(
 	 * An unconstrained ZoneId configuration with no constraints applied.<br>
 	 */
 	public static final ZoneIdConstraintConfig UNCONSTRAINED = new ZoneIdConstraintConfig(
-		Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(),
+		Optional.empty(), Optional.empty(),
 		Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(),
 		Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(),
 		Optional.empty()
@@ -81,7 +86,7 @@ public record ZoneIdConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull ZoneIdConstraintConfig withEqualTo(@NonNull ZoneId value) {
-		return new ZoneIdConstraintConfig(Optional.of(Objects.requireNonNull(value)), this.notEqualTo, this.in, this.notIn, this.normalized, this.regionBased, this.offsetBased, this.fixedOffset, this.utc, this.systemDefault, this.available, this.region, this.custom);
+		return new ZoneIdConstraintConfig(Optional.of(Pair.of(Objects.requireNonNull(value), false)), this.in, this.normalized, this.regionBased, this.offsetBased, this.fixedOffset, this.utc, this.systemDefault, this.available, this.region, this.custom);
 	}
 
 	/**
@@ -91,7 +96,7 @@ public record ZoneIdConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull ZoneIdConstraintConfig withNotEqualTo(@NonNull ZoneId value) {
-		return new ZoneIdConstraintConfig(this.equalTo, Optional.of(Objects.requireNonNull(value)), this.in, this.notIn, this.normalized, this.regionBased, this.offsetBased, this.fixedOffset, this.utc, this.systemDefault, this.available, this.region, this.custom);
+		return new ZoneIdConstraintConfig(Optional.of(Pair.of(Objects.requireNonNull(value), true)), this.in, this.normalized, this.regionBased, this.offsetBased, this.fixedOffset, this.utc, this.systemDefault, this.available, this.region, this.custom);
 	}
 
 	/**
@@ -101,7 +106,7 @@ public record ZoneIdConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull ZoneIdConstraintConfig withIn(@NonNull Collection<ZoneId> values) {
-		return new ZoneIdConstraintConfig(this.equalTo, this.notEqualTo, Optional.of(Set.copyOf(values)), this.notIn, this.normalized, this.regionBased, this.offsetBased, this.fixedOffset, this.utc, this.systemDefault, this.available, this.region, this.custom);
+		return new ZoneIdConstraintConfig(this.equalTo, Optional.of(Pair.of(Set.copyOf(values), false)), this.normalized, this.regionBased, this.offsetBased, this.fixedOffset, this.utc, this.systemDefault, this.available, this.region, this.custom);
 	}
 
 	/**
@@ -111,7 +116,7 @@ public record ZoneIdConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull ZoneIdConstraintConfig withNotIn(@NonNull Collection<ZoneId> values) {
-		return new ZoneIdConstraintConfig(this.equalTo, this.notEqualTo, this.in, Optional.of(Set.copyOf(values)), this.normalized, this.regionBased, this.offsetBased, this.fixedOffset, this.utc, this.systemDefault, this.available, this.region, this.custom);
+		return new ZoneIdConstraintConfig(this.equalTo, Optional.of(Pair.of(Set.copyOf(values), true)), this.normalized, this.regionBased, this.offsetBased, this.fixedOffset, this.utc, this.systemDefault, this.available, this.region, this.custom);
 	}
 
 	/**
@@ -120,7 +125,7 @@ public record ZoneIdConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull ZoneIdConstraintConfig withNormalized() {
-		return new ZoneIdConstraintConfig(this.equalTo, this.notEqualTo, this.in, this.notIn, Optional.of(null), this.regionBased, this.offsetBased, this.fixedOffset, this.utc, this.systemDefault, this.available, this.region, this.custom);
+		return new ZoneIdConstraintConfig(this.equalTo, this.in, Optional.of(null), this.regionBased, this.offsetBased, this.fixedOffset, this.utc, this.systemDefault, this.available, this.region, this.custom);
 	}
 
 	/**
@@ -129,7 +134,7 @@ public record ZoneIdConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull ZoneIdConstraintConfig withRegionBased() {
-		return new ZoneIdConstraintConfig(this.equalTo, this.notEqualTo, this.in, this.notIn, this.normalized, Optional.of(null), this.offsetBased, this.fixedOffset, this.utc, this.systemDefault, this.available, this.region, this.custom);
+		return new ZoneIdConstraintConfig(this.equalTo, this.in, this.normalized, Optional.of(null), this.offsetBased, this.fixedOffset, this.utc, this.systemDefault, this.available, this.region, this.custom);
 	}
 
 	/**
@@ -138,7 +143,7 @@ public record ZoneIdConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull ZoneIdConstraintConfig withOffsetBased() {
-		return new ZoneIdConstraintConfig(this.equalTo, this.notEqualTo, this.in, this.notIn, this.normalized, this.regionBased, Optional.of(null), this.fixedOffset, this.utc, this.systemDefault, this.available, this.region, this.custom);
+		return new ZoneIdConstraintConfig(this.equalTo, this.in, this.normalized, this.regionBased, Optional.of(null), this.fixedOffset, this.utc, this.systemDefault, this.available, this.region, this.custom);
 	}
 
 	/**
@@ -147,7 +152,7 @@ public record ZoneIdConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull ZoneIdConstraintConfig withFixedOffset() {
-		return new ZoneIdConstraintConfig(this.equalTo, this.notEqualTo, this.in, this.notIn, this.normalized, this.regionBased, this.offsetBased, Optional.of(null), this.utc, this.systemDefault, this.available, this.region, this.custom);
+		return new ZoneIdConstraintConfig(this.equalTo, this.in, this.normalized, this.regionBased, this.offsetBased, Optional.of(null), this.utc, this.systemDefault, this.available, this.region, this.custom);
 	}
 
 	/**
@@ -156,7 +161,7 @@ public record ZoneIdConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull ZoneIdConstraintConfig withUtc() {
-		return new ZoneIdConstraintConfig(this.equalTo, this.notEqualTo, this.in, this.notIn, this.normalized, this.regionBased, this.offsetBased, this.fixedOffset, Optional.of(null), this.systemDefault, this.available, this.region, this.custom);
+		return new ZoneIdConstraintConfig(this.equalTo, this.in, this.normalized, this.regionBased, this.offsetBased, this.fixedOffset, Optional.of(null), this.systemDefault, this.available, this.region, this.custom);
 	}
 
 	/**
@@ -165,7 +170,7 @@ public record ZoneIdConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull ZoneIdConstraintConfig withSystemDefault() {
-		return new ZoneIdConstraintConfig(this.equalTo, this.notEqualTo, this.in, this.notIn, this.normalized, this.regionBased, this.offsetBased, this.fixedOffset, this.utc, Optional.of(null), this.available, this.region, this.custom);
+		return new ZoneIdConstraintConfig(this.equalTo, this.in, this.normalized, this.regionBased, this.offsetBased, this.fixedOffset, this.utc, Optional.of(null), this.available, this.region, this.custom);
 	}
 
 	/**
@@ -174,7 +179,7 @@ public record ZoneIdConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull ZoneIdConstraintConfig withAvailable() {
-		return new ZoneIdConstraintConfig(this.equalTo, this.notEqualTo, this.in, this.notIn, this.normalized, this.regionBased, this.offsetBased, this.fixedOffset, this.utc, this.systemDefault, Optional.of(null), this.region, this.custom);
+		return new ZoneIdConstraintConfig(this.equalTo, this.in, this.normalized, this.regionBased, this.offsetBased, this.fixedOffset, this.utc, this.systemDefault, Optional.of(null), this.region, this.custom);
 	}
 
 	/**
@@ -184,7 +189,7 @@ public record ZoneIdConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull ZoneIdConstraintConfig withRegion(@NonNull StringConstraintConfig regionConfig) {
-		return new ZoneIdConstraintConfig(this.equalTo, this.notEqualTo, this.in, this.notIn, this.normalized, this.regionBased, this.offsetBased, this.fixedOffset, this.utc, this.systemDefault, this.available, Optional.of(Objects.requireNonNull(regionConfig)), this.custom);
+		return new ZoneIdConstraintConfig(this.equalTo, this.in, this.normalized, this.regionBased, this.offsetBased, this.fixedOffset, this.utc, this.systemDefault, this.available, Optional.of(Objects.requireNonNull(regionConfig)), this.custom);
 	}
 
 	/**
@@ -194,6 +199,6 @@ public record ZoneIdConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull ZoneIdConstraintConfig withCustom(@NonNull Constraint<ZoneId> constraint) {
-		return new ZoneIdConstraintConfig(this.equalTo, this.notEqualTo, this.in, this.notIn, this.normalized, this.regionBased, this.offsetBased, this.fixedOffset, this.utc, this.systemDefault, this.available, this.region, Optional.of(Objects.requireNonNull(constraint)));
+		return new ZoneIdConstraintConfig(this.equalTo, this.in, this.normalized, this.regionBased, this.offsetBased, this.fixedOffset, this.utc, this.systemDefault, this.available, this.region, Optional.of(Objects.requireNonNull(constraint)));
 	}
 }

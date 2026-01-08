@@ -38,13 +38,19 @@ import java.util.*;
  *     The after and before fields use {@link Pair} where the first value is the bound
  *     and the second value indicates whether the bound is inclusive (true) or exclusive (false).
  * </p>
+ * <p>
+ *     The equalTo field uses {@link Pair} where the first value is the LocalTime and
+ *     the second value indicates negation (false=equalTo, true=notEqualTo).
+ * </p>
+ * <p>
+ *     The in field uses {@link Pair} where the first value is the set of LocalTimes and
+ *     the second value indicates negation (false=in, true=notIn).
+ * </p>
  *
  * @author Luis-St
  *
- * @param equalTo The exact LocalTime that should be matched
- * @param notEqualTo The LocalTime that should be excluded
- * @param in The set of LocalTimes that are allowed
- * @param notIn The set of LocalTimes that are not allowed
+ * @param equalTo The LocalTime equality constraint as a pair of (value, negated) where negated=false means equalTo and negated=true means notEqualTo
+ * @param in The LocalTime set constraint as a pair of (values, negated) where negated=false means in and negated=true means notIn
  * @param after The "after" temporal constraint as a pair of (value, inclusive)
  * @param before The "before" temporal constraint as a pair of (value, inclusive)
  * @param withinLast A Duration specifying how far back from now values must fall
@@ -57,10 +63,8 @@ import java.util.*;
  * @param custom A custom constraint implementation
  */
 public record LocalTimeConstraintConfig(
-	@NonNull Optional<LocalTime> equalTo,
-	@NonNull Optional<LocalTime> notEqualTo,
-	@NonNull Optional<Set<LocalTime>> in,
-	@NonNull Optional<Set<LocalTime>> notIn,
+	@NonNull Optional<Pair<LocalTime, Boolean>> equalTo,
+	@NonNull Optional<Pair<Set<LocalTime>, Boolean>> in,
 	@NonNull Optional<Pair<LocalTime, Boolean>> after,
 	@NonNull Optional<Pair<LocalTime, Boolean>> before,
 	@NonNull Optional<Duration> withinLast,
@@ -79,7 +83,6 @@ public record LocalTimeConstraintConfig(
 	public static final LocalTimeConstraintConfig UNCONSTRAINED = new LocalTimeConstraintConfig(
 		Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(),
 		Optional.empty(), Optional.empty(),
-		Optional.empty(), Optional.empty(),
 		Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(),
 		Optional.empty()
 	);
@@ -91,7 +94,7 @@ public record LocalTimeConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull LocalTimeConstraintConfig withEqualTo(@NonNull LocalTime value) {
-		return new LocalTimeConstraintConfig(Optional.of(Objects.requireNonNull(value)), this.notEqualTo, this.in, this.notIn, this.after, this.before, this.withinLast, this.withinNext, this.hour, this.minute, this.second, this.millisecond, this.nanosecond, this.custom);
+		return new LocalTimeConstraintConfig(Optional.of(Pair.of(Objects.requireNonNull(value), false)), this.in, this.after, this.before, this.withinLast, this.withinNext, this.hour, this.minute, this.second, this.millisecond, this.nanosecond, this.custom);
 	}
 
 	/**
@@ -101,7 +104,7 @@ public record LocalTimeConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull LocalTimeConstraintConfig withNotEqualTo(@NonNull LocalTime value) {
-		return new LocalTimeConstraintConfig(this.equalTo, Optional.of(Objects.requireNonNull(value)), this.in, this.notIn, this.after, this.before, this.withinLast, this.withinNext, this.hour, this.minute, this.second, this.millisecond, this.nanosecond, this.custom);
+		return new LocalTimeConstraintConfig(Optional.of(Pair.of(Objects.requireNonNull(value), true)), this.in, this.after, this.before, this.withinLast, this.withinNext, this.hour, this.minute, this.second, this.millisecond, this.nanosecond, this.custom);
 	}
 
 	/**
@@ -111,7 +114,7 @@ public record LocalTimeConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull LocalTimeConstraintConfig withIn(@NonNull Collection<LocalTime> values) {
-		return new LocalTimeConstraintConfig(this.equalTo, this.notEqualTo, Optional.of(Set.copyOf(values)), this.notIn, this.after, this.before, this.withinLast, this.withinNext, this.hour, this.minute, this.second, this.millisecond, this.nanosecond, this.custom);
+		return new LocalTimeConstraintConfig(this.equalTo, Optional.of(Pair.of(Set.copyOf(values), false)), this.after, this.before, this.withinLast, this.withinNext, this.hour, this.minute, this.second, this.millisecond, this.nanosecond, this.custom);
 	}
 
 	/**
@@ -121,7 +124,7 @@ public record LocalTimeConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull LocalTimeConstraintConfig withNotIn(@NonNull Collection<LocalTime> values) {
-		return new LocalTimeConstraintConfig(this.equalTo, this.notEqualTo, this.in, Optional.of(Set.copyOf(values)), this.after, this.before, this.withinLast, this.withinNext, this.hour, this.minute, this.second, this.millisecond, this.nanosecond, this.custom);
+		return new LocalTimeConstraintConfig(this.equalTo, Optional.of(Pair.of(Set.copyOf(values), true)), this.after, this.before, this.withinLast, this.withinNext, this.hour, this.minute, this.second, this.millisecond, this.nanosecond, this.custom);
 	}
 
 	/**
@@ -131,7 +134,7 @@ public record LocalTimeConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull LocalTimeConstraintConfig withAfter(@NonNull LocalTime value) {
-		return new LocalTimeConstraintConfig(this.equalTo, this.notEqualTo, this.in, this.notIn, Optional.of(Pair.of(Objects.requireNonNull(value), false)), this.before, this.withinLast, this.withinNext, this.hour, this.minute, this.second, this.millisecond, this.nanosecond, this.custom);
+		return new LocalTimeConstraintConfig(this.equalTo, this.in, Optional.of(Pair.of(Objects.requireNonNull(value), false)), this.before, this.withinLast, this.withinNext, this.hour, this.minute, this.second, this.millisecond, this.nanosecond, this.custom);
 	}
 
 	/**
@@ -141,7 +144,7 @@ public record LocalTimeConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull LocalTimeConstraintConfig withAfterOrEqual(@NonNull LocalTime value) {
-		return new LocalTimeConstraintConfig(this.equalTo, this.notEqualTo, this.in, this.notIn, Optional.of(Pair.of(Objects.requireNonNull(value), true)), this.before, this.withinLast, this.withinNext, this.hour, this.minute, this.second, this.millisecond, this.nanosecond, this.custom);
+		return new LocalTimeConstraintConfig(this.equalTo, this.in, Optional.of(Pair.of(Objects.requireNonNull(value), true)), this.before, this.withinLast, this.withinNext, this.hour, this.minute, this.second, this.millisecond, this.nanosecond, this.custom);
 	}
 
 	/**
@@ -151,7 +154,7 @@ public record LocalTimeConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull LocalTimeConstraintConfig withBefore(@NonNull LocalTime value) {
-		return new LocalTimeConstraintConfig(this.equalTo, this.notEqualTo, this.in, this.notIn, this.after, Optional.of(Pair.of(Objects.requireNonNull(value), false)), this.withinLast, this.withinNext, this.hour, this.minute, this.second, this.millisecond, this.nanosecond, this.custom);
+		return new LocalTimeConstraintConfig(this.equalTo, this.in, this.after, Optional.of(Pair.of(Objects.requireNonNull(value), false)), this.withinLast, this.withinNext, this.hour, this.minute, this.second, this.millisecond, this.nanosecond, this.custom);
 	}
 
 	/**
@@ -161,7 +164,7 @@ public record LocalTimeConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull LocalTimeConstraintConfig withBeforeOrEqual(@NonNull LocalTime value) {
-		return new LocalTimeConstraintConfig(this.equalTo, this.notEqualTo, this.in, this.notIn, this.after, Optional.of(Pair.of(Objects.requireNonNull(value), true)), this.withinLast, this.withinNext, this.hour, this.minute, this.second, this.millisecond, this.nanosecond, this.custom);
+		return new LocalTimeConstraintConfig(this.equalTo, this.in, this.after, Optional.of(Pair.of(Objects.requireNonNull(value), true)), this.withinLast, this.withinNext, this.hour, this.minute, this.second, this.millisecond, this.nanosecond, this.custom);
 	}
 
 	/**
@@ -172,7 +175,7 @@ public record LocalTimeConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull LocalTimeConstraintConfig withBetween(@NonNull LocalTime after, @NonNull LocalTime before) {
-		return new LocalTimeConstraintConfig(this.equalTo, this.notEqualTo, this.in, this.notIn, Optional.of(Pair.of(Objects.requireNonNull(after), false)), Optional.of(Pair.of(Objects.requireNonNull(before), false)), this.withinLast, this.withinNext, this.hour, this.minute, this.second, this.millisecond, this.nanosecond, this.custom);
+		return new LocalTimeConstraintConfig(this.equalTo, this.in, Optional.of(Pair.of(Objects.requireNonNull(after), false)), Optional.of(Pair.of(Objects.requireNonNull(before), false)), this.withinLast, this.withinNext, this.hour, this.minute, this.second, this.millisecond, this.nanosecond, this.custom);
 	}
 
 	/**
@@ -183,7 +186,7 @@ public record LocalTimeConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull LocalTimeConstraintConfig withBetweenOrEqual(@NonNull LocalTime after, @NonNull LocalTime before) {
-		return new LocalTimeConstraintConfig(this.equalTo, this.notEqualTo, this.in, this.notIn, Optional.of(Pair.of(Objects.requireNonNull(after), true)), Optional.of(Pair.of(Objects.requireNonNull(before), true)), this.withinLast, this.withinNext, this.hour, this.minute, this.second, this.millisecond, this.nanosecond, this.custom);
+		return new LocalTimeConstraintConfig(this.equalTo, Optional.of(Pair.of(Objects.requireNonNull(after), true)), Optional.of(Pair.of(Objects.requireNonNull(before), true)), this.before, this.withinLast, this.withinNext, this.hour, this.minute, this.second, this.millisecond, this.nanosecond, this.custom);
 	}
 
 	/**
@@ -193,7 +196,7 @@ public record LocalTimeConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull LocalTimeConstraintConfig withWithinLast(@NonNull Duration duration) {
-		return new LocalTimeConstraintConfig(this.equalTo, this.notEqualTo, this.in, this.notIn, this.after, this.before, Optional.of(Objects.requireNonNull(duration)), this.withinNext, this.hour, this.minute, this.second, this.millisecond, this.nanosecond, this.custom);
+		return new LocalTimeConstraintConfig(this.equalTo, this.in, this.after, this.before, Optional.of(Objects.requireNonNull(duration)), this.withinNext, this.hour, this.minute, this.second, this.millisecond, this.nanosecond, this.custom);
 	}
 
 	/**
@@ -203,7 +206,7 @@ public record LocalTimeConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull LocalTimeConstraintConfig withWithinNext(@NonNull Duration duration) {
-		return new LocalTimeConstraintConfig(this.equalTo, this.notEqualTo, this.in, this.notIn, this.after, this.before, this.withinLast, Optional.of(Objects.requireNonNull(duration)), this.hour, this.minute, this.second, this.millisecond, this.nanosecond, this.custom);
+		return new LocalTimeConstraintConfig(this.equalTo, this.in, this.after, this.before, this.withinLast, Optional.of(Objects.requireNonNull(duration)), this.hour, this.minute, this.second, this.millisecond, this.nanosecond, this.custom);
 	}
 
 	/**
@@ -213,7 +216,7 @@ public record LocalTimeConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull LocalTimeConstraintConfig withHour(@NonNull NumericFieldConstraintConfig config) {
-		return new LocalTimeConstraintConfig(this.equalTo, this.notEqualTo, this.in, this.notIn, this.after, this.before, this.withinLast, this.withinNext, Optional.of(Objects.requireNonNull(config)), this.minute, this.second, this.millisecond, this.nanosecond, this.custom);
+		return new LocalTimeConstraintConfig(this.equalTo, this.in, this.after, this.before, this.withinLast, this.withinNext, Optional.of(Objects.requireNonNull(config)), this.minute, this.second, this.millisecond, this.nanosecond, this.custom);
 	}
 
 	/**
@@ -223,7 +226,7 @@ public record LocalTimeConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull LocalTimeConstraintConfig withMinute(@NonNull NumericFieldConstraintConfig config) {
-		return new LocalTimeConstraintConfig(this.equalTo, this.notEqualTo, this.in, this.notIn, this.after, this.before, this.withinLast, this.withinNext, this.hour, Optional.of(Objects.requireNonNull(config)), this.second, this.millisecond, this.nanosecond, this.custom);
+		return new LocalTimeConstraintConfig(this.equalTo, this.in, this.after, this.before, this.withinLast, this.withinNext, this.hour, Optional.of(Objects.requireNonNull(config)), this.second, this.millisecond, this.nanosecond, this.custom);
 	}
 
 	/**
@@ -233,7 +236,7 @@ public record LocalTimeConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull LocalTimeConstraintConfig withSecond(@NonNull NumericFieldConstraintConfig config) {
-		return new LocalTimeConstraintConfig(this.equalTo, this.notEqualTo, this.in, this.notIn, this.after, this.before, this.withinLast, this.withinNext, this.hour, this.minute, Optional.of(Objects.requireNonNull(config)), this.millisecond, this.nanosecond, this.custom);
+		return new LocalTimeConstraintConfig(this.equalTo, this.in, this.after, this.before, this.withinLast, this.withinNext, this.hour, this.minute, Optional.of(Objects.requireNonNull(config)), this.millisecond, this.nanosecond, this.custom);
 	}
 
 	/**
@@ -243,7 +246,7 @@ public record LocalTimeConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull LocalTimeConstraintConfig withMillisecond(@NonNull NumericFieldConstraintConfig config) {
-		return new LocalTimeConstraintConfig(this.equalTo, this.notEqualTo, this.in, this.notIn, this.after, this.before, this.withinLast, this.withinNext, this.hour, this.minute, this.second, Optional.of(Objects.requireNonNull(config)), this.nanosecond, this.custom);
+		return new LocalTimeConstraintConfig(this.equalTo, this.in, this.after, this.before, this.withinLast, this.withinNext, this.hour, this.minute, this.second, Optional.of(Objects.requireNonNull(config)), this.nanosecond, this.custom);
 	}
 
 	/**
@@ -253,7 +256,7 @@ public record LocalTimeConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull LocalTimeConstraintConfig withNanosecond(@NonNull NumericFieldConstraintConfig config) {
-		return new LocalTimeConstraintConfig(this.equalTo, this.notEqualTo, this.in, this.notIn, this.after, this.before, this.withinLast, this.withinNext, this.hour, this.minute, this.second, this.millisecond, Optional.of(Objects.requireNonNull(config)), this.custom);
+		return new LocalTimeConstraintConfig(this.equalTo, this.in, this.after, this.before, this.withinLast, this.withinNext, this.hour, this.minute, this.second, this.millisecond, Optional.of(Objects.requireNonNull(config)), this.custom);
 	}
 
 	/**
@@ -263,6 +266,6 @@ public record LocalTimeConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull LocalTimeConstraintConfig withCustom(@NonNull Constraint<LocalTime> constraint) {
-		return new LocalTimeConstraintConfig(this.equalTo, this.notEqualTo, this.in, this.notIn, this.after, this.before, this.withinLast, this.withinNext, this.hour, this.minute, this.second, this.millisecond, this.nanosecond, Optional.of(Objects.requireNonNull(constraint)));
+		return new LocalTimeConstraintConfig(this.equalTo, this.in, this.after, this.before, this.withinLast, this.withinNext, this.hour, this.minute, this.second, this.millisecond, this.nanosecond, Optional.of(Objects.requireNonNull(constraint)));
 	}
 }

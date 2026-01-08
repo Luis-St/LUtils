@@ -19,6 +19,7 @@
 package net.luis.utils.io.codec.constraint_new.config;
 
 import net.luis.utils.io.codec.constraint_new.Constraint;
+import net.luis.utils.util.Pair;
 import org.jspecify.annotations.NonNull;
 
 import java.util.*;
@@ -33,17 +34,13 @@ import java.util.*;
  * @author Luis-St
  *
  * @param <T> The enum type this config is for
- * @param equalTo The exact enum value that should be matched
- * @param notEqualTo The enum value that should be excluded
- * @param in The set of enum values that are allowed
- * @param notIn The set of enum values that are not allowed
+ * @param equalTo The enum equality constraint as a pair of (value, negated) where negated=false means equalTo and negated=true means notEqualTo
+ * @param in The enum set constraint as a pair of (values, negated) where negated=false means in and negated=true means notIn
  * @param custom A custom constraint implementation
  */
 public record EnumConstraintConfig<T extends Enum<T>>(
-	@NonNull Optional<T> equalTo,
-	@NonNull Optional<T> notEqualTo,
-	@NonNull Optional<Set<T>> in,
-	@NonNull Optional<Set<T>> notIn,
+	@NonNull Optional<Pair<T, Boolean>> equalTo,
+	@NonNull Optional<Pair<Set<T>, Boolean>> in,
 	@NonNull Optional<Constraint<T>> custom
 ) {
 
@@ -55,7 +52,7 @@ public record EnumConstraintConfig<T extends Enum<T>>(
 	 */
 	public static <T extends Enum<T>> @NonNull EnumConstraintConfig<T> unconstrained() {
 		return new EnumConstraintConfig<>(
-			Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty()
+			Optional.empty(), Optional.empty(), Optional.empty()
 		);
 	}
 
@@ -66,7 +63,7 @@ public record EnumConstraintConfig<T extends Enum<T>>(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull EnumConstraintConfig<T> withEqualTo(@NonNull T value) {
-		return new EnumConstraintConfig<>(Optional.of(Objects.requireNonNull(value)), this.notEqualTo, this.in, this.notIn, this.custom);
+		return new EnumConstraintConfig<>(Optional.of(Pair.of(Objects.requireNonNull(value), false)), this.in, this.custom);
 	}
 
 	/**
@@ -76,7 +73,7 @@ public record EnumConstraintConfig<T extends Enum<T>>(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull EnumConstraintConfig<T> withNotEqualTo(@NonNull T value) {
-		return new EnumConstraintConfig<>(this.equalTo, Optional.of(Objects.requireNonNull(value)), this.in, this.notIn, this.custom);
+		return new EnumConstraintConfig<>(Optional.of(Pair.of(Objects.requireNonNull(value), true)), this.in, this.custom);
 	}
 
 	/**
@@ -86,7 +83,7 @@ public record EnumConstraintConfig<T extends Enum<T>>(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull EnumConstraintConfig<T> withIn(@NonNull Collection<T> values) {
-		return new EnumConstraintConfig<>(this.equalTo, this.notEqualTo, Optional.of(EnumSet.copyOf(values)), this.notIn, this.custom);
+		return new EnumConstraintConfig<>(this.equalTo, Optional.of(Pair.of(EnumSet.copyOf(values), false)), this.custom);
 	}
 
 	/**
@@ -96,7 +93,7 @@ public record EnumConstraintConfig<T extends Enum<T>>(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull EnumConstraintConfig<T> withNotIn(@NonNull Collection<T> values) {
-		return new EnumConstraintConfig<>(this.equalTo, this.notEqualTo, this.in, Optional.of(EnumSet.copyOf(values)), this.custom);
+		return new EnumConstraintConfig<>(this.equalTo, Optional.of(Pair.of(EnumSet.copyOf(values), true)), this.custom);
 	}
 
 	/**
@@ -106,6 +103,6 @@ public record EnumConstraintConfig<T extends Enum<T>>(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull EnumConstraintConfig<T> withCustom(@NonNull Constraint<T> constraint) {
-		return new EnumConstraintConfig<>(this.equalTo, this.notEqualTo, this.in, this.notIn, Optional.of(Objects.requireNonNull(constraint)));
+		return new EnumConstraintConfig<>(this.equalTo, this.in, Optional.of(Objects.requireNonNull(constraint)));
 	}
 }

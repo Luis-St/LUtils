@@ -38,13 +38,19 @@ import java.util.*;
  *     The after and before fields use {@link Pair} where the first value is the bound
  *     and the second value indicates whether the bound is inclusive (true) or exclusive (false).
  * </p>
+ * <p>
+ *     The equalTo field uses {@link Pair} where the first value is the LocalDate and
+ *     the second value indicates negation (false=equalTo, true=notEqualTo).
+ * </p>
+ * <p>
+ *     The in field uses {@link Pair} where the first value is the set of LocalDates and
+ *     the second value indicates negation (false=in, true=notIn).
+ * </p>
  *
  * @author Luis-St
  *
- * @param equalTo The exact LocalDate that should be matched
- * @param notEqualTo The LocalDate that should be excluded
- * @param in The set of LocalDates that are allowed
- * @param notIn The set of LocalDates that are not allowed
+ * @param equalTo The LocalDate equality constraint as a pair of (value, negated) where negated=false means equalTo and negated=true means notEqualTo
+ * @param in The LocalDate set constraint as a pair of (values, negated) where negated=false means in and negated=true means notIn
  * @param after The "after" temporal constraint as a pair of (value, inclusive)
  * @param before The "before" temporal constraint as a pair of (value, inclusive)
  * @param withinLast A Duration specifying how far back from now values must fall
@@ -59,10 +65,8 @@ import java.util.*;
  * @param custom A custom constraint implementation
  */
 public record LocalDateConstraintConfig(
-	@NonNull Optional<LocalDate> equalTo,
-	@NonNull Optional<LocalDate> notEqualTo,
-	@NonNull Optional<Set<LocalDate>> in,
-	@NonNull Optional<Set<LocalDate>> notIn,
+	@NonNull Optional<Pair<LocalDate, Boolean>> equalTo,
+	@NonNull Optional<Pair<Set<LocalDate>, Boolean>> in,
 	@NonNull Optional<Pair<LocalDate, Boolean>> after,
 	@NonNull Optional<Pair<LocalDate, Boolean>> before,
 	@NonNull Optional<Duration> withinLast,
@@ -83,7 +87,6 @@ public record LocalDateConstraintConfig(
 	public static final LocalDateConstraintConfig UNCONSTRAINED = new LocalDateConstraintConfig(
 		Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(),
 		Optional.empty(), Optional.empty(),
-		Optional.empty(), Optional.empty(),
 		Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(),
 		Optional.empty(), Optional.empty(), Optional.empty(),
 		Optional.empty()
@@ -96,7 +99,7 @@ public record LocalDateConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull LocalDateConstraintConfig withEqualTo(@NonNull LocalDate value) {
-		return new LocalDateConstraintConfig(Optional.of(Objects.requireNonNull(value)), this.notEqualTo, this.in, this.notIn, this.after, this.before, this.withinLast, this.withinNext, this.dayOfWeek, this.dayOfMonth, this.dayOfYear, this.weekOfMonth, this.weekOfYear, this.month, this.year, this.custom);
+		return new LocalDateConstraintConfig(Optional.of(Pair.of(Objects.requireNonNull(value), false)), this.in, this.after, this.before, this.withinLast, this.withinNext, this.dayOfWeek, this.dayOfMonth, this.dayOfYear, this.weekOfMonth, this.weekOfYear, this.month, this.year, this.custom);
 	}
 
 	/**
@@ -106,7 +109,7 @@ public record LocalDateConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull LocalDateConstraintConfig withNotEqualTo(@NonNull LocalDate value) {
-		return new LocalDateConstraintConfig(this.equalTo, Optional.of(Objects.requireNonNull(value)), this.in, this.notIn, this.after, this.before, this.withinLast, this.withinNext, this.dayOfWeek, this.dayOfMonth, this.dayOfYear, this.weekOfMonth, this.weekOfYear, this.month, this.year, this.custom);
+		return new LocalDateConstraintConfig(Optional.of(Pair.of(Objects.requireNonNull(value), true)), this.in, this.after, this.before, this.withinLast, this.withinNext, this.dayOfWeek, this.dayOfMonth, this.dayOfYear, this.weekOfMonth, this.weekOfYear, this.month, this.year, this.custom);
 	}
 
 	/**
@@ -116,7 +119,7 @@ public record LocalDateConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull LocalDateConstraintConfig withIn(@NonNull Collection<LocalDate> values) {
-		return new LocalDateConstraintConfig(this.equalTo, this.notEqualTo, Optional.of(Set.copyOf(values)), this.notIn, this.after, this.before, this.withinLast, this.withinNext, this.dayOfWeek, this.dayOfMonth, this.dayOfYear, this.weekOfMonth, this.weekOfYear, this.month, this.year, this.custom);
+		return new LocalDateConstraintConfig(this.equalTo, Optional.of(Pair.of(Set.copyOf(values), false)), this.after, this.before, this.withinLast, this.withinNext, this.dayOfWeek, this.dayOfMonth, this.dayOfYear, this.weekOfMonth, this.weekOfYear, this.month, this.year, this.custom);
 	}
 
 	/**
@@ -126,7 +129,7 @@ public record LocalDateConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull LocalDateConstraintConfig withNotIn(@NonNull Collection<LocalDate> values) {
-		return new LocalDateConstraintConfig(this.equalTo, this.notEqualTo, this.in, Optional.of(Set.copyOf(values)), this.after, this.before, this.withinLast, this.withinNext, this.dayOfWeek, this.dayOfMonth, this.dayOfYear, this.weekOfMonth, this.weekOfYear, this.month, this.year, this.custom);
+		return new LocalDateConstraintConfig(this.equalTo, Optional.of(Pair.of(Set.copyOf(values), true)), this.after, this.before, this.withinLast, this.withinNext, this.dayOfWeek, this.dayOfMonth, this.dayOfYear, this.weekOfMonth, this.weekOfYear, this.month, this.year, this.custom);
 	}
 
 	/**
@@ -136,7 +139,7 @@ public record LocalDateConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull LocalDateConstraintConfig withAfter(@NonNull LocalDate value) {
-		return new LocalDateConstraintConfig(this.equalTo, this.notEqualTo, this.in, this.notIn, Optional.of(Pair.of(Objects.requireNonNull(value), false)), this.before, this.withinLast, this.withinNext, this.dayOfWeek, this.dayOfMonth, this.dayOfYear, this.weekOfMonth, this.weekOfYear, this.month, this.year, this.custom);
+		return new LocalDateConstraintConfig(this.equalTo, this.in, Optional.of(Pair.of(Objects.requireNonNull(value), false)), this.before, this.withinLast, this.withinNext, this.dayOfWeek, this.dayOfMonth, this.dayOfYear, this.weekOfMonth, this.weekOfYear, this.month, this.year, this.custom);
 	}
 
 	/**
@@ -146,7 +149,7 @@ public record LocalDateConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull LocalDateConstraintConfig withAfterOrEqual(@NonNull LocalDate value) {
-		return new LocalDateConstraintConfig(this.equalTo, this.notEqualTo, this.in, this.notIn, Optional.of(Pair.of(Objects.requireNonNull(value), true)), this.before, this.withinLast, this.withinNext, this.dayOfWeek, this.dayOfMonth, this.dayOfYear, this.weekOfMonth, this.weekOfYear, this.month, this.year, this.custom);
+		return new LocalDateConstraintConfig(this.equalTo, this.in, Optional.of(Pair.of(Objects.requireNonNull(value), true)), this.before, this.withinLast, this.withinNext, this.dayOfWeek, this.dayOfMonth, this.dayOfYear, this.weekOfMonth, this.weekOfYear, this.month, this.year, this.custom);
 	}
 
 	/**
@@ -156,7 +159,7 @@ public record LocalDateConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull LocalDateConstraintConfig withBefore(@NonNull LocalDate value) {
-		return new LocalDateConstraintConfig(this.equalTo, this.notEqualTo, this.in, this.notIn, this.after, Optional.of(Pair.of(Objects.requireNonNull(value), false)), this.withinLast, this.withinNext, this.dayOfWeek, this.dayOfMonth, this.dayOfYear, this.weekOfMonth, this.weekOfYear, this.month, this.year, this.custom);
+		return new LocalDateConstraintConfig(this.equalTo, this.in, this.after, Optional.of(Pair.of(Objects.requireNonNull(value), false)), this.withinLast, this.withinNext, this.dayOfWeek, this.dayOfMonth, this.dayOfYear, this.weekOfMonth, this.weekOfYear, this.month, this.year, this.custom);
 	}
 
 	/**
@@ -166,7 +169,7 @@ public record LocalDateConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull LocalDateConstraintConfig withBeforeOrEqual(@NonNull LocalDate value) {
-		return new LocalDateConstraintConfig(this.equalTo, this.notEqualTo, this.in, this.notIn, this.after, Optional.of(Pair.of(Objects.requireNonNull(value), true)), this.withinLast, this.withinNext, this.dayOfWeek, this.dayOfMonth, this.dayOfYear, this.weekOfMonth, this.weekOfYear, this.month, this.year, this.custom);
+		return new LocalDateConstraintConfig(this.equalTo, this.in, this.after, Optional.of(Pair.of(Objects.requireNonNull(value), true)), this.withinLast, this.withinNext, this.dayOfWeek, this.dayOfMonth, this.dayOfYear, this.weekOfMonth, this.weekOfYear, this.month, this.year, this.custom);
 	}
 
 	/**
@@ -177,7 +180,7 @@ public record LocalDateConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull LocalDateConstraintConfig withBetween(@NonNull LocalDate after, @NonNull LocalDate before) {
-		return new LocalDateConstraintConfig(this.equalTo, this.notEqualTo, this.in, this.notIn, Optional.of(Pair.of(Objects.requireNonNull(after), false)), Optional.of(Pair.of(Objects.requireNonNull(before), false)), this.withinLast, this.withinNext, this.dayOfWeek, this.dayOfMonth, this.dayOfYear, this.weekOfMonth, this.weekOfYear, this.month, this.year, this.custom);
+		return new LocalDateConstraintConfig(this.equalTo, this.in, Optional.of(Pair.of(Objects.requireNonNull(after), false)), Optional.of(Pair.of(Objects.requireNonNull(before), false)), this.withinLast, this.withinNext, this.dayOfWeek, this.dayOfMonth, this.dayOfYear, this.weekOfMonth, this.weekOfYear, this.month, this.year, this.custom);
 	}
 
 	/**
@@ -188,7 +191,7 @@ public record LocalDateConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull LocalDateConstraintConfig withBetweenOrEqual(@NonNull LocalDate after, @NonNull LocalDate before) {
-		return new LocalDateConstraintConfig(this.equalTo, this.notEqualTo, this.in, this.notIn, Optional.of(Pair.of(Objects.requireNonNull(after), true)), Optional.of(Pair.of(Objects.requireNonNull(before), true)), this.withinLast, this.withinNext, this.dayOfWeek, this.dayOfMonth, this.dayOfYear, this.weekOfMonth, this.weekOfYear, this.month, this.year, this.custom);
+		return new LocalDateConstraintConfig(this.equalTo, this.in, Optional.of(Pair.of(Objects.requireNonNull(after), true)), Optional.of(Pair.of(Objects.requireNonNull(before), true)), this.withinLast, this.withinNext, this.dayOfWeek, this.dayOfMonth, this.dayOfYear, this.weekOfMonth, this.weekOfYear, this.month, this.year, this.custom);
 	}
 
 	/**
@@ -198,7 +201,7 @@ public record LocalDateConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull LocalDateConstraintConfig withWithinLast(@NonNull Duration duration) {
-		return new LocalDateConstraintConfig(this.equalTo, this.notEqualTo, this.in, this.notIn, this.after, this.before, Optional.of(Objects.requireNonNull(duration)), this.withinNext, this.dayOfWeek, this.dayOfMonth, this.dayOfYear, this.weekOfMonth, this.weekOfYear, this.month, this.year, this.custom);
+		return new LocalDateConstraintConfig(this.equalTo, this.in, this.after, this.before, Optional.of(Objects.requireNonNull(duration)), this.withinNext, this.dayOfWeek, this.dayOfMonth, this.dayOfYear, this.weekOfMonth, this.weekOfYear, this.month, this.year, this.custom);
 	}
 
 	/**
@@ -208,7 +211,7 @@ public record LocalDateConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull LocalDateConstraintConfig withWithinNext(@NonNull Duration duration) {
-		return new LocalDateConstraintConfig(this.equalTo, this.notEqualTo, this.in, this.notIn, this.after, this.before, this.withinLast, Optional.of(Objects.requireNonNull(duration)), this.dayOfWeek, this.dayOfMonth, this.dayOfYear, this.weekOfMonth, this.weekOfYear, this.month, this.year, this.custom);
+		return new LocalDateConstraintConfig(this.equalTo, this.in, this.after, this.before, this.withinLast, Optional.of(Objects.requireNonNull(duration)), this.dayOfWeek, this.dayOfMonth, this.dayOfYear, this.weekOfMonth, this.weekOfYear, this.month, this.year, this.custom);
 	}
 
 	/**
@@ -218,7 +221,7 @@ public record LocalDateConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull LocalDateConstraintConfig withDayOfWeek(@NonNull EnumConstraintConfig<DayOfWeek> config) {
-		return new LocalDateConstraintConfig(this.equalTo, this.notEqualTo, this.in, this.notIn, this.after, this.before, this.withinLast, this.withinNext, Optional.of(Objects.requireNonNull(config)), this.dayOfMonth, this.dayOfYear, this.weekOfMonth, this.weekOfYear, this.month, this.year, this.custom);
+		return new LocalDateConstraintConfig(this.equalTo, this.in, this.after, this.before, this.withinLast, this.withinNext, Optional.of(Objects.requireNonNull(config)), this.dayOfMonth, this.dayOfYear, this.weekOfMonth, this.weekOfYear, this.month, this.year, this.custom);
 	}
 
 	/**
@@ -228,7 +231,7 @@ public record LocalDateConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull LocalDateConstraintConfig withDayOfMonth(@NonNull NumericFieldConstraintConfig config) {
-		return new LocalDateConstraintConfig(this.equalTo, this.notEqualTo, this.in, this.notIn, this.after, this.before, this.withinLast, this.withinNext, this.dayOfWeek, Optional.of(Objects.requireNonNull(config)), this.dayOfYear, this.weekOfMonth, this.weekOfYear, this.month, this.year, this.custom);
+		return new LocalDateConstraintConfig(this.equalTo, this.in, this.after, this.before, this.withinLast, this.withinNext, this.dayOfWeek, Optional.of(Objects.requireNonNull(config)), this.dayOfYear, this.weekOfMonth, this.weekOfYear, this.month, this.year, this.custom);
 	}
 
 	/**
@@ -238,7 +241,7 @@ public record LocalDateConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull LocalDateConstraintConfig withDayOfYear(@NonNull NumericFieldConstraintConfig config) {
-		return new LocalDateConstraintConfig(this.equalTo, this.notEqualTo, this.in, this.notIn, this.after, this.before, this.withinLast, this.withinNext, this.dayOfWeek, this.dayOfMonth, Optional.of(Objects.requireNonNull(config)), this.weekOfMonth, this.weekOfYear, this.month, this.year, this.custom);
+		return new LocalDateConstraintConfig(this.equalTo, this.in, this.after, this.before, this.withinLast, this.withinNext, this.dayOfWeek, this.dayOfMonth, Optional.of(Objects.requireNonNull(config)), this.weekOfMonth, this.weekOfYear, this.month, this.year, this.custom);
 	}
 
 	/**
@@ -248,7 +251,7 @@ public record LocalDateConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull LocalDateConstraintConfig withWeekOfMonth(@NonNull NumericFieldConstraintConfig config) {
-		return new LocalDateConstraintConfig(this.equalTo, this.notEqualTo, this.in, this.notIn, this.after, this.before, this.withinLast, this.withinNext, this.dayOfWeek, this.dayOfMonth, this.dayOfYear, Optional.of(Objects.requireNonNull(config)), this.weekOfYear, this.month, this.year, this.custom);
+		return new LocalDateConstraintConfig(this.equalTo, this.in, this.after, this.before, this.withinLast, this.withinNext, this.dayOfWeek, this.dayOfMonth, this.dayOfYear, Optional.of(Objects.requireNonNull(config)), this.weekOfYear, this.month, this.year, this.custom);
 	}
 
 	/**
@@ -258,7 +261,7 @@ public record LocalDateConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull LocalDateConstraintConfig withWeekOfYear(@NonNull NumericFieldConstraintConfig config) {
-		return new LocalDateConstraintConfig(this.equalTo, this.notEqualTo, this.in, this.notIn, this.after, this.before, this.withinLast, this.withinNext, this.dayOfWeek, this.dayOfMonth, this.dayOfYear, this.weekOfMonth, Optional.of(Objects.requireNonNull(config)), this.month, this.year, this.custom);
+		return new LocalDateConstraintConfig(this.equalTo, this.in, this.after, this.before, this.withinLast, this.withinNext, this.dayOfWeek, this.dayOfMonth, this.dayOfYear, this.weekOfMonth, Optional.of(Objects.requireNonNull(config)), this.month, this.year, this.custom);
 	}
 
 	/**
@@ -268,7 +271,7 @@ public record LocalDateConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull LocalDateConstraintConfig withMonth(@NonNull EnumConstraintConfig<Month> config) {
-		return new LocalDateConstraintConfig(this.equalTo, this.notEqualTo, this.in, this.notIn, this.after, this.before, this.withinLast, this.withinNext, this.dayOfWeek, this.dayOfMonth, this.dayOfYear, this.weekOfMonth, this.weekOfYear, Optional.of(Objects.requireNonNull(config)), this.year, this.custom);
+		return new LocalDateConstraintConfig(this.equalTo, this.in, this.after, this.before, this.withinLast, this.withinNext, this.dayOfWeek, this.dayOfMonth, this.dayOfYear, this.weekOfMonth, this.weekOfYear, Optional.of(Objects.requireNonNull(config)), this.year, this.custom);
 	}
 
 	/**
@@ -278,7 +281,7 @@ public record LocalDateConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull LocalDateConstraintConfig withYear(@NonNull NumericFieldConstraintConfig config) {
-		return new LocalDateConstraintConfig(this.equalTo, this.notEqualTo, this.in, this.notIn, this.after, this.before, this.withinLast, this.withinNext, this.dayOfWeek, this.dayOfMonth, this.dayOfYear, this.weekOfMonth, this.weekOfYear, this.month, Optional.of(Objects.requireNonNull(config)), this.custom);
+		return new LocalDateConstraintConfig(this.equalTo, this.in, this.after, this.before, this.withinLast, this.withinNext, this.dayOfWeek, this.dayOfMonth, this.dayOfYear, this.weekOfMonth, this.weekOfYear, this.month, Optional.of(Objects.requireNonNull(config)), this.custom);
 	}
 
 	/**
@@ -288,6 +291,6 @@ public record LocalDateConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull LocalDateConstraintConfig withCustom(@NonNull Constraint<LocalDate> constraint) {
-		return new LocalDateConstraintConfig(this.equalTo, this.notEqualTo, this.in, this.notIn, this.after, this.before, this.withinLast, this.withinNext, this.dayOfWeek, this.dayOfMonth, this.dayOfYear, this.weekOfMonth, this.weekOfYear, this.month, this.year, Optional.of(Objects.requireNonNull(constraint)));
+		return new LocalDateConstraintConfig(this.equalTo, this.in, this.after, this.before, this.withinLast, this.withinNext, this.dayOfWeek, this.dayOfMonth, this.dayOfYear, this.weekOfMonth, this.weekOfYear, this.month, this.year, Optional.of(Objects.requireNonNull(constraint)));
 	}
 }

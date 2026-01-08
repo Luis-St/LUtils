@@ -34,13 +34,23 @@ import java.util.*;
  *     It includes base constraints, temporal comparable constraints, temporal span constraints,
  *     date and time field constraints, and zone constraints.
  * </p>
+ * <p>
+ *     The after and before fields use {@link Pair} where the first value is the bound
+ *     and the second value indicates whether the bound is inclusive (true) or exclusive (false).
+ * </p>
+ * <p>
+ *     The equalTo field uses {@link Pair} where the first value is the ZonedDateTime and
+ *     the second value indicates negation (false=equalTo, true=notEqualTo).
+ * </p>
+ * <p>
+ *     The in field uses {@link Pair} where the first value is the set of ZonedDateTimes and
+ *     the second value indicates negation (false=in, true=notIn).
+ * </p>
  *
  * @author Luis-St
  *
- * @param equalTo The exact ZonedDateTime that should be matched
- * @param notEqualTo The ZonedDateTime that should be excluded
- * @param in The set of ZonedDateTimes that are allowed
- * @param notIn The set of ZonedDateTimes that are not allowed
+ * @param equalTo The ZonedDateTime equality constraint as a pair of (value, negated) where negated=false means equalTo and negated=true means notEqualTo
+ * @param in The ZonedDateTime set constraint as a pair of (values, negated) where negated=false means in and negated=true means notIn
  * @param after The "after" temporal constraint as a pair of (value, inclusive)
  * @param before The "before" temporal constraint as a pair of (value, inclusive)
  * @param withinLast A Duration specifying how far back from now values must fall
@@ -61,10 +71,8 @@ import java.util.*;
  * @param custom A custom constraint implementation
  */
 public record ZonedDateTimeConstraintConfig(
-	@NonNull Optional<ZonedDateTime> equalTo,
-	@NonNull Optional<ZonedDateTime> notEqualTo,
-	@NonNull Optional<Set<ZonedDateTime>> in,
-	@NonNull Optional<Set<ZonedDateTime>> notIn,
+	@NonNull Optional<Pair<ZonedDateTime, Boolean>> equalTo,
+	@NonNull Optional<Pair<Set<ZonedDateTime>, Boolean>> in,
 	@NonNull Optional<Pair<ZonedDateTime, Boolean>> after,
 	@NonNull Optional<Pair<ZonedDateTime, Boolean>> before,
 	@NonNull Optional<Duration> withinLast,
@@ -91,7 +99,6 @@ public record ZonedDateTimeConstraintConfig(
 	public static final ZonedDateTimeConstraintConfig UNCONSTRAINED = new ZonedDateTimeConstraintConfig(
 		Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(),
 		Optional.empty(), Optional.empty(),
-		Optional.empty(), Optional.empty(),
 		Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(),
 		Optional.empty(), Optional.empty(), Optional.empty(),
 		Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(),
@@ -106,7 +113,7 @@ public record ZonedDateTimeConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull ZonedDateTimeConstraintConfig withEqualTo(@NonNull ZonedDateTime value) {
-		return new ZonedDateTimeConstraintConfig(Optional.of(Objects.requireNonNull(value)), this.notEqualTo, this.in, this.notIn, this.after, this.before, this.withinLast, this.withinNext, this.dayOfWeek, this.dayOfMonth, this.dayOfYear, this.weekOfMonth, this.weekOfYear, this.month, this.year, this.hour, this.minute, this.second, this.millisecond, this.nanosecond, this.zone, this.custom);
+		return new ZonedDateTimeConstraintConfig(Optional.of(Pair.of(Objects.requireNonNull(value), false)), this.in, this.after, this.before, this.withinLast, this.withinNext, this.dayOfWeek, this.dayOfMonth, this.dayOfYear, this.weekOfMonth, this.weekOfYear, this.month, this.year, this.hour, this.minute, this.second, this.millisecond, this.nanosecond, this.zone, this.custom);
 	}
 
 	/**
@@ -116,7 +123,7 @@ public record ZonedDateTimeConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull ZonedDateTimeConstraintConfig withNotEqualTo(@NonNull ZonedDateTime value) {
-		return new ZonedDateTimeConstraintConfig(this.equalTo, Optional.of(Objects.requireNonNull(value)), this.in, this.notIn, this.after, this.before, this.withinLast, this.withinNext, this.dayOfWeek, this.dayOfMonth, this.dayOfYear, this.weekOfMonth, this.weekOfYear, this.month, this.year, this.hour, this.minute, this.second, this.millisecond, this.nanosecond, this.zone, this.custom);
+		return new ZonedDateTimeConstraintConfig(Optional.of(Pair.of(Objects.requireNonNull(value), true)), this.in, this.after, this.before, this.withinLast, this.withinNext, this.dayOfWeek, this.dayOfMonth, this.dayOfYear, this.weekOfMonth, this.weekOfYear, this.month, this.year, this.hour, this.minute, this.second, this.millisecond, this.nanosecond, this.zone, this.custom);
 	}
 
 	/**
@@ -126,7 +133,7 @@ public record ZonedDateTimeConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull ZonedDateTimeConstraintConfig withIn(@NonNull Collection<ZonedDateTime> values) {
-		return new ZonedDateTimeConstraintConfig(this.equalTo, this.notEqualTo, Optional.of(Set.copyOf(values)), this.notIn, this.after, this.before, this.withinLast, this.withinNext, this.dayOfWeek, this.dayOfMonth, this.dayOfYear, this.weekOfMonth, this.weekOfYear, this.month, this.year, this.hour, this.minute, this.second, this.millisecond, this.nanosecond, this.zone, this.custom);
+		return new ZonedDateTimeConstraintConfig(this.equalTo, Optional.of(Pair.of(Set.copyOf(values), false)), this.after, this.before, this.withinLast, this.withinNext, this.dayOfWeek, this.dayOfMonth, this.dayOfYear, this.weekOfMonth, this.weekOfYear, this.month, this.year, this.hour, this.minute, this.second, this.millisecond, this.nanosecond, this.zone, this.custom);
 	}
 
 	/**
@@ -136,7 +143,7 @@ public record ZonedDateTimeConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull ZonedDateTimeConstraintConfig withNotIn(@NonNull Collection<ZonedDateTime> values) {
-		return new ZonedDateTimeConstraintConfig(this.equalTo, this.notEqualTo, this.in, Optional.of(Set.copyOf(values)), this.after, this.before, this.withinLast, this.withinNext, this.dayOfWeek, this.dayOfMonth, this.dayOfYear, this.weekOfMonth, this.weekOfYear, this.month, this.year, this.hour, this.minute, this.second, this.millisecond, this.nanosecond, this.zone, this.custom);
+		return new ZonedDateTimeConstraintConfig(this.equalTo, Optional.of(Pair.of(Set.copyOf(values), true)), this.after, this.before, this.withinLast, this.withinNext, this.dayOfWeek, this.dayOfMonth, this.dayOfYear, this.weekOfMonth, this.weekOfYear, this.month, this.year, this.hour, this.minute, this.second, this.millisecond, this.nanosecond, this.zone, this.custom);
 	}
 
 	/**
@@ -146,7 +153,7 @@ public record ZonedDateTimeConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull ZonedDateTimeConstraintConfig withAfter(@NonNull ZonedDateTime value) {
-		return new ZonedDateTimeConstraintConfig(this.equalTo, this.notEqualTo, this.in, this.notIn, Optional.of(Pair.of(Objects.requireNonNull(value), false)), this.before, this.withinLast, this.withinNext, this.dayOfWeek, this.dayOfMonth, this.dayOfYear, this.weekOfMonth, this.weekOfYear, this.month, this.year, this.hour, this.minute, this.second, this.millisecond, this.nanosecond, this.zone, this.custom);
+		return new ZonedDateTimeConstraintConfig(this.equalTo, this.in, Optional.of(Pair.of(Objects.requireNonNull(value), false)), this.before, this.withinLast, this.withinNext, this.dayOfWeek, this.dayOfMonth, this.dayOfYear, this.weekOfMonth, this.weekOfYear, this.month, this.year, this.hour, this.minute, this.second, this.millisecond, this.nanosecond, this.zone, this.custom);
 	}
 
 	/**
@@ -156,7 +163,7 @@ public record ZonedDateTimeConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull ZonedDateTimeConstraintConfig withAfterOrEqual(@NonNull ZonedDateTime value) {
-		return new ZonedDateTimeConstraintConfig(this.equalTo, this.notEqualTo, this.in, this.notIn, Optional.of(Pair.of(Objects.requireNonNull(value), true)), this.before, this.withinLast, this.withinNext, this.dayOfWeek, this.dayOfMonth, this.dayOfYear, this.weekOfMonth, this.weekOfYear, this.month, this.year, this.hour, this.minute, this.second, this.millisecond, this.nanosecond, this.zone, this.custom);
+		return new ZonedDateTimeConstraintConfig(this.equalTo, this.in, Optional.of(Pair.of(Objects.requireNonNull(value), true)), this.before, this.withinLast, this.withinNext, this.dayOfWeek, this.dayOfMonth, this.dayOfYear, this.weekOfMonth, this.weekOfYear, this.month, this.year, this.hour, this.minute, this.second, this.millisecond, this.nanosecond, this.zone, this.custom);
 	}
 
 	/**
@@ -166,7 +173,7 @@ public record ZonedDateTimeConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull ZonedDateTimeConstraintConfig withBefore(@NonNull ZonedDateTime value) {
-		return new ZonedDateTimeConstraintConfig(this.equalTo, this.notEqualTo, this.in, this.notIn, this.after, Optional.of(Pair.of(Objects.requireNonNull(value), false)), this.withinLast, this.withinNext, this.dayOfWeek, this.dayOfMonth, this.dayOfYear, this.weekOfMonth, this.weekOfYear, this.month, this.year, this.hour, this.minute, this.second, this.millisecond, this.nanosecond, this.zone, this.custom);
+		return new ZonedDateTimeConstraintConfig(this.equalTo, this.in, this.after, Optional.of(Pair.of(Objects.requireNonNull(value), false)), this.withinLast, this.withinNext, this.dayOfWeek, this.dayOfMonth, this.dayOfYear, this.weekOfMonth, this.weekOfYear, this.month, this.year, this.hour, this.minute, this.second, this.millisecond, this.nanosecond, this.zone, this.custom);
 	}
 
 	/**
@@ -176,7 +183,7 @@ public record ZonedDateTimeConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull ZonedDateTimeConstraintConfig withBeforeOrEqual(@NonNull ZonedDateTime value) {
-		return new ZonedDateTimeConstraintConfig(this.equalTo, this.notEqualTo, this.in, this.notIn, this.after, Optional.of(Pair.of(Objects.requireNonNull(value), true)), this.withinLast, this.withinNext, this.dayOfWeek, this.dayOfMonth, this.dayOfYear, this.weekOfMonth, this.weekOfYear, this.month, this.year, this.hour, this.minute, this.second, this.millisecond, this.nanosecond, this.zone, this.custom);
+		return new ZonedDateTimeConstraintConfig(this.equalTo, this.in, this.after, Optional.of(Pair.of(Objects.requireNonNull(value), true)), this.withinLast, this.withinNext, this.dayOfWeek, this.dayOfMonth, this.dayOfYear, this.weekOfMonth, this.weekOfYear, this.month, this.year, this.hour, this.minute, this.second, this.millisecond, this.nanosecond, this.zone, this.custom);
 	}
 
 	/**
@@ -187,7 +194,7 @@ public record ZonedDateTimeConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull ZonedDateTimeConstraintConfig withBetween(@NonNull ZonedDateTime after, @NonNull ZonedDateTime before) {
-		return new ZonedDateTimeConstraintConfig(this.equalTo, this.notEqualTo, this.in, this.notIn, Optional.of(Pair.of(Objects.requireNonNull(after), false)), Optional.of(Pair.of(Objects.requireNonNull(before), false)), this.withinLast, this.withinNext, this.dayOfWeek, this.dayOfMonth, this.dayOfYear, this.weekOfMonth, this.weekOfYear, this.month, this.year, this.hour, this.minute, this.second, this.millisecond, this.nanosecond, this.zone, this.custom);
+		return new ZonedDateTimeConstraintConfig(this.equalTo, this.in, Optional.of(Pair.of(Objects.requireNonNull(after), false)), Optional.of(Pair.of(Objects.requireNonNull(before), false)), this.withinLast, this.withinNext, this.dayOfWeek, this.dayOfMonth, this.dayOfYear, this.weekOfMonth, this.weekOfYear, this.month, this.year, this.hour, this.minute, this.second, this.millisecond, this.nanosecond, this.zone, this.custom);
 	}
 
 	/**
@@ -198,7 +205,7 @@ public record ZonedDateTimeConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull ZonedDateTimeConstraintConfig withBetweenOrEqual(@NonNull ZonedDateTime after, @NonNull ZonedDateTime before) {
-		return new ZonedDateTimeConstraintConfig(this.equalTo, this.notEqualTo, this.in, this.notIn, Optional.of(Pair.of(Objects.requireNonNull(after), true)), Optional.of(Pair.of(Objects.requireNonNull(before), true)), this.withinLast, this.withinNext, this.dayOfWeek, this.dayOfMonth, this.dayOfYear, this.weekOfMonth, this.weekOfYear, this.month, this.year, this.hour, this.minute, this.second, this.millisecond, this.nanosecond, this.zone, this.custom);
+		return new ZonedDateTimeConstraintConfig(this.equalTo, this.in, Optional.of(Pair.of(Objects.requireNonNull(after), true)), Optional.of(Pair.of(Objects.requireNonNull(before), true)), this.withinLast, this.withinNext, this.dayOfWeek, this.dayOfMonth, this.dayOfYear, this.weekOfMonth, this.weekOfYear, this.month, this.year, this.hour, this.minute, this.second, this.millisecond, this.nanosecond, this.zone, this.custom);
 	}
 
 	/**
@@ -208,7 +215,7 @@ public record ZonedDateTimeConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull ZonedDateTimeConstraintConfig withWithinLast(@NonNull Duration duration) {
-		return new ZonedDateTimeConstraintConfig(this.equalTo, this.notEqualTo, this.in, this.notIn, this.after, this.before, Optional.of(Objects.requireNonNull(duration)), this.withinNext, this.dayOfWeek, this.dayOfMonth, this.dayOfYear, this.weekOfMonth, this.weekOfYear, this.month, this.year, this.hour, this.minute, this.second, this.millisecond, this.nanosecond, this.zone, this.custom);
+		return new ZonedDateTimeConstraintConfig(this.equalTo, this.in, this.after, this.before, Optional.of(Objects.requireNonNull(duration)), this.withinNext, this.dayOfWeek, this.dayOfMonth, this.dayOfYear, this.weekOfMonth, this.weekOfYear, this.month, this.year, this.hour, this.minute, this.second, this.millisecond, this.nanosecond, this.zone, this.custom);
 	}
 
 	/**
@@ -218,7 +225,7 @@ public record ZonedDateTimeConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull ZonedDateTimeConstraintConfig withWithinNext(@NonNull Duration duration) {
-		return new ZonedDateTimeConstraintConfig(this.equalTo, this.notEqualTo, this.in, this.notIn, this.after, this.before, this.withinLast, Optional.of(Objects.requireNonNull(duration)), this.dayOfWeek, this.dayOfMonth, this.dayOfYear, this.weekOfMonth, this.weekOfYear, this.month, this.year, this.hour, this.minute, this.second, this.millisecond, this.nanosecond, this.zone, this.custom);
+		return new ZonedDateTimeConstraintConfig(this.equalTo, this.in, this.after, this.before, this.withinLast, Optional.of(Objects.requireNonNull(duration)), this.dayOfWeek, this.dayOfMonth, this.dayOfYear, this.weekOfMonth, this.weekOfYear, this.month, this.year, this.hour, this.minute, this.second, this.millisecond, this.nanosecond, this.zone, this.custom);
 	}
 
 	/**
@@ -228,7 +235,7 @@ public record ZonedDateTimeConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull ZonedDateTimeConstraintConfig withDayOfWeek(@NonNull EnumConstraintConfig<DayOfWeek> config) {
-		return new ZonedDateTimeConstraintConfig(this.equalTo, this.notEqualTo, this.in, this.notIn, this.after, this.before, this.withinLast, this.withinNext, Optional.of(Objects.requireNonNull(config)), this.dayOfMonth, this.dayOfYear, this.weekOfMonth, this.weekOfYear, this.month, this.year, this.hour, this.minute, this.second, this.millisecond, this.nanosecond, this.zone, this.custom);
+		return new ZonedDateTimeConstraintConfig(this.equalTo, this.in, this.after, this.before, this.withinLast, this.withinNext, Optional.of(Objects.requireNonNull(config)), this.dayOfMonth, this.dayOfYear, this.weekOfMonth, this.weekOfYear, this.month, this.year, this.hour, this.minute, this.second, this.millisecond, this.nanosecond, this.zone, this.custom);
 	}
 
 	/**
@@ -238,7 +245,7 @@ public record ZonedDateTimeConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull ZonedDateTimeConstraintConfig withDayOfMonth(@NonNull NumericFieldConstraintConfig config) {
-		return new ZonedDateTimeConstraintConfig(this.equalTo, this.notEqualTo, this.in, this.notIn, this.after, this.before, this.withinLast, this.withinNext, this.dayOfWeek, Optional.of(Objects.requireNonNull(config)), this.dayOfYear, this.weekOfMonth, this.weekOfYear, this.month, this.year, this.hour, this.minute, this.second, this.millisecond, this.nanosecond, this.zone, this.custom);
+		return new ZonedDateTimeConstraintConfig(this.equalTo, this.in, this.after, this.before, this.withinLast, this.withinNext, this.dayOfWeek, Optional.of(Objects.requireNonNull(config)), this.dayOfYear, this.weekOfMonth, this.weekOfYear, this.month, this.year, this.hour, this.minute, this.second, this.millisecond, this.nanosecond, this.zone, this.custom);
 	}
 
 	/**
@@ -248,7 +255,7 @@ public record ZonedDateTimeConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull ZonedDateTimeConstraintConfig withDayOfYear(@NonNull NumericFieldConstraintConfig config) {
-		return new ZonedDateTimeConstraintConfig(this.equalTo, this.notEqualTo, this.in, this.notIn, this.after, this.before, this.withinLast, this.withinNext, this.dayOfWeek, this.dayOfMonth, Optional.of(Objects.requireNonNull(config)), this.weekOfMonth, this.weekOfYear, this.month, this.year, this.hour, this.minute, this.second, this.millisecond, this.nanosecond, this.zone, this.custom);
+		return new ZonedDateTimeConstraintConfig(this.equalTo, this.in, this.after, this.before, this.withinLast, this.withinNext, this.dayOfWeek, this.dayOfMonth, Optional.of(Objects.requireNonNull(config)), this.weekOfMonth, this.weekOfYear, this.month, this.year, this.hour, this.minute, this.second, this.millisecond, this.nanosecond, this.zone, this.custom);
 	}
 
 	/**
@@ -258,7 +265,7 @@ public record ZonedDateTimeConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull ZonedDateTimeConstraintConfig withWeekOfMonth(@NonNull NumericFieldConstraintConfig config) {
-		return new ZonedDateTimeConstraintConfig(this.equalTo, this.notEqualTo, this.in, this.notIn, this.after, this.before, this.withinLast, this.withinNext, this.dayOfWeek, this.dayOfMonth, this.dayOfYear, Optional.of(Objects.requireNonNull(config)), this.weekOfYear, this.month, this.year, this.hour, this.minute, this.second, this.millisecond, this.nanosecond, this.zone, this.custom);
+		return new ZonedDateTimeConstraintConfig(this.equalTo, this.in, this.after, this.before, this.withinLast, this.withinNext, this.dayOfWeek, this.dayOfMonth, this.dayOfYear, Optional.of(Objects.requireNonNull(config)), this.weekOfYear, this.month, this.year, this.hour, this.minute, this.second, this.millisecond, this.nanosecond, this.zone, this.custom);
 	}
 
 	/**
@@ -268,7 +275,7 @@ public record ZonedDateTimeConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull ZonedDateTimeConstraintConfig withWeekOfYear(@NonNull NumericFieldConstraintConfig config) {
-		return new ZonedDateTimeConstraintConfig(this.equalTo, this.notEqualTo, this.in, this.notIn, this.after, this.before, this.withinLast, this.withinNext, this.dayOfWeek, this.dayOfMonth, this.dayOfYear, this.weekOfMonth, Optional.of(Objects.requireNonNull(config)), this.month, this.year, this.hour, this.minute, this.second, this.millisecond, this.nanosecond, this.zone, this.custom);
+		return new ZonedDateTimeConstraintConfig(this.equalTo, this.in, this.after, this.before, this.withinLast, this.withinNext, this.dayOfWeek, this.dayOfMonth, this.dayOfYear, this.weekOfMonth, Optional.of(Objects.requireNonNull(config)), this.month, this.year, this.hour, this.minute, this.second, this.millisecond, this.nanosecond, this.zone, this.custom);
 	}
 
 	/**
@@ -278,7 +285,7 @@ public record ZonedDateTimeConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull ZonedDateTimeConstraintConfig withMonth(@NonNull EnumConstraintConfig<Month> config) {
-		return new ZonedDateTimeConstraintConfig(this.equalTo, this.notEqualTo, this.in, this.notIn, this.after, this.before, this.withinLast, this.withinNext, this.dayOfWeek, this.dayOfMonth, this.dayOfYear, this.weekOfMonth, this.weekOfYear, Optional.of(Objects.requireNonNull(config)), this.year, this.hour, this.minute, this.second, this.millisecond, this.nanosecond, this.zone, this.custom);
+		return new ZonedDateTimeConstraintConfig(this.equalTo, this.in, this.after, this.before, this.withinLast, this.withinNext, this.dayOfWeek, this.dayOfMonth, this.dayOfYear, this.weekOfMonth, this.weekOfYear, Optional.of(Objects.requireNonNull(config)), this.year, this.hour, this.minute, this.second, this.millisecond, this.nanosecond, this.zone, this.custom);
 	}
 
 	/**
@@ -288,7 +295,7 @@ public record ZonedDateTimeConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull ZonedDateTimeConstraintConfig withYear(@NonNull NumericFieldConstraintConfig config) {
-		return new ZonedDateTimeConstraintConfig(this.equalTo, this.notEqualTo, this.in, this.notIn, this.after, this.before, this.withinLast, this.withinNext, this.dayOfWeek, this.dayOfMonth, this.dayOfYear, this.weekOfMonth, this.weekOfYear, this.month, Optional.of(Objects.requireNonNull(config)), this.hour, this.minute, this.second, this.millisecond, this.nanosecond, this.zone, this.custom);
+		return new ZonedDateTimeConstraintConfig(this.equalTo, this.in, this.after, this.before, this.withinLast, this.withinNext, this.dayOfWeek, this.dayOfMonth, this.dayOfYear, this.weekOfMonth, this.weekOfYear, this.month, Optional.of(Objects.requireNonNull(config)), this.hour, this.minute, this.second, this.millisecond, this.nanosecond, this.zone, this.custom);
 	}
 
 	/**
@@ -298,7 +305,7 @@ public record ZonedDateTimeConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull ZonedDateTimeConstraintConfig withHour(@NonNull NumericFieldConstraintConfig config) {
-		return new ZonedDateTimeConstraintConfig(this.equalTo, this.notEqualTo, this.in, this.notIn, this.after, this.before, this.withinLast, this.withinNext, this.dayOfWeek, this.dayOfMonth, this.dayOfYear, this.weekOfMonth, this.weekOfYear, this.month, this.year, Optional.of(Objects.requireNonNull(config)), this.minute, this.second, this.millisecond, this.nanosecond, this.zone, this.custom);
+		return new ZonedDateTimeConstraintConfig(this.equalTo, this.in, this.after, this.before, this.withinLast, this.withinNext, this.dayOfWeek, this.dayOfMonth, this.dayOfYear, this.weekOfMonth, this.weekOfYear, this.month, this.year, Optional.of(Objects.requireNonNull(config)), this.minute, this.second, this.millisecond, this.nanosecond, this.zone, this.custom);
 	}
 
 	/**
@@ -308,7 +315,7 @@ public record ZonedDateTimeConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull ZonedDateTimeConstraintConfig withMinute(@NonNull NumericFieldConstraintConfig config) {
-		return new ZonedDateTimeConstraintConfig(this.equalTo, this.notEqualTo, this.in, this.notIn, this.after, this.before, this.withinLast, this.withinNext, this.dayOfWeek, this.dayOfMonth, this.dayOfYear, this.weekOfMonth, this.weekOfYear, this.month, this.year, this.hour, Optional.of(Objects.requireNonNull(config)), this.second, this.millisecond, this.nanosecond, this.zone, this.custom);
+		return new ZonedDateTimeConstraintConfig(this.equalTo, this.in, this.after, this.before, this.withinLast, this.withinNext, this.dayOfWeek, this.dayOfMonth, this.dayOfYear, this.weekOfMonth, this.weekOfYear, this.month, this.year, this.hour, Optional.of(Objects.requireNonNull(config)), this.second, this.millisecond, this.nanosecond, this.zone, this.custom);
 	}
 
 	/**
@@ -318,7 +325,7 @@ public record ZonedDateTimeConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull ZonedDateTimeConstraintConfig withSecond(@NonNull NumericFieldConstraintConfig config) {
-		return new ZonedDateTimeConstraintConfig(this.equalTo, this.notEqualTo, this.in, this.notIn, this.after, this.before, this.withinLast, this.withinNext, this.dayOfWeek, this.dayOfMonth, this.dayOfYear, this.weekOfMonth, this.weekOfYear, this.month, this.year, this.hour, this.minute, Optional.of(Objects.requireNonNull(config)), this.millisecond, this.nanosecond, this.zone, this.custom);
+		return new ZonedDateTimeConstraintConfig(this.equalTo, this.in, this.after, this.before, this.withinLast, this.withinNext, this.dayOfWeek, this.dayOfMonth, this.dayOfYear, this.weekOfMonth, this.weekOfYear, this.month, this.year, this.hour, this.minute, Optional.of(Objects.requireNonNull(config)), this.millisecond, this.nanosecond, this.zone, this.custom);
 	}
 
 	/**
@@ -328,7 +335,7 @@ public record ZonedDateTimeConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull ZonedDateTimeConstraintConfig withMillisecond(@NonNull NumericFieldConstraintConfig config) {
-		return new ZonedDateTimeConstraintConfig(this.equalTo, this.notEqualTo, this.in, this.notIn, this.after, this.before, this.withinLast, this.withinNext, this.dayOfWeek, this.dayOfMonth, this.dayOfYear, this.weekOfMonth, this.weekOfYear, this.month, this.year, this.hour, this.minute, this.second, Optional.of(Objects.requireNonNull(config)), this.nanosecond, this.zone, this.custom);
+		return new ZonedDateTimeConstraintConfig(this.equalTo, this.in, this.after, this.before, this.withinLast, this.withinNext, this.dayOfWeek, this.dayOfMonth, this.dayOfYear, this.weekOfMonth, this.weekOfYear, this.month, this.year, this.hour, this.minute, this.second, Optional.of(Objects.requireNonNull(config)), this.nanosecond, this.zone, this.custom);
 	}
 
 	/**
@@ -338,7 +345,7 @@ public record ZonedDateTimeConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull ZonedDateTimeConstraintConfig withNanosecond(@NonNull NumericFieldConstraintConfig config) {
-		return new ZonedDateTimeConstraintConfig(this.equalTo, this.notEqualTo, this.in, this.notIn, this.after, this.before, this.withinLast, this.withinNext, this.dayOfWeek, this.dayOfMonth, this.dayOfYear, this.weekOfMonth, this.weekOfYear, this.month, this.year, this.hour, this.minute, this.second, this.millisecond, Optional.of(Objects.requireNonNull(config)), this.zone, this.custom);
+		return new ZonedDateTimeConstraintConfig(this.equalTo, this.in, this.after, this.before, this.withinLast, this.withinNext, this.dayOfWeek, this.dayOfMonth, this.dayOfYear, this.weekOfMonth, this.weekOfYear, this.month, this.year, this.hour, this.minute, this.second, this.millisecond, Optional.of(Objects.requireNonNull(config)), this.zone, this.custom);
 	}
 
 	/**
@@ -348,7 +355,7 @@ public record ZonedDateTimeConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull ZonedDateTimeConstraintConfig withZone(@NonNull ZoneIdConstraintConfig config) {
-		return new ZonedDateTimeConstraintConfig(this.equalTo, this.notEqualTo, this.in, this.notIn, this.after, this.before, this.withinLast, this.withinNext, this.dayOfWeek, this.dayOfMonth, this.dayOfYear, this.weekOfMonth, this.weekOfYear, this.month, this.year, this.hour, this.minute, this.second, this.millisecond, this.nanosecond, Optional.of(Objects.requireNonNull(config)), this.custom);
+		return new ZonedDateTimeConstraintConfig(this.equalTo, this.in, this.after, this.before, this.withinLast, this.withinNext, this.dayOfWeek, this.dayOfMonth, this.dayOfYear, this.weekOfMonth, this.weekOfYear, this.month, this.year, this.hour, this.minute, this.second, this.millisecond, this.nanosecond, Optional.of(Objects.requireNonNull(config)), this.custom);
 	}
 
 	/**
@@ -358,6 +365,6 @@ public record ZonedDateTimeConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull ZonedDateTimeConstraintConfig withCustom(@NonNull Constraint<ZonedDateTime> constraint) {
-		return new ZonedDateTimeConstraintConfig(this.equalTo, this.notEqualTo, this.in, this.notIn, this.after, this.before, this.withinLast, this.withinNext, this.dayOfWeek, this.dayOfMonth, this.dayOfYear, this.weekOfMonth, this.weekOfYear, this.month, this.year, this.hour, this.minute, this.second, this.millisecond, this.nanosecond, this.zone, Optional.of(Objects.requireNonNull(constraint)));
+		return new ZonedDateTimeConstraintConfig(this.equalTo, this.in, this.after, this.before, this.withinLast, this.withinNext, this.dayOfWeek, this.dayOfMonth, this.dayOfYear, this.weekOfMonth, this.weekOfYear, this.month, this.year, this.hour, this.minute, this.second, this.millisecond, this.nanosecond, this.zone, Optional.of(Objects.requireNonNull(constraint)));
 	}
 }

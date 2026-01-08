@@ -37,13 +37,19 @@ import java.util.*;
  *     The min and max fields use {@link Pair} where the first value is the bound
  *     and the second value indicates whether the bound is inclusive (true) or exclusive (false).
  * </p>
+ * <p>
+ *     The equalTo field uses {@link Pair} where the first value is the Period and
+ *     the second value indicates negation (false=equalTo, true=notEqualTo).
+ * </p>
+ * <p>
+ *     The in field uses {@link Pair} where the first value is the set of Periods and
+ *     the second value indicates negation (false=in, true=notIn).
+ * </p>
  *
  * @author Luis-St
  *
- * @param equalTo The exact Period that should be matched
- * @param notEqualTo The Period that should be excluded
- * @param in The set of Periods that are allowed
- * @param notIn The set of Periods that are not allowed
+ * @param equalTo The Period equality constraint as a pair of (value, negated) where negated=false means equalTo and negated=true means notEqualTo
+ * @param in The Period set constraint as a pair of (values, negated) where negated=false means in and negated=true means notIn
  * @param min The minimum Period constraint as a pair of (value, inclusive)
  * @param max The maximum Period constraint as a pair of (value, inclusive)
  * @param positive If present, requires the period to be positive
@@ -58,10 +64,8 @@ import java.util.*;
  * @param custom A custom constraint implementation
  */
 public record PeriodConstraintConfig(
-	@NonNull Optional<Period> equalTo,
-	@NonNull Optional<Period> notEqualTo,
-	@NonNull Optional<Set<Period>> in,
-	@NonNull Optional<Set<Period>> notIn,
+	@NonNull Optional<Pair<Period, Boolean>> equalTo,
+	@NonNull Optional<Pair<Set<Period>, Boolean>> in,
 	@NonNull Optional<Pair<Period, Boolean>> min,
 	@NonNull Optional<Pair<Period, Boolean>> max,
 	@NonNull Optional<Void> positive,
@@ -81,7 +85,6 @@ public record PeriodConstraintConfig(
 	 */
 	public static final PeriodConstraintConfig UNCONSTRAINED = new PeriodConstraintConfig(
 		Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(),
-		Optional.empty(), Optional.empty(),
 		Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(),
 		Optional.empty(), Optional.empty(),
 		Optional.empty(), Optional.empty(), Optional.empty(),
@@ -95,7 +98,7 @@ public record PeriodConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull PeriodConstraintConfig withEqualTo(@NonNull Period value) {
-		return new PeriodConstraintConfig(Optional.of(Objects.requireNonNull(value)), this.notEqualTo, this.in, this.notIn, this.min, this.max, this.positive, this.negative, this.nonNegative, this.nonPositive, this.zero, this.nonZero, this.day, this.month, this.year, this.custom);
+		return new PeriodConstraintConfig(Optional.of(Pair.of(Objects.requireNonNull(value), false)), this.in, this.min, this.max, this.positive, this.negative, this.nonNegative, this.nonPositive, this.zero, this.nonZero, this.day, this.month, this.year, this.custom);
 	}
 
 	/**
@@ -105,7 +108,7 @@ public record PeriodConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull PeriodConstraintConfig withNotEqualTo(@NonNull Period value) {
-		return new PeriodConstraintConfig(this.equalTo, Optional.of(Objects.requireNonNull(value)), this.in, this.notIn, this.min, this.max, this.positive, this.negative, this.nonNegative, this.nonPositive, this.zero, this.nonZero, this.day, this.month, this.year, this.custom);
+		return new PeriodConstraintConfig(Optional.of(Pair.of(Objects.requireNonNull(value), true)), this.in, this.min, this.max, this.positive, this.negative, this.nonNegative, this.nonPositive, this.zero, this.nonZero, this.day, this.month, this.year, this.custom);
 	}
 
 	/**
@@ -115,7 +118,7 @@ public record PeriodConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull PeriodConstraintConfig withIn(@NonNull Collection<Period> values) {
-		return new PeriodConstraintConfig(this.equalTo, this.notEqualTo, Optional.of(Set.copyOf(values)), this.notIn, this.min, this.max, this.positive, this.negative, this.nonNegative, this.nonPositive, this.zero, this.nonZero, this.day, this.month, this.year, this.custom);
+		return new PeriodConstraintConfig(this.equalTo, Optional.of(Pair.of(Set.copyOf(values), false)), this.min, this.max, this.positive, this.negative, this.nonNegative, this.nonPositive, this.zero, this.nonZero, this.day, this.month, this.year, this.custom);
 	}
 
 	/**
@@ -125,7 +128,7 @@ public record PeriodConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull PeriodConstraintConfig withNotIn(@NonNull Collection<Period> values) {
-		return new PeriodConstraintConfig(this.equalTo, this.notEqualTo, this.in, Optional.of(Set.copyOf(values)), this.min, this.max, this.positive, this.negative, this.nonNegative, this.nonPositive, this.zero, this.nonZero, this.day, this.month, this.year, this.custom);
+		return new PeriodConstraintConfig(this.equalTo, Optional.of(Pair.of(Set.copyOf(values), true)), this.min, this.max, this.positive, this.negative, this.nonNegative, this.nonPositive, this.zero, this.nonZero, this.day, this.month, this.year, this.custom);
 	}
 
 	/**
@@ -135,7 +138,7 @@ public record PeriodConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull PeriodConstraintConfig withGreaterThan(@NonNull Period value) {
-		return new PeriodConstraintConfig(this.equalTo, this.notEqualTo, this.in, this.notIn, Optional.of(Pair.of(Objects.requireNonNull(value), false)), this.max, this.positive, this.negative, this.nonNegative, this.nonPositive, this.zero, this.nonZero, this.day, this.month, this.year, this.custom);
+		return new PeriodConstraintConfig(this.equalTo, this.in, Optional.of(Pair.of(Objects.requireNonNull(value), false)), this.max, this.positive, this.negative, this.nonNegative, this.nonPositive, this.zero, this.nonZero, this.day, this.month, this.year, this.custom);
 	}
 
 	/**
@@ -145,7 +148,7 @@ public record PeriodConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull PeriodConstraintConfig withGreaterThanOrEqual(@NonNull Period value) {
-		return new PeriodConstraintConfig(this.equalTo, this.notEqualTo, this.in, this.notIn, Optional.of(Pair.of(Objects.requireNonNull(value), true)), this.max, this.positive, this.negative, this.nonNegative, this.nonPositive, this.zero, this.nonZero, this.day, this.month, this.year, this.custom);
+		return new PeriodConstraintConfig(this.equalTo, this.in, Optional.of(Pair.of(Objects.requireNonNull(value), true)), this.max, this.positive, this.negative, this.nonNegative, this.nonPositive, this.zero, this.nonZero, this.day, this.month, this.year, this.custom);
 	}
 
 	/**
@@ -155,7 +158,7 @@ public record PeriodConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull PeriodConstraintConfig withLessThan(@NonNull Period value) {
-		return new PeriodConstraintConfig(this.equalTo, this.notEqualTo, this.in, this.notIn, this.min, Optional.of(Pair.of(Objects.requireNonNull(value), false)), this.positive, this.negative, this.nonNegative, this.nonPositive, this.zero, this.nonZero, this.day, this.month, this.year, this.custom);
+		return new PeriodConstraintConfig(this.equalTo, this.in, this.min, Optional.of(Pair.of(Objects.requireNonNull(value), false)), this.positive, this.negative, this.nonNegative, this.nonPositive, this.zero, this.nonZero, this.day, this.month, this.year, this.custom);
 	}
 
 	/**
@@ -165,7 +168,7 @@ public record PeriodConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull PeriodConstraintConfig withLessThanOrEqual(@NonNull Period value) {
-		return new PeriodConstraintConfig(this.equalTo, this.notEqualTo, this.in, this.notIn, this.min, Optional.of(Pair.of(Objects.requireNonNull(value), true)), this.positive, this.negative, this.nonNegative, this.nonPositive, this.zero, this.nonZero, this.day, this.month, this.year, this.custom);
+		return new PeriodConstraintConfig(this.equalTo, this.in, this.min, Optional.of(Pair.of(Objects.requireNonNull(value), true)), this.positive, this.negative, this.nonNegative, this.nonPositive, this.zero, this.nonZero, this.day, this.month, this.year, this.custom);
 	}
 
 	/**
@@ -176,7 +179,7 @@ public record PeriodConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull PeriodConstraintConfig withBetween(@NonNull Period min, @NonNull Period max) {
-		return new PeriodConstraintConfig(this.equalTo, this.notEqualTo, this.in, this.notIn, Optional.of(Pair.of(Objects.requireNonNull(min), false)), Optional.of(Pair.of(Objects.requireNonNull(max), false)), this.positive, this.negative, this.nonNegative, this.nonPositive, this.zero, this.nonZero, this.day, this.month, this.year, this.custom);
+		return new PeriodConstraintConfig(this.equalTo, this.in, Optional.of(Pair.of(Objects.requireNonNull(min), false)), Optional.of(Pair.of(Objects.requireNonNull(max), false)), this.positive, this.negative, this.nonNegative, this.nonPositive, this.zero, this.nonZero, this.day, this.month, this.year, this.custom);
 	}
 
 	/**
@@ -187,7 +190,7 @@ public record PeriodConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull PeriodConstraintConfig withBetweenOrEqual(@NonNull Period min, @NonNull Period max) {
-		return new PeriodConstraintConfig(this.equalTo, this.notEqualTo, this.in, this.notIn, Optional.of(Pair.of(Objects.requireNonNull(min), true)), Optional.of(Pair.of(Objects.requireNonNull(max), true)), this.positive, this.negative, this.nonNegative, this.nonPositive, this.zero, this.nonZero, this.day, this.month, this.year, this.custom);
+		return new PeriodConstraintConfig(this.equalTo, this.in, Optional.of(Pair.of(Objects.requireNonNull(min), true)), Optional.of(Pair.of(Objects.requireNonNull(max), true)), this.positive, this.negative, this.nonNegative, this.nonPositive, this.zero, this.nonZero, this.day, this.month, this.year, this.custom);
 	}
 
 	/**
@@ -196,7 +199,7 @@ public record PeriodConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull PeriodConstraintConfig withPositive() {
-		return new PeriodConstraintConfig(this.equalTo, this.notEqualTo, this.in, this.notIn, this.min, this.max, Optional.of(null), this.negative, this.nonNegative, this.nonPositive, this.zero, this.nonZero, this.day, this.month, this.year, this.custom);
+		return new PeriodConstraintConfig(this.equalTo, this.in, this.min, this.max, Optional.of(null), this.negative, this.nonNegative, this.nonPositive, this.zero, this.nonZero, this.day, this.month, this.year, this.custom);
 	}
 
 	/**
@@ -205,7 +208,7 @@ public record PeriodConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull PeriodConstraintConfig withNegative() {
-		return new PeriodConstraintConfig(this.equalTo, this.notEqualTo, this.in, this.notIn, this.min, this.max, this.positive, Optional.of(null), this.nonNegative, this.nonPositive, this.zero, this.nonZero, this.day, this.month, this.year, this.custom);
+		return new PeriodConstraintConfig(this.equalTo, this.in, this.min, this.max, this.positive, Optional.of(null), this.nonNegative, this.nonPositive, this.zero, this.nonZero, this.day, this.month, this.year, this.custom);
 	}
 
 	/**
@@ -214,7 +217,7 @@ public record PeriodConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull PeriodConstraintConfig withNonNegative() {
-		return new PeriodConstraintConfig(this.equalTo, this.notEqualTo, this.in, this.notIn, this.min, this.max, this.positive, this.negative, Optional.of(null), this.nonPositive, this.zero, this.nonZero, this.day, this.month, this.year, this.custom);
+		return new PeriodConstraintConfig(this.equalTo, this.in, this.min, this.max, this.positive, this.negative, Optional.of(null), this.nonPositive, this.zero, this.nonZero, this.day, this.month, this.year, this.custom);
 	}
 
 	/**
@@ -223,7 +226,7 @@ public record PeriodConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull PeriodConstraintConfig withNonPositive() {
-		return new PeriodConstraintConfig(this.equalTo, this.notEqualTo, this.in, this.notIn, this.min, this.max, this.positive, this.negative, this.nonNegative, Optional.of(null), this.zero, this.nonZero, this.day, this.month, this.year, this.custom);
+		return new PeriodConstraintConfig(this.equalTo, this.in, this.min, this.max, this.positive, this.negative, this.nonNegative, Optional.of(null), this.zero, this.nonZero, this.day, this.month, this.year, this.custom);
 	}
 
 	/**
@@ -232,7 +235,7 @@ public record PeriodConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull PeriodConstraintConfig withZero() {
-		return new PeriodConstraintConfig(this.equalTo, this.notEqualTo, this.in, this.notIn, this.min, this.max, this.positive, this.negative, this.nonNegative, this.nonPositive, Optional.of(null), this.nonZero, this.day, this.month, this.year, this.custom);
+		return new PeriodConstraintConfig(this.equalTo, this.in, this.min, this.max, this.positive, this.negative, this.nonNegative, this.nonPositive, Optional.of(null), this.nonZero, this.day, this.month, this.year, this.custom);
 	}
 
 	/**
@@ -241,7 +244,7 @@ public record PeriodConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull PeriodConstraintConfig withNonZero() {
-		return new PeriodConstraintConfig(this.equalTo, this.notEqualTo, this.in, this.notIn, this.min, this.max, this.positive, this.negative, this.nonNegative, this.nonPositive, this.zero, Optional.of(null), this.day, this.month, this.year, this.custom);
+		return new PeriodConstraintConfig(this.equalTo, this.in, this.min, this.max, this.positive, this.negative, this.nonNegative, this.nonPositive, this.zero, Optional.of(null), this.day, this.month, this.year, this.custom);
 	}
 
 	/**
@@ -251,7 +254,7 @@ public record PeriodConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull PeriodConstraintConfig withDay(@NonNull NumericFieldConstraintConfig dayConfig) {
-		return new PeriodConstraintConfig(this.equalTo, this.notEqualTo, this.in, this.notIn, this.min, this.max, this.positive, this.negative, this.nonNegative, this.nonPositive, this.zero, this.nonZero, Optional.of(Objects.requireNonNull(dayConfig)), this.month, this.year, this.custom);
+		return new PeriodConstraintConfig(this.equalTo, this.in, this.min, this.max, this.positive, this.negative, this.nonNegative, this.nonPositive, this.zero, this.nonZero, Optional.of(Objects.requireNonNull(dayConfig)), this.month, this.year, this.custom);
 	}
 
 	/**
@@ -261,7 +264,7 @@ public record PeriodConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull PeriodConstraintConfig withMonth(@NonNull NumericFieldConstraintConfig monthConfig) {
-		return new PeriodConstraintConfig(this.equalTo, this.notEqualTo, this.in, this.notIn, this.min, this.max, this.positive, this.negative, this.nonNegative, this.nonPositive, this.zero, this.nonZero, this.day, Optional.of(Objects.requireNonNull(monthConfig)), this.year, this.custom);
+		return new PeriodConstraintConfig(this.equalTo, this.in, this.min, this.max, this.positive, this.negative, this.nonNegative, this.nonPositive, this.zero, this.nonZero, this.day, Optional.of(Objects.requireNonNull(monthConfig)), this.year, this.custom);
 	}
 
 	/**
@@ -271,7 +274,7 @@ public record PeriodConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull PeriodConstraintConfig withYear(@NonNull NumericFieldConstraintConfig yearConfig) {
-		return new PeriodConstraintConfig(this.equalTo, this.notEqualTo, this.in, this.notIn, this.min, this.max, this.positive, this.negative, this.nonNegative, this.nonPositive, this.zero, this.nonZero, this.day, this.month, Optional.of(Objects.requireNonNull(yearConfig)), this.custom);
+		return new PeriodConstraintConfig(this.equalTo, this.in, this.min, this.max, this.positive, this.negative, this.nonNegative, this.nonPositive, this.zero, this.nonZero, this.day, this.month, Optional.of(Objects.requireNonNull(yearConfig)), this.custom);
 	}
 
 	/**
@@ -281,6 +284,6 @@ public record PeriodConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull PeriodConstraintConfig withCustom(@NonNull Constraint<Period> constraint) {
-		return new PeriodConstraintConfig(this.equalTo, this.notEqualTo, this.in, this.notIn, this.min, this.max, this.positive, this.negative, this.nonNegative, this.nonPositive, this.zero, this.nonZero, this.day, this.month, this.year, Optional.of(Objects.requireNonNull(constraint)));
+		return new PeriodConstraintConfig(this.equalTo, this.in, this.min, this.max, this.positive, this.negative, this.nonNegative, this.nonPositive, this.zero, this.nonZero, this.day, this.month, this.year, Optional.of(Objects.requireNonNull(constraint)));
 	}
 }

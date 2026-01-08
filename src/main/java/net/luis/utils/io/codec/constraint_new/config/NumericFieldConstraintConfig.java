@@ -37,19 +37,15 @@ import java.util.*;
  *
  * @author Luis-St
  *
- * @param equalTo The exact value that should be matched
- * @param notEqualTo The value that should be excluded
- * @param in The set of values that are allowed
- * @param notIn The set of values that are not allowed
+ * @param equalTo The equality constraint as a pair of (value, negated) where negated=false means equalTo and negated=true means notEqualTo
+ * @param in The set constraint as a pair of (values, negated) where negated=false means in and negated=true means notIn
  * @param min The minimum value constraint as a pair of (value, inclusive)
  * @param max The maximum value constraint as a pair of (value, inclusive)
  * @param custom A custom constraint implementation
  */
 public record NumericFieldConstraintConfig(
-	@NonNull Optional<Integer> equalTo,
-	@NonNull Optional<Integer> notEqualTo,
-	@NonNull Optional<Set<Integer>> in,
-	@NonNull Optional<Set<Integer>> notIn,
+	@NonNull Optional<Pair<Integer, Boolean>> equalTo,
+	@NonNull Optional<Pair<Set<Integer>, Boolean>> in,
 	@NonNull Optional<Pair<Integer, Boolean>> min,
 	@NonNull Optional<Pair<Integer, Boolean>> max,
 	@NonNull Optional<Constraint<Integer>> custom
@@ -59,8 +55,7 @@ public record NumericFieldConstraintConfig(
 	 * An unconstrained numeric field configuration with no constraints applied.<br>
 	 */
 	public static final NumericFieldConstraintConfig UNCONSTRAINED = new NumericFieldConstraintConfig(
-		Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(),
-		Optional.empty(), Optional.empty(), Optional.empty()
+		Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty()
 	);
 
 	/**
@@ -70,7 +65,7 @@ public record NumericFieldConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull NumericFieldConstraintConfig withEqualTo(int value) {
-		return new NumericFieldConstraintConfig(Optional.of(value), this.notEqualTo, this.in, this.notIn, this.min, this.max, this.custom);
+		return new NumericFieldConstraintConfig(Optional.of(Pair.of(value, false)), this.in, this.min, this.max, this.custom);
 	}
 
 	/**
@@ -80,7 +75,7 @@ public record NumericFieldConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull NumericFieldConstraintConfig withNotEqualTo(int value) {
-		return new NumericFieldConstraintConfig(this.equalTo, Optional.of(value), this.in, this.notIn, this.min, this.max, this.custom);
+		return new NumericFieldConstraintConfig(Optional.of(Pair.of(value, true)), this.in, this.min, this.max, this.custom);
 	}
 
 	/**
@@ -90,7 +85,7 @@ public record NumericFieldConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull NumericFieldConstraintConfig withIn(@NonNull Collection<Integer> values) {
-		return new NumericFieldConstraintConfig(this.equalTo, this.notEqualTo, Optional.of(Set.copyOf(values)), this.notIn, this.min, this.max, this.custom);
+		return new NumericFieldConstraintConfig(this.equalTo, Optional.of(Pair.of(Set.copyOf(values), false)), this.min, this.max, this.custom);
 	}
 
 	/**
@@ -100,7 +95,7 @@ public record NumericFieldConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull NumericFieldConstraintConfig withNotIn(@NonNull Collection<Integer> values) {
-		return new NumericFieldConstraintConfig(this.equalTo, this.notEqualTo, this.in, Optional.of(Set.copyOf(values)), this.min, this.max, this.custom);
+		return new NumericFieldConstraintConfig(this.equalTo, Optional.of(Pair.of(Set.copyOf(values), true)), this.min, this.max, this.custom);
 	}
 
 	/**
@@ -110,7 +105,7 @@ public record NumericFieldConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull NumericFieldConstraintConfig withGreaterThan(int value) {
-		return new NumericFieldConstraintConfig(this.equalTo, this.notEqualTo, this.in, this.notIn, Optional.of(Pair.of(value, false)), this.max, this.custom);
+		return new NumericFieldConstraintConfig(this.equalTo, this.in, Optional.of(Pair.of(value, false)), this.max, this.custom);
 	}
 
 	/**
@@ -120,7 +115,7 @@ public record NumericFieldConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull NumericFieldConstraintConfig withGreaterThanOrEqual(int value) {
-		return new NumericFieldConstraintConfig(this.equalTo, this.notEqualTo, this.in, this.notIn, Optional.of(Pair.of(value, true)), this.max, this.custom);
+		return new NumericFieldConstraintConfig(this.equalTo, this.in, Optional.of(Pair.of(value, true)), this.max, this.custom);
 	}
 
 	/**
@@ -130,7 +125,7 @@ public record NumericFieldConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull NumericFieldConstraintConfig withLessThan(int value) {
-		return new NumericFieldConstraintConfig(this.equalTo, this.notEqualTo, this.in, this.notIn, this.min, Optional.of(Pair.of(value, false)), this.custom);
+		return new NumericFieldConstraintConfig(this.equalTo, this.in, this.min, Optional.of(Pair.of(value, false)), this.custom);
 	}
 
 	/**
@@ -140,7 +135,7 @@ public record NumericFieldConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull NumericFieldConstraintConfig withLessThanOrEqual(int value) {
-		return new NumericFieldConstraintConfig(this.equalTo, this.notEqualTo, this.in, this.notIn, this.min, Optional.of(Pair.of(value, true)), this.custom);
+		return new NumericFieldConstraintConfig(this.equalTo, this.in, this.min, Optional.of(Pair.of(value, true)), this.custom);
 	}
 
 	/**
@@ -151,7 +146,7 @@ public record NumericFieldConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull NumericFieldConstraintConfig withBetween(int min, int max) {
-		return new NumericFieldConstraintConfig(this.equalTo, this.notEqualTo, this.in, this.notIn, Optional.of(Pair.of(min, false)), Optional.of(Pair.of(max, false)), this.custom);
+		return new NumericFieldConstraintConfig(this.equalTo, this.in, Optional.of(Pair.of(min, false)), Optional.of(Pair.of(max, false)), this.custom);
 	}
 
 	/**
@@ -162,7 +157,7 @@ public record NumericFieldConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull NumericFieldConstraintConfig withBetweenOrEqual(int min, int max) {
-		return new NumericFieldConstraintConfig(this.equalTo, this.notEqualTo, this.in, this.notIn, Optional.of(Pair.of(min, true)), Optional.of(Pair.of(max, true)), this.custom);
+		return new NumericFieldConstraintConfig(this.equalTo, this.in, Optional.of(Pair.of(min, true)), Optional.of(Pair.of(max, true)), this.custom);
 	}
 
 	/**
@@ -172,6 +167,6 @@ public record NumericFieldConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull NumericFieldConstraintConfig withCustom(@NonNull Constraint<Integer> constraint) {
-		return new NumericFieldConstraintConfig(this.equalTo, this.notEqualTo, this.in, this.notIn, this.min, this.max, Optional.of(Objects.requireNonNull(constraint)));
+		return new NumericFieldConstraintConfig(this.equalTo, this.in, this.min, this.max, Optional.of(Objects.requireNonNull(constraint)));
 	}
 }

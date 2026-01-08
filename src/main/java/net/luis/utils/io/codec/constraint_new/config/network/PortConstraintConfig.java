@@ -35,24 +35,18 @@ import java.util.*;
  *
  * @author Luis-St
  *
- * @param equalTo The exact port value that should be matched
- * @param notEqualTo The port value that should be excluded
- * @param in The set of port values that are allowed
- * @param notIn The set of port values that are not allowed
- * @param inRange The port range constraint as a pair of (min, max) inclusive
- * @param notInRange The excluded port range constraint as a pair of (min, max) inclusive
+ * @param equalTo The equality constraint as a pair of (value, negated) where negated=false means equalTo and negated=true means notEqualTo
+ * @param in The inclusion constraint as a pair of (values, negated) where negated=false means in and negated=true means notIn
+ * @param inRange The port range constraint as a pair of ((min, max), negated) where negated=false means inRange and negated=true means notInRange
  * @param type The enum constraint config for port type (system, registered, dynamic)
  * @param custom A custom constraint implementation
  */
 public record PortConstraintConfig(
 	// BaseConstraint fields
-	@NonNull Optional<Integer> equalTo,
-	@NonNull Optional<Integer> notEqualTo,
-	@NonNull Optional<Set<Integer>> in,
-	@NonNull Optional<Set<Integer>> notIn,
+	@NonNull Optional<Pair<Integer, Boolean>> equalTo,
+	@NonNull Optional<Pair<Set<Integer>, Boolean>> in,
 	// PortConstraint fields
-	@NonNull Optional<Pair<Integer, Integer>> inRange,
-	@NonNull Optional<Pair<Integer, Integer>> notInRange,
+	@NonNull Optional<Pair<Pair<Integer, Integer>, Boolean>> inRange,
 	@NonNull Optional<EnumConstraintConfig<PortRange>> type,
 	// Custom constraint
 	@NonNull Optional<Constraint<Integer>> custom
@@ -62,9 +56,7 @@ public record PortConstraintConfig(
 	 * An unconstrained port configuration with no constraints applied.<br>
 	 */
 	public static final PortConstraintConfig UNCONSTRAINED = new PortConstraintConfig(
-		Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(),
-		Optional.empty(), Optional.empty(), Optional.empty(),
-		Optional.empty()
+		Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty()
 	);
 
 	/**
@@ -74,7 +66,7 @@ public record PortConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull PortConstraintConfig withEqualTo(int value) {
-		return new PortConstraintConfig(Optional.of(value), this.notEqualTo, this.in, this.notIn, this.inRange, this.notInRange, this.type, this.custom);
+		return new PortConstraintConfig(Optional.of(Pair.of(value, false)), this.in, this.inRange, this.type, this.custom);
 	}
 
 	/**
@@ -84,7 +76,7 @@ public record PortConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull PortConstraintConfig withNotEqualTo(int value) {
-		return new PortConstraintConfig(this.equalTo, Optional.of(value), this.in, this.notIn, this.inRange, this.notInRange, this.type, this.custom);
+		return new PortConstraintConfig(Optional.of(Pair.of(value, true)), this.in, this.inRange, this.type, this.custom);
 	}
 
 	/**
@@ -94,7 +86,7 @@ public record PortConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull PortConstraintConfig withIn(@NonNull Collection<Integer> values) {
-		return new PortConstraintConfig(this.equalTo, this.notEqualTo, Optional.of(Set.copyOf(values)), this.notIn, this.inRange, this.notInRange, this.type, this.custom);
+		return new PortConstraintConfig(this.equalTo, Optional.of(Pair.of(Set.copyOf(values), false)), this.inRange, this.type, this.custom);
 	}
 
 	/**
@@ -104,7 +96,7 @@ public record PortConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull PortConstraintConfig withNotIn(@NonNull Collection<Integer> values) {
-		return new PortConstraintConfig(this.equalTo, this.notEqualTo, this.in, Optional.of(Set.copyOf(values)), this.inRange, this.notInRange, this.type, this.custom);
+		return new PortConstraintConfig(this.equalTo, Optional.of(Pair.of(Set.copyOf(values), true)), this.inRange, this.type, this.custom);
 	}
 
 	/**
@@ -115,7 +107,7 @@ public record PortConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull PortConstraintConfig withInRange(int min, int max) {
-		return new PortConstraintConfig(this.equalTo, this.notEqualTo, this.in, this.notIn, Optional.of(Pair.of(min, max)), this.notInRange, this.type, this.custom);
+		return new PortConstraintConfig(this.equalTo, this.in, Optional.of(Pair.of(Pair.of(min, max), false)), this.type, this.custom);
 	}
 
 	/**
@@ -126,7 +118,7 @@ public record PortConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull PortConstraintConfig withNotInRange(int min, int max) {
-		return new PortConstraintConfig(this.equalTo, this.notEqualTo, this.in, this.notIn, this.inRange, Optional.of(Pair.of(min, max)), this.type, this.custom);
+		return new PortConstraintConfig(this.equalTo, this.in, Optional.of(Pair.of(Pair.of(min, max), true)), this.type, this.custom);
 	}
 
 	/**
@@ -136,7 +128,7 @@ public record PortConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull PortConstraintConfig withType(@NonNull EnumConstraintConfig<PortRange> config) {
-		return new PortConstraintConfig(this.equalTo, this.notEqualTo, this.in, this.notIn, this.inRange, this.notInRange, Optional.of(Objects.requireNonNull(config)), this.custom);
+		return new PortConstraintConfig(this.equalTo, this.in, this.inRange, Optional.of(Objects.requireNonNull(config)), this.custom);
 	}
 
 	/**
@@ -146,6 +138,6 @@ public record PortConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull PortConstraintConfig withCustom(@NonNull Constraint<Integer> constraint) {
-		return new PortConstraintConfig(this.equalTo, this.notEqualTo, this.in, this.notIn, this.inRange, this.notInRange, this.type, Optional.of(Objects.requireNonNull(constraint)));
+		return new PortConstraintConfig(this.equalTo, this.in, this.inRange, this.type, Optional.of(Objects.requireNonNull(constraint)));
 	}
 }

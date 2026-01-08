@@ -20,6 +20,7 @@ package net.luis.utils.io.codec.constraint_new.config;
 
 import net.luis.utils.io.codec.constraint_new.Constraint;
 import net.luis.utils.io.codec.constraint_new.core.UUIDVariant;
+import net.luis.utils.util.Pair;
 import org.jspecify.annotations.NonNull;
 
 import java.util.*;
@@ -33,10 +34,8 @@ import java.util.*;
  *
  * @author Luis-St
  *
- * @param equalTo The exact UUID value that should be matched
- * @param notEqualTo The UUID value that should be excluded
- * @param in The set of UUIDs that are allowed
- * @param notIn The set of UUIDs that are not allowed
+ * @param equalTo The UUID equality constraint as a pair of (value, negated) where negated=false means equalTo and negated=true means notEqualTo
+ * @param in The UUID set constraint as a pair of (values, negated) where negated=false means in and negated=true means notIn
  * @param version The UUID version number to constrain to
  * @param variant The UUID variant to constrain to
  * @param nil If present, requires the UUID to be the nil UUID
@@ -45,10 +44,8 @@ import java.util.*;
  * @param custom A custom constraint implementation
  */
 public record UUIDConstraintConfig(
-	@NonNull Optional<UUID> equalTo,
-	@NonNull Optional<UUID> notEqualTo,
-	@NonNull Optional<Set<UUID>> in,
-	@NonNull Optional<Set<UUID>> notIn,
+	@NonNull Optional<Pair<UUID, Boolean>> equalTo,
+	@NonNull Optional<Pair<Set<UUID>, Boolean>> in,
 	@NonNull Optional<Integer> version,
 	@NonNull Optional<UUIDVariant> variant,
 	@NonNull Optional<Void> nil,
@@ -62,47 +59,46 @@ public record UUIDConstraintConfig(
 	 */
 	public static final UUIDConstraintConfig UNCONSTRAINED = new UUIDConstraintConfig(
 		Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(),
-		Optional.empty(), Optional.empty(),
 		Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty()
 	);
 
 	public @NonNull UUIDConstraintConfig withEqualTo(@NonNull UUID value) {
-		return new UUIDConstraintConfig(Optional.of(Objects.requireNonNull(value)), this.notEqualTo, this.in, this.notIn, this.version, this.variant, this.nil, this.notNil, this.max, this.custom);
+		return new UUIDConstraintConfig(Optional.of(Pair.of(Objects.requireNonNull(value), false)), this.in, this.version, this.variant, this.nil, this.notNil, this.max, this.custom);
 	}
 
 	public @NonNull UUIDConstraintConfig withNotEqualTo(@NonNull UUID value) {
-		return new UUIDConstraintConfig(this.equalTo, Optional.of(Objects.requireNonNull(value)), this.in, this.notIn, this.version, this.variant, this.nil, this.notNil, this.max, this.custom);
+		return new UUIDConstraintConfig(Optional.of(Pair.of(Objects.requireNonNull(value), true)), this.in, this.version, this.variant, this.nil, this.notNil, this.max, this.custom);
 	}
 
 	public @NonNull UUIDConstraintConfig withIn(@NonNull Collection<UUID> values) {
-		return new UUIDConstraintConfig(this.equalTo, this.notEqualTo, Optional.of(Set.copyOf(values)), this.notIn, this.version, this.variant, this.nil, this.notNil, this.max, this.custom);
+		return new UUIDConstraintConfig(this.equalTo, Optional.of(Pair.of(Set.copyOf(values), false)), this.version, this.variant, this.nil, this.notNil, this.max, this.custom);
 	}
 
 	public @NonNull UUIDConstraintConfig withNotIn(@NonNull Collection<UUID> values) {
-		return new UUIDConstraintConfig(this.equalTo, this.notEqualTo, this.in, Optional.of(Set.copyOf(values)), this.version, this.variant, this.nil, this.notNil, this.max, this.custom);
+		return new UUIDConstraintConfig(this.equalTo, Optional.of(Pair.of(Set.copyOf(values), true)), this.version, this.variant, this.nil, this.notNil, this.max, this.custom);
 	}
 
 	public @NonNull UUIDConstraintConfig withVersion(int version) {
-		return new UUIDConstraintConfig(this.equalTo, this.notEqualTo, this.in, this.notIn, Optional.of(version), this.variant, this.nil, this.notNil, this.max, this.custom);
+		return new UUIDConstraintConfig(this.equalTo, this.in, Optional.of(version), this.variant, this.nil, this.notNil, this.max, this.custom);
 	}
 
 	public @NonNull UUIDConstraintConfig withVariant(@NonNull UUIDVariant variant) {
-		return new UUIDConstraintConfig(this.equalTo, this.notEqualTo, this.in, this.notIn, this.version, Optional.of(Objects.requireNonNull(variant)), this.nil, this.notNil, this.max, this.custom);
+		return new UUIDConstraintConfig(this.equalTo, this.in, this.version, Optional.of(Objects.requireNonNull(variant)), this.nil, this.notNil, this.max, this.custom);
 	}
 
 	public @NonNull UUIDConstraintConfig withNil() {
-		return new UUIDConstraintConfig(this.equalTo, this.notEqualTo, this.in, this.notIn, this.version, this.variant, Optional.of(null), this.notNil, this.max, this.custom);
+		return new UUIDConstraintConfig(this.equalTo, this.in, this.version, this.variant, Optional.of(null), this.notNil, this.max, this.custom);
 	}
 
 	public @NonNull UUIDConstraintConfig withNotNil() {
-		return new UUIDConstraintConfig(this.equalTo, this.notEqualTo, this.in, this.notIn, this.version, this.variant, this.nil, Optional.of(null), this.max, this.custom);
+		return new UUIDConstraintConfig(this.equalTo, this.in, this.version, this.variant, this.nil, Optional.of(null), this.max, this.custom);
 	}
 
 	public @NonNull UUIDConstraintConfig withMax() {
-		return new UUIDConstraintConfig(this.equalTo, this.notEqualTo, this.in, this.notIn, this.version, this.variant, this.nil, this.notNil, Optional.of(null), this.custom);
+		return new UUIDConstraintConfig(this.equalTo, this.in, this.version, this.variant, this.nil, this.notNil, Optional.of(null), this.custom);
 	}
 
 	public @NonNull UUIDConstraintConfig withCustom(@NonNull Constraint<UUID> constraint) {
-		return new UUIDConstraintConfig(this.equalTo, this.notEqualTo, this.in, this.notIn, this.version, this.variant, this.nil, this.notNil, this.max, Optional.of(Objects.requireNonNull(constraint)));
+		return new UUIDConstraintConfig(this.equalTo, this.in, this.version, this.variant, this.nil, this.notNil, this.max, Optional.of(Objects.requireNonNull(constraint)));
 	}
 }

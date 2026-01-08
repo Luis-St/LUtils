@@ -38,18 +38,13 @@ import java.util.*;
  * @author Luis-St
  *
  * @param <T> The numeric type this config is for
- * @param equalTo The exact value that should be matched
- * @param notEqualTo The value that should be excluded
- * @param in The set of values that are allowed
- * @param notIn The set of values that are not allowed
+ * @param equalTo The equality constraint as a pair of (value, negated) where negated=false means equalTo and negated=true means notEqualTo
+ * @param in The set constraint as a pair of (values, negated) where negated=false means in and negated=true means notIn
  * @param min The minimum value constraint as a pair of (value, inclusive)
  * @param max The maximum value constraint as a pair of (value, inclusive)
- * @param positive If present, requires the value to be positive (greater than zero)
- * @param negative If present, requires the value to be negative (less than zero)
- * @param nonNegative If present, requires the value to be non-negative (greater than or equal to zero)
- * @param nonPositive If present, requires the value to be non-positive (less than or equal to zero)
- * @param zero If present, requires the value to be zero
- * @param nonZero If present, requires the value to be non-zero
+ * @param positive The positive constraint as a Boolean where false means positive (greater than zero) and true means nonPositive (less than or equal to zero)
+ * @param negative The negative constraint as a Boolean where false means negative (less than zero) and true means nonNegative (greater than or equal to zero)
+ * @param zero The zero constraint as a Boolean where false means zero and true means nonZero
  * @param percentage If present, requires the value to be between 0 and 100 (inclusive)
  * @param even If present, requires the value to be even
  * @param odd If present, requires the value to be odd
@@ -58,18 +53,13 @@ import java.util.*;
  * @param custom A custom constraint implementation
  */
 public record IntegerConstraintConfig<T extends Number & Comparable<T>>(
-	@NonNull Optional<T> equalTo,
-	@NonNull Optional<T> notEqualTo,
-	@NonNull Optional<Set<T>> in,
-	@NonNull Optional<Set<T>> notIn,
+	@NonNull Optional<Pair<T, Boolean>> equalTo,
+	@NonNull Optional<Pair<Set<T>, Boolean>> in,
 	@NonNull Optional<Pair<T, Boolean>> min,
 	@NonNull Optional<Pair<T, Boolean>> max,
-	@NonNull Optional<Void> positive,
-	@NonNull Optional<Void> negative,
-	@NonNull Optional<Void> nonNegative,
-	@NonNull Optional<Void> nonPositive,
-	@NonNull Optional<Void> zero,
-	@NonNull Optional<Void> nonZero,
+	@NonNull Optional<Boolean> positive,
+	@NonNull Optional<Boolean> negative,
+	@NonNull Optional<Boolean> zero,
 	@NonNull Optional<Void> percentage,
 	@NonNull Optional<Void> even,
 	@NonNull Optional<Void> odd,
@@ -87,11 +77,9 @@ public record IntegerConstraintConfig<T extends Number & Comparable<T>>(
 	public static <T extends Number & Comparable<T>> @NonNull IntegerConstraintConfig<T> unconstrained() {
 		return new IntegerConstraintConfig<>(
 			Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(),
-			Optional.empty(), Optional.empty(),
-			Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(),
 			Optional.empty(), Optional.empty(), Optional.empty(),
-			Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(),
-			Optional.empty()
+			Optional.empty(), Optional.empty(), Optional.empty(),
+			Optional.empty(), Optional.empty(), Optional.empty()
 		);
 	}
 
@@ -102,7 +90,7 @@ public record IntegerConstraintConfig<T extends Number & Comparable<T>>(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull IntegerConstraintConfig<T> withEqualTo(@NonNull T value) {
-		return new IntegerConstraintConfig<>(Optional.of(Objects.requireNonNull(value)), this.notEqualTo, this.in, this.notIn, this.min, this.max, this.positive, this.negative, this.nonNegative, this.nonPositive, this.zero, this.nonZero, this.percentage, this.even, this.odd, this.divisibleBy, this.powerOf, this.custom);
+		return new IntegerConstraintConfig<>(Optional.of(Pair.of(Objects.requireNonNull(value), false)), this.in, this.min, this.max, this.positive, this.negative, this.zero, this.percentage, this.even, this.odd, this.divisibleBy, this.powerOf, this.custom);
 	}
 
 	/**
@@ -112,7 +100,7 @@ public record IntegerConstraintConfig<T extends Number & Comparable<T>>(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull IntegerConstraintConfig<T> withNotEqualTo(@NonNull T value) {
-		return new IntegerConstraintConfig<>(this.equalTo, Optional.of(Objects.requireNonNull(value)), this.in, this.notIn, this.min, this.max, this.positive, this.negative, this.nonNegative, this.nonPositive, this.zero, this.nonZero, this.percentage, this.even, this.odd, this.divisibleBy, this.powerOf, this.custom);
+		return new IntegerConstraintConfig<>(Optional.of(Pair.of(Objects.requireNonNull(value), true)), this.in, this.min, this.max, this.positive, this.negative, this.zero, this.percentage, this.even, this.odd, this.divisibleBy, this.powerOf, this.custom);
 	}
 
 	/**
@@ -122,7 +110,7 @@ public record IntegerConstraintConfig<T extends Number & Comparable<T>>(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull IntegerConstraintConfig<T> withIn(@NonNull Collection<T> values) {
-		return new IntegerConstraintConfig<>(this.equalTo, this.notEqualTo, Optional.of(Set.copyOf(values)), this.notIn, this.min, this.max, this.positive, this.negative, this.nonNegative, this.nonPositive, this.zero, this.nonZero, this.percentage, this.even, this.odd, this.divisibleBy, this.powerOf, this.custom);
+		return new IntegerConstraintConfig<>(this.equalTo, Optional.of(Pair.of(Set.copyOf(values), false)), this.min, this.max, this.positive, this.negative, this.zero, this.percentage, this.even, this.odd, this.divisibleBy, this.powerOf, this.custom);
 	}
 
 	/**
@@ -132,7 +120,7 @@ public record IntegerConstraintConfig<T extends Number & Comparable<T>>(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull IntegerConstraintConfig<T> withNotIn(@NonNull Collection<T> values) {
-		return new IntegerConstraintConfig<>(this.equalTo, this.notEqualTo, this.in, Optional.of(Set.copyOf(values)), this.min, this.max, this.positive, this.negative, this.nonNegative, this.nonPositive, this.zero, this.nonZero, this.percentage, this.even, this.odd, this.divisibleBy, this.powerOf, this.custom);
+		return new IntegerConstraintConfig<>(this.equalTo, Optional.of(Pair.of(Set.copyOf(values), true)), this.min, this.max, this.positive, this.negative, this.zero, this.percentage, this.even, this.odd, this.divisibleBy, this.powerOf, this.custom);
 	}
 
 	/**
@@ -142,7 +130,7 @@ public record IntegerConstraintConfig<T extends Number & Comparable<T>>(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull IntegerConstraintConfig<T> withGreaterThan(@NonNull T value) {
-		return new IntegerConstraintConfig<>(this.equalTo, this.notEqualTo, this.in, this.notIn, Optional.of(Pair.of(Objects.requireNonNull(value), false)), this.max, this.positive, this.negative, this.nonNegative, this.nonPositive, this.zero, this.nonZero, this.percentage, this.even, this.odd, this.divisibleBy, this.powerOf, this.custom);
+		return new IntegerConstraintConfig<>(this.equalTo, this.in, Optional.of(Pair.of(Objects.requireNonNull(value), false)), this.max, this.positive, this.negative, this.zero, this.percentage, this.even, this.odd, this.divisibleBy, this.powerOf, this.custom);
 	}
 
 	/**
@@ -152,7 +140,7 @@ public record IntegerConstraintConfig<T extends Number & Comparable<T>>(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull IntegerConstraintConfig<T> withGreaterThanOrEqual(@NonNull T value) {
-		return new IntegerConstraintConfig<>(this.equalTo, this.notEqualTo, this.in, this.notIn, Optional.of(Pair.of(Objects.requireNonNull(value), true)), this.max, this.positive, this.negative, this.nonNegative, this.nonPositive, this.zero, this.nonZero, this.percentage, this.even, this.odd, this.divisibleBy, this.powerOf, this.custom);
+		return new IntegerConstraintConfig<>(this.equalTo, this.in, Optional.of(Pair.of(Objects.requireNonNull(value), true)), this.max, this.positive, this.negative, this.zero, this.percentage, this.even, this.odd, this.divisibleBy, this.powerOf, this.custom);
 	}
 
 	/**
@@ -162,7 +150,7 @@ public record IntegerConstraintConfig<T extends Number & Comparable<T>>(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull IntegerConstraintConfig<T> withLessThan(@NonNull T value) {
-		return new IntegerConstraintConfig<>(this.equalTo, this.notEqualTo, this.in, this.notIn, this.min, Optional.of(Pair.of(Objects.requireNonNull(value), false)), this.positive, this.negative, this.nonNegative, this.nonPositive, this.zero, this.nonZero, this.percentage, this.even, this.odd, this.divisibleBy, this.powerOf, this.custom);
+		return new IntegerConstraintConfig<>(this.equalTo, this.in, this.min, Optional.of(Pair.of(Objects.requireNonNull(value), false)), this.positive, this.negative, this.zero, this.percentage, this.even, this.odd, this.divisibleBy, this.powerOf, this.custom);
 	}
 
 	/**
@@ -172,7 +160,7 @@ public record IntegerConstraintConfig<T extends Number & Comparable<T>>(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull IntegerConstraintConfig<T> withLessThanOrEqual(@NonNull T value) {
-		return new IntegerConstraintConfig<>(this.equalTo, this.notEqualTo, this.in, this.notIn, this.min, Optional.of(Pair.of(Objects.requireNonNull(value), true)), this.positive, this.negative, this.nonNegative, this.nonPositive, this.zero, this.nonZero, this.percentage, this.even, this.odd, this.divisibleBy, this.powerOf, this.custom);
+		return new IntegerConstraintConfig<>(this.equalTo, this.in, this.min, Optional.of(Pair.of(Objects.requireNonNull(value), true)), this.positive, this.negative, this.zero, this.percentage, this.even, this.odd, this.divisibleBy, this.powerOf, this.custom);
 	}
 
 	/**
@@ -183,7 +171,7 @@ public record IntegerConstraintConfig<T extends Number & Comparable<T>>(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull IntegerConstraintConfig<T> withBetween(@NonNull T min, @NonNull T max) {
-		return new IntegerConstraintConfig<>(this.equalTo, this.notEqualTo, this.in, this.notIn, Optional.of(Pair.of(Objects.requireNonNull(min), false)), Optional.of(Pair.of(Objects.requireNonNull(max), false)), this.positive, this.negative, this.nonNegative, this.nonPositive, this.zero, this.nonZero, this.percentage, this.even, this.odd, this.divisibleBy, this.powerOf, this.custom);
+		return new IntegerConstraintConfig<>(this.equalTo, this.in, Optional.of(Pair.of(Objects.requireNonNull(min), false)), Optional.of(Pair.of(Objects.requireNonNull(max), false)), this.positive, this.negative, this.zero, this.percentage, this.even, this.odd, this.divisibleBy, this.powerOf, this.custom);
 	}
 
 	/**
@@ -194,7 +182,7 @@ public record IntegerConstraintConfig<T extends Number & Comparable<T>>(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull IntegerConstraintConfig<T> withBetweenOrEqual(@NonNull T min, @NonNull T max) {
-		return new IntegerConstraintConfig<>(this.equalTo, this.notEqualTo, this.in, this.notIn, Optional.of(Pair.of(Objects.requireNonNull(min), true)), Optional.of(Pair.of(Objects.requireNonNull(max), true)), this.positive, this.negative, this.nonNegative, this.nonPositive, this.zero, this.nonZero, this.percentage, this.even, this.odd, this.divisibleBy, this.powerOf, this.custom);
+		return new IntegerConstraintConfig<>(this.equalTo, this.in, Optional.of(Pair.of(Objects.requireNonNull(min), true)), Optional.of(Pair.of(Objects.requireNonNull(max), true)), this.positive, this.negative, this.zero, this.percentage, this.even, this.odd, this.divisibleBy, this.powerOf, this.custom);
 	}
 
 	/**
@@ -203,25 +191,7 @@ public record IntegerConstraintConfig<T extends Number & Comparable<T>>(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull IntegerConstraintConfig<T> withPositive() {
-		return new IntegerConstraintConfig<>(this.equalTo, this.notEqualTo, this.in, this.notIn, this.min, this.max, Optional.of(null), this.negative, this.nonNegative, this.nonPositive, this.zero, this.nonZero, this.percentage, this.even, this.odd, this.divisibleBy, this.powerOf, this.custom);
-	}
-
-	/**
-	 * Creates a new config with the negative constraint enabled.<br>
-	 *
-	 * @return A new config with the constraint applied
-	 */
-	public @NonNull IntegerConstraintConfig<T> withNegative() {
-		return new IntegerConstraintConfig<>(this.equalTo, this.notEqualTo, this.in, this.notIn, this.min, this.max, this.positive, Optional.of(null), this.nonNegative, this.nonPositive, this.zero, this.nonZero, this.percentage, this.even, this.odd, this.divisibleBy, this.powerOf, this.custom);
-	}
-
-	/**
-	 * Creates a new config with the non-negative constraint enabled.<br>
-	 *
-	 * @return A new config with the constraint applied
-	 */
-	public @NonNull IntegerConstraintConfig<T> withNonNegative() {
-		return new IntegerConstraintConfig<>(this.equalTo, this.notEqualTo, this.in, this.notIn, this.min, this.max, this.positive, this.negative, Optional.of(null), this.nonPositive, this.zero, this.nonZero, this.percentage, this.even, this.odd, this.divisibleBy, this.powerOf, this.custom);
+		return new IntegerConstraintConfig<>(this.equalTo, this.in, this.min, this.max, Optional.of(false), this.negative, this.zero, this.percentage, this.even, this.odd, this.divisibleBy, this.powerOf, this.custom);
 	}
 
 	/**
@@ -230,7 +200,25 @@ public record IntegerConstraintConfig<T extends Number & Comparable<T>>(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull IntegerConstraintConfig<T> withNonPositive() {
-		return new IntegerConstraintConfig<>(this.equalTo, this.notEqualTo, this.in, this.notIn, this.min, this.max, this.positive, this.negative, this.nonNegative, Optional.of(null), this.zero, this.nonZero, this.percentage, this.even, this.odd, this.divisibleBy, this.powerOf, this.custom);
+		return new IntegerConstraintConfig<>(this.equalTo, this.in, this.min, this.max, Optional.of(true), this.negative, this.zero, this.percentage, this.even, this.odd, this.divisibleBy, this.powerOf, this.custom);
+	}
+
+	/**
+	 * Creates a new config with the negative constraint enabled.<br>
+	 *
+	 * @return A new config with the constraint applied
+	 */
+	public @NonNull IntegerConstraintConfig<T> withNegative() {
+		return new IntegerConstraintConfig<>(this.equalTo, this.in, this.min, this.max, this.positive, Optional.of(false), this.zero, this.percentage, this.even, this.odd, this.divisibleBy, this.powerOf, this.custom);
+	}
+
+	/**
+	 * Creates a new config with the non-negative constraint enabled.<br>
+	 *
+	 * @return A new config with the constraint applied
+	 */
+	public @NonNull IntegerConstraintConfig<T> withNonNegative() {
+		return new IntegerConstraintConfig<>(this.equalTo, this.in, this.min, this.max, this.positive, Optional.of(true), this.zero, this.percentage, this.even, this.odd, this.divisibleBy, this.powerOf, this.custom);
 	}
 
 	/**
@@ -239,7 +227,7 @@ public record IntegerConstraintConfig<T extends Number & Comparable<T>>(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull IntegerConstraintConfig<T> withZero() {
-		return new IntegerConstraintConfig<>(this.equalTo, this.notEqualTo, this.in, this.notIn, this.min, this.max, this.positive, this.negative, this.nonNegative, this.nonPositive, Optional.of(null), this.nonZero, this.percentage, this.even, this.odd, this.divisibleBy, this.powerOf, this.custom);
+		return new IntegerConstraintConfig<>(this.equalTo, this.in, this.min, this.max, this.positive, this.negative, Optional.of(false), this.percentage, this.even, this.odd, this.divisibleBy, this.powerOf, this.custom);
 	}
 
 	/**
@@ -248,7 +236,7 @@ public record IntegerConstraintConfig<T extends Number & Comparable<T>>(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull IntegerConstraintConfig<T> withNonZero() {
-		return new IntegerConstraintConfig<>(this.equalTo, this.notEqualTo, this.in, this.notIn, this.min, this.max, this.positive, this.negative, this.nonNegative, this.nonPositive, this.zero, Optional.of(null), this.percentage, this.even, this.odd, this.divisibleBy, this.powerOf, this.custom);
+		return new IntegerConstraintConfig<>(this.equalTo, this.in, this.min, this.max, this.positive, this.negative, Optional.of(true), this.percentage, this.even, this.odd, this.divisibleBy, this.powerOf, this.custom);
 	}
 
 	/**
@@ -257,7 +245,7 @@ public record IntegerConstraintConfig<T extends Number & Comparable<T>>(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull IntegerConstraintConfig<T> withPercentage() {
-		return new IntegerConstraintConfig<>(this.equalTo, this.notEqualTo, this.in, this.notIn, this.min, this.max, this.positive, this.negative, this.nonNegative, this.nonPositive, this.zero, this.nonZero, Optional.of(null), this.even, this.odd, this.divisibleBy, this.powerOf, this.custom);
+		return new IntegerConstraintConfig<>(this.equalTo, this.in, this.min, this.max, this.positive, this.negative, this.zero, Optional.of(null), this.even, this.odd, this.divisibleBy, this.powerOf, this.custom);
 	}
 
 	/**
@@ -266,7 +254,7 @@ public record IntegerConstraintConfig<T extends Number & Comparable<T>>(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull IntegerConstraintConfig<T> withEven() {
-		return new IntegerConstraintConfig<>(this.equalTo, this.notEqualTo, this.in, this.notIn, this.min, this.max, this.positive, this.negative, this.nonNegative, this.nonPositive, this.zero, this.nonZero, this.percentage, Optional.of(null), this.odd, this.divisibleBy, this.powerOf, this.custom);
+		return new IntegerConstraintConfig<>(this.equalTo, this.in, this.min, this.max, this.positive, this.negative, this.zero, this.percentage, Optional.of(null), this.odd, this.divisibleBy, this.powerOf, this.custom);
 	}
 
 	/**
@@ -275,7 +263,7 @@ public record IntegerConstraintConfig<T extends Number & Comparable<T>>(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull IntegerConstraintConfig<T> withOdd() {
-		return new IntegerConstraintConfig<>(this.equalTo, this.notEqualTo, this.in, this.notIn, this.min, this.max, this.positive, this.negative, this.nonNegative, this.nonPositive, this.zero, this.nonZero, this.percentage, this.even, Optional.of(null), this.divisibleBy, this.powerOf, this.custom);
+		return new IntegerConstraintConfig<>(this.equalTo, this.in, this.min, this.max, this.positive, this.negative, this.zero, this.percentage, this.even, Optional.of(null), this.divisibleBy, this.powerOf, this.custom);
 	}
 
 	/**
@@ -285,7 +273,7 @@ public record IntegerConstraintConfig<T extends Number & Comparable<T>>(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull IntegerConstraintConfig<T> withDivisibleBy(long divisor) {
-		return new IntegerConstraintConfig<>(this.equalTo, this.notEqualTo, this.in, this.notIn, this.min, this.max, this.positive, this.negative, this.nonNegative, this.nonPositive, this.zero, this.nonZero, this.percentage, this.even, this.odd, Optional.of(divisor), this.powerOf, this.custom);
+		return new IntegerConstraintConfig<>(this.equalTo, this.in, this.min, this.max, this.positive, this.negative, this.zero, this.percentage, this.even, this.odd, Optional.of(divisor), this.powerOf, this.custom);
 	}
 
 	/**
@@ -304,7 +292,7 @@ public record IntegerConstraintConfig<T extends Number & Comparable<T>>(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull IntegerConstraintConfig<T> withPowerOf(int base) {
-		return new IntegerConstraintConfig<>(this.equalTo, this.notEqualTo, this.in, this.notIn, this.min, this.max, this.positive, this.negative, this.nonNegative, this.nonPositive, this.zero, this.nonZero, this.percentage, this.even, this.odd, this.divisibleBy, Optional.of(base), this.custom);
+		return new IntegerConstraintConfig<>(this.equalTo, this.in, this.min, this.max, this.positive, this.negative, this.zero, this.percentage, this.even, this.odd, this.divisibleBy, Optional.of(base), this.custom);
 	}
 
 	/**
@@ -314,6 +302,6 @@ public record IntegerConstraintConfig<T extends Number & Comparable<T>>(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull IntegerConstraintConfig<T> withCustom(@NonNull Constraint<T> constraint) {
-		return new IntegerConstraintConfig<>(this.equalTo, this.notEqualTo, this.in, this.notIn, this.min, this.max, this.positive, this.negative, this.nonNegative, this.nonPositive, this.zero, this.nonZero, this.percentage, this.even, this.odd, this.divisibleBy, this.powerOf, Optional.of(Objects.requireNonNull(constraint)));
+		return new IntegerConstraintConfig<>(this.equalTo, this.in, this.min, this.max, this.positive, this.negative, this.zero, this.percentage, this.even, this.odd, this.divisibleBy, this.powerOf, Optional.of(Objects.requireNonNull(constraint)));
 	}
 }
