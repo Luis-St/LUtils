@@ -75,7 +75,7 @@ public record MapConstraintConfig<K, V>(
 	@NonNull Optional<Unit> nonNullValues,
 	@NonNull Optional<Constraint<Map<K, V>>> custom
 ) {
-
+	
 	/**
 	 * Constructs a new map constraint config with the specified parameters.<br>
 	 *
@@ -170,7 +170,7 @@ public record MapConstraintConfig<K, V>(
 			}
 		}
 	}
-
+	
 	/**
 	 * Creates an unconstrained map configuration with no constraints applied.<br>
 	 *
@@ -192,7 +192,7 @@ public record MapConstraintConfig<K, V>(
 		Objects.requireNonNull(value, "Value for 'equal to' constraint must not be null");
 		return new MapConstraintConfig<>(Optional.of(Pair.of(Map.copyOf(value), false)), this.in, this.min, this.max, this.requiredKeys, this.forbiddenKeys, this.allowedKeys, this.nonNullKeys, this.uniqueValues, this.nonNullValues, this.custom);
 	}
-
+	
 	/**
 	 * Creates a new config with the specified not-equal-to constraint.<br>
 	 *
@@ -203,7 +203,7 @@ public record MapConstraintConfig<K, V>(
 		Objects.requireNonNull(value, "Value for 'not equal to' constraint must not be null");
 		return new MapConstraintConfig<>(Optional.of(Pair.of(Map.copyOf(value), true)), this.in, this.min, this.max, this.requiredKeys, this.forbiddenKeys, this.allowedKeys, this.nonNullKeys, this.uniqueValues, this.nonNullValues, this.custom);
 	}
-
+	
 	/**
 	 * Creates a new config with the specified inclusion constraint.<br>
 	 *
@@ -220,7 +220,7 @@ public record MapConstraintConfig<K, V>(
 		
 		return new MapConstraintConfig<>(this.equalTo, Optional.of(Pair.of(Set.copyOf(copies), false)), this.min, this.max, this.requiredKeys, this.forbiddenKeys, this.allowedKeys, this.nonNullKeys, this.uniqueValues, this.nonNullValues, this.custom);
 	}
-
+	
 	/**
 	 * Creates a new config with the specified exclusion constraint.<br>
 	 *
@@ -237,7 +237,7 @@ public record MapConstraintConfig<K, V>(
 		
 		return new MapConstraintConfig<>(this.equalTo, Optional.of(Pair.of(Set.copyOf(copies), true)), this.min, this.max, this.requiredKeys, this.forbiddenKeys, this.allowedKeys, this.nonNullKeys, this.uniqueValues, this.nonNullValues, this.custom);
 	}
-
+	
 	/**
 	 * Creates a new map constraint config with the specified minimum size (inclusive).<br>
 	 *

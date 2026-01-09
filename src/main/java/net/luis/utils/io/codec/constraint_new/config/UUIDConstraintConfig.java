@@ -117,7 +117,7 @@ public record UUIDConstraintConfig(
 		Objects.requireNonNull(value, "Value for 'equal to' constraint must not be null");
 		return new UUIDConstraintConfig(Optional.of(Pair.of(value, false)), this.in, this.version, this.variant, this.nil, this.notNil, this.max, this.custom);
 	}
-
+	
 	/**
 	 * Creates a new config with the specified not-equal-to constraint.<br>
 	 *
@@ -128,7 +128,7 @@ public record UUIDConstraintConfig(
 		Objects.requireNonNull(value, "Value for 'not equal to' constraint must not be null");
 		return new UUIDConstraintConfig(Optional.of(Pair.of(value, true)), this.in, this.version, this.variant, this.nil, this.notNil, this.max, this.custom);
 	}
-
+	
 	/**
 	 * Creates a new config with the specified inclusion constraint.<br>
 	 *
@@ -139,7 +139,7 @@ public record UUIDConstraintConfig(
 		Objects.requireNonNull(values, "Values for 'in' constraint must not be null");
 		return new UUIDConstraintConfig(this.equalTo, Optional.of(Pair.of(Set.copyOf(values), false)), this.version, this.variant, this.nil, this.notNil, this.max, this.custom);
 	}
-
+	
 	/**
 	 * Creates a new config with the specified exclusion constraint.<br>
 	 *
@@ -150,7 +150,7 @@ public record UUIDConstraintConfig(
 		Objects.requireNonNull(values, "Values for 'not in' constraint must not be null");
 		return new UUIDConstraintConfig(this.equalTo, Optional.of(Pair.of(Set.copyOf(values), true)), this.version, this.variant, this.nil, this.notNil, this.max, this.custom);
 	}
-
+	
 	/**
 	 * Creates a new config with the specified version constraint.<br>
 	 *
@@ -160,7 +160,7 @@ public record UUIDConstraintConfig(
 	public @NonNull UUIDConstraintConfig withVersion(int version) {
 		return new UUIDConstraintConfig(this.equalTo, this.in, Optional.of(version), this.variant, this.nil, this.notNil, this.max, this.custom);
 	}
-
+	
 	/**
 	 * Creates a new config with the specified variant constraint.<br>
 	 *
@@ -171,7 +171,7 @@ public record UUIDConstraintConfig(
 		Objects.requireNonNull(variant, "Variant for 'variant' constraint must not be null");
 		return new UUIDConstraintConfig(this.equalTo, this.in, this.version, Optional.of(variant), this.nil, this.notNil, this.max, this.custom);
 	}
-
+	
 	/**
 	 * Creates a new config with the nil uuid constraint enabled.<br>
 	 * <p>
@@ -183,7 +183,7 @@ public record UUIDConstraintConfig(
 	public @NonNull UUIDConstraintConfig withNil() {
 		return new UUIDConstraintConfig(this.equalTo, this.in, this.version, this.variant, Optional.of(Unit.INSTANCE), this.notNil, this.max, this.custom);
 	}
-
+	
 	/**
 	 * Creates a new config with the not-nil uuid constraint enabled.<br>
 	 * <p>
@@ -195,7 +195,7 @@ public record UUIDConstraintConfig(
 	public @NonNull UUIDConstraintConfig withNotNil() {
 		return new UUIDConstraintConfig(this.equalTo, this.in, this.version, this.variant, this.nil, Optional.of(Unit.INSTANCE), this.max, this.custom);
 	}
-
+	
 	/**
 	 * Creates a new config with the max uuid constraint enabled.<br>
 	 * <p>
@@ -207,7 +207,7 @@ public record UUIDConstraintConfig(
 	public @NonNull UUIDConstraintConfig withMax() {
 		return new UUIDConstraintConfig(this.equalTo, this.in, this.version, this.variant, this.nil, this.notNil, Optional.of(Unit.INSTANCE), this.custom);
 	}
-
+	
 	/**
 	 * Creates a new config with the specified custom constraint.<br>
 	 *

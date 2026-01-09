@@ -71,7 +71,7 @@ public record InstantConstraintConfig(
 	public static final InstantConstraintConfig UNCONSTRAINED = new InstantConstraintConfig(
 		Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty()
 	);
-
+	
 	/**
 	 * Constructs a new instant constraint config with the specified parameters.<br>
 	 *

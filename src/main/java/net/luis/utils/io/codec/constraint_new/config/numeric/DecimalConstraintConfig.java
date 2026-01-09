@@ -68,7 +68,7 @@ public record DecimalConstraintConfig<T extends Number & Comparable<T>>(
 	@NonNull Optional<Unit> normalized,
 	@NonNull Optional<Constraint<T>> custom
 ) {
-
+	
 	/**
 	 * Constructs a new decimal constraint config with the specified parameters.<br>
 	 *

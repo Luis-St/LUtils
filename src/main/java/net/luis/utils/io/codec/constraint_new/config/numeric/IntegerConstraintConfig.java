@@ -68,7 +68,7 @@ public record IntegerConstraintConfig<T extends Number & Comparable<T>>(
 	@NonNull Optional<Integer> powerOf,
 	@NonNull Optional<Constraint<T>> custom
 ) {
-
+	
 	/**
 	 * Constructs a new integer constraint config with the specified parameters.<br>
 	 *
@@ -133,7 +133,7 @@ public record IntegerConstraintConfig<T extends Number & Comparable<T>>(
 			throw new IllegalArgumentException("Power of must be greater than 1 when present, but got " + powerOf.get());
 		}
 	}
-
+	
 	/**
 	 * Creates an unconstrained integer configuration with no constraints applied.<br>
 	 *

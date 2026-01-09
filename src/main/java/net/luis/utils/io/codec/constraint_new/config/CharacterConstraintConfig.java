@@ -336,7 +336,7 @@ public record CharacterConstraintConfig(
 	public @NonNull CharacterConstraintConfig withAscii() {
 		return new CharacterConstraintConfig(this.equalTo, this.in, this.min, this.max, this.letter, this.digit, this.alphanumeric, this.whitespace, this.punctuation, this.symbol, this.control, this.upperCase, this.lowerCase, Optional.of(Unit.INSTANCE), this.latin1, this.custom);
 	}
-
+	
 	/**
 	 * Creates a new config with the Latin-1 constraint enabled.<br>
 	 * <p>
@@ -348,7 +348,7 @@ public record CharacterConstraintConfig(
 	public @NonNull CharacterConstraintConfig withLatin1() {
 		return new CharacterConstraintConfig(this.equalTo, this.in, this.min, this.max, this.letter, this.digit, this.alphanumeric, this.whitespace, this.punctuation, this.symbol, this.control, this.upperCase, this.lowerCase, this.ascii, Optional.of(Unit.INSTANCE), this.custom);
 	}
-
+	
 	/**
 	 * Creates a new config with the specified custom constraint.<br>
 	 *

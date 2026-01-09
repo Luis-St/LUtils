@@ -43,7 +43,7 @@ public record EnumConstraintConfig<T extends Enum<T>>(
 	@NonNull Optional<Pair<Set<T>, Boolean>> in,
 	@NonNull Optional<Constraint<T>> custom
 ) {
-
+	
 	/**
 	 * Constructs a new enum constraint config with the specified parameters.<br>
 	 *
@@ -62,7 +62,7 @@ public record EnumConstraintConfig<T extends Enum<T>>(
 			throw new IllegalArgumentException("In constraint set must not be empty when present");
 		}
 	}
-
+	
 	/**
 	 * Creates an unconstrained enum configuration with no constraints applied.<br>
 	 *
