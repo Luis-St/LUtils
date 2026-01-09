@@ -80,7 +80,8 @@ public record EnumConstraintConfig<T extends Enum<T>>(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull EnumConstraintConfig<T> withEqualTo(@NonNull T value) {
-		return new EnumConstraintConfig<>(Optional.of(Pair.of(Objects.requireNonNull(value), false)), this.in, this.custom);
+		Objects.requireNonNull(value, "Value for 'equal to' constraint must not be null");
+		return new EnumConstraintConfig<>(Optional.of(Pair.of(value, false)), this.in, this.custom);
 	}
 	
 	/**
@@ -90,7 +91,8 @@ public record EnumConstraintConfig<T extends Enum<T>>(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull EnumConstraintConfig<T> withNotEqualTo(@NonNull T value) {
-		return new EnumConstraintConfig<>(Optional.of(Pair.of(Objects.requireNonNull(value), true)), this.in, this.custom);
+		Objects.requireNonNull(value, "Value for 'not equal to' constraint must not be null");
+		return new EnumConstraintConfig<>(Optional.of(Pair.of(value, true)), this.in, this.custom);
 	}
 	
 	/**
@@ -100,6 +102,7 @@ public record EnumConstraintConfig<T extends Enum<T>>(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull EnumConstraintConfig<T> withIn(@NonNull Collection<T> values) {
+		Objects.requireNonNull(values, "Values for 'in' constraint must not be null");
 		return new EnumConstraintConfig<>(this.equalTo, Optional.of(Pair.of(EnumSet.copyOf(values), false)), this.custom);
 	}
 	
@@ -110,6 +113,7 @@ public record EnumConstraintConfig<T extends Enum<T>>(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull EnumConstraintConfig<T> withNotIn(@NonNull Collection<T> values) {
+		Objects.requireNonNull(values, "Values for 'not in' constraint must not be null");
 		return new EnumConstraintConfig<>(this.equalTo, Optional.of(Pair.of(EnumSet.copyOf(values), true)), this.custom);
 	}
 	
@@ -120,6 +124,7 @@ public record EnumConstraintConfig<T extends Enum<T>>(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull EnumConstraintConfig<T> withCustom(@NonNull Constraint<T> constraint) {
-		return new EnumConstraintConfig<>(this.equalTo, this.in, Optional.of(Objects.requireNonNull(constraint)));
+		Objects.requireNonNull(constraint, "Custom constraint must not be null");
+		return new EnumConstraintConfig<>(this.equalTo, this.in, Optional.of(constraint));
 	}
 }

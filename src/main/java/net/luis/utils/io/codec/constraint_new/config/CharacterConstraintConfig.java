@@ -166,6 +166,7 @@ public record CharacterConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull CharacterConstraintConfig withIn(@NonNull Collection<Character> values) {
+		Objects.requireNonNull(values, "Values for 'in' constraint must not be null");
 		return new CharacterConstraintConfig(this.equalTo, Optional.of(Pair.of(Set.copyOf(values), false)), this.min, this.max, this.letter, this.digit, this.alphanumeric, this.whitespace, this.punctuation, this.symbol, this.control, this.upperCase, this.lowerCase, this.ascii, this.latin1, this.custom);
 	}
 	
@@ -176,6 +177,7 @@ public record CharacterConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull CharacterConstraintConfig withNotIn(@NonNull Collection<Character> values) {
+		Objects.requireNonNull(values, "Values for 'not in' constraint must not be null");
 		return new CharacterConstraintConfig(this.equalTo, Optional.of(Pair.of(Set.copyOf(values), true)), this.min, this.max, this.letter, this.digit, this.alphanumeric, this.whitespace, this.punctuation, this.symbol, this.control, this.upperCase, this.lowerCase, this.ascii, this.latin1, this.custom);
 	}
 	
@@ -353,6 +355,7 @@ public record CharacterConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull CharacterConstraintConfig withCustom(@NonNull Constraint<Character> constraint) {
-		return new CharacterConstraintConfig(this.equalTo, this.in, this.min, this.max, this.letter, this.digit, this.alphanumeric, this.whitespace, this.punctuation, this.symbol, this.control, this.upperCase, this.lowerCase, this.ascii, this.latin1, Optional.of(Objects.requireNonNull(constraint, "Constraint must not be null")));
+		Objects.requireNonNull(constraint, "Custom constraint must not be null");
+		return new CharacterConstraintConfig(this.equalTo, this.in, this.min, this.max, this.letter, this.digit, this.alphanumeric, this.whitespace, this.punctuation, this.symbol, this.control, this.upperCase, this.lowerCase, this.ascii, this.latin1, Optional.of(constraint));
 	}
 }

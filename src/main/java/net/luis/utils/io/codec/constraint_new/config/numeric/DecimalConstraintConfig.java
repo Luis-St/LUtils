@@ -138,7 +138,8 @@ public record DecimalConstraintConfig<T extends Number & Comparable<T>>(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull DecimalConstraintConfig<T> withEqualTo(@NonNull T value) {
-		return new DecimalConstraintConfig<>(Optional.of(Pair.of(Objects.requireNonNull(value), false)), this.in, this.min, this.max, this.positive, this.negative, this.zero, this.percentage, this.finite, this.notNaN, this.integral, this.normalized, this.custom);
+		Objects.requireNonNull(value, "Value for 'equal to' constraint must not be null");
+		return new DecimalConstraintConfig<>(Optional.of(Pair.of(value, false)), this.in, this.min, this.max, this.positive, this.negative, this.zero, this.percentage, this.finite, this.notNaN, this.integral, this.normalized, this.custom);
 	}
 	
 	/**
@@ -148,7 +149,8 @@ public record DecimalConstraintConfig<T extends Number & Comparable<T>>(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull DecimalConstraintConfig<T> withNotEqualTo(@NonNull T value) {
-		return new DecimalConstraintConfig<>(Optional.of(Pair.of(Objects.requireNonNull(value), true)), this.in, this.min, this.max, this.positive, this.negative, this.zero, this.percentage, this.finite, this.notNaN, this.integral, this.normalized, this.custom);
+		Objects.requireNonNull(value, "Value for 'not equal to' constraint must not be null");
+		return new DecimalConstraintConfig<>(Optional.of(Pair.of(value, true)), this.in, this.min, this.max, this.positive, this.negative, this.zero, this.percentage, this.finite, this.notNaN, this.integral, this.normalized, this.custom);
 	}
 	
 	/**
@@ -158,6 +160,7 @@ public record DecimalConstraintConfig<T extends Number & Comparable<T>>(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull DecimalConstraintConfig<T> withIn(@NonNull Collection<T> values) {
+		Objects.requireNonNull(values, "Values for 'in' constraint must not be null");
 		return new DecimalConstraintConfig<>(this.equalTo, Optional.of(Pair.of(Set.copyOf(values), false)), this.min, this.max, this.positive, this.negative, this.zero, this.percentage, this.finite, this.notNaN, this.integral, this.normalized, this.custom);
 	}
 	
@@ -168,6 +171,7 @@ public record DecimalConstraintConfig<T extends Number & Comparable<T>>(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull DecimalConstraintConfig<T> withNotIn(@NonNull Collection<T> values) {
+		Objects.requireNonNull(values, "Values for 'not in' constraint must not be null");
 		return new DecimalConstraintConfig<>(this.equalTo, Optional.of(Pair.of(Set.copyOf(values), true)), this.min, this.max, this.positive, this.negative, this.zero, this.percentage, this.finite, this.notNaN, this.integral, this.normalized, this.custom);
 	}
 	
@@ -178,7 +182,8 @@ public record DecimalConstraintConfig<T extends Number & Comparable<T>>(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull DecimalConstraintConfig<T> withGreaterThan(@NonNull T value) {
-		return new DecimalConstraintConfig<>(this.equalTo, this.in, Optional.of(Pair.of(Objects.requireNonNull(value), false)), this.max, this.positive, this.negative, this.zero, this.percentage, this.finite, this.notNaN, this.integral, this.normalized, this.custom);
+		Objects.requireNonNull(value, "Value for 'greater than' constraint must not be null");
+		return new DecimalConstraintConfig<>(this.equalTo, this.in, Optional.of(Pair.of(value, false)), this.max, this.positive, this.negative, this.zero, this.percentage, this.finite, this.notNaN, this.integral, this.normalized, this.custom);
 	}
 	
 	/**
@@ -188,7 +193,8 @@ public record DecimalConstraintConfig<T extends Number & Comparable<T>>(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull DecimalConstraintConfig<T> withGreaterThanOrEqual(@NonNull T value) {
-		return new DecimalConstraintConfig<>(this.equalTo, this.in, Optional.of(Pair.of(Objects.requireNonNull(value), true)), this.max, this.positive, this.negative, this.zero, this.percentage, this.finite, this.notNaN, this.integral, this.normalized, this.custom);
+		Objects.requireNonNull(value, "Value for 'greater than or equal' constraint must not be null");
+		return new DecimalConstraintConfig<>(this.equalTo, this.in, Optional.of(Pair.of(value, true)), this.max, this.positive, this.negative, this.zero, this.percentage, this.finite, this.notNaN, this.integral, this.normalized, this.custom);
 	}
 	
 	/**
@@ -198,7 +204,8 @@ public record DecimalConstraintConfig<T extends Number & Comparable<T>>(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull DecimalConstraintConfig<T> withLessThan(@NonNull T value) {
-		return new DecimalConstraintConfig<>(this.equalTo, this.in, this.min, Optional.of(Pair.of(Objects.requireNonNull(value), false)), this.positive, this.negative, this.zero, this.percentage, this.finite, this.notNaN, this.integral, this.normalized, this.custom);
+		Objects.requireNonNull(value, "Value for 'less than' constraint must not be null");
+		return new DecimalConstraintConfig<>(this.equalTo, this.in, this.min, Optional.of(Pair.of(value, false)), this.positive, this.negative, this.zero, this.percentage, this.finite, this.notNaN, this.integral, this.normalized, this.custom);
 	}
 	
 	/**
@@ -208,7 +215,8 @@ public record DecimalConstraintConfig<T extends Number & Comparable<T>>(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull DecimalConstraintConfig<T> withLessThanOrEqual(@NonNull T value) {
-		return new DecimalConstraintConfig<>(this.equalTo, this.in, this.min, Optional.of(Pair.of(Objects.requireNonNull(value), true)), this.positive, this.negative, this.zero, this.percentage, this.finite, this.notNaN, this.integral, this.normalized, this.custom);
+		Objects.requireNonNull(value, "Value for 'less than or equal' constraint must not be null");
+		return new DecimalConstraintConfig<>(this.equalTo, this.in, this.min, Optional.of(Pair.of(value, true)), this.positive, this.negative, this.zero, this.percentage, this.finite, this.notNaN, this.integral, this.normalized, this.custom);
 	}
 	
 	/**
@@ -219,7 +227,9 @@ public record DecimalConstraintConfig<T extends Number & Comparable<T>>(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull DecimalConstraintConfig<T> withBetween(@NonNull T min, @NonNull T max) {
-		return new DecimalConstraintConfig<>(this.equalTo, this.in, Optional.of(Pair.of(Objects.requireNonNull(min), false)), Optional.of(Pair.of(Objects.requireNonNull(max), false)), this.positive, this.negative, this.zero, this.percentage, this.finite, this.notNaN, this.integral, this.normalized, this.custom);
+		Objects.requireNonNull(min, "Min value for 'between' constraint must not be null");
+		Objects.requireNonNull(max, "Max value for 'between' constraint must not be null");
+		return new DecimalConstraintConfig<>(this.equalTo, this.in, Optional.of(Pair.of(min, false)), Optional.of(Pair.of(max, false)), this.positive, this.negative, this.zero, this.percentage, this.finite, this.notNaN, this.integral, this.normalized, this.custom);
 	}
 	
 	/**
@@ -230,7 +240,9 @@ public record DecimalConstraintConfig<T extends Number & Comparable<T>>(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull DecimalConstraintConfig<T> withBetweenOrEqual(@NonNull T min, @NonNull T max) {
-		return new DecimalConstraintConfig<>(this.equalTo, this.in, Optional.of(Pair.of(Objects.requireNonNull(min), true)), Optional.of(Pair.of(Objects.requireNonNull(max), true)), this.positive, this.negative, this.zero, this.percentage, this.finite, this.notNaN, this.integral, this.normalized, this.custom);
+		Objects.requireNonNull(min, "Min value for 'between or equal' constraint must not be null");
+		Objects.requireNonNull(max, "Max value for 'between or equal' constraint must not be null");
+		return new DecimalConstraintConfig<>(this.equalTo, this.in, Optional.of(Pair.of(min, true)), Optional.of(Pair.of(max, true)), this.positive, this.negative, this.zero, this.percentage, this.finite, this.notNaN, this.integral, this.normalized, this.custom);
 	}
 	
 	/**
@@ -339,6 +351,7 @@ public record DecimalConstraintConfig<T extends Number & Comparable<T>>(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull DecimalConstraintConfig<T> withCustom(@NonNull Constraint<T> constraint) {
-		return new DecimalConstraintConfig<>(this.equalTo, this.in, this.min, this.max, this.positive, this.negative, this.zero, this.percentage, this.finite, this.notNaN, this.integral, this.normalized, Optional.of(Objects.requireNonNull(constraint)));
+		Objects.requireNonNull(constraint, "Custom constraint must not be null");
+		return new DecimalConstraintConfig<>(this.equalTo, this.in, this.min, this.max, this.positive, this.negative, this.zero, this.percentage, this.finite, this.notNaN, this.integral, this.normalized, Optional.of(constraint));
 	}
 }

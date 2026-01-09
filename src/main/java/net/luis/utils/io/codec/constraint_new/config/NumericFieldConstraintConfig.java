@@ -119,6 +119,7 @@ public record NumericFieldConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull NumericFieldConstraintConfig withIn(@NonNull Collection<Integer> values) {
+		Objects.requireNonNull(values, "Values for 'in' constraint must not be null");
 		return new NumericFieldConstraintConfig(this.equalTo, Optional.of(Pair.of(Set.copyOf(values), false)), this.min, this.max, this.custom);
 	}
 	
@@ -129,6 +130,7 @@ public record NumericFieldConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull NumericFieldConstraintConfig withNotIn(@NonNull Collection<Integer> values) {
+		Objects.requireNonNull(values, "Values for 'not in' constraint must not be null");
 		return new NumericFieldConstraintConfig(this.equalTo, Optional.of(Pair.of(Set.copyOf(values), true)), this.min, this.max, this.custom);
 	}
 	
@@ -201,6 +203,7 @@ public record NumericFieldConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull NumericFieldConstraintConfig withCustom(@NonNull Constraint<Integer> constraint) {
-		return new NumericFieldConstraintConfig(this.equalTo, this.in, this.min, this.max, Optional.of(Objects.requireNonNull(constraint)));
+		Objects.requireNonNull(constraint, "Custom constraint must not be null");
+		return new NumericFieldConstraintConfig(this.equalTo, this.in, this.min, this.max, Optional.of(constraint));
 	}
 }

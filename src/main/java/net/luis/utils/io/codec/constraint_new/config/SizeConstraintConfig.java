@@ -142,6 +142,7 @@ public record SizeConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull SizeConstraintConfig withCustom(@NonNull Constraint<Integer> constraint) {
-		return new SizeConstraintConfig(this.min, this.max, Optional.of(Objects.requireNonNull(constraint)));
+		Objects.requireNonNull(constraint, "Custom constraint must not be null");
+		return new SizeConstraintConfig(this.min, this.max, Optional.of(constraint));
 	}
 }

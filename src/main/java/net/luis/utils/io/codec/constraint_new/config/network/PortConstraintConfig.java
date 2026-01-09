@@ -134,6 +134,7 @@ public record PortConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull PortConstraintConfig withIn(@NonNull Collection<Integer> values) {
+		Objects.requireNonNull(values, "Values for 'in' constraint must not be null");
 		return new PortConstraintConfig(this.equalTo, Optional.of(Pair.of(Set.copyOf(values), false)), this.inRange, this.type, this.custom);
 	}
 	
@@ -144,6 +145,7 @@ public record PortConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull PortConstraintConfig withNotIn(@NonNull Collection<Integer> values) {
+		Objects.requireNonNull(values, "Values for 'not in' constraint must not be null");
 		return new PortConstraintConfig(this.equalTo, Optional.of(Pair.of(Set.copyOf(values), true)), this.inRange, this.type, this.custom);
 	}
 	
@@ -176,7 +178,8 @@ public record PortConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull PortConstraintConfig withType(@NonNull EnumConstraintConfig<PortRange> config) {
-		return new PortConstraintConfig(this.equalTo, this.in, this.inRange, Optional.of(Objects.requireNonNull(config)), this.custom);
+		Objects.requireNonNull(config, "Config for 'type' constraint must not be null");
+		return new PortConstraintConfig(this.equalTo, this.in, this.inRange, Optional.of(config), this.custom);
 	}
 	
 	/**
@@ -186,6 +189,7 @@ public record PortConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull PortConstraintConfig withCustom(@NonNull Constraint<Integer> constraint) {
-		return new PortConstraintConfig(this.equalTo, this.in, this.inRange, this.type, Optional.of(Objects.requireNonNull(constraint)));
+		Objects.requireNonNull(constraint, "Custom constraint must not be null");
+		return new PortConstraintConfig(this.equalTo, this.in, this.inRange, this.type, Optional.of(constraint));
 	}
 }

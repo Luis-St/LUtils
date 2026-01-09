@@ -159,7 +159,8 @@ public record OffsetDateTimeConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull OffsetDateTimeConstraintConfig withEqualTo(@NonNull OffsetDateTime value) {
-		return new OffsetDateTimeConstraintConfig(Optional.of(Pair.of(Objects.requireNonNull(value), false)), this.in, this.after, this.before, this.withinLast, this.withinNext, this.dayOfWeek, this.dayOfMonth, this.dayOfYear, this.weekOfMonth, this.weekOfYear, this.month, this.year, this.hour, this.minute, this.second, this.millisecond, this.nanosecond, this.offset, this.custom);
+		Objects.requireNonNull(value, "Value for 'equal to' constraint must not be null");
+		return new OffsetDateTimeConstraintConfig(Optional.of(Pair.of(value, false)), this.in, this.after, this.before, this.withinLast, this.withinNext, this.dayOfWeek, this.dayOfMonth, this.dayOfYear, this.weekOfMonth, this.weekOfYear, this.month, this.year, this.hour, this.minute, this.second, this.millisecond, this.nanosecond, this.offset, this.custom);
 	}
 	
 	/**
@@ -169,7 +170,8 @@ public record OffsetDateTimeConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull OffsetDateTimeConstraintConfig withNotEqualTo(@NonNull OffsetDateTime value) {
-		return new OffsetDateTimeConstraintConfig(Optional.of(Pair.of(Objects.requireNonNull(value), true)), this.in, this.after, this.before, this.withinLast, this.withinNext, this.dayOfWeek, this.dayOfMonth, this.dayOfYear, this.weekOfMonth, this.weekOfYear, this.month, this.year, this.hour, this.minute, this.second, this.millisecond, this.nanosecond, this.offset, this.custom);
+		Objects.requireNonNull(value, "Value for 'not equal to' constraint must not be null");
+		return new OffsetDateTimeConstraintConfig(Optional.of(Pair.of(value, true)), this.in, this.after, this.before, this.withinLast, this.withinNext, this.dayOfWeek, this.dayOfMonth, this.dayOfYear, this.weekOfMonth, this.weekOfYear, this.month, this.year, this.hour, this.minute, this.second, this.millisecond, this.nanosecond, this.offset, this.custom);
 	}
 	
 	/**
@@ -179,6 +181,7 @@ public record OffsetDateTimeConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull OffsetDateTimeConstraintConfig withIn(@NonNull Collection<OffsetDateTime> values) {
+		Objects.requireNonNull(values, "Values for 'in' constraint must not be null");
 		return new OffsetDateTimeConstraintConfig(this.equalTo, Optional.of(Pair.of(Set.copyOf(values), false)), this.after, this.before, this.withinLast, this.withinNext, this.dayOfWeek, this.dayOfMonth, this.dayOfYear, this.weekOfMonth, this.weekOfYear, this.month, this.year, this.hour, this.minute, this.second, this.millisecond, this.nanosecond, this.offset, this.custom);
 	}
 	
@@ -189,6 +192,7 @@ public record OffsetDateTimeConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull OffsetDateTimeConstraintConfig withNotIn(@NonNull Collection<OffsetDateTime> values) {
+		Objects.requireNonNull(values, "Values for 'not in' constraint must not be null");
 		return new OffsetDateTimeConstraintConfig(this.equalTo, Optional.of(Pair.of(Set.copyOf(values), true)), this.after, this.before, this.withinLast, this.withinNext, this.dayOfWeek, this.dayOfMonth, this.dayOfYear, this.weekOfMonth, this.weekOfYear, this.month, this.year, this.hour, this.minute, this.second, this.millisecond, this.nanosecond, this.offset, this.custom);
 	}
 	
@@ -199,7 +203,8 @@ public record OffsetDateTimeConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull OffsetDateTimeConstraintConfig withAfter(@NonNull OffsetDateTime value) {
-		return new OffsetDateTimeConstraintConfig(this.equalTo, this.in, Optional.of(Pair.of(Objects.requireNonNull(value), false)), this.before, this.withinLast, this.withinNext, this.dayOfWeek, this.dayOfMonth, this.dayOfYear, this.weekOfMonth, this.weekOfYear, this.month, this.year, this.hour, this.minute, this.second, this.millisecond, this.nanosecond, this.offset, this.custom);
+		Objects.requireNonNull(value, "Value for 'after' constraint must not be null");
+		return new OffsetDateTimeConstraintConfig(this.equalTo, this.in, Optional.of(Pair.of(value, false)), this.before, this.withinLast, this.withinNext, this.dayOfWeek, this.dayOfMonth, this.dayOfYear, this.weekOfMonth, this.weekOfYear, this.month, this.year, this.hour, this.minute, this.second, this.millisecond, this.nanosecond, this.offset, this.custom);
 	}
 	
 	/**
@@ -209,7 +214,8 @@ public record OffsetDateTimeConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull OffsetDateTimeConstraintConfig withAfterOrEqual(@NonNull OffsetDateTime value) {
-		return new OffsetDateTimeConstraintConfig(this.equalTo, this.in, Optional.of(Pair.of(Objects.requireNonNull(value), true)), this.before, this.withinLast, this.withinNext, this.dayOfWeek, this.dayOfMonth, this.dayOfYear, this.weekOfMonth, this.weekOfYear, this.month, this.year, this.hour, this.minute, this.second, this.millisecond, this.nanosecond, this.offset, this.custom);
+		Objects.requireNonNull(value, "Value for 'after or equal' constraint must not be null");
+		return new OffsetDateTimeConstraintConfig(this.equalTo, this.in, Optional.of(Pair.of(value, true)), this.before, this.withinLast, this.withinNext, this.dayOfWeek, this.dayOfMonth, this.dayOfYear, this.weekOfMonth, this.weekOfYear, this.month, this.year, this.hour, this.minute, this.second, this.millisecond, this.nanosecond, this.offset, this.custom);
 	}
 	
 	/**
@@ -219,7 +225,8 @@ public record OffsetDateTimeConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull OffsetDateTimeConstraintConfig withBefore(@NonNull OffsetDateTime value) {
-		return new OffsetDateTimeConstraintConfig(this.equalTo, this.in, this.after, Optional.of(Pair.of(Objects.requireNonNull(value), false)), this.withinLast, this.withinNext, this.dayOfWeek, this.dayOfMonth, this.dayOfYear, this.weekOfMonth, this.weekOfYear, this.month, this.year, this.hour, this.minute, this.second, this.millisecond, this.nanosecond, this.offset, this.custom);
+		Objects.requireNonNull(value, "Value for 'before' constraint must not be null");
+		return new OffsetDateTimeConstraintConfig(this.equalTo, this.in, this.after, Optional.of(Pair.of(value, false)), this.withinLast, this.withinNext, this.dayOfWeek, this.dayOfMonth, this.dayOfYear, this.weekOfMonth, this.weekOfYear, this.month, this.year, this.hour, this.minute, this.second, this.millisecond, this.nanosecond, this.offset, this.custom);
 	}
 	
 	/**
@@ -229,7 +236,8 @@ public record OffsetDateTimeConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull OffsetDateTimeConstraintConfig withBeforeOrEqual(@NonNull OffsetDateTime value) {
-		return new OffsetDateTimeConstraintConfig(this.equalTo, this.in, this.after, Optional.of(Pair.of(Objects.requireNonNull(value), true)), this.withinLast, this.withinNext, this.dayOfWeek, this.dayOfMonth, this.dayOfYear, this.weekOfMonth, this.weekOfYear, this.month, this.year, this.hour, this.minute, this.second, this.millisecond, this.nanosecond, this.offset, this.custom);
+		Objects.requireNonNull(value, "Value for 'before or equal' constraint must not be null");
+		return new OffsetDateTimeConstraintConfig(this.equalTo, this.in, this.after, Optional.of(Pair.of(value, true)), this.withinLast, this.withinNext, this.dayOfWeek, this.dayOfMonth, this.dayOfYear, this.weekOfMonth, this.weekOfYear, this.month, this.year, this.hour, this.minute, this.second, this.millisecond, this.nanosecond, this.offset, this.custom);
 	}
 	
 	/**
@@ -240,7 +248,9 @@ public record OffsetDateTimeConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull OffsetDateTimeConstraintConfig withBetween(@NonNull OffsetDateTime after, @NonNull OffsetDateTime before) {
-		return new OffsetDateTimeConstraintConfig(this.equalTo, this.in, Optional.of(Pair.of(Objects.requireNonNull(after), false)), Optional.of(Pair.of(Objects.requireNonNull(before), false)), this.withinLast, this.withinNext, this.dayOfWeek, this.dayOfMonth, this.dayOfYear, this.weekOfMonth, this.weekOfYear, this.month, this.year, this.hour, this.minute, this.second, this.millisecond, this.nanosecond, this.offset, this.custom);
+		Objects.requireNonNull(after, "After value for 'between' constraint must not be null");
+		Objects.requireNonNull(before, "Before value for 'between' constraint must not be null");
+		return new OffsetDateTimeConstraintConfig(this.equalTo, this.in, Optional.of(Pair.of(after, false)), Optional.of(Pair.of(before, false)), this.withinLast, this.withinNext, this.dayOfWeek, this.dayOfMonth, this.dayOfYear, this.weekOfMonth, this.weekOfYear, this.month, this.year, this.hour, this.minute, this.second, this.millisecond, this.nanosecond, this.offset, this.custom);
 	}
 	
 	/**
@@ -251,7 +261,9 @@ public record OffsetDateTimeConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull OffsetDateTimeConstraintConfig withBetweenOrEqual(@NonNull OffsetDateTime after, @NonNull OffsetDateTime before) {
-		return new OffsetDateTimeConstraintConfig(this.equalTo, this.in, Optional.of(Pair.of(Objects.requireNonNull(after), true)), Optional.of(Pair.of(Objects.requireNonNull(before), true)), this.withinLast, this.withinNext, this.dayOfWeek, this.dayOfMonth, this.dayOfYear, this.weekOfMonth, this.weekOfYear, this.month, this.year, this.hour, this.minute, this.second, this.millisecond, this.nanosecond, this.offset, this.custom);
+		Objects.requireNonNull(after, "After value for 'between or equal' constraint must not be null");
+		Objects.requireNonNull(before, "Before value for 'between or equal' constraint must not be null");
+		return new OffsetDateTimeConstraintConfig(this.equalTo, this.in, Optional.of(Pair.of(after, true)), Optional.of(Pair.of(before, true)), this.withinLast, this.withinNext, this.dayOfWeek, this.dayOfMonth, this.dayOfYear, this.weekOfMonth, this.weekOfYear, this.month, this.year, this.hour, this.minute, this.second, this.millisecond, this.nanosecond, this.offset, this.custom);
 	}
 	
 	/**
@@ -261,7 +273,8 @@ public record OffsetDateTimeConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull OffsetDateTimeConstraintConfig withWithinLast(@NonNull Duration duration) {
-		return new OffsetDateTimeConstraintConfig(this.equalTo, this.in, this.after, this.before, Optional.of(Objects.requireNonNull(duration)), this.withinNext, this.dayOfWeek, this.dayOfMonth, this.dayOfYear, this.weekOfMonth, this.weekOfYear, this.month, this.year, this.hour, this.minute, this.second, this.millisecond, this.nanosecond, this.offset, this.custom);
+		Objects.requireNonNull(duration, "Duration for 'within last' constraint must not be null");
+		return new OffsetDateTimeConstraintConfig(this.equalTo, this.in, this.after, this.before, Optional.of(duration), this.withinNext, this.dayOfWeek, this.dayOfMonth, this.dayOfYear, this.weekOfMonth, this.weekOfYear, this.month, this.year, this.hour, this.minute, this.second, this.millisecond, this.nanosecond, this.offset, this.custom);
 	}
 	
 	/**
@@ -271,7 +284,8 @@ public record OffsetDateTimeConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull OffsetDateTimeConstraintConfig withWithinNext(@NonNull Duration duration) {
-		return new OffsetDateTimeConstraintConfig(this.equalTo, this.in, this.after, this.before, this.withinLast, Optional.of(Objects.requireNonNull(duration)), this.dayOfWeek, this.dayOfMonth, this.dayOfYear, this.weekOfMonth, this.weekOfYear, this.month, this.year, this.hour, this.minute, this.second, this.millisecond, this.nanosecond, this.offset, this.custom);
+		Objects.requireNonNull(duration, "Duration for 'within next' constraint must not be null");
+		return new OffsetDateTimeConstraintConfig(this.equalTo, this.in, this.after, this.before, this.withinLast, Optional.of(duration), this.dayOfWeek, this.dayOfMonth, this.dayOfYear, this.weekOfMonth, this.weekOfYear, this.month, this.year, this.hour, this.minute, this.second, this.millisecond, this.nanosecond, this.offset, this.custom);
 	}
 	
 	/**
@@ -281,7 +295,8 @@ public record OffsetDateTimeConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull OffsetDateTimeConstraintConfig withDayOfWeek(@NonNull EnumConstraintConfig<DayOfWeek> config) {
-		return new OffsetDateTimeConstraintConfig(this.equalTo, this.in, this.after, this.before, this.withinLast, this.withinNext, Optional.of(Objects.requireNonNull(config)), this.dayOfMonth, this.dayOfYear, this.weekOfMonth, this.weekOfYear, this.month, this.year, this.hour, this.minute, this.second, this.millisecond, this.nanosecond, this.offset, this.custom);
+		Objects.requireNonNull(config, "Config for 'day of week' constraint must not be null");
+		return new OffsetDateTimeConstraintConfig(this.equalTo, this.in, this.after, this.before, this.withinLast, this.withinNext, Optional.of(config), this.dayOfMonth, this.dayOfYear, this.weekOfMonth, this.weekOfYear, this.month, this.year, this.hour, this.minute, this.second, this.millisecond, this.nanosecond, this.offset, this.custom);
 	}
 	
 	/**
@@ -291,7 +306,8 @@ public record OffsetDateTimeConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull OffsetDateTimeConstraintConfig withDayOfMonth(@NonNull NumericFieldConstraintConfig config) {
-		return new OffsetDateTimeConstraintConfig(this.equalTo, this.in, this.after, this.before, this.withinLast, this.withinNext, this.dayOfWeek, Optional.of(Objects.requireNonNull(config)), this.dayOfYear, this.weekOfMonth, this.weekOfYear, this.month, this.year, this.hour, this.minute, this.second, this.millisecond, this.nanosecond, this.offset, this.custom);
+		Objects.requireNonNull(config, "Config for 'day of month' constraint must not be null");
+		return new OffsetDateTimeConstraintConfig(this.equalTo, this.in, this.after, this.before, this.withinLast, this.withinNext, this.dayOfWeek, Optional.of(config), this.dayOfYear, this.weekOfMonth, this.weekOfYear, this.month, this.year, this.hour, this.minute, this.second, this.millisecond, this.nanosecond, this.offset, this.custom);
 	}
 	
 	/**
@@ -301,7 +317,8 @@ public record OffsetDateTimeConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull OffsetDateTimeConstraintConfig withDayOfYear(@NonNull NumericFieldConstraintConfig config) {
-		return new OffsetDateTimeConstraintConfig(this.equalTo, this.in, this.after, this.before, this.withinLast, this.withinNext, this.dayOfWeek, this.dayOfMonth, Optional.of(Objects.requireNonNull(config)), this.weekOfMonth, this.weekOfYear, this.month, this.year, this.hour, this.minute, this.second, this.millisecond, this.nanosecond, this.offset, this.custom);
+		Objects.requireNonNull(config, "Config for 'day of year' constraint must not be null");
+		return new OffsetDateTimeConstraintConfig(this.equalTo, this.in, this.after, this.before, this.withinLast, this.withinNext, this.dayOfWeek, this.dayOfMonth, Optional.of(config), this.weekOfMonth, this.weekOfYear, this.month, this.year, this.hour, this.minute, this.second, this.millisecond, this.nanosecond, this.offset, this.custom);
 	}
 	
 	/**
@@ -311,7 +328,8 @@ public record OffsetDateTimeConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull OffsetDateTimeConstraintConfig withWeekOfMonth(@NonNull NumericFieldConstraintConfig config) {
-		return new OffsetDateTimeConstraintConfig(this.equalTo, this.in, this.after, this.before, this.withinLast, this.withinNext, this.dayOfWeek, this.dayOfMonth, this.dayOfYear, Optional.of(Objects.requireNonNull(config)), this.weekOfYear, this.month, this.year, this.hour, this.minute, this.second, this.millisecond, this.nanosecond, this.offset, this.custom);
+		Objects.requireNonNull(config, "Config for 'week of month' constraint must not be null");
+		return new OffsetDateTimeConstraintConfig(this.equalTo, this.in, this.after, this.before, this.withinLast, this.withinNext, this.dayOfWeek, this.dayOfMonth, this.dayOfYear, Optional.of(config), this.weekOfYear, this.month, this.year, this.hour, this.minute, this.second, this.millisecond, this.nanosecond, this.offset, this.custom);
 	}
 	
 	/**
@@ -321,7 +339,8 @@ public record OffsetDateTimeConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull OffsetDateTimeConstraintConfig withWeekOfYear(@NonNull NumericFieldConstraintConfig config) {
-		return new OffsetDateTimeConstraintConfig(this.equalTo, this.in, this.after, this.before, this.withinLast, this.withinNext, this.dayOfWeek, this.dayOfMonth, this.dayOfYear, this.weekOfMonth, Optional.of(Objects.requireNonNull(config)), this.month, this.year, this.hour, this.minute, this.second, this.millisecond, this.nanosecond, this.offset, this.custom);
+		Objects.requireNonNull(config, "Config for 'week of year' constraint must not be null");
+		return new OffsetDateTimeConstraintConfig(this.equalTo, this.in, this.after, this.before, this.withinLast, this.withinNext, this.dayOfWeek, this.dayOfMonth, this.dayOfYear, this.weekOfMonth, Optional.of(config), this.month, this.year, this.hour, this.minute, this.second, this.millisecond, this.nanosecond, this.offset, this.custom);
 	}
 	
 	/**
@@ -331,7 +350,8 @@ public record OffsetDateTimeConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull OffsetDateTimeConstraintConfig withMonth(@NonNull EnumConstraintConfig<Month> config) {
-		return new OffsetDateTimeConstraintConfig(this.equalTo, this.in, this.after, this.before, this.withinLast, this.withinNext, this.dayOfWeek, this.dayOfMonth, this.dayOfYear, this.weekOfMonth, this.weekOfYear, Optional.of(Objects.requireNonNull(config)), this.year, this.hour, this.minute, this.second, this.millisecond, this.nanosecond, this.offset, this.custom);
+		Objects.requireNonNull(config, "Config for 'month' constraint must not be null");
+		return new OffsetDateTimeConstraintConfig(this.equalTo, this.in, this.after, this.before, this.withinLast, this.withinNext, this.dayOfWeek, this.dayOfMonth, this.dayOfYear, this.weekOfMonth, this.weekOfYear, Optional.of(config), this.year, this.hour, this.minute, this.second, this.millisecond, this.nanosecond, this.offset, this.custom);
 	}
 	
 	/**
@@ -341,7 +361,8 @@ public record OffsetDateTimeConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull OffsetDateTimeConstraintConfig withYear(@NonNull NumericFieldConstraintConfig config) {
-		return new OffsetDateTimeConstraintConfig(this.equalTo, this.in, this.after, this.before, this.withinLast, this.withinNext, this.dayOfWeek, this.dayOfMonth, this.dayOfYear, this.weekOfMonth, this.weekOfYear, this.month, Optional.of(Objects.requireNonNull(config)), this.hour, this.minute, this.second, this.millisecond, this.nanosecond, this.offset, this.custom);
+		Objects.requireNonNull(config, "Config for 'year' constraint must not be null");
+		return new OffsetDateTimeConstraintConfig(this.equalTo, this.in, this.after, this.before, this.withinLast, this.withinNext, this.dayOfWeek, this.dayOfMonth, this.dayOfYear, this.weekOfMonth, this.weekOfYear, this.month, Optional.of(config), this.hour, this.minute, this.second, this.millisecond, this.nanosecond, this.offset, this.custom);
 	}
 	
 	/**
@@ -351,7 +372,8 @@ public record OffsetDateTimeConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull OffsetDateTimeConstraintConfig withHour(@NonNull NumericFieldConstraintConfig config) {
-		return new OffsetDateTimeConstraintConfig(this.equalTo, this.in, this.after, this.before, this.withinLast, this.withinNext, this.dayOfWeek, this.dayOfMonth, this.dayOfYear, this.weekOfMonth, this.weekOfYear, this.month, this.year, Optional.of(Objects.requireNonNull(config)), this.minute, this.second, this.millisecond, this.nanosecond, this.offset, this.custom);
+		Objects.requireNonNull(config, "Config for 'hour' constraint must not be null");
+		return new OffsetDateTimeConstraintConfig(this.equalTo, this.in, this.after, this.before, this.withinLast, this.withinNext, this.dayOfWeek, this.dayOfMonth, this.dayOfYear, this.weekOfMonth, this.weekOfYear, this.month, this.year, Optional.of(config), this.minute, this.second, this.millisecond, this.nanosecond, this.offset, this.custom);
 	}
 	
 	/**
@@ -361,7 +383,8 @@ public record OffsetDateTimeConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull OffsetDateTimeConstraintConfig withMinute(@NonNull NumericFieldConstraintConfig config) {
-		return new OffsetDateTimeConstraintConfig(this.equalTo, this.in, this.after, this.before, this.withinLast, this.withinNext, this.dayOfWeek, this.dayOfMonth, this.dayOfYear, this.weekOfMonth, this.weekOfYear, this.month, this.year, this.hour, Optional.of(Objects.requireNonNull(config)), this.second, this.millisecond, this.nanosecond, this.offset, this.custom);
+		Objects.requireNonNull(config, "Config for 'minute' constraint must not be null");
+		return new OffsetDateTimeConstraintConfig(this.equalTo, this.in, this.after, this.before, this.withinLast, this.withinNext, this.dayOfWeek, this.dayOfMonth, this.dayOfYear, this.weekOfMonth, this.weekOfYear, this.month, this.year, this.hour, Optional.of(config), this.second, this.millisecond, this.nanosecond, this.offset, this.custom);
 	}
 	
 	/**
@@ -371,7 +394,8 @@ public record OffsetDateTimeConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull OffsetDateTimeConstraintConfig withSecond(@NonNull NumericFieldConstraintConfig config) {
-		return new OffsetDateTimeConstraintConfig(this.equalTo, this.in, this.after, this.before, this.withinLast, this.withinNext, this.dayOfWeek, this.dayOfMonth, this.dayOfYear, this.weekOfMonth, this.weekOfYear, this.month, this.year, this.hour, this.minute, Optional.of(Objects.requireNonNull(config)), this.millisecond, this.nanosecond, this.offset, this.custom);
+		Objects.requireNonNull(config, "Config for 'second' constraint must not be null");
+		return new OffsetDateTimeConstraintConfig(this.equalTo, this.in, this.after, this.before, this.withinLast, this.withinNext, this.dayOfWeek, this.dayOfMonth, this.dayOfYear, this.weekOfMonth, this.weekOfYear, this.month, this.year, this.hour, this.minute, Optional.of(config), this.millisecond, this.nanosecond, this.offset, this.custom);
 	}
 	
 	/**
@@ -381,7 +405,8 @@ public record OffsetDateTimeConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull OffsetDateTimeConstraintConfig withMillisecond(@NonNull NumericFieldConstraintConfig config) {
-		return new OffsetDateTimeConstraintConfig(this.equalTo, this.in, this.after, this.before, this.withinLast, this.withinNext, this.dayOfWeek, this.dayOfMonth, this.dayOfYear, this.weekOfMonth, this.weekOfYear, this.month, this.year, this.hour, this.minute, this.second, Optional.of(Objects.requireNonNull(config)), this.nanosecond, this.offset, this.custom);
+		Objects.requireNonNull(config, "Config for 'millisecond' constraint must not be null");
+		return new OffsetDateTimeConstraintConfig(this.equalTo, this.in, this.after, this.before, this.withinLast, this.withinNext, this.dayOfWeek, this.dayOfMonth, this.dayOfYear, this.weekOfMonth, this.weekOfYear, this.month, this.year, this.hour, this.minute, this.second, Optional.of(config), this.nanosecond, this.offset, this.custom);
 	}
 	
 	/**
@@ -391,7 +416,8 @@ public record OffsetDateTimeConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull OffsetDateTimeConstraintConfig withNanosecond(@NonNull NumericFieldConstraintConfig config) {
-		return new OffsetDateTimeConstraintConfig(this.equalTo, this.in, this.after, this.before, this.withinLast, this.withinNext, this.dayOfWeek, this.dayOfMonth, this.dayOfYear, this.weekOfMonth, this.weekOfYear, this.month, this.year, this.hour, this.minute, this.second, this.millisecond, Optional.of(Objects.requireNonNull(config)), this.offset, this.custom);
+		Objects.requireNonNull(config, "Config for 'nanosecond' constraint must not be null");
+		return new OffsetDateTimeConstraintConfig(this.equalTo, this.in, this.after, this.before, this.withinLast, this.withinNext, this.dayOfWeek, this.dayOfMonth, this.dayOfYear, this.weekOfMonth, this.weekOfYear, this.month, this.year, this.hour, this.minute, this.second, this.millisecond, Optional.of(config), this.offset, this.custom);
 	}
 	
 	/**
@@ -401,7 +427,8 @@ public record OffsetDateTimeConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull OffsetDateTimeConstraintConfig withOffset(@NonNull ZoneOffsetConstraintConfig config) {
-		return new OffsetDateTimeConstraintConfig(this.equalTo, this.in, this.after, this.before, this.withinLast, this.withinNext, this.dayOfWeek, this.dayOfMonth, this.dayOfYear, this.weekOfMonth, this.weekOfYear, this.month, this.year, this.hour, this.minute, this.second, this.millisecond, this.nanosecond, Optional.of(Objects.requireNonNull(config)), this.custom);
+		Objects.requireNonNull(config, "Config for 'offset' constraint must not be null");
+		return new OffsetDateTimeConstraintConfig(this.equalTo, this.in, this.after, this.before, this.withinLast, this.withinNext, this.dayOfWeek, this.dayOfMonth, this.dayOfYear, this.weekOfMonth, this.weekOfYear, this.month, this.year, this.hour, this.minute, this.second, this.millisecond, this.nanosecond, Optional.of(config), this.custom);
 	}
 	
 	/**
@@ -411,6 +438,7 @@ public record OffsetDateTimeConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull OffsetDateTimeConstraintConfig withCustom(@NonNull Constraint<OffsetDateTime> constraint) {
-		return new OffsetDateTimeConstraintConfig(this.equalTo, this.in, this.after, this.before, this.withinLast, this.withinNext, this.dayOfWeek, this.dayOfMonth, this.dayOfYear, this.weekOfMonth, this.weekOfYear, this.month, this.year, this.hour, this.minute, this.second, this.millisecond, this.nanosecond, this.offset, Optional.of(Objects.requireNonNull(constraint)));
+		Objects.requireNonNull(constraint, "Custom constraint must not be null");
+		return new OffsetDateTimeConstraintConfig(this.equalTo, this.in, this.after, this.before, this.withinLast, this.withinNext, this.dayOfWeek, this.dayOfMonth, this.dayOfYear, this.weekOfMonth, this.weekOfYear, this.month, this.year, this.hour, this.minute, this.second, this.millisecond, this.nanosecond, this.offset, Optional.of(constraint));
 	}
 }

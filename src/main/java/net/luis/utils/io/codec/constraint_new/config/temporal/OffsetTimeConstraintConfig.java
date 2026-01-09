@@ -131,7 +131,8 @@ public record OffsetTimeConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull OffsetTimeConstraintConfig withEqualTo(@NonNull OffsetTime value) {
-		return new OffsetTimeConstraintConfig(Optional.of(Pair.of(Objects.requireNonNull(value), false)), this.in, this.after, this.before, this.withinLast, this.withinNext, this.hour, this.minute, this.second, this.millisecond, this.nanosecond, this.offset, this.custom);
+		Objects.requireNonNull(value, "Value for 'equal to' constraint must not be null");
+		return new OffsetTimeConstraintConfig(Optional.of(Pair.of(value, false)), this.in, this.after, this.before, this.withinLast, this.withinNext, this.hour, this.minute, this.second, this.millisecond, this.nanosecond, this.offset, this.custom);
 	}
 	
 	/**
@@ -141,7 +142,8 @@ public record OffsetTimeConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull OffsetTimeConstraintConfig withNotEqualTo(@NonNull OffsetTime value) {
-		return new OffsetTimeConstraintConfig(Optional.of(Pair.of(Objects.requireNonNull(value), true)), this.in, this.after, this.before, this.withinLast, this.withinNext, this.hour, this.minute, this.second, this.millisecond, this.nanosecond, this.offset, this.custom);
+		Objects.requireNonNull(value, "Value for 'not equal to' constraint must not be null");
+		return new OffsetTimeConstraintConfig(Optional.of(Pair.of(value, true)), this.in, this.after, this.before, this.withinLast, this.withinNext, this.hour, this.minute, this.second, this.millisecond, this.nanosecond, this.offset, this.custom);
 	}
 	
 	/**
@@ -151,6 +153,7 @@ public record OffsetTimeConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull OffsetTimeConstraintConfig withIn(@NonNull Collection<OffsetTime> values) {
+		Objects.requireNonNull(values, "Values for 'in' constraint must not be null");
 		return new OffsetTimeConstraintConfig(this.equalTo, Optional.of(Pair.of(Set.copyOf(values), false)), this.after, this.before, this.withinLast, this.withinNext, this.hour, this.minute, this.second, this.millisecond, this.nanosecond, this.offset, this.custom);
 	}
 	
@@ -161,6 +164,7 @@ public record OffsetTimeConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull OffsetTimeConstraintConfig withNotIn(@NonNull Collection<OffsetTime> values) {
+		Objects.requireNonNull(values, "Values for 'not in' constraint must not be null");
 		return new OffsetTimeConstraintConfig(this.equalTo, Optional.of(Pair.of(Set.copyOf(values), true)), this.after, this.before, this.withinLast, this.withinNext, this.hour, this.minute, this.second, this.millisecond, this.nanosecond, this.offset, this.custom);
 	}
 	
@@ -171,7 +175,8 @@ public record OffsetTimeConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull OffsetTimeConstraintConfig withAfter(@NonNull OffsetTime value) {
-		return new OffsetTimeConstraintConfig(this.equalTo, this.in, Optional.of(Pair.of(Objects.requireNonNull(value), false)), this.before, this.withinLast, this.withinNext, this.hour, this.minute, this.second, this.millisecond, this.nanosecond, this.offset, this.custom);
+		Objects.requireNonNull(value, "Value for 'after' constraint must not be null");
+		return new OffsetTimeConstraintConfig(this.equalTo, this.in, Optional.of(Pair.of(value, false)), this.before, this.withinLast, this.withinNext, this.hour, this.minute, this.second, this.millisecond, this.nanosecond, this.offset, this.custom);
 	}
 	
 	/**
@@ -181,7 +186,8 @@ public record OffsetTimeConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull OffsetTimeConstraintConfig withAfterOrEqual(@NonNull OffsetTime value) {
-		return new OffsetTimeConstraintConfig(this.equalTo, this.in, Optional.of(Pair.of(Objects.requireNonNull(value), true)), this.before, this.withinLast, this.withinNext, this.hour, this.minute, this.second, this.millisecond, this.nanosecond, this.offset, this.custom);
+		Objects.requireNonNull(value, "Value for 'after or equal' constraint must not be null");
+		return new OffsetTimeConstraintConfig(this.equalTo, this.in, Optional.of(Pair.of(value, true)), this.before, this.withinLast, this.withinNext, this.hour, this.minute, this.second, this.millisecond, this.nanosecond, this.offset, this.custom);
 	}
 	
 	/**
@@ -191,7 +197,8 @@ public record OffsetTimeConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull OffsetTimeConstraintConfig withBefore(@NonNull OffsetTime value) {
-		return new OffsetTimeConstraintConfig(this.equalTo, this.in, this.after, Optional.of(Pair.of(Objects.requireNonNull(value), false)), this.withinLast, this.withinNext, this.hour, this.minute, this.second, this.millisecond, this.nanosecond, this.offset, this.custom);
+		Objects.requireNonNull(value, "Value for 'before' constraint must not be null");
+		return new OffsetTimeConstraintConfig(this.equalTo, this.in, this.after, Optional.of(Pair.of(value, false)), this.withinLast, this.withinNext, this.hour, this.minute, this.second, this.millisecond, this.nanosecond, this.offset, this.custom);
 	}
 	
 	/**
@@ -201,7 +208,8 @@ public record OffsetTimeConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull OffsetTimeConstraintConfig withBeforeOrEqual(@NonNull OffsetTime value) {
-		return new OffsetTimeConstraintConfig(this.equalTo, this.in, this.after, Optional.of(Pair.of(Objects.requireNonNull(value), true)), this.withinLast, this.withinNext, this.hour, this.minute, this.second, this.millisecond, this.nanosecond, this.offset, this.custom);
+		Objects.requireNonNull(value, "Value for 'before or equal' constraint must not be null");
+		return new OffsetTimeConstraintConfig(this.equalTo, this.in, this.after, Optional.of(Pair.of(value, true)), this.withinLast, this.withinNext, this.hour, this.minute, this.second, this.millisecond, this.nanosecond, this.offset, this.custom);
 	}
 	
 	/**
@@ -212,7 +220,9 @@ public record OffsetTimeConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull OffsetTimeConstraintConfig withBetween(@NonNull OffsetTime after, @NonNull OffsetTime before) {
-		return new OffsetTimeConstraintConfig(this.equalTo, this.in, Optional.of(Pair.of(Objects.requireNonNull(after), false)), Optional.of(Pair.of(Objects.requireNonNull(before), false)), this.withinLast, this.withinNext, this.hour, this.minute, this.second, this.millisecond, this.nanosecond, this.offset, this.custom);
+		Objects.requireNonNull(after, "After value for 'between' constraint must not be null");
+		Objects.requireNonNull(before, "Before value for 'between' constraint must not be null");
+		return new OffsetTimeConstraintConfig(this.equalTo, this.in, Optional.of(Pair.of(after, false)), Optional.of(Pair.of(before, false)), this.withinLast, this.withinNext, this.hour, this.minute, this.second, this.millisecond, this.nanosecond, this.offset, this.custom);
 	}
 	
 	/**
@@ -223,7 +233,9 @@ public record OffsetTimeConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull OffsetTimeConstraintConfig withBetweenOrEqual(@NonNull OffsetTime after, @NonNull OffsetTime before) {
-		return new OffsetTimeConstraintConfig(this.equalTo, this.in, Optional.of(Pair.of(Objects.requireNonNull(after), true)), Optional.of(Pair.of(Objects.requireNonNull(before), true)), this.withinLast, this.withinNext, this.hour, this.minute, this.second, this.millisecond, this.nanosecond, this.offset, this.custom);
+		Objects.requireNonNull(after, "After value for 'between or equal' constraint must not be null");
+		Objects.requireNonNull(before, "Before value for 'between or equal' constraint must not be null");
+		return new OffsetTimeConstraintConfig(this.equalTo, this.in, Optional.of(Pair.of(after, true)), Optional.of(Pair.of(before, true)), this.withinLast, this.withinNext, this.hour, this.minute, this.second, this.millisecond, this.nanosecond, this.offset, this.custom);
 	}
 	
 	/**
@@ -233,7 +245,8 @@ public record OffsetTimeConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull OffsetTimeConstraintConfig withWithinLast(@NonNull Duration duration) {
-		return new OffsetTimeConstraintConfig(this.equalTo, this.in, this.after, this.before, Optional.of(Objects.requireNonNull(duration)), this.withinNext, this.hour, this.minute, this.second, this.millisecond, this.nanosecond, this.offset, this.custom);
+		Objects.requireNonNull(duration, "Duration for 'within last' constraint must not be null");
+		return new OffsetTimeConstraintConfig(this.equalTo, this.in, this.after, this.before, Optional.of(duration), this.withinNext, this.hour, this.minute, this.second, this.millisecond, this.nanosecond, this.offset, this.custom);
 	}
 	
 	/**
@@ -243,7 +256,8 @@ public record OffsetTimeConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull OffsetTimeConstraintConfig withWithinNext(@NonNull Duration duration) {
-		return new OffsetTimeConstraintConfig(this.equalTo, this.in, this.after, this.before, this.withinLast, Optional.of(Objects.requireNonNull(duration)), this.hour, this.minute, this.second, this.millisecond, this.nanosecond, this.offset, this.custom);
+		Objects.requireNonNull(duration, "Duration for 'within next' constraint must not be null");
+		return new OffsetTimeConstraintConfig(this.equalTo, this.in, this.after, this.before, this.withinLast, Optional.of(duration), this.hour, this.minute, this.second, this.millisecond, this.nanosecond, this.offset, this.custom);
 	}
 	
 	/**
@@ -253,7 +267,8 @@ public record OffsetTimeConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull OffsetTimeConstraintConfig withHour(@NonNull NumericFieldConstraintConfig config) {
-		return new OffsetTimeConstraintConfig(this.equalTo, this.in, this.after, this.before, this.withinLast, this.withinNext, Optional.of(Objects.requireNonNull(config)), this.minute, this.second, this.millisecond, this.nanosecond, this.offset, this.custom);
+		Objects.requireNonNull(config, "Config for 'hour' constraint must not be null");
+		return new OffsetTimeConstraintConfig(this.equalTo, this.in, this.after, this.before, this.withinLast, this.withinNext, Optional.of(config), this.minute, this.second, this.millisecond, this.nanosecond, this.offset, this.custom);
 	}
 	
 	/**
@@ -263,7 +278,8 @@ public record OffsetTimeConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull OffsetTimeConstraintConfig withMinute(@NonNull NumericFieldConstraintConfig config) {
-		return new OffsetTimeConstraintConfig(this.equalTo, this.in, this.after, this.before, this.withinLast, this.withinNext, this.hour, Optional.of(Objects.requireNonNull(config)), this.second, this.millisecond, this.nanosecond, this.offset, this.custom);
+		Objects.requireNonNull(config, "Config for 'minute' constraint must not be null");
+		return new OffsetTimeConstraintConfig(this.equalTo, this.in, this.after, this.before, this.withinLast, this.withinNext, this.hour, Optional.of(config), this.second, this.millisecond, this.nanosecond, this.offset, this.custom);
 	}
 	
 	/**
@@ -273,7 +289,8 @@ public record OffsetTimeConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull OffsetTimeConstraintConfig withSecond(@NonNull NumericFieldConstraintConfig config) {
-		return new OffsetTimeConstraintConfig(this.equalTo, this.in, this.after, this.before, this.withinLast, this.withinNext, this.hour, this.minute, Optional.of(Objects.requireNonNull(config)), this.millisecond, this.nanosecond, this.offset, this.custom);
+		Objects.requireNonNull(config, "Config for 'second' constraint must not be null");
+		return new OffsetTimeConstraintConfig(this.equalTo, this.in, this.after, this.before, this.withinLast, this.withinNext, this.hour, this.minute, Optional.of(config), this.millisecond, this.nanosecond, this.offset, this.custom);
 	}
 	
 	/**
@@ -283,7 +300,8 @@ public record OffsetTimeConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull OffsetTimeConstraintConfig withMillisecond(@NonNull NumericFieldConstraintConfig config) {
-		return new OffsetTimeConstraintConfig(this.equalTo, this.in, this.after, this.before, this.withinLast, this.withinNext, this.hour, this.minute, this.second, Optional.of(Objects.requireNonNull(config)), this.nanosecond, this.offset, this.custom);
+		Objects.requireNonNull(config, "Config for 'millisecond' constraint must not be null");
+		return new OffsetTimeConstraintConfig(this.equalTo, this.in, this.after, this.before, this.withinLast, this.withinNext, this.hour, this.minute, this.second, Optional.of(config), this.nanosecond, this.offset, this.custom);
 	}
 	
 	/**
@@ -293,7 +311,8 @@ public record OffsetTimeConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull OffsetTimeConstraintConfig withNanosecond(@NonNull NumericFieldConstraintConfig config) {
-		return new OffsetTimeConstraintConfig(this.equalTo, this.in, this.after, this.before, this.withinLast, this.withinNext, this.hour, this.minute, this.second, this.millisecond, Optional.of(Objects.requireNonNull(config)), this.offset, this.custom);
+		Objects.requireNonNull(config, "Config for 'nanosecond' constraint must not be null");
+		return new OffsetTimeConstraintConfig(this.equalTo, this.in, this.after, this.before, this.withinLast, this.withinNext, this.hour, this.minute, this.second, this.millisecond, Optional.of(config), this.offset, this.custom);
 	}
 	
 	/**
@@ -303,7 +322,8 @@ public record OffsetTimeConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull OffsetTimeConstraintConfig withOffset(@NonNull ZoneOffsetConstraintConfig config) {
-		return new OffsetTimeConstraintConfig(this.equalTo, this.in, this.after, this.before, this.withinLast, this.withinNext, this.hour, this.minute, this.second, this.millisecond, this.nanosecond, Optional.of(Objects.requireNonNull(config)), this.custom);
+		Objects.requireNonNull(config, "Config for 'offset' constraint must not be null");
+		return new OffsetTimeConstraintConfig(this.equalTo, this.in, this.after, this.before, this.withinLast, this.withinNext, this.hour, this.minute, this.second, this.millisecond, this.nanosecond, Optional.of(config), this.custom);
 	}
 	
 	/**
@@ -313,6 +333,7 @@ public record OffsetTimeConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull OffsetTimeConstraintConfig withCustom(@NonNull Constraint<OffsetTime> constraint) {
-		return new OffsetTimeConstraintConfig(this.equalTo, this.in, this.after, this.before, this.withinLast, this.withinNext, this.hour, this.minute, this.second, this.millisecond, this.nanosecond, this.offset, Optional.of(Objects.requireNonNull(constraint)));
+		Objects.requireNonNull(constraint, "Custom constraint must not be null");
+		return new OffsetTimeConstraintConfig(this.equalTo, this.in, this.after, this.before, this.withinLast, this.withinNext, this.hour, this.minute, this.second, this.millisecond, this.nanosecond, this.offset, Optional.of(constraint));
 	}
 }

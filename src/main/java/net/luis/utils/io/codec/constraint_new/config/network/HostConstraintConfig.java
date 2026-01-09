@@ -210,7 +210,8 @@ public record HostConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull HostConstraintConfig withEqualTo(@NonNull String value) {
-		return new HostConstraintConfig(Optional.of(Pair.of(Objects.requireNonNull(value), false)), this.in, this.minLength, this.maxLength, this.startsWith, this.startsWithAny, this.contains, this.containsAny, this.containsAll, this.containsOnly, this.endsWith, this.endsWithAny, this.matches, this.ipv4, this.ipv6, this.ip, this.ipType, this.inAnySubnet, this.domain, this.rootDomain, this.subDomain, this.custom);
+		Objects.requireNonNull(value, "Value for 'equal to' constraint must not be null");
+		return new HostConstraintConfig(Optional.of(Pair.of(value, false)), this.in, this.minLength, this.maxLength, this.startsWith, this.startsWithAny, this.contains, this.containsAny, this.containsAll, this.containsOnly, this.endsWith, this.endsWithAny, this.matches, this.ipv4, this.ipv6, this.ip, this.ipType, this.inAnySubnet, this.domain, this.rootDomain, this.subDomain, this.custom);
 	}
 	
 	/**
@@ -220,7 +221,8 @@ public record HostConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull HostConstraintConfig withNotEqualTo(@NonNull String value) {
-		return new HostConstraintConfig(Optional.of(Pair.of(Objects.requireNonNull(value), true)), this.in, this.minLength, this.maxLength, this.startsWith, this.startsWithAny, this.contains, this.containsAny, this.containsAll, this.containsOnly, this.endsWith, this.endsWithAny, this.matches, this.ipv4, this.ipv6, this.ip, this.ipType, this.inAnySubnet, this.domain, this.rootDomain, this.subDomain, this.custom);
+		Objects.requireNonNull(value, "Value for 'not equal to' constraint must not be null");
+		return new HostConstraintConfig(Optional.of(Pair.of(value, true)), this.in, this.minLength, this.maxLength, this.startsWith, this.startsWithAny, this.contains, this.containsAny, this.containsAll, this.containsOnly, this.endsWith, this.endsWithAny, this.matches, this.ipv4, this.ipv6, this.ip, this.ipType, this.inAnySubnet, this.domain, this.rootDomain, this.subDomain, this.custom);
 	}
 	
 	/**
@@ -230,6 +232,7 @@ public record HostConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull HostConstraintConfig withIn(@NonNull Collection<String> values) {
+		Objects.requireNonNull(values, "Values for 'in' constraint must not be null");
 		return new HostConstraintConfig(this.equalTo, Optional.of(Pair.of(Set.copyOf(values), false)), this.minLength, this.maxLength, this.startsWith, this.startsWithAny, this.contains, this.containsAny, this.containsAll, this.containsOnly, this.endsWith, this.endsWithAny, this.matches, this.ipv4, this.ipv6, this.ip, this.ipType, this.inAnySubnet, this.domain, this.rootDomain, this.subDomain, this.custom);
 	}
 	
@@ -240,6 +243,7 @@ public record HostConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull HostConstraintConfig withNotIn(@NonNull Collection<String> values) {
+		Objects.requireNonNull(values, "Values for 'not in' constraint must not be null");
 		return new HostConstraintConfig(this.equalTo, Optional.of(Pair.of(Set.copyOf(values), true)), this.minLength, this.maxLength, this.startsWith, this.startsWithAny, this.contains, this.containsAny, this.containsAll, this.containsOnly, this.endsWith, this.endsWithAny, this.matches, this.ipv4, this.ipv6, this.ip, this.ipType, this.inAnySubnet, this.domain, this.rootDomain, this.subDomain, this.custom);
 	}
 	
@@ -291,7 +295,8 @@ public record HostConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull HostConstraintConfig withStartsWith(@NonNull String prefix) {
-		return new HostConstraintConfig(this.equalTo, this.in, this.minLength, this.maxLength, Optional.of(Pair.of(Objects.requireNonNull(prefix), false)), this.startsWithAny, this.contains, this.containsAny, this.containsAll, this.containsOnly, this.endsWith, this.endsWithAny, this.matches, this.ipv4, this.ipv6, this.ip, this.ipType, this.inAnySubnet, this.domain, this.rootDomain, this.subDomain, this.custom);
+		Objects.requireNonNull(prefix, "Prefix for 'starts with' constraint must not be null");
+		return new HostConstraintConfig(this.equalTo, this.in, this.minLength, this.maxLength, Optional.of(Pair.of(prefix, false)), this.startsWithAny, this.contains, this.containsAny, this.containsAll, this.containsOnly, this.endsWith, this.endsWithAny, this.matches, this.ipv4, this.ipv6, this.ip, this.ipType, this.inAnySubnet, this.domain, this.rootDomain, this.subDomain, this.custom);
 	}
 	
 	/**
@@ -301,7 +306,8 @@ public record HostConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull HostConstraintConfig withNotStartsWith(@NonNull String prefix) {
-		return new HostConstraintConfig(this.equalTo, this.in, this.minLength, this.maxLength, Optional.of(Pair.of(Objects.requireNonNull(prefix), true)), this.startsWithAny, this.contains, this.containsAny, this.containsAll, this.containsOnly, this.endsWith, this.endsWithAny, this.matches, this.ipv4, this.ipv6, this.ip, this.ipType, this.inAnySubnet, this.domain, this.rootDomain, this.subDomain, this.custom);
+		Objects.requireNonNull(prefix, "Prefix for 'not starts with' constraint must not be null");
+		return new HostConstraintConfig(this.equalTo, this.in, this.minLength, this.maxLength, Optional.of(Pair.of(prefix, true)), this.startsWithAny, this.contains, this.containsAny, this.containsAll, this.containsOnly, this.endsWith, this.endsWithAny, this.matches, this.ipv4, this.ipv6, this.ip, this.ipType, this.inAnySubnet, this.domain, this.rootDomain, this.subDomain, this.custom);
 	}
 	
 	/**
@@ -311,6 +317,7 @@ public record HostConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull HostConstraintConfig withStartsWithAny(@NonNull Collection<String> prefixes) {
+		Objects.requireNonNull(prefixes, "Prefixes for 'starts with any' constraint must not be null");
 		return new HostConstraintConfig(this.equalTo, this.in, this.minLength, this.maxLength, this.startsWith, Optional.of(Pair.of(Set.copyOf(prefixes), false)), this.contains, this.containsAny, this.containsAll, this.containsOnly, this.endsWith, this.endsWithAny, this.matches, this.ipv4, this.ipv6, this.ip, this.ipType, this.inAnySubnet, this.domain, this.rootDomain, this.subDomain, this.custom);
 	}
 	
@@ -321,6 +328,7 @@ public record HostConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull HostConstraintConfig withStartsWithNone(@NonNull Collection<String> prefixes) {
+		Objects.requireNonNull(prefixes, "Prefixes for 'starts with none' constraint must not be null");
 		return new HostConstraintConfig(this.equalTo, this.in, this.minLength, this.maxLength, this.startsWith, Optional.of(Pair.of(Set.copyOf(prefixes), true)), this.contains, this.containsAny, this.containsAll, this.containsOnly, this.endsWith, this.endsWithAny, this.matches, this.ipv4, this.ipv6, this.ip, this.ipType, this.inAnySubnet, this.domain, this.rootDomain, this.subDomain, this.custom);
 	}
 	
@@ -331,7 +339,8 @@ public record HostConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull HostConstraintConfig withContains(@NonNull String substring) {
-		return new HostConstraintConfig(this.equalTo, this.in, this.minLength, this.maxLength, this.startsWith, this.startsWithAny, Optional.of(Pair.of(Objects.requireNonNull(substring), false)), this.containsAny, this.containsAll, this.containsOnly, this.endsWith, this.endsWithAny, this.matches, this.ipv4, this.ipv6, this.ip, this.ipType, this.inAnySubnet, this.domain, this.rootDomain, this.subDomain, this.custom);
+		Objects.requireNonNull(substring, "Substring for 'contains' constraint must not be null");
+		return new HostConstraintConfig(this.equalTo, this.in, this.minLength, this.maxLength, this.startsWith, this.startsWithAny, Optional.of(Pair.of(substring, false)), this.containsAny, this.containsAll, this.containsOnly, this.endsWith, this.endsWithAny, this.matches, this.ipv4, this.ipv6, this.ip, this.ipType, this.inAnySubnet, this.domain, this.rootDomain, this.subDomain, this.custom);
 	}
 	
 	/**
@@ -341,7 +350,8 @@ public record HostConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull HostConstraintConfig withNotContains(@NonNull String substring) {
-		return new HostConstraintConfig(this.equalTo, this.in, this.minLength, this.maxLength, this.startsWith, this.startsWithAny, Optional.of(Pair.of(Objects.requireNonNull(substring), true)), this.containsAny, this.containsAll, this.containsOnly, this.endsWith, this.endsWithAny, this.matches, this.ipv4, this.ipv6, this.ip, this.ipType, this.inAnySubnet, this.domain, this.rootDomain, this.subDomain, this.custom);
+		Objects.requireNonNull(substring, "Substring for 'not contains' constraint must not be null");
+		return new HostConstraintConfig(this.equalTo, this.in, this.minLength, this.maxLength, this.startsWith, this.startsWithAny, Optional.of(Pair.of(substring, true)), this.containsAny, this.containsAll, this.containsOnly, this.endsWith, this.endsWithAny, this.matches, this.ipv4, this.ipv6, this.ip, this.ipType, this.inAnySubnet, this.domain, this.rootDomain, this.subDomain, this.custom);
 	}
 	
 	/**
@@ -351,6 +361,7 @@ public record HostConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull HostConstraintConfig withContainsAny(@NonNull Collection<String> substrings) {
+		Objects.requireNonNull(substrings, "Substrings for 'contains any' constraint must not be null");
 		return new HostConstraintConfig(this.equalTo, this.in, this.minLength, this.maxLength, this.startsWith, this.startsWithAny, this.contains, Optional.of(Pair.of(Set.copyOf(substrings), false)), this.containsAll, this.containsOnly, this.endsWith, this.endsWithAny, this.matches, this.ipv4, this.ipv6, this.ip, this.ipType, this.inAnySubnet, this.domain, this.rootDomain, this.subDomain, this.custom);
 	}
 	
@@ -361,6 +372,7 @@ public record HostConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull HostConstraintConfig withContainsNone(@NonNull Collection<String> substrings) {
+		Objects.requireNonNull(substrings, "Substrings for 'contains none' constraint must not be null");
 		return new HostConstraintConfig(this.equalTo, this.in, this.minLength, this.maxLength, this.startsWith, this.startsWithAny, this.contains, Optional.of(Pair.of(Set.copyOf(substrings), true)), this.containsAll, this.containsOnly, this.endsWith, this.endsWithAny, this.matches, this.ipv4, this.ipv6, this.ip, this.ipType, this.inAnySubnet, this.domain, this.rootDomain, this.subDomain, this.custom);
 	}
 	
@@ -371,6 +383,7 @@ public record HostConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull HostConstraintConfig withContainsAll(@NonNull Collection<String> substrings) {
+		Objects.requireNonNull(substrings, "Substrings for 'contains all' constraint must not be null");
 		return new HostConstraintConfig(this.equalTo, this.in, this.minLength, this.maxLength, this.startsWith, this.startsWithAny, this.contains, this.containsAny, Optional.of(Set.copyOf(substrings)), this.containsOnly, this.endsWith, this.endsWithAny, this.matches, this.ipv4, this.ipv6, this.ip, this.ipType, this.inAnySubnet, this.domain, this.rootDomain, this.subDomain, this.custom);
 	}
 	
@@ -381,6 +394,7 @@ public record HostConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull HostConstraintConfig withContainsOnly(@NonNull Collection<String> substrings) {
+		Objects.requireNonNull(substrings, "Substrings for 'contains only' constraint must not be null");
 		return new HostConstraintConfig(this.equalTo, this.in, this.minLength, this.maxLength, this.startsWith, this.startsWithAny, this.contains, this.containsAny, this.containsAll, Optional.of(Set.copyOf(substrings)), this.endsWith, this.endsWithAny, this.matches, this.ipv4, this.ipv6, this.ip, this.ipType, this.inAnySubnet, this.domain, this.rootDomain, this.subDomain, this.custom);
 	}
 	
@@ -391,7 +405,8 @@ public record HostConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull HostConstraintConfig withEndsWith(@NonNull String suffix) {
-		return new HostConstraintConfig(this.equalTo, this.in, this.minLength, this.maxLength, this.startsWith, this.startsWithAny, this.contains, this.containsAny, this.containsAll, this.containsOnly, Optional.of(Pair.of(Objects.requireNonNull(suffix), false)), this.endsWithAny, this.matches, this.ipv4, this.ipv6, this.ip, this.ipType, this.inAnySubnet, this.domain, this.rootDomain, this.subDomain, this.custom);
+		Objects.requireNonNull(suffix, "Suffix for 'ends with' constraint must not be null");
+		return new HostConstraintConfig(this.equalTo, this.in, this.minLength, this.maxLength, this.startsWith, this.startsWithAny, this.contains, this.containsAny, this.containsAll, this.containsOnly, Optional.of(Pair.of(suffix, false)), this.endsWithAny, this.matches, this.ipv4, this.ipv6, this.ip, this.ipType, this.inAnySubnet, this.domain, this.rootDomain, this.subDomain, this.custom);
 	}
 	
 	/**
@@ -401,7 +416,8 @@ public record HostConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull HostConstraintConfig withNotEndsWith(@NonNull String suffix) {
-		return new HostConstraintConfig(this.equalTo, this.in, this.minLength, this.maxLength, this.startsWith, this.startsWithAny, this.contains, this.containsAny, this.containsAll, this.containsOnly, Optional.of(Pair.of(Objects.requireNonNull(suffix), true)), this.endsWithAny, this.matches, this.ipv4, this.ipv6, this.ip, this.ipType, this.inAnySubnet, this.domain, this.rootDomain, this.subDomain, this.custom);
+		Objects.requireNonNull(suffix, "Suffix for 'not ends with' constraint must not be null");
+		return new HostConstraintConfig(this.equalTo, this.in, this.minLength, this.maxLength, this.startsWith, this.startsWithAny, this.contains, this.containsAny, this.containsAll, this.containsOnly, Optional.of(Pair.of(suffix, true)), this.endsWithAny, this.matches, this.ipv4, this.ipv6, this.ip, this.ipType, this.inAnySubnet, this.domain, this.rootDomain, this.subDomain, this.custom);
 	}
 	
 	/**
@@ -411,6 +427,7 @@ public record HostConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull HostConstraintConfig withEndsWithAny(@NonNull Collection<String> suffixes) {
+		Objects.requireNonNull(suffixes, "Suffixes for 'ends with any' constraint must not be null");
 		return new HostConstraintConfig(this.equalTo, this.in, this.minLength, this.maxLength, this.startsWith, this.startsWithAny, this.contains, this.containsAny, this.containsAll, this.containsOnly, this.endsWith, Optional.of(Pair.of(Set.copyOf(suffixes), false)), this.matches, this.ipv4, this.ipv6, this.ip, this.ipType, this.inAnySubnet, this.domain, this.rootDomain, this.subDomain, this.custom);
 	}
 	
@@ -421,6 +438,7 @@ public record HostConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull HostConstraintConfig withEndsWithNone(@NonNull Collection<String> suffixes) {
+		Objects.requireNonNull(suffixes, "Suffixes for 'ends with none' constraint must not be null");
 		return new HostConstraintConfig(this.equalTo, this.in, this.minLength, this.maxLength, this.startsWith, this.startsWithAny, this.contains, this.containsAny, this.containsAll, this.containsOnly, this.endsWith, Optional.of(Pair.of(Set.copyOf(suffixes), true)), this.matches, this.ipv4, this.ipv6, this.ip, this.ipType, this.inAnySubnet, this.domain, this.rootDomain, this.subDomain, this.custom);
 	}
 	
@@ -431,6 +449,7 @@ public record HostConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull HostConstraintConfig withMatches(@NonNull String regex) {
+		Objects.requireNonNull(regex, "Regex for 'matches' constraint must not be null");
 		return new HostConstraintConfig(this.equalTo, this.in, this.minLength, this.maxLength, this.startsWith, this.startsWithAny, this.contains, this.containsAny, this.containsAll, this.containsOnly, this.endsWith, this.endsWithAny, Optional.of(Pair.of(Pattern.compile(regex), false)), this.ipv4, this.ipv6, this.ip, this.ipType, this.inAnySubnet, this.domain, this.rootDomain, this.subDomain, this.custom);
 	}
 	
@@ -441,7 +460,8 @@ public record HostConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull HostConstraintConfig withMatches(@NonNull Pattern pattern) {
-		return new HostConstraintConfig(this.equalTo, this.in, this.minLength, this.maxLength, this.startsWith, this.startsWithAny, this.contains, this.containsAny, this.containsAll, this.containsOnly, this.endsWith, this.endsWithAny, Optional.of(Pair.of(Objects.requireNonNull(pattern), false)), this.ipv4, this.ipv6, this.ip, this.ipType, this.inAnySubnet, this.domain, this.rootDomain, this.subDomain, this.custom);
+		Objects.requireNonNull(pattern, "Pattern for 'matches' constraint must not be null");
+		return new HostConstraintConfig(this.equalTo, this.in, this.minLength, this.maxLength, this.startsWith, this.startsWithAny, this.contains, this.containsAny, this.containsAll, this.containsOnly, this.endsWith, this.endsWithAny, Optional.of(Pair.of(pattern, false)), this.ipv4, this.ipv6, this.ip, this.ipType, this.inAnySubnet, this.domain, this.rootDomain, this.subDomain, this.custom);
 	}
 	
 	/**
@@ -451,6 +471,7 @@ public record HostConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull HostConstraintConfig withNotMatches(@NonNull String regex) {
+		Objects.requireNonNull(regex, "Regex for 'not matches' constraint must not be null");
 		return new HostConstraintConfig(this.equalTo, this.in, this.minLength, this.maxLength, this.startsWith, this.startsWithAny, this.contains, this.containsAny, this.containsAll, this.containsOnly, this.endsWith, this.endsWithAny, Optional.of(Pair.of(Pattern.compile(regex), true)), this.ipv4, this.ipv6, this.ip, this.ipType, this.inAnySubnet, this.domain, this.rootDomain, this.subDomain, this.custom);
 	}
 	
@@ -461,7 +482,8 @@ public record HostConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull HostConstraintConfig withNotMatches(@NonNull Pattern pattern) {
-		return new HostConstraintConfig(this.equalTo, this.in, this.minLength, this.maxLength, this.startsWith, this.startsWithAny, this.contains, this.containsAny, this.containsAll, this.containsOnly, this.endsWith, this.endsWithAny, Optional.of(Pair.of(Objects.requireNonNull(pattern), true)), this.ipv4, this.ipv6, this.ip, this.ipType, this.inAnySubnet, this.domain, this.rootDomain, this.subDomain, this.custom);
+		Objects.requireNonNull(pattern, "Pattern for 'not matches' constraint must not be null");
+		return new HostConstraintConfig(this.equalTo, this.in, this.minLength, this.maxLength, this.startsWith, this.startsWithAny, this.contains, this.containsAny, this.containsAll, this.containsOnly, this.endsWith, this.endsWithAny, Optional.of(Pair.of(pattern, true)), this.ipv4, this.ipv6, this.ip, this.ipType, this.inAnySubnet, this.domain, this.rootDomain, this.subDomain, this.custom);
 	}
 	
 	/**
@@ -489,7 +511,8 @@ public record HostConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull HostConstraintConfig withIp(@NonNull StringConstraintConfig config) {
-		return new HostConstraintConfig(this.equalTo, this.in, this.minLength, this.maxLength, this.startsWith, this.startsWithAny, this.contains, this.containsAny, this.containsAll, this.containsOnly, this.endsWith, this.endsWithAny, this.matches, this.ipv4, this.ipv6, Optional.of(Objects.requireNonNull(config)), this.ipType, this.inAnySubnet, this.domain, this.rootDomain, this.subDomain, this.custom);
+		Objects.requireNonNull(config, "Config for 'ip' constraint must not be null");
+		return new HostConstraintConfig(this.equalTo, this.in, this.minLength, this.maxLength, this.startsWith, this.startsWithAny, this.contains, this.containsAny, this.containsAll, this.containsOnly, this.endsWith, this.endsWithAny, this.matches, this.ipv4, this.ipv6, Optional.of(config), this.ipType, this.inAnySubnet, this.domain, this.rootDomain, this.subDomain, this.custom);
 	}
 	
 	/**
@@ -499,7 +522,8 @@ public record HostConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull HostConstraintConfig withIpType(@NonNull EnumConstraintConfig<IpAddressType> config) {
-		return new HostConstraintConfig(this.equalTo, this.in, this.minLength, this.maxLength, this.startsWith, this.startsWithAny, this.contains, this.containsAny, this.containsAll, this.containsOnly, this.endsWith, this.endsWithAny, this.matches, this.ipv4, this.ipv6, this.ip, Optional.of(Objects.requireNonNull(config)), this.inAnySubnet, this.domain, this.rootDomain, this.subDomain, this.custom);
+		Objects.requireNonNull(config, "Config for 'ip type' constraint must not be null");
+		return new HostConstraintConfig(this.equalTo, this.in, this.minLength, this.maxLength, this.startsWith, this.startsWithAny, this.contains, this.containsAny, this.containsAll, this.containsOnly, this.endsWith, this.endsWithAny, this.matches, this.ipv4, this.ipv6, this.ip, Optional.of(config), this.inAnySubnet, this.domain, this.rootDomain, this.subDomain, this.custom);
 	}
 	
 	/**
@@ -509,6 +533,7 @@ public record HostConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull HostConstraintConfig withInAnySubnet(@NonNull Collection<String> cidrs) {
+		Objects.requireNonNull(cidrs, "CIDRs for 'in any subnet' constraint must not be null");
 		return new HostConstraintConfig(this.equalTo, this.in, this.minLength, this.maxLength, this.startsWith, this.startsWithAny, this.contains, this.containsAny, this.containsAll, this.containsOnly, this.endsWith, this.endsWithAny, this.matches, this.ipv4, this.ipv6, this.ip, this.ipType, Optional.of(Pair.of(Set.copyOf(cidrs), false)), this.domain, this.rootDomain, this.subDomain, this.custom);
 	}
 	
@@ -519,6 +544,7 @@ public record HostConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull HostConstraintConfig withNotInAnySubnet(@NonNull Collection<String> cidrs) {
+		Objects.requireNonNull(cidrs, "CIDRs for 'not in any subnet' constraint must not be null");
 		return new HostConstraintConfig(this.equalTo, this.in, this.minLength, this.maxLength, this.startsWith, this.startsWithAny, this.contains, this.containsAny, this.containsAll, this.containsOnly, this.endsWith, this.endsWithAny, this.matches, this.ipv4, this.ipv6, this.ip, this.ipType, Optional.of(Pair.of(Set.copyOf(cidrs), true)), this.domain, this.rootDomain, this.subDomain, this.custom);
 	}
 	
@@ -529,7 +555,8 @@ public record HostConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull HostConstraintConfig withDomain(@NonNull StringConstraintConfig config) {
-		return new HostConstraintConfig(this.equalTo, this.in, this.minLength, this.maxLength, this.startsWith, this.startsWithAny, this.contains, this.containsAny, this.containsAll, this.containsOnly, this.endsWith, this.endsWithAny, this.matches, this.ipv4, this.ipv6, this.ip, this.ipType, this.inAnySubnet, Optional.of(Objects.requireNonNull(config)), this.rootDomain, this.subDomain, this.custom);
+		Objects.requireNonNull(config, "Config for 'domain' constraint must not be null");
+		return new HostConstraintConfig(this.equalTo, this.in, this.minLength, this.maxLength, this.startsWith, this.startsWithAny, this.contains, this.containsAny, this.containsAll, this.containsOnly, this.endsWith, this.endsWithAny, this.matches, this.ipv4, this.ipv6, this.ip, this.ipType, this.inAnySubnet, Optional.of(config), this.rootDomain, this.subDomain, this.custom);
 	}
 	
 	/**
@@ -557,6 +584,7 @@ public record HostConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull HostConstraintConfig withCustom(@NonNull Constraint<String> constraint) {
-		return new HostConstraintConfig(this.equalTo, this.in, this.minLength, this.maxLength, this.startsWith, this.startsWithAny, this.contains, this.containsAny, this.containsAll, this.containsOnly, this.endsWith, this.endsWithAny, this.matches, this.ipv4, this.ipv6, this.ip, this.ipType, this.inAnySubnet, this.domain, this.rootDomain, this.subDomain, Optional.of(Objects.requireNonNull(constraint)));
+		Objects.requireNonNull(constraint, "Custom constraint must not be null");
+		return new HostConstraintConfig(this.equalTo, this.in, this.minLength, this.maxLength, this.startsWith, this.startsWithAny, this.contains, this.containsAny, this.containsAll, this.containsOnly, this.endsWith, this.endsWithAny, this.matches, this.ipv4, this.ipv6, this.ip, this.ipType, this.inAnySubnet, this.domain, this.rootDomain, this.subDomain, Optional.of(constraint));
 	}
 }

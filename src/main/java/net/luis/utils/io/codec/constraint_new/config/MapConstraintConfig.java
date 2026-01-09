@@ -188,7 +188,8 @@ public record MapConstraintConfig<K, V>(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull MapConstraintConfig<K, V> withEqualTo(@NonNull Map<K, V> value) {
-		return new MapConstraintConfig<>(Optional.of(Pair.of(Map.copyOf(Objects.requireNonNull(value)), false)), this.in, this.min, this.max, this.requiredKeys, this.forbiddenKeys, this.allowedKeys, this.nonNullKeys, this.uniqueValues, this.nonNullValues, this.custom);
+		Objects.requireNonNull(value, "Value for 'equal to' constraint must not be null");
+		return new MapConstraintConfig<>(Optional.of(Pair.of(Map.copyOf(value), false)), this.in, this.min, this.max, this.requiredKeys, this.forbiddenKeys, this.allowedKeys, this.nonNullKeys, this.uniqueValues, this.nonNullValues, this.custom);
 	}
 
 	/**
@@ -198,7 +199,8 @@ public record MapConstraintConfig<K, V>(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull MapConstraintConfig<K, V> withNotEqualTo(@NonNull Map<K, V> value) {
-		return new MapConstraintConfig<>(Optional.of(Pair.of(Map.copyOf(Objects.requireNonNull(value)), true)), this.in, this.min, this.max, this.requiredKeys, this.forbiddenKeys, this.allowedKeys, this.nonNullKeys, this.uniqueValues, this.nonNullValues, this.custom);
+		Objects.requireNonNull(value, "Value for 'not equal to' constraint must not be null");
+		return new MapConstraintConfig<>(Optional.of(Pair.of(Map.copyOf(value), true)), this.in, this.min, this.max, this.requiredKeys, this.forbiddenKeys, this.allowedKeys, this.nonNullKeys, this.uniqueValues, this.nonNullValues, this.custom);
 	}
 
 	/**
@@ -208,10 +210,13 @@ public record MapConstraintConfig<K, V>(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull MapConstraintConfig<K, V> withIn(@NonNull Collection<Map<K, V>> values) {
+		Objects.requireNonNull(values, "Values for 'in' constraint must not be null");
+		
 		Set<Map<K, V>> copies = new HashSet<>();
-		for (Map<K, V> value : Objects.requireNonNull(values)) {
+		for (Map<K, V> value : values) {
 			copies.add(Map.copyOf(value));
 		}
+		
 		return new MapConstraintConfig<>(this.equalTo, Optional.of(Pair.of(Set.copyOf(copies), false)), this.min, this.max, this.requiredKeys, this.forbiddenKeys, this.allowedKeys, this.nonNullKeys, this.uniqueValues, this.nonNullValues, this.custom);
 	}
 
@@ -222,10 +227,13 @@ public record MapConstraintConfig<K, V>(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull MapConstraintConfig<K, V> withNotIn(@NonNull Collection<Map<K, V>> values) {
+		Objects.requireNonNull(values, "Values for 'not in' constraint must not be null");
+		
 		Set<Map<K, V>> copies = new HashSet<>();
-		for (Map<K, V> value : Objects.requireNonNull(values)) {
+		for (Map<K, V> value : values) {
 			copies.add(Map.copyOf(value));
 		}
+		
 		return new MapConstraintConfig<>(this.equalTo, Optional.of(Pair.of(Set.copyOf(copies), true)), this.min, this.max, this.requiredKeys, this.forbiddenKeys, this.allowedKeys, this.nonNullKeys, this.uniqueValues, this.nonNullValues, this.custom);
 	}
 
@@ -277,8 +285,10 @@ public record MapConstraintConfig<K, V>(
 	 * @return A new config with the required key constraint applied
 	 */
 	public @NonNull MapConstraintConfig<K, V> withRequiredKey(@NonNull K key) {
+		Objects.requireNonNull(key, "Key for 'required key' constraint must not be null");
+		
 		Set<K> keys = new HashSet<>(this.requiredKeys.orElse(Set.of()));
-		keys.add(Objects.requireNonNull(key, "Key must not be null"));
+		keys.add(key);
 		return new MapConstraintConfig<>(this.equalTo, this.in, this.min, this.max, Optional.of(Set.copyOf(keys)), this.forbiddenKeys, this.allowedKeys, this.nonNullKeys, this.uniqueValues, this.nonNullValues, this.custom);
 	}
 	
@@ -289,8 +299,10 @@ public record MapConstraintConfig<K, V>(
 	 * @return A new config with the required keys constraint applied
 	 */
 	public @NonNull MapConstraintConfig<K, V> withRequiredKeys(@NonNull Collection<K> keys) {
+		Objects.requireNonNull(keys, "Keys for 'required keys' constraint must not be null");
+		
 		Set<K> allKeys = new HashSet<>(this.requiredKeys.orElse(Set.of()));
-		allKeys.addAll(Objects.requireNonNull(keys, "Keys must not be null"));
+		allKeys.addAll(keys);
 		return new MapConstraintConfig<>(this.equalTo, this.in, this.min, this.max, Optional.of(Set.copyOf(allKeys)), this.forbiddenKeys, this.allowedKeys, this.nonNullKeys, this.uniqueValues, this.nonNullValues, this.custom);
 	}
 	
@@ -301,8 +313,10 @@ public record MapConstraintConfig<K, V>(
 	 * @return A new config with the forbidden key constraint applied
 	 */
 	public @NonNull MapConstraintConfig<K, V> withForbiddenKey(@NonNull K key) {
+		Objects.requireNonNull(key, "Key for 'forbidden key' constraint must not be null");
+		
 		Set<K> keys = new HashSet<>(this.forbiddenKeys.orElse(Set.of()));
-		keys.add(Objects.requireNonNull(key, "Key must not be null"));
+		keys.add(key);
 		return new MapConstraintConfig<>(this.equalTo, this.in, this.min, this.max, this.requiredKeys, Optional.of(Set.copyOf(keys)), this.allowedKeys, this.nonNullKeys, this.uniqueValues, this.nonNullValues, this.custom);
 	}
 	
@@ -313,8 +327,10 @@ public record MapConstraintConfig<K, V>(
 	 * @return A new config with the forbidden keys constraint applied
 	 */
 	public @NonNull MapConstraintConfig<K, V> withForbiddenKeys(@NonNull Collection<K> keys) {
+		Objects.requireNonNull(keys, "Keys for 'forbidden keys' constraint must not be null");
+		
 		Set<K> allKeys = new HashSet<>(this.forbiddenKeys.orElse(Set.of()));
-		allKeys.addAll(Objects.requireNonNull(keys, "Keys must not be null"));
+		allKeys.addAll(keys);
 		return new MapConstraintConfig<>(this.equalTo, this.in, this.min, this.max, this.requiredKeys, Optional.of(Set.copyOf(allKeys)), this.allowedKeys, this.nonNullKeys, this.uniqueValues, this.nonNullValues, this.custom);
 	}
 	
@@ -325,8 +341,10 @@ public record MapConstraintConfig<K, V>(
 	 * @return A new config with the allowed key constraint applied
 	 */
 	public @NonNull MapConstraintConfig<K, V> withAllowedKey(@NonNull K key) {
+		Objects.requireNonNull(key, "Key for 'allowed key' constraint must not be null");
+		
 		Set<K> keys = new HashSet<>(this.allowedKeys.orElse(Set.of()));
-		keys.add(Objects.requireNonNull(key, "Key must not be null"));
+		keys.add(key);
 		return new MapConstraintConfig<>(this.equalTo, this.in, this.min, this.max, this.requiredKeys, this.forbiddenKeys, Optional.of(Set.copyOf(keys)), this.nonNullKeys, this.uniqueValues, this.nonNullValues, this.custom);
 	}
 	
@@ -337,8 +355,10 @@ public record MapConstraintConfig<K, V>(
 	 * @return A new config with the allowed keys constraint applied
 	 */
 	public @NonNull MapConstraintConfig<K, V> withAllowedKeys(@NonNull Collection<K> keys) {
+		Objects.requireNonNull(keys, "Keys for 'allowed keys' constraint must not be null");
+		
 		Set<K> allKeys = new HashSet<>(this.allowedKeys.orElse(Set.of()));
-		allKeys.addAll(Objects.requireNonNull(keys, "Keys must not be null"));
+		allKeys.addAll(keys);
 		return new MapConstraintConfig<>(this.equalTo, this.in, this.min, this.max, this.requiredKeys, this.forbiddenKeys, Optional.of(Set.copyOf(allKeys)), this.nonNullKeys, this.uniqueValues, this.nonNullValues, this.custom);
 	}
 	
@@ -376,6 +396,7 @@ public record MapConstraintConfig<K, V>(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull MapConstraintConfig<K, V> withCustom(@NonNull Constraint<Map<K, V>> constraint) {
-		return new MapConstraintConfig<>(this.equalTo, this.in, this.min, this.max, this.requiredKeys, this.forbiddenKeys, this.allowedKeys, this.nonNullKeys, this.uniqueValues, this.nonNullValues, Optional.of(Objects.requireNonNull(constraint)));
+		Objects.requireNonNull(constraint, "Custom constraint must not be null");
+		return new MapConstraintConfig<>(this.equalTo, this.in, this.min, this.max, this.requiredKeys, this.forbiddenKeys, this.allowedKeys, this.nonNullKeys, this.uniqueValues, this.nonNullValues, Optional.of(constraint));
 	}
 }

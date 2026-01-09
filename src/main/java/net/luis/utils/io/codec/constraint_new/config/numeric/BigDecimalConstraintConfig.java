@@ -171,7 +171,8 @@ public record BigDecimalConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull BigDecimalConstraintConfig withEqualTo(@NonNull BigDecimal value) {
-		return new BigDecimalConstraintConfig(Optional.of(Pair.of(Objects.requireNonNull(value), false)), this.in, this.min, this.max, this.positive, this.negative, this.zero, this.percentage, this.integral, this.normalized, this.scaleMin, this.scaleMax, this.precisionMin, this.precisionMax, this.custom);
+		Objects.requireNonNull(value, "Value for 'equal to' constraint must not be null");
+		return new BigDecimalConstraintConfig(Optional.of(Pair.of(value, false)), this.in, this.min, this.max, this.positive, this.negative, this.zero, this.percentage, this.integral, this.normalized, this.scaleMin, this.scaleMax, this.precisionMin, this.precisionMax, this.custom);
 	}
 	
 	/**
@@ -181,7 +182,8 @@ public record BigDecimalConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull BigDecimalConstraintConfig withNotEqualTo(@NonNull BigDecimal value) {
-		return new BigDecimalConstraintConfig(Optional.of(Pair.of(Objects.requireNonNull(value), true)), this.in, this.min, this.max, this.positive, this.negative, this.zero, this.percentage, this.integral, this.normalized, this.scaleMin, this.scaleMax, this.precisionMin, this.precisionMax, this.custom);
+		Objects.requireNonNull(value, "Value for 'not equal to' constraint must not be null");
+		return new BigDecimalConstraintConfig(Optional.of(Pair.of(value, true)), this.in, this.min, this.max, this.positive, this.negative, this.zero, this.percentage, this.integral, this.normalized, this.scaleMin, this.scaleMax, this.precisionMin, this.precisionMax, this.custom);
 	}
 	
 	/**
@@ -191,6 +193,7 @@ public record BigDecimalConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull BigDecimalConstraintConfig withIn(@NonNull Collection<BigDecimal> values) {
+		Objects.requireNonNull(values, "Values for 'in' constraint must not be null");
 		return new BigDecimalConstraintConfig(this.equalTo, Optional.of(Pair.of(Set.copyOf(values), false)), this.min, this.max, this.positive, this.negative, this.zero, this.percentage, this.integral, this.normalized, this.scaleMin, this.scaleMax, this.precisionMin, this.precisionMax, this.custom);
 	}
 	
@@ -201,6 +204,7 @@ public record BigDecimalConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull BigDecimalConstraintConfig withNotIn(@NonNull Collection<BigDecimal> values) {
+		Objects.requireNonNull(values, "Values for 'not in' constraint must not be null");
 		return new BigDecimalConstraintConfig(this.equalTo, Optional.of(Pair.of(Set.copyOf(values), true)), this.min, this.max, this.positive, this.negative, this.zero, this.percentage, this.integral, this.normalized, this.scaleMin, this.scaleMax, this.precisionMin, this.precisionMax, this.custom);
 	}
 	
@@ -211,7 +215,8 @@ public record BigDecimalConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull BigDecimalConstraintConfig withGreaterThan(@NonNull BigDecimal value) {
-		return new BigDecimalConstraintConfig(this.equalTo, this.in, Optional.of(Pair.of(Objects.requireNonNull(value), false)), this.max, this.positive, this.negative, this.zero, this.percentage, this.integral, this.normalized, this.scaleMin, this.scaleMax, this.precisionMin, this.precisionMax, this.custom);
+		Objects.requireNonNull(value, "Value for 'greater than' constraint must not be null");
+		return new BigDecimalConstraintConfig(this.equalTo, this.in, Optional.of(Pair.of(value, false)), this.max, this.positive, this.negative, this.zero, this.percentage, this.integral, this.normalized, this.scaleMin, this.scaleMax, this.precisionMin, this.precisionMax, this.custom);
 	}
 	
 	/**
@@ -221,7 +226,8 @@ public record BigDecimalConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull BigDecimalConstraintConfig withGreaterThanOrEqual(@NonNull BigDecimal value) {
-		return new BigDecimalConstraintConfig(this.equalTo, this.in, Optional.of(Pair.of(Objects.requireNonNull(value), true)), this.max, this.positive, this.negative, this.zero, this.percentage, this.integral, this.normalized, this.scaleMin, this.scaleMax, this.precisionMin, this.precisionMax, this.custom);
+		Objects.requireNonNull(value, "Value for 'greater than or equal' constraint must not be null");
+		return new BigDecimalConstraintConfig(this.equalTo, this.in, Optional.of(Pair.of(value, true)), this.max, this.positive, this.negative, this.zero, this.percentage, this.integral, this.normalized, this.scaleMin, this.scaleMax, this.precisionMin, this.precisionMax, this.custom);
 	}
 	
 	/**
@@ -231,7 +237,8 @@ public record BigDecimalConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull BigDecimalConstraintConfig withLessThan(@NonNull BigDecimal value) {
-		return new BigDecimalConstraintConfig(this.equalTo, this.in, this.min, Optional.of(Pair.of(Objects.requireNonNull(value), false)), this.positive, this.negative, this.zero, this.percentage, this.integral, this.normalized, this.scaleMin, this.scaleMax, this.precisionMin, this.precisionMax, this.custom);
+		Objects.requireNonNull(value, "Value for 'less than' constraint must not be null");
+		return new BigDecimalConstraintConfig(this.equalTo, this.in, this.min, Optional.of(Pair.of(value, false)), this.positive, this.negative, this.zero, this.percentage, this.integral, this.normalized, this.scaleMin, this.scaleMax, this.precisionMin, this.precisionMax, this.custom);
 	}
 	
 	/**
@@ -241,7 +248,8 @@ public record BigDecimalConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull BigDecimalConstraintConfig withLessThanOrEqual(@NonNull BigDecimal value) {
-		return new BigDecimalConstraintConfig(this.equalTo, this.in, this.min, Optional.of(Pair.of(Objects.requireNonNull(value), true)), this.positive, this.negative, this.zero, this.percentage, this.integral, this.normalized, this.scaleMin, this.scaleMax, this.precisionMin, this.precisionMax, this.custom);
+		Objects.requireNonNull(value, "Value for 'less than or equal' constraint must not be null");
+		return new BigDecimalConstraintConfig(this.equalTo, this.in, this.min, Optional.of(Pair.of(value, true)), this.positive, this.negative, this.zero, this.percentage, this.integral, this.normalized, this.scaleMin, this.scaleMax, this.precisionMin, this.precisionMax, this.custom);
 	}
 	
 	/**
@@ -252,7 +260,9 @@ public record BigDecimalConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull BigDecimalConstraintConfig withBetween(@NonNull BigDecimal min, @NonNull BigDecimal max) {
-		return new BigDecimalConstraintConfig(this.equalTo, this.in, Optional.of(Pair.of(Objects.requireNonNull(min), false)), Optional.of(Pair.of(Objects.requireNonNull(max), false)), this.positive, this.negative, this.zero, this.percentage, this.integral, this.normalized, this.scaleMin, this.scaleMax, this.precisionMin, this.precisionMax, this.custom);
+		Objects.requireNonNull(min, "Min value for 'between' constraint must not be null");
+		Objects.requireNonNull(max, "Max value for 'between' constraint must not be null");
+		return new BigDecimalConstraintConfig(this.equalTo, this.in, Optional.of(Pair.of(min, false)), Optional.of(Pair.of(max, false)), this.positive, this.negative, this.zero, this.percentage, this.integral, this.normalized, this.scaleMin, this.scaleMax, this.precisionMin, this.precisionMax, this.custom);
 	}
 	
 	/**
@@ -263,7 +273,9 @@ public record BigDecimalConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull BigDecimalConstraintConfig withBetweenOrEqual(@NonNull BigDecimal min, @NonNull BigDecimal max) {
-		return new BigDecimalConstraintConfig(this.equalTo, this.in, Optional.of(Pair.of(Objects.requireNonNull(min), true)), Optional.of(Pair.of(Objects.requireNonNull(max), true)), this.positive, this.negative, this.zero, this.percentage, this.integral, this.normalized, this.scaleMin, this.scaleMax, this.precisionMin, this.precisionMax, this.custom);
+		Objects.requireNonNull(min, "Min value for 'between or equal' constraint must not be null");
+		Objects.requireNonNull(max, "Max value for 'between or equal' constraint must not be null");
+		return new BigDecimalConstraintConfig(this.equalTo, this.in, Optional.of(Pair.of(min, true)), Optional.of(Pair.of(max, true)), this.positive, this.negative, this.zero, this.percentage, this.integral, this.normalized, this.scaleMin, this.scaleMax, this.precisionMin, this.precisionMax, this.custom);
 	}
 	
 	/**
@@ -436,6 +448,7 @@ public record BigDecimalConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull BigDecimalConstraintConfig withCustom(@NonNull Constraint<BigDecimal> constraint) {
-		return new BigDecimalConstraintConfig(this.equalTo, this.in, this.min, this.max, this.positive, this.negative, this.zero, this.percentage, this.integral, this.normalized, this.scaleMin, this.scaleMax, this.precisionMin, this.precisionMax, Optional.of(Objects.requireNonNull(constraint)));
+		Objects.requireNonNull(constraint, "Custom constraint must not be null");
+		return new BigDecimalConstraintConfig(this.equalTo, this.in, this.min, this.max, this.positive, this.negative, this.zero, this.percentage, this.integral, this.normalized, this.scaleMin, this.scaleMax, this.precisionMin, this.precisionMax, Optional.of(constraint));
 	}
 }

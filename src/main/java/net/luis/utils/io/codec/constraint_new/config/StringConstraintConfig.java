@@ -242,7 +242,8 @@ public record StringConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull StringConstraintConfig withEqualTo(@NonNull String value) {
-		return new StringConstraintConfig(Optional.of(Pair.of(Objects.requireNonNull(value), false)), this.in, this.equalToIgnoreCase, this.inIgnoreCase, this.minLength, this.maxLength, this.startsWith, this.startsWithAny, this.contains, this.containsAny, this.containsAll, this.containsOnly, this.endsWith, this.endsWithAny, this.matches, this.trimmed, this.blank, this.notBlank, this.upperCase, this.lowerCase, this.numeric, this.alphabetic, this.alphanumeric, this.ascii, this.latin1, this.custom);
+		Objects.requireNonNull(value, "Value for 'equal to' constraint must not be null");
+		return new StringConstraintConfig(Optional.of(Pair.of(value, false)), this.in, this.equalToIgnoreCase, this.inIgnoreCase, this.minLength, this.maxLength, this.startsWith, this.startsWithAny, this.contains, this.containsAny, this.containsAll, this.containsOnly, this.endsWith, this.endsWithAny, this.matches, this.trimmed, this.blank, this.notBlank, this.upperCase, this.lowerCase, this.numeric, this.alphabetic, this.alphanumeric, this.ascii, this.latin1, this.custom);
 	}
 
 	/**
@@ -252,7 +253,8 @@ public record StringConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull StringConstraintConfig withNotEqualTo(@NonNull String value) {
-		return new StringConstraintConfig(Optional.of(Pair.of(Objects.requireNonNull(value), true)), this.in, this.equalToIgnoreCase, this.inIgnoreCase, this.minLength, this.maxLength, this.startsWith, this.startsWithAny, this.contains, this.containsAny, this.containsAll, this.containsOnly, this.endsWith, this.endsWithAny, this.matches, this.trimmed, this.blank, this.notBlank, this.upperCase, this.lowerCase, this.numeric, this.alphabetic, this.alphanumeric, this.ascii, this.latin1, this.custom);
+		Objects.requireNonNull(value, "Value for 'not equal to' constraint must not be null");
+		return new StringConstraintConfig(Optional.of(Pair.of(value, true)), this.in, this.equalToIgnoreCase, this.inIgnoreCase, this.minLength, this.maxLength, this.startsWith, this.startsWithAny, this.contains, this.containsAny, this.containsAll, this.containsOnly, this.endsWith, this.endsWithAny, this.matches, this.trimmed, this.blank, this.notBlank, this.upperCase, this.lowerCase, this.numeric, this.alphabetic, this.alphanumeric, this.ascii, this.latin1, this.custom);
 	}
 
 	/**
@@ -262,6 +264,7 @@ public record StringConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull StringConstraintConfig withIn(@NonNull Collection<String> values) {
+		Objects.requireNonNull(values, "Values for 'in' constraint must not be null");
 		return new StringConstraintConfig(this.equalTo, Optional.of(Pair.of(Set.copyOf(values), false)), this.equalToIgnoreCase, this.inIgnoreCase, this.minLength, this.maxLength, this.startsWith, this.startsWithAny, this.contains, this.containsAny, this.containsAll, this.containsOnly, this.endsWith, this.endsWithAny, this.matches, this.trimmed, this.blank, this.notBlank, this.upperCase, this.lowerCase, this.numeric, this.alphabetic, this.alphanumeric, this.ascii, this.latin1, this.custom);
 	}
 
@@ -272,6 +275,7 @@ public record StringConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull StringConstraintConfig withNotIn(@NonNull Collection<String> values) {
+		Objects.requireNonNull(values, "Values for 'not in' constraint must not be null");
 		return new StringConstraintConfig(this.equalTo, Optional.of(Pair.of(Set.copyOf(values), true)), this.equalToIgnoreCase, this.inIgnoreCase, this.minLength, this.maxLength, this.startsWith, this.startsWithAny, this.contains, this.containsAny, this.containsAll, this.containsOnly, this.endsWith, this.endsWithAny, this.matches, this.trimmed, this.blank, this.notBlank, this.upperCase, this.lowerCase, this.numeric, this.alphabetic, this.alphanumeric, this.ascii, this.latin1, this.custom);
 	}
 
@@ -282,7 +286,8 @@ public record StringConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull StringConstraintConfig withEqualToIgnoreCase(@NonNull String value) {
-		return new StringConstraintConfig(this.equalTo, this.in, Optional.of(Pair.of(Objects.requireNonNull(value), false)), this.inIgnoreCase, this.minLength, this.maxLength, this.startsWith, this.startsWithAny, this.contains, this.containsAny, this.containsAll, this.containsOnly, this.endsWith, this.endsWithAny, this.matches, this.trimmed, this.blank, this.notBlank, this.upperCase, this.lowerCase, this.numeric, this.alphabetic, this.alphanumeric, this.ascii, this.latin1, this.custom);
+		Objects.requireNonNull(value, "Value for 'equal to ignore case' constraint must not be null");
+		return new StringConstraintConfig(this.equalTo, this.in, Optional.of(Pair.of(value, false)), this.inIgnoreCase, this.minLength, this.maxLength, this.startsWith, this.startsWithAny, this.contains, this.containsAny, this.containsAll, this.containsOnly, this.endsWith, this.endsWithAny, this.matches, this.trimmed, this.blank, this.notBlank, this.upperCase, this.lowerCase, this.numeric, this.alphabetic, this.alphanumeric, this.ascii, this.latin1, this.custom);
 	}
 
 	/**
@@ -292,7 +297,8 @@ public record StringConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull StringConstraintConfig withNotEqualToIgnoreCase(@NonNull String value) {
-		return new StringConstraintConfig(this.equalTo, this.in, Optional.of(Pair.of(Objects.requireNonNull(value), true)), this.inIgnoreCase, this.minLength, this.maxLength, this.startsWith, this.startsWithAny, this.contains, this.containsAny, this.containsAll, this.containsOnly, this.endsWith, this.endsWithAny, this.matches, this.trimmed, this.blank, this.notBlank, this.upperCase, this.lowerCase, this.numeric, this.alphabetic, this.alphanumeric, this.ascii, this.latin1, this.custom);
+		Objects.requireNonNull(value, "Value for 'not equal to ignore case' constraint must not be null");
+		return new StringConstraintConfig(this.equalTo, this.in, Optional.of(Pair.of(value, true)), this.inIgnoreCase, this.minLength, this.maxLength, this.startsWith, this.startsWithAny, this.contains, this.containsAny, this.containsAll, this.containsOnly, this.endsWith, this.endsWithAny, this.matches, this.trimmed, this.blank, this.notBlank, this.upperCase, this.lowerCase, this.numeric, this.alphabetic, this.alphanumeric, this.ascii, this.latin1, this.custom);
 	}
 
 	/**
@@ -302,6 +308,7 @@ public record StringConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull StringConstraintConfig withInIgnoreCase(@NonNull Collection<String> values) {
+		Objects.requireNonNull(values, "Values for 'in ignore case' constraint must not be null");
 		return new StringConstraintConfig(this.equalTo, this.in, this.equalToIgnoreCase, Optional.of(Pair.of(Set.copyOf(values), false)), this.minLength, this.maxLength, this.startsWith, this.startsWithAny, this.contains, this.containsAny, this.containsAll, this.containsOnly, this.endsWith, this.endsWithAny, this.matches, this.trimmed, this.blank, this.notBlank, this.upperCase, this.lowerCase, this.numeric, this.alphabetic, this.alphanumeric, this.ascii, this.latin1, this.custom);
 	}
 
@@ -312,6 +319,7 @@ public record StringConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull StringConstraintConfig withNotInIgnoreCase(@NonNull Collection<String> values) {
+		Objects.requireNonNull(values, "Values for 'not in ignore case' constraint must not be null");
 		return new StringConstraintConfig(this.equalTo, this.in, this.equalToIgnoreCase, Optional.of(Pair.of(Set.copyOf(values), true)), this.minLength, this.maxLength, this.startsWith, this.startsWithAny, this.contains, this.containsAny, this.containsAll, this.containsOnly, this.endsWith, this.endsWithAny, this.matches, this.trimmed, this.blank, this.notBlank, this.upperCase, this.lowerCase, this.numeric, this.alphabetic, this.alphanumeric, this.ascii, this.latin1, this.custom);
 	}
 
@@ -366,7 +374,8 @@ public record StringConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull StringConstraintConfig withStartsWith(@NonNull String prefix) {
-		return new StringConstraintConfig(this.equalTo, this.in, this.equalToIgnoreCase, this.inIgnoreCase, this.minLength, this.maxLength, Optional.of(Pair.of(Objects.requireNonNull(prefix), false)), this.startsWithAny, this.contains, this.containsAny, this.containsAll, this.containsOnly, this.endsWith, this.endsWithAny, this.matches, this.trimmed, this.blank, this.notBlank, this.upperCase, this.lowerCase, this.numeric, this.alphabetic, this.alphanumeric, this.ascii, this.latin1, this.custom);
+		Objects.requireNonNull(prefix, "Prefix for 'starts with' constraint must not be null");
+		return new StringConstraintConfig(this.equalTo, this.in, this.equalToIgnoreCase, this.inIgnoreCase, this.minLength, this.maxLength, Optional.of(Pair.of(prefix, false)), this.startsWithAny, this.contains, this.containsAny, this.containsAll, this.containsOnly, this.endsWith, this.endsWithAny, this.matches, this.trimmed, this.blank, this.notBlank, this.upperCase, this.lowerCase, this.numeric, this.alphabetic, this.alphanumeric, this.ascii, this.latin1, this.custom);
 	}
 
 	/**
@@ -376,7 +385,8 @@ public record StringConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull StringConstraintConfig withNotStartsWith(@NonNull String prefix) {
-		return new StringConstraintConfig(this.equalTo, this.in, this.equalToIgnoreCase, this.inIgnoreCase, this.minLength, this.maxLength, Optional.of(Pair.of(Objects.requireNonNull(prefix), true)), this.startsWithAny, this.contains, this.containsAny, this.containsAll, this.containsOnly, this.endsWith, this.endsWithAny, this.matches, this.trimmed, this.blank, this.notBlank, this.upperCase, this.lowerCase, this.numeric, this.alphabetic, this.alphanumeric, this.ascii, this.latin1, this.custom);
+		Objects.requireNonNull(prefix, "Prefix for 'not starts with' constraint must not be null");
+		return new StringConstraintConfig(this.equalTo, this.in, this.equalToIgnoreCase, this.inIgnoreCase, this.minLength, this.maxLength, Optional.of(Pair.of(prefix, true)), this.startsWithAny, this.contains, this.containsAny, this.containsAll, this.containsOnly, this.endsWith, this.endsWithAny, this.matches, this.trimmed, this.blank, this.notBlank, this.upperCase, this.lowerCase, this.numeric, this.alphabetic, this.alphanumeric, this.ascii, this.latin1, this.custom);
 	}
 
 	/**
@@ -386,6 +396,7 @@ public record StringConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull StringConstraintConfig withStartsWithAny(@NonNull Collection<String> prefixes) {
+		Objects.requireNonNull(prefixes, "Prefixes for 'starts with any' constraint must not be null");
 		return new StringConstraintConfig(this.equalTo, this.in, this.equalToIgnoreCase, this.inIgnoreCase, this.minLength, this.maxLength, this.startsWith, Optional.of(Pair.of(Set.copyOf(prefixes), false)), this.contains, this.containsAny, this.containsAll, this.containsOnly, this.endsWith, this.endsWithAny, this.matches, this.trimmed, this.blank, this.notBlank, this.upperCase, this.lowerCase, this.numeric, this.alphabetic, this.alphanumeric, this.ascii, this.latin1, this.custom);
 	}
 
@@ -396,6 +407,7 @@ public record StringConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull StringConstraintConfig withStartsWithNone(@NonNull Collection<String> prefixes) {
+		Objects.requireNonNull(prefixes, "Prefixes for 'starts with none' constraint must not be null");
 		return new StringConstraintConfig(this.equalTo, this.in, this.equalToIgnoreCase, this.inIgnoreCase, this.minLength, this.maxLength, this.startsWith, Optional.of(Pair.of(Set.copyOf(prefixes), true)), this.contains, this.containsAny, this.containsAll, this.containsOnly, this.endsWith, this.endsWithAny, this.matches, this.trimmed, this.blank, this.notBlank, this.upperCase, this.lowerCase, this.numeric, this.alphabetic, this.alphanumeric, this.ascii, this.latin1, this.custom);
 	}
 
@@ -406,7 +418,8 @@ public record StringConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull StringConstraintConfig withContains(@NonNull String substring) {
-		return new StringConstraintConfig(this.equalTo, this.in, this.equalToIgnoreCase, this.inIgnoreCase, this.minLength, this.maxLength, this.startsWith, this.startsWithAny, Optional.of(Pair.of(Objects.requireNonNull(substring), false)), this.containsAny, this.containsAll, this.containsOnly, this.endsWith, this.endsWithAny, this.matches, this.trimmed, this.blank, this.notBlank, this.upperCase, this.lowerCase, this.numeric, this.alphabetic, this.alphanumeric, this.ascii, this.latin1, this.custom);
+		Objects.requireNonNull(substring, "Substring for 'contains' constraint must not be null");
+		return new StringConstraintConfig(this.equalTo, this.in, this.equalToIgnoreCase, this.inIgnoreCase, this.minLength, this.maxLength, this.startsWith, this.startsWithAny, Optional.of(Pair.of(substring, false)), this.containsAny, this.containsAll, this.containsOnly, this.endsWith, this.endsWithAny, this.matches, this.trimmed, this.blank, this.notBlank, this.upperCase, this.lowerCase, this.numeric, this.alphabetic, this.alphanumeric, this.ascii, this.latin1, this.custom);
 	}
 
 	/**
@@ -416,7 +429,8 @@ public record StringConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull StringConstraintConfig withNotContains(@NonNull String substring) {
-		return new StringConstraintConfig(this.equalTo, this.in, this.equalToIgnoreCase, this.inIgnoreCase, this.minLength, this.maxLength, this.startsWith, this.startsWithAny, Optional.of(Pair.of(Objects.requireNonNull(substring), true)), this.containsAny, this.containsAll, this.containsOnly, this.endsWith, this.endsWithAny, this.matches, this.trimmed, this.blank, this.notBlank, this.upperCase, this.lowerCase, this.numeric, this.alphabetic, this.alphanumeric, this.ascii, this.latin1, this.custom);
+		Objects.requireNonNull(substring, "Substring for 'not contains' constraint must not be null");
+		return new StringConstraintConfig(this.equalTo, this.in, this.equalToIgnoreCase, this.inIgnoreCase, this.minLength, this.maxLength, this.startsWith, this.startsWithAny, Optional.of(Pair.of(substring, true)), this.containsAny, this.containsAll, this.containsOnly, this.endsWith, this.endsWithAny, this.matches, this.trimmed, this.blank, this.notBlank, this.upperCase, this.lowerCase, this.numeric, this.alphabetic, this.alphanumeric, this.ascii, this.latin1, this.custom);
 	}
 
 	/**
@@ -426,6 +440,7 @@ public record StringConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull StringConstraintConfig withContainsAny(@NonNull Collection<String> substrings) {
+		Objects.requireNonNull(substrings, "Substrings for 'contains any' constraint must not be null");
 		return new StringConstraintConfig(this.equalTo, this.in, this.equalToIgnoreCase, this.inIgnoreCase, this.minLength, this.maxLength, this.startsWith, this.startsWithAny, this.contains, Optional.of(Pair.of(Set.copyOf(substrings), false)), this.containsAll, this.containsOnly, this.endsWith, this.endsWithAny, this.matches, this.trimmed, this.blank, this.notBlank, this.upperCase, this.lowerCase, this.numeric, this.alphabetic, this.alphanumeric, this.ascii, this.latin1, this.custom);
 	}
 
@@ -436,6 +451,7 @@ public record StringConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull StringConstraintConfig withContainsNone(@NonNull Collection<String> substrings) {
+		Objects.requireNonNull(substrings, "Substrings for 'contains none' constraint must not be null");
 		return new StringConstraintConfig(this.equalTo, this.in, this.equalToIgnoreCase, this.inIgnoreCase, this.minLength, this.maxLength, this.startsWith, this.startsWithAny, this.contains, Optional.of(Pair.of(Set.copyOf(substrings), true)), this.containsAll, this.containsOnly, this.endsWith, this.endsWithAny, this.matches, this.trimmed, this.blank, this.notBlank, this.upperCase, this.lowerCase, this.numeric, this.alphabetic, this.alphanumeric, this.ascii, this.latin1, this.custom);
 	}
 
@@ -446,6 +462,7 @@ public record StringConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull StringConstraintConfig withContainsAll(@NonNull Collection<String> substrings) {
+		Objects.requireNonNull(substrings, "Substrings for 'contains all' constraint must not be null");
 		return new StringConstraintConfig(this.equalTo, this.in, this.equalToIgnoreCase, this.inIgnoreCase, this.minLength, this.maxLength, this.startsWith, this.startsWithAny, this.contains, this.containsAny, Optional.of(Set.copyOf(substrings)), this.containsOnly, this.endsWith, this.endsWithAny, this.matches, this.trimmed, this.blank, this.notBlank, this.upperCase, this.lowerCase, this.numeric, this.alphabetic, this.alphanumeric, this.ascii, this.latin1, this.custom);
 	}
 
@@ -456,6 +473,7 @@ public record StringConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull StringConstraintConfig withContainsOnly(@NonNull Collection<String> substrings) {
+		Objects.requireNonNull(substrings, "Substrings for 'contains only' constraint must not be null");
 		return new StringConstraintConfig(this.equalTo, this.in, this.equalToIgnoreCase, this.inIgnoreCase, this.minLength, this.maxLength, this.startsWith, this.startsWithAny, this.contains, this.containsAny, this.containsAll, Optional.of(Set.copyOf(substrings)), this.endsWith, this.endsWithAny, this.matches, this.trimmed, this.blank, this.notBlank, this.upperCase, this.lowerCase, this.numeric, this.alphabetic, this.alphanumeric, this.ascii, this.latin1, this.custom);
 	}
 
@@ -466,7 +484,8 @@ public record StringConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull StringConstraintConfig withEndsWith(@NonNull String suffix) {
-		return new StringConstraintConfig(this.equalTo, this.in, this.equalToIgnoreCase, this.inIgnoreCase, this.minLength, this.maxLength, this.startsWith, this.startsWithAny, this.contains, this.containsAny, this.containsAll, this.containsOnly, Optional.of(Pair.of(Objects.requireNonNull(suffix), false)), this.endsWithAny, this.matches, this.trimmed, this.blank, this.notBlank, this.upperCase, this.lowerCase, this.numeric, this.alphabetic, this.alphanumeric, this.ascii, this.latin1, this.custom);
+		Objects.requireNonNull(suffix, "Suffix for 'ends with' constraint must not be null");
+		return new StringConstraintConfig(this.equalTo, this.in, this.equalToIgnoreCase, this.inIgnoreCase, this.minLength, this.maxLength, this.startsWith, this.startsWithAny, this.contains, this.containsAny, this.containsAll, this.containsOnly, Optional.of(Pair.of(suffix, false)), this.endsWithAny, this.matches, this.trimmed, this.blank, this.notBlank, this.upperCase, this.lowerCase, this.numeric, this.alphabetic, this.alphanumeric, this.ascii, this.latin1, this.custom);
 	}
 
 	/**
@@ -476,7 +495,8 @@ public record StringConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull StringConstraintConfig withNotEndsWith(@NonNull String suffix) {
-		return new StringConstraintConfig(this.equalTo, this.in, this.equalToIgnoreCase, this.inIgnoreCase, this.minLength, this.maxLength, this.startsWith, this.startsWithAny, this.contains, this.containsAny, this.containsAll, this.containsOnly, Optional.of(Pair.of(Objects.requireNonNull(suffix), true)), this.endsWithAny, this.matches, this.trimmed, this.blank, this.notBlank, this.upperCase, this.lowerCase, this.numeric, this.alphabetic, this.alphanumeric, this.ascii, this.latin1, this.custom);
+		Objects.requireNonNull(suffix, "Suffix for 'not ends with' constraint must not be null");
+		return new StringConstraintConfig(this.equalTo, this.in, this.equalToIgnoreCase, this.inIgnoreCase, this.minLength, this.maxLength, this.startsWith, this.startsWithAny, this.contains, this.containsAny, this.containsAll, this.containsOnly, Optional.of(Pair.of(suffix, true)), this.endsWithAny, this.matches, this.trimmed, this.blank, this.notBlank, this.upperCase, this.lowerCase, this.numeric, this.alphabetic, this.alphanumeric, this.ascii, this.latin1, this.custom);
 	}
 
 	/**
@@ -486,6 +506,7 @@ public record StringConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull StringConstraintConfig withEndsWithAny(@NonNull Collection<String> suffixes) {
+		Objects.requireNonNull(suffixes, "Suffixes for 'ends with any' constraint must not be null");
 		return new StringConstraintConfig(this.equalTo, this.in, this.equalToIgnoreCase, this.inIgnoreCase, this.minLength, this.maxLength, this.startsWith, this.startsWithAny, this.contains, this.containsAny, this.containsAll, this.containsOnly, this.endsWith, Optional.of(Pair.of(Set.copyOf(suffixes), false)), this.matches, this.trimmed, this.blank, this.notBlank, this.upperCase, this.lowerCase, this.numeric, this.alphabetic, this.alphanumeric, this.ascii, this.latin1, this.custom);
 	}
 
@@ -496,6 +517,7 @@ public record StringConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull StringConstraintConfig withEndsWithNone(@NonNull Collection<String> suffixes) {
+		Objects.requireNonNull(suffixes, "Suffixes for 'ends with none' constraint must not be null");
 		return new StringConstraintConfig(this.equalTo, this.in, this.equalToIgnoreCase, this.inIgnoreCase, this.minLength, this.maxLength, this.startsWith, this.startsWithAny, this.contains, this.containsAny, this.containsAll, this.containsOnly, this.endsWith, Optional.of(Pair.of(Set.copyOf(suffixes), true)), this.matches, this.trimmed, this.blank, this.notBlank, this.upperCase, this.lowerCase, this.numeric, this.alphabetic, this.alphanumeric, this.ascii, this.latin1, this.custom);
 	}
 
@@ -506,6 +528,7 @@ public record StringConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull StringConstraintConfig withMatches(@NonNull String regex) {
+		Objects.requireNonNull(regex, "Regex for 'matches' constraint must not be null");
 		return new StringConstraintConfig(this.equalTo, this.in, this.equalToIgnoreCase, this.inIgnoreCase, this.minLength, this.maxLength, this.startsWith, this.startsWithAny, this.contains, this.containsAny, this.containsAll, this.containsOnly, this.endsWith, this.endsWithAny, Optional.of(Pair.of(Pattern.compile(regex), false)), this.trimmed, this.blank, this.notBlank, this.upperCase, this.lowerCase, this.numeric, this.alphabetic, this.alphanumeric, this.ascii, this.latin1, this.custom);
 	}
 
@@ -516,7 +539,8 @@ public record StringConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull StringConstraintConfig withMatches(@NonNull Pattern pattern) {
-		return new StringConstraintConfig(this.equalTo, this.in, this.equalToIgnoreCase, this.inIgnoreCase, this.minLength, this.maxLength, this.startsWith, this.startsWithAny, this.contains, this.containsAny, this.containsAll, this.containsOnly, this.endsWith, this.endsWithAny, Optional.of(Pair.of(Objects.requireNonNull(pattern), false)), this.trimmed, this.blank, this.notBlank, this.upperCase, this.lowerCase, this.numeric, this.alphabetic, this.alphanumeric, this.ascii, this.latin1, this.custom);
+		Objects.requireNonNull(pattern, "Pattern for 'matches' constraint must not be null");
+		return new StringConstraintConfig(this.equalTo, this.in, this.equalToIgnoreCase, this.inIgnoreCase, this.minLength, this.maxLength, this.startsWith, this.startsWithAny, this.contains, this.containsAny, this.containsAll, this.containsOnly, this.endsWith, this.endsWithAny, Optional.of(Pair.of(pattern, false)), this.trimmed, this.blank, this.notBlank, this.upperCase, this.lowerCase, this.numeric, this.alphabetic, this.alphanumeric, this.ascii, this.latin1, this.custom);
 	}
 
 	/**
@@ -526,6 +550,7 @@ public record StringConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull StringConstraintConfig withNotMatches(@NonNull String regex) {
+		Objects.requireNonNull(regex, "Regex for 'not matches' constraint must not be null");
 		return new StringConstraintConfig(this.equalTo, this.in, this.equalToIgnoreCase, this.inIgnoreCase, this.minLength, this.maxLength, this.startsWith, this.startsWithAny, this.contains, this.containsAny, this.containsAll, this.containsOnly, this.endsWith, this.endsWithAny, Optional.of(Pair.of(Pattern.compile(regex), true)), this.trimmed, this.blank, this.notBlank, this.upperCase, this.lowerCase, this.numeric, this.alphabetic, this.alphanumeric, this.ascii, this.latin1, this.custom);
 	}
 
@@ -536,7 +561,8 @@ public record StringConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull StringConstraintConfig withNotMatches(@NonNull Pattern pattern) {
-		return new StringConstraintConfig(this.equalTo, this.in, this.equalToIgnoreCase, this.inIgnoreCase, this.minLength, this.maxLength, this.startsWith, this.startsWithAny, this.contains, this.containsAny, this.containsAll, this.containsOnly, this.endsWith, this.endsWithAny, Optional.of(Pair.of(Objects.requireNonNull(pattern), true)), this.trimmed, this.blank, this.notBlank, this.upperCase, this.lowerCase, this.numeric, this.alphabetic, this.alphanumeric, this.ascii, this.latin1, this.custom);
+		Objects.requireNonNull(pattern, "Pattern for 'not matches' constraint must not be null");
+		return new StringConstraintConfig(this.equalTo, this.in, this.equalToIgnoreCase, this.inIgnoreCase, this.minLength, this.maxLength, this.startsWith, this.startsWithAny, this.contains, this.containsAny, this.containsAll, this.containsOnly, this.endsWith, this.endsWithAny, Optional.of(Pair.of(pattern, true)), this.trimmed, this.blank, this.notBlank, this.upperCase, this.lowerCase, this.numeric, this.alphabetic, this.alphanumeric, this.ascii, this.latin1, this.custom);
 	}
 
 	/**
@@ -636,6 +662,7 @@ public record StringConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull StringConstraintConfig withCustom(@NonNull Constraint<String> constraint) {
-		return new StringConstraintConfig(this.equalTo, this.in, this.equalToIgnoreCase, this.inIgnoreCase, this.minLength, this.maxLength, this.startsWith, this.startsWithAny, this.contains, this.containsAny, this.containsAll, this.containsOnly, this.endsWith, this.endsWithAny, this.matches, this.trimmed, this.blank, this.notBlank, this.upperCase, this.lowerCase, this.numeric, this.alphabetic, this.alphanumeric, this.ascii, this.latin1, Optional.of(Objects.requireNonNull(constraint)));
+		Objects.requireNonNull(constraint, "Custom constraint must not be null");
+		return new StringConstraintConfig(this.equalTo, this.in, this.equalToIgnoreCase, this.inIgnoreCase, this.minLength, this.maxLength, this.startsWith, this.startsWithAny, this.contains, this.containsAny, this.containsAll, this.containsOnly, this.endsWith, this.endsWithAny, this.matches, this.trimmed, this.blank, this.notBlank, this.upperCase, this.lowerCase, this.numeric, this.alphabetic, this.alphanumeric, this.ascii, this.latin1, Optional.of(constraint));
 	}
 }

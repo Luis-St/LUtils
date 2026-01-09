@@ -119,7 +119,8 @@ public record ZoneOffsetConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull ZoneOffsetConstraintConfig withEqualTo(@NonNull ZoneOffset value) {
-		return new ZoneOffsetConstraintConfig(Optional.of(Pair.of(Objects.requireNonNull(value), false)), this.in, this.min, this.max, this.positive, this.negative, this.zero, this.hours, this.custom);
+		Objects.requireNonNull(value, "Value for 'equal to' constraint must not be null");
+		return new ZoneOffsetConstraintConfig(Optional.of(Pair.of(value, false)), this.in, this.min, this.max, this.positive, this.negative, this.zero, this.hours, this.custom);
 	}
 	
 	/**
@@ -129,7 +130,8 @@ public record ZoneOffsetConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull ZoneOffsetConstraintConfig withNotEqualTo(@NonNull ZoneOffset value) {
-		return new ZoneOffsetConstraintConfig(Optional.of(Pair.of(Objects.requireNonNull(value), true)), this.in, this.min, this.max, this.positive, this.negative, this.zero, this.hours, this.custom);
+		Objects.requireNonNull(value, "Value for 'not equal to' constraint must not be null");
+		return new ZoneOffsetConstraintConfig(Optional.of(Pair.of(value, true)), this.in, this.min, this.max, this.positive, this.negative, this.zero, this.hours, this.custom);
 	}
 	
 	/**
@@ -139,6 +141,7 @@ public record ZoneOffsetConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull ZoneOffsetConstraintConfig withIn(@NonNull Collection<ZoneOffset> values) {
+		Objects.requireNonNull(values, "Values for 'in' constraint must not be null");
 		return new ZoneOffsetConstraintConfig(this.equalTo, Optional.of(Pair.of(Set.copyOf(values), false)), this.min, this.max, this.positive, this.negative, this.zero, this.hours, this.custom);
 	}
 	
@@ -149,6 +152,7 @@ public record ZoneOffsetConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull ZoneOffsetConstraintConfig withNotIn(@NonNull Collection<ZoneOffset> values) {
+		Objects.requireNonNull(values, "Values for 'not in' constraint must not be null");
 		return new ZoneOffsetConstraintConfig(this.equalTo, Optional.of(Pair.of(Set.copyOf(values), true)), this.min, this.max, this.positive, this.negative, this.zero, this.hours, this.custom);
 	}
 	
@@ -159,7 +163,8 @@ public record ZoneOffsetConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull ZoneOffsetConstraintConfig withGreaterThan(@NonNull ZoneOffset value) {
-		return new ZoneOffsetConstraintConfig(this.equalTo, this.in, Optional.of(Pair.of(Objects.requireNonNull(value), false)), this.max, this.positive, this.negative, this.zero, this.hours, this.custom);
+		Objects.requireNonNull(value, "Value for 'greater than' constraint must not be null");
+		return new ZoneOffsetConstraintConfig(this.equalTo, this.in, Optional.of(Pair.of(value, false)), this.max, this.positive, this.negative, this.zero, this.hours, this.custom);
 	}
 	
 	/**
@@ -169,7 +174,8 @@ public record ZoneOffsetConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull ZoneOffsetConstraintConfig withGreaterThanOrEqual(@NonNull ZoneOffset value) {
-		return new ZoneOffsetConstraintConfig(this.equalTo, this.in, Optional.of(Pair.of(Objects.requireNonNull(value), true)), this.max, this.positive, this.negative, this.zero, this.hours, this.custom);
+		Objects.requireNonNull(value, "Value for 'greater than or equal' constraint must not be null");
+		return new ZoneOffsetConstraintConfig(this.equalTo, this.in, Optional.of(Pair.of(value, true)), this.max, this.positive, this.negative, this.zero, this.hours, this.custom);
 	}
 	
 	/**
@@ -179,7 +185,8 @@ public record ZoneOffsetConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull ZoneOffsetConstraintConfig withLessThan(@NonNull ZoneOffset value) {
-		return new ZoneOffsetConstraintConfig(this.equalTo, this.in, this.min, Optional.of(Pair.of(Objects.requireNonNull(value), false)), this.positive, this.negative, this.zero, this.hours, this.custom);
+		Objects.requireNonNull(value, "Value for 'less than' constraint must not be null");
+		return new ZoneOffsetConstraintConfig(this.equalTo, this.in, this.min, Optional.of(Pair.of(value, false)), this.positive, this.negative, this.zero, this.hours, this.custom);
 	}
 	
 	/**
@@ -189,7 +196,8 @@ public record ZoneOffsetConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull ZoneOffsetConstraintConfig withLessThanOrEqual(@NonNull ZoneOffset value) {
-		return new ZoneOffsetConstraintConfig(this.equalTo, this.in, this.min, Optional.of(Pair.of(Objects.requireNonNull(value), true)), this.positive, this.negative, this.zero, this.hours, this.custom);
+		Objects.requireNonNull(value, "Value for 'less than or equal' constraint must not be null");
+		return new ZoneOffsetConstraintConfig(this.equalTo, this.in, this.min, Optional.of(Pair.of(value, true)), this.positive, this.negative, this.zero, this.hours, this.custom);
 	}
 	
 	/**
@@ -200,7 +208,9 @@ public record ZoneOffsetConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull ZoneOffsetConstraintConfig withBetween(@NonNull ZoneOffset min, @NonNull ZoneOffset max) {
-		return new ZoneOffsetConstraintConfig(this.equalTo, this.in, Optional.of(Pair.of(Objects.requireNonNull(min), false)), Optional.of(Pair.of(Objects.requireNonNull(max), false)), this.positive, this.negative, this.zero, this.hours, this.custom);
+		Objects.requireNonNull(min, "Min value for 'between' constraint must not be null");
+		Objects.requireNonNull(max, "Max value for 'between' constraint must not be null");
+		return new ZoneOffsetConstraintConfig(this.equalTo, this.in, Optional.of(Pair.of(min, false)), Optional.of(Pair.of(max, false)), this.positive, this.negative, this.zero, this.hours, this.custom);
 	}
 	
 	/**
@@ -211,7 +221,9 @@ public record ZoneOffsetConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull ZoneOffsetConstraintConfig withBetweenOrEqual(@NonNull ZoneOffset min, @NonNull ZoneOffset max) {
-		return new ZoneOffsetConstraintConfig(this.equalTo, this.in, Optional.of(Pair.of(Objects.requireNonNull(min), true)), Optional.of(Pair.of(Objects.requireNonNull(max), true)), this.positive, this.negative, this.zero, this.hours, this.custom);
+		Objects.requireNonNull(min, "Min value for 'between or equal' constraint must not be null");
+		Objects.requireNonNull(max, "Max value for 'between or equal' constraint must not be null");
+		return new ZoneOffsetConstraintConfig(this.equalTo, this.in, Optional.of(Pair.of(min, true)), Optional.of(Pair.of(max, true)), this.positive, this.negative, this.zero, this.hours, this.custom);
 	}
 	
 	/**
@@ -287,7 +299,8 @@ public record ZoneOffsetConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull ZoneOffsetConstraintConfig withHours(@NonNull NumericFieldConstraintConfig hoursConfig) {
-		return new ZoneOffsetConstraintConfig(this.equalTo, this.in, this.min, this.max, this.positive, this.negative, this.zero, Optional.of(Objects.requireNonNull(hoursConfig)), this.custom);
+		Objects.requireNonNull(hoursConfig, "Config for 'hours' constraint must not be null");
+		return new ZoneOffsetConstraintConfig(this.equalTo, this.in, this.min, this.max, this.positive, this.negative, this.zero, Optional.of(hoursConfig), this.custom);
 	}
 	
 	/**
@@ -297,6 +310,7 @@ public record ZoneOffsetConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull ZoneOffsetConstraintConfig withCustom(@NonNull Constraint<ZoneOffset> constraint) {
-		return new ZoneOffsetConstraintConfig(this.equalTo, this.in, this.min, this.max, this.positive, this.negative, this.zero, this.hours, Optional.of(Objects.requireNonNull(constraint)));
+		Objects.requireNonNull(constraint, "Custom constraint must not be null");
+		return new ZoneOffsetConstraintConfig(this.equalTo, this.in, this.min, this.max, this.positive, this.negative, this.zero, this.hours, Optional.of(constraint));
 	}
 }

@@ -97,7 +97,8 @@ public record YearConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull YearConstraintConfig withEqualTo(@NonNull Year value) {
-		return new YearConstraintConfig(Optional.of(Pair.of(Objects.requireNonNull(value), false)), this.in, this.min, this.max, this.custom);
+		Objects.requireNonNull(value, "Value for 'equal to' constraint must not be null");
+		return new YearConstraintConfig(Optional.of(Pair.of(value, false)), this.in, this.min, this.max, this.custom);
 	}
 	
 	/**
@@ -107,7 +108,8 @@ public record YearConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull YearConstraintConfig withNotEqualTo(@NonNull Year value) {
-		return new YearConstraintConfig(Optional.of(Pair.of(Objects.requireNonNull(value), true)), this.in, this.min, this.max, this.custom);
+		Objects.requireNonNull(value, "Value for 'not equal to' constraint must not be null");
+		return new YearConstraintConfig(Optional.of(Pair.of(value, true)), this.in, this.min, this.max, this.custom);
 	}
 	
 	/**
@@ -117,6 +119,7 @@ public record YearConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull YearConstraintConfig withIn(@NonNull Collection<Year> values) {
+		Objects.requireNonNull(values, "Values for 'in' constraint must not be null");
 		return new YearConstraintConfig(this.equalTo, Optional.of(Pair.of(Set.copyOf(values), false)), this.min, this.max, this.custom);
 	}
 	
@@ -127,6 +130,7 @@ public record YearConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull YearConstraintConfig withNotIn(@NonNull Collection<Year> values) {
+		Objects.requireNonNull(values, "Values for 'not in' constraint must not be null");
 		return new YearConstraintConfig(this.equalTo, Optional.of(Pair.of(Set.copyOf(values), true)), this.min, this.max, this.custom);
 	}
 	
@@ -137,7 +141,8 @@ public record YearConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull YearConstraintConfig withAfter(@NonNull Year value) {
-		return new YearConstraintConfig(this.equalTo, this.in, Optional.of(Pair.of(Objects.requireNonNull(value), false)), this.max, this.custom);
+		Objects.requireNonNull(value, "Value for 'after' constraint must not be null");
+		return new YearConstraintConfig(this.equalTo, this.in, Optional.of(Pair.of(value, false)), this.max, this.custom);
 	}
 	
 	/**
@@ -147,7 +152,8 @@ public record YearConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull YearConstraintConfig withAfterOrEqual(@NonNull Year value) {
-		return new YearConstraintConfig(this.equalTo, this.in, Optional.of(Pair.of(Objects.requireNonNull(value), true)), this.max, this.custom);
+		Objects.requireNonNull(value, "Value for 'after or equal' constraint must not be null");
+		return new YearConstraintConfig(this.equalTo, this.in, Optional.of(Pair.of(value, true)), this.max, this.custom);
 	}
 	
 	/**
@@ -157,7 +163,8 @@ public record YearConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull YearConstraintConfig withBefore(@NonNull Year value) {
-		return new YearConstraintConfig(this.equalTo, this.in, this.min, Optional.of(Pair.of(Objects.requireNonNull(value), false)), this.custom);
+		Objects.requireNonNull(value, "Value for 'before' constraint must not be null");
+		return new YearConstraintConfig(this.equalTo, this.in, this.min, Optional.of(Pair.of(value, false)), this.custom);
 	}
 	
 	/**
@@ -167,7 +174,8 @@ public record YearConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull YearConstraintConfig withBeforeOrEqual(@NonNull Year value) {
-		return new YearConstraintConfig(this.equalTo, this.in, this.min, Optional.of(Pair.of(Objects.requireNonNull(value), true)), this.custom);
+		Objects.requireNonNull(value, "Value for 'before or equal' constraint must not be null");
+		return new YearConstraintConfig(this.equalTo, this.in, this.min, Optional.of(Pair.of(value, true)), this.custom);
 	}
 	
 	/**
@@ -178,7 +186,9 @@ public record YearConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull YearConstraintConfig withBetween(@NonNull Year min, @NonNull Year max) {
-		return new YearConstraintConfig(this.equalTo, this.in, Optional.of(Pair.of(Objects.requireNonNull(min), false)), Optional.of(Pair.of(Objects.requireNonNull(max), false)), this.custom);
+		Objects.requireNonNull(min, "Min value for 'between' constraint must not be null");
+		Objects.requireNonNull(max, "Max value for 'between' constraint must not be null");
+		return new YearConstraintConfig(this.equalTo, this.in, Optional.of(Pair.of(min, false)), Optional.of(Pair.of(max, false)), this.custom);
 	}
 	
 	/**
@@ -189,7 +199,9 @@ public record YearConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull YearConstraintConfig withBetweenOrEqual(@NonNull Year min, @NonNull Year max) {
-		return new YearConstraintConfig(this.equalTo, this.in, Optional.of(Pair.of(Objects.requireNonNull(min), true)), Optional.of(Pair.of(Objects.requireNonNull(max), true)), this.custom);
+		Objects.requireNonNull(min, "Min value for 'between or equal' constraint must not be null");
+		Objects.requireNonNull(max, "Max value for 'between or equal' constraint must not be null");
+		return new YearConstraintConfig(this.equalTo, this.in, Optional.of(Pair.of(min, true)), Optional.of(Pair.of(max, true)), this.custom);
 	}
 	
 	/**
@@ -199,6 +211,7 @@ public record YearConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull YearConstraintConfig withCustom(@NonNull Constraint<Year> constraint) {
-		return new YearConstraintConfig(this.equalTo, this.in, this.min, this.max, Optional.of(Objects.requireNonNull(constraint)));
+		Objects.requireNonNull(constraint, "Custom constraint must not be null");
+		return new YearConstraintConfig(this.equalTo, this.in, this.min, this.max, Optional.of(constraint));
 	}
 }

@@ -184,6 +184,7 @@ public record QueryConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull QueryConstraintConfig withRequiredKeys(@NonNull Collection<String> keys) {
+		Objects.requireNonNull(keys, "Keys for 'required keys' constraint must not be null");
 		return new QueryConstraintConfig(this.min, this.max, Optional.of(Set.copyOf(keys)), this.forbiddenKeys, this.allowedKeys, this.nonNullKeys, this.uniqueValues, this.nonNullValues, this.valueConstraints, this.patternValueConstraints, this.singleValued, this.multiValuedConstraints, this.custom);
 	}
 	
@@ -194,6 +195,7 @@ public record QueryConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull QueryConstraintConfig withForbiddenKeys(@NonNull Collection<String> keys) {
+		Objects.requireNonNull(keys, "Keys for 'forbidden keys' constraint must not be null");
 		return new QueryConstraintConfig(this.min, this.max, this.requiredKeys, Optional.of(Set.copyOf(keys)), this.allowedKeys, this.nonNullKeys, this.uniqueValues, this.nonNullValues, this.valueConstraints, this.patternValueConstraints, this.singleValued, this.multiValuedConstraints, this.custom);
 	}
 	
@@ -204,6 +206,7 @@ public record QueryConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull QueryConstraintConfig withAllowedKeys(@NonNull Collection<String> keys) {
+		Objects.requireNonNull(keys, "Keys for 'allowed keys' constraint must not be null");
 		return new QueryConstraintConfig(this.min, this.max, this.requiredKeys, this.forbiddenKeys, Optional.of(Set.copyOf(keys)), this.nonNullKeys, this.uniqueValues, this.nonNullValues, this.valueConstraints, this.patternValueConstraints, this.singleValued, this.multiValuedConstraints, this.custom);
 	}
 	
@@ -242,8 +245,11 @@ public record QueryConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull QueryConstraintConfig withValue(@NonNull String key, @NonNull StringConstraintConfig config) {
+		Objects.requireNonNull(key, "Key for 'value' constraint must not be null");
+		Objects.requireNonNull(config, "Config for 'value' constraint must not be null");
+		
 		Map<String, StringConstraintConfig> newConstraints = new HashMap<>(this.valueConstraints.orElse(Map.of()));
-		newConstraints.put(Objects.requireNonNull(key), Objects.requireNonNull(config));
+		newConstraints.put(key, config);
 		return new QueryConstraintConfig(this.min, this.max, this.requiredKeys, this.forbiddenKeys, this.allowedKeys, this.nonNullKeys, this.uniqueValues, this.nonNullValues, Optional.of(Map.copyOf(newConstraints)), this.patternValueConstraints, this.singleValued, this.multiValuedConstraints, this.custom);
 	}
 	
@@ -255,6 +261,7 @@ public record QueryConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull QueryConstraintConfig withValues(@NonNull String regex, @NonNull StringConstraintConfig config) {
+		Objects.requireNonNull(regex, "Regex for 'values' constraint must not be null");
 		return this.withValues(Pattern.compile(regex), config);
 	}
 	
@@ -266,8 +273,11 @@ public record QueryConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull QueryConstraintConfig withValues(@NonNull Pattern pattern, @NonNull StringConstraintConfig config) {
+		Objects.requireNonNull(pattern, "Pattern for 'values' constraint must not be null");
+		Objects.requireNonNull(config, "Config for 'values' constraint must not be null");
+		
 		Map<Pattern, StringConstraintConfig> newConstraints = new HashMap<>(this.patternValueConstraints.orElse(Map.of()));
-		newConstraints.put(Objects.requireNonNull(pattern), Objects.requireNonNull(config));
+		newConstraints.put(pattern, config);
 		return new QueryConstraintConfig(this.min, this.max, this.requiredKeys, this.forbiddenKeys, this.allowedKeys, this.nonNullKeys, this.uniqueValues, this.nonNullValues, this.valueConstraints, Optional.of(Map.copyOf(newConstraints)), this.singleValued, this.multiValuedConstraints, this.custom);
 	}
 	
@@ -288,8 +298,11 @@ public record QueryConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull QueryConstraintConfig withMultiValued(@NonNull String key, @NonNull SizeConstraintConfig config) {
+		Objects.requireNonNull(key, "Key for 'multi valued' constraint must not be null");
+		Objects.requireNonNull(config, "Config for 'multi valued' constraint must not be null");
+		
 		Map<String, SizeConstraintConfig> newConstraints = new HashMap<>(this.multiValuedConstraints.orElse(Map.of()));
-		newConstraints.put(Objects.requireNonNull(key), Objects.requireNonNull(config));
+		newConstraints.put(key, config);
 		return new QueryConstraintConfig(this.min, this.max, this.requiredKeys, this.forbiddenKeys, this.allowedKeys, this.nonNullKeys, this.uniqueValues, this.nonNullValues, this.valueConstraints, this.patternValueConstraints, this.singleValued, Optional.of(Map.copyOf(newConstraints)), this.custom);
 	}
 	
@@ -300,6 +313,7 @@ public record QueryConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull QueryConstraintConfig withCustom(@NonNull Constraint<Map<String, List<String>>> constraint) {
-		return new QueryConstraintConfig(this.min, this.max, this.requiredKeys, this.forbiddenKeys, this.allowedKeys, this.nonNullKeys, this.uniqueValues, this.nonNullValues, this.valueConstraints, this.patternValueConstraints, this.singleValued, this.multiValuedConstraints, Optional.of(Objects.requireNonNull(constraint)));
+		Objects.requireNonNull(constraint, "Custom constraint must not be null");
+		return new QueryConstraintConfig(this.min, this.max, this.requiredKeys, this.forbiddenKeys, this.allowedKeys, this.nonNullKeys, this.uniqueValues, this.nonNullValues, this.valueConstraints, this.patternValueConstraints, this.singleValued, this.multiValuedConstraints, Optional.of(constraint));
 	}
 }

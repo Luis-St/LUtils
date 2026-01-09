@@ -179,7 +179,8 @@ public record URIConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull URIConstraintConfig withEqualTo(@NonNull URI value) {
-		return new URIConstraintConfig(Optional.of(Pair.of(Objects.requireNonNull(value), false)), this.in, this.scheme, this.host, this.withoutUserInfo, this.userInfo, this.withoutPort, this.port, this.withoutPath, this.path, this.withoutQuery, this.query, this.withoutFragment, this.fragment, this.absolute, this.relative, this.opaque, this.hierarchical, this.custom);
+		Objects.requireNonNull(value, "Value for 'equal to' constraint must not be null");
+		return new URIConstraintConfig(Optional.of(Pair.of(value, false)), this.in, this.scheme, this.host, this.withoutUserInfo, this.userInfo, this.withoutPort, this.port, this.withoutPath, this.path, this.withoutQuery, this.query, this.withoutFragment, this.fragment, this.absolute, this.relative, this.opaque, this.hierarchical, this.custom);
 	}
 	
 	/**
@@ -189,7 +190,8 @@ public record URIConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull URIConstraintConfig withNotEqualTo(@NonNull URI value) {
-		return new URIConstraintConfig(Optional.of(Pair.of(Objects.requireNonNull(value), true)), this.in, this.scheme, this.host, this.withoutUserInfo, this.userInfo, this.withoutPort, this.port, this.withoutPath, this.path, this.withoutQuery, this.query, this.withoutFragment, this.fragment, this.absolute, this.relative, this.opaque, this.hierarchical, this.custom);
+		Objects.requireNonNull(value, "Value for 'not equal to' constraint must not be null");
+		return new URIConstraintConfig(Optional.of(Pair.of(value, true)), this.in, this.scheme, this.host, this.withoutUserInfo, this.userInfo, this.withoutPort, this.port, this.withoutPath, this.path, this.withoutQuery, this.query, this.withoutFragment, this.fragment, this.absolute, this.relative, this.opaque, this.hierarchical, this.custom);
 	}
 	
 	/**
@@ -199,6 +201,7 @@ public record URIConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull URIConstraintConfig withIn(@NonNull Collection<URI> values) {
+		Objects.requireNonNull(values, "Values for 'in' constraint must not be null");
 		return new URIConstraintConfig(this.equalTo, Optional.of(Pair.of(Set.copyOf(values), false)), this.scheme, this.host, this.withoutUserInfo, this.userInfo, this.withoutPort, this.port, this.withoutPath, this.path, this.withoutQuery, this.query, this.withoutFragment, this.fragment, this.absolute, this.relative, this.opaque, this.hierarchical, this.custom);
 	}
 	
@@ -209,6 +212,7 @@ public record URIConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull URIConstraintConfig withNotIn(@NonNull Collection<URI> values) {
+		Objects.requireNonNull(values, "Values for 'not in' constraint must not be null");
 		return new URIConstraintConfig(this.equalTo, Optional.of(Pair.of(Set.copyOf(values), true)), this.scheme, this.host, this.withoutUserInfo, this.userInfo, this.withoutPort, this.port, this.withoutPath, this.path, this.withoutQuery, this.query, this.withoutFragment, this.fragment, this.absolute, this.relative, this.opaque, this.hierarchical, this.custom);
 	}
 	
@@ -219,7 +223,8 @@ public record URIConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull URIConstraintConfig withScheme(@NonNull StringConstraintConfig config) {
-		return new URIConstraintConfig(this.equalTo, this.in, Optional.of(Objects.requireNonNull(config)), this.host, this.withoutUserInfo, this.userInfo, this.withoutPort, this.port, this.withoutPath, this.path, this.withoutQuery, this.query, this.withoutFragment, this.fragment, this.absolute, this.relative, this.opaque, this.hierarchical, this.custom);
+		Objects.requireNonNull(config, "Config for 'scheme' constraint must not be null");
+		return new URIConstraintConfig(this.equalTo, this.in, Optional.of(config), this.host, this.withoutUserInfo, this.userInfo, this.withoutPort, this.port, this.withoutPath, this.path, this.withoutQuery, this.query, this.withoutFragment, this.fragment, this.absolute, this.relative, this.opaque, this.hierarchical, this.custom);
 	}
 	
 	/**
@@ -229,7 +234,8 @@ public record URIConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull URIConstraintConfig withHost(@NonNull HostConstraintConfig config) {
-		return new URIConstraintConfig(this.equalTo, this.in, this.scheme, Optional.of(Objects.requireNonNull(config)), this.withoutUserInfo, this.userInfo, this.withoutPort, this.port, this.withoutPath, this.path, this.withoutQuery, this.query, this.withoutFragment, this.fragment, this.absolute, this.relative, this.opaque, this.hierarchical, this.custom);
+		Objects.requireNonNull(config, "Config for 'host' constraint must not be null");
+		return new URIConstraintConfig(this.equalTo, this.in, this.scheme, Optional.of(config), this.withoutUserInfo, this.userInfo, this.withoutPort, this.port, this.withoutPath, this.path, this.withoutQuery, this.query, this.withoutFragment, this.fragment, this.absolute, this.relative, this.opaque, this.hierarchical, this.custom);
 	}
 	
 	/**
@@ -248,7 +254,8 @@ public record URIConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull URIConstraintConfig withUserInfo(@NonNull StringConstraintConfig config) {
-		return new URIConstraintConfig(this.equalTo, this.in, this.scheme, this.host, this.withoutUserInfo, Optional.of(Objects.requireNonNull(config)), this.withoutPort, this.port, this.withoutPath, this.path, this.withoutQuery, this.query, this.withoutFragment, this.fragment, this.absolute, this.relative, this.opaque, this.hierarchical, this.custom);
+		Objects.requireNonNull(config, "Config for 'user info' constraint must not be null");
+		return new URIConstraintConfig(this.equalTo, this.in, this.scheme, this.host, this.withoutUserInfo, Optional.of(config), this.withoutPort, this.port, this.withoutPath, this.path, this.withoutQuery, this.query, this.withoutFragment, this.fragment, this.absolute, this.relative, this.opaque, this.hierarchical, this.custom);
 	}
 	
 	/**
@@ -267,7 +274,8 @@ public record URIConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull URIConstraintConfig withPort(@NonNull PortConstraintConfig config) {
-		return new URIConstraintConfig(this.equalTo, this.in, this.scheme, this.host, this.withoutUserInfo, this.userInfo, this.withoutPort, Optional.of(Objects.requireNonNull(config)), this.withoutPath, this.path, this.withoutQuery, this.query, this.withoutFragment, this.fragment, this.absolute, this.relative, this.opaque, this.hierarchical, this.custom);
+		Objects.requireNonNull(config, "Config for 'port' constraint must not be null");
+		return new URIConstraintConfig(this.equalTo, this.in, this.scheme, this.host, this.withoutUserInfo, this.userInfo, this.withoutPort, Optional.of(config), this.withoutPath, this.path, this.withoutQuery, this.query, this.withoutFragment, this.fragment, this.absolute, this.relative, this.opaque, this.hierarchical, this.custom);
 	}
 	
 	/**
@@ -286,7 +294,8 @@ public record URIConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull URIConstraintConfig withPath(@NonNull PathConstraintConfig config) {
-		return new URIConstraintConfig(this.equalTo, this.in, this.scheme, this.host, this.withoutUserInfo, this.userInfo, this.withoutPort, this.port, this.withoutPath, Optional.of(Objects.requireNonNull(config)), this.withoutQuery, this.query, this.withoutFragment, this.fragment, this.absolute, this.relative, this.opaque, this.hierarchical, this.custom);
+		Objects.requireNonNull(config, "Config for 'path' constraint must not be null");
+		return new URIConstraintConfig(this.equalTo, this.in, this.scheme, this.host, this.withoutUserInfo, this.userInfo, this.withoutPort, this.port, this.withoutPath, Optional.of(config), this.withoutQuery, this.query, this.withoutFragment, this.fragment, this.absolute, this.relative, this.opaque, this.hierarchical, this.custom);
 	}
 	
 	/**
@@ -305,7 +314,8 @@ public record URIConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull URIConstraintConfig withQuery(@NonNull QueryConstraintConfig config) {
-		return new URIConstraintConfig(this.equalTo, this.in, this.scheme, this.host, this.withoutUserInfo, this.userInfo, this.withoutPort, this.port, this.withoutPath, this.path, this.withoutQuery, Optional.of(Objects.requireNonNull(config)), this.withoutFragment, this.fragment, this.absolute, this.relative, this.opaque, this.hierarchical, this.custom);
+		Objects.requireNonNull(config, "Config for 'query' constraint must not be null");
+		return new URIConstraintConfig(this.equalTo, this.in, this.scheme, this.host, this.withoutUserInfo, this.userInfo, this.withoutPort, this.port, this.withoutPath, this.path, this.withoutQuery, Optional.of(config), this.withoutFragment, this.fragment, this.absolute, this.relative, this.opaque, this.hierarchical, this.custom);
 	}
 	
 	/**
@@ -324,7 +334,8 @@ public record URIConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull URIConstraintConfig withFragment(@NonNull StringConstraintConfig config) {
-		return new URIConstraintConfig(this.equalTo, this.in, this.scheme, this.host, this.withoutUserInfo, this.userInfo, this.withoutPort, this.port, this.withoutPath, this.path, this.withoutQuery, this.query, this.withoutFragment, Optional.of(Objects.requireNonNull(config)), this.absolute, this.relative, this.opaque, this.hierarchical, this.custom);
+		Objects.requireNonNull(config, "Config for 'fragment' constraint must not be null");
+		return new URIConstraintConfig(this.equalTo, this.in, this.scheme, this.host, this.withoutUserInfo, this.userInfo, this.withoutPort, this.port, this.withoutPath, this.path, this.withoutQuery, this.query, this.withoutFragment, Optional.of(config), this.absolute, this.relative, this.opaque, this.hierarchical, this.custom);
 	}
 	
 	/**
@@ -370,6 +381,7 @@ public record URIConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull URIConstraintConfig withCustom(@NonNull Constraint<URI> constraint) {
-		return new URIConstraintConfig(this.equalTo, this.in, this.scheme, this.host, this.withoutUserInfo, this.userInfo, this.withoutPort, this.port, this.withoutPath, this.path, this.withoutQuery, this.query, this.withoutFragment, this.fragment, this.absolute, this.relative, this.opaque, this.hierarchical, Optional.of(Objects.requireNonNull(constraint)));
+		Objects.requireNonNull(constraint, "Custom constraint must not be null");
+		return new URIConstraintConfig(this.equalTo, this.in, this.scheme, this.host, this.withoutUserInfo, this.userInfo, this.withoutPort, this.port, this.withoutPath, this.path, this.withoutQuery, this.query, this.withoutFragment, this.fragment, this.absolute, this.relative, this.opaque, this.hierarchical, Optional.of(constraint));
 	}
 }

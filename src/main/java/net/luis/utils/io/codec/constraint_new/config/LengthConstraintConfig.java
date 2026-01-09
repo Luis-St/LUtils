@@ -142,6 +142,7 @@ public record LengthConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull LengthConstraintConfig withCustom(@NonNull Constraint<Integer> constraint) {
-		return new LengthConstraintConfig(this.min, this.max, Optional.of(Objects.requireNonNull(constraint)));
+		Objects.requireNonNull(constraint, "Custom constraint must not be null");
+		return new LengthConstraintConfig(this.min, this.max, Optional.of(constraint));
 	}
 }

@@ -113,7 +113,8 @@ public record UUIDConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull UUIDConstraintConfig withEqualTo(@NonNull UUID value) {
-		return new UUIDConstraintConfig(Optional.of(Pair.of(Objects.requireNonNull(value), false)), this.in, this.version, this.variant, this.nil, this.notNil, this.max, this.custom);
+		Objects.requireNonNull(value, "Value for 'equal to' constraint must not be null");
+		return new UUIDConstraintConfig(Optional.of(Pair.of(value, false)), this.in, this.version, this.variant, this.nil, this.notNil, this.max, this.custom);
 	}
 
 	/**
@@ -123,7 +124,8 @@ public record UUIDConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull UUIDConstraintConfig withNotEqualTo(@NonNull UUID value) {
-		return new UUIDConstraintConfig(Optional.of(Pair.of(Objects.requireNonNull(value), true)), this.in, this.version, this.variant, this.nil, this.notNil, this.max, this.custom);
+		Objects.requireNonNull(value, "Value for 'not equal to' constraint must not be null");
+		return new UUIDConstraintConfig(Optional.of(Pair.of(value, true)), this.in, this.version, this.variant, this.nil, this.notNil, this.max, this.custom);
 	}
 
 	/**
@@ -133,6 +135,7 @@ public record UUIDConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull UUIDConstraintConfig withIn(@NonNull Collection<UUID> values) {
+		Objects.requireNonNull(values, "Values for 'in' constraint must not be null");
 		return new UUIDConstraintConfig(this.equalTo, Optional.of(Pair.of(Set.copyOf(values), false)), this.version, this.variant, this.nil, this.notNil, this.max, this.custom);
 	}
 
@@ -143,6 +146,7 @@ public record UUIDConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull UUIDConstraintConfig withNotIn(@NonNull Collection<UUID> values) {
+		Objects.requireNonNull(values, "Values for 'not in' constraint must not be null");
 		return new UUIDConstraintConfig(this.equalTo, Optional.of(Pair.of(Set.copyOf(values), true)), this.version, this.variant, this.nil, this.notNil, this.max, this.custom);
 	}
 
@@ -163,7 +167,8 @@ public record UUIDConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull UUIDConstraintConfig withVariant(@NonNull UUIDVariant variant) {
-		return new UUIDConstraintConfig(this.equalTo, this.in, this.version, Optional.of(Objects.requireNonNull(variant)), this.nil, this.notNil, this.max, this.custom);
+		Objects.requireNonNull(variant, "Variant for 'variant' constraint must not be null");
+		return new UUIDConstraintConfig(this.equalTo, this.in, this.version, Optional.of(variant), this.nil, this.notNil, this.max, this.custom);
 	}
 
 	/**
@@ -209,6 +214,7 @@ public record UUIDConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull UUIDConstraintConfig withCustom(@NonNull Constraint<UUID> constraint) {
-		return new UUIDConstraintConfig(this.equalTo, this.in, this.version, this.variant, this.nil, this.notNil, this.max, Optional.of(Objects.requireNonNull(constraint)));
+		Objects.requireNonNull(constraint, "Custom constraint must not be null");
+		return new UUIDConstraintConfig(this.equalTo, this.in, this.version, this.variant, this.nil, this.notNil, this.max, Optional.of(constraint));
 	}
 }

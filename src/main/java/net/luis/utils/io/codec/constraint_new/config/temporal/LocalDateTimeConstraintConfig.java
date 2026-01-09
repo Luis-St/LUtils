@@ -155,7 +155,8 @@ public record LocalDateTimeConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull LocalDateTimeConstraintConfig withEqualTo(@NonNull LocalDateTime value) {
-		return new LocalDateTimeConstraintConfig(Optional.of(Pair.of(Objects.requireNonNull(value), false)), this.in, this.after, this.before, this.withinLast, this.withinNext, this.dayOfWeek, this.dayOfMonth, this.dayOfYear, this.weekOfMonth, this.weekOfYear, this.month, this.year, this.hour, this.minute, this.second, this.millisecond, this.nanosecond, this.custom);
+		Objects.requireNonNull(value, "Value for 'equal to' constraint must not be null");
+		return new LocalDateTimeConstraintConfig(Optional.of(Pair.of(value, false)), this.in, this.after, this.before, this.withinLast, this.withinNext, this.dayOfWeek, this.dayOfMonth, this.dayOfYear, this.weekOfMonth, this.weekOfYear, this.month, this.year, this.hour, this.minute, this.second, this.millisecond, this.nanosecond, this.custom);
 	}
 	
 	/**
@@ -165,7 +166,8 @@ public record LocalDateTimeConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull LocalDateTimeConstraintConfig withNotEqualTo(@NonNull LocalDateTime value) {
-		return new LocalDateTimeConstraintConfig(Optional.of(Pair.of(Objects.requireNonNull(value), true)), this.in, this.after, this.before, this.withinLast, this.withinNext, this.dayOfWeek, this.dayOfMonth, this.dayOfYear, this.weekOfMonth, this.weekOfYear, this.month, this.year, this.hour, this.minute, this.second, this.millisecond, this.nanosecond, this.custom);
+		Objects.requireNonNull(value, "Value for 'not equal to' constraint must not be null");
+		return new LocalDateTimeConstraintConfig(Optional.of(Pair.of(value, true)), this.in, this.after, this.before, this.withinLast, this.withinNext, this.dayOfWeek, this.dayOfMonth, this.dayOfYear, this.weekOfMonth, this.weekOfYear, this.month, this.year, this.hour, this.minute, this.second, this.millisecond, this.nanosecond, this.custom);
 	}
 	
 	/**
@@ -175,6 +177,7 @@ public record LocalDateTimeConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull LocalDateTimeConstraintConfig withIn(@NonNull Collection<LocalDateTime> values) {
+		Objects.requireNonNull(values, "Values for 'in' constraint must not be null");
 		return new LocalDateTimeConstraintConfig(this.equalTo, Optional.of(Pair.of(Set.copyOf(values), false)), this.after, this.before, this.withinLast, this.withinNext, this.dayOfWeek, this.dayOfMonth, this.dayOfYear, this.weekOfMonth, this.weekOfYear, this.month, this.year, this.hour, this.minute, this.second, this.millisecond, this.nanosecond, this.custom);
 	}
 	
@@ -185,6 +188,7 @@ public record LocalDateTimeConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull LocalDateTimeConstraintConfig withNotIn(@NonNull Collection<LocalDateTime> values) {
+		Objects.requireNonNull(values, "Values for 'not in' constraint must not be null");
 		return new LocalDateTimeConstraintConfig(this.equalTo, Optional.of(Pair.of(Set.copyOf(values), true)), this.after, this.before, this.withinLast, this.withinNext, this.dayOfWeek, this.dayOfMonth, this.dayOfYear, this.weekOfMonth, this.weekOfYear, this.month, this.year, this.hour, this.minute, this.second, this.millisecond, this.nanosecond, this.custom);
 	}
 	
@@ -195,7 +199,8 @@ public record LocalDateTimeConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull LocalDateTimeConstraintConfig withAfter(@NonNull LocalDateTime value) {
-		return new LocalDateTimeConstraintConfig(this.equalTo, this.in, Optional.of(Pair.of(Objects.requireNonNull(value), false)), this.before, this.withinLast, this.withinNext, this.dayOfWeek, this.dayOfMonth, this.dayOfYear, this.weekOfMonth, this.weekOfYear, this.month, this.year, this.hour, this.minute, this.second, this.millisecond, this.nanosecond, this.custom);
+		Objects.requireNonNull(value, "Value for 'after' constraint must not be null");
+		return new LocalDateTimeConstraintConfig(this.equalTo, this.in, Optional.of(Pair.of(value, false)), this.before, this.withinLast, this.withinNext, this.dayOfWeek, this.dayOfMonth, this.dayOfYear, this.weekOfMonth, this.weekOfYear, this.month, this.year, this.hour, this.minute, this.second, this.millisecond, this.nanosecond, this.custom);
 	}
 	
 	/**
@@ -205,7 +210,8 @@ public record LocalDateTimeConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull LocalDateTimeConstraintConfig withAfterOrEqual(@NonNull LocalDateTime value) {
-		return new LocalDateTimeConstraintConfig(this.equalTo, this.in, Optional.of(Pair.of(Objects.requireNonNull(value), true)), this.before, this.withinLast, this.withinNext, this.dayOfWeek, this.dayOfMonth, this.dayOfYear, this.weekOfMonth, this.weekOfYear, this.month, this.year, this.hour, this.minute, this.second, this.millisecond, this.nanosecond, this.custom);
+		Objects.requireNonNull(value, "Value for 'after or equal' constraint must not be null");
+		return new LocalDateTimeConstraintConfig(this.equalTo, this.in, Optional.of(Pair.of(value, true)), this.before, this.withinLast, this.withinNext, this.dayOfWeek, this.dayOfMonth, this.dayOfYear, this.weekOfMonth, this.weekOfYear, this.month, this.year, this.hour, this.minute, this.second, this.millisecond, this.nanosecond, this.custom);
 	}
 	
 	/**
@@ -215,7 +221,8 @@ public record LocalDateTimeConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull LocalDateTimeConstraintConfig withBefore(@NonNull LocalDateTime value) {
-		return new LocalDateTimeConstraintConfig(this.equalTo, this.in, this.after, Optional.of(Pair.of(Objects.requireNonNull(value), false)), this.withinLast, this.withinNext, this.dayOfWeek, this.dayOfMonth, this.dayOfYear, this.weekOfMonth, this.weekOfYear, this.month, this.year, this.hour, this.minute, this.second, this.millisecond, this.nanosecond, this.custom);
+		Objects.requireNonNull(value, "Value for 'before' constraint must not be null");
+		return new LocalDateTimeConstraintConfig(this.equalTo, this.in, this.after, Optional.of(Pair.of(value, false)), this.withinLast, this.withinNext, this.dayOfWeek, this.dayOfMonth, this.dayOfYear, this.weekOfMonth, this.weekOfYear, this.month, this.year, this.hour, this.minute, this.second, this.millisecond, this.nanosecond, this.custom);
 	}
 	
 	/**
@@ -225,7 +232,8 @@ public record LocalDateTimeConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull LocalDateTimeConstraintConfig withBeforeOrEqual(@NonNull LocalDateTime value) {
-		return new LocalDateTimeConstraintConfig(this.equalTo, this.in, this.after, Optional.of(Pair.of(Objects.requireNonNull(value), true)), this.withinLast, this.withinNext, this.dayOfWeek, this.dayOfMonth, this.dayOfYear, this.weekOfMonth, this.weekOfYear, this.month, this.year, this.hour, this.minute, this.second, this.millisecond, this.nanosecond, this.custom);
+		Objects.requireNonNull(value, "Value for 'before or equal' constraint must not be null");
+		return new LocalDateTimeConstraintConfig(this.equalTo, this.in, this.after, Optional.of(Pair.of(value, true)), this.withinLast, this.withinNext, this.dayOfWeek, this.dayOfMonth, this.dayOfYear, this.weekOfMonth, this.weekOfYear, this.month, this.year, this.hour, this.minute, this.second, this.millisecond, this.nanosecond, this.custom);
 	}
 	
 	/**
@@ -236,7 +244,9 @@ public record LocalDateTimeConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull LocalDateTimeConstraintConfig withBetween(@NonNull LocalDateTime after, @NonNull LocalDateTime before) {
-		return new LocalDateTimeConstraintConfig(this.equalTo, this.in, Optional.of(Pair.of(Objects.requireNonNull(after), false)), Optional.of(Pair.of(Objects.requireNonNull(before), false)), this.withinLast, this.withinNext, this.dayOfWeek, this.dayOfMonth, this.dayOfYear, this.weekOfMonth, this.weekOfYear, this.month, this.year, this.hour, this.minute, this.second, this.millisecond, this.nanosecond, this.custom);
+		Objects.requireNonNull(after, "After value for 'between' constraint must not be null");
+		Objects.requireNonNull(before, "Before value for 'between' constraint must not be null");
+		return new LocalDateTimeConstraintConfig(this.equalTo, this.in, Optional.of(Pair.of(after, false)), Optional.of(Pair.of(before, false)), this.withinLast, this.withinNext, this.dayOfWeek, this.dayOfMonth, this.dayOfYear, this.weekOfMonth, this.weekOfYear, this.month, this.year, this.hour, this.minute, this.second, this.millisecond, this.nanosecond, this.custom);
 	}
 	
 	/**
@@ -247,7 +257,9 @@ public record LocalDateTimeConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull LocalDateTimeConstraintConfig withBetweenOrEqual(@NonNull LocalDateTime after, @NonNull LocalDateTime before) {
-		return new LocalDateTimeConstraintConfig(this.equalTo, this.in, Optional.of(Pair.of(Objects.requireNonNull(after), true)), Optional.of(Pair.of(Objects.requireNonNull(before), true)), this.withinLast, this.withinNext, this.dayOfWeek, this.dayOfMonth, this.dayOfYear, this.weekOfMonth, this.weekOfYear, this.month, this.year, this.hour, this.minute, this.second, this.millisecond, this.nanosecond, this.custom);
+		Objects.requireNonNull(after, "After value for 'between or equal' constraint must not be null");
+		Objects.requireNonNull(before, "Before value for 'between or equal' constraint must not be null");
+		return new LocalDateTimeConstraintConfig(this.equalTo, this.in, Optional.of(Pair.of(after, true)), Optional.of(Pair.of(before, true)), this.withinLast, this.withinNext, this.dayOfWeek, this.dayOfMonth, this.dayOfYear, this.weekOfMonth, this.weekOfYear, this.month, this.year, this.hour, this.minute, this.second, this.millisecond, this.nanosecond, this.custom);
 	}
 	
 	/**
@@ -257,7 +269,8 @@ public record LocalDateTimeConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull LocalDateTimeConstraintConfig withWithinLast(@NonNull Duration duration) {
-		return new LocalDateTimeConstraintConfig(this.equalTo, this.in, this.after, this.before, Optional.of(Objects.requireNonNull(duration)), this.withinNext, this.dayOfWeek, this.dayOfMonth, this.dayOfYear, this.weekOfMonth, this.weekOfYear, this.month, this.year, this.hour, this.minute, this.second, this.millisecond, this.nanosecond, this.custom);
+		Objects.requireNonNull(duration, "Duration for 'within last' constraint must not be null");
+		return new LocalDateTimeConstraintConfig(this.equalTo, this.in, this.after, this.before, Optional.of(duration), this.withinNext, this.dayOfWeek, this.dayOfMonth, this.dayOfYear, this.weekOfMonth, this.weekOfYear, this.month, this.year, this.hour, this.minute, this.second, this.millisecond, this.nanosecond, this.custom);
 	}
 	
 	/**
@@ -267,7 +280,8 @@ public record LocalDateTimeConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull LocalDateTimeConstraintConfig withWithinNext(@NonNull Duration duration) {
-		return new LocalDateTimeConstraintConfig(this.equalTo, this.in, this.after, this.before, this.withinLast, Optional.of(Objects.requireNonNull(duration)), this.dayOfWeek, this.dayOfMonth, this.dayOfYear, this.weekOfMonth, this.weekOfYear, this.month, this.year, this.hour, this.minute, this.second, this.millisecond, this.nanosecond, this.custom);
+		Objects.requireNonNull(duration, "Duration for 'within next' constraint must not be null");
+		return new LocalDateTimeConstraintConfig(this.equalTo, this.in, this.after, this.before, this.withinLast, Optional.of(duration), this.dayOfWeek, this.dayOfMonth, this.dayOfYear, this.weekOfMonth, this.weekOfYear, this.month, this.year, this.hour, this.minute, this.second, this.millisecond, this.nanosecond, this.custom);
 	}
 	
 	/**
@@ -277,7 +291,8 @@ public record LocalDateTimeConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull LocalDateTimeConstraintConfig withDayOfWeek(@NonNull EnumConstraintConfig<DayOfWeek> config) {
-		return new LocalDateTimeConstraintConfig(this.equalTo, this.in, this.after, this.before, this.withinLast, this.withinNext, Optional.of(Objects.requireNonNull(config)), this.dayOfMonth, this.dayOfYear, this.weekOfMonth, this.weekOfYear, this.month, this.year, this.hour, this.minute, this.second, this.millisecond, this.nanosecond, this.custom);
+		Objects.requireNonNull(config, "Config for 'day of week' constraint must not be null");
+		return new LocalDateTimeConstraintConfig(this.equalTo, this.in, this.after, this.before, this.withinLast, this.withinNext, Optional.of(config), this.dayOfMonth, this.dayOfYear, this.weekOfMonth, this.weekOfYear, this.month, this.year, this.hour, this.minute, this.second, this.millisecond, this.nanosecond, this.custom);
 	}
 	
 	/**
@@ -287,7 +302,8 @@ public record LocalDateTimeConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull LocalDateTimeConstraintConfig withDayOfMonth(@NonNull NumericFieldConstraintConfig config) {
-		return new LocalDateTimeConstraintConfig(this.equalTo, this.in, this.after, this.before, this.withinLast, this.withinNext, this.dayOfWeek, Optional.of(Objects.requireNonNull(config)), this.dayOfYear, this.weekOfMonth, this.weekOfYear, this.month, this.year, this.hour, this.minute, this.second, this.millisecond, this.nanosecond, this.custom);
+		Objects.requireNonNull(config, "Config for 'day of month' constraint must not be null");
+		return new LocalDateTimeConstraintConfig(this.equalTo, this.in, this.after, this.before, this.withinLast, this.withinNext, this.dayOfWeek, Optional.of(config), this.dayOfYear, this.weekOfMonth, this.weekOfYear, this.month, this.year, this.hour, this.minute, this.second, this.millisecond, this.nanosecond, this.custom);
 	}
 	
 	/**
@@ -297,7 +313,8 @@ public record LocalDateTimeConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull LocalDateTimeConstraintConfig withDayOfYear(@NonNull NumericFieldConstraintConfig config) {
-		return new LocalDateTimeConstraintConfig(this.equalTo, this.in, this.after, this.before, this.withinLast, this.withinNext, this.dayOfWeek, this.dayOfMonth, Optional.of(Objects.requireNonNull(config)), this.weekOfMonth, this.weekOfYear, this.month, this.year, this.hour, this.minute, this.second, this.millisecond, this.nanosecond, this.custom);
+		Objects.requireNonNull(config, "Config for 'day of year' constraint must not be null");
+		return new LocalDateTimeConstraintConfig(this.equalTo, this.in, this.after, this.before, this.withinLast, this.withinNext, this.dayOfWeek, this.dayOfMonth, Optional.of(config), this.weekOfMonth, this.weekOfYear, this.month, this.year, this.hour, this.minute, this.second, this.millisecond, this.nanosecond, this.custom);
 	}
 	
 	/**
@@ -307,7 +324,8 @@ public record LocalDateTimeConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull LocalDateTimeConstraintConfig withWeekOfMonth(@NonNull NumericFieldConstraintConfig config) {
-		return new LocalDateTimeConstraintConfig(this.equalTo, this.in, this.after, this.before, this.withinLast, this.withinNext, this.dayOfWeek, this.dayOfMonth, this.dayOfYear, Optional.of(Objects.requireNonNull(config)), this.weekOfYear, this.month, this.year, this.hour, this.minute, this.second, this.millisecond, this.nanosecond, this.custom);
+		Objects.requireNonNull(config, "Config for 'week of month' constraint must not be null");
+		return new LocalDateTimeConstraintConfig(this.equalTo, this.in, this.after, this.before, this.withinLast, this.withinNext, this.dayOfWeek, this.dayOfMonth, this.dayOfYear, Optional.of(config), this.weekOfYear, this.month, this.year, this.hour, this.minute, this.second, this.millisecond, this.nanosecond, this.custom);
 	}
 	
 	/**
@@ -317,7 +335,8 @@ public record LocalDateTimeConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull LocalDateTimeConstraintConfig withWeekOfYear(@NonNull NumericFieldConstraintConfig config) {
-		return new LocalDateTimeConstraintConfig(this.equalTo, this.in, this.after, this.before, this.withinLast, this.withinNext, this.dayOfWeek, this.dayOfMonth, this.dayOfYear, this.weekOfMonth, Optional.of(Objects.requireNonNull(config)), this.month, this.year, this.hour, this.minute, this.second, this.millisecond, this.nanosecond, this.custom);
+		Objects.requireNonNull(config, "Config for 'week of year' constraint must not be null");
+		return new LocalDateTimeConstraintConfig(this.equalTo, this.in, this.after, this.before, this.withinLast, this.withinNext, this.dayOfWeek, this.dayOfMonth, this.dayOfYear, this.weekOfMonth, Optional.of(config), this.month, this.year, this.hour, this.minute, this.second, this.millisecond, this.nanosecond, this.custom);
 	}
 	
 	/**
@@ -327,7 +346,8 @@ public record LocalDateTimeConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull LocalDateTimeConstraintConfig withMonth(@NonNull EnumConstraintConfig<Month> config) {
-		return new LocalDateTimeConstraintConfig(this.equalTo, this.in, this.after, this.before, this.withinLast, this.withinNext, this.dayOfWeek, this.dayOfMonth, this.dayOfYear, this.weekOfMonth, this.weekOfYear, Optional.of(Objects.requireNonNull(config)), this.year, this.hour, this.minute, this.second, this.millisecond, this.nanosecond, this.custom);
+		Objects.requireNonNull(config, "Config for 'month' constraint must not be null");
+		return new LocalDateTimeConstraintConfig(this.equalTo, this.in, this.after, this.before, this.withinLast, this.withinNext, this.dayOfWeek, this.dayOfMonth, this.dayOfYear, this.weekOfMonth, this.weekOfYear, Optional.of(config), this.year, this.hour, this.minute, this.second, this.millisecond, this.nanosecond, this.custom);
 	}
 	
 	/**
@@ -337,7 +357,8 @@ public record LocalDateTimeConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull LocalDateTimeConstraintConfig withYear(@NonNull NumericFieldConstraintConfig config) {
-		return new LocalDateTimeConstraintConfig(this.equalTo, this.in, this.after, this.before, this.withinLast, this.withinNext, this.dayOfWeek, this.dayOfMonth, this.dayOfYear, this.weekOfMonth, this.weekOfYear, this.month, Optional.of(Objects.requireNonNull(config)), this.hour, this.minute, this.second, this.millisecond, this.nanosecond, this.custom);
+		Objects.requireNonNull(config, "Config for 'year' constraint must not be null");
+		return new LocalDateTimeConstraintConfig(this.equalTo, this.in, this.after, this.before, this.withinLast, this.withinNext, this.dayOfWeek, this.dayOfMonth, this.dayOfYear, this.weekOfMonth, this.weekOfYear, this.month, Optional.of(config), this.hour, this.minute, this.second, this.millisecond, this.nanosecond, this.custom);
 	}
 	
 	/**
@@ -347,7 +368,8 @@ public record LocalDateTimeConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull LocalDateTimeConstraintConfig withHour(@NonNull NumericFieldConstraintConfig config) {
-		return new LocalDateTimeConstraintConfig(this.equalTo, this.in, this.after, this.before, this.withinLast, this.withinNext, this.dayOfWeek, this.dayOfMonth, this.dayOfYear, this.weekOfMonth, this.weekOfYear, this.month, this.year, Optional.of(Objects.requireNonNull(config)), this.minute, this.second, this.millisecond, this.nanosecond, this.custom);
+		Objects.requireNonNull(config, "Config for 'hour' constraint must not be null");
+		return new LocalDateTimeConstraintConfig(this.equalTo, this.in, this.after, this.before, this.withinLast, this.withinNext, this.dayOfWeek, this.dayOfMonth, this.dayOfYear, this.weekOfMonth, this.weekOfYear, this.month, this.year, Optional.of(config), this.minute, this.second, this.millisecond, this.nanosecond, this.custom);
 	}
 	
 	/**
@@ -357,7 +379,8 @@ public record LocalDateTimeConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull LocalDateTimeConstraintConfig withMinute(@NonNull NumericFieldConstraintConfig config) {
-		return new LocalDateTimeConstraintConfig(this.equalTo, this.in, this.after, this.before, this.withinLast, this.withinNext, this.dayOfWeek, this.dayOfMonth, this.dayOfYear, this.weekOfMonth, this.weekOfYear, this.month, this.year, this.hour, Optional.of(Objects.requireNonNull(config)), this.second, this.millisecond, this.nanosecond, this.custom);
+		Objects.requireNonNull(config, "Config for 'minute' constraint must not be null");
+		return new LocalDateTimeConstraintConfig(this.equalTo, this.in, this.after, this.before, this.withinLast, this.withinNext, this.dayOfWeek, this.dayOfMonth, this.dayOfYear, this.weekOfMonth, this.weekOfYear, this.month, this.year, this.hour, Optional.of(config), this.second, this.millisecond, this.nanosecond, this.custom);
 	}
 	
 	/**
@@ -367,7 +390,8 @@ public record LocalDateTimeConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull LocalDateTimeConstraintConfig withSecond(@NonNull NumericFieldConstraintConfig config) {
-		return new LocalDateTimeConstraintConfig(this.equalTo, this.in, this.after, this.before, this.withinLast, this.withinNext, this.dayOfWeek, this.dayOfMonth, this.dayOfYear, this.weekOfMonth, this.weekOfYear, this.month, this.year, this.hour, this.minute, Optional.of(Objects.requireNonNull(config)), this.millisecond, this.nanosecond, this.custom);
+		Objects.requireNonNull(config, "Config for 'second' constraint must not be null");
+		return new LocalDateTimeConstraintConfig(this.equalTo, this.in, this.after, this.before, this.withinLast, this.withinNext, this.dayOfWeek, this.dayOfMonth, this.dayOfYear, this.weekOfMonth, this.weekOfYear, this.month, this.year, this.hour, this.minute, Optional.of(config), this.millisecond, this.nanosecond, this.custom);
 	}
 	
 	/**
@@ -377,7 +401,8 @@ public record LocalDateTimeConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull LocalDateTimeConstraintConfig withMillisecond(@NonNull NumericFieldConstraintConfig config) {
-		return new LocalDateTimeConstraintConfig(this.equalTo, this.in, this.after, this.before, this.withinLast, this.withinNext, this.dayOfWeek, this.dayOfMonth, this.dayOfYear, this.weekOfMonth, this.weekOfYear, this.month, this.year, this.hour, this.minute, this.second, Optional.of(Objects.requireNonNull(config)), this.nanosecond, this.custom);
+		Objects.requireNonNull(config, "Config for 'millisecond' constraint must not be null");
+		return new LocalDateTimeConstraintConfig(this.equalTo, this.in, this.after, this.before, this.withinLast, this.withinNext, this.dayOfWeek, this.dayOfMonth, this.dayOfYear, this.weekOfMonth, this.weekOfYear, this.month, this.year, this.hour, this.minute, this.second, Optional.of(config), this.nanosecond, this.custom);
 	}
 	
 	/**
@@ -387,7 +412,8 @@ public record LocalDateTimeConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull LocalDateTimeConstraintConfig withNanosecond(@NonNull NumericFieldConstraintConfig config) {
-		return new LocalDateTimeConstraintConfig(this.equalTo, this.in, this.after, this.before, this.withinLast, this.withinNext, this.dayOfWeek, this.dayOfMonth, this.dayOfYear, this.weekOfMonth, this.weekOfYear, this.month, this.year, this.hour, this.minute, this.second, this.millisecond, Optional.of(Objects.requireNonNull(config)), this.custom);
+		Objects.requireNonNull(config, "Config for 'nanosecond' constraint must not be null");
+		return new LocalDateTimeConstraintConfig(this.equalTo, this.in, this.after, this.before, this.withinLast, this.withinNext, this.dayOfWeek, this.dayOfMonth, this.dayOfYear, this.weekOfMonth, this.weekOfYear, this.month, this.year, this.hour, this.minute, this.second, this.millisecond, Optional.of(config), this.custom);
 	}
 	
 	/**
@@ -397,6 +423,7 @@ public record LocalDateTimeConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull LocalDateTimeConstraintConfig withCustom(@NonNull Constraint<LocalDateTime> constraint) {
-		return new LocalDateTimeConstraintConfig(this.equalTo, this.in, this.after, this.before, this.withinLast, this.withinNext, this.dayOfWeek, this.dayOfMonth, this.dayOfYear, this.weekOfMonth, this.weekOfYear, this.month, this.year, this.hour, this.minute, this.second, this.millisecond, this.nanosecond, Optional.of(Objects.requireNonNull(constraint)));
+		Objects.requireNonNull(constraint, "Custom constraint must not be null");
+		return new LocalDateTimeConstraintConfig(this.equalTo, this.in, this.after, this.before, this.withinLast, this.withinNext, this.dayOfWeek, this.dayOfMonth, this.dayOfYear, this.weekOfMonth, this.weekOfYear, this.month, this.year, this.hour, this.minute, this.second, this.millisecond, this.nanosecond, Optional.of(constraint));
 	}
 }
