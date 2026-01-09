@@ -22,6 +22,7 @@ import net.luis.utils.io.codec.constraint_new.Constraint;
 import net.luis.utils.io.codec.constraint_new.config.EnumConstraintConfig;
 import net.luis.utils.io.codec.constraint_new.config.StringConstraintConfig;
 import net.luis.utils.io.codec.constraint_new.core.IpAddressType;
+import net.luis.utils.io.codec.constraint_new.core.Unit;
 import net.luis.utils.util.Pair;
 import org.jspecify.annotations.NonNull;
 
@@ -76,14 +77,14 @@ public record HostConstraintConfig(
 	@NonNull Optional<Pair<String, Boolean>> endsWith,
 	@NonNull Optional<Pair<Set<String>, Boolean>> endsWithAny,
 	@NonNull Optional<Pair<Pattern, Boolean>> matches,
-	@NonNull Optional<Void> ipv4,
-	@NonNull Optional<Void> ipv6,
+	@NonNull Optional<Unit> ipv4,
+	@NonNull Optional<Unit> ipv6,
 	@NonNull Optional<StringConstraintConfig> ip,
 	@NonNull Optional<EnumConstraintConfig<IpAddressType>> ipType,
 	@NonNull Optional<Pair<Set<String>, Boolean>> inAnySubnet,
 	@NonNull Optional<StringConstraintConfig> domain,
-	@NonNull Optional<Void> rootDomain,
-	@NonNull Optional<Void> subDomain,
+	@NonNull Optional<Unit> rootDomain,
+	@NonNull Optional<Unit> subDomain,
 	@NonNull Optional<Constraint<String>> custom
 ) {
 	
@@ -492,7 +493,7 @@ public record HostConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull HostConstraintConfig withIpv4() {
-		return new HostConstraintConfig(this.equalTo, this.in, this.minLength, this.maxLength, this.startsWith, this.startsWithAny, this.contains, this.containsAny, this.containsAll, this.containsOnly, this.endsWith, this.endsWithAny, this.matches, Optional.of(null), this.ipv6, this.ip, this.ipType, this.inAnySubnet, this.domain, this.rootDomain, this.subDomain, this.custom);
+		return new HostConstraintConfig(this.equalTo, this.in, this.minLength, this.maxLength, this.startsWith, this.startsWithAny, this.contains, this.containsAny, this.containsAll, this.containsOnly, this.endsWith, this.endsWithAny, this.matches, Optional.of(Unit.INSTANCE), this.ipv6, this.ip, this.ipType, this.inAnySubnet, this.domain, this.rootDomain, this.subDomain, this.custom);
 	}
 	
 	/**
@@ -501,7 +502,7 @@ public record HostConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull HostConstraintConfig withIpv6() {
-		return new HostConstraintConfig(this.equalTo, this.in, this.minLength, this.maxLength, this.startsWith, this.startsWithAny, this.contains, this.containsAny, this.containsAll, this.containsOnly, this.endsWith, this.endsWithAny, this.matches, this.ipv4, Optional.of(null), this.ip, this.ipType, this.inAnySubnet, this.domain, this.rootDomain, this.subDomain, this.custom);
+		return new HostConstraintConfig(this.equalTo, this.in, this.minLength, this.maxLength, this.startsWith, this.startsWithAny, this.contains, this.containsAny, this.containsAll, this.containsOnly, this.endsWith, this.endsWithAny, this.matches, this.ipv4, Optional.of(Unit.INSTANCE), this.ip, this.ipType, this.inAnySubnet, this.domain, this.rootDomain, this.subDomain, this.custom);
 	}
 	
 	/**
@@ -565,7 +566,7 @@ public record HostConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull HostConstraintConfig withRootDomain() {
-		return new HostConstraintConfig(this.equalTo, this.in, this.minLength, this.maxLength, this.startsWith, this.startsWithAny, this.contains, this.containsAny, this.containsAll, this.containsOnly, this.endsWith, this.endsWithAny, this.matches, this.ipv4, this.ipv6, this.ip, this.ipType, this.inAnySubnet, this.domain, Optional.of(null), this.subDomain, this.custom);
+		return new HostConstraintConfig(this.equalTo, this.in, this.minLength, this.maxLength, this.startsWith, this.startsWithAny, this.contains, this.containsAny, this.containsAll, this.containsOnly, this.endsWith, this.endsWithAny, this.matches, this.ipv4, this.ipv6, this.ip, this.ipType, this.inAnySubnet, this.domain, Optional.of(Unit.INSTANCE), this.subDomain, this.custom);
 	}
 	
 	/**
@@ -574,7 +575,7 @@ public record HostConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull HostConstraintConfig withSubDomain() {
-		return new HostConstraintConfig(this.equalTo, this.in, this.minLength, this.maxLength, this.startsWith, this.startsWithAny, this.contains, this.containsAny, this.containsAll, this.containsOnly, this.endsWith, this.endsWithAny, this.matches, this.ipv4, this.ipv6, this.ip, this.ipType, this.inAnySubnet, this.domain, this.rootDomain, Optional.of(null), this.custom);
+		return new HostConstraintConfig(this.equalTo, this.in, this.minLength, this.maxLength, this.startsWith, this.startsWithAny, this.contains, this.containsAny, this.containsAll, this.containsOnly, this.endsWith, this.endsWithAny, this.matches, this.ipv4, this.ipv6, this.ip, this.ipType, this.inAnySubnet, this.domain, this.rootDomain, Optional.of(Unit.INSTANCE), this.custom);
 	}
 	
 	/**

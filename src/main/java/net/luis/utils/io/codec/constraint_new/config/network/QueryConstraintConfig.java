@@ -21,6 +21,7 @@ package net.luis.utils.io.codec.constraint_new.config.network;
 import net.luis.utils.io.codec.constraint_new.Constraint;
 import net.luis.utils.io.codec.constraint_new.config.SizeConstraintConfig;
 import net.luis.utils.io.codec.constraint_new.config.StringConstraintConfig;
+import net.luis.utils.io.codec.constraint_new.core.Unit;
 import net.luis.utils.util.Pair;
 import org.jspecify.annotations.NonNull;
 
@@ -58,12 +59,12 @@ public record QueryConstraintConfig(
 	@NonNull Optional<Set<String>> requiredKeys,
 	@NonNull Optional<Set<String>> forbiddenKeys,
 	@NonNull Optional<Set<String>> allowedKeys,
-	@NonNull Optional<Void> nonNullKeys,
-	@NonNull Optional<Void> uniqueValues,
-	@NonNull Optional<Void> nonNullValues,
+	@NonNull Optional<Unit> nonNullKeys,
+	@NonNull Optional<Unit> uniqueValues,
+	@NonNull Optional<Unit> nonNullValues,
 	@NonNull Optional<Map<String, StringConstraintConfig>> valueConstraints,
 	@NonNull Optional<Map<Pattern, StringConstraintConfig>> patternValueConstraints,
-	@NonNull Optional<Void> singleValued,
+	@NonNull Optional<Unit> singleValued,
 	@NonNull Optional<Map<String, SizeConstraintConfig>> multiValuedConstraints,
 	@NonNull Optional<Constraint<Map<String, List<String>>>> custom
 ) {
@@ -216,7 +217,7 @@ public record QueryConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull QueryConstraintConfig withNonNullKeys() {
-		return new QueryConstraintConfig(this.min, this.max, this.requiredKeys, this.forbiddenKeys, this.allowedKeys, Optional.of(null), this.uniqueValues, this.nonNullValues, this.valueConstraints, this.patternValueConstraints, this.singleValued, this.multiValuedConstraints, this.custom);
+		return new QueryConstraintConfig(this.min, this.max, this.requiredKeys, this.forbiddenKeys, this.allowedKeys, Optional.of(Unit.INSTANCE), this.uniqueValues, this.nonNullValues, this.valueConstraints, this.patternValueConstraints, this.singleValued, this.multiValuedConstraints, this.custom);
 	}
 	
 	/**
@@ -225,7 +226,7 @@ public record QueryConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull QueryConstraintConfig withUniqueValues() {
-		return new QueryConstraintConfig(this.min, this.max, this.requiredKeys, this.forbiddenKeys, this.allowedKeys, this.nonNullKeys, Optional.of(null), this.nonNullValues, this.valueConstraints, this.patternValueConstraints, this.singleValued, this.multiValuedConstraints, this.custom);
+		return new QueryConstraintConfig(this.min, this.max, this.requiredKeys, this.forbiddenKeys, this.allowedKeys, this.nonNullKeys, Optional.of(Unit.INSTANCE), this.nonNullValues, this.valueConstraints, this.patternValueConstraints, this.singleValued, this.multiValuedConstraints, this.custom);
 	}
 	
 	/**
@@ -234,7 +235,7 @@ public record QueryConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull QueryConstraintConfig withNonNullValues() {
-		return new QueryConstraintConfig(this.min, this.max, this.requiredKeys, this.forbiddenKeys, this.allowedKeys, this.nonNullKeys, this.uniqueValues, Optional.of(null), this.valueConstraints, this.patternValueConstraints, this.singleValued, this.multiValuedConstraints, this.custom);
+		return new QueryConstraintConfig(this.min, this.max, this.requiredKeys, this.forbiddenKeys, this.allowedKeys, this.nonNullKeys, this.uniqueValues, Optional.of(Unit.INSTANCE), this.valueConstraints, this.patternValueConstraints, this.singleValued, this.multiValuedConstraints, this.custom);
 	}
 	
 	/**
@@ -287,7 +288,7 @@ public record QueryConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull QueryConstraintConfig withSingleValued() {
-		return new QueryConstraintConfig(this.min, this.max, this.requiredKeys, this.forbiddenKeys, this.allowedKeys, this.nonNullKeys, this.uniqueValues, this.nonNullValues, this.valueConstraints, this.patternValueConstraints, Optional.of(null), this.multiValuedConstraints, this.custom);
+		return new QueryConstraintConfig(this.min, this.max, this.requiredKeys, this.forbiddenKeys, this.allowedKeys, this.nonNullKeys, this.uniqueValues, this.nonNullValues, this.valueConstraints, this.patternValueConstraints, Optional.of(Unit.INSTANCE), this.multiValuedConstraints, this.custom);
 	}
 	
 	/**

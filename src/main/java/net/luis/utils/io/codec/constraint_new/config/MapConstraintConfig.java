@@ -20,6 +20,7 @@ package net.luis.utils.io.codec.constraint_new.config;
 
 import net.luis.utils.io.codec.constraint_new.Constraint;
 import net.luis.utils.io.codec.constraint_new.MapConstraint;
+import net.luis.utils.io.codec.constraint_new.core.Unit;
 import net.luis.utils.util.Pair;
 import org.jspecify.annotations.NonNull;
 
@@ -69,9 +70,9 @@ public record MapConstraintConfig<K, V>(
 	@NonNull Optional<Set<K>> requiredKeys,
 	@NonNull Optional<Set<K>> forbiddenKeys,
 	@NonNull Optional<Set<K>> allowedKeys,
-	@NonNull Optional<Void> nonNullKeys,
-	@NonNull Optional<Void> uniqueValues,
-	@NonNull Optional<Void> nonNullValues,
+	@NonNull Optional<Unit> nonNullKeys,
+	@NonNull Optional<Unit> uniqueValues,
+	@NonNull Optional<Unit> nonNullValues,
 	@NonNull Optional<Constraint<Map<K, V>>> custom
 ) {
 
@@ -368,7 +369,7 @@ public record MapConstraintConfig<K, V>(
 	 * @return A new config with the non-null keys constraint applied
 	 */
 	public @NonNull MapConstraintConfig<K, V> withNonNullKeys() {
-		return new MapConstraintConfig<>(this.equalTo, this.in, this.min, this.max, this.requiredKeys, this.forbiddenKeys, this.allowedKeys, Optional.of(null), this.uniqueValues, this.nonNullValues, this.custom);
+		return new MapConstraintConfig<>(this.equalTo, this.in, this.min, this.max, this.requiredKeys, this.forbiddenKeys, this.allowedKeys, Optional.of(Unit.INSTANCE), this.uniqueValues, this.nonNullValues, this.custom);
 	}
 	
 	/**
@@ -377,7 +378,7 @@ public record MapConstraintConfig<K, V>(
 	 * @return A new config with the unique values constraint applied
 	 */
 	public @NonNull MapConstraintConfig<K, V> withUniqueValues() {
-		return new MapConstraintConfig<>(this.equalTo, this.in, this.min, this.max, this.requiredKeys, this.forbiddenKeys, this.allowedKeys, this.nonNullKeys, Optional.of(null), this.nonNullValues, this.custom);
+		return new MapConstraintConfig<>(this.equalTo, this.in, this.min, this.max, this.requiredKeys, this.forbiddenKeys, this.allowedKeys, this.nonNullKeys, Optional.of(Unit.INSTANCE), this.nonNullValues, this.custom);
 	}
 	
 	/**
@@ -386,7 +387,7 @@ public record MapConstraintConfig<K, V>(
 	 * @return A new config with the non-null values constraint applied
 	 */
 	public @NonNull MapConstraintConfig<K, V> withNonNullValues() {
-		return new MapConstraintConfig<>(this.equalTo, this.in, this.min, this.max, this.requiredKeys, this.forbiddenKeys, this.allowedKeys, this.nonNullKeys, this.uniqueValues, Optional.of(null), this.custom);
+		return new MapConstraintConfig<>(this.equalTo, this.in, this.min, this.max, this.requiredKeys, this.forbiddenKeys, this.allowedKeys, this.nonNullKeys, this.uniqueValues, Optional.of(Unit.INSTANCE), this.custom);
 	}
 	
 	/**

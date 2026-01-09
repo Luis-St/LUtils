@@ -21,6 +21,7 @@ package net.luis.utils.io.codec.constraint_new.config;
 import net.luis.utils.io.codec.constraint_new.Constraint;
 import net.luis.utils.io.codec.constraint_new.UUIDConstraint;
 import net.luis.utils.io.codec.constraint_new.core.UUIDVariant;
+import net.luis.utils.io.codec.constraint_new.core.Unit;
 import net.luis.utils.util.Pair;
 import org.jspecify.annotations.NonNull;
 
@@ -49,9 +50,9 @@ public record UUIDConstraintConfig(
 	@NonNull Optional<Pair<Set<UUID>, Boolean>> in,
 	@NonNull Optional<Integer> version,
 	@NonNull Optional<UUIDVariant> variant,
-	@NonNull Optional<Void> nil,
-	@NonNull Optional<Void> notNil,
-	@NonNull Optional<Void> max,
+	@NonNull Optional<Unit> nil,
+	@NonNull Optional<Unit> notNil,
+	@NonNull Optional<Unit> max,
 	@NonNull Optional<Constraint<UUID>> custom
 ) {
 	
@@ -180,7 +181,7 @@ public record UUIDConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull UUIDConstraintConfig withNil() {
-		return new UUIDConstraintConfig(this.equalTo, this.in, this.version, this.variant, Optional.of(null), this.notNil, this.max, this.custom);
+		return new UUIDConstraintConfig(this.equalTo, this.in, this.version, this.variant, Optional.of(Unit.INSTANCE), this.notNil, this.max, this.custom);
 	}
 
 	/**
@@ -192,7 +193,7 @@ public record UUIDConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull UUIDConstraintConfig withNotNil() {
-		return new UUIDConstraintConfig(this.equalTo, this.in, this.version, this.variant, this.nil, Optional.of(null), this.max, this.custom);
+		return new UUIDConstraintConfig(this.equalTo, this.in, this.version, this.variant, this.nil, Optional.of(Unit.INSTANCE), this.max, this.custom);
 	}
 
 	/**
@@ -204,7 +205,7 @@ public record UUIDConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull UUIDConstraintConfig withMax() {
-		return new UUIDConstraintConfig(this.equalTo, this.in, this.version, this.variant, this.nil, this.notNil, Optional.of(null), this.custom);
+		return new UUIDConstraintConfig(this.equalTo, this.in, this.version, this.variant, this.nil, this.notNil, Optional.of(Unit.INSTANCE), this.custom);
 	}
 
 	/**

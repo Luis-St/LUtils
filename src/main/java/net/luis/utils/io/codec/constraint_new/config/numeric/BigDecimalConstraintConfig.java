@@ -19,6 +19,7 @@
 package net.luis.utils.io.codec.constraint_new.config.numeric;
 
 import net.luis.utils.io.codec.constraint_new.Constraint;
+import net.luis.utils.io.codec.constraint_new.core.Unit;
 import net.luis.utils.util.Pair;
 import org.jspecify.annotations.NonNull;
 
@@ -63,9 +64,9 @@ public record BigDecimalConstraintConfig(
 	@NonNull Optional<Boolean> positive,
 	@NonNull Optional<Boolean> negative,
 	@NonNull Optional<Boolean> zero,
-	@NonNull Optional<Void> percentage,
-	@NonNull Optional<Void> integral,
-	@NonNull Optional<Void> normalized,
+	@NonNull Optional<Unit> percentage,
+	@NonNull Optional<Unit> integral,
+	@NonNull Optional<Unit> normalized,
 	@NonNull Optional<Pair<Integer, Boolean>> scaleMin,
 	@NonNull Optional<Pair<Integer, Boolean>> scaleMax,
 	@NonNull Optional<Pair<Integer, Boolean>> precisionMin,
@@ -338,7 +339,7 @@ public record BigDecimalConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull BigDecimalConstraintConfig withPercentage() {
-		return new BigDecimalConstraintConfig(this.equalTo, this.in, this.min, this.max, this.positive, this.negative, this.zero, Optional.of(null), this.integral, this.normalized, this.scaleMin, this.scaleMax, this.precisionMin, this.precisionMax, this.custom);
+		return new BigDecimalConstraintConfig(this.equalTo, this.in, this.min, this.max, this.positive, this.negative, this.zero, Optional.of(Unit.INSTANCE), this.integral, this.normalized, this.scaleMin, this.scaleMax, this.precisionMin, this.precisionMax, this.custom);
 	}
 	
 	/**
@@ -347,7 +348,7 @@ public record BigDecimalConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull BigDecimalConstraintConfig withIntegral() {
-		return new BigDecimalConstraintConfig(this.equalTo, this.in, this.min, this.max, this.positive, this.negative, this.zero, this.percentage, Optional.of(null), this.normalized, this.scaleMin, this.scaleMax, this.precisionMin, this.precisionMax, this.custom);
+		return new BigDecimalConstraintConfig(this.equalTo, this.in, this.min, this.max, this.positive, this.negative, this.zero, this.percentage, Optional.of(Unit.INSTANCE), this.normalized, this.scaleMin, this.scaleMax, this.precisionMin, this.precisionMax, this.custom);
 	}
 	
 	/**
@@ -356,7 +357,7 @@ public record BigDecimalConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull BigDecimalConstraintConfig withNormalized() {
-		return new BigDecimalConstraintConfig(this.equalTo, this.in, this.min, this.max, this.positive, this.negative, this.zero, this.percentage, this.integral, Optional.of(null), this.scaleMin, this.scaleMax, this.precisionMin, this.precisionMax, this.custom);
+		return new BigDecimalConstraintConfig(this.equalTo, this.in, this.min, this.max, this.positive, this.negative, this.zero, this.percentage, this.integral, Optional.of(Unit.INSTANCE), this.scaleMin, this.scaleMax, this.precisionMin, this.precisionMax, this.custom);
 	}
 	
 	/**

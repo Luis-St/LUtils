@@ -19,6 +19,7 @@
 package net.luis.utils.io.codec.constraint_new.config.numeric;
 
 import net.luis.utils.io.codec.constraint_new.Constraint;
+import net.luis.utils.io.codec.constraint_new.core.Unit;
 import net.luis.utils.util.Pair;
 import org.jspecify.annotations.NonNull;
 
@@ -60,11 +61,11 @@ public record DecimalConstraintConfig<T extends Number & Comparable<T>>(
 	@NonNull Optional<Boolean> positive,
 	@NonNull Optional<Boolean> negative,
 	@NonNull Optional<Boolean> zero,
-	@NonNull Optional<Void> percentage,
-	@NonNull Optional<Void> finite,
-	@NonNull Optional<Void> notNaN,
-	@NonNull Optional<Void> integral,
-	@NonNull Optional<Void> normalized,
+	@NonNull Optional<Unit> percentage,
+	@NonNull Optional<Unit> finite,
+	@NonNull Optional<Unit> notNaN,
+	@NonNull Optional<Unit> integral,
+	@NonNull Optional<Unit> normalized,
 	@NonNull Optional<Constraint<T>> custom
 ) {
 
@@ -305,7 +306,7 @@ public record DecimalConstraintConfig<T extends Number & Comparable<T>>(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull DecimalConstraintConfig<T> withPercentage() {
-		return new DecimalConstraintConfig<>(this.equalTo, this.in, this.min, this.max, this.positive, this.negative, this.zero, Optional.of(null), this.finite, this.notNaN, this.integral, this.normalized, this.custom);
+		return new DecimalConstraintConfig<>(this.equalTo, this.in, this.min, this.max, this.positive, this.negative, this.zero, Optional.of(Unit.INSTANCE), this.finite, this.notNaN, this.integral, this.normalized, this.custom);
 	}
 	
 	/**
@@ -314,7 +315,7 @@ public record DecimalConstraintConfig<T extends Number & Comparable<T>>(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull DecimalConstraintConfig<T> withFinite() {
-		return new DecimalConstraintConfig<>(this.equalTo, this.in, this.min, this.max, this.positive, this.negative, this.zero, this.percentage, Optional.of(null), this.notNaN, this.integral, this.normalized, this.custom);
+		return new DecimalConstraintConfig<>(this.equalTo, this.in, this.min, this.max, this.positive, this.negative, this.zero, this.percentage, Optional.of(Unit.INSTANCE), this.notNaN, this.integral, this.normalized, this.custom);
 	}
 	
 	/**
@@ -323,7 +324,7 @@ public record DecimalConstraintConfig<T extends Number & Comparable<T>>(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull DecimalConstraintConfig<T> withNotNaN() {
-		return new DecimalConstraintConfig<>(this.equalTo, this.in, this.min, this.max, this.positive, this.negative, this.zero, this.percentage, this.finite, Optional.of(null), this.integral, this.normalized, this.custom);
+		return new DecimalConstraintConfig<>(this.equalTo, this.in, this.min, this.max, this.positive, this.negative, this.zero, this.percentage, this.finite, Optional.of(Unit.INSTANCE), this.integral, this.normalized, this.custom);
 	}
 	
 	/**
@@ -332,7 +333,7 @@ public record DecimalConstraintConfig<T extends Number & Comparable<T>>(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull DecimalConstraintConfig<T> withIntegral() {
-		return new DecimalConstraintConfig<>(this.equalTo, this.in, this.min, this.max, this.positive, this.negative, this.zero, this.percentage, this.finite, this.notNaN, Optional.of(null), this.normalized, this.custom);
+		return new DecimalConstraintConfig<>(this.equalTo, this.in, this.min, this.max, this.positive, this.negative, this.zero, this.percentage, this.finite, this.notNaN, Optional.of(Unit.INSTANCE), this.normalized, this.custom);
 	}
 	
 	/**
@@ -341,7 +342,7 @@ public record DecimalConstraintConfig<T extends Number & Comparable<T>>(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull DecimalConstraintConfig<T> withNormalized() {
-		return new DecimalConstraintConfig<>(this.equalTo, this.in, this.min, this.max, this.positive, this.negative, this.zero, this.percentage, this.finite, this.notNaN, this.integral, Optional.of(null), this.custom);
+		return new DecimalConstraintConfig<>(this.equalTo, this.in, this.min, this.max, this.positive, this.negative, this.zero, this.percentage, this.finite, this.notNaN, this.integral, Optional.of(Unit.INSTANCE), this.custom);
 	}
 	
 	/**

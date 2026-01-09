@@ -20,6 +20,7 @@ package net.luis.utils.io.codec.constraint_new.config;
 
 import net.luis.utils.io.codec.constraint_new.Constraint;
 import net.luis.utils.io.codec.constraint_new.StringConstraint;
+import net.luis.utils.io.codec.constraint_new.core.Unit;
 import net.luis.utils.util.Pair;
 import org.jspecify.annotations.NonNull;
 
@@ -79,16 +80,16 @@ public record StringConstraintConfig(
 	@NonNull Optional<Pair<String, Boolean>> endsWith,
 	@NonNull Optional<Pair<Set<String>, Boolean>> endsWithAny,
 	@NonNull Optional<Pair<Pattern, Boolean>> matches,
-	@NonNull Optional<Void> trimmed,
-	@NonNull Optional<Void> blank,
-	@NonNull Optional<Void> notBlank,
-	@NonNull Optional<Void> upperCase,
-	@NonNull Optional<Void> lowerCase,
-	@NonNull Optional<Void> numeric,
-	@NonNull Optional<Void> alphabetic,
-	@NonNull Optional<Void> alphanumeric,
-	@NonNull Optional<Void> ascii,
-	@NonNull Optional<Void> latin1,
+	@NonNull Optional<Unit> trimmed,
+	@NonNull Optional<Unit> blank,
+	@NonNull Optional<Unit> notBlank,
+	@NonNull Optional<Unit> upperCase,
+	@NonNull Optional<Unit> lowerCase,
+	@NonNull Optional<Unit> numeric,
+	@NonNull Optional<Unit> alphabetic,
+	@NonNull Optional<Unit> alphanumeric,
+	@NonNull Optional<Unit> ascii,
+	@NonNull Optional<Unit> latin1,
 	@NonNull Optional<Constraint<String>> custom
 ) {
 	
@@ -571,7 +572,7 @@ public record StringConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull StringConstraintConfig withTrimmed() {
-		return new StringConstraintConfig(this.equalTo, this.in, this.equalToIgnoreCase, this.inIgnoreCase, this.minLength, this.maxLength, this.startsWith, this.startsWithAny, this.contains, this.containsAny, this.containsAll, this.containsOnly, this.endsWith, this.endsWithAny, this.matches, Optional.of(null), this.blank, this.notBlank, this.upperCase, this.lowerCase, this.numeric, this.alphabetic, this.alphanumeric, this.ascii, this.latin1, this.custom);
+		return new StringConstraintConfig(this.equalTo, this.in, this.equalToIgnoreCase, this.inIgnoreCase, this.minLength, this.maxLength, this.startsWith, this.startsWithAny, this.contains, this.containsAny, this.containsAll, this.containsOnly, this.endsWith, this.endsWithAny, this.matches, Optional.of(Unit.INSTANCE), this.blank, this.notBlank, this.upperCase, this.lowerCase, this.numeric, this.alphabetic, this.alphanumeric, this.ascii, this.latin1, this.custom);
 	}
 
 	/**
@@ -580,7 +581,7 @@ public record StringConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull StringConstraintConfig withBlank() {
-		return new StringConstraintConfig(this.equalTo, this.in, this.equalToIgnoreCase, this.inIgnoreCase, this.minLength, this.maxLength, this.startsWith, this.startsWithAny, this.contains, this.containsAny, this.containsAll, this.containsOnly, this.endsWith, this.endsWithAny, this.matches, this.trimmed, Optional.of(null), this.notBlank, this.upperCase, this.lowerCase, this.numeric, this.alphabetic, this.alphanumeric, this.ascii, this.latin1, this.custom);
+		return new StringConstraintConfig(this.equalTo, this.in, this.equalToIgnoreCase, this.inIgnoreCase, this.minLength, this.maxLength, this.startsWith, this.startsWithAny, this.contains, this.containsAny, this.containsAll, this.containsOnly, this.endsWith, this.endsWithAny, this.matches, this.trimmed, Optional.of(Unit.INSTANCE), this.notBlank, this.upperCase, this.lowerCase, this.numeric, this.alphabetic, this.alphanumeric, this.ascii, this.latin1, this.custom);
 	}
 
 	/**
@@ -589,7 +590,7 @@ public record StringConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull StringConstraintConfig withNotBlank() {
-		return new StringConstraintConfig(this.equalTo, this.in, this.equalToIgnoreCase, this.inIgnoreCase, this.minLength, this.maxLength, this.startsWith, this.startsWithAny, this.contains, this.containsAny, this.containsAll, this.containsOnly, this.endsWith, this.endsWithAny, this.matches, this.trimmed, this.blank, Optional.of(null), this.upperCase, this.lowerCase, this.numeric, this.alphabetic, this.alphanumeric, this.ascii, this.latin1, this.custom);
+		return new StringConstraintConfig(this.equalTo, this.in, this.equalToIgnoreCase, this.inIgnoreCase, this.minLength, this.maxLength, this.startsWith, this.startsWithAny, this.contains, this.containsAny, this.containsAll, this.containsOnly, this.endsWith, this.endsWithAny, this.matches, this.trimmed, this.blank, Optional.of(Unit.INSTANCE), this.upperCase, this.lowerCase, this.numeric, this.alphabetic, this.alphanumeric, this.ascii, this.latin1, this.custom);
 	}
 
 	/**
@@ -598,7 +599,7 @@ public record StringConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull StringConstraintConfig withUpperCase() {
-		return new StringConstraintConfig(this.equalTo, this.in, this.equalToIgnoreCase, this.inIgnoreCase, this.minLength, this.maxLength, this.startsWith, this.startsWithAny, this.contains, this.containsAny, this.containsAll, this.containsOnly, this.endsWith, this.endsWithAny, this.matches, this.trimmed, this.blank, this.notBlank, Optional.of(null), this.lowerCase, this.numeric, this.alphabetic, this.alphanumeric, this.ascii, this.latin1, this.custom);
+		return new StringConstraintConfig(this.equalTo, this.in, this.equalToIgnoreCase, this.inIgnoreCase, this.minLength, this.maxLength, this.startsWith, this.startsWithAny, this.contains, this.containsAny, this.containsAll, this.containsOnly, this.endsWith, this.endsWithAny, this.matches, this.trimmed, this.blank, this.notBlank, Optional.of(Unit.INSTANCE), this.lowerCase, this.numeric, this.alphabetic, this.alphanumeric, this.ascii, this.latin1, this.custom);
 	}
 
 	/**
@@ -607,7 +608,7 @@ public record StringConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull StringConstraintConfig withLowerCase() {
-		return new StringConstraintConfig(this.equalTo, this.in, this.equalToIgnoreCase, this.inIgnoreCase, this.minLength, this.maxLength, this.startsWith, this.startsWithAny, this.contains, this.containsAny, this.containsAll, this.containsOnly, this.endsWith, this.endsWithAny, this.matches, this.trimmed, this.blank, this.notBlank, this.upperCase, Optional.of(null), this.numeric, this.alphabetic, this.alphanumeric, this.ascii, this.latin1, this.custom);
+		return new StringConstraintConfig(this.equalTo, this.in, this.equalToIgnoreCase, this.inIgnoreCase, this.minLength, this.maxLength, this.startsWith, this.startsWithAny, this.contains, this.containsAny, this.containsAll, this.containsOnly, this.endsWith, this.endsWithAny, this.matches, this.trimmed, this.blank, this.notBlank, this.upperCase, Optional.of(Unit.INSTANCE), this.numeric, this.alphabetic, this.alphanumeric, this.ascii, this.latin1, this.custom);
 	}
 
 	/**
@@ -616,7 +617,7 @@ public record StringConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull StringConstraintConfig withNumeric() {
-		return new StringConstraintConfig(this.equalTo, this.in, this.equalToIgnoreCase, this.inIgnoreCase, this.minLength, this.maxLength, this.startsWith, this.startsWithAny, this.contains, this.containsAny, this.containsAll, this.containsOnly, this.endsWith, this.endsWithAny, this.matches, this.trimmed, this.blank, this.notBlank, this.upperCase, this.lowerCase, Optional.of(null), this.alphabetic, this.alphanumeric, this.ascii, this.latin1, this.custom);
+		return new StringConstraintConfig(this.equalTo, this.in, this.equalToIgnoreCase, this.inIgnoreCase, this.minLength, this.maxLength, this.startsWith, this.startsWithAny, this.contains, this.containsAny, this.containsAll, this.containsOnly, this.endsWith, this.endsWithAny, this.matches, this.trimmed, this.blank, this.notBlank, this.upperCase, this.lowerCase, Optional.of(Unit.INSTANCE), this.alphabetic, this.alphanumeric, this.ascii, this.latin1, this.custom);
 	}
 
 	/**
@@ -625,7 +626,7 @@ public record StringConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull StringConstraintConfig withAlphabetic() {
-		return new StringConstraintConfig(this.equalTo, this.in, this.equalToIgnoreCase, this.inIgnoreCase, this.minLength, this.maxLength, this.startsWith, this.startsWithAny, this.contains, this.containsAny, this.containsAll, this.containsOnly, this.endsWith, this.endsWithAny, this.matches, this.trimmed, this.blank, this.notBlank, this.upperCase, this.lowerCase, this.numeric, Optional.of(null), this.alphanumeric, this.ascii, this.latin1, this.custom);
+		return new StringConstraintConfig(this.equalTo, this.in, this.equalToIgnoreCase, this.inIgnoreCase, this.minLength, this.maxLength, this.startsWith, this.startsWithAny, this.contains, this.containsAny, this.containsAll, this.containsOnly, this.endsWith, this.endsWithAny, this.matches, this.trimmed, this.blank, this.notBlank, this.upperCase, this.lowerCase, this.numeric, Optional.of(Unit.INSTANCE), this.alphanumeric, this.ascii, this.latin1, this.custom);
 	}
 
 	/**
@@ -634,7 +635,7 @@ public record StringConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull StringConstraintConfig withAlphanumeric() {
-		return new StringConstraintConfig(this.equalTo, this.in, this.equalToIgnoreCase, this.inIgnoreCase, this.minLength, this.maxLength, this.startsWith, this.startsWithAny, this.contains, this.containsAny, this.containsAll, this.containsOnly, this.endsWith, this.endsWithAny, this.matches, this.trimmed, this.blank, this.notBlank, this.upperCase, this.lowerCase, this.numeric, this.alphabetic, Optional.of(null), this.ascii, this.latin1, this.custom);
+		return new StringConstraintConfig(this.equalTo, this.in, this.equalToIgnoreCase, this.inIgnoreCase, this.minLength, this.maxLength, this.startsWith, this.startsWithAny, this.contains, this.containsAny, this.containsAll, this.containsOnly, this.endsWith, this.endsWithAny, this.matches, this.trimmed, this.blank, this.notBlank, this.upperCase, this.lowerCase, this.numeric, this.alphabetic, Optional.of(Unit.INSTANCE), this.ascii, this.latin1, this.custom);
 	}
 
 	/**
@@ -643,7 +644,7 @@ public record StringConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull StringConstraintConfig withAscii() {
-		return new StringConstraintConfig(this.equalTo, this.in, this.equalToIgnoreCase, this.inIgnoreCase, this.minLength, this.maxLength, this.startsWith, this.startsWithAny, this.contains, this.containsAny, this.containsAll, this.containsOnly, this.endsWith, this.endsWithAny, this.matches, this.trimmed, this.blank, this.notBlank, this.upperCase, this.lowerCase, this.numeric, this.alphabetic, this.alphanumeric, Optional.of(null), this.latin1, this.custom);
+		return new StringConstraintConfig(this.equalTo, this.in, this.equalToIgnoreCase, this.inIgnoreCase, this.minLength, this.maxLength, this.startsWith, this.startsWithAny, this.contains, this.containsAny, this.containsAll, this.containsOnly, this.endsWith, this.endsWithAny, this.matches, this.trimmed, this.blank, this.notBlank, this.upperCase, this.lowerCase, this.numeric, this.alphabetic, this.alphanumeric, Optional.of(Unit.INSTANCE), this.latin1, this.custom);
 	}
 
 	/**
@@ -652,7 +653,7 @@ public record StringConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull StringConstraintConfig withLatin1() {
-		return new StringConstraintConfig(this.equalTo, this.in, this.equalToIgnoreCase, this.inIgnoreCase, this.minLength, this.maxLength, this.startsWith, this.startsWithAny, this.contains, this.containsAny, this.containsAll, this.containsOnly, this.endsWith, this.endsWithAny, this.matches, this.trimmed, this.blank, this.notBlank, this.upperCase, this.lowerCase, this.numeric, this.alphabetic, this.alphanumeric, this.ascii, Optional.of(null), this.custom);
+		return new StringConstraintConfig(this.equalTo, this.in, this.equalToIgnoreCase, this.inIgnoreCase, this.minLength, this.maxLength, this.startsWith, this.startsWithAny, this.contains, this.containsAny, this.containsAll, this.containsOnly, this.endsWith, this.endsWithAny, this.matches, this.trimmed, this.blank, this.notBlank, this.upperCase, this.lowerCase, this.numeric, this.alphabetic, this.alphanumeric, this.ascii, Optional.of(Unit.INSTANCE), this.custom);
 	}
 
 	/**

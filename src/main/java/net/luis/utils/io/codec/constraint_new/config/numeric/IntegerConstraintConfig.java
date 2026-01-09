@@ -19,6 +19,7 @@
 package net.luis.utils.io.codec.constraint_new.config.numeric;
 
 import net.luis.utils.io.codec.constraint_new.Constraint;
+import net.luis.utils.io.codec.constraint_new.core.Unit;
 import net.luis.utils.util.Pair;
 import org.jspecify.annotations.NonNull;
 
@@ -60,9 +61,9 @@ public record IntegerConstraintConfig<T extends Number & Comparable<T>>(
 	@NonNull Optional<Boolean> positive,
 	@NonNull Optional<Boolean> negative,
 	@NonNull Optional<Boolean> zero,
-	@NonNull Optional<Void> percentage,
-	@NonNull Optional<Void> even,
-	@NonNull Optional<Void> odd,
+	@NonNull Optional<Unit> percentage,
+	@NonNull Optional<Unit> even,
+	@NonNull Optional<Unit> odd,
 	@NonNull Optional<Long> divisibleBy,
 	@NonNull Optional<Integer> powerOf,
 	@NonNull Optional<Constraint<T>> custom
@@ -320,7 +321,7 @@ public record IntegerConstraintConfig<T extends Number & Comparable<T>>(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull IntegerConstraintConfig<T> withPercentage() {
-		return new IntegerConstraintConfig<>(this.equalTo, this.in, this.min, this.max, this.positive, this.negative, this.zero, Optional.of(null), this.even, this.odd, this.divisibleBy, this.powerOf, this.custom);
+		return new IntegerConstraintConfig<>(this.equalTo, this.in, this.min, this.max, this.positive, this.negative, this.zero, Optional.of(Unit.INSTANCE), this.even, this.odd, this.divisibleBy, this.powerOf, this.custom);
 	}
 	
 	/**
@@ -329,7 +330,7 @@ public record IntegerConstraintConfig<T extends Number & Comparable<T>>(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull IntegerConstraintConfig<T> withEven() {
-		return new IntegerConstraintConfig<>(this.equalTo, this.in, this.min, this.max, this.positive, this.negative, this.zero, this.percentage, Optional.of(null), this.odd, this.divisibleBy, this.powerOf, this.custom);
+		return new IntegerConstraintConfig<>(this.equalTo, this.in, this.min, this.max, this.positive, this.negative, this.zero, this.percentage, Optional.of(Unit.INSTANCE), this.odd, this.divisibleBy, this.powerOf, this.custom);
 	}
 	
 	/**
@@ -338,7 +339,7 @@ public record IntegerConstraintConfig<T extends Number & Comparable<T>>(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull IntegerConstraintConfig<T> withOdd() {
-		return new IntegerConstraintConfig<>(this.equalTo, this.in, this.min, this.max, this.positive, this.negative, this.zero, this.percentage, this.even, Optional.of(null), this.divisibleBy, this.powerOf, this.custom);
+		return new IntegerConstraintConfig<>(this.equalTo, this.in, this.min, this.max, this.positive, this.negative, this.zero, this.percentage, this.even, Optional.of(Unit.INSTANCE), this.divisibleBy, this.powerOf, this.custom);
 	}
 	
 	/**
