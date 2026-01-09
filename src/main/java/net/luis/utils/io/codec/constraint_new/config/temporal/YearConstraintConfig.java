@@ -59,14 +59,14 @@ public record YearConstraintConfig(
 	@NonNull Optional<Pair<Year, Boolean>> max,
 	@NonNull Optional<Constraint<Year>> custom
 ) {
-
+	
 	/**
 	 * An unconstrained Year configuration with no constraints applied.<br>
 	 */
 	public static final YearConstraintConfig UNCONSTRAINED = new YearConstraintConfig(
 		Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty()
 	);
-
+	
 	/**
 	 * Creates a new config with the specified equal-to constraint.<br>
 	 *
@@ -76,7 +76,7 @@ public record YearConstraintConfig(
 	public @NonNull YearConstraintConfig withEqualTo(@NonNull Year value) {
 		return new YearConstraintConfig(Optional.of(Pair.of(Objects.requireNonNull(value), false)), this.in, this.min, this.max, this.custom);
 	}
-
+	
 	/**
 	 * Creates a new config with the specified not-equal-to constraint.<br>
 	 *
@@ -86,7 +86,7 @@ public record YearConstraintConfig(
 	public @NonNull YearConstraintConfig withNotEqualTo(@NonNull Year value) {
 		return new YearConstraintConfig(Optional.of(Pair.of(Objects.requireNonNull(value), true)), this.in, this.min, this.max, this.custom);
 	}
-
+	
 	/**
 	 * Creates a new config with the specified inclusion constraint.<br>
 	 *
@@ -96,7 +96,7 @@ public record YearConstraintConfig(
 	public @NonNull YearConstraintConfig withIn(@NonNull Collection<Year> values) {
 		return new YearConstraintConfig(this.equalTo, Optional.of(Pair.of(Set.copyOf(values), false)), this.min, this.max, this.custom);
 	}
-
+	
 	/**
 	 * Creates a new config with the specified exclusion constraint.<br>
 	 *
@@ -106,7 +106,7 @@ public record YearConstraintConfig(
 	public @NonNull YearConstraintConfig withNotIn(@NonNull Collection<Year> values) {
 		return new YearConstraintConfig(this.equalTo, Optional.of(Pair.of(Set.copyOf(values), true)), this.min, this.max, this.custom);
 	}
-
+	
 	/**
 	 * Creates a new config with the specified after constraint (exclusive).<br>
 	 *
@@ -116,7 +116,7 @@ public record YearConstraintConfig(
 	public @NonNull YearConstraintConfig withAfter(@NonNull Year value) {
 		return new YearConstraintConfig(this.equalTo, this.in, Optional.of(Pair.of(Objects.requireNonNull(value), false)), this.max, this.custom);
 	}
-
+	
 	/**
 	 * Creates a new config with the specified after-or-equal constraint (inclusive).<br>
 	 *
@@ -126,7 +126,7 @@ public record YearConstraintConfig(
 	public @NonNull YearConstraintConfig withAfterOrEqual(@NonNull Year value) {
 		return new YearConstraintConfig(this.equalTo, this.in, Optional.of(Pair.of(Objects.requireNonNull(value), true)), this.max, this.custom);
 	}
-
+	
 	/**
 	 * Creates a new config with the specified before constraint (exclusive).<br>
 	 *
@@ -136,7 +136,7 @@ public record YearConstraintConfig(
 	public @NonNull YearConstraintConfig withBefore(@NonNull Year value) {
 		return new YearConstraintConfig(this.equalTo, this.in, this.min, Optional.of(Pair.of(Objects.requireNonNull(value), false)), this.custom);
 	}
-
+	
 	/**
 	 * Creates a new config with the specified before-or-equal constraint (inclusive).<br>
 	 *
@@ -146,7 +146,7 @@ public record YearConstraintConfig(
 	public @NonNull YearConstraintConfig withBeforeOrEqual(@NonNull Year value) {
 		return new YearConstraintConfig(this.equalTo, this.in, this.min, Optional.of(Pair.of(Objects.requireNonNull(value), true)), this.custom);
 	}
-
+	
 	/**
 	 * Creates a new config with the specified between constraint (exclusive on both bounds).<br>
 	 *
@@ -157,7 +157,7 @@ public record YearConstraintConfig(
 	public @NonNull YearConstraintConfig withBetween(@NonNull Year min, @NonNull Year max) {
 		return new YearConstraintConfig(this.equalTo, this.in, Optional.of(Pair.of(Objects.requireNonNull(min), false)), Optional.of(Pair.of(Objects.requireNonNull(max), false)), this.custom);
 	}
-
+	
 	/**
 	 * Creates a new config with the specified between constraint (inclusive on both bounds).<br>
 	 *
@@ -168,7 +168,7 @@ public record YearConstraintConfig(
 	public @NonNull YearConstraintConfig withBetweenOrEqual(@NonNull Year min, @NonNull Year max) {
 		return new YearConstraintConfig(this.equalTo, this.in, Optional.of(Pair.of(Objects.requireNonNull(min), true)), Optional.of(Pair.of(Objects.requireNonNull(max), true)), this.custom);
 	}
-
+	
 	/**
 	 * Creates a new config with the specified custom constraint.<br>
 	 *

@@ -72,18 +72,15 @@ public record BigDecimalConstraintConfig(
 	@NonNull Optional<Pair<Integer, Boolean>> precisionMax,
 	@NonNull Optional<Constraint<BigDecimal>> custom
 ) {
-
+	
 	/**
 	 * An unconstrained BigDecimal configuration with no constraints applied.<br>
 	 */
 	public static final BigDecimalConstraintConfig UNCONSTRAINED = new BigDecimalConstraintConfig(
-		Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(),
-		Optional.empty(), Optional.empty(), Optional.empty(),
-		Optional.empty(), Optional.empty(), Optional.empty(),
-		Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(),
-		Optional.empty()
+		Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(),
+		Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty()
 	);
-
+	
 	/**
 	 * Creates a new config with the specified equal-to constraint.<br>
 	 *
@@ -93,7 +90,7 @@ public record BigDecimalConstraintConfig(
 	public @NonNull BigDecimalConstraintConfig withEqualTo(@NonNull BigDecimal value) {
 		return new BigDecimalConstraintConfig(Optional.of(Pair.of(Objects.requireNonNull(value), false)), this.in, this.min, this.max, this.positive, this.negative, this.zero, this.percentage, this.integral, this.normalized, this.scaleMin, this.scaleMax, this.precisionMin, this.precisionMax, this.custom);
 	}
-
+	
 	/**
 	 * Creates a new config with the specified not-equal-to constraint.<br>
 	 *
@@ -103,7 +100,7 @@ public record BigDecimalConstraintConfig(
 	public @NonNull BigDecimalConstraintConfig withNotEqualTo(@NonNull BigDecimal value) {
 		return new BigDecimalConstraintConfig(Optional.of(Pair.of(Objects.requireNonNull(value), true)), this.in, this.min, this.max, this.positive, this.negative, this.zero, this.percentage, this.integral, this.normalized, this.scaleMin, this.scaleMax, this.precisionMin, this.precisionMax, this.custom);
 	}
-
+	
 	/**
 	 * Creates a new config with the specified inclusion constraint.<br>
 	 *
@@ -113,7 +110,7 @@ public record BigDecimalConstraintConfig(
 	public @NonNull BigDecimalConstraintConfig withIn(@NonNull Collection<BigDecimal> values) {
 		return new BigDecimalConstraintConfig(this.equalTo, Optional.of(Pair.of(Set.copyOf(values), false)), this.min, this.max, this.positive, this.negative, this.zero, this.percentage, this.integral, this.normalized, this.scaleMin, this.scaleMax, this.precisionMin, this.precisionMax, this.custom);
 	}
-
+	
 	/**
 	 * Creates a new config with the specified exclusion constraint.<br>
 	 *
@@ -123,7 +120,7 @@ public record BigDecimalConstraintConfig(
 	public @NonNull BigDecimalConstraintConfig withNotIn(@NonNull Collection<BigDecimal> values) {
 		return new BigDecimalConstraintConfig(this.equalTo, Optional.of(Pair.of(Set.copyOf(values), true)), this.min, this.max, this.positive, this.negative, this.zero, this.percentage, this.integral, this.normalized, this.scaleMin, this.scaleMax, this.precisionMin, this.precisionMax, this.custom);
 	}
-
+	
 	/**
 	 * Creates a new config with the specified greater-than constraint (exclusive).<br>
 	 *
@@ -133,7 +130,7 @@ public record BigDecimalConstraintConfig(
 	public @NonNull BigDecimalConstraintConfig withGreaterThan(@NonNull BigDecimal value) {
 		return new BigDecimalConstraintConfig(this.equalTo, this.in, Optional.of(Pair.of(Objects.requireNonNull(value), false)), this.max, this.positive, this.negative, this.zero, this.percentage, this.integral, this.normalized, this.scaleMin, this.scaleMax, this.precisionMin, this.precisionMax, this.custom);
 	}
-
+	
 	/**
 	 * Creates a new config with the specified greater-than-or-equal constraint (inclusive).<br>
 	 *
@@ -143,7 +140,7 @@ public record BigDecimalConstraintConfig(
 	public @NonNull BigDecimalConstraintConfig withGreaterThanOrEqual(@NonNull BigDecimal value) {
 		return new BigDecimalConstraintConfig(this.equalTo, this.in, Optional.of(Pair.of(Objects.requireNonNull(value), true)), this.max, this.positive, this.negative, this.zero, this.percentage, this.integral, this.normalized, this.scaleMin, this.scaleMax, this.precisionMin, this.precisionMax, this.custom);
 	}
-
+	
 	/**
 	 * Creates a new config with the specified less-than constraint (exclusive).<br>
 	 *
@@ -153,7 +150,7 @@ public record BigDecimalConstraintConfig(
 	public @NonNull BigDecimalConstraintConfig withLessThan(@NonNull BigDecimal value) {
 		return new BigDecimalConstraintConfig(this.equalTo, this.in, this.min, Optional.of(Pair.of(Objects.requireNonNull(value), false)), this.positive, this.negative, this.zero, this.percentage, this.integral, this.normalized, this.scaleMin, this.scaleMax, this.precisionMin, this.precisionMax, this.custom);
 	}
-
+	
 	/**
 	 * Creates a new config with the specified less-than-or-equal constraint (inclusive).<br>
 	 *
@@ -163,7 +160,7 @@ public record BigDecimalConstraintConfig(
 	public @NonNull BigDecimalConstraintConfig withLessThanOrEqual(@NonNull BigDecimal value) {
 		return new BigDecimalConstraintConfig(this.equalTo, this.in, this.min, Optional.of(Pair.of(Objects.requireNonNull(value), true)), this.positive, this.negative, this.zero, this.percentage, this.integral, this.normalized, this.scaleMin, this.scaleMax, this.precisionMin, this.precisionMax, this.custom);
 	}
-
+	
 	/**
 	 * Creates a new config with the specified between constraint (exclusive on both bounds).<br>
 	 *
@@ -174,7 +171,7 @@ public record BigDecimalConstraintConfig(
 	public @NonNull BigDecimalConstraintConfig withBetween(@NonNull BigDecimal min, @NonNull BigDecimal max) {
 		return new BigDecimalConstraintConfig(this.equalTo, this.in, Optional.of(Pair.of(Objects.requireNonNull(min), false)), Optional.of(Pair.of(Objects.requireNonNull(max), false)), this.positive, this.negative, this.zero, this.percentage, this.integral, this.normalized, this.scaleMin, this.scaleMax, this.precisionMin, this.precisionMax, this.custom);
 	}
-
+	
 	/**
 	 * Creates a new config with the specified between constraint (inclusive on both bounds).<br>
 	 *
@@ -185,7 +182,7 @@ public record BigDecimalConstraintConfig(
 	public @NonNull BigDecimalConstraintConfig withBetweenOrEqual(@NonNull BigDecimal min, @NonNull BigDecimal max) {
 		return new BigDecimalConstraintConfig(this.equalTo, this.in, Optional.of(Pair.of(Objects.requireNonNull(min), true)), Optional.of(Pair.of(Objects.requireNonNull(max), true)), this.positive, this.negative, this.zero, this.percentage, this.integral, this.normalized, this.scaleMin, this.scaleMax, this.precisionMin, this.precisionMax, this.custom);
 	}
-
+	
 	/**
 	 * Creates a new config with the positive constraint enabled.<br>
 	 *
@@ -194,7 +191,7 @@ public record BigDecimalConstraintConfig(
 	public @NonNull BigDecimalConstraintConfig withPositive() {
 		return new BigDecimalConstraintConfig(this.equalTo, this.in, this.min, this.max, Optional.of(false), this.negative, this.zero, this.percentage, this.integral, this.normalized, this.scaleMin, this.scaleMax, this.precisionMin, this.precisionMax, this.custom);
 	}
-
+	
 	/**
 	 * Creates a new config with the non-positive constraint enabled.<br>
 	 *
@@ -203,7 +200,7 @@ public record BigDecimalConstraintConfig(
 	public @NonNull BigDecimalConstraintConfig withNonPositive() {
 		return new BigDecimalConstraintConfig(this.equalTo, this.in, this.min, this.max, Optional.of(true), this.negative, this.zero, this.percentage, this.integral, this.normalized, this.scaleMin, this.scaleMax, this.precisionMin, this.precisionMax, this.custom);
 	}
-
+	
 	/**
 	 * Creates a new config with the negative constraint enabled.<br>
 	 *
@@ -212,7 +209,7 @@ public record BigDecimalConstraintConfig(
 	public @NonNull BigDecimalConstraintConfig withNegative() {
 		return new BigDecimalConstraintConfig(this.equalTo, this.in, this.min, this.max, this.positive, Optional.of(false), this.zero, this.percentage, this.integral, this.normalized, this.scaleMin, this.scaleMax, this.precisionMin, this.precisionMax, this.custom);
 	}
-
+	
 	/**
 	 * Creates a new config with the non-negative constraint enabled.<br>
 	 *
@@ -221,7 +218,7 @@ public record BigDecimalConstraintConfig(
 	public @NonNull BigDecimalConstraintConfig withNonNegative() {
 		return new BigDecimalConstraintConfig(this.equalTo, this.in, this.min, this.max, this.positive, Optional.of(true), this.zero, this.percentage, this.integral, this.normalized, this.scaleMin, this.scaleMax, this.precisionMin, this.precisionMax, this.custom);
 	}
-
+	
 	/**
 	 * Creates a new config with the zero constraint enabled.<br>
 	 *
@@ -230,7 +227,7 @@ public record BigDecimalConstraintConfig(
 	public @NonNull BigDecimalConstraintConfig withZero() {
 		return new BigDecimalConstraintConfig(this.equalTo, this.in, this.min, this.max, this.positive, this.negative, Optional.of(false), this.percentage, this.integral, this.normalized, this.scaleMin, this.scaleMax, this.precisionMin, this.precisionMax, this.custom);
 	}
-
+	
 	/**
 	 * Creates a new config with the non-zero constraint enabled.<br>
 	 *
@@ -239,7 +236,7 @@ public record BigDecimalConstraintConfig(
 	public @NonNull BigDecimalConstraintConfig withNonZero() {
 		return new BigDecimalConstraintConfig(this.equalTo, this.in, this.min, this.max, this.positive, this.negative, Optional.of(true), this.percentage, this.integral, this.normalized, this.scaleMin, this.scaleMax, this.precisionMin, this.precisionMax, this.custom);
 	}
-
+	
 	/**
 	 * Creates a new config with the percentage constraint enabled.<br>
 	 *
@@ -248,7 +245,7 @@ public record BigDecimalConstraintConfig(
 	public @NonNull BigDecimalConstraintConfig withPercentage() {
 		return new BigDecimalConstraintConfig(this.equalTo, this.in, this.min, this.max, this.positive, this.negative, this.zero, Optional.of(null), this.integral, this.normalized, this.scaleMin, this.scaleMax, this.precisionMin, this.precisionMax, this.custom);
 	}
-
+	
 	/**
 	 * Creates a new config with the integral constraint enabled.<br>
 	 *
@@ -257,7 +254,7 @@ public record BigDecimalConstraintConfig(
 	public @NonNull BigDecimalConstraintConfig withIntegral() {
 		return new BigDecimalConstraintConfig(this.equalTo, this.in, this.min, this.max, this.positive, this.negative, this.zero, this.percentage, Optional.of(null), this.normalized, this.scaleMin, this.scaleMax, this.precisionMin, this.precisionMax, this.custom);
 	}
-
+	
 	/**
 	 * Creates a new config with the normalized constraint enabled.<br>
 	 *
@@ -266,7 +263,7 @@ public record BigDecimalConstraintConfig(
 	public @NonNull BigDecimalConstraintConfig withNormalized() {
 		return new BigDecimalConstraintConfig(this.equalTo, this.in, this.min, this.max, this.positive, this.negative, this.zero, this.percentage, this.integral, Optional.of(null), this.scaleMin, this.scaleMax, this.precisionMin, this.precisionMax, this.custom);
 	}
-
+	
 	/**
 	 * Creates a new config with the specified exact scale constraint.<br>
 	 *
@@ -276,7 +273,7 @@ public record BigDecimalConstraintConfig(
 	public @NonNull BigDecimalConstraintConfig withScale(int scale) {
 		return new BigDecimalConstraintConfig(this.equalTo, this.in, this.min, this.max, this.positive, this.negative, this.zero, this.percentage, this.integral, this.normalized, Optional.of(Pair.of(scale, true)), Optional.of(Pair.of(scale, true)), this.precisionMin, this.precisionMax, this.custom);
 	}
-
+	
 	/**
 	 * Creates a new config with the specified minimum scale constraint.<br>
 	 *
@@ -286,7 +283,7 @@ public record BigDecimalConstraintConfig(
 	public @NonNull BigDecimalConstraintConfig withMinScale(int minScale) {
 		return new BigDecimalConstraintConfig(this.equalTo, this.in, this.min, this.max, this.positive, this.negative, this.zero, this.percentage, this.integral, this.normalized, Optional.of(Pair.of(minScale, true)), this.scaleMax, this.precisionMin, this.precisionMax, this.custom);
 	}
-
+	
 	/**
 	 * Creates a new config with the specified maximum scale constraint.<br>
 	 *
@@ -296,7 +293,7 @@ public record BigDecimalConstraintConfig(
 	public @NonNull BigDecimalConstraintConfig withMaxScale(int maxScale) {
 		return new BigDecimalConstraintConfig(this.equalTo, this.in, this.min, this.max, this.positive, this.negative, this.zero, this.percentage, this.integral, this.normalized, this.scaleMin, Optional.of(Pair.of(maxScale, true)), this.precisionMin, this.precisionMax, this.custom);
 	}
-
+	
 	/**
 	 * Creates a new config with the specified scale range constraint.<br>
 	 *
@@ -307,7 +304,7 @@ public record BigDecimalConstraintConfig(
 	public @NonNull BigDecimalConstraintConfig withScaleBetween(int minScale, int maxScale) {
 		return new BigDecimalConstraintConfig(this.equalTo, this.in, this.min, this.max, this.positive, this.negative, this.zero, this.percentage, this.integral, this.normalized, Optional.of(Pair.of(minScale, true)), Optional.of(Pair.of(maxScale, true)), this.precisionMin, this.precisionMax, this.custom);
 	}
-
+	
 	/**
 	 * Creates a new config with the specified exact precision constraint.<br>
 	 *
@@ -317,7 +314,7 @@ public record BigDecimalConstraintConfig(
 	public @NonNull BigDecimalConstraintConfig withPrecision(int precision) {
 		return new BigDecimalConstraintConfig(this.equalTo, this.in, this.min, this.max, this.positive, this.negative, this.zero, this.percentage, this.integral, this.normalized, this.scaleMin, this.scaleMax, Optional.of(Pair.of(precision, true)), Optional.of(Pair.of(precision, true)), this.custom);
 	}
-
+	
 	/**
 	 * Creates a new config with the specified minimum precision constraint.<br>
 	 *
@@ -327,7 +324,7 @@ public record BigDecimalConstraintConfig(
 	public @NonNull BigDecimalConstraintConfig withMinPrecision(int minPrecision) {
 		return new BigDecimalConstraintConfig(this.equalTo, this.in, this.min, this.max, this.positive, this.negative, this.zero, this.percentage, this.integral, this.normalized, this.scaleMin, this.scaleMax, Optional.of(Pair.of(minPrecision, true)), this.precisionMax, this.custom);
 	}
-
+	
 	/**
 	 * Creates a new config with the specified maximum precision constraint.<br>
 	 *
@@ -337,7 +334,7 @@ public record BigDecimalConstraintConfig(
 	public @NonNull BigDecimalConstraintConfig withMaxPrecision(int maxPrecision) {
 		return new BigDecimalConstraintConfig(this.equalTo, this.in, this.min, this.max, this.positive, this.negative, this.zero, this.percentage, this.integral, this.normalized, this.scaleMin, this.scaleMax, this.precisionMin, Optional.of(Pair.of(maxPrecision, true)), this.custom);
 	}
-
+	
 	/**
 	 * Creates a new config with the specified precision range constraint.<br>
 	 *
@@ -348,7 +345,7 @@ public record BigDecimalConstraintConfig(
 	public @NonNull BigDecimalConstraintConfig withPrecisionBetween(int minPrecision, int maxPrecision) {
 		return new BigDecimalConstraintConfig(this.equalTo, this.in, this.min, this.max, this.positive, this.negative, this.zero, this.percentage, this.integral, this.normalized, this.scaleMin, this.scaleMax, Optional.of(Pair.of(minPrecision, true)), Optional.of(Pair.of(maxPrecision, true)), this.custom);
 	}
-
+	
 	/**
 	 * Creates a new config with the specified custom constraint.<br>
 	 *

@@ -43,7 +43,7 @@ public record EnumConstraintConfig<T extends Enum<T>>(
 	@NonNull Optional<Pair<Set<T>, Boolean>> in,
 	@NonNull Optional<Constraint<T>> custom
 ) {
-
+	
 	/**
 	 * Creates an unconstrained enum configuration with no constraints applied.<br>
 	 *
@@ -51,11 +51,9 @@ public record EnumConstraintConfig<T extends Enum<T>>(
 	 * @return An unconstrained enum constraint config
 	 */
 	public static <T extends Enum<T>> @NonNull EnumConstraintConfig<T> unconstrained() {
-		return new EnumConstraintConfig<>(
-			Optional.empty(), Optional.empty(), Optional.empty()
-		);
+		return new EnumConstraintConfig<>(Optional.empty(), Optional.empty(), Optional.empty());
 	}
-
+	
 	/**
 	 * Creates a new config with the specified equal-to constraint.<br>
 	 *
@@ -65,7 +63,7 @@ public record EnumConstraintConfig<T extends Enum<T>>(
 	public @NonNull EnumConstraintConfig<T> withEqualTo(@NonNull T value) {
 		return new EnumConstraintConfig<>(Optional.of(Pair.of(Objects.requireNonNull(value), false)), this.in, this.custom);
 	}
-
+	
 	/**
 	 * Creates a new config with the specified not-equal-to constraint.<br>
 	 *
@@ -75,7 +73,7 @@ public record EnumConstraintConfig<T extends Enum<T>>(
 	public @NonNull EnumConstraintConfig<T> withNotEqualTo(@NonNull T value) {
 		return new EnumConstraintConfig<>(Optional.of(Pair.of(Objects.requireNonNull(value), true)), this.in, this.custom);
 	}
-
+	
 	/**
 	 * Creates a new config with the specified inclusion constraint.<br>
 	 *
@@ -85,7 +83,7 @@ public record EnumConstraintConfig<T extends Enum<T>>(
 	public @NonNull EnumConstraintConfig<T> withIn(@NonNull Collection<T> values) {
 		return new EnumConstraintConfig<>(this.equalTo, Optional.of(Pair.of(EnumSet.copyOf(values), false)), this.custom);
 	}
-
+	
 	/**
 	 * Creates a new config with the specified exclusion constraint.<br>
 	 *
@@ -95,7 +93,7 @@ public record EnumConstraintConfig<T extends Enum<T>>(
 	public @NonNull EnumConstraintConfig<T> withNotIn(@NonNull Collection<T> values) {
 		return new EnumConstraintConfig<>(this.equalTo, Optional.of(Pair.of(EnumSet.copyOf(values), true)), this.custom);
 	}
-
+	
 	/**
 	 * Creates a new config with the specified custom constraint.<br>
 	 *

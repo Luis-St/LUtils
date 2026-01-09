@@ -64,15 +64,14 @@ public record InstantConstraintConfig(
 	@NonNull Optional<Duration> withinNext,
 	@NonNull Optional<Constraint<Instant>> custom
 ) {
-
+	
 	/**
 	 * An unconstrained Instant configuration with no constraints applied.<br>
 	 */
 	public static final InstantConstraintConfig UNCONSTRAINED = new InstantConstraintConfig(
-		Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(),
-		Optional.empty(), Optional.empty(), Optional.empty()
+		Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty()
 	);
-
+	
 	/**
 	 * Creates a new config with the specified equal-to constraint.<br>
 	 *
@@ -82,7 +81,7 @@ public record InstantConstraintConfig(
 	public @NonNull InstantConstraintConfig withEqualTo(@NonNull Instant value) {
 		return new InstantConstraintConfig(Optional.of(Pair.of(Objects.requireNonNull(value), false)), this.in, this.after, this.before, this.withinLast, this.withinNext, this.custom);
 	}
-
+	
 	/**
 	 * Creates a new config with the specified not-equal-to constraint.<br>
 	 *
@@ -92,7 +91,7 @@ public record InstantConstraintConfig(
 	public @NonNull InstantConstraintConfig withNotEqualTo(@NonNull Instant value) {
 		return new InstantConstraintConfig(Optional.of(Pair.of(Objects.requireNonNull(value), true)), this.in, this.after, this.before, this.withinLast, this.withinNext, this.custom);
 	}
-
+	
 	/**
 	 * Creates a new config with the specified inclusion constraint.<br>
 	 *
@@ -102,7 +101,7 @@ public record InstantConstraintConfig(
 	public @NonNull InstantConstraintConfig withIn(@NonNull Collection<Instant> values) {
 		return new InstantConstraintConfig(this.equalTo, Optional.of(Pair.of(Set.copyOf(values), false)), this.after, this.before, this.withinLast, this.withinNext, this.custom);
 	}
-
+	
 	/**
 	 * Creates a new config with the specified exclusion constraint.<br>
 	 *
@@ -112,7 +111,7 @@ public record InstantConstraintConfig(
 	public @NonNull InstantConstraintConfig withNotIn(@NonNull Collection<Instant> values) {
 		return new InstantConstraintConfig(this.equalTo, Optional.of(Pair.of(Set.copyOf(values), true)), this.after, this.before, this.withinLast, this.withinNext, this.custom);
 	}
-
+	
 	/**
 	 * Creates a new config with the specified after constraint (exclusive).<br>
 	 *
@@ -122,7 +121,7 @@ public record InstantConstraintConfig(
 	public @NonNull InstantConstraintConfig withAfter(@NonNull Instant value) {
 		return new InstantConstraintConfig(this.equalTo, this.in, Optional.of(Pair.of(Objects.requireNonNull(value), false)), this.before, this.withinLast, this.withinNext, this.custom);
 	}
-
+	
 	/**
 	 * Creates a new config with the specified after-or-equal constraint (inclusive).<br>
 	 *
@@ -132,7 +131,7 @@ public record InstantConstraintConfig(
 	public @NonNull InstantConstraintConfig withAfterOrEqual(@NonNull Instant value) {
 		return new InstantConstraintConfig(this.equalTo, this.in, Optional.of(Pair.of(Objects.requireNonNull(value), true)), this.before, this.withinLast, this.withinNext, this.custom);
 	}
-
+	
 	/**
 	 * Creates a new config with the specified before constraint (exclusive).<br>
 	 *
@@ -142,7 +141,7 @@ public record InstantConstraintConfig(
 	public @NonNull InstantConstraintConfig withBefore(@NonNull Instant value) {
 		return new InstantConstraintConfig(this.equalTo, this.in, this.after, Optional.of(Pair.of(Objects.requireNonNull(value), false)), this.withinLast, this.withinNext, this.custom);
 	}
-
+	
 	/**
 	 * Creates a new config with the specified before-or-equal constraint (inclusive).<br>
 	 *
@@ -152,7 +151,7 @@ public record InstantConstraintConfig(
 	public @NonNull InstantConstraintConfig withBeforeOrEqual(@NonNull Instant value) {
 		return new InstantConstraintConfig(this.equalTo, this.in, this.after, Optional.of(Pair.of(Objects.requireNonNull(value), true)), this.withinLast, this.withinNext, this.custom);
 	}
-
+	
 	/**
 	 * Creates a new config with the specified between constraint (exclusive on both bounds).<br>
 	 *
@@ -163,7 +162,7 @@ public record InstantConstraintConfig(
 	public @NonNull InstantConstraintConfig withBetween(@NonNull Instant after, @NonNull Instant before) {
 		return new InstantConstraintConfig(this.equalTo, this.in, Optional.of(Pair.of(Objects.requireNonNull(after), false)), Optional.of(Pair.of(Objects.requireNonNull(before), false)), this.withinLast, this.withinNext, this.custom);
 	}
-
+	
 	/**
 	 * Creates a new config with the specified between constraint (inclusive on both bounds).<br>
 	 *
@@ -174,7 +173,7 @@ public record InstantConstraintConfig(
 	public @NonNull InstantConstraintConfig withBetweenOrEqual(@NonNull Instant after, @NonNull Instant before) {
 		return new InstantConstraintConfig(this.equalTo, this.in, Optional.of(Pair.of(Objects.requireNonNull(after), true)), Optional.of(Pair.of(Objects.requireNonNull(before), true)), this.withinLast, this.withinNext, this.custom);
 	}
-
+	
 	/**
 	 * Creates a new config with the specified within-last constraint.<br>
 	 *
@@ -184,7 +183,7 @@ public record InstantConstraintConfig(
 	public @NonNull InstantConstraintConfig withWithinLast(@NonNull Duration duration) {
 		return new InstantConstraintConfig(this.equalTo, this.in, this.after, this.before, Optional.of(Objects.requireNonNull(duration)), this.withinNext, this.custom);
 	}
-
+	
 	/**
 	 * Creates a new config with the specified within-next constraint.<br>
 	 *
@@ -194,7 +193,7 @@ public record InstantConstraintConfig(
 	public @NonNull InstantConstraintConfig withWithinNext(@NonNull Duration duration) {
 		return new InstantConstraintConfig(this.equalTo, this.in, this.after, this.before, this.withinLast, Optional.of(Objects.requireNonNull(duration)), this.custom);
 	}
-
+	
 	/**
 	 * Creates a new config with the specified custom constraint.<br>
 	 *

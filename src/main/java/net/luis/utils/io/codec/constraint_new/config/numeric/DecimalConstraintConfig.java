@@ -67,7 +67,7 @@ public record DecimalConstraintConfig<T extends Number & Comparable<T>>(
 	@NonNull Optional<Void> normalized,
 	@NonNull Optional<Constraint<T>> custom
 ) {
-
+	
 	/**
 	 * Creates an unconstrained decimal configuration with no constraints applied.<br>
 	 *
@@ -76,13 +76,11 @@ public record DecimalConstraintConfig<T extends Number & Comparable<T>>(
 	 */
 	public static <T extends Number & Comparable<T>> @NonNull DecimalConstraintConfig<T> unconstrained() {
 		return new DecimalConstraintConfig<>(
-			Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(),
-			Optional.empty(), Optional.empty(), Optional.empty(),
-			Optional.empty(), Optional.empty(), Optional.empty(),
-			Optional.empty(), Optional.empty(), Optional.empty()
+			Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(),
+			Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty()
 		);
 	}
-
+	
 	/**
 	 * Creates a new config with the specified equal-to constraint.<br>
 	 *
@@ -92,7 +90,7 @@ public record DecimalConstraintConfig<T extends Number & Comparable<T>>(
 	public @NonNull DecimalConstraintConfig<T> withEqualTo(@NonNull T value) {
 		return new DecimalConstraintConfig<>(Optional.of(Pair.of(Objects.requireNonNull(value), false)), this.in, this.min, this.max, this.positive, this.negative, this.zero, this.percentage, this.finite, this.notNaN, this.integral, this.normalized, this.custom);
 	}
-
+	
 	/**
 	 * Creates a new config with the specified not-equal-to constraint.<br>
 	 *
@@ -102,7 +100,7 @@ public record DecimalConstraintConfig<T extends Number & Comparable<T>>(
 	public @NonNull DecimalConstraintConfig<T> withNotEqualTo(@NonNull T value) {
 		return new DecimalConstraintConfig<>(Optional.of(Pair.of(Objects.requireNonNull(value), true)), this.in, this.min, this.max, this.positive, this.negative, this.zero, this.percentage, this.finite, this.notNaN, this.integral, this.normalized, this.custom);
 	}
-
+	
 	/**
 	 * Creates a new config with the specified inclusion constraint.<br>
 	 *
@@ -112,7 +110,7 @@ public record DecimalConstraintConfig<T extends Number & Comparable<T>>(
 	public @NonNull DecimalConstraintConfig<T> withIn(@NonNull Collection<T> values) {
 		return new DecimalConstraintConfig<>(this.equalTo, Optional.of(Pair.of(Set.copyOf(values), false)), this.min, this.max, this.positive, this.negative, this.zero, this.percentage, this.finite, this.notNaN, this.integral, this.normalized, this.custom);
 	}
-
+	
 	/**
 	 * Creates a new config with the specified exclusion constraint.<br>
 	 *
@@ -122,7 +120,7 @@ public record DecimalConstraintConfig<T extends Number & Comparable<T>>(
 	public @NonNull DecimalConstraintConfig<T> withNotIn(@NonNull Collection<T> values) {
 		return new DecimalConstraintConfig<>(this.equalTo, Optional.of(Pair.of(Set.copyOf(values), true)), this.min, this.max, this.positive, this.negative, this.zero, this.percentage, this.finite, this.notNaN, this.integral, this.normalized, this.custom);
 	}
-
+	
 	/**
 	 * Creates a new config with the specified greater-than constraint (exclusive).<br>
 	 *
@@ -132,7 +130,7 @@ public record DecimalConstraintConfig<T extends Number & Comparable<T>>(
 	public @NonNull DecimalConstraintConfig<T> withGreaterThan(@NonNull T value) {
 		return new DecimalConstraintConfig<>(this.equalTo, this.in, Optional.of(Pair.of(Objects.requireNonNull(value), false)), this.max, this.positive, this.negative, this.zero, this.percentage, this.finite, this.notNaN, this.integral, this.normalized, this.custom);
 	}
-
+	
 	/**
 	 * Creates a new config with the specified greater-than-or-equal constraint (inclusive).<br>
 	 *
@@ -142,7 +140,7 @@ public record DecimalConstraintConfig<T extends Number & Comparable<T>>(
 	public @NonNull DecimalConstraintConfig<T> withGreaterThanOrEqual(@NonNull T value) {
 		return new DecimalConstraintConfig<>(this.equalTo, this.in, Optional.of(Pair.of(Objects.requireNonNull(value), true)), this.max, this.positive, this.negative, this.zero, this.percentage, this.finite, this.notNaN, this.integral, this.normalized, this.custom);
 	}
-
+	
 	/**
 	 * Creates a new config with the specified less-than constraint (exclusive).<br>
 	 *
@@ -152,7 +150,7 @@ public record DecimalConstraintConfig<T extends Number & Comparable<T>>(
 	public @NonNull DecimalConstraintConfig<T> withLessThan(@NonNull T value) {
 		return new DecimalConstraintConfig<>(this.equalTo, this.in, this.min, Optional.of(Pair.of(Objects.requireNonNull(value), false)), this.positive, this.negative, this.zero, this.percentage, this.finite, this.notNaN, this.integral, this.normalized, this.custom);
 	}
-
+	
 	/**
 	 * Creates a new config with the specified less-than-or-equal constraint (inclusive).<br>
 	 *
@@ -162,7 +160,7 @@ public record DecimalConstraintConfig<T extends Number & Comparable<T>>(
 	public @NonNull DecimalConstraintConfig<T> withLessThanOrEqual(@NonNull T value) {
 		return new DecimalConstraintConfig<>(this.equalTo, this.in, this.min, Optional.of(Pair.of(Objects.requireNonNull(value), true)), this.positive, this.negative, this.zero, this.percentage, this.finite, this.notNaN, this.integral, this.normalized, this.custom);
 	}
-
+	
 	/**
 	 * Creates a new config with the specified between constraint (exclusive on both bounds).<br>
 	 *
@@ -173,7 +171,7 @@ public record DecimalConstraintConfig<T extends Number & Comparable<T>>(
 	public @NonNull DecimalConstraintConfig<T> withBetween(@NonNull T min, @NonNull T max) {
 		return new DecimalConstraintConfig<>(this.equalTo, this.in, Optional.of(Pair.of(Objects.requireNonNull(min), false)), Optional.of(Pair.of(Objects.requireNonNull(max), false)), this.positive, this.negative, this.zero, this.percentage, this.finite, this.notNaN, this.integral, this.normalized, this.custom);
 	}
-
+	
 	/**
 	 * Creates a new config with the specified between constraint (inclusive on both bounds).<br>
 	 *
@@ -184,7 +182,7 @@ public record DecimalConstraintConfig<T extends Number & Comparable<T>>(
 	public @NonNull DecimalConstraintConfig<T> withBetweenOrEqual(@NonNull T min, @NonNull T max) {
 		return new DecimalConstraintConfig<>(this.equalTo, this.in, Optional.of(Pair.of(Objects.requireNonNull(min), true)), Optional.of(Pair.of(Objects.requireNonNull(max), true)), this.positive, this.negative, this.zero, this.percentage, this.finite, this.notNaN, this.integral, this.normalized, this.custom);
 	}
-
+	
 	/**
 	 * Creates a new config with the positive constraint enabled.<br>
 	 *
@@ -193,7 +191,7 @@ public record DecimalConstraintConfig<T extends Number & Comparable<T>>(
 	public @NonNull DecimalConstraintConfig<T> withPositive() {
 		return new DecimalConstraintConfig<>(this.equalTo, this.in, this.min, this.max, Optional.of(false), this.negative, this.zero, this.percentage, this.finite, this.notNaN, this.integral, this.normalized, this.custom);
 	}
-
+	
 	/**
 	 * Creates a new config with the non-positive constraint enabled.<br>
 	 *
@@ -202,7 +200,7 @@ public record DecimalConstraintConfig<T extends Number & Comparable<T>>(
 	public @NonNull DecimalConstraintConfig<T> withNonPositive() {
 		return new DecimalConstraintConfig<>(this.equalTo, this.in, this.min, this.max, Optional.of(true), this.negative, this.zero, this.percentage, this.finite, this.notNaN, this.integral, this.normalized, this.custom);
 	}
-
+	
 	/**
 	 * Creates a new config with the negative constraint enabled.<br>
 	 *
@@ -211,7 +209,7 @@ public record DecimalConstraintConfig<T extends Number & Comparable<T>>(
 	public @NonNull DecimalConstraintConfig<T> withNegative() {
 		return new DecimalConstraintConfig<>(this.equalTo, this.in, this.min, this.max, this.positive, Optional.of(false), this.zero, this.percentage, this.finite, this.notNaN, this.integral, this.normalized, this.custom);
 	}
-
+	
 	/**
 	 * Creates a new config with the non-negative constraint enabled.<br>
 	 *
@@ -220,7 +218,7 @@ public record DecimalConstraintConfig<T extends Number & Comparable<T>>(
 	public @NonNull DecimalConstraintConfig<T> withNonNegative() {
 		return new DecimalConstraintConfig<>(this.equalTo, this.in, this.min, this.max, this.positive, Optional.of(true), this.zero, this.percentage, this.finite, this.notNaN, this.integral, this.normalized, this.custom);
 	}
-
+	
 	/**
 	 * Creates a new config with the zero constraint enabled.<br>
 	 *
@@ -229,7 +227,7 @@ public record DecimalConstraintConfig<T extends Number & Comparable<T>>(
 	public @NonNull DecimalConstraintConfig<T> withZero() {
 		return new DecimalConstraintConfig<>(this.equalTo, this.in, this.min, this.max, this.positive, this.negative, Optional.of(false), this.percentage, this.finite, this.notNaN, this.integral, this.normalized, this.custom);
 	}
-
+	
 	/**
 	 * Creates a new config with the non-zero constraint enabled.<br>
 	 *
@@ -238,7 +236,7 @@ public record DecimalConstraintConfig<T extends Number & Comparable<T>>(
 	public @NonNull DecimalConstraintConfig<T> withNonZero() {
 		return new DecimalConstraintConfig<>(this.equalTo, this.in, this.min, this.max, this.positive, this.negative, Optional.of(true), this.percentage, this.finite, this.notNaN, this.integral, this.normalized, this.custom);
 	}
-
+	
 	/**
 	 * Creates a new config with the percentage constraint enabled.<br>
 	 *
@@ -247,7 +245,7 @@ public record DecimalConstraintConfig<T extends Number & Comparable<T>>(
 	public @NonNull DecimalConstraintConfig<T> withPercentage() {
 		return new DecimalConstraintConfig<>(this.equalTo, this.in, this.min, this.max, this.positive, this.negative, this.zero, Optional.of(null), this.finite, this.notNaN, this.integral, this.normalized, this.custom);
 	}
-
+	
 	/**
 	 * Creates a new config with the finite constraint enabled.<br>
 	 *
@@ -256,7 +254,7 @@ public record DecimalConstraintConfig<T extends Number & Comparable<T>>(
 	public @NonNull DecimalConstraintConfig<T> withFinite() {
 		return new DecimalConstraintConfig<>(this.equalTo, this.in, this.min, this.max, this.positive, this.negative, this.zero, this.percentage, Optional.of(null), this.notNaN, this.integral, this.normalized, this.custom);
 	}
-
+	
 	/**
 	 * Creates a new config with the not-NaN constraint enabled.<br>
 	 *
@@ -265,7 +263,7 @@ public record DecimalConstraintConfig<T extends Number & Comparable<T>>(
 	public @NonNull DecimalConstraintConfig<T> withNotNaN() {
 		return new DecimalConstraintConfig<>(this.equalTo, this.in, this.min, this.max, this.positive, this.negative, this.zero, this.percentage, this.finite, Optional.of(null), this.integral, this.normalized, this.custom);
 	}
-
+	
 	/**
 	 * Creates a new config with the integral constraint enabled.<br>
 	 *
@@ -274,7 +272,7 @@ public record DecimalConstraintConfig<T extends Number & Comparable<T>>(
 	public @NonNull DecimalConstraintConfig<T> withIntegral() {
 		return new DecimalConstraintConfig<>(this.equalTo, this.in, this.min, this.max, this.positive, this.negative, this.zero, this.percentage, this.finite, this.notNaN, Optional.of(null), this.normalized, this.custom);
 	}
-
+	
 	/**
 	 * Creates a new config with the normalized constraint enabled.<br>
 	 *
@@ -283,7 +281,7 @@ public record DecimalConstraintConfig<T extends Number & Comparable<T>>(
 	public @NonNull DecimalConstraintConfig<T> withNormalized() {
 		return new DecimalConstraintConfig<>(this.equalTo, this.in, this.min, this.max, this.positive, this.negative, this.zero, this.percentage, this.finite, this.notNaN, this.integral, Optional.of(null), this.custom);
 	}
-
+	
 	/**
 	 * Creates a new config with the specified custom constraint.<br>
 	 *

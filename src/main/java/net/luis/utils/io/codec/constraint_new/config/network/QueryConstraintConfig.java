@@ -51,39 +51,31 @@ import java.util.regex.Pattern;
  * @param multiValuedConstraints A map of key to size constraint config for multi-value validation
  * @param custom A custom constraint implementation
  */
+@SuppressWarnings("OptionalContainsCollection")
 public record QueryConstraintConfig(
-	// SizeConstraint fields
 	@NonNull Optional<Pair<Integer, Boolean>> min,
 	@NonNull Optional<Pair<Integer, Boolean>> max,
-	// MapConstraint fields
 	@NonNull Optional<Set<String>> requiredKeys,
 	@NonNull Optional<Set<String>> forbiddenKeys,
 	@NonNull Optional<Set<String>> allowedKeys,
 	@NonNull Optional<Void> nonNullKeys,
 	@NonNull Optional<Void> uniqueValues,
 	@NonNull Optional<Void> nonNullValues,
-	// QueryConstraint fields
 	@NonNull Optional<Map<String, StringConstraintConfig>> valueConstraints,
 	@NonNull Optional<Map<Pattern, StringConstraintConfig>> patternValueConstraints,
 	@NonNull Optional<Void> singleValued,
 	@NonNull Optional<Map<String, SizeConstraintConfig>> multiValuedConstraints,
-	// Custom constraint
 	@NonNull Optional<Constraint<Map<String, List<String>>>> custom
 ) {
-
+	
 	/**
 	 * An unconstrained query configuration with no constraints applied.<br>
 	 */
 	public static final QueryConstraintConfig UNCONSTRAINED = new QueryConstraintConfig(
-		Optional.empty(), Optional.empty(),
-		Optional.empty(), Optional.empty(), Optional.empty(),
-		Optional.empty(), Optional.empty(), Optional.empty(),
-		Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(),
-		Optional.empty()
+		Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(),
+		Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty()
 	);
-
-	// SizeConstraint with methods
-
+	
 	/**
 	 * Creates a new config with the specified minimum size constraint (inclusive).<br>
 	 *
@@ -93,7 +85,7 @@ public record QueryConstraintConfig(
 	public @NonNull QueryConstraintConfig withMinSize(int minSize) {
 		return new QueryConstraintConfig(Optional.of(Pair.of(minSize, true)), this.max, this.requiredKeys, this.forbiddenKeys, this.allowedKeys, this.nonNullKeys, this.uniqueValues, this.nonNullValues, this.valueConstraints, this.patternValueConstraints, this.singleValued, this.multiValuedConstraints, this.custom);
 	}
-
+	
 	/**
 	 * Creates a new config with the specified maximum size constraint (inclusive).<br>
 	 *
@@ -103,7 +95,7 @@ public record QueryConstraintConfig(
 	public @NonNull QueryConstraintConfig withMaxSize(int maxSize) {
 		return new QueryConstraintConfig(this.min, Optional.of(Pair.of(maxSize, true)), this.requiredKeys, this.forbiddenKeys, this.allowedKeys, this.nonNullKeys, this.uniqueValues, this.nonNullValues, this.valueConstraints, this.patternValueConstraints, this.singleValued, this.multiValuedConstraints, this.custom);
 	}
-
+	
 	/**
 	 * Creates a new config with the specified exact size constraint.<br>
 	 *
@@ -113,7 +105,7 @@ public record QueryConstraintConfig(
 	public @NonNull QueryConstraintConfig withExactSize(int exactSize) {
 		return new QueryConstraintConfig(Optional.of(Pair.of(exactSize, true)), Optional.of(Pair.of(exactSize, true)), this.requiredKeys, this.forbiddenKeys, this.allowedKeys, this.nonNullKeys, this.uniqueValues, this.nonNullValues, this.valueConstraints, this.patternValueConstraints, this.singleValued, this.multiValuedConstraints, this.custom);
 	}
-
+	
 	/**
 	 * Creates a new config with the specified size range constraint (inclusive).<br>
 	 *
@@ -124,9 +116,7 @@ public record QueryConstraintConfig(
 	public @NonNull QueryConstraintConfig withSizeBetween(int minSize, int maxSize) {
 		return new QueryConstraintConfig(Optional.of(Pair.of(minSize, true)), Optional.of(Pair.of(maxSize, true)), this.requiredKeys, this.forbiddenKeys, this.allowedKeys, this.nonNullKeys, this.uniqueValues, this.nonNullValues, this.valueConstraints, this.patternValueConstraints, this.singleValued, this.multiValuedConstraints, this.custom);
 	}
-
-	// MapConstraint with methods
-
+	
 	/**
 	 * Creates a new config with the specified required keys constraint.<br>
 	 *
@@ -136,7 +126,7 @@ public record QueryConstraintConfig(
 	public @NonNull QueryConstraintConfig withRequiredKeys(@NonNull Collection<String> keys) {
 		return new QueryConstraintConfig(this.min, this.max, Optional.of(Set.copyOf(keys)), this.forbiddenKeys, this.allowedKeys, this.nonNullKeys, this.uniqueValues, this.nonNullValues, this.valueConstraints, this.patternValueConstraints, this.singleValued, this.multiValuedConstraints, this.custom);
 	}
-
+	
 	/**
 	 * Creates a new config with the specified forbidden keys constraint.<br>
 	 *
@@ -146,7 +136,7 @@ public record QueryConstraintConfig(
 	public @NonNull QueryConstraintConfig withForbiddenKeys(@NonNull Collection<String> keys) {
 		return new QueryConstraintConfig(this.min, this.max, this.requiredKeys, Optional.of(Set.copyOf(keys)), this.allowedKeys, this.nonNullKeys, this.uniqueValues, this.nonNullValues, this.valueConstraints, this.patternValueConstraints, this.singleValued, this.multiValuedConstraints, this.custom);
 	}
-
+	
 	/**
 	 * Creates a new config with the specified allowed keys constraint.<br>
 	 *
@@ -156,7 +146,7 @@ public record QueryConstraintConfig(
 	public @NonNull QueryConstraintConfig withAllowedKeys(@NonNull Collection<String> keys) {
 		return new QueryConstraintConfig(this.min, this.max, this.requiredKeys, this.forbiddenKeys, Optional.of(Set.copyOf(keys)), this.nonNullKeys, this.uniqueValues, this.nonNullValues, this.valueConstraints, this.patternValueConstraints, this.singleValued, this.multiValuedConstraints, this.custom);
 	}
-
+	
 	/**
 	 * Creates a new config with the non-null keys constraint.<br>
 	 *
@@ -165,7 +155,7 @@ public record QueryConstraintConfig(
 	public @NonNull QueryConstraintConfig withNonNullKeys() {
 		return new QueryConstraintConfig(this.min, this.max, this.requiredKeys, this.forbiddenKeys, this.allowedKeys, Optional.of(null), this.uniqueValues, this.nonNullValues, this.valueConstraints, this.patternValueConstraints, this.singleValued, this.multiValuedConstraints, this.custom);
 	}
-
+	
 	/**
 	 * Creates a new config with the unique values constraint.<br>
 	 *
@@ -174,7 +164,7 @@ public record QueryConstraintConfig(
 	public @NonNull QueryConstraintConfig withUniqueValues() {
 		return new QueryConstraintConfig(this.min, this.max, this.requiredKeys, this.forbiddenKeys, this.allowedKeys, this.nonNullKeys, Optional.of(null), this.nonNullValues, this.valueConstraints, this.patternValueConstraints, this.singleValued, this.multiValuedConstraints, this.custom);
 	}
-
+	
 	/**
 	 * Creates a new config with the non-null values constraint.<br>
 	 *
@@ -183,9 +173,7 @@ public record QueryConstraintConfig(
 	public @NonNull QueryConstraintConfig withNonNullValues() {
 		return new QueryConstraintConfig(this.min, this.max, this.requiredKeys, this.forbiddenKeys, this.allowedKeys, this.nonNullKeys, this.uniqueValues, Optional.of(null), this.valueConstraints, this.patternValueConstraints, this.singleValued, this.multiValuedConstraints, this.custom);
 	}
-
-	// QueryConstraint with methods
-
+	
 	/**
 	 * Creates a new config with the specified value constraint for a key.<br>
 	 *
@@ -198,7 +186,7 @@ public record QueryConstraintConfig(
 		newConstraints.put(Objects.requireNonNull(key), Objects.requireNonNull(config));
 		return new QueryConstraintConfig(this.min, this.max, this.requiredKeys, this.forbiddenKeys, this.allowedKeys, this.nonNullKeys, this.uniqueValues, this.nonNullValues, Optional.of(Map.copyOf(newConstraints)), this.patternValueConstraints, this.singleValued, this.multiValuedConstraints, this.custom);
 	}
-
+	
 	/**
 	 * Creates a new config with the specified value constraint for keys matching a regex.<br>
 	 *
@@ -209,7 +197,7 @@ public record QueryConstraintConfig(
 	public @NonNull QueryConstraintConfig withValues(@NonNull String regex, @NonNull StringConstraintConfig config) {
 		return this.withValues(Pattern.compile(regex), config);
 	}
-
+	
 	/**
 	 * Creates a new config with the specified value constraint for keys matching a pattern.<br>
 	 *
@@ -222,7 +210,7 @@ public record QueryConstraintConfig(
 		newConstraints.put(Objects.requireNonNull(pattern), Objects.requireNonNull(config));
 		return new QueryConstraintConfig(this.min, this.max, this.requiredKeys, this.forbiddenKeys, this.allowedKeys, this.nonNullKeys, this.uniqueValues, this.nonNullValues, this.valueConstraints, Optional.of(Map.copyOf(newConstraints)), this.singleValued, this.multiValuedConstraints, this.custom);
 	}
-
+	
 	/**
 	 * Creates a new config with the single-valued constraint.<br>
 	 *
@@ -231,7 +219,7 @@ public record QueryConstraintConfig(
 	public @NonNull QueryConstraintConfig withSingleValued() {
 		return new QueryConstraintConfig(this.min, this.max, this.requiredKeys, this.forbiddenKeys, this.allowedKeys, this.nonNullKeys, this.uniqueValues, this.nonNullValues, this.valueConstraints, this.patternValueConstraints, Optional.of(null), this.multiValuedConstraints, this.custom);
 	}
-
+	
 	/**
 	 * Creates a new config with the specified multi-valued constraint for a key.<br>
 	 *
@@ -244,7 +232,7 @@ public record QueryConstraintConfig(
 		newConstraints.put(Objects.requireNonNull(key), Objects.requireNonNull(config));
 		return new QueryConstraintConfig(this.min, this.max, this.requiredKeys, this.forbiddenKeys, this.allowedKeys, this.nonNullKeys, this.uniqueValues, this.nonNullValues, this.valueConstraints, this.patternValueConstraints, this.singleValued, Optional.of(Map.copyOf(newConstraints)), this.custom);
 	}
-
+	
 	/**
 	 * Creates a new config with the specified custom constraint.<br>
 	 *

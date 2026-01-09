@@ -42,23 +42,20 @@ import java.util.*;
  * @param custom A custom constraint implementation
  */
 public record PortConstraintConfig(
-	// BaseConstraint fields
 	@NonNull Optional<Pair<Integer, Boolean>> equalTo,
 	@NonNull Optional<Pair<Set<Integer>, Boolean>> in,
-	// PortConstraint fields
 	@NonNull Optional<Pair<Pair<Integer, Integer>, Boolean>> inRange,
 	@NonNull Optional<EnumConstraintConfig<PortRange>> type,
-	// Custom constraint
 	@NonNull Optional<Constraint<Integer>> custom
 ) {
-
+	
 	/**
 	 * An unconstrained port configuration with no constraints applied.<br>
 	 */
 	public static final PortConstraintConfig UNCONSTRAINED = new PortConstraintConfig(
 		Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty()
 	);
-
+	
 	/**
 	 * Creates a new config with the specified equal-to constraint.<br>
 	 *
@@ -68,7 +65,7 @@ public record PortConstraintConfig(
 	public @NonNull PortConstraintConfig withEqualTo(int value) {
 		return new PortConstraintConfig(Optional.of(Pair.of(value, false)), this.in, this.inRange, this.type, this.custom);
 	}
-
+	
 	/**
 	 * Creates a new config with the specified not-equal-to constraint.<br>
 	 *
@@ -78,7 +75,7 @@ public record PortConstraintConfig(
 	public @NonNull PortConstraintConfig withNotEqualTo(int value) {
 		return new PortConstraintConfig(Optional.of(Pair.of(value, true)), this.in, this.inRange, this.type, this.custom);
 	}
-
+	
 	/**
 	 * Creates a new config with the specified inclusion constraint.<br>
 	 *
@@ -88,7 +85,7 @@ public record PortConstraintConfig(
 	public @NonNull PortConstraintConfig withIn(@NonNull Collection<Integer> values) {
 		return new PortConstraintConfig(this.equalTo, Optional.of(Pair.of(Set.copyOf(values), false)), this.inRange, this.type, this.custom);
 	}
-
+	
 	/**
 	 * Creates a new config with the specified exclusion constraint.<br>
 	 *
@@ -98,7 +95,7 @@ public record PortConstraintConfig(
 	public @NonNull PortConstraintConfig withNotIn(@NonNull Collection<Integer> values) {
 		return new PortConstraintConfig(this.equalTo, Optional.of(Pair.of(Set.copyOf(values), true)), this.inRange, this.type, this.custom);
 	}
-
+	
 	/**
 	 * Creates a new config with the specified port range constraint (inclusive).<br>
 	 *
@@ -109,7 +106,7 @@ public record PortConstraintConfig(
 	public @NonNull PortConstraintConfig withInRange(int min, int max) {
 		return new PortConstraintConfig(this.equalTo, this.in, Optional.of(Pair.of(Pair.of(min, max), false)), this.type, this.custom);
 	}
-
+	
 	/**
 	 * Creates a new config with the specified excluded port range constraint.<br>
 	 *
@@ -120,7 +117,7 @@ public record PortConstraintConfig(
 	public @NonNull PortConstraintConfig withNotInRange(int min, int max) {
 		return new PortConstraintConfig(this.equalTo, this.in, Optional.of(Pair.of(Pair.of(min, max), true)), this.type, this.custom);
 	}
-
+	
 	/**
 	 * Creates a new config with the specified port type constraint.<br>
 	 *
@@ -130,7 +127,7 @@ public record PortConstraintConfig(
 	public @NonNull PortConstraintConfig withType(@NonNull EnumConstraintConfig<PortRange> config) {
 		return new PortConstraintConfig(this.equalTo, this.in, this.inRange, Optional.of(Objects.requireNonNull(config)), this.custom);
 	}
-
+	
 	/**
 	 * Creates a new config with the specified custom constraint.<br>
 	 *
