@@ -27,13 +27,13 @@ import java.time.ZoneId;
 import java.util.*;
 
 /**
- * Configuration record for ZoneId type constraints.<br>
+ * Configuration record for zone id type constraints.<br>
  * <p>
- *     This record stores the constraint values for ZoneId codecs.<br>
+ *     This record stores the constraint values for zone id codecs.<br>
  *     It includes base constraints and zone-specific flags for type validation.
  * </p>
  * <p>
- *     The equalTo field uses {@link Pair} where the first value is the ZoneId and
+ *     The equalTo field uses {@link Pair} where the first value is the zone id and
  *     the second value indicates negation (false=equalTo, true=notEqualTo).
  * </p>
  * <p>
@@ -43,8 +43,8 @@ import java.util.*;
  *
  * @author Luis-St
  *
- * @param equalTo The ZoneId equality constraint as a pair of (value, negated) where negated=false means equalTo and negated=true means notEqualTo
- * @param in The ZoneId set constraint as a pair of (values, negated) where negated=false means in and negated=true means notIn
+ * @param equalTo The zone id equality constraint as a pair of (value, negated) where negated=false means equalTo and negated=true means notEqualTo
+ * @param in The zone id set constraint as a pair of (values, negated) where negated=false means in and negated=true means notIn
  * @param normalized If present, requires the zone to be in normalized form
  * @param regionBased If present, requires the zone to be region-based
  * @param offsetBased If present, requires the zone to be offset-based
@@ -54,10 +54,6 @@ import java.util.*;
  * @param available If present, requires the zone to be in the available zone list
  * @param region A nested config for region string constraints
  * @param custom A custom constraint implementation
- *
- * @throws NullPointerException If any of the optional fields is null
- * @throws IllegalArgumentException If the 'in' set is empty when present
- * @throws IllegalArgumentException If regionBased and offsetBased constraints are both present
  */
 public record ZoneIdConstraintConfig(
 	@NonNull Optional<Pair<ZoneId, Boolean>> equalTo,
@@ -74,17 +70,17 @@ public record ZoneIdConstraintConfig(
 ) {
 	
 	/**
-	 * An unconstrained ZoneId configuration with no constraints applied.<br>
+	 * An unconstrained zone id configuration with no constraints applied.<br>
 	 */
 	public static final ZoneIdConstraintConfig UNCONSTRAINED = new ZoneIdConstraintConfig(
 		Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty()
 	);
 	
 	/**
-	 * Canonical constructor that validates all constraint fields.<br>
+	 * Constructs a new zone id constraint config with the specified parameters.<br>
 	 *
-	 * @param equalTo The ZoneId equality constraint as a pair of (value, negated) where negated=false means equalTo and negated=true means notEqualTo
-	 * @param in The ZoneId set constraint as a pair of (values, negated) where negated=false means in and negated=true means notIn
+	 * @param equalTo The zone id equality constraint as a pair of (value, negated) where negated=false means equalTo and negated=true means notEqualTo
+	 * @param in The zone id set constraint as a pair of (values, negated) where negated=false means in and negated=true means notIn
 	 * @param normalized If present, requires the zone to be in normalized form
 	 * @param regionBased If present, requires the zone to be region-based
 	 * @param offsetBased If present, requires the zone to be offset-based
@@ -123,7 +119,7 @@ public record ZoneIdConstraintConfig(
 	/**
 	 * Creates a new config with the specified equal-to constraint.<br>
 	 *
-	 * @param value The exact ZoneId that should be matched
+	 * @param value The exact zone id that should be matched
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull ZoneIdConstraintConfig withEqualTo(@NonNull ZoneId value) {
@@ -133,7 +129,7 @@ public record ZoneIdConstraintConfig(
 	/**
 	 * Creates a new config with the specified not-equal-to constraint.<br>
 	 *
-	 * @param value The ZoneId that should be excluded
+	 * @param value The zone id that should be excluded
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull ZoneIdConstraintConfig withNotEqualTo(@NonNull ZoneId value) {

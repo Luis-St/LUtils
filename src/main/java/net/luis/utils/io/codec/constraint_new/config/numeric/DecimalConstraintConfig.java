@@ -51,11 +51,6 @@ import java.util.*;
  * @param integral If present, requires the value to be a whole number (no fractional part)
  * @param normalized If present, requires the value to be within the range [0.0, 1.0]
  * @param custom A custom constraint implementation
- *
- * @throws NullPointerException If any optional field is null
- * @throws IllegalArgumentException If the 'in' constraint set is empty when present
- * @throws IllegalArgumentException If min is greater than max when both are present
- * @throws IllegalArgumentException If min equals max with at least one exclusive bound when both are present
  */
 public record DecimalConstraintConfig<T extends Number & Comparable<T>>(
 	@NonNull Optional<Pair<T, Boolean>> equalTo,
@@ -74,8 +69,21 @@ public record DecimalConstraintConfig<T extends Number & Comparable<T>>(
 ) {
 
 	/**
-	 * Canonical constructor that validates all constraint parameters.<br>
+	 * Constructs a new decimal constraint config with the specified parameters.<br>
 	 *
+	 * @param equalTo The equality constraint as a pair of (value, negated) where negated=false means equalTo and negated=true means notEqualTo
+	 * @param in The set constraint as a pair of (values, negated) where negated=false means in and negated=true means notIn
+	 * @param min The minimum value constraint as a pair of (value, inclusive)
+	 * @param max The maximum value constraint as a pair of (value, inclusive)
+	 * @param positive The positive constraint as a Boolean where false means positive (greater than zero) and true means nonPositive (less than or equal to zero)
+	 * @param negative The negative constraint as a Boolean where false means negative (less than zero) and true means nonNegative (greater than or equal to zero)
+	 * @param zero The zero constraint as a Boolean where false means zero and true means nonZero
+	 * @param percentage If present, requires the value to be between 0 and 100 (inclusive)
+	 * @param finite If present, requires the value to be finite (not infinite or NaN)
+	 * @param notNaN If present, requires the value to not be NaN
+	 * @param integral If present, requires the value to be a whole number (no fractional part)
+	 * @param normalized If present, requires the value to be within the range [0.0, 1.0]
+	 * @param custom A custom constraint implementation
 	 * @throws NullPointerException If any optional field is null
 	 * @throws IllegalArgumentException If the 'in' constraint set is empty when present
 	 * @throws IllegalArgumentException If min is greater than max when both are present

@@ -28,16 +28,16 @@ import java.time.*;
 import java.util.*;
 
 /**
- * Configuration record for OffsetDateTime type constraints.<br>
+ * Configuration record for offset date time  type constraints.<br>
  * <p>
- *     This record stores the constraint values for OffsetDateTime codecs.<br>
+ *     This record stores the constraint values for offset date time  codecs.<br>
  *     It includes base constraints, temporal comparable constraints, temporal span constraints,
  *     date and time field constraints, and offset constraints.
  * </p>
  *
  * @author Luis-St
  *
- * @param equalTo The exact OffsetDateTime that should be matched (Boolean: false=equalTo, true=notEqualTo)
+ * @param equalTo The exact offset date time  that should be matched (Boolean: false=equalTo, true=notEqualTo)
  * @param in The set of OffsetDateTimes that are allowed or excluded (Boolean: false=in, true=notIn)
  * @param after The "after" temporal constraint as a pair of (value, inclusive)
  * @param before The "before" temporal constraint as a pair of (value, inclusive)
@@ -57,11 +57,6 @@ import java.util.*;
  * @param nanosecond A nested config for nanosecond constraints
  * @param offset A nested config for offset constraints
  * @param custom A custom constraint implementation
- *
- * @throws NullPointerException If any of the optional fields is null
- * @throws IllegalArgumentException If the 'in' set is empty when present
- * @throws IllegalArgumentException If withinLast duration is not positive when present
- * @throws IllegalArgumentException If withinNext duration is not positive when present
  */
 public record OffsetDateTimeConstraintConfig(
 	@NonNull Optional<Pair<OffsetDateTime, Boolean>> equalTo,
@@ -87,7 +82,7 @@ public record OffsetDateTimeConstraintConfig(
 ) {
 	
 	/**
-	 * An unconstrained OffsetDateTime configuration with no constraints applied.<br>
+	 * An unconstrained offset date time  configuration with no constraints applied.<br>
 	 */
 	public static final OffsetDateTimeConstraintConfig UNCONSTRAINED = new OffsetDateTimeConstraintConfig(
 		Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(),
@@ -95,9 +90,9 @@ public record OffsetDateTimeConstraintConfig(
 	);
 	
 	/**
-	 * Canonical constructor that validates all constraint fields.<br>
+	 * Constructs a new offset date time constraint config with the specified parameters.<br>
 	 *
-	 * @param equalTo The exact OffsetDateTime that should be matched (Boolean: false=equalTo, true=notEqualTo)
+	 * @param equalTo The exact offset date time  that should be matched (Boolean: false=equalTo, true=notEqualTo)
 	 * @param in The set of OffsetDateTimes that are allowed or excluded (Boolean: false=in, true=notIn)
 	 * @param after The "after" temporal constraint as a pair of (value, inclusive)
 	 * @param before The "before" temporal constraint as a pair of (value, inclusive)
@@ -160,7 +155,7 @@ public record OffsetDateTimeConstraintConfig(
 	/**
 	 * Creates a new config with the specified equal-to constraint.<br>
 	 *
-	 * @param value The exact OffsetDateTime that should be matched
+	 * @param value The exact offset date time  that should be matched
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull OffsetDateTimeConstraintConfig withEqualTo(@NonNull OffsetDateTime value) {
@@ -170,7 +165,7 @@ public record OffsetDateTimeConstraintConfig(
 	/**
 	 * Creates a new config with the specified not-equal-to constraint.<br>
 	 *
-	 * @param value The OffsetDateTime that should be excluded
+	 * @param value The offset date time  that should be excluded
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull OffsetDateTimeConstraintConfig withNotEqualTo(@NonNull OffsetDateTime value) {
@@ -200,7 +195,7 @@ public record OffsetDateTimeConstraintConfig(
 	/**
 	 * Creates a new config with the specified after constraint (exclusive).<br>
 	 *
-	 * @param value The threshold OffsetDateTime (exclusive)
+	 * @param value The threshold offset date time  (exclusive)
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull OffsetDateTimeConstraintConfig withAfter(@NonNull OffsetDateTime value) {
@@ -210,7 +205,7 @@ public record OffsetDateTimeConstraintConfig(
 	/**
 	 * Creates a new config with the specified after-or-equal constraint (inclusive).<br>
 	 *
-	 * @param value The threshold OffsetDateTime (inclusive)
+	 * @param value The threshold offset date time  (inclusive)
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull OffsetDateTimeConstraintConfig withAfterOrEqual(@NonNull OffsetDateTime value) {
@@ -220,7 +215,7 @@ public record OffsetDateTimeConstraintConfig(
 	/**
 	 * Creates a new config with the specified before constraint (exclusive).<br>
 	 *
-	 * @param value The threshold OffsetDateTime (exclusive)
+	 * @param value The threshold offset date time  (exclusive)
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull OffsetDateTimeConstraintConfig withBefore(@NonNull OffsetDateTime value) {
@@ -230,7 +225,7 @@ public record OffsetDateTimeConstraintConfig(
 	/**
 	 * Creates a new config with the specified before-or-equal constraint (inclusive).<br>
 	 *
-	 * @param value The threshold OffsetDateTime (inclusive)
+	 * @param value The threshold offset date time  (inclusive)
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull OffsetDateTimeConstraintConfig withBeforeOrEqual(@NonNull OffsetDateTime value) {
@@ -240,8 +235,8 @@ public record OffsetDateTimeConstraintConfig(
 	/**
 	 * Creates a new config with the specified between constraint (exclusive on both bounds).<br>
 	 *
-	 * @param after The minimum OffsetDateTime (exclusive)
-	 * @param before The maximum OffsetDateTime (exclusive)
+	 * @param after The minimum offset date time  (exclusive)
+	 * @param before The maximum offset date time  (exclusive)
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull OffsetDateTimeConstraintConfig withBetween(@NonNull OffsetDateTime after, @NonNull OffsetDateTime before) {
@@ -251,8 +246,8 @@ public record OffsetDateTimeConstraintConfig(
 	/**
 	 * Creates a new config with the specified between constraint (inclusive on both bounds).<br>
 	 *
-	 * @param after The minimum OffsetDateTime (inclusive)
-	 * @param before The maximum OffsetDateTime (inclusive)
+	 * @param after The minimum offset date time  (inclusive)
+	 * @param before The maximum offset date time  (inclusive)
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull OffsetDateTimeConstraintConfig withBetweenOrEqual(@NonNull OffsetDateTime after, @NonNull OffsetDateTime before) {

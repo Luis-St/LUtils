@@ -26,9 +26,9 @@ import java.time.Year;
 import java.util.*;
 
 /**
- * Configuration record for Year type constraints.<br>
+ * Configuration record for year type constraints.<br>
  * <p>
- *     This record stores the constraint values for Year codecs.<br>
+ *     This record stores the constraint values for year codecs.<br>
  *     It includes base constraints and comparable constraints for year values.
  * </p>
  * <p>
@@ -36,7 +36,7 @@ import java.util.*;
  *     and the second value indicates whether the bound is inclusive (true) or exclusive (false).
  * </p>
  * <p>
- *     The equalTo field uses {@link Pair} where the first value is the Year and
+ *     The equalTo field uses {@link Pair} where the first value is the year and
  *     the second value indicates negation (false=equalTo, true=notEqualTo).
  * </p>
  * <p>
@@ -46,14 +46,11 @@ import java.util.*;
  *
  * @author Luis-St
  *
- * @param equalTo The Year equality constraint as a pair of (value, negated) where negated=false means equalTo and negated=true means notEqualTo
- * @param in The Year set constraint as a pair of (values, negated) where negated=false means in and negated=true means notIn
- * @param min The minimum Year constraint as a pair of (value, inclusive)
- * @param max The maximum Year constraint as a pair of (value, inclusive)
+ * @param equalTo The year equality constraint as a pair of (value, negated) where negated=false means equalTo and negated=true means notEqualTo
+ * @param in The year set constraint as a pair of (values, negated) where negated=false means in and negated=true means notIn
+ * @param min The minimum year constraint as a pair of (value, inclusive)
+ * @param max The maximum year constraint as a pair of (value, inclusive)
  * @param custom A custom constraint implementation
- *
- * @throws NullPointerException If any of the optional fields is null
- * @throws IllegalArgumentException If the 'in' set is empty when present
  */
 public record YearConstraintConfig(
 	@NonNull Optional<Pair<Year, Boolean>> equalTo,
@@ -64,19 +61,19 @@ public record YearConstraintConfig(
 ) {
 	
 	/**
-	 * An unconstrained Year configuration with no constraints applied.<br>
+	 * An unconstrained year configuration with no constraints applied.<br>
 	 */
 	public static final YearConstraintConfig UNCONSTRAINED = new YearConstraintConfig(
 		Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty()
 	);
 	
 	/**
-	 * Canonical constructor that validates all constraint fields.<br>
+	 * Constructs a new year constraint config with the specified parameters.<br>
 	 *
-	 * @param equalTo The Year equality constraint as a pair of (value, negated) where negated=false means equalTo and negated=true means notEqualTo
-	 * @param in The Year set constraint as a pair of (values, negated) where negated=false means in and negated=true means notIn
-	 * @param min The minimum Year constraint as a pair of (value, inclusive)
-	 * @param max The maximum Year constraint as a pair of (value, inclusive)
+	 * @param equalTo The year equality constraint as a pair of (value, negated) where negated=false means equalTo and negated=true means notEqualTo
+	 * @param in The year set constraint as a pair of (values, negated) where negated=false means in and negated=true means notIn
+	 * @param min The minimum year constraint as a pair of (value, inclusive)
+	 * @param max The maximum year constraint as a pair of (value, inclusive)
 	 * @param custom A custom constraint implementation
 	 * @throws NullPointerException If any of the optional fields is null
 	 * @throws IllegalArgumentException If the 'in' set is empty when present
@@ -96,7 +93,7 @@ public record YearConstraintConfig(
 	/**
 	 * Creates a new config with the specified equal-to constraint.<br>
 	 *
-	 * @param value The exact Year that should be matched
+	 * @param value The exact year that should be matched
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull YearConstraintConfig withEqualTo(@NonNull Year value) {
@@ -106,7 +103,7 @@ public record YearConstraintConfig(
 	/**
 	 * Creates a new config with the specified not-equal-to constraint.<br>
 	 *
-	 * @param value The Year that should be excluded
+	 * @param value The year that should be excluded
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull YearConstraintConfig withNotEqualTo(@NonNull Year value) {
@@ -136,7 +133,7 @@ public record YearConstraintConfig(
 	/**
 	 * Creates a new config with the specified after constraint (exclusive).<br>
 	 *
-	 * @param value The threshold Year (exclusive)
+	 * @param value The threshold year (exclusive)
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull YearConstraintConfig withAfter(@NonNull Year value) {
@@ -146,7 +143,7 @@ public record YearConstraintConfig(
 	/**
 	 * Creates a new config with the specified after-or-equal constraint (inclusive).<br>
 	 *
-	 * @param value The threshold Year (inclusive)
+	 * @param value The threshold year (inclusive)
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull YearConstraintConfig withAfterOrEqual(@NonNull Year value) {
@@ -156,7 +153,7 @@ public record YearConstraintConfig(
 	/**
 	 * Creates a new config with the specified before constraint (exclusive).<br>
 	 *
-	 * @param value The threshold Year (exclusive)
+	 * @param value The threshold year (exclusive)
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull YearConstraintConfig withBefore(@NonNull Year value) {
@@ -166,7 +163,7 @@ public record YearConstraintConfig(
 	/**
 	 * Creates a new config with the specified before-or-equal constraint (inclusive).<br>
 	 *
-	 * @param value The threshold Year (inclusive)
+	 * @param value The threshold year (inclusive)
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull YearConstraintConfig withBeforeOrEqual(@NonNull Year value) {
@@ -176,8 +173,8 @@ public record YearConstraintConfig(
 	/**
 	 * Creates a new config with the specified between constraint (exclusive on both bounds).<br>
 	 *
-	 * @param min The minimum Year (exclusive)
-	 * @param max The maximum Year (exclusive)
+	 * @param min The minimum year (exclusive)
+	 * @param max The maximum year (exclusive)
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull YearConstraintConfig withBetween(@NonNull Year min, @NonNull Year max) {
@@ -187,8 +184,8 @@ public record YearConstraintConfig(
 	/**
 	 * Creates a new config with the specified between constraint (inclusive on both bounds).<br>
 	 *
-	 * @param min The minimum Year (inclusive)
-	 * @param max The maximum Year (inclusive)
+	 * @param min The minimum year (inclusive)
+	 * @param max The maximum year (inclusive)
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull YearConstraintConfig withBetweenOrEqual(@NonNull Year min, @NonNull Year max) {

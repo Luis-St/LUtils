@@ -26,10 +26,10 @@ import java.math.BigDecimal;
 import java.util.*;
 
 /**
- * Configuration record for BigDecimal type constraints.<br>
+ * Configuration record for big decimal type constraints.<br>
  * <p>
- *     This record stores the constraint values for BigDecimal codecs.<br>
- *     It includes base constraints, comparable constraints, signed constraints, and BigDecimal-specific constraints
+ *     This record stores the constraint values for big decimal codecs.<br>
+ *     It includes base constraints, comparable constraints, signed constraints, and big decimal specific constraints
  *     for scale (decimal places) and precision (significant digits).
  * </p>
  * <p>
@@ -54,17 +54,6 @@ import java.util.*;
  * @param precisionMin The minimum precision (significant digits) constraint as a pair of (value, inclusive)
  * @param precisionMax The maximum precision (significant digits) constraint as a pair of (value, inclusive)
  * @param custom A custom constraint implementation
- *
- * @throws NullPointerException If any optional field is null
- * @throws IllegalArgumentException If the 'in' constraint set is empty when present
- * @throws IllegalArgumentException If min is greater than max when both are present
- * @throws IllegalArgumentException If min equals max with at least one exclusive bound when both are present
- * @throws IllegalArgumentException If the minimum scale is negative when present
- * @throws IllegalArgumentException If the minimum scale is greater than the maximum scale when both are present
- * @throws IllegalArgumentException If min and max scale are equal but at least one bound is exclusive when both are present
- * @throws IllegalArgumentException If the minimum precision is not positive when present
- * @throws IllegalArgumentException If the minimum precision is greater than the maximum precision when both are present
- * @throws IllegalArgumentException If min and max precision are equal but at least one bound is exclusive when both are present
  */
 public record BigDecimalConstraintConfig(
 	@NonNull Optional<Pair<BigDecimal, Boolean>> equalTo,
@@ -85,7 +74,7 @@ public record BigDecimalConstraintConfig(
 ) {
 	
 	/**
-	 * An unconstrained BigDecimal configuration with no constraints applied.<br>
+	 * An unconstrained big decimal configuration with no constraints applied.<br>
 	 */
 	public static final BigDecimalConstraintConfig UNCONSTRAINED = new BigDecimalConstraintConfig(
 		Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(),
@@ -93,22 +82,22 @@ public record BigDecimalConstraintConfig(
 	);
 	
 	/**
-	 * Canonical constructor for BigDecimal constraint configuration.<br>
+	 * Constructs a new big decimal constraint config with the specified parameters.<br>
 	 *
-	 * @param equalTo The equality constraint
-	 * @param in The set constraint
-	 * @param min The minimum value constraint
-	 * @param max The maximum value constraint
-	 * @param positive The positive constraint
-	 * @param negative The negative constraint
-	 * @param zero The zero constraint
+	 * @param equalTo The equality constraint as a pair of (value, negated) where negated=false means equalTo and negated=true means notEqualTo
+	 * @param in The set constraint as a pair of (values, negated) where negated=false means in and negated=true means notIn
+	 * @param min The minimum value constraint as a pair of (value, inclusive)
+	 * @param max The maximum value constraint as a pair of (value, inclusive)
+	 * @param positive The positive constraint as a Boolean where false means positive (greater than zero) and true means nonPositive (less than or equal to zero)
+	 * @param negative The negative constraint as a Boolean where false means negative (less than zero) and true means nonNegative (greater than or equal to zero)
+	 * @param zero The zero constraint as a Boolean where false means zero and true means nonZero
 	 * @param percentage If present, requires the value to be between 0 and 100 (inclusive)
 	 * @param integral If present, requires the value to be a whole number (no fractional part)
 	 * @param normalized If present, requires the value to be within the range [0.0, 1.0]
-	 * @param scaleMin The minimum scale (decimal places) constraint
-	 * @param scaleMax The maximum scale (decimal places) constraint
-	 * @param precisionMin The minimum precision (significant digits) constraint
-	 * @param precisionMax The maximum precision (significant digits) constraint
+	 * @param scaleMin The minimum scale (decimal places) constraint as a pair of (value, inclusive)
+	 * @param scaleMax The maximum scale (decimal places) constraint as a pair of (value, inclusive)
+	 * @param precisionMin The minimum precision (significant digits) constraint as a pair of (value, inclusive)
+	 * @param precisionMax The maximum precision (significant digits) constraint as a pair of (value, inclusive)
 	 * @param custom A custom constraint implementation
 	 * @throws NullPointerException If any optional field is null
 	 * @throws IllegalArgumentException If the 'in' constraint set is empty when present

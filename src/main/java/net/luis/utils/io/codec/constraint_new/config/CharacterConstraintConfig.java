@@ -50,12 +50,6 @@ import java.util.*;
  * @param ascii If present, requires the character to be an ASCII character (0-127)
  * @param latin1 If present, requires the character to be a Latin-1 character (0-255)
  * @param custom A custom constraint implementation
- *
- * @throws NullPointerException If any optional field is null
- * @throws IllegalArgumentException If the 'in' constraint set is empty when present
- * @throws IllegalArgumentException If min is greater than max when both are present
- * @throws IllegalArgumentException If min equals max with at least one exclusive bound when both are present
- * @throws IllegalArgumentException If both 'upperCase' and 'lowerCase' constraints are present
  */
 public record CharacterConstraintConfig(
 	@NonNull Optional<Pair<Character, Boolean>> equalTo,
@@ -85,8 +79,24 @@ public record CharacterConstraintConfig(
 	);
 	
 	/**
-	 * Canonical constructor that validates all constraint parameters.<br>
+	 * Constructs a new character constraint config with the specified parameters.<br>
 	 *
+	 * @param equalTo The character equality constraint as a pair of (value, negated) where negated=false means equalTo and negated=true means notEqualTo
+	 * @param in The character set constraint as a pair of (values, negated) where negated=false means in and negated=true means notIn
+	 * @param min The minimum character constraint as a pair of (value, inclusive)
+	 * @param max The maximum character constraint as a pair of (value, inclusive)
+	 * @param letter If present, requires the character to be a letter
+	 * @param digit If present, requires the character to be a digit
+	 * @param alphanumeric If present, requires the character to be alphanumeric
+	 * @param whitespace If present, requires the character to be whitespace
+	 * @param punctuation If present, requires the character to be punctuation
+	 * @param symbol If present, requires the character to be a symbol
+	 * @param control If present, requires the character to be a control character
+	 * @param upperCase If present, requires the character to be upper case
+	 * @param lowerCase If present, requires the character to be lower case
+	 * @param ascii If present, requires the character to be an ASCII character (0-127)
+	 * @param latin1 If present, requires the character to be a Latin-1 character (0-255)
+	 * @param custom A custom constraint implementation
 	 * @throws NullPointerException If any optional field is null
 	 * @throws IllegalArgumentException If the 'in' constraint set is empty when present
 	 * @throws IllegalArgumentException If min is greater than max when both are present

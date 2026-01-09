@@ -28,16 +28,16 @@ import java.time.*;
 import java.util.*;
 
 /**
- * Configuration record for LocalDateTime type constraints.<br>
+ * Configuration record for local date time type constraints.<br>
  * <p>
- *     This record stores the constraint values for LocalDateTime codecs.<br>
+ *     This record stores the constraint values for local date time codecs.<br>
  *     It includes base constraints, temporal comparable constraints, temporal span constraints,
  *     and both date and time field constraints.
  * </p>
  *
  * @author Luis-St
  *
- * @param equalTo The exact LocalDateTime that should be matched (Boolean: false=equalTo, true=notEqualTo)
+ * @param equalTo The exact local date time that should be matched (Boolean: false=equalTo, true=notEqualTo)
  * @param in The set of LocalDateTimes that are allowed or excluded (Boolean: false=in, true=notIn)
  * @param after The "after" temporal constraint as a pair of (value, inclusive)
  * @param before The "before" temporal constraint as a pair of (value, inclusive)
@@ -56,11 +56,6 @@ import java.util.*;
  * @param millisecond A nested config for millisecond constraints
  * @param nanosecond A nested config for nanosecond constraints
  * @param custom A custom constraint implementation
- *
- * @throws NullPointerException If any of the optional fields is null
- * @throws IllegalArgumentException If the 'in' set is empty when present
- * @throws IllegalArgumentException If withinLast duration is not positive when present
- * @throws IllegalArgumentException If withinNext duration is not positive when present
  */
 public record LocalDateTimeConstraintConfig(
 	@NonNull Optional<Pair<LocalDateTime, Boolean>> equalTo,
@@ -85,7 +80,7 @@ public record LocalDateTimeConstraintConfig(
 ) {
 	
 	/**
-	 * An unconstrained LocalDateTime configuration with no constraints applied.<br>
+	 * An unconstrained local date time configuration with no constraints applied.<br>
 	 */
 	public static final LocalDateTimeConstraintConfig UNCONSTRAINED = new LocalDateTimeConstraintConfig(
 		Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(),
@@ -93,9 +88,9 @@ public record LocalDateTimeConstraintConfig(
 	);
 	
 	/**
-	 * Canonical constructor that validates all constraint fields.<br>
+	 * Constructs a new local date time constraint config with the specified parameters.<br>
 	 *
-	 * @param equalTo The exact LocalDateTime that should be matched (Boolean: false=equalTo, true=notEqualTo)
+	 * @param equalTo The exact local date time that should be matched (Boolean: false=equalTo, true=notEqualTo)
 	 * @param in The set of LocalDateTimes that are allowed or excluded (Boolean: false=in, true=notIn)
 	 * @param after The "after" temporal constraint as a pair of (value, inclusive)
 	 * @param before The "before" temporal constraint as a pair of (value, inclusive)
@@ -156,7 +151,7 @@ public record LocalDateTimeConstraintConfig(
 	/**
 	 * Creates a new config with the specified equal-to constraint.<br>
 	 *
-	 * @param value The exact LocalDateTime that should be matched
+	 * @param value The exact local date time that should be matched
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull LocalDateTimeConstraintConfig withEqualTo(@NonNull LocalDateTime value) {
@@ -166,7 +161,7 @@ public record LocalDateTimeConstraintConfig(
 	/**
 	 * Creates a new config with the specified not-equal-to constraint.<br>
 	 *
-	 * @param value The LocalDateTime that should be excluded
+	 * @param value The local date time that should be excluded
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull LocalDateTimeConstraintConfig withNotEqualTo(@NonNull LocalDateTime value) {
@@ -196,7 +191,7 @@ public record LocalDateTimeConstraintConfig(
 	/**
 	 * Creates a new config with the specified after constraint (exclusive).<br>
 	 *
-	 * @param value The threshold LocalDateTime (exclusive)
+	 * @param value The threshold local date time (exclusive)
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull LocalDateTimeConstraintConfig withAfter(@NonNull LocalDateTime value) {
@@ -206,7 +201,7 @@ public record LocalDateTimeConstraintConfig(
 	/**
 	 * Creates a new config with the specified after-or-equal constraint (inclusive).<br>
 	 *
-	 * @param value The threshold LocalDateTime (inclusive)
+	 * @param value The threshold local date time (inclusive)
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull LocalDateTimeConstraintConfig withAfterOrEqual(@NonNull LocalDateTime value) {
@@ -216,7 +211,7 @@ public record LocalDateTimeConstraintConfig(
 	/**
 	 * Creates a new config with the specified before constraint (exclusive).<br>
 	 *
-	 * @param value The threshold LocalDateTime (exclusive)
+	 * @param value The threshold local date time (exclusive)
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull LocalDateTimeConstraintConfig withBefore(@NonNull LocalDateTime value) {
@@ -226,7 +221,7 @@ public record LocalDateTimeConstraintConfig(
 	/**
 	 * Creates a new config with the specified before-or-equal constraint (inclusive).<br>
 	 *
-	 * @param value The threshold LocalDateTime (inclusive)
+	 * @param value The threshold local date time (inclusive)
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull LocalDateTimeConstraintConfig withBeforeOrEqual(@NonNull LocalDateTime value) {
@@ -236,8 +231,8 @@ public record LocalDateTimeConstraintConfig(
 	/**
 	 * Creates a new config with the specified between constraint (exclusive on both bounds).<br>
 	 *
-	 * @param after The minimum LocalDateTime (exclusive)
-	 * @param before The maximum LocalDateTime (exclusive)
+	 * @param after The minimum local date time (exclusive)
+	 * @param before The maximum local date time (exclusive)
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull LocalDateTimeConstraintConfig withBetween(@NonNull LocalDateTime after, @NonNull LocalDateTime before) {
@@ -247,8 +242,8 @@ public record LocalDateTimeConstraintConfig(
 	/**
 	 * Creates a new config with the specified between constraint (inclusive on both bounds).<br>
 	 *
-	 * @param after The minimum LocalDateTime (inclusive)
-	 * @param before The maximum LocalDateTime (inclusive)
+	 * @param after The minimum local date time (inclusive)
+	 * @param before The maximum local date time (inclusive)
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull LocalDateTimeConstraintConfig withBetweenOrEqual(@NonNull LocalDateTime after, @NonNull LocalDateTime before) {

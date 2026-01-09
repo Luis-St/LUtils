@@ -28,9 +28,9 @@ import java.time.*;
 import java.util.*;
 
 /**
- * Configuration record for ZonedDateTime type constraints.<br>
+ * Configuration record for zoned date time type constraints.<br>
  * <p>
- *     This record stores the constraint values for ZonedDateTime codecs.<br>
+ *     This record stores the constraint values for zoned date time codecs.<br>
  *     It includes base constraints, temporal comparable constraints, temporal span constraints,
  *     date and time field constraints, and zone constraints.
  * </p>
@@ -39,7 +39,7 @@ import java.util.*;
  *     and the second value indicates whether the bound is inclusive (true) or exclusive (false).
  * </p>
  * <p>
- *     The equalTo field uses {@link Pair} where the first value is the ZonedDateTime and
+ *     The equalTo field uses {@link Pair} where the first value is the zoned date time and
  *     the second value indicates negation (false=equalTo, true=notEqualTo).
  * </p>
  * <p>
@@ -49,8 +49,8 @@ import java.util.*;
  *
  * @author Luis-St
  *
- * @param equalTo The ZonedDateTime equality constraint as a pair of (value, negated) where negated=false means equalTo and negated=true means notEqualTo
- * @param in The ZonedDateTime set constraint as a pair of (values, negated) where negated=false means in and negated=true means notIn
+ * @param equalTo The zoned date time equality constraint as a pair of (value, negated) where negated=false means equalTo and negated=true means notEqualTo
+ * @param in The zoned date time set constraint as a pair of (values, negated) where negated=false means in and negated=true means notIn
  * @param after The "after" temporal constraint as a pair of (value, inclusive)
  * @param before The "before" temporal constraint as a pair of (value, inclusive)
  * @param withinLast A Duration specifying how far back from now values must fall
@@ -69,11 +69,6 @@ import java.util.*;
  * @param nanosecond A nested config for nanosecond constraints
  * @param zone A nested config for zone constraints
  * @param custom A custom constraint implementation
- *
- * @throws NullPointerException If any of the optional fields is null
- * @throws IllegalArgumentException If the 'in' set is empty when present
- * @throws IllegalArgumentException If withinLast duration is not positive when present
- * @throws IllegalArgumentException If withinNext duration is not positive when present
  */
 public record ZonedDateTimeConstraintConfig(
 	@NonNull Optional<Pair<ZonedDateTime, Boolean>> equalTo,
@@ -99,7 +94,7 @@ public record ZonedDateTimeConstraintConfig(
 ) {
 	
 	/**
-	 * An unconstrained ZonedDateTime configuration with no constraints applied.<br>
+	 * An unconstrained zoned date time configuration with no constraints applied.<br>
 	 */
 	public static final ZonedDateTimeConstraintConfig UNCONSTRAINED = new ZonedDateTimeConstraintConfig(
 		Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(),
@@ -107,10 +102,10 @@ public record ZonedDateTimeConstraintConfig(
 	);
 	
 	/**
-	 * Canonical constructor that validates all constraint fields.<br>
+	 * Constructs a new zoned date time constraint config with the specified parameters.<br>
 	 *
-	 * @param equalTo The ZonedDateTime equality constraint as a pair of (value, negated) where negated=false means equalTo and negated=true means notEqualTo
-	 * @param in The ZonedDateTime set constraint as a pair of (values, negated) where negated=false means in and negated=true means notIn
+	 * @param equalTo The zoned date time equality constraint as a pair of (value, negated) where negated=false means equalTo and negated=true means notEqualTo
+	 * @param in The zoned date time set constraint as a pair of (values, negated) where negated=false means in and negated=true means notIn
 	 * @param after The "after" temporal constraint as a pair of (value, inclusive)
 	 * @param before The "before" temporal constraint as a pair of (value, inclusive)
 	 * @param withinLast A Duration specifying how far back from now values must fall
@@ -172,7 +167,7 @@ public record ZonedDateTimeConstraintConfig(
 	/**
 	 * Creates a new config with the specified equal-to constraint.<br>
 	 *
-	 * @param value The exact ZonedDateTime that should be matched
+	 * @param value The exact zoned date time that should be matched
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull ZonedDateTimeConstraintConfig withEqualTo(@NonNull ZonedDateTime value) {
@@ -182,7 +177,7 @@ public record ZonedDateTimeConstraintConfig(
 	/**
 	 * Creates a new config with the specified not-equal-to constraint.<br>
 	 *
-	 * @param value The ZonedDateTime that should be excluded
+	 * @param value The zoned date time that should be excluded
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull ZonedDateTimeConstraintConfig withNotEqualTo(@NonNull ZonedDateTime value) {
@@ -212,7 +207,7 @@ public record ZonedDateTimeConstraintConfig(
 	/**
 	 * Creates a new config with the specified after constraint (exclusive).<br>
 	 *
-	 * @param value The threshold ZonedDateTime (exclusive)
+	 * @param value The threshold zoned date time (exclusive)
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull ZonedDateTimeConstraintConfig withAfter(@NonNull ZonedDateTime value) {
@@ -222,7 +217,7 @@ public record ZonedDateTimeConstraintConfig(
 	/**
 	 * Creates a new config with the specified after-or-equal constraint (inclusive).<br>
 	 *
-	 * @param value The threshold ZonedDateTime (inclusive)
+	 * @param value The threshold zoned date time (inclusive)
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull ZonedDateTimeConstraintConfig withAfterOrEqual(@NonNull ZonedDateTime value) {
@@ -232,7 +227,7 @@ public record ZonedDateTimeConstraintConfig(
 	/**
 	 * Creates a new config with the specified before constraint (exclusive).<br>
 	 *
-	 * @param value The threshold ZonedDateTime (exclusive)
+	 * @param value The threshold zoned date time (exclusive)
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull ZonedDateTimeConstraintConfig withBefore(@NonNull ZonedDateTime value) {
@@ -242,7 +237,7 @@ public record ZonedDateTimeConstraintConfig(
 	/**
 	 * Creates a new config with the specified before-or-equal constraint (inclusive).<br>
 	 *
-	 * @param value The threshold ZonedDateTime (inclusive)
+	 * @param value The threshold zoned date time (inclusive)
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull ZonedDateTimeConstraintConfig withBeforeOrEqual(@NonNull ZonedDateTime value) {
@@ -252,8 +247,8 @@ public record ZonedDateTimeConstraintConfig(
 	/**
 	 * Creates a new config with the specified between constraint (exclusive on both bounds).<br>
 	 *
-	 * @param after The minimum ZonedDateTime (exclusive)
-	 * @param before The maximum ZonedDateTime (exclusive)
+	 * @param after The minimum zoned date time (exclusive)
+	 * @param before The maximum zoned date time (exclusive)
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull ZonedDateTimeConstraintConfig withBetween(@NonNull ZonedDateTime after, @NonNull ZonedDateTime before) {
@@ -263,8 +258,8 @@ public record ZonedDateTimeConstraintConfig(
 	/**
 	 * Creates a new config with the specified between constraint (inclusive on both bounds).<br>
 	 *
-	 * @param after The minimum ZonedDateTime (inclusive)
-	 * @param before The maximum ZonedDateTime (inclusive)
+	 * @param after The minimum zoned date time (inclusive)
+	 * @param before The maximum zoned date time (inclusive)
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull ZonedDateTimeConstraintConfig withBetweenOrEqual(@NonNull ZonedDateTime after, @NonNull ZonedDateTime before) {

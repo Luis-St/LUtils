@@ -27,10 +27,10 @@ import java.net.URI;
 import java.util.*;
 
 /**
- * Configuration record for URI constraints.<br>
+ * Configuration record for uri constraints.<br>
  * <p>
- *     This record stores the constraint values for URI codecs.<br>
- *     It includes base constraints and URI-specific constraints for components
+ *     This record stores the constraint values for uri codecs.<br>
+ *     It includes base constraints and uri specific constraints for components
  *     (scheme, host, port, path, query, fragment) and structure (absolute, relative, opaque, hierarchical).
  * </p>
  *
@@ -55,16 +55,6 @@ import java.util.*;
  * @param opaque If present, requires URIs to be opaque
  * @param hierarchical If present, requires URIs to be hierarchical
  * @param custom A custom constraint implementation
- *
- * @throws NullPointerException If any of the optional fields is null
- * @throws IllegalArgumentException If the in constraint set is empty when present
- * @throws IllegalArgumentException If both absolute and relative constraints are present
- * @throws IllegalArgumentException If both opaque and hierarchical constraints are present
- * @throws IllegalArgumentException If both without user info and user info constraints are present
- * @throws IllegalArgumentException If both without port and port constraints are present
- * @throws IllegalArgumentException If both without path and path constraints are present
- * @throws IllegalArgumentException If both without query and query constraints are present
- * @throws IllegalArgumentException If both without fragment and fragment constraints are present
  */
 public record URIConstraintConfig(
 	@NonNull Optional<Pair<URI, Boolean>> equalTo,
@@ -89,7 +79,7 @@ public record URIConstraintConfig(
 ) {
 	
 	/**
-	 * An unconstrained URI configuration with no constraints applied.<br>
+	 * An unconstrained uri configuration with no constraints applied.<br>
 	 */
 	public static final URIConstraintConfig UNCONSTRAINED = new URIConstraintConfig(
 		Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(),
@@ -97,7 +87,27 @@ public record URIConstraintConfig(
 	);
 	
 	/**
-	 * Canonical constructor for {@link URIConstraintConfig}.<br>
+	 * Constructs a new uri constraint config with the specified parameters.<br>
+	 *
+	 * @param equalTo The equality constraint as a pair of (value, negated) where negated=false means equalTo and negated=true means notEqualTo
+	 * @param in The inclusion constraint as a pair of (values, negated) where negated=false means in and negated=true means notIn
+	 * @param scheme The string constraint config for scheme validation
+	 * @param host The host constraint config for host validation
+	 * @param withoutUserInfo If present, requires URIs to have no user info component
+	 * @param userInfo The string constraint config for user info validation
+	 * @param withoutPort If present, requires URIs to have no port component
+	 * @param port The port constraint config for port validation
+	 * @param withoutPath If present, requires URIs to have no path component
+	 * @param path The path constraint config for path validation
+	 * @param withoutQuery If present, requires URIs to have no query component
+	 * @param query The query constraint config for query validation
+	 * @param withoutFragment If present, requires URIs to have no fragment component
+	 * @param fragment The string constraint config for fragment validation
+	 * @param absolute If present, requires URIs to be absolute
+	 * @param relative If present, requires URIs to be relative
+	 * @param opaque If present, requires URIs to be opaque
+	 * @param hierarchical If present, requires URIs to be hierarchical
+	 * @param custom A custom constraint implementation
 	 * @throws NullPointerException If any of the optional fields is null
 	 * @throws IllegalArgumentException If the in constraint set is empty when present
 	 * @throws IllegalArgumentException If both absolute and relative constraints are present
@@ -165,7 +175,7 @@ public record URIConstraintConfig(
 	/**
 	 * Creates a new config with the specified equal-to constraint.<br>
 	 *
-	 * @param value The exact URI that should be matched
+	 * @param value The exact uri that should be matched
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull URIConstraintConfig withEqualTo(@NonNull URI value) {
@@ -175,7 +185,7 @@ public record URIConstraintConfig(
 	/**
 	 * Creates a new config with the specified not-equal-to constraint.<br>
 	 *
-	 * @param value The URI that should be excluded
+	 * @param value The uri that should be excluded
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull URIConstraintConfig withNotEqualTo(@NonNull URI value) {
@@ -318,7 +328,7 @@ public record URIConstraintConfig(
 	}
 	
 	/**
-	 * Creates a new config with the absolute URI constraint.<br>
+	 * Creates a new config with the absolute uri constraint.<br>
 	 *
 	 * @return A new config with the constraint applied
 	 */
@@ -327,7 +337,7 @@ public record URIConstraintConfig(
 	}
 	
 	/**
-	 * Creates a new config with the relative URI constraint.<br>
+	 * Creates a new config with the relative uri constraint.<br>
 	 *
 	 * @return A new config with the constraint applied
 	 */
@@ -336,7 +346,7 @@ public record URIConstraintConfig(
 	}
 	
 	/**
-	 * Creates a new config with the opaque URI constraint.<br>
+	 * Creates a new config with the opaque uri constraint.<br>
 	 *
 	 * @return A new config with the constraint applied
 	 */
@@ -345,7 +355,7 @@ public record URIConstraintConfig(
 	}
 	
 	/**
-	 * Creates a new config with the hierarchical URI constraint.<br>
+	 * Creates a new config with the hierarchical uri constraint.<br>
 	 *
 	 * @return A new config with the constraint applied
 	 */

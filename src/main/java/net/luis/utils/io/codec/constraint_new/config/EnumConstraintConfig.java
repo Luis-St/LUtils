@@ -37,9 +37,6 @@ import java.util.*;
  * @param equalTo The enum equality constraint as a pair of (value, negated) where negated=false means equalTo and negated=true means notEqualTo
  * @param in The enum set constraint as a pair of (values, negated) where negated=false means in and negated=true means notIn
  * @param custom A custom constraint implementation
- *
- * @throws NullPointerException If any optional field is null
- * @throws IllegalArgumentException If the 'in' constraint set is empty when present
  */
 public record EnumConstraintConfig<T extends Enum<T>>(
 	@NonNull Optional<Pair<T, Boolean>> equalTo,
@@ -48,8 +45,11 @@ public record EnumConstraintConfig<T extends Enum<T>>(
 ) {
 
 	/**
-	 * Canonical constructor that validates all constraint parameters.<br>
+	 * Constructs a new enum constraint config with the specified parameters.<br>
 	 *
+	 * @param equalTo The enum equality constraint as a pair of (value, negated) where negated=false means equalTo and negated=true means notEqualTo
+	 * @param in The enum set constraint as a pair of (values, negated) where negated=false means in and negated=true means notIn
+	 * @param custom A custom constraint implementation
 	 * @throws NullPointerException If any optional field is null
 	 * @throws IllegalArgumentException If the 'in' constraint set is empty when present
 	 */

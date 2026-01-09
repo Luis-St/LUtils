@@ -59,19 +59,6 @@ import java.util.*;
  * @param uniqueValues If present, requires all values to be unique
  * @param nonNullValues If present, requires all values to be non-null
  * @param custom A custom constraint implementation
- *
- * @throws NullPointerException If any optional field is null
- * @throws IllegalArgumentException If the 'in' constraint set is empty when present
- * @throws IllegalArgumentException If the minimum size is negative when present
- * @throws IllegalArgumentException If the maximum size is negative when present
- * @throws IllegalArgumentException If the minimum size is greater than the maximum size when both are present
- * @throws IllegalArgumentException If min and max size are equal but at least one bound is exclusive when both are present
- * @throws IllegalArgumentException If the 'requiredKeys' constraint set is empty when present
- * @throws IllegalArgumentException If the 'forbiddenKeys' constraint set is empty when present
- * @throws IllegalArgumentException If the 'allowedKeys' constraint set is empty when present
- * @throws IllegalArgumentException If required keys and forbidden keys overlap
- * @throws IllegalArgumentException If required keys are not a subset of allowed keys when both are present
- * @throws IllegalArgumentException If forbidden keys and allowed keys overlap
  */
 @SuppressWarnings("OptionalContainsCollection")
 public record MapConstraintConfig<K, V>(
@@ -89,12 +76,12 @@ public record MapConstraintConfig<K, V>(
 ) {
 
 	/**
-	 * Canonical constructor for map constraint configuration.<br>
+	 * Constructs a new map constraint config with the specified parameters.<br>
 	 *
-	 * @param equalTo The map equality constraint
-	 * @param in The map set constraint
-	 * @param min The minimum size constraint
-	 * @param max The maximum size constraint
+	 * @param equalTo The map equality constraint as a pair of (value, negated) where negated=false means equalTo and negated=true means notEqualTo
+	 * @param in The map set constraint as a pair of (values, negated) where negated=false means in and negated=true means notIn
+	 * @param min The minimum size constraint as a pair of (value, inclusive)
+	 * @param max The maximum size constraint as a pair of (value, inclusive)
 	 * @param requiredKeys The set of keys that must be present in the map
 	 * @param forbiddenKeys The set of keys that must not be present in the map
 	 * @param allowedKeys The set of keys that are the only ones allowed in the map

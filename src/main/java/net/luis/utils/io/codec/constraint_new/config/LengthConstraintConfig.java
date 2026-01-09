@@ -42,11 +42,6 @@ import java.util.Optional;
  * @param min The minimum length constraint as a pair of (value, inclusive)
  * @param max The maximum length constraint as a pair of (value, inclusive)
  * @param custom A custom constraint implementation
- * @throws NullPointerException If any optional field is null
- * @throws IllegalArgumentException If the minimum length is negative when present
- * @throws IllegalArgumentException If the maximum length is negative when present
- * @throws IllegalArgumentException If the maximum length is less than the minimum length when both are present
- * @throws IllegalArgumentException If min and max length are equal but at least one bound is exclusive when both are present
  */
 public record LengthConstraintConfig(
 	@NonNull Optional<Pair<Integer, Boolean>> min,
@@ -60,7 +55,19 @@ public record LengthConstraintConfig(
 	public static final LengthConstraintConfig UNCONSTRAINED = new LengthConstraintConfig(
 		Optional.empty(), Optional.empty(), Optional.empty()
 	);
-
+	
+	/**
+	 * Constructs a new length constraint config with the specified parameters.<br>
+	 *
+	 * @param min The minimum length constraint as a pair of (value, inclusive)
+	 * @param max The maximum length constraint as a pair of (value, inclusive)
+	 * @param custom A custom constraint implementation
+	 * @throws NullPointerException If any optional field is null
+	 * @throws IllegalArgumentException If the minimum length is negative when present
+	 * @throws IllegalArgumentException If the maximum length is negative when present
+	 * @throws IllegalArgumentException If the maximum length is less than the minimum length when both are present
+	 * @throws IllegalArgumentException If min and max length are equal but at least one bound is exclusive when both are present
+	 */
 	public LengthConstraintConfig {
 		Objects.requireNonNull(min, "Optional for 'min' constraint must not be null");
 		Objects.requireNonNull(max, "Optional for 'max' constraint must not be null");

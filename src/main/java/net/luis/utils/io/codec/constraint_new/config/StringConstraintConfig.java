@@ -61,23 +61,6 @@ import java.util.regex.Pattern;
  * @param ascii If present, requires strings to contain only ASCII characters
  * @param latin1 If present, requires strings to contain only Latin-1 characters
  * @param custom A custom constraint implementation
- *
- * @throws NullPointerException If any optional field is null
- * @throws IllegalArgumentException If the 'in' constraint set is empty when present
- * @throws IllegalArgumentException If the 'inIgnoreCase' constraint set is empty when present
- * @throws IllegalArgumentException If the minimum length is negative when present
- * @throws IllegalArgumentException If the maximum length is negative when present
- * @throws IllegalArgumentException If the minimum length is greater than the maximum length when both are present
- * @throws IllegalArgumentException If min and max length are equal but at least one bound is exclusive when both are present
- * @throws IllegalArgumentException If the 'startsWithAny' constraint set is empty when present
- * @throws IllegalArgumentException If the 'containsAny' constraint set is empty when present
- * @throws IllegalArgumentException If the 'containsAll' constraint set is empty when present
- * @throws IllegalArgumentException If the 'containsOnly' constraint set is empty when present
- * @throws IllegalArgumentException If the 'endsWithAny' constraint set is empty when present
- * @throws IllegalArgumentException If both 'blank' and 'notBlank' constraints are present
- * @throws IllegalArgumentException If both 'upperCase' and 'lowerCase' constraints are present
- * @throws IllegalArgumentException If 'blank' constraint conflicts with minimum length greater than zero
- * @throws IllegalArgumentException If 'notBlank' constraint conflicts with maximum length of zero
  */
 @SuppressWarnings("OptionalContainsCollection")
 public record StringConstraintConfig(
@@ -119,23 +102,23 @@ public record StringConstraintConfig(
 	);
 
 	/**
-	 * Canonical constructor for string constraint configuration.<br>
+	 * Constructs a new string constraint config with the specified parameters.<br>
 	 *
-	 * @param equalTo The string equality constraint
-	 * @param in The string set constraint
-	 * @param equalToIgnoreCase The case-insensitive equality constraint
-	 * @param inIgnoreCase The case-insensitive set constraint
-	 * @param minLength The minimum length constraint
-	 * @param maxLength The maximum length constraint
-	 * @param startsWith The prefix constraint
-	 * @param startsWithAny The prefix set constraint
-	 * @param contains The substring constraint
-	 * @param containsAny The substring set constraint
+	 * @param equalTo The string equality constraint as a pair of (value, negated) where negated=false means equalTo and negated=true means notEqualTo
+	 * @param in The string set constraint as a pair of (values, negated) where negated=false means in and negated=true means notIn
+	 * @param equalToIgnoreCase The case-insensitive equality constraint as a pair of (value, negated)
+	 * @param inIgnoreCase The case-insensitive set constraint as a pair of (values, negated)
+	 * @param minLength The minimum length constraint as a pair of (value, inclusive)
+	 * @param maxLength The maximum length constraint as a pair of (value, inclusive)
+	 * @param startsWith The prefix constraint as a pair of (prefix, negated) where negated=false means startsWith and negated=true means notStartsWith
+	 * @param startsWithAny The prefix set constraint as a pair of (prefixes, negated) where negated=false means startsWithAny and negated=true means startsWithNone
+	 * @param contains The substring constraint as a pair of (substring, negated) where negated=false means contains and negated=true means notContains
+	 * @param containsAny The substring set constraint as a pair of (substrings, negated) where negated=false means containsAny and negated=true means containsNone
 	 * @param containsAll The set of substrings that strings must all contain
 	 * @param containsOnly The set of substrings that strings must exclusively contain
-	 * @param endsWith The suffix constraint
-	 * @param endsWithAny The suffix set constraint
-	 * @param matches The pattern constraint
+	 * @param endsWith The suffix constraint as a pair of (suffix, negated) where negated=false means endsWith and negated=true means notEndsWith
+	 * @param endsWithAny The suffix set constraint as a pair of (suffixes, negated) where negated=false means endsWithAny and negated=true means endsWithNone
+	 * @param matches The pattern constraint as a pair of (pattern, negated) where negated=false means matches and negated=true means notMatches
 	 * @param trimmed If present, requires strings to have no leading/trailing whitespace
 	 * @param blank If present, requires strings to be blank
 	 * @param notBlank If present, requires strings to not be blank

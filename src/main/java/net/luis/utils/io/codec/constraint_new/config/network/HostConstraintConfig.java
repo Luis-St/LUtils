@@ -60,19 +60,6 @@ import java.util.regex.Pattern;
  * @param rootDomain If present, requires hosts to be root domains
  * @param subDomain If present, requires hosts to be subdomains
  * @param custom A custom constraint implementation
- *
- * @throws NullPointerException If any of the optional fields is null
- * @throws IllegalArgumentException If the in constraint set is empty when present
- * @throws IllegalArgumentException If min length is greater than max length when both are present
- * @throws IllegalArgumentException If min and max length are equal but at least one bound is exclusive when both are present
- * @throws IllegalArgumentException If the starts with any set is empty when present
- * @throws IllegalArgumentException If the contains any set is empty when present
- * @throws IllegalArgumentException If the contains all set is empty when present
- * @throws IllegalArgumentException If the contains only set is empty when present
- * @throws IllegalArgumentException If the ends with any set is empty when present
- * @throws IllegalArgumentException If the in any subnet set is empty when present
- * @throws IllegalArgumentException If both ipv4 and ipv6 constraints are present
- * @throws IllegalArgumentException If both root domain and sub domain constraints are present
  */
 @SuppressWarnings("OptionalContainsCollection")
 public record HostConstraintConfig(
@@ -109,7 +96,30 @@ public record HostConstraintConfig(
 	);
 
 	/**
-	 * Canonical constructor for {@link HostConstraintConfig}.<br>
+	 * Constructs a new host constraint config with the specified parameters.<br>
+	 *
+	 * @param equalTo The equality constraint as a pair of (value, negated) where negated=false means equalTo and negated=true means notEqualTo
+	 * @param in The inclusion constraint as a pair of (values, negated) where negated=false means in and negated=true means notIn
+	 * @param minLength The minimum length constraint as a pair of (value, inclusive)
+	 * @param maxLength The maximum length constraint as a pair of (value, inclusive)
+	 * @param startsWith The prefix constraint as a pair of (prefix, negated) where negated=false means startsWith and negated=true means notStartsWith
+	 * @param startsWithAny The multi-prefix constraint as a pair of (prefixes, negated) where negated=false means startsWithAny and negated=true means startsWithNone
+	 * @param contains The containment constraint as a pair of (substring, negated) where negated=false means contains and negated=true means notContains
+	 * @param containsAny The multi-containment constraint as a pair of (substrings, negated) where negated=false means containsAny and negated=true means containsNone
+	 * @param containsAll The set of substrings that hosts must all contain
+	 * @param containsOnly The set of substrings that hosts must exclusively contain
+	 * @param endsWith The suffix constraint as a pair of (suffix, negated) where negated=false means endsWith and negated=true means notEndsWith
+	 * @param endsWithAny The multi-suffix constraint as a pair of (suffixes, negated) where negated=false means endsWithAny and negated=true means endsWithNone
+	 * @param matches The pattern constraint as a pair of (pattern, negated) where negated=false means matches and negated=true means notMatches
+	 * @param ipv4 If present, requires hosts to be valid IPv4 addresses
+	 * @param ipv6 If present, requires hosts to be valid IPv6 addresses
+	 * @param ip The IP address string constraint config
+	 * @param ipType The enum constraint config for IP address type
+	 * @param inAnySubnet The subnet constraint as a pair of (cidrs, negated) where negated=false means inAnySubnet and negated=true means notInAnySubnet
+	 * @param domain The domain string constraint config
+	 * @param rootDomain If present, requires hosts to be root domains
+	 * @param subDomain If present, requires hosts to be subdomains
+	 * @param custom A custom constraint implementation
 	 * @throws NullPointerException If any of the optional fields is null
 	 * @throws IllegalArgumentException If the in constraint set is empty when present
 	 * @throws IllegalArgumentException If min length is greater than max length when both are present

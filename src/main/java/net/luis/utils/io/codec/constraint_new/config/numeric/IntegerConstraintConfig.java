@@ -51,14 +51,6 @@ import java.util.*;
  * @param divisibleBy The divisor that the value must be divisible by
  * @param powerOf The base that the value must be a power of
  * @param custom A custom constraint implementation
- *
- * @throws NullPointerException If any optional field is null
- * @throws IllegalArgumentException If the 'in' constraint set is empty when present
- * @throws IllegalArgumentException If min is greater than max when both are present
- * @throws IllegalArgumentException If min equals max with at least one exclusive bound when both are present
- * @throws IllegalArgumentException If both 'even' and 'odd' constraints are present
- * @throws IllegalArgumentException If 'divisibleBy' is not positive when present
- * @throws IllegalArgumentException If 'powerOf' is not greater than 1 when present
  */
 public record IntegerConstraintConfig<T extends Number & Comparable<T>>(
 	@NonNull Optional<Pair<T, Boolean>> equalTo,
@@ -77,8 +69,21 @@ public record IntegerConstraintConfig<T extends Number & Comparable<T>>(
 ) {
 
 	/**
-	 * Canonical constructor that validates all constraint parameters.<br>
+	 * Constructs a new integer constraint config with the specified parameters.<br>
 	 *
+	 * @param equalTo The equality constraint as a pair of (value, negated) where negated=false means equalTo and negated=true means notEqualTo
+	 * @param in The set constraint as a pair of (values, negated) where negated=false means in and negated=true means notIn
+	 * @param min The minimum value constraint as a pair of (value, inclusive)
+	 * @param max The maximum value constraint as a pair of (value, inclusive)
+	 * @param positive The positive constraint as a Boolean where false means positive (greater than zero) and true means nonPositive (less than or equal to zero)
+	 * @param negative The negative constraint as a Boolean where false means negative (less than zero) and true means nonNegative (greater than or equal to zero)
+	 * @param zero The zero constraint as a Boolean where false means zero and true means nonZero
+	 * @param percentage If present, requires the value to be between 0 and 100 (inclusive)
+	 * @param even If present, requires the value to be even
+	 * @param odd If present, requires the value to be odd
+	 * @param divisibleBy The divisor that the value must be divisible by
+	 * @param powerOf The base that the value must be a power of
+	 * @param custom A custom constraint implementation
 	 * @throws NullPointerException If any optional field is null
 	 * @throws IllegalArgumentException If the 'in' constraint set is empty when present
 	 * @throws IllegalArgumentException If min is greater than max when both are present

@@ -27,9 +27,9 @@ import java.time.Period;
 import java.util.*;
 
 /**
- * Configuration record for Period type constraints.<br>
+ * Configuration record for period type constraints.<br>
  * <p>
- *     This record stores the constraint values for Period codecs.<br>
+ *     This record stores the constraint values for period codecs.<br>
  *     It includes base constraints, comparable constraints, signed constraints, and field constraints
  *     for day, month, and year components.
  * </p>
@@ -38,7 +38,7 @@ import java.util.*;
  *     and the second value indicates whether the bound is inclusive (true) or exclusive (false).
  * </p>
  * <p>
- *     The equalTo field uses {@link Pair} where the first value is the Period and
+ *     The equalTo field uses {@link Pair} where the first value is the period and
  *     the second value indicates negation (false=equalTo, true=notEqualTo).
  * </p>
  * <p>
@@ -48,10 +48,10 @@ import java.util.*;
  *
  * @author Luis-St
  *
- * @param equalTo The Period equality constraint as a pair of (value, negated) where negated=false means equalTo and negated=true means notEqualTo
- * @param in The Period set constraint as a pair of (values, negated) where negated=false means in and negated=true means notIn
- * @param min The minimum Period constraint as a pair of (value, inclusive)
- * @param max The maximum Period constraint as a pair of (value, inclusive)
+ * @param equalTo The period equality constraint as a pair of (value, negated) where negated=false means equalTo and negated=true means notEqualTo
+ * @param in The period set constraint as a pair of (values, negated) where negated=false means in and negated=true means notIn
+ * @param min The minimum period constraint as a pair of (value, inclusive)
+ * @param max The maximum period constraint as a pair of (value, inclusive)
  * @param positive The positive constraint as a Boolean where false means positive and true means nonPositive
  * @param negative The negative constraint as a Boolean where false means negative and true means nonNegative
  * @param zero The zero constraint as a Boolean where false means zero and true means nonZero
@@ -59,10 +59,6 @@ import java.util.*;
  * @param month A nested config for month component constraints
  * @param year A nested config for year component constraints
  * @param custom A custom constraint implementation
- *
- * @throws NullPointerException If any of the optional fields is null
- * @throws IllegalArgumentException If the 'in' set is empty when present
- * @throws IllegalArgumentException If positive and negative constraints are both present
  */
 public record PeriodConstraintConfig(
 	@NonNull Optional<Pair<Period, Boolean>> equalTo,
@@ -79,7 +75,7 @@ public record PeriodConstraintConfig(
 ) {
 	
 	/**
-	 * An unconstrained Period configuration with no constraints applied.<br>
+	 * An unconstrained period configuration with no constraints applied.<br>
 	 */
 	public static final PeriodConstraintConfig UNCONSTRAINED = new PeriodConstraintConfig(
 		Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(),
@@ -87,12 +83,12 @@ public record PeriodConstraintConfig(
 	);
 	
 	/**
-	 * Canonical constructor that validates all constraint fields.<br>
+	 * Constructs a new period constraint config with the specified parameters.<br>
 	 *
-	 * @param equalTo The Period equality constraint as a pair of (value, negated) where negated=false means equalTo and negated=true means notEqualTo
-	 * @param in The Period set constraint as a pair of (values, negated) where negated=false means in and negated=true means notIn
-	 * @param min The minimum Period constraint as a pair of (value, inclusive)
-	 * @param max The maximum Period constraint as a pair of (value, inclusive)
+	 * @param equalTo The period equality constraint as a pair of (value, negated) where negated=false means equalTo and negated=true means notEqualTo
+	 * @param in The period set constraint as a pair of (values, negated) where negated=false means in and negated=true means notIn
+	 * @param min The minimum period constraint as a pair of (value, inclusive)
+	 * @param max The maximum period constraint as a pair of (value, inclusive)
 	 * @param positive The positive constraint as a Boolean where false means positive and true means nonPositive
 	 * @param negative The negative constraint as a Boolean where false means negative and true means nonNegative
 	 * @param zero The zero constraint as a Boolean where false means zero and true means nonZero
@@ -129,7 +125,7 @@ public record PeriodConstraintConfig(
 	/**
 	 * Creates a new config with the specified equal-to constraint.<br>
 	 *
-	 * @param value The exact Period that should be matched
+	 * @param value The exact period that should be matched
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull PeriodConstraintConfig withEqualTo(@NonNull Period value) {
@@ -139,7 +135,7 @@ public record PeriodConstraintConfig(
 	/**
 	 * Creates a new config with the specified not-equal-to constraint.<br>
 	 *
-	 * @param value The Period that should be excluded
+	 * @param value The period that should be excluded
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull PeriodConstraintConfig withNotEqualTo(@NonNull Period value) {
@@ -169,7 +165,7 @@ public record PeriodConstraintConfig(
 	/**
 	 * Creates a new config with the specified greater-than constraint (exclusive).<br>
 	 *
-	 * @param value The threshold Period (exclusive)
+	 * @param value The threshold period (exclusive)
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull PeriodConstraintConfig withGreaterThan(@NonNull Period value) {
@@ -179,7 +175,7 @@ public record PeriodConstraintConfig(
 	/**
 	 * Creates a new config with the specified greater-than-or-equal constraint (inclusive).<br>
 	 *
-	 * @param value The threshold Period (inclusive)
+	 * @param value The threshold period (inclusive)
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull PeriodConstraintConfig withGreaterThanOrEqual(@NonNull Period value) {
@@ -189,7 +185,7 @@ public record PeriodConstraintConfig(
 	/**
 	 * Creates a new config with the specified less-than constraint (exclusive).<br>
 	 *
-	 * @param value The threshold Period (exclusive)
+	 * @param value The threshold period (exclusive)
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull PeriodConstraintConfig withLessThan(@NonNull Period value) {
@@ -199,7 +195,7 @@ public record PeriodConstraintConfig(
 	/**
 	 * Creates a new config with the specified less-than-or-equal constraint (inclusive).<br>
 	 *
-	 * @param value The threshold Period (inclusive)
+	 * @param value The threshold period (inclusive)
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull PeriodConstraintConfig withLessThanOrEqual(@NonNull Period value) {
@@ -209,8 +205,8 @@ public record PeriodConstraintConfig(
 	/**
 	 * Creates a new config with the specified between constraint (exclusive on both bounds).<br>
 	 *
-	 * @param min The minimum Period (exclusive)
-	 * @param max The maximum Period (exclusive)
+	 * @param min The minimum period (exclusive)
+	 * @param max The maximum period (exclusive)
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull PeriodConstraintConfig withBetween(@NonNull Period min, @NonNull Period max) {
@@ -220,8 +216,8 @@ public record PeriodConstraintConfig(
 	/**
 	 * Creates a new config with the specified between constraint (inclusive on both bounds).<br>
 	 *
-	 * @param min The minimum Period (inclusive)
-	 * @param max The maximum Period (inclusive)
+	 * @param min The minimum period (inclusive)
+	 * @param max The maximum period (inclusive)
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull PeriodConstraintConfig withBetweenOrEqual(@NonNull Period min, @NonNull Period max) {

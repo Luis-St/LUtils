@@ -63,12 +63,6 @@ import java.util.*;
  * @param millisecond A nested config for millisecond component constraints
  * @param nanosecond A nested config for nanosecond component constraints
  * @param custom A custom constraint implementation
- *
- * @throws NullPointerException If any of the optional fields is null
- * @throws IllegalArgumentException If the 'in' set is empty when present
- * @throws IllegalArgumentException If positive and negative constraints are both present
- * @throws IllegalArgumentException If withinLast duration is not positive when present
- * @throws IllegalArgumentException If withinNext duration is not positive when present
  */
 public record DurationConstraintConfig(
 	@NonNull Optional<Pair<Duration, Boolean>> equalTo,
@@ -97,7 +91,7 @@ public record DurationConstraintConfig(
 	);
 	
 	/**
-	 * Canonical constructor that validates all constraint fields.<br>
+	 * Constructs a new duration constraint config with the specified parameters.<br>
 	 *
 	 * @param equalTo The Duration equality constraint as a pair of (value, negated) where negated=false means equalTo and negated=true means notEqualTo
 	 * @param in The Duration set constraint as a pair of (values, negated) where negated=false means in and negated=true means notIn

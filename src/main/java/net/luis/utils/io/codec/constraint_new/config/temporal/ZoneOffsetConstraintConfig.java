@@ -27,9 +27,9 @@ import java.time.ZoneOffset;
 import java.util.*;
 
 /**
- * Configuration record for ZoneOffset type constraints.<br>
+ * Configuration record for zone offset type constraints.<br>
  * <p>
- *     This record stores the constraint values for ZoneOffset codecs.<br>
+ *     This record stores the constraint values for zone offset codecs.<br>
  *     It includes base constraints, comparable constraints, signed constraints, and hour-based constraints.
  * </p>
  * <p>
@@ -37,7 +37,7 @@ import java.util.*;
  *     and the second value indicates whether the bound is inclusive (true) or exclusive (false).
  * </p>
  * <p>
- *     The equalTo field uses {@link Pair} where the first value is the ZoneOffset and
+ *     The equalTo field uses {@link Pair} where the first value is the zone offset and
  *     the second value indicates negation (false=equalTo, true=notEqualTo).
  * </p>
  * <p>
@@ -47,19 +47,15 @@ import java.util.*;
  *
  * @author Luis-St
  *
- * @param equalTo The ZoneOffset equality constraint as a pair of (value, negated) where negated=false means equalTo and negated=true means notEqualTo
- * @param in The ZoneOffset set constraint as a pair of (values, negated) where negated=false means in and negated=true means notIn
- * @param min The minimum ZoneOffset constraint as a pair of (value, inclusive)
- * @param max The maximum ZoneOffset constraint as a pair of (value, inclusive)
+ * @param equalTo The zone offset equality constraint as a pair of (value, negated) where negated=false means equalTo and negated=true means notEqualTo
+ * @param in The zone offset set constraint as a pair of (values, negated) where negated=false means in and negated=true means notIn
+ * @param min The minimum zone offset constraint as a pair of (value, inclusive)
+ * @param max The maximum zone offset constraint as a pair of (value, inclusive)
  * @param positive The positive constraint as a Boolean where false means positive and true means nonPositive
  * @param negative The negative constraint as a Boolean where false means negative and true means nonNegative
  * @param zero The zero constraint as a Boolean where false means zero and true means nonZero
  * @param hours A nested config for hour component constraints
  * @param custom A custom constraint implementation
- *
- * @throws NullPointerException If any of the optional fields is null
- * @throws IllegalArgumentException If the 'in' set is empty when present
- * @throws IllegalArgumentException If positive and negative constraints are both present
  */
 public record ZoneOffsetConstraintConfig(
 	@NonNull Optional<Pair<ZoneOffset, Boolean>> equalTo,
@@ -74,19 +70,19 @@ public record ZoneOffsetConstraintConfig(
 ) {
 	
 	/**
-	 * An unconstrained ZoneOffset configuration with no constraints applied.<br>
+	 * An unconstrained zone offset configuration with no constraints applied.<br>
 	 */
 	public static final ZoneOffsetConstraintConfig UNCONSTRAINED = new ZoneOffsetConstraintConfig(
 		Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty()
 	);
 	
 	/**
-	 * Canonical constructor that validates all constraint fields.<br>
+	 * Constructs a new zone offset constraint config with the specified parameters.<br>
 	 *
-	 * @param equalTo The ZoneOffset equality constraint as a pair of (value, negated) where negated=false means equalTo and negated=true means notEqualTo
-	 * @param in The ZoneOffset set constraint as a pair of (values, negated) where negated=false means in and negated=true means notIn
-	 * @param min The minimum ZoneOffset constraint as a pair of (value, inclusive)
-	 * @param max The maximum ZoneOffset constraint as a pair of (value, inclusive)
+	 * @param equalTo The zone offset equality constraint as a pair of (value, negated) where negated=false means equalTo and negated=true means notEqualTo
+	 * @param in The zone offset set constraint as a pair of (values, negated) where negated=false means in and negated=true means notIn
+	 * @param min The minimum zone offset constraint as a pair of (value, inclusive)
+	 * @param max The maximum zone offset constraint as a pair of (value, inclusive)
 	 * @param positive The positive constraint as a Boolean where false means positive and true means nonPositive
 	 * @param negative The negative constraint as a Boolean where false means negative and true means nonNegative
 	 * @param zero The zero constraint as a Boolean where false means zero and true means nonZero
@@ -119,7 +115,7 @@ public record ZoneOffsetConstraintConfig(
 	/**
 	 * Creates a new config with the specified equal-to constraint.<br>
 	 *
-	 * @param value The exact ZoneOffset that should be matched
+	 * @param value The exact zone offset that should be matched
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull ZoneOffsetConstraintConfig withEqualTo(@NonNull ZoneOffset value) {
@@ -129,7 +125,7 @@ public record ZoneOffsetConstraintConfig(
 	/**
 	 * Creates a new config with the specified not-equal-to constraint.<br>
 	 *
-	 * @param value The ZoneOffset that should be excluded
+	 * @param value The zone offset that should be excluded
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull ZoneOffsetConstraintConfig withNotEqualTo(@NonNull ZoneOffset value) {
@@ -159,7 +155,7 @@ public record ZoneOffsetConstraintConfig(
 	/**
 	 * Creates a new config with the specified greater-than constraint (exclusive).<br>
 	 *
-	 * @param value The threshold ZoneOffset (exclusive)
+	 * @param value The threshold zone offset (exclusive)
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull ZoneOffsetConstraintConfig withGreaterThan(@NonNull ZoneOffset value) {
@@ -169,7 +165,7 @@ public record ZoneOffsetConstraintConfig(
 	/**
 	 * Creates a new config with the specified greater-than-or-equal constraint (inclusive).<br>
 	 *
-	 * @param value The threshold ZoneOffset (inclusive)
+	 * @param value The threshold zone offset (inclusive)
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull ZoneOffsetConstraintConfig withGreaterThanOrEqual(@NonNull ZoneOffset value) {
@@ -179,7 +175,7 @@ public record ZoneOffsetConstraintConfig(
 	/**
 	 * Creates a new config with the specified less-than constraint (exclusive).<br>
 	 *
-	 * @param value The threshold ZoneOffset (exclusive)
+	 * @param value The threshold zone offset (exclusive)
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull ZoneOffsetConstraintConfig withLessThan(@NonNull ZoneOffset value) {
@@ -189,7 +185,7 @@ public record ZoneOffsetConstraintConfig(
 	/**
 	 * Creates a new config with the specified less-than-or-equal constraint (inclusive).<br>
 	 *
-	 * @param value The threshold ZoneOffset (inclusive)
+	 * @param value The threshold zone offset (inclusive)
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull ZoneOffsetConstraintConfig withLessThanOrEqual(@NonNull ZoneOffset value) {
@@ -199,8 +195,8 @@ public record ZoneOffsetConstraintConfig(
 	/**
 	 * Creates a new config with the specified between constraint (exclusive on both bounds).<br>
 	 *
-	 * @param min The minimum ZoneOffset (exclusive)
-	 * @param max The maximum ZoneOffset (exclusive)
+	 * @param min The minimum zone offset (exclusive)
+	 * @param max The maximum zone offset (exclusive)
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull ZoneOffsetConstraintConfig withBetween(@NonNull ZoneOffset min, @NonNull ZoneOffset max) {
@@ -210,8 +206,8 @@ public record ZoneOffsetConstraintConfig(
 	/**
 	 * Creates a new config with the specified between constraint (inclusive on both bounds).<br>
 	 *
-	 * @param min The minimum ZoneOffset (inclusive)
-	 * @param max The maximum ZoneOffset (inclusive)
+	 * @param min The minimum zone offset (inclusive)
+	 * @param max The maximum zone offset (inclusive)
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull ZoneOffsetConstraintConfig withBetweenOrEqual(@NonNull ZoneOffset min, @NonNull ZoneOffset max) {

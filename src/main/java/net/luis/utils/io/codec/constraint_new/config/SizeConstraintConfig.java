@@ -42,11 +42,6 @@ import java.util.Optional;
  * @param min The minimum size constraint as a pair of (value, inclusive)
  * @param max The maximum size constraint as a pair of (value, inclusive)
  * @param custom A custom constraint implementation
- * @throws NullPointerException If any optional field is null
- * @throws IllegalArgumentException If the minimum size is negative when present
- * @throws IllegalArgumentException If the maximum size is negative when present
- * @throws IllegalArgumentException If the maximum size is less than the minimum size when both are present
- * @throws IllegalArgumentException If min and max size are equal but at least one bound is exclusive when both are present
  */
 public record SizeConstraintConfig(
 	@NonNull Optional<Pair<Integer, Boolean>> min,
@@ -61,6 +56,18 @@ public record SizeConstraintConfig(
 		Optional.empty(), Optional.empty(), Optional.empty()
 	);
 	
+	/**
+	 * Constructs a new size constraint config with the specified parameters.<br>
+	 *
+	 * @param min The minimum size constraint as a pair of (value, inclusive)
+	 * @param max The maximum size constraint as a pair of (value, inclusive)
+	 * @param custom A custom constraint implementation
+	 * @throws NullPointerException If any optional field is null
+	 * @throws IllegalArgumentException If the minimum size is negative when present
+	 * @throws IllegalArgumentException If the maximum size is negative when present
+	 * @throws IllegalArgumentException If the maximum size is less than the minimum size when both are present
+	 * @throws IllegalArgumentException If min and max size are equal but at least one bound is exclusive when both are present
+	 */
 	public SizeConstraintConfig {
 		Objects.requireNonNull(min, "Optional for 'min' constraint must not be null");
 		Objects.requireNonNull(max, "Optional for 'max' constraint must not be null");

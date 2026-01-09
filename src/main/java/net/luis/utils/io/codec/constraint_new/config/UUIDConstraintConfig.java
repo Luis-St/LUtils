@@ -27,28 +27,22 @@ import org.jspecify.annotations.NonNull;
 import java.util.*;
 
 /**
- * Configuration record for UUID constraints.<br>
+ * Configuration record for uuid constraints.<br>
  * <p>
  *     This record stores the constraint values for {@link UUIDConstraint}.<br>
- *     It includes base constraints, version constraints, variant constraints, and special UUID validations.
+ *     It includes base constraints, version constraints, variant constraints, and special uuid validations.
  * </p>
  *
  * @author Luis-St
  *
- * @param equalTo The UUID equality constraint as a pair of (value, negated) where negated=false means equalTo and negated=true means notEqualTo
- * @param in The UUID set constraint as a pair of (values, negated) where negated=false means in and negated=true means notIn
- * @param version The UUID version number to constrain to
- * @param variant The UUID variant to constrain to
- * @param nil If present, requires the UUID to be the nil UUID
- * @param notNil If present, requires the UUID to not be the nil UUID
- * @param max If present, requires the UUID to be the max UUID
+ * @param equalTo The uuid equality constraint as a pair of (value, negated) where negated=false means equalTo and negated=true means notEqualTo
+ * @param in The uuid set constraint as a pair of (values, negated) where negated=false means in and negated=true means notIn
+ * @param version The uuid version number to constrain to
+ * @param variant The uuid variant to constrain to
+ * @param nil If present, requires the uuid to be the nil uuid
+ * @param notNil If present, requires the uuid to not be the nil uuid
+ * @param max If present, requires the uuid to be the max uuid
  * @param custom A custom constraint implementation
- *
- * @throws NullPointerException If any optional field is null
- * @throws IllegalArgumentException If the 'in' constraint set is empty when present
- * @throws IllegalArgumentException If 'version' is not between 0 and 5 when present
- * @throws IllegalArgumentException If both 'nil' and 'notNil' constraints are present
- * @throws IllegalArgumentException If both 'nil' and 'max' constraints are present
  */
 public record UUIDConstraintConfig(
 	@NonNull Optional<Pair<UUID, Boolean>> equalTo,
@@ -62,15 +56,23 @@ public record UUIDConstraintConfig(
 ) {
 	
 	/**
-	 * An unconstrained UUID configuration with no constraints applied.<br>
+	 * An unconstrained uuid configuration with no constraints applied.<br>
 	 */
 	public static final UUIDConstraintConfig UNCONSTRAINED = new UUIDConstraintConfig(
 		Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty()
 	);
 	
 	/**
-	 * Canonical constructor that validates all constraint parameters.<br>
+	 * Constructs a new uuid constraint config with the specified parameters.<br>
 	 *
+	 * @param equalTo The uuid equality constraint as a pair of (value, negated) where negated=false means equalTo and negated=true means notEqualTo
+	 * @param in The uuid set constraint as a pair of (values, negated) where negated=false means in and negated=true means notIn
+	 * @param version The uuid version number to constrain to
+	 * @param variant The uuid variant to constrain to
+	 * @param nil If present, requires the uuid to be the nil uuid
+	 * @param notNil If present, requires the uuid to not be the nil uuid
+	 * @param max If present, requires the uuid to be the max uuid
+	 * @param custom A custom constraint implementation
 	 * @throws NullPointerException If any optional field is null
 	 * @throws IllegalArgumentException If the 'in' constraint set is empty when present
 	 * @throws IllegalArgumentException If 'version' is not between 0 and 5 when present
@@ -107,7 +109,7 @@ public record UUIDConstraintConfig(
 	/**
 	 * Creates a new config with the specified equal-to constraint.<br>
 	 *
-	 * @param value The exact UUID that should be matched
+	 * @param value The exact uuid that should be matched
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull UUIDConstraintConfig withEqualTo(@NonNull UUID value) {
@@ -117,7 +119,7 @@ public record UUIDConstraintConfig(
 	/**
 	 * Creates a new config with the specified not-equal-to constraint.<br>
 	 *
-	 * @param value The UUID that should be excluded
+	 * @param value The uuid that should be excluded
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull UUIDConstraintConfig withNotEqualTo(@NonNull UUID value) {
@@ -147,7 +149,7 @@ public record UUIDConstraintConfig(
 	/**
 	 * Creates a new config with the specified version constraint.<br>
 	 *
-	 * @param version The UUID version number to constrain to
+	 * @param version The uuid version number to constrain to
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull UUIDConstraintConfig withVersion(int version) {
@@ -157,7 +159,7 @@ public record UUIDConstraintConfig(
 	/**
 	 * Creates a new config with the specified variant constraint.<br>
 	 *
-	 * @param variant The UUID variant to constrain to
+	 * @param variant The uuid variant to constrain to
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull UUIDConstraintConfig withVariant(@NonNull UUIDVariant variant) {
@@ -165,9 +167,9 @@ public record UUIDConstraintConfig(
 	}
 
 	/**
-	 * Creates a new config with the nil UUID constraint enabled.<br>
+	 * Creates a new config with the nil uuid constraint enabled.<br>
 	 * <p>
-	 *     The nil UUID is a special UUID with all bits set to zero (00000000-0000-0000-0000-000000000000).
+	 *     The nil uuid is a special uuid with all bits set to zero (00000000-0000-0000-0000-000000000000).
 	 * </p>
 	 *
 	 * @return A new config with the constraint applied
@@ -177,9 +179,9 @@ public record UUIDConstraintConfig(
 	}
 
 	/**
-	 * Creates a new config with the not-nil UUID constraint enabled.<br>
+	 * Creates a new config with the not-nil uuid constraint enabled.<br>
 	 * <p>
-	 *     Requires the UUID to not be the nil UUID (00000000-0000-0000-0000-000000000000).
+	 *     Requires the uuid to not be the nil uuid (00000000-0000-0000-0000-000000000000).
 	 * </p>
 	 *
 	 * @return A new config with the constraint applied
@@ -189,9 +191,9 @@ public record UUIDConstraintConfig(
 	}
 
 	/**
-	 * Creates a new config with the max UUID constraint enabled.<br>
+	 * Creates a new config with the max uuid constraint enabled.<br>
 	 * <p>
-	 *     The max UUID is a special UUID with all bits set to one (ffffffff-ffff-ffff-ffff-ffffffffffff).
+	 *     The max uuid is a special uuid with all bits set to one (ffffffff-ffff-ffff-ffff-ffffffffffff).
 	 * </p>
 	 *
 	 * @return A new config with the constraint applied

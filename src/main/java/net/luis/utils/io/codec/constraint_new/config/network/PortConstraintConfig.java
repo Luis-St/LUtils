@@ -40,13 +40,6 @@ import java.util.*;
  * @param inRange The port range constraint as a pair of ((min, max), negated) where negated=false means inRange and negated=true means notInRange
  * @param type The enum constraint config for port type (system, registered, dynamic)
  * @param custom A custom constraint implementation
- *
- * @throws NullPointerException If any of the optional fields is null
- * @throws IllegalArgumentException If the in constraint set is empty when present
- * @throws IllegalArgumentException If the equalTo port value is not between 0 and 65535 when present
- * @throws IllegalArgumentException If any port value in the in constraint set is not between 0 and 65535 when present
- * @throws IllegalArgumentException If the inRange min or max port value is not between 0 and 65535 when present
- * @throws IllegalArgumentException If the inRange min is greater than max when both are present
  */
 public record PortConstraintConfig(
 	@NonNull Optional<Pair<Integer, Boolean>> equalTo,
@@ -64,7 +57,13 @@ public record PortConstraintConfig(
 	);
 	
 	/**
-	 * Canonical constructor for {@link PortConstraintConfig}.<br>
+	 * Constructs a new port constraint config with the specified parameters.<br>
+	 *
+	 * @param equalTo The equality constraint as a pair of (value, negated) where negated=false means equalTo and negated=true means notEqualTo
+	 * @param in The inclusion constraint as a pair of (values, negated) where negated=false means in and negated=true means notIn
+	 * @param inRange The port range constraint as a pair of ((min, max), negated) where negated=false means inRange and negated=true means notInRange
+	 * @param type The enum constraint config for port type (system, registered, dynamic)
+	 * @param custom A custom constraint implementation
 	 * @throws NullPointerException If any of the optional fields is null
 	 * @throws IllegalArgumentException If the in constraint set is empty when present
 	 * @throws IllegalArgumentException If the equalTo port value is not between 0 and 65535 when present

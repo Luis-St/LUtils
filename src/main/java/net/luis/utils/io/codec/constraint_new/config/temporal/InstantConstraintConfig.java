@@ -54,11 +54,6 @@ import java.util.*;
  * @param withinLast A Duration specifying how far back from now values must fall
  * @param withinNext A Duration specifying how far ahead from now values must fall
  * @param custom A custom constraint implementation
- *
- * @throws NullPointerException If any of the optional fields is null
- * @throws IllegalArgumentException If the 'in' set is empty when present
- * @throws IllegalArgumentException If withinLast duration is not positive when present
- * @throws IllegalArgumentException If withinNext duration is not positive when present
  */
 public record InstantConstraintConfig(
 	@NonNull Optional<Pair<Instant, Boolean>> equalTo,
@@ -78,7 +73,7 @@ public record InstantConstraintConfig(
 	);
 
 	/**
-	 * Canonical constructor that validates all constraint fields.<br>
+	 * Constructs a new instant constraint config with the specified parameters.<br>
 	 *
 	 * @param equalTo The Instant equality constraint as a pair of (value, negated) where negated=false means equalTo and negated=true means notEqualTo
 	 * @param in The Instant set constraint as a pair of (values, negated) where negated=false means in and negated=true means notIn

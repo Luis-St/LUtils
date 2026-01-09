@@ -28,9 +28,9 @@ import java.time.LocalTime;
 import java.util.*;
 
 /**
- * Configuration record for LocalTime type constraints.<br>
+ * Configuration record for local time type constraints.<br>
  * <p>
- *     This record stores the constraint values for LocalTime codecs.<br>
+ *     This record stores the constraint values for local time codecs.<br>
  *     It includes base constraints, temporal comparable constraints, temporal span constraints,
  *     and time field constraints.
  * </p>
@@ -39,7 +39,7 @@ import java.util.*;
  *     and the second value indicates whether the bound is inclusive (true) or exclusive (false).
  * </p>
  * <p>
- *     The equalTo field uses {@link Pair} where the first value is the LocalTime and
+ *     The equalTo field uses {@link Pair} where the first value is the local time and
  *     the second value indicates negation (false=equalTo, true=notEqualTo).
  * </p>
  * <p>
@@ -49,8 +49,8 @@ import java.util.*;
  *
  * @author Luis-St
  *
- * @param equalTo The LocalTime equality constraint as a pair of (value, negated) where negated=false means equalTo and negated=true means notEqualTo
- * @param in The LocalTime set constraint as a pair of (values, negated) where negated=false means in and negated=true means notIn
+ * @param equalTo The local time equality constraint as a pair of (value, negated) where negated=false means equalTo and negated=true means notEqualTo
+ * @param in The local time set constraint as a pair of (values, negated) where negated=false means in and negated=true means notIn
  * @param after The "after" temporal constraint as a pair of (value, inclusive)
  * @param before The "before" temporal constraint as a pair of (value, inclusive)
  * @param withinLast A Duration specifying how far back from now values must fall
@@ -61,11 +61,6 @@ import java.util.*;
  * @param millisecond A nested config for millisecond constraints
  * @param nanosecond A nested config for nanosecond constraints
  * @param custom A custom constraint implementation
- *
- * @throws NullPointerException If any of the optional fields is null
- * @throws IllegalArgumentException If the 'in' set is empty when present
- * @throws IllegalArgumentException If withinLast duration is not positive when present
- * @throws IllegalArgumentException If withinNext duration is not positive when present
  */
 public record LocalTimeConstraintConfig(
 	@NonNull Optional<Pair<LocalTime, Boolean>> equalTo,
@@ -83,7 +78,7 @@ public record LocalTimeConstraintConfig(
 ) {
 	
 	/**
-	 * An unconstrained LocalTime configuration with no constraints applied.<br>
+	 * An unconstrained local time configuration with no constraints applied.<br>
 	 */
 	public static final LocalTimeConstraintConfig UNCONSTRAINED = new LocalTimeConstraintConfig(
 		Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(),
@@ -91,10 +86,10 @@ public record LocalTimeConstraintConfig(
 	);
 	
 	/**
-	 * Canonical constructor that validates all constraint fields.<br>
+	 * Constructs a new local time constraint config with the specified parameters.<br>
 	 *
-	 * @param equalTo The LocalTime equality constraint as a pair of (value, negated) where negated=false means equalTo and negated=true means notEqualTo
-	 * @param in The LocalTime set constraint as a pair of (values, negated) where negated=false means in and negated=true means notIn
+	 * @param equalTo The local time equality constraint as a pair of (value, negated) where negated=false means equalTo and negated=true means notEqualTo
+	 * @param in The local time set constraint as a pair of (values, negated) where negated=false means in and negated=true means notIn
 	 * @param after The "after" temporal constraint as a pair of (value, inclusive)
 	 * @param before The "before" temporal constraint as a pair of (value, inclusive)
 	 * @param withinLast A Duration specifying how far back from now values must fall
@@ -140,7 +135,7 @@ public record LocalTimeConstraintConfig(
 	/**
 	 * Creates a new config with the specified equal-to constraint.<br>
 	 *
-	 * @param value The exact LocalTime that should be matched
+	 * @param value The exact local time that should be matched
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull LocalTimeConstraintConfig withEqualTo(@NonNull LocalTime value) {
@@ -150,7 +145,7 @@ public record LocalTimeConstraintConfig(
 	/**
 	 * Creates a new config with the specified not-equal-to constraint.<br>
 	 *
-	 * @param value The LocalTime that should be excluded
+	 * @param value The local time that should be excluded
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull LocalTimeConstraintConfig withNotEqualTo(@NonNull LocalTime value) {
@@ -180,7 +175,7 @@ public record LocalTimeConstraintConfig(
 	/**
 	 * Creates a new config with the specified after constraint (exclusive).<br>
 	 *
-	 * @param value The threshold LocalTime (exclusive)
+	 * @param value The threshold local time (exclusive)
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull LocalTimeConstraintConfig withAfter(@NonNull LocalTime value) {
@@ -190,7 +185,7 @@ public record LocalTimeConstraintConfig(
 	/**
 	 * Creates a new config with the specified after-or-equal constraint (inclusive).<br>
 	 *
-	 * @param value The threshold LocalTime (inclusive)
+	 * @param value The threshold local time (inclusive)
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull LocalTimeConstraintConfig withAfterOrEqual(@NonNull LocalTime value) {
@@ -200,7 +195,7 @@ public record LocalTimeConstraintConfig(
 	/**
 	 * Creates a new config with the specified before constraint (exclusive).<br>
 	 *
-	 * @param value The threshold LocalTime (exclusive)
+	 * @param value The threshold local time (exclusive)
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull LocalTimeConstraintConfig withBefore(@NonNull LocalTime value) {
@@ -210,7 +205,7 @@ public record LocalTimeConstraintConfig(
 	/**
 	 * Creates a new config with the specified before-or-equal constraint (inclusive).<br>
 	 *
-	 * @param value The threshold LocalTime (inclusive)
+	 * @param value The threshold local time (inclusive)
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull LocalTimeConstraintConfig withBeforeOrEqual(@NonNull LocalTime value) {
@@ -220,8 +215,8 @@ public record LocalTimeConstraintConfig(
 	/**
 	 * Creates a new config with the specified between constraint (exclusive on both bounds).<br>
 	 *
-	 * @param after The minimum LocalTime (exclusive)
-	 * @param before The maximum LocalTime (exclusive)
+	 * @param after The minimum local time (exclusive)
+	 * @param before The maximum local time (exclusive)
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull LocalTimeConstraintConfig withBetween(@NonNull LocalTime after, @NonNull LocalTime before) {
@@ -231,8 +226,8 @@ public record LocalTimeConstraintConfig(
 	/**
 	 * Creates a new config with the specified between constraint (inclusive on both bounds).<br>
 	 *
-	 * @param after The minimum LocalTime (inclusive)
-	 * @param before The maximum LocalTime (inclusive)
+	 * @param after The minimum local time (inclusive)
+	 * @param before The maximum local time (inclusive)
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull LocalTimeConstraintConfig withBetweenOrEqual(@NonNull LocalTime after, @NonNull LocalTime before) {

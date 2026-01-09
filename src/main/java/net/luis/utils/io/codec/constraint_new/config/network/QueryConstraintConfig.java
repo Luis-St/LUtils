@@ -50,13 +50,6 @@ import java.util.regex.Pattern;
  * @param singleValued If present, requires all parameters to have exactly one value
  * @param multiValuedConstraints A map of key to size constraint config for multi-value validation
  * @param custom A custom constraint implementation
- *
- * @throws NullPointerException If any of the optional fields is null
- * @throws IllegalArgumentException If min is greater than max when both are present
- * @throws IllegalArgumentException If min and max are equal but at least one bound is exclusive when both are present
- * @throws IllegalArgumentException If the required keys set is empty when present
- * @throws IllegalArgumentException If the forbidden keys set is empty when present
- * @throws IllegalArgumentException If the allowed keys set is empty when present
  */
 @SuppressWarnings("OptionalContainsCollection")
 public record QueryConstraintConfig(
@@ -84,7 +77,21 @@ public record QueryConstraintConfig(
 	);
 	
 	/**
-	 * Canonical constructor for {@link QueryConstraintConfig}.<br>
+	 * Constructs a new query constraint config with the specified parameters.<br>
+	 *
+	 * @param min The minimum size constraint as a pair of (value, inclusive)
+	 * @param max The maximum size constraint as a pair of (value, inclusive)
+	 * @param requiredKeys The set of keys that must be present
+	 * @param forbiddenKeys The set of keys that must not be present
+	 * @param allowedKeys The set of keys that are allowed (others forbidden)
+	 * @param nonNullKeys If present, requires all keys to be non-null
+	 * @param uniqueValues If present, requires all values to be unique
+	 * @param nonNullValues If present, requires all values to be non-null
+	 * @param valueConstraints A map of key to string constraint config for value validation
+	 * @param patternValueConstraints A map of pattern to string constraint config for value validation
+	 * @param singleValued If present, requires all parameters to have exactly one value
+	 * @param multiValuedConstraints A map of key to size constraint config for multi-value validation
+	 * @param custom A custom constraint implementation
 	 * @throws NullPointerException If any of the optional fields is null
 	 * @throws IllegalArgumentException If min is greater than max when both are present
 	 * @throws IllegalArgumentException If min and max are equal but at least one bound is exclusive when both are present

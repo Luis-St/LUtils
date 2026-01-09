@@ -60,17 +60,6 @@ import java.util.*;
  * @param portable If present, requires paths to be portable across platforms
  * @param separator The platform whose separator should be used
  * @param custom A custom constraint implementation
- *
- * @throws NullPointerException If any of the optional fields is null
- * @throws IllegalArgumentException If the in constraint set is empty when present
- * @throws IllegalArgumentException If min length is greater than max length when both are present
- * @throws IllegalArgumentException If min and max length are equal but at least one bound is exclusive when both are present
- * @throws IllegalArgumentException If min depth is greater than max depth when both are present
- * @throws IllegalArgumentException If min and max depth are equal but at least one bound is exclusive when both are present
- * @throws IllegalArgumentException If the ancestor of set is empty when present
- * @throws IllegalArgumentException If the descendant of set is empty when present
- * @throws IllegalArgumentException If both absolute and relative constraints are present
- * @throws IllegalArgumentException If both without extension and extension constraints are present
  */
 @SuppressWarnings("OptionalContainsCollection")
 public record PathConstraintConfig(
@@ -109,7 +98,31 @@ public record PathConstraintConfig(
 	);
 	
 	/**
-	 * Canonical constructor for {@link PathConstraintConfig}.<br>
+	 * Constructs a new path constraint config with the specified parameters.<br>
+	 *
+	 * @param equalTo The equality constraint as a pair of (value, negated) where negated=false means equalTo and negated=true means notEqualTo
+	 * @param in The inclusion constraint as a pair of (values, negated) where negated=false means in and negated=true means notIn
+	 * @param minLength The minimum length constraint as a pair of (value, inclusive)
+	 * @param maxLength The maximum length constraint as a pair of (value, inclusive)
+	 * @param minDepth The minimum depth constraint as a pair of (value, inclusive)
+	 * @param maxDepth The maximum depth constraint as a pair of (value, inclusive)
+	 * @param absolute If present, requires paths to be absolute
+	 * @param relative If present, requires paths to be relative
+	 * @param normalized If present, requires paths to be normalized
+	 * @param canonical If present, requires paths to be canonical
+	 * @param path The string constraint config for path validation
+	 * @param root The string constraint config for root component validation
+	 * @param parent The string constraint config for parent directory validation
+	 * @param segment The string constraint config for segment validation
+	 * @param file The string constraint config for file name validation
+	 * @param withoutExtension If present, requires paths to have no extension
+	 * @param extension The string constraint config for extension validation
+	 * @param ancestorOf The set of paths that constrained paths must be ancestors of
+	 * @param descendantOf The set of paths that constrained paths must be descendants of
+	 * @param validFor The platform to validate against
+	 * @param portable If present, requires paths to be portable across platforms
+	 * @param separator The platform whose separator should be used
+	 * @param custom A custom constraint implementation
 	 * @throws NullPointerException If any of the optional fields is null
 	 * @throws IllegalArgumentException If the in constraint set is empty when present
 	 * @throws IllegalArgumentException If min length is greater than max length when both are present
