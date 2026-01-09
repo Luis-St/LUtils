@@ -60,6 +60,17 @@ import java.util.*;
  * @param portable If present, requires paths to be portable across platforms
  * @param separator The platform whose separator should be used
  * @param custom A custom constraint implementation
+ *
+ * @throws NullPointerException If any of the optional fields is null
+ * @throws IllegalArgumentException If the in constraint set is empty when present
+ * @throws IllegalArgumentException If min length is greater than max length when both are present
+ * @throws IllegalArgumentException If min and max length are equal but at least one bound is exclusive when both are present
+ * @throws IllegalArgumentException If min depth is greater than max depth when both are present
+ * @throws IllegalArgumentException If min and max depth are equal but at least one bound is exclusive when both are present
+ * @throws IllegalArgumentException If the ancestor of set is empty when present
+ * @throws IllegalArgumentException If the descendant of set is empty when present
+ * @throws IllegalArgumentException If both absolute and relative constraints are present
+ * @throws IllegalArgumentException If both without extension and extension constraints are present
  */
 @SuppressWarnings("OptionalContainsCollection")
 public record PathConstraintConfig(
@@ -96,6 +107,83 @@ public record PathConstraintConfig(
 		Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(),
 		Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty()
 	);
+	
+	/**
+	 * Canonical constructor for {@link PathConstraintConfig}.<br>
+	 * @throws NullPointerException If any of the optional fields is null
+	 * @throws IllegalArgumentException If the in constraint set is empty when present
+	 * @throws IllegalArgumentException If min length is greater than max length when both are present
+	 * @throws IllegalArgumentException If min and max length are equal but at least one bound is exclusive when both are present
+	 * @throws IllegalArgumentException If min depth is greater than max depth when both are present
+	 * @throws IllegalArgumentException If min and max depth are equal but at least one bound is exclusive when both are present
+	 * @throws IllegalArgumentException If the ancestor of set is empty when present
+	 * @throws IllegalArgumentException If the descendant of set is empty when present
+	 * @throws IllegalArgumentException If both absolute and relative constraints are present
+	 * @throws IllegalArgumentException If both without extension and extension constraints are present
+	 */
+	public PathConstraintConfig {
+		Objects.requireNonNull(equalTo, "Optional for 'equal to' constraint must not be null");
+		Objects.requireNonNull(in, "Optional for 'in' constraint must not be null");
+		Objects.requireNonNull(minLength, "Optional for 'min length' constraint must not be null");
+		Objects.requireNonNull(maxLength, "Optional for 'max length' constraint must not be null");
+		Objects.requireNonNull(minDepth, "Optional for 'min depth' constraint must not be null");
+		Objects.requireNonNull(maxDepth, "Optional for 'max depth' constraint must not be null");
+		Objects.requireNonNull(absolute, "Optional for 'absolute' constraint must not be null");
+		Objects.requireNonNull(relative, "Optional for 'relative' constraint must not be null");
+		Objects.requireNonNull(normalized, "Optional for 'normalized' constraint must not be null");
+		Objects.requireNonNull(canonical, "Optional for 'canonical' constraint must not be null");
+		Objects.requireNonNull(path, "Optional for 'path' constraint must not be null");
+		Objects.requireNonNull(root, "Optional for 'root' constraint must not be null");
+		Objects.requireNonNull(parent, "Optional for 'parent' constraint must not be null");
+		Objects.requireNonNull(segment, "Optional for 'segment' constraint must not be null");
+		Objects.requireNonNull(file, "Optional for 'file' constraint must not be null");
+		Objects.requireNonNull(withoutExtension, "Optional for 'without extension' constraint must not be null");
+		Objects.requireNonNull(extension, "Optional for 'extension' constraint must not be null");
+		Objects.requireNonNull(ancestorOf, "Optional for 'ancestor of' constraint must not be null");
+		Objects.requireNonNull(descendantOf, "Optional for 'descendant of' constraint must not be null");
+		Objects.requireNonNull(validFor, "Optional for 'valid for' constraint must not be null");
+		Objects.requireNonNull(portable, "Optional for 'portable' constraint must not be null");
+		Objects.requireNonNull(separator, "Optional for 'separator' constraint must not be null");
+		Objects.requireNonNull(custom, "Optional for 'custom' constraint must not be null");
+		
+		if (in.isPresent() && in.get().getFirst().isEmpty()) {
+			throw new IllegalArgumentException("In constraint set must not be empty when present");
+		}
+		
+		if (minLength.isPresent() && maxLength.isPresent()) {
+			if (minLength.get().getFirst().compareTo(maxLength.get().getFirst()) > 0) {
+				throw new IllegalArgumentException("Min must be less than or equal to max when both are present, but got " + minLength.get().getFirst() + " > " + maxLength.get().getFirst());
+			}
+			if (minLength.get().getFirst().compareTo(maxLength.get().getFirst()) == 0 && (!minLength.get().getSecond() || !maxLength.get().getSecond())) {
+				throw new IllegalArgumentException("Min and max are equal but at least one bound is exclusive when both are present");
+			}
+		}
+		
+		if (minDepth.isPresent() && maxDepth.isPresent()) {
+			if (minDepth.get().getFirst().compareTo(maxDepth.get().getFirst()) > 0) {
+				throw new IllegalArgumentException("Min must be less than or equal to max when both are present, but got " + minDepth.get().getFirst() + " > " + maxDepth.get().getFirst());
+			}
+			if (minDepth.get().getFirst().compareTo(maxDepth.get().getFirst()) == 0 && (!minDepth.get().getSecond() || !maxDepth.get().getSecond())) {
+				throw new IllegalArgumentException("Min and max are equal but at least one bound is exclusive when both are present");
+			}
+		}
+		
+		if (ancestorOf.isPresent() && ancestorOf.get().isEmpty()) {
+			throw new IllegalArgumentException("Ancestor of set must not be empty when present");
+		}
+		
+		if (descendantOf.isPresent() && descendantOf.get().isEmpty()) {
+			throw new IllegalArgumentException("Descendant of set must not be empty when present");
+		}
+		
+		if (absolute.isPresent() && relative.isPresent()) {
+			throw new IllegalArgumentException("Both absolute and relative constraints cannot be present at the same time");
+		}
+		
+		if (withoutExtension.isPresent() && extension.isPresent()) {
+			throw new IllegalArgumentException("Both without extension and extension constraints cannot be present at the same time");
+		}
+	}
 	
 	/**
 	 * Creates a new config with the specified equal-to constraint.<br>

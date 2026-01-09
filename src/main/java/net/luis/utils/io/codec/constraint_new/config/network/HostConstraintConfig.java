@@ -60,6 +60,19 @@ import java.util.regex.Pattern;
  * @param rootDomain If present, requires hosts to be root domains
  * @param subDomain If present, requires hosts to be subdomains
  * @param custom A custom constraint implementation
+ *
+ * @throws NullPointerException If any of the optional fields is null
+ * @throws IllegalArgumentException If the in constraint set is empty when present
+ * @throws IllegalArgumentException If min length is greater than max length when both are present
+ * @throws IllegalArgumentException If min and max length are equal but at least one bound is exclusive when both are present
+ * @throws IllegalArgumentException If the starts with any set is empty when present
+ * @throws IllegalArgumentException If the contains any set is empty when present
+ * @throws IllegalArgumentException If the contains all set is empty when present
+ * @throws IllegalArgumentException If the contains only set is empty when present
+ * @throws IllegalArgumentException If the ends with any set is empty when present
+ * @throws IllegalArgumentException If the in any subnet set is empty when present
+ * @throws IllegalArgumentException If both ipv4 and ipv6 constraints are present
+ * @throws IllegalArgumentException If both root domain and sub domain constraints are present
  */
 @SuppressWarnings("OptionalContainsCollection")
 public record HostConstraintConfig(
@@ -94,6 +107,91 @@ public record HostConstraintConfig(
 		Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(),
 		Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty()
 	);
+
+	/**
+	 * Canonical constructor for {@link HostConstraintConfig}.<br>
+	 * @throws NullPointerException If any of the optional fields is null
+	 * @throws IllegalArgumentException If the in constraint set is empty when present
+	 * @throws IllegalArgumentException If min length is greater than max length when both are present
+	 * @throws IllegalArgumentException If min and max length are equal but at least one bound is exclusive when both are present
+	 * @throws IllegalArgumentException If the starts with any set is empty when present
+	 * @throws IllegalArgumentException If the contains any set is empty when present
+	 * @throws IllegalArgumentException If the contains all set is empty when present
+	 * @throws IllegalArgumentException If the contains only set is empty when present
+	 * @throws IllegalArgumentException If the ends with any set is empty when present
+	 * @throws IllegalArgumentException If the in any subnet set is empty when present
+	 * @throws IllegalArgumentException If both ipv4 and ipv6 constraints are present
+	 * @throws IllegalArgumentException If both root domain and sub domain constraints are present
+	 */
+	public HostConstraintConfig {
+		Objects.requireNonNull(equalTo, "Optional for 'equal to' constraint must not be null");
+		Objects.requireNonNull(in, "Optional for 'in' constraint must not be null");
+		Objects.requireNonNull(minLength, "Optional for 'min length' constraint must not be null");
+		Objects.requireNonNull(maxLength, "Optional for 'max length' constraint must not be null");
+		Objects.requireNonNull(startsWith, "Optional for 'starts with' constraint must not be null");
+		Objects.requireNonNull(startsWithAny, "Optional for 'starts with any' constraint must not be null");
+		Objects.requireNonNull(contains, "Optional for 'contains' constraint must not be null");
+		Objects.requireNonNull(containsAny, "Optional for 'contains any' constraint must not be null");
+		Objects.requireNonNull(containsAll, "Optional for 'contains all' constraint must not be null");
+		Objects.requireNonNull(containsOnly, "Optional for 'contains only' constraint must not be null");
+		Objects.requireNonNull(endsWith, "Optional for 'ends with' constraint must not be null");
+		Objects.requireNonNull(endsWithAny, "Optional for 'ends with any' constraint must not be null");
+		Objects.requireNonNull(matches, "Optional for 'matches' constraint must not be null");
+		Objects.requireNonNull(ipv4, "Optional for 'ipv4' constraint must not be null");
+		Objects.requireNonNull(ipv6, "Optional for 'ipv6' constraint must not be null");
+		Objects.requireNonNull(ip, "Optional for 'ip' constraint must not be null");
+		Objects.requireNonNull(ipType, "Optional for 'ip type' constraint must not be null");
+		Objects.requireNonNull(inAnySubnet, "Optional for 'in any subnet' constraint must not be null");
+		Objects.requireNonNull(domain, "Optional for 'domain' constraint must not be null");
+		Objects.requireNonNull(rootDomain, "Optional for 'root domain' constraint must not be null");
+		Objects.requireNonNull(subDomain, "Optional for 'sub domain' constraint must not be null");
+		Objects.requireNonNull(custom, "Optional for 'custom' constraint must not be null");
+		
+		if (in.isPresent() && in.get().getFirst().isEmpty()) {
+			throw new IllegalArgumentException("In constraint set must not be empty when present");
+		}
+		
+		if (minLength.isPresent() && maxLength.isPresent()) {
+			if (minLength.get().getFirst().compareTo(maxLength.get().getFirst()) > 0) {
+				throw new IllegalArgumentException("Min must be less than or equal to max when both are present, but got " + minLength.get().getFirst() + " > " + maxLength.get().getFirst());
+			}
+			if (minLength.get().getFirst().compareTo(maxLength.get().getFirst()) == 0 && (!minLength.get().getSecond() || !maxLength.get().getSecond())) {
+				throw new IllegalArgumentException("Min and max are equal but at least one bound is exclusive when both are present");
+			}
+		}
+		
+		if (startsWithAny.isPresent() && startsWithAny.get().getFirst().isEmpty()) {
+			throw new IllegalArgumentException("Starts with any set must not be empty when present");
+		}
+		
+		if (containsAny.isPresent() && containsAny.get().getFirst().isEmpty()) {
+			throw new IllegalArgumentException("Contains any set must not be empty when present");
+		}
+		
+		if (containsAll.isPresent() && containsAll.get().isEmpty()) {
+			throw new IllegalArgumentException("Contains all set must not be empty when present");
+		}
+		
+		if (containsOnly.isPresent() && containsOnly.get().isEmpty()) {
+			throw new IllegalArgumentException("Contains only set must not be empty when present");
+		}
+		
+		if (endsWithAny.isPresent() && endsWithAny.get().getFirst().isEmpty()) {
+			throw new IllegalArgumentException("Ends with any set must not be empty when present");
+		}
+		
+		if (inAnySubnet.isPresent() && inAnySubnet.get().getFirst().isEmpty()) {
+			throw new IllegalArgumentException("In any subnet set must not be empty when present");
+		}
+		
+		if (ipv4.isPresent() && ipv6.isPresent()) {
+			throw new IllegalArgumentException("Both ipv4 and ipv6 constraints cannot be present at the same time");
+		}
+		
+		if (rootDomain.isPresent() && subDomain.isPresent()) {
+			throw new IllegalArgumentException("Both root domain and sub domain constraints cannot be present at the same time");
+		}
+	}
 	
 	/**
 	 * Creates a new config with the specified equal-to constraint.<br>

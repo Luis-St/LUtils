@@ -56,6 +56,10 @@ import java.util.*;
  * @param zero The zero constraint as a Boolean where false means zero and true means nonZero
  * @param hours A nested config for hour component constraints
  * @param custom A custom constraint implementation
+ *
+ * @throws NullPointerException If any of the optional fields is null
+ * @throws IllegalArgumentException If the 'in' set is empty when present
+ * @throws IllegalArgumentException If positive and negative constraints are both present
  */
 public record ZoneOffsetConstraintConfig(
 	@NonNull Optional<Pair<ZoneOffset, Boolean>> equalTo,
@@ -75,6 +79,42 @@ public record ZoneOffsetConstraintConfig(
 	public static final ZoneOffsetConstraintConfig UNCONSTRAINED = new ZoneOffsetConstraintConfig(
 		Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty()
 	);
+	
+	/**
+	 * Canonical constructor that validates all constraint fields.<br>
+	 *
+	 * @param equalTo The ZoneOffset equality constraint as a pair of (value, negated) where negated=false means equalTo and negated=true means notEqualTo
+	 * @param in The ZoneOffset set constraint as a pair of (values, negated) where negated=false means in and negated=true means notIn
+	 * @param min The minimum ZoneOffset constraint as a pair of (value, inclusive)
+	 * @param max The maximum ZoneOffset constraint as a pair of (value, inclusive)
+	 * @param positive The positive constraint as a Boolean where false means positive and true means nonPositive
+	 * @param negative The negative constraint as a Boolean where false means negative and true means nonNegative
+	 * @param zero The zero constraint as a Boolean where false means zero and true means nonZero
+	 * @param hours A nested config for hour component constraints
+	 * @param custom A custom constraint implementation
+	 * @throws NullPointerException If any of the optional fields is null
+	 * @throws IllegalArgumentException If the 'in' set is empty when present
+	 * @throws IllegalArgumentException If positive and negative constraints are both present
+	 */
+	public ZoneOffsetConstraintConfig {
+		Objects.requireNonNull(equalTo, "Optional for 'equal to' constraint must not be null");
+		Objects.requireNonNull(in, "Optional for 'in' constraint must not be null");
+		Objects.requireNonNull(min, "Optional for 'min' constraint must not be null");
+		Objects.requireNonNull(max, "Optional for 'max' constraint must not be null");
+		Objects.requireNonNull(positive, "Optional for 'positive' constraint must not be null");
+		Objects.requireNonNull(negative, "Optional for 'negative' constraint must not be null");
+		Objects.requireNonNull(zero, "Optional for 'zero' constraint must not be null");
+		Objects.requireNonNull(hours, "Optional for 'hours' constraint must not be null");
+		Objects.requireNonNull(custom, "Optional for 'custom' constraint must not be null");
+		
+		if (in.isPresent() && in.get().getFirst().isEmpty()) {
+			throw new IllegalArgumentException("In set must not be empty when present");
+		}
+		
+		if (positive.isPresent() && negative.isPresent()) {
+			throw new IllegalArgumentException("Positive and negative constraints are mutually exclusive");
+		}
+	}
 	
 	/**
 	 * Creates a new config with the specified equal-to constraint.<br>

@@ -37,13 +37,32 @@ import java.util.*;
  * @param equalTo The enum equality constraint as a pair of (value, negated) where negated=false means equalTo and negated=true means notEqualTo
  * @param in The enum set constraint as a pair of (values, negated) where negated=false means in and negated=true means notIn
  * @param custom A custom constraint implementation
+ *
+ * @throws NullPointerException If any optional field is null
+ * @throws IllegalArgumentException If the 'in' constraint set is empty when present
  */
 public record EnumConstraintConfig<T extends Enum<T>>(
 	@NonNull Optional<Pair<T, Boolean>> equalTo,
 	@NonNull Optional<Pair<Set<T>, Boolean>> in,
 	@NonNull Optional<Constraint<T>> custom
 ) {
-	
+
+	/**
+	 * Canonical constructor that validates all constraint parameters.<br>
+	 *
+	 * @throws NullPointerException If any optional field is null
+	 * @throws IllegalArgumentException If the 'in' constraint set is empty when present
+	 */
+	public EnumConstraintConfig {
+		Objects.requireNonNull(equalTo, "Optional for 'equal to' constraint must not be null");
+		Objects.requireNonNull(in, "Optional for 'in' constraint must not be null");
+		Objects.requireNonNull(custom, "Optional for 'custom' constraint must not be null");
+		
+		if (in.isPresent() && in.get().getFirst().isEmpty()) {
+			throw new IllegalArgumentException("In constraint set must not be empty when present");
+		}
+	}
+
 	/**
 	 * Creates an unconstrained enum configuration with no constraints applied.<br>
 	 *

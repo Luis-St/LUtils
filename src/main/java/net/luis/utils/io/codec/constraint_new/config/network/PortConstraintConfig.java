@@ -40,6 +40,13 @@ import java.util.*;
  * @param inRange The port range constraint as a pair of ((min, max), negated) where negated=false means inRange and negated=true means notInRange
  * @param type The enum constraint config for port type (system, registered, dynamic)
  * @param custom A custom constraint implementation
+ *
+ * @throws NullPointerException If any of the optional fields is null
+ * @throws IllegalArgumentException If the in constraint set is empty when present
+ * @throws IllegalArgumentException If the equalTo port value is not between 0 and 65535 when present
+ * @throws IllegalArgumentException If any port value in the in constraint set is not between 0 and 65535 when present
+ * @throws IllegalArgumentException If the inRange min or max port value is not between 0 and 65535 when present
+ * @throws IllegalArgumentException If the inRange min is greater than max when both are present
  */
 public record PortConstraintConfig(
 	@NonNull Optional<Pair<Integer, Boolean>> equalTo,
@@ -55,6 +62,51 @@ public record PortConstraintConfig(
 	public static final PortConstraintConfig UNCONSTRAINED = new PortConstraintConfig(
 		Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty()
 	);
+	
+	/**
+	 * Canonical constructor for {@link PortConstraintConfig}.<br>
+	 * @throws NullPointerException If any of the optional fields is null
+	 * @throws IllegalArgumentException If the in constraint set is empty when present
+	 * @throws IllegalArgumentException If the equalTo port value is not between 0 and 65535 when present
+	 * @throws IllegalArgumentException If any port value in the in constraint set is not between 0 and 65535 when present
+	 * @throws IllegalArgumentException If the inRange min or max port value is not between 0 and 65535 when present
+	 * @throws IllegalArgumentException If the inRange min is greater than max when both are present
+	 */
+	public PortConstraintConfig {
+		Objects.requireNonNull(equalTo, "Optional for 'equal to' constraint must not be null");
+		Objects.requireNonNull(in, "Optional for 'in' constraint must not be null");
+		Objects.requireNonNull(inRange, "Optional for 'in range' constraint must not be null");
+		Objects.requireNonNull(type, "Optional for 'type' constraint must not be null");
+		Objects.requireNonNull(custom, "Optional for 'custom' constraint must not be null");
+		
+		if (in.isPresent() && in.get().getFirst().isEmpty()) {
+			throw new IllegalArgumentException("In constraint set must not be empty when present");
+		}
+		
+		if (equalTo.isPresent() && (equalTo.get().getFirst() < 0 || equalTo.get().getFirst() > 65535)) {
+			throw new IllegalArgumentException("Port must be between 0 and 65535 when present, but got " + equalTo.get().getFirst());
+		}
+		
+		if (in.isPresent()) {
+			for (Integer port : in.get().getFirst()) {
+				if (port < 0 || port > 65535) {
+					throw new IllegalArgumentException("Port must be between 0 and 65535 when present, but got " + port);
+				}
+			}
+		}
+		
+		if (inRange.isPresent()) {
+			if (inRange.get().getFirst().getFirst() < 0 || inRange.get().getFirst().getFirst() > 65535) {
+				throw new IllegalArgumentException("Port must be between 0 and 65535 when present, but got " + inRange.get().getFirst().getFirst());
+			}
+			if (inRange.get().getFirst().getSecond() < 0 || inRange.get().getFirst().getSecond() > 65535) {
+				throw new IllegalArgumentException("Port must be between 0 and 65535 when present, but got " + inRange.get().getFirst().getSecond());
+			}
+			if (inRange.get().getFirst().getFirst() > inRange.get().getFirst().getSecond()) {
+				throw new IllegalArgumentException("Min must be less than or equal to max when both are present, but got " + inRange.get().getFirst().getFirst() + " > " + inRange.get().getFirst().getSecond());
+			}
+		}
+	}
 	
 	/**
 	 * Creates a new config with the specified equal-to constraint.<br>

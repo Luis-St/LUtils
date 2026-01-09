@@ -51,6 +51,11 @@ import java.util.*;
  * @param integral If present, requires the value to be a whole number (no fractional part)
  * @param normalized If present, requires the value to be within the range [0.0, 1.0]
  * @param custom A custom constraint implementation
+ *
+ * @throws NullPointerException If any optional field is null
+ * @throws IllegalArgumentException If the 'in' constraint set is empty when present
+ * @throws IllegalArgumentException If min is greater than max when both are present
+ * @throws IllegalArgumentException If min equals max with at least one exclusive bound when both are present
  */
 public record DecimalConstraintConfig<T extends Number & Comparable<T>>(
 	@NonNull Optional<Pair<T, Boolean>> equalTo,
@@ -67,6 +72,43 @@ public record DecimalConstraintConfig<T extends Number & Comparable<T>>(
 	@NonNull Optional<Void> normalized,
 	@NonNull Optional<Constraint<T>> custom
 ) {
+
+	/**
+	 * Canonical constructor that validates all constraint parameters.<br>
+	 *
+	 * @throws NullPointerException If any optional field is null
+	 * @throws IllegalArgumentException If the 'in' constraint set is empty when present
+	 * @throws IllegalArgumentException If min is greater than max when both are present
+	 * @throws IllegalArgumentException If min equals max with at least one exclusive bound when both are present
+	 */
+	public DecimalConstraintConfig {
+		Objects.requireNonNull(equalTo, "Optional for 'equal to' constraint must not be null");
+		Objects.requireNonNull(in, "Optional for 'in' constraint must not be null");
+		Objects.requireNonNull(min, "Optional for 'min' constraint must not be null");
+		Objects.requireNonNull(max, "Optional for 'max' constraint must not be null");
+		Objects.requireNonNull(positive, "Optional for 'positive' constraint must not be null");
+		Objects.requireNonNull(negative, "Optional for 'negative' constraint must not be null");
+		Objects.requireNonNull(zero, "Optional for 'zero' constraint must not be null");
+		Objects.requireNonNull(percentage, "Optional for 'percentage' constraint must not be null");
+		Objects.requireNonNull(finite, "Optional for 'finite' constraint must not be null");
+		Objects.requireNonNull(notNaN, "Optional for 'not NaN' constraint must not be null");
+		Objects.requireNonNull(integral, "Optional for 'integral' constraint must not be null");
+		Objects.requireNonNull(normalized, "Optional for 'normalized' constraint must not be null");
+		Objects.requireNonNull(custom, "Optional for 'custom' constraint must not be null");
+		
+		if (in.isPresent() && in.get().getFirst().isEmpty()) {
+			throw new IllegalArgumentException("In constraint set must not be empty when present");
+		}
+		
+		if (min.isPresent() && max.isPresent()) {
+			if (min.get().getFirst().compareTo(max.get().getFirst()) > 0) {
+				throw new IllegalArgumentException("Min must be less than or equal to max when both are present, but got " + min.get().getFirst() + " > " + max.get().getFirst());
+			}
+			if (min.get().getFirst().compareTo(max.get().getFirst()) == 0 && (!min.get().getSecond() || !max.get().getSecond())) {
+				throw new IllegalArgumentException("Min and max are equal but at least one bound is exclusive when both are present");
+			}
+		}
+	}
 	
 	/**
 	 * Creates an unconstrained decimal configuration with no constraints applied.<br>

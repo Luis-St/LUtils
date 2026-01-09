@@ -54,6 +54,10 @@ import java.util.*;
  * @param available If present, requires the zone to be in the available zone list
  * @param region A nested config for region string constraints
  * @param custom A custom constraint implementation
+ *
+ * @throws NullPointerException If any of the optional fields is null
+ * @throws IllegalArgumentException If the 'in' set is empty when present
+ * @throws IllegalArgumentException If regionBased and offsetBased constraints are both present
  */
 public record ZoneIdConstraintConfig(
 	@NonNull Optional<Pair<ZoneId, Boolean>> equalTo,
@@ -75,6 +79,46 @@ public record ZoneIdConstraintConfig(
 	public static final ZoneIdConstraintConfig UNCONSTRAINED = new ZoneIdConstraintConfig(
 		Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty()
 	);
+	
+	/**
+	 * Canonical constructor that validates all constraint fields.<br>
+	 *
+	 * @param equalTo The ZoneId equality constraint as a pair of (value, negated) where negated=false means equalTo and negated=true means notEqualTo
+	 * @param in The ZoneId set constraint as a pair of (values, negated) where negated=false means in and negated=true means notIn
+	 * @param normalized If present, requires the zone to be in normalized form
+	 * @param regionBased If present, requires the zone to be region-based
+	 * @param offsetBased If present, requires the zone to be offset-based
+	 * @param fixedOffset If present, requires the zone to be a fixed offset
+	 * @param utc If present, requires the zone to be UTC
+	 * @param systemDefault If present, requires the zone to be the system default
+	 * @param available If present, requires the zone to be in the available zone list
+	 * @param region A nested config for region string constraints
+	 * @param custom A custom constraint implementation
+	 * @throws NullPointerException If any of the optional fields is null
+	 * @throws IllegalArgumentException If the 'in' set is empty when present
+	 * @throws IllegalArgumentException If regionBased and offsetBased constraints are both present
+	 */
+	public ZoneIdConstraintConfig {
+		Objects.requireNonNull(equalTo, "Optional for 'equal to' constraint must not be null");
+		Objects.requireNonNull(in, "Optional for 'in' constraint must not be null");
+		Objects.requireNonNull(normalized, "Optional for 'normalized' constraint must not be null");
+		Objects.requireNonNull(regionBased, "Optional for 'region based' constraint must not be null");
+		Objects.requireNonNull(offsetBased, "Optional for 'offset based' constraint must not be null");
+		Objects.requireNonNull(fixedOffset, "Optional for 'fixed offset' constraint must not be null");
+		Objects.requireNonNull(utc, "Optional for 'utc' constraint must not be null");
+		Objects.requireNonNull(systemDefault, "Optional for 'system default' constraint must not be null");
+		Objects.requireNonNull(available, "Optional for 'available' constraint must not be null");
+		Objects.requireNonNull(region, "Optional for 'region' constraint must not be null");
+		Objects.requireNonNull(custom, "Optional for 'custom' constraint must not be null");
+		
+		if (in.isPresent() && in.get().getFirst().isEmpty()) {
+			throw new IllegalArgumentException("In set must not be empty when present");
+		}
+		
+		if (regionBased.isPresent() && offsetBased.isPresent()) {
+			throw new IllegalArgumentException("Region based and offset based constraints are mutually exclusive");
+		}
+	}
 	
 	/**
 	 * Creates a new config with the specified equal-to constraint.<br>

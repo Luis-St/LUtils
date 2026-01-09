@@ -61,6 +61,11 @@ import java.util.*;
  * @param millisecond A nested config for millisecond constraints
  * @param nanosecond A nested config for nanosecond constraints
  * @param custom A custom constraint implementation
+ *
+ * @throws NullPointerException If any of the optional fields is null
+ * @throws IllegalArgumentException If the 'in' set is empty when present
+ * @throws IllegalArgumentException If withinLast duration is not positive when present
+ * @throws IllegalArgumentException If withinNext duration is not positive when present
  */
 public record LocalTimeConstraintConfig(
 	@NonNull Optional<Pair<LocalTime, Boolean>> equalTo,
@@ -84,6 +89,53 @@ public record LocalTimeConstraintConfig(
 		Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(),
 		Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty()
 	);
+	
+	/**
+	 * Canonical constructor that validates all constraint fields.<br>
+	 *
+	 * @param equalTo The LocalTime equality constraint as a pair of (value, negated) where negated=false means equalTo and negated=true means notEqualTo
+	 * @param in The LocalTime set constraint as a pair of (values, negated) where negated=false means in and negated=true means notIn
+	 * @param after The "after" temporal constraint as a pair of (value, inclusive)
+	 * @param before The "before" temporal constraint as a pair of (value, inclusive)
+	 * @param withinLast A Duration specifying how far back from now values must fall
+	 * @param withinNext A Duration specifying how far ahead from now values must fall
+	 * @param hour A nested config for hour constraints
+	 * @param minute A nested config for minute constraints
+	 * @param second A nested config for second constraints
+	 * @param millisecond A nested config for millisecond constraints
+	 * @param nanosecond A nested config for nanosecond constraints
+	 * @param custom A custom constraint implementation
+	 * @throws NullPointerException If any of the optional fields is null
+	 * @throws IllegalArgumentException If the 'in' set is empty when present
+	 * @throws IllegalArgumentException If withinLast duration is not positive when present
+	 * @throws IllegalArgumentException If withinNext duration is not positive when present
+	 */
+	public LocalTimeConstraintConfig {
+		Objects.requireNonNull(equalTo, "Optional for 'equal to' constraint must not be null");
+		Objects.requireNonNull(in, "Optional for 'in' constraint must not be null");
+		Objects.requireNonNull(after, "Optional for 'after' constraint must not be null");
+		Objects.requireNonNull(before, "Optional for 'before' constraint must not be null");
+		Objects.requireNonNull(withinLast, "Optional for 'within last' constraint must not be null");
+		Objects.requireNonNull(withinNext, "Optional for 'within next' constraint must not be null");
+		Objects.requireNonNull(hour, "Optional for 'hour' constraint must not be null");
+		Objects.requireNonNull(minute, "Optional for 'minute' constraint must not be null");
+		Objects.requireNonNull(second, "Optional for 'second' constraint must not be null");
+		Objects.requireNonNull(millisecond, "Optional for 'millisecond' constraint must not be null");
+		Objects.requireNonNull(nanosecond, "Optional for 'nanosecond' constraint must not be null");
+		Objects.requireNonNull(custom, "Optional for 'custom' constraint must not be null");
+		
+		if (in.isPresent() && in.get().getFirst().isEmpty()) {
+			throw new IllegalArgumentException("In set must not be empty when present");
+		}
+		
+		if (withinLast.isPresent() && (withinLast.get().isNegative() || withinLast.get().isZero())) {
+			throw new IllegalArgumentException("Within last duration must be positive when present, but got " + withinLast.get());
+		}
+		
+		if (withinNext.isPresent() && (withinNext.get().isNegative() || withinNext.get().isZero())) {
+			throw new IllegalArgumentException("Within next duration must be positive when present, but got " + withinNext.get());
+		}
+	}
 	
 	/**
 	 * Creates a new config with the specified equal-to constraint.<br>

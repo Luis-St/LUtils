@@ -42,6 +42,11 @@ import java.util.Optional;
  * @param min The minimum size constraint as a pair of (value, inclusive)
  * @param max The maximum size constraint as a pair of (value, inclusive)
  * @param custom A custom constraint implementation
+ * @throws NullPointerException If any optional field is null
+ * @throws IllegalArgumentException If the minimum size is negative when present
+ * @throws IllegalArgumentException If the maximum size is negative when present
+ * @throws IllegalArgumentException If the maximum size is less than the minimum size when both are present
+ * @throws IllegalArgumentException If min and max size are equal but at least one bound is exclusive when both are present
  */
 public record SizeConstraintConfig(
 	@NonNull Optional<Pair<Integer, Boolean>> min,
@@ -55,6 +60,29 @@ public record SizeConstraintConfig(
 	public static final SizeConstraintConfig UNCONSTRAINED = new SizeConstraintConfig(
 		Optional.empty(), Optional.empty(), Optional.empty()
 	);
+	
+	public SizeConstraintConfig {
+		Objects.requireNonNull(min, "Optional for 'min' constraint must not be null");
+		Objects.requireNonNull(max, "Optional for 'max' constraint must not be null");
+		Objects.requireNonNull(custom, "Optional for 'custom' constraint must not be null");
+		
+		if (min.isPresent() && min.get().getFirst() < 0) {
+			throw new IllegalArgumentException("Minimum size must not be negative when present, but got " + min.get().getFirst());
+		}
+		
+		if (max.isPresent() && max.get().getFirst() < 0) {
+			throw new IllegalArgumentException("Maximum size must not be negative when present, but got " + max.get().getFirst());
+		}
+		
+		if (min.isPresent() && max.isPresent()) {
+			if (min.get().getFirst() > max.get().getFirst()) {
+				throw new IllegalArgumentException("Maximum size must not be less than minimum size when both are present, but got " + min.get().getFirst() + " > " + max.get().getFirst());
+			}
+			if (min.get().getFirst().equals(max.get().getFirst()) && (!min.get().getSecond() || !max.get().getSecond())) {
+				throw new IllegalArgumentException("Min and max size are equal but at least one bound is exclusive when both are present");
+			}
+		}
+	}
 	
 	/**
 	 * Creates a new size constraint config with the specified minimum size (inclusive).<br>

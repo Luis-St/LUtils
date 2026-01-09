@@ -51,6 +51,14 @@ import java.util.*;
  * @param divisibleBy The divisor that the value must be divisible by
  * @param powerOf The base that the value must be a power of
  * @param custom A custom constraint implementation
+ *
+ * @throws NullPointerException If any optional field is null
+ * @throws IllegalArgumentException If the 'in' constraint set is empty when present
+ * @throws IllegalArgumentException If min is greater than max when both are present
+ * @throws IllegalArgumentException If min equals max with at least one exclusive bound when both are present
+ * @throws IllegalArgumentException If both 'even' and 'odd' constraints are present
+ * @throws IllegalArgumentException If 'divisibleBy' is not positive when present
+ * @throws IllegalArgumentException If 'powerOf' is not greater than 1 when present
  */
 public record IntegerConstraintConfig<T extends Number & Comparable<T>>(
 	@NonNull Optional<Pair<T, Boolean>> equalTo,
@@ -67,7 +75,59 @@ public record IntegerConstraintConfig<T extends Number & Comparable<T>>(
 	@NonNull Optional<Integer> powerOf,
 	@NonNull Optional<Constraint<T>> custom
 ) {
-	
+
+	/**
+	 * Canonical constructor that validates all constraint parameters.<br>
+	 *
+	 * @throws NullPointerException If any optional field is null
+	 * @throws IllegalArgumentException If the 'in' constraint set is empty when present
+	 * @throws IllegalArgumentException If min is greater than max when both are present
+	 * @throws IllegalArgumentException If min equals max with at least one exclusive bound when both are present
+	 * @throws IllegalArgumentException If both 'even' and 'odd' constraints are present
+	 * @throws IllegalArgumentException If 'divisibleBy' is not positive when present
+	 * @throws IllegalArgumentException If 'powerOf' is not greater than 1 when present
+	 */
+	public IntegerConstraintConfig {
+		Objects.requireNonNull(equalTo, "Optional for 'equal to' constraint must not be null");
+		Objects.requireNonNull(in, "Optional for 'in' constraint must not be null");
+		Objects.requireNonNull(min, "Optional for 'min' constraint must not be null");
+		Objects.requireNonNull(max, "Optional for 'max' constraint must not be null");
+		Objects.requireNonNull(positive, "Optional for 'positive' constraint must not be null");
+		Objects.requireNonNull(negative, "Optional for 'negative' constraint must not be null");
+		Objects.requireNonNull(zero, "Optional for 'zero' constraint must not be null");
+		Objects.requireNonNull(percentage, "Optional for 'percentage' constraint must not be null");
+		Objects.requireNonNull(even, "Optional for 'even' constraint must not be null");
+		Objects.requireNonNull(odd, "Optional for 'odd' constraint must not be null");
+		Objects.requireNonNull(divisibleBy, "Optional for 'divisible by' constraint must not be null");
+		Objects.requireNonNull(powerOf, "Optional for 'power of' constraint must not be null");
+		Objects.requireNonNull(custom, "Optional for 'custom' constraint must not be null");
+		
+		if (in.isPresent() && in.get().getFirst().isEmpty()) {
+			throw new IllegalArgumentException("In constraint set must not be empty when present");
+		}
+		
+		if (min.isPresent() && max.isPresent()) {
+			if (min.get().getFirst().compareTo(max.get().getFirst()) > 0) {
+				throw new IllegalArgumentException("Min must be less than or equal to max when both are present, but got " + min.get().getFirst() + " > " + max.get().getFirst());
+			}
+			if (min.get().getFirst().compareTo(max.get().getFirst()) == 0 && (!min.get().getSecond() || !max.get().getSecond())) {
+				throw new IllegalArgumentException("Min and max are equal but at least one bound is exclusive when both are present");
+			}
+		}
+		
+		if (even.isPresent() && odd.isPresent()) {
+			throw new IllegalArgumentException("Even and odd are mutually exclusive");
+		}
+		
+		if (divisibleBy.isPresent() && divisibleBy.get() <= 0) {
+			throw new IllegalArgumentException("Divisible by must be positive when present, but got " + divisibleBy.get());
+		}
+		
+		if (powerOf.isPresent() && powerOf.get() <= 1) {
+			throw new IllegalArgumentException("Power of must be greater than 1 when present, but got " + powerOf.get());
+		}
+	}
+
 	/**
 	 * Creates an unconstrained integer configuration with no constraints applied.<br>
 	 *

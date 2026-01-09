@@ -55,6 +55,16 @@ import java.util.*;
  * @param opaque If present, requires URIs to be opaque
  * @param hierarchical If present, requires URIs to be hierarchical
  * @param custom A custom constraint implementation
+ *
+ * @throws NullPointerException If any of the optional fields is null
+ * @throws IllegalArgumentException If the in constraint set is empty when present
+ * @throws IllegalArgumentException If both absolute and relative constraints are present
+ * @throws IllegalArgumentException If both opaque and hierarchical constraints are present
+ * @throws IllegalArgumentException If both without user info and user info constraints are present
+ * @throws IllegalArgumentException If both without port and port constraints are present
+ * @throws IllegalArgumentException If both without path and path constraints are present
+ * @throws IllegalArgumentException If both without query and query constraints are present
+ * @throws IllegalArgumentException If both without fragment and fragment constraints are present
  */
 public record URIConstraintConfig(
 	@NonNull Optional<Pair<URI, Boolean>> equalTo,
@@ -82,13 +92,75 @@ public record URIConstraintConfig(
 	 * An unconstrained URI configuration with no constraints applied.<br>
 	 */
 	public static final URIConstraintConfig UNCONSTRAINED = new URIConstraintConfig(
-		Optional.empty(), Optional.empty(),
-		Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(),
-		Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(),
-		Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(),
-		Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(),
-		Optional.empty()
+		Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(),
+		Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty()
 	);
+	
+	/**
+	 * Canonical constructor for {@link URIConstraintConfig}.<br>
+	 * @throws NullPointerException If any of the optional fields is null
+	 * @throws IllegalArgumentException If the in constraint set is empty when present
+	 * @throws IllegalArgumentException If both absolute and relative constraints are present
+	 * @throws IllegalArgumentException If both opaque and hierarchical constraints are present
+	 * @throws IllegalArgumentException If both without user info and user info constraints are present
+	 * @throws IllegalArgumentException If both without port and port constraints are present
+	 * @throws IllegalArgumentException If both without path and path constraints are present
+	 * @throws IllegalArgumentException If both without query and query constraints are present
+	 * @throws IllegalArgumentException If both without fragment and fragment constraints are present
+	 */
+	public URIConstraintConfig {
+		Objects.requireNonNull(equalTo, "Optional for 'equal to' constraint must not be null");
+		Objects.requireNonNull(in, "Optional for 'in' constraint must not be null");
+		Objects.requireNonNull(scheme, "Optional for 'scheme' constraint must not be null");
+		Objects.requireNonNull(host, "Optional for 'host' constraint must not be null");
+		Objects.requireNonNull(withoutUserInfo, "Optional for 'without user info' constraint must not be null");
+		Objects.requireNonNull(userInfo, "Optional for 'user info' constraint must not be null");
+		Objects.requireNonNull(withoutPort, "Optional for 'without port' constraint must not be null");
+		Objects.requireNonNull(port, "Optional for 'port' constraint must not be null");
+		Objects.requireNonNull(withoutPath, "Optional for 'without path' constraint must not be null");
+		Objects.requireNonNull(path, "Optional for 'path' constraint must not be null");
+		Objects.requireNonNull(withoutQuery, "Optional for 'without query' constraint must not be null");
+		Objects.requireNonNull(query, "Optional for 'query' constraint must not be null");
+		Objects.requireNonNull(withoutFragment, "Optional for 'without fragment' constraint must not be null");
+		Objects.requireNonNull(fragment, "Optional for 'fragment' constraint must not be null");
+		Objects.requireNonNull(absolute, "Optional for 'absolute' constraint must not be null");
+		Objects.requireNonNull(relative, "Optional for 'relative' constraint must not be null");
+		Objects.requireNonNull(opaque, "Optional for 'opaque' constraint must not be null");
+		Objects.requireNonNull(hierarchical, "Optional for 'hierarchical' constraint must not be null");
+		Objects.requireNonNull(custom, "Optional for 'custom' constraint must not be null");
+		
+		if (in.isPresent() && in.get().getFirst().isEmpty()) {
+			throw new IllegalArgumentException("In constraint set must not be empty when present");
+		}
+		
+		if (absolute.isPresent() && relative.isPresent()) {
+			throw new IllegalArgumentException("Both absolute and relative constraints cannot be present at the same time");
+		}
+		
+		if (opaque.isPresent() && hierarchical.isPresent()) {
+			throw new IllegalArgumentException("Both opaque and hierarchical constraints cannot be present at the same time");
+		}
+		
+		if (withoutUserInfo.isPresent() && userInfo.isPresent()) {
+			throw new IllegalArgumentException("Both without user info and user info constraints cannot be present at the same time");
+		}
+		
+		if (withoutPort.isPresent() && port.isPresent()) {
+			throw new IllegalArgumentException("Both without port and port constraints cannot be present at the same time");
+		}
+		
+		if (withoutPath.isPresent() && path.isPresent()) {
+			throw new IllegalArgumentException("Both without path and path constraints cannot be present at the same time");
+		}
+		
+		if (withoutQuery.isPresent() && query.isPresent()) {
+			throw new IllegalArgumentException("Both without query and query constraints cannot be present at the same time");
+		}
+		
+		if (withoutFragment.isPresent() && fragment.isPresent()) {
+			throw new IllegalArgumentException("Both without fragment and fragment constraints cannot be present at the same time");
+		}
+	}
 	
 	/**
 	 * Creates a new config with the specified equal-to constraint.<br>

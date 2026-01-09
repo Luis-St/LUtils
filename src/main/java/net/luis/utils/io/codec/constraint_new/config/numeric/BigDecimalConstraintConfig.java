@@ -54,6 +54,17 @@ import java.util.*;
  * @param precisionMin The minimum precision (significant digits) constraint as a pair of (value, inclusive)
  * @param precisionMax The maximum precision (significant digits) constraint as a pair of (value, inclusive)
  * @param custom A custom constraint implementation
+ *
+ * @throws NullPointerException If any optional field is null
+ * @throws IllegalArgumentException If the 'in' constraint set is empty when present
+ * @throws IllegalArgumentException If min is greater than max when both are present
+ * @throws IllegalArgumentException If min equals max with at least one exclusive bound when both are present
+ * @throws IllegalArgumentException If the minimum scale is negative when present
+ * @throws IllegalArgumentException If the minimum scale is greater than the maximum scale when both are present
+ * @throws IllegalArgumentException If min and max scale are equal but at least one bound is exclusive when both are present
+ * @throws IllegalArgumentException If the minimum precision is not positive when present
+ * @throws IllegalArgumentException If the minimum precision is greater than the maximum precision when both are present
+ * @throws IllegalArgumentException If min and max precision are equal but at least one bound is exclusive when both are present
  */
 public record BigDecimalConstraintConfig(
 	@NonNull Optional<Pair<BigDecimal, Boolean>> equalTo,
@@ -80,6 +91,89 @@ public record BigDecimalConstraintConfig(
 		Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(),
 		Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty()
 	);
+	
+	/**
+	 * Canonical constructor for BigDecimal constraint configuration.<br>
+	 *
+	 * @param equalTo The equality constraint
+	 * @param in The set constraint
+	 * @param min The minimum value constraint
+	 * @param max The maximum value constraint
+	 * @param positive The positive constraint
+	 * @param negative The negative constraint
+	 * @param zero The zero constraint
+	 * @param percentage If present, requires the value to be between 0 and 100 (inclusive)
+	 * @param integral If present, requires the value to be a whole number (no fractional part)
+	 * @param normalized If present, requires the value to be within the range [0.0, 1.0]
+	 * @param scaleMin The minimum scale (decimal places) constraint
+	 * @param scaleMax The maximum scale (decimal places) constraint
+	 * @param precisionMin The minimum precision (significant digits) constraint
+	 * @param precisionMax The maximum precision (significant digits) constraint
+	 * @param custom A custom constraint implementation
+	 * @throws NullPointerException If any optional field is null
+	 * @throws IllegalArgumentException If the 'in' constraint set is empty when present
+	 * @throws IllegalArgumentException If min is greater than max when both are present
+	 * @throws IllegalArgumentException If min equals max with at least one exclusive bound when both are present
+	 * @throws IllegalArgumentException If the minimum scale is negative when present
+	 * @throws IllegalArgumentException If the minimum scale is greater than the maximum scale when both are present
+	 * @throws IllegalArgumentException If min and max scale are equal but at least one bound is exclusive when both are present
+	 * @throws IllegalArgumentException If the minimum precision is not positive when present
+	 * @throws IllegalArgumentException If the minimum precision is greater than the maximum precision when both are present
+	 * @throws IllegalArgumentException If min and max precision are equal but at least one bound is exclusive when both are present
+	 */
+	public BigDecimalConstraintConfig {
+		Objects.requireNonNull(equalTo, "Optional for 'equal to' constraint must not be null");
+		Objects.requireNonNull(in, "Optional for 'in' constraint must not be null");
+		Objects.requireNonNull(min, "Optional for 'min' constraint must not be null");
+		Objects.requireNonNull(max, "Optional for 'max' constraint must not be null");
+		Objects.requireNonNull(positive, "Optional for 'positive' constraint must not be null");
+		Objects.requireNonNull(negative, "Optional for 'negative' constraint must not be null");
+		Objects.requireNonNull(zero, "Optional for 'zero' constraint must not be null");
+		Objects.requireNonNull(percentage, "Optional for 'percentage' constraint must not be null");
+		Objects.requireNonNull(integral, "Optional for 'integral' constraint must not be null");
+		Objects.requireNonNull(normalized, "Optional for 'normalized' constraint must not be null");
+		Objects.requireNonNull(scaleMin, "Optional for 'scale min' constraint must not be null");
+		Objects.requireNonNull(scaleMax, "Optional for 'scale max' constraint must not be null");
+		Objects.requireNonNull(precisionMin, "Optional for 'precision min' constraint must not be null");
+		Objects.requireNonNull(precisionMax, "Optional for 'precision max' constraint must not be null");
+		Objects.requireNonNull(custom, "Optional for 'custom' constraint must not be null");
+		
+		if (in.isPresent() && in.get().getFirst().isEmpty()) {
+			throw new IllegalArgumentException("The 'in' constraint set must not be empty when present");
+		}
+		
+		if (min.isPresent() && max.isPresent() && min.get().getFirst().compareTo(max.get().getFirst()) > 0) {
+			throw new IllegalArgumentException("Min must be less than or equal to max when both are present, but got " + min.get().getFirst() + " > " + max.get().getFirst());
+		}
+		
+		if (min.isPresent() && max.isPresent() && min.get().getFirst().compareTo(max.get().getFirst()) == 0 && (!min.get().getSecond() || !max.get().getSecond())) {
+			throw new IllegalArgumentException("Min and max are equal but at least one bound is exclusive when both are present");
+		}
+		
+		if (scaleMin.isPresent() && scaleMin.get().getFirst() < 0) {
+			throw new IllegalArgumentException("Min scale must be non-negative when present, but got " + scaleMin.get().getFirst());
+		}
+		
+		if (scaleMin.isPresent() && scaleMax.isPresent() && scaleMin.get().getFirst() > scaleMax.get().getFirst()) {
+			throw new IllegalArgumentException("Min scale must be less than or equal to max scale when both are present, but got " + scaleMin.get().getFirst() + " > " + scaleMax.get().getFirst());
+		}
+		
+		if (scaleMin.isPresent() && scaleMax.isPresent() && scaleMin.get().getFirst().equals(scaleMax.get().getFirst()) && (!scaleMin.get().getSecond() || !scaleMax.get().getSecond())) {
+			throw new IllegalArgumentException("Min and max scale are equal but at least one bound is exclusive when both are present");
+		}
+		
+		if (precisionMin.isPresent() && precisionMin.get().getFirst() < 1) {
+			throw new IllegalArgumentException("Min precision must be positive when present, but got " + precisionMin.get().getFirst());
+		}
+		
+		if (precisionMin.isPresent() && precisionMax.isPresent() && precisionMin.get().getFirst() > precisionMax.get().getFirst()) {
+			throw new IllegalArgumentException("Min precision must be less than or equal to max precision when both are present, but got " + precisionMin.get().getFirst() + " > " + precisionMax.get().getFirst());
+		}
+		
+		if (precisionMin.isPresent() && precisionMax.isPresent() && precisionMin.get().getFirst().equals(precisionMax.get().getFirst()) && (!precisionMin.get().getSecond() || !precisionMax.get().getSecond())) {
+			throw new IllegalArgumentException("Min and max precision are equal but at least one bound is exclusive when both are present");
+		}
+	}
 	
 	/**
 	 * Creates a new config with the specified equal-to constraint.<br>

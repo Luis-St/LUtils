@@ -50,6 +50,12 @@ import java.util.*;
  * @param ascii If present, requires the character to be an ASCII character (0-127)
  * @param latin1 If present, requires the character to be a Latin-1 character (0-255)
  * @param custom A custom constraint implementation
+ *
+ * @throws NullPointerException If any optional field is null
+ * @throws IllegalArgumentException If the 'in' constraint set is empty when present
+ * @throws IllegalArgumentException If min is greater than max when both are present
+ * @throws IllegalArgumentException If min equals max with at least one exclusive bound when both are present
+ * @throws IllegalArgumentException If both 'upperCase' and 'lowerCase' constraints are present
  */
 public record CharacterConstraintConfig(
 	@NonNull Optional<Pair<Character, Boolean>> equalTo,
@@ -77,6 +83,51 @@ public record CharacterConstraintConfig(
 		Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(),
 		Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty()
 	);
+	
+	/**
+	 * Canonical constructor that validates all constraint parameters.<br>
+	 *
+	 * @throws NullPointerException If any optional field is null
+	 * @throws IllegalArgumentException If the 'in' constraint set is empty when present
+	 * @throws IllegalArgumentException If min is greater than max when both are present
+	 * @throws IllegalArgumentException If min equals max with at least one exclusive bound when both are present
+	 * @throws IllegalArgumentException If both 'upperCase' and 'lowerCase' constraints are present
+	 */
+	public CharacterConstraintConfig {
+		Objects.requireNonNull(equalTo, "Optional for 'equal to' constraint must not be null");
+		Objects.requireNonNull(in, "Optional for 'in' constraint must not be null");
+		Objects.requireNonNull(min, "Optional for 'min' constraint must not be null");
+		Objects.requireNonNull(max, "Optional for 'max' constraint must not be null");
+		Objects.requireNonNull(letter, "Optional for 'letter' constraint must not be null");
+		Objects.requireNonNull(digit, "Optional for 'digit' constraint must not be null");
+		Objects.requireNonNull(alphanumeric, "Optional for 'alphanumeric' constraint must not be null");
+		Objects.requireNonNull(whitespace, "Optional for 'whitespace' constraint must not be null");
+		Objects.requireNonNull(punctuation, "Optional for 'punctuation' constraint must not be null");
+		Objects.requireNonNull(symbol, "Optional for 'symbol' constraint must not be null");
+		Objects.requireNonNull(control, "Optional for 'control' constraint must not be null");
+		Objects.requireNonNull(upperCase, "Optional for 'upper case' constraint must not be null");
+		Objects.requireNonNull(lowerCase, "Optional for 'lower case' constraint must not be null");
+		Objects.requireNonNull(ascii, "Optional for 'ascii' constraint must not be null");
+		Objects.requireNonNull(latin1, "Optional for 'latin1' constraint must not be null");
+		Objects.requireNonNull(custom, "Optional for 'custom' constraint must not be null");
+		
+		if (in.isPresent() && in.get().getFirst().isEmpty()) {
+			throw new IllegalArgumentException("In constraint set must not be empty when present");
+		}
+		
+		if (min.isPresent() && max.isPresent()) {
+			if (min.get().getFirst().compareTo(max.get().getFirst()) > 0) {
+				throw new IllegalArgumentException("Min must be less than or equal to max when both are present, but got " + min.get().getFirst() + " > " + max.get().getFirst());
+			}
+			if (min.get().getFirst().compareTo(max.get().getFirst()) == 0 && (!min.get().getSecond() || !max.get().getSecond())) {
+				throw new IllegalArgumentException("Min and max are equal but at least one bound is exclusive when both are present");
+			}
+		}
+		
+		if (upperCase.isPresent() && lowerCase.isPresent()) {
+			throw new IllegalArgumentException("Upper case and lower case are mutually exclusive");
+		}
+	}
 	
 	/**
 	 * Creates a new config with the specified equal-to constraint.<br>

@@ -43,6 +43,12 @@ import java.util.*;
  * @param notNil If present, requires the UUID to not be the nil UUID
  * @param max If present, requires the UUID to be the max UUID
  * @param custom A custom constraint implementation
+ *
+ * @throws NullPointerException If any optional field is null
+ * @throws IllegalArgumentException If the 'in' constraint set is empty when present
+ * @throws IllegalArgumentException If 'version' is not between 0 and 5 when present
+ * @throws IllegalArgumentException If both 'nil' and 'notNil' constraints are present
+ * @throws IllegalArgumentException If both 'nil' and 'max' constraints are present
  */
 public record UUIDConstraintConfig(
 	@NonNull Optional<Pair<UUID, Boolean>> equalTo,
@@ -61,6 +67,42 @@ public record UUIDConstraintConfig(
 	public static final UUIDConstraintConfig UNCONSTRAINED = new UUIDConstraintConfig(
 		Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty()
 	);
+	
+	/**
+	 * Canonical constructor that validates all constraint parameters.<br>
+	 *
+	 * @throws NullPointerException If any optional field is null
+	 * @throws IllegalArgumentException If the 'in' constraint set is empty when present
+	 * @throws IllegalArgumentException If 'version' is not between 0 and 5 when present
+	 * @throws IllegalArgumentException If both 'nil' and 'notNil' constraints are present
+	 * @throws IllegalArgumentException If both 'nil' and 'max' constraints are present
+	 */
+	public UUIDConstraintConfig {
+		Objects.requireNonNull(equalTo, "Optional for 'equal to' constraint must not be null");
+		Objects.requireNonNull(in, "Optional for 'in' constraint must not be null");
+		Objects.requireNonNull(version, "Optional for 'version' constraint must not be null");
+		Objects.requireNonNull(variant, "Optional for 'variant' constraint must not be null");
+		Objects.requireNonNull(nil, "Optional for 'nil' constraint must not be null");
+		Objects.requireNonNull(notNil, "Optional for 'not nil' constraint must not be null");
+		Objects.requireNonNull(max, "Optional for 'max' constraint must not be null");
+		Objects.requireNonNull(custom, "Optional for 'custom' constraint must not be null");
+		
+		if (in.isPresent() && in.get().getFirst().isEmpty()) {
+			throw new IllegalArgumentException("In constraint set must not be empty when present");
+		}
+		
+		if (version.isPresent() && (version.get() < 0 || version.get() > 5)) {
+			throw new IllegalArgumentException("Version must be between 0 and 5 when present, but got " + version.get());
+		}
+		
+		if (nil.isPresent() && notNil.isPresent()) {
+			throw new IllegalArgumentException("Nil and not nil are mutually exclusive");
+		}
+		
+		if (nil.isPresent() && max.isPresent()) {
+			throw new IllegalArgumentException("Nil and max are mutually exclusive");
+		}
+	}
 	
 	/**
 	 * Creates a new config with the specified equal-to constraint.<br>

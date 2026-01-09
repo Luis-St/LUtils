@@ -51,6 +51,9 @@ import java.util.*;
  * @param min The minimum Year constraint as a pair of (value, inclusive)
  * @param max The maximum Year constraint as a pair of (value, inclusive)
  * @param custom A custom constraint implementation
+ *
+ * @throws NullPointerException If any of the optional fields is null
+ * @throws IllegalArgumentException If the 'in' set is empty when present
  */
 public record YearConstraintConfig(
 	@NonNull Optional<Pair<Year, Boolean>> equalTo,
@@ -66,6 +69,29 @@ public record YearConstraintConfig(
 	public static final YearConstraintConfig UNCONSTRAINED = new YearConstraintConfig(
 		Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty()
 	);
+	
+	/**
+	 * Canonical constructor that validates all constraint fields.<br>
+	 *
+	 * @param equalTo The Year equality constraint as a pair of (value, negated) where negated=false means equalTo and negated=true means notEqualTo
+	 * @param in The Year set constraint as a pair of (values, negated) where negated=false means in and negated=true means notIn
+	 * @param min The minimum Year constraint as a pair of (value, inclusive)
+	 * @param max The maximum Year constraint as a pair of (value, inclusive)
+	 * @param custom A custom constraint implementation
+	 * @throws NullPointerException If any of the optional fields is null
+	 * @throws IllegalArgumentException If the 'in' set is empty when present
+	 */
+	public YearConstraintConfig {
+		Objects.requireNonNull(equalTo, "Optional for 'equal to' constraint must not be null");
+		Objects.requireNonNull(in, "Optional for 'in' constraint must not be null");
+		Objects.requireNonNull(min, "Optional for 'min' constraint must not be null");
+		Objects.requireNonNull(max, "Optional for 'max' constraint must not be null");
+		Objects.requireNonNull(custom, "Optional for 'custom' constraint must not be null");
+		
+		if (in.isPresent() && in.get().getFirst().isEmpty()) {
+			throw new IllegalArgumentException("In set must not be empty when present");
+		}
+	}
 	
 	/**
 	 * Creates a new config with the specified equal-to constraint.<br>

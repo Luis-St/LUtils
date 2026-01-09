@@ -61,6 +61,23 @@ import java.util.regex.Pattern;
  * @param ascii If present, requires strings to contain only ASCII characters
  * @param latin1 If present, requires strings to contain only Latin-1 characters
  * @param custom A custom constraint implementation
+ *
+ * @throws NullPointerException If any optional field is null
+ * @throws IllegalArgumentException If the 'in' constraint set is empty when present
+ * @throws IllegalArgumentException If the 'inIgnoreCase' constraint set is empty when present
+ * @throws IllegalArgumentException If the minimum length is negative when present
+ * @throws IllegalArgumentException If the maximum length is negative when present
+ * @throws IllegalArgumentException If the minimum length is greater than the maximum length when both are present
+ * @throws IllegalArgumentException If min and max length are equal but at least one bound is exclusive when both are present
+ * @throws IllegalArgumentException If the 'startsWithAny' constraint set is empty when present
+ * @throws IllegalArgumentException If the 'containsAny' constraint set is empty when present
+ * @throws IllegalArgumentException If the 'containsAll' constraint set is empty when present
+ * @throws IllegalArgumentException If the 'containsOnly' constraint set is empty when present
+ * @throws IllegalArgumentException If the 'endsWithAny' constraint set is empty when present
+ * @throws IllegalArgumentException If both 'blank' and 'notBlank' constraints are present
+ * @throws IllegalArgumentException If both 'upperCase' and 'lowerCase' constraints are present
+ * @throws IllegalArgumentException If 'blank' constraint conflicts with minimum length greater than zero
+ * @throws IllegalArgumentException If 'notBlank' constraint conflicts with maximum length of zero
  */
 @SuppressWarnings("OptionalContainsCollection")
 public record StringConstraintConfig(
@@ -100,6 +117,140 @@ public record StringConstraintConfig(
 		Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(),
 		Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty()
 	);
+
+	/**
+	 * Canonical constructor for string constraint configuration.<br>
+	 *
+	 * @param equalTo The string equality constraint
+	 * @param in The string set constraint
+	 * @param equalToIgnoreCase The case-insensitive equality constraint
+	 * @param inIgnoreCase The case-insensitive set constraint
+	 * @param minLength The minimum length constraint
+	 * @param maxLength The maximum length constraint
+	 * @param startsWith The prefix constraint
+	 * @param startsWithAny The prefix set constraint
+	 * @param contains The substring constraint
+	 * @param containsAny The substring set constraint
+	 * @param containsAll The set of substrings that strings must all contain
+	 * @param containsOnly The set of substrings that strings must exclusively contain
+	 * @param endsWith The suffix constraint
+	 * @param endsWithAny The suffix set constraint
+	 * @param matches The pattern constraint
+	 * @param trimmed If present, requires strings to have no leading/trailing whitespace
+	 * @param blank If present, requires strings to be blank
+	 * @param notBlank If present, requires strings to not be blank
+	 * @param upperCase If present, requires strings to be upper case
+	 * @param lowerCase If present, requires strings to be lower case
+	 * @param numeric If present, requires strings to contain only digits
+	 * @param alphabetic If present, requires strings to contain only letters
+	 * @param alphanumeric If present, requires strings to contain only letters and digits
+	 * @param ascii If present, requires strings to contain only ASCII characters
+	 * @param latin1 If present, requires strings to contain only Latin-1 characters
+	 * @param custom A custom constraint implementation
+	 * @throws NullPointerException If any optional field is null
+	 * @throws IllegalArgumentException If the 'in' constraint set is empty when present
+	 * @throws IllegalArgumentException If the 'inIgnoreCase' constraint set is empty when present
+	 * @throws IllegalArgumentException If the minimum length is negative when present
+	 * @throws IllegalArgumentException If the maximum length is negative when present
+	 * @throws IllegalArgumentException If the minimum length is greater than the maximum length when both are present
+	 * @throws IllegalArgumentException If min and max length are equal but at least one bound is exclusive when both are present
+	 * @throws IllegalArgumentException If the 'startsWithAny' constraint set is empty when present
+	 * @throws IllegalArgumentException If the 'containsAny' constraint set is empty when present
+	 * @throws IllegalArgumentException If the 'containsAll' constraint set is empty when present
+	 * @throws IllegalArgumentException If the 'containsOnly' constraint set is empty when present
+	 * @throws IllegalArgumentException If the 'endsWithAny' constraint set is empty when present
+	 * @throws IllegalArgumentException If both 'blank' and 'notBlank' constraints are present
+	 * @throws IllegalArgumentException If both 'upperCase' and 'lowerCase' constraints are present
+	 * @throws IllegalArgumentException If 'blank' constraint conflicts with minimum length greater than zero
+	 * @throws IllegalArgumentException If 'notBlank' constraint conflicts with maximum length of zero
+	 */
+	public StringConstraintConfig {
+		Objects.requireNonNull(equalTo, "Optional for 'equal to' constraint must not be null");
+		Objects.requireNonNull(in, "Optional for 'in' constraint must not be null");
+		Objects.requireNonNull(equalToIgnoreCase, "Optional for 'equal to ignore case' constraint must not be null");
+		Objects.requireNonNull(inIgnoreCase, "Optional for 'in ignore case' constraint must not be null");
+		Objects.requireNonNull(minLength, "Optional for 'min length' constraint must not be null");
+		Objects.requireNonNull(maxLength, "Optional for 'max length' constraint must not be null");
+		Objects.requireNonNull(startsWith, "Optional for 'starts with' constraint must not be null");
+		Objects.requireNonNull(startsWithAny, "Optional for 'starts with any' constraint must not be null");
+		Objects.requireNonNull(contains, "Optional for 'contains' constraint must not be null");
+		Objects.requireNonNull(containsAny, "Optional for 'contains any' constraint must not be null");
+		Objects.requireNonNull(containsAll, "Optional for 'contains all' constraint must not be null");
+		Objects.requireNonNull(containsOnly, "Optional for 'contains only' constraint must not be null");
+		Objects.requireNonNull(endsWith, "Optional for 'ends with' constraint must not be null");
+		Objects.requireNonNull(endsWithAny, "Optional for 'ends with any' constraint must not be null");
+		Objects.requireNonNull(matches, "Optional for 'matches' constraint must not be null");
+		Objects.requireNonNull(trimmed, "Optional for 'trimmed' constraint must not be null");
+		Objects.requireNonNull(blank, "Optional for 'blank' constraint must not be null");
+		Objects.requireNonNull(notBlank, "Optional for 'not blank' constraint must not be null");
+		Objects.requireNonNull(upperCase, "Optional for 'upper case' constraint must not be null");
+		Objects.requireNonNull(lowerCase, "Optional for 'lower case' constraint must not be null");
+		Objects.requireNonNull(numeric, "Optional for 'numeric' constraint must not be null");
+		Objects.requireNonNull(alphabetic, "Optional for 'alphabetic' constraint must not be null");
+		Objects.requireNonNull(alphanumeric, "Optional for 'alphanumeric' constraint must not be null");
+		Objects.requireNonNull(ascii, "Optional for 'ascii' constraint must not be null");
+		Objects.requireNonNull(latin1, "Optional for 'latin1' constraint must not be null");
+		Objects.requireNonNull(custom, "Optional for 'custom' constraint must not be null");
+		
+		if (in.isPresent() && in.get().getFirst().isEmpty()) {
+			throw new IllegalArgumentException("The 'in' constraint set must not be empty when present");
+		}
+		
+		if (inIgnoreCase.isPresent() && inIgnoreCase.get().getFirst().isEmpty()) {
+			throw new IllegalArgumentException("The 'in ignore case' constraint set must not be empty when present");
+		}
+		
+		if (minLength.isPresent() && minLength.get().getFirst() < 0) {
+			throw new IllegalArgumentException("Min length must be non-negative when present, but got " + minLength.get().getFirst());
+		}
+		
+		if (maxLength.isPresent() && maxLength.get().getFirst() < 0) {
+			throw new IllegalArgumentException("Max length must be non-negative when present, but got " + maxLength.get().getFirst());
+		}
+		
+		if (minLength.isPresent() && maxLength.isPresent() && minLength.get().getFirst() > maxLength.get().getFirst()) {
+			throw new IllegalArgumentException("Min length must be less than or equal to max length when both are present, but got " + minLength.get().getFirst() + " > " + maxLength.get().getFirst());
+		}
+		
+		if (minLength.isPresent() && maxLength.isPresent() && minLength.get().getFirst().equals(maxLength.get().getFirst()) && (!minLength.get().getSecond() || !maxLength.get().getSecond())) {
+			throw new IllegalArgumentException("Min and max length are equal but at least one bound is exclusive when both are present");
+		}
+		
+		if (startsWithAny.isPresent() && startsWithAny.get().getFirst().isEmpty()) {
+			throw new IllegalArgumentException("The 'starts with any' constraint set must not be empty when present");
+		}
+		
+		if (containsAny.isPresent() && containsAny.get().getFirst().isEmpty()) {
+			throw new IllegalArgumentException("The 'contains any' constraint set must not be empty when present");
+		}
+		
+		if (containsAll.isPresent() && containsAll.get().isEmpty()) {
+			throw new IllegalArgumentException("The 'contains all' constraint set must not be empty when present");
+		}
+		if (containsOnly.isPresent() && containsOnly.get().isEmpty()) {
+			throw new IllegalArgumentException("The 'contains only' constraint set must not be empty when present");
+		}
+		
+		if (endsWithAny.isPresent() && endsWithAny.get().getFirst().isEmpty()) {
+			throw new IllegalArgumentException("The 'ends with any' constraint set must not be empty when present");
+		}
+		
+		if (blank.isPresent() && notBlank.isPresent()) {
+			throw new IllegalArgumentException("Both 'blank' and 'not blank' constraints cannot be present at the same time");
+		}
+		
+		if (upperCase.isPresent() && lowerCase.isPresent()) {
+			throw new IllegalArgumentException("Both 'upper case' and 'lower case' constraints cannot be present at the same time");
+		}
+		
+		if (blank.isPresent() && minLength.isPresent() && minLength.get().getFirst() > 0) {
+			throw new IllegalArgumentException("Blank constraint conflicts with minimum length greater than zero");
+		}
+		
+		if (notBlank.isPresent() && maxLength.isPresent() && maxLength.get().getFirst() == 0) {
+			throw new IllegalArgumentException("Not blank constraint conflicts with maximum length of zero");
+		}
+	}
 	
 	/**
 	 * Creates a new config with the specified equal-to constraint.<br>

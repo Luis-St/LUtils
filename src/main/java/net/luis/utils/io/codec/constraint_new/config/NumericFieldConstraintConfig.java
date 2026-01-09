@@ -42,6 +42,11 @@ import java.util.*;
  * @param min The minimum value constraint as a pair of (value, inclusive)
  * @param max The maximum value constraint as a pair of (value, inclusive)
  * @param custom A custom constraint implementation
+ *
+ * @throws NullPointerException If any optional field is null
+ * @throws IllegalArgumentException If the 'in' constraint set is empty when present
+ * @throws IllegalArgumentException If min is greater than max when both are present
+ * @throws IllegalArgumentException If min equals max with at least one exclusive bound when both are present
  */
 public record NumericFieldConstraintConfig(
 	@NonNull Optional<Pair<Integer, Boolean>> equalTo,
@@ -57,6 +62,35 @@ public record NumericFieldConstraintConfig(
 	public static final NumericFieldConstraintConfig UNCONSTRAINED = new NumericFieldConstraintConfig(
 		Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty()
 	);
+	
+	/**
+	 * Canonical constructor that validates all constraint parameters.<br>
+	 *
+	 * @throws NullPointerException If any optional field is null
+	 * @throws IllegalArgumentException If the 'in' constraint set is empty when present
+	 * @throws IllegalArgumentException If min is greater than max when both are present
+	 * @throws IllegalArgumentException If min equals max with at least one exclusive bound when both are present
+	 */
+	public NumericFieldConstraintConfig {
+		Objects.requireNonNull(equalTo, "Optional for 'equal to' constraint must not be null");
+		Objects.requireNonNull(in, "Optional for 'in' constraint must not be null");
+		Objects.requireNonNull(min, "Optional for 'min' constraint must not be null");
+		Objects.requireNonNull(max, "Optional for 'max' constraint must not be null");
+		Objects.requireNonNull(custom, "Optional for 'custom' constraint must not be null");
+		
+		if (in.isPresent() && in.get().getFirst().isEmpty()) {
+			throw new IllegalArgumentException("In constraint set must not be empty when present");
+		}
+		
+		if (min.isPresent() && max.isPresent()) {
+			if (min.get().getFirst().compareTo(max.get().getFirst()) > 0) {
+				throw new IllegalArgumentException("Min must be less than or equal to max when both are present, but got " + min.get().getFirst() + " > " + max.get().getFirst());
+			}
+			if (min.get().getFirst().compareTo(max.get().getFirst()) == 0 && (!min.get().getSecond() || !max.get().getSecond())) {
+				throw new IllegalArgumentException("Min and max are equal but at least one bound is exclusive when both are present");
+			}
+		}
+	}
 	
 	/**
 	 * Creates a new config with the specified equal-to constraint.<br>

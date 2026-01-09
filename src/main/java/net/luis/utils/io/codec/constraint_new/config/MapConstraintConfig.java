@@ -59,6 +59,19 @@ import java.util.*;
  * @param uniqueValues If present, requires all values to be unique
  * @param nonNullValues If present, requires all values to be non-null
  * @param custom A custom constraint implementation
+ *
+ * @throws NullPointerException If any optional field is null
+ * @throws IllegalArgumentException If the 'in' constraint set is empty when present
+ * @throws IllegalArgumentException If the minimum size is negative when present
+ * @throws IllegalArgumentException If the maximum size is negative when present
+ * @throws IllegalArgumentException If the minimum size is greater than the maximum size when both are present
+ * @throws IllegalArgumentException If min and max size are equal but at least one bound is exclusive when both are present
+ * @throws IllegalArgumentException If the 'requiredKeys' constraint set is empty when present
+ * @throws IllegalArgumentException If the 'forbiddenKeys' constraint set is empty when present
+ * @throws IllegalArgumentException If the 'allowedKeys' constraint set is empty when present
+ * @throws IllegalArgumentException If required keys and forbidden keys overlap
+ * @throws IllegalArgumentException If required keys are not a subset of allowed keys when both are present
+ * @throws IllegalArgumentException If forbidden keys and allowed keys overlap
  */
 @SuppressWarnings("OptionalContainsCollection")
 public record MapConstraintConfig<K, V>(
@@ -74,7 +87,102 @@ public record MapConstraintConfig<K, V>(
 	@NonNull Optional<Void> nonNullValues,
 	@NonNull Optional<Constraint<Map<K, V>>> custom
 ) {
-	
+
+	/**
+	 * Canonical constructor for map constraint configuration.<br>
+	 *
+	 * @param equalTo The map equality constraint
+	 * @param in The map set constraint
+	 * @param min The minimum size constraint
+	 * @param max The maximum size constraint
+	 * @param requiredKeys The set of keys that must be present in the map
+	 * @param forbiddenKeys The set of keys that must not be present in the map
+	 * @param allowedKeys The set of keys that are the only ones allowed in the map
+	 * @param nonNullKeys If present, requires all keys to be non-null
+	 * @param uniqueValues If present, requires all values to be unique
+	 * @param nonNullValues If present, requires all values to be non-null
+	 * @param custom A custom constraint implementation
+	 * @throws NullPointerException If any optional field is null
+	 * @throws IllegalArgumentException If the 'in' constraint set is empty when present
+	 * @throws IllegalArgumentException If the minimum size is negative when present
+	 * @throws IllegalArgumentException If the maximum size is negative when present
+	 * @throws IllegalArgumentException If the minimum size is greater than the maximum size when both are present
+	 * @throws IllegalArgumentException If min and max size are equal but at least one bound is exclusive when both are present
+	 * @throws IllegalArgumentException If the 'requiredKeys' constraint set is empty when present
+	 * @throws IllegalArgumentException If the 'forbiddenKeys' constraint set is empty when present
+	 * @throws IllegalArgumentException If the 'allowedKeys' constraint set is empty when present
+	 * @throws IllegalArgumentException If required keys and forbidden keys overlap
+	 * @throws IllegalArgumentException If required keys are not a subset of allowed keys when both are present
+	 * @throws IllegalArgumentException If forbidden keys and allowed keys overlap
+	 */
+	public MapConstraintConfig {
+		Objects.requireNonNull(equalTo, "Optional for 'equal to' constraint must not be null");
+		Objects.requireNonNull(in, "Optional for 'in' constraint must not be null");
+		Objects.requireNonNull(min, "Optional for 'min' constraint must not be null");
+		Objects.requireNonNull(max, "Optional for 'max' constraint must not be null");
+		Objects.requireNonNull(requiredKeys, "Optional for 'required keys' constraint must not be null");
+		Objects.requireNonNull(forbiddenKeys, "Optional for 'forbidden keys' constraint must not be null");
+		Objects.requireNonNull(allowedKeys, "Optional for 'allowed keys' constraint must not be null");
+		Objects.requireNonNull(nonNullKeys, "Optional for 'non null keys' constraint must not be null");
+		Objects.requireNonNull(uniqueValues, "Optional for 'unique values' constraint must not be null");
+		Objects.requireNonNull(nonNullValues, "Optional for 'non null values' constraint must not be null");
+		Objects.requireNonNull(custom, "Optional for 'custom' constraint must not be null");
+		
+		if (in.isPresent() && in.get().getFirst().isEmpty()) {
+			throw new IllegalArgumentException("The 'in' constraint set must not be empty when present");
+		}
+		
+		if (min.isPresent() && min.get().getFirst() < 0) {
+			throw new IllegalArgumentException("Min size must be non-negative when present, but got " + min.get().getFirst());
+		}
+		
+		if (max.isPresent() && max.get().getFirst() < 0) {
+			throw new IllegalArgumentException("Max size must be non-negative when present, but got " + max.get().getFirst());
+		}
+		
+		if (min.isPresent() && max.isPresent() && min.get().getFirst() > max.get().getFirst()) {
+			throw new IllegalArgumentException("Min size must be less than or equal to max size when both are present, but got " + min.get().getFirst() + " > " + max.get().getFirst());
+		}
+		
+		if (min.isPresent() && max.isPresent() && min.get().getFirst().equals(max.get().getFirst()) && (!min.get().getSecond() || !max.get().getSecond())) {
+			throw new IllegalArgumentException("Min and max size are equal but at least one bound is exclusive when both are present");
+		}
+		
+		if (requiredKeys.isPresent() && requiredKeys.get().isEmpty()) {
+			throw new IllegalArgumentException("The 'required keys' constraint set must not be empty when present");
+		}
+		
+		if (forbiddenKeys.isPresent() && forbiddenKeys.get().isEmpty()) {
+			throw new IllegalArgumentException("The 'forbidden keys' constraint set must not be empty when present");
+		}
+		
+		if (allowedKeys.isPresent() && allowedKeys.get().isEmpty()) {
+			throw new IllegalArgumentException("The 'allowed keys' constraint set must not be empty when present");
+		}
+		
+		if (requiredKeys.isPresent() && forbiddenKeys.isPresent()) {
+			Set<K> overlap = new HashSet<>(requiredKeys.get());
+			overlap.retainAll(forbiddenKeys.get());
+			
+			if (!overlap.isEmpty()) {
+				throw new IllegalArgumentException("Required keys and forbidden keys must not overlap, but got overlap: " + overlap);
+			}
+		}
+		
+		if (requiredKeys.isPresent() && allowedKeys.isPresent() && !allowedKeys.get().containsAll(requiredKeys.get())) {
+			throw new IllegalArgumentException("Required keys must be a subset of allowed keys when both are present");
+		}
+		
+		if (forbiddenKeys.isPresent() && allowedKeys.isPresent()) {
+			Set<K> overlap = new HashSet<>(forbiddenKeys.get());
+			overlap.retainAll(allowedKeys.get());
+			
+			if (!overlap.isEmpty()) {
+				throw new IllegalArgumentException("Forbidden keys and allowed keys must not overlap when both are present, but got overlap: " + overlap);
+			}
+		}
+	}
+
 	/**
 	 * Creates an unconstrained map configuration with no constraints applied.<br>
 	 *

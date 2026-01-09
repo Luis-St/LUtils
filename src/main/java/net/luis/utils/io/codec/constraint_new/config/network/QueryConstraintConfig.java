@@ -50,6 +50,13 @@ import java.util.regex.Pattern;
  * @param singleValued If present, requires all parameters to have exactly one value
  * @param multiValuedConstraints A map of key to size constraint config for multi-value validation
  * @param custom A custom constraint implementation
+ *
+ * @throws NullPointerException If any of the optional fields is null
+ * @throws IllegalArgumentException If min is greater than max when both are present
+ * @throws IllegalArgumentException If min and max are equal but at least one bound is exclusive when both are present
+ * @throws IllegalArgumentException If the required keys set is empty when present
+ * @throws IllegalArgumentException If the forbidden keys set is empty when present
+ * @throws IllegalArgumentException If the allowed keys set is empty when present
  */
 @SuppressWarnings("OptionalContainsCollection")
 public record QueryConstraintConfig(
@@ -75,6 +82,52 @@ public record QueryConstraintConfig(
 		Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(),
 		Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty()
 	);
+	
+	/**
+	 * Canonical constructor for {@link QueryConstraintConfig}.<br>
+	 * @throws NullPointerException If any of the optional fields is null
+	 * @throws IllegalArgumentException If min is greater than max when both are present
+	 * @throws IllegalArgumentException If min and max are equal but at least one bound is exclusive when both are present
+	 * @throws IllegalArgumentException If the required keys set is empty when present
+	 * @throws IllegalArgumentException If the forbidden keys set is empty when present
+	 * @throws IllegalArgumentException If the allowed keys set is empty when present
+	 */
+	public QueryConstraintConfig {
+		Objects.requireNonNull(min, "Optional for 'min' constraint must not be null");
+		Objects.requireNonNull(max, "Optional for 'max' constraint must not be null");
+		Objects.requireNonNull(requiredKeys, "Optional for 'required keys' constraint must not be null");
+		Objects.requireNonNull(forbiddenKeys, "Optional for 'forbidden keys' constraint must not be null");
+		Objects.requireNonNull(allowedKeys, "Optional for 'allowed keys' constraint must not be null");
+		Objects.requireNonNull(nonNullKeys, "Optional for 'non null keys' constraint must not be null");
+		Objects.requireNonNull(uniqueValues, "Optional for 'unique values' constraint must not be null");
+		Objects.requireNonNull(nonNullValues, "Optional for 'non null values' constraint must not be null");
+		Objects.requireNonNull(valueConstraints, "Optional for 'value constraints' constraint must not be null");
+		Objects.requireNonNull(patternValueConstraints, "Optional for 'pattern value constraints' constraint must not be null");
+		Objects.requireNonNull(singleValued, "Optional for 'single valued' constraint must not be null");
+		Objects.requireNonNull(multiValuedConstraints, "Optional for 'multi valued constraints' constraint must not be null");
+		Objects.requireNonNull(custom, "Optional for 'custom' constraint must not be null");
+		
+		if (min.isPresent() && max.isPresent()) {
+			if (min.get().getFirst().compareTo(max.get().getFirst()) > 0) {
+				throw new IllegalArgumentException("Min must be less than or equal to max when both are present, but got " + min.get().getFirst() + " > " + max.get().getFirst());
+			}
+			if (min.get().getFirst().compareTo(max.get().getFirst()) == 0 && (!min.get().getSecond() || !max.get().getSecond())) {
+				throw new IllegalArgumentException("Min and max are equal but at least one bound is exclusive when both are present");
+			}
+		}
+		
+		if (requiredKeys.isPresent() && requiredKeys.get().isEmpty()) {
+			throw new IllegalArgumentException("Required keys set must not be empty when present");
+		}
+		
+		if (forbiddenKeys.isPresent() && forbiddenKeys.get().isEmpty()) {
+			throw new IllegalArgumentException("Forbidden keys set must not be empty when present");
+		}
+		
+		if (allowedKeys.isPresent() && allowedKeys.get().isEmpty()) {
+			throw new IllegalArgumentException("Allowed keys set must not be empty when present");
+		}
+	}
 	
 	/**
 	 * Creates a new config with the specified minimum size constraint (inclusive).<br>
