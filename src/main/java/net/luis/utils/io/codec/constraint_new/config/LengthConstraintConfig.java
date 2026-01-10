@@ -21,6 +21,7 @@ package net.luis.utils.io.codec.constraint_new.config;
 import net.luis.utils.io.codec.constraint_new.Constraint;
 import net.luis.utils.io.codec.constraint_new.LengthConstraint;
 import net.luis.utils.util.Pair;
+import net.luis.utils.util.result.Result;
 import org.jspecify.annotations.NonNull;
 
 import java.util.*;
@@ -50,7 +51,7 @@ public record LengthConstraintConfig(
 	@NonNull Optional<Pair<Integer, Boolean>> min,
 	@NonNull Optional<Pair<Integer, Boolean>> max,
 	@NonNull Optional<Constraint<Integer>> custom
-) {
+) implements ConstraintConfig<Integer> {
 	
 	/**
 	 * An unconstrained length configuration with no constraints applied.<br>
@@ -80,19 +81,19 @@ public record LengthConstraintConfig(
 		Objects.requireNonNull(min, "Optional for 'min' constraint must not be null");
 		Objects.requireNonNull(max, "Optional for 'max' constraint must not be null");
 		Objects.requireNonNull(custom, "Optional for 'custom' constraint must not be null");
-
+		
 		if (in.isPresent() && in.get().getFirst().isEmpty()) {
 			throw new IllegalArgumentException("In constraint set must not be empty when present");
 		}
-
+		
 		if (min.isPresent() && min.get().getFirst() < 0) {
 			throw new IllegalArgumentException("Minimum length must not be negative when present, but got " + min.get().getFirst());
 		}
-
+		
 		if (max.isPresent() && max.get().getFirst() < 0) {
 			throw new IllegalArgumentException("Maximum length must not be negative when present, but got " + max.get().getFirst());
 		}
-
+		
 		if (min.isPresent() && max.isPresent()) {
 			if (min.get().getFirst() > max.get().getFirst()) {
 				throw new IllegalArgumentException("Maximum length must not be less than minimum length when both are present, but got " + min.get().getFirst() + " > " + max.get().getFirst());
@@ -103,6 +104,8 @@ public record LengthConstraintConfig(
 		}
 	}
 	
+	//region With methods
+	
 	/**
 	 * Creates a new config with the specified equal-to constraint.<br>
 	 *
@@ -112,7 +115,7 @@ public record LengthConstraintConfig(
 	public @NonNull LengthConstraintConfig withEqualTo(int value) {
 		return new LengthConstraintConfig(Optional.of(Pair.of(value, false)), this.in, this.min, this.max, this.custom);
 	}
-
+	
 	/**
 	 * Creates a new config with the specified not-equal-to constraint.<br>
 	 *
@@ -122,7 +125,7 @@ public record LengthConstraintConfig(
 	public @NonNull LengthConstraintConfig withNotEqualTo(int value) {
 		return new LengthConstraintConfig(Optional.of(Pair.of(value, true)), this.in, this.min, this.max, this.custom);
 	}
-
+	
 	/**
 	 * Creates a new config with the specified inclusion constraint.<br>
 	 *
@@ -133,7 +136,7 @@ public record LengthConstraintConfig(
 		Objects.requireNonNull(values, "Values for 'in' constraint must not be null");
 		return new LengthConstraintConfig(this.equalTo, Optional.of(Pair.of(Set.copyOf(values), false)), this.min, this.max, this.custom);
 	}
-
+	
 	/**
 	 * Creates a new config with the specified exclusion constraint.<br>
 	 *
@@ -144,7 +147,7 @@ public record LengthConstraintConfig(
 		Objects.requireNonNull(values, "Values for 'not in' constraint must not be null");
 		return new LengthConstraintConfig(this.equalTo, Optional.of(Pair.of(Set.copyOf(values), true)), this.min, this.max, this.custom);
 	}
-
+	
 	/**
 	 * Creates a new length constraint config with the specified minimum length (inclusive).<br>
 	 *
@@ -154,7 +157,7 @@ public record LengthConstraintConfig(
 	public @NonNull LengthConstraintConfig withMinLength(int minLength) {
 		return new LengthConstraintConfig(this.equalTo, this.in, Optional.of(Pair.of(minLength, true)), this.max, this.custom);
 	}
-
+	
 	/**
 	 * Creates a new length constraint config with the specified maximum length (inclusive).<br>
 	 *
@@ -164,7 +167,7 @@ public record LengthConstraintConfig(
 	public @NonNull LengthConstraintConfig withMaxLength(int maxLength) {
 		return new LengthConstraintConfig(this.equalTo, this.in, this.min, Optional.of(Pair.of(maxLength, true)), this.custom);
 	}
-
+	
 	/**
 	 * Creates a new length constraint config with the specified exact length.<br>
 	 * <p>
@@ -177,7 +180,7 @@ public record LengthConstraintConfig(
 	public @NonNull LengthConstraintConfig withExactLength(int exactLength) {
 		return new LengthConstraintConfig(this.equalTo, this.in, Optional.of(Pair.of(exactLength, true)), Optional.of(Pair.of(exactLength, true)), this.custom);
 	}
-
+	
 	/**
 	 * Creates a new length constraint config with the specified length range (inclusive).<br>
 	 *
@@ -188,7 +191,7 @@ public record LengthConstraintConfig(
 	public @NonNull LengthConstraintConfig withLengthBetween(int minLength, int maxLength) {
 		return new LengthConstraintConfig(this.equalTo, this.in, Optional.of(Pair.of(minLength, true)), Optional.of(Pair.of(maxLength, true)), this.custom);
 	}
-
+	
 	/**
 	 * Creates a new config with the specified custom constraint.<br>
 	 *
@@ -198,5 +201,18 @@ public record LengthConstraintConfig(
 	public @NonNull LengthConstraintConfig withCustom(@NonNull Constraint<Integer> constraint) {
 		Objects.requireNonNull(constraint, "Custom constraint must not be null");
 		return new LengthConstraintConfig(this.equalTo, this.in, this.min, this.max, Optional.of(constraint));
+	}
+	//endregion
+	
+	@Override
+	public @NonNull Result<Void> matches(@NonNull Integer value) {
+		Objects.requireNonNull(value, "Value must not be null");
+		
+		return ConstraintMatchers.allOf(
+			() -> ConstraintMatchers.matchEqualTo(value, this.equalTo),
+			() -> ConstraintMatchers.matchIn(value, this.in),
+			() -> ConstraintMatchers.matchRange(value, this.min, this.max),
+			() -> ConstraintMatchers.matchCustom(value, this.custom)
+		);
 	}
 }

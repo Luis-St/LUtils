@@ -20,6 +20,7 @@ package net.luis.utils.io.codec.constraint_new.config;
 
 import net.luis.utils.io.codec.constraint_new.Constraint;
 import net.luis.utils.util.Pair;
+import net.luis.utils.util.result.Result;
 import org.jspecify.annotations.NonNull;
 
 import java.util.*;
@@ -49,7 +50,7 @@ public record NumericFieldConstraintConfig(
 	@NonNull Optional<Pair<Integer, Boolean>> min,
 	@NonNull Optional<Pair<Integer, Boolean>> max,
 	@NonNull Optional<Constraint<Integer>> custom
-) {
+) implements ConstraintConfig<Integer> {
 	
 	/**
 	 * An unconstrained numeric field configuration with no constraints applied.<br>
@@ -91,6 +92,8 @@ public record NumericFieldConstraintConfig(
 			}
 		}
 	}
+	
+	//region With methods
 	
 	/**
 	 * Creates a new config with the specified equal-to constraint.<br>
@@ -205,5 +208,18 @@ public record NumericFieldConstraintConfig(
 	public @NonNull NumericFieldConstraintConfig withCustom(@NonNull Constraint<Integer> constraint) {
 		Objects.requireNonNull(constraint, "Custom constraint must not be null");
 		return new NumericFieldConstraintConfig(this.equalTo, this.in, this.min, this.max, Optional.of(constraint));
+	}
+	//endregion
+	
+	@Override
+	public @NonNull Result<Void> matches(@NonNull Integer value) {
+		Objects.requireNonNull(value, "Value must not be null");
+		
+		return ConstraintMatchers.allOf(
+			() -> ConstraintMatchers.matchEqualTo(value, this.equalTo),
+			() -> ConstraintMatchers.matchIn(value, this.in),
+			() -> ConstraintMatchers.matchRange(value, this.min, this.max),
+			() -> ConstraintMatchers.matchCustom(value, this.custom)
+		);
 	}
 }

@@ -23,9 +23,13 @@ import net.luis.utils.io.codec.constraint_new.UUIDConstraint;
 import net.luis.utils.io.codec.constraint_new.core.UUIDVariant;
 import net.luis.utils.io.codec.constraint_new.core.Unit;
 import net.luis.utils.util.Pair;
+import net.luis.utils.util.result.Result;
+import org.jetbrains.annotations.NotNull;
 import org.jspecify.annotations.NonNull;
 
 import java.util.*;
+
+import static net.luis.utils.io.codec.constraint_new.config.ConstraintMatchers.*;
 
 /**
  * Configuration record for uuid constraints.<br>
@@ -54,7 +58,10 @@ public record UUIDConstraintConfig(
 	@NonNull Optional<Unit> notNil,
 	@NonNull Optional<Unit> max,
 	@NonNull Optional<Constraint<UUID>> custom
-) {
+) implements ConstraintConfig<UUID> {
+	
+	private static final UUID NIL_UUID = new UUID(0L, 0L);
+	private static final UUID MAX_UUID = new UUID(-1L, -1L);
 	
 	/**
 	 * An unconstrained uuid configuration with no constraints applied.<br>
@@ -217,5 +224,51 @@ public record UUIDConstraintConfig(
 	public @NonNull UUIDConstraintConfig withCustom(@NonNull Constraint<UUID> constraint) {
 		Objects.requireNonNull(constraint, "Custom constraint must not be null");
 		return new UUIDConstraintConfig(this.equalTo, this.in, this.version, this.variant, this.nil, this.notNil, this.max, Optional.of(constraint));
+	}
+	
+	@Override
+	public @NotNull Result<Void> matches(@NonNull UUID value) {
+		Objects.requireNonNull(value, "Value must not be null");
+		return allOf(
+			() -> matchEqualTo(value, this.equalTo),
+			() -> matchIn(value, this.in),
+			() -> this.matchVersion(value, this.version),
+			() -> this.matchVariant(value, this.variant),
+			() -> matchFlag(value, this.nil, u -> u.equals(NIL_UUID), "UUID '" + value + "' must be the nil UUID"),
+			() -> matchFlag(value, this.notNil, u -> !u.equals(NIL_UUID), "UUID '" + value + "' must not be the nil UUID"),
+			() -> matchFlag(value, this.max, u -> u.equals(MAX_UUID), "UUID '" + value + "' must be the max UUID"),
+			() -> matchCustom(value, this.custom)
+		);
+	}
+	
+	private @NonNull Result<Void> matchVersion(@NonNull UUID value, @NonNull Optional<Integer> version) {
+		if (version.isEmpty()) {
+			return Result.success();
+		}
+		int expected = version.get();
+		int actual = value.version();
+		if (actual != expected) {
+			return Result.error("UUID '" + value + "' must have version " + expected + " but has version " + actual);
+		}
+		return Result.success();
+	}
+	
+	private @NonNull Result<Void> matchVariant(@NonNull UUID value, @NonNull Optional<UUIDVariant> variant) {
+		if (variant.isEmpty()) {
+			return Result.success();
+		}
+		UUIDVariant expected = variant.get();
+		int actualVariant = value.variant();
+		UUIDVariant actual = switch (actualVariant) {
+			case 0 -> UUIDVariant.NFC;
+			case 2 -> UUIDVariant.RFC_4122;
+			case 6 -> UUIDVariant.MICROSOFT;
+			case 7 -> UUIDVariant.RESERVED;
+			default -> null;
+		};
+		if (actual != expected) {
+			return Result.error("UUID '" + value + "' must have variant " + expected + " but has variant " + actual);
+		}
+		return Result.success();
 	}
 }

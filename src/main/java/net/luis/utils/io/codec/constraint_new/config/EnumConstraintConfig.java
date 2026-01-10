@@ -20,6 +20,7 @@ package net.luis.utils.io.codec.constraint_new.config;
 
 import net.luis.utils.io.codec.constraint_new.Constraint;
 import net.luis.utils.util.Pair;
+import net.luis.utils.util.result.Result;
 import org.jspecify.annotations.NonNull;
 
 import java.util.*;
@@ -42,7 +43,7 @@ public record EnumConstraintConfig<T extends Enum<T>>(
 	@NonNull Optional<Pair<T, Boolean>> equalTo,
 	@NonNull Optional<Pair<Set<T>, Boolean>> in,
 	@NonNull Optional<Constraint<T>> custom
-) {
+) implements ConstraintConfig<T> {
 	
 	/**
 	 * Constructs a new enum constraint config with the specified parameters.<br>
@@ -72,6 +73,8 @@ public record EnumConstraintConfig<T extends Enum<T>>(
 	public static <T extends Enum<T>> @NonNull EnumConstraintConfig<T> unconstrained() {
 		return new EnumConstraintConfig<>(Optional.empty(), Optional.empty(), Optional.empty());
 	}
+	
+	//region With methods
 	
 	/**
 	 * Creates a new config with the specified equal-to constraint.<br>
@@ -126,5 +129,17 @@ public record EnumConstraintConfig<T extends Enum<T>>(
 	public @NonNull EnumConstraintConfig<T> withCustom(@NonNull Constraint<T> constraint) {
 		Objects.requireNonNull(constraint, "Custom constraint must not be null");
 		return new EnumConstraintConfig<>(this.equalTo, this.in, Optional.of(constraint));
+	}
+	//endregion
+	
+	@Override
+	public @NonNull Result<Void> matches(@NonNull T value) {
+		Objects.requireNonNull(value, "Value must not be null");
+		
+		return ConstraintMatchers.allOf(
+			() -> ConstraintMatchers.matchEqualTo(value, this.equalTo),
+			() -> ConstraintMatchers.matchIn(value, this.in),
+			() -> ConstraintMatchers.matchCustom(value, this.custom)
+		);
 	}
 }

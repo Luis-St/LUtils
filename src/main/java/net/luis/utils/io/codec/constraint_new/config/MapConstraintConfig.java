@@ -22,6 +22,8 @@ import net.luis.utils.io.codec.constraint_new.Constraint;
 import net.luis.utils.io.codec.constraint_new.MapConstraint;
 import net.luis.utils.io.codec.constraint_new.core.Unit;
 import net.luis.utils.util.Pair;
+import net.luis.utils.util.result.Result;
+import org.jetbrains.annotations.NotNull;
 import org.jspecify.annotations.NonNull;
 
 import java.util.*;
@@ -74,7 +76,7 @@ public record MapConstraintConfig<K, V>(
 	@NonNull Optional<Unit> uniqueValues,
 	@NonNull Optional<Unit> nonNullValues,
 	@NonNull Optional<Constraint<Map<K, V>>> custom
-) {
+) implements ConstraintConfig<Map<K, V>> {
 	
 	/**
 	 * Constructs a new map constraint config with the specified parameters.<br>
@@ -181,6 +183,8 @@ public record MapConstraintConfig<K, V>(
 	public static <K, V> @NonNull MapConstraintConfig<K, V> unconstrained() {
 		return new MapConstraintConfig<>(Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty());
 	}
+	
+	//region With methods
 	
 	/**
 	 * Creates a new config with the specified equal-to constraint.<br>
@@ -399,5 +403,24 @@ public record MapConstraintConfig<K, V>(
 	public @NonNull MapConstraintConfig<K, V> withCustom(@NonNull Constraint<Map<K, V>> constraint) {
 		Objects.requireNonNull(constraint, "Custom constraint must not be null");
 		return new MapConstraintConfig<>(this.equalTo, this.in, this.min, this.max, this.requiredKeys, this.forbiddenKeys, this.allowedKeys, this.nonNullKeys, this.uniqueValues, this.nonNullValues, Optional.of(constraint));
+	}
+	//endregion
+	
+	@Override
+	public @NotNull Result<Void> matches(@NonNull Map<K, V> value) {
+		Objects.requireNonNull(value, "Value must not be null");
+		
+		return ConstraintMatchers.allOf(
+			() -> ConstraintMatchers.matchEqualTo(value, this.equalTo),
+			() -> ConstraintMatchers.matchIn(value, this.in),
+			() -> ConstraintMatchers.matchRange(value.size(), this.min, this.max),
+			() -> ConstraintMatchers.matchRequiredKeys(value.keySet(), this.requiredKeys, "Map"),
+			() -> ConstraintMatchers.matchForbiddenKeys(value.keySet(), this.forbiddenKeys, "Map"),
+			() -> ConstraintMatchers.matchAllowedKeys(value.keySet(), this.allowedKeys, "Map"),
+			() -> ConstraintMatchers.matchFlag(value, this.nonNullKeys, m -> m.keySet().stream().noneMatch(Objects::isNull), "Map keys must not contain null"),
+			() -> ConstraintMatchers.matchFlag(value, this.uniqueValues, m -> m.values().stream().distinct().count() == m.size(), "Map values must be unique"),
+			() -> ConstraintMatchers.matchFlag(value, this.nonNullValues, m -> m.values().stream().noneMatch(Objects::isNull), "Map values must not contain null"),
+			() -> ConstraintMatchers.matchCustom(value, this.custom)
+		);
 	}
 }

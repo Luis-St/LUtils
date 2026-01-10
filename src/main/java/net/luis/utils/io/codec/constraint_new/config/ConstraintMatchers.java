@@ -24,6 +24,8 @@ import net.luis.utils.util.Pair;
 import net.luis.utils.util.result.Result;
 import org.jspecify.annotations.NonNull;
 
+import java.time.Duration;
+import java.time.temporal.Temporal;
 import java.util.*;
 import java.util.function.*;
 import java.util.regex.Pattern;
@@ -735,6 +737,228 @@ public final class ConstraintMatchers {
 			if (!classifier.test(c)) {
 				return Result.error("Value '" + value + "' must contain only " + className + " characters");
 			}
+		}
+		return Result.success();
+	}
+	
+	/**
+	 * Validates that all required keys are present in the actual key set.<br>
+	 *
+	 * @param actualKeys The actual keys present
+	 * @param requiredKeys The optional set of required keys
+	 * @param typeName The name of the type for error messages (e.g., "Map", "Query")
+	 * @param <K> The type of the keys
+	 * @return A successful result if all required keys are present or no constraint is set
+	 */
+	@SuppressWarnings("DuplicatedCode")
+	public static <K> @NonNull Result<Void> matchRequiredKeys(@NonNull Set<K> actualKeys, @NonNull Optional<Set<K>> requiredKeys, @NonNull String typeName) {
+		Objects.requireNonNull(actualKeys, "Actual keys must not be null");
+		Objects.requireNonNull(requiredKeys, "Required keys constraint must not be null");
+		Objects.requireNonNull(typeName, "Type name must not be null");
+		if (requiredKeys.isEmpty()) {
+			return Result.success();
+		}
+		
+		Set<K> required = requiredKeys.get();
+		Set<K> missing = new HashSet<>(required);
+		missing.removeAll(actualKeys);
+		if (!missing.isEmpty()) {
+			return Result.error(typeName + " must contain required keys: " + formatSet(missing));
+		}
+		return Result.success();
+	}
+	
+	/**
+	 * Validates that no forbidden keys are present in the actual key set.<br>
+	 *
+	 * @param actualKeys The actual keys present
+	 * @param forbiddenKeys The optional set of forbidden keys
+	 * @param typeName The name of the type for error messages (e.g., "Map", "Query")
+	 * @param <K> The type of the keys
+	 * @return A successful result if no forbidden keys are present or no constraint is set
+	 */
+	@SuppressWarnings("DuplicatedCode")
+	public static <K> @NonNull Result<Void> matchForbiddenKeys(@NonNull Set<K> actualKeys, @NonNull Optional<Set<K>> forbiddenKeys, @NonNull String typeName) {
+		Objects.requireNonNull(actualKeys, "Actual keys must not be null");
+		Objects.requireNonNull(forbiddenKeys, "Forbidden keys constraint must not be null");
+		Objects.requireNonNull(typeName, "Type name must not be null");
+		if (forbiddenKeys.isEmpty()) {
+			return Result.success();
+		}
+		
+		Set<K> forbidden = forbiddenKeys.get();
+		Set<K> present = new HashSet<>(actualKeys);
+		present.retainAll(forbidden);
+		if (!present.isEmpty()) {
+			return Result.error(typeName + " must not contain forbidden keys: " + formatSet(present));
+		}
+		return Result.success();
+	}
+	
+	/**
+	 * Validates that only allowed keys are present in the actual key set.<br>
+	 *
+	 * @param actualKeys The actual keys present
+	 * @param allowedKeys The optional set of allowed keys
+	 * @param typeName The name of the type for error messages (e.g., "Map", "Query")
+	 * @param <K> The type of the keys
+	 * @return A successful result if all keys are in the allowed set or no constraint is set
+	 */
+	@SuppressWarnings("DuplicatedCode")
+	public static <K> @NonNull Result<Void> matchAllowedKeys(@NonNull Set<K> actualKeys, @NonNull Optional<Set<K>> allowedKeys, @NonNull String typeName) {
+		Objects.requireNonNull(actualKeys, "Actual keys must not be null");
+		Objects.requireNonNull(allowedKeys, "Allowed keys constraint must not be null");
+		Objects.requireNonNull(typeName, "Type name must not be null");
+		if (allowedKeys.isEmpty()) {
+			return Result.success();
+		}
+		
+		Set<K> allowed = allowedKeys.get();
+		Set<K> disallowed = new HashSet<>(actualKeys);
+		disallowed.removeAll(allowed);
+		if (!disallowed.isEmpty()) {
+			return Result.error(typeName + " contains keys that are not allowed: " + formatSet(disallowed));
+		}
+		return Result.success();
+	}
+	
+	/**
+	 * Validates a value against a nested constraint configuration.<br>
+	 * <p>
+	 *     This method delegates validation to another {@link ConstraintConfig} and
+	 *     wraps any error messages with the field name for context.
+	 * </p>
+	 *
+	 * @param value The value to validate
+	 * @param config The optional nested constraint configuration
+	 * @param fieldName The name of the field for error messages
+	 * @param <T> The type of the value
+	 * @return A successful result if validation passes or no constraint is set
+	 */
+	@SuppressWarnings("DuplicatedCode")
+	public static <T> @NonNull Result<Void> matchNestedConfig(@NonNull T value, @NonNull Optional<? extends ConstraintConfig<T>> config, @NonNull String fieldName) {
+		Objects.requireNonNull(value, "Value must not be null");
+		Objects.requireNonNull(config, "Config constraint must not be null");
+		Objects.requireNonNull(fieldName, "Field name must not be null");
+		if (config.isEmpty()) {
+			return Result.success();
+		}
+		
+		Result<Void> result = config.get().matches(value);
+		if (result.isError()) {
+			return Result.error(fieldName + " constraint failed: " + result.errorOrThrow());
+		}
+		return Result.success();
+	}
+	
+	/**
+	 * Validates an enum value against a nested enum constraint configuration.<br>
+	 * <p>
+	 *     This is a convenience method that delegates to {@link #matchNestedConfig(Object, Optional, String)}.
+	 * </p>
+	 *
+	 * @param value The enum value to validate
+	 * @param config The optional enum constraint configuration
+	 * @param fieldName The name of the field for error messages
+	 * @param <E> The enum type
+	 * @return A successful result if validation passes or no constraint is set
+	 */
+	public static <E extends Enum<E>> @NonNull Result<Void> matchEnumField(@NonNull E value, @NonNull Optional<EnumConstraintConfig<E>> config, @NonNull String fieldName) {
+		return matchNestedConfig(value, config, fieldName);
+	}
+	
+	/**
+	 * Validates an integer value against a numeric field constraint configuration.<br>
+	 * <p>
+	 *     This is a convenience method that delegates to {@link #matchNestedConfig(Object, Optional, String)}.
+	 * </p>
+	 *
+	 * @param value The integer value to validate
+	 * @param config The optional numeric field constraint configuration
+	 * @param fieldName The name of the field for error messages
+	 * @return A successful result if validation passes or no constraint is set
+	 */
+	@SuppressWarnings("DuplicatedCode")
+	public static @NonNull Result<Void> matchNumericField(int value, @NonNull Optional<NumericFieldConstraintConfig> config, @NonNull String fieldName) {
+		Objects.requireNonNull(config, "Config constraint must not be null");
+		Objects.requireNonNull(fieldName, "Field name must not be null");
+		if (config.isEmpty()) {
+			return Result.success();
+		}
+		
+		Result<Void> result = config.get().matches(value);
+		if (result.isError()) {
+			return Result.error("Field '" + fieldName + "' constraint failed: " + result.errorOrThrow());
+		}
+		return Result.success();
+	}
+	
+	/**
+	 * Validates that a temporal value is within the last specified duration from now.<br>
+	 * <p>
+	 *     The threshold is calculated as {@code nowSupplier.get() - withinLast}.<br>
+	 *     The value must be after or equal to this threshold.
+	 * </p>
+	 *
+	 * @param value The temporal value to validate
+	 * @param withinLast The optional duration constraint
+	 * @param nowSupplier Supplier for the current time
+	 * @param subtractor Function to subtract duration from a temporal value
+	 * @param typeName The name of the type for error messages (e.g., "Instant", "LocalDateTime")
+	 * @param <T> The type of the temporal value (must be Temporal and Comparable)
+	 * @return A successful result if the value is within the last duration or no constraint is set
+	 */
+	public static <T extends Temporal & Comparable<? super T>> @NonNull Result<Void> matchWithinLast(
+		@NonNull T value, @NonNull Optional<Duration> withinLast, @NonNull Supplier<T> nowSupplier, @NonNull BiFunction<T, Duration, T> subtractor, @NonNull String typeName
+	) {
+		Objects.requireNonNull(value, "Value must not be null");
+		Objects.requireNonNull(withinLast, "WithinLast constraint must not be null");
+		Objects.requireNonNull(nowSupplier, "Now supplier must not be null");
+		Objects.requireNonNull(subtractor, "Subtractor must not be null");
+		Objects.requireNonNull(typeName, "Type name must not be null");
+		if (withinLast.isEmpty()) {
+			return Result.success();
+		}
+		
+		Duration duration = withinLast.get();
+		T threshold = subtractor.apply(nowSupplier.get(), duration);
+		if (value.compareTo(threshold) < 0) {
+			return Result.error(typeName + " '" + value + "' must be within last " + duration);
+		}
+		return Result.success();
+	}
+	
+	/**
+	 * Validates that a temporal value is within the next specified duration from now.<br>
+	 * <p>
+	 *     The threshold is calculated as {@code nowSupplier.get() + withinNext}.<br>
+	 *     The value must be before or equal to this threshold.
+	 * </p>
+	 *
+	 * @param value The temporal value to validate
+	 * @param withinNext The optional duration constraint
+	 * @param nowSupplier Supplier for the current time
+	 * @param adder Function to add duration to a temporal value
+	 * @param typeName The name of the type for error messages (e.g., "Instant", "LocalDateTime")
+	 * @param <T> The type of the temporal value (must be Temporal and Comparable)
+	 * @return A successful result if the value is within the next duration or no constraint is set
+	 */
+	public static <T extends Temporal & Comparable<? super T>> @NonNull Result<Void> matchWithinNext(
+		@NonNull T value, @NonNull Optional<Duration> withinNext, @NonNull Supplier<T> nowSupplier, @NonNull BiFunction<T, Duration, T> adder, @NonNull String typeName
+	) {
+		Objects.requireNonNull(value, "Value must not be null");
+		Objects.requireNonNull(withinNext, "WithinNext constraint must not be null");
+		Objects.requireNonNull(nowSupplier, "Now supplier must not be null");
+		Objects.requireNonNull(adder, "Adder must not be null");
+		Objects.requireNonNull(typeName, "Type name must not be null");
+		if (withinNext.isEmpty()) {
+			return Result.success();
+		}
+		
+		Duration duration = withinNext.get();
+		T threshold = adder.apply(nowSupplier.get(), duration);
+		if (value.compareTo(threshold) > 0) {
+			return Result.error(typeName + " '" + value + "' must be within next " + duration);
 		}
 		return Result.success();
 	}

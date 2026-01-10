@@ -18,8 +18,10 @@
 
 package net.luis.utils.io.codec.constraint_new.config;
 
-import net.luis.utils.io.codec.constraint_new.*;
+import net.luis.utils.io.codec.constraint_new.Constraint;
+import net.luis.utils.io.codec.constraint_new.DepthConstraint;
 import net.luis.utils.util.Pair;
+import net.luis.utils.util.result.Result;
 import org.jspecify.annotations.NonNull;
 
 import java.util.*;
@@ -49,7 +51,7 @@ public record DepthConstraintConfig(
 	@NonNull Optional<Pair<Integer, Boolean>> min,
 	@NonNull Optional<Pair<Integer, Boolean>> max,
 	@NonNull Optional<Constraint<Integer>> custom
-) {
+) implements ConstraintConfig<Integer> {
 	
 	/**
 	 * An unconstrained depth configuration with no constraints applied.<br>
@@ -79,19 +81,19 @@ public record DepthConstraintConfig(
 		Objects.requireNonNull(min, "Optional for 'min' constraint must not be null");
 		Objects.requireNonNull(max, "Optional for 'max' constraint must not be null");
 		Objects.requireNonNull(custom, "Optional for 'custom' constraint must not be null");
-
+		
 		if (in.isPresent() && in.get().getFirst().isEmpty()) {
 			throw new IllegalArgumentException("In constraint set must not be empty when present");
 		}
-
+		
 		if (min.isPresent() && min.get().getFirst() < 0) {
 			throw new IllegalArgumentException("Minimum depth must not be negative when present, but got " + min.get().getFirst());
 		}
-
+		
 		if (max.isPresent() && max.get().getFirst() < 0) {
 			throw new IllegalArgumentException("Maximum depth must not be negative when present, but got " + max.get().getFirst());
 		}
-
+		
 		if (min.isPresent() && max.isPresent()) {
 			if (min.get().getFirst() > max.get().getFirst()) {
 				throw new IllegalArgumentException("Maximum depth must not be less than minimum depth when both are present, but got " + min.get().getFirst() + " > " + max.get().getFirst());
@@ -102,6 +104,8 @@ public record DepthConstraintConfig(
 		}
 	}
 	
+	//region With methods
+	
 	/**
 	 * Creates a new config with the specified equal-to constraint.<br>
 	 *
@@ -111,7 +115,7 @@ public record DepthConstraintConfig(
 	public @NonNull DepthConstraintConfig withEqualTo(int value) {
 		return new DepthConstraintConfig(Optional.of(Pair.of(value, false)), this.in, this.min, this.max, this.custom);
 	}
-
+	
 	/**
 	 * Creates a new config with the specified not-equal-to constraint.<br>
 	 *
@@ -121,7 +125,7 @@ public record DepthConstraintConfig(
 	public @NonNull DepthConstraintConfig withNotEqualTo(int value) {
 		return new DepthConstraintConfig(Optional.of(Pair.of(value, true)), this.in, this.min, this.max, this.custom);
 	}
-
+	
 	/**
 	 * Creates a new config with the specified inclusion constraint.<br>
 	 *
@@ -132,7 +136,7 @@ public record DepthConstraintConfig(
 		Objects.requireNonNull(values, "Values for 'in' constraint must not be null");
 		return new DepthConstraintConfig(this.equalTo, Optional.of(Pair.of(Set.copyOf(values), false)), this.min, this.max, this.custom);
 	}
-
+	
 	/**
 	 * Creates a new config with the specified exclusion constraint.<br>
 	 *
@@ -143,7 +147,7 @@ public record DepthConstraintConfig(
 		Objects.requireNonNull(values, "Values for 'not in' constraint must not be null");
 		return new DepthConstraintConfig(this.equalTo, Optional.of(Pair.of(Set.copyOf(values), true)), this.min, this.max, this.custom);
 	}
-
+	
 	/**
 	 * Creates a new depth constraint config with the specified minimum depth (inclusive).<br>
 	 *
@@ -153,7 +157,7 @@ public record DepthConstraintConfig(
 	public @NonNull DepthConstraintConfig withMinDepth(int minDepth) {
 		return new DepthConstraintConfig(this.equalTo, this.in, Optional.of(Pair.of(minDepth, true)), this.max, this.custom);
 	}
-
+	
 	/**
 	 * Creates a new depth constraint config with the specified maximum depth (inclusive).<br>
 	 *
@@ -163,7 +167,7 @@ public record DepthConstraintConfig(
 	public @NonNull DepthConstraintConfig withMaxDepth(int maxDepth) {
 		return new DepthConstraintConfig(this.equalTo, this.in, this.min, Optional.of(Pair.of(maxDepth, true)), this.custom);
 	}
-
+	
 	/**
 	 * Creates a new depth constraint config with the specified exact depth.<br>
 	 * <p>
@@ -176,7 +180,7 @@ public record DepthConstraintConfig(
 	public @NonNull DepthConstraintConfig withExactDepth(int exactDepth) {
 		return new DepthConstraintConfig(this.equalTo, this.in, Optional.of(Pair.of(exactDepth, true)), Optional.of(Pair.of(exactDepth, true)), this.custom);
 	}
-
+	
 	/**
 	 * Creates a new depth constraint config with the specified depth range (inclusive).<br>
 	 *
@@ -187,7 +191,7 @@ public record DepthConstraintConfig(
 	public @NonNull DepthConstraintConfig withDepthBetween(int minDepth, int maxDepth) {
 		return new DepthConstraintConfig(this.equalTo, this.in, Optional.of(Pair.of(minDepth, true)), Optional.of(Pair.of(maxDepth, true)), this.custom);
 	}
-
+	
 	/**
 	 * Creates a new config with the specified custom constraint.<br>
 	 *
@@ -197,5 +201,18 @@ public record DepthConstraintConfig(
 	public @NonNull DepthConstraintConfig withCustom(@NonNull Constraint<Integer> constraint) {
 		Objects.requireNonNull(constraint, "Custom constraint must not be null");
 		return new DepthConstraintConfig(this.equalTo, this.in, this.min, this.max, Optional.of(constraint));
+	}
+	//endregion
+	
+	@Override
+	public @NonNull Result<Void> matches(@NonNull Integer value) {
+		Objects.requireNonNull(value, "Value must not be null");
+		
+		return ConstraintMatchers.allOf(
+			() -> ConstraintMatchers.matchEqualTo(value, this.equalTo),
+			() -> ConstraintMatchers.matchIn(value, this.in),
+			() -> ConstraintMatchers.matchRange(value, this.min, this.max),
+			() -> ConstraintMatchers.matchCustom(value, this.custom)
+		);
 	}
 }

@@ -35,7 +35,7 @@ import org.jspecify.annotations.NonNull;
  */
 @FunctionalInterface
 public interface ConstraintConfig<T> {
-
+	
 	/**
 	 * Validates the given value against all configured constraints.<br>
 	 * <p>

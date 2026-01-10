@@ -22,6 +22,8 @@ import net.luis.utils.io.codec.constraint_new.Constraint;
 import net.luis.utils.io.codec.constraint_new.StringConstraint;
 import net.luis.utils.io.codec.constraint_new.core.Unit;
 import net.luis.utils.util.Pair;
+import net.luis.utils.util.result.Result;
+import org.jetbrains.annotations.NotNull;
 import org.jspecify.annotations.NonNull;
 
 import java.util.*;
@@ -91,7 +93,7 @@ public record StringConstraintConfig(
 	@NonNull Optional<Unit> ascii,
 	@NonNull Optional<Unit> latin1,
 	@NonNull Optional<Constraint<String>> custom
-) {
+) implements ConstraintConfig<String> {
 	
 	/**
 	 * An unconstrained string configuration with no constraints applied.<br>
@@ -235,6 +237,8 @@ public record StringConstraintConfig(
 			throw new IllegalArgumentException("Not blank constraint conflicts with maximum length of zero");
 		}
 	}
+	
+	//region With methods
 	
 	/**
 	 * Creates a new config with the specified equal-to constraint.<br>
@@ -665,5 +669,39 @@ public record StringConstraintConfig(
 	public @NonNull StringConstraintConfig withCustom(@NonNull Constraint<String> constraint) {
 		Objects.requireNonNull(constraint, "Custom constraint must not be null");
 		return new StringConstraintConfig(this.equalTo, this.in, this.equalToIgnoreCase, this.inIgnoreCase, this.minLength, this.maxLength, this.startsWith, this.startsWithAny, this.contains, this.containsAny, this.containsAll, this.containsOnly, this.endsWith, this.endsWithAny, this.matches, this.trimmed, this.blank, this.notBlank, this.upperCase, this.lowerCase, this.numeric, this.alphabetic, this.alphanumeric, this.ascii, this.latin1, Optional.of(constraint));
+	}
+	//endregion
+	
+	@Override
+	public @NotNull Result<Void> matches(@NonNull String value) {
+		Objects.requireNonNull(value, "Value must not be null");
+		
+		return ConstraintMatchers.allOf(
+			() -> ConstraintMatchers.matchEqualTo(value, this.equalTo),
+			() -> ConstraintMatchers.matchIn(value, this.in),
+			() -> ConstraintMatchers.matchEqualTo(value, this.equalToIgnoreCase, String::equalsIgnoreCase),
+			() -> ConstraintMatchers.matchIn(value, this.inIgnoreCase, String::equalsIgnoreCase),
+			() -> ConstraintMatchers.matchRange(value.length(), this.minLength, this.maxLength),
+			() -> ConstraintMatchers.matchStartsWith(value, this.startsWith),
+			() -> ConstraintMatchers.matchStartsWithAny(value, this.startsWithAny),
+			() -> ConstraintMatchers.matchContains(value, this.contains),
+			() -> ConstraintMatchers.matchContainsAny(value, this.containsAny),
+			() -> ConstraintMatchers.matchContainsAll(value, this.containsAll),
+			() -> ConstraintMatchers.matchContainsOnly(value, this.containsOnly),
+			() -> ConstraintMatchers.matchEndsWith(value, this.endsWith),
+			() -> ConstraintMatchers.matchEndsWithAny(value, this.endsWithAny),
+			() -> ConstraintMatchers.matchPattern(value, this.matches),
+			() -> ConstraintMatchers.matchFlag(value, this.trimmed, s -> s.equals(s.trim()), "String '" + value + "' must be trimmed (no leading/trailing whitespace)"),
+			() -> ConstraintMatchers.matchFlag(value, this.blank, String::isBlank, "String '" + value + "' must be blank"),
+			() -> ConstraintMatchers.matchFlag(value, this.notBlank, s -> !s.isBlank(), "String '" + value + "' must not be blank"),
+			() -> ConstraintMatchers.matchFlag(value, this.upperCase, s -> s.equals(s.toUpperCase()), "String '" + value + "' must be upper case"),
+			() -> ConstraintMatchers.matchFlag(value, this.lowerCase, s -> s.equals(s.toLowerCase()), "String '" + value + "' must be lower case"),
+			() -> ConstraintMatchers.matchCharacterClass(value, this.numeric, Character::isDigit, "numeric"),
+			() -> ConstraintMatchers.matchCharacterClass(value, this.alphabetic, Character::isLetter, "alphabetic"),
+			() -> ConstraintMatchers.matchCharacterClass(value, this.alphanumeric, Character::isLetterOrDigit, "alphanumeric"),
+			() -> ConstraintMatchers.matchCharacterClass(value, this.ascii, c -> c < 128, "ASCII"),
+			() -> ConstraintMatchers.matchCharacterClass(value, this.latin1, c -> c < 256, "Latin-1"),
+			() -> ConstraintMatchers.matchCustom(value, this.custom)
+		);
 	}
 }

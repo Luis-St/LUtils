@@ -22,6 +22,7 @@ import net.luis.utils.io.codec.constraint_new.CharacterConstraint;
 import net.luis.utils.io.codec.constraint_new.Constraint;
 import net.luis.utils.io.codec.constraint_new.core.Unit;
 import net.luis.utils.util.Pair;
+import net.luis.utils.util.result.Result;
 import org.jspecify.annotations.NonNull;
 
 import java.util.*;
@@ -69,7 +70,30 @@ public record CharacterConstraintConfig(
 	@NonNull Optional<Unit> ascii,
 	@NonNull Optional<Unit> latin1,
 	@NonNull Optional<Constraint<Character>> custom
-) {
+) implements ConstraintConfig<Character> {
+	
+	/**
+	 * Set of punctuation character types used for classification.<br>
+	 */
+	private static final Set<Byte> PUNCTUATION_TYPES = Set.of(
+		Character.CONNECTOR_PUNCTUATION,
+		Character.DASH_PUNCTUATION,
+		Character.START_PUNCTUATION,
+		Character.END_PUNCTUATION,
+		Character.INITIAL_QUOTE_PUNCTUATION,
+		Character.FINAL_QUOTE_PUNCTUATION,
+		Character.OTHER_PUNCTUATION
+	);
+	
+	/**
+	 * Set of symbol character types used for classification.<br>
+	 */
+	private static final Set<Byte> SYMBOL_TYPES = Set.of(
+		Character.MATH_SYMBOL,
+		Character.CURRENCY_SYMBOL,
+		Character.MODIFIER_SYMBOL,
+		Character.OTHER_SYMBOL
+	);
 	
 	/**
 	 * An unconstrained character configuration with no constraints applied.<br>
@@ -139,6 +163,8 @@ public record CharacterConstraintConfig(
 			throw new IllegalArgumentException("Upper case and lower case are mutually exclusive");
 		}
 	}
+	
+	//region With methods
 	
 	/**
 	 * Creates a new config with the specified equal-to constraint.<br>
@@ -358,5 +384,29 @@ public record CharacterConstraintConfig(
 	public @NonNull CharacterConstraintConfig withCustom(@NonNull Constraint<Character> constraint) {
 		Objects.requireNonNull(constraint, "Custom constraint must not be null");
 		return new CharacterConstraintConfig(this.equalTo, this.in, this.min, this.max, this.letter, this.digit, this.alphanumeric, this.whitespace, this.punctuation, this.symbol, this.control, this.upperCase, this.lowerCase, this.ascii, this.latin1, Optional.of(constraint));
+	}
+	//endregion
+	
+	@Override
+	public @NonNull Result<Void> matches(@NonNull Character value) {
+		Objects.requireNonNull(value, "Value must not be null");
+		
+		return ConstraintMatchers.allOf(
+			() -> ConstraintMatchers.matchEqualTo(value, this.equalTo),
+			() -> ConstraintMatchers.matchIn(value, this.in),
+			() -> ConstraintMatchers.matchRange(value, this.min, this.max),
+			() -> ConstraintMatchers.matchFlag(value, this.letter, Character::isLetter, "Character '" + value + "' must be a letter"),
+			() -> ConstraintMatchers.matchFlag(value, this.digit, Character::isDigit, "Character" + value + "' must be a digit"),
+			() -> ConstraintMatchers.matchFlag(value, this.alphanumeric, Character::isLetterOrDigit, "Character '" + value + "' must be alphanumeric"),
+			() -> ConstraintMatchers.matchFlag(value, this.whitespace, Character::isWhitespace, "Character '" + value + "' must be whitespace"),
+			() -> ConstraintMatchers.matchFlag(value, this.punctuation, c -> PUNCTUATION_TYPES.contains((byte) Character.getType(c)), "Character '" + value + "' must be punctuation"),
+			() -> ConstraintMatchers.matchFlag(value, this.symbol, c -> SYMBOL_TYPES.contains((byte) Character.getType(c)), "Character '" + value + "' must be a symbol"),
+			() -> ConstraintMatchers.matchFlag(value, this.control, Character::isISOControl, "Character '" + value + "' must be a control character"),
+			() -> ConstraintMatchers.matchFlag(value, this.upperCase, Character::isUpperCase, "Character '" + value + "' must be upper case"),
+			() -> ConstraintMatchers.matchFlag(value, this.lowerCase, Character::isLowerCase, "Character '" + value + "' must be lower case"),
+			() -> ConstraintMatchers.matchFlag(value, this.ascii, c -> c <= 127, "Character '" + value + "' must be an ASCII character (0-127)"),
+			() -> ConstraintMatchers.matchFlag(value, this.latin1, c -> c <= 255, "Character '" + value + "' must be a Latin-1 character (0-255)"),
+			() -> ConstraintMatchers.matchCustom(value, this.custom)
+		);
 	}
 }
