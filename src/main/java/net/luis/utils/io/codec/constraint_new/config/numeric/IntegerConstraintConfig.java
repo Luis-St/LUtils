@@ -19,8 +19,11 @@
 package net.luis.utils.io.codec.constraint_new.config.numeric;
 
 import net.luis.utils.io.codec.constraint_new.Constraint;
+import net.luis.utils.io.codec.constraint_new.config.ConstraintConfig;
+import net.luis.utils.io.codec.constraint_new.config.ConstraintMatchers;
 import net.luis.utils.io.codec.constraint_new.core.Unit;
 import net.luis.utils.util.Pair;
+import net.luis.utils.util.result.Result;
 import org.jspecify.annotations.NonNull;
 
 import java.util.*;
@@ -67,7 +70,7 @@ public record IntegerConstraintConfig<T extends Number & Comparable<T>>(
 	@NonNull Optional<Long> divisibleBy,
 	@NonNull Optional<Integer> powerOf,
 	@NonNull Optional<Constraint<T>> custom
-) {
+) implements ConstraintConfig<T> {
 	
 	/**
 	 * Constructs a new integer constraint config with the specified parameters.<br>
@@ -146,6 +149,8 @@ public record IntegerConstraintConfig<T extends Number & Comparable<T>>(
 			Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty()
 		);
 	}
+	
+	//region With methods
 	
 	/**
 	 * Creates a new config with the specified equal-to constraint.<br>
@@ -380,5 +385,23 @@ public record IntegerConstraintConfig<T extends Number & Comparable<T>>(
 	public @NonNull IntegerConstraintConfig<T> withCustom(@NonNull Constraint<T> constraint) {
 		Objects.requireNonNull(constraint, "Custom constraint must not be null");
 		return new IntegerConstraintConfig<>(this.equalTo, this.in, this.min, this.max, this.positive, this.negative, this.zero, this.percentage, this.even, this.odd, this.divisibleBy, this.powerOf, Optional.of(constraint));
+	}
+	//endregion
+
+	@Override
+	public @NonNull Result<Void> matches(@NonNull T value) {
+		Objects.requireNonNull(value, "Value must not be null");
+		
+		return ConstraintMatchers.allOf(
+			() -> ConstraintMatchers.matchEqualTo(value, this.equalTo),
+			() -> ConstraintMatchers.matchIn(value, this.in),
+			() -> ConstraintMatchers.matchRange(value, this.min, this.max),
+			() -> ConstraintMatchers.matchSign(value, this.positive, this.negative, this.zero),
+			() -> ConstraintMatchers.matchPercentage(value, this.percentage),
+			() -> ConstraintMatchers.matchParity(value.longValue(), this.even, this.odd),
+			() -> ConstraintMatchers.matchDivisibleBy(value.longValue(), this.divisibleBy),
+			() -> ConstraintMatchers.matchPowerOf(value.longValue(), this.powerOf),
+			() -> ConstraintMatchers.matchCustom(value, this.custom)
+		);
 	}
 }

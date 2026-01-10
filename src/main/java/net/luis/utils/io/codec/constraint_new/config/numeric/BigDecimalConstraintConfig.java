@@ -19,8 +19,11 @@
 package net.luis.utils.io.codec.constraint_new.config.numeric;
 
 import net.luis.utils.io.codec.constraint_new.Constraint;
+import net.luis.utils.io.codec.constraint_new.config.ConstraintConfig;
+import net.luis.utils.io.codec.constraint_new.config.ConstraintMatchers;
 import net.luis.utils.io.codec.constraint_new.core.Unit;
 import net.luis.utils.util.Pair;
+import net.luis.utils.util.result.Result;
 import org.jspecify.annotations.NonNull;
 
 import java.math.BigDecimal;
@@ -72,7 +75,7 @@ public record BigDecimalConstraintConfig(
 	@NonNull Optional<Pair<Integer, Boolean>> precisionMin,
 	@NonNull Optional<Pair<Integer, Boolean>> precisionMax,
 	@NonNull Optional<Constraint<BigDecimal>> custom
-) {
+) implements ConstraintConfig<BigDecimal> {
 	
 	/**
 	 * An unconstrained big decimal configuration with no constraints applied.<br>
@@ -164,6 +167,8 @@ public record BigDecimalConstraintConfig(
 			throw new IllegalArgumentException("Min and max precision are equal but at least one bound is exclusive when both are present");
 		}
 	}
+	
+	//region With methods
 	
 	/**
 	 * Creates a new config with the specified equal-to constraint.<br>
@@ -451,5 +456,24 @@ public record BigDecimalConstraintConfig(
 	public @NonNull BigDecimalConstraintConfig withCustom(@NonNull Constraint<BigDecimal> constraint) {
 		Objects.requireNonNull(constraint, "Custom constraint must not be null");
 		return new BigDecimalConstraintConfig(this.equalTo, this.in, this.min, this.max, this.positive, this.negative, this.zero, this.percentage, this.integral, this.normalized, this.scaleMin, this.scaleMax, this.precisionMin, this.precisionMax, Optional.of(constraint));
+	}
+	//endregion
+	
+	@Override
+	public @NonNull Result<Void> matches(@NonNull BigDecimal value) {
+		Objects.requireNonNull(value, "Value must not be null");
+		
+		return ConstraintMatchers.allOf(
+			() -> ConstraintMatchers.matchEqualTo(value, this.equalTo),
+			() -> ConstraintMatchers.matchIn(value, this.in),
+			() -> ConstraintMatchers.matchRange(value, this.min, this.max),
+			() -> ConstraintMatchers.matchSign(value, this.positive, this.negative, this.zero),
+			() -> ConstraintMatchers.matchPercentage(value, this.percentage),
+			() -> ConstraintMatchers.matchFlag(value, this.integral, v -> v.stripTrailingZeros().scale() <= 0, "Value '" + value + "' must be integral (no fractional part)"),
+			() -> ConstraintMatchers.matchFlag(value, this.normalized, v -> v.compareTo(BigDecimal.ZERO) >= 0 && v.compareTo(BigDecimal.ONE) <= 0, "Value '" + value + "' must be normalized (between 0.0 and 1.0)"),
+			() -> ConstraintMatchers.matchRange(value.scale(), this.scaleMin, this.scaleMax),
+			() -> ConstraintMatchers.matchRange(value.precision(), this.precisionMin, this.precisionMax),
+			() -> ConstraintMatchers.matchCustom(value, this.custom)
+		);
 	}
 }

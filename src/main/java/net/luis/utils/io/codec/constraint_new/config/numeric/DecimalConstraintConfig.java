@@ -19,8 +19,11 @@
 package net.luis.utils.io.codec.constraint_new.config.numeric;
 
 import net.luis.utils.io.codec.constraint_new.Constraint;
+import net.luis.utils.io.codec.constraint_new.config.ConstraintConfig;
+import net.luis.utils.io.codec.constraint_new.config.ConstraintMatchers;
 import net.luis.utils.io.codec.constraint_new.core.Unit;
 import net.luis.utils.util.Pair;
+import net.luis.utils.util.result.Result;
 import org.jspecify.annotations.NonNull;
 
 import java.util.*;
@@ -67,7 +70,7 @@ public record DecimalConstraintConfig<T extends Number & Comparable<T>>(
 	@NonNull Optional<Unit> integral,
 	@NonNull Optional<Unit> normalized,
 	@NonNull Optional<Constraint<T>> custom
-) {
+) implements ConstraintConfig<T> {
 	
 	/**
 	 * Constructs a new decimal constraint config with the specified parameters.<br>
@@ -131,6 +134,8 @@ public record DecimalConstraintConfig<T extends Number & Comparable<T>>(
 			Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty()
 		);
 	}
+	
+	//region With methods
 	
 	/**
 	 * Creates a new config with the specified equal-to constraint.<br>
@@ -354,5 +359,24 @@ public record DecimalConstraintConfig<T extends Number & Comparable<T>>(
 	public @NonNull DecimalConstraintConfig<T> withCustom(@NonNull Constraint<T> constraint) {
 		Objects.requireNonNull(constraint, "Custom constraint must not be null");
 		return new DecimalConstraintConfig<>(this.equalTo, this.in, this.min, this.max, this.positive, this.negative, this.zero, this.percentage, this.finite, this.notNaN, this.integral, this.normalized, Optional.of(constraint));
+	}
+	//endregion
+	
+	@Override
+	public @NonNull Result<Void> matches(@NonNull T value) {
+		Objects.requireNonNull(value, "Value must not be null");
+		
+		return ConstraintMatchers.allOf(
+			() -> ConstraintMatchers.matchEqualTo(value, this.equalTo),
+			() -> ConstraintMatchers.matchIn(value, this.in),
+			() -> ConstraintMatchers.matchRange(value, this.min, this.max),
+			() -> ConstraintMatchers.matchSign(value, this.positive, this.negative, this.zero),
+			() -> ConstraintMatchers.matchPercentage(value, this.percentage),
+			() -> ConstraintMatchers.matchFlag(value, this.finite, v -> Double.isFinite(v.doubleValue()), "Value '" + value + "' must be finite"),
+			() -> ConstraintMatchers.matchFlag(value, this.notNaN, v -> !Double.isNaN(v.doubleValue()), "Value '" + value + "' must not be NaN"),
+			() -> ConstraintMatchers.matchFlag(value, this.integral, v -> v.doubleValue() == Math.floor(v.doubleValue()), "Value '" + value + "' must be integral (no fractional part)"),
+			() -> ConstraintMatchers.matchFlag(value, this.normalized, v -> v.doubleValue() >= 0.0 && v.doubleValue() <= 1.0, "Value '" + value + "' must be normalized (between 0.0 and 1.0)"),
+			() -> ConstraintMatchers.matchCustom(value, this.custom)
+		);
 	}
 }
