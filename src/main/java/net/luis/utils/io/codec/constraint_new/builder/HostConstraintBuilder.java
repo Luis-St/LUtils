@@ -19,13 +19,14 @@
 package net.luis.utils.io.codec.constraint_new.builder;
 
 import net.luis.utils.io.codec.constraint_new.Constraint;
+import net.luis.utils.io.codec.constraint_new.config.network.HostConstraintConfig;
 import net.luis.utils.io.codec.constraint_new.core.IpAddressType;
 import net.luis.utils.io.codec.constraint_new.network.HostConstraint;
 import org.jspecify.annotations.NonNull;
 
 import java.util.Collection;
+import java.util.Objects;
 import java.util.function.UnaryOperator;
-import java.util.regex.Pattern;
 
 /**
  * Builder class for constructing host-based constraints.<br>
@@ -38,184 +39,120 @@ import java.util.regex.Pattern;
  * @author Luis-St
  */
 public class HostConstraintBuilder implements HostConstraint<String, HostConstraintBuilder> {
+
+	/**
+	 * The current constraint configuration being built.<br>
+	 */
+	private HostConstraintConfig config;
+
+	/**
+	 * Constructs a new host constraint builder with no constraints applied.<br>
+	 */
+	public HostConstraintBuilder() {
+		this.config = HostConstraintConfig.UNCONSTRAINED;
+	}
+
+	/**
+	 * Constructs a new host constraint builder with the specified initial config.<br>
+	 *
+	 * @param initialConfig The initial configuration to use
+	 * @throws NullPointerException If the initial config is null
+	 */
+	public HostConstraintBuilder(@NonNull HostConstraintConfig initialConfig) {
+		this.config = Objects.requireNonNull(initialConfig, "Initial config must not be null");
+	}
 	
 	@Override
 	public @NonNull HostConstraintBuilder equalTo(@NonNull String value) {
-		return null;
+		this.config = this.config.withEqualTo(value);
+		return this;
 	}
 	
 	@Override
 	public @NonNull HostConstraintBuilder notEqualTo(@NonNull String value) {
-		return null;
+		this.config = this.config.withNotEqualTo(value);
+		return this;
 	}
 	
 	@Override
 	public @NonNull HostConstraintBuilder in(@NonNull Collection<String> values) {
-		return null;
+		this.config = this.config.withIn(values);
+		return this;
 	}
 	
 	@Override
 	public @NonNull HostConstraintBuilder notIn(@NonNull Collection<String> values) {
-		return null;
+		this.config = this.config.withNotIn(values);
+		return this;
 	}
 	
 	@Override
 	public @NonNull HostConstraintBuilder custom(@NonNull Constraint<String> constraint) {
-		return null;
+		this.config = this.config.withCustom(constraint);
+		return this;
 	}
 	
 	@Override
 	public @NonNull HostConstraintBuilder ipv4() {
-		return null;
+		this.config = this.config.withIpv4();
+		return this;
 	}
 	
 	@Override
 	public @NonNull HostConstraintBuilder ipv6() {
-		return null;
+		this.config = this.config.withIpv6();
+		return this;
 	}
 	
 	@Override
 	public @NonNull HostConstraintBuilder ip(@NonNull UnaryOperator<StringConstraintBuilder> builder) {
-		return null;
+		Objects.requireNonNull(builder, "Builder function must not be null");
+		
+		this.config = this.config.withIp(builder.apply(new StringConstraintBuilder()).build());
+		return this;
 	}
 	
 	@Override
 	public @NonNull HostConstraintBuilder ipType(@NonNull UnaryOperator<EnumConstraintBuilder<IpAddressType>> builder) {
-		return null;
+		Objects.requireNonNull(builder, "Builder function must not be null");
+		
+		this.config = this.config.withIpType(builder.apply(new EnumConstraintBuilder<>()).build());
+		return this;
 	}
 	
 	@Override
 	public @NonNull HostConstraintBuilder inAnySubnet(@NonNull Collection<String> cidrs) {
-		return null;
+		this.config = this.config.withInAnySubnet(cidrs);
+		return this;
 	}
 	
 	@Override
 	public @NonNull HostConstraintBuilder notInAnySubnet(@NonNull Collection<String> cidrs) {
-		return null;
+		this.config = this.config.withNotInAnySubnet(cidrs);
+		return this;
 	}
 	
 	@Override
 	public @NonNull HostConstraintBuilder domain(@NonNull UnaryOperator<StringConstraintBuilder> builder) {
-		return null;
+		Objects.requireNonNull(builder, "Builder function must not be null");
+		
+		this.config = this.config.withDomain(builder.apply(new StringConstraintBuilder()).build());
+		return this;
 	}
 	
 	@Override
 	public @NonNull HostConstraintBuilder rootDomain() {
-		return null;
+		this.config = this.config.withRootDomain();
+		return this;
 	}
 	
 	@Override
 	public @NonNull HostConstraintBuilder subDomain() {
-		return null;
+		this.config = this.config.withSubDomain();
+		return this;
 	}
 	
-	@Override
-	public @NonNull HostConstraintBuilder startsWith(@NonNull String prefix) {
-		return null;
-	}
-	
-	@Override
-	public @NonNull HostConstraintBuilder notStartsWith(@NonNull String prefix) {
-		return null;
-	}
-	
-	@Override
-	public @NonNull HostConstraintBuilder startsWithAny(@NonNull Collection<String> prefixes) {
-		return null;
-	}
-	
-	@Override
-	public @NonNull HostConstraintBuilder startsWithNone(@NonNull Collection<String> prefixes) {
-		return null;
-	}
-	
-	@Override
-	public @NonNull HostConstraintBuilder contains(@NonNull String substring) {
-		return null;
-	}
-	
-	@Override
-	public @NonNull HostConstraintBuilder notContains(@NonNull String substring) {
-		return null;
-	}
-	
-	@Override
-	public @NonNull HostConstraintBuilder containsAny(@NonNull Collection<String> substrings) {
-		return null;
-	}
-	
-	@Override
-	public @NonNull HostConstraintBuilder containsNone(@NonNull Collection<String> substrings) {
-		return null;
-	}
-	
-	@Override
-	public @NonNull HostConstraintBuilder containsAll(@NonNull Collection<String> substrings) {
-		return null;
-	}
-	
-	@Override
-	public @NonNull HostConstraintBuilder containsOnly(@NonNull Collection<String> substrings) {
-		return null;
-	}
-	
-	@Override
-	public @NonNull HostConstraintBuilder endsWith(@NonNull String suffix) {
-		return null;
-	}
-	
-	@Override
-	public @NonNull HostConstraintBuilder notEndsWith(@NonNull String suffix) {
-		return null;
-	}
-	
-	@Override
-	public @NonNull HostConstraintBuilder endsWithAny(@NonNull Collection<String> suffixes) {
-		return null;
-	}
-	
-	@Override
-	public @NonNull HostConstraintBuilder endsWithNone(@NonNull Collection<String> suffixes) {
-		return null;
-	}
-	
-	@Override
-	public @NonNull HostConstraintBuilder matches(@NonNull String regex) {
-		return null;
-	}
-	
-	@Override
-	public @NonNull HostConstraintBuilder notMatches(@NonNull String regex) {
-		return null;
-	}
-	
-	@Override
-	public @NonNull HostConstraintBuilder matches(@NonNull Pattern pattern) {
-		return null;
-	}
-	
-	@Override
-	public @NonNull HostConstraintBuilder notMatches(@NonNull Pattern pattern) {
-		return null;
-	}
-	
-	@Override
-	public @NonNull HostConstraintBuilder minLength(int minLength) {
-		return null;
-	}
-	
-	@Override
-	public @NonNull HostConstraintBuilder maxLength(int maxLength) {
-		return null;
-	}
-	
-	@Override
-	public @NonNull HostConstraintBuilder exactLength(int exactLength) {
-		return null;
-	}
-	
-	@Override
-	public @NonNull HostConstraintBuilder lengthBetween(int minLength, int maxLength) {
-		return null;
+	public @NonNull HostConstraintConfig build() {
+		return this.config;
 	}
 }

@@ -19,6 +19,7 @@
 package net.luis.utils.io.codec.constraint_new.builder;
 
 import net.luis.utils.io.codec.constraint_new.Constraint;
+import net.luis.utils.io.codec.constraint_new.config.network.QueryConstraintConfig;
 import net.luis.utils.io.codec.constraint_new.network.QueryConstraint;
 import org.jspecify.annotations.NonNull;
 
@@ -37,119 +38,189 @@ import java.util.regex.Pattern;
  * @author Luis-St
  */
 public class QueryConstraintBuilder implements QueryConstraint<QueryConstraintBuilder> {
-	
+
+	/**
+	 * The current constraint configuration being built.<br>
+	 */
+	private QueryConstraintConfig config;
+
+	/**
+	 * Constructs a new query constraint builder with no constraints applied.<br>
+	 */
+	public QueryConstraintBuilder() {
+		this.config = QueryConstraintConfig.UNCONSTRAINED;
+	}
+
+	/**
+	 * Constructs a new query constraint builder with the specified initial config.<br>
+	 *
+	 * @param initialConfig The initial configuration to use
+	 * @throws NullPointerException If the initial config is null
+	 */
+	public QueryConstraintBuilder(@NonNull QueryConstraintConfig initialConfig) {
+		this.config = Objects.requireNonNull(initialConfig, "Initial config must not be null");
+	}
+
 	@Override
 	public @NonNull QueryConstraintBuilder equalTo(@NonNull Map<String, List<String>> value) {
-		return null;
+		Objects.requireNonNull(value, "Value for 'equal to' constraint must not be null");
+
+		this.config = this.config.withEqualTo(value);
+		return this;
 	}
-	
+
 	@Override
 	public @NonNull QueryConstraintBuilder notEqualTo(@NonNull Map<String, List<String>> value) {
-		return null;
+		Objects.requireNonNull(value, "Value for 'not equal to' constraint must not be null");
+
+		this.config = this.config.withNotEqualTo(value);
+		return this;
 	}
-	
+
 	@Override
 	public @NonNull QueryConstraintBuilder in(@NonNull Collection<Map<String, List<String>>> values) {
-		return null;
+		Objects.requireNonNull(values, "Values for 'in' constraint must not be null");
+
+		this.config = this.config.withIn(values);
+		return this;
 	}
-	
+
 	@Override
 	public @NonNull QueryConstraintBuilder notIn(@NonNull Collection<Map<String, List<String>>> values) {
-		return null;
+		Objects.requireNonNull(values, "Values for 'not in' constraint must not be null");
+
+		this.config = this.config.withNotIn(values);
+		return this;
 	}
-	
+
 	@Override
 	public @NonNull QueryConstraintBuilder custom(@NonNull Constraint<Map<String, List<String>>> constraint) {
-		return null;
+		this.config = this.config.withCustom(constraint);
+		return this;
 	}
-	
+
 	@Override
 	public @NonNull QueryConstraintBuilder minSize(int minSize) {
-		return null;
+		this.config = this.config.withMinSize(minSize);
+		return this;
 	}
-	
+
 	@Override
 	public @NonNull QueryConstraintBuilder maxSize(int maxSize) {
-		return null;
+		this.config = this.config.withMaxSize(maxSize);
+		return this;
 	}
-	
+
 	@Override
 	public @NonNull QueryConstraintBuilder exactSize(int exactSize) {
-		return null;
+		this.config = this.config.withExactSize(exactSize);
+		return this;
 	}
-	
+
 	@Override
 	public @NonNull QueryConstraintBuilder sizeBetween(int minSize, int maxSize) {
-		return null;
+		this.config = this.config.withSizeBetween(minSize, maxSize);
+		return this;
 	}
-	
+
 	@Override
 	public @NonNull QueryConstraintBuilder requiredKey(@NonNull String key) {
-		return null;
+		Objects.requireNonNull(key, "Key for 'required key' constraint must not be null");
+		return this.requiredKeys(Collections.singleton(key));
 	}
-	
+
 	@Override
 	public @NonNull QueryConstraintBuilder requiredKeys(@NonNull Collection<String> keys) {
-		return null;
+		this.config = this.config.withRequiredKeys(keys);
+		return this;
 	}
-	
+
 	@Override
 	public @NonNull QueryConstraintBuilder forbiddenKey(@NonNull String key) {
-		return null;
+		Objects.requireNonNull(key, "Key for 'forbidden key' constraint must not be null");
+		return this.forbiddenKeys(Collections.singleton(key));
 	}
-	
+
 	@Override
 	public @NonNull QueryConstraintBuilder forbiddenKeys(@NonNull Collection<String> keys) {
-		return null;
+		this.config = this.config.withForbiddenKeys(keys);
+		return this;
 	}
-	
+
 	@Override
 	public @NonNull QueryConstraintBuilder allowedKey(@NonNull String key) {
-		return null;
+		Objects.requireNonNull(key, "Key for 'allowed key' constraint must not be null");
+		return this.allowedKeys(Collections.singleton(key));
 	}
-	
+
 	@Override
 	public @NonNull QueryConstraintBuilder allowedKeys(@NonNull Collection<String> keys) {
-		return null;
+		this.config = this.config.withAllowedKeys(keys);
+		return this;
 	}
-	
+
 	@Override
 	public @NonNull QueryConstraintBuilder nonNullKeys() {
-		return null;
+		this.config = this.config.withNonNullKeys();
+		return this;
 	}
-	
+
 	@Override
 	public @NonNull QueryConstraintBuilder uniqueValues() {
-		return null;
+		this.config = this.config.withUniqueValues();
+		return this;
 	}
-	
+
 	@Override
 	public @NonNull QueryConstraintBuilder nonNullValues() {
-		return null;
+		this.config = this.config.withNonNullValues();
+		return this;
 	}
-	
+
 	@Override
 	public @NonNull QueryConstraintBuilder value(@NonNull String key, @NonNull UnaryOperator<StringConstraintBuilder> builder) {
-		return null;
+		Objects.requireNonNull(builder, "Builder function for 'value' constraint must not be null");
+		
+		this.config = this.config.withValue(key, builder.apply(new StringConstraintBuilder()).build());
+		return this;
 	}
-	
+
 	@Override
 	public @NonNull QueryConstraintBuilder values(@NonNull String regex, @NonNull UnaryOperator<StringConstraintBuilder> builder) {
-		return null;
+		Objects.requireNonNull(builder, "Builder function for 'values' constraint must not be null");
+		
+		this.config = this.config.withValues(Pattern.compile(regex), builder.apply(new StringConstraintBuilder()).build());
+		return this;
 	}
-	
+
 	@Override
 	public @NonNull QueryConstraintBuilder values(@NonNull Pattern pattern, @NonNull UnaryOperator<StringConstraintBuilder> builder) {
-		return null;
+		Objects.requireNonNull(builder, "Builder function for 'values' constraint must not be null");
+		
+		this.config = this.config.withValues(pattern, builder.apply(new StringConstraintBuilder()).build());
+		return this;
 	}
-	
+
 	@Override
 	public @NonNull QueryConstraintBuilder singleValued() {
-		return null;
+		this.config = this.config.withSingleValued();
+		return this;
 	}
-	
+
 	@Override
 	public @NonNull QueryConstraintBuilder multiValued(@NonNull String key, @NonNull UnaryOperator<SizeConstraintBuilder> builder) {
-		return null;
+		Objects.requireNonNull(builder, "Builder function for 'multi valued' constraint must not be null");
+		
+		this.config = this.config.withMultiValued(key, builder.apply(new SizeConstraintBuilder()).build());
+		return this;
+	}
+
+	/**
+	 * Builds and returns the constraint configuration.<br>
+	 *
+	 * @return The built query constraint config
+	 */
+	public @NonNull QueryConstraintConfig build() {
+		return this.config;
 	}
 }

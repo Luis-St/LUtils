@@ -20,9 +20,11 @@ package net.luis.utils.io.codec.constraint_new.builder;
 
 import net.luis.utils.io.codec.constraint_new.BaseConstraint;
 import net.luis.utils.io.codec.constraint_new.Constraint;
+import net.luis.utils.io.codec.constraint_new.config.EnumConstraintConfig;
 import org.jspecify.annotations.NonNull;
 
 import java.util.Collection;
+import java.util.Objects;
 
 /**
  * Builder class for constructing enum-based constraints.<br>
@@ -37,29 +39,60 @@ import java.util.Collection;
  * @param <T> The enum type being constrained
  */
 public class EnumConstraintBuilder<T extends Enum<T>> implements BaseConstraint<T, EnumConstraintBuilder<T>> {
+
+	/**
+	 * The current constraint configuration being built.<br>
+	 */
+	private EnumConstraintConfig<T> config;
+
+	/**
+	 * Constructs a new enum constraint builder with no constraints applied.<br>
+	 */
+	public EnumConstraintBuilder() {
+		this.config = EnumConstraintConfig.unconstrained();
+	}
+
+	/**
+	 * Constructs a new enum constraint builder with the specified initial config.<br>
+	 *
+	 * @param initialConfig The initial configuration to use
+	 * @throws NullPointerException If the initial config is null
+	 */
+	public EnumConstraintBuilder(@NonNull EnumConstraintConfig<T> initialConfig) {
+		this.config = Objects.requireNonNull(initialConfig, "Initial config must not be null");
+	}
 	
 	@Override
 	public @NonNull EnumConstraintBuilder<T> equalTo(@NonNull T value) {
-		return null;
+		this.config = this.config.withEqualTo(value);
+		return this;
 	}
 	
 	@Override
 	public @NonNull EnumConstraintBuilder<T> notEqualTo(@NonNull T value) {
-		return null;
+		this.config = this.config.withNotEqualTo(value);
+		return this;
 	}
 	
 	@Override
 	public @NonNull EnumConstraintBuilder<T> in(@NonNull Collection<T> values) {
-		return null;
+		this.config = this.config.withIn(values);
+		return this;
 	}
 	
 	@Override
 	public @NonNull EnumConstraintBuilder<T> notIn(@NonNull Collection<T> values) {
-		return null;
+		this.config = this.config.withNotIn(values);
+		return this;
 	}
 	
 	@Override
 	public @NonNull EnumConstraintBuilder<T> custom(@NonNull Constraint<T> constraint) {
-		return null;
+		this.config = this.config.withCustom(constraint);
+		return this;
+	}
+	
+	public @NonNull EnumConstraintConfig<T> build() {
+		return this.config;
 	}
 }

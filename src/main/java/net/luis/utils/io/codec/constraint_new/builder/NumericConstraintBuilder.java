@@ -20,9 +20,11 @@ package net.luis.utils.io.codec.constraint_new.builder;
 
 import net.luis.utils.io.codec.constraint_new.ComparableConstraint;
 import net.luis.utils.io.codec.constraint_new.Constraint;
+import net.luis.utils.io.codec.constraint_new.config.NumericFieldConstraintConfig;
 import org.jspecify.annotations.NonNull;
 
 import java.util.Collection;
+import java.util.Objects;
 
 /**
  * Builder class for constructing numeric constraints.<br>
@@ -35,59 +37,101 @@ import java.util.Collection;
  * @author Luis-St
  */
 public class NumericConstraintBuilder implements ComparableConstraint<Integer, NumericConstraintBuilder> {
-	
+
+	/**
+	 * The current constraint configuration being built.<br>
+	 */
+	private NumericFieldConstraintConfig config;
+
+	/**
+	 * Constructs a new numeric constraint builder with no constraints applied.<br>
+	 */
+	public NumericConstraintBuilder() {
+		this.config = NumericFieldConstraintConfig.UNCONSTRAINED;
+	}
+
+	/**
+	 * Constructs a new numeric constraint builder with the specified initial config.<br>
+	 *
+	 * @param initialConfig The initial configuration to use
+	 * @throws NullPointerException If the initial config is null
+	 */
+	public NumericConstraintBuilder(@NonNull NumericFieldConstraintConfig initialConfig) {
+		this.config = Objects.requireNonNull(initialConfig, "Initial config must not be null");
+	}
+
 	@Override
 	public @NonNull NumericConstraintBuilder equalTo(@NonNull Integer value) {
-		return null;
+		this.config = this.config.withEqualTo(value);
+		return this;
 	}
-	
+
 	@Override
 	public @NonNull NumericConstraintBuilder notEqualTo(@NonNull Integer value) {
-		return null;
+		this.config = this.config.withNotEqualTo(value);
+		return this;
 	}
-	
+
 	@Override
 	public @NonNull NumericConstraintBuilder in(@NonNull Collection<Integer> values) {
-		return null;
+		this.config = this.config.withIn(values);
+		return this;
 	}
-	
+
 	@Override
 	public @NonNull NumericConstraintBuilder notIn(@NonNull Collection<Integer> values) {
-		return null;
+		this.config = this.config.withNotIn(values);
+		return this;
 	}
-	
+
 	@Override
 	public @NonNull NumericConstraintBuilder custom(@NonNull Constraint<Integer> constraint) {
-		return null;
+		this.config = this.config.withCustom(constraint);
+		return this;
 	}
-	
+
 	@Override
 	public @NonNull NumericConstraintBuilder greaterThan(@NonNull Integer value) {
-		return null;
+		this.config = this.config.withGreaterThan(value);
+		return this;
 	}
-	
+
 	@Override
 	public @NonNull NumericConstraintBuilder greaterThanOrEqual(@NonNull Integer value) {
-		return null;
+		this.config = this.config.withGreaterThanOrEqual(value);
+		return this;
 	}
-	
+
 	@Override
 	public @NonNull NumericConstraintBuilder lessThan(@NonNull Integer value) {
-		return null;
+		this.config = this.config.withLessThan(value);
+		return this;
 	}
-	
+
 	@Override
 	public @NonNull NumericConstraintBuilder lessThanOrEqual(@NonNull Integer value) {
-		return null;
+		this.config = this.config.withLessThanOrEqual(value);
+		return this;
 	}
-	
+
 	@Override
 	public @NonNull NumericConstraintBuilder between(@NonNull Integer min, @NonNull Integer max) {
-		return null;
+		this.config = this.config.withBetween(min, max);
+		return this;
 	}
-	
+
 	@Override
 	public @NonNull NumericConstraintBuilder betweenOrEqual(@NonNull Integer min, @NonNull Integer max) {
-		return null;
+		this.config = this.config.withBetweenOrEqual(min, max);
+		return this;
+	}
+
+	/**
+	 * Builds and returns the constraint configuration.<br>
+	 *
+	 * @return The built numeric field constraint config
+	 */
+	public @NonNull NumericFieldConstraintConfig build() {
+		return this.config;
 	}
 }

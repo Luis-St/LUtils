@@ -18,6 +18,7 @@
 
 package net.luis.utils.io.codec.constraint_new.network;
 
+import net.luis.utils.io.codec.constraint_new.BaseConstraint;
 import net.luis.utils.io.codec.constraint_new.CharSequenceConstraint;
 import net.luis.utils.io.codec.constraint_new.builder.EnumConstraintBuilder;
 import net.luis.utils.io.codec.constraint_new.builder.StringConstraintBuilder;
@@ -41,7 +42,7 @@ import java.util.function.UnaryOperator;
  * @param <T> The type of the constraint configuration
  * @param <C> The return type of the constraint method (for fluent method chaining)
  */
-public interface HostConstraint<T, C> extends CharSequenceConstraint<T, C> {
+public interface HostConstraint<T, C> extends BaseConstraint<T, C> {
 	
 	/**
 	 * Applies an IPv4 constraint to the host.<br>
