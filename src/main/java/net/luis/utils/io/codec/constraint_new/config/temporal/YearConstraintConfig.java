@@ -19,7 +19,11 @@
 package net.luis.utils.io.codec.constraint_new.config.temporal;
 
 import net.luis.utils.io.codec.constraint_new.Constraint;
+import net.luis.utils.io.codec.constraint_new.config.ConstraintConfig;
+import net.luis.utils.io.codec.constraint_new.config.ConstraintMatchers;
 import net.luis.utils.util.Pair;
+import net.luis.utils.util.result.Result;
+import org.jetbrains.annotations.NotNull;
 import org.jspecify.annotations.NonNull;
 
 import java.time.Year;
@@ -58,7 +62,7 @@ public record YearConstraintConfig(
 	@NonNull Optional<Pair<Year, Boolean>> min,
 	@NonNull Optional<Pair<Year, Boolean>> max,
 	@NonNull Optional<Constraint<Year>> custom
-) {
+) implements ConstraintConfig<Year> {
 	
 	/**
 	 * An unconstrained year configuration with no constraints applied.<br>
@@ -89,6 +93,8 @@ public record YearConstraintConfig(
 			throw new IllegalArgumentException("In set must not be empty when present");
 		}
 	}
+	
+	//region With methods
 	
 	/**
 	 * Creates a new config with the specified equal-to constraint.<br>
@@ -213,5 +219,18 @@ public record YearConstraintConfig(
 	public @NonNull YearConstraintConfig withCustom(@NonNull Constraint<Year> constraint) {
 		Objects.requireNonNull(constraint, "Custom constraint must not be null");
 		return new YearConstraintConfig(this.equalTo, this.in, this.min, this.max, Optional.of(constraint));
+	}
+	//endregion
+	
+	@Override
+	public @NotNull Result<Void> matches(@NonNull Year value) {
+		Objects.requireNonNull(value, "Value must not be null");
+		
+		return ConstraintMatchers.allOf(
+			() -> ConstraintMatchers.matchEqualTo(value, this.equalTo),
+			() -> ConstraintMatchers.matchIn(value, this.in),
+			() -> ConstraintMatchers.matchRange(value, this.min, this.max),
+			() -> ConstraintMatchers.matchCustom(value, this.custom)
+		);
 	}
 }

@@ -19,12 +19,15 @@
 package net.luis.utils.io.codec.constraint_new.config.temporal;
 
 import net.luis.utils.io.codec.constraint_new.Constraint;
-import net.luis.utils.io.codec.constraint_new.config.EnumConstraintConfig;
-import net.luis.utils.io.codec.constraint_new.config.NumericFieldConstraintConfig;
+import net.luis.utils.io.codec.constraint_new.config.*;
 import net.luis.utils.util.Pair;
+import net.luis.utils.util.result.Result;
+import org.jetbrains.annotations.NotNull;
 import org.jspecify.annotations.NonNull;
 
 import java.time.*;
+import java.time.chrono.ChronoZonedDateTime;
+import java.time.temporal.WeekFields;
 import java.util.*;
 
 /**
@@ -91,7 +94,7 @@ public record ZonedDateTimeConstraintConfig(
 	@NonNull Optional<NumericFieldConstraintConfig> nanosecond,
 	@NonNull Optional<ZoneIdConstraintConfig> zone,
 	@NonNull Optional<Constraint<ZonedDateTime>> custom
-) {
+) implements ConstraintConfig<ZonedDateTime> {
 	
 	/**
 	 * An unconstrained zoned date time configuration with no constraints applied.<br>
@@ -163,6 +166,8 @@ public record ZonedDateTimeConstraintConfig(
 			throw new IllegalArgumentException("Within next duration must be positive when present, but got " + withinNext.get());
 		}
 	}
+	
+	//region With methods
 	
 	/**
 	 * Creates a new config with the specified equal-to constraint.<br>
@@ -452,5 +457,33 @@ public record ZonedDateTimeConstraintConfig(
 	public @NonNull ZonedDateTimeConstraintConfig withCustom(@NonNull Constraint<ZonedDateTime> constraint) {
 		Objects.requireNonNull(constraint, "Custom constraint must not be null");
 		return new ZonedDateTimeConstraintConfig(this.equalTo, this.in, this.after, this.before, this.withinLast, this.withinNext, this.dayOfWeek, this.dayOfMonth, this.dayOfYear, this.weekOfMonth, this.weekOfYear, this.month, this.year, this.hour, this.minute, this.second, this.millisecond, this.nanosecond, this.zone, Optional.of(constraint));
+	}
+	//endregion
+	
+	@Override
+	public @NotNull Result<Void> matches(@NonNull ZonedDateTime value) {
+		Objects.requireNonNull(value, "Value must not be null");
+		
+		return ConstraintMatchers.allOf(
+			() -> ConstraintMatchers.matchEqualTo(value, this.equalTo),
+			() -> ConstraintMatchers.matchIn(value, this.in),
+			() -> ConstraintMatchers.matchRange(value, this.after, this.before, ChronoZonedDateTime::compareTo),
+			() -> ConstraintMatchers.matchWithinLast(value, this.withinLast, ZonedDateTime::now, ZonedDateTime::minus, "Zoned date time"),
+			() -> ConstraintMatchers.matchWithinNext(value, this.withinNext, ZonedDateTime::now, ZonedDateTime::plus, "Zoned date time"),
+			() -> ConstraintMatchers.matchEnumField(value.getDayOfWeek(), this.dayOfWeek, "day of week"),
+			() -> ConstraintMatchers.matchNumericField(value.getDayOfMonth(), this.dayOfMonth, "day of month"),
+			() -> ConstraintMatchers.matchNumericField(value.getDayOfYear(), this.dayOfYear, "day of year"),
+			() -> ConstraintMatchers.matchNumericField(value.get(WeekFields.ISO.weekOfMonth()), this.weekOfMonth, "week of month"),
+			() -> ConstraintMatchers.matchNumericField(value.get(WeekFields.ISO.weekOfWeekBasedYear()), this.weekOfYear, "week of year"),
+			() -> ConstraintMatchers.matchEnumField(value.getMonth(), this.month, "month"),
+			() -> ConstraintMatchers.matchNumericField(value.getYear(), this.year, "year"),
+			() -> ConstraintMatchers.matchNumericField(value.getHour(), this.hour, "hour"),
+			() -> ConstraintMatchers.matchNumericField(value.getMinute(), this.minute, "minute"),
+			() -> ConstraintMatchers.matchNumericField(value.getSecond(), this.second, "second"),
+			() -> ConstraintMatchers.matchNumericField(value.getNano() / 1_000_000, this.millisecond, "millisecond"),
+			() -> ConstraintMatchers.matchNumericField(value.getNano(), this.nanosecond, "nanosecond"),
+			() -> ConstraintMatchers.matchNestedConfig(value.getZone(), this.zone, "Zone"),
+			() -> ConstraintMatchers.matchCustom(value, this.custom)
+		);
 	}
 }

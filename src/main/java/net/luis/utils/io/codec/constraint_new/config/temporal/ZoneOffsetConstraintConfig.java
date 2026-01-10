@@ -19,8 +19,10 @@
 package net.luis.utils.io.codec.constraint_new.config.temporal;
 
 import net.luis.utils.io.codec.constraint_new.Constraint;
-import net.luis.utils.io.codec.constraint_new.config.NumericFieldConstraintConfig;
+import net.luis.utils.io.codec.constraint_new.config.*;
 import net.luis.utils.util.Pair;
+import net.luis.utils.util.result.Result;
+import org.jetbrains.annotations.NotNull;
 import org.jspecify.annotations.NonNull;
 
 import java.time.ZoneOffset;
@@ -67,7 +69,7 @@ public record ZoneOffsetConstraintConfig(
 	@NonNull Optional<Boolean> zero,
 	@NonNull Optional<NumericFieldConstraintConfig> hours,
 	@NonNull Optional<Constraint<ZoneOffset>> custom
-) {
+) implements ConstraintConfig<ZoneOffset> {
 	
 	/**
 	 * An unconstrained zone offset configuration with no constraints applied.<br>
@@ -111,6 +113,8 @@ public record ZoneOffsetConstraintConfig(
 			throw new IllegalArgumentException("Positive and negative constraints are mutually exclusive");
 		}
 	}
+	
+	//region With methods
 	
 	/**
 	 * Creates a new config with the specified equal-to constraint.<br>
@@ -312,5 +316,44 @@ public record ZoneOffsetConstraintConfig(
 	public @NonNull ZoneOffsetConstraintConfig withCustom(@NonNull Constraint<ZoneOffset> constraint) {
 		Objects.requireNonNull(constraint, "Custom constraint must not be null");
 		return new ZoneOffsetConstraintConfig(this.equalTo, this.in, this.min, this.max, this.positive, this.negative, this.zero, this.hours, Optional.of(constraint));
+	}
+	//endregion
+	
+	@Override
+	public @NotNull Result<Void> matches(@NonNull ZoneOffset value) {
+		Objects.requireNonNull(value, "Value must not be null");
+		
+		int totalSeconds = value.getTotalSeconds();
+		return ConstraintMatchers.allOf(
+			() -> ConstraintMatchers.matchEqualTo(value, this.equalTo),
+			() -> ConstraintMatchers.matchIn(value, this.in),
+			() -> ConstraintMatchers.matchRange(value, this.min, this.max),
+			() -> this.positive.map(nonPositive -> {
+				if (!nonPositive && totalSeconds <= 0) {
+					return Result.<Void>error("ZoneOffset '" + value + "' must be positive");
+				} else if (nonPositive && totalSeconds > 0) {
+					return Result.<Void>error("ZoneOffset '" + value + "' must be non-positive");
+				}
+				return Result.<Void>success();
+			}).orElseGet(Result::success),
+			() -> this.negative.map(nonNegative -> {
+				if (!nonNegative && totalSeconds >= 0) {
+					return Result.<Void>error("ZoneOffset '" + value + "' must be negative");
+				} else if (nonNegative && totalSeconds < 0) {
+					return Result.<Void>error("ZoneOffset '" + value + "' must be non-negative");
+				}
+				return Result.<Void>success();
+			}).orElseGet(Result::success),
+			() -> this.zero.map(nonZero -> {
+				if (!nonZero && totalSeconds != 0) {
+					return Result.<Void>error("ZoneOffset '" + value + "' must be zero (UTC)");
+				} else if (nonZero && totalSeconds == 0) {
+					return Result.<Void>error("ZoneOffset '" + value + "' must be non-zero");
+				}
+				return Result.<Void>success();
+			}).orElseGet(Result::success),
+			() -> ConstraintMatchers.matchNestedConfig(totalSeconds / 3600, this.hours, "Hours"),
+			() -> ConstraintMatchers.matchCustom(value, this.custom)
+		);
 	}
 }

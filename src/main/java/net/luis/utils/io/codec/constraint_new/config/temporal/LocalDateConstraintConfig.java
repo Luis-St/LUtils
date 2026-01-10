@@ -19,12 +19,15 @@
 package net.luis.utils.io.codec.constraint_new.config.temporal;
 
 import net.luis.utils.io.codec.constraint_new.Constraint;
-import net.luis.utils.io.codec.constraint_new.config.EnumConstraintConfig;
-import net.luis.utils.io.codec.constraint_new.config.NumericFieldConstraintConfig;
+import net.luis.utils.io.codec.constraint_new.config.*;
 import net.luis.utils.util.Pair;
+import net.luis.utils.util.result.Result;
+import org.jetbrains.annotations.NotNull;
 import org.jspecify.annotations.NonNull;
 
 import java.time.*;
+import java.time.chrono.ChronoLocalDate;
+import java.time.temporal.WeekFields;
 import java.util.*;
 
 /**
@@ -79,7 +82,7 @@ public record LocalDateConstraintConfig(
 	@NonNull Optional<EnumConstraintConfig<Month>> month,
 	@NonNull Optional<NumericFieldConstraintConfig> year,
 	@NonNull Optional<Constraint<LocalDate>> custom
-) {
+) implements ConstraintConfig<LocalDate> {
 	
 	/**
 	 * An unconstrained local date configuration with no constraints applied.<br>
@@ -139,6 +142,8 @@ public record LocalDateConstraintConfig(
 			throw new IllegalArgumentException("Within next duration must be positive when present, but got " + withinNext.get());
 		}
 	}
+	
+	//region With methods
 	
 	/**
 	 * Creates a new config with the specified equal-to constraint.<br>
@@ -362,5 +367,27 @@ public record LocalDateConstraintConfig(
 	public @NonNull LocalDateConstraintConfig withCustom(@NonNull Constraint<LocalDate> constraint) {
 		Objects.requireNonNull(constraint, "Custom constraint must not be null");
 		return new LocalDateConstraintConfig(this.equalTo, this.in, this.after, this.before, this.withinLast, this.withinNext, this.dayOfWeek, this.dayOfMonth, this.dayOfYear, this.weekOfMonth, this.weekOfYear, this.month, this.year, Optional.of(constraint));
+	}
+	//endregion
+	
+	@Override
+	public @NotNull Result<Void> matches(@NonNull LocalDate value) {
+		Objects.requireNonNull(value, "Value must not be null");
+		
+		return ConstraintMatchers.allOf(
+			() -> ConstraintMatchers.matchEqualTo(value, this.equalTo),
+			() -> ConstraintMatchers.matchIn(value, this.in),
+			() -> ConstraintMatchers.matchRange(value, this.after, this.before, ChronoLocalDate::compareTo),
+			() -> ConstraintMatchers.matchWithinLast(value, this.withinLast, LocalDate::now, (t, d) -> t.minusDays(d.toDays()), "LocalDate"),
+			() -> ConstraintMatchers.matchWithinNext(value, this.withinNext, LocalDate::now, (t, d) -> t.plusDays(d.toDays()), "LocalDate"),
+			() -> ConstraintMatchers.matchEnumField(value.getDayOfWeek(), this.dayOfWeek, "dayOfWeek"),
+			() -> ConstraintMatchers.matchNumericField(value.getDayOfMonth(), this.dayOfMonth, "dayOfMonth"),
+			() -> ConstraintMatchers.matchNumericField(value.getDayOfYear(), this.dayOfYear, "dayOfYear"),
+			() -> ConstraintMatchers.matchNumericField(value.get(WeekFields.ISO.weekOfMonth()), this.weekOfMonth, "weekOfMonth"),
+			() -> ConstraintMatchers.matchNumericField(value.get(WeekFields.ISO.weekOfWeekBasedYear()), this.weekOfYear, "weekOfYear"),
+			() -> ConstraintMatchers.matchEnumField(value.getMonth(), this.month, "month"),
+			() -> ConstraintMatchers.matchNumericField(value.getYear(), this.year, "year"),
+			() -> ConstraintMatchers.matchCustom(value, this.custom)
+		);
 	}
 }

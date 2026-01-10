@@ -19,7 +19,11 @@
 package net.luis.utils.io.codec.constraint_new.config.temporal;
 
 import net.luis.utils.io.codec.constraint_new.Constraint;
+import net.luis.utils.io.codec.constraint_new.config.ConstraintConfig;
+import net.luis.utils.io.codec.constraint_new.config.ConstraintMatchers;
 import net.luis.utils.util.Pair;
+import net.luis.utils.util.result.Result;
+import org.jetbrains.annotations.NotNull;
 import org.jspecify.annotations.NonNull;
 
 import java.time.Duration;
@@ -63,7 +67,7 @@ public record InstantConstraintConfig(
 	@NonNull Optional<Duration> withinLast,
 	@NonNull Optional<Duration> withinNext,
 	@NonNull Optional<Constraint<Instant>> custom
-) {
+) implements ConstraintConfig<Instant> {
 	
 	/**
 	 * An unconstrained Instant configuration with no constraints applied.<br>
@@ -108,6 +112,8 @@ public record InstantConstraintConfig(
 			throw new IllegalArgumentException("Within next duration must be positive when present, but got " + withinNext.get());
 		}
 	}
+	
+	//region With methods
 	
 	/**
 	 * Creates a new config with the specified equal-to constraint.<br>
@@ -254,5 +260,20 @@ public record InstantConstraintConfig(
 	public @NonNull InstantConstraintConfig withCustom(@NonNull Constraint<Instant> constraint) {
 		Objects.requireNonNull(constraint, "Custom constraint must not be null");
 		return new InstantConstraintConfig(this.equalTo, this.in, this.after, this.before, this.withinLast, this.withinNext, Optional.of(constraint));
+	}
+	//endregion
+	
+	@Override
+	public @NotNull Result<Void> matches(@NonNull Instant value) {
+		Objects.requireNonNull(value, "Value must not be null");
+		
+		return ConstraintMatchers.allOf(
+			() -> ConstraintMatchers.matchEqualTo(value, this.equalTo),
+			() -> ConstraintMatchers.matchIn(value, this.in),
+			() -> ConstraintMatchers.matchRange(value, this.after, this.before),
+			() -> ConstraintMatchers.matchWithinLast(value, this.withinLast, Instant::now, Instant::minus, "Instant"),
+			() -> ConstraintMatchers.matchWithinNext(value, this.withinNext, Instant::now, Instant::plus, "Instant"),
+			() -> ConstraintMatchers.matchCustom(value, this.custom)
+		);
 	}
 }

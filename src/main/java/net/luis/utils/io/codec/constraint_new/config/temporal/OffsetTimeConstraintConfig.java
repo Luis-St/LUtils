@@ -19,8 +19,10 @@
 package net.luis.utils.io.codec.constraint_new.config.temporal;
 
 import net.luis.utils.io.codec.constraint_new.Constraint;
-import net.luis.utils.io.codec.constraint_new.config.NumericFieldConstraintConfig;
+import net.luis.utils.io.codec.constraint_new.config.*;
 import net.luis.utils.util.Pair;
+import net.luis.utils.util.result.Result;
+import org.jetbrains.annotations.NotNull;
 import org.jspecify.annotations.NonNull;
 
 import java.time.Duration;
@@ -65,7 +67,7 @@ public record OffsetTimeConstraintConfig(
 	@NonNull Optional<NumericFieldConstraintConfig> nanosecond,
 	@NonNull Optional<ZoneOffsetConstraintConfig> offset,
 	@NonNull Optional<Constraint<OffsetTime>> custom
-) {
+) implements ConstraintConfig<OffsetTime> {
 	
 	/**
 	 * An unconstrained offset time configuration with no constraints applied.<br>
@@ -123,6 +125,8 @@ public record OffsetTimeConstraintConfig(
 			throw new IllegalArgumentException("Within next duration must be positive when present, but got " + withinNext.get());
 		}
 	}
+	
+	//region With methods
 	
 	/**
 	 * Creates a new config with the specified equal-to constraint.<br>
@@ -335,5 +339,25 @@ public record OffsetTimeConstraintConfig(
 	public @NonNull OffsetTimeConstraintConfig withCustom(@NonNull Constraint<OffsetTime> constraint) {
 		Objects.requireNonNull(constraint, "Custom constraint must not be null");
 		return new OffsetTimeConstraintConfig(this.equalTo, this.in, this.after, this.before, this.withinLast, this.withinNext, this.hour, this.minute, this.second, this.millisecond, this.nanosecond, this.offset, Optional.of(constraint));
+	}
+	//endregion
+	
+	@Override
+	public @NotNull Result<Void> matches(@NonNull OffsetTime value) {
+		Objects.requireNonNull(value, "Value must not be null");
+		return ConstraintMatchers.allOf(
+			() -> ConstraintMatchers.matchEqualTo(value, this.equalTo),
+			() -> ConstraintMatchers.matchIn(value, this.in),
+			() -> ConstraintMatchers.matchRange(value, this.after, this.before),
+			() -> ConstraintMatchers.matchWithinLast(value, this.withinLast, OffsetTime::now, OffsetTime::minus, "Offset time"),
+			() -> ConstraintMatchers.matchWithinNext(value, this.withinNext, OffsetTime::now, OffsetTime::plus, "Offset time"),
+			() -> ConstraintMatchers.matchNumericField(value.getHour(), this.hour, "hour"),
+			() -> ConstraintMatchers.matchNumericField(value.getMinute(), this.minute, "minute"),
+			() -> ConstraintMatchers.matchNumericField(value.getSecond(), this.second, "second"),
+			() -> ConstraintMatchers.matchNumericField(value.getNano() / 1_000_000, this.millisecond, "millisecond"),
+			() -> ConstraintMatchers.matchNumericField(value.getNano(), this.nanosecond, "nanosecond"),
+			() -> ConstraintMatchers.matchNestedConfig(value.getOffset(), this.offset, "Offset"),
+			() -> ConstraintMatchers.matchCustom(value, this.custom)
+		);
 	}
 }

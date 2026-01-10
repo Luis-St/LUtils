@@ -19,12 +19,15 @@
 package net.luis.utils.io.codec.constraint_new.config.temporal;
 
 import net.luis.utils.io.codec.constraint_new.Constraint;
-import net.luis.utils.io.codec.constraint_new.config.StringConstraintConfig;
+import net.luis.utils.io.codec.constraint_new.config.*;
 import net.luis.utils.io.codec.constraint_new.core.Unit;
 import net.luis.utils.util.Pair;
+import net.luis.utils.util.result.Result;
+import org.jetbrains.annotations.NotNull;
 import org.jspecify.annotations.NonNull;
 
 import java.time.ZoneId;
+import java.time.ZoneOffset;
 import java.util.*;
 
 /**
@@ -68,7 +71,7 @@ public record ZoneIdConstraintConfig(
 	@NonNull Optional<Unit> available,
 	@NonNull Optional<StringConstraintConfig> region,
 	@NonNull Optional<Constraint<ZoneId>> custom
-) {
+) implements ConstraintConfig<ZoneId> {
 	
 	/**
 	 * An unconstrained zone id configuration with no constraints applied.<br>
@@ -116,6 +119,8 @@ public record ZoneIdConstraintConfig(
 			throw new IllegalArgumentException("Region based and offset based constraints are mutually exclusive");
 		}
 	}
+	
+	//region With methods
 	
 	/**
 	 * Creates a new config with the specified equal-to constraint.<br>
@@ -244,5 +249,24 @@ public record ZoneIdConstraintConfig(
 	public @NonNull ZoneIdConstraintConfig withCustom(@NonNull Constraint<ZoneId> constraint) {
 		Objects.requireNonNull(constraint, "Custom constraint must not be null");
 		return new ZoneIdConstraintConfig(this.equalTo, this.in, this.normalized, this.regionBased, this.offsetBased, this.fixedOffset, this.utc, this.systemDefault, this.available, this.region, Optional.of(constraint));
+	}
+	//endregion
+	
+	@Override
+	public @NotNull Result<Void> matches(@NonNull ZoneId value) {
+		Objects.requireNonNull(value, "Value must not be null");
+		return ConstraintMatchers.allOf(
+			() -> ConstraintMatchers.matchEqualTo(value, this.equalTo),
+			() -> ConstraintMatchers.matchIn(value, this.in),
+			() -> ConstraintMatchers.matchFlag(value, this.normalized, v -> v.equals(v.normalized()), "Zone id '" + value + "' must be in normalized form"),
+			() -> ConstraintMatchers.matchFlag(value, this.regionBased, v -> !(v instanceof ZoneOffset), "Zone id '" + value + "' must be region-based"),
+			() -> ConstraintMatchers.matchFlag(value, this.offsetBased, ZoneOffset.class::isInstance, "Zone id '" + value + "' must be offset-based"),
+			() -> ConstraintMatchers.matchFlag(value, this.fixedOffset, ZoneOffset.class::isInstance, "Zone id '" + value + "' must be a fixed offset"),
+			() -> ConstraintMatchers.matchFlag(value, this.utc, v -> v.normalized().equals(ZoneOffset.UTC), "Zone id '" + value + "' must be UTC"),
+			() -> ConstraintMatchers.matchFlag(value, this.systemDefault, v -> v.equals(ZoneId.systemDefault()), "Zone id '" + value + "' must be the system default"),
+			() -> ConstraintMatchers.matchFlag(value, this.available, v -> ZoneId.getAvailableZoneIds().contains(v.getId()), "Zone id '" + value + "' must be in the available zone list"),
+			() -> ConstraintMatchers.matchNestedConfig(value.getId(), this.region, "Region"),
+			() -> ConstraintMatchers.matchCustom(value, this.custom)
+		);
 	}
 }

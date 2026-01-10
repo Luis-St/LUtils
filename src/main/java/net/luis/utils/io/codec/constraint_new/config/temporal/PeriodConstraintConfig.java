@@ -19,8 +19,10 @@
 package net.luis.utils.io.codec.constraint_new.config.temporal;
 
 import net.luis.utils.io.codec.constraint_new.Constraint;
-import net.luis.utils.io.codec.constraint_new.config.NumericFieldConstraintConfig;
+import net.luis.utils.io.codec.constraint_new.config.*;
 import net.luis.utils.util.Pair;
+import net.luis.utils.util.result.Result;
+import org.jetbrains.annotations.NotNull;
 import org.jspecify.annotations.NonNull;
 
 import java.time.Period;
@@ -72,7 +74,7 @@ public record PeriodConstraintConfig(
 	@NonNull Optional<NumericFieldConstraintConfig> month,
 	@NonNull Optional<NumericFieldConstraintConfig> year,
 	@NonNull Optional<Constraint<Period>> custom
-) {
+) implements ConstraintConfig<Period> {
 	
 	/**
 	 * An unconstrained period configuration with no constraints applied.<br>
@@ -121,6 +123,8 @@ public record PeriodConstraintConfig(
 			throw new IllegalArgumentException("Positive and negative constraints are mutually exclusive");
 		}
 	}
+	
+	//region With methods
 	
 	/**
 	 * Creates a new config with the specified equal-to constraint.<br>
@@ -332,5 +336,22 @@ public record PeriodConstraintConfig(
 	public @NonNull PeriodConstraintConfig withCustom(@NonNull Constraint<Period> constraint) {
 		Objects.requireNonNull(constraint, "Custom constraint must not be null");
 		return new PeriodConstraintConfig(this.equalTo, this.in, this.min, this.max, this.positive, this.negative, this.zero, this.day, this.month, this.year, Optional.of(constraint));
+	}
+	//endregion
+	
+	@Override
+	public @NotNull Result<Void> matches(@NonNull Period value) {
+		Objects.requireNonNull(value, "Value must not be null");
+
+		return ConstraintMatchers.allOf(
+			() -> ConstraintMatchers.matchEqualTo(value, this.equalTo),
+			() -> ConstraintMatchers.matchIn(value, this.in),
+			() -> TemporalMatchers.matchPeriodRange(value, this.min, this.max),
+			() -> TemporalMatchers.matchPeriodSign(value, this.positive, this.negative, this.zero),
+			() -> ConstraintMatchers.matchNestedConfig(value.getDays(), this.day, "Day"),
+			() -> ConstraintMatchers.matchNestedConfig(value.getMonths(), this.month, "Month"),
+			() -> ConstraintMatchers.matchNestedConfig(value.getYears(), this.year, "Year"),
+			() -> ConstraintMatchers.matchCustom(value, this.custom)
+		);
 	}
 }
