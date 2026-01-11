@@ -20,7 +20,6 @@ package net.luis.utils.io.codec.constraint_new.builder;
 
 import net.luis.utils.io.codec.constraint_new.Constraint;
 import net.luis.utils.io.codec.constraint_new.config.network.HostConstraintConfig;
-import net.luis.utils.io.codec.constraint_new.core.IpAddressType;
 import net.luis.utils.io.codec.constraint_new.network.HostConstraint;
 import org.jspecify.annotations.NonNull;
 
@@ -32,26 +31,27 @@ import java.util.function.UnaryOperator;
  * Builder class for constructing host-based constraints.<br>
  * <p>
  *     This builder implements {@link HostConstraint} to provide a fluent API for building
- *     constraints on network hosts including IP address format, subnet membership, and domain validation.<br>
+ *     constraints on network hosts. It allows choosing between IP address constraints
+ *     or domain name constraints, which are mutually exclusive.<br>
  *     It is typically used as a parameter to constraint builder methods that accept host constraints.
  * </p>
  *
  * @author Luis-St
  */
 public class HostConstraintBuilder implements HostConstraint<String, HostConstraintBuilder> {
-
+	
 	/**
 	 * The current constraint configuration being built.<br>
 	 */
 	private HostConstraintConfig config;
-
+	
 	/**
 	 * Constructs a new host constraint builder with no constraints applied.<br>
 	 */
 	public HostConstraintBuilder() {
 		this.config = HostConstraintConfig.UNCONSTRAINED;
 	}
-
+	
 	/**
 	 * Constructs a new host constraint builder with the specified initial config.<br>
 	 *
@@ -93,65 +93,26 @@ public class HostConstraintBuilder implements HostConstraint<String, HostConstra
 	}
 	
 	@Override
-	public @NonNull HostConstraintBuilder ipv4() {
-		this.config = this.config.withIpv4();
-		return this;
-	}
-	
-	@Override
-	public @NonNull HostConstraintBuilder ipv6() {
-		this.config = this.config.withIpv6();
-		return this;
-	}
-	
-	@Override
-	public @NonNull HostConstraintBuilder ip(@NonNull UnaryOperator<StringConstraintBuilder> builder) {
+	public @NonNull HostConstraintBuilder ip(@NonNull UnaryOperator<IpConstraintBuilder> builder) {
 		Objects.requireNonNull(builder, "Builder function must not be null");
 		
-		this.config = this.config.withIp(builder.apply(new StringConstraintBuilder()).build());
+		this.config = this.config.withIp(builder.apply(new IpConstraintBuilder()).build());
 		return this;
 	}
 	
 	@Override
-	public @NonNull HostConstraintBuilder ipType(@NonNull UnaryOperator<EnumConstraintBuilder<IpAddressType>> builder) {
+	public @NonNull HostConstraintBuilder domain(@NonNull UnaryOperator<DomainConstraintBuilder> builder) {
 		Objects.requireNonNull(builder, "Builder function must not be null");
 		
-		this.config = this.config.withIpType(builder.apply(new EnumConstraintBuilder<>()).build());
+		this.config = this.config.withDomain(builder.apply(new DomainConstraintBuilder()).build());
 		return this;
 	}
 	
-	@Override
-	public @NonNull HostConstraintBuilder inAnySubnet(@NonNull Collection<String> cidrs) {
-		this.config = this.config.withInAnySubnet(cidrs);
-		return this;
-	}
-	
-	@Override
-	public @NonNull HostConstraintBuilder notInAnySubnet(@NonNull Collection<String> cidrs) {
-		this.config = this.config.withNotInAnySubnet(cidrs);
-		return this;
-	}
-	
-	@Override
-	public @NonNull HostConstraintBuilder domain(@NonNull UnaryOperator<StringConstraintBuilder> builder) {
-		Objects.requireNonNull(builder, "Builder function must not be null");
-		
-		this.config = this.config.withDomain(builder.apply(new StringConstraintBuilder()).build());
-		return this;
-	}
-	
-	@Override
-	public @NonNull HostConstraintBuilder rootDomain() {
-		this.config = this.config.withRootDomain();
-		return this;
-	}
-	
-	@Override
-	public @NonNull HostConstraintBuilder subDomain() {
-		this.config = this.config.withSubDomain();
-		return this;
-	}
-	
+	/**
+	 * Builds and returns the host constraint configuration.<br>
+	 *
+	 * @return The built constraint configuration
+	 */
 	public @NonNull HostConstraintConfig build() {
 		return this.config;
 	}

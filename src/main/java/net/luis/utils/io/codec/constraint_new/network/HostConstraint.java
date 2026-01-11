@@ -19,22 +19,26 @@
 package net.luis.utils.io.codec.constraint_new.network;
 
 import net.luis.utils.io.codec.constraint_new.BaseConstraint;
-import net.luis.utils.io.codec.constraint_new.CharSequenceConstraint;
-import net.luis.utils.io.codec.constraint_new.builder.EnumConstraintBuilder;
-import net.luis.utils.io.codec.constraint_new.builder.StringConstraintBuilder;
-import net.luis.utils.io.codec.constraint_new.core.IpAddressType;
+import net.luis.utils.io.codec.constraint_new.builder.DomainConstraintBuilder;
+import net.luis.utils.io.codec.constraint_new.builder.IpConstraintBuilder;
 import org.jspecify.annotations.NonNull;
 
-import java.util.Collection;
-import java.util.Collections;
 import java.util.function.UnaryOperator;
 
 /**
  * Constraint interface for host types that provides host validation operations.<br>
  * <p>
- *     This interface extends {@link CharSequenceConstraint} with methods for constraining hosts
- *     based on IP address format, IP type, subnet membership, and domain characteristics.<br>
- *     It supports validation of both IP addresses (IPv4, IPv6) and domain names.
+ *     This interface extends {@link BaseConstraint} with methods for constraining hosts
+ *     as either IP addresses or domain names. The constraints are mutually exclusive -
+ *     a host can be validated as an IP address or a domain, but not both simultaneously.
+ * </p>
+ * <p>
+ *     Use {@link #ip(UnaryOperator)} to constrain the host as an IP address with
+ *     IPv4/IPv6 format validation, type classification, and subnet membership checks.
+ * </p>
+ * <p>
+ *     Use {@link #domain(UnaryOperator)} to constrain the host as a domain name with
+ *     root domain/subdomain validation and string pattern matching.
  * </p>
  *
  * @author Luis-St
@@ -45,182 +49,34 @@ import java.util.function.UnaryOperator;
 public interface HostConstraint<T, C> extends BaseConstraint<T, C> {
 	
 	/**
-	 * Applies an IPv4 constraint to the host.<br>
-	 * <p>
-	 *     The returned type will validate that hosts are valid IPv4 addresses.
-	 * </p>
-	 *
-	 * @return A new type with the applied IPv4 constraint
-	 * @see #ipv6()
-	 * @see #ip()
-	 */
-	@NonNull C ipv4();
-	
-	/**
-	 * Applies an IPv6 constraint to the host.<br>
-	 * <p>
-	 *     The returned type will validate that hosts are valid IPv6 addresses.
-	 * </p>
-	 *
-	 * @return A new type with the applied IPv6 constraint
-	 * @see #ipv4()
-	 * @see #ip()
-	 */
-	@NonNull C ipv6();
-	
-	/**
-	 * Applies an IP address constraint to the host.<br>
-	 * <p>
-	 *     The returned type will validate that hosts are valid IP addresses (either IPv4 or IPv6).<br>
-	 *     This is a convenience method equivalent to {@code ip(UnaryOperator.identity())}.
-	 * </p>
-	 *
-	 * @return A new type with the applied IP constraint
-	 * @see #ip(UnaryOperator)
-	 * @see #ipv4()
-	 * @see #ipv6()
-	 */
-	default @NonNull C ip() {
-		return this.ip(UnaryOperator.identity());
-	}
-	
-	/**
 	 * Applies an IP address constraint to the host using a builder.<br>
 	 * <p>
 	 *     The returned type will validate that hosts are valid IP addresses matching
-	 *     the additional string constraints defined by the builder.
+	 *     the constraints defined by the builder (IPv4/IPv6 format, type, subnet, etc.).<br>
+	 *     This constraint is mutually exclusive with {@link #domain(UnaryOperator)}.
 	 * </p>
 	 *
-	 * @param builder A function that configures additional constraints on the IP address string
+	 * @param builder A function that configures constraints on the IP address
 	 * @return A new type with the applied IP constraint
 	 * @throws NullPointerException If the builder is null
-	 * @see #ip()
-	 */
-	@NonNull C ip(@NonNull UnaryOperator<StringConstraintBuilder> builder);
-	
-	/**
-	 * Applies an IP type constraint to the host using a builder.<br>
-	 * <p>
-	 *     The returned type will validate that IP addresses belong to the types
-	 *     defined by the builder (public, private, loopback, link-local, multicast, broadcast, or unspecified).
-	 * </p>
-	 *
-	 * @param builder A function that configures the IP type constraint using an enum constraint builder
-	 * @return A new type with the applied IP type constraint
-	 * @throws NullPointerException If the builder is null
-	 * @see IpAddressType
-	 */
-	@NonNull C ipType(@NonNull UnaryOperator<EnumConstraintBuilder<IpAddressType>> builder);
-	
-	/**
-	 * Applies a subnet membership constraint to the host.<br>
-	 * <p>
-	 *     The returned type will validate that IP addresses are within the specified CIDR subnet.<br>
-	 *     This is a convenience method equivalent to {@code inAnySubnet(Collections.singletonList(cidr))}.
-	 * </p>
-	 *
-	 * @param cidr The CIDR notation subnet (e.g., "192.168.1.0/24")
-	 * @return A new type with the applied subnet constraint
-	 * @throws NullPointerException If the CIDR is null
-	 * @see #inAnySubnet(Collection)
-	 * @see #notInSubnet(String)
-	 */
-	default @NonNull C inSubnet(@NonNull String cidr) {
-		return this.inAnySubnet(Collections.singletonList(cidr));
-	}
-	
-	/**
-	 * Applies a negative subnet membership constraint to the host.<br>
-	 * <p>
-	 *     The returned type will validate that IP addresses are not within the specified CIDR subnet.<br>
-	 *     This is a convenience method equivalent to {@code notInAnySubnet(Collections.singletonList(cidr))}.
-	 * </p>
-	 *
-	 * @param cidr The CIDR notation subnet to exclude (e.g., "10.0.0.0/8")
-	 * @return A new type with the applied negative subnet constraint
-	 * @throws NullPointerException If the CIDR is null
-	 * @see #notInAnySubnet(Collection)
-	 * @see #inSubnet(String)
-	 */
-	default @NonNull C notInSubnet(@NonNull String cidr) {
-		return this.notInAnySubnet(Collections.singletonList(cidr));
-	}
-	
-	/**
-	 * Applies a multi-subnet membership constraint to the host.<br>
-	 * <p>
-	 *     The returned type will validate that IP addresses are within any of the specified CIDR subnets.
-	 * </p>
-	 *
-	 * @param cidrs The collection of CIDR notation subnets
-	 * @return A new type with the applied multi-subnet constraint
-	 * @throws NullPointerException If the collection is null
-	 * @see #inSubnet(String)
-	 * @see #notInAnySubnet(Collection)
-	 */
-	@NonNull C inAnySubnet(@NonNull Collection<String> cidrs);
-	
-	/**
-	 * Applies a negative multi-subnet membership constraint to the host.<br>
-	 * <p>
-	 *     The returned type will validate that IP addresses are not within any of the specified CIDR subnets.
-	 * </p>
-	 *
-	 * @param cidrs The collection of CIDR notation subnets to exclude
-	 * @return A new type with the applied negative multi-subnet constraint
-	 * @throws NullPointerException If the collection is null
-	 * @see #notInSubnet(String)
-	 * @see #inAnySubnet(Collection)
-	 */
-	@NonNull C notInAnySubnet(@NonNull Collection<String> cidrs);
-	
-	/**
-	 * Applies a domain constraint to the host.<br>
-	 * <p>
-	 *     The returned type will validate that hosts are valid domain names.<br>
-	 *     This is a convenience method equivalent to {@code domain(UnaryOperator.identity())}.
-	 * </p>
-	 *
-	 * @return A new type with the applied domain constraint
+	 * @see IpConstraint
 	 * @see #domain(UnaryOperator)
 	 */
-	default @NonNull C domain() {
-		return this.domain(UnaryOperator.identity());
-	}
+	@NonNull C ip(@NonNull UnaryOperator<IpConstraintBuilder> builder);
 	
 	/**
-	 * Applies a domain constraint to the host using a builder.<br>
+	 * Applies a domain name constraint to the host using a builder.<br>
 	 * <p>
 	 *     The returned type will validate that hosts are valid domain names matching
-	 *     the additional string constraints defined by the builder.
+	 *     the constraints defined by the builder (root domain, subdomain, patterns, etc.).<br>
+	 *     This constraint is mutually exclusive with {@link #ip(UnaryOperator)}.
 	 * </p>
 	 *
-	 * @param builder A function that configures additional constraints on the domain string
+	 * @param builder A function that configures constraints on the domain name
 	 * @return A new type with the applied domain constraint
 	 * @throws NullPointerException If the builder is null
-	 * @see #domain()
+	 * @see DomainConstraint
+	 * @see #ip(UnaryOperator)
 	 */
-	@NonNull C domain(@NonNull UnaryOperator<StringConstraintBuilder> builder);
-	
-	/**
-	 * Applies a root domain constraint to the host.<br>
-	 * <p>
-	 *     The returned type will validate that hosts are root domains (e.g., "example.com" rather than "sub.example.com").
-	 * </p>
-	 *
-	 * @return A new type with the applied root domain constraint
-	 * @see #subDomain()
-	 */
-	@NonNull C rootDomain();
-	
-	/**
-	 * Applies a subdomain constraint to the host.<br>
-	 * <p>
-	 *     The returned type will validate that hosts are subdomains (e.g., "sub.example.com" rather than "example.com").
-	 * </p>
-	 *
-	 * @return A new type with the applied subdomain constraint
-	 * @see #rootDomain()
-	 */
-	@NonNull C subDomain();
+	@NonNull C domain(@NonNull UnaryOperator<DomainConstraintBuilder> builder);
 }

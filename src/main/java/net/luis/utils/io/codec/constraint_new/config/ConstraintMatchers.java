@@ -61,6 +61,7 @@ public final class ConstraintMatchers {
 	 * @return A formatted string representation of the set
 	 */
 	private static <T> @NonNull String formatSet(@NonNull Set<T> set) {
+		Objects.requireNonNull(set, "Set must not be null");
 		return "[" + set.stream().map(Object::toString).collect(Collectors.joining(", ")) + "]";
 	}
 	

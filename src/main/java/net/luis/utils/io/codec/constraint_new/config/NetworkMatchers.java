@@ -16,9 +16,9 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-package net.luis.utils.io.codec.constraint_new.config.network;
+package net.luis.utils.io.codec.constraint_new.config;
 
-import net.luis.utils.io.codec.constraint_new.config.*;
+import net.luis.utils.io.codec.constraint_new.config.network.*;
 import net.luis.utils.io.codec.constraint_new.core.*;
 import net.luis.utils.util.Pair;
 import net.luis.utils.util.result.Result;
@@ -97,66 +97,32 @@ public final class NetworkMatchers {
 	}
 	
 	/**
-	 * Validates that a host value is a valid IPv4 address.<br>
+	 * Validates a host value against an IP version constraint.<br>
 	 *
 	 * @param value The host value to validate
-	 * @param ipv4 The IPv4 constraint flag
+	 * @param ipVersion The IP version enum constraint config
 	 * @return A successful result if the constraint is satisfied or not present
+	 * @throws NullPointerException If any parameter is null
 	 */
-	public static @NonNull Result<Void> matchIpv4(@NonNull String value, @NonNull Optional<Unit> ipv4) {
+	public static @NonNull Result<Void> matchIpVersion(@NonNull String value, @NonNull Optional<EnumConstraintConfig<IpVersion>> ipVersion) {
 		Objects.requireNonNull(value, "Value must not be null");
-		Objects.requireNonNull(ipv4, "IPv4 constraint must not be null");
-		if (ipv4.isEmpty()) {
+		Objects.requireNonNull(ipVersion, "IP version constraint must not be null");
+		if (ipVersion.isEmpty()) {
 			return Result.success();
 		}
 		
-		if (!isValidIpv4(value)) {
-			return Result.error("Host '" + value + "' must be a valid IPv4 address");
-		}
-		return Result.success();
-	}
-	
-	/**
-	 * Validates that a host value is a valid IPv6 address.<br>
-	 *
-	 * @param value The host value to validate
-	 * @param ipv6 The IPv6 constraint flag
-	 * @return A successful result if the constraint is satisfied or not present
-	 */
-	public static @NonNull Result<Void> matchIpv6(@NonNull String value, @NonNull Optional<Unit> ipv6) {
-		Objects.requireNonNull(value, "Value must not be null");
-		Objects.requireNonNull(ipv6, "IPv6 constraint must not be null");
-		if (ipv6.isEmpty()) {
-			return Result.success();
+		IpVersion detectedVersion;
+		if (isValidIpv4(value)) {
+			detectedVersion = IpVersion.IPV4;
+		} else if (isValidIpv6(value)) {
+			detectedVersion = IpVersion.IPV6;
+		} else {
+			return Result.error("Host '" + value + "' is not a valid IP address");
 		}
 		
-		if (!isValidIpv6(value)) {
-			return Result.error("Host '" + value + "' must be a valid IPv6 address");
-		}
-		return Result.success();
-	}
-	
-	/**
-	 * Validates a host value as a valid IP address with a nested string constraint config.<br>
-	 *
-	 * @param value The host value to validate
-	 * @param ip The IP address string constraint config
-	 * @return A successful result if the constraint is satisfied or not present
-	 */
-	public static @NonNull Result<Void> matchIpConfig(@NonNull String value, @NonNull Optional<StringConstraintConfig> ip) {
-		Objects.requireNonNull(value, "Value must not be null");
-		Objects.requireNonNull(ip, "IP constraint must not be null");
-		if (ip.isEmpty()) {
-			return Result.success();
-		}
-		
-		if (!isValidIpv4(value) && !isValidIpv6(value)) {
-			return Result.error("Host '" + value + "' must be a valid IP address");
-		}
-		
-		Result<Void> result = ip.get().matches(value);
+		Result<Void> result = ipVersion.get().matches(detectedVersion);
 		if (result.isError()) {
-			return Result.error("IP constraint failed: " + result.errorOrThrow());
+			return Result.error("IP version constraint failed: " + result.errorOrThrow());
 		}
 		return Result.success();
 	}
@@ -487,7 +453,7 @@ public final class NetworkMatchers {
 		if (extensionConfig.isEmpty()) {
 			return Result.success();
 		}
-
+		
 		Path fileName = value.getFileName();
 		if (fileName == null) {
 			return Result.error("Path '" + value + "' has no file name for extension check");
@@ -506,7 +472,7 @@ public final class NetworkMatchers {
 		}
 		return Result.success();
 	}
-
+	
 	/**
 	 * Validates that a path has no file extension.<br>
 	 *
@@ -520,7 +486,7 @@ public final class NetworkMatchers {
 		if (withoutExtension.isEmpty()) {
 			return Result.success();
 		}
-
+		
 		Path fileName = value.getFileName();
 		if (fileName != null && fileName.toString().contains(".")) {
 			return Result.error("Path '" + value + "' must not have an extension");
@@ -647,7 +613,7 @@ public final class NetworkMatchers {
 		if (singleValued.isEmpty()) {
 			return Result.success();
 		}
-
+		
 		for (Map.Entry<String, List<String>> entry : value.entrySet()) {
 			if (entry.getValue().size() != 1) {
 				return Result.error("Query parameter '" + entry.getKey() + "' must have exactly one value");
@@ -655,7 +621,7 @@ public final class NetworkMatchers {
 		}
 		return Result.success();
 	}
-
+	
 	/**
 	 * Validates that all query parameter values are unique across all keys.<br>
 	 *
@@ -669,7 +635,7 @@ public final class NetworkMatchers {
 		if (uniqueValues.isEmpty()) {
 			return Result.success();
 		}
-
+		
 		Set<String> allValues = new HashSet<>();
 		for (List<String> values : value.values()) {
 			for (String val : values) {
