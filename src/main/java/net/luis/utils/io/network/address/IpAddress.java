@@ -65,11 +65,11 @@ import java.util.concurrent.TimeUnit;
  * @see Ipv6Address
  *
  * @author Luis-St
- * 
+ *
  * @param <T> The concrete type of the IP address (self-referential for type safety)
  */
 public sealed interface IpAddress<T extends IpAddress<T>> extends Comparable<T> permits Ipv4Address, Ipv6Address {
-
+	
 	/**
 	 * Returns the IP version number of this address.<br>
 	 * This method returns {@code 4} for IPv4 addresses and {@code 6} for IPv6 addresses.<br>
@@ -82,7 +82,7 @@ public sealed interface IpAddress<T extends IpAddress<T>> extends Comparable<T> 
 	 * @return The IP version number ({@code 4} for IPv4, {@code 6} for IPv6)
 	 */
 	int version();
-
+	
 	/**
 	 * Returns the bit length of this IP address.<br>
 	 * This method returns {@code 32} for IPv4 addresses and {@code 128} for IPv6 addresses.<br>
@@ -94,7 +94,7 @@ public sealed interface IpAddress<T extends IpAddress<T>> extends Comparable<T> 
 	 * @return The bit length of the address ({@code 32} for IPv4, {@code 128} for IPv6)
 	 */
 	int bitLength();
-
+	
 	/**
 	 * Returns the byte representation of this IP address in network byte order (big-endian).<br>
 	 * The returned array contains the raw bytes of the address, with the most significant byte at index 0.<br>
@@ -117,7 +117,7 @@ public sealed interface IpAddress<T extends IpAddress<T>> extends Comparable<T> 
 	 * @return A new byte array containing the address in network byte order
 	 */
 	byte @NonNull [] toBytes();
-
+	
 	/**
 	 * Returns the unsigned integer representation of this IP address as a {@link BigInteger}.<br>
 	 * The returned value is always non-negative and represents the address as a single unsigned integer value.<br>
@@ -141,7 +141,7 @@ public sealed interface IpAddress<T extends IpAddress<T>> extends Comparable<T> 
 	 * @return The address as an unsigned {@link BigInteger}
 	 */
 	@NonNull BigInteger toBigInteger();
-
+	
 	/**
 	 * Returns the value of the bit at the specified index.<br>
 	 * Bit index {@code 0} represents the most significant bit (leftmost), and the last index represents the least significant bit (rightmost).<br>
@@ -165,7 +165,7 @@ public sealed interface IpAddress<T extends IpAddress<T>> extends Comparable<T> 
 	 * @throws IndexOutOfBoundsException If the index is negative or greater than or equal to {@link #bitLength()}
 	 */
 	boolean getBit(int index);
-
+	
 	/**
 	 * Returns a new address with the bit at the specified index changed to the given value.<br>
 	 * This method does not modify the current address; it returns a new instance with the specified bit set or cleared.<br>
@@ -191,7 +191,7 @@ public sealed interface IpAddress<T extends IpAddress<T>> extends Comparable<T> 
 	 * @throws IndexOutOfBoundsException If the index is negative or greater than or equal to {@link #bitLength()}
 	 */
 	@NonNull T withBit(int index, boolean value);
-
+	
 	/**
 	 * Returns the next sequential IP address, if one exists.<br>
 	 * This method returns the address that is numerically one greater than this address.<br>
@@ -216,7 +216,7 @@ public sealed interface IpAddress<T extends IpAddress<T>> extends Comparable<T> 
 	 * @return An {@link Optional} containing the next address, or empty if at maximum
 	 */
 	@NonNull Optional<T> next();
-
+	
 	/**
 	 * Returns the previous sequential IP address, if one exists.<br>
 	 * This method returns the address that is numerically one less than this address.<br>
@@ -241,7 +241,7 @@ public sealed interface IpAddress<T extends IpAddress<T>> extends Comparable<T> 
 	 * @return An {@link Optional} containing the previous address, or empty if at minimum
 	 */
 	@NonNull Optional<T> previous();
-
+	
 	/**
 	 * Calculates the signed distance from this address to another address.<br>
 	 * The distance is positive if the other address is greater than this address,
@@ -267,7 +267,7 @@ public sealed interface IpAddress<T extends IpAddress<T>> extends Comparable<T> 
 	 * @throws NullPointerException If other is null
 	 */
 	@NonNull BigInteger distanceTo(@NonNull T other);
-
+	
 	/**
 	 * Checks if this is the unspecified (all-zeros) address.<br>
 	 * The unspecified address indicates the absence of an address and is typically
@@ -282,7 +282,7 @@ public sealed interface IpAddress<T extends IpAddress<T>> extends Comparable<T> 
 	 * @see <a href="https://tools.ietf.org/html/rfc4291">RFC 4291 - IP Version 6 Addressing Architecture</a>
 	 */
 	boolean isUnspecified();
-
+	
 	/**
 	 * Checks if this is a loopback address.<br>
 	 * Loopback addresses are used by a host to send packets to itself.<br>
@@ -296,7 +296,7 @@ public sealed interface IpAddress<T extends IpAddress<T>> extends Comparable<T> 
 	 * @see <a href="https://tools.ietf.org/html/rfc4291">RFC 4291 - IP Version 6 Addressing Architecture</a>
 	 */
 	boolean isLoopback();
-
+	
 	/**
 	 * Checks if this is a multicast address.<br>
 	 * Multicast addresses are used to deliver packets to multiple destinations simultaneously.<br>
@@ -310,7 +310,7 @@ public sealed interface IpAddress<T extends IpAddress<T>> extends Comparable<T> 
 	 * @see <a href="https://tools.ietf.org/html/rfc4291">RFC 4291 - IP Version 6 Addressing Architecture</a>
 	 */
 	boolean isMulticast();
-
+	
 	/**
 	 * Checks if this is a link-local address.<br>
 	 * Link-local addresses are used for communication within a single network segment and are not routable beyond the local link.<br>
@@ -324,7 +324,7 @@ public sealed interface IpAddress<T extends IpAddress<T>> extends Comparable<T> 
 	 * @see <a href="https://tools.ietf.org/html/rfc4291">RFC 4291 - IP Version 6 Addressing Architecture</a>
 	 */
 	boolean isLinkLocal();
-
+	
 	/**
 	 * Checks if this is a private address.<br>
 	 * Private addresses are reserved for use in private networks and are not globally routable on the internet.<br>
@@ -345,7 +345,7 @@ public sealed interface IpAddress<T extends IpAddress<T>> extends Comparable<T> 
 	 * @see <a href="https://tools.ietf.org/html/rfc4193">RFC 4193 - Unique Local IPv6 Unicast Addresses</a>
 	 */
 	boolean isPrivate();
-
+	
 	/**
 	 * Checks if this is a documentation address.<br>
 	 * Documentation addresses are reserved for use in documentation and examples, and should not be used in production networks.<br>
@@ -366,7 +366,7 @@ public sealed interface IpAddress<T extends IpAddress<T>> extends Comparable<T> 
 	 * @see <a href="https://tools.ietf.org/html/rfc3849">RFC 3849 - IPv6 Address Prefix Reserved for Documentation</a>
 	 */
 	boolean isDocumentation();
-
+	
 	/**
 	 * Checks if this is a globally routable unicast address.<br>
 	 * Global unicast addresses are addresses that can be routed on the public internet.<br>
@@ -381,7 +381,7 @@ public sealed interface IpAddress<T extends IpAddress<T>> extends Comparable<T> 
 	 * @return {@code true} if this is a globally routable unicast address, {@code false} otherwise
 	 */
 	boolean isGlobalUnicast();
-
+	
 	/**
 	 * Returns the address type classification for this IP address.<br>
 	 * This method provides a comprehensive classification of the address based on
@@ -398,7 +398,7 @@ public sealed interface IpAddress<T extends IpAddress<T>> extends Comparable<T> 
 	 * @see AddressType
 	 */
 	@NonNull AddressType getAddressType();
-
+	
 	/**
 	 * Returns the reverse DNS (PTR) name for this IP address.<br>
 	 * This is the domain name used for reverse DNS lookups to resolve an IP address back to a hostname.<br>
@@ -416,7 +416,7 @@ public sealed interface IpAddress<T extends IpAddress<T>> extends Comparable<T> 
 	 * @see <a href="https://tools.ietf.org/html/rfc3596">RFC 3596 - DNS Extensions to Support IPv6</a>
 	 */
 	@NonNull String toReverseDnsName();
-
+	
 	/**
 	 * Performs a blocking reverse DNS lookup to resolve the hostname for this IP address.<br>
 	 * This method queries the DNS system to find the PTR record associated with this IP address and returns the corresponding hostname.<br>
@@ -444,7 +444,7 @@ public sealed interface IpAddress<T extends IpAddress<T>> extends Comparable<T> 
 			return Optional.empty();
 		}
 	}
-
+	
 	/**
 	 * Performs a non-blocking reverse DNS lookup to resolve the hostname for this IP address.<br>
 	 * This method returns a {@link CompletableFuture} that will complete with the resolved hostname when the DNS lookup finishes.<br>
@@ -470,7 +470,7 @@ public sealed interface IpAddress<T extends IpAddress<T>> extends Comparable<T> 
 	default @NonNull CompletableFuture<Optional<String>> resolveHostnameAsync() {
 		return CompletableFuture.supplyAsync(this::resolveHostname);
 	}
-
+	
 	/**
 	 * Performs a blocking reverse DNS lookup with a specified timeout.<br>
 	 * This method queries the DNS system to find the PTR record associated with this IP address,
@@ -503,7 +503,7 @@ public sealed interface IpAddress<T extends IpAddress<T>> extends Comparable<T> 
 			return Optional.empty();
 		}
 	}
-
+	
 	/**
 	 * Converts this IP address to a {@link java.net.InetAddress}.<br>
 	 * This method provides interoperability with the standard Java networking API.<br>
@@ -518,7 +518,7 @@ public sealed interface IpAddress<T extends IpAddress<T>> extends Comparable<T> 
 	 * @return An {@link InetAddress} representing this IP address
 	 */
 	@NonNull InetAddress toInetAddress();
-
+	
 	/**
 	 * Creates an {@link InetSocketAddress} from this IP address and the specified port.<br>
 	 * This method provides a convenient way to create socket addresses for use with standard Java networking APIs.
@@ -542,7 +542,7 @@ public sealed interface IpAddress<T extends IpAddress<T>> extends Comparable<T> 
 	 * @throws IllegalArgumentException If the port is outside the valid range (0-65535)
 	 */
 	@NonNull InetSocketAddress toSocketAddress(int port);
-
+	
 	/**
 	 * Returns the minimum possible value for this IP address type.<br>
 	 * This is the address with all bits set to zero.<br>
@@ -557,7 +557,7 @@ public sealed interface IpAddress<T extends IpAddress<T>> extends Comparable<T> 
 	 * @return The minimum address value for this IP address type
 	 */
 	@NonNull T minValue();
-
+	
 	/**
 	 * Returns the maximum possible value for this IP address type.<br>
 	 * This is the address with all bits set to one.<br>

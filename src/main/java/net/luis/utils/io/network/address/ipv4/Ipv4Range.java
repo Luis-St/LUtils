@@ -65,7 +65,7 @@ import java.util.stream.StreamSupport;
  * @author Luis-St
  */
 public record Ipv4Range(@NonNull Ipv4Address start, @NonNull Ipv4Address end) implements IpRange<Ipv4Address, Ipv4Range, Ipv4Network> {
-
+	
 	/**
 	 * Constructs a new IPv4 range with the given start and end addresses.<br>
 	 *
@@ -81,7 +81,7 @@ public record Ipv4Range(@NonNull Ipv4Address start, @NonNull Ipv4Address end) im
 			throw new IllegalArgumentException("Start address must not be greater than end address");
 		}
 	}
-
+	
 	/**
 	 * Creates a new IPv4 range from the given start and end addresses.<br>
 	 *
@@ -94,7 +94,7 @@ public record Ipv4Range(@NonNull Ipv4Address start, @NonNull Ipv4Address end) im
 	public static @NonNull Ipv4Range of(@NonNull Ipv4Address start, @NonNull Ipv4Address end) {
 		return new Ipv4Range(start, end);
 	}
-
+	
 	/**
 	 * Parses an IPv4 range from a string in the format "start-end".<br>
 	 * For example: "192.168.1.10-192.168.1.50"<br>
@@ -108,7 +108,7 @@ public record Ipv4Range(@NonNull Ipv4Address start, @NonNull Ipv4Address end) im
 		Objects.requireNonNull(range, "Range must not be null");
 		return tryParse(range).orElseThrow(() -> new IllegalArgumentException("Invalid range notation: " + range));
 	}
-
+	
 	/**
 	 * Attempts to parse an IPv4 range from a string in the format "start-end".<br>
 	 * For example: "192.168.1.10-192.168.1.50"<br>
@@ -145,7 +145,7 @@ public record Ipv4Range(@NonNull Ipv4Address start, @NonNull Ipv4Address end) im
 			return Optional.empty();
 		}
 	}
-
+	
 	/**
 	 * Creates a single-address range containing only the specified address.<br>
 	 *
@@ -157,7 +157,7 @@ public record Ipv4Range(@NonNull Ipv4Address start, @NonNull Ipv4Address end) im
 		Objects.requireNonNull(address, "Address must not be null");
 		return new Ipv4Range(address, address);
 	}
-
+	
 	/**
 	 * Creates a range from a network, covering all addresses in the network.<br>
 	 *
@@ -169,30 +169,30 @@ public record Ipv4Range(@NonNull Ipv4Address start, @NonNull Ipv4Address end) im
 		Objects.requireNonNull(network, "Network must not be null");
 		return new Ipv4Range(network.networkAddress(), network.broadcastAddress());
 	}
-
+	
 	@Override
 	public @NonNull BigInteger size() {
 		return this.end.toBigInteger().subtract(this.start.toBigInteger()).add(BigInteger.ONE);
 	}
-
+	
 	@Override
 	public boolean containsAddress(@NonNull Ipv4Address address) {
 		Objects.requireNonNull(address, "Address must not be null");
 		return address.compareTo(this.start) >= 0 && address.compareTo(this.end) <= 0;
 	}
-
+	
 	@Override
 	public boolean containsRange(@NonNull Ipv4Range other) {
 		Objects.requireNonNull(other, "Other range must not be null");
 		return other.start.compareTo(this.start) >= 0 && other.end.compareTo(this.end) <= 0;
 	}
-
+	
 	@Override
 	public boolean overlaps(@NonNull Ipv4Range other) {
 		Objects.requireNonNull(other, "Other range must not be null");
 		return this.start.compareTo(other.end) <= 0 && this.end.compareTo(other.start) >= 0;
 	}
-
+	
 	@Override
 	public @NonNull Optional<Ipv4Range> intersection(@NonNull Ipv4Range other) {
 		Objects.requireNonNull(other, "Other range must not be null");
@@ -204,27 +204,27 @@ public record Ipv4Range(@NonNull Ipv4Address start, @NonNull Ipv4Address end) im
 		Ipv4Address intersectionEnd = this.end.compareTo(other.end) <= 0 ? this.end : other.end;
 		return Optional.of(new Ipv4Range(intersectionStart, intersectionEnd));
 	}
-
+	
 	@Override
 	public @NonNull List<Ipv4Range> difference(@NonNull Ipv4Range other) {
 		Objects.requireNonNull(other, "Other range must not be null");
 		if (!this.overlaps(other)) {
 			return List.of(this);
 		}
-
+		
 		if (other.containsRange(this)) {
 			return List.of();
 		}
-
+		
 		List<Ipv4Range> result = new ArrayList<>(2);
-
+		
 		if (this.start.compareTo(other.start) < 0) {
 			Ipv4Address beforeEnd = other.start.previous().orElse(other.start);
 			if (this.start.compareTo(beforeEnd) <= 0) {
 				result.add(new Ipv4Range(this.start, beforeEnd));
 			}
 		}
-
+		
 		if (this.end.compareTo(other.end) > 0) {
 			Ipv4Address afterStart = other.end.next().orElse(other.end);
 			if (afterStart.compareTo(this.end) <= 0) {
@@ -233,11 +233,11 @@ public record Ipv4Range(@NonNull Ipv4Address start, @NonNull Ipv4Address end) im
 		}
 		return result;
 	}
-
+	
 	@Override
 	public @NonNull Optional<Ipv4Range> merge(@NonNull Ipv4Range other) {
 		Objects.requireNonNull(other, "Other range must not be null");
-
+		
 		boolean overlapping = this.overlaps(other);
 		boolean adjacent = false;
 		if (!overlapping) {
@@ -245,21 +245,21 @@ public record Ipv4Range(@NonNull Ipv4Address start, @NonNull Ipv4Address end) im
 			Optional<Ipv4Address> otherEndNext = other.end.next();
 			adjacent = (thisEndNext.isPresent() && thisEndNext.get().equals(other.start)) || (otherEndNext.isPresent() && otherEndNext.get().equals(this.start));
 		}
-
+		
 		if (!overlapping && !adjacent) {
 			return Optional.empty();
 		}
-
+		
 		Ipv4Address mergedStart = this.start.compareTo(other.start) <= 0 ? this.start : other.start;
 		Ipv4Address mergedEnd = this.end.compareTo(other.end) >= 0 ? this.end : other.end;
 		return Optional.of(new Ipv4Range(mergedStart, mergedEnd));
 	}
-
+	
 	@Override
 	public @NonNull Iterator<Ipv4Address> iterator() {
 		return new Ipv4RangeIterator(this.start, this.end);
 	}
-
+	
 	@Override
 	public @NonNull Stream<Ipv4Address> addressStream() {
 		Spliterator<Ipv4Address> spliterator = Spliterators.spliterator(
@@ -269,17 +269,17 @@ public record Ipv4Range(@NonNull Ipv4Address start, @NonNull Ipv4Address end) im
 		);
 		return StreamSupport.stream(spliterator, false);
 	}
-
+	
 	@Override
 	public @NonNull List<Ipv4Network> toCidrNetworks() {
 		List<Ipv4Network> networks = new ArrayList<>();
 		Ipv4Address current = this.start;
-
+		
 		while (current.compareTo(this.end) <= 0) {
 			int maxPrefixLength = findMaxPrefixLength(current, this.end);
 			Ipv4Network network = new Ipv4Network(current, maxPrefixLength);
 			networks.add(network);
-
+			
 			Ipv4Address broadcastAddr = network.broadcastAddress();
 			Optional<Ipv4Address> nextAddr = broadcastAddr.next();
 			if (nextAddr.isEmpty()) {
@@ -289,7 +289,7 @@ public record Ipv4Range(@NonNull Ipv4Address start, @NonNull Ipv4Address end) im
 		}
 		return networks;
 	}
-
+	
 	/**
 	 * Finds the maximum prefix length (smallest network) that starts at the given address and does not extend beyond the end address.<br>
 	 *
@@ -303,17 +303,17 @@ public record Ipv4Range(@NonNull Ipv4Address start, @NonNull Ipv4Address end) im
 		
 		int startValue = start.value();
 		long endValue = end.toUnsignedLong();
-
+		
 		int prefixLength = 32;
 		while (prefixLength > 0) {
 			int hostBits = 32 - prefixLength;
 			int mask = -(1 << hostBits);
-
+			
 			if ((startValue & mask) != startValue) {
 				prefixLength++;
 				break;
 			}
-
+			
 			long broadcastValue = Integer.toUnsignedLong(startValue | ((1 << hostBits) - 1));
 			if (broadcastValue > endValue) {
 				prefixLength++;
@@ -323,17 +323,17 @@ public record Ipv4Range(@NonNull Ipv4Address start, @NonNull Ipv4Address end) im
 		}
 		return Math.max(0, prefixLength);
 	}
-
+	
 	@Override
 	public boolean isSingleAddress() {
 		return this.start.equals(this.end);
 	}
-
+	
 	@Override
 	public boolean isNetwork() {
 		return this.toNetwork().isPresent();
 	}
-
+	
 	@Override
 	public @NonNull Optional<Ipv4Network> toNetwork() {
 		for (int prefixLength = 0; prefixLength <= 32; prefixLength++) {
@@ -346,7 +346,7 @@ public record Ipv4Range(@NonNull Ipv4Address start, @NonNull Ipv4Address end) im
 		}
 		return Optional.empty();
 	}
-
+	
 	@Override
 	public int compareTo(@NonNull Ipv4Range other) {
 		int startCompare = this.start.compareTo(other.start);
@@ -358,11 +358,11 @@ public record Ipv4Range(@NonNull Ipv4Address start, @NonNull Ipv4Address end) im
 	
 	@Override
 	public @NonNull String toString() {
-		return this.start.toString() + "-" + this.end.toString();
+		return this.start + "-" + this.end;
 	}
-
+	
 	//region Inner classes
-
+	
 	/**
 	 * Iterator implementation for iterating over addresses in an IPv4 range.<br>
 	 *
@@ -382,7 +382,7 @@ public record Ipv4Range(@NonNull Ipv4Address start, @NonNull Ipv4Address end) im
 		 * Indicates if there are more addresses to iterate.<br>
 		 */
 		private boolean hasNext;
-
+		
 		/**
 		 * Creates a new iterator from the start address to the end address (inclusive).<br>
 		 *
@@ -395,12 +395,12 @@ public record Ipv4Range(@NonNull Ipv4Address start, @NonNull Ipv4Address end) im
 			this.endAddress = Objects.requireNonNull(endAddress, "End address must not be null");
 			this.hasNext = startAddress.compareTo(endAddress) <= 0;
 		}
-
+		
 		@Override
 		public boolean hasNext() {
 			return this.hasNext;
 		}
-
+		
 		@Override
 		public @NonNull Ipv4Address next() {
 			if (!this.hasNext) {

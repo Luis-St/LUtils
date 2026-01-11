@@ -50,24 +50,23 @@ import java.util.stream.Stream;
  * @author Luis-St
  */
 public final class Ipv6Set implements IpSet<Ipv6Address, Ipv6Range, Ipv6Network, Ipv6Set> {
-
+	
 	/**
 	 * An empty IPv6 set containing no addresses.<br>
 	 */
 	private static final Ipv6Set EMPTY = new Ipv6Set(List.of());
-
 	/**
 	 * A set containing all possible IPv6 addresses (:: to ffff:ffff:ffff:ffff:ffff:ffff:ffff:ffff).<br>
 	 */
 	private static final Ipv6Set ALL = new Ipv6Set(List.of(
 		Ipv6Range.of(Ipv6Address.UNSPECIFIED, new Ipv6Address(-1L, -1L, null))
 	));
-
+	
 	/**
 	 * The internal list of non-overlapping, sorted ranges representing this set.
 	 */
 	private final List<Ipv6Range> ranges;
-
+	
 	/**
 	 * Constructs a new Ipv6Set from the given list of ranges.<br>
 	 * The ranges are assumed to be already normalized (non-overlapping and sorted).<br>
@@ -79,7 +78,7 @@ public final class Ipv6Set implements IpSet<Ipv6Address, Ipv6Range, Ipv6Network,
 		Objects.requireNonNull(ranges, "Ranges must not be null");
 		this.ranges = List.copyOf(ranges);
 	}
-
+	
 	/**
 	 * Returns an empty IPv6 set containing no addresses.<br>
 	 * @return An empty IPv6 set
@@ -87,7 +86,7 @@ public final class Ipv6Set implements IpSet<Ipv6Address, Ipv6Range, Ipv6Network,
 	public static @NonNull Ipv6Set empty() {
 		return EMPTY;
 	}
-
+	
 	/**
 	 * Creates an IPv6 set containing the specified addresses.<br>
 	 * Zone identifiers are stripped from all addresses.<br>
@@ -110,7 +109,7 @@ public final class Ipv6Set implements IpSet<Ipv6Address, Ipv6Range, Ipv6Network,
 		}
 		return new Ipv6Set(normalize(rangeList));
 	}
-
+	
 	/**
 	 * Creates an IPv6 set containing all addresses in the specified networks.<br>
 	 *
@@ -131,7 +130,7 @@ public final class Ipv6Set implements IpSet<Ipv6Address, Ipv6Range, Ipv6Network,
 		}
 		return new Ipv6Set(normalize(rangeList));
 	}
-
+	
 	/**
 	 * Creates an IPv6 set containing all addresses in the specified ranges.<br>
 	 *
@@ -152,7 +151,7 @@ public final class Ipv6Set implements IpSet<Ipv6Address, Ipv6Range, Ipv6Network,
 		}
 		return new Ipv6Set(normalize(rangeList));
 	}
-
+	
 	/**
 	 * Returns a set containing all possible IPv6 addresses (:: to ffff:ffff:ffff:ffff:ffff:ffff:ffff:ffff).<br>
 	 * @return A set containing all IPv6 addresses
@@ -160,7 +159,7 @@ public final class Ipv6Set implements IpSet<Ipv6Address, Ipv6Range, Ipv6Network,
 	public static @NonNull Ipv6Set all() {
 		return ALL;
 	}
-
+	
 	/**
 	 * Normalizes a list of ranges by sorting them and merging overlapping/adjacent ranges.<br>
 	 *
@@ -174,10 +173,10 @@ public final class Ipv6Set implements IpSet<Ipv6Address, Ipv6Range, Ipv6Network,
 		if (ranges.size() == 1) {
 			return List.of(ranges.getFirst());
 		}
-
+		
 		List<Ipv6Range> sorted = new ArrayList<>(ranges);
 		sorted.sort(Comparator.comparing(Ipv6Range::start));
-
+		
 		List<Ipv6Range> result = new ArrayList<>();
 		Ipv6Range current = sorted.getFirst();
 		for (int i = 1; i < sorted.size(); i++) {
@@ -193,12 +192,12 @@ public final class Ipv6Set implements IpSet<Ipv6Address, Ipv6Range, Ipv6Network,
 		result.add(current);
 		return result;
 	}
-
+	
 	@Override
 	public boolean isEmpty() {
 		return this.ranges.isEmpty();
 	}
-
+	
 	@Override
 	public @NonNull BigInteger size() {
 		BigInteger total = BigInteger.ZERO;
@@ -207,7 +206,7 @@ public final class Ipv6Set implements IpSet<Ipv6Address, Ipv6Range, Ipv6Network,
 		}
 		return total;
 	}
-
+	
 	@Override
 	public boolean containsAddress(@NonNull Ipv6Address address) {
 		Objects.requireNonNull(address, "Address must not be null");
@@ -224,13 +223,13 @@ public final class Ipv6Set implements IpSet<Ipv6Address, Ipv6Range, Ipv6Network,
 		}
 		return false;
 	}
-
+	
 	@Override
 	public boolean containsNetwork(@NonNull Ipv6Network network) {
 		Objects.requireNonNull(network, "Network must not be null");
 		return this.containsRange(Ipv6Range.of(network.networkAddress(), network.broadcastAddress()));
 	}
-
+	
 	@Override
 	public boolean containsRange(@NonNull Ipv6Range range) {
 		Objects.requireNonNull(range, "Range must not be null");
@@ -242,7 +241,7 @@ public final class Ipv6Set implements IpSet<Ipv6Address, Ipv6Range, Ipv6Network,
 		}
 		return false;
 	}
-
+	
 	@Override
 	public boolean containsAll(@NonNull Ipv6Set other) {
 		Objects.requireNonNull(other, "Other set must not be null");
@@ -254,7 +253,7 @@ public final class Ipv6Set implements IpSet<Ipv6Address, Ipv6Range, Ipv6Network,
 		}
 		return true;
 	}
-
+	
 	@Override
 	public @NonNull Ipv6Set union(@NonNull Ipv6Set other) {
 		Objects.requireNonNull(other, "Other set must not be null");
@@ -264,20 +263,20 @@ public final class Ipv6Set implements IpSet<Ipv6Address, Ipv6Range, Ipv6Network,
 		if (other.isEmpty()) {
 			return this;
 		}
-
+		
 		List<Ipv6Range> combined = new ArrayList<>(this.ranges.size() + other.ranges.size());
 		combined.addAll(this.ranges);
 		combined.addAll(other.ranges);
 		return new Ipv6Set(normalize(combined));
 	}
-
+	
 	@Override
 	public @NonNull Ipv6Set intersection(@NonNull Ipv6Set other) {
 		Objects.requireNonNull(other, "Other set must not be null");
 		if (this.isEmpty() || other.isEmpty()) {
 			return EMPTY;
 		}
-
+		
 		List<Ipv6Range> result = new ArrayList<>();
 		for (Ipv6Range thisRange : this.ranges) {
 			for (Ipv6Range otherRange : other.ranges) {
@@ -285,20 +284,20 @@ public final class Ipv6Set implements IpSet<Ipv6Address, Ipv6Range, Ipv6Network,
 				inter.ifPresent(result::add);
 			}
 		}
-
+		
 		if (result.isEmpty()) {
 			return EMPTY;
 		}
 		return new Ipv6Set(normalize(result));
 	}
-
+	
 	@Override
 	public @NonNull Ipv6Set difference(@NonNull Ipv6Set other) {
 		Objects.requireNonNull(other, "Other set must not be null");
 		if (this.isEmpty() || other.isEmpty()) {
 			return this;
 		}
-
+		
 		List<Ipv6Range> current = new ArrayList<>(this.ranges);
 		for (Ipv6Range toRemove : other.ranges) {
 			List<Ipv6Range> next = new ArrayList<>();
@@ -307,19 +306,19 @@ public final class Ipv6Set implements IpSet<Ipv6Address, Ipv6Range, Ipv6Network,
 			}
 			current = next;
 		}
-
+		
 		if (current.isEmpty()) {
 			return EMPTY;
 		}
 		return new Ipv6Set(normalize(current));
 	}
-
+	
 	@Override
 	public @NonNull Ipv6Set symmetricDifference(@NonNull Ipv6Set other) {
 		Objects.requireNonNull(other, "Other set must not be null");
 		return this.difference(other).union(other.difference(this));
 	}
-
+	
 	@Override
 	public @NonNull Ipv6Set complement() {
 		if (this.isEmpty()) {
@@ -327,79 +326,79 @@ public final class Ipv6Set implements IpSet<Ipv6Address, Ipv6Range, Ipv6Network,
 		}
 		return ALL.difference(this);
 	}
-
+	
 	@Override
 	public @NonNull Ipv6Set addAddress(@NonNull Ipv6Address address) {
 		Objects.requireNonNull(address, "Address must not be null");
 		return this.union(Ipv6Set.of(address));
 	}
-
+	
 	@Override
 	public @NonNull Ipv6Set addNetwork(@NonNull Ipv6Network network) {
 		Objects.requireNonNull(network, "Network must not be null");
 		return this.union(Ipv6Set.of(network));
 	}
-
+	
 	@Override
 	public @NonNull Ipv6Set addRange(@NonNull Ipv6Range range) {
 		Objects.requireNonNull(range, "Range must not be null");
 		return this.union(Ipv6Set.of(range));
 	}
-
+	
 	@Override
 	public @NonNull Ipv6Set removeAddress(@NonNull Ipv6Address address) {
 		Objects.requireNonNull(address, "Address must not be null");
 		return this.difference(Ipv6Set.of(address));
 	}
-
+	
 	@Override
 	public @NonNull Ipv6Set removeNetwork(@NonNull Ipv6Network network) {
 		Objects.requireNonNull(network, "Network must not be null");
 		return this.difference(Ipv6Set.of(network));
 	}
-
+	
 	@Override
 	public @NonNull Ipv6Set removeRange(@NonNull Ipv6Range range) {
 		Objects.requireNonNull(range, "Range must not be null");
 		return this.difference(Ipv6Set.of(range));
 	}
-
+	
 	@Override
 	public @NonNull List<Ipv6Range> toRanges() {
 		return this.ranges;
 	}
-
+	
 	@Override
 	public @NonNull List<Ipv6Network> toNetworks() {
 		if (this.isEmpty()) {
 			return List.of();
 		}
-
+		
 		List<Ipv6Network> result = new ArrayList<>();
 		for (Ipv6Range range : this.ranges) {
 			Ipv6Address start = range.start();
 			Ipv6Address end = range.end();
-
+			
 			int prefixLength = calculateMinimalPrefixLength(start, end);
 			Ipv6Network network = Ipv6Network.of(start, prefixLength);
 			result.add(network);
 		}
 		return result;
 	}
-
+	
 	@Override
 	public @NonNull List<Ipv6Network> toExactNetworks() {
 		if (this.isEmpty()) {
 			return List.of();
 		}
-
+		
 		List<Ipv6Network> result = new ArrayList<>();
 		for (Ipv6Range range : this.ranges) {
 			result.addAll(range.toCidrNetworks());
 		}
 		return result;
 	}
-
+	
 	/**
 	 * Calculates the minimal prefix length for a network that can contain both addresses.<br>
 	 *
@@ -410,7 +409,7 @@ public final class Ipv6Set implements IpSet<Ipv6Address, Ipv6Range, Ipv6Network,
 	private static int calculateMinimalPrefixLength(@NonNull Ipv6Address start, @NonNull Ipv6Address end) {
 		long highXor = start.highBits() ^ end.highBits();
 		long lowXor = start.lowBits() ^ end.lowBits();
-
+		
 		if (highXor == 0 && lowXor == 0) {
 			return 128;
 		}
@@ -421,17 +420,17 @@ public final class Ipv6Set implements IpSet<Ipv6Address, Ipv6Range, Ipv6Network,
 			return Long.numberOfLeadingZeros(highXor);
 		}
 	}
-
+	
 	@Override
 	public @NonNull Iterator<Ipv6Range> rangeIterator() {
 		return this.ranges.iterator();
 	}
-
+	
 	@Override
 	public @NonNull Stream<Ipv6Range> rangeStream() {
 		return this.ranges.stream();
 	}
-
+	
 	//region Object overrides
 	@Override
 	public boolean equals(Object o) {

@@ -67,17 +67,16 @@ public record TeredoInfo(
 	int flags,
 	boolean coneNat
 ) {
-
+	
 	/**
 	 * The fixed Teredo prefix high bits (2001:0000).<br>
 	 */
 	private static final long TEREDO_PREFIX_HIGH = 0x2001000000000000L;
-
 	/**
 	 * The cone NAT flag bit (bit 0 of the flags field).<br>
 	 */
 	public static final int CONE_NAT_FLAG = 0x8000;
-
+	
 	/**
 	 * Constructs a new TeredoInfo with validated parameters.<br>
 	 *
@@ -96,7 +95,7 @@ public record TeredoInfo(
 			throw new IllegalArgumentException("Port must be between 0 and 65535: " + port);
 		}
 	}
-
+	
 	/**
 	 * Returns the Teredo prefix network (2001:0000::/32).<br>
 	 * @return The Teredo prefix network
@@ -104,7 +103,7 @@ public record TeredoInfo(
 	public static @NonNull Ipv6Network teredoPrefix() {
 		return new Ipv6Network(new Ipv6Address(TEREDO_PREFIX_HIGH, 0L), 32);
 	}
-
+	
 	/**
 	 * Parses Teredo information from an IPv6 address.<br>
 	 *
@@ -117,13 +116,13 @@ public record TeredoInfo(
 		if (!isTeredo(address)) {
 			return Optional.empty();
 		}
-
+		
 		int serverIpv4 = (int) address.highBits();
 		int flags = (int) (address.lowBits() >>> 48);
 		int port = (int) ((address.lowBits() >>> 32) & 0xFFFF) ^ 0xFFFF;
 		int clientIpv4 = ~((int) address.lowBits());
 		boolean isConeNat = (flags & CONE_NAT_FLAG) != 0;
-
+		
 		return Optional.of(new TeredoInfo(
 			new Ipv4Address(serverIpv4),
 			new Ipv4Address(clientIpv4),
@@ -132,7 +131,7 @@ public record TeredoInfo(
 			isConeNat
 		));
 	}
-
+	
 	/**
 	 * Checks if an IPv6 address is a Teredo address (2001:0000::/32).<br>
 	 *
@@ -144,14 +143,14 @@ public record TeredoInfo(
 		Objects.requireNonNull(address, "Address must not be null");
 		return (address.highBits() >>> 32) == 0x20010000L;
 	}
-
+	
 	/**
 	 * Builds a Teredo IPv6 address from the components in this info.<br>
 	 * @return The Teredo IPv6 address
 	 */
 	public @NonNull Ipv6Address toIpv6Address() {
 		long highBits = TEREDO_PREFIX_HIGH | Integer.toUnsignedLong(this.server.value());
-
+		
 		long obfuscatedPort = (this.port ^ 0xFFFF) & 0xFFFFL;
 		long obfuscatedClient = Integer.toUnsignedLong(~this.client.value());
 		long lowBits = ((long) this.flags << 48) | (obfuscatedPort << 32) | obfuscatedClient;

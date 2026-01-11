@@ -62,7 +62,7 @@ public final class IpFormatOptionsBuilder {
 	 * The include prefix length option.<br>
 	 * When enabled, network addresses include CIDR notation with the prefix length.<br>
 	 */
-	private boolean includePrefixLength = false;
+	private boolean includePrefixLength;
 	
 	/**
 	 * Constructs a new builder with default values.<br>

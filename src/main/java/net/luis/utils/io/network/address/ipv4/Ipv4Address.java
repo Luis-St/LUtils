@@ -21,15 +21,11 @@ package net.luis.utils.io.network.address.ipv4;
 import net.luis.utils.io.network.address.AddressType;
 import net.luis.utils.io.network.address.IpAddress;
 import org.jspecify.annotations.NonNull;
-import org.jspecify.annotations.Nullable;
 
 import java.math.BigInteger;
 import java.net.*;
-import java.time.Duration;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.TimeUnit;
 
 /**
  * Represents an IPv4 (Internet Protocol version 4) address.<br>
@@ -64,27 +60,23 @@ import java.util.concurrent.TimeUnit;
  * @param value The 32-bit address value stored as a signed int (unsigned semantics)
  */
 public record Ipv4Address(int value) implements IpAddress<Ipv4Address> {
-
+	
 	/**
 	 * The bit length of an IPv4 address.<br>
 	 */
 	public static final int BIT_LENGTH = 32;
-
 	/**
 	 * The number of octets in an IPv4 address.<br>
 	 */
 	public static final int OCTET_COUNT = 4;
-
 	/**
 	 * The unspecified IPv4 address (0.0.0.0).<br>
 	 */
 	public static final Ipv4Address UNSPECIFIED = new Ipv4Address(0);
-
 	/**
 	 * The loopback IPv4 address (127.0.0.1).<br>
 	 */
 	public static final Ipv4Address LOOPBACK = new Ipv4Address(0x7F000001);
-
 	/**
 	 * The broadcast IPv4 address (255.255.255.255).<br>
 	 */
@@ -202,6 +194,7 @@ public record Ipv4Address(int value) implements IpAddress<Ipv4Address> {
 			(byte) (this.value & 0xFF)
 		};
 	}
+	
 	@Override
 	public @NonNull BigInteger toBigInteger() {
 		return BigInteger.valueOf(this.toUnsignedLong());
@@ -280,17 +273,17 @@ public record Ipv4Address(int value) implements IpAddress<Ipv4Address> {
 	public boolean isPrivate() {
 		int firstOctet = this.getOctet(0);
 		int secondOctet = this.getOctet(1);
-
+		
 		// 10.0.0.0/8
 		if (firstOctet == 10) {
 			return true;
 		}
-
+		
 		// 172.16.0.0/12 (172.16.x.x - 172.31.x.x)
 		if (firstOctet == 172 && secondOctet >= 16 && secondOctet <= 31) {
 			return true;
 		}
-
+		
 		// 192.168.0.0/16
 		return firstOctet == 192 && secondOctet == 168;
 	}
@@ -300,21 +293,21 @@ public record Ipv4Address(int value) implements IpAddress<Ipv4Address> {
 		int firstOctet = this.getOctet(0);
 		int secondOctet = this.getOctet(1);
 		int thirdOctet = this.getOctet(2);
-
+		
 		// 192.0.2.0/24 (TEST-NET-1)
 		if (firstOctet == 192 && secondOctet == 0 && thirdOctet == 2) {
 			return true;
 		}
-
+		
 		// 198.51.100.0/24 (TEST-NET-2)
 		if (firstOctet == 198 && secondOctet == 51 && thirdOctet == 100) {
 			return true;
 		}
-
+		
 		// 203.0.113.0/24 (TEST-NET-3)
 		return firstOctet == 203 && secondOctet == 0 && thirdOctet == 113;
 	}
-
+	
 	/**
 	 * Checks if this is the broadcast address (255.255.255.255).<br>
 	 * @return {@code true} if this is the broadcast address, {@code false} otherwise
@@ -322,7 +315,7 @@ public record Ipv4Address(int value) implements IpAddress<Ipv4Address> {
 	public boolean isBroadcast() {
 		return this.value == 0xFFFFFFFF;
 	}
-
+	
 	/**
 	 * Checks if this is a shared address space address (100.64.0.0/10).<br>
 	 * @return {@code true} if this is a shared address space address, {@code false} otherwise
@@ -339,7 +332,7 @@ public record Ipv4Address(int value) implements IpAddress<Ipv4Address> {
 	public boolean isGlobalUnicast() {
 		return !this.isUnspecified() && !this.isLoopback() && !this.isPrivate() && !this.isLinkLocal() && !this.isMulticast() && !this.isDocumentation() && !this.isBroadcast() && !this.isSharedAddressSpace() && !this.isReserved();
 	}
-
+	
 	/**
 	 * Checks if this is a reserved address.<br>
 	 * This includes addresses in reserved ranges that are not classified elsewhere.<br>
@@ -348,12 +341,12 @@ public record Ipv4Address(int value) implements IpAddress<Ipv4Address> {
 	 */
 	public boolean isReserved() {
 		int firstOctet = this.getOctet(0);
-
+		
 		// 0.0.0.0/8 (except 0.0.0.0 which is unspecified)
 		if (firstOctet == 0 && this.value != 0) {
 			return true;
 		}
-
+		
 		// 240.0.0.0/4 (reserved for future use, except broadcast)
 		return firstOctet >= 240 && firstOctet <= 255 && this.value != 0xFFFFFFFF;
 	}
@@ -399,7 +392,7 @@ public record Ipv4Address(int value) implements IpAddress<Ipv4Address> {
 	public @NonNull InetAddress toInetAddress() {
 		return this.toInet4Address();
 	}
-
+	
 	/**
 	 * Converts this IP address to a {@link Inet4Address}.<br>
 	 * @return An ipv4 address representing this IP address
@@ -434,7 +427,7 @@ public record Ipv4Address(int value) implements IpAddress<Ipv4Address> {
 	public int compareTo(@NonNull Ipv4Address other) {
 		return Long.compare(this.toUnsignedLong(), other.toUnsignedLong());
 	}
-
+	
 	/**
 	 * Returns the value of the octet at the specified index.<br>
 	 * Index 0 is the most significant octet.<br>
@@ -451,7 +444,7 @@ public record Ipv4Address(int value) implements IpAddress<Ipv4Address> {
 		int shift = (3 - index) * 8;
 		return (this.value >>> shift) & 0xFF;
 	}
-
+	
 	/**
 	 * Returns a new address with the octet at the specified index changed to the given value.<br>
 	 *
@@ -474,7 +467,7 @@ public record Ipv4Address(int value) implements IpAddress<Ipv4Address> {
 		int newValue = (this.value & mask) | (octetValue << shift);
 		return new Ipv4Address(newValue);
 	}
-
+	
 	/**
 	 * Returns the unsigned long representation of this IPv4 address.<br>
 	 * This method treats the 32-bit signed integer as an unsigned value.<br>
@@ -484,7 +477,7 @@ public record Ipv4Address(int value) implements IpAddress<Ipv4Address> {
 	public long toUnsignedLong() {
 		return Integer.toUnsignedLong(this.value);
 	}
-
+	
 	/**
 	 * Returns a string representation of this IPv4 address in dotted-decimal notation.
 	 *

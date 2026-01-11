@@ -61,27 +61,24 @@ import java.util.Objects;
  * @param value The 48-bit MAC address stored in the lower 48 bits of a long
  */
 public record MacAddress(long value) implements Comparable<MacAddress> {
-
+	
 	/**
 	 * The number of bits in a MAC address.<br>
 	 */
 	public static final int BIT_LENGTH = 48;
-
 	/**
 	 * The number of octets in a MAC address.<br>
 	 */
 	public static final int OCTET_COUNT = 6;
-
 	/**
 	 * The broadcast MAC address (FF:FF:FF:FF:FF:FF).<br>
 	 */
 	public static final MacAddress BROADCAST = new MacAddress(0xFFFF_FFFF_FFFFL);
-
 	/**
 	 * The zero MAC address (00:00:00:00:00:00).<br>
 	 */
 	public static final MacAddress ZERO = new MacAddress(0L);
-
+	
 	/**
 	 * Compact constructor that masks the value to ensure only the lower 48 bits are used.<br>
 	 * @param value The 48-bit MAC address value
@@ -89,7 +86,7 @@ public record MacAddress(long value) implements Comparable<MacAddress> {
 	public MacAddress {
 		value = value & 0xFFFF_FFFF_FFFFL;
 	}
-
+	
 	/**
 	 * Creates a MAC address from a 48-bit value.<br>
 	 *
@@ -99,7 +96,7 @@ public record MacAddress(long value) implements Comparable<MacAddress> {
 	public static @NonNull MacAddress of(long value) {
 		return new MacAddress(value);
 	}
-
+	
 	/**
 	 * Returns the MAC address as raw bytes in network byte order.<br>
 	 * @return A 6-byte array representing the MAC address
@@ -111,7 +108,7 @@ public record MacAddress(long value) implements Comparable<MacAddress> {
 		}
 		return bytes;
 	}
-
+	
 	/**
 	 * Returns the MAC address as a 48-bit value stored in a long.<br>
 	 * This is equivalent to the record component accessor.<br>
@@ -121,7 +118,7 @@ public record MacAddress(long value) implements Comparable<MacAddress> {
 	public long toLong() {
 		return this.value;
 	}
-
+	
 	/**
 	 * Returns the octet at the specified index.<br>
 	 * Index 0 is the most significant octet (leftmost in standard notation).<br>
@@ -136,7 +133,7 @@ public record MacAddress(long value) implements Comparable<MacAddress> {
 		}
 		return (int) ((this.value >>> (40 - index * 8)) & 0xFF);
 	}
-
+	
 	/**
 	 * Returns a new address with the specified octet changed.<br>
 	 *
@@ -159,7 +156,7 @@ public record MacAddress(long value) implements Comparable<MacAddress> {
 		long newValue = (this.value & ~mask) | ((long) value << shift);
 		return new MacAddress(newValue);
 	}
-
+	
 	/**
 	 * Returns the OUI (Organizationally Unique Identifier) bytes.<br>
 	 * The OUI is the first 3 octets, assigned to vendors by IEEE.<br>
@@ -173,7 +170,7 @@ public record MacAddress(long value) implements Comparable<MacAddress> {
 		oui[2] = (byte) ((this.value >>> 24) & 0xFF);
 		return oui;
 	}
-
+	
 	/**
 	 * Returns the OUI as a colon-separated string (e.g., "00:1A:2B").<br>
 	 * @return The OUI string in uppercase colon-delimited format
@@ -184,7 +181,7 @@ public record MacAddress(long value) implements Comparable<MacAddress> {
 			(this.value >>> 32) & 0xFF,
 			(this.value >>> 24) & 0xFF);
 	}
-
+	
 	/**
 	 * Checks if this is a unicast address.<br>
 	 * The I/G bit (bit 0 of the first octet) is 0 for unicast addresses.<br>
@@ -194,7 +191,7 @@ public record MacAddress(long value) implements Comparable<MacAddress> {
 	public boolean isUnicast() {
 		return ((this.value >>> 40) & 0x01) == 0;
 	}
-
+	
 	/**
 	 * Checks if this is a multicast address.<br>
 	 * The I/G bit (bit 0 of the first octet) is 1 for multicast addresses.<br>
@@ -204,7 +201,7 @@ public record MacAddress(long value) implements Comparable<MacAddress> {
 	public boolean isMulticast() {
 		return ((this.value >>> 40) & 0x01) == 1;
 	}
-
+	
 	/**
 	 * Checks if this is a universally administered address.<br>
 	 * The U/L bit (bit 1 of the first octet) is 0 for universally administered addresses.<br>
@@ -214,7 +211,7 @@ public record MacAddress(long value) implements Comparable<MacAddress> {
 	public boolean isUniversal() {
 		return ((this.value >>> 40) & 0x02) == 0;
 	}
-
+	
 	/**
 	 * Checks if this is a locally administered address.<br>
 	 * The U/L bit (bit 1 of the first octet) is 1 for locally administered addresses.<br>
@@ -224,7 +221,7 @@ public record MacAddress(long value) implements Comparable<MacAddress> {
 	public boolean isLocal() {
 		return ((this.value >>> 40) & 0x02) == 0x02;
 	}
-
+	
 	/**
 	 * Checks if this is the broadcast address (FF:FF:FF:FF:FF:FF).<br>
 	 * @return {@code true} if this is the broadcast address, {@code false} otherwise
@@ -232,7 +229,7 @@ public record MacAddress(long value) implements Comparable<MacAddress> {
 	public boolean isBroadcast() {
 		return this.value == 0xFFFF_FFFF_FFFFL;
 	}
-
+	
 	/**
 	 * Converts this MAC address to a Modified EUI-64 identifier.<br>
 	 * The algorithm:<br>
@@ -259,7 +256,7 @@ public record MacAddress(long value) implements Comparable<MacAddress> {
 		eui64[7] = (byte) (this.value & 0xFF);
 		return eui64;
 	}
-
+	
 	/**
 	 * Generates an IPv6 link-local address from this MAC using Modified EUI-64.<br>
 	 * Format: fe80::xxxx:xxff:fexx:xxxx<br>
@@ -275,7 +272,7 @@ public record MacAddress(long value) implements Comparable<MacAddress> {
 		}
 		return new Ipv6Address(0xFE80_0000_0000_0000L, lowBits);
 	}
-
+	
 	/**
 	 * Generates an IPv6 address by combining a /64 prefix with this MAC's EUI-64.<br>
 	 * The prefix must be a /64 network.<br>
@@ -298,7 +295,7 @@ public record MacAddress(long value) implements Comparable<MacAddress> {
 		}
 		return new Ipv6Address(prefix.networkAddress().highBits(), lowBits);
 	}
-
+	
 	/**
 	 * Returns a new address with the U/L bit set (locally administered).<br>
 	 * @return A new locally administered MAC address
@@ -306,7 +303,7 @@ public record MacAddress(long value) implements Comparable<MacAddress> {
 	public @NonNull MacAddress toLocallyAdministered() {
 		return new MacAddress(this.value | (0x02L << 40));
 	}
-
+	
 	/**
 	 * Returns a new address with the U/L bit cleared (universally administered).<br>
 	 * @return A new universally administered MAC address

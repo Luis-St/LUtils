@@ -58,24 +58,23 @@ import java.util.stream.Stream;
  * @author Luis-St
  */
 public final class Ipv4Set implements IpSet<Ipv4Address, Ipv4Range, Ipv4Network, Ipv4Set> {
-
+	
 	/**
 	 * An empty IPv4 set containing no addresses.<br>
 	 */
 	private static final Ipv4Set EMPTY = new Ipv4Set(List.of());
-
 	/**
 	 * A set containing all possible IPv4 addresses (0.0.0.0 - 255.255.255.255).<br>
 	 */
 	private static final Ipv4Set ALL = new Ipv4Set(List.of(
 		Ipv4Range.of(Ipv4Address.UNSPECIFIED, Ipv4Address.BROADCAST)
 	));
-
+	
 	/**
 	 * The internal list of non-overlapping, sorted ranges representing this set.<br>
 	 */
 	private final List<Ipv4Range> ranges;
-
+	
 	/**
 	 * Constructs a new Ipv4Set from the given list of ranges.<br>
 	 * The ranges are assumed to be already normalized (non-overlapping and sorted).<br>
@@ -87,7 +86,7 @@ public final class Ipv4Set implements IpSet<Ipv4Address, Ipv4Range, Ipv4Network,
 		Objects.requireNonNull(ranges, "Ranges must not be null");
 		this.ranges = List.copyOf(ranges);
 	}
-
+	
 	/**
 	 * Returns an empty IPv4 set containing no addresses.<br>
 	 * @return An empty IPv4 set
@@ -95,7 +94,7 @@ public final class Ipv4Set implements IpSet<Ipv4Address, Ipv4Range, Ipv4Network,
 	public static @NonNull Ipv4Set empty() {
 		return EMPTY;
 	}
-
+	
 	/**
 	 * Creates an IPv4 set containing the specified addresses.<br>
 	 *
@@ -116,7 +115,7 @@ public final class Ipv4Set implements IpSet<Ipv4Address, Ipv4Range, Ipv4Network,
 		}
 		return new Ipv4Set(normalize(rangeList));
 	}
-
+	
 	/**
 	 * Creates an IPv4 set containing all addresses in the specified networks.<br>
 	 *
@@ -136,7 +135,7 @@ public final class Ipv4Set implements IpSet<Ipv4Address, Ipv4Range, Ipv4Network,
 		}
 		return new Ipv4Set(normalize(rangeList));
 	}
-
+	
 	/**
 	 * Creates an IPv4 set containing all addresses in the specified ranges.<br>
 	 *
@@ -157,7 +156,7 @@ public final class Ipv4Set implements IpSet<Ipv4Address, Ipv4Range, Ipv4Network,
 		}
 		return new Ipv4Set(normalize(rangeList));
 	}
-
+	
 	/**
 	 * Returns a set containing all possible IPv4 addresses (0.0.0.0 - 255.255.255.255).<br>
 	 * @return A set containing all IPv4 addresses
@@ -165,7 +164,7 @@ public final class Ipv4Set implements IpSet<Ipv4Address, Ipv4Range, Ipv4Network,
 	public static @NonNull Ipv4Set all() {
 		return ALL;
 	}
-
+	
 	/**
 	 * Normalizes a list of ranges by sorting them and merging overlapping/adjacent ranges.<br>
 	 *
@@ -179,10 +178,10 @@ public final class Ipv4Set implements IpSet<Ipv4Address, Ipv4Range, Ipv4Network,
 		if (ranges.size() == 1) {
 			return List.of(ranges.get(0));
 		}
-
+		
 		List<Ipv4Range> sorted = new ArrayList<>(ranges);
 		sorted.sort(Comparator.comparing(Ipv4Range::start));
-
+		
 		List<Ipv4Range> result = new ArrayList<>();
 		Ipv4Range current = sorted.getFirst();
 		for (int i = 1; i < sorted.size(); i++) {
@@ -199,12 +198,12 @@ public final class Ipv4Set implements IpSet<Ipv4Address, Ipv4Range, Ipv4Network,
 		result.add(current);
 		return result;
 	}
-
+	
 	@Override
 	public boolean isEmpty() {
 		return this.ranges.isEmpty();
 	}
-
+	
 	@Override
 	public @NonNull BigInteger size() {
 		BigInteger total = BigInteger.ZERO;
@@ -213,7 +212,7 @@ public final class Ipv4Set implements IpSet<Ipv4Address, Ipv4Range, Ipv4Network,
 		}
 		return total;
 	}
-
+	
 	@Override
 	public boolean containsAddress(@NonNull Ipv4Address address) {
 		Objects.requireNonNull(address, "Address must not be null");
@@ -229,13 +228,13 @@ public final class Ipv4Set implements IpSet<Ipv4Address, Ipv4Range, Ipv4Network,
 		}
 		return false;
 	}
-
+	
 	@Override
 	public boolean containsNetwork(@NonNull Ipv4Network network) {
 		Objects.requireNonNull(network, "Network must not be null");
 		return this.containsRange(Ipv4Range.of(network.networkAddress(), network.broadcastAddress()));
 	}
-
+	
 	@Override
 	public boolean containsRange(@NonNull Ipv4Range range) {
 		Objects.requireNonNull(range, "Range must not be null");
@@ -247,7 +246,7 @@ public final class Ipv4Set implements IpSet<Ipv4Address, Ipv4Range, Ipv4Network,
 		}
 		return false;
 	}
-
+	
 	@Override
 	public boolean containsAll(@NonNull Ipv4Set other) {
 		Objects.requireNonNull(other, "Other set must not be null");
@@ -259,7 +258,7 @@ public final class Ipv4Set implements IpSet<Ipv4Address, Ipv4Range, Ipv4Network,
 		}
 		return true;
 	}
-
+	
 	@Override
 	public @NonNull Ipv4Set union(@NonNull Ipv4Set other) {
 		Objects.requireNonNull(other, "Other set must not be null");
@@ -269,20 +268,20 @@ public final class Ipv4Set implements IpSet<Ipv4Address, Ipv4Range, Ipv4Network,
 		if (other.isEmpty()) {
 			return this;
 		}
-
+		
 		List<Ipv4Range> combined = new ArrayList<>(this.ranges.size() + other.ranges.size());
 		combined.addAll(this.ranges);
 		combined.addAll(other.ranges);
 		return new Ipv4Set(normalize(combined));
 	}
-
+	
 	@Override
 	public @NonNull Ipv4Set intersection(@NonNull Ipv4Set other) {
 		Objects.requireNonNull(other, "Other set must not be null");
 		if (this.isEmpty() || other.isEmpty()) {
 			return EMPTY;
 		}
-
+		
 		List<Ipv4Range> result = new ArrayList<>();
 		for (Ipv4Range thisRange : this.ranges) {
 			for (Ipv4Range otherRange : other.ranges) {
@@ -290,22 +289,22 @@ public final class Ipv4Set implements IpSet<Ipv4Address, Ipv4Range, Ipv4Network,
 				inter.ifPresent(result::add);
 			}
 		}
-
+		
 		if (result.isEmpty()) {
 			return EMPTY;
 		}
 		return new Ipv4Set(normalize(result));
 	}
-
+	
 	@Override
 	public @NonNull Ipv4Set difference(@NonNull Ipv4Set other) {
 		Objects.requireNonNull(other, "Other set must not be null");
 		if (this.isEmpty() || other.isEmpty()) {
 			return this;
 		}
-
+		
 		List<Ipv4Range> current = new ArrayList<>(this.ranges);
-
+		
 		for (Ipv4Range toRemove : other.ranges) {
 			List<Ipv4Range> next = new ArrayList<>();
 			for (Ipv4Range range : current) {
@@ -313,19 +312,19 @@ public final class Ipv4Set implements IpSet<Ipv4Address, Ipv4Range, Ipv4Network,
 			}
 			current = next;
 		}
-
+		
 		if (current.isEmpty()) {
 			return EMPTY;
 		}
 		return new Ipv4Set(normalize(current));
 	}
-
+	
 	@Override
 	public @NonNull Ipv4Set symmetricDifference(@NonNull Ipv4Set other) {
 		Objects.requireNonNull(other, "Other set must not be null");
 		return this.difference(other).union(other.difference(this));
 	}
-
+	
 	@Override
 	public @NonNull Ipv4Set complement() {
 		if (this.isEmpty()) {
@@ -333,79 +332,79 @@ public final class Ipv4Set implements IpSet<Ipv4Address, Ipv4Range, Ipv4Network,
 		}
 		return ALL.difference(this);
 	}
-
+	
 	@Override
 	public @NonNull Ipv4Set addAddress(@NonNull Ipv4Address address) {
 		Objects.requireNonNull(address, "Address must not be null");
 		return this.union(Ipv4Set.of(address));
 	}
-
+	
 	@Override
 	public @NonNull Ipv4Set addNetwork(@NonNull Ipv4Network network) {
 		Objects.requireNonNull(network, "Network must not be null");
 		return this.union(Ipv4Set.of(network));
 	}
-
+	
 	@Override
 	public @NonNull Ipv4Set addRange(@NonNull Ipv4Range range) {
 		Objects.requireNonNull(range, "Range must not be null");
 		return this.union(Ipv4Set.of(range));
 	}
-
+	
 	@Override
 	public @NonNull Ipv4Set removeAddress(@NonNull Ipv4Address address) {
 		Objects.requireNonNull(address, "Address must not be null");
 		return this.difference(Ipv4Set.of(address));
 	}
-
+	
 	@Override
 	public @NonNull Ipv4Set removeNetwork(@NonNull Ipv4Network network) {
 		Objects.requireNonNull(network, "Network must not be null");
 		return this.difference(Ipv4Set.of(network));
 	}
-
+	
 	@Override
 	public @NonNull Ipv4Set removeRange(@NonNull Ipv4Range range) {
 		Objects.requireNonNull(range, "Range must not be null");
 		return this.difference(Ipv4Set.of(range));
 	}
-
+	
 	@Override
 	public @NonNull List<Ipv4Range> toRanges() {
 		return this.ranges;
 	}
-
+	
 	@Override
 	public @NonNull List<Ipv4Network> toNetworks() {
 		if (this.isEmpty()) {
 			return List.of();
 		}
-
+		
 		List<Ipv4Network> result = new ArrayList<>();
 		for (Ipv4Range range : this.ranges) {
 			Ipv4Address start = range.start();
 			Ipv4Address end = range.end();
-
+			
 			int prefixLength = calculateMinimalPrefixLength(start, end);
 			Ipv4Network network = Ipv4Network.of(start, prefixLength);
 			result.add(network);
 		}
 		return result;
 	}
-
+	
 	@Override
 	public @NonNull List<Ipv4Network> toExactNetworks() {
 		if (this.isEmpty()) {
 			return List.of();
 		}
-
+		
 		List<Ipv4Network> result = new ArrayList<>();
 		for (Ipv4Range range : this.ranges) {
 			result.addAll(range.toCidrNetworks());
 		}
 		return result;
 	}
-
+	
 	/**
 	 * Calculates the minimal prefix length for a network that can contain both addresses.<br>
 	 *
@@ -421,17 +420,17 @@ public final class Ipv4Set implements IpSet<Ipv4Address, Ipv4Range, Ipv4Network,
 		
 		return Integer.numberOfLeadingZeros(xor);
 	}
-
+	
 	@Override
 	public @NonNull Iterator<Ipv4Range> rangeIterator() {
 		return this.ranges.iterator();
 	}
-
+	
 	@Override
 	public @NonNull Stream<Ipv4Range> rangeStream() {
 		return this.ranges.stream();
 	}
-
+	
 	//region Object methods
 	@Override
 	public boolean equals(Object o) {

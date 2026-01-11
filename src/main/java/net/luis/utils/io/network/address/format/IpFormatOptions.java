@@ -58,7 +58,7 @@ public record IpFormatOptions(
 	boolean includeZoneId,
 	boolean includePrefixLength
 ) {
-
+	
 	/**
 	 * Default formatting options.<br>
 	 * Uses lowercase hex characters, enables :: compression, no padding, and includes zone identifiers when present.<br>
@@ -67,7 +67,7 @@ public record IpFormatOptions(
 	 * </p>
 	 */
 	public static final IpFormatOptions DEFAULT = new IpFormatOptions(false, false, false, true, true, false);
-
+	
 	/**
 	 * Expanded formatting options.<br>
 	 * Disables :: compression and pads all hextets with leading zeros for a fully expanded representation.<br>
@@ -76,7 +76,7 @@ public record IpFormatOptions(
 	 * </p>
 	 */
 	public static final IpFormatOptions EXPANDED = new IpFormatOptions(false, true, true, false, true, false);
-
+	
 	/**
 	 * Compact formatting options.<br>
 	 * Uses maximum compression with :: notation and excludes zone identifiers for the most compact representation possible.<br>

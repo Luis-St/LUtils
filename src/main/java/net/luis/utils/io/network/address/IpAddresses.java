@@ -68,7 +68,7 @@ import java.util.Optional;
  * @author Luis-St
  */
 public final class IpAddresses {
-
+	
 	/**
 	 * The IPv4 loopback network (127.0.0.0/8).<br>
 	 * This network is reserved for loopback addresses, with 127.0.0.1 being the most commonly used loopback address.<br>
@@ -99,7 +99,7 @@ public final class IpAddresses {
 	 * This address block is designated for use in carrier-grade NAT (CGN) environments as defined in RFC 6598.<br>
 	 */
 	public static final Ipv4Network IPV4_SHARED_ADDRESS_SPACE = Ipv4Network.parse("100.64.0.0/10");
-
+	
 	/**
 	 * The IPv6 loopback network (::1/128).<br>
 	 * The IPv6 loopback address is a single address (::1) used for localhost communication.<br>
@@ -125,12 +125,12 @@ public final class IpAddresses {
 	 * All IPv6 multicast addresses begin with ff, with the following bits indicating flags and scope.<br>
 	 */
 	public static final Ipv6Network IPV6_MULTICAST_NETWORK = Ipv6Network.parse("ff00::/8");
-
+	
 	/**
 	 * Private constructor to prevent instantiation.
 	 */
 	private IpAddresses() {}
-
+	
 	/**
 	 * Parses an IPv4 address from the given string using default parse options.<br>
 	 * The address must be in dotted-decimal notation (e.g., "192.168.1.1").<br>
@@ -143,7 +143,7 @@ public final class IpAddresses {
 	public static @NonNull Ipv4Address parseIpv4(@NonNull String address) {
 		return parseIpv4(address, IpParseOptions.DEFAULT);
 	}
-
+	
 	/**
 	 * Parses an IPv4 address from the given string using the specified parse options.<br>
 	 * The address must be in dotted-decimal notation (e.g., "192.168.1.1").<br>
@@ -159,7 +159,7 @@ public final class IpAddresses {
 			new IpParseException("Invalid IPv4 address: " + address, IpParseErrorType.INVALID_FORMAT, address)
 		);
 	}
-
+	
 	/**
 	 * Attempts to parse an IPv4 address from the given string using default parse options.<br>
 	 * The address must be in dotted-decimal notation (e.g., "192.168.1.1").<br>
@@ -171,7 +171,7 @@ public final class IpAddresses {
 	public static @NonNull Optional<Ipv4Address> tryParseIpv4(@NonNull String address) {
 		return tryParseIpv4(address, IpParseOptions.DEFAULT);
 	}
-
+	
 	/**
 	 * Attempts to parse an IPv4 address from the given string using the specified parse options.<br>
 	 * The address must be in dotted-decimal notation (e.g., "192.168.1.1").<br>
@@ -184,7 +184,7 @@ public final class IpAddresses {
 	public static @NonNull Optional<Ipv4Address> tryParseIpv4(@NonNull String address, @NonNull IpParseOptions options) {
 		Objects.requireNonNull(address, "Address must not be null");
 		Objects.requireNonNull(options, "Options must not be null");
-
+		
 		String addressToParse = address.trim();
 		if (options.allowPortSuffix()) {
 			int colonIndex = addressToParse.lastIndexOf(':');
@@ -195,13 +195,13 @@ public final class IpAddresses {
 				}
 			}
 		}
-
+		
 		if (options.allowDecimalNotation() && !addressToParse.contains(".")) {
 			return tryParseIpv4Decimal(addressToParse);
 		}
 		return tryParseIpv4DottedDecimal(addressToParse, options);
 	}
-
+	
 	/**
 	 * Parses an IPv4 address from a decimal integer representation.<br>
 	 *
@@ -219,7 +219,7 @@ public final class IpAddresses {
 			return Optional.empty();
 		}
 	}
-
+	
 	/**
 	 * Parses an IPv4 address from dotted-decimal notation.<br>
 	 *
@@ -232,14 +232,14 @@ public final class IpAddresses {
 		if (parts.length != 4) {
 			return Optional.empty();
 		}
-
+		
 		int value = 0;
 		for (int i = 0; i < 4; i++) {
 			String part = parts[i];
 			if (part.isEmpty()) {
 				return Optional.empty();
 			}
-
+			
 			int octet;
 			try {
 				if (part.length() > 1 && part.charAt(0) == '0') {
@@ -256,7 +256,7 @@ public final class IpAddresses {
 			} catch (NumberFormatException e) {
 				return Optional.empty();
 			}
-
+			
 			if (octet < 0 || octet > 255) {
 				return Optional.empty();
 			}
@@ -264,7 +264,7 @@ public final class IpAddresses {
 		}
 		return Optional.of(Ipv4Address.fromValue(value));
 	}
-
+	
 	/**
 	 * Parses an IPv6 address from the given string using default parse options.<br>
 	 * The address can be in full or compressed colon-hexadecimal notation (e.g., "2001:db8::1" or "2001:0db8:0000:0000:0000:0000:0000:0001").<br>
@@ -277,7 +277,7 @@ public final class IpAddresses {
 	public static @NonNull Ipv6Address parseIpv6(@NonNull String address) {
 		return parseIpv6(address, IpParseOptions.DEFAULT);
 	}
-
+	
 	/**
 	 * Parses an IPv6 address from the given string using the specified parse options.<br>
 	 * The address can be in full or compressed colon-hexadecimal notation (e.g., "2001:db8::1" or "2001:0db8:0000:0000:0000:0000:0000:0001").<br>
@@ -293,7 +293,7 @@ public final class IpAddresses {
 			new IpParseException("Invalid IPv6 address: " + address, IpParseErrorType.INVALID_FORMAT, address)
 		);
 	}
-
+	
 	/**
 	 * Attempts to parse an IPv6 address from the given string using default parse options.<br>
 	 * The address can be in full or compressed colon-hexadecimal notation (e.g., "2001:db8::1" or "2001:0db8:0000:0000:0000:0000:0000:0001").<br>
@@ -305,7 +305,7 @@ public final class IpAddresses {
 	public static @NonNull Optional<Ipv6Address> tryParseIpv6(@NonNull String address) {
 		return tryParseIpv6(address, IpParseOptions.DEFAULT);
 	}
-
+	
 	/**
 	 * Attempts to parse an IPv6 address from the given string using the specified parse options.<br>
 	 * The address can be in full or compressed colon-hexadecimal notation (e.g., "2001:db8::1" or "2001:0db8:0000:0000:0000:0000:0000:0001").<br>
@@ -318,16 +318,16 @@ public final class IpAddresses {
 	public static @NonNull Optional<Ipv6Address> tryParseIpv6(@NonNull String address, @NonNull IpParseOptions options) {
 		Objects.requireNonNull(address, "Address must not be null");
 		Objects.requireNonNull(options, "Options must not be null");
-
+		
 		String addressToParse = address.trim();
-
+		
 		if (options.allowPortSuffix() && addressToParse.startsWith("[")) {
 			int closeBracket = addressToParse.indexOf(']');
 			if (closeBracket != -1) {
 				addressToParse = addressToParse.substring(1, closeBracket);
 			}
 		}
-
+		
 		String zoneId = null;
 		if (options.allowZoneId()) {
 			int zoneIndex = addressToParse.indexOf('%');
@@ -343,7 +343,7 @@ public final class IpAddresses {
 				return Optional.empty();
 			}
 		}
-
+		
 		int lastColonIndex = addressToParse.lastIndexOf(':');
 		if (lastColonIndex != -1 && options.allowMixedNotation()) {
 			String possibleIpv4 = addressToParse.substring(lastColonIndex + 1);
@@ -351,7 +351,7 @@ public final class IpAddresses {
 				return tryParseIpv6MixedNotation(addressToParse, zoneId, options);
 			}
 		}
-
+		
 		if (!options.allowMixedCase()) {
 			String lower = addressToParse.toLowerCase();
 			String upper = addressToParse.toUpperCase();
@@ -359,14 +359,14 @@ public final class IpAddresses {
 				return Optional.empty();
 			}
 		}
-
+		
 		int doubleColonIndex = addressToParse.indexOf("::");
 		if (doubleColonIndex != -1 && !options.allowEmptySegments()) {
 			return Optional.empty();
 		}
 		return tryParseIpv6Standard(addressToParse, zoneId, options);
 	}
-
+	
 	/**
 	 * Parses a standard IPv6 address (without mixed IPv4 notation).<br>
 	 *
@@ -384,13 +384,13 @@ public final class IpAddresses {
 		int doubleColonIndex = address.indexOf("::");
 		long highBits = 0;
 		long lowBits = 0;
-
+		
 		if (doubleColonIndex == -1) {
 			String[] groups = address.split(":", -1);
 			if (groups.length != 8) {
 				return Optional.empty();
 			}
-
+			
 			for (int i = 0; i < 8; i++) {
 				int value = parseHextet(groups[i], options);
 				if (value < 0) {
@@ -406,21 +406,21 @@ public final class IpAddresses {
 			if (address.indexOf("::", doubleColonIndex + 2) != -1) {
 				return Optional.empty();
 			}
-
+			
 			String leftPart = address.substring(0, doubleColonIndex);
 			String rightPart = address.substring(doubleColonIndex + 2);
-
-			String[] leftGroups = leftPart.isEmpty() ? new String[0] : leftPart.split(":", -1);
-			String[] rightGroups = rightPart.isEmpty() ? new String[0] : rightPart.split(":", -1);
-
+			
+			String[] leftGroups = leftPart.isEmpty() ? ArrayUtils.EMPTY_STRING_ARRAY : leftPart.split(":", -1);
+			String[] rightGroups = rightPart.isEmpty() ? ArrayUtils.EMPTY_STRING_ARRAY : rightPart.split(":", -1);
+			
 			int totalGroups = leftGroups.length + rightGroups.length;
 			if (totalGroups > 7) {
-				return Optional.empty(); // Too many groups
+				return Optional.empty();
 			}
-
+			
 			int zerosNeeded = 8 - totalGroups;
 			int[] hextets = new int[8];
-
+			
 			for (int i = 0; i < leftGroups.length; i++) {
 				int value = parseHextet(leftGroups[i], options);
 				if (value < 0) {
@@ -428,7 +428,7 @@ public final class IpAddresses {
 				}
 				hextets[i] = value;
 			}
-
+			
 			for (int i = 0; i < rightGroups.length; i++) {
 				int value = parseHextet(rightGroups[i], options);
 				if (value < 0) {
@@ -436,7 +436,7 @@ public final class IpAddresses {
 				}
 				hextets[leftGroups.length + zerosNeeded + i] = value;
 			}
-
+			
 			for (int i = 0; i < 4; i++) {
 				highBits = (highBits << 16) | hextets[i];
 			}
@@ -446,7 +446,7 @@ public final class IpAddresses {
 		}
 		return Optional.of(new Ipv6Address(highBits, lowBits, zoneId));
 	}
-
+	
 	/**
 	 * Parses an IPv6 address in mixed notation (::ffff:192.168.1.1).
 	 *
@@ -464,13 +464,13 @@ public final class IpAddresses {
 		int lastColonIndex = address.lastIndexOf(':');
 		String ipv6Part = address.substring(0, lastColonIndex);
 		String ipv4Part = address.substring(lastColonIndex + 1);
-
+		
 		Optional<Ipv4Address> ipv4Optional = tryParseIpv4DottedDecimal(ipv4Part, options);
 		if (ipv4Optional.isEmpty()) {
 			return Optional.empty();
 		}
 		Ipv4Address ipv4 = ipv4Optional.get();
-
+		
 		int doubleColonIndex = ipv6Part.indexOf("::");
 		int[] hextets = new int[6];
 		if (doubleColonIndex == -1) {
@@ -489,17 +489,17 @@ public final class IpAddresses {
 			if (ipv6Part.indexOf("::", doubleColonIndex + 2) != -1) {
 				return Optional.empty();
 			}
-
+			
 			String leftPart = ipv6Part.substring(0, doubleColonIndex);
 			String rightPart = ipv6Part.substring(doubleColonIndex + 2);
-
+			
 			String[] leftGroups = leftPart.isEmpty() ? ArrayUtils.EMPTY_STRING_ARRAY : leftPart.split(":", -1);
 			String[] rightGroups = rightPart.isEmpty() ? ArrayUtils.EMPTY_STRING_ARRAY : rightPart.split(":", -1);
 			int totalGroups = leftGroups.length + rightGroups.length;
 			if (totalGroups > 5) {
 				return Optional.empty();
 			}
-
+			
 			int zerosNeeded = 6 - totalGroups;
 			for (int i = 0; i < leftGroups.length; i++) {
 				int value = parseHextet(leftGroups[i], options);
@@ -508,7 +508,7 @@ public final class IpAddresses {
 				}
 				hextets[i] = value;
 			}
-
+			
 			for (int i = 0; i < rightGroups.length; i++) {
 				int value = parseHextet(rightGroups[i], options);
 				if (value < 0) {
@@ -517,12 +517,12 @@ public final class IpAddresses {
 				hextets[leftGroups.length + zerosNeeded + i] = value;
 			}
 		}
-
+		
 		long highBits = ((long) hextets[0] << 48) | ((long) hextets[1] << 32) | ((long) hextets[2] << 16) | hextets[3];
 		long lowBits = ((long) hextets[4] << 48) | ((long) hextets[5] << 32) | (ipv4.toUnsignedLong() & 0xFFFFFFFFL);
 		return Optional.of(new Ipv6Address(highBits, lowBits, zoneId));
 	}
-
+	
 	/**
 	 * Parses a hextet (16-bit group) from a string.<br>
 	 *
@@ -534,14 +534,14 @@ public final class IpAddresses {
 		if (hextet.isEmpty() || hextet.length() > 4) {
 			return -1;
 		}
-
+		
 		for (int i = 0; i < hextet.length(); i++) {
 			char c = hextet.charAt(i);
 			if (!isHexDigit(c)) {
 				return -1;
 			}
 		}
-
+		
 		try {
 			int value = Integer.parseInt(hextet, 16);
 			if (value < 0 || value > 0xFFFF) {
@@ -552,7 +552,7 @@ public final class IpAddresses {
 			return -1;
 		}
 	}
-
+	
 	/**
 	 * Checks if a character is a hexadecimal digit.<br>
 	 *
@@ -562,7 +562,7 @@ public final class IpAddresses {
 	private static boolean isHexDigit(char c) {
 		return (c >= '0' && c <= '9') || (c >= 'a' && c <= 'f') || (c >= 'A' && c <= 'F');
 	}
-
+	
 	/**
 	 * Parses an IP address from the given string, auto-detecting the version.<br>
 	 * This method first attempts to parse as IPv4, then as IPv6.<br>
@@ -575,7 +575,7 @@ public final class IpAddresses {
 	public static @NonNull IpAddress<?> parse(@NonNull String address) {
 		return parse(address, IpParseOptions.DEFAULT);
 	}
-
+	
 	/**
 	 * Parses an IP address from the given string using the specified options, auto-detecting the version.<br>
 	 * This method first attempts to parse as IPv4, then as IPv6.<br>
@@ -591,7 +591,7 @@ public final class IpAddresses {
 			new IpParseException("Invalid IP address: " + address, IpParseErrorType.INVALID_FORMAT, address)
 		);
 	}
-
+	
 	/**
 	 * Attempts to parse an IP address from the given string, auto-detecting the version.<br>
 	 * This method first attempts to parse as IPv4, then as IPv6.<br>
@@ -603,7 +603,7 @@ public final class IpAddresses {
 	public static @NonNull Optional<? extends IpAddress<?>> tryParse(@NonNull String address) {
 		return tryParse(address, IpParseOptions.DEFAULT);
 	}
-
+	
 	/**
 	 * Attempts to parse an IP address from the given string using the specified options, auto-detecting the version.<br>
 	 * This method first attempts to parse as IPv4, then as IPv6.<br>
@@ -616,25 +616,25 @@ public final class IpAddresses {
 	public static @NonNull Optional<? extends IpAddress<?>> tryParse(@NonNull String address, @NonNull IpParseOptions options) {
 		Objects.requireNonNull(address, "Address must not be null");
 		Objects.requireNonNull(options, "Options must not be null");
-
+		
 		if (address.contains(":")) {
 			Optional<Ipv6Address> ipv6 = tryParseIpv6(address, options);
 			if (ipv6.isPresent()) {
 				return ipv6;
 			}
 		}
-
+		
 		Optional<Ipv4Address> ipv4 = tryParseIpv4(address, options);
 		if (ipv4.isPresent()) {
 			return ipv4;
 		}
-
+		
 		if (!address.contains(":")) {
 			return tryParseIpv6(address, options);
 		}
 		return Optional.empty();
 	}
-
+	
 	/**
 	 * Checks if the given string is a valid IPv4 address.<br>
 	 *
@@ -646,7 +646,7 @@ public final class IpAddresses {
 		Objects.requireNonNull(address, "Address must not be null");
 		return tryParseIpv4(address).isPresent();
 	}
-
+	
 	/**
 	 * Checks if the given string is a valid IPv6 address.<br>
 	 *
@@ -658,7 +658,7 @@ public final class IpAddresses {
 		Objects.requireNonNull(address, "Address must not be null");
 		return tryParseIpv6(address).isPresent();
 	}
-
+	
 	/**
 	 * Checks if the given string is a valid IP address (either IPv4 or IPv6).<br>
 	 *
@@ -670,7 +670,7 @@ public final class IpAddresses {
 		Objects.requireNonNull(address, "Address must not be null");
 		return tryParse(address).isPresent();
 	}
-
+	
 	/**
 	 * Parses an IPv4 network from CIDR notation (e.g., "192.168.1.0/24").<br>
 	 *
@@ -684,7 +684,7 @@ public final class IpAddresses {
 			new IpParseException("Invalid IPv4 CIDR notation: " + cidr, IpParseErrorType.INVALID_FORMAT, cidr)
 		);
 	}
-
+	
 	/**
 	 * Attempts to parse an IPv4 network from CIDR notation (e.g., "192.168.1.0/24").<br>
 	 *
@@ -696,7 +696,7 @@ public final class IpAddresses {
 		Objects.requireNonNull(cidr, "CIDR must not be null");
 		return Ipv4Network.tryParse(cidr);
 	}
-
+	
 	/**
 	 * Parses an IPv6 network from CIDR notation (e.g., "2001:db8::/32").<br>
 	 *
@@ -710,7 +710,7 @@ public final class IpAddresses {
 			new IpParseException("Invalid IPv6 CIDR notation: " + cidr, IpParseErrorType.INVALID_FORMAT, cidr)
 		);
 	}
-
+	
 	/**
 	 * Attempts to parse an IPv6 network from CIDR notation (e.g., "2001:db8::/32").<br>
 	 *
@@ -722,7 +722,7 @@ public final class IpAddresses {
 		Objects.requireNonNull(cidr, "CIDR must not be null");
 		return Ipv6Network.tryParse(cidr);
 	}
-
+	
 	/**
 	 * Creates an IP address from a {@link InetAddress}.<br>
 	 * This method returns an {@link Ipv4Address} for {@link Inet4Address} and an {@link Ipv6Address} for {@link Inet6Address}.
@@ -741,7 +741,7 @@ public final class IpAddresses {
 		}
 		throw new IllegalArgumentException("Unknown InetAddress type: " + address.getClass().getName());
 	}
-
+	
 	/**
 	 * Creates an IPv4 address from a {@link Inet4Address}.<br>
 	 *
@@ -753,7 +753,7 @@ public final class IpAddresses {
 		Objects.requireNonNull(address, "Address must not be null");
 		return Ipv4Address.from(address);
 	}
-
+	
 	/**
 	 * Creates an IPv6 address from a {@link java.net.Inet6Address}.<br>
 	 *
@@ -765,7 +765,7 @@ public final class IpAddresses {
 		Objects.requireNonNull(address, "Address must not be null");
 		return Ipv6Address.from(address);
 	}
-
+	
 	/**
 	 * Creates an IPv4 address range from the start to end addresses (inclusive).<br>
 	 *
@@ -778,7 +778,7 @@ public final class IpAddresses {
 	public static @NonNull Ipv4Range ipv4Range(@NonNull Ipv4Address start, @NonNull Ipv4Address end) {
 		return Ipv4Range.of(start, end);
 	}
-
+	
 	/**
 	 * Creates an IPv6 address range from the start to end addresses (inclusive).<br>
 	 *
@@ -791,7 +791,7 @@ public final class IpAddresses {
 	public static @NonNull Ipv6Range ipv6Range(@NonNull Ipv6Address start, @NonNull Ipv6Address end) {
 		return Ipv6Range.of(start, end);
 	}
-
+	
 	/**
 	 * Checks if a string represents a valid port number (0-65535).
 	 *

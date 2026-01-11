@@ -50,7 +50,7 @@ import java.util.stream.Stream;
  * @param <N> The network type (self-referential for type safety)
  */
 public sealed interface IpNetwork<A extends IpAddress<A>, N extends IpNetwork<A, N>> extends Iterable<A>, Comparable<N> permits Ipv4Network, Ipv6Network {
-
+	
 	/**
 	 * Returns the network address, which is the first address in the network.<br>
 	 * For example, in 192.168.1.0/24, the network address is 192.168.1.0.<br>
@@ -58,7 +58,7 @@ public sealed interface IpNetwork<A extends IpAddress<A>, N extends IpNetwork<A,
 	 * @return The network address
 	 */
 	@NonNull A networkAddress();
-
+	
 	/**
 	 * Returns the broadcast address, which is the last address in the network.<br>
 	 * For example, in 192.168.1.0/24, the broadcast address is 192.168.1.255.<br>
@@ -67,7 +67,7 @@ public sealed interface IpNetwork<A extends IpAddress<A>, N extends IpNetwork<A,
 	 * @throws UnsupportedOperationException If the address type does not support broadcast addresses (e.g., IPv6)
 	 */
 	@NonNull A broadcastAddress();
-
+	
 	/**
 	 * Returns the CIDR prefix length of this network.<br>
 	 * <p>
@@ -78,7 +78,7 @@ public sealed interface IpNetwork<A extends IpAddress<A>, N extends IpNetwork<A,
 	 * @return The prefix length (0 to address bit length)
 	 */
 	int prefixLength();
-
+	
 	/**
 	 * Returns the total number of addresses in this network.<br>
 	 * <p>
@@ -89,7 +89,7 @@ public sealed interface IpNetwork<A extends IpAddress<A>, N extends IpNetwork<A,
 	 * @return The number of addresses in the network
 	 */
 	@NonNull BigInteger size();
-
+	
 	/**
 	 * Checks if the given address is contained within this network.<br>
 	 *
@@ -98,7 +98,7 @@ public sealed interface IpNetwork<A extends IpAddress<A>, N extends IpNetwork<A,
 	 * @throws NullPointerException If the address is null
 	 */
 	boolean contains(@NonNull A address);
-
+	
 	/**
 	 * Checks if this network completely contains another network.<br>
 	 * A network contains another if the other network's prefix is longer (or equal) and the other network's address falls within this network's range.<br>
@@ -108,7 +108,7 @@ public sealed interface IpNetwork<A extends IpAddress<A>, N extends IpNetwork<A,
 	 * @throws NullPointerException If the other network is null
 	 */
 	boolean contains(@NonNull N other);
-
+	
 	/**
 	 * Checks if this network overlaps with another network.<br>
 	 * Two networks overlap if they share at least one common address.<br>
@@ -118,7 +118,7 @@ public sealed interface IpNetwork<A extends IpAddress<A>, N extends IpNetwork<A,
 	 * @throws NullPointerException If the other network is null
 	 */
 	boolean overlaps(@NonNull N other);
-
+	
 	/**
 	 * Splits this network into two subnets with prefix length + 1.<br>
 	 * For example, splitting 192.168.0.0/24 produces:<br>
@@ -131,7 +131,7 @@ public sealed interface IpNetwork<A extends IpAddress<A>, N extends IpNetwork<A,
 	 * @throws IllegalStateException If the network cannot be split (prefix is already at maximum)
 	 */
 	@NonNull List<N> split();
-
+	
 	/**
 	 * Returns the supernet (parent network) with prefix length - 1.<br>
 	 * For example, the supernet of 192.168.1.0/24 is 192.168.0.0/23.<br>
@@ -139,7 +139,7 @@ public sealed interface IpNetwork<A extends IpAddress<A>, N extends IpNetwork<A,
 	 * @return An optional containing the supernet, or empty if prefix is 0
 	 */
 	@NonNull Optional<N> supernet();
-
+	
 	/**
 	 * Returns all subnets of this network with the specified prefix length.<br>
 	 *
@@ -148,7 +148,7 @@ public sealed interface IpNetwork<A extends IpAddress<A>, N extends IpNetwork<A,
 	 * @throws IllegalArgumentException If the new prefix length is not greater than the current prefix length or exceeds the maximum prefix length for the address type
 	 */
 	@NonNull List<N> subnets(int newPrefixLength);
-
+	
 	/**
 	 * Returns an iterator over all addresses in this network.<br>
 	 * <p>
@@ -160,7 +160,7 @@ public sealed interface IpNetwork<A extends IpAddress<A>, N extends IpNetwork<A,
 	 */
 	@Override
 	@NonNull Iterator<A> iterator();
-
+	
 	/**
 	 * Returns a stream of all addresses in this network.<br>
 	 * <p>
@@ -170,7 +170,7 @@ public sealed interface IpNetwork<A extends IpAddress<A>, N extends IpNetwork<A,
 	 * @return A stream of all addresses in the network
 	 */
 	@NonNull Stream<A> addressStream();
-
+	
 	/**
 	 * Returns an iterator over usable host addresses in this network.<br>
 	 * <p>
@@ -182,7 +182,7 @@ public sealed interface IpNetwork<A extends IpAddress<A>, N extends IpNetwork<A,
 	 * @throws UnsupportedOperationException If the address type does not support broadcast addresses (e.g., IPv6)
 	 */
 	@NonNull Iterator<A> hostIterator();
-
+	
 	/**
 	 * Returns a stream of usable host addresses in this network.<br>
 	 * <p>
@@ -194,7 +194,7 @@ public sealed interface IpNetwork<A extends IpAddress<A>, N extends IpNetwork<A,
 	 * @throws UnsupportedOperationException If the address type does not support broadcast addresses (e.g., IPv6)
 	 */
 	@NonNull Stream<A> hostStream();
-
+	
 	/**
 	 * Returns the number of usable host addresses in this network.<br>
 	 * <p>
@@ -206,7 +206,7 @@ public sealed interface IpNetwork<A extends IpAddress<A>, N extends IpNetwork<A,
 	 * @throws UnsupportedOperationException If the address type does not support broadcast addresses (e.g., IPv6)
 	 */
 	@NonNull BigInteger hostCount();
-
+	
 	/**
 	 * Checks if this network is in canonical form.<br>
 	 * <p>
@@ -217,7 +217,7 @@ public sealed interface IpNetwork<A extends IpAddress<A>, N extends IpNetwork<A,
 	 * @return {@code true} if the network is in canonical form, {@code false} otherwise
 	 */
 	boolean isCanonical();
-
+	
 	/**
 	 * Returns this network in canonical form with all host bits cleared.<br>
 	 * <p>
@@ -228,7 +228,7 @@ public sealed interface IpNetwork<A extends IpAddress<A>, N extends IpNetwork<A,
 	 * @return The canonical form of this network
 	 */
 	@NonNull N toCanonical();
-
+	
 	/**
 	 * Returns the CIDR notation representation of this network.<br>
 	 * The format is "address/prefix", e.g., "192.168.1.0/24" or "2001:db8::/32".<br>

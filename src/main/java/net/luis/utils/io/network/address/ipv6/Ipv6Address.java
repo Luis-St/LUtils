@@ -27,11 +27,8 @@ import org.jspecify.annotations.Nullable;
 
 import java.math.BigInteger;
 import java.net.*;
-import java.time.Duration;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.TimeUnit;
 
 /**
  * Represents an IPv6 (Internet Protocol version 6) address.<br>
@@ -72,27 +69,24 @@ import java.util.concurrent.TimeUnit;
  * @param zoneId Optional zone identifier for link-local addresses
  */
 public record Ipv6Address(long highBits, long lowBits, @Nullable String zoneId) implements IpAddress<Ipv6Address> {
-
+	
 	/**
 	 * The number of bits in an IPv6 address.<br>
 	 */
 	public static final int BIT_LENGTH = 128;
-
 	/**
 	 * The number of hextets (16-bit groups) in an IPv6 address.<br>
 	 */
 	public static final int HEXTET_COUNT = 8;
-
 	/**
 	 * The unspecified address (::), representing the absence of an address.<br>
 	 */
 	public static final Ipv6Address UNSPECIFIED = new Ipv6Address(0L, 0L, null);
-
 	/**
 	 * The loopback address (::1), used for localhost communication.<br>
 	 */
 	public static final Ipv6Address LOOPBACK = new Ipv6Address(0L, 1L, null);
-
+	
 	/**
 	 * Constructs a new IPv6 address without a zone identifier.
 	 *
@@ -165,12 +159,12 @@ public record Ipv6Address(long highBits, long lowBits, @Nullable String zoneId) 
 	public int version() {
 		return 6;
 	}
-
+	
 	@Override
 	public int bitLength() {
 		return BIT_LENGTH;
 	}
-
+	
 	@Override
 	public byte @NonNull [] toBytes() {
 		byte[] bytes = new byte[16];
@@ -182,7 +176,7 @@ public record Ipv6Address(long highBits, long lowBits, @Nullable String zoneId) 
 		}
 		return bytes;
 	}
-
+	
 	@Override
 	public @NonNull BigInteger toBigInteger() {
 		byte[] bytes = new byte[17];
@@ -192,7 +186,7 @@ public record Ipv6Address(long highBits, long lowBits, @Nullable String zoneId) 
 		System.arraycopy(addressBytes, 0, bytes, 1, 16);
 		return new BigInteger(bytes);
 	}
-
+	
 	@Override
 	public boolean getBit(int index) {
 		if (index < 0 || index >= BIT_LENGTH) {
@@ -205,7 +199,7 @@ public record Ipv6Address(long highBits, long lowBits, @Nullable String zoneId) 
 			return ((this.lowBits >>> (127 - index)) & 1L) == 1L;
 		}
 	}
-
+	
 	@Override
 	public @NonNull Ipv6Address withBit(int index, boolean value) {
 		if (index < 0 || index >= BIT_LENGTH) {
@@ -213,7 +207,7 @@ public record Ipv6Address(long highBits, long lowBits, @Nullable String zoneId) 
 		}
 		long newHighBits = this.highBits;
 		long newLowBits = this.lowBits;
-
+		
 		if (index < 64) {
 			long mask = 1L << (63 - index);
 			if (value) {
@@ -231,7 +225,7 @@ public record Ipv6Address(long highBits, long lowBits, @Nullable String zoneId) 
 		}
 		return new Ipv6Address(newHighBits, newLowBits, this.zoneId);
 	}
-
+	
 	@Override
 	public @NonNull Optional<Ipv6Address> next() {
 		if (this.highBits == -1L && this.lowBits == -1L) {
@@ -245,7 +239,7 @@ public record Ipv6Address(long highBits, long lowBits, @Nullable String zoneId) 
 		}
 		return Optional.of(new Ipv6Address(newHighBits, newLowBits, this.zoneId));
 	}
-
+	
 	@Override
 	public @NonNull Optional<Ipv6Address> previous() {
 		if (this.highBits == 0L && this.lowBits == 0L) {
@@ -259,41 +253,41 @@ public record Ipv6Address(long highBits, long lowBits, @Nullable String zoneId) 
 		}
 		return Optional.of(new Ipv6Address(newHighBits, newLowBits, this.zoneId));
 	}
-
+	
 	@Override
 	public @NonNull BigInteger distanceTo(@NonNull Ipv6Address other) {
 		Objects.requireNonNull(other, "Other address must not be null");
 		return other.toBigInteger().subtract(this.toBigInteger());
 	}
-
+	
 	@Override
 	public boolean isUnspecified() {
 		return this.highBits == 0L && this.lowBits == 0L;
 	}
-
+	
 	@Override
 	public boolean isLoopback() {
 		return this.highBits == 0L && this.lowBits == 1L;
 	}
-
+	
 	@Override
 	public boolean isMulticast() {
 		// ff00::/8 - first 8 bits are 11111111
 		return (this.highBits >>> 56) == 0xFFL;
 	}
-
+	
 	@Override
 	public boolean isLinkLocal() {
 		// fe80::/10 - first 10 bits are 1111111010
 		return (this.highBits >>> 54) == 0x3FAL; // 0b1111111010
 	}
-
+	
 	@Override
 	public boolean isPrivate() {
 		// fc00::/7 - Unique Local Addresses, first 7 bits are 1111110
 		return (this.highBits >>> 57) == 0x7EL; // 0b1111110
 	}
-
+	
 	/**
 	 * Checks if this address is a Unique Local Address (ULA).<br>
 	 * This is an alias for {@link #isPrivate()} for IPv6.
@@ -303,13 +297,13 @@ public record Ipv6Address(long highBits, long lowBits, @Nullable String zoneId) 
 	public boolean isUniqueLocal() {
 		return this.isPrivate();
 	}
-
+	
 	@Override
 	public boolean isDocumentation() {
 		// 2001:db8::/32
 		return (this.highBits >>> 32) == 0x20010DB8L;
 	}
-
+	
 	@Override
 	public boolean isGlobalUnicast() {
 		// 2000::/3 (first 3 bits are 001) minus reserved ranges
@@ -323,7 +317,7 @@ public record Ipv6Address(long highBits, long lowBits, @Nullable String zoneId) 
 		// Exclude Teredo (2001:0000::/32)
 		return (this.highBits >>> 32) != 0x20010000L;
 	}
-
+	
 	@Override
 	public @NonNull AddressType getAddressType() {
 		if (this.isUnspecified()) {
@@ -349,7 +343,7 @@ public record Ipv6Address(long highBits, long lowBits, @Nullable String zoneId) 
 		}
 		return AddressType.RESERVED;
 	}
-
+	
 	@Override
 	public @NonNull String toReverseDnsName() {
 		StringBuilder sb = new StringBuilder();
@@ -364,12 +358,12 @@ public record Ipv6Address(long highBits, long lowBits, @Nullable String zoneId) 
 		sb.append("ip6.arpa");
 		return sb.toString();
 	}
-
+	
 	@Override
 	public @NonNull InetAddress toInetAddress() {
 		return this.toInet6Address();
 	}
-
+	
 	@Override
 	public @NonNull InetSocketAddress toSocketAddress(int port) {
 		if (port < 0 || port > 65535) {
@@ -377,17 +371,17 @@ public record Ipv6Address(long highBits, long lowBits, @Nullable String zoneId) 
 		}
 		return new InetSocketAddress(this.toInetAddress(), port);
 	}
-
+	
 	@Override
 	public @NonNull Ipv6Address minValue() {
 		return UNSPECIFIED;
 	}
-
+	
 	@Override
 	public @NonNull Ipv6Address maxValue() {
 		return new Ipv6Address(-1L, -1L, null);
 	}
-
+	
 	@Override
 	public int compareTo(@NonNull Ipv6Address other) {
 		int highCompare = Long.compareUnsigned(this.highBits, other.highBits);
@@ -396,7 +390,7 @@ public record Ipv6Address(long highBits, long lowBits, @Nullable String zoneId) 
 		}
 		return Long.compareUnsigned(this.lowBits, other.lowBits);
 	}
-
+	
 	/**
 	 * Returns the zone identifier as an {@link Optional}.<br>
 	 * The zone ID is used to distinguish link-local addresses on different interfaces.<br>
@@ -406,7 +400,7 @@ public record Ipv6Address(long highBits, long lowBits, @Nullable String zoneId) 
 	public @NonNull Optional<String> getZoneId() {
 		return Optional.ofNullable(this.zoneId);
 	}
-
+	
 	/**
 	 * Returns a new address with the specified zone identifier.<br>
 	 *
@@ -418,7 +412,7 @@ public record Ipv6Address(long highBits, long lowBits, @Nullable String zoneId) 
 		Objects.requireNonNull(zoneId, "Zone ID must not be null");
 		return new Ipv6Address(this.highBits, this.lowBits, zoneId);
 	}
-
+	
 	/**
 	 * Returns a new address without any zone identifier.<br>
 	 * @return A new address without a zone ID
@@ -429,7 +423,7 @@ public record Ipv6Address(long highBits, long lowBits, @Nullable String zoneId) 
 		}
 		return new Ipv6Address(this.highBits, this.lowBits, null);
 	}
-
+	
 	/**
 	 * Returns the hextet (16-bit group) at the specified index.<br>
 	 * Index 0 is the most significant hextet (leftmost in standard notation).<br>
@@ -448,7 +442,7 @@ public record Ipv6Address(long highBits, long lowBits, @Nullable String zoneId) 
 			return (int) ((this.lowBits >>> (48 - (index - 4) * 16)) & 0xFFFFL);
 		}
 	}
-
+	
 	/**
 	 * Returns a new address with the specified hextet changed.<br>
 	 *
@@ -465,7 +459,7 @@ public record Ipv6Address(long highBits, long lowBits, @Nullable String zoneId) 
 		if (value < 0 || value > 0xFFFF) {
 			throw new IllegalArgumentException("Hextet value out of range: " + value);
 		}
-
+		
 		long newHighBits = this.highBits;
 		long newLowBits = this.lowBits;
 		if (index < 4) {
@@ -477,7 +471,7 @@ public record Ipv6Address(long highBits, long lowBits, @Nullable String zoneId) 
 		}
 		return new Ipv6Address(newHighBits, newLowBits, this.zoneId);
 	}
-
+	
 	/**
 	 * Checks if this is an IPv4-mapped IPv6 address (::ffff:x.x.x.x, highBits is 0, lowBits starts with 0x0000FFFF).<br>
 	 * IPv4-mapped addresses have the format ::ffff:0:0/96 with the IPv4 address in the last 32 bits.<br>
@@ -487,7 +481,7 @@ public record Ipv6Address(long highBits, long lowBits, @Nullable String zoneId) 
 	public boolean isIpv4Mapped() {
 		return this.highBits == 0L && (this.lowBits >>> 32) == 0xFFFFL;
 	}
-
+	
 	/**
 	 * Checks if this is an IPv4-compatible IPv6 address (::x.x.x.x).<br>
 	 * IPv4-compatible addresses are deprecated in RFC 4291.<br>
@@ -501,7 +495,7 @@ public record Ipv6Address(long highBits, long lowBits, @Nullable String zoneId) 
 		// Must not be ::0 (unspecified) or ::1 (loopback) or ::ffff:x.x.x.x (mapped)
 		return this.highBits == 0L && (this.lowBits >>> 32) == 0L && this.lowBits > 1L;
 	}
-
+	
 	/**
 	 * Checks if this is an IPv4-translatable IPv6 address (64:ff9b::/96, well-known prefix for NAT64).<br>
 	 * These addresses are used by NAT64 for IPv4/IPv6 translation.<br>
@@ -511,7 +505,7 @@ public record Ipv6Address(long highBits, long lowBits, @Nullable String zoneId) 
 	public boolean isIpv4Translatable() {
 		return this.highBits == 0x0064FF9B00000000L && (this.lowBits >>> 32) == 0L;
 	}
-
+	
 	/**
 	 * Extracts the embedded IPv4 address from IPv4-mapped, IPv4-compatible,or IPv4-translatable addresses.<br>
 	 * @return An {@link Optional} containing the extracted IPv4 address, or empty if not applicable
@@ -523,7 +517,7 @@ public record Ipv6Address(long highBits, long lowBits, @Nullable String zoneId) 
 		}
 		return Optional.empty();
 	}
-
+	
 	/**
 	 * Checks if this address has an EUI-64 interface identifier.<br>
 	 * EUI-64 addresses have 0xFFFE in bits 24-39 of the interface identifier (positions 88-103 of the full address).<br>
@@ -533,7 +527,7 @@ public record Ipv6Address(long highBits, long lowBits, @Nullable String zoneId) 
 	public boolean isEui64() {
 		return ((this.lowBits >>> 24) & 0xFFFFL) == 0xFFFEL;
 	}
-
+	
 	/**
 	 * Extracts the MAC address from an EUI-64 interface identifier.<br>
 	 * This reverses the EUI-64 process by removing the 0xFFFE bytes and
@@ -552,7 +546,7 @@ public record Ipv6Address(long highBits, long lowBits, @Nullable String zoneId) 
 		long macValue = (highMac << 24) | lowMac;
 		return Optional.of(MacAddress.of(macValue));
 	}
-
+	
 	/**
 	 * Checks if this is a solicited-node multicast address (ff02::1:ffxx:xxxx).<br>
 	 * Solicited-node addresses are used in neighbor discovery.<br>
@@ -562,7 +556,7 @@ public record Ipv6Address(long highBits, long lowBits, @Nullable String zoneId) 
 	public boolean isSolicitedNodeMulticast() {
 		return this.highBits == 0xFF02000000000000L && (this.lowBits >>> 24) == 0x0000000001FFL;
 	}
-
+	
 	/**
 	 * Returns the multicast scope of this address.<br>
 	 * The scope is encoded in bits 8-11 of the address (second nibble of the second byte).<br>
@@ -577,7 +571,7 @@ public record Ipv6Address(long highBits, long lowBits, @Nullable String zoneId) 
 		int scopeValue = (int) ((this.highBits >>> 48) & 0x0FL);
 		return Ipv6MulticastScope.fromValue(scopeValue);
 	}
-
+	
 	/**
 	 * Generates the solicited-node multicast address for this unicast address.<br>
 	 * The solicited-node address is formed by taking ff02::1:ff00:0/104 and appending the last 24 bits of the unicast address.<br>
@@ -589,7 +583,7 @@ public record Ipv6Address(long highBits, long lowBits, @Nullable String zoneId) 
 		long last24Bits = this.lowBits & 0xFFFFFFL;
 		return new Ipv6Address(0xFF02000000000000L, 0x00000001FF000000L | last24Bits, null);
 	}
-
+	
 	/**
 	 * Checks if this is a Teredo address (2001:0000::/32).<br>
 	 * Teredo is a transition technology for providing IPv6 connectivity through IPv4 NATs.<br>
@@ -599,7 +593,7 @@ public record Ipv6Address(long highBits, long lowBits, @Nullable String zoneId) 
 	public boolean isTeredo() {
 		return (this.highBits >>> 32) == 0x20010000L;
 	}
-
+	
 	/**
 	 * Extracts Teredo information from this address.<br>
 	 * Returns the server IPv4 address, client IPv4 address, and UDP port.<br>
@@ -623,7 +617,7 @@ public record Ipv6Address(long highBits, long lowBits, @Nullable String zoneId) 
 		int port = (int) ((this.lowBits >>> 32) & 0xFFFF) ^ 0xFFFF;
 		int clientIpv4 = ~((int) this.lowBits);
 		boolean isConeNat = (flags & TeredoInfo.CONE_NAT_FLAG) != 0;
-
+		
 		return Optional.of(new TeredoInfo(
 			new Ipv4Address(serverIpv4),
 			new Ipv4Address(clientIpv4),
@@ -632,7 +626,7 @@ public record Ipv6Address(long highBits, long lowBits, @Nullable String zoneId) 
 			isConeNat
 		));
 	}
-
+	
 	/**
 	 * Converts this address to an internet v6 address.<br>
 	 * @return An internet v6 address representing this address

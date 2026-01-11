@@ -46,12 +46,12 @@ public class IpParseException extends IllegalArgumentException {
 	 * The type of error that caused this exception.<br>
 	 */
 	private final @NonNull IpParseErrorType errorType;
-
+	
 	/**
 	 * The original input string that failed to parse, or null if not available.<br>
 	 */
 	private final @Nullable String input;
-
+	
 	/**
 	 * Constructs a new IP parse exception with no details.<br>
 	 * The error type defaults to {@link IpParseErrorType#UNKNOWN} and the input is null.
@@ -60,7 +60,7 @@ public class IpParseException extends IllegalArgumentException {
 		this.errorType = IpParseErrorType.UNKNOWN;
 		this.input = null;
 	}
-
+	
 	/**
 	 * Constructs a new IP parse exception with the specified message.<br>
 	 * The error type defaults to {@link IpParseErrorType#UNKNOWN} and the input is null.<br>
@@ -72,7 +72,7 @@ public class IpParseException extends IllegalArgumentException {
 		this.errorType = IpParseErrorType.UNKNOWN;
 		this.input = null;
 	}
-
+	
 	/**
 	 * Constructs a new IP parse exception with the specified message and cause.<br>
 	 * The error type defaults to {@link IpParseErrorType#UNKNOWN} and the input is null.<br>
@@ -85,7 +85,7 @@ public class IpParseException extends IllegalArgumentException {
 		this.errorType = IpParseErrorType.UNKNOWN;
 		this.input = null;
 	}
-
+	
 	/**
 	 * Constructs a new IP parse exception with the specified cause.<br>
 	 * The error type defaults to {@link IpParseErrorType#UNKNOWN} and the input is null.<br>
@@ -97,7 +97,7 @@ public class IpParseException extends IllegalArgumentException {
 		this.errorType = IpParseErrorType.UNKNOWN;
 		this.input = null;
 	}
-
+	
 	/**
 	 * Constructs a new IP parse exception with the specified error type.<br>
 	 * The input is null and no message is set.<br>
@@ -109,7 +109,7 @@ public class IpParseException extends IllegalArgumentException {
 		this.errorType = errorType != null ? errorType : IpParseErrorType.UNKNOWN;
 		this.input = null;
 	}
-
+	
 	/**
 	 * Constructs a new IP parse exception with the specified error type and input.<br>
 	 * No message is set, if the provided error type is null, it defaults to {@link IpParseErrorType#UNKNOWN}.<br>
@@ -121,7 +121,7 @@ public class IpParseException extends IllegalArgumentException {
 		this.errorType = errorType != null ? errorType : IpParseErrorType.UNKNOWN;
 		this.input = input;
 	}
-
+	
 	/**
 	 * Constructs a new IP parse exception with the specified message and error type.<br>
 	 * The input is null, if the provided error type is null, it defaults to {@link IpParseErrorType#UNKNOWN}.<br>
@@ -134,7 +134,7 @@ public class IpParseException extends IllegalArgumentException {
 		this.errorType = errorType != null ? errorType : IpParseErrorType.UNKNOWN;
 		this.input = null;
 	}
-
+	
 	/**
 	 * Constructs a new IP parse exception with the specified message, error type, and input.<br>
 	 * If the provided error type is null, it defaults to {@link IpParseErrorType#UNKNOWN}.<br>
@@ -148,7 +148,7 @@ public class IpParseException extends IllegalArgumentException {
 		this.errorType = errorType != null ? errorType : IpParseErrorType.UNKNOWN;
 		this.input = input;
 	}
-
+	
 	/**
 	 * Constructs a new IP parse exception with the specified message, cause, and error type.<br>
 	 * The input is null, if the provided error type is null, it defaults to {@link IpParseErrorType#UNKNOWN}.<br>
@@ -162,7 +162,7 @@ public class IpParseException extends IllegalArgumentException {
 		this.errorType = errorType != null ? errorType : IpParseErrorType.UNKNOWN;
 		this.input = null;
 	}
-
+	
 	/**
 	 * Constructs a new IP parse exception with the specified message, cause, error type, and input.<br>
 	 * If the provided error type is null, it defaults to {@link IpParseErrorType#UNKNOWN}.<br>
@@ -177,7 +177,7 @@ public class IpParseException extends IllegalArgumentException {
 		this.errorType = errorType != null ? errorType : IpParseErrorType.UNKNOWN;
 		this.input = input;
 	}
-
+	
 	/**
 	 * Returns the type of error that caused this exception.<br>
 	 * @return The error type, never null
@@ -185,7 +185,7 @@ public class IpParseException extends IllegalArgumentException {
 	public @NonNull IpParseErrorType errorType() {
 		return this.errorType;
 	}
-
+	
 	/**
 	 * Returns the original input string that failed to parse.<br>
 	 * @return The input string, or null if not available

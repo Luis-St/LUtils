@@ -52,68 +52,59 @@ import java.util.Objects;
  * @author Luis-St
  */
 public enum AddressType {
-
+	
 	/**
 	 * Unspecified address (0.0.0.0 for IPv4 or :: for IPv6).<br>
 	 * Used to indicate the absence of an address or to bind to all available interfaces.<br>
 	 */
 	UNSPECIFIED("0.0.0.0 or ::", false),
-
 	/**
 	 * Loopback address (127.0.0.0/8 for IPv4 or ::1 for IPv6).<br>
 	 * Used for communication within the local host.<br>
 	 */
 	LOOPBACK("127.0.0.0/8 or ::1", false),
-
 	/**
 	 * Private address as defined by RFC 1918 for IPv4 (10/8, 172.16/12, 192.168/16)
 	 * or Unique Local Address (ULA) for IPv6 (fc00::/7).<br>
 	 * Used for internal network communication and not routable on the public internet.<br>
 	 */
 	PRIVATE("RFC 1918 private addresses (10/8, 172.16/12, 192.168/16) or IPv6 ULA (fc00::/7)", false),
-
 	/**
 	 * Link-local address (169.254.0.0/16 for IPv4 or fe80::/10 for IPv6).<br>
 	 * Used for communication on a single network segment when no other address is available.<br>
 	 */
 	LINK_LOCAL("169.254.0.0/16 or fe80::/10", false),
-
 	/**
 	 * Multicast address (224.0.0.0/4 for IPv4 or ff00::/8 for IPv6).<br>
 	 * Used for one-to-many communication.<br>
 	 */
 	MULTICAST("224.0.0.0/4 or ff00::/8", false),
-
 	/**
 	 * Broadcast address (255.255.255.255 for IPv4 only).<br>
 	 * Used for one-to-all communication on a network segment.<br>
 	 */
 	BROADCAST("255.255.255.255 (IPv4 only)", false),
-
 	/**
 	 * Documentation address (192.0.2.0/24, 198.51.100.0/24, 203.0.113.0/24 for IPv4 or 2001:db8::/32 for IPv6).<br>
 	 * Reserved for use in documentation and examples.<br>
 	 */
 	DOCUMENTATION("192.0.2.0/24, 198.51.100.0/24, 203.0.113.0/24 or 2001:db8::/32", false),
-
 	/**
 	 * Shared address space as defined by RFC 6598 (100.64.0.0/10).<br>
 	 * Used for carrier-grade NAT deployments.<br>
 	 */
 	SHARED_ADDRESS_SPACE("100.64.0.0/10 (RFC 6598, carrier-grade NAT)", false),
-
 	/**
 	 * Global unicast address.<br>
 	 * Globally routable unicast addresses used for communication across the internet.<br>
 	 */
 	GLOBAL_UNICAST("Globally routable unicast addresses", true),
-
 	/**
 	 * Reserved address.<br>
 	 * Reserved for future use or special purposes.<br>
 	 */
 	RESERVED("Reserved for future use or special purposes", false);
-
+	
 	/**
 	 * The description of this address type.<br>
 	 */
@@ -122,7 +113,7 @@ public enum AddressType {
 	 * Whether this address type is globally routable.<br>
 	 */
 	private final boolean routable;
-
+	
 	/**
 	 * Constructs a new address type with the given description and routability.<br>
 	 *
@@ -134,7 +125,7 @@ public enum AddressType {
 		this.description = Objects.requireNonNull(description, "Description must not be null");
 		this.routable = routable;
 	}
-
+	
 	/**
 	 * Returns the description of this address type.<br>
 	 * @return The description
@@ -142,7 +133,7 @@ public enum AddressType {
 	public @NonNull String description() {
 		return this.description;
 	}
-
+	
 	/**
 	 * Returns whether this address type is globally routable.<br>
 	 * Only {@link #GLOBAL_UNICAST} addresses are globally routable.<br>

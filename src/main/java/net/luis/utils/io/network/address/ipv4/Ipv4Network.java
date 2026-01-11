@@ -21,7 +21,6 @@ package net.luis.utils.io.network.address.ipv4;
 import net.luis.utils.io.network.address.IpAddresses;
 import net.luis.utils.io.network.address.IpNetwork;
 import org.jspecify.annotations.NonNull;
-import org.jspecify.annotations.Nullable;
 
 import java.math.BigInteger;
 import java.util.*;
@@ -71,7 +70,7 @@ import java.util.stream.StreamSupport;
  * @param prefixLength The CIDR prefix length (0-32)
  */
 public record Ipv4Network(@NonNull Ipv4Address networkAddress, int prefixLength) implements IpNetwork<Ipv4Address, Ipv4Network> {
-
+	
 	/**
 	 * Constructs a new IPv4 network with the given network address and prefix length.<br>
 	 *
@@ -87,7 +86,7 @@ public record Ipv4Network(@NonNull Ipv4Address networkAddress, int prefixLength)
 			throw new IllegalArgumentException("Prefix length must be between 0 and 32, got: " + prefixLength);
 		}
 	}
-
+	
 	/**
 	 * Creates a new IPv4 network from an address and prefix length.<br>
 	 * The network address is calculated by applying the prefix mask to the given address.<br>
@@ -108,7 +107,7 @@ public record Ipv4Network(@NonNull Ipv4Address networkAddress, int prefixLength)
 		Ipv4Address networkAddr = mask.applyTo(address);
 		return new Ipv4Network(networkAddr, prefixLength);
 	}
-
+	
 	/**
 	 * Creates a new IPv4 network from an address and subnet mask.<br>
 	 * The network address is calculated by applying the subnet mask to the given address.<br>
@@ -125,7 +124,7 @@ public record Ipv4Network(@NonNull Ipv4Address networkAddress, int prefixLength)
 		Ipv4Address networkAddr = mask.applyTo(address);
 		return new Ipv4Network(networkAddr, mask.toPrefixLength());
 	}
-
+	
 	/**
 	 * Parses an IPv4 network from CIDR notation (e.g., "192.168.1.0/24").<br>
 	 *
@@ -138,7 +137,7 @@ public record Ipv4Network(@NonNull Ipv4Address networkAddress, int prefixLength)
 		Objects.requireNonNull(cidr, "CIDR must not be null");
 		return tryParse(cidr).orElseThrow(() -> new IllegalArgumentException("Invalid CIDR notation: " + cidr));
 	}
-
+	
 	/**
 	 * Attempts to parse an IPv4 network from CIDR notation (e.g., "192.168.1.0/24").<br>
 	 *
@@ -214,7 +213,7 @@ public record Ipv4Network(@NonNull Ipv4Address networkAddress, int prefixLength)
 		Objects.requireNonNull(other, "Other network must not be null");
 		return this.contains(other.networkAddress) || other.contains(this.networkAddress);
 	}
-
+	
 	@Override
 	public @NonNull List<Ipv4Network> split() {
 		if (this.prefixLength >= 32) {
@@ -222,7 +221,7 @@ public record Ipv4Network(@NonNull Ipv4Address networkAddress, int prefixLength)
 		}
 		int newPrefixLength = this.prefixLength + 1;
 		Ipv4Network first = new Ipv4Network(this.networkAddress, newPrefixLength);
-
+		
 		int hostBits = 32 - newPrefixLength;
 		int secondNetworkValue = this.networkAddress.value() | (1 << hostBits);
 		Ipv4Network second = new Ipv4Network(Ipv4Address.fromValue(secondNetworkValue), newPrefixLength);
@@ -245,25 +244,25 @@ public record Ipv4Network(@NonNull Ipv4Address networkAddress, int prefixLength)
 		if (newPrefixLength > 32) {
 			throw new IllegalArgumentException("Prefix length cannot exceed 32, got: " + newPrefixLength);
 		}
-
+		
 		int subnetCount = 1 << (newPrefixLength - this.prefixLength);
 		int hostBitsInNewSubnet = 32 - newPrefixLength;
-
+		
 		List<Ipv4Network> result = new ArrayList<>(subnetCount);
 		int baseValue = this.networkAddress.value();
-
+		
 		for (int i = 0; i < subnetCount; i++) {
 			int subnetValue = baseValue + (i << hostBitsInNewSubnet);
 			result.add(new Ipv4Network(Ipv4Address.fromValue(subnetValue), newPrefixLength));
 		}
 		return result;
 	}
-
+	
 	@Override
 	public @NonNull Iterator<Ipv4Address> iterator() {
 		return new Ipv4NetworkIterator(this.networkAddress, this.broadcastAddress());
 	}
-
+	
 	@Override
 	public @NonNull Stream<Ipv4Address> addressStream() {
 		Spliterator<Ipv4Address> spliterator = Spliterators.spliterator(
@@ -273,7 +272,7 @@ public record Ipv4Network(@NonNull Ipv4Address networkAddress, int prefixLength)
 		);
 		return StreamSupport.stream(spliterator, false);
 	}
-
+	
 	@Override
 	public @NonNull Iterator<Ipv4Address> hostIterator() {
 		if (this.prefixLength >= 31) {
@@ -284,7 +283,7 @@ public record Ipv4Network(@NonNull Ipv4Address networkAddress, int prefixLength)
 		Ipv4Address lastHost = this.broadcastAddress().previous().orElse(this.broadcastAddress());
 		return new Ipv4NetworkIterator(firstHost, lastHost);
 	}
-
+	
 	@Override
 	public @NonNull Stream<Ipv4Address> hostStream() {
 		long hostCount = this.hostCount().longValueExact();
@@ -296,7 +295,7 @@ public record Ipv4Network(@NonNull Ipv4Address networkAddress, int prefixLength)
 		);
 		return StreamSupport.stream(spliterator, false);
 	}
-
+	
 	@Override
 	public @NonNull BigInteger hostCount() {
 		if (this.prefixLength >= 31) {
@@ -304,14 +303,14 @@ public record Ipv4Network(@NonNull Ipv4Address networkAddress, int prefixLength)
 		}
 		return this.size().subtract(BigInteger.TWO);
 	}
-
+	
 	@Override
 	public boolean isCanonical() {
 		Ipv4SubnetMask mask = this.subnetMask();
 		Ipv4Address canonical = mask.applyTo(this.networkAddress);
 		return canonical.equals(this.networkAddress);
 	}
-
+	
 	@Override
 	public @NonNull Ipv4Network toCanonical() {
 		if (this.isCanonical()) {
@@ -319,10 +318,10 @@ public record Ipv4Network(@NonNull Ipv4Address networkAddress, int prefixLength)
 		}
 		return of(this.networkAddress, this.prefixLength);
 	}
-
+	
 	@Override
 	public @NonNull String toCidrNotation() {
-		return this.networkAddress.toString() + "/" + this.prefixLength;
+		return this.networkAddress + "/" + this.prefixLength;
 	}
 	
 	@Override
@@ -333,7 +332,7 @@ public record Ipv4Network(@NonNull Ipv4Address networkAddress, int prefixLength)
 		}
 		return Integer.compare(this.prefixLength, other.prefixLength);
 	}
-
+	
 	/**
 	 * Returns the subnet mask for this network.<br>
 	 * The subnet mask has the first {@code prefixLength} bits set to 1.<br>
@@ -343,7 +342,7 @@ public record Ipv4Network(@NonNull Ipv4Address networkAddress, int prefixLength)
 	public @NonNull Ipv4SubnetMask subnetMask() {
 		return Ipv4SubnetMask.fromPrefixLength(this.prefixLength);
 	}
-
+	
 	/**
 	 * Returns the wildcard mask for this network.<br>
 	 * The wildcard mask is the inverse of the subnet mask.<br>
@@ -353,7 +352,7 @@ public record Ipv4Network(@NonNull Ipv4Address networkAddress, int prefixLength)
 	public @NonNull Ipv4SubnetMask wildcardMask() {
 		return this.subnetMask().toWildcard();
 	}
-
+	
 	/**
 	 * Returns the first usable host address in this network.<br>
 	 * <p>
@@ -373,7 +372,7 @@ public record Ipv4Network(@NonNull Ipv4Address networkAddress, int prefixLength)
 		}
 		return this.networkAddress.next();
 	}
-
+	
 	/**
 	 * Returns the last usable host address in this network.<br>
 	 * <p>
@@ -393,12 +392,12 @@ public record Ipv4Network(@NonNull Ipv4Address networkAddress, int prefixLength)
 		}
 		return this.broadcastAddress().previous();
 	}
-
+	
 	@Override
 	public @NonNull String toString() {
 		return this.toCidrNotation();
 	}
-
+	
 	//region Inner class
 	
 	/**
@@ -420,7 +419,7 @@ public record Ipv4Network(@NonNull Ipv4Address networkAddress, int prefixLength)
 		 * Indicates if there are more addresses to iterate.<br>
 		 */
 		private boolean hasNext;
-
+		
 		/**
 		 * Creates a new iterator from the start address to the end address (inclusive).<br>
 		 *
@@ -433,12 +432,12 @@ public record Ipv4Network(@NonNull Ipv4Address networkAddress, int prefixLength)
 			this.endAddress = Objects.requireNonNull(endAddress, "End address must not be null");
 			this.hasNext = startAddress.compareTo(endAddress) <= 0;
 		}
-
+		
 		@Override
 		public boolean hasNext() {
 			return this.hasNext;
 		}
-
+		
 		@Override
 		public @NonNull Ipv4Address next() {
 			if (!this.hasNext) {

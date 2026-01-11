@@ -62,7 +62,7 @@ public record IpParseOptions(
 	boolean allowPortSuffix,
 	boolean normalize
 ) {
-
+	
 	/**
 	 * Default parsing options with sensible defaults for common use cases.<br>
 	 * <p>
@@ -81,7 +81,7 @@ public record IpParseOptions(
 	 * </ul>
 	 */
 	public static final IpParseOptions DEFAULT = new IpParseOptions(false, false, false, true, true, true, true, false, false);
-
+	
 	/**
 	 * Strict parsing options for RFC-compliant address parsing with normalization.<br>
 	 * <p>
@@ -100,7 +100,7 @@ public record IpParseOptions(
 	 * </ul>
 	 */
 	public static final IpParseOptions STRICT = new IpParseOptions(false, false, false, false, false, false, false, false, true);
-
+	
 	/**
 	 * Lenient parsing options that accept all supported formats.<br>
 	 * <p>

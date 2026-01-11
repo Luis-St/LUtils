@@ -53,7 +53,7 @@ import java.util.Objects;
  * @author Luis-St
  */
 public enum Ipv6MulticastScope {
-
+	
 	/**
 	 * Reserved scope value (0x0).<br>
 	 */
@@ -130,7 +130,7 @@ public enum Ipv6MulticastScope {
 	 * Used when the scope value is not in the valid range (0x0-0xF).<br>
 	 */
 	UNKNOWN(-1, "Unknown scope");
-
+	
 	/**
 	 * The numeric value of this scope (0x0-0xF or -1 for unknown).<br>
 	 */
@@ -139,7 +139,7 @@ public enum Ipv6MulticastScope {
 	 * A human-readable description of this scope.<br>
 	 */
 	private final String description;
-
+	
 	/**
 	 * Constructs a new multicast scope with the given value and description.<br>
 	 *
@@ -150,7 +150,7 @@ public enum Ipv6MulticastScope {
 		this.value = value;
 		this.description = Objects.requireNonNull(description, "Description must not be null");
 	}
-
+	
 	/**
 	 * Returns the multicast scope for the given numeric value.<br>
 	 *
@@ -165,7 +165,7 @@ public enum Ipv6MulticastScope {
 		}
 		return UNKNOWN;
 	}
-
+	
 	/**
 	 * Returns the numeric value of this scope.<br>
 	 * @return The scope value (0x0-0xF or -1 for unknown)
@@ -173,7 +173,7 @@ public enum Ipv6MulticastScope {
 	public int getValue() {
 		return this.value;
 	}
-
+	
 	/**
 	 * Returns the human-readable description of this scope.<br>
 	 * @return The scope description
@@ -181,7 +181,7 @@ public enum Ipv6MulticastScope {
 	public @NonNull String getDescription() {
 		return this.description;
 	}
-
+	
 	/**
 	 * Checks whether this scope is an assigned (non-reserved, non-unassigned) scope.<br>
 	 * @return {@code true} if this scope is assigned, {@code false} if it is reserved, unassigned, or unknown
@@ -192,7 +192,7 @@ public enum Ipv6MulticastScope {
 			default -> true;
 		};
 	}
-
+	
 	/**
 	 * Checks whether this scope is a well-known scope commonly used in practice.<br>
 	 * @return {@code true} if this is one of the well-known scopes ({@link #INTERFACE_LOCAL}, {@link #LINK_LOCAL}, {@link #SITE_LOCAL}, {@link #ORGANIZATION_LOCAL}, or {@link #GLOBAL})

@@ -66,19 +66,19 @@ import java.util.stream.Stream;
  * @param <S> The set type (self-referential)
  */
 public sealed interface IpSet<A extends IpAddress<A>, R extends IpRange<A, R, N>, N extends IpNetwork<A, N>, S extends IpSet<A, R, N, S>> permits Ipv4Set, Ipv6Set {
-
+	
 	/**
 	 * Checks if this set is empty.<br>
 	 * @return {@code true} if this set contains no addresses, {@code false} otherwise
 	 */
 	boolean isEmpty();
-
+	
 	/**
 	 * Returns the total number of addresses in this set.<br>
 	 * @return The total number of addresses
 	 */
 	@NonNull BigInteger size();
-
+	
 	/**
 	 * Checks if this set contains the specified address.<br>
 	 *
@@ -87,7 +87,7 @@ public sealed interface IpSet<A extends IpAddress<A>, R extends IpRange<A, R, N>
 	 * @throws NullPointerException If the address is null
 	 */
 	boolean containsAddress(@NonNull A address);
-
+	
 	/**
 	 * Checks if this set contains all addresses in the specified network.<br>
 	 *
@@ -96,7 +96,7 @@ public sealed interface IpSet<A extends IpAddress<A>, R extends IpRange<A, R, N>
 	 * @throws NullPointerException If the network is null
 	 */
 	boolean containsNetwork(@NonNull N network);
-
+	
 	/**
 	 * Checks if this set contains all addresses in the specified range.<br>
 	 *
@@ -105,7 +105,7 @@ public sealed interface IpSet<A extends IpAddress<A>, R extends IpRange<A, R, N>
 	 * @throws NullPointerException If the range is null
 	 */
 	boolean containsRange(@NonNull R range);
-
+	
 	/**
 	 * Checks if this set contains all addresses in the specified other set.<br>
 	 *
@@ -114,7 +114,7 @@ public sealed interface IpSet<A extends IpAddress<A>, R extends IpRange<A, R, N>
 	 * @throws NullPointerException If the other set is null
 	 */
 	boolean containsAll(@NonNull S other);
-
+	
 	/**
 	 * Returns a new set containing all addresses in this set or the other set.<br>
 	 *
@@ -123,7 +123,7 @@ public sealed interface IpSet<A extends IpAddress<A>, R extends IpRange<A, R, N>
 	 * @throws NullPointerException If the other set is null
 	 */
 	@NonNull S union(@NonNull S other);
-
+	
 	/**
 	 * Returns a new set containing only addresses present in both this set and the other set.<br>
 	 *
@@ -132,7 +132,7 @@ public sealed interface IpSet<A extends IpAddress<A>, R extends IpRange<A, R, N>
 	 * @throws NullPointerException If the other set is null
 	 */
 	@NonNull S intersection(@NonNull S other);
-
+	
 	/**
 	 * Returns a new set containing addresses in this set but not in the other set.<br>
 	 *
@@ -141,7 +141,7 @@ public sealed interface IpSet<A extends IpAddress<A>, R extends IpRange<A, R, N>
 	 * @throws NullPointerException If the other set is null
 	 */
 	@NonNull S difference(@NonNull S other);
-
+	
 	/**
 	 * Returns a new set containing addresses in either set but not in both.<br>
 	 * <p>
@@ -153,13 +153,13 @@ public sealed interface IpSet<A extends IpAddress<A>, R extends IpRange<A, R, N>
 	 * @throws NullPointerException If the other set is null
 	 */
 	@NonNull S symmetricDifference(@NonNull S other);
-
+	
 	/**
 	 * Returns a new set containing all addresses not in this set.<br>
 	 * @return A new set representing the complement of this set
 	 */
 	@NonNull S complement();
-
+	
 	/**
 	 * Returns a new set with the specified address added.<br>
 	 *
@@ -168,7 +168,7 @@ public sealed interface IpSet<A extends IpAddress<A>, R extends IpRange<A, R, N>
 	 * @throws NullPointerException If the address is null
 	 */
 	@NonNull S addAddress(@NonNull A address);
-
+	
 	/**
 	 * Returns a new set with all addresses in the specified network added.<br>
 	 *
@@ -177,7 +177,7 @@ public sealed interface IpSet<A extends IpAddress<A>, R extends IpRange<A, R, N>
 	 * @throws NullPointerException If the network is null
 	 */
 	@NonNull S addNetwork(@NonNull N network);
-
+	
 	/**
 	 * Returns a new set with all addresses in the specified range added.<br>
 	 *
@@ -186,7 +186,7 @@ public sealed interface IpSet<A extends IpAddress<A>, R extends IpRange<A, R, N>
 	 * @throws NullPointerException If the range is null
 	 */
 	@NonNull S addRange(@NonNull R range);
-
+	
 	/**
 	 * Returns a new set with the specified address removed.<br>
 	 *
@@ -195,7 +195,7 @@ public sealed interface IpSet<A extends IpAddress<A>, R extends IpRange<A, R, N>
 	 * @throws NullPointerException If the address is null
 	 */
 	@NonNull S removeAddress(@NonNull A address);
-
+	
 	/**
 	 * Returns a new set with all addresses in the specified network removed.<br>
 	 *
@@ -204,7 +204,7 @@ public sealed interface IpSet<A extends IpAddress<A>, R extends IpRange<A, R, N>
 	 * @throws NullPointerException If the network is null
 	 */
 	@NonNull S removeNetwork(@NonNull N network);
-
+	
 	/**
 	 * Returns a new set with all addresses in the specified range removed.<br>
 	 *
@@ -213,7 +213,7 @@ public sealed interface IpSet<A extends IpAddress<A>, R extends IpRange<A, R, N>
 	 * @throws NullPointerException If the range is null
 	 */
 	@NonNull S removeRange(@NonNull R range);
-
+	
 	/**
 	 * Returns a minimal list of ranges that cover all addresses in this set.<br>
 	 * <p>
@@ -223,7 +223,7 @@ public sealed interface IpSet<A extends IpAddress<A>, R extends IpRange<A, R, N>
 	 * @return A minimal list of ranges representing this set
 	 */
 	@NonNull List<R> toRanges();
-
+	
 	/**
 	 * Returns a minimal list of CIDR networks that cover all addresses in this set.<br>
 	 * <p>
@@ -233,7 +233,7 @@ public sealed interface IpSet<A extends IpAddress<A>, R extends IpRange<A, R, N>
 	 * @return A minimal list of CIDR networks covering this set
 	 */
 	@NonNull List<N> toNetworks();
-
+	
 	/**
 	 * Returns a list of CIDR networks that exactly cover all addresses in this set.<br>
 	 * <p>
@@ -243,13 +243,13 @@ public sealed interface IpSet<A extends IpAddress<A>, R extends IpRange<A, R, N>
 	 * @return A list of CIDR networks exactly representing this set
 	 */
 	@NonNull List<N> toExactNetworks();
-
+	
 	/**
 	 * Returns an iterator over the ranges in this set.<br>
 	 * @return An iterator over the ranges
 	 */
 	@NonNull Iterator<R> rangeIterator();
-
+	
 	/**
 	 * Returns a stream of the ranges in this set.<br>
 	 * @return A stream of the ranges

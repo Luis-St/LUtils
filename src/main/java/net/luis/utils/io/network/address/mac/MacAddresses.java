@@ -64,52 +64,45 @@ import java.util.regex.Pattern;
  * @author Luis-St
  */
 public final class MacAddresses {
-
+	
 	/**
 	 * Pattern for colon-separated MAC address format (e.g., "00:1A:2B:3C:4D:5E").<br>
 	 */
 	private static final Pattern COLON_PATTERN = Pattern.compile("^([0-9A-Fa-f]{2}:){5}[0-9A-Fa-f]{2}$");
-
 	/**
 	 * Pattern for dash-separated MAC address format (e.g., "00-1A-2B-3C-4D-5E").<br>
 	 */
 	private static final Pattern DASH_PATTERN = Pattern.compile("^([0-9A-Fa-f]{2}-){5}[0-9A-Fa-f]{2}$");
-
 	/**
 	 * Pattern for Cisco dot notation MAC address format (e.g., "001A.2B3C.4D5E").<br>
 	 */
 	private static final Pattern CISCO_PATTERN = Pattern.compile("^[0-9A-Fa-f]{4}\\.[0-9A-Fa-f]{4}\\.[0-9A-Fa-f]{4}$");
-
 	/**
 	 * Pattern for bare hexadecimal MAC address format (e.g., "001A2B3C4D5E").<br>
 	 */
 	private static final Pattern BARE_PATTERN = Pattern.compile("^[0-9A-Fa-f]{12}$");
-
 	/**
 	 * The number of octets in a MAC address.<br>
 	 */
 	private static final int OCTET_COUNT = 6;
-
 	/**
 	 * Secure random instance for generating random MAC addresses.<br>
 	 */
 	private static final SecureRandom RANDOM = new SecureRandom();
-
 	/**
 	 * Cached broadcast MAC address (FF:FF:FF:FF:FF:FF).<br>
 	 */
 	private static final MacAddress BROADCAST = MacAddress.of(0xFFFFFFFFFFFFL);
-
 	/**
 	 * Cached zero MAC address (00:00:00:00:00:00).<br>
 	 */
 	private static final MacAddress ZERO = MacAddress.of(0L);
-
+	
 	/**
 	 * Private constructor to prevent instantiation.<br>
 	 */
 	private MacAddresses() {}
-
+	
 	/**
 	 * Parses a MAC address from a string representation.<br>
 	 * This method supports multiple formats:
@@ -127,16 +120,16 @@ public final class MacAddresses {
 	 */
 	public static @NonNull MacAddress parse(@NonNull String address) {
 		Objects.requireNonNull(address, "Address must not be null");
-
+		
 		if (address.isEmpty()) {
 			throw new IpParseException("MAC address cannot be empty", IpParseErrorType.EMPTY_INPUT, address);
 		}
-
+		
 		String normalizedHex = normalizeToHex(address);
 		if (normalizedHex == null) {
 			throw new IpParseException("Invalid MAC address format: " + address, IpParseErrorType.INVALID_FORMAT, address);
 		}
-
+		
 		try {
 			long value = Long.parseLong(normalizedHex, 16);
 			return MacAddress.of(value);
@@ -144,7 +137,7 @@ public final class MacAddresses {
 			throw new IpParseException("Invalid MAC address format: " + address, e, IpParseErrorType.INVALID_FORMAT, address);
 		}
 	}
-
+	
 	/**
 	 * Attempts to parse a MAC address from a string representation.<br>
 	 * This method supports the same formats as {@link #parse(String)} but returns
@@ -157,12 +150,12 @@ public final class MacAddresses {
 		if (address == null || address.isEmpty()) {
 			return Optional.empty();
 		}
-
+		
 		String normalizedHex = normalizeToHex(address);
 		if (normalizedHex == null) {
 			return Optional.empty();
 		}
-
+		
 		try {
 			long value = Long.parseLong(normalizedHex, 16);
 			return Optional.of(MacAddress.of(value));
@@ -170,7 +163,7 @@ public final class MacAddresses {
 			return Optional.empty();
 		}
 	}
-
+	
 	/**
 	 * Checks if the given string is a valid MAC address.<br>
 	 * This method supports the same formats as {@link #parse(String)}.<br>
@@ -184,7 +177,7 @@ public final class MacAddresses {
 		}
 		return normalizeToHex(address) != null;
 	}
-
+	
 	/**
 	 * Normalizes a MAC address string to bare hexadecimal format.<br>
 	 * Returns null if the format is not recognized.<br>
@@ -198,21 +191,21 @@ public final class MacAddresses {
 		if (COLON_PATTERN.matcher(address).matches()) {
 			return address.replace(":", "");
 		}
-
+		
 		if (DASH_PATTERN.matcher(address).matches()) {
 			return address.replace("-", "");
 		}
-
+		
 		if (CISCO_PATTERN.matcher(address).matches()) {
 			return address.replace(".", "");
 		}
-
+		
 		if (BARE_PATTERN.matcher(address).matches()) {
 			return address;
 		}
 		return null;
 	}
-
+	
 	/**
 	 * Creates a MAC address from a 6-byte array.<br>
 	 *
@@ -226,14 +219,14 @@ public final class MacAddresses {
 		if (bytes.length != OCTET_COUNT) {
 			throw new IllegalArgumentException("MAC address must be exactly 6 bytes, got: " + bytes.length);
 		}
-
+		
 		long value = 0;
 		for (int i = 0; i < OCTET_COUNT; i++) {
 			value = (value << 8) | (bytes[i] & 0xFF);
 		}
 		return MacAddress.of(value);
 	}
-
+	
 	/**
 	 * Creates a MAC address from a 48-bit value stored in a long.<br>
 	 * Only the lower 48 bits of the long are used.<br>
@@ -244,7 +237,7 @@ public final class MacAddresses {
 	public static @NonNull MacAddress of(long value) {
 		return MacAddress.of(value & 0xFFFFFFFFFFFFL);
 	}
-
+	
 	/**
 	 * Creates a MAC address from six individual octets.<br>
 	 * Each octet must be in the range 0-255.<br>
@@ -265,7 +258,7 @@ public final class MacAddresses {
 		validateOctet(o3, 3);
 		validateOctet(o4, 4);
 		validateOctet(o5, 5);
-
+		
 		long value = ((long) (o0 & 0xFF) << 40)
 			| ((long) (o1 & 0xFF) << 32)
 			| ((long) (o2 & 0xFF) << 24)
@@ -274,7 +267,7 @@ public final class MacAddresses {
 			| (o5 & 0xFF);
 		return MacAddress.of(value);
 	}
-
+	
 	/**
 	 * Validates that an octet value is within the valid range (0-255).<br>
 	 *
@@ -287,7 +280,7 @@ public final class MacAddresses {
 			throw new IllegalArgumentException("Octet " + index + " out of range (0-255): " + value);
 		}
 	}
-
+	
 	/**
 	 * Returns the broadcast MAC address (FF:FF:FF:FF:FF:FF).<br>
 	 * The broadcast address is used to send frames to all devices on the network.
@@ -297,7 +290,7 @@ public final class MacAddresses {
 	public static @NonNull MacAddress broadcast() {
 		return BROADCAST;
 	}
-
+	
 	/**
 	 * Returns the zero MAC address (00:00:00:00:00:00).<br>
 	 * The zero address is often used as a placeholder or to indicate an unspecified address.
@@ -307,7 +300,7 @@ public final class MacAddresses {
 	public static @NonNull MacAddress zero() {
 		return ZERO;
 	}
-
+	
 	/**
 	 * Extracts a MAC address from an EUI-64 encoded IPv6 address.<br>
 	 * EUI-64 is a method of creating a 64-bit interface identifier from a 48-bit MAC address
@@ -325,7 +318,7 @@ public final class MacAddresses {
 		Objects.requireNonNull(address, "Address must not be null");
 		return address.extractMacAddress();
 	}
-
+	
 	/**
 	 * Generates a random locally-administered unicast MAC address.<br>
 	 * The locally-administered bit (bit 1 of the first octet) is set to 1, and the multicast bit (bit 0 of the first octet) is set to 0.<br>
@@ -340,11 +333,11 @@ public final class MacAddresses {
 	public static @NonNull MacAddress random() {
 		byte[] bytes = new byte[OCTET_COUNT];
 		RANDOM.nextBytes(bytes);
-
+		
 		bytes[0] = (byte) ((bytes[0] | 0x02) & 0xFE);
 		return of(bytes);
 	}
-
+	
 	/**
 	 * Generates a random locally-administered multicast MAC address.<br>
 	 * The locally-administered bit (bit 1 of the first octet) is set to 1,<br>
@@ -355,7 +348,7 @@ public final class MacAddresses {
 	public static @NonNull MacAddress randomMulticast() {
 		byte[] bytes = new byte[OCTET_COUNT];
 		RANDOM.nextBytes(bytes);
-
+		
 		bytes[0] = (byte) (bytes[0] | 0x03);
 		return of(bytes);
 	}

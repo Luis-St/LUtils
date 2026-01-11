@@ -57,7 +57,7 @@ import java.util.concurrent.*;
  * @author Luis-St
  */
 public final class HostnameResolver {
-
+	
 	/**
 	 * Shared executor for async DNS operations.<br>
 	 * Uses daemon threads to avoid blocking JVM shutdown.<br>
@@ -71,12 +71,12 @@ public final class HostnameResolver {
 		t.setDaemon(true);
 		return t;
 	});
-
+	
 	/**
 	 * Private constructor to prevent instantiation.<br>
 	 */
 	private HostnameResolver() {}
-
+	
 	/**
 	 * Resolves all IP addresses associated with the given hostname.<br>
 	 * This method performs a DNS lookup and returns all A (IPv4) and AAAA (IPv6) records for the specified hostname.<br>
@@ -108,7 +108,7 @@ public final class HostnameResolver {
 			return List.of();
 		}
 	}
-
+	
 	/**
 	 * Resolves all IPv4 addresses associated with the given hostname.<br>
 	 * This method performs a DNS lookup and returns only the A (IPv4) records for the specified hostname.<br>
@@ -134,7 +134,7 @@ public final class HostnameResolver {
 			return List.of();
 		}
 	}
-
+	
 	/**
 	 * Resolves all IPv6 addresses associated with the given hostname.<br>
 	 * This method performs a DNS lookup and returns only the AAAA (IPv6) records for the specified hostname.<br>
@@ -160,7 +160,7 @@ public final class HostnameResolver {
 			return List.of();
 		}
 	}
-
+	
 	/**
 	 * Resolves the first IPv4 address associated with the given hostname.<br>
 	 * This method performs a DNS lookup and returns the first A (IPv4) record for the specified hostname.<br>
@@ -173,7 +173,7 @@ public final class HostnameResolver {
 		List<Ipv4Address> addresses = resolveAllIpv4(hostname);
 		return addresses.isEmpty() ? Optional.empty() : Optional.of(addresses.getFirst());
 	}
-
+	
 	/**
 	 * Resolves the first IPv6 address associated with the given hostname.<br>
 	 * This method performs a DNS lookup and returns the first AAAA (IPv6) record for the specified hostname.<br>
@@ -186,7 +186,7 @@ public final class HostnameResolver {
 		List<Ipv6Address> addresses = resolveAllIpv6(hostname);
 		return addresses.isEmpty() ? Optional.empty() : Optional.of(addresses.getFirst());
 	}
-
+	
 	/**
 	 * Resolves the first IP address (of any type) associated with the given hostname.<br>
 	 * This method performs a DNS lookup and returns the first address found, which may be either IPv4 or IPv6.<br>
@@ -211,7 +211,7 @@ public final class HostnameResolver {
 			return Optional.empty();
 		}
 	}
-
+	
 	/**
 	 * Asynchronously resolves all IP addresses associated with the given hostname.<br>
 	 * This method returns a {@link CompletableFuture} that will complete with all A (IPv4) and AAAA (IPv6) records for the specified hostname.<br>
@@ -224,7 +224,7 @@ public final class HostnameResolver {
 		Objects.requireNonNull(hostname, "Hostname must not be null");
 		return CompletableFuture.supplyAsync(() -> resolveAll(hostname), dnsExecutor);
 	}
-
+	
 	/**
 	 * Asynchronously resolves the first IP address (of any type) associated with the given hostname.<br>
 	 * This method returns a {@link CompletableFuture} that will complete with the first address found, which may be either IPv4 or IPv6.<br>
@@ -237,7 +237,7 @@ public final class HostnameResolver {
 		Objects.requireNonNull(hostname, "Hostname must not be null");
 		return CompletableFuture.supplyAsync(() -> resolve(hostname), dnsExecutor);
 	}
-
+	
 	/**
 	 * Performs a reverse DNS lookup for the given IP address.<br>
 	 * This method queries the DNS system to find the PTR record associated with the IP address and returns the corresponding hostname.<br>
@@ -265,7 +265,7 @@ public final class HostnameResolver {
 			return Optional.empty();
 		}
 	}
-
+	
 	/**
 	 * Performs a reverse DNS lookup for the given IP address with a timeout.<br>
 	 * This method queries the DNS system to find the PTR record associated with the IP address, but will abort and return empty if the lookup takes longer
@@ -285,7 +285,7 @@ public final class HostnameResolver {
 			return Optional.empty();
 		}
 	}
-
+	
 	/**
 	 * Asynchronously performs a reverse DNS lookup for the given IP address.<br>
 	 * This method returns a {@link CompletableFuture} that will complete with the resolved hostname when the DNS lookup finishes.<br>
@@ -298,7 +298,7 @@ public final class HostnameResolver {
 		Objects.requireNonNull(address, "Address must not be null");
 		return CompletableFuture.supplyAsync(() -> reverseResolve(address), dnsExecutor);
 	}
-
+	
 	/**
 	 * Performs a reverse DNS lookup for the given IP address bytes.<br>
 	 * This method accepts raw IP address bytes (4 bytes for IPv4, 16 bytes for IPv6) and performs a reverse DNS lookup.<br>
@@ -325,7 +325,7 @@ public final class HostnameResolver {
 			return Optional.empty();
 		}
 	}
-
+	
 	/**
 	 * Checks if the given hostname is resolvable to at least one IP address.<br>
 	 * This method performs a DNS lookup and returns whether any A or AAAA records exist for the hostname.<br>
@@ -343,7 +343,7 @@ public final class HostnameResolver {
 			return false;
 		}
 	}
-
+	
 	/**
 	 * Gets the canonical hostname for the given IP address.<br>
 	 * The canonical hostname is the fully qualified domain name (FQDN) associated with the IP address, as determined by a reverse DNS lookup.<br>
@@ -367,7 +367,7 @@ public final class HostnameResolver {
 			return Optional.empty();
 		}
 	}
-
+	
 	/**
 	 * Shuts down the DNS executor service.<br>
 	 * This method should be called during application shutdown to cleanly terminate the background thread pool used for async DNS operations.<br>

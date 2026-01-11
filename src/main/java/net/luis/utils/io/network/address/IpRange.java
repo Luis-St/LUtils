@@ -64,25 +64,25 @@ import java.util.stream.Stream;
  * @param <N> The network type for CIDR decomposition
  */
 public sealed interface IpRange<A extends IpAddress<A>, R extends IpRange<A, R, N>, N extends IpNetwork<A, N>> extends Iterable<A>, Comparable<R> permits Ipv4Range, Ipv6Range {
-
+	
 	/**
 	 * Returns the first address in this range (inclusive).<br>
 	 * @return The start address of this range
 	 */
 	@NonNull A start();
-
+	
 	/**
 	 * Returns the last address in this range (inclusive).<br>
 	 * @return The end address of this range
 	 */
 	@NonNull A end();
-
+	
 	/**
 	 * Returns the number of addresses in this range.<br>
 	 * @return The number of addresses as a BigInteger
 	 */
 	@NonNull BigInteger size();
-
+	
 	/**
 	 * Checks if this range contains the specified address.<br>
 	 *
@@ -91,7 +91,7 @@ public sealed interface IpRange<A extends IpAddress<A>, R extends IpRange<A, R, 
 	 * @throws NullPointerException If the address is null
 	 */
 	boolean containsAddress(@NonNull A address);
-
+	
 	/**
 	 * Checks if this range completely contains another range.<br>
 	 *
@@ -100,7 +100,7 @@ public sealed interface IpRange<A extends IpAddress<A>, R extends IpRange<A, R, 
 	 * @throws NullPointerException If the other range is null
 	 */
 	boolean containsRange(@NonNull R other);
-
+	
 	/**
 	 * Checks if this range overlaps with another range.<br>
 	 *
@@ -109,7 +109,7 @@ public sealed interface IpRange<A extends IpAddress<A>, R extends IpRange<A, R, 
 	 * @throws NullPointerException If the other range is null
 	 */
 	boolean overlaps(@NonNull R other);
-
+	
 	/**
 	 * Returns the intersection of this range with another range.<br>
 	 *
@@ -118,7 +118,7 @@ public sealed interface IpRange<A extends IpAddress<A>, R extends IpRange<A, R, 
 	 * @throws NullPointerException If the other range is null
 	 */
 	@NonNull Optional<R> intersection(@NonNull R other);
-
+	
 	/**
 	 * Returns the difference between this range and another range.<br>
 	 * The result contains all addresses that are in this range but not in the other range.<br>
@@ -128,7 +128,7 @@ public sealed interface IpRange<A extends IpAddress<A>, R extends IpRange<A, R, 
 	 * @throws NullPointerException If the other range is null
 	 */
 	@NonNull List<R> difference(@NonNull R other);
-
+	
 	/**
 	 * Attempts to merge this range with another range if they are contiguous or overlapping.<br>
 	 *
@@ -137,7 +137,7 @@ public sealed interface IpRange<A extends IpAddress<A>, R extends IpRange<A, R, 
 	 * @throws NullPointerException If the other range is null
 	 */
 	@NonNull Optional<R> merge(@NonNull R other);
-
+	
 	/**
 	 * Returns an iterator over all addresses in this range.<br>
 	 * <p>
@@ -149,7 +149,7 @@ public sealed interface IpRange<A extends IpAddress<A>, R extends IpRange<A, R, 
 	 */
 	@Override
 	@NonNull Iterator<A> iterator();
-
+	
 	/**
 	 * Returns a stream of all addresses in this range.<br>
 	 * <p>
@@ -160,25 +160,25 @@ public sealed interface IpRange<A extends IpAddress<A>, R extends IpRange<A, R, 
 	 * @return A stream of all addresses in this range
 	 */
 	@NonNull Stream<A> addressStream();
-
+	
 	/**
 	 * Decomposes this range into a minimal set of CIDR networks that cover all addresses.<br>
 	 * @return A list of CIDR networks that together cover exactly this range
 	 */
 	@NonNull List<N> toCidrNetworks();
-
+	
 	/**
 	 * Checks if this range contains only a single address.<br>
 	 * @return {@code true} if start equals end, {@code false} otherwise
 	 */
 	boolean isSingleAddress();
-
+	
 	/**
 	 * Checks if this range can be represented as a single CIDR network.<br>
 	 * @return {@code true} if this range aligns to CIDR boundaries, {@code false} otherwise
 	 */
 	boolean isNetwork();
-
+	
 	/**
 	 * Converts this range to a network if it can be represented as a single CIDR block.<br>
 	 * @return An optional containing the network, or empty if the range does not align to CIDR boundaries

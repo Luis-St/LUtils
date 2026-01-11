@@ -58,32 +58,32 @@ import java.util.Optional;
  * @author Luis-St
  */
 public record Ipv4SubnetMask(int value, boolean isWildcard) {
-
+	
 	/**
 	 * Subnet mask with prefix length 0 (0.0.0.0).<br>
 	 */
 	public static final Ipv4SubnetMask MASK_0 = fromPrefixLength(0);
-
+	
 	/**
 	 * Subnet mask with prefix length 8 (255.0.0.0).<br>
 	 */
 	public static final Ipv4SubnetMask MASK_8 = fromPrefixLength(8);
-
+	
 	/**
 	 * Subnet mask with prefix length 16 (255.255.0.0).<br>
 	 */
 	public static final Ipv4SubnetMask MASK_16 = fromPrefixLength(16);
-
+	
 	/**
 	 * Subnet mask with prefix length 24 (255.255.255.0).<br>
 	 */
 	public static final Ipv4SubnetMask MASK_24 = fromPrefixLength(24);
-
+	
 	/**
 	 * Subnet mask with prefix length 32 (255.255.255.255).<br>
 	 */
 	public static final Ipv4SubnetMask MASK_32 = fromPrefixLength(32);
-
+	
 	/**
 	 * Constructs a new IPv4 subnet mask with the given value and wildcard flag.<br>
 	 *
@@ -97,7 +97,7 @@ public record Ipv4SubnetMask(int value, boolean isWildcard) {
 			throw new IllegalArgumentException("Subnet mask must be contiguous (no holes): " + toDottedDecimalInternal(value));
 		}
 	}
-
+	
 	/**
 	 * Creates a subnet mask from the given prefix length.<br>
 	 *
@@ -113,7 +113,7 @@ public record Ipv4SubnetMask(int value, boolean isWildcard) {
 		int mask = prefixLength == 0 ? 0 : (0xFFFFFFFF << (32 - prefixLength));
 		return new Ipv4SubnetMask(mask, false);
 	}
-
+	
 	/**
 	 * Parses a subnet mask from dotted decimal notation (e.g., "255.255.255.0").<br>
 	 *
@@ -126,7 +126,7 @@ public record Ipv4SubnetMask(int value, boolean isWildcard) {
 		Objects.requireNonNull(mask, "Mask must not be null");
 		return tryParse(mask).orElseThrow(() -> new IllegalArgumentException("Invalid subnet mask: " + mask));
 	}
-
+	
 	/**
 	 * Attempts to parse a subnet mask from dotted decimal notation (e.g., "255.255.255.0").<br>
 	 *
@@ -148,7 +148,7 @@ public record Ipv4SubnetMask(int value, boolean isWildcard) {
 			return Optional.empty();
 		}
 	}
-
+	
 	/**
 	 * Creates a subnet mask from a wildcard mask string (e.g., "0.0.0.255").<br>
 	 *
@@ -161,7 +161,7 @@ public record Ipv4SubnetMask(int value, boolean isWildcard) {
 		Objects.requireNonNull(wildcard, "Wildcard must not be null");
 		return new Ipv4SubnetMask(parseOctets(wildcard), true);
 	}
-
+	
 	/**
 	 * Creates a subnet mask from a wildcard mask value.<br>
 	 *
@@ -172,9 +172,9 @@ public record Ipv4SubnetMask(int value, boolean isWildcard) {
 	public static @NonNull Ipv4SubnetMask fromWildcard(int value) {
 		return new Ipv4SubnetMask(value, true);
 	}
-
+	
 	//region Static helper methods
-
+	
 	/**
 	 * Parses octets from a dotted decimal string.<br>
 	 *
@@ -207,7 +207,7 @@ public record Ipv4SubnetMask(int value, boolean isWildcard) {
 		}
 		return result;
 	}
-
+	
 	/**
 	 * Checks if a mask value represents a contiguous subnet mask.<br>
 	 * A contiguous subnet mask has all 1-bits followed by all 0-bits.<br>
@@ -227,7 +227,7 @@ public record Ipv4SubnetMask(int value, boolean isWildcard) {
 		int check = inverted + 1;
 		return (check & inverted) == 0;
 	}
-
+	
 	/**
 	 * Converts a mask value to dotted decimal string.<br>
 	 *
@@ -238,7 +238,7 @@ public record Ipv4SubnetMask(int value, boolean isWildcard) {
 		return ((value >>> 24) & 0xFF) + "." + ((value >>> 16) & 0xFF) + "." + ((value >>> 8) & 0xFF) + "." + (value & 0xFF);
 	}
 	//endregion
-
+	
 	/**
 	 * Converts this mask to its equivalent prefix length (CIDR notation).<br>
 	 * For example, 255.255.255.0 returns 24.<br>
@@ -249,7 +249,7 @@ public record Ipv4SubnetMask(int value, boolean isWildcard) {
 		int maskValue = this.isWildcard ? ~this.value : this.value;
 		return Integer.bitCount(maskValue);
 	}
-
+	
 	/**
 	 * Converts this subnet mask to its equivalent wildcard mask.<br>
 	 * <p>
@@ -265,7 +265,7 @@ public record Ipv4SubnetMask(int value, boolean isWildcard) {
 		}
 		return new Ipv4SubnetMask(~this.value, true);
 	}
-
+	
 	/**
 	 * Converts this wildcard mask to its equivalent subnet mask.<br>
 	 * If this mask is already a subnet mask (not wildcard), it is returned as-is.<br>
@@ -278,7 +278,7 @@ public record Ipv4SubnetMask(int value, boolean isWildcard) {
 		}
 		return new Ipv4SubnetMask(~this.value, false);
 	}
-
+	
 	/**
 	 * Returns the number of host addresses available with this subnet mask.<br>
 	 * <p>
@@ -298,7 +298,7 @@ public record Ipv4SubnetMask(int value, boolean isWildcard) {
 			default -> (1L << hostBits) - 2;
 		};
 	}
-
+	
 	/**
 	 * Applies this mask to an address to get the network address.<br>
 	 * This performs a bitwise AND operation between the address and the mask.<br>
@@ -314,7 +314,7 @@ public record Ipv4SubnetMask(int value, boolean isWildcard) {
 		int networkValue = address.value() & maskValue;
 		return Ipv4Address.fromValue(networkValue);
 	}
-
+	
 	/**
 	 * Extracts the host portion of an address using this mask.<br>
 	 * This performs a bitwise AND operation between the address and the inverted mask.<br>
@@ -330,7 +330,7 @@ public record Ipv4SubnetMask(int value, boolean isWildcard) {
 		int hostValue = address.value() & ~maskValue;
 		return Ipv4Address.fromValue(hostValue);
 	}
-
+	
 	/**
 	 * Returns the byte representation of this mask in network byte order (big-endian).<br>
 	 * @return A new 4-byte array containing the mask value
@@ -343,7 +343,7 @@ public record Ipv4SubnetMask(int value, boolean isWildcard) {
 			(byte) (this.value & 0xFF)
 		};
 	}
-
+	
 	/**
 	 * Returns the dotted decimal representation of this mask (e.g., "255.255.255.0").<br>
 	 * @return The dotted decimal string representation
@@ -351,7 +351,7 @@ public record Ipv4SubnetMask(int value, boolean isWildcard) {
 	public @NonNull String toDottedDecimal() {
 		return toDottedDecimalInternal(this.value);
 	}
-
+	
 	/**
 	 * Returns the octet value at the specified index.<br>
 	 *

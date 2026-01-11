@@ -18,7 +18,8 @@
 
 package net.luis.utils.io.network.address.ipv6;
 
-import net.luis.utils.io.network.address.*;
+import net.luis.utils.io.network.address.IpAddresses;
+import net.luis.utils.io.network.address.IpNetwork;
 import net.luis.utils.io.network.address.ipv4.Ipv4Network;
 import org.jspecify.annotations.NonNull;
 
@@ -63,7 +64,7 @@ import java.util.stream.StreamSupport;
  * @param prefixLength The CIDR prefix length (0-128)
  */
 public record Ipv6Network(@NonNull Ipv6Address networkAddress, int prefixLength) implements IpNetwork<Ipv6Address, Ipv6Network> {
-
+	
 	/**
 	 * Constructs a new IPv6 network with the given network address and prefix length.<br>
 	 *
@@ -78,7 +79,7 @@ public record Ipv6Network(@NonNull Ipv6Address networkAddress, int prefixLength)
 			throw new IllegalArgumentException("Prefix length must be between 0 and 128, got: " + prefixLength);
 		}
 	}
-
+	
 	/**
 	 * Creates a new IPv6 network from an address and prefix length.<br>
 	 * The network address is calculated by applying the prefix mask to the given address.<br>
@@ -97,7 +98,7 @@ public record Ipv6Network(@NonNull Ipv6Address networkAddress, int prefixLength)
 		Ipv6Address networkAddr = applyPrefixMask(address, prefixLength);
 		return new Ipv6Network(networkAddr, prefixLength);
 	}
-
+	
 	/**
 	 * Parses an IPv6 network from CIDR notation (e.g., "2001:db8::/32").<br>
 	 *
@@ -110,7 +111,7 @@ public record Ipv6Network(@NonNull Ipv6Address networkAddress, int prefixLength)
 		Objects.requireNonNull(cidr, "CIDR must not be null");
 		return tryParse(cidr).orElseThrow(() -> new IllegalArgumentException("Invalid CIDR notation: " + cidr));
 	}
-
+	
 	/**
 	 * Attempts to parse an IPv6 network from CIDR notation (e.g., "2001:db8::/32").<br>
 	 *
@@ -143,7 +144,7 @@ public record Ipv6Network(@NonNull Ipv6Address networkAddress, int prefixLength)
 			return Optional.empty();
 		}
 	}
-
+	
 	/**
 	 * Applies a prefix mask to an IPv6 address, clearing host bits.<br>
 	 *
@@ -159,10 +160,10 @@ public record Ipv6Network(@NonNull Ipv6Address networkAddress, int prefixLength)
 		if (prefixLength == 128) {
 			return address.withoutZoneId();
 		}
-
+		
 		long highBits = address.highBits();
 		long lowBits = address.lowBits();
-
+		
 		if (prefixLength <= 64) {
 			int hostBits = 64 - prefixLength;
 			long highMask = -1L << hostBits;
@@ -180,13 +181,13 @@ public record Ipv6Network(@NonNull Ipv6Address networkAddress, int prefixLength)
 	public @NonNull Ipv6Address broadcastAddress() {
 		throw new UnsupportedOperationException("IPv6 does not have broadcast addresses");
 	}
-
+	
 	@Override
 	public @NonNull BigInteger size() {
 		int hostBits = 128 - this.prefixLength;
 		return BigInteger.ONE.shiftLeft(hostBits);
 	}
-
+	
 	@Override
 	public boolean contains(@NonNull Ipv6Address address) {
 		Objects.requireNonNull(address, "Address must not be null");
@@ -194,7 +195,7 @@ public record Ipv6Network(@NonNull Ipv6Address networkAddress, int prefixLength)
 		Ipv6Address maskedAddress = applyPrefixMask(address, this.prefixLength);
 		return maskedAddress.highBits() == this.networkAddress.highBits() && maskedAddress.lowBits() == this.networkAddress.lowBits();
 	}
-
+	
 	@Override
 	public boolean contains(@NonNull Ipv6Network other) {
 		Objects.requireNonNull(other, "Other network must not be null");
@@ -204,13 +205,13 @@ public record Ipv6Network(@NonNull Ipv6Address networkAddress, int prefixLength)
 		}
 		return this.contains(other.networkAddress);
 	}
-
+	
 	@Override
 	public boolean overlaps(@NonNull Ipv6Network other) {
 		Objects.requireNonNull(other, "Other network must not be null");
 		return this.contains(other.networkAddress) || other.contains(this.networkAddress);
 	}
-
+	
 	@Override
 	public @NonNull List<Ipv6Network> split() {
 		if (this.prefixLength >= 128) {
@@ -218,12 +219,12 @@ public record Ipv6Network(@NonNull Ipv6Address networkAddress, int prefixLength)
 		}
 		int newPrefixLength = this.prefixLength + 1;
 		Ipv6Network first = new Ipv6Network(this.networkAddress, newPrefixLength);
-
+		
 		Ipv6Address secondNetworkAddr = setBitAt(this.networkAddress, this.prefixLength);
 		Ipv6Network second = new Ipv6Network(secondNetworkAddr, newPrefixLength);
 		return List.of(first, second);
 	}
-
+	
 	/**
 	 * Sets a specific bit in an IPv6 address.<br>
 	 *
@@ -234,7 +235,7 @@ public record Ipv6Network(@NonNull Ipv6Address networkAddress, int prefixLength)
 	private static @NonNull Ipv6Address setBitAt(@NonNull Ipv6Address address, int bitIndex) {
 		long highBits = address.highBits();
 		long lowBits = address.lowBits();
-
+		
 		if (bitIndex < 64) {
 			highBits |= (1L << (63 - bitIndex));
 		} else {
@@ -242,7 +243,7 @@ public record Ipv6Network(@NonNull Ipv6Address networkAddress, int prefixLength)
 		}
 		return new Ipv6Address(highBits, lowBits, null);
 	}
-
+	
 	@Override
 	public @NonNull Optional<Ipv6Network> supernet() {
 		if (this.prefixLength == 0) {
@@ -250,7 +251,7 @@ public record Ipv6Network(@NonNull Ipv6Address networkAddress, int prefixLength)
 		}
 		return Optional.of(of(this.networkAddress, this.prefixLength - 1));
 	}
-
+	
 	@Override
 	@SuppressWarnings("ExtractMethodRecommender")
 	public @NonNull List<Ipv6Network> subnets(int newPrefixLength) {
@@ -260,15 +261,15 @@ public record Ipv6Network(@NonNull Ipv6Address networkAddress, int prefixLength)
 		if (newPrefixLength > 128) {
 			throw new IllegalArgumentException("Prefix length cannot exceed 128, got: " + newPrefixLength);
 		}
-
+		
 		int prefixDifference = newPrefixLength - this.prefixLength;
 		if (prefixDifference > 20) {
 			throw new IllegalArgumentException("Cannot generate more than 2^20 subnets. Requested prefix difference: " + prefixDifference);
 		}
-
+		
 		int subnetCount = 1 << prefixDifference;
 		List<Ipv6Network> result = new ArrayList<>(subnetCount);
-
+		
 		BigInteger baseValue = this.networkAddress.toBigInteger();
 		BigInteger increment = BigInteger.ONE.shiftLeft(128 - newPrefixLength);
 		for (int i = 0; i < subnetCount; i++) {
@@ -278,7 +279,7 @@ public record Ipv6Network(@NonNull Ipv6Address networkAddress, int prefixLength)
 		}
 		return result;
 	}
-
+	
 	/**
 	 * Converts a BigInteger to an Ipv6Address.<br>
 	 *
@@ -288,11 +289,11 @@ public record Ipv6Network(@NonNull Ipv6Address networkAddress, int prefixLength)
 	private static @NonNull Ipv6Address bigIntegerToIpv6Address(@NonNull BigInteger value) {
 		byte[] bytes = value.toByteArray();
 		byte[] addressBytes = new byte[16];
-
+		
 		int srcOffset = Math.max(0, bytes.length - 16);
 		int destOffset = Math.max(0, 16 - bytes.length);
 		int length = Math.min(bytes.length, 16);
-
+		
 		System.arraycopy(bytes, srcOffset, addressBytes, destOffset, length);
 		long highBits = 0;
 		long lowBits = 0;
@@ -304,7 +305,7 @@ public record Ipv6Network(@NonNull Ipv6Address networkAddress, int prefixLength)
 		}
 		return new Ipv6Address(highBits, lowBits, null);
 	}
-
+	
 	@Override
 	public @NonNull Iterator<Ipv6Address> iterator() {
 		return new Ipv6NetworkIterator(this.networkAddress, this.lastHost());
@@ -315,7 +316,7 @@ public record Ipv6Network(@NonNull Ipv6Address networkAddress, int prefixLength)
 	public @NonNull Stream<Ipv6Address> addressStream() {
 		BigInteger size = this.size();
 		long streamSize = size.compareTo(BigInteger.valueOf(Long.MAX_VALUE)) > 0 ? Long.MAX_VALUE : size.longValueExact();
-
+		
 		Spliterator<Ipv6Address> spliterator = Spliterators.spliterator(
 			this.iterator(),
 			streamSize,
@@ -338,13 +339,13 @@ public record Ipv6Network(@NonNull Ipv6Address networkAddress, int prefixLength)
 	public @NonNull BigInteger hostCount() {
 		throw new UnsupportedOperationException("IPv6 does not have reserved host addresses, all addresses are usable hosts");
 	}
-
+	
 	@Override
 	public boolean isCanonical() {
 		Ipv6Address canonical = applyPrefixMask(this.networkAddress, this.prefixLength);
 		return canonical.highBits() == this.networkAddress.highBits() && canonical.lowBits() == this.networkAddress.lowBits();
 	}
-
+	
 	@Override
 	public @NonNull Ipv6Network toCanonical() {
 		if (this.isCanonical()) {
@@ -352,12 +353,12 @@ public record Ipv6Network(@NonNull Ipv6Address networkAddress, int prefixLength)
 		}
 		return of(this.networkAddress, this.prefixLength);
 	}
-
+	
 	@Override
 	public @NonNull String toCidrNotation() {
 		return formatIpv6Address(this.networkAddress) + "/" + this.prefixLength;
 	}
-
+	
 	/**
 	 * Formats an IPv6 address in compressed notation.<br>
 	 *
@@ -371,7 +372,7 @@ public record Ipv6Network(@NonNull Ipv6Address networkAddress, int prefixLength)
 		for (int i = 0; i < 8; i++) {
 			hextets[i] = address.getHextet(i);
 		}
-
+		
 		int bestStart = -1;
 		int bestLength = 0;
 		int currentStart = -1;
@@ -397,7 +398,7 @@ public record Ipv6Network(@NonNull Ipv6Address networkAddress, int prefixLength)
 			bestStart = currentStart;
 			bestLength = currentLength;
 		}
-
+		
 		StringBuilder sb = new StringBuilder();
 		for (int i = 0; i < 8; i++) {
 			if (bestStart != -1 && i >= bestStart && i < bestStart + bestLength) {
@@ -423,7 +424,7 @@ public record Ipv6Network(@NonNull Ipv6Address networkAddress, int prefixLength)
 		}
 		return Integer.compare(this.prefixLength, other.prefixLength);
 	}
-
+	
 	/**
 	 * Returns the first usable host address in this network.<br>
 	 * For IPv6, this is simply the network address since IPv6 doesn't reserve the first address.<br>
@@ -433,7 +434,7 @@ public record Ipv6Network(@NonNull Ipv6Address networkAddress, int prefixLength)
 	public @NonNull Ipv6Address firstHost() {
 		return null;
 	}
-
+	
 	/**
 	 * Returns the last usable host address in this network.<br>
 	 * For IPv6, this is the last address since IPv6 doesn't reserve a broadcast address.<br>
@@ -443,7 +444,7 @@ public record Ipv6Network(@NonNull Ipv6Address networkAddress, int prefixLength)
 	public @NonNull Ipv6Address lastHost() {
 		return null;
 	}
-
+	
 	/**
 	 * Checks if this network is a standard /64 subnet.<br>
 	 * A /64 is the standard prefix length for IPv6 subnets and is required for SLAAC (Stateless Address Autoconfiguration) to work.<br>
@@ -453,7 +454,7 @@ public record Ipv6Network(@NonNull Ipv6Address networkAddress, int prefixLength)
 	public boolean isStandardSubnet() {
 		return this.prefixLength == 64;
 	}
-
+	
 	/**
 	 * Checks if this network represents a single host (/128).<br>
 	 * @return {@code true} if this is a /128 network, {@code false} otherwise
@@ -461,14 +462,14 @@ public record Ipv6Network(@NonNull Ipv6Address networkAddress, int prefixLength)
 	public boolean isSingleHost() {
 		return this.prefixLength == 128;
 	}
-
+	
 	@Override
 	public @NonNull String toString() {
 		return this.toCidrNotation();
 	}
-
+	
 	//region Inner classes
-
+	
 	/**
 	 * Iterator implementation for iterating over addresses in an IPv6 network.<br>
 	 */
@@ -486,7 +487,7 @@ public record Ipv6Network(@NonNull Ipv6Address networkAddress, int prefixLength)
 		 * Indicates if there are more addresses to iterate.<br>
 		 */
 		private boolean hasNext;
-
+		
 		/**
 		 * Creates a new iterator from the start address to the end address (inclusive).<br>
 		 *
@@ -499,12 +500,12 @@ public record Ipv6Network(@NonNull Ipv6Address networkAddress, int prefixLength)
 			this.endAddress = Objects.requireNonNull(endAddress, "End address must not be null");
 			this.hasNext = startAddress.compareTo(endAddress) <= 0;
 		}
-
+		
 		@Override
 		public boolean hasNext() {
 			return this.hasNext;
 		}
-
+		
 		@Override
 		public @NonNull Ipv6Address next() {
 			if (!this.hasNext) {

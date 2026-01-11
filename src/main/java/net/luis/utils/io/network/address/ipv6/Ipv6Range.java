@@ -57,7 +57,7 @@ import java.util.stream.StreamSupport;
  * @param end The last address in the range (inclusive, without zone ID)
  */
 public record Ipv6Range(@NonNull Ipv6Address start, @NonNull Ipv6Address end) implements IpRange<Ipv6Address, Ipv6Range, Ipv6Network> {
-
+	
 	/**
 	 * Constructs a new IPv6 range with the given start and end addresses.<br>
 	 * Zone IDs are stripped from both addresses as they are not relevant for range comparisons.
@@ -77,7 +77,7 @@ public record Ipv6Range(@NonNull Ipv6Address start, @NonNull Ipv6Address end) im
 			throw new IllegalArgumentException("Start address must not be greater than end address: " + start + " > " + end);
 		}
 	}
-
+	
 	/**
 	 * Creates a new IPv6 range from the given start and end addresses.<br>
 	 * Zone IDs are stripped from both addresses.<br>
@@ -91,7 +91,7 @@ public record Ipv6Range(@NonNull Ipv6Address start, @NonNull Ipv6Address end) im
 	public static @NonNull Ipv6Range of(@NonNull Ipv6Address start, @NonNull Ipv6Address end) {
 		return new Ipv6Range(start, end);
 	}
-
+	
 	/**
 	 * Creates a single-address range containing only the given address.<br>
 	 * The zone ID is stripped from the address.<br>
@@ -105,12 +105,12 @@ public record Ipv6Range(@NonNull Ipv6Address start, @NonNull Ipv6Address end) im
 		Ipv6Address stripped = address.withoutZoneId();
 		return new Ipv6Range(stripped, stripped);
 	}
-
+	
 	@Override
 	public @NonNull BigInteger size() {
 		return this.end.toBigInteger().subtract(this.start.toBigInteger()).add(BigInteger.ONE);
 	}
-
+	
 	@Override
 	public boolean containsAddress(@NonNull Ipv6Address address) {
 		Objects.requireNonNull(address, "Address must not be null");
@@ -123,13 +123,13 @@ public record Ipv6Range(@NonNull Ipv6Address start, @NonNull Ipv6Address end) im
 		Objects.requireNonNull(other, "Other range must not be null");
 		return this.start.compareTo(other.start) <= 0 && this.end.compareTo(other.end) >= 0;
 	}
-
+	
 	@Override
 	public boolean overlaps(@NonNull Ipv6Range other) {
 		Objects.requireNonNull(other, "Other range must not be null");
 		return this.start.compareTo(other.end) <= 0 && this.end.compareTo(other.start) >= 0;
 	}
-
+	
 	@Override
 	public @NonNull Optional<Ipv6Range> intersection(@NonNull Ipv6Range other) {
 		Objects.requireNonNull(other, "Other range must not be null");
@@ -141,7 +141,7 @@ public record Ipv6Range(@NonNull Ipv6Address start, @NonNull Ipv6Address end) im
 		Ipv6Address newEnd = this.end.compareTo(other.end) <= 0 ? this.end : other.end;
 		return Optional.of(new Ipv6Range(newStart, newEnd));
 	}
-
+	
 	@Override
 	public @NonNull List<Ipv6Range> difference(@NonNull Ipv6Range other) {
 		Objects.requireNonNull(other, "Other range must not be null");
@@ -165,7 +165,7 @@ public record Ipv6Range(@NonNull Ipv6Address start, @NonNull Ipv6Address end) im
 		}
 		return result;
 	}
-
+	
 	@Override
 	public @NonNull Optional<Ipv6Range> merge(@NonNull Ipv6Range other) {
 		Objects.requireNonNull(other, "Other range must not be null");
@@ -185,18 +185,18 @@ public record Ipv6Range(@NonNull Ipv6Address start, @NonNull Ipv6Address end) im
 		Ipv6Address newEnd = this.end.compareTo(other.end) >= 0 ? this.end : other.end;
 		return Optional.of(new Ipv6Range(newStart, newEnd));
 	}
-
+	
 	@Override
 	public @NonNull Iterator<Ipv6Address> iterator() {
 		return new Ipv6RangeIterator(this.start, this.end);
 	}
-
+	
 	@Override
 	@SuppressWarnings("DuplicatedCode")
 	public @NonNull Stream<Ipv6Address> addressStream() {
 		BigInteger size = this.size();
 		long estimatedSize = size.compareTo(BigInteger.valueOf(Long.MAX_VALUE)) > 0 ? Long.MAX_VALUE : size.longValueExact();
-
+		
 		Spliterator<Ipv6Address> spliterator = Spliterators.spliterator(
 			this.iterator(),
 			estimatedSize,
@@ -204,24 +204,24 @@ public record Ipv6Range(@NonNull Ipv6Address start, @NonNull Ipv6Address end) im
 		);
 		return StreamSupport.stream(spliterator, false);
 	}
-
+	
 	@Override
 	public @NonNull List<Ipv6Network> toCidrNetworks() {
 		List<Ipv6Network> networks = new ArrayList<>();
 		BigInteger currentValue = this.start.toBigInteger();
 		BigInteger endValue = this.end.toBigInteger();
-
+		
 		while (currentValue.compareTo(endValue) <= 0) {
 			int prefixLength = findOptimalPrefixLength(currentValue, endValue);
 			Ipv6Address networkAddr = bigIntegerToIpv6(currentValue);
 			networks.add(Ipv6Network.of(networkAddr, prefixLength));
-
+			
 			BigInteger blockSize = BigInteger.ONE.shiftLeft(128 - prefixLength);
 			currentValue = currentValue.add(blockSize);
 		}
 		return networks;
 	}
-
+	
 	/**
 	 * Finds the optimal prefix length for a CIDR block starting at the given value.<br>
 	 *
@@ -234,21 +234,21 @@ public record Ipv6Range(@NonNull Ipv6Address start, @NonNull Ipv6Address end) im
 		Objects.requireNonNull(startValue, "Start value must not be null");
 		Objects.requireNonNull(endValue, "End value must not be null");
 		BigInteger remaining = endValue.subtract(startValue).add(BigInteger.ONE);
-
+		
 		for (int prefixLength = 128; prefixLength >= 0; prefixLength--) {
 			BigInteger blockSize = BigInteger.ONE.shiftLeft(128 - prefixLength);
-
+			
 			if (!startValue.mod(blockSize).equals(BigInteger.ZERO)) {
 				continue;
 			}
-
+			
 			if (blockSize.compareTo(remaining) <= 0) {
 				return prefixLength;
 			}
 		}
 		return 128;
 	}
-
+	
 	/**
 	 * Converts a BigInteger to an IPv6 address.<br>
 	 *
@@ -260,13 +260,13 @@ public record Ipv6Range(@NonNull Ipv6Address start, @NonNull Ipv6Address end) im
 		Objects.requireNonNull(value, "Value must not be null");
 		byte[] bytes = value.toByteArray();
 		byte[] addressBytes = new byte[16];
-
+		
 		if (bytes.length <= 16) {
 			System.arraycopy(bytes, 0, addressBytes, 16 - bytes.length, bytes.length);
 		} else {
 			System.arraycopy(bytes, bytes.length - 16, addressBytes, 0, 16);
 		}
-
+		
 		long highBits = 0;
 		for (int i = 0; i < 8; i++) {
 			highBits = (highBits << 8) | (addressBytes[i] & 0xFFL);
@@ -277,50 +277,50 @@ public record Ipv6Range(@NonNull Ipv6Address start, @NonNull Ipv6Address end) im
 		}
 		return new Ipv6Address(highBits, lowBits);
 	}
-
+	
 	@Override
 	public boolean isSingleAddress() {
 		return this.start.equals(this.end);
 	}
-
+	
 	@Override
 	public boolean isNetwork() {
 		BigInteger startValue = this.start.toBigInteger();
 		BigInteger endValue = this.end.toBigInteger();
 		BigInteger size = this.size();
-
+		
 		if (size.bitCount() != 1) {
 			return false;
 		}
-
+		
 		int hostBits = size.bitLength() - 1;
 		int prefixLength = 128 - hostBits;
-
+		
 		if (prefixLength < 0 || prefixLength > 128) {
 			return false;
 		}
-
+		
 		BigInteger blockSize = BigInteger.ONE.shiftLeft(hostBits);
 		if (!startValue.mod(blockSize).equals(BigInteger.ZERO)) {
 			return false;
 		}
-
+		
 		BigInteger expectedEnd = startValue.add(blockSize).subtract(BigInteger.ONE);
 		return endValue.equals(expectedEnd);
 	}
-
+	
 	@Override
 	public @NonNull Optional<Ipv6Network> toNetwork() {
 		if (!this.isNetwork()) {
 			return Optional.empty();
 		}
-
+		
 		BigInteger size = this.size();
 		int hostBits = size.bitLength() - 1;
 		int prefixLength = 128 - hostBits;
 		return Optional.of(Ipv6Network.of(this.start, prefixLength));
 	}
-
+	
 	@Override
 	public int compareTo(@NonNull Ipv6Range other) {
 		int startCompare = this.start.compareTo(other.start);
@@ -329,7 +329,7 @@ public record Ipv6Range(@NonNull Ipv6Address start, @NonNull Ipv6Address end) im
 		}
 		return this.end.compareTo(other.end);
 	}
-
+	
 	@Override
 	public @NonNull String toString() {
 		if (this.isSingleAddress()) {
@@ -337,9 +337,9 @@ public record Ipv6Range(@NonNull Ipv6Address start, @NonNull Ipv6Address end) im
 		}
 		return this.start + "-" + this.end;
 	}
-
+	
 	//region Inner classes
-
+	
 	/**
 	 * Iterator implementation for iterating over addresses in an IPv6 range.<br>
 	 *
@@ -359,7 +359,7 @@ public record Ipv6Range(@NonNull Ipv6Address start, @NonNull Ipv6Address end) im
 		 * Indicates if there are more addresses to iterate.<br>
 		 */
 		private boolean hasNext;
-
+		
 		/**
 		 * Creates a new iterator from the start address to the end address (inclusive).
 		 *
@@ -372,12 +372,12 @@ public record Ipv6Range(@NonNull Ipv6Address start, @NonNull Ipv6Address end) im
 			this.endAddress = Objects.requireNonNull(endAddress, "End address must not be null");
 			this.hasNext = startAddress.compareTo(endAddress) <= 0;
 		}
-
+		
 		@Override
 		public boolean hasNext() {
 			return this.hasNext;
 		}
-
+		
 		@Override
 		public @NonNull Ipv6Address next() {
 			if (!this.hasNext) {
