@@ -86,7 +86,12 @@ public record Ipv6Address(long highBits, long lowBits, @Nullable String zoneId) 
 	 * The loopback address (::1), used for localhost communication.<br>
 	 */
 	public static final Ipv6Address LOOPBACK = new Ipv6Address(0L, 1L, null);
-	
+	/**
+	 * The maximum IPv6 address (ffff:ffff:ffff:ffff:ffff:ffff:ffff:ffff).<br>
+	 * All 128 bits are set to 1.<br>
+	 */
+	public static final Ipv6Address MAX = new Ipv6Address(-1L, -1L, null);
+
 	/**
 	 * Constructs a new IPv6 address without a zone identifier.
 	 *

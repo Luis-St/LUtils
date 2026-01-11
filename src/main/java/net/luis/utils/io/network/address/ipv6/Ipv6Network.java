@@ -308,7 +308,37 @@ public record Ipv6Network(@NonNull Ipv6Address networkAddress, int prefixLength)
 	
 	@Override
 	public @NonNull Iterator<Ipv6Address> iterator() {
-		return new Ipv6NetworkIterator(this.networkAddress, this.lastHost());
+		return new Ipv6NetworkIterator(this.networkAddress, this.lastAddress());
+	}
+
+	/**
+	 * Returns the last address in this network.<br>
+	 * This is the highest address within the network range, calculated by setting all host bits to 1.<br>
+	 *
+	 * @return The last address in the network
+	 */
+	public @NonNull Ipv6Address lastAddress() {
+		if (this.prefixLength == 128) {
+			return this.networkAddress;
+		}
+		if (this.prefixLength == 0) {
+			return Ipv6Address.MAX;
+		}
+
+		long highBits = this.networkAddress.highBits();
+		long lowBits = this.networkAddress.lowBits();
+
+		if (this.prefixLength <= 64) {
+			int hostBits = 64 - this.prefixLength;
+			long hostMask = (1L << hostBits) - 1;
+			highBits |= hostMask;
+			lowBits = -1L;
+		} else {
+			int hostBits = 128 - this.prefixLength;
+			long hostMask = (1L << hostBits) - 1;
+			lowBits |= hostMask;
+		}
+		return new Ipv6Address(highBits, lowBits, null);
 	}
 	
 	@Override
@@ -426,26 +456,6 @@ public record Ipv6Network(@NonNull Ipv6Address networkAddress, int prefixLength)
 	}
 	
 	/**
-	 * Returns the first usable host address in this network.<br>
-	 * For IPv6, this is simply the network address since IPv6 doesn't reserve the first address.<br>
-	 *
-	 * @return The first usable host address
-	 */
-	public @NonNull Ipv6Address firstHost() {
-		return null;
-	}
-	
-	/**
-	 * Returns the last usable host address in this network.<br>
-	 * For IPv6, this is the last address since IPv6 doesn't reserve a broadcast address.<br>
-	 *
-	 * @return The last usable host address
-	 */
-	public @NonNull Ipv6Address lastHost() {
-		return null;
-	}
-	
-	/**
 	 * Checks if this network is a standard /64 subnet.<br>
 	 * A /64 is the standard prefix length for IPv6 subnets and is required for SLAAC (Stateless Address Autoconfiguration) to work.<br>
 	 *
@@ -472,6 +482,8 @@ public record Ipv6Network(@NonNull Ipv6Address networkAddress, int prefixLength)
 	
 	/**
 	 * Iterator implementation for iterating over addresses in an IPv6 network.<br>
+	 *
+	 * @author Luis-St
 	 */
 	private static final class Ipv6NetworkIterator implements Iterator<Ipv6Address> {
 		
