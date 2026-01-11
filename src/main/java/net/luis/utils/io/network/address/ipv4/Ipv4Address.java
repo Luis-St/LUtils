@@ -399,7 +399,7 @@ public record Ipv4Address(int value) implements IpAddress<Ipv4Address> {
 	}
 
 	/**
-	 * Converts this IP address to a {@link java.net.Inet4Address}.<br>
+	 * Converts this IP address to a {@link Inet4Address}.<br>
 	 * @return An ipv4 address representing this IP address
 	 */
 	public @NonNull Inet4Address toInet4Address() {
