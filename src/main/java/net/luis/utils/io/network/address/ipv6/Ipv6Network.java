@@ -388,7 +388,17 @@ public record Ipv6Network(@NonNull Ipv6Address networkAddress, int prefixLength)
 	public @NonNull String toCidrNotation() {
 		return formatIpv6Address(this.networkAddress) + "/" + this.prefixLength;
 	}
-	
+
+	/**
+	 * Converts this network to an equivalent range covering all addresses in the network.<br>
+	 * The range starts at the network address and ends at the last address.<br>
+	 *
+	 * @return A new IPv6 range covering all addresses in this network
+	 */
+	public @NonNull Ipv6Range toRange() {
+		return Ipv6Range.fromNetwork(this);
+	}
+
 	/**
 	 * Formats an IPv6 address in compressed notation.<br>
 	 *

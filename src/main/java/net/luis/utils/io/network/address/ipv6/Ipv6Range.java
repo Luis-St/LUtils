@@ -105,7 +105,19 @@ public record Ipv6Range(@NonNull Ipv6Address start, @NonNull Ipv6Address end) im
 		Ipv6Address stripped = address.withoutZoneId();
 		return new Ipv6Range(stripped, stripped);
 	}
-	
+
+	/**
+	 * Creates a range from a network, covering all addresses in the network.<br>
+	 *
+	 * @param network The network to create a range from
+	 * @return A new IPv6 range covering all addresses in the network
+	 * @throws NullPointerException If network is null
+	 */
+	public static @NonNull Ipv6Range fromNetwork(@NonNull Ipv6Network network) {
+		Objects.requireNonNull(network, "Network must not be null");
+		return new Ipv6Range(network.networkAddress(), network.lastAddress());
+	}
+
 	@Override
 	public @NonNull BigInteger size() {
 		return this.end.toBigInteger().subtract(this.start.toBigInteger()).add(BigInteger.ONE);

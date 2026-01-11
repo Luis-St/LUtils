@@ -323,7 +323,17 @@ public record Ipv4Network(@NonNull Ipv4Address networkAddress, int prefixLength)
 	public @NonNull String toCidrNotation() {
 		return this.networkAddress + "/" + this.prefixLength;
 	}
-	
+
+	/**
+	 * Converts this network to an equivalent range covering all addresses in the network.<br>
+	 * The range starts at the network address and ends at the broadcast address.<br>
+	 *
+	 * @return A new IPv4 range covering all addresses in this network
+	 */
+	public @NonNull Ipv4Range toRange() {
+		return Ipv4Range.fromNetwork(this);
+	}
+
 	@Override
 	public int compareTo(@NonNull Ipv4Network other) {
 		int addressCompare = this.networkAddress.compareTo(other.networkAddress);
