@@ -141,9 +141,11 @@ public record Ipv4Address(int value) implements IpAddress<Ipv4Address> {
 	 *
 	 * @param bytes The byte array representing the address
 	 * @return An ipv4 address with the specified bytes
+	 * @throws NullPointerException If the byte array is null
 	 * @throws IllegalArgumentException If the byte array is not exactly 4 bytes long
 	 */
 	public static @NonNull Ipv4Address fromBytes(byte @NonNull [] bytes) {
+		Objects.requireNonNull(bytes, "Byte array must not be null");
 		if (bytes.length != 4) {
 			throw new IllegalArgumentException("Byte array must be exactly 4 bytes long");
 		}

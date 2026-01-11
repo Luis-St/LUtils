@@ -52,6 +52,11 @@ import java.util.stream.Stream;
  * List<Ipv4Network> networks = range.toCidrNetworks();
  * }</pre>
  *
+ * @see IpAddress
+ * @see IpNetwork
+ * @see Ipv4Range
+ * @see Ipv6Range
+ *
  * @author Luis-St
  *
  * @param <A> The address type

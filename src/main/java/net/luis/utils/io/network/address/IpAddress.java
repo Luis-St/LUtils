@@ -57,7 +57,13 @@ import java.util.concurrent.TimeUnit;
  *     case Ipv6Address ipv6 -> System.out.println("IPv6: " + ipv6);
  * }
  * }</pre>
- * 
+ *
+ * @see IpNetwork
+ * @see IpRange
+ * @see IpSet
+ * @see Ipv4Address
+ * @see Ipv6Address
+ *
  * @author Luis-St
  * 
  * @param <T> The concrete type of the IP address (self-referential for type safety)

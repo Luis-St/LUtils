@@ -54,6 +54,10 @@ import java.util.stream.Stream;
  * }
  * }</pre>
  *
+ * @see IpAddress
+ * @see Ipv4Set
+ * @see Ipv6Set
+ *
  * @author Luis-St
  *
  * @param <A> The address type

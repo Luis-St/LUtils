@@ -39,7 +39,12 @@ import java.util.stream.Stream;
  *     For example, a /24 network contains 256 addresses, while a /8 contains over 16 million.
  * </p>
  *
- *  @author Luis-St
+ * @see IpAddress
+ * @see IpRange
+ * @see Ipv4Network
+ * @see Ipv6Network
+ *
+ * @author Luis-St
  *
  * @param <A> The address type (Ipv4Address or Ipv6Address)
  * @param <N> The network type (self-referential for type safety)
@@ -59,6 +64,7 @@ public sealed interface IpNetwork<A extends IpAddress<A>, N extends IpNetwork<A,
 	 * For example, in 192.168.1.0/24, the broadcast address is 192.168.1.255.<br>
 	 *
 	 * @return The broadcast address
+	 * @throws UnsupportedOperationException If the address type does not support broadcast addresses (e.g., IPv6)
 	 */
 	@NonNull A broadcastAddress();
 
@@ -173,6 +179,7 @@ public sealed interface IpNetwork<A extends IpAddress<A>, N extends IpNetwork<A,
 	 * </p>
 	 *
 	 * @return An iterator over usable host addresses
+	 * @throws UnsupportedOperationException If the address type does not support broadcast addresses (e.g., IPv6)
 	 */
 	@NonNull Iterator<A> hostIterator();
 
@@ -184,6 +191,7 @@ public sealed interface IpNetwork<A extends IpAddress<A>, N extends IpNetwork<A,
 	 * </p>
 	 *
 	 * @return A stream of usable host addresses
+	 * @throws UnsupportedOperationException If the address type does not support broadcast addresses (e.g., IPv6)
 	 */
 	@NonNull Stream<A> hostStream();
 
@@ -195,6 +203,7 @@ public sealed interface IpNetwork<A extends IpAddress<A>, N extends IpNetwork<A,
 	 * </p>
 	 *
 	 * @return The number of usable host addresses
+	 * @throws UnsupportedOperationException If the address type does not support broadcast addresses (e.g., IPv6)
 	 */
 	@NonNull BigInteger hostCount();
 
