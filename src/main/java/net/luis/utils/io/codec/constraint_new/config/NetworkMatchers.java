@@ -55,9 +55,10 @@ public final class NetworkMatchers {
 	 * @param value The port value to validate
 	 * @param inRange The port range constraint as a pair of ((min, max), negated)
 	 * @return A successful result if the constraint is satisfied or not present
+	 * @throws NullPointerException If any parameter is null
 	 */
 	public static @NonNull Result<Void> matchPortRange(int value, @NonNull Optional<Pair<Pair<Integer, Integer>, Boolean>> inRange) {
-		Objects.requireNonNull(inRange, "InRange constraint must not be null");
+		Objects.requireNonNull(inRange, "Port in range constraint must not be null");
 		if (inRange.isEmpty()) {
 			return Result.success();
 		}
@@ -81,9 +82,10 @@ public final class NetworkMatchers {
 	 * @param port The port value to validate
 	 * @param type The port type enum constraint config
 	 * @return A successful result if the constraint is satisfied or not present
+	 * @throws NullPointerException If any parameter is null
 	 */
 	public static @NonNull Result<Void> matchPortType(int port, @NonNull Optional<EnumConstraintConfig<PortRange>> type) {
-		Objects.requireNonNull(type, "Type constraint must not be null");
+		Objects.requireNonNull(type, "Port type constraint must not be null");
 		if (type.isEmpty()) {
 			return Result.success();
 		}
@@ -105,8 +107,8 @@ public final class NetworkMatchers {
 	 * @throws NullPointerException If any parameter is null
 	 */
 	public static @NonNull Result<Void> matchIpVersion(@NonNull String value, @NonNull Optional<EnumConstraintConfig<IpVersion>> ipVersion) {
-		Objects.requireNonNull(value, "Value must not be null");
-		Objects.requireNonNull(ipVersion, "IP version constraint must not be null");
+		Objects.requireNonNull(value, "Ip address must not be null");
+		Objects.requireNonNull(ipVersion, "Ip version constraint must not be null");
 		if (ipVersion.isEmpty()) {
 			return Result.success();
 		}
@@ -133,10 +135,11 @@ public final class NetworkMatchers {
 	 * @param value The host value to validate
 	 * @param ipType The IP address type enum constraint config
 	 * @return A successful result if the constraint is satisfied or not present
+	 * @throws NullPointerException If any parameter is null
 	 */
 	public static @NonNull Result<Void> matchIpType(@NonNull String value, @NonNull Optional<EnumConstraintConfig<IpAddressType>> ipType) {
-		Objects.requireNonNull(value, "Value must not be null");
-		Objects.requireNonNull(ipType, "IP type constraint must not be null");
+		Objects.requireNonNull(value, "Ip address must not be null");
+		Objects.requireNonNull(ipType, "Ip type constraint must not be null");
 		if (ipType.isEmpty()) {
 			return Result.success();
 		}
@@ -155,10 +158,11 @@ public final class NetworkMatchers {
 	 * @param value The host value to validate
 	 * @param inAnySubnet The subnet constraint as a pair of (CIDRs, negated)
 	 * @return A successful result if the constraint is satisfied or not present
+	 * @throws NullPointerException If any parameter is null
 	 */
 	public static @NonNull Result<Void> matchInAnySubnet(@NonNull String value, @NonNull Optional<Pair<Set<String>, Boolean>> inAnySubnet) {
-		Objects.requireNonNull(value, "Value must not be null");
-		Objects.requireNonNull(inAnySubnet, "InAnySubnet constraint must not be null");
+		Objects.requireNonNull(value, "Ip address must not be null");
+		Objects.requireNonNull(inAnySubnet, "In any subnet constraint must not be null");
 		if (inAnySubnet.isEmpty()) {
 			return Result.success();
 		}
@@ -173,9 +177,10 @@ public final class NetworkMatchers {
 	 * @param value The host value to validate
 	 * @param domain The domain string constraint config
 	 * @return A successful result if the constraint is satisfied or not present
+	 * @throws NullPointerException If any parameter is null
 	 */
 	public static @NonNull Result<Void> matchDomainConfig(@NonNull String value, @NonNull Optional<StringConstraintConfig> domain) {
-		Objects.requireNonNull(value, "Value must not be null");
+		Objects.requireNonNull(value, "Domain must not be null");
 		Objects.requireNonNull(domain, "Domain constraint must not be null");
 		if (domain.isEmpty()) {
 			return Result.success();
@@ -194,10 +199,11 @@ public final class NetworkMatchers {
 	 * @param value The host value to validate
 	 * @param rootDomain The root domain constraint flag
 	 * @return A successful result if the constraint is satisfied or not present
+	 * @throws NullPointerException If any parameter is null
 	 */
 	public static @NonNull Result<Void> matchRootDomain(@NonNull String value, @NonNull Optional<Unit> rootDomain) {
-		Objects.requireNonNull(value, "Value must not be null");
-		Objects.requireNonNull(rootDomain, "RootDomain constraint must not be null");
+		Objects.requireNonNull(value, "Domain must not be null");
+		Objects.requireNonNull(rootDomain, "Root domain constraint must not be null");
 		if (rootDomain.isEmpty()) {
 			return Result.success();
 		}
@@ -215,10 +221,11 @@ public final class NetworkMatchers {
 	 * @param value The host value to validate
 	 * @param subDomain The subdomain constraint flag
 	 * @return A successful result if the constraint is satisfied or not present
+	 * @throws NullPointerException If any parameter is null
 	 */
 	public static @NonNull Result<Void> matchSubDomain(@NonNull String value, @NonNull Optional<Unit> subDomain) {
-		Objects.requireNonNull(value, "Value must not be null");
-		Objects.requireNonNull(subDomain, "SubDomain constraint must not be null");
+		Objects.requireNonNull(value, "Domain must not be null");
+		Objects.requireNonNull(subDomain, "Sub domain constraint must not be null");
 		if (subDomain.isEmpty()) {
 			return Result.success();
 		}
@@ -235,8 +242,11 @@ public final class NetworkMatchers {
 	 *
 	 * @param value The string to check
 	 * @return true if the string is a valid IPv4 address
+	 * @throws NullPointerException If any parameter is null
 	 */
 	private static boolean isValidIpv4(@NonNull String value) {
+		Objects.requireNonNull(value, "Ip address must not be null");
+		
 		String[] parts = value.split("\\.");
 		if (parts.length != 4) {
 			return false;
@@ -260,8 +270,11 @@ public final class NetworkMatchers {
 	 *
 	 * @param value The string to check
 	 * @return true if the string is a valid IPv6 address
+	 * @throws NullPointerException If any parameter is null
 	 */
 	private static boolean isValidIpv6(@NonNull String value) {
+		Objects.requireNonNull(value, "Ip address must not be null");
+		
 		if (value.contains("::")) {
 			String[] parts = value.split("::");
 			if (parts.length > 2) {
@@ -298,10 +311,11 @@ public final class NetworkMatchers {
 	 * @param value The path to validate
 	 * @param canonical The canonical constraint flag
 	 * @return A successful result if the constraint is satisfied or not present
+	 * @throws NullPointerException If any parameter is null
 	 */
-	public static @NonNull Result<Void> matchCanonical(@NonNull Path value, @NonNull Optional<Unit> canonical) {
-		Objects.requireNonNull(value, "Value must not be null");
-		Objects.requireNonNull(canonical, "Canonical constraint must not be null");
+	public static @NonNull Result<Void> matchPathCanonical(@NonNull Path value, @NonNull Optional<Unit> canonical) {
+		Objects.requireNonNull(value, "Path must not be null");
+		Objects.requireNonNull(canonical, "Path canonical constraint must not be null");
 		if (canonical.isEmpty()) {
 			return Result.success();
 		}
@@ -324,9 +338,10 @@ public final class NetworkMatchers {
 	 * @param value The path to validate
 	 * @param pathConfig The string constraint config for path validation
 	 * @return A successful result if the constraint is satisfied or not present
+	 * @throws NullPointerException If any parameter is null
 	 */
 	public static @NonNull Result<Void> matchPathStringConfig(@NonNull Path value, @NonNull Optional<StringConstraintConfig> pathConfig) {
-		Objects.requireNonNull(value, "Value must not be null");
+		Objects.requireNonNull(value, "Path must not be null");
 		Objects.requireNonNull(pathConfig, "Path config constraint must not be null");
 		if (pathConfig.isEmpty()) {
 			return Result.success();
@@ -345,10 +360,11 @@ public final class NetworkMatchers {
 	 * @param value The path to validate
 	 * @param rootConfig The string constraint config for root component validation
 	 * @return A successful result if the constraint is satisfied or not present
+	 * @throws NullPointerException If any parameter is null
 	 */
-	public static @NonNull Result<Void> matchRootConfig(@NonNull Path value, @NonNull Optional<StringConstraintConfig> rootConfig) {
-		Objects.requireNonNull(value, "Value must not be null");
-		Objects.requireNonNull(rootConfig, "Root config constraint must not be null");
+	public static @NonNull Result<Void> matchPathRootConfig(@NonNull Path value, @NonNull Optional<StringConstraintConfig> rootConfig) {
+		Objects.requireNonNull(value, "Path must not be null");
+		Objects.requireNonNull(rootConfig, "Path root config constraint must not be null");
 		if (rootConfig.isEmpty()) {
 			return Result.success();
 		}
@@ -371,10 +387,11 @@ public final class NetworkMatchers {
 	 * @param value The path to validate
 	 * @param parentConfig The string constraint config for parent directory validation
 	 * @return A successful result if the constraint is satisfied or not present
+	 * @throws NullPointerException If any parameter is null
 	 */
-	public static @NonNull Result<Void> matchParentConfig(@NonNull Path value, @NonNull Optional<StringConstraintConfig> parentConfig) {
-		Objects.requireNonNull(value, "Value must not be null");
-		Objects.requireNonNull(parentConfig, "Parent config constraint must not be null");
+	public static @NonNull Result<Void> matchPathParentConfig(@NonNull Path value, @NonNull Optional<StringConstraintConfig> parentConfig) {
+		Objects.requireNonNull(value, "Path must not be null");
+		Objects.requireNonNull(parentConfig, "Path parent config constraint must not be null");
 		if (parentConfig.isEmpty()) {
 			return Result.success();
 		}
@@ -397,10 +414,11 @@ public final class NetworkMatchers {
 	 * @param value The path to validate
 	 * @param segmentConfig The string constraint config for segment validation
 	 * @return A successful result if the constraint is satisfied or not present
+	 * @throws NullPointerException If any parameter is null
 	 */
-	public static @NonNull Result<Void> matchSegmentConfig(@NonNull Path value, @NonNull Optional<StringConstraintConfig> segmentConfig) {
-		Objects.requireNonNull(value, "Value must not be null");
-		Objects.requireNonNull(segmentConfig, "Segment config constraint must not be null");
+	public static @NonNull Result<Void> matchPathSegmentConfig(@NonNull Path value, @NonNull Optional<StringConstraintConfig> segmentConfig) {
+		Objects.requireNonNull(value, "Path must not be null");
+		Objects.requireNonNull(segmentConfig, "Path segment config constraint must not be null");
 		if (segmentConfig.isEmpty()) {
 			return Result.success();
 		}
@@ -420,10 +438,11 @@ public final class NetworkMatchers {
 	 * @param value The path to validate
 	 * @param fileConfig The string constraint config for file name validation
 	 * @return A successful result if the constraint is satisfied or not present
+	 * @throws NullPointerException If any parameter is null
 	 */
-	public static @NonNull Result<Void> matchFileConfig(@NonNull Path value, @NonNull Optional<StringConstraintConfig> fileConfig) {
-		Objects.requireNonNull(value, "Value must not be null");
-		Objects.requireNonNull(fileConfig, "File config constraint must not be null");
+	public static @NonNull Result<Void> matchPathFileNameConfig(@NonNull Path value, @NonNull Optional<StringConstraintConfig> fileConfig) {
+		Objects.requireNonNull(value, "Path must not be null");
+		Objects.requireNonNull(fileConfig, "Path file name config constraint must not be null");
 		if (fileConfig.isEmpty()) {
 			return Result.success();
 		}
@@ -446,10 +465,11 @@ public final class NetworkMatchers {
 	 * @param value The path to validate
 	 * @param extensionConfig The string constraint config for extension validation
 	 * @return A successful result if the constraint is satisfied or not present
+	 * @throws NullPointerException If any parameter is null
 	 */
-	public static @NonNull Result<Void> matchExtensionConfig(@NonNull Path value, @NonNull Optional<StringConstraintConfig> extensionConfig) {
-		Objects.requireNonNull(value, "Value must not be null");
-		Objects.requireNonNull(extensionConfig, "Extension config constraint must not be null");
+	public static @NonNull Result<Void> matchPathExtensionConfig(@NonNull Path value, @NonNull Optional<StringConstraintConfig> extensionConfig) {
+		Objects.requireNonNull(value, "Path must not be null");
+		Objects.requireNonNull(extensionConfig, "Path extension config constraint must not be null");
 		if (extensionConfig.isEmpty()) {
 			return Result.success();
 		}
@@ -479,10 +499,11 @@ public final class NetworkMatchers {
 	 * @param value The path to validate
 	 * @param withoutExtension The without extension constraint flag
 	 * @return A successful result if the constraint is satisfied or not present
+	 * @throws NullPointerException If any parameter is null
 	 */
-	public static @NonNull Result<Void> matchWithoutExtension(@NonNull Path value, @NonNull Optional<Unit> withoutExtension) {
-		Objects.requireNonNull(value, "Value must not be null");
-		Objects.requireNonNull(withoutExtension, "WithoutExtension constraint must not be null");
+	public static @NonNull Result<Void> matchPathWithoutExtension(@NonNull Path value, @NonNull Optional<Unit> withoutExtension) {
+		Objects.requireNonNull(value, "Path must not be null");
+		Objects.requireNonNull(withoutExtension, "Path without extension constraint must not be null");
 		if (withoutExtension.isEmpty()) {
 			return Result.success();
 		}
@@ -500,10 +521,11 @@ public final class NetworkMatchers {
 	 * @param value The path to validate
 	 * @param ancestorOf The set of paths that the value must be an ancestor of
 	 * @return A successful result if the constraint is satisfied or not present
+	 * @throws NullPointerException If any parameter is null
 	 */
-	public static @NonNull Result<Void> matchAncestorOf(@NonNull Path value, @NonNull Optional<Set<String>> ancestorOf) {
-		Objects.requireNonNull(value, "Value must not be null");
-		Objects.requireNonNull(ancestorOf, "AncestorOf constraint must not be null");
+	public static @NonNull Result<Void> matchPathAncestorOf(@NonNull Path value, @NonNull Optional<Set<String>> ancestorOf) {
+		Objects.requireNonNull(value, "Path must not be null");
+		Objects.requireNonNull(ancestorOf, "path ancestor of constraint must not be null");
 		if (ancestorOf.isEmpty()) {
 			return Result.success();
 		}
@@ -523,10 +545,11 @@ public final class NetworkMatchers {
 	 * @param value The path to validate
 	 * @param descendantOf The set of paths that the value must be a descendant of
 	 * @return A successful result if the constraint is satisfied or not present
+	 * @throws NullPointerException If any parameter is null
 	 */
-	public static @NonNull Result<Void> matchDescendantOf(@NonNull Path value, @NonNull Optional<Set<String>> descendantOf) {
-		Objects.requireNonNull(value, "Value must not be null");
-		Objects.requireNonNull(descendantOf, "DescendantOf constraint must not be null");
+	public static @NonNull Result<Void> matchPathDescendantOf(@NonNull Path value, @NonNull Optional<Set<String>> descendantOf) {
+		Objects.requireNonNull(value, "Path must not be null");
+		Objects.requireNonNull(descendantOf, "Path descendant of constraint must not be null");
 		if (descendantOf.isEmpty()) {
 			return Result.success();
 		}
@@ -546,10 +569,11 @@ public final class NetworkMatchers {
 	 * @param value The query parameters to validate
 	 * @param valueConstraints A map of key to string constraint config
 	 * @return A successful result if the constraint is satisfied or not present
+	 * @throws NullPointerException If any parameter is null
 	 */
-	public static @NonNull Result<Void> matchValueConstraints(@NonNull Map<String, List<String>> value, @NonNull Optional<Map<String, StringConstraintConfig>> valueConstraints) {
-		Objects.requireNonNull(value, "Value must not be null");
-		Objects.requireNonNull(valueConstraints, "ValueConstraints must not be null");
+	public static @NonNull Result<Void> matchQueryValueConstraints(@NonNull Map<String, List<String>> value, @NonNull Optional<Map<String, StringConstraintConfig>> valueConstraints) {
+		Objects.requireNonNull(value, "Query parameter map must not be null");
+		Objects.requireNonNull(valueConstraints, "Query value constraints must not be null");
 		if (valueConstraints.isEmpty()) {
 			return Result.success();
 		}
@@ -575,10 +599,11 @@ public final class NetworkMatchers {
 	 * @param value The query parameters to validate
 	 * @param patternValueConstraints A map of pattern to string constraint config
 	 * @return A successful result if the constraint is satisfied or not present
+	 * @throws NullPointerException If any parameter is null
 	 */
-	public static @NonNull Result<Void> matchPatternValueConstraints(@NonNull Map<String, List<String>> value, @NonNull Optional<Map<Pattern, StringConstraintConfig>> patternValueConstraints) {
-		Objects.requireNonNull(value, "Value must not be null");
-		Objects.requireNonNull(patternValueConstraints, "PatternValueConstraints must not be null");
+	public static @NonNull Result<Void> matchQueryPatternValueConstraints(@NonNull Map<String, List<String>> value, @NonNull Optional<Map<Pattern, StringConstraintConfig>> patternValueConstraints) {
+		Objects.requireNonNull(value, "Query parameter map must not be null");
+		Objects.requireNonNull(patternValueConstraints, "Query pattern value constraints must not be null");
 		if (patternValueConstraints.isEmpty()) {
 			return Result.success();
 		}
@@ -606,10 +631,11 @@ public final class NetworkMatchers {
 	 * @param value The query parameters to validate
 	 * @param singleValued The single-valued constraint flag
 	 * @return A successful result if the constraint is satisfied or not present
+	 * @throws NullPointerException If any parameter is null
 	 */
-	public static @NonNull Result<Void> matchSingleValued(@NonNull Map<String, List<String>> value, @NonNull Optional<Unit> singleValued) {
-		Objects.requireNonNull(value, "Value must not be null");
-		Objects.requireNonNull(singleValued, "SingleValued constraint must not be null");
+	public static @NonNull Result<Void> matchQuerySingleValued(@NonNull Map<String, List<String>> value, @NonNull Optional<Unit> singleValued) {
+		Objects.requireNonNull(value, "Query parameter map must not be null");
+		Objects.requireNonNull(singleValued, "Query single valued constraint must not be null");
 		if (singleValued.isEmpty()) {
 			return Result.success();
 		}
@@ -628,10 +654,11 @@ public final class NetworkMatchers {
 	 * @param value The query parameters to validate
 	 * @param uniqueValues The unique values constraint flag
 	 * @return A successful result if the constraint is satisfied or not present
+	 * @throws NullPointerException If any parameter is null
 	 */
-	public static @NonNull Result<Void> matchUniqueValues(@NonNull Map<String, List<String>> value, @NonNull Optional<Unit> uniqueValues) {
-		Objects.requireNonNull(value, "Value must not be null");
-		Objects.requireNonNull(uniqueValues, "UniqueValues constraint must not be null");
+	public static @NonNull Result<Void> matchQueryUniqueValues(@NonNull Map<String, List<String>> value, @NonNull Optional<Unit> uniqueValues) {
+		Objects.requireNonNull(value, "Query parameter map must not be null");
+		Objects.requireNonNull(uniqueValues, "Query unique values constraint must not be null");
 		if (uniqueValues.isEmpty()) {
 			return Result.success();
 		}
@@ -653,10 +680,11 @@ public final class NetworkMatchers {
 	 * @param value The query parameters to validate
 	 * @param multiValuedConstraints A map of key to size constraint config
 	 * @return A successful result if the constraint is satisfied or not present
+	 * @throws NullPointerException If any parameter is null
 	 */
-	public static @NonNull Result<Void> matchMultiValuedConstraints(@NonNull Map<String, List<String>> value, @NonNull Optional<Map<String, SizeConstraintConfig>> multiValuedConstraints) {
-		Objects.requireNonNull(value, "Value must not be null");
-		Objects.requireNonNull(multiValuedConstraints, "MultiValuedConstraints must not be null");
+	public static @NonNull Result<Void> matchQueryMultiValuedConstraints(@NonNull Map<String, List<String>> value, @NonNull Optional<Map<String, SizeConstraintConfig>> multiValuedConstraints) {
+		Objects.requireNonNull(value, "Query parameter map must not be null");
+		Objects.requireNonNull(multiValuedConstraints, "Query multi valued constraints must not be null");
 		if (multiValuedConstraints.isEmpty()) {
 			return Result.success();
 		}
@@ -680,10 +708,11 @@ public final class NetworkMatchers {
 	 * @param value The URI to validate
 	 * @param schemeConfig The string constraint config for scheme validation
 	 * @return A successful result if the constraint is satisfied or not present
+	 * @throws NullPointerException If any parameter is null
 	 */
-	public static @NonNull Result<Void> matchSchemeConfig(@NonNull URI value, @NonNull Optional<StringConstraintConfig> schemeConfig) {
-		Objects.requireNonNull(value, "Value must not be null");
-		Objects.requireNonNull(schemeConfig, "Scheme config constraint must not be null");
+	public static @NonNull Result<Void> matchUriSchemeConfig(@NonNull URI value, @NonNull Optional<StringConstraintConfig> schemeConfig) {
+		Objects.requireNonNull(value, "Uri must not be null");
+		Objects.requireNonNull(schemeConfig, "Uri scheme config constraint must not be null");
 		if (schemeConfig.isEmpty()) {
 			return Result.success();
 		}
@@ -706,10 +735,11 @@ public final class NetworkMatchers {
 	 * @param value The URI to validate
 	 * @param hostConfig The host constraint config for host validation
 	 * @return A successful result if the constraint is satisfied or not present
+	 * @throws NullPointerException If any parameter is null
 	 */
 	public static @NonNull Result<Void> matchUriHostConfig(@NonNull URI value, @NonNull Optional<HostConstraintConfig> hostConfig) {
-		Objects.requireNonNull(value, "Value must not be null");
-		Objects.requireNonNull(hostConfig, "Host config constraint must not be null");
+		Objects.requireNonNull(value, "Uri must not be null");
+		Objects.requireNonNull(hostConfig, "Uri host config constraint must not be null");
 		if (hostConfig.isEmpty()) {
 			return Result.success();
 		}
@@ -732,10 +762,11 @@ public final class NetworkMatchers {
 	 * @param value The URI to validate
 	 * @param userInfoConfig The string constraint config for user info validation
 	 * @return A successful result if the constraint is satisfied or not present
+	 * @throws NullPointerException If any parameter is null
 	 */
-	public static @NonNull Result<Void> matchUserInfoConfig(@NonNull URI value, @NonNull Optional<StringConstraintConfig> userInfoConfig) {
-		Objects.requireNonNull(value, "Value must not be null");
-		Objects.requireNonNull(userInfoConfig, "User info config constraint must not be null");
+	public static @NonNull Result<Void> matchUriUserInfoConfig(@NonNull URI value, @NonNull Optional<StringConstraintConfig> userInfoConfig) {
+		Objects.requireNonNull(value, "Uri must not be null");
+		Objects.requireNonNull(userInfoConfig, "Uri user info config constraint must not be null");
 		if (userInfoConfig.isEmpty()) {
 			return Result.success();
 		}
@@ -758,10 +789,11 @@ public final class NetworkMatchers {
 	 * @param value The URI to validate
 	 * @param portConfig The port constraint config for port validation
 	 * @return A successful result if the constraint is satisfied or not present
+	 * @throws NullPointerException If any parameter is null
 	 */
 	public static @NonNull Result<Void> matchUriPortConfig(@NonNull URI value, @NonNull Optional<PortConstraintConfig> portConfig) {
-		Objects.requireNonNull(value, "Value must not be null");
-		Objects.requireNonNull(portConfig, "Port config constraint must not be null");
+		Objects.requireNonNull(value, "Uri must not be null");
+		Objects.requireNonNull(portConfig, "Uri port config constraint must not be null");
 		if (portConfig.isEmpty()) {
 			return Result.success();
 		}
@@ -784,10 +816,11 @@ public final class NetworkMatchers {
 	 * @param value The URI to validate
 	 * @param pathConfig The path constraint config for path validation
 	 * @return A successful result if the constraint is satisfied or not present
+	 * @throws NullPointerException If any parameter is null
 	 */
 	public static @NonNull Result<Void> matchUriPathConfig(@NonNull URI value, @NonNull Optional<PathConstraintConfig> pathConfig) {
-		Objects.requireNonNull(value, "Value must not be null");
-		Objects.requireNonNull(pathConfig, "Path config constraint must not be null");
+		Objects.requireNonNull(value, "Uri must not be null");
+		Objects.requireNonNull(pathConfig, "Uri path config constraint must not be null");
 		if (pathConfig.isEmpty()) {
 			return Result.success();
 		}
@@ -810,10 +843,11 @@ public final class NetworkMatchers {
 	 * @param value The URI to validate
 	 * @param queryConfig The query constraint config for query validation
 	 * @return A successful result if the constraint is satisfied or not present
+	 * @throws NullPointerException If any parameter is null
 	 */
 	public static @NonNull Result<Void> matchUriQueryConfig(@NonNull URI value, @NonNull Optional<QueryConstraintConfig> queryConfig) {
-		Objects.requireNonNull(value, "Value must not be null");
-		Objects.requireNonNull(queryConfig, "Query config constraint must not be null");
+		Objects.requireNonNull(value, "Uri must not be null");
+		Objects.requireNonNull(queryConfig, "Uri query config constraint must not be null");
 		if (queryConfig.isEmpty()) {
 			return Result.success();
 		}
@@ -837,10 +871,11 @@ public final class NetworkMatchers {
 	 * @param value The URI to validate
 	 * @param fragmentConfig The string constraint config for fragment validation
 	 * @return A successful result if the constraint is satisfied or not present
+	 * @throws NullPointerException If any parameter is null
 	 */
-	public static @NonNull Result<Void> matchFragmentConfig(@NonNull URI value, @NonNull Optional<StringConstraintConfig> fragmentConfig) {
-		Objects.requireNonNull(value, "Value must not be null");
-		Objects.requireNonNull(fragmentConfig, "Fragment config constraint must not be null");
+	public static @NonNull Result<Void> matchUriFragmentConfig(@NonNull URI value, @NonNull Optional<StringConstraintConfig> fragmentConfig) {
+		Objects.requireNonNull(value, "Uri must not be null");
+		Objects.requireNonNull(fragmentConfig, "Uri fragment config constraint must not be null");
 		if (fragmentConfig.isEmpty()) {
 			return Result.success();
 		}
@@ -862,9 +897,10 @@ public final class NetworkMatchers {
 	 *
 	 * @param query The query string to parse
 	 * @return A map of query parameter keys to their values
+	 * @throws NullPointerException If any parameter is null
 	 */
 	public static @NonNull Map<String, List<String>> parseQuery(@NonNull String query) {
-		Objects.requireNonNull(query, "Query must not be null");
+		Objects.requireNonNull(query, "Query string must not be null");
 		Map<String, List<String>> params = new LinkedHashMap<>();
 		if (query.isEmpty()) {
 			return params;

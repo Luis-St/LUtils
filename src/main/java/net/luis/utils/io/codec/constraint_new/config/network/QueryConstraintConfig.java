@@ -396,12 +396,12 @@ public record QueryConstraintConfig(
 			() -> ConstraintMatchers.matchForbiddenKeys(value.keySet(), this.forbiddenKeys, "Query"),
 			() -> ConstraintMatchers.matchAllowedKeys(value.keySet(), this.allowedKeys, "Query"),
 			() -> ConstraintMatchers.matchFlag(value, this.nonNullKeys, v -> v.keySet().stream().noneMatch(Objects::isNull), "Query keys must not be null"),
-			() -> NetworkMatchers.matchUniqueValues(value, this.uniqueValues),
+			() -> NetworkMatchers.matchQueryUniqueValues(value, this.uniqueValues),
 			() -> ConstraintMatchers.matchFlag(value, this.nonNullValues, v -> v.values().stream().flatMap(List::stream).noneMatch(Objects::isNull), "Query values must not be null"),
-			() -> NetworkMatchers.matchValueConstraints(value, this.valueConstraints),
-			() -> NetworkMatchers.matchPatternValueConstraints(value, this.patternValueConstraints),
-			() -> NetworkMatchers.matchSingleValued(value, this.singleValued),
-			() -> NetworkMatchers.matchMultiValuedConstraints(value, this.multiValuedConstraints),
+			() -> NetworkMatchers.matchQueryValueConstraints(value, this.valueConstraints),
+			() -> NetworkMatchers.matchQueryPatternValueConstraints(value, this.patternValueConstraints),
+			() -> NetworkMatchers.matchQuerySingleValued(value, this.singleValued),
+			() -> NetworkMatchers.matchQueryMultiValuedConstraints(value, this.multiValuedConstraints),
 			() -> ConstraintMatchers.matchCustom(value, this.custom)
 		);
 	}

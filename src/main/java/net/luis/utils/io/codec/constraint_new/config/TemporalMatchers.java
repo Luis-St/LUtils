@@ -57,11 +57,12 @@ public final class TemporalMatchers {
 	 * @param negative The negative constraint flag
 	 * @param zero The zero constraint flag
 	 * @return A successful result if all present constraints are satisfied
+	 * @throws NullPointerException If any parameter is null
 	 */
 	public static @NonNull Result<Void> matchDurationSign(
 		@NonNull Duration value, @NonNull Optional<Boolean> positive, @NonNull Optional<Boolean> negative, @NonNull Optional<Boolean> zero
 	) {
-		Objects.requireNonNull(value, "Value must not be null");
+		Objects.requireNonNull(value, "Duration must not be null");
 		Objects.requireNonNull(positive, "Positive constraint must not be null");
 		Objects.requireNonNull(negative, "Negative constraint must not be null");
 		Objects.requireNonNull(zero, "Zero constraint must not be null");
@@ -118,10 +119,11 @@ public final class TemporalMatchers {
 	 * @param value The Duration value to validate
 	 * @param withinLast The optional duration threshold
 	 * @return A successful result if the constraint is satisfied or not present
+	 * @throws NullPointerException If any parameter is null
 	 */
 	public static @NonNull Result<Void> matchDurationWithinLast(@NonNull Duration value, @NonNull Optional<Duration> withinLast) {
-		Objects.requireNonNull(value, "Value must not be null");
-		Objects.requireNonNull(withinLast, "WithinLast constraint must not be null");
+		Objects.requireNonNull(value, "Duration must not be null");
+		Objects.requireNonNull(withinLast, "Within last constraint must not be null");
 		if (withinLast.isEmpty()) {
 			return Result.success();
 		}
@@ -143,10 +145,11 @@ public final class TemporalMatchers {
 	 * @param value The Duration value to validate
 	 * @param withinNext The optional duration threshold
 	 * @return A successful result if the constraint is satisfied or not present
+	 * @throws NullPointerException If any parameter is null
 	 */
 	public static @NonNull Result<Void> matchDurationWithinNext(@NonNull Duration value, @NonNull Optional<Duration> withinNext) {
-		Objects.requireNonNull(value, "Value must not be null");
-		Objects.requireNonNull(withinNext, "WithinNext constraint must not be null");
+		Objects.requireNonNull(value, "Duration must not be null");
+		Objects.requireNonNull(withinNext, "Within next constraint must not be null");
 		if (withinNext.isEmpty()) {
 			return Result.success();
 		}
@@ -171,11 +174,12 @@ public final class TemporalMatchers {
 	 * @param negative The negative constraint flag
 	 * @param zero The zero constraint flag
 	 * @return A successful result if all present constraints are satisfied
+	 * @throws NullPointerException If any parameter is null
 	 */
 	public static @NonNull Result<Void> matchPeriodSign(
 		@NonNull Period value, @NonNull Optional<Boolean> positive, @NonNull Optional<Boolean> negative, @NonNull Optional<Boolean> zero
 	) {
-		Objects.requireNonNull(value, "Value must not be null");
+		Objects.requireNonNull(value, "Period must not be null");
 		Objects.requireNonNull(positive, "Positive constraint must not be null");
 		Objects.requireNonNull(negative, "Negative constraint must not be null");
 		Objects.requireNonNull(zero, "Zero constraint must not be null");
@@ -235,12 +239,13 @@ public final class TemporalMatchers {
 	 * @param min The optional minimum bound as a pair of (value, inclusive)
 	 * @param max The optional maximum bound as a pair of (value, inclusive)
 	 * @return A successful result if the value is within the specified range
+	 * @throws NullPointerException If any parameter is null
 	 */
 	@SuppressWarnings("DuplicatedCode")
 	public static @NonNull Result<Void> matchPeriodRange(
 		@NonNull Period value, @NonNull Optional<Pair<Period, Boolean>> min, @NonNull Optional<Pair<Period, Boolean>> max
 	) {
-		Objects.requireNonNull(value, "Value must not be null");
+		Objects.requireNonNull(value, "Period must not be null");
 		Objects.requireNonNull(min, "Min constraint must not be null");
 		Objects.requireNonNull(max, "Max constraint must not be null");
 		
