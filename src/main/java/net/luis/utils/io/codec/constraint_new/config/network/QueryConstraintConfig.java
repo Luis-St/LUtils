@@ -19,10 +19,11 @@
 package net.luis.utils.io.codec.constraint_new.config.network;
 
 import net.luis.utils.io.codec.constraint_new.Constraint;
-import net.luis.utils.io.codec.constraint_new.config.SizeConstraintConfig;
-import net.luis.utils.io.codec.constraint_new.config.StringConstraintConfig;
+import net.luis.utils.io.codec.constraint_new.config.*;
 import net.luis.utils.io.codec.constraint_new.core.Unit;
 import net.luis.utils.util.Pair;
+import net.luis.utils.util.result.Result;
+import org.jetbrains.annotations.NotNull;
 import org.jspecify.annotations.NonNull;
 
 import java.util.*;
@@ -71,7 +72,7 @@ public record QueryConstraintConfig(
 	@NonNull Optional<Unit> singleValued,
 	@NonNull Optional<Map<String, SizeConstraintConfig>> multiValuedConstraints,
 	@NonNull Optional<Constraint<Map<String, List<String>>>> custom
-) {
+) implements ConstraintConfig<Map<String, List<String>>> {
 	
 	/**
 	 * An unconstrained query configuration with no constraints applied.<br>
@@ -149,6 +150,8 @@ public record QueryConstraintConfig(
 			throw new IllegalArgumentException("Allowed keys set must not be empty when present");
 		}
 	}
+	
+	//region With methods
 	
 	/**
 	 * Creates a new config with the specified equality constraint.<br>
@@ -377,5 +380,28 @@ public record QueryConstraintConfig(
 	public @NonNull QueryConstraintConfig withCustom(@NonNull Constraint<Map<String, List<String>>> constraint) {
 		Objects.requireNonNull(constraint, "Custom constraint must not be null");
 		return new QueryConstraintConfig(this.equalTo, this.in, this.min, this.max, this.requiredKeys, this.forbiddenKeys, this.allowedKeys, this.nonNullKeys, this.uniqueValues, this.nonNullValues, this.valueConstraints, this.patternValueConstraints, this.singleValued, this.multiValuedConstraints, Optional.of(constraint));
+	}
+	//endregion
+	
+	@Override
+	public @NotNull Result<Void> matches(@NonNull Map<String, List<String>> value) {
+		Objects.requireNonNull(value, "Value must not be null");
+
+		return ConstraintMatchers.allOf(
+			() -> ConstraintMatchers.matchEqualTo(value, this.equalTo),
+			() -> ConstraintMatchers.matchIn(value, this.in),
+			() -> ConstraintMatchers.matchRange(value.size(), this.min, this.max),
+			() -> ConstraintMatchers.matchRequiredKeys(value.keySet(), this.requiredKeys, "Query"),
+			() -> ConstraintMatchers.matchForbiddenKeys(value.keySet(), this.forbiddenKeys, "Query"),
+			() -> ConstraintMatchers.matchAllowedKeys(value.keySet(), this.allowedKeys, "Query"),
+			() -> ConstraintMatchers.matchFlag(value, this.nonNullKeys, v -> v.keySet().stream().noneMatch(Objects::isNull), "Query keys must not be null"),
+			() -> NetworkMatchers.matchUniqueValues(value, this.uniqueValues),
+			() -> ConstraintMatchers.matchFlag(value, this.nonNullValues, v -> v.values().stream().flatMap(List::stream).noneMatch(Objects::isNull), "Query values must not be null"),
+			() -> NetworkMatchers.matchValueConstraints(value, this.valueConstraints),
+			() -> NetworkMatchers.matchPatternValueConstraints(value, this.patternValueConstraints),
+			() -> NetworkMatchers.matchSingleValued(value, this.singleValued),
+			() -> NetworkMatchers.matchMultiValuedConstraints(value, this.multiValuedConstraints),
+			() -> ConstraintMatchers.matchCustom(value, this.custom)
+		);
 	}
 }

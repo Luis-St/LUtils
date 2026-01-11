@@ -18,6 +18,8 @@
 
 package net.luis.utils.io.codec.constraint_new.core;
 
+import org.jspecify.annotations.NonNull;
+
 /**
  * Enumeration of network port ranges as defined by IANA.<br>
  * <p>
@@ -56,5 +58,25 @@ public enum PortRange {
 	 *     Typically assigned automatically by the operating system for client-side connections.
 	 * </p>
 	 */
-	DYNAMIC
+	DYNAMIC;
+	
+	/**
+	 * Gets the port range for a given port number.<br>
+	 * Determines which port range the specified port number belongs to.<br>
+	 *
+	 * @param port The port number to evaluate
+	 * @return The corresponding port range
+	 * @throws IllegalArgumentException if the port number is not in the range 0-65535
+	 */
+	public static @NonNull PortRange fromPort(int port) {
+		if (port >= 0 && port <= 1023) {
+			return SYSTEM;
+		} else if (port >= 1024 && port <= 49151) {
+			return REGISTERED;
+		} else if (port >= 49152 && port <= 65535) {
+			return DYNAMIC;
+		} else {
+			throw new IllegalArgumentException("Port must be in the range 0-65535");
+		}
+	}
 }

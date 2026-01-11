@@ -19,9 +19,11 @@
 package net.luis.utils.io.codec.constraint_new.config.network;
 
 import net.luis.utils.io.codec.constraint_new.Constraint;
-import net.luis.utils.io.codec.constraint_new.config.StringConstraintConfig;
+import net.luis.utils.io.codec.constraint_new.config.*;
 import net.luis.utils.io.codec.constraint_new.core.Unit;
 import net.luis.utils.util.Pair;
+import net.luis.utils.util.result.Result;
+import org.jetbrains.annotations.NotNull;
 import org.jspecify.annotations.NonNull;
 
 import java.net.URI;
@@ -77,7 +79,7 @@ public record URIConstraintConfig(
 	@NonNull Optional<Unit> opaque,
 	@NonNull Optional<Unit> hierarchical,
 	@NonNull Optional<Constraint<URI>> custom
-) {
+) implements ConstraintConfig<URI> {
 	
 	/**
 	 * An unconstrained uri configuration with no constraints applied.<br>
@@ -172,6 +174,8 @@ public record URIConstraintConfig(
 			throw new IllegalArgumentException("Both without fragment and fragment constraints cannot be present at the same time");
 		}
 	}
+	
+	//region With methods
 	
 	/**
 	 * Creates a new config with the specified equal-to constraint.<br>
@@ -384,5 +388,33 @@ public record URIConstraintConfig(
 	public @NonNull URIConstraintConfig withCustom(@NonNull Constraint<URI> constraint) {
 		Objects.requireNonNull(constraint, "Custom constraint must not be null");
 		return new URIConstraintConfig(this.equalTo, this.in, this.scheme, this.host, this.withoutUserInfo, this.userInfo, this.withoutPort, this.port, this.withoutPath, this.path, this.withoutQuery, this.query, this.withoutFragment, this.fragment, this.absolute, this.relative, this.opaque, this.hierarchical, Optional.of(constraint));
+	}
+	//endregion
+	
+	@Override
+	public @NotNull Result<Void> matches(@NonNull URI value) {
+		Objects.requireNonNull(value, "Value must not be null");
+
+		return ConstraintMatchers.allOf(
+			() -> ConstraintMatchers.matchEqualTo(value, this.equalTo),
+			() -> ConstraintMatchers.matchIn(value, this.in),
+			() -> NetworkMatchers.matchSchemeConfig(value, this.scheme),
+			() -> NetworkMatchers.matchUriHostConfig(value, this.host),
+			() -> ConstraintMatchers.matchFlag(value, this.withoutUserInfo, uri -> uri.getUserInfo() == null, "URI '" + value + "' must not have user info"),
+			() -> NetworkMatchers.matchUserInfoConfig(value, this.userInfo),
+			() -> ConstraintMatchers.matchFlag(value, this.withoutPort, uri -> uri.getPort() == -1, "URI '" + value + "' must not have a port"),
+			() -> NetworkMatchers.matchUriPortConfig(value, this.port),
+			() -> ConstraintMatchers.matchFlag(value, this.withoutPath, uri -> uri.getPath() == null || uri.getPath().isEmpty(), "URI '" + value + "' must not have a path"),
+			() -> NetworkMatchers.matchUriPathConfig(value, this.path),
+			() -> ConstraintMatchers.matchFlag(value, this.withoutQuery, uri -> uri.getQuery() == null, "URI '" + value + "' must not have a query"),
+			() -> NetworkMatchers.matchUriQueryConfig(value, this.query),
+			() -> ConstraintMatchers.matchFlag(value, this.withoutFragment, uri -> uri.getFragment() == null, "URI '" + value + "' must not have a fragment"),
+			() -> NetworkMatchers.matchFragmentConfig(value, this.fragment),
+			() -> ConstraintMatchers.matchFlag(value, this.absolute, URI::isAbsolute, "URI '" + value + "' must be absolute"),
+			() -> ConstraintMatchers.matchFlag(value, this.relative, uri -> !uri.isAbsolute(), "URI '" + value + "' must be relative"),
+			() -> ConstraintMatchers.matchFlag(value, this.opaque, URI::isOpaque, "URI '" + value + "' must be opaque"),
+			() -> ConstraintMatchers.matchFlag(value, this.hierarchical, uri -> !uri.isOpaque(), "URI '" + value + "' must be hierarchical"),
+			() -> ConstraintMatchers.matchCustom(value, this.custom)
+		);
 	}
 }

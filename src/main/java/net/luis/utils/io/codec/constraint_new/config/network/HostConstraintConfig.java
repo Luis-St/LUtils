@@ -19,11 +19,12 @@
 package net.luis.utils.io.codec.constraint_new.config.network;
 
 import net.luis.utils.io.codec.constraint_new.Constraint;
-import net.luis.utils.io.codec.constraint_new.config.EnumConstraintConfig;
-import net.luis.utils.io.codec.constraint_new.config.StringConstraintConfig;
+import net.luis.utils.io.codec.constraint_new.config.*;
 import net.luis.utils.io.codec.constraint_new.core.IpAddressType;
 import net.luis.utils.io.codec.constraint_new.core.Unit;
 import net.luis.utils.util.Pair;
+import net.luis.utils.util.result.Result;
+import org.jetbrains.annotations.NotNull;
 import org.jspecify.annotations.NonNull;
 
 import java.util.*;
@@ -86,7 +87,7 @@ public record HostConstraintConfig(
 	@NonNull Optional<Unit> rootDomain,
 	@NonNull Optional<Unit> subDomain,
 	@NonNull Optional<Constraint<String>> custom
-) {
+) implements ConstraintConfig<String> {
 	
 	/**
 	 * An unconstrained host configuration with no constraints applied.<br>
@@ -203,6 +204,8 @@ public record HostConstraintConfig(
 			throw new IllegalArgumentException("Both root domain and sub domain constraints cannot be present at the same time");
 		}
 	}
+	
+	//region With methods
 	
 	/**
 	 * Creates a new config with the specified equal-to constraint.<br>
@@ -587,5 +590,35 @@ public record HostConstraintConfig(
 	public @NonNull HostConstraintConfig withCustom(@NonNull Constraint<String> constraint) {
 		Objects.requireNonNull(constraint, "Custom constraint must not be null");
 		return new HostConstraintConfig(this.equalTo, this.in, this.minLength, this.maxLength, this.startsWith, this.startsWithAny, this.contains, this.containsAny, this.containsAll, this.containsOnly, this.endsWith, this.endsWithAny, this.matches, this.ipv4, this.ipv6, this.ip, this.ipType, this.inAnySubnet, this.domain, this.rootDomain, this.subDomain, Optional.of(constraint));
+	}
+	//endregion
+	
+	@Override
+	public @NotNull Result<Void> matches(@NonNull String value) {
+		Objects.requireNonNull(value, "Value must not be null");
+
+		return ConstraintMatchers.allOf(
+			() -> ConstraintMatchers.matchEqualTo(value, this.equalTo),
+			() -> ConstraintMatchers.matchIn(value, this.in),
+			() -> ConstraintMatchers.matchRange(value.length(), this.minLength, this.maxLength),
+			() -> ConstraintMatchers.matchStartsWith(value, this.startsWith),
+			() -> ConstraintMatchers.matchStartsWithAny(value, this.startsWithAny),
+			() -> ConstraintMatchers.matchContains(value, this.contains),
+			() -> ConstraintMatchers.matchContainsAny(value, this.containsAny),
+			() -> ConstraintMatchers.matchContainsAll(value, this.containsAll),
+			() -> ConstraintMatchers.matchContainsOnly(value, this.containsOnly),
+			() -> ConstraintMatchers.matchEndsWith(value, this.endsWith),
+			() -> ConstraintMatchers.matchEndsWithAny(value, this.endsWithAny),
+			() -> ConstraintMatchers.matchPattern(value, this.matches),
+			() -> NetworkMatchers.matchIpv4(value, this.ipv4),
+			() -> NetworkMatchers.matchIpv6(value, this.ipv6),
+			() -> NetworkMatchers.matchIpConfig(value, this.ip),
+			() -> NetworkMatchers.matchIpType(value, this.ipType),
+			() -> NetworkMatchers.matchInAnySubnet(value, this.inAnySubnet),
+			() -> NetworkMatchers.matchDomainConfig(value, this.domain),
+			() -> NetworkMatchers.matchRootDomain(value, this.rootDomain),
+			() -> NetworkMatchers.matchSubDomain(value, this.subDomain),
+			() -> ConstraintMatchers.matchCustom(value, this.custom)
+		);
 	}
 }

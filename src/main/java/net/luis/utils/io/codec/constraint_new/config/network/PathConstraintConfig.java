@@ -19,10 +19,12 @@
 package net.luis.utils.io.codec.constraint_new.config.network;
 
 import net.luis.utils.io.codec.constraint_new.Constraint;
-import net.luis.utils.io.codec.constraint_new.config.StringConstraintConfig;
+import net.luis.utils.io.codec.constraint_new.config.*;
 import net.luis.utils.io.codec.constraint_new.core.Platform;
 import net.luis.utils.io.codec.constraint_new.core.Unit;
 import net.luis.utils.util.Pair;
+import net.luis.utils.util.result.Result;
+import org.jetbrains.annotations.NotNull;
 import org.jspecify.annotations.NonNull;
 
 import java.nio.file.Path;
@@ -87,7 +89,7 @@ public record PathConstraintConfig(
 	@NonNull Optional<Unit> portable,
 	@NonNull Optional<Platform> separator,
 	@NonNull Optional<Constraint<Path>> custom
-) {
+) implements ConstraintConfig<Path> {
 	
 	/**
 	 * An unconstrained path configuration with no constraints applied.<br>
@@ -198,6 +200,8 @@ public record PathConstraintConfig(
 			throw new IllegalArgumentException("Both without extension and extension constraints cannot be present at the same time");
 		}
 	}
+	
+	//region With methods
 	
 	/**
 	 * Creates a new config with the specified equal-to constraint.<br>
@@ -498,5 +502,32 @@ public record PathConstraintConfig(
 	public @NonNull PathConstraintConfig withCustom(@NonNull Constraint<Path> constraint) {
 		Objects.requireNonNull(constraint, "Custom constraint must not be null");
 		return new PathConstraintConfig(this.equalTo, this.in, this.minLength, this.maxLength, this.minDepth, this.maxDepth, this.absolute, this.relative, this.normalized, this.canonical, this.path, this.root, this.parent, this.segment, this.file, this.withoutExtension, this.extension, this.ancestorOf, this.descendantOf, this.validFor, this.portable, this.separator, Optional.of(constraint));
+	}
+	//endregion
+	
+	@Override
+	public @NotNull Result<Void> matches(@NonNull Path value) {
+		Objects.requireNonNull(value, "Value must not be null");
+		
+		return ConstraintMatchers.allOf(
+			() -> ConstraintMatchers.matchEqualTo(value, this.equalTo),
+			() -> ConstraintMatchers.matchIn(value, this.in),
+			() -> ConstraintMatchers.matchRange(value.toString().length(), this.minLength, this.maxLength),
+			() -> ConstraintMatchers.matchRange(value.getNameCount(), this.minDepth, this.maxDepth),
+			() -> ConstraintMatchers.matchFlag(value, this.absolute, Path::isAbsolute, "Path '" + value + "' must be absolute"),
+			() -> ConstraintMatchers.matchFlag(value, this.relative, p -> !p.isAbsolute(), "Path '" + value + "' must be relative"),
+			() -> ConstraintMatchers.matchFlag(value, this.normalized, p -> p.equals(p.normalize()), "Path '" + value + "' must be normalized"),
+			() -> NetworkMatchers.matchCanonical(value, this.canonical),
+			() -> NetworkMatchers.matchPathStringConfig(value, this.path),
+			() -> NetworkMatchers.matchRootConfig(value, this.root),
+			() -> NetworkMatchers.matchParentConfig(value, this.parent),
+			() -> NetworkMatchers.matchSegmentConfig(value, this.segment),
+			() -> NetworkMatchers.matchFileConfig(value, this.file),
+			() -> NetworkMatchers.matchWithoutExtension(value, this.withoutExtension),
+			() -> NetworkMatchers.matchExtensionConfig(value, this.extension),
+			() -> NetworkMatchers.matchAncestorOf(value, this.ancestorOf),
+			() -> NetworkMatchers.matchDescendantOf(value, this.descendantOf),
+			() -> ConstraintMatchers.matchCustom(value, this.custom)
+		);
 	}
 }
