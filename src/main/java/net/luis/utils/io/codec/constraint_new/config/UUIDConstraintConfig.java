@@ -29,7 +29,7 @@ import org.jspecify.annotations.NonNull;
 
 import java.util.*;
 
-import static net.luis.utils.io.codec.constraint_new.config.ConstraintMatchers.*;
+import static net.luis.utils.io.codec.constraint_new.config.matcher.ConstraintMatchers.*;
 
 /**
  * Configuration record for uuid constraints.<br>

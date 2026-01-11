@@ -16,8 +16,9 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-package net.luis.utils.io.codec.constraint_new.config;
+package net.luis.utils.io.codec.constraint_new.config.matcher;
 
+import net.luis.utils.io.codec.constraint_new.config.*;
 import net.luis.utils.io.codec.constraint_new.config.network.*;
 import net.luis.utils.io.codec.constraint_new.core.*;
 import net.luis.utils.util.Pair;
