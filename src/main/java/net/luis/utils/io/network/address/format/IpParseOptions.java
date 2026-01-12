@@ -108,7 +108,7 @@ public record IpParseOptions(
 	 * </p>
 	 * <ul>
 	 *     <li>{@link #allowLeadingZeros} = {@code true}</li>
-	 *     <li>{@link #allowOctalNotation} = {@code true}</li>
+	 *     <li>{@link #allowOctalNotation} = {@code false}</li>
 	 *     <li>{@link #allowDecimalNotation} = {@code true}</li>
 	 *     <li>{@link #allowMixedCase} = {@code true}</li>
 	 *     <li>{@link #allowEmptySegments} = {@code true}</li>
@@ -118,7 +118,7 @@ public record IpParseOptions(
 	 *     <li>{@link #normalize} = {@code true}</li>
 	 * </ul>
 	 */
-	public static final IpParseOptions LENIENT = new IpParseOptions(true, true, true, true, true, true, true, true, true);
+	public static final IpParseOptions LENIENT = new IpParseOptions(true, false, true, true, true, true, true, true, true);
 	
 	/**
 	 * Constructs a new ip parse options instance.<br>

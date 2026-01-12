@@ -126,7 +126,7 @@ public final class Ipv6Set implements IpSet<Ipv6Address, Ipv6Range, Ipv6Network,
 		List<Ipv6Range> rangeList = new ArrayList<>(networks.length);
 		for (Ipv6Network network : networks) {
 			Objects.requireNonNull(network, "Network must not be null");
-			rangeList.add(Ipv6Range.of(network.networkAddress(), network.broadcastAddress()));
+			rangeList.add(Ipv6Range.of(network.networkAddress(), network.lastAddress()));
 		}
 		return new Ipv6Set(normalize(rangeList));
 	}
@@ -227,7 +227,7 @@ public final class Ipv6Set implements IpSet<Ipv6Address, Ipv6Range, Ipv6Network,
 	@Override
 	public boolean containsNetwork(@NonNull Ipv6Network network) {
 		Objects.requireNonNull(network, "Network must not be null");
-		return this.containsRange(Ipv6Range.of(network.networkAddress(), network.broadcastAddress()));
+		return this.containsRange(Ipv6Range.of(network.networkAddress(), network.lastAddress()));
 	}
 	
 	@Override

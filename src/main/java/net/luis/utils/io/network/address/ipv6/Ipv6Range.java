@@ -246,14 +246,18 @@ public record Ipv6Range(@NonNull Ipv6Address start, @NonNull Ipv6Address end) im
 		Objects.requireNonNull(startValue, "Start value must not be null");
 		Objects.requireNonNull(endValue, "End value must not be null");
 		BigInteger remaining = endValue.subtract(startValue).add(BigInteger.ONE);
-		
-		for (int prefixLength = 128; prefixLength >= 0; prefixLength--) {
+
+		// Iterate from largest block (prefix 0) to smallest (prefix 128)
+		// Return the first (largest) aligned block that fits within remaining
+		for (int prefixLength = 0; prefixLength <= 128; prefixLength++) {
 			BigInteger blockSize = BigInteger.ONE.shiftLeft(128 - prefixLength);
-			
+
+			// Skip if start address is not aligned to this block size
 			if (!startValue.mod(blockSize).equals(BigInteger.ZERO)) {
 				continue;
 			}
-			
+
+			// Return this prefix if the block fits within remaining addresses
 			if (blockSize.compareTo(remaining) <= 0) {
 				return prefixLength;
 			}
