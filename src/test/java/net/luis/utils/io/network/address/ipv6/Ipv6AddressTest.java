@@ -18,6 +18,7 @@
 
 package net.luis.utils.io.network.address.ipv6;
 
+import net.luis.utils.io.network.IpEndpoint;
 import net.luis.utils.io.network.address.AddressType;
 import net.luis.utils.io.network.address.ipv4.Ipv4Address;
 import org.junit.jupiter.api.Test;
@@ -283,6 +284,22 @@ class Ipv6AddressTest {
 	void toSocketAddress() {
 		InetSocketAddress socketAddr = Ipv6Address.LOOPBACK.toSocketAddress(8080);
 		assertEquals(8080, socketAddr.getPort());
+	}
+	
+	@Test
+	void toEndpointInvalidPort() {
+		assertThrows(IllegalArgumentException.class, () -> Ipv6Address.LOOPBACK.toEndpoint(-1));
+		assertThrows(IllegalArgumentException.class, () -> Ipv6Address.LOOPBACK.toEndpoint(65536));
+	}
+	
+	@Test
+	void toEndpoint() {
+		Ipv6Address address = Ipv6Address.LOOPBACK;
+		IpEndpoint endpoint = address.toEndpoint(443);
+		assertEquals(address, endpoint.address());
+		assertEquals(443, endpoint.port());
+		assertTrue(endpoint.toString().startsWith("["));
+		assertTrue(endpoint.toString().endsWith("]:443"));
 	}
 	
 	@Test

@@ -18,6 +18,7 @@
 
 package net.luis.utils.io.network.address;
 
+import net.luis.utils.io.network.IpEndpoint;
 import net.luis.utils.io.network.address.ipv4.Ipv4Address;
 import net.luis.utils.io.network.address.ipv6.Ipv6Address;
 import org.jspecify.annotations.NonNull;
@@ -542,6 +543,27 @@ public sealed interface IpAddress<T extends IpAddress<T>> extends Comparable<T> 
 	 * @throws IllegalArgumentException If the port is outside the valid range (0-65535)
 	 */
 	@NonNull InetSocketAddress toSocketAddress(int port);
+	
+	/**
+	 * Creates an {@link IpEndpoint} from this IP address and the specified port.<br>
+	 * This method provides a convenient way to create an endpoint that bundles
+	 * the IP address with a port number.
+	 * <p>
+	 *     Example:
+	 * </p>
+	 * <pre>{@code
+	 * IpAddress<?> address = IpAddresses.parse("192.168.1.1");
+	 * IpEndpoint endpoint = address.toEndpoint(8080);
+	 * // endpoint.toString() returns "192.168.1.1:8080"
+	 * }</pre>
+	 *
+	 * @param port The port number (must be between 0 and 65535 inclusive)
+	 * @return An {@link IpEndpoint} combining this IP address and the specified port
+	 * @throws IllegalArgumentException If the port is outside the valid range (0-65535)
+	 */
+	default @NonNull IpEndpoint toEndpoint(int port) {
+		return new IpEndpoint(this, port);
+	}
 	
 	/**
 	 * Returns the minimum possible value for this IP address type.<br>

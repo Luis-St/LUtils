@@ -18,6 +18,7 @@
 
 package net.luis.utils.io.network.address.ipv4;
 
+import net.luis.utils.io.network.IpEndpoint;
 import net.luis.utils.io.network.address.AddressType;
 import org.junit.jupiter.api.Test;
 
@@ -349,6 +350,21 @@ class Ipv4AddressTest {
 		InetSocketAddress socketAddr = Ipv4Address.LOOPBACK.toSocketAddress(8080);
 		assertEquals(8080, socketAddr.getPort());
 		assertEquals("/127.0.0.1", socketAddr.getAddress().toString());
+	}
+	
+	@Test
+	void toEndpointInvalidPort() {
+		assertThrows(IllegalArgumentException.class, () -> Ipv4Address.LOOPBACK.toEndpoint(-1));
+		assertThrows(IllegalArgumentException.class, () -> Ipv4Address.LOOPBACK.toEndpoint(65536));
+	}
+	
+	@Test
+	void toEndpoint() {
+		Ipv4Address address = Ipv4Address.fromOctets(192, 168, 1, 1);
+		IpEndpoint endpoint = address.toEndpoint(8080);
+		assertEquals(address, endpoint.address());
+		assertEquals(8080, endpoint.port());
+		assertEquals("192.168.1.1:8080", endpoint.toString());
 	}
 	
 	@Test
