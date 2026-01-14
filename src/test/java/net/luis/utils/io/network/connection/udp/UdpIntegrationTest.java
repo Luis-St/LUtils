@@ -203,7 +203,7 @@ class UdpIntegrationTest {
 	void clientSendAndReceiveWithAck() throws Exception {
 		CountDownLatch messageLatch = new CountDownLatch(1);
 		AtomicReference<byte[]> receivedData = new AtomicReference<>();
-
+		
 		UdpServerConfig config = UdpServerConfig.builder()
 			.executorStrategy(ClientExecutorStrategy.virtualThreads())
 			.onMessage((server, datagram, data) -> {

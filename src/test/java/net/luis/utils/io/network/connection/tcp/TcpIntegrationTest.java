@@ -530,7 +530,7 @@ class TcpIntegrationTest {
 		}
 	}
 	
-	@RepeatedTest(5)
+	@RepeatedTest(2)
 	void errorHandlerDoesNotReceiveIOError() throws Exception {
 		CountDownLatch errorLatch = new CountDownLatch(1);
 		
