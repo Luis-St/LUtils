@@ -34,7 +34,7 @@
 
 ### Empty Line Rules
 
-**Short Javadocs (2 lines or less):** No empty line before tags.
+**Short Javadocs (2 lines or less):** No empty line before tags. The line count includes both description and tags.
 
 ```java
 // Correct - short javadoc, no empty line
@@ -480,7 +480,7 @@ public class InvalidStringException extends RuntimeException {
 ## 10. Key Principles
 
 1. **Line breaks:** All description lines end with `<br>`, except inside lists, pre blocks, or before `</p>`
-2. **Empty lines:** Short javadocs (2 lines or less) have no empty line before tags; longer ones do
+2. **Empty lines:** Short javadocs (2 lines or less, including description and tags) have no empty line before tags; longer ones do
 3. **No nesting:** Never put `<ul>`, `<ol>`, `<li>`, or `<pre>` inside `<p></p>` blocks
 4. **Consistent indentation:** Content inside `<p>`, `<ul>`, `<ol>` is indented with 4 spaces
 5. **Self-closing:** `<br>` is used, not `<br/>`
