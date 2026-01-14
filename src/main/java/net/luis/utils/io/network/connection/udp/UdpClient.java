@@ -60,7 +60,13 @@ import java.util.Optional;
  */
 public final class UdpClient implements NetworkClient {
 	
-	private final @NonNull UdpClientConfig config;
+	/**
+	 * The configuration for this client.<br>
+	 */
+	private final UdpClientConfig config;
+	/**
+	 * The underlying datagram socket for communication.<br>
+	 */
 	private volatile DatagramSocket socket;
 	
 	/**
@@ -85,7 +91,7 @@ public final class UdpClient implements NetworkClient {
 	 * This must be called before receiving datagrams.<br>
 	 *
 	 * @param localEndpoint The local endpoint to bind to
-	 * @throws NullPointerException If localEndpoint is null
+	 * @throws NullPointerException If local endpoint is null
 	 * @throws NetworkConnectionException If binding fails
 	 */
 	public void bind(@NonNull IpEndpoint localEndpoint) throws NetworkConnectionException {
@@ -219,6 +225,11 @@ public final class UdpClient implements NetworkClient {
 	}
 	
 	//region Helper methods
+	
+	/**
+	 * Ensures that the socket is created before performing send operations.<br>
+	 * @throws NetworkConnectionException If the socket cannot be created
+	 */
 	private void ensureSocketCreated() throws NetworkConnectionException {
 		if (this.socket == null || this.socket.isClosed()) {
 			try {
@@ -232,6 +243,10 @@ public final class UdpClient implements NetworkClient {
 		}
 	}
 	
+	/**
+	 * Ensures that the socket is bound before performing receive operations.<br>
+	 * @throws NetworkConnectionException If the socket is not bound
+	 */
 	private void ensureSocketBound() throws NetworkConnectionException {
 		if (this.socket == null || this.socket.isClosed()) {
 			throw new NetworkConnectionException("Client is not bound", NetworkErrorType.NOT_CONNECTED);
@@ -242,6 +257,12 @@ public final class UdpClient implements NetworkClient {
 		}
 	}
 	
+	/**
+	 * Creates an {@link IpEndpoint} from the given socket address.<br>
+	 *
+	 * @param address The socket address to convert
+	 * @return The created endpoint
+	 */
 	private @NonNull IpEndpoint createEndpoint(@NonNull InetSocketAddress address) {
 		IpAddress<?> ipAddress;
 		if (address.getAddress() instanceof Inet4Address inet4) {
@@ -252,6 +273,13 @@ public final class UdpClient implements NetworkClient {
 		return new IpEndpoint(ipAddress, address.getPort());
 	}
 	
+	/**
+	 * Handles an error by notifying the configured error handler.<br>
+	 *
+	 * @param errorType The type of error that occurred
+	 * @param message A human-readable error message
+	 * @param cause The underlying exception
+	 */
 	private void handleError(@NonNull NetworkErrorType errorType, @NonNull String message, @NonNull Throwable cause) {
 		if (this.config.onError() != null) {
 			this.config.onError().handle(errorType, message, cause);

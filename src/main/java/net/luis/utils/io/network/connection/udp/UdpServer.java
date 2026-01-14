@@ -63,18 +63,36 @@ import java.util.concurrent.atomic.AtomicBoolean;
  */
 public final class UdpServer implements NetworkServer {
 	
-	private final @NonNull IpEndpoint bindEndpoint;
-	private final @NonNull UdpServerConfig config;
+	/**
+	 * The endpoint to bind the server to.<br>
+	 */
+	private final IpEndpoint bindEndpoint;
+	/**
+	 * The configuration for this server.<br>
+	 */
+	private final UdpServerConfig config;
+	/**
+	 * Whether the server is currently running.<br>
+	 */
 	private final AtomicBoolean running = new AtomicBoolean(false);
+	/**
+	 * The underlying datagram socket for receiving packets.<br>
+	 */
 	private volatile DatagramSocket socket;
+	/**
+	 * The executor service for handling incoming datagrams.<br>
+	 */
 	private volatile ExecutorService executor;
+	/**
+	 * The thread that receives incoming datagrams.<br>
+	 */
 	private volatile Thread acceptThread;
 	
 	/**
 	 * Constructs a new UDP server with the specified bind endpoint and default configuration.<br>
 	 *
 	 * @param bindEndpoint The endpoint to bind to
-	 * @throws NullPointerException If bindEndpoint is null
+	 * @throws NullPointerException If bind endpoint is null
 	 */
 	public UdpServer(@NonNull IpEndpoint bindEndpoint) {
 		this(bindEndpoint, UdpServerConfig.DEFAULT);
@@ -85,7 +103,7 @@ public final class UdpServer implements NetworkServer {
 	 *
 	 * @param bindEndpoint The endpoint to bind to
 	 * @param config The server configuration
-	 * @throws NullPointerException If bindEndpoint or config is null
+	 * @throws NullPointerException If bind endpoint or config is null
 	 */
 	public UdpServer(@NonNull IpEndpoint bindEndpoint, @NonNull UdpServerConfig config) {
 		this.bindEndpoint = Objects.requireNonNull(bindEndpoint, "Bind endpoint must not be null");
@@ -192,6 +210,11 @@ public final class UdpServer implements NetworkServer {
 	}
 	
 	//region Helper methods
+	
+	/**
+	 * The main loop that receives incoming datagrams.<br>
+	 * This method runs on a dedicated thread and dispatches datagrams to handlers.<br>
+	 */
 	private void acceptLoop() {
 		byte[] buffer = new byte[this.config.bufferSize()];
 		
@@ -230,6 +253,12 @@ public final class UdpServer implements NetworkServer {
 		}
 	}
 	
+	/**
+	 * Creates an {@link IpEndpoint} from the given socket address.<br>
+	 *
+	 * @param address The socket address to convert
+	 * @return The created endpoint
+	 */
 	private @NonNull IpEndpoint createEndpoint(@NonNull InetSocketAddress address) {
 		IpAddress<?> ipAddress;
 		if (address.getAddress() instanceof Inet4Address inet4) {
@@ -240,12 +269,23 @@ public final class UdpServer implements NetworkServer {
 		return new IpEndpoint(ipAddress, address.getPort());
 	}
 	
+	/**
+	 * Handles an error by notifying the configured error handler.<br>
+	 *
+	 * @param errorType The type of error that occurred
+	 * @param message A human-readable error message
+	 * @param cause The underlying exception
+	 */
 	private void handleError(@NonNull NetworkErrorType errorType, @NonNull String message, @NonNull Throwable cause) {
 		if (this.config.onError() != null) {
 			this.config.onError().handle(errorType, message, cause);
 		}
 	}
 	
+	/**
+	 * Shuts down the executor service if it is owned by this server.<br>
+	 * Waits up to 5 seconds for graceful termination before forcing shutdown.<br>
+	 */
 	private void shutdownExecutor() {
 		if (this.executor != null && this.config.executorStrategy().ownsExecutor()) {
 			this.executor.shutdown();

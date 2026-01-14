@@ -82,8 +82,8 @@ public record UdpClientConfig(
 	 * @param broadcast Whether to allow broadcast packets
 	 * @param reuseAddress Whether to allow address reuse
 	 * @param onError Handler called when an error occurs
-	 * @throws NullPointerException If receiveTimeout is null
-	 * @throws IllegalArgumentException If bufferSize is less than 1
+	 * @throws NullPointerException If receive timeout is null
+	 * @throws IllegalArgumentException If buffer size is less than 1
 	 */
 	public UdpClientConfig {
 		Objects.requireNonNull(receiveTimeout, "Receive timeout must not be null");

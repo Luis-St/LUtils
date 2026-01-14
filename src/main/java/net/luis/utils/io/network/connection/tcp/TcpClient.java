@@ -60,8 +60,17 @@ import java.util.Optional;
  */
 public final class TcpClient implements NetworkClient {
 	
-	private final @NonNull TcpClientConfig config;
+	/**
+	 * The configuration for this client.<br>
+	 */
+	private final TcpClientConfig config;
+	/**
+	 * The underlying socket for communication.<br>
+	 */
 	private volatile Socket socket;
+	/**
+	 * Whether this client is currently connected.<br>
+	 */
 	private volatile boolean connected;
 	
 	/**
@@ -274,12 +283,21 @@ public final class TcpClient implements NetworkClient {
 	}
 	
 	//region Helper methods
+	
+	/**
+	 * Ensures that the client is connected before performing operations.<br>
+	 * @throws NetworkConnectionException If the client is not connected
+	 */
 	private void ensureConnected() throws NetworkConnectionException {
 		if (!this.connected || this.socket == null || this.socket.isClosed()) {
 			throw new NetworkConnectionException("Client is not connected", NetworkErrorType.NOT_CONNECTED);
 		}
 	}
 	
+	/**
+	 * Handles the disconnection event by notifying the configured handler.<br>
+	 * This method is called when the connection is closed or reset.<br>
+	 */
 	private void handleDisconnect() {
 		if (this.connected && this.config.onDisconnect() != null) {
 			try {
@@ -294,7 +312,16 @@ public final class TcpClient implements NetworkClient {
 		this.connected = false;
 	}
 	
+	/**
+	 * Creates an {@link IpEndpoint} from the given socket address.<br>
+	 *
+	 * @param address The socket address to convert
+	 * @return The created endpoint
+	 * @throws NullPointerException If address is null
+	 */
 	private @NonNull IpEndpoint createEndpoint(@NonNull InetSocketAddress address) {
+		Objects.requireNonNull(address, "Address must not be null");
+		
 		IpAddress<?> ipAddress;
 		if (address.getAddress() instanceof Inet4Address inet4) {
 			ipAddress = Ipv4Address.from(inet4);
@@ -304,6 +331,13 @@ public final class TcpClient implements NetworkClient {
 		return new IpEndpoint(ipAddress, address.getPort());
 	}
 	
+	/**
+	 * Handles an error by notifying the configured error handler.<br>
+	 *
+	 * @param errorType The type of error that occurred
+	 * @param message A human-readable error message
+	 * @param cause The underlying exception
+	 */
 	private void handleError(@NonNull NetworkErrorType errorType, @NonNull String message, @NonNull Throwable cause) {
 		if (this.config.onError() != null) {
 			this.config.onError().handle(errorType, message, cause);

@@ -24,6 +24,7 @@ import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
 import java.time.Duration;
+import java.util.Objects;
 
 /**
  * Builder class for constructing TCP client configuration.<br>
@@ -50,14 +51,41 @@ import java.time.Duration;
  */
 public final class TcpClientConfigBuilder {
 	
-	private @NonNull Duration connectTimeout = Duration.ofSeconds(30);
-	private @NonNull Duration readTimeout = Duration.ZERO;
-	private @NonNull Duration writeTimeout = Duration.ZERO;
+	/**
+	 * The maximum time to wait for connection establishment.<br>
+	 */
+	private Duration connectTimeout = Duration.ofSeconds(30);
+	/**
+	 * The maximum time to wait for read operations.<br>
+	 */
+	private Duration readTimeout = Duration.ZERO;
+	/**
+	 * The maximum time to wait for write operations.<br>
+	 */
+	private Duration writeTimeout = Duration.ZERO;
+	/**
+	 * The size of the read/write buffers in bytes.<br>
+	 */
 	private int bufferSize = 8192;
+	/**
+	 * Whether to disable Nagle's algorithm (TCP_NODELAY).<br>
+	 */
 	private boolean tcpNoDelay = true;
+	/**
+	 * Whether to enable TCP keep-alive (SO_KEEPALIVE).<br>
+	 */
 	private boolean keepAlive = true;
+	/**
+	 * The handler called when connection is established.<br>
+	 */
 	private @Nullable ConnectionEventHandler onConnect;
+	/**
+	 * The handler called when connection is closed.<br>
+	 */
 	private @Nullable ConnectionEventHandler onDisconnect;
+	/**
+	 * The handler called when an error occurs.<br>
+	 */
 	private @Nullable ErrorEventHandler onError;
 	
 	/**
@@ -70,9 +98,10 @@ public final class TcpClientConfigBuilder {
 	 *
 	 * @param connectTimeout The connect timeout
 	 * @return This builder for method chaining
+	 * @throws NullPointerException If the connect timeout is null
 	 */
 	public @NonNull TcpClientConfigBuilder connectTimeout(@NonNull Duration connectTimeout) {
-		this.connectTimeout = connectTimeout;
+		this.connectTimeout = Objects.requireNonNull(connectTimeout, "Connect timeout must not be null");
 		return this;
 	}
 	
@@ -82,9 +111,10 @@ public final class TcpClientConfigBuilder {
 	 *
 	 * @param readTimeout The read timeout
 	 * @return This builder for method chaining
+	 * @throws NullPointerException If the read timeout is null
 	 */
 	public @NonNull TcpClientConfigBuilder readTimeout(@NonNull Duration readTimeout) {
-		this.readTimeout = readTimeout;
+		this.readTimeout = Objects.requireNonNull(readTimeout, "Read timeout must not be null");
 		return this;
 	}
 	
@@ -94,9 +124,10 @@ public final class TcpClientConfigBuilder {
 	 *
 	 * @param writeTimeout The write timeout
 	 * @return This builder for method chaining
+	 * @throws NullPointerException If the write timeout is null
 	 */
 	public @NonNull TcpClientConfigBuilder writeTimeout(@NonNull Duration writeTimeout) {
-		this.writeTimeout = writeTimeout;
+		this.writeTimeout = Objects.requireNonNull(writeTimeout, "Write timeout must not be null");
 		return this;
 	}
 	

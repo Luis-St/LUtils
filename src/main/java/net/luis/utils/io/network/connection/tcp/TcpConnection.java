@@ -56,9 +56,18 @@ import java.util.Objects;
  */
 public final class TcpConnection implements AutoCloseable {
 	
-	private final @NonNull Socket socket;
+	/**
+	 * The underlying client socket.<br>
+	 */
+	private final Socket socket;
+	/**
+	 * The buffer size for read operations.<br>
+	 */
 	private final int bufferSize;
-	private final @NonNull Duration readTimeout;
+	/**
+	 * The read timeout for blocking operations.<br>
+	 */
+	private final Duration readTimeout;
 	
 	/**
 	 * Constructs a new TCP connection wrapping the given socket.<br>
@@ -66,7 +75,7 @@ public final class TcpConnection implements AutoCloseable {
 	 * @param socket The client socket
 	 * @param bufferSize The buffer size for read operations
 	 * @param readTimeout The read timeout
-	 * @throws NullPointerException If socket or readTimeout is null
+	 * @throws NullPointerException If socket or read timeout is null
 	 */
 	TcpConnection(@NonNull Socket socket, int bufferSize, @NonNull Duration readTimeout) {
 		this.socket = Objects.requireNonNull(socket, "Socket must not be null");
@@ -220,7 +229,16 @@ public final class TcpConnection implements AutoCloseable {
 		}
 	}
 	
+	/**
+	 * Creates an {@link IpEndpoint} from the given socket address.<br>
+	 *
+	 * @param address The socket address to convert
+	 * @return The created endpoint
+	 * @throws NullPointerException If address is null
+	 */
 	private @NonNull IpEndpoint createEndpoint(@NonNull InetSocketAddress address) {
+		Objects.requireNonNull(address, "Address must not be null");
+		
 		IpAddress<?> ipAddress;
 		if (address.getAddress() instanceof Inet4Address inet4) {
 			ipAddress = Ipv4Address.from(inet4);

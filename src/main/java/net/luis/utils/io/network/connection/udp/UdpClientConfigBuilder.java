@@ -23,6 +23,7 @@ import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
 import java.time.Duration;
+import java.util.Objects;
 
 /**
  * Builder class for constructing UDP client configuration.<br>
@@ -48,10 +49,25 @@ import java.time.Duration;
  */
 public final class UdpClientConfigBuilder {
 	
-	private @NonNull Duration receiveTimeout = Duration.ZERO;
+	/**
+	 * The maximum time to wait for receive operations.<br>
+	 */
+	private Duration receiveTimeout = Duration.ZERO;
+	/**
+	 * The size of the receive buffer in bytes.<br>
+	 */
 	private int bufferSize = 65535;
+	/**
+	 * Whether to allow sending/receiving broadcast packets.<br>
+	 */
 	private boolean broadcast;
+	/**
+	 * Whether to allow address reuse (SO_REUSEADDR).<br>
+	 */
 	private boolean reuseAddress;
+	/**
+	 * The handler called when an error occurs.<br>
+	 */
 	private @Nullable ErrorEventHandler onError;
 	
 	/**
@@ -65,9 +81,10 @@ public final class UdpClientConfigBuilder {
 	 *
 	 * @param receiveTimeout The receive timeout
 	 * @return This builder for method chaining
+	 * @throws NullPointerException If receive timeout is null
 	 */
 	public @NonNull UdpClientConfigBuilder receiveTimeout(@NonNull Duration receiveTimeout) {
-		this.receiveTimeout = receiveTimeout;
+		this.receiveTimeout = Objects.requireNonNull(receiveTimeout, "Receive timeout must not be null");
 		return this;
 	}
 	

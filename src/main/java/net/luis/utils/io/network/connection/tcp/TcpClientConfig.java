@@ -98,7 +98,7 @@ public record TcpClientConfig(
 	 * @param onConnect Handler called when connection is established
 	 * @param onDisconnect Handler called when connection is closed
 	 * @param onError Handler called when an error occurs
-	 * @throws NullPointerException If connectTimeout, readTimeout, or writeTimeout is null
+	 * @throws NullPointerException If connect timeout, read timeout, or write timeout is null
 	 * @throws IllegalArgumentException If bufferSize is less than 1
 	 */
 	public TcpClientConfig {

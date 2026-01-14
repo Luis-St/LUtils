@@ -66,19 +66,40 @@ import java.util.concurrent.atomic.AtomicBoolean;
  */
 public final class TcpServer implements NetworkServer {
 	
-	private final @NonNull IpEndpoint bindEndpoint;
+	/**
+	 * The endpoint to bind the server to.<br>
+	 */
+	private final IpEndpoint bindEndpoint;
+	/**
+	 * The configuration for this server.<br>
+	 */
 	private final @NonNull TcpServerConfig config;
+	/**
+	 * Whether the server is currently running.<br>
+	 */
 	private final AtomicBoolean running = new AtomicBoolean(false);
+	/**
+	 * The set of currently active client connections.<br>
+	 */
 	private final Set<TcpConnection> connections = ConcurrentHashMap.newKeySet();
+	/**
+	 * The underlying server socket for accepting connections.<br>
+	 */
 	private volatile ServerSocket serverSocket;
+	/**
+	 * The executor service for handling client connections.<br>
+	 */
 	private volatile ExecutorService executor;
+	/**
+	 * The thread that accepts incoming connections.<br>
+	 */
 	private volatile Thread acceptThread;
 	
 	/**
 	 * Constructs a new TCP server with the specified bind endpoint and default configuration.<br>
 	 *
 	 * @param bindEndpoint The endpoint to bind to
-	 * @throws NullPointerException If bindEndpoint is null
+	 * @throws NullPointerException If bind endpoint is null
 	 */
 	public TcpServer(@NonNull IpEndpoint bindEndpoint) {
 		this(bindEndpoint, TcpServerConfig.DEFAULT);
@@ -89,7 +110,7 @@ public final class TcpServer implements NetworkServer {
 	 *
 	 * @param bindEndpoint The endpoint to bind to
 	 * @param config The server configuration
-	 * @throws NullPointerException If bindEndpoint or config is null
+	 * @throws NullPointerException If bind endpoint or config is null
 	 */
 	public TcpServer(@NonNull IpEndpoint bindEndpoint, @NonNull TcpServerConfig config) {
 		this.bindEndpoint = Objects.requireNonNull(bindEndpoint, "Bind endpoint must not be null");
@@ -193,6 +214,11 @@ public final class TcpServer implements NetworkServer {
 	}
 	
 	//region Helper methods
+	
+	/**
+	 * The main loop that accepts incoming client connections.<br>
+	 * This method runs on a dedicated thread and handles new connections.<br>
+	 */
 	private void acceptLoop() {
 		while (this.running.get() && !Thread.currentThread().isInterrupted()) {
 			try {
@@ -226,7 +252,16 @@ public final class TcpServer implements NetworkServer {
 		}
 	}
 	
+	/**
+	 * Handles communication with a connected client.<br>
+	 * This method runs on the executor and processes incoming messages.<br>
+	 *
+	 * @param connection The client connection to handle
+	 * @throws NullPointerException If connection is null
+	 */
 	private void handleClient(@NonNull TcpConnection connection) {
+		Objects.requireNonNull(connection, "Connection must not be null");
+		
 		try {
 			while (this.running.get() && connection.isActive()) {
 				byte[] data = connection.receive();
@@ -260,7 +295,16 @@ public final class TcpServer implements NetworkServer {
 		}
 	}
 	
+	/**
+	 * Creates an {@link IpEndpoint} from the given socket address.<br>
+	 *
+	 * @param address The socket address to convert
+	 * @return The created endpoint
+	 * @throws NullPointerException If address is null
+	 */
 	private @NonNull IpEndpoint createEndpoint(@NonNull InetSocketAddress address) {
+		Objects.requireNonNull(address, "Address must not be null");
+		
 		IpAddress<?> ipAddress;
 		if (address.getAddress() instanceof Inet4Address inet4) {
 			ipAddress = Ipv4Address.from(inet4);
@@ -270,12 +314,28 @@ public final class TcpServer implements NetworkServer {
 		return new IpEndpoint(ipAddress, address.getPort());
 	}
 	
+	/**
+	 * Handles an error by notifying the configured error handler.<br>
+	 *
+	 * @param errorType The type of error that occurred
+	 * @param message A human-readable error message
+	 * @param cause The underlying exception
+	 * @throws NullPointerException If the error type, message, or cause is null
+	 */
 	private void handleError(@NonNull NetworkErrorType errorType, @NonNull String message, @NonNull Throwable cause) {
+		Objects.requireNonNull(errorType, "Error type must not be null");
+		Objects.requireNonNull(message, "Message must not be null");
+		Objects.requireNonNull(cause, "Cause must not be null");
+		
 		if (this.config.onError() != null) {
 			this.config.onError().handle(errorType, message, cause);
 		}
 	}
 	
+	/**
+	 * Shuts down the executor service if it is owned by this server.<br>
+	 * Waits up to 5 seconds for graceful termination before forcing shutdown.<br>
+	 */
 	private void shutdownExecutor() {
 		if (this.executor != null && this.config.executorStrategy().ownsExecutor()) {
 			this.executor.shutdown();

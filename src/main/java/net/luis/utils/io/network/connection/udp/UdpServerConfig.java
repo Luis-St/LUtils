@@ -88,8 +88,8 @@ public record UdpServerConfig(
 	 * @param executorStrategy How to handle concurrent datagram processing
 	 * @param onMessage Handler called when a datagram is received
 	 * @param onError Handler called when an error occurs
-	 * @throws NullPointerException If executorStrategy is null
-	 * @throws IllegalArgumentException If bufferSize is less than 1
+	 * @throws NullPointerException If executor strategy is null
+	 * @throws IllegalArgumentException If buffer size is less than 1
 	 */
 	public UdpServerConfig {
 		Objects.requireNonNull(executorStrategy, "Executor strategy must not be null");

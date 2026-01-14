@@ -24,6 +24,8 @@ import net.luis.utils.io.network.connection.executor.ClientExecutorStrategy;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
+import java.util.Objects;
+
 /**
  * Builder class for constructing UDP server configuration.<br>
  * Provides a fluent API for setting individual configuration options.<br>
@@ -49,11 +51,29 @@ import org.jspecify.annotations.Nullable;
  */
 public final class UdpServerConfigBuilder {
 	
+	/**
+	 * The size of the receive buffer in bytes.<br>
+	 */
 	private int bufferSize = 65535;
+	/**
+	 * Whether to allow receiving broadcast packets.<br>
+	 */
 	private boolean broadcast;
+	/**
+	 * Whether to allow address reuse (SO_REUSEADDR).<br>
+	 */
 	private boolean reuseAddress;
-	private @NonNull ClientExecutorStrategy executorStrategy = ClientExecutorStrategy.virtualThreads();
+	/**
+	 * The executor strategy for handling concurrent datagram processing.<br>
+	 */
+	private ClientExecutorStrategy executorStrategy = ClientExecutorStrategy.virtualThreads();
+	/**
+	 * The handler called when a datagram is received.<br>
+	 */
 	private @Nullable MessageEventHandler<UdpServer, UdpDatagram> onMessage;
+	/**
+	 * The handler called when an error occurs.<br>
+	 */
 	private @Nullable ErrorEventHandler onError;
 	
 	/**
@@ -99,9 +119,10 @@ public final class UdpServerConfigBuilder {
 	 *
 	 * @param executorStrategy The executor strategy
 	 * @return This builder for method chaining
+	 * @throws NullPointerException If executor strategy is null
 	 */
 	public @NonNull UdpServerConfigBuilder executorStrategy(@NonNull ClientExecutorStrategy executorStrategy) {
-		this.executorStrategy = executorStrategy;
+		this.executorStrategy = Objects.requireNonNull(executorStrategy, "Executor strategy must not be null");
 		return this;
 	}
 	

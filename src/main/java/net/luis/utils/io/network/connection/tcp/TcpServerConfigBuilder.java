@@ -52,15 +52,45 @@ import java.time.Duration;
  */
 public final class TcpServerConfigBuilder {
 	
+	/**
+	 * The maximum number of pending connections in the queue.<br>
+	 */
 	private int backlog = 50;
+	/**
+	 * The buffer size for each client connection in bytes.<br>
+	 */
 	private int clientBufferSize = 8192;
-	private @NonNull Duration clientReadTimeout = Duration.ZERO;
+	/**
+	 * The read timeout for client connections.<br>
+	 */
+	private Duration clientReadTimeout = Duration.ZERO;
+	/**
+	 * Whether to disable Nagle's algorithm for client connections.<br>
+	 */
 	private boolean tcpNoDelay = true;
+	/**
+	 * Whether to enable TCP keep-alive for client connections.<br>
+	 */
 	private boolean keepAlive = true;
-	private @NonNull ClientExecutorStrategy executorStrategy = ClientExecutorStrategy.virtualThreads();
+	/**
+	 * The executor strategy for handling concurrent client connections.<br>
+	 */
+	private ClientExecutorStrategy executorStrategy = ClientExecutorStrategy.virtualThreads();
+	/**
+	 * The handler called when a client connects.<br>
+	 */
 	private @Nullable ConnectionEventHandler onClientConnect;
+	/**
+	 * The handler called when a client disconnects.<br>
+	 */
 	private @Nullable ConnectionEventHandler onClientDisconnect;
+	/**
+	 * The handler called when a message is received from a client.<br>
+	 */
 	private @Nullable MessageEventHandler<TcpServer, TcpConnection> onMessage;
+	/**
+	 * The handler called when an error occurs.<br>
+	 */
 	private @Nullable ErrorEventHandler onError;
 	
 	/**

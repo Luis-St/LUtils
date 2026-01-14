@@ -54,8 +54,17 @@ import java.util.concurrent.Executors;
  */
 public final class ThreadPoolStrategy implements ClientExecutorStrategy {
 	
+	/**
+	 * The number of threads in the fixed pool.<br>
+	 */
 	private final int poolSize;
+	/**
+	 * Whether to use a cached thread pool.<br>
+	 */
 	private final boolean cached;
+	/**
+	 * A custom executor service, or null to create one.<br>
+	 */
 	private final @Nullable ExecutorService customExecutor;
 	
 	/**
