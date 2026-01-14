@@ -31,6 +31,7 @@ class StructuredConcurrencyExceptionTest {
 	
 	@Test
 	void constructor() {
+		assertDoesNotThrow(() -> new StructuredConcurrencyException());
 		assertDoesNotThrow(() -> new StructuredConcurrencyException((String) null));
 		assertDoesNotThrow(() -> new StructuredConcurrencyException((Throwable) null));
 		assertDoesNotThrow(() -> new StructuredConcurrencyException(null, null));

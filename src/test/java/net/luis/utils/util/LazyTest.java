@@ -191,4 +191,41 @@ class LazyTest {
 		
 		assertEquals(lazyUninitialized1.hashCode(), lazyUninitialized2.hashCode());
 	}
+	
+	@Test
+	void equalsComparesValueAndState() {
+		Lazy<String> lazy1 = new Lazy<>("value");
+		Lazy<String> lazy2 = new Lazy<>("value");
+		Lazy<String> differentValue = new Lazy<>("other");
+		Lazy<String> uninitialized = new Lazy<>();
+		Lazy<String> nullValue1 = new Lazy<>((String) null);
+		Lazy<String> nullValue2 = new Lazy<>((String) null);
+		
+		assertEquals(lazy1, lazy1);
+		assertEquals(lazy1, lazy2);
+		assertNotEquals(lazy1, differentValue);
+		assertNotEquals(lazy1, uninitialized);
+		assertNotEquals(lazy1, null);
+		assertNotEquals(lazy1, "not a lazy");
+		assertEquals(nullValue1, nullValue2);
+	}
+	
+	@Test
+	void equalsUninitializedInstances() {
+		Lazy<String> uninitialized1 = new Lazy<>();
+		Lazy<String> uninitialized2 = new Lazy<>();
+		Lazy<Integer> uninitializedDifferentType = new Lazy<>();
+		
+		assertEquals(uninitialized1, uninitialized1);
+		assertEquals(uninitialized1, uninitialized2);
+		assertEquals(uninitialized1, uninitializedDifferentType);
+	}
+	
+	@Test
+	void toStringFormatsCorrectly() {
+		assertEquals("unknown", new Lazy<>().toString());
+		assertEquals("test", new Lazy<>("test").toString());
+		assertEquals("42", new Lazy<>(42).toString());
+		assertEquals("null", new Lazy<>((String) null).toString());
+	}
 }
