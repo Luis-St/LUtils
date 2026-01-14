@@ -243,6 +243,10 @@ public final class UdpServer implements NetworkServer {
 				UdpDatagram datagram = new UdpDatagram(sourceEndpoint, data);
 				
 				if (this.config.onMessage() != null) {
+					if (!this.isRunning()) {
+						break;
+					}
+					
 					this.executor.submit(() -> {
 						try {
 							this.config.onMessage().handle(this, datagram, data);

@@ -237,7 +237,13 @@ public final class TcpServer implements NetworkServer {
 					this.config.onClientConnect().handle(event);
 				}
 				
-				this.executor.submit(() -> this.handleClient(connection));
+				if (this.isRunning()) {
+					this.executor.submit(() -> this.handleClient(connection));
+				} else {
+					connection.close();
+					this.connections.remove(connection);
+					break;
+				}
 			} catch (SocketException e) {
 				if (this.running.get()) {
 					NetworkUtils.handleError(this.config.onError(), NetworkErrorType.SOCKET_CLOSED, "Server socket closed unexpectedly", e);
