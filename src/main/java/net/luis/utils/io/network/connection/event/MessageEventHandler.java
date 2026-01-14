@@ -23,7 +23,7 @@ import org.jspecify.annotations.NonNull;
 
 /**
  * Handler for incoming messages/datagrams.<br>
- * This functional interface is used to handle incoming data on servers.
+ * This functional interface is used to handle incoming data on servers.<br>
  * <p>
  *     For TCP servers, the context parameter is a {@code TcpConnection} that can be used to send replies.<br>
  *     For UDP servers, the context parameter is a {@code UdpDatagram} containing the source endpoint.
@@ -48,10 +48,10 @@ import org.jspecify.annotations.NonNull;
  * };
  * }</pre>
  *
+ * @author Luis-St
+ *
  * @param <S> The server type (TcpServer or UdpServer)
  * @param <C> The context type (TcpConnection for TCP, UdpDatagram for UDP)
- *
- * @author Luis-St
  */
 @FunctionalInterface
 public interface MessageEventHandler<S extends NetworkServer, C> {

@@ -39,7 +39,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * A blocking TCP server that accepts client connections.<br>
- * This class provides a simple server that dispatches incoming connections to a message handler.
+ * This class provides a simple server that dispatches incoming connections to a message handler.<br>
  * <p>
  *     Example usage:
  * </p>
@@ -138,9 +138,7 @@ public final class TcpServer implements NetworkServer {
 		if (this.serverSocket != null && !this.serverSocket.isClosed()) {
 			try {
 				this.serverSocket.close();
-			} catch (IOException ignored) {
-				// Ignore close errors
-			}
+			} catch (IOException _) {}
 		}
 
 		if (this.acceptThread != null) {
@@ -166,7 +164,6 @@ public final class TcpServer implements NetworkServer {
 
 	/**
 	 * Returns the number of currently connected clients.<br>
-	 *
 	 * @return The number of active connections
 	 */
 	public int getClientCount() {
@@ -263,9 +260,7 @@ public final class TcpServer implements NetworkServer {
 				try {
 					ConnectionEvent event = ConnectionEvent.now(connection.localEndpoint(), connection.remoteEndpoint());
 					this.config.onClientDisconnect().handle(event);
-				} catch (Exception ignored) {
-					// Ignore errors in disconnect handler
-				}
+				} catch (Exception _) {}
 			}
 
 			this.connections.remove(connection);

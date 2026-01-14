@@ -25,7 +25,7 @@ import java.util.concurrent.ExecutorService;
 
 /**
  * Strategy for handling concurrent client connections/message processing.<br>
- * This sealed interface allows configuration of how servers handle multiple clients.
+ * This sealed interface allows configuration of how servers handle multiple clients.<br>
  * <p>
  *     Two strategies are provided:
  * </p>
@@ -59,7 +59,6 @@ public sealed interface ClientExecutorStrategy permits VirtualThreadStrategy, Th
 
 	/**
 	 * Creates an executor service based on this strategy.<br>
-	 *
 	 * @return A new executor service
 	 */
 	@NonNull ExecutorService createExecutor();
@@ -75,7 +74,7 @@ public sealed interface ClientExecutorStrategy permits VirtualThreadStrategy, Th
 
 	/**
 	 * Creates a virtual thread per client strategy.<br>
-	 * This is the recommended approach for modern Java applications (Java 21+).
+	 * This is the recommended approach for modern Java applications (Java 21+).<br>
 	 *
 	 * @return A new virtual thread strategy
 	 */
@@ -99,7 +98,7 @@ public sealed interface ClientExecutorStrategy permits VirtualThreadStrategy, Th
 
 	/**
 	 * Creates a cached thread pool strategy.<br>
-	 * Threads are created as needed and reused when available.
+	 * Threads are created as needed and reused when available.<br>
 	 *
 	 * @return A new cached thread pool strategy
 	 */
@@ -109,8 +108,8 @@ public sealed interface ClientExecutorStrategy permits VirtualThreadStrategy, Th
 
 	/**
 	 * Uses a custom executor service.<br>
-	 * The executor is not owned by this strategy and will not be shut down
-	 * when the server is closed.
+	 * The executor is not owned by this strategy and will not be shut down<br>
+	 * when the server is closed.<br>
 	 *
 	 * @param executor The custom executor service to use
 	 * @return A new thread pool strategy wrapping the custom executor

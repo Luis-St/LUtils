@@ -27,7 +27,7 @@ import java.util.Objects;
 
 /**
  * Thrown when a network operation times out.<br>
- * This exception extends {@link NetworkConnectionException} and provides
+ * This exception extends {@link NetworkConnectionException} and provides<br>
  * additional information about the timeout duration that was exceeded.<br>
  * <p>
  *     Example:
@@ -123,7 +123,6 @@ public class NetworkTimeoutException extends NetworkConnectionException {
 
 	/**
 	 * Returns the timeout duration that was exceeded.<br>
-	 *
 	 * @return The timeout duration, never null
 	 */
 	public @NonNull Duration timeout() {

@@ -26,7 +26,7 @@ import org.jspecify.annotations.Nullable;
 
 /**
  * Builder class for constructing UDP server configuration.<br>
- * Provides a fluent API for setting individual configuration options.
+ * Provides a fluent API for setting individual configuration options.<br>
  * <p>
  *     All options default to values matching {@link UdpServerConfig#DEFAULT}.
  * </p>
@@ -129,17 +129,9 @@ public final class UdpServerConfigBuilder {
 
 	/**
 	 * Builds a new UDP server configuration with the configured values.<br>
-	 *
 	 * @return A new configuration instance
 	 */
 	public @NonNull UdpServerConfig build() {
-		return new UdpServerConfig(
-			this.bufferSize,
-			this.broadcast,
-			this.reuseAddress,
-			this.executorStrategy,
-			this.onMessage,
-			this.onError
-		);
+		return new UdpServerConfig(this.bufferSize, this.broadcast, this.reuseAddress, this.executorStrategy, this.onMessage, this.onError);
 	}
 }

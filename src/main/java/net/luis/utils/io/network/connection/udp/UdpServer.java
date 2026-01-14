@@ -36,7 +36,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * A UDP server that receives datagrams on a bound port.<br>
- * This class provides a simple blocking server that dispatches incoming datagrams to a message handler.
+ * This class provides a simple blocking server that dispatches incoming datagrams to a message handler.<br>
  * <p>
  *     Example usage:
  * </p>
@@ -154,8 +154,8 @@ public final class UdpServer implements NetworkServer {
 	 *
 	 * @param destination The destination endpoint
 	 * @param data The data to send
-	 * @throws NetworkConnectionException If sending fails
 	 * @throws NullPointerException If destination or data is null
+	 * @throws NetworkConnectionException If sending fails
 	 */
 	public void send(@NonNull IpEndpoint destination, byte @NonNull [] data) throws NetworkConnectionException {
 		Objects.requireNonNull(destination, "Destination must not be null");
@@ -178,8 +178,8 @@ public final class UdpServer implements NetworkServer {
 	 * Sends a datagram.<br>
 	 *
 	 * @param datagram The datagram to send
-	 * @throws NetworkConnectionException If sending fails
 	 * @throws NullPointerException If datagram is null
+	 * @throws NetworkConnectionException If sending fails
 	 */
 	public void send(@NonNull UdpDatagram datagram) throws NetworkConnectionException {
 		Objects.requireNonNull(datagram, "Datagram must not be null");

@@ -27,7 +27,7 @@ import java.time.Duration;
 
 /**
  * Builder class for constructing TCP client configuration.<br>
- * Provides a fluent API for setting individual configuration options.
+ * Provides a fluent API for setting individual configuration options.<br>
  * <p>
  *     All options default to values matching {@link TcpClientConfig#DEFAULT}.
  * </p>
@@ -78,7 +78,7 @@ public final class TcpClientConfigBuilder {
 
 	/**
 	 * Sets the maximum time to wait for read operations.<br>
-	 * Use {@link Duration#ZERO} for infinite timeout.
+	 * Use {@link Duration#ZERO} for infinite timeout.<br>
 	 *
 	 * @param readTimeout The read timeout
 	 * @return This builder for method chaining
@@ -90,7 +90,7 @@ public final class TcpClientConfigBuilder {
 
 	/**
 	 * Sets the maximum time to wait for write operations.<br>
-	 * Use {@link Duration#ZERO} for infinite timeout.
+	 * Use {@link Duration#ZERO} for infinite timeout.<br>
 	 *
 	 * @param writeTimeout The write timeout
 	 * @return This builder for method chaining
@@ -113,7 +113,7 @@ public final class TcpClientConfigBuilder {
 
 	/**
 	 * Sets whether to disable Nagle's algorithm (TCP_NODELAY).<br>
-	 * When enabled, small packets are sent immediately without waiting.
+	 * When enabled, small packets are sent immediately without waiting.<br>
 	 *
 	 * @param tcpNoDelay True to disable Nagle's algorithm
 	 * @return This builder for method chaining
@@ -169,20 +169,9 @@ public final class TcpClientConfigBuilder {
 
 	/**
 	 * Builds a new TCP client configuration with the configured values.<br>
-	 *
 	 * @return A new configuration instance
 	 */
 	public @NonNull TcpClientConfig build() {
-		return new TcpClientConfig(
-			this.connectTimeout,
-			this.readTimeout,
-			this.writeTimeout,
-			this.bufferSize,
-			this.tcpNoDelay,
-			this.keepAlive,
-			this.onConnect,
-			this.onDisconnect,
-			this.onError
-		);
+		return new TcpClientConfig(this.connectTimeout, this.readTimeout, this.writeTimeout, this.bufferSize, this.tcpNoDelay, this.keepAlive, this.onConnect, this.onDisconnect, this.onError);
 	}
 }

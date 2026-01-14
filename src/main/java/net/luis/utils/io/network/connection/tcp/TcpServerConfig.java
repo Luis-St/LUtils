@@ -30,7 +30,7 @@ import java.util.Objects;
 
 /**
  * Configuration options for TCP servers.<br>
- * This record provides settings for TCP server behavior such as backlog, client settings, and event handlers.
+ * This record provides settings for TCP server behavior such as backlog, client settings, and event handlers.<br>
  * <p>
  *     Example usage:
  * </p>
@@ -132,7 +132,6 @@ public record TcpServerConfig(
 
 	/**
 	 * Creates a new builder for constructing TCP server configuration.<br>
-	 *
 	 * @return A new builder with default values
 	 */
 	public static @NonNull TcpServerConfigBuilder builder() {

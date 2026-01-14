@@ -38,7 +38,7 @@ import java.util.Optional;
 
 /**
  * A blocking TCP client for establishing connections to remote servers.<br>
- * This class provides a simple blocking API for TCP communication.
+ * This class provides a simple blocking API for TCP communication.<br>
  * <p>
  *     Example usage:
  * </p>
@@ -88,9 +88,9 @@ public final class TcpClient implements NetworkClient {
 	 * Connects to the specified remote endpoint.<br>
 	 *
 	 * @param endpoint The remote endpoint to connect to
+	 * @throws NullPointerException If endpoint is null
 	 * @throws NetworkConnectionException If connection fails
 	 * @throws NetworkTimeoutException If connection times out
-	 * @throws NullPointerException If endpoint is null
 	 */
 	public void connect(@NonNull IpEndpoint endpoint) throws NetworkConnectionException {
 		Objects.requireNonNull(endpoint, "Endpoint must not be null");
@@ -134,8 +134,8 @@ public final class TcpClient implements NetworkClient {
 	 * Sends data to the connected server.<br>
 	 *
 	 * @param data The data to send
-	 * @throws NetworkConnectionException If sending fails
 	 * @throws NullPointerException If data is null
+	 * @throws NetworkConnectionException If sending fails
 	 */
 	public void send(byte @NonNull [] data) throws NetworkConnectionException {
 		Objects.requireNonNull(data, "Data must not be null");
@@ -156,7 +156,7 @@ public final class TcpClient implements NetworkClient {
 
 	/**
 	 * Receives data from the connected server (blocking).<br>
-	 * Uses the buffer size from the configuration.
+	 * Uses the buffer size from the configuration.<br>
 	 *
 	 * @return The received data, or an empty array if the connection was closed
 	 * @throws NetworkConnectionException If receiving fails
@@ -171,9 +171,9 @@ public final class TcpClient implements NetworkClient {
 	 *
 	 * @param maxBytes The maximum number of bytes to receive
 	 * @return The received data, or an empty array if the connection was closed
+	 * @throws IllegalArgumentException If maxBytes is less than 1
 	 * @throws NetworkConnectionException If receiving fails
 	 * @throws NetworkTimeoutException If the receive times out
-	 * @throws IllegalArgumentException If maxBytes is less than 1
 	 */
 	public byte @NonNull [] receive(int maxBytes) throws NetworkConnectionException {
 		if (maxBytes < 1) {
@@ -251,7 +251,6 @@ public final class TcpClient implements NetworkClient {
 
 	/**
 	 * Returns the remote endpoint this client is connected to.<br>
-	 *
 	 * @return The remote endpoint, or empty if not connected
 	 */
 	public @NonNull Optional<IpEndpoint> remoteEndpoint() {
@@ -291,9 +290,7 @@ public final class TcpClient implements NetworkClient {
 					ConnectionEvent event = ConnectionEvent.now(local, remote);
 					this.config.onDisconnect().handle(event);
 				}
-			} catch (Exception ignored) {
-				// Ignore errors in disconnect handler
-			}
+			} catch (Exception _) {}
 		}
 		this.connected = false;
 	}

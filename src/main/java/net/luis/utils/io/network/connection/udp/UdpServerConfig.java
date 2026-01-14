@@ -28,7 +28,7 @@ import java.util.Objects;
 
 /**
  * Configuration options for UDP servers.<br>
- * This record provides settings for UDP server behavior such as buffer sizes, executor strategy, and event handlers.
+ * This record provides settings for UDP server behavior such as buffer sizes, executor strategy, and event handlers.<br>
  * <p>
  *     Example usage:
  * </p>
@@ -107,7 +107,6 @@ public record UdpServerConfig(
 
 	/**
 	 * Creates a new builder for constructing UDP server configuration.<br>
-	 *
 	 * @return A new builder with default values
 	 */
 	public static @NonNull UdpServerConfigBuilder builder() {

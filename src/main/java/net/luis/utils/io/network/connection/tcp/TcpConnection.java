@@ -25,6 +25,7 @@ import net.luis.utils.io.network.address.ipv6.Ipv6Address;
 import net.luis.utils.io.network.connection.exception.NetworkConnectionException;
 import net.luis.utils.io.network.connection.exception.NetworkErrorType;
 import net.luis.utils.io.network.connection.exception.NetworkTimeoutException;
+import org.apache.commons.lang3.ArrayUtils;
 import org.jspecify.annotations.NonNull;
 
 import java.io.IOException;
@@ -36,7 +37,7 @@ import java.util.Objects;
 
 /**
  * Represents an active TCP connection from a client to a server.<br>
- * This class wraps a client socket and provides convenient send/receive operations.
+ * This class wraps a client socket and provides convenient send/receive operations.<br>
  * <p>
  *     Instances of this class are created by {@link TcpServer} when clients connect
  *     and are passed to the message handler for processing.
@@ -80,7 +81,6 @@ public final class TcpConnection implements AutoCloseable {
 
 	/**
 	 * Returns the remote endpoint of this connection.<br>
-	 *
 	 * @return The remote endpoint
 	 */
 	public @NonNull IpEndpoint remoteEndpoint() {
@@ -90,7 +90,6 @@ public final class TcpConnection implements AutoCloseable {
 
 	/**
 	 * Returns the local endpoint of this connection.<br>
-	 *
 	 * @return The local endpoint
 	 */
 	public @NonNull IpEndpoint localEndpoint() {
@@ -102,8 +101,8 @@ public final class TcpConnection implements AutoCloseable {
 	 * Sends data to the connected client.<br>
 	 *
 	 * @param data The data to send
-	 * @throws NetworkConnectionException If sending fails
 	 * @throws NullPointerException If data is null
+	 * @throws NetworkConnectionException If sending fails
 	 */
 	public void send(byte @NonNull [] data) throws NetworkConnectionException {
 		Objects.requireNonNull(data, "Data must not be null");
@@ -125,7 +124,7 @@ public final class TcpConnection implements AutoCloseable {
 
 	/**
 	 * Receives data from the connected client (blocking).<br>
-	 * Uses the configured buffer size.
+	 * Uses the configured buffer size.<br>
 	 *
 	 * @return The received data, or an empty array if the connection was closed
 	 * @throws NetworkConnectionException If receiving fails
@@ -140,9 +139,9 @@ public final class TcpConnection implements AutoCloseable {
 	 *
 	 * @param maxBytes The maximum number of bytes to receive
 	 * @return The received data, or an empty array if the connection was closed
+	 * @throws IllegalArgumentException If maxBytes is less than 1
 	 * @throws NetworkConnectionException If receiving fails
 	 * @throws NetworkTimeoutException If the receive times out
-	 * @throws IllegalArgumentException If maxBytes is less than 1
 	 */
 	public byte @NonNull [] receive(int maxBytes) throws NetworkConnectionException {
 		if (maxBytes < 1) {
@@ -159,7 +158,7 @@ public final class TcpConnection implements AutoCloseable {
 			int bytesRead = in.read(buffer);
 
 			if (bytesRead == -1) {
-				return new byte[0]; // Connection closed
+				return ArrayUtils.EMPTY_BYTE_ARRAY; // Connection closed
 			}
 
 			byte[] data = new byte[bytesRead];
@@ -210,16 +209,15 @@ public final class TcpConnection implements AutoCloseable {
 
 	/**
 	 * Returns whether this connection is still active.<br>
-	 *
 	 * @return True if the connection is active
 	 */
 	public boolean isActive() {
-		return this.socket != null && !this.socket.isClosed() && this.socket.isConnected();
+		return !this.socket.isClosed() && this.socket.isConnected();
 	}
 
 	@Override
 	public void close() {
-		if (this.socket != null && !this.socket.isClosed()) {
+		if (!this.socket.isClosed()) {
 			try {
 				this.socket.close();
 			} catch (IOException ignored) {

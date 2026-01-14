@@ -35,7 +35,7 @@ import java.util.Optional;
 
 /**
  * A connectionless UDP client for sending and receiving datagrams.<br>
- * This class provides a simple blocking API for UDP communication.
+ * This class provides a simple blocking API for UDP communication.<br>
  * <p>
  *     Example usage:
  * </p>
@@ -84,11 +84,11 @@ public final class UdpClient implements NetworkClient {
 
 	/**
 	 * Binds the client to a local endpoint.<br>
-	 * This must be called before receiving datagrams.
+	 * This must be called before receiving datagrams.<br>
 	 *
 	 * @param localEndpoint The local endpoint to bind to
-	 * @throws NetworkConnectionException If binding fails
 	 * @throws NullPointerException If localEndpoint is null
+	 * @throws NetworkConnectionException If binding fails
 	 */
 	public void bind(@NonNull IpEndpoint localEndpoint) throws NetworkConnectionException {
 		Objects.requireNonNull(localEndpoint, "Local endpoint must not be null");
@@ -121,8 +121,8 @@ public final class UdpClient implements NetworkClient {
 	 *
 	 * @param destination The destination endpoint
 	 * @param data The data to send
-	 * @throws NetworkConnectionException If sending fails
 	 * @throws NullPointerException If destination or data is null
+	 * @throws NetworkConnectionException If sending fails
 	 */
 	public void send(@NonNull IpEndpoint destination, byte @NonNull [] data) throws NetworkConnectionException {
 		Objects.requireNonNull(destination, "Destination must not be null");
@@ -143,8 +143,8 @@ public final class UdpClient implements NetworkClient {
 	 * Sends a datagram.<br>
 	 *
 	 * @param datagram The datagram to send
-	 * @throws NetworkConnectionException If sending fails
 	 * @throws NullPointerException If datagram is null
+	 * @throws NetworkConnectionException If sending fails
 	 */
 	public void send(@NonNull UdpDatagram datagram) throws NetworkConnectionException {
 		Objects.requireNonNull(datagram, "Datagram must not be null");
@@ -153,7 +153,7 @@ public final class UdpClient implements NetworkClient {
 
 	/**
 	 * Receives a datagram (blocking).<br>
-	 * Uses the buffer size from the configuration.
+	 * Uses the buffer size from the configuration.<br>
 	 *
 	 * @return The received datagram
 	 * @throws NetworkConnectionException If receiving fails
@@ -168,9 +168,9 @@ public final class UdpClient implements NetworkClient {
 	 *
 	 * @param maxBytes The maximum number of bytes to receive
 	 * @return The received datagram
+	 * @throws IllegalArgumentException If maxBytes is less than 1
 	 * @throws NetworkConnectionException If receiving fails
 	 * @throws NetworkTimeoutException If the receive times out
-	 * @throws IllegalArgumentException If maxBytes is less than 1
 	 */
 	public @NonNull UdpDatagram receive(int maxBytes) throws NetworkConnectionException {
 		if (maxBytes < 1) {

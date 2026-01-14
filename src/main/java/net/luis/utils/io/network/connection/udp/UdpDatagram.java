@@ -26,7 +26,7 @@ import java.util.Objects;
 /**
  * Represents a UDP datagram with its source/destination endpoint and payload.<br>
  * For received datagrams, the endpoint represents the source address.<br>
- * For outgoing datagrams, the endpoint represents the destination address.
+ * For outgoing datagrams, the endpoint represents the destination address.<br>
  * <p>
  *     Example usage:
  * </p>
@@ -77,7 +77,7 @@ public record UdpDatagram(
 
 	/**
 	 * Returns a copy of the payload data.<br>
-	 * Modifications to the returned array will not affect this datagram.
+	 * Modifications to the returned array will not affect this datagram.<br>
 	 *
 	 * @return A copy of the payload data
 	 */

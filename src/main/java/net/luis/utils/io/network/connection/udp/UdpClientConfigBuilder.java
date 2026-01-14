@@ -26,7 +26,7 @@ import java.time.Duration;
 
 /**
  * Builder class for constructing UDP client configuration.<br>
- * Provides a fluent API for setting individual configuration options.
+ * Provides a fluent API for setting individual configuration options.<br>
  * <p>
  *     All options default to values matching {@link UdpClientConfig#DEFAULT}.
  * </p>
@@ -61,7 +61,7 @@ public final class UdpClientConfigBuilder {
 
 	/**
 	 * Sets the maximum time to wait for receive operations.<br>
-	 * Use {@link Duration#ZERO} for infinite timeout.
+	 * Use {@link Duration#ZERO} for infinite timeout.<br>
 	 *
 	 * @param receiveTimeout The receive timeout
 	 * @return This builder for method chaining
@@ -117,7 +117,6 @@ public final class UdpClientConfigBuilder {
 
 	/**
 	 * Builds a new UDP client configuration with the configured values.<br>
-	 *
 	 * @return A new configuration instance
 	 */
 	public @NonNull UdpClientConfig build() {

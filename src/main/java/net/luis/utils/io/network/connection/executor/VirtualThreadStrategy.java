@@ -25,7 +25,7 @@ import java.util.concurrent.Executors;
 
 /**
  * Strategy that creates a virtual thread per client connection.<br>
- * This is the recommended approach for modern Java applications (Java 21+).
+ * This is the recommended approach for modern Java applications (Java 21+).<br>
  * <p>
  *     Virtual threads are lightweight and can scale to thousands of concurrent
  *     connections without the overhead of traditional platform threads.

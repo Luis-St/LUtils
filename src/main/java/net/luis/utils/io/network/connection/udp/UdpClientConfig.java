@@ -27,7 +27,7 @@ import java.util.Objects;
 
 /**
  * Configuration options for UDP clients.<br>
- * This record provides settings for UDP socket behavior such as timeouts, buffer sizes, and event handlers.
+ * This record provides settings for UDP socket behavior such as timeouts, buffer sizes, and event handlers.<br>
  * <p>
  *     Example usage:
  * </p>
@@ -100,7 +100,6 @@ public record UdpClientConfig(
 
 	/**
 	 * Creates a new builder for constructing UDP client configuration.<br>
-	 *
 	 * @return A new builder with default values
 	 */
 	public static @NonNull UdpClientConfigBuilder builder() {

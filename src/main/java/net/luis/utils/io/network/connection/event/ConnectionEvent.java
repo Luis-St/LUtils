@@ -26,7 +26,7 @@ import java.util.Objects;
 
 /**
  * Event context for connection lifecycle events.<br>
- * This record contains information about a connection event such as connect or disconnect.
+ * This record contains information about a connection event such as connect or disconnect.<br>
  * <p>
  *     Example usage:
  * </p>

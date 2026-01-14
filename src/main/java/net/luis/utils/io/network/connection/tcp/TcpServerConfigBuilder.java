@@ -29,7 +29,7 @@ import java.time.Duration;
 
 /**
  * Builder class for constructing TCP server configuration.<br>
- * Provides a fluent API for setting individual configuration options.
+ * Provides a fluent API for setting individual configuration options.<br>
  * <p>
  *     All options default to values matching {@link TcpServerConfig#DEFAULT}.
  * </p>
@@ -94,7 +94,7 @@ public final class TcpServerConfigBuilder {
 
 	/**
 	 * Sets the read timeout for client connections.<br>
-	 * Use {@link Duration#ZERO} for infinite timeout.
+	 * Use {@link Duration#ZERO} for infinite timeout.<br>
 	 *
 	 * @param clientReadTimeout The read timeout
 	 * @return This builder for method chaining
@@ -183,7 +183,6 @@ public final class TcpServerConfigBuilder {
 
 	/**
 	 * Builds a new TCP server configuration with the configured values.<br>
-	 *
 	 * @return A new configuration instance
 	 */
 	public @NonNull TcpServerConfig build() {

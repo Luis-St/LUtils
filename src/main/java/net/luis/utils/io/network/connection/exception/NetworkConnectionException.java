@@ -26,7 +26,7 @@ import java.io.IOException;
 
 /**
  * Thrown when a network connection operation fails.<br>
- * This exception provides detailed information about the failure including
+ * This exception provides detailed information about the failure including<br>
  * the error type and optionally the endpoint involved.<br>
  * <p>
  *     The {@link NetworkErrorType} enum categorizes the specific error, allowing
@@ -60,7 +60,7 @@ public class NetworkConnectionException extends IOException {
 
 	/**
 	 * Constructs a new network connection exception with no details.<br>
-	 * The error type defaults to {@link NetworkErrorType#UNKNOWN} and the endpoint is null.
+	 * The error type defaults to {@link NetworkErrorType#UNKNOWN} and the endpoint is null.<br>
 	 */
 	public NetworkConnectionException() {
 		this.errorType = NetworkErrorType.UNKNOWN;
@@ -186,7 +186,6 @@ public class NetworkConnectionException extends IOException {
 
 	/**
 	 * Returns the type of error that caused this exception.<br>
-	 *
 	 * @return The error type, never null
 	 */
 	public @NonNull NetworkErrorType errorType() {
@@ -195,7 +194,6 @@ public class NetworkConnectionException extends IOException {
 
 	/**
 	 * Returns the endpoint involved in the failed operation.<br>
-	 *
 	 * @return The endpoint, or null if not available
 	 */
 	public @Nullable IpEndpoint endpoint() {

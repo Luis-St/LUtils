@@ -24,8 +24,8 @@ import org.jspecify.annotations.Nullable;
 
 /**
  * Handler for network errors.<br>
- * This functional interface is used to handle errors that occur during
- * network operations without throwing exceptions.
+ * This functional interface is used to handle errors that occur during<br>
+ * network operations without throwing exceptions.<br>
  * <p>
  *     Example usage:
  * </p>

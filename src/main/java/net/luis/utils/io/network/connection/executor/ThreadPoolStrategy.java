@@ -26,7 +26,7 @@ import java.util.concurrent.Executors;
 
 /**
  * Strategy that uses a traditional thread pool for client handling.<br>
- * This can be either a fixed-size pool, a cached pool, or a custom executor.
+ * This can be either a fixed-size pool, a cached pool, or a custom executor.<br>
  * <p>
  *     Example usage:
  * </p>
@@ -89,7 +89,6 @@ public final class ThreadPoolStrategy implements ClientExecutorStrategy {
 
 	/**
 	 * Returns the pool size for fixed thread pools.<br>
-	 *
 	 * @return The pool size, or 0 for cached/custom pools
 	 */
 	public int poolSize() {
@@ -98,7 +97,6 @@ public final class ThreadPoolStrategy implements ClientExecutorStrategy {
 
 	/**
 	 * Returns whether this is a cached thread pool strategy.<br>
-	 *
 	 * @return True if cached
 	 */
 	public boolean isCached() {
@@ -107,7 +105,6 @@ public final class ThreadPoolStrategy implements ClientExecutorStrategy {
 
 	/**
 	 * Returns whether this strategy uses a custom executor.<br>
-	 *
 	 * @return True if using a custom executor
 	 */
 	public boolean isCustom() {
