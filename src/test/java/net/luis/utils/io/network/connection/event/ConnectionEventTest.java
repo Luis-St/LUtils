@@ -18,14 +18,13 @@
 
 package net.luis.utils.io.network.connection.event;
 
-import static org.junit.jupiter.api.Assertions.*;
-
-import org.junit.jupiter.api.Test;
-
 import net.luis.utils.io.network.IpEndpoint;
 import net.luis.utils.io.network.address.ipv4.Ipv4Address;
+import org.junit.jupiter.api.Test;
 
 import java.time.Instant;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * Test class for {@link ConnectionEvent}.<br>
@@ -33,70 +32,70 @@ import java.time.Instant;
  * @author Luis-St
  */
 class ConnectionEventTest {
-
+	
 	@Test
 	void construct() {
 		IpEndpoint local = new IpEndpoint(Ipv4Address.LOOPBACK, 12345);
 		IpEndpoint remote = new IpEndpoint(Ipv4Address.LOOPBACK, 8080);
 		Instant timestamp = Instant.now();
-
+		
 		ConnectionEvent event = new ConnectionEvent(local, remote, timestamp);
-
+		
 		assertEquals(local, event.localEndpoint());
 		assertEquals(remote, event.remoteEndpoint());
 		assertEquals(timestamp, event.timestamp());
 	}
-
+	
 	@Test
 	void constructWithNullLocalEndpointThrows() {
 		IpEndpoint remote = new IpEndpoint(Ipv4Address.LOOPBACK, 8080);
 		Instant timestamp = Instant.now();
-
+		
 		assertThrows(NullPointerException.class, () -> new ConnectionEvent(null, remote, timestamp));
 	}
-
+	
 	@Test
 	void constructWithNullRemoteEndpointThrows() {
 		IpEndpoint local = new IpEndpoint(Ipv4Address.LOOPBACK, 12345);
 		Instant timestamp = Instant.now();
-
+		
 		assertThrows(NullPointerException.class, () -> new ConnectionEvent(local, null, timestamp));
 	}
-
+	
 	@Test
 	void constructWithNullTimestampThrows() {
 		IpEndpoint local = new IpEndpoint(Ipv4Address.LOOPBACK, 12345);
 		IpEndpoint remote = new IpEndpoint(Ipv4Address.LOOPBACK, 8080);
-
+		
 		assertThrows(NullPointerException.class, () -> new ConnectionEvent(local, remote, null));
 	}
-
+	
 	@Test
 	void now() {
 		IpEndpoint local = new IpEndpoint(Ipv4Address.LOOPBACK, 12345);
 		IpEndpoint remote = new IpEndpoint(Ipv4Address.LOOPBACK, 8080);
-
+		
 		Instant before = Instant.now();
 		ConnectionEvent event = ConnectionEvent.now(local, remote);
 		Instant after = Instant.now();
-
+		
 		assertEquals(local, event.localEndpoint());
 		assertEquals(remote, event.remoteEndpoint());
 		assertFalse(event.timestamp().isBefore(before));
 		assertFalse(event.timestamp().isAfter(after));
 	}
-
+	
 	@Test
 	void nowWithNullLocalEndpointThrows() {
 		IpEndpoint remote = new IpEndpoint(Ipv4Address.LOOPBACK, 8080);
-
+		
 		assertThrows(NullPointerException.class, () -> ConnectionEvent.now(null, remote));
 	}
-
+	
 	@Test
 	void nowWithNullRemoteEndpointThrows() {
 		IpEndpoint local = new IpEndpoint(Ipv4Address.LOOPBACK, 12345);
-
+		
 		assertThrows(NullPointerException.class, () -> ConnectionEvent.now(local, null));
 	}
 }

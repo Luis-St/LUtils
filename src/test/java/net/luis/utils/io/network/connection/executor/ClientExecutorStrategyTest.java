@@ -18,12 +18,12 @@
 
 package net.luis.utils.io.network.connection.executor;
 
-import static org.junit.jupiter.api.Assertions.*;
-
 import org.junit.jupiter.api.Test;
 
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * Test class for {@link ClientExecutorStrategy}.<br>
@@ -31,83 +31,80 @@ import java.util.concurrent.Executors;
  * @author Luis-St
  */
 class ClientExecutorStrategyTest {
-
+	
 	@Test
 	void virtualThreads() {
 		ClientExecutorStrategy strategy = ClientExecutorStrategy.virtualThreads();
-
+		
 		assertNotNull(strategy);
 		assertInstanceOf(VirtualThreadStrategy.class, strategy);
 		assertTrue(strategy.ownsExecutor());
-
+		
 		ExecutorService executor = strategy.createExecutor();
 		assertNotNull(executor);
 		executor.shutdownNow();
 	}
-
+	
 	@Test
 	void fixedPool() {
 		ClientExecutorStrategy strategy = ClientExecutorStrategy.fixedPool(10);
-
+		
 		assertNotNull(strategy);
-		assertInstanceOf(ThreadPoolStrategy.class, strategy);
 		assertTrue(strategy.ownsExecutor());
-
-		ThreadPoolStrategy threadPool = (ThreadPoolStrategy) strategy;
+		
+		ThreadPoolStrategy threadPool = assertInstanceOf(ThreadPoolStrategy.class, strategy);
 		assertEquals(10, threadPool.poolSize());
 		assertFalse(threadPool.isCached());
 		assertFalse(threadPool.isCustom());
-
+		
 		ExecutorService executor = strategy.createExecutor();
 		assertNotNull(executor);
 		executor.shutdownNow();
 	}
-
+	
 	@Test
 	void fixedPoolWithInvalidSizeThrows() {
 		assertThrows(IllegalArgumentException.class, () -> ClientExecutorStrategy.fixedPool(0));
 		assertThrows(IllegalArgumentException.class, () -> ClientExecutorStrategy.fixedPool(-1));
 		assertThrows(IllegalArgumentException.class, () -> ClientExecutorStrategy.fixedPool(-10));
 	}
-
+	
 	@Test
 	void cachedPool() {
 		ClientExecutorStrategy strategy = ClientExecutorStrategy.cachedPool();
-
+		
 		assertNotNull(strategy);
-		assertInstanceOf(ThreadPoolStrategy.class, strategy);
 		assertTrue(strategy.ownsExecutor());
-
-		ThreadPoolStrategy threadPool = (ThreadPoolStrategy) strategy;
+		
+		ThreadPoolStrategy threadPool = assertInstanceOf(ThreadPoolStrategy.class, strategy);
 		assertEquals(0, threadPool.poolSize());
 		assertTrue(threadPool.isCached());
 		assertFalse(threadPool.isCustom());
-
+		
 		ExecutorService executor = strategy.createExecutor();
 		assertNotNull(executor);
 		executor.shutdownNow();
 	}
-
+	
 	@Test
 	void customExecutor() {
 		ExecutorService customExecutor = Executors.newFixedThreadPool(5);
 		try {
 			ClientExecutorStrategy strategy = ClientExecutorStrategy.custom(customExecutor);
-
+			
 			assertNotNull(strategy);
-			assertInstanceOf(ThreadPoolStrategy.class, strategy);
 			assertFalse(strategy.ownsExecutor());
-
-			ThreadPoolStrategy threadPool = (ThreadPoolStrategy) strategy;
+			
+			ThreadPoolStrategy threadPool = assertInstanceOf(ThreadPoolStrategy.class, strategy);
 			assertTrue(threadPool.isCustom());
-
+			
 			ExecutorService returned = strategy.createExecutor();
 			assertSame(customExecutor, returned);
 		} finally {
 			customExecutor.shutdownNow();
 		}
 	}
-
+	
 	@Test
 	void customExecutorWithNullThrows() {
 		assertThrows(NullPointerException.class, () -> ClientExecutorStrategy.custom(null));

@@ -310,7 +310,7 @@ public record Ipv6Network(@NonNull Ipv6Address networkAddress, int prefixLength)
 	public @NonNull Iterator<Ipv6Address> iterator() {
 		return new Ipv6NetworkIterator(this.networkAddress, this.lastAddress());
 	}
-
+	
 	/**
 	 * Returns the last address in this network.<br>
 	 * This is the highest address within the network range, calculated by setting all host bits to 1.<br>
@@ -324,10 +324,10 @@ public record Ipv6Network(@NonNull Ipv6Address networkAddress, int prefixLength)
 		if (this.prefixLength == 0) {
 			return Ipv6Address.MAX;
 		}
-
+		
 		long highBits = this.networkAddress.highBits();
 		long lowBits = this.networkAddress.lowBits();
-
+		
 		if (this.prefixLength <= 64) {
 			int hostBits = 64 - this.prefixLength;
 			long hostMask = (1L << hostBits) - 1;
@@ -388,7 +388,7 @@ public record Ipv6Network(@NonNull Ipv6Address networkAddress, int prefixLength)
 	public @NonNull String toCidrNotation() {
 		return formatIpv6Address(this.networkAddress) + "/" + this.prefixLength;
 	}
-
+	
 	/**
 	 * Converts this network to an equivalent range covering all addresses in the network.<br>
 	 * The range starts at the network address and ends at the last address.<br>
@@ -398,7 +398,7 @@ public record Ipv6Network(@NonNull Ipv6Address networkAddress, int prefixLength)
 	public @NonNull Ipv6Range toRange() {
 		return Ipv6Range.fromNetwork(this);
 	}
-
+	
 	/**
 	 * Formats an IPv6 address in compressed notation.<br>
 	 *

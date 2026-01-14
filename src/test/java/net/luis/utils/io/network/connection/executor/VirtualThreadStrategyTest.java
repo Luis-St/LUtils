@@ -18,13 +18,12 @@
 
 package net.luis.utils.io.network.connection.executor;
 
-import static org.junit.jupiter.api.Assertions.*;
-
 import org.junit.jupiter.api.Test;
 
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.*;
+import java.util.concurrent.atomic.AtomicBoolean;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * Test class for {@link VirtualThreadStrategy}.<br>
@@ -32,44 +31,44 @@ import java.util.concurrent.TimeUnit;
  * @author Luis-St
  */
 class VirtualThreadStrategyTest {
-
+	
 	@Test
 	void createExecutor() {
 		VirtualThreadStrategy strategy = new VirtualThreadStrategy();
-
+		
 		ExecutorService executor = strategy.createExecutor();
 		assertNotNull(executor);
 		executor.shutdownNow();
 	}
-
+	
 	@Test
 	void ownsExecutor() {
 		VirtualThreadStrategy strategy = new VirtualThreadStrategy();
-
+		
 		assertTrue(strategy.ownsExecutor());
 	}
-
+	
 	@Test
 	void executorRunsTasksOnVirtualThreads() throws InterruptedException {
 		VirtualThreadStrategy strategy = new VirtualThreadStrategy();
 		ExecutorService executor = strategy.createExecutor();
-
+		
 		try {
 			CountDownLatch latch = new CountDownLatch(1);
-			boolean[] isVirtual = { false };
-
+			AtomicBoolean isVirtual = new AtomicBoolean(false);
+			
 			executor.submit(() -> {
-				isVirtual[0] = Thread.currentThread().isVirtual();
+				isVirtual.set(Thread.currentThread().isVirtual());
 				latch.countDown();
 			});
-
+			
 			assertTrue(latch.await(5, TimeUnit.SECONDS));
-			assertTrue(isVirtual[0]);
+			assertTrue(isVirtual.get());
 		} finally {
 			executor.shutdownNow();
 		}
 	}
-
+	
 	@Test
 	void implementsClientExecutorStrategy() {
 		VirtualThreadStrategy strategy = new VirtualThreadStrategy();

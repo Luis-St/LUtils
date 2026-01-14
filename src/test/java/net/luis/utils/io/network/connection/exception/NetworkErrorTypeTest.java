@@ -18,9 +18,9 @@
 
 package net.luis.utils.io.network.connection.exception;
 
-import static org.junit.jupiter.api.Assertions.*;
-
 import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * Test class for {@link NetworkErrorType}.<br>
@@ -28,12 +28,12 @@ import org.junit.jupiter.api.Test;
  * @author Luis-St
  */
 class NetworkErrorTypeTest {
-
+	
 	@Test
 	void valuesCount() {
-		assertEquals(14, NetworkErrorType.values().length);
+		assertEquals(15, NetworkErrorType.values().length);
 	}
-
+	
 	@Test
 	void valueOf() {
 		assertEquals(NetworkErrorType.CONNECTION_FAILED, NetworkErrorType.valueOf("CONNECTION_FAILED"));
@@ -49,9 +49,10 @@ class NetworkErrorTypeTest {
 		assertEquals(NetworkErrorType.NOT_CONNECTED, NetworkErrorType.valueOf("NOT_CONNECTED"));
 		assertEquals(NetworkErrorType.ALREADY_CONNECTED, NetworkErrorType.valueOf("ALREADY_CONNECTED"));
 		assertEquals(NetworkErrorType.IO_ERROR, NetworkErrorType.valueOf("IO_ERROR"));
+		assertEquals(NetworkErrorType.MESSAGE_TOO_LARGE, NetworkErrorType.valueOf("MESSAGE_TOO_LARGE"));
 		assertEquals(NetworkErrorType.UNKNOWN, NetworkErrorType.valueOf("UNKNOWN"));
 	}
-
+	
 	@Test
 	void valueOfInvalidThrows() {
 		assertThrows(IllegalArgumentException.class, () -> NetworkErrorType.valueOf("INVALID"));

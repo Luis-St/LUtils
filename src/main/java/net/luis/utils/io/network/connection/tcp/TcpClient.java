@@ -19,10 +19,8 @@
 package net.luis.utils.io.network.connection.tcp;
 
 import net.luis.utils.io.network.IpEndpoint;
-import net.luis.utils.io.network.address.IpAddress;
-import net.luis.utils.io.network.address.ipv4.Ipv4Address;
-import net.luis.utils.io.network.address.ipv6.Ipv6Address;
 import net.luis.utils.io.network.connection.NetworkClient;
+import net.luis.utils.io.network.connection.NetworkUtils;
 import net.luis.utils.io.network.connection.event.ConnectionEvent;
 import net.luis.utils.io.network.connection.exception.*;
 import org.apache.commons.lang3.ArrayUtils;
@@ -121,16 +119,16 @@ public final class TcpClient implements NetworkClient {
 				this.config.onConnect().handle(event);
 			}
 		} catch (SocketTimeoutException e) {
-			this.handleError(NetworkErrorType.CONNECTION_TIMEOUT, "Connection timed out to " + endpoint, e);
+			NetworkUtils.handleError(this.config.onError(), NetworkErrorType.CONNECTION_TIMEOUT, "Connection timed out to " + endpoint, e);
 			throw new NetworkTimeoutException("Connection timed out to " + endpoint, NetworkErrorType.CONNECTION_TIMEOUT, this.config.connectTimeout(), endpoint);
 		} catch (ConnectException e) {
-			this.handleError(NetworkErrorType.CONNECTION_REFUSED, "Connection refused by " + endpoint, e);
+			NetworkUtils.handleError(this.config.onError(), NetworkErrorType.CONNECTION_REFUSED, "Connection refused by " + endpoint, e);
 			throw new NetworkConnectionException("Connection refused by " + endpoint, e, NetworkErrorType.CONNECTION_REFUSED, endpoint);
 		} catch (NoRouteToHostException e) {
-			this.handleError(NetworkErrorType.HOST_UNREACHABLE, "Host unreachable: " + endpoint, e);
+			NetworkUtils.handleError(this.config.onError(), NetworkErrorType.HOST_UNREACHABLE, "Host unreachable: " + endpoint, e);
 			throw new NetworkConnectionException("Host unreachable: " + endpoint, e, NetworkErrorType.HOST_UNREACHABLE, endpoint);
 		} catch (IOException e) {
-			this.handleError(NetworkErrorType.CONNECTION_FAILED, "Failed to connect to " + endpoint, e);
+			NetworkUtils.handleError(this.config.onError(), NetworkErrorType.CONNECTION_FAILED, "Failed to connect to " + endpoint, e);
 			throw new NetworkConnectionException("Failed to connect to " + endpoint, e, NetworkErrorType.CONNECTION_FAILED, endpoint);
 		}
 	}
@@ -140,10 +138,11 @@ public final class TcpClient implements NetworkClient {
 	 *
 	 * @param data The data to send
 	 * @throws NullPointerException If data is null
-	 * @throws NetworkConnectionException If sending fails
+	 * @throws NetworkConnectionException If sending fails or data exceeds buffer size
 	 */
 	public void send(byte @NonNull [] data) throws NetworkConnectionException {
 		Objects.requireNonNull(data, "Data must not be null");
+		this.validateMessageSize(data);
 		this.ensureConnected();
 		
 		try {
@@ -154,7 +153,7 @@ public final class TcpClient implements NetworkClient {
 			this.handleDisconnect();
 			throw new NetworkConnectionException("Connection reset", e, NetworkErrorType.CONNECTION_RESET);
 		} catch (IOException e) {
-			this.handleError(NetworkErrorType.IO_ERROR, "Failed to send data", e);
+			NetworkUtils.handleError(this.config.onError(), NetworkErrorType.IO_ERROR, "Failed to send data", e);
 			throw new NetworkConnectionException("Failed to send data", e, NetworkErrorType.IO_ERROR);
 		}
 	}
@@ -205,7 +204,7 @@ public final class TcpClient implements NetworkClient {
 			this.handleDisconnect();
 			throw new NetworkConnectionException("Connection reset", e, NetworkErrorType.CONNECTION_RESET);
 		} catch (IOException e) {
-			this.handleError(NetworkErrorType.IO_ERROR, "Failed to receive data", e);
+			NetworkUtils.handleError(this.config.onError(), NetworkErrorType.IO_ERROR, "Failed to receive data", e);
 			throw new NetworkConnectionException("Failed to receive data", e, NetworkErrorType.IO_ERROR);
 		}
 	}
@@ -254,7 +253,7 @@ public final class TcpClient implements NetworkClient {
 		}
 		
 		InetSocketAddress address = (InetSocketAddress) this.socket.getLocalSocketAddress();
-		return Optional.of(this.createEndpoint(address));
+		return Optional.of(IpEndpoint.from(address));
 	}
 	
 	/**
@@ -267,7 +266,7 @@ public final class TcpClient implements NetworkClient {
 		}
 		
 		InetSocketAddress address = (InetSocketAddress) this.socket.getRemoteSocketAddress();
-		return Optional.of(this.createEndpoint(address));
+		return Optional.of(IpEndpoint.from(address));
 	}
 	
 	@Override
@@ -283,6 +282,18 @@ public final class TcpClient implements NetworkClient {
 	}
 	
 	//region Helper methods
+	
+	/**
+	 * Validates that the message size does not exceed the configured buffer size.<br>
+	 *
+	 * @param data The data to validate
+	 * @throws NetworkConnectionException If the data exceeds the buffer size
+	 */
+	private void validateMessageSize(byte @NonNull [] data) throws NetworkConnectionException {
+		if (data.length > this.config.bufferSize()) {
+			throw new NetworkConnectionException("Message size " + data.length + " exceeds buffer size " + this.config.bufferSize(), NetworkErrorType.MESSAGE_TOO_LARGE);
+		}
+	}
 	
 	/**
 	 * Ensures that the client is connected before performing operations.<br>
@@ -310,38 +321,6 @@ public final class TcpClient implements NetworkClient {
 			} catch (Exception _) {}
 		}
 		this.connected = false;
-	}
-	
-	/**
-	 * Creates an {@link IpEndpoint} from the given socket address.<br>
-	 *
-	 * @param address The socket address to convert
-	 * @return The created endpoint
-	 * @throws NullPointerException If address is null
-	 */
-	private @NonNull IpEndpoint createEndpoint(@NonNull InetSocketAddress address) {
-		Objects.requireNonNull(address, "Address must not be null");
-		
-		IpAddress<?> ipAddress;
-		if (address.getAddress() instanceof Inet4Address inet4) {
-			ipAddress = Ipv4Address.from(inet4);
-		} else {
-			ipAddress = Ipv6Address.from((Inet6Address) address.getAddress());
-		}
-		return new IpEndpoint(ipAddress, address.getPort());
-	}
-	
-	/**
-	 * Handles an error by notifying the configured error handler.<br>
-	 *
-	 * @param errorType The type of error that occurred
-	 * @param message A human-readable error message
-	 * @param cause The underlying exception
-	 */
-	private void handleError(@NonNull NetworkErrorType errorType, @NonNull String message, @NonNull Throwable cause) {
-		if (this.config.onError() != null) {
-			this.config.onError().handle(errorType, message, cause);
-		}
 	}
 	//endregion
 }

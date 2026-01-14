@@ -739,7 +739,7 @@ public final class IpAddresses {
 		} else if (address instanceof Inet6Address inet6) {
 			return from(inet6);
 		}
-		throw new IllegalArgumentException("Unknown InetAddress type: " + address.getClass().getName());
+		throw new IllegalArgumentException("Unknown network address type: " + address.getClass().getName());
 	}
 	
 	/**

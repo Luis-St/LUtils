@@ -19,9 +19,6 @@
 package net.luis.utils.io.network.connection.tcp;
 
 import net.luis.utils.io.network.IpEndpoint;
-import net.luis.utils.io.network.address.IpAddress;
-import net.luis.utils.io.network.address.ipv4.Ipv4Address;
-import net.luis.utils.io.network.address.ipv6.Ipv6Address;
 import net.luis.utils.io.network.connection.exception.*;
 import org.apache.commons.lang3.ArrayUtils;
 import org.jspecify.annotations.NonNull;
@@ -89,7 +86,7 @@ public final class TcpConnection implements AutoCloseable {
 	 */
 	public @NonNull IpEndpoint remoteEndpoint() {
 		InetSocketAddress address = (InetSocketAddress) this.socket.getRemoteSocketAddress();
-		return this.createEndpoint(address);
+		return IpEndpoint.from(address);
 	}
 	
 	/**
@@ -98,7 +95,7 @@ public final class TcpConnection implements AutoCloseable {
 	 */
 	public @NonNull IpEndpoint localEndpoint() {
 		InetSocketAddress address = (InetSocketAddress) this.socket.getLocalSocketAddress();
-		return this.createEndpoint(address);
+		return IpEndpoint.from(address);
 	}
 	
 	/**
@@ -106,10 +103,11 @@ public final class TcpConnection implements AutoCloseable {
 	 *
 	 * @param data The data to send
 	 * @throws NullPointerException If data is null
-	 * @throws NetworkConnectionException If sending fails
+	 * @throws NetworkConnectionException If sending fails or data exceeds buffer size
 	 */
 	public void send(byte @NonNull [] data) throws NetworkConnectionException {
 		Objects.requireNonNull(data, "Data must not be null");
+		this.validateMessageSize(data);
 		if (!this.isActive()) {
 			throw new NetworkConnectionException("Connection is closed", NetworkErrorType.SOCKET_CLOSED, this.remoteEndpoint());
 		}
@@ -229,22 +227,18 @@ public final class TcpConnection implements AutoCloseable {
 		}
 	}
 	
+	//region Helper methods
+	
 	/**
-	 * Creates an {@link IpEndpoint} from the given socket address.<br>
+	 * Validates that the message size does not exceed the configured buffer size.<br>
 	 *
-	 * @param address The socket address to convert
-	 * @return The created endpoint
-	 * @throws NullPointerException If address is null
+	 * @param data The data to validate
+	 * @throws NetworkConnectionException If the data exceeds the buffer size
 	 */
-	private @NonNull IpEndpoint createEndpoint(@NonNull InetSocketAddress address) {
-		Objects.requireNonNull(address, "Address must not be null");
-		
-		IpAddress<?> ipAddress;
-		if (address.getAddress() instanceof Inet4Address inet4) {
-			ipAddress = Ipv4Address.from(inet4);
-		} else {
-			ipAddress = Ipv6Address.from((Inet6Address) address.getAddress());
+	private void validateMessageSize(byte @NonNull [] data) throws NetworkConnectionException {
+		if (data.length > this.bufferSize) {
+			throw new NetworkConnectionException("Message size " + data.length + " exceeds buffer size " + this.bufferSize, NetworkErrorType.MESSAGE_TOO_LARGE, this.remoteEndpoint());
 		}
-		return new IpEndpoint(ipAddress, address.getPort());
 	}
+	//endregion
 }

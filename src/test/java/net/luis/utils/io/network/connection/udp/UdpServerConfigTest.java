@@ -18,12 +18,11 @@
 
 package net.luis.utils.io.network.connection.udp;
 
-import static org.junit.jupiter.api.Assertions.*;
-
-import org.junit.jupiter.api.Test;
-
 import net.luis.utils.io.network.connection.executor.ClientExecutorStrategy;
 import net.luis.utils.io.network.connection.executor.VirtualThreadStrategy;
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * Test class for {@link UdpServerConfig}.<br>
@@ -31,11 +30,11 @@ import net.luis.utils.io.network.connection.executor.VirtualThreadStrategy;
  * @author Luis-St
  */
 class UdpServerConfigTest {
-
+	
 	@Test
 	void defaultConfig() {
 		UdpServerConfig config = UdpServerConfig.DEFAULT;
-
+		
 		assertEquals(65535, config.bufferSize());
 		assertFalse(config.broadcast());
 		assertFalse(config.reuseAddress());
@@ -43,7 +42,18 @@ class UdpServerConfigTest {
 		assertNull(config.onMessage());
 		assertNull(config.onError());
 	}
-
+	
+	@Test
+	void constructWithNullExecutorStrategyThrows() {
+		assertThrows(NullPointerException.class, () -> new UdpServerConfig(65535, false, false, null, null, null));
+	}
+	
+	@Test
+	void constructWithInvalidBufferSizeThrows() {
+		assertThrows(IllegalArgumentException.class, () -> new UdpServerConfig(0, false, false, ClientExecutorStrategy.virtualThreads(), null, null));
+		assertThrows(IllegalArgumentException.class, () -> new UdpServerConfig(-1, false, false, ClientExecutorStrategy.virtualThreads(), null, null));
+	}
+	
 	@Test
 	void builder() {
 		UdpServerConfig config = UdpServerConfig.builder()
@@ -52,40 +62,20 @@ class UdpServerConfigTest {
 			.reuseAddress(true)
 			.executorStrategy(ClientExecutorStrategy.fixedPool(4))
 			.build();
-
+		
 		assertEquals(1024, config.bufferSize());
 		assertTrue(config.broadcast());
 		assertTrue(config.reuseAddress());
 	}
-
+	
 	@Test
 	void builderWithHandlers() {
-		boolean[] messageCalled = { false };
-		boolean[] errorCalled = { false };
-
 		UdpServerConfig config = UdpServerConfig.builder()
-			.onMessage((server, datagram, data) -> messageCalled[0] = true)
-			.onError((type, msg, cause) -> errorCalled[0] = true)
+			.onMessage((server, datagram, data) -> {})
+			.onError((type, msg, cause) -> {})
 			.build();
-
+		
 		assertNotNull(config.onMessage());
 		assertNotNull(config.onError());
-	}
-
-	@Test
-	void constructWithNullExecutorStrategyThrows() {
-		assertThrows(NullPointerException.class, () -> new UdpServerConfig(
-			65535, false, false, null, null, null
-		));
-	}
-
-	@Test
-	void constructWithInvalidBufferSizeThrows() {
-		assertThrows(IllegalArgumentException.class, () -> new UdpServerConfig(
-			0, false, false, ClientExecutorStrategy.virtualThreads(), null, null
-		));
-		assertThrows(IllegalArgumentException.class, () -> new UdpServerConfig(
-			-1, false, false, ClientExecutorStrategy.virtualThreads(), null, null
-		));
 	}
 }

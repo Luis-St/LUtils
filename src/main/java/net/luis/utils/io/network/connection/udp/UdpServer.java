@@ -19,10 +19,8 @@
 package net.luis.utils.io.network.connection.udp;
 
 import net.luis.utils.io.network.IpEndpoint;
-import net.luis.utils.io.network.address.IpAddress;
-import net.luis.utils.io.network.address.ipv4.Ipv4Address;
-import net.luis.utils.io.network.address.ipv6.Ipv6Address;
 import net.luis.utils.io.network.connection.NetworkServer;
+import net.luis.utils.io.network.connection.NetworkUtils;
 import net.luis.utils.io.network.connection.exception.NetworkConnectionException;
 import net.luis.utils.io.network.connection.exception.NetworkErrorType;
 import org.jspecify.annotations.NonNull;
@@ -31,7 +29,6 @@ import java.io.IOException;
 import java.net.*;
 import java.util.Objects;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
@@ -129,10 +126,10 @@ public final class UdpServer implements NetworkServer {
 			this.acceptThread.start();
 		} catch (BindException e) {
 			this.running.set(false);
-			this.handleError(NetworkErrorType.ADDRESS_IN_USE, "Address already in use: " + this.bindEndpoint, e);
+			NetworkUtils.handleError(this.config.onError(), NetworkErrorType.ADDRESS_IN_USE, "Address already in use: " + this.bindEndpoint, e);
 		} catch (IOException e) {
 			this.running.set(false);
-			this.handleError(NetworkErrorType.IO_ERROR, "Failed to start server on " + this.bindEndpoint, e);
+			NetworkUtils.handleError(this.config.onError(), NetworkErrorType.IO_ERROR, "Failed to start server on " + this.bindEndpoint, e);
 		}
 	}
 	
@@ -150,7 +147,7 @@ public final class UdpServer implements NetworkServer {
 			this.acceptThread.interrupt();
 		}
 		
-		this.shutdownExecutor();
+		NetworkUtils.shutdownExecutor(this.executor, this.config.executorStrategy().ownsExecutor());
 	}
 	
 	@Override
@@ -162,7 +159,7 @@ public final class UdpServer implements NetworkServer {
 	public @NonNull IpEndpoint boundEndpoint() {
 		if (this.socket != null && this.socket.isBound()) {
 			InetSocketAddress address = (InetSocketAddress) this.socket.getLocalSocketAddress();
-			return this.createEndpoint(address);
+			return IpEndpoint.from(address);
 		}
 		return this.bindEndpoint;
 	}
@@ -173,11 +170,12 @@ public final class UdpServer implements NetworkServer {
 	 * @param destination The destination endpoint
 	 * @param data The data to send
 	 * @throws NullPointerException If destination or data is null
-	 * @throws NetworkConnectionException If sending fails
+	 * @throws NetworkConnectionException If sending fails or data exceeds buffer size
 	 */
 	public void send(@NonNull IpEndpoint destination, byte @NonNull [] data) throws NetworkConnectionException {
 		Objects.requireNonNull(destination, "Destination must not be null");
 		Objects.requireNonNull(data, "Data must not be null");
+		this.validateMessageSize(data, destination);
 		
 		if (!this.isRunning()) {
 			throw new NetworkConnectionException("Server is not running", NetworkErrorType.SOCKET_CLOSED);
@@ -187,7 +185,7 @@ public final class UdpServer implements NetworkServer {
 			DatagramPacket packet = new DatagramPacket(data, data.length, destination.toInetSocketAddress());
 			this.socket.send(packet);
 		} catch (IOException e) {
-			this.handleError(NetworkErrorType.IO_ERROR, "Failed to send datagram to " + destination, e);
+			NetworkUtils.handleError(this.config.onError(), NetworkErrorType.IO_ERROR, "Failed to send datagram to " + destination, e);
 			throw new NetworkConnectionException("Failed to send datagram to " + destination, e, NetworkErrorType.IO_ERROR, destination);
 		}
 	}
@@ -212,6 +210,19 @@ public final class UdpServer implements NetworkServer {
 	//region Helper methods
 	
 	/**
+	 * Validates that the message size does not exceed the configured buffer size.<br>
+	 *
+	 * @param data The data to validate
+	 * @param destination The destination endpoint for error reporting
+	 * @throws NetworkConnectionException If the data exceeds the buffer size
+	 */
+	private void validateMessageSize(byte @NonNull [] data, @NonNull IpEndpoint destination) throws NetworkConnectionException {
+		if (data.length > this.config.bufferSize()) {
+			throw new NetworkConnectionException("Message size " + data.length + " exceeds buffer size " + this.config.bufferSize(), NetworkErrorType.MESSAGE_TOO_LARGE, destination);
+		}
+	}
+	
+	/**
 	 * The main loop that receives incoming datagrams.<br>
 	 * This method runs on a dedicated thread and dispatches datagrams to handlers.<br>
 	 */
@@ -224,7 +235,7 @@ public final class UdpServer implements NetworkServer {
 				this.socket.receive(packet);
 				
 				InetSocketAddress address = (InetSocketAddress) packet.getSocketAddress();
-				IpEndpoint sourceEndpoint = this.createEndpoint(address);
+				IpEndpoint sourceEndpoint = IpEndpoint.from(address);
 				
 				byte[] data = new byte[packet.getLength()];
 				System.arraycopy(packet.getData(), packet.getOffset(), data, 0, packet.getLength());
@@ -236,67 +247,19 @@ public final class UdpServer implements NetworkServer {
 						try {
 							this.config.onMessage().handle(this, datagram, data);
 						} catch (Exception e) {
-							this.handleError(NetworkErrorType.IO_ERROR, "Error in message handler", e);
+							NetworkUtils.handleError(this.config.onError(), NetworkErrorType.IO_ERROR, "Error in message handler", e);
 						}
 					});
 				}
 			} catch (SocketException e) {
 				if (this.running.get()) {
-					this.handleError(NetworkErrorType.SOCKET_CLOSED, "Socket closed unexpectedly", e);
+					NetworkUtils.handleError(this.config.onError(), NetworkErrorType.SOCKET_CLOSED, "Socket closed unexpectedly", e);
 				}
 				break;
 			} catch (IOException e) {
 				if (this.running.get()) {
-					this.handleError(NetworkErrorType.IO_ERROR, "Error receiving datagram", e);
+					NetworkUtils.handleError(this.config.onError(), NetworkErrorType.IO_ERROR, "Error receiving datagram", e);
 				}
-			}
-		}
-	}
-	
-	/**
-	 * Creates an {@link IpEndpoint} from the given socket address.<br>
-	 *
-	 * @param address The socket address to convert
-	 * @return The created endpoint
-	 */
-	private @NonNull IpEndpoint createEndpoint(@NonNull InetSocketAddress address) {
-		IpAddress<?> ipAddress;
-		if (address.getAddress() instanceof Inet4Address inet4) {
-			ipAddress = Ipv4Address.from(inet4);
-		} else {
-			ipAddress = Ipv6Address.from((Inet6Address) address.getAddress());
-		}
-		return new IpEndpoint(ipAddress, address.getPort());
-	}
-	
-	/**
-	 * Handles an error by notifying the configured error handler.<br>
-	 *
-	 * @param errorType The type of error that occurred
-	 * @param message A human-readable error message
-	 * @param cause The underlying exception
-	 */
-	private void handleError(@NonNull NetworkErrorType errorType, @NonNull String message, @NonNull Throwable cause) {
-		if (this.config.onError() != null) {
-			this.config.onError().handle(errorType, message, cause);
-		}
-	}
-	
-	/**
-	 * Shuts down the executor service if it is owned by this server.<br>
-	 * Waits up to 5 seconds for graceful termination before forcing shutdown.<br>
-	 */
-	private void shutdownExecutor() {
-		if (this.executor != null && this.config.executorStrategy().ownsExecutor()) {
-			this.executor.shutdown();
-			
-			try {
-				if (!this.executor.awaitTermination(5, TimeUnit.SECONDS)) {
-					this.executor.shutdownNow();
-				}
-			} catch (InterruptedException e) {
-				this.executor.shutdownNow();
-				Thread.currentThread().interrupt();
 			}
 		}
 	}

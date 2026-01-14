@@ -18,14 +18,13 @@
 
 package net.luis.utils.io.network.connection.tcp;
 
-import static org.junit.jupiter.api.Assertions.*;
-
-import org.junit.jupiter.api.Test;
-
 import net.luis.utils.io.network.connection.executor.ClientExecutorStrategy;
 import net.luis.utils.io.network.connection.executor.VirtualThreadStrategy;
+import org.junit.jupiter.api.Test;
 
 import java.time.Duration;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * Test class for {@link TcpServerConfig}.<br>
@@ -33,11 +32,11 @@ import java.time.Duration;
  * @author Luis-St
  */
 class TcpServerConfigTest {
-
+	
 	@Test
 	void defaultConfig() {
 		TcpServerConfig config = TcpServerConfig.DEFAULT;
-
+		
 		assertEquals(50, config.backlog());
 		assertEquals(8192, config.clientBufferSize());
 		assertEquals(Duration.ZERO, config.clientReadTimeout());
@@ -49,7 +48,29 @@ class TcpServerConfigTest {
 		assertNull(config.onMessage());
 		assertNull(config.onError());
 	}
-
+	
+	@Test
+	void constructWithNullClientReadTimeoutThrows() {
+		assertThrows(NullPointerException.class, () -> new TcpServerConfig(50, 8192, null, true, true, ClientExecutorStrategy.virtualThreads(), null, null, null, null));
+	}
+	
+	@Test
+	void constructWithNullExecutorStrategyThrows() {
+		assertThrows(NullPointerException.class, () -> new TcpServerConfig(50, 8192, Duration.ZERO, true, true, null, null, null, null, null));
+	}
+	
+	@Test
+	void constructWithInvalidBacklogThrows() {
+		assertThrows(IllegalArgumentException.class, () -> new TcpServerConfig(0, 8192, Duration.ZERO, true, true, ClientExecutorStrategy.virtualThreads(), null, null, null, null));
+		assertThrows(IllegalArgumentException.class, () -> new TcpServerConfig(-1, 8192, Duration.ZERO, true, true, ClientExecutorStrategy.virtualThreads(), null, null, null, null));
+	}
+	
+	@Test
+	void constructWithInvalidClientBufferSizeThrows() {
+		assertThrows(IllegalArgumentException.class, () -> new TcpServerConfig(50, 0, Duration.ZERO, true, true, ClientExecutorStrategy.virtualThreads(), null, null, null, null));
+		assertThrows(IllegalArgumentException.class, () -> new TcpServerConfig(50, -1, Duration.ZERO, true, true, ClientExecutorStrategy.virtualThreads(), null, null, null, null));
+	}
+	
 	@Test
 	void builder() {
 		TcpServerConfig config = TcpServerConfig.builder()
@@ -60,65 +81,26 @@ class TcpServerConfigTest {
 			.keepAlive(false)
 			.executorStrategy(ClientExecutorStrategy.fixedPool(8))
 			.build();
-
+		
 		assertEquals(100, config.backlog());
 		assertEquals(16384, config.clientBufferSize());
 		assertEquals(Duration.ofSeconds(60), config.clientReadTimeout());
 		assertFalse(config.tcpNoDelay());
 		assertFalse(config.keepAlive());
 	}
-
+	
 	@Test
 	void builderWithHandlers() {
-		boolean[] connectCalled = { false };
-		boolean[] disconnectCalled = { false };
-		boolean[] messageCalled = { false };
-		boolean[] errorCalled = { false };
-
 		TcpServerConfig config = TcpServerConfig.builder()
-			.onClientConnect(event -> connectCalled[0] = true)
-			.onClientDisconnect(event -> disconnectCalled[0] = true)
-			.onMessage((server, conn, data) -> messageCalled[0] = true)
-			.onError((type, msg, cause) -> errorCalled[0] = true)
+			.onClientConnect(event -> {})
+			.onClientDisconnect(event -> {})
+			.onMessage((server, conn, data) -> {})
+			.onError((type, msg, cause) -> {})
 			.build();
-
+		
 		assertNotNull(config.onClientConnect());
 		assertNotNull(config.onClientDisconnect());
 		assertNotNull(config.onMessage());
 		assertNotNull(config.onError());
-	}
-
-	@Test
-	void constructWithNullClientReadTimeoutThrows() {
-		assertThrows(NullPointerException.class, () -> new TcpServerConfig(
-			50, 8192, null, true, true, ClientExecutorStrategy.virtualThreads(), null, null, null, null
-		));
-	}
-
-	@Test
-	void constructWithNullExecutorStrategyThrows() {
-		assertThrows(NullPointerException.class, () -> new TcpServerConfig(
-			50, 8192, Duration.ZERO, true, true, null, null, null, null, null
-		));
-	}
-
-	@Test
-	void constructWithInvalidBacklogThrows() {
-		assertThrows(IllegalArgumentException.class, () -> new TcpServerConfig(
-			0, 8192, Duration.ZERO, true, true, ClientExecutorStrategy.virtualThreads(), null, null, null, null
-		));
-		assertThrows(IllegalArgumentException.class, () -> new TcpServerConfig(
-			-1, 8192, Duration.ZERO, true, true, ClientExecutorStrategy.virtualThreads(), null, null, null, null
-		));
-	}
-
-	@Test
-	void constructWithInvalidClientBufferSizeThrows() {
-		assertThrows(IllegalArgumentException.class, () -> new TcpServerConfig(
-			50, 0, Duration.ZERO, true, true, ClientExecutorStrategy.virtualThreads(), null, null, null, null
-		));
-		assertThrows(IllegalArgumentException.class, () -> new TcpServerConfig(
-			50, -1, Duration.ZERO, true, true, ClientExecutorStrategy.virtualThreads(), null, null, null, null
-		));
 	}
 }

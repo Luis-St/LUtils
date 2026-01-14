@@ -18,11 +18,11 @@
 
 package net.luis.utils.io.network.connection.udp;
 
-import static org.junit.jupiter.api.Assertions.*;
-
 import org.junit.jupiter.api.Test;
 
 import java.time.Duration;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * Test class for {@link UdpClientConfig}.<br>
@@ -30,18 +30,29 @@ import java.time.Duration;
  * @author Luis-St
  */
 class UdpClientConfigTest {
-
+	
 	@Test
 	void defaultConfig() {
 		UdpClientConfig config = UdpClientConfig.DEFAULT;
-
+		
 		assertEquals(Duration.ZERO, config.receiveTimeout());
 		assertEquals(65535, config.bufferSize());
 		assertFalse(config.broadcast());
 		assertFalse(config.reuseAddress());
 		assertNull(config.onError());
 	}
-
+	
+	@Test
+	void constructWithNullReceiveTimeoutThrows() {
+		assertThrows(NullPointerException.class, () -> new UdpClientConfig(null, 65535, false, false, null));
+	}
+	
+	@Test
+	void constructWithInvalidBufferSizeThrows() {
+		assertThrows(IllegalArgumentException.class, () -> new UdpClientConfig(Duration.ZERO, 0, false, false, null));
+		assertThrows(IllegalArgumentException.class, () -> new UdpClientConfig(Duration.ZERO, -1, false, false, null));
+	}
+	
 	@Test
 	void builder() {
 		UdpClientConfig config = UdpClientConfig.builder()
@@ -50,38 +61,19 @@ class UdpClientConfigTest {
 			.broadcast(true)
 			.reuseAddress(true)
 			.build();
-
+		
 		assertEquals(Duration.ofSeconds(5), config.receiveTimeout());
 		assertEquals(1024, config.bufferSize());
 		assertTrue(config.broadcast());
 		assertTrue(config.reuseAddress());
 	}
-
+	
 	@Test
 	void builderWithErrorHandler() {
-		boolean[] errorCalled = { false };
-
 		UdpClientConfig config = UdpClientConfig.builder()
-			.onError((type, msg, cause) -> errorCalled[0] = true)
+			.onError((type, msg, cause) -> {})
 			.build();
-
+		
 		assertNotNull(config.onError());
-	}
-
-	@Test
-	void constructWithNullReceiveTimeoutThrows() {
-		assertThrows(NullPointerException.class, () -> new UdpClientConfig(
-			null, 65535, false, false, null
-		));
-	}
-
-	@Test
-	void constructWithInvalidBufferSizeThrows() {
-		assertThrows(IllegalArgumentException.class, () -> new UdpClientConfig(
-			Duration.ZERO, 0, false, false, null
-		));
-		assertThrows(IllegalArgumentException.class, () -> new UdpClientConfig(
-			Duration.ZERO, -1, false, false, null
-		));
 	}
 }

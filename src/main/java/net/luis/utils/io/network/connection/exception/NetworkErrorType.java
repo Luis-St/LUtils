@@ -103,6 +103,12 @@ public enum NetworkErrorType {
 	IO_ERROR,
 	
 	/**
+	 * The message exceeds the configured buffer size.<br>
+	 * The data to send is larger than the configured buffer size allows.<br>
+	 */
+	MESSAGE_TOO_LARGE,
+	
+	/**
 	 * An unknown or unclassified error occurred.<br>
 	 * This is used when the error does not fit any other category.<br>
 	 */

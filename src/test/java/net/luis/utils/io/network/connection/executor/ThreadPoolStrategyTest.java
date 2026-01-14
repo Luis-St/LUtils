@@ -18,12 +18,12 @@
 
 package net.luis.utils.io.network.connection.executor;
 
-import static org.junit.jupiter.api.Assertions.*;
-
 import org.junit.jupiter.api.Test;
 
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * Test class for {@link ThreadPoolStrategy}.<br>
@@ -31,82 +31,82 @@ import java.util.concurrent.Executors;
  * @author Luis-St
  */
 class ThreadPoolStrategyTest {
-
+	
 	@Test
 	void fixedPoolSize() {
 		ThreadPoolStrategy strategy = ClientExecutorStrategy.fixedPool(8);
-
+		
 		assertEquals(8, strategy.poolSize());
 		assertFalse(strategy.isCached());
 		assertFalse(strategy.isCustom());
 		assertTrue(strategy.ownsExecutor());
-
+		
 		ExecutorService executor = strategy.createExecutor();
 		assertNotNull(executor);
 		executor.shutdownNow();
 	}
-
+	
 	@Test
 	void cachedPool() {
 		ThreadPoolStrategy strategy = ClientExecutorStrategy.cachedPool();
-
+		
 		assertEquals(0, strategy.poolSize());
 		assertTrue(strategy.isCached());
 		assertFalse(strategy.isCustom());
 		assertTrue(strategy.ownsExecutor());
-
+		
 		ExecutorService executor = strategy.createExecutor();
 		assertNotNull(executor);
 		executor.shutdownNow();
 	}
-
+	
 	@Test
 	void customExecutor() {
 		ExecutorService customExecutor = Executors.newSingleThreadExecutor();
 		try {
 			ThreadPoolStrategy strategy = ClientExecutorStrategy.custom(customExecutor);
-
+			
 			assertEquals(0, strategy.poolSize());
 			assertFalse(strategy.isCached());
 			assertTrue(strategy.isCustom());
 			assertFalse(strategy.ownsExecutor());
-
+			
 			ExecutorService returned = strategy.createExecutor();
 			assertSame(customExecutor, returned);
 		} finally {
 			customExecutor.shutdownNow();
 		}
 	}
-
+	
 	@Test
 	void createExecutorReturnsNewInstancesForOwned() {
 		ThreadPoolStrategy strategy = ClientExecutorStrategy.fixedPool(4);
-
+		
 		ExecutorService executor1 = strategy.createExecutor();
 		ExecutorService executor2 = strategy.createExecutor();
-
+		
 		assertNotSame(executor1, executor2);
-
+		
 		executor1.shutdownNow();
 		executor2.shutdownNow();
 	}
-
+	
 	@Test
 	void createExecutorReturnsSameInstanceForCustom() {
 		ExecutorService customExecutor = Executors.newFixedThreadPool(2);
 		try {
 			ThreadPoolStrategy strategy = ClientExecutorStrategy.custom(customExecutor);
-
+			
 			ExecutorService executor1 = strategy.createExecutor();
 			ExecutorService executor2 = strategy.createExecutor();
-
+			
 			assertSame(executor1, executor2);
 			assertSame(customExecutor, executor1);
 		} finally {
 			customExecutor.shutdownNow();
 		}
 	}
-
+	
 	@Test
 	void implementsClientExecutorStrategy() {
 		ThreadPoolStrategy strategy = ClientExecutorStrategy.fixedPool(1);

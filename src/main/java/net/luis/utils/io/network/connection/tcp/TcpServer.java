@@ -19,10 +19,8 @@
 package net.luis.utils.io.network.connection.tcp;
 
 import net.luis.utils.io.network.IpEndpoint;
-import net.luis.utils.io.network.address.IpAddress;
-import net.luis.utils.io.network.address.ipv4.Ipv4Address;
-import net.luis.utils.io.network.address.ipv6.Ipv6Address;
 import net.luis.utils.io.network.connection.NetworkServer;
+import net.luis.utils.io.network.connection.NetworkUtils;
 import net.luis.utils.io.network.connection.event.ConnectionEvent;
 import net.luis.utils.io.network.connection.exception.NetworkConnectionException;
 import net.luis.utils.io.network.connection.exception.NetworkErrorType;
@@ -32,7 +30,8 @@ import java.io.IOException;
 import java.net.*;
 import java.util.Objects;
 import java.util.Set;
-import java.util.concurrent.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
@@ -135,10 +134,10 @@ public final class TcpServer implements NetworkServer {
 			this.acceptThread.start();
 		} catch (BindException e) {
 			this.running.set(false);
-			this.handleError(NetworkErrorType.ADDRESS_IN_USE, "Address already in use: " + this.bindEndpoint, e);
+			NetworkUtils.handleError(this.config.onError(), NetworkErrorType.ADDRESS_IN_USE, "Address already in use: " + this.bindEndpoint, e);
 		} catch (IOException e) {
 			this.running.set(false);
-			this.handleError(NetworkErrorType.IO_ERROR, "Failed to start server on " + this.bindEndpoint, e);
+			NetworkUtils.handleError(this.config.onError(), NetworkErrorType.IO_ERROR, "Failed to start server on " + this.bindEndpoint, e);
 		}
 	}
 	
@@ -163,7 +162,7 @@ public final class TcpServer implements NetworkServer {
 			this.acceptThread.interrupt();
 		}
 		
-		this.shutdownExecutor();
+		NetworkUtils.shutdownExecutor(this.executor, this.config.executorStrategy().ownsExecutor());
 	}
 	
 	@Override
@@ -175,7 +174,7 @@ public final class TcpServer implements NetworkServer {
 	public @NonNull IpEndpoint boundEndpoint() {
 		if (this.serverSocket != null && this.serverSocket.isBound()) {
 			InetSocketAddress address = (InetSocketAddress) this.serverSocket.getLocalSocketAddress();
-			return this.createEndpoint(address);
+			return IpEndpoint.from(address);
 		}
 		return this.bindEndpoint;
 	}
@@ -202,7 +201,7 @@ public final class TcpServer implements NetworkServer {
 				try {
 					connection.send(data);
 				} catch (NetworkConnectionException e) {
-					this.handleError(NetworkErrorType.IO_ERROR, "Failed to broadcast to " + connection.remoteEndpoint(), e);
+					NetworkUtils.handleError(this.config.onError(), NetworkErrorType.IO_ERROR, "Failed to broadcast to " + connection.remoteEndpoint(), e);
 				}
 			}
 		}
@@ -241,12 +240,12 @@ public final class TcpServer implements NetworkServer {
 				this.executor.submit(() -> this.handleClient(connection));
 			} catch (SocketException e) {
 				if (this.running.get()) {
-					this.handleError(NetworkErrorType.SOCKET_CLOSED, "Server socket closed unexpectedly", e);
+					NetworkUtils.handleError(this.config.onError(), NetworkErrorType.SOCKET_CLOSED, "Server socket closed unexpectedly", e);
 				}
 				break;
 			} catch (IOException e) {
 				if (this.running.get()) {
-					this.handleError(NetworkErrorType.IO_ERROR, "Error accepting client", e);
+					NetworkUtils.handleError(this.config.onError(), NetworkErrorType.IO_ERROR, "Error accepting client", e);
 				}
 			}
 		}
@@ -274,13 +273,13 @@ public final class TcpServer implements NetworkServer {
 					try {
 						this.config.onMessage().handle(this, connection, data);
 					} catch (Exception e) {
-						this.handleError(NetworkErrorType.IO_ERROR, "Error in message handler", e);
+						NetworkUtils.handleError(this.config.onError(), NetworkErrorType.IO_ERROR, "Error in message handler", e);
 					}
 				}
 			}
 		} catch (NetworkConnectionException e) {
 			if (e.errorType() != NetworkErrorType.READ_TIMEOUT) {
-				this.handleError(e.errorType(), "Client error: " + e.getMessage(), e);
+				NetworkUtils.handleError(this.config.onError(), e.errorType(), "Client error: " + e.getMessage(), e);
 			}
 		} finally {
 			if (this.config.onClientDisconnect() != null && connection.isActive()) {
@@ -292,61 +291,6 @@ public final class TcpServer implements NetworkServer {
 			
 			this.connections.remove(connection);
 			connection.close();
-		}
-	}
-	
-	/**
-	 * Creates an {@link IpEndpoint} from the given socket address.<br>
-	 *
-	 * @param address The socket address to convert
-	 * @return The created endpoint
-	 * @throws NullPointerException If address is null
-	 */
-	private @NonNull IpEndpoint createEndpoint(@NonNull InetSocketAddress address) {
-		Objects.requireNonNull(address, "Address must not be null");
-		
-		IpAddress<?> ipAddress;
-		if (address.getAddress() instanceof Inet4Address inet4) {
-			ipAddress = Ipv4Address.from(inet4);
-		} else {
-			ipAddress = Ipv6Address.from((Inet6Address) address.getAddress());
-		}
-		return new IpEndpoint(ipAddress, address.getPort());
-	}
-	
-	/**
-	 * Handles an error by notifying the configured error handler.<br>
-	 *
-	 * @param errorType The type of error that occurred
-	 * @param message A human-readable error message
-	 * @param cause The underlying exception
-	 * @throws NullPointerException If the error type, message, or cause is null
-	 */
-	private void handleError(@NonNull NetworkErrorType errorType, @NonNull String message, @NonNull Throwable cause) {
-		Objects.requireNonNull(errorType, "Error type must not be null");
-		Objects.requireNonNull(message, "Message must not be null");
-		Objects.requireNonNull(cause, "Cause must not be null");
-		
-		if (this.config.onError() != null) {
-			this.config.onError().handle(errorType, message, cause);
-		}
-	}
-	
-	/**
-	 * Shuts down the executor service if it is owned by this server.<br>
-	 * Waits up to 5 seconds for graceful termination before forcing shutdown.<br>
-	 */
-	private void shutdownExecutor() {
-		if (this.executor != null && this.config.executorStrategy().ownsExecutor()) {
-			this.executor.shutdown();
-			try {
-				if (!this.executor.awaitTermination(5, TimeUnit.SECONDS)) {
-					this.executor.shutdownNow();
-				}
-			} catch (InterruptedException e) {
-				this.executor.shutdownNow();
-				Thread.currentThread().interrupt();
-			}
 		}
 	}
 	//endregion

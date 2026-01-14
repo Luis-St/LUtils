@@ -19,6 +19,7 @@
 package net.luis.utils.io.network;
 
 import net.luis.utils.io.network.address.IpAddress;
+import net.luis.utils.io.network.address.IpAddresses;
 import org.jspecify.annotations.NonNull;
 
 import java.net.InetSocketAddress;
@@ -79,6 +80,22 @@ public record IpEndpoint(@NonNull IpAddress<?> address, int port) {
 		if (port < MIN_PORT || port > MAX_PORT) {
 			throw new IllegalArgumentException("Port must be between " + MIN_PORT + " and " + MAX_PORT + ": " + port);
 		}
+	}
+	
+	/**
+	 * Creates an  from a {@link InetSocketAddress}.<br>
+	 * This method provides a convenient way to convert from the standard Java networking API to an .<br>
+	 * <p>
+	 *     The method automatically detects whether the address is IPv4 or IPv6 and creates the appropriate {@link IpAddress} type.
+	 * </p>
+	 *
+	 * @param address The socket address to convert
+	 * @return A new  representing the given socket address
+	 * @throws NullPointerException If address is null
+	 */
+	public static @NonNull IpEndpoint from(@NonNull InetSocketAddress address) {
+		Objects.requireNonNull(address, "Address must not be null");
+		return new IpEndpoint(IpAddresses.from(address.getAddress()), address.getPort());
 	}
 	
 	/**

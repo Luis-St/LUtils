@@ -380,8 +380,8 @@ public final class Codecs {
 	 * This codec tries each provided codec in order until one succeeds. If all codecs fail,
 	 * an error is returned containing all the individual error messages.<br>
 	 * <p>
-	 * This is particularly useful for polymorphic types where multiple subtypes need to be handled dynamically,
-	 * such as different payment method implementations or various message types.
+	 *     This is particularly useful for polymorphic types where multiple subtypes need to be handled dynamically,
+	 *     such as different payment method implementations or various message types.
 	 * </p>
 	 *
 	 * @param codecs The list of codecs to try in sequence
@@ -400,8 +400,8 @@ public final class Codecs {
 	 * This codec tries each provided codec in order until one succeeds. If all codecs fail,
 	 * an error is returned containing all the individual error messages.<br>
 	 * <p>
-	 * This is particularly useful for polymorphic types where multiple subtypes need to be handled dynamically,
-	 * such as different payment method implementations or various message types.
+	 *     This is particularly useful for polymorphic types where multiple subtypes need to be handled dynamically,
+	 *     such as different payment method implementations or various message types.
 	 * </p>
 	 *
 	 * @param codecs The array of codecs to try in sequence

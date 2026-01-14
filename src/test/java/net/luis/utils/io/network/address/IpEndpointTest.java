@@ -136,4 +136,35 @@ class IpEndpointTest {
 		assertTrue(endpoint.toString().startsWith("["));
 		assertTrue(endpoint.toString().endsWith("]:443"));
 	}
+
+	@Test
+	void fromWithNullAddress() {
+		assertThrows(NullPointerException.class, () -> IpEndpoint.from(null));
+	}
+
+	@Test
+	void fromWithIpv4Address() {
+		InetSocketAddress socketAddress = new InetSocketAddress("192.168.1.1", 8080);
+		IpEndpoint endpoint = IpEndpoint.from(socketAddress);
+		assertEquals(8080, endpoint.port());
+		assertInstanceOf(Ipv4Address.class, endpoint.address());
+		assertEquals("192.168.1.1:8080", endpoint.toString());
+	}
+
+	@Test
+	void fromWithIpv6Address() {
+		InetSocketAddress socketAddress = new InetSocketAddress("::1", 443);
+		IpEndpoint endpoint = IpEndpoint.from(socketAddress);
+		assertEquals(443, endpoint.port());
+		assertInstanceOf(Ipv6Address.class, endpoint.address());
+	}
+
+	@Test
+	void fromRoundTrip() {
+		Ipv4Address address = Ipv4Address.fromOctets(10, 0, 0, 1);
+		IpEndpoint original = new IpEndpoint(address, 9999);
+		InetSocketAddress socketAddress = original.toInetSocketAddress();
+		IpEndpoint roundTripped = IpEndpoint.from(socketAddress);
+		assertEquals(original, roundTripped);
+	}
 }

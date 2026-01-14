@@ -18,11 +18,11 @@
 
 package net.luis.utils.io.network.connection.tcp;
 
-import static org.junit.jupiter.api.Assertions.*;
-
 import org.junit.jupiter.api.Test;
 
 import java.time.Duration;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * Test class for {@link TcpClientConfig}.<br>
@@ -30,11 +30,11 @@ import java.time.Duration;
  * @author Luis-St
  */
 class TcpClientConfigTest {
-
+	
 	@Test
 	void defaultConfig() {
 		TcpClientConfig config = TcpClientConfig.DEFAULT;
-
+		
 		assertEquals(Duration.ofSeconds(30), config.connectTimeout());
 		assertEquals(Duration.ZERO, config.readTimeout());
 		assertEquals(Duration.ZERO, config.writeTimeout());
@@ -45,7 +45,28 @@ class TcpClientConfigTest {
 		assertNull(config.onDisconnect());
 		assertNull(config.onError());
 	}
-
+	
+	@Test
+	void constructWithNullConnectTimeoutThrows() {
+		assertThrows(NullPointerException.class, () -> new TcpClientConfig(null, Duration.ZERO, Duration.ZERO, 8192, true, true, null, null, null));
+	}
+	
+	@Test
+	void constructWithNullReadTimeoutThrows() {
+		assertThrows(NullPointerException.class, () -> new TcpClientConfig(Duration.ofSeconds(30), null, Duration.ZERO, 8192, true, true, null, null, null));
+	}
+	
+	@Test
+	void constructWithNullWriteTimeoutThrows() {
+		assertThrows(NullPointerException.class, () -> new TcpClientConfig(Duration.ofSeconds(30), Duration.ZERO, null, 8192, true, true, null, null, null));
+	}
+	
+	@Test
+	void constructWithInvalidBufferSizeThrows() {
+		assertThrows(IllegalArgumentException.class, () -> new TcpClientConfig(Duration.ofSeconds(30), Duration.ZERO, Duration.ZERO, 0, true, true, null, null, null));
+		assertThrows(IllegalArgumentException.class, () -> new TcpClientConfig(Duration.ofSeconds(30), Duration.ZERO, Duration.ZERO, -1, true, true, null, null, null));
+	}
+	
 	@Test
 	void builder() {
 		TcpClientConfig config = TcpClientConfig.builder()
@@ -56,7 +77,7 @@ class TcpClientConfigTest {
 			.tcpNoDelay(false)
 			.keepAlive(false)
 			.build();
-
+		
 		assertEquals(Duration.ofSeconds(10), config.connectTimeout());
 		assertEquals(Duration.ofSeconds(30), config.readTimeout());
 		assertEquals(Duration.ofSeconds(15), config.writeTimeout());
@@ -64,52 +85,17 @@ class TcpClientConfigTest {
 		assertFalse(config.tcpNoDelay());
 		assertFalse(config.keepAlive());
 	}
-
+	
 	@Test
 	void builderWithHandlers() {
-		boolean[] connectCalled = { false };
-		boolean[] disconnectCalled = { false };
-		boolean[] errorCalled = { false };
-
 		TcpClientConfig config = TcpClientConfig.builder()
-			.onConnect(event -> connectCalled[0] = true)
-			.onDisconnect(event -> disconnectCalled[0] = true)
-			.onError((type, msg, cause) -> errorCalled[0] = true)
+			.onConnect(event -> {})
+			.onDisconnect(event -> {})
+			.onError((type, msg, cause) -> {})
 			.build();
-
+		
 		assertNotNull(config.onConnect());
 		assertNotNull(config.onDisconnect());
 		assertNotNull(config.onError());
-	}
-
-	@Test
-	void constructWithNullConnectTimeoutThrows() {
-		assertThrows(NullPointerException.class, () -> new TcpClientConfig(
-			null, Duration.ZERO, Duration.ZERO, 8192, true, true, null, null, null
-		));
-	}
-
-	@Test
-	void constructWithNullReadTimeoutThrows() {
-		assertThrows(NullPointerException.class, () -> new TcpClientConfig(
-			Duration.ofSeconds(30), null, Duration.ZERO, 8192, true, true, null, null, null
-		));
-	}
-
-	@Test
-	void constructWithNullWriteTimeoutThrows() {
-		assertThrows(NullPointerException.class, () -> new TcpClientConfig(
-			Duration.ofSeconds(30), Duration.ZERO, null, 8192, true, true, null, null, null
-		));
-	}
-
-	@Test
-	void constructWithInvalidBufferSizeThrows() {
-		assertThrows(IllegalArgumentException.class, () -> new TcpClientConfig(
-			Duration.ofSeconds(30), Duration.ZERO, Duration.ZERO, 0, true, true, null, null, null
-		));
-		assertThrows(IllegalArgumentException.class, () -> new TcpClientConfig(
-			Duration.ofSeconds(30), Duration.ZERO, Duration.ZERO, -1, true, true, null, null, null
-		));
 	}
 }

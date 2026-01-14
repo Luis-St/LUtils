@@ -105,7 +105,7 @@ public record Ipv6Range(@NonNull Ipv6Address start, @NonNull Ipv6Address end) im
 		Ipv6Address stripped = address.withoutZoneId();
 		return new Ipv6Range(stripped, stripped);
 	}
-
+	
 	/**
 	 * Creates a range from a network, covering all addresses in the network.<br>
 	 *
@@ -117,7 +117,7 @@ public record Ipv6Range(@NonNull Ipv6Address start, @NonNull Ipv6Address end) im
 		Objects.requireNonNull(network, "Network must not be null");
 		return new Ipv6Range(network.networkAddress(), network.lastAddress());
 	}
-
+	
 	@Override
 	public @NonNull BigInteger size() {
 		return this.end.toBigInteger().subtract(this.start.toBigInteger()).add(BigInteger.ONE);
@@ -246,17 +246,17 @@ public record Ipv6Range(@NonNull Ipv6Address start, @NonNull Ipv6Address end) im
 		Objects.requireNonNull(startValue, "Start value must not be null");
 		Objects.requireNonNull(endValue, "End value must not be null");
 		BigInteger remaining = endValue.subtract(startValue).add(BigInteger.ONE);
-
+		
 		// Iterate from largest block (prefix 0) to smallest (prefix 128)
 		// Return the first (largest) aligned block that fits within remaining
 		for (int prefixLength = 0; prefixLength <= 128; prefixLength++) {
 			BigInteger blockSize = BigInteger.ONE.shiftLeft(128 - prefixLength);
-
+			
 			// Skip if start address is not aligned to this block size
 			if (!startValue.mod(blockSize).equals(BigInteger.ZERO)) {
 				continue;
 			}
-
+			
 			// Return this prefix if the block fits within remaining addresses
 			if (blockSize.compareTo(remaining) <= 0) {
 				return prefixLength;

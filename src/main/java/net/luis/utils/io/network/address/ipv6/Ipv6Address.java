@@ -91,7 +91,7 @@ public record Ipv6Address(long highBits, long lowBits, @Nullable String zoneId) 
 	 * All 128 bits are set to 1.<br>
 	 */
 	public static final Ipv6Address MAX = new Ipv6Address(-1L, -1L, null);
-
+	
 	/**
 	 * Constructs a new IPv6 address without a zone identifier.
 	 *

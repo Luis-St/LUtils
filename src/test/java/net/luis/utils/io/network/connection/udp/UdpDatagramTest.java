@@ -18,12 +18,12 @@
 
 package net.luis.utils.io.network.connection.udp;
 
-import static org.junit.jupiter.api.Assertions.*;
-
-import org.junit.jupiter.api.Test;
-
 import net.luis.utils.io.network.IpEndpoint;
 import net.luis.utils.io.network.address.ipv4.Ipv4Address;
+import org.apache.commons.lang3.ArrayUtils;
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * Test class for {@link UdpDatagram}.<br>
@@ -31,56 +31,55 @@ import net.luis.utils.io.network.address.ipv4.Ipv4Address;
  * @author Luis-St
  */
 class UdpDatagramTest {
-
+	
 	@Test
 	void construct() {
 		IpEndpoint endpoint = new IpEndpoint(Ipv4Address.LOOPBACK, 8080);
 		byte[] data = "Hello".getBytes();
-
+		
 		UdpDatagram datagram = new UdpDatagram(endpoint, data);
-
+		
 		assertEquals(endpoint, datagram.endpoint());
 		assertArrayEquals(data, datagram.data());
 	}
-
+	
 	@Test
 	void constructWithNullEndpointThrows() {
 		assertThrows(NullPointerException.class, () -> new UdpDatagram(null, "data".getBytes()));
 	}
-
+	
 	@Test
 	void constructWithNullDataThrows() {
 		IpEndpoint endpoint = new IpEndpoint(Ipv4Address.LOOPBACK, 8080);
 		assertThrows(NullPointerException.class, () -> new UdpDatagram(endpoint, null));
 	}
-
+	
 	@Test
 	void length() {
 		IpEndpoint endpoint = new IpEndpoint(Ipv4Address.LOOPBACK, 8080);
-
-		UdpDatagram empty = new UdpDatagram(endpoint, new byte[0]);
+		
+		UdpDatagram empty = new UdpDatagram(endpoint, ArrayUtils.EMPTY_BYTE_ARRAY);
 		assertEquals(0, empty.length());
-
+		
 		UdpDatagram small = new UdpDatagram(endpoint, new byte[10]);
 		assertEquals(10, small.length());
-
+		
 		UdpDatagram larger = new UdpDatagram(endpoint, new byte[1024]);
 		assertEquals(1024, larger.length());
 	}
-
+	
 	@Test
 	void dataCopy() {
 		IpEndpoint endpoint = new IpEndpoint(Ipv4Address.LOOPBACK, 8080);
 		byte[] original = { 1, 2, 3, 4, 5 };
-
+		
 		UdpDatagram datagram = new UdpDatagram(endpoint, original);
 		byte[] copy = datagram.dataCopy();
-
+		
 		assertArrayEquals(original, copy);
 		assertNotSame(original, copy);
 		assertNotSame(datagram.data(), copy);
-
-		// Modifying copy should not affect original
+		
 		copy[0] = 99;
 		assertEquals(1, datagram.data()[0]);
 	}
