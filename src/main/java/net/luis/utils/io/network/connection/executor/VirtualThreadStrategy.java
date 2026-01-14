@@ -27,8 +27,7 @@ import java.util.concurrent.Executors;
  * Strategy that creates a virtual thread per client connection.<br>
  * This is the recommended approach for modern Java applications (Java 21+).<br>
  * <p>
- *     Virtual threads are lightweight and can scale to thousands of concurrent
- *     connections without the overhead of traditional platform threads.
+ *     Virtual threads are lightweight and can scale to thousands of concurrent connections without the overhead of traditional platform threads.
  * </p>
  * <p>
  *     Example usage:
@@ -44,12 +43,12 @@ import java.util.concurrent.Executors;
  * @author Luis-St
  */
 public record VirtualThreadStrategy() implements ClientExecutorStrategy {
-
+	
 	@Override
 	public @NonNull ExecutorService createExecutor() {
 		return Executors.newVirtualThreadPerTaskExecutor();
 	}
-
+	
 	@Override
 	public boolean ownsExecutor() {
 		return true;

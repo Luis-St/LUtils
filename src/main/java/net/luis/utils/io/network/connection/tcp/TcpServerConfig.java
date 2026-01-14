@@ -18,9 +18,7 @@
 
 package net.luis.utils.io.network.connection.tcp;
 
-import net.luis.utils.io.network.connection.event.ConnectionEventHandler;
-import net.luis.utils.io.network.connection.event.ErrorEventHandler;
-import net.luis.utils.io.network.connection.event.MessageEventHandler;
+import net.luis.utils.io.network.connection.event.*;
 import net.luis.utils.io.network.connection.executor.ClientExecutorStrategy;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
@@ -77,7 +75,7 @@ public record TcpServerConfig(
 	@Nullable MessageEventHandler<TcpServer, TcpConnection> onMessage,
 	@Nullable ErrorEventHandler onError
 ) {
-
+	
 	/**
 	 * Default configuration for TCP servers.<br>
 	 * <ul>
@@ -90,19 +88,8 @@ public record TcpServerConfig(
 	 *     <li>All handlers = {@code null}</li>
 	 * </ul>
 	 */
-	public static final TcpServerConfig DEFAULT = new TcpServerConfig(
-		50,
-		8192,
-		Duration.ZERO,
-		true,
-		true,
-		ClientExecutorStrategy.virtualThreads(),
-		null,
-		null,
-		null,
-		null
-	);
-
+	public static final TcpServerConfig DEFAULT = new TcpServerConfig(50, 8192, Duration.ZERO, true, true, ClientExecutorStrategy.virtualThreads(), null, null, null, null);
+	
 	/**
 	 * Constructs a new TCP server configuration.<br>
 	 *
@@ -122,6 +109,7 @@ public record TcpServerConfig(
 	public TcpServerConfig {
 		Objects.requireNonNull(clientReadTimeout, "Client read timeout must not be null");
 		Objects.requireNonNull(executorStrategy, "Executor strategy must not be null");
+		
 		if (backlog < 1) {
 			throw new IllegalArgumentException("Backlog must be at least 1: " + backlog);
 		}
@@ -129,7 +117,7 @@ public record TcpServerConfig(
 			throw new IllegalArgumentException("Client buffer size must be at least 1: " + clientBufferSize);
 		}
 	}
-
+	
 	/**
 	 * Creates a new builder for constructing TCP server configuration.<br>
 	 * @return A new builder with default values

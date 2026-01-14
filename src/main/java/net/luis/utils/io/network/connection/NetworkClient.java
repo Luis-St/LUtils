@@ -29,7 +29,7 @@ import java.util.Optional;
  * Base interface for network clients.<br>
  * This sealed interface provides common operations for both TCP and UDP clients.
  * <p>
- *     This interface is sealed and permits only {@link TcpClient} and {@link UdpClient}
+ *     This interface is sealed and permits only {@link TcpClient} and {@link UdpClient}<br>
  *     as implementations, ensuring type safety when working with network clients polymorphically.
  * </p>
  * <p>
@@ -59,27 +59,24 @@ import java.util.Optional;
  * @author Luis-St
  */
 public sealed interface NetworkClient extends AutoCloseable permits TcpClient, UdpClient {
-
+	
 	/**
 	 * Returns whether this client is currently active (connected or bound).<br>
-	 * For TCP clients, this means connected to a server.<br>
-	 * For UDP clients, this means bound to a local endpoint.
+	 * <p>
+	 *     For TCP clients, this means connected to a server.<br>
+	 *     For UDP clients, this means bound to a local endpoint.
+	 * </p>
 	 *
 	 * @return True if the client is active
 	 */
 	boolean isActive();
-
+	
 	/**
 	 * Returns the local endpoint this client is bound to, if any.<br>
-	 *
 	 * @return The local endpoint, or empty if not bound
 	 */
 	@NonNull Optional<IpEndpoint> localEndpoint();
-
-	/**
-	 * Closes this client and releases all associated resources.<br>
-	 * This method does not throw checked exceptions.
-	 */
+	
 	@Override
 	void close();
 }

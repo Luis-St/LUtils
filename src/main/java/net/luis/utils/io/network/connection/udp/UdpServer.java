@@ -62,14 +62,14 @@ import java.util.concurrent.atomic.AtomicBoolean;
  * @author Luis-St
  */
 public final class UdpServer implements NetworkServer {
-
+	
 	private final @NonNull IpEndpoint bindEndpoint;
 	private final @NonNull UdpServerConfig config;
+	private final AtomicBoolean running = new AtomicBoolean(false);
 	private volatile DatagramSocket socket;
 	private volatile ExecutorService executor;
-	private final AtomicBoolean running = new AtomicBoolean(false);
 	private volatile Thread acceptThread;
-
+	
 	/**
 	 * Constructs a new UDP server with the specified bind endpoint and default configuration.<br>
 	 *
@@ -79,7 +79,7 @@ public final class UdpServer implements NetworkServer {
 	public UdpServer(@NonNull IpEndpoint bindEndpoint) {
 		this(bindEndpoint, UdpServerConfig.DEFAULT);
 	}
-
+	
 	/**
 	 * Constructs a new UDP server with the specified bind endpoint and configuration.<br>
 	 *
@@ -91,21 +91,21 @@ public final class UdpServer implements NetworkServer {
 		this.bindEndpoint = Objects.requireNonNull(bindEndpoint, "Bind endpoint must not be null");
 		this.config = Objects.requireNonNull(config, "Config must not be null");
 	}
-
+	
 	@Override
 	public void start() {
 		if (this.running.getAndSet(true)) {
-			return; // Already running
+			return;
 		}
-
+		
 		try {
 			this.socket = new DatagramSocket(null);
 			this.socket.setReuseAddress(this.config.reuseAddress());
 			this.socket.setBroadcast(this.config.broadcast());
 			this.socket.bind(this.bindEndpoint.toInetSocketAddress());
-
+			
 			this.executor = this.config.executorStrategy().createExecutor();
-
+			
 			this.acceptThread = new Thread(this::acceptLoop, "UdpServer-Accept");
 			this.acceptThread.setDaemon(true);
 			this.acceptThread.start();
@@ -117,29 +117,29 @@ public final class UdpServer implements NetworkServer {
 			this.handleError(NetworkErrorType.IO_ERROR, "Failed to start server on " + this.bindEndpoint, e);
 		}
 	}
-
+	
 	@Override
 	public void stop() {
 		if (!this.running.getAndSet(false)) {
-			return; // Not running
+			return;
 		}
-
+		
 		if (this.socket != null && !this.socket.isClosed()) {
 			this.socket.close();
 		}
-
+		
 		if (this.acceptThread != null) {
 			this.acceptThread.interrupt();
 		}
-
+		
 		this.shutdownExecutor();
 	}
-
+	
 	@Override
 	public boolean isRunning() {
 		return this.running.get() && this.socket != null && !this.socket.isClosed();
 	}
-
+	
 	@Override
 	public @NonNull IpEndpoint boundEndpoint() {
 		if (this.socket != null && this.socket.isBound()) {
@@ -148,7 +148,7 @@ public final class UdpServer implements NetworkServer {
 		}
 		return this.bindEndpoint;
 	}
-
+	
 	/**
 	 * Sends a datagram to the specified endpoint.<br>
 	 *
@@ -160,11 +160,11 @@ public final class UdpServer implements NetworkServer {
 	public void send(@NonNull IpEndpoint destination, byte @NonNull [] data) throws NetworkConnectionException {
 		Objects.requireNonNull(destination, "Destination must not be null");
 		Objects.requireNonNull(data, "Data must not be null");
-
+		
 		if (!this.isRunning()) {
 			throw new NetworkConnectionException("Server is not running", NetworkErrorType.SOCKET_CLOSED);
 		}
-
+		
 		try {
 			DatagramPacket packet = new DatagramPacket(data, data.length, destination.toInetSocketAddress());
 			this.socket.send(packet);
@@ -173,7 +173,7 @@ public final class UdpServer implements NetworkServer {
 			throw new NetworkConnectionException("Failed to send datagram to " + destination, e, NetworkErrorType.IO_ERROR, destination);
 		}
 	}
-
+	
 	/**
 	 * Sends a datagram.<br>
 	 *
@@ -185,29 +185,29 @@ public final class UdpServer implements NetworkServer {
 		Objects.requireNonNull(datagram, "Datagram must not be null");
 		this.send(datagram.endpoint(), datagram.data());
 	}
-
+	
 	@Override
 	public void close() {
 		this.stop();
 	}
-
+	
 	//region Helper methods
 	private void acceptLoop() {
 		byte[] buffer = new byte[this.config.bufferSize()];
-
+		
 		while (this.running.get() && !Thread.currentThread().isInterrupted()) {
 			try {
 				DatagramPacket packet = new DatagramPacket(buffer, buffer.length);
 				this.socket.receive(packet);
-
+				
 				InetSocketAddress address = (InetSocketAddress) packet.getSocketAddress();
 				IpEndpoint sourceEndpoint = this.createEndpoint(address);
-
+				
 				byte[] data = new byte[packet.getLength()];
 				System.arraycopy(packet.getData(), packet.getOffset(), data, 0, packet.getLength());
-
+				
 				UdpDatagram datagram = new UdpDatagram(sourceEndpoint, data);
-
+				
 				if (this.config.onMessage() != null) {
 					this.executor.submit(() -> {
 						try {
@@ -229,7 +229,7 @@ public final class UdpServer implements NetworkServer {
 			}
 		}
 	}
-
+	
 	private @NonNull IpEndpoint createEndpoint(@NonNull InetSocketAddress address) {
 		IpAddress<?> ipAddress;
 		if (address.getAddress() instanceof Inet4Address inet4) {
@@ -239,16 +239,17 @@ public final class UdpServer implements NetworkServer {
 		}
 		return new IpEndpoint(ipAddress, address.getPort());
 	}
-
+	
 	private void handleError(@NonNull NetworkErrorType errorType, @NonNull String message, @NonNull Throwable cause) {
 		if (this.config.onError() != null) {
 			this.config.onError().handle(errorType, message, cause);
 		}
 	}
-
+	
 	private void shutdownExecutor() {
 		if (this.executor != null && this.config.executorStrategy().ownsExecutor()) {
 			this.executor.shutdown();
+			
 			try {
 				if (!this.executor.awaitTermination(5, TimeUnit.SECONDS)) {
 					this.executor.shutdownNow();

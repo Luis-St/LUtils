@@ -48,19 +48,19 @@ import org.jspecify.annotations.Nullable;
  * @author Luis-St
  */
 public final class UdpServerConfigBuilder {
-
+	
 	private int bufferSize = 65535;
 	private boolean broadcast;
 	private boolean reuseAddress;
 	private @NonNull ClientExecutorStrategy executorStrategy = ClientExecutorStrategy.virtualThreads();
 	private @Nullable MessageEventHandler<UdpServer, UdpDatagram> onMessage;
 	private @Nullable ErrorEventHandler onError;
-
+	
 	/**
 	 * Constructs a new builder with default values.<br>
 	 */
 	UdpServerConfigBuilder() {}
-
+	
 	/**
 	 * Sets the size of the receive buffer in bytes.<br>
 	 *
@@ -71,7 +71,7 @@ public final class UdpServerConfigBuilder {
 		this.bufferSize = bufferSize;
 		return this;
 	}
-
+	
 	/**
 	 * Sets whether to allow receiving broadcast packets.<br>
 	 *
@@ -82,7 +82,7 @@ public final class UdpServerConfigBuilder {
 		this.broadcast = broadcast;
 		return this;
 	}
-
+	
 	/**
 	 * Sets whether to allow address reuse (SO_REUSEADDR).<br>
 	 *
@@ -93,7 +93,7 @@ public final class UdpServerConfigBuilder {
 		this.reuseAddress = reuseAddress;
 		return this;
 	}
-
+	
 	/**
 	 * Sets the executor strategy for handling concurrent datagram processing.<br>
 	 *
@@ -104,7 +104,7 @@ public final class UdpServerConfigBuilder {
 		this.executorStrategy = executorStrategy;
 		return this;
 	}
-
+	
 	/**
 	 * Sets the message event handler called when a datagram is received.<br>
 	 *
@@ -115,7 +115,7 @@ public final class UdpServerConfigBuilder {
 		this.onMessage = onMessage;
 		return this;
 	}
-
+	
 	/**
 	 * Sets the error event handler.<br>
 	 *
@@ -126,7 +126,7 @@ public final class UdpServerConfigBuilder {
 		this.onError = onError;
 		return this;
 	}
-
+	
 	/**
 	 * Builds a new UDP server configuration with the configured values.<br>
 	 * @return A new configuration instance

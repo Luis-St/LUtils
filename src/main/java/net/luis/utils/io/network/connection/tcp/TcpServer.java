@@ -32,9 +32,7 @@ import java.io.IOException;
 import java.net.*;
 import java.util.Objects;
 import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
@@ -67,15 +65,15 @@ import java.util.concurrent.atomic.AtomicBoolean;
  * @author Luis-St
  */
 public final class TcpServer implements NetworkServer {
-
+	
 	private final @NonNull IpEndpoint bindEndpoint;
 	private final @NonNull TcpServerConfig config;
+	private final AtomicBoolean running = new AtomicBoolean(false);
+	private final Set<TcpConnection> connections = ConcurrentHashMap.newKeySet();
 	private volatile ServerSocket serverSocket;
 	private volatile ExecutorService executor;
-	private final AtomicBoolean running = new AtomicBoolean(false);
 	private volatile Thread acceptThread;
-	private final Set<TcpConnection> connections = ConcurrentHashMap.newKeySet();
-
+	
 	/**
 	 * Constructs a new TCP server with the specified bind endpoint and default configuration.<br>
 	 *
@@ -85,7 +83,7 @@ public final class TcpServer implements NetworkServer {
 	public TcpServer(@NonNull IpEndpoint bindEndpoint) {
 		this(bindEndpoint, TcpServerConfig.DEFAULT);
 	}
-
+	
 	/**
 	 * Constructs a new TCP server with the specified bind endpoint and configuration.<br>
 	 *
@@ -97,20 +95,20 @@ public final class TcpServer implements NetworkServer {
 		this.bindEndpoint = Objects.requireNonNull(bindEndpoint, "Bind endpoint must not be null");
 		this.config = Objects.requireNonNull(config, "Config must not be null");
 	}
-
+	
 	@Override
 	public void start() {
 		if (this.running.getAndSet(true)) {
-			return; // Already running
+			return;
 		}
-
+		
 		try {
 			this.serverSocket = new ServerSocket();
 			this.serverSocket.setReuseAddress(true);
 			this.serverSocket.bind(this.bindEndpoint.toInetSocketAddress(), this.config.backlog());
-
+			
 			this.executor = this.config.executorStrategy().createExecutor();
-
+			
 			this.acceptThread = new Thread(this::acceptLoop, "TcpServer-Accept");
 			this.acceptThread.setDaemon(true);
 			this.acceptThread.start();
@@ -122,37 +120,36 @@ public final class TcpServer implements NetworkServer {
 			this.handleError(NetworkErrorType.IO_ERROR, "Failed to start server on " + this.bindEndpoint, e);
 		}
 	}
-
+	
 	@Override
 	public void stop() {
 		if (!this.running.getAndSet(false)) {
-			return; // Not running
+			return;
 		}
-
-		// Close all client connections
+		
 		for (TcpConnection connection : this.connections) {
 			connection.close();
 		}
 		this.connections.clear();
-
+		
 		if (this.serverSocket != null && !this.serverSocket.isClosed()) {
 			try {
 				this.serverSocket.close();
 			} catch (IOException _) {}
 		}
-
+		
 		if (this.acceptThread != null) {
 			this.acceptThread.interrupt();
 		}
-
+		
 		this.shutdownExecutor();
 	}
-
+	
 	@Override
 	public boolean isRunning() {
 		return this.running.get() && this.serverSocket != null && !this.serverSocket.isClosed();
 	}
-
+	
 	@Override
 	public @NonNull IpEndpoint boundEndpoint() {
 		if (this.serverSocket != null && this.serverSocket.isBound()) {
@@ -161,7 +158,7 @@ public final class TcpServer implements NetworkServer {
 		}
 		return this.bindEndpoint;
 	}
-
+	
 	/**
 	 * Returns the number of currently connected clients.<br>
 	 * @return The number of active connections
@@ -169,7 +166,7 @@ public final class TcpServer implements NetworkServer {
 	public int getClientCount() {
 		return this.connections.size();
 	}
-
+	
 	/**
 	 * Broadcasts data to all connected clients.<br>
 	 *
@@ -178,7 +175,7 @@ public final class TcpServer implements NetworkServer {
 	 */
 	public void broadcast(byte @NonNull [] data) {
 		Objects.requireNonNull(data, "Data must not be null");
-
+		
 		for (TcpConnection connection : this.connections) {
 			if (connection.isActive()) {
 				try {
@@ -189,35 +186,32 @@ public final class TcpServer implements NetworkServer {
 			}
 		}
 	}
-
+	
 	@Override
 	public void close() {
 		this.stop();
 	}
-
+	
 	//region Helper methods
 	private void acceptLoop() {
 		while (this.running.get() && !Thread.currentThread().isInterrupted()) {
 			try {
 				Socket clientSocket = this.serverSocket.accept();
-
-				// Configure client socket
+				
 				clientSocket.setTcpNoDelay(this.config.tcpNoDelay());
 				clientSocket.setKeepAlive(this.config.keepAlive());
 				if (!this.config.clientReadTimeout().isZero()) {
 					clientSocket.setSoTimeout((int) this.config.clientReadTimeout().toMillis());
 				}
-
+				
 				TcpConnection connection = new TcpConnection(clientSocket, this.config.clientBufferSize(), this.config.clientReadTimeout());
 				this.connections.add(connection);
-
-				// Fire connect event
+				
 				if (this.config.onClientConnect() != null) {
 					ConnectionEvent event = ConnectionEvent.now(connection.localEndpoint(), connection.remoteEndpoint());
 					this.config.onClientConnect().handle(event);
 				}
-
-				// Handle client in separate thread
+				
 				this.executor.submit(() -> this.handleClient(connection));
 			} catch (SocketException e) {
 				if (this.running.get()) {
@@ -231,16 +225,16 @@ public final class TcpServer implements NetworkServer {
 			}
 		}
 	}
-
+	
 	private void handleClient(@NonNull TcpConnection connection) {
 		try {
 			while (this.running.get() && connection.isActive()) {
 				byte[] data = connection.receive();
-
+				
 				if (data.length == 0) {
-					break; // Connection closed
+					break;
 				}
-
+				
 				if (this.config.onMessage() != null) {
 					try {
 						this.config.onMessage().handle(this, connection, data);
@@ -251,23 +245,21 @@ public final class TcpServer implements NetworkServer {
 			}
 		} catch (NetworkConnectionException e) {
 			if (e.errorType() != NetworkErrorType.READ_TIMEOUT) {
-				// Only log non-timeout errors
 				this.handleError(e.errorType(), "Client error: " + e.getMessage(), e);
 			}
 		} finally {
-			// Fire disconnect event
 			if (this.config.onClientDisconnect() != null && connection.isActive()) {
 				try {
 					ConnectionEvent event = ConnectionEvent.now(connection.localEndpoint(), connection.remoteEndpoint());
 					this.config.onClientDisconnect().handle(event);
 				} catch (Exception _) {}
 			}
-
+			
 			this.connections.remove(connection);
 			connection.close();
 		}
 	}
-
+	
 	private @NonNull IpEndpoint createEndpoint(@NonNull InetSocketAddress address) {
 		IpAddress<?> ipAddress;
 		if (address.getAddress() instanceof Inet4Address inet4) {
@@ -277,13 +269,13 @@ public final class TcpServer implements NetworkServer {
 		}
 		return new IpEndpoint(ipAddress, address.getPort());
 	}
-
+	
 	private void handleError(@NonNull NetworkErrorType errorType, @NonNull String message, @NonNull Throwable cause) {
 		if (this.config.onError() != null) {
 			this.config.onError().handle(errorType, message, cause);
 		}
 	}
-
+	
 	private void shutdownExecutor() {
 		if (this.executor != null && this.config.executorStrategy().ownsExecutor()) {
 			this.executor.shutdown();

@@ -49,7 +49,7 @@ import java.time.Duration;
  * @author Luis-St
  */
 public final class TcpClientConfigBuilder {
-
+	
 	private @NonNull Duration connectTimeout = Duration.ofSeconds(30);
 	private @NonNull Duration readTimeout = Duration.ZERO;
 	private @NonNull Duration writeTimeout = Duration.ZERO;
@@ -59,12 +59,12 @@ public final class TcpClientConfigBuilder {
 	private @Nullable ConnectionEventHandler onConnect;
 	private @Nullable ConnectionEventHandler onDisconnect;
 	private @Nullable ErrorEventHandler onError;
-
+	
 	/**
 	 * Constructs a new builder with default values.<br>
 	 */
 	TcpClientConfigBuilder() {}
-
+	
 	/**
 	 * Sets the maximum time to wait for connection establishment.<br>
 	 *
@@ -75,7 +75,7 @@ public final class TcpClientConfigBuilder {
 		this.connectTimeout = connectTimeout;
 		return this;
 	}
-
+	
 	/**
 	 * Sets the maximum time to wait for read operations.<br>
 	 * Use {@link Duration#ZERO} for infinite timeout.<br>
@@ -87,7 +87,7 @@ public final class TcpClientConfigBuilder {
 		this.readTimeout = readTimeout;
 		return this;
 	}
-
+	
 	/**
 	 * Sets the maximum time to wait for write operations.<br>
 	 * Use {@link Duration#ZERO} for infinite timeout.<br>
@@ -99,7 +99,7 @@ public final class TcpClientConfigBuilder {
 		this.writeTimeout = writeTimeout;
 		return this;
 	}
-
+	
 	/**
 	 * Sets the size of the read/write buffers in bytes.<br>
 	 *
@@ -110,7 +110,7 @@ public final class TcpClientConfigBuilder {
 		this.bufferSize = bufferSize;
 		return this;
 	}
-
+	
 	/**
 	 * Sets whether to disable Nagle's algorithm (TCP_NODELAY).<br>
 	 * When enabled, small packets are sent immediately without waiting.<br>
@@ -122,7 +122,7 @@ public final class TcpClientConfigBuilder {
 		this.tcpNoDelay = tcpNoDelay;
 		return this;
 	}
-
+	
 	/**
 	 * Sets whether to enable TCP keep-alive (SO_KEEPALIVE).<br>
 	 *
@@ -133,7 +133,7 @@ public final class TcpClientConfigBuilder {
 		this.keepAlive = keepAlive;
 		return this;
 	}
-
+	
 	/**
 	 * Sets the handler called when connection is established.<br>
 	 *
@@ -144,7 +144,7 @@ public final class TcpClientConfigBuilder {
 		this.onConnect = onConnect;
 		return this;
 	}
-
+	
 	/**
 	 * Sets the handler called when connection is closed.<br>
 	 *
@@ -155,7 +155,7 @@ public final class TcpClientConfigBuilder {
 		this.onDisconnect = onDisconnect;
 		return this;
 	}
-
+	
 	/**
 	 * Sets the error event handler.<br>
 	 *
@@ -166,7 +166,7 @@ public final class TcpClientConfigBuilder {
 		this.onError = onError;
 		return this;
 	}
-
+	
 	/**
 	 * Builds a new TCP client configuration with the configured values.<br>
 	 * @return A new configuration instance

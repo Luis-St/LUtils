@@ -32,8 +32,7 @@ import java.util.Objects;
  * </p>
  * <pre>{@code
  * ConnectionEventHandler handler = event -> {
- *     System.out.println("Connection from " + event.remoteEndpoint() +
- *                        " at " + event.timestamp());
+ *     System.out.println("Connection from " + event.remoteEndpoint() + " at " + event.timestamp());
  * };
  * }</pre>
  *
@@ -50,7 +49,7 @@ public record ConnectionEvent(
 	@NonNull IpEndpoint remoteEndpoint,
 	@NonNull Instant timestamp
 ) {
-
+	
 	/**
 	 * Constructs a new connection event.<br>
 	 *
@@ -64,7 +63,7 @@ public record ConnectionEvent(
 		Objects.requireNonNull(remoteEndpoint, "Remote endpoint must not be null");
 		Objects.requireNonNull(timestamp, "Timestamp must not be null");
 	}
-
+	
 	/**
 	 * Creates a connection event with the current timestamp.<br>
 	 *

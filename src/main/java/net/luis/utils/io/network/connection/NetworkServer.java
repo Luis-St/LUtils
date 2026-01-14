@@ -25,9 +25,9 @@ import org.jspecify.annotations.NonNull;
 
 /**
  * Base interface for network servers.<br>
- * This sealed interface provides common operations for both TCP and UDP servers.
+ * This sealed interface provides common operations for both TCP and UDP servers.<br>
  * <p>
- *     This interface is sealed and permits only {@link TcpServer} and {@link UdpServer}
+ *     This interface is sealed and permits only {@link TcpServer} and {@link UdpServer}<br>
  *     as implementations, ensuring type safety when working with network servers polymorphically.
  * </p>
  * <p>
@@ -57,38 +57,31 @@ import org.jspecify.annotations.NonNull;
  * @author Luis-St
  */
 public sealed interface NetworkServer extends AutoCloseable permits TcpServer, UdpServer {
-
+	
 	/**
 	 * Returns whether this server is currently running.<br>
-	 *
 	 * @return True if the server is running
 	 */
 	boolean isRunning();
-
+	
 	/**
 	 * Returns the endpoint this server is bound to.<br>
-	 *
 	 * @return The bound endpoint
 	 */
 	@NonNull IpEndpoint boundEndpoint();
-
+	
 	/**
 	 * Starts the server and begins accepting connections/datagrams.<br>
 	 * This method returns immediately; the server runs in background threads.
 	 */
 	void start();
-
+	
 	/**
 	 * Stops the server gracefully.<br>
 	 * This method blocks until all active operations complete or timeout.
 	 */
 	void stop();
-
-	/**
-	 * Closes this server and releases all associated resources.<br>
-	 * Equivalent to calling {@link #stop()}.
-	 * This method does not throw checked exceptions.
-	 */
+	
 	@Override
 	void close();
 }

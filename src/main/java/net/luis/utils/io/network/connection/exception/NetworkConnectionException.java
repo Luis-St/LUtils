@@ -47,17 +47,17 @@ import java.io.IOException;
  * @author Luis-St
  */
 public class NetworkConnectionException extends IOException {
-
+	
 	/**
 	 * The type of error that caused this exception.<br>
 	 */
 	private final @NonNull NetworkErrorType errorType;
-
+	
 	/**
 	 * The endpoint involved in the failed operation, or null if not available.<br>
 	 */
 	private final @Nullable IpEndpoint endpoint;
-
+	
 	/**
 	 * Constructs a new network connection exception with no details.<br>
 	 * The error type defaults to {@link NetworkErrorType#UNKNOWN} and the endpoint is null.<br>
@@ -66,7 +66,7 @@ public class NetworkConnectionException extends IOException {
 		this.errorType = NetworkErrorType.UNKNOWN;
 		this.endpoint = null;
 	}
-
+	
 	/**
 	 * Constructs a new network connection exception with the specified message.<br>
 	 * The error type defaults to {@link NetworkErrorType#UNKNOWN} and the endpoint is null.<br>
@@ -78,7 +78,7 @@ public class NetworkConnectionException extends IOException {
 		this.errorType = NetworkErrorType.UNKNOWN;
 		this.endpoint = null;
 	}
-
+	
 	/**
 	 * Constructs a new network connection exception with the specified message and cause.<br>
 	 * The error type defaults to {@link NetworkErrorType#UNKNOWN} and the endpoint is null.<br>
@@ -91,7 +91,7 @@ public class NetworkConnectionException extends IOException {
 		this.errorType = NetworkErrorType.UNKNOWN;
 		this.endpoint = null;
 	}
-
+	
 	/**
 	 * Constructs a new network connection exception with the specified cause.<br>
 	 * The error type defaults to {@link NetworkErrorType#UNKNOWN} and the endpoint is null.<br>
@@ -103,7 +103,7 @@ public class NetworkConnectionException extends IOException {
 		this.errorType = NetworkErrorType.UNKNOWN;
 		this.endpoint = null;
 	}
-
+	
 	/**
 	 * Constructs a new network connection exception with the specified error type.<br>
 	 * The endpoint is null and no message is set.<br>
@@ -115,7 +115,7 @@ public class NetworkConnectionException extends IOException {
 		this.errorType = errorType != null ? errorType : NetworkErrorType.UNKNOWN;
 		this.endpoint = null;
 	}
-
+	
 	/**
 	 * Constructs a new network connection exception with the specified error type and endpoint.<br>
 	 * No message is set, if the provided error type is null, it defaults to {@link NetworkErrorType#UNKNOWN}.<br>
@@ -127,7 +127,7 @@ public class NetworkConnectionException extends IOException {
 		this.errorType = errorType != null ? errorType : NetworkErrorType.UNKNOWN;
 		this.endpoint = endpoint;
 	}
-
+	
 	/**
 	 * Constructs a new network connection exception with the specified message and error type.<br>
 	 * The endpoint is null, if the provided error type is null, it defaults to {@link NetworkErrorType#UNKNOWN}.<br>
@@ -140,7 +140,7 @@ public class NetworkConnectionException extends IOException {
 		this.errorType = errorType != null ? errorType : NetworkErrorType.UNKNOWN;
 		this.endpoint = null;
 	}
-
+	
 	/**
 	 * Constructs a new network connection exception with the specified message, error type, and endpoint.<br>
 	 * If the provided error type is null, it defaults to {@link NetworkErrorType#UNKNOWN}.<br>
@@ -154,7 +154,7 @@ public class NetworkConnectionException extends IOException {
 		this.errorType = errorType != null ? errorType : NetworkErrorType.UNKNOWN;
 		this.endpoint = endpoint;
 	}
-
+	
 	/**
 	 * Constructs a new network connection exception with the specified message, cause, and error type.<br>
 	 * The endpoint is null, if the provided error type is null, it defaults to {@link NetworkErrorType#UNKNOWN}.<br>
@@ -168,7 +168,7 @@ public class NetworkConnectionException extends IOException {
 		this.errorType = errorType != null ? errorType : NetworkErrorType.UNKNOWN;
 		this.endpoint = null;
 	}
-
+	
 	/**
 	 * Constructs a new network connection exception with the specified message, cause, error type, and endpoint.<br>
 	 * If the provided error type is null, it defaults to {@link NetworkErrorType#UNKNOWN}.<br>
@@ -183,7 +183,7 @@ public class NetworkConnectionException extends IOException {
 		this.errorType = errorType != null ? errorType : NetworkErrorType.UNKNOWN;
 		this.endpoint = endpoint;
 	}
-
+	
 	/**
 	 * Returns the type of error that caused this exception.<br>
 	 * @return The error type, never null
@@ -191,7 +191,7 @@ public class NetworkConnectionException extends IOException {
 	public @NonNull NetworkErrorType errorType() {
 		return this.errorType;
 	}
-
+	
 	/**
 	 * Returns the endpoint involved in the failed operation.<br>
 	 * @return The endpoint, or null if not available

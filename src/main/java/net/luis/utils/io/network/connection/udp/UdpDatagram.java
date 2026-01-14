@@ -53,7 +53,7 @@ public record UdpDatagram(
 	@NonNull IpEndpoint endpoint,
 	byte @NonNull [] data
 ) {
-
+	
 	/**
 	 * Constructs a new UDP datagram.<br>
 	 *
@@ -65,7 +65,7 @@ public record UdpDatagram(
 		Objects.requireNonNull(endpoint, "Endpoint must not be null");
 		Objects.requireNonNull(data, "Data must not be null");
 	}
-
+	
 	/**
 	 * Returns the length of the payload data.<br>
 	 *
@@ -74,7 +74,7 @@ public record UdpDatagram(
 	public int length() {
 		return this.data.length;
 	}
-
+	
 	/**
 	 * Returns a copy of the payload data.<br>
 	 * Modifications to the returned array will not affect this datagram.<br>

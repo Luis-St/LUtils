@@ -71,7 +71,7 @@ public record TcpClientConfig(
 	@Nullable ConnectionEventHandler onDisconnect,
 	@Nullable ErrorEventHandler onError
 ) {
-
+	
 	/**
 	 * Default configuration for TCP clients.<br>
 	 * <ul>
@@ -84,18 +84,8 @@ public record TcpClientConfig(
 	 *     <li>All handlers = {@code null}</li>
 	 * </ul>
 	 */
-	public static final TcpClientConfig DEFAULT = new TcpClientConfig(
-		Duration.ofSeconds(30),
-		Duration.ZERO,
-		Duration.ZERO,
-		8192,
-		true,
-		true,
-		null,
-		null,
-		null
-	);
-
+	public static final TcpClientConfig DEFAULT = new TcpClientConfig(Duration.ofSeconds(30), Duration.ZERO, Duration.ZERO, 8192, true, true, null, null, null);
+	
 	/**
 	 * Constructs a new TCP client configuration.<br>
 	 *
@@ -115,11 +105,12 @@ public record TcpClientConfig(
 		Objects.requireNonNull(connectTimeout, "Connect timeout must not be null");
 		Objects.requireNonNull(readTimeout, "Read timeout must not be null");
 		Objects.requireNonNull(writeTimeout, "Write timeout must not be null");
+		
 		if (bufferSize < 1) {
 			throw new IllegalArgumentException("Buffer size must be at least 1: " + bufferSize);
 		}
 	}
-
+	
 	/**
 	 * Creates a new builder for constructing TCP client configuration.<br>
 	 * @return A new builder with default values

@@ -55,7 +55,7 @@ import org.jspecify.annotations.NonNull;
  */
 @FunctionalInterface
 public interface MessageEventHandler<S extends NetworkServer, C> {
-
+	
 	/**
 	 * Called when a message is received.<br>
 	 *

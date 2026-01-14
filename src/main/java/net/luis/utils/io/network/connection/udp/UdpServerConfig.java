@@ -65,7 +65,7 @@ public record UdpServerConfig(
 	@Nullable MessageEventHandler<UdpServer, UdpDatagram> onMessage,
 	@Nullable ErrorEventHandler onError
 ) {
-
+	
 	/**
 	 * Default configuration for UDP servers.<br>
 	 * <ul>
@@ -77,15 +77,8 @@ public record UdpServerConfig(
 	 *     <li>{@link #onError} = {@code null}</li>
 	 * </ul>
 	 */
-	public static final UdpServerConfig DEFAULT = new UdpServerConfig(
-		65535,
-		false,
-		false,
-		ClientExecutorStrategy.virtualThreads(),
-		null,
-		null
-	);
-
+	public static final UdpServerConfig DEFAULT = new UdpServerConfig(65535, false, false, ClientExecutorStrategy.virtualThreads(), null, null);
+	
 	/**
 	 * Constructs a new UDP server configuration.<br>
 	 *
@@ -100,11 +93,12 @@ public record UdpServerConfig(
 	 */
 	public UdpServerConfig {
 		Objects.requireNonNull(executorStrategy, "Executor strategy must not be null");
+		
 		if (bufferSize < 1) {
 			throw new IllegalArgumentException("Buffer size must be at least 1: " + bufferSize);
 		}
 	}
-
+	
 	/**
 	 * Creates a new builder for constructing UDP server configuration.<br>
 	 * @return A new builder with default values

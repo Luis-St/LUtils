@@ -56,22 +56,7 @@ import java.util.concurrent.ExecutorService;
  * @author Luis-St
  */
 public sealed interface ClientExecutorStrategy permits VirtualThreadStrategy, ThreadPoolStrategy {
-
-	/**
-	 * Creates an executor service based on this strategy.<br>
-	 * @return A new executor service
-	 */
-	@NonNull ExecutorService createExecutor();
-
-	/**
-	 * Returns whether this strategy owns the executor.<br>
-	 * If true, the executor should be shut down when the server is closed.<br>
-	 * If false, the executor is managed externally and should not be shut down.
-	 *
-	 * @return True if the executor is owned by this strategy
-	 */
-	boolean ownsExecutor();
-
+	
 	/**
 	 * Creates a virtual thread per client strategy.<br>
 	 * This is the recommended approach for modern Java applications (Java 21+).<br>
@@ -81,7 +66,7 @@ public sealed interface ClientExecutorStrategy permits VirtualThreadStrategy, Th
 	static @NonNull VirtualThreadStrategy virtualThreads() {
 		return new VirtualThreadStrategy();
 	}
-
+	
 	/**
 	 * Creates a fixed thread pool strategy with the specified number of threads.<br>
 	 *
@@ -95,7 +80,7 @@ public sealed interface ClientExecutorStrategy permits VirtualThreadStrategy, Th
 		}
 		return new ThreadPoolStrategy(threads, false, null);
 	}
-
+	
 	/**
 	 * Creates a cached thread pool strategy.<br>
 	 * Threads are created as needed and reused when available.<br>
@@ -105,11 +90,10 @@ public sealed interface ClientExecutorStrategy permits VirtualThreadStrategy, Th
 	static @NonNull ThreadPoolStrategy cachedPool() {
 		return new ThreadPoolStrategy(0, true, null);
 	}
-
+	
 	/**
 	 * Uses a custom executor service.<br>
-	 * The executor is not owned by this strategy and will not be shut down<br>
-	 * when the server is closed.<br>
+	 * The executor is not owned by this strategy and will not be shut down when the server is closed.<br>
 	 *
 	 * @param executor The custom executor service to use
 	 * @return A new thread pool strategy wrapping the custom executor
@@ -119,4 +103,21 @@ public sealed interface ClientExecutorStrategy permits VirtualThreadStrategy, Th
 		Objects.requireNonNull(executor, "Executor must not be null");
 		return new ThreadPoolStrategy(0, false, executor);
 	}
+	
+	/**
+	 * Creates an executor service based on this strategy.<br>
+	 * @return A new executor service
+	 */
+	@NonNull ExecutorService createExecutor();
+	
+	/**
+	 * Returns whether this strategy owns the executor.<br>
+	 * <p>
+	 *     If true, the executor should be shut down when the server is closed.<br>
+	 * 	   If false, the executor is managed externally and should not be shut down.
+	 * </p>
+	 *
+	 * @return True if the executor is owned by this strategy
+	 */
+	boolean ownsExecutor();
 }

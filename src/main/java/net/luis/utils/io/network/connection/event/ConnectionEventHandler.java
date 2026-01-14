@@ -22,8 +22,7 @@ import org.jspecify.annotations.NonNull;
 
 /**
  * Handler for connection lifecycle events (connect/disconnect).<br>
- * This functional interface is used to handle connection and disconnection events<br>
- * for both TCP clients and servers.<br>
+ * This functional interface is used to handle connection and disconnection events for both TCP clients and servers.<br>
  * <p>
  *     Example usage:
  * </p>
@@ -43,7 +42,7 @@ import org.jspecify.annotations.NonNull;
  */
 @FunctionalInterface
 public interface ConnectionEventHandler {
-
+	
 	/**
 	 * Called when a connection event occurs.<br>
 	 * @param event The connection event context

@@ -61,7 +61,7 @@ public record UdpClientConfig(
 	boolean reuseAddress,
 	@Nullable ErrorEventHandler onError
 ) {
-
+	
 	/**
 	 * Default configuration for UDP clients.<br>
 	 * <ul>
@@ -72,14 +72,8 @@ public record UdpClientConfig(
 	 *     <li>{@link #onError} = {@code null}</li>
 	 * </ul>
 	 */
-	public static final UdpClientConfig DEFAULT = new UdpClientConfig(
-		Duration.ZERO,
-		65535,
-		false,
-		false,
-		null
-	);
-
+	public static final UdpClientConfig DEFAULT = new UdpClientConfig(Duration.ZERO, 65535, false, false, null);
+	
 	/**
 	 * Constructs a new UDP client configuration.<br>
 	 *
@@ -93,11 +87,12 @@ public record UdpClientConfig(
 	 */
 	public UdpClientConfig {
 		Objects.requireNonNull(receiveTimeout, "Receive timeout must not be null");
+		
 		if (bufferSize < 1) {
 			throw new IllegalArgumentException("Buffer size must be at least 1: " + bufferSize);
 		}
 	}
-
+	
 	/**
 	 * Creates a new builder for constructing UDP client configuration.<br>
 	 * @return A new builder with default values

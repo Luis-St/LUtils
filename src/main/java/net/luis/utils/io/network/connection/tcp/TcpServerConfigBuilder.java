@@ -18,9 +18,7 @@
 
 package net.luis.utils.io.network.connection.tcp;
 
-import net.luis.utils.io.network.connection.event.ConnectionEventHandler;
-import net.luis.utils.io.network.connection.event.ErrorEventHandler;
-import net.luis.utils.io.network.connection.event.MessageEventHandler;
+import net.luis.utils.io.network.connection.event.*;
 import net.luis.utils.io.network.connection.executor.ClientExecutorStrategy;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
@@ -53,7 +51,7 @@ import java.time.Duration;
  * @author Luis-St
  */
 public final class TcpServerConfigBuilder {
-
+	
 	private int backlog = 50;
 	private int clientBufferSize = 8192;
 	private @NonNull Duration clientReadTimeout = Duration.ZERO;
@@ -64,12 +62,12 @@ public final class TcpServerConfigBuilder {
 	private @Nullable ConnectionEventHandler onClientDisconnect;
 	private @Nullable MessageEventHandler<TcpServer, TcpConnection> onMessage;
 	private @Nullable ErrorEventHandler onError;
-
+	
 	/**
 	 * Constructs a new builder with default values.<br>
 	 */
 	TcpServerConfigBuilder() {}
-
+	
 	/**
 	 * Sets the maximum number of pending connections in the queue.<br>
 	 *
@@ -80,7 +78,7 @@ public final class TcpServerConfigBuilder {
 		this.backlog = backlog;
 		return this;
 	}
-
+	
 	/**
 	 * Sets the buffer size for each client connection in bytes.<br>
 	 *
@@ -91,7 +89,7 @@ public final class TcpServerConfigBuilder {
 		this.clientBufferSize = clientBufferSize;
 		return this;
 	}
-
+	
 	/**
 	 * Sets the read timeout for client connections.<br>
 	 * Use {@link Duration#ZERO} for infinite timeout.<br>
@@ -103,7 +101,7 @@ public final class TcpServerConfigBuilder {
 		this.clientReadTimeout = clientReadTimeout;
 		return this;
 	}
-
+	
 	/**
 	 * Sets whether to disable Nagle's algorithm for client connections.<br>
 	 *
@@ -114,7 +112,7 @@ public final class TcpServerConfigBuilder {
 		this.tcpNoDelay = tcpNoDelay;
 		return this;
 	}
-
+	
 	/**
 	 * Sets whether to enable TCP keep-alive for client connections.<br>
 	 *
@@ -125,7 +123,7 @@ public final class TcpServerConfigBuilder {
 		this.keepAlive = keepAlive;
 		return this;
 	}
-
+	
 	/**
 	 * Sets the executor strategy for handling concurrent client connections.<br>
 	 *
@@ -136,7 +134,7 @@ public final class TcpServerConfigBuilder {
 		this.executorStrategy = executorStrategy;
 		return this;
 	}
-
+	
 	/**
 	 * Sets the handler called when a client connects.<br>
 	 *
@@ -147,7 +145,7 @@ public final class TcpServerConfigBuilder {
 		this.onClientConnect = onClientConnect;
 		return this;
 	}
-
+	
 	/**
 	 * Sets the handler called when a client disconnects.<br>
 	 *
@@ -158,7 +156,7 @@ public final class TcpServerConfigBuilder {
 		this.onClientDisconnect = onClientDisconnect;
 		return this;
 	}
-
+	
 	/**
 	 * Sets the handler called when a message is received from a client.<br>
 	 *
@@ -169,7 +167,7 @@ public final class TcpServerConfigBuilder {
 		this.onMessage = onMessage;
 		return this;
 	}
-
+	
 	/**
 	 * Sets the error event handler.<br>
 	 *
@@ -180,23 +178,12 @@ public final class TcpServerConfigBuilder {
 		this.onError = onError;
 		return this;
 	}
-
+	
 	/**
 	 * Builds a new TCP server configuration with the configured values.<br>
 	 * @return A new configuration instance
 	 */
 	public @NonNull TcpServerConfig build() {
-		return new TcpServerConfig(
-			this.backlog,
-			this.clientBufferSize,
-			this.clientReadTimeout,
-			this.tcpNoDelay,
-			this.keepAlive,
-			this.executorStrategy,
-			this.onClientConnect,
-			this.onClientDisconnect,
-			this.onMessage,
-			this.onError
-		);
+		return new TcpServerConfig(this.backlog, this.clientBufferSize, this.clientReadTimeout, this.tcpNoDelay, this.keepAlive, this.executorStrategy, this.onClientConnect, this.onClientDisconnect, this.onMessage, this.onError);
 	}
 }

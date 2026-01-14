@@ -48,12 +48,12 @@ import java.util.Objects;
  * @author Luis-St
  */
 public class NetworkTimeoutException extends NetworkConnectionException {
-
+	
 	/**
 	 * The timeout duration that was exceeded.<br>
 	 */
 	private final @NonNull Duration timeout;
-
+	
 	/**
 	 * Constructs a new network timeout exception with the specified error type and timeout.<br>
 	 *
@@ -65,7 +65,7 @@ public class NetworkTimeoutException extends NetworkConnectionException {
 		super(errorType);
 		this.timeout = Objects.requireNonNull(timeout, "Timeout must not be null");
 	}
-
+	
 	/**
 	 * Constructs a new network timeout exception with the specified error type, timeout, and endpoint.<br>
 	 *
@@ -78,7 +78,7 @@ public class NetworkTimeoutException extends NetworkConnectionException {
 		super(errorType, endpoint);
 		this.timeout = Objects.requireNonNull(timeout, "Timeout must not be null");
 	}
-
+	
 	/**
 	 * Constructs a new network timeout exception with the specified message, error type, and timeout.<br>
 	 *
@@ -91,7 +91,7 @@ public class NetworkTimeoutException extends NetworkConnectionException {
 		super(message, errorType);
 		this.timeout = Objects.requireNonNull(timeout, "Timeout must not be null");
 	}
-
+	
 	/**
 	 * Constructs a new network timeout exception with the specified message, error type, timeout, and endpoint.<br>
 	 *
@@ -105,7 +105,7 @@ public class NetworkTimeoutException extends NetworkConnectionException {
 		super(message, errorType, endpoint);
 		this.timeout = Objects.requireNonNull(timeout, "Timeout must not be null");
 	}
-
+	
 	/**
 	 * Constructs a new network timeout exception with all details.<br>
 	 *
@@ -120,7 +120,7 @@ public class NetworkTimeoutException extends NetworkConnectionException {
 		super(message, cause, errorType, endpoint);
 		this.timeout = Objects.requireNonNull(timeout, "Timeout must not be null");
 	}
-
+	
 	/**
 	 * Returns the timeout duration that was exceeded.<br>
 	 * @return The timeout duration, never null

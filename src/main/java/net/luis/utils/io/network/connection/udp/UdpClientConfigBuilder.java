@@ -47,18 +47,18 @@ import java.time.Duration;
  * @author Luis-St
  */
 public final class UdpClientConfigBuilder {
-
+	
 	private @NonNull Duration receiveTimeout = Duration.ZERO;
 	private int bufferSize = 65535;
 	private boolean broadcast;
 	private boolean reuseAddress;
 	private @Nullable ErrorEventHandler onError;
-
+	
 	/**
 	 * Constructs a new builder with default values.<br>
 	 */
 	UdpClientConfigBuilder() {}
-
+	
 	/**
 	 * Sets the maximum time to wait for receive operations.<br>
 	 * Use {@link Duration#ZERO} for infinite timeout.<br>
@@ -70,7 +70,7 @@ public final class UdpClientConfigBuilder {
 		this.receiveTimeout = receiveTimeout;
 		return this;
 	}
-
+	
 	/**
 	 * Sets the size of the receive buffer in bytes.<br>
 	 *
@@ -81,7 +81,7 @@ public final class UdpClientConfigBuilder {
 		this.bufferSize = bufferSize;
 		return this;
 	}
-
+	
 	/**
 	 * Sets whether to allow sending/receiving broadcast packets.<br>
 	 *
@@ -92,7 +92,7 @@ public final class UdpClientConfigBuilder {
 		this.broadcast = broadcast;
 		return this;
 	}
-
+	
 	/**
 	 * Sets whether to allow address reuse (SO_REUSEADDR).<br>
 	 *
@@ -103,7 +103,7 @@ public final class UdpClientConfigBuilder {
 		this.reuseAddress = reuseAddress;
 		return this;
 	}
-
+	
 	/**
 	 * Sets the error event handler.<br>
 	 *
@@ -114,18 +114,12 @@ public final class UdpClientConfigBuilder {
 		this.onError = onError;
 		return this;
 	}
-
+	
 	/**
 	 * Builds a new UDP client configuration with the configured values.<br>
 	 * @return A new configuration instance
 	 */
 	public @NonNull UdpClientConfig build() {
-		return new UdpClientConfig(
-			this.receiveTimeout,
-			this.bufferSize,
-			this.broadcast,
-			this.reuseAddress,
-			this.onError
-		);
+		return new UdpClientConfig(this.receiveTimeout, this.bufferSize, this.broadcast, this.reuseAddress, this.onError);
 	}
 }

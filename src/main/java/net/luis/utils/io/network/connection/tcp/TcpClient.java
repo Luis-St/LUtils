@@ -24,14 +24,11 @@ import net.luis.utils.io.network.address.ipv4.Ipv4Address;
 import net.luis.utils.io.network.address.ipv6.Ipv6Address;
 import net.luis.utils.io.network.connection.NetworkClient;
 import net.luis.utils.io.network.connection.event.ConnectionEvent;
-import net.luis.utils.io.network.connection.exception.NetworkConnectionException;
-import net.luis.utils.io.network.connection.exception.NetworkErrorType;
-import net.luis.utils.io.network.connection.exception.NetworkTimeoutException;
+import net.luis.utils.io.network.connection.exception.*;
+import org.apache.commons.lang3.ArrayUtils;
 import org.jspecify.annotations.NonNull;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
+import java.io.*;
 import java.net.*;
 import java.util.Objects;
 import java.util.Optional;
@@ -62,18 +59,18 @@ import java.util.Optional;
  * @author Luis-St
  */
 public final class TcpClient implements NetworkClient {
-
+	
 	private final @NonNull TcpClientConfig config;
 	private volatile Socket socket;
 	private volatile boolean connected;
-
+	
 	/**
 	 * Constructs a new TCP client with default configuration.<br>
 	 */
 	public TcpClient() {
 		this(TcpClientConfig.DEFAULT);
 	}
-
+	
 	/**
 	 * Constructs a new TCP client with the specified configuration.<br>
 	 *
@@ -83,7 +80,7 @@ public final class TcpClient implements NetworkClient {
 	public TcpClient(@NonNull TcpClientConfig config) {
 		this.config = Objects.requireNonNull(config, "Config must not be null");
 	}
-
+	
 	/**
 	 * Connects to the specified remote endpoint.<br>
 	 *
@@ -94,23 +91,22 @@ public final class TcpClient implements NetworkClient {
 	 */
 	public void connect(@NonNull IpEndpoint endpoint) throws NetworkConnectionException {
 		Objects.requireNonNull(endpoint, "Endpoint must not be null");
-
 		if (this.connected) {
 			throw new NetworkConnectionException("Client is already connected", NetworkErrorType.ALREADY_CONNECTED, endpoint);
 		}
-
+		
 		try {
 			this.socket = new Socket();
 			this.socket.setTcpNoDelay(this.config.tcpNoDelay());
 			this.socket.setKeepAlive(this.config.keepAlive());
-
+			
 			if (!this.config.readTimeout().isZero()) {
 				this.socket.setSoTimeout((int) this.config.readTimeout().toMillis());
 			}
-
+			
 			this.socket.connect(endpoint.toInetSocketAddress(), (int) this.config.connectTimeout().toMillis());
 			this.connected = true;
-
+			
 			if (this.config.onConnect() != null) {
 				ConnectionEvent event = ConnectionEvent.now(this.localEndpoint().orElse(endpoint), endpoint);
 				this.config.onConnect().handle(event);
@@ -129,7 +125,7 @@ public final class TcpClient implements NetworkClient {
 			throw new NetworkConnectionException("Failed to connect to " + endpoint, e, NetworkErrorType.CONNECTION_FAILED, endpoint);
 		}
 	}
-
+	
 	/**
 	 * Sends data to the connected server.<br>
 	 *
@@ -140,7 +136,7 @@ public final class TcpClient implements NetworkClient {
 	public void send(byte @NonNull [] data) throws NetworkConnectionException {
 		Objects.requireNonNull(data, "Data must not be null");
 		this.ensureConnected();
-
+		
 		try {
 			OutputStream out = this.socket.getOutputStream();
 			out.write(data);
@@ -153,7 +149,7 @@ public final class TcpClient implements NetworkClient {
 			throw new NetworkConnectionException("Failed to send data", e, NetworkErrorType.IO_ERROR);
 		}
 	}
-
+	
 	/**
 	 * Receives data from the connected server (blocking).<br>
 	 * Uses the buffer size from the configuration.<br>
@@ -165,7 +161,7 @@ public final class TcpClient implements NetworkClient {
 	public byte @NonNull [] receive() throws NetworkConnectionException {
 		return this.receive(this.config.bufferSize());
 	}
-
+	
 	/**
 	 * Receives data with a custom buffer size (blocking).<br>
 	 *
@@ -180,17 +176,17 @@ public final class TcpClient implements NetworkClient {
 			throw new IllegalArgumentException("Max bytes must be at least 1: " + maxBytes);
 		}
 		this.ensureConnected();
-
+		
 		try {
 			InputStream in = this.socket.getInputStream();
 			byte[] buffer = new byte[maxBytes];
 			int bytesRead = in.read(buffer);
-
+			
 			if (bytesRead == -1) {
 				this.handleDisconnect();
-				return new byte[0]; // Connection closed
+				return ArrayUtils.EMPTY_BYTE_ARRAY;
 			}
-
+			
 			byte[] data = new byte[bytesRead];
 			System.arraycopy(buffer, 0, data, 0, bytesRead);
 			return data;
@@ -204,7 +200,7 @@ public final class TcpClient implements NetworkClient {
 			throw new NetworkConnectionException("Failed to receive data", e, NetworkErrorType.IO_ERROR);
 		}
 	}
-
+	
 	/**
 	 * Returns the input stream for advanced reading.<br>
 	 *
@@ -213,13 +209,14 @@ public final class TcpClient implements NetworkClient {
 	 */
 	public @NonNull InputStream getInputStream() throws NetworkConnectionException {
 		this.ensureConnected();
+		
 		try {
 			return this.socket.getInputStream();
 		} catch (IOException e) {
 			throw new NetworkConnectionException("Failed to get input stream", e, NetworkErrorType.IO_ERROR);
 		}
 	}
-
+	
 	/**
 	 * Returns the output stream for advanced writing.<br>
 	 *
@@ -228,27 +225,29 @@ public final class TcpClient implements NetworkClient {
 	 */
 	public @NonNull OutputStream getOutputStream() throws NetworkConnectionException {
 		this.ensureConnected();
+		
 		try {
 			return this.socket.getOutputStream();
 		} catch (IOException e) {
 			throw new NetworkConnectionException("Failed to get output stream", e, NetworkErrorType.IO_ERROR);
 		}
 	}
-
+	
 	@Override
 	public boolean isActive() {
 		return this.connected && this.socket != null && !this.socket.isClosed() && this.socket.isConnected();
 	}
-
+	
 	@Override
 	public @NonNull Optional<IpEndpoint> localEndpoint() {
 		if (!this.isActive()) {
 			return Optional.empty();
 		}
+		
 		InetSocketAddress address = (InetSocketAddress) this.socket.getLocalSocketAddress();
 		return Optional.of(this.createEndpoint(address));
 	}
-
+	
 	/**
 	 * Returns the remote endpoint this client is connected to.<br>
 	 * @return The remote endpoint, or empty if not connected
@@ -257,30 +256,30 @@ public final class TcpClient implements NetworkClient {
 		if (!this.isActive()) {
 			return Optional.empty();
 		}
+		
 		InetSocketAddress address = (InetSocketAddress) this.socket.getRemoteSocketAddress();
 		return Optional.of(this.createEndpoint(address));
 	}
-
+	
 	@Override
 	public void close() {
 		if (this.socket != null && !this.socket.isClosed()) {
 			this.handleDisconnect();
+			
 			try {
 				this.socket.close();
-			} catch (IOException ignored) {
-				// Ignore close errors
-			}
+			} catch (IOException _) {}
 		}
 		this.connected = false;
 	}
-
+	
 	//region Helper methods
 	private void ensureConnected() throws NetworkConnectionException {
 		if (!this.connected || this.socket == null || this.socket.isClosed()) {
 			throw new NetworkConnectionException("Client is not connected", NetworkErrorType.NOT_CONNECTED);
 		}
 	}
-
+	
 	private void handleDisconnect() {
 		if (this.connected && this.config.onDisconnect() != null) {
 			try {
@@ -294,7 +293,7 @@ public final class TcpClient implements NetworkClient {
 		}
 		this.connected = false;
 	}
-
+	
 	private @NonNull IpEndpoint createEndpoint(@NonNull InetSocketAddress address) {
 		IpAddress<?> ipAddress;
 		if (address.getAddress() instanceof Inet4Address inet4) {
@@ -304,7 +303,7 @@ public final class TcpClient implements NetworkClient {
 		}
 		return new IpEndpoint(ipAddress, address.getPort());
 	}
-
+	
 	private void handleError(@NonNull NetworkErrorType errorType, @NonNull String message, @NonNull Throwable cause) {
 		if (this.config.onError() != null) {
 			this.config.onError().handle(errorType, message, cause);

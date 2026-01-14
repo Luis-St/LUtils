@@ -53,11 +53,11 @@ import java.util.concurrent.Executors;
  * @author Luis-St
  */
 public final class ThreadPoolStrategy implements ClientExecutorStrategy {
-
+	
 	private final int poolSize;
 	private final boolean cached;
 	private final @Nullable ExecutorService customExecutor;
-
+	
 	/**
 	 * Constructs a new thread pool strategy.<br>
 	 *
@@ -70,7 +70,7 @@ public final class ThreadPoolStrategy implements ClientExecutorStrategy {
 		this.cached = cached;
 		this.customExecutor = customExecutor;
 	}
-
+	
 	@Override
 	public @NonNull ExecutorService createExecutor() {
 		if (this.customExecutor != null) {
@@ -81,12 +81,12 @@ public final class ThreadPoolStrategy implements ClientExecutorStrategy {
 		}
 		return Executors.newFixedThreadPool(this.poolSize);
 	}
-
+	
 	@Override
 	public boolean ownsExecutor() {
 		return this.customExecutor == null;
 	}
-
+	
 	/**
 	 * Returns the pool size for fixed thread pools.<br>
 	 * @return The pool size, or 0 for cached/custom pools
@@ -94,7 +94,7 @@ public final class ThreadPoolStrategy implements ClientExecutorStrategy {
 	public int poolSize() {
 		return this.poolSize;
 	}
-
+	
 	/**
 	 * Returns whether this is a cached thread pool strategy.<br>
 	 * @return True if cached
@@ -102,7 +102,7 @@ public final class ThreadPoolStrategy implements ClientExecutorStrategy {
 	public boolean isCached() {
 		return this.cached;
 	}
-
+	
 	/**
 	 * Returns whether this strategy uses a custom executor.<br>
 	 * @return True if using a custom executor
