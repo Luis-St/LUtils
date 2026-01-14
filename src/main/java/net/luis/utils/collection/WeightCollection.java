@@ -84,6 +84,7 @@ public class WeightCollection<T> {
 		if (0 >= weight) {
 			throw new IllegalArgumentException("The weight must be greater than 0, but it is " + weight);
 		}
+		
 		this.total += weight;
 		this.map.put(this.total, value);
 		this.weights.put(value, weight);
@@ -104,12 +105,10 @@ public class WeightCollection<T> {
 		
 		this.map.clear();
 		this.total = 0;
-		
 		for (Map.Entry<T, Integer> entry : this.weights.entrySet()) {
 			this.total += entry.getValue();
 			this.map.put(this.total, entry.getKey());
 		}
-		
 		return true;
 	}
 	

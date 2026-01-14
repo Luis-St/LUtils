@@ -163,7 +163,6 @@ public class StructuredConcurrency implements AutoCloseable {
 		this.ensureOpenState();
 		
 		this.phaser.register();
-		
 		return this.executor.submit(() -> {
 			try {
 				action.run();
@@ -191,7 +190,6 @@ public class StructuredConcurrency implements AutoCloseable {
 		this.ensureOpenState();
 		
 		this.phaser.register();
-		
 		return this.executor.submit(() -> {
 			try {
 				return action.call();

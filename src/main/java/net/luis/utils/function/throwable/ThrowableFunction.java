@@ -48,6 +48,7 @@ public interface ThrowableFunction<T, R, X extends Throwable> {
 	 */
 	static <T, R> @NonNull Function<T, R> caught(@NonNull ThrowableFunction<T, R, ? extends Throwable> function) {
 		Objects.requireNonNull(function, "Throwable function must not be null");
+		
 		return (t) -> {
 			try {
 				return function.apply(t);

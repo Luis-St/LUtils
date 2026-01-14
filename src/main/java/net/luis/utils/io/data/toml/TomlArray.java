@@ -478,7 +478,7 @@ public class TomlArray implements TomlElement, Iterable<TomlElement> {
 		this.elements.clear();
 	}
 	
-	//region  overrides
+	//region Object overrides
 	@Override
 	public boolean equals(Object o) {
 		if (this == o) return true;

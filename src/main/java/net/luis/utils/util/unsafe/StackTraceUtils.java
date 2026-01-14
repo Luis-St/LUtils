@@ -63,8 +63,6 @@ public final class StackTraceUtils {
 	 */
 	private StackTraceUtils() {}
 	
-	//region Calling class
-	
 	/**
 	 * Gets the calling class from the stack trace with an offset of:<br>
 	 * <pre>base + default</pre>
@@ -123,9 +121,6 @@ public final class StackTraceUtils {
 	public static Class<?> getCallingClass(int callsBefore) {
 		return ReflectionHelper.getClassForName(getStackTrace(getDefaultOffset() + callsBefore).getClassName());
 	}
-	//endregion
-	
-	//region Calling method
 	
 	/**
 	 * Gets the calling method from the stack trace with an offset of:<br>
@@ -155,6 +150,7 @@ public final class StackTraceUtils {
 	public static @NonNull Method getCallingMethod() {
 		StackTraceElement element = getStackTrace(getDefaultOffset());
 		Method method = getCallingMethod(element);
+		
 		if (method != null) {
 			return method;
 		} else {
@@ -193,6 +189,7 @@ public final class StackTraceUtils {
 	public static @NonNull Method getCallingMethod(int callsBefore) {
 		StackTraceElement element = getStackTrace(getDefaultOffset() + callsBefore);
 		Method method = getCallingMethod(element);
+		
 		if (method != null) {
 			return method;
 		} else {
@@ -270,7 +267,6 @@ public final class StackTraceUtils {
 			return Optional.empty();
 		}
 	}
-	//endregion
 	
 	//region Internal
 	
@@ -319,10 +315,12 @@ public final class StackTraceUtils {
 		if (0 >= callsBefore) {
 			throw new IllegalArgumentException("The calls before value must be greater than 0");
 		}
+		
 		int base = Integer.parseInt(System.getProperty(UNSAFE_OFFSET_BASE, "3"));
 		if (elements.length < base + callsBefore) {
 			throw new IndexOutOfBoundsException("The specified position is out of bounds");
 		}
+		
 		boolean preventMainCalls = !Boolean.parseBoolean(System.getProperty(UNSAFE_CALLS_MAIN, "false"));
 		if (elements.length - 1 == base + callsBefore && preventMainCalls) {
 			throw new IllegalCallerException("Could not identify the calling stack trace element for the main method");

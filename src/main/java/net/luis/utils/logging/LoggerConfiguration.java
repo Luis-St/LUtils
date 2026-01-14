@@ -180,18 +180,18 @@ public class LoggerConfiguration {
 	 */
 	public LoggerConfiguration(@NonNull List<String> loggers) {
 		Objects.requireNonNull(loggers, "Loggers must not be null");
+		
 		loggers = Lists.newArrayList(loggers);
 		if (loggers.isEmpty()) {
 			throw new IllegalArgumentException("Loggers must not be empty");
 		}
+		
 		loggers.removeIf(StringUtils::isBlank);
 		if (loggers.isEmpty()) {
 			throw new IllegalArgumentException("Loggers does not contain any valid logger name");
 		}
 		this.loggers = loggers.contains("*") ? Lists.newArrayList("*") : loggers;
 	}
-	
-	//region Status level
 	
 	/**
 	 * Sets the status level for the internal Log4j2 logger.<br>
@@ -204,9 +204,6 @@ public class LoggerConfiguration {
 		this.statusLevel = Objects.requireNonNull(level, "Level must not be null");
 		return this;
 	}
-	//endregion
-	
-	//region Enable/Disable logging type
 	
 	/**
 	 * Enables the given logging type.<br>
@@ -230,9 +227,6 @@ public class LoggerConfiguration {
 		this.allowedTypes.remove(type);
 		return this;
 	}
-	//endregion
-	
-	//region Pattern override
 	
 	/**
 	 * Overrides the pattern for the given logging type and level.<br>
@@ -249,12 +243,14 @@ public class LoggerConfiguration {
 		Objects.requireNonNull(type, "Logging type must not be null");
 		Objects.requireNonNull(level, "Level must not be null");
 		Objects.requireNonNull(pattern, "Pattern must not be null");
+		
 		if (StringUtils.isBlank(pattern)) {
 			throw new IllegalArgumentException("Pattern must not be empty");
 		}
 		if (!Strings.CS.containsAny(pattern, "%m", "%msg", "%message", "%throwable", "%ex", "%exception")) {
 			throw new IllegalArgumentException("Pattern must contain at least one of the following placeholders: %m, %msg, %message, %throwable, %ex, %exception");
 		}
+		
 		if (level == Level.ALL) {
 			for (Level temp : type.getAllowedLevels()) {
 				this.patternOverrides.computeIfAbsent(type, _ -> Maps.newHashMap()).put(temp, pattern);
@@ -294,9 +290,6 @@ public class LoggerConfiguration {
 	public @NonNull LoggerConfiguration overrideFilePattern(@NonNull Level level, @NonNull String pattern) {
 		return this.overridePattern(LoggingType.FILE, level, pattern);
 	}
-	//endregion
-	
-	//region Log override
 	
 	/**
 	 * Sets the root directory for all log files.<br>
@@ -313,10 +306,12 @@ public class LoggerConfiguration {
 		if (StringUtils.isBlank(rootDirectory)) {
 			throw new IllegalArgumentException("Root folder must not be empty");
 		}
+		
 		rootDirectory = rootDirectory.replace("\\", "/");
 		if (!rootDirectory.matches(PATH_PATTERN)) {
 			throw new IllegalArgumentException("Root folder must be relative or absolute");
 		}
+		
 		this.rootDirectory = StringUtils.strip(rootDirectory, "/") + "/"; // Must end with '/'
 		return this;
 	}
@@ -340,20 +335,24 @@ public class LoggerConfiguration {
 		this.validateLevel(level);
 		Objects.requireNonNull(file, "File must not be null");
 		Objects.requireNonNull(archive, "Archive must not be null");
+		
 		if (StringUtils.isBlank(file)) {
 			throw new IllegalArgumentException("File name must not be empty");
 		}
 		if (StringUtils.isBlank(archive)) {
 			throw new IllegalArgumentException("Archive must not be empty");
 		}
+		
 		file = file.replace("\\", "/");
 		if (file.matches(PATH_PATTERN)) {
 			throw new IllegalArgumentException("File name must not be absolute or relative");
 		}
+		
 		archive = archive.replace("\\", "/");
 		if (archive.matches(PATH_PATTERN)) {
 			throw new IllegalArgumentException("Archive must not be absolute or relative");
 		}
+		
 		this.logs.put(level, Map.entry(StringUtils.strip(file, "/"), StringUtils.strip(archive, "/"))); // Must not start with '/'
 		return this;
 	}
@@ -424,6 +423,7 @@ public class LoggerConfiguration {
 	 */
 	private void validateLevel(@NonNull Level level) {
 		Objects.requireNonNull(level, "Level must not be null");
+		
 		if (level == Level.ALL || level == Level.OFF) {
 			throw new IllegalArgumentException("Level must not be 'all' or 'off'");
 		}
@@ -431,9 +431,6 @@ public class LoggerConfiguration {
 			throw new IllegalArgumentException("Logging type 'file' does not support level '" + level.name().toLowerCase() + "'");
 		}
 	}
-	//endregion
-	
-	//region Default loggers
 	
 	/**
 	 * Adds the default logger for the given type and level.<br>
@@ -459,6 +456,7 @@ public class LoggerConfiguration {
 		if (!this.allowedTypes.contains(type)) {
 			throw new IllegalArgumentException("Logging type '" + type.name().toLowerCase() + "' is not allowed");
 		}
+		
 		this.defaultLoggers.computeIfAbsent(type, _ -> Lists.newArrayList()).add(level);
 		return this;
 	}
@@ -484,9 +482,6 @@ public class LoggerConfiguration {
 		this.defaultLoggers.getOrDefault(type, Lists.newArrayList()).remove(level);
 		return this;
 	}
-	//endregion
-	
-	//region Log file
 	
 	/**
 	 * Sets the maximum file size for the log files.<br>
@@ -505,6 +500,7 @@ public class LoggerConfiguration {
 		if (!Pattern.compile(FILE_SIZE, Pattern.CASE_INSENSITIVE).matcher(fileSize).matches()) {
 			throw new IllegalArgumentException("Invalid file size: '" + fileSize + "'");
 		}
+		
 		this.fileSize = fileSize;
 		return this;
 	}
@@ -526,6 +522,7 @@ public class LoggerConfiguration {
 		if (!Pattern.compile(ARCHIVE_TYPE, Pattern.CASE_INSENSITIVE).matcher(archiveType).matches()) {
 			throw new IllegalArgumentException("Archive type must be '.gz', '.zip', '.bz2' or '.xy'");
 		}
+		
 		if (archiveType.startsWith(".")) {
 			archiveType = archiveType.substring(1);
 		}
@@ -584,7 +581,6 @@ public class LoggerConfiguration {
 		this.archiveAutoDeletionAge = Math.max(1, archiveAutoDeletionAge);
 		return this;
 	}
-	//endregion
 	
 	/**
 	 * Builds the configuration.<br>
@@ -594,6 +590,7 @@ public class LoggerConfiguration {
 		ConfigurationBuilder<BuiltConfiguration> builder = ConfigurationBuilderFactory.newConfigurationBuilder();
 		builder.setConfigurationName("RuntimeConfiguration");
 		builder.setStatusLevel(this.statusLevel);
+		
 		List<String> appenders = Lists.newArrayList();
 		if (this.allowedTypes.contains(LoggingType.CONSOLE)) {
 			for (Level level : LoggingType.CONSOLE) {
@@ -605,6 +602,7 @@ public class LoggerConfiguration {
 							.addAttribute("pattern", this.getPattern(LoggingType.CONSOLE, level)))
 						.addComponent(builder.newFilter("LevelMatchFilter", Filter.Result.ACCEPT, Filter.Result.DENY)
 							.addAttribute("level", level)));
+				
 				if (this.defaultLoggers.getOrDefault(LoggingType.CONSOLE, Lists.newArrayList()).contains(level)) {
 					appenders.add(name);
 				}
@@ -616,6 +614,7 @@ public class LoggerConfiguration {
 				// Reason: Avoid creating a new file for each logger
 				if (this.defaultLoggers.getOrDefault(LoggingType.FILE, Lists.newArrayList()).contains(level)) {
 					String name = LoggingUtils.getLogger(LoggingType.FILE, level);
+					
 					builder.add(
 						builder.newAppender(name, "RollingRandomAccessFile")
 							.addAttribute("fileName", this.rootDirectory + this.logs.get(level).getKey())
@@ -648,18 +647,22 @@ public class LoggerConfiguration {
 		}
 		if (this.loggers.stream().anyMatch(logger -> logger.contains("*"))) {
 			RootLoggerComponentBuilder rootLogger = builder.newRootLogger(Level.ALL);
+			
 			for (String appender : appenders) {
 				rootLogger.add(builder.newAppenderRef(appender));
 			}
+			
 			builder.add(rootLogger);
 		} else {
 			builder.add(builder.newRootLogger(Level.OFF));
 			for (String logger : this.loggers) {
 				LoggerComponentBuilder loggerBuilder = builder.newLogger(logger, Level.ALL);
 				loggerBuilder.addAttribute("additivity", false);
+				
 				for (String appender : appenders) {
 					loggerBuilder.add(builder.newAppenderRef(appender));
 				}
+				
 				builder.add(loggerBuilder);
 			}
 		}

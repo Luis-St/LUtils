@@ -84,10 +84,12 @@ public class ScopedStringReader extends StringReader {
 		if (!this.canRead()) {
 			return "";
 		}
+		
 		char next = this.peek();
 		if (next != scope.open()) {
 			throw new IllegalArgumentException("Expected '" + scope.open() + "' but got '" + next + "'");
 		}
+		
 		StringBuilder builder = new StringBuilder();
 		int depth = 0;
 		boolean escaped = false;
@@ -95,16 +97,19 @@ public class ScopedStringReader extends StringReader {
 		boolean inDoubleQuotes = false;
 		while (this.canRead()) {
 			char c = this.read();
+			
 			if (c == '\\' && !escaped) {
 				builder.append(c);
 				escaped = true;
 				continue;
 			}
+			
 			if (c == '\'' && !escaped) {
 				inSingleQuotes = !inSingleQuotes;
 			} else if (c == '\"' && !escaped) {
 				inDoubleQuotes = !inDoubleQuotes;
 			}
+			
 			if (!inSingleQuotes && !inDoubleQuotes && !escaped) {
 				if (c == scope.open()) {
 					depth++;
@@ -116,9 +121,11 @@ public class ScopedStringReader extends StringReader {
 					}
 				}
 			}
+			
 			builder.append(c);
 			escaped = false;
 		}
+		
 		if (depth > 0) {
 			throw new InvalidStringException("Invalid scope, " + depth + " scope" + (depth > 1 ? "s" : "") + " are not closed, expected '" + scope.close() + "'");
 		} else if (depth < 0) {
@@ -126,8 +133,6 @@ public class ScopedStringReader extends StringReader {
 		}
 		return builder.toString();
 	}
-	
-	//region Read until
 	
 	/**
 	 * Reads the string until the given terminator is found.<br>
@@ -222,6 +227,7 @@ public class ScopedStringReader extends StringReader {
 		boolean inSingleQuotes = false;
 		boolean inDoubleQuotes = false;
 		Deque<Character> stack = new ArrayDeque<>();
+		
 		while (this.canRead()) {
 			char c = this.read();
 			if (escaped) {
@@ -245,6 +251,7 @@ public class ScopedStringReader extends StringReader {
 			}
 			builder.append(c);
 		}
+		
 		if (!stack.isEmpty()) {
 			String scopes = stack.reversed().stream().map(SCOPE_REGISTRY::get).map(String::valueOf).collect(Collectors.joining("', '", "'", "'"));
 			throw new InvalidStringException("Invalid scope, " + stack.size() + " scope" + (stack.size() > 1 ? "s" : "") + " are not closed, expected closing characters in order: " + scopes);
@@ -307,6 +314,7 @@ public class ScopedStringReader extends StringReader {
 	@SuppressWarnings("DuplicatedCode")
 	protected @NonNull String readUntil(@NonNull String terminator, boolean caseSensitive, boolean inclusive) {
 		Objects.requireNonNull(terminator, "Terminator string must not be null");
+		
 		Predicate<String> matcher = s -> caseSensitive ? terminator.startsWith(s) : Strings.CI.startsWith(s, terminator);
 		Predicate<String> breaker = s -> caseSensitive ? terminator.equals(s) : s.equalsIgnoreCase(terminator);
 		StringBuilder builder = new StringBuilder();
@@ -315,8 +323,10 @@ public class ScopedStringReader extends StringReader {
 		boolean inSingleQuotes = false;
 		boolean inDoubleQuotes = false;
 		Deque<Character> stack = new ArrayDeque<>();
+		
 		while (this.canRead()) {
 			char c = this.read();
+			
 			if (escaped) {
 				escaped = false;
 			} else if (c == '\\') {
@@ -331,6 +341,7 @@ public class ScopedStringReader extends StringReader {
 			} else if (!stack.isEmpty() && SCOPE_REGISTRY.get(stack.peek()) == c) {
 				stack.pop();
 			}
+			
 			if (!inSingleQuotes && !inDoubleQuotes && stack.isEmpty()) {
 				if (terminatorBuilder.isEmpty()) {
 					if (matcher.test(String.valueOf(c))) {
@@ -354,15 +365,13 @@ public class ScopedStringReader extends StringReader {
 			}
 			builder.append(c);
 		}
+		
 		if (!stack.isEmpty()) {
 			String scopes = stack.reversed().stream().map(SCOPE_REGISTRY::get).map(String::valueOf).collect(Collectors.joining("', '", "'", "'"));
 			throw new InvalidStringException("Invalid scope, " + stack.size() + " scope" + (stack.size() > 1 ? "s" : "") + " are not closed, expected closing characters in order: " + scopes);
 		}
 		return builder.toString();
 	}
-	//endregion
-	
-	//region Read collections
 	
 	/**
 	 * Reads a collection like object from the string.<br>
@@ -386,11 +395,13 @@ public class ScopedStringReader extends StringReader {
 	private <T> @NonNull Collection<T> readCollection(@NonNull StringScope scope, @NonNull Function<ScopedStringReader, T> parser) {
 		Objects.requireNonNull(scope, "Scope must not be null");
 		Objects.requireNonNull(parser, "Parser must not be null");
+		
 		ScopedStringReader reader = new ScopedStringReader(this.readScope(scope));
 		char next = reader.peek();
 		if (next != scope.open()) {
 			throw new InvalidStringException("Expected '" + scope.open() + "' but got '" + next + "'");
 		}
+		
 		reader.skip();
 		reader.skipWhitespaces();
 		List<T> collection = new ArrayList<>();
@@ -399,10 +410,12 @@ public class ScopedStringReader extends StringReader {
 				reader.skip();
 				break;
 			}
+			
 			String value = reader.readUntil(',').strip();
 			if (value.isEmpty()) {
 				continue;
 			}
+			
 			if (value.endsWith("" + scope.close())) {
 				int remaining = reader.getString().length() - reader.getIndex();
 				if (0 >= remaining || reader.canRead(remaining, Character::isWhitespace)) {
@@ -483,12 +496,14 @@ public class ScopedStringReader extends StringReader {
 		if (!this.canRead()) {
 			return new HashMap<>();
 		}
+		
 		Map<K, V> map = new HashMap<>();
 		Collection<String> entries = this.readCollection(CURLY_BRACKETS, reader -> reader.readUntil(',').strip());
 		for (String entry : entries) {
 			if (!entry.contains("=")) {
 				throw new InvalidStringException("Invalid map entry, expected 'key=value' but got: '" + entry + "'");
 			}
+			
 			ScopedStringReader reader = new ScopedStringReader(entry);
 			K key = keyParser.apply(new ScopedStringReader(reader.readUntil('=').strip()));
 			V value = valueParser.apply(new ScopedStringReader(reader.readRemaining().strip()));
@@ -496,5 +511,4 @@ public class ScopedStringReader extends StringReader {
 		}
 		return map;
 	}
-	//endregion
 }

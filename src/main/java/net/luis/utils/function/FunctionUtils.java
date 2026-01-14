@@ -48,6 +48,7 @@ public final class FunctionUtils {
 	 */
 	public static <T> @NonNull Supplier<T> memorize(@NonNull Supplier<T> delegate) {
 		Objects.requireNonNull(delegate, "Delegate supplier must not be null");
+		
 		return new Supplier<>() {
 			private boolean initialized;
 			private T value;
@@ -74,6 +75,7 @@ public final class FunctionUtils {
 	 */
 	public static <T, X extends Throwable> @NonNull ThrowableSupplier<T, X> memorizeThrowable(@NonNull ThrowableSupplier<T, X> delegate) {
 		Objects.requireNonNull(delegate, "Delegate supplier must not be null");
+		
 		return new ThrowableSupplier<>() {
 			private boolean initialized;
 			private T value;
@@ -102,6 +104,7 @@ public final class FunctionUtils {
 	 */
 	public static <T, R> @NonNull Function<T, R> memorize(@NonNull Function<T, R> delegate) {
 		Objects.requireNonNull(delegate, "Delegate function must not be null");
+		
 		return new Function<>() {
 			private final Map<T, R> cache = new WeakHashMap<>();
 			
@@ -125,6 +128,7 @@ public final class FunctionUtils {
 	 */
 	public static <T, R, X extends Throwable> @NonNull ThrowableFunction<T, R, X> memorizeThrowable(@NonNull ThrowableFunction<T, R, X> delegate) {
 		Objects.requireNonNull(delegate, "Delegate function must not be null");
+		
 		return new ThrowableFunction<>() {
 			private final Map<T, R> cache = new WeakHashMap<>();
 			
@@ -133,6 +137,7 @@ public final class FunctionUtils {
 				if (this.cache.containsKey(value)) {
 					return this.cache.get(value);
 				}
+				
 				R result = delegate.apply(value);
 				Objects.requireNonNull(result, "Function result must not be null");
 				this.cache.put(value, result);
@@ -154,6 +159,7 @@ public final class FunctionUtils {
 	 */
 	public static <T, U, R> @NonNull BiFunction<T, U, R> memorize(@NonNull BiFunction<T, U, R> function) {
 		Objects.requireNonNull(function, "Delegate function must not be null");
+		
 		return new BiFunction<>() {
 			private final Map<T, Map<U, R>> cache = new WeakHashMap<>();
 			
@@ -167,6 +173,7 @@ public final class FunctionUtils {
 				} else {
 					this.cache.put(first, new WeakHashMap<>());
 				}
+				
 				R result = function.apply(first, second);
 				Objects.requireNonNull(result, "Function result must not be null");
 				this.cache.get(first).put(second, result);
@@ -189,6 +196,7 @@ public final class FunctionUtils {
 	 */
 	public static <T, U, R, X extends Throwable> @NonNull ThrowableBiFunction<T, U, R, X> memorizeThrowable(@NonNull ThrowableBiFunction<T, U, R, X> function) {
 		Objects.requireNonNull(function, "Delegate function must not be null");
+		
 		return new ThrowableBiFunction<>() {
 			private final Map<T, Map<U, R>> cache = new WeakHashMap<>();
 			
@@ -202,6 +210,7 @@ public final class FunctionUtils {
 				} else {
 					this.cache.put(first, new WeakHashMap<>());
 				}
+				
 				R result = function.apply(first, second);
 				Objects.requireNonNull(result, "Function result must not be null");
 				this.cache.get(first).put(second, result);
@@ -224,6 +233,7 @@ public final class FunctionUtils {
 	 */
 	public static <T, U, V, R> @NonNull TriFunction<T, U, V, R> memorize(@NonNull TriFunction<T, U, V, R> function) {
 		Objects.requireNonNull(function, "Delegate function must not be null");
+		
 		return new TriFunction<>() {
 			private final Map<T, Map<U, Map<V, R>>> cache = new WeakHashMap<>();
 			
@@ -231,6 +241,7 @@ public final class FunctionUtils {
 			public @NonNull R apply(@NonNull T first, @NonNull U second, @NonNull V third) {
 				if (this.cache.containsKey(first)) {
 					Map<U, Map<V, R>> secondMap = this.cache.get(first);
+					
 					if (secondMap.containsKey(second)) {
 						Map<V, R> thirdMap = secondMap.get(second);
 						if (thirdMap.containsKey(third)) {
@@ -244,6 +255,7 @@ public final class FunctionUtils {
 					secondMap.put(second, new WeakHashMap<>());
 					this.cache.put(first, secondMap);
 				}
+				
 				R result = function.apply(first, second, third);
 				Objects.requireNonNull(result, "Function result must not be null");
 				this.cache.get(first).get(second).put(third, result);
@@ -267,6 +279,7 @@ public final class FunctionUtils {
 	 */
 	public static <T, U, V, R, X extends Throwable> @NonNull ThrowableTriFunction<T, U, V, R, X> memorizeThrowable(@NonNull ThrowableTriFunction<T, U, V, R, X> function) {
 		Objects.requireNonNull(function, "Delegate function must not be null");
+		
 		return new ThrowableTriFunction<>() {
 			private final Map<T, Map<U, Map<V, R>>> cache = new WeakHashMap<>();
 			
@@ -274,8 +287,10 @@ public final class FunctionUtils {
 			public @NonNull R apply(@NonNull T first, @NonNull U second, @NonNull V third) throws X {
 				if (this.cache.containsKey(first)) {
 					Map<U, Map<V, R>> secondMap = this.cache.get(first);
+					
 					if (secondMap.containsKey(second)) {
 						Map<V, R> thirdMap = secondMap.get(second);
+						
 						if (thirdMap.containsKey(third)) {
 							return thirdMap.get(third);
 						}
@@ -287,6 +302,7 @@ public final class FunctionUtils {
 					secondMap.put(second, new WeakHashMap<>());
 					this.cache.put(first, secondMap);
 				}
+				
 				R result = function.apply(first, second, third);
 				Objects.requireNonNull(result, "Function result must not be null");
 				this.cache.get(first).get(second).put(third, result);
@@ -310,6 +326,7 @@ public final class FunctionUtils {
 	 */
 	public static <T, U, V, W, R> @NonNull QuadFunction<T, U, V, W, R> memorize(@NonNull QuadFunction<T, U, V, W, R> function) {
 		Objects.requireNonNull(function, "Delegate function must not be null");
+		
 		return new QuadFunction<>() {
 			private final Map<T, Map<U, Map<V, Map<W, R>>>> cache = new WeakHashMap<>();
 			
@@ -317,10 +334,13 @@ public final class FunctionUtils {
 			public @NonNull R apply(@NonNull T first, @NonNull U second, @NonNull V third, @NonNull W fourth) {
 				if (this.cache.containsKey(first)) {
 					Map<U, Map<V, Map<W, R>>> secondMap = this.cache.get(first);
+					
 					if (secondMap.containsKey(second)) {
 						Map<V, Map<W, R>> thirdMap = secondMap.get(second);
+						
 						if (thirdMap.containsKey(third)) {
 							Map<W, R> fourthMap = thirdMap.get(third);
+							
 							if (fourthMap.containsKey(fourth)) {
 								return fourthMap.get(fourth);
 							}
@@ -339,6 +359,7 @@ public final class FunctionUtils {
 					secondMap.put(second, thirdMap);
 					this.cache.put(first, secondMap);
 				}
+				
 				R result = function.apply(first, second, third, fourth);
 				Objects.requireNonNull(result, "Function result must not be null");
 				this.cache.get(first).get(second).get(third).put(fourth, result);
@@ -363,6 +384,7 @@ public final class FunctionUtils {
 	 */
 	public static <T, U, V, W, R, X extends Throwable> @NonNull ThrowableQuadFunction<T, U, V, W, R, X> memorizeThrowable(@NonNull ThrowableQuadFunction<T, U, V, W, R, X> function) {
 		Objects.requireNonNull(function, "Delegate function must not be null");
+		
 		return new ThrowableQuadFunction<>() {
 			private final Map<T, Map<U, Map<V, Map<W, R>>>> cache = new WeakHashMap<>();
 			
@@ -370,10 +392,13 @@ public final class FunctionUtils {
 			public @NonNull R apply(@NonNull T first, @NonNull U second, @NonNull V third, @NonNull W fourth) throws X {
 				if (this.cache.containsKey(first)) {
 					Map<U, Map<V, Map<W, R>>> secondMap = this.cache.get(first);
+					
 					if (secondMap.containsKey(second)) {
 						Map<V, Map<W, R>> thirdMap = secondMap.get(second);
+						
 						if (thirdMap.containsKey(third)) {
 							Map<W, R> fourthMap = thirdMap.get(third);
+							
 							if (fourthMap.containsKey(fourth)) {
 								return fourthMap.get(fourth);
 							}
@@ -392,6 +417,7 @@ public final class FunctionUtils {
 					secondMap.put(second, thirdMap);
 					this.cache.put(first, secondMap);
 				}
+				
 				R result = function.apply(first, second, third, fourth);
 				Objects.requireNonNull(result, "Function result must not be null");
 				this.cache.get(first).get(second).get(third).put(fourth, result);

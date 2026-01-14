@@ -68,7 +68,6 @@ final class ExternalResourceLocation extends ResourceLocation {
 		this.path = Paths.get(this.getPath() + this.getFile());
 	}
 	
-	//region Constructor modifications
 	@Override
 	protected @NonNull String modifyPath(@Nullable String path) {
 		String strPath = StringUtils.stripToEmpty(path);
@@ -84,7 +83,6 @@ final class ExternalResourceLocation extends ResourceLocation {
 		}
 		return strPath.charAt(strPath.length() - 1) != '/' ? strPath + "/" : strPath;
 	}
-	//endregion
 	
 	@Override
 	public @NonNull Type getType() {

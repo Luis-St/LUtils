@@ -54,6 +54,7 @@ public interface ThrowableQuadFunction<T, U, V, W, R, X extends Throwable> {
 	 */
 	static <T, U, V, W, R> @NonNull QuadFunction<T, U, V, W, R> caught(@NonNull ThrowableQuadFunction<T, U, V, W, R, ? extends Throwable> function) {
 		Objects.requireNonNull(function, "Throwable function must not be null");
+		
 		return (t, u, v, w) -> {
 			try {
 				return function.apply(t, u, v, w);

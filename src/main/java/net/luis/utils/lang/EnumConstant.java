@@ -50,6 +50,7 @@ public record EnumConstant<T>(
 	public EnumConstant {
 		Objects.requireNonNull(name, "Name must not be null");
 		Objects.requireNonNull(value, "Value must not be null");
+		
 		if (ordinal < 0) {
 			throw new IllegalArgumentException("Ordinal must not be negative");
 		}

@@ -81,6 +81,7 @@ public final class ReflectionHelper {
 	 */
 	public static @Nullable Class<?> getClassForName(@NonNull String className) {
 		Objects.requireNonNull(className, "Class name must not be null");
+		
 		try {
 			return Class.forName(className);
 		} catch (ClassNotFoundException e) {
@@ -101,13 +102,12 @@ public final class ReflectionHelper {
 	public static boolean hasInterface(@NonNull Class<?> clazz, @NonNull Class<?> iface) {
 		Objects.requireNonNull(clazz, "Class must not be null");
 		Objects.requireNonNull(iface, "Interface must not be null");
+		
 		if (iface.isInterface()) {
 			return contains(clazz.getInterfaces(), iface);
 		}
 		return false;
 	}
-	
-	//region Constructor methods
 	
 	/**
 	 * Gets the constructor from the given class with the given parameters.<br>
@@ -122,6 +122,7 @@ public final class ReflectionHelper {
 	 */
 	public static <T> @NonNull Optional<Constructor<T>> getConstructor(@NonNull Class<T> clazz, Class<?> @Nullable ... parameters) {
 		Objects.requireNonNull(clazz, "Class must not be null");
+		
 		try {
 			return Optional.of(clazz.getDeclaredConstructor(nullToEmpty(parameters)));
 		} catch (NoSuchMethodException e) {
@@ -162,6 +163,7 @@ public final class ReflectionHelper {
 	public static <T> boolean hasConstructor(@NonNull Class<T> clazz, @Nullable Predicate<Constructor<T>> predicate, Class<?> @Nullable ... parameters) {
 		Objects.requireNonNull(clazz, "Class must not be null");
 		Constructor<T> constructor = null;
+		
 		try {
 			constructor = clazz.getDeclaredConstructor(nullToEmpty(parameters));
 		} catch (Exception _) {}
@@ -182,6 +184,7 @@ public final class ReflectionHelper {
 	 */
 	public static <T> @NonNull Optional<T> newInstance(@NonNull Constructor<T> constructor, Object @Nullable ... parameters) {
 		Objects.requireNonNull(constructor, "Constructor must not be null");
+		
 		try {
 			if (constructor.trySetAccessible()) {
 				return Optional.of(constructor.newInstance(nullToEmpty(parameters)));
@@ -220,14 +223,12 @@ public final class ReflectionHelper {
 		Objects.requireNonNull(clazz, "Class must not be null");
 		Object[] params = nullToEmpty(parameters);
 		Optional<Constructor<T>> constructor = getConstructor(clazz, Lists.newArrayList(params).stream().map(Object::getClass).toArray(Class<?>[]::new));
+		
 		if (constructor.isEmpty()) {
 			throw new IllegalStateException("No constructor for parameters " + getSimpleNames(params) + " in type '" + clazz.getSimpleName() + "' found");
 		}
 		return newInstance(constructor.orElseThrow(), params);
 	}
-	//endregion
-	
-	//region Method methods
 	
 	/**
 	 * Gets the method from the given class with the given name and parameters.<br>
@@ -243,6 +244,7 @@ public final class ReflectionHelper {
 	public static @NonNull Optional<Method> getMethod(@NonNull Class<?> clazz, @NonNull String name, Class<?> @Nullable ... parameters) {
 		Objects.requireNonNull(clazz, "Class must not be null");
 		Objects.requireNonNull(name, "Name must not be null");
+		
 		try {
 			return Optional.of(clazz.getDeclaredMethod(name, nullToEmpty(parameters)));
 		} catch (NoSuchMethodException e) {
@@ -283,6 +285,7 @@ public final class ReflectionHelper {
 	public static boolean hasMethod(@NonNull Class<?> clazz, @NonNull String name, @Nullable Predicate<Method> predicate, Class<?> @Nullable ... parameters) {
 		Objects.requireNonNull(clazz, "Class must not be null");
 		Objects.requireNonNull(name, "Name must not be null");
+		
 		Method method = null;
 		try {
 			method = clazz.getDeclaredMethod(name, nullToEmpty(parameters));
@@ -310,6 +313,7 @@ public final class ReflectionHelper {
 	 */
 	public static @NonNull Optional<Object> invoke(@NonNull Method method, @Nullable Object instance, Object @Nullable ... parameters) {
 		Objects.requireNonNull(method, "Method must not be null");
+		
 		try {
 			if (method.trySetAccessible()) {
 				return Optional.ofNullable(method.invoke(instance, nullToEmpty(parameters)));
@@ -349,6 +353,7 @@ public final class ReflectionHelper {
 	public static @NonNull Optional<Object> invoke(@NonNull Class<?> clazz, @NonNull String name, @Nullable Object instance, Object @Nullable ... parameters) {
 		Objects.requireNonNull(clazz, "Class must not be null");
 		Objects.requireNonNull(name, "Name must not be null");
+		
 		Object[] params = nullToEmpty(parameters);
 		Optional<Method> method = getMethod(clazz, name, Lists.newArrayList(params).stream().map(Object::getClass).toArray(Class<?>[]::new));
 		if (method.isEmpty()) {
@@ -356,9 +361,6 @@ public final class ReflectionHelper {
 		}
 		return invoke(method.orElseThrow(), instance, params);
 	}
-	//endregion
-	
-	//region Field methods
 	
 	/**
 	 * Gets the field from the given class with the given name.<br>
@@ -373,6 +375,7 @@ public final class ReflectionHelper {
 	public static @NonNull Optional<Field> getField(@NonNull Class<?> clazz, @NonNull String name) {
 		Objects.requireNonNull(clazz, "Class must not be null");
 		Objects.requireNonNull(name, "Name must not be null");
+		
 		try {
 			return Optional.of(clazz.getDeclaredField(name));
 		} catch (NoSuchFieldException e) {
@@ -432,6 +435,7 @@ public final class ReflectionHelper {
 	 */
 	public static @NonNull Optional<Object> get(@NonNull Field field, @Nullable Object instance) {
 		Objects.requireNonNull(field, "Field must not be null");
+		
 		try {
 			if (field.trySetAccessible()) {
 				return Optional.ofNullable(field.get(instance));
@@ -463,6 +467,7 @@ public final class ReflectionHelper {
 	public static @NonNull Optional<Object> get(@NonNull Class<?> clazz, @NonNull String name, @Nullable Object instance) {
 		Objects.requireNonNull(clazz, "Class must not be null");
 		Objects.requireNonNull(name, "Name must not be null");
+		
 		Optional<Field> field = getField(clazz, name);
 		if (field.isEmpty()) { // Only thrown when 'reflection.exceptions.throw' is false
 			throw new IllegalStateException("No field with the name '" + name + "' in type '" + clazz.getSimpleName() + "' found");
@@ -512,13 +517,13 @@ public final class ReflectionHelper {
 	public static void set(@NonNull Class<?> clazz, @NonNull String name, @Nullable Object instance, @Nullable Object value) {
 		Objects.requireNonNull(clazz, "Class must not be null");
 		Objects.requireNonNull(name, "Name must not be null");
+		
 		Optional<Field> field = getField(clazz, name);
 		if (field.isEmpty()) { // Only thrown when 'reflection.exceptions.throw' is false
 			throw new IllegalStateException("No field with the name '" + name + "' in type '" + clazz.getSimpleName() + "' found");
 		}
 		set(field.orElseThrow(), instance, value);
 	}
-	//endregion
 	
 	//region Internal
 	

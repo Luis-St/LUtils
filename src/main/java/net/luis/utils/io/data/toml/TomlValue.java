@@ -199,8 +199,6 @@ public class TomlValue implements TomlElement {
 		throw new IllegalStateException("Unknown TOML value type");
 	}
 	
-	//region Boolean
-	
 	@Override
 	public boolean isBoolean() {
 		return this.value instanceof Boolean;
@@ -213,10 +211,6 @@ public class TomlValue implements TomlElement {
 		}
 		throw new TomlTypeException("Expected a TOML boolean, but found: " + this.getName());
 	}
-	
-	//endregion
-	
-	//region Number
 	
 	@Override
 	public boolean isNumber() {
@@ -321,10 +315,6 @@ public class TomlValue implements TomlElement {
 		throw new TomlTypeException("Expected a TOML double, but found: " + this.getName());
 	}
 	
-	//endregion
-	
-	//region String
-	
 	@Override
 	public boolean isString() {
 		return this.value instanceof String;
@@ -343,10 +333,6 @@ public class TomlValue implements TomlElement {
 		}
 		throw new TomlTypeException("Expected a TOML string, but found: " + this.getName());
 	}
-	
-	//endregion
-	
-	//region Date/Time
 	
 	@Override
 	public boolean isLocalDate() {
@@ -418,12 +404,14 @@ public class TomlValue implements TomlElement {
 			return this.getAsLocalTime().toString();
 		} else if (this.isLocalDateTime()) {
 			LocalDateTime dt = this.getAsLocalDateTime();
+			
 			return switch (config.dateTimeStyle()) {
 				case RFC_3339, ISO_8601 -> dt.toString();
 				case SPACE_SEPARATED -> dt.toLocalDate() + " " + dt.toLocalTime();
 			};
 		} else if (this.isOffsetDateTime()) {
 			OffsetDateTime dt = this.getAsOffsetDateTime();
+			
 			return switch (config.dateTimeStyle()) {
 				case RFC_3339 -> dt.format(RFC_3339_FORMATTER);
 				case ISO_8601 -> dt.toLocalDateTime().toString();
@@ -432,8 +420,6 @@ public class TomlValue implements TomlElement {
 		}
 		throw new IllegalStateException("Not a date/time value");
 	}
-	
-	//endregion
 	
 	//region Object overrides
 	@Override

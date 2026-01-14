@@ -126,8 +126,6 @@ public final class Utils {
 		return map;
 	}
 	
-	//region List util methods
-	
 	/**
 	 * Maps the given list to a new list using the given mapper function.<br>
 	 * <p>
@@ -187,9 +185,6 @@ public final class Utils {
 		}
 		return list.stream().map(first).map(second).collect(Collectors.toList());
 	}
-	//endregion
-	
-	//region Map util methods
 	
 	/**
 	 * Maps the keys of the given map using the given mapper function.<br>
@@ -213,6 +208,7 @@ public final class Utils {
 		if (map == null || map.isEmpty() || function == null) {
 			return mapped;
 		}
+		
 		for (Entry<K, V> entry : map.entrySet()) {
 			T key = function.apply(entry.getKey());
 			if (key != null) {
@@ -244,14 +240,12 @@ public final class Utils {
 		if (map == null || map.isEmpty() || function == null) {
 			return mapped;
 		}
+		
 		for (Entry<K, V> entry : map.entrySet()) {
 			mapped.put(entry.getKey(), function.apply(entry.getValue()));
 		}
 		return mapped;
 	}
-	//endregion
-	
-	//region Duplicate checks
 	
 	/**
 	 * Checks if the given array contains duplicate values.<br>
@@ -308,9 +302,6 @@ public final class Utils {
 		}
 		return list.size() != Sets.newHashSet(list).size();
 	}
-	//endregion
-	
-	//region Null helper methods
 	
 	/**
 	 * Wraps the given value to the given fallback value if the value is null.<br>
@@ -362,9 +353,6 @@ public final class Utils {
 			action.accept(value);
 		}
 	}
-	//endregion
-	
-	//region Random util methods
 	
 	/**
 	 * Returns a new {@link Random} instance using the current system time as seed.<br>
@@ -444,7 +432,6 @@ public final class Utils {
 		}
 		return Optional.of(getRandom(rng, values));
 	}
-	//endregion
 	
 	/**
 	 * Throws the given exception as a sneaky exception.<br>

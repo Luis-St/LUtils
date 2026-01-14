@@ -50,6 +50,7 @@ public interface ThrowableTriConsumer<T, U, V, X extends Throwable> {
 	 */
 	static <T, U, V> @NonNull TriConsumer<T, U, V> caught(@NonNull ThrowableTriConsumer<T, U, V, ? extends Throwable> consumer) {
 		Objects.requireNonNull(consumer, "Throwable consumer must not be null");
+		
 		return (t, u, v) -> {
 			try {
 				consumer.accept(t, u, v);
@@ -79,6 +80,7 @@ public interface ThrowableTriConsumer<T, U, V, X extends Throwable> {
 	 */
 	default @NonNull ThrowableTriConsumer<T, U, V, X> andThen(@NonNull ThrowableTriConsumer<? super T, ? super U, ? super V, X> after) {
 		Objects.requireNonNull(after, "After operation must not be null");
+		
 		return (t, u, v) -> {
 			this.accept(t, u, v);
 			after.accept(t, u, v);
