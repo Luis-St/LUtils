@@ -1,0 +1,57 @@
+/*
+ * LUtils
+ * Copyright (C) 2026 Luis Staudt
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program. If not, see <https://www.gnu.org/licenses/>.
+ */
+
+package net.luis.utils.io.codec.constraint_new.core;
+
+import static org.junit.jupiter.api.Assertions.*;
+
+import org.junit.jupiter.api.Test;
+
+/**
+ * Test class for {@link Platform}.<br>
+ *
+ * @author Luis-St
+ */
+class PlatformTest {
+
+	@Test
+	void valuesContainsAllConstants() {
+		Platform[] values = Platform.values();
+		assertEquals(4, values.length);
+		assertEquals(Platform.WINDOWS, values[0]);
+		assertEquals(Platform.MAC, values[1]);
+		assertEquals(Platform.LINUX, values[2]);
+		assertEquals(Platform.POSIX, values[3]);
+	}
+
+	@Test
+	void valueOfReturnsCorrectConstant() {
+		assertEquals(Platform.WINDOWS, Platform.valueOf("WINDOWS"));
+		assertEquals(Platform.MAC, Platform.valueOf("MAC"));
+		assertEquals(Platform.LINUX, Platform.valueOf("LINUX"));
+		assertEquals(Platform.POSIX, Platform.valueOf("POSIX"));
+	}
+
+	@Test
+	void ordinalValues() {
+		assertEquals(0, Platform.WINDOWS.ordinal());
+		assertEquals(1, Platform.MAC.ordinal());
+		assertEquals(2, Platform.LINUX.ordinal());
+		assertEquals(3, Platform.POSIX.ordinal());
+	}
+}
