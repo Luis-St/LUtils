@@ -21,6 +21,12 @@ package net.luis.utils.io.codec.constraint_new.config.matcher;
 import net.luis.utils.io.codec.constraint_new.config.*;
 import net.luis.utils.io.codec.constraint_new.config.network.*;
 import net.luis.utils.io.codec.constraint_new.core.*;
+import net.luis.utils.io.network.address.*;
+import net.luis.utils.io.network.address.exception.IpParseException;
+import net.luis.utils.io.network.address.ipv4.Ipv4Address;
+import net.luis.utils.io.network.address.ipv4.Ipv4Network;
+import net.luis.utils.io.network.address.ipv6.Ipv6Address;
+import net.luis.utils.io.network.address.ipv6.Ipv6Network;
 import net.luis.utils.util.Pair;
 import net.luis.utils.util.result.Result;
 import org.jspecify.annotations.NonNull;
@@ -145,16 +151,86 @@ public final class NetworkMatchers {
 			return Result.success();
 		}
 		
-		// ToDo: Implement IP address type detection and matching
-		return Result.success();
+		try {
+			IpAddress<?> address = IpAddresses.parse(value);
+			return ipType.get().matches(getIpAddressType(address));
+		} catch (IpParseException e) {
+			return Result.error("Host '" + value + "' is not a valid ip address: " + e.getMessage());
+		}
+	}
+	
+	/**
+	 * Gets the of IP address type for a given IP address.<br>
+	 * <p>
+	 *     This method analyzes the properties of the provided IP address and returns its type.<br>
+	 *     The classifications include PRIVATE, LOOPBACK, LINK_LOCAL, MULTICAST, BROADCAST, UNSPECIFIED, and PUBLIC:
+	 * </p>
+	 * <ul>
+	 *     <li>
+	 *         <b>PRIVATE</b>:<br>
+	 *         Indicates that the IP address is reserved for use within private networks.<br>
+	 *         Checked using {@link IpAddress#isPrivate()}.
+	 *     </li>
+	 *     <li>
+	 *         <b>LOOPBACK</b>:<br>
+	 *         Indicates that the IP address is used for communication within the same host.<br>
+	 *         Checked using {@link IpAddress#isLoopback()}.
+	 *     </li>
+	 *     <li>
+	 *         <b>LINK_LOCAL</b>:<br>
+	 *         Indicates that the IP address is used for communication within a local network segment without a router.<br>
+	 *         Checked using {@link IpAddress#isLinkLocal()}.
+	 *     </li>
+	 *     <li>
+	 *         <b>MULTICAST</b>:<br>
+	 *         Indicates that the IP address is used for one-to-many communication.<br>
+	 *         Checked using {@link IpAddress#isMulticast()}.
+	 *     </li>
+	 *     <li>
+	 *         <b>BROADCAST</b>:<br>
+	 *         Indicates that the IP address is used for one-to-all communication within a network.<br>
+	 *         Checked specifically for IPv4 addresses using {@link Ipv4Address#isBroadcast()}.
+	 *     </li>
+	 *     <li>
+	 *         <b>UNSPECIFIED</b>:<br>
+	 *         Indicates that the IP address is unspecified (all zeros).<br>
+	 *         Checked using {@link IpAddress#isUnspecified()}.
+	 *     </li>
+	 *     <li>
+	 *         <b>PUBLIC</b>:<br>
+	 *         Indicates that the IP address is a globally routable address.<br>
+	 *         This type is assigned if none of the other types apply and the address is not unspecified.
+	 *     </li>
+	 * </ul>
+	 *
+	 * @param address The IP address to analyze
+	 * @return An ip address type representing the classification of the IP address
+	 * @throws NullPointerException If the address is null
+	 */
+	private static @NonNull IpAddressType getIpAddressType(@NonNull IpAddress<?> address) {
+		Objects.requireNonNull(address, "Ip address must not be null");
+		
+		if (address.isPrivate()) {
+			return IpAddressType.PRIVATE;
+		} else if (address.isLoopback()) {
+			return IpAddressType.LOOPBACK;
+		} else if (address.isLinkLocal()) {
+			return IpAddressType.LINK_LOCAL;
+		} else if (address.isMulticast()) {
+			return IpAddressType.MULTICAST;
+		} else if (address instanceof Ipv4Address ipv4 && ipv4.isBroadcast()) {
+			return IpAddressType.BROADCAST;
+		} else if (address.isUnspecified()) {
+			return IpAddressType.UNSPECIFIED;
+		} else if (address.isDocumentation()) {
+			return IpAddressType.DOCUMENTATION;
+		} else {
+			return IpAddressType.PUBLIC;
+		}
 	}
 	
 	/**
 	 * Validates a host value against a subnet membership constraint.<br>
-	 * <p>
-	 *     Note: This is a placeholder implementation that always succeeds.
-	 *     A full implementation would parse CIDR notation and check if the IP is within the subnet.
-	 * </p>
 	 *
 	 * @param value The host value to validate
 	 * @param inAnySubnet The subnet constraint as a pair of (CIDRs, negated)
@@ -168,28 +244,110 @@ public final class NetworkMatchers {
 			return Result.success();
 		}
 		
-		// ToDo: Implement subnet membership check based on CIDR notation
+		Set<IpNetwork<?, ?>> subnets = new HashSet<>();
+		for (String cidr : inAnySubnet.get().getFirst()) {
+			try {
+				subnets.add(IpAddresses.parseNetwork(cidr));
+			} catch (IpParseException e) {
+				return Result.error("Invalid CIDR '" + cidr + "' in subnet constraint: " + e.getMessage());
+			}
+		}
+		
+		try {
+			IpAddress<?> address = IpAddresses.parse(value);
+			
+			return switch (address) {
+				case Ipv4Address ipv4 -> checkIpv4SubnetMembership(ipv4, subnets, inAnySubnet.get().getSecond());
+				case Ipv6Address ipv6 -> checkIpv6SubnetMembership(ipv6, subnets, inAnySubnet.get().getSecond());
+			};
+		} catch (IpParseException e) {
+			return Result.error("Host '" + value + "' is not a valid ip address: " + e.getMessage());
+		}
+	}
+	
+	/**
+	 * Checks IPv4 subnet membership.<br>
+	 * <p>
+	 *     This method checks if the given IPv4 address is a member of any or none of the specified subnets, based on the negation flag.<br>
+	 *     All subnets that are not IPv4 networks are ignored in the check:
+	 * </p>
+	 * <p>
+	 *     If the negation flag is {@code false}, the method ensures that the address is a member of at least one subnet.<br>
+	 *     If the negation flag is {@code true}, the method ensures that the address is not a member of any subnet.
+	 * </p>
+	 * @param ipv4 The IPv4 address to check
+	 * @param subnets The set of subnets to check against
+	 * @param negated The negation flag indicating the membership condition
+	 * @return A successful result if the membership condition is satisfied, otherwise an error result with a descriptive message
+	 * @throws NullPointerException If any parameter is null
+	 */
+	private static @NonNull Result<Void> checkIpv4SubnetMembership(@NonNull Ipv4Address ipv4, @NonNull Set<IpNetwork<?, ?>> subnets, boolean negated) {
+		Objects.requireNonNull(ipv4, "Ipv4 address must not be null");
+		Objects.requireNonNull(subnets, "Subnet set must not be null");
+		
+		boolean memberOfAny = false;
+		boolean memberOfNone = true;
+		List<Ipv4Network> validSubnets = new ArrayList<>();
+		for (IpNetwork<?, ?> subnet : subnets) {
+			if (!(subnet instanceof Ipv4Network ipv4Network)) {
+				continue;
+			}
+			validSubnets.add(ipv4Network);
+			
+			if (ipv4Network.contains(ipv4)) {
+				memberOfAny = true;
+				memberOfNone = false;
+			}
+		}
+		
+		if (!negated && !memberOfAny) {
+			return Result.error("IPv4 address '" + ipv4 + "' must be member of at least one specified subnet: " + validSubnets);
+		} else if (negated && !memberOfNone) {
+			return Result.error("IPv4 address '" + ipv4 + "' must not be member of any specified subnet: " + validSubnets);
+		}
 		return Result.success();
 	}
 	
 	/**
-	 * Validates a host value against a domain string constraint config.<br>
+	 * Checks IPv6 subnet membership.<br>
+	 * <p>
+	 *     This method checks if the given IPv6 address is a member of any or none of the specified subnets, based on the negation flag.<br>
+	 *     All subnets that are not IPv6 networks are ignored in the check:
+	 * </p>
+	 * <p>
+	 *     If the negation flag is {@code false}, the method ensures that the address is a member of at least one subnet.<br>
+	 *     If the negation flag is {@code true}, the method ensures that the address is not a member of any subnet.
+	 * </p>
 	 *
-	 * @param value The host value to validate
-	 * @param domain The domain string constraint config
-	 * @return A successful result if the constraint is satisfied or not present
+	 * @param ipv6 The IPv6 address to check
+	 * @param subnets The set of subnets to check against
+	 * @param negated The negation flag indicating the membership condition
+	 * @return A successful result if the membership condition is satisfied, otherwise an error result with a descriptive message
 	 * @throws NullPointerException If any parameter is null
 	 */
-	public static @NonNull Result<Void> matchDomainConfig(@NonNull String value, @NonNull Optional<StringConstraintConfig> domain) {
-		Objects.requireNonNull(value, "Domain must not be null");
-		Objects.requireNonNull(domain, "Domain constraint must not be null");
-		if (domain.isEmpty()) {
-			return Result.success();
+	private static @NonNull Result<Void> checkIpv6SubnetMembership(@NonNull Ipv6Address ipv6, @NonNull Set<IpNetwork<?, ?>> subnets, boolean negated) {
+		Objects.requireNonNull(ipv6, "Ipv6 address must not be null");
+		Objects.requireNonNull(subnets, "Subnet set must not be null");
+		
+		boolean memberOfAny = false;
+		boolean memberOfNone = true;
+		List<Ipv6Network> validSubnets = new ArrayList<>();
+		for (IpNetwork<?, ?> subnet : subnets) {
+			if (!(subnet instanceof Ipv6Network ipv6Network)) {
+				continue;
+			}
+			validSubnets.add(ipv6Network);
+			
+			if (ipv6Network.contains(ipv6)) {
+				memberOfAny = true;
+				memberOfNone = false;
+			}
 		}
 		
-		Result<Void> result = domain.get().matches(value);
-		if (result.isError()) {
-			return Result.error("Domain constraint failed: " + result.errorOrThrow());
+		if (!negated && !memberOfAny) {
+			return Result.error("IPv6 address '" + ipv6 + "' must be member of at least one specified subnet: " + validSubnets);
+		} else if (negated && !memberOfNone) {
+			return Result.error("IPv6 address '" + ipv6 + "' must not be member of any specified subnet: " + validSubnets);
 		}
 		return Result.success();
 	}

@@ -171,6 +171,7 @@ public interface IpConstraint<T, C> extends CharSequenceConstraint<T, C> {
 	 * Applies a subnet membership constraint.<br>
 	 * <p>
 	 *     The returned type will validate that IP addresses are within the specified CIDR subnet.<br>
+	 *     If underlying IP address is an IPv4 but the CIDR is IPv6 (or vice versa), it will be ignored during validation.<br>
 	 *     This is a convenience method equivalent to {@code inAnySubnet(Collections.singletonList(cidr))}.
 	 * </p>
 	 *
@@ -188,6 +189,7 @@ public interface IpConstraint<T, C> extends CharSequenceConstraint<T, C> {
 	 * Applies a negative subnet membership constraint.<br>
 	 * <p>
 	 *     The returned type will validate that IP addresses are not within the specified CIDR subnet.<br>
+	 *     If underlying IP address is an IPv4 but the CIDR is IPv6 (or vice versa), it will be ignored during validation.<br>
 	 *     This is a convenience method equivalent to {@code notInAnySubnet(Collections.singletonList(cidr))}.
 	 * </p>
 	 *
@@ -204,7 +206,8 @@ public interface IpConstraint<T, C> extends CharSequenceConstraint<T, C> {
 	/**
 	 * Applies a multi-subnet membership constraint.<br>
 	 * <p>
-	 *     The returned type will validate that IP addresses are within any of the specified CIDR subnets.
+	 *     The returned type will validate that IP addresses are within any of the specified CIDR subnets.<br>
+	 *     If the underlying IP address is an IPv4 but a CIDR is IPv6 (or vice versa), that CIDR will be ignored during validation.
 	 * </p>
 	 *
 	 * @param cidrs The collection of CIDR notation subnets
@@ -219,6 +222,7 @@ public interface IpConstraint<T, C> extends CharSequenceConstraint<T, C> {
 	 * Applies a negative multi-subnet membership constraint.<br>
 	 * <p>
 	 *     The returned type will validate that IP addresses are not within any of the specified CIDR subnets.
+	 *     If the underlying IP address is an IPv4 but a CIDR is IPv6 (or vice versa), that CIDR will be ignored during validation.
 	 * </p>
 	 *
 	 * @param cidrs The collection of CIDR notation subnets to exclude

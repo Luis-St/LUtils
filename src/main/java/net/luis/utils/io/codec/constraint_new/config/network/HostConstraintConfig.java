@@ -44,7 +44,6 @@ import java.util.*;
  * @param domain The domain name constraint config (mutually exclusive with ip)
  * @param custom A custom constraint implementation
  */
-@SuppressWarnings("OptionalContainsCollection")
 public record HostConstraintConfig(
 	@NonNull Optional<Pair<String, Boolean>> equalTo,
 	@NonNull Optional<Pair<Set<String>, Boolean>> in,

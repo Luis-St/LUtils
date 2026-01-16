@@ -155,6 +155,180 @@ class NetworkMatchersTest {
 	}
 	
 	@Test
+	void matchIpTypeWithEmptyOptional() {
+		Result<Void> result = NetworkMatchers.matchIpType("192.168.1.1", Optional.empty());
+		assertTrue(result.isSuccess());
+	}
+	
+	@Test
+	void matchIpTypeWithPublicIpv4() {
+		EnumConstraintConfig<IpAddressType> config = EnumConstraintConfig.<IpAddressType>unconstrained().withEqualTo(IpAddressType.PUBLIC);
+		Result<Void> result = NetworkMatchers.matchIpType("8.8.8.8", Optional.of(config));
+		assertTrue(result.isSuccess());
+	}
+	
+	@Test
+	void matchIpTypeWithPrivateIpv4() {
+		EnumConstraintConfig<IpAddressType> config = EnumConstraintConfig.<IpAddressType>unconstrained().withEqualTo(IpAddressType.PRIVATE);
+		Result<Void> result = NetworkMatchers.matchIpType("192.168.1.1", Optional.of(config));
+		assertTrue(result.isSuccess());
+	}
+	
+	@Test
+	void matchIpTypeWithLoopbackIpv4() {
+		EnumConstraintConfig<IpAddressType> config = EnumConstraintConfig.<IpAddressType>unconstrained().withEqualTo(IpAddressType.LOOPBACK);
+		Result<Void> result = NetworkMatchers.matchIpType("127.0.0.1", Optional.of(config));
+		assertTrue(result.isSuccess());
+	}
+	
+	@Test
+	void matchIpTypeWithLinkLocalIpv4() {
+		EnumConstraintConfig<IpAddressType> config = EnumConstraintConfig.<IpAddressType>unconstrained().withEqualTo(IpAddressType.LINK_LOCAL);
+		Result<Void> result = NetworkMatchers.matchIpType("169.254.1.1", Optional.of(config));
+		assertTrue(result.isSuccess());
+	}
+	
+	@Test
+	void matchIpTypeWithMulticastIpv4() {
+		EnumConstraintConfig<IpAddressType> config = EnumConstraintConfig.<IpAddressType>unconstrained().withEqualTo(IpAddressType.MULTICAST);
+		Result<Void> result = NetworkMatchers.matchIpType("224.0.0.1", Optional.of(config));
+		assertTrue(result.isSuccess());
+	}
+	
+	@Test
+	void matchIpTypeWithBroadcastIpv4() {
+		EnumConstraintConfig<IpAddressType> config = EnumConstraintConfig.<IpAddressType>unconstrained().withEqualTo(IpAddressType.BROADCAST);
+		Result<Void> result = NetworkMatchers.matchIpType("255.255.255.255", Optional.of(config));
+		assertTrue(result.isSuccess());
+	}
+	
+	@Test
+	void matchIpTypeWithDocumentationIpv4() {
+		EnumConstraintConfig<IpAddressType> config = EnumConstraintConfig.<IpAddressType>unconstrained().withEqualTo(IpAddressType.DOCUMENTATION);
+		Result<Void> result = NetworkMatchers.matchIpType("192.0.2.1", Optional.of(config));
+		assertTrue(result.isSuccess());
+	}
+	
+	@Test
+	void matchIpTypeWithUnspecifiedIpv4() {
+		EnumConstraintConfig<IpAddressType> config = EnumConstraintConfig.<IpAddressType>unconstrained().withEqualTo(IpAddressType.UNSPECIFIED);
+		Result<Void> result = NetworkMatchers.matchIpType("0.0.0.0", Optional.of(config));
+		assertTrue(result.isSuccess());
+	}
+	
+	@Test
+	void matchIpTypeWithLoopbackIpv6() {
+		EnumConstraintConfig<IpAddressType> config = EnumConstraintConfig.<IpAddressType>unconstrained().withEqualTo(IpAddressType.LOOPBACK);
+		Result<Void> result = NetworkMatchers.matchIpType("::1", Optional.of(config));
+		assertTrue(result.isSuccess());
+	}
+	
+	@Test
+	void matchIpTypeWithDocumentationIpv6() {
+		EnumConstraintConfig<IpAddressType> config = EnumConstraintConfig.<IpAddressType>unconstrained().withEqualTo(IpAddressType.DOCUMENTATION);
+		Result<Void> result = NetworkMatchers.matchIpType("2001:db8::1", Optional.of(config));
+		assertTrue(result.isSuccess());
+	}
+	
+	@Test
+	void matchIpTypeWithMismatch() {
+		EnumConstraintConfig<IpAddressType> config = EnumConstraintConfig.<IpAddressType>unconstrained().withEqualTo(IpAddressType.PUBLIC);
+		Result<Void> result = NetworkMatchers.matchIpType("192.168.1.1", Optional.of(config));
+		assertTrue(result.isError());
+	}
+	
+	@Test
+	void matchIpTypeWithInvalidIp() {
+		EnumConstraintConfig<IpAddressType> config = EnumConstraintConfig.<IpAddressType>unconstrained().withEqualTo(IpAddressType.PUBLIC);
+		Result<Void> result = NetworkMatchers.matchIpType("invalid", Optional.of(config));
+		assertTrue(result.isError());
+		assertTrue(result.errorOrThrow().contains("not a valid ip address"));
+	}
+	
+	@Test
+	void matchIpTypeWithNullChecks() {
+		assertThrows(NullPointerException.class, () -> NetworkMatchers.matchIpType(null, Optional.empty()));
+		assertThrows(NullPointerException.class, () -> NetworkMatchers.matchIpType("192.168.1.1", null));
+	}
+	
+	@Test
+	void matchInAnySubnetWithEmptyOptional() {
+		Result<Void> result = NetworkMatchers.matchInAnySubnet("192.168.1.1", Optional.empty());
+		assertTrue(result.isSuccess());
+	}
+	
+	@Test
+	void matchInAnySubnetWithIpv4InSubnet() {
+		Result<Void> result = NetworkMatchers.matchInAnySubnet("192.168.1.50", Optional.of(Pair.of(Set.of("192.168.1.0/24"), false)));
+		assertTrue(result.isSuccess());
+	}
+	
+	@Test
+	void matchInAnySubnetWithIpv4NotInSubnet() {
+		Result<Void> result = NetworkMatchers.matchInAnySubnet("10.0.0.1", Optional.of(Pair.of(Set.of("192.168.1.0/24"), false)));
+		assertTrue(result.isError());
+		assertTrue(result.errorOrThrow().contains("must be member of at least one specified subnet"));
+	}
+	
+	@Test
+	void matchInAnySubnetWithIpv6InSubnet() {
+		Result<Void> result = NetworkMatchers.matchInAnySubnet("2001:db8::1", Optional.of(Pair.of(Set.of("2001:db8::/32"), false)));
+		assertTrue(result.isSuccess());
+	}
+	
+	@Test
+	void matchInAnySubnetWithIpv6NotInSubnet() {
+		Result<Void> result = NetworkMatchers.matchInAnySubnet("2001:db9::1", Optional.of(Pair.of(Set.of("2001:db8::/32"), false)));
+		assertTrue(result.isError());
+		assertTrue(result.errorOrThrow().contains("must be member of at least one specified subnet"));
+	}
+	
+	@Test
+	void matchInAnySubnetWithMultipleSubnets() {
+		Result<Void> result = NetworkMatchers.matchInAnySubnet("10.0.0.1", Optional.of(Pair.of(Set.of("192.168.0.0/16", "10.0.0.0/8"), false)));
+		assertTrue(result.isSuccess());
+	}
+	
+	@Test
+	void matchInAnySubnetWithNegatedNotMember() {
+		Result<Void> result = NetworkMatchers.matchInAnySubnet("8.8.8.8", Optional.of(Pair.of(Set.of("192.168.0.0/16"), true)));
+		assertTrue(result.isSuccess());
+	}
+	
+	@Test
+	void matchInAnySubnetWithNegatedMember() {
+		Result<Void> result = NetworkMatchers.matchInAnySubnet("192.168.1.1", Optional.of(Pair.of(Set.of("192.168.0.0/16"), true)));
+		assertTrue(result.isError());
+		assertTrue(result.errorOrThrow().contains("must not be member of any specified subnet"));
+	}
+	
+	@Test
+	void matchInAnySubnetWithInvalidCidr() {
+		Result<Void> result = NetworkMatchers.matchInAnySubnet("192.168.1.1", Optional.of(Pair.of(Set.of("invalid"), false)));
+		assertTrue(result.isError());
+		assertTrue(result.errorOrThrow().contains("Invalid CIDR"));
+	}
+	
+	@Test
+	void matchInAnySubnetWithInvalidIp() {
+		Result<Void> result = NetworkMatchers.matchInAnySubnet("invalid", Optional.of(Pair.of(Set.of("192.168.0.0/16"), false)));
+		assertTrue(result.isError());
+		assertTrue(result.errorOrThrow().contains("not a valid ip address"));
+	}
+	
+	@Test
+	void matchInAnySubnetWithMixedSubnets() {
+		Result<Void> result = NetworkMatchers.matchInAnySubnet("192.168.1.1", Optional.of(Pair.of(Set.of("192.168.0.0/16", "2001:db8::/32"), false)));
+		assertTrue(result.isSuccess());
+	}
+	
+	@Test
+	void matchInAnySubnetWithNullChecks() {
+		assertThrows(NullPointerException.class, () -> NetworkMatchers.matchInAnySubnet(null, Optional.empty()));
+		assertThrows(NullPointerException.class, () -> NetworkMatchers.matchInAnySubnet("192.168.1.1", null));
+	}
+	
+	@Test
 	void matchRootDomainWithEmptyOptional() {
 		Result<Void> result = NetworkMatchers.matchRootDomain("example.com", Optional.empty());
 		assertTrue(result.isSuccess());
