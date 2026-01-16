@@ -156,7 +156,7 @@ public record MapConstraintConfig<K, V>(
 			overlap.retainAll(forbiddenKeys.get());
 			
 			if (!overlap.isEmpty()) {
-				throw new IllegalArgumentException("Required keys and forbidden keys must not overlap, but got overlap: " + overlap);
+				throw new IllegalArgumentException("Required keys and forbidden keys must not overlap when both are present, but got overlap: " + overlap);
 			}
 		}
 		
