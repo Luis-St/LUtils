@@ -111,9 +111,11 @@ public interface EnumLike<T extends EnumLike<T>> extends Comparable<T> {
 		Objects.requireNonNull(enumType, "Enum type must not be null");
 		List<EnumConstant<T>> values = Lists.newArrayList();
 		List<Field> constants = ReflectionUtils.getFieldsForType(enumType, enumType);
+		
 		for (Field field : constants) {
 			if (isConstant(field)) {
 				Optional<?> optional = ReflectionHelper.get(field, null);
+				
 				if (optional.isPresent()) {
 					T constant = (T) optional.orElseThrow();
 					values.add(new EnumConstant<>(field.getName(), constant.ordinal(), constant));
@@ -143,6 +145,7 @@ public interface EnumLike<T extends EnumLike<T>> extends Comparable<T> {
 	@Unmodifiable
 	static <T extends EnumLike<T>> @NonNull List<T> values(@NonNull Class<T> enumType) {
 		Objects.requireNonNull(enumType, "Enum type must not be null");
+		
 		Predicate<Field> isConstant = field -> field.isAnnotationPresent(ReflectiveUsage.class) && Modifier.isPrivate(field.getModifiers()) && isConstant(field);
 		if (ReflectionHelper.hasField(enumType, "VALUES", isConstant)) {
 			return List.copyOf((List<T>) ReflectionHelper.get(enumType, "VALUES", null).orElseThrow());
@@ -179,6 +182,7 @@ public interface EnumLike<T extends EnumLike<T>> extends Comparable<T> {
 	 */
 	default int ordinal() {
 		int index = values((Class<T>) this.getClass()).indexOf(this);
+		
 		if (index != -1) {
 			return index;
 		}

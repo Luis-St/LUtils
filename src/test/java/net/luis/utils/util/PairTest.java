@@ -187,6 +187,7 @@ class PairTest {
 		Pair<Integer, String> firstNull = Pair.of(null, "test");
 		Pair<Integer, String> secondNull = Pair.of(1, null);
 		
+		assertEquals(bothNull, bothNull);
 		assertEquals(bothNull, bothNullToo);
 		assertNotEquals(bothNull, firstNull);
 		assertNotEquals(bothNull, secondNull);

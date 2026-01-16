@@ -111,15 +111,15 @@ public class Chance {
 		if (StringUtils.isBlank(chance)) {
 			return ZERO;
 		}
+		
 		Matcher matcher = CHANCE_PATTERN.matcher(chance);
-		if (!matcher.matches()) {
-			return ZERO;
-		}
-		if (matcher.group(1) != null && matcher.group(2) != null) {
-			return of(Double.parseDouble("0." + matcher.group(2)));
-		}
-		if (matcher.group(1) != null) {
-			return ONE;
+		if (matcher.matches()) {
+			if (matcher.group(1) != null && matcher.group(2) != null) {
+				return of(Double.parseDouble("0." + matcher.group(2)));
+			}
+			if (matcher.group(1) != null) {
+				return ONE;
+			}
 		}
 		return ZERO;
 	}

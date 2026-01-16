@@ -47,8 +47,6 @@ public final class ReflectionUtils {
 	 */
 	private ReflectionUtils() {}
 	
-	//region Methods
-	
 	/**
 	 * Gets the raw name of the given method.<br>
 	 * The raw name is the name of the method without prefixes like "get", "set", "is" or "has".<br>
@@ -60,6 +58,7 @@ public final class ReflectionUtils {
 	 */
 	public static @NonNull String getRawName(@NonNull Method method, String @Nullable ... prefixes) {
 		String name = Objects.requireNonNull(method, "Method must not be null").getName();
+		
 		if (name.startsWith("get")) {
 			return name.substring(3);
 		} else if (name.startsWith("set")) {
@@ -69,6 +68,7 @@ public final class ReflectionUtils {
 		} else if (name.startsWith("has")) {
 			return name.substring(3);
 		}
+		
 		for (String prefix : nullToEmpty(prefixes)) {
 			if (prefix == null || prefix.isEmpty()) {
 				continue;
@@ -108,6 +108,7 @@ public final class ReflectionUtils {
 		Objects.requireNonNull(clazz, "Class must not be null");
 		Objects.requireNonNull(name, "Name must not be null");
 		Objects.requireNonNull(annotation, "Annotation must not be null");
+		
 		if (ReflectionHelper.hasMethod(clazz, name, m -> m.isAnnotationPresent(annotation), parameters)) {
 			return ReflectionHelper.getMethod(clazz, name, parameters);
 		}
@@ -141,6 +142,7 @@ public final class ReflectionUtils {
 	public static @NonNull Optional<Method> getMethodForName(@NonNull Class<?> clazz, @Nullable String name) {
 		Objects.requireNonNull(clazz, "Class must not be null");
 		List<Method> methods = getMethodsForName(clazz, name);
+		
 		if (methods.size() == 1) {
 			return Optional.of(methods.getFirst());
 		}
@@ -166,6 +168,7 @@ public final class ReflectionUtils {
 	 */
 	public static Object @NonNull [] findParameters(@NonNull Executable executable, Object @Nullable ... values) {
 		Objects.requireNonNull(executable, "Executable must not be null");
+		
 		return findParameters(executable, Utils.mapList(Lists.newArrayList(nullToEmpty(values)), value -> {
 			String name = value.getClass().getSimpleName();
 			return Pair.of(value, StringUtils.uncapitalize(name));
@@ -192,14 +195,12 @@ public final class ReflectionUtils {
 	public static Object @NonNull [] findParameters(@NonNull Executable executable, @Nullable List<Pair<Object, String>> values) {
 		Parameter[] parameters = Objects.requireNonNull(executable, "Executable must not be null").getParameters();
 		Object[] arguments = new Object[parameters.length];
+		
 		for (int i = 0; i < parameters.length; i++) {
 			arguments[i] = findParameter(parameters[i], values == null ? Lists.newArrayList() : values);
 		}
 		return arguments;
 	}
-	//endregion
-	
-	//region Fields
 	
 	/**
 	 * Gets all fields from the given class that are annotated with the given annotation.<br>
@@ -229,6 +230,7 @@ public final class ReflectionUtils {
 		Objects.requireNonNull(clazz, "Class must not be null");
 		Objects.requireNonNull(name, "Name must not be null");
 		Objects.requireNonNull(annotation, "Annotation must not be null");
+		
 		if (ReflectionHelper.hasField(clazz, name, f -> f.isAnnotationPresent(annotation))) {
 			return ReflectionHelper.getField(clazz, name);
 		}
@@ -248,7 +250,6 @@ public final class ReflectionUtils {
 		Objects.requireNonNull(clazz, "Class must not be null");
 		return Arrays.stream(clazz.getDeclaredFields()).filter(field -> field.getType().equals(type)).collect(Collectors.toList());
 	}
-	//endregion
 	
 	//region Internal
 	
@@ -268,9 +269,11 @@ public final class ReflectionUtils {
 		Objects.requireNonNull(parameter, "Parameter must not be null");
 		Objects.requireNonNull(values, "Values must not be null");
 		Executable executable = parameter.getDeclaringExecutable();
+		
 		for (Pair<Object, String> value : values) {
 			Object object = value.getFirst();
 			boolean noDuplicates = !Utils.hasDuplicates(object, Utils.mapList(Lists.newArrayList(values), Pair::getFirst));
+			
 			if (parameter.getType().isInstance(object) || ClassUtils.primitiveToWrapper(parameter.getType()).isInstance(object)) {
 				if (noDuplicates) {
 					return object;

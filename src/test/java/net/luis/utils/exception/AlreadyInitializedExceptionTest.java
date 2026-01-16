@@ -31,6 +31,7 @@ class AlreadyInitializedExceptionTest {
 	
 	@Test
 	void constructor() {
+		assertDoesNotThrow(() -> new AlreadyInitializedException());
 		assertDoesNotThrow(() -> new AlreadyInitializedException((String) null));
 		assertDoesNotThrow(() -> new AlreadyInitializedException((Throwable) null));
 		assertDoesNotThrow(() -> new AlreadyInitializedException(null, null));

@@ -46,6 +46,7 @@ public interface ThrowableSupplier<T, X extends Throwable> {
 	 */
 	static <T> @NonNull Supplier<T> caught(@NonNull ThrowableSupplier<T, ? extends Throwable> supplier) {
 		Objects.requireNonNull(supplier, "Throwable supplier must not be null");
+		
 		return () -> {
 			try {
 				return supplier.get();

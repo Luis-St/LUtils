@@ -592,8 +592,6 @@ public class PropertyObject implements PropertyElement {
 		return this.getPropertyValue(key).getAsString();
 	}
 	
-	//region Group/Namespace support
-	
 	/**
 	 * Gets the element with the given key from this property object as a boolean.<br>
 	 * The element will be converted to a property value and then to a boolean.<br>
@@ -832,8 +830,8 @@ public class PropertyObject implements PropertyElement {
 		}
 		return result;
 	}
-	//endregion
 	
+	//region Object overrides
 	@Override
 	public boolean equals(Object o) {
 		if (this == o) return true;
@@ -879,4 +877,5 @@ public class PropertyObject implements PropertyElement {
 		
 		return builder.toString();
 	}
+	//endregion
 }

@@ -50,8 +50,6 @@ public final class ClassPathUtils {
 	 */
 	private ClassPathUtils() {}
 	
-	//region Classes
-	
 	/**
 	 * Gets all classes from the classpath.<br>
 	 * If an error occurs, the error will be logged and an empty list will be returned.<br>
@@ -149,9 +147,6 @@ public final class ClassPathUtils {
 		Objects.requireNonNull(annotation, "Annotation must not be null");
 		return getClasses(packageName).stream().filter(clazz -> clazz.isAnnotationPresent(annotation)).collect(Collectors.toList());
 	}
-	//endregion
-	
-	//region Methods
 	
 	/**
 	 * Gets all methods from the classpath which are annotated with the given annotation.<br>
@@ -177,9 +172,6 @@ public final class ClassPathUtils {
 		Objects.requireNonNull(annotation, "Annotation must not be null");
 		return getClasses(packageName).stream().map(Class::getDeclaredMethods).flatMap(methods -> Lists.newArrayList(methods).stream()).filter(method -> method.isAnnotationPresent(annotation)).collect(Collectors.toList());
 	}
-	//endregion
-	
-	//region Fields
 	
 	/**
 	 * Gets all fields from the classpath which are annotated with the given annotation.<br>
@@ -205,7 +197,6 @@ public final class ClassPathUtils {
 		Objects.requireNonNull(annotation, "Annotation must not be null");
 		return getClasses(packageName).stream().map(Class::getDeclaredFields).flatMap(fields -> Lists.newArrayList(fields).stream()).filter(field -> field.isAnnotationPresent(annotation)).collect(Collectors.toList());
 	}
-	//endregion
 	
 	//region Internal
 	

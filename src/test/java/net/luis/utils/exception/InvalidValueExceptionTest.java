@@ -31,6 +31,7 @@ class InvalidValueExceptionTest {
 	
 	@Test
 	void constructor() {
+		assertDoesNotThrow(() -> new InvalidValueException());
 		assertDoesNotThrow(() -> new InvalidValueException((String) null));
 		assertDoesNotThrow(() -> new InvalidValueException((Throwable) null));
 		assertDoesNotThrow(() -> new InvalidValueException(null, null));

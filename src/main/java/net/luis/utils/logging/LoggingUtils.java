@@ -60,10 +60,6 @@ public final class LoggingUtils {
 	 */
 	private LoggingUtils() {}
 	
-	//region Configuration
-	
-	//region Loading from system properties
-	
 	/**
 	 * Loads the logging configuration for the given loggers from the system properties and initializes the logging system.<br>
 	 * Loading the logger should be done as early as possible in the application lifecycle.<br>
@@ -96,9 +92,6 @@ public final class LoggingUtils {
 		reconfigure(LoggingHelper.load(loggers)); // No idea why initialize does not work here
 		LoggingHelper.configure();
 	}
-	//endregion
-	
-	//region Initialize and reconfigure
 	
 	/**
 	 * Initializes the logging system with the given configuration.<br>
@@ -150,6 +143,7 @@ public final class LoggingUtils {
 	 */
 	public static void initialize(@NonNull LoggerConfiguration configuration, boolean override) {
 		Objects.requireNonNull(configuration, "Logger configuration must not be null");
+		
 		if (!isInitialized()) {
 			initializeInternal(Objects.requireNonNull(configuration, "Logger configuration must not be null"));
 		} else if (override) {
@@ -170,6 +164,7 @@ public final class LoggingUtils {
 	 */
 	public static boolean initializeSafe(@NonNull LoggerConfiguration configuration) {
 		Objects.requireNonNull(configuration, "Logger configuration must not be null");
+		
 		if (!isInitialized()) {
 			initialize(configuration);
 			return true;
@@ -185,6 +180,7 @@ public final class LoggingUtils {
 	 */
 	private static void initializeInternal(@NonNull LoggerConfiguration configuration) {
 		Objects.requireNonNull(configuration, "Logger configuration must not be null");
+		
 		Configuration config = configuration.build();
 		Configurator.initialize(config);
 		LoggingUtils.configuration = configuration;
@@ -203,6 +199,7 @@ public final class LoggingUtils {
 	 */
 	public static void reconfigure(@NonNull LoggerConfiguration configuration) {
 		Objects.requireNonNull(configuration, "Logger configuration must not be null");
+		
 		Configuration config = configuration.build();
 		Configurator.reconfigure(config);
 		LoggingUtils.configuration = configuration;
@@ -224,7 +221,6 @@ public final class LoggingUtils {
 			reconfigure(configuration);
 		}
 	}
-	//endregion
 	
 	/**
 	 * Checks whether the logging system has been initialized.<br>
@@ -304,9 +300,6 @@ public final class LoggingUtils {
 			registeredFactory = true;
 		}
 	}
-	//endregion
-	
-	//region Enable logging
 	
 	/**
 	 * Enables logging for the given logging type and level.<br>
@@ -361,9 +354,6 @@ public final class LoggingUtils {
 	public static void enableFile() {
 		Arrays.stream(LoggingType.FILE.getAllowedLevels()).forEach(LoggingUtils::enableFile);
 	}
-	//endregion
-	
-	//region Disable logging
 	
 	/**
 	 * Disables logging for the given logging type and level.<br>
@@ -418,9 +408,6 @@ public final class LoggingUtils {
 	public static void disableFile() {
 		Arrays.stream(LoggingType.FILE.getAllowedLevels()).forEach(LoggingUtils::disableFile);
 	}
-	//endregion
-	
-	//region Marker
 	
 	/**
 	 * Creates a new reference marker with the given length.<br>
@@ -446,9 +433,9 @@ public final class LoggingUtils {
 		if (length > 32) {
 			throw new IllegalArgumentException("Reference marker length must be 32 or less");
 		}
+		
 		return MarkerManager.getMarker(UUID.randomUUID().toString().replace("-", "").substring(0, length));
 	}
-	//endregion
 	
 	//region Helper methods
 	
@@ -460,17 +447,21 @@ public final class LoggingUtils {
 	 * @throws IllegalStateException If the appender was not found (file logging only)
 	 */
 	private static void enableAppender(@NonNull String name) {
+		Objects.requireNonNull(name, "Appender name must not be null");
+		
 		LoggerContext context = (LoggerContext) LogManager.getContext(false);
 		Configuration config = context.getConfiguration();
-		Appender appender = config.getAppender(Objects.requireNonNull(name, "Appender name must not be null"));
+		Appender appender = config.getAppender(name);
 		if (appender == null) {
 			throw new IllegalStateException("Appender " + name + " not found, appender may not be registered");
 		}
+		
 		if (isRootLoggerConfigured()) {
 			config.getRootLogger().addAppender(appender, null, null);
 		} else {
 			for (String logger : CONFIGURED_LOGGERS) {
 				LoggerConfig loggerConfig = config.getLoggerConfig(logger);
+				
 				if (loggerConfig == null) {
 					throw new IllegalStateException("Logger '" + logger + "' not found, logger may not be registered");
 				}
@@ -485,6 +476,8 @@ public final class LoggingUtils {
 	 * @param name The name of the appender to disable
 	 */
 	private static void disableAppender(@NonNull String name) {
+		Objects.requireNonNull(name, "Appender name must not be null");
+		
 		LoggerContext context = (LoggerContext) LogManager.getContext(false);
 		Configuration config = context.getConfiguration();
 		if (isRootLoggerConfigured()) {
@@ -492,6 +485,7 @@ public final class LoggingUtils {
 		} else {
 			for (String logger : CONFIGURED_LOGGERS) {
 				LoggerConfig loggerConfig = config.getLoggerConfig(logger);
+				
 				if (loggerConfig == null) {
 					throw new IllegalStateException("Logger '" + logger + "' not found, logger may not be registered");
 				}
@@ -530,6 +524,7 @@ public final class LoggingUtils {
 	static void checkLevel(@NonNull LoggingType type, @NonNull Level level) {
 		Objects.requireNonNull(type, "Logging type must not be null");
 		Objects.requireNonNull(level, "Level must not be null");
+		
 		if (level == Level.ALL || level == Level.OFF) {
 			throw new IllegalArgumentException("Level must not be 'all' or 'off'");
 		}
@@ -537,5 +532,4 @@ public final class LoggingUtils {
 			throw new IllegalArgumentException("Logging type 'file' does not support level '" + level.name().toLowerCase() + "'");
 		}
 	}
-	//endregion
 }

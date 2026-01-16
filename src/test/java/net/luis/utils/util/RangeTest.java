@@ -95,7 +95,20 @@ class RangeTest {
 		assertSame(Range.EMPTY, Range.parse("[0;1]"));
 		assertSame(Range.EMPTY, Range.parse("[0..1..2]"));
 		assertSame(Range.EMPTY, Range.parse("[1..0]"));
+		assertSame(Range.EMPTY, Range.parse("[1..0"));
 		assertSame(Range.EMPTY, Range.parse("invalid"));
+	}
+	
+	@Test
+	void constructingWithMinGreaterThanMaxThrowsException() {
+		class InternalRange extends Range {
+			
+			InternalRange(double min, double max) {
+				super(min, max);
+			}
+		}
+		
+		assertThrows(IllegalArgumentException.class, () -> new InternalRange(5.0, 3.0));
 	}
 	
 	@Test
@@ -200,6 +213,7 @@ class RangeTest {
 		Range differentMin = Range.of(2.0, 5.0);
 		Range differentMax = Range.of(1.0, 6.0);
 		
+		assertEquals(range1, range1);
 		assertEquals(range1, range2);
 		assertNotEquals(range1, differentMin);
 		assertNotEquals(range1, differentMax);

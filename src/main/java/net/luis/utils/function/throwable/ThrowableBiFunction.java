@@ -50,6 +50,7 @@ public interface ThrowableBiFunction<T, U, R, X extends Throwable> {
 	 */
 	static <T, U, R> @NonNull BiFunction<T, U, R> caught(@NonNull ThrowableBiFunction<T, U, R, ? extends Throwable> function) {
 		Objects.requireNonNull(function, "Throwable function must not be null");
+		
 		return (t, u) -> {
 			try {
 				return function.apply(t, u);

@@ -48,6 +48,7 @@ public interface ThrowableBiConsumer<T, U, X extends Throwable> {
 	 */
 	static <T, U> @NonNull BiConsumer<T, U> caught(@NonNull ThrowableBiConsumer<T, U, ? extends Throwable> consumer) {
 		Objects.requireNonNull(consumer, "Throwable consumer must not be null");
+		
 		return (t, u) -> {
 			try {
 				consumer.accept(t, u);
@@ -76,6 +77,7 @@ public interface ThrowableBiConsumer<T, U, X extends Throwable> {
 	 */
 	default @NonNull ThrowableBiConsumer<T, U, X> andThen(@NonNull ThrowableBiConsumer<? super T, ? super U, X> after) {
 		Objects.requireNonNull(after, "After operation must not be null");
+		
 		return (t, u) -> {
 			this.accept(t, u);
 			after.accept(t, u);

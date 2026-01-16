@@ -138,6 +138,7 @@ class LazyLoadTest {
 		different.load();
 		nullValue.load();
 		
+		assertEquals(loaded1, loaded1);
 		assertEquals(loaded1, loaded2);
 		assertNotEquals(loaded1, different);
 		assertNotEquals(loaded1, nullValue);

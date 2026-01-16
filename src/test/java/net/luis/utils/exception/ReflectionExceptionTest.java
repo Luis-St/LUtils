@@ -31,6 +31,7 @@ class ReflectionExceptionTest {
 	
 	@Test
 	void constructor() {
+		assertDoesNotThrow(() -> new ReflectionException());
 		assertDoesNotThrow(() -> new ReflectionException((String) null));
 		assertDoesNotThrow(() -> new ReflectionException((Throwable) null));
 		assertDoesNotThrow(() -> new ReflectionException(null, null));

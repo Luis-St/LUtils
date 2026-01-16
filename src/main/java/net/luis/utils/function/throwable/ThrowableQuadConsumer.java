@@ -52,6 +52,7 @@ public interface ThrowableQuadConsumer<T, U, V, W, X extends Throwable> {
 	 */
 	static <T, U, V, W> @NonNull QuadConsumer<T, U, V, W> caught(@NonNull ThrowableQuadConsumer<T, U, V, W, ? extends Throwable> consumer) {
 		Objects.requireNonNull(consumer, "Throwable consumer must not be null");
+		
 		return (t, u, v, w) -> {
 			try {
 				consumer.accept(t, u, v, w);
@@ -82,6 +83,7 @@ public interface ThrowableQuadConsumer<T, U, V, W, X extends Throwable> {
 	 */
 	default @NonNull ThrowableQuadConsumer<T, U, V, W, X> andThen(@NonNull ThrowableQuadConsumer<? super T, ? super U, ? super V, ? super W, X> after) {
 		Objects.requireNonNull(after, "After operation must not be null");
+		
 		return (t, u, v, w) -> {
 			this.accept(t, u, v, w);
 			after.accept(t, u, v, w);

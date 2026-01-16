@@ -52,6 +52,7 @@ public interface ThrowableTriFunction<T, U, V, R, X extends Throwable> {
 	 */
 	static <T, U, V, R> @NonNull TriFunction<T, U, V, R> caught(@NonNull ThrowableTriFunction<T, U, V, R, ? extends Throwable> function) {
 		Objects.requireNonNull(function, "Throwable function must not be null");
+		
 		return (t, u, v) -> {
 			try {
 				return function.apply(t, u, v);

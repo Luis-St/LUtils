@@ -205,8 +205,6 @@ public final class StringUtils {
 		return indexes;
 	}
 	
-	//region Description
-	
 	/*
 	 * Summarize methods, only one method for counting differences with different modes
 	 */
@@ -414,7 +412,6 @@ public final class StringUtils {
 		}
 		return Collections.min(differences);
 	}
-	//endregion
 	
 	/**
 	 * Calculates the levenshtein distance between the given strings.<br>
