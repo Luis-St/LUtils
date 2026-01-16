@@ -18,8 +18,6 @@
 
 package net.luis.utils.io.codec.constraint_new.config.temporal;
 
-import static org.junit.jupiter.api.Assertions.*;
-
 import net.luis.utils.io.codec.constraint_new.config.NumericFieldConstraintConfig;
 import net.luis.utils.util.Pair;
 import net.luis.utils.util.result.Result;
@@ -28,19 +26,109 @@ import org.junit.jupiter.api.Test;
 import java.time.ZoneOffset;
 import java.util.*;
 
+import static org.junit.jupiter.api.Assertions.*;
+
 /**
  * Test class for {@link ZoneOffsetConstraintConfig}.<br>
  *
  * @author Luis-St
  */
 class ZoneOffsetConstraintConfigTest {
-
+	
 	private static final ZoneOffset UTC = ZoneOffset.UTC;
 	private static final ZoneOffset PLUS_2 = ZoneOffset.ofHours(2);
 	private static final ZoneOffset PLUS_5 = ZoneOffset.ofHours(5);
 	private static final ZoneOffset MINUS_5 = ZoneOffset.ofHours(-5);
 	private static final ZoneOffset MINUS_8 = ZoneOffset.ofHours(-8);
-
+	
+	@Test
+	void constructWithNullEqualTo() {
+		assertThrows(NullPointerException.class, () -> new ZoneOffsetConstraintConfig(
+			null, Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(),
+			Optional.empty(), Optional.empty(), Optional.empty()
+		));
+	}
+	
+	@Test
+	void constructWithNullIn() {
+		assertThrows(NullPointerException.class, () -> new ZoneOffsetConstraintConfig(
+			Optional.empty(), null, Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(),
+			Optional.empty(), Optional.empty(), Optional.empty()
+		));
+	}
+	
+	@Test
+	void constructWithNullMin() {
+		assertThrows(NullPointerException.class, () -> new ZoneOffsetConstraintConfig(
+			Optional.empty(), Optional.empty(), null, Optional.empty(), Optional.empty(), Optional.empty(),
+			Optional.empty(), Optional.empty(), Optional.empty()
+		));
+	}
+	
+	@Test
+	void constructWithNullMax() {
+		assertThrows(NullPointerException.class, () -> new ZoneOffsetConstraintConfig(
+			Optional.empty(), Optional.empty(), Optional.empty(), null, Optional.empty(), Optional.empty(),
+			Optional.empty(), Optional.empty(), Optional.empty()
+		));
+	}
+	
+	@Test
+	void constructWithNullPositive() {
+		assertThrows(NullPointerException.class, () -> new ZoneOffsetConstraintConfig(
+			Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), null, Optional.empty(),
+			Optional.empty(), Optional.empty(), Optional.empty()
+		));
+	}
+	
+	@Test
+	void constructWithNullNegative() {
+		assertThrows(NullPointerException.class, () -> new ZoneOffsetConstraintConfig(
+			Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), null,
+			Optional.empty(), Optional.empty(), Optional.empty()
+		));
+	}
+	
+	@Test
+	void constructWithNullZero() {
+		assertThrows(NullPointerException.class, () -> new ZoneOffsetConstraintConfig(
+			Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(),
+			null, Optional.empty(), Optional.empty()
+		));
+	}
+	
+	@Test
+	void constructWithNullHours() {
+		assertThrows(NullPointerException.class, () -> new ZoneOffsetConstraintConfig(
+			Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(),
+			Optional.empty(), null, Optional.empty()
+		));
+	}
+	
+	@Test
+	void constructWithNullCustom() {
+		assertThrows(NullPointerException.class, () -> new ZoneOffsetConstraintConfig(
+			Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(),
+			Optional.empty(), Optional.empty(), null
+		));
+	}
+	
+	@Test
+	void constructWithEmptyInSet() {
+		assertThrows(IllegalArgumentException.class, () -> new ZoneOffsetConstraintConfig(
+			Optional.empty(), Optional.of(Pair.of(Set.of(), false)), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(),
+			Optional.empty(), Optional.empty(), Optional.empty()
+		));
+	}
+	
+	@Test
+	void constructWithBothPositiveAndNegative() {
+		assertThrows(IllegalArgumentException.class, () -> new ZoneOffsetConstraintConfig(
+			Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.of(false), Optional.of(false),
+			Optional.empty(), Optional.empty(), Optional.empty()
+		));
+	}
+	
 	@Test
 	void unconstrained() {
 		ZoneOffsetConstraintConfig config = ZoneOffsetConstraintConfig.UNCONSTRAINED;
@@ -56,95 +144,7 @@ class ZoneOffsetConstraintConfigTest {
 		assertTrue(config.custom().isEmpty());
 		assertTrue(config.matches(UTC).isSuccess());
 	}
-
-	@Test
-	void constructWithNullEqualTo() {
-		assertThrows(NullPointerException.class, () -> new ZoneOffsetConstraintConfig(
-			null, Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(),
-			Optional.empty(), Optional.empty(), Optional.empty()
-		));
-	}
-
-	@Test
-	void constructWithNullIn() {
-		assertThrows(NullPointerException.class, () -> new ZoneOffsetConstraintConfig(
-			Optional.empty(), null, Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(),
-			Optional.empty(), Optional.empty(), Optional.empty()
-		));
-	}
-
-	@Test
-	void constructWithNullMin() {
-		assertThrows(NullPointerException.class, () -> new ZoneOffsetConstraintConfig(
-			Optional.empty(), Optional.empty(), null, Optional.empty(), Optional.empty(), Optional.empty(),
-			Optional.empty(), Optional.empty(), Optional.empty()
-		));
-	}
-
-	@Test
-	void constructWithNullMax() {
-		assertThrows(NullPointerException.class, () -> new ZoneOffsetConstraintConfig(
-			Optional.empty(), Optional.empty(), Optional.empty(), null, Optional.empty(), Optional.empty(),
-			Optional.empty(), Optional.empty(), Optional.empty()
-		));
-	}
-
-	@Test
-	void constructWithNullPositive() {
-		assertThrows(NullPointerException.class, () -> new ZoneOffsetConstraintConfig(
-			Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), null, Optional.empty(),
-			Optional.empty(), Optional.empty(), Optional.empty()
-		));
-	}
-
-	@Test
-	void constructWithNullNegative() {
-		assertThrows(NullPointerException.class, () -> new ZoneOffsetConstraintConfig(
-			Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), null,
-			Optional.empty(), Optional.empty(), Optional.empty()
-		));
-	}
-
-	@Test
-	void constructWithNullZero() {
-		assertThrows(NullPointerException.class, () -> new ZoneOffsetConstraintConfig(
-			Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(),
-			null, Optional.empty(), Optional.empty()
-		));
-	}
-
-	@Test
-	void constructWithNullHours() {
-		assertThrows(NullPointerException.class, () -> new ZoneOffsetConstraintConfig(
-			Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(),
-			Optional.empty(), null, Optional.empty()
-		));
-	}
-
-	@Test
-	void constructWithNullCustom() {
-		assertThrows(NullPointerException.class, () -> new ZoneOffsetConstraintConfig(
-			Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(),
-			Optional.empty(), Optional.empty(), null
-		));
-	}
-
-	@Test
-	void constructWithEmptyInSet() {
-		assertThrows(IllegalArgumentException.class, () -> new ZoneOffsetConstraintConfig(
-			Optional.empty(), Optional.of(Pair.of(Set.of(), false)), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(),
-			Optional.empty(), Optional.empty(), Optional.empty()
-		));
-	}
-
-	@Test
-	void constructWithBothPositiveAndNegative() {
-		assertThrows(IllegalArgumentException.class, () -> new ZoneOffsetConstraintConfig(
-			Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.of(false), Optional.of(false),
-			Optional.empty(), Optional.empty(), Optional.empty()
-		));
-	}
-
+	
 	@Test
 	void withEqualTo() {
 		ZoneOffsetConstraintConfig config = ZoneOffsetConstraintConfig.UNCONSTRAINED.withEqualTo(PLUS_2);
@@ -152,12 +152,12 @@ class ZoneOffsetConstraintConfigTest {
 		assertEquals(PLUS_2, config.equalTo().get().getFirst());
 		assertFalse(config.equalTo().get().getSecond());
 	}
-
+	
 	@Test
 	void withEqualToNull() {
 		assertThrows(NullPointerException.class, () -> ZoneOffsetConstraintConfig.UNCONSTRAINED.withEqualTo(null));
 	}
-
+	
 	@Test
 	void withNotEqualTo() {
 		ZoneOffsetConstraintConfig config = ZoneOffsetConstraintConfig.UNCONSTRAINED.withNotEqualTo(PLUS_2);
@@ -165,12 +165,12 @@ class ZoneOffsetConstraintConfigTest {
 		assertEquals(PLUS_2, config.equalTo().get().getFirst());
 		assertTrue(config.equalTo().get().getSecond());
 	}
-
+	
 	@Test
 	void withNotEqualToNull() {
 		assertThrows(NullPointerException.class, () -> ZoneOffsetConstraintConfig.UNCONSTRAINED.withNotEqualTo(null));
 	}
-
+	
 	@Test
 	void withIn() {
 		ZoneOffsetConstraintConfig config = ZoneOffsetConstraintConfig.UNCONSTRAINED.withIn(List.of(UTC, PLUS_2));
@@ -178,12 +178,12 @@ class ZoneOffsetConstraintConfigTest {
 		assertEquals(Set.of(UTC, PLUS_2), config.in().get().getFirst());
 		assertFalse(config.in().get().getSecond());
 	}
-
+	
 	@Test
 	void withInNull() {
 		assertThrows(NullPointerException.class, () -> ZoneOffsetConstraintConfig.UNCONSTRAINED.withIn(null));
 	}
-
+	
 	@Test
 	void withNotIn() {
 		ZoneOffsetConstraintConfig config = ZoneOffsetConstraintConfig.UNCONSTRAINED.withNotIn(List.of(UTC, PLUS_2));
@@ -191,12 +191,12 @@ class ZoneOffsetConstraintConfigTest {
 		assertEquals(Set.of(UTC, PLUS_2), config.in().get().getFirst());
 		assertTrue(config.in().get().getSecond());
 	}
-
+	
 	@Test
 	void withNotInNull() {
 		assertThrows(NullPointerException.class, () -> ZoneOffsetConstraintConfig.UNCONSTRAINED.withNotIn(null));
 	}
-
+	
 	@Test
 	void withGreaterThan() {
 		ZoneOffsetConstraintConfig config = ZoneOffsetConstraintConfig.UNCONSTRAINED.withGreaterThan(MINUS_5);
@@ -204,12 +204,12 @@ class ZoneOffsetConstraintConfigTest {
 		assertEquals(MINUS_5, config.min().get().getFirst());
 		assertFalse(config.min().get().getSecond());
 	}
-
+	
 	@Test
 	void withGreaterThanNull() {
 		assertThrows(NullPointerException.class, () -> ZoneOffsetConstraintConfig.UNCONSTRAINED.withGreaterThan(null));
 	}
-
+	
 	@Test
 	void withGreaterThanOrEqual() {
 		ZoneOffsetConstraintConfig config = ZoneOffsetConstraintConfig.UNCONSTRAINED.withGreaterThanOrEqual(MINUS_5);
@@ -217,12 +217,12 @@ class ZoneOffsetConstraintConfigTest {
 		assertEquals(MINUS_5, config.min().get().getFirst());
 		assertTrue(config.min().get().getSecond());
 	}
-
+	
 	@Test
 	void withGreaterThanOrEqualNull() {
 		assertThrows(NullPointerException.class, () -> ZoneOffsetConstraintConfig.UNCONSTRAINED.withGreaterThanOrEqual(null));
 	}
-
+	
 	@Test
 	void withLessThan() {
 		ZoneOffsetConstraintConfig config = ZoneOffsetConstraintConfig.UNCONSTRAINED.withLessThan(PLUS_5);
@@ -230,12 +230,12 @@ class ZoneOffsetConstraintConfigTest {
 		assertEquals(PLUS_5, config.max().get().getFirst());
 		assertFalse(config.max().get().getSecond());
 	}
-
+	
 	@Test
 	void withLessThanNull() {
 		assertThrows(NullPointerException.class, () -> ZoneOffsetConstraintConfig.UNCONSTRAINED.withLessThan(null));
 	}
-
+	
 	@Test
 	void withLessThanOrEqual() {
 		ZoneOffsetConstraintConfig config = ZoneOffsetConstraintConfig.UNCONSTRAINED.withLessThanOrEqual(PLUS_5);
@@ -243,12 +243,12 @@ class ZoneOffsetConstraintConfigTest {
 		assertEquals(PLUS_5, config.max().get().getFirst());
 		assertTrue(config.max().get().getSecond());
 	}
-
+	
 	@Test
 	void withLessThanOrEqualNull() {
 		assertThrows(NullPointerException.class, () -> ZoneOffsetConstraintConfig.UNCONSTRAINED.withLessThanOrEqual(null));
 	}
-
+	
 	@Test
 	void withBetween() {
 		ZoneOffsetConstraintConfig config = ZoneOffsetConstraintConfig.UNCONSTRAINED.withBetween(MINUS_5, PLUS_5);
@@ -259,17 +259,17 @@ class ZoneOffsetConstraintConfigTest {
 		assertFalse(config.min().get().getSecond());
 		assertFalse(config.max().get().getSecond());
 	}
-
+	
 	@Test
 	void withBetweenNullMin() {
 		assertThrows(NullPointerException.class, () -> ZoneOffsetConstraintConfig.UNCONSTRAINED.withBetween(null, PLUS_5));
 	}
-
+	
 	@Test
 	void withBetweenNullMax() {
 		assertThrows(NullPointerException.class, () -> ZoneOffsetConstraintConfig.UNCONSTRAINED.withBetween(MINUS_5, null));
 	}
-
+	
 	@Test
 	void withBetweenOrEqual() {
 		ZoneOffsetConstraintConfig config = ZoneOffsetConstraintConfig.UNCONSTRAINED.withBetweenOrEqual(MINUS_5, PLUS_5);
@@ -280,66 +280,66 @@ class ZoneOffsetConstraintConfigTest {
 		assertTrue(config.min().get().getSecond());
 		assertTrue(config.max().get().getSecond());
 	}
-
+	
 	@Test
 	void withBetweenOrEqualNullMin() {
 		assertThrows(NullPointerException.class, () -> ZoneOffsetConstraintConfig.UNCONSTRAINED.withBetweenOrEqual(null, PLUS_5));
 	}
-
+	
 	@Test
 	void withBetweenOrEqualNullMax() {
 		assertThrows(NullPointerException.class, () -> ZoneOffsetConstraintConfig.UNCONSTRAINED.withBetweenOrEqual(MINUS_5, null));
 	}
-
+	
 	@Test
 	void withPositive() {
 		ZoneOffsetConstraintConfig config = ZoneOffsetConstraintConfig.UNCONSTRAINED.withPositive();
 		assertTrue(config.positive().isPresent());
 		assertFalse(config.positive().get());
 	}
-
+	
 	@Test
 	void withNonPositive() {
 		ZoneOffsetConstraintConfig config = ZoneOffsetConstraintConfig.UNCONSTRAINED.withNonPositive();
 		assertTrue(config.positive().isPresent());
 		assertTrue(config.positive().get());
 	}
-
+	
 	@Test
 	void withNegative() {
 		ZoneOffsetConstraintConfig config = ZoneOffsetConstraintConfig.UNCONSTRAINED.withNegative();
 		assertTrue(config.negative().isPresent());
 		assertFalse(config.negative().get());
 	}
-
+	
 	@Test
 	void withNonNegative() {
 		ZoneOffsetConstraintConfig config = ZoneOffsetConstraintConfig.UNCONSTRAINED.withNonNegative();
 		assertTrue(config.negative().isPresent());
 		assertTrue(config.negative().get());
 	}
-
+	
 	@Test
 	void withZero() {
 		ZoneOffsetConstraintConfig config = ZoneOffsetConstraintConfig.UNCONSTRAINED.withZero();
 		assertTrue(config.zero().isPresent());
 		assertFalse(config.zero().get());
 	}
-
+	
 	@Test
 	void withUtc() {
 		ZoneOffsetConstraintConfig config = ZoneOffsetConstraintConfig.UNCONSTRAINED.withUtc();
 		assertTrue(config.zero().isPresent());
 		assertFalse(config.zero().get());
 	}
-
+	
 	@Test
 	void withNonZero() {
 		ZoneOffsetConstraintConfig config = ZoneOffsetConstraintConfig.UNCONSTRAINED.withNonZero();
 		assertTrue(config.zero().isPresent());
 		assertTrue(config.zero().get());
 	}
-
+	
 	@Test
 	void withHours() {
 		NumericFieldConstraintConfig hoursConfig = NumericFieldConstraintConfig.UNCONSTRAINED.withBetweenOrEqual(-5, 5);
@@ -347,37 +347,37 @@ class ZoneOffsetConstraintConfigTest {
 		assertTrue(config.hours().isPresent());
 		assertEquals(hoursConfig, config.hours().get());
 	}
-
+	
 	@Test
 	void withHoursNull() {
 		assertThrows(NullPointerException.class, () -> ZoneOffsetConstraintConfig.UNCONSTRAINED.withHours(null));
 	}
-
+	
 	@Test
 	void withCustom() {
 		ZoneOffsetConstraintConfig config = ZoneOffsetConstraintConfig.UNCONSTRAINED.withCustom(offset -> offset.getTotalSeconds() % 3600 == 0 ? Result.success() : Result.error("Offset must be on the hour"));
 		assertTrue(config.custom().isPresent());
 	}
-
+	
 	@Test
 	void withCustomNull() {
 		assertThrows(NullPointerException.class, () -> ZoneOffsetConstraintConfig.UNCONSTRAINED.withCustom(null));
 	}
-
+	
 	@Test
 	void matchesWithEqualTo() {
 		ZoneOffsetConstraintConfig config = ZoneOffsetConstraintConfig.UNCONSTRAINED.withEqualTo(PLUS_2);
 		assertTrue(config.matches(PLUS_2).isSuccess());
 		assertTrue(config.matches(PLUS_5).isError());
 	}
-
+	
 	@Test
 	void matchesWithNotEqualTo() {
 		ZoneOffsetConstraintConfig config = ZoneOffsetConstraintConfig.UNCONSTRAINED.withNotEqualTo(PLUS_2);
 		assertTrue(config.matches(PLUS_5).isSuccess());
 		assertTrue(config.matches(PLUS_2).isError());
 	}
-
+	
 	@Test
 	void matchesWithIn() {
 		ZoneOffsetConstraintConfig config = ZoneOffsetConstraintConfig.UNCONSTRAINED.withIn(List.of(UTC, PLUS_2));
@@ -385,7 +385,7 @@ class ZoneOffsetConstraintConfigTest {
 		assertTrue(config.matches(PLUS_2).isSuccess());
 		assertTrue(config.matches(PLUS_5).isError());
 	}
-
+	
 	@Test
 	void matchesWithNotIn() {
 		ZoneOffsetConstraintConfig config = ZoneOffsetConstraintConfig.UNCONSTRAINED.withNotIn(List.of(UTC, PLUS_2));
@@ -393,61 +393,51 @@ class ZoneOffsetConstraintConfigTest {
 		assertTrue(config.matches(UTC).isError());
 		assertTrue(config.matches(PLUS_2).isError());
 	}
-
+	
 	@Test
 	void matchesWithGreaterThan() {
-		// Natural ordering: PLUS_5 < PLUS_2 < UTC < MINUS_5 < MINUS_8
-		// Greater than UTC means values that come after UTC in natural order
 		ZoneOffsetConstraintConfig config = ZoneOffsetConstraintConfig.UNCONSTRAINED.withGreaterThan(UTC);
 		assertTrue(config.matches(MINUS_5).isSuccess());
 		assertTrue(config.matches(MINUS_8).isSuccess());
 		assertTrue(config.matches(UTC).isError());
 		assertTrue(config.matches(PLUS_2).isError());
 	}
-
+	
 	@Test
 	void matchesWithGreaterThanOrEqual() {
-		// Natural ordering: PLUS_5 < PLUS_2 < UTC < MINUS_5 < MINUS_8
 		ZoneOffsetConstraintConfig config = ZoneOffsetConstraintConfig.UNCONSTRAINED.withGreaterThanOrEqual(UTC);
 		assertTrue(config.matches(UTC).isSuccess());
 		assertTrue(config.matches(MINUS_5).isSuccess());
 		assertTrue(config.matches(PLUS_2).isError());
 	}
-
+	
 	@Test
 	void matchesWithLessThan() {
-		// Natural ordering: PLUS_5 < PLUS_2 < UTC < MINUS_5 < MINUS_8
-		// Less than UTC means values that come before UTC in natural order
 		ZoneOffsetConstraintConfig config = ZoneOffsetConstraintConfig.UNCONSTRAINED.withLessThan(UTC);
 		assertTrue(config.matches(PLUS_2).isSuccess());
 		assertTrue(config.matches(PLUS_5).isSuccess());
 		assertTrue(config.matches(UTC).isError());
 	}
-
+	
 	@Test
 	void matchesWithLessThanOrEqual() {
-		// Natural ordering: PLUS_5 < PLUS_2 < UTC < MINUS_5 < MINUS_8
 		ZoneOffsetConstraintConfig config = ZoneOffsetConstraintConfig.UNCONSTRAINED.withLessThanOrEqual(UTC);
 		assertTrue(config.matches(UTC).isSuccess());
 		assertTrue(config.matches(PLUS_2).isSuccess());
 		assertTrue(config.matches(MINUS_5).isError());
 	}
-
+	
 	@Test
 	void matchesWithBetween() {
-		// Natural ordering: PLUS_5 < PLUS_2 < UTC < MINUS_5 < MINUS_8
-		// Between PLUS_2 (min, exclusive) and MINUS_5 (max, exclusive)
 		ZoneOffsetConstraintConfig config = ZoneOffsetConstraintConfig.UNCONSTRAINED.withBetween(PLUS_2, MINUS_5);
 		assertTrue(config.matches(UTC).isSuccess());
 		assertTrue(config.matches(PLUS_2).isError());
 		assertTrue(config.matches(MINUS_5).isError());
 		assertTrue(config.matches(PLUS_5).isError());
 	}
-
+	
 	@Test
 	void matchesWithBetweenOrEqual() {
-		// Natural ordering: PLUS_5 < PLUS_2 < UTC < MINUS_5 < MINUS_8
-		// Between PLUS_2 (min, inclusive) and MINUS_5 (max, inclusive)
 		ZoneOffsetConstraintConfig config = ZoneOffsetConstraintConfig.UNCONSTRAINED.withBetweenOrEqual(PLUS_2, MINUS_5);
 		assertTrue(config.matches(PLUS_2).isSuccess());
 		assertTrue(config.matches(UTC).isSuccess());
@@ -455,7 +445,7 @@ class ZoneOffsetConstraintConfigTest {
 		assertTrue(config.matches(PLUS_5).isError());
 		assertTrue(config.matches(MINUS_8).isError());
 	}
-
+	
 	@Test
 	void matchesWithPositive() {
 		ZoneOffsetConstraintConfig config = ZoneOffsetConstraintConfig.UNCONSTRAINED.withPositive();
@@ -464,7 +454,7 @@ class ZoneOffsetConstraintConfigTest {
 		assertTrue(config.matches(UTC).isError());
 		assertTrue(config.matches(MINUS_5).isError());
 	}
-
+	
 	@Test
 	void matchesWithNonPositive() {
 		ZoneOffsetConstraintConfig config = ZoneOffsetConstraintConfig.UNCONSTRAINED.withNonPositive();
@@ -472,7 +462,7 @@ class ZoneOffsetConstraintConfigTest {
 		assertTrue(config.matches(MINUS_5).isSuccess());
 		assertTrue(config.matches(PLUS_2).isError());
 	}
-
+	
 	@Test
 	void matchesWithNegative() {
 		ZoneOffsetConstraintConfig config = ZoneOffsetConstraintConfig.UNCONSTRAINED.withNegative();
@@ -481,7 +471,7 @@ class ZoneOffsetConstraintConfigTest {
 		assertTrue(config.matches(UTC).isError());
 		assertTrue(config.matches(PLUS_2).isError());
 	}
-
+	
 	@Test
 	void matchesWithNonNegative() {
 		ZoneOffsetConstraintConfig config = ZoneOffsetConstraintConfig.UNCONSTRAINED.withNonNegative();
@@ -489,7 +479,7 @@ class ZoneOffsetConstraintConfigTest {
 		assertTrue(config.matches(PLUS_2).isSuccess());
 		assertTrue(config.matches(MINUS_5).isError());
 	}
-
+	
 	@Test
 	void matchesWithZero() {
 		ZoneOffsetConstraintConfig config = ZoneOffsetConstraintConfig.UNCONSTRAINED.withZero();
@@ -497,7 +487,7 @@ class ZoneOffsetConstraintConfigTest {
 		assertTrue(config.matches(PLUS_2).isError());
 		assertTrue(config.matches(MINUS_5).isError());
 	}
-
+	
 	@Test
 	void matchesWithNonZero() {
 		ZoneOffsetConstraintConfig config = ZoneOffsetConstraintConfig.UNCONSTRAINED.withNonZero();
@@ -505,7 +495,7 @@ class ZoneOffsetConstraintConfigTest {
 		assertTrue(config.matches(MINUS_5).isSuccess());
 		assertTrue(config.matches(UTC).isError());
 	}
-
+	
 	@Test
 	void matchesWithHoursConstraint() {
 		NumericFieldConstraintConfig hoursConfig = NumericFieldConstraintConfig.UNCONSTRAINED.withBetweenOrEqual(-2, 2);
@@ -515,23 +505,21 @@ class ZoneOffsetConstraintConfigTest {
 		assertTrue(config.matches(PLUS_5).isError());
 		assertTrue(config.matches(MINUS_5).isError());
 	}
-
+	
 	@Test
 	void matchesWithMultipleConstraints() {
-		// Natural ordering: PLUS_5 < PLUS_2 < UTC < MINUS_5 < MINUS_8
-		// Range: >= PLUS_2 AND <= MINUS_5, excluding UTC
 		ZoneOffsetConstraintConfig config = ZoneOffsetConstraintConfig.UNCONSTRAINED
 			.withGreaterThanOrEqual(PLUS_2)
 			.withLessThanOrEqual(MINUS_5)
 			.withNotIn(List.of(UTC));
-
+		
 		assertTrue(config.matches(PLUS_2).isSuccess());
 		assertTrue(config.matches(MINUS_5).isSuccess());
-		assertTrue(config.matches(UTC).isError()); // excluded by notIn
-		assertTrue(config.matches(PLUS_5).isError()); // outside range (< PLUS_2)
-		assertTrue(config.matches(MINUS_8).isError()); // outside range (> MINUS_5)
+		assertTrue(config.matches(UTC).isError());
+		assertTrue(config.matches(PLUS_5).isError());
+		assertTrue(config.matches(MINUS_8).isError());
 	}
-
+	
 	@Test
 	void matchesWithNullValue() {
 		ZoneOffsetConstraintConfig config = ZoneOffsetConstraintConfig.UNCONSTRAINED;

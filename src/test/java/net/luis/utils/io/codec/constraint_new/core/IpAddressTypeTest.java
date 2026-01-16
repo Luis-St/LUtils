@@ -18,9 +18,9 @@
 
 package net.luis.utils.io.codec.constraint_new.core;
 
-import static org.junit.jupiter.api.Assertions.*;
-
 import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * Test class for {@link IpAddressType}.<br>
@@ -28,7 +28,7 @@ import org.junit.jupiter.api.Test;
  * @author Luis-St
  */
 class IpAddressTypeTest {
-
+	
 	@Test
 	void valuesContainsAllConstants() {
 		IpAddressType[] values = IpAddressType.values();
@@ -41,7 +41,7 @@ class IpAddressTypeTest {
 		assertEquals(IpAddressType.BROADCAST, values[5]);
 		assertEquals(IpAddressType.UNSPECIFIED, values[6]);
 	}
-
+	
 	@Test
 	void valueOfReturnsCorrectConstant() {
 		assertEquals(IpAddressType.PUBLIC, IpAddressType.valueOf("PUBLIC"));
@@ -52,7 +52,7 @@ class IpAddressTypeTest {
 		assertEquals(IpAddressType.BROADCAST, IpAddressType.valueOf("BROADCAST"));
 		assertEquals(IpAddressType.UNSPECIFIED, IpAddressType.valueOf("UNSPECIFIED"));
 	}
-
+	
 	@Test
 	void ordinalValues() {
 		assertEquals(0, IpAddressType.PUBLIC.ordinal());

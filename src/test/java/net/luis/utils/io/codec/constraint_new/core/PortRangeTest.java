@@ -18,9 +18,9 @@
 
 package net.luis.utils.io.codec.constraint_new.core;
 
-import static org.junit.jupiter.api.Assertions.*;
-
 import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * Test class for {@link PortRange}.<br>
@@ -28,7 +28,7 @@ import org.junit.jupiter.api.Test;
  * @author Luis-St
  */
 class PortRangeTest {
-
+	
 	@Test
 	void valuesContainsAllConstants() {
 		PortRange[] values = PortRange.values();
@@ -37,7 +37,7 @@ class PortRangeTest {
 		assertEquals(PortRange.REGISTERED, values[1]);
 		assertEquals(PortRange.DYNAMIC, values[2]);
 	}
-
+	
 	@Test
 	void fromPortForSystemRange() {
 		assertEquals(PortRange.SYSTEM, PortRange.fromPort(0));
@@ -46,13 +46,13 @@ class PortRangeTest {
 		assertEquals(PortRange.SYSTEM, PortRange.fromPort(512));
 		assertEquals(PortRange.SYSTEM, PortRange.fromPort(1023));
 	}
-
+	
 	@Test
 	void fromPortForSystemRangeBoundary() {
 		assertEquals(PortRange.SYSTEM, PortRange.fromPort(0));
 		assertEquals(PortRange.SYSTEM, PortRange.fromPort(1023));
 	}
-
+	
 	@Test
 	void fromPortForRegisteredRange() {
 		assertEquals(PortRange.REGISTERED, PortRange.fromPort(1024));
@@ -61,13 +61,13 @@ class PortRangeTest {
 		assertEquals(PortRange.REGISTERED, PortRange.fromPort(27017));
 		assertEquals(PortRange.REGISTERED, PortRange.fromPort(49151));
 	}
-
+	
 	@Test
 	void fromPortForRegisteredRangeBoundary() {
 		assertEquals(PortRange.REGISTERED, PortRange.fromPort(1024));
 		assertEquals(PortRange.REGISTERED, PortRange.fromPort(49151));
 	}
-
+	
 	@Test
 	void fromPortForDynamicRange() {
 		assertEquals(PortRange.DYNAMIC, PortRange.fromPort(49152));
@@ -76,20 +76,20 @@ class PortRangeTest {
 		assertEquals(PortRange.DYNAMIC, PortRange.fromPort(60000));
 		assertEquals(PortRange.DYNAMIC, PortRange.fromPort(65535));
 	}
-
+	
 	@Test
 	void fromPortForDynamicRangeBoundary() {
 		assertEquals(PortRange.DYNAMIC, PortRange.fromPort(49152));
 		assertEquals(PortRange.DYNAMIC, PortRange.fromPort(65535));
 	}
-
+	
 	@Test
 	void fromPortWithNegativePort() {
 		assertThrows(IllegalArgumentException.class, () -> PortRange.fromPort(-1));
 		assertThrows(IllegalArgumentException.class, () -> PortRange.fromPort(-100));
 		assertThrows(IllegalArgumentException.class, () -> PortRange.fromPort(Integer.MIN_VALUE));
 	}
-
+	
 	@Test
 	void fromPortWithPortTooHigh() {
 		assertThrows(IllegalArgumentException.class, () -> PortRange.fromPort(65536));

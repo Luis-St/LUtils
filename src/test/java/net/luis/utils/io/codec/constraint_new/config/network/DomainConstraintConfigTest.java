@@ -34,7 +34,7 @@ import static org.junit.jupiter.api.Assertions.*;
  * @author Luis-St
  */
 class DomainConstraintConfigTest {
-
+	
 	@Test
 	void constructor() {
 		assertDoesNotThrow(() -> DomainConstraintConfig.UNCONSTRAINED);
@@ -44,7 +44,7 @@ class DomainConstraintConfigTest {
 			Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty()
 		));
 	}
-
+	
 	@Test
 	void constructorNullChecks() {
 		assertThrows(NullPointerException.class, () -> new DomainConstraintConfig(
@@ -58,7 +58,7 @@ class DomainConstraintConfigTest {
 			Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty()
 		));
 	}
-
+	
 	@Test
 	void constructorEmptyInSet() {
 		assertThrows(IllegalArgumentException.class, () -> new DomainConstraintConfig(
@@ -67,7 +67,7 @@ class DomainConstraintConfigTest {
 			Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty()
 		));
 	}
-
+	
 	@Test
 	void constructorMinMaxLengthValidation() {
 		assertThrows(IllegalArgumentException.class, () -> new DomainConstraintConfig(
@@ -76,7 +76,7 @@ class DomainConstraintConfigTest {
 			Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty()
 		));
 	}
-
+	
 	@Test
 	void constructorRootAndSubDomainMutuallyExclusive() {
 		assertThrows(IllegalArgumentException.class, () -> new DomainConstraintConfig(
@@ -85,7 +85,7 @@ class DomainConstraintConfigTest {
 			Optional.empty(), Optional.of(Unit.INSTANCE), Optional.of(Unit.INSTANCE), Optional.empty()
 		));
 	}
-
+	
 	@Test
 	void unconstrained() {
 		DomainConstraintConfig config = DomainConstraintConfig.UNCONSTRAINED;
@@ -96,246 +96,246 @@ class DomainConstraintConfigTest {
 		assertTrue(config.subDomain().isEmpty());
 		assertTrue(config.custom().isEmpty());
 	}
-
+	
 	@Test
 	void withEqualTo() {
 		DomainConstraintConfig config = DomainConstraintConfig.UNCONSTRAINED.withEqualTo("example.com");
-
+		
 		assertTrue(config.equalTo().isPresent());
 		assertEquals("example.com", config.equalTo().get().getFirst());
 		assertFalse(config.equalTo().get().getSecond());
 	}
-
+	
 	@Test
 	void withEqualToNull() {
 		assertThrows(NullPointerException.class, () -> DomainConstraintConfig.UNCONSTRAINED.withEqualTo(null));
 	}
-
+	
 	@Test
 	void withNotEqualTo() {
 		DomainConstraintConfig config = DomainConstraintConfig.UNCONSTRAINED.withNotEqualTo("blocked.com");
-
+		
 		assertTrue(config.equalTo().isPresent());
 		assertEquals("blocked.com", config.equalTo().get().getFirst());
 		assertTrue(config.equalTo().get().getSecond());
 	}
-
+	
 	@Test
 	void withIn() {
 		DomainConstraintConfig config = DomainConstraintConfig.UNCONSTRAINED.withIn(List.of("example.com", "test.com"));
-
+		
 		assertTrue(config.in().isPresent());
 		assertEquals(2, config.in().get().getFirst().size());
 		assertFalse(config.in().get().getSecond());
 	}
-
+	
 	@Test
 	void withNotIn() {
 		DomainConstraintConfig config = DomainConstraintConfig.UNCONSTRAINED.withNotIn(List.of("blocked.com"));
-
+		
 		assertTrue(config.in().isPresent());
 		assertTrue(config.in().get().getSecond());
 	}
-
+	
 	@Test
 	void withMinLength() {
 		DomainConstraintConfig config = DomainConstraintConfig.UNCONSTRAINED.withMinLength(5);
-
+		
 		assertTrue(config.minLength().isPresent());
 		assertEquals(5, config.minLength().get().getFirst());
 	}
-
+	
 	@Test
 	void withMaxLength() {
 		DomainConstraintConfig config = DomainConstraintConfig.UNCONSTRAINED.withMaxLength(253);
-
+		
 		assertTrue(config.maxLength().isPresent());
 		assertEquals(253, config.maxLength().get().getFirst());
 	}
-
+	
 	@Test
 	void withExactLength() {
 		DomainConstraintConfig config = DomainConstraintConfig.UNCONSTRAINED.withExactLength(11);
-
+		
 		assertTrue(config.minLength().isPresent());
 		assertTrue(config.maxLength().isPresent());
 		assertEquals(11, config.minLength().get().getFirst());
 		assertEquals(11, config.maxLength().get().getFirst());
 	}
-
+	
 	@Test
 	void withLengthBetween() {
 		DomainConstraintConfig config = DomainConstraintConfig.UNCONSTRAINED.withLengthBetween(5, 50);
-
+		
 		assertTrue(config.minLength().isPresent());
 		assertTrue(config.maxLength().isPresent());
 		assertEquals(5, config.minLength().get().getFirst());
 		assertEquals(50, config.maxLength().get().getFirst());
 	}
-
+	
 	@Test
 	void withStartsWith() {
 		DomainConstraintConfig config = DomainConstraintConfig.UNCONSTRAINED.withStartsWith("www.");
-
+		
 		assertTrue(config.startsWith().isPresent());
 		assertEquals("www.", config.startsWith().get().getFirst());
 		assertFalse(config.startsWith().get().getSecond());
 	}
-
+	
 	@Test
 	void withNotStartsWith() {
 		DomainConstraintConfig config = DomainConstraintConfig.UNCONSTRAINED.withNotStartsWith("test.");
-
+		
 		assertTrue(config.startsWith().isPresent());
 		assertTrue(config.startsWith().get().getSecond());
 	}
-
+	
 	@Test
 	void withStartsWithAny() {
 		DomainConstraintConfig config = DomainConstraintConfig.UNCONSTRAINED.withStartsWithAny(List.of("www.", "api."));
-
+		
 		assertTrue(config.startsWithAny().isPresent());
 		assertEquals(2, config.startsWithAny().get().getFirst().size());
 		assertFalse(config.startsWithAny().get().getSecond());
 	}
-
+	
 	@Test
 	void withContains() {
 		DomainConstraintConfig config = DomainConstraintConfig.UNCONSTRAINED.withContains("example");
-
+		
 		assertTrue(config.contains().isPresent());
 		assertEquals("example", config.contains().get().getFirst());
 	}
-
+	
 	@Test
 	void withEndsWith() {
 		DomainConstraintConfig config = DomainConstraintConfig.UNCONSTRAINED.withEndsWith(".com");
-
+		
 		assertTrue(config.endsWith().isPresent());
 		assertEquals(".com", config.endsWith().get().getFirst());
 		assertFalse(config.endsWith().get().getSecond());
 	}
-
+	
 	@Test
 	void withNotEndsWith() {
 		DomainConstraintConfig config = DomainConstraintConfig.UNCONSTRAINED.withNotEndsWith(".xyz");
-
+		
 		assertTrue(config.endsWith().isPresent());
 		assertTrue(config.endsWith().get().getSecond());
 	}
-
+	
 	@Test
 	void withMatchesRegex() {
 		DomainConstraintConfig config = DomainConstraintConfig.UNCONSTRAINED.withMatches("^[a-z]+\\.[a-z]+$");
-
+		
 		assertTrue(config.matches().isPresent());
 		assertFalse(config.matches().get().getSecond());
 	}
-
+	
 	@Test
 	void withMatchesPattern() {
 		Pattern pattern = Pattern.compile("^[a-z]+\\.[a-z]+$");
 		DomainConstraintConfig config = DomainConstraintConfig.UNCONSTRAINED.withMatches(pattern);
-
+		
 		assertTrue(config.matches().isPresent());
 	}
-
+	
 	@Test
 	void withRootDomain() {
 		DomainConstraintConfig config = DomainConstraintConfig.UNCONSTRAINED.withRootDomain();
-
+		
 		assertTrue(config.rootDomain().isPresent());
 		assertTrue(config.subDomain().isEmpty());
 	}
-
+	
 	@Test
 	void withSubDomain() {
 		DomainConstraintConfig config = DomainConstraintConfig.UNCONSTRAINED.withSubDomain();
-
+		
 		assertTrue(config.subDomain().isPresent());
 		assertTrue(config.rootDomain().isEmpty());
 	}
-
+	
 	@Test
 	void withCustom() {
 		DomainConstraintConfig config = DomainConstraintConfig.UNCONSTRAINED.withCustom(value -> Result.success());
-
+		
 		assertTrue(config.custom().isPresent());
 	}
-
+	
 	@Test
 	void withCustomNull() {
 		assertThrows(NullPointerException.class, () -> DomainConstraintConfig.UNCONSTRAINED.withCustom(null));
 	}
-
+	
 	@Test
 	void matchesUnconstrained() {
 		DomainConstraintConfig config = DomainConstraintConfig.UNCONSTRAINED;
-
+		
 		assertTrue(config.matches("example.com").isSuccess());
 		assertTrue(config.matches("sub.example.com").isSuccess());
 		assertTrue(config.matches("any-string").isSuccess());
 	}
-
+	
 	@Test
 	void matchesWithNull() {
 		assertThrows(NullPointerException.class, () -> DomainConstraintConfig.UNCONSTRAINED.matches(null));
 	}
-
+	
 	@Test
 	void matchesEqualTo() {
 		DomainConstraintConfig config = DomainConstraintConfig.UNCONSTRAINED.withEqualTo("example.com");
-
+		
 		assertTrue(config.matches("example.com").isSuccess());
 		assertTrue(config.matches("other.com").isError());
 	}
-
+	
 	@Test
 	void matchesNotEqualTo() {
 		DomainConstraintConfig config = DomainConstraintConfig.UNCONSTRAINED.withNotEqualTo("blocked.com");
-
+		
 		assertTrue(config.matches("example.com").isSuccess());
 		assertTrue(config.matches("blocked.com").isError());
 	}
-
+	
 	@Test
 	void matchesIn() {
 		DomainConstraintConfig config = DomainConstraintConfig.UNCONSTRAINED.withIn(List.of("example.com", "test.com"));
-
+		
 		assertTrue(config.matches("example.com").isSuccess());
 		assertTrue(config.matches("test.com").isSuccess());
 		assertTrue(config.matches("other.com").isError());
 	}
-
+	
 	@Test
 	void matchesLengthConstraint() {
 		DomainConstraintConfig config = DomainConstraintConfig.UNCONSTRAINED.withLengthBetween(5, 15);
-
+		
 		assertTrue(config.matches("test.com").isSuccess());
 		assertTrue(config.matches("example.com").isSuccess());
 		assertTrue(config.matches("a.io").isError());
 	}
-
+	
 	@Test
 	void matchesStartsWith() {
 		DomainConstraintConfig config = DomainConstraintConfig.UNCONSTRAINED.withStartsWith("www.");
-
+		
 		assertTrue(config.matches("www.example.com").isSuccess());
 		assertTrue(config.matches("example.com").isError());
 	}
-
+	
 	@Test
 	void matchesEndsWith() {
 		DomainConstraintConfig config = DomainConstraintConfig.UNCONSTRAINED.withEndsWith(".com");
-
+		
 		assertTrue(config.matches("example.com").isSuccess());
 		assertTrue(config.matches("example.org").isError());
 	}
-
+	
 	@Test
 	void matchesContains() {
 		DomainConstraintConfig config = DomainConstraintConfig.UNCONSTRAINED.withContains("example");
-
+		
 		assertTrue(config.matches("example.com").isSuccess());
 		assertTrue(config.matches("sub.example.org").isSuccess());
 		assertTrue(config.matches("test.com").isError());

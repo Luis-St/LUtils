@@ -18,9 +18,9 @@
 
 package net.luis.utils.io.codec.constraint_new.core;
 
-import static org.junit.jupiter.api.Assertions.*;
-
 import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * Test class for {@link IpVersion}.<br>
@@ -28,7 +28,7 @@ import org.junit.jupiter.api.Test;
  * @author Luis-St
  */
 class IpVersionTest {
-
+	
 	@Test
 	void valuesContainsAllConstants() {
 		IpVersion[] values = IpVersion.values();
@@ -36,7 +36,7 @@ class IpVersionTest {
 		assertEquals(IpVersion.IPV4, values[0]);
 		assertEquals(IpVersion.IPV6, values[1]);
 	}
-
+	
 	@Test
 	void valueOfReturnsCorrectConstant() {
 		assertEquals(IpVersion.IPV4, IpVersion.valueOf("IPV4"));

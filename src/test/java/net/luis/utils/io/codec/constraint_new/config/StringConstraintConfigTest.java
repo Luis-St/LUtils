@@ -18,15 +18,13 @@
 
 package net.luis.utils.io.codec.constraint_new.config;
 
-import static org.junit.jupiter.api.Assertions.*;
-
-import org.junit.jupiter.api.Test;
-
 import net.luis.utils.util.Pair;
-import net.luis.utils.util.result.Result;
+import org.junit.jupiter.api.Test;
 
 import java.util.*;
 import java.util.regex.Pattern;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * Test class for {@link StringConstraintConfig}.<br>
@@ -34,18 +32,7 @@ import java.util.regex.Pattern;
  * @author Luis-St
  */
 class StringConstraintConfigTest {
-
-	@Test
-	void unconstrained() {
-		StringConstraintConfig config = StringConstraintConfig.UNCONSTRAINED;
-		assertNotNull(config);
-		assertTrue(config.equalTo().isEmpty());
-		assertTrue(config.in().isEmpty());
-		assertTrue(config.minLength().isEmpty());
-		assertTrue(config.maxLength().isEmpty());
-		assertTrue(config.matches("any string").isSuccess());
-	}
-
+	
 	@Test
 	void constructWithNullEqualTo() {
 		assertThrows(NullPointerException.class, () -> new StringConstraintConfig(
@@ -56,7 +43,7 @@ class StringConstraintConfigTest {
 			Optional.empty(), Optional.empty()
 		));
 	}
-
+	
 	@Test
 	void constructWithNullIn() {
 		assertThrows(NullPointerException.class, () -> new StringConstraintConfig(
@@ -67,7 +54,7 @@ class StringConstraintConfigTest {
 			Optional.empty(), Optional.empty()
 		));
 	}
-
+	
 	@Test
 	void constructWithEmptyInSet() {
 		assertThrows(IllegalArgumentException.class, () -> new StringConstraintConfig(
@@ -78,22 +65,22 @@ class StringConstraintConfigTest {
 			Optional.empty(), Optional.empty()
 		));
 	}
-
+	
 	@Test
 	void constructWithNegativeMinLength() {
 		assertThrows(IllegalArgumentException.class, () -> StringConstraintConfig.UNCONSTRAINED.withMinLength(-1));
 	}
-
+	
 	@Test
 	void constructWithNegativeMaxLength() {
 		assertThrows(IllegalArgumentException.class, () -> StringConstraintConfig.UNCONSTRAINED.withMaxLength(-1));
 	}
-
+	
 	@Test
 	void constructWithMinGreaterThanMax() {
 		assertThrows(IllegalArgumentException.class, () -> StringConstraintConfig.UNCONSTRAINED.withLengthBetween(10, 5));
 	}
-
+	
 	@Test
 	void constructWithEqualMinMaxExclusiveBound() {
 		assertThrows(IllegalArgumentException.class, () -> new StringConstraintConfig(
@@ -105,27 +92,38 @@ class StringConstraintConfigTest {
 			Optional.empty(), Optional.empty()
 		));
 	}
-
+	
 	@Test
 	void constructWithBlankAndNotBlank() {
 		assertThrows(IllegalArgumentException.class, () -> StringConstraintConfig.UNCONSTRAINED.withBlank().withNotBlank());
 	}
-
+	
 	@Test
 	void constructWithUpperCaseAndLowerCase() {
 		assertThrows(IllegalArgumentException.class, () -> StringConstraintConfig.UNCONSTRAINED.withUpperCase().withLowerCase());
 	}
-
+	
 	@Test
 	void constructWithBlankAndMinLengthGreaterZero() {
 		assertThrows(IllegalArgumentException.class, () -> StringConstraintConfig.UNCONSTRAINED.withMinLength(1).withBlank());
 	}
-
+	
 	@Test
 	void constructWithNotBlankAndMaxLengthZero() {
 		assertThrows(IllegalArgumentException.class, () -> StringConstraintConfig.UNCONSTRAINED.withMaxLength(0).withNotBlank());
 	}
-
+	
+	@Test
+	void unconstrained() {
+		StringConstraintConfig config = StringConstraintConfig.UNCONSTRAINED;
+		assertNotNull(config);
+		assertTrue(config.equalTo().isEmpty());
+		assertTrue(config.in().isEmpty());
+		assertTrue(config.minLength().isEmpty());
+		assertTrue(config.maxLength().isEmpty());
+		assertTrue(config.matches("any string").isSuccess());
+	}
+	
 	@Test
 	void withEqualTo() {
 		StringConstraintConfig config = StringConstraintConfig.UNCONSTRAINED.withEqualTo("test");
@@ -133,7 +131,7 @@ class StringConstraintConfigTest {
 		assertEquals("test", config.equalTo().get().getFirst());
 		assertFalse(config.equalTo().get().getSecond());
 	}
-
+	
 	@Test
 	void withNotEqualTo() {
 		StringConstraintConfig config = StringConstraintConfig.UNCONSTRAINED.withNotEqualTo("test");
@@ -141,7 +139,7 @@ class StringConstraintConfigTest {
 		assertEquals("test", config.equalTo().get().getFirst());
 		assertTrue(config.equalTo().get().getSecond());
 	}
-
+	
 	@Test
 	void withIn() {
 		StringConstraintConfig config = StringConstraintConfig.UNCONSTRAINED.withIn(List.of("a", "b", "c"));
@@ -149,7 +147,7 @@ class StringConstraintConfigTest {
 		assertEquals(Set.of("a", "b", "c"), config.in().get().getFirst());
 		assertFalse(config.in().get().getSecond());
 	}
-
+	
 	@Test
 	void withNotIn() {
 		StringConstraintConfig config = StringConstraintConfig.UNCONSTRAINED.withNotIn(List.of("x", "y"));
@@ -157,7 +155,7 @@ class StringConstraintConfigTest {
 		assertEquals(Set.of("x", "y"), config.in().get().getFirst());
 		assertTrue(config.in().get().getSecond());
 	}
-
+	
 	@Test
 	void withMinLength() {
 		StringConstraintConfig config = StringConstraintConfig.UNCONSTRAINED.withMinLength(5);
@@ -165,7 +163,7 @@ class StringConstraintConfigTest {
 		assertEquals(5, config.minLength().get().getFirst());
 		assertTrue(config.minLength().get().getSecond());
 	}
-
+	
 	@Test
 	void withMaxLength() {
 		StringConstraintConfig config = StringConstraintConfig.UNCONSTRAINED.withMaxLength(10);
@@ -173,7 +171,7 @@ class StringConstraintConfigTest {
 		assertEquals(10, config.maxLength().get().getFirst());
 		assertTrue(config.maxLength().get().getSecond());
 	}
-
+	
 	@Test
 	void withExactLength() {
 		StringConstraintConfig config = StringConstraintConfig.UNCONSTRAINED.withExactLength(7);
@@ -182,7 +180,7 @@ class StringConstraintConfigTest {
 		assertEquals(7, config.minLength().get().getFirst());
 		assertEquals(7, config.maxLength().get().getFirst());
 	}
-
+	
 	@Test
 	void withLengthBetween() {
 		StringConstraintConfig config = StringConstraintConfig.UNCONSTRAINED.withLengthBetween(3, 8);
@@ -191,7 +189,7 @@ class StringConstraintConfigTest {
 		assertEquals(3, config.minLength().get().getFirst());
 		assertEquals(8, config.maxLength().get().getFirst());
 	}
-
+	
 	@Test
 	void withStartsWith() {
 		StringConstraintConfig config = StringConstraintConfig.UNCONSTRAINED.withStartsWith("pre");
@@ -199,7 +197,7 @@ class StringConstraintConfigTest {
 		assertEquals("pre", config.startsWith().get().getFirst());
 		assertFalse(config.startsWith().get().getSecond());
 	}
-
+	
 	@Test
 	void withNotStartsWith() {
 		StringConstraintConfig config = StringConstraintConfig.UNCONSTRAINED.withNotStartsWith("pre");
@@ -207,7 +205,7 @@ class StringConstraintConfigTest {
 		assertEquals("pre", config.startsWith().get().getFirst());
 		assertTrue(config.startsWith().get().getSecond());
 	}
-
+	
 	@Test
 	void withContains() {
 		StringConstraintConfig config = StringConstraintConfig.UNCONSTRAINED.withContains("mid");
@@ -215,7 +213,7 @@ class StringConstraintConfigTest {
 		assertEquals("mid", config.contains().get().getFirst());
 		assertFalse(config.contains().get().getSecond());
 	}
-
+	
 	@Test
 	void withNotContains() {
 		StringConstraintConfig config = StringConstraintConfig.UNCONSTRAINED.withNotContains("mid");
@@ -223,7 +221,7 @@ class StringConstraintConfigTest {
 		assertEquals("mid", config.contains().get().getFirst());
 		assertTrue(config.contains().get().getSecond());
 	}
-
+	
 	@Test
 	void withEndsWith() {
 		StringConstraintConfig config = StringConstraintConfig.UNCONSTRAINED.withEndsWith("suf");
@@ -231,7 +229,7 @@ class StringConstraintConfigTest {
 		assertEquals("suf", config.endsWith().get().getFirst());
 		assertFalse(config.endsWith().get().getSecond());
 	}
-
+	
 	@Test
 	void withMatchesString() {
 		StringConstraintConfig config = StringConstraintConfig.UNCONSTRAINED.withMatches("[a-z]+");
@@ -239,7 +237,7 @@ class StringConstraintConfigTest {
 		assertEquals("[a-z]+", config.matches().get().getFirst().pattern());
 		assertFalse(config.matches().get().getSecond());
 	}
-
+	
 	@Test
 	void withMatchesPattern() {
 		Pattern pattern = Pattern.compile("[0-9]+");
@@ -248,21 +246,21 @@ class StringConstraintConfigTest {
 		assertSame(pattern, config.matches().get().getFirst());
 		assertFalse(config.matches().get().getSecond());
 	}
-
+	
 	@Test
 	void matchesWithEqualTo() {
 		StringConstraintConfig config = StringConstraintConfig.UNCONSTRAINED.withEqualTo("hello");
 		assertTrue(config.matches("hello").isSuccess());
 		assertTrue(config.matches("world").isError());
 	}
-
+	
 	@Test
 	void matchesWithNotEqualTo() {
 		StringConstraintConfig config = StringConstraintConfig.UNCONSTRAINED.withNotEqualTo("forbidden");
 		assertTrue(config.matches("allowed").isSuccess());
 		assertTrue(config.matches("forbidden").isError());
 	}
-
+	
 	@Test
 	void matchesWithIn() {
 		StringConstraintConfig config = StringConstraintConfig.UNCONSTRAINED.withIn(List.of("a", "b", "c"));
@@ -270,7 +268,7 @@ class StringConstraintConfigTest {
 		assertTrue(config.matches("b").isSuccess());
 		assertTrue(config.matches("d").isError());
 	}
-
+	
 	@Test
 	void matchesWithLength() {
 		StringConstraintConfig config = StringConstraintConfig.UNCONSTRAINED.withLengthBetween(2, 5);
@@ -279,28 +277,28 @@ class StringConstraintConfigTest {
 		assertTrue(config.matches("a").isError());
 		assertTrue(config.matches("abcdef").isError());
 	}
-
+	
 	@Test
 	void matchesWithStartsWith() {
 		StringConstraintConfig config = StringConstraintConfig.UNCONSTRAINED.withStartsWith("pre");
 		assertTrue(config.matches("prefix").isSuccess());
 		assertTrue(config.matches("postfix").isError());
 	}
-
+	
 	@Test
 	void matchesWithContains() {
 		StringConstraintConfig config = StringConstraintConfig.UNCONSTRAINED.withContains("mid");
 		assertTrue(config.matches("amid").isSuccess());
 		assertTrue(config.matches("test").isError());
 	}
-
+	
 	@Test
 	void matchesWithEndsWith() {
 		StringConstraintConfig config = StringConstraintConfig.UNCONSTRAINED.withEndsWith("suf");
 		assertTrue(config.matches("testsuf").isSuccess());
 		assertTrue(config.matches("suffix").isError());
 	}
-
+	
 	@Test
 	void matchesWithPattern() {
 		StringConstraintConfig config = StringConstraintConfig.UNCONSTRAINED.withMatches("[a-z]+");
@@ -308,14 +306,14 @@ class StringConstraintConfigTest {
 		assertTrue(config.matches("ABC").isError());
 		assertTrue(config.matches("123").isError());
 	}
-
+	
 	@Test
 	void matchesWithTrimmed() {
 		StringConstraintConfig config = StringConstraintConfig.UNCONSTRAINED.withTrimmed();
 		assertTrue(config.matches("trimmed").isSuccess());
 		assertTrue(config.matches(" spaces ").isError());
 	}
-
+	
 	@Test
 	void matchesWithBlank() {
 		StringConstraintConfig config = StringConstraintConfig.UNCONSTRAINED.withBlank();
@@ -323,7 +321,7 @@ class StringConstraintConfigTest {
 		assertTrue(config.matches("   ").isSuccess());
 		assertTrue(config.matches("text").isError());
 	}
-
+	
 	@Test
 	void matchesWithNotBlank() {
 		StringConstraintConfig config = StringConstraintConfig.UNCONSTRAINED.withNotBlank();
@@ -331,7 +329,7 @@ class StringConstraintConfigTest {
 		assertTrue(config.matches("").isError());
 		assertTrue(config.matches("   ").isError());
 	}
-
+	
 	@Test
 	void matchesWithUpperCase() {
 		StringConstraintConfig config = StringConstraintConfig.UNCONSTRAINED.withUpperCase();
@@ -339,7 +337,7 @@ class StringConstraintConfigTest {
 		assertTrue(config.matches("Hello").isError());
 		assertTrue(config.matches("hello").isError());
 	}
-
+	
 	@Test
 	void matchesWithLowerCase() {
 		StringConstraintConfig config = StringConstraintConfig.UNCONSTRAINED.withLowerCase();
@@ -347,35 +345,35 @@ class StringConstraintConfigTest {
 		assertTrue(config.matches("Hello").isError());
 		assertTrue(config.matches("HELLO").isError());
 	}
-
+	
 	@Test
 	void matchesWithNumeric() {
 		StringConstraintConfig config = StringConstraintConfig.UNCONSTRAINED.withNumeric();
 		assertTrue(config.matches("12345").isSuccess());
 		assertTrue(config.matches("123a5").isError());
 	}
-
+	
 	@Test
 	void matchesWithAlphabetic() {
 		StringConstraintConfig config = StringConstraintConfig.UNCONSTRAINED.withAlphabetic();
 		assertTrue(config.matches("hello").isSuccess());
 		assertTrue(config.matches("hello1").isError());
 	}
-
+	
 	@Test
 	void matchesWithAlphanumeric() {
 		StringConstraintConfig config = StringConstraintConfig.UNCONSTRAINED.withAlphanumeric();
 		assertTrue(config.matches("hello123").isSuccess());
 		assertTrue(config.matches("hello-123").isError());
 	}
-
+	
 	@Test
 	void matchesWithAscii() {
 		StringConstraintConfig config = StringConstraintConfig.UNCONSTRAINED.withAscii();
 		assertTrue(config.matches("hello").isSuccess());
 		assertTrue(config.matches("hello\u00E9").isError());
 	}
-
+	
 	@Test
 	void matchesWithMultipleConstraints() {
 		StringConstraintConfig config = StringConstraintConfig.UNCONSTRAINED
@@ -383,12 +381,12 @@ class StringConstraintConfigTest {
 			.withMaxLength(10)
 			.withStartsWith("a")
 			.withNotBlank();
-
+		
 		assertTrue(config.matches("abc").isSuccess());
 		assertTrue(config.matches("ab").isError());
 		assertTrue(config.matches("bcd").isError());
 	}
-
+	
 	@Test
 	void matchesWithNullValue() {
 		StringConstraintConfig config = StringConstraintConfig.UNCONSTRAINED;

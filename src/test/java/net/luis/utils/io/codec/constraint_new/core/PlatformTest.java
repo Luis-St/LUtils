@@ -18,9 +18,9 @@
 
 package net.luis.utils.io.codec.constraint_new.core;
 
-import static org.junit.jupiter.api.Assertions.*;
-
 import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * Test class for {@link Platform}.<br>
@@ -28,7 +28,7 @@ import org.junit.jupiter.api.Test;
  * @author Luis-St
  */
 class PlatformTest {
-
+	
 	@Test
 	void valuesContainsAllConstants() {
 		Platform[] values = Platform.values();
@@ -38,7 +38,7 @@ class PlatformTest {
 		assertEquals(Platform.LINUX, values[2]);
 		assertEquals(Platform.POSIX, values[3]);
 	}
-
+	
 	@Test
 	void valueOfReturnsCorrectConstant() {
 		assertEquals(Platform.WINDOWS, Platform.valueOf("WINDOWS"));
@@ -46,7 +46,7 @@ class PlatformTest {
 		assertEquals(Platform.LINUX, Platform.valueOf("LINUX"));
 		assertEquals(Platform.POSIX, Platform.valueOf("POSIX"));
 	}
-
+	
 	@Test
 	void ordinalValues() {
 		assertEquals(0, Platform.WINDOWS.ordinal());

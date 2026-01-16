@@ -35,7 +35,143 @@ import static org.junit.jupiter.api.Assertions.*;
  * @author Luis-St
  */
 class LocalTimeConstraintConfigTest {
-
+	
+	@Test
+	void constructWithNullEqualTo() {
+		assertThrows(NullPointerException.class, () -> new LocalTimeConstraintConfig(
+			null, Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(),
+			Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty()
+		));
+	}
+	
+	@Test
+	void constructWithNullIn() {
+		assertThrows(NullPointerException.class, () -> new LocalTimeConstraintConfig(
+			Optional.empty(), null, Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(),
+			Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty()
+		));
+	}
+	
+	@Test
+	void constructWithNullAfter() {
+		assertThrows(NullPointerException.class, () -> new LocalTimeConstraintConfig(
+			Optional.empty(), Optional.empty(), null, Optional.empty(), Optional.empty(), Optional.empty(),
+			Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty()
+		));
+	}
+	
+	@Test
+	void constructWithNullBefore() {
+		assertThrows(NullPointerException.class, () -> new LocalTimeConstraintConfig(
+			Optional.empty(), Optional.empty(), Optional.empty(), null, Optional.empty(), Optional.empty(),
+			Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty()
+		));
+	}
+	
+	@Test
+	void constructWithNullWithinLast() {
+		assertThrows(NullPointerException.class, () -> new LocalTimeConstraintConfig(
+			Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), null, Optional.empty(),
+			Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty()
+		));
+	}
+	
+	@Test
+	void constructWithNullWithinNext() {
+		assertThrows(NullPointerException.class, () -> new LocalTimeConstraintConfig(
+			Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), null,
+			Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty()
+		));
+	}
+	
+	@Test
+	void constructWithNullHour() {
+		assertThrows(NullPointerException.class, () -> new LocalTimeConstraintConfig(
+			Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(),
+			null, Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty()
+		));
+	}
+	
+	@Test
+	void constructWithNullMinute() {
+		assertThrows(NullPointerException.class, () -> new LocalTimeConstraintConfig(
+			Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(),
+			Optional.empty(), null, Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty()
+		));
+	}
+	
+	@Test
+	void constructWithNullSecond() {
+		assertThrows(NullPointerException.class, () -> new LocalTimeConstraintConfig(
+			Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(),
+			Optional.empty(), Optional.empty(), null, Optional.empty(), Optional.empty(), Optional.empty()
+		));
+	}
+	
+	@Test
+	void constructWithNullMillisecond() {
+		assertThrows(NullPointerException.class, () -> new LocalTimeConstraintConfig(
+			Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(),
+			Optional.empty(), Optional.empty(), Optional.empty(), null, Optional.empty(), Optional.empty()
+		));
+	}
+	
+	@Test
+	void constructWithNullNanosecond() {
+		assertThrows(NullPointerException.class, () -> new LocalTimeConstraintConfig(
+			Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(),
+			Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), null, Optional.empty()
+		));
+	}
+	
+	@Test
+	void constructWithNullCustom() {
+		assertThrows(NullPointerException.class, () -> new LocalTimeConstraintConfig(
+			Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(),
+			Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), null
+		));
+	}
+	
+	@Test
+	void constructWithEmptyInSet() {
+		assertThrows(IllegalArgumentException.class, () -> new LocalTimeConstraintConfig(
+			Optional.empty(), Optional.of(Pair.of(Set.of(), false)), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(),
+			Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty()
+		));
+	}
+	
+	@Test
+	void constructWithNegativeWithinLast() {
+		assertThrows(IllegalArgumentException.class, () -> new LocalTimeConstraintConfig(
+			Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.of(Duration.ofHours(-1)), Optional.empty(),
+			Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty()
+		));
+	}
+	
+	@Test
+	void constructWithZeroWithinLast() {
+		assertThrows(IllegalArgumentException.class, () -> new LocalTimeConstraintConfig(
+			Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.of(Duration.ZERO), Optional.empty(),
+			Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty()
+		));
+	}
+	
+	@Test
+	void constructWithNegativeWithinNext() {
+		assertThrows(IllegalArgumentException.class, () -> new LocalTimeConstraintConfig(
+			Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.of(Duration.ofHours(-1)),
+			Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty()
+		));
+	}
+	
+	@Test
+	void constructWithZeroWithinNext() {
+		assertThrows(IllegalArgumentException.class, () -> new LocalTimeConstraintConfig(
+			Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.of(Duration.ZERO),
+			Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty()
+		));
+	}
+	
 	@Test
 	void unconstrained() {
 		LocalTimeConstraintConfig config = LocalTimeConstraintConfig.UNCONSTRAINED;
@@ -54,143 +190,7 @@ class LocalTimeConstraintConfigTest {
 		assertTrue(config.custom().isEmpty());
 		assertTrue(config.matches(LocalTime.now()).isSuccess());
 	}
-
-	@Test
-	void constructWithNullEqualTo() {
-		assertThrows(NullPointerException.class, () -> new LocalTimeConstraintConfig(
-			null, Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(),
-			Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty()
-		));
-	}
-
-	@Test
-	void constructWithNullIn() {
-		assertThrows(NullPointerException.class, () -> new LocalTimeConstraintConfig(
-			Optional.empty(), null, Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(),
-			Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty()
-		));
-	}
-
-	@Test
-	void constructWithNullAfter() {
-		assertThrows(NullPointerException.class, () -> new LocalTimeConstraintConfig(
-			Optional.empty(), Optional.empty(), null, Optional.empty(), Optional.empty(), Optional.empty(),
-			Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty()
-		));
-	}
-
-	@Test
-	void constructWithNullBefore() {
-		assertThrows(NullPointerException.class, () -> new LocalTimeConstraintConfig(
-			Optional.empty(), Optional.empty(), Optional.empty(), null, Optional.empty(), Optional.empty(),
-			Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty()
-		));
-	}
-
-	@Test
-	void constructWithNullWithinLast() {
-		assertThrows(NullPointerException.class, () -> new LocalTimeConstraintConfig(
-			Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), null, Optional.empty(),
-			Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty()
-		));
-	}
-
-	@Test
-	void constructWithNullWithinNext() {
-		assertThrows(NullPointerException.class, () -> new LocalTimeConstraintConfig(
-			Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), null,
-			Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty()
-		));
-	}
-
-	@Test
-	void constructWithNullHour() {
-		assertThrows(NullPointerException.class, () -> new LocalTimeConstraintConfig(
-			Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(),
-			null, Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty()
-		));
-	}
-
-	@Test
-	void constructWithNullMinute() {
-		assertThrows(NullPointerException.class, () -> new LocalTimeConstraintConfig(
-			Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(),
-			Optional.empty(), null, Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty()
-		));
-	}
-
-	@Test
-	void constructWithNullSecond() {
-		assertThrows(NullPointerException.class, () -> new LocalTimeConstraintConfig(
-			Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(),
-			Optional.empty(), Optional.empty(), null, Optional.empty(), Optional.empty(), Optional.empty()
-		));
-	}
-
-	@Test
-	void constructWithNullMillisecond() {
-		assertThrows(NullPointerException.class, () -> new LocalTimeConstraintConfig(
-			Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(),
-			Optional.empty(), Optional.empty(), Optional.empty(), null, Optional.empty(), Optional.empty()
-		));
-	}
-
-	@Test
-	void constructWithNullNanosecond() {
-		assertThrows(NullPointerException.class, () -> new LocalTimeConstraintConfig(
-			Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(),
-			Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), null, Optional.empty()
-		));
-	}
-
-	@Test
-	void constructWithNullCustom() {
-		assertThrows(NullPointerException.class, () -> new LocalTimeConstraintConfig(
-			Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(),
-			Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), null
-		));
-	}
-
-	@Test
-	void constructWithEmptyInSet() {
-		assertThrows(IllegalArgumentException.class, () -> new LocalTimeConstraintConfig(
-			Optional.empty(), Optional.of(Pair.of(Set.of(), false)), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(),
-			Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty()
-		));
-	}
-
-	@Test
-	void constructWithNegativeWithinLast() {
-		assertThrows(IllegalArgumentException.class, () -> new LocalTimeConstraintConfig(
-			Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.of(Duration.ofHours(-1)), Optional.empty(),
-			Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty()
-		));
-	}
-
-	@Test
-	void constructWithZeroWithinLast() {
-		assertThrows(IllegalArgumentException.class, () -> new LocalTimeConstraintConfig(
-			Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.of(Duration.ZERO), Optional.empty(),
-			Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty()
-		));
-	}
-
-	@Test
-	void constructWithNegativeWithinNext() {
-		assertThrows(IllegalArgumentException.class, () -> new LocalTimeConstraintConfig(
-			Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.of(Duration.ofHours(-1)),
-			Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty()
-		));
-	}
-
-	@Test
-	void constructWithZeroWithinNext() {
-		assertThrows(IllegalArgumentException.class, () -> new LocalTimeConstraintConfig(
-			Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.of(Duration.ZERO),
-			Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty()
-		));
-	}
-
+	
 	@Test
 	void withEqualTo() {
 		LocalTime time = LocalTime.of(10, 30, 0);
@@ -199,7 +199,7 @@ class LocalTimeConstraintConfigTest {
 		assertEquals(time, config.equalTo().get().getFirst());
 		assertFalse(config.equalTo().get().getSecond());
 	}
-
+	
 	@Test
 	void withNotEqualTo() {
 		LocalTime time = LocalTime.of(10, 30, 0);
@@ -208,7 +208,7 @@ class LocalTimeConstraintConfigTest {
 		assertEquals(time, config.equalTo().get().getFirst());
 		assertTrue(config.equalTo().get().getSecond());
 	}
-
+	
 	@Test
 	void withIn() {
 		LocalTime time1 = LocalTime.of(10, 0, 0);
@@ -218,7 +218,7 @@ class LocalTimeConstraintConfigTest {
 		assertEquals(Set.of(time1, time2), config.in().get().getFirst());
 		assertFalse(config.in().get().getSecond());
 	}
-
+	
 	@Test
 	void withNotIn() {
 		LocalTime time1 = LocalTime.of(10, 0, 0);
@@ -228,7 +228,7 @@ class LocalTimeConstraintConfigTest {
 		assertEquals(Set.of(time1, time2), config.in().get().getFirst());
 		assertTrue(config.in().get().getSecond());
 	}
-
+	
 	@Test
 	void withAfter() {
 		LocalTime time = LocalTime.of(9, 0, 0);
@@ -237,7 +237,7 @@ class LocalTimeConstraintConfigTest {
 		assertEquals(time, config.after().get().getFirst());
 		assertFalse(config.after().get().getSecond());
 	}
-
+	
 	@Test
 	void withAfterOrEqual() {
 		LocalTime time = LocalTime.of(9, 0, 0);
@@ -246,7 +246,7 @@ class LocalTimeConstraintConfigTest {
 		assertEquals(time, config.after().get().getFirst());
 		assertTrue(config.after().get().getSecond());
 	}
-
+	
 	@Test
 	void withBefore() {
 		LocalTime time = LocalTime.of(17, 0, 0);
@@ -255,7 +255,7 @@ class LocalTimeConstraintConfigTest {
 		assertEquals(time, config.before().get().getFirst());
 		assertFalse(config.before().get().getSecond());
 	}
-
+	
 	@Test
 	void withBeforeOrEqual() {
 		LocalTime time = LocalTime.of(17, 0, 0);
@@ -264,7 +264,7 @@ class LocalTimeConstraintConfigTest {
 		assertEquals(time, config.before().get().getFirst());
 		assertTrue(config.before().get().getSecond());
 	}
-
+	
 	@Test
 	void withBetween() {
 		LocalTime after = LocalTime.of(9, 0, 0);
@@ -277,7 +277,7 @@ class LocalTimeConstraintConfigTest {
 		assertFalse(config.after().get().getSecond());
 		assertFalse(config.before().get().getSecond());
 	}
-
+	
 	@Test
 	void withBetweenOrEqual() {
 		LocalTime after = LocalTime.of(9, 0, 0);
@@ -290,21 +290,21 @@ class LocalTimeConstraintConfigTest {
 		assertTrue(config.after().get().getSecond());
 		assertTrue(config.before().get().getSecond());
 	}
-
+	
 	@Test
 	void withWithinLast() {
 		LocalTimeConstraintConfig config = LocalTimeConstraintConfig.UNCONSTRAINED.withWithinLast(Duration.ofHours(2));
 		assertTrue(config.withinLast().isPresent());
 		assertEquals(Duration.ofHours(2), config.withinLast().get());
 	}
-
+	
 	@Test
 	void withWithinNext() {
 		LocalTimeConstraintConfig config = LocalTimeConstraintConfig.UNCONSTRAINED.withWithinNext(Duration.ofHours(2));
 		assertTrue(config.withinNext().isPresent());
 		assertEquals(Duration.ofHours(2), config.withinNext().get());
 	}
-
+	
 	@Test
 	void withHour() {
 		NumericFieldConstraintConfig hourConfig = NumericFieldConstraintConfig.UNCONSTRAINED.withBetweenOrEqual(9, 17);
@@ -312,7 +312,7 @@ class LocalTimeConstraintConfigTest {
 		assertTrue(config.hour().isPresent());
 		assertEquals(hourConfig, config.hour().get());
 	}
-
+	
 	@Test
 	void withMinute() {
 		NumericFieldConstraintConfig minuteConfig = NumericFieldConstraintConfig.UNCONSTRAINED.withBetweenOrEqual(0, 59);
@@ -320,7 +320,7 @@ class LocalTimeConstraintConfigTest {
 		assertTrue(config.minute().isPresent());
 		assertEquals(minuteConfig, config.minute().get());
 	}
-
+	
 	@Test
 	void withSecond() {
 		NumericFieldConstraintConfig secondConfig = NumericFieldConstraintConfig.UNCONSTRAINED.withBetweenOrEqual(0, 59);
@@ -328,7 +328,7 @@ class LocalTimeConstraintConfigTest {
 		assertTrue(config.second().isPresent());
 		assertEquals(secondConfig, config.second().get());
 	}
-
+	
 	@Test
 	void withMillisecond() {
 		NumericFieldConstraintConfig millisecondConfig = NumericFieldConstraintConfig.UNCONSTRAINED.withBetweenOrEqual(0, 999);
@@ -336,7 +336,7 @@ class LocalTimeConstraintConfigTest {
 		assertTrue(config.millisecond().isPresent());
 		assertEquals(millisecondConfig, config.millisecond().get());
 	}
-
+	
 	@Test
 	void withNanosecond() {
 		NumericFieldConstraintConfig nanosecondConfig = NumericFieldConstraintConfig.UNCONSTRAINED.withGreaterThanOrEqual(0);
@@ -344,13 +344,13 @@ class LocalTimeConstraintConfigTest {
 		assertTrue(config.nanosecond().isPresent());
 		assertEquals(nanosecondConfig, config.nanosecond().get());
 	}
-
+	
 	@Test
 	void withCustom() {
 		LocalTimeConstraintConfig config = LocalTimeConstraintConfig.UNCONSTRAINED.withCustom(t -> t.getHour() >= 9 && t.getHour() <= 17 ? Result.success() : Result.error("Time must be between 9 and 17"));
 		assertTrue(config.custom().isPresent());
 	}
-
+	
 	@Test
 	void matchesWithEqualTo() {
 		LocalTime time = LocalTime.of(10, 30, 0);
@@ -358,7 +358,7 @@ class LocalTimeConstraintConfigTest {
 		assertTrue(config.matches(time).isSuccess());
 		assertTrue(config.matches(time.plusSeconds(1)).isError());
 	}
-
+	
 	@Test
 	void matchesWithNotEqualTo() {
 		LocalTime time = LocalTime.of(10, 30, 0);
@@ -366,7 +366,7 @@ class LocalTimeConstraintConfigTest {
 		assertTrue(config.matches(time.plusSeconds(1)).isSuccess());
 		assertTrue(config.matches(time).isError());
 	}
-
+	
 	@Test
 	void matchesWithIn() {
 		LocalTime time1 = LocalTime.of(10, 0, 0);
@@ -376,7 +376,7 @@ class LocalTimeConstraintConfigTest {
 		assertTrue(config.matches(time2).isSuccess());
 		assertTrue(config.matches(LocalTime.of(11, 0, 0)).isError());
 	}
-
+	
 	@Test
 	void matchesWithNotIn() {
 		LocalTime time1 = LocalTime.of(10, 0, 0);
@@ -385,7 +385,7 @@ class LocalTimeConstraintConfigTest {
 		assertTrue(config.matches(LocalTime.of(11, 0, 0)).isSuccess());
 		assertTrue(config.matches(time1).isError());
 	}
-
+	
 	@Test
 	void matchesWithAfter() {
 		LocalTime threshold = LocalTime.of(9, 0, 0);
@@ -394,7 +394,7 @@ class LocalTimeConstraintConfigTest {
 		assertTrue(config.matches(threshold).isError());
 		assertTrue(config.matches(LocalTime.of(8, 59, 59)).isError());
 	}
-
+	
 	@Test
 	void matchesWithAfterOrEqual() {
 		LocalTime threshold = LocalTime.of(9, 0, 0);
@@ -403,7 +403,7 @@ class LocalTimeConstraintConfigTest {
 		assertTrue(config.matches(LocalTime.of(9, 0, 1)).isSuccess());
 		assertTrue(config.matches(LocalTime.of(8, 59, 59)).isError());
 	}
-
+	
 	@Test
 	void matchesWithBefore() {
 		LocalTime threshold = LocalTime.of(17, 0, 0);
@@ -412,7 +412,7 @@ class LocalTimeConstraintConfigTest {
 		assertTrue(config.matches(threshold).isError());
 		assertTrue(config.matches(LocalTime.of(17, 0, 1)).isError());
 	}
-
+	
 	@Test
 	void matchesWithBeforeOrEqual() {
 		LocalTime threshold = LocalTime.of(17, 0, 0);
@@ -421,7 +421,7 @@ class LocalTimeConstraintConfigTest {
 		assertTrue(config.matches(LocalTime.of(16, 59, 59)).isSuccess());
 		assertTrue(config.matches(LocalTime.of(17, 0, 1)).isError());
 	}
-
+	
 	@Test
 	void matchesWithBetween() {
 		LocalTime after = LocalTime.of(9, 0, 0);
@@ -431,7 +431,7 @@ class LocalTimeConstraintConfigTest {
 		assertTrue(config.matches(after).isError());
 		assertTrue(config.matches(before).isError());
 	}
-
+	
 	@Test
 	void matchesWithBetweenOrEqual() {
 		LocalTime after = LocalTime.of(9, 0, 0);
@@ -443,7 +443,7 @@ class LocalTimeConstraintConfigTest {
 		assertTrue(config.matches(LocalTime.of(8, 59, 59)).isError());
 		assertTrue(config.matches(LocalTime.of(17, 0, 1)).isError());
 	}
-
+	
 	@Test
 	void matchesWithHour() {
 		NumericFieldConstraintConfig hourConfig = NumericFieldConstraintConfig.UNCONSTRAINED.withBetweenOrEqual(9, 17);
@@ -452,7 +452,7 @@ class LocalTimeConstraintConfigTest {
 		assertTrue(config.matches(LocalTime.of(8, 0, 0)).isError());
 		assertTrue(config.matches(LocalTime.of(18, 0, 0)).isError());
 	}
-
+	
 	@Test
 	void matchesWithMinute() {
 		NumericFieldConstraintConfig minuteConfig = NumericFieldConstraintConfig.UNCONSTRAINED.withEqualTo(30);
@@ -460,7 +460,7 @@ class LocalTimeConstraintConfigTest {
 		assertTrue(config.matches(LocalTime.of(10, 30, 0)).isSuccess());
 		assertTrue(config.matches(LocalTime.of(10, 0, 0)).isError());
 	}
-
+	
 	@Test
 	void matchesWithSecond() {
 		NumericFieldConstraintConfig secondConfig = NumericFieldConstraintConfig.UNCONSTRAINED.withEqualTo(0);
@@ -468,7 +468,7 @@ class LocalTimeConstraintConfigTest {
 		assertTrue(config.matches(LocalTime.of(10, 30, 0)).isSuccess());
 		assertTrue(config.matches(LocalTime.of(10, 30, 1)).isError());
 	}
-
+	
 	@Test
 	void matchesWithNullValue() {
 		LocalTimeConstraintConfig config = LocalTimeConstraintConfig.UNCONSTRAINED;

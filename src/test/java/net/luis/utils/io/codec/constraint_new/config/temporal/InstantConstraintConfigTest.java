@@ -34,7 +34,91 @@ import static org.junit.jupiter.api.Assertions.*;
  * @author Luis-St
  */
 class InstantConstraintConfigTest {
-
+	
+	@Test
+	void constructWithNullEqualTo() {
+		assertThrows(NullPointerException.class, () -> new InstantConstraintConfig(
+			null, Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty()
+		));
+	}
+	
+	@Test
+	void constructWithNullIn() {
+		assertThrows(NullPointerException.class, () -> new InstantConstraintConfig(
+			Optional.empty(), null, Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty()
+		));
+	}
+	
+	@Test
+	void constructWithNullAfter() {
+		assertThrows(NullPointerException.class, () -> new InstantConstraintConfig(
+			Optional.empty(), Optional.empty(), null, Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty()
+		));
+	}
+	
+	@Test
+	void constructWithNullBefore() {
+		assertThrows(NullPointerException.class, () -> new InstantConstraintConfig(
+			Optional.empty(), Optional.empty(), Optional.empty(), null, Optional.empty(), Optional.empty(), Optional.empty()
+		));
+	}
+	
+	@Test
+	void constructWithNullWithinLast() {
+		assertThrows(NullPointerException.class, () -> new InstantConstraintConfig(
+			Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), null, Optional.empty(), Optional.empty()
+		));
+	}
+	
+	@Test
+	void constructWithNullWithinNext() {
+		assertThrows(NullPointerException.class, () -> new InstantConstraintConfig(
+			Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), null, Optional.empty()
+		));
+	}
+	
+	@Test
+	void constructWithNullCustom() {
+		assertThrows(NullPointerException.class, () -> new InstantConstraintConfig(
+			Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), null
+		));
+	}
+	
+	@Test
+	void constructWithEmptyInSet() {
+		assertThrows(IllegalArgumentException.class, () -> new InstantConstraintConfig(
+			Optional.empty(), Optional.of(Pair.of(Set.of(), false)), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty()
+		));
+	}
+	
+	@Test
+	void constructWithNegativeWithinLast() {
+		assertThrows(IllegalArgumentException.class, () -> new InstantConstraintConfig(
+			Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.of(Duration.ofHours(-1)), Optional.empty(), Optional.empty()
+		));
+	}
+	
+	@Test
+	void constructWithZeroWithinLast() {
+		assertThrows(IllegalArgumentException.class, () -> new InstantConstraintConfig(
+			Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.of(Duration.ZERO), Optional.empty(), Optional.empty()
+		));
+	}
+	
+	@Test
+	void constructWithNegativeWithinNext() {
+		assertThrows(IllegalArgumentException.class, () -> new InstantConstraintConfig(
+			Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.of(Duration.ofHours(-1)), Optional.empty()
+		));
+	}
+	
+	@Test
+	void constructWithZeroWithinNext() {
+		assertThrows(IllegalArgumentException.class, () -> new InstantConstraintConfig(
+			Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.of(Duration.ZERO), Optional.empty()
+		));
+	}
+	
 	@Test
 	void unconstrained() {
 		InstantConstraintConfig config = InstantConstraintConfig.UNCONSTRAINED;
@@ -48,91 +132,7 @@ class InstantConstraintConfigTest {
 		assertTrue(config.custom().isEmpty());
 		assertTrue(config.matches(Instant.now()).isSuccess());
 	}
-
-	@Test
-	void constructWithNullEqualTo() {
-		assertThrows(NullPointerException.class, () -> new InstantConstraintConfig(
-			null, Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty()
-		));
-	}
-
-	@Test
-	void constructWithNullIn() {
-		assertThrows(NullPointerException.class, () -> new InstantConstraintConfig(
-			Optional.empty(), null, Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty()
-		));
-	}
-
-	@Test
-	void constructWithNullAfter() {
-		assertThrows(NullPointerException.class, () -> new InstantConstraintConfig(
-			Optional.empty(), Optional.empty(), null, Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty()
-		));
-	}
-
-	@Test
-	void constructWithNullBefore() {
-		assertThrows(NullPointerException.class, () -> new InstantConstraintConfig(
-			Optional.empty(), Optional.empty(), Optional.empty(), null, Optional.empty(), Optional.empty(), Optional.empty()
-		));
-	}
-
-	@Test
-	void constructWithNullWithinLast() {
-		assertThrows(NullPointerException.class, () -> new InstantConstraintConfig(
-			Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), null, Optional.empty(), Optional.empty()
-		));
-	}
-
-	@Test
-	void constructWithNullWithinNext() {
-		assertThrows(NullPointerException.class, () -> new InstantConstraintConfig(
-			Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), null, Optional.empty()
-		));
-	}
-
-	@Test
-	void constructWithNullCustom() {
-		assertThrows(NullPointerException.class, () -> new InstantConstraintConfig(
-			Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), null
-		));
-	}
-
-	@Test
-	void constructWithEmptyInSet() {
-		assertThrows(IllegalArgumentException.class, () -> new InstantConstraintConfig(
-			Optional.empty(), Optional.of(Pair.of(Set.of(), false)), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty()
-		));
-	}
-
-	@Test
-	void constructWithNegativeWithinLast() {
-		assertThrows(IllegalArgumentException.class, () -> new InstantConstraintConfig(
-			Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.of(Duration.ofHours(-1)), Optional.empty(), Optional.empty()
-		));
-	}
-
-	@Test
-	void constructWithZeroWithinLast() {
-		assertThrows(IllegalArgumentException.class, () -> new InstantConstraintConfig(
-			Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.of(Duration.ZERO), Optional.empty(), Optional.empty()
-		));
-	}
-
-	@Test
-	void constructWithNegativeWithinNext() {
-		assertThrows(IllegalArgumentException.class, () -> new InstantConstraintConfig(
-			Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.of(Duration.ofHours(-1)), Optional.empty()
-		));
-	}
-
-	@Test
-	void constructWithZeroWithinNext() {
-		assertThrows(IllegalArgumentException.class, () -> new InstantConstraintConfig(
-			Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.of(Duration.ZERO), Optional.empty()
-		));
-	}
-
+	
 	@Test
 	void withEqualTo() {
 		Instant instant = Instant.now();
@@ -141,7 +141,7 @@ class InstantConstraintConfigTest {
 		assertEquals(instant, config.equalTo().get().getFirst());
 		assertFalse(config.equalTo().get().getSecond());
 	}
-
+	
 	@Test
 	void withNotEqualTo() {
 		Instant instant = Instant.now();
@@ -150,7 +150,7 @@ class InstantConstraintConfigTest {
 		assertEquals(instant, config.equalTo().get().getFirst());
 		assertTrue(config.equalTo().get().getSecond());
 	}
-
+	
 	@Test
 	void withIn() {
 		Instant instant1 = Instant.now();
@@ -160,7 +160,7 @@ class InstantConstraintConfigTest {
 		assertEquals(Set.of(instant1, instant2), config.in().get().getFirst());
 		assertFalse(config.in().get().getSecond());
 	}
-
+	
 	@Test
 	void withNotIn() {
 		Instant instant1 = Instant.now();
@@ -170,7 +170,7 @@ class InstantConstraintConfigTest {
 		assertEquals(Set.of(instant1, instant2), config.in().get().getFirst());
 		assertTrue(config.in().get().getSecond());
 	}
-
+	
 	@Test
 	void withAfter() {
 		Instant instant = Instant.now();
@@ -179,7 +179,7 @@ class InstantConstraintConfigTest {
 		assertEquals(instant, config.after().get().getFirst());
 		assertFalse(config.after().get().getSecond());
 	}
-
+	
 	@Test
 	void withAfterOrEqual() {
 		Instant instant = Instant.now();
@@ -188,7 +188,7 @@ class InstantConstraintConfigTest {
 		assertEquals(instant, config.after().get().getFirst());
 		assertTrue(config.after().get().getSecond());
 	}
-
+	
 	@Test
 	void withBefore() {
 		Instant instant = Instant.now();
@@ -197,7 +197,7 @@ class InstantConstraintConfigTest {
 		assertEquals(instant, config.before().get().getFirst());
 		assertFalse(config.before().get().getSecond());
 	}
-
+	
 	@Test
 	void withBeforeOrEqual() {
 		Instant instant = Instant.now();
@@ -206,7 +206,7 @@ class InstantConstraintConfigTest {
 		assertEquals(instant, config.before().get().getFirst());
 		assertTrue(config.before().get().getSecond());
 	}
-
+	
 	@Test
 	void withBetween() {
 		Instant after = Instant.now();
@@ -219,7 +219,7 @@ class InstantConstraintConfigTest {
 		assertFalse(config.after().get().getSecond());
 		assertFalse(config.before().get().getSecond());
 	}
-
+	
 	@Test
 	void withBetweenOrEqual() {
 		Instant after = Instant.now();
@@ -232,27 +232,27 @@ class InstantConstraintConfigTest {
 		assertTrue(config.after().get().getSecond());
 		assertTrue(config.before().get().getSecond());
 	}
-
+	
 	@Test
 	void withWithinLast() {
 		InstantConstraintConfig config = InstantConstraintConfig.UNCONSTRAINED.withWithinLast(Duration.ofHours(24));
 		assertTrue(config.withinLast().isPresent());
 		assertEquals(Duration.ofHours(24), config.withinLast().get());
 	}
-
+	
 	@Test
 	void withWithinNext() {
 		InstantConstraintConfig config = InstantConstraintConfig.UNCONSTRAINED.withWithinNext(Duration.ofHours(24));
 		assertTrue(config.withinNext().isPresent());
 		assertEquals(Duration.ofHours(24), config.withinNext().get());
 	}
-
+	
 	@Test
 	void withCustom() {
 		InstantConstraintConfig config = InstantConstraintConfig.UNCONSTRAINED.withCustom(i -> i.isBefore(Instant.MAX) ? Result.success() : Result.error("Instant must be before MAX"));
 		assertTrue(config.custom().isPresent());
 	}
-
+	
 	@Test
 	void matchesWithEqualTo() {
 		Instant instant = Instant.now();
@@ -260,7 +260,7 @@ class InstantConstraintConfigTest {
 		assertTrue(config.matches(instant).isSuccess());
 		assertTrue(config.matches(instant.plusSeconds(1)).isError());
 	}
-
+	
 	@Test
 	void matchesWithNotEqualTo() {
 		Instant instant = Instant.now();
@@ -268,7 +268,7 @@ class InstantConstraintConfigTest {
 		assertTrue(config.matches(instant.plusSeconds(1)).isSuccess());
 		assertTrue(config.matches(instant).isError());
 	}
-
+	
 	@Test
 	void matchesWithIn() {
 		Instant instant1 = Instant.now();
@@ -278,7 +278,7 @@ class InstantConstraintConfigTest {
 		assertTrue(config.matches(instant2).isSuccess());
 		assertTrue(config.matches(instant1.plusSeconds(50)).isError());
 	}
-
+	
 	@Test
 	void matchesWithNotIn() {
 		Instant instant1 = Instant.now();
@@ -287,7 +287,7 @@ class InstantConstraintConfigTest {
 		assertTrue(config.matches(instant1.plusSeconds(50)).isSuccess());
 		assertTrue(config.matches(instant1).isError());
 	}
-
+	
 	@Test
 	void matchesWithAfter() {
 		Instant threshold = Instant.now();
@@ -296,7 +296,7 @@ class InstantConstraintConfigTest {
 		assertTrue(config.matches(threshold).isError());
 		assertTrue(config.matches(threshold.minusSeconds(1)).isError());
 	}
-
+	
 	@Test
 	void matchesWithAfterOrEqual() {
 		Instant threshold = Instant.now();
@@ -305,7 +305,7 @@ class InstantConstraintConfigTest {
 		assertTrue(config.matches(threshold.plusSeconds(1)).isSuccess());
 		assertTrue(config.matches(threshold.minusSeconds(1)).isError());
 	}
-
+	
 	@Test
 	void matchesWithBefore() {
 		Instant threshold = Instant.now();
@@ -314,7 +314,7 @@ class InstantConstraintConfigTest {
 		assertTrue(config.matches(threshold).isError());
 		assertTrue(config.matches(threshold.plusSeconds(1)).isError());
 	}
-
+	
 	@Test
 	void matchesWithBeforeOrEqual() {
 		Instant threshold = Instant.now();
@@ -323,7 +323,7 @@ class InstantConstraintConfigTest {
 		assertTrue(config.matches(threshold.minusSeconds(1)).isSuccess());
 		assertTrue(config.matches(threshold.plusSeconds(1)).isError());
 	}
-
+	
 	@Test
 	void matchesWithBetween() {
 		Instant after = Instant.now();
@@ -333,7 +333,7 @@ class InstantConstraintConfigTest {
 		assertTrue(config.matches(after).isError());
 		assertTrue(config.matches(before).isError());
 	}
-
+	
 	@Test
 	void matchesWithBetweenOrEqual() {
 		Instant after = Instant.now();
@@ -345,21 +345,21 @@ class InstantConstraintConfigTest {
 		assertTrue(config.matches(after.minusSeconds(1)).isError());
 		assertTrue(config.matches(before.plusSeconds(1)).isError());
 	}
-
+	
 	@Test
 	void matchesWithWithinLast() {
 		InstantConstraintConfig config = InstantConstraintConfig.UNCONSTRAINED.withWithinLast(Duration.ofHours(1));
 		assertTrue(config.matches(Instant.now().minusSeconds(1800)).isSuccess());
 		assertTrue(config.matches(Instant.now().minusSeconds(7200)).isError());
 	}
-
+	
 	@Test
 	void matchesWithWithinNext() {
 		InstantConstraintConfig config = InstantConstraintConfig.UNCONSTRAINED.withWithinNext(Duration.ofHours(1));
 		assertTrue(config.matches(Instant.now().plusSeconds(1800)).isSuccess());
 		assertTrue(config.matches(Instant.now().plusSeconds(7200)).isError());
 	}
-
+	
 	@Test
 	void matchesWithNullValue() {
 		InstantConstraintConfig config = InstantConstraintConfig.UNCONSTRAINED;

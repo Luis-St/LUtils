@@ -18,9 +18,9 @@
 
 package net.luis.utils.io.codec.constraint_new.core;
 
-import static org.junit.jupiter.api.Assertions.*;
-
 import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * Test class for {@link UUIDVariant}.<br>
@@ -28,7 +28,7 @@ import org.junit.jupiter.api.Test;
  * @author Luis-St
  */
 class UUIDVariantTest {
-
+	
 	@Test
 	void valuesContainsAllConstants() {
 		UUIDVariant[] values = UUIDVariant.values();
@@ -38,7 +38,7 @@ class UUIDVariantTest {
 		assertEquals(UUIDVariant.MICROSOFT, values[2]);
 		assertEquals(UUIDVariant.RESERVED, values[3]);
 	}
-
+	
 	@Test
 	void valueOfReturnsCorrectConstant() {
 		assertEquals(UUIDVariant.NFC, UUIDVariant.valueOf("NFC"));
@@ -46,7 +46,7 @@ class UUIDVariantTest {
 		assertEquals(UUIDVariant.MICROSOFT, UUIDVariant.valueOf("MICROSOFT"));
 		assertEquals(UUIDVariant.RESERVED, UUIDVariant.valueOf("RESERVED"));
 	}
-
+	
 	@Test
 	void ordinalValues() {
 		assertEquals(0, UUIDVariant.NFC.ordinal());

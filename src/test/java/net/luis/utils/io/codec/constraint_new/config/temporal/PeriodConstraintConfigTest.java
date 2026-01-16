@@ -34,7 +34,111 @@ import static org.junit.jupiter.api.Assertions.*;
  * @author Luis-St
  */
 class PeriodConstraintConfigTest {
-
+	
+	@Test
+	void constructWithNullEqualTo() {
+		assertThrows(NullPointerException.class, () -> new PeriodConstraintConfig(
+			null, Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(),
+			Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty()
+		));
+	}
+	
+	@Test
+	void constructWithNullIn() {
+		assertThrows(NullPointerException.class, () -> new PeriodConstraintConfig(
+			Optional.empty(), null, Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(),
+			Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty()
+		));
+	}
+	
+	@Test
+	void constructWithNullMin() {
+		assertThrows(NullPointerException.class, () -> new PeriodConstraintConfig(
+			Optional.empty(), Optional.empty(), null, Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(),
+			Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty()
+		));
+	}
+	
+	@Test
+	void constructWithNullMax() {
+		assertThrows(NullPointerException.class, () -> new PeriodConstraintConfig(
+			Optional.empty(), Optional.empty(), Optional.empty(), null, Optional.empty(), Optional.empty(), Optional.empty(),
+			Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty()
+		));
+	}
+	
+	@Test
+	void constructWithNullPositive() {
+		assertThrows(NullPointerException.class, () -> new PeriodConstraintConfig(
+			Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), null, Optional.empty(), Optional.empty(),
+			Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty()
+		));
+	}
+	
+	@Test
+	void constructWithNullNegative() {
+		assertThrows(NullPointerException.class, () -> new PeriodConstraintConfig(
+			Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), null, Optional.empty(),
+			Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty()
+		));
+	}
+	
+	@Test
+	void constructWithNullZero() {
+		assertThrows(NullPointerException.class, () -> new PeriodConstraintConfig(
+			Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), null,
+			Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty()
+		));
+	}
+	
+	@Test
+	void constructWithNullDay() {
+		assertThrows(NullPointerException.class, () -> new PeriodConstraintConfig(
+			Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(),
+			null, Optional.empty(), Optional.empty(), Optional.empty()
+		));
+	}
+	
+	@Test
+	void constructWithNullMonth() {
+		assertThrows(NullPointerException.class, () -> new PeriodConstraintConfig(
+			Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(),
+			Optional.empty(), null, Optional.empty(), Optional.empty()
+		));
+	}
+	
+	@Test
+	void constructWithNullYear() {
+		assertThrows(NullPointerException.class, () -> new PeriodConstraintConfig(
+			Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(),
+			Optional.empty(), Optional.empty(), null, Optional.empty()
+		));
+	}
+	
+	@Test
+	void constructWithNullCustom() {
+		assertThrows(NullPointerException.class, () -> new PeriodConstraintConfig(
+			Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(),
+			Optional.empty(), Optional.empty(), Optional.empty(), null
+		));
+	}
+	
+	@Test
+	void constructWithEmptyInSet() {
+		assertThrows(IllegalArgumentException.class, () -> new PeriodConstraintConfig(
+			Optional.empty(), Optional.of(Pair.of(Set.of(), false)), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(),
+			Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty()
+		));
+	}
+	
+	@Test
+	void constructWithPositiveAndNegative() {
+		assertThrows(IllegalArgumentException.class, () -> new PeriodConstraintConfig(
+			Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.of(false), Optional.of(false), Optional.empty(),
+			Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty()
+		));
+	}
+	
 	@Test
 	void unconstrained() {
 		PeriodConstraintConfig config = PeriodConstraintConfig.UNCONSTRAINED;
@@ -52,111 +156,7 @@ class PeriodConstraintConfigTest {
 		assertTrue(config.custom().isEmpty());
 		assertTrue(config.matches(Period.ofDays(1)).isSuccess());
 	}
-
-	@Test
-	void constructWithNullEqualTo() {
-		assertThrows(NullPointerException.class, () -> new PeriodConstraintConfig(
-			null, Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(),
-			Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty()
-		));
-	}
-
-	@Test
-	void constructWithNullIn() {
-		assertThrows(NullPointerException.class, () -> new PeriodConstraintConfig(
-			Optional.empty(), null, Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(),
-			Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty()
-		));
-	}
-
-	@Test
-	void constructWithNullMin() {
-		assertThrows(NullPointerException.class, () -> new PeriodConstraintConfig(
-			Optional.empty(), Optional.empty(), null, Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(),
-			Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty()
-		));
-	}
-
-	@Test
-	void constructWithNullMax() {
-		assertThrows(NullPointerException.class, () -> new PeriodConstraintConfig(
-			Optional.empty(), Optional.empty(), Optional.empty(), null, Optional.empty(), Optional.empty(), Optional.empty(),
-			Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty()
-		));
-	}
-
-	@Test
-	void constructWithNullPositive() {
-		assertThrows(NullPointerException.class, () -> new PeriodConstraintConfig(
-			Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), null, Optional.empty(), Optional.empty(),
-			Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty()
-		));
-	}
-
-	@Test
-	void constructWithNullNegative() {
-		assertThrows(NullPointerException.class, () -> new PeriodConstraintConfig(
-			Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), null, Optional.empty(),
-			Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty()
-		));
-	}
-
-	@Test
-	void constructWithNullZero() {
-		assertThrows(NullPointerException.class, () -> new PeriodConstraintConfig(
-			Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), null,
-			Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty()
-		));
-	}
-
-	@Test
-	void constructWithNullDay() {
-		assertThrows(NullPointerException.class, () -> new PeriodConstraintConfig(
-			Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(),
-			null, Optional.empty(), Optional.empty(), Optional.empty()
-		));
-	}
-
-	@Test
-	void constructWithNullMonth() {
-		assertThrows(NullPointerException.class, () -> new PeriodConstraintConfig(
-			Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(),
-			Optional.empty(), null, Optional.empty(), Optional.empty()
-		));
-	}
-
-	@Test
-	void constructWithNullYear() {
-		assertThrows(NullPointerException.class, () -> new PeriodConstraintConfig(
-			Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(),
-			Optional.empty(), Optional.empty(), null, Optional.empty()
-		));
-	}
-
-	@Test
-	void constructWithNullCustom() {
-		assertThrows(NullPointerException.class, () -> new PeriodConstraintConfig(
-			Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(),
-			Optional.empty(), Optional.empty(), Optional.empty(), null
-		));
-	}
-
-	@Test
-	void constructWithEmptyInSet() {
-		assertThrows(IllegalArgumentException.class, () -> new PeriodConstraintConfig(
-			Optional.empty(), Optional.of(Pair.of(Set.of(), false)), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(),
-			Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty()
-		));
-	}
-
-	@Test
-	void constructWithPositiveAndNegative() {
-		assertThrows(IllegalArgumentException.class, () -> new PeriodConstraintConfig(
-			Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.of(false), Optional.of(false), Optional.empty(),
-			Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty()
-		));
-	}
-
+	
 	@Test
 	void withEqualTo() {
 		PeriodConstraintConfig config = PeriodConstraintConfig.UNCONSTRAINED.withEqualTo(Period.ofDays(10));
@@ -164,7 +164,7 @@ class PeriodConstraintConfigTest {
 		assertEquals(Period.ofDays(10), config.equalTo().get().getFirst());
 		assertFalse(config.equalTo().get().getSecond());
 	}
-
+	
 	@Test
 	void withNotEqualTo() {
 		PeriodConstraintConfig config = PeriodConstraintConfig.UNCONSTRAINED.withNotEqualTo(Period.ofDays(10));
@@ -172,7 +172,7 @@ class PeriodConstraintConfigTest {
 		assertEquals(Period.ofDays(10), config.equalTo().get().getFirst());
 		assertTrue(config.equalTo().get().getSecond());
 	}
-
+	
 	@Test
 	void withIn() {
 		PeriodConstraintConfig config = PeriodConstraintConfig.UNCONSTRAINED.withIn(List.of(Period.ofDays(1), Period.ofDays(2)));
@@ -180,7 +180,7 @@ class PeriodConstraintConfigTest {
 		assertEquals(Set.of(Period.ofDays(1), Period.ofDays(2)), config.in().get().getFirst());
 		assertFalse(config.in().get().getSecond());
 	}
-
+	
 	@Test
 	void withNotIn() {
 		PeriodConstraintConfig config = PeriodConstraintConfig.UNCONSTRAINED.withNotIn(List.of(Period.ofDays(1), Period.ofDays(2)));
@@ -188,7 +188,7 @@ class PeriodConstraintConfigTest {
 		assertEquals(Set.of(Period.ofDays(1), Period.ofDays(2)), config.in().get().getFirst());
 		assertTrue(config.in().get().getSecond());
 	}
-
+	
 	@Test
 	void withGreaterThan() {
 		PeriodConstraintConfig config = PeriodConstraintConfig.UNCONSTRAINED.withGreaterThan(Period.ofDays(5));
@@ -196,7 +196,7 @@ class PeriodConstraintConfigTest {
 		assertEquals(Period.ofDays(5), config.min().get().getFirst());
 		assertFalse(config.min().get().getSecond());
 	}
-
+	
 	@Test
 	void withGreaterThanOrEqual() {
 		PeriodConstraintConfig config = PeriodConstraintConfig.UNCONSTRAINED.withGreaterThanOrEqual(Period.ofDays(5));
@@ -204,7 +204,7 @@ class PeriodConstraintConfigTest {
 		assertEquals(Period.ofDays(5), config.min().get().getFirst());
 		assertTrue(config.min().get().getSecond());
 	}
-
+	
 	@Test
 	void withLessThan() {
 		PeriodConstraintConfig config = PeriodConstraintConfig.UNCONSTRAINED.withLessThan(Period.ofMonths(3));
@@ -212,7 +212,7 @@ class PeriodConstraintConfigTest {
 		assertEquals(Period.ofMonths(3), config.max().get().getFirst());
 		assertFalse(config.max().get().getSecond());
 	}
-
+	
 	@Test
 	void withLessThanOrEqual() {
 		PeriodConstraintConfig config = PeriodConstraintConfig.UNCONSTRAINED.withLessThanOrEqual(Period.ofMonths(3));
@@ -220,7 +220,7 @@ class PeriodConstraintConfigTest {
 		assertEquals(Period.ofMonths(3), config.max().get().getFirst());
 		assertTrue(config.max().get().getSecond());
 	}
-
+	
 	@Test
 	void withBetween() {
 		PeriodConstraintConfig config = PeriodConstraintConfig.UNCONSTRAINED.withBetween(Period.ofDays(1), Period.ofMonths(1));
@@ -231,7 +231,7 @@ class PeriodConstraintConfigTest {
 		assertFalse(config.min().get().getSecond());
 		assertFalse(config.max().get().getSecond());
 	}
-
+	
 	@Test
 	void withBetweenOrEqual() {
 		PeriodConstraintConfig config = PeriodConstraintConfig.UNCONSTRAINED.withBetweenOrEqual(Period.ofDays(1), Period.ofMonths(1));
@@ -242,49 +242,49 @@ class PeriodConstraintConfigTest {
 		assertTrue(config.min().get().getSecond());
 		assertTrue(config.max().get().getSecond());
 	}
-
+	
 	@Test
 	void withPositive() {
 		PeriodConstraintConfig config = PeriodConstraintConfig.UNCONSTRAINED.withPositive();
 		assertTrue(config.positive().isPresent());
 		assertFalse(config.positive().get());
 	}
-
+	
 	@Test
 	void withNonPositive() {
 		PeriodConstraintConfig config = PeriodConstraintConfig.UNCONSTRAINED.withNonPositive();
 		assertTrue(config.positive().isPresent());
 		assertTrue(config.positive().get());
 	}
-
+	
 	@Test
 	void withNegative() {
 		PeriodConstraintConfig config = PeriodConstraintConfig.UNCONSTRAINED.withNegative();
 		assertTrue(config.negative().isPresent());
 		assertFalse(config.negative().get());
 	}
-
+	
 	@Test
 	void withNonNegative() {
 		PeriodConstraintConfig config = PeriodConstraintConfig.UNCONSTRAINED.withNonNegative();
 		assertTrue(config.negative().isPresent());
 		assertTrue(config.negative().get());
 	}
-
+	
 	@Test
 	void withZero() {
 		PeriodConstraintConfig config = PeriodConstraintConfig.UNCONSTRAINED.withZero();
 		assertTrue(config.zero().isPresent());
 		assertFalse(config.zero().get());
 	}
-
+	
 	@Test
 	void withNonZero() {
 		PeriodConstraintConfig config = PeriodConstraintConfig.UNCONSTRAINED.withNonZero();
 		assertTrue(config.zero().isPresent());
 		assertTrue(config.zero().get());
 	}
-
+	
 	@Test
 	void withDay() {
 		NumericFieldConstraintConfig dayConfig = NumericFieldConstraintConfig.UNCONSTRAINED.withBetweenOrEqual(1, 31);
@@ -292,7 +292,7 @@ class PeriodConstraintConfigTest {
 		assertTrue(config.day().isPresent());
 		assertEquals(dayConfig, config.day().get());
 	}
-
+	
 	@Test
 	void withMonth() {
 		NumericFieldConstraintConfig monthConfig = NumericFieldConstraintConfig.UNCONSTRAINED.withBetweenOrEqual(1, 12);
@@ -300,7 +300,7 @@ class PeriodConstraintConfigTest {
 		assertTrue(config.month().isPresent());
 		assertEquals(monthConfig, config.month().get());
 	}
-
+	
 	@Test
 	void withYear() {
 		NumericFieldConstraintConfig yearConfig = NumericFieldConstraintConfig.UNCONSTRAINED.withGreaterThanOrEqual(0);
@@ -308,27 +308,27 @@ class PeriodConstraintConfigTest {
 		assertTrue(config.year().isPresent());
 		assertEquals(yearConfig, config.year().get());
 	}
-
+	
 	@Test
 	void withCustom() {
 		PeriodConstraintConfig config = PeriodConstraintConfig.UNCONSTRAINED.withCustom(p -> p.getYears() < 100 ? Result.success() : Result.error("Period must be less than 100 years"));
 		assertTrue(config.custom().isPresent());
 	}
-
+	
 	@Test
 	void matchesWithEqualTo() {
 		PeriodConstraintConfig config = PeriodConstraintConfig.UNCONSTRAINED.withEqualTo(Period.ofDays(10));
 		assertTrue(config.matches(Period.ofDays(10)).isSuccess());
 		assertTrue(config.matches(Period.ofDays(5)).isError());
 	}
-
+	
 	@Test
 	void matchesWithNotEqualTo() {
 		PeriodConstraintConfig config = PeriodConstraintConfig.UNCONSTRAINED.withNotEqualTo(Period.ofDays(10));
 		assertTrue(config.matches(Period.ofDays(5)).isSuccess());
 		assertTrue(config.matches(Period.ofDays(10)).isError());
 	}
-
+	
 	@Test
 	void matchesWithIn() {
 		PeriodConstraintConfig config = PeriodConstraintConfig.UNCONSTRAINED.withIn(List.of(Period.ofDays(1), Period.ofDays(2)));
@@ -336,14 +336,14 @@ class PeriodConstraintConfigTest {
 		assertTrue(config.matches(Period.ofDays(2)).isSuccess());
 		assertTrue(config.matches(Period.ofDays(3)).isError());
 	}
-
+	
 	@Test
 	void matchesWithNotIn() {
 		PeriodConstraintConfig config = PeriodConstraintConfig.UNCONSTRAINED.withNotIn(List.of(Period.ofDays(1), Period.ofDays(2)));
 		assertTrue(config.matches(Period.ofDays(3)).isSuccess());
 		assertTrue(config.matches(Period.ofDays(1)).isError());
 	}
-
+	
 	@Test
 	void matchesWithPositive() {
 		PeriodConstraintConfig config = PeriodConstraintConfig.UNCONSTRAINED.withPositive();
@@ -351,7 +351,7 @@ class PeriodConstraintConfigTest {
 		assertTrue(config.matches(Period.ZERO).isError());
 		assertTrue(config.matches(Period.ofDays(-1)).isError());
 	}
-
+	
 	@Test
 	void matchesWithNonPositive() {
 		PeriodConstraintConfig config = PeriodConstraintConfig.UNCONSTRAINED.withNonPositive();
@@ -359,7 +359,7 @@ class PeriodConstraintConfigTest {
 		assertTrue(config.matches(Period.ofDays(-1)).isSuccess());
 		assertTrue(config.matches(Period.ofDays(1)).isError());
 	}
-
+	
 	@Test
 	void matchesWithNegative() {
 		PeriodConstraintConfig config = PeriodConstraintConfig.UNCONSTRAINED.withNegative();
@@ -367,7 +367,7 @@ class PeriodConstraintConfigTest {
 		assertTrue(config.matches(Period.ZERO).isError());
 		assertTrue(config.matches(Period.ofDays(1)).isError());
 	}
-
+	
 	@Test
 	void matchesWithNonNegative() {
 		PeriodConstraintConfig config = PeriodConstraintConfig.UNCONSTRAINED.withNonNegative();
@@ -375,7 +375,7 @@ class PeriodConstraintConfigTest {
 		assertTrue(config.matches(Period.ofDays(1)).isSuccess());
 		assertTrue(config.matches(Period.ofDays(-1)).isError());
 	}
-
+	
 	@Test
 	void matchesWithZero() {
 		PeriodConstraintConfig config = PeriodConstraintConfig.UNCONSTRAINED.withZero();
@@ -383,7 +383,7 @@ class PeriodConstraintConfigTest {
 		assertTrue(config.matches(Period.ofDays(1)).isError());
 		assertTrue(config.matches(Period.ofDays(-1)).isError());
 	}
-
+	
 	@Test
 	void matchesWithNonZero() {
 		PeriodConstraintConfig config = PeriodConstraintConfig.UNCONSTRAINED.withNonZero();
@@ -391,7 +391,7 @@ class PeriodConstraintConfigTest {
 		assertTrue(config.matches(Period.ofDays(-1)).isSuccess());
 		assertTrue(config.matches(Period.ZERO).isError());
 	}
-
+	
 	@Test
 	void matchesWithNullValue() {
 		PeriodConstraintConfig config = PeriodConstraintConfig.UNCONSTRAINED;

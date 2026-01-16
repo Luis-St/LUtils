@@ -18,14 +18,13 @@
 
 package net.luis.utils.io.codec.constraint_new.config;
 
-import static org.junit.jupiter.api.Assertions.*;
-
-import org.junit.jupiter.api.Test;
-
 import net.luis.utils.util.Pair;
 import net.luis.utils.util.result.Result;
+import org.junit.jupiter.api.Test;
 
 import java.util.*;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * Test class for {@link CharacterConstraintConfig}.<br>
@@ -33,7 +32,49 @@ import java.util.*;
  * @author Luis-St
  */
 class CharacterConstraintConfigTest {
-
+	
+	@Test
+	void constructWithNullEqualTo() {
+		assertThrows(NullPointerException.class, () -> new CharacterConstraintConfig(
+			null, Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(),
+			Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(),
+			Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty()
+		));
+	}
+	
+	@Test
+	void constructWithNullIn() {
+		assertThrows(NullPointerException.class, () -> new CharacterConstraintConfig(
+			Optional.empty(), null, Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(),
+			Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(),
+			Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty()
+		));
+	}
+	
+	@Test
+	void constructWithEmptyInSet() {
+		assertThrows(IllegalArgumentException.class, () -> new CharacterConstraintConfig(
+			Optional.empty(), Optional.of(Pair.of(Set.of(), false)), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(),
+			Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(),
+			Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty()
+		));
+	}
+	
+	@Test
+	void constructWithMinGreaterThanMax() {
+		assertThrows(IllegalArgumentException.class, () -> CharacterConstraintConfig.UNCONSTRAINED.withBetweenOrEqual('z', 'a'));
+	}
+	
+	@Test
+	void constructWithEqualMinMaxExclusiveBound() {
+		assertThrows(IllegalArgumentException.class, () -> CharacterConstraintConfig.UNCONSTRAINED.withBetween('a', 'a'));
+	}
+	
+	@Test
+	void constructWithUpperCaseAndLowerCase() {
+		assertThrows(IllegalArgumentException.class, () -> CharacterConstraintConfig.UNCONSTRAINED.withUpperCase().withLowerCase());
+	}
+	
 	@Test
 	void unconstrained() {
 		CharacterConstraintConfig config = CharacterConstraintConfig.UNCONSTRAINED;
@@ -56,49 +97,7 @@ class CharacterConstraintConfigTest {
 		assertTrue(config.custom().isEmpty());
 		assertTrue(config.matches('a').isSuccess());
 	}
-
-	@Test
-	void constructWithNullEqualTo() {
-		assertThrows(NullPointerException.class, () -> new CharacterConstraintConfig(
-			null, Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(),
-			Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(),
-			Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty()
-		));
-	}
-
-	@Test
-	void constructWithNullIn() {
-		assertThrows(NullPointerException.class, () -> new CharacterConstraintConfig(
-			Optional.empty(), null, Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(),
-			Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(),
-			Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty()
-		));
-	}
-
-	@Test
-	void constructWithEmptyInSet() {
-		assertThrows(IllegalArgumentException.class, () -> new CharacterConstraintConfig(
-			Optional.empty(), Optional.of(Pair.of(Set.of(), false)), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(),
-			Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(),
-			Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty()
-		));
-	}
-
-	@Test
-	void constructWithMinGreaterThanMax() {
-		assertThrows(IllegalArgumentException.class, () -> CharacterConstraintConfig.UNCONSTRAINED.withBetweenOrEqual('z', 'a'));
-	}
-
-	@Test
-	void constructWithEqualMinMaxExclusiveBound() {
-		assertThrows(IllegalArgumentException.class, () -> CharacterConstraintConfig.UNCONSTRAINED.withBetween('a', 'a'));
-	}
-
-	@Test
-	void constructWithUpperCaseAndLowerCase() {
-		assertThrows(IllegalArgumentException.class, () -> CharacterConstraintConfig.UNCONSTRAINED.withUpperCase().withLowerCase());
-	}
-
+	
 	@Test
 	void withEqualTo() {
 		CharacterConstraintConfig config = CharacterConstraintConfig.UNCONSTRAINED.withEqualTo('x');
@@ -106,7 +105,7 @@ class CharacterConstraintConfigTest {
 		assertEquals('x', config.equalTo().get().getFirst());
 		assertFalse(config.equalTo().get().getSecond());
 	}
-
+	
 	@Test
 	void withNotEqualTo() {
 		CharacterConstraintConfig config = CharacterConstraintConfig.UNCONSTRAINED.withNotEqualTo('x');
@@ -114,7 +113,7 @@ class CharacterConstraintConfigTest {
 		assertEquals('x', config.equalTo().get().getFirst());
 		assertTrue(config.equalTo().get().getSecond());
 	}
-
+	
 	@Test
 	void withIn() {
 		CharacterConstraintConfig config = CharacterConstraintConfig.UNCONSTRAINED.withIn(List.of('a', 'b', 'c'));
@@ -122,12 +121,12 @@ class CharacterConstraintConfigTest {
 		assertEquals(Set.of('a', 'b', 'c'), config.in().get().getFirst());
 		assertFalse(config.in().get().getSecond());
 	}
-
+	
 	@Test
 	void withInNull() {
 		assertThrows(NullPointerException.class, () -> CharacterConstraintConfig.UNCONSTRAINED.withIn(null));
 	}
-
+	
 	@Test
 	void withNotIn() {
 		CharacterConstraintConfig config = CharacterConstraintConfig.UNCONSTRAINED.withNotIn(List.of('x', 'y'));
@@ -135,12 +134,12 @@ class CharacterConstraintConfigTest {
 		assertEquals(Set.of('x', 'y'), config.in().get().getFirst());
 		assertTrue(config.in().get().getSecond());
 	}
-
+	
 	@Test
 	void withNotInNull() {
 		assertThrows(NullPointerException.class, () -> CharacterConstraintConfig.UNCONSTRAINED.withNotIn(null));
 	}
-
+	
 	@Test
 	void withGreaterThan() {
 		CharacterConstraintConfig config = CharacterConstraintConfig.UNCONSTRAINED.withGreaterThan('a');
@@ -148,7 +147,7 @@ class CharacterConstraintConfigTest {
 		assertEquals('a', config.min().get().getFirst());
 		assertFalse(config.min().get().getSecond());
 	}
-
+	
 	@Test
 	void withGreaterThanOrEqual() {
 		CharacterConstraintConfig config = CharacterConstraintConfig.UNCONSTRAINED.withGreaterThanOrEqual('a');
@@ -156,7 +155,7 @@ class CharacterConstraintConfigTest {
 		assertEquals('a', config.min().get().getFirst());
 		assertTrue(config.min().get().getSecond());
 	}
-
+	
 	@Test
 	void withLessThan() {
 		CharacterConstraintConfig config = CharacterConstraintConfig.UNCONSTRAINED.withLessThan('z');
@@ -164,7 +163,7 @@ class CharacterConstraintConfigTest {
 		assertEquals('z', config.max().get().getFirst());
 		assertFalse(config.max().get().getSecond());
 	}
-
+	
 	@Test
 	void withLessThanOrEqual() {
 		CharacterConstraintConfig config = CharacterConstraintConfig.UNCONSTRAINED.withLessThanOrEqual('z');
@@ -172,7 +171,7 @@ class CharacterConstraintConfigTest {
 		assertEquals('z', config.max().get().getFirst());
 		assertTrue(config.max().get().getSecond());
 	}
-
+	
 	@Test
 	void withBetween() {
 		CharacterConstraintConfig config = CharacterConstraintConfig.UNCONSTRAINED.withBetween('a', 'z');
@@ -183,7 +182,7 @@ class CharacterConstraintConfigTest {
 		assertFalse(config.min().get().getSecond());
 		assertFalse(config.max().get().getSecond());
 	}
-
+	
 	@Test
 	void withBetweenOrEqual() {
 		CharacterConstraintConfig config = CharacterConstraintConfig.UNCONSTRAINED.withBetweenOrEqual('a', 'z');
@@ -194,98 +193,98 @@ class CharacterConstraintConfigTest {
 		assertTrue(config.min().get().getSecond());
 		assertTrue(config.max().get().getSecond());
 	}
-
+	
 	@Test
 	void withLetter() {
 		CharacterConstraintConfig config = CharacterConstraintConfig.UNCONSTRAINED.withLetter();
 		assertTrue(config.letter().isPresent());
 	}
-
+	
 	@Test
 	void withDigit() {
 		CharacterConstraintConfig config = CharacterConstraintConfig.UNCONSTRAINED.withDigit();
 		assertTrue(config.digit().isPresent());
 	}
-
+	
 	@Test
 	void withAlphanumeric() {
 		CharacterConstraintConfig config = CharacterConstraintConfig.UNCONSTRAINED.withAlphanumeric();
 		assertTrue(config.alphanumeric().isPresent());
 	}
-
+	
 	@Test
 	void withWhitespace() {
 		CharacterConstraintConfig config = CharacterConstraintConfig.UNCONSTRAINED.withWhitespace();
 		assertTrue(config.whitespace().isPresent());
 	}
-
+	
 	@Test
 	void withPunctuation() {
 		CharacterConstraintConfig config = CharacterConstraintConfig.UNCONSTRAINED.withPunctuation();
 		assertTrue(config.punctuation().isPresent());
 	}
-
+	
 	@Test
 	void withSymbol() {
 		CharacterConstraintConfig config = CharacterConstraintConfig.UNCONSTRAINED.withSymbol();
 		assertTrue(config.symbol().isPresent());
 	}
-
+	
 	@Test
 	void withControl() {
 		CharacterConstraintConfig config = CharacterConstraintConfig.UNCONSTRAINED.withControl();
 		assertTrue(config.control().isPresent());
 	}
-
+	
 	@Test
 	void withUpperCase() {
 		CharacterConstraintConfig config = CharacterConstraintConfig.UNCONSTRAINED.withUpperCase();
 		assertTrue(config.upperCase().isPresent());
 	}
-
+	
 	@Test
 	void withLowerCase() {
 		CharacterConstraintConfig config = CharacterConstraintConfig.UNCONSTRAINED.withLowerCase();
 		assertTrue(config.lowerCase().isPresent());
 	}
-
+	
 	@Test
 	void withAscii() {
 		CharacterConstraintConfig config = CharacterConstraintConfig.UNCONSTRAINED.withAscii();
 		assertTrue(config.ascii().isPresent());
 	}
-
+	
 	@Test
 	void withLatin1() {
 		CharacterConstraintConfig config = CharacterConstraintConfig.UNCONSTRAINED.withLatin1();
 		assertTrue(config.latin1().isPresent());
 	}
-
+	
 	@Test
 	void withCustom() {
 		CharacterConstraintConfig config = CharacterConstraintConfig.UNCONSTRAINED.withCustom(c -> Character.isLetter(c) ? Result.success() : Result.error("Must be letter"));
 		assertTrue(config.custom().isPresent());
 	}
-
+	
 	@Test
 	void withCustomNull() {
 		assertThrows(NullPointerException.class, () -> CharacterConstraintConfig.UNCONSTRAINED.withCustom(null));
 	}
-
+	
 	@Test
 	void matchesWithEqualTo() {
 		CharacterConstraintConfig config = CharacterConstraintConfig.UNCONSTRAINED.withEqualTo('a');
 		assertTrue(config.matches('a').isSuccess());
 		assertTrue(config.matches('b').isError());
 	}
-
+	
 	@Test
 	void matchesWithNotEqualTo() {
 		CharacterConstraintConfig config = CharacterConstraintConfig.UNCONSTRAINED.withNotEqualTo('a');
 		assertTrue(config.matches('b').isSuccess());
 		assertTrue(config.matches('a').isError());
 	}
-
+	
 	@Test
 	void matchesWithIn() {
 		CharacterConstraintConfig config = CharacterConstraintConfig.UNCONSTRAINED.withIn(List.of('a', 'b', 'c'));
@@ -293,14 +292,14 @@ class CharacterConstraintConfigTest {
 		assertTrue(config.matches('b').isSuccess());
 		assertTrue(config.matches('d').isError());
 	}
-
+	
 	@Test
 	void matchesWithNotIn() {
 		CharacterConstraintConfig config = CharacterConstraintConfig.UNCONSTRAINED.withNotIn(List.of('x', 'y'));
 		assertTrue(config.matches('a').isSuccess());
 		assertTrue(config.matches('x').isError());
 	}
-
+	
 	@Test
 	void matchesWithGreaterThan() {
 		CharacterConstraintConfig config = CharacterConstraintConfig.UNCONSTRAINED.withGreaterThan('m');
@@ -308,7 +307,7 @@ class CharacterConstraintConfigTest {
 		assertTrue(config.matches('m').isError());
 		assertTrue(config.matches('a').isError());
 	}
-
+	
 	@Test
 	void matchesWithGreaterThanOrEqual() {
 		CharacterConstraintConfig config = CharacterConstraintConfig.UNCONSTRAINED.withGreaterThanOrEqual('m');
@@ -316,7 +315,7 @@ class CharacterConstraintConfigTest {
 		assertTrue(config.matches('n').isSuccess());
 		assertTrue(config.matches('l').isError());
 	}
-
+	
 	@Test
 	void matchesWithLessThan() {
 		CharacterConstraintConfig config = CharacterConstraintConfig.UNCONSTRAINED.withLessThan('m');
@@ -324,7 +323,7 @@ class CharacterConstraintConfigTest {
 		assertTrue(config.matches('m').isError());
 		assertTrue(config.matches('z').isError());
 	}
-
+	
 	@Test
 	void matchesWithLessThanOrEqual() {
 		CharacterConstraintConfig config = CharacterConstraintConfig.UNCONSTRAINED.withLessThanOrEqual('m');
@@ -332,7 +331,7 @@ class CharacterConstraintConfigTest {
 		assertTrue(config.matches('l').isSuccess());
 		assertTrue(config.matches('n').isError());
 	}
-
+	
 	@Test
 	void matchesWithBetween() {
 		CharacterConstraintConfig config = CharacterConstraintConfig.UNCONSTRAINED.withBetween('a', 'z');
@@ -340,7 +339,7 @@ class CharacterConstraintConfigTest {
 		assertTrue(config.matches('a').isError());
 		assertTrue(config.matches('z').isError());
 	}
-
+	
 	@Test
 	void matchesWithBetweenOrEqual() {
 		CharacterConstraintConfig config = CharacterConstraintConfig.UNCONSTRAINED.withBetweenOrEqual('a', 'z');
@@ -349,7 +348,7 @@ class CharacterConstraintConfigTest {
 		assertTrue(config.matches('m').isSuccess());
 		assertTrue(config.matches('A').isError());
 	}
-
+	
 	@Test
 	void matchesWithLetter() {
 		CharacterConstraintConfig config = CharacterConstraintConfig.UNCONSTRAINED.withLetter();
@@ -358,7 +357,7 @@ class CharacterConstraintConfigTest {
 		assertTrue(config.matches('1').isError());
 		assertTrue(config.matches('!').isError());
 	}
-
+	
 	@Test
 	void matchesWithDigit() {
 		CharacterConstraintConfig config = CharacterConstraintConfig.UNCONSTRAINED.withDigit();
@@ -366,7 +365,7 @@ class CharacterConstraintConfigTest {
 		assertTrue(config.matches('9').isSuccess());
 		assertTrue(config.matches('a').isError());
 	}
-
+	
 	@Test
 	void matchesWithAlphanumeric() {
 		CharacterConstraintConfig config = CharacterConstraintConfig.UNCONSTRAINED.withAlphanumeric();
@@ -374,7 +373,7 @@ class CharacterConstraintConfigTest {
 		assertTrue(config.matches('5').isSuccess());
 		assertTrue(config.matches('!').isError());
 	}
-
+	
 	@Test
 	void matchesWithWhitespace() {
 		CharacterConstraintConfig config = CharacterConstraintConfig.UNCONSTRAINED.withWhitespace();
@@ -382,7 +381,7 @@ class CharacterConstraintConfigTest {
 		assertTrue(config.matches('\t').isSuccess());
 		assertTrue(config.matches('a').isError());
 	}
-
+	
 	@Test
 	void matchesWithPunctuation() {
 		CharacterConstraintConfig config = CharacterConstraintConfig.UNCONSTRAINED.withPunctuation();
@@ -390,7 +389,7 @@ class CharacterConstraintConfigTest {
 		assertTrue(config.matches(',').isSuccess());
 		assertTrue(config.matches('a').isError());
 	}
-
+	
 	@Test
 	void matchesWithSymbol() {
 		CharacterConstraintConfig config = CharacterConstraintConfig.UNCONSTRAINED.withSymbol();
@@ -398,7 +397,7 @@ class CharacterConstraintConfigTest {
 		assertTrue(config.matches('$').isSuccess());
 		assertTrue(config.matches('a').isError());
 	}
-
+	
 	@Test
 	void matchesWithControl() {
 		CharacterConstraintConfig config = CharacterConstraintConfig.UNCONSTRAINED.withControl();
@@ -406,7 +405,7 @@ class CharacterConstraintConfigTest {
 		assertTrue(config.matches('\u001F').isSuccess());
 		assertTrue(config.matches('a').isError());
 	}
-
+	
 	@Test
 	void matchesWithUpperCase() {
 		CharacterConstraintConfig config = CharacterConstraintConfig.UNCONSTRAINED.withUpperCase();
@@ -414,7 +413,7 @@ class CharacterConstraintConfigTest {
 		assertTrue(config.matches('Z').isSuccess());
 		assertTrue(config.matches('a').isError());
 	}
-
+	
 	@Test
 	void matchesWithLowerCase() {
 		CharacterConstraintConfig config = CharacterConstraintConfig.UNCONSTRAINED.withLowerCase();
@@ -422,7 +421,7 @@ class CharacterConstraintConfigTest {
 		assertTrue(config.matches('z').isSuccess());
 		assertTrue(config.matches('A').isError());
 	}
-
+	
 	@Test
 	void matchesWithAscii() {
 		CharacterConstraintConfig config = CharacterConstraintConfig.UNCONSTRAINED.withAscii();
@@ -430,7 +429,7 @@ class CharacterConstraintConfigTest {
 		assertTrue(config.matches('\u007F').isSuccess());
 		assertTrue(config.matches('\u0080').isError());
 	}
-
+	
 	@Test
 	void matchesWithLatin1() {
 		CharacterConstraintConfig config = CharacterConstraintConfig.UNCONSTRAINED.withLatin1();
@@ -438,20 +437,20 @@ class CharacterConstraintConfigTest {
 		assertTrue(config.matches('\u00FF').isSuccess());
 		assertTrue(config.matches('\u0100').isError());
 	}
-
+	
 	@Test
 	void matchesWithMultipleConstraints() {
 		CharacterConstraintConfig config = CharacterConstraintConfig.UNCONSTRAINED
 			.withLetter()
 			.withLowerCase()
 			.withAscii();
-
+		
 		assertTrue(config.matches('a').isSuccess());
 		assertTrue(config.matches('z').isSuccess());
 		assertTrue(config.matches('A').isError());
 		assertTrue(config.matches('1').isError());
 	}
-
+	
 	@Test
 	void matchesWithNullValue() {
 		CharacterConstraintConfig config = CharacterConstraintConfig.UNCONSTRAINED;

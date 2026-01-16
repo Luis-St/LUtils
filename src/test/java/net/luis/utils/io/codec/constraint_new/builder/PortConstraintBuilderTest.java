@@ -18,8 +18,6 @@
 
 package net.luis.utils.io.codec.constraint_new.builder;
 
-import static org.junit.jupiter.api.Assertions.*;
-
 import net.luis.utils.io.codec.constraint_new.Constraint;
 import net.luis.utils.io.codec.constraint_new.config.network.PortConstraintConfig;
 import net.luis.utils.io.codec.constraint_new.core.PortRange;
@@ -28,90 +26,92 @@ import org.junit.jupiter.api.Test;
 
 import java.util.List;
 
+import static org.junit.jupiter.api.Assertions.*;
+
 /**
  * Test class for {@link PortConstraintBuilder}.<br>
  *
  * @author Luis-St
  */
 class PortConstraintBuilderTest {
-
+	
 	@Test
 	void constructEmpty() {
 		PortConstraintBuilder builder = new PortConstraintBuilder();
 		PortConstraintConfig config = builder.build();
-
+		
 		assertNotNull(config);
 		assertEquals(PortConstraintConfig.UNCONSTRAINED, config);
 	}
-
+	
 	@Test
 	void constructWithInitialConfig() {
 		PortConstraintConfig initialConfig = PortConstraintConfig.UNCONSTRAINED.withInRange(1024, 49151);
 		PortConstraintBuilder builder = new PortConstraintBuilder(initialConfig);
 		PortConstraintConfig config = builder.build();
-
+		
 		assertNotNull(config);
 		assertEquals(initialConfig, config);
 		assertTrue(config.inRange().isPresent());
 	}
-
+	
 	@Test
 	void constructWithNullInitialConfig() {
 		assertThrows(NullPointerException.class, () -> new PortConstraintBuilder(null));
 	}
-
+	
 	@Test
 	void equalToReturnsBuilder() {
 		PortConstraintBuilder builder = new PortConstraintBuilder();
 		assertSame(builder, builder.equalTo(8080));
 		assertTrue(builder.build().equalTo().isPresent());
 	}
-
+	
 	@Test
 	void equalToWithNullValue() {
 		PortConstraintBuilder builder = new PortConstraintBuilder();
 		assertThrows(NullPointerException.class, () -> builder.equalTo(null));
 	}
-
+	
 	@Test
 	void notEqualToReturnsBuilder() {
 		PortConstraintBuilder builder = new PortConstraintBuilder();
 		assertSame(builder, builder.notEqualTo(8080));
 		assertTrue(builder.build().equalTo().isPresent());
 	}
-
+	
 	@Test
 	void notEqualToWithNullValue() {
 		PortConstraintBuilder builder = new PortConstraintBuilder();
 		assertThrows(NullPointerException.class, () -> builder.notEqualTo(null));
 	}
-
+	
 	@Test
 	void inReturnsBuilder() {
 		PortConstraintBuilder builder = new PortConstraintBuilder();
 		assertSame(builder, builder.in(List.of(80, 443, 8080)));
 		assertTrue(builder.build().in().isPresent());
 	}
-
+	
 	@Test
 	void inWithNullValues() {
 		PortConstraintBuilder builder = new PortConstraintBuilder();
 		assertThrows(NullPointerException.class, () -> builder.in(null));
 	}
-
+	
 	@Test
 	void notInReturnsBuilder() {
 		PortConstraintBuilder builder = new PortConstraintBuilder();
 		assertSame(builder, builder.notIn(List.of(80, 443, 8080)));
 		assertTrue(builder.build().in().isPresent());
 	}
-
+	
 	@Test
 	void notInWithNullValues() {
 		PortConstraintBuilder builder = new PortConstraintBuilder();
 		assertThrows(NullPointerException.class, () -> builder.notIn(null));
 	}
-
+	
 	@Test
 	void customReturnsBuilder() {
 		PortConstraintBuilder builder = new PortConstraintBuilder();
@@ -119,62 +119,62 @@ class PortConstraintBuilderTest {
 		assertSame(builder, builder.custom(constraint));
 		assertTrue(builder.build().custom().isPresent());
 	}
-
+	
 	@Test
 	void customWithNullConstraint() {
 		PortConstraintBuilder builder = new PortConstraintBuilder();
 		assertThrows(NullPointerException.class, () -> builder.custom(null));
 	}
-
+	
 	@Test
 	void inRangeReturnsBuilder() {
 		PortConstraintBuilder builder = new PortConstraintBuilder();
 		assertSame(builder, builder.inRange(1024, 49151));
 		assertTrue(builder.build().inRange().isPresent());
 	}
-
+	
 	@Test
 	void notInRangeReturnsBuilder() {
 		PortConstraintBuilder builder = new PortConstraintBuilder();
 		assertSame(builder, builder.notInRange(0, 1023));
 		assertTrue(builder.build().inRange().isPresent());
 	}
-
+	
 	@Test
 	void typeReturnsBuilder() {
 		PortConstraintBuilder builder = new PortConstraintBuilder();
 		assertSame(builder, builder.type(b -> b.equalTo(PortRange.REGISTERED)));
 		assertTrue(builder.build().type().isPresent());
 	}
-
+	
 	@Test
 	void typeWithNullBuilder() {
 		PortConstraintBuilder builder = new PortConstraintBuilder();
 		assertThrows(NullPointerException.class, () -> builder.type(null));
 	}
-
+	
 	@Test
 	void buildReturnsCorrectConfig() {
 		PortConstraintBuilder builder = new PortConstraintBuilder();
 		builder.inRange(1024, 65535).notIn(List.of(3306, 5432));
-
+		
 		PortConstraintConfig config = builder.build();
-
+		
 		assertNotNull(config);
 		assertTrue(config.inRange().isPresent());
 		assertTrue(config.in().isPresent());
 	}
-
+	
 	@Test
 	void methodChainingWorks() {
 		PortConstraintBuilder builder = new PortConstraintBuilder();
-
+		
 		PortConstraintConfig config = builder
 			.inRange(1024, 65535)
 			.type(b -> b.equalTo(PortRange.REGISTERED))
 			.notIn(List.of(3306, 5432))
 			.build();
-
+		
 		assertNotNull(config);
 		assertTrue(config.inRange().isPresent());
 		assertTrue(config.type().isPresent());

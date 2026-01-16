@@ -18,9 +18,9 @@
 
 package net.luis.utils.io.codec.constraint_new.core;
 
-import static org.junit.jupiter.api.Assertions.*;
-
 import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * Test class for {@link Unit}.<br>
@@ -28,12 +28,12 @@ import org.junit.jupiter.api.Test;
  * @author Luis-St
  */
 class UnitTest {
-
+	
 	@Test
 	void instanceIsNotNull() {
 		assertNotNull(Unit.INSTANCE);
 	}
-
+	
 	@Test
 	void instanceIsSingleton() {
 		Unit first = Unit.INSTANCE;
@@ -41,7 +41,7 @@ class UnitTest {
 		assertSame(first, second);
 		assertEquals(first, second);
 	}
-
+	
 	@Test
 	void toStringReturnsUnit() {
 		assertEquals("Unit", Unit.INSTANCE.toString());

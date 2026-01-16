@@ -18,8 +18,6 @@
 
 package net.luis.utils.io.codec.constraint_new.builder;
 
-import static org.junit.jupiter.api.Assertions.*;
-
 import net.luis.utils.io.codec.constraint_new.Constraint;
 import net.luis.utils.io.codec.constraint_new.config.network.PathConstraintConfig;
 import net.luis.utils.io.codec.constraint_new.core.Platform;
@@ -28,90 +26,92 @@ import org.junit.jupiter.api.Test;
 
 import java.util.List;
 
+import static org.junit.jupiter.api.Assertions.*;
+
 /**
  * Test class for {@link PathConstraintBuilder}.<br>
  *
  * @author Luis-St
  */
 class PathConstraintBuilderTest {
-
+	
 	@Test
 	void constructEmpty() {
 		PathConstraintBuilder builder = new PathConstraintBuilder();
 		PathConstraintConfig config = builder.build();
-
+		
 		assertNotNull(config);
 		assertEquals(PathConstraintConfig.UNCONSTRAINED, config);
 	}
-
+	
 	@Test
 	void constructWithInitialConfig() {
 		PathConstraintConfig initialConfig = PathConstraintConfig.UNCONSTRAINED.withMinLength(1);
 		PathConstraintBuilder builder = new PathConstraintBuilder(initialConfig);
 		PathConstraintConfig config = builder.build();
-
+		
 		assertNotNull(config);
 		assertEquals(initialConfig, config);
 		assertTrue(config.minLength().isPresent());
 	}
-
+	
 	@Test
 	void constructWithNullInitialConfig() {
 		assertThrows(NullPointerException.class, () -> new PathConstraintBuilder(null));
 	}
-
+	
 	@Test
 	void equalToReturnsBuilder() {
 		PathConstraintBuilder builder = new PathConstraintBuilder();
 		assertSame(builder, builder.equalTo("/home/user"));
 		assertTrue(builder.build().equalTo().isPresent());
 	}
-
+	
 	@Test
 	void equalToWithNullValue() {
 		PathConstraintBuilder builder = new PathConstraintBuilder();
 		assertThrows(NullPointerException.class, () -> builder.equalTo(null));
 	}
-
+	
 	@Test
 	void notEqualToReturnsBuilder() {
 		PathConstraintBuilder builder = new PathConstraintBuilder();
 		assertSame(builder, builder.notEqualTo("/home/user"));
 		assertTrue(builder.build().equalTo().isPresent());
 	}
-
+	
 	@Test
 	void notEqualToWithNullValue() {
 		PathConstraintBuilder builder = new PathConstraintBuilder();
 		assertThrows(NullPointerException.class, () -> builder.notEqualTo(null));
 	}
-
+	
 	@Test
 	void inReturnsBuilder() {
 		PathConstraintBuilder builder = new PathConstraintBuilder();
 		assertSame(builder, builder.in(List.of("/home", "/tmp")));
 		assertTrue(builder.build().in().isPresent());
 	}
-
+	
 	@Test
 	void inWithNullValues() {
 		PathConstraintBuilder builder = new PathConstraintBuilder();
 		assertThrows(NullPointerException.class, () -> builder.in(null));
 	}
-
+	
 	@Test
 	void notInReturnsBuilder() {
 		PathConstraintBuilder builder = new PathConstraintBuilder();
 		assertSame(builder, builder.notIn(List.of("/home", "/tmp")));
 		assertTrue(builder.build().in().isPresent());
 	}
-
+	
 	@Test
 	void notInWithNullValues() {
 		PathConstraintBuilder builder = new PathConstraintBuilder();
 		assertThrows(NullPointerException.class, () -> builder.notIn(null));
 	}
-
+	
 	@Test
 	void customReturnsBuilder() {
 		PathConstraintBuilder builder = new PathConstraintBuilder();
@@ -119,7 +119,7 @@ class PathConstraintBuilderTest {
 		assertSame(builder, builder.custom(constraint));
 		assertTrue(builder.build().custom().isPresent());
 	}
-
+	
 	@Test
 	void customWithNullConstraintDoesNotThrowImmediately() {
 		PathConstraintBuilder builder = new PathConstraintBuilder();
@@ -127,290 +127,290 @@ class PathConstraintBuilderTest {
 		// NPE would occur when the constraint is actually used during matching
 		assertDoesNotThrow(() -> builder.custom(null));
 	}
-
+	
 	@Test
 	void minLengthReturnsBuilder() {
 		PathConstraintBuilder builder = new PathConstraintBuilder();
 		assertSame(builder, builder.minLength(1));
 		assertTrue(builder.build().minLength().isPresent());
 	}
-
+	
 	@Test
 	void maxLengthReturnsBuilder() {
 		PathConstraintBuilder builder = new PathConstraintBuilder();
 		assertSame(builder, builder.maxLength(4096));
 		assertTrue(builder.build().maxLength().isPresent());
 	}
-
+	
 	@Test
 	void exactLengthReturnsBuilder() {
 		PathConstraintBuilder builder = new PathConstraintBuilder();
 		assertSame(builder, builder.exactLength(10));
-
+		
 		PathConstraintConfig config = builder.build();
 		assertTrue(config.minLength().isPresent());
 		assertTrue(config.maxLength().isPresent());
 	}
-
+	
 	@Test
 	void lengthBetweenReturnsBuilder() {
 		PathConstraintBuilder builder = new PathConstraintBuilder();
 		assertSame(builder, builder.lengthBetween(1, 4096));
-
+		
 		PathConstraintConfig config = builder.build();
 		assertTrue(config.minLength().isPresent());
 		assertTrue(config.maxLength().isPresent());
 	}
-
+	
 	@Test
 	void minDepthReturnsBuilder() {
 		PathConstraintBuilder builder = new PathConstraintBuilder();
 		assertSame(builder, builder.minDepth(1));
 		assertTrue(builder.build().minDepth().isPresent());
 	}
-
+	
 	@Test
 	void maxDepthReturnsBuilder() {
 		PathConstraintBuilder builder = new PathConstraintBuilder();
 		assertSame(builder, builder.maxDepth(10));
 		assertTrue(builder.build().maxDepth().isPresent());
 	}
-
+	
 	@Test
 	void exactDepthReturnsBuilder() {
 		PathConstraintBuilder builder = new PathConstraintBuilder();
 		assertSame(builder, builder.exactDepth(3));
-
+		
 		PathConstraintConfig config = builder.build();
 		assertTrue(config.minDepth().isPresent());
 		assertTrue(config.maxDepth().isPresent());
 	}
-
+	
 	@Test
 	void depthBetweenReturnsBuilder() {
 		PathConstraintBuilder builder = new PathConstraintBuilder();
 		assertSame(builder, builder.depthBetween(1, 10));
-
+		
 		PathConstraintConfig config = builder.build();
 		assertTrue(config.minDepth().isPresent());
 		assertTrue(config.maxDepth().isPresent());
 	}
-
+	
 	@Test
 	void absoluteReturnsBuilder() {
 		PathConstraintBuilder builder = new PathConstraintBuilder();
 		assertSame(builder, builder.absolute());
 		assertTrue(builder.build().absolute().isPresent());
 	}
-
+	
 	@Test
 	void relativeReturnsBuilder() {
 		PathConstraintBuilder builder = new PathConstraintBuilder();
 		assertSame(builder, builder.relative());
 		assertTrue(builder.build().relative().isPresent());
 	}
-
+	
 	@Test
 	void normalizedReturnsBuilder() {
 		PathConstraintBuilder builder = new PathConstraintBuilder();
 		assertSame(builder, builder.normalized());
 		assertTrue(builder.build().normalized().isPresent());
 	}
-
+	
 	@Test
 	void canonicalReturnsBuilder() {
 		PathConstraintBuilder builder = new PathConstraintBuilder();
 		assertSame(builder, builder.canonical());
 		assertTrue(builder.build().canonical().isPresent());
 	}
-
+	
 	@Test
 	void pathReturnsBuilder() {
 		PathConstraintBuilder builder = new PathConstraintBuilder();
 		assertSame(builder, builder.path(b -> b.notBlank()));
 		assertTrue(builder.build().path().isPresent());
 	}
-
+	
 	@Test
 	void pathWithNullBuilder() {
 		PathConstraintBuilder builder = new PathConstraintBuilder();
 		assertThrows(NullPointerException.class, () -> builder.path(null));
 	}
-
+	
 	@Test
 	void rootReturnsBuilder() {
 		PathConstraintBuilder builder = new PathConstraintBuilder();
 		assertSame(builder, builder.root(b -> b.equalTo("/")));
 		assertTrue(builder.build().root().isPresent());
 	}
-
+	
 	@Test
 	void rootWithNullBuilder() {
 		PathConstraintBuilder builder = new PathConstraintBuilder();
 		assertThrows(NullPointerException.class, () -> builder.root(null));
 	}
-
+	
 	@Test
 	void parentReturnsBuilder() {
 		PathConstraintBuilder builder = new PathConstraintBuilder();
 		assertSame(builder, builder.parent(b -> b.notBlank()));
 		assertTrue(builder.build().parent().isPresent());
 	}
-
+	
 	@Test
 	void parentWithNullBuilder() {
 		PathConstraintBuilder builder = new PathConstraintBuilder();
 		assertThrows(NullPointerException.class, () -> builder.parent(null));
 	}
-
+	
 	@Test
 	void segmentReturnsBuilder() {
 		PathConstraintBuilder builder = new PathConstraintBuilder();
 		assertSame(builder, builder.segment(b -> b.notBlank()));
 		assertTrue(builder.build().segment().isPresent());
 	}
-
+	
 	@Test
 	void segmentWithNullBuilder() {
 		PathConstraintBuilder builder = new PathConstraintBuilder();
 		assertThrows(NullPointerException.class, () -> builder.segment(null));
 	}
-
+	
 	@Test
 	void fileReturnsBuilder() {
 		PathConstraintBuilder builder = new PathConstraintBuilder();
 		assertSame(builder, builder.file(b -> b.notBlank()));
 		assertTrue(builder.build().file().isPresent());
 	}
-
+	
 	@Test
 	void fileWithNullBuilder() {
 		PathConstraintBuilder builder = new PathConstraintBuilder();
 		assertThrows(NullPointerException.class, () -> builder.file(null));
 	}
-
+	
 	@Test
 	void withoutExtensionReturnsBuilder() {
 		PathConstraintBuilder builder = new PathConstraintBuilder();
 		assertSame(builder, builder.withoutExtension());
 		assertTrue(builder.build().withoutExtension().isPresent());
 	}
-
+	
 	@Test
 	void extensionReturnsBuilder() {
 		PathConstraintBuilder builder = new PathConstraintBuilder();
 		assertSame(builder, builder.extension(b -> b.equalTo("txt")));
 		assertTrue(builder.build().extension().isPresent());
 	}
-
+	
 	@Test
 	void extensionWithNullBuilder() {
 		PathConstraintBuilder builder = new PathConstraintBuilder();
 		assertThrows(NullPointerException.class, () -> builder.extension(null));
 	}
-
+	
 	@Test
 	void ancestorOfSingleReturnsBuilder() {
 		PathConstraintBuilder builder = new PathConstraintBuilder();
 		assertSame(builder, builder.ancestorOf("/home/user/file.txt"));
 		assertTrue(builder.build().ancestorOf().isPresent());
 	}
-
+	
 	@Test
 	void ancestorOfSingleWithNullPath() {
 		PathConstraintBuilder builder = new PathConstraintBuilder();
 		assertThrows(NullPointerException.class, () -> builder.ancestorOf((String) null));
 	}
-
+	
 	@Test
 	void ancestorOfCollectionReturnsBuilder() {
 		PathConstraintBuilder builder = new PathConstraintBuilder();
 		assertSame(builder, builder.ancestorOf(List.of("/home/user/file.txt", "/tmp/test.txt")));
 		assertTrue(builder.build().ancestorOf().isPresent());
 	}
-
+	
 	@Test
 	void ancestorOfCollectionWithNullPaths() {
 		PathConstraintBuilder builder = new PathConstraintBuilder();
 		assertThrows(NullPointerException.class, () -> builder.ancestorOf((List<String>) null));
 	}
-
+	
 	@Test
 	void descendantOfSingleReturnsBuilder() {
 		PathConstraintBuilder builder = new PathConstraintBuilder();
 		assertSame(builder, builder.descendantOf("/home"));
 		assertTrue(builder.build().descendantOf().isPresent());
 	}
-
+	
 	@Test
 	void descendantOfSingleWithNullPath() {
 		PathConstraintBuilder builder = new PathConstraintBuilder();
 		assertThrows(NullPointerException.class, () -> builder.descendantOf((String) null));
 	}
-
+	
 	@Test
 	void descendantOfCollectionReturnsBuilder() {
 		PathConstraintBuilder builder = new PathConstraintBuilder();
 		assertSame(builder, builder.descendantOf(List.of("/home", "/tmp")));
 		assertTrue(builder.build().descendantOf().isPresent());
 	}
-
+	
 	@Test
 	void descendantOfCollectionWithNullPaths() {
 		PathConstraintBuilder builder = new PathConstraintBuilder();
 		assertThrows(NullPointerException.class, () -> builder.descendantOf((List<String>) null));
 	}
-
+	
 	@Test
 	void validForReturnsBuilder() {
 		PathConstraintBuilder builder = new PathConstraintBuilder();
 		assertSame(builder, builder.validFor(Platform.LINUX));
 		assertTrue(builder.build().validFor().isPresent());
 	}
-
+	
 	@Test
 	void validForWithNullPlatform() {
 		PathConstraintBuilder builder = new PathConstraintBuilder();
 		assertThrows(NullPointerException.class, () -> builder.validFor(null));
 	}
-
+	
 	@Test
 	void portableReturnsBuilder() {
 		PathConstraintBuilder builder = new PathConstraintBuilder();
 		assertSame(builder, builder.portable());
 		assertTrue(builder.build().portable().isPresent());
 	}
-
+	
 	@Test
 	void separatorReturnsBuilder() {
 		PathConstraintBuilder builder = new PathConstraintBuilder();
 		assertSame(builder, builder.separator(Platform.LINUX));
 		assertTrue(builder.build().separator().isPresent());
 	}
-
+	
 	@Test
 	void separatorWithNullPlatform() {
 		PathConstraintBuilder builder = new PathConstraintBuilder();
 		assertThrows(NullPointerException.class, () -> builder.separator(null));
 	}
-
+	
 	@Test
 	void buildReturnsCorrectConfig() {
 		PathConstraintBuilder builder = new PathConstraintBuilder();
 		builder.minLength(1).maxLength(4096).absolute();
-
+		
 		PathConstraintConfig config = builder.build();
-
+		
 		assertNotNull(config);
 		assertTrue(config.minLength().isPresent());
 		assertTrue(config.maxLength().isPresent());
 		assertTrue(config.absolute().isPresent());
 	}
-
+	
 	@Test
 	void methodChainingWorks() {
 		PathConstraintBuilder builder = new PathConstraintBuilder();
-
+		
 		PathConstraintConfig config = builder
 			.minLength(1)
 			.maxLength(4096)
@@ -418,7 +418,7 @@ class PathConstraintBuilderTest {
 			.normalized()
 			.extension(b -> b.in(List.of("txt", "json")))
 			.build();
-
+		
 		assertNotNull(config);
 		assertTrue(config.minLength().isPresent());
 		assertTrue(config.maxLength().isPresent());
