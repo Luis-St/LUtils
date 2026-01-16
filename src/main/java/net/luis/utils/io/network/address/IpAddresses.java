@@ -722,7 +722,40 @@ public final class IpAddresses {
 		Objects.requireNonNull(cidr, "CIDR must not be null");
 		return Ipv6Network.tryParse(cidr);
 	}
-	
+
+	/**
+	 * Parses a network from CIDR notation, auto-detecting the version.<br>
+	 * This method first attempts to parse as IPv4, then as IPv6.<br>
+	 *
+	 * @param cidr The CIDR notation string to parse
+	 * @return The parsed network
+	 * @throws NullPointerException If the CIDR string is null
+	 * @throws IpParseException If the CIDR string cannot be parsed
+	 */
+	public static @NonNull IpNetwork<?, ?> parseNetwork(@NonNull String cidr) {
+		return tryParseNetwork(cidr).orElseThrow(() ->
+			new IpParseException("Invalid CIDR notation: " + cidr, IpParseErrorType.INVALID_FORMAT, cidr)
+		);
+	}
+
+	/**
+	 * Attempts to parse a network from CIDR notation, auto-detecting the version.<br>
+	 * This method first attempts to parse as IPv4, then as IPv6.<br>
+	 *
+	 * @param cidr The CIDR notation string to parse
+	 * @return An optional containing the parsed network, or empty if parsing fails
+	 * @throws NullPointerException If the CIDR string is null
+	 */
+	public static @NonNull Optional<? extends IpNetwork<?, ?>> tryParseNetwork(@NonNull String cidr) {
+		Objects.requireNonNull(cidr, "CIDR must not be null");
+
+		Optional<Ipv4Network> ipv4Network = tryParseIpv4Network(cidr);
+		if (ipv4Network.isPresent()) {
+			return ipv4Network;
+		}
+		return tryParseIpv6Network(cidr);
+	}
+
 	/**
 	 * Creates an IP address from a {@link InetAddress}.<br>
 	 * This method returns an {@link Ipv4Address} for {@link Inet4Address} and an {@link Ipv6Address} for {@link Inet6Address}.

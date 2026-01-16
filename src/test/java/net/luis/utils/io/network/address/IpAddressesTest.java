@@ -20,8 +20,12 @@ package net.luis.utils.io.network.address;
 
 import net.luis.utils.io.network.address.exception.IpParseException;
 import net.luis.utils.io.network.address.format.IpParseOptions;
-import net.luis.utils.io.network.address.ipv4.*;
-import net.luis.utils.io.network.address.ipv6.*;
+import net.luis.utils.io.network.address.ipv4.Ipv4Address;
+import net.luis.utils.io.network.address.ipv4.Ipv4Network;
+import net.luis.utils.io.network.address.ipv4.Ipv4Range;
+import net.luis.utils.io.network.address.ipv6.Ipv6Address;
+import net.luis.utils.io.network.address.ipv6.Ipv6Network;
+import net.luis.utils.io.network.address.ipv6.Ipv6Range;
 import org.junit.jupiter.api.Test;
 
 import java.net.*;
@@ -323,7 +327,49 @@ class IpAddressesTest {
 	void tryParseIpv6NetworkValid() {
 		assertTrue(IpAddresses.tryParseIpv6Network("2001:db8::/32").isPresent());
 	}
-	
+
+	@Test
+	void parseNetworkNull() {
+		assertThrows(NullPointerException.class, () -> IpAddresses.parseNetwork(null));
+	}
+
+	@Test
+	void parseNetworkInvalid() {
+		assertThrows(IpParseException.class, () -> IpAddresses.parseNetwork("invalid"));
+		assertThrows(IpParseException.class, () -> IpAddresses.parseNetwork("192.168.1.1"));
+	}
+
+	@Test
+	void parseNetworkDetectsIpv4() {
+		IpNetwork<?, ?> network = IpAddresses.parseNetwork("192.168.1.0/24");
+		assertInstanceOf(Ipv4Network.class, network);
+		assertEquals(24, network.prefixLength());
+	}
+
+	@Test
+	void parseNetworkDetectsIpv6() {
+		IpNetwork<?, ?> network = IpAddresses.parseNetwork("2001:db8::/32");
+		assertInstanceOf(Ipv6Network.class, network);
+		assertEquals(32, network.prefixLength());
+	}
+
+	@Test
+	void tryParseNetworkNull() {
+		assertThrows(NullPointerException.class, () -> IpAddresses.tryParseNetwork(null));
+	}
+
+	@Test
+	void tryParseNetworkInvalid() {
+		assertTrue(IpAddresses.tryParseNetwork("invalid").isEmpty());
+		assertTrue(IpAddresses.tryParseNetwork("192.168.1.1").isEmpty());
+	}
+
+	@Test
+	void tryParseNetworkValid() {
+		assertTrue(IpAddresses.tryParseNetwork("192.168.1.0/24").isPresent());
+		assertTrue(IpAddresses.tryParseNetwork("2001:db8::/32").isPresent());
+	}
+
 	@Test
 	void fromInetAddressNull() {
 		assertThrows(NullPointerException.class, () -> IpAddresses.from((InetAddress) null));
