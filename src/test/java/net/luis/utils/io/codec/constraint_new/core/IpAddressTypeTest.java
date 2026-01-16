@@ -32,14 +32,15 @@ class IpAddressTypeTest {
 	@Test
 	void valuesContainsAllConstants() {
 		IpAddressType[] values = IpAddressType.values();
-		assertEquals(7, values.length);
+		assertEquals(8, values.length);
 		assertEquals(IpAddressType.PUBLIC, values[0]);
 		assertEquals(IpAddressType.PRIVATE, values[1]);
 		assertEquals(IpAddressType.LOOPBACK, values[2]);
 		assertEquals(IpAddressType.LINK_LOCAL, values[3]);
 		assertEquals(IpAddressType.MULTICAST, values[4]);
 		assertEquals(IpAddressType.BROADCAST, values[5]);
-		assertEquals(IpAddressType.UNSPECIFIED, values[6]);
+		assertEquals(IpAddressType.DOCUMENTATION, values[6]);
+		assertEquals(IpAddressType.UNSPECIFIED, values[7]);
 	}
 	
 	@Test
@@ -50,6 +51,7 @@ class IpAddressTypeTest {
 		assertEquals(IpAddressType.LINK_LOCAL, IpAddressType.valueOf("LINK_LOCAL"));
 		assertEquals(IpAddressType.MULTICAST, IpAddressType.valueOf("MULTICAST"));
 		assertEquals(IpAddressType.BROADCAST, IpAddressType.valueOf("BROADCAST"));
+		assertEquals(IpAddressType.DOCUMENTATION, IpAddressType.valueOf("DOCUMENTATION"));
 		assertEquals(IpAddressType.UNSPECIFIED, IpAddressType.valueOf("UNSPECIFIED"));
 	}
 	
@@ -61,6 +63,7 @@ class IpAddressTypeTest {
 		assertEquals(3, IpAddressType.LINK_LOCAL.ordinal());
 		assertEquals(4, IpAddressType.MULTICAST.ordinal());
 		assertEquals(5, IpAddressType.BROADCAST.ordinal());
-		assertEquals(6, IpAddressType.UNSPECIFIED.ordinal());
+		assertEquals(6, IpAddressType.DOCUMENTATION.ordinal());
+		assertEquals(7, IpAddressType.UNSPECIFIED.ordinal());
 	}
 }

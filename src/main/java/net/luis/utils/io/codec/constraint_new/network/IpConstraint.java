@@ -96,8 +96,6 @@ public interface IpConstraint<T, C> extends CharSequenceConstraint<T, C> {
 	 * @see #privateIp()
 	 * @see #loopbackIp()
 	 * @see #linkLocalIp()
-	 * @see #multicastIp()
-	 * @see #broadcastIp()
 	 * @see #ipType(UnaryOperator)
 	 */
 	default @NonNull C publicIp() {
@@ -115,8 +113,6 @@ public interface IpConstraint<T, C> extends CharSequenceConstraint<T, C> {
 	 * @see #publicIp()
 	 * @see #loopbackIp()
 	 * @see #linkLocalIp()
-	 * @see #multicastIp()
-	 * @see #broadcastIp()
 	 * @see #ipType(UnaryOperator)
 	 */
 	default @NonNull C privateIp() {
@@ -134,8 +130,6 @@ public interface IpConstraint<T, C> extends CharSequenceConstraint<T, C> {
 	 * @see #publicIp()
 	 * @see #privateIp()
 	 * @see #linkLocalIp()
-	 * @see #multicastIp()
-	 * @see #broadcastIp()
 	 * @see #ipType(UnaryOperator)
 	 */
 	default @NonNull C loopbackIp() {
@@ -153,50 +147,10 @@ public interface IpConstraint<T, C> extends CharSequenceConstraint<T, C> {
 	 * @see #publicIp()
 	 * @see #privateIp()
 	 * @see #loopbackIp()
-	 * @see #multicastIp()
-	 * @see #broadcastIp()
 	 * @see #ipType(UnaryOperator)
 	 */
 	default @NonNull C linkLocalIp() {
 		return this.ipType(builder -> builder.equalTo(IpAddressType.LINK_LOCAL));
-	}
-	
-	/**
-	 * Applies a multicast IP type constraint.<br>
-	 * <p>
-	 *     The returned type will validate that values are multicast IP addresses.<br>
-	 *     Multicast IP addresses are used for one-to-many communication within a network.
-	 * </p>
-	 *
-	 * @return A new type with the applied multicast IP type constraint
-	 * @see #publicIp()
-	 * @see #privateIp()
-	 * @see #loopbackIp()
-	 * @see #linkLocalIp()
-	 * @see #broadcastIp()
-	 * @see #ipType(UnaryOperator)
-	 */
-	default @NonNull C multicastIp() {
-		return this.ipType(builder -> builder.equalTo(IpAddressType.MULTICAST));
-	}
-	
-	/**
-	 * Applies a broadcast IP type constraint.<br>
-	 * <p>
-	 *     The returned type will validate that values are broadcast IP addresses.<br>
-	 *     Broadcast IP addresses are used to send messages to all hosts on a local network.
-	 * </p>
-	 *
-	 * @return A new type with the applied broadcast IP type constraint
-	 * @see #publicIp()
-	 * @see #privateIp()
-	 * @see #loopbackIp()
-	 * @see #linkLocalIp()
-	 * @see #multicastIp()
-	 * @see #ipType(UnaryOperator)
-	 */
-	default @NonNull C broadcastIp() {
-		return this.ipType(builder -> builder.equalTo(IpAddressType.BROADCAST));
 	}
 	
 	/**

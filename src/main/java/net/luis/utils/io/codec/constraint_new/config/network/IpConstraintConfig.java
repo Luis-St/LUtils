@@ -106,7 +106,7 @@ public record IpConstraintConfig(
 	 * @param matches The pattern constraint as a pair of (pattern, negated) where negated=false means matches and negated=true means notMatches
 	 * @param ipVersion The enum constraint config for IP version
 	 * @param ipType The enum constraint config for IP address type
-	 * @param inAnySubnet The subnet constraint as a pair of (cidrs, negated) where negated=false means inAnySubnet and negated=true means notInAnySubnet
+	 * @param inAnySubnet The subnet constraint as a pair of (cidrs, negated) where negated=false means inAnySubnet and negated=true means inNoSubnet
 	 * @param custom A custom constraint implementation
 	 * @throws NullPointerException If any of the optional fields is null
 	 * @throws IllegalArgumentException If the in constraint set is empty when present

@@ -86,6 +86,16 @@ public enum IpAddressType {
 	BROADCAST,
 	
 	/**
+	 * Documentation IP address.<br>
+	 * <p>
+	 *     IP addresses reserved for documentation and examples.<br>
+	 *     IPv4 documentation addresses are 192.0.2.0/24, 198.51.100.0/24 and 203.0.113.0/24.<br>
+	 *     IPv6 documentation address is 2001:db8::/32.
+	 * </p>
+	 */
+	DOCUMENTATION,
+	
+	/**
 	 * Unspecified IP address.<br>
 	 * <p>
 	 *     The all-zeros address indicating no specific address.<br>
