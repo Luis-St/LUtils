@@ -37,19 +37,19 @@ import java.util.Objects;
  * @author Luis-St
  */
 public class NumericConstraintBuilder implements ComparableConstraint<Integer, NumericConstraintBuilder> {
-
+	
 	/**
 	 * The current constraint configuration being built.<br>
 	 */
 	private NumericFieldConstraintConfig config;
-
+	
 	/**
 	 * Constructs a new numeric constraint builder with no constraints applied.<br>
 	 */
 	public NumericConstraintBuilder() {
 		this.config = NumericFieldConstraintConfig.UNCONSTRAINED;
 	}
-
+	
 	/**
 	 * Constructs a new numeric constraint builder with the specified initial config.<br>
 	 *
@@ -59,73 +59,73 @@ public class NumericConstraintBuilder implements ComparableConstraint<Integer, N
 	public NumericConstraintBuilder(@NonNull NumericFieldConstraintConfig initialConfig) {
 		this.config = Objects.requireNonNull(initialConfig, "Initial config must not be null");
 	}
-
+	
 	@Override
 	public @NonNull NumericConstraintBuilder equalTo(@NonNull Integer value) {
 		this.config = this.config.withEqualTo(value);
 		return this;
 	}
-
+	
 	@Override
 	public @NonNull NumericConstraintBuilder notEqualTo(@NonNull Integer value) {
 		this.config = this.config.withNotEqualTo(value);
 		return this;
 	}
-
+	
 	@Override
 	public @NonNull NumericConstraintBuilder in(@NonNull Collection<Integer> values) {
 		this.config = this.config.withIn(values);
 		return this;
 	}
-
+	
 	@Override
 	public @NonNull NumericConstraintBuilder notIn(@NonNull Collection<Integer> values) {
 		this.config = this.config.withNotIn(values);
 		return this;
 	}
-
+	
 	@Override
 	public @NonNull NumericConstraintBuilder custom(@NonNull Constraint<Integer> constraint) {
 		this.config = this.config.withCustom(constraint);
 		return this;
 	}
-
+	
 	@Override
 	public @NonNull NumericConstraintBuilder greaterThan(@NonNull Integer value) {
 		this.config = this.config.withGreaterThan(value);
 		return this;
 	}
-
+	
 	@Override
 	public @NonNull NumericConstraintBuilder greaterThanOrEqual(@NonNull Integer value) {
 		this.config = this.config.withGreaterThanOrEqual(value);
 		return this;
 	}
-
+	
 	@Override
 	public @NonNull NumericConstraintBuilder lessThan(@NonNull Integer value) {
 		this.config = this.config.withLessThan(value);
 		return this;
 	}
-
+	
 	@Override
 	public @NonNull NumericConstraintBuilder lessThanOrEqual(@NonNull Integer value) {
 		this.config = this.config.withLessThanOrEqual(value);
 		return this;
 	}
-
+	
 	@Override
 	public @NonNull NumericConstraintBuilder between(@NonNull Integer min, @NonNull Integer max) {
 		this.config = this.config.withBetween(min, max);
 		return this;
 	}
-
+	
 	@Override
 	public @NonNull NumericConstraintBuilder betweenOrEqual(@NonNull Integer min, @NonNull Integer max) {
 		this.config = this.config.withBetweenOrEqual(min, max);
 		return this;
 	}
-
+	
 	/**
 	 * Builds and returns the constraint configuration.<br>
 	 *

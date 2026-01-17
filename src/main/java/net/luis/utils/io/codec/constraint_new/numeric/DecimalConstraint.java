@@ -18,7 +18,13 @@
 
 package net.luis.utils.io.codec.constraint_new.numeric;
 
+import net.luis.utils.io.codec.constraint_new.ApplicableConstraint;
+import net.luis.utils.io.codec.constraint_new.Constraint;
+import net.luis.utils.io.codec.constraint_new.config.numeric.DecimalConstraintConfig;
 import org.jspecify.annotations.NonNull;
+
+import java.util.Collection;
+import java.util.function.UnaryOperator;
 
 /**
  * Constraint interface for floating-point decimal types that provides decimal-specific validation operations.<br>
@@ -29,10 +35,14 @@ import org.jspecify.annotations.NonNull;
  *
  * @author Luis-St
  *
- * @param <T> The type of the constraint configuration
+ * @param <T> The numeric type (Float, Double)
  * @param <C> The return type of the constraint method (for fluent method chaining)
  */
-public interface DecimalConstraint<T, C> extends NumericConstraint<T, C> {
+@FunctionalInterface
+public interface DecimalConstraint<T extends Number & Comparable<T>, C> extends ApplicableConstraint<DecimalConstraintConfig<T>, C>, NumericConstraint<T, C> {
+	
+	@Override
+	@NonNull C apply(@NonNull UnaryOperator<DecimalConstraintConfig<T>> configModifier);
 	
 	/**
 	 * Applies a finite value constraint to the type.<br>
@@ -44,7 +54,9 @@ public interface DecimalConstraint<T, C> extends NumericConstraint<T, C> {
 	 * @return A new type with the applied finite constraint
 	 * @see #notNaN()
 	 */
-	@NonNull C finite();
+	default @NonNull C finite() {
+		return this.apply(DecimalConstraintConfig::withFinite);
+	}
 	
 	/**
 	 * Applies a not-NaN constraint to the type.<br>
@@ -56,7 +68,9 @@ public interface DecimalConstraint<T, C> extends NumericConstraint<T, C> {
 	 * @return A new type with the applied not-NaN constraint
 	 * @see #finite()
 	 */
-	@NonNull C notNaN();
+	default @NonNull C notNaN() {
+		return this.apply(DecimalConstraintConfig::withNotNaN);
+	}
 	
 	/**
 	 * Applies an integral value constraint to the type.<br>
@@ -67,7 +81,9 @@ public interface DecimalConstraint<T, C> extends NumericConstraint<T, C> {
 	 *
 	 * @return A new type with the applied integral constraint
 	 */
-	@NonNull C integral();
+	default @NonNull C integral() {
+		return this.apply(DecimalConstraintConfig::withIntegral);
+	}
 	
 	/**
 	 * Applies a normalized form constraint to the type.<br>
@@ -78,5 +94,101 @@ public interface DecimalConstraint<T, C> extends NumericConstraint<T, C> {
 	 *
 	 * @return A new type with the applied normalized constraint
 	 */
-	@NonNull C normalized();
+	default @NonNull C normalized() {
+		return this.apply(DecimalConstraintConfig::withNormalized);
+	}
+	
+	// BaseConstraint methods
+	@Override
+	default @NonNull C equalTo(@NonNull T value) {
+		return this.apply(config -> config.withEqualTo(value));
+	}
+	
+	@Override
+	default @NonNull C notEqualTo(@NonNull T value) {
+		return this.apply(config -> config.withNotEqualTo(value));
+	}
+	
+	@Override
+	default @NonNull C in(@NonNull Collection<T> values) {
+		return this.apply(config -> config.withIn(values));
+	}
+	
+	@Override
+	default @NonNull C notIn(@NonNull Collection<T> values) {
+		return this.apply(config -> config.withNotIn(values));
+	}
+	
+	@Override
+	default @NonNull C custom(@NonNull Constraint<T> constraint) {
+		return this.apply(config -> config.withCustom(constraint));
+	}
+	
+	// ComparableConstraint methods
+	@Override
+	default @NonNull C greaterThan(@NonNull T value) {
+		return this.apply(config -> config.withGreaterThan(value));
+	}
+	
+	@Override
+	default @NonNull C greaterThanOrEqual(@NonNull T value) {
+		return this.apply(config -> config.withGreaterThanOrEqual(value));
+	}
+	
+	@Override
+	default @NonNull C lessThan(@NonNull T value) {
+		return this.apply(config -> config.withLessThan(value));
+	}
+	
+	@Override
+	default @NonNull C lessThanOrEqual(@NonNull T value) {
+		return this.apply(config -> config.withLessThanOrEqual(value));
+	}
+	
+	@Override
+	default @NonNull C between(@NonNull T min, @NonNull T max) {
+		return this.apply(config -> config.withBetween(min, max));
+	}
+	
+	@Override
+	default @NonNull C betweenOrEqual(@NonNull T min, @NonNull T max) {
+		return this.apply(config -> config.withBetweenOrEqual(min, max));
+	}
+	
+	// SignedConstraint methods
+	@Override
+	default @NonNull C positive() {
+		return this.apply(DecimalConstraintConfig::withPositive);
+	}
+	
+	@Override
+	default @NonNull C nonPositive() {
+		return this.apply(DecimalConstraintConfig::withNonPositive);
+	}
+	
+	@Override
+	default @NonNull C negative() {
+		return this.apply(DecimalConstraintConfig::withNegative);
+	}
+	
+	@Override
+	default @NonNull C nonNegative() {
+		return this.apply(DecimalConstraintConfig::withNonNegative);
+	}
+	
+	@Override
+	default @NonNull C zero() {
+		return this.apply(DecimalConstraintConfig::withZero);
+	}
+	
+	@Override
+	default @NonNull C nonZero() {
+		return this.apply(DecimalConstraintConfig::withNonZero);
+	}
+	
+	// NumericConstraint methods
+	@Override
+	default @NonNull C percentage() {
+		return this.apply(DecimalConstraintConfig::withPercentage);
+	}
 }

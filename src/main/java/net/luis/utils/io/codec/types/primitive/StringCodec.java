@@ -19,8 +19,8 @@
 package net.luis.utils.io.codec.types.primitive;
 
 import net.luis.utils.io.codec.AbstractCodec;
-import net.luis.utils.io.codec.constraint.LengthConstraint;
-import net.luis.utils.io.codec.constraint.config.LengthConstraintConfig;
+import net.luis.utils.io.codec.constraint_new.StringConstraint;
+import net.luis.utils.io.codec.constraint_new.config.StringConstraintConfig;
 import net.luis.utils.io.codec.provider.TypeProvider;
 import net.luis.utils.util.result.Result;
 import org.jspecify.annotations.NonNull;
@@ -34,7 +34,7 @@ import java.util.function.UnaryOperator;
  *
  * @author Luis-St
  */
-public class StringCodec extends AbstractCodec<String, LengthConstraintConfig> implements LengthConstraint<String, StringCodec> {
+public class StringCodec extends AbstractCodec<String, StringConstraintConfig> implements StringConstraint<StringCodec> {
 	
 	/**
 	 * Constructs a new string codec.<br>
@@ -42,32 +42,22 @@ public class StringCodec extends AbstractCodec<String, LengthConstraintConfig> i
 	public StringCodec() {}
 	
 	/**
-	 * Constructs a new string codec with the specified length constraint configuration.<br>
+	 * Constructs a new string codec with the given configuration.<br>
 	 *
-	 * @param constraintConfig The length constraint configuration
+	 * @param config The constraint configuration
+	 * @throws NullPointerException If the config is null
 	 */
-	public StringCodec(@NonNull LengthConstraintConfig constraintConfig) {
-		super(constraintConfig);
+	private StringCodec(@NonNull StringConstraintConfig config) {
+		super(config);
 	}
 	
 	@Override
-	public @NonNull StringCodec applyConstraint(@NonNull UnaryOperator<LengthConstraintConfig> configModifier) {
+	public @NonNull StringCodec apply(@NonNull UnaryOperator<StringConstraintConfig> configModifier) {
 		Objects.requireNonNull(configModifier, "Config modifier must not be null");
 		
-		return new StringCodec(configModifier.apply(
-			this.getConstraintConfig().orElse(LengthConstraintConfig.UNCONSTRAINED)
-		));
-	}
-	
-	@Override
-	protected @NonNull Result<Void> checkConstraints(@NonNull String value) {
-		Objects.requireNonNull(value, "Value must not be null");
-		
-		Result<Void> constraintResult = this.getConstraintConfig().map(config -> config.matches(value.length())).orElseGet(Result::success);
-		if (constraintResult.isError()) {
-			return Result.error("String " + value + " does not meet constraints: " + constraintResult.errorOrThrow());
-		}
-		return Result.success();
+		return new StringCodec(
+			configModifier.apply(this.getConstraintConfig().orElse(StringConstraintConfig.UNCONSTRAINED))
+		);
 	}
 	
 	@Override
@@ -87,6 +77,11 @@ public class StringCodec extends AbstractCodec<String, LengthConstraintConfig> i
 	@Override
 	public @NonNull Result<String> encodeKey(@NonNull String key) {
 		Objects.requireNonNull(key, "Key must not be null");
+		
+		Result<Void> constraintResult = this.checkConstraints(key);
+		if (constraintResult.isError()) {
+			return Result.error(constraintResult.errorOrThrow());
+		}
 		return Result.success(key);
 	}
 	
@@ -113,6 +108,11 @@ public class StringCodec extends AbstractCodec<String, LengthConstraintConfig> i
 	@Override
 	public @NonNull Result<String> decodeKey(@NonNull String key) {
 		Objects.requireNonNull(key, "Key must not be null");
+		
+		Result<Void> constraintResult = this.checkConstraints(key);
+		if (constraintResult.isError()) {
+			return Result.error(constraintResult.errorOrThrow());
+		}
 		return Result.success(key);
 	}
 	

@@ -19,8 +19,8 @@
 package net.luis.utils.io.codec.types.temporal.offset;
 
 import net.luis.utils.io.codec.AbstractCodec;
-import net.luis.utils.io.codec.constraint.config.temporal.OffsetDateTimeConstraintConfig;
-import net.luis.utils.io.codec.constraint.temporal.*;
+import net.luis.utils.io.codec.constraint_new.config.temporal.OffsetDateTimeConstraintConfig;
+import net.luis.utils.io.codec.constraint_new.temporal.OffsetDateTimeConstraint;
 import net.luis.utils.io.codec.provider.TypeProvider;
 import net.luis.utils.util.result.Result;
 import org.jspecify.annotations.NonNull;
@@ -40,7 +40,7 @@ import java.util.function.UnaryOperator;
  *
  * @author Luis-St
  */
-public class OffsetDateTimeCodec extends AbstractCodec<OffsetDateTime, OffsetDateTimeConstraintConfig> implements TemporalSpanConstraint<OffsetDateTime, OffsetDateTimeCodec, OffsetDateTimeConstraintConfig>, TimeFieldConstraint<OffsetDateTimeCodec, OffsetDateTimeConstraintConfig>, DateFieldConstraint<OffsetDateTimeCodec, OffsetDateTimeConstraintConfig> {
+public class OffsetDateTimeCodec extends AbstractCodec<OffsetDateTime, OffsetDateTimeConstraintConfig> implements OffsetDateTimeConstraint<OffsetDateTimeCodec> {
 	
 	/**
 	 * Constructs a new offset date time codec.<br>
@@ -53,28 +53,17 @@ public class OffsetDateTimeCodec extends AbstractCodec<OffsetDateTime, OffsetDat
 	 * @param constraintConfig The constraint configuration
 	 * @throws NullPointerException If the constraint config is null
 	 */
-	public OffsetDateTimeCodec(@NonNull OffsetDateTimeConstraintConfig constraintConfig) {
+	private OffsetDateTimeCodec(@NonNull OffsetDateTimeConstraintConfig constraintConfig) {
 		super(constraintConfig);
 	}
 	
 	@Override
-	public @NonNull OffsetDateTimeCodec applyConstraint(@NonNull UnaryOperator<OffsetDateTimeConstraintConfig> configModifier) {
+	public @NonNull OffsetDateTimeCodec apply(@NonNull UnaryOperator<OffsetDateTimeConstraintConfig> configModifier) {
 		Objects.requireNonNull(configModifier, "Config modifier must not be null");
 		
-		return new OffsetDateTimeCodec(configModifier.apply(
-			this.getConstraintConfig().orElse(OffsetDateTimeConstraintConfig.UNCONSTRAINED)
-		));
-	}
-	
-	@Override
-	protected @NonNull Result<Void> checkConstraints(@NonNull OffsetDateTime value) {
-		Objects.requireNonNull(value, "Value must not be null");
-		
-		Result<Void> constraintResult = this.getConstraintConfig().map(config -> config.matches(value)).orElseGet(Result::success);
-		if (constraintResult.isError()) {
-			return Result.error("OffsetDateTime value " + value + " does not meet constraints: " + constraintResult.errorOrThrow());
-		}
-		return Result.success();
+		return new OffsetDateTimeCodec(
+			configModifier.apply(this.getConstraintConfig().orElse(OffsetDateTimeConstraintConfig.UNCONSTRAINED))
+		);
 	}
 	
 	@Override
@@ -96,6 +85,11 @@ public class OffsetDateTimeCodec extends AbstractCodec<OffsetDateTime, OffsetDat
 	@Override
 	public @NonNull Result<String> encodeKey(@NonNull OffsetDateTime key) {
 		Objects.requireNonNull(key, "Key must not be null");
+		
+		Result<Void> constraintResult = this.checkConstraints(key);
+		if (constraintResult.isError()) {
+			return Result.error(constraintResult.errorOrThrow());
+		}
 		return Result.success(key.toString());
 	}
 	
@@ -131,7 +125,13 @@ public class OffsetDateTimeCodec extends AbstractCodec<OffsetDateTime, OffsetDat
 		Objects.requireNonNull(key, "Key must not be null");
 		
 		try {
-			return Result.success(OffsetDateTime.parse(key));
+			OffsetDateTime dateTime = OffsetDateTime.parse(key);
+			
+			Result<Void> constraintResult = this.checkConstraints(dateTime);
+			if (constraintResult.isError()) {
+				return Result.error(constraintResult.errorOrThrow());
+			}
+			return Result.success(dateTime);
 		} catch (DateTimeParseException e) {
 			return Result.error("Unable to decode key '" + key + "' as offset date time using '" + this + "': " + e.getMessage());
 		}

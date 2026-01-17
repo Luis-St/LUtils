@@ -20,10 +20,11 @@ package net.luis.utils.io.codec.constraint_new;
 
 import net.luis.utils.io.codec.constraint_new.builder.EnumConstraintBuilder;
 import net.luis.utils.io.codec.constraint_new.builder.NumericConstraintBuilder;
+import net.luis.utils.io.codec.constraint_new.config.UUIDConstraintConfig;
 import net.luis.utils.io.codec.constraint_new.core.UUIDVariant;
 import org.jspecify.annotations.NonNull;
 
-import java.util.UUID;
+import java.util.*;
 import java.util.function.UnaryOperator;
 
 /**
@@ -38,7 +39,35 @@ import java.util.function.UnaryOperator;
  *
  * @param <C> The return type of the constraint method (for fluent method chaining)
  */
-public interface UUIDConstraint<C> extends BaseConstraint<UUID, C> {
+public interface UUIDConstraint<C> extends ApplicableConstraint<UUIDConstraintConfig, C>, BaseConstraint<UUID, C> {
+	
+	@Override
+	@NonNull C apply(@NonNull UnaryOperator<UUIDConstraintConfig> configModifier);
+	
+	@Override
+	default @NonNull C equalTo(@NonNull UUID value) {
+		return this.apply(config -> config.withEqualTo(value));
+	}
+	
+	@Override
+	default @NonNull C notEqualTo(@NonNull UUID value) {
+		return this.apply(config -> config.withNotEqualTo(value));
+	}
+	
+	@Override
+	default @NonNull C in(@NonNull Collection<UUID> values) {
+		return this.apply(config -> config.withIn(values));
+	}
+	
+	@Override
+	default @NonNull C notIn(@NonNull Collection<UUID> values) {
+		return this.apply(config -> config.withNotIn(values));
+	}
+	
+	@Override
+	default @NonNull C custom(@NonNull Constraint<UUID> constraint) {
+		return this.apply(config -> config.withCustom(constraint));
+	}
 	
 	/**
 	 * Applies a version 1 (time-based) constraint to the UUID.<br>
@@ -123,7 +152,13 @@ public interface UUIDConstraint<C> extends BaseConstraint<UUID, C> {
 	 * @throws NullPointerException If the builder is null
 	 * @see #version(int)
 	 */
-	@NonNull C version(@NonNull UnaryOperator<NumericConstraintBuilder> builder);
+	default @NonNull C version(@NonNull UnaryOperator<NumericConstraintBuilder> builder) {
+		Objects.requireNonNull(builder, "Builder must not be null");
+		
+		NumericConstraintBuilder numericBuilder = new NumericConstraintBuilder();
+		builder.apply(numericBuilder);
+		return this.apply(config -> config.withVersion(numericBuilder.build()));
+	}
 	
 	/**
 	 * Applies a variant constraint to the UUID using a builder.<br>
@@ -137,7 +172,13 @@ public interface UUIDConstraint<C> extends BaseConstraint<UUID, C> {
 	 * @throws NullPointerException If the builder is null
 	 * @see UUIDVariant
 	 */
-	@NonNull C variant(@NonNull UnaryOperator<EnumConstraintBuilder<UUIDVariant>> builder);
+	default @NonNull C variant(@NonNull UnaryOperator<EnumConstraintBuilder<UUIDVariant>> builder) {
+		Objects.requireNonNull(builder, "Builder must not be null");
+		
+		EnumConstraintBuilder<UUIDVariant> enumBuilder = new EnumConstraintBuilder<>();
+		builder.apply(enumBuilder);
+		return this.apply(config -> config.withVariant(enumBuilder.build()));
+	}
 	
 	/**
 	 * Applies a nil UUID constraint to the type.<br>
@@ -148,7 +189,9 @@ public interface UUIDConstraint<C> extends BaseConstraint<UUID, C> {
 	 * @return A new type with the applied nil constraint
 	 * @see #notNil()
 	 */
-	@NonNull C nil();
+	default @NonNull C nil() {
+		return this.apply(UUIDConstraintConfig::withNil);
+	}
 	
 	/**
 	 * Applies a non-nil UUID constraint to the type.<br>
@@ -159,7 +202,9 @@ public interface UUIDConstraint<C> extends BaseConstraint<UUID, C> {
 	 * @return A new type with the applied non-nil constraint
 	 * @see #nil()
 	 */
-	@NonNull C notNil();
+	default @NonNull C notNil() {
+		return this.apply(UUIDConstraintConfig::withNotNil);
+	}
 	
 	/**
 	 * Applies a max UUID constraint to the type.<br>
@@ -169,5 +214,7 @@ public interface UUIDConstraint<C> extends BaseConstraint<UUID, C> {
 	 *
 	 * @return A new type with the applied max constraint
 	 */
-	@NonNull C max();
+	default @NonNull C max() {
+		return this.apply(UUIDConstraintConfig::withMax);
+	}
 }

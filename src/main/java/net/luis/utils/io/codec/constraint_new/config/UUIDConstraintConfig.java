@@ -20,6 +20,7 @@ package net.luis.utils.io.codec.constraint_new.config;
 
 import net.luis.utils.io.codec.constraint_new.Constraint;
 import net.luis.utils.io.codec.constraint_new.UUIDConstraint;
+import net.luis.utils.io.codec.constraint_new.config.matcher.ConstraintMatchers;
 import net.luis.utils.io.codec.constraint_new.core.UUIDVariant;
 import net.luis.utils.io.codec.constraint_new.core.Unit;
 import net.luis.utils.util.Pair;
@@ -28,8 +29,6 @@ import org.jetbrains.annotations.NotNull;
 import org.jspecify.annotations.NonNull;
 
 import java.util.*;
-
-import static net.luis.utils.io.codec.constraint_new.config.matcher.ConstraintMatchers.*;
 
 /**
  * Configuration record for uuid constraints.<br>
@@ -52,15 +51,21 @@ import static net.luis.utils.io.codec.constraint_new.config.matcher.ConstraintMa
 public record UUIDConstraintConfig(
 	@NonNull Optional<Pair<UUID, Boolean>> equalTo,
 	@NonNull Optional<Pair<Set<UUID>, Boolean>> in,
-	@NonNull Optional<Integer> version,
-	@NonNull Optional<UUIDVariant> variant,
+	@NonNull Optional<NumericFieldConstraintConfig> version,
+	@NonNull Optional<EnumConstraintConfig<UUIDVariant>> variant,
 	@NonNull Optional<Unit> nil,
 	@NonNull Optional<Unit> notNil,
 	@NonNull Optional<Unit> max,
 	@NonNull Optional<Constraint<UUID>> custom
 ) implements ConstraintConfig<UUID> {
 	
+	/**
+	 * The nil uuid constant (00000000-0000-0000-0000-000000000000).<br>
+	 */
 	private static final UUID NIL_UUID = new UUID(0L, 0L);
+	/**
+	 * The max uuid constant (ffffffff-ffff-ffff-ffff-ffffffffffff).<br>
+	 */
 	private static final UUID MAX_UUID = new UUID(-1L, -1L);
 	
 	/**
@@ -83,7 +88,6 @@ public record UUIDConstraintConfig(
 	 * @param custom A custom constraint implementation
 	 * @throws NullPointerException If any optional field is null
 	 * @throws IllegalArgumentException If the 'in' constraint set is empty when present
-	 * @throws IllegalArgumentException If 'version' is not between 0 and 5 when present
 	 * @throws IllegalArgumentException If both 'nil' and 'notNil' constraints are present
 	 * @throws IllegalArgumentException If both 'nil' and 'max' constraints are present
 	 */
@@ -101,10 +105,6 @@ public record UUIDConstraintConfig(
 			throw new IllegalArgumentException("In constraint set must not be empty when present");
 		}
 		
-		if (version.isPresent() && (version.get() < 0 || version.get() > 5)) {
-			throw new IllegalArgumentException("Version must be between 0 and 5 when present, but got " + version.get());
-		}
-		
 		if (nil.isPresent() && notNil.isPresent()) {
 			throw new IllegalArgumentException("Nil and not nil are mutually exclusive");
 		}
@@ -113,6 +113,8 @@ public record UUIDConstraintConfig(
 			throw new IllegalArgumentException("Nil and max are mutually exclusive");
 		}
 	}
+	
+	//region With methods
 	
 	/**
 	 * Creates a new config with the specified equal-to constraint.<br>
@@ -161,22 +163,23 @@ public record UUIDConstraintConfig(
 	/**
 	 * Creates a new config with the specified version constraint.<br>
 	 *
-	 * @param version The uuid version number to constrain to
+	 * @param config The numeric field constraint config for version validation
 	 * @return A new config with the constraint applied
 	 */
-	public @NonNull UUIDConstraintConfig withVersion(int version) {
-		return new UUIDConstraintConfig(this.equalTo, this.in, Optional.of(version), this.variant, this.nil, this.notNil, this.max, this.custom);
+	public @NonNull UUIDConstraintConfig withVersion(@NonNull NumericFieldConstraintConfig config) {
+		Objects.requireNonNull(config, "Config for 'version' constraint must not be null");
+		return new UUIDConstraintConfig(this.equalTo, this.in, Optional.of(config), this.variant, this.nil, this.notNil, this.max, this.custom);
 	}
 	
 	/**
 	 * Creates a new config with the specified variant constraint.<br>
 	 *
-	 * @param variant The uuid variant to constrain to
+	 * @param config The enum constraint config for variant validation
 	 * @return A new config with the constraint applied
 	 */
-	public @NonNull UUIDConstraintConfig withVariant(@NonNull UUIDVariant variant) {
-		Objects.requireNonNull(variant, "Variant for 'variant' constraint must not be null");
-		return new UUIDConstraintConfig(this.equalTo, this.in, this.version, Optional.of(variant), this.nil, this.notNil, this.max, this.custom);
+	public @NonNull UUIDConstraintConfig withVariant(@NonNull EnumConstraintConfig<UUIDVariant> config) {
+		Objects.requireNonNull(config, "Config for 'variant' constraint must not be null");
+		return new UUIDConstraintConfig(this.equalTo, this.in, this.version, Optional.of(config), this.nil, this.notNil, this.max, this.custom);
 	}
 	
 	/**
@@ -225,50 +228,21 @@ public record UUIDConstraintConfig(
 		Objects.requireNonNull(constraint, "Custom constraint must not be null");
 		return new UUIDConstraintConfig(this.equalTo, this.in, this.version, this.variant, this.nil, this.notNil, this.max, Optional.of(constraint));
 	}
+	//endregion
 	
 	@Override
 	public @NotNull Result<Void> matches(@NonNull UUID value) {
 		Objects.requireNonNull(value, "Value must not be null");
-		return allOf(
-			() -> matchEqualTo(value, this.equalTo),
-			() -> matchIn(value, this.in),
-			() -> this.matchVersion(value, this.version),
-			() -> this.matchVariant(value, this.variant),
-			() -> matchFlag(value, this.nil, u -> u.equals(NIL_UUID), "UUID '" + value + "' must be the nil UUID"),
-			() -> matchFlag(value, this.notNil, u -> !u.equals(NIL_UUID), "UUID '" + value + "' must not be the nil UUID"),
-			() -> matchFlag(value, this.max, u -> u.equals(MAX_UUID), "UUID '" + value + "' must be the max UUID"),
-			() -> matchCustom(value, this.custom)
+		
+		return ConstraintMatchers.allOf(
+			() -> ConstraintMatchers.matchEqualTo(value, this.equalTo),
+			() -> ConstraintMatchers.matchIn(value, this.in),
+			() -> ConstraintMatchers.matchNestedConfig(value.version(), this.version, "Version"),
+			() -> ConstraintMatchers.matchNestedConfig(UUIDVariant.from(value), this.variant, "Variant"),
+			() -> ConstraintMatchers.matchFlag(value, this.nil, u -> u.equals(NIL_UUID), "UUID '" + value + "' must be the nil UUID"),
+			() -> ConstraintMatchers.matchFlag(value, this.notNil, u -> !u.equals(NIL_UUID), "UUID '" + value + "' must not be the nil UUID"),
+			() -> ConstraintMatchers.matchFlag(value, this.max, u -> u.equals(MAX_UUID), "UUID '" + value + "' must be the max UUID"),
+			() -> ConstraintMatchers.matchCustom(value, this.custom)
 		);
-	}
-	
-	private @NonNull Result<Void> matchVersion(@NonNull UUID value, @NonNull Optional<Integer> version) {
-		if (version.isEmpty()) {
-			return Result.success();
-		}
-		int expected = version.get();
-		int actual = value.version();
-		if (actual != expected) {
-			return Result.error("UUID '" + value + "' must have version " + expected + " but has version " + actual);
-		}
-		return Result.success();
-	}
-	
-	private @NonNull Result<Void> matchVariant(@NonNull UUID value, @NonNull Optional<UUIDVariant> variant) {
-		if (variant.isEmpty()) {
-			return Result.success();
-		}
-		UUIDVariant expected = variant.get();
-		int actualVariant = value.variant();
-		UUIDVariant actual = switch (actualVariant) {
-			case 0 -> UUIDVariant.NFC;
-			case 2 -> UUIDVariant.RFC_4122;
-			case 6 -> UUIDVariant.MICROSOFT;
-			case 7 -> UUIDVariant.RESERVED;
-			default -> null;
-		};
-		if (actual != expected) {
-			return Result.error("UUID '" + value + "' must have variant " + expected + " but has variant " + actual);
-		}
-		return Result.success();
 	}
 }

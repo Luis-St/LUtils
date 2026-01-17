@@ -19,8 +19,8 @@
 package net.luis.utils.io.codec.types.temporal.zoned;
 
 import net.luis.utils.io.codec.AbstractCodec;
-import net.luis.utils.io.codec.constraint.config.temporal.ZonedDateTimeConstraintConfig;
-import net.luis.utils.io.codec.constraint.temporal.*;
+import net.luis.utils.io.codec.constraint_new.config.temporal.ZonedDateTimeConstraintConfig;
+import net.luis.utils.io.codec.constraint_new.temporal.ZonedDateTimeConstraint;
 import net.luis.utils.io.codec.provider.TypeProvider;
 import net.luis.utils.util.result.Result;
 import org.jspecify.annotations.NonNull;
@@ -40,7 +40,7 @@ import java.util.function.UnaryOperator;
  *
  * @author Luis-St
  */
-public class ZonedDateTimeCodec extends AbstractCodec<ZonedDateTime, ZonedDateTimeConstraintConfig> implements TemporalSpanConstraint<ZonedDateTime, ZonedDateTimeCodec, ZonedDateTimeConstraintConfig>, TimeFieldConstraint<ZonedDateTimeCodec, ZonedDateTimeConstraintConfig>, DateFieldConstraint<ZonedDateTimeCodec, ZonedDateTimeConstraintConfig> {
+public class ZonedDateTimeCodec extends AbstractCodec<ZonedDateTime, ZonedDateTimeConstraintConfig> implements ZonedDateTimeConstraint<ZonedDateTimeCodec> {
 	
 	/**
 	 * Constructs a new zoned date time codec.<br>
@@ -53,28 +53,17 @@ public class ZonedDateTimeCodec extends AbstractCodec<ZonedDateTime, ZonedDateTi
 	 * @param constraintConfig The constraint configuration
 	 * @throws NullPointerException If the constraint config is null
 	 */
-	public ZonedDateTimeCodec(@NonNull ZonedDateTimeConstraintConfig constraintConfig) {
+	private ZonedDateTimeCodec(@NonNull ZonedDateTimeConstraintConfig constraintConfig) {
 		super(constraintConfig);
 	}
 	
 	@Override
-	public @NonNull ZonedDateTimeCodec applyConstraint(@NonNull UnaryOperator<ZonedDateTimeConstraintConfig> configModifier) {
+	public @NonNull ZonedDateTimeCodec apply(@NonNull UnaryOperator<ZonedDateTimeConstraintConfig> configModifier) {
 		Objects.requireNonNull(configModifier, "Config modifier must not be null");
 		
-		return new ZonedDateTimeCodec(configModifier.apply(
-			this.getConstraintConfig().orElse(ZonedDateTimeConstraintConfig.UNCONSTRAINED)
-		));
-	}
-	
-	@Override
-	protected @NonNull Result<Void> checkConstraints(@NonNull ZonedDateTime value) {
-		Objects.requireNonNull(value, "Value must not be null");
-		
-		Result<Void> constraintResult = this.getConstraintConfig().map(config -> config.matches(value)).orElseGet(Result::success);
-		if (constraintResult.isError()) {
-			return Result.error("ZonedDateTime value " + value + " does not meet constraints: " + constraintResult.errorOrThrow());
-		}
-		return Result.success();
+		return new ZonedDateTimeCodec(
+			configModifier.apply(this.getConstraintConfig().orElse(ZonedDateTimeConstraintConfig.UNCONSTRAINED))
+		);
 	}
 	
 	@Override
@@ -95,6 +84,11 @@ public class ZonedDateTimeCodec extends AbstractCodec<ZonedDateTime, ZonedDateTi
 	@Override
 	public @NonNull Result<String> encodeKey(@NonNull ZonedDateTime key) {
 		Objects.requireNonNull(key, "Key must not be null");
+		
+		Result<Void> constraintResult = this.checkConstraints(key);
+		if (constraintResult.isError()) {
+			return Result.error(constraintResult.errorOrThrow());
+		}
 		return Result.success(key.toString());
 	}
 	
@@ -130,7 +124,13 @@ public class ZonedDateTimeCodec extends AbstractCodec<ZonedDateTime, ZonedDateTi
 		Objects.requireNonNull(key, "Key must not be null");
 		
 		try {
-			return Result.success(ZonedDateTime.parse(key));
+			ZonedDateTime dateTime = ZonedDateTime.parse(key);
+			
+			Result<Void> constraintResult = this.checkConstraints(dateTime);
+			if (constraintResult.isError()) {
+				return Result.error(constraintResult.errorOrThrow());
+			}
+			return Result.success(dateTime);
 		} catch (DateTimeParseException e) {
 			return Result.error("Unable to decode key '" + key + "' as zoned date time using '" + this + "': " + e.getMessage());
 		}

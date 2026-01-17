@@ -19,8 +19,8 @@
 package net.luis.utils.io.codec.types.temporal.local;
 
 import net.luis.utils.io.codec.AbstractCodec;
-import net.luis.utils.io.codec.constraint.config.temporal.YearConstraintConfig;
-import net.luis.utils.io.codec.constraint.temporal.TemporalComparisonConstraint;
+import net.luis.utils.io.codec.constraint_new.config.temporal.YearConstraintConfig;
+import net.luis.utils.io.codec.constraint_new.temporal.YearConstraint;
 import net.luis.utils.io.codec.provider.TypeProvider;
 import net.luis.utils.util.result.Result;
 import org.jspecify.annotations.NonNull;
@@ -40,7 +40,7 @@ import java.util.function.UnaryOperator;
  *
  * @author Luis-St
  */
-public class YearCodec extends AbstractCodec<Year, YearConstraintConfig> implements TemporalComparisonConstraint<Year, YearCodec, YearConstraintConfig> {
+public class YearCodec extends AbstractCodec<Year, YearConstraintConfig> implements YearConstraint<YearCodec> {
 	
 	/**
 	 * Constructs a new year codec.<br>
@@ -53,28 +53,17 @@ public class YearCodec extends AbstractCodec<Year, YearConstraintConfig> impleme
 	 * @param constraintConfig The constraint configuration
 	 * @throws NullPointerException If the constraint config is null
 	 */
-	public YearCodec(@NonNull YearConstraintConfig constraintConfig) {
+	private YearCodec(@NonNull YearConstraintConfig constraintConfig) {
 		super(constraintConfig);
 	}
 	
 	@Override
-	public @NonNull YearCodec applyConstraint(@NonNull UnaryOperator<YearConstraintConfig> configModifier) {
+	public @NonNull YearCodec apply(@NonNull UnaryOperator<YearConstraintConfig> configModifier) {
 		Objects.requireNonNull(configModifier, "Config modifier must not be null");
 		
-		return new YearCodec(configModifier.apply(
-			this.getConstraintConfig().orElse(YearConstraintConfig.UNCONSTRAINED)
-		));
-	}
-	
-	@Override
-	protected @NonNull Result<Void> checkConstraints(@NonNull Year value) {
-		Objects.requireNonNull(value, "Value must not be null");
-		
-		Result<Void> constraintResult = this.getConstraintConfig().map(config -> config.matches(value)).orElseGet(Result::success);
-		if (constraintResult.isError()) {
-			return Result.error("Year value " + value + " does not meet constraints: " + constraintResult.errorOrThrow());
-		}
-		return Result.success();
+		return new YearCodec(
+			configModifier.apply(this.getConstraintConfig().orElse(YearConstraintConfig.UNCONSTRAINED))
+		);
 	}
 	
 	@Override
@@ -95,6 +84,11 @@ public class YearCodec extends AbstractCodec<Year, YearConstraintConfig> impleme
 	@Override
 	public @NonNull Result<String> encodeKey(@NonNull Year key) {
 		Objects.requireNonNull(key, "Key must not be null");
+		
+		Result<Void> constraintResult = this.checkConstraints(key);
+		if (constraintResult.isError()) {
+			return Result.error(constraintResult.errorOrThrow());
+		}
 		return Result.success(String.valueOf(key.getValue()));
 	}
 	
@@ -131,7 +125,13 @@ public class YearCodec extends AbstractCodec<Year, YearConstraintConfig> impleme
 		Objects.requireNonNull(key, "Key must not be null");
 		
 		try {
-			return Result.success(Year.of(Integer.parseInt(key)));
+			Year year = Year.of(Integer.parseInt(key));
+			
+			Result<Void> constraintResult = this.checkConstraints(year);
+			if (constraintResult.isError()) {
+				return Result.error(constraintResult.errorOrThrow());
+			}
+			return Result.success(year);
 		} catch (NumberFormatException | DateTimeParseException e) {
 			return Result.error("Unable to decode key '" + key + "' as year using '" + this + "': " + e.getMessage());
 		}

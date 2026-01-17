@@ -18,6 +18,11 @@
 
 package net.luis.utils.io.codec.constraint_new.core;
 
+import org.jspecify.annotations.NonNull;
+
+import java.util.Objects;
+import java.util.UUID;
+
 /**
  * Enumeration of UUID variant types as defined in RFC 4122.<br>
  * <p>
@@ -65,5 +70,25 @@ public enum UUIDVariant {
 	 *     The three high bits of clock_seq_hi_and_reserved are 111.
 	 * </p>
 	 */
-	RESERVED
+	RESERVED;
+	
+	/**
+	 * Gets the variant type from the given UUID instance.<br>
+	 *
+	 * @param uuid The UUID instance
+	 * @return The corresponding UUID variant
+	 * @throws NullPointerException If the UUID is null
+	 * @throws IllegalArgumentException If the UUID has an unknown variant
+	 */
+	public static @NonNull UUIDVariant from(@NonNull UUID uuid) {
+		Objects.requireNonNull(uuid, "UUID must not be null");
+		
+		return switch (uuid.variant()) {
+			case 0 -> NFC;
+			case 2 -> RFC_4122;
+			case 6 -> MICROSOFT;
+			case 7 -> RESERVED;
+			default -> throw new IllegalArgumentException("Unknown UUID variant: " + uuid.variant());
+		};
+	}
 }

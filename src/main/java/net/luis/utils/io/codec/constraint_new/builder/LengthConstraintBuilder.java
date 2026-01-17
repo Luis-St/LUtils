@@ -19,49 +19,49 @@
 package net.luis.utils.io.codec.constraint_new.builder;
 
 import net.luis.utils.io.codec.constraint_new.Constraint;
-import net.luis.utils.io.codec.constraint_new.SizeConstraint;
-import net.luis.utils.io.codec.constraint_new.config.SizeConstraintConfig;
+import net.luis.utils.io.codec.constraint_new.LengthConstraint;
+import net.luis.utils.io.codec.constraint_new.config.LengthConstraintConfig;
 import org.jspecify.annotations.NonNull;
 
 import java.util.Collection;
 import java.util.Objects;
 
 /**
- * Builder class for constructing size-based constraints.<br>
+ * Builder class for constructing length-based constraints.<br>
  * <p>
- *     This builder implements {@link SizeConstraint} to provide a fluent API for building
- *     constraints on collection sizes.<br>
- *     It is typically used as a parameter to constraint builder methods that accept size constraints.
+ *     This builder implements {@link LengthConstraint} to provide a fluent API for building
+ *     constraints on string lengths or array lengths.<br>
+ *     It is typically used as a parameter to constraint builder methods that accept length constraints.
  * </p>
  *
  * @author Luis-St
  */
-public class SizeConstraintBuilder implements SizeConstraint<Integer, SizeConstraintBuilder> {
+public class LengthConstraintBuilder implements LengthConstraint<Integer, LengthConstraintBuilder> {
 	
 	/**
 	 * The current constraint configuration being built.<br>
 	 */
-	private SizeConstraintConfig config;
+	private LengthConstraintConfig config;
 	
 	/**
-	 * Constructs a new size constraint builder with no constraints applied.<br>
+	 * Constructs a new length constraint builder with no constraints applied.<br>
 	 */
-	public SizeConstraintBuilder() {
-		this.config = SizeConstraintConfig.UNCONSTRAINED;
+	public LengthConstraintBuilder() {
+		this.config = LengthConstraintConfig.UNCONSTRAINED;
 	}
 	
 	/**
-	 * Constructs a new size constraint builder with the specified initial config.<br>
+	 * Constructs a new length constraint builder with the specified initial config.<br>
 	 *
 	 * @param initialConfig The initial configuration to use
 	 * @throws NullPointerException If the initial config is null
 	 */
-	public SizeConstraintBuilder(@NonNull SizeConstraintConfig initialConfig) {
+	public LengthConstraintBuilder(@NonNull LengthConstraintConfig initialConfig) {
 		this.config = Objects.requireNonNull(initialConfig, "Initial config must not be null");
 	}
 	
 	@Override
-	public @NonNull SizeConstraintBuilder equalTo(@NonNull Integer value) {
+	public @NonNull LengthConstraintBuilder equalTo(@NonNull Integer value) {
 		Objects.requireNonNull(value, "Value for 'equal to' constraint must not be null");
 		
 		this.config = this.config.withEqualTo(value);
@@ -69,7 +69,7 @@ public class SizeConstraintBuilder implements SizeConstraint<Integer, SizeConstr
 	}
 	
 	@Override
-	public @NonNull SizeConstraintBuilder notEqualTo(@NonNull Integer value) {
+	public @NonNull LengthConstraintBuilder notEqualTo(@NonNull Integer value) {
 		Objects.requireNonNull(value, "Value for 'not equal to' constraint must not be null");
 		
 		this.config = this.config.withNotEqualTo(value);
@@ -77,7 +77,7 @@ public class SizeConstraintBuilder implements SizeConstraint<Integer, SizeConstr
 	}
 	
 	@Override
-	public @NonNull SizeConstraintBuilder in(@NonNull Collection<Integer> values) {
+	public @NonNull LengthConstraintBuilder in(@NonNull Collection<Integer> values) {
 		Objects.requireNonNull(values, "Values for 'in' constraint must not be null");
 		
 		this.config = this.config.withIn(values);
@@ -85,7 +85,7 @@ public class SizeConstraintBuilder implements SizeConstraint<Integer, SizeConstr
 	}
 	
 	@Override
-	public @NonNull SizeConstraintBuilder notIn(@NonNull Collection<Integer> values) {
+	public @NonNull LengthConstraintBuilder notIn(@NonNull Collection<Integer> values) {
 		Objects.requireNonNull(values, "Values for 'not in' constraint must not be null");
 		
 		this.config = this.config.withNotIn(values);
@@ -93,7 +93,7 @@ public class SizeConstraintBuilder implements SizeConstraint<Integer, SizeConstr
 	}
 	
 	@Override
-	public @NonNull SizeConstraintBuilder custom(@NonNull Constraint<Integer> constraint) {
+	public @NonNull LengthConstraintBuilder custom(@NonNull Constraint<Integer> constraint) {
 		Objects.requireNonNull(constraint, "Custom constraint must not be null");
 		
 		this.config = this.config.withCustom(constraint);
@@ -101,35 +101,35 @@ public class SizeConstraintBuilder implements SizeConstraint<Integer, SizeConstr
 	}
 	
 	@Override
-	public @NonNull SizeConstraintBuilder minSize(int minSize) {
-		this.config = this.config.withMinSize(minSize);
+	public @NonNull LengthConstraintBuilder minLength(int minLength) {
+		this.config = this.config.withMinLength(minLength);
 		return this;
 	}
 	
 	@Override
-	public @NonNull SizeConstraintBuilder maxSize(int maxSize) {
-		this.config = this.config.withMaxSize(maxSize);
+	public @NonNull LengthConstraintBuilder maxLength(int maxLength) {
+		this.config = this.config.withMaxLength(maxLength);
 		return this;
 	}
 	
 	@Override
-	public @NonNull SizeConstraintBuilder exactSize(int exactSize) {
-		this.config = this.config.withExactSize(exactSize);
+	public @NonNull LengthConstraintBuilder exactLength(int exactLength) {
+		this.config = this.config.withExactLength(exactLength);
 		return this;
 	}
 	
 	@Override
-	public @NonNull SizeConstraintBuilder sizeBetween(int minSize, int maxSize) {
-		this.config = this.config.withSizeBetween(minSize, maxSize);
+	public @NonNull LengthConstraintBuilder lengthBetween(int minLength, int maxLength) {
+		this.config = this.config.withLengthBetween(minLength, maxLength);
 		return this;
 	}
 	
 	/**
 	 * Builds and returns the constraint configuration.<br>
 	 *
-	 * @return The built size constraint config
+	 * @return The built length constraint config
 	 */
-	public @NonNull SizeConstraintConfig build() {
+	public @NonNull LengthConstraintConfig build() {
 		return this.config;
 	}
 }

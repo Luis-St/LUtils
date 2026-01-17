@@ -21,6 +21,7 @@ package net.luis.utils.io.codec.constraint_new.network;
 import net.luis.utils.io.codec.constraint_new.MapConstraint;
 import net.luis.utils.io.codec.constraint_new.builder.SizeConstraintBuilder;
 import net.luis.utils.io.codec.constraint_new.builder.StringConstraintBuilder;
+import net.luis.utils.io.codec.constraint_new.config.MapConstraintConfig;
 import org.jspecify.annotations.NonNull;
 
 import java.util.List;
@@ -40,6 +41,11 @@ import java.util.regex.Pattern;
  * @param <C> The return type of the constraint method (for fluent method chaining)
  */
 public interface QueryConstraint<C> extends MapConstraint<String, List<String>, C> {
+	
+	// ToDo: Fix
+	
+	@Override
+	@NonNull C apply(@NonNull UnaryOperator<MapConstraintConfig<String, List<String>>> configModifier);
 	
 	/**
 	 * Applies a value constraint to a specific query parameter key using a builder.<br>

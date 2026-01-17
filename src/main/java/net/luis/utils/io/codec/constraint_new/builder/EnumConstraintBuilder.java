@@ -39,19 +39,19 @@ import java.util.Objects;
  * @param <T> The enum type being constrained
  */
 public class EnumConstraintBuilder<T extends Enum<T>> implements BaseConstraint<T, EnumConstraintBuilder<T>> {
-
+	
 	/**
 	 * The current constraint configuration being built.<br>
 	 */
 	private EnumConstraintConfig<T> config;
-
+	
 	/**
 	 * Constructs a new enum constraint builder with no constraints applied.<br>
 	 */
 	public EnumConstraintBuilder() {
 		this.config = EnumConstraintConfig.unconstrained();
 	}
-
+	
 	/**
 	 * Constructs a new enum constraint builder with the specified initial config.<br>
 	 *

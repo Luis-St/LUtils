@@ -19,9 +19,10 @@
 package net.luis.utils.io.codec.constraint_new.config.network;
 
 import net.luis.utils.io.codec.constraint_new.Constraint;
+import net.luis.utils.io.codec.constraint_new.config.ConstraintConfig;
+import net.luis.utils.io.codec.constraint_new.config.EnumConstraintConfig;
 import net.luis.utils.io.codec.constraint_new.config.matcher.ConstraintMatchers;
 import net.luis.utils.io.codec.constraint_new.config.matcher.NetworkMatchers;
-import net.luis.utils.io.codec.constraint_new.config.*;
 import net.luis.utils.io.codec.constraint_new.core.PortRange;
 import net.luis.utils.util.Pair;
 import net.luis.utils.util.result.Result;
@@ -203,7 +204,7 @@ public record PortConstraintConfig(
 	@Override
 	public @NotNull Result<Void> matches(@NonNull Integer value) {
 		Objects.requireNonNull(value, "Value must not be null");
-
+		
 		return ConstraintMatchers.allOf(
 			() -> ConstraintMatchers.matchEqualTo(value, this.equalTo),
 			() -> ConstraintMatchers.matchIn(value, this.in),

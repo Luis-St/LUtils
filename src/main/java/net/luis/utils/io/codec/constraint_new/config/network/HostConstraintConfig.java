@@ -51,14 +51,14 @@ public record HostConstraintConfig(
 	@NonNull Optional<DomainConstraintConfig> domain,
 	@NonNull Optional<Constraint<String>> custom
 ) implements ConstraintConfig<String> {
-
+	
 	/**
 	 * An unconstrained host configuration with no constraints applied.<br>
 	 */
 	public static final HostConstraintConfig UNCONSTRAINED = new HostConstraintConfig(
 		Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty()
 	);
-
+	
 	/**
 	 * Constructs a new host constraint config with the specified parameters.<br>
 	 *
@@ -77,18 +77,18 @@ public record HostConstraintConfig(
 		Objects.requireNonNull(ip, "Optional for 'ip' constraint must not be null");
 		Objects.requireNonNull(domain, "Optional for 'domain' constraint must not be null");
 		Objects.requireNonNull(custom, "Optional for 'custom' constraint must not be null");
-
+		
 		if (in.isPresent() && in.get().getFirst().isEmpty()) {
 			throw new IllegalArgumentException("In constraint set must not be empty when present");
 		}
-
+		
 		if (ip.isPresent() && domain.isPresent()) {
 			throw new IllegalArgumentException("Both ip and domain constraints cannot be present at the same time");
 		}
 	}
-
+	
 	//region With methods
-
+	
 	/**
 	 * Creates a new config with the specified equal-to constraint.<br>
 	 *
@@ -99,7 +99,7 @@ public record HostConstraintConfig(
 		Objects.requireNonNull(value, "Value for 'equal to' constraint must not be null");
 		return new HostConstraintConfig(Optional.of(Pair.of(value, false)), this.in, this.ip, this.domain, this.custom);
 	}
-
+	
 	/**
 	 * Creates a new config with the specified not-equal-to constraint.<br>
 	 *
@@ -110,7 +110,7 @@ public record HostConstraintConfig(
 		Objects.requireNonNull(value, "Value for 'not equal to' constraint must not be null");
 		return new HostConstraintConfig(Optional.of(Pair.of(value, true)), this.in, this.ip, this.domain, this.custom);
 	}
-
+	
 	/**
 	 * Creates a new config with the specified inclusion constraint.<br>
 	 *
@@ -121,7 +121,7 @@ public record HostConstraintConfig(
 		Objects.requireNonNull(values, "Values for 'in' constraint must not be null");
 		return new HostConstraintConfig(this.equalTo, Optional.of(Pair.of(Set.copyOf(values), false)), this.ip, this.domain, this.custom);
 	}
-
+	
 	/**
 	 * Creates a new config with the specified exclusion constraint.<br>
 	 *
@@ -132,7 +132,7 @@ public record HostConstraintConfig(
 		Objects.requireNonNull(values, "Values for 'not in' constraint must not be null");
 		return new HostConstraintConfig(this.equalTo, Optional.of(Pair.of(Set.copyOf(values), true)), this.ip, this.domain, this.custom);
 	}
-
+	
 	/**
 	 * Creates a new config with the specified IP address constraint.<br>
 	 * <p>
@@ -146,7 +146,7 @@ public record HostConstraintConfig(
 		Objects.requireNonNull(config, "Config for 'ip' constraint must not be null");
 		return new HostConstraintConfig(this.equalTo, this.in, Optional.of(config), Optional.empty(), this.custom);
 	}
-
+	
 	/**
 	 * Creates a new config with the specified domain name constraint.<br>
 	 * <p>
@@ -160,7 +160,7 @@ public record HostConstraintConfig(
 		Objects.requireNonNull(config, "Config for 'domain' constraint must not be null");
 		return new HostConstraintConfig(this.equalTo, this.in, Optional.empty(), Optional.of(config), this.custom);
 	}
-
+	
 	/**
 	 * Creates a new config with the specified custom constraint.<br>
 	 *
@@ -172,11 +172,11 @@ public record HostConstraintConfig(
 		return new HostConstraintConfig(this.equalTo, this.in, this.ip, this.domain, Optional.of(constraint));
 	}
 	//endregion
-
+	
 	@Override
 	public @NotNull Result<Void> matches(@NonNull String value) {
 		Objects.requireNonNull(value, "Value must not be null");
-
+		
 		return ConstraintMatchers.allOf(
 			() -> ConstraintMatchers.matchEqualTo(value, this.equalTo),
 			() -> ConstraintMatchers.matchIn(value, this.in),

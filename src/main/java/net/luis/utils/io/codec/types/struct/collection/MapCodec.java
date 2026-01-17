@@ -21,8 +21,8 @@ package net.luis.utils.io.codec.types.struct.collection;
 import net.luis.utils.collection.util.SimpleEntry;
 import net.luis.utils.io.codec.AbstractCodec;
 import net.luis.utils.io.codec.Codec;
-import net.luis.utils.io.codec.constraint.SizeConstraint;
-import net.luis.utils.io.codec.constraint.config.SizeConstraintConfig;
+import net.luis.utils.io.codec.constraint_new.MapConstraint;
+import net.luis.utils.io.codec.constraint_new.config.MapConstraintConfig;
 import net.luis.utils.io.codec.provider.TypeProvider;
 import net.luis.utils.util.result.Result;
 import org.jspecify.annotations.NonNull;
@@ -40,7 +40,7 @@ import java.util.function.UnaryOperator;
  * @param <K> The type of keys in the map
  * @param <V> The type of values in the map
  */
-public class MapCodec<K, V> extends AbstractCodec<Map<K, V>, SizeConstraintConfig> implements SizeConstraint<Map<K, V>, MapCodec<K, V>> {
+public class MapCodec<K, V> extends AbstractCodec<Map<K, V>, MapConstraintConfig<K, V>> implements MapConstraint<K, V, MapCodec<K, V>> {
 	
 	/**
 	 * The codec used to encode and decode the keys of the map.<br>
@@ -64,43 +64,32 @@ public class MapCodec<K, V> extends AbstractCodec<Map<K, V>, SizeConstraintConfi
 	}
 	
 	/**
-	 * Constructs a new map codec using the given codecs for the keys and values and the given size constraint configuration.<br>
+	 * Constructs a new map codec using the given codecs for the keys and values and the given configuration.<br>
 	 *
 	 * @param keyCodec The key codec
 	 * @param valueCodec The value codec
-	 * @param constraintConfig The size constraint configuration
-	 * @throws NullPointerException If the key or value codec is null
+	 * @param config The constraint configuration
+	 * @throws NullPointerException If the key codec, value codec or the config is null
 	 */
-	public MapCodec(@NonNull Codec<K> keyCodec, @NonNull Codec<V> valueCodec, @NonNull SizeConstraintConfig constraintConfig) {
+	private MapCodec(@NonNull Codec<K> keyCodec, @NonNull Codec<V> valueCodec, @NonNull MapConstraintConfig<K, V> config) {
+		super(config);
 		this.keyCodec = Objects.requireNonNull(keyCodec, "Key codec must not be null");
 		this.valueCodec = Objects.requireNonNull(valueCodec, "Value codec must not be null");
-		super(constraintConfig);
+	}
+	
+	@Override
+	public @NonNull MapCodec<K, V> apply(@NonNull UnaryOperator<MapConstraintConfig<K, V>> configModifier) {
+		Objects.requireNonNull(configModifier, "Config modifier must not be null");
+		
+		return new MapCodec<>(
+			this.keyCodec, this.valueCodec, configModifier.apply(this.getConstraintConfig().orElse(MapConstraintConfig.unconstrained()))
+		);
 	}
 	
 	@Override
 	@SuppressWarnings("unchecked")
 	public @NonNull Class<Map<K, V>> getType() {
 		return (Class<Map<K, V>>) (Class<?>) Map.class;
-	}
-	
-	@Override
-	public @NonNull MapCodec<K, V> applyConstraint(@NonNull UnaryOperator<SizeConstraintConfig> configModifier) {
-		Objects.requireNonNull(configModifier, "Config modifier must not be null");
-		
-		return new MapCodec<>(this.keyCodec, this.valueCodec, configModifier.apply(
-			this.getConstraintConfig().orElse(SizeConstraintConfig.UNCONSTRAINED)
-		));
-	}
-	
-	@Override
-	protected @NonNull Result<Void> checkConstraints(@NonNull Map<K, V> value) {
-		Objects.requireNonNull(value, "Value must not be null");
-		
-		Result<Void> constraintResult = this.getConstraintConfig().map(config -> config.matches(value.size())).orElseGet(Result::success);
-		if (constraintResult.isError()) {
-			return Result.error("Map " + value + " does not meet constraints: " + constraintResult.errorOrThrow());
-		}
-		return Result.success();
 	}
 	
 	@Override

@@ -18,47 +18,68 @@
 
 package net.luis.utils.io.codec.constraint_new;
 
-import net.luis.utils.io.codec.constraint_new.config.EnumConstraintConfig;
+import net.luis.utils.io.codec.constraint_new.config.ArrayConstraintConfig;
 import org.jspecify.annotations.NonNull;
 
 import java.util.Collection;
 import java.util.function.UnaryOperator;
 
 /**
- * Base interface for all enum constraint types that provides fundamental equality and membership operations.<br>
+ * Constraint interface for array types that provides size validation operations.<br>
  *
  * @author Luis-St
  *
- * @param <T> The type of the constraint configuration
+ * @param <T> The element type of the array
  * @param <C> The return type of the constraint method (for fluent method chaining)
  */
-public interface EnumConstraint<T extends Enum<T>, C> extends ApplicableConstraint<EnumConstraintConfig<T>, C>, BaseConstraint<T, C> {
+@FunctionalInterface
+public interface ArrayConstraint<T, C> extends ApplicableConstraint<ArrayConstraintConfig<T>, C>, LengthConstraint<T[], C> {
 	
 	@Override
-	@NonNull C apply(@NonNull UnaryOperator<EnumConstraintConfig<T>> configModifier);
+	@NonNull C apply(@NonNull UnaryOperator<ArrayConstraintConfig<T>> configModifier);
 	
 	@Override
-	default @NonNull C equalTo(@NonNull T value) {
+	default @NonNull C equalTo(T @NonNull [] value) {
 		return this.apply(config -> config.withEqualTo(value));
 	}
 	
 	@Override
-	default @NonNull C notEqualTo(@NonNull T value) {
+	default @NonNull C notEqualTo(T @NonNull [] value) {
 		return this.apply(config -> config.withNotEqualTo(value));
 	}
 	
 	@Override
-	default @NonNull C in(@NonNull Collection<T> values) {
+	default @NonNull C in(@NonNull Collection<T[]> values) {
 		return this.apply(config -> config.withIn(values));
 	}
 	
 	@Override
-	default @NonNull C notIn(@NonNull Collection<T> values) {
+	default @NonNull C notIn(@NonNull Collection<T[]> values) {
 		return this.apply(config -> config.withNotIn(values));
 	}
 	
 	@Override
-	default @NonNull C custom(@NonNull Constraint<T> constraint) {
+	default @NonNull C custom(@NonNull Constraint<T[]> constraint) {
 		return this.apply(config -> config.withCustom(constraint));
+	}
+	
+	@Override
+	default @NonNull C minLength(int minLength) {
+		return this.apply(config -> config.withMinLength(minLength));
+	}
+	
+	@Override
+	default @NonNull C maxLength(int maxLength) {
+		return this.apply(config -> config.withMaxLength(maxLength));
+	}
+	
+	@Override
+	default @NonNull C exactLength(int exactLength) {
+		return this.apply(config -> config.withExactLength(exactLength));
+	}
+	
+	@Override
+	default @NonNull C lengthBetween(int minLength, int maxLength) {
+		return this.apply(config -> config.withLengthBetween(minLength, maxLength));
 	}
 }

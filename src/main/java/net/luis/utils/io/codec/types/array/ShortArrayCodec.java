@@ -19,8 +19,8 @@
 package net.luis.utils.io.codec.types.array;
 
 import net.luis.utils.io.codec.*;
-import net.luis.utils.io.codec.constraint.LengthConstraint;
-import net.luis.utils.io.codec.constraint.config.LengthConstraintConfig;
+import net.luis.utils.io.codec.constraint_new.ArrayConstraint;
+import net.luis.utils.io.codec.constraint_new.config.ArrayConstraintConfig;
 import net.luis.utils.io.codec.provider.TypeProvider;
 import net.luis.utils.util.result.Result;
 import org.apache.commons.lang3.ArrayUtils;
@@ -36,7 +36,7 @@ import java.util.function.UnaryOperator;
  *
  * @author Luis-St
  */
-public class ShortArrayCodec extends AbstractCodec<short[], LengthConstraintConfig> implements LengthConstraint<short[], ShortArrayCodec> {
+public class ShortArrayCodec extends AbstractCodec<short[], ArrayConstraintConfig<short[]>> implements ArrayConstraint<short[], ShortArrayCodec> {
 	
 	/**
 	 * The internal codec that handles the conversion between a list of shorts and the array representation.<br>
@@ -51,31 +51,20 @@ public class ShortArrayCodec extends AbstractCodec<short[], LengthConstraintConf
 	/**
 	 * Constructs a new short array codec with the specified length constraint configuration.<br>
 	 *
-	 * @param constraintConfig The length constraint configuration
+	 * @param config The constraint configuration
 	 * @throws NullPointerException If the constraint config is null
 	 */
-	public ShortArrayCodec(@NonNull LengthConstraintConfig constraintConfig) {
-		super(constraintConfig);
+	private ShortArrayCodec(@NonNull ArrayConstraintConfig<short[]> config) {
+		super(config);
 	}
 	
 	@Override
-	public @NonNull ShortArrayCodec applyConstraint(@NonNull UnaryOperator<LengthConstraintConfig> configModifier) {
+	public @NonNull ShortArrayCodec apply(@NonNull UnaryOperator<ArrayConstraintConfig<short[]>> configModifier) {
 		Objects.requireNonNull(configModifier, "Config modifier must not be null");
 		
-		return new ShortArrayCodec(configModifier.apply(
-			this.getConstraintConfig().orElse(LengthConstraintConfig.UNCONSTRAINED)
-		));
-	}
-	
-	@Override
-	protected @NonNull Result<Void> checkConstraints(short @NonNull [] value) {
-		Objects.requireNonNull(value, "Value must not be null");
-		
-		Result<Void> constraintResult = this.getConstraintConfig().map(config -> config.matches(value.length)).orElseGet(Result::success);
-		if (constraintResult.isError()) {
-			return Result.error("Short array " + Arrays.toString(value) + " does not meet constraints: " + constraintResult.errorOrThrow());
-		}
-		return Result.success();
+		return new ShortArrayCodec(
+			configModifier.apply(this.getConstraintConfig().orElse(ArrayConstraintConfig.unconstrained()))
+		);
 	}
 	
 	@Override

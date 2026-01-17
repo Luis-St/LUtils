@@ -19,11 +19,9 @@
 package net.luis.utils.io.codec.types.primitive.numeric;
 
 import net.luis.utils.io.codec.AbstractCodec;
-import net.luis.utils.io.codec.constraint.config.numeric.IntegerConstraintConfig;
-import net.luis.utils.io.codec.constraint.core.NumberProvider;
-import net.luis.utils.io.codec.constraint.numeric.IntegerConstraint;
+import net.luis.utils.io.codec.constraint_new.config.numeric.IntegerConstraintConfig;
+import net.luis.utils.io.codec.constraint_new.numeric.IntegerConstraint;
 import net.luis.utils.io.codec.provider.TypeProvider;
-import net.luis.utils.math.NumberType;
 import net.luis.utils.util.result.Result;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
@@ -49,33 +47,17 @@ public class LongCodec extends AbstractCodec<Long, IntegerConstraintConfig<Long>
 	 * @param constraintConfig The integer constraint configuration
 	 * @throws NullPointerException If the constraint config is null
 	 */
-	public LongCodec(@NonNull IntegerConstraintConfig<Long> constraintConfig) {
+	private LongCodec(@NonNull IntegerConstraintConfig<Long> constraintConfig) {
 		super(constraintConfig);
 	}
 	
 	@Override
-	public @NonNull LongCodec applyConstraint(@NonNull UnaryOperator<IntegerConstraintConfig<Long>> configModifier) {
+	public @NonNull LongCodec apply(@NonNull UnaryOperator<IntegerConstraintConfig<Long>> configModifier) {
 		Objects.requireNonNull(configModifier, "Config modifier must not be null");
 		
-		return new LongCodec(configModifier.apply(
-			this.getConstraintConfig().orElse(IntegerConstraintConfig.unconstrained())
-		));
-	}
-	
-	@Override
-	public @NonNull NumberProvider<Long> provider() {
-		return NumberProvider.of(0L, 1L, 100L);
-	}
-	
-	@Override
-	protected @NonNull Result<Void> checkConstraints(@NonNull Long value) {
-		Objects.requireNonNull(value, "Value must not be null");
-		
-		Result<Void> constraintResult = this.getConstraintConfig().map(config -> config.matches(NumberType.LONG, value)).orElseGet(Result::success);
-		if (constraintResult.isError()) {
-			return Result.error("Long value " + value + " does not meet constraints: " + constraintResult.errorOrThrow());
-		}
-		return Result.success();
+		return new LongCodec(
+			configModifier.apply(this.getConstraintConfig().orElse(IntegerConstraintConfig.unconstrained()))
+		);
 	}
 	
 	@Override
@@ -96,6 +78,11 @@ public class LongCodec extends AbstractCodec<Long, IntegerConstraintConfig<Long>
 	@Override
 	public @NonNull Result<String> encodeKey(@NonNull Long key) {
 		Objects.requireNonNull(key, "Key must not be null");
+		
+		Result<Void> constraintResult = this.checkConstraints(key);
+		if (constraintResult.isError()) {
+			return Result.error(constraintResult.errorOrThrow());
+		}
 		return Result.success(Long.toString(key));
 	}
 	
@@ -125,7 +112,13 @@ public class LongCodec extends AbstractCodec<Long, IntegerConstraintConfig<Long>
 		Objects.requireNonNull(key, "Key must not be null");
 		
 		try {
-			return Result.success(Long.parseLong(key));
+			Long longValue = Long.parseLong(key);
+			
+			Result<Void> constraintResult = this.checkConstraints(longValue);
+			if (constraintResult.isError()) {
+				return Result.error(constraintResult.errorOrThrow());
+			}
+			return Result.success(longValue);
 		} catch (Exception e) {
 			return Result.error("Unable to decode key '" + key + "' as long using '" + this + "': " + e.getMessage());
 		}

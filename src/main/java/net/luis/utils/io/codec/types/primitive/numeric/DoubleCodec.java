@@ -19,11 +19,9 @@
 package net.luis.utils.io.codec.types.primitive.numeric;
 
 import net.luis.utils.io.codec.AbstractCodec;
-import net.luis.utils.io.codec.constraint.config.numeric.DecimalConstraintConfig;
-import net.luis.utils.io.codec.constraint.core.NumberProvider;
-import net.luis.utils.io.codec.constraint.numeric.DecimalConstraint;
+import net.luis.utils.io.codec.constraint_new.config.numeric.DecimalConstraintConfig;
+import net.luis.utils.io.codec.constraint_new.numeric.DecimalConstraint;
 import net.luis.utils.io.codec.provider.TypeProvider;
-import net.luis.utils.math.NumberType;
 import net.luis.utils.util.result.Result;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
@@ -49,33 +47,17 @@ public class DoubleCodec extends AbstractCodec<Double, DecimalConstraintConfig<D
 	 * @param constraintConfig The decimal constraint configuration
 	 * @throws NullPointerException If the constraint config is null
 	 */
-	public DoubleCodec(@NonNull DecimalConstraintConfig<Double> constraintConfig) {
+	private DoubleCodec(@NonNull DecimalConstraintConfig<Double> constraintConfig) {
 		super(constraintConfig);
 	}
 	
 	@Override
-	public @NonNull DoubleCodec applyConstraint(@NonNull UnaryOperator<DecimalConstraintConfig<Double>> configModifier) {
+	public @NonNull DoubleCodec apply(@NonNull UnaryOperator<DecimalConstraintConfig<Double>> configModifier) {
 		Objects.requireNonNull(configModifier, "Config modifier must not be null");
 		
-		return new DoubleCodec(configModifier.apply(
-			this.getConstraintConfig().orElse(DecimalConstraintConfig.unconstrained())
-		));
-	}
-	
-	@Override
-	public @NonNull NumberProvider<Double> provider() {
-		return NumberProvider.of(0.0, 1.0, 100.0);
-	}
-	
-	@Override
-	protected @NonNull Result<Void> checkConstraints(@NonNull Double value) {
-		Objects.requireNonNull(value, "Value must not be null");
-		
-		Result<Void> constraintResult = this.getConstraintConfig().map(config -> config.matches(NumberType.DOUBLE, value)).orElseGet(Result::success);
-		if (constraintResult.isError()) {
-			return Result.error("Double value " + value + " does not meet constraints: " + constraintResult.errorOrThrow());
-		}
-		return Result.success();
+		return new DoubleCodec(
+			configModifier.apply(this.getConstraintConfig().orElse(DecimalConstraintConfig.unconstrained()))
+		);
 	}
 	
 	@Override
@@ -96,6 +78,11 @@ public class DoubleCodec extends AbstractCodec<Double, DecimalConstraintConfig<D
 	@Override
 	public @NonNull Result<String> encodeKey(@NonNull Double key) {
 		Objects.requireNonNull(key, "Key must not be null");
+		
+		Result<Void> constraintResult = this.checkConstraints(key);
+		if (constraintResult.isError()) {
+			return Result.error(constraintResult.errorOrThrow());
+		}
 		return Result.success(Double.toString(key));
 	}
 	
@@ -125,7 +112,13 @@ public class DoubleCodec extends AbstractCodec<Double, DecimalConstraintConfig<D
 		Objects.requireNonNull(key, "Key must not be null");
 		
 		try {
-			return Result.success(Double.parseDouble(key));
+			Double doubleValue = Double.parseDouble(key);
+			
+			Result<Void> constraintResult = this.checkConstraints(doubleValue);
+			if (constraintResult.isError()) {
+				return Result.error(constraintResult.errorOrThrow());
+			}
+			return Result.success(doubleValue);
 		} catch (Exception e) {
 			return Result.error("Unable to decode key '" + key + "' as double using '" + this + "': " + e.getMessage());
 		}

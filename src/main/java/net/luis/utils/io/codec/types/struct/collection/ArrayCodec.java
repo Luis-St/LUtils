@@ -19,8 +19,8 @@
 package net.luis.utils.io.codec.types.struct.collection;
 
 import net.luis.utils.io.codec.*;
-import net.luis.utils.io.codec.constraint.LengthConstraint;
-import net.luis.utils.io.codec.constraint.config.LengthConstraintConfig;
+import net.luis.utils.io.codec.constraint_new.ArrayConstraint;
+import net.luis.utils.io.codec.constraint_new.config.ArrayConstraintConfig;
 import net.luis.utils.io.codec.provider.TypeProvider;
 import net.luis.utils.util.result.Result;
 import org.jspecify.annotations.NonNull;
@@ -47,7 +47,7 @@ import java.util.function.UnaryOperator;
  *
  * @param <C> The type of elements in the array
  */
-public class ArrayCodec<C> extends AbstractCodec<C[], LengthConstraintConfig> implements LengthConstraint<C[], ArrayCodec<C>> {
+public class ArrayCodec<C> extends AbstractCodec<C[], ArrayConstraintConfig<C>> implements ArrayConstraint<C, ArrayCodec<C>> {
 	
 	/**
 	 * The type of the elements in the array.<br>
@@ -79,33 +79,22 @@ public class ArrayCodec<C> extends AbstractCodec<C[], LengthConstraintConfig> im
 	 *
 	 * @param type The type of the elements in the array
 	 * @param codec The codec for the elements
-	 * @param constraintConfig The length constraint configuration
-	 * @throws NullPointerException If the type, codec, or constraint configuration is null
+	 * @param config The constraint configuration
+	 * @throws NullPointerException If the type, codec, or the config is null
 	 */
-	public ArrayCodec(@NonNull Class<C> type, @NonNull Codec<C> codec, @NonNull LengthConstraintConfig constraintConfig) {
+	private ArrayCodec(@NonNull Class<C> type, @NonNull Codec<C> codec, @NonNull ArrayConstraintConfig<C> config) {
+		super(config);
 		this.type = Objects.requireNonNull(type, "Type must not be null");
 		this.codec = Objects.requireNonNull(codec, "Codec must not be null");
-		super(constraintConfig);
 	}
 	
 	@Override
-	public @NonNull ArrayCodec<C> applyConstraint(@NonNull UnaryOperator<LengthConstraintConfig> configModifier) {
+	public @NonNull ArrayCodec<C> apply(@NonNull UnaryOperator<ArrayConstraintConfig<C>> configModifier) {
 		Objects.requireNonNull(configModifier, "Config modifier must not be null");
 		
-		return new ArrayCodec<>(this.type, this.codec, configModifier.apply(
-			this.getConstraintConfig().orElse(LengthConstraintConfig.UNCONSTRAINED)
-		));
-	}
-	
-	@Override
-	protected @NonNull Result<Void> checkConstraints(C @NonNull [] value) {
-		Objects.requireNonNull(value, "Value must not be null");
-		
-		Result<Void> constraintResult = this.getConstraintConfig().map(config -> config.matches(value.length)).orElseGet(Result::success);
-		if (constraintResult.isError()) {
-			return Result.error("Array " + Arrays.toString(value) + " does not meet constraints: " + constraintResult.errorOrThrow());
-		}
-		return Result.success();
+		return new ArrayCodec<>(
+			this.type, this.codec, configModifier.apply(this.getConstraintConfig().orElse(ArrayConstraintConfig.unconstrained()))
+		);
 	}
 	
 	@Override

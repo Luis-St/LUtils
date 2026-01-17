@@ -387,7 +387,7 @@ public record IntegerConstraintConfig<T extends Number & Comparable<T>>(
 		return new IntegerConstraintConfig<>(this.equalTo, this.in, this.min, this.max, this.positive, this.negative, this.zero, this.percentage, this.even, this.odd, this.divisibleBy, this.powerOf, Optional.of(constraint));
 	}
 	//endregion
-
+	
 	@Override
 	public @NonNull Result<Void> matches(@NonNull T value) {
 		Objects.requireNonNull(value, "Value must not be null");

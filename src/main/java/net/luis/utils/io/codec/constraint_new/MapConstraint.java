@@ -18,10 +18,12 @@
 
 package net.luis.utils.io.codec.constraint_new;
 
+import net.luis.utils.io.codec.constraint_new.config.MapConstraintConfig;
 import org.jspecify.annotations.NonNull;
 
 import java.util.Collection;
 import java.util.Map;
+import java.util.function.UnaryOperator;
 
 /**
  * Constraint interface for map types that provides key-based validation operations.<br>
@@ -38,7 +40,55 @@ import java.util.Map;
  * @param <V> The type of the values in the map
  * @param <C> The return type of the constraint method (for fluent method chaining)
  */
-public interface MapConstraint<K, V, C> extends SizeConstraint<Map<K, V>, C> {
+public interface MapConstraint<K, V, C> extends ApplicableConstraint<MapConstraintConfig<K, V>, C>, SizeConstraint<Map<K, V>, C> {
+	
+	@Override
+	@NonNull C apply(@NonNull UnaryOperator<MapConstraintConfig<K, V>> configModifier);
+	
+	@Override
+	default @NonNull C equalTo(@NonNull Map<K, V> value) {
+		return this.apply(config -> config.withEqualTo(value));
+	}
+	
+	@Override
+	default @NonNull C notEqualTo(@NonNull Map<K, V> value) {
+		return this.apply(config -> config.withNotEqualTo(value));
+	}
+	
+	@Override
+	default @NonNull C in(@NonNull Collection<Map<K, V>> values) {
+		return this.apply(config -> config.withIn(values));
+	}
+	
+	@Override
+	default @NonNull C notIn(@NonNull Collection<Map<K, V>> values) {
+		return this.apply(config -> config.withNotIn(values));
+	}
+	
+	@Override
+	default @NonNull C custom(@NonNull Constraint<Map<K, V>> constraint) {
+		return this.apply(config -> config.withCustom(constraint));
+	}
+	
+	@Override
+	default @NonNull C minSize(int minSize) {
+		return this.apply(config -> config.withMinSize(minSize));
+	}
+	
+	@Override
+	default @NonNull C maxSize(int maxSize) {
+		return this.apply(config -> config.withMaxSize(maxSize));
+	}
+	
+	@Override
+	default @NonNull C exactSize(int exactSize) {
+		return this.apply(config -> config.withExactSize(exactSize));
+	}
+	
+	@Override
+	default @NonNull C sizeBetween(int minSize, int maxSize) {
+		return this.apply(config -> config.withSizeBetween(minSize, maxSize));
+	}
 	
 	/**
 	 * Applies a required key constraint to the map.<br>
@@ -52,7 +102,9 @@ public interface MapConstraint<K, V, C> extends SizeConstraint<Map<K, V>, C> {
 	 * @see #requiredKeys(Collection)
 	 * @see #forbiddenKey(Object)
 	 */
-	@NonNull C requiredKey(@NonNull K key);
+	default @NonNull C requiredKey(@NonNull K key) {
+		return this.apply(config -> config.withRequiredKey(key));
+	}
 	
 	/**
 	 * Applies a multiple required keys constraint to the map.<br>
@@ -66,7 +118,9 @@ public interface MapConstraint<K, V, C> extends SizeConstraint<Map<K, V>, C> {
 	 * @see #requiredKey(Object)
 	 * @see #forbiddenKeys(Collection)
 	 */
-	@NonNull C requiredKeys(@NonNull Collection<K> keys);
+	default @NonNull C requiredKeys(@NonNull Collection<K> keys) {
+		return this.apply(config -> config.withRequiredKeys(keys));
+	}
 	
 	/**
 	 * Applies a forbidden key constraint to the map.<br>
@@ -80,7 +134,9 @@ public interface MapConstraint<K, V, C> extends SizeConstraint<Map<K, V>, C> {
 	 * @see #forbiddenKeys(Collection)
 	 * @see #requiredKey(Object)
 	 */
-	@NonNull C forbiddenKey(@NonNull K key);
+	default @NonNull C forbiddenKey(@NonNull K key) {
+		return this.apply(config -> config.withForbiddenKey(key));
+	}
 	
 	/**
 	 * Applies a multiple forbidden keys constraint to the map.<br>
@@ -94,7 +150,9 @@ public interface MapConstraint<K, V, C> extends SizeConstraint<Map<K, V>, C> {
 	 * @see #forbiddenKey(Object)
 	 * @see #requiredKeys(Collection)
 	 */
-	@NonNull C forbiddenKeys(@NonNull Collection<K> keys);
+	default @NonNull C forbiddenKeys(@NonNull Collection<K> keys) {
+		return this.apply(config -> config.withForbiddenKeys(keys));
+	}
 	
 	/**
 	 * Applies an allowed key constraint to the map.<br>
@@ -107,7 +165,9 @@ public interface MapConstraint<K, V, C> extends SizeConstraint<Map<K, V>, C> {
 	 * @throws NullPointerException If the key is null
 	 * @see #allowedKeys(Collection)
 	 */
-	@NonNull C allowedKey(@NonNull K key);
+	default @NonNull C allowedKey(@NonNull K key) {
+		return this.apply(config -> config.withAllowedKey(key));
+	}
 	
 	/**
 	 * Applies a multiple allowed keys constraint to the map.<br>
@@ -121,7 +181,9 @@ public interface MapConstraint<K, V, C> extends SizeConstraint<Map<K, V>, C> {
 	 * @throws NullPointerException If the collection is null
 	 * @see #allowedKey(Object)
 	 */
-	@NonNull C allowedKeys(@NonNull Collection<K> keys);
+	default @NonNull C allowedKeys(@NonNull Collection<K> keys) {
+		return this.apply(config -> config.withAllowedKeys(keys));
+	}
 	
 	/**
 	 * Applies a non-null keys constraint to the map.<br>
@@ -133,7 +195,9 @@ public interface MapConstraint<K, V, C> extends SizeConstraint<Map<K, V>, C> {
 	 * @see #uniqueValues()
 	 * @see #nonNullValues()
 	 */
-	@NonNull C nonNullKeys();
+	default @NonNull C nonNullKeys() {
+		return this.apply(MapConstraintConfig::withNonNullKeys);
+	}
 	
 	/**
 	 * Applies a unique values constraint to the map.<br>
@@ -145,7 +209,9 @@ public interface MapConstraint<K, V, C> extends SizeConstraint<Map<K, V>, C> {
 	 * @see #nonNullKeys()
 	 * @see #nonNullValues()
 	 */
-	@NonNull C uniqueValues();
+	default @NonNull C uniqueValues() {
+		return this.apply(MapConstraintConfig::withUniqueValues);
+	}
 	
 	/**
 	 * Applies a non-null values constraint to the map.<br>
@@ -157,5 +223,7 @@ public interface MapConstraint<K, V, C> extends SizeConstraint<Map<K, V>, C> {
 	 * @see #nonNullKeys()
 	 * @see #uniqueValues()
 	 */
-	@NonNull C nonNullValues();
+	default @NonNull C nonNullValues() {
+		return this.apply(MapConstraintConfig::withNonNullValues);
+	}
 }

@@ -19,8 +19,8 @@
 package net.luis.utils.io.codec.types.array;
 
 import net.luis.utils.io.codec.*;
-import net.luis.utils.io.codec.constraint.LengthConstraint;
-import net.luis.utils.io.codec.constraint.config.LengthConstraintConfig;
+import net.luis.utils.io.codec.constraint_new.ArrayConstraint;
+import net.luis.utils.io.codec.constraint_new.config.ArrayConstraintConfig;
 import net.luis.utils.io.codec.provider.TypeProvider;
 import net.luis.utils.util.result.Result;
 import org.apache.commons.lang3.ArrayUtils;
@@ -36,7 +36,7 @@ import java.util.function.UnaryOperator;
  *
  * @author Luis-St
  */
-public class FloatArrayCodec extends AbstractCodec<float[], LengthConstraintConfig> implements LengthConstraint<float[], FloatArrayCodec> {
+public class FloatArrayCodec extends AbstractCodec<float[], ArrayConstraintConfig<float[]>> implements ArrayConstraint<float[], FloatArrayCodec> {
 	
 	/**
 	 * The internal codec that handles the conversion between a list of floats and the array representation.<br>
@@ -51,31 +51,20 @@ public class FloatArrayCodec extends AbstractCodec<float[], LengthConstraintConf
 	/**
 	 * Constructs a new float array codec with the specified length constraint configuration.<br>
 	 *
-	 * @param constraintConfig The length constraint configuration
+	 * @param config The constraint configuration
 	 * @throws NullPointerException If the constraint config is null
 	 */
-	public FloatArrayCodec(@NonNull LengthConstraintConfig constraintConfig) {
-		super(constraintConfig);
+	private FloatArrayCodec(@NonNull ArrayConstraintConfig<float[]> config) {
+		super(config);
 	}
 	
 	@Override
-	public @NonNull FloatArrayCodec applyConstraint(@NonNull UnaryOperator<LengthConstraintConfig> configModifier) {
+	public @NonNull FloatArrayCodec apply(@NonNull UnaryOperator<ArrayConstraintConfig<float[]>> configModifier) {
 		Objects.requireNonNull(configModifier, "Config modifier must not be null");
 		
-		return new FloatArrayCodec(configModifier.apply(
-			this.getConstraintConfig().orElse(LengthConstraintConfig.UNCONSTRAINED)
-		));
-	}
-	
-	@Override
-	protected @NonNull Result<Void> checkConstraints(float @NonNull [] value) {
-		Objects.requireNonNull(value, "Value must not be null");
-		
-		Result<Void> constraintResult = this.getConstraintConfig().map(config -> config.matches(value.length)).orElseGet(Result::success);
-		if (constraintResult.isError()) {
-			return Result.error("Float array " + Arrays.toString(value) + " does not meet constraints: " + constraintResult.errorOrThrow());
-		}
-		return Result.success();
+		return new FloatArrayCodec(
+			configModifier.apply(this.getConstraintConfig().orElse(ArrayConstraintConfig.unconstrained()))
+		);
 	}
 	
 	@Override

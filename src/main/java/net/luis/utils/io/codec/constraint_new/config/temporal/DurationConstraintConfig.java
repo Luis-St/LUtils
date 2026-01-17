@@ -19,7 +19,8 @@
 package net.luis.utils.io.codec.constraint_new.config.temporal;
 
 import net.luis.utils.io.codec.constraint_new.Constraint;
-import net.luis.utils.io.codec.constraint_new.config.*;
+import net.luis.utils.io.codec.constraint_new.config.ConstraintConfig;
+import net.luis.utils.io.codec.constraint_new.config.NumericFieldConstraintConfig;
 import net.luis.utils.io.codec.constraint_new.config.matcher.ConstraintMatchers;
 import net.luis.utils.io.codec.constraint_new.config.matcher.TemporalMatchers;
 import net.luis.utils.util.Pair;
@@ -414,7 +415,7 @@ public record DurationConstraintConfig(
 	@Override
 	public @NotNull Result<Void> matches(@NonNull Duration value) {
 		Objects.requireNonNull(value, "Value must not be null");
-
+		
 		return ConstraintMatchers.allOf(
 			() -> ConstraintMatchers.matchEqualTo(value, this.equalTo),
 			() -> ConstraintMatchers.matchIn(value, this.in),

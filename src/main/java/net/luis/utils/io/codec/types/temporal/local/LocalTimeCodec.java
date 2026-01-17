@@ -19,9 +19,8 @@
 package net.luis.utils.io.codec.types.temporal.local;
 
 import net.luis.utils.io.codec.AbstractCodec;
-import net.luis.utils.io.codec.constraint.config.temporal.LocalTimeConstraintConfig;
-import net.luis.utils.io.codec.constraint.temporal.TemporalSpanConstraint;
-import net.luis.utils.io.codec.constraint.temporal.TimeFieldConstraint;
+import net.luis.utils.io.codec.constraint_new.config.temporal.LocalTimeConstraintConfig;
+import net.luis.utils.io.codec.constraint_new.temporal.LocalTimeConstraint;
 import net.luis.utils.io.codec.provider.TypeProvider;
 import net.luis.utils.util.result.Result;
 import org.jspecify.annotations.NonNull;
@@ -41,7 +40,7 @@ import java.util.function.UnaryOperator;
  *
  * @author Luis-St
  */
-public class LocalTimeCodec extends AbstractCodec<LocalTime, LocalTimeConstraintConfig> implements TemporalSpanConstraint<LocalTime, LocalTimeCodec, LocalTimeConstraintConfig>, TimeFieldConstraint<LocalTimeCodec, LocalTimeConstraintConfig> {
+public class LocalTimeCodec extends AbstractCodec<LocalTime, LocalTimeConstraintConfig> implements LocalTimeConstraint<LocalTimeCodec> {
 	
 	/**
 	 * Constructs a new local time codec.<br>
@@ -54,28 +53,17 @@ public class LocalTimeCodec extends AbstractCodec<LocalTime, LocalTimeConstraint
 	 * @param constraintConfig The constraint configuration
 	 * @throws NullPointerException If the constraint config is null
 	 */
-	public LocalTimeCodec(@NonNull LocalTimeConstraintConfig constraintConfig) {
+	private LocalTimeCodec(@NonNull LocalTimeConstraintConfig constraintConfig) {
 		super(constraintConfig);
 	}
 	
 	@Override
-	public @NonNull LocalTimeCodec applyConstraint(@NonNull UnaryOperator<LocalTimeConstraintConfig> configModifier) {
+	public @NonNull LocalTimeCodec apply(@NonNull UnaryOperator<LocalTimeConstraintConfig> configModifier) {
 		Objects.requireNonNull(configModifier, "Config modifier must not be null");
 		
-		return new LocalTimeCodec(configModifier.apply(
-			this.getConstraintConfig().orElse(LocalTimeConstraintConfig.UNCONSTRAINED)
-		));
-	}
-	
-	@Override
-	protected @NonNull Result<Void> checkConstraints(@NonNull LocalTime value) {
-		Objects.requireNonNull(value, "Value must not be null");
-		
-		Result<Void> constraintResult = this.getConstraintConfig().map(config -> config.matches(value)).orElseGet(Result::success);
-		if (constraintResult.isError()) {
-			return Result.error("LocalTime value " + value + " does not meet constraints: " + constraintResult.errorOrThrow());
-		}
-		return Result.success();
+		return new LocalTimeCodec(
+			configModifier.apply(this.getConstraintConfig().orElse(LocalTimeConstraintConfig.UNCONSTRAINED))
+		);
 	}
 	
 	@Override
@@ -96,6 +84,11 @@ public class LocalTimeCodec extends AbstractCodec<LocalTime, LocalTimeConstraint
 	@Override
 	public @NonNull Result<String> encodeKey(@NonNull LocalTime key) {
 		Objects.requireNonNull(key, "Key must not be null");
+		
+		Result<Void> constraintResult = this.checkConstraints(key);
+		if (constraintResult.isError()) {
+			return Result.error(constraintResult.errorOrThrow());
+		}
 		return Result.success(key.toString());
 	}
 	
@@ -131,7 +124,13 @@ public class LocalTimeCodec extends AbstractCodec<LocalTime, LocalTimeConstraint
 		Objects.requireNonNull(key, "Key must not be null");
 		
 		try {
-			return Result.success(LocalTime.parse(key));
+			LocalTime time = LocalTime.parse(key);
+			
+			Result<Void> constraintResult = this.checkConstraints(time);
+			if (constraintResult.isError()) {
+				return Result.error(constraintResult.errorOrThrow());
+			}
+			return Result.success(time);
 		} catch (DateTimeParseException e) {
 			return Result.error("Unable to decode key '" + key + "' as local time using '" + this + "': " + e.getMessage());
 		}

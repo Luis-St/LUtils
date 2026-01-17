@@ -18,7 +18,11 @@
 
 package net.luis.utils.io.codec.constraint_new;
 
+import net.luis.utils.io.codec.constraint_new.config.CharacterConstraintConfig;
 import org.jspecify.annotations.NonNull;
+
+import java.util.Collection;
+import java.util.function.UnaryOperator;
 
 /**
  * Constraint interface for character types that provides character classification validation operations.<br>
@@ -32,7 +36,65 @@ import org.jspecify.annotations.NonNull;
  *
  * @param <C> The return type of the constraint method (for fluent method chaining)
  */
-public interface CharacterConstraint<C> extends ComparableConstraint<Character, C> {
+public interface CharacterConstraint<C> extends ApplicableConstraint<CharacterConstraintConfig, C>, ComparableConstraint<Character, C> {
+	
+	@Override
+	@NonNull C apply(@NonNull UnaryOperator<CharacterConstraintConfig> configModifier);
+	
+	@Override
+	default @NonNull C equalTo(@NonNull Character value) {
+		return this.apply(config -> config.withEqualTo(value));
+	}
+	
+	@Override
+	default @NonNull C notEqualTo(@NonNull Character value) {
+		return this.apply(config -> config.withNotEqualTo(value));
+	}
+	
+	@Override
+	default @NonNull C in(@NonNull Collection<Character> values) {
+		return this.apply(config -> config.withIn(values));
+	}
+	
+	@Override
+	default @NonNull C notIn(@NonNull Collection<Character> values) {
+		return this.apply(config -> config.withNotIn(values));
+	}
+	
+	@Override
+	default @NonNull C custom(@NonNull Constraint<Character> constraint) {
+		return this.apply(config -> config.withCustom(constraint));
+	}
+	
+	@Override
+	default @NonNull C greaterThan(@NonNull Character value) {
+		return this.apply(config -> config.withGreaterThan(value));
+	}
+	
+	@Override
+	default @NonNull C greaterThanOrEqual(@NonNull Character value) {
+		return this.apply(config -> config.withGreaterThanOrEqual(value));
+	}
+	
+	@Override
+	default @NonNull C lessThan(@NonNull Character value) {
+		return this.apply(config -> config.withLessThan(value));
+	}
+	
+	@Override
+	default @NonNull C lessThanOrEqual(@NonNull Character value) {
+		return this.apply(config -> config.withLessThanOrEqual(value));
+	}
+	
+	@Override
+	default @NonNull C between(@NonNull Character min, @NonNull Character max) {
+		return this.apply(config -> config.withBetween(min, max));
+	}
+	
+	@Override
+	default @NonNull C betweenOrEqual(@NonNull Character min, @NonNull Character max) {
+		return this.apply(config -> config.withBetweenOrEqual(min, max));
+	}
 	
 	/**
 	 * Applies a letter constraint to the character.<br>
@@ -44,7 +106,9 @@ public interface CharacterConstraint<C> extends ComparableConstraint<Character, 
 	 * @see #digit()
 	 * @see #alphanumeric()
 	 */
-	@NonNull C letter();
+	default @NonNull C letter() {
+		return this.apply(CharacterConstraintConfig::withLetter);
+	}
 	
 	/**
 	 * Applies a digit constraint to the character.<br>
@@ -56,7 +120,9 @@ public interface CharacterConstraint<C> extends ComparableConstraint<Character, 
 	 * @see #letter()
 	 * @see #alphanumeric()
 	 */
-	@NonNull C digit();
+	default @NonNull C digit() {
+		return this.apply(CharacterConstraintConfig::withDigit);
+	}
 	
 	/**
 	 * Applies an alphanumeric constraint to the character.<br>
@@ -68,7 +134,9 @@ public interface CharacterConstraint<C> extends ComparableConstraint<Character, 
 	 * @see #letter()
 	 * @see #digit()
 	 */
-	@NonNull C alphanumeric();
+	default @NonNull C alphanumeric() {
+		return this.apply(CharacterConstraintConfig::withAlphanumeric);
+	}
 	
 	/**
 	 * Applies a whitespace constraint to the character.<br>
@@ -78,7 +146,9 @@ public interface CharacterConstraint<C> extends ComparableConstraint<Character, 
 	 *
 	 * @return A new type with the applied whitespace constraint
 	 */
-	@NonNull C whitespace();
+	default @NonNull C whitespace() {
+		return this.apply(CharacterConstraintConfig::withWhitespace);
+	}
 	
 	/**
 	 * Applies a punctuation constraint to the character.<br>
@@ -89,7 +159,9 @@ public interface CharacterConstraint<C> extends ComparableConstraint<Character, 
 	 * @return A new type with the applied punctuation constraint
 	 * @see #symbol()
 	 */
-	@NonNull C punctuation();
+	default @NonNull C punctuation() {
+		return this.apply(CharacterConstraintConfig::withPunctuation);
+	}
 	
 	/**
 	 * Applies a symbol constraint to the character.<br>
@@ -100,7 +172,9 @@ public interface CharacterConstraint<C> extends ComparableConstraint<Character, 
 	 * @return A new type with the applied symbol constraint
 	 * @see #punctuation()
 	 */
-	@NonNull C symbol();
+	default @NonNull C symbol() {
+		return this.apply(CharacterConstraintConfig::withSymbol);
+	}
 	
 	/**
 	 * Applies a control character constraint to the character.<br>
@@ -110,7 +184,9 @@ public interface CharacterConstraint<C> extends ComparableConstraint<Character, 
 	 *
 	 * @return A new type with the applied control constraint
 	 */
-	@NonNull C control();
+	default @NonNull C control() {
+		return this.apply(CharacterConstraintConfig::withControl);
+	}
 	
 	/**
 	 * Applies an upper case constraint to the character.<br>
@@ -121,7 +197,9 @@ public interface CharacterConstraint<C> extends ComparableConstraint<Character, 
 	 * @return A new type with the applied upper case constraint
 	 * @see #lowerCase()
 	 */
-	@NonNull C upperCase();
+	default @NonNull C upperCase() {
+		return this.apply(CharacterConstraintConfig::withUpperCase);
+	}
 	
 	/**
 	 * Applies a lower case constraint to the character.<br>
@@ -132,7 +210,9 @@ public interface CharacterConstraint<C> extends ComparableConstraint<Character, 
 	 * @return A new type with the applied lower case constraint
 	 * @see #upperCase()
 	 */
-	@NonNull C lowerCase();
+	default @NonNull C lowerCase() {
+		return this.apply(CharacterConstraintConfig::withLowerCase);
+	}
 	
 	/**
 	 * Applies an ASCII character constraint to the character.<br>

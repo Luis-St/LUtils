@@ -19,11 +19,9 @@
 package net.luis.utils.io.codec.types.primitive.numeric;
 
 import net.luis.utils.io.codec.AbstractCodec;
-import net.luis.utils.io.codec.constraint.config.numeric.IntegerConstraintConfig;
-import net.luis.utils.io.codec.constraint.core.NumberProvider;
-import net.luis.utils.io.codec.constraint.numeric.IntegerConstraint;
+import net.luis.utils.io.codec.constraint_new.config.numeric.IntegerConstraintConfig;
+import net.luis.utils.io.codec.constraint_new.numeric.IntegerConstraint;
 import net.luis.utils.io.codec.provider.TypeProvider;
-import net.luis.utils.math.NumberType;
 import net.luis.utils.util.result.Result;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
@@ -51,33 +49,17 @@ public class BigIntegerCodec extends AbstractCodec<BigInteger, IntegerConstraint
 	 * @param constraintConfig The integer constraint configuration
 	 * @throws NullPointerException If the constraint config is null
 	 */
-	public BigIntegerCodec(@NonNull IntegerConstraintConfig<BigInteger> constraintConfig) {
+	private BigIntegerCodec(@NonNull IntegerConstraintConfig<BigInteger> constraintConfig) {
 		super(constraintConfig);
 	}
 	
 	@Override
-	public @NonNull BigIntegerCodec applyConstraint(@NonNull UnaryOperator<IntegerConstraintConfig<BigInteger>> configModifier) {
+	public @NonNull BigIntegerCodec apply(@NonNull UnaryOperator<IntegerConstraintConfig<BigInteger>> configModifier) {
 		Objects.requireNonNull(configModifier, "Config modifier must not be null");
 		
-		return new BigIntegerCodec(configModifier.apply(
-			this.getConstraintConfig().orElse(IntegerConstraintConfig.unconstrained())
-		));
-	}
-	
-	@Override
-	public @NonNull NumberProvider<BigInteger> provider() {
-		return NumberProvider.of(BigInteger.ZERO, BigInteger.ONE, BigInteger.valueOf(100));
-	}
-	
-	@Override
-	protected @NonNull Result<Void> checkConstraints(@NonNull BigInteger value) {
-		Objects.requireNonNull(value, "Value must not be null");
-		
-		Result<Void> constraintResult = this.getConstraintConfig().map(config -> config.matches(NumberType.BIG_INTEGER, value)).orElseGet(Result::success);
-		if (constraintResult.isError()) {
-			return Result.error("BigInteger value " + value + " does not meet constraints: " + constraintResult.errorOrThrow());
-		}
-		return Result.success();
+		return new BigIntegerCodec(
+			configModifier.apply(this.getConstraintConfig().orElse(IntegerConstraintConfig.unconstrained()))
+		);
 	}
 	
 	@Override
@@ -98,6 +80,11 @@ public class BigIntegerCodec extends AbstractCodec<BigInteger, IntegerConstraint
 	@Override
 	public @NonNull Result<String> encodeKey(@NonNull BigInteger key) {
 		Objects.requireNonNull(key, "Key must not be null");
+		
+		Result<Void> constraintResult = this.checkConstraints(key);
+		if (constraintResult.isError()) {
+			return Result.error(constraintResult.errorOrThrow());
+		}
 		return Result.success(key.toString());
 	}
 	
@@ -133,7 +120,13 @@ public class BigIntegerCodec extends AbstractCodec<BigInteger, IntegerConstraint
 		Objects.requireNonNull(key, "Key must not be null");
 		
 		try {
-			return Result.success(new BigInteger(key));
+			BigInteger bigInteger = new BigInteger(key);
+			
+			Result<Void> constraintResult = this.checkConstraints(bigInteger);
+			if (constraintResult.isError()) {
+				return Result.error(constraintResult.errorOrThrow());
+			}
+			return Result.success(bigInteger);
 		} catch (NumberFormatException e) {
 			return Result.error("Unable to decode key '" + key + "' as big integer using '" + this + "': " + e.getMessage());
 		}

@@ -41,19 +41,19 @@ import java.util.stream.Collectors;
  * @author Luis-St
  */
 public class PathConstraintBuilder implements PathConstraint<String, PathConstraintBuilder> {
-
+	
 	/**
 	 * The current constraint configuration being built.<br>
 	 */
 	private PathConstraintConfig config;
-
+	
 	/**
 	 * Constructs a new path constraint builder with no constraints applied.<br>
 	 */
 	public PathConstraintBuilder() {
 		this.config = PathConstraintConfig.UNCONSTRAINED;
 	}
-
+	
 	/**
 	 * Constructs a new path constraint builder with the specified initial config.<br>
 	 *
@@ -63,109 +63,109 @@ public class PathConstraintBuilder implements PathConstraint<String, PathConstra
 	public PathConstraintBuilder(@NonNull PathConstraintConfig initialConfig) {
 		this.config = Objects.requireNonNull(initialConfig, "Initial config must not be null");
 	}
-
+	
 	@Override
 	public @NonNull PathConstraintBuilder equalTo(@NonNull String value) {
 		this.config = this.config.withEqualTo(Path.of(value));
 		return this;
 	}
-
+	
 	@Override
 	public @NonNull PathConstraintBuilder notEqualTo(@NonNull String value) {
 		this.config = this.config.withNotEqualTo(Path.of(value));
 		return this;
 	}
-
+	
 	@Override
 	public @NonNull PathConstraintBuilder in(@NonNull Collection<String> values) {
 		this.config = this.config.withIn(values.stream().map(Path::of).collect(Collectors.toList()));
 		return this;
 	}
-
+	
 	@Override
 	public @NonNull PathConstraintBuilder notIn(@NonNull Collection<String> values) {
 		this.config = this.config.withNotIn(values.stream().map(Path::of).collect(Collectors.toList()));
 		return this;
 	}
-
+	
 	@Override
 	public @NonNull PathConstraintBuilder custom(@NonNull Constraint<String> constraint) {
 		this.config = this.config.withCustom(path -> constraint.validate(path.toString()));
 		return this;
 	}
-
+	
 	@Override
 	public @NonNull PathConstraintBuilder minLength(int minLength) {
 		this.config = this.config.withMinLength(minLength);
 		return this;
 	}
-
+	
 	@Override
 	public @NonNull PathConstraintBuilder maxLength(int maxLength) {
 		this.config = this.config.withMaxLength(maxLength);
 		return this;
 	}
-
+	
 	@Override
 	public @NonNull PathConstraintBuilder exactLength(int exactLength) {
 		this.config = this.config.withExactLength(exactLength);
 		return this;
 	}
-
+	
 	@Override
 	public @NonNull PathConstraintBuilder lengthBetween(int minLength, int maxLength) {
 		this.config = this.config.withLengthBetween(minLength, maxLength);
 		return this;
 	}
-
+	
 	@Override
 	public @NonNull PathConstraintBuilder minDepth(int minDepth) {
 		this.config = this.config.withMinDepth(minDepth);
 		return this;
 	}
-
+	
 	@Override
 	public @NonNull PathConstraintBuilder maxDepth(int maxDepth) {
 		this.config = this.config.withMaxDepth(maxDepth);
 		return this;
 	}
-
+	
 	@Override
 	public @NonNull PathConstraintBuilder exactDepth(int exactDepth) {
 		this.config = this.config.withExactDepth(exactDepth);
 		return this;
 	}
-
+	
 	@Override
 	public @NonNull PathConstraintBuilder depthBetween(int minDepth, int maxDepth) {
 		this.config = this.config.withDepthBetween(minDepth, maxDepth);
 		return this;
 	}
-
+	
 	@Override
 	public @NonNull PathConstraintBuilder absolute() {
 		this.config = this.config.withAbsolute();
 		return this;
 	}
-
+	
 	@Override
 	public @NonNull PathConstraintBuilder relative() {
 		this.config = this.config.withRelative();
 		return this;
 	}
-
+	
 	@Override
 	public @NonNull PathConstraintBuilder normalized() {
 		this.config = this.config.withNormalized();
 		return this;
 	}
-
+	
 	@Override
 	public @NonNull PathConstraintBuilder canonical() {
 		this.config = this.config.withCanonical();
 		return this;
 	}
-
+	
 	@Override
 	public @NonNull PathConstraintBuilder path(@NonNull UnaryOperator<StringConstraintBuilder> builder) {
 		Objects.requireNonNull(builder, "Builder function for 'path' constraint must not be null");
@@ -173,7 +173,7 @@ public class PathConstraintBuilder implements PathConstraint<String, PathConstra
 		this.config = this.config.withPath(builder.apply(new StringConstraintBuilder()).build());
 		return this;
 	}
-
+	
 	@Override
 	public @NonNull PathConstraintBuilder root(@NonNull UnaryOperator<StringConstraintBuilder> builder) {
 		Objects.requireNonNull(builder, "Builder function for 'root' constraint must not be null");
@@ -181,7 +181,7 @@ public class PathConstraintBuilder implements PathConstraint<String, PathConstra
 		this.config = this.config.withRoot(builder.apply(new StringConstraintBuilder()).build());
 		return this;
 	}
-
+	
 	@Override
 	public @NonNull PathConstraintBuilder parent(@NonNull UnaryOperator<StringConstraintBuilder> builder) {
 		Objects.requireNonNull(builder, "Builder function for 'parent' constraint must not be null");
@@ -189,7 +189,7 @@ public class PathConstraintBuilder implements PathConstraint<String, PathConstra
 		this.config = this.config.withParent(builder.apply(new StringConstraintBuilder()).build());
 		return this;
 	}
-
+	
 	@Override
 	public @NonNull PathConstraintBuilder segment(@NonNull UnaryOperator<StringConstraintBuilder> builder) {
 		Objects.requireNonNull(builder, "Builder function for 'segment' constraint must not be null");
@@ -197,7 +197,7 @@ public class PathConstraintBuilder implements PathConstraint<String, PathConstra
 		this.config = this.config.withSegment(builder.apply(new StringConstraintBuilder()).build());
 		return this;
 	}
-
+	
 	@Override
 	public @NonNull PathConstraintBuilder file(@NonNull UnaryOperator<StringConstraintBuilder> builder) {
 		Objects.requireNonNull(builder, "Builder function for 'file' constraint must not be null");
@@ -205,13 +205,13 @@ public class PathConstraintBuilder implements PathConstraint<String, PathConstra
 		this.config = this.config.withFile(builder.apply(new StringConstraintBuilder()).build());
 		return this;
 	}
-
+	
 	@Override
 	public @NonNull PathConstraintBuilder withoutExtension() {
 		this.config = this.config.withWithoutExtension();
 		return this;
 	}
-
+	
 	@Override
 	public @NonNull PathConstraintBuilder extension(@NonNull UnaryOperator<StringConstraintBuilder> builder) {
 		Objects.requireNonNull(builder, "Builder function for 'extension' constraint must not be null");
@@ -219,49 +219,49 @@ public class PathConstraintBuilder implements PathConstraint<String, PathConstra
 		this.config = this.config.withExtension(builder.apply(new StringConstraintBuilder()).build());
 		return this;
 	}
-
+	
 	@Override
 	public @NonNull PathConstraintBuilder ancestorOf(@NonNull String path) {
 		this.config = this.config.withAncestorOf(java.util.List.of(path));
 		return this;
 	}
-
+	
 	@Override
 	public @NonNull PathConstraintBuilder ancestorOf(@NonNull Collection<String> paths) {
 		this.config = this.config.withAncestorOf(paths);
 		return this;
 	}
-
+	
 	@Override
 	public @NonNull PathConstraintBuilder descendantOf(@NonNull String path) {
 		this.config = this.config.withDescendantOf(java.util.List.of(path));
 		return this;
 	}
-
+	
 	@Override
 	public @NonNull PathConstraintBuilder descendantOf(@NonNull Collection<String> paths) {
 		this.config = this.config.withDescendantOf(paths);
 		return this;
 	}
-
+	
 	@Override
 	public @NonNull PathConstraintBuilder validFor(@NonNull Platform platform) {
 		this.config = this.config.withValidFor(platform);
 		return this;
 	}
-
+	
 	@Override
 	public @NonNull PathConstraintBuilder portable() {
 		this.config = this.config.withPortable();
 		return this;
 	}
-
+	
 	@Override
 	public @NonNull PathConstraintBuilder separator(@NonNull Platform platform) {
 		this.config = this.config.withSeparator(platform);
 		return this;
 	}
-
+	
 	/**
 	 * Builds and returns the constraint configuration.<br>
 	 *
