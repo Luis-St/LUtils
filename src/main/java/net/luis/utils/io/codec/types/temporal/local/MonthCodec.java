@@ -19,6 +19,8 @@
 package net.luis.utils.io.codec.types.temporal.local;
 
 import net.luis.utils.io.codec.AbstractCodec;
+import net.luis.utils.io.codec.constraint_new.EnumConstraint;
+import net.luis.utils.io.codec.constraint_new.config.EnumConstraintConfig;
 import net.luis.utils.io.codec.provider.TypeProvider;
 import net.luis.utils.util.result.Result;
 import org.jspecify.annotations.NonNull;
@@ -26,6 +28,7 @@ import org.jspecify.annotations.Nullable;
 
 import java.time.Month;
 import java.util.Objects;
+import java.util.function.UnaryOperator;
 
 /**
  * Internal codec implementation for month.<br>
@@ -33,20 +36,43 @@ import java.util.Objects;
  *
  * @author Luis-St
  */
-public class MonthCodec extends AbstractCodec<Month, Object> {
+public class MonthCodec extends AbstractCodec<Month, EnumConstraintConfig<Month>> implements EnumConstraint<Month, MonthCodec> {
 	
 	/**
 	 * Constructs a new month codec.<br>
 	 */
 	public MonthCodec() {}
 	
+	/**
+	 * Constructs a new month codec with the given configuration.<br>
+	 *
+	 * @param config The constraint configuration
+	 * @throws NullPointerException If the config is null
+	 */
+	private MonthCodec(@NonNull EnumConstraintConfig<Month> config) {
+		super(config);
+	}
+	
+	@Override
+	public @NonNull MonthCodec apply(@NonNull UnaryOperator<EnumConstraintConfig<Month>> configModifier) {
+		Objects.requireNonNull(configModifier, "Config modifier must not be null");
+		
+		return new MonthCodec(
+			configModifier.apply(this.getConstraintConfig().orElse(EnumConstraintConfig.unconstrained()))
+		);
+	}
+	
 	@Override
 	public <R> @NonNull Result<R> encodeStart(@NonNull TypeProvider<R> provider, @NonNull R current, @Nullable Month value) {
 		Objects.requireNonNull(provider, "Type provider must not be null");
 		Objects.requireNonNull(current, "Current value must not be null");
-		
 		if (value == null) {
 			return Result.error("Unable to encode null as month using '" + this + "'");
+		}
+		
+		Result<Void> constraintResult = this.checkConstraints(value);
+		if (constraintResult.isError()) {
+			return Result.error(constraintResult.errorOrThrow());
 		}
 		return provider.createString(value.name());
 	}
@@ -54,6 +80,11 @@ public class MonthCodec extends AbstractCodec<Month, Object> {
 	@Override
 	public @NonNull Result<String> encodeKey(@NonNull Month key) {
 		Objects.requireNonNull(key, "Key must not be null");
+		
+		Result<Void> constraintResult = this.checkConstraints(key);
+		if (constraintResult.isError()) {
+			return Result.error(constraintResult.errorOrThrow());
+		}
 		return Result.success(key.name());
 	}
 	
@@ -72,7 +103,13 @@ public class MonthCodec extends AbstractCodec<Month, Object> {
 		
 		String string = result.resultOrThrow();
 		try {
-			return Result.success(Month.valueOf(string));
+			Month month = Month.valueOf(string);
+			
+			Result<Void> constraintResult = this.checkConstraints(month);
+			if (constraintResult.isError()) {
+				return Result.error(constraintResult.errorOrThrow());
+			}
+			return Result.success(month);
 		} catch (IllegalArgumentException e) {
 			return Result.error("Unable to decode month '" + string + "' using '" + this + "': " + e.getMessage());
 		}
@@ -83,7 +120,13 @@ public class MonthCodec extends AbstractCodec<Month, Object> {
 		Objects.requireNonNull(key, "Key must not be null");
 		
 		try {
-			return Result.success(Month.valueOf(key));
+			Month month = Month.valueOf(key);
+			
+			Result<Void> constraintResult = this.checkConstraints(month);
+			if (constraintResult.isError()) {
+				return Result.error(constraintResult.errorOrThrow());
+			}
+			return Result.success(month);
 		} catch (IllegalArgumentException e) {
 			return Result.error("Unable to decode key '" + key + "' as month using '" + this + "': " + e.getMessage());
 		}
@@ -91,6 +134,8 @@ public class MonthCodec extends AbstractCodec<Month, Object> {
 	
 	@Override
 	public String toString() {
-		return "MonthCodec";
+		return this.getConstraintConfig().map(config -> {
+			return "ConstrainedMonthCodec[constraints=" + config + "]";
+		}).orElse("MonthCodec");
 	}
 }

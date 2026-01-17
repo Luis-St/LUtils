@@ -19,6 +19,8 @@
 package net.luis.utils.io.codec.types.temporal.local;
 
 import net.luis.utils.io.codec.AbstractCodec;
+import net.luis.utils.io.codec.constraint_new.EnumConstraint;
+import net.luis.utils.io.codec.constraint_new.config.EnumConstraintConfig;
 import net.luis.utils.io.codec.provider.TypeProvider;
 import net.luis.utils.util.result.Result;
 import org.jspecify.annotations.NonNull;
@@ -26,6 +28,7 @@ import org.jspecify.annotations.Nullable;
 
 import java.time.DayOfWeek;
 import java.util.Objects;
+import java.util.function.UnaryOperator;
 
 /**
  * Internal codec implementation for day of week.<br>
@@ -33,12 +36,31 @@ import java.util.Objects;
  *
  * @author Luis-St
  */
-public class DayOfWeekCodec extends AbstractCodec<DayOfWeek, Object> {
+public class DayOfWeekCodec extends AbstractCodec<DayOfWeek, EnumConstraintConfig<DayOfWeek>> implements EnumConstraint<DayOfWeek, DayOfWeekCodec> {
 	
 	/**
 	 * Constructs a new day of week codec.<br>
 	 */
 	public DayOfWeekCodec() {}
+	
+	/**
+	 * Constructs a new day of week codec with the given configuration.<br>
+	 *
+	 * @param config The constraint configuration
+	 * @throws NullPointerException If the config is null
+	 */
+	private DayOfWeekCodec(@NonNull EnumConstraintConfig<DayOfWeek> config) {
+		super(config);
+	}
+	
+	@Override
+	public @NonNull DayOfWeekCodec apply(@NonNull UnaryOperator<EnumConstraintConfig<DayOfWeek>> configModifier) {
+		Objects.requireNonNull(configModifier, "Config modifier must not be null");
+		
+		return new DayOfWeekCodec(
+			configModifier.apply(this.getConstraintConfig().orElse(EnumConstraintConfig.unconstrained()))
+		);
+	}
 	
 	@Override
 	public <R> @NonNull Result<R> encodeStart(@NonNull TypeProvider<R> provider, @NonNull R current, @Nullable DayOfWeek value) {
@@ -48,12 +70,21 @@ public class DayOfWeekCodec extends AbstractCodec<DayOfWeek, Object> {
 			return Result.error("Unable to encode null as day of week using '" + this + "'");
 		}
 		
+		Result<Void> constraintResult = this.checkConstraints(value);
+		if (constraintResult.isError()) {
+			return Result.error(constraintResult.errorOrThrow());
+		}
 		return provider.createString(value.name());
 	}
 	
 	@Override
 	public @NonNull Result<String> encodeKey(@NonNull DayOfWeek key) {
 		Objects.requireNonNull(key, "Key must not be null");
+		
+		Result<Void> constraintResult = this.checkConstraints(key);
+		if (constraintResult.isError()) {
+			return Result.error(constraintResult.errorOrThrow());
+		}
 		return Result.success(key.name());
 	}
 	
@@ -72,7 +103,13 @@ public class DayOfWeekCodec extends AbstractCodec<DayOfWeek, Object> {
 		
 		String string = result.resultOrThrow();
 		try {
-			return Result.success(DayOfWeek.valueOf(string));
+			DayOfWeek dayOfWeek = DayOfWeek.valueOf(string);
+			
+			Result<Void> constraintResult = this.checkConstraints(dayOfWeek);
+			if (constraintResult.isError()) {
+				return Result.error(constraintResult.errorOrThrow());
+			}
+			return Result.success(dayOfWeek);
 		} catch (IllegalArgumentException e) {
 			return Result.error("Unable to decode day of week '" + string + "' using '" + this + "': " + e.getMessage());
 		}
@@ -83,7 +120,13 @@ public class DayOfWeekCodec extends AbstractCodec<DayOfWeek, Object> {
 		Objects.requireNonNull(key, "Key must not be null");
 		
 		try {
-			return Result.success(DayOfWeek.valueOf(key));
+			DayOfWeek dayOfWeek = DayOfWeek.valueOf(key);
+			
+			Result<Void> constraintResult = this.checkConstraints(dayOfWeek);
+			if (constraintResult.isError()) {
+				return Result.error(constraintResult.errorOrThrow());
+			}
+			return Result.success(dayOfWeek);
 		} catch (IllegalArgumentException e) {
 			return Result.error("Unable to decode key '" + key + "' as day of week using '" + this + "': " + e.getMessage());
 		}
@@ -91,6 +134,8 @@ public class DayOfWeekCodec extends AbstractCodec<DayOfWeek, Object> {
 	
 	@Override
 	public String toString() {
-		return "DayOfWeekCodec";
+		return this.getConstraintConfig().map(config -> {
+			return "ConstrainedDayOfWeekCodec[constraints=" + config + "]";
+		}).orElse("DayOfWeekCodec");
 	}
 }
