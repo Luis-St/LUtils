@@ -61,19 +61,6 @@ public interface SignedConstraint<T, C> extends ComparableConstraint<T, C> {
 	@NonNull C negative();
 	
 	/**
-	 * Applies a non-negative value constraint to the type.<br>
-	 * <p>
-	 *     The returned type will validate that values are greater than or equal to zero.<br>
-	 *     This is a convenience method equivalent to {@code greaterThanOrEqual(zero)}.
-	 * </p>
-	 *
-	 * @return A new type with the applied non-negative constraint
-	 * @see #greaterThanOrEqual(Object)
-	 * @see #nonPositive()
-	 */
-	@NonNull C nonNegative();
-	
-	/**
 	 * Applies a non-positive value constraint to the type.<br>
 	 * <p>
 	 *     The returned type will validate that values are less than or equal to zero.<br>
@@ -85,6 +72,19 @@ public interface SignedConstraint<T, C> extends ComparableConstraint<T, C> {
 	 * @see #nonNegative()
 	 */
 	@NonNull C nonPositive();
+	
+	/**
+	 * Applies a non-negative value constraint to the type.<br>
+	 * <p>
+	 *     The returned type will validate that values are greater than or equal to zero.<br>
+	 *     This is a convenience method equivalent to {@code greaterThanOrEqual(zero)}.
+	 * </p>
+	 *
+	 * @return A new type with the applied non-negative constraint
+	 * @see #greaterThanOrEqual(Object)
+	 * @see #nonPositive()
+	 */
+	@NonNull C nonNegative();
 	
 	/**
 	 * Applies a zero value constraint to the type.<br>
