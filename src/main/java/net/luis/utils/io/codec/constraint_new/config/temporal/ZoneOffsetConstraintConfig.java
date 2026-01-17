@@ -19,7 +19,8 @@
 package net.luis.utils.io.codec.constraint_new.config.temporal;
 
 import net.luis.utils.io.codec.constraint_new.Constraint;
-import net.luis.utils.io.codec.constraint_new.config.*;
+import net.luis.utils.io.codec.constraint_new.config.ConstraintConfig;
+import net.luis.utils.io.codec.constraint_new.config.NumericFieldConstraintConfig;
 import net.luis.utils.io.codec.constraint_new.config.matcher.ConstraintMatchers;
 import net.luis.utils.util.Pair;
 import net.luis.utils.util.result.Result;
@@ -57,7 +58,7 @@ import java.util.*;
  * @param positive The positive constraint as a Boolean where false means positive and true means nonPositive
  * @param negative The negative constraint as a Boolean where false means negative and true means nonNegative
  * @param zero The zero constraint as a Boolean where false means zero and true means nonZero
- * @param hours A nested config for hour component constraints
+ * @param hour A nested config for hour component constraints
  * @param custom A custom constraint implementation
  */
 public record ZoneOffsetConstraintConfig(
@@ -68,7 +69,7 @@ public record ZoneOffsetConstraintConfig(
 	@NonNull Optional<Boolean> positive,
 	@NonNull Optional<Boolean> negative,
 	@NonNull Optional<Boolean> zero,
-	@NonNull Optional<NumericFieldConstraintConfig> hours,
+	@NonNull Optional<NumericFieldConstraintConfig> hour,
 	@NonNull Optional<Constraint<ZoneOffset>> custom
 ) implements ConstraintConfig<ZoneOffset> {
 	
@@ -89,7 +90,7 @@ public record ZoneOffsetConstraintConfig(
 	 * @param positive The positive constraint as a Boolean where false means positive and true means nonPositive
 	 * @param negative The negative constraint as a Boolean where false means negative and true means nonNegative
 	 * @param zero The zero constraint as a Boolean where false means zero and true means nonZero
-	 * @param hours A nested config for hour component constraints
+	 * @param hour A nested config for hour component constraints
 	 * @param custom A custom constraint implementation
 	 * @throws NullPointerException If any of the optional fields is null
 	 * @throws IllegalArgumentException If the 'in' set is empty when present
@@ -103,7 +104,7 @@ public record ZoneOffsetConstraintConfig(
 		Objects.requireNonNull(positive, "Optional for 'positive' constraint must not be null");
 		Objects.requireNonNull(negative, "Optional for 'negative' constraint must not be null");
 		Objects.requireNonNull(zero, "Optional for 'zero' constraint must not be null");
-		Objects.requireNonNull(hours, "Optional for 'hours' constraint must not be null");
+		Objects.requireNonNull(hour, "Optional for 'hour' constraint must not be null");
 		Objects.requireNonNull(custom, "Optional for 'custom' constraint must not be null");
 		
 		if (in.isPresent() && in.get().getFirst().isEmpty()) {
@@ -125,7 +126,7 @@ public record ZoneOffsetConstraintConfig(
 	 */
 	public @NonNull ZoneOffsetConstraintConfig withEqualTo(@NonNull ZoneOffset value) {
 		Objects.requireNonNull(value, "Value for 'equal to' constraint must not be null");
-		return new ZoneOffsetConstraintConfig(Optional.of(Pair.of(value, false)), this.in, this.min, this.max, this.positive, this.negative, this.zero, this.hours, this.custom);
+		return new ZoneOffsetConstraintConfig(Optional.of(Pair.of(value, false)), this.in, this.min, this.max, this.positive, this.negative, this.zero, this.hour, this.custom);
 	}
 	
 	/**
@@ -136,7 +137,7 @@ public record ZoneOffsetConstraintConfig(
 	 */
 	public @NonNull ZoneOffsetConstraintConfig withNotEqualTo(@NonNull ZoneOffset value) {
 		Objects.requireNonNull(value, "Value for 'not equal to' constraint must not be null");
-		return new ZoneOffsetConstraintConfig(Optional.of(Pair.of(value, true)), this.in, this.min, this.max, this.positive, this.negative, this.zero, this.hours, this.custom);
+		return new ZoneOffsetConstraintConfig(Optional.of(Pair.of(value, true)), this.in, this.min, this.max, this.positive, this.negative, this.zero, this.hour, this.custom);
 	}
 	
 	/**
@@ -147,7 +148,7 @@ public record ZoneOffsetConstraintConfig(
 	 */
 	public @NonNull ZoneOffsetConstraintConfig withIn(@NonNull Collection<ZoneOffset> values) {
 		Objects.requireNonNull(values, "Values for 'in' constraint must not be null");
-		return new ZoneOffsetConstraintConfig(this.equalTo, Optional.of(Pair.of(Set.copyOf(values), false)), this.min, this.max, this.positive, this.negative, this.zero, this.hours, this.custom);
+		return new ZoneOffsetConstraintConfig(this.equalTo, Optional.of(Pair.of(Set.copyOf(values), false)), this.min, this.max, this.positive, this.negative, this.zero, this.hour, this.custom);
 	}
 	
 	/**
@@ -158,7 +159,7 @@ public record ZoneOffsetConstraintConfig(
 	 */
 	public @NonNull ZoneOffsetConstraintConfig withNotIn(@NonNull Collection<ZoneOffset> values) {
 		Objects.requireNonNull(values, "Values for 'not in' constraint must not be null");
-		return new ZoneOffsetConstraintConfig(this.equalTo, Optional.of(Pair.of(Set.copyOf(values), true)), this.min, this.max, this.positive, this.negative, this.zero, this.hours, this.custom);
+		return new ZoneOffsetConstraintConfig(this.equalTo, Optional.of(Pair.of(Set.copyOf(values), true)), this.min, this.max, this.positive, this.negative, this.zero, this.hour, this.custom);
 	}
 	
 	/**
@@ -169,7 +170,7 @@ public record ZoneOffsetConstraintConfig(
 	 */
 	public @NonNull ZoneOffsetConstraintConfig withGreaterThan(@NonNull ZoneOffset value) {
 		Objects.requireNonNull(value, "Value for 'greater than' constraint must not be null");
-		return new ZoneOffsetConstraintConfig(this.equalTo, this.in, Optional.of(Pair.of(value, false)), this.max, this.positive, this.negative, this.zero, this.hours, this.custom);
+		return new ZoneOffsetConstraintConfig(this.equalTo, this.in, Optional.of(Pair.of(value, false)), this.max, this.positive, this.negative, this.zero, this.hour, this.custom);
 	}
 	
 	/**
@@ -180,7 +181,7 @@ public record ZoneOffsetConstraintConfig(
 	 */
 	public @NonNull ZoneOffsetConstraintConfig withGreaterThanOrEqual(@NonNull ZoneOffset value) {
 		Objects.requireNonNull(value, "Value for 'greater than or equal' constraint must not be null");
-		return new ZoneOffsetConstraintConfig(this.equalTo, this.in, Optional.of(Pair.of(value, true)), this.max, this.positive, this.negative, this.zero, this.hours, this.custom);
+		return new ZoneOffsetConstraintConfig(this.equalTo, this.in, Optional.of(Pair.of(value, true)), this.max, this.positive, this.negative, this.zero, this.hour, this.custom);
 	}
 	
 	/**
@@ -191,7 +192,7 @@ public record ZoneOffsetConstraintConfig(
 	 */
 	public @NonNull ZoneOffsetConstraintConfig withLessThan(@NonNull ZoneOffset value) {
 		Objects.requireNonNull(value, "Value for 'less than' constraint must not be null");
-		return new ZoneOffsetConstraintConfig(this.equalTo, this.in, this.min, Optional.of(Pair.of(value, false)), this.positive, this.negative, this.zero, this.hours, this.custom);
+		return new ZoneOffsetConstraintConfig(this.equalTo, this.in, this.min, Optional.of(Pair.of(value, false)), this.positive, this.negative, this.zero, this.hour, this.custom);
 	}
 	
 	/**
@@ -202,7 +203,7 @@ public record ZoneOffsetConstraintConfig(
 	 */
 	public @NonNull ZoneOffsetConstraintConfig withLessThanOrEqual(@NonNull ZoneOffset value) {
 		Objects.requireNonNull(value, "Value for 'less than or equal' constraint must not be null");
-		return new ZoneOffsetConstraintConfig(this.equalTo, this.in, this.min, Optional.of(Pair.of(value, true)), this.positive, this.negative, this.zero, this.hours, this.custom);
+		return new ZoneOffsetConstraintConfig(this.equalTo, this.in, this.min, Optional.of(Pair.of(value, true)), this.positive, this.negative, this.zero, this.hour, this.custom);
 	}
 	
 	/**
@@ -215,7 +216,7 @@ public record ZoneOffsetConstraintConfig(
 	public @NonNull ZoneOffsetConstraintConfig withBetween(@NonNull ZoneOffset min, @NonNull ZoneOffset max) {
 		Objects.requireNonNull(min, "Min value for 'between' constraint must not be null");
 		Objects.requireNonNull(max, "Max value for 'between' constraint must not be null");
-		return new ZoneOffsetConstraintConfig(this.equalTo, this.in, Optional.of(Pair.of(min, false)), Optional.of(Pair.of(max, false)), this.positive, this.negative, this.zero, this.hours, this.custom);
+		return new ZoneOffsetConstraintConfig(this.equalTo, this.in, Optional.of(Pair.of(min, false)), Optional.of(Pair.of(max, false)), this.positive, this.negative, this.zero, this.hour, this.custom);
 	}
 	
 	/**
@@ -228,7 +229,7 @@ public record ZoneOffsetConstraintConfig(
 	public @NonNull ZoneOffsetConstraintConfig withBetweenOrEqual(@NonNull ZoneOffset min, @NonNull ZoneOffset max) {
 		Objects.requireNonNull(min, "Min value for 'between or equal' constraint must not be null");
 		Objects.requireNonNull(max, "Max value for 'between or equal' constraint must not be null");
-		return new ZoneOffsetConstraintConfig(this.equalTo, this.in, Optional.of(Pair.of(min, true)), Optional.of(Pair.of(max, true)), this.positive, this.negative, this.zero, this.hours, this.custom);
+		return new ZoneOffsetConstraintConfig(this.equalTo, this.in, Optional.of(Pair.of(min, true)), Optional.of(Pair.of(max, true)), this.positive, this.negative, this.zero, this.hour, this.custom);
 	}
 	
 	/**
@@ -237,7 +238,7 @@ public record ZoneOffsetConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull ZoneOffsetConstraintConfig withPositive() {
-		return new ZoneOffsetConstraintConfig(this.equalTo, this.in, this.min, this.max, Optional.of(false), this.negative, this.zero, this.hours, this.custom);
+		return new ZoneOffsetConstraintConfig(this.equalTo, this.in, this.min, this.max, Optional.of(false), this.negative, this.zero, this.hour, this.custom);
 	}
 	
 	/**
@@ -246,7 +247,7 @@ public record ZoneOffsetConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull ZoneOffsetConstraintConfig withNonPositive() {
-		return new ZoneOffsetConstraintConfig(this.equalTo, this.in, this.min, this.max, Optional.of(true), this.negative, this.zero, this.hours, this.custom);
+		return new ZoneOffsetConstraintConfig(this.equalTo, this.in, this.min, this.max, Optional.of(true), this.negative, this.zero, this.hour, this.custom);
 	}
 	
 	/**
@@ -255,7 +256,7 @@ public record ZoneOffsetConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull ZoneOffsetConstraintConfig withNegative() {
-		return new ZoneOffsetConstraintConfig(this.equalTo, this.in, this.min, this.max, this.positive, Optional.of(false), this.zero, this.hours, this.custom);
+		return new ZoneOffsetConstraintConfig(this.equalTo, this.in, this.min, this.max, this.positive, Optional.of(false), this.zero, this.hour, this.custom);
 	}
 	
 	/**
@@ -264,7 +265,7 @@ public record ZoneOffsetConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull ZoneOffsetConstraintConfig withNonNegative() {
-		return new ZoneOffsetConstraintConfig(this.equalTo, this.in, this.min, this.max, this.positive, Optional.of(true), this.zero, this.hours, this.custom);
+		return new ZoneOffsetConstraintConfig(this.equalTo, this.in, this.min, this.max, this.positive, Optional.of(true), this.zero, this.hour, this.custom);
 	}
 	
 	/**
@@ -273,7 +274,7 @@ public record ZoneOffsetConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull ZoneOffsetConstraintConfig withZero() {
-		return new ZoneOffsetConstraintConfig(this.equalTo, this.in, this.min, this.max, this.positive, this.negative, Optional.of(false), this.hours, this.custom);
+		return new ZoneOffsetConstraintConfig(this.equalTo, this.in, this.min, this.max, this.positive, this.negative, Optional.of(false), this.hour, this.custom);
 	}
 	
 	/**
@@ -294,18 +295,18 @@ public record ZoneOffsetConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull ZoneOffsetConstraintConfig withNonZero() {
-		return new ZoneOffsetConstraintConfig(this.equalTo, this.in, this.min, this.max, this.positive, this.negative, Optional.of(true), this.hours, this.custom);
+		return new ZoneOffsetConstraintConfig(this.equalTo, this.in, this.min, this.max, this.positive, this.negative, Optional.of(true), this.hour, this.custom);
 	}
 	
 	/**
-	 * Creates a new config with the specified hours constraint.<br>
+	 * Creates a new config with the specified hour constraint.<br>
 	 *
-	 * @param hoursConfig The numeric field constraint config for hours validation
+	 * @param hourConfig The numeric field constraint config for hour validation
 	 * @return A new config with the constraint applied
 	 */
-	public @NonNull ZoneOffsetConstraintConfig withHours(@NonNull NumericFieldConstraintConfig hoursConfig) {
-		Objects.requireNonNull(hoursConfig, "Config for 'hours' constraint must not be null");
-		return new ZoneOffsetConstraintConfig(this.equalTo, this.in, this.min, this.max, this.positive, this.negative, this.zero, Optional.of(hoursConfig), this.custom);
+	public @NonNull ZoneOffsetConstraintConfig withHour(@NonNull NumericFieldConstraintConfig hourConfig) {
+		Objects.requireNonNull(hourConfig, "Config for 'hour' constraint must not be null");
+		return new ZoneOffsetConstraintConfig(this.equalTo, this.in, this.min, this.max, this.positive, this.negative, this.zero, Optional.of(hourConfig), this.custom);
 	}
 	
 	/**
@@ -316,7 +317,7 @@ public record ZoneOffsetConstraintConfig(
 	 */
 	public @NonNull ZoneOffsetConstraintConfig withCustom(@NonNull Constraint<ZoneOffset> constraint) {
 		Objects.requireNonNull(constraint, "Custom constraint must not be null");
-		return new ZoneOffsetConstraintConfig(this.equalTo, this.in, this.min, this.max, this.positive, this.negative, this.zero, this.hours, Optional.of(constraint));
+		return new ZoneOffsetConstraintConfig(this.equalTo, this.in, this.min, this.max, this.positive, this.negative, this.zero, this.hour, Optional.of(constraint));
 	}
 	//endregion
 	
@@ -331,29 +332,29 @@ public record ZoneOffsetConstraintConfig(
 			() -> ConstraintMatchers.matchRange(value, this.min, this.max),
 			() -> this.positive.map(nonPositive -> {
 				if (!nonPositive && totalSeconds <= 0) {
-					return Result.<Void>error("ZoneOffset '" + value + "' must be positive");
+					return Result.<Void>error("Zone offset '" + value + "' must be positive");
 				} else if (nonPositive && totalSeconds > 0) {
-					return Result.<Void>error("ZoneOffset '" + value + "' must be non-positive");
+					return Result.<Void>error("Zone offset '" + value + "' must be non-positive");
 				}
 				return Result.<Void>success();
 			}).orElseGet(Result::success),
 			() -> this.negative.map(nonNegative -> {
 				if (!nonNegative && totalSeconds >= 0) {
-					return Result.<Void>error("ZoneOffset '" + value + "' must be negative");
+					return Result.<Void>error("Zone offset '" + value + "' must be negative");
 				} else if (nonNegative && totalSeconds < 0) {
-					return Result.<Void>error("ZoneOffset '" + value + "' must be non-negative");
+					return Result.<Void>error("Zone offset '" + value + "' must be non-negative");
 				}
 				return Result.<Void>success();
 			}).orElseGet(Result::success),
 			() -> this.zero.map(nonZero -> {
 				if (!nonZero && totalSeconds != 0) {
-					return Result.<Void>error("ZoneOffset '" + value + "' must be zero (UTC)");
+					return Result.<Void>error("Zone offset '" + value + "' must be zero (UTC)");
 				} else if (nonZero && totalSeconds == 0) {
-					return Result.<Void>error("ZoneOffset '" + value + "' must be non-zero");
+					return Result.<Void>error("Zone offset '" + value + "' must be non-zero");
 				}
 				return Result.<Void>success();
 			}).orElseGet(Result::success),
-			() -> ConstraintMatchers.matchNestedConfig(totalSeconds / 3600, this.hours, "Hours"),
+			() -> ConstraintMatchers.matchNestedConfig(totalSeconds / 3600, this.hour, "Hours"),
 			() -> ConstraintMatchers.matchCustom(value, this.custom)
 		);
 	}

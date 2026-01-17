@@ -19,6 +19,8 @@
 package net.luis.utils.io.codec.types.temporal.zoned;
 
 import net.luis.utils.io.codec.AbstractCodec;
+import net.luis.utils.io.codec.constraint_new.config.temporal.ZoneIdConstraintConfig;
+import net.luis.utils.io.codec.constraint_new.temporal.ZoneIdConstraint;
 import net.luis.utils.io.codec.provider.TypeProvider;
 import net.luis.utils.util.result.Result;
 import org.jspecify.annotations.NonNull;
@@ -27,6 +29,7 @@ import org.jspecify.annotations.Nullable;
 import java.time.ZoneId;
 import java.time.zone.ZoneRulesException;
 import java.util.Objects;
+import java.util.function.UnaryOperator;
 
 /**
  * Internal codec implementation for zone ids.<br>
@@ -34,12 +37,31 @@ import java.util.Objects;
  *
  * @author Luis-St
  */
-public class ZoneIdCodec extends AbstractCodec<ZoneId, Object> {
+public class ZoneIdCodec extends AbstractCodec<ZoneId, ZoneIdConstraintConfig> implements ZoneIdConstraint<ZoneIdCodec> {
 	
 	/**
 	 * Constructs a new zone id codec.<br>
 	 */
 	public ZoneIdCodec() {}
+	
+	/**
+	 * Constructs a new zone id codec with the given configuration.<br>
+	 *
+	 * @param config The constraint configuration
+	 * @throws NullPointerException If the config is null
+	 */
+	private ZoneIdCodec(@NonNull ZoneIdConstraintConfig config) {
+		super(config);
+	}
+	
+	@Override
+	public @NonNull ZoneIdCodec apply(@NonNull UnaryOperator<ZoneIdConstraintConfig> configModifier) {
+		Objects.requireNonNull(configModifier, "Config modifier must not be null");
+		
+		return new ZoneIdCodec(
+			configModifier.apply(this.getConstraintConfig().orElse(ZoneIdConstraintConfig.UNCONSTRAINED))
+		);
+	}
 	
 	@Override
 	public <R> @NonNull Result<R> encodeStart(@NonNull TypeProvider<R> provider, @NonNull R current, @Nullable ZoneId value) {
@@ -49,6 +71,10 @@ public class ZoneIdCodec extends AbstractCodec<ZoneId, Object> {
 			return Result.error("Unable to encode null as zone id using '" + this + "'");
 		}
 		
+		Result<Void> constraintResult = this.checkConstraints(value);
+		if (constraintResult.isError()) {
+			return Result.error(constraintResult.errorOrThrow());
+		}
 		return provider.createString(value.getId());
 	}
 	
@@ -73,7 +99,13 @@ public class ZoneIdCodec extends AbstractCodec<ZoneId, Object> {
 		
 		String string = result.resultOrThrow();
 		try {
-			return Result.success(ZoneId.of(string));
+			ZoneId zoneId = ZoneId.of(string);
+			Result<Void> constraintResult = this.checkConstraints(zoneId);
+			if (constraintResult.isError()) {
+				return Result.error(constraintResult.errorOrThrow());
+			}
+			
+			return Result.success(zoneId);
 		} catch (ZoneRulesException e) {
 			return Result.error("Unable to decode zone id '" + string + "' using '" + this + "': " + e.getMessage());
 		}
@@ -92,6 +124,8 @@ public class ZoneIdCodec extends AbstractCodec<ZoneId, Object> {
 	
 	@Override
 	public String toString() {
-		return "ZoneIdCodec";
+		return this.getConstraintConfig().map(config -> {
+			return "ConstrainedZoneIdCodec[constraints=" + config + "]";
+		}).orElse("ZoneIdCodec");
 	}
 }

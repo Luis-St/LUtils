@@ -18,14 +18,18 @@
 
 package net.luis.utils.io.codec.constraint_new.temporal;
 
-import net.luis.utils.io.codec.constraint_new.SignedConstraint;
+import net.luis.utils.io.codec.constraint_new.*;
 import net.luis.utils.io.codec.constraint_new.builder.NumericConstraintBuilder;
+import net.luis.utils.io.codec.constraint_new.config.temporal.PeriodConstraintConfig;
 import org.jspecify.annotations.NonNull;
 
+import java.time.Period;
+import java.util.Collection;
+import java.util.Objects;
 import java.util.function.UnaryOperator;
 
 /**
- * Constraint interface for Period types that provides date-based period validation operations.<br>
+ * Constraint interface for {@link Period} that provides date-based period validation operations.<br>
  * <p>
  *     This interface extends {@link SignedConstraint} with methods for constraining periods
  *     based on their day, month, and year components.<br>
@@ -34,10 +38,98 @@ import java.util.function.UnaryOperator;
  *
  * @author Luis-St
  *
- * @param <T> The type of the constraint configuration
  * @param <C> The return type of the constraint method (for fluent method chaining)
  */
-public interface PeriodConstraint<T, C> extends SignedConstraint<T, C> {
+@FunctionalInterface
+public interface PeriodConstraint<C> extends ApplicableConstraint<PeriodConstraintConfig, C>, SignedConstraint<Period, C> {
+	
+	@Override
+	@NonNull C apply(@NonNull UnaryOperator<PeriodConstraintConfig> configModifier);
+	
+	@Override
+	default @NonNull C equalTo(@NonNull Period value) {
+		return this.apply(config -> config.withEqualTo(value));
+	}
+	
+	@Override
+	default @NonNull C notEqualTo(@NonNull Period value) {
+		return this.apply(config -> config.withNotEqualTo(value));
+	}
+	
+	@Override
+	default @NonNull C in(@NonNull Collection<Period> values) {
+		return this.apply(config -> config.withIn(values));
+	}
+	
+	@Override
+	default @NonNull C notIn(@NonNull Collection<Period> values) {
+		return this.apply(config -> config.withNotIn(values));
+	}
+	
+	@Override
+	default @NonNull C custom(@NonNull Constraint<Period> constraint) {
+		return this.apply(config -> config.withCustom(constraint));
+	}
+	
+	@Override
+	default @NonNull C greaterThan(@NonNull Period value) {
+		return this.apply(config -> config.withGreaterThan(value));
+	}
+	
+	@Override
+	default @NonNull C greaterThanOrEqual(@NonNull Period value) {
+		return this.apply(config -> config.withGreaterThanOrEqual(value));
+	}
+	
+	@Override
+	default @NonNull C lessThan(@NonNull Period value) {
+		return this.apply(config -> config.withLessThan(value));
+	}
+	
+	@Override
+	default @NonNull C lessThanOrEqual(@NonNull Period value) {
+		return this.apply(config -> config.withLessThanOrEqual(value));
+	}
+	
+	@Override
+	default @NonNull C between(@NonNull Period min, @NonNull Period max) {
+		return this.apply(config -> config.withBetween(min, max));
+	}
+	
+	@Override
+	default @NonNull C betweenOrEqual(@NonNull Period min, @NonNull Period max) {
+		return this.apply(config -> config.withBetweenOrEqual(min, max));
+	}
+	
+	@Override
+	default @NonNull C positive() {
+		return this.apply(PeriodConstraintConfig::withPositive);
+	}
+	
+	@Override
+	default @NonNull C negative() {
+		return this.apply(PeriodConstraintConfig::withNegative);
+	}
+	
+	@Override
+	default @NonNull C nonPositive() {
+		return this.apply(PeriodConstraintConfig::withNonPositive);
+	}
+	
+	@Override
+	default @NonNull C nonNegative() {
+		return this.apply(PeriodConstraintConfig::withNonNegative);
+	}
+	
+	@Override
+	default @NonNull C zero() {
+		return this.apply(PeriodConstraintConfig::withZero);
+	}
+	
+	@Override
+	default @NonNull C nonZero() {
+		return this.apply(PeriodConstraintConfig::withNonZero);
+	}
 	
 	/**
 	 * Applies a day constraint to the period using a builder.<br>
@@ -52,7 +144,13 @@ public interface PeriodConstraint<T, C> extends SignedConstraint<T, C> {
 	 * @see #month(UnaryOperator)
 	 * @see #year(UnaryOperator)
 	 */
-	@NonNull C day(@NonNull UnaryOperator<NumericConstraintBuilder> builder);
+	default @NonNull C day(@NonNull UnaryOperator<NumericConstraintBuilder> builder) {
+		Objects.requireNonNull(builder, "Builder must not be null");
+		
+		NumericConstraintBuilder numericBuilder = new NumericConstraintBuilder();
+		builder.apply(numericBuilder);
+		return this.apply(config -> config.withDay(numericBuilder.build()));
+	}
 	
 	/**
 	 * Applies a month constraint to the period using a builder.<br>
@@ -67,7 +165,13 @@ public interface PeriodConstraint<T, C> extends SignedConstraint<T, C> {
 	 * @see #day(UnaryOperator)
 	 * @see #year(UnaryOperator)
 	 */
-	@NonNull C month(@NonNull UnaryOperator<NumericConstraintBuilder> builder);
+	default @NonNull C month(@NonNull UnaryOperator<NumericConstraintBuilder> builder) {
+		Objects.requireNonNull(builder, "Builder must not be null");
+		
+		NumericConstraintBuilder numericBuilder = new NumericConstraintBuilder();
+		builder.apply(numericBuilder);
+		return this.apply(config -> config.withMonth(numericBuilder.build()));
+	}
 	
 	/**
 	 * Applies a year constraint to the period using a builder.<br>
@@ -82,5 +186,11 @@ public interface PeriodConstraint<T, C> extends SignedConstraint<T, C> {
 	 * @see #day(UnaryOperator)
 	 * @see #month(UnaryOperator)
 	 */
-	@NonNull C year(@NonNull UnaryOperator<NumericConstraintBuilder> builder);
+	default @NonNull C year(@NonNull UnaryOperator<NumericConstraintBuilder> builder) {
+		Objects.requireNonNull(builder, "Builder must not be null");
+		
+		NumericConstraintBuilder numericBuilder = new NumericConstraintBuilder();
+		builder.apply(numericBuilder);
+		return this.apply(config -> config.withYear(numericBuilder.build()));
+	}
 }

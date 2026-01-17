@@ -42,7 +42,7 @@ public interface TemporalSpanConstraint<T, C> {
 	 * <p>
 	 *     The returned type will validate that values are within the last specified duration from the current time.<br>
 	 *     For example, {@code withinLast(Duration.ofDays(7))} ensures the value is within the last 7 days,
-	 *     or {@code withinLast(Duration.ofHours(2))} ensures the value is within the last 2 hours.
+	 *     or {@code withinLast(Duration.ofHours(2))} ensures the value is within the last 2 hour.
 	 * </p>
 	 * <p>
 	 *     The validation is performed at the time of encoding/decoding, using the current time as reference.

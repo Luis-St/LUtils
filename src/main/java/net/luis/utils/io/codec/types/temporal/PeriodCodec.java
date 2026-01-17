@@ -19,6 +19,8 @@
 package net.luis.utils.io.codec.types.temporal;
 
 import net.luis.utils.io.codec.AbstractCodec;
+import net.luis.utils.io.codec.constraint_new.config.temporal.PeriodConstraintConfig;
+import net.luis.utils.io.codec.constraint_new.temporal.PeriodConstraint;
 import net.luis.utils.io.codec.provider.TypeProvider;
 import net.luis.utils.util.result.Result;
 import org.jspecify.annotations.NonNull;
@@ -26,6 +28,7 @@ import org.jspecify.annotations.Nullable;
 
 import java.time.Period;
 import java.util.*;
+import java.util.function.UnaryOperator;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -35,7 +38,7 @@ import java.util.regex.Pattern;
  *
  * @author Luis-St
  */
-public class PeriodCodec extends AbstractCodec<Period, Object> {
+public class PeriodCodec extends AbstractCodec<Period, PeriodConstraintConfig> implements PeriodConstraint<PeriodCodec> {
 	
 	/**
 	 * Pattern to match period parts (e.g., "1y", "2mo", "3d").<br>
@@ -48,11 +51,35 @@ public class PeriodCodec extends AbstractCodec<Period, Object> {
 	 */
 	public PeriodCodec() {}
 	
+	/**
+	 * Constructs a new period codec with the given configuration.<br>
+	 *
+	 * @param config The constraint configuration
+	 * @throws NullPointerException If the config is null
+	 */
+	private PeriodCodec(@NonNull PeriodConstraintConfig config) {
+		super(config);
+	}
+	
+	@Override
+	public @NonNull PeriodCodec apply(@NonNull UnaryOperator<PeriodConstraintConfig> configModifier) {
+		Objects.requireNonNull(configModifier, "Config modifier must not be null");
+		
+		return new PeriodCodec(
+			configModifier.apply(this.getConstraintConfig().orElse(PeriodConstraintConfig.UNCONSTRAINED))
+		);
+	}
+	
 	@Override
 	public <R> @NonNull Result<R> encodeStart(@NonNull TypeProvider<R> provider, @NonNull R current, @Nullable Period value) {
 		Objects.requireNonNull(provider, "Type provider must not be null");
 		if (value == null) {
 			return Result.error("Unable to encode null as period using '" + this + "'");
+		}
+		
+		Result<Void> constraint = this.checkConstraints(value);
+		if (constraint.isError()) {
+			return Result.error(constraint.errorOrThrow());
 		}
 		
 		if (value.isZero()) {
@@ -119,7 +146,12 @@ public class PeriodCodec extends AbstractCodec<Period, Object> {
 				}
 			}
 			
-			return Result.success(Period.of(years, months, days));
+			Period period = Period.of(years, months, days);
+			Result<Void> constraint = this.checkConstraints(period);
+			if (constraint.isError()) {
+				return Result.error(constraint.errorOrThrow());
+			}
+			return Result.success(period);
 		} catch (Exception e) {
 			return Result.error("Unable to decode period '" + string + "' using '" + this + "': Failed to parse period '" + string + "': " + e.getMessage());
 		}
@@ -127,6 +159,8 @@ public class PeriodCodec extends AbstractCodec<Period, Object> {
 	
 	@Override
 	public String toString() {
-		return "PeriodCodec";
+		return this.getConstraintConfig().map(config -> {
+			return "ConstrainedPeriodCodec[constraints=" + config + "]";
+		}).orElse("PeriodCodec");
 	}
 }

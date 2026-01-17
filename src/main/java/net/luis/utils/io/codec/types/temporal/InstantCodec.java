@@ -19,8 +19,8 @@
 package net.luis.utils.io.codec.types.temporal;
 
 import net.luis.utils.io.codec.AbstractCodec;
-import net.luis.utils.io.codec.constraint.config.temporal.InstantConstraintConfig;
-import net.luis.utils.io.codec.constraint.temporal.TemporalComparisonConstraint;
+import net.luis.utils.io.codec.constraint_new.config.temporal.InstantConstraintConfig;
+import net.luis.utils.io.codec.constraint_new.temporal.InstantConstraint;
 import net.luis.utils.io.codec.provider.TypeProvider;
 import net.luis.utils.util.result.Result;
 import org.jspecify.annotations.NonNull;
@@ -40,7 +40,7 @@ import java.util.function.UnaryOperator;
  *
  * @author Luis-St
  */
-public class InstantCodec extends AbstractCodec<Instant, InstantConstraintConfig> implements TemporalComparisonConstraint<Instant, InstantCodec, InstantConstraintConfig> {
+public class InstantCodec extends AbstractCodec<Instant, InstantConstraintConfig> implements InstantConstraint<InstantCodec> {
 	
 	/**
 	 * Constructs a new instant codec.<br>
@@ -48,33 +48,22 @@ public class InstantCodec extends AbstractCodec<Instant, InstantConstraintConfig
 	public InstantCodec() {}
 	
 	/**
-	 * Constructs a new instant codec with the specified constraint configuration.<br>
+	 * Constructs a new instant codec with the given configuration.<br>
 	 *
-	 * @param constraintConfig The constraint configuration
-	 * @throws NullPointerException If the constraint config is null
+	 * @param config The constraint configuration
+	 * @throws NullPointerException If the config is null
 	 */
-	public InstantCodec(@NonNull InstantConstraintConfig constraintConfig) {
-		super(constraintConfig);
+	private InstantCodec(@NonNull InstantConstraintConfig config) {
+		super(config);
 	}
 	
 	@Override
-	public @NonNull InstantCodec applyConstraint(@NonNull UnaryOperator<InstantConstraintConfig> configModifier) {
+	public @NonNull InstantCodec apply(@NonNull UnaryOperator<InstantConstraintConfig> configModifier) {
 		Objects.requireNonNull(configModifier, "Config modifier must not be null");
 		
-		return new InstantCodec(configModifier.apply(
-			this.getConstraintConfig().orElse(InstantConstraintConfig.UNCONSTRAINED)
-		));
-	}
-	
-	@Override
-	protected @NonNull Result<Void> checkConstraints(@NonNull Instant value) {
-		Objects.requireNonNull(value, "Value must not be null");
-		
-		Result<Void> constraintResult = this.getConstraintConfig().map(config -> config.matches(value)).orElseGet(Result::success);
-		if (constraintResult.isError()) {
-			return Result.error("Instant value " + value + " does not meet constraints: " + constraintResult.errorOrThrow());
-		}
-		return Result.success();
+		return new InstantCodec(
+			configModifier.apply(this.getConstraintConfig().orElse(InstantConstraintConfig.UNCONSTRAINED))
+		);
 	}
 	
 	@Override
@@ -95,6 +84,11 @@ public class InstantCodec extends AbstractCodec<Instant, InstantConstraintConfig
 	@Override
 	public @NonNull Result<String> encodeKey(@NonNull Instant key) {
 		Objects.requireNonNull(key, "Key must not be null");
+		
+		Result<Void> constraintResult = this.checkConstraints(key);
+		if (constraintResult.isError()) {
+			return Result.error(constraintResult.errorOrThrow());
+		}
 		return Result.success(key.toString());
 	}
 	
@@ -130,7 +124,13 @@ public class InstantCodec extends AbstractCodec<Instant, InstantConstraintConfig
 		Objects.requireNonNull(key, "Key must not be null");
 		
 		try {
-			return Result.success(Instant.parse(key));
+			Instant instant = Instant.parse(key);
+			
+			Result<Void> constraintResult = this.checkConstraints(instant);
+			if (constraintResult.isError()) {
+				return Result.error(constraintResult.errorOrThrow());
+			}
+			return Result.success(instant);
 		} catch (DateTimeParseException e) {
 			return Result.error("Unable to decode key '" + key + "' as instant using '" + this + "': " + e.getMessage());
 		}

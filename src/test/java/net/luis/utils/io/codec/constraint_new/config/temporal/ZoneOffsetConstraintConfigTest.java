@@ -140,7 +140,7 @@ class ZoneOffsetConstraintConfigTest {
 		assertTrue(config.positive().isEmpty());
 		assertTrue(config.negative().isEmpty());
 		assertTrue(config.zero().isEmpty());
-		assertTrue(config.hours().isEmpty());
+		assertTrue(config.hour().isEmpty());
 		assertTrue(config.custom().isEmpty());
 		assertTrue(config.matches(UTC).isSuccess());
 	}
@@ -343,14 +343,14 @@ class ZoneOffsetConstraintConfigTest {
 	@Test
 	void withHours() {
 		NumericFieldConstraintConfig hoursConfig = NumericFieldConstraintConfig.UNCONSTRAINED.withBetweenOrEqual(-5, 5);
-		ZoneOffsetConstraintConfig config = ZoneOffsetConstraintConfig.UNCONSTRAINED.withHours(hoursConfig);
-		assertTrue(config.hours().isPresent());
-		assertEquals(hoursConfig, config.hours().get());
+		ZoneOffsetConstraintConfig config = ZoneOffsetConstraintConfig.UNCONSTRAINED.withHour(hoursConfig);
+		assertTrue(config.hour().isPresent());
+		assertEquals(hoursConfig, config.hour().get());
 	}
 	
 	@Test
 	void withHoursNull() {
-		assertThrows(NullPointerException.class, () -> ZoneOffsetConstraintConfig.UNCONSTRAINED.withHours(null));
+		assertThrows(NullPointerException.class, () -> ZoneOffsetConstraintConfig.UNCONSTRAINED.withHour(null));
 	}
 	
 	@Test
@@ -499,7 +499,7 @@ class ZoneOffsetConstraintConfigTest {
 	@Test
 	void matchesWithHoursConstraint() {
 		NumericFieldConstraintConfig hoursConfig = NumericFieldConstraintConfig.UNCONSTRAINED.withBetweenOrEqual(-2, 2);
-		ZoneOffsetConstraintConfig config = ZoneOffsetConstraintConfig.UNCONSTRAINED.withHours(hoursConfig);
+		ZoneOffsetConstraintConfig config = ZoneOffsetConstraintConfig.UNCONSTRAINED.withHour(hoursConfig);
 		assertTrue(config.matches(UTC).isSuccess());
 		assertTrue(config.matches(PLUS_2).isSuccess());
 		assertTrue(config.matches(PLUS_5).isError());

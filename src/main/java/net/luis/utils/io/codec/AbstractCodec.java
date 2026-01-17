@@ -53,6 +53,7 @@ public abstract non-sealed class AbstractCodec<C, T> implements Codec<C> {
 	
 	/**
 	 * Constructs a new abstract codec with the given constraint configuration.<br>
+	 *
 	 * @param constraintConfig The constraint configuration for this codec
 	 * @throws NullPointerException If the constraint configuration is null
 	 */

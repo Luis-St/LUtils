@@ -19,6 +19,8 @@
 package net.luis.utils.io.codec.types.temporal;
 
 import net.luis.utils.io.codec.AbstractCodec;
+import net.luis.utils.io.codec.constraint_new.config.temporal.DurationConstraintConfig;
+import net.luis.utils.io.codec.constraint_new.temporal.*;
 import net.luis.utils.io.codec.provider.TypeProvider;
 import net.luis.utils.util.result.Result;
 import org.jspecify.annotations.NonNull;
@@ -26,6 +28,7 @@ import org.jspecify.annotations.Nullable;
 
 import java.time.Duration;
 import java.util.Objects;
+import java.util.function.UnaryOperator;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -35,7 +38,7 @@ import java.util.regex.Pattern;
  *
  * @author Luis-St
  */
-public class DurationCodec extends AbstractCodec<Duration, Object> {
+public class DurationCodec extends AbstractCodec<Duration, DurationConstraintConfig> implements DurationConstraint<DurationCodec> {
 	
 	/**
 	 * Pattern to match duration parts (e.g., "1h", "30m", "45s", "500ms", "200ns").<br>
@@ -48,11 +51,35 @@ public class DurationCodec extends AbstractCodec<Duration, Object> {
 	 */
 	public DurationCodec() {}
 	
+	/**
+	 * Constructs a new duration codec with the given configuration.<br>
+	 *
+	 * @param config The constraint configuration
+	 * @throws NullPointerException If the config is null
+	 */
+	private DurationCodec(@NonNull DurationConstraintConfig config) {
+		super(config);
+	}
+	
+	@Override
+	public @NonNull DurationCodec apply(@NonNull UnaryOperator<DurationConstraintConfig> configModifier) {
+		Objects.requireNonNull(configModifier, "Config modifier must not be null");
+		
+		return new DurationCodec(
+			configModifier.apply(this.getConstraintConfig().orElse(DurationConstraintConfig.UNCONSTRAINED))
+		);
+	}
+	
 	@Override
 	public <R> @NonNull Result<R> encodeStart(@NonNull TypeProvider<R> provider, @NonNull R current, @Nullable Duration value) {
 		Objects.requireNonNull(provider, "Type provider must not be null");
 		if (value == null) {
 			return Result.error("Unable to encode null as duration using '" + this + "'");
+		}
+		
+		Result<Void> constraintResult = this.checkConstraints(value);
+		if (constraintResult.isError()) {
+			return Result.error(constraintResult.errorOrThrow());
 		}
 		
 		long totalSeconds = value.getSeconds();
@@ -137,7 +164,12 @@ public class DurationCodec extends AbstractCodec<Duration, Object> {
 				}
 			}
 			
-			return Result.success(Duration.ofSeconds(totalSeconds, nanos));
+			Duration duration = Duration.ofSeconds(totalSeconds, nanos);
+			Result<Void> constraint = this.checkConstraints(duration);
+			if (constraint.isError()) {
+				return Result.error(constraint.errorOrThrow());
+			}
+			return Result.success(duration);
 		} catch (Exception e) {
 			return Result.error("Unable to decode duration '" + string + "' using '" + this + "': Failed to parse duration '" + string + "': " + e.getMessage());
 		}
@@ -145,6 +177,8 @@ public class DurationCodec extends AbstractCodec<Duration, Object> {
 	
 	@Override
 	public String toString() {
-		return "DurationCodec";
+		return this.getConstraintConfig().map(config -> {
+			return "ConstrainedDurationCodec[constraints=" + config + "]";
+		}).orElse("DurationCodec");
 	}
 }

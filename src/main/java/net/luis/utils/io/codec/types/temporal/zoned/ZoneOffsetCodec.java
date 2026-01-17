@@ -19,6 +19,8 @@
 package net.luis.utils.io.codec.types.temporal.zoned;
 
 import net.luis.utils.io.codec.AbstractCodec;
+import net.luis.utils.io.codec.constraint_new.config.temporal.ZoneOffsetConstraintConfig;
+import net.luis.utils.io.codec.constraint_new.temporal.ZoneOffsetConstraint;
 import net.luis.utils.io.codec.provider.TypeProvider;
 import net.luis.utils.util.result.Result;
 import org.jspecify.annotations.NonNull;
@@ -27,6 +29,7 @@ import org.jspecify.annotations.Nullable;
 import java.time.DateTimeException;
 import java.time.ZoneOffset;
 import java.util.Objects;
+import java.util.function.UnaryOperator;
 
 /**
  * Internal codec implementation for zone offsets.<br>
@@ -34,12 +37,31 @@ import java.util.Objects;
  *
  * @author Luis-St
  */
-public class ZoneOffsetCodec extends AbstractCodec<ZoneOffset, Object> {
+public class ZoneOffsetCodec extends AbstractCodec<ZoneOffset, ZoneOffsetConstraintConfig> implements ZoneOffsetConstraint<ZoneOffsetCodec> {
 	
 	/**
 	 * Constructs a new zone offset codec.<br>
 	 */
 	public ZoneOffsetCodec() {}
+	
+	/**
+	 * Constructs a new zone offset codec with the given configuration.<br>
+	 *
+	 * @param config The constraint configuration
+	 * @throws NullPointerException If the config is null
+	 */
+	private ZoneOffsetCodec(@NonNull ZoneOffsetConstraintConfig config) {
+		super(config);
+	}
+	
+	@Override
+	public @NonNull ZoneOffsetCodec apply(@NonNull UnaryOperator<ZoneOffsetConstraintConfig> configModifier) {
+		Objects.requireNonNull(configModifier, "Config modifier must not be null");
+		
+		return new ZoneOffsetCodec(
+			configModifier.apply(this.getConstraintConfig().orElse(ZoneOffsetConstraintConfig.UNCONSTRAINED))
+		);
+	}
 	
 	@Override
 	public <R> @NonNull Result<R> encodeStart(@NonNull TypeProvider<R> provider, @NonNull R current, @Nullable ZoneOffset value) {
@@ -49,6 +71,10 @@ public class ZoneOffsetCodec extends AbstractCodec<ZoneOffset, Object> {
 			return Result.error("Unable to encode null as zone offset using '" + this + "'");
 		}
 		
+		Result<Void> constraintResult = this.checkConstraints(value);
+		if (constraintResult.isError()) {
+			return Result.error(constraintResult.errorOrThrow());
+		}
 		return provider.createString(value.getId());
 	}
 	
@@ -73,7 +99,13 @@ public class ZoneOffsetCodec extends AbstractCodec<ZoneOffset, Object> {
 		
 		String string = result.resultOrThrow();
 		try {
-			return Result.success(ZoneOffset.of(string));
+			ZoneOffset zoneOffset = ZoneOffset.of(string);
+			Result<Void> constraintResult = this.checkConstraints(zoneOffset);
+			if (constraintResult.isError()) {
+				return Result.error(constraintResult.errorOrThrow());
+			}
+			
+			return Result.success(zoneOffset);
 		} catch (DateTimeException e) {
 			return Result.error("Unable to decode zone offset '" + string + "' using '" + this + "': " + e.getMessage());
 		}
@@ -92,6 +124,8 @@ public class ZoneOffsetCodec extends AbstractCodec<ZoneOffset, Object> {
 	
 	@Override
 	public String toString() {
-		return "ZoneOffsetCodec";
+		return this.getConstraintConfig().map(config -> {
+			return "ConstrainedZoneOffsetCodec[constraints=" + config + "]";
+		}).orElse("ZoneOffsetCodec");
 	}
 }

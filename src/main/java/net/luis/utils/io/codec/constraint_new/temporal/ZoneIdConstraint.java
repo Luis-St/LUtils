@@ -18,14 +18,18 @@
 
 package net.luis.utils.io.codec.constraint_new.temporal;
 
-import net.luis.utils.io.codec.constraint_new.BaseConstraint;
+import net.luis.utils.io.codec.constraint_new.*;
 import net.luis.utils.io.codec.constraint_new.builder.StringConstraintBuilder;
+import net.luis.utils.io.codec.constraint_new.config.temporal.ZoneIdConstraintConfig;
 import org.jspecify.annotations.NonNull;
 
+import java.time.ZoneId;
+import java.util.Collection;
+import java.util.Objects;
 import java.util.function.UnaryOperator;
 
 /**
- * Constraint interface for ZoneId types that provides time zone validation operations.<br>
+ * Constraint interface for {@link ZoneId} that provides time zone validation operations.<br>
  * <p>
  *     This interface extends {@link BaseConstraint} with methods for constraining time zones
  *     based on their type (region-based, offset-based), normalization, and availability.<br>
@@ -34,10 +38,38 @@ import java.util.function.UnaryOperator;
  *
  * @author Luis-St
  *
- * @param <T> The type of the constraint configuration
  * @param <C> The return type of the constraint method (for fluent method chaining)
  */
-public interface ZoneIdConstraint<T, C> extends BaseConstraint<T, C> {
+@FunctionalInterface
+public interface ZoneIdConstraint<C> extends ApplicableConstraint<ZoneIdConstraintConfig, C>, BaseConstraint<ZoneId, C> {
+	
+	@Override
+	@NonNull C apply(@NonNull UnaryOperator<ZoneIdConstraintConfig> configModifier);
+	
+	@Override
+	default @NonNull C equalTo(@NonNull ZoneId value) {
+		return this.apply(config -> config.withEqualTo(value));
+	}
+	
+	@Override
+	default @NonNull C notEqualTo(@NonNull ZoneId value) {
+		return this.apply(config -> config.withNotEqualTo(value));
+	}
+	
+	@Override
+	default @NonNull C in(@NonNull Collection<ZoneId> values) {
+		return this.apply(config -> config.withIn(values));
+	}
+	
+	@Override
+	default @NonNull C notIn(@NonNull Collection<ZoneId> values) {
+		return this.apply(config -> config.withNotIn(values));
+	}
+	
+	@Override
+	default @NonNull C custom(@NonNull Constraint<ZoneId> constraint) {
+		return this.apply(config -> config.withCustom(constraint));
+	}
 	
 	/**
 	 * Applies a normalized zone constraint to the type.<br>
@@ -47,7 +79,9 @@ public interface ZoneIdConstraint<T, C> extends BaseConstraint<T, C> {
 	 *
 	 * @return A new type with the applied normalized constraint
 	 */
-	@NonNull C normalized();
+	default @NonNull C normalized() {
+		return this.apply(ZoneIdConstraintConfig::withNormalized);
+	}
 	
 	/**
 	 * Applies a region-based zone constraint to the type.<br>
@@ -59,7 +93,9 @@ public interface ZoneIdConstraint<T, C> extends BaseConstraint<T, C> {
 	 * @return A new type with the applied region-based constraint
 	 * @see #offsetBased()
 	 */
-	@NonNull C regionBased();
+	default @NonNull C regionBased() {
+		return this.apply(ZoneIdConstraintConfig::withRegionBased);
+	}
 	
 	/**
 	 * Applies an offset-based zone constraint to the type.<br>
@@ -72,7 +108,9 @@ public interface ZoneIdConstraint<T, C> extends BaseConstraint<T, C> {
 	 * @see #regionBased()
 	 * @see #fixedOffset()
 	 */
-	@NonNull C offsetBased();
+	default @NonNull C offsetBased() {
+		return this.apply(ZoneIdConstraintConfig::withOffsetBased);
+	}
 	
 	/**
 	 * Applies a fixed offset zone constraint to the type.<br>
@@ -83,7 +121,9 @@ public interface ZoneIdConstraint<T, C> extends BaseConstraint<T, C> {
 	 * @return A new type with the applied fixed offset constraint
 	 * @see #offsetBased()
 	 */
-	@NonNull C fixedOffset();
+	default @NonNull C fixedOffset() {
+		return this.apply(ZoneIdConstraintConfig::withFixedOffset);
+	}
 	
 	/**
 	 * Applies a UTC zone constraint to the type.<br>
@@ -93,7 +133,9 @@ public interface ZoneIdConstraint<T, C> extends BaseConstraint<T, C> {
 	 *
 	 * @return A new type with the applied UTC constraint
 	 */
-	@NonNull C utc();
+	default @NonNull C utc() {
+		return this.apply(ZoneIdConstraintConfig::withUtc);
+	}
 	
 	/**
 	 * Applies a system default zone constraint to the type.<br>
@@ -103,7 +145,9 @@ public interface ZoneIdConstraint<T, C> extends BaseConstraint<T, C> {
 	 *
 	 * @return A new type with the applied system default constraint
 	 */
-	@NonNull C systemDefault();
+	default @NonNull C systemDefault() {
+		return this.apply(ZoneIdConstraintConfig::withSystemDefault);
+	}
 	
 	/**
 	 * Applies an available zone constraint to the type.<br>
@@ -113,7 +157,9 @@ public interface ZoneIdConstraint<T, C> extends BaseConstraint<T, C> {
 	 *
 	 * @return A new type with the applied available constraint
 	 */
-	@NonNull C available();
+	default @NonNull C available() {
+		return this.apply(ZoneIdConstraintConfig::withAvailable);
+	}
 	
 	/**
 	 * Applies a region constraint to the zone using a builder.<br>
@@ -126,5 +172,11 @@ public interface ZoneIdConstraint<T, C> extends BaseConstraint<T, C> {
 	 * @return A new type with the applied region constraint
 	 * @throws NullPointerException If the builder is null
 	 */
-	@NonNull C region(@NonNull UnaryOperator<StringConstraintBuilder> builder);
+	default @NonNull C region(@NonNull UnaryOperator<StringConstraintBuilder> builder) {
+		Objects.requireNonNull(builder, "Builder must not be null");
+		
+		StringConstraintBuilder stringBuilder = new StringConstraintBuilder();
+		builder.apply(stringBuilder);
+		return this.apply(config -> config.withRegion(stringBuilder.build()));
+	}
 }
