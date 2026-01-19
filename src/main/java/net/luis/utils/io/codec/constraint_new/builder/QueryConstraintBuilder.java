@@ -108,27 +108,24 @@ public class QueryConstraintBuilder implements QueryConstraint<QueryConstraintBu
 	}
 	
 	@Override
+	public @NonNull QueryConstraintBuilder size(@NonNull UnaryOperator<SizeConstraintBuilder> builder) {
+		throw new UnsupportedOperationException("Not implemented yet");
+	}
+	
 	public @NonNull QueryConstraintBuilder minSize(int minSize) {
-		this.config = this.config.withMinSize(minSize);
-		return this;
+		throw new UnsupportedOperationException("Not implemented yet");
 	}
-	
-	@Override
+
 	public @NonNull QueryConstraintBuilder maxSize(int maxSize) {
-		this.config = this.config.withMaxSize(maxSize);
-		return this;
+		throw new UnsupportedOperationException("Not implemented yet");
 	}
-	
-	@Override
+
 	public @NonNull QueryConstraintBuilder exactSize(int exactSize) {
-		this.config = this.config.withExactSize(exactSize);
-		return this;
+		throw new UnsupportedOperationException("Not implemented yet");
 	}
-	
-	@Override
+
 	public @NonNull QueryConstraintBuilder sizeBetween(int minSize, int maxSize) {
-		this.config = this.config.withSizeBetween(minSize, maxSize);
-		return this;
+		throw new UnsupportedOperationException("Not implemented yet");
 	}
 	
 	@Override

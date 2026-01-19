@@ -18,11 +18,11 @@
 
 package net.luis.utils.io.codec.constraint_new;
 
+import net.luis.utils.io.codec.constraint_new.builder.SizeConstraintBuilder;
 import net.luis.utils.io.codec.constraint_new.config.MapConstraintConfig;
 import org.jspecify.annotations.NonNull;
 
-import java.util.Collection;
-import java.util.Map;
+import java.util.*;
 import java.util.function.UnaryOperator;
 
 /**
@@ -40,7 +40,7 @@ import java.util.function.UnaryOperator;
  * @param <V> The type of the values in the map
  * @param <C> The return type of the constraint method (for fluent method chaining)
  */
-public interface MapConstraint<K, V, C> extends ApplicableConstraint<MapConstraintConfig<K, V>, C>, SizeConstraint<Map<K, V>, C> {
+public interface MapConstraint<K, V, C> extends ApplicableConstraint<MapConstraintConfig<K, V>, C>, BaseConstraint<Map<K, V>, C> {
 	
 	@Override
 	@NonNull C apply(@NonNull UnaryOperator<MapConstraintConfig<K, V>> configModifier);
@@ -70,24 +70,24 @@ public interface MapConstraint<K, V, C> extends ApplicableConstraint<MapConstrai
 		return this.apply(config -> config.withCustom(constraint));
 	}
 	
-	@Override
-	default @NonNull C minSize(int minSize) {
-		return this.apply(config -> config.withMinSize(minSize));
-	}
-	
-	@Override
-	default @NonNull C maxSize(int maxSize) {
-		return this.apply(config -> config.withMaxSize(maxSize));
-	}
-	
-	@Override
-	default @NonNull C exactSize(int exactSize) {
-		return this.apply(config -> config.withExactSize(exactSize));
-	}
-	
-	@Override
-	default @NonNull C sizeBetween(int minSize, int maxSize) {
-		return this.apply(config -> config.withSizeBetween(minSize, maxSize));
+	/**
+	 * Applies size constraints to the map using a builder.<br>
+	 * <p>
+	 *     This method provides a fluent API for configuring size constraints on maps.<br>
+	 *     The builder allows setting minimum size, maximum size, exact size, or size ranges.
+	 * </p>
+	 *
+	 * @param builder The builder function to configure size constraints
+	 * @return A new type with the applied size constraints
+	 * @throws NullPointerException If the builder is null
+	 * @see SizeConstraintBuilder
+	 */
+	default @NonNull C size(@NonNull UnaryOperator<SizeConstraintBuilder> builder) {
+		Objects.requireNonNull(builder, "Builder must not be null");
+		
+		SizeConstraintBuilder sizeBuilder = new SizeConstraintBuilder();
+		builder.apply(sizeBuilder);
+		return this.apply(config -> config.withSize(sizeBuilder.build()));
 	}
 	
 	/**

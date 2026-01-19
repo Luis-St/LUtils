@@ -44,8 +44,7 @@ import java.util.*;
  *     A list is used instead of a set because arrays do not have proper hashCode implementations.
  * </p>
  * <p>
- *     The min and max fields use {@link Pair} where the first value is the bound
- *     and the second value indicates whether the bound is inclusive (true) or exclusive (false).
+ *     The length field stores length constraints using {@link LengthConstraintConfig}.
  * </p>
  *
  * @author Luis-St
@@ -53,15 +52,13 @@ import java.util.*;
  * @param <T> The element type of the array
  * @param equalTo The array equality constraint as a pair of (value, negated) where negated=false means equalTo and negated=true means notEqualTo
  * @param in The array collection constraint as a pair of (values, negated) where negated=false means in and negated=true means notIn
- * @param min The minimum length constraint as a pair of (value, inclusive)
- * @param max The maximum length constraint as a pair of (value, inclusive)
+ * @param length The length constraint configuration
  * @param custom A custom constraint implementation
  */
 public record ArrayConstraintConfig<T>(
 	@NonNull Optional<Pair<T[], Boolean>> equalTo,
 	@NonNull Optional<Pair<Set<T[]>, Boolean>> in,
-	@NonNull Optional<Pair<Integer, Boolean>> min,
-	@NonNull Optional<Pair<Integer, Boolean>> max,
+	@NonNull Optional<LengthConstraintConfig> length,
 	@NonNull Optional<Constraint<T[]>> custom
 ) implements ConstraintConfig<T[]> {
 	
@@ -70,41 +67,19 @@ public record ArrayConstraintConfig<T>(
 	 *
 	 * @param equalTo The array equality constraint as a pair of (value, negated) where negated=false means equalTo and negated=true means notEqualTo
 	 * @param in The array collection constraint as a pair of (values, negated) where negated=false means in and negated=true means notIn
-	 * @param min The minimum length constraint as a pair of (value, inclusive)
-	 * @param max The maximum length constraint as a pair of (value, inclusive)
+	 * @param length The length constraint configuration
 	 * @param custom A custom constraint implementation
 	 * @throws NullPointerException If any optional field is null
 	 * @throws IllegalArgumentException If the 'in' constraint list is empty when present
-	 * @throws IllegalArgumentException If the minimum length is negative when present
-	 * @throws IllegalArgumentException If the maximum length is negative when present
-	 * @throws IllegalArgumentException If the minimum length is greater than the maximum length when both are present
-	 * @throws IllegalArgumentException If min and max length are equal but at least one bound is exclusive when both are present
 	 */
 	public ArrayConstraintConfig {
 		Objects.requireNonNull(equalTo, "Optional for 'equal to' constraint must not be null");
 		Objects.requireNonNull(in, "Optional for 'in' constraint must not be null");
-		Objects.requireNonNull(min, "Optional for 'min' constraint must not be null");
-		Objects.requireNonNull(max, "Optional for 'max' constraint must not be null");
+		Objects.requireNonNull(length, "Optional for 'length' constraint must not be null");
 		Objects.requireNonNull(custom, "Optional for 'custom' constraint must not be null");
 		
 		if (in.isPresent() && in.get().getFirst().isEmpty()) {
 			throw new IllegalArgumentException("The 'in' constraint list must not be empty when present");
-		}
-		
-		if (min.isPresent() && min.get().getFirst() < 0) {
-			throw new IllegalArgumentException("Min length must be non-negative when present, but got " + min.get().getFirst());
-		}
-		
-		if (max.isPresent() && max.get().getFirst() < 0) {
-			throw new IllegalArgumentException("Max length must be non-negative when present, but got " + max.get().getFirst());
-		}
-		
-		if (min.isPresent() && max.isPresent() && min.get().getFirst() > max.get().getFirst()) {
-			throw new IllegalArgumentException("Min length must be less than or equal to max length when both are present, but got " + min.get().getFirst() + " > " + max.get().getFirst());
-		}
-		
-		if (min.isPresent() && max.isPresent() && min.get().getFirst().equals(max.get().getFirst()) && (!min.get().getSecond() || !max.get().getSecond())) {
-			throw new IllegalArgumentException("Min and max length are equal but at least one bound is exclusive when both are present");
 		}
 	}
 	
@@ -115,7 +90,7 @@ public record ArrayConstraintConfig<T>(
 	 * @return An unconstrained array constraint config
 	 */
 	public static <T> @NonNull ArrayConstraintConfig<T> unconstrained() {
-		return new ArrayConstraintConfig<>(Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty());
+		return new ArrayConstraintConfig<>(Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty());
 	}
 	
 	//region With methods
@@ -128,7 +103,7 @@ public record ArrayConstraintConfig<T>(
 	 */
 	public @NonNull ArrayConstraintConfig<T> withEqualTo(T @NonNull [] value) {
 		Objects.requireNonNull(value, "Value for 'equal to' constraint must not be null");
-		return new ArrayConstraintConfig<>(Optional.of(Pair.of(value.clone(), false)), this.in, this.min, this.max, this.custom);
+		return new ArrayConstraintConfig<>(Optional.of(Pair.of(value.clone(), false)), this.in, this.length, this.custom);
 	}
 	
 	/**
@@ -139,7 +114,7 @@ public record ArrayConstraintConfig<T>(
 	 */
 	public @NonNull ArrayConstraintConfig<T> withNotEqualTo(T @NonNull [] value) {
 		Objects.requireNonNull(value, "Value for 'not equal to' constraint must not be null");
-		return new ArrayConstraintConfig<>(Optional.of(Pair.of(value.clone(), true)), this.in, this.min, this.max, this.custom);
+		return new ArrayConstraintConfig<>(Optional.of(Pair.of(value.clone(), true)), this.in, this.length, this.custom);
 	}
 	
 	/**
@@ -155,7 +130,7 @@ public record ArrayConstraintConfig<T>(
 		for (T[] value : values) {
 			copies.add(value.clone());
 		}
-		return new ArrayConstraintConfig<>(this.equalTo, Optional.of(Pair.of(copies, false)), this.min, this.max, this.custom);
+		return new ArrayConstraintConfig<>(this.equalTo, Optional.of(Pair.of(copies, false)), this.length, this.custom);
 	}
 	
 	/**
@@ -171,7 +146,7 @@ public record ArrayConstraintConfig<T>(
 		for (T[] value : values) {
 			copies.add(value.clone());
 		}
-		return new ArrayConstraintConfig<>(this.equalTo, Optional.of(Pair.of(copies, true)), this.min, this.max, this.custom);
+		return new ArrayConstraintConfig<>(this.equalTo, Optional.of(Pair.of(copies, true)), this.length, this.custom);
 	}
 	
 	/**
@@ -181,7 +156,8 @@ public record ArrayConstraintConfig<T>(
 	 * @return A new config with the minimum length constraint applied
 	 */
 	public @NonNull ArrayConstraintConfig<T> withMinLength(int minLength) {
-		return new ArrayConstraintConfig<>(this.equalTo, this.in, Optional.of(Pair.of(minLength, true)), this.max, this.custom);
+		LengthConstraintConfig newLength = this.length.orElse(LengthConstraintConfig.UNCONSTRAINED).withMinLength(minLength);
+		return new ArrayConstraintConfig<>(this.equalTo, this.in, Optional.of(newLength), this.custom);
 	}
 	
 	/**
@@ -191,7 +167,8 @@ public record ArrayConstraintConfig<T>(
 	 * @return A new config with the maximum length constraint applied
 	 */
 	public @NonNull ArrayConstraintConfig<T> withMaxLength(int maxLength) {
-		return new ArrayConstraintConfig<>(this.equalTo, this.in, this.min, Optional.of(Pair.of(maxLength, true)), this.custom);
+		LengthConstraintConfig newLength = this.length.orElse(LengthConstraintConfig.UNCONSTRAINED).withMaxLength(maxLength);
+		return new ArrayConstraintConfig<>(this.equalTo, this.in, Optional.of(newLength), this.custom);
 	}
 	
 	/**
@@ -201,7 +178,8 @@ public record ArrayConstraintConfig<T>(
 	 * @return A new config with the exact length constraint applied
 	 */
 	public @NonNull ArrayConstraintConfig<T> withExactLength(int exactLength) {
-		return new ArrayConstraintConfig<>(this.equalTo, this.in, Optional.of(Pair.of(exactLength, true)), Optional.of(Pair.of(exactLength, true)), this.custom);
+		LengthConstraintConfig newLength = this.length.orElse(LengthConstraintConfig.UNCONSTRAINED).withExactLength(exactLength);
+		return new ArrayConstraintConfig<>(this.equalTo, this.in, Optional.of(newLength), this.custom);
 	}
 	
 	/**
@@ -212,7 +190,23 @@ public record ArrayConstraintConfig<T>(
 	 * @return A new config with the length range constraint applied
 	 */
 	public @NonNull ArrayConstraintConfig<T> withLengthBetween(int minLength, int maxLength) {
-		return new ArrayConstraintConfig<>(this.equalTo, this.in, Optional.of(Pair.of(minLength, true)), Optional.of(Pair.of(maxLength, true)), this.custom);
+		LengthConstraintConfig newLength = this.length.orElse(LengthConstraintConfig.UNCONSTRAINED).withLengthBetween(minLength, maxLength);
+		return new ArrayConstraintConfig<>(this.equalTo, this.in, Optional.of(newLength), this.custom);
+	}
+	
+	/**
+	 * Creates a new array constraint config with the specified length constraints.<br>
+	 * <p>
+	 *     This method applies the given {@link LengthConstraintConfig} to this config.
+	 * </p>
+	 *
+	 * @param lengthConfig The length constraint configuration to apply
+	 * @return A new config with the length constraints applied
+	 * @throws NullPointerException If the length config is null
+	 */
+	public @NonNull ArrayConstraintConfig<T> withLength(@NonNull LengthConstraintConfig lengthConfig) {
+		Objects.requireNonNull(lengthConfig, "Length config must not be null");
+		return new ArrayConstraintConfig<>(this.equalTo, this.in, Optional.of(lengthConfig), this.custom);
 	}
 	
 	/**
@@ -223,7 +217,7 @@ public record ArrayConstraintConfig<T>(
 	 */
 	public @NonNull ArrayConstraintConfig<T> withCustom(@NonNull Constraint<T[]> constraint) {
 		Objects.requireNonNull(constraint, "Custom constraint must not be null");
-		return new ArrayConstraintConfig<>(this.equalTo, this.in, this.min, this.max, Optional.of(constraint));
+		return new ArrayConstraintConfig<>(this.equalTo, this.in, this.length, Optional.of(constraint));
 	}
 	//endregion
 	
@@ -234,7 +228,7 @@ public record ArrayConstraintConfig<T>(
 		return ConstraintMatchers.allOf(
 			() -> ConstraintMatchers.matchEqualTo(value, this.equalTo, Arrays::equals),
 			() -> ConstraintMatchers.matchIn(value, this.in, Arrays::equals),
-			() -> ConstraintMatchers.matchRange(value.length, this.min, this.max),
+			() -> ConstraintMatchers.matchExtractedValue(value, this.length, arr -> arr.length, "length"),
 			() -> ConstraintMatchers.matchCustom(value, this.custom)
 		);
 	}

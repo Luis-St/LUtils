@@ -19,8 +19,7 @@
 package net.luis.utils.io.codec.constraint_new.config.matcher;
 
 import net.luis.utils.io.codec.constraint_new.Constraint;
-import net.luis.utils.io.codec.constraint_new.config.EnumConstraintConfig;
-import net.luis.utils.io.codec.constraint_new.config.NumericFieldConstraintConfig;
+import net.luis.utils.io.codec.constraint_new.config.*;
 import net.luis.utils.io.codec.constraint_new.core.Unit;
 import net.luis.utils.util.Pair;
 import net.luis.utils.util.result.Result;
@@ -28,6 +27,7 @@ import org.junit.jupiter.api.Test;
 
 import java.time.Duration;
 import java.time.Instant;
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.regex.Pattern;
@@ -780,7 +780,60 @@ class ConstraintMatchersTest {
 		assertThrows(NullPointerException.class, () -> ConstraintMatchers.matchNestedConfig("test", null, "field"));
 		assertThrows(NullPointerException.class, () -> ConstraintMatchers.matchNestedConfig("test", Optional.empty(), null));
 	}
-	
+
+	@Test
+	void matchExtractedValueWithEmptyConfig() {
+		List<String> list = List.of("a", "b", "c");
+		Optional<SizeConstraintConfig> config = Optional.empty();
+		assertTrue(ConstraintMatchers.matchExtractedValue(list, config, List::size, "size").isSuccess());
+	}
+
+	@Test
+	void matchExtractedValueWithMatchingValue() {
+		List<String> list = List.of("a", "b", "c");
+		SizeConstraintConfig sizeConfig = SizeConstraintConfig.UNCONSTRAINED.withMinSize(1).withMaxSize(5);
+		Optional<SizeConstraintConfig> config = Optional.of(sizeConfig);
+		assertTrue(ConstraintMatchers.matchExtractedValue(list, config, List::size, "size").isSuccess());
+	}
+
+	@Test
+	void matchExtractedValueWithNonMatchingValue() {
+		List<String> list = List.of("a", "b", "c");
+		SizeConstraintConfig sizeConfig = SizeConstraintConfig.UNCONSTRAINED.withMinSize(5);
+		Optional<SizeConstraintConfig> config = Optional.of(sizeConfig);
+		Result<Void> result = ConstraintMatchers.matchExtractedValue(list, config, List::size, "size");
+		assertTrue(result.isError());
+		assertTrue(result.errorOrThrow().contains("size constraint failed"));
+	}
+
+	@Test
+	void matchExtractedValueWithArrayLength() {
+		String[] array = new String[] { "a", "b" };
+		LengthConstraintConfig lengthConfig = LengthConstraintConfig.UNCONSTRAINED.withMinLength(1).withMaxLength(3);
+		Optional<LengthConstraintConfig> config = Optional.of(lengthConfig);
+		assertTrue(ConstraintMatchers.matchExtractedValue(array, config, arr -> arr.length, "length").isSuccess());
+	}
+
+	@Test
+	void matchExtractedValueWithNullValue() {
+		assertThrows(NullPointerException.class, () -> ConstraintMatchers.matchExtractedValue((List<String>) null, Optional.empty(), list -> list.size(), "size"));
+	}
+
+	@Test
+	void matchExtractedValueWithNullConfig() {
+		assertThrows(NullPointerException.class, () -> ConstraintMatchers.matchExtractedValue(List.of(), null, List::size, "size"));
+	}
+
+	@Test
+	void matchExtractedValueWithNullExtractor() {
+		assertThrows(NullPointerException.class, () -> ConstraintMatchers.matchExtractedValue(List.of(), Optional.empty(), null, "size"));
+	}
+
+	@Test
+	void matchExtractedValueWithNullFieldName() {
+		assertThrows(NullPointerException.class, () -> ConstraintMatchers.matchExtractedValue(List.of(), Optional.empty(), List::size, null));
+	}
+
 	@Test
 	void matchEnumFieldWithEmptyOptional() {
 		Result<Void> result = ConstraintMatchers.matchEnumField(TestEnum.VALUE1, Optional.empty(), "field");

@@ -36,16 +36,15 @@ import java.util.*;
  *     It extends size constraints with map-specific constraints for keys and values.
  * </p>
  * <p>
- *     The min and max fields use {@link Pair} where the first value is the bound
- *     and the second value indicates whether the bound is inclusive (true) or exclusive (false).
- * </p>
- * <p>
  *     The equalTo field uses {@link Pair} where the first value is the Map and
  *     the second value indicates negation (false=equalTo, true=notEqualTo).
  * </p>
  * <p>
  *     The in field uses {@link Pair} where the first value is the set of Maps and
  *     the second value indicates negation (false=in, true=notIn).
+ * </p>
+ * <p>
+ *     The size field stores size constraints using {@link SizeConstraintConfig}.
  * </p>
  *
  * @author Luis-St
@@ -54,8 +53,7 @@ import java.util.*;
  * @param <V> The type of the values in the map
  * @param equalTo The map equality constraint as a pair of (value, negated) where negated=false means equalTo and negated=true means notEqualTo
  * @param in The map set constraint as a pair of (values, negated) where negated=false means in and negated=true means notIn
- * @param min The minimum size constraint as a pair of (value, inclusive)
- * @param max The maximum size constraint as a pair of (value, inclusive)
+ * @param size The size constraint configuration
  * @param requiredKeys The set of keys that must be present in the map
  * @param forbiddenKeys The set of keys that must not be present in the map
  * @param allowedKeys The set of keys that are the only ones allowed in the map
@@ -68,8 +66,7 @@ import java.util.*;
 public record MapConstraintConfig<K, V>(
 	@NonNull Optional<Pair<Map<K, V>, Boolean>> equalTo,
 	@NonNull Optional<Pair<Set<Map<K, V>>, Boolean>> in,
-	@NonNull Optional<Pair<Integer, Boolean>> min,
-	@NonNull Optional<Pair<Integer, Boolean>> max,
+	@NonNull Optional<SizeConstraintConfig> size,
 	@NonNull Optional<Set<K>> requiredKeys,
 	@NonNull Optional<Set<K>> forbiddenKeys,
 	@NonNull Optional<Set<K>> allowedKeys,
@@ -84,8 +81,7 @@ public record MapConstraintConfig<K, V>(
 	 *
 	 * @param equalTo The map equality constraint as a pair of (value, negated) where negated=false means equalTo and negated=true means notEqualTo
 	 * @param in The map set constraint as a pair of (values, negated) where negated=false means in and negated=true means notIn
-	 * @param min The minimum size constraint as a pair of (value, inclusive)
-	 * @param max The maximum size constraint as a pair of (value, inclusive)
+	 * @param size The size constraint configuration
 	 * @param requiredKeys The set of keys that must be present in the map
 	 * @param forbiddenKeys The set of keys that must not be present in the map
 	 * @param allowedKeys The set of keys that are the only ones allowed in the map
@@ -95,10 +91,6 @@ public record MapConstraintConfig<K, V>(
 	 * @param custom A custom constraint implementation
 	 * @throws NullPointerException If any optional field is null
 	 * @throws IllegalArgumentException If the 'in' constraint set is empty when present
-	 * @throws IllegalArgumentException If the minimum size is negative when present
-	 * @throws IllegalArgumentException If the maximum size is negative when present
-	 * @throws IllegalArgumentException If the minimum size is greater than the maximum size when both are present
-	 * @throws IllegalArgumentException If min and max size are equal but at least one bound is exclusive when both are present
 	 * @throws IllegalArgumentException If the 'requiredKeys' constraint set is empty when present
 	 * @throws IllegalArgumentException If the 'forbiddenKeys' constraint set is empty when present
 	 * @throws IllegalArgumentException If the 'allowedKeys' constraint set is empty when present
@@ -109,8 +101,7 @@ public record MapConstraintConfig<K, V>(
 	public MapConstraintConfig {
 		Objects.requireNonNull(equalTo, "Optional for 'equal to' constraint must not be null");
 		Objects.requireNonNull(in, "Optional for 'in' constraint must not be null");
-		Objects.requireNonNull(min, "Optional for 'min' constraint must not be null");
-		Objects.requireNonNull(max, "Optional for 'max' constraint must not be null");
+		Objects.requireNonNull(size, "Optional for 'size' constraint must not be null");
 		Objects.requireNonNull(requiredKeys, "Optional for 'required keys' constraint must not be null");
 		Objects.requireNonNull(forbiddenKeys, "Optional for 'forbidden keys' constraint must not be null");
 		Objects.requireNonNull(allowedKeys, "Optional for 'allowed keys' constraint must not be null");
@@ -121,22 +112,6 @@ public record MapConstraintConfig<K, V>(
 		
 		if (in.isPresent() && in.get().getFirst().isEmpty()) {
 			throw new IllegalArgumentException("The 'in' constraint set must not be empty when present");
-		}
-		
-		if (min.isPresent() && min.get().getFirst() < 0) {
-			throw new IllegalArgumentException("Min size must be non-negative when present, but got " + min.get().getFirst());
-		}
-		
-		if (max.isPresent() && max.get().getFirst() < 0) {
-			throw new IllegalArgumentException("Max size must be non-negative when present, but got " + max.get().getFirst());
-		}
-		
-		if (min.isPresent() && max.isPresent() && min.get().getFirst() > max.get().getFirst()) {
-			throw new IllegalArgumentException("Min size must be less than or equal to max size when both are present, but got " + min.get().getFirst() + " > " + max.get().getFirst());
-		}
-		
-		if (min.isPresent() && max.isPresent() && min.get().getFirst().equals(max.get().getFirst()) && (!min.get().getSecond() || !max.get().getSecond())) {
-			throw new IllegalArgumentException("Min and max size are equal but at least one bound is exclusive when both are present");
 		}
 		
 		if (requiredKeys.isPresent() && requiredKeys.get().isEmpty()) {
@@ -182,7 +157,7 @@ public record MapConstraintConfig<K, V>(
 	 * @return An unconstrained map constraint config
 	 */
 	public static <K, V> @NonNull MapConstraintConfig<K, V> unconstrained() {
-		return new MapConstraintConfig<>(Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty());
+		return new MapConstraintConfig<>(Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty());
 	}
 	
 	//region With methods
@@ -195,7 +170,7 @@ public record MapConstraintConfig<K, V>(
 	 */
 	public @NonNull MapConstraintConfig<K, V> withEqualTo(@NonNull Map<K, V> value) {
 		Objects.requireNonNull(value, "Value for 'equal to' constraint must not be null");
-		return new MapConstraintConfig<>(Optional.of(Pair.of(Map.copyOf(value), false)), this.in, this.min, this.max, this.requiredKeys, this.forbiddenKeys, this.allowedKeys, this.nonNullKeys, this.uniqueValues, this.nonNullValues, this.custom);
+		return new MapConstraintConfig<>(Optional.of(Pair.of(Map.copyOf(value), false)), this.in, this.size, this.requiredKeys, this.forbiddenKeys, this.allowedKeys, this.nonNullKeys, this.uniqueValues, this.nonNullValues, this.custom);
 	}
 	
 	/**
@@ -206,7 +181,7 @@ public record MapConstraintConfig<K, V>(
 	 */
 	public @NonNull MapConstraintConfig<K, V> withNotEqualTo(@NonNull Map<K, V> value) {
 		Objects.requireNonNull(value, "Value for 'not equal to' constraint must not be null");
-		return new MapConstraintConfig<>(Optional.of(Pair.of(Map.copyOf(value), true)), this.in, this.min, this.max, this.requiredKeys, this.forbiddenKeys, this.allowedKeys, this.nonNullKeys, this.uniqueValues, this.nonNullValues, this.custom);
+		return new MapConstraintConfig<>(Optional.of(Pair.of(Map.copyOf(value), true)), this.in, this.size, this.requiredKeys, this.forbiddenKeys, this.allowedKeys, this.nonNullKeys, this.uniqueValues, this.nonNullValues, this.custom);
 	}
 	
 	/**
@@ -223,7 +198,7 @@ public record MapConstraintConfig<K, V>(
 			copies.add(Map.copyOf(value));
 		}
 		
-		return new MapConstraintConfig<>(this.equalTo, Optional.of(Pair.of(Set.copyOf(copies), false)), this.min, this.max, this.requiredKeys, this.forbiddenKeys, this.allowedKeys, this.nonNullKeys, this.uniqueValues, this.nonNullValues, this.custom);
+		return new MapConstraintConfig<>(this.equalTo, Optional.of(Pair.of(Set.copyOf(copies), false)), this.size, this.requiredKeys, this.forbiddenKeys, this.allowedKeys, this.nonNullKeys, this.uniqueValues, this.nonNullValues, this.custom);
 	}
 	
 	/**
@@ -240,7 +215,7 @@ public record MapConstraintConfig<K, V>(
 			copies.add(Map.copyOf(value));
 		}
 		
-		return new MapConstraintConfig<>(this.equalTo, Optional.of(Pair.of(Set.copyOf(copies), true)), this.min, this.max, this.requiredKeys, this.forbiddenKeys, this.allowedKeys, this.nonNullKeys, this.uniqueValues, this.nonNullValues, this.custom);
+		return new MapConstraintConfig<>(this.equalTo, Optional.of(Pair.of(Set.copyOf(copies), true)), this.size, this.requiredKeys, this.forbiddenKeys, this.allowedKeys, this.nonNullKeys, this.uniqueValues, this.nonNullValues, this.custom);
 	}
 	
 	/**
@@ -250,7 +225,8 @@ public record MapConstraintConfig<K, V>(
 	 * @return A new config with the minimum size constraint applied
 	 */
 	public @NonNull MapConstraintConfig<K, V> withMinSize(int minSize) {
-		return new MapConstraintConfig<>(this.equalTo, this.in, Optional.of(Pair.of(minSize, true)), this.max, this.requiredKeys, this.forbiddenKeys, this.allowedKeys, this.nonNullKeys, this.uniqueValues, this.nonNullValues, this.custom);
+		SizeConstraintConfig newSize = this.size.orElse(SizeConstraintConfig.UNCONSTRAINED).withMinSize(minSize);
+		return new MapConstraintConfig<>(this.equalTo, this.in, Optional.of(newSize), this.requiredKeys, this.forbiddenKeys, this.allowedKeys, this.nonNullKeys, this.uniqueValues, this.nonNullValues, this.custom);
 	}
 	
 	/**
@@ -260,7 +236,8 @@ public record MapConstraintConfig<K, V>(
 	 * @return A new config with the maximum size constraint applied
 	 */
 	public @NonNull MapConstraintConfig<K, V> withMaxSize(int maxSize) {
-		return new MapConstraintConfig<>(this.equalTo, this.in, this.min, Optional.of(Pair.of(maxSize, true)), this.requiredKeys, this.forbiddenKeys, this.allowedKeys, this.nonNullKeys, this.uniqueValues, this.nonNullValues, this.custom);
+		SizeConstraintConfig newSize = this.size.orElse(SizeConstraintConfig.UNCONSTRAINED).withMaxSize(maxSize);
+		return new MapConstraintConfig<>(this.equalTo, this.in, Optional.of(newSize), this.requiredKeys, this.forbiddenKeys, this.allowedKeys, this.nonNullKeys, this.uniqueValues, this.nonNullValues, this.custom);
 	}
 	
 	/**
@@ -270,7 +247,8 @@ public record MapConstraintConfig<K, V>(
 	 * @return A new config with the exact size constraint applied
 	 */
 	public @NonNull MapConstraintConfig<K, V> withExactSize(int exactSize) {
-		return new MapConstraintConfig<>(this.equalTo, this.in, Optional.of(Pair.of(exactSize, true)), Optional.of(Pair.of(exactSize, true)), this.requiredKeys, this.forbiddenKeys, this.allowedKeys, this.nonNullKeys, this.uniqueValues, this.nonNullValues, this.custom);
+		SizeConstraintConfig newSize = this.size.orElse(SizeConstraintConfig.UNCONSTRAINED).withExactSize(exactSize);
+		return new MapConstraintConfig<>(this.equalTo, this.in, Optional.of(newSize), this.requiredKeys, this.forbiddenKeys, this.allowedKeys, this.nonNullKeys, this.uniqueValues, this.nonNullValues, this.custom);
 	}
 	
 	/**
@@ -281,7 +259,23 @@ public record MapConstraintConfig<K, V>(
 	 * @return A new config with the size range constraint applied
 	 */
 	public @NonNull MapConstraintConfig<K, V> withSizeBetween(int minSize, int maxSize) {
-		return new MapConstraintConfig<>(this.equalTo, this.in, Optional.of(Pair.of(minSize, true)), Optional.of(Pair.of(maxSize, true)), this.requiredKeys, this.forbiddenKeys, this.allowedKeys, this.nonNullKeys, this.uniqueValues, this.nonNullValues, this.custom);
+		SizeConstraintConfig newSize = this.size.orElse(SizeConstraintConfig.UNCONSTRAINED).withSizeBetween(minSize, maxSize);
+		return new MapConstraintConfig<>(this.equalTo, this.in, Optional.of(newSize), this.requiredKeys, this.forbiddenKeys, this.allowedKeys, this.nonNullKeys, this.uniqueValues, this.nonNullValues, this.custom);
+	}
+	
+	/**
+	 * Creates a new map constraint config with the specified size constraints.<br>
+	 * <p>
+	 *     This method applies the given {@link SizeConstraintConfig} to this config.
+	 * </p>
+	 *
+	 * @param sizeConfig The size constraint configuration to apply
+	 * @return A new config with the size constraints applied
+	 * @throws NullPointerException If the size config is null
+	 */
+	public @NonNull MapConstraintConfig<K, V> withSize(@NonNull SizeConstraintConfig sizeConfig) {
+		Objects.requireNonNull(sizeConfig, "Size config must not be null");
+		return new MapConstraintConfig<>(this.equalTo, this.in, Optional.of(sizeConfig), this.requiredKeys, this.forbiddenKeys, this.allowedKeys, this.nonNullKeys, this.uniqueValues, this.nonNullValues, this.custom);
 	}
 	
 	/**
@@ -295,7 +289,7 @@ public record MapConstraintConfig<K, V>(
 		
 		Set<K> keys = new HashSet<>(this.requiredKeys.orElse(Set.of()));
 		keys.add(key);
-		return new MapConstraintConfig<>(this.equalTo, this.in, this.min, this.max, Optional.of(Set.copyOf(keys)), this.forbiddenKeys, this.allowedKeys, this.nonNullKeys, this.uniqueValues, this.nonNullValues, this.custom);
+		return new MapConstraintConfig<>(this.equalTo, this.in, this.size, Optional.of(Set.copyOf(keys)), this.forbiddenKeys, this.allowedKeys, this.nonNullKeys, this.uniqueValues, this.nonNullValues, this.custom);
 	}
 	
 	/**
@@ -309,7 +303,7 @@ public record MapConstraintConfig<K, V>(
 		
 		Set<K> allKeys = new HashSet<>(this.requiredKeys.orElse(Set.of()));
 		allKeys.addAll(keys);
-		return new MapConstraintConfig<>(this.equalTo, this.in, this.min, this.max, Optional.of(Set.copyOf(allKeys)), this.forbiddenKeys, this.allowedKeys, this.nonNullKeys, this.uniqueValues, this.nonNullValues, this.custom);
+		return new MapConstraintConfig<>(this.equalTo, this.in, this.size, Optional.of(Set.copyOf(allKeys)), this.forbiddenKeys, this.allowedKeys, this.nonNullKeys, this.uniqueValues, this.nonNullValues, this.custom);
 	}
 	
 	/**
@@ -323,7 +317,7 @@ public record MapConstraintConfig<K, V>(
 		
 		Set<K> keys = new HashSet<>(this.forbiddenKeys.orElse(Set.of()));
 		keys.add(key);
-		return new MapConstraintConfig<>(this.equalTo, this.in, this.min, this.max, this.requiredKeys, Optional.of(Set.copyOf(keys)), this.allowedKeys, this.nonNullKeys, this.uniqueValues, this.nonNullValues, this.custom);
+		return new MapConstraintConfig<>(this.equalTo, this.in, this.size, this.requiredKeys, Optional.of(Set.copyOf(keys)), this.allowedKeys, this.nonNullKeys, this.uniqueValues, this.nonNullValues, this.custom);
 	}
 	
 	/**
@@ -337,7 +331,7 @@ public record MapConstraintConfig<K, V>(
 		
 		Set<K> allKeys = new HashSet<>(this.forbiddenKeys.orElse(Set.of()));
 		allKeys.addAll(keys);
-		return new MapConstraintConfig<>(this.equalTo, this.in, this.min, this.max, this.requiredKeys, Optional.of(Set.copyOf(allKeys)), this.allowedKeys, this.nonNullKeys, this.uniqueValues, this.nonNullValues, this.custom);
+		return new MapConstraintConfig<>(this.equalTo, this.in, this.size, this.requiredKeys, Optional.of(Set.copyOf(allKeys)), this.allowedKeys, this.nonNullKeys, this.uniqueValues, this.nonNullValues, this.custom);
 	}
 	
 	/**
@@ -351,7 +345,7 @@ public record MapConstraintConfig<K, V>(
 		
 		Set<K> keys = new HashSet<>(this.allowedKeys.orElse(Set.of()));
 		keys.add(key);
-		return new MapConstraintConfig<>(this.equalTo, this.in, this.min, this.max, this.requiredKeys, this.forbiddenKeys, Optional.of(Set.copyOf(keys)), this.nonNullKeys, this.uniqueValues, this.nonNullValues, this.custom);
+		return new MapConstraintConfig<>(this.equalTo, this.in, this.size, this.requiredKeys, this.forbiddenKeys, Optional.of(Set.copyOf(keys)), this.nonNullKeys, this.uniqueValues, this.nonNullValues, this.custom);
 	}
 	
 	/**
@@ -365,7 +359,7 @@ public record MapConstraintConfig<K, V>(
 		
 		Set<K> allKeys = new HashSet<>(this.allowedKeys.orElse(Set.of()));
 		allKeys.addAll(keys);
-		return new MapConstraintConfig<>(this.equalTo, this.in, this.min, this.max, this.requiredKeys, this.forbiddenKeys, Optional.of(Set.copyOf(allKeys)), this.nonNullKeys, this.uniqueValues, this.nonNullValues, this.custom);
+		return new MapConstraintConfig<>(this.equalTo, this.in, this.size, this.requiredKeys, this.forbiddenKeys, Optional.of(Set.copyOf(allKeys)), this.nonNullKeys, this.uniqueValues, this.nonNullValues, this.custom);
 	}
 	
 	/**
@@ -374,7 +368,7 @@ public record MapConstraintConfig<K, V>(
 	 * @return A new config with the non-null keys constraint applied
 	 */
 	public @NonNull MapConstraintConfig<K, V> withNonNullKeys() {
-		return new MapConstraintConfig<>(this.equalTo, this.in, this.min, this.max, this.requiredKeys, this.forbiddenKeys, this.allowedKeys, Optional.of(Unit.INSTANCE), this.uniqueValues, this.nonNullValues, this.custom);
+		return new MapConstraintConfig<>(this.equalTo, this.in, this.size, this.requiredKeys, this.forbiddenKeys, this.allowedKeys, Optional.of(Unit.INSTANCE), this.uniqueValues, this.nonNullValues, this.custom);
 	}
 	
 	/**
@@ -383,7 +377,7 @@ public record MapConstraintConfig<K, V>(
 	 * @return A new config with the unique values constraint applied
 	 */
 	public @NonNull MapConstraintConfig<K, V> withUniqueValues() {
-		return new MapConstraintConfig<>(this.equalTo, this.in, this.min, this.max, this.requiredKeys, this.forbiddenKeys, this.allowedKeys, this.nonNullKeys, Optional.of(Unit.INSTANCE), this.nonNullValues, this.custom);
+		return new MapConstraintConfig<>(this.equalTo, this.in, this.size, this.requiredKeys, this.forbiddenKeys, this.allowedKeys, this.nonNullKeys, Optional.of(Unit.INSTANCE), this.nonNullValues, this.custom);
 	}
 	
 	/**
@@ -392,7 +386,7 @@ public record MapConstraintConfig<K, V>(
 	 * @return A new config with the non-null values constraint applied
 	 */
 	public @NonNull MapConstraintConfig<K, V> withNonNullValues() {
-		return new MapConstraintConfig<>(this.equalTo, this.in, this.min, this.max, this.requiredKeys, this.forbiddenKeys, this.allowedKeys, this.nonNullKeys, this.uniqueValues, Optional.of(Unit.INSTANCE), this.custom);
+		return new MapConstraintConfig<>(this.equalTo, this.in, this.size, this.requiredKeys, this.forbiddenKeys, this.allowedKeys, this.nonNullKeys, this.uniqueValues, Optional.of(Unit.INSTANCE), this.custom);
 	}
 	
 	/**
@@ -403,7 +397,7 @@ public record MapConstraintConfig<K, V>(
 	 */
 	public @NonNull MapConstraintConfig<K, V> withCustom(@NonNull Constraint<Map<K, V>> constraint) {
 		Objects.requireNonNull(constraint, "Custom constraint must not be null");
-		return new MapConstraintConfig<>(this.equalTo, this.in, this.min, this.max, this.requiredKeys, this.forbiddenKeys, this.allowedKeys, this.nonNullKeys, this.uniqueValues, this.nonNullValues, Optional.of(constraint));
+		return new MapConstraintConfig<>(this.equalTo, this.in, this.size, this.requiredKeys, this.forbiddenKeys, this.allowedKeys, this.nonNullKeys, this.uniqueValues, this.nonNullValues, Optional.of(constraint));
 	}
 	//endregion
 	
@@ -414,7 +408,7 @@ public record MapConstraintConfig<K, V>(
 		return ConstraintMatchers.allOf(
 			() -> ConstraintMatchers.matchEqualTo(value, this.equalTo),
 			() -> ConstraintMatchers.matchIn(value, this.in),
-			() -> ConstraintMatchers.matchRange(value.size(), this.min, this.max),
+			() -> ConstraintMatchers.matchExtractedValue(value, this.size, Map::size, "size"),
 			() -> ConstraintMatchers.matchRequiredKeys(value.keySet(), this.requiredKeys, "Map"),
 			() -> ConstraintMatchers.matchForbiddenKeys(value.keySet(), this.forbiddenKeys, "Map"),
 			() -> ConstraintMatchers.matchAllowedKeys(value.keySet(), this.allowedKeys, "Map"),

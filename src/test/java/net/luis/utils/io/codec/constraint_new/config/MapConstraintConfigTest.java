@@ -37,7 +37,7 @@ class MapConstraintConfigTest {
 	void constructWithNullEqualTo() {
 		assertThrows(NullPointerException.class, () -> new MapConstraintConfig<String, Integer>(
 			null, Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(),
-			Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty()
+			Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty()
 		));
 	}
 	
@@ -45,47 +45,39 @@ class MapConstraintConfigTest {
 	void constructWithNullIn() {
 		assertThrows(NullPointerException.class, () -> new MapConstraintConfig<String, Integer>(
 			Optional.empty(), null, Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(),
-			Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty()
+			Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty()
 		));
 	}
 	
 	@Test
-	void constructWithNullMin() {
+	void constructWithNullSize() {
 		assertThrows(NullPointerException.class, () -> new MapConstraintConfig<String, Integer>(
 			Optional.empty(), Optional.empty(), null, Optional.empty(), Optional.empty(), Optional.empty(),
-			Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty()
-		));
-	}
-	
-	@Test
-	void constructWithNullMax() {
-		assertThrows(NullPointerException.class, () -> new MapConstraintConfig<String, Integer>(
-			Optional.empty(), Optional.empty(), Optional.empty(), null, Optional.empty(), Optional.empty(),
-			Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty()
+			Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty()
 		));
 	}
 	
 	@Test
 	void constructWithNullRequiredKeys() {
 		assertThrows(NullPointerException.class, () -> new MapConstraintConfig<String, Integer>(
-			Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), null, Optional.empty(),
-			Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty()
+			Optional.empty(), Optional.empty(), Optional.empty(), null, Optional.empty(), Optional.empty(),
+			Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty()
 		));
 	}
 	
 	@Test
 	void constructWithNullForbiddenKeys() {
 		assertThrows(NullPointerException.class, () -> new MapConstraintConfig<String, Integer>(
-			Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), null,
-			Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty()
+			Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), null, Optional.empty(),
+			Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty()
 		));
 	}
 	
 	@Test
 	void constructWithNullAllowedKeys() {
 		assertThrows(NullPointerException.class, () -> new MapConstraintConfig<String, Integer>(
-			Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(),
-			null, Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty()
+			Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), null,
+			Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty()
 		));
 	}
 	
@@ -93,7 +85,7 @@ class MapConstraintConfigTest {
 	void constructWithNullNonNullKeys() {
 		assertThrows(NullPointerException.class, () -> new MapConstraintConfig<String, Integer>(
 			Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(),
-			Optional.empty(), null, Optional.empty(), Optional.empty(), Optional.empty()
+			null, Optional.empty(), Optional.empty(), Optional.empty()
 		));
 	}
 	
@@ -101,7 +93,7 @@ class MapConstraintConfigTest {
 	void constructWithNullUniqueValues() {
 		assertThrows(NullPointerException.class, () -> new MapConstraintConfig<String, Integer>(
 			Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(),
-			Optional.empty(), Optional.empty(), null, Optional.empty(), Optional.empty()
+			Optional.empty(), null, Optional.empty(), Optional.empty()
 		));
 	}
 	
@@ -109,7 +101,7 @@ class MapConstraintConfigTest {
 	void constructWithNullNonNullValues() {
 		assertThrows(NullPointerException.class, () -> new MapConstraintConfig<String, Integer>(
 			Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(),
-			Optional.empty(), Optional.empty(), Optional.empty(), null, Optional.empty()
+			Optional.empty(), Optional.empty(), null, Optional.empty()
 		));
 	}
 	
@@ -117,7 +109,7 @@ class MapConstraintConfigTest {
 	void constructWithNullCustom() {
 		assertThrows(NullPointerException.class, () -> new MapConstraintConfig<String, Integer>(
 			Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(),
-			Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), null
+			Optional.empty(), Optional.empty(), Optional.empty(), null
 		));
 	}
 	
@@ -125,7 +117,7 @@ class MapConstraintConfigTest {
 	void constructWithEmptyInSet() {
 		assertThrows(IllegalArgumentException.class, () -> new MapConstraintConfig<String, Integer>(
 			Optional.empty(), Optional.of(Pair.of(Set.of(), false)), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(),
-			Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty()
+			Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty()
 		));
 	}
 	
@@ -145,17 +137,9 @@ class MapConstraintConfigTest {
 	}
 	
 	@Test
-	void constructWithEqualMinMaxExclusiveBound() {
-		assertThrows(IllegalArgumentException.class, () -> new MapConstraintConfig<String, Integer>(
-			Optional.empty(), Optional.empty(), Optional.of(Pair.of(5, false)), Optional.of(Pair.of(5, true)), Optional.empty(), Optional.empty(),
-			Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty()
-		));
-	}
-	
-	@Test
 	void constructWithEmptyRequiredKeys() {
 		assertThrows(IllegalArgumentException.class, () -> new MapConstraintConfig<String, Integer>(
-			Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.of(Set.of()), Optional.empty(),
+			Optional.empty(), Optional.empty(), Optional.empty(), Optional.of(Set.of()), Optional.empty(),
 			Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty()
 		));
 	}
@@ -163,7 +147,7 @@ class MapConstraintConfigTest {
 	@Test
 	void constructWithEmptyForbiddenKeys() {
 		assertThrows(IllegalArgumentException.class, () -> new MapConstraintConfig<String, Integer>(
-			Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.of(Set.of()),
+			Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.of(Set.of()),
 			Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty()
 		));
 	}
@@ -171,7 +155,7 @@ class MapConstraintConfigTest {
 	@Test
 	void constructWithEmptyAllowedKeys() {
 		assertThrows(IllegalArgumentException.class, () -> new MapConstraintConfig<String, Integer>(
-			Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(),
+			Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(),
 			Optional.of(Set.of()), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty()
 		));
 	}
@@ -179,7 +163,7 @@ class MapConstraintConfigTest {
 	@Test
 	void constructWithOverlappingRequiredAndForbiddenKeys() {
 		assertThrows(IllegalArgumentException.class, () -> new MapConstraintConfig<String, Integer>(
-			Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.of(Set.of("a")), Optional.of(Set.of("a")),
+			Optional.empty(), Optional.empty(), Optional.empty(), Optional.of(Set.of("a")), Optional.of(Set.of("a")),
 			Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty()
 		));
 	}
@@ -187,7 +171,7 @@ class MapConstraintConfigTest {
 	@Test
 	void constructWithRequiredKeysNotSubsetOfAllowed() {
 		assertThrows(IllegalArgumentException.class, () -> new MapConstraintConfig<String, Integer>(
-			Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.of(Set.of("a", "b")), Optional.empty(),
+			Optional.empty(), Optional.empty(), Optional.empty(), Optional.of(Set.of("a", "b")), Optional.empty(),
 			Optional.of(Set.of("a")), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty()
 		));
 	}
@@ -195,7 +179,7 @@ class MapConstraintConfigTest {
 	@Test
 	void constructWithOverlappingForbiddenAndAllowedKeys() {
 		assertThrows(IllegalArgumentException.class, () -> new MapConstraintConfig<String, Integer>(
-			Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.of(Set.of("a")),
+			Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.of(Set.of("a")),
 			Optional.of(Set.of("a", "b")), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty()
 		));
 	}
@@ -206,8 +190,7 @@ class MapConstraintConfigTest {
 		assertNotNull(config);
 		assertTrue(config.equalTo().isEmpty());
 		assertTrue(config.in().isEmpty());
-		assertTrue(config.min().isEmpty());
-		assertTrue(config.max().isEmpty());
+		assertTrue(config.size().isEmpty());
 		assertTrue(config.requiredKeys().isEmpty());
 		assertTrue(config.forbiddenKeys().isEmpty());
 		assertTrue(config.allowedKeys().isEmpty());
@@ -275,35 +258,39 @@ class MapConstraintConfigTest {
 	@Test
 	void withMinSize() {
 		MapConstraintConfig<String, Integer> config = MapConstraintConfig.<String, Integer>unconstrained().withMinSize(5);
-		assertTrue(config.min().isPresent());
-		assertEquals(5, config.min().get().getFirst());
-		assertTrue(config.min().get().getSecond());
+		assertTrue(config.size().isPresent());
+		assertTrue(config.size().get().min().isPresent());
+		assertEquals(5, config.size().get().min().get().getFirst());
+		assertTrue(config.size().get().min().get().getSecond());
 	}
 	
 	@Test
 	void withMaxSize() {
 		MapConstraintConfig<String, Integer> config = MapConstraintConfig.<String, Integer>unconstrained().withMaxSize(10);
-		assertTrue(config.max().isPresent());
-		assertEquals(10, config.max().get().getFirst());
-		assertTrue(config.max().get().getSecond());
+		assertTrue(config.size().isPresent());
+		assertTrue(config.size().get().max().isPresent());
+		assertEquals(10, config.size().get().max().get().getFirst());
+		assertTrue(config.size().get().max().get().getSecond());
 	}
 	
 	@Test
 	void withExactSize() {
 		MapConstraintConfig<String, Integer> config = MapConstraintConfig.<String, Integer>unconstrained().withExactSize(7);
-		assertTrue(config.min().isPresent());
-		assertTrue(config.max().isPresent());
-		assertEquals(7, config.min().get().getFirst());
-		assertEquals(7, config.max().get().getFirst());
+		assertTrue(config.size().isPresent());
+		assertTrue(config.size().get().min().isPresent());
+		assertTrue(config.size().get().max().isPresent());
+		assertEquals(7, config.size().get().min().get().getFirst());
+		assertEquals(7, config.size().get().max().get().getFirst());
 	}
 	
 	@Test
 	void withSizeBetween() {
 		MapConstraintConfig<String, Integer> config = MapConstraintConfig.<String, Integer>unconstrained().withSizeBetween(3, 8);
-		assertTrue(config.min().isPresent());
-		assertTrue(config.max().isPresent());
-		assertEquals(3, config.min().get().getFirst());
-		assertEquals(8, config.max().get().getFirst());
+		assertTrue(config.size().isPresent());
+		assertTrue(config.size().get().min().isPresent());
+		assertTrue(config.size().get().max().isPresent());
+		assertEquals(3, config.size().get().min().get().getFirst());
+		assertEquals(8, config.size().get().max().get().getFirst());
 	}
 	
 	@Test
@@ -512,5 +499,32 @@ class MapConstraintConfigTest {
 	void matchesWithNullValue() {
 		MapConstraintConfig<String, Integer> config = MapConstraintConfig.unconstrained();
 		assertThrows(NullPointerException.class, () -> config.matches(null));
+	}
+	
+	@Test
+	void withSize() {
+		SizeConstraintConfig sizeConfig = SizeConstraintConfig.UNCONSTRAINED.withMinSize(2).withMaxSize(10);
+		MapConstraintConfig<String, Integer> config = MapConstraintConfig.<String, Integer>unconstrained().withSize(sizeConfig);
+		assertTrue(config.size().isPresent());
+		assertEquals(sizeConfig, config.size().get());
+		assertTrue(config.size().get().min().isPresent());
+		assertTrue(config.size().get().max().isPresent());
+		assertEquals(2, config.size().get().min().get().getFirst());
+		assertEquals(10, config.size().get().max().get().getFirst());
+	}
+	
+	@Test
+	void withSizeNull() {
+		assertThrows(NullPointerException.class, () -> MapConstraintConfig.<String, Integer>unconstrained().withSize(null));
+	}
+	
+	@Test
+	void matchesWithSize() {
+		SizeConstraintConfig sizeConfig = SizeConstraintConfig.UNCONSTRAINED.withMinSize(1).withMaxSize(3);
+		MapConstraintConfig<String, Integer> config = MapConstraintConfig.<String, Integer>unconstrained().withSize(sizeConfig);
+		assertTrue(config.matches(Map.of("a", 1)).isSuccess());
+		assertTrue(config.matches(Map.of("a", 1, "b", 2, "c", 3)).isSuccess());
+		assertTrue(config.matches(Map.of()).isError());
+		assertTrue(config.matches(Map.of("a", 1, "b", 2, "c", 3, "d", 4)).isError());
 	}
 }

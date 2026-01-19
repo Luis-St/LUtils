@@ -20,8 +20,8 @@ package net.luis.utils.io.codec.types.struct.collection;
 
 import net.luis.utils.io.codec.AbstractCodec;
 import net.luis.utils.io.codec.Codec;
-import net.luis.utils.io.codec.constraint_new.collection.ListConstraint;
-import net.luis.utils.io.codec.constraint_new.config.SizeConstraintConfig;
+import net.luis.utils.io.codec.constraint_new.ListConstraint;
+import net.luis.utils.io.codec.constraint_new.config.ListConstraintConfig;
 import net.luis.utils.io.codec.provider.TypeProvider;
 import net.luis.utils.util.result.Result;
 import org.jspecify.annotations.NonNull;
@@ -39,13 +39,13 @@ import java.util.stream.Collectors;
  *
  * @param <C> The type of elements in the list
  */
-public class ListCodec<C> extends AbstractCodec<List<C>, SizeConstraintConfig> implements ListConstraint<ListCodec<C>> {
-
+public class ListCodec<C> extends AbstractCodec<List<C>, ListConstraintConfig<C>> implements ListConstraint<C, ListCodec<C>> {
+	
 	/**
 	 * The codec used to encode and decode the elements of the list.<br>
 	 */
 	private final Codec<C> codec;
-
+	
 	/**
 	 * Constructs a new list codec using the given codec for the elements.<br>
 	 *
@@ -55,44 +55,34 @@ public class ListCodec<C> extends AbstractCodec<List<C>, SizeConstraintConfig> i
 	public ListCodec(@NonNull Codec<C> codec) {
 		this.codec = Objects.requireNonNull(codec, "Codec must not be null");
 	}
-
+	
 	/**
-	 * Constructs a new list codec using the given codec for the elements and the given size constraint configuration.<br>
+	 * Constructs a new list codec using the given codec for the elements and the given constraint configuration.<br>
 	 *
 	 * @param codec The codec for the elements
-	 * @param constraintConfig The size constraint configuration
+	 * @param constraintConfig The constraint configuration
 	 * @throws NullPointerException If the codec is null
 	 */
-	private ListCodec(@NonNull Codec<C> codec, @NonNull SizeConstraintConfig constraintConfig) {
+	private ListCodec(@NonNull Codec<C> codec, @NonNull ListConstraintConfig<C> constraintConfig) {
 		super(constraintConfig);
 		this.codec = Objects.requireNonNull(codec, "Codec must not be null");
 	}
-
+	
+	@Override
+	public @NonNull ListCodec<C> apply(@NonNull UnaryOperator<ListConstraintConfig<C>> configModifier) {
+		Objects.requireNonNull(configModifier, "Config modifier must not be null");
+		
+		return new ListCodec<>(this.codec,
+			configModifier.apply(this.getConstraintConfig().orElse(ListConstraintConfig.unconstrained()))
+		);
+	}
+	
 	@Override
 	@SuppressWarnings("unchecked")
 	public @NonNull Class<List<C>> getType() {
 		return (Class<List<C>>) (Class<?>) List.class;
 	}
-
-	@Override
-	public @NonNull ListCodec<C> apply(@NonNull UnaryOperator<SizeConstraintConfig> configModifier) {
-		Objects.requireNonNull(configModifier, "Config modifier must not be null");
-
-		return new ListCodec<>(this.codec,
-			configModifier.apply(this.getConstraintConfig().orElse(SizeConstraintConfig.UNCONSTRAINED))
-		);
-	}
-
-	protected @NonNull Result<Void> checkConstraints(@NonNull Integer size) {
-		Objects.requireNonNull(size, "Size must not be null");
-
-		Result<Void> constraintResult = this.getConstraintConfig().map(config -> config.matches(size)).orElseGet(Result::success);
-		if (constraintResult.isError()) {
-			return Result.error("List size " + size + " does not meet constraints: " + constraintResult.errorOrThrow());
-		}
-		return Result.success();
-	}
-
+	
 	@Override
 	@SuppressWarnings("DuplicatedCode")
 	public <R> @NonNull Result<R> encodeStart(@NonNull TypeProvider<R> provider, @NonNull R current, @Nullable List<C> value) {
@@ -101,17 +91,17 @@ public class ListCodec<C> extends AbstractCodec<List<C>, SizeConstraintConfig> i
 		if (value == null) {
 			return Result.error("Unable to encode null value as list using '" + this + "'");
 		}
-
-		Result<Void> constraintResult = this.checkConstraints(value.size());
+		
+		Result<Void> constraintResult = this.checkConstraints(value);
 		if (constraintResult.isError()) {
-			return Result.error("Unable to encode list using '" + this + "': " + constraintResult.errorOrThrow());
+			return Result.error(constraintResult.errorOrThrow());
 		}
-
+		
 		List<R> elements = new ArrayList<>();
 		List<String> errors = new ArrayList<>();
 		for (int i = 0; i < value.size(); i++) {
 			Result<R> result = this.codec.encodeStart(provider, provider.empty(), value.get(i));
-
+			
 			if (result.hasValue()) {
 				R encodedValue = result.resultOrThrow();
 				if (provider.getEmpty(encodedValue).isError()) {
@@ -122,7 +112,7 @@ public class ListCodec<C> extends AbstractCodec<List<C>, SizeConstraintConfig> i
 				errors.add("Index " + i + ": " + result.errorOrThrow());
 			}
 		}
-
+		
 		Result<R> merged = provider.merge(current, provider.createList(elements));
 		if (merged.isError()) {
 			return Result.error(merged.errorOrThrow());
@@ -132,7 +122,7 @@ public class ListCodec<C> extends AbstractCodec<List<C>, SizeConstraintConfig> i
 		}
 		return Result.partial(merged.resultOrThrow(), "Encoded " + elements.size() + " of " + value.size() + " elements successfully:", errors);
 	}
-
+	
 	@Override
 	@SuppressWarnings("DuplicatedCode")
 	public <R> @NonNull Result<List<C>> decodeStart(@NonNull TypeProvider<R> provider, @NonNull R current, @Nullable R value) {
@@ -141,13 +131,13 @@ public class ListCodec<C> extends AbstractCodec<List<C>, SizeConstraintConfig> i
 		if (value == null) {
 			return Result.error("Unable to decode null value as list using'" + this + "'");
 		}
-
+		
 		Result<List<R>> decoded = provider.getList(value);
 		if (decoded.isError()) {
 			return Result.error("Unable to decode list using '" + this + "': " + decoded.errorOrThrow());
 		}
 		List<Result<C>> results = decoded.resultOrThrow().stream().map(element -> this.codec.decodeStart(provider, value, element)).toList();
-
+		
 		List<C> elements = new ArrayList<>();
 		List<String> errors = new ArrayList<>();
 		for (int i = 0; i < results.size(); i++) {
@@ -159,38 +149,38 @@ public class ListCodec<C> extends AbstractCodec<List<C>, SizeConstraintConfig> i
 				errors.add("Index " + i + ": " + result.errorOrThrow());
 			}
 		}
-
+		
 		if (elements.isEmpty() && !errors.isEmpty()) {
 			return Result.error("Unable to decode any elements of the list using '" + this + "': " + errors.stream().collect(Collectors.joining("\n - ", "", "\n")));
 		}
-		Result<Void> constraintResult = this.checkConstraints(elements.size());
+		Result<Void> constraintResult = this.checkConstraints(elements);
 		if (constraintResult.isError()) {
-			return Result.error("Unable to decode list using '" + this + "': " + constraintResult.errorOrThrow());
+			return Result.error(constraintResult.errorOrThrow());
 		}
-
+		
 		if (errors.isEmpty()) {
 			return Result.success(elements);
 		}
 		return Result.partial(elements, "Decoded " + elements.size() + " of " + results.size() + " elements successfully:", errors);
 	}
-
+	
 	//region Object overrides
 	@Override
 	public boolean equals(Object o) {
 		if (!(o instanceof ListCodec<?> listCodec)) return false;
-
+		
 		return this.codec.equals(listCodec.codec);
 	}
-
+	
 	@Override
 	public int hashCode() {
 		return Objects.hash(this.codec);
 	}
-
+	
 	@Override
 	public String toString() {
-		return this.getConstraintConfig().map(sizeConstraintConfig -> {
-			return "ConstrainedListCodec[" + this.codec + ",constraints=" + sizeConstraintConfig + "]";
+		return this.getConstraintConfig().map(config -> {
+			return "ConstrainedListCodec[" + this.codec + ",constraints=" + config + "]";
 		}).orElse("ListCodec[" + this.codec + "]");
 	}
 	//endregion

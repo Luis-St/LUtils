@@ -18,10 +18,12 @@
 
 package net.luis.utils.io.codec.constraint_new;
 
+import net.luis.utils.io.codec.constraint_new.builder.LengthConstraintBuilder;
 import net.luis.utils.io.codec.constraint_new.config.ArrayConstraintConfig;
 import org.jspecify.annotations.NonNull;
 
 import java.util.Collection;
+import java.util.Objects;
 import java.util.function.UnaryOperator;
 
 /**
@@ -33,7 +35,7 @@ import java.util.function.UnaryOperator;
  * @param <C> The return type of the constraint method (for fluent method chaining)
  */
 @FunctionalInterface
-public interface ArrayConstraint<T, C> extends ApplicableConstraint<ArrayConstraintConfig<T>, C>, LengthConstraint<T[], C> {
+public interface ArrayConstraint<T, C> extends ApplicableConstraint<ArrayConstraintConfig<T>, C>, BaseConstraint<T[], C> {
 	
 	@Override
 	@NonNull C apply(@NonNull UnaryOperator<ArrayConstraintConfig<T>> configModifier);
@@ -63,23 +65,23 @@ public interface ArrayConstraint<T, C> extends ApplicableConstraint<ArrayConstra
 		return this.apply(config -> config.withCustom(constraint));
 	}
 	
-	@Override
-	default @NonNull C minLength(int minLength) {
-		return this.apply(config -> config.withMinLength(minLength));
-	}
-	
-	@Override
-	default @NonNull C maxLength(int maxLength) {
-		return this.apply(config -> config.withMaxLength(maxLength));
-	}
-	
-	@Override
-	default @NonNull C exactLength(int exactLength) {
-		return this.apply(config -> config.withExactLength(exactLength));
-	}
-	
-	@Override
-	default @NonNull C lengthBetween(int minLength, int maxLength) {
-		return this.apply(config -> config.withLengthBetween(minLength, maxLength));
+	/**
+	 * Applies length constraints to the array using a builder.<br>
+	 * <p>
+	 *     This method provides a fluent API for configuring length constraints on arrays.<br>
+	 *     The builder allows setting minimum length, maximum length, exact length, or length ranges.
+	 * </p>
+	 *
+	 * @param builder The builder function to configure length constraints
+	 * @return A new type with the applied length constraints
+	 * @throws NullPointerException If the builder is null
+	 * @see LengthConstraintBuilder
+	 */
+	default @NonNull C length(@NonNull UnaryOperator<LengthConstraintBuilder> builder) {
+		Objects.requireNonNull(builder, "Builder must not be null");
+		
+		LengthConstraintBuilder lengthBuilder = new LengthConstraintBuilder();
+		builder.apply(lengthBuilder);
+		return this.apply(config -> config.withLength(lengthBuilder.build()));
 	}
 }

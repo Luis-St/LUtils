@@ -883,6 +883,44 @@ public final class ConstraintMatchers {
 	}
 	
 	/**
+	 * Validates an extracted value against a nested constraint configuration.<br>
+	 * <p>
+	 *     This method extracts a value from the input using the provided extractor function,
+	 *     then delegates validation to the nested {@link ConstraintConfig}.<br>
+	 *     Error messages are wrapped with the field name for context.
+	 * </p>
+	 * <p>
+	 *     This is useful when the constraint config operates on a derived value rather than
+	 *     the original value, such as validating the length of an array or size of a collection.
+	 * </p>
+	 *
+	 * @param value The value to extract from
+	 * @param config The optional nested constraint configuration
+	 * @param extractor Function to extract the value to validate from the input
+	 * @param fieldName The name of the field for error messages
+	 * @param <T> The type of the input value
+	 * @param <V> The type of the extracted value to validate
+	 * @return A successful result if validation passes or no constraint is set
+	 * @throws NullPointerException If any parameter is null
+	 */
+	public static <T, V> @NonNull Result<Void> matchExtractedValue(@NonNull T value, @NonNull Optional<? extends ConstraintConfig<V>> config, @NonNull Function<T, V> extractor, @NonNull String fieldName) {
+		Objects.requireNonNull(value, "Value must not be null");
+		Objects.requireNonNull(config, "Config constraint must not be null");
+		Objects.requireNonNull(extractor, "Extractor must not be null");
+		Objects.requireNonNull(fieldName, "Field name must not be null");
+		if (config.isEmpty()) {
+			return Result.success();
+		}
+		
+		V extracted = extractor.apply(value);
+		Result<Void> result = config.get().matches(extracted);
+		if (result.isError()) {
+			return Result.error(fieldName + " constraint failed: " + result.errorOrThrow());
+		}
+		return Result.success();
+	}
+	
+	/**
 	 * Validates an enum value against a nested enum constraint configuration.<br>
 	 * <p>
 	 *     This is a convenience method that delegates to {@link #matchNestedConfig(Object, Optional, String)}.
