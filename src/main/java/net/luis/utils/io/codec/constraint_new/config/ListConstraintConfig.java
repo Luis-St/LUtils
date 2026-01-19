@@ -226,7 +226,7 @@ public record ListConstraintConfig<T>(
 		return ConstraintMatchers.allOf(
 			() -> ConstraintMatchers.matchEqualTo(value, this.equalTo),
 			() -> ConstraintMatchers.matchIn(value, this.in),
-			() -> ConstraintMatchers.matchExtractedValue(value, this.size, List::size, "size"),
+			() -> ConstraintMatchers.matchExtractedValue(value, this.size, List::size, "Size"),
 			() -> ConstraintMatchers.matchCustom(value, this.custom)
 		);
 	}

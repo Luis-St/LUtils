@@ -408,7 +408,7 @@ public record MapConstraintConfig<K, V>(
 		return ConstraintMatchers.allOf(
 			() -> ConstraintMatchers.matchEqualTo(value, this.equalTo),
 			() -> ConstraintMatchers.matchIn(value, this.in),
-			() -> ConstraintMatchers.matchExtractedValue(value, this.size, Map::size, "size"),
+			() -> ConstraintMatchers.matchExtractedValue(value, this.size, Map::size, "Size"),
 			() -> ConstraintMatchers.matchRequiredKeys(value.keySet(), this.requiredKeys, "Map"),
 			() -> ConstraintMatchers.matchForbiddenKeys(value.keySet(), this.forbiddenKeys, "Map"),
 			() -> ConstraintMatchers.matchAllowedKeys(value.keySet(), this.allowedKeys, "Map"),

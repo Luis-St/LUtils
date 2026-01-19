@@ -228,7 +228,7 @@ public record ArrayConstraintConfig<T>(
 		return ConstraintMatchers.allOf(
 			() -> ConstraintMatchers.matchEqualTo(value, this.equalTo, Arrays::equals),
 			() -> ConstraintMatchers.matchIn(value, this.in, Arrays::equals),
-			() -> ConstraintMatchers.matchExtractedValue(value, this.length, arr -> arr.length, "length"),
+			() -> ConstraintMatchers.matchExtractedValue(value, this.length, arr -> arr.length, "Length"),
 			() -> ConstraintMatchers.matchCustom(value, this.custom)
 		);
 	}
