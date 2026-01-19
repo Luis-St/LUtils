@@ -921,23 +921,6 @@ public final class ConstraintMatchers {
 	}
 	
 	/**
-	 * Validates an enum value against a nested enum constraint configuration.<br>
-	 * <p>
-	 *     This is a convenience method that delegates to {@link #matchNestedConfig(Object, Optional, String)}.
-	 * </p>
-	 *
-	 * @param value The enum value to validate
-	 * @param config The optional enum constraint configuration
-	 * @param fieldName The name of the field for error messages
-	 * @param <E> The enum type
-	 * @return A successful result if validation passes or no constraint is set
-	 * @throws NullPointerException If any parameter is null
-	 */
-	public static <E extends Enum<E>> @NonNull Result<Void> matchEnumField(@NonNull E value, @NonNull Optional<EnumConstraintConfig<E>> config, @NonNull String fieldName) {
-		return matchNestedConfig(value, config, fieldName);
-	}
-	
-	/**
 	 * Validates an integer value against a numeric field constraint configuration.<br>
 	 * <p>
 	 *     This is a convenience method that delegates to {@link #matchNestedConfig(Object, Optional, String)}.
