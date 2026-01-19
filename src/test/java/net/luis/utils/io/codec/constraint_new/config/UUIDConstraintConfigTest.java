@@ -102,16 +102,6 @@ class UUIDConstraintConfigTest {
 	}
 	
 	@Test
-	void constructWithInvalidVersionNegative() {
-		assertThrows(IllegalArgumentException.class, () -> UUIDConstraintConfig.UNCONSTRAINED.withVersion(-1));
-	}
-	
-	@Test
-	void constructWithInvalidVersionTooHigh() {
-		assertThrows(IllegalArgumentException.class, () -> UUIDConstraintConfig.UNCONSTRAINED.withVersion(6));
-	}
-	
-	@Test
 	void constructWithNilAndNotNil() {
 		assertThrows(IllegalArgumentException.class, () -> UUIDConstraintConfig.UNCONSTRAINED.withNil().withNotNil());
 	}
@@ -194,16 +184,23 @@ class UUIDConstraintConfigTest {
 	
 	@Test
 	void withVersion() {
-		UUIDConstraintConfig config = UUIDConstraintConfig.UNCONSTRAINED.withVersion(4);
+		NumericFieldConstraintConfig versionConfig = NumericFieldConstraintConfig.UNCONSTRAINED.withEqualTo(4);
+		UUIDConstraintConfig config = UUIDConstraintConfig.UNCONSTRAINED.withVersion(versionConfig);
 		assertTrue(config.version().isPresent());
-		assertEquals(4, config.version().get());
+		assertEquals(versionConfig, config.version().get());
+	}
+	
+	@Test
+	void withVersionNull() {
+		assertThrows(NullPointerException.class, () -> UUIDConstraintConfig.UNCONSTRAINED.withVersion(null));
 	}
 	
 	@Test
 	void withVariant() {
-		UUIDConstraintConfig config = UUIDConstraintConfig.UNCONSTRAINED.withVariant(UUIDVariant.RFC_4122);
+		EnumConstraintConfig<UUIDVariant> variantConfig = EnumConstraintConfig.<UUIDVariant>unconstrained().withEqualTo(UUIDVariant.RFC_4122);
+		UUIDConstraintConfig config = UUIDConstraintConfig.UNCONSTRAINED.withVariant(variantConfig);
 		assertTrue(config.variant().isPresent());
-		assertEquals(UUIDVariant.RFC_4122, config.variant().get());
+		assertEquals(variantConfig, config.variant().get());
 	}
 	
 	@Test
@@ -278,14 +275,16 @@ class UUIDConstraintConfigTest {
 	
 	@Test
 	void matchesWithVersion() {
-		UUIDConstraintConfig config = UUIDConstraintConfig.UNCONSTRAINED.withVersion(4);
+		NumericFieldConstraintConfig versionConfig = NumericFieldConstraintConfig.UNCONSTRAINED.withEqualTo(4);
+		UUIDConstraintConfig config = UUIDConstraintConfig.UNCONSTRAINED.withVersion(versionConfig);
 		assertTrue(config.matches(RANDOM_UUID).isSuccess());
 		assertTrue(config.matches(NIL_UUID).isError());
 	}
 	
 	@Test
 	void matchesWithVariant() {
-		UUIDConstraintConfig config = UUIDConstraintConfig.UNCONSTRAINED.withVariant(UUIDVariant.RFC_4122);
+		EnumConstraintConfig<UUIDVariant> variantConfig = EnumConstraintConfig.<UUIDVariant>unconstrained().withEqualTo(UUIDVariant.RFC_4122);
+		UUIDConstraintConfig config = UUIDConstraintConfig.UNCONSTRAINED.withVariant(variantConfig);
 		assertTrue(config.matches(RANDOM_UUID).isSuccess());
 		assertTrue(config.matches(NIL_UUID).isError());
 	}
@@ -313,9 +312,11 @@ class UUIDConstraintConfigTest {
 	
 	@Test
 	void matchesWithMultipleConstraints() {
+		NumericFieldConstraintConfig versionConfig = NumericFieldConstraintConfig.UNCONSTRAINED.withEqualTo(4);
+		EnumConstraintConfig<UUIDVariant> variantConfig = EnumConstraintConfig.<UUIDVariant>unconstrained().withEqualTo(UUIDVariant.RFC_4122);
 		UUIDConstraintConfig config = UUIDConstraintConfig.UNCONSTRAINED
-			.withVersion(4)
-			.withVariant(UUIDVariant.RFC_4122)
+			.withVersion(versionConfig)
+			.withVariant(variantConfig)
 			.withNotNil();
 		
 		assertTrue(config.matches(RANDOM_UUID).isSuccess());
