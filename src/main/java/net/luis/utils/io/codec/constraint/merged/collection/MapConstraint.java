@@ -35,6 +35,7 @@ import java.util.function.UnaryOperator;
  * @param <V> The type of the values in the map
  * @param <C> The return type of the constraint method (for fluent method chaining)
  */
+@FunctionalInterface
 public interface MapConstraint<K, V, C> extends ApplicableConstraint<MapConstraintConfig<K, V>, C>, BaseConstraint<Map<K, V>, C> {
 	
 	@Override

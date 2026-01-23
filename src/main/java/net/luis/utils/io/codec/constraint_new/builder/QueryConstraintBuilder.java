@@ -18,8 +18,8 @@
 
 package net.luis.utils.io.codec.constraint_new.builder;
 
-import net.luis.utils.io.codec.constraint_new.Constraint;
 import net.luis.utils.io.codec.constraint.config.collection.MapConstraintConfig;
+import net.luis.utils.io.codec.constraint_new.Constraint;
 import net.luis.utils.io.codec.constraint_new.config.network.QueryConstraintConfig;
 import net.luis.utils.io.codec.constraint_new.network.QueryConstraint;
 import org.jspecify.annotations.NonNull;
@@ -39,8 +39,6 @@ import java.util.regex.Pattern;
  * @author Luis-St
  */
 public class QueryConstraintBuilder implements QueryConstraint<QueryConstraintBuilder> {
-	
-	// ToDo: Fix
 	
 	/**
 	 * The current constraint configuration being built.<br>
@@ -109,23 +107,12 @@ public class QueryConstraintBuilder implements QueryConstraint<QueryConstraintBu
 	
 	@Override
 	public @NonNull QueryConstraintBuilder size(@NonNull UnaryOperator<SizeConstraintBuilder> builder) {
-		throw new UnsupportedOperationException("Not implemented yet");
-	}
-	
-	public @NonNull QueryConstraintBuilder minSize(int minSize) {
-		throw new UnsupportedOperationException("Not implemented yet");
-	}
-
-	public @NonNull QueryConstraintBuilder maxSize(int maxSize) {
-		throw new UnsupportedOperationException("Not implemented yet");
-	}
-
-	public @NonNull QueryConstraintBuilder exactSize(int exactSize) {
-		throw new UnsupportedOperationException("Not implemented yet");
-	}
-
-	public @NonNull QueryConstraintBuilder sizeBetween(int minSize, int maxSize) {
-		throw new UnsupportedOperationException("Not implemented yet");
+		Objects.requireNonNull(builder, "Builder function for 'size' constraint must not be null");
+		
+		SizeConstraintBuilder sizeBuilder = new SizeConstraintBuilder();
+		builder.apply(sizeBuilder);
+		this.config = this.config.withSize(sizeBuilder.build());
+		return this;
 	}
 	
 	@Override

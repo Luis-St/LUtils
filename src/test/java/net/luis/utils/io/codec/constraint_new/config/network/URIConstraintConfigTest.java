@@ -19,6 +19,7 @@
 package net.luis.utils.io.codec.constraint_new.config.network;
 
 import net.luis.utils.io.codec.constraint.config.StringConstraintConfig;
+import net.luis.utils.io.codec.constraint_new.config.SizeConstraintConfig;
 import net.luis.utils.io.codec.constraint_new.core.Unit;
 import net.luis.utils.util.Pair;
 import net.luis.utils.util.result.Result;
@@ -376,7 +377,7 @@ class URIConstraintConfigTest {
 	
 	@Test
 	void withQuery() {
-		QueryConstraintConfig queryConfig = QueryConstraintConfig.UNCONSTRAINED.withMinSize(1);
+		QueryConstraintConfig queryConfig = QueryConstraintConfig.UNCONSTRAINED.withSize(SizeConstraintConfig.UNCONSTRAINED.withMinSize(1));
 		URIConstraintConfig config = URIConstraintConfig.UNCONSTRAINED.withQuery(queryConfig);
 		
 		assertTrue(config.query().isPresent());

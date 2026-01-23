@@ -20,7 +20,9 @@ package net.luis.utils.io.codec.constraint_new.config.network;
 
 import net.luis.utils.io.codec.constraint.config.StringConstraintConfig;
 import net.luis.utils.io.codec.constraint_new.Constraint;
-import net.luis.utils.io.codec.constraint_new.config.*;
+import net.luis.utils.io.codec.constraint_new.config.ConstraintConfig;
+import net.luis.utils.io.codec.constraint_new.config.SizeConstraintConfig;
+import net.luis.utils.io.codec.constraint_new.config.network.PathConstraintConfig;
 import net.luis.utils.io.codec.constraint_new.config.matcher.ConstraintMatchers;
 import net.luis.utils.io.codec.constraint_new.config.matcher.NetworkMatchers;
 import net.luis.utils.io.codec.constraint_new.core.Unit;
@@ -44,8 +46,7 @@ import java.util.regex.Pattern;
  *
  * @param equalTo The equality constraint as a pair of (value, negated)
  * @param in The set membership constraint as a pair of (values, negated)
- * @param min The minimum size constraint as a pair of (value, inclusive)
- * @param max The maximum size constraint as a pair of (value, inclusive)
+ * @param size The size constraint configuration
  * @param requiredKeys The set of keys that must be present
  * @param forbiddenKeys The set of keys that must not be present
  * @param allowedKeys The set of keys that are allowed (others forbidden)
@@ -62,8 +63,7 @@ import java.util.regex.Pattern;
 public record QueryConstraintConfig(
 	@NonNull Optional<Pair<Map<String, List<String>>, Boolean>> equalTo,
 	@NonNull Optional<Pair<Set<Map<String, List<String>>>, Boolean>> in,
-	@NonNull Optional<Pair<Integer, Boolean>> min,
-	@NonNull Optional<Pair<Integer, Boolean>> max,
+	@NonNull Optional<SizeConstraintConfig> size,
 	@NonNull Optional<Set<String>> requiredKeys,
 	@NonNull Optional<Set<String>> forbiddenKeys,
 	@NonNull Optional<Set<String>> allowedKeys,
@@ -81,7 +81,7 @@ public record QueryConstraintConfig(
 	 * An unconstrained query configuration with no constraints applied.<br>
 	 */
 	public static final QueryConstraintConfig UNCONSTRAINED = new QueryConstraintConfig(
-		Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(),
+		Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(),
 		Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty()
 	);
 	
@@ -90,8 +90,7 @@ public record QueryConstraintConfig(
 	 *
 	 * @param equalTo The equality constraint as a pair of (value, negated)
 	 * @param in The set membership constraint as a pair of (values, negated)
-	 * @param min The minimum size constraint as a pair of (value, inclusive)
-	 * @param max The maximum size constraint as a pair of (value, inclusive)
+	 * @param size The size constraint configuration
 	 * @param requiredKeys The set of keys that must be present
 	 * @param forbiddenKeys The set of keys that must not be present
 	 * @param allowedKeys The set of keys that are allowed (others forbidden)
@@ -105,8 +104,6 @@ public record QueryConstraintConfig(
 	 * @param custom A custom constraint implementation
 	 * @throws NullPointerException If any of the optional fields is null
 	 * @throws IllegalArgumentException If the in set is empty when present
-	 * @throws IllegalArgumentException If min is greater than max when both are present
-	 * @throws IllegalArgumentException If min and max are equal but at least one bound is exclusive when both are present
 	 * @throws IllegalArgumentException If the required keys set is empty when present
 	 * @throws IllegalArgumentException If the forbidden keys set is empty when present
 	 * @throws IllegalArgumentException If the allowed keys set is empty when present
@@ -114,8 +111,7 @@ public record QueryConstraintConfig(
 	public QueryConstraintConfig {
 		Objects.requireNonNull(equalTo, "Optional for 'equal to' constraint must not be null");
 		Objects.requireNonNull(in, "Optional for 'in' constraint must not be null");
-		Objects.requireNonNull(min, "Optional for 'min' constraint must not be null");
-		Objects.requireNonNull(max, "Optional for 'max' constraint must not be null");
+		Objects.requireNonNull(size, "Optional for 'size' constraint must not be null");
 		Objects.requireNonNull(requiredKeys, "Optional for 'required keys' constraint must not be null");
 		Objects.requireNonNull(forbiddenKeys, "Optional for 'forbidden keys' constraint must not be null");
 		Objects.requireNonNull(allowedKeys, "Optional for 'allowed keys' constraint must not be null");
@@ -130,15 +126,6 @@ public record QueryConstraintConfig(
 		
 		if (in.isPresent() && in.get().getFirst().isEmpty()) {
 			throw new IllegalArgumentException("In set must not be empty when present");
-		}
-		
-		if (min.isPresent() && max.isPresent()) {
-			if (min.get().getFirst().compareTo(max.get().getFirst()) > 0) {
-				throw new IllegalArgumentException("Min must be less than or equal to max when both are present, but got " + min.get().getFirst() + " > " + max.get().getFirst());
-			}
-			if (min.get().getFirst().compareTo(max.get().getFirst()) == 0 && (!min.get().getSecond() || !max.get().getSecond())) {
-				throw new IllegalArgumentException("Min and max are equal but at least one bound is exclusive when both are present");
-			}
 		}
 		
 		if (requiredKeys.isPresent() && requiredKeys.get().isEmpty()) {
@@ -165,7 +152,7 @@ public record QueryConstraintConfig(
 	 */
 	public @NonNull QueryConstraintConfig withEqualTo(@NonNull Map<String, List<String>> value) {
 		Objects.requireNonNull(value, "Value for 'equal to' constraint must not be null");
-		return new QueryConstraintConfig(Optional.of(Pair.of(Map.copyOf(value), false)), this.in, this.min, this.max, this.requiredKeys, this.forbiddenKeys, this.allowedKeys, this.nonNullKeys, this.uniqueValues, this.nonNullValues, this.valueConstraints, this.patternValueConstraints, this.singleValued, this.multiValuedConstraints, this.custom);
+		return new QueryConstraintConfig(Optional.of(Pair.of(Map.copyOf(value), false)), this.in, this.size, this.requiredKeys, this.forbiddenKeys, this.allowedKeys, this.nonNullKeys, this.uniqueValues, this.nonNullValues, this.valueConstraints, this.patternValueConstraints, this.singleValued, this.multiValuedConstraints, this.custom);
 	}
 	
 	/**
@@ -177,7 +164,7 @@ public record QueryConstraintConfig(
 	 */
 	public @NonNull QueryConstraintConfig withNotEqualTo(@NonNull Map<String, List<String>> value) {
 		Objects.requireNonNull(value, "Value for 'not equal to' constraint must not be null");
-		return new QueryConstraintConfig(Optional.of(Pair.of(Map.copyOf(value), true)), this.in, this.min, this.max, this.requiredKeys, this.forbiddenKeys, this.allowedKeys, this.nonNullKeys, this.uniqueValues, this.nonNullValues, this.valueConstraints, this.patternValueConstraints, this.singleValued, this.multiValuedConstraints, this.custom);
+		return new QueryConstraintConfig(Optional.of(Pair.of(Map.copyOf(value), true)), this.in, this.size, this.requiredKeys, this.forbiddenKeys, this.allowedKeys, this.nonNullKeys, this.uniqueValues, this.nonNullValues, this.valueConstraints, this.patternValueConstraints, this.singleValued, this.multiValuedConstraints, this.custom);
 	}
 	
 	/**
@@ -189,7 +176,7 @@ public record QueryConstraintConfig(
 	 */
 	public @NonNull QueryConstraintConfig withIn(@NonNull Collection<Map<String, List<String>>> values) {
 		Objects.requireNonNull(values, "Values for 'in' constraint must not be null");
-		return new QueryConstraintConfig(this.equalTo, Optional.of(Pair.of(Set.copyOf(values), false)), this.min, this.max, this.requiredKeys, this.forbiddenKeys, this.allowedKeys, this.nonNullKeys, this.uniqueValues, this.nonNullValues, this.valueConstraints, this.patternValueConstraints, this.singleValued, this.multiValuedConstraints, this.custom);
+		return new QueryConstraintConfig(this.equalTo, Optional.of(Pair.of(Set.copyOf(values), false)), this.size, this.requiredKeys, this.forbiddenKeys, this.allowedKeys, this.nonNullKeys, this.uniqueValues, this.nonNullValues, this.valueConstraints, this.patternValueConstraints, this.singleValued, this.multiValuedConstraints, this.custom);
 	}
 	
 	/**
@@ -201,48 +188,19 @@ public record QueryConstraintConfig(
 	 */
 	public @NonNull QueryConstraintConfig withNotIn(@NonNull Collection<Map<String, List<String>>> values) {
 		Objects.requireNonNull(values, "Values for 'not in' constraint must not be null");
-		return new QueryConstraintConfig(this.equalTo, Optional.of(Pair.of(Set.copyOf(values), true)), this.min, this.max, this.requiredKeys, this.forbiddenKeys, this.allowedKeys, this.nonNullKeys, this.uniqueValues, this.nonNullValues, this.valueConstraints, this.patternValueConstraints, this.singleValued, this.multiValuedConstraints, this.custom);
+		return new QueryConstraintConfig(this.equalTo, Optional.of(Pair.of(Set.copyOf(values), true)), this.size, this.requiredKeys, this.forbiddenKeys, this.allowedKeys, this.nonNullKeys, this.uniqueValues, this.nonNullValues, this.valueConstraints, this.patternValueConstraints, this.singleValued, this.multiValuedConstraints, this.custom);
 	}
 	
 	/**
-	 * Creates a new config with the specified minimum size constraint (inclusive).<br>
+	 * Creates a new config with the specified size constraint.<br>
 	 *
-	 * @param minSize The minimum number of query parameters (inclusive)
+	 * @param sizeConfig The size constraint configuration
 	 * @return A new config with the constraint applied
+	 * @throws NullPointerException If the size config is null
 	 */
-	public @NonNull QueryConstraintConfig withMinSize(int minSize) {
-		return new QueryConstraintConfig(this.equalTo, this.in, Optional.of(Pair.of(minSize, true)), this.max, this.requiredKeys, this.forbiddenKeys, this.allowedKeys, this.nonNullKeys, this.uniqueValues, this.nonNullValues, this.valueConstraints, this.patternValueConstraints, this.singleValued, this.multiValuedConstraints, this.custom);
-	}
-	
-	/**
-	 * Creates a new config with the specified maximum size constraint (inclusive).<br>
-	 *
-	 * @param maxSize The maximum number of query parameters (inclusive)
-	 * @return A new config with the constraint applied
-	 */
-	public @NonNull QueryConstraintConfig withMaxSize(int maxSize) {
-		return new QueryConstraintConfig(this.equalTo, this.in, this.min, Optional.of(Pair.of(maxSize, true)), this.requiredKeys, this.forbiddenKeys, this.allowedKeys, this.nonNullKeys, this.uniqueValues, this.nonNullValues, this.valueConstraints, this.patternValueConstraints, this.singleValued, this.multiValuedConstraints, this.custom);
-	}
-	
-	/**
-	 * Creates a new config with the specified exact size constraint.<br>
-	 *
-	 * @param exactSize The exact number of query parameters required
-	 * @return A new config with the constraint applied
-	 */
-	public @NonNull QueryConstraintConfig withExactSize(int exactSize) {
-		return new QueryConstraintConfig(this.equalTo, this.in, Optional.of(Pair.of(exactSize, true)), Optional.of(Pair.of(exactSize, true)), this.requiredKeys, this.forbiddenKeys, this.allowedKeys, this.nonNullKeys, this.uniqueValues, this.nonNullValues, this.valueConstraints, this.patternValueConstraints, this.singleValued, this.multiValuedConstraints, this.custom);
-	}
-	
-	/**
-	 * Creates a new config with the specified size range constraint (inclusive).<br>
-	 *
-	 * @param minSize The minimum number of query parameters (inclusive)
-	 * @param maxSize The maximum number of query parameters (inclusive)
-	 * @return A new config with the constraint applied
-	 */
-	public @NonNull QueryConstraintConfig withSizeBetween(int minSize, int maxSize) {
-		return new QueryConstraintConfig(this.equalTo, this.in, Optional.of(Pair.of(minSize, true)), Optional.of(Pair.of(maxSize, true)), this.requiredKeys, this.forbiddenKeys, this.allowedKeys, this.nonNullKeys, this.uniqueValues, this.nonNullValues, this.valueConstraints, this.patternValueConstraints, this.singleValued, this.multiValuedConstraints, this.custom);
+	public @NonNull QueryConstraintConfig withSize(@NonNull SizeConstraintConfig sizeConfig) {
+		Objects.requireNonNull(sizeConfig, "Size config must not be null");
+		return new QueryConstraintConfig(this.equalTo, this.in, Optional.of(sizeConfig), this.requiredKeys, this.forbiddenKeys, this.allowedKeys, this.nonNullKeys, this.uniqueValues, this.nonNullValues, this.valueConstraints, this.patternValueConstraints, this.singleValued, this.multiValuedConstraints, this.custom);
 	}
 	
 	/**
@@ -253,7 +211,7 @@ public record QueryConstraintConfig(
 	 */
 	public @NonNull QueryConstraintConfig withRequiredKeys(@NonNull Collection<String> keys) {
 		Objects.requireNonNull(keys, "Keys for 'required keys' constraint must not be null");
-		return new QueryConstraintConfig(this.equalTo, this.in, this.min, this.max, Optional.of(Set.copyOf(keys)), this.forbiddenKeys, this.allowedKeys, this.nonNullKeys, this.uniqueValues, this.nonNullValues, this.valueConstraints, this.patternValueConstraints, this.singleValued, this.multiValuedConstraints, this.custom);
+		return new QueryConstraintConfig(this.equalTo, this.in, this.size, Optional.of(Set.copyOf(keys)), this.forbiddenKeys, this.allowedKeys, this.nonNullKeys, this.uniqueValues, this.nonNullValues, this.valueConstraints, this.patternValueConstraints, this.singleValued, this.multiValuedConstraints, this.custom);
 	}
 	
 	/**
@@ -264,7 +222,7 @@ public record QueryConstraintConfig(
 	 */
 	public @NonNull QueryConstraintConfig withForbiddenKeys(@NonNull Collection<String> keys) {
 		Objects.requireNonNull(keys, "Keys for 'forbidden keys' constraint must not be null");
-		return new QueryConstraintConfig(this.equalTo, this.in, this.min, this.max, this.requiredKeys, Optional.of(Set.copyOf(keys)), this.allowedKeys, this.nonNullKeys, this.uniqueValues, this.nonNullValues, this.valueConstraints, this.patternValueConstraints, this.singleValued, this.multiValuedConstraints, this.custom);
+		return new QueryConstraintConfig(this.equalTo, this.in, this.size, this.requiredKeys, Optional.of(Set.copyOf(keys)), this.allowedKeys, this.nonNullKeys, this.uniqueValues, this.nonNullValues, this.valueConstraints, this.patternValueConstraints, this.singleValued, this.multiValuedConstraints, this.custom);
 	}
 	
 	/**
@@ -275,7 +233,7 @@ public record QueryConstraintConfig(
 	 */
 	public @NonNull QueryConstraintConfig withAllowedKeys(@NonNull Collection<String> keys) {
 		Objects.requireNonNull(keys, "Keys for 'allowed keys' constraint must not be null");
-		return new QueryConstraintConfig(this.equalTo, this.in, this.min, this.max, this.requiredKeys, this.forbiddenKeys, Optional.of(Set.copyOf(keys)), this.nonNullKeys, this.uniqueValues, this.nonNullValues, this.valueConstraints, this.patternValueConstraints, this.singleValued, this.multiValuedConstraints, this.custom);
+		return new QueryConstraintConfig(this.equalTo, this.in, this.size, this.requiredKeys, this.forbiddenKeys, Optional.of(Set.copyOf(keys)), this.nonNullKeys, this.uniqueValues, this.nonNullValues, this.valueConstraints, this.patternValueConstraints, this.singleValued, this.multiValuedConstraints, this.custom);
 	}
 	
 	/**
@@ -284,7 +242,7 @@ public record QueryConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull QueryConstraintConfig withNonNullKeys() {
-		return new QueryConstraintConfig(this.equalTo, this.in, this.min, this.max, this.requiredKeys, this.forbiddenKeys, this.allowedKeys, Optional.of(Unit.INSTANCE), this.uniqueValues, this.nonNullValues, this.valueConstraints, this.patternValueConstraints, this.singleValued, this.multiValuedConstraints, this.custom);
+		return new QueryConstraintConfig(this.equalTo, this.in, this.size, this.requiredKeys, this.forbiddenKeys, this.allowedKeys, Optional.of(Unit.INSTANCE), this.uniqueValues, this.nonNullValues, this.valueConstraints, this.patternValueConstraints, this.singleValued, this.multiValuedConstraints, this.custom);
 	}
 	
 	/**
@@ -293,7 +251,7 @@ public record QueryConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull QueryConstraintConfig withUniqueValues() {
-		return new QueryConstraintConfig(this.equalTo, this.in, this.min, this.max, this.requiredKeys, this.forbiddenKeys, this.allowedKeys, this.nonNullKeys, Optional.of(Unit.INSTANCE), this.nonNullValues, this.valueConstraints, this.patternValueConstraints, this.singleValued, this.multiValuedConstraints, this.custom);
+		return new QueryConstraintConfig(this.equalTo, this.in, this.size, this.requiredKeys, this.forbiddenKeys, this.allowedKeys, this.nonNullKeys, Optional.of(Unit.INSTANCE), this.nonNullValues, this.valueConstraints, this.patternValueConstraints, this.singleValued, this.multiValuedConstraints, this.custom);
 	}
 	
 	/**
@@ -302,7 +260,7 @@ public record QueryConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull QueryConstraintConfig withNonNullValues() {
-		return new QueryConstraintConfig(this.equalTo, this.in, this.min, this.max, this.requiredKeys, this.forbiddenKeys, this.allowedKeys, this.nonNullKeys, this.uniqueValues, Optional.of(Unit.INSTANCE), this.valueConstraints, this.patternValueConstraints, this.singleValued, this.multiValuedConstraints, this.custom);
+		return new QueryConstraintConfig(this.equalTo, this.in, this.size, this.requiredKeys, this.forbiddenKeys, this.allowedKeys, this.nonNullKeys, this.uniqueValues, Optional.of(Unit.INSTANCE), this.valueConstraints, this.patternValueConstraints, this.singleValued, this.multiValuedConstraints, this.custom);
 	}
 	
 	/**
@@ -318,7 +276,7 @@ public record QueryConstraintConfig(
 		
 		Map<String, StringConstraintConfig> newConstraints = new HashMap<>(this.valueConstraints.orElse(Map.of()));
 		newConstraints.put(key, config);
-		return new QueryConstraintConfig(this.equalTo, this.in, this.min, this.max, this.requiredKeys, this.forbiddenKeys, this.allowedKeys, this.nonNullKeys, this.uniqueValues, this.nonNullValues, Optional.of(Map.copyOf(newConstraints)), this.patternValueConstraints, this.singleValued, this.multiValuedConstraints, this.custom);
+		return new QueryConstraintConfig(this.equalTo, this.in, this.size, this.requiredKeys, this.forbiddenKeys, this.allowedKeys, this.nonNullKeys, this.uniqueValues, this.nonNullValues, Optional.of(Map.copyOf(newConstraints)), this.patternValueConstraints, this.singleValued, this.multiValuedConstraints, this.custom);
 	}
 	
 	/**
@@ -346,7 +304,7 @@ public record QueryConstraintConfig(
 		
 		Map<Pattern, StringConstraintConfig> newConstraints = new HashMap<>(this.patternValueConstraints.orElse(Map.of()));
 		newConstraints.put(pattern, config);
-		return new QueryConstraintConfig(this.equalTo, this.in, this.min, this.max, this.requiredKeys, this.forbiddenKeys, this.allowedKeys, this.nonNullKeys, this.uniqueValues, this.nonNullValues, this.valueConstraints, Optional.of(Map.copyOf(newConstraints)), this.singleValued, this.multiValuedConstraints, this.custom);
+		return new QueryConstraintConfig(this.equalTo, this.in, this.size, this.requiredKeys, this.forbiddenKeys, this.allowedKeys, this.nonNullKeys, this.uniqueValues, this.nonNullValues, this.valueConstraints, Optional.of(Map.copyOf(newConstraints)), this.singleValued, this.multiValuedConstraints, this.custom);
 	}
 	
 	/**
@@ -355,7 +313,7 @@ public record QueryConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull QueryConstraintConfig withSingleValued() {
-		return new QueryConstraintConfig(this.equalTo, this.in, this.min, this.max, this.requiredKeys, this.forbiddenKeys, this.allowedKeys, this.nonNullKeys, this.uniqueValues, this.nonNullValues, this.valueConstraints, this.patternValueConstraints, Optional.of(Unit.INSTANCE), this.multiValuedConstraints, this.custom);
+		return new QueryConstraintConfig(this.equalTo, this.in, this.size, this.requiredKeys, this.forbiddenKeys, this.allowedKeys, this.nonNullKeys, this.uniqueValues, this.nonNullValues, this.valueConstraints, this.patternValueConstraints, Optional.of(Unit.INSTANCE), this.multiValuedConstraints, this.custom);
 	}
 	
 	/**
@@ -371,7 +329,7 @@ public record QueryConstraintConfig(
 		
 		Map<String, SizeConstraintConfig> newConstraints = new HashMap<>(this.multiValuedConstraints.orElse(Map.of()));
 		newConstraints.put(key, config);
-		return new QueryConstraintConfig(this.equalTo, this.in, this.min, this.max, this.requiredKeys, this.forbiddenKeys, this.allowedKeys, this.nonNullKeys, this.uniqueValues, this.nonNullValues, this.valueConstraints, this.patternValueConstraints, this.singleValued, Optional.of(Map.copyOf(newConstraints)), this.custom);
+		return new QueryConstraintConfig(this.equalTo, this.in, this.size, this.requiredKeys, this.forbiddenKeys, this.allowedKeys, this.nonNullKeys, this.uniqueValues, this.nonNullValues, this.valueConstraints, this.patternValueConstraints, this.singleValued, Optional.of(Map.copyOf(newConstraints)), this.custom);
 	}
 	
 	/**
@@ -382,7 +340,7 @@ public record QueryConstraintConfig(
 	 */
 	public @NonNull QueryConstraintConfig withCustom(@NonNull Constraint<Map<String, List<String>>> constraint) {
 		Objects.requireNonNull(constraint, "Custom constraint must not be null");
-		return new QueryConstraintConfig(this.equalTo, this.in, this.min, this.max, this.requiredKeys, this.forbiddenKeys, this.allowedKeys, this.nonNullKeys, this.uniqueValues, this.nonNullValues, this.valueConstraints, this.patternValueConstraints, this.singleValued, this.multiValuedConstraints, Optional.of(constraint));
+		return new QueryConstraintConfig(this.equalTo, this.in, this.size, this.requiredKeys, this.forbiddenKeys, this.allowedKeys, this.nonNullKeys, this.uniqueValues, this.nonNullValues, this.valueConstraints, this.patternValueConstraints, this.singleValued, this.multiValuedConstraints, Optional.of(constraint));
 	}
 	//endregion
 	
@@ -393,7 +351,7 @@ public record QueryConstraintConfig(
 		return ConstraintMatchers.allOf(
 			() -> ConstraintMatchers.matchEqualTo(value, this.equalTo),
 			() -> ConstraintMatchers.matchIn(value, this.in),
-			() -> ConstraintMatchers.matchRange(value.size(), this.min, this.max),
+			() -> ConstraintMatchers.matchExtractedValue(value, this.size, v -> v.size(), "Size"),
 			() -> ConstraintMatchers.matchRequiredKeys(value.keySet(), this.requiredKeys, "Query"),
 			() -> ConstraintMatchers.matchForbiddenKeys(value.keySet(), this.forbiddenKeys, "Query"),
 			() -> ConstraintMatchers.matchAllowedKeys(value.keySet(), this.allowedKeys, "Query"),

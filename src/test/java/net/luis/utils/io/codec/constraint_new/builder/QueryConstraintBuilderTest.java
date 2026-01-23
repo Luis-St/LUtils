@@ -19,6 +19,7 @@
 package net.luis.utils.io.codec.constraint_new.builder;
 
 import net.luis.utils.io.codec.constraint_new.Constraint;
+import net.luis.utils.io.codec.constraint_new.config.SizeConstraintConfig;
 import net.luis.utils.io.codec.constraint_new.config.network.QueryConstraintConfig;
 import net.luis.utils.util.result.Result;
 import org.junit.jupiter.api.Test;
@@ -47,13 +48,13 @@ class QueryConstraintBuilderTest {
 	
 	@Test
 	void constructWithInitialConfig() {
-		QueryConstraintConfig initialConfig = QueryConstraintConfig.UNCONSTRAINED.withMinSize(1);
+		QueryConstraintConfig initialConfig = QueryConstraintConfig.UNCONSTRAINED.withSize(SizeConstraintConfig.UNCONSTRAINED.withMinSize(1));
 		QueryConstraintBuilder builder = new QueryConstraintBuilder(initialConfig);
 		QueryConstraintConfig config = builder.build();
 		
 		assertNotNull(config);
 		assertEquals(initialConfig, config);
-		assertTrue(config.min().isPresent());
+		assertTrue(config.size().isPresent());
 	}
 	
 	@Test
@@ -138,37 +139,18 @@ class QueryConstraintBuilderTest {
 	}
 	
 	@Test
-	void minSizeReturnsBuilder() {
+	void sizeReturnsBuilder() {
 		QueryConstraintBuilder builder = new QueryConstraintBuilder();
-		assertSame(builder, builder.minSize(1));
-		assertTrue(builder.build().min().isPresent());
-	}
-	
-	@Test
-	void maxSizeReturnsBuilder() {
-		QueryConstraintBuilder builder = new QueryConstraintBuilder();
-		assertSame(builder, builder.maxSize(10));
-		assertTrue(builder.build().max().isPresent());
-	}
-	
-	@Test
-	void exactSizeReturnsBuilder() {
-		QueryConstraintBuilder builder = new QueryConstraintBuilder();
-		assertSame(builder, builder.exactSize(5));
+		assertSame(builder, builder.size(b -> b.minSize(1).maxSize(10)));
 		
 		QueryConstraintConfig config = builder.build();
-		assertTrue(config.min().isPresent());
-		assertTrue(config.max().isPresent());
+		assertTrue(config.size().isPresent());
 	}
 	
 	@Test
-	void sizeBetweenReturnsBuilder() {
+	void sizeWithNullBuilder() {
 		QueryConstraintBuilder builder = new QueryConstraintBuilder();
-		assertSame(builder, builder.sizeBetween(1, 10));
-		
-		QueryConstraintConfig config = builder.build();
-		assertTrue(config.min().isPresent());
-		assertTrue(config.max().isPresent());
+		assertThrows(NullPointerException.class, () -> builder.size(null));
 	}
 	
 	@Test
@@ -332,13 +314,12 @@ class QueryConstraintBuilderTest {
 	@Test
 	void buildReturnsCorrectConfig() {
 		QueryConstraintBuilder builder = new QueryConstraintBuilder();
-		builder.minSize(1).maxSize(10).requiredKey("id");
+		builder.size(b -> b.minSize(1).maxSize(10)).requiredKey("id");
 		
 		QueryConstraintConfig config = builder.build();
 		
 		assertNotNull(config);
-		assertTrue(config.min().isPresent());
-		assertTrue(config.max().isPresent());
+		assertTrue(config.size().isPresent());
 		assertTrue(config.requiredKeys().isPresent());
 	}
 	
@@ -347,8 +328,7 @@ class QueryConstraintBuilderTest {
 		QueryConstraintBuilder builder = new QueryConstraintBuilder();
 		
 		QueryConstraintConfig config = builder
-			.minSize(1)
-			.maxSize(10)
+			.size(b -> b.minSize(1).maxSize(10))
 			.requiredKeys(List.of("id", "name"))
 			.forbiddenKey("password")
 			.nonNullValues()
@@ -356,8 +336,7 @@ class QueryConstraintBuilderTest {
 			.build();
 		
 		assertNotNull(config);
-		assertTrue(config.min().isPresent());
-		assertTrue(config.max().isPresent());
+		assertTrue(config.size().isPresent());
 		assertTrue(config.requiredKeys().isPresent());
 		assertTrue(config.forbiddenKeys().isPresent());
 		assertTrue(config.nonNullValues().isPresent());

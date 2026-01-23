@@ -18,8 +18,8 @@
 
 package net.luis.utils.io.codec.constraint_new.config.network;
 
-import net.luis.utils.io.codec.constraint_new.config.SizeConstraintConfig;
 import net.luis.utils.io.codec.constraint.config.StringConstraintConfig;
+import net.luis.utils.io.codec.constraint_new.config.SizeConstraintConfig;
 import net.luis.utils.util.Pair;
 import net.luis.utils.util.result.Result;
 import org.junit.jupiter.api.Test;
@@ -40,7 +40,7 @@ class QueryConstraintConfigTest {
 	void constructor() {
 		assertDoesNotThrow(() -> QueryConstraintConfig.UNCONSTRAINED);
 		assertDoesNotThrow(() -> new QueryConstraintConfig(
-			Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(),
+			Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(),
 			Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty()
 		));
 	}
@@ -48,63 +48,59 @@ class QueryConstraintConfigTest {
 	@Test
 	void constructorNullChecks() {
 		assertThrows(NullPointerException.class, () -> new QueryConstraintConfig(
-			null, Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(),
+			null, Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(),
 			Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty()
 		));
 		assertThrows(NullPointerException.class, () -> new QueryConstraintConfig(
-			Optional.empty(), null, Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(),
+			Optional.empty(), null, Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(),
 			Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty()
 		));
 		assertThrows(NullPointerException.class, () -> new QueryConstraintConfig(
-			Optional.empty(), Optional.empty(), null, Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(),
+			Optional.empty(), Optional.empty(), null, Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(),
 			Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty()
 		));
 		assertThrows(NullPointerException.class, () -> new QueryConstraintConfig(
-			Optional.empty(), Optional.empty(), Optional.empty(), null, Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(),
+			Optional.empty(), Optional.empty(), Optional.empty(), null, Optional.empty(), Optional.empty(), Optional.empty(),
 			Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty()
 		));
 		assertThrows(NullPointerException.class, () -> new QueryConstraintConfig(
-			Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), null, Optional.empty(), Optional.empty(), Optional.empty(),
+			Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), null, Optional.empty(), Optional.empty(),
 			Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty()
 		));
 		assertThrows(NullPointerException.class, () -> new QueryConstraintConfig(
-			Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), null, Optional.empty(), Optional.empty(),
+			Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), null, Optional.empty(),
 			Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty()
 		));
 		assertThrows(NullPointerException.class, () -> new QueryConstraintConfig(
-			Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), null, Optional.empty(),
+			Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), null,
 			Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty()
 		));
 		assertThrows(NullPointerException.class, () -> new QueryConstraintConfig(
-			Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), null,
-			Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty()
-		));
-		assertThrows(NullPointerException.class, () -> new QueryConstraintConfig(
-			Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(),
+			Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(),
 			null, Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty()
 		));
 		assertThrows(NullPointerException.class, () -> new QueryConstraintConfig(
-			Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(),
+			Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(),
 			Optional.empty(), null, Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty()
 		));
 		assertThrows(NullPointerException.class, () -> new QueryConstraintConfig(
-			Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(),
+			Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(),
 			Optional.empty(), Optional.empty(), null, Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty()
 		));
 		assertThrows(NullPointerException.class, () -> new QueryConstraintConfig(
-			Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(),
+			Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(),
 			Optional.empty(), Optional.empty(), Optional.empty(), null, Optional.empty(), Optional.empty(), Optional.empty()
 		));
 		assertThrows(NullPointerException.class, () -> new QueryConstraintConfig(
-			Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(),
+			Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(),
 			Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), null, Optional.empty(), Optional.empty()
 		));
 		assertThrows(NullPointerException.class, () -> new QueryConstraintConfig(
-			Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(),
+			Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(),
 			Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), null, Optional.empty()
 		));
 		assertThrows(NullPointerException.class, () -> new QueryConstraintConfig(
-			Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(),
+			Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(),
 			Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), null
 		));
 	}
@@ -112,23 +108,7 @@ class QueryConstraintConfigTest {
 	@Test
 	void constructorEmptyInSet() {
 		assertThrows(IllegalArgumentException.class, () -> new QueryConstraintConfig(
-			Optional.empty(), Optional.of(Pair.of(Set.of(), false)), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(),
-			Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty()
-		));
-	}
-	
-	@Test
-	void constructorMinMaxValidation() {
-		assertThrows(IllegalArgumentException.class, () -> new QueryConstraintConfig(
-			Optional.empty(), Optional.empty(), Optional.of(Pair.of(10, true)), Optional.of(Pair.of(5, true)), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(),
-			Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty()
-		));
-	}
-	
-	@Test
-	void constructorMinMaxEqualExclusiveValidation() {
-		assertThrows(IllegalArgumentException.class, () -> new QueryConstraintConfig(
-			Optional.empty(), Optional.empty(), Optional.of(Pair.of(5, false)), Optional.of(Pair.of(5, true)), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(),
+			Optional.empty(), Optional.of(Pair.of(Set.of(), false)), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(),
 			Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty()
 		));
 	}
@@ -136,7 +116,7 @@ class QueryConstraintConfigTest {
 	@Test
 	void constructorEmptyRequiredKeysSet() {
 		assertThrows(IllegalArgumentException.class, () -> new QueryConstraintConfig(
-			Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.of(Set.of()), Optional.empty(), Optional.empty(), Optional.empty(),
+			Optional.empty(), Optional.empty(), Optional.empty(), Optional.of(Set.of()), Optional.empty(), Optional.empty(), Optional.empty(),
 			Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty()
 		));
 	}
@@ -144,7 +124,7 @@ class QueryConstraintConfigTest {
 	@Test
 	void constructorEmptyForbiddenKeysSet() {
 		assertThrows(IllegalArgumentException.class, () -> new QueryConstraintConfig(
-			Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.of(Set.of()), Optional.empty(), Optional.empty(),
+			Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.of(Set.of()), Optional.empty(), Optional.empty(),
 			Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty()
 		));
 	}
@@ -152,7 +132,7 @@ class QueryConstraintConfigTest {
 	@Test
 	void constructorEmptyAllowedKeysSet() {
 		assertThrows(IllegalArgumentException.class, () -> new QueryConstraintConfig(
-			Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.of(Set.of()), Optional.empty(),
+			Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.of(Set.of()), Optional.empty(),
 			Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty()
 		));
 	}
@@ -163,8 +143,7 @@ class QueryConstraintConfigTest {
 		assertNotNull(config);
 		assertTrue(config.equalTo().isEmpty());
 		assertTrue(config.in().isEmpty());
-		assertTrue(config.min().isEmpty());
-		assertTrue(config.max().isEmpty());
+		assertTrue(config.size().isEmpty());
 		assertTrue(config.requiredKeys().isEmpty());
 		assertTrue(config.forbiddenKeys().isEmpty());
 		assertTrue(config.allowedKeys().isEmpty());
@@ -239,41 +218,17 @@ class QueryConstraintConfigTest {
 	}
 	
 	@Test
-	void withMinSize() {
-		QueryConstraintConfig config = QueryConstraintConfig.UNCONSTRAINED.withMinSize(2);
+	void withSize() {
+		SizeConstraintConfig sizeConfig = SizeConstraintConfig.UNCONSTRAINED.withMinSize(2).withMaxSize(10);
+		QueryConstraintConfig config = QueryConstraintConfig.UNCONSTRAINED.withSize(sizeConfig);
 		
-		assertTrue(config.min().isPresent());
-		assertEquals(2, config.min().get().getFirst());
-		assertTrue(config.min().get().getSecond());
+		assertTrue(config.size().isPresent());
+		assertEquals(sizeConfig, config.size().get());
 	}
 	
 	@Test
-	void withMaxSize() {
-		QueryConstraintConfig config = QueryConstraintConfig.UNCONSTRAINED.withMaxSize(10);
-		
-		assertTrue(config.max().isPresent());
-		assertEquals(10, config.max().get().getFirst());
-		assertTrue(config.max().get().getSecond());
-	}
-	
-	@Test
-	void withExactSize() {
-		QueryConstraintConfig config = QueryConstraintConfig.UNCONSTRAINED.withExactSize(5);
-		
-		assertTrue(config.min().isPresent());
-		assertTrue(config.max().isPresent());
-		assertEquals(5, config.min().get().getFirst());
-		assertEquals(5, config.max().get().getFirst());
-	}
-	
-	@Test
-	void withSizeBetween() {
-		QueryConstraintConfig config = QueryConstraintConfig.UNCONSTRAINED.withSizeBetween(2, 10);
-		
-		assertTrue(config.min().isPresent());
-		assertTrue(config.max().isPresent());
-		assertEquals(2, config.min().get().getFirst());
-		assertEquals(10, config.max().get().getFirst());
+	void withSizeNull() {
+		assertThrows(NullPointerException.class, () -> QueryConstraintConfig.UNCONSTRAINED.withSize(null));
 	}
 	
 	@Test
@@ -486,7 +441,7 @@ class QueryConstraintConfigTest {
 	
 	@Test
 	void matchesMinSize() {
-		QueryConstraintConfig config = QueryConstraintConfig.UNCONSTRAINED.withMinSize(2);
+		QueryConstraintConfig config = QueryConstraintConfig.UNCONSTRAINED.withSize(SizeConstraintConfig.UNCONSTRAINED.withMinSize(2));
 		
 		assertTrue(config.matches(Map.of("a", List.of("1"), "b", List.of("2"))).isSuccess());
 		assertTrue(config.matches(Map.of("a", List.of("1"), "b", List.of("2"), "c", List.of("3"))).isSuccess());
@@ -495,7 +450,7 @@ class QueryConstraintConfigTest {
 	
 	@Test
 	void matchesMaxSize() {
-		QueryConstraintConfig config = QueryConstraintConfig.UNCONSTRAINED.withMaxSize(2);
+		QueryConstraintConfig config = QueryConstraintConfig.UNCONSTRAINED.withSize(SizeConstraintConfig.UNCONSTRAINED.withMaxSize(2));
 		
 		assertTrue(config.matches(Map.of()).isSuccess());
 		assertTrue(config.matches(Map.of("a", List.of("1"))).isSuccess());

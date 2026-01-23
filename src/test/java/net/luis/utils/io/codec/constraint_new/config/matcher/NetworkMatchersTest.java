@@ -971,7 +971,7 @@ class NetworkMatchersTest {
 	@Test
 	void matchUriQueryConfigWithNoQuery() {
 		URI uri = URI.create("https://example.com");
-		QueryConstraintConfig config = QueryConstraintConfig.UNCONSTRAINED.withMinSize(1);
+		QueryConstraintConfig config = QueryConstraintConfig.UNCONSTRAINED.withSize(SizeConstraintConfig.UNCONSTRAINED.withMinSize(1));
 		Result<Void> result = NetworkMatchers.matchUriQueryConfig(uri, Optional.of(config));
 		assertTrue(result.isError());
 		assertTrue(result.errorOrThrow().contains("has no query"));
