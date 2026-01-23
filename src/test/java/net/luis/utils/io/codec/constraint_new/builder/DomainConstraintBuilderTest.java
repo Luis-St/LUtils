@@ -125,44 +125,6 @@ class DomainConstraintBuilderTest {
 		DomainConstraintBuilder builder = new DomainConstraintBuilder();
 		assertThrows(NullPointerException.class, () -> builder.custom(null));
 	}
-	
-	@Test
-	void minLengthReturnsBuilder() {
-		DomainConstraintBuilder builder = new DomainConstraintBuilder();
-		assertSame(builder, builder.minLength(5));
-		assertTrue(builder.build().length().isPresent());
-		assertTrue(builder.build().length().get().min().isPresent());
-	}
-
-	@Test
-	void maxLengthReturnsBuilder() {
-		DomainConstraintBuilder builder = new DomainConstraintBuilder();
-		assertSame(builder, builder.maxLength(253));
-		assertTrue(builder.build().length().isPresent());
-		assertTrue(builder.build().length().get().max().isPresent());
-	}
-
-	@Test
-	void exactLengthReturnsBuilder() {
-		DomainConstraintBuilder builder = new DomainConstraintBuilder();
-		assertSame(builder, builder.exactLength(11));
-
-		DomainConstraintConfig config = builder.build();
-		assertTrue(config.length().isPresent());
-		assertTrue(config.length().get().min().isPresent());
-		assertTrue(config.length().get().max().isPresent());
-	}
-
-	@Test
-	void lengthBetweenReturnsBuilder() {
-		DomainConstraintBuilder builder = new DomainConstraintBuilder();
-		assertSame(builder, builder.lengthBetween(5, 253));
-
-		DomainConstraintConfig config = builder.build();
-		assertTrue(config.length().isPresent());
-		assertTrue(config.length().get().min().isPresent());
-		assertTrue(config.length().get().max().isPresent());
-	}
 
 	@Test
 	void lengthReturnsBuilder() {
@@ -434,7 +396,7 @@ class DomainConstraintBuilderTest {
 	@Test
 	void buildReturnsCorrectConfig() {
 		DomainConstraintBuilder builder = new DomainConstraintBuilder();
-		builder.minLength(5).maxLength(253).endsWith(".com");
+		builder.length(b -> b.minLength(5).maxLength(253)).endsWith(".com");
 
 		DomainConstraintConfig config = builder.build();
 
@@ -450,8 +412,7 @@ class DomainConstraintBuilderTest {
 		DomainConstraintBuilder builder = new DomainConstraintBuilder();
 
 		DomainConstraintConfig config = builder
-			.minLength(5)
-			.maxLength(253)
+			.length(b -> b.minLength(5).maxLength(253))
 			.endsWith(".com")
 			.rootDomain()
 			.build();

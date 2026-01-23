@@ -341,7 +341,7 @@ class QueryConstraintConfigTest {
 	
 	@Test
 	void withValue() {
-		StringConstraintConfig stringConfig = StringConstraintConfig.UNCONSTRAINED.withMinLength(1);
+		StringConstraintConfig stringConfig = StringConstraintConfig.UNCONSTRAINED.withNotBlank();
 		QueryConstraintConfig config = QueryConstraintConfig.UNCONSTRAINED.withValue("name", stringConfig);
 		
 		assertTrue(config.valueConstraints().isPresent());
@@ -360,7 +360,7 @@ class QueryConstraintConfigTest {
 	
 	@Test
 	void withValuesString() {
-		StringConstraintConfig stringConfig = StringConstraintConfig.UNCONSTRAINED.withMinLength(1);
+		StringConstraintConfig stringConfig = StringConstraintConfig.UNCONSTRAINED.withNotBlank();
 		QueryConstraintConfig config = QueryConstraintConfig.UNCONSTRAINED.withValues("^id_.*$", stringConfig);
 		
 		assertTrue(config.patternValueConstraints().isPresent());
@@ -375,7 +375,7 @@ class QueryConstraintConfigTest {
 	@Test
 	void withValuesPattern() {
 		Pattern pattern = Pattern.compile("^id_.*$");
-		StringConstraintConfig stringConfig = StringConstraintConfig.UNCONSTRAINED.withMinLength(1);
+		StringConstraintConfig stringConfig = StringConstraintConfig.UNCONSTRAINED.withNotBlank();
 		QueryConstraintConfig config = QueryConstraintConfig.UNCONSTRAINED.withValues(pattern, stringConfig);
 		
 		assertTrue(config.patternValueConstraints().isPresent());

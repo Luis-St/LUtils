@@ -310,7 +310,7 @@ class URIConstraintConfigTest {
 	
 	@Test
 	void withUserInfo() {
-		StringConstraintConfig userInfoConfig = StringConstraintConfig.UNCONSTRAINED.withMinLength(1);
+		StringConstraintConfig userInfoConfig = StringConstraintConfig.UNCONSTRAINED.withNotBlank();
 		URIConstraintConfig config = URIConstraintConfig.UNCONSTRAINED.withUserInfo(userInfoConfig);
 		
 		assertTrue(config.userInfo().isPresent());
@@ -398,7 +398,7 @@ class URIConstraintConfigTest {
 	
 	@Test
 	void withFragment() {
-		StringConstraintConfig fragmentConfig = StringConstraintConfig.UNCONSTRAINED.withMinLength(1);
+		StringConstraintConfig fragmentConfig = StringConstraintConfig.UNCONSTRAINED.withNotBlank();
 		URIConstraintConfig config = URIConstraintConfig.UNCONSTRAINED.withFragment(fragmentConfig);
 		
 		assertTrue(config.fragment().isPresent());

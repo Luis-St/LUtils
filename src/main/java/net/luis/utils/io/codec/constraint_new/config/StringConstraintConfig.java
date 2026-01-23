@@ -170,49 +170,49 @@ public record StringConstraintConfig(
 		Objects.requireNonNull(ascii, "Optional for 'ascii' constraint must not be null");
 		Objects.requireNonNull(latin1, "Optional for 'latin1' constraint must not be null");
 		Objects.requireNonNull(custom, "Optional for 'custom' constraint must not be null");
-
+		
 		if (in.isPresent() && in.get().getFirst().isEmpty()) {
 			throw new IllegalArgumentException("The 'in' constraint set must not be empty when present");
 		}
-
+		
 		if (inIgnoreCase.isPresent() && inIgnoreCase.get().getFirst().isEmpty()) {
 			throw new IllegalArgumentException("The 'in ignore case' constraint set must not be empty when present");
 		}
-
+		
 		if (startsWithAny.isPresent() && startsWithAny.get().getFirst().isEmpty()) {
 			throw new IllegalArgumentException("The 'starts with any' constraint set must not be empty when present");
 		}
-
+		
 		if (containsAny.isPresent() && containsAny.get().getFirst().isEmpty()) {
 			throw new IllegalArgumentException("The 'contains any' constraint set must not be empty when present");
 		}
-
+		
 		if (containsAll.isPresent() && containsAll.get().isEmpty()) {
 			throw new IllegalArgumentException("The 'contains all' constraint set must not be empty when present");
 		}
 		if (containsOnly.isPresent() && containsOnly.get().isEmpty()) {
 			throw new IllegalArgumentException("The 'contains only' constraint set must not be empty when present");
 		}
-
+		
 		if (endsWithAny.isPresent() && endsWithAny.get().getFirst().isEmpty()) {
 			throw new IllegalArgumentException("The 'ends with any' constraint set must not be empty when present");
 		}
-
+		
 		if (blank.isPresent() && notBlank.isPresent()) {
 			throw new IllegalArgumentException("Both 'blank' and 'not blank' constraints cannot be present at the same time");
 		}
-
+		
 		if (upperCase.isPresent() && lowerCase.isPresent()) {
 			throw new IllegalArgumentException("Both 'upper case' and 'lower case' constraints cannot be present at the same time");
 		}
-
+		
 		if (blank.isPresent() && length.isPresent()) {
 			LengthConstraintConfig lengthConfig = length.get();
 			if (lengthConfig.min().isPresent() && lengthConfig.min().get().getFirst() > 0) {
 				throw new IllegalArgumentException("Blank constraint conflicts with minimum length greater than zero");
 			}
 		}
-
+		
 		if (notBlank.isPresent() && length.isPresent()) {
 			LengthConstraintConfig lengthConfig = length.get();
 			if (lengthConfig.max().isPresent() && lengthConfig.max().get().getFirst() == 0) {
@@ -311,54 +311,6 @@ public record StringConstraintConfig(
 		return new StringConstraintConfig(this.equalTo, this.in, this.equalToIgnoreCase, Optional.of(Pair.of(Set.copyOf(values), true)), this.length, this.startsWith, this.startsWithAny, this.contains, this.containsAny, this.containsAll, this.containsOnly, this.endsWith, this.endsWithAny, this.matches, this.trimmed, this.blank, this.notBlank, this.upperCase, this.lowerCase, this.numeric, this.alphabetic, this.alphanumeric, this.ascii, this.latin1, this.custom);
 	}
 	
-	/**
-	 * Creates a new config with the specified minimum length constraint (inclusive).<br>
-	 *
-	 * @param minLength The minimum length (inclusive)
-	 * @return A new config with the constraint applied
-	 */
-	public @NonNull StringConstraintConfig withMinLength(int minLength) {
-		LengthConstraintConfig newLength = this.length.orElse(LengthConstraintConfig.UNCONSTRAINED).withMinLength(minLength);
-		return new StringConstraintConfig(this.equalTo, this.in, this.equalToIgnoreCase, this.inIgnoreCase, Optional.of(newLength), this.startsWith, this.startsWithAny, this.contains, this.containsAny, this.containsAll, this.containsOnly, this.endsWith, this.endsWithAny, this.matches, this.trimmed, this.blank, this.notBlank, this.upperCase, this.lowerCase, this.numeric, this.alphabetic, this.alphanumeric, this.ascii, this.latin1, this.custom);
-	}
-
-	/**
-	 * Creates a new config with the specified maximum length constraint (inclusive).<br>
-	 *
-	 * @param maxLength The maximum length (inclusive)
-	 * @return A new config with the constraint applied
-	 */
-	public @NonNull StringConstraintConfig withMaxLength(int maxLength) {
-		LengthConstraintConfig newLength = this.length.orElse(LengthConstraintConfig.UNCONSTRAINED).withMaxLength(maxLength);
-		return new StringConstraintConfig(this.equalTo, this.in, this.equalToIgnoreCase, this.inIgnoreCase, Optional.of(newLength), this.startsWith, this.startsWithAny, this.contains, this.containsAny, this.containsAll, this.containsOnly, this.endsWith, this.endsWithAny, this.matches, this.trimmed, this.blank, this.notBlank, this.upperCase, this.lowerCase, this.numeric, this.alphabetic, this.alphanumeric, this.ascii, this.latin1, this.custom);
-	}
-
-	/**
-	 * Creates a new config with the specified exact length constraint.<br>
-	 * <p>
-	 *     This sets both min and max length to the same value with inclusive bounds.
-	 * </p>
-	 *
-	 * @param exactLength The exact length required
-	 * @return A new config with the constraint applied
-	 */
-	public @NonNull StringConstraintConfig withExactLength(int exactLength) {
-		LengthConstraintConfig newLength = this.length.orElse(LengthConstraintConfig.UNCONSTRAINED).withExactLength(exactLength);
-		return new StringConstraintConfig(this.equalTo, this.in, this.equalToIgnoreCase, this.inIgnoreCase, Optional.of(newLength), this.startsWith, this.startsWithAny, this.contains, this.containsAny, this.containsAll, this.containsOnly, this.endsWith, this.endsWithAny, this.matches, this.trimmed, this.blank, this.notBlank, this.upperCase, this.lowerCase, this.numeric, this.alphabetic, this.alphanumeric, this.ascii, this.latin1, this.custom);
-	}
-
-	/**
-	 * Creates a new config with the specified length range constraint (inclusive).<br>
-	 *
-	 * @param minLength The minimum length (inclusive)
-	 * @param maxLength The maximum length (inclusive)
-	 * @return A new config with the constraint applied
-	 */
-	public @NonNull StringConstraintConfig withLengthBetween(int minLength, int maxLength) {
-		LengthConstraintConfig newLength = this.length.orElse(LengthConstraintConfig.UNCONSTRAINED).withLengthBetween(minLength, maxLength);
-		return new StringConstraintConfig(this.equalTo, this.in, this.equalToIgnoreCase, this.inIgnoreCase, Optional.of(newLength), this.startsWith, this.startsWithAny, this.contains, this.containsAny, this.containsAll, this.containsOnly, this.endsWith, this.endsWithAny, this.matches, this.trimmed, this.blank, this.notBlank, this.upperCase, this.lowerCase, this.numeric, this.alphabetic, this.alphanumeric, this.ascii, this.latin1, this.custom);
-	}
-
 	/**
 	 * Creates a new config with the specified length constraints.<br>
 	 * <p>

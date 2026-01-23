@@ -69,23 +69,7 @@ class StringConstraintConfigTest {
 	}
 	
 	@Test
-	void constructWithNegativeMinLength() {
-		assertThrows(IllegalArgumentException.class, () -> StringConstraintConfig.UNCONSTRAINED.withMinLength(-1));
-	}
-	
-	@Test
-	void constructWithNegativeMaxLength() {
-		assertThrows(IllegalArgumentException.class, () -> StringConstraintConfig.UNCONSTRAINED.withMaxLength(-1));
-	}
-	
-	@Test
-	void constructWithMinGreaterThanMax() {
-		assertThrows(IllegalArgumentException.class, () -> StringConstraintConfig.UNCONSTRAINED.withLengthBetween(10, 5));
-	}
-	
-	@Test
 	void constructWithEqualMinMaxExclusiveBound() {
-		// LengthConstraintConfig validates this internally
 		assertThrows(IllegalArgumentException.class, () -> new LengthConstraintConfig(
 			Optional.empty(), Optional.empty(),
 			Optional.of(Pair.of(5, false)), Optional.of(Pair.of(5, true)),
@@ -105,12 +89,12 @@ class StringConstraintConfigTest {
 	
 	@Test
 	void constructWithBlankAndMinLengthGreaterZero() {
-		assertThrows(IllegalArgumentException.class, () -> StringConstraintConfig.UNCONSTRAINED.withMinLength(1).withBlank());
+		assertThrows(IllegalArgumentException.class, () -> StringConstraintConfig.UNCONSTRAINED.withLength(LengthConstraintConfig.UNCONSTRAINED.withMinLength(1)).withBlank());
 	}
 	
 	@Test
 	void constructWithNotBlankAndMaxLengthZero() {
-		assertThrows(IllegalArgumentException.class, () -> StringConstraintConfig.UNCONSTRAINED.withMaxLength(0).withNotBlank());
+		assertThrows(IllegalArgumentException.class, () -> StringConstraintConfig.UNCONSTRAINED.withLength(LengthConstraintConfig.UNCONSTRAINED.withMaxLength(0)).withNotBlank());
 	}
 	
 	@Test
@@ -153,44 +137,6 @@ class StringConstraintConfigTest {
 		assertTrue(config.in().isPresent());
 		assertEquals(Set.of("x", "y"), config.in().get().getFirst());
 		assertTrue(config.in().get().getSecond());
-	}
-	
-	@Test
-	void withMinLength() {
-		StringConstraintConfig config = StringConstraintConfig.UNCONSTRAINED.withMinLength(5);
-		assertTrue(config.length().isPresent());
-		assertTrue(config.length().get().min().isPresent());
-		assertEquals(5, config.length().get().min().get().getFirst());
-		assertTrue(config.length().get().min().get().getSecond());
-	}
-
-	@Test
-	void withMaxLength() {
-		StringConstraintConfig config = StringConstraintConfig.UNCONSTRAINED.withMaxLength(10);
-		assertTrue(config.length().isPresent());
-		assertTrue(config.length().get().max().isPresent());
-		assertEquals(10, config.length().get().max().get().getFirst());
-		assertTrue(config.length().get().max().get().getSecond());
-	}
-
-	@Test
-	void withExactLength() {
-		StringConstraintConfig config = StringConstraintConfig.UNCONSTRAINED.withExactLength(7);
-		assertTrue(config.length().isPresent());
-		assertTrue(config.length().get().min().isPresent());
-		assertTrue(config.length().get().max().isPresent());
-		assertEquals(7, config.length().get().min().get().getFirst());
-		assertEquals(7, config.length().get().max().get().getFirst());
-	}
-
-	@Test
-	void withLengthBetween() {
-		StringConstraintConfig config = StringConstraintConfig.UNCONSTRAINED.withLengthBetween(3, 8);
-		assertTrue(config.length().isPresent());
-		assertTrue(config.length().get().min().isPresent());
-		assertTrue(config.length().get().max().isPresent());
-		assertEquals(3, config.length().get().min().get().getFirst());
-		assertEquals(8, config.length().get().max().get().getFirst());
 	}
 
 	@Test
@@ -282,7 +228,7 @@ class StringConstraintConfigTest {
 	
 	@Test
 	void matchesWithLength() {
-		StringConstraintConfig config = StringConstraintConfig.UNCONSTRAINED.withLengthBetween(2, 5);
+		StringConstraintConfig config = StringConstraintConfig.UNCONSTRAINED.withLength(LengthConstraintConfig.UNCONSTRAINED.withMinLength(2).withMaxLength(5));
 		assertTrue(config.matches("ab").isSuccess());
 		assertTrue(config.matches("abcde").isSuccess());
 		assertTrue(config.matches("a").isError());
@@ -388,8 +334,7 @@ class StringConstraintConfigTest {
 	@Test
 	void matchesWithMultipleConstraints() {
 		StringConstraintConfig config = StringConstraintConfig.UNCONSTRAINED
-			.withMinLength(3)
-			.withMaxLength(10)
+			.withLength(LengthConstraintConfig.UNCONSTRAINED.withMinLength(3).withMaxLength(10))
 			.withStartsWith("a")
 			.withNotBlank();
 		

@@ -128,44 +128,6 @@ class IpConstraintBuilderTest {
 		IpConstraintBuilder builder = new IpConstraintBuilder();
 		assertThrows(NullPointerException.class, () -> builder.custom(null));
 	}
-	
-	@Test
-	void minLengthReturnsBuilder() {
-		IpConstraintBuilder builder = new IpConstraintBuilder();
-		assertSame(builder, builder.minLength(7));
-		assertTrue(builder.build().length().isPresent());
-		assertTrue(builder.build().length().get().min().isPresent());
-	}
-
-	@Test
-	void maxLengthReturnsBuilder() {
-		IpConstraintBuilder builder = new IpConstraintBuilder();
-		assertSame(builder, builder.maxLength(15));
-		assertTrue(builder.build().length().isPresent());
-		assertTrue(builder.build().length().get().max().isPresent());
-	}
-
-	@Test
-	void exactLengthReturnsBuilder() {
-		IpConstraintBuilder builder = new IpConstraintBuilder();
-		assertSame(builder, builder.exactLength(15));
-
-		IpConstraintConfig config = builder.build();
-		assertTrue(config.length().isPresent());
-		assertTrue(config.length().get().min().isPresent());
-		assertTrue(config.length().get().max().isPresent());
-	}
-
-	@Test
-	void lengthBetweenReturnsBuilder() {
-		IpConstraintBuilder builder = new IpConstraintBuilder();
-		assertSame(builder, builder.lengthBetween(7, 15));
-
-		IpConstraintConfig config = builder.build();
-		assertTrue(config.length().isPresent());
-		assertTrue(config.length().get().min().isPresent());
-		assertTrue(config.length().get().max().isPresent());
-	}
 
 	@Test
 	void lengthReturnsBuilder() {
@@ -475,7 +437,7 @@ class IpConstraintBuilderTest {
 	@Test
 	void buildReturnsCorrectConfig() {
 		IpConstraintBuilder builder = new IpConstraintBuilder();
-		builder.minLength(7).maxLength(15).startsWith("192.");
+		builder.length(b -> b.minLength(7).maxLength(15)).startsWith("192.");
 
 		IpConstraintConfig config = builder.build();
 
@@ -491,8 +453,7 @@ class IpConstraintBuilderTest {
 		IpConstraintBuilder builder = new IpConstraintBuilder();
 
 		IpConstraintConfig config = builder
-			.minLength(7)
-			.maxLength(15)
+			.length(b -> b.minLength(7).maxLength(15))
 			.startsWith("192.")
 			.ipVersion(b -> b.equalTo(IpVersion.IPV4))
 			.build();

@@ -154,7 +154,7 @@ class HostConstraintBuilderTest {
 	@Test
 	void buildReturnsCorrectConfig() {
 		HostConstraintBuilder builder = new HostConstraintBuilder();
-		builder.equalTo("localhost").ip(b -> b.minLength(7));
+		builder.equalTo("localhost").ip(b -> b.length(ib -> ib.minLength(7)));
 		
 		HostConstraintConfig config = builder.build();
 		
@@ -169,7 +169,7 @@ class HostConstraintBuilderTest {
 		
 		HostConstraintConfig config = builder
 			.notEqualTo("blocked-host")
-			.ip(b -> b.minLength(7).maxLength(15))
+			.ip(b -> b.length(ib -> ib.minLength(7).maxLength(15)))
 			.build();
 		
 		assertNotNull(config);

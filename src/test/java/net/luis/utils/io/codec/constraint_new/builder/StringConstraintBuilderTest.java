@@ -46,14 +46,13 @@ class StringConstraintBuilderTest {
 	
 	@Test
 	void constructWithInitialConfig() {
-		StringConstraintConfig initialConfig = StringConstraintConfig.UNCONSTRAINED.withMinLength(5);
+		StringConstraintConfig initialConfig = StringConstraintConfig.UNCONSTRAINED.withNotBlank();
 		StringConstraintBuilder builder = new StringConstraintBuilder(initialConfig);
 		StringConstraintConfig config = builder.build();
 
 		assertNotNull(config);
 		assertEquals(initialConfig, config);
-		assertTrue(config.length().isPresent());
-		assertTrue(config.length().get().min().isPresent());
+		assertTrue(config.notBlank().isPresent());
 	}
 	
 	@Test
@@ -191,44 +190,6 @@ class StringConstraintBuilderTest {
 		StringConstraintBuilder builder = new StringConstraintBuilder();
 		assertSame(builder, builder.upperCase());
 		assertTrue(builder.build().upperCase().isPresent());
-	}
-	
-	@Test
-	void minLengthReturnsBuilder() {
-		StringConstraintBuilder builder = new StringConstraintBuilder();
-		assertSame(builder, builder.minLength(5));
-		assertTrue(builder.build().length().isPresent());
-		assertTrue(builder.build().length().get().min().isPresent());
-	}
-
-	@Test
-	void maxLengthReturnsBuilder() {
-		StringConstraintBuilder builder = new StringConstraintBuilder();
-		assertSame(builder, builder.maxLength(100));
-		assertTrue(builder.build().length().isPresent());
-		assertTrue(builder.build().length().get().max().isPresent());
-	}
-
-	@Test
-	void exactLengthReturnsBuilder() {
-		StringConstraintBuilder builder = new StringConstraintBuilder();
-		assertSame(builder, builder.exactLength(10));
-
-		StringConstraintConfig config = builder.build();
-		assertTrue(config.length().isPresent());
-		assertTrue(config.length().get().min().isPresent());
-		assertTrue(config.length().get().max().isPresent());
-	}
-
-	@Test
-	void lengthBetweenReturnsBuilder() {
-		StringConstraintBuilder builder = new StringConstraintBuilder();
-		assertSame(builder, builder.lengthBetween(5, 20));
-
-		StringConstraintConfig config = builder.build();
-		assertTrue(config.length().isPresent());
-		assertTrue(config.length().get().min().isPresent());
-		assertTrue(config.length().get().max().isPresent());
 	}
 
 	@Test
@@ -543,7 +504,7 @@ class StringConstraintBuilderTest {
 	@Test
 	void buildReturnsCorrectConfig() {
 		StringConstraintBuilder builder = new StringConstraintBuilder();
-		builder.minLength(5).maxLength(100).startsWith("test");
+		builder.length(b -> b.minLength(5).maxLength(100)).startsWith("test");
 
 		StringConstraintConfig config = builder.build();
 
@@ -559,8 +520,7 @@ class StringConstraintBuilderTest {
 		StringConstraintBuilder builder = new StringConstraintBuilder();
 
 		StringConstraintConfig config = builder
-			.minLength(5)
-			.maxLength(100)
+			.length(b -> b.minLength(5).maxLength(100))
 			.notBlank()
 			.startsWith("test")
 			.endsWith(".txt")

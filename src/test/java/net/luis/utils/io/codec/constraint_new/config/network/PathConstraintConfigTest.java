@@ -279,7 +279,7 @@ class PathConstraintConfigTest {
 	
 	@Test
 	void withSegment() {
-		StringConstraintConfig stringConfig = StringConstraintConfig.UNCONSTRAINED.withMinLength(1);
+		StringConstraintConfig stringConfig = StringConstraintConfig.UNCONSTRAINED.withNotBlank();
 		PathConstraintConfig config = PathConstraintConfig.UNCONSTRAINED.withSegment(stringConfig);
 		
 		assertTrue(config.segment().isPresent());

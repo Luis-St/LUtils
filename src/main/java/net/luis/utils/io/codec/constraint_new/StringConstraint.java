@@ -29,11 +29,6 @@ import java.util.regex.Pattern;
 
 /**
  * Constraint interface for string types that provides string-specific validation operations.<br>
- * <p>
- *     This interface extends {@link CharSequenceConstraint} with additional methods for case-insensitive
- *     comparisons, whitespace handling, and character content validation.<br>
- *     It provides methods for validating string content such as numeric, alphabetic, and alphanumeric strings.
- * </p>
  *
  * @author Luis-St
  *
@@ -135,45 +130,14 @@ public interface StringConstraint<C> extends ApplicableConstraint<StringConstrai
 	}
 	
 	@Override
-	default @NonNull C minLength(int minLength) {
-		return this.apply(config -> config.withMinLength(minLength));
-	}
-	
-	@Override
-	default @NonNull C maxLength(int maxLength) {
-		return this.apply(config -> config.withMaxLength(maxLength));
-	}
-	
-	@Override
-	default @NonNull C exactLength(int exactLength) {
-		return this.apply(config -> config.withExactLength(exactLength));
-	}
-	
-	@Override
-	default @NonNull C lengthBetween(int minLength, int maxLength) {
-		return this.apply(config -> config.withLengthBetween(minLength, maxLength));
-	}
-
-	/**
-	 * Applies length constraints to the string using a builder.<br>
-	 * <p>
-	 *     This method provides a fluent API for configuring length constraints on strings.<br>
-	 *     The builder allows setting minimum length, maximum length, exact length, or length ranges.
-	 * </p>
-	 *
-	 * @param builder The builder function to configure length constraints
-	 * @return A new type with the applied length constraints
-	 * @throws NullPointerException If the builder is null
-	 * @see LengthConstraintBuilder
-	 */
 	default @NonNull C length(@NonNull UnaryOperator<LengthConstraintBuilder> builder) {
 		Objects.requireNonNull(builder, "Builder must not be null");
-
+		
 		LengthConstraintBuilder lengthBuilder = new LengthConstraintBuilder();
 		builder.apply(lengthBuilder);
 		return this.apply(config -> config.withLength(lengthBuilder.build()));
 	}
-
+	
 	@Override
 	default @NonNull C startsWith(@NonNull String prefix) {
 		return this.apply(config -> config.withStartsWith(prefix));
@@ -313,7 +277,6 @@ public interface StringConstraint<C> extends ApplicableConstraint<StringConstrai
 	 *
 	 * @return A new type with the applied blank constraint
 	 * @see #notBlank()
-	 * @see #empty()
 	 */
 	default @NonNull C blank() {
 		return this.apply(StringConstraintConfig::withBlank);
@@ -327,7 +290,6 @@ public interface StringConstraint<C> extends ApplicableConstraint<StringConstrai
 	 *
 	 * @return A new type with the applied non-blank constraint
 	 * @see #blank()
-	 * @see #notEmpty()
 	 */
 	default @NonNull C notBlank() {
 		return this.apply(StringConstraintConfig::withNotBlank);

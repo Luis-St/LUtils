@@ -18,25 +18,36 @@
 
 package net.luis.utils.io.codec.constraint_new;
 
+import net.luis.utils.io.codec.constraint_new.builder.LengthConstraintBuilder;
 import org.jspecify.annotations.NonNull;
 
 import java.util.Collection;
+import java.util.function.UnaryOperator;
 import java.util.regex.Pattern;
 
 /**
  * Constraint interface for character sequence types that provides string pattern matching operations.<br>
- * <p>
- *     This interface extends {@link LengthConstraint} with methods for constraining character sequences
- *     based on prefix, suffix, substring containment, and regular expression matching.<br>
- *     It is suitable for string-like types that support character sequence operations.
- * </p>
  *
  * @author Luis-St
  *
  * @param <T> The type of the constraint configuration
  * @param <C> The return type of the constraint method (for fluent method chaining)
  */
-public interface CharSequenceConstraint<T, C> extends LengthConstraint<T, C> {
+public interface CharSequenceConstraint<T, C> extends BaseConstraint<T, C> {
+	
+	/**
+	 * Applies length constraints to the string using a builder.<br>
+	 * <p>
+	 *     This method provides a fluent API for configuring length constraints on strings.<br>
+	 *     The builder allows setting minimum length, maximum length, exact length, or length ranges.
+	 * </p>
+	 *
+	 * @param builder The builder function to configure length constraints
+	 * @return A new type with the applied length constraints
+	 * @throws NullPointerException If the builder is null
+	 * @see LengthConstraintBuilder
+	 */
+	@NonNull C length(@NonNull UnaryOperator<LengthConstraintBuilder> builder);
 	
 	/**
 	 * Applies a prefix constraint to the type.<br>

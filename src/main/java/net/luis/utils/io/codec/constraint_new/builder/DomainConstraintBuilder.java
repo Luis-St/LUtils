@@ -93,39 +93,15 @@ public class DomainConstraintBuilder implements DomainConstraint<String, DomainC
 	}
 	
 	@Override
-	public @NonNull DomainConstraintBuilder minLength(int minLength) {
-		this.config = this.config.withMinLength(minLength);
-		return this;
-	}
-	
-	@Override
-	public @NonNull DomainConstraintBuilder maxLength(int maxLength) {
-		this.config = this.config.withMaxLength(maxLength);
-		return this;
-	}
-	
-	@Override
-	public @NonNull DomainConstraintBuilder exactLength(int exactLength) {
-		this.config = this.config.withExactLength(exactLength);
-		return this;
-	}
-	
-	@Override
-	public @NonNull DomainConstraintBuilder lengthBetween(int minLength, int maxLength) {
-		this.config = this.config.withLengthBetween(minLength, maxLength);
-		return this;
-	}
-
-	@Override
 	public @NonNull DomainConstraintBuilder length(@NonNull UnaryOperator<LengthConstraintBuilder> builder) {
 		Objects.requireNonNull(builder, "Builder must not be null");
-
+		
 		LengthConstraintBuilder lengthBuilder = new LengthConstraintBuilder();
 		builder.apply(lengthBuilder);
 		this.config = this.config.withLength(lengthBuilder.build());
 		return this;
 	}
-
+	
 	@Override
 	public @NonNull DomainConstraintBuilder startsWith(@NonNull String prefix) {
 		this.config = this.config.withStartsWith(prefix);
