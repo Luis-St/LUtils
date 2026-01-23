@@ -51,10 +51,11 @@ class IpConstraintBuilderTest {
 		IpConstraintConfig initialConfig = IpConstraintConfig.UNCONSTRAINED.withMinLength(7);
 		IpConstraintBuilder builder = new IpConstraintBuilder(initialConfig);
 		IpConstraintConfig config = builder.build();
-		
+
 		assertNotNull(config);
 		assertEquals(initialConfig, config);
-		assertTrue(config.minLength().isPresent());
+		assertTrue(config.length().isPresent());
+		assertTrue(config.length().get().min().isPresent());
 	}
 	
 	@Test
@@ -132,34 +133,57 @@ class IpConstraintBuilderTest {
 	void minLengthReturnsBuilder() {
 		IpConstraintBuilder builder = new IpConstraintBuilder();
 		assertSame(builder, builder.minLength(7));
-		assertTrue(builder.build().minLength().isPresent());
+		assertTrue(builder.build().length().isPresent());
+		assertTrue(builder.build().length().get().min().isPresent());
 	}
-	
+
 	@Test
 	void maxLengthReturnsBuilder() {
 		IpConstraintBuilder builder = new IpConstraintBuilder();
 		assertSame(builder, builder.maxLength(15));
-		assertTrue(builder.build().maxLength().isPresent());
+		assertTrue(builder.build().length().isPresent());
+		assertTrue(builder.build().length().get().max().isPresent());
 	}
-	
+
 	@Test
 	void exactLengthReturnsBuilder() {
 		IpConstraintBuilder builder = new IpConstraintBuilder();
 		assertSame(builder, builder.exactLength(15));
-		
+
 		IpConstraintConfig config = builder.build();
-		assertTrue(config.minLength().isPresent());
-		assertTrue(config.maxLength().isPresent());
+		assertTrue(config.length().isPresent());
+		assertTrue(config.length().get().min().isPresent());
+		assertTrue(config.length().get().max().isPresent());
 	}
-	
+
 	@Test
 	void lengthBetweenReturnsBuilder() {
 		IpConstraintBuilder builder = new IpConstraintBuilder();
 		assertSame(builder, builder.lengthBetween(7, 15));
-		
+
 		IpConstraintConfig config = builder.build();
-		assertTrue(config.minLength().isPresent());
-		assertTrue(config.maxLength().isPresent());
+		assertTrue(config.length().isPresent());
+		assertTrue(config.length().get().min().isPresent());
+		assertTrue(config.length().get().max().isPresent());
+	}
+
+	@Test
+	void lengthReturnsBuilder() {
+		IpConstraintBuilder builder = new IpConstraintBuilder();
+		assertSame(builder, builder.length(l -> l.minLength(7).maxLength(15)));
+
+		IpConstraintConfig config = builder.build();
+		assertTrue(config.length().isPresent());
+		assertTrue(config.length().get().min().isPresent());
+		assertTrue(config.length().get().max().isPresent());
+		assertEquals(7, config.length().get().min().get().getFirst());
+		assertEquals(15, config.length().get().max().get().getFirst());
+	}
+
+	@Test
+	void lengthWithNullBuilder() {
+		IpConstraintBuilder builder = new IpConstraintBuilder();
+		assertThrows(NullPointerException.class, () -> builder.length(null));
 	}
 	
 	@Test
@@ -452,29 +476,31 @@ class IpConstraintBuilderTest {
 	void buildReturnsCorrectConfig() {
 		IpConstraintBuilder builder = new IpConstraintBuilder();
 		builder.minLength(7).maxLength(15).startsWith("192.");
-		
+
 		IpConstraintConfig config = builder.build();
-		
+
 		assertNotNull(config);
-		assertTrue(config.minLength().isPresent());
-		assertTrue(config.maxLength().isPresent());
+		assertTrue(config.length().isPresent());
+		assertTrue(config.length().get().min().isPresent());
+		assertTrue(config.length().get().max().isPresent());
 		assertTrue(config.startsWith().isPresent());
 	}
-	
+
 	@Test
 	void methodChainingWorks() {
 		IpConstraintBuilder builder = new IpConstraintBuilder();
-		
+
 		IpConstraintConfig config = builder
 			.minLength(7)
 			.maxLength(15)
 			.startsWith("192.")
 			.ipVersion(b -> b.equalTo(IpVersion.IPV4))
 			.build();
-		
+
 		assertNotNull(config);
-		assertTrue(config.minLength().isPresent());
-		assertTrue(config.maxLength().isPresent());
+		assertTrue(config.length().isPresent());
+		assertTrue(config.length().get().min().isPresent());
+		assertTrue(config.length().get().max().isPresent());
 		assertTrue(config.startsWith().isPresent());
 		assertTrue(config.ipVersion().isPresent());
 	}

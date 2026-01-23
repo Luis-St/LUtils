@@ -19,7 +19,10 @@
 package net.luis.utils.io.codec.constraint_new.network;
 
 import net.luis.utils.io.codec.constraint_new.CharSequenceConstraint;
+import net.luis.utils.io.codec.constraint_new.builder.LengthConstraintBuilder;
 import org.jspecify.annotations.NonNull;
+
+import java.util.function.UnaryOperator;
 
 /**
  * Constraint interface for domain name validation operations.<br>
@@ -58,4 +61,18 @@ public interface DomainConstraint<T, C> extends CharSequenceConstraint<T, C> {
 	 * @see #rootDomain()
 	 */
 	@NonNull C subDomain();
+
+	/**
+	 * Applies length constraints to the domain name using a builder.<br>
+	 * <p>
+	 *     This method provides a fluent API for configuring length constraints on domain names.<br>
+	 *     The builder allows setting minimum length, maximum length, exact length, or length ranges.
+	 * </p>
+	 *
+	 * @param builder The builder function to configure length constraints
+	 * @return A new type with the applied length constraints
+	 * @throws NullPointerException If the builder is null
+	 * @see LengthConstraintBuilder
+	 */
+	@NonNull C length(@NonNull UnaryOperator<LengthConstraintBuilder> builder);
 }

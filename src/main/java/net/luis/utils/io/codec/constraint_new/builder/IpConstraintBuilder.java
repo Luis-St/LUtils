@@ -117,7 +117,17 @@ public class IpConstraintBuilder implements IpConstraint<String, IpConstraintBui
 		this.config = this.config.withLengthBetween(minLength, maxLength);
 		return this;
 	}
-	
+
+	@Override
+	public @NonNull IpConstraintBuilder length(@NonNull UnaryOperator<LengthConstraintBuilder> builder) {
+		Objects.requireNonNull(builder, "Builder must not be null");
+
+		LengthConstraintBuilder lengthBuilder = new LengthConstraintBuilder();
+		builder.apply(lengthBuilder);
+		this.config = this.config.withLength(lengthBuilder.build());
+		return this;
+	}
+
 	@Override
 	public @NonNull IpConstraintBuilder startsWith(@NonNull String prefix) {
 		this.config = this.config.withStartsWith(prefix);

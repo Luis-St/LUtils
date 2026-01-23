@@ -18,6 +18,7 @@
 
 package net.luis.utils.io.codec.constraint_new.config.network;
 
+import net.luis.utils.io.codec.constraint_new.config.LengthConstraintConfig;
 import net.luis.utils.io.codec.constraint_new.core.Unit;
 import net.luis.utils.util.Pair;
 import net.luis.utils.util.result.Result;
@@ -39,50 +40,52 @@ class DomainConstraintConfigTest {
 	void constructor() {
 		assertDoesNotThrow(() -> DomainConstraintConfig.UNCONSTRAINED);
 		assertDoesNotThrow(() -> new DomainConstraintConfig(
-			Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(),
-			Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(),
-			Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty()
+			Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(),
+			Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(),
+			Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty()
 		));
 	}
-	
+
 	@Test
 	void constructorNullChecks() {
 		assertThrows(NullPointerException.class, () -> new DomainConstraintConfig(
-			null, Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(),
-			Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(),
-			Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty()
+			null, Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(),
+			Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(),
+			Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty()
 		));
 		assertThrows(NullPointerException.class, () -> new DomainConstraintConfig(
-			Optional.empty(), null, Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(),
-			Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(),
-			Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty()
+			Optional.empty(), null, Optional.empty(), Optional.empty(), Optional.empty(),
+			Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(),
+			Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty()
 		));
 	}
-	
+
 	@Test
 	void constructorEmptyInSet() {
 		assertThrows(IllegalArgumentException.class, () -> new DomainConstraintConfig(
-			Optional.empty(), Optional.of(Pair.of(Set.of(), false)), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(),
-			Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(),
-			Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty()
+			Optional.empty(), Optional.of(Pair.of(Set.of(), false)), Optional.empty(), Optional.empty(), Optional.empty(),
+			Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(),
+			Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty()
 		));
 	}
-	
+
 	@Test
 	void constructorMinMaxLengthValidation() {
-		assertThrows(IllegalArgumentException.class, () -> new DomainConstraintConfig(
-			Optional.empty(), Optional.empty(), Optional.of(Pair.of(20, true)), Optional.of(Pair.of(10, true)), Optional.empty(), Optional.empty(),
-			Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(),
-			Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty()
+		// LengthConstraintConfig validates this internally
+		assertThrows(IllegalArgumentException.class, () -> new LengthConstraintConfig(
+			Optional.empty(), Optional.empty(),
+			Optional.of(Pair.of(20, true)), Optional.of(Pair.of(10, true)),
+			Optional.empty()
 		));
 	}
-	
+
 	@Test
 	void constructorRootAndSubDomainMutuallyExclusive() {
 		assertThrows(IllegalArgumentException.class, () -> new DomainConstraintConfig(
-			Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(),
-			Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(),
-			Optional.empty(), Optional.of(Unit.INSTANCE), Optional.of(Unit.INSTANCE), Optional.empty()
+			Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(),
+			Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(),
+			Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(),
+			Optional.of(Unit.INSTANCE), Optional.of(Unit.INSTANCE), Optional.empty()
 		));
 	}
 	
@@ -140,37 +143,52 @@ class DomainConstraintConfigTest {
 	@Test
 	void withMinLength() {
 		DomainConstraintConfig config = DomainConstraintConfig.UNCONSTRAINED.withMinLength(5);
-		
-		assertTrue(config.minLength().isPresent());
-		assertEquals(5, config.minLength().get().getFirst());
+
+		assertTrue(config.length().isPresent());
+		assertTrue(config.length().get().min().isPresent());
+		assertEquals(5, config.length().get().min().get().getFirst());
+		assertTrue(config.length().get().min().get().getSecond());
 	}
-	
+
 	@Test
 	void withMaxLength() {
 		DomainConstraintConfig config = DomainConstraintConfig.UNCONSTRAINED.withMaxLength(253);
-		
-		assertTrue(config.maxLength().isPresent());
-		assertEquals(253, config.maxLength().get().getFirst());
+
+		assertTrue(config.length().isPresent());
+		assertTrue(config.length().get().max().isPresent());
+		assertEquals(253, config.length().get().max().get().getFirst());
+		assertTrue(config.length().get().max().get().getSecond());
 	}
-	
+
 	@Test
 	void withExactLength() {
 		DomainConstraintConfig config = DomainConstraintConfig.UNCONSTRAINED.withExactLength(11);
-		
-		assertTrue(config.minLength().isPresent());
-		assertTrue(config.maxLength().isPresent());
-		assertEquals(11, config.minLength().get().getFirst());
-		assertEquals(11, config.maxLength().get().getFirst());
+
+		assertTrue(config.length().isPresent());
+		assertTrue(config.length().get().min().isPresent());
+		assertTrue(config.length().get().max().isPresent());
+		assertEquals(11, config.length().get().min().get().getFirst());
+		assertEquals(11, config.length().get().max().get().getFirst());
 	}
-	
+
 	@Test
 	void withLengthBetween() {
 		DomainConstraintConfig config = DomainConstraintConfig.UNCONSTRAINED.withLengthBetween(5, 50);
-		
-		assertTrue(config.minLength().isPresent());
-		assertTrue(config.maxLength().isPresent());
-		assertEquals(5, config.minLength().get().getFirst());
-		assertEquals(50, config.maxLength().get().getFirst());
+
+		assertTrue(config.length().isPresent());
+		assertTrue(config.length().get().min().isPresent());
+		assertTrue(config.length().get().max().isPresent());
+		assertEquals(5, config.length().get().min().get().getFirst());
+		assertEquals(50, config.length().get().max().get().getFirst());
+	}
+
+	@Test
+	void withLength() {
+		LengthConstraintConfig lengthConfig = LengthConstraintConfig.UNCONSTRAINED.withMinLength(5).withMaxLength(50);
+		DomainConstraintConfig config = DomainConstraintConfig.UNCONSTRAINED.withLength(lengthConfig);
+
+		assertTrue(config.length().isPresent());
+		assertEquals(lengthConfig, config.length().get());
 	}
 	
 	@Test

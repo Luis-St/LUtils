@@ -18,10 +18,12 @@
 
 package net.luis.utils.io.codec.constraint_new;
 
+import net.luis.utils.io.codec.constraint_new.builder.LengthConstraintBuilder;
 import net.luis.utils.io.codec.constraint_new.config.StringConstraintConfig;
 import org.jspecify.annotations.NonNull;
 
 import java.util.Collection;
+import java.util.Objects;
 import java.util.function.UnaryOperator;
 import java.util.regex.Pattern;
 
@@ -151,7 +153,27 @@ public interface StringConstraint<C> extends ApplicableConstraint<StringConstrai
 	default @NonNull C lengthBetween(int minLength, int maxLength) {
 		return this.apply(config -> config.withLengthBetween(minLength, maxLength));
 	}
-	
+
+	/**
+	 * Applies length constraints to the string using a builder.<br>
+	 * <p>
+	 *     This method provides a fluent API for configuring length constraints on strings.<br>
+	 *     The builder allows setting minimum length, maximum length, exact length, or length ranges.
+	 * </p>
+	 *
+	 * @param builder The builder function to configure length constraints
+	 * @return A new type with the applied length constraints
+	 * @throws NullPointerException If the builder is null
+	 * @see LengthConstraintBuilder
+	 */
+	default @NonNull C length(@NonNull UnaryOperator<LengthConstraintBuilder> builder) {
+		Objects.requireNonNull(builder, "Builder must not be null");
+
+		LengthConstraintBuilder lengthBuilder = new LengthConstraintBuilder();
+		builder.apply(lengthBuilder);
+		return this.apply(config -> config.withLength(lengthBuilder.build()));
+	}
+
 	@Override
 	default @NonNull C startsWith(@NonNull String prefix) {
 		return this.apply(config -> config.withStartsWith(prefix));

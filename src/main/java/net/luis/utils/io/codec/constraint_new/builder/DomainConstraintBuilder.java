@@ -25,6 +25,7 @@ import org.jspecify.annotations.NonNull;
 
 import java.util.Collection;
 import java.util.Objects;
+import java.util.function.UnaryOperator;
 import java.util.regex.Pattern;
 
 /**
@@ -114,7 +115,17 @@ public class DomainConstraintBuilder implements DomainConstraint<String, DomainC
 		this.config = this.config.withLengthBetween(minLength, maxLength);
 		return this;
 	}
-	
+
+	@Override
+	public @NonNull DomainConstraintBuilder length(@NonNull UnaryOperator<LengthConstraintBuilder> builder) {
+		Objects.requireNonNull(builder, "Builder must not be null");
+
+		LengthConstraintBuilder lengthBuilder = new LengthConstraintBuilder();
+		builder.apply(lengthBuilder);
+		this.config = this.config.withLength(lengthBuilder.build());
+		return this;
+	}
+
 	@Override
 	public @NonNull DomainConstraintBuilder startsWith(@NonNull String prefix) {
 		this.config = this.config.withStartsWith(prefix);

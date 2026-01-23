@@ -19,13 +19,16 @@
 package net.luis.utils.io.codec.constraint_new.config.network;
 
 import net.luis.utils.io.codec.constraint_new.config.EnumConstraintConfig;
+import net.luis.utils.io.codec.constraint_new.config.LengthConstraintConfig;
 import net.luis.utils.io.codec.constraint_new.core.IpAddressType;
 import net.luis.utils.io.codec.constraint_new.core.IpVersion;
 import net.luis.utils.util.Pair;
 import net.luis.utils.util.result.Result;
 import org.junit.jupiter.api.Test;
 
-import java.util.*;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
 import java.util.regex.Pattern;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -41,55 +44,56 @@ class IpConstraintConfigTest {
 	void constructor() {
 		assertDoesNotThrow(() -> IpConstraintConfig.UNCONSTRAINED);
 		assertDoesNotThrow(() -> new IpConstraintConfig(
-			Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(),
-			Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(),
-			Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty()
+			Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(),
+			Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(),
+			Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty()
 		));
 	}
-	
+
 	@Test
 	void constructorNullChecks() {
 		assertThrows(NullPointerException.class, () -> new IpConstraintConfig(
-			null, Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(),
-			Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(),
-			Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty()
+			null, Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(),
+			Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(),
+			Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty()
 		));
 		assertThrows(NullPointerException.class, () -> new IpConstraintConfig(
-			Optional.empty(), null, Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(),
-			Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(),
-			Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty()
+			Optional.empty(), null, Optional.empty(), Optional.empty(), Optional.empty(),
+			Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(),
+			Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty()
 		));
 	}
-	
+
 	@Test
 	void constructorEmptyInSet() {
 		assertThrows(IllegalArgumentException.class, () -> new IpConstraintConfig(
-			Optional.empty(), Optional.of(Pair.of(Set.of(), false)), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(),
-			Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(),
-			Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty()
+			Optional.empty(), Optional.of(Pair.of(Set.of(), false)), Optional.empty(), Optional.empty(), Optional.empty(),
+			Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(),
+			Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty()
 		));
 	}
-	
+
 	@Test
 	void constructorMinMaxLengthValidation() {
-		assertThrows(IllegalArgumentException.class, () -> new IpConstraintConfig(
-			Optional.empty(), Optional.empty(), Optional.of(Pair.of(10, true)), Optional.of(Pair.of(5, true)), Optional.empty(), Optional.empty(),
-			Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(),
-			Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty()
+		// LengthConstraintConfig validates this internally
+		assertThrows(IllegalArgumentException.class, () -> new LengthConstraintConfig(
+			Optional.empty(), Optional.empty(),
+			Optional.of(Pair.of(10, true)), Optional.of(Pair.of(5, true)),
+			Optional.empty()
 		));
-		assertThrows(IllegalArgumentException.class, () -> new IpConstraintConfig(
-			Optional.empty(), Optional.empty(), Optional.of(Pair.of(5, false)), Optional.of(Pair.of(5, true)), Optional.empty(), Optional.empty(),
-			Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(),
-			Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty()
+		assertThrows(IllegalArgumentException.class, () -> new LengthConstraintConfig(
+			Optional.empty(), Optional.empty(),
+			Optional.of(Pair.of(5, false)), Optional.of(Pair.of(5, true)),
+			Optional.empty()
 		));
 	}
-	
+
 	@Test
 	void constructorEmptySubnetSet() {
 		assertThrows(IllegalArgumentException.class, () -> new IpConstraintConfig(
-			Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(),
-			Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(),
-			Optional.empty(), Optional.empty(), Optional.empty(), Optional.of(Pair.of(Set.of(), false)), Optional.empty()
+			Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(),
+			Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(),
+			Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.of(Pair.of(Set.of(), false)), Optional.empty()
 		));
 	}
 	
@@ -99,8 +103,7 @@ class IpConstraintConfigTest {
 		assertNotNull(config);
 		assertTrue(config.equalTo().isEmpty());
 		assertTrue(config.in().isEmpty());
-		assertTrue(config.minLength().isEmpty());
-		assertTrue(config.maxLength().isEmpty());
+		assertTrue(config.length().isEmpty());
 		assertTrue(config.custom().isEmpty());
 	}
 	
@@ -148,39 +151,52 @@ class IpConstraintConfigTest {
 	@Test
 	void withMinLength() {
 		IpConstraintConfig config = IpConstraintConfig.UNCONSTRAINED.withMinLength(7);
-		
-		assertTrue(config.minLength().isPresent());
-		assertEquals(7, config.minLength().get().getFirst());
-		assertTrue(config.minLength().get().getSecond());
+
+		assertTrue(config.length().isPresent());
+		assertTrue(config.length().get().min().isPresent());
+		assertEquals(7, config.length().get().min().get().getFirst());
+		assertTrue(config.length().get().min().get().getSecond());
 	}
-	
+
 	@Test
 	void withMaxLength() {
 		IpConstraintConfig config = IpConstraintConfig.UNCONSTRAINED.withMaxLength(15);
-		
-		assertTrue(config.maxLength().isPresent());
-		assertEquals(15, config.maxLength().get().getFirst());
-		assertTrue(config.maxLength().get().getSecond());
+
+		assertTrue(config.length().isPresent());
+		assertTrue(config.length().get().max().isPresent());
+		assertEquals(15, config.length().get().max().get().getFirst());
+		assertTrue(config.length().get().max().get().getSecond());
 	}
-	
+
 	@Test
 	void withExactLength() {
 		IpConstraintConfig config = IpConstraintConfig.UNCONSTRAINED.withExactLength(11);
-		
-		assertTrue(config.minLength().isPresent());
-		assertTrue(config.maxLength().isPresent());
-		assertEquals(11, config.minLength().get().getFirst());
-		assertEquals(11, config.maxLength().get().getFirst());
+
+		assertTrue(config.length().isPresent());
+		assertTrue(config.length().get().min().isPresent());
+		assertTrue(config.length().get().max().isPresent());
+		assertEquals(11, config.length().get().min().get().getFirst());
+		assertEquals(11, config.length().get().max().get().getFirst());
 	}
-	
+
 	@Test
 	void withLengthBetween() {
 		IpConstraintConfig config = IpConstraintConfig.UNCONSTRAINED.withLengthBetween(7, 15);
-		
-		assertTrue(config.minLength().isPresent());
-		assertTrue(config.maxLength().isPresent());
-		assertEquals(7, config.minLength().get().getFirst());
-		assertEquals(15, config.maxLength().get().getFirst());
+
+		assertTrue(config.length().isPresent());
+		assertTrue(config.length().get().min().isPresent());
+		assertTrue(config.length().get().max().isPresent());
+		assertEquals(7, config.length().get().min().get().getFirst());
+		assertEquals(15, config.length().get().max().get().getFirst());
+	}
+
+	@Test
+	void withLength() {
+		LengthConstraintConfig lengthConfig = LengthConstraintConfig.UNCONSTRAINED.withMinLength(7).withMaxLength(15);
+		IpConstraintConfig config = IpConstraintConfig.UNCONSTRAINED.withLength(lengthConfig);
+
+		assertTrue(config.length().isPresent());
+		assertEquals(lengthConfig, config.length().get());
 	}
 	
 	@Test

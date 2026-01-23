@@ -21,7 +21,9 @@ package net.luis.utils.io.codec.constraint_new.config;
 import net.luis.utils.util.Pair;
 import org.junit.jupiter.api.Test;
 
-import java.util.*;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
 import java.util.regex.Pattern;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -36,29 +38,29 @@ class StringConstraintConfigTest {
 	@Test
 	void constructWithNullEqualTo() {
 		assertThrows(NullPointerException.class, () -> new StringConstraintConfig(
-			null, Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(),
+			null, Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(),
 			Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(),
 			Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(),
 			Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(),
 			Optional.empty(), Optional.empty()
 		));
 	}
-	
+
 	@Test
 	void constructWithNullIn() {
 		assertThrows(NullPointerException.class, () -> new StringConstraintConfig(
-			Optional.empty(), null, Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(),
+			Optional.empty(), null, Optional.empty(), Optional.empty(), Optional.empty(),
 			Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(),
 			Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(),
 			Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(),
 			Optional.empty(), Optional.empty()
 		));
 	}
-	
+
 	@Test
 	void constructWithEmptyInSet() {
 		assertThrows(IllegalArgumentException.class, () -> new StringConstraintConfig(
-			Optional.empty(), Optional.of(Pair.of(Set.of(), false)), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(),
+			Optional.empty(), Optional.of(Pair.of(Set.of(), false)), Optional.empty(), Optional.empty(), Optional.empty(),
 			Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(),
 			Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(),
 			Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(),
@@ -83,13 +85,11 @@ class StringConstraintConfigTest {
 	
 	@Test
 	void constructWithEqualMinMaxExclusiveBound() {
-		assertThrows(IllegalArgumentException.class, () -> new StringConstraintConfig(
-			Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(),
+		// LengthConstraintConfig validates this internally
+		assertThrows(IllegalArgumentException.class, () -> new LengthConstraintConfig(
+			Optional.empty(), Optional.empty(),
 			Optional.of(Pair.of(5, false)), Optional.of(Pair.of(5, true)),
-			Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(),
-			Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(),
-			Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(),
-			Optional.empty(), Optional.empty()
+			Optional.empty()
 		));
 	}
 	
@@ -119,8 +119,7 @@ class StringConstraintConfigTest {
 		assertNotNull(config);
 		assertTrue(config.equalTo().isEmpty());
 		assertTrue(config.in().isEmpty());
-		assertTrue(config.minLength().isEmpty());
-		assertTrue(config.maxLength().isEmpty());
+		assertTrue(config.length().isEmpty());
 		assertTrue(config.matches("any string").isSuccess());
 	}
 	
@@ -159,35 +158,47 @@ class StringConstraintConfigTest {
 	@Test
 	void withMinLength() {
 		StringConstraintConfig config = StringConstraintConfig.UNCONSTRAINED.withMinLength(5);
-		assertTrue(config.minLength().isPresent());
-		assertEquals(5, config.minLength().get().getFirst());
-		assertTrue(config.minLength().get().getSecond());
+		assertTrue(config.length().isPresent());
+		assertTrue(config.length().get().min().isPresent());
+		assertEquals(5, config.length().get().min().get().getFirst());
+		assertTrue(config.length().get().min().get().getSecond());
 	}
-	
+
 	@Test
 	void withMaxLength() {
 		StringConstraintConfig config = StringConstraintConfig.UNCONSTRAINED.withMaxLength(10);
-		assertTrue(config.maxLength().isPresent());
-		assertEquals(10, config.maxLength().get().getFirst());
-		assertTrue(config.maxLength().get().getSecond());
+		assertTrue(config.length().isPresent());
+		assertTrue(config.length().get().max().isPresent());
+		assertEquals(10, config.length().get().max().get().getFirst());
+		assertTrue(config.length().get().max().get().getSecond());
 	}
-	
+
 	@Test
 	void withExactLength() {
 		StringConstraintConfig config = StringConstraintConfig.UNCONSTRAINED.withExactLength(7);
-		assertTrue(config.minLength().isPresent());
-		assertTrue(config.maxLength().isPresent());
-		assertEquals(7, config.minLength().get().getFirst());
-		assertEquals(7, config.maxLength().get().getFirst());
+		assertTrue(config.length().isPresent());
+		assertTrue(config.length().get().min().isPresent());
+		assertTrue(config.length().get().max().isPresent());
+		assertEquals(7, config.length().get().min().get().getFirst());
+		assertEquals(7, config.length().get().max().get().getFirst());
 	}
-	
+
 	@Test
 	void withLengthBetween() {
 		StringConstraintConfig config = StringConstraintConfig.UNCONSTRAINED.withLengthBetween(3, 8);
-		assertTrue(config.minLength().isPresent());
-		assertTrue(config.maxLength().isPresent());
-		assertEquals(3, config.minLength().get().getFirst());
-		assertEquals(8, config.maxLength().get().getFirst());
+		assertTrue(config.length().isPresent());
+		assertTrue(config.length().get().min().isPresent());
+		assertTrue(config.length().get().max().isPresent());
+		assertEquals(3, config.length().get().min().get().getFirst());
+		assertEquals(8, config.length().get().max().get().getFirst());
+	}
+
+	@Test
+	void withLength() {
+		LengthConstraintConfig lengthConfig = LengthConstraintConfig.UNCONSTRAINED.withMinLength(2).withMaxLength(10);
+		StringConstraintConfig config = StringConstraintConfig.UNCONSTRAINED.withLength(lengthConfig);
+		assertTrue(config.length().isPresent());
+		assertEquals(lengthConfig, config.length().get());
 	}
 	
 	@Test

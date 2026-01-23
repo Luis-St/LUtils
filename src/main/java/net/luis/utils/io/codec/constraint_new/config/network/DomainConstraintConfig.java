@@ -20,6 +20,7 @@ package net.luis.utils.io.codec.constraint_new.config.network;
 
 import net.luis.utils.io.codec.constraint_new.Constraint;
 import net.luis.utils.io.codec.constraint_new.config.ConstraintConfig;
+import net.luis.utils.io.codec.constraint_new.config.LengthConstraintConfig;
 import net.luis.utils.io.codec.constraint_new.config.matcher.ConstraintMatchers;
 import net.luis.utils.io.codec.constraint_new.config.matcher.NetworkMatchers;
 import net.luis.utils.io.codec.constraint_new.core.Unit;
@@ -43,8 +44,7 @@ import java.util.regex.Pattern;
  *
  * @param equalTo The equality constraint as a pair of (value, negated) where negated=false means equalTo and negated=true means notEqualTo
  * @param in The inclusion constraint as a pair of (values, negated) where negated=false means in and negated=true means notIn
- * @param minLength The minimum length constraint as a pair of (value, inclusive)
- * @param maxLength The maximum length constraint as a pair of (value, inclusive)
+ * @param length The length constraint configuration
  * @param startsWith The prefix constraint as a pair of (prefix, negated) where negated=false means startsWith and negated=true means notStartsWith
  * @param startsWithAny The multi-prefix constraint as a pair of (prefixes, negated) where negated=false means startsWithAny and negated=true means startsWithNone
  * @param contains The containment constraint as a pair of (substring, negated) where negated=false means contains and negated=true means notContains
@@ -62,8 +62,7 @@ import java.util.regex.Pattern;
 public record DomainConstraintConfig(
 	@NonNull Optional<Pair<String, Boolean>> equalTo,
 	@NonNull Optional<Pair<Set<String>, Boolean>> in,
-	@NonNull Optional<Pair<Integer, Boolean>> minLength,
-	@NonNull Optional<Pair<Integer, Boolean>> maxLength,
+	@NonNull Optional<LengthConstraintConfig> length,
 	@NonNull Optional<Pair<String, Boolean>> startsWith,
 	@NonNull Optional<Pair<Set<String>, Boolean>> startsWithAny,
 	@NonNull Optional<Pair<String, Boolean>> contains,
@@ -82,9 +81,9 @@ public record DomainConstraintConfig(
 	 * An unconstrained domain configuration with no constraints applied.<br>
 	 */
 	public static final DomainConstraintConfig UNCONSTRAINED = new DomainConstraintConfig(
-		Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(),
-		Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(),
-		Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty()
+		Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(),
+		Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(),
+		Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty()
 	);
 	
 	/**
@@ -92,8 +91,7 @@ public record DomainConstraintConfig(
 	 *
 	 * @param equalTo The equality constraint as a pair of (value, negated) where negated=false means equalTo and negated=true means notEqualTo
 	 * @param in The inclusion constraint as a pair of (values, negated) where negated=false means in and negated=true means notIn
-	 * @param minLength The minimum length constraint as a pair of (value, inclusive)
-	 * @param maxLength The maximum length constraint as a pair of (value, inclusive)
+	 * @param length The length constraint configuration
 	 * @param startsWith The prefix constraint as a pair of (prefix, negated) where negated=false means startsWith and negated=true means notStartsWith
 	 * @param startsWithAny The multi-prefix constraint as a pair of (prefixes, negated) where negated=false means startsWithAny and negated=true means startsWithNone
 	 * @param contains The containment constraint as a pair of (substring, negated) where negated=false means contains and negated=true means notContains
@@ -108,8 +106,6 @@ public record DomainConstraintConfig(
 	 * @param custom A custom constraint implementation
 	 * @throws NullPointerException If any of the optional fields is null
 	 * @throws IllegalArgumentException If the in constraint set is empty when present
-	 * @throws IllegalArgumentException If min length is greater than max length when both are present
-	 * @throws IllegalArgumentException If min and max length are equal but at least one bound is exclusive when both are present
 	 * @throws IllegalArgumentException If the starts with any set is empty when present
 	 * @throws IllegalArgumentException If the contains any set is empty when present
 	 * @throws IllegalArgumentException If the contains all set is empty when present
@@ -120,8 +116,7 @@ public record DomainConstraintConfig(
 	public DomainConstraintConfig {
 		Objects.requireNonNull(equalTo, "Optional for 'equal to' constraint must not be null");
 		Objects.requireNonNull(in, "Optional for 'in' constraint must not be null");
-		Objects.requireNonNull(minLength, "Optional for 'min length' constraint must not be null");
-		Objects.requireNonNull(maxLength, "Optional for 'max length' constraint must not be null");
+		Objects.requireNonNull(length, "Optional for 'length' constraint must not be null");
 		Objects.requireNonNull(startsWith, "Optional for 'starts with' constraint must not be null");
 		Objects.requireNonNull(startsWithAny, "Optional for 'starts with any' constraint must not be null");
 		Objects.requireNonNull(contains, "Optional for 'contains' constraint must not be null");
@@ -134,40 +129,31 @@ public record DomainConstraintConfig(
 		Objects.requireNonNull(rootDomain, "Optional for 'root domain' constraint must not be null");
 		Objects.requireNonNull(subDomain, "Optional for 'sub domain' constraint must not be null");
 		Objects.requireNonNull(custom, "Optional for 'custom' constraint must not be null");
-		
+
 		if (in.isPresent() && in.get().getFirst().isEmpty()) {
 			throw new IllegalArgumentException("In constraint set must not be empty when present");
 		}
-		
-		if (minLength.isPresent() && maxLength.isPresent()) {
-			if (minLength.get().getFirst().compareTo(maxLength.get().getFirst()) > 0) {
-				throw new IllegalArgumentException("Min must be less than or equal to max when both are present, but got " + minLength.get().getFirst() + " > " + maxLength.get().getFirst());
-			}
-			if (minLength.get().getFirst().compareTo(maxLength.get().getFirst()) == 0 && (!minLength.get().getSecond() || !maxLength.get().getSecond())) {
-				throw new IllegalArgumentException("Min and max are equal but at least one bound is exclusive when both are present");
-			}
-		}
-		
+
 		if (startsWithAny.isPresent() && startsWithAny.get().getFirst().isEmpty()) {
 			throw new IllegalArgumentException("Starts with any set must not be empty when present");
 		}
-		
+
 		if (containsAny.isPresent() && containsAny.get().getFirst().isEmpty()) {
 			throw new IllegalArgumentException("Contains any set must not be empty when present");
 		}
-		
+
 		if (containsAll.isPresent() && containsAll.get().isEmpty()) {
 			throw new IllegalArgumentException("Contains all set must not be empty when present");
 		}
-		
+
 		if (containsOnly.isPresent() && containsOnly.get().isEmpty()) {
 			throw new IllegalArgumentException("Contains only set must not be empty when present");
 		}
-		
+
 		if (endsWithAny.isPresent() && endsWithAny.get().getFirst().isEmpty()) {
 			throw new IllegalArgumentException("Ends with any set must not be empty when present");
 		}
-		
+
 		if (rootDomain.isPresent() && subDomain.isPresent()) {
 			throw new IllegalArgumentException("Both root domain and sub domain constraints cannot be present at the same time");
 		}
@@ -183,7 +169,7 @@ public record DomainConstraintConfig(
 	 */
 	public @NonNull DomainConstraintConfig withEqualTo(@NonNull String value) {
 		Objects.requireNonNull(value, "Value for 'equal to' constraint must not be null");
-		return new DomainConstraintConfig(Optional.of(Pair.of(value, false)), this.in, this.minLength, this.maxLength, this.startsWith, this.startsWithAny, this.contains, this.containsAny, this.containsAll, this.containsOnly, this.endsWith, this.endsWithAny, this.matches, this.rootDomain, this.subDomain, this.custom);
+		return new DomainConstraintConfig(Optional.of(Pair.of(value, false)), this.in, this.length, this.startsWith, this.startsWithAny, this.contains, this.containsAny, this.containsAll, this.containsOnly, this.endsWith, this.endsWithAny, this.matches, this.rootDomain, this.subDomain, this.custom);
 	}
 	
 	/**
@@ -194,7 +180,7 @@ public record DomainConstraintConfig(
 	 */
 	public @NonNull DomainConstraintConfig withNotEqualTo(@NonNull String value) {
 		Objects.requireNonNull(value, "Value for 'not equal to' constraint must not be null");
-		return new DomainConstraintConfig(Optional.of(Pair.of(value, true)), this.in, this.minLength, this.maxLength, this.startsWith, this.startsWithAny, this.contains, this.containsAny, this.containsAll, this.containsOnly, this.endsWith, this.endsWithAny, this.matches, this.rootDomain, this.subDomain, this.custom);
+		return new DomainConstraintConfig(Optional.of(Pair.of(value, true)), this.in, this.length, this.startsWith, this.startsWithAny, this.contains, this.containsAny, this.containsAll, this.containsOnly, this.endsWith, this.endsWithAny, this.matches, this.rootDomain, this.subDomain, this.custom);
 	}
 	
 	/**
@@ -205,7 +191,7 @@ public record DomainConstraintConfig(
 	 */
 	public @NonNull DomainConstraintConfig withIn(@NonNull Collection<String> values) {
 		Objects.requireNonNull(values, "Values for 'in' constraint must not be null");
-		return new DomainConstraintConfig(this.equalTo, Optional.of(Pair.of(Set.copyOf(values), false)), this.minLength, this.maxLength, this.startsWith, this.startsWithAny, this.contains, this.containsAny, this.containsAll, this.containsOnly, this.endsWith, this.endsWithAny, this.matches, this.rootDomain, this.subDomain, this.custom);
+		return new DomainConstraintConfig(this.equalTo, Optional.of(Pair.of(Set.copyOf(values), false)), this.length, this.startsWith, this.startsWithAny, this.contains, this.containsAny, this.containsAll, this.containsOnly, this.endsWith, this.endsWithAny, this.matches, this.rootDomain, this.subDomain, this.custom);
 	}
 	
 	/**
@@ -216,7 +202,7 @@ public record DomainConstraintConfig(
 	 */
 	public @NonNull DomainConstraintConfig withNotIn(@NonNull Collection<String> values) {
 		Objects.requireNonNull(values, "Values for 'not in' constraint must not be null");
-		return new DomainConstraintConfig(this.equalTo, Optional.of(Pair.of(Set.copyOf(values), true)), this.minLength, this.maxLength, this.startsWith, this.startsWithAny, this.contains, this.containsAny, this.containsAll, this.containsOnly, this.endsWith, this.endsWithAny, this.matches, this.rootDomain, this.subDomain, this.custom);
+		return new DomainConstraintConfig(this.equalTo, Optional.of(Pair.of(Set.copyOf(values), true)), this.length, this.startsWith, this.startsWithAny, this.contains, this.containsAny, this.containsAll, this.containsOnly, this.endsWith, this.endsWithAny, this.matches, this.rootDomain, this.subDomain, this.custom);
 	}
 	
 	/**
@@ -226,9 +212,10 @@ public record DomainConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull DomainConstraintConfig withMinLength(int minLength) {
-		return new DomainConstraintConfig(this.equalTo, this.in, Optional.of(Pair.of(minLength, true)), this.maxLength, this.startsWith, this.startsWithAny, this.contains, this.containsAny, this.containsAll, this.containsOnly, this.endsWith, this.endsWithAny, this.matches, this.rootDomain, this.subDomain, this.custom);
+		LengthConstraintConfig newLength = this.length.orElse(LengthConstraintConfig.UNCONSTRAINED).withMinLength(minLength);
+		return new DomainConstraintConfig(this.equalTo, this.in, Optional.of(newLength), this.startsWith, this.startsWithAny, this.contains, this.containsAny, this.containsAll, this.containsOnly, this.endsWith, this.endsWithAny, this.matches, this.rootDomain, this.subDomain, this.custom);
 	}
-	
+
 	/**
 	 * Creates a new config with the specified maximum length constraint (inclusive).<br>
 	 *
@@ -236,9 +223,10 @@ public record DomainConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull DomainConstraintConfig withMaxLength(int maxLength) {
-		return new DomainConstraintConfig(this.equalTo, this.in, this.minLength, Optional.of(Pair.of(maxLength, true)), this.startsWith, this.startsWithAny, this.contains, this.containsAny, this.containsAll, this.containsOnly, this.endsWith, this.endsWithAny, this.matches, this.rootDomain, this.subDomain, this.custom);
+		LengthConstraintConfig newLength = this.length.orElse(LengthConstraintConfig.UNCONSTRAINED).withMaxLength(maxLength);
+		return new DomainConstraintConfig(this.equalTo, this.in, Optional.of(newLength), this.startsWith, this.startsWithAny, this.contains, this.containsAny, this.containsAll, this.containsOnly, this.endsWith, this.endsWithAny, this.matches, this.rootDomain, this.subDomain, this.custom);
 	}
-	
+
 	/**
 	 * Creates a new config with the specified exact length constraint.<br>
 	 *
@@ -246,9 +234,10 @@ public record DomainConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull DomainConstraintConfig withExactLength(int exactLength) {
-		return new DomainConstraintConfig(this.equalTo, this.in, Optional.of(Pair.of(exactLength, true)), Optional.of(Pair.of(exactLength, true)), this.startsWith, this.startsWithAny, this.contains, this.containsAny, this.containsAll, this.containsOnly, this.endsWith, this.endsWithAny, this.matches, this.rootDomain, this.subDomain, this.custom);
+		LengthConstraintConfig newLength = this.length.orElse(LengthConstraintConfig.UNCONSTRAINED).withExactLength(exactLength);
+		return new DomainConstraintConfig(this.equalTo, this.in, Optional.of(newLength), this.startsWith, this.startsWithAny, this.contains, this.containsAny, this.containsAll, this.containsOnly, this.endsWith, this.endsWithAny, this.matches, this.rootDomain, this.subDomain, this.custom);
 	}
-	
+
 	/**
 	 * Creates a new config with the specified length range constraint (inclusive).<br>
 	 *
@@ -257,7 +246,23 @@ public record DomainConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull DomainConstraintConfig withLengthBetween(int minLength, int maxLength) {
-		return new DomainConstraintConfig(this.equalTo, this.in, Optional.of(Pair.of(minLength, true)), Optional.of(Pair.of(maxLength, true)), this.startsWith, this.startsWithAny, this.contains, this.containsAny, this.containsAll, this.containsOnly, this.endsWith, this.endsWithAny, this.matches, this.rootDomain, this.subDomain, this.custom);
+		LengthConstraintConfig newLength = this.length.orElse(LengthConstraintConfig.UNCONSTRAINED).withLengthBetween(minLength, maxLength);
+		return new DomainConstraintConfig(this.equalTo, this.in, Optional.of(newLength), this.startsWith, this.startsWithAny, this.contains, this.containsAny, this.containsAll, this.containsOnly, this.endsWith, this.endsWithAny, this.matches, this.rootDomain, this.subDomain, this.custom);
+	}
+
+	/**
+	 * Creates a new config with the specified length constraints.<br>
+	 * <p>
+	 *     This method applies the given {@link LengthConstraintConfig} to this config.
+	 * </p>
+	 *
+	 * @param lengthConfig The length constraint configuration to apply
+	 * @return A new config with the length constraints applied
+	 * @throws NullPointerException If the length config is null
+	 */
+	public @NonNull DomainConstraintConfig withLength(@NonNull LengthConstraintConfig lengthConfig) {
+		Objects.requireNonNull(lengthConfig, "Length config must not be null");
+		return new DomainConstraintConfig(this.equalTo, this.in, Optional.of(lengthConfig), this.startsWith, this.startsWithAny, this.contains, this.containsAny, this.containsAll, this.containsOnly, this.endsWith, this.endsWithAny, this.matches, this.rootDomain, this.subDomain, this.custom);
 	}
 	
 	/**
@@ -268,7 +273,7 @@ public record DomainConstraintConfig(
 	 */
 	public @NonNull DomainConstraintConfig withStartsWith(@NonNull String prefix) {
 		Objects.requireNonNull(prefix, "Prefix for 'starts with' constraint must not be null");
-		return new DomainConstraintConfig(this.equalTo, this.in, this.minLength, this.maxLength, Optional.of(Pair.of(prefix, false)), this.startsWithAny, this.contains, this.containsAny, this.containsAll, this.containsOnly, this.endsWith, this.endsWithAny, this.matches, this.rootDomain, this.subDomain, this.custom);
+		return new DomainConstraintConfig(this.equalTo, this.in, this.length, Optional.of(Pair.of(prefix, false)), this.startsWithAny, this.contains, this.containsAny, this.containsAll, this.containsOnly, this.endsWith, this.endsWithAny, this.matches, this.rootDomain, this.subDomain, this.custom);
 	}
 	
 	/**
@@ -279,7 +284,7 @@ public record DomainConstraintConfig(
 	 */
 	public @NonNull DomainConstraintConfig withNotStartsWith(@NonNull String prefix) {
 		Objects.requireNonNull(prefix, "Prefix for 'not starts with' constraint must not be null");
-		return new DomainConstraintConfig(this.equalTo, this.in, this.minLength, this.maxLength, Optional.of(Pair.of(prefix, true)), this.startsWithAny, this.contains, this.containsAny, this.containsAll, this.containsOnly, this.endsWith, this.endsWithAny, this.matches, this.rootDomain, this.subDomain, this.custom);
+		return new DomainConstraintConfig(this.equalTo, this.in, this.length, Optional.of(Pair.of(prefix, true)), this.startsWithAny, this.contains, this.containsAny, this.containsAll, this.containsOnly, this.endsWith, this.endsWithAny, this.matches, this.rootDomain, this.subDomain, this.custom);
 	}
 	
 	/**
@@ -290,7 +295,7 @@ public record DomainConstraintConfig(
 	 */
 	public @NonNull DomainConstraintConfig withStartsWithAny(@NonNull Collection<String> prefixes) {
 		Objects.requireNonNull(prefixes, "Prefixes for 'starts with any' constraint must not be null");
-		return new DomainConstraintConfig(this.equalTo, this.in, this.minLength, this.maxLength, this.startsWith, Optional.of(Pair.of(Set.copyOf(prefixes), false)), this.contains, this.containsAny, this.containsAll, this.containsOnly, this.endsWith, this.endsWithAny, this.matches, this.rootDomain, this.subDomain, this.custom);
+		return new DomainConstraintConfig(this.equalTo, this.in, this.length, this.startsWith, Optional.of(Pair.of(Set.copyOf(prefixes), false)), this.contains, this.containsAny, this.containsAll, this.containsOnly, this.endsWith, this.endsWithAny, this.matches, this.rootDomain, this.subDomain, this.custom);
 	}
 	
 	/**
@@ -301,7 +306,7 @@ public record DomainConstraintConfig(
 	 */
 	public @NonNull DomainConstraintConfig withStartsWithNone(@NonNull Collection<String> prefixes) {
 		Objects.requireNonNull(prefixes, "Prefixes for 'starts with none' constraint must not be null");
-		return new DomainConstraintConfig(this.equalTo, this.in, this.minLength, this.maxLength, this.startsWith, Optional.of(Pair.of(Set.copyOf(prefixes), true)), this.contains, this.containsAny, this.containsAll, this.containsOnly, this.endsWith, this.endsWithAny, this.matches, this.rootDomain, this.subDomain, this.custom);
+		return new DomainConstraintConfig(this.equalTo, this.in, this.length, this.startsWith, Optional.of(Pair.of(Set.copyOf(prefixes), true)), this.contains, this.containsAny, this.containsAll, this.containsOnly, this.endsWith, this.endsWithAny, this.matches, this.rootDomain, this.subDomain, this.custom);
 	}
 	
 	/**
@@ -312,7 +317,7 @@ public record DomainConstraintConfig(
 	 */
 	public @NonNull DomainConstraintConfig withContains(@NonNull String substring) {
 		Objects.requireNonNull(substring, "Substring for 'contains' constraint must not be null");
-		return new DomainConstraintConfig(this.equalTo, this.in, this.minLength, this.maxLength, this.startsWith, this.startsWithAny, Optional.of(Pair.of(substring, false)), this.containsAny, this.containsAll, this.containsOnly, this.endsWith, this.endsWithAny, this.matches, this.rootDomain, this.subDomain, this.custom);
+		return new DomainConstraintConfig(this.equalTo, this.in, this.length, this.startsWith, this.startsWithAny, Optional.of(Pair.of(substring, false)), this.containsAny, this.containsAll, this.containsOnly, this.endsWith, this.endsWithAny, this.matches, this.rootDomain, this.subDomain, this.custom);
 	}
 	
 	/**
@@ -323,7 +328,7 @@ public record DomainConstraintConfig(
 	 */
 	public @NonNull DomainConstraintConfig withNotContains(@NonNull String substring) {
 		Objects.requireNonNull(substring, "Substring for 'not contains' constraint must not be null");
-		return new DomainConstraintConfig(this.equalTo, this.in, this.minLength, this.maxLength, this.startsWith, this.startsWithAny, Optional.of(Pair.of(substring, true)), this.containsAny, this.containsAll, this.containsOnly, this.endsWith, this.endsWithAny, this.matches, this.rootDomain, this.subDomain, this.custom);
+		return new DomainConstraintConfig(this.equalTo, this.in, this.length, this.startsWith, this.startsWithAny, Optional.of(Pair.of(substring, true)), this.containsAny, this.containsAll, this.containsOnly, this.endsWith, this.endsWithAny, this.matches, this.rootDomain, this.subDomain, this.custom);
 	}
 	
 	/**
@@ -334,7 +339,7 @@ public record DomainConstraintConfig(
 	 */
 	public @NonNull DomainConstraintConfig withContainsAny(@NonNull Collection<String> substrings) {
 		Objects.requireNonNull(substrings, "Substrings for 'contains any' constraint must not be null");
-		return new DomainConstraintConfig(this.equalTo, this.in, this.minLength, this.maxLength, this.startsWith, this.startsWithAny, this.contains, Optional.of(Pair.of(Set.copyOf(substrings), false)), this.containsAll, this.containsOnly, this.endsWith, this.endsWithAny, this.matches, this.rootDomain, this.subDomain, this.custom);
+		return new DomainConstraintConfig(this.equalTo, this.in, this.length, this.startsWith, this.startsWithAny, this.contains, Optional.of(Pair.of(Set.copyOf(substrings), false)), this.containsAll, this.containsOnly, this.endsWith, this.endsWithAny, this.matches, this.rootDomain, this.subDomain, this.custom);
 	}
 	
 	/**
@@ -345,7 +350,7 @@ public record DomainConstraintConfig(
 	 */
 	public @NonNull DomainConstraintConfig withContainsNone(@NonNull Collection<String> substrings) {
 		Objects.requireNonNull(substrings, "Substrings for 'contains none' constraint must not be null");
-		return new DomainConstraintConfig(this.equalTo, this.in, this.minLength, this.maxLength, this.startsWith, this.startsWithAny, this.contains, Optional.of(Pair.of(Set.copyOf(substrings), true)), this.containsAll, this.containsOnly, this.endsWith, this.endsWithAny, this.matches, this.rootDomain, this.subDomain, this.custom);
+		return new DomainConstraintConfig(this.equalTo, this.in, this.length, this.startsWith, this.startsWithAny, this.contains, Optional.of(Pair.of(Set.copyOf(substrings), true)), this.containsAll, this.containsOnly, this.endsWith, this.endsWithAny, this.matches, this.rootDomain, this.subDomain, this.custom);
 	}
 	
 	/**
@@ -356,7 +361,7 @@ public record DomainConstraintConfig(
 	 */
 	public @NonNull DomainConstraintConfig withContainsAll(@NonNull Collection<String> substrings) {
 		Objects.requireNonNull(substrings, "Substrings for 'contains all' constraint must not be null");
-		return new DomainConstraintConfig(this.equalTo, this.in, this.minLength, this.maxLength, this.startsWith, this.startsWithAny, this.contains, this.containsAny, Optional.of(Set.copyOf(substrings)), this.containsOnly, this.endsWith, this.endsWithAny, this.matches, this.rootDomain, this.subDomain, this.custom);
+		return new DomainConstraintConfig(this.equalTo, this.in, this.length, this.startsWith, this.startsWithAny, this.contains, this.containsAny, Optional.of(Set.copyOf(substrings)), this.containsOnly, this.endsWith, this.endsWithAny, this.matches, this.rootDomain, this.subDomain, this.custom);
 	}
 	
 	/**
@@ -367,7 +372,7 @@ public record DomainConstraintConfig(
 	 */
 	public @NonNull DomainConstraintConfig withContainsOnly(@NonNull Collection<String> substrings) {
 		Objects.requireNonNull(substrings, "Substrings for 'contains only' constraint must not be null");
-		return new DomainConstraintConfig(this.equalTo, this.in, this.minLength, this.maxLength, this.startsWith, this.startsWithAny, this.contains, this.containsAny, this.containsAll, Optional.of(Set.copyOf(substrings)), this.endsWith, this.endsWithAny, this.matches, this.rootDomain, this.subDomain, this.custom);
+		return new DomainConstraintConfig(this.equalTo, this.in, this.length, this.startsWith, this.startsWithAny, this.contains, this.containsAny, this.containsAll, Optional.of(Set.copyOf(substrings)), this.endsWith, this.endsWithAny, this.matches, this.rootDomain, this.subDomain, this.custom);
 	}
 	
 	/**
@@ -378,7 +383,7 @@ public record DomainConstraintConfig(
 	 */
 	public @NonNull DomainConstraintConfig withEndsWith(@NonNull String suffix) {
 		Objects.requireNonNull(suffix, "Suffix for 'ends with' constraint must not be null");
-		return new DomainConstraintConfig(this.equalTo, this.in, this.minLength, this.maxLength, this.startsWith, this.startsWithAny, this.contains, this.containsAny, this.containsAll, this.containsOnly, Optional.of(Pair.of(suffix, false)), this.endsWithAny, this.matches, this.rootDomain, this.subDomain, this.custom);
+		return new DomainConstraintConfig(this.equalTo, this.in, this.length, this.startsWith, this.startsWithAny, this.contains, this.containsAny, this.containsAll, this.containsOnly, Optional.of(Pair.of(suffix, false)), this.endsWithAny, this.matches, this.rootDomain, this.subDomain, this.custom);
 	}
 	
 	/**
@@ -389,7 +394,7 @@ public record DomainConstraintConfig(
 	 */
 	public @NonNull DomainConstraintConfig withNotEndsWith(@NonNull String suffix) {
 		Objects.requireNonNull(suffix, "Suffix for 'not ends with' constraint must not be null");
-		return new DomainConstraintConfig(this.equalTo, this.in, this.minLength, this.maxLength, this.startsWith, this.startsWithAny, this.contains, this.containsAny, this.containsAll, this.containsOnly, Optional.of(Pair.of(suffix, true)), this.endsWithAny, this.matches, this.rootDomain, this.subDomain, this.custom);
+		return new DomainConstraintConfig(this.equalTo, this.in, this.length, this.startsWith, this.startsWithAny, this.contains, this.containsAny, this.containsAll, this.containsOnly, Optional.of(Pair.of(suffix, true)), this.endsWithAny, this.matches, this.rootDomain, this.subDomain, this.custom);
 	}
 	
 	/**
@@ -400,7 +405,7 @@ public record DomainConstraintConfig(
 	 */
 	public @NonNull DomainConstraintConfig withEndsWithAny(@NonNull Collection<String> suffixes) {
 		Objects.requireNonNull(suffixes, "Suffixes for 'ends with any' constraint must not be null");
-		return new DomainConstraintConfig(this.equalTo, this.in, this.minLength, this.maxLength, this.startsWith, this.startsWithAny, this.contains, this.containsAny, this.containsAll, this.containsOnly, this.endsWith, Optional.of(Pair.of(Set.copyOf(suffixes), false)), this.matches, this.rootDomain, this.subDomain, this.custom);
+		return new DomainConstraintConfig(this.equalTo, this.in, this.length, this.startsWith, this.startsWithAny, this.contains, this.containsAny, this.containsAll, this.containsOnly, this.endsWith, Optional.of(Pair.of(Set.copyOf(suffixes), false)), this.matches, this.rootDomain, this.subDomain, this.custom);
 	}
 	
 	/**
@@ -411,7 +416,7 @@ public record DomainConstraintConfig(
 	 */
 	public @NonNull DomainConstraintConfig withEndsWithNone(@NonNull Collection<String> suffixes) {
 		Objects.requireNonNull(suffixes, "Suffixes for 'ends with none' constraint must not be null");
-		return new DomainConstraintConfig(this.equalTo, this.in, this.minLength, this.maxLength, this.startsWith, this.startsWithAny, this.contains, this.containsAny, this.containsAll, this.containsOnly, this.endsWith, Optional.of(Pair.of(Set.copyOf(suffixes), true)), this.matches, this.rootDomain, this.subDomain, this.custom);
+		return new DomainConstraintConfig(this.equalTo, this.in, this.length, this.startsWith, this.startsWithAny, this.contains, this.containsAny, this.containsAll, this.containsOnly, this.endsWith, Optional.of(Pair.of(Set.copyOf(suffixes), true)), this.matches, this.rootDomain, this.subDomain, this.custom);
 	}
 	
 	/**
@@ -422,7 +427,7 @@ public record DomainConstraintConfig(
 	 */
 	public @NonNull DomainConstraintConfig withMatches(@NonNull String regex) {
 		Objects.requireNonNull(regex, "Regex for 'matches' constraint must not be null");
-		return new DomainConstraintConfig(this.equalTo, this.in, this.minLength, this.maxLength, this.startsWith, this.startsWithAny, this.contains, this.containsAny, this.containsAll, this.containsOnly, this.endsWith, this.endsWithAny, Optional.of(Pair.of(Pattern.compile(regex), false)), this.rootDomain, this.subDomain, this.custom);
+		return new DomainConstraintConfig(this.equalTo, this.in, this.length, this.startsWith, this.startsWithAny, this.contains, this.containsAny, this.containsAll, this.containsOnly, this.endsWith, this.endsWithAny, Optional.of(Pair.of(Pattern.compile(regex), false)), this.rootDomain, this.subDomain, this.custom);
 	}
 	
 	/**
@@ -433,7 +438,7 @@ public record DomainConstraintConfig(
 	 */
 	public @NonNull DomainConstraintConfig withMatches(@NonNull Pattern pattern) {
 		Objects.requireNonNull(pattern, "Pattern for 'matches' constraint must not be null");
-		return new DomainConstraintConfig(this.equalTo, this.in, this.minLength, this.maxLength, this.startsWith, this.startsWithAny, this.contains, this.containsAny, this.containsAll, this.containsOnly, this.endsWith, this.endsWithAny, Optional.of(Pair.of(pattern, false)), this.rootDomain, this.subDomain, this.custom);
+		return new DomainConstraintConfig(this.equalTo, this.in, this.length, this.startsWith, this.startsWithAny, this.contains, this.containsAny, this.containsAll, this.containsOnly, this.endsWith, this.endsWithAny, Optional.of(Pair.of(pattern, false)), this.rootDomain, this.subDomain, this.custom);
 	}
 	
 	/**
@@ -444,7 +449,7 @@ public record DomainConstraintConfig(
 	 */
 	public @NonNull DomainConstraintConfig withNotMatches(@NonNull String regex) {
 		Objects.requireNonNull(regex, "Regex for 'not matches' constraint must not be null");
-		return new DomainConstraintConfig(this.equalTo, this.in, this.minLength, this.maxLength, this.startsWith, this.startsWithAny, this.contains, this.containsAny, this.containsAll, this.containsOnly, this.endsWith, this.endsWithAny, Optional.of(Pair.of(Pattern.compile(regex), true)), this.rootDomain, this.subDomain, this.custom);
+		return new DomainConstraintConfig(this.equalTo, this.in, this.length, this.startsWith, this.startsWithAny, this.contains, this.containsAny, this.containsAll, this.containsOnly, this.endsWith, this.endsWithAny, Optional.of(Pair.of(Pattern.compile(regex), true)), this.rootDomain, this.subDomain, this.custom);
 	}
 	
 	/**
@@ -455,7 +460,7 @@ public record DomainConstraintConfig(
 	 */
 	public @NonNull DomainConstraintConfig withNotMatches(@NonNull Pattern pattern) {
 		Objects.requireNonNull(pattern, "Pattern for 'not matches' constraint must not be null");
-		return new DomainConstraintConfig(this.equalTo, this.in, this.minLength, this.maxLength, this.startsWith, this.startsWithAny, this.contains, this.containsAny, this.containsAll, this.containsOnly, this.endsWith, this.endsWithAny, Optional.of(Pair.of(pattern, true)), this.rootDomain, this.subDomain, this.custom);
+		return new DomainConstraintConfig(this.equalTo, this.in, this.length, this.startsWith, this.startsWithAny, this.contains, this.containsAny, this.containsAll, this.containsOnly, this.endsWith, this.endsWithAny, Optional.of(Pair.of(pattern, true)), this.rootDomain, this.subDomain, this.custom);
 	}
 	
 	/**
@@ -464,7 +469,7 @@ public record DomainConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull DomainConstraintConfig withRootDomain() {
-		return new DomainConstraintConfig(this.equalTo, this.in, this.minLength, this.maxLength, this.startsWith, this.startsWithAny, this.contains, this.containsAny, this.containsAll, this.containsOnly, this.endsWith, this.endsWithAny, this.matches, Optional.of(Unit.INSTANCE), Optional.empty(), this.custom);
+		return new DomainConstraintConfig(this.equalTo, this.in, this.length, this.startsWith, this.startsWithAny, this.contains, this.containsAny, this.containsAll, this.containsOnly, this.endsWith, this.endsWithAny, this.matches, Optional.of(Unit.INSTANCE), Optional.empty(), this.custom);
 	}
 	
 	/**
@@ -473,7 +478,7 @@ public record DomainConstraintConfig(
 	 * @return A new config with the constraint applied
 	 */
 	public @NonNull DomainConstraintConfig withSubDomain() {
-		return new DomainConstraintConfig(this.equalTo, this.in, this.minLength, this.maxLength, this.startsWith, this.startsWithAny, this.contains, this.containsAny, this.containsAll, this.containsOnly, this.endsWith, this.endsWithAny, this.matches, Optional.empty(), Optional.of(Unit.INSTANCE), this.custom);
+		return new DomainConstraintConfig(this.equalTo, this.in, this.length, this.startsWith, this.startsWithAny, this.contains, this.containsAny, this.containsAll, this.containsOnly, this.endsWith, this.endsWithAny, this.matches, Optional.empty(), Optional.of(Unit.INSTANCE), this.custom);
 	}
 	
 	/**
@@ -484,7 +489,7 @@ public record DomainConstraintConfig(
 	 */
 	public @NonNull DomainConstraintConfig withCustom(@NonNull Constraint<String> constraint) {
 		Objects.requireNonNull(constraint, "Custom constraint must not be null");
-		return new DomainConstraintConfig(this.equalTo, this.in, this.minLength, this.maxLength, this.startsWith, this.startsWithAny, this.contains, this.containsAny, this.containsAll, this.containsOnly, this.endsWith, this.endsWithAny, this.matches, this.rootDomain, this.subDomain, Optional.of(constraint));
+		return new DomainConstraintConfig(this.equalTo, this.in, this.length, this.startsWith, this.startsWithAny, this.contains, this.containsAny, this.containsAll, this.containsOnly, this.endsWith, this.endsWithAny, this.matches, this.rootDomain, this.subDomain, Optional.of(constraint));
 	}
 	//endregion
 	
@@ -495,7 +500,7 @@ public record DomainConstraintConfig(
 		return ConstraintMatchers.allOf(
 			() -> ConstraintMatchers.matchEqualTo(value, this.equalTo),
 			() -> ConstraintMatchers.matchIn(value, this.in),
-			() -> ConstraintMatchers.matchRange(value.length(), this.minLength, this.maxLength),
+			() -> ConstraintMatchers.matchExtractedValue(value, this.length, String::length, "Length"),
 			() -> ConstraintMatchers.matchStartsWith(value, this.startsWith),
 			() -> ConstraintMatchers.matchStartsWithAny(value, this.startsWithAny),
 			() -> ConstraintMatchers.matchContains(value, this.contains),

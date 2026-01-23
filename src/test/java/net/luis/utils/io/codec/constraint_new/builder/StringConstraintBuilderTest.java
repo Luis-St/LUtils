@@ -49,10 +49,11 @@ class StringConstraintBuilderTest {
 		StringConstraintConfig initialConfig = StringConstraintConfig.UNCONSTRAINED.withMinLength(5);
 		StringConstraintBuilder builder = new StringConstraintBuilder(initialConfig);
 		StringConstraintConfig config = builder.build();
-		
+
 		assertNotNull(config);
 		assertEquals(initialConfig, config);
-		assertTrue(config.minLength().isPresent());
+		assertTrue(config.length().isPresent());
+		assertTrue(config.length().get().min().isPresent());
 	}
 	
 	@Test
@@ -196,34 +197,57 @@ class StringConstraintBuilderTest {
 	void minLengthReturnsBuilder() {
 		StringConstraintBuilder builder = new StringConstraintBuilder();
 		assertSame(builder, builder.minLength(5));
-		assertTrue(builder.build().minLength().isPresent());
+		assertTrue(builder.build().length().isPresent());
+		assertTrue(builder.build().length().get().min().isPresent());
 	}
-	
+
 	@Test
 	void maxLengthReturnsBuilder() {
 		StringConstraintBuilder builder = new StringConstraintBuilder();
 		assertSame(builder, builder.maxLength(100));
-		assertTrue(builder.build().maxLength().isPresent());
+		assertTrue(builder.build().length().isPresent());
+		assertTrue(builder.build().length().get().max().isPresent());
 	}
-	
+
 	@Test
 	void exactLengthReturnsBuilder() {
 		StringConstraintBuilder builder = new StringConstraintBuilder();
 		assertSame(builder, builder.exactLength(10));
-		
+
 		StringConstraintConfig config = builder.build();
-		assertTrue(config.minLength().isPresent());
-		assertTrue(config.maxLength().isPresent());
+		assertTrue(config.length().isPresent());
+		assertTrue(config.length().get().min().isPresent());
+		assertTrue(config.length().get().max().isPresent());
 	}
-	
+
 	@Test
 	void lengthBetweenReturnsBuilder() {
 		StringConstraintBuilder builder = new StringConstraintBuilder();
 		assertSame(builder, builder.lengthBetween(5, 20));
-		
+
 		StringConstraintConfig config = builder.build();
-		assertTrue(config.minLength().isPresent());
-		assertTrue(config.maxLength().isPresent());
+		assertTrue(config.length().isPresent());
+		assertTrue(config.length().get().min().isPresent());
+		assertTrue(config.length().get().max().isPresent());
+	}
+
+	@Test
+	void lengthReturnsBuilder() {
+		StringConstraintBuilder builder = new StringConstraintBuilder();
+		assertSame(builder, builder.length(l -> l.minLength(3).maxLength(10)));
+
+		StringConstraintConfig config = builder.build();
+		assertTrue(config.length().isPresent());
+		assertTrue(config.length().get().min().isPresent());
+		assertTrue(config.length().get().max().isPresent());
+		assertEquals(3, config.length().get().min().get().getFirst());
+		assertEquals(10, config.length().get().max().get().getFirst());
+	}
+
+	@Test
+	void lengthWithNullBuilder() {
+		StringConstraintBuilder builder = new StringConstraintBuilder();
+		assertThrows(NullPointerException.class, () -> builder.length(null));
 	}
 	
 	@Test
@@ -520,19 +544,20 @@ class StringConstraintBuilderTest {
 	void buildReturnsCorrectConfig() {
 		StringConstraintBuilder builder = new StringConstraintBuilder();
 		builder.minLength(5).maxLength(100).startsWith("test");
-		
+
 		StringConstraintConfig config = builder.build();
-		
+
 		assertNotNull(config);
-		assertTrue(config.minLength().isPresent());
-		assertTrue(config.maxLength().isPresent());
+		assertTrue(config.length().isPresent());
+		assertTrue(config.length().get().min().isPresent());
+		assertTrue(config.length().get().max().isPresent());
 		assertTrue(config.startsWith().isPresent());
 	}
-	
+
 	@Test
 	void methodChainingWorks() {
 		StringConstraintBuilder builder = new StringConstraintBuilder();
-		
+
 		StringConstraintConfig config = builder
 			.minLength(5)
 			.maxLength(100)
@@ -540,10 +565,11 @@ class StringConstraintBuilderTest {
 			.startsWith("test")
 			.endsWith(".txt")
 			.build();
-		
+
 		assertNotNull(config);
-		assertTrue(config.minLength().isPresent());
-		assertTrue(config.maxLength().isPresent());
+		assertTrue(config.length().isPresent());
+		assertTrue(config.length().get().min().isPresent());
+		assertTrue(config.length().get().max().isPresent());
 		assertTrue(config.notBlank().isPresent());
 		assertTrue(config.startsWith().isPresent());
 		assertTrue(config.endsWith().isPresent());

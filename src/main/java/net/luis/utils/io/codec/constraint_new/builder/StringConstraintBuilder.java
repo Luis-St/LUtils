@@ -20,6 +20,7 @@ package net.luis.utils.io.codec.constraint_new.builder;
 
 import net.luis.utils.io.codec.constraint_new.Constraint;
 import net.luis.utils.io.codec.constraint_new.StringConstraint;
+import net.luis.utils.io.codec.constraint_new.config.LengthConstraintConfig;
 import net.luis.utils.io.codec.constraint_new.config.StringConstraintConfig;
 import org.jspecify.annotations.NonNull;
 
@@ -158,7 +159,27 @@ public class StringConstraintBuilder implements StringConstraint<StringConstrain
 		this.config = this.config.withLengthBetween(minLength, maxLength);
 		return this;
 	}
-	
+
+	/**
+	 * Applies length constraints to the string using a builder.<br>
+	 * <p>
+	 *     This method provides a fluent API for configuring length constraints on strings.<br>
+	 *     The builder allows setting minimum length, maximum length, exact length, or length ranges.
+	 * </p>
+	 *
+	 * @param builder The builder function to configure length constraints
+	 * @return This builder for method chaining
+	 * @throws NullPointerException If the builder is null
+	 */
+	public @NonNull StringConstraintBuilder length(@NonNull UnaryOperator<LengthConstraintBuilder> builder) {
+		Objects.requireNonNull(builder, "Builder must not be null");
+
+		LengthConstraintBuilder lengthBuilder = new LengthConstraintBuilder();
+		builder.apply(lengthBuilder);
+		this.config = this.config.withLength(lengthBuilder.build());
+		return this;
+	}
+
 	@Override
 	public @NonNull StringConstraintBuilder startsWith(@NonNull String prefix) {
 		this.config = this.config.withStartsWith(prefix);

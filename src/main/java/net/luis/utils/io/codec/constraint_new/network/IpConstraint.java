@@ -20,6 +20,7 @@ package net.luis.utils.io.codec.constraint_new.network;
 
 import net.luis.utils.io.codec.constraint_new.CharSequenceConstraint;
 import net.luis.utils.io.codec.constraint_new.builder.EnumConstraintBuilder;
+import net.luis.utils.io.codec.constraint_new.builder.LengthConstraintBuilder;
 import net.luis.utils.io.codec.constraint_new.core.IpAddressType;
 import net.luis.utils.io.codec.constraint_new.core.IpVersion;
 import org.jspecify.annotations.NonNull;
@@ -84,6 +85,20 @@ public interface IpConstraint<T, C> extends CharSequenceConstraint<T, C> {
 	 * @see #ipv6()
 	 */
 	@NonNull C ipVersion(@NonNull UnaryOperator<EnumConstraintBuilder<IpVersion>> builder);
+
+	/**
+	 * Applies length constraints to the IP address using a builder.<br>
+	 * <p>
+	 *     This method provides a fluent API for configuring length constraints on IP addresses.<br>
+	 *     The builder allows setting minimum length, maximum length, exact length, or length ranges.
+	 * </p>
+	 *
+	 * @param builder The builder function to configure length constraints
+	 * @return A new type with the applied length constraints
+	 * @throws NullPointerException If the builder is null
+	 * @see LengthConstraintBuilder
+	 */
+	@NonNull C length(@NonNull UnaryOperator<LengthConstraintBuilder> builder);
 	
 	/**
 	 * Applies a public IP type constraint.<br>
