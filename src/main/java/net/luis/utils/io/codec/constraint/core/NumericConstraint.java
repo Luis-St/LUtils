@@ -16,7 +16,7 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-package net.luis.utils.io.codec.constraint_new.numeric;
+package net.luis.utils.io.codec.constraint.core;
 
 import net.luis.utils.io.codec.constraint_new.SignedConstraint;
 import org.jspecify.annotations.NonNull;

@@ -19,8 +19,8 @@
 package net.luis.utils.io.codec.types.primitive.numeric;
 
 import net.luis.utils.io.codec.AbstractCodec;
-import net.luis.utils.io.codec.constraint_new.config.numeric.BigDecimalConstraintConfig;
-import net.luis.utils.io.codec.constraint_new.numeric.BigDecimalConstraint;
+import net.luis.utils.io.codec.constraint.config.numeric.BigDecimalConstraintConfig;
+import net.luis.utils.io.codec.constraint.merged.numeric.BigDecimalConstraint;
 import net.luis.utils.io.codec.provider.TypeProvider;
 import net.luis.utils.util.result.Result;
 import org.jspecify.annotations.NonNull;

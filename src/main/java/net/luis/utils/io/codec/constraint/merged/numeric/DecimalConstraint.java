@@ -16,11 +16,12 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-package net.luis.utils.io.codec.constraint_new.numeric;
+package net.luis.utils.io.codec.constraint.merged.numeric;
 
+import net.luis.utils.io.codec.constraint.core.NumericConstraint;
 import net.luis.utils.io.codec.constraint_new.ApplicableConstraint;
 import net.luis.utils.io.codec.constraint_new.Constraint;
-import net.luis.utils.io.codec.constraint_new.config.numeric.DecimalConstraintConfig;
+import net.luis.utils.io.codec.constraint.config.numeric.DecimalConstraintConfig;
 import org.jspecify.annotations.NonNull;
 
 import java.util.Collection;
