@@ -18,10 +18,10 @@
 
 package net.luis.utils.io.codec.constraint_new.network;
 
-import net.luis.utils.io.codec.constraint_new.MapConstraint;
+import net.luis.utils.io.codec.constraint.merged.collection.MapConstraint;
 import net.luis.utils.io.codec.constraint_new.builder.SizeConstraintBuilder;
 import net.luis.utils.io.codec.constraint_new.builder.StringConstraintBuilder;
-import net.luis.utils.io.codec.constraint_new.config.MapConstraintConfig;
+import net.luis.utils.io.codec.constraint.config.collection.MapConstraintConfig;
 import org.jspecify.annotations.NonNull;
 
 import java.util.List;

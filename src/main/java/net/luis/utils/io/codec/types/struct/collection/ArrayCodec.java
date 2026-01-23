@@ -19,8 +19,8 @@
 package net.luis.utils.io.codec.types.struct.collection;
 
 import net.luis.utils.io.codec.*;
-import net.luis.utils.io.codec.constraint_new.ArrayConstraint;
-import net.luis.utils.io.codec.constraint_new.config.ArrayConstraintConfig;
+import net.luis.utils.io.codec.constraint.merged.collection.ArrayConstraint;
+import net.luis.utils.io.codec.constraint.config.collection.ArrayConstraintConfig;
 import net.luis.utils.io.codec.provider.TypeProvider;
 import net.luis.utils.util.result.Result;
 import org.jspecify.annotations.NonNull;

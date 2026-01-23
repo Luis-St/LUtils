@@ -16,10 +16,11 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-package net.luis.utils.io.codec.constraint_new;
+package net.luis.utils.io.codec.constraint.merged.collection;
 
+import net.luis.utils.io.codec.constraint_new.*;
 import net.luis.utils.io.codec.constraint_new.builder.SizeConstraintBuilder;
-import net.luis.utils.io.codec.constraint_new.config.MapConstraintConfig;
+import net.luis.utils.io.codec.constraint.config.collection.MapConstraintConfig;
 import org.jspecify.annotations.NonNull;
 
 import java.util.*;
@@ -27,12 +28,6 @@ import java.util.function.UnaryOperator;
 
 /**
  * Constraint interface for map types that provides key-based validation operations.<br>
- * <p>
- *     This interface extends {@link SizeConstraint} with methods for constraining maps based on
- *     required, forbidden, and allowed keys.<br>
- *     It allows validation of map structure by specifying which keys must be present,
- *     which keys must not be present, and which keys are the only ones allowed.
- * </p>
  *
  * @author Luis-St
  *
