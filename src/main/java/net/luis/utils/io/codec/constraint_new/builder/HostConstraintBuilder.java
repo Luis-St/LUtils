@@ -19,8 +19,8 @@
 package net.luis.utils.io.codec.constraint_new.builder;
 
 import net.luis.utils.io.codec.constraint_new.Constraint;
-import net.luis.utils.io.codec.constraint_new.config.network.HostConstraintConfig;
-import net.luis.utils.io.codec.constraint_new.network.HostConstraint;
+import net.luis.utils.io.codec.constraint.config.io.HostConstraintConfig;
+import net.luis.utils.io.codec.constraint.merged.io.HostConstraint;
 import org.jspecify.annotations.NonNull;
 
 import java.util.Collection;

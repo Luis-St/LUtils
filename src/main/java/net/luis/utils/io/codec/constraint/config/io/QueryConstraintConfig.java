@@ -16,13 +16,12 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-package net.luis.utils.io.codec.constraint_new.config.network;
+package net.luis.utils.io.codec.constraint.config.io;
 
 import net.luis.utils.io.codec.constraint.config.StringConstraintConfig;
 import net.luis.utils.io.codec.constraint_new.Constraint;
 import net.luis.utils.io.codec.constraint_new.config.ConstraintConfig;
 import net.luis.utils.io.codec.constraint_new.config.SizeConstraintConfig;
-import net.luis.utils.io.codec.constraint_new.config.network.PathConstraintConfig;
 import net.luis.utils.io.codec.constraint_new.config.matcher.ConstraintMatchers;
 import net.luis.utils.io.codec.constraint_new.config.matcher.NetworkMatchers;
 import net.luis.utils.io.codec.constraint_new.core.Unit;

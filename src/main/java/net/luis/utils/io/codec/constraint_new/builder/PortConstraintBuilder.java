@@ -19,9 +19,9 @@
 package net.luis.utils.io.codec.constraint_new.builder;
 
 import net.luis.utils.io.codec.constraint_new.Constraint;
-import net.luis.utils.io.codec.constraint_new.config.network.PortConstraintConfig;
+import net.luis.utils.io.codec.constraint.config.io.PortConstraintConfig;
 import net.luis.utils.io.codec.constraint_new.core.PortRange;
-import net.luis.utils.io.codec.constraint_new.network.PortConstraint;
+import net.luis.utils.io.codec.constraint.merged.io.PortConstraint;
 import org.jspecify.annotations.NonNull;
 
 import java.util.Collection;

@@ -19,10 +19,10 @@
 package net.luis.utils.io.codec.constraint_new.builder;
 
 import net.luis.utils.io.codec.constraint_new.Constraint;
-import net.luis.utils.io.codec.constraint_new.config.network.IpConstraintConfig;
+import net.luis.utils.io.codec.constraint.config.io.IpConstraintConfig;
 import net.luis.utils.io.codec.constraint_new.core.IpAddressType;
 import net.luis.utils.io.codec.constraint_new.core.IpVersion;
-import net.luis.utils.io.codec.constraint_new.network.IpConstraint;
+import net.luis.utils.io.codec.constraint.merged.io.IpConstraint;
 import org.jspecify.annotations.NonNull;
 
 import java.util.Collection;

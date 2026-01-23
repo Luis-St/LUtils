@@ -19,7 +19,7 @@
 package net.luis.utils.io.codec.constraint_new.core;
 
 import net.luis.utils.io.codec.constraint_new.builder.IpConstraintBuilder;
-import net.luis.utils.io.codec.constraint_new.network.IpConstraint;
+import net.luis.utils.io.codec.constraint.merged.io.IpConstraint;
 
 /**
  * Enumeration representing Internet Protocol versions.<br>

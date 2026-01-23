@@ -20,8 +20,8 @@ package net.luis.utils.io.codec.constraint_new.builder;
 
 import net.luis.utils.io.codec.constraint.config.collection.MapConstraintConfig;
 import net.luis.utils.io.codec.constraint_new.Constraint;
-import net.luis.utils.io.codec.constraint_new.config.network.QueryConstraintConfig;
-import net.luis.utils.io.codec.constraint_new.network.QueryConstraint;
+import net.luis.utils.io.codec.constraint.config.io.QueryConstraintConfig;
+import net.luis.utils.io.codec.constraint.merged.io.QueryConstraint;
 import org.jspecify.annotations.NonNull;
 
 import java.util.*;

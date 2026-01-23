@@ -19,8 +19,8 @@
 package net.luis.utils.io.codec.constraint_new.config.matcher;
 
 import net.luis.utils.io.codec.constraint.config.StringConstraintConfig;
+import net.luis.utils.io.codec.constraint.config.io.*;
 import net.luis.utils.io.codec.constraint_new.config.*;
-import net.luis.utils.io.codec.constraint_new.config.network.*;
 import net.luis.utils.io.codec.constraint_new.core.*;
 import net.luis.utils.io.network.address.*;
 import net.luis.utils.io.network.address.exception.IpParseException;

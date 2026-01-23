@@ -19,7 +19,7 @@
 package net.luis.utils.io.codec.constraint_new.builder;
 
 import net.luis.utils.io.codec.constraint_new.Constraint;
-import net.luis.utils.io.codec.constraint_new.config.network.HostConstraintConfig;
+import net.luis.utils.io.codec.constraint.config.io.HostConstraintConfig;
 import net.luis.utils.util.result.Result;
 import org.junit.jupiter.api.Test;
 
