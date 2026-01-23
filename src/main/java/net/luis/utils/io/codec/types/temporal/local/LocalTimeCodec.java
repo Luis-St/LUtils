@@ -19,8 +19,8 @@
 package net.luis.utils.io.codec.types.temporal.local;
 
 import net.luis.utils.io.codec.AbstractCodec;
-import net.luis.utils.io.codec.constraint_new.config.temporal.LocalTimeConstraintConfig;
-import net.luis.utils.io.codec.constraint_new.temporal.LocalTimeConstraint;
+import net.luis.utils.io.codec.constraint.config.temporal.local.LocalTimeConstraintConfig;
+import net.luis.utils.io.codec.constraint.merged.temporal.local.LocalTimeConstraint;
 import net.luis.utils.io.codec.provider.TypeProvider;
 import net.luis.utils.util.result.Result;
 import org.jspecify.annotations.NonNull;

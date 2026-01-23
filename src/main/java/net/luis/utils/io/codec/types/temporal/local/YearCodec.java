@@ -19,8 +19,8 @@
 package net.luis.utils.io.codec.types.temporal.local;
 
 import net.luis.utils.io.codec.AbstractCodec;
-import net.luis.utils.io.codec.constraint_new.config.temporal.YearConstraintConfig;
-import net.luis.utils.io.codec.constraint_new.temporal.YearConstraint;
+import net.luis.utils.io.codec.constraint.config.temporal.local.YearConstraintConfig;
+import net.luis.utils.io.codec.constraint.merged.temporal.local.YearConstraint;
 import net.luis.utils.io.codec.provider.TypeProvider;
 import net.luis.utils.util.result.Result;
 import org.jspecify.annotations.NonNull;

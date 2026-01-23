@@ -19,8 +19,8 @@
 package net.luis.utils.io.codec.types.temporal.offset;
 
 import net.luis.utils.io.codec.AbstractCodec;
-import net.luis.utils.io.codec.constraint_new.config.temporal.OffsetTimeConstraintConfig;
-import net.luis.utils.io.codec.constraint_new.temporal.OffsetTimeConstraint;
+import net.luis.utils.io.codec.constraint.config.temporal.offset.OffsetTimeConstraintConfig;
+import net.luis.utils.io.codec.constraint.merged.temporal.offset.OffsetTimeConstraint;
 import net.luis.utils.io.codec.provider.TypeProvider;
 import net.luis.utils.util.result.Result;
 import org.jspecify.annotations.NonNull;

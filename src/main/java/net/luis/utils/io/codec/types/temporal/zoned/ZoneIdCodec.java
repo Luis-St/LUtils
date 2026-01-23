@@ -19,8 +19,8 @@
 package net.luis.utils.io.codec.types.temporal.zoned;
 
 import net.luis.utils.io.codec.AbstractCodec;
-import net.luis.utils.io.codec.constraint_new.config.temporal.ZoneIdConstraintConfig;
-import net.luis.utils.io.codec.constraint_new.temporal.ZoneIdConstraint;
+import net.luis.utils.io.codec.constraint.config.temporal.zoned.ZoneIdConstraintConfig;
+import net.luis.utils.io.codec.constraint.merged.temporal.zoned.ZoneIdConstraint;
 import net.luis.utils.io.codec.provider.TypeProvider;
 import net.luis.utils.util.result.Result;
 import org.jspecify.annotations.NonNull;

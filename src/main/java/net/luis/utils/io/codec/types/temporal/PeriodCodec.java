@@ -19,8 +19,8 @@
 package net.luis.utils.io.codec.types.temporal;
 
 import net.luis.utils.io.codec.AbstractCodec;
-import net.luis.utils.io.codec.constraint_new.config.temporal.PeriodConstraintConfig;
-import net.luis.utils.io.codec.constraint_new.temporal.PeriodConstraint;
+import net.luis.utils.io.codec.constraint.config.temporal.PeriodConstraintConfig;
+import net.luis.utils.io.codec.constraint.merged.temporal.PeriodConstraint;
 import net.luis.utils.io.codec.provider.TypeProvider;
 import net.luis.utils.util.result.Result;
 import org.jspecify.annotations.NonNull;
