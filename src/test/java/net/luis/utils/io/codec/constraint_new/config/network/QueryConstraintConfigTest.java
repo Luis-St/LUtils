@@ -19,7 +19,7 @@
 package net.luis.utils.io.codec.constraint_new.config.network;
 
 import net.luis.utils.io.codec.constraint_new.config.SizeConstraintConfig;
-import net.luis.utils.io.codec.constraint_new.config.StringConstraintConfig;
+import net.luis.utils.io.codec.constraint.config.StringConstraintConfig;
 import net.luis.utils.util.Pair;
 import net.luis.utils.util.result.Result;
 import org.junit.jupiter.api.Test;

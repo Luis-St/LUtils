@@ -16,11 +16,12 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-package net.luis.utils.io.codec.constraint_new;
+package net.luis.utils.io.codec.constraint.merged;
 
+import net.luis.utils.io.codec.constraint_new.*;
 import net.luis.utils.io.codec.constraint_new.builder.EnumConstraintBuilder;
 import net.luis.utils.io.codec.constraint_new.builder.NumericConstraintBuilder;
-import net.luis.utils.io.codec.constraint_new.config.UUIDConstraintConfig;
+import net.luis.utils.io.codec.constraint.config.UUIDConstraintConfig;
 import net.luis.utils.io.codec.constraint_new.core.UUIDVariant;
 import org.jspecify.annotations.NonNull;
 

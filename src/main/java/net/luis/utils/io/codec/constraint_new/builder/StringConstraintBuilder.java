@@ -19,8 +19,8 @@
 package net.luis.utils.io.codec.constraint_new.builder;
 
 import net.luis.utils.io.codec.constraint_new.Constraint;
-import net.luis.utils.io.codec.constraint_new.StringConstraint;
-import net.luis.utils.io.codec.constraint_new.config.StringConstraintConfig;
+import net.luis.utils.io.codec.constraint.merged.StringConstraint;
+import net.luis.utils.io.codec.constraint.config.StringConstraintConfig;
 import org.jspecify.annotations.NonNull;
 
 import java.util.Collection;

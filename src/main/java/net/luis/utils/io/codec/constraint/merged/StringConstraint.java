@@ -16,10 +16,11 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-package net.luis.utils.io.codec.constraint_new;
+package net.luis.utils.io.codec.constraint.merged;
 
+import net.luis.utils.io.codec.constraint_new.*;
 import net.luis.utils.io.codec.constraint_new.builder.LengthConstraintBuilder;
-import net.luis.utils.io.codec.constraint_new.config.StringConstraintConfig;
+import net.luis.utils.io.codec.constraint.config.StringConstraintConfig;
 import org.jspecify.annotations.NonNull;
 
 import java.util.Collection;

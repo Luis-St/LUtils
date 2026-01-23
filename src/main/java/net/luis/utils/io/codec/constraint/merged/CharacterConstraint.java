@@ -16,9 +16,10 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-package net.luis.utils.io.codec.constraint_new;
+package net.luis.utils.io.codec.constraint.merged;
 
-import net.luis.utils.io.codec.constraint_new.config.CharacterConstraintConfig;
+import net.luis.utils.io.codec.constraint_new.*;
+import net.luis.utils.io.codec.constraint.config.CharacterConstraintConfig;
 import org.jspecify.annotations.NonNull;
 
 import java.util.Collection;
@@ -36,6 +37,7 @@ import java.util.function.UnaryOperator;
  *
  * @param <C> The return type of the constraint method (for fluent method chaining)
  */
+@FunctionalInterface
 public interface CharacterConstraint<C> extends ApplicableConstraint<CharacterConstraintConfig, C>, ComparableConstraint<Character, C> {
 	
 	@Override

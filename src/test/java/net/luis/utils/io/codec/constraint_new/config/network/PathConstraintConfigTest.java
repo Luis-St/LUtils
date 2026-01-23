@@ -18,7 +18,7 @@
 
 package net.luis.utils.io.codec.constraint_new.config.network;
 
-import net.luis.utils.io.codec.constraint_new.config.StringConstraintConfig;
+import net.luis.utils.io.codec.constraint.config.StringConstraintConfig;
 import net.luis.utils.io.codec.constraint_new.core.Platform;
 import net.luis.utils.io.codec.constraint_new.core.Unit;
 import net.luis.utils.util.Pair;
