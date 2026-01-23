@@ -19,6 +19,8 @@
 package net.luis.utils.io.codec.constraint_new.config.network;
 
 import net.luis.utils.io.codec.constraint.config.StringConstraintConfig;
+import net.luis.utils.io.codec.constraint_new.config.DepthConstraintConfig;
+import net.luis.utils.io.codec.constraint_new.config.LengthConstraintConfig;
 import net.luis.utils.io.codec.constraint_new.core.Platform;
 import net.luis.utils.io.codec.constraint_new.core.Unit;
 import net.luis.utils.util.Pair;
@@ -47,7 +49,7 @@ class PathConstraintConfigTest {
 		assertThrows(NullPointerException.class, () -> new PathConstraintConfig(
 			null, Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(),
 			Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(),
-			Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty()
+			Optional.empty(), Optional.empty(), Optional.empty()
 		));
 	}
 	
@@ -56,34 +58,16 @@ class PathConstraintConfigTest {
 		assertThrows(IllegalArgumentException.class, () -> new PathConstraintConfig(
 			Optional.empty(), Optional.of(Pair.of(Set.of(), false)), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(),
 			Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(),
-			Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty()
-		));
-	}
-	
-	@Test
-	void constructorMinMaxLengthValidation() {
-		assertThrows(IllegalArgumentException.class, () -> new PathConstraintConfig(
-			Optional.empty(), Optional.empty(), Optional.of(Pair.of(100, true)), Optional.of(Pair.of(50, true)), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(),
-			Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(),
-			Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty()
-		));
-	}
-	
-	@Test
-	void constructorMinMaxDepthValidation() {
-		assertThrows(IllegalArgumentException.class, () -> new PathConstraintConfig(
-			Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.of(Pair.of(10, true)), Optional.of(Pair.of(5, true)), Optional.empty(), Optional.empty(), Optional.empty(),
-			Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(),
-			Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty()
+			Optional.empty(), Optional.empty(), Optional.empty()
 		));
 	}
 	
 	@Test
 	void constructorAbsoluteRelativeMutuallyExclusive() {
 		assertThrows(IllegalArgumentException.class, () -> new PathConstraintConfig(
-			Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.of(Unit.INSTANCE), Optional.of(Unit.INSTANCE), Optional.empty(),
+			Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.of(Unit.INSTANCE), Optional.of(Unit.INSTANCE), Optional.empty(), Optional.empty(), Optional.empty(),
 			Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(),
-			Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty()
+			Optional.empty(), Optional.empty(), Optional.empty()
 		));
 	}
 	
@@ -91,8 +75,8 @@ class PathConstraintConfigTest {
 	void constructorWithoutExtensionAndExtensionMutuallyExclusive() {
 		assertThrows(IllegalArgumentException.class, () -> new PathConstraintConfig(
 			Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(),
-			Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.of(Unit.INSTANCE), Optional.of(StringConstraintConfig.UNCONSTRAINED), Optional.empty(),
-			Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty()
+			Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.of(Unit.INSTANCE), Optional.of(StringConstraintConfig.UNCONSTRAINED), Optional.empty(), Optional.empty(), Optional.empty(),
+			Optional.empty(), Optional.empty(), Optional.empty()
 		));
 	}
 	
@@ -102,6 +86,8 @@ class PathConstraintConfigTest {
 		assertNotNull(config);
 		assertTrue(config.equalTo().isEmpty());
 		assertTrue(config.in().isEmpty());
+		assertTrue(config.length().isEmpty());
+		assertTrue(config.depth().isEmpty());
 		assertTrue(config.absolute().isEmpty());
 		assertTrue(config.relative().isEmpty());
 		assertTrue(config.custom().isEmpty());
@@ -147,75 +133,31 @@ class PathConstraintConfigTest {
 	}
 	
 	@Test
-	void withMinLength() {
-		PathConstraintConfig config = PathConstraintConfig.UNCONSTRAINED.withMinLength(5);
+	void withLength() {
+		LengthConstraintConfig lengthConfig = LengthConstraintConfig.UNCONSTRAINED.withMinLength(1).withMaxLength(100);
+		PathConstraintConfig config = PathConstraintConfig.UNCONSTRAINED.withLength(lengthConfig);
 		
-		assertTrue(config.minLength().isPresent());
-		assertEquals(5, config.minLength().get().getFirst());
+		assertTrue(config.length().isPresent());
+		assertEquals(lengthConfig, config.length().get());
 	}
 	
 	@Test
-	void withMaxLength() {
-		PathConstraintConfig config = PathConstraintConfig.UNCONSTRAINED.withMaxLength(255);
-		
-		assertTrue(config.maxLength().isPresent());
-		assertEquals(255, config.maxLength().get().getFirst());
+	void withLengthNull() {
+		assertThrows(NullPointerException.class, () -> PathConstraintConfig.UNCONSTRAINED.withLength(null));
 	}
 	
 	@Test
-	void withExactLength() {
-		PathConstraintConfig config = PathConstraintConfig.UNCONSTRAINED.withExactLength(10);
+	void withDepth() {
+		DepthConstraintConfig depthConfig = DepthConstraintConfig.UNCONSTRAINED.withMinDepth(1).withMaxDepth(10);
+		PathConstraintConfig config = PathConstraintConfig.UNCONSTRAINED.withDepth(depthConfig);
 		
-		assertTrue(config.minLength().isPresent());
-		assertTrue(config.maxLength().isPresent());
-		assertEquals(10, config.minLength().get().getFirst());
-		assertEquals(10, config.maxLength().get().getFirst());
+		assertTrue(config.depth().isPresent());
+		assertEquals(depthConfig, config.depth().get());
 	}
 	
 	@Test
-	void withLengthBetween() {
-		PathConstraintConfig config = PathConstraintConfig.UNCONSTRAINED.withLengthBetween(5, 100);
-		
-		assertTrue(config.minLength().isPresent());
-		assertTrue(config.maxLength().isPresent());
-		assertEquals(5, config.minLength().get().getFirst());
-		assertEquals(100, config.maxLength().get().getFirst());
-	}
-	
-	@Test
-	void withMinDepth() {
-		PathConstraintConfig config = PathConstraintConfig.UNCONSTRAINED.withMinDepth(2);
-		
-		assertTrue(config.minDepth().isPresent());
-		assertEquals(2, config.minDepth().get().getFirst());
-	}
-	
-	@Test
-	void withMaxDepth() {
-		PathConstraintConfig config = PathConstraintConfig.UNCONSTRAINED.withMaxDepth(10);
-		
-		assertTrue(config.maxDepth().isPresent());
-		assertEquals(10, config.maxDepth().get().getFirst());
-	}
-	
-	@Test
-	void withExactDepth() {
-		PathConstraintConfig config = PathConstraintConfig.UNCONSTRAINED.withExactDepth(3);
-		
-		assertTrue(config.minDepth().isPresent());
-		assertTrue(config.maxDepth().isPresent());
-		assertEquals(3, config.minDepth().get().getFirst());
-		assertEquals(3, config.maxDepth().get().getFirst());
-	}
-	
-	@Test
-	void withDepthBetween() {
-		PathConstraintConfig config = PathConstraintConfig.UNCONSTRAINED.withDepthBetween(1, 5);
-		
-		assertTrue(config.minDepth().isPresent());
-		assertTrue(config.maxDepth().isPresent());
-		assertEquals(1, config.minDepth().get().getFirst());
-		assertEquals(5, config.maxDepth().get().getFirst());
+	void withDepthNull() {
+		assertThrows(NullPointerException.class, () -> PathConstraintConfig.UNCONSTRAINED.withDepth(null));
 	}
 	
 	@Test
@@ -395,5 +337,25 @@ class PathConstraintConfigTest {
 		assertTrue(config.matches(Path.of("/home")).isSuccess());
 		assertTrue(config.matches(Path.of("/var")).isSuccess());
 		assertTrue(config.matches(Path.of("/tmp")).isError());
+	}
+	
+	@Test
+	void matchesLength() {
+		LengthConstraintConfig lengthConfig = LengthConstraintConfig.UNCONSTRAINED.withMinLength(5).withMaxLength(20);
+		PathConstraintConfig config = PathConstraintConfig.UNCONSTRAINED.withLength(lengthConfig);
+		
+		assertTrue(config.matches(Path.of("/home/user")).isSuccess());
+		assertTrue(config.matches(Path.of("/a")).isError());
+	}
+	
+	@Test
+	void matchesDepth() {
+		DepthConstraintConfig depthConfig = DepthConstraintConfig.UNCONSTRAINED.withMinDepth(2).withMaxDepth(4);
+		PathConstraintConfig config = PathConstraintConfig.UNCONSTRAINED.withDepth(depthConfig);
+		
+		assertTrue(config.matches(Path.of("a/b")).isSuccess());
+		assertTrue(config.matches(Path.of("a/b/c")).isSuccess());
+		assertTrue(config.matches(Path.of("a")).isError());
+		assertTrue(config.matches(Path.of("a/b/c/d/e")).isError());
 	}
 }

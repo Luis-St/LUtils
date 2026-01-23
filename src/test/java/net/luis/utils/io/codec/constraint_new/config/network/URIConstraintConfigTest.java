@@ -19,6 +19,7 @@
 package net.luis.utils.io.codec.constraint_new.config.network;
 
 import net.luis.utils.io.codec.constraint.config.StringConstraintConfig;
+import net.luis.utils.io.codec.constraint_new.config.LengthConstraintConfig;
 import net.luis.utils.io.codec.constraint_new.config.SizeConstraintConfig;
 import net.luis.utils.io.codec.constraint_new.core.Unit;
 import net.luis.utils.util.Pair;
@@ -355,7 +356,9 @@ class URIConstraintConfigTest {
 	
 	@Test
 	void withPath() {
-		PathConstraintConfig pathConfig = PathConstraintConfig.UNCONSTRAINED.withMinLength(1);
+		PathConstraintConfig pathConfig = PathConstraintConfig.UNCONSTRAINED.withLength(
+			LengthConstraintConfig.UNCONSTRAINED.withMinLength(1)
+		);
 		URIConstraintConfig config = URIConstraintConfig.UNCONSTRAINED.withPath(pathConfig);
 		
 		assertTrue(config.path().isPresent());

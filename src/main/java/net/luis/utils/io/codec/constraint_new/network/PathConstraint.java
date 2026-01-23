@@ -18,9 +18,8 @@
 
 package net.luis.utils.io.codec.constraint_new.network;
 
-import net.luis.utils.io.codec.constraint_new.DepthConstraint;
-import net.luis.utils.io.codec.constraint_new.LengthConstraint;
-import net.luis.utils.io.codec.constraint_new.builder.StringConstraintBuilder;
+import net.luis.utils.io.codec.constraint_new.BaseConstraint;
+import net.luis.utils.io.codec.constraint_new.builder.*;
 import net.luis.utils.io.codec.constraint_new.core.Platform;
 import org.jspecify.annotations.NonNull;
 
@@ -30,7 +29,7 @@ import java.util.function.UnaryOperator;
 /**
  * Constraint interface for file path types that provides comprehensive path validation operations.<br>
  * <p>
- *     This interface extends {@link LengthConstraint} and {@link DepthConstraint} with methods for constraining paths
+ *     This interface extends {@link BaseConstraint} with methods for constraining paths
  *     based on their structure, components, relationships, and platform compatibility.<br>
  *     It allows validation of file system paths according to various criteria.
  * </p>
@@ -40,7 +39,31 @@ import java.util.function.UnaryOperator;
  * @param <T> The type of the constraint configuration
  * @param <C> The return type of the constraint method (for fluent method chaining)
  */
-public interface PathConstraint<T, C> extends LengthConstraint<T, C>, DepthConstraint<T, C> {
+public interface PathConstraint<T, C> extends BaseConstraint<T, C> {
+	
+	/**
+	 * Applies length constraints to the path using a builder.<br>
+	 * <p>
+	 *     The returned type will validate that the path string length matches the constraints defined by the builder.
+	 * </p>
+	 *
+	 * @param builder A function that configures the length constraint using a length constraint builder
+	 * @return A new type with the applied length constraints
+	 * @throws NullPointerException If the builder is null
+	 */
+	@NonNull C length(@NonNull UnaryOperator<LengthConstraintBuilder> builder);
+	
+	/**
+	 * Applies depth constraints to the path using a builder.<br>
+	 * <p>
+	 *     The returned type will validate that the path depth (number of components) matches the constraints defined by the builder.
+	 * </p>
+	 *
+	 * @param builder A function that configures the depth constraint using a depth constraint builder
+	 * @return A new type with the applied depth constraints
+	 * @throws NullPointerException If the builder is null
+	 */
+	@NonNull C depth(@NonNull UnaryOperator<DepthConstraintBuilder> builder);
 	
 	/**
 	 * Applies an absolute path constraint to the type.<br>

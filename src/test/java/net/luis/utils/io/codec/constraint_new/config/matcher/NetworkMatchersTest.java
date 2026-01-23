@@ -915,7 +915,9 @@ class NetworkMatchersTest {
 	@Test
 	void matchUriPathConfigWithMatch() {
 		URI uri = URI.create("https://example.com/path/to/resource");
-		PathConstraintConfig config = PathConstraintConfig.UNCONSTRAINED.withMinDepth(2);
+		PathConstraintConfig config = PathConstraintConfig.UNCONSTRAINED.withDepth(
+			DepthConstraintConfig.UNCONSTRAINED.withMinDepth(2)
+		);
 		Result<Void> result = NetworkMatchers.matchUriPathConfig(uri, Optional.of(config));
 		assertTrue(result.isSuccess());
 	}
@@ -923,7 +925,9 @@ class NetworkMatchersTest {
 	@Test
 	void matchUriPathConfigWithNoMatch() {
 		URI uri = URI.create("https://example.com/path");
-		PathConstraintConfig config = PathConstraintConfig.UNCONSTRAINED.withMinDepth(3);
+		PathConstraintConfig config = PathConstraintConfig.UNCONSTRAINED.withDepth(
+			DepthConstraintConfig.UNCONSTRAINED.withMinDepth(3)
+		);
 		Result<Void> result = NetworkMatchers.matchUriPathConfig(uri, Optional.of(config));
 		assertTrue(result.isError());
 		assertTrue(result.errorOrThrow().contains("Path constraint failed"));
@@ -932,7 +936,9 @@ class NetworkMatchersTest {
 	@Test
 	void matchUriPathConfigWithNoPath() {
 		URI uri = URI.create("https://example.com");
-		PathConstraintConfig config = PathConstraintConfig.UNCONSTRAINED.withMinDepth(1);
+		PathConstraintConfig config = PathConstraintConfig.UNCONSTRAINED.withDepth(
+			DepthConstraintConfig.UNCONSTRAINED.withMinDepth(1)
+		);
 		Result<Void> result = NetworkMatchers.matchUriPathConfig(uri, Optional.of(config));
 		assertTrue(result.isError());
 		assertTrue(result.errorOrThrow().contains("has no path"));

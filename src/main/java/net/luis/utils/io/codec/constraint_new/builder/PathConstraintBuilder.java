@@ -95,50 +95,18 @@ public class PathConstraintBuilder implements PathConstraint<String, PathConstra
 	}
 	
 	@Override
-	public @NonNull PathConstraintBuilder minLength(int minLength) {
-		this.config = this.config.withMinLength(minLength);
+	public @NonNull PathConstraintBuilder length(@NonNull UnaryOperator<LengthConstraintBuilder> builder) {
+		Objects.requireNonNull(builder, "Builder function for 'length' constraint must not be null");
+		
+		this.config = this.config.withLength(builder.apply(new LengthConstraintBuilder()).build());
 		return this;
 	}
 	
 	@Override
-	public @NonNull PathConstraintBuilder maxLength(int maxLength) {
-		this.config = this.config.withMaxLength(maxLength);
-		return this;
-	}
-	
-	@Override
-	public @NonNull PathConstraintBuilder exactLength(int exactLength) {
-		this.config = this.config.withExactLength(exactLength);
-		return this;
-	}
-	
-	@Override
-	public @NonNull PathConstraintBuilder lengthBetween(int minLength, int maxLength) {
-		this.config = this.config.withLengthBetween(minLength, maxLength);
-		return this;
-	}
-	
-	@Override
-	public @NonNull PathConstraintBuilder minDepth(int minDepth) {
-		this.config = this.config.withMinDepth(minDepth);
-		return this;
-	}
-	
-	@Override
-	public @NonNull PathConstraintBuilder maxDepth(int maxDepth) {
-		this.config = this.config.withMaxDepth(maxDepth);
-		return this;
-	}
-	
-	@Override
-	public @NonNull PathConstraintBuilder exactDepth(int exactDepth) {
-		this.config = this.config.withExactDepth(exactDepth);
-		return this;
-	}
-	
-	@Override
-	public @NonNull PathConstraintBuilder depthBetween(int minDepth, int maxDepth) {
-		this.config = this.config.withDepthBetween(minDepth, maxDepth);
+	public @NonNull PathConstraintBuilder depth(@NonNull UnaryOperator<DepthConstraintBuilder> builder) {
+		Objects.requireNonNull(builder, "Builder function for 'depth' constraint must not be null");
+		
+		this.config = this.config.withDepth(builder.apply(new DepthConstraintBuilder()).build());
 		return this;
 	}
 	

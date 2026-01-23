@@ -19,6 +19,7 @@
 package net.luis.utils.io.codec.constraint_new.builder;
 
 import net.luis.utils.io.codec.constraint_new.Constraint;
+import net.luis.utils.io.codec.constraint_new.config.LengthConstraintConfig;
 import net.luis.utils.io.codec.constraint_new.config.network.PathConstraintConfig;
 import net.luis.utils.io.codec.constraint_new.core.Platform;
 import net.luis.utils.util.result.Result;
@@ -46,13 +47,15 @@ class PathConstraintBuilderTest {
 	
 	@Test
 	void constructWithInitialConfig() {
-		PathConstraintConfig initialConfig = PathConstraintConfig.UNCONSTRAINED.withMinLength(1);
+		PathConstraintConfig initialConfig = PathConstraintConfig.UNCONSTRAINED.withLength(
+			LengthConstraintConfig.UNCONSTRAINED.withMinLength(1)
+		);
 		PathConstraintBuilder builder = new PathConstraintBuilder(initialConfig);
 		PathConstraintConfig config = builder.build();
 		
 		assertNotNull(config);
 		assertEquals(initialConfig, config);
-		assertTrue(config.minLength().isPresent());
+		assertTrue(config.length().isPresent());
 	}
 	
 	@Test
@@ -129,71 +132,29 @@ class PathConstraintBuilderTest {
 	}
 	
 	@Test
-	void minLengthReturnsBuilder() {
+	void lengthReturnsBuilder() {
 		PathConstraintBuilder builder = new PathConstraintBuilder();
-		assertSame(builder, builder.minLength(1));
-		assertTrue(builder.build().minLength().isPresent());
+		assertSame(builder, builder.length(l -> l.minLength(1).maxLength(100)));
+		assertTrue(builder.build().length().isPresent());
 	}
 	
 	@Test
-	void maxLengthReturnsBuilder() {
+	void lengthWithNullBuilder() {
 		PathConstraintBuilder builder = new PathConstraintBuilder();
-		assertSame(builder, builder.maxLength(4096));
-		assertTrue(builder.build().maxLength().isPresent());
+		assertThrows(NullPointerException.class, () -> builder.length(null));
 	}
 	
 	@Test
-	void exactLengthReturnsBuilder() {
+	void depthReturnsBuilder() {
 		PathConstraintBuilder builder = new PathConstraintBuilder();
-		assertSame(builder, builder.exactLength(10));
-		
-		PathConstraintConfig config = builder.build();
-		assertTrue(config.minLength().isPresent());
-		assertTrue(config.maxLength().isPresent());
+		assertSame(builder, builder.depth(d -> d.minDepth(1).maxDepth(10)));
+		assertTrue(builder.build().depth().isPresent());
 	}
 	
 	@Test
-	void lengthBetweenReturnsBuilder() {
+	void depthWithNullBuilder() {
 		PathConstraintBuilder builder = new PathConstraintBuilder();
-		assertSame(builder, builder.lengthBetween(1, 4096));
-		
-		PathConstraintConfig config = builder.build();
-		assertTrue(config.minLength().isPresent());
-		assertTrue(config.maxLength().isPresent());
-	}
-	
-	@Test
-	void minDepthReturnsBuilder() {
-		PathConstraintBuilder builder = new PathConstraintBuilder();
-		assertSame(builder, builder.minDepth(1));
-		assertTrue(builder.build().minDepth().isPresent());
-	}
-	
-	@Test
-	void maxDepthReturnsBuilder() {
-		PathConstraintBuilder builder = new PathConstraintBuilder();
-		assertSame(builder, builder.maxDepth(10));
-		assertTrue(builder.build().maxDepth().isPresent());
-	}
-	
-	@Test
-	void exactDepthReturnsBuilder() {
-		PathConstraintBuilder builder = new PathConstraintBuilder();
-		assertSame(builder, builder.exactDepth(3));
-		
-		PathConstraintConfig config = builder.build();
-		assertTrue(config.minDepth().isPresent());
-		assertTrue(config.maxDepth().isPresent());
-	}
-	
-	@Test
-	void depthBetweenReturnsBuilder() {
-		PathConstraintBuilder builder = new PathConstraintBuilder();
-		assertSame(builder, builder.depthBetween(1, 10));
-		
-		PathConstraintConfig config = builder.build();
-		assertTrue(config.minDepth().isPresent());
-		assertTrue(config.maxDepth().isPresent());
+		assertThrows(NullPointerException.class, () -> builder.depth(null));
 	}
 	
 	@Test
@@ -397,13 +358,12 @@ class PathConstraintBuilderTest {
 	@Test
 	void buildReturnsCorrectConfig() {
 		PathConstraintBuilder builder = new PathConstraintBuilder();
-		builder.minLength(1).maxLength(4096).absolute();
+		builder.length(l -> l.minLength(1).maxLength(4096)).absolute();
 		
 		PathConstraintConfig config = builder.build();
 		
 		assertNotNull(config);
-		assertTrue(config.minLength().isPresent());
-		assertTrue(config.maxLength().isPresent());
+		assertTrue(config.length().isPresent());
 		assertTrue(config.absolute().isPresent());
 	}
 	
@@ -412,16 +372,16 @@ class PathConstraintBuilderTest {
 		PathConstraintBuilder builder = new PathConstraintBuilder();
 		
 		PathConstraintConfig config = builder
-			.minLength(1)
-			.maxLength(4096)
+			.length(l -> l.minLength(1).maxLength(4096))
+			.depth(d -> d.minDepth(1).maxDepth(10))
 			.absolute()
 			.normalized()
 			.extension(b -> b.in(List.of("txt", "json")))
 			.build();
 		
 		assertNotNull(config);
-		assertTrue(config.minLength().isPresent());
-		assertTrue(config.maxLength().isPresent());
+		assertTrue(config.length().isPresent());
+		assertTrue(config.depth().isPresent());
 		assertTrue(config.absolute().isPresent());
 		assertTrue(config.normalized().isPresent());
 		assertTrue(config.extension().isPresent());
