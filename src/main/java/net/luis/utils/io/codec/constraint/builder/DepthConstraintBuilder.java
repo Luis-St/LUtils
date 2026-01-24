@@ -16,52 +16,52 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-package net.luis.utils.io.codec.constraint_new.builder;
+package net.luis.utils.io.codec.constraint.builder;
 
 import net.luis.utils.io.codec.constraint.core.Constraint;
-import net.luis.utils.io.codec.constraint.core.SizeConstraint;
-import net.luis.utils.io.codec.constraint.config.SizeConstraintConfig;
+import net.luis.utils.io.codec.constraint.core.DepthConstraint;
+import net.luis.utils.io.codec.constraint.config.DepthConstraintConfig;
 import org.jspecify.annotations.NonNull;
 
 import java.util.Collection;
 import java.util.Objects;
 
 /**
- * Builder class for constructing size-based constraints.<br>
+ * Builder class for constructing depth-based constraints.<br>
  * <p>
- *     This builder implements {@link SizeConstraint} to provide a fluent API for building
- *     constraints on collection sizes.<br>
- *     It is typically used as a parameter to constraint builder methods that accept size constraints.
+ *     This builder implements {@link DepthConstraint} to provide a fluent API for building
+ *     constraints on hierarchical depths such as path depths or tree depths.<br>
+ *     It is typically used as a parameter to constraint builder methods that accept depth constraints.
  * </p>
  *
  * @author Luis-St
  */
-public class SizeConstraintBuilder implements SizeConstraint<Integer, SizeConstraintBuilder> {
+public class DepthConstraintBuilder implements DepthConstraint<Integer, DepthConstraintBuilder> {
 	
 	/**
 	 * The current constraint configuration being built.<br>
 	 */
-	private SizeConstraintConfig config;
+	private DepthConstraintConfig config;
 	
 	/**
-	 * Constructs a new size constraint builder with no constraints applied.<br>
+	 * Constructs a new depth constraint builder with no constraints applied.<br>
 	 */
-	public SizeConstraintBuilder() {
-		this.config = SizeConstraintConfig.UNCONSTRAINED;
+	public DepthConstraintBuilder() {
+		this.config = DepthConstraintConfig.UNCONSTRAINED;
 	}
 	
 	/**
-	 * Constructs a new size constraint builder with the specified initial config.<br>
+	 * Constructs a new depth constraint builder with the specified initial config.<br>
 	 *
 	 * @param initialConfig The initial configuration to use
 	 * @throws NullPointerException If the initial config is null
 	 */
-	public SizeConstraintBuilder(@NonNull SizeConstraintConfig initialConfig) {
+	public DepthConstraintBuilder(@NonNull DepthConstraintConfig initialConfig) {
 		this.config = Objects.requireNonNull(initialConfig, "Initial config must not be null");
 	}
 	
 	@Override
-	public @NonNull SizeConstraintBuilder equalTo(@NonNull Integer value) {
+	public @NonNull DepthConstraintBuilder equalTo(@NonNull Integer value) {
 		Objects.requireNonNull(value, "Value for 'equal to' constraint must not be null");
 		
 		this.config = this.config.withEqualTo(value);
@@ -69,7 +69,7 @@ public class SizeConstraintBuilder implements SizeConstraint<Integer, SizeConstr
 	}
 	
 	@Override
-	public @NonNull SizeConstraintBuilder notEqualTo(@NonNull Integer value) {
+	public @NonNull DepthConstraintBuilder notEqualTo(@NonNull Integer value) {
 		Objects.requireNonNull(value, "Value for 'not equal to' constraint must not be null");
 		
 		this.config = this.config.withNotEqualTo(value);
@@ -77,7 +77,7 @@ public class SizeConstraintBuilder implements SizeConstraint<Integer, SizeConstr
 	}
 	
 	@Override
-	public @NonNull SizeConstraintBuilder in(@NonNull Collection<Integer> values) {
+	public @NonNull DepthConstraintBuilder in(@NonNull Collection<Integer> values) {
 		Objects.requireNonNull(values, "Values for 'in' constraint must not be null");
 		
 		this.config = this.config.withIn(values);
@@ -85,7 +85,7 @@ public class SizeConstraintBuilder implements SizeConstraint<Integer, SizeConstr
 	}
 	
 	@Override
-	public @NonNull SizeConstraintBuilder notIn(@NonNull Collection<Integer> values) {
+	public @NonNull DepthConstraintBuilder notIn(@NonNull Collection<Integer> values) {
 		Objects.requireNonNull(values, "Values for 'not in' constraint must not be null");
 		
 		this.config = this.config.withNotIn(values);
@@ -93,7 +93,7 @@ public class SizeConstraintBuilder implements SizeConstraint<Integer, SizeConstr
 	}
 	
 	@Override
-	public @NonNull SizeConstraintBuilder custom(@NonNull Constraint<Integer> constraint) {
+	public @NonNull DepthConstraintBuilder custom(@NonNull Constraint<Integer> constraint) {
 		Objects.requireNonNull(constraint, "Custom constraint must not be null");
 		
 		this.config = this.config.withCustom(constraint);
@@ -101,35 +101,35 @@ public class SizeConstraintBuilder implements SizeConstraint<Integer, SizeConstr
 	}
 	
 	@Override
-	public @NonNull SizeConstraintBuilder minSize(int minSize) {
-		this.config = this.config.withMinSize(minSize);
+	public @NonNull DepthConstraintBuilder minDepth(int minDepth) {
+		this.config = this.config.withMinDepth(minDepth);
 		return this;
 	}
 	
 	@Override
-	public @NonNull SizeConstraintBuilder maxSize(int maxSize) {
-		this.config = this.config.withMaxSize(maxSize);
+	public @NonNull DepthConstraintBuilder maxDepth(int maxDepth) {
+		this.config = this.config.withMaxDepth(maxDepth);
 		return this;
 	}
 	
 	@Override
-	public @NonNull SizeConstraintBuilder exactSize(int exactSize) {
-		this.config = this.config.withExactSize(exactSize);
+	public @NonNull DepthConstraintBuilder exactDepth(int exactDepth) {
+		this.config = this.config.withExactDepth(exactDepth);
 		return this;
 	}
 	
 	@Override
-	public @NonNull SizeConstraintBuilder sizeBetween(int minSize, int maxSize) {
-		this.config = this.config.withSizeBetween(minSize, maxSize);
+	public @NonNull DepthConstraintBuilder depthBetween(int minDepth, int maxDepth) {
+		this.config = this.config.withDepthBetween(minDepth, maxDepth);
 		return this;
 	}
 	
 	/**
 	 * Builds and returns the constraint configuration.<br>
 	 *
-	 * @return The built size constraint config
+	 * @return The built depth constraint config
 	 */
-	public @NonNull SizeConstraintConfig build() {
+	public @NonNull DepthConstraintConfig build() {
 		return this.config;
 	}
 }

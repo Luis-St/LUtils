@@ -18,7 +18,7 @@
 
 package net.luis.utils.io.codec.constraint.util;
 
-import net.luis.utils.io.codec.constraint_new.builder.IpConstraintBuilder;
+import net.luis.utils.io.codec.constraint.builder.IpConstraintBuilder;
 import net.luis.utils.io.codec.constraint.merged.io.IpConstraint;
 
 /**

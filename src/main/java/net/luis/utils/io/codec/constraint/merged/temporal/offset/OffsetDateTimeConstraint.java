@@ -21,8 +21,8 @@ package net.luis.utils.io.codec.constraint.merged.temporal.offset;
 import net.luis.utils.io.codec.constraint.core.temporal.*;
 import net.luis.utils.io.codec.constraint.core.ApplicableConstraint;
 import net.luis.utils.io.codec.constraint.core.Constraint;
-import net.luis.utils.io.codec.constraint_new.builder.EnumConstraintBuilder;
-import net.luis.utils.io.codec.constraint_new.builder.NumericConstraintBuilder;
+import net.luis.utils.io.codec.constraint.builder.EnumConstraintBuilder;
+import net.luis.utils.io.codec.constraint.builder.NumericConstraintBuilder;
 import net.luis.utils.io.codec.constraint.config.temporal.offset.OffsetDateTimeConstraintConfig;
 import org.jspecify.annotations.NonNull;
 

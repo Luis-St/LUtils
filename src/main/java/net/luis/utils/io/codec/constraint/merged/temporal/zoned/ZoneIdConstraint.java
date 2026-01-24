@@ -19,7 +19,7 @@
 package net.luis.utils.io.codec.constraint.merged.temporal.zoned;
 
 import net.luis.utils.io.codec.constraint.core.*;
-import net.luis.utils.io.codec.constraint_new.builder.StringConstraintBuilder;
+import net.luis.utils.io.codec.constraint.builder.StringConstraintBuilder;
 import net.luis.utils.io.codec.constraint.config.temporal.zoned.ZoneIdConstraintConfig;
 import org.jspecify.annotations.NonNull;
 

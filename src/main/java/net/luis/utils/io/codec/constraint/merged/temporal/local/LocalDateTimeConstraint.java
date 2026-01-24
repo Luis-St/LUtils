@@ -21,8 +21,8 @@ package net.luis.utils.io.codec.constraint.merged.temporal.local;
 import net.luis.utils.io.codec.constraint.core.temporal.*;
 import net.luis.utils.io.codec.constraint.core.ApplicableConstraint;
 import net.luis.utils.io.codec.constraint.core.Constraint;
-import net.luis.utils.io.codec.constraint_new.builder.EnumConstraintBuilder;
-import net.luis.utils.io.codec.constraint_new.builder.NumericConstraintBuilder;
+import net.luis.utils.io.codec.constraint.builder.EnumConstraintBuilder;
+import net.luis.utils.io.codec.constraint.builder.NumericConstraintBuilder;
 import net.luis.utils.io.codec.constraint.config.temporal.local.LocalDateTimeConstraintConfig;
 import org.jspecify.annotations.NonNull;
 

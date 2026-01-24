@@ -16,10 +16,10 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-package net.luis.utils.io.codec.constraint_new.builder;
+package net.luis.utils.io.codec.constraint.builder;
 
 import net.luis.utils.io.codec.constraint.core.Constraint;
-import net.luis.utils.io.codec.constraint.config.LengthConstraintConfig;
+import net.luis.utils.io.codec.constraint.config.SizeConstraintConfig;
 import net.luis.utils.util.result.Result;
 import org.junit.jupiter.api.Test;
 
@@ -28,26 +28,26 @@ import java.util.List;
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
- * Test class for {@link LengthConstraintBuilder}.<br>
+ * Test class for {@link SizeConstraintBuilder}.<br>
  *
  * @author Luis-St
  */
-class LengthConstraintBuilderTest {
+class SizeConstraintBuilderTest {
 	
 	@Test
 	void constructEmpty() {
-		LengthConstraintBuilder builder = new LengthConstraintBuilder();
-		LengthConstraintConfig config = builder.build();
+		SizeConstraintBuilder builder = new SizeConstraintBuilder();
+		SizeConstraintConfig config = builder.build();
 		
 		assertNotNull(config);
-		assertEquals(LengthConstraintConfig.UNCONSTRAINED, config);
+		assertEquals(SizeConstraintConfig.UNCONSTRAINED, config);
 	}
 	
 	@Test
 	void constructWithInitialConfig() {
-		LengthConstraintConfig initialConfig = LengthConstraintConfig.UNCONSTRAINED.withMinLength(1);
-		LengthConstraintBuilder builder = new LengthConstraintBuilder(initialConfig);
-		LengthConstraintConfig config = builder.build();
+		SizeConstraintConfig initialConfig = SizeConstraintConfig.UNCONSTRAINED.withMinSize(1);
+		SizeConstraintBuilder builder = new SizeConstraintBuilder(initialConfig);
+		SizeConstraintConfig config = builder.build();
 		
 		assertNotNull(config);
 		assertEquals(initialConfig, config);
@@ -56,64 +56,64 @@ class LengthConstraintBuilderTest {
 	
 	@Test
 	void constructWithNullInitialConfig() {
-		assertThrows(NullPointerException.class, () -> new LengthConstraintBuilder(null));
+		assertThrows(NullPointerException.class, () -> new SizeConstraintBuilder(null));
 	}
 	
 	@Test
 	void equalToReturnsBuilder() {
-		LengthConstraintBuilder builder = new LengthConstraintBuilder();
+		SizeConstraintBuilder builder = new SizeConstraintBuilder();
 		assertSame(builder, builder.equalTo(10));
 		assertTrue(builder.build().equalTo().isPresent());
 	}
 	
 	@Test
 	void equalToWithNullValue() {
-		LengthConstraintBuilder builder = new LengthConstraintBuilder();
+		SizeConstraintBuilder builder = new SizeConstraintBuilder();
 		assertThrows(NullPointerException.class, () -> builder.equalTo(null));
 	}
 	
 	@Test
 	void notEqualToReturnsBuilder() {
-		LengthConstraintBuilder builder = new LengthConstraintBuilder();
+		SizeConstraintBuilder builder = new SizeConstraintBuilder();
 		assertSame(builder, builder.notEqualTo(10));
 		assertTrue(builder.build().equalTo().isPresent());
 	}
 	
 	@Test
 	void notEqualToWithNullValue() {
-		LengthConstraintBuilder builder = new LengthConstraintBuilder();
+		SizeConstraintBuilder builder = new SizeConstraintBuilder();
 		assertThrows(NullPointerException.class, () -> builder.notEqualTo(null));
 	}
 	
 	@Test
 	void inReturnsBuilder() {
-		LengthConstraintBuilder builder = new LengthConstraintBuilder();
+		SizeConstraintBuilder builder = new SizeConstraintBuilder();
 		assertSame(builder, builder.in(List.of(1, 2, 3)));
 		assertTrue(builder.build().in().isPresent());
 	}
 	
 	@Test
 	void inWithNullValues() {
-		LengthConstraintBuilder builder = new LengthConstraintBuilder();
+		SizeConstraintBuilder builder = new SizeConstraintBuilder();
 		assertThrows(NullPointerException.class, () -> builder.in(null));
 	}
 	
 	@Test
 	void notInReturnsBuilder() {
-		LengthConstraintBuilder builder = new LengthConstraintBuilder();
+		SizeConstraintBuilder builder = new SizeConstraintBuilder();
 		assertSame(builder, builder.notIn(List.of(0, 100)));
 		assertTrue(builder.build().in().isPresent());
 	}
 	
 	@Test
 	void notInWithNullValues() {
-		LengthConstraintBuilder builder = new LengthConstraintBuilder();
+		SizeConstraintBuilder builder = new SizeConstraintBuilder();
 		assertThrows(NullPointerException.class, () -> builder.notIn(null));
 	}
 	
 	@Test
 	void customReturnsBuilder() {
-		LengthConstraintBuilder builder = new LengthConstraintBuilder();
+		SizeConstraintBuilder builder = new SizeConstraintBuilder();
 		Constraint<Integer> constraint = value -> Result.success(null);
 		assertSame(builder, builder.custom(constraint));
 		assertTrue(builder.build().custom().isPresent());
@@ -121,50 +121,50 @@ class LengthConstraintBuilderTest {
 	
 	@Test
 	void customWithNullConstraint() {
-		LengthConstraintBuilder builder = new LengthConstraintBuilder();
+		SizeConstraintBuilder builder = new SizeConstraintBuilder();
 		assertThrows(NullPointerException.class, () -> builder.custom(null));
 	}
 	
 	@Test
-	void minLengthReturnsBuilder() {
-		LengthConstraintBuilder builder = new LengthConstraintBuilder();
-		assertSame(builder, builder.minLength(1));
+	void minSizeReturnsBuilder() {
+		SizeConstraintBuilder builder = new SizeConstraintBuilder();
+		assertSame(builder, builder.minSize(1));
 		assertTrue(builder.build().min().isPresent());
 	}
 	
 	@Test
-	void maxLengthReturnsBuilder() {
-		LengthConstraintBuilder builder = new LengthConstraintBuilder();
-		assertSame(builder, builder.maxLength(100));
+	void maxSizeReturnsBuilder() {
+		SizeConstraintBuilder builder = new SizeConstraintBuilder();
+		assertSame(builder, builder.maxSize(100));
 		assertTrue(builder.build().max().isPresent());
 	}
 	
 	@Test
-	void exactLengthReturnsBuilder() {
-		LengthConstraintBuilder builder = new LengthConstraintBuilder();
-		assertSame(builder, builder.exactLength(10));
+	void exactSizeReturnsBuilder() {
+		SizeConstraintBuilder builder = new SizeConstraintBuilder();
+		assertSame(builder, builder.exactSize(10));
 		
-		LengthConstraintConfig config = builder.build();
+		SizeConstraintConfig config = builder.build();
 		assertTrue(config.min().isPresent());
 		assertTrue(config.max().isPresent());
 	}
 	
 	@Test
-	void lengthBetweenReturnsBuilder() {
-		LengthConstraintBuilder builder = new LengthConstraintBuilder();
-		assertSame(builder, builder.lengthBetween(5, 20));
+	void sizeBetweenReturnsBuilder() {
+		SizeConstraintBuilder builder = new SizeConstraintBuilder();
+		assertSame(builder, builder.sizeBetween(5, 20));
 		
-		LengthConstraintConfig config = builder.build();
+		SizeConstraintConfig config = builder.build();
 		assertTrue(config.min().isPresent());
 		assertTrue(config.max().isPresent());
 	}
 	
 	@Test
 	void buildReturnsCorrectConfig() {
-		LengthConstraintBuilder builder = new LengthConstraintBuilder();
-		builder.minLength(1).maxLength(100);
+		SizeConstraintBuilder builder = new SizeConstraintBuilder();
+		builder.minSize(1).maxSize(100);
 		
-		LengthConstraintConfig config = builder.build();
+		SizeConstraintConfig config = builder.build();
 		
 		assertNotNull(config);
 		assertTrue(config.min().isPresent());
@@ -173,11 +173,11 @@ class LengthConstraintBuilderTest {
 	
 	@Test
 	void methodChainingWorks() {
-		LengthConstraintBuilder builder = new LengthConstraintBuilder();
+		SizeConstraintBuilder builder = new SizeConstraintBuilder();
 		
-		LengthConstraintConfig config = builder
-			.minLength(1)
-			.maxLength(50)
+		SizeConstraintConfig config = builder
+			.minSize(1)
+			.maxSize(50)
 			.build();
 		
 		assertNotNull(config);
@@ -187,11 +187,11 @@ class LengthConstraintBuilderTest {
 	}
 	
 	@Test
-	void exactLengthSetsMinAndMax() {
-		LengthConstraintBuilder builder = new LengthConstraintBuilder();
-		builder.exactLength(25);
+	void exactSizeSetsMinAndMax() {
+		SizeConstraintBuilder builder = new SizeConstraintBuilder();
+		builder.exactSize(25);
 		
-		LengthConstraintConfig config = builder.build();
+		SizeConstraintConfig config = builder.build();
 		assertTrue(config.min().isPresent());
 		assertTrue(config.max().isPresent());
 		assertEquals(25, config.min().get().getFirst());
@@ -199,11 +199,11 @@ class LengthConstraintBuilderTest {
 	}
 	
 	@Test
-	void lengthBetweenSetsMinAndMax() {
-		LengthConstraintBuilder builder = new LengthConstraintBuilder();
-		builder.lengthBetween(10, 50);
+	void sizeBetweenSetsMinAndMax() {
+		SizeConstraintBuilder builder = new SizeConstraintBuilder();
+		builder.sizeBetween(10, 50);
 		
-		LengthConstraintConfig config = builder.build();
+		SizeConstraintConfig config = builder.build();
 		assertTrue(config.min().isPresent());
 		assertTrue(config.max().isPresent());
 		assertEquals(10, config.min().get().getFirst());

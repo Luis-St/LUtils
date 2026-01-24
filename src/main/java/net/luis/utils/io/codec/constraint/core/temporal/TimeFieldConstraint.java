@@ -18,7 +18,7 @@
 
 package net.luis.utils.io.codec.constraint.core.temporal;
 
-import net.luis.utils.io.codec.constraint_new.builder.NumericConstraintBuilder;
+import net.luis.utils.io.codec.constraint.builder.NumericConstraintBuilder;
 import org.jspecify.annotations.NonNull;
 
 import java.util.function.UnaryOperator;
