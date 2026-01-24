@@ -242,11 +242,9 @@ class Ipv6AddressTest {
 	
 	@Test
 	void isGlobalUnicast() {
-		// 2003:: is global unicast (not Teredo 2001:0000::/32 or documentation 2001:db8::/32)
 		Ipv6Address global = new Ipv6Address(0x2003000000000000L, 1L);
 		assertTrue(global.isGlobalUnicast());
 		assertFalse(Ipv6Address.LOOPBACK.isGlobalUnicast());
-		// Teredo addresses are not global unicast
 		assertFalse(new Ipv6Address(0x2001000000000000L, 1L).isGlobalUnicast());
 	}
 	
@@ -455,7 +453,7 @@ class Ipv6AddressTest {
 	
 	@Test
 	void getMulticastScopeNotMulticast() {
-		assertThrows(IllegalStateException.class, () -> Ipv6Address.LOOPBACK.getMulticastScope());
+		assertThrows(IllegalStateException.class, Ipv6Address.LOOPBACK::getMulticastScope);
 	}
 	
 	@Test
@@ -468,6 +466,14 @@ class Ipv6AddressTest {
 	void toInet6Address() {
 		Inet6Address inet = Ipv6Address.LOOPBACK.toInet6Address();
 		assertNotNull(inet);
+	}
+	
+	@Test
+	void toStringFormat() {
+		assertEquals("0:0:0:0:0:0:0:0", Ipv6Address.UNSPECIFIED.toString());
+		assertEquals("0:0:0:0:0:0:0:1", Ipv6Address.LOOPBACK.toString());
+		assertEquals("102:304:506:708:90a:b0c:d0e:f10", Ipv6Address.fromBytes(new byte[] { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16 }).toString());
+		assertEquals("2001:db8:85a3:0:0:8a2e:370:7334", new Ipv6Address(0x20010DB885A30000L, 0x00008A2E03707334L).toString());
 	}
 	
 	@Test

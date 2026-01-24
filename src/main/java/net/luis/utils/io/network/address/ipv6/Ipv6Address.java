@@ -649,4 +649,19 @@ public record Ipv6Address(long highBits, long lowBits, @Nullable String zoneId) 
 			throw new IllegalStateException("Failed to create internet v6 address", e);
 		}
 	}
+	
+	@Override
+	public @NonNull String toString() {
+		StringBuilder sb = new StringBuilder();
+		for (int i = 0; i < HEXTET_COUNT; i++) {
+			if (i > 0) {
+				sb.append(':');
+			}
+			sb.append(Integer.toHexString(this.getHextet(i)));
+		}
+		if (this.zoneId != null) {
+			sb.append('%').append(this.zoneId);
+		}
+		return sb.toString();
+	}
 }

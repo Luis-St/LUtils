@@ -27,6 +27,7 @@ import net.luis.utils.io.network.address.ipv4.Ipv4Address;
 import net.luis.utils.io.network.address.ipv4.Ipv4Network;
 import net.luis.utils.io.network.address.ipv6.Ipv6Address;
 import net.luis.utils.io.network.address.ipv6.Ipv6Network;
+import net.luis.utils.io.network.address.mac.MacAddress;
 import net.luis.utils.util.Pair;
 import net.luis.utils.util.result.Result;
 import org.apache.commons.lang3.ArrayUtils;
@@ -1483,6 +1484,63 @@ public final class IOMatchers {
 		Result<Void> result = portConfig.get().matches(value.getPort());
 		if (result.isError()) {
 			return Result.error("Port constraint failed: " + result.errorOrThrow());
+		}
+		return Result.success();
+	}
+	
+	/**
+	 * Validates an IpNetwork against an IP version constraint.<br>
+	 *
+	 * @param value The IpNetwork to validate
+	 * @param ipVersion The enum constraint config for IP version
+	 * @return A successful result if the constraint is satisfied or not present
+	 * @throws NullPointerException If any parameter is null
+	 */
+	public static @NonNull Result<Void> matchIpNetworkIpVersion(@NonNull IpNetwork<?, ?> value, @NonNull Optional<EnumConstraintConfig<IpVersion>> ipVersion) {
+		Objects.requireNonNull(value, "IpNetwork must not be null");
+		Objects.requireNonNull(ipVersion, "IP version constraint must not be null");
+		if (ipVersion.isEmpty()) {
+			return Result.success();
+		}
+		
+		IpVersion version = switch (value.networkAddress()) {
+			case Ipv4Address _ -> IpVersion.IPV4;
+			case Ipv6Address _ -> IpVersion.IPV6;
+			default -> null;
+		};
+		if (version == null) {
+			return Result.error("Unable to determine IP version for network: " + value);
+		}
+		
+		Result<Void> result = ipVersion.get().matches(version);
+		if (result.isError()) {
+			return Result.error("IP version constraint failed: " + result.errorOrThrow());
+		}
+		return Result.success();
+	}
+	
+	/**
+	 * Validates a MacAddress against a broadcast constraint.<br>
+	 *
+	 * @param value The MacAddress to validate
+	 * @param broadcast The broadcast constraint as a pair of (Unit, negated)
+	 * @return A successful result if the constraint is satisfied or not present
+	 * @throws NullPointerException If any parameter is null
+	 */
+	public static @NonNull Result<Void> matchMacAddressBroadcast(@NonNull MacAddress value, @NonNull Optional<Pair<Unit, Boolean>> broadcast) {
+		Objects.requireNonNull(value, "MacAddress must not be null");
+		Objects.requireNonNull(broadcast, "Broadcast constraint must not be null");
+		if (broadcast.isEmpty()) {
+			return Result.success();
+		}
+		
+		boolean isBroadcast = value.isBroadcast();
+		boolean negated = broadcast.get().getSecond();
+		
+		if (negated && isBroadcast) {
+			return Result.error("MAC address must not be broadcast, but was: " + value);
+		} else if (!negated && !isBroadcast) {
+			return Result.error("MAC address must be broadcast, but was: " + value);
 		}
 		return Result.success();
 	}

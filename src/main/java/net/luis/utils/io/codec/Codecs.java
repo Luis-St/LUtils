@@ -35,6 +35,9 @@ import net.luis.utils.io.codec.types.temporal.local.*;
 import net.luis.utils.io.codec.types.temporal.offset.OffsetDateTimeCodec;
 import net.luis.utils.io.codec.types.temporal.offset.OffsetTimeCodec;
 import net.luis.utils.io.codec.types.temporal.zoned.*;
+import net.luis.utils.io.network.address.IpAddress;
+import net.luis.utils.io.network.address.IpNetwork;
+import net.luis.utils.io.network.address.mac.MacAddress;
 import net.luis.utils.util.Either;
 import net.luis.utils.util.result.Result;
 import net.luis.utils.util.result.ResultingFunction;
@@ -261,6 +264,21 @@ public final class Codecs {
 	 * The underlying inet socket address is converted to and from a string.<br>
 	 */
 	public static final InetSocketAddressCodec INET_SOCKET_ADDRESS = new InetSocketAddressCodec();
+	/**
+	 * A codec that encodes and decodes {@link IpAddress ip addresses}.<br>
+	 * The underlying IP address (IPv4 or IPv6) is converted to and from a string.<br>
+	 */
+	public static final IpAddressCodec IP_ADDRESS = new IpAddressCodec();
+	/**
+	 * A codec that encodes and decodes {@link IpNetwork ip networks}.<br>
+	 * The underlying IP network (IPv4 or IPv6) is converted to and from a CIDR notation string.<br>
+	 */
+	public static final IpNetworkCodec IP_NETWORK = new IpNetworkCodec();
+	/**
+	 * A codec that encodes and decodes {@link MacAddress mac addresses}.<br>
+	 * The underlying MAC address is converted to and from a colon-delimited string.<br>
+	 */
+	public static final MacAddressCodec MAC_ADDRESS = new MacAddressCodec();
 	/**
 	 * A codec that encodes and decodes {@link Locale locales}.<br>
 	 * The underlying locale is converted to and from a string.<br>
