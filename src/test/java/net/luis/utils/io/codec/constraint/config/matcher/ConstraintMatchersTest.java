@@ -16,7 +16,7 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-package net.luis.utils.io.codec.constraint_new.config.matcher;
+package net.luis.utils.io.codec.constraint.config.matcher;
 
 import net.luis.utils.io.codec.constraint.config.LengthConstraintConfig;
 import net.luis.utils.io.codec.constraint.config.SizeConstraintConfig;
@@ -30,6 +30,7 @@ import org.junit.jupiter.api.Test;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.*;
+import java.util.function.Supplier;
 import java.util.regex.Pattern;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -85,7 +86,7 @@ class ConstraintMatchersTest {
 	
 	@Test
 	void allOfWithNullChecks() {
-		assertThrows(NullPointerException.class, () -> ConstraintMatchers.allOf(null));
+		assertThrows(NullPointerException.class, () -> ConstraintMatchers.allOf((Supplier<Result<Void>>[]) null));
 	}
 	
 	@Test
