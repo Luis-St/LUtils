@@ -18,9 +18,9 @@
 
 package net.luis.utils.io.codec.constraint.builder;
 
+import net.luis.utils.io.codec.constraint.config.numeric.NumericConstraintConfig;
 import net.luis.utils.io.codec.constraint.core.ComparableConstraint;
 import net.luis.utils.io.codec.constraint.core.Constraint;
-import net.luis.utils.io.codec.constraint.config.numeric.NumericConstraintConfig;
 import org.jspecify.annotations.NonNull;
 
 import java.util.Collection;

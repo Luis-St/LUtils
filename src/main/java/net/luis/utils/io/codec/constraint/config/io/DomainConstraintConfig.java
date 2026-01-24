@@ -18,11 +18,11 @@
 
 package net.luis.utils.io.codec.constraint.config.io;
 
-import net.luis.utils.io.codec.constraint.core.Constraint;
 import net.luis.utils.io.codec.constraint.config.ConstraintConfig;
 import net.luis.utils.io.codec.constraint.config.LengthConstraintConfig;
 import net.luis.utils.io.codec.constraint.config.matcher.ConstraintMatchers;
 import net.luis.utils.io.codec.constraint.config.matcher.NetworkMatchers;
+import net.luis.utils.io.codec.constraint.core.Constraint;
 import net.luis.utils.io.codec.constraint.util.Unit;
 import net.luis.utils.util.Pair;
 import net.luis.utils.util.result.Result;
@@ -129,31 +129,31 @@ public record DomainConstraintConfig(
 		Objects.requireNonNull(rootDomain, "Optional for 'root domain' constraint must not be null");
 		Objects.requireNonNull(subDomain, "Optional for 'sub domain' constraint must not be null");
 		Objects.requireNonNull(custom, "Optional for 'custom' constraint must not be null");
-
+		
 		if (in.isPresent() && in.get().getFirst().isEmpty()) {
 			throw new IllegalArgumentException("In constraint set must not be empty when present");
 		}
-
+		
 		if (startsWithAny.isPresent() && startsWithAny.get().getFirst().isEmpty()) {
 			throw new IllegalArgumentException("Starts with any set must not be empty when present");
 		}
-
+		
 		if (containsAny.isPresent() && containsAny.get().getFirst().isEmpty()) {
 			throw new IllegalArgumentException("Contains any set must not be empty when present");
 		}
-
+		
 		if (containsAll.isPresent() && containsAll.get().isEmpty()) {
 			throw new IllegalArgumentException("Contains all set must not be empty when present");
 		}
-
+		
 		if (containsOnly.isPresent() && containsOnly.get().isEmpty()) {
 			throw new IllegalArgumentException("Contains only set must not be empty when present");
 		}
-
+		
 		if (endsWithAny.isPresent() && endsWithAny.get().getFirst().isEmpty()) {
 			throw new IllegalArgumentException("Ends with any set must not be empty when present");
 		}
-
+		
 		if (rootDomain.isPresent() && subDomain.isPresent()) {
 			throw new IllegalArgumentException("Both root domain and sub domain constraints cannot be present at the same time");
 		}
@@ -215,7 +215,7 @@ public record DomainConstraintConfig(
 		LengthConstraintConfig newLength = this.length.orElse(LengthConstraintConfig.UNCONSTRAINED).withMinLength(minLength);
 		return new DomainConstraintConfig(this.equalTo, this.in, Optional.of(newLength), this.startsWith, this.startsWithAny, this.contains, this.containsAny, this.containsAll, this.containsOnly, this.endsWith, this.endsWithAny, this.matches, this.rootDomain, this.subDomain, this.custom);
 	}
-
+	
 	/**
 	 * Creates a new config with the specified maximum length constraint (inclusive).<br>
 	 *
@@ -226,7 +226,7 @@ public record DomainConstraintConfig(
 		LengthConstraintConfig newLength = this.length.orElse(LengthConstraintConfig.UNCONSTRAINED).withMaxLength(maxLength);
 		return new DomainConstraintConfig(this.equalTo, this.in, Optional.of(newLength), this.startsWith, this.startsWithAny, this.contains, this.containsAny, this.containsAll, this.containsOnly, this.endsWith, this.endsWithAny, this.matches, this.rootDomain, this.subDomain, this.custom);
 	}
-
+	
 	/**
 	 * Creates a new config with the specified exact length constraint.<br>
 	 *
@@ -237,7 +237,7 @@ public record DomainConstraintConfig(
 		LengthConstraintConfig newLength = this.length.orElse(LengthConstraintConfig.UNCONSTRAINED).withExactLength(exactLength);
 		return new DomainConstraintConfig(this.equalTo, this.in, Optional.of(newLength), this.startsWith, this.startsWithAny, this.contains, this.containsAny, this.containsAll, this.containsOnly, this.endsWith, this.endsWithAny, this.matches, this.rootDomain, this.subDomain, this.custom);
 	}
-
+	
 	/**
 	 * Creates a new config with the specified length range constraint (inclusive).<br>
 	 *
@@ -249,7 +249,7 @@ public record DomainConstraintConfig(
 		LengthConstraintConfig newLength = this.length.orElse(LengthConstraintConfig.UNCONSTRAINED).withLengthBetween(minLength, maxLength);
 		return new DomainConstraintConfig(this.equalTo, this.in, Optional.of(newLength), this.startsWith, this.startsWithAny, this.contains, this.containsAny, this.containsAll, this.containsOnly, this.endsWith, this.endsWithAny, this.matches, this.rootDomain, this.subDomain, this.custom);
 	}
-
+	
 	/**
 	 * Creates a new config with the specified length constraints.<br>
 	 * <p>

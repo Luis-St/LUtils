@@ -18,10 +18,8 @@
 
 package net.luis.utils.io.codec.constraint.merged.numeric;
 
-import net.luis.utils.io.codec.constraint.core.NumericConstraint;
-import net.luis.utils.io.codec.constraint.core.ApplicableConstraint;
-import net.luis.utils.io.codec.constraint.core.Constraint;
 import net.luis.utils.io.codec.constraint.config.numeric.BigDecimalConstraintConfig;
+import net.luis.utils.io.codec.constraint.core.*;
 import org.jspecify.annotations.NonNull;
 
 import java.math.BigDecimal;

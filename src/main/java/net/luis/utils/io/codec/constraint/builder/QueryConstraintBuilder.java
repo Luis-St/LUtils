@@ -19,8 +19,8 @@
 package net.luis.utils.io.codec.constraint.builder;
 
 import net.luis.utils.io.codec.constraint.config.collection.MapConstraintConfig;
-import net.luis.utils.io.codec.constraint.core.Constraint;
 import net.luis.utils.io.codec.constraint.config.io.QueryConstraintConfig;
+import net.luis.utils.io.codec.constraint.core.Constraint;
 import net.luis.utils.io.codec.constraint.merged.io.QueryConstraint;
 import org.jspecify.annotations.NonNull;
 

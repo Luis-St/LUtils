@@ -18,10 +18,10 @@
 
 package net.luis.utils.io.codec.constraint.merged;
 
-import net.luis.utils.io.codec.constraint.core.*;
 import net.luis.utils.io.codec.constraint.builder.EnumConstraintBuilder;
 import net.luis.utils.io.codec.constraint.builder.NumericConstraintBuilder;
 import net.luis.utils.io.codec.constraint.config.UUIDConstraintConfig;
+import net.luis.utils.io.codec.constraint.core.*;
 import net.luis.utils.io.codec.constraint.util.UUIDVariant;
 import org.jspecify.annotations.NonNull;
 

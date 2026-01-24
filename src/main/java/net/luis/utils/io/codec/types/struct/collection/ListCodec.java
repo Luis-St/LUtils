@@ -20,8 +20,8 @@ package net.luis.utils.io.codec.types.struct.collection;
 
 import net.luis.utils.io.codec.AbstractCodec;
 import net.luis.utils.io.codec.Codec;
-import net.luis.utils.io.codec.constraint.merged.collection.ListConstraint;
 import net.luis.utils.io.codec.constraint.config.collection.ListConstraintConfig;
+import net.luis.utils.io.codec.constraint.merged.collection.ListConstraint;
 import net.luis.utils.io.codec.provider.TypeProvider;
 import net.luis.utils.util.result.Result;
 import org.jspecify.annotations.NonNull;

@@ -18,8 +18,8 @@
 
 package net.luis.utils.io.codec.constraint.builder;
 
-import net.luis.utils.io.codec.constraint.core.Constraint;
 import net.luis.utils.io.codec.constraint.config.io.HostConstraintConfig;
+import net.luis.utils.io.codec.constraint.core.Constraint;
 import net.luis.utils.io.codec.constraint.merged.io.HostConstraint;
 import org.jspecify.annotations.NonNull;
 

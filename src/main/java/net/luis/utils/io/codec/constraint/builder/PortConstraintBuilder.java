@@ -18,10 +18,10 @@
 
 package net.luis.utils.io.codec.constraint.builder;
 
-import net.luis.utils.io.codec.constraint.core.Constraint;
 import net.luis.utils.io.codec.constraint.config.io.PortConstraintConfig;
-import net.luis.utils.io.codec.constraint.util.PortRange;
+import net.luis.utils.io.codec.constraint.core.Constraint;
 import net.luis.utils.io.codec.constraint.merged.io.PortConstraint;
+import net.luis.utils.io.codec.constraint.util.PortRange;
 import org.jspecify.annotations.NonNull;
 
 import java.util.Collection;

@@ -18,9 +18,9 @@
 
 package net.luis.utils.io.codec.constraint.merged.collection;
 
-import net.luis.utils.io.codec.constraint.core.*;
 import net.luis.utils.io.codec.constraint.builder.LengthConstraintBuilder;
 import net.luis.utils.io.codec.constraint.config.collection.ArrayConstraintConfig;
+import net.luis.utils.io.codec.constraint.core.*;
 import org.jspecify.annotations.NonNull;
 
 import java.util.Collection;

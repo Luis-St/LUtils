@@ -18,9 +18,9 @@
 
 package net.luis.utils.io.codec.constraint.config;
 
+import net.luis.utils.io.codec.constraint.config.matcher.ConstraintMatchers;
 import net.luis.utils.io.codec.constraint.core.Constraint;
 import net.luis.utils.io.codec.constraint.core.DepthConstraint;
-import net.luis.utils.io.codec.constraint.config.matcher.ConstraintMatchers;
 import net.luis.utils.util.Pair;
 import net.luis.utils.util.result.Result;
 import org.jspecify.annotations.NonNull;

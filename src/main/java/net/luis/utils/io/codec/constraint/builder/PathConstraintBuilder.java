@@ -18,10 +18,10 @@
 
 package net.luis.utils.io.codec.constraint.builder;
 
-import net.luis.utils.io.codec.constraint.core.Constraint;
 import net.luis.utils.io.codec.constraint.config.io.PathConstraintConfig;
-import net.luis.utils.io.codec.constraint.util.Platform;
+import net.luis.utils.io.codec.constraint.core.Constraint;
 import net.luis.utils.io.codec.constraint.merged.io.PathConstraint;
+import net.luis.utils.io.codec.constraint.util.Platform;
 import org.jspecify.annotations.NonNull;
 
 import java.nio.file.Path;

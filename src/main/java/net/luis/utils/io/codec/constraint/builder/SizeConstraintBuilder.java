@@ -18,9 +18,9 @@
 
 package net.luis.utils.io.codec.constraint.builder;
 
+import net.luis.utils.io.codec.constraint.config.SizeConstraintConfig;
 import net.luis.utils.io.codec.constraint.core.Constraint;
 import net.luis.utils.io.codec.constraint.core.SizeConstraint;
-import net.luis.utils.io.codec.constraint.config.SizeConstraintConfig;
 import org.jspecify.annotations.NonNull;
 
 import java.util.Collection;

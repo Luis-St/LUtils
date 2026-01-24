@@ -18,12 +18,10 @@
 
 package net.luis.utils.io.codec.constraint.config.io;
 
-import net.luis.utils.io.codec.constraint.core.Constraint;
-import net.luis.utils.io.codec.constraint.config.ConstraintConfig;
-import net.luis.utils.io.codec.constraint.config.EnumConstraintConfig;
-import net.luis.utils.io.codec.constraint.config.LengthConstraintConfig;
+import net.luis.utils.io.codec.constraint.config.*;
 import net.luis.utils.io.codec.constraint.config.matcher.ConstraintMatchers;
 import net.luis.utils.io.codec.constraint.config.matcher.NetworkMatchers;
+import net.luis.utils.io.codec.constraint.core.Constraint;
 import net.luis.utils.io.codec.constraint.util.IpAddressType;
 import net.luis.utils.io.codec.constraint.util.IpVersion;
 import net.luis.utils.util.Pair;
@@ -134,31 +132,31 @@ public record IpConstraintConfig(
 		Objects.requireNonNull(ipType, "Optional for 'ip type' constraint must not be null");
 		Objects.requireNonNull(inAnySubnet, "Optional for 'in any subnet' constraint must not be null");
 		Objects.requireNonNull(custom, "Optional for 'custom' constraint must not be null");
-
+		
 		if (in.isPresent() && in.get().getFirst().isEmpty()) {
 			throw new IllegalArgumentException("In constraint set must not be empty when present");
 		}
-
+		
 		if (startsWithAny.isPresent() && startsWithAny.get().getFirst().isEmpty()) {
 			throw new IllegalArgumentException("Starts with any set must not be empty when present");
 		}
-
+		
 		if (containsAny.isPresent() && containsAny.get().getFirst().isEmpty()) {
 			throw new IllegalArgumentException("Contains any set must not be empty when present");
 		}
-
+		
 		if (containsAll.isPresent() && containsAll.get().isEmpty()) {
 			throw new IllegalArgumentException("Contains all set must not be empty when present");
 		}
-
+		
 		if (containsOnly.isPresent() && containsOnly.get().isEmpty()) {
 			throw new IllegalArgumentException("Contains only set must not be empty when present");
 		}
-
+		
 		if (endsWithAny.isPresent() && endsWithAny.get().getFirst().isEmpty()) {
 			throw new IllegalArgumentException("Ends with any set must not be empty when present");
 		}
-
+		
 		if (inAnySubnet.isPresent() && inAnySubnet.get().getFirst().isEmpty()) {
 			throw new IllegalArgumentException("In any subnet set must not be empty when present");
 		}
@@ -220,7 +218,7 @@ public record IpConstraintConfig(
 		LengthConstraintConfig newLength = this.length.orElse(LengthConstraintConfig.UNCONSTRAINED).withMinLength(minLength);
 		return new IpConstraintConfig(this.equalTo, this.in, Optional.of(newLength), this.startsWith, this.startsWithAny, this.contains, this.containsAny, this.containsAll, this.containsOnly, this.endsWith, this.endsWithAny, this.matches, this.ipVersion, this.ipType, this.inAnySubnet, this.custom);
 	}
-
+	
 	/**
 	 * Creates a new config with the specified maximum length constraint (inclusive).<br>
 	 *
@@ -231,7 +229,7 @@ public record IpConstraintConfig(
 		LengthConstraintConfig newLength = this.length.orElse(LengthConstraintConfig.UNCONSTRAINED).withMaxLength(maxLength);
 		return new IpConstraintConfig(this.equalTo, this.in, Optional.of(newLength), this.startsWith, this.startsWithAny, this.contains, this.containsAny, this.containsAll, this.containsOnly, this.endsWith, this.endsWithAny, this.matches, this.ipVersion, this.ipType, this.inAnySubnet, this.custom);
 	}
-
+	
 	/**
 	 * Creates a new config with the specified exact length constraint.<br>
 	 *
@@ -242,7 +240,7 @@ public record IpConstraintConfig(
 		LengthConstraintConfig newLength = this.length.orElse(LengthConstraintConfig.UNCONSTRAINED).withExactLength(exactLength);
 		return new IpConstraintConfig(this.equalTo, this.in, Optional.of(newLength), this.startsWith, this.startsWithAny, this.contains, this.containsAny, this.containsAll, this.containsOnly, this.endsWith, this.endsWithAny, this.matches, this.ipVersion, this.ipType, this.inAnySubnet, this.custom);
 	}
-
+	
 	/**
 	 * Creates a new config with the specified length range constraint (inclusive).<br>
 	 *
@@ -254,7 +252,7 @@ public record IpConstraintConfig(
 		LengthConstraintConfig newLength = this.length.orElse(LengthConstraintConfig.UNCONSTRAINED).withLengthBetween(minLength, maxLength);
 		return new IpConstraintConfig(this.equalTo, this.in, Optional.of(newLength), this.startsWith, this.startsWithAny, this.contains, this.containsAny, this.containsAll, this.containsOnly, this.endsWith, this.endsWithAny, this.matches, this.ipVersion, this.ipType, this.inAnySubnet, this.custom);
 	}
-
+	
 	/**
 	 * Creates a new config with the specified length constraints.<br>
 	 * <p>

@@ -18,11 +18,11 @@
 
 package net.luis.utils.io.codec.constraint.builder;
 
-import net.luis.utils.io.codec.constraint.core.Constraint;
 import net.luis.utils.io.codec.constraint.config.io.IpConstraintConfig;
+import net.luis.utils.io.codec.constraint.core.Constraint;
+import net.luis.utils.io.codec.constraint.merged.io.IpConstraint;
 import net.luis.utils.io.codec.constraint.util.IpAddressType;
 import net.luis.utils.io.codec.constraint.util.IpVersion;
-import net.luis.utils.io.codec.constraint.merged.io.IpConstraint;
 import org.jspecify.annotations.NonNull;
 
 import java.util.Collection;

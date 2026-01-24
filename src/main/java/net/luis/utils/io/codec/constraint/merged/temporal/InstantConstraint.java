@@ -18,9 +18,9 @@
 
 package net.luis.utils.io.codec.constraint.merged.temporal;
 
+import net.luis.utils.io.codec.constraint.config.temporal.InstantConstraintConfig;
 import net.luis.utils.io.codec.constraint.core.ApplicableConstraint;
 import net.luis.utils.io.codec.constraint.core.Constraint;
-import net.luis.utils.io.codec.constraint.config.temporal.InstantConstraintConfig;
 import net.luis.utils.io.codec.constraint.core.temporal.TemporalComparableConstraint;
 import net.luis.utils.io.codec.constraint.core.temporal.TemporalSpanConstraint;
 import org.jspecify.annotations.NonNull;
