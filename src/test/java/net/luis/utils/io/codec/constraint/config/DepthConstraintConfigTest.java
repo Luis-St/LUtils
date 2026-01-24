@@ -16,7 +16,7 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-package net.luis.utils.io.codec.constraint_new.config;
+package net.luis.utils.io.codec.constraint.config;
 
 import net.luis.utils.util.Pair;
 import net.luis.utils.util.result.Result;
@@ -27,79 +27,79 @@ import java.util.*;
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
- * Test class for {@link LengthConstraintConfig}.<br>
+ * Test class for {@link DepthConstraintConfig}.<br>
  *
  * @author Luis-St
  */
-class LengthConstraintConfigTest {
+class DepthConstraintConfigTest {
 	
 	@Test
 	void constructWithNullEqualTo() {
-		assertThrows(NullPointerException.class, () -> new LengthConstraintConfig(
+		assertThrows(NullPointerException.class, () -> new DepthConstraintConfig(
 			null, Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty()
 		));
 	}
 	
 	@Test
 	void constructWithNullIn() {
-		assertThrows(NullPointerException.class, () -> new LengthConstraintConfig(
+		assertThrows(NullPointerException.class, () -> new DepthConstraintConfig(
 			Optional.empty(), null, Optional.empty(), Optional.empty(), Optional.empty()
 		));
 	}
 	
 	@Test
 	void constructWithNullMin() {
-		assertThrows(NullPointerException.class, () -> new LengthConstraintConfig(
+		assertThrows(NullPointerException.class, () -> new DepthConstraintConfig(
 			Optional.empty(), Optional.empty(), null, Optional.empty(), Optional.empty()
 		));
 	}
 	
 	@Test
 	void constructWithNullMax() {
-		assertThrows(NullPointerException.class, () -> new LengthConstraintConfig(
+		assertThrows(NullPointerException.class, () -> new DepthConstraintConfig(
 			Optional.empty(), Optional.empty(), Optional.empty(), null, Optional.empty()
 		));
 	}
 	
 	@Test
 	void constructWithNullCustom() {
-		assertThrows(NullPointerException.class, () -> new LengthConstraintConfig(
+		assertThrows(NullPointerException.class, () -> new DepthConstraintConfig(
 			Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), null
 		));
 	}
 	
 	@Test
 	void constructWithEmptyInSet() {
-		assertThrows(IllegalArgumentException.class, () -> new LengthConstraintConfig(
+		assertThrows(IllegalArgumentException.class, () -> new DepthConstraintConfig(
 			Optional.empty(), Optional.of(Pair.of(Set.of(), false)), Optional.empty(), Optional.empty(), Optional.empty()
 		));
 	}
 	
 	@Test
 	void constructWithNegativeMin() {
-		assertThrows(IllegalArgumentException.class, () -> LengthConstraintConfig.UNCONSTRAINED.withMinLength(-1));
+		assertThrows(IllegalArgumentException.class, () -> DepthConstraintConfig.UNCONSTRAINED.withMinDepth(-1));
 	}
 	
 	@Test
 	void constructWithNegativeMax() {
-		assertThrows(IllegalArgumentException.class, () -> LengthConstraintConfig.UNCONSTRAINED.withMaxLength(-1));
+		assertThrows(IllegalArgumentException.class, () -> DepthConstraintConfig.UNCONSTRAINED.withMaxDepth(-1));
 	}
 	
 	@Test
 	void constructWithMinGreaterThanMax() {
-		assertThrows(IllegalArgumentException.class, () -> LengthConstraintConfig.UNCONSTRAINED.withLengthBetween(10, 5));
+		assertThrows(IllegalArgumentException.class, () -> DepthConstraintConfig.UNCONSTRAINED.withDepthBetween(10, 5));
 	}
 	
 	@Test
 	void constructWithEqualMinMaxExclusiveBound() {
-		assertThrows(IllegalArgumentException.class, () -> new LengthConstraintConfig(
+		assertThrows(IllegalArgumentException.class, () -> new DepthConstraintConfig(
 			Optional.empty(), Optional.empty(), Optional.of(Pair.of(5, false)), Optional.of(Pair.of(5, true)), Optional.empty()
 		));
 	}
 	
 	@Test
 	void unconstrained() {
-		LengthConstraintConfig config = LengthConstraintConfig.UNCONSTRAINED;
+		DepthConstraintConfig config = DepthConstraintConfig.UNCONSTRAINED;
 		assertNotNull(config);
 		assertTrue(config.equalTo().isEmpty());
 		assertTrue(config.in().isEmpty());
@@ -111,7 +111,7 @@ class LengthConstraintConfigTest {
 	
 	@Test
 	void withEqualTo() {
-		LengthConstraintConfig config = LengthConstraintConfig.UNCONSTRAINED.withEqualTo(10);
+		DepthConstraintConfig config = DepthConstraintConfig.UNCONSTRAINED.withEqualTo(10);
 		assertTrue(config.equalTo().isPresent());
 		assertEquals(10, config.equalTo().get().getFirst());
 		assertFalse(config.equalTo().get().getSecond());
@@ -119,7 +119,7 @@ class LengthConstraintConfigTest {
 	
 	@Test
 	void withNotEqualTo() {
-		LengthConstraintConfig config = LengthConstraintConfig.UNCONSTRAINED.withNotEqualTo(10);
+		DepthConstraintConfig config = DepthConstraintConfig.UNCONSTRAINED.withNotEqualTo(10);
 		assertTrue(config.equalTo().isPresent());
 		assertEquals(10, config.equalTo().get().getFirst());
 		assertTrue(config.equalTo().get().getSecond());
@@ -127,7 +127,7 @@ class LengthConstraintConfigTest {
 	
 	@Test
 	void withIn() {
-		LengthConstraintConfig config = LengthConstraintConfig.UNCONSTRAINED.withIn(List.of(1, 2, 3));
+		DepthConstraintConfig config = DepthConstraintConfig.UNCONSTRAINED.withIn(List.of(1, 2, 3));
 		assertTrue(config.in().isPresent());
 		assertEquals(Set.of(1, 2, 3), config.in().get().getFirst());
 		assertFalse(config.in().get().getSecond());
@@ -135,12 +135,12 @@ class LengthConstraintConfigTest {
 	
 	@Test
 	void withInNull() {
-		assertThrows(NullPointerException.class, () -> LengthConstraintConfig.UNCONSTRAINED.withIn(null));
+		assertThrows(NullPointerException.class, () -> DepthConstraintConfig.UNCONSTRAINED.withIn(null));
 	}
 	
 	@Test
 	void withNotIn() {
-		LengthConstraintConfig config = LengthConstraintConfig.UNCONSTRAINED.withNotIn(List.of(4, 5));
+		DepthConstraintConfig config = DepthConstraintConfig.UNCONSTRAINED.withNotIn(List.of(4, 5));
 		assertTrue(config.in().isPresent());
 		assertEquals(Set.of(4, 5), config.in().get().getFirst());
 		assertTrue(config.in().get().getSecond());
@@ -148,28 +148,28 @@ class LengthConstraintConfigTest {
 	
 	@Test
 	void withNotInNull() {
-		assertThrows(NullPointerException.class, () -> LengthConstraintConfig.UNCONSTRAINED.withNotIn(null));
+		assertThrows(NullPointerException.class, () -> DepthConstraintConfig.UNCONSTRAINED.withNotIn(null));
 	}
 	
 	@Test
-	void withMinLength() {
-		LengthConstraintConfig config = LengthConstraintConfig.UNCONSTRAINED.withMinLength(5);
+	void withMinDepth() {
+		DepthConstraintConfig config = DepthConstraintConfig.UNCONSTRAINED.withMinDepth(5);
 		assertTrue(config.min().isPresent());
 		assertEquals(5, config.min().get().getFirst());
 		assertTrue(config.min().get().getSecond());
 	}
 	
 	@Test
-	void withMaxLength() {
-		LengthConstraintConfig config = LengthConstraintConfig.UNCONSTRAINED.withMaxLength(10);
+	void withMaxDepth() {
+		DepthConstraintConfig config = DepthConstraintConfig.UNCONSTRAINED.withMaxDepth(10);
 		assertTrue(config.max().isPresent());
 		assertEquals(10, config.max().get().getFirst());
 		assertTrue(config.max().get().getSecond());
 	}
 	
 	@Test
-	void withExactLength() {
-		LengthConstraintConfig config = LengthConstraintConfig.UNCONSTRAINED.withExactLength(7);
+	void withExactDepth() {
+		DepthConstraintConfig config = DepthConstraintConfig.UNCONSTRAINED.withExactDepth(7);
 		assertTrue(config.min().isPresent());
 		assertTrue(config.max().isPresent());
 		assertEquals(7, config.min().get().getFirst());
@@ -179,8 +179,8 @@ class LengthConstraintConfigTest {
 	}
 	
 	@Test
-	void withLengthBetween() {
-		LengthConstraintConfig config = LengthConstraintConfig.UNCONSTRAINED.withLengthBetween(3, 8);
+	void withDepthBetween() {
+		DepthConstraintConfig config = DepthConstraintConfig.UNCONSTRAINED.withDepthBetween(3, 8);
 		assertTrue(config.min().isPresent());
 		assertTrue(config.max().isPresent());
 		assertEquals(3, config.min().get().getFirst());
@@ -191,32 +191,32 @@ class LengthConstraintConfigTest {
 	
 	@Test
 	void withCustom() {
-		LengthConstraintConfig config = LengthConstraintConfig.UNCONSTRAINED.withCustom(v -> v % 2 != 0 ? Result.error("Length must be even") : Result.success());
+		DepthConstraintConfig config = DepthConstraintConfig.UNCONSTRAINED.withCustom(v -> v % 2 != 0 ? Result.error("Depth must be even") : Result.success());
 		assertTrue(config.custom().isPresent());
 	}
 	
 	@Test
 	void withCustomNull() {
-		assertThrows(NullPointerException.class, () -> LengthConstraintConfig.UNCONSTRAINED.withCustom(null));
+		assertThrows(NullPointerException.class, () -> DepthConstraintConfig.UNCONSTRAINED.withCustom(null));
 	}
 	
 	@Test
 	void matchesWithEqualTo() {
-		LengthConstraintConfig config = LengthConstraintConfig.UNCONSTRAINED.withEqualTo(42);
+		DepthConstraintConfig config = DepthConstraintConfig.UNCONSTRAINED.withEqualTo(42);
 		assertTrue(config.matches(42).isSuccess());
 		assertTrue(config.matches(43).isError());
 	}
 	
 	@Test
 	void matchesWithNotEqualTo() {
-		LengthConstraintConfig config = LengthConstraintConfig.UNCONSTRAINED.withNotEqualTo(42);
+		DepthConstraintConfig config = DepthConstraintConfig.UNCONSTRAINED.withNotEqualTo(42);
 		assertTrue(config.matches(41).isSuccess());
 		assertTrue(config.matches(42).isError());
 	}
 	
 	@Test
 	void matchesWithIn() {
-		LengthConstraintConfig config = LengthConstraintConfig.UNCONSTRAINED.withIn(List.of(1, 2, 3));
+		DepthConstraintConfig config = DepthConstraintConfig.UNCONSTRAINED.withIn(List.of(1, 2, 3));
 		assertTrue(config.matches(1).isSuccess());
 		assertTrue(config.matches(2).isSuccess());
 		assertTrue(config.matches(4).isError());
@@ -224,38 +224,38 @@ class LengthConstraintConfigTest {
 	
 	@Test
 	void matchesWithNotIn() {
-		LengthConstraintConfig config = LengthConstraintConfig.UNCONSTRAINED.withNotIn(List.of(1, 2, 3));
+		DepthConstraintConfig config = DepthConstraintConfig.UNCONSTRAINED.withNotIn(List.of(1, 2, 3));
 		assertTrue(config.matches(4).isSuccess());
 		assertTrue(config.matches(1).isError());
 	}
 	
 	@Test
-	void matchesWithMinLength() {
-		LengthConstraintConfig config = LengthConstraintConfig.UNCONSTRAINED.withMinLength(5);
+	void matchesWithMinDepth() {
+		DepthConstraintConfig config = DepthConstraintConfig.UNCONSTRAINED.withMinDepth(5);
 		assertTrue(config.matches(5).isSuccess());
 		assertTrue(config.matches(6).isSuccess());
 		assertTrue(config.matches(4).isError());
 	}
 	
 	@Test
-	void matchesWithMaxLength() {
-		LengthConstraintConfig config = LengthConstraintConfig.UNCONSTRAINED.withMaxLength(10);
+	void matchesWithMaxDepth() {
+		DepthConstraintConfig config = DepthConstraintConfig.UNCONSTRAINED.withMaxDepth(10);
 		assertTrue(config.matches(10).isSuccess());
 		assertTrue(config.matches(9).isSuccess());
 		assertTrue(config.matches(11).isError());
 	}
 	
 	@Test
-	void matchesWithExactLength() {
-		LengthConstraintConfig config = LengthConstraintConfig.UNCONSTRAINED.withExactLength(7);
+	void matchesWithExactDepth() {
+		DepthConstraintConfig config = DepthConstraintConfig.UNCONSTRAINED.withExactDepth(7);
 		assertTrue(config.matches(7).isSuccess());
 		assertTrue(config.matches(6).isError());
 		assertTrue(config.matches(8).isError());
 	}
 	
 	@Test
-	void matchesWithLengthBetween() {
-		LengthConstraintConfig config = LengthConstraintConfig.UNCONSTRAINED.withLengthBetween(3, 8);
+	void matchesWithDepthBetween() {
+		DepthConstraintConfig config = DepthConstraintConfig.UNCONSTRAINED.withDepthBetween(3, 8);
 		assertTrue(config.matches(3).isSuccess());
 		assertTrue(config.matches(8).isSuccess());
 		assertTrue(config.matches(5).isSuccess());
@@ -265,9 +265,9 @@ class LengthConstraintConfigTest {
 	
 	@Test
 	void matchesWithMultipleConstraints() {
-		LengthConstraintConfig config = LengthConstraintConfig.UNCONSTRAINED
-			.withMinLength(0)
-			.withMaxLength(100)
+		DepthConstraintConfig config = DepthConstraintConfig.UNCONSTRAINED
+			.withMinDepth(0)
+			.withMaxDepth(100)
 			.withNotIn(List.of(50));
 		
 		assertTrue(config.matches(0).isSuccess());
@@ -278,7 +278,7 @@ class LengthConstraintConfigTest {
 	
 	@Test
 	void matchesWithNullValue() {
-		LengthConstraintConfig config = LengthConstraintConfig.UNCONSTRAINED;
+		DepthConstraintConfig config = DepthConstraintConfig.UNCONSTRAINED;
 		assertThrows(NullPointerException.class, () -> config.matches(null));
 	}
 }

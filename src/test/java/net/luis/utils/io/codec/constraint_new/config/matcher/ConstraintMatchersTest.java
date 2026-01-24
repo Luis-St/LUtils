@@ -18,8 +18,10 @@
 
 package net.luis.utils.io.codec.constraint_new.config.matcher;
 
-import net.luis.utils.io.codec.constraint_new.Constraint;
-import net.luis.utils.io.codec.constraint_new.config.*;
+import net.luis.utils.io.codec.constraint.config.LengthConstraintConfig;
+import net.luis.utils.io.codec.constraint.config.SizeConstraintConfig;
+import net.luis.utils.io.codec.constraint.config.numeric.NumericConstraintConfig;
+import net.luis.utils.io.codec.constraint.core.Constraint;
 import net.luis.utils.io.codec.constraint_new.core.Unit;
 import net.luis.utils.util.Pair;
 import net.luis.utils.util.result.Result;
@@ -759,14 +761,14 @@ class ConstraintMatchersTest {
 	
 	@Test
 	void matchNestedConfigWithPass() {
-		NumericFieldConstraintConfig config = NumericFieldConstraintConfig.UNCONSTRAINED.withGreaterThanOrEqual(0);
+		NumericConstraintConfig config = NumericConstraintConfig.UNCONSTRAINED.withGreaterThanOrEqual(0);
 		Result<Void> result = ConstraintMatchers.matchNestedConfig(5, Optional.of(config), "value");
 		assertTrue(result.isSuccess());
 	}
 	
 	@Test
 	void matchNestedConfigWithFail() {
-		NumericFieldConstraintConfig config = NumericFieldConstraintConfig.UNCONSTRAINED.withGreaterThanOrEqual(10);
+		NumericConstraintConfig config = NumericConstraintConfig.UNCONSTRAINED.withGreaterThanOrEqual(10);
 		Result<Void> result = ConstraintMatchers.matchNestedConfig(5, Optional.of(config), "value");
 		assertTrue(result.isError());
 		assertTrue(result.errorOrThrow().contains("constraint failed"));
@@ -840,14 +842,14 @@ class ConstraintMatchersTest {
 	
 	@Test
 	void matchNumericFieldWithPass() {
-		NumericFieldConstraintConfig config = NumericFieldConstraintConfig.UNCONSTRAINED.withBetweenOrEqual(0, 10);
+		NumericConstraintConfig config = NumericConstraintConfig.UNCONSTRAINED.withBetweenOrEqual(0, 10);
 		Result<Void> result = ConstraintMatchers.matchNumericField(5, Optional.of(config), "field");
 		assertTrue(result.isSuccess());
 	}
 	
 	@Test
 	void matchNumericFieldWithFail() {
-		NumericFieldConstraintConfig config = NumericFieldConstraintConfig.UNCONSTRAINED.withBetweenOrEqual(10, 20);
+		NumericConstraintConfig config = NumericConstraintConfig.UNCONSTRAINED.withBetweenOrEqual(10, 20);
 		Result<Void> result = ConstraintMatchers.matchNumericField(5, Optional.of(config), "field");
 		assertTrue(result.isError());
 		assertTrue(result.errorOrThrow().contains("constraint failed"));

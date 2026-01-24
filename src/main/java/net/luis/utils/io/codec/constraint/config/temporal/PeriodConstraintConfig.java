@@ -18,9 +18,9 @@
 
 package net.luis.utils.io.codec.constraint.config.temporal;
 
-import net.luis.utils.io.codec.constraint_new.Constraint;
-import net.luis.utils.io.codec.constraint_new.config.ConstraintConfig;
-import net.luis.utils.io.codec.constraint_new.config.NumericFieldConstraintConfig;
+import net.luis.utils.io.codec.constraint.core.Constraint;
+import net.luis.utils.io.codec.constraint.config.ConstraintConfig;
+import net.luis.utils.io.codec.constraint.config.numeric.NumericConstraintConfig;
 import net.luis.utils.io.codec.constraint_new.config.matcher.ConstraintMatchers;
 import net.luis.utils.io.codec.constraint_new.config.matcher.TemporalMatchers;
 import net.luis.utils.util.Pair;
@@ -73,9 +73,9 @@ public record PeriodConstraintConfig(
 	@NonNull Optional<Boolean> positive,
 	@NonNull Optional<Boolean> negative,
 	@NonNull Optional<Boolean> zero,
-	@NonNull Optional<NumericFieldConstraintConfig> day,
-	@NonNull Optional<NumericFieldConstraintConfig> month,
-	@NonNull Optional<NumericFieldConstraintConfig> year,
+	@NonNull Optional<NumericConstraintConfig> day,
+	@NonNull Optional<NumericConstraintConfig> month,
+	@NonNull Optional<NumericConstraintConfig> year,
 	@NonNull Optional<Constraint<Period>> custom
 ) implements ConstraintConfig<Period> {
 	
@@ -303,7 +303,7 @@ public record PeriodConstraintConfig(
 	 * @param dayConfig The numeric field constraint config for day validation
 	 * @return A new config with the constraint applied
 	 */
-	public @NonNull PeriodConstraintConfig withDay(@NonNull NumericFieldConstraintConfig dayConfig) {
+	public @NonNull PeriodConstraintConfig withDay(@NonNull NumericConstraintConfig dayConfig) {
 		Objects.requireNonNull(dayConfig, "Config for 'day' constraint must not be null");
 		return new PeriodConstraintConfig(this.equalTo, this.in, this.min, this.max, this.positive, this.negative, this.zero, Optional.of(dayConfig), this.month, this.year, this.custom);
 	}
@@ -314,7 +314,7 @@ public record PeriodConstraintConfig(
 	 * @param monthConfig The numeric field constraint config for month validation
 	 * @return A new config with the constraint applied
 	 */
-	public @NonNull PeriodConstraintConfig withMonth(@NonNull NumericFieldConstraintConfig monthConfig) {
+	public @NonNull PeriodConstraintConfig withMonth(@NonNull NumericConstraintConfig monthConfig) {
 		Objects.requireNonNull(monthConfig, "Config for 'month' constraint must not be null");
 		return new PeriodConstraintConfig(this.equalTo, this.in, this.min, this.max, this.positive, this.negative, this.zero, this.day, Optional.of(monthConfig), this.year, this.custom);
 	}
@@ -325,7 +325,7 @@ public record PeriodConstraintConfig(
 	 * @param yearConfig The numeric field constraint config for year validation
 	 * @return A new config with the constraint applied
 	 */
-	public @NonNull PeriodConstraintConfig withYear(@NonNull NumericFieldConstraintConfig yearConfig) {
+	public @NonNull PeriodConstraintConfig withYear(@NonNull NumericConstraintConfig yearConfig) {
 		Objects.requireNonNull(yearConfig, "Config for 'year' constraint must not be null");
 		return new PeriodConstraintConfig(this.equalTo, this.in, this.min, this.max, this.positive, this.negative, this.zero, this.day, this.month, Optional.of(yearConfig), this.custom);
 	}

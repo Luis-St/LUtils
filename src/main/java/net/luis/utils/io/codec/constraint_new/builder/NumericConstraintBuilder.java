@@ -18,9 +18,9 @@
 
 package net.luis.utils.io.codec.constraint_new.builder;
 
-import net.luis.utils.io.codec.constraint_new.ComparableConstraint;
-import net.luis.utils.io.codec.constraint_new.Constraint;
-import net.luis.utils.io.codec.constraint_new.config.NumericFieldConstraintConfig;
+import net.luis.utils.io.codec.constraint.core.ComparableConstraint;
+import net.luis.utils.io.codec.constraint.core.Constraint;
+import net.luis.utils.io.codec.constraint.config.numeric.NumericConstraintConfig;
 import org.jspecify.annotations.NonNull;
 
 import java.util.Collection;
@@ -41,13 +41,13 @@ public class NumericConstraintBuilder implements ComparableConstraint<Integer, N
 	/**
 	 * The current constraint configuration being built.<br>
 	 */
-	private NumericFieldConstraintConfig config;
+	private NumericConstraintConfig config;
 	
 	/**
 	 * Constructs a new numeric constraint builder with no constraints applied.<br>
 	 */
 	public NumericConstraintBuilder() {
-		this.config = NumericFieldConstraintConfig.UNCONSTRAINED;
+		this.config = NumericConstraintConfig.UNCONSTRAINED;
 	}
 	
 	/**
@@ -56,7 +56,7 @@ public class NumericConstraintBuilder implements ComparableConstraint<Integer, N
 	 * @param initialConfig The initial configuration to use
 	 * @throws NullPointerException If the initial config is null
 	 */
-	public NumericConstraintBuilder(@NonNull NumericFieldConstraintConfig initialConfig) {
+	public NumericConstraintBuilder(@NonNull NumericConstraintConfig initialConfig) {
 		this.config = Objects.requireNonNull(initialConfig, "Initial config must not be null");
 	}
 	
@@ -131,7 +131,7 @@ public class NumericConstraintBuilder implements ComparableConstraint<Integer, N
 	 *
 	 * @return The built numeric field constraint config
 	 */
-	public @NonNull NumericFieldConstraintConfig build() {
+	public @NonNull NumericConstraintConfig build() {
 		return this.config;
 	}
 }

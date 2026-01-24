@@ -18,8 +18,8 @@
 
 package net.luis.utils.io.codec.constraint.merged.temporal.local;
 
-import net.luis.utils.io.codec.constraint_new.ApplicableConstraint;
-import net.luis.utils.io.codec.constraint_new.Constraint;
+import net.luis.utils.io.codec.constraint.core.ApplicableConstraint;
+import net.luis.utils.io.codec.constraint.core.Constraint;
 import net.luis.utils.io.codec.constraint.config.temporal.local.YearConstraintConfig;
 import net.luis.utils.io.codec.constraint.core.temporal.TemporalComparableConstraint;
 import org.jspecify.annotations.NonNull;

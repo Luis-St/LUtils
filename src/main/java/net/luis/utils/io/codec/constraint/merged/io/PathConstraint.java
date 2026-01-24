@@ -18,7 +18,7 @@
 
 package net.luis.utils.io.codec.constraint.merged.io;
 
-import net.luis.utils.io.codec.constraint_new.BaseConstraint;
+import net.luis.utils.io.codec.constraint.core.BaseConstraint;
 import net.luis.utils.io.codec.constraint_new.builder.*;
 import net.luis.utils.io.codec.constraint_new.core.Platform;
 import org.jspecify.annotations.NonNull;

@@ -18,8 +18,10 @@
 
 package net.luis.utils.io.codec.constraint.config.temporal.local;
 
-import net.luis.utils.io.codec.constraint_new.Constraint;
-import net.luis.utils.io.codec.constraint_new.config.*;
+import net.luis.utils.io.codec.constraint.config.ConstraintConfig;
+import net.luis.utils.io.codec.constraint.config.EnumConstraintConfig;
+import net.luis.utils.io.codec.constraint.config.numeric.NumericConstraintConfig;
+import net.luis.utils.io.codec.constraint.core.Constraint;
 import net.luis.utils.io.codec.constraint_new.config.matcher.ConstraintMatchers;
 import net.luis.utils.util.Pair;
 import net.luis.utils.util.result.Result;
@@ -76,12 +78,12 @@ public record LocalDateConstraintConfig(
 	@NonNull Optional<Duration> withinLast,
 	@NonNull Optional<Duration> withinNext,
 	@NonNull Optional<EnumConstraintConfig<DayOfWeek>> dayOfWeek,
-	@NonNull Optional<NumericFieldConstraintConfig> dayOfMonth,
-	@NonNull Optional<NumericFieldConstraintConfig> dayOfYear,
-	@NonNull Optional<NumericFieldConstraintConfig> weekOfMonth,
-	@NonNull Optional<NumericFieldConstraintConfig> weekOfYear,
+	@NonNull Optional<NumericConstraintConfig> dayOfMonth,
+	@NonNull Optional<NumericConstraintConfig> dayOfYear,
+	@NonNull Optional<NumericConstraintConfig> weekOfMonth,
+	@NonNull Optional<NumericConstraintConfig> weekOfYear,
 	@NonNull Optional<EnumConstraintConfig<Month>> month,
-	@NonNull Optional<NumericFieldConstraintConfig> year,
+	@NonNull Optional<NumericConstraintConfig> year,
 	@NonNull Optional<Constraint<LocalDate>> custom
 ) implements ConstraintConfig<LocalDate> {
 	
@@ -299,7 +301,7 @@ public record LocalDateConstraintConfig(
 	 * @param config The numeric field constraint config for day of month validation
 	 * @return A new config with the constraint applied
 	 */
-	public @NonNull LocalDateConstraintConfig withDayOfMonth(@NonNull NumericFieldConstraintConfig config) {
+	public @NonNull LocalDateConstraintConfig withDayOfMonth(@NonNull NumericConstraintConfig config) {
 		Objects.requireNonNull(config, "Config for 'day of month' constraint must not be null");
 		return new LocalDateConstraintConfig(this.equalTo, this.in, this.after, this.before, this.withinLast, this.withinNext, this.dayOfWeek, Optional.of(config), this.dayOfYear, this.weekOfMonth, this.weekOfYear, this.month, this.year, this.custom);
 	}
@@ -310,7 +312,7 @@ public record LocalDateConstraintConfig(
 	 * @param config The numeric field constraint config for day of year validation
 	 * @return A new config with the constraint applied
 	 */
-	public @NonNull LocalDateConstraintConfig withDayOfYear(@NonNull NumericFieldConstraintConfig config) {
+	public @NonNull LocalDateConstraintConfig withDayOfYear(@NonNull NumericConstraintConfig config) {
 		Objects.requireNonNull(config, "Config for 'day of year' constraint must not be null");
 		return new LocalDateConstraintConfig(this.equalTo, this.in, this.after, this.before, this.withinLast, this.withinNext, this.dayOfWeek, this.dayOfMonth, Optional.of(config), this.weekOfMonth, this.weekOfYear, this.month, this.year, this.custom);
 	}
@@ -321,7 +323,7 @@ public record LocalDateConstraintConfig(
 	 * @param config The numeric field constraint config for week of month validation
 	 * @return A new config with the constraint applied
 	 */
-	public @NonNull LocalDateConstraintConfig withWeekOfMonth(@NonNull NumericFieldConstraintConfig config) {
+	public @NonNull LocalDateConstraintConfig withWeekOfMonth(@NonNull NumericConstraintConfig config) {
 		Objects.requireNonNull(config, "Config for 'week of month' constraint must not be null");
 		return new LocalDateConstraintConfig(this.equalTo, this.in, this.after, this.before, this.withinLast, this.withinNext, this.dayOfWeek, this.dayOfMonth, this.dayOfYear, Optional.of(config), this.weekOfYear, this.month, this.year, this.custom);
 	}
@@ -332,7 +334,7 @@ public record LocalDateConstraintConfig(
 	 * @param config The numeric field constraint config for week of year validation
 	 * @return A new config with the constraint applied
 	 */
-	public @NonNull LocalDateConstraintConfig withWeekOfYear(@NonNull NumericFieldConstraintConfig config) {
+	public @NonNull LocalDateConstraintConfig withWeekOfYear(@NonNull NumericConstraintConfig config) {
 		Objects.requireNonNull(config, "Config for 'week of year' constraint must not be null");
 		return new LocalDateConstraintConfig(this.equalTo, this.in, this.after, this.before, this.withinLast, this.withinNext, this.dayOfWeek, this.dayOfMonth, this.dayOfYear, this.weekOfMonth, Optional.of(config), this.month, this.year, this.custom);
 	}
@@ -354,7 +356,7 @@ public record LocalDateConstraintConfig(
 	 * @param config The numeric field constraint config for year validation
 	 * @return A new config with the constraint applied
 	 */
-	public @NonNull LocalDateConstraintConfig withYear(@NonNull NumericFieldConstraintConfig config) {
+	public @NonNull LocalDateConstraintConfig withYear(@NonNull NumericConstraintConfig config) {
 		Objects.requireNonNull(config, "Config for 'year' constraint must not be null");
 		return new LocalDateConstraintConfig(this.equalTo, this.in, this.after, this.before, this.withinLast, this.withinNext, this.dayOfWeek, this.dayOfMonth, this.dayOfYear, this.weekOfMonth, this.weekOfYear, this.month, Optional.of(config), this.custom);
 	}

@@ -18,8 +18,9 @@
 
 package net.luis.utils.io.codec.constraint_new.builder;
 
+import net.luis.utils.io.codec.constraint.config.EnumConstraintConfig;
 import net.luis.utils.io.codec.constraint.config.UUIDConstraintConfig;
-import net.luis.utils.io.codec.constraint_new.config.*;
+import net.luis.utils.io.codec.constraint.config.numeric.NumericConstraintConfig;
 import net.luis.utils.io.codec.constraint_new.core.UUIDVariant;
 import net.luis.utils.util.Pair;
 import net.luis.utils.util.result.Result;
@@ -186,7 +187,7 @@ class UUIDConstraintConfigTest {
 	
 	@Test
 	void withVersion() {
-		NumericFieldConstraintConfig versionConfig = NumericFieldConstraintConfig.UNCONSTRAINED.withEqualTo(4);
+		NumericConstraintConfig versionConfig = NumericConstraintConfig.UNCONSTRAINED.withEqualTo(4);
 		UUIDConstraintConfig config = UUIDConstraintConfig.UNCONSTRAINED.withVersion(versionConfig);
 		assertTrue(config.version().isPresent());
 		assertEquals(versionConfig, config.version().get());
@@ -277,7 +278,7 @@ class UUIDConstraintConfigTest {
 	
 	@Test
 	void matchesWithVersion() {
-		NumericFieldConstraintConfig versionConfig = NumericFieldConstraintConfig.UNCONSTRAINED.withEqualTo(4);
+		NumericConstraintConfig versionConfig = NumericConstraintConfig.UNCONSTRAINED.withEqualTo(4);
 		UUIDConstraintConfig config = UUIDConstraintConfig.UNCONSTRAINED.withVersion(versionConfig);
 		assertTrue(config.matches(RANDOM_UUID).isSuccess());
 		assertTrue(config.matches(NIL_UUID).isError());
@@ -314,7 +315,7 @@ class UUIDConstraintConfigTest {
 	
 	@Test
 	void matchesWithMultipleConstraints() {
-		NumericFieldConstraintConfig versionConfig = NumericFieldConstraintConfig.UNCONSTRAINED.withEqualTo(4);
+		NumericConstraintConfig versionConfig = NumericConstraintConfig.UNCONSTRAINED.withEqualTo(4);
 		EnumConstraintConfig<UUIDVariant> variantConfig = EnumConstraintConfig.<UUIDVariant>unconstrained().withEqualTo(UUIDVariant.RFC_4122);
 		UUIDConstraintConfig config = UUIDConstraintConfig.UNCONSTRAINED
 			.withVersion(versionConfig)

@@ -18,7 +18,7 @@
 
 package net.luis.utils.io.codec.constraint.config.temporal;
 
-import net.luis.utils.io.codec.constraint_new.config.NumericFieldConstraintConfig;
+import net.luis.utils.io.codec.constraint.config.numeric.NumericConstraintConfig;
 import net.luis.utils.util.Pair;
 import net.luis.utils.util.result.Result;
 import org.junit.jupiter.api.Test;
@@ -287,7 +287,7 @@ class PeriodConstraintConfigTest {
 	
 	@Test
 	void withDay() {
-		NumericFieldConstraintConfig dayConfig = NumericFieldConstraintConfig.UNCONSTRAINED.withBetweenOrEqual(1, 31);
+		NumericConstraintConfig dayConfig = NumericConstraintConfig.UNCONSTRAINED.withBetweenOrEqual(1, 31);
 		PeriodConstraintConfig config = PeriodConstraintConfig.UNCONSTRAINED.withDay(dayConfig);
 		assertTrue(config.day().isPresent());
 		assertEquals(dayConfig, config.day().get());
@@ -295,7 +295,7 @@ class PeriodConstraintConfigTest {
 	
 	@Test
 	void withMonth() {
-		NumericFieldConstraintConfig monthConfig = NumericFieldConstraintConfig.UNCONSTRAINED.withBetweenOrEqual(1, 12);
+		NumericConstraintConfig monthConfig = NumericConstraintConfig.UNCONSTRAINED.withBetweenOrEqual(1, 12);
 		PeriodConstraintConfig config = PeriodConstraintConfig.UNCONSTRAINED.withMonth(monthConfig);
 		assertTrue(config.month().isPresent());
 		assertEquals(monthConfig, config.month().get());
@@ -303,7 +303,7 @@ class PeriodConstraintConfigTest {
 	
 	@Test
 	void withYear() {
-		NumericFieldConstraintConfig yearConfig = NumericFieldConstraintConfig.UNCONSTRAINED.withGreaterThanOrEqual(0);
+		NumericConstraintConfig yearConfig = NumericConstraintConfig.UNCONSTRAINED.withGreaterThanOrEqual(0);
 		PeriodConstraintConfig config = PeriodConstraintConfig.UNCONSTRAINED.withYear(yearConfig);
 		assertTrue(config.year().isPresent());
 		assertEquals(yearConfig, config.year().get());

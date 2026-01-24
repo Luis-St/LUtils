@@ -18,8 +18,9 @@
 
 package net.luis.utils.io.codec.constraint_new.config.matcher;
 
-import net.luis.utils.io.codec.constraint_new.Constraint;
-import net.luis.utils.io.codec.constraint_new.config.*;
+import net.luis.utils.io.codec.constraint.config.ConstraintConfig;
+import net.luis.utils.io.codec.constraint.config.numeric.NumericConstraintConfig;
+import net.luis.utils.io.codec.constraint.core.Constraint;
 import net.luis.utils.io.codec.constraint_new.core.Unit;
 import net.luis.utils.util.Pair;
 import net.luis.utils.util.result.Result;
@@ -933,7 +934,7 @@ public final class ConstraintMatchers {
 	 * @throws NullPointerException If any parameter is null
 	 */
 	@SuppressWarnings("DuplicatedCode")
-	public static @NonNull Result<Void> matchNumericField(int value, @NonNull Optional<NumericFieldConstraintConfig> config, @NonNull String fieldName) {
+	public static @NonNull Result<Void> matchNumericField(int value, @NonNull Optional<NumericConstraintConfig> config, @NonNull String fieldName) {
 		Objects.requireNonNull(config, "Config constraint must not be null");
 		Objects.requireNonNull(fieldName, "Field name must not be null");
 		if (config.isEmpty()) {

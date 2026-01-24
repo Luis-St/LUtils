@@ -18,7 +18,7 @@
 
 package net.luis.utils.io.codec.constraint.merged.io;
 
-import net.luis.utils.io.codec.constraint_new.CharSequenceConstraint;
+import net.luis.utils.io.codec.constraint.core.CharSequenceConstraint;
 import org.jspecify.annotations.NonNull;
 
 /**

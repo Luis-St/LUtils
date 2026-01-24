@@ -18,7 +18,6 @@
 
 package net.luis.utils.io.codec.constraint.core;
 
-import net.luis.utils.io.codec.constraint_new.SignedConstraint;
 import org.jspecify.annotations.NonNull;
 
 /**

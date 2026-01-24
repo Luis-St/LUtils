@@ -18,8 +18,8 @@
 
 package net.luis.utils.io.codec.constraint_new.builder;
 
-import net.luis.utils.io.codec.constraint_new.Constraint;
-import net.luis.utils.io.codec.constraint_new.config.NumericFieldConstraintConfig;
+import net.luis.utils.io.codec.constraint.core.Constraint;
+import net.luis.utils.io.codec.constraint.config.numeric.NumericConstraintConfig;
 import net.luis.utils.util.result.Result;
 import org.junit.jupiter.api.Test;
 
@@ -37,17 +37,17 @@ class NumericConstraintBuilderTest {
 	@Test
 	void constructEmpty() {
 		NumericConstraintBuilder builder = new NumericConstraintBuilder();
-		NumericFieldConstraintConfig config = builder.build();
+		NumericConstraintConfig config = builder.build();
 		
 		assertNotNull(config);
-		assertEquals(NumericFieldConstraintConfig.UNCONSTRAINED, config);
+		assertEquals(NumericConstraintConfig.UNCONSTRAINED, config);
 	}
 	
 	@Test
 	void constructWithInitialConfig() {
-		NumericFieldConstraintConfig initialConfig = NumericFieldConstraintConfig.UNCONSTRAINED.withGreaterThan(0);
+		NumericConstraintConfig initialConfig = NumericConstraintConfig.UNCONSTRAINED.withGreaterThan(0);
 		NumericConstraintBuilder builder = new NumericConstraintBuilder(initialConfig);
-		NumericFieldConstraintConfig config = builder.build();
+		NumericConstraintConfig config = builder.build();
 		
 		assertNotNull(config);
 		assertEquals(initialConfig, config);
@@ -182,7 +182,7 @@ class NumericConstraintBuilderTest {
 		NumericConstraintBuilder builder = new NumericConstraintBuilder();
 		assertSame(builder, builder.between(10, 100));
 		
-		NumericFieldConstraintConfig config = builder.build();
+		NumericConstraintConfig config = builder.build();
 		assertTrue(config.min().isPresent());
 		assertTrue(config.max().isPresent());
 	}
@@ -204,7 +204,7 @@ class NumericConstraintBuilderTest {
 		NumericConstraintBuilder builder = new NumericConstraintBuilder();
 		assertSame(builder, builder.betweenOrEqual(10, 100));
 		
-		NumericFieldConstraintConfig config = builder.build();
+		NumericConstraintConfig config = builder.build();
 		assertTrue(config.min().isPresent());
 		assertTrue(config.max().isPresent());
 	}
@@ -226,7 +226,7 @@ class NumericConstraintBuilderTest {
 		NumericConstraintBuilder builder = new NumericConstraintBuilder();
 		builder.greaterThanOrEqual(0).lessThanOrEqual(100);
 		
-		NumericFieldConstraintConfig config = builder.build();
+		NumericConstraintConfig config = builder.build();
 		
 		assertNotNull(config);
 		assertTrue(config.min().isPresent());
@@ -237,7 +237,7 @@ class NumericConstraintBuilderTest {
 	void methodChainingWorks() {
 		NumericConstraintBuilder builder = new NumericConstraintBuilder();
 		
-		NumericFieldConstraintConfig config = builder
+		NumericConstraintConfig config = builder
 			.greaterThanOrEqual(0)
 			.lessThanOrEqual(1000)
 			.build();

@@ -18,7 +18,7 @@
 
 package net.luis.utils.io.codec.constraint.config.collection;
 
-import net.luis.utils.io.codec.constraint_new.config.LengthConstraintConfig;
+import net.luis.utils.io.codec.constraint.config.LengthConstraintConfig;
 import net.luis.utils.util.Pair;
 import net.luis.utils.util.result.Result;
 import org.junit.jupiter.api.Test;

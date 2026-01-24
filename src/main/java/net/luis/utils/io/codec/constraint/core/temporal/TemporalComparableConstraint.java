@@ -18,7 +18,7 @@
 
 package net.luis.utils.io.codec.constraint.core.temporal;
 
-import net.luis.utils.io.codec.constraint_new.BaseConstraint;
+import net.luis.utils.io.codec.constraint.core.BaseConstraint;
 import org.jspecify.annotations.NonNull;
 
 /**

@@ -18,7 +18,7 @@
 
 package net.luis.utils.io.codec.constraint.config.temporal.local;
 
-import net.luis.utils.io.codec.constraint_new.config.NumericFieldConstraintConfig;
+import net.luis.utils.io.codec.constraint.config.numeric.NumericConstraintConfig;
 import net.luis.utils.util.Pair;
 import net.luis.utils.util.result.Result;
 import org.junit.jupiter.api.Test;
@@ -307,7 +307,7 @@ class LocalTimeConstraintConfigTest {
 	
 	@Test
 	void withHour() {
-		NumericFieldConstraintConfig hourConfig = NumericFieldConstraintConfig.UNCONSTRAINED.withBetweenOrEqual(9, 17);
+		NumericConstraintConfig hourConfig = NumericConstraintConfig.UNCONSTRAINED.withBetweenOrEqual(9, 17);
 		LocalTimeConstraintConfig config = LocalTimeConstraintConfig.UNCONSTRAINED.withHour(hourConfig);
 		assertTrue(config.hour().isPresent());
 		assertEquals(hourConfig, config.hour().get());
@@ -315,7 +315,7 @@ class LocalTimeConstraintConfigTest {
 	
 	@Test
 	void withMinute() {
-		NumericFieldConstraintConfig minuteConfig = NumericFieldConstraintConfig.UNCONSTRAINED.withBetweenOrEqual(0, 59);
+		NumericConstraintConfig minuteConfig = NumericConstraintConfig.UNCONSTRAINED.withBetweenOrEqual(0, 59);
 		LocalTimeConstraintConfig config = LocalTimeConstraintConfig.UNCONSTRAINED.withMinute(minuteConfig);
 		assertTrue(config.minute().isPresent());
 		assertEquals(minuteConfig, config.minute().get());
@@ -323,7 +323,7 @@ class LocalTimeConstraintConfigTest {
 	
 	@Test
 	void withSecond() {
-		NumericFieldConstraintConfig secondConfig = NumericFieldConstraintConfig.UNCONSTRAINED.withBetweenOrEqual(0, 59);
+		NumericConstraintConfig secondConfig = NumericConstraintConfig.UNCONSTRAINED.withBetweenOrEqual(0, 59);
 		LocalTimeConstraintConfig config = LocalTimeConstraintConfig.UNCONSTRAINED.withSecond(secondConfig);
 		assertTrue(config.second().isPresent());
 		assertEquals(secondConfig, config.second().get());
@@ -331,7 +331,7 @@ class LocalTimeConstraintConfigTest {
 	
 	@Test
 	void withMillisecond() {
-		NumericFieldConstraintConfig millisecondConfig = NumericFieldConstraintConfig.UNCONSTRAINED.withBetweenOrEqual(0, 999);
+		NumericConstraintConfig millisecondConfig = NumericConstraintConfig.UNCONSTRAINED.withBetweenOrEqual(0, 999);
 		LocalTimeConstraintConfig config = LocalTimeConstraintConfig.UNCONSTRAINED.withMillisecond(millisecondConfig);
 		assertTrue(config.millisecond().isPresent());
 		assertEquals(millisecondConfig, config.millisecond().get());
@@ -339,7 +339,7 @@ class LocalTimeConstraintConfigTest {
 	
 	@Test
 	void withNanosecond() {
-		NumericFieldConstraintConfig nanosecondConfig = NumericFieldConstraintConfig.UNCONSTRAINED.withGreaterThanOrEqual(0);
+		NumericConstraintConfig nanosecondConfig = NumericConstraintConfig.UNCONSTRAINED.withGreaterThanOrEqual(0);
 		LocalTimeConstraintConfig config = LocalTimeConstraintConfig.UNCONSTRAINED.withNanosecond(nanosecondConfig);
 		assertTrue(config.nanosecond().isPresent());
 		assertEquals(nanosecondConfig, config.nanosecond().get());
@@ -446,7 +446,7 @@ class LocalTimeConstraintConfigTest {
 	
 	@Test
 	void matchesWithHour() {
-		NumericFieldConstraintConfig hourConfig = NumericFieldConstraintConfig.UNCONSTRAINED.withBetweenOrEqual(9, 17);
+		NumericConstraintConfig hourConfig = NumericConstraintConfig.UNCONSTRAINED.withBetweenOrEqual(9, 17);
 		LocalTimeConstraintConfig config = LocalTimeConstraintConfig.UNCONSTRAINED.withHour(hourConfig);
 		assertTrue(config.matches(LocalTime.of(10, 0, 0)).isSuccess());
 		assertTrue(config.matches(LocalTime.of(8, 0, 0)).isError());
@@ -455,7 +455,7 @@ class LocalTimeConstraintConfigTest {
 	
 	@Test
 	void matchesWithMinute() {
-		NumericFieldConstraintConfig minuteConfig = NumericFieldConstraintConfig.UNCONSTRAINED.withEqualTo(30);
+		NumericConstraintConfig minuteConfig = NumericConstraintConfig.UNCONSTRAINED.withEqualTo(30);
 		LocalTimeConstraintConfig config = LocalTimeConstraintConfig.UNCONSTRAINED.withMinute(minuteConfig);
 		assertTrue(config.matches(LocalTime.of(10, 30, 0)).isSuccess());
 		assertTrue(config.matches(LocalTime.of(10, 0, 0)).isError());
@@ -463,7 +463,7 @@ class LocalTimeConstraintConfigTest {
 	
 	@Test
 	void matchesWithSecond() {
-		NumericFieldConstraintConfig secondConfig = NumericFieldConstraintConfig.UNCONSTRAINED.withEqualTo(0);
+		NumericConstraintConfig secondConfig = NumericConstraintConfig.UNCONSTRAINED.withEqualTo(0);
 		LocalTimeConstraintConfig config = LocalTimeConstraintConfig.UNCONSTRAINED.withSecond(secondConfig);
 		assertTrue(config.matches(LocalTime.of(10, 30, 0)).isSuccess());
 		assertTrue(config.matches(LocalTime.of(10, 30, 1)).isError());

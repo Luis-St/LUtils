@@ -18,8 +18,8 @@
 
 package net.luis.utils.io.codec.constraint.config.temporal.local;
 
-import net.luis.utils.io.codec.constraint_new.config.EnumConstraintConfig;
-import net.luis.utils.io.codec.constraint_new.config.NumericFieldConstraintConfig;
+import net.luis.utils.io.codec.constraint.config.EnumConstraintConfig;
+import net.luis.utils.io.codec.constraint.config.numeric.NumericConstraintConfig;
 import net.luis.utils.util.Pair;
 import net.luis.utils.util.result.Result;
 import org.junit.jupiter.api.Test;
@@ -378,7 +378,7 @@ class LocalDateTimeConstraintConfigTest {
 	
 	@Test
 	void withDayOfMonth() {
-		NumericFieldConstraintConfig dayOfMonthConfig = NumericFieldConstraintConfig.UNCONSTRAINED.withBetweenOrEqual(1, 31);
+		NumericConstraintConfig dayOfMonthConfig = NumericConstraintConfig.UNCONSTRAINED.withBetweenOrEqual(1, 31);
 		LocalDateTimeConstraintConfig config = LocalDateTimeConstraintConfig.UNCONSTRAINED.withDayOfMonth(dayOfMonthConfig);
 		assertTrue(config.dayOfMonth().isPresent());
 		assertEquals(dayOfMonthConfig, config.dayOfMonth().get());
@@ -386,7 +386,7 @@ class LocalDateTimeConstraintConfigTest {
 	
 	@Test
 	void withDayOfYear() {
-		NumericFieldConstraintConfig dayOfYearConfig = NumericFieldConstraintConfig.UNCONSTRAINED.withBetweenOrEqual(1, 365);
+		NumericConstraintConfig dayOfYearConfig = NumericConstraintConfig.UNCONSTRAINED.withBetweenOrEqual(1, 365);
 		LocalDateTimeConstraintConfig config = LocalDateTimeConstraintConfig.UNCONSTRAINED.withDayOfYear(dayOfYearConfig);
 		assertTrue(config.dayOfYear().isPresent());
 		assertEquals(dayOfYearConfig, config.dayOfYear().get());
@@ -394,7 +394,7 @@ class LocalDateTimeConstraintConfigTest {
 	
 	@Test
 	void withWeekOfMonth() {
-		NumericFieldConstraintConfig weekOfMonthConfig = NumericFieldConstraintConfig.UNCONSTRAINED.withBetweenOrEqual(1, 5);
+		NumericConstraintConfig weekOfMonthConfig = NumericConstraintConfig.UNCONSTRAINED.withBetweenOrEqual(1, 5);
 		LocalDateTimeConstraintConfig config = LocalDateTimeConstraintConfig.UNCONSTRAINED.withWeekOfMonth(weekOfMonthConfig);
 		assertTrue(config.weekOfMonth().isPresent());
 		assertEquals(weekOfMonthConfig, config.weekOfMonth().get());
@@ -402,7 +402,7 @@ class LocalDateTimeConstraintConfigTest {
 	
 	@Test
 	void withWeekOfYear() {
-		NumericFieldConstraintConfig weekOfYearConfig = NumericFieldConstraintConfig.UNCONSTRAINED.withBetweenOrEqual(1, 53);
+		NumericConstraintConfig weekOfYearConfig = NumericConstraintConfig.UNCONSTRAINED.withBetweenOrEqual(1, 53);
 		LocalDateTimeConstraintConfig config = LocalDateTimeConstraintConfig.UNCONSTRAINED.withWeekOfYear(weekOfYearConfig);
 		assertTrue(config.weekOfYear().isPresent());
 		assertEquals(weekOfYearConfig, config.weekOfYear().get());
@@ -418,7 +418,7 @@ class LocalDateTimeConstraintConfigTest {
 	
 	@Test
 	void withYear() {
-		NumericFieldConstraintConfig yearConfig = NumericFieldConstraintConfig.UNCONSTRAINED.withGreaterThanOrEqual(2000);
+		NumericConstraintConfig yearConfig = NumericConstraintConfig.UNCONSTRAINED.withGreaterThanOrEqual(2000);
 		LocalDateTimeConstraintConfig config = LocalDateTimeConstraintConfig.UNCONSTRAINED.withYear(yearConfig);
 		assertTrue(config.year().isPresent());
 		assertEquals(yearConfig, config.year().get());
@@ -426,7 +426,7 @@ class LocalDateTimeConstraintConfigTest {
 	
 	@Test
 	void withHour() {
-		NumericFieldConstraintConfig hourConfig = NumericFieldConstraintConfig.UNCONSTRAINED.withBetweenOrEqual(9, 17);
+		NumericConstraintConfig hourConfig = NumericConstraintConfig.UNCONSTRAINED.withBetweenOrEqual(9, 17);
 		LocalDateTimeConstraintConfig config = LocalDateTimeConstraintConfig.UNCONSTRAINED.withHour(hourConfig);
 		assertTrue(config.hour().isPresent());
 		assertEquals(hourConfig, config.hour().get());
@@ -434,7 +434,7 @@ class LocalDateTimeConstraintConfigTest {
 	
 	@Test
 	void withMinute() {
-		NumericFieldConstraintConfig minuteConfig = NumericFieldConstraintConfig.UNCONSTRAINED.withBetweenOrEqual(0, 59);
+		NumericConstraintConfig minuteConfig = NumericConstraintConfig.UNCONSTRAINED.withBetweenOrEqual(0, 59);
 		LocalDateTimeConstraintConfig config = LocalDateTimeConstraintConfig.UNCONSTRAINED.withMinute(minuteConfig);
 		assertTrue(config.minute().isPresent());
 		assertEquals(minuteConfig, config.minute().get());
@@ -442,7 +442,7 @@ class LocalDateTimeConstraintConfigTest {
 	
 	@Test
 	void withSecond() {
-		NumericFieldConstraintConfig secondConfig = NumericFieldConstraintConfig.UNCONSTRAINED.withBetweenOrEqual(0, 59);
+		NumericConstraintConfig secondConfig = NumericConstraintConfig.UNCONSTRAINED.withBetweenOrEqual(0, 59);
 		LocalDateTimeConstraintConfig config = LocalDateTimeConstraintConfig.UNCONSTRAINED.withSecond(secondConfig);
 		assertTrue(config.second().isPresent());
 		assertEquals(secondConfig, config.second().get());
@@ -450,7 +450,7 @@ class LocalDateTimeConstraintConfigTest {
 	
 	@Test
 	void withMillisecond() {
-		NumericFieldConstraintConfig millisecondConfig = NumericFieldConstraintConfig.UNCONSTRAINED.withBetweenOrEqual(0, 999);
+		NumericConstraintConfig millisecondConfig = NumericConstraintConfig.UNCONSTRAINED.withBetweenOrEqual(0, 999);
 		LocalDateTimeConstraintConfig config = LocalDateTimeConstraintConfig.UNCONSTRAINED.withMillisecond(millisecondConfig);
 		assertTrue(config.millisecond().isPresent());
 		assertEquals(millisecondConfig, config.millisecond().get());
@@ -458,7 +458,7 @@ class LocalDateTimeConstraintConfigTest {
 	
 	@Test
 	void withNanosecond() {
-		NumericFieldConstraintConfig nanosecondConfig = NumericFieldConstraintConfig.UNCONSTRAINED.withGreaterThanOrEqual(0);
+		NumericConstraintConfig nanosecondConfig = NumericConstraintConfig.UNCONSTRAINED.withGreaterThanOrEqual(0);
 		LocalDateTimeConstraintConfig config = LocalDateTimeConstraintConfig.UNCONSTRAINED.withNanosecond(nanosecondConfig);
 		assertTrue(config.nanosecond().isPresent());
 		assertEquals(nanosecondConfig, config.nanosecond().get());
@@ -559,7 +559,7 @@ class LocalDateTimeConstraintConfigTest {
 	
 	@Test
 	void matchesWithHour() {
-		NumericFieldConstraintConfig hourConfig = NumericFieldConstraintConfig.UNCONSTRAINED.withBetweenOrEqual(9, 17);
+		NumericConstraintConfig hourConfig = NumericConstraintConfig.UNCONSTRAINED.withBetweenOrEqual(9, 17);
 		LocalDateTimeConstraintConfig config = LocalDateTimeConstraintConfig.UNCONSTRAINED.withHour(hourConfig);
 		assertTrue(config.matches(LocalDateTime.of(2024, 6, 15, 10, 0, 0)).isSuccess());
 		assertTrue(config.matches(LocalDateTime.of(2024, 6, 15, 8, 0, 0)).isError());

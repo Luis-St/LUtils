@@ -16,37 +16,33 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-package net.luis.utils.io.codec.constraint_new.config;
+package net.luis.utils.io.codec.constraint.core;
 
 import net.luis.utils.util.result.Result;
 import org.jetbrains.annotations.NotNull;
 import org.jspecify.annotations.NonNull;
 
 /**
- * Configuration interface that defines a validation method for a given value of type {@code T}.<br>
- * <p>
- *     This interface is implemented by constraint configuration records to provide validation of values against the configured constraints.<br>
- *     It mirrors the {@link net.luis.utils.io.codec.constraint_new.Constraint} functional interface but is specifically designed for configuration records.
- * </p>
+ * Constraint interface that defines a validation method for a given value of type {@code T}.<br>
+ * This interface can be implemented to create various constraints that can be applied to values during encoding or decoding processes.<br>
  *
  * @author Luis-St
  *
  * @param <T> The type of the value to be validated
  */
 @FunctionalInterface
-public interface ConstraintConfig<T> {
+public interface Constraint<T> {
 	
 	/**
-	 * Validates the given value against all configured constraints.<br>
+	 * Validates the given value against the constraint.<br>
 	 * <p>
-	 *     If the value satisfies all constraints, a successful Result is returned.<br>
-	 *     If the value does not satisfy any constraint, a failed Result with an appropriate error message is returned.<br>
-	 *     The validation uses early-exit behavior, stopping at the first failed constraint.
+	 *     If the value satisfies the constraint, a successful Result is returned.<br>
+	 *     If the value does not satisfy the constraint, a failed Result with an appropriate error message is returned.
 	 * </p>
 	 *
 	 * @param value The value to be validated
 	 * @return A result indicating success or failure of the validation
 	 * @throws NullPointerException If the value is null
 	 */
-	@NotNull Result<Void> matches(@NonNull T value);
+	@NotNull Result<Void> validate(@NonNull T value);
 }

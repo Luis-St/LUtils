@@ -16,9 +16,9 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-package net.luis.utils.io.codec.constraint_new;
+package net.luis.utils.io.codec.constraint.core;
 
-import net.luis.utils.io.codec.constraint_new.config.EnumConstraintConfig;
+import net.luis.utils.io.codec.constraint.config.EnumConstraintConfig;
 import org.jspecify.annotations.NonNull;
 
 import java.util.Collection;

@@ -18,7 +18,7 @@
 
 package net.luis.utils.io.codec.constraint.config.temporal.zoned;
 
-import net.luis.utils.io.codec.constraint_new.config.NumericFieldConstraintConfig;
+import net.luis.utils.io.codec.constraint.config.numeric.NumericConstraintConfig;
 import net.luis.utils.util.Pair;
 import net.luis.utils.util.result.Result;
 import org.junit.jupiter.api.Test;
@@ -342,7 +342,7 @@ class ZoneOffsetConstraintConfigTest {
 	
 	@Test
 	void withHours() {
-		NumericFieldConstraintConfig hoursConfig = NumericFieldConstraintConfig.UNCONSTRAINED.withBetweenOrEqual(-5, 5);
+		NumericConstraintConfig hoursConfig = NumericConstraintConfig.UNCONSTRAINED.withBetweenOrEqual(-5, 5);
 		ZoneOffsetConstraintConfig config = ZoneOffsetConstraintConfig.UNCONSTRAINED.withHour(hoursConfig);
 		assertTrue(config.hour().isPresent());
 		assertEquals(hoursConfig, config.hour().get());
@@ -498,7 +498,7 @@ class ZoneOffsetConstraintConfigTest {
 	
 	@Test
 	void matchesWithHoursConstraint() {
-		NumericFieldConstraintConfig hoursConfig = NumericFieldConstraintConfig.UNCONSTRAINED.withBetweenOrEqual(-2, 2);
+		NumericConstraintConfig hoursConfig = NumericConstraintConfig.UNCONSTRAINED.withBetweenOrEqual(-2, 2);
 		ZoneOffsetConstraintConfig config = ZoneOffsetConstraintConfig.UNCONSTRAINED.withHour(hoursConfig);
 		assertTrue(config.matches(UTC).isSuccess());
 		assertTrue(config.matches(PLUS_2).isSuccess());

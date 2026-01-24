@@ -19,8 +19,8 @@
 package net.luis.utils.io.codec.constraint.config.temporal.offset;
 
 import net.luis.utils.io.codec.constraint.config.temporal.zoned.ZoneOffsetConstraintConfig;
-import net.luis.utils.io.codec.constraint_new.config.EnumConstraintConfig;
-import net.luis.utils.io.codec.constraint_new.config.NumericFieldConstraintConfig;
+import net.luis.utils.io.codec.constraint.config.EnumConstraintConfig;
+import net.luis.utils.io.codec.constraint.config.numeric.NumericConstraintConfig;
 import net.luis.utils.util.Pair;
 import net.luis.utils.util.result.Result;
 import org.junit.jupiter.api.Test;
@@ -479,7 +479,7 @@ class OffsetDateTimeConstraintConfigTest {
 	
 	@Test
 	void withDayOfMonth() {
-		NumericFieldConstraintConfig domConfig = NumericFieldConstraintConfig.UNCONSTRAINED.withBetweenOrEqual(1, 15);
+		NumericConstraintConfig domConfig = NumericConstraintConfig.UNCONSTRAINED.withBetweenOrEqual(1, 15);
 		OffsetDateTimeConstraintConfig config = OffsetDateTimeConstraintConfig.UNCONSTRAINED.withDayOfMonth(domConfig);
 		assertTrue(config.dayOfMonth().isPresent());
 		assertEquals(domConfig, config.dayOfMonth().get());
@@ -492,7 +492,7 @@ class OffsetDateTimeConstraintConfigTest {
 	
 	@Test
 	void withDayOfYear() {
-		NumericFieldConstraintConfig doyConfig = NumericFieldConstraintConfig.UNCONSTRAINED.withBetweenOrEqual(1, 100);
+		NumericConstraintConfig doyConfig = NumericConstraintConfig.UNCONSTRAINED.withBetweenOrEqual(1, 100);
 		OffsetDateTimeConstraintConfig config = OffsetDateTimeConstraintConfig.UNCONSTRAINED.withDayOfYear(doyConfig);
 		assertTrue(config.dayOfYear().isPresent());
 		assertEquals(doyConfig, config.dayOfYear().get());
@@ -505,7 +505,7 @@ class OffsetDateTimeConstraintConfigTest {
 	
 	@Test
 	void withWeekOfMonth() {
-		NumericFieldConstraintConfig womConfig = NumericFieldConstraintConfig.UNCONSTRAINED.withBetweenOrEqual(1, 4);
+		NumericConstraintConfig womConfig = NumericConstraintConfig.UNCONSTRAINED.withBetweenOrEqual(1, 4);
 		OffsetDateTimeConstraintConfig config = OffsetDateTimeConstraintConfig.UNCONSTRAINED.withWeekOfMonth(womConfig);
 		assertTrue(config.weekOfMonth().isPresent());
 		assertEquals(womConfig, config.weekOfMonth().get());
@@ -518,7 +518,7 @@ class OffsetDateTimeConstraintConfigTest {
 	
 	@Test
 	void withWeekOfYear() {
-		NumericFieldConstraintConfig woyConfig = NumericFieldConstraintConfig.UNCONSTRAINED.withBetweenOrEqual(1, 52);
+		NumericConstraintConfig woyConfig = NumericConstraintConfig.UNCONSTRAINED.withBetweenOrEqual(1, 52);
 		OffsetDateTimeConstraintConfig config = OffsetDateTimeConstraintConfig.UNCONSTRAINED.withWeekOfYear(woyConfig);
 		assertTrue(config.weekOfYear().isPresent());
 		assertEquals(woyConfig, config.weekOfYear().get());
@@ -544,7 +544,7 @@ class OffsetDateTimeConstraintConfigTest {
 	
 	@Test
 	void withYear() {
-		NumericFieldConstraintConfig yearConfig = NumericFieldConstraintConfig.UNCONSTRAINED.withBetweenOrEqual(2020, 2030);
+		NumericConstraintConfig yearConfig = NumericConstraintConfig.UNCONSTRAINED.withBetweenOrEqual(2020, 2030);
 		OffsetDateTimeConstraintConfig config = OffsetDateTimeConstraintConfig.UNCONSTRAINED.withYear(yearConfig);
 		assertTrue(config.year().isPresent());
 		assertEquals(yearConfig, config.year().get());
@@ -557,7 +557,7 @@ class OffsetDateTimeConstraintConfigTest {
 	
 	@Test
 	void withHour() {
-		NumericFieldConstraintConfig hourConfig = NumericFieldConstraintConfig.UNCONSTRAINED.withBetweenOrEqual(9, 17);
+		NumericConstraintConfig hourConfig = NumericConstraintConfig.UNCONSTRAINED.withBetweenOrEqual(9, 17);
 		OffsetDateTimeConstraintConfig config = OffsetDateTimeConstraintConfig.UNCONSTRAINED.withHour(hourConfig);
 		assertTrue(config.hour().isPresent());
 		assertEquals(hourConfig, config.hour().get());
@@ -570,7 +570,7 @@ class OffsetDateTimeConstraintConfigTest {
 	
 	@Test
 	void withMinute() {
-		NumericFieldConstraintConfig minuteConfig = NumericFieldConstraintConfig.UNCONSTRAINED.withIn(List.of(0, 15, 30, 45));
+		NumericConstraintConfig minuteConfig = NumericConstraintConfig.UNCONSTRAINED.withIn(List.of(0, 15, 30, 45));
 		OffsetDateTimeConstraintConfig config = OffsetDateTimeConstraintConfig.UNCONSTRAINED.withMinute(minuteConfig);
 		assertTrue(config.minute().isPresent());
 		assertEquals(minuteConfig, config.minute().get());
@@ -583,7 +583,7 @@ class OffsetDateTimeConstraintConfigTest {
 	
 	@Test
 	void withSecond() {
-		NumericFieldConstraintConfig secondConfig = NumericFieldConstraintConfig.UNCONSTRAINED.withEqualTo(0);
+		NumericConstraintConfig secondConfig = NumericConstraintConfig.UNCONSTRAINED.withEqualTo(0);
 		OffsetDateTimeConstraintConfig config = OffsetDateTimeConstraintConfig.UNCONSTRAINED.withSecond(secondConfig);
 		assertTrue(config.second().isPresent());
 		assertEquals(secondConfig, config.second().get());
@@ -596,7 +596,7 @@ class OffsetDateTimeConstraintConfigTest {
 	
 	@Test
 	void withMillisecond() {
-		NumericFieldConstraintConfig millisecondConfig = NumericFieldConstraintConfig.UNCONSTRAINED.withEqualTo(0);
+		NumericConstraintConfig millisecondConfig = NumericConstraintConfig.UNCONSTRAINED.withEqualTo(0);
 		OffsetDateTimeConstraintConfig config = OffsetDateTimeConstraintConfig.UNCONSTRAINED.withMillisecond(millisecondConfig);
 		assertTrue(config.millisecond().isPresent());
 		assertEquals(millisecondConfig, config.millisecond().get());
@@ -609,7 +609,7 @@ class OffsetDateTimeConstraintConfigTest {
 	
 	@Test
 	void withNanosecond() {
-		NumericFieldConstraintConfig nanosecondConfig = NumericFieldConstraintConfig.UNCONSTRAINED.withEqualTo(0);
+		NumericConstraintConfig nanosecondConfig = NumericConstraintConfig.UNCONSTRAINED.withEqualTo(0);
 		OffsetDateTimeConstraintConfig config = OffsetDateTimeConstraintConfig.UNCONSTRAINED.withNanosecond(nanosecondConfig);
 		assertTrue(config.nanosecond().isPresent());
 		assertEquals(nanosecondConfig, config.nanosecond().get());
@@ -730,7 +730,7 @@ class OffsetDateTimeConstraintConfigTest {
 	
 	@Test
 	void matchesWithYearConstraint() {
-		NumericFieldConstraintConfig yearConfig = NumericFieldConstraintConfig.UNCONSTRAINED.withEqualTo(2024);
+		NumericConstraintConfig yearConfig = NumericConstraintConfig.UNCONSTRAINED.withEqualTo(2024);
 		OffsetDateTimeConstraintConfig config = OffsetDateTimeConstraintConfig.UNCONSTRAINED.withYear(yearConfig);
 		assertTrue(config.matches(DT_2024_06_15_12_00).isSuccess());
 		assertTrue(config.matches(DT_2025_01_01_00_00).isError());
@@ -738,7 +738,7 @@ class OffsetDateTimeConstraintConfigTest {
 	
 	@Test
 	void matchesWithHourConstraint() {
-		NumericFieldConstraintConfig hourConfig = NumericFieldConstraintConfig.UNCONSTRAINED.withBetweenOrEqual(9, 13);
+		NumericConstraintConfig hourConfig = NumericConstraintConfig.UNCONSTRAINED.withBetweenOrEqual(9, 13);
 		OffsetDateTimeConstraintConfig config = OffsetDateTimeConstraintConfig.UNCONSTRAINED.withHour(hourConfig);
 		assertTrue(config.matches(DT_2024_01_15_10_30).isSuccess());
 		assertTrue(config.matches(DT_2024_06_15_12_00).isSuccess());

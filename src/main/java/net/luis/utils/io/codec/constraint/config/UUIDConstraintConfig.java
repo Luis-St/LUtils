@@ -18,9 +18,9 @@
 
 package net.luis.utils.io.codec.constraint.config;
 
-import net.luis.utils.io.codec.constraint_new.Constraint;
+import net.luis.utils.io.codec.constraint.config.numeric.NumericConstraintConfig;
+import net.luis.utils.io.codec.constraint.core.Constraint;
 import net.luis.utils.io.codec.constraint.merged.UUIDConstraint;
-import net.luis.utils.io.codec.constraint_new.config.*;
 import net.luis.utils.io.codec.constraint_new.config.matcher.ConstraintMatchers;
 import net.luis.utils.io.codec.constraint_new.core.UUIDVariant;
 import net.luis.utils.io.codec.constraint_new.core.Unit;
@@ -52,7 +52,7 @@ import java.util.*;
 public record UUIDConstraintConfig(
 	@NonNull Optional<Pair<UUID, Boolean>> equalTo,
 	@NonNull Optional<Pair<Set<UUID>, Boolean>> in,
-	@NonNull Optional<NumericFieldConstraintConfig> version,
+	@NonNull Optional<NumericConstraintConfig> version,
 	@NonNull Optional<EnumConstraintConfig<UUIDVariant>> variant,
 	@NonNull Optional<Unit> nil,
 	@NonNull Optional<Unit> notNil,
@@ -167,7 +167,7 @@ public record UUIDConstraintConfig(
 	 * @param config The numeric field constraint config for version validation
 	 * @return A new config with the constraint applied
 	 */
-	public @NonNull UUIDConstraintConfig withVersion(@NonNull NumericFieldConstraintConfig config) {
+	public @NonNull UUIDConstraintConfig withVersion(@NonNull NumericConstraintConfig config) {
 		Objects.requireNonNull(config, "Config for 'version' constraint must not be null");
 		return new UUIDConstraintConfig(this.equalTo, this.in, Optional.of(config), this.variant, this.nil, this.notNil, this.max, this.custom);
 	}

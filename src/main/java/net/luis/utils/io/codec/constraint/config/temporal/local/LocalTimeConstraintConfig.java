@@ -18,9 +18,9 @@
 
 package net.luis.utils.io.codec.constraint.config.temporal.local;
 
-import net.luis.utils.io.codec.constraint_new.Constraint;
-import net.luis.utils.io.codec.constraint_new.config.ConstraintConfig;
-import net.luis.utils.io.codec.constraint_new.config.NumericFieldConstraintConfig;
+import net.luis.utils.io.codec.constraint.core.Constraint;
+import net.luis.utils.io.codec.constraint.config.ConstraintConfig;
+import net.luis.utils.io.codec.constraint.config.numeric.NumericConstraintConfig;
 import net.luis.utils.io.codec.constraint_new.config.matcher.ConstraintMatchers;
 import net.luis.utils.util.Pair;
 import net.luis.utils.util.result.Result;
@@ -73,11 +73,11 @@ public record LocalTimeConstraintConfig(
 	@NonNull Optional<Pair<LocalTime, Boolean>> before,
 	@NonNull Optional<Duration> withinLast,
 	@NonNull Optional<Duration> withinNext,
-	@NonNull Optional<NumericFieldConstraintConfig> hour,
-	@NonNull Optional<NumericFieldConstraintConfig> minute,
-	@NonNull Optional<NumericFieldConstraintConfig> second,
-	@NonNull Optional<NumericFieldConstraintConfig> millisecond,
-	@NonNull Optional<NumericFieldConstraintConfig> nanosecond,
+	@NonNull Optional<NumericConstraintConfig> hour,
+	@NonNull Optional<NumericConstraintConfig> minute,
+	@NonNull Optional<NumericConstraintConfig> second,
+	@NonNull Optional<NumericConstraintConfig> millisecond,
+	@NonNull Optional<NumericConstraintConfig> nanosecond,
 	@NonNull Optional<Constraint<LocalTime>> custom
 ) implements ConstraintConfig<LocalTime> {
 	
@@ -280,7 +280,7 @@ public record LocalTimeConstraintConfig(
 	 * @param config The numeric field constraint config for hour validation
 	 * @return A new config with the constraint applied
 	 */
-	public @NonNull LocalTimeConstraintConfig withHour(@NonNull NumericFieldConstraintConfig config) {
+	public @NonNull LocalTimeConstraintConfig withHour(@NonNull NumericConstraintConfig config) {
 		Objects.requireNonNull(config, "Config for 'hour' constraint must not be null");
 		return new LocalTimeConstraintConfig(this.equalTo, this.in, this.after, this.before, this.withinLast, this.withinNext, Optional.of(config), this.minute, this.second, this.millisecond, this.nanosecond, this.custom);
 	}
@@ -291,7 +291,7 @@ public record LocalTimeConstraintConfig(
 	 * @param config The numeric field constraint config for minute validation
 	 * @return A new config with the constraint applied
 	 */
-	public @NonNull LocalTimeConstraintConfig withMinute(@NonNull NumericFieldConstraintConfig config) {
+	public @NonNull LocalTimeConstraintConfig withMinute(@NonNull NumericConstraintConfig config) {
 		Objects.requireNonNull(config, "Config for 'minute' constraint must not be null");
 		return new LocalTimeConstraintConfig(this.equalTo, this.in, this.after, this.before, this.withinLast, this.withinNext, this.hour, Optional.of(config), this.second, this.millisecond, this.nanosecond, this.custom);
 	}
@@ -302,7 +302,7 @@ public record LocalTimeConstraintConfig(
 	 * @param config The numeric field constraint config for second validation
 	 * @return A new config with the constraint applied
 	 */
-	public @NonNull LocalTimeConstraintConfig withSecond(@NonNull NumericFieldConstraintConfig config) {
+	public @NonNull LocalTimeConstraintConfig withSecond(@NonNull NumericConstraintConfig config) {
 		Objects.requireNonNull(config, "Config for 'second' constraint must not be null");
 		return new LocalTimeConstraintConfig(this.equalTo, this.in, this.after, this.before, this.withinLast, this.withinNext, this.hour, this.minute, Optional.of(config), this.millisecond, this.nanosecond, this.custom);
 	}
@@ -313,7 +313,7 @@ public record LocalTimeConstraintConfig(
 	 * @param config The numeric field constraint config for millisecond validation
 	 * @return A new config with the constraint applied
 	 */
-	public @NonNull LocalTimeConstraintConfig withMillisecond(@NonNull NumericFieldConstraintConfig config) {
+	public @NonNull LocalTimeConstraintConfig withMillisecond(@NonNull NumericConstraintConfig config) {
 		Objects.requireNonNull(config, "Config for 'millisecond' constraint must not be null");
 		return new LocalTimeConstraintConfig(this.equalTo, this.in, this.after, this.before, this.withinLast, this.withinNext, this.hour, this.minute, this.second, Optional.of(config), this.nanosecond, this.custom);
 	}
@@ -324,7 +324,7 @@ public record LocalTimeConstraintConfig(
 	 * @param config The numeric field constraint config for nanosecond validation
 	 * @return A new config with the constraint applied
 	 */
-	public @NonNull LocalTimeConstraintConfig withNanosecond(@NonNull NumericFieldConstraintConfig config) {
+	public @NonNull LocalTimeConstraintConfig withNanosecond(@NonNull NumericConstraintConfig config) {
 		Objects.requireNonNull(config, "Config for 'nanosecond' constraint must not be null");
 		return new LocalTimeConstraintConfig(this.equalTo, this.in, this.after, this.before, this.withinLast, this.withinNext, this.hour, this.minute, this.second, this.millisecond, Optional.of(config), this.custom);
 	}

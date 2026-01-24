@@ -16,7 +16,7 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-package net.luis.utils.io.codec.constraint_new;
+package net.luis.utils.io.codec.constraint.core;
 
 import net.luis.utils.io.codec.constraint_new.builder.LengthConstraintBuilder;
 import org.jspecify.annotations.NonNull;

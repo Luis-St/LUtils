@@ -18,9 +18,9 @@
 
 package net.luis.utils.io.codec.constraint_new.builder;
 
-import net.luis.utils.io.codec.constraint_new.Constraint;
-import net.luis.utils.io.codec.constraint_new.DepthConstraint;
-import net.luis.utils.io.codec.constraint_new.config.DepthConstraintConfig;
+import net.luis.utils.io.codec.constraint.core.Constraint;
+import net.luis.utils.io.codec.constraint.core.DepthConstraint;
+import net.luis.utils.io.codec.constraint.config.DepthConstraintConfig;
 import org.jspecify.annotations.NonNull;
 
 import java.util.Collection;

@@ -19,7 +19,7 @@
 package net.luis.utils.io.codec.constraint.config.temporal.offset;
 
 import net.luis.utils.io.codec.constraint.config.temporal.zoned.ZoneOffsetConstraintConfig;
-import net.luis.utils.io.codec.constraint_new.config.NumericFieldConstraintConfig;
+import net.luis.utils.io.codec.constraint.config.numeric.NumericConstraintConfig;
 import net.luis.utils.util.Pair;
 import net.luis.utils.util.result.Result;
 import org.junit.jupiter.api.Test;
@@ -377,7 +377,7 @@ class OffsetTimeConstraintConfigTest {
 	
 	@Test
 	void withHour() {
-		NumericFieldConstraintConfig hourConfig = NumericFieldConstraintConfig.UNCONSTRAINED.withBetweenOrEqual(9, 17);
+		NumericConstraintConfig hourConfig = NumericConstraintConfig.UNCONSTRAINED.withBetweenOrEqual(9, 17);
 		OffsetTimeConstraintConfig config = OffsetTimeConstraintConfig.UNCONSTRAINED.withHour(hourConfig);
 		assertTrue(config.hour().isPresent());
 		assertEquals(hourConfig, config.hour().get());
@@ -390,7 +390,7 @@ class OffsetTimeConstraintConfigTest {
 	
 	@Test
 	void withMinute() {
-		NumericFieldConstraintConfig minuteConfig = NumericFieldConstraintConfig.UNCONSTRAINED.withIn(List.of(0, 15, 30, 45));
+		NumericConstraintConfig minuteConfig = NumericConstraintConfig.UNCONSTRAINED.withIn(List.of(0, 15, 30, 45));
 		OffsetTimeConstraintConfig config = OffsetTimeConstraintConfig.UNCONSTRAINED.withMinute(minuteConfig);
 		assertTrue(config.minute().isPresent());
 		assertEquals(minuteConfig, config.minute().get());
@@ -403,7 +403,7 @@ class OffsetTimeConstraintConfigTest {
 	
 	@Test
 	void withSecond() {
-		NumericFieldConstraintConfig secondConfig = NumericFieldConstraintConfig.UNCONSTRAINED.withEqualTo(0);
+		NumericConstraintConfig secondConfig = NumericConstraintConfig.UNCONSTRAINED.withEqualTo(0);
 		OffsetTimeConstraintConfig config = OffsetTimeConstraintConfig.UNCONSTRAINED.withSecond(secondConfig);
 		assertTrue(config.second().isPresent());
 		assertEquals(secondConfig, config.second().get());
@@ -416,7 +416,7 @@ class OffsetTimeConstraintConfigTest {
 	
 	@Test
 	void withMillisecond() {
-		NumericFieldConstraintConfig millisecondConfig = NumericFieldConstraintConfig.UNCONSTRAINED.withEqualTo(0);
+		NumericConstraintConfig millisecondConfig = NumericConstraintConfig.UNCONSTRAINED.withEqualTo(0);
 		OffsetTimeConstraintConfig config = OffsetTimeConstraintConfig.UNCONSTRAINED.withMillisecond(millisecondConfig);
 		assertTrue(config.millisecond().isPresent());
 		assertEquals(millisecondConfig, config.millisecond().get());
@@ -429,7 +429,7 @@ class OffsetTimeConstraintConfigTest {
 	
 	@Test
 	void withNanosecond() {
-		NumericFieldConstraintConfig nanosecondConfig = NumericFieldConstraintConfig.UNCONSTRAINED.withEqualTo(0);
+		NumericConstraintConfig nanosecondConfig = NumericConstraintConfig.UNCONSTRAINED.withEqualTo(0);
 		OffsetTimeConstraintConfig config = OffsetTimeConstraintConfig.UNCONSTRAINED.withNanosecond(nanosecondConfig);
 		assertTrue(config.nanosecond().isPresent());
 		assertEquals(nanosecondConfig, config.nanosecond().get());
@@ -541,7 +541,7 @@ class OffsetTimeConstraintConfigTest {
 	
 	@Test
 	void matchesWithHourConstraint() {
-		NumericFieldConstraintConfig hourConfig = NumericFieldConstraintConfig.UNCONSTRAINED.withBetweenOrEqual(9, 17);
+		NumericConstraintConfig hourConfig = NumericConstraintConfig.UNCONSTRAINED.withBetweenOrEqual(9, 17);
 		OffsetTimeConstraintConfig config = OffsetTimeConstraintConfig.UNCONSTRAINED.withHour(hourConfig);
 		assertTrue(config.matches(TIME_10_30).isSuccess());
 		assertTrue(config.matches(TIME_12_00).isSuccess());
@@ -551,7 +551,7 @@ class OffsetTimeConstraintConfigTest {
 	
 	@Test
 	void matchesWithMinuteConstraint() {
-		NumericFieldConstraintConfig minuteConfig = NumericFieldConstraintConfig.UNCONSTRAINED.withIn(List.of(0, 30));
+		NumericConstraintConfig minuteConfig = NumericConstraintConfig.UNCONSTRAINED.withIn(List.of(0, 30));
 		OffsetTimeConstraintConfig config = OffsetTimeConstraintConfig.UNCONSTRAINED.withMinute(minuteConfig);
 		assertTrue(config.matches(TIME_10_30).isSuccess());
 		assertTrue(config.matches(TIME_12_00).isSuccess());

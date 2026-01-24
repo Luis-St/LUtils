@@ -16,10 +16,10 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-package net.luis.utils.io.codec.constraint_new.config;
+package net.luis.utils.io.codec.constraint.config;
 
-import net.luis.utils.io.codec.constraint_new.Constraint;
-import net.luis.utils.io.codec.constraint_new.LengthConstraint;
+import net.luis.utils.io.codec.constraint.core.Constraint;
+import net.luis.utils.io.codec.constraint.core.DepthConstraint;
 import net.luis.utils.io.codec.constraint_new.config.matcher.ConstraintMatchers;
 import net.luis.utils.util.Pair;
 import net.luis.utils.util.result.Result;
@@ -28,10 +28,10 @@ import org.jspecify.annotations.NonNull;
 import java.util.*;
 
 /**
- * Configuration record for length constraints on types with measurable length (strings, arrays).<br>
+ * Configuration record for depth constraints on recursive structures.<br>
  * <p>
- *     This record stores the constraint values for {@link LengthConstraint}.<br>
- *     Each field is optional and represents a specific length constraint.
+ *     This record stores the constraint values for {@link DepthConstraint}.<br>
+ *     Each field is optional and represents a specific depth constraint.
  * </p>
  * <p>
  *     The min and max fields use {@link Pair} where the first value is the bound
@@ -42,11 +42,11 @@ import java.util.*;
  *
  * @param equalTo The equality constraint as a pair of (value, negated) where negated=false means equalTo and negated=true means notEqualTo
  * @param in The set constraint as a pair of (values, negated) where negated=false means in and negated=true means notIn
- * @param min The minimum length constraint as a pair of (value, inclusive)
- * @param max The maximum length constraint as a pair of (value, inclusive)
+ * @param min The minimum depth constraint as a pair of (value, inclusive)
+ * @param max The maximum depth constraint as a pair of (value, inclusive)
  * @param custom A custom constraint implementation
  */
-public record LengthConstraintConfig(
+public record DepthConstraintConfig(
 	@NonNull Optional<Pair<Integer, Boolean>> equalTo,
 	@NonNull Optional<Pair<Set<Integer>, Boolean>> in,
 	@NonNull Optional<Pair<Integer, Boolean>> min,
@@ -55,28 +55,28 @@ public record LengthConstraintConfig(
 ) implements ConstraintConfig<Integer> {
 	
 	/**
-	 * An unconstrained length configuration with no constraints applied.<br>
+	 * An unconstrained depth configuration with no constraints applied.<br>
 	 */
-	public static final LengthConstraintConfig UNCONSTRAINED = new LengthConstraintConfig(
+	public static final DepthConstraintConfig UNCONSTRAINED = new DepthConstraintConfig(
 		Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty()
 	);
 	
 	/**
-	 * Constructs a new length constraint config with the specified parameters.<br>
+	 * Constructs a new depth constraint config with the specified parameters.<br>
 	 *
 	 * @param equalTo The equality constraint as a pair of (value, negated) where negated=false means equalTo and negated=true means notEqualTo
 	 * @param in The set constraint as a pair of (values, negated) where negated=false means in and negated=true means notIn
-	 * @param min The minimum length constraint as a pair of (value, inclusive)
-	 * @param max The maximum length constraint as a pair of (value, inclusive)
+	 * @param min The minimum depth constraint as a pair of (value, inclusive)
+	 * @param max The maximum depth constraint as a pair of (value, inclusive)
 	 * @param custom A custom constraint implementation
 	 * @throws NullPointerException If any optional field is null
 	 * @throws IllegalArgumentException If the 'in' constraint set is empty when present
-	 * @throws IllegalArgumentException If the minimum length is negative when present
-	 * @throws IllegalArgumentException If the maximum length is negative when present
-	 * @throws IllegalArgumentException If the maximum length is less than the minimum length when both are present
-	 * @throws IllegalArgumentException If min and max length are equal but at least one bound is exclusive when both are present
+	 * @throws IllegalArgumentException If the minimum depth is negative when present
+	 * @throws IllegalArgumentException If the maximum depth is negative when present
+	 * @throws IllegalArgumentException If the maximum depth is less than the minimum depth when both are present
+	 * @throws IllegalArgumentException If min and max depth are equal but at least one bound is exclusive when both are present
 	 */
-	public LengthConstraintConfig {
+	public DepthConstraintConfig {
 		Objects.requireNonNull(equalTo, "Optional for 'equal to' constraint must not be null");
 		Objects.requireNonNull(in, "Optional for 'in' constraint must not be null");
 		Objects.requireNonNull(min, "Optional for 'min' constraint must not be null");
@@ -88,19 +88,19 @@ public record LengthConstraintConfig(
 		}
 		
 		if (min.isPresent() && min.get().getFirst() < 0) {
-			throw new IllegalArgumentException("Minimum length must not be negative when present, but got " + min.get().getFirst());
+			throw new IllegalArgumentException("Minimum depth must not be negative when present, but got " + min.get().getFirst());
 		}
 		
 		if (max.isPresent() && max.get().getFirst() < 0) {
-			throw new IllegalArgumentException("Maximum length must not be negative when present, but got " + max.get().getFirst());
+			throw new IllegalArgumentException("Maximum depth must not be negative when present, but got " + max.get().getFirst());
 		}
 		
 		if (min.isPresent() && max.isPresent()) {
 			if (min.get().getFirst() > max.get().getFirst()) {
-				throw new IllegalArgumentException("Maximum length must not be less than minimum length when both are present, but got " + min.get().getFirst() + " > " + max.get().getFirst());
+				throw new IllegalArgumentException("Maximum depth must not be less than minimum depth when both are present, but got " + min.get().getFirst() + " > " + max.get().getFirst());
 			}
 			if (min.get().getFirst().equals(max.get().getFirst()) && (!min.get().getSecond() || !max.get().getSecond())) {
-				throw new IllegalArgumentException("Min and max length are equal but at least one bound is exclusive when both are present");
+				throw new IllegalArgumentException("Min and max depth are equal but at least one bound is exclusive when both are present");
 			}
 		}
 	}
@@ -113,8 +113,8 @@ public record LengthConstraintConfig(
 	 * @param value The exact value that should be matched
 	 * @return A new config with the constraint applied
 	 */
-	public @NonNull LengthConstraintConfig withEqualTo(int value) {
-		return new LengthConstraintConfig(Optional.of(Pair.of(value, false)), this.in, this.min, this.max, this.custom);
+	public @NonNull DepthConstraintConfig withEqualTo(int value) {
+		return new DepthConstraintConfig(Optional.of(Pair.of(value, false)), this.in, this.min, this.max, this.custom);
 	}
 	
 	/**
@@ -123,8 +123,8 @@ public record LengthConstraintConfig(
 	 * @param value The value that should be excluded
 	 * @return A new config with the constraint applied
 	 */
-	public @NonNull LengthConstraintConfig withNotEqualTo(int value) {
-		return new LengthConstraintConfig(Optional.of(Pair.of(value, true)), this.in, this.min, this.max, this.custom);
+	public @NonNull DepthConstraintConfig withNotEqualTo(int value) {
+		return new DepthConstraintConfig(Optional.of(Pair.of(value, true)), this.in, this.min, this.max, this.custom);
 	}
 	
 	/**
@@ -133,9 +133,9 @@ public record LengthConstraintConfig(
 	 * @param values The collection of values that are allowed
 	 * @return A new config with the constraint applied
 	 */
-	public @NonNull LengthConstraintConfig withIn(@NonNull Collection<Integer> values) {
+	public @NonNull DepthConstraintConfig withIn(@NonNull Collection<Integer> values) {
 		Objects.requireNonNull(values, "Values for 'in' constraint must not be null");
-		return new LengthConstraintConfig(this.equalTo, Optional.of(Pair.of(Set.copyOf(values), false)), this.min, this.max, this.custom);
+		return new DepthConstraintConfig(this.equalTo, Optional.of(Pair.of(Set.copyOf(values), false)), this.min, this.max, this.custom);
 	}
 	
 	/**
@@ -144,53 +144,53 @@ public record LengthConstraintConfig(
 	 * @param values The collection of values that are not allowed
 	 * @return A new config with the constraint applied
 	 */
-	public @NonNull LengthConstraintConfig withNotIn(@NonNull Collection<Integer> values) {
+	public @NonNull DepthConstraintConfig withNotIn(@NonNull Collection<Integer> values) {
 		Objects.requireNonNull(values, "Values for 'not in' constraint must not be null");
-		return new LengthConstraintConfig(this.equalTo, Optional.of(Pair.of(Set.copyOf(values), true)), this.min, this.max, this.custom);
+		return new DepthConstraintConfig(this.equalTo, Optional.of(Pair.of(Set.copyOf(values), true)), this.min, this.max, this.custom);
 	}
 	
 	/**
-	 * Creates a new length constraint config with the specified minimum length (inclusive).<br>
+	 * Creates a new depth constraint config with the specified minimum depth (inclusive).<br>
 	 *
-	 * @param minLength The minimum length (inclusive)
-	 * @return A new config with the minimum length constraint applied
+	 * @param minDepth The minimum depth (inclusive)
+	 * @return A new config with the minimum depth constraint applied
 	 */
-	public @NonNull LengthConstraintConfig withMinLength(int minLength) {
-		return new LengthConstraintConfig(this.equalTo, this.in, Optional.of(Pair.of(minLength, true)), this.max, this.custom);
+	public @NonNull DepthConstraintConfig withMinDepth(int minDepth) {
+		return new DepthConstraintConfig(this.equalTo, this.in, Optional.of(Pair.of(minDepth, true)), this.max, this.custom);
 	}
 	
 	/**
-	 * Creates a new length constraint config with the specified maximum length (inclusive).<br>
+	 * Creates a new depth constraint config with the specified maximum depth (inclusive).<br>
 	 *
-	 * @param maxLength The maximum length (inclusive)
-	 * @return A new config with the maximum length constraint applied
+	 * @param maxDepth The maximum depth (inclusive)
+	 * @return A new config with the maximum depth constraint applied
 	 */
-	public @NonNull LengthConstraintConfig withMaxLength(int maxLength) {
-		return new LengthConstraintConfig(this.equalTo, this.in, this.min, Optional.of(Pair.of(maxLength, true)), this.custom);
+	public @NonNull DepthConstraintConfig withMaxDepth(int maxDepth) {
+		return new DepthConstraintConfig(this.equalTo, this.in, this.min, Optional.of(Pair.of(maxDepth, true)), this.custom);
 	}
 	
 	/**
-	 * Creates a new length constraint config with the specified exact length.<br>
+	 * Creates a new depth constraint config with the specified exact depth.<br>
 	 * <p>
 	 *     This sets both min and max to the same value with inclusive bounds.
 	 * </p>
 	 *
-	 * @param exactLength The exact length required
-	 * @return A new config with the exact length constraint applied
+	 * @param exactDepth The exact depth required
+	 * @return A new config with the exact depth constraint applied
 	 */
-	public @NonNull LengthConstraintConfig withExactLength(int exactLength) {
-		return new LengthConstraintConfig(this.equalTo, this.in, Optional.of(Pair.of(exactLength, true)), Optional.of(Pair.of(exactLength, true)), this.custom);
+	public @NonNull DepthConstraintConfig withExactDepth(int exactDepth) {
+		return new DepthConstraintConfig(this.equalTo, this.in, Optional.of(Pair.of(exactDepth, true)), Optional.of(Pair.of(exactDepth, true)), this.custom);
 	}
 	
 	/**
-	 * Creates a new length constraint config with the specified length range (inclusive).<br>
+	 * Creates a new depth constraint config with the specified depth range (inclusive).<br>
 	 *
-	 * @param minLength The minimum length (inclusive)
-	 * @param maxLength The maximum length (inclusive)
-	 * @return A new config with the length range constraint applied
+	 * @param minDepth The minimum depth (inclusive)
+	 * @param maxDepth The maximum depth (inclusive)
+	 * @return A new config with the depth range constraint applied
 	 */
-	public @NonNull LengthConstraintConfig withLengthBetween(int minLength, int maxLength) {
-		return new LengthConstraintConfig(this.equalTo, this.in, Optional.of(Pair.of(minLength, true)), Optional.of(Pair.of(maxLength, true)), this.custom);
+	public @NonNull DepthConstraintConfig withDepthBetween(int minDepth, int maxDepth) {
+		return new DepthConstraintConfig(this.equalTo, this.in, Optional.of(Pair.of(minDepth, true)), Optional.of(Pair.of(maxDepth, true)), this.custom);
 	}
 	
 	/**
@@ -199,9 +199,9 @@ public record LengthConstraintConfig(
 	 * @param constraint The custom constraint implementation
 	 * @return A new config with the constraint applied
 	 */
-	public @NonNull LengthConstraintConfig withCustom(@NonNull Constraint<Integer> constraint) {
+	public @NonNull DepthConstraintConfig withCustom(@NonNull Constraint<Integer> constraint) {
 		Objects.requireNonNull(constraint, "Custom constraint must not be null");
-		return new LengthConstraintConfig(this.equalTo, this.in, this.min, this.max, Optional.of(constraint));
+		return new DepthConstraintConfig(this.equalTo, this.in, this.min, this.max, Optional.of(constraint));
 	}
 	//endregion
 	

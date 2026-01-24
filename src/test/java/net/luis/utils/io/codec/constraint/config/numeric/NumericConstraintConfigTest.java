@@ -16,7 +16,7 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-package net.luis.utils.io.codec.constraint_new.config;
+package net.luis.utils.io.codec.constraint.config.numeric;
 
 import net.luis.utils.util.Pair;
 import org.junit.jupiter.api.Test;
@@ -26,67 +26,67 @@ import java.util.*;
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
- * Test class for {@link NumericFieldConstraintConfig}.<br>
+ * Test class for {@link NumericConstraintConfig}.<br>
  *
  * @author Luis-St
  */
-class NumericFieldConstraintConfigTest {
+class NumericConstraintConfigTest {
 	
 	@Test
 	void constructWithNullEqualTo() {
-		assertThrows(NullPointerException.class, () -> new NumericFieldConstraintConfig(
+		assertThrows(NullPointerException.class, () -> new NumericConstraintConfig(
 			null, Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty()
 		));
 	}
 	
 	@Test
 	void constructWithNullIn() {
-		assertThrows(NullPointerException.class, () -> new NumericFieldConstraintConfig(
+		assertThrows(NullPointerException.class, () -> new NumericConstraintConfig(
 			Optional.empty(), null, Optional.empty(), Optional.empty(), Optional.empty()
 		));
 	}
 	
 	@Test
 	void constructWithNullMin() {
-		assertThrows(NullPointerException.class, () -> new NumericFieldConstraintConfig(
+		assertThrows(NullPointerException.class, () -> new NumericConstraintConfig(
 			Optional.empty(), Optional.empty(), null, Optional.empty(), Optional.empty()
 		));
 	}
 	
 	@Test
 	void constructWithNullMax() {
-		assertThrows(NullPointerException.class, () -> new NumericFieldConstraintConfig(
+		assertThrows(NullPointerException.class, () -> new NumericConstraintConfig(
 			Optional.empty(), Optional.empty(), Optional.empty(), null, Optional.empty()
 		));
 	}
 	
 	@Test
 	void constructWithNullCustom() {
-		assertThrows(NullPointerException.class, () -> new NumericFieldConstraintConfig(
+		assertThrows(NullPointerException.class, () -> new NumericConstraintConfig(
 			Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), null
 		));
 	}
 	
 	@Test
 	void constructWithEmptyInSet() {
-		assertThrows(IllegalArgumentException.class, () -> new NumericFieldConstraintConfig(
+		assertThrows(IllegalArgumentException.class, () -> new NumericConstraintConfig(
 			Optional.empty(), Optional.of(Pair.of(Set.of(), false)), Optional.empty(), Optional.empty(), Optional.empty()
 		));
 	}
 	
 	@Test
 	void constructWithMinGreaterThanMax() {
-		assertThrows(IllegalArgumentException.class, () -> NumericFieldConstraintConfig.UNCONSTRAINED.withBetweenOrEqual(10, 5));
+		assertThrows(IllegalArgumentException.class, () -> NumericConstraintConfig.UNCONSTRAINED.withBetweenOrEqual(10, 5));
 	}
 	
 	@Test
 	void constructWithEqualMinMaxExclusiveBound() {
-		assertThrows(IllegalArgumentException.class, () -> NumericFieldConstraintConfig.UNCONSTRAINED.withBetween(5, 5));
+		assertThrows(IllegalArgumentException.class, () -> NumericConstraintConfig.UNCONSTRAINED.withBetween(5, 5));
 	}
 	
 	@Test
 	void unconstrained() {
-		NumericFieldConstraintConfig config = NumericFieldConstraintConfig.UNCONSTRAINED;
+		NumericConstraintConfig config = NumericConstraintConfig.UNCONSTRAINED;
 		assertNotNull(config);
 		assertTrue(config.equalTo().isEmpty());
 		assertTrue(config.in().isEmpty());
@@ -98,7 +98,7 @@ class NumericFieldConstraintConfigTest {
 	
 	@Test
 	void withEqualTo() {
-		NumericFieldConstraintConfig config = NumericFieldConstraintConfig.UNCONSTRAINED.withEqualTo(10);
+		NumericConstraintConfig config = NumericConstraintConfig.UNCONSTRAINED.withEqualTo(10);
 		assertTrue(config.equalTo().isPresent());
 		assertEquals(10, config.equalTo().get().getFirst());
 		assertFalse(config.equalTo().get().getSecond());
@@ -106,7 +106,7 @@ class NumericFieldConstraintConfigTest {
 	
 	@Test
 	void withNotEqualTo() {
-		NumericFieldConstraintConfig config = NumericFieldConstraintConfig.UNCONSTRAINED.withNotEqualTo(10);
+		NumericConstraintConfig config = NumericConstraintConfig.UNCONSTRAINED.withNotEqualTo(10);
 		assertTrue(config.equalTo().isPresent());
 		assertEquals(10, config.equalTo().get().getFirst());
 		assertTrue(config.equalTo().get().getSecond());
@@ -114,7 +114,7 @@ class NumericFieldConstraintConfigTest {
 	
 	@Test
 	void withIn() {
-		NumericFieldConstraintConfig config = NumericFieldConstraintConfig.UNCONSTRAINED.withIn(List.of(1, 2, 3));
+		NumericConstraintConfig config = NumericConstraintConfig.UNCONSTRAINED.withIn(List.of(1, 2, 3));
 		assertTrue(config.in().isPresent());
 		assertEquals(Set.of(1, 2, 3), config.in().get().getFirst());
 		assertFalse(config.in().get().getSecond());
@@ -122,7 +122,7 @@ class NumericFieldConstraintConfigTest {
 	
 	@Test
 	void withNotIn() {
-		NumericFieldConstraintConfig config = NumericFieldConstraintConfig.UNCONSTRAINED.withNotIn(List.of(4, 5));
+		NumericConstraintConfig config = NumericConstraintConfig.UNCONSTRAINED.withNotIn(List.of(4, 5));
 		assertTrue(config.in().isPresent());
 		assertEquals(Set.of(4, 5), config.in().get().getFirst());
 		assertTrue(config.in().get().getSecond());
@@ -130,7 +130,7 @@ class NumericFieldConstraintConfigTest {
 	
 	@Test
 	void withGreaterThan() {
-		NumericFieldConstraintConfig config = NumericFieldConstraintConfig.UNCONSTRAINED.withGreaterThan(5);
+		NumericConstraintConfig config = NumericConstraintConfig.UNCONSTRAINED.withGreaterThan(5);
 		assertTrue(config.min().isPresent());
 		assertEquals(5, config.min().get().getFirst());
 		assertFalse(config.min().get().getSecond());
@@ -138,7 +138,7 @@ class NumericFieldConstraintConfigTest {
 	
 	@Test
 	void withGreaterThanOrEqual() {
-		NumericFieldConstraintConfig config = NumericFieldConstraintConfig.UNCONSTRAINED.withGreaterThanOrEqual(5);
+		NumericConstraintConfig config = NumericConstraintConfig.UNCONSTRAINED.withGreaterThanOrEqual(5);
 		assertTrue(config.min().isPresent());
 		assertEquals(5, config.min().get().getFirst());
 		assertTrue(config.min().get().getSecond());
@@ -146,7 +146,7 @@ class NumericFieldConstraintConfigTest {
 	
 	@Test
 	void withLessThan() {
-		NumericFieldConstraintConfig config = NumericFieldConstraintConfig.UNCONSTRAINED.withLessThan(10);
+		NumericConstraintConfig config = NumericConstraintConfig.UNCONSTRAINED.withLessThan(10);
 		assertTrue(config.max().isPresent());
 		assertEquals(10, config.max().get().getFirst());
 		assertFalse(config.max().get().getSecond());
@@ -154,7 +154,7 @@ class NumericFieldConstraintConfigTest {
 	
 	@Test
 	void withLessThanOrEqual() {
-		NumericFieldConstraintConfig config = NumericFieldConstraintConfig.UNCONSTRAINED.withLessThanOrEqual(10);
+		NumericConstraintConfig config = NumericConstraintConfig.UNCONSTRAINED.withLessThanOrEqual(10);
 		assertTrue(config.max().isPresent());
 		assertEquals(10, config.max().get().getFirst());
 		assertTrue(config.max().get().getSecond());
@@ -162,7 +162,7 @@ class NumericFieldConstraintConfigTest {
 	
 	@Test
 	void withBetween() {
-		NumericFieldConstraintConfig config = NumericFieldConstraintConfig.UNCONSTRAINED.withBetween(1, 10);
+		NumericConstraintConfig config = NumericConstraintConfig.UNCONSTRAINED.withBetween(1, 10);
 		assertTrue(config.min().isPresent());
 		assertTrue(config.max().isPresent());
 		assertEquals(1, config.min().get().getFirst());
@@ -173,7 +173,7 @@ class NumericFieldConstraintConfigTest {
 	
 	@Test
 	void withBetweenOrEqual() {
-		NumericFieldConstraintConfig config = NumericFieldConstraintConfig.UNCONSTRAINED.withBetweenOrEqual(1, 10);
+		NumericConstraintConfig config = NumericConstraintConfig.UNCONSTRAINED.withBetweenOrEqual(1, 10);
 		assertTrue(config.min().isPresent());
 		assertTrue(config.max().isPresent());
 		assertEquals(1, config.min().get().getFirst());
@@ -184,21 +184,21 @@ class NumericFieldConstraintConfigTest {
 	
 	@Test
 	void matchesWithEqualTo() {
-		NumericFieldConstraintConfig config = NumericFieldConstraintConfig.UNCONSTRAINED.withEqualTo(42);
+		NumericConstraintConfig config = NumericConstraintConfig.UNCONSTRAINED.withEqualTo(42);
 		assertTrue(config.matches(42).isSuccess());
 		assertTrue(config.matches(43).isError());
 	}
 	
 	@Test
 	void matchesWithNotEqualTo() {
-		NumericFieldConstraintConfig config = NumericFieldConstraintConfig.UNCONSTRAINED.withNotEqualTo(42);
+		NumericConstraintConfig config = NumericConstraintConfig.UNCONSTRAINED.withNotEqualTo(42);
 		assertTrue(config.matches(41).isSuccess());
 		assertTrue(config.matches(42).isError());
 	}
 	
 	@Test
 	void matchesWithIn() {
-		NumericFieldConstraintConfig config = NumericFieldConstraintConfig.UNCONSTRAINED.withIn(List.of(1, 2, 3));
+		NumericConstraintConfig config = NumericConstraintConfig.UNCONSTRAINED.withIn(List.of(1, 2, 3));
 		assertTrue(config.matches(1).isSuccess());
 		assertTrue(config.matches(2).isSuccess());
 		assertTrue(config.matches(4).isError());
@@ -206,14 +206,14 @@ class NumericFieldConstraintConfigTest {
 	
 	@Test
 	void matchesWithNotIn() {
-		NumericFieldConstraintConfig config = NumericFieldConstraintConfig.UNCONSTRAINED.withNotIn(List.of(1, 2, 3));
+		NumericConstraintConfig config = NumericConstraintConfig.UNCONSTRAINED.withNotIn(List.of(1, 2, 3));
 		assertTrue(config.matches(4).isSuccess());
 		assertTrue(config.matches(1).isError());
 	}
 	
 	@Test
 	void matchesWithGreaterThan() {
-		NumericFieldConstraintConfig config = NumericFieldConstraintConfig.UNCONSTRAINED.withGreaterThan(5);
+		NumericConstraintConfig config = NumericConstraintConfig.UNCONSTRAINED.withGreaterThan(5);
 		assertTrue(config.matches(6).isSuccess());
 		assertTrue(config.matches(5).isError());
 		assertTrue(config.matches(4).isError());
@@ -221,7 +221,7 @@ class NumericFieldConstraintConfigTest {
 	
 	@Test
 	void matchesWithGreaterThanOrEqual() {
-		NumericFieldConstraintConfig config = NumericFieldConstraintConfig.UNCONSTRAINED.withGreaterThanOrEqual(5);
+		NumericConstraintConfig config = NumericConstraintConfig.UNCONSTRAINED.withGreaterThanOrEqual(5);
 		assertTrue(config.matches(5).isSuccess());
 		assertTrue(config.matches(6).isSuccess());
 		assertTrue(config.matches(4).isError());
@@ -229,7 +229,7 @@ class NumericFieldConstraintConfigTest {
 	
 	@Test
 	void matchesWithLessThan() {
-		NumericFieldConstraintConfig config = NumericFieldConstraintConfig.UNCONSTRAINED.withLessThan(10);
+		NumericConstraintConfig config = NumericConstraintConfig.UNCONSTRAINED.withLessThan(10);
 		assertTrue(config.matches(9).isSuccess());
 		assertTrue(config.matches(10).isError());
 		assertTrue(config.matches(11).isError());
@@ -237,7 +237,7 @@ class NumericFieldConstraintConfigTest {
 	
 	@Test
 	void matchesWithLessThanOrEqual() {
-		NumericFieldConstraintConfig config = NumericFieldConstraintConfig.UNCONSTRAINED.withLessThanOrEqual(10);
+		NumericConstraintConfig config = NumericConstraintConfig.UNCONSTRAINED.withLessThanOrEqual(10);
 		assertTrue(config.matches(10).isSuccess());
 		assertTrue(config.matches(9).isSuccess());
 		assertTrue(config.matches(11).isError());
@@ -245,7 +245,7 @@ class NumericFieldConstraintConfigTest {
 	
 	@Test
 	void matchesWithBetween() {
-		NumericFieldConstraintConfig config = NumericFieldConstraintConfig.UNCONSTRAINED.withBetween(1, 10);
+		NumericConstraintConfig config = NumericConstraintConfig.UNCONSTRAINED.withBetween(1, 10);
 		assertTrue(config.matches(5).isSuccess());
 		assertTrue(config.matches(1).isError());
 		assertTrue(config.matches(10).isError());
@@ -253,7 +253,7 @@ class NumericFieldConstraintConfigTest {
 	
 	@Test
 	void matchesWithBetweenOrEqual() {
-		NumericFieldConstraintConfig config = NumericFieldConstraintConfig.UNCONSTRAINED.withBetweenOrEqual(1, 10);
+		NumericConstraintConfig config = NumericConstraintConfig.UNCONSTRAINED.withBetweenOrEqual(1, 10);
 		assertTrue(config.matches(1).isSuccess());
 		assertTrue(config.matches(10).isSuccess());
 		assertTrue(config.matches(5).isSuccess());
@@ -263,7 +263,7 @@ class NumericFieldConstraintConfigTest {
 	
 	@Test
 	void matchesWithMultipleConstraints() {
-		NumericFieldConstraintConfig config = NumericFieldConstraintConfig.UNCONSTRAINED
+		NumericConstraintConfig config = NumericConstraintConfig.UNCONSTRAINED
 			.withGreaterThanOrEqual(0)
 			.withLessThanOrEqual(100)
 			.withNotIn(List.of(50));
@@ -277,7 +277,7 @@ class NumericFieldConstraintConfigTest {
 	
 	@Test
 	void matchesWithNullValue() {
-		NumericFieldConstraintConfig config = NumericFieldConstraintConfig.UNCONSTRAINED;
+		NumericConstraintConfig config = NumericConstraintConfig.UNCONSTRAINED;
 		assertThrows(NullPointerException.class, () -> config.matches(null));
 	}
 }

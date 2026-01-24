@@ -18,8 +18,10 @@
 
 package net.luis.utils.io.codec.constraint.config.temporal.zoned;
 
-import net.luis.utils.io.codec.constraint_new.Constraint;
-import net.luis.utils.io.codec.constraint_new.config.*;
+import net.luis.utils.io.codec.constraint.config.ConstraintConfig;
+import net.luis.utils.io.codec.constraint.config.EnumConstraintConfig;
+import net.luis.utils.io.codec.constraint.config.numeric.NumericConstraintConfig;
+import net.luis.utils.io.codec.constraint.core.Constraint;
 import net.luis.utils.io.codec.constraint_new.config.matcher.ConstraintMatchers;
 import net.luis.utils.util.Pair;
 import net.luis.utils.util.result.Result;
@@ -82,17 +84,17 @@ public record ZonedDateTimeConstraintConfig(
 	@NonNull Optional<Duration> withinLast,
 	@NonNull Optional<Duration> withinNext,
 	@NonNull Optional<EnumConstraintConfig<DayOfWeek>> dayOfWeek,
-	@NonNull Optional<NumericFieldConstraintConfig> dayOfMonth,
-	@NonNull Optional<NumericFieldConstraintConfig> dayOfYear,
-	@NonNull Optional<NumericFieldConstraintConfig> weekOfMonth,
-	@NonNull Optional<NumericFieldConstraintConfig> weekOfYear,
+	@NonNull Optional<NumericConstraintConfig> dayOfMonth,
+	@NonNull Optional<NumericConstraintConfig> dayOfYear,
+	@NonNull Optional<NumericConstraintConfig> weekOfMonth,
+	@NonNull Optional<NumericConstraintConfig> weekOfYear,
 	@NonNull Optional<EnumConstraintConfig<Month>> month,
-	@NonNull Optional<NumericFieldConstraintConfig> year,
-	@NonNull Optional<NumericFieldConstraintConfig> hour,
-	@NonNull Optional<NumericFieldConstraintConfig> minute,
-	@NonNull Optional<NumericFieldConstraintConfig> second,
-	@NonNull Optional<NumericFieldConstraintConfig> millisecond,
-	@NonNull Optional<NumericFieldConstraintConfig> nanosecond,
+	@NonNull Optional<NumericConstraintConfig> year,
+	@NonNull Optional<NumericConstraintConfig> hour,
+	@NonNull Optional<NumericConstraintConfig> minute,
+	@NonNull Optional<NumericConstraintConfig> second,
+	@NonNull Optional<NumericConstraintConfig> millisecond,
+	@NonNull Optional<NumericConstraintConfig> nanosecond,
 	@NonNull Optional<ZoneIdConstraintConfig> zone,
 	@NonNull Optional<Constraint<ZonedDateTime>> custom
 ) implements ConstraintConfig<ZonedDateTime> {
@@ -323,7 +325,7 @@ public record ZonedDateTimeConstraintConfig(
 	 * @param config The numeric field constraint config for day of month validation
 	 * @return A new config with the constraint applied
 	 */
-	public @NonNull ZonedDateTimeConstraintConfig withDayOfMonth(@NonNull NumericFieldConstraintConfig config) {
+	public @NonNull ZonedDateTimeConstraintConfig withDayOfMonth(@NonNull NumericConstraintConfig config) {
 		Objects.requireNonNull(config, "Config for 'day of month' constraint must not be null");
 		return new ZonedDateTimeConstraintConfig(this.equalTo, this.in, this.after, this.before, this.withinLast, this.withinNext, this.dayOfWeek, Optional.of(config), this.dayOfYear, this.weekOfMonth, this.weekOfYear, this.month, this.year, this.hour, this.minute, this.second, this.millisecond, this.nanosecond, this.zone, this.custom);
 	}
@@ -334,7 +336,7 @@ public record ZonedDateTimeConstraintConfig(
 	 * @param config The numeric field constraint config for day of year validation
 	 * @return A new config with the constraint applied
 	 */
-	public @NonNull ZonedDateTimeConstraintConfig withDayOfYear(@NonNull NumericFieldConstraintConfig config) {
+	public @NonNull ZonedDateTimeConstraintConfig withDayOfYear(@NonNull NumericConstraintConfig config) {
 		Objects.requireNonNull(config, "Config for 'day of year' constraint must not be null");
 		return new ZonedDateTimeConstraintConfig(this.equalTo, this.in, this.after, this.before, this.withinLast, this.withinNext, this.dayOfWeek, this.dayOfMonth, Optional.of(config), this.weekOfMonth, this.weekOfYear, this.month, this.year, this.hour, this.minute, this.second, this.millisecond, this.nanosecond, this.zone, this.custom);
 	}
@@ -345,7 +347,7 @@ public record ZonedDateTimeConstraintConfig(
 	 * @param config The numeric field constraint config for week of month validation
 	 * @return A new config with the constraint applied
 	 */
-	public @NonNull ZonedDateTimeConstraintConfig withWeekOfMonth(@NonNull NumericFieldConstraintConfig config) {
+	public @NonNull ZonedDateTimeConstraintConfig withWeekOfMonth(@NonNull NumericConstraintConfig config) {
 		Objects.requireNonNull(config, "Config for 'week of month' constraint must not be null");
 		return new ZonedDateTimeConstraintConfig(this.equalTo, this.in, this.after, this.before, this.withinLast, this.withinNext, this.dayOfWeek, this.dayOfMonth, this.dayOfYear, Optional.of(config), this.weekOfYear, this.month, this.year, this.hour, this.minute, this.second, this.millisecond, this.nanosecond, this.zone, this.custom);
 	}
@@ -356,7 +358,7 @@ public record ZonedDateTimeConstraintConfig(
 	 * @param config The numeric field constraint config for week of year validation
 	 * @return A new config with the constraint applied
 	 */
-	public @NonNull ZonedDateTimeConstraintConfig withWeekOfYear(@NonNull NumericFieldConstraintConfig config) {
+	public @NonNull ZonedDateTimeConstraintConfig withWeekOfYear(@NonNull NumericConstraintConfig config) {
 		Objects.requireNonNull(config, "Config for 'week of year' constraint must not be null");
 		return new ZonedDateTimeConstraintConfig(this.equalTo, this.in, this.after, this.before, this.withinLast, this.withinNext, this.dayOfWeek, this.dayOfMonth, this.dayOfYear, this.weekOfMonth, Optional.of(config), this.month, this.year, this.hour, this.minute, this.second, this.millisecond, this.nanosecond, this.zone, this.custom);
 	}
@@ -378,7 +380,7 @@ public record ZonedDateTimeConstraintConfig(
 	 * @param config The numeric field constraint config for year validation
 	 * @return A new config with the constraint applied
 	 */
-	public @NonNull ZonedDateTimeConstraintConfig withYear(@NonNull NumericFieldConstraintConfig config) {
+	public @NonNull ZonedDateTimeConstraintConfig withYear(@NonNull NumericConstraintConfig config) {
 		Objects.requireNonNull(config, "Config for 'year' constraint must not be null");
 		return new ZonedDateTimeConstraintConfig(this.equalTo, this.in, this.after, this.before, this.withinLast, this.withinNext, this.dayOfWeek, this.dayOfMonth, this.dayOfYear, this.weekOfMonth, this.weekOfYear, this.month, Optional.of(config), this.hour, this.minute, this.second, this.millisecond, this.nanosecond, this.zone, this.custom);
 	}
@@ -389,7 +391,7 @@ public record ZonedDateTimeConstraintConfig(
 	 * @param config The numeric field constraint config for hour validation
 	 * @return A new config with the constraint applied
 	 */
-	public @NonNull ZonedDateTimeConstraintConfig withHour(@NonNull NumericFieldConstraintConfig config) {
+	public @NonNull ZonedDateTimeConstraintConfig withHour(@NonNull NumericConstraintConfig config) {
 		Objects.requireNonNull(config, "Config for 'hour' constraint must not be null");
 		return new ZonedDateTimeConstraintConfig(this.equalTo, this.in, this.after, this.before, this.withinLast, this.withinNext, this.dayOfWeek, this.dayOfMonth, this.dayOfYear, this.weekOfMonth, this.weekOfYear, this.month, this.year, Optional.of(config), this.minute, this.second, this.millisecond, this.nanosecond, this.zone, this.custom);
 	}
@@ -400,7 +402,7 @@ public record ZonedDateTimeConstraintConfig(
 	 * @param config The numeric field constraint config for minute validation
 	 * @return A new config with the constraint applied
 	 */
-	public @NonNull ZonedDateTimeConstraintConfig withMinute(@NonNull NumericFieldConstraintConfig config) {
+	public @NonNull ZonedDateTimeConstraintConfig withMinute(@NonNull NumericConstraintConfig config) {
 		Objects.requireNonNull(config, "Config for 'minute' constraint must not be null");
 		return new ZonedDateTimeConstraintConfig(this.equalTo, this.in, this.after, this.before, this.withinLast, this.withinNext, this.dayOfWeek, this.dayOfMonth, this.dayOfYear, this.weekOfMonth, this.weekOfYear, this.month, this.year, this.hour, Optional.of(config), this.second, this.millisecond, this.nanosecond, this.zone, this.custom);
 	}
@@ -411,7 +413,7 @@ public record ZonedDateTimeConstraintConfig(
 	 * @param config The numeric field constraint config for second validation
 	 * @return A new config with the constraint applied
 	 */
-	public @NonNull ZonedDateTimeConstraintConfig withSecond(@NonNull NumericFieldConstraintConfig config) {
+	public @NonNull ZonedDateTimeConstraintConfig withSecond(@NonNull NumericConstraintConfig config) {
 		Objects.requireNonNull(config, "Config for 'second' constraint must not be null");
 		return new ZonedDateTimeConstraintConfig(this.equalTo, this.in, this.after, this.before, this.withinLast, this.withinNext, this.dayOfWeek, this.dayOfMonth, this.dayOfYear, this.weekOfMonth, this.weekOfYear, this.month, this.year, this.hour, this.minute, Optional.of(config), this.millisecond, this.nanosecond, this.zone, this.custom);
 	}
@@ -422,7 +424,7 @@ public record ZonedDateTimeConstraintConfig(
 	 * @param config The numeric field constraint config for millisecond validation
 	 * @return A new config with the constraint applied
 	 */
-	public @NonNull ZonedDateTimeConstraintConfig withMillisecond(@NonNull NumericFieldConstraintConfig config) {
+	public @NonNull ZonedDateTimeConstraintConfig withMillisecond(@NonNull NumericConstraintConfig config) {
 		Objects.requireNonNull(config, "Config for 'millisecond' constraint must not be null");
 		return new ZonedDateTimeConstraintConfig(this.equalTo, this.in, this.after, this.before, this.withinLast, this.withinNext, this.dayOfWeek, this.dayOfMonth, this.dayOfYear, this.weekOfMonth, this.weekOfYear, this.month, this.year, this.hour, this.minute, this.second, Optional.of(config), this.nanosecond, this.zone, this.custom);
 	}
@@ -433,7 +435,7 @@ public record ZonedDateTimeConstraintConfig(
 	 * @param config The numeric field constraint config for nanosecond validation
 	 * @return A new config with the constraint applied
 	 */
-	public @NonNull ZonedDateTimeConstraintConfig withNanosecond(@NonNull NumericFieldConstraintConfig config) {
+	public @NonNull ZonedDateTimeConstraintConfig withNanosecond(@NonNull NumericConstraintConfig config) {
 		Objects.requireNonNull(config, "Config for 'nanosecond' constraint must not be null");
 		return new ZonedDateTimeConstraintConfig(this.equalTo, this.in, this.after, this.before, this.withinLast, this.withinNext, this.dayOfWeek, this.dayOfMonth, this.dayOfYear, this.weekOfMonth, this.weekOfYear, this.month, this.year, this.hour, this.minute, this.second, this.millisecond, Optional.of(config), this.zone, this.custom);
 	}

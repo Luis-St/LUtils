@@ -19,9 +19,9 @@
 package net.luis.utils.io.codec.constraint.config.temporal.offset;
 
 import net.luis.utils.io.codec.constraint.config.temporal.zoned.ZoneOffsetConstraintConfig;
-import net.luis.utils.io.codec.constraint_new.Constraint;
-import net.luis.utils.io.codec.constraint_new.config.ConstraintConfig;
-import net.luis.utils.io.codec.constraint_new.config.NumericFieldConstraintConfig;
+import net.luis.utils.io.codec.constraint.core.Constraint;
+import net.luis.utils.io.codec.constraint.config.ConstraintConfig;
+import net.luis.utils.io.codec.constraint.config.numeric.NumericConstraintConfig;
 import net.luis.utils.io.codec.constraint_new.config.matcher.ConstraintMatchers;
 import net.luis.utils.util.Pair;
 import net.luis.utils.util.result.Result;
@@ -63,11 +63,11 @@ public record OffsetTimeConstraintConfig(
 	@NonNull Optional<Pair<OffsetTime, Boolean>> before,
 	@NonNull Optional<Duration> withinLast,
 	@NonNull Optional<Duration> withinNext,
-	@NonNull Optional<NumericFieldConstraintConfig> hour,
-	@NonNull Optional<NumericFieldConstraintConfig> minute,
-	@NonNull Optional<NumericFieldConstraintConfig> second,
-	@NonNull Optional<NumericFieldConstraintConfig> millisecond,
-	@NonNull Optional<NumericFieldConstraintConfig> nanosecond,
+	@NonNull Optional<NumericConstraintConfig> hour,
+	@NonNull Optional<NumericConstraintConfig> minute,
+	@NonNull Optional<NumericConstraintConfig> second,
+	@NonNull Optional<NumericConstraintConfig> millisecond,
+	@NonNull Optional<NumericConstraintConfig> nanosecond,
 	@NonNull Optional<ZoneOffsetConstraintConfig> offset,
 	@NonNull Optional<Constraint<OffsetTime>> custom
 ) implements ConstraintConfig<OffsetTime> {
@@ -273,7 +273,7 @@ public record OffsetTimeConstraintConfig(
 	 * @param config The numeric field constraint config for hour validation
 	 * @return A new config with the constraint applied
 	 */
-	public @NonNull OffsetTimeConstraintConfig withHour(@NonNull NumericFieldConstraintConfig config) {
+	public @NonNull OffsetTimeConstraintConfig withHour(@NonNull NumericConstraintConfig config) {
 		Objects.requireNonNull(config, "Config for 'hour' constraint must not be null");
 		return new OffsetTimeConstraintConfig(this.equalTo, this.in, this.after, this.before, this.withinLast, this.withinNext, Optional.of(config), this.minute, this.second, this.millisecond, this.nanosecond, this.offset, this.custom);
 	}
@@ -284,7 +284,7 @@ public record OffsetTimeConstraintConfig(
 	 * @param config The numeric field constraint config for minute validation
 	 * @return A new config with the constraint applied
 	 */
-	public @NonNull OffsetTimeConstraintConfig withMinute(@NonNull NumericFieldConstraintConfig config) {
+	public @NonNull OffsetTimeConstraintConfig withMinute(@NonNull NumericConstraintConfig config) {
 		Objects.requireNonNull(config, "Config for 'minute' constraint must not be null");
 		return new OffsetTimeConstraintConfig(this.equalTo, this.in, this.after, this.before, this.withinLast, this.withinNext, this.hour, Optional.of(config), this.second, this.millisecond, this.nanosecond, this.offset, this.custom);
 	}
@@ -295,7 +295,7 @@ public record OffsetTimeConstraintConfig(
 	 * @param config The numeric field constraint config for second validation
 	 * @return A new config with the constraint applied
 	 */
-	public @NonNull OffsetTimeConstraintConfig withSecond(@NonNull NumericFieldConstraintConfig config) {
+	public @NonNull OffsetTimeConstraintConfig withSecond(@NonNull NumericConstraintConfig config) {
 		Objects.requireNonNull(config, "Config for 'second' constraint must not be null");
 		return new OffsetTimeConstraintConfig(this.equalTo, this.in, this.after, this.before, this.withinLast, this.withinNext, this.hour, this.minute, Optional.of(config), this.millisecond, this.nanosecond, this.offset, this.custom);
 	}
@@ -306,7 +306,7 @@ public record OffsetTimeConstraintConfig(
 	 * @param config The numeric field constraint config for millisecond validation
 	 * @return A new config with the constraint applied
 	 */
-	public @NonNull OffsetTimeConstraintConfig withMillisecond(@NonNull NumericFieldConstraintConfig config) {
+	public @NonNull OffsetTimeConstraintConfig withMillisecond(@NonNull NumericConstraintConfig config) {
 		Objects.requireNonNull(config, "Config for 'millisecond' constraint must not be null");
 		return new OffsetTimeConstraintConfig(this.equalTo, this.in, this.after, this.before, this.withinLast, this.withinNext, this.hour, this.minute, this.second, Optional.of(config), this.nanosecond, this.offset, this.custom);
 	}
@@ -317,7 +317,7 @@ public record OffsetTimeConstraintConfig(
 	 * @param config The numeric field constraint config for nanosecond validation
 	 * @return A new config with the constraint applied
 	 */
-	public @NonNull OffsetTimeConstraintConfig withNanosecond(@NonNull NumericFieldConstraintConfig config) {
+	public @NonNull OffsetTimeConstraintConfig withNanosecond(@NonNull NumericConstraintConfig config) {
 		Objects.requireNonNull(config, "Config for 'nanosecond' constraint must not be null");
 		return new OffsetTimeConstraintConfig(this.equalTo, this.in, this.after, this.before, this.withinLast, this.withinNext, this.hour, this.minute, this.second, this.millisecond, Optional.of(config), this.offset, this.custom);
 	}

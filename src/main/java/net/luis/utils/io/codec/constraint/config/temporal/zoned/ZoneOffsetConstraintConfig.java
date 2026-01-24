@@ -18,9 +18,9 @@
 
 package net.luis.utils.io.codec.constraint.config.temporal.zoned;
 
-import net.luis.utils.io.codec.constraint_new.Constraint;
-import net.luis.utils.io.codec.constraint_new.config.ConstraintConfig;
-import net.luis.utils.io.codec.constraint_new.config.NumericFieldConstraintConfig;
+import net.luis.utils.io.codec.constraint.core.Constraint;
+import net.luis.utils.io.codec.constraint.config.ConstraintConfig;
+import net.luis.utils.io.codec.constraint.config.numeric.NumericConstraintConfig;
 import net.luis.utils.io.codec.constraint_new.config.matcher.ConstraintMatchers;
 import net.luis.utils.util.Pair;
 import net.luis.utils.util.result.Result;
@@ -69,7 +69,7 @@ public record ZoneOffsetConstraintConfig(
 	@NonNull Optional<Boolean> positive,
 	@NonNull Optional<Boolean> negative,
 	@NonNull Optional<Boolean> zero,
-	@NonNull Optional<NumericFieldConstraintConfig> hour,
+	@NonNull Optional<NumericConstraintConfig> hour,
 	@NonNull Optional<Constraint<ZoneOffset>> custom
 ) implements ConstraintConfig<ZoneOffset> {
 	
@@ -304,7 +304,7 @@ public record ZoneOffsetConstraintConfig(
 	 * @param hourConfig The numeric field constraint config for hour validation
 	 * @return A new config with the constraint applied
 	 */
-	public @NonNull ZoneOffsetConstraintConfig withHour(@NonNull NumericFieldConstraintConfig hourConfig) {
+	public @NonNull ZoneOffsetConstraintConfig withHour(@NonNull NumericConstraintConfig hourConfig) {
 		Objects.requireNonNull(hourConfig, "Config for 'hour' constraint must not be null");
 		return new ZoneOffsetConstraintConfig(this.equalTo, this.in, this.min, this.max, this.positive, this.negative, this.zero, Optional.of(hourConfig), this.custom);
 	}

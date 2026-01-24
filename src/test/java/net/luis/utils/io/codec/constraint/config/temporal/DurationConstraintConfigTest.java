@@ -18,7 +18,7 @@
 
 package net.luis.utils.io.codec.constraint.config.temporal;
 
-import net.luis.utils.io.codec.constraint_new.config.NumericFieldConstraintConfig;
+import net.luis.utils.io.codec.constraint.config.numeric.NumericConstraintConfig;
 import net.luis.utils.util.Pair;
 import net.luis.utils.util.result.Result;
 import org.junit.jupiter.api.Test;
@@ -369,7 +369,7 @@ class DurationConstraintConfigTest {
 	
 	@Test
 	void withHour() {
-		NumericFieldConstraintConfig hourConfig = NumericFieldConstraintConfig.UNCONSTRAINED.withGreaterThanOrEqual(0);
+		NumericConstraintConfig hourConfig = NumericConstraintConfig.UNCONSTRAINED.withGreaterThanOrEqual(0);
 		DurationConstraintConfig config = DurationConstraintConfig.UNCONSTRAINED.withHour(hourConfig);
 		assertTrue(config.hour().isPresent());
 		assertEquals(hourConfig, config.hour().get());
@@ -377,7 +377,7 @@ class DurationConstraintConfigTest {
 	
 	@Test
 	void withMinute() {
-		NumericFieldConstraintConfig minuteConfig = NumericFieldConstraintConfig.UNCONSTRAINED.withBetweenOrEqual(0, 59);
+		NumericConstraintConfig minuteConfig = NumericConstraintConfig.UNCONSTRAINED.withBetweenOrEqual(0, 59);
 		DurationConstraintConfig config = DurationConstraintConfig.UNCONSTRAINED.withMinute(minuteConfig);
 		assertTrue(config.minute().isPresent());
 		assertEquals(minuteConfig, config.minute().get());
@@ -385,7 +385,7 @@ class DurationConstraintConfigTest {
 	
 	@Test
 	void withSecond() {
-		NumericFieldConstraintConfig secondConfig = NumericFieldConstraintConfig.UNCONSTRAINED.withBetweenOrEqual(0, 59);
+		NumericConstraintConfig secondConfig = NumericConstraintConfig.UNCONSTRAINED.withBetweenOrEqual(0, 59);
 		DurationConstraintConfig config = DurationConstraintConfig.UNCONSTRAINED.withSecond(secondConfig);
 		assertTrue(config.second().isPresent());
 		assertEquals(secondConfig, config.second().get());
@@ -393,7 +393,7 @@ class DurationConstraintConfigTest {
 	
 	@Test
 	void withMillisecond() {
-		NumericFieldConstraintConfig millisecondConfig = NumericFieldConstraintConfig.UNCONSTRAINED.withBetweenOrEqual(0, 999);
+		NumericConstraintConfig millisecondConfig = NumericConstraintConfig.UNCONSTRAINED.withBetweenOrEqual(0, 999);
 		DurationConstraintConfig config = DurationConstraintConfig.UNCONSTRAINED.withMillisecond(millisecondConfig);
 		assertTrue(config.millisecond().isPresent());
 		assertEquals(millisecondConfig, config.millisecond().get());
@@ -401,7 +401,7 @@ class DurationConstraintConfigTest {
 	
 	@Test
 	void withNanosecond() {
-		NumericFieldConstraintConfig nanosecondConfig = NumericFieldConstraintConfig.UNCONSTRAINED.withGreaterThanOrEqual(0);
+		NumericConstraintConfig nanosecondConfig = NumericConstraintConfig.UNCONSTRAINED.withGreaterThanOrEqual(0);
 		DurationConstraintConfig config = DurationConstraintConfig.UNCONSTRAINED.withNanosecond(nanosecondConfig);
 		assertTrue(config.nanosecond().isPresent());
 		assertEquals(nanosecondConfig, config.nanosecond().get());
