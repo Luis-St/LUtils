@@ -66,7 +66,7 @@ public class StringConstraintBuilder implements StringConstraint<StringConstrain
 	
 	@Override
 	public @NonNull StringConstraintBuilder apply(@NonNull UnaryOperator<StringConstraintConfig> configModifier) {
-		throw new UnsupportedOperationException("Not implemented yet");
+		throw new UnsupportedOperationException("The 'apply' method is not supported in string constraint builder");
 	}
 	
 	@Override

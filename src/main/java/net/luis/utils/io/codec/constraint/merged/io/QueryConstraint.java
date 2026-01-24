@@ -42,8 +42,6 @@ import java.util.regex.Pattern;
  */
 public interface QueryConstraint<C> extends MapConstraint<String, List<String>, C> {
 	
-	// ToDo: Fix
-	
 	@Override
 	@NonNull C apply(@NonNull UnaryOperator<MapConstraintConfig<String, List<String>>> configModifier);
 	

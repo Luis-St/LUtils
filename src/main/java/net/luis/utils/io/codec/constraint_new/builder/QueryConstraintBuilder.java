@@ -64,7 +64,7 @@ public class QueryConstraintBuilder implements QueryConstraint<QueryConstraintBu
 	
 	@Override
 	public @NonNull QueryConstraintBuilder apply(@NonNull UnaryOperator<MapConstraintConfig<String, List<String>>> configModifier) {
-		throw new UnsupportedOperationException("Not implemented yet");
+		throw new UnsupportedOperationException("The 'apply' method is not supported in query constraint builder");
 	}
 	
 	@Override
