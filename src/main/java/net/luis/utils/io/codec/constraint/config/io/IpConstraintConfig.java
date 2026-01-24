@@ -20,7 +20,7 @@ package net.luis.utils.io.codec.constraint.config.io;
 
 import net.luis.utils.io.codec.constraint.config.*;
 import net.luis.utils.io.codec.constraint.config.matcher.ConstraintMatchers;
-import net.luis.utils.io.codec.constraint.config.matcher.NetworkMatchers;
+import net.luis.utils.io.codec.constraint.config.matcher.IOMatchers;
 import net.luis.utils.io.codec.constraint.core.Constraint;
 import net.luis.utils.io.codec.constraint.util.IpAddressType;
 import net.luis.utils.io.codec.constraint.util.IpVersion;
@@ -533,9 +533,9 @@ public record IpConstraintConfig(
 			() -> ConstraintMatchers.matchEndsWith(value, this.endsWith),
 			() -> ConstraintMatchers.matchEndsWithAny(value, this.endsWithAny),
 			() -> ConstraintMatchers.matchPattern(value, this.matches),
-			() -> NetworkMatchers.matchIpVersion(value, this.ipVersion),
-			() -> NetworkMatchers.matchIpType(value, this.ipType),
-			() -> NetworkMatchers.matchInAnySubnet(value, this.inAnySubnet),
+			() -> IOMatchers.matchIpVersion(value, this.ipVersion),
+			() -> IOMatchers.matchIpType(value, this.ipType),
+			() -> IOMatchers.matchInAnySubnet(value, this.inAnySubnet),
 			() -> ConstraintMatchers.matchCustom(value, this.custom)
 		);
 	}

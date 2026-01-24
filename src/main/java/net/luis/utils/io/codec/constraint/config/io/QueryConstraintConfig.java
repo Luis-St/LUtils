@@ -20,7 +20,7 @@ package net.luis.utils.io.codec.constraint.config.io;
 
 import net.luis.utils.io.codec.constraint.config.*;
 import net.luis.utils.io.codec.constraint.config.matcher.ConstraintMatchers;
-import net.luis.utils.io.codec.constraint.config.matcher.NetworkMatchers;
+import net.luis.utils.io.codec.constraint.config.matcher.IOMatchers;
 import net.luis.utils.io.codec.constraint.core.Constraint;
 import net.luis.utils.io.codec.constraint.util.Unit;
 import net.luis.utils.util.Pair;
@@ -353,12 +353,12 @@ public record QueryConstraintConfig(
 			() -> ConstraintMatchers.matchForbiddenKeys(value.keySet(), this.forbiddenKeys, "Query"),
 			() -> ConstraintMatchers.matchAllowedKeys(value.keySet(), this.allowedKeys, "Query"),
 			() -> ConstraintMatchers.matchFlag(value, this.nonNullKeys, v -> v.keySet().stream().noneMatch(Objects::isNull), "Query keys must not be null"),
-			() -> NetworkMatchers.matchQueryUniqueValues(value, this.uniqueValues),
+			() -> IOMatchers.matchQueryUniqueValues(value, this.uniqueValues),
 			() -> ConstraintMatchers.matchFlag(value, this.nonNullValues, v -> v.values().stream().flatMap(List::stream).noneMatch(Objects::isNull), "Query values must not be null"),
-			() -> NetworkMatchers.matchQueryValueConstraints(value, this.valueConstraints),
-			() -> NetworkMatchers.matchQueryPatternValueConstraints(value, this.patternValueConstraints),
-			() -> NetworkMatchers.matchQuerySingleValued(value, this.singleValued),
-			() -> NetworkMatchers.matchQueryMultiValuedConstraints(value, this.multiValuedConstraints),
+			() -> IOMatchers.matchQueryValueConstraints(value, this.valueConstraints),
+			() -> IOMatchers.matchQueryPatternValueConstraints(value, this.patternValueConstraints),
+			() -> IOMatchers.matchQuerySingleValued(value, this.singleValued),
+			() -> IOMatchers.matchQueryMultiValuedConstraints(value, this.multiValuedConstraints),
 			() -> ConstraintMatchers.matchCustom(value, this.custom)
 		);
 	}

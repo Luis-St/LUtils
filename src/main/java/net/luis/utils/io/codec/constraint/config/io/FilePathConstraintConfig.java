@@ -20,7 +20,7 @@ package net.luis.utils.io.codec.constraint.config.io;
 
 import net.luis.utils.io.codec.constraint.config.*;
 import net.luis.utils.io.codec.constraint.config.matcher.ConstraintMatchers;
-import net.luis.utils.io.codec.constraint.config.matcher.NetworkMatchers;
+import net.luis.utils.io.codec.constraint.config.matcher.IOMatchers;
 import net.luis.utils.io.codec.constraint.core.Constraint;
 import net.luis.utils.io.codec.constraint.util.Platform;
 import net.luis.utils.io.codec.constraint.util.Unit;
@@ -33,9 +33,9 @@ import java.nio.file.Path;
 import java.util.*;
 
 /**
- * Configuration record for file path constraints.<br>
+ * Configuration record for file system path constraints.<br>
  * <p>
- *     This record stores the constraint values for path codecs.<br>
+ *     This record stores the constraint values for file path codecs using {@link Path}.<br>
  *     It includes base constraints, length constraints, depth constraints,
  *     and path-specific constraints for structure, components, and platform compatibility.
  * </p>
@@ -65,7 +65,7 @@ import java.util.*;
  * @param custom A custom constraint implementation
  */
 @SuppressWarnings("OptionalContainsCollection")
-public record PathConstraintConfig(
+public record FilePathConstraintConfig(
 	@NonNull Optional<Pair<Path, Boolean>> equalTo,
 	@NonNull Optional<Pair<Set<Path>, Boolean>> in,
 	@NonNull Optional<LengthConstraintConfig> length,
@@ -90,16 +90,16 @@ public record PathConstraintConfig(
 ) implements ConstraintConfig<Path> {
 	
 	/**
-	 * An unconstrained path configuration with no constraints applied.<br>
+	 * An unconstrained file path configuration with no constraints applied.<br>
 	 */
-	public static final PathConstraintConfig UNCONSTRAINED = new PathConstraintConfig(
+	public static final FilePathConstraintConfig UNCONSTRAINED = new FilePathConstraintConfig(
 		Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(),
 		Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(),
 		Optional.empty(), Optional.empty(), Optional.empty()
 	);
 	
 	/**
-	 * Constructs a new path constraint config with the specified parameters.<br>
+	 * Constructs a new file path constraint config with the specified parameters.<br>
 	 *
 	 * @param equalTo The equality constraint as a pair of (value, negated) where negated=false means equalTo and negated=true means notEqualTo
 	 * @param in The inclusion constraint as a pair of (values, negated) where negated=false means in and negated=true means notIn
@@ -129,7 +129,7 @@ public record PathConstraintConfig(
 	 * @throws IllegalArgumentException If both absolute and relative constraints are present
 	 * @throws IllegalArgumentException If both without extension and extension constraints are present
 	 */
-	public PathConstraintConfig {
+	public FilePathConstraintConfig {
 		Objects.requireNonNull(equalTo, "Optional for 'equal to' constraint must not be null");
 		Objects.requireNonNull(in, "Optional for 'in' constraint must not be null");
 		Objects.requireNonNull(length, "Optional for 'length' constraint must not be null");
@@ -181,9 +181,9 @@ public record PathConstraintConfig(
 	 * @param value The exact path that should be matched
 	 * @return A new config with the constraint applied
 	 */
-	public @NonNull PathConstraintConfig withEqualTo(@NonNull Path value) {
+	public @NonNull FilePathConstraintConfig withEqualTo(@NonNull Path value) {
 		Objects.requireNonNull(value, "Value for 'equal to' constraint must not be null");
-		return new PathConstraintConfig(Optional.of(Pair.of(value, false)), this.in, this.length, this.depth, this.absolute, this.relative, this.normalized, this.canonical, this.path, this.root, this.parent, this.segment, this.file, this.withoutExtension, this.extension, this.ancestorOf, this.descendantOf, this.validFor, this.portable, this.separator, this.custom);
+		return new FilePathConstraintConfig(Optional.of(Pair.of(value, false)), this.in, this.length, this.depth, this.absolute, this.relative, this.normalized, this.canonical, this.path, this.root, this.parent, this.segment, this.file, this.withoutExtension, this.extension, this.ancestorOf, this.descendantOf, this.validFor, this.portable, this.separator, this.custom);
 	}
 	
 	/**
@@ -192,9 +192,9 @@ public record PathConstraintConfig(
 	 * @param value The path that should be excluded
 	 * @return A new config with the constraint applied
 	 */
-	public @NonNull PathConstraintConfig withNotEqualTo(@NonNull Path value) {
+	public @NonNull FilePathConstraintConfig withNotEqualTo(@NonNull Path value) {
 		Objects.requireNonNull(value, "Value for 'not equal to' constraint must not be null");
-		return new PathConstraintConfig(Optional.of(Pair.of(value, true)), this.in, this.length, this.depth, this.absolute, this.relative, this.normalized, this.canonical, this.path, this.root, this.parent, this.segment, this.file, this.withoutExtension, this.extension, this.ancestorOf, this.descendantOf, this.validFor, this.portable, this.separator, this.custom);
+		return new FilePathConstraintConfig(Optional.of(Pair.of(value, true)), this.in, this.length, this.depth, this.absolute, this.relative, this.normalized, this.canonical, this.path, this.root, this.parent, this.segment, this.file, this.withoutExtension, this.extension, this.ancestorOf, this.descendantOf, this.validFor, this.portable, this.separator, this.custom);
 	}
 	
 	/**
@@ -203,9 +203,9 @@ public record PathConstraintConfig(
 	 * @param values The collection of paths that are allowed
 	 * @return A new config with the constraint applied
 	 */
-	public @NonNull PathConstraintConfig withIn(@NonNull Collection<Path> values) {
+	public @NonNull FilePathConstraintConfig withIn(@NonNull Collection<Path> values) {
 		Objects.requireNonNull(values, "Values for 'in' constraint must not be null");
-		return new PathConstraintConfig(this.equalTo, Optional.of(Pair.of(Set.copyOf(values), false)), this.length, this.depth, this.absolute, this.relative, this.normalized, this.canonical, this.path, this.root, this.parent, this.segment, this.file, this.withoutExtension, this.extension, this.ancestorOf, this.descendantOf, this.validFor, this.portable, this.separator, this.custom);
+		return new FilePathConstraintConfig(this.equalTo, Optional.of(Pair.of(Set.copyOf(values), false)), this.length, this.depth, this.absolute, this.relative, this.normalized, this.canonical, this.path, this.root, this.parent, this.segment, this.file, this.withoutExtension, this.extension, this.ancestorOf, this.descendantOf, this.validFor, this.portable, this.separator, this.custom);
 	}
 	
 	/**
@@ -214,9 +214,9 @@ public record PathConstraintConfig(
 	 * @param values The collection of paths that are not allowed
 	 * @return A new config with the constraint applied
 	 */
-	public @NonNull PathConstraintConfig withNotIn(@NonNull Collection<Path> values) {
+	public @NonNull FilePathConstraintConfig withNotIn(@NonNull Collection<Path> values) {
 		Objects.requireNonNull(values, "Values for 'not in' constraint must not be null");
-		return new PathConstraintConfig(this.equalTo, Optional.of(Pair.of(Set.copyOf(values), true)), this.length, this.depth, this.absolute, this.relative, this.normalized, this.canonical, this.path, this.root, this.parent, this.segment, this.file, this.withoutExtension, this.extension, this.ancestorOf, this.descendantOf, this.validFor, this.portable, this.separator, this.custom);
+		return new FilePathConstraintConfig(this.equalTo, Optional.of(Pair.of(Set.copyOf(values), true)), this.length, this.depth, this.absolute, this.relative, this.normalized, this.canonical, this.path, this.root, this.parent, this.segment, this.file, this.withoutExtension, this.extension, this.ancestorOf, this.descendantOf, this.validFor, this.portable, this.separator, this.custom);
 	}
 	
 	/**
@@ -225,9 +225,9 @@ public record PathConstraintConfig(
 	 * @param config The length constraint configuration
 	 * @return A new config with the constraint applied
 	 */
-	public @NonNull PathConstraintConfig withLength(@NonNull LengthConstraintConfig config) {
+	public @NonNull FilePathConstraintConfig withLength(@NonNull LengthConstraintConfig config) {
 		Objects.requireNonNull(config, "Config for 'length' constraint must not be null");
-		return new PathConstraintConfig(this.equalTo, this.in, Optional.of(config), this.depth, this.absolute, this.relative, this.normalized, this.canonical, this.path, this.root, this.parent, this.segment, this.file, this.withoutExtension, this.extension, this.ancestorOf, this.descendantOf, this.validFor, this.portable, this.separator, this.custom);
+		return new FilePathConstraintConfig(this.equalTo, this.in, Optional.of(config), this.depth, this.absolute, this.relative, this.normalized, this.canonical, this.path, this.root, this.parent, this.segment, this.file, this.withoutExtension, this.extension, this.ancestorOf, this.descendantOf, this.validFor, this.portable, this.separator, this.custom);
 	}
 	
 	/**
@@ -236,9 +236,9 @@ public record PathConstraintConfig(
 	 * @param config The depth constraint configuration
 	 * @return A new config with the constraint applied
 	 */
-	public @NonNull PathConstraintConfig withDepth(@NonNull DepthConstraintConfig config) {
+	public @NonNull FilePathConstraintConfig withDepth(@NonNull DepthConstraintConfig config) {
 		Objects.requireNonNull(config, "Config for 'depth' constraint must not be null");
-		return new PathConstraintConfig(this.equalTo, this.in, this.length, Optional.of(config), this.absolute, this.relative, this.normalized, this.canonical, this.path, this.root, this.parent, this.segment, this.file, this.withoutExtension, this.extension, this.ancestorOf, this.descendantOf, this.validFor, this.portable, this.separator, this.custom);
+		return new FilePathConstraintConfig(this.equalTo, this.in, this.length, Optional.of(config), this.absolute, this.relative, this.normalized, this.canonical, this.path, this.root, this.parent, this.segment, this.file, this.withoutExtension, this.extension, this.ancestorOf, this.descendantOf, this.validFor, this.portable, this.separator, this.custom);
 	}
 	
 	/**
@@ -246,8 +246,8 @@ public record PathConstraintConfig(
 	 *
 	 * @return A new config with the constraint applied
 	 */
-	public @NonNull PathConstraintConfig withAbsolute() {
-		return new PathConstraintConfig(this.equalTo, this.in, this.length, this.depth, Optional.of(Unit.INSTANCE), this.relative, this.normalized, this.canonical, this.path, this.root, this.parent, this.segment, this.file, this.withoutExtension, this.extension, this.ancestorOf, this.descendantOf, this.validFor, this.portable, this.separator, this.custom);
+	public @NonNull FilePathConstraintConfig withAbsolute() {
+		return new FilePathConstraintConfig(this.equalTo, this.in, this.length, this.depth, Optional.of(Unit.INSTANCE), this.relative, this.normalized, this.canonical, this.path, this.root, this.parent, this.segment, this.file, this.withoutExtension, this.extension, this.ancestorOf, this.descendantOf, this.validFor, this.portable, this.separator, this.custom);
 	}
 	
 	/**
@@ -255,8 +255,8 @@ public record PathConstraintConfig(
 	 *
 	 * @return A new config with the constraint applied
 	 */
-	public @NonNull PathConstraintConfig withRelative() {
-		return new PathConstraintConfig(this.equalTo, this.in, this.length, this.depth, this.absolute, Optional.of(Unit.INSTANCE), this.normalized, this.canonical, this.path, this.root, this.parent, this.segment, this.file, this.withoutExtension, this.extension, this.ancestorOf, this.descendantOf, this.validFor, this.portable, this.separator, this.custom);
+	public @NonNull FilePathConstraintConfig withRelative() {
+		return new FilePathConstraintConfig(this.equalTo, this.in, this.length, this.depth, this.absolute, Optional.of(Unit.INSTANCE), this.normalized, this.canonical, this.path, this.root, this.parent, this.segment, this.file, this.withoutExtension, this.extension, this.ancestorOf, this.descendantOf, this.validFor, this.portable, this.separator, this.custom);
 	}
 	
 	/**
@@ -264,8 +264,8 @@ public record PathConstraintConfig(
 	 *
 	 * @return A new config with the constraint applied
 	 */
-	public @NonNull PathConstraintConfig withNormalized() {
-		return new PathConstraintConfig(this.equalTo, this.in, this.length, this.depth, this.absolute, this.relative, Optional.of(Unit.INSTANCE), this.canonical, this.path, this.root, this.parent, this.segment, this.file, this.withoutExtension, this.extension, this.ancestorOf, this.descendantOf, this.validFor, this.portable, this.separator, this.custom);
+	public @NonNull FilePathConstraintConfig withNormalized() {
+		return new FilePathConstraintConfig(this.equalTo, this.in, this.length, this.depth, this.absolute, this.relative, Optional.of(Unit.INSTANCE), this.canonical, this.path, this.root, this.parent, this.segment, this.file, this.withoutExtension, this.extension, this.ancestorOf, this.descendantOf, this.validFor, this.portable, this.separator, this.custom);
 	}
 	
 	/**
@@ -273,8 +273,8 @@ public record PathConstraintConfig(
 	 *
 	 * @return A new config with the constraint applied
 	 */
-	public @NonNull PathConstraintConfig withCanonical() {
-		return new PathConstraintConfig(this.equalTo, this.in, this.length, this.depth, this.absolute, this.relative, this.normalized, Optional.of(Unit.INSTANCE), this.path, this.root, this.parent, this.segment, this.file, this.withoutExtension, this.extension, this.ancestorOf, this.descendantOf, this.validFor, this.portable, this.separator, this.custom);
+	public @NonNull FilePathConstraintConfig withCanonical() {
+		return new FilePathConstraintConfig(this.equalTo, this.in, this.length, this.depth, this.absolute, this.relative, this.normalized, Optional.of(Unit.INSTANCE), this.path, this.root, this.parent, this.segment, this.file, this.withoutExtension, this.extension, this.ancestorOf, this.descendantOf, this.validFor, this.portable, this.separator, this.custom);
 	}
 	
 	/**
@@ -283,9 +283,9 @@ public record PathConstraintConfig(
 	 * @param config The string constraint config for path validation
 	 * @return A new config with the constraint applied
 	 */
-	public @NonNull PathConstraintConfig withPath(@NonNull StringConstraintConfig config) {
+	public @NonNull FilePathConstraintConfig withPath(@NonNull StringConstraintConfig config) {
 		Objects.requireNonNull(config, "Config for 'path' constraint must not be null");
-		return new PathConstraintConfig(this.equalTo, this.in, this.length, this.depth, this.absolute, this.relative, this.normalized, this.canonical, Optional.of(config), this.root, this.parent, this.segment, this.file, this.withoutExtension, this.extension, this.ancestorOf, this.descendantOf, this.validFor, this.portable, this.separator, this.custom);
+		return new FilePathConstraintConfig(this.equalTo, this.in, this.length, this.depth, this.absolute, this.relative, this.normalized, this.canonical, Optional.of(config), this.root, this.parent, this.segment, this.file, this.withoutExtension, this.extension, this.ancestorOf, this.descendantOf, this.validFor, this.portable, this.separator, this.custom);
 	}
 	
 	/**
@@ -294,9 +294,9 @@ public record PathConstraintConfig(
 	 * @param config The string constraint config for root component validation
 	 * @return A new config with the constraint applied
 	 */
-	public @NonNull PathConstraintConfig withRoot(@NonNull StringConstraintConfig config) {
+	public @NonNull FilePathConstraintConfig withRoot(@NonNull StringConstraintConfig config) {
 		Objects.requireNonNull(config, "Config for 'root' constraint must not be null");
-		return new PathConstraintConfig(this.equalTo, this.in, this.length, this.depth, this.absolute, this.relative, this.normalized, this.canonical, this.path, Optional.of(config), this.parent, this.segment, this.file, this.withoutExtension, this.extension, this.ancestorOf, this.descendantOf, this.validFor, this.portable, this.separator, this.custom);
+		return new FilePathConstraintConfig(this.equalTo, this.in, this.length, this.depth, this.absolute, this.relative, this.normalized, this.canonical, this.path, Optional.of(config), this.parent, this.segment, this.file, this.withoutExtension, this.extension, this.ancestorOf, this.descendantOf, this.validFor, this.portable, this.separator, this.custom);
 	}
 	
 	/**
@@ -305,9 +305,9 @@ public record PathConstraintConfig(
 	 * @param config The string constraint config for parent directory validation
 	 * @return A new config with the constraint applied
 	 */
-	public @NonNull PathConstraintConfig withParent(@NonNull StringConstraintConfig config) {
+	public @NonNull FilePathConstraintConfig withParent(@NonNull StringConstraintConfig config) {
 		Objects.requireNonNull(config, "Config for 'parent' constraint must not be null");
-		return new PathConstraintConfig(this.equalTo, this.in, this.length, this.depth, this.absolute, this.relative, this.normalized, this.canonical, this.path, this.root, Optional.of(config), this.segment, this.file, this.withoutExtension, this.extension, this.ancestorOf, this.descendantOf, this.validFor, this.portable, this.separator, this.custom);
+		return new FilePathConstraintConfig(this.equalTo, this.in, this.length, this.depth, this.absolute, this.relative, this.normalized, this.canonical, this.path, this.root, Optional.of(config), this.segment, this.file, this.withoutExtension, this.extension, this.ancestorOf, this.descendantOf, this.validFor, this.portable, this.separator, this.custom);
 	}
 	
 	/**
@@ -316,9 +316,9 @@ public record PathConstraintConfig(
 	 * @param config The string constraint config for segment validation
 	 * @return A new config with the constraint applied
 	 */
-	public @NonNull PathConstraintConfig withSegment(@NonNull StringConstraintConfig config) {
+	public @NonNull FilePathConstraintConfig withSegment(@NonNull StringConstraintConfig config) {
 		Objects.requireNonNull(config, "Config for 'segment' constraint must not be null");
-		return new PathConstraintConfig(this.equalTo, this.in, this.length, this.depth, this.absolute, this.relative, this.normalized, this.canonical, this.path, this.root, this.parent, Optional.of(config), this.file, this.withoutExtension, this.extension, this.ancestorOf, this.descendantOf, this.validFor, this.portable, this.separator, this.custom);
+		return new FilePathConstraintConfig(this.equalTo, this.in, this.length, this.depth, this.absolute, this.relative, this.normalized, this.canonical, this.path, this.root, this.parent, Optional.of(config), this.file, this.withoutExtension, this.extension, this.ancestorOf, this.descendantOf, this.validFor, this.portable, this.separator, this.custom);
 	}
 	
 	/**
@@ -327,9 +327,9 @@ public record PathConstraintConfig(
 	 * @param config The string constraint config for file name validation
 	 * @return A new config with the constraint applied
 	 */
-	public @NonNull PathConstraintConfig withFile(@NonNull StringConstraintConfig config) {
+	public @NonNull FilePathConstraintConfig withFile(@NonNull StringConstraintConfig config) {
 		Objects.requireNonNull(config, "Config for 'file' constraint must not be null");
-		return new PathConstraintConfig(this.equalTo, this.in, this.length, this.depth, this.absolute, this.relative, this.normalized, this.canonical, this.path, this.root, this.parent, this.segment, Optional.of(config), this.withoutExtension, this.extension, this.ancestorOf, this.descendantOf, this.validFor, this.portable, this.separator, this.custom);
+		return new FilePathConstraintConfig(this.equalTo, this.in, this.length, this.depth, this.absolute, this.relative, this.normalized, this.canonical, this.path, this.root, this.parent, this.segment, Optional.of(config), this.withoutExtension, this.extension, this.ancestorOf, this.descendantOf, this.validFor, this.portable, this.separator, this.custom);
 	}
 	
 	/**
@@ -337,8 +337,8 @@ public record PathConstraintConfig(
 	 *
 	 * @return A new config with the constraint applied
 	 */
-	public @NonNull PathConstraintConfig withWithoutExtension() {
-		return new PathConstraintConfig(this.equalTo, this.in, this.length, this.depth, this.absolute, this.relative, this.normalized, this.canonical, this.path, this.root, this.parent, this.segment, this.file, Optional.of(Unit.INSTANCE), this.extension, this.ancestorOf, this.descendantOf, this.validFor, this.portable, this.separator, this.custom);
+	public @NonNull FilePathConstraintConfig withWithoutExtension() {
+		return new FilePathConstraintConfig(this.equalTo, this.in, this.length, this.depth, this.absolute, this.relative, this.normalized, this.canonical, this.path, this.root, this.parent, this.segment, this.file, Optional.of(Unit.INSTANCE), this.extension, this.ancestorOf, this.descendantOf, this.validFor, this.portable, this.separator, this.custom);
 	}
 	
 	/**
@@ -347,9 +347,9 @@ public record PathConstraintConfig(
 	 * @param config The string constraint config for extension validation
 	 * @return A new config with the constraint applied
 	 */
-	public @NonNull PathConstraintConfig withExtension(@NonNull StringConstraintConfig config) {
+	public @NonNull FilePathConstraintConfig withExtension(@NonNull StringConstraintConfig config) {
 		Objects.requireNonNull(config, "Config for 'extension' constraint must not be null");
-		return new PathConstraintConfig(this.equalTo, this.in, this.length, this.depth, this.absolute, this.relative, this.normalized, this.canonical, this.path, this.root, this.parent, this.segment, this.file, this.withoutExtension, Optional.of(config), this.ancestorOf, this.descendantOf, this.validFor, this.portable, this.separator, this.custom);
+		return new FilePathConstraintConfig(this.equalTo, this.in, this.length, this.depth, this.absolute, this.relative, this.normalized, this.canonical, this.path, this.root, this.parent, this.segment, this.file, this.withoutExtension, Optional.of(config), this.ancestorOf, this.descendantOf, this.validFor, this.portable, this.separator, this.custom);
 	}
 	
 	/**
@@ -358,9 +358,9 @@ public record PathConstraintConfig(
 	 * @param paths The collection of paths that constrained paths must be ancestors of
 	 * @return A new config with the constraint applied
 	 */
-	public @NonNull PathConstraintConfig withAncestorOf(@NonNull Collection<String> paths) {
+	public @NonNull FilePathConstraintConfig withAncestorOf(@NonNull Collection<String> paths) {
 		Objects.requireNonNull(paths, "Paths for 'ancestor of' constraint must not be null");
-		return new PathConstraintConfig(this.equalTo, this.in, this.length, this.depth, this.absolute, this.relative, this.normalized, this.canonical, this.path, this.root, this.parent, this.segment, this.file, this.withoutExtension, this.extension, Optional.of(Set.copyOf(paths)), this.descendantOf, this.validFor, this.portable, this.separator, this.custom);
+		return new FilePathConstraintConfig(this.equalTo, this.in, this.length, this.depth, this.absolute, this.relative, this.normalized, this.canonical, this.path, this.root, this.parent, this.segment, this.file, this.withoutExtension, this.extension, Optional.of(Set.copyOf(paths)), this.descendantOf, this.validFor, this.portable, this.separator, this.custom);
 	}
 	
 	/**
@@ -369,9 +369,9 @@ public record PathConstraintConfig(
 	 * @param paths The collection of paths that constrained paths must be descendants of
 	 * @return A new config with the constraint applied
 	 */
-	public @NonNull PathConstraintConfig withDescendantOf(@NonNull Collection<String> paths) {
+	public @NonNull FilePathConstraintConfig withDescendantOf(@NonNull Collection<String> paths) {
 		Objects.requireNonNull(paths, "Paths for 'descendant of' constraint must not be null");
-		return new PathConstraintConfig(this.equalTo, this.in, this.length, this.depth, this.absolute, this.relative, this.normalized, this.canonical, this.path, this.root, this.parent, this.segment, this.file, this.withoutExtension, this.extension, this.ancestorOf, Optional.of(Set.copyOf(paths)), this.validFor, this.portable, this.separator, this.custom);
+		return new FilePathConstraintConfig(this.equalTo, this.in, this.length, this.depth, this.absolute, this.relative, this.normalized, this.canonical, this.path, this.root, this.parent, this.segment, this.file, this.withoutExtension, this.extension, this.ancestorOf, Optional.of(Set.copyOf(paths)), this.validFor, this.portable, this.separator, this.custom);
 	}
 	
 	/**
@@ -380,9 +380,9 @@ public record PathConstraintConfig(
 	 * @param platform The platform to validate against
 	 * @return A new config with the constraint applied
 	 */
-	public @NonNull PathConstraintConfig withValidFor(@NonNull Platform platform) {
+	public @NonNull FilePathConstraintConfig withValidFor(@NonNull Platform platform) {
 		Objects.requireNonNull(platform, "Platform for 'valid for' constraint must not be null");
-		return new PathConstraintConfig(this.equalTo, this.in, this.length, this.depth, this.absolute, this.relative, this.normalized, this.canonical, this.path, this.root, this.parent, this.segment, this.file, this.withoutExtension, this.extension, this.ancestorOf, this.descendantOf, Optional.of(platform), this.portable, this.separator, this.custom);
+		return new FilePathConstraintConfig(this.equalTo, this.in, this.length, this.depth, this.absolute, this.relative, this.normalized, this.canonical, this.path, this.root, this.parent, this.segment, this.file, this.withoutExtension, this.extension, this.ancestorOf, this.descendantOf, Optional.of(platform), this.portable, this.separator, this.custom);
 	}
 	
 	/**
@@ -390,8 +390,8 @@ public record PathConstraintConfig(
 	 *
 	 * @return A new config with the constraint applied
 	 */
-	public @NonNull PathConstraintConfig withPortable() {
-		return new PathConstraintConfig(this.equalTo, this.in, this.length, this.depth, this.absolute, this.relative, this.normalized, this.canonical, this.path, this.root, this.parent, this.segment, this.file, this.withoutExtension, this.extension, this.ancestorOf, this.descendantOf, this.validFor, Optional.of(Unit.INSTANCE), this.separator, this.custom);
+	public @NonNull FilePathConstraintConfig withPortable() {
+		return new FilePathConstraintConfig(this.equalTo, this.in, this.length, this.depth, this.absolute, this.relative, this.normalized, this.canonical, this.path, this.root, this.parent, this.segment, this.file, this.withoutExtension, this.extension, this.ancestorOf, this.descendantOf, this.validFor, Optional.of(Unit.INSTANCE), this.separator, this.custom);
 	}
 	
 	/**
@@ -400,9 +400,9 @@ public record PathConstraintConfig(
 	 * @param platform The platform whose separator should be used
 	 * @return A new config with the constraint applied
 	 */
-	public @NonNull PathConstraintConfig withSeparator(@NonNull Platform platform) {
+	public @NonNull FilePathConstraintConfig withSeparator(@NonNull Platform platform) {
 		Objects.requireNonNull(platform, "Platform for 'separator' constraint must not be null");
-		return new PathConstraintConfig(this.equalTo, this.in, this.length, this.depth, this.absolute, this.relative, this.normalized, this.canonical, this.path, this.root, this.parent, this.segment, this.file, this.withoutExtension, this.extension, this.ancestorOf, this.descendantOf, this.validFor, this.portable, Optional.of(platform), this.custom);
+		return new FilePathConstraintConfig(this.equalTo, this.in, this.length, this.depth, this.absolute, this.relative, this.normalized, this.canonical, this.path, this.root, this.parent, this.segment, this.file, this.withoutExtension, this.extension, this.ancestorOf, this.descendantOf, this.validFor, this.portable, Optional.of(platform), this.custom);
 	}
 	
 	/**
@@ -411,9 +411,9 @@ public record PathConstraintConfig(
 	 * @param constraint The custom constraint implementation
 	 * @return A new config with the constraint applied
 	 */
-	public @NonNull PathConstraintConfig withCustom(@NonNull Constraint<Path> constraint) {
+	public @NonNull FilePathConstraintConfig withCustom(@NonNull Constraint<Path> constraint) {
 		Objects.requireNonNull(constraint, "Custom constraint must not be null");
-		return new PathConstraintConfig(this.equalTo, this.in, this.length, this.depth, this.absolute, this.relative, this.normalized, this.canonical, this.path, this.root, this.parent, this.segment, this.file, this.withoutExtension, this.extension, this.ancestorOf, this.descendantOf, this.validFor, this.portable, this.separator, Optional.of(constraint));
+		return new FilePathConstraintConfig(this.equalTo, this.in, this.length, this.depth, this.absolute, this.relative, this.normalized, this.canonical, this.path, this.root, this.parent, this.segment, this.file, this.withoutExtension, this.extension, this.ancestorOf, this.descendantOf, this.validFor, this.portable, this.separator, Optional.of(constraint));
 	}
 	//endregion
 	
@@ -429,16 +429,16 @@ public record PathConstraintConfig(
 			() -> ConstraintMatchers.matchFlag(value, this.absolute, Path::isAbsolute, "Path '" + value + "' must be absolute"),
 			() -> ConstraintMatchers.matchFlag(value, this.relative, p -> !p.isAbsolute(), "Path '" + value + "' must be relative"),
 			() -> ConstraintMatchers.matchFlag(value, this.normalized, p -> p.equals(p.normalize()), "Path '" + value + "' must be normalized"),
-			() -> NetworkMatchers.matchPathCanonical(value, this.canonical),
-			() -> NetworkMatchers.matchPathStringConfig(value, this.path),
-			() -> NetworkMatchers.matchPathRootConfig(value, this.root),
-			() -> NetworkMatchers.matchPathParentConfig(value, this.parent),
-			() -> NetworkMatchers.matchPathSegmentConfig(value, this.segment),
-			() -> NetworkMatchers.matchPathFileNameConfig(value, this.file),
-			() -> NetworkMatchers.matchPathWithoutExtension(value, this.withoutExtension),
-			() -> NetworkMatchers.matchPathExtensionConfig(value, this.extension),
-			() -> NetworkMatchers.matchPathAncestorOf(value, this.ancestorOf),
-			() -> NetworkMatchers.matchPathDescendantOf(value, this.descendantOf),
+			() -> IOMatchers.matchPathCanonical(value, this.canonical),
+			() -> IOMatchers.matchPathStringConfig(value, this.path),
+			() -> IOMatchers.matchPathRootConfig(value, this.root),
+			() -> IOMatchers.matchPathParentConfig(value, this.parent),
+			() -> IOMatchers.matchPathSegmentConfig(value, this.segment),
+			() -> IOMatchers.matchPathFileNameConfig(value, this.file),
+			() -> IOMatchers.matchPathWithoutExtension(value, this.withoutExtension),
+			() -> IOMatchers.matchPathExtensionConfig(value, this.extension),
+			() -> IOMatchers.matchPathAncestorOf(value, this.ancestorOf),
+			() -> IOMatchers.matchPathDescendantOf(value, this.descendantOf),
 			() -> ConstraintMatchers.matchCustom(value, this.custom)
 		);
 	}

@@ -21,7 +21,7 @@ package net.luis.utils.io.codec.constraint.config.io;
 import net.luis.utils.io.codec.constraint.config.ConstraintConfig;
 import net.luis.utils.io.codec.constraint.config.LengthConstraintConfig;
 import net.luis.utils.io.codec.constraint.config.matcher.ConstraintMatchers;
-import net.luis.utils.io.codec.constraint.config.matcher.NetworkMatchers;
+import net.luis.utils.io.codec.constraint.config.matcher.IOMatchers;
 import net.luis.utils.io.codec.constraint.core.Constraint;
 import net.luis.utils.io.codec.constraint.util.Unit;
 import net.luis.utils.util.Pair;
@@ -510,8 +510,8 @@ public record DomainConstraintConfig(
 			() -> ConstraintMatchers.matchEndsWith(value, this.endsWith),
 			() -> ConstraintMatchers.matchEndsWithAny(value, this.endsWithAny),
 			() -> ConstraintMatchers.matchPattern(value, this.matches),
-			() -> NetworkMatchers.matchRootDomain(value, this.rootDomain),
-			() -> NetworkMatchers.matchSubDomain(value, this.subDomain),
+			() -> IOMatchers.matchRootDomain(value, this.rootDomain),
+			() -> IOMatchers.matchSubDomain(value, this.subDomain),
 			() -> ConstraintMatchers.matchCustom(value, this.custom)
 		);
 	}

@@ -40,8 +40,6 @@ import java.util.regex.Pattern;
  */
 public class StringConstraintBuilder implements StringConstraint<StringConstraintBuilder> {
 	
-	// ToDo: Fix
-	
 	/**
 	 * The current constraint configuration being built.<br>
 	 */

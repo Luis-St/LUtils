@@ -16,27 +16,28 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-package net.luis.utils.io.codec.constraint.merged.io;
+package net.luis.utils.io.codec.constraint.core.io;
 
 import net.luis.utils.io.codec.constraint.builder.*;
 import net.luis.utils.io.codec.constraint.core.BaseConstraint;
-import net.luis.utils.io.codec.constraint.util.Platform;
+import net.luis.utils.io.codec.constraint.merged.io.FilePathConstraint;
 import org.jspecify.annotations.NonNull;
 
 import java.util.Collection;
 import java.util.function.UnaryOperator;
 
 /**
- * Constraint interface for file path types that provides comprehensive path validation operations.<br>
+ * Common constraint interface for path types that provides path validation operations.<br>
  * <p>
- *     This interface extends {@link BaseConstraint} with methods for constraining paths
- *     based on their structure, components, relationships, and platform compatibility.<br>
- *     It allows validation of file system paths according to various criteria.
+ *     This interface defines the 14 common constraint methods shared between
+ *     {@link URIPathConstraint URIPathConstraint} and
+ *     {@link FilePathConstraint FilePathConstraint}.<br>
+ *     It provides methods for constraining paths based on their structure, components, and relationships.
  * </p>
  *
  * @author Luis-St
  *
- * @param <T> The type of the constraint configuration
+ * @param <T> The value type for base constraint methods
  * @param <C> The return type of the constraint method (for fluent method chaining)
  */
 public interface PathConstraint<T, C> extends BaseConstraint<T, C> {
@@ -56,7 +57,7 @@ public interface PathConstraint<T, C> extends BaseConstraint<T, C> {
 	/**
 	 * Applies depth constraints to the path using a builder.<br>
 	 * <p>
-	 *     The returned type will validate that the path depth (number of components) matches the constraints defined by the builder.
+	 *     The returned type will validate that the path depth (number of segments) matches the constraints defined by the builder.
 	 * </p>
 	 *
 	 * @param builder A function that configures the depth constraint using a depth constraint builder
@@ -68,7 +69,7 @@ public interface PathConstraint<T, C> extends BaseConstraint<T, C> {
 	/**
 	 * Applies an absolute path constraint to the type.<br>
 	 * <p>
-	 *     The returned type will validate that paths are absolute (start from the root).
+	 *     The returned type will validate that paths are absolute.
 	 * </p>
 	 *
 	 * @return A new type with the applied absolute constraint
@@ -79,7 +80,7 @@ public interface PathConstraint<T, C> extends BaseConstraint<T, C> {
 	/**
 	 * Applies a relative path constraint to the type.<br>
 	 * <p>
-	 *     The returned type will validate that paths are relative (do not start from the root).
+	 *     The returned type will validate that paths are relative.
 	 * </p>
 	 *
 	 * @return A new type with the applied relative constraint
@@ -94,20 +95,8 @@ public interface PathConstraint<T, C> extends BaseConstraint<T, C> {
 	 * </p>
 	 *
 	 * @return A new type with the applied normalized constraint
-	 * @see #canonical()
 	 */
 	@NonNull C normalized();
-	
-	/**
-	 * Applies a canonical path constraint to the type.<br>
-	 * <p>
-	 *     The returned type will validate that paths are in canonical form (absolute, normalized, and unique).
-	 * </p>
-	 *
-	 * @return A new type with the applied canonical constraint
-	 * @see #normalized()
-	 */
-	@NonNull C canonical();
 	
 	/**
 	 * Applies a path string constraint using a builder.<br>
@@ -122,33 +111,9 @@ public interface PathConstraint<T, C> extends BaseConstraint<T, C> {
 	@NonNull C path(@NonNull UnaryOperator<StringConstraintBuilder> builder);
 	
 	/**
-	 * Applies a root constraint to the path using a builder.<br>
-	 * <p>
-	 *     The returned type will validate that the root component of the path matches the constraints defined by the builder.
-	 * </p>
-	 *
-	 * @param builder A function that configures the root constraint using a string constraint builder
-	 * @return A new type with the applied root constraint
-	 * @throws NullPointerException If the builder is null
-	 */
-	@NonNull C root(@NonNull UnaryOperator<StringConstraintBuilder> builder);
-	
-	/**
-	 * Applies a parent constraint to the path using a builder.<br>
-	 * <p>
-	 *     The returned type will validate that the parent directory of the path matches the constraints defined by the builder.
-	 * </p>
-	 *
-	 * @param builder A function that configures the parent constraint using a string constraint builder
-	 * @return A new type with the applied parent constraint
-	 * @throws NullPointerException If the builder is null
-	 */
-	@NonNull C parent(@NonNull UnaryOperator<StringConstraintBuilder> builder);
-	
-	/**
 	 * Applies a segment constraint to the path using a builder.<br>
 	 * <p>
-	 *     The returned type will validate that path segments match the constraints defined by the builder.
+	 *     The returned type will validate that each path segment matches the constraints defined by the builder.
 	 * </p>
 	 *
 	 * @param builder A function that configures the segment constraint using a string constraint builder
@@ -249,42 +214,4 @@ public interface PathConstraint<T, C> extends BaseConstraint<T, C> {
 	 * @see #ancestorOf(Collection)
 	 */
 	@NonNull C descendantOf(@NonNull Collection<String> paths);
-	
-	/**
-	 * Applies a platform validity constraint to the path.<br>
-	 * <p>
-	 *     The returned type will validate that paths are valid for the specified platform.
-	 * </p>
-	 *
-	 * @param platform The platform to validate against
-	 * @return A new type with the applied platform validity constraint
-	 * @throws NullPointerException If the platform is null
-	 * @see #portable()
-	 * @see Platform
-	 */
-	@NonNull C validFor(@NonNull Platform platform);
-	
-	/**
-	 * Applies a portable path constraint to the type.<br>
-	 * <p>
-	 *     The returned type will validate that paths are portable across all supported platforms.
-	 * </p>
-	 *
-	 * @return A new type with the applied portable constraint
-	 * @see #validFor(Platform)
-	 */
-	@NonNull C portable();
-	
-	/**
-	 * Applies a path separator constraint based on platform.<br>
-	 * <p>
-	 *     The returned type will validate that paths use the path separator for the specified platform.
-	 * </p>
-	 *
-	 * @param platform The platform whose separator should be used
-	 * @return A new type with the applied separator constraint
-	 * @throws NullPointerException If the platform is null
-	 * @see Platform
-	 */
-	@NonNull C separator(@NonNull Platform platform);
 }

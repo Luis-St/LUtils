@@ -20,6 +20,8 @@ package net.luis.utils.io.codec.types.io;
 
 import net.luis.utils.io.codec.AbstractCodec;
 import net.luis.utils.io.codec.Codecs;
+import net.luis.utils.io.codec.constraint.config.io.FilePathConstraintConfig;
+import net.luis.utils.io.codec.constraint.merged.io.FilePathConstraint;
 import net.luis.utils.io.codec.provider.TypeProvider;
 import net.luis.utils.util.result.Result;
 import org.jspecify.annotations.NonNull;
@@ -27,19 +29,42 @@ import org.jspecify.annotations.Nullable;
 
 import java.nio.file.Path;
 import java.util.Objects;
+import java.util.function.UnaryOperator;
 
 /**
- * Internal codec implementation for paths.<br>
+ * Internal codec implementation for file system paths.<br>
  * Uses the path string as an internal representation.<br>
+ * <p>
+ *     Supports file path constraints for validation.
+ * </p>
  *
  * @author Luis-St
  */
-public class PathCodec extends AbstractCodec<Path, Object> {
+public class PathCodec extends AbstractCodec<Path, FilePathConstraintConfig> implements FilePathConstraint<Path, PathCodec> {
 	
 	/**
 	 * Constructs a new path codec.<br>
 	 */
 	public PathCodec() {}
+	
+	/**
+	 * Constructs a new path codec with the given configuration.<br>
+	 *
+	 * @param config The constraint configuration
+	 * @throws NullPointerException If the config is null
+	 */
+	private PathCodec(@NonNull FilePathConstraintConfig config) {
+		super(config);
+	}
+	
+	@Override
+	public @NonNull PathCodec apply(@NonNull UnaryOperator<FilePathConstraintConfig> configModifier) {
+		Objects.requireNonNull(configModifier, "Config modifier must not be null");
+		
+		return new PathCodec(
+			configModifier.apply(this.getConstraintConfig().orElse(FilePathConstraintConfig.UNCONSTRAINED))
+		);
+	}
 	
 	@Override
 	public <R> @NonNull Result<R> encodeStart(@NonNull TypeProvider<R> provider, @NonNull R current, @Nullable Path value) {
@@ -48,6 +73,11 @@ public class PathCodec extends AbstractCodec<Path, Object> {
 		
 		if (value == null) {
 			return Result.error("Unable to encode null as path using '" + this + "'");
+		}
+		
+		Result<Void> constraintResult = this.checkConstraints(value);
+		if (constraintResult.isError()) {
+			return Result.error(constraintResult.errorOrThrow());
 		}
 		return Codecs.STRING.encodeStart(provider, current, value.toString());
 	}
@@ -67,7 +97,13 @@ public class PathCodec extends AbstractCodec<Path, Object> {
 		
 		String string = result.resultOrThrow();
 		try {
-			return Result.success(Path.of(string));
+			Path path = Path.of(string);
+			
+			Result<Void> constraintResult = this.checkConstraints(path);
+			if (constraintResult.isError()) {
+				return Result.error(constraintResult.errorOrThrow());
+			}
+			return Result.success(path);
 		} catch (Exception e) {
 			return Result.error("Unable to decode path '" + string + "' using '" + this + "': Unable to create path: " + e.getMessage());
 		}
@@ -75,6 +111,8 @@ public class PathCodec extends AbstractCodec<Path, Object> {
 	
 	@Override
 	public String toString() {
-		return "PathCodec";
+		return this.getConstraintConfig().map(config -> {
+			return "ConstrainedPathCodec[constraints=" + config + "]";
+		}).orElse("PathCodec");
 	}
 }

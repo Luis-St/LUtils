@@ -21,6 +21,8 @@ package net.luis.utils.io.codec.constraint.merged.io;
 import net.luis.utils.io.codec.constraint.builder.DomainConstraintBuilder;
 import net.luis.utils.io.codec.constraint.builder.IpConstraintBuilder;
 import net.luis.utils.io.codec.constraint.core.BaseConstraint;
+import net.luis.utils.io.codec.constraint.core.io.DomainConstraint;
+import net.luis.utils.io.codec.constraint.core.io.IpConstraint;
 import org.jspecify.annotations.NonNull;
 
 import java.util.function.UnaryOperator;

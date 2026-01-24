@@ -21,7 +21,7 @@ package net.luis.utils.io.codec.constraint.config.io;
 import net.luis.utils.io.codec.constraint.config.ConstraintConfig;
 import net.luis.utils.io.codec.constraint.config.StringConstraintConfig;
 import net.luis.utils.io.codec.constraint.config.matcher.ConstraintMatchers;
-import net.luis.utils.io.codec.constraint.config.matcher.NetworkMatchers;
+import net.luis.utils.io.codec.constraint.config.matcher.IOMatchers;
 import net.luis.utils.io.codec.constraint.core.Constraint;
 import net.luis.utils.io.codec.constraint.util.Unit;
 import net.luis.utils.util.Pair;
@@ -72,7 +72,7 @@ public record URIConstraintConfig(
 	@NonNull Optional<Unit> withoutPort,
 	@NonNull Optional<PortConstraintConfig> port,
 	@NonNull Optional<Unit> withoutPath,
-	@NonNull Optional<PathConstraintConfig> path,
+	@NonNull Optional<URIPathConstraintConfig> path,
 	@NonNull Optional<Unit> withoutQuery,
 	@NonNull Optional<QueryConstraintConfig> query,
 	@NonNull Optional<Unit> withoutFragment,
@@ -298,10 +298,10 @@ public record URIConstraintConfig(
 	/**
 	 * Creates a new config with the specified path constraint.<br>
 	 *
-	 * @param config The path constraint config for path validation
+	 * @param config The URI path constraint config for path validation
 	 * @return A new config with the constraint applied
 	 */
-	public @NonNull URIConstraintConfig withPath(@NonNull PathConstraintConfig config) {
+	public @NonNull URIConstraintConfig withPath(@NonNull URIPathConstraintConfig config) {
 		Objects.requireNonNull(config, "Config for 'path' constraint must not be null");
 		return new URIConstraintConfig(this.equalTo, this.in, this.scheme, this.host, this.withoutUserInfo, this.userInfo, this.withoutPort, this.port, this.withoutPath, Optional.of(config), this.withoutQuery, this.query, this.withoutFragment, this.fragment, this.absolute, this.relative, this.opaque, this.hierarchical, this.custom);
 	}
@@ -401,18 +401,18 @@ public record URIConstraintConfig(
 		return ConstraintMatchers.allOf(
 			() -> ConstraintMatchers.matchEqualTo(value, this.equalTo),
 			() -> ConstraintMatchers.matchIn(value, this.in),
-			() -> NetworkMatchers.matchUriSchemeConfig(value, this.scheme),
-			() -> NetworkMatchers.matchUriHostConfig(value, this.host),
+			() -> IOMatchers.matchUriSchemeConfig(value, this.scheme),
+			() -> IOMatchers.matchUriHostConfig(value, this.host),
 			() -> ConstraintMatchers.matchFlag(value, this.withoutUserInfo, uri -> uri.getUserInfo() == null, "URI '" + value + "' must not have user info"),
-			() -> NetworkMatchers.matchUriUserInfoConfig(value, this.userInfo),
+			() -> IOMatchers.matchUriUserInfoConfig(value, this.userInfo),
 			() -> ConstraintMatchers.matchFlag(value, this.withoutPort, uri -> uri.getPort() == -1, "URI '" + value + "' must not have a port"),
-			() -> NetworkMatchers.matchUriPortConfig(value, this.port),
+			() -> IOMatchers.matchUriPortConfig(value, this.port),
 			() -> ConstraintMatchers.matchFlag(value, this.withoutPath, uri -> uri.getPath() == null || uri.getPath().isEmpty(), "URI '" + value + "' must not have a path"),
-			() -> NetworkMatchers.matchUriPathConfig(value, this.path),
+			() -> IOMatchers.matchUriPathConfig(value, this.path),
 			() -> ConstraintMatchers.matchFlag(value, this.withoutQuery, uri -> uri.getQuery() == null, "URI '" + value + "' must not have a query"),
-			() -> NetworkMatchers.matchUriQueryConfig(value, this.query),
+			() -> IOMatchers.matchUriQueryConfig(value, this.query),
 			() -> ConstraintMatchers.matchFlag(value, this.withoutFragment, uri -> uri.getFragment() == null, "URI '" + value + "' must not have a fragment"),
-			() -> NetworkMatchers.matchUriFragmentConfig(value, this.fragment),
+			() -> IOMatchers.matchUriFragmentConfig(value, this.fragment),
 			() -> ConstraintMatchers.matchFlag(value, this.absolute, URI::isAbsolute, "URI '" + value + "' must be absolute"),
 			() -> ConstraintMatchers.matchFlag(value, this.relative, uri -> !uri.isAbsolute(), "URI '" + value + "' must be relative"),
 			() -> ConstraintMatchers.matchFlag(value, this.opaque, URI::isOpaque, "URI '" + value + "' must be opaque"),

@@ -71,6 +71,7 @@ module net.luis.utils {
 	exports net.luis.utils.io.codec.constraint.config.temporal.offset;
 	exports net.luis.utils.io.codec.constraint.config.temporal.zoned;
 	exports net.luis.utils.io.codec.constraint.core;
+	exports net.luis.utils.io.codec.constraint.core.io;
 	exports net.luis.utils.io.codec.constraint.core.temporal;
 	exports net.luis.utils.io.codec.constraint.merged;
 	exports net.luis.utils.io.codec.constraint.merged.collection;

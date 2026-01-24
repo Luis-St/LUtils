@@ -18,9 +18,7 @@
 
 package net.luis.utils.io.codec.constraint.config.io;
 
-import net.luis.utils.io.codec.constraint.config.StringConstraintConfig;
-import net.luis.utils.io.codec.constraint.config.DepthConstraintConfig;
-import net.luis.utils.io.codec.constraint.config.LengthConstraintConfig;
+import net.luis.utils.io.codec.constraint.config.*;
 import net.luis.utils.io.codec.constraint.util.Platform;
 import net.luis.utils.io.codec.constraint.util.Unit;
 import net.luis.utils.util.Pair;
@@ -33,20 +31,20 @@ import java.util.*;
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
- * Test class for {@link PathConstraintConfig}.<br>
+ * Test class for {@link FilePathConstraintConfig}.<br>
  *
  * @author Luis-St
  */
-class PathConstraintConfigTest {
+class FilePathConstraintConfigTest {
 	
 	@Test
 	void constructor() {
-		assertDoesNotThrow(() -> PathConstraintConfig.UNCONSTRAINED);
+		assertDoesNotThrow(() -> FilePathConstraintConfig.UNCONSTRAINED);
 	}
 	
 	@Test
 	void constructorNullChecks() {
-		assertThrows(NullPointerException.class, () -> new PathConstraintConfig(
+		assertThrows(NullPointerException.class, () -> new FilePathConstraintConfig(
 			null, Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(),
 			Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(),
 			Optional.empty(), Optional.empty(), Optional.empty()
@@ -55,7 +53,7 @@ class PathConstraintConfigTest {
 	
 	@Test
 	void constructorEmptyInSet() {
-		assertThrows(IllegalArgumentException.class, () -> new PathConstraintConfig(
+		assertThrows(IllegalArgumentException.class, () -> new FilePathConstraintConfig(
 			Optional.empty(), Optional.of(Pair.of(Set.of(), false)), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(),
 			Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(),
 			Optional.empty(), Optional.empty(), Optional.empty()
@@ -64,7 +62,7 @@ class PathConstraintConfigTest {
 	
 	@Test
 	void constructorAbsoluteRelativeMutuallyExclusive() {
-		assertThrows(IllegalArgumentException.class, () -> new PathConstraintConfig(
+		assertThrows(IllegalArgumentException.class, () -> new FilePathConstraintConfig(
 			Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.of(Unit.INSTANCE), Optional.of(Unit.INSTANCE), Optional.empty(), Optional.empty(), Optional.empty(),
 			Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(),
 			Optional.empty(), Optional.empty(), Optional.empty()
@@ -73,7 +71,7 @@ class PathConstraintConfigTest {
 	
 	@Test
 	void constructorWithoutExtensionAndExtensionMutuallyExclusive() {
-		assertThrows(IllegalArgumentException.class, () -> new PathConstraintConfig(
+		assertThrows(IllegalArgumentException.class, () -> new FilePathConstraintConfig(
 			Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(),
 			Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.of(Unit.INSTANCE), Optional.of(StringConstraintConfig.UNCONSTRAINED), Optional.empty(), Optional.empty(), Optional.empty(),
 			Optional.empty(), Optional.empty(), Optional.empty()
@@ -82,7 +80,7 @@ class PathConstraintConfigTest {
 	
 	@Test
 	void unconstrained() {
-		PathConstraintConfig config = PathConstraintConfig.UNCONSTRAINED;
+		FilePathConstraintConfig config = FilePathConstraintConfig.UNCONSTRAINED;
 		assertNotNull(config);
 		assertTrue(config.equalTo().isEmpty());
 		assertTrue(config.in().isEmpty());
@@ -95,7 +93,7 @@ class PathConstraintConfigTest {
 	
 	@Test
 	void withEqualTo() {
-		PathConstraintConfig config = PathConstraintConfig.UNCONSTRAINED.withEqualTo(Path.of("/home/user"));
+		FilePathConstraintConfig config = FilePathConstraintConfig.UNCONSTRAINED.withEqualTo(Path.of("/home/user"));
 		
 		assertTrue(config.equalTo().isPresent());
 		assertEquals(Path.of("/home/user"), config.equalTo().get().getFirst());
@@ -104,12 +102,12 @@ class PathConstraintConfigTest {
 	
 	@Test
 	void withEqualToNull() {
-		assertThrows(NullPointerException.class, () -> PathConstraintConfig.UNCONSTRAINED.withEqualTo(null));
+		assertThrows(NullPointerException.class, () -> FilePathConstraintConfig.UNCONSTRAINED.withEqualTo(null));
 	}
 	
 	@Test
 	void withNotEqualTo() {
-		PathConstraintConfig config = PathConstraintConfig.UNCONSTRAINED.withNotEqualTo(Path.of("/tmp"));
+		FilePathConstraintConfig config = FilePathConstraintConfig.UNCONSTRAINED.withNotEqualTo(Path.of("/tmp"));
 		
 		assertTrue(config.equalTo().isPresent());
 		assertTrue(config.equalTo().get().getSecond());
@@ -117,7 +115,7 @@ class PathConstraintConfigTest {
 	
 	@Test
 	void withIn() {
-		PathConstraintConfig config = PathConstraintConfig.UNCONSTRAINED.withIn(List.of(Path.of("/home"), Path.of("/var")));
+		FilePathConstraintConfig config = FilePathConstraintConfig.UNCONSTRAINED.withIn(List.of(Path.of("/home"), Path.of("/var")));
 		
 		assertTrue(config.in().isPresent());
 		assertEquals(2, config.in().get().getFirst().size());
@@ -126,7 +124,7 @@ class PathConstraintConfigTest {
 	
 	@Test
 	void withNotIn() {
-		PathConstraintConfig config = PathConstraintConfig.UNCONSTRAINED.withNotIn(List.of(Path.of("/tmp")));
+		FilePathConstraintConfig config = FilePathConstraintConfig.UNCONSTRAINED.withNotIn(List.of(Path.of("/tmp")));
 		
 		assertTrue(config.in().isPresent());
 		assertTrue(config.in().get().getSecond());
@@ -135,7 +133,7 @@ class PathConstraintConfigTest {
 	@Test
 	void withLength() {
 		LengthConstraintConfig lengthConfig = LengthConstraintConfig.UNCONSTRAINED.withMinLength(1).withMaxLength(100);
-		PathConstraintConfig config = PathConstraintConfig.UNCONSTRAINED.withLength(lengthConfig);
+		FilePathConstraintConfig config = FilePathConstraintConfig.UNCONSTRAINED.withLength(lengthConfig);
 		
 		assertTrue(config.length().isPresent());
 		assertEquals(lengthConfig, config.length().get());
@@ -143,13 +141,13 @@ class PathConstraintConfigTest {
 	
 	@Test
 	void withLengthNull() {
-		assertThrows(NullPointerException.class, () -> PathConstraintConfig.UNCONSTRAINED.withLength(null));
+		assertThrows(NullPointerException.class, () -> FilePathConstraintConfig.UNCONSTRAINED.withLength(null));
 	}
 	
 	@Test
 	void withDepth() {
 		DepthConstraintConfig depthConfig = DepthConstraintConfig.UNCONSTRAINED.withMinDepth(1).withMaxDepth(10);
-		PathConstraintConfig config = PathConstraintConfig.UNCONSTRAINED.withDepth(depthConfig);
+		FilePathConstraintConfig config = FilePathConstraintConfig.UNCONSTRAINED.withDepth(depthConfig);
 		
 		assertTrue(config.depth().isPresent());
 		assertEquals(depthConfig, config.depth().get());
@@ -157,12 +155,12 @@ class PathConstraintConfigTest {
 	
 	@Test
 	void withDepthNull() {
-		assertThrows(NullPointerException.class, () -> PathConstraintConfig.UNCONSTRAINED.withDepth(null));
+		assertThrows(NullPointerException.class, () -> FilePathConstraintConfig.UNCONSTRAINED.withDepth(null));
 	}
 	
 	@Test
 	void withAbsolute() {
-		PathConstraintConfig config = PathConstraintConfig.UNCONSTRAINED.withAbsolute();
+		FilePathConstraintConfig config = FilePathConstraintConfig.UNCONSTRAINED.withAbsolute();
 		
 		assertTrue(config.absolute().isPresent());
 		assertTrue(config.relative().isEmpty());
@@ -170,7 +168,7 @@ class PathConstraintConfigTest {
 	
 	@Test
 	void withRelative() {
-		PathConstraintConfig config = PathConstraintConfig.UNCONSTRAINED.withRelative();
+		FilePathConstraintConfig config = FilePathConstraintConfig.UNCONSTRAINED.withRelative();
 		
 		assertTrue(config.relative().isPresent());
 		assertTrue(config.absolute().isEmpty());
@@ -178,14 +176,14 @@ class PathConstraintConfigTest {
 	
 	@Test
 	void withNormalized() {
-		PathConstraintConfig config = PathConstraintConfig.UNCONSTRAINED.withNormalized();
+		FilePathConstraintConfig config = FilePathConstraintConfig.UNCONSTRAINED.withNormalized();
 		
 		assertTrue(config.normalized().isPresent());
 	}
 	
 	@Test
 	void withCanonical() {
-		PathConstraintConfig config = PathConstraintConfig.UNCONSTRAINED.withCanonical();
+		FilePathConstraintConfig config = FilePathConstraintConfig.UNCONSTRAINED.withCanonical();
 		
 		assertTrue(config.canonical().isPresent());
 	}
@@ -193,20 +191,20 @@ class PathConstraintConfigTest {
 	@Test
 	void withPath() {
 		StringConstraintConfig stringConfig = StringConstraintConfig.UNCONSTRAINED.withStartsWith("/home");
-		PathConstraintConfig config = PathConstraintConfig.UNCONSTRAINED.withPath(stringConfig);
+		FilePathConstraintConfig config = FilePathConstraintConfig.UNCONSTRAINED.withPath(stringConfig);
 		
 		assertTrue(config.path().isPresent());
 	}
 	
 	@Test
 	void withPathNull() {
-		assertThrows(NullPointerException.class, () -> PathConstraintConfig.UNCONSTRAINED.withPath(null));
+		assertThrows(NullPointerException.class, () -> FilePathConstraintConfig.UNCONSTRAINED.withPath(null));
 	}
 	
 	@Test
 	void withRoot() {
 		StringConstraintConfig stringConfig = StringConstraintConfig.UNCONSTRAINED.withEqualTo("/");
-		PathConstraintConfig config = PathConstraintConfig.UNCONSTRAINED.withRoot(stringConfig);
+		FilePathConstraintConfig config = FilePathConstraintConfig.UNCONSTRAINED.withRoot(stringConfig);
 		
 		assertTrue(config.root().isPresent());
 	}
@@ -214,7 +212,7 @@ class PathConstraintConfigTest {
 	@Test
 	void withParent() {
 		StringConstraintConfig stringConfig = StringConstraintConfig.UNCONSTRAINED.withContains("home");
-		PathConstraintConfig config = PathConstraintConfig.UNCONSTRAINED.withParent(stringConfig);
+		FilePathConstraintConfig config = FilePathConstraintConfig.UNCONSTRAINED.withParent(stringConfig);
 		
 		assertTrue(config.parent().isPresent());
 	}
@@ -222,7 +220,7 @@ class PathConstraintConfigTest {
 	@Test
 	void withSegment() {
 		StringConstraintConfig stringConfig = StringConstraintConfig.UNCONSTRAINED.withNotBlank();
-		PathConstraintConfig config = PathConstraintConfig.UNCONSTRAINED.withSegment(stringConfig);
+		FilePathConstraintConfig config = FilePathConstraintConfig.UNCONSTRAINED.withSegment(stringConfig);
 		
 		assertTrue(config.segment().isPresent());
 	}
@@ -230,14 +228,14 @@ class PathConstraintConfigTest {
 	@Test
 	void withFile() {
 		StringConstraintConfig stringConfig = StringConstraintConfig.UNCONSTRAINED.withEndsWith(".txt");
-		PathConstraintConfig config = PathConstraintConfig.UNCONSTRAINED.withFile(stringConfig);
+		FilePathConstraintConfig config = FilePathConstraintConfig.UNCONSTRAINED.withFile(stringConfig);
 		
 		assertTrue(config.file().isPresent());
 	}
 	
 	@Test
 	void withWithoutExtension() {
-		PathConstraintConfig config = PathConstraintConfig.UNCONSTRAINED.withWithoutExtension();
+		FilePathConstraintConfig config = FilePathConstraintConfig.UNCONSTRAINED.withWithoutExtension();
 		
 		assertTrue(config.withoutExtension().isPresent());
 		assertTrue(config.extension().isEmpty());
@@ -246,7 +244,7 @@ class PathConstraintConfigTest {
 	@Test
 	void withExtension() {
 		StringConstraintConfig stringConfig = StringConstraintConfig.UNCONSTRAINED.withIn(List.of("txt", "md"));
-		PathConstraintConfig config = PathConstraintConfig.UNCONSTRAINED.withExtension(stringConfig);
+		FilePathConstraintConfig config = FilePathConstraintConfig.UNCONSTRAINED.withExtension(stringConfig);
 		
 		assertTrue(config.extension().isPresent());
 		assertTrue(config.withoutExtension().isEmpty());
@@ -254,7 +252,7 @@ class PathConstraintConfigTest {
 	
 	@Test
 	void withAncestorOf() {
-		PathConstraintConfig config = PathConstraintConfig.UNCONSTRAINED.withAncestorOf(List.of("/home/user/file.txt"));
+		FilePathConstraintConfig config = FilePathConstraintConfig.UNCONSTRAINED.withAncestorOf(List.of("/home/user/file.txt"));
 		
 		assertTrue(config.ancestorOf().isPresent());
 		assertEquals(1, config.ancestorOf().get().size());
@@ -262,7 +260,7 @@ class PathConstraintConfigTest {
 	
 	@Test
 	void withDescendantOf() {
-		PathConstraintConfig config = PathConstraintConfig.UNCONSTRAINED.withDescendantOf(List.of("/home"));
+		FilePathConstraintConfig config = FilePathConstraintConfig.UNCONSTRAINED.withDescendantOf(List.of("/home"));
 		
 		assertTrue(config.descendantOf().isPresent());
 		assertEquals(1, config.descendantOf().get().size());
@@ -270,7 +268,7 @@ class PathConstraintConfigTest {
 	
 	@Test
 	void withValidFor() {
-		PathConstraintConfig config = PathConstraintConfig.UNCONSTRAINED.withValidFor(Platform.LINUX);
+		FilePathConstraintConfig config = FilePathConstraintConfig.UNCONSTRAINED.withValidFor(Platform.LINUX);
 		
 		assertTrue(config.validFor().isPresent());
 		assertEquals(Platform.LINUX, config.validFor().get());
@@ -278,19 +276,19 @@ class PathConstraintConfigTest {
 	
 	@Test
 	void withValidForNull() {
-		assertThrows(NullPointerException.class, () -> PathConstraintConfig.UNCONSTRAINED.withValidFor(null));
+		assertThrows(NullPointerException.class, () -> FilePathConstraintConfig.UNCONSTRAINED.withValidFor(null));
 	}
 	
 	@Test
 	void withPortable() {
-		PathConstraintConfig config = PathConstraintConfig.UNCONSTRAINED.withPortable();
+		FilePathConstraintConfig config = FilePathConstraintConfig.UNCONSTRAINED.withPortable();
 		
 		assertTrue(config.portable().isPresent());
 	}
 	
 	@Test
 	void withSeparator() {
-		PathConstraintConfig config = PathConstraintConfig.UNCONSTRAINED.withSeparator(Platform.WINDOWS);
+		FilePathConstraintConfig config = FilePathConstraintConfig.UNCONSTRAINED.withSeparator(Platform.WINDOWS);
 		
 		assertTrue(config.separator().isPresent());
 		assertEquals(Platform.WINDOWS, config.separator().get());
@@ -298,19 +296,19 @@ class PathConstraintConfigTest {
 	
 	@Test
 	void withCustom() {
-		PathConstraintConfig config = PathConstraintConfig.UNCONSTRAINED.withCustom(value -> Result.success());
+		FilePathConstraintConfig config = FilePathConstraintConfig.UNCONSTRAINED.withCustom(value -> Result.success());
 		
 		assertTrue(config.custom().isPresent());
 	}
 	
 	@Test
 	void withCustomNull() {
-		assertThrows(NullPointerException.class, () -> PathConstraintConfig.UNCONSTRAINED.withCustom(null));
+		assertThrows(NullPointerException.class, () -> FilePathConstraintConfig.UNCONSTRAINED.withCustom(null));
 	}
 	
 	@Test
 	void matchesUnconstrained() {
-		PathConstraintConfig config = PathConstraintConfig.UNCONSTRAINED;
+		FilePathConstraintConfig config = FilePathConstraintConfig.UNCONSTRAINED;
 		
 		assertTrue(config.matches(Path.of("/home/user")).isSuccess());
 		assertTrue(config.matches(Path.of("relative/path")).isSuccess());
@@ -319,12 +317,12 @@ class PathConstraintConfigTest {
 	
 	@Test
 	void matchesWithNull() {
-		assertThrows(NullPointerException.class, () -> PathConstraintConfig.UNCONSTRAINED.matches(null));
+		assertThrows(NullPointerException.class, () -> FilePathConstraintConfig.UNCONSTRAINED.matches(null));
 	}
 	
 	@Test
 	void matchesEqualTo() {
-		PathConstraintConfig config = PathConstraintConfig.UNCONSTRAINED.withEqualTo(Path.of("/home/user"));
+		FilePathConstraintConfig config = FilePathConstraintConfig.UNCONSTRAINED.withEqualTo(Path.of("/home/user"));
 		
 		assertTrue(config.matches(Path.of("/home/user")).isSuccess());
 		assertTrue(config.matches(Path.of("/home/other")).isError());
@@ -332,7 +330,7 @@ class PathConstraintConfigTest {
 	
 	@Test
 	void matchesIn() {
-		PathConstraintConfig config = PathConstraintConfig.UNCONSTRAINED.withIn(List.of(Path.of("/home"), Path.of("/var")));
+		FilePathConstraintConfig config = FilePathConstraintConfig.UNCONSTRAINED.withIn(List.of(Path.of("/home"), Path.of("/var")));
 		
 		assertTrue(config.matches(Path.of("/home")).isSuccess());
 		assertTrue(config.matches(Path.of("/var")).isSuccess());
@@ -342,7 +340,7 @@ class PathConstraintConfigTest {
 	@Test
 	void matchesLength() {
 		LengthConstraintConfig lengthConfig = LengthConstraintConfig.UNCONSTRAINED.withMinLength(5).withMaxLength(20);
-		PathConstraintConfig config = PathConstraintConfig.UNCONSTRAINED.withLength(lengthConfig);
+		FilePathConstraintConfig config = FilePathConstraintConfig.UNCONSTRAINED.withLength(lengthConfig);
 		
 		assertTrue(config.matches(Path.of("/home/user")).isSuccess());
 		assertTrue(config.matches(Path.of("/a")).isError());
@@ -351,7 +349,7 @@ class PathConstraintConfigTest {
 	@Test
 	void matchesDepth() {
 		DepthConstraintConfig depthConfig = DepthConstraintConfig.UNCONSTRAINED.withMinDepth(2).withMaxDepth(4);
-		PathConstraintConfig config = PathConstraintConfig.UNCONSTRAINED.withDepth(depthConfig);
+		FilePathConstraintConfig config = FilePathConstraintConfig.UNCONSTRAINED.withDepth(depthConfig);
 		
 		assertTrue(config.matches(Path.of("a/b")).isSuccess());
 		assertTrue(config.matches(Path.of("a/b/c")).isSuccess());

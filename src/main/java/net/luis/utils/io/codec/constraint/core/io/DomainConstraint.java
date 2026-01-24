@@ -16,7 +16,7 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-package net.luis.utils.io.codec.constraint.merged.io;
+package net.luis.utils.io.codec.constraint.core.io;
 
 import net.luis.utils.io.codec.constraint.core.CharSequenceConstraint;
 import org.jspecify.annotations.NonNull;

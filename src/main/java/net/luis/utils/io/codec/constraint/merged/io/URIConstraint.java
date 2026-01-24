@@ -19,25 +19,57 @@
 package net.luis.utils.io.codec.constraint.merged.io;
 
 import net.luis.utils.io.codec.constraint.builder.*;
-import net.luis.utils.io.codec.constraint.core.BaseConstraint;
+import net.luis.utils.io.codec.constraint.config.io.URIConstraintConfig;
+import net.luis.utils.io.codec.constraint.core.*;
 import org.jspecify.annotations.NonNull;
 
+import java.net.URI;
+import java.util.Collection;
+import java.util.Objects;
 import java.util.function.UnaryOperator;
 
 /**
  * Constraint interface for URI types that provides comprehensive URI validation operations.<br>
  * <p>
- *     This interface extends {@link BaseConstraint} with methods for constraining URIs
+ *     This interface extends {@link ApplicableConstraint} and {@link BaseConstraint} with methods for constraining URIs
  *     based on their components (scheme, host, port, path, query, fragment) and structure (absolute, relative, opaque, hierarchical).<br>
  *     It allows fine-grained validation of URI structure according to RFC 3986.
  * </p>
  *
  * @author Luis-St
  *
- * @param <T> The type of the constraint configuration
  * @param <C> The return type of the constraint method (for fluent method chaining)
  */
-public interface URIConstraint<T, C> extends BaseConstraint<T, C> {
+@FunctionalInterface
+public interface URIConstraint<C> extends ApplicableConstraint<URIConstraintConfig, C>, BaseConstraint<URI, C> {
+	
+	@Override
+	@NonNull C apply(@NonNull UnaryOperator<URIConstraintConfig> configModifier);
+	
+	@Override
+	default @NonNull C equalTo(@NonNull URI value) {
+		return this.apply(config -> config.withEqualTo(value));
+	}
+	
+	@Override
+	default @NonNull C notEqualTo(@NonNull URI value) {
+		return this.apply(config -> config.withNotEqualTo(value));
+	}
+	
+	@Override
+	default @NonNull C in(@NonNull Collection<URI> values) {
+		return this.apply(config -> config.withIn(values));
+	}
+	
+	@Override
+	default @NonNull C notIn(@NonNull Collection<URI> values) {
+		return this.apply(config -> config.withNotIn(values));
+	}
+	
+	@Override
+	default @NonNull C custom(@NonNull Constraint<URI> constraint) {
+		return this.apply(config -> config.withCustom(constraint));
+	}
 	
 	/**
 	 * Applies a scheme constraint to the URI using a builder.<br>
@@ -49,7 +81,13 @@ public interface URIConstraint<T, C> extends BaseConstraint<T, C> {
 	 * @return A new type with the applied scheme constraint
 	 * @throws NullPointerException If the builder is null
 	 */
-	@NonNull C scheme(@NonNull UnaryOperator<StringConstraintBuilder> builder);
+	default @NonNull C scheme(@NonNull UnaryOperator<StringConstraintBuilder> builder) {
+		Objects.requireNonNull(builder, "Builder must not be null");
+		
+		StringConstraintBuilder stringBuilder = new StringConstraintBuilder();
+		builder.apply(stringBuilder);
+		return this.apply(config -> config.withScheme(stringBuilder.build()));
+	}
 	
 	/**
 	 * Applies a host constraint to the URI using a builder.<br>
@@ -61,7 +99,13 @@ public interface URIConstraint<T, C> extends BaseConstraint<T, C> {
 	 * @return A new type with the applied host constraint
 	 * @throws NullPointerException If the builder is null
 	 */
-	@NonNull C host(@NonNull UnaryOperator<HostConstraintBuilder> builder);
+	default @NonNull C host(@NonNull UnaryOperator<HostConstraintBuilder> builder) {
+		Objects.requireNonNull(builder, "Builder must not be null");
+		
+		HostConstraintBuilder hostBuilder = new HostConstraintBuilder();
+		builder.apply(hostBuilder);
+		return this.apply(config -> config.withHost(hostBuilder.build()));
+	}
 	
 	/**
 	 * Applies a constraint requiring the URI to have no user info component.<br>
@@ -72,7 +116,9 @@ public interface URIConstraint<T, C> extends BaseConstraint<T, C> {
 	 * @return A new type with the applied no-user-info constraint
 	 * @see #userInfo(UnaryOperator)
 	 */
-	@NonNull C withoutUserInfo();
+	default @NonNull C withoutUserInfo() {
+		return this.apply(URIConstraintConfig::withWithoutUserInfo);
+	}
 	
 	/**
 	 * Applies a user info constraint to the URI using a builder.<br>
@@ -85,7 +131,13 @@ public interface URIConstraint<T, C> extends BaseConstraint<T, C> {
 	 * @throws NullPointerException If the builder is null
 	 * @see #withoutUserInfo()
 	 */
-	@NonNull C userInfo(@NonNull UnaryOperator<StringConstraintBuilder> builder);
+	default @NonNull C userInfo(@NonNull UnaryOperator<StringConstraintBuilder> builder) {
+		Objects.requireNonNull(builder, "Builder must not be null");
+		
+		StringConstraintBuilder stringBuilder = new StringConstraintBuilder();
+		builder.apply(stringBuilder);
+		return this.apply(config -> config.withUserInfo(stringBuilder.build()));
+	}
 	
 	/**
 	 * Applies a constraint requiring the URI to have no port component.<br>
@@ -96,7 +148,9 @@ public interface URIConstraint<T, C> extends BaseConstraint<T, C> {
 	 * @return A new type with the applied no-port constraint
 	 * @see #port(UnaryOperator)
 	 */
-	@NonNull C withoutPort();
+	default @NonNull C withoutPort() {
+		return this.apply(URIConstraintConfig::withWithoutPort);
+	}
 	
 	/**
 	 * Applies a port constraint to the URI using a builder.<br>
@@ -109,7 +163,13 @@ public interface URIConstraint<T, C> extends BaseConstraint<T, C> {
 	 * @throws NullPointerException If the builder is null
 	 * @see #withoutPort()
 	 */
-	@NonNull C port(@NonNull UnaryOperator<PortConstraintBuilder> builder);
+	default @NonNull C port(@NonNull UnaryOperator<PortConstraintBuilder> builder) {
+		Objects.requireNonNull(builder, "Builder must not be null");
+		
+		PortConstraintBuilder portBuilder = new PortConstraintBuilder();
+		builder.apply(portBuilder);
+		return this.apply(config -> config.withPort(portBuilder.build()));
+	}
 	
 	/**
 	 * Applies a constraint requiring the URI to have no path component.<br>
@@ -120,7 +180,9 @@ public interface URIConstraint<T, C> extends BaseConstraint<T, C> {
 	 * @return A new type with the applied no-path constraint
 	 * @see #path(UnaryOperator)
 	 */
-	@NonNull C withoutPath();
+	default @NonNull C withoutPath() {
+		return this.apply(URIConstraintConfig::withWithoutPath);
+	}
 	
 	/**
 	 * Applies a path constraint to the URI using a builder.<br>
@@ -128,12 +190,18 @@ public interface URIConstraint<T, C> extends BaseConstraint<T, C> {
 	 *     The returned type will validate that the URI path matches the constraints defined by the builder.
 	 * </p>
 	 *
-	 * @param builder A function that configures the path constraint using a path constraint builder
+	 * @param builder A function that configures the path constraint using a URI path constraint builder
 	 * @return A new type with the applied path constraint
 	 * @throws NullPointerException If the builder is null
 	 * @see #withoutPath()
 	 */
-	@NonNull C path(@NonNull UnaryOperator<PathConstraintBuilder> builder);
+	default @NonNull C path(@NonNull UnaryOperator<URIPathConstraintBuilder> builder) {
+		Objects.requireNonNull(builder, "Builder must not be null");
+
+		URIPathConstraintBuilder pathBuilder = new URIPathConstraintBuilder();
+		builder.apply(pathBuilder);
+		return this.apply(config -> config.withPath(pathBuilder.build()));
+	}
 	
 	/**
 	 * Applies a constraint requiring the URI to have no query component.<br>
@@ -144,7 +212,9 @@ public interface URIConstraint<T, C> extends BaseConstraint<T, C> {
 	 * @return A new type with the applied no-query constraint
 	 * @see #query(UnaryOperator)
 	 */
-	@NonNull C withoutQuery();
+	default @NonNull C withoutQuery() {
+		return this.apply(URIConstraintConfig::withWithoutQuery);
+	}
 	
 	/**
 	 * Applies a query constraint to the URI using a builder.<br>
@@ -157,7 +227,13 @@ public interface URIConstraint<T, C> extends BaseConstraint<T, C> {
 	 * @throws NullPointerException If the builder is null
 	 * @see #withoutQuery()
 	 */
-	@NonNull C query(@NonNull UnaryOperator<QueryConstraintBuilder> builder);
+	default @NonNull C query(@NonNull UnaryOperator<QueryConstraintBuilder> builder) {
+		Objects.requireNonNull(builder, "Builder must not be null");
+		
+		QueryConstraintBuilder queryBuilder = new QueryConstraintBuilder();
+		builder.apply(queryBuilder);
+		return this.apply(config -> config.withQuery(queryBuilder.build()));
+	}
 	
 	/**
 	 * Applies a constraint requiring the URI to have no fragment component.<br>
@@ -168,7 +244,9 @@ public interface URIConstraint<T, C> extends BaseConstraint<T, C> {
 	 * @return A new type with the applied no-fragment constraint
 	 * @see #fragment(UnaryOperator)
 	 */
-	@NonNull C withoutFragment();
+	default @NonNull C withoutFragment() {
+		return this.apply(URIConstraintConfig::withWithoutFragment);
+	}
 	
 	/**
 	 * Applies a fragment constraint to the URI using a builder.<br>
@@ -181,7 +259,13 @@ public interface URIConstraint<T, C> extends BaseConstraint<T, C> {
 	 * @throws NullPointerException If the builder is null
 	 * @see #withoutFragment()
 	 */
-	@NonNull C fragment(@NonNull UnaryOperator<StringConstraintBuilder> builder);
+	default @NonNull C fragment(@NonNull UnaryOperator<StringConstraintBuilder> builder) {
+		Objects.requireNonNull(builder, "Builder must not be null");
+		
+		StringConstraintBuilder stringBuilder = new StringConstraintBuilder();
+		builder.apply(stringBuilder);
+		return this.apply(config -> config.withFragment(stringBuilder.build()));
+	}
 	
 	/**
 	 * Applies an absolute URI constraint to the type.<br>
@@ -192,7 +276,9 @@ public interface URIConstraint<T, C> extends BaseConstraint<T, C> {
 	 * @return A new type with the applied absolute constraint
 	 * @see #relative()
 	 */
-	@NonNull C absolute();
+	default @NonNull C absolute() {
+		return this.apply(URIConstraintConfig::withAbsolute);
+	}
 	
 	/**
 	 * Applies a relative URI constraint to the type.<br>
@@ -203,7 +289,9 @@ public interface URIConstraint<T, C> extends BaseConstraint<T, C> {
 	 * @return A new type with the applied relative constraint
 	 * @see #absolute()
 	 */
-	@NonNull C relative();
+	default @NonNull C relative() {
+		return this.apply(URIConstraintConfig::withRelative);
+	}
 	
 	/**
 	 * Applies an opaque URI constraint to the type.<br>
@@ -214,7 +302,9 @@ public interface URIConstraint<T, C> extends BaseConstraint<T, C> {
 	 * @return A new type with the applied opaque constraint
 	 * @see #hierarchical()
 	 */
-	@NonNull C opaque();
+	default @NonNull C opaque() {
+		return this.apply(URIConstraintConfig::withOpaque);
+	}
 	
 	/**
 	 * Applies a hierarchical URI constraint to the type.<br>
@@ -225,5 +315,7 @@ public interface URIConstraint<T, C> extends BaseConstraint<T, C> {
 	 * @return A new type with the applied hierarchical constraint
 	 * @see #opaque()
 	 */
-	@NonNull C hierarchical();
+	default @NonNull C hierarchical() {
+		return this.apply(URIConstraintConfig::withHierarchical);
+	}
 }

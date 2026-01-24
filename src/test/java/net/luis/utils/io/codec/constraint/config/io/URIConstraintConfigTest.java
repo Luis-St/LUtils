@@ -170,7 +170,7 @@ class URIConstraintConfigTest {
 	@Test
 	void constructorWithoutPathAndPathMutuallyExclusive() {
 		assertThrows(IllegalArgumentException.class, () -> new URIConstraintConfig(
-			Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.of(Unit.INSTANCE), Optional.of(PathConstraintConfig.UNCONSTRAINED),
+			Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.of(Unit.INSTANCE), Optional.of(URIPathConstraintConfig.UNCONSTRAINED),
 			Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty()
 		));
 	}
@@ -356,11 +356,11 @@ class URIConstraintConfigTest {
 	
 	@Test
 	void withPath() {
-		PathConstraintConfig pathConfig = PathConstraintConfig.UNCONSTRAINED.withLength(
+		URIPathConstraintConfig pathConfig = URIPathConstraintConfig.UNCONSTRAINED.withLength(
 			LengthConstraintConfig.UNCONSTRAINED.withMinLength(1)
 		);
 		URIConstraintConfig config = URIConstraintConfig.UNCONSTRAINED.withPath(pathConfig);
-		
+
 		assertTrue(config.path().isPresent());
 		assertTrue(config.withoutPath().isEmpty());
 	}

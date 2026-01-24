@@ -21,7 +21,7 @@ package net.luis.utils.io.codec.constraint.config.io;
 import net.luis.utils.io.codec.constraint.config.ConstraintConfig;
 import net.luis.utils.io.codec.constraint.config.EnumConstraintConfig;
 import net.luis.utils.io.codec.constraint.config.matcher.ConstraintMatchers;
-import net.luis.utils.io.codec.constraint.config.matcher.NetworkMatchers;
+import net.luis.utils.io.codec.constraint.config.matcher.IOMatchers;
 import net.luis.utils.io.codec.constraint.core.Constraint;
 import net.luis.utils.io.codec.constraint.util.PortRange;
 import net.luis.utils.util.Pair;
@@ -208,8 +208,8 @@ public record PortConstraintConfig(
 		return ConstraintMatchers.allOf(
 			() -> ConstraintMatchers.matchEqualTo(value, this.equalTo),
 			() -> ConstraintMatchers.matchIn(value, this.in),
-			() -> NetworkMatchers.matchPortRange(value, this.inRange),
-			() -> NetworkMatchers.matchPortType(value, this.type),
+			() -> IOMatchers.matchPortRange(value, this.inRange),
+			() -> IOMatchers.matchPortType(value, this.type),
 			() -> ConstraintMatchers.matchCustom(value, this.custom)
 		);
 	}

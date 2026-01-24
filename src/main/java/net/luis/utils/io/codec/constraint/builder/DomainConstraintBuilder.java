@@ -20,7 +20,7 @@ package net.luis.utils.io.codec.constraint.builder;
 
 import net.luis.utils.io.codec.constraint.config.io.DomainConstraintConfig;
 import net.luis.utils.io.codec.constraint.core.Constraint;
-import net.luis.utils.io.codec.constraint.merged.io.DomainConstraint;
+import net.luis.utils.io.codec.constraint.core.io.DomainConstraint;
 import org.jspecify.annotations.NonNull;
 
 import java.util.Collection;

@@ -29,6 +29,7 @@ import net.luis.utils.io.network.address.ipv6.Ipv6Address;
 import net.luis.utils.io.network.address.ipv6.Ipv6Network;
 import net.luis.utils.util.Pair;
 import net.luis.utils.util.result.Result;
+import org.apache.commons.lang3.ArrayUtils;
 import org.jspecify.annotations.NonNull;
 
 import java.io.File;
@@ -49,12 +50,12 @@ import java.util.regex.Pattern;
  * @author Luis-St
  */
 @SuppressWarnings("OptionalContainsCollection")
-public final class NetworkMatchers {
+public final class IOMatchers {
 	
 	/**
 	 * Private constructor to prevent instantiation.<br>
 	 */
-	private NetworkMatchers() {}
+	private IOMatchers() {}
 	
 	/**
 	 * Validates a port value against a port range constraint.<br>
@@ -970,14 +971,14 @@ public final class NetworkMatchers {
 	}
 	
 	/**
-	 * Validates a URI's path against a path constraint config.<br>
+	 * Validates a URI's path against a URI path constraint config.<br>
 	 *
 	 * @param value The URI to validate
-	 * @param pathConfig The path constraint config for path validation
+	 * @param pathConfig The URI path constraint config for path validation
 	 * @return A successful result if the constraint is satisfied or not present
 	 * @throws NullPointerException If any parameter is null
 	 */
-	public static @NonNull Result<Void> matchUriPathConfig(@NonNull URI value, @NonNull Optional<PathConstraintConfig> pathConfig) {
+	public static @NonNull Result<Void> matchUriPathConfig(@NonNull URI value, @NonNull Optional<URIPathConstraintConfig> pathConfig) {
 		Objects.requireNonNull(value, "Uri must not be null");
 		Objects.requireNonNull(pathConfig, "Uri path config constraint must not be null");
 		if (pathConfig.isEmpty()) {
@@ -989,7 +990,7 @@ public final class NetworkMatchers {
 			return Result.error("URI '" + value + "' has no path");
 		}
 		
-		Result<Void> result = pathConfig.get().matches(Path.of(pathStr));
+		Result<Void> result = pathConfig.get().matches(pathStr);
 		if (result.isError()) {
 			return Result.error("Path constraint failed: " + result.errorOrThrow());
 		}
@@ -1072,5 +1073,314 @@ public final class NetworkMatchers {
 			params.computeIfAbsent(key, _ -> new ArrayList<>()).add(value);
 		}
 		return params;
+	}
+	
+	/**
+	 * Calculates the depth of a URI path (number of segments).<br>
+	 *
+	 * @param pathStr The path string to analyze
+	 * @return The number of path segments
+	 * @throws NullPointerException If the path string is null
+	 */
+	public static int calculateUriPathDepth(@NonNull String pathStr) {
+		Objects.requireNonNull(pathStr, "URI path string must not be null");
+		if (pathStr.isEmpty()) {
+			return 0;
+		}
+		String normalized = pathStr;
+		if (normalized.startsWith("/")) {
+			normalized = normalized.substring(1);
+		}
+		if (normalized.endsWith("/")) {
+			normalized = normalized.substring(0, normalized.length() - 1);
+		}
+		if (normalized.isEmpty()) {
+			return 0;
+		}
+		return normalized.split("/").length;
+	}
+	
+	/**
+	 * Gets the segments of a URI path.<br>
+	 *
+	 * @param pathStr The path string to split
+	 * @return An array of path segments
+	 * @throws NullPointerException If the path string is null
+	 */
+	public static @NonNull String[] getUriPathSegments(@NonNull String pathStr) {
+		Objects.requireNonNull(pathStr, "URI path string must not be null");
+		if (pathStr.isEmpty()) {
+			return ArrayUtils.EMPTY_STRING_ARRAY;
+		}
+		
+		String normalized = pathStr;
+		if (normalized.startsWith("/")) {
+			normalized = normalized.substring(1);
+		}
+		if (normalized.endsWith("/")) {
+			normalized = normalized.substring(0, normalized.length() - 1);
+		}
+		if (normalized.isEmpty()) {
+			return ArrayUtils.EMPTY_STRING_ARRAY;
+		}
+		return normalized.split("/");
+	}
+	
+	/**
+	 * Gets the file name (last segment) of a URI path.<br>
+	 *
+	 * @param pathStr The path string
+	 * @return The file name, or empty if the path has no segments
+	 * @throws NullPointerException If the path string is null
+	 */
+	public static @NonNull Optional<String> getUriPathFileName(@NonNull String pathStr) {
+		Objects.requireNonNull(pathStr, "URI path string must not be null");
+		
+		String[] segments = getUriPathSegments(pathStr);
+		if (segments.length == 0) {
+			return Optional.empty();
+		}
+		return Optional.of(segments[segments.length - 1]);
+	}
+	
+	/**
+	 * Gets the extension of a file name.<br>
+	 *
+	 * @param fileName The file name
+	 * @return The extension without the dot, or empty if no extension
+	 * @throws NullPointerException If the file name is null
+	 */
+	public static @NonNull Optional<String> getUriPathExtension(@NonNull String fileName) {
+		Objects.requireNonNull(fileName, "File name must not be null");
+		
+		int dotIndex = fileName.lastIndexOf('.');
+		if (dotIndex < 0 || dotIndex == fileName.length() - 1) {
+			return Optional.empty();
+		}
+		return Optional.of(fileName.substring(dotIndex + 1));
+	}
+	
+	/**
+	 * Checks if a URI path is normalized (contains no '.' or '..' segments).<br>
+	 *
+	 * @param pathStr The path string to check
+	 * @return true if the path is normalized
+	 * @throws NullPointerException If the path string is null
+	 */
+	public static boolean isUriPathNormalized(@NonNull String pathStr) {
+		Objects.requireNonNull(pathStr, "URI path string must not be null");
+		
+		for (String segment : getUriPathSegments(pathStr)) {
+			if (".".equals(segment) || "..".equals(segment)) {
+				return false;
+			}
+		}
+		return true;
+	}
+	
+	/**
+	 * Normalizes a URI path by removing '.' and '..' segments.<br>
+	 *
+	 * @param pathStr The path string to normalize
+	 * @return The normalized path
+	 * @throws NullPointerException If the path string is null
+	 */
+	public static @NonNull String normalizeUriPath(@NonNull String pathStr) {
+		Objects.requireNonNull(pathStr, "URI path string must not be null");
+		
+		List<String> result = new ArrayList<>();
+		for (String segment : getUriPathSegments(pathStr)) {
+			if (".".equals(segment)) {
+				continue;
+			} else if ("..".equals(segment)) {
+				if (!result.isEmpty()) {
+					result.removeLast();
+				}
+			} else {
+				result.add(segment);
+			}
+		}
+		
+		String normalized = String.join("/", result);
+		return pathStr.startsWith("/") ? "/" + normalized : normalized;
+	}
+	//endregion
+	
+	/**
+	 * Validates a URI path string against a string constraint config.<br>
+	 *
+	 * @param value The path to validate
+	 * @param pathConfig The string constraint config for path validation
+	 * @return A successful result if the constraint is satisfied or not present
+	 * @throws NullPointerException If any parameter is null
+	 */
+	public static @NonNull Result<Void> matchUriPathStringConfig(@NonNull String value, @NonNull Optional<StringConstraintConfig> pathConfig) {
+		Objects.requireNonNull(value, "URI path must not be null");
+		Objects.requireNonNull(pathConfig, "URI path config constraint must not be null");
+		if (pathConfig.isEmpty()) {
+			return Result.success();
+		}
+		
+		Result<Void> result = pathConfig.get().matches(value);
+		if (result.isError()) {
+			return Result.error("Path constraint failed: " + result.errorOrThrow());
+		}
+		return Result.success();
+	}
+	
+	/**
+	 * Validates each segment of a URI path against a string constraint config.<br>
+	 *
+	 * @param value The path to validate
+	 * @param segmentConfig The string constraint config for segment validation
+	 * @return A successful result if the constraint is satisfied or not present
+	 * @throws NullPointerException If any parameter is null
+	 */
+	public static @NonNull Result<Void> matchUriPathSegmentConfig(@NonNull String value, @NonNull Optional<StringConstraintConfig> segmentConfig) {
+		Objects.requireNonNull(value, "URI path must not be null");
+		Objects.requireNonNull(segmentConfig, "URI path segment config constraint must not be null");
+		if (segmentConfig.isEmpty()) {
+			return Result.success();
+		}
+		
+		String[] segments = getUriPathSegments(value);
+		for (String segment : segments) {
+			Result<Void> result = segmentConfig.get().matches(segment);
+			if (result.isError()) {
+				return Result.error("Segment '" + segment + "' constraint failed: " + result.errorOrThrow());
+			}
+		}
+		return Result.success();
+	}
+	
+	/**
+	 * Validates a URI path's file name against a string constraint config.<br>
+	 *
+	 * @param value The path to validate
+	 * @param fileConfig The string constraint config for file name validation
+	 * @return A successful result if the constraint is satisfied or not present
+	 * @throws NullPointerException If any parameter is null
+	 */
+	public static @NonNull Result<Void> matchUriPathFileNameConfig(@NonNull String value, @NonNull Optional<StringConstraintConfig> fileConfig) {
+		Objects.requireNonNull(value, "URI path must not be null");
+		Objects.requireNonNull(fileConfig, "URI path file name config constraint must not be null");
+		if (fileConfig.isEmpty()) {
+			return Result.success();
+		}
+		
+		Optional<String> fileName = getUriPathFileName(value);
+		if (fileName.isEmpty()) {
+			return Result.error("URI path '" + value + "' has no file name");
+		}
+		
+		Result<Void> result = fileConfig.get().matches(fileName.get());
+		if (result.isError()) {
+			return Result.error("File constraint failed: " + result.errorOrThrow());
+		}
+		return Result.success();
+	}
+	
+	/**
+	 * Validates that a URI path has no file extension.<br>
+	 *
+	 * @param value The path to validate
+	 * @param withoutExtension The without extension constraint flag
+	 * @return A successful result if the constraint is satisfied or not present
+	 * @throws NullPointerException If any parameter is null
+	 */
+	public static @NonNull Result<Void> matchUriPathWithoutExtension(@NonNull String value, @NonNull Optional<Unit> withoutExtension) {
+		Objects.requireNonNull(value, "URI path must not be null");
+		Objects.requireNonNull(withoutExtension, "URI path without extension constraint must not be null");
+		if (withoutExtension.isEmpty()) {
+			return Result.success();
+		}
+		
+		Optional<String> fileName = getUriPathFileName(value);
+		if (fileName.isPresent() && fileName.get().contains(".")) {
+			return Result.error("URI path '" + value + "' must not have an extension");
+		}
+		return Result.success();
+	}
+	
+	/**
+	 * Validates a URI path's file extension against a string constraint config.<br>
+	 *
+	 * @param value The path to validate
+	 * @param extensionConfig The string constraint config for extension validation
+	 * @return A successful result if the constraint is satisfied or not present
+	 * @throws NullPointerException If any parameter is null
+	 */
+	public static @NonNull Result<Void> matchUriPathExtensionConfig(@NonNull String value, @NonNull Optional<StringConstraintConfig> extensionConfig) {
+		Objects.requireNonNull(value, "URI path must not be null");
+		Objects.requireNonNull(extensionConfig, "URI path extension config constraint must not be null");
+		if (extensionConfig.isEmpty()) {
+			return Result.success();
+		}
+		
+		Optional<String> fileName = getUriPathFileName(value);
+		if (fileName.isEmpty()) {
+			return Result.error("URI path '" + value + "' has no file name for extension check");
+		}
+		
+		Optional<String> extension = getUriPathExtension(fileName.get());
+		if (extension.isEmpty()) {
+			return Result.error("URI path '" + value + "' has no extension");
+		}
+		
+		Result<Void> result = extensionConfig.get().matches(extension.get());
+		if (result.isError()) {
+			return Result.error("Extension constraint failed: " + result.errorOrThrow());
+		}
+		return Result.success();
+	}
+	
+	/**
+	 * Validates that a URI path is an ancestor of all specified paths.<br>
+	 *
+	 * @param value The path to validate
+	 * @param ancestorOf The set of paths that the value must be an ancestor of
+	 * @return A successful result if the constraint is satisfied or not present
+	 * @throws NullPointerException If any parameter is null
+	 */
+	public static @NonNull Result<Void> matchUriPathAncestorOf(@NonNull String value, @NonNull Optional<Set<String>> ancestorOf) {
+		Objects.requireNonNull(value, "URI path must not be null");
+		Objects.requireNonNull(ancestorOf, "URI path ancestor of constraint must not be null");
+		if (ancestorOf.isEmpty()) {
+			return Result.success();
+		}
+		
+		String normalizedValue = normalizeUriPath(value);
+		for (String pathStr : ancestorOf.get()) {
+			String normalizedTarget = normalizeUriPath(pathStr);
+			if (!normalizedTarget.startsWith(normalizedValue)) {
+				return Result.error("URI path '" + value + "' must be ancestor of '" + pathStr + "'");
+			}
+		}
+		return Result.success();
+	}
+	
+	/**
+	 * Validates that a URI path is a descendant of all specified paths.<br>
+	 *
+	 * @param value The path to validate
+	 * @param descendantOf The set of paths that the value must be a descendant of
+	 * @return A successful result if the constraint is satisfied or not present
+	 * @throws NullPointerException If any parameter is null
+	 */
+	public static @NonNull Result<Void> matchUriPathDescendantOf(@NonNull String value, @NonNull Optional<Set<String>> descendantOf) {
+		Objects.requireNonNull(value, "URI path must not be null");
+		Objects.requireNonNull(descendantOf, "URI path descendant of constraint must not be null");
+		if (descendantOf.isEmpty()) {
+			return Result.success();
+		}
+		
+		String normalizedValue = normalizeUriPath(value);
+		for (String pathStr : descendantOf.get()) {
+			String normalizedTarget = normalizeUriPath(pathStr);
+			if (!normalizedValue.startsWith(normalizedTarget)) {
+				return Result.error("URI path '" + value + "' must be descendant of '" + pathStr + "'");
+			}
+		}
+		return Result.success();
 	}
 }
