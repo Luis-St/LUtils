@@ -18,6 +18,7 @@
 
 package net.luis.utils.io.codec;
 
+import net.luis.utils.io.codec.constraint.config.ConstraintConfig;
 import net.luis.utils.util.result.Result;
 import org.jspecify.annotations.NonNull;
 
@@ -78,7 +79,13 @@ public abstract non-sealed class AbstractCodec<C, T> implements Codec<C> {
 	 * @return The result of the constraint check
 	 * @throws NullPointerException If the value is null
 	 */
+	@SuppressWarnings("unchecked")
 	protected @NonNull Result<Void> checkConstraints(@NonNull C value) {
+		if (this.constraintConfig.isPresent() && this.constraintConfig.get() instanceof ConstraintConfig<?>) {
+			ConstraintConfig<C> config = (ConstraintConfig<C>) this.constraintConfig.get();
+			
+			return config.matches(value);
+		}
 		return Result.success();
 	}
 }
