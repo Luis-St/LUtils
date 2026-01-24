@@ -22,8 +22,7 @@ import net.luis.utils.util.Pair;
 import net.luis.utils.util.result.Result;
 import org.junit.jupiter.api.Test;
 
-import java.time.Duration;
-import java.time.Period;
+import java.time.*;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -304,5 +303,79 @@ class TemporalMatchersTest {
 		assertThrows(NullPointerException.class, () -> TemporalMatchers.matchPeriodRange(null, Optional.empty(), Optional.empty()));
 		assertThrows(NullPointerException.class, () -> TemporalMatchers.matchPeriodRange(Period.ZERO, null, Optional.empty()));
 		assertThrows(NullPointerException.class, () -> TemporalMatchers.matchPeriodRange(Period.ZERO, Optional.empty(), null));
+	}
+	
+	@Test
+	void matchZoneOffsetSignWithAllEmpty() {
+		Result<Void> result = TemporalMatchers.matchZoneOffsetSign(ZoneOffset.ofHours(1), Optional.empty(), Optional.empty(), Optional.empty());
+		assertTrue(result.isSuccess());
+	}
+	
+	@Test
+	void matchZoneOffsetSignWithPositive() {
+		Result<Void> result = TemporalMatchers.matchZoneOffsetSign(ZoneOffset.ofHours(1), Optional.of(false), Optional.empty(), Optional.empty());
+		assertTrue(result.isSuccess());
+		Result<Void> failResult = TemporalMatchers.matchZoneOffsetSign(ZoneOffset.ofHours(-1), Optional.of(false), Optional.empty(), Optional.empty());
+		assertTrue(failResult.isError());
+		assertTrue(failResult.errorOrThrow().contains("must be positive"));
+	}
+	
+	@Test
+	void matchZoneOffsetSignWithNegative() {
+		Result<Void> result = TemporalMatchers.matchZoneOffsetSign(ZoneOffset.ofHours(-1), Optional.empty(), Optional.of(false), Optional.empty());
+		assertTrue(result.isSuccess());
+		Result<Void> failResult = TemporalMatchers.matchZoneOffsetSign(ZoneOffset.ofHours(1), Optional.empty(), Optional.of(false), Optional.empty());
+		assertTrue(failResult.isError());
+		assertTrue(failResult.errorOrThrow().contains("must be negative"));
+	}
+	
+	@Test
+	void matchZoneOffsetSignWithZero() {
+		Result<Void> result = TemporalMatchers.matchZoneOffsetSign(ZoneOffset.UTC, Optional.empty(), Optional.empty(), Optional.of(false));
+		assertTrue(result.isSuccess());
+		Result<Void> failResult = TemporalMatchers.matchZoneOffsetSign(ZoneOffset.ofHours(1), Optional.empty(), Optional.empty(), Optional.of(false));
+		assertTrue(failResult.isError());
+		assertTrue(failResult.errorOrThrow().contains("must be zero"));
+	}
+	
+	@Test
+	void matchZoneOffsetSignWithNonPositive() {
+		Result<Void> result = TemporalMatchers.matchZoneOffsetSign(ZoneOffset.ofHours(-1), Optional.of(true), Optional.empty(), Optional.empty());
+		assertTrue(result.isSuccess());
+		Result<Void> zeroResult = TemporalMatchers.matchZoneOffsetSign(ZoneOffset.UTC, Optional.of(true), Optional.empty(), Optional.empty());
+		assertTrue(zeroResult.isSuccess());
+		Result<Void> failResult = TemporalMatchers.matchZoneOffsetSign(ZoneOffset.ofHours(1), Optional.of(true), Optional.empty(), Optional.empty());
+		assertTrue(failResult.isError());
+		assertTrue(failResult.errorOrThrow().contains("must be non-positive"));
+	}
+	
+	@Test
+	void matchZoneOffsetSignWithNonNegative() {
+		Result<Void> result = TemporalMatchers.matchZoneOffsetSign(ZoneOffset.ofHours(1), Optional.empty(), Optional.of(true), Optional.empty());
+		assertTrue(result.isSuccess());
+		Result<Void> zeroResult = TemporalMatchers.matchZoneOffsetSign(ZoneOffset.UTC, Optional.empty(), Optional.of(true), Optional.empty());
+		assertTrue(zeroResult.isSuccess());
+		Result<Void> failResult = TemporalMatchers.matchZoneOffsetSign(ZoneOffset.ofHours(-1), Optional.empty(), Optional.of(true), Optional.empty());
+		assertTrue(failResult.isError());
+		assertTrue(failResult.errorOrThrow().contains("must be non-negative"));
+	}
+	
+	@Test
+	void matchZoneOffsetSignWithNonZero() {
+		Result<Void> result = TemporalMatchers.matchZoneOffsetSign(ZoneOffset.ofHours(1), Optional.empty(), Optional.empty(), Optional.of(true));
+		assertTrue(result.isSuccess());
+		Result<Void> negResult = TemporalMatchers.matchZoneOffsetSign(ZoneOffset.ofHours(-1), Optional.empty(), Optional.empty(), Optional.of(true));
+		assertTrue(negResult.isSuccess());
+		Result<Void> failResult = TemporalMatchers.matchZoneOffsetSign(ZoneOffset.UTC, Optional.empty(), Optional.empty(), Optional.of(true));
+		assertTrue(failResult.isError());
+		assertTrue(failResult.errorOrThrow().contains("must be non-zero"));
+	}
+	
+	@Test
+	void matchZoneOffsetSignWithNullChecks() {
+		assertThrows(NullPointerException.class, () -> TemporalMatchers.matchZoneOffsetSign(null, Optional.empty(), Optional.empty(), Optional.empty()));
+		assertThrows(NullPointerException.class, () -> TemporalMatchers.matchZoneOffsetSign(ZoneOffset.UTC, null, Optional.empty(), Optional.empty()));
+		assertThrows(NullPointerException.class, () -> TemporalMatchers.matchZoneOffsetSign(ZoneOffset.UTC, Optional.empty(), null, Optional.empty()));
+		assertThrows(NullPointerException.class, () -> TemporalMatchers.matchZoneOffsetSign(ZoneOffset.UTC, Optional.empty(), Optional.empty(), null));
 	}
 }

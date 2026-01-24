@@ -350,7 +350,7 @@ public record QueryConstraintConfig(
 		return ConstraintMatchers.allOf(
 			() -> ConstraintMatchers.matchEqualTo(value, this.equalTo),
 			() -> ConstraintMatchers.matchIn(value, this.in),
-			() -> ConstraintMatchers.matchExtractedValue(value, this.size, v -> v.size(), "Size"),
+			() -> ConstraintMatchers.matchExtractedValue(value, this.size, Map::size, "Size"),
 			() -> ConstraintMatchers.matchRequiredKeys(value.keySet(), this.requiredKeys, "Query"),
 			() -> ConstraintMatchers.matchForbiddenKeys(value.keySet(), this.forbiddenKeys, "Query"),
 			() -> ConstraintMatchers.matchAllowedKeys(value.keySet(), this.allowedKeys, "Query"),

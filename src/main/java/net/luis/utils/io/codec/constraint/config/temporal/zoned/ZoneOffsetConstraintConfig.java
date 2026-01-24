@@ -18,10 +18,11 @@
 
 package net.luis.utils.io.codec.constraint.config.temporal.zoned;
 
-import net.luis.utils.io.codec.constraint.core.Constraint;
 import net.luis.utils.io.codec.constraint.config.ConstraintConfig;
 import net.luis.utils.io.codec.constraint.config.numeric.NumericConstraintConfig;
+import net.luis.utils.io.codec.constraint.core.Constraint;
 import net.luis.utils.io.codec.constraint_new.config.matcher.ConstraintMatchers;
+import net.luis.utils.io.codec.constraint_new.config.matcher.TemporalMatchers;
 import net.luis.utils.util.Pair;
 import net.luis.utils.util.result.Result;
 import org.jetbrains.annotations.NotNull;
@@ -325,36 +326,12 @@ public record ZoneOffsetConstraintConfig(
 	public @NotNull Result<Void> matches(@NonNull ZoneOffset value) {
 		Objects.requireNonNull(value, "Value must not be null");
 		
-		int totalSeconds = value.getTotalSeconds();
 		return ConstraintMatchers.allOf(
 			() -> ConstraintMatchers.matchEqualTo(value, this.equalTo),
 			() -> ConstraintMatchers.matchIn(value, this.in),
 			() -> ConstraintMatchers.matchRange(value, this.min, this.max),
-			() -> this.positive.map(nonPositive -> {
-				if (!nonPositive && totalSeconds <= 0) {
-					return Result.<Void>error("Zone offset '" + value + "' must be positive");
-				} else if (nonPositive && totalSeconds > 0) {
-					return Result.<Void>error("Zone offset '" + value + "' must be non-positive");
-				}
-				return Result.<Void>success();
-			}).orElseGet(Result::success),
-			() -> this.negative.map(nonNegative -> {
-				if (!nonNegative && totalSeconds >= 0) {
-					return Result.<Void>error("Zone offset '" + value + "' must be negative");
-				} else if (nonNegative && totalSeconds < 0) {
-					return Result.<Void>error("Zone offset '" + value + "' must be non-negative");
-				}
-				return Result.<Void>success();
-			}).orElseGet(Result::success),
-			() -> this.zero.map(nonZero -> {
-				if (!nonZero && totalSeconds != 0) {
-					return Result.<Void>error("Zone offset '" + value + "' must be zero (UTC)");
-				} else if (nonZero && totalSeconds == 0) {
-					return Result.<Void>error("Zone offset '" + value + "' must be non-zero");
-				}
-				return Result.<Void>success();
-			}).orElseGet(Result::success),
-			() -> ConstraintMatchers.matchNestedConfig(totalSeconds / 3600, this.hour, "Hours"),
+			() -> TemporalMatchers.matchZoneOffsetSign(value, this.positive, this.negative, this.zero),
+			() -> ConstraintMatchers.matchNestedConfig(value.getTotalSeconds() / 3600, this.hour, "Hours"),
 			() -> ConstraintMatchers.matchCustom(value, this.custom)
 		);
 	}

@@ -424,8 +424,8 @@ public record PathConstraintConfig(
 		return ConstraintMatchers.allOf(
 			() -> ConstraintMatchers.matchEqualTo(value, this.equalTo),
 			() -> ConstraintMatchers.matchIn(value, this.in),
-			() -> this.length.map(config -> config.matches(value.toString().length())).orElse(Result.success()),
-			() -> this.depth.map(config -> config.matches(value.getNameCount())).orElse(Result.success()),
+			() -> ConstraintMatchers.matchExtractedValue(value, this.length, p -> p.toString().length(), "Length"),
+			() -> ConstraintMatchers.matchExtractedValue(value, this.depth, Path::getNameCount, "Depth"),
 			() -> ConstraintMatchers.matchFlag(value, this.absolute, Path::isAbsolute, "Path '" + value + "' must be absolute"),
 			() -> ConstraintMatchers.matchFlag(value, this.relative, p -> !p.isAbsolute(), "Path '" + value + "' must be relative"),
 			() -> ConstraintMatchers.matchFlag(value, this.normalized, p -> p.equals(p.normalize()), "Path '" + value + "' must be normalized"),

@@ -22,8 +22,7 @@ import net.luis.utils.util.Pair;
 import net.luis.utils.util.result.Result;
 import org.jspecify.annotations.NonNull;
 
-import java.time.Duration;
-import java.time.Period;
+import java.time.*;
 import java.util.Objects;
 import java.util.Optional;
 
@@ -292,6 +291,73 @@ public final class TemporalMatchers {
 			} else {
 				if (cmp >= 0) {
 					return Result.error("Period '" + value + "' must be less than " + maxPeriod);
+				}
+			}
+		}
+		return Result.success();
+	}
+	
+	/**
+	 * Validates sign constraints (positive/negative/zero) for a ZoneOffset value.<br>
+	 * <p>
+	 *     The boolean flags use inverted semantics:<br>
+	 *     - positive: false=must be positive, true=must be non-positive<br>
+	 *     - negative: false=must be negative, true=must be non-negative<br>
+	 *     - zero: false=must be zero (UTC), true=must be non-zero
+	 * </p>
+	 *
+	 * @param value The ZoneOffset value to validate
+	 * @param positive The positive constraint flag
+	 * @param negative The negative constraint flag
+	 * @param zero The zero constraint flag
+	 * @return A successful result if all present constraints are satisfied
+	 * @throws NullPointerException If any parameter is null
+	 */
+	public static @NonNull Result<Void> matchZoneOffsetSign(
+		@NonNull ZoneOffset value, @NonNull Optional<Boolean> positive, @NonNull Optional<Boolean> negative, @NonNull Optional<Boolean> zero
+	) {
+		Objects.requireNonNull(value, "Zone offset must not be null");
+		Objects.requireNonNull(positive, "Positive constraint must not be null");
+		Objects.requireNonNull(negative, "Negative constraint must not be null");
+		Objects.requireNonNull(zero, "Zero constraint must not be null");
+		
+		int totalSeconds = value.getTotalSeconds();
+		
+		if (positive.isPresent()) {
+			boolean nonPositive = positive.get();
+			if (nonPositive) {
+				if (totalSeconds > 0) {
+					return Result.error("Zone offset '" + value + "' must be non-positive");
+				}
+			} else {
+				if (totalSeconds <= 0) {
+					return Result.error("Zone offset '" + value + "' must be positive");
+				}
+			}
+		}
+		
+		if (negative.isPresent()) {
+			boolean nonNegative = negative.get();
+			if (nonNegative) {
+				if (totalSeconds < 0) {
+					return Result.error("Zone offset '" + value + "' must be non-negative");
+				}
+			} else {
+				if (totalSeconds >= 0) {
+					return Result.error("Zone offset '" + value + "' must be negative");
+				}
+			}
+		}
+		
+		if (zero.isPresent()) {
+			boolean nonZero = zero.get();
+			if (nonZero) {
+				if (totalSeconds == 0) {
+					return Result.error("Zone offset '" + value + "' must be non-zero");
+				}
+			} else {
+				if (totalSeconds != 0) {
+					return Result.error("Zone offset '" + value + "' must be zero (UTC)");
 				}
 			}
 		}
