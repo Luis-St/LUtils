@@ -16,7 +16,7 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-package net.luis.utils.io.codec.constraint_new.core;
+package net.luis.utils.io.codec.constraint.util;
 
 import net.luis.utils.io.codec.constraint_new.builder.IpConstraintBuilder;
 import net.luis.utils.io.codec.constraint.merged.io.IpConstraint;

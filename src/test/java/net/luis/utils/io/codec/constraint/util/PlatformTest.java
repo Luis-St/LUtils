@@ -16,42 +16,42 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-package net.luis.utils.io.codec.constraint_new.core;
+package net.luis.utils.io.codec.constraint.util;
 
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
- * Test class for {@link UUIDVariant}.<br>
+ * Test class for {@link Platform}.<br>
  *
  * @author Luis-St
  */
-class UUIDVariantTest {
+class PlatformTest {
 	
 	@Test
 	void valuesContainsAllConstants() {
-		UUIDVariant[] values = UUIDVariant.values();
+		Platform[] values = Platform.values();
 		assertEquals(4, values.length);
-		assertEquals(UUIDVariant.NFC, values[0]);
-		assertEquals(UUIDVariant.RFC_4122, values[1]);
-		assertEquals(UUIDVariant.MICROSOFT, values[2]);
-		assertEquals(UUIDVariant.RESERVED, values[3]);
+		assertEquals(Platform.WINDOWS, values[0]);
+		assertEquals(Platform.MAC, values[1]);
+		assertEquals(Platform.LINUX, values[2]);
+		assertEquals(Platform.POSIX, values[3]);
 	}
 	
 	@Test
 	void valueOfReturnsCorrectConstant() {
-		assertEquals(UUIDVariant.NFC, UUIDVariant.valueOf("NFC"));
-		assertEquals(UUIDVariant.RFC_4122, UUIDVariant.valueOf("RFC_4122"));
-		assertEquals(UUIDVariant.MICROSOFT, UUIDVariant.valueOf("MICROSOFT"));
-		assertEquals(UUIDVariant.RESERVED, UUIDVariant.valueOf("RESERVED"));
+		assertEquals(Platform.WINDOWS, Platform.valueOf("WINDOWS"));
+		assertEquals(Platform.MAC, Platform.valueOf("MAC"));
+		assertEquals(Platform.LINUX, Platform.valueOf("LINUX"));
+		assertEquals(Platform.POSIX, Platform.valueOf("POSIX"));
 	}
 	
 	@Test
 	void ordinalValues() {
-		assertEquals(0, UUIDVariant.NFC.ordinal());
-		assertEquals(1, UUIDVariant.RFC_4122.ordinal());
-		assertEquals(2, UUIDVariant.MICROSOFT.ordinal());
-		assertEquals(3, UUIDVariant.RESERVED.ordinal());
+		assertEquals(0, Platform.WINDOWS.ordinal());
+		assertEquals(1, Platform.MAC.ordinal());
+		assertEquals(2, Platform.LINUX.ordinal());
+		assertEquals(3, Platform.POSIX.ordinal());
 	}
 }

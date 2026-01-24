@@ -21,7 +21,7 @@ package net.luis.utils.io.codec.constraint_new.builder;
 import net.luis.utils.io.codec.constraint.config.io.PathConstraintConfig;
 import net.luis.utils.io.codec.constraint.core.Constraint;
 import net.luis.utils.io.codec.constraint.config.LengthConstraintConfig;
-import net.luis.utils.io.codec.constraint_new.core.Platform;
+import net.luis.utils.io.codec.constraint.util.Platform;
 import net.luis.utils.util.result.Result;
 import org.junit.jupiter.api.Test;
 

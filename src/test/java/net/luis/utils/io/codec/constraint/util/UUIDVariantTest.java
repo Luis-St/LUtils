@@ -16,30 +16,42 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-package net.luis.utils.io.codec.constraint_new.core;
+package net.luis.utils.io.codec.constraint.util;
 
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
- * Test class for {@link IpVersion}.<br>
+ * Test class for {@link UUIDVariant}.<br>
  *
  * @author Luis-St
  */
-class IpVersionTest {
+class UUIDVariantTest {
 	
 	@Test
 	void valuesContainsAllConstants() {
-		IpVersion[] values = IpVersion.values();
-		assertEquals(2, values.length);
-		assertEquals(IpVersion.IPV4, values[0]);
-		assertEquals(IpVersion.IPV6, values[1]);
+		UUIDVariant[] values = UUIDVariant.values();
+		assertEquals(4, values.length);
+		assertEquals(UUIDVariant.NFC, values[0]);
+		assertEquals(UUIDVariant.RFC_4122, values[1]);
+		assertEquals(UUIDVariant.MICROSOFT, values[2]);
+		assertEquals(UUIDVariant.RESERVED, values[3]);
 	}
 	
 	@Test
 	void valueOfReturnsCorrectConstant() {
-		assertEquals(IpVersion.IPV4, IpVersion.valueOf("IPV4"));
-		assertEquals(IpVersion.IPV6, IpVersion.valueOf("IPV6"));
+		assertEquals(UUIDVariant.NFC, UUIDVariant.valueOf("NFC"));
+		assertEquals(UUIDVariant.RFC_4122, UUIDVariant.valueOf("RFC_4122"));
+		assertEquals(UUIDVariant.MICROSOFT, UUIDVariant.valueOf("MICROSOFT"));
+		assertEquals(UUIDVariant.RESERVED, UUIDVariant.valueOf("RESERVED"));
+	}
+	
+	@Test
+	void ordinalValues() {
+		assertEquals(0, UUIDVariant.NFC.ordinal());
+		assertEquals(1, UUIDVariant.RFC_4122.ordinal());
+		assertEquals(2, UUIDVariant.MICROSOFT.ordinal());
+		assertEquals(3, UUIDVariant.RESERVED.ordinal());
 	}
 }

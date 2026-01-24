@@ -20,8 +20,8 @@ package net.luis.utils.io.codec.constraint.config.io;
 
 import net.luis.utils.io.codec.constraint.config.EnumConstraintConfig;
 import net.luis.utils.io.codec.constraint.config.LengthConstraintConfig;
-import net.luis.utils.io.codec.constraint_new.core.IpAddressType;
-import net.luis.utils.io.codec.constraint_new.core.IpVersion;
+import net.luis.utils.io.codec.constraint.util.IpAddressType;
+import net.luis.utils.io.codec.constraint.util.IpVersion;
 import net.luis.utils.util.Pair;
 import net.luis.utils.util.result.Result;
 import org.junit.jupiter.api.Test;

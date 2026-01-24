@@ -20,7 +20,7 @@ package net.luis.utils.io.codec.constraint.config.matcher;
 
 import net.luis.utils.io.codec.constraint.config.*;
 import net.luis.utils.io.codec.constraint.config.io.*;
-import net.luis.utils.io.codec.constraint_new.core.*;
+import net.luis.utils.io.codec.constraint.util.*;
 import net.luis.utils.util.Pair;
 import net.luis.utils.util.result.Result;
 import org.junit.jupiter.api.Test;

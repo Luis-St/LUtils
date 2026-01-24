@@ -16,28 +16,34 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-package net.luis.utils.io.codec.constraint_new.core;
+package net.luis.utils.io.codec.constraint.util;
+
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 /**
- * A singleton class representing a unit value.<br>
- * Used by the constraint configs to represent the presence of a constraint without any associated data.<br>
+ * Test class for {@link Unit}.<br>
  *
  * @author Luis-St
  */
-public final class Unit {
+class UnitTest {
 	
-	/**
-	 * The singleton instance of the unit value.<br>
-	 */
-	public static final Unit INSTANCE = new Unit();
+	@Test
+	void instanceIsNotNull() {
+		assertNotNull(Unit.INSTANCE);
+	}
 	
-	/**
-	 * Private constructor to prevent instantiation.<br>
-	 */
-	private Unit() {}
+	@Test
+	void instanceIsSingleton() {
+		Unit first = Unit.INSTANCE;
+		Unit second = Unit.INSTANCE;
+		assertSame(first, second);
+		assertEquals(first, second);
+	}
 	
-	@Override
-	public String toString() {
-		return "Unit";
+	@Test
+	void toStringReturnsUnit() {
+		assertEquals("Unit", Unit.INSTANCE.toString());
 	}
 }

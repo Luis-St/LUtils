@@ -21,7 +21,7 @@ package net.luis.utils.io.codec.constraint_new.builder;
 import net.luis.utils.io.codec.constraint.config.EnumConstraintConfig;
 import net.luis.utils.io.codec.constraint.config.UUIDConstraintConfig;
 import net.luis.utils.io.codec.constraint.config.numeric.NumericConstraintConfig;
-import net.luis.utils.io.codec.constraint_new.core.UUIDVariant;
+import net.luis.utils.io.codec.constraint.util.UUIDVariant;
 import net.luis.utils.util.Pair;
 import net.luis.utils.util.result.Result;
 import org.junit.jupiter.api.Test;

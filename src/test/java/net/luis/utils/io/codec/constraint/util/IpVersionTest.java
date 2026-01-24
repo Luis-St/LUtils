@@ -16,34 +16,30 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-package net.luis.utils.io.codec.constraint_new.core;
+package net.luis.utils.io.codec.constraint.util;
 
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
- * Test class for {@link Unit}.<br>
+ * Test class for {@link IpVersion}.<br>
  *
  * @author Luis-St
  */
-class UnitTest {
+class IpVersionTest {
 	
 	@Test
-	void instanceIsNotNull() {
-		assertNotNull(Unit.INSTANCE);
+	void valuesContainsAllConstants() {
+		IpVersion[] values = IpVersion.values();
+		assertEquals(2, values.length);
+		assertEquals(IpVersion.IPV4, values[0]);
+		assertEquals(IpVersion.IPV6, values[1]);
 	}
 	
 	@Test
-	void instanceIsSingleton() {
-		Unit first = Unit.INSTANCE;
-		Unit second = Unit.INSTANCE;
-		assertSame(first, second);
-		assertEquals(first, second);
-	}
-	
-	@Test
-	void toStringReturnsUnit() {
-		assertEquals("Unit", Unit.INSTANCE.toString());
+	void valueOfReturnsCorrectConstant() {
+		assertEquals(IpVersion.IPV4, IpVersion.valueOf("IPV4"));
+		assertEquals(IpVersion.IPV6, IpVersion.valueOf("IPV6"));
 	}
 }

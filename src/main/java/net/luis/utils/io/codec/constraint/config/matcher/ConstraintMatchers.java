@@ -21,7 +21,7 @@ package net.luis.utils.io.codec.constraint.config.matcher;
 import net.luis.utils.io.codec.constraint.config.ConstraintConfig;
 import net.luis.utils.io.codec.constraint.config.numeric.NumericConstraintConfig;
 import net.luis.utils.io.codec.constraint.core.Constraint;
-import net.luis.utils.io.codec.constraint_new.core.Unit;
+import net.luis.utils.io.codec.constraint.util.Unit;
 import net.luis.utils.util.Pair;
 import net.luis.utils.util.result.Result;
 import org.jspecify.annotations.NonNull;

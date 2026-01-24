@@ -20,8 +20,8 @@ package net.luis.utils.io.codec.constraint.merged.io;
 
 import net.luis.utils.io.codec.constraint.core.CharSequenceConstraint;
 import net.luis.utils.io.codec.constraint_new.builder.EnumConstraintBuilder;
-import net.luis.utils.io.codec.constraint_new.core.IpAddressType;
-import net.luis.utils.io.codec.constraint_new.core.IpVersion;
+import net.luis.utils.io.codec.constraint.util.IpAddressType;
+import net.luis.utils.io.codec.constraint.util.IpVersion;
 import org.jspecify.annotations.NonNull;
 
 import java.util.Collection;

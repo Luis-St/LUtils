@@ -22,7 +22,7 @@ import net.luis.utils.io.codec.constraint.core.Constraint;
 import net.luis.utils.io.codec.constraint.config.ConstraintConfig;
 import net.luis.utils.io.codec.constraint.config.StringConstraintConfig;
 import net.luis.utils.io.codec.constraint.config.matcher.ConstraintMatchers;
-import net.luis.utils.io.codec.constraint_new.core.Unit;
+import net.luis.utils.io.codec.constraint.util.Unit;
 import net.luis.utils.util.Pair;
 import net.luis.utils.util.result.Result;
 import org.jetbrains.annotations.NotNull;

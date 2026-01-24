@@ -20,7 +20,7 @@ package net.luis.utils.io.codec.constraint_new.builder;
 
 import net.luis.utils.io.codec.constraint.core.Constraint;
 import net.luis.utils.io.codec.constraint.config.io.PortConstraintConfig;
-import net.luis.utils.io.codec.constraint_new.core.PortRange;
+import net.luis.utils.io.codec.constraint.util.PortRange;
 import net.luis.utils.io.codec.constraint.merged.io.PortConstraint;
 import org.jspecify.annotations.NonNull;
 
