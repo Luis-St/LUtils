@@ -25,7 +25,7 @@ import net.luis.utils.util.Pair;
 import net.luis.utils.util.result.Result;
 import org.junit.jupiter.api.Test;
 
-import java.net.URI;
+import java.net.*;
 import java.nio.file.Path;
 import java.util.*;
 import java.util.regex.Pattern;
@@ -1064,22 +1064,22 @@ class IOMatchersTest {
 	void parseQueryWithNullChecks() {
 		assertThrows(NullPointerException.class, () -> IOMatchers.parseQuery(null));
 	}
-
+	
 	// URI Path matcher tests
-
+	
 	@Test
 	void matchUriPathStringConfigWithEmptyOptional() {
 		Result<Void> result = IOMatchers.matchUriPathStringConfig("/some/path", Optional.empty());
 		assertTrue(result.isSuccess());
 	}
-
+	
 	@Test
 	void matchUriPathStringConfigWithMatch() {
 		StringConstraintConfig config = StringConstraintConfig.UNCONSTRAINED.withStartsWith("/");
 		Result<Void> result = IOMatchers.matchUriPathStringConfig("/some/path", Optional.of(config));
 		assertTrue(result.isSuccess());
 	}
-
+	
 	@Test
 	void matchUriPathStringConfigWithNoMatch() {
 		StringConstraintConfig config = StringConstraintConfig.UNCONSTRAINED.withStartsWith("/usr");
@@ -1087,26 +1087,26 @@ class IOMatchersTest {
 		assertTrue(result.isError());
 		assertTrue(result.errorOrThrow().contains("Path constraint failed"));
 	}
-
+	
 	@Test
 	void matchUriPathStringConfigWithNullChecks() {
 		assertThrows(NullPointerException.class, () -> IOMatchers.matchUriPathStringConfig(null, Optional.empty()));
 		assertThrows(NullPointerException.class, () -> IOMatchers.matchUriPathStringConfig("/some/path", null));
 	}
-
+	
 	@Test
 	void matchUriPathSegmentConfigWithEmptyOptional() {
 		Result<Void> result = IOMatchers.matchUriPathSegmentConfig("/some/path", Optional.empty());
 		assertTrue(result.isSuccess());
 	}
-
+	
 	@Test
 	void matchUriPathSegmentConfigWithMatch() {
 		StringConstraintConfig config = StringConstraintConfig.UNCONSTRAINED.withAlphabetic();
 		Result<Void> result = IOMatchers.matchUriPathSegmentConfig("/some/path", Optional.of(config));
 		assertTrue(result.isSuccess());
 	}
-
+	
 	@Test
 	void matchUriPathSegmentConfigWithNoMatch() {
 		StringConstraintConfig config = StringConstraintConfig.UNCONSTRAINED.withNumeric();
@@ -1114,26 +1114,26 @@ class IOMatchersTest {
 		assertTrue(result.isError());
 		assertTrue(result.errorOrThrow().contains("Segment"));
 	}
-
+	
 	@Test
 	void matchUriPathSegmentConfigWithNullChecks() {
 		assertThrows(NullPointerException.class, () -> IOMatchers.matchUriPathSegmentConfig(null, Optional.empty()));
 		assertThrows(NullPointerException.class, () -> IOMatchers.matchUriPathSegmentConfig("/some/path", null));
 	}
-
+	
 	@Test
 	void matchUriPathFileNameConfigWithEmptyOptional() {
 		Result<Void> result = IOMatchers.matchUriPathFileNameConfig("/some/file.txt", Optional.empty());
 		assertTrue(result.isSuccess());
 	}
-
+	
 	@Test
 	void matchUriPathFileNameConfigWithMatch() {
 		StringConstraintConfig config = StringConstraintConfig.UNCONSTRAINED.withEndsWith(".txt");
 		Result<Void> result = IOMatchers.matchUriPathFileNameConfig("/some/file.txt", Optional.of(config));
 		assertTrue(result.isSuccess());
 	}
-
+	
 	@Test
 	void matchUriPathFileNameConfigWithNoMatch() {
 		StringConstraintConfig config = StringConstraintConfig.UNCONSTRAINED.withEndsWith(".java");
@@ -1141,7 +1141,7 @@ class IOMatchersTest {
 		assertTrue(result.isError());
 		assertTrue(result.errorOrThrow().contains("File constraint failed"));
 	}
-
+	
 	@Test
 	void matchUriPathFileNameConfigWithNoFileName() {
 		StringConstraintConfig config = StringConstraintConfig.UNCONSTRAINED.withEqualTo("test");
@@ -1149,51 +1149,51 @@ class IOMatchersTest {
 		assertTrue(result.isError());
 		assertTrue(result.errorOrThrow().contains("has no file name"));
 	}
-
+	
 	@Test
 	void matchUriPathFileNameConfigWithNullChecks() {
 		assertThrows(NullPointerException.class, () -> IOMatchers.matchUriPathFileNameConfig(null, Optional.empty()));
 		assertThrows(NullPointerException.class, () -> IOMatchers.matchUriPathFileNameConfig("/some/file.txt", null));
 	}
-
+	
 	@Test
 	void matchUriPathWithoutExtensionWithEmptyOptional() {
 		Result<Void> result = IOMatchers.matchUriPathWithoutExtension("/some/file.txt", Optional.empty());
 		assertTrue(result.isSuccess());
 	}
-
+	
 	@Test
 	void matchUriPathWithoutExtensionWithNoExtension() {
 		Result<Void> result = IOMatchers.matchUriPathWithoutExtension("/some/file", Optional.of(Unit.INSTANCE));
 		assertTrue(result.isSuccess());
 	}
-
+	
 	@Test
 	void matchUriPathWithoutExtensionWithExtension() {
 		Result<Void> result = IOMatchers.matchUriPathWithoutExtension("/some/file.txt", Optional.of(Unit.INSTANCE));
 		assertTrue(result.isError());
 		assertTrue(result.errorOrThrow().contains("must not have an extension"));
 	}
-
+	
 	@Test
 	void matchUriPathWithoutExtensionWithNullChecks() {
 		assertThrows(NullPointerException.class, () -> IOMatchers.matchUriPathWithoutExtension(null, Optional.empty()));
 		assertThrows(NullPointerException.class, () -> IOMatchers.matchUriPathWithoutExtension("/some/file", null));
 	}
-
+	
 	@Test
 	void matchUriPathExtensionConfigWithEmptyOptional() {
 		Result<Void> result = IOMatchers.matchUriPathExtensionConfig("/some/file.txt", Optional.empty());
 		assertTrue(result.isSuccess());
 	}
-
+	
 	@Test
 	void matchUriPathExtensionConfigWithMatch() {
 		StringConstraintConfig config = StringConstraintConfig.UNCONSTRAINED.withEqualTo("txt");
 		Result<Void> result = IOMatchers.matchUriPathExtensionConfig("/some/file.txt", Optional.of(config));
 		assertTrue(result.isSuccess());
 	}
-
+	
 	@Test
 	void matchUriPathExtensionConfigWithNoExtension() {
 		StringConstraintConfig config = StringConstraintConfig.UNCONSTRAINED.withEqualTo("txt");
@@ -1201,7 +1201,7 @@ class IOMatchersTest {
 		assertTrue(result.isError());
 		assertTrue(result.errorOrThrow().contains("has no extension"));
 	}
-
+	
 	@Test
 	void matchUriPathExtensionConfigWithNoFileName() {
 		StringConstraintConfig config = StringConstraintConfig.UNCONSTRAINED.withEqualTo("txt");
@@ -1209,60 +1209,270 @@ class IOMatchersTest {
 		assertTrue(result.isError());
 		assertTrue(result.errorOrThrow().contains("has no file name"));
 	}
-
+	
 	@Test
 	void matchUriPathExtensionConfigWithNullChecks() {
 		assertThrows(NullPointerException.class, () -> IOMatchers.matchUriPathExtensionConfig(null, Optional.empty()));
 		assertThrows(NullPointerException.class, () -> IOMatchers.matchUriPathExtensionConfig("/some/file.txt", null));
 	}
-
+	
 	@Test
 	void matchUriPathAncestorOfWithEmptyOptional() {
 		Result<Void> result = IOMatchers.matchUriPathAncestorOf("/some", Optional.empty());
 		assertTrue(result.isSuccess());
 	}
-
+	
 	@Test
 	void matchUriPathAncestorOfWithValid() {
 		Result<Void> result = IOMatchers.matchUriPathAncestorOf("/some", Optional.of(Set.of("/some/path", "/some/other")));
 		assertTrue(result.isSuccess());
 	}
-
+	
 	@Test
 	void matchUriPathAncestorOfWithInvalid() {
 		Result<Void> result = IOMatchers.matchUriPathAncestorOf("/other", Optional.of(Set.of("/some/path")));
 		assertTrue(result.isError());
 		assertTrue(result.errorOrThrow().contains("must be ancestor of"));
 	}
-
+	
 	@Test
 	void matchUriPathAncestorOfWithNullChecks() {
 		assertThrows(NullPointerException.class, () -> IOMatchers.matchUriPathAncestorOf(null, Optional.empty()));
 		assertThrows(NullPointerException.class, () -> IOMatchers.matchUriPathAncestorOf("/some", null));
 	}
-
+	
 	@Test
 	void matchUriPathDescendantOfWithEmptyOptional() {
 		Result<Void> result = IOMatchers.matchUriPathDescendantOf("/some/path/file", Optional.empty());
 		assertTrue(result.isSuccess());
 	}
-
+	
 	@Test
 	void matchUriPathDescendantOfWithValid() {
 		Result<Void> result = IOMatchers.matchUriPathDescendantOf("/some/path/file", Optional.of(Set.of("/some", "/some/path")));
 		assertTrue(result.isSuccess());
 	}
-
+	
 	@Test
 	void matchUriPathDescendantOfWithInvalid() {
 		Result<Void> result = IOMatchers.matchUriPathDescendantOf("/other/path", Optional.of(Set.of("/some")));
 		assertTrue(result.isError());
 		assertTrue(result.errorOrThrow().contains("must be descendant of"));
 	}
-
+	
 	@Test
 	void matchUriPathDescendantOfWithNullChecks() {
 		assertThrows(NullPointerException.class, () -> IOMatchers.matchUriPathDescendantOf(null, Optional.empty()));
 		assertThrows(NullPointerException.class, () -> IOMatchers.matchUriPathDescendantOf("/some/path", null));
+	}
+	
+	@Test
+	void matchInetAddressIpVersionWithEmptyOptional() throws UnknownHostException {
+		InetAddress address = InetAddress.getByName("192.168.1.1");
+		Result<Void> result = IOMatchers.matchInetAddressIpVersion(address, Optional.empty());
+		assertTrue(result.isSuccess());
+	}
+	
+	@Test
+	void matchInetAddressIpVersionWithIpv4() throws UnknownHostException {
+		InetAddress address = InetAddress.getByName("192.168.1.1");
+		EnumConstraintConfig<IpVersion> config = EnumConstraintConfig.<IpVersion>unconstrained().withEqualTo(IpVersion.IPV4);
+		Result<Void> result = IOMatchers.matchInetAddressIpVersion(address, Optional.of(config));
+		assertTrue(result.isSuccess());
+	}
+	
+	@Test
+	void matchInetAddressIpVersionWithIpv6() throws UnknownHostException {
+		InetAddress address = InetAddress.getByName("::1");
+		EnumConstraintConfig<IpVersion> config = EnumConstraintConfig.<IpVersion>unconstrained().withEqualTo(IpVersion.IPV6);
+		Result<Void> result = IOMatchers.matchInetAddressIpVersion(address, Optional.of(config));
+		assertTrue(result.isSuccess());
+	}
+	
+	@Test
+	void matchInetAddressIpVersionWithMismatch() throws UnknownHostException {
+		InetAddress address = InetAddress.getByName("192.168.1.1");
+		EnumConstraintConfig<IpVersion> config = EnumConstraintConfig.<IpVersion>unconstrained().withEqualTo(IpVersion.IPV6);
+		Result<Void> result = IOMatchers.matchInetAddressIpVersion(address, Optional.of(config));
+		assertTrue(result.isError());
+	}
+	
+	@Test
+	void matchInetAddressIpVersionWithNullChecks() {
+		assertThrows(NullPointerException.class, () -> IOMatchers.matchInetAddressIpVersion(null, Optional.empty()));
+		assertThrows(NullPointerException.class, () -> IOMatchers.matchInetAddressIpVersion(InetAddress.getByName("192.168.1.1"), null));
+	}
+	
+	@Test
+	void matchInetAddressIpTypeWithEmptyOptional() throws UnknownHostException {
+		InetAddress address = InetAddress.getByName("192.168.1.1");
+		Result<Void> result = IOMatchers.matchInetAddressIpType(address, Optional.empty());
+		assertTrue(result.isSuccess());
+	}
+	
+	@Test
+	void matchInetAddressIpTypeWithPrivate() throws UnknownHostException {
+		InetAddress address = InetAddress.getByName("192.168.1.1");
+		EnumConstraintConfig<IpAddressType> config = EnumConstraintConfig.<IpAddressType>unconstrained().withEqualTo(IpAddressType.PRIVATE);
+		Result<Void> result = IOMatchers.matchInetAddressIpType(address, Optional.of(config));
+		assertTrue(result.isSuccess());
+	}
+	
+	@Test
+	void matchInetAddressIpTypeWithLoopback() throws UnknownHostException {
+		InetAddress address = InetAddress.getByName("127.0.0.1");
+		EnumConstraintConfig<IpAddressType> config = EnumConstraintConfig.<IpAddressType>unconstrained().withEqualTo(IpAddressType.LOOPBACK);
+		Result<Void> result = IOMatchers.matchInetAddressIpType(address, Optional.of(config));
+		assertTrue(result.isSuccess());
+	}
+	
+	@Test
+	void matchInetAddressIpTypeWithLoopbackIpv6() throws UnknownHostException {
+		InetAddress address = InetAddress.getByName("::1");
+		EnumConstraintConfig<IpAddressType> config = EnumConstraintConfig.<IpAddressType>unconstrained().withEqualTo(IpAddressType.LOOPBACK);
+		Result<Void> result = IOMatchers.matchInetAddressIpType(address, Optional.of(config));
+		assertTrue(result.isSuccess());
+	}
+	
+	@Test
+	void matchInetAddressIpTypeWithMismatch() throws UnknownHostException {
+		InetAddress address = InetAddress.getByName("192.168.1.1");
+		EnumConstraintConfig<IpAddressType> config = EnumConstraintConfig.<IpAddressType>unconstrained().withEqualTo(IpAddressType.LOOPBACK);
+		Result<Void> result = IOMatchers.matchInetAddressIpType(address, Optional.of(config));
+		assertTrue(result.isError());
+	}
+	
+	@Test
+	void matchInetAddressIpTypeWithNullChecks() {
+		assertThrows(NullPointerException.class, () -> IOMatchers.matchInetAddressIpType(null, Optional.empty()));
+		assertThrows(NullPointerException.class, () -> IOMatchers.matchInetAddressIpType(InetAddress.getByName("192.168.1.1"), null));
+	}
+	
+	@Test
+	void matchInetAddressInAnySubnetWithEmptyOptional() throws UnknownHostException {
+		InetAddress address = InetAddress.getByName("192.168.1.1");
+		Result<Void> result = IOMatchers.matchInetAddressInAnySubnet(address, Optional.empty());
+		assertTrue(result.isSuccess());
+	}
+	
+	@Test
+	void matchInetAddressInAnySubnetWithMatch() throws UnknownHostException {
+		InetAddress address = InetAddress.getByName("192.168.1.50");
+		Result<Void> result = IOMatchers.matchInetAddressInAnySubnet(address, Optional.of(Pair.of(Set.of("192.168.1.0/24"), false)));
+		assertTrue(result.isSuccess());
+	}
+	
+	@Test
+	void matchInetAddressInAnySubnetWithNoMatch() throws UnknownHostException {
+		InetAddress address = InetAddress.getByName("10.0.0.1");
+		Result<Void> result = IOMatchers.matchInetAddressInAnySubnet(address, Optional.of(Pair.of(Set.of("192.168.1.0/24"), false)));
+		assertTrue(result.isError());
+		assertTrue(result.errorOrThrow().contains("must be member of at least one specified subnet"));
+	}
+	
+	@Test
+	void matchInetAddressInAnySubnetWithNegated() throws UnknownHostException {
+		InetAddress address = InetAddress.getByName("10.0.0.1");
+		Result<Void> result = IOMatchers.matchInetAddressInAnySubnet(address, Optional.of(Pair.of(Set.of("192.168.0.0/16"), true)));
+		assertTrue(result.isSuccess());
+	}
+	
+	@Test
+	void matchInetAddressInAnySubnetWithNegatedMember() throws UnknownHostException {
+		InetAddress address = InetAddress.getByName("192.168.1.1");
+		Result<Void> result = IOMatchers.matchInetAddressInAnySubnet(address, Optional.of(Pair.of(Set.of("192.168.0.0/16"), true)));
+		assertTrue(result.isError());
+		assertTrue(result.errorOrThrow().contains("must not be member of any specified subnet"));
+	}
+	
+	@Test
+	void matchInetAddressInAnySubnetWithNullChecks() {
+		assertThrows(NullPointerException.class, () -> IOMatchers.matchInetAddressInAnySubnet(null, Optional.empty()));
+		assertThrows(NullPointerException.class, () -> IOMatchers.matchInetAddressInAnySubnet(InetAddress.getByName("192.168.1.1"), null));
+	}
+	
+	@Test
+	void matchInetSocketAddressAddressWithEmptyOptional() throws UnknownHostException {
+		InetSocketAddress socketAddress = new InetSocketAddress(InetAddress.getByName("192.168.1.1"), 8080);
+		Result<Void> result = IOMatchers.matchInetSocketAddressAddress(socketAddress, Optional.empty());
+		assertTrue(result.isSuccess());
+	}
+	
+	@Test
+	void matchInetSocketAddressAddressWithMatch() throws UnknownHostException {
+		InetSocketAddress socketAddress = new InetSocketAddress(InetAddress.getByName("192.168.1.1"), 8080);
+		InetAddressConstraintConfig config = InetAddressConstraintConfig.UNCONSTRAINED.withIpType(
+			EnumConstraintConfig.<IpAddressType>unconstrained().withEqualTo(IpAddressType.PRIVATE)
+		);
+		Result<Void> result = IOMatchers.matchInetSocketAddressAddress(socketAddress, Optional.of(config));
+		assertTrue(result.isSuccess());
+	}
+	
+	@Test
+	void matchInetSocketAddressAddressWithNoMatch() throws UnknownHostException {
+		InetSocketAddress socketAddress = new InetSocketAddress(InetAddress.getByName("127.0.0.1"), 8080);
+		InetAddressConstraintConfig config = InetAddressConstraintConfig.UNCONSTRAINED.withIpType(
+			EnumConstraintConfig.<IpAddressType>unconstrained().withEqualTo(IpAddressType.PRIVATE)
+		);
+		Result<Void> result = IOMatchers.matchInetSocketAddressAddress(socketAddress, Optional.of(config));
+		assertTrue(result.isError());
+		assertTrue(result.errorOrThrow().contains("Address constraint failed"));
+	}
+	
+	@Test
+	void matchInetSocketAddressAddressWithUnresolved() {
+		InetSocketAddress socketAddress = InetSocketAddress.createUnresolved("nonexistent.invalid", 8080);
+		InetAddressConstraintConfig config = InetAddressConstraintConfig.UNCONSTRAINED;
+		Result<Void> result = IOMatchers.matchInetSocketAddressAddress(socketAddress, Optional.of(config));
+		assertTrue(result.isError());
+		assertTrue(result.errorOrThrow().contains("has no resolved address"));
+	}
+	
+	@Test
+	void matchInetSocketAddressAddressWithNullChecks() {
+		assertThrows(NullPointerException.class, () -> IOMatchers.matchInetSocketAddressAddress(null, Optional.empty()));
+		assertThrows(NullPointerException.class, () -> IOMatchers.matchInetSocketAddressAddress(
+			new InetSocketAddress(InetAddress.getByName("192.168.1.1"), 8080), null
+		));
+	}
+	
+	@Test
+	void matchInetSocketAddressPortWithEmptyOptional() throws UnknownHostException {
+		InetSocketAddress socketAddress = new InetSocketAddress(InetAddress.getByName("192.168.1.1"), 8080);
+		Result<Void> result = IOMatchers.matchInetSocketAddressPort(socketAddress, Optional.empty());
+		assertTrue(result.isSuccess());
+	}
+	
+	@Test
+	void matchInetSocketAddressPortWithMatch() throws UnknownHostException {
+		InetSocketAddress socketAddress = new InetSocketAddress(InetAddress.getByName("192.168.1.1"), 8080);
+		PortConstraintConfig config = PortConstraintConfig.UNCONSTRAINED.withInRange(8000, 9000);
+		Result<Void> result = IOMatchers.matchInetSocketAddressPort(socketAddress, Optional.of(config));
+		assertTrue(result.isSuccess());
+	}
+	
+	@Test
+	void matchInetSocketAddressPortWithNoMatch() throws UnknownHostException {
+		InetSocketAddress socketAddress = new InetSocketAddress(InetAddress.getByName("192.168.1.1"), 80);
+		PortConstraintConfig config = PortConstraintConfig.UNCONSTRAINED.withInRange(8000, 9000);
+		Result<Void> result = IOMatchers.matchInetSocketAddressPort(socketAddress, Optional.of(config));
+		assertTrue(result.isError());
+		assertTrue(result.errorOrThrow().contains("Port constraint failed"));
+	}
+	
+	@Test
+	void matchInetSocketAddressPortWithExactMatch() throws UnknownHostException {
+		InetSocketAddress socketAddress = new InetSocketAddress(InetAddress.getByName("192.168.1.1"), 443);
+		PortConstraintConfig config = PortConstraintConfig.UNCONSTRAINED.withEqualTo(443);
+		Result<Void> result = IOMatchers.matchInetSocketAddressPort(socketAddress, Optional.of(config));
+		assertTrue(result.isSuccess());
+	}
+	
+	@Test
+	void matchInetSocketAddressPortWithNullChecks() {
+		assertThrows(NullPointerException.class, () -> IOMatchers.matchInetSocketAddressPort(null, Optional.empty()));
+		assertThrows(NullPointerException.class, () -> IOMatchers.matchInetSocketAddressPort(
+			new InetSocketAddress(InetAddress.getByName("192.168.1.1"), 8080), null
+		));
 	}
 }

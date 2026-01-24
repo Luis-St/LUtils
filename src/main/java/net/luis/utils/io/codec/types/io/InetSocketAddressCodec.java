@@ -19,6 +19,8 @@
 package net.luis.utils.io.codec.types.io;
 
 import net.luis.utils.io.codec.AbstractCodec;
+import net.luis.utils.io.codec.constraint.config.io.InetSocketAddressConstraintConfig;
+import net.luis.utils.io.codec.constraint.merged.io.InetSocketAddressConstraint;
 import net.luis.utils.io.codec.provider.TypeProvider;
 import net.luis.utils.util.result.Result;
 import org.jspecify.annotations.NonNull;
@@ -28,20 +30,43 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.util.Objects;
+import java.util.function.UnaryOperator;
 
 /**
  * Internal codec implementation for inet socket addresses.<br>
  * Uses the format "address:port" as an internal representation.<br>
  * Supports IPv4, IPv6, and domain names.<br>
+ * <p>
+ *     Supports InetSocketAddress constraints for validation.
+ * </p>
  *
  * @author Luis-St
  */
-public class InetSocketAddressCodec extends AbstractCodec<InetSocketAddress, Object> {
+public class InetSocketAddressCodec extends AbstractCodec<InetSocketAddress, InetSocketAddressConstraintConfig> implements InetSocketAddressConstraint<InetSocketAddressCodec> {
 	
 	/**
 	 * Constructs a new inet socket address codec.<br>
 	 */
 	public InetSocketAddressCodec() {}
+	
+	/**
+	 * Constructs a new inet socket address codec with the given configuration.<br>
+	 *
+	 * @param config The constraint configuration
+	 * @throws NullPointerException If the config is null
+	 */
+	private InetSocketAddressCodec(@NonNull InetSocketAddressConstraintConfig config) {
+		super(config);
+	}
+	
+	@Override
+	public @NonNull InetSocketAddressCodec apply(@NonNull UnaryOperator<InetSocketAddressConstraintConfig> configModifier) {
+		Objects.requireNonNull(configModifier, "Config modifier must not be null");
+		
+		return new InetSocketAddressCodec(
+			configModifier.apply(this.getConstraintConfig().orElse(InetSocketAddressConstraintConfig.UNCONSTRAINED))
+		);
+	}
 	
 	@Override
 	public <R> @NonNull Result<R> encodeStart(@NonNull TypeProvider<R> provider, @NonNull R current, @Nullable InetSocketAddress value) {
@@ -49,6 +74,11 @@ public class InetSocketAddressCodec extends AbstractCodec<InetSocketAddress, Obj
 		Objects.requireNonNull(current, "Current value must not be null");
 		if (value == null) {
 			return Result.error("Unable to encode null as network socket address using '" + this + "'");
+		}
+		
+		Result<Void> constraintResult = this.checkConstraints(value);
+		if (constraintResult.isError()) {
+			return Result.error(constraintResult.errorOrThrow());
 		}
 		
 		String address = value.getAddress().getHostAddress();
@@ -66,6 +96,11 @@ public class InetSocketAddressCodec extends AbstractCodec<InetSocketAddress, Obj
 	@Override
 	public @NonNull Result<String> encodeKey(@NonNull InetSocketAddress key) {
 		Objects.requireNonNull(key, "Key must not be null");
+		
+		Result<Void> constraintResult = this.checkConstraints(key);
+		if (constraintResult.isError()) {
+			return Result.error(constraintResult.errorOrThrow());
+		}
 		
 		String address = key.getAddress().getHostAddress();
 		int port = key.getPort();
@@ -90,13 +125,34 @@ public class InetSocketAddressCodec extends AbstractCodec<InetSocketAddress, Obj
 		}
 		
 		String string = result.resultOrThrow();
-		return this.parseSocketAddress(string);
+		Result<InetSocketAddress> parseResult = this.parseSocketAddress(string);
+		if (parseResult.isError()) {
+			return parseResult;
+		}
+		
+		InetSocketAddress socketAddress = parseResult.resultOrThrow();
+		Result<Void> constraintResult = this.checkConstraints(socketAddress);
+		if (constraintResult.isError()) {
+			return Result.error(constraintResult.errorOrThrow());
+		}
+		return Result.success(socketAddress);
 	}
 	
 	@Override
 	public @NonNull Result<InetSocketAddress> decodeKey(@NonNull String key) {
 		Objects.requireNonNull(key, "Key must not be null");
-		return this.parseSocketAddress(key);
+		
+		Result<InetSocketAddress> parseResult = this.parseSocketAddress(key);
+		if (parseResult.isError()) {
+			return parseResult;
+		}
+		
+		InetSocketAddress socketAddress = parseResult.resultOrThrow();
+		Result<Void> constraintResult = this.checkConstraints(socketAddress);
+		if (constraintResult.isError()) {
+			return Result.error(constraintResult.errorOrThrow());
+		}
+		return Result.success(socketAddress);
 	}
 	
 	/**
@@ -144,6 +200,8 @@ public class InetSocketAddressCodec extends AbstractCodec<InetSocketAddress, Obj
 	
 	@Override
 	public String toString() {
-		return "InetSocketAddressCodec";
+		return this.getConstraintConfig().map(config -> {
+			return "ConstrainedInetSocketAddressCodec[constraints=" + config + "]";
+		}).orElse("InetSocketAddressCodec");
 	}
 }

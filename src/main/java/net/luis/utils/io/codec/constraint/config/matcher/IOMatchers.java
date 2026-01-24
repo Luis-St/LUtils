@@ -34,7 +34,7 @@ import org.jspecify.annotations.NonNull;
 
 import java.io.File;
 import java.io.IOException;
-import java.net.URI;
+import java.net.*;
 import java.nio.file.Path;
 import java.util.*;
 import java.util.regex.Pattern;
@@ -1380,6 +1380,109 @@ public final class IOMatchers {
 			if (!normalizedValue.startsWith(normalizedTarget)) {
 				return Result.error("URI path '" + value + "' must be descendant of '" + pathStr + "'");
 			}
+		}
+		return Result.success();
+	}
+	
+	/**
+	 * Validates an InetAddress against an IP version constraint.<br>
+	 *
+	 * @param value The InetAddress to validate
+	 * @param ipVersion The IP version enum constraint config
+	 * @return A successful result if the constraint is satisfied or not present
+	 * @throws NullPointerException If any parameter is null
+	 */
+	public static @NonNull Result<Void> matchInetAddressIpVersion(@NonNull InetAddress value, @NonNull Optional<EnumConstraintConfig<IpVersion>> ipVersion) {
+		Objects.requireNonNull(value, "InetAddress must not be null");
+		Objects.requireNonNull(ipVersion, "IP version constraint must not be null");
+		if (ipVersion.isEmpty()) {
+			return Result.success();
+		}
+		
+		return matchIpVersion(value.getHostAddress(), ipVersion);
+	}
+	
+	/**
+	 * Validates an InetAddress against an IP address type constraint.<br>
+	 *
+	 * @param value The InetAddress to validate
+	 * @param ipType The IP address type enum constraint config
+	 * @return A successful result if the constraint is satisfied or not present
+	 * @throws NullPointerException If any parameter is null
+	 */
+	public static @NonNull Result<Void> matchInetAddressIpType(@NonNull InetAddress value, @NonNull Optional<EnumConstraintConfig<IpAddressType>> ipType) {
+		Objects.requireNonNull(value, "InetAddress must not be null");
+		Objects.requireNonNull(ipType, "IP type constraint must not be null");
+		if (ipType.isEmpty()) {
+			return Result.success();
+		}
+		
+		return matchIpType(value.getHostAddress(), ipType);
+	}
+	
+	/**
+	 * Validates an InetAddress against a subnet membership constraint.<br>
+	 *
+	 * @param value The InetAddress to validate
+	 * @param inAnySubnet The subnet constraint as a pair of (CIDRs, negated)
+	 * @return A successful result if the constraint is satisfied or not present
+	 * @throws NullPointerException If any parameter is null
+	 */
+	public static @NonNull Result<Void> matchInetAddressInAnySubnet(@NonNull InetAddress value, @NonNull Optional<Pair<Set<String>, Boolean>> inAnySubnet) {
+		Objects.requireNonNull(value, "InetAddress must not be null");
+		Objects.requireNonNull(inAnySubnet, "In any subnet constraint must not be null");
+		if (inAnySubnet.isEmpty()) {
+			return Result.success();
+		}
+		
+		return matchInAnySubnet(value.getHostAddress(), inAnySubnet);
+	}
+	
+	/**
+	 * Validates an InetSocketAddress's address component against an InetAddressConstraintConfig.<br>
+	 *
+	 * @param value The InetSocketAddress to validate
+	 * @param addressConfig The InetAddressConstraintConfig for address validation
+	 * @return A successful result if the constraint is satisfied or not present
+	 * @throws NullPointerException If any parameter is null
+	 */
+	public static @NonNull Result<Void> matchInetSocketAddressAddress(@NonNull InetSocketAddress value, @NonNull Optional<InetAddressConstraintConfig> addressConfig) {
+		Objects.requireNonNull(value, "InetSocketAddress must not be null");
+		Objects.requireNonNull(addressConfig, "Address config constraint must not be null");
+		if (addressConfig.isEmpty()) {
+			return Result.success();
+		}
+		
+		InetAddress address = value.getAddress();
+		if (address == null) {
+			return Result.error("InetSocketAddress '" + value + "' has no resolved address");
+		}
+		
+		Result<Void> result = addressConfig.get().matches(address);
+		if (result.isError()) {
+			return Result.error("Address constraint failed: " + result.errorOrThrow());
+		}
+		return Result.success();
+	}
+	
+	/**
+	 * Validates an InetSocketAddress's port component against a PortConstraintConfig.<br>
+	 *
+	 * @param value The InetSocketAddress to validate
+	 * @param portConfig The PortConstraintConfig for port validation
+	 * @return A successful result if the constraint is satisfied or not present
+	 * @throws NullPointerException If any parameter is null
+	 */
+	public static @NonNull Result<Void> matchInetSocketAddressPort(@NonNull InetSocketAddress value, @NonNull Optional<PortConstraintConfig> portConfig) {
+		Objects.requireNonNull(value, "InetSocketAddress must not be null");
+		Objects.requireNonNull(portConfig, "Port config constraint must not be null");
+		if (portConfig.isEmpty()) {
+			return Result.success();
+		}
+		
+		Result<Void> result = portConfig.get().matches(value.getPort());
+		if (result.isError()) {
+			return Result.error("Port constraint failed: " + result.errorOrThrow());
 		}
 		return Result.success();
 	}
