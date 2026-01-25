@@ -81,6 +81,11 @@ public class ZoneIdCodec extends AbstractCodec<ZoneId, ZoneIdConstraintConfig> i
 	@Override
 	public @NonNull Result<String> encodeKey(@NonNull ZoneId key) {
 		Objects.requireNonNull(key, "Key must not be null");
+		
+		Result<Void> constraintResult = this.checkConstraints(key);
+		if (constraintResult.isError()) {
+			return Result.error(constraintResult.errorOrThrow());
+		}
 		return Result.success(key.getId());
 	}
 	
@@ -100,11 +105,11 @@ public class ZoneIdCodec extends AbstractCodec<ZoneId, ZoneIdConstraintConfig> i
 		String string = result.resultOrThrow();
 		try {
 			ZoneId zoneId = ZoneId.of(string);
+			
 			Result<Void> constraintResult = this.checkConstraints(zoneId);
 			if (constraintResult.isError()) {
 				return Result.error(constraintResult.errorOrThrow());
 			}
-			
 			return Result.success(zoneId);
 		} catch (ZoneRulesException e) {
 			return Result.error("Unable to decode zone id '" + string + "' using '" + this + "': " + e.getMessage());
@@ -116,7 +121,13 @@ public class ZoneIdCodec extends AbstractCodec<ZoneId, ZoneIdConstraintConfig> i
 		Objects.requireNonNull(key, "Key must not be null");
 		
 		try {
-			return Result.success(ZoneId.of(key));
+			ZoneId zoneId = ZoneId.of(key);
+			
+			Result<Void> constraintResult = this.checkConstraints(zoneId);
+			if (constraintResult.isError()) {
+				return Result.error(constraintResult.errorOrThrow());
+			}
+			return Result.success(zoneId);
 		} catch (ZoneRulesException e) {
 			return Result.error("Unable to decode key '" + key + "' as zone id using '" + this + "': " + e.getMessage());
 		}

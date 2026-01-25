@@ -81,6 +81,11 @@ public class ZoneOffsetCodec extends AbstractCodec<ZoneOffset, ZoneOffsetConstra
 	@Override
 	public @NonNull Result<String> encodeKey(@NonNull ZoneOffset key) {
 		Objects.requireNonNull(key, "Key must not be null");
+		
+		Result<Void> constraintResult = this.checkConstraints(key);
+		if (constraintResult.isError()) {
+			return Result.error(constraintResult.errorOrThrow());
+		}
 		return Result.success(key.getId());
 	}
 	
@@ -116,7 +121,13 @@ public class ZoneOffsetCodec extends AbstractCodec<ZoneOffset, ZoneOffsetConstra
 		Objects.requireNonNull(key, "Key must not be null");
 		
 		try {
-			return Result.success(ZoneOffset.of(key));
+			ZoneOffset zoneOffset = ZoneOffset.of(key);
+			Result<Void> constraintResult = this.checkConstraints(zoneOffset);
+			if (constraintResult.isError()) {
+				return Result.error(constraintResult.errorOrThrow());
+			}
+			
+			return Result.success(zoneOffset);
 		} catch (DateTimeException e) {
 			return Result.error("Unable to decode key '" + key + "' as zone offset using '" + this + "': " + e.getMessage());
 		}
