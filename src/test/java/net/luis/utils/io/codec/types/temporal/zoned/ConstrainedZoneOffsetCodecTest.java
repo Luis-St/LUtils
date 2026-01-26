@@ -262,9 +262,9 @@ class ConstrainedZoneOffsetCodecTest {
 	void encodeStartGreaterThanConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<ZoneOffset> codec = new ZoneOffsetCodec().apply(config -> config.withGreaterThan(ZoneOffset.of("+02:00")));
-		ZoneOffset largerOffset = ZoneOffset.of("+05:00");
+		ZoneOffset smallerOffset = ZoneOffset.of("-01:00");
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), largerOffset);
+		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), smallerOffset);
 		assertTrue(result.isError());
 	}
 	
@@ -273,7 +273,7 @@ class ConstrainedZoneOffsetCodecTest {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<ZoneOffset> codec = new ZoneOffsetCodec().apply(config -> config.withGreaterThan(ZoneOffset.of("+02:00")));
 		
-		Result<ZoneOffset> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive("+05:00"));
+		Result<ZoneOffset> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive("-01:00"));
 		assertTrue(result.isError());
 	}
 	
@@ -297,9 +297,9 @@ class ConstrainedZoneOffsetCodecTest {
 	void encodeStartLessThanConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<ZoneOffset> codec = new ZoneOffsetCodec().apply(config -> config.withLessThan(ZoneOffset.of("+02:00")));
-		ZoneOffset smallerOffset = ZoneOffset.of("+01:00");
+		ZoneOffset largerOffset = ZoneOffset.of("+05:00");
 		
-		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), smallerOffset);
+		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), largerOffset);
 		assertTrue(result.isError());
 	}
 	
@@ -308,7 +308,7 @@ class ConstrainedZoneOffsetCodecTest {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<ZoneOffset> codec = new ZoneOffsetCodec().apply(config -> config.withLessThan(ZoneOffset.of("+02:00")));
 		
-		Result<ZoneOffset> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive("+01:00"));
+		Result<ZoneOffset> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive("+05:00"));
 		assertTrue(result.isError());
 	}
 	

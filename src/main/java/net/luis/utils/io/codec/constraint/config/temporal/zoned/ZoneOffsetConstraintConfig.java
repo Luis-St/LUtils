@@ -329,7 +329,7 @@ public record ZoneOffsetConstraintConfig(
 		return ConstraintMatchers.allOf(
 			() -> ConstraintMatchers.matchEqualTo(value, this.equalTo),
 			() -> ConstraintMatchers.matchIn(value, this.in),
-			() -> ConstraintMatchers.matchRange(value, this.min, this.max),
+			() -> ConstraintMatchers.matchRange(value, this.min, this.max, Comparator.comparingInt(ZoneOffset::getTotalSeconds)),
 			() -> TemporalMatchers.matchZoneOffsetSign(value, this.positive, this.negative, this.zero),
 			() -> ConstraintMatchers.matchNestedConfig(value.getTotalSeconds() / 3600, this.hour, "Hours"),
 			() -> ConstraintMatchers.matchCustom(value, this.custom)

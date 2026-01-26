@@ -397,6 +397,23 @@ class ZoneOffsetConstraintConfigTest {
 	@Test
 	void matchesWithGreaterThan() {
 		ZoneOffsetConstraintConfig config = ZoneOffsetConstraintConfig.UNCONSTRAINED.withGreaterThan(UTC);
+		assertTrue(config.matches(PLUS_2).isSuccess());
+		assertTrue(config.matches(PLUS_5).isSuccess());
+		assertTrue(config.matches(UTC).isError());
+		assertTrue(config.matches(MINUS_5).isError());
+	}
+	
+	@Test
+	void matchesWithGreaterThanOrEqual() {
+		ZoneOffsetConstraintConfig config = ZoneOffsetConstraintConfig.UNCONSTRAINED.withGreaterThanOrEqual(UTC);
+		assertTrue(config.matches(UTC).isSuccess());
+		assertTrue(config.matches(PLUS_2).isSuccess());
+		assertTrue(config.matches(MINUS_5).isError());
+	}
+	
+	@Test
+	void matchesWithLessThan() {
+		ZoneOffsetConstraintConfig config = ZoneOffsetConstraintConfig.UNCONSTRAINED.withLessThan(UTC);
 		assertTrue(config.matches(MINUS_5).isSuccess());
 		assertTrue(config.matches(MINUS_8).isSuccess());
 		assertTrue(config.matches(UTC).isError());
@@ -404,44 +421,28 @@ class ZoneOffsetConstraintConfigTest {
 	}
 	
 	@Test
-	void matchesWithGreaterThanOrEqual() {
-		ZoneOffsetConstraintConfig config = ZoneOffsetConstraintConfig.UNCONSTRAINED.withGreaterThanOrEqual(UTC);
-		assertTrue(config.matches(UTC).isSuccess());
-		assertTrue(config.matches(MINUS_5).isSuccess());
-		assertTrue(config.matches(PLUS_2).isError());
-	}
-	
-	@Test
-	void matchesWithLessThan() {
-		ZoneOffsetConstraintConfig config = ZoneOffsetConstraintConfig.UNCONSTRAINED.withLessThan(UTC);
-		assertTrue(config.matches(PLUS_2).isSuccess());
-		assertTrue(config.matches(PLUS_5).isSuccess());
-		assertTrue(config.matches(UTC).isError());
-	}
-	
-	@Test
 	void matchesWithLessThanOrEqual() {
 		ZoneOffsetConstraintConfig config = ZoneOffsetConstraintConfig.UNCONSTRAINED.withLessThanOrEqual(UTC);
 		assertTrue(config.matches(UTC).isSuccess());
-		assertTrue(config.matches(PLUS_2).isSuccess());
-		assertTrue(config.matches(MINUS_5).isError());
+		assertTrue(config.matches(MINUS_5).isSuccess());
+		assertTrue(config.matches(PLUS_2).isError());
 	}
 	
 	@Test
 	void matchesWithBetween() {
-		ZoneOffsetConstraintConfig config = ZoneOffsetConstraintConfig.UNCONSTRAINED.withBetween(PLUS_2, MINUS_5);
+		ZoneOffsetConstraintConfig config = ZoneOffsetConstraintConfig.UNCONSTRAINED.withBetween(MINUS_5, PLUS_2);
 		assertTrue(config.matches(UTC).isSuccess());
-		assertTrue(config.matches(PLUS_2).isError());
 		assertTrue(config.matches(MINUS_5).isError());
-		assertTrue(config.matches(PLUS_5).isError());
+		assertTrue(config.matches(PLUS_2).isError());
+		assertTrue(config.matches(MINUS_8).isError());
 	}
 	
 	@Test
 	void matchesWithBetweenOrEqual() {
-		ZoneOffsetConstraintConfig config = ZoneOffsetConstraintConfig.UNCONSTRAINED.withBetweenOrEqual(PLUS_2, MINUS_5);
-		assertTrue(config.matches(PLUS_2).isSuccess());
-		assertTrue(config.matches(UTC).isSuccess());
+		ZoneOffsetConstraintConfig config = ZoneOffsetConstraintConfig.UNCONSTRAINED.withBetweenOrEqual(MINUS_5, PLUS_2);
 		assertTrue(config.matches(MINUS_5).isSuccess());
+		assertTrue(config.matches(UTC).isSuccess());
+		assertTrue(config.matches(PLUS_2).isSuccess());
 		assertTrue(config.matches(PLUS_5).isError());
 		assertTrue(config.matches(MINUS_8).isError());
 	}
@@ -509,12 +510,12 @@ class ZoneOffsetConstraintConfigTest {
 	@Test
 	void matchesWithMultipleConstraints() {
 		ZoneOffsetConstraintConfig config = ZoneOffsetConstraintConfig.UNCONSTRAINED
-			.withGreaterThanOrEqual(PLUS_2)
-			.withLessThanOrEqual(MINUS_5)
+			.withGreaterThanOrEqual(MINUS_5)
+			.withLessThanOrEqual(PLUS_2)
 			.withNotIn(List.of(UTC));
 		
-		assertTrue(config.matches(PLUS_2).isSuccess());
 		assertTrue(config.matches(MINUS_5).isSuccess());
+		assertTrue(config.matches(PLUS_2).isSuccess());
 		assertTrue(config.matches(UTC).isError());
 		assertTrue(config.matches(PLUS_5).isError());
 		assertTrue(config.matches(MINUS_8).isError());
