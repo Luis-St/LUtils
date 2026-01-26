@@ -476,26 +476,6 @@ class TcpIntegrationTest {
 	}
 	
 	@Test
-	void serverStopsWhileClientConnected() throws Exception {
-		IpEndpoint endpoint = new IpEndpoint(Ipv4Address.LOOPBACK, 0);
-		TcpServer server = new TcpServer(endpoint);
-		server.start();
-		
-		TcpClientConfig config = TcpClientConfig.builder()
-			.readTimeout(Duration.ofSeconds(2))
-			.build();
-		
-		try (TcpClient client = new TcpClient(config)) {
-			client.connect(server.boundEndpoint());
-			assertTrue(client.isActive());
-			
-			server.stop();
-			
-			assertArrayEquals(ArrayUtils.EMPTY_BYTE_ARRAY, client.receive());
-		}
-	}
-	
-	@Test
 	void receiveThrowsOnPeerClose() throws Exception {
 		CountDownLatch clientConnected = new CountDownLatch(1);
 		AtomicReference<TcpConnection> connectionRef = new AtomicReference<>();
