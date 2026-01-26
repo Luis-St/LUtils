@@ -19,8 +19,8 @@
 package net.luis.utils.io.codec.types.array;
 
 import net.luis.utils.io.codec.*;
-import net.luis.utils.io.codec.constraint.config.collection.ArrayConstraintConfig;
-import net.luis.utils.io.codec.constraint.merged.collection.ArrayConstraint;
+import net.luis.utils.io.codec.constraint.config.collection.PrimitiveArrayConstraintConfig;
+import net.luis.utils.io.codec.constraint.merged.collection.PrimitiveArrayConstraint;
 import net.luis.utils.io.codec.provider.TypeProvider;
 import net.luis.utils.util.result.Result;
 import org.apache.commons.lang3.ArrayUtils;
@@ -36,7 +36,7 @@ import java.util.function.UnaryOperator;
  *
  * @author Luis-St
  */
-public class ShortArrayCodec extends AbstractCodec<short[], ArrayConstraintConfig<short[]>> implements ArrayConstraint<short[], ShortArrayCodec> {
+public class ShortArrayCodec extends AbstractCodec<short[], PrimitiveArrayConstraintConfig<short[]>> implements PrimitiveArrayConstraint<short[], ShortArrayCodec> {
 	
 	/**
 	 * The internal codec that handles the conversion between a list of shorts and the array representation.<br>
@@ -54,16 +54,16 @@ public class ShortArrayCodec extends AbstractCodec<short[], ArrayConstraintConfi
 	 * @param config The constraint configuration
 	 * @throws NullPointerException If the constraint config is null
 	 */
-	private ShortArrayCodec(@NonNull ArrayConstraintConfig<short[]> config) {
+	private ShortArrayCodec(@NonNull PrimitiveArrayConstraintConfig<short[]> config) {
 		super(config);
 	}
 	
 	@Override
-	public @NonNull ShortArrayCodec apply(@NonNull UnaryOperator<ArrayConstraintConfig<short[]>> configModifier) {
+	public @NonNull ShortArrayCodec apply(@NonNull UnaryOperator<PrimitiveArrayConstraintConfig<short[]>> configModifier) {
 		Objects.requireNonNull(configModifier, "Config modifier must not be null");
 		
 		return new ShortArrayCodec(
-			configModifier.apply(this.getConstraintConfig().orElse(ArrayConstraintConfig.unconstrained()))
+			configModifier.apply(this.getConstraintConfig().orElse(PrimitiveArrayConstraintConfig.shortArray()))
 		);
 	}
 	

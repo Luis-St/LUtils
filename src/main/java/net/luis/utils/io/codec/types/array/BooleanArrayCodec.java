@@ -19,8 +19,8 @@
 package net.luis.utils.io.codec.types.array;
 
 import net.luis.utils.io.codec.*;
-import net.luis.utils.io.codec.constraint.config.collection.ArrayConstraintConfig;
-import net.luis.utils.io.codec.constraint.merged.collection.ArrayConstraint;
+import net.luis.utils.io.codec.constraint.config.collection.PrimitiveArrayConstraintConfig;
+import net.luis.utils.io.codec.constraint.merged.collection.PrimitiveArrayConstraint;
 import net.luis.utils.io.codec.provider.TypeProvider;
 import net.luis.utils.util.result.Result;
 import org.apache.commons.lang3.ArrayUtils;
@@ -36,7 +36,7 @@ import java.util.function.UnaryOperator;
  *
  * @author Luis-St
  */
-public class BooleanArrayCodec extends AbstractCodec<boolean[], ArrayConstraintConfig<boolean[]>> implements ArrayConstraint<boolean[], BooleanArrayCodec> {
+public class BooleanArrayCodec extends AbstractCodec<boolean[], PrimitiveArrayConstraintConfig<boolean[]>> implements PrimitiveArrayConstraint<boolean[], BooleanArrayCodec> {
 	
 	/**
 	 * The internal codec that handles the conversion between a list of booleans and the array representation.<br>
@@ -54,16 +54,16 @@ public class BooleanArrayCodec extends AbstractCodec<boolean[], ArrayConstraintC
 	 * @param config The constraint configuration
 	 * @throws NullPointerException If the constraint config is null
 	 */
-	private BooleanArrayCodec(@NonNull ArrayConstraintConfig<boolean[]> config) {
+	private BooleanArrayCodec(@NonNull PrimitiveArrayConstraintConfig<boolean[]> config) {
 		super(config);
 	}
 	
 	@Override
-	public @NonNull BooleanArrayCodec apply(@NonNull UnaryOperator<ArrayConstraintConfig<boolean[]>> configModifier) {
+	public @NonNull BooleanArrayCodec apply(@NonNull UnaryOperator<PrimitiveArrayConstraintConfig<boolean[]>> configModifier) {
 		Objects.requireNonNull(configModifier, "Config modifier must not be null");
 		
 		return new BooleanArrayCodec(
-			configModifier.apply(this.getConstraintConfig().orElse(ArrayConstraintConfig.unconstrained()))
+			configModifier.apply(this.getConstraintConfig().orElse(PrimitiveArrayConstraintConfig.booleanArray()))
 		);
 	}
 	

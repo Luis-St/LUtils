@@ -19,8 +19,8 @@
 package net.luis.utils.io.codec.types.array;
 
 import net.luis.utils.io.codec.*;
-import net.luis.utils.io.codec.constraint.config.collection.ArrayConstraintConfig;
-import net.luis.utils.io.codec.constraint.merged.collection.ArrayConstraint;
+import net.luis.utils.io.codec.constraint.config.collection.PrimitiveArrayConstraintConfig;
+import net.luis.utils.io.codec.constraint.merged.collection.PrimitiveArrayConstraint;
 import net.luis.utils.io.codec.provider.TypeProvider;
 import net.luis.utils.util.result.Result;
 import org.apache.commons.lang3.ArrayUtils;
@@ -36,7 +36,7 @@ import java.util.function.UnaryOperator;
  *
  * @author Luis-St
  */
-public class IntegerArrayCodec extends AbstractCodec<int[], ArrayConstraintConfig<int[]>> implements ArrayConstraint<int[], IntegerArrayCodec> {
+public class IntegerArrayCodec extends AbstractCodec<int[], PrimitiveArrayConstraintConfig<int[]>> implements PrimitiveArrayConstraint<int[], IntegerArrayCodec> {
 	
 	/**
 	 * The internal codec that handles the conversion between a list of integers and the array representation.<br>
@@ -54,16 +54,16 @@ public class IntegerArrayCodec extends AbstractCodec<int[], ArrayConstraintConfi
 	 * @param config The constraint configuration
 	 * @throws NullPointerException If the constraint config is null
 	 */
-	private IntegerArrayCodec(@NonNull ArrayConstraintConfig<int[]> config) {
+	private IntegerArrayCodec(@NonNull PrimitiveArrayConstraintConfig<int[]> config) {
 		super(config);
 	}
 	
 	@Override
-	public @NonNull IntegerArrayCodec apply(@NonNull UnaryOperator<ArrayConstraintConfig<int[]>> configModifier) {
+	public @NonNull IntegerArrayCodec apply(@NonNull UnaryOperator<PrimitiveArrayConstraintConfig<int[]>> configModifier) {
 		Objects.requireNonNull(configModifier, "Config modifier must not be null");
 		
 		return new IntegerArrayCodec(
-			configModifier.apply(this.getConstraintConfig().orElse(ArrayConstraintConfig.unconstrained()))
+			configModifier.apply(this.getConstraintConfig().orElse(PrimitiveArrayConstraintConfig.intArray()))
 		);
 	}
 	

@@ -19,8 +19,8 @@
 package net.luis.utils.io.codec.types.array;
 
 import net.luis.utils.io.codec.*;
-import net.luis.utils.io.codec.constraint.config.collection.ArrayConstraintConfig;
-import net.luis.utils.io.codec.constraint.merged.collection.ArrayConstraint;
+import net.luis.utils.io.codec.constraint.config.collection.PrimitiveArrayConstraintConfig;
+import net.luis.utils.io.codec.constraint.merged.collection.PrimitiveArrayConstraint;
 import net.luis.utils.io.codec.provider.TypeProvider;
 import net.luis.utils.util.result.Result;
 import org.apache.commons.lang3.ArrayUtils;
@@ -36,7 +36,7 @@ import java.util.function.UnaryOperator;
  *
  * @author Luis-St
  */
-public class DoubleArrayCodec extends AbstractCodec<double[], ArrayConstraintConfig<double[]>> implements ArrayConstraint<double[], DoubleArrayCodec> {
+public class DoubleArrayCodec extends AbstractCodec<double[], PrimitiveArrayConstraintConfig<double[]>> implements PrimitiveArrayConstraint<double[], DoubleArrayCodec> {
 	
 	/**
 	 * The internal codec that handles the conversion between a list of doubles and the array representation.<br>
@@ -54,16 +54,16 @@ public class DoubleArrayCodec extends AbstractCodec<double[], ArrayConstraintCon
 	 * @param config The constraint configuration
 	 * @throws NullPointerException If the constraint config is null
 	 */
-	private DoubleArrayCodec(@NonNull ArrayConstraintConfig<double[]> config) {
+	private DoubleArrayCodec(@NonNull PrimitiveArrayConstraintConfig<double[]> config) {
 		super(config);
 	}
 	
 	@Override
-	public @NonNull DoubleArrayCodec apply(@NonNull UnaryOperator<ArrayConstraintConfig<double[]>> configModifier) {
+	public @NonNull DoubleArrayCodec apply(@NonNull UnaryOperator<PrimitiveArrayConstraintConfig<double[]>> configModifier) {
 		Objects.requireNonNull(configModifier, "Config modifier must not be null");
 		
 		return new DoubleArrayCodec(
-			configModifier.apply(this.getConstraintConfig().orElse(ArrayConstraintConfig.unconstrained()))
+			configModifier.apply(this.getConstraintConfig().orElse(PrimitiveArrayConstraintConfig.doubleArray()))
 		);
 	}
 	

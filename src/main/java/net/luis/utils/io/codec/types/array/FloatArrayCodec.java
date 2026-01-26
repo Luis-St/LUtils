@@ -19,8 +19,8 @@
 package net.luis.utils.io.codec.types.array;
 
 import net.luis.utils.io.codec.*;
-import net.luis.utils.io.codec.constraint.config.collection.ArrayConstraintConfig;
-import net.luis.utils.io.codec.constraint.merged.collection.ArrayConstraint;
+import net.luis.utils.io.codec.constraint.config.collection.PrimitiveArrayConstraintConfig;
+import net.luis.utils.io.codec.constraint.merged.collection.PrimitiveArrayConstraint;
 import net.luis.utils.io.codec.provider.TypeProvider;
 import net.luis.utils.util.result.Result;
 import org.apache.commons.lang3.ArrayUtils;
@@ -36,7 +36,7 @@ import java.util.function.UnaryOperator;
  *
  * @author Luis-St
  */
-public class FloatArrayCodec extends AbstractCodec<float[], ArrayConstraintConfig<float[]>> implements ArrayConstraint<float[], FloatArrayCodec> {
+public class FloatArrayCodec extends AbstractCodec<float[], PrimitiveArrayConstraintConfig<float[]>> implements PrimitiveArrayConstraint<float[], FloatArrayCodec> {
 	
 	/**
 	 * The internal codec that handles the conversion between a list of floats and the array representation.<br>
@@ -54,16 +54,16 @@ public class FloatArrayCodec extends AbstractCodec<float[], ArrayConstraintConfi
 	 * @param config The constraint configuration
 	 * @throws NullPointerException If the constraint config is null
 	 */
-	private FloatArrayCodec(@NonNull ArrayConstraintConfig<float[]> config) {
+	private FloatArrayCodec(@NonNull PrimitiveArrayConstraintConfig<float[]> config) {
 		super(config);
 	}
 	
 	@Override
-	public @NonNull FloatArrayCodec apply(@NonNull UnaryOperator<ArrayConstraintConfig<float[]>> configModifier) {
+	public @NonNull FloatArrayCodec apply(@NonNull UnaryOperator<PrimitiveArrayConstraintConfig<float[]>> configModifier) {
 		Objects.requireNonNull(configModifier, "Config modifier must not be null");
 		
 		return new FloatArrayCodec(
-			configModifier.apply(this.getConstraintConfig().orElse(ArrayConstraintConfig.unconstrained()))
+			configModifier.apply(this.getConstraintConfig().orElse(PrimitiveArrayConstraintConfig.floatArray()))
 		);
 	}
 	
