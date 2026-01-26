@@ -27,6 +27,7 @@ import net.luis.utils.io.data.json.JsonPrimitive;
 import net.luis.utils.util.result.Result;
 import org.junit.jupiter.api.Test;
 
+import java.io.File;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.Set;
@@ -43,12 +44,12 @@ class ConstrainedPathCodecTest {
 	@Test
 	void encodeStartWithValidConstrainedValue() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
-		Path expected = Path.of("/home/user/file.txt");
+		Path expected = Path.of("home", "user", "file.txt");
 		Codec<Path> codec = new PathCodec().apply(config -> config.withEqualTo(expected));
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), expected);
 		assertTrue(result.isSuccess());
-		assertEquals(new JsonPrimitive("/home/user/file.txt"), result.resultOrThrow());
+		assertEquals(new JsonPrimitive("home" + File.separator + "user" + File.separator + "file.txt"), result.resultOrThrow());
 	}
 	
 	@Test
@@ -233,7 +234,7 @@ class ConstrainedPathCodecTest {
 	void encodeStartAbsoluteSuccess() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Path> codec = new PathCodec().apply(FilePathConstraintConfig::withAbsolute);
-		Path absolutePath = Path.of("/home/user/file.txt");
+		Path absolutePath = Path.of("").toAbsolutePath().resolve("file.txt");
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), absolutePath);
 		assertTrue(result.isSuccess());
@@ -243,7 +244,7 @@ class ConstrainedPathCodecTest {
 	void encodeStartRelativeConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Path> codec = new PathCodec().apply(FilePathConstraintConfig::withRelative);
-		Path absolutePath = Path.of("/home/user/file.txt");
+		Path absolutePath = Path.of("").toAbsolutePath().resolve("file.txt");
 		
 		Result<JsonElement> result = codec.encodeStart(typeProvider, typeProvider.empty(), absolutePath);
 		assertTrue(result.isError());
@@ -253,8 +254,9 @@ class ConstrainedPathCodecTest {
 	void decodeStartRelativeConstraintViolation() {
 		JsonTypeProvider typeProvider = JsonTypeProvider.INSTANCE;
 		Codec<Path> codec = new PathCodec().apply(FilePathConstraintConfig::withRelative);
+		String absolutePathString = Path.of("").toAbsolutePath().resolve("file.txt").toString();
 		
-		Result<Path> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive("/home/user/file.txt"));
+		Result<Path> result = codec.decodeStart(typeProvider, typeProvider.empty(), new JsonPrimitive(absolutePathString));
 		assertTrue(result.isError());
 	}
 	

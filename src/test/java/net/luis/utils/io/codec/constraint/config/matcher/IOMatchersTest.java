@@ -25,6 +25,7 @@ import net.luis.utils.util.Pair;
 import net.luis.utils.util.result.Result;
 import org.junit.jupiter.api.Test;
 
+import java.io.File;
 import java.net.*;
 import java.nio.file.Path;
 import java.util.*;
@@ -405,8 +406,9 @@ class IOMatchersTest {
 	
 	@Test
 	void matchPathStringConfigWithMatch() {
-		StringConstraintConfig config = StringConstraintConfig.UNCONSTRAINED.withStartsWith("/");
-		Result<Void> result = IOMatchers.matchPathStringConfig(Path.of("/some/path"), Optional.of(config));
+		String separator = File.separator;
+		StringConstraintConfig config = StringConstraintConfig.UNCONSTRAINED.withStartsWith(separator);
+		Result<Void> result = IOMatchers.matchPathStringConfig(Path.of(separator + "some" + separator + "path"), Optional.of(config));
 		assertTrue(result.isSuccess());
 	}
 	
