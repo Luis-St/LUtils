@@ -28,6 +28,12 @@ import java.util.function.UnaryOperator;
 
 /**
  * Constraint interface for map types that provides key-based validation operations.<br>
+ * <p>
+ *     This interface extends {@link ApplicableConstraint} and {@link BaseConstraint} with methods
+ *     for constraining maps based on size, key requirements, and value constraints.<br>
+ *     It provides comprehensive map validation including required keys, forbidden keys, allowed keys,
+ *     unique values, and non-null constraints for both keys and values.
+ * </p>
  *
  * @author Luis-St
  *

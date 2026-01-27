@@ -40,6 +40,7 @@ import java.util.function.UnaryOperator;
  *
  * @param <C> The return type of the constraint method (for fluent method chaining)
  */
+@FunctionalInterface
 public interface UUIDConstraint<C> extends ApplicableConstraint<UUIDConstraintConfig, C>, BaseConstraint<UUID, C> {
 	
 	@Override

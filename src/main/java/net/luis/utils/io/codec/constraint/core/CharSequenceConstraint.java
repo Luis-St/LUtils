@@ -27,6 +27,11 @@ import java.util.regex.Pattern;
 
 /**
  * Constraint interface for character sequence types that provides string pattern matching operations.<br>
+ * <p>
+ *     This interface extends {@link BaseConstraint} with methods for constraining character sequences
+ *     based on length, prefix, suffix, containment, and regular expression matching.<br>
+ *     It provides comprehensive string validation capabilities for pattern-based constraints.
+ * </p>
  *
  * @author Luis-St
  *

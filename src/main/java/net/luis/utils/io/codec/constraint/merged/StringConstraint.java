@@ -30,6 +30,12 @@ import java.util.regex.Pattern;
 
 /**
  * Constraint interface for string types that provides string-specific validation operations.<br>
+ * <p>
+ *     This interface extends {@link ApplicableConstraint} and {@link CharSequenceConstraint} with methods
+ *     for constraining strings based on case sensitivity, character content, and format validation.<br>
+ *     It inherits pattern matching constraints and adds string-specific features like case-insensitive
+ *     comparison, trimmed validation, and character class constraints (alphabetic, numeric, alphanumeric).
+ * </p>
  *
  * @author Luis-St
  *

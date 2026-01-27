@@ -32,6 +32,12 @@ import java.util.function.UnaryOperator;
 
 /**
  * Constraint interface for {@link Instant} that provides temporal validation operations.<br>
+ * <p>
+ *     This interface extends {@link TemporalComparableConstraint} and {@link TemporalSpanConstraint}
+ *     to provide comprehensive instant validation capabilities.<br>
+ *     It inherits temporal comparison constraints (after, before, between) and span constraints
+ *     (withinLast, withinNext) for validating instant values.
+ * </p>
  *
  * @author Luis-St
  *

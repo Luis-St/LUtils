@@ -28,6 +28,11 @@ import java.util.function.UnaryOperator;
 
 /**
  * Constraint interface for list types that provides size validation operations.<br>
+ * <p>
+ *     This interface extends {@link ApplicableConstraint} and {@link BaseConstraint} with methods
+ *     for constraining lists based on their size.<br>
+ *     It provides size validation capabilities using a fluent builder API.
+ * </p>
  *
  * @author Luis-St
  *

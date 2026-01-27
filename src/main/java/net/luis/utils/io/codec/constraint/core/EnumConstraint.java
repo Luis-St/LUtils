@@ -26,12 +26,18 @@ import java.util.function.UnaryOperator;
 
 /**
  * Base interface for all enum constraint types that provides fundamental equality and membership operations.<br>
+ * <p>
+ *     This interface extends {@link ApplicableConstraint} and {@link BaseConstraint} with methods
+ *     for constraining enum values based on equality, membership, and custom validation.<br>
+ *     It allows validation of enum constants using the standard constraint operations.
+ * </p>
  *
  * @author Luis-St
  *
- * @param <T> The type of the constraint configuration
+ * @param <T> The enum type being constrained
  * @param <C> The return type of the constraint method (for fluent method chaining)
  */
+@FunctionalInterface
 public interface EnumConstraint<T extends Enum<T>, C> extends ApplicableConstraint<EnumConstraintConfig<T>, C>, BaseConstraint<T, C> {
 	
 	@Override

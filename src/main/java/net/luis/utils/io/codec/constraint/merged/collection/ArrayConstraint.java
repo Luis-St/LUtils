@@ -29,6 +29,11 @@ import java.util.function.UnaryOperator;
 
 /**
  * Constraint interface for array types that provides size validation operations.<br>
+ * <p>
+ *     This interface extends {@link ApplicableConstraint} and {@link BaseConstraint} with methods
+ *     for constraining arrays based on their length.<br>
+ *     It provides length validation capabilities using a fluent builder API.
+ * </p>
  *
  * @author Luis-St
  *
