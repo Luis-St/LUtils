@@ -18,8 +18,7 @@
 
 package net.luis.utils.io.codec.constraint.merged.temporal.zoned;
 
-import net.luis.utils.io.codec.constraint.builder.EnumConstraintBuilder;
-import net.luis.utils.io.codec.constraint.builder.NumericConstraintBuilder;
+import net.luis.utils.io.codec.constraint.builder.*;
 import net.luis.utils.io.codec.constraint.config.temporal.zoned.ZonedDateTimeConstraintConfig;
 import net.luis.utils.io.codec.constraint.core.ApplicableConstraint;
 import net.luis.utils.io.codec.constraint.core.Constraint;
@@ -224,5 +223,24 @@ public interface ZonedDateTimeConstraint<C> extends ApplicableConstraint<ZonedDa
 		NumericConstraintBuilder numericBuilder = new NumericConstraintBuilder();
 		builder.apply(numericBuilder);
 		return this.apply(config -> config.withNanosecond(numericBuilder.build()));
+	}
+	
+	/**
+	 * Applies a zone constraint to the zoned date time using a builder.<br>
+	 * <p>
+	 *     The returned type will validate that the zone component of zoned date times matches
+	 *     the constraints defined by the builder.
+	 * </p>
+	 *
+	 * @param builder A function that configures the zone constraint using a zone id constraint builder
+	 * @return A new type with the applied zone constraint
+	 * @throws NullPointerException If the builder is null
+	 */
+	default @NonNull C zone(@NonNull UnaryOperator<ZoneIdConstraintBuilder> builder) {
+		Objects.requireNonNull(builder, "Builder must not be null");
+		
+		ZoneIdConstraintBuilder zoneBuilder = new ZoneIdConstraintBuilder();
+		builder.apply(zoneBuilder);
+		return this.apply(config -> config.withZone(zoneBuilder.build()));
 	}
 }

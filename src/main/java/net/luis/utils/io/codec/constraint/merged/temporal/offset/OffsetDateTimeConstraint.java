@@ -18,8 +18,7 @@
 
 package net.luis.utils.io.codec.constraint.merged.temporal.offset;
 
-import net.luis.utils.io.codec.constraint.builder.EnumConstraintBuilder;
-import net.luis.utils.io.codec.constraint.builder.NumericConstraintBuilder;
+import net.luis.utils.io.codec.constraint.builder.*;
 import net.luis.utils.io.codec.constraint.config.temporal.offset.OffsetDateTimeConstraintConfig;
 import net.luis.utils.io.codec.constraint.core.ApplicableConstraint;
 import net.luis.utils.io.codec.constraint.core.Constraint;
@@ -224,5 +223,24 @@ public interface OffsetDateTimeConstraint<C> extends ApplicableConstraint<Offset
 		NumericConstraintBuilder numericBuilder = new NumericConstraintBuilder();
 		builder.apply(numericBuilder);
 		return this.apply(config -> config.withNanosecond(numericBuilder.build()));
+	}
+	
+	/**
+	 * Applies an offset constraint to the offset date time using a builder.<br>
+	 * <p>
+	 *     The returned type will validate that the offset component of offset date times matches
+	 *     the constraints defined by the builder.
+	 * </p>
+	 *
+	 * @param builder A function that configures the offset constraint using a zone offset constraint builder
+	 * @return A new type with the applied offset constraint
+	 * @throws NullPointerException If the builder is null
+	 */
+	default @NonNull C offset(@NonNull UnaryOperator<ZoneOffsetConstraintBuilder> builder) {
+		Objects.requireNonNull(builder, "Builder must not be null");
+		
+		ZoneOffsetConstraintBuilder offsetBuilder = new ZoneOffsetConstraintBuilder();
+		builder.apply(offsetBuilder);
+		return this.apply(config -> config.withOffset(offsetBuilder.build()));
 	}
 }
